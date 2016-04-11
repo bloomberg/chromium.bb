@@ -5,7 +5,9 @@
 #include "chrome/renderer/chrome_render_process_observer.h"
 
 #include <stddef.h>
+
 #include <limits>
+#include <memory>
 #include <set>
 #include <utility>
 #include <vector>
@@ -75,8 +77,8 @@ class RendererResourceDelegate : public content::ResourceDispatcherDelegate {
       : weak_factory_(this) {
   }
 
-  scoped_ptr<content::RequestPeer> OnRequestComplete(
-      scoped_ptr<content::RequestPeer> current_peer,
+  std::unique_ptr<content::RequestPeer> OnRequestComplete(
+      std::unique_ptr<content::RequestPeer> current_peer,
       content::ResourceType resource_type,
       int error_code) override {
     // Update the browser about our cache.
@@ -98,8 +100,8 @@ class RendererResourceDelegate : public content::ResourceDispatcherDelegate {
         resource_type, std::move(current_peer), error_code);
   }
 
-  scoped_ptr<content::RequestPeer> OnReceivedResponse(
-      scoped_ptr<content::RequestPeer> current_peer,
+  std::unique_ptr<content::RequestPeer> OnReceivedResponse(
+      std::unique_ptr<content::RequestPeer> current_peer,
       const std::string& mime_type,
       const GURL& url) override {
 #if defined(ENABLE_EXTENSIONS)

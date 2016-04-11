@@ -5,10 +5,10 @@
 #ifndef CHROME_RENDERER_SPELLCHECKER_HUNSPELL_ENGINE_H_
 #define CHROME_RENDERER_SPELLCHECKER_HUNSPELL_ENGINE_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/spellcheck_common.h"
@@ -40,10 +40,10 @@ class HunspellEngine : public SpellingEngine {
   void InitializeHunspell();
 
   // We memory-map the BDict file.
-  scoped_ptr<base::MemoryMappedFile> bdict_file_;
+  std::unique_ptr<base::MemoryMappedFile> bdict_file_;
 
   // The hunspell dictionary in use.
-  scoped_ptr<Hunspell> hunspell_;
+  std::unique_ptr<Hunspell> hunspell_;
 
   base::File file_;
 

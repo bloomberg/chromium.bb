@@ -5,13 +5,13 @@
 #ifndef CHROME_RENDERER_SPELLCHECKER_SPELLCHECK_LANGUAGE_H_
 #define CHROME_RENDERER_SPELLCHECKER_SPELLCHECK_LANGUAGE_H_
 
+#include <memory>
 #include <queue>
 #include <string>
 #include <vector>
 
 #include "base/files/file.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/renderer/spellchecker/spellcheck_worditerator.h"
 
@@ -91,7 +91,7 @@ class SpellcheckLanguage {
 
   // Pointer to a platform-specific spelling engine, if it is in use. This
   // should only be set if hunspell is not used. (I.e. on OSX, for now)
-  scoped_ptr<SpellingEngine> platform_spelling_engine_;
+  std::unique_ptr<SpellingEngine> platform_spelling_engine_;
 
   DISALLOW_COPY_AND_ASSIGN(SpellcheckLanguage);
 };

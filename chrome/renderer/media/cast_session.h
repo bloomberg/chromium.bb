@@ -5,12 +5,12 @@
 #ifndef CHROME_RENDERER_MEDIA_CAST_SESSION_H_
 #define CHROME_RENDERER_MEDIA_CAST_SESSION_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "media/cast/cast_config.h"
 #include "net/base/ip_endpoint.h"
 
@@ -44,8 +44,10 @@ class CastSession : public base::RefCounted<CastSession> {
   typedef base::Callback<void(const scoped_refptr<
       media::cast::VideoFrameInput>&)> VideoFrameInputAvailableCallback;
   typedef base::Callback<void(const std::vector<char>&)> SendPacketCallback;
-  typedef base::Callback<void(scoped_ptr<base::BinaryValue>)> EventLogsCallback;
-  typedef base::Callback<void(scoped_ptr<base::DictionaryValue>)> StatsCallback;
+  typedef base::Callback<void(std::unique_ptr<base::BinaryValue>)>
+      EventLogsCallback;
+  typedef base::Callback<void(std::unique_ptr<base::DictionaryValue>)>
+      StatsCallback;
   typedef base::Callback<void(const std::string&)> ErrorCallback;
 
   CastSession();
@@ -70,7 +72,7 @@ class CastSession : public base::RefCounted<CastSession> {
   // udp transport.
   // Must be called before initialization of audio or video.
   void StartUDP(const net::IPEndPoint& remote_endpoint,
-                scoped_ptr<base::DictionaryValue> options,
+                std::unique_ptr<base::DictionaryValue> options,
                 const ErrorCallback& error_callback);
 
   // Creates or destroys event subscriber for the audio or video stream.
@@ -97,7 +99,7 @@ class CastSession : public base::RefCounted<CastSession> {
   // CastSessionDelegate lives only on the IO thread. It is always
   // safe to post task on the IO thread to access CastSessionDelegate
   // because it is owned by this object.
-  scoped_ptr<CastSessionDelegate> delegate_;
+  std::unique_ptr<CastSessionDelegate> delegate_;
 
   // Proxy to the IO task runner.
   const scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;

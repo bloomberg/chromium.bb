@@ -4,8 +4,9 @@
 
 #include <string.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
 #include "chrome/renderer/autofill/password_generation_test_utils.h"

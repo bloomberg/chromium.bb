@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/renderer/safe_browsing/threat_dom_details.h"
+
+#include <memory>
+
 #include "base/strings/stringprintf.h"
 #include "chrome/common/safe_browsing/safebrowsing_messages.h"
-#include "chrome/renderer/safe_browsing/threat_dom_details.h"
 #include "chrome/test/base/chrome_render_view_test.h"
 #include "content/public/renderer/render_view.h"
 #include "net/base/escape.h"
@@ -12,7 +15,7 @@
 typedef ChromeRenderViewTest ThreatDOMDetailsTest;
 
 TEST_F(ThreatDOMDetailsTest, Everything) {
-  scoped_ptr<safe_browsing::ThreatDOMDetails> details(
+  std::unique_ptr<safe_browsing::ThreatDOMDetails> details(
       safe_browsing::ThreatDOMDetails::Create(view_->GetMainRenderFrame()));
   // Lower kMaxNodes for the test. Loading 500 subframes in a
   // debug build takes a while.

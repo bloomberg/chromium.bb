@@ -7,6 +7,7 @@
 #include "chrome/renderer/spellchecker/spellcheck_worditerator.h"
 
 #include <map>
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -331,7 +332,8 @@ bool SpellcheckWordIterator::Initialize(
   if (rule.empty())
     return false;
 
-  scoped_ptr<BreakIterator> iterator(new BreakIterator(base::string16(), rule));
+  std::unique_ptr<BreakIterator> iterator(
+      new BreakIterator(base::string16(), rule));
   if (!iterator->Init()) {
     // Since we're not passing in any text, the only reason this could fail
     // is if we fail to parse the rules. Since the rules are hardcoded,

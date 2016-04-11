@@ -5,6 +5,8 @@
 #include "chrome/renderer/spellchecker/spellcheck.h"
 
 #include <stddef.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/files/file_path.h"
@@ -121,7 +123,7 @@ class SpellCheckTest : public testing::Test {
 #endif
 
  private:
-  scoped_ptr<SpellCheck> spell_check_;
+  std::unique_ptr<SpellCheck> spell_check_;
   base::MessageLoop loop;
 };
 

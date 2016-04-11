@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include <stddef.h>
+
 #include <algorithm>
+#include <memory>
 #include <utility>
 
 #include "base/macros.h"
@@ -109,7 +111,7 @@ class MultilingualSpellCheckTest : public testing::Test {
  private:
   // Owned by |provider_|.
   SpellCheck* spellcheck_;
-  scoped_ptr<TestingSpellCheckProvider> provider_;
+  std::unique_ptr<TestingSpellCheckProvider> provider_;
 };
 
 // Check that a string of different words is properly spellchecked for different

@@ -4,6 +4,7 @@
 
 #include "chrome/renderer/chrome_content_renderer_client.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/command_line.h"
@@ -523,9 +524,8 @@ void ChromeContentRendererClient::RenderViewCreated(
   new PageLoadHistograms(render_view);
 #if defined(ENABLE_PRINTING)
   new printing::PrintWebViewHelper(
-      render_view,
-      scoped_ptr<printing::PrintWebViewHelper::Delegate>(
-          new ChromePrintWebViewHelperDelegate()));
+      render_view, std::unique_ptr<printing::PrintWebViewHelper::Delegate>(
+                       new ChromePrintWebViewHelperDelegate()));
 #endif
 #if defined(ENABLE_SPELLCHECK)
   new SpellCheckProvider(render_view, spellcheck_.get());
@@ -782,7 +782,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
           break;
         }
 
-        scoped_ptr<content::PluginInstanceThrottler> throttler;
+        std::unique_ptr<content::PluginInstanceThrottler> throttler;
         if (power_saver_info.power_saver_enabled) {
           throttler = PluginInstanceThrottler::Create();
           // PluginPreroller manages its own lifetime.
@@ -1347,10 +1347,10 @@ void ChromeContentRendererClient::RecordRapporURL(const std::string& metric,
   RenderThread::Get()->Send(new ChromeViewHostMsg_RecordRapporURL(metric, url));
 }
 
-scoped_ptr<blink::WebAppBannerClient>
+std::unique_ptr<blink::WebAppBannerClient>
 ChromeContentRendererClient::CreateAppBannerClient(
     content::RenderFrame* render_frame) {
-  return scoped_ptr<blink::WebAppBannerClient>(
+  return std::unique_ptr<blink::WebAppBannerClient>(
       new AppBannerClient(render_frame));
 }
 

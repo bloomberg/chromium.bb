@@ -4,6 +4,7 @@
 
 #include "chrome/renderer/extensions/notifications_native_handler.h"
 
+#include <memory>
 #include <string>
 
 #include "base/logging.h"
@@ -30,7 +31,7 @@ void NotificationsNativeHandler::GetNotificationImageSizes(
   float scale_factor =
       ui::GetScaleForScaleFactor(ui::GetSupportedScaleFactors().back());
 
-  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
   dict->SetDouble("scaleFactor", scale_factor);
   dict->SetInteger("icon.width", bitmap_sizes.icon_size.width());
   dict->SetInteger("icon.height", bitmap_sizes.icon_size.height());
@@ -43,7 +44,7 @@ void NotificationsNativeHandler::GetNotificationImageSizes(
   dict->SetInteger("appIconMask.height",
                    bitmap_sizes.app_icon_mask_size.height());
 
-  scoped_ptr<content::V8ValueConverter> converter(
+  std::unique_ptr<content::V8ValueConverter> converter(
       content::V8ValueConverter::create());
   args.GetReturnValue().Set(
       converter->ToV8Value(dict.get(), context()->v8_context()));

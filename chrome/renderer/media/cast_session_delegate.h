@@ -6,6 +6,7 @@
 #define CHROME_RENDERER_MEDIA_CAST_SESSION_DELEGATE_H_
 
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
@@ -53,7 +54,7 @@ class CastSessionDelegateBase {
   // Must be called before initialization of audio or video.
   void StartUDP(const net::IPEndPoint& local_endpoint,
                 const net::IPEndPoint& remote_endpoint,
-                scoped_ptr<base::DictionaryValue> options,
+                std::unique_ptr<base::DictionaryValue> options,
                 const ErrorCallback& error_callback);
 
  protected:
@@ -61,11 +62,11 @@ class CastSessionDelegateBase {
       const ErrorCallback& error_callback,
       media::cast::CastTransportStatus status);
 
-  virtual void ReceivePacket(scoped_ptr<media::cast::Packet> packet) = 0;
+  virtual void ReceivePacket(std::unique_ptr<media::cast::Packet> packet) = 0;
 
   base::ThreadChecker thread_checker_;
   scoped_refptr<media::cast::CastEnvironment> cast_environment_;
-  scoped_ptr<media::cast::CastTransport> cast_transport_;
+  std::unique_ptr<media::cast::CastTransport> cast_transport_;
 
   // Proxy to the IO message loop.
   const scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
@@ -84,15 +85,17 @@ class CastSessionDelegate : public CastSessionDelegateBase {
       media::cast::AudioFrameInput>&)> AudioFrameInputAvailableCallback;
   typedef base::Callback<void(const scoped_refptr<
       media::cast::VideoFrameInput>&)> VideoFrameInputAvailableCallback;
-  typedef base::Callback<void(scoped_ptr<base::BinaryValue>)> EventLogsCallback;
-  typedef base::Callback<void(scoped_ptr<base::DictionaryValue>)> StatsCallback;
+  typedef base::Callback<void(std::unique_ptr<base::BinaryValue>)>
+      EventLogsCallback;
+  typedef base::Callback<void(std::unique_ptr<base::DictionaryValue>)>
+      StatsCallback;
 
   CastSessionDelegate();
   ~CastSessionDelegate() override;
 
   void StartUDP(const net::IPEndPoint& local_endpoint,
                 const net::IPEndPoint& remote_endpoint,
-                scoped_ptr<base::DictionaryValue> options,
+                std::unique_ptr<base::DictionaryValue> options,
                 const ErrorCallback& error_callback);
 
   // After calling StartAudio() or StartVideo() encoding of that media will
@@ -132,14 +135,14 @@ class CastSessionDelegate : public CastSessionDelegateBase {
       media::cast::OperationalStatus result);
 
  private:
-  void ReceivePacket(scoped_ptr<media::cast::Packet> packet) override;
+  void ReceivePacket(std::unique_ptr<media::cast::Packet> packet) override;
 
-  scoped_ptr<media::cast::CastSender> cast_sender_;
+  std::unique_ptr<media::cast::CastSender> cast_sender_;
 
   AudioFrameInputAvailableCallback audio_frame_input_available_callback_;
   VideoFrameInputAvailableCallback video_frame_input_available_callback_;
 
-  scoped_ptr<media::cast::RawEventSubscriberBundle> event_subscribers_;
+  std::unique_ptr<media::cast::RawEventSubscriberBundle> event_subscribers_;
 
   base::WeakPtrFactory<CastSessionDelegate> weak_factory_;
 

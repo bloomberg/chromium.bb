@@ -4,10 +4,11 @@
 
 #include "chrome/renderer/security_filter_peer.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/child/fixed_received_data.h"
@@ -15,17 +16,18 @@
 #include "net/http/http_response_headers.h"
 #include "ui/base/l10n/l10n_util.h"
 
-SecurityFilterPeer::SecurityFilterPeer(scoped_ptr<content::RequestPeer> peer)
+SecurityFilterPeer::SecurityFilterPeer(
+    std::unique_ptr<content::RequestPeer> peer)
     : original_peer_(std::move(peer)) {}
 
 SecurityFilterPeer::~SecurityFilterPeer() {
 }
 
 // static
-scoped_ptr<content::RequestPeer>
+std::unique_ptr<content::RequestPeer>
 SecurityFilterPeer::CreateSecurityFilterPeerForDeniedRequest(
     content::ResourceType resource_type,
-    scoped_ptr<content::RequestPeer> peer,
+    std::unique_ptr<content::RequestPeer> peer,
     int os_error) {
   // Create a filter for SSL and CERT errors.
   switch (os_error) {
@@ -46,7 +48,7 @@ SecurityFilterPeer::CreateSecurityFilterPeerForDeniedRequest(
       if (content::IsResourceTypeFrame(resource_type))
         return CreateSecurityFilterPeerForFrame(std::move(peer), os_error);
       // Any other content is entirely filtered-out.
-      return make_scoped_ptr(new ReplaceContentPeer(
+      return base::WrapUnique(new ReplaceContentPeer(
           std::move(peer), std::string(), std::string()));
     default:
       // For other errors, we use our normal error handling.
@@ -55,9 +57,9 @@ SecurityFilterPeer::CreateSecurityFilterPeerForDeniedRequest(
 }
 
 // static
-scoped_ptr<content::RequestPeer>
+std::unique_ptr<content::RequestPeer>
 SecurityFilterPeer::CreateSecurityFilterPeerForFrame(
-    scoped_ptr<content::RequestPeer> peer,
+    std::unique_ptr<content::RequestPeer> peer,
     int os_error) {
   // TODO(jcampan): use a different message when getting a phishing/malware
   // error.
@@ -66,7 +68,7 @@ SecurityFilterPeer::CreateSecurityFilterPeerForFrame(
       "<body style='background-color:#990000;color:white;'>"
       "%s</body></html>",
       l10n_util::GetStringUTF8(IDS_UNSAFE_FRAME_MESSAGE).c_str());
-  return make_scoped_ptr(
+  return base::WrapUnique(
       new ReplaceContentPeer(std::move(peer), "text/html", html));
 }
 
@@ -112,7 +114,7 @@ void ProcessResponseInfo(const content::ResourceResponseInfo& info_in,
 ////////////////////////////////////////////////////////////////////////////////
 // BufferedPeer
 
-BufferedPeer::BufferedPeer(scoped_ptr<content::RequestPeer> peer,
+BufferedPeer::BufferedPeer(std::unique_ptr<content::RequestPeer> peer,
                            const std::string& mime_type)
     : SecurityFilterPeer(std::move(peer)), mime_type_(mime_type) {}
 
@@ -124,7 +126,7 @@ void BufferedPeer::OnReceivedResponse(
   ProcessResponseInfo(info, &response_info_, mime_type_);
 }
 
-void BufferedPeer::OnReceivedData(scoped_ptr<ReceivedData> data) {
+void BufferedPeer::OnReceivedData(std::unique_ptr<ReceivedData> data) {
   data_.append(data->payload(), data->length());
 }
 
@@ -146,7 +148,7 @@ void BufferedPeer::OnCompletedRequest(int error_code,
 
   original_peer_->OnReceivedResponse(response_info_);
   if (!data_.empty()) {
-    original_peer_->OnReceivedData(make_scoped_ptr(
+    original_peer_->OnReceivedData(base::WrapUnique(
         new content::FixedReceivedData(data_.data(), data_.size(), -1)));
   }
   original_peer_->OnCompletedRequest(error_code, was_ignored_by_handler,
@@ -157,9 +159,10 @@ void BufferedPeer::OnCompletedRequest(int error_code,
 ////////////////////////////////////////////////////////////////////////////////
 // ReplaceContentPeer
 
-ReplaceContentPeer::ReplaceContentPeer(scoped_ptr<content::RequestPeer> peer,
-                                       const std::string& mime_type,
-                                       const std::string& data)
+ReplaceContentPeer::ReplaceContentPeer(
+    std::unique_ptr<content::RequestPeer> peer,
+    const std::string& mime_type,
+    const std::string& data)
     : SecurityFilterPeer(std::move(peer)), mime_type_(mime_type), data_(data) {}
 
 ReplaceContentPeer::~ReplaceContentPeer() {
@@ -170,7 +173,7 @@ void ReplaceContentPeer::OnReceivedResponse(
   // Ignore this, we'll serve some alternate content in OnCompletedRequest.
 }
 
-void ReplaceContentPeer::OnReceivedData(scoped_ptr<ReceivedData> data) {
+void ReplaceContentPeer::OnReceivedData(std::unique_ptr<ReceivedData> data) {
   // Ignore this, we'll serve some alternate content in OnCompletedRequest.
 }
 
@@ -187,7 +190,7 @@ void ReplaceContentPeer::OnCompletedRequest(
   info.content_length = static_cast<int>(data_.size());
   original_peer_->OnReceivedResponse(info);
   if (!data_.empty()) {
-    original_peer_->OnReceivedData(make_scoped_ptr(
+    original_peer_->OnReceivedData(base::WrapUnique(
         new content::FixedReceivedData(data_.data(), data_.size(), -1)));
   }
   original_peer_->OnCompletedRequest(net::OK, false, stale_copy_in_cache,

@@ -19,13 +19,13 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <set>
 #include <string>
 
 #include "base/callback.h"
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
@@ -158,7 +158,7 @@ class PhishingTermFeatureExtractor {
   DoneCallback done_callback_;
 
   // Stores the current state of term extraction from |page_text_|.
-  scoped_ptr<ExtractionState> state_;
+  std::unique_ptr<ExtractionState> state_;
 
   // Used in scheduling ExtractFeaturesWithTimeout tasks.
   // These pointers are invalidated if extraction is cancelled.

@@ -5,6 +5,8 @@
 #include "chrome/renderer/media/cast_session.h"
 
 #include <stddef.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/single_thread_task_runner.h"
@@ -31,7 +33,7 @@ void CreateVideoEncodeMemory(
     const media::cast::ReceiveVideoEncodeMemoryCallback& callback) {
   DCHECK(content::RenderThread::Get());
 
-  scoped_ptr<base::SharedMemory> shm =
+  std::unique_ptr<base::SharedMemory> shm =
       content::RenderThread::Get()->HostAllocateSharedMemoryBuffer(size);
   DCHECK(shm) << "Failed to allocate shared memory";
   if (!shm->Map(size)) {
@@ -85,7 +87,7 @@ void CastSession::StartVideo(const media::cast::VideoSenderConfig& config,
 }
 
 void CastSession::StartUDP(const net::IPEndPoint& remote_endpoint,
-                           scoped_ptr<base::DictionaryValue> options,
+                           std::unique_ptr<base::DictionaryValue> options,
                            const ErrorCallback& error_callback) {
   io_task_runner_->PostTask(
       FROM_HERE,

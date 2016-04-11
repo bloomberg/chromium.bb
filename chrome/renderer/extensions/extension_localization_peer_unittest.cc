@@ -2,14 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/renderer/extensions/extension_localization_peer.h"
+
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
-#include "chrome/renderer/extensions/extension_localization_peer.h"
+#include "base/memory/ptr_util.h"
 #include "content/public/child/fixed_received_data.h"
 #include "extensions/common/message_bundle.h"
 #include "ipc/ipc_sender.h"
@@ -68,7 +70,8 @@ class MockRequestPeer : public content::RequestPeer {
   MOCK_METHOD1(OnReceivedResponse,
                void(const content::ResourceResponseInfo& info));
   MOCK_METHOD2(OnDownloadedData, void(int len, int encoded_data_length));
-  void OnReceivedData(scoped_ptr<RequestPeer::ReceivedData> data) override {
+  void OnReceivedData(
+      std::unique_ptr<RequestPeer::ReceivedData> data) override {
     OnReceivedDataInternal(data->payload(), data->length(),
                            data->encoded_length());
   }
@@ -98,7 +101,7 @@ class ExtensionLocalizationPeerTest : public testing::Test {
 
   void SetUpExtensionLocalizationPeer(const std::string& mime_type,
                                       const GURL& request_url) {
-    scoped_ptr<MockRequestPeer> original_peer(new MockRequestPeer());
+    std::unique_ptr<MockRequestPeer> original_peer(new MockRequestPeer());
     original_peer_ = original_peer.get();
     filter_peer_ = ExtensionLocalizationPeer::CreateExtensionLocalizationPeer(
         std::move(original_peer), sender_.get(), mime_type, request_url);
@@ -113,13 +116,13 @@ class ExtensionLocalizationPeerTest : public testing::Test {
     static_cast<ExtensionLocalizationPeer*>(filter_peer_.get())->data_ = data;
   }
 
-  scoped_ptr<MockIpcMessageSender> sender_;
+  std::unique_ptr<MockIpcMessageSender> sender_;
   MockRequestPeer* original_peer_;
-  scoped_ptr<content::RequestPeer> filter_peer_;
+  std::unique_ptr<content::RequestPeer> filter_peer_;
 };
 
 TEST_F(ExtensionLocalizationPeerTest, CreateWithWrongMimeType) {
-  scoped_ptr<content::RequestPeer> peer =
+  std::unique_ptr<content::RequestPeer> peer =
       ExtensionLocalizationPeer::CreateExtensionLocalizationPeer(
           nullptr, sender_.get(), "text/html", GURL(kExtensionUrl_1));
   EXPECT_EQ(nullptr, peer);
@@ -135,12 +138,12 @@ TEST_F(ExtensionLocalizationPeerTest, OnReceivedData) {
   EXPECT_TRUE(GetData().empty());
 
   const std::string data_chunk("12345");
-  filter_peer_->OnReceivedData(make_scoped_ptr(new content::FixedReceivedData(
+  filter_peer_->OnReceivedData(base::WrapUnique(new content::FixedReceivedData(
       data_chunk.data(), data_chunk.length(), -1)));
 
   EXPECT_EQ(data_chunk, GetData());
 
-  filter_peer_->OnReceivedData(make_scoped_ptr(new content::FixedReceivedData(
+  filter_peer_->OnReceivedData(base::WrapUnique(new content::FixedReceivedData(
       data_chunk.data(), data_chunk.length(), -1)));
   EXPECT_EQ(data_chunk + data_chunk, GetData());
 }

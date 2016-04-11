@@ -18,13 +18,13 @@
 #ifndef CHROME_RENDERER_SAFE_BROWSING_PHISHING_CLASSIFIER_H_
 #define CHROME_RENDERER_SAFE_BROWSING_PHISHING_CLASSIFIER_H_
 
-#include <set>
-
 #include <stdint.h>
+
+#include <memory>
+#include <set>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 
@@ -132,14 +132,14 @@ class PhishingClassifier {
 
   content::RenderFrame* render_frame_;  // owns us
   const Scorer* scorer_;  // owned by the caller
-  scoped_ptr<FeatureExtractorClock> clock_;
-  scoped_ptr<PhishingUrlFeatureExtractor> url_extractor_;
-  scoped_ptr<PhishingDOMFeatureExtractor> dom_extractor_;
-  scoped_ptr<PhishingTermFeatureExtractor> term_extractor_;
+  std::unique_ptr<FeatureExtractorClock> clock_;
+  std::unique_ptr<PhishingUrlFeatureExtractor> url_extractor_;
+  std::unique_ptr<PhishingDOMFeatureExtractor> dom_extractor_;
+  std::unique_ptr<PhishingTermFeatureExtractor> term_extractor_;
 
   // State for any in-progress extraction.
-  scoped_ptr<FeatureMap> features_;
-  scoped_ptr<std::set<uint32_t>> shingle_hashes_;
+  std::unique_ptr<FeatureMap> features_;
+  std::unique_ptr<std::set<uint32_t>> shingle_hashes_;
   const base::string16* page_text_;  // owned by the caller
   DoneCallback done_callback_;
 

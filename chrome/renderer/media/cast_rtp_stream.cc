@@ -5,7 +5,9 @@
 #include "chrome/renderer/media/cast_rtp_stream.h"
 
 #include <stdint.h>
+
 #include <algorithm>
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -526,7 +528,7 @@ class CastAudioSink : public base::SupportsWeakPtr<CastAudioSink>,
     // provided as input is always the same, the chunk size (and the size of the
     // |audio_bus| here) can be variable.  This is not an issue since
     // media::cast::AudioFrameInput can handle variable-sized AudioBuses.
-    scoped_ptr<media::AudioBus> audio_bus =
+    std::unique_ptr<media::AudioBus> audio_bus =
         media::AudioBus::Create(output_channels_, converter_->ChunkSize());
     // AudioConverter will call ProvideInput() to fetch from |current_data_|.
     current_input_bus_ = &input_bus;
@@ -584,7 +586,7 @@ class CastAudioSink : public base::SupportsWeakPtr<CastAudioSink>,
 
   // These members are accessed on the real-time audio time only.
   media::AudioParameters input_params_;
-  scoped_ptr<media::AudioConverter> converter_;
+  std::unique_ptr<media::AudioConverter> converter_;
   const media::AudioBus* current_input_bus_;
   int64_t sample_frames_in_;
   int64_t sample_frames_out_;
@@ -709,7 +711,7 @@ void CastRtpStream::ToggleLogging(bool enable) {
 }
 
 void CastRtpStream::GetRawEvents(
-    const base::Callback<void(scoped_ptr<base::BinaryValue>)>& callback,
+    const base::Callback<void(std::unique_ptr<base::BinaryValue>)>& callback,
     const std::string& extra_data) {
   DVLOG(1) << "CastRtpStream::GetRawEvents = "
            << (IsAudio() ? "audio" : "video");
@@ -717,7 +719,8 @@ void CastRtpStream::GetRawEvents(
 }
 
 void CastRtpStream::GetStats(
-    const base::Callback<void(scoped_ptr<base::DictionaryValue>)>& callback) {
+    const base::Callback<void(std::unique_ptr<base::DictionaryValue>)>&
+        callback) {
   DVLOG(1) << "CastRtpStream::GetStats = "
            << (IsAudio() ? "audio" : "video");
   cast_session_->GetStatsAndReset(IsAudio(), callback);

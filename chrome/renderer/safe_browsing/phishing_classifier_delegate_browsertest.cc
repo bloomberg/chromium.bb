@@ -4,7 +4,8 @@
 
 #include "chrome/renderer/safe_browsing/phishing_classifier_delegate.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "chrome/common/safe_browsing/safebrowsing_messages.h"

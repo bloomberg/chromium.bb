@@ -5,6 +5,8 @@
 #ifndef CHROME_RENDERER_MEDIA_CAST_UDP_TRANSPORT_H_
 #define CHROME_RENDERER_MEDIA_CAST_UDP_TRANSPORT_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -30,12 +32,12 @@ class CastUdpTransport {
                       const CastSessionDelegate::ErrorCallback& error_callback);
 
   // Set options.
-  void SetOptions(scoped_ptr<base::DictionaryValue> options);
+  void SetOptions(std::unique_ptr<base::DictionaryValue> options);
 
  private:
   const scoped_refptr<CastSession> cast_session_;
   net::IPEndPoint remote_address_;
-  scoped_ptr<base::DictionaryValue> options_;
+  std::unique_ptr<base::DictionaryValue> options_;
   base::WeakPtrFactory<CastUdpTransport> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CastUdpTransport);

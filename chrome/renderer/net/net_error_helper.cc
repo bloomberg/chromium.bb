@@ -4,6 +4,7 @@
 
 #include "chrome/renderer/net/net_error_helper.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -183,7 +184,7 @@ void NetErrorHelper::GenerateLocalizedErrorPage(
     bool is_failed_post,
     bool can_show_network_diagnostics_dialog,
     bool has_offline_pages,
-    scoped_ptr<ErrorPageParams> params,
+    std::unique_ptr<ErrorPageParams> params,
     bool* reload_button_shown,
     bool* show_saved_copy_button_shown,
     bool* show_cached_copy_button_shown,
@@ -232,16 +233,10 @@ void NetErrorHelper::UpdateErrorPage(const blink::WebURLError& error,
                                      bool has_offline_pages) {
   base::DictionaryValue error_strings;
   LocalizedError::GetStrings(
-      error.reason,
-      error.domain.utf8(),
-      error.unreachableURL,
-      is_failed_post,
-      error.staleCopyInCache,
-      can_show_network_diagnostics_dialog,
-      has_offline_pages,
-      RenderThread::Get()->GetLocale(),
-      scoped_ptr<ErrorPageParams>(),
-      &error_strings);
+      error.reason, error.domain.utf8(), error.unreachableURL, is_failed_post,
+      error.staleCopyInCache, can_show_network_diagnostics_dialog,
+      has_offline_pages, RenderThread::Get()->GetLocale(),
+      std::unique_ptr<ErrorPageParams>(), &error_strings);
 
   std::string json;
   JSONWriter::Write(error_strings, &json);
@@ -361,7 +356,7 @@ void NetErrorHelper::OnNavigationCorrectionsFetched(
     const std::string& data) {
   // The fetcher may only be deleted after |data| is passed to |core_|.  Move
   // it to a temporary to prevent any potential re-entrancy issues.
-  scoped_ptr<content::ResourceFetcher> fetcher(
+  std::unique_ptr<content::ResourceFetcher> fetcher(
       correction_fetcher_.release());
   bool success = (!response.isNull() && response.httpStatusCode() == 200);
   core_->OnNavigationCorrectionsFetched(success ? data : "",

@@ -7,10 +7,10 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "url/gurl.h"
 
@@ -83,7 +83,7 @@ class PluginUMAReporter {
   // Converts plugin's mime type to plugin type.
   PluginType MimeTypeToPluginType(const std::string& mime_type);
 
-  scoped_ptr<UMASender> report_sender_;
+  std::unique_ptr<UMASender> report_sender_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginUMAReporter);
 };

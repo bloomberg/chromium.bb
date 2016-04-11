@@ -6,8 +6,9 @@
 
 #include <math.h>
 
+#include <memory>
+
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_piece.h"
 #include "chrome/common/safe_browsing/client_model.pb.h"
@@ -52,7 +53,7 @@ Scorer::~Scorer() {}
 
 /* static */
 Scorer* Scorer::Create(const base::StringPiece& model_str) {
-  scoped_ptr<Scorer> scorer(new Scorer());
+  std::unique_ptr<Scorer> scorer(new Scorer());
   ClientSideModel& model = scorer->model_;
   if (!model.ParseFromArray(model_str.data(), model_str.size())) {
     DLOG(ERROR) << "Unable to parse phishing model.  This Scorer object is "

@@ -7,8 +7,9 @@
 #ifndef CHROME_RENDERER_SAFE_BROWSING_PHISHING_CLASSIFIER_DELEGATE_H_
 #define CHROME_RENDERER_SAFE_BROWSING_PHISHING_CLASSIFIER_DELEGATE_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_process_observer.h"
@@ -99,7 +100,7 @@ class PhishingClassifierDelegate : public content::RenderFrameObserver {
 
   // The PhishingClassifier to use for the RenderFrame.  This is created once
   // a scorer is made available via SetPhishingScorer().
-  scoped_ptr<PhishingClassifier> classifier_;
+  std::unique_ptr<PhishingClassifier> classifier_;
 
   // The last URL that the browser instructed us to classify,
   // with the ref stripped.

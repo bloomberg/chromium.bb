@@ -7,10 +7,10 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/public/child/request_peer.h"
 #include "content/public/common/resource_response_info.h"
 #include "content/public/common/resource_type.h"
@@ -24,14 +24,14 @@ class SecurityFilterPeer : public content::RequestPeer {
  public:
   ~SecurityFilterPeer() override;
 
-  static scoped_ptr<content::RequestPeer>
+  static std::unique_ptr<content::RequestPeer>
   CreateSecurityFilterPeerForDeniedRequest(
       content::ResourceType resource_type,
-      scoped_ptr<content::RequestPeer> peer,
+      std::unique_ptr<content::RequestPeer> peer,
       int os_error);
 
-  static scoped_ptr<content::RequestPeer> CreateSecurityFilterPeerForFrame(
-      scoped_ptr<content::RequestPeer> peer,
+  static std::unique_ptr<content::RequestPeer> CreateSecurityFilterPeerForFrame(
+      std::unique_ptr<content::RequestPeer> peer,
       int os_error);
 
   // content::RequestPeer methods.
@@ -41,9 +41,9 @@ class SecurityFilterPeer : public content::RequestPeer {
   void OnDownloadedData(int len, int encoded_data_length) override {}
 
  protected:
-  explicit SecurityFilterPeer(scoped_ptr<content::RequestPeer> peer);
+  explicit SecurityFilterPeer(std::unique_ptr<content::RequestPeer> peer);
 
-  scoped_ptr<content::RequestPeer> original_peer_;
+  std::unique_ptr<content::RequestPeer> original_peer_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SecurityFilterPeer);
@@ -53,13 +53,13 @@ class SecurityFilterPeer : public content::RequestPeer {
 // Subclasses should implement DataReady() to process the data as necessary.
 class BufferedPeer : public SecurityFilterPeer {
  public:
-  BufferedPeer(scoped_ptr<content::RequestPeer> peer,
+  BufferedPeer(std::unique_ptr<content::RequestPeer> peer,
                const std::string& mime_type);
   ~BufferedPeer() override;
 
   // content::RequestPeer Implementation.
   void OnReceivedResponse(const content::ResourceResponseInfo& info) override;
-  void OnReceivedData(scoped_ptr<ReceivedData> data) override;
+  void OnReceivedData(std::unique_ptr<ReceivedData> data) override;
   void OnCompletedRequest(int error_code,
                           bool was_ignored_by_handler,
                           bool stale_copy_in_cache,
@@ -91,14 +91,14 @@ class BufferedPeer : public SecurityFilterPeer {
 // ignored.
 class ReplaceContentPeer : public SecurityFilterPeer {
  public:
-  ReplaceContentPeer(scoped_ptr<content::RequestPeer> peer,
+  ReplaceContentPeer(std::unique_ptr<content::RequestPeer> peer,
                      const std::string& mime_type,
                      const std::string& data);
   ~ReplaceContentPeer() override;
 
   // content::RequestPeer Implementation.
   void OnReceivedResponse(const content::ResourceResponseInfo& info) override;
-  void OnReceivedData(scoped_ptr<ReceivedData> data) override;
+  void OnReceivedData(std::unique_ptr<ReceivedData> data) override;
   void OnCompletedRequest(int error_code,
                           bool was_ignored_by_handler,
                           bool stale_copy_in_cache,

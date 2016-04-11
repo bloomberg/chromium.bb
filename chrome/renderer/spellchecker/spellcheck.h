@@ -5,6 +5,7 @@
 #ifndef CHROME_RENDERER_SPELLCHECKER_SPELLCHECK_H_
 #define CHROME_RENDERER_SPELLCHECKER_SPELLCHECK_H_
 
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
@@ -12,7 +13,6 @@
 #include "base/files/file.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
@@ -145,7 +145,7 @@ class SpellCheck : public content::RenderProcessObserver,
   // we save its parameters and start spellchecking after we finish initializing
   // hunspell. (When WebKit sends two or more requests, we cancel the previous
   // requests so we do not have to use vectors.)
-  scoped_ptr<SpellcheckRequest> pending_request_param_;
+  std::unique_ptr<SpellcheckRequest> pending_request_param_;
 #endif
 
   // A vector of objects used to actually check spelling, one for each enabled

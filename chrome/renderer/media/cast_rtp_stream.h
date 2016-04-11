@@ -5,13 +5,13 @@
 #ifndef CHROME_RENDERER_MEDIA_CAST_RTP_STREAM_H_
 #define CHROME_RENDERER_MEDIA_CAST_RTP_STREAM_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/constants.h"
@@ -143,13 +143,13 @@ class CastRtpStream {
   // Get serialized raw events for this stream with |extra_data| attached,
   // and invokes |callback| with the result.
   void GetRawEvents(
-      const base::Callback<void(scoped_ptr<base::BinaryValue>)>& callback,
+      const base::Callback<void(std::unique_ptr<base::BinaryValue>)>& callback,
       const std::string& extra_data);
 
   // Get stats in DictionaryValue format and invokves |callback| with
   // the result.
-  void GetStats(const base::Callback<void(
-      scoped_ptr<base::DictionaryValue>)>& callback);
+  void GetStats(const base::Callback<
+                void(std::unique_ptr<base::DictionaryValue>)>& callback);
 
  private:
   // Return true if this track is an audio track. Return false if this
@@ -160,8 +160,8 @@ class CastRtpStream {
 
   blink::WebMediaStreamTrack track_;
   const scoped_refptr<CastSession> cast_session_;
-  scoped_ptr<CastAudioSink> audio_sink_;
-  scoped_ptr<CastVideoSink> video_sink_;
+  std::unique_ptr<CastAudioSink> audio_sink_;
+  std::unique_ptr<CastVideoSink> video_sink_;
   CastRtpParams params_;
   base::Closure stop_callback_;
   ErrorCallback error_callback_;

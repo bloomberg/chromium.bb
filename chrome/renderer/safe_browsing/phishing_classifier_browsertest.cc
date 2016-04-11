@@ -4,12 +4,12 @@
 
 #include "chrome/renderer/safe_browsing/phishing_classifier.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -193,9 +193,9 @@ class PhishingClassifierTest : public InProcessBrowserTest {
         embedded_test_server()->base_url().ReplaceComponents(replace_host));
   }
 
-  scoped_ptr<net::test_server::HttpResponse>
-      HandleRequest(const net::test_server::HttpRequest& request) {
-    scoped_ptr<net::test_server::BasicHttpResponse> http_response(
+  std::unique_ptr<net::test_server::HttpResponse> HandleRequest(
+      const net::test_server::HttpRequest& request) {
+    std::unique_ptr<net::test_server::BasicHttpResponse> http_response(
         new net::test_server::BasicHttpResponse());
     http_response->set_code(net::HTTP_OK);
     http_response->set_content_type("text/html");
@@ -204,8 +204,8 @@ class PhishingClassifierTest : public InProcessBrowserTest {
   }
 
   std::string response_content_;
-  scoped_ptr<Scorer> scorer_;
-  scoped_ptr<PhishingClassifier> classifier_;
+  std::unique_ptr<Scorer> scorer_;
+  std::unique_ptr<PhishingClassifier> classifier_;
   MockFeatureExtractorClock* clock_;  // Owned by classifier_.
 
   // Features that are in the model.

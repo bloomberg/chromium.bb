@@ -6,11 +6,11 @@
 #define CHROME_RENDERER_PRERENDER_PRERENDER_DISPATCHER_H_
 
 #include <map>
+#include <memory>
 #include <set>
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/public/renderer/render_process_observer.h"
 #include "third_party/WebKit/public/platform/WebPrerender.h"
 #include "third_party/WebKit/public/platform/WebPrerenderingSupport.h"

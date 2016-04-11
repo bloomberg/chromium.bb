@@ -4,9 +4,9 @@
 
 #include "chrome/renderer/searchbox/search_bouncer.h"
 
+#include <memory>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "chrome/common/render_messages.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -21,7 +21,7 @@ class SearchBouncerTest : public testing::Test {
     bouncer_->OnSetSearchURLs(search_urls, GURL("http://example.com/newtab"));
   }
 
-  scoped_ptr<SearchBouncer> bouncer_;
+  std::unique_ptr<SearchBouncer> bouncer_;
 };
 
 TEST_F(SearchBouncerTest, ShouldFork) {

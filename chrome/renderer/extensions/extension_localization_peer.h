@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
@@ -28,8 +29,8 @@ class ExtensionLocalizationPeer : public content::RequestPeer {
  public:
   ~ExtensionLocalizationPeer() override;
 
-  static scoped_ptr<content::RequestPeer> CreateExtensionLocalizationPeer(
-      scoped_ptr<content::RequestPeer> peer,
+  static std::unique_ptr<content::RequestPeer> CreateExtensionLocalizationPeer(
+      std::unique_ptr<content::RequestPeer> peer,
       IPC::Sender* message_sender,
       const std::string& mime_type,
       const GURL& request_url);
@@ -40,7 +41,7 @@ class ExtensionLocalizationPeer : public content::RequestPeer {
                           const content::ResourceResponseInfo& info) override;
   void OnReceivedResponse(const content::ResourceResponseInfo& info) override;
   void OnDownloadedData(int len, int encoded_data_length) override {}
-  void OnReceivedData(scoped_ptr<ReceivedData> data) override;
+  void OnReceivedData(std::unique_ptr<ReceivedData> data) override;
   void OnCompletedRequest(int error_code,
                           bool was_ignored_by_handler,
                           bool stale_copy_in_cache,
@@ -52,7 +53,7 @@ class ExtensionLocalizationPeer : public content::RequestPeer {
   friend class ExtensionLocalizationPeerTest;
 
   // Use CreateExtensionLocalizationPeer to create an instance.
-  ExtensionLocalizationPeer(scoped_ptr<content::RequestPeer> peer,
+  ExtensionLocalizationPeer(std::unique_ptr<content::RequestPeer> peer,
                             IPC::Sender* message_sender,
                             const GURL& request_url);
 
@@ -61,7 +62,7 @@ class ExtensionLocalizationPeer : public content::RequestPeer {
   void ReplaceMessages();
 
   // Original peer that handles the request once we are done processing data_.
-  scoped_ptr<content::RequestPeer> original_peer_;
+  std::unique_ptr<content::RequestPeer> original_peer_;
 
   // We just pass though the response info. This holds the copy of the original.
   content::ResourceResponseInfo response_info_;

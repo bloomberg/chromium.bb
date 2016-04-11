@@ -4,6 +4,8 @@
 
 #include "chrome/renderer/media/cast_receiver_session.h"
 
+#include <memory>
+
 #include "base/location.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/thread_task_runner_handle.h"
@@ -70,7 +72,7 @@ void CastReceiverSession::Start(
     const media::cast::FrameReceiverConfig& video_config,
     const net::IPEndPoint& local_endpoint,
     const net::IPEndPoint& remote_endpoint,
-    scoped_ptr<base::DictionaryValue> options,
+    std::unique_ptr<base::DictionaryValue> options,
     const media::VideoCaptureFormat& capture_format,
     const StartCB& start_callback,
     const CastReceiverSessionDelegate::ErrorCallback& error_callback) {
@@ -90,7 +92,7 @@ void CastReceiverSession::Start(
                  media::BindToCurrentLoop(error_callback)));
   scoped_refptr<media::AudioCapturerSource> audio(
       new CastReceiverSession::AudioCapturerSource(this));
-  scoped_ptr<media::VideoCapturerSource> video(
+  std::unique_ptr<media::VideoCapturerSource> video(
       new CastReceiverSession::VideoCapturerSource(this));
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(start_callback, audio, base::Passed(&video)));

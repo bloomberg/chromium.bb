@@ -4,6 +4,7 @@
 
 #include "chrome/renderer/extensions/platform_keys_natives.h"
 
+#include <memory>
 #include <string>
 
 #include "base/values.h"
@@ -40,11 +41,11 @@ bool StringToWebCryptoOperation(const std::string& str,
   return false;
 }
 
-scoped_ptr<base::DictionaryValue> WebCryptoAlgorithmToBaseValue(
+std::unique_ptr<base::DictionaryValue> WebCryptoAlgorithmToBaseValue(
     const blink::WebCryptoAlgorithm& algorithm) {
   DCHECK(!algorithm.isNull());
 
-  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
   const blink::WebCryptoAlgorithmInfo* info =
       blink::WebCryptoAlgorithm::lookupAlgorithmInfo(algorithm.id());
   dict->SetStringWithoutPathExpansion("name", info->name);
@@ -79,7 +80,7 @@ scoped_ptr<base::DictionaryValue> WebCryptoAlgorithmToBaseValue(
     const blink::WebCryptoAlgorithmInfo* hash_info =
         blink::WebCryptoAlgorithm::lookupAlgorithmInfo(hash->id());
 
-    scoped_ptr<base::DictionaryValue> hash_dict(new base::DictionaryValue);
+    std::unique_ptr<base::DictionaryValue> hash_dict(new base::DictionaryValue);
     hash_dict->SetStringWithoutPathExpansion("name", hash_info->name);
     dict->SetWithoutPathExpansion("hash", hash_dict.release());
   }
@@ -116,14 +117,14 @@ void PlatformKeysNatives::NormalizeAlgorithm(
       v8::Local<v8::Object>::Cast(call_info[0]), operation, &exception_code,
       &error_details, call_info.GetIsolate());
 
-  scoped_ptr<base::DictionaryValue> algorithm_dict;
+  std::unique_ptr<base::DictionaryValue> algorithm_dict;
   if (!algorithm.isNull())
     algorithm_dict = WebCryptoAlgorithmToBaseValue(algorithm);
 
   if (!algorithm_dict)
     return;
 
-  scoped_ptr<content::V8ValueConverter> converter(
+  std::unique_ptr<content::V8ValueConverter> converter(
       content::V8ValueConverter::create());
   call_info.GetReturnValue().Set(
       converter->ToV8Value(algorithm_dict.get(), context()->v8_context()));

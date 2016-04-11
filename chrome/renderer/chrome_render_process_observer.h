@@ -5,12 +5,12 @@
 #ifndef CHROME_RENDERER_CHROME_RENDER_PROCESS_OBSERVER_H_
 #define CHROME_RENDERER_CHROME_RENDER_PROCESS_OBSERVER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/process/process.h"
@@ -66,7 +66,7 @@ class ChromeRenderProcessObserver : public content::RenderProcessObserver,
                             base::ProcessId sender_pid);
 
   static bool is_incognito_process_;
-  scoped_ptr<content::ResourceDispatcherDelegate> resource_delegate_;
+  std::unique_ptr<content::ResourceDispatcherDelegate> resource_delegate_;
   RendererContentSettingRules content_setting_rules_;
 
   base::WeakPtrFactory<ChromeRenderProcessObserver> weak_factory_;

@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 
 #include "base/macros.h"
 #include "base/thread_task_runner_handle.h"
@@ -23,7 +24,7 @@ class CastTransportIPC : public media::cast::CastTransport {
  public:
   CastTransportIPC(const net::IPEndPoint& local_end_point,
                    const net::IPEndPoint& remote_end_point,
-                   scoped_ptr<base::DictionaryValue> options,
+                   std::unique_ptr<base::DictionaryValue> options,
                    const media::cast::PacketReceiverCallback& packet_callback,
                    const media::cast::CastTransportStatusCallback& status_cb,
                    const media::cast::BulkRawEventsCallback& raw_events_cb);

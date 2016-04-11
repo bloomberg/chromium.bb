@@ -4,11 +4,13 @@
 
 #include "chrome/renderer/media/cast_session_delegate.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/callback_helpers.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/thread_task_runner_handle.h"
@@ -59,7 +61,7 @@ CastSessionDelegateBase::~CastSessionDelegateBase() {
 void CastSessionDelegateBase::StartUDP(
     const net::IPEndPoint& local_endpoint,
     const net::IPEndPoint& remote_endpoint,
-    scoped_ptr<base::DictionaryValue> options,
+    std::unique_ptr<base::DictionaryValue> options,
     const ErrorCallback& error_callback) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
 
@@ -67,7 +69,7 @@ void CastSessionDelegateBase::StartUDP(
   // thread hopping for incoming video frames and outgoing network packets.
   // TODO(hubbe): Create cast environment in ctor instead.
   cast_environment_ = new CastEnvironment(
-      scoped_ptr<base::TickClock>(new base::DefaultTickClock()),
+      std::unique_ptr<base::TickClock>(new base::DefaultTickClock()),
       base::ThreadTaskRunnerHandle::Get(),
       g_cast_threads.Get().GetAudioEncodeMessageLoopProxy(),
       g_cast_threads.Get().GetVideoEncodeMessageLoopProxy());
@@ -156,11 +158,10 @@ void CastSessionDelegate::StartVideo(
       create_video_encode_mem_cb);
 }
 
-
 void CastSessionDelegate::StartUDP(
     const net::IPEndPoint& local_endpoint,
     const net::IPEndPoint& remote_endpoint,
-    scoped_ptr<base::DictionaryValue> options,
+    std::unique_ptr<base::DictionaryValue> options,
     const ErrorCallback& error_callback) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   CastSessionDelegateBase::StartUDP(local_endpoint, remote_endpoint,
@@ -189,14 +190,14 @@ void CastSessionDelegate::GetEventLogsAndReset(
   DCHECK(io_task_runner_->BelongsToCurrentThread());
 
   if (!event_subscribers_.get()) {
-    callback.Run(make_scoped_ptr(new base::BinaryValue));
+    callback.Run(base::WrapUnique(new base::BinaryValue));
     return;
   }
 
   media::cast::EncodingEventSubscriber* subscriber =
       event_subscribers_->GetEncodingEventSubscriber(is_audio);
   if (!subscriber) {
-    callback.Run(make_scoped_ptr(new base::BinaryValue));
+    callback.Run(base::WrapUnique(new base::BinaryValue));
     return;
   }
 
@@ -214,7 +215,8 @@ void CastSessionDelegate::GetEventLogsAndReset(
   gen_desc->set_product_version(version_info::GetVersionNumber());
   gen_desc->set_os(version_info::GetOSType());
 
-  scoped_ptr<char[]> serialized_log(new char[media::cast::kMaxSerializedBytes]);
+  std::unique_ptr<char[]> serialized_log(
+      new char[media::cast::kMaxSerializedBytes]);
   int output_bytes;
   bool success = media::cast::SerializeEvents(metadata,
                                               frame_events,
@@ -226,13 +228,13 @@ void CastSessionDelegate::GetEventLogsAndReset(
 
   if (!success) {
     DVLOG(2) << "Failed to serialize event log.";
-    callback.Run(make_scoped_ptr(new base::BinaryValue));
+    callback.Run(base::WrapUnique(new base::BinaryValue));
     return;
   }
 
   DVLOG(2) << "Serialized log length: " << output_bytes;
 
-  scoped_ptr<base::BinaryValue> blob(
+  std::unique_ptr<base::BinaryValue> blob(
       new base::BinaryValue(std::move(serialized_log), output_bytes));
   callback.Run(std::move(blob));
 }
@@ -242,18 +244,18 @@ void CastSessionDelegate::GetStatsAndReset(bool is_audio,
   DCHECK(io_task_runner_->BelongsToCurrentThread());
 
   if (!event_subscribers_.get()) {
-    callback.Run(make_scoped_ptr(new base::DictionaryValue));
+    callback.Run(base::WrapUnique(new base::DictionaryValue));
     return;
   }
 
   media::cast::StatsEventSubscriber* subscriber =
       event_subscribers_->GetStatsEventSubscriber(is_audio);
   if (!subscriber) {
-    callback.Run(make_scoped_ptr(new base::DictionaryValue));
+    callback.Run(base::WrapUnique(new base::DictionaryValue));
     return;
   }
 
-  scoped_ptr<base::DictionaryValue> stats = subscriber->GetStats();
+  std::unique_ptr<base::DictionaryValue> stats = subscriber->GetStats();
   subscriber->Reset();
 
   callback.Run(std::move(stats));
@@ -309,6 +311,6 @@ void CastSessionDelegate::OnOperationalStatusChange(
 }
 
 void CastSessionDelegate::ReceivePacket(
-    scoped_ptr<media::cast::Packet> packet) {
+    std::unique_ptr<media::cast::Packet> packet) {
   // Do nothing (frees packet)
 }

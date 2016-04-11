@@ -4,6 +4,7 @@
 
 #include "chrome/renderer/plugins/chrome_plugin_placeholder.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/command_line.h"
@@ -354,7 +355,7 @@ void ChromePluginPlaceholder::ShowContextMenu(
 }
 
 blink::WebPlugin* ChromePluginPlaceholder::CreatePlugin() {
-  scoped_ptr<content::PluginInstanceThrottler> throttler;
+  std::unique_ptr<content::PluginInstanceThrottler> throttler;
   // If the plugin has already been marked essential in its placeholder form,
   // we shouldn't create a new throttler and start the process all over again.
   if (power_saver_enabled()) {

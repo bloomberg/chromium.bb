@@ -6,11 +6,12 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/containers/hash_tables.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/format_macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread.h"
 #include "chrome/common/safe_browsing/client_model.pb.h"
@@ -65,7 +66,7 @@ class PhishingScorerTest : public ::testing::Test {
 };
 
 TEST_F(PhishingScorerTest, HasValidModel) {
-  scoped_ptr<Scorer> scorer;
+  std::unique_ptr<Scorer> scorer;
   scorer.reset(Scorer::Create(model_.SerializeAsString()));
   EXPECT_TRUE(scorer.get() != NULL);
 
@@ -80,7 +81,7 @@ TEST_F(PhishingScorerTest, HasValidModel) {
 }
 
 TEST_F(PhishingScorerTest, PageTerms) {
-  scoped_ptr<Scorer> scorer(Scorer::Create(model_.SerializeAsString()));
+  std::unique_ptr<Scorer> scorer(Scorer::Create(model_.SerializeAsString()));
   ASSERT_TRUE(scorer.get());
 
   // Use std::vector instead of base::hash_set for comparison.
@@ -99,7 +100,7 @@ TEST_F(PhishingScorerTest, PageTerms) {
 }
 
 TEST_F(PhishingScorerTest, PageWords) {
-  scoped_ptr<Scorer> scorer(Scorer::Create(model_.SerializeAsString()));
+  std::unique_ptr<Scorer> scorer(Scorer::Create(model_.SerializeAsString()));
   ASSERT_TRUE(scorer.get());
   std::vector<uint32_t> expected_page_words;
   expected_page_words.push_back(1000U);
@@ -120,7 +121,7 @@ TEST_F(PhishingScorerTest, PageWords) {
 }
 
 TEST_F(PhishingScorerTest, ComputeScore) {
-  scoped_ptr<Scorer> scorer(Scorer::Create(model_.SerializeAsString()));
+  std::unique_ptr<Scorer> scorer(Scorer::Create(model_.SerializeAsString()));
   ASSERT_TRUE(scorer.get());
 
   // An empty feature map should match the empty rule.

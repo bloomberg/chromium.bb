@@ -6,6 +6,7 @@
 
 #include <list>
 #include <map>
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -14,7 +15,6 @@
 #include "base/i18n/case_conversion.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
@@ -59,7 +59,7 @@ struct PhishingTermFeatureExtractor::ExtractionState {
   std::list<size_t> previous_word_sizes;
 
   // An iterator for word breaking.
-  scoped_ptr<base::i18n::BreakIterator> iterator;
+  std::unique_ptr<base::i18n::BreakIterator> iterator;
 
   // The time at which we started feature extraction for the current page.
   base::TimeTicks start_time;
@@ -70,10 +70,8 @@ struct PhishingTermFeatureExtractor::ExtractionState {
   ExtractionState(const base::string16& text, base::TimeTicks start_time_ticks)
       : start_time(start_time_ticks),
         num_iterations(0) {
-
-    scoped_ptr<base::i18n::BreakIterator> i(
-        new base::i18n::BreakIterator(
-            text, base::i18n::BreakIterator::BREAK_WORD));
+    std::unique_ptr<base::i18n::BreakIterator> i(new base::i18n::BreakIterator(
+        text, base::i18n::BreakIterator::BREAK_WORD));
 
     if (i->Init()) {
       iterator = std::move(i);

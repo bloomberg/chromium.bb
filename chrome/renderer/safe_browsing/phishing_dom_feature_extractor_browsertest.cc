@@ -4,8 +4,11 @@
 
 #include "chrome/renderer/safe_browsing/phishing_dom_feature_extractor.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -202,7 +205,7 @@ class PhishingDOMFeatureExtractorTest : public ChromeRenderViewTest {
         new ChromeExtensionsDispatcherDelegate());
     ChromeExtensionsRendererClient* ext_client =
         ChromeExtensionsRendererClient::GetInstance();
-    ext_client->SetExtensionDispatcherForTest(make_scoped_ptr(
+    ext_client->SetExtensionDispatcherForTest(base::WrapUnique(
         new extensions::Dispatcher(extension_dispatcher_delegate_.get())));
 #endif
 #if defined(ENABLE_SPELLCHECK)
@@ -226,7 +229,7 @@ class PhishingDOMFeatureExtractorTest : public ChromeRenderViewTest {
 
   MockFeatureExtractorClock clock_;
   bool success_;
-  scoped_ptr<TestPhishingDOMFeatureExtractor> extractor_;
+  std::unique_ptr<TestPhishingDOMFeatureExtractor> extractor_;
   scoped_refptr<content::MessageLoopRunner> message_loop_;
   base::WeakPtrFactory<PhishingDOMFeatureExtractorTest> weak_factory_;
 };

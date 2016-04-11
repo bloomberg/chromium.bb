@@ -4,6 +4,7 @@
 
 #include "chrome/renderer/media/cast_transport_ipc.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/callback.h"
@@ -21,7 +22,7 @@ CastTransportIPC::ClientCallbacks::~ClientCallbacks() {}
 CastTransportIPC::CastTransportIPC(
     const net::IPEndPoint& local_end_point,
     const net::IPEndPoint& remote_end_point,
-    scoped_ptr<base::DictionaryValue> options,
+    std::unique_ptr<base::DictionaryValue> options,
     const media::cast::PacketReceiverCallback& packet_callback,
     const media::cast::CastTransportStatusCallback& status_cb,
     const media::cast::BulkRawEventsCallback& raw_events_cb)
@@ -138,11 +139,11 @@ void CastTransportIPC::OnRawEvents(
   // Note: Casting away const to avoid having to copy all the data elements.  As
   // the only consumer of this data in the IPC message, mutating the inputs
   // should be acceptable.  Just nod and blame the interface we were given here.
-  scoped_ptr<std::vector<media::cast::FrameEvent>> taken_frame_events(
+  std::unique_ptr<std::vector<media::cast::FrameEvent>> taken_frame_events(
       new std::vector<media::cast::FrameEvent>());
   taken_frame_events->swap(
       const_cast<std::vector<media::cast::FrameEvent>&>(frame_events));
-  scoped_ptr<std::vector<media::cast::PacketEvent>> taken_packet_events(
+  std::unique_ptr<std::vector<media::cast::PacketEvent>> taken_packet_events(
       new std::vector<media::cast::PacketEvent>());
   taken_packet_events->swap(
       const_cast<std::vector<media::cast::PacketEvent>&>(packet_events));
@@ -187,7 +188,7 @@ void CastTransportIPC::OnReceivedPli(uint32_t rtp_sender_ssrc) {
 void CastTransportIPC::OnReceivedPacket(const media::cast::Packet& packet) {
   if (!packet_callback_.is_null()) {
     // TODO(hubbe): Perhaps an non-ownership-transferring cb here?
-    scoped_ptr<media::cast::Packet> packet_copy(
+    std::unique_ptr<media::cast::Packet> packet_copy(
         new media::cast::Packet(packet));
     packet_callback_.Run(std::move(packet_copy));
   } else {

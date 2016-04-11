@@ -4,10 +4,11 @@
 
 #include "chrome/renderer/extensions/extension_localization_peer.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "chrome/common/url_constants.h"
 #include "extensions/common/constants.h"
@@ -37,7 +38,7 @@ class StringData final : public content::RequestPeer::ReceivedData {
 }  // namespace
 
 ExtensionLocalizationPeer::ExtensionLocalizationPeer(
-    scoped_ptr<content::RequestPeer> peer,
+    std::unique_ptr<content::RequestPeer> peer,
     IPC::Sender* message_sender,
     const GURL& request_url)
     : original_peer_(std::move(peer)),
@@ -48,9 +49,9 @@ ExtensionLocalizationPeer::~ExtensionLocalizationPeer() {
 }
 
 // static
-scoped_ptr<content::RequestPeer>
+std::unique_ptr<content::RequestPeer>
 ExtensionLocalizationPeer::CreateExtensionLocalizationPeer(
-    scoped_ptr<content::RequestPeer> peer,
+    std::unique_ptr<content::RequestPeer> peer,
     IPC::Sender* message_sender,
     const std::string& mime_type,
     const GURL& request_url) {
@@ -59,7 +60,7 @@ ExtensionLocalizationPeer::CreateExtensionLocalizationPeer(
   return (request_url.SchemeIs(extensions::kExtensionScheme) &&
           base::StartsWith(mime_type, "text/css",
                            base::CompareCase::INSENSITIVE_ASCII))
-             ? make_scoped_ptr(new ExtensionLocalizationPeer(
+             ? base::WrapUnique(new ExtensionLocalizationPeer(
                    std::move(peer), message_sender, request_url))
              : std::move(peer);
 }
@@ -81,7 +82,8 @@ void ExtensionLocalizationPeer::OnReceivedResponse(
   response_info_ = info;
 }
 
-void ExtensionLocalizationPeer::OnReceivedData(scoped_ptr<ReceivedData> data) {
+void ExtensionLocalizationPeer::OnReceivedData(
+    std::unique_ptr<ReceivedData> data) {
   data_.append(data->payload(), data->length());
 }
 
@@ -106,7 +108,7 @@ void ExtensionLocalizationPeer::OnCompletedRequest(
 
   original_peer_->OnReceivedResponse(response_info_);
   if (!data_.empty())
-    original_peer_->OnReceivedData(make_scoped_ptr(new StringData(data_)));
+    original_peer_->OnReceivedData(base::WrapUnique(new StringData(data_)));
   original_peer_->OnCompletedRequest(error_code, was_ignored_by_handler,
                                      stale_copy_in_cache, security_info,
                                      completion_time, total_transfer_size);

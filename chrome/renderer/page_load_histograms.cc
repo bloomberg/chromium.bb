@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 
 #include "base/command_line.h"
@@ -696,8 +697,8 @@ void DumpDeprecatedHistograms(const WebPerformance& performance,
   }
   PLT_HISTOGRAM("PLT.CommitToFinish", finish_all_loads - commit);
 
-  scoped_ptr<TimeDelta> begin_to_first_paint;
-  scoped_ptr<TimeDelta> commit_to_first_paint;
+  std::unique_ptr<TimeDelta> begin_to_first_paint;
+  std::unique_ptr<TimeDelta> commit_to_first_paint;
   if (!first_paint.is_null()) {
     // 'first_paint' can be before 'begin' for an unknown reason.
     // See bug http://crbug.com/125273 for details.

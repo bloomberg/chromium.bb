@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/renderer/extensions/renderer_permissions_policy_delegate.h"
+
+#include <memory>
 #include <utility>
 
 #include "base/command_line.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/renderer/extensions/chrome_extensions_dispatcher_delegate.h"
-#include "chrome/renderer/extensions/renderer_permissions_policy_delegate.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/mock_render_thread.h"
 #include "extensions/common/constants.h"
@@ -41,11 +43,11 @@ class RendererPermissionsPolicyDelegateTest : public testing::Test {
   }
 
  protected:
-  scoped_ptr<content::MockRenderThread> render_thread_;
-  scoped_ptr<ExtensionsRendererClient> renderer_client_;
-  scoped_ptr<DispatcherDelegate> extension_dispatcher_delegate_;
-  scoped_ptr<Dispatcher> extension_dispatcher_;
-  scoped_ptr<RendererPermissionsPolicyDelegate> policy_delegate_;
+  std::unique_ptr<content::MockRenderThread> render_thread_;
+  std::unique_ptr<ExtensionsRendererClient> renderer_client_;
+  std::unique_ptr<DispatcherDelegate> extension_dispatcher_delegate_;
+  std::unique_ptr<Dispatcher> extension_dispatcher_;
+  std::unique_ptr<RendererPermissionsPolicyDelegate> policy_delegate_;
 };
 
 scoped_refptr<const Extension> CreateTestExtension(const std::string& id) {
