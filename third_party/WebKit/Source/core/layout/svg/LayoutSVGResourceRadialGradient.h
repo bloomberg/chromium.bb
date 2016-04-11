@@ -49,17 +49,10 @@ public:
     float focalRadius(const RadialGradientAttributes&) const;
 
 private:
-#if ENABLE(OILPAN)
     Persistent<RadialGradientAttributesWrapper> m_attributesWrapper;
 
     RadialGradientAttributes& mutableAttributes() { return m_attributesWrapper->attributes(); }
     const RadialGradientAttributes& attributes() const { return m_attributesWrapper->attributes(); }
-#else
-    RadialGradientAttributes m_attributes;
-
-    RadialGradientAttributes& mutableAttributes() { return m_attributes; }
-    const RadialGradientAttributes& attributes() const { return m_attributes; }
-#endif
 };
 
 DEFINE_LAYOUT_SVG_RESOURCE_TYPE_CASTS(LayoutSVGResourceRadialGradient, RadialGradientResourceType);

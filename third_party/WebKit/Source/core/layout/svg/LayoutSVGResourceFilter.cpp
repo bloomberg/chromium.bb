@@ -50,10 +50,8 @@ LayoutSVGResourceFilter::~LayoutSVGResourceFilter()
 
 void LayoutSVGResourceFilter::disposeFilterMap()
 {
-#if ENABLE(OILPAN)
     for (auto& filter : m_filter)
         filter.value->dispose();
-#endif
     m_filter.clear();
 }
 

@@ -26,9 +26,7 @@ namespace blink {
 
 LayoutSVGResourceLinearGradient::LayoutSVGResourceLinearGradient(SVGLinearGradientElement* node)
     : LayoutSVGResourceGradient(node)
-#if ENABLE(OILPAN)
     , m_attributesWrapper(LinearGradientAttributesWrapper::create())
-#endif
 {
 }
 
@@ -38,11 +36,7 @@ LayoutSVGResourceLinearGradient::~LayoutSVGResourceLinearGradient()
 
 bool LayoutSVGResourceLinearGradient::collectGradientAttributes(SVGGradientElement* gradientElement)
 {
-#if ENABLE(OILPAN)
     m_attributesWrapper->set(LinearGradientAttributes());
-#else
-    m_attributes = LinearGradientAttributes();
-#endif
     return toSVGLinearGradientElement(gradientElement)->collectGradientAttributes(mutableAttributes());
 }
 

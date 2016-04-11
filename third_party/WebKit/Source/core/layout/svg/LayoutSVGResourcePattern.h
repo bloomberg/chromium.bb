@@ -60,17 +60,10 @@ private:
     const LayoutSVGResourceContainer* resolveContentElement() const;
 
     bool m_shouldCollectPatternAttributes : 1;
-#if ENABLE(OILPAN)
     Persistent<PatternAttributesWrapper> m_attributesWrapper;
 
     PatternAttributes& mutableAttributes() { return m_attributesWrapper->attributes(); }
     const PatternAttributes& attributes() const { return m_attributesWrapper->attributes(); }
-#else
-    PatternAttributes m_attributes;
-
-    PatternAttributes& mutableAttributes() { return m_attributes; }
-    const PatternAttributes& attributes() const { return m_attributes; }
-#endif
 
     // FIXME: we can almost do away with this per-object map, but not quite: the tile size can be
     // relative to the client bounding box, and it gets captured in the cached Pattern shader.

@@ -73,11 +73,9 @@ void LayoutSVGResourceContainer::willBeDestroyed()
     // LayoutSVGHiddenContainer::willBeDestroyed() below.
     detachAllClients();
 
-#if !ENABLE(OILPAN)
     for (SVGResourceClient* client : m_resourceClients)
         client->filterWillBeDestroyed(toSVGFilterElement(element()));
     m_resourceClients.clear();
-#endif
 
     LayoutSVGHiddenContainer::willBeDestroyed();
     if (m_registered)

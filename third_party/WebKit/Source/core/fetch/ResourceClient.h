@@ -32,6 +32,7 @@
 namespace blink {
 class Resource;
 
+// TODO(Oilpan): Move ResourceClient to Oilpan's heap.
 class CORE_EXPORT ResourceClient {
 public:
     enum ResourceClientType {

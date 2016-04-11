@@ -27,9 +27,7 @@ namespace blink {
 
 LayoutSVGResourceRadialGradient::LayoutSVGResourceRadialGradient(SVGRadialGradientElement* node)
     : LayoutSVGResourceGradient(node)
-#if ENABLE(OILPAN)
     , m_attributesWrapper(RadialGradientAttributesWrapper::create())
-#endif
 {
 }
 
@@ -39,11 +37,7 @@ LayoutSVGResourceRadialGradient::~LayoutSVGResourceRadialGradient()
 
 bool LayoutSVGResourceRadialGradient::collectGradientAttributes(SVGGradientElement* gradientElement)
 {
-#if ENABLE(OILPAN)
     m_attributesWrapper->set(RadialGradientAttributes());
-#else
-    m_attributes = RadialGradientAttributes();
-#endif
     return toSVGRadialGradientElement(gradientElement)->collectGradientAttributes(mutableAttributes());
 }
 

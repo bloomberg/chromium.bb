@@ -47,17 +47,10 @@ public:
     FloatPoint endPoint(const LinearGradientAttributes&) const;
 
 private:
-#if ENABLE(OILPAN)
     Persistent<LinearGradientAttributesWrapper> m_attributesWrapper;
 
     LinearGradientAttributes& mutableAttributes() { return m_attributesWrapper->attributes(); }
     const LinearGradientAttributes& attributes() const { return m_attributesWrapper->attributes(); }
-#else
-    LinearGradientAttributes m_attributes;
-
-    LinearGradientAttributes& mutableAttributes() { return m_attributes; }
-    const LinearGradientAttributes& attributes() const { return m_attributes; }
-#endif
 };
 
 } // namespace blink

@@ -62,13 +62,6 @@ void ReferenceFilterBuilder::setDocumentResourceReference(const FilterOperation*
     documentResourceReferences().add(filterOperation, documentResourceReference);
 }
 
-#if !ENABLE(OILPAN)
-void ReferenceFilterBuilder::clearDocumentResourceReference(const FilterOperation* filterOperation)
-{
-    documentResourceReferences().remove(filterOperation);
-}
-#endif
-
 Filter* ReferenceFilterBuilder::build(float zoom, Element* element, FilterEffect* previousEffect, const ReferenceFilterOperation& filterOperation, const FloatSize* referenceBoxSize, const SkPaint* fillPaint, const SkPaint* strokePaint)
 {
     TreeScope* treeScope = &element->treeScope();
