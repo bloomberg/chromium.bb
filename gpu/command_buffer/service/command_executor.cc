@@ -96,11 +96,7 @@ void CommandExecutor::PutChanged() {
 void CommandExecutor::SetScheduled(bool scheduled) {
   TRACE_EVENT2("gpu", "CommandExecutor:SetScheduled", "this", this, "scheduled",
                scheduled);
-  if (scheduled_ == scheduled)
-    return;
   scheduled_ = scheduled;
-  if (!scheduling_changed_callback_.is_null())
-    scheduling_changed_callback_.Run(scheduled);
 }
 
 bool CommandExecutor::HasPendingQueries() const {
@@ -111,11 +107,6 @@ void CommandExecutor::ProcessPendingQueries() {
   if (!decoder_)
     return;
   decoder_->ProcessPendingQueries(false);
-}
-
-void CommandExecutor::SetSchedulingChangedCallback(
-    const SchedulingChangedCallback& callback) {
-  scheduling_changed_callback_ = callback;
 }
 
 scoped_refptr<Buffer> CommandExecutor::GetSharedMemoryBuffer(int32_t shm_id) {

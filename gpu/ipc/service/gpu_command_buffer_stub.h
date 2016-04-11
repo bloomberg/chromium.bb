@@ -202,7 +202,6 @@ class GPU_EXPORT GpuCommandBufferStub
 
   void OnCommandProcessed();
   void OnParseError();
-  void OnSchedulingChanged(bool scheduled);
 
   void ReportState();
 

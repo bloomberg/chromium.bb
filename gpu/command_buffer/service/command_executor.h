@@ -76,12 +76,6 @@ class GPU_EXPORT CommandExecutor
   // determine if there's more pending queries after this has been called.
   void ProcessPendingQueries();
 
-  typedef base::Callback<void(bool /* scheduled */)> SchedulingChangedCallback;
-
-  // Sets a callback that is invoked just before scheduler is rescheduled
-  // or descheduled. Takes ownership of callback object.
-  void SetSchedulingChangedCallback(const SchedulingChangedCallback& callback);
-
   // Implementation of CommandBufferEngine.
   scoped_refptr<Buffer> GetSharedMemoryBuffer(int32_t shm_id) override;
   void set_token(int32_t token) override;
@@ -125,8 +119,6 @@ class GPU_EXPORT CommandExecutor
   // Whether the scheduler is currently able to process more commands.
   bool scheduled_;
 
-  SchedulingChangedCallback scheduling_changed_callback_;
-  base::Closure descheduled_callback_;
   base::Closure command_processed_callback_;
 
   // If non-NULL and |preemption_flag_->IsSet()|, exit PutChanged early.

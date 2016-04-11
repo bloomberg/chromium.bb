@@ -646,8 +646,6 @@ void GpuCommandBufferStub::OnInitialize(
       &CommandExecutor::SetGetBuffer, base::Unretained(executor_.get())));
   command_buffer_->SetParseErrorCallback(
       base::Bind(&GpuCommandBufferStub::OnParseError, base::Unretained(this)));
-  executor_->SetSchedulingChangedCallback(base::Bind(
-      &GpuCommandBufferStub::OnSchedulingChanged, base::Unretained(this)));
 
   if (watchdog_) {
     executor_->SetCommandProcessedCallback(base::Bind(
@@ -738,12 +736,6 @@ void GpuCommandBufferStub::OnParseError() {
       active_url_);
 
   CheckContextLost();
-}
-
-void GpuCommandBufferStub::OnSchedulingChanged(bool scheduled) {
-  TRACE_EVENT1("gpu", "GpuCommandBufferStub::OnSchedulingChanged", "scheduled",
-               scheduled);
-  channel_->OnStreamRescheduled(stream_id_, scheduled);
 }
 
 void GpuCommandBufferStub::OnWaitForTokenInRange(int32_t start,
@@ -974,6 +966,7 @@ bool GpuCommandBufferStub::OnWaitFenceSync(
     return true;
 
   executor_->SetScheduled(false);
+  channel_->OnStreamRescheduled(stream_id_, false);
   return false;
 }
 
@@ -987,6 +980,7 @@ void GpuCommandBufferStub::OnWaitFenceSyncCompleted(
   PullTextureUpdates(namespace_id, command_buffer_id, release);
   waiting_for_sync_point_ = false;
   executor_->SetScheduled(true);
+  channel_->OnStreamRescheduled(stream_id_, true);
 }
 
 void GpuCommandBufferStub::OnCreateImage(
