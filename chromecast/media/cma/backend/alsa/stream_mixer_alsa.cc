@@ -448,8 +448,7 @@ StreamMixerAlsa::~StreamMixerAlsa() {
 
 void StreamMixerAlsa::FinalizeOnMixerThread() {
   RUN_ON_MIXER_THREAD(&StreamMixerAlsa::FinalizeOnMixerThread);
-  Stop();
-  ClosePcm();
+  Close();
 
   // Post a task to allow any pending input deletions to run.
   POST_TASK_TO_MIXER_THREAD(&StreamMixerAlsa::FinishFinalize);
@@ -527,7 +526,9 @@ void StreamMixerAlsa::Stop() {
   }
 }
 
-void StreamMixerAlsa::ClosePcm() {
+void StreamMixerAlsa::Close() {
+  Stop();
+
   if (!pcm_)
     return;
   LOG(INFO) << "snd_pcm_close: handle=" << pcm_;
@@ -541,16 +542,19 @@ void StreamMixerAlsa::ClosePcm() {
 
 void StreamMixerAlsa::SignalError() {
   state_ = kStateError;
-  for (InputQueue* input : inputs_)
-    input->SignalError();
+  retry_write_frames_timer_->Stop();
+  for (auto&& input : inputs_) {
+    input->SignalError(StreamMixerAlsaInput::MixerError::kInternalError);
+    ignored_inputs_.push_back(std::move(input));
+  }
+  inputs_.clear();
+  POST_TASK_TO_MIXER_THREAD(&StreamMixerAlsa::Close);
 }
 
 void StreamMixerAlsa::SetAlsaWrapperForTest(
     std::unique_ptr<AlsaWrapper> alsa_wrapper) {
-  if (alsa_) {
-    Stop();
-    ClosePcm();
-  }
+  if (alsa_)
+    Close();
   alsa_ = std::move(alsa_wrapper);
 }
 
@@ -579,18 +583,18 @@ void StreamMixerAlsa::AddInput(std::unique_ptr<InputQueue> input) {
     CheckChangeOutputRate(input->input_samples_per_second());
   }
 
-  InputQueue* input_ptr = input.get();
-  inputs_.push_back(std::move(input));
   check_close_timer_->Stop();
   if (state_ == kStateUninitialized) {
-    requested_output_samples_per_second_ =
-        input_ptr->input_samples_per_second();
+    requested_output_samples_per_second_ = input->input_samples_per_second();
     Start();
-    input_ptr->Initialize(rendering_delay_);
+    input->Initialize(rendering_delay_);
+    inputs_.push_back(std::move(input));
   } else if (state_ == kStateNormalPlayback) {
-    input_ptr->Initialize(rendering_delay_);
+    input->Initialize(rendering_delay_);
+    inputs_.push_back(std::move(input));
   } else {
-    input_ptr->SignalError();
+    input->SignalError(StreamMixerAlsaInput::MixerError::kInternalError);
+    ignored_inputs_.push_back(std::move(input));
   }
 }
 
@@ -601,21 +605,21 @@ void StreamMixerAlsa::CheckChangeOutputRate(int input_samples_per_second) {
       input_samples_per_second == output_samples_per_second_ ||
       input_samples_per_second < static_cast<int>(kLowSampleRateCutoff))
     return;
-  for (InputQueue* input : inputs_) {
+  for (auto&& input : inputs_) {
     if (input->primary() && !input->IsDeleting())
       return;
   }
 
   // Move all current inputs to the ignored list
-  for (InputQueue* input : inputs_) {
-    LOG(INFO) << "Mixer input " << input
+  for (auto&& input : inputs_) {
+    LOG(INFO) << "Mixer input " << input.get()
               << " now being ignored due to output sample rate change from "
               << output_samples_per_second_ << " to "
               << input_samples_per_second;
-    ignored_inputs_.push_back(input);
-    input->SignalError();
+    input->SignalError(StreamMixerAlsaInput::MixerError::kInputIgnored);
+    ignored_inputs_.push_back(std::move(input));
   }
-  inputs_.weak_clear();
+  inputs_.clear();
 
   requested_output_samples_per_second_ = input_samples_per_second;
   // Reset the ALSA params so that the new output sample rate takes effect.
@@ -640,9 +644,13 @@ void StreamMixerAlsa::DeleteInputQueue(InputQueue* input) {
 void StreamMixerAlsa::DeleteInputQueueInternal(InputQueue* input) {
   DCHECK(input);
   DCHECK(mixer_task_runner_->BelongsToCurrentThread());
-  auto it = std::find(inputs_.begin(), inputs_.end(), input);
+  auto match_input = [input](const std::unique_ptr<InputQueue>& item) {
+    return item.get() == input;
+  };
+  auto it = std::find_if(inputs_.begin(), inputs_.end(), match_input);
   if (it == inputs_.end()) {
-    it = std::find(ignored_inputs_.begin(), ignored_inputs_.end(), input);
+    it = std::find_if(ignored_inputs_.begin(), ignored_inputs_.end(),
+                      match_input);
     DCHECK(it != ignored_inputs_.end());
     ignored_inputs_.erase(it);
   } else {
@@ -660,8 +668,7 @@ void StreamMixerAlsa::CheckClose() {
   DCHECK(mixer_task_runner_->BelongsToCurrentThread());
   DCHECK(inputs_.empty());
   retry_write_frames_timer_->Stop();
-  Stop();
-  ClosePcm();
+  Close();
 }
 
 void StreamMixerAlsa::OnFramesQueued() {
@@ -689,10 +696,10 @@ bool StreamMixerAlsa::TryWriteFrames() {
     return false;
   int chunk_size = std::numeric_limits<int>::max();
   std::vector<InputQueue*> active_inputs;
-  for (InputQueue* input : inputs_) {
+  for (auto&& input : inputs_) {
     int read_size = input->MaxReadSize();
     if (read_size > 0) {
-      active_inputs.push_back(input);
+      active_inputs.push_back(input.get());
       chunk_size = std::min(chunk_size, read_size);
     } else if (input->primary()) {
       // A primary input cannot provide any data, so wait until later.
@@ -781,7 +788,7 @@ void StreamMixerAlsa::WriteMixedPcm(const ::media::AudioBus& mixed,
         frames_or_error * num_output_channels_ * BytesPerOutputFormatSample();
   }
   UpdateRenderingDelay(frames);
-  for (InputQueue* input : inputs_)
+  for (auto&& input : inputs_)
     input->AfterWriteFrames(rendering_delay_);
 }
 

@@ -52,7 +52,7 @@ class AudioDecoderAlsa : public MediaPipelineBackend::AudioDecoder,
   // StreamMixerAlsaInput::Delegate implementation:
   void OnWritePcmCompletion(BufferStatus status,
                             const RenderingDelay& delay) override;
-  void OnMixerError() override;
+  void OnMixerError(MixerError error) override;
 
   void CleanUpPcm();
   void CreateDecoder();

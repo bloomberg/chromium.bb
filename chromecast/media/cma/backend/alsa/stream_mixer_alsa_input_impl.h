@@ -8,6 +8,7 @@
 #include <deque>
 #include <memory>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -121,7 +122,7 @@ class StreamMixerAlsaInputImpl : public StreamMixerAlsa::InputQueue {
   void GetResampledData(::media::AudioBus* dest, int frames) override;
   void AfterWriteFrames(const MediaPipelineBackendAlsa::RenderingDelay&
                             mixer_rendering_delay) override;
-  void SignalError() override;
+  void SignalError(StreamMixerAlsaInput::MixerError error) override;
   void PrepareToDelete(const OnReadyToDeleteCb& delete_cb) override;
 
   // Tells the mixer to delete |this|. Makes sure not to call |delete_cb_| more
@@ -136,7 +137,7 @@ class StreamMixerAlsaInputImpl : public StreamMixerAlsa::InputQueue {
   int NormalFadeFrames();
   void FadeIn(::media::AudioBus* dest, int frames);
   void FadeOut(::media::AudioBus* dest, int frames);
-  void PostError();
+  void PostError(StreamMixerAlsaInput::MixerError error);
 
   StreamMixerAlsaInput::Delegate* const delegate_;
   const int input_samples_per_second_;

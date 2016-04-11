@@ -429,19 +429,21 @@ void StreamMixerAlsaInputImpl::FadeOut(::media::AudioBus* dest, int frames) {
   }
 }
 
-void StreamMixerAlsaInputImpl::SignalError() {
+void StreamMixerAlsaInputImpl::SignalError(
+    StreamMixerAlsaInput::MixerError error) {
   DCHECK(mixer_task_runner_->BelongsToCurrentThread());
   if (state_ == kStateFinalFade) {
     DeleteThis();
     return;
   }
   state_ = kStateError;
-  PostError();
+  PostError(error);
 }
 
-void StreamMixerAlsaInputImpl::PostError() {
-  RUN_ON_CALLER_THREAD(PostError);
-  delegate_->OnMixerError();
+void StreamMixerAlsaInputImpl::PostError(
+    StreamMixerAlsaInput::MixerError error) {
+  RUN_ON_CALLER_THREAD(PostError, error);
+  delegate_->OnMixerError(error);
 }
 
 void StreamMixerAlsaInputImpl::SetPaused(bool paused) {

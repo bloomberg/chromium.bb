@@ -290,11 +290,11 @@ void AudioDecoderAlsa::OnWritePcmCompletion(BufferStatus status,
     delegate_->OnEndOfStream();
 }
 
-void AudioDecoderAlsa::OnMixerError() {
+void AudioDecoderAlsa::OnMixerError(MixerError error) {
   TRACE_FUNCTION_ENTRY0();
   DCHECK(task_runner_->BelongsToCurrentThread());
-  // TODO(jyw): properly avoid outputting this message when it isn't needed
-  LOG(ERROR) << "Mixer error occurred. Did the sample rate just change?";
+  if (error != MixerError::kInputIgnored)
+    LOG(ERROR) << "Mixer error occurred.";
   error_ = true;
   delegate_->OnDecoderError();
 }
