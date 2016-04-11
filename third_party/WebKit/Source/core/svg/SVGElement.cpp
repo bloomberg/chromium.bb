@@ -1033,7 +1033,7 @@ SVGElement::InstanceUpdateBlocker::~InstanceUpdateBlocker()
         m_targetElement->setInstanceUpdatesBlocked(false);
 }
 
-#if DCHECK_IS_ON()
+#if ENABLE(ASSERT)
 bool SVGElement::isAnimatableAttribute(const QualifiedName& name) const
 {
     // This static is atomically initialized to dodge a warning about
@@ -1143,7 +1143,7 @@ bool SVGElement::isAnimatableAttribute(const QualifiedName& name) const
 
     return animatableAttributes.contains(name);
 }
-#endif // DCHECK_IS_ON()
+#endif
 
 SVGElementSet* SVGElement::setOfIncomingReferences() const
 {

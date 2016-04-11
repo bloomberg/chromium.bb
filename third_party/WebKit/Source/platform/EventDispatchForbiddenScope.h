@@ -12,7 +12,7 @@
 
 namespace blink {
 
-#if DCHECK_IS_ON()
+#if ENABLE(ASSERT)
 
 class EventDispatchForbiddenScope {
     STACK_ALLOCATED();
@@ -73,7 +73,7 @@ public:
     };
 };
 
-#endif // DCHECK_IS_ON()
+#endif // ENABLE(ASSERT)
 
 } // namespace blink
 

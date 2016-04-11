@@ -6,8 +6,8 @@
 
 namespace blink {
 
-#if DCHECK_IS_ON()
+#if ENABLE(ASSERT)
 unsigned EventDispatchForbiddenScope::s_count = 0;
-#endif // DECHECK_IS_ON()
+#endif // ENABLE(ASSERT)
 
 } // namespace blink

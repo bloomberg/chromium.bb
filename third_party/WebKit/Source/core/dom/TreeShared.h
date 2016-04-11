@@ -53,7 +53,7 @@ protected:
         DCHECK(isMainThread());
         DCHECK(!m_refCount);
         ASSERT_WITH_SECURITY_IMPLICATION(m_deletionHasBegun);
-#if ENABLE(SECURITY_ASSERT)
+#if DCHECK_IS_ON()
         DCHECK(!m_adoptionIsRequired);
 #endif
     }
@@ -63,7 +63,7 @@ public:
     {
         DCHECK(isMainThread());
         ASSERT_WITH_SECURITY_IMPLICATION(!m_deletionHasBegun);
-#if ENABLE(SECURITY_ASSERT)
+#if DCHECK_IS_ON()
         DCHECK(!m_inRemovedLastRefFunction);
         DCHECK(!m_adoptionIsRequired);
 #endif
@@ -75,13 +75,13 @@ public:
         DCHECK(isMainThread());
         DCHECK_GT(m_refCount, 0);
         ASSERT_WITH_SECURITY_IMPLICATION(!m_deletionHasBegun);
-#if ENABLE(SECURITY_ASSERT)
+#if DCHECK_IS_ON()
         DCHECK(!m_inRemovedLastRefFunction);
         DCHECK(!m_adoptionIsRequired);
 #endif
         NodeType* thisNode = static_cast<NodeType*>(this);
         if (!--m_refCount && !thisNode->hasTreeSharedParent()) {
-#if ENABLE(SECURITY_ASSERT) && DCHECK_IS_ON()
+#if DCHECK_IS_ON()
             m_inRemovedLastRefFunction = true;
 #endif
             thisNode->removedLastRef();
