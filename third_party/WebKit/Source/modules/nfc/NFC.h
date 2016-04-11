@@ -19,7 +19,7 @@ using NFCPushMessage = StringOrArrayBufferOrNFCMessage;
 class NFCWatchOptions;
 
 class NFC final
-    : public GarbageCollectedFinalized<NFC>
+    : public GarbageCollected<NFC>
     , public ScriptWrappable
     , public LocalFrameLifecycleObserver
     , public PageLifecycleObserver {
@@ -28,9 +28,6 @@ class NFC final
 
 public:
     static NFC* create(LocalFrame*);
-#if !ENABLE(OILPAN)
-    ~NFC() override = default;
-#endif
 
     // Pushes NFCPushMessage asynchronously to NFC tag / peer.
     ScriptPromise push(ScriptState*, const NFCPushMessage&, const NFCPushOptions&);
@@ -57,7 +54,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    NFC(LocalFrame*);
+    explicit NFC(LocalFrame*);
 };
 
 } // namespace blink

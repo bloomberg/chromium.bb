@@ -18,8 +18,6 @@ class PresentationRequest;
 
 // Implements the main entry point of the Presentation API corresponding to the Presentation.idl
 // See https://w3c.github.io/presentation-api/#navigatorpresentation for details.
-//
-// TODO(Oilpan): switch to GarbageCollected<Presentation> once object is unconditionally on the Oilpan heap.
 class Presentation final
     : public GarbageCollected<Presentation>
     , public ScriptWrappable
@@ -28,9 +26,6 @@ class Presentation final
     DEFINE_WRAPPERTYPEINFO();
 public:
     static Presentation* create(LocalFrame*);
-#if !ENABLE(OILPAN)
-    ~Presentation() override = default;
-#endif
 
     DECLARE_VIRTUAL_TRACE();
 

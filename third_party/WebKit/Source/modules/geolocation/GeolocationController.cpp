@@ -65,12 +65,6 @@ void GeolocationController::stopUpdatingIfNeeded()
 GeolocationController::~GeolocationController()
 {
     ASSERT(m_observers.isEmpty());
-#if !ENABLE(OILPAN)
-    if (m_hasClientForTest) {
-        m_client->controllerForTestRemoved(this);
-        m_hasClientForTest = false;
-    }
-#endif
 }
 
 GeolocationController* GeolocationController::create(LocalFrame& frame, GeolocationClient* client)

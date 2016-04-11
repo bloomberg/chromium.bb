@@ -5,9 +5,6 @@
 #include "modules/offscreencanvas/OffscreenCanvas.h"
 
 #include "core/dom/ExceptionCode.h"
-#if !ENABLE(OILPAN)
-#include "core/frame/ImageBitmap.h" // So ~RefPtr can call unref()
-#endif
 #include "core/html/canvas/CanvasContextCreationAttributes.h"
 #include "modules/offscreencanvas/OffscreenCanvasRenderingContext.h"
 #include "modules/offscreencanvas/OffscreenCanvasRenderingContextFactory.h"

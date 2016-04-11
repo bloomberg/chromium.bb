@@ -108,9 +108,7 @@ MediaSource::MediaSource(ExecutionContext* context)
 MediaSource::~MediaSource()
 {
     WTF_LOG(Media, "MediaSource::~MediaSource %p", this);
-#if !ENABLE(OILPAN)
     ASSERT(isClosed());
-#endif
 }
 
 void MediaSource::logAndThrowDOMException(ExceptionState& exceptionState, const ExceptionCode& error, const String& message)

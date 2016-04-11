@@ -85,10 +85,6 @@ public:
     double duration() const override;
     TimeRanges* buffered() const override;
     TimeRanges* seekable() const override;
-#if !ENABLE(OILPAN)
-    void refHTMLMediaSource() override { ref(); }
-    void derefHTMLMediaSource() override { deref(); }
-#endif
 
     // EventTarget interface
     const AtomicString& interfaceName() const override;
