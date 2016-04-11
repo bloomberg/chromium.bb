@@ -236,7 +236,7 @@ MediaDocument::MediaDocument(const DocumentInit& initializer)
     lockCompatibilityMode();
 }
 
-RawPtr<DocumentParser> MediaDocument::createParser()
+DocumentParser* MediaDocument::createParser()
 {
     return MediaDocumentParser::create(this);
 }

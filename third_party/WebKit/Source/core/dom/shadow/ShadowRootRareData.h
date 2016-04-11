@@ -48,7 +48,7 @@ public:
     }
 
     HTMLShadowElement* shadowInsertionPointOfYoungerShadowRoot() const { return m_shadowInsertionPointOfYoungerShadowRoot.get(); }
-    void setShadowInsertionPointOfYoungerShadowRoot(RawPtr<HTMLShadowElement> shadowInsertionPoint) { m_shadowInsertionPointOfYoungerShadowRoot = shadowInsertionPoint; }
+    void setShadowInsertionPointOfYoungerShadowRoot(HTMLShadowElement* shadowInsertionPoint) { m_shadowInsertionPointOfYoungerShadowRoot = shadowInsertionPoint; }
 
     void didAddInsertionPoint(InsertionPoint*);
     void didRemoveInsertionPoint(InsertionPoint*);
@@ -69,7 +69,7 @@ public:
     void clearDescendantInsertionPoints() { m_descendantInsertionPoints.clear(); }
 
     StyleSheetList* styleSheets() { return m_styleSheetList.get(); }
-    void setStyleSheets(RawPtr<StyleSheetList> styleSheetList) { m_styleSheetList = styleSheetList; }
+    void setStyleSheets(StyleSheetList* styleSheetList) { m_styleSheetList = styleSheetList; }
 
     void didAddSlot() { ++m_descendantSlotCount; }
     void didRemoveSlot() { DCHECK_GT(m_descendantSlotCount, 0u); --m_descendantSlotCount; }

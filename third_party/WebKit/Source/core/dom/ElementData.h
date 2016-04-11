@@ -107,7 +107,7 @@ private:
     void destroy();
 #endif
 
-    RawPtr<UniqueElementData> makeUniqueCopy() const;
+    UniqueElementData* makeUniqueCopy() const;
 };
 
 #define DEFINE_ELEMENT_DATA_TYPE_CASTS(thisType,  pointerPredicate, referencePredicate) \
@@ -125,7 +125,7 @@ private:
 // duplicate sets of attributes (ex. the same classes).
 class ShareableElementData final : public ElementData {
 public:
-    static RawPtr<ShareableElementData> createWithAttributes(const Vector<Attribute>&);
+    static ShareableElementData* createWithAttributes(const Vector<Attribute>&);
 
     explicit ShareableElementData(const Vector<Attribute>&);
     explicit ShareableElementData(const UniqueElementData&);
@@ -162,8 +162,8 @@ DEFINE_ELEMENT_DATA_TYPE_CASTS(ShareableElementData, !data->isUnique(), !data.is
 // attribute will have the same inline style.
 class UniqueElementData final : public ElementData {
 public:
-    static RawPtr<UniqueElementData> create();
-    RawPtr<ShareableElementData> makeShareableCopy() const;
+    static UniqueElementData* create();
+    ShareableElementData* makeShareableCopy() const;
 
     MutableAttributeCollection attributes();
     AttributeCollection attributes() const;

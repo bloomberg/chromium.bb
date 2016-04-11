@@ -68,7 +68,7 @@ namespace blink {
 //         [3] createCrossThreadTask(function, const P1& p1, ..., const Pn& pn);
 //         [4] createCrossThreadTask(member, C* ptr, const P1& p1, ..., const Pn& pn);
 //         [5] createCrossThreadTask(member, const WeakPtr<C>& ptr, const P1& p1, ..., const Pn& pn);
-//         [6] createCrossThreadTask(member, RawPtr<C> p0, const P1& p1, ..., const Pn& pn);
+//         [6] createCrossThreadTask(member, C* p0, const P1& p1, ..., const Pn& pn);
 //     and then the following are called on the target thread:
 //         [1]   functionEC(p1, ..., pn, context);
 //         [2]   ptr->memberEC(p1, ..., pn, context);

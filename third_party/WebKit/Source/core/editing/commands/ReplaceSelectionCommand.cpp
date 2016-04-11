@@ -1239,7 +1239,7 @@ void ReplaceSelectionCommand::doApply(EditingState* editingState)
     // We inserted before the enclosingBlockOfInsertionPos to prevent nesting, and the content before the enclosingBlockOfInsertionPos wasn't in its own block and
     // didn't have a br after it, so the inserted content ended up in the same paragraph.
     if (!startOfInsertedContent.isNull() && enclosingBlockOfInsertionPos && insertionPos.anchorNode() == enclosingBlockOfInsertionPos->parentNode() && (unsigned)insertionPos.computeEditingOffset() < enclosingBlockOfInsertionPos->nodeIndex() && !isStartOfParagraph(startOfInsertedContent)) {
-        insertNodeAt(HTMLBRElement::create(document()).get(), startOfInsertedContent.deepEquivalent(), editingState);
+        insertNodeAt(HTMLBRElement::create(document()), startOfInsertedContent.deepEquivalent(), editingState);
         if (editingState->isAborted())
             return;
     }
@@ -1302,7 +1302,7 @@ void ReplaceSelectionCommand::doApply(EditingState* editingState)
         // comes after and prevent that from happening.
         VisiblePosition endOfInsertedContent = positionAtEndOfInsertedContent();
         if (startOfParagraph(endOfInsertedContent).deepEquivalent() == startOfParagraphToMove.deepEquivalent()) {
-            insertNodeAt(HTMLBRElement::create(document()).get(), endOfInsertedContent.deepEquivalent(), editingState);
+            insertNodeAt(HTMLBRElement::create(document()), endOfInsertedContent.deepEquivalent(), editingState);
             if (editingState->isAborted())
                 return;
             // Mutation events (bug 22634) triggered by inserting the <br> might have removed the content we're about to move

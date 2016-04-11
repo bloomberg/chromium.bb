@@ -129,7 +129,7 @@ inline void DistributionPool::detachNonDistributedNodes()
     }
 }
 
-RawPtr<ElementShadow> ElementShadow::create()
+ElementShadow* ElementShadow::create()
 {
     return new ElementShadow();
 }
@@ -168,17 +168,17 @@ ShadowRoot& ElementShadow::addShadowRoot(Element& shadowHost, ShadowRootType typ
     for (ShadowRoot* root = m_shadowRoots.head(); root; root = root->olderShadowRoot())
         root->lazyReattachIfAttached();
 
-    RawPtr<ShadowRoot> shadowRoot = ShadowRoot::create(shadowHost.document(), type);
+    ShadowRoot* shadowRoot = ShadowRoot::create(shadowHost.document(), type);
     shadowRoot->setParentOrShadowHostNode(&shadowHost);
     shadowRoot->setParentTreeScope(shadowHost.treeScope());
-    m_shadowRoots.push(shadowRoot.get());
+    m_shadowRoots.push(shadowRoot);
     setNeedsDistributionRecalc();
 
     shadowRoot->insertedInto(&shadowHost);
     shadowHost.setChildNeedsStyleRecalc();
     shadowHost.setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::Shadow));
 
-    InspectorInstrumentation::didPushShadowRoot(&shadowHost, shadowRoot.get());
+    InspectorInstrumentation::didPushShadowRoot(&shadowHost, shadowRoot);
 
     return *shadowRoot;
 }
@@ -190,9 +190,9 @@ void ElementShadow::removeDetachedShadowRoots()
     Element* shadowHost = host();
     DCHECK(shadowHost);
 
-    while (RawPtr<ShadowRoot> oldRoot = m_shadowRoots.head()) {
-        InspectorInstrumentation::willPopShadowRoot(shadowHost, oldRoot.get());
-        shadowHost->document().removeFocusedElementOfSubtree(oldRoot.get());
+    while (ShadowRoot* oldRoot = m_shadowRoots.head()) {
+        InspectorInstrumentation::willPopShadowRoot(shadowHost, oldRoot);
+        shadowHost->document().removeFocusedElementOfSubtree(oldRoot);
         m_shadowRoots.removeHead();
         oldRoot->setParentOrShadowHostNode(0);
         oldRoot->setParentTreeScope(shadowHost->document());

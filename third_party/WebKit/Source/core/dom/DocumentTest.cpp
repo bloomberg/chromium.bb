@@ -80,7 +80,7 @@ class MockDocumentVisibilityObserver
     , public DocumentVisibilityObserver {
     USING_GARBAGE_COLLECTED_MIXIN(MockDocumentVisibilityObserver);
 public:
-    static RawPtr<MockDocumentVisibilityObserver> create(Document& document)
+    static MockDocumentVisibilityObserver* create(Document& document)
     {
         return new MockDocumentVisibilityObserver(document);
     }
@@ -100,32 +100,32 @@ private:
 TEST_F(DocumentTest, VisibilityOberver)
 {
     page().setVisibilityState(PageVisibilityStateVisible, true); // initial state
-    RawPtr<MockDocumentVisibilityObserver> observer1 = MockDocumentVisibilityObserver::create(document());
+    MockDocumentVisibilityObserver* observer1 = MockDocumentVisibilityObserver::create(document());
 
     {
-        RawPtr<MockDocumentVisibilityObserver> observer2 = MockDocumentVisibilityObserver::create(document());
+        MockDocumentVisibilityObserver* observer2 = MockDocumentVisibilityObserver::create(document());
         EXPECT_CALL(*observer1, didChangeVisibilityState(PageVisibilityStateHidden)).Times(0);
         EXPECT_CALL(*observer1, didChangeVisibilityState(PageVisibilityStateVisible)).Times(0);
         EXPECT_CALL(*observer2, didChangeVisibilityState(PageVisibilityStateHidden)).Times(0);
         EXPECT_CALL(*observer2, didChangeVisibilityState(PageVisibilityStateVisible)).Times(0);
-        ::testing::Mock::VerifyAndClearExpectations(observer1.get());
-        ::testing::Mock::VerifyAndClearExpectations(observer2.get());
+        ::testing::Mock::VerifyAndClearExpectations(observer1);
+        ::testing::Mock::VerifyAndClearExpectations(observer2);
 
         EXPECT_CALL(*observer1, didChangeVisibilityState(PageVisibilityStateHidden)).Times(1);
         EXPECT_CALL(*observer1, didChangeVisibilityState(PageVisibilityStateVisible)).Times(0);
         EXPECT_CALL(*observer2, didChangeVisibilityState(PageVisibilityStateHidden)).Times(1);
         EXPECT_CALL(*observer2, didChangeVisibilityState(PageVisibilityStateVisible)).Times(0);
         page().setVisibilityState(PageVisibilityStateHidden, false);
-        ::testing::Mock::VerifyAndClearExpectations(observer1.get());
-        ::testing::Mock::VerifyAndClearExpectations(observer2.get());
+        ::testing::Mock::VerifyAndClearExpectations(observer1);
+        ::testing::Mock::VerifyAndClearExpectations(observer2);
 
         EXPECT_CALL(*observer1, didChangeVisibilityState(PageVisibilityStateHidden)).Times(0);
         EXPECT_CALL(*observer1, didChangeVisibilityState(PageVisibilityStateVisible)).Times(0);
         EXPECT_CALL(*observer2, didChangeVisibilityState(PageVisibilityStateHidden)).Times(0);
         EXPECT_CALL(*observer2, didChangeVisibilityState(PageVisibilityStateVisible)).Times(0);
         page().setVisibilityState(PageVisibilityStateHidden, false);
-        ::testing::Mock::VerifyAndClearExpectations(observer1.get());
-        ::testing::Mock::VerifyAndClearExpectations(observer2.get());
+        ::testing::Mock::VerifyAndClearExpectations(observer1);
+        ::testing::Mock::VerifyAndClearExpectations(observer2);
 
         EXPECT_CALL(*observer1, didChangeVisibilityState(PageVisibilityStateHidden)).Times(0);
         EXPECT_CALL(*observer1, didChangeVisibilityState(PageVisibilityStateVisible)).Times(1);
@@ -135,8 +135,8 @@ TEST_F(DocumentTest, VisibilityOberver)
         Document& alternateDocument = alternatePage->document();
         observer2->setObservedDocument(alternateDocument);
         page().setVisibilityState(PageVisibilityStateVisible, false);
-        ::testing::Mock::VerifyAndClearExpectations(observer1.get());
-        ::testing::Mock::VerifyAndClearExpectations(observer2.get());
+        ::testing::Mock::VerifyAndClearExpectations(observer1);
+        ::testing::Mock::VerifyAndClearExpectations(observer2);
 
         EXPECT_CALL(*observer1, didChangeVisibilityState(PageVisibilityStateHidden)).Times(1);
         EXPECT_CALL(*observer1, didChangeVisibilityState(PageVisibilityStateVisible)).Times(0);
@@ -144,8 +144,8 @@ TEST_F(DocumentTest, VisibilityOberver)
         EXPECT_CALL(*observer2, didChangeVisibilityState(PageVisibilityStateVisible)).Times(0);
         observer2->setObservedDocument(document());
         page().setVisibilityState(PageVisibilityStateHidden, false);
-        ::testing::Mock::VerifyAndClearExpectations(observer1.get());
-        ::testing::Mock::VerifyAndClearExpectations(observer2.get());
+        ::testing::Mock::VerifyAndClearExpectations(observer1);
+        ::testing::Mock::VerifyAndClearExpectations(observer2);
     }
 
     // observer2 destroyed
@@ -193,16 +193,16 @@ TEST_F(DocumentTest, LinkManifest)
     EXPECT_EQ(0, document().linkManifest());
 
     // Check that we use the first manifest with <link rel=manifest>
-    RawPtr<HTMLLinkElement> link = HTMLLinkElement::create(document(), false);
+    HTMLLinkElement* link = HTMLLinkElement::create(document(), false);
     link->setAttribute(blink::HTMLNames::relAttr, "manifest");
     link->setAttribute(blink::HTMLNames::hrefAttr, "foo.json");
     document().head()->appendChild(link);
     EXPECT_EQ(link, document().linkManifest());
 
-    RawPtr<HTMLLinkElement> link2 = HTMLLinkElement::create(document(), false);
+    HTMLLinkElement* link2 = HTMLLinkElement::create(document(), false);
     link2->setAttribute(blink::HTMLNames::relAttr, "manifest");
     link2->setAttribute(blink::HTMLNames::hrefAttr, "bar.json");
-    document().head()->insertBefore(link2, link.get());
+    document().head()->insertBefore(link2, link);
     EXPECT_EQ(link2, document().linkManifest());
     document().head()->appendChild(link2);
     EXPECT_EQ(link, document().linkManifest());
@@ -237,8 +237,8 @@ TEST_F(DocumentTest, LinkManifest)
     link->setAttribute(blink::HTMLNames::relAttr, "manifest");
 
     // Check that link outside of the <head> are ignored.
-    document().head()->removeChild(link.get(), ASSERT_NO_EXCEPTION);
-    document().head()->removeChild(link2.get(), ASSERT_NO_EXCEPTION);
+    document().head()->removeChild(link, ASSERT_NO_EXCEPTION);
+    document().head()->removeChild(link2, ASSERT_NO_EXCEPTION);
     EXPECT_EQ(0, document().linkManifest());
     document().body()->appendChild(link);
     EXPECT_EQ(0, document().linkManifest());

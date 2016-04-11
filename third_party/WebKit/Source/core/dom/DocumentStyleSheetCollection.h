@@ -39,7 +39,7 @@ class TreeScope;
 class DocumentStyleSheetCollection final : public TreeScopeStyleSheetCollection {
     WTF_MAKE_NONCOPYABLE(DocumentStyleSheetCollection);
 public:
-    static RawPtr<DocumentStyleSheetCollection> create(TreeScope& treeScope)
+    static DocumentStyleSheetCollection* create(TreeScope& treeScope)
     {
         return new DocumentStyleSheetCollection(treeScope);
     }

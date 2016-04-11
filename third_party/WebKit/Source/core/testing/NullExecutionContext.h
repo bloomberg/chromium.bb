@@ -37,7 +37,7 @@ public:
     SecurityContext& securityContext() override { return *this; }
     DOMTimerCoordinator* timers() override { return nullptr; }
 
-    void addConsoleMessage(RawPtr<ConsoleMessage>) override { }
+    void addConsoleMessage(ConsoleMessage*) override { }
     void logExceptionToConsole(const String& errorMessage, int scriptId, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtr<ScriptCallStack>) override { }
 
     void setIsSecureContext(bool);

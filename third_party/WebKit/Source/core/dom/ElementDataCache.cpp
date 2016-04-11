@@ -42,7 +42,7 @@ inline bool hasSameAttributes(const Vector<Attribute>& attributes, ShareableElem
     return !memcmp(attributes.data(), elementData.m_attributeArray, attributes.size() * sizeof(Attribute));
 }
 
-RawPtr<ShareableElementData> ElementDataCache::cachedShareableElementDataWithAttributes(const Vector<Attribute>& attributes)
+ShareableElementData* ElementDataCache::cachedShareableElementDataWithAttributes(const Vector<Attribute>& attributes)
 {
     DCHECK(!attributes.isEmpty());
 

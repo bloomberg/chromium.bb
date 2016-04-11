@@ -34,7 +34,7 @@
 
 namespace blink {
 
-void CustomElementAsyncImportMicrotaskQueue::enqueue(RawPtr<CustomElementMicrotaskStep> step)
+void CustomElementAsyncImportMicrotaskQueue::enqueue(CustomElementMicrotaskStep* step)
 {
     m_queue.append(step);
 }

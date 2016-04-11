@@ -48,7 +48,7 @@ class HTMLImportChild;
 // import isn't "ready" (finished parsing and running script.)
 class CustomElementMicrotaskImportStep final : public CustomElementMicrotaskStep {
 public:
-    static RawPtr<CustomElementMicrotaskImportStep> create(HTMLImportChild*);
+    static CustomElementMicrotaskImportStep* create(HTMLImportChild*);
     ~CustomElementMicrotaskImportStep() override;
 
     // API for HTML Imports

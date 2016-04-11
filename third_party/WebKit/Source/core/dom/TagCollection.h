@@ -32,13 +32,13 @@ namespace blink {
 // Collection that limits to a particular tag.
 class TagCollection : public HTMLCollection {
 public:
-    static RawPtr<TagCollection> create(ContainerNode& rootNode, const AtomicString& namespaceURI, const AtomicString& localName)
+    static TagCollection* create(ContainerNode& rootNode, const AtomicString& namespaceURI, const AtomicString& localName)
     {
         DCHECK(namespaceURI != starAtom);
         return new TagCollection(rootNode, TagCollectionType, namespaceURI, localName);
     }
 
-    static RawPtr<TagCollection> create(ContainerNode& rootNode, CollectionType type, const AtomicString& localName)
+    static TagCollection* create(ContainerNode& rootNode, CollectionType type, const AtomicString& localName)
     {
         ASSERT_UNUSED(type, type == TagCollectionType);
         return new TagCollection(rootNode, TagCollectionType, starAtom, localName);

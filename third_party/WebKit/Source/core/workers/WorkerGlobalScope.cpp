@@ -300,10 +300,9 @@ void WorkerGlobalScope::reportBlockedScriptExecutionToInspector(const String& di
     InspectorInstrumentation::scriptExecutionBlockedByCSP(this, directiveText);
 }
 
-void WorkerGlobalScope::addConsoleMessage(RawPtr<ConsoleMessage> prpConsoleMessage)
+void WorkerGlobalScope::addConsoleMessage(ConsoleMessage* consoleMessage)
 {
     ASSERT(isContextThread());
-    ConsoleMessage* consoleMessage = prpConsoleMessage;
     thread()->workerReportingProxy().reportConsoleMessage(consoleMessage);
     addMessageToWorkerConsole(consoleMessage);
 }

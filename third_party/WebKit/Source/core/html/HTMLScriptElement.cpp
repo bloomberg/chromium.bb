@@ -174,7 +174,7 @@ void HTMLScriptElement::dispatchLoadEvent()
     dispatchEvent(Event::create(EventTypeNames::load));
 }
 
-RawPtr<Element> HTMLScriptElement::cloneElementWithoutAttributesAndChildren()
+Element* HTMLScriptElement::cloneElementWithoutAttributesAndChildren()
 {
     return new HTMLScriptElement(document(), false, m_loader->alreadyStarted(), false);
 }

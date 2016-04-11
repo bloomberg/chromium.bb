@@ -39,9 +39,9 @@ class ShareableElementData;
 
 class ElementDataCache final : public GarbageCollected<ElementDataCache>  {
 public:
-    static RawPtr<ElementDataCache> create() { return new ElementDataCache; }
+    static ElementDataCache* create() { return new ElementDataCache; }
 
-    RawPtr<ShareableElementData> cachedShareableElementDataWithAttributes(const Vector<Attribute>&);
+    ShareableElementData* cachedShareableElementDataWithAttributes(const Vector<Attribute>&);
 
     DECLARE_TRACE();
 

@@ -120,11 +120,11 @@ static bool isPrefixed(const AtomicString& type)
     return type == EventTypeNames::webkitfullscreenchange || type == EventTypeNames::webkitfullscreenerror;
 }
 
-static RawPtr<Event> createEvent(const AtomicString& type, EventTarget& target)
+static Event* createEvent(const AtomicString& type, EventTarget& target)
 {
     EventInit initializer;
     initializer.setBubbles(isPrefixed(type));
-    RawPtr<Event> event = Event::create(type, initializer);
+    Event* event = Event::create(type, initializer);
     event->setTarget(&target);
     return event;
 }
@@ -516,7 +516,7 @@ void Fullscreen::fullScreenLayoutObjectDestroyed()
 
 void Fullscreen::enqueueChangeEvent(Document& document, RequestType requestType)
 {
-    RawPtr<Event> event;
+    Event* event;
     if (requestType == UnprefixedRequest) {
         event = createEvent(EventTypeNames::fullscreenchange, document);
     } else {
@@ -535,7 +535,7 @@ void Fullscreen::enqueueChangeEvent(Document& document, RequestType requestType)
 
 void Fullscreen::enqueueErrorEvent(Element& element, RequestType requestType)
 {
-    RawPtr<Event> event;
+    Event* event;
     if (requestType == UnprefixedRequest)
         event = createEvent(EventTypeNames::fullscreenerror, element.document());
     else
@@ -546,15 +546,11 @@ void Fullscreen::enqueueErrorEvent(Element& element, RequestType requestType)
 
 void Fullscreen::eventQueueTimerFired(Timer<Fullscreen>*)
 {
-    // Since we dispatch events in this function, it's possible that the
-    // document will be detached and GC'd. We protect it here to make sure we
-    // can finish the function successfully.
-    RawPtr<Document> protectDocument(document());
     HeapDeque<Member<Event>> eventQueue;
     m_eventQueue.swap(eventQueue);
 
     while (!eventQueue.isEmpty()) {
-        RawPtr<Event> event = eventQueue.takeFirst();
+        Event* event = eventQueue.takeFirst();
         Node* target = event->target()->toNode();
 
         // If the element was removed from our tree, also message the documentElement.

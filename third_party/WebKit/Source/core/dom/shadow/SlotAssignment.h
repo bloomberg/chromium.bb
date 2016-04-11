@@ -15,7 +15,7 @@ class ShadowRoot;
 
 class SlotAssignment final : public GarbageCollected<SlotAssignment> {
 public:
-    static RawPtr<SlotAssignment> create()
+    static SlotAssignment* create()
     {
         return new SlotAssignment;
     }

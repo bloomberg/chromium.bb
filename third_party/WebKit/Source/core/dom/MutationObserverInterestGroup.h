@@ -43,7 +43,7 @@ namespace blink {
 
 class MutationObserverInterestGroup final : public GarbageCollected<MutationObserverInterestGroup> {
 public:
-    static RawPtr<MutationObserverInterestGroup> createForChildListMutation(Node& target)
+    static MutationObserverInterestGroup* createForChildListMutation(Node& target)
     {
         if (!target.document().hasMutationObserversOfType(MutationObserver::ChildList))
             return nullptr;
@@ -52,7 +52,7 @@ public:
         return createIfNeeded(target, MutationObserver::ChildList, oldValueFlag);
     }
 
-    static RawPtr<MutationObserverInterestGroup> createForCharacterDataMutation(Node& target)
+    static MutationObserverInterestGroup* createForCharacterDataMutation(Node& target)
     {
         if (!target.document().hasMutationObserversOfType(MutationObserver::CharacterData))
             return nullptr;
@@ -60,7 +60,7 @@ public:
         return createIfNeeded(target, MutationObserver::CharacterData, MutationObserver::CharacterDataOldValue);
     }
 
-    static RawPtr<MutationObserverInterestGroup> createForAttributesMutation(Node& target, const QualifiedName& attributeName)
+    static MutationObserverInterestGroup* createForAttributesMutation(Node& target, const QualifiedName& attributeName)
     {
         if (!target.document().hasMutationObserversOfType(MutationObserver::Attributes))
             return nullptr;
@@ -69,12 +69,12 @@ public:
     }
 
     bool isOldValueRequested();
-    void enqueueMutationRecord(RawPtr<MutationRecord>);
+    void enqueueMutationRecord(MutationRecord*);
 
     DECLARE_TRACE();
 
 private:
-    static RawPtr<MutationObserverInterestGroup> createIfNeeded(Node& target, MutationObserver::MutationType, MutationRecordDeliveryOptions oldValueFlag, const QualifiedName* attributeName = 0);
+    static MutationObserverInterestGroup* createIfNeeded(Node& target, MutationObserver::MutationType, MutationRecordDeliveryOptions oldValueFlag, const QualifiedName* attributeName = 0);
     MutationObserverInterestGroup(HeapHashMap<Member<MutationObserver>, MutationRecordDeliveryOptions>& observers, MutationRecordDeliveryOptions oldValueFlag);
 
     bool hasOldValue(MutationRecordDeliveryOptions options) { return options & m_oldValueFlag; }

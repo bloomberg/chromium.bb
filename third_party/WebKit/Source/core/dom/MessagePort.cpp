@@ -210,9 +210,9 @@ void MessagePort::dispatchMessages()
             return;
 
         MessagePortArray* ports = MessagePort::entanglePorts(*getExecutionContext(), channels.release());
-        RawPtr<Event> evt = MessageEvent::create(ports, message.release());
+        Event* evt = MessageEvent::create(ports, message.release());
 
-        dispatchEvent(evt.release());
+        dispatchEvent(evt);
     }
 }
 

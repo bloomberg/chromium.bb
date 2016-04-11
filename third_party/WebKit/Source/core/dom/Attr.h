@@ -34,8 +34,8 @@ namespace blink {
 class CORE_EXPORT Attr final : public Node {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RawPtr<Attr> create(Element&, const QualifiedName&);
-    static RawPtr<Attr> create(Document&, const QualifiedName&, const AtomicString& value);
+    static Attr* create(Element&, const QualifiedName&);
+    static Attr* create(Document&, const QualifiedName&, const AtomicString& value);
     ~Attr() override;
 
     String name() const { return m_name.toString(); }
@@ -70,7 +70,7 @@ private:
 
     String nodeValue() const override { return value(); }
     void setNodeValue(const String&) override;
-    RawPtr<Node> cloneNode(bool deep) override;
+    Node* cloneNode(bool deep) override;
 
     bool isAttributeNode() const override { return true; }
 

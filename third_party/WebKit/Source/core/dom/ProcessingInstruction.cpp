@@ -48,7 +48,7 @@ inline ProcessingInstruction::ProcessingInstruction(Document& document, const St
 {
 }
 
-RawPtr<ProcessingInstruction> ProcessingInstruction::create(Document& document, const String& target, const String& data)
+ProcessingInstruction* ProcessingInstruction::create(Document& document, const String& target, const String& data)
 {
     return new ProcessingInstruction(document, target, data);
 }
@@ -94,7 +94,7 @@ Node::NodeType ProcessingInstruction::getNodeType() const
     return PROCESSING_INSTRUCTION_NODE;
 }
 
-RawPtr<Node> ProcessingInstruction::cloneNode(bool /*deep*/)
+Node* ProcessingInstruction::cloneNode(bool /*deep*/)
 {
     // FIXME: Is it a problem that this does not copy m_localHref?
     // What about other data members?
@@ -164,7 +164,7 @@ void ProcessingInstruction::process(const String& href, const String& charset)
 
     String url = document().completeURL(href).getString();
 
-    RawPtr<StyleSheetResource> resource = nullptr;
+    StyleSheetResource* resource = nullptr;
     FetchRequest request(ResourceRequest(document().completeURL(href)), FetchInitiatorTypeNames::processinginstruction);
     if (m_isXSL) {
         if (RuntimeEnabledFeatures::xsltEnabled())
@@ -211,14 +211,14 @@ void ProcessingInstruction::setCSSStyleSheet(const String& href, const KURL& bas
     DCHECK(m_isCSS);
     CSSParserContext parserContext(document(), 0, baseURL, charset);
 
-    RawPtr<StyleSheetContents> newSheet = StyleSheetContents::create(href, parserContext);
+    StyleSheetContents* newSheet = StyleSheetContents::create(href, parserContext);
 
-    RawPtr<CSSStyleSheet> cssSheet = CSSStyleSheet::create(newSheet, this);
+    CSSStyleSheet* cssSheet = CSSStyleSheet::create(newSheet, this);
     cssSheet->setDisabled(m_alternate);
     cssSheet->setTitle(m_title);
     cssSheet->setMediaQueries(MediaQuerySet::create(m_media));
 
-    m_sheet = cssSheet.release();
+    m_sheet = cssSheet;
 
     // We don't need the cross-origin security check here because we are
     // getting the sheet text in "strict" mode. This enforces a valid CSS MIME
@@ -235,7 +235,6 @@ void ProcessingInstruction::setXSLStyleSheet(const String& href, const KURL& bas
 
     DCHECK(m_isXSL);
     m_sheet = XSLStyleSheet::create(this, href, baseURL);
-    RawPtr<Document> protect(&document());
     OwnPtr<IncrementLoadEventDelayCount> delay = IncrementLoadEventDelayCount::create(document());
     parseStyleSheet(sheet);
 }
@@ -282,7 +281,7 @@ void ProcessingInstruction::removedFrom(ContainerNode* insertionPoint)
     if (!DocumentXSLT::processingInstructionRemovedFromDocument(document(), this))
         document().styleEngine().removeStyleSheetCandidateNode(this);
 
-    RawPtr<StyleSheet> removedSheet = m_sheet;
+    StyleSheet* removedSheet = m_sheet;
     if (m_sheet) {
         DCHECK_EQ(m_sheet->ownerNode(), this);
         clearSheet();
@@ -293,7 +292,7 @@ void ProcessingInstruction::removedFrom(ContainerNode* insertionPoint)
 
     // If we're in document teardown, then we don't need to do any notification of our sheet's removal.
     if (document().isActive())
-        document().styleEngine().setNeedsActiveStyleUpdate(removedSheet.get(), FullStyleUpdate);
+        document().styleEngine().setNeedsActiveStyleUpdate(removedSheet, FullStyleUpdate);
 }
 
 void ProcessingInstruction::clearSheet()

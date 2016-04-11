@@ -30,7 +30,7 @@ inline CDATASection::CDATASection(Document& document, const String& data)
 {
 }
 
-RawPtr<CDATASection> CDATASection::create(Document& document, const String& data)
+CDATASection* CDATASection::create(Document& document, const String& data)
 {
     return new CDATASection(document, data);
 }
@@ -45,7 +45,7 @@ Node::NodeType CDATASection::getNodeType() const
     return CDATA_SECTION_NODE;
 }
 
-RawPtr<Text> CDATASection::cloneWithData(const String& data)
+Text* CDATASection::cloneWithData(const String& data)
 {
     return create(document(), data);
 }

@@ -657,7 +657,7 @@ void DeleteSelectionCommand::mergeParagraphs(EditingState* editingState)
 
     // We need to merge into m_upstreamStart's block, but it's been emptied out and collapsed by deletion.
     if (!mergeDestination.deepEquivalent().anchorNode() || (!mergeDestination.deepEquivalent().anchorNode()->isDescendantOf(enclosingBlock(m_upstreamStart.computeContainerNode())) && (!mergeDestination.deepEquivalent().anchorNode()->hasChildren() || !m_upstreamStart.computeContainerNode()->hasChildren())) || (m_startsAtEmptyLine && mergeDestination.deepEquivalent() != startOfParagraphToMove.deepEquivalent())) {
-        insertNodeAt(HTMLBRElement::create(document()).get(), m_upstreamStart, editingState);
+        insertNodeAt(HTMLBRElement::create(document()), m_upstreamStart, editingState);
         if (editingState->isAborted())
             return;
         mergeDestination = createVisiblePosition(m_upstreamStart);

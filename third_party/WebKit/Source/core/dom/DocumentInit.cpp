@@ -49,12 +49,12 @@ static Document* parentDocument(LocalFrame* frame)
     return &ownerElement->document();
 }
 
-DocumentInit::DocumentInit(const KURL& url, LocalFrame* frame, RawPtr<Document> contextDocument, HTMLImportsController* importsController)
+DocumentInit::DocumentInit(const KURL& url, LocalFrame* frame, Document* contextDocument, HTMLImportsController* importsController)
     : DocumentInit(nullptr, url, frame, contextDocument, importsController)
 {
 }
 
-DocumentInit::DocumentInit(RawPtr<Document> ownerDocument, const KURL& url, LocalFrame* frame, RawPtr<Document> contextDocument, HTMLImportsController* importsController)
+DocumentInit::DocumentInit(Document* ownerDocument, const KURL& url, LocalFrame* frame, Document* contextDocument, HTMLImportsController* importsController)
     : m_url(url)
     , m_frame(frame)
     , m_parent(parentDocument(frame))
@@ -164,7 +164,7 @@ DocumentInit& DocumentInit::withNewRegistrationContext()
     return *this;
 }
 
-RawPtr<CustomElementRegistrationContext> DocumentInit::registrationContext(Document* document) const
+CustomElementRegistrationContext* DocumentInit::registrationContext(Document* document) const
 {
     if (!document->isHTMLDocument() && !document->isXHTMLDocument())
         return nullptr;
@@ -175,12 +175,12 @@ RawPtr<CustomElementRegistrationContext> DocumentInit::registrationContext(Docum
     return m_registrationContext.get();
 }
 
-RawPtr<Document> DocumentInit::contextDocument() const
+Document* DocumentInit::contextDocument() const
 {
     return m_contextDocument;
 }
 
-DocumentInit DocumentInit::fromContext(RawPtr<Document> contextDocument, const KURL& url)
+DocumentInit DocumentInit::fromContext(Document* contextDocument, const KURL& url)
 {
     return DocumentInit(url, 0, contextDocument, 0);
 }

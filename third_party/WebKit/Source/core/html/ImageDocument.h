@@ -57,7 +57,7 @@ public:
 private:
     explicit ImageDocument(const DocumentInit&);
 
-    RawPtr<DocumentParser> createParser() override;
+    DocumentParser* createParser() override;
 #if !ENABLE(OILPAN)
     void dispose() override;
 #endif

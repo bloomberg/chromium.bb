@@ -34,7 +34,7 @@
 
 namespace blink {
 
-RawPtr<CustomElementUpgradeCandidateMap> CustomElementUpgradeCandidateMap::create()
+CustomElementUpgradeCandidateMap* CustomElementUpgradeCandidateMap::create()
 {
     return new CustomElementUpgradeCandidateMap();
 }
@@ -78,9 +78,9 @@ void CustomElementUpgradeCandidateMap::elementWasDestroyed(Element* element)
     m_upgradeCandidates.remove(candidate);
 }
 
-RawPtr<CustomElementUpgradeCandidateMap::ElementSet> CustomElementUpgradeCandidateMap::takeUpgradeCandidatesFor(const CustomElementDescriptor& descriptor)
+CustomElementUpgradeCandidateMap::ElementSet* CustomElementUpgradeCandidateMap::takeUpgradeCandidatesFor(const CustomElementDescriptor& descriptor)
 {
-    RawPtr<ElementSet> candidates = m_unresolvedDefinitions.take(descriptor);
+    ElementSet* candidates = m_unresolvedDefinitions.take(descriptor);
 
     if (!candidates)
         return nullptr;
@@ -89,7 +89,7 @@ RawPtr<CustomElementUpgradeCandidateMap::ElementSet> CustomElementUpgradeCandida
         unobserve(candidate);
         m_upgradeCandidates.remove(candidate);
     }
-    return candidates.release();
+    return candidates;
 }
 
 DEFINE_TRACE(CustomElementUpgradeCandidateMap)

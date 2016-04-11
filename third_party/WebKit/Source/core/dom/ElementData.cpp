@@ -97,7 +97,7 @@ void ElementData::destroy()
 }
 #endif
 
-RawPtr<UniqueElementData> ElementData::makeUniqueCopy() const
+UniqueElementData* ElementData::makeUniqueCopy() const
 {
     if (isUnique())
         return new UniqueElementData(toUniqueElementData(*this));
@@ -161,7 +161,7 @@ ShareableElementData::ShareableElementData(const UniqueElementData& other)
         new (&m_attributeArray[i]) Attribute(other.m_attributeVector.at(i));
 }
 
-RawPtr<ShareableElementData> ShareableElementData::createWithAttributes(const Vector<Attribute>& attributes)
+ShareableElementData* ShareableElementData::createWithAttributes(const Vector<Attribute>& attributes)
 {
     void* slot = Heap::allocate<ElementData>(sizeForShareableElementDataWithAttributeCount(attributes.size()));
     return new (slot) ShareableElementData(attributes);
@@ -192,12 +192,12 @@ UniqueElementData::UniqueElementData(const ShareableElementData& other)
         m_attributeVector.uncheckedAppend(other.m_attributeArray[i]);
 }
 
-RawPtr<UniqueElementData> UniqueElementData::create()
+UniqueElementData* UniqueElementData::create()
 {
     return new UniqueElementData;
 }
 
-RawPtr<ShareableElementData> UniqueElementData::makeShareableCopy() const
+ShareableElementData* UniqueElementData::makeShareableCopy() const
 {
     void* slot = Heap::allocate<ElementData>(sizeForShareableElementDataWithAttributeCount(m_attributeVector.size()));
     return new (slot) ShareableElementData(*this);

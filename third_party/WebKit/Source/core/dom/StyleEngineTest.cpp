@@ -34,7 +34,7 @@ void StyleEngineTest::SetUp()
 
 TEST_F(StyleEngineTest, DocumentDirtyAfterInject)
 {
-    RawPtr<StyleSheetContents> parsedSheet = StyleSheetContents::create(CSSParserContext(document(), nullptr));
+    StyleSheetContents* parsedSheet = StyleSheetContents::create(CSSParserContext(document(), nullptr));
     parsedSheet->parseString("div {}");
     styleEngine().injectAuthorSheet(parsedSheet);
     document().view()->updateAllLifecyclePhases();
@@ -54,7 +54,7 @@ TEST_F(StyleEngineTest, AnalyzedInject)
 
     unsigned beforeCount = styleEngine().styleForElementCount();
 
-    RawPtr<StyleSheetContents> parsedSheet = StyleSheetContents::create(CSSParserContext(document(), nullptr));
+    StyleSheetContents* parsedSheet = StyleSheetContents::create(CSSParserContext(document(), nullptr));
     parsedSheet->parseString("#t1 { color: green }");
     styleEngine().injectAuthorSheet(parsedSheet);
     document().view()->updateAllLifecyclePhases();

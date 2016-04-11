@@ -147,7 +147,7 @@ bool SVGScriptElement::hasSourceAttribute() const
     return href()->isSpecified();
 }
 
-RawPtr<Element> SVGScriptElement::cloneElementWithoutAttributesAndChildren()
+Element* SVGScriptElement::cloneElementWithoutAttributesAndChildren()
 {
     return new SVGScriptElement(document(), false, m_loader->alreadyStarted());
 }

@@ -41,7 +41,7 @@ namespace blink {
 using namespace HTMLNames;
 
 
-RawPtr<DocumentOrderedMap> DocumentOrderedMap::create()
+DocumentOrderedMap* DocumentOrderedMap::create()
 {
     return new DocumentOrderedMap;
 }

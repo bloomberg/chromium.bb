@@ -22,7 +22,7 @@ protected:
         Additive = TreeScopeStyleSheetCollection::Additive
     };
 
-    static RawPtr<CSSStyleSheet> createSheet()
+    static CSSStyleSheet* createSheet()
     {
         return CSSStyleSheet::create(StyleSheetContents::create(CSSParserContext(HTMLStandardMode, nullptr)));
     }
@@ -42,8 +42,8 @@ protected:
 
 TEST_F(TreeScopeStyleSheetCollectionTest, CompareStyleSheetsAppend)
 {
-    RawPtr<CSSStyleSheet> sheet1 = createSheet();
-    RawPtr<CSSStyleSheet> sheet2 = createSheet();
+    CSSStyleSheet* sheet1 = createSheet();
+    CSSStyleSheet* sheet2 = createSheet();
 
     ContentsVector added;
     SheetVector previous;
@@ -61,8 +61,8 @@ TEST_F(TreeScopeStyleSheetCollectionTest, CompareStyleSheetsAppend)
 
 TEST_F(TreeScopeStyleSheetCollectionTest, CompareStyleSheetsPrepend)
 {
-    RawPtr<CSSStyleSheet> sheet1 = createSheet();
-    RawPtr<CSSStyleSheet> sheet2 = createSheet();
+    CSSStyleSheet* sheet1 = createSheet();
+    CSSStyleSheet* sheet2 = createSheet();
 
     ContentsVector added;
     SheetVector previous;
@@ -80,9 +80,9 @@ TEST_F(TreeScopeStyleSheetCollectionTest, CompareStyleSheetsPrepend)
 
 TEST_F(TreeScopeStyleSheetCollectionTest, CompareStyleSheetsInsert)
 {
-    RawPtr<CSSStyleSheet> sheet1 = createSheet();
-    RawPtr<CSSStyleSheet> sheet2 = createSheet();
-    RawPtr<CSSStyleSheet> sheet3 = createSheet();
+    CSSStyleSheet* sheet1 = createSheet();
+    CSSStyleSheet* sheet2 = createSheet();
+    CSSStyleSheet* sheet3 = createSheet();
 
     ContentsVector added;
     SheetVector previous;
@@ -102,9 +102,9 @@ TEST_F(TreeScopeStyleSheetCollectionTest, CompareStyleSheetsInsert)
 
 TEST_F(TreeScopeStyleSheetCollectionTest, CompareStyleSheetsRemove)
 {
-    RawPtr<CSSStyleSheet> sheet1 = createSheet();
-    RawPtr<CSSStyleSheet> sheet2 = createSheet();
-    RawPtr<CSSStyleSheet> sheet3 = createSheet();
+    CSSStyleSheet* sheet1 = createSheet();
+    CSSStyleSheet* sheet2 = createSheet();
+    CSSStyleSheet* sheet3 = createSheet();
 
     ContentsVector added;
     SheetVector previous;
@@ -126,9 +126,9 @@ TEST_F(TreeScopeStyleSheetCollectionTest, CompareStyleSheetsRemove)
 
 TEST_F(TreeScopeStyleSheetCollectionTest, CompareStyleSheetsInsertRemove)
 {
-    RawPtr<CSSStyleSheet> sheet1 = createSheet();
-    RawPtr<CSSStyleSheet> sheet2 = createSheet();
-    RawPtr<CSSStyleSheet> sheet3 = createSheet();
+    CSSStyleSheet* sheet1 = createSheet();
+    CSSStyleSheet* sheet2 = createSheet();
+    CSSStyleSheet* sheet3 = createSheet();
 
     ContentsVector added;
     SheetVector previous;

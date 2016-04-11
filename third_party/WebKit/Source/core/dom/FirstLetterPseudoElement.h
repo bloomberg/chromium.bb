@@ -37,7 +37,7 @@ class LayoutTextFragment;
 class FirstLetterPseudoElement final : public PseudoElement {
     WTF_MAKE_NONCOPYABLE(FirstLetterPseudoElement);
 public:
-    static RawPtr<FirstLetterPseudoElement> create(Element* parent)
+    static FirstLetterPseudoElement* create(Element* parent)
     {
         return new FirstLetterPseudoElement(parent);
     }

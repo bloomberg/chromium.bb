@@ -158,8 +158,6 @@ void ScriptedAnimationController::serviceScriptedAnimations(double monotonicTime
     if (!hasScheduledItems())
         return;
 
-    RawPtr<ScriptedAnimationController> protect(this);
-
     callMediaQueryListListeners();
     dispatchEvents();
     executeCallbacks(monotonicTimeNow);
@@ -174,9 +172,9 @@ void ScriptedAnimationController::enqueueEvent(Event* event)
     scheduleAnimationIfNeeded();
 }
 
-void ScriptedAnimationController::enqueuePerFrameEvent(RawPtr<Event> event)
+void ScriptedAnimationController::enqueuePerFrameEvent(Event* event)
 {
-    if (!m_perFrameEvents.add(eventTargetKey(event.get())).isNewEntry)
+    if (!m_perFrameEvents.add(eventTargetKey(event)).isNewEntry)
         return;
     enqueueEvent(event);
 }

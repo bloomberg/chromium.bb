@@ -33,7 +33,7 @@ DocumentFragment::DocumentFragment(Document* document, ConstructionType construc
 {
 }
 
-RawPtr<DocumentFragment> DocumentFragment::create(Document& document)
+DocumentFragment* DocumentFragment::create(Document& document)
 {
     return new DocumentFragment(&document, Node::CreateDocumentFragment);
 }
@@ -62,12 +62,12 @@ bool DocumentFragment::childTypeAllowed(NodeType type) const
     }
 }
 
-RawPtr<Node> DocumentFragment::cloneNode(bool deep)
+Node* DocumentFragment::cloneNode(bool deep)
 {
-    RawPtr<DocumentFragment> clone = create(document());
+    DocumentFragment* clone = create(document());
     if (deep)
-        cloneChildNodes(clone.get());
-    return clone.release();
+        cloneChildNodes(clone);
+    return clone;
 }
 
 void DocumentFragment::parseHTML(const String& source, Element* contextElement, ParserContentPolicy parserContentPolicy)

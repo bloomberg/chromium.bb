@@ -50,10 +50,10 @@ class MutationObserverInterestGroup;
 // mutations and the accumulator can be garbage collected.
 class ChildListMutationAccumulator final : public GarbageCollected<ChildListMutationAccumulator> {
 public:
-    static RawPtr<ChildListMutationAccumulator> getOrCreate(Node&);
+    static ChildListMutationAccumulator* getOrCreate(Node&);
 
-    void childAdded(RawPtr<Node>);
-    void willRemoveChild(RawPtr<Node>);
+    void childAdded(Node*);
+    void willRemoveChild(Node*);
 
     bool hasObservers() const { return m_observers; }
 
@@ -65,7 +65,7 @@ public:
     DECLARE_TRACE();
 
 private:
-    ChildListMutationAccumulator(RawPtr<Node>, RawPtr<MutationObserverInterestGroup>);
+    ChildListMutationAccumulator(Node*, MutationObserverInterestGroup*);
 
     void enqueueMutationRecord();
     bool isEmpty();

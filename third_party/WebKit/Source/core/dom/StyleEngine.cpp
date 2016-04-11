@@ -147,7 +147,7 @@ void StyleEngine::resetCSSFeatureFlags(const RuleFeatureSet& features)
     m_maxDirectAdjacentSelectors = features.maxDirectAdjacentSelectors();
 }
 
-void StyleEngine::injectAuthorSheet(RawPtr<StyleSheetContents> authorSheet)
+void StyleEngine::injectAuthorSheet(StyleSheetContents* authorSheet)
 {
     m_injectedAuthorStyleSheets.append(CSSStyleSheet::create(authorSheet, m_document));
     markDocumentDirty();
@@ -531,9 +531,9 @@ static bool isCacheableForStyleElement(const StyleSheetContents& contents)
     return true;
 }
 
-RawPtr<CSSStyleSheet> StyleEngine::createSheet(Element* e, const String& text, TextPosition startPosition)
+CSSStyleSheet* StyleEngine::createSheet(Element* e, const String& text, TextPosition startPosition)
 {
-    RawPtr<CSSStyleSheet> styleSheet = nullptr;
+    CSSStyleSheet* styleSheet = nullptr;
 
     e->document().styleEngine().addPendingSheet();
 
@@ -559,9 +559,9 @@ RawPtr<CSSStyleSheet> StyleEngine::createSheet(Element* e, const String& text, T
     return styleSheet;
 }
 
-RawPtr<CSSStyleSheet> StyleEngine::parseSheet(Element* e, const String& text, TextPosition startPosition)
+CSSStyleSheet* StyleEngine::parseSheet(Element* e, const String& text, TextPosition startPosition)
 {
-    RawPtr<CSSStyleSheet> styleSheet = nullptr;
+    CSSStyleSheet* styleSheet = nullptr;
     styleSheet = CSSStyleSheet::createInline(e, KURL(), startPosition, e->document().characterSet());
     styleSheet->contents()->parseStringAtPosition(text, startPosition);
     return styleSheet;
@@ -603,7 +603,7 @@ void StyleEngine::fontsNeedUpdate(CSSFontSelector*)
     document().setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::Fonts));
 }
 
-void StyleEngine::setFontSelector(RawPtr<CSSFontSelector> fontSelector)
+void StyleEngine::setFontSelector(CSSFontSelector* fontSelector)
 {
 #if !ENABLE(OILPAN)
     if (m_fontSelector)

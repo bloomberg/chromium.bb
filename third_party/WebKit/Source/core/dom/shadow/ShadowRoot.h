@@ -59,7 +59,7 @@ public:
     // FIXME: Current implementation does not work well if a shadow root is dynamically created.
     // So multiple shadow subtrees in several elements are prohibited.
     // See https://github.com/w3c/webcomponents/issues/102 and http://crbug.com/234020
-    static RawPtr<ShadowRoot> create(Document& document, ShadowRootType type)
+    static ShadowRoot* create(Document& document, ShadowRootType type)
     {
         return new ShadowRoot(document, type);
     }
@@ -108,7 +108,7 @@ public:
     unsigned numberOfStyles() const { return m_numberOfStyles; }
 
     HTMLShadowElement* shadowInsertionPointOfYoungerShadowRoot() const;
-    void setShadowInsertionPointOfYoungerShadowRoot(RawPtr<HTMLShadowElement>);
+    void setShadowInsertionPointOfYoungerShadowRoot(HTMLShadowElement*);
 
     void didAddInsertionPoint(InsertionPoint*);
     void didRemoveInsertionPoint(InsertionPoint*);
@@ -132,7 +132,7 @@ public:
     String innerHTML() const;
     void setInnerHTML(const String&, ExceptionState&);
 
-    RawPtr<Node> cloneNode(bool, ExceptionState&);
+    Node* cloneNode(bool, ExceptionState&);
 
     StyleSheetList* styleSheets();
 
@@ -158,7 +158,7 @@ private:
     void invalidateDescendantInsertionPoints();
 
     // ShadowRoots should never be cloned.
-    RawPtr<Node> cloneNode(bool) override { return nullptr; }
+    Node* cloneNode(bool) override { return nullptr; }
 
     // FIXME: This shouldn't happen. https://bugs.webkit.org/show_bug.cgi?id=88834
     bool isOrphan() const { return !host(); }

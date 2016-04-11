@@ -38,7 +38,7 @@ class NodeIterator final : public GarbageCollected<NodeIterator>, public ScriptW
     DEFINE_WRAPPERTYPEINFO();
     USING_GARBAGE_COLLECTED_MIXIN(NodeIterator);
 public:
-    static RawPtr<NodeIterator> create(RawPtr<Node> rootNode, unsigned whatToShow, RawPtr<NodeFilter> filter)
+    static NodeIterator* create(Node* rootNode, unsigned whatToShow, NodeFilter* filter)
     {
         return new NodeIterator(rootNode, whatToShow, filter);
     }
@@ -47,8 +47,8 @@ public:
     ~NodeIterator();
 #endif
 
-    RawPtr<Node> nextNode(ExceptionState&);
-    RawPtr<Node> previousNode(ExceptionState&);
+    Node* nextNode(ExceptionState&);
+    Node* previousNode(ExceptionState&);
     void detach();
 
     Node* referenceNode() const { return m_referenceNode.node.get(); }
@@ -60,13 +60,13 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    NodeIterator(RawPtr<Node>, unsigned whatToShow, RawPtr<NodeFilter>);
+    NodeIterator(Node*, unsigned whatToShow, NodeFilter*);
 
     class NodePointer {
         DISALLOW_NEW();
     public:
         NodePointer();
-        NodePointer(RawPtr<Node>, bool);
+        NodePointer(Node*, bool);
 
         void clear();
         bool moveToNext(Node* root);

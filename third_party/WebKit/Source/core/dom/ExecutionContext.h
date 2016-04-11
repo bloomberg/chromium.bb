@@ -104,9 +104,9 @@ public:
     KURL contextCompleteURL(const String& url) const { return virtualCompleteURL(url); }
 
     bool shouldSanitizeScriptError(const String& sourceURL, AccessControlStatus);
-    void reportException(RawPtr<ErrorEvent>, int scriptId, PassRefPtr<ScriptCallStack>, AccessControlStatus);
+    void reportException(ErrorEvent*, int scriptId, PassRefPtr<ScriptCallStack>, AccessControlStatus);
 
-    virtual void addConsoleMessage(RawPtr<ConsoleMessage>) = 0;
+    virtual void addConsoleMessage(ConsoleMessage*) = 0;
     virtual void logExceptionToConsole(const String& errorMessage, int scriptId, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtr<ScriptCallStack>) = 0;
 
     PublicURLManager& publicURLManager();
@@ -164,7 +164,7 @@ protected:
     virtual KURL virtualCompleteURL(const String&) const = 0;
 
 private:
-    bool dispatchErrorEvent(RawPtr<ErrorEvent>, AccessControlStatus);
+    bool dispatchErrorEvent(ErrorEvent*, AccessControlStatus);
     void runSuspendableTasks();
 
 #if !ENABLE(OILPAN)

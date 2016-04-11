@@ -20,10 +20,10 @@ TEST_F(TextTest, RemoveFirstLetterPseudoElementWhenNoLetter)
     document().documentElement()->setInnerHTML("<style>*::first-letter{font:icon;}</style><pre>AB\n</pre>", ASSERT_NO_EXCEPTION);
     updateLayoutAndStyleForPainting();
 
-    RawPtr<Element> pre = document().querySelector("pre", ASSERT_NO_EXCEPTION);
+    Element* pre = document().querySelector("pre", ASSERT_NO_EXCEPTION);
     Text* text = toText(pre->firstChild());
 
-    RawPtr<Range> range = Range::create(document(), text, 0, text, 2);
+    Range* range = Range::create(document(), text, 0, text, 2);
     range->deleteContents(ASSERT_NO_EXCEPTION);
     updateLayoutAndStyleForPainting();
 

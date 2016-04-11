@@ -50,7 +50,7 @@ static AccumulatorMap& accumulatorMap()
     return map;
 }
 
-ChildListMutationAccumulator::ChildListMutationAccumulator(RawPtr<Node> target, RawPtr<MutationObserverInterestGroup> observers)
+ChildListMutationAccumulator::ChildListMutationAccumulator(Node* target, MutationObserverInterestGroup* observers)
     : m_target(target)
     , m_lastAdded(nullptr)
     , m_observers(observers)
@@ -68,17 +68,17 @@ void ChildListMutationAccumulator::leaveMutationScope()
     }
 }
 
-RawPtr<ChildListMutationAccumulator> ChildListMutationAccumulator::getOrCreate(Node& target)
+ChildListMutationAccumulator* ChildListMutationAccumulator::getOrCreate(Node& target)
 {
     AccumulatorMap::AddResult result = accumulatorMap().add(&target, nullptr);
-    RawPtr<ChildListMutationAccumulator> accumulator;
+    ChildListMutationAccumulator* accumulator;
     if (!result.isNewEntry) {
         accumulator = result.storedValue->value;
     } else {
-        accumulator = new ChildListMutationAccumulator(RawPtr<Node>(target), MutationObserverInterestGroup::createForChildListMutation(target));
-        result.storedValue->value = accumulator.get();
+        accumulator = new ChildListMutationAccumulator(&target, MutationObserverInterestGroup::createForChildListMutation(target));
+        result.storedValue->value = accumulator;
     }
-    return accumulator.release();
+    return accumulator;
 }
 
 inline bool ChildListMutationAccumulator::isAddedNodeInOrder(Node* child)
@@ -86,13 +86,11 @@ inline bool ChildListMutationAccumulator::isAddedNodeInOrder(Node* child)
     return isEmpty() || (m_lastAdded == child->previousSibling() && m_nextSibling == child->nextSibling());
 }
 
-void ChildListMutationAccumulator::childAdded(RawPtr<Node> prpChild)
+void ChildListMutationAccumulator::childAdded(Node* child)
 {
     DCHECK(hasObservers());
 
-    RawPtr<Node> child = prpChild;
-
-    if (!isAddedNodeInOrder(child.get()))
+    if (!isAddedNodeInOrder(child))
         enqueueMutationRecord();
 
     if (isEmpty()) {
@@ -100,8 +98,8 @@ void ChildListMutationAccumulator::childAdded(RawPtr<Node> prpChild)
         m_nextSibling = child->nextSibling();
     }
 
-    m_lastAdded = child.get();
-    m_addedNodes.append(child.release());
+    m_lastAdded = child;
+    m_addedNodes.append(child);
 }
 
 inline bool ChildListMutationAccumulator::isRemovedNodeInOrder(Node* child)
@@ -109,13 +107,11 @@ inline bool ChildListMutationAccumulator::isRemovedNodeInOrder(Node* child)
     return isEmpty() || m_nextSibling == child;
 }
 
-void ChildListMutationAccumulator::willRemoveChild(RawPtr<Node> prpChild)
+void ChildListMutationAccumulator::willRemoveChild(Node* child)
 {
     DCHECK(hasObservers());
 
-    RawPtr<Node> child = prpChild;
-
-    if (!m_addedNodes.isEmpty() || !isRemovedNodeInOrder(child.get()))
+    if (!m_addedNodes.isEmpty() || !isRemovedNodeInOrder(child))
         enqueueMutationRecord();
 
     if (isEmpty()) {
@@ -126,7 +122,7 @@ void ChildListMutationAccumulator::willRemoveChild(RawPtr<Node> prpChild)
         m_nextSibling = child->nextSibling();
     }
 
-    m_removedNodes.append(child.release());
+    m_removedNodes.append(child);
 }
 
 void ChildListMutationAccumulator::enqueueMutationRecord()
@@ -134,10 +130,10 @@ void ChildListMutationAccumulator::enqueueMutationRecord()
     DCHECK(hasObservers());
     DCHECK(!isEmpty());
 
-    RawPtr<StaticNodeList> addedNodes = StaticNodeList::adopt(m_addedNodes);
-    RawPtr<StaticNodeList> removedNodes = StaticNodeList::adopt(m_removedNodes);
-    RawPtr<MutationRecord> record = MutationRecord::createChildList(m_target, addedNodes.release(), removedNodes.release(), m_previousSibling.release(), m_nextSibling.release());
-    m_observers->enqueueMutationRecord(record.release());
+    StaticNodeList* addedNodes = StaticNodeList::adopt(m_addedNodes);
+    StaticNodeList* removedNodes = StaticNodeList::adopt(m_removedNodes);
+    MutationRecord* record = MutationRecord::createChildList(m_target, addedNodes, removedNodes, m_previousSibling.release(), m_nextSibling.release());
+    m_observers->enqueueMutationRecord(record);
     m_lastAdded = nullptr;
     DCHECK(isEmpty());
 }

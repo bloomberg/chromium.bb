@@ -48,10 +48,10 @@ class HTMLImportChild;
 class CustomElementScheduler final : public GarbageCollected<CustomElementScheduler> {
 public:
 
-    static void scheduleCallback(RawPtr<CustomElementLifecycleCallbacks>, RawPtr<Element>, CustomElementLifecycleCallbacks::CallbackType);
-    static void scheduleAttributeChangedCallback(RawPtr<CustomElementLifecycleCallbacks>, RawPtr<Element>, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue);
+    static void scheduleCallback(CustomElementLifecycleCallbacks*, Element*, CustomElementLifecycleCallbacks::CallbackType);
+    static void scheduleAttributeChangedCallback(CustomElementLifecycleCallbacks*, Element*, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue);
 
-    static void resolveOrScheduleResolution(RawPtr<CustomElementRegistrationContext>, RawPtr<Element>, const CustomElementDescriptor&);
+    static void resolveOrScheduleResolution(CustomElementRegistrationContext*, Element*, const CustomElementDescriptor&);
     static CustomElementMicrotaskImportStep* scheduleImport(HTMLImportChild*);
 
     static void microtaskDispatcherDidFinish();
@@ -60,7 +60,7 @@ public:
 private:
     CustomElementScheduler() { }
 
-    static void enqueueMicrotaskStep(Document&, RawPtr<CustomElementMicrotaskStep>, bool importIsSync = true);
+    static void enqueueMicrotaskStep(Document&, CustomElementMicrotaskStep*, bool importIsSync = true);
 };
 
 } // namespace blink

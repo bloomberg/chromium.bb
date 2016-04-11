@@ -37,7 +37,7 @@ public:
     HeapVector<Member<MutationObserverRegistration>> registry;
     HeapHashSet<Member<MutationObserverRegistration>> transientRegistry;
 
-    static RawPtr<NodeMutationObserverData> create()
+    static NodeMutationObserverData* create()
     {
         return new NodeMutationObserverData;
     }

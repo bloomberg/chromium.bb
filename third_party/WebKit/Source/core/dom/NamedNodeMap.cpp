@@ -45,17 +45,17 @@ void NamedNodeMap::deref()
 }
 #endif
 
-RawPtr<Attr> NamedNodeMap::getNamedItem(const AtomicString& name) const
+Attr* NamedNodeMap::getNamedItem(const AtomicString& name) const
 {
     return m_element->getAttributeNode(name);
 }
 
-RawPtr<Attr> NamedNodeMap::getNamedItemNS(const AtomicString& namespaceURI, const AtomicString& localName) const
+Attr* NamedNodeMap::getNamedItemNS(const AtomicString& namespaceURI, const AtomicString& localName) const
 {
     return m_element->getAttributeNodeNS(namespaceURI, localName);
 }
 
-RawPtr<Attr> NamedNodeMap::removeNamedItem(const AtomicString& name, ExceptionState& exceptionState)
+Attr* NamedNodeMap::removeNamedItem(const AtomicString& name, ExceptionState& exceptionState)
 {
     size_t index = m_element->attributes().findIndex(name, m_element->shouldIgnoreAttributeCase());
     if (index == kNotFound) {
@@ -65,7 +65,7 @@ RawPtr<Attr> NamedNodeMap::removeNamedItem(const AtomicString& name, ExceptionSt
     return m_element->detachAttribute(index);
 }
 
-RawPtr<Attr> NamedNodeMap::removeNamedItemNS(const AtomicString& namespaceURI, const AtomicString& localName, ExceptionState& exceptionState)
+Attr* NamedNodeMap::removeNamedItemNS(const AtomicString& namespaceURI, const AtomicString& localName, ExceptionState& exceptionState)
 {
     size_t index = m_element->attributes().findIndex(QualifiedName(nullAtom, localName, namespaceURI));
     if (index == kNotFound) {
@@ -75,19 +75,19 @@ RawPtr<Attr> NamedNodeMap::removeNamedItemNS(const AtomicString& namespaceURI, c
     return m_element->detachAttribute(index);
 }
 
-RawPtr<Attr> NamedNodeMap::setNamedItem(Attr* attr, ExceptionState& exceptionState)
+Attr* NamedNodeMap::setNamedItem(Attr* attr, ExceptionState& exceptionState)
 {
     DCHECK(attr);
     return m_element->setAttributeNode(attr, exceptionState);
 }
 
-RawPtr<Attr> NamedNodeMap::setNamedItemNS(Attr* attr, ExceptionState& exceptionState)
+Attr* NamedNodeMap::setNamedItemNS(Attr* attr, ExceptionState& exceptionState)
 {
     DCHECK(attr);
     return m_element->setAttributeNodeNS(attr, exceptionState);
 }
 
-RawPtr<Attr> NamedNodeMap::item(unsigned index) const
+Attr* NamedNodeMap::item(unsigned index) const
 {
     AttributeCollection attributes = m_element->attributes();
     if (index >= attributes.size())

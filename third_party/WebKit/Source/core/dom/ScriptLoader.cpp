@@ -223,7 +223,7 @@ bool ScriptLoader::prepareScript(const TextPosition& scriptStartPosition, Legacy
 
     // FIXME: If script is parser inserted, verify it's still in the original document.
     Document& elementDocument = m_element->document();
-    Document* contextDocument = elementDocument.contextDocument().get();
+    Document* contextDocument = elementDocument.contextDocument();
 
     if (!contextDocument || !contextDocument->allowExecutingScripts(m_element))
         return false;
@@ -286,7 +286,7 @@ bool ScriptLoader::fetchScript(const String& sourceUrl, FetchRequest::DeferOptio
 {
     DCHECK(m_element);
 
-    RawPtr<Document> elementDocument(m_element->document());
+    Document* elementDocument = &(m_element->document());
     if (!m_element->inShadowIncludingDocument() || m_element->document() != elementDocument)
         return false;
 
@@ -317,7 +317,7 @@ bool ScriptLoader::fetchScript(const String& sourceUrl, FetchRequest::DeferOptio
         String integrityAttr = m_element->fastGetAttribute(HTMLNames::integrityAttr);
         if (!integrityAttr.isEmpty()) {
             IntegrityMetadataSet metadataSet;
-            SubresourceIntegrity::parseIntegrityAttribute(integrityAttr, metadataSet, elementDocument.get());
+            SubresourceIntegrity::parseIntegrityAttribute(integrityAttr, metadataSet, elementDocument);
             request.setIntegrityMetadata(metadataSet);
         }
 
@@ -365,8 +365,8 @@ bool ScriptLoader::executeScript(const ScriptSourceCode& sourceCode, double* com
     if (sourceCode.isEmpty())
         return true;
 
-    RawPtr<Document> elementDocument(m_element->document());
-    RawPtr<Document> contextDocument = elementDocument->contextDocument().get();
+    Document* elementDocument = &(m_element->document());
+    Document* contextDocument = elementDocument->contextDocument();
     if (!contextDocument)
         return true;
 
@@ -423,7 +423,7 @@ bool ScriptLoader::executeScript(const ScriptSourceCode& sourceCode, double* com
     const bool isImportedScript = contextDocument != elementDocument;
     // http://www.whatwg.org/specs/web-apps/current-work/#execute-the-script-block step 2.3
     // with additional support for HTML imports.
-    IgnoreDestructiveWriteCountIncrementer ignoreDestructiveWriteCountIncrementer(m_isExternalScript || isImportedScript ? contextDocument.get() : 0);
+    IgnoreDestructiveWriteCountIncrementer ignoreDestructiveWriteCountIncrementer(m_isExternalScript || isImportedScript ? contextDocument : 0);
 
     if (isHTMLScriptLoader(m_element))
         contextDocument->pushCurrentScript(toHTMLScriptElement(m_element));
@@ -447,7 +447,7 @@ void ScriptLoader::execute()
     DCHECK(m_pendingScript->resource());
     bool errorOccurred = false;
     ScriptSourceCode source = m_pendingScript->getSource(KURL(), errorOccurred);
-    RawPtr<Element> element = m_pendingScript->releaseElementAndClear();
+    Element* element = m_pendingScript->releaseElementAndClear();
     ALLOW_UNUSED_LOCAL(element);
     if (errorOccurred) {
         dispatchErrorEvent();
@@ -464,8 +464,8 @@ void ScriptLoader::notifyFinished(Resource* resource)
 {
     DCHECK(!m_willBeParserExecuted);
 
-    RawPtr<Document> elementDocument(m_element->document());
-    RawPtr<Document> contextDocument = elementDocument->contextDocument().get();
+    Document* elementDocument = &(m_element->document());
+    Document* contextDocument = elementDocument->contextDocument();
     if (!contextDocument)
         return;
 

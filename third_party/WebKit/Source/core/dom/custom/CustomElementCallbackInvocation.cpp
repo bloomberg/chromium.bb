@@ -38,7 +38,7 @@ namespace blink {
 
 class AttachedDetachedInvocation final : public CustomElementCallbackInvocation {
 public:
-    AttachedDetachedInvocation(RawPtr<CustomElementLifecycleCallbacks>, CustomElementLifecycleCallbacks::CallbackType which);
+    AttachedDetachedInvocation(CustomElementLifecycleCallbacks*, CustomElementLifecycleCallbacks::CallbackType which);
 
 private:
     void dispatch(Element*) override;
@@ -46,7 +46,7 @@ private:
     CustomElementLifecycleCallbacks::CallbackType m_which;
 };
 
-AttachedDetachedInvocation::AttachedDetachedInvocation(RawPtr<CustomElementLifecycleCallbacks> callbacks, CustomElementLifecycleCallbacks::CallbackType which)
+AttachedDetachedInvocation::AttachedDetachedInvocation(CustomElementLifecycleCallbacks* callbacks, CustomElementLifecycleCallbacks::CallbackType which)
     : CustomElementCallbackInvocation(callbacks)
     , m_which(which)
 {
@@ -69,7 +69,7 @@ void AttachedDetachedInvocation::dispatch(Element* element)
 
 class AttributeChangedInvocation final : public CustomElementCallbackInvocation {
 public:
-    AttributeChangedInvocation(RawPtr<CustomElementLifecycleCallbacks>, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue);
+    AttributeChangedInvocation(CustomElementLifecycleCallbacks*, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue);
 
 private:
     void dispatch(Element*) override;
@@ -79,7 +79,7 @@ private:
     AtomicString m_newValue;
 };
 
-AttributeChangedInvocation::AttributeChangedInvocation(RawPtr<CustomElementLifecycleCallbacks> callbacks, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue)
+AttributeChangedInvocation::AttributeChangedInvocation(CustomElementLifecycleCallbacks* callbacks, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue)
     : CustomElementCallbackInvocation(callbacks)
     , m_name(name)
     , m_oldValue(oldValue)
@@ -94,7 +94,7 @@ void AttributeChangedInvocation::dispatch(Element* element)
 
 class CreatedInvocation final : public CustomElementCallbackInvocation {
 public:
-    explicit CreatedInvocation(RawPtr<CustomElementLifecycleCallbacks> callbacks)
+    explicit CreatedInvocation(CustomElementLifecycleCallbacks* callbacks)
         : CustomElementCallbackInvocation(callbacks)
     {
     }
@@ -111,7 +111,7 @@ void CreatedInvocation::dispatch(Element* element)
     callbacks()->created(element);
 }
 
-RawPtr<CustomElementCallbackInvocation> CustomElementCallbackInvocation::createInvocation(RawPtr<CustomElementLifecycleCallbacks> callbacks, CustomElementLifecycleCallbacks::CallbackType which)
+CustomElementCallbackInvocation* CustomElementCallbackInvocation::createInvocation(CustomElementLifecycleCallbacks* callbacks, CustomElementLifecycleCallbacks::CallbackType which)
 {
     switch (which) {
     case CustomElementLifecycleCallbacks::CreatedCallback:
@@ -126,7 +126,7 @@ RawPtr<CustomElementCallbackInvocation> CustomElementCallbackInvocation::createI
     }
 }
 
-RawPtr<CustomElementCallbackInvocation> CustomElementCallbackInvocation::createAttributeChangedInvocation(RawPtr<CustomElementLifecycleCallbacks> callbacks, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue)
+CustomElementCallbackInvocation* CustomElementCallbackInvocation::createAttributeChangedInvocation(CustomElementLifecycleCallbacks* callbacks, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue)
 {
     return new AttributeChangedInvocation(callbacks, name, oldValue, newValue);
 }

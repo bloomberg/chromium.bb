@@ -78,7 +78,7 @@ private:
 
     void dispatchLoadEvent() override;
 
-    RawPtr<Element> cloneElementWithoutAttributesAndChildren() override;
+    Element* cloneElementWithoutAttributesAndChildren() override;
     bool layoutObjectIsNeeded(const ComputedStyle&) override { return false; }
 
     Member<ScriptLoader> m_loader;

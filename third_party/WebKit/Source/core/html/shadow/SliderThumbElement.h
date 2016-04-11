@@ -61,7 +61,7 @@ public:
 private:
     SliderThumbElement(Document&);
     LayoutObject* createLayoutObject(const ComputedStyle&) override;
-    RawPtr<Element> cloneElementWithoutAttributesAndChildren() override;
+    Element* cloneElementWithoutAttributesAndChildren() override;
     bool isDisabledFormControl() const override;
     bool matchesReadOnlyPseudoClass() const override;
     bool matchesReadWritePseudoClass() const override;
@@ -71,7 +71,7 @@ private:
     bool m_inDragMode;
 };
 
-inline RawPtr<Element> SliderThumbElement::cloneElementWithoutAttributesAndChildren()
+inline Element* SliderThumbElement::cloneElementWithoutAttributesAndChildren()
 {
     return create(document());
 }

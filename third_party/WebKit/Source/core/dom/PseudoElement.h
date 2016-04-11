@@ -35,7 +35,7 @@ namespace blink {
 
 class CORE_EXPORT PseudoElement : public Element {
 public:
-    static RawPtr<PseudoElement> create(Element* parent, PseudoId);
+    static PseudoElement* create(Element* parent, PseudoId);
 
     PassRefPtr<ComputedStyle> customStyleForLayoutObject() override;
     void attach(const AttachContext& = AttachContext()) override;

@@ -99,7 +99,7 @@ public:
     // ActiveDOMObject implementation.
     void stop() override { close(); }
 
-    void setOnmessage(RawPtr<EventListener> listener)
+    void setOnmessage(EventListener* listener)
     {
         setAttributeEventListener(EventTypeNames::message, listener);
         start();

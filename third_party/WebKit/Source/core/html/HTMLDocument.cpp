@@ -156,7 +156,7 @@ void HTMLDocument::setVlinkColor(const AtomicString& value)
     setBodyAttribute(vlinkAttr, value);
 }
 
-RawPtr<Document> HTMLDocument::cloneDocumentWithoutChildren()
+Document* HTMLDocument::cloneDocumentWithoutChildren()
 {
     return create(DocumentInit(url()).withRegistrationContext(registrationContext()));
 }

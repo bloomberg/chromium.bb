@@ -159,7 +159,7 @@ using namespace XMLNames;
 
 enum class ClassStringContent { Empty, WhiteSpaceOnly, HasClasses };
 
-RawPtr<Element> Element::create(const QualifiedName& tagName, Document* document)
+Element* Element::create(const QualifiedName& tagName, Document* document)
 {
     return new Element(tagName, document, CreateElement);
 }
@@ -264,46 +264,46 @@ bool Element::layoutObjectIsFocusable() const
     return layoutObject() && layoutObject()->style()->visibility() == VISIBLE;
 }
 
-RawPtr<Node> Element::cloneNode(bool deep)
+Node* Element::cloneNode(bool deep)
 {
     return deep ? cloneElementWithChildren() : cloneElementWithoutChildren();
 }
 
-RawPtr<Element> Element::cloneElementWithChildren()
+Element* Element::cloneElementWithChildren()
 {
-    RawPtr<Element> clone = cloneElementWithoutChildren();
-    cloneChildNodes(clone.get());
-    return clone.release();
+    Element* clone = cloneElementWithoutChildren();
+    cloneChildNodes(clone);
+    return clone;
 }
 
-RawPtr<Element> Element::cloneElementWithoutChildren()
+Element* Element::cloneElementWithoutChildren()
 {
-    RawPtr<Element> clone = cloneElementWithoutAttributesAndChildren();
+    Element* clone = cloneElementWithoutAttributesAndChildren();
     // This will catch HTML elements in the wrong namespace that are not correctly copied.
     // This is a sanity check as HTML overloads some of the DOM methods.
     DCHECK_EQ(isHTMLElement(), clone->isHTMLElement());
 
     clone->cloneDataFromElement(*this);
-    return clone.release();
+    return clone;
 }
 
-RawPtr<Element> Element::cloneElementWithoutAttributesAndChildren()
+Element* Element::cloneElementWithoutAttributesAndChildren()
 {
     return document().createElement(tagQName(), false);
 }
 
-RawPtr<Attr> Element::detachAttribute(size_t index)
+Attr* Element::detachAttribute(size_t index)
 {
     DCHECK(elementData());
     const Attribute& attribute = elementData()->attributes().at(index);
-    RawPtr<Attr> attrNode = attrIfExists(attribute.name());
+    Attr* attrNode = attrIfExists(attribute.name());
     if (attrNode) {
-        detachAttrNodeAtIndex(attrNode.get(), index);
+        detachAttrNodeAtIndex(attrNode, index);
     } else {
         attrNode = Attr::create(document(), attribute.name(), attribute.value());
         removeAttributeInternal(index, NotInSynchronizationOfLazyAttribute);
     }
-    return attrNode.release();
+    return attrNode;
 }
 
 void Element::detachAttrNodeAtIndex(Attr* attr, size_t index)
@@ -1880,7 +1880,7 @@ void Element::setNeedsCompositingUpdate()
     layoutObject->layer()->updateSelfPaintingLayer();
 }
 
-void Element::setCustomElementDefinition(RawPtr<CustomElementDefinition> definition)
+void Element::setCustomElementDefinition(CustomElementDefinition* definition)
 {
     if (!hasRareData() && !definition)
         return;
@@ -1895,7 +1895,7 @@ CustomElementDefinition* Element::customElementDefinition() const
     return nullptr;
 }
 
-RawPtr<ShadowRoot> Element::createShadowRoot(const ScriptState* scriptState, ExceptionState& exceptionState)
+ShadowRoot* Element::createShadowRoot(const ScriptState* scriptState, ExceptionState& exceptionState)
 {
     OriginsUsingFeatures::countMainWorldOnly(scriptState, document(), OriginsUsingFeatures::Feature::ElementCreateShadowRoot);
     if (ShadowRoot* root = shadowRoot()) {
@@ -1913,7 +1913,7 @@ RawPtr<ShadowRoot> Element::createShadowRoot(const ScriptState* scriptState, Exc
     return createShadowRootInternal(ShadowRootType::V0, exceptionState);
 }
 
-RawPtr<ShadowRoot> Element::attachShadow(const ScriptState* scriptState, const ShadowRootInit& shadowRootInitDict, ExceptionState& exceptionState)
+ShadowRoot* Element::attachShadow(const ScriptState* scriptState, const ShadowRootInit& shadowRootInitDict, ExceptionState& exceptionState)
 {
     DCHECK(RuntimeEnabledFeatures::shadowDOMV1Enabled());
 
@@ -1959,15 +1959,15 @@ RawPtr<ShadowRoot> Element::attachShadow(const ScriptState* scriptState, const S
     else if (type == ShadowRootType::Open)
         UseCounter::count(document(), UseCounter::ElementAttachShadowOpen);
 
-    RawPtr<ShadowRoot> shadowRoot = createShadowRootInternal(type, exceptionState);
+    ShadowRoot* shadowRoot = createShadowRootInternal(type, exceptionState);
 
     if (shadowRootInitDict.hasDelegatesFocus())
         shadowRoot->setDelegatesFocus(shadowRootInitDict.delegatesFocus());
 
-    return shadowRoot.release();
+    return shadowRoot;
 }
 
-RawPtr<ShadowRoot> Element::createShadowRootInternal(ShadowRootType type, ExceptionState& exceptionState)
+ShadowRoot* Element::createShadowRootInternal(ShadowRootType type, ExceptionState& exceptionState)
 {
     DCHECK(!closedShadowRoot());
 
@@ -1981,7 +1981,7 @@ RawPtr<ShadowRoot> Element::createShadowRootInternal(ShadowRootType type, Except
         return nullptr;
     }
 
-    return RawPtr<ShadowRoot>(ensureShadow().addShadowRoot(*this, type));
+    return &ensureShadow().addShadowRoot(*this, type);
 }
 
 ShadowRoot* Element::shadowRoot() const
@@ -2131,10 +2131,10 @@ void Element::removeAttrNodeList()
         elementRareData()->removeAttrNodeList();
 }
 
-RawPtr<Attr> Element::setAttributeNode(Attr* attrNode, ExceptionState& exceptionState)
+Attr* Element::setAttributeNode(Attr* attrNode, ExceptionState& exceptionState)
 {
-    RawPtr<Attr> oldAttrNode = attrIfExists(attrNode->getQualifiedName());
-    if (oldAttrNode.get() == attrNode)
+    Attr* oldAttrNode = attrIfExists(attrNode->getQualifiedName());
+    if (oldAttrNode == attrNode)
         return attrNode; // This Attr is already attached to the element.
 
     // InUseAttributeError: Raised if node is an Attr that is already an attribute of another Element object.
@@ -2164,7 +2164,7 @@ RawPtr<Attr> Element::setAttributeNode(Attr* attrNode, ExceptionState& exception
             localName = attr.localName();
 
         if (oldAttrNode) {
-            detachAttrNodeFromElementWithValue(oldAttrNode.get(), attr.value());
+            detachAttrNodeFromElementWithValue(oldAttrNode, attr.value());
         } else {
             // FIXME: using attrNode's name rather than the
             // Attribute's for the replaced Attr is compatible with
@@ -2180,15 +2180,15 @@ RawPtr<Attr> Element::setAttributeNode(Attr* attrNode, ExceptionState& exception
     treeScope().adoptIfNeeded(*attrNode);
     ensureAttrNodeList().append(attrNode);
 
-    return oldAttrNode.release();
+    return oldAttrNode;
 }
 
-RawPtr<Attr> Element::setAttributeNodeNS(Attr* attr, ExceptionState& exceptionState)
+Attr* Element::setAttributeNodeNS(Attr* attr, ExceptionState& exceptionState)
 {
     return setAttributeNode(attr, exceptionState);
 }
 
-RawPtr<Attr> Element::removeAttributeNode(Attr* attr, ExceptionState& exceptionState)
+Attr* Element::removeAttributeNode(Attr* attr, ExceptionState& exceptionState)
 {
     if (attr->ownerElement() != this) {
         exceptionState.throwDOMException(NotFoundError, "The node provided is owned by another element.");
@@ -2205,9 +2205,8 @@ RawPtr<Attr> Element::removeAttributeNode(Attr* attr, ExceptionState& exceptionS
         return nullptr;
     }
 
-    RawPtr<Attr> guard(attr);
     detachAttrNodeAtIndex(attr, index);
-    return guard.release();
+    return attr;
 }
 
 void Element::parseAttribute(const QualifiedName& name, const AtomicString&, const AtomicString& value)
@@ -2269,8 +2268,8 @@ void Element::removeAttributeInternal(size_t index, SynchronizationOfLazyAttribu
             willModifyAttribute(name, valueBeingRemoved, nullAtom);
     }
 
-    if (RawPtr<Attr> attrNode = attrIfExists(name))
-        detachAttrNodeFromElementWithValue(attrNode.get(), attributes[index].value());
+    if (Attr* attrNode = attrIfExists(name))
+        detachAttrNodeFromElementWithValue(attrNode, attributes[index].value());
 
     attributes.remove(index);
 
@@ -2308,7 +2307,7 @@ void Element::removeAttributeNS(const AtomicString& namespaceURI, const AtomicSt
     removeAttribute(QualifiedName(nullAtom, localName, namespaceURI));
 }
 
-RawPtr<Attr> Element::getAttributeNode(const AtomicString& localName)
+Attr* Element::getAttributeNode(const AtomicString& localName)
 {
     if (!elementData())
         return nullptr;
@@ -2319,7 +2318,7 @@ RawPtr<Attr> Element::getAttributeNode(const AtomicString& localName)
     return ensureAttr(attribute->name());
 }
 
-RawPtr<Attr> Element::getAttributeNodeNS(const AtomicString& namespaceURI, const AtomicString& localName)
+Attr* Element::getAttributeNodeNS(const AtomicString& namespaceURI, const AtomicString& localName)
 {
     if (!elementData())
         return nullptr;
@@ -2375,7 +2374,6 @@ void Element::focus(const FocusParams& params)
         }
     }
 
-    RawPtr<Node> protect(this);
     if (!document().page()->focusController().setFocusedElement(this, document().frame(), params))
         return;
 
@@ -2393,8 +2391,7 @@ void Element::updateFocusAppearance(SelectionBehaviorOnFocus selectionBehavior)
     if (selectionBehavior == SelectionBehaviorOnFocus::None)
         return;
     if (isRootEditableElement()) {
-        // Taking the ownership since setSelection() may release the last reference to |frame|.
-        RawPtr<LocalFrame> frame(document().frame());
+        LocalFrame* frame = document().frame();
         if (!frame)
             return;
 
@@ -2524,11 +2521,11 @@ String Element::outerHTML() const
 void Element::setInnerHTML(const String& html, ExceptionState& exceptionState)
 {
     InspectorInstrumentation::allowNativeBreakpoint(&document(), "setInnerHTML", true);
-    if (RawPtr<DocumentFragment> fragment = createFragmentForInnerOuterHTML(html, this, AllowScriptingContent, "innerHTML", exceptionState)) {
+    if (DocumentFragment* fragment = createFragmentForInnerOuterHTML(html, this, AllowScriptingContent, "innerHTML", exceptionState)) {
         ContainerNode* container = this;
         if (isHTMLTemplateElement(*this))
             container = toHTMLTemplateElement(this)->content();
-        replaceChildrenWithFragment(container, fragment.release(), exceptionState);
+        replaceChildrenWithFragment(container, fragment, exceptionState);
     }
 }
 
@@ -2544,21 +2541,21 @@ void Element::setOuterHTML(const String& html, ExceptionState& exceptionState)
         return;
     }
 
-    RawPtr<Element> parent = toElement(p);
-    RawPtr<Node> prev = previousSibling();
-    RawPtr<Node> next = nextSibling();
+    Element* parent = toElement(p);
+    Node* prev = previousSibling();
+    Node* next = nextSibling();
 
-    RawPtr<DocumentFragment> fragment = createFragmentForInnerOuterHTML(html, parent.get(), AllowScriptingContent, "outerHTML", exceptionState);
+    DocumentFragment* fragment = createFragmentForInnerOuterHTML(html, parent, AllowScriptingContent, "outerHTML", exceptionState);
     if (exceptionState.hadException())
         return;
 
-    parent->replaceChild(fragment.release(), this, exceptionState);
-    RawPtr<Node> node = next ? next->previousSibling() : nullptr;
+    parent->replaceChild(fragment, this, exceptionState);
+    Node* node = next ? next->previousSibling() : nullptr;
     if (!exceptionState.hadException() && node && node->isTextNode())
-        mergeWithNextTextNode(toText(node.get()), exceptionState);
+        mergeWithNextTextNode(toText(node), exceptionState);
 
     if (!exceptionState.hadException() && prev && prev->isTextNode())
-        mergeWithNextTextNode(toText(prev.get()), exceptionState);
+        mergeWithNextTextNode(toText(prev), exceptionState);
 }
 
 Node* Element::insertAdjacent(const String& where, Node* newChild, ExceptionState& exceptionState)
@@ -2632,19 +2629,19 @@ Element* Element::insertAdjacentElement(const String& where, Element* newChild, 
 
 void Element::insertAdjacentText(const String& where, const String& text, ExceptionState& exceptionState)
 {
-    insertAdjacent(where, document().createTextNode(text).get(), exceptionState);
+    insertAdjacent(where, document().createTextNode(text), exceptionState);
 }
 
 void Element::insertAdjacentHTML(const String& where, const String& markup, ExceptionState& exceptionState)
 {
-    RawPtr<Element> contextElement = contextElementForInsertion(where, this, exceptionState);
+    Element* contextElement = contextElementForInsertion(where, this, exceptionState);
     if (!contextElement)
         return;
 
-    RawPtr<DocumentFragment> fragment = createFragmentForInnerOuterHTML(markup, contextElement.get(), AllowScriptingContent, "insertAdjacentHTML", exceptionState);
+    DocumentFragment* fragment = createFragmentForInnerOuterHTML(markup, contextElement, AllowScriptingContent, "insertAdjacentHTML", exceptionState);
     if (!fragment)
         return;
-    insertAdjacent(where, fragment.get(), exceptionState);
+    insertAdjacent(where, fragment, exceptionState);
 }
 
 void Element::setPointerCapture(int pointerId, ExceptionState& exceptionState)
@@ -2909,18 +2906,18 @@ void Element::createPseudoElementIfNeeded(PseudoId pseudoId)
         return;
 
     // Document::ensureStyleResolver is not inlined and shows up on profiles, avoid it here.
-    RawPtr<PseudoElement> element = document().styleEngine().ensureResolver().createPseudoElementIfNeeded(*this, pseudoId);
+    PseudoElement* element = document().styleEngine().ensureResolver().createPseudoElementIfNeeded(*this, pseudoId);
     if (!element)
         return;
 
     if (pseudoId == PseudoIdBackdrop)
-        document().addToTopLayer(element.get(), this);
+        document().addToTopLayer(element, this);
     element->insertedInto(this);
     element->attach();
 
-    InspectorInstrumentation::pseudoElementCreated(element.get());
+    InspectorInstrumentation::pseudoElementCreated(element);
 
-    ensureElementRareData().setPseudoElement(pseudoId, element.release());
+    ensureElementRareData().setPseudoElement(pseudoId, element);
 }
 
 PseudoElement* Element::pseudoElement(PseudoId pseudoId) const
@@ -3167,7 +3164,7 @@ void Element::willModifyAttribute(const QualifiedName& name, const AtomicString&
             CustomElement::attributeDidChange(this, name.localName(), oldValue, newValue);
     }
 
-    if (RawPtr<MutationObserverInterestGroup> recipients = MutationObserverInterestGroup::createForAttributesMutation(*this, name))
+    if (MutationObserverInterestGroup* recipients = MutationObserverInterestGroup::createForAttributesMutation(*this, name))
         recipients->enqueueMutationRecord(MutationRecord::createAttributes(this, name, oldValue));
 
     InspectorInstrumentation::willModifyDOMAttr(this, oldValue, newValue);
@@ -3286,7 +3283,7 @@ void Element::setSavedLayerScrollOffset(const IntSize& size)
     ensureElementRareData().setSavedLayerScrollOffset(size);
 }
 
-RawPtr<Attr> Element::attrIfExists(const QualifiedName& name)
+Attr* Element::attrIfExists(const QualifiedName& name)
 {
     if (AttrNodeList* attrNodeList = this->attrNodeList()) {
         bool shouldIgnoreCase = shouldIgnoreAttributeCase();
@@ -3298,15 +3295,15 @@ RawPtr<Attr> Element::attrIfExists(const QualifiedName& name)
     return nullptr;
 }
 
-RawPtr<Attr> Element::ensureAttr(const QualifiedName& name)
+Attr* Element::ensureAttr(const QualifiedName& name)
 {
-    RawPtr<Attr> attrNode = attrIfExists(name);
+    Attr* attrNode = attrIfExists(name);
     if (!attrNode) {
         attrNode = Attr::create(*this, name);
         treeScope().adoptIfNeeded(*attrNode);
         ensureAttrNodeList().append(attrNode);
     }
-    return attrNode.release();
+    return attrNode;
 }
 
 void Element::detachAttrNodeFromElementWithValue(Attr* attrNode, const AtomicString& value)
@@ -3330,7 +3327,7 @@ void Element::detachAllAttrNodesFromElement()
 
     AttributeCollection attributes = elementData()->attributes();
     for (const Attribute& attr : attributes) {
-        if (RawPtr<Attr> attrNode = attrIfExists(attr.name()))
+        if (Attr* attrNode = attrIfExists(attr.name()))
             attrNode->detachFromElementWithValue(attr.value());
     }
 
@@ -3576,7 +3573,7 @@ void Element::addPropertyToPresentationAttributeStyle(MutableStylePropertySet* s
     style->setProperty(propertyID, value, false);
 }
 
-void Element::addPropertyToPresentationAttributeStyle(MutableStylePropertySet*  style, CSSPropertyID propertyID, RawPtr<CSSValue> value)
+void Element::addPropertyToPresentationAttributeStyle(MutableStylePropertySet*  style, CSSPropertyID propertyID, CSSValue* value)
 {
     DCHECK(isStyledElement());
     style->setProperty(propertyID, value);

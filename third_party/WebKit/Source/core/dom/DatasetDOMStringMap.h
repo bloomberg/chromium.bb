@@ -36,7 +36,7 @@ class ExceptionState;
 
 class DatasetDOMStringMap final : public DOMStringMap {
 public:
-    static RawPtr<DatasetDOMStringMap> create(Element* element)
+    static DatasetDOMStringMap* create(Element* element)
     {
         return new DatasetDOMStringMap(element);
     }

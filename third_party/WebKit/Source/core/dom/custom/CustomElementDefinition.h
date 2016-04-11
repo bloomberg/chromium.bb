@@ -38,7 +38,7 @@ namespace blink {
 
 class CustomElementDefinition final : public GarbageCollectedFinalized<CustomElementDefinition> {
 public:
-    static RawPtr<CustomElementDefinition> create(const CustomElementDescriptor&, RawPtr<CustomElementLifecycleCallbacks>);
+    static CustomElementDefinition* create(const CustomElementDescriptor&, CustomElementLifecycleCallbacks*);
 
     const CustomElementDescriptor& descriptor() const { return m_descriptor; }
     CustomElementLifecycleCallbacks* callbacks() const { return m_callbacks.get(); }
@@ -46,7 +46,7 @@ public:
     DECLARE_TRACE();
 
 private:
-    CustomElementDefinition(const CustomElementDescriptor&, RawPtr<CustomElementLifecycleCallbacks>);
+    CustomElementDefinition(const CustomElementDescriptor&, CustomElementLifecycleCallbacks*);
 
     CustomElementDescriptor m_descriptor;
     Member<CustomElementLifecycleCallbacks> m_callbacks;

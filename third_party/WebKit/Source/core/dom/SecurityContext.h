@@ -91,7 +91,7 @@ protected:
     SecurityContext();
     virtual ~SecurityContext();
 
-    void setContentSecurityPolicy(RawPtr<ContentSecurityPolicy>);
+    void setContentSecurityPolicy(ContentSecurityPolicy*);
 
     void applySandboxFlags(SandboxFlags mask);
 

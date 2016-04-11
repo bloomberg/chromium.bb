@@ -46,8 +46,6 @@ void CharacterData::setData(const String& data)
     if (m_data == nonNullData)
         return;
 
-    RawPtr<CharacterData> protect(this);
-
     unsigned oldLength = length();
 
     setDataAndUpdate(nonNullData, 0, oldLength, nonNullData.length(), UpdateFromNonParser);
@@ -182,7 +180,7 @@ void CharacterData::setDataAndUpdate(const String& newData, unsigned offsetOfRep
 
 void CharacterData::didModifyData(const String& oldData, UpdateSource source)
 {
-    if (RawPtr<MutationObserverInterestGroup> mutationRecipients = MutationObserverInterestGroup::createForCharacterDataMutation(*this))
+    if (MutationObserverInterestGroup* mutationRecipients = MutationObserverInterestGroup::createForCharacterDataMutation(*this))
         mutationRecipients->enqueueMutationRecord(MutationRecord::createCharacterData(this, oldData));
 
     if (parentNode()) {

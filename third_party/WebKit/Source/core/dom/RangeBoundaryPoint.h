@@ -35,7 +35,7 @@ namespace blink {
 class RangeBoundaryPoint {
     DISALLOW_NEW();
 public:
-    explicit RangeBoundaryPoint(RawPtr<Node> container);
+    explicit RangeBoundaryPoint(Node* container);
 
     explicit RangeBoundaryPoint(const RangeBoundaryPoint&);
 
@@ -48,7 +48,7 @@ public:
 
     void clear();
 
-    void set(RawPtr<Node> container, int offset, Node* childBefore);
+    void set(Node* container, int offset, Node* childBefore);
     void setOffset(int);
 
     void setToBeforeChild(Node&);
@@ -73,7 +73,7 @@ private:
     Member<Node> m_childBeforeBoundary;
 };
 
-inline RangeBoundaryPoint::RangeBoundaryPoint(RawPtr<Node> container)
+inline RangeBoundaryPoint::RangeBoundaryPoint(Node* container)
     : m_containerNode(container)
     , m_offsetInContainer(0)
     , m_childBeforeBoundary(nullptr)
@@ -131,7 +131,7 @@ inline void RangeBoundaryPoint::clear()
     m_childBeforeBoundary = nullptr;
 }
 
-inline void RangeBoundaryPoint::set(RawPtr<Node> container, int offset, Node* childBefore)
+inline void RangeBoundaryPoint::set(Node* container, int offset, Node* childBefore)
 {
     DCHECK(container);
     DCHECK_GE(offset, 0);

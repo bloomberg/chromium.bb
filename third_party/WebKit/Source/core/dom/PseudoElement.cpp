@@ -35,7 +35,7 @@
 
 namespace blink {
 
-RawPtr<PseudoElement> PseudoElement::create(Element* parent, PseudoId pseudoId)
+PseudoElement* PseudoElement::create(Element* parent, PseudoId pseudoId)
 {
     return new PseudoElement(parent, pseudoId);
 }
@@ -108,10 +108,10 @@ void PseudoElement::dispose()
     DCHECK(!previousSibling());
 
     detach();
-    RawPtr<Element> parent = parentOrShadowHostElement();
+    Element* parent = parentOrShadowHostElement();
     document().adoptIfNeeded(*this);
     setParentOrShadowHostNode(0);
-    removedFrom(parent.get());
+    removedFrom(parent);
 }
 
 void PseudoElement::attach(const AttachContext& context)

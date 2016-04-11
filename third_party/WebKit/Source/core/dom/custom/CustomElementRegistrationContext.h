@@ -42,7 +42,7 @@ namespace blink {
 
 class CustomElementRegistrationContext final : public GarbageCollectedFinalized<CustomElementRegistrationContext> {
 public:
-    static RawPtr<CustomElementRegistrationContext> create()
+    static CustomElementRegistrationContext* create()
     {
         return new CustomElementRegistrationContext();
     }
@@ -53,7 +53,7 @@ public:
     // Definitions
     void registerElement(Document*, CustomElementConstructorBuilder*, const AtomicString& type, CustomElement::NameSet validNames, ExceptionState&);
 
-    RawPtr<Element> createCustomTagElement(Document&, const QualifiedName&);
+    Element* createCustomTagElement(Document&, const QualifiedName&);
     static void setIsAttributeAndTypeExtension(Element*, const AtomicString& type);
     static void setTypeExtension(Element*, const AtomicString& type);
 

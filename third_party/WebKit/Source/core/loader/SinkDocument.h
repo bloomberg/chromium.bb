@@ -40,7 +40,7 @@ public:
 private:
     SinkDocument(const DocumentInit&);
 
-    RawPtr<DocumentParser> createParser() override;
+    DocumentParser* createParser() override;
 };
 
 

@@ -21,7 +21,7 @@ CustomElementMicrotaskRunQueue::CustomElementMicrotaskRunQueue()
 {
 }
 
-void CustomElementMicrotaskRunQueue::enqueue(HTMLImportLoader* parentLoader, RawPtr<CustomElementMicrotaskStep> step, bool importIsSync)
+void CustomElementMicrotaskRunQueue::enqueue(HTMLImportLoader* parentLoader, CustomElementMicrotaskStep* step, bool importIsSync)
 {
     if (importIsSync) {
         if (parentLoader)
@@ -55,7 +55,6 @@ DEFINE_TRACE(CustomElementMicrotaskRunQueue)
 
 void CustomElementMicrotaskRunQueue::dispatch()
 {
-    RawPtr<CustomElementMicrotaskRunQueue> protect(this);
     m_dispatchIsPending = false;
     m_syncQueue->dispatch();
     if (m_syncQueue->isEmpty())

@@ -60,7 +60,7 @@ HTMLViewSourceDocument::HTMLViewSourceDocument(const DocumentInit& initializer, 
     lockCompatibilityMode();
 }
 
-RawPtr<DocumentParser> HTMLViewSourceDocument::createParser()
+DocumentParser* HTMLViewSourceDocument::createParser()
 {
     return HTMLViewSourceParser::create(*this, m_type);
 }

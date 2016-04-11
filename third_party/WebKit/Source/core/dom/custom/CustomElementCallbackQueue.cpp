@@ -34,12 +34,12 @@
 
 namespace blink {
 
-RawPtr<CustomElementCallbackQueue> CustomElementCallbackQueue::create(RawPtr<Element> element)
+CustomElementCallbackQueue* CustomElementCallbackQueue::create(Element* element)
 {
     return new CustomElementCallbackQueue(element);
 }
 
-CustomElementCallbackQueue::CustomElementCallbackQueue(RawPtr<Element> element)
+CustomElementCallbackQueue::CustomElementCallbackQueue(Element* element)
     : m_element(element)
     , m_owner(-1)
     , m_index(0)

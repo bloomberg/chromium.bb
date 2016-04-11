@@ -48,7 +48,7 @@ public:
 
     static const char* supplementName();
     static ContextFeatures& defaultSwitch();
-    static RawPtr<ContextFeatures> create(PassOwnPtr<ContextFeaturesClient>);
+    static ContextFeatures* create(PassOwnPtr<ContextFeaturesClient>);
 
     static bool pagePopupEnabled(Document*);
     static bool mutationEventsEnabled(Document*);
@@ -77,7 +77,7 @@ public:
 CORE_EXPORT void provideContextFeaturesTo(Page&, PassOwnPtr<ContextFeaturesClient>);
 void provideContextFeaturesToDocumentFrom(Document&, Page&);
 
-inline RawPtr<ContextFeatures> ContextFeatures::create(PassOwnPtr<ContextFeaturesClient> client)
+inline ContextFeatures* ContextFeatures::create(PassOwnPtr<ContextFeaturesClient> client)
 {
     return new ContextFeatures(std::move(client));
 }

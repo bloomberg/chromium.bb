@@ -43,14 +43,14 @@ class LocalFrame;
 class CORE_EXPORT Touch final : public GarbageCollectedFinalized<Touch>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RawPtr<Touch> create(LocalFrame* frame, EventTarget* target,
+    static Touch* create(LocalFrame* frame, EventTarget* target,
         int identifier, const FloatPoint& screenPos, const FloatPoint& pagePos,
         const FloatSize& radius, float rotationAngle, float force, String region)
     {
         return new Touch(frame, target, identifier, screenPos, pagePos, radius, rotationAngle, force, region);
     }
 
-    static RawPtr<Touch> create(const Document& document, const TouchInit& initializer)
+    static Touch* create(const Document& document, const TouchInit& initializer)
     {
         return new Touch(document.frame(), initializer);
     }
@@ -73,7 +73,7 @@ public:
     // Blink-internal methods
     const LayoutPoint& absoluteLocation() const { return m_absoluteLocation; }
     const FloatPoint& screenLocation() const { return m_screenPos; }
-    RawPtr<Touch> cloneWithNewTarget(EventTarget*) const;
+    Touch* cloneWithNewTarget(EventTarget*) const;
 
     DECLARE_TRACE();
 

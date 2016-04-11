@@ -35,7 +35,7 @@ TextDocument::TextDocument(const DocumentInit& initializer)
     lockCompatibilityMode();
 }
 
-RawPtr<DocumentParser> TextDocument::createParser()
+DocumentParser* TextDocument::createParser()
 {
     return TextDocumentParser::create(*this, getParserSynchronizationPolicy());
 }

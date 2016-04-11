@@ -40,7 +40,7 @@ public:
 private:
     MediaDocument(const DocumentInit&);
 
-    RawPtr<DocumentParser> createParser() override;
+    DocumentParser* createParser() override;
 
     void defaultEventHandler(Event*) override;
 };

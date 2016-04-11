@@ -29,7 +29,7 @@
 
 namespace blink {
 
-RawPtr<IdTargetObserverRegistry> IdTargetObserverRegistry::create()
+IdTargetObserverRegistry* IdTargetObserverRegistry::create()
 {
     return new IdTargetObserverRegistry();
 }

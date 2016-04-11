@@ -42,7 +42,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 protected:
-    NodeIteratorBase(RawPtr<Node>, unsigned whatToShow, RawPtr<NodeFilter>);
+    NodeIteratorBase(Node*, unsigned whatToShow, NodeFilter*);
     unsigned acceptNode(Node*, ExceptionState&) const;
 
 private:

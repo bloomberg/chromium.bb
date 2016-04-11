@@ -38,13 +38,13 @@ class TreeWalker final : public GarbageCollected<TreeWalker>, public ScriptWrapp
     DEFINE_WRAPPERTYPEINFO();
     USING_GARBAGE_COLLECTED_MIXIN(TreeWalker);
 public:
-    static RawPtr<TreeWalker> create(RawPtr<Node> rootNode, unsigned whatToShow, RawPtr<NodeFilter> filter)
+    static TreeWalker* create(Node* rootNode, unsigned whatToShow, NodeFilter* filter)
     {
         return new TreeWalker(rootNode, whatToShow, filter);
     }
 
     Node* currentNode() const { return m_current.get(); }
-    void setCurrentNode(RawPtr<Node>);
+    void setCurrentNode(Node*);
 
     Node* parentNode(ExceptionState&);
     Node* firstChild(ExceptionState&);
@@ -57,9 +57,9 @@ public:
     DECLARE_TRACE();
 
 private:
-    TreeWalker(RawPtr<Node>, unsigned whatToShow, RawPtr<NodeFilter>);
+    TreeWalker(Node*, unsigned whatToShow, NodeFilter*);
 
-    Node* setCurrent(RawPtr<Node>);
+    Node* setCurrent(Node*);
 
     Member<Node> m_current;
 };

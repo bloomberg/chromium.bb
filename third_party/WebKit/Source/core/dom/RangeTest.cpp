@@ -33,9 +33,9 @@ private:
 void RangeTest::SetUp()
 {
     m_document = HTMLDocument::create();
-    RawPtr<HTMLHtmlElement> html = HTMLHtmlElement::create(*m_document);
+    HTMLHtmlElement* html = HTMLHtmlElement::create(*m_document);
     html->appendChild(HTMLBodyElement::create(*m_document));
-    m_document->appendChild(html.release());
+    m_document->appendChild(html);
 }
 
 HTMLDocument& RangeTest::document() const
@@ -48,10 +48,10 @@ TEST_F(RangeTest, SplitTextNodeRangeWithinText)
     document().body()->setInnerHTML("1234", ASSERT_NO_EXCEPTION);
     Text* oldText = toText(document().body()->firstChild());
 
-    RawPtr<Range> range04 = Range::create(document(), oldText, 0, oldText, 4);
-    RawPtr<Range> range02 = Range::create(document(), oldText, 0, oldText, 2);
-    RawPtr<Range> range22 = Range::create(document(), oldText, 2, oldText, 2);
-    RawPtr<Range> range24 = Range::create(document(), oldText, 2, oldText, 4);
+    Range* range04 = Range::create(document(), oldText, 0, oldText, 4);
+    Range* range02 = Range::create(document(), oldText, 0, oldText, 2);
+    Range* range22 = Range::create(document(), oldText, 2, oldText, 2);
+    Range* range24 = Range::create(document(), oldText, 2, oldText, 4);
 
     oldText->splitText(2, ASSERT_NO_EXCEPTION);
     Text* newText = toText(oldText->nextSibling());
@@ -91,12 +91,12 @@ TEST_F(RangeTest, SplitTextNodeRangeOutsideText)
     Element* innerRight = document().getElementById(AtomicString::fromUTF8("inner-right"));
     Text* oldText = toText(outer->childNodes()->item(2));
 
-    RawPtr<Range> rangeOuterOutside = Range::create(document(), outer, 0, outer, 5);
-    RawPtr<Range> rangeOuterInside = Range::create(document(), outer, 1, outer, 4);
-    RawPtr<Range> rangeOuterSurroundingText = Range::create(document(), outer, 2, outer, 3);
-    RawPtr<Range> rangeInnerLeft = Range::create(document(), innerLeft, 0, innerLeft, 1);
-    RawPtr<Range> rangeInnerRight = Range::create(document(), innerRight, 0, innerRight, 1);
-    RawPtr<Range> rangeFromTextToMiddleOfElement = Range::create(document(), oldText, 6, outer, 3);
+    Range* rangeOuterOutside = Range::create(document(), outer, 0, outer, 5);
+    Range* rangeOuterInside = Range::create(document(), outer, 1, outer, 4);
+    Range* rangeOuterSurroundingText = Range::create(document(), outer, 2, outer, 3);
+    Range* rangeInnerLeft = Range::create(document(), innerLeft, 0, innerLeft, 1);
+    Range* rangeInnerRight = Range::create(document(), innerRight, 0, innerRight, 1);
+    Range* rangeFromTextToMiddleOfElement = Range::create(document(), oldText, 6, outer, 3);
 
     oldText->splitText(3, ASSERT_NO_EXCEPTION);
     Text* newText = toText(oldText->nextSibling());

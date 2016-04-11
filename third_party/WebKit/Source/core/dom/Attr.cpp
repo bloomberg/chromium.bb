@@ -52,12 +52,12 @@ Attr::Attr(Document& document, const QualifiedName& name, const AtomicString& st
 {
 }
 
-RawPtr<Attr> Attr::create(Element& element, const QualifiedName& name)
+Attr* Attr::create(Element& element, const QualifiedName& name)
 {
     return new Attr(element, name);
 }
 
-RawPtr<Attr> Attr::create(Document& document, const QualifiedName& name, const AtomicString& value)
+Attr* Attr::create(Document& document, const QualifiedName& name, const AtomicString& value)
 {
     return new Attr(document, name, value);
 }
@@ -115,7 +115,7 @@ void Attr::setNodeValue(const String& v)
     setValue(AtomicString(v));
 }
 
-RawPtr<Node> Attr::cloneNode(bool /*deep*/)
+Node* Attr::cloneNode(bool /*deep*/)
 {
     UseCounter::count(document(), UseCounter::AttrCloneNode);
     return new Attr(document(), m_name, value());

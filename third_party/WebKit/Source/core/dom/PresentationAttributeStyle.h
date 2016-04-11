@@ -38,7 +38,7 @@ namespace blink {
 class Element;
 class StylePropertySet;
 
-RawPtr<StylePropertySet> computePresentationAttributeStyle(Element&);
+StylePropertySet* computePresentationAttributeStyle(Element&);
 
 } // namespace blink
 

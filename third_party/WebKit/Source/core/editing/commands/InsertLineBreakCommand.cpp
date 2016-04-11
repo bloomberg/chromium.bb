@@ -124,7 +124,7 @@ void InsertLineBreakCommand::doApply(EditingState* editingState)
 
         // Insert an extra br or '\n' if the just inserted one collapsed.
         if (!isStartOfParagraph(createVisiblePosition(positionBeforeNode(nodeToInsert)))) {
-            insertNodeBefore(nodeToInsert->cloneNode(false).get(), nodeToInsert, editingState);
+            insertNodeBefore(nodeToInsert->cloneNode(false), nodeToInsert, editingState);
             if (editingState->isAborted())
                 return;
         }

@@ -48,7 +48,7 @@ class CORE_EXPORT PendingScript final : public GarbageCollectedFinalized<Pending
     USING_GARBAGE_COLLECTED_MIXIN(PendingScript);
     USING_PRE_FINALIZER(PendingScript, dispose);
 public:
-    static RawPtr<PendingScript> create(Element*, ScriptResource*);
+    static PendingScript* create(Element*, ScriptResource*);
     ~PendingScript() override;
 
     PendingScript& operator=(const PendingScript&);
@@ -66,7 +66,7 @@ public:
 
     Element* element() const { return m_element.get(); }
     void setElement(Element*);
-    RawPtr<Element> releaseElementAndClear();
+    Element* releaseElementAndClear();
 
     void setScriptResource(ScriptResource*);
 
@@ -78,7 +78,7 @@ public:
 
     ScriptSourceCode getSource(const KURL& documentURL, bool& errorOccurred) const;
 
-    void setStreamer(RawPtr<ScriptStreamer>);
+    void setStreamer(ScriptStreamer*);
     void streamingFinished();
 
     bool isReady() const;

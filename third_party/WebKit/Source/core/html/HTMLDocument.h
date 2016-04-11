@@ -66,7 +66,7 @@ public:
 
     static bool isCaseSensitiveAttribute(const QualifiedName&);
 
-    RawPtr<Document> cloneDocumentWithoutChildren() final;
+    Document* cloneDocumentWithoutChildren() final;
 
 protected:
     HTMLDocument(const DocumentInit&, DocumentClassFlags extendedDocumentClasses = DefaultDocumentClass);

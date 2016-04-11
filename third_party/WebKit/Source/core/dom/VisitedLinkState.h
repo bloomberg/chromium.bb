@@ -40,7 +40,7 @@ class Document;
 
 class VisitedLinkState : public GarbageCollectedFinalized<VisitedLinkState> {
 public:
-    static RawPtr<VisitedLinkState> create(const Document& document)
+    static VisitedLinkState* create(const Document& document)
     {
         return new VisitedLinkState(document);
     }

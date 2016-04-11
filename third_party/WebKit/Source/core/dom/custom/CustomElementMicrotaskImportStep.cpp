@@ -38,7 +38,7 @@
 
 namespace blink {
 
-RawPtr<CustomElementMicrotaskImportStep> CustomElementMicrotaskImportStep::create(HTMLImportChild* import)
+CustomElementMicrotaskImportStep* CustomElementMicrotaskImportStep::create(HTMLImportChild* import)
 {
     return new CustomElementMicrotaskImportStep(import);
 }

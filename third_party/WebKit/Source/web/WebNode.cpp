@@ -239,7 +239,7 @@ WebElement WebNode::querySelector(const WebString& selector, WebExceptionCode& e
     if (!m_private->isContainerNode())
         return WebElement();
     TrackExceptionState exceptionState;
-    WebElement element = toContainerNode(m_private.get())->querySelector(selector, exceptionState).get();
+    WebElement element = toContainerNode(m_private.get())->querySelector(selector, exceptionState);
     ec = exceptionState.code();
     return element;
 }

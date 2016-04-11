@@ -40,7 +40,7 @@ namespace blink {
 
 class ParentNode {
 public:
-    static RawPtr<HTMLCollection> children(ContainerNode& node)
+    static HTMLCollection* children(ContainerNode& node)
     {
         return node.children();
     }
@@ -63,12 +63,12 @@ public:
         return count;
     }
 
-    static RawPtr<Element> querySelector(ContainerNode& node, const AtomicString& selectors, ExceptionState& exceptionState)
+    static Element* querySelector(ContainerNode& node, const AtomicString& selectors, ExceptionState& exceptionState)
     {
         return node.querySelector(selectors, exceptionState);
     }
 
-    static RawPtr<StaticElementList> querySelectorAll(ContainerNode& node, const AtomicString& selectors, ExceptionState& exceptionState)
+    static StaticElementList* querySelectorAll(ContainerNode& node, const AtomicString& selectors, ExceptionState& exceptionState)
     {
         return node.querySelectorAll(selectors, exceptionState);
     }

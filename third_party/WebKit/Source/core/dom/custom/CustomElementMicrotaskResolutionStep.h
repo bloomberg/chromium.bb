@@ -42,14 +42,14 @@ class Element;
 
 class CustomElementMicrotaskResolutionStep final : public CustomElementMicrotaskStep {
 public:
-    static RawPtr<CustomElementMicrotaskResolutionStep> create(RawPtr<CustomElementRegistrationContext>, RawPtr<Element>, const CustomElementDescriptor&);
+    static CustomElementMicrotaskResolutionStep* create(CustomElementRegistrationContext*, Element*, const CustomElementDescriptor&);
 
     ~CustomElementMicrotaskResolutionStep() override;
 
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    CustomElementMicrotaskResolutionStep(RawPtr<CustomElementRegistrationContext>, RawPtr<Element>, const CustomElementDescriptor&);
+    CustomElementMicrotaskResolutionStep(CustomElementRegistrationContext*, Element*, const CustomElementDescriptor&);
 
     Result process() override;
 

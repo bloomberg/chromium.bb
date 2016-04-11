@@ -80,30 +80,30 @@ public:
     bool hasOneTextChild() const { return hasOneChild() && m_firstChild->isTextNode(); }
     bool hasChildCount(unsigned) const;
 
-    RawPtr<HTMLCollection> children();
+    HTMLCollection* children();
 
     unsigned countChildren() const;
 
-    RawPtr<Element> querySelector(const AtomicString& selectors, ExceptionState&);
-    RawPtr<StaticElementList> querySelectorAll(const AtomicString& selectors, ExceptionState&);
+    Element* querySelector(const AtomicString& selectors, ExceptionState&);
+    StaticElementList* querySelectorAll(const AtomicString& selectors, ExceptionState&);
 
-    RawPtr<Node> insertBefore(RawPtr<Node> newChild, Node* refChild, ExceptionState& = ASSERT_NO_EXCEPTION);
-    RawPtr<Node> replaceChild(RawPtr<Node> newChild, RawPtr<Node> oldChild, ExceptionState& = ASSERT_NO_EXCEPTION);
-    RawPtr<Node> removeChild(RawPtr<Node> child, ExceptionState& = ASSERT_NO_EXCEPTION);
-    RawPtr<Node> appendChild(RawPtr<Node> newChild, ExceptionState& = ASSERT_NO_EXCEPTION);
+    Node* insertBefore(Node* newChild, Node* refChild, ExceptionState& = ASSERT_NO_EXCEPTION);
+    Node* replaceChild(Node* newChild, Node* oldChild, ExceptionState& = ASSERT_NO_EXCEPTION);
+    Node* removeChild(Node* child, ExceptionState& = ASSERT_NO_EXCEPTION);
+    Node* appendChild(Node* newChild, ExceptionState& = ASSERT_NO_EXCEPTION);
 
     Element* getElementById(const AtomicString& id) const;
-    RawPtr<TagCollection> getElementsByTagName(const AtomicString&);
-    RawPtr<TagCollection> getElementsByTagNameNS(const AtomicString& namespaceURI, const AtomicString& localName);
-    RawPtr<NameNodeList> getElementsByName(const AtomicString& elementName);
-    RawPtr<ClassCollection> getElementsByClassName(const AtomicString& classNames);
-    RawPtr<RadioNodeList> radioNodeList(const AtomicString&, bool onlyMatchImgElements = false);
+    TagCollection* getElementsByTagName(const AtomicString&);
+    TagCollection* getElementsByTagNameNS(const AtomicString& namespaceURI, const AtomicString& localName);
+    NameNodeList* getElementsByName(const AtomicString& elementName);
+    ClassCollection* getElementsByClassName(const AtomicString& classNames);
+    RadioNodeList* radioNodeList(const AtomicString&, bool onlyMatchImgElements = false);
 
     // These methods are only used during parsing.
     // They don't send DOM mutation events or accept DocumentFragments.
-    void parserAppendChild(RawPtr<Node>);
+    void parserAppendChild(Node*);
     void parserRemoveChild(Node&);
-    void parserInsertBefore(RawPtr<Node> newChild, Node& refChild);
+    void parserInsertBefore(Node* newChild, Node& refChild);
     void parserTakeAllChildrenFrom(ContainerNode&);
 
     void removeChildren(SubtreeModificationAction = DispatchSubtreeModifiedEvent);
@@ -223,9 +223,9 @@ protected:
     void setLastChild(Node* child) { m_lastChild = child; }
 
     // Utility functions for NodeListsNodeData API.
-    template <typename Collection> RawPtr<Collection> ensureCachedCollection(CollectionType);
-    template <typename Collection> RawPtr<Collection> ensureCachedCollection(CollectionType, const AtomicString& name);
-    template <typename Collection> RawPtr<Collection> ensureCachedCollection(CollectionType, const AtomicString& namespaceURI, const AtomicString& localName);
+    template <typename Collection> Collection* ensureCachedCollection(CollectionType);
+    template <typename Collection> Collection* ensureCachedCollection(CollectionType, const AtomicString& name);
+    template <typename Collection> Collection* ensureCachedCollection(CollectionType, const AtomicString& namespaceURI, const AtomicString& localName);
     template <typename Collection> Collection* cachedCollection(CollectionType);
 
 private:

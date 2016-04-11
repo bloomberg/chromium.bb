@@ -38,7 +38,7 @@ class LocalFrame;
 
 class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>, public ScriptResourceClient {
 public:
-    static RawPtr<ScriptLoader> create(Element* element, bool createdByParser, bool isEvaluated, bool createdDuringDocumentWrite = false)
+    static ScriptLoader* create(Element* element, bool createdByParser, bool isEvaluated, bool createdDuringDocumentWrite = false)
     {
         return new ScriptLoader(element, createdByParser, isEvaluated, createdDuringDocumentWrite);
     }

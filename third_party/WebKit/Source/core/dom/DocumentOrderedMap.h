@@ -46,7 +46,7 @@ class TreeScope;
 
 class DocumentOrderedMap : public GarbageCollected<DocumentOrderedMap> {
 public:
-    static RawPtr<DocumentOrderedMap> create();
+    static DocumentOrderedMap* create();
 
     void add(const AtomicString&, Element*);
     void remove(const AtomicString&, Element*);

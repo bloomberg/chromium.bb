@@ -42,7 +42,7 @@ class WebTaskRunner;
 class CORE_EXPORT ScriptRunner final : public GarbageCollectedFinalized<ScriptRunner> {
     WTF_MAKE_NONCOPYABLE(ScriptRunner);
 public:
-    static RawPtr<ScriptRunner> create(Document* document)
+    static ScriptRunner* create(Document* document)
     {
         return new ScriptRunner(document);
     }

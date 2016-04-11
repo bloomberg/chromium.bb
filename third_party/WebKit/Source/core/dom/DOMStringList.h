@@ -49,7 +49,7 @@ public:
     // what path it should take. http://crbug.com/460726
     enum Source { IndexedDB, Location };
 
-    static RawPtr<DOMStringList> create(Source source)
+    static DOMStringList* create(Source source)
     {
         return new DOMStringList(source);
     }

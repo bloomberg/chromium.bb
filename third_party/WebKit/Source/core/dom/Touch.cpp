@@ -86,7 +86,7 @@ Touch::Touch(LocalFrame* frame, const TouchInit& initializer)
     m_absoluteLocation = roundedLayoutPoint(m_pagePos.scaledBy(scaleFactor));
 }
 
-RawPtr<Touch> Touch::cloneWithNewTarget(EventTarget* eventTarget) const
+Touch* Touch::cloneWithNewTarget(EventTarget* eventTarget) const
 {
     return new Touch(eventTarget, m_identifier, m_clientPos, m_screenPos, m_pagePos, m_radius, m_rotationAngle, m_force, m_region, m_absoluteLocation);
 }

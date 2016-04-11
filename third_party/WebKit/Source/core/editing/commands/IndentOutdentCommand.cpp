@@ -88,7 +88,7 @@ bool IndentOutdentCommand::tryIndentingAsListItem(const Position& start, const P
     // We should calculate visible range in list item because inserting new
     // list element will change visibility of list item, e.g. :first-child
     // CSS selector.
-    HTMLElement* newList = toHTMLElement(document().createElement(listElement->tagQName(), false).get());
+    HTMLElement* newList = toHTMLElement(document().createElement(listElement->tagQName(), false));
     insertNodeBefore(newList, selectedListItem, editingState);
     if (editingState->isAborted())
         return false;

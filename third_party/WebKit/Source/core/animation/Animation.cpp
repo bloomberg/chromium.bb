@@ -66,7 +66,7 @@ Animation* Animation::create(AnimationEffect* effect, AnimationTimeline* timelin
         return nullptr;
     }
 
-    Animation* animation = new Animation(timeline->document()->contextDocument().get(), *timeline, effect);
+    Animation* animation = new Animation(timeline->document()->contextDocument(), *timeline, effect);
     animation->suspendIfNeeded();
 
     if (timeline) {

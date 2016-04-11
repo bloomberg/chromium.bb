@@ -66,7 +66,7 @@ CustomElementDefinition* CustomElementRegistry::registerElement(Document* docume
 
     DCHECK(!m_documentWasDetached);
 
-    RawPtr<CustomElementLifecycleCallbacks> lifecycleCallbacks = constructorBuilder->createCallbacks();
+    CustomElementLifecycleCallbacks* lifecycleCallbacks = constructorBuilder->createCallbacks();
 
     // Consulting the constructor builder could execute script and
     // kill the document.
@@ -76,9 +76,9 @@ CustomElementDefinition* CustomElementRegistry::registerElement(Document* docume
     }
 
     const CustomElementDescriptor descriptor(type, tagName.namespaceURI(), tagName.localName());
-    RawPtr<CustomElementDefinition> definition = CustomElementDefinition::create(descriptor, lifecycleCallbacks);
+    CustomElementDefinition* definition = CustomElementDefinition::create(descriptor, lifecycleCallbacks);
 
-    if (!constructorBuilder->createConstructor(document, definition.get(), exceptionState))
+    if (!constructorBuilder->createConstructor(document, definition, exceptionState))
         return 0;
 
     m_definitions.add(descriptor, definition);
@@ -89,7 +89,7 @@ CustomElementDefinition* CustomElementRegistry::registerElement(Document* docume
         return 0;
     }
 
-    return definition.get();
+    return definition;
 }
 
 CustomElementDefinition* CustomElementRegistry::find(const CustomElementDescriptor& descriptor) const

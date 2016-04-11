@@ -43,7 +43,7 @@ class MediaQueryListListener;
 
 class ScriptedAnimationController : public GarbageCollected<ScriptedAnimationController> {
 public:
-    static RawPtr<ScriptedAnimationController> create(Document* document)
+    static ScriptedAnimationController* create(Document* document)
     {
         return new ScriptedAnimationController(document);
     }
@@ -58,7 +58,7 @@ public:
     void serviceScriptedAnimations(double monotonicTimeNow);
 
     void enqueueEvent(Event*);
-    void enqueuePerFrameEvent(RawPtr<Event>);
+    void enqueuePerFrameEvent(Event*);
     void enqueueMediaQueryChangeListeners(HeapVector<Member<MediaQueryListListener>>&);
 
     void suspend();

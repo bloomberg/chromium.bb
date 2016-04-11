@@ -66,11 +66,11 @@ void CustomElementRegistrationContext::registerElement(Document* document, Custo
         CustomElement::define(candidate, definition);
 }
 
-RawPtr<Element> CustomElementRegistrationContext::createCustomTagElement(Document& document, const QualifiedName& tagName)
+Element* CustomElementRegistrationContext::createCustomTagElement(Document& document, const QualifiedName& tagName)
 {
     DCHECK(CustomElement::isValidName(tagName.localName()));
 
-    RawPtr<Element> element;
+    Element* element;
 
     if (HTMLNames::xhtmlNamespaceURI == tagName.namespaceURI()) {
         element = HTMLElement::create(tagName, document);
@@ -82,8 +82,8 @@ RawPtr<Element> CustomElementRegistrationContext::createCustomTagElement(Documen
     }
 
     element->setCustomElementState(Element::WaitingForUpgrade);
-    resolveOrScheduleResolution(element.get(), nullAtom);
-    return element.release();
+    resolveOrScheduleResolution(element, nullAtom);
+    return element;
 }
 
 void CustomElementRegistrationContext::didGiveTypeExtension(Element* element, const AtomicString& type)

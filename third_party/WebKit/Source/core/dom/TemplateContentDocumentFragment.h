@@ -33,7 +33,7 @@ namespace blink {
 
 class TemplateContentDocumentFragment final : public DocumentFragment {
 public:
-    static RawPtr<TemplateContentDocumentFragment> create(Document& document, Element* host)
+    static TemplateContentDocumentFragment* create(Document& document, Element* host)
     {
         return new TemplateContentDocumentFragment(document, host);
     }

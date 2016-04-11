@@ -83,7 +83,7 @@ static void parseThresholds(const DoubleOrDoubleArray& thresholdParameter, Vecto
 
 IntersectionObserver* IntersectionObserver::create(const IntersectionObserverInit& observerInit, IntersectionObserverCallback& callback, ExceptionState& exceptionState)
 {
-    RawPtr<Node> root = observerInit.root();
+    Node* root = observerInit.root();
     if (!root) {
         // TODO(szager): Use Document instead of document element for implicit root. (crbug.com/570538)
         ExecutionContext* context = callback.getExecutionContext();

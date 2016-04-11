@@ -62,7 +62,7 @@ inline Range::Range(Document& ownerDocument)
     m_ownerDocument->attachRange(this);
 }
 
-RawPtr<Range> Range::create(Document& ownerDocument)
+Range* Range::create(Document& ownerDocument)
 {
     return new Range(ownerDocument);
 }
@@ -80,19 +80,19 @@ inline Range::Range(Document& ownerDocument, Node* startContainer, int startOffs
     setEnd(endContainer, endOffset);
 }
 
-RawPtr<Range> Range::create(Document& ownerDocument, Node* startContainer, int startOffset, Node* endContainer, int endOffset)
+Range* Range::create(Document& ownerDocument, Node* startContainer, int startOffset, Node* endContainer, int endOffset)
 {
     return new Range(ownerDocument, startContainer, startOffset, endContainer, endOffset);
 }
 
-RawPtr<Range> Range::create(Document& ownerDocument, const Position& start, const Position& end)
+Range* Range::create(Document& ownerDocument, const Position& start, const Position& end)
 {
     return new Range(ownerDocument, start.computeContainerNode(), start.computeOffsetInContainerNode(), end.computeContainerNode(), end.computeOffsetInContainerNode());
 }
 
-RawPtr<Range> Range::createAdjustedToTreeScope(const TreeScope& treeScope, const Position& position)
+Range* Range::createAdjustedToTreeScope(const TreeScope& treeScope, const Position& position)
 {
-    RawPtr<Range> range = create(treeScope.document(), position, position);
+    Range* range = create(treeScope.document(), position, position);
 
     // Make sure the range is in this scope.
     Node* firstNode = range->firstNode();
@@ -100,7 +100,7 @@ RawPtr<Range> Range::createAdjustedToTreeScope(const TreeScope& treeScope, const
     Node* shadowHostInThisScopeOrFirstNode = treeScope.ancestorInThisScope(firstNode);
     DCHECK(shadowHostInThisScopeOrFirstNode);
     if (shadowHostInThisScopeOrFirstNode == firstNode)
-        return range.release();
+        return range;
 
     // If not, create a range for the shadow host in this scope.
     ContainerNode* container = shadowHostInThisScopeOrFirstNode->parentNode();
@@ -158,7 +158,7 @@ static inline bool checkForDifferentRootContainer(const RangeBoundaryPoint& star
     return startRootContainer != endRootContainer || (Range::compareBoundaryPoints(start, end, ASSERT_NO_EXCEPTION) > 0);
 }
 
-void Range::setStart(RawPtr<Node> refNode, int offset, ExceptionState& exceptionState)
+void Range::setStart(Node* refNode, int offset, ExceptionState& exceptionState)
 {
     if (!refNode) {
         // FIXME: Generated bindings code never calls with null, and neither should other callers!
@@ -172,7 +172,7 @@ void Range::setStart(RawPtr<Node> refNode, int offset, ExceptionState& exception
         didMoveDocument = true;
     }
 
-    Node* childNode = checkNodeWOffset(refNode.get(), offset, exceptionState);
+    Node* childNode = checkNodeWOffset(refNode, offset, exceptionState);
     if (exceptionState.hadException())
         return;
 
@@ -182,7 +182,7 @@ void Range::setStart(RawPtr<Node> refNode, int offset, ExceptionState& exception
         collapse(true);
 }
 
-void Range::setEnd(RawPtr<Node> refNode, int offset, ExceptionState& exceptionState)
+void Range::setEnd(Node* refNode, int offset, ExceptionState& exceptionState)
 {
     if (!refNode) {
         // FIXME: Generated bindings code never calls with null, and neither should other callers!
@@ -196,7 +196,7 @@ void Range::setEnd(RawPtr<Node> refNode, int offset, ExceptionState& exceptionSt
         didMoveDocument = true;
     }
 
-    Node* childNode = checkNodeWOffset(refNode.get(), offset, exceptionState);
+    Node* childNode = checkNodeWOffset(refNode, offset, exceptionState);
     if (exceptionState.hadException())
         return;
 
@@ -470,18 +470,18 @@ static inline Node* childOfCommonRootBeforeOffset(Node* container, unsigned offs
     return container;
 }
 
-RawPtr<DocumentFragment> Range::processContents(ActionType action, ExceptionState& exceptionState)
+DocumentFragment* Range::processContents(ActionType action, ExceptionState& exceptionState)
 {
     typedef HeapVector<Member<Node>> NodeVector;
 
-    RawPtr<DocumentFragment> fragment = nullptr;
+    DocumentFragment* fragment = nullptr;
     if (action == EXTRACT_CONTENTS || action == CLONE_CONTENTS)
         fragment = DocumentFragment::create(*m_ownerDocument.get());
 
     if (collapsed())
-        return fragment.release();
+        return fragment;
 
-    RawPtr<Node> commonRoot = commonAncestorContainer();
+    Node* commonRoot = commonAncestorContainer();
     DCHECK(commonRoot);
 
     if (m_start.container() == m_end.container()) {
@@ -494,8 +494,8 @@ RawPtr<DocumentFragment> Range::processContents(ActionType action, ExceptionStat
     RangeBoundaryPoint originalEnd(m_end);
 
     // what is the highest node that partially selects the start / end of the range?
-    RawPtr<Node> partialStart = highestAncestorUnderCommonRoot(originalStart.container(), commonRoot.get());
-    RawPtr<Node> partialEnd = highestAncestorUnderCommonRoot(originalEnd.container(), commonRoot.get());
+    Node* partialStart = highestAncestorUnderCommonRoot(originalStart.container(), commonRoot);
+    Node* partialEnd = highestAncestorUnderCommonRoot(originalEnd.container(), commonRoot);
 
     // Start and end containers are different.
     // There are three possibilities here:
@@ -517,31 +517,31 @@ RawPtr<DocumentFragment> Range::processContents(ActionType action, ExceptionStat
     // Note that we are verifying that our common root hierarchy is still intact
     // after any DOM mutation event, at various stages below. See webkit bug 60350.
 
-    RawPtr<Node> leftContents = nullptr;
+    Node* leftContents = nullptr;
     if (originalStart.container() != commonRoot && commonRoot->contains(originalStart.container())) {
         leftContents = processContentsBetweenOffsets(action, nullptr, originalStart.container(), originalStart.offset(), originalStart.container()->lengthOfContents(), exceptionState);
-        leftContents = processAncestorsAndTheirSiblings(action, originalStart.container(), ProcessContentsForward, leftContents, commonRoot.get(), exceptionState);
+        leftContents = processAncestorsAndTheirSiblings(action, originalStart.container(), ProcessContentsForward, leftContents, commonRoot, exceptionState);
     }
 
-    RawPtr<Node> rightContents = nullptr;
+    Node* rightContents = nullptr;
     if (m_end.container() != commonRoot && commonRoot->contains(originalEnd.container())) {
         rightContents = processContentsBetweenOffsets(action, nullptr, originalEnd.container(), 0, originalEnd.offset(), exceptionState);
-        rightContents = processAncestorsAndTheirSiblings(action, originalEnd.container(), ProcessContentsBackward, rightContents, commonRoot.get(), exceptionState);
+        rightContents = processAncestorsAndTheirSiblings(action, originalEnd.container(), ProcessContentsBackward, rightContents, commonRoot, exceptionState);
     }
 
     // delete all children of commonRoot between the start and end container
-    RawPtr<Node> processStart = childOfCommonRootBeforeOffset(originalStart.container(), originalStart.offset(), commonRoot.get());
+    Node* processStart = childOfCommonRootBeforeOffset(originalStart.container(), originalStart.offset(), commonRoot);
     if (processStart && originalStart.container() != commonRoot) // processStart contains nodes before m_start.
         processStart = processStart->nextSibling();
-    RawPtr<Node> processEnd = childOfCommonRootBeforeOffset(originalEnd.container(), originalEnd.offset(), commonRoot.get());
+    Node* processEnd = childOfCommonRootBeforeOffset(originalEnd.container(), originalEnd.offset(), commonRoot);
 
     // Collapse the range, making sure that the result is not within a node that was partially selected.
     if (action == EXTRACT_CONTENTS || action == DELETE_CONTENTS) {
-        if (partialStart && commonRoot->contains(partialStart.get())) {
+        if (partialStart && commonRoot->contains(partialStart)) {
             // FIXME: We should not continue if we have an earlier error.
             exceptionState.clearException();
             setStart(partialStart->parentNode(), partialStart->nodeIndex() + 1, exceptionState);
-        } else if (partialEnd && commonRoot->contains(partialEnd.get())) {
+        } else if (partialEnd && commonRoot->contains(partialEnd)) {
             // FIXME: We should not continue if we have an earlier error.
             exceptionState.clearException();
             setStart(partialEnd->parentNode(), partialEnd->nodeIndex(), exceptionState);
@@ -562,7 +562,7 @@ RawPtr<DocumentFragment> Range::processContents(ActionType action, ExceptionStat
 
     if (processStart) {
         NodeVector nodes;
-        for (Node* n = processStart.get(); n && n != processEnd; n = n->nextSibling())
+        for (Node* n = processStart; n && n != processEnd; n = n->nextSibling())
             nodes.append(n);
         processNodes(action, nodes, commonRoot, fragment, exceptionState);
     }
@@ -570,10 +570,10 @@ RawPtr<DocumentFragment> Range::processContents(ActionType action, ExceptionStat
     if ((action == EXTRACT_CONTENTS || action == CLONE_CONTENTS) && rightContents)
         fragment->appendChild(rightContents, exceptionState);
 
-    return fragment.release();
+    return fragment;
 }
 
-static inline void deleteCharacterData(RawPtr<CharacterData> data, unsigned startOffset, unsigned endOffset, ExceptionState& exceptionState)
+static inline void deleteCharacterData(CharacterData* data, unsigned startOffset, unsigned endOffset, ExceptionState& exceptionState)
 {
     if (data->length() - endOffset)
         data->deleteData(endOffset, data->length() - endOffset, exceptionState);
@@ -581,14 +581,14 @@ static inline void deleteCharacterData(RawPtr<CharacterData> data, unsigned star
         data->deleteData(0, startOffset, exceptionState);
 }
 
-RawPtr<Node> Range::processContentsBetweenOffsets(ActionType action, RawPtr<DocumentFragment> fragment,
+Node* Range::processContentsBetweenOffsets(ActionType action, DocumentFragment* fragment,
     Node* container, unsigned startOffset, unsigned endOffset, ExceptionState& exceptionState)
 {
     DCHECK(container);
     DCHECK_LE(startOffset, endOffset);
 
     // This switch statement must be consistent with that of Node::lengthOfContents.
-    RawPtr<Node> result = nullptr;
+    Node* result = nullptr;
     switch (container->getNodeType()) {
     case Node::TEXT_NODE:
     case Node::CDATA_SECTION_NODE:
@@ -596,13 +596,13 @@ RawPtr<Node> Range::processContentsBetweenOffsets(ActionType action, RawPtr<Docu
     case Node::PROCESSING_INSTRUCTION_NODE:
         endOffset = std::min(endOffset, toCharacterData(container)->length());
         if (action == EXTRACT_CONTENTS || action == CLONE_CONTENTS) {
-            RawPtr<CharacterData> c = static_pointer_cast<CharacterData>(container->cloneNode(true));
+            CharacterData* c = static_cast<CharacterData*>(container->cloneNode(true));
             deleteCharacterData(c, startOffset, endOffset, exceptionState);
             if (fragment) {
                 result = fragment;
-                result->appendChild(c.release(), exceptionState);
+                result->appendChild(c, exceptionState);
             } else {
-                result = c.release();
+                result = c;
             }
         }
         if (action == EXTRACT_CONTENTS || action == DELETE_CONTENTS)
@@ -632,10 +632,10 @@ RawPtr<Node> Range::processContentsBetweenOffsets(ActionType action, RawPtr<Docu
         break;
     }
 
-    return result.release();
+    return result;
 }
 
-void Range::processNodes(ActionType action, HeapVector<Member<Node>>& nodes, RawPtr<Node> oldContainer, RawPtr<Node> newContainer, ExceptionState& exceptionState)
+void Range::processNodes(ActionType action, HeapVector<Member<Node>>& nodes, Node* oldContainer, Node* newContainer, ExceptionState& exceptionState)
 {
     for (auto& node : nodes) {
         switch (action) {
@@ -652,19 +652,18 @@ void Range::processNodes(ActionType action, HeapVector<Member<Node>>& nodes, Raw
     }
 }
 
-RawPtr<Node> Range::processAncestorsAndTheirSiblings(ActionType action, Node* container, ContentsProcessDirection direction, RawPtr<Node> passedClonedContainer, Node* commonRoot, ExceptionState& exceptionState)
+Node* Range::processAncestorsAndTheirSiblings(ActionType action, Node* container, ContentsProcessDirection direction, Node* clonedContainer, Node* commonRoot, ExceptionState& exceptionState)
 {
     typedef HeapVector<Member<Node>> NodeVector;
 
-    RawPtr<Node> clonedContainer = passedClonedContainer;
     NodeVector ancestors;
     for (ContainerNode* n = container->parentNode(); n && n != commonRoot; n = n->parentNode())
         ancestors.append(n);
 
-    RawPtr<Node> firstChildInAncestorToProcess = direction == ProcessContentsForward ? container->nextSibling() : container->previousSibling();
-    for (const RawPtr<Node>& ancestor : ancestors) {
+    Node* firstChildInAncestorToProcess = direction == ProcessContentsForward ? container->nextSibling() : container->previousSibling();
+    for (const auto& ancestor : ancestors) {
         if (action == EXTRACT_CONTENTS || action == CLONE_CONTENTS) {
-            if (RawPtr<Node> clonedAncestor = ancestor->cloneNode(false)) { // Might have been removed already during mutation event.
+            if (Node* clonedAncestor = ancestor->cloneNode(false)) { // Might have been removed already during mutation event.
                 clonedAncestor->appendChild(clonedContainer, exceptionState);
                 clonedContainer = clonedAncestor;
             }
@@ -676,11 +675,11 @@ RawPtr<Node> Range::processAncestorsAndTheirSiblings(ActionType action, Node* co
         DCHECK(!firstChildInAncestorToProcess || firstChildInAncestorToProcess->parentNode() == ancestor);
 
         NodeVector nodes;
-        for (Node* child = firstChildInAncestorToProcess.get(); child;
+        for (Node* child = firstChildInAncestorToProcess; child;
             child = (direction == ProcessContentsForward) ? child->nextSibling() : child->previousSibling())
             nodes.append(child);
 
-        for (const RawPtr<Node>& node : nodes) {
+        for (const auto& node : nodes) {
             Node* child = node.get();
             switch (action) {
             case DELETE_CONTENTS:
@@ -706,10 +705,10 @@ RawPtr<Node> Range::processAncestorsAndTheirSiblings(ActionType action, Node* co
         firstChildInAncestorToProcess = direction == ProcessContentsForward ? ancestor->nextSibling() : ancestor->previousSibling();
     }
 
-    return clonedContainer.release();
+    return clonedContainer;
 }
 
-RawPtr<DocumentFragment> Range::extractContents(ExceptionState& exceptionState)
+DocumentFragment* Range::extractContents(ExceptionState& exceptionState)
 {
     checkExtractPrecondition(exceptionState);
     if (exceptionState.hadException())
@@ -718,15 +717,13 @@ RawPtr<DocumentFragment> Range::extractContents(ExceptionState& exceptionState)
     return processContents(EXTRACT_CONTENTS, exceptionState);
 }
 
-RawPtr<DocumentFragment> Range::cloneContents(ExceptionState& exceptionState)
+DocumentFragment* Range::cloneContents(ExceptionState& exceptionState)
 {
     return processContents(CLONE_CONTENTS, exceptionState);
 }
 
-void Range::insertNode(RawPtr<Node> prpNewNode, ExceptionState& exceptionState)
+void Range::insertNode(Node* newNode, ExceptionState& exceptionState)
 {
-    RawPtr<Node> newNode = prpNewNode;
-
     if (!newNode) {
         // FIXME: Generated bindings code never calls with null, and neither should other callers!
         exceptionState.throwTypeError("The node provided is null.");
@@ -794,15 +791,15 @@ void Range::insertNode(RawPtr<Node> prpNewNode, ExceptionState& exceptionState)
 
     EventQueueScope scope;
     bool collapsed = m_start == m_end;
-    RawPtr<Node> container = nullptr;
+    Node* container = nullptr;
     if (startIsText) {
         container = m_start.container();
-        RawPtr<Text> newText = toText(container)->splitText(m_start.offset(), exceptionState);
+        Text* newText = toText(container)->splitText(m_start.offset(), exceptionState);
         if (exceptionState.hadException())
             return;
 
         container = m_start.container();
-        container->parentNode()->insertBefore(newNode.release(), newText.get(), exceptionState);
+        container->parentNode()->insertBefore(newNode, newText, exceptionState);
         if (exceptionState.hadException())
             return;
 
@@ -817,25 +814,25 @@ void Range::insertNode(RawPtr<Node> prpNewNode, ExceptionState& exceptionState)
             m_end.setToBeforeChild(*newText);
         }
     } else {
-        RawPtr<Node> lastChild = (newNodeType == Node::DOCUMENT_FRAGMENT_NODE) ? toDocumentFragment(newNode)->lastChild() : newNode.get();
+        Node* lastChild = (newNodeType == Node::DOCUMENT_FRAGMENT_NODE) ? toDocumentFragment(newNode)->lastChild() : newNode;
         if (lastChild && lastChild == m_start.childBefore()) {
             // The insertion will do nothing, but we need to extend the range to include
             // the inserted nodes.
-            Node* firstChild = (newNodeType == Node::DOCUMENT_FRAGMENT_NODE) ? toDocumentFragment(newNode)->firstChild() : newNode.get();
+            Node* firstChild = (newNodeType == Node::DOCUMENT_FRAGMENT_NODE) ? toDocumentFragment(newNode)->firstChild() : newNode;
             DCHECK(firstChild);
             m_start.setToBeforeChild(*firstChild);
             return;
         }
 
         container = m_start.container();
-        container->insertBefore(newNode.release(), NodeTraversal::childAt(*container, m_start.offset()), exceptionState);
+        container->insertBefore(newNode, NodeTraversal::childAt(*container, m_start.offset()), exceptionState);
         if (exceptionState.hadException())
             return;
 
         // Note that m_start.offset() may have changed as a result of container->insertBefore,
         // when the node we are inserting comes before the range in the same container.
         if (collapsed && numNewChildren)
-            m_end.set(m_start.container(), m_start.offset() + numNewChildren, lastChild.get());
+            m_end.set(m_start.container(), m_start.offset() + numNewChildren, lastChild);
     }
 }
 
@@ -863,14 +860,14 @@ String Range::text() const
     return plainText(EphemeralRange(this), TextIteratorEmitsObjectReplacementCharacter);
 }
 
-RawPtr<DocumentFragment> Range::createContextualFragment(const String& markup, ExceptionState& exceptionState)
+DocumentFragment* Range::createContextualFragment(const String& markup, ExceptionState& exceptionState)
 {
     // Algorithm: http://domparsing.spec.whatwg.org/#extensions-to-the-range-interface
 
     Node* node = m_start.container();
 
     // Step 1.
-    RawPtr<Element> element;
+    Element* element;
     if (!m_start.offset() && (node->isDocumentNode() || node->isDocumentFragment()))
         element = nullptr;
     else if (node->isElementNode())
@@ -900,11 +897,11 @@ RawPtr<DocumentFragment> Range::createContextualFragment(const String& markup, E
     }
 
     // Steps 3, 4, 5.
-    RawPtr<DocumentFragment> fragment = blink::createContextualFragment(markup, element.get(), AllowScriptingContentAndDoNotMarkAlreadyStarted, exceptionState);
+    DocumentFragment* fragment = blink::createContextualFragment(markup, element, AllowScriptingContentAndDoNotMarkAlreadyStarted, exceptionState);
     if (!fragment)
         return nullptr;
 
-    return fragment.release();
+    return fragment;
 }
 
 
@@ -997,7 +994,7 @@ void Range::checkNodeBA(Node* n, ExceptionState& exceptionState) const
     }
 }
 
-RawPtr<Range> Range::cloneRange() const
+Range* Range::cloneRange() const
 {
     return Range::create(*m_ownerDocument.get(), m_start.container(), m_start.offset(), m_end.container(), m_end.offset());
 }
@@ -1129,9 +1126,8 @@ bool Range::selectNodeContents(Node* refNode, Position& start, Position& end)
     return true;
 }
 
-void Range::surroundContents(RawPtr<Node> passNewParent, ExceptionState& exceptionState)
+void Range::surroundContents(Node* newParent, ExceptionState& exceptionState)
 {
-    RawPtr<Node> newParent = passNewParent;
     if (!newParent) {
         // FIXME: Generated bindings code never calls with null, and neither should other callers!
         exceptionState.throwTypeError("The node provided is null.");
@@ -1199,16 +1195,16 @@ void Range::surroundContents(RawPtr<Node> passNewParent, ExceptionState& excepti
         if (exceptionState.hadException())
             return;
     }
-    RawPtr<DocumentFragment> fragment = extractContents(exceptionState);
+    DocumentFragment* fragment = extractContents(exceptionState);
     if (exceptionState.hadException())
         return;
     insertNode(newParent, exceptionState);
     if (exceptionState.hadException())
         return;
-    newParent->appendChild(fragment.release(), exceptionState);
+    newParent->appendChild(fragment, exceptionState);
     if (exceptionState.hadException())
         return;
-    selectNode(newParent.get(), exceptionState);
+    selectNode(newParent, exceptionState);
 }
 
 void Range::setStartBefore(Node* refNode, ExceptionState& exceptionState)

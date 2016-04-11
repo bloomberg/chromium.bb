@@ -32,12 +32,12 @@
 
 namespace blink {
 
-RawPtr<CustomElementDefinition> CustomElementDefinition::create(const CustomElementDescriptor& descriptor, RawPtr<CustomElementLifecycleCallbacks> callbacks)
+CustomElementDefinition* CustomElementDefinition::create(const CustomElementDescriptor& descriptor, CustomElementLifecycleCallbacks* callbacks)
 {
     return new CustomElementDefinition(descriptor, callbacks);
 }
 
-CustomElementDefinition::CustomElementDefinition(const CustomElementDescriptor& descriptor, RawPtr<CustomElementLifecycleCallbacks> callbacks)
+CustomElementDefinition::CustomElementDefinition(const CustomElementDescriptor& descriptor, CustomElementLifecycleCallbacks* callbacks)
     : m_descriptor(descriptor)
     , m_callbacks(callbacks)
 {

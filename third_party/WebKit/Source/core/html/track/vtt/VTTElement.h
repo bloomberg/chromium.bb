@@ -48,7 +48,7 @@ public:
     static VTTElement* create(const QualifiedName&, Document*);
     HTMLElement* createEquivalentHTMLElement(Document&);
 
-    RawPtr<Element> cloneElementWithoutAttributesAndChildren() override;
+    Element* cloneElementWithoutAttributesAndChildren() override;
 
     void setVTTNodeType(VTTNodeType type) { m_webVTTNodeType = static_cast<unsigned>(type); }
     VTTNodeType webVTTNodeType() const { return static_cast<VTTNodeType>(m_webVTTNodeType); }

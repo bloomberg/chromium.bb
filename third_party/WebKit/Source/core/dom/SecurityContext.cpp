@@ -54,7 +54,7 @@ void SecurityContext::setSecurityOrigin(PassRefPtr<SecurityOrigin> securityOrigi
     m_securityOrigin = securityOrigin;
 }
 
-void SecurityContext::setContentSecurityPolicy(RawPtr<ContentSecurityPolicy> contentSecurityPolicy)
+void SecurityContext::setContentSecurityPolicy(ContentSecurityPolicy* contentSecurityPolicy)
 {
     m_contentSecurityPolicy = contentSecurityPolicy;
 }

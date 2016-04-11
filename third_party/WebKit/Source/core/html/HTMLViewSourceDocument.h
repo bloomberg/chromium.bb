@@ -56,7 +56,7 @@ public:
 private:
     HTMLViewSourceDocument(const DocumentInit&, const String& mimeType);
 
-    RawPtr<DocumentParser> createParser() override;
+    DocumentParser* createParser() override;
 
     void processDoctypeToken(const String& source, HTMLToken&);
     void processEndOfFileToken(const String& source, HTMLToken&);

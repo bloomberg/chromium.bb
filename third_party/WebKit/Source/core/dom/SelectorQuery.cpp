@@ -161,14 +161,14 @@ Element* SelectorDataList::closest(Element& targetElement) const
     return nullptr;
 }
 
-RawPtr<StaticElementList> SelectorDataList::queryAll(ContainerNode& rootNode) const
+StaticElementList* SelectorDataList::queryAll(ContainerNode& rootNode) const
 {
     HeapVector<Member<Element>> result;
     execute<AllElementsSelectorQueryTrait>(rootNode, result);
     return StaticElementList::adopt(result);
 }
 
-RawPtr<Element> SelectorDataList::queryFirst(ContainerNode& rootNode) const
+Element* SelectorDataList::queryFirst(ContainerNode& rootNode) const
 {
     Element* matchedElement = nullptr;
     execute<SingleElementSelectorQueryTrait>(rootNode, matchedElement);
@@ -541,12 +541,12 @@ Element* SelectorQuery::closest(Element& element) const
     return m_selectors.closest(element);
 }
 
-RawPtr<StaticElementList> SelectorQuery::queryAll(ContainerNode& rootNode) const
+StaticElementList* SelectorQuery::queryAll(ContainerNode& rootNode) const
 {
     return m_selectors.queryAll(rootNode);
 }
 
-RawPtr<Element> SelectorQuery::queryFirst(ContainerNode& rootNode) const
+Element* SelectorQuery::queryFirst(ContainerNode& rootNode) const
 {
     return m_selectors.queryFirst(rootNode);
 }

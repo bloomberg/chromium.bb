@@ -30,7 +30,7 @@ inline Comment::Comment(Document& document, const String& text)
 {
 }
 
-RawPtr<Comment> Comment::create(Document& document, const String& text)
+Comment* Comment::create(Document& document, const String& text)
 {
     return new Comment(document, text);
 }
@@ -45,7 +45,7 @@ Node::NodeType Comment::getNodeType() const
     return COMMENT_NODE;
 }
 
-RawPtr<Node> Comment::cloneNode(bool /*deep*/)
+Node* Comment::cloneNode(bool /*deep*/)
 {
     return create(document(), data());
 }

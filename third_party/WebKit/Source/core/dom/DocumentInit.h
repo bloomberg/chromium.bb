@@ -46,8 +46,8 @@ class Settings;
 class CORE_EXPORT DocumentInit final {
     STACK_ALLOCATED();
 public:
-    DocumentInit(const KURL& = KURL(), LocalFrame* = nullptr, RawPtr<Document> contextDocument = nullptr, HTMLImportsController* = nullptr);
-    DocumentInit(RawPtr<Document> ownerDocument, const KURL&, LocalFrame*, RawPtr<Document> contextDocument = nullptr, HTMLImportsController* = nullptr);
+    DocumentInit(const KURL& = KURL(), LocalFrame* = nullptr, Document* contextDocument = nullptr, HTMLImportsController* = nullptr);
+    DocumentInit(Document* ownerDocument, const KURL&, LocalFrame*, Document* contextDocument = nullptr, HTMLImportsController* = nullptr);
     DocumentInit(const DocumentInit&);
     ~DocumentInit();
 
@@ -74,10 +74,10 @@ public:
 
     DocumentInit& withRegistrationContext(CustomElementRegistrationContext*);
     DocumentInit& withNewRegistrationContext();
-    RawPtr<CustomElementRegistrationContext> registrationContext(Document*) const;
-    RawPtr<Document> contextDocument() const;
+    CustomElementRegistrationContext* registrationContext(Document*) const;
+    Document* contextDocument() const;
 
-    static DocumentInit fromContext(RawPtr<Document> contextDocument, const KURL& = KURL());
+    static DocumentInit fromContext(Document* contextDocument, const KURL& = KURL());
 
 private:
     LocalFrame* frameForSecurityContext() const;

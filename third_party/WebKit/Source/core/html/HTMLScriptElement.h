@@ -73,7 +73,7 @@ private:
 
     void dispatchLoadEvent() override;
 
-    RawPtr<Element> cloneElementWithoutAttributesAndChildren() override;
+    Element* cloneElementWithoutAttributesAndChildren() override;
 
     Member<ScriptLoader> m_loader;
 };

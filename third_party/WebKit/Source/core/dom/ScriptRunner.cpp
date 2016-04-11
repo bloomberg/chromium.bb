@@ -213,7 +213,7 @@ void ScriptRunner::notifyScriptLoadError(ScriptLoader* scriptLoader, ExecutionTy
 
 void ScriptRunner::movePendingScript(Document& oldDocument, Document& newDocument, ScriptLoader* scriptLoader)
 {
-    RawPtr<Document> newContextDocument = newDocument.contextDocument().get();
+    Document* newContextDocument = newDocument.contextDocument();
     if (!newContextDocument) {
         // Document's contextDocument() method will return no Document if the
         // following conditions both hold:
@@ -228,7 +228,7 @@ void ScriptRunner::movePendingScript(Document& oldDocument, Document& newDocumen
         DCHECK(!newDocument.frame());
         newContextDocument = &newDocument;
     }
-    RawPtr<Document> oldContextDocument = oldDocument.contextDocument().get();
+    Document* oldContextDocument = oldDocument.contextDocument();
     if (!oldContextDocument) {
         DCHECK(!oldDocument.frame());
         oldContextDocument = &oldDocument;

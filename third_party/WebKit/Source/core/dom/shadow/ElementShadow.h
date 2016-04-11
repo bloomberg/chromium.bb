@@ -42,7 +42,7 @@ namespace blink {
 class CORE_EXPORT ElementShadow final : public GarbageCollectedFinalized<ElementShadow> {
     WTF_MAKE_NONCOPYABLE(ElementShadow);
 public:
-    static RawPtr<ElementShadow> create();
+    static ElementShadow* create();
     ~ElementShadow();
 
     Element* host() const;

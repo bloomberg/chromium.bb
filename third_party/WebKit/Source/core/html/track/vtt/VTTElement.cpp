@@ -76,7 +76,7 @@ VTTElement* VTTElement::create(VTTNodeType nodeType, Document* document)
     return new VTTElement(nodeType, document);
 }
 
-RawPtr<Element> VTTElement::cloneElementWithoutAttributesAndChildren()
+Element* VTTElement::cloneElementWithoutAttributesAndChildren()
 {
     VTTElement* clone = create(static_cast<VTTNodeType>(m_webVTTNodeType), &document());
     clone->setLanguage(m_language);

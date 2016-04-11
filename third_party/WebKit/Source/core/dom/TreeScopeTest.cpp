@@ -13,13 +13,13 @@ namespace blink {
 
 TEST(TreeScopeTest, CommonAncestorOfSameTrees)
 {
-    RawPtr<Document> document = Document::create();
-    EXPECT_EQ(document.get(), document->commonAncestorTreeScope(*document));
+    Document* document = Document::create();
+    EXPECT_EQ(document, document->commonAncestorTreeScope(*document));
 
-    RawPtr<Element> html = document->createElement("html", nullAtom, ASSERT_NO_EXCEPTION);
+    Element* html = document->createElement("html", nullAtom, ASSERT_NO_EXCEPTION);
     document->appendChild(html, ASSERT_NO_EXCEPTION);
-    RawPtr<ShadowRoot> shadowRoot = html->createShadowRootInternal(ShadowRootType::V0, ASSERT_NO_EXCEPTION);
-    EXPECT_EQ(shadowRoot.get(), shadowRoot->commonAncestorTreeScope(*shadowRoot));
+    ShadowRoot* shadowRoot = html->createShadowRootInternal(ShadowRootType::V0, ASSERT_NO_EXCEPTION);
+    EXPECT_EQ(shadowRoot, shadowRoot->commonAncestorTreeScope(*shadowRoot));
 }
 
 TEST(TreeScopeTest, CommonAncestorOfInclusiveTrees)
@@ -28,13 +28,13 @@ TEST(TreeScopeTest, CommonAncestorOfInclusiveTrees)
     //     |      : Common ancestor is document.
     // shadowRoot
 
-    RawPtr<Document> document = Document::create();
-    RawPtr<Element> html = document->createElement("html", nullAtom, ASSERT_NO_EXCEPTION);
+    Document* document = Document::create();
+    Element* html = document->createElement("html", nullAtom, ASSERT_NO_EXCEPTION);
     document->appendChild(html, ASSERT_NO_EXCEPTION);
-    RawPtr<ShadowRoot> shadowRoot = html->createShadowRootInternal(ShadowRootType::V0, ASSERT_NO_EXCEPTION);
+    ShadowRoot* shadowRoot = html->createShadowRootInternal(ShadowRootType::V0, ASSERT_NO_EXCEPTION);
 
-    EXPECT_EQ(document.get(), document->commonAncestorTreeScope(*shadowRoot));
-    EXPECT_EQ(document.get(), shadowRoot->commonAncestorTreeScope(*document));
+    EXPECT_EQ(document, document->commonAncestorTreeScope(*shadowRoot));
+    EXPECT_EQ(document, shadowRoot->commonAncestorTreeScope(*document));
 }
 
 TEST(TreeScopeTest, CommonAncestorOfSiblingTrees)
@@ -43,19 +43,19 @@ TEST(TreeScopeTest, CommonAncestorOfSiblingTrees)
     //   /    \  : Common ancestor is document.
     //  A      B
 
-    RawPtr<Document> document = Document::create();
-    RawPtr<Element> html = document->createElement("html", nullAtom, ASSERT_NO_EXCEPTION);
+    Document* document = Document::create();
+    Element* html = document->createElement("html", nullAtom, ASSERT_NO_EXCEPTION);
     document->appendChild(html, ASSERT_NO_EXCEPTION);
-    RawPtr<Element> head = document->createElement("head", nullAtom, ASSERT_NO_EXCEPTION);
+    Element* head = document->createElement("head", nullAtom, ASSERT_NO_EXCEPTION);
     html->appendChild(head);
-    RawPtr<Element> body = document->createElement("body", nullAtom, ASSERT_NO_EXCEPTION);
+    Element* body = document->createElement("body", nullAtom, ASSERT_NO_EXCEPTION);
     html->appendChild(body);
 
-    RawPtr<ShadowRoot> shadowRootA = head->createShadowRootInternal(ShadowRootType::V0, ASSERT_NO_EXCEPTION);
-    RawPtr<ShadowRoot> shadowRootB = body->createShadowRootInternal(ShadowRootType::V0, ASSERT_NO_EXCEPTION);
+    ShadowRoot* shadowRootA = head->createShadowRootInternal(ShadowRootType::V0, ASSERT_NO_EXCEPTION);
+    ShadowRoot* shadowRootB = body->createShadowRootInternal(ShadowRootType::V0, ASSERT_NO_EXCEPTION);
 
-    EXPECT_EQ(document.get(), shadowRootA->commonAncestorTreeScope(*shadowRootB));
-    EXPECT_EQ(document.get(), shadowRootB->commonAncestorTreeScope(*shadowRootA));
+    EXPECT_EQ(document, shadowRootA->commonAncestorTreeScope(*shadowRootB));
+    EXPECT_EQ(document, shadowRootB->commonAncestorTreeScope(*shadowRootA));
 }
 
 TEST(TreeScopeTest, CommonAncestorOfTreesAtDifferentDepths)
@@ -66,29 +66,29 @@ TEST(TreeScopeTest, CommonAncestorOfTreesAtDifferentDepths)
     //  /
     // A
 
-    RawPtr<Document> document = Document::create();
-    RawPtr<Element> html = document->createElement("html", nullAtom, ASSERT_NO_EXCEPTION);
+    Document* document = Document::create();
+    Element* html = document->createElement("html", nullAtom, ASSERT_NO_EXCEPTION);
     document->appendChild(html, ASSERT_NO_EXCEPTION);
-    RawPtr<Element> head = document->createElement("head", nullAtom, ASSERT_NO_EXCEPTION);
+    Element* head = document->createElement("head", nullAtom, ASSERT_NO_EXCEPTION);
     html->appendChild(head);
-    RawPtr<Element> body = document->createElement("body", nullAtom, ASSERT_NO_EXCEPTION);
+    Element* body = document->createElement("body", nullAtom, ASSERT_NO_EXCEPTION);
     html->appendChild(body);
 
-    RawPtr<ShadowRoot> shadowRootY = head->createShadowRootInternal(ShadowRootType::V0, ASSERT_NO_EXCEPTION);
-    RawPtr<ShadowRoot> shadowRootB = body->createShadowRootInternal(ShadowRootType::V0, ASSERT_NO_EXCEPTION);
+    ShadowRoot* shadowRootY = head->createShadowRootInternal(ShadowRootType::V0, ASSERT_NO_EXCEPTION);
+    ShadowRoot* shadowRootB = body->createShadowRootInternal(ShadowRootType::V0, ASSERT_NO_EXCEPTION);
 
-    RawPtr<Element> divInY = document->createElement("div", nullAtom, ASSERT_NO_EXCEPTION);
+    Element* divInY = document->createElement("div", nullAtom, ASSERT_NO_EXCEPTION);
     shadowRootY->appendChild(divInY);
-    RawPtr<ShadowRoot> shadowRootA = divInY->createShadowRootInternal(ShadowRootType::V0, ASSERT_NO_EXCEPTION);
+    ShadowRoot* shadowRootA = divInY->createShadowRootInternal(ShadowRootType::V0, ASSERT_NO_EXCEPTION);
 
-    EXPECT_EQ(document.get(), shadowRootA->commonAncestorTreeScope(*shadowRootB));
-    EXPECT_EQ(document.get(), shadowRootB->commonAncestorTreeScope(*shadowRootA));
+    EXPECT_EQ(document, shadowRootA->commonAncestorTreeScope(*shadowRootB));
+    EXPECT_EQ(document, shadowRootB->commonAncestorTreeScope(*shadowRootA));
 }
 
 TEST(TreeScopeTest, CommonAncestorOfTreesInDifferentDocuments)
 {
-    RawPtr<Document> document1 = Document::create();
-    RawPtr<Document> document2 = Document::create();
+    Document* document1 = Document::create();
+    Document* document2 = Document::create();
     EXPECT_EQ(0, document1->commonAncestorTreeScope(*document2));
     EXPECT_EQ(0, document2->commonAncestorTreeScope(*document1));
 }

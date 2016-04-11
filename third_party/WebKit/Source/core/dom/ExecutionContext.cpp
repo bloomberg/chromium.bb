@@ -146,9 +146,8 @@ bool ExecutionContext::shouldSanitizeScriptError(const String& sourceURL, Access
     return !(getSecurityOrigin()->canRequestNoSuborigin(completeURL(sourceURL)) || corsStatus == SharableCrossOrigin);
 }
 
-void ExecutionContext::reportException(RawPtr<ErrorEvent> event, int scriptId, PassRefPtr<ScriptCallStack> callStack, AccessControlStatus corsStatus)
+void ExecutionContext::reportException(ErrorEvent* errorEvent, int scriptId, PassRefPtr<ScriptCallStack> callStack, AccessControlStatus corsStatus)
 {
-    RawPtr<ErrorEvent> errorEvent = event;
     if (m_inDispatchErrorEvent) {
         if (!m_pendingExceptions)
             m_pendingExceptions = adoptPtr(new Vector<OwnPtr<PendingException>>());
@@ -170,13 +169,12 @@ void ExecutionContext::reportException(RawPtr<ErrorEvent> event, int scriptId, P
     m_pendingExceptions.clear();
 }
 
-bool ExecutionContext::dispatchErrorEvent(RawPtr<ErrorEvent> event, AccessControlStatus corsStatus)
+bool ExecutionContext::dispatchErrorEvent(ErrorEvent* errorEvent, AccessControlStatus corsStatus)
 {
     EventTarget* target = errorEventTarget();
     if (!target)
         return false;
 
-    RawPtr<ErrorEvent> errorEvent = event;
     if (shouldSanitizeScriptError(errorEvent->filename(), corsStatus))
         errorEvent = ErrorEvent::createSanitizedError(errorEvent->world());
 

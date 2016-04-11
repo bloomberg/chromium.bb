@@ -40,7 +40,7 @@ class ClassCollection final : public HTMLCollection {
 public:
     // classNames argument is an AtomicString because it is common for Elements to share the same class names.
     // It is also used to construct a SpaceSplitString (m_classNames) and its constructor requires an AtomicString.
-    static RawPtr<ClassCollection> create(ContainerNode& rootNode, CollectionType type, const AtomicString& classNames)
+    static ClassCollection* create(ContainerNode& rootNode, CollectionType type, const AtomicString& classNames)
     {
         ASSERT_UNUSED(type, type == ClassCollectionType);
         return new ClassCollection(rootNode, classNames);

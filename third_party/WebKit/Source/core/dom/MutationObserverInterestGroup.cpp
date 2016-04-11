@@ -34,7 +34,7 @@
 
 namespace blink {
 
-RawPtr<MutationObserverInterestGroup> MutationObserverInterestGroup::createIfNeeded(Node& target, MutationObserver::MutationType type, MutationRecordDeliveryOptions oldValueFlag, const QualifiedName* attributeName)
+MutationObserverInterestGroup* MutationObserverInterestGroup::createIfNeeded(Node& target, MutationObserver::MutationType type, MutationRecordDeliveryOptions oldValueFlag, const QualifiedName* attributeName)
 {
     DCHECK((type == MutationObserver::Attributes && attributeName) || !attributeName);
     HeapHashMap<Member<MutationObserver>, MutationRecordDeliveryOptions> observers;
@@ -61,10 +61,9 @@ bool MutationObserverInterestGroup::isOldValueRequested()
     return false;
 }
 
-void MutationObserverInterestGroup::enqueueMutationRecord(RawPtr<MutationRecord> prpMutation)
+void MutationObserverInterestGroup::enqueueMutationRecord(MutationRecord* mutation)
 {
-    RawPtr<MutationRecord> mutation = prpMutation;
-    RawPtr<MutationRecord> mutationWithNullOldValue = nullptr;
+    MutationRecord* mutationWithNullOldValue = nullptr;
     for (auto& iter : m_observers) {
         MutationObserver* observer = iter.key.get();
         if (hasOldValue(iter.value)) {
@@ -75,7 +74,7 @@ void MutationObserverInterestGroup::enqueueMutationRecord(RawPtr<MutationRecord>
             if (mutation->oldValue().isNull())
                 mutationWithNullOldValue = mutation;
             else
-                mutationWithNullOldValue = MutationRecord::createWithNullOldValue(mutation).get();
+                mutationWithNullOldValue = MutationRecord::createWithNullOldValue(mutation);
         }
         observer->enqueueMutationRecord(mutationWithNullOldValue);
     }

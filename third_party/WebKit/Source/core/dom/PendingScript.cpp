@@ -34,7 +34,7 @@
 
 namespace blink {
 
-RawPtr<PendingScript> PendingScript::create(Element* element, ScriptResource* resource)
+PendingScript* PendingScript::create(Element* element, ScriptResource* resource)
 {
     return new PendingScript(element, resource);
 }
@@ -115,7 +115,7 @@ void PendingScript::setElement(Element* element)
     m_element = element;
 }
 
-RawPtr<Element> PendingScript::releaseElementAndClear()
+Element* PendingScript::releaseElementAndClear()
 {
     setScriptResource(0);
     m_watchingForLoad = false;
@@ -217,7 +217,7 @@ ScriptSourceCode PendingScript::getSource(const KURL& documentURL, bool& errorOc
     return ScriptSourceCode(m_element->textContent(), documentURL, startingPosition());
 }
 
-void PendingScript::setStreamer(RawPtr<ScriptStreamer> streamer)
+void PendingScript::setStreamer(ScriptStreamer* streamer)
 {
     DCHECK(!m_streamer);
     DCHECK(!m_watchingForLoad);

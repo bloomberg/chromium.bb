@@ -45,7 +45,7 @@ class ExecutionContextTask;
 class CORE_EXPORT MainThreadTaskRunner final : public GarbageCollectedFinalized<MainThreadTaskRunner> {
     WTF_MAKE_NONCOPYABLE(MainThreadTaskRunner);
 public:
-    static RawPtr<MainThreadTaskRunner> create(ExecutionContext*);
+    static MainThreadTaskRunner* create(ExecutionContext*);
 
     ~MainThreadTaskRunner();
 
@@ -74,7 +74,7 @@ private:
     bool m_suspended;
 };
 
-inline RawPtr<MainThreadTaskRunner> MainThreadTaskRunner::create(ExecutionContext* context)
+inline MainThreadTaskRunner* MainThreadTaskRunner::create(ExecutionContext* context)
 {
     return new MainThreadTaskRunner(context);
 }

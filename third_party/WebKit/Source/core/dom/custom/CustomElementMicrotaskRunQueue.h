@@ -17,9 +17,9 @@ class HTMLImportLoader;
 
 class CustomElementMicrotaskRunQueue : public GarbageCollectedFinalized<CustomElementMicrotaskRunQueue> {
 public:
-    static RawPtr<CustomElementMicrotaskRunQueue> create() { return new CustomElementMicrotaskRunQueue(); }
+    static CustomElementMicrotaskRunQueue* create() { return new CustomElementMicrotaskRunQueue(); }
 
-    void enqueue(HTMLImportLoader* parentLoader, RawPtr<CustomElementMicrotaskStep>, bool importIsSync);
+    void enqueue(HTMLImportLoader* parentLoader, CustomElementMicrotaskStep*, bool importIsSync);
     void requestDispatchIfNeeded();
     bool isEmpty() const;
 

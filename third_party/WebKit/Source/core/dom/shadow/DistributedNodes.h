@@ -42,14 +42,14 @@ class DistributedNodes final {
 public:
     DistributedNodes() { }
 
-    RawPtr<Node> first() const { return m_nodes.first(); }
-    RawPtr<Node> last() const { return m_nodes.last(); }
-    RawPtr<Node> at(size_t index) const { return m_nodes.at(index); }
+    Node* first() const { return m_nodes.first(); }
+    Node* last() const { return m_nodes.last(); }
+    Node* at(size_t index) const { return m_nodes.at(index); }
 
     size_t size() const { return m_nodes.size(); }
     bool isEmpty() const { return m_nodes.isEmpty(); }
 
-    void append(RawPtr<Node>);
+    void append(Node*);
     void clear() { m_nodes.clear(); m_indices.clear(); }
     void shrinkToFit() { m_nodes.shrinkToFit(); }
 

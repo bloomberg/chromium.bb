@@ -196,7 +196,7 @@ ImageDocument::ImageDocument(const DocumentInit& initializer)
     lockCompatibilityMode();
 }
 
-RawPtr<DocumentParser> ImageDocument::createParser()
+DocumentParser* ImageDocument::createParser()
 {
     return ImageDocumentParser::create(this);
 }

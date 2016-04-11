@@ -50,10 +50,10 @@ class Text;
 class CORE_EXPORT Range final : public GarbageCollected<Range>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RawPtr<Range> create(Document&);
-    static RawPtr<Range> create(Document&, Node* startContainer, int startOffset, Node* endContainer, int endOffset);
-    static RawPtr<Range> create(Document&, const Position&, const Position&);
-    static RawPtr<Range> createAdjustedToTreeScope(const TreeScope&, const Position&);
+    static Range* create(Document&);
+    static Range* create(Document&, Node* startContainer, int startOffset, Node* endContainer, int endOffset);
+    static Range* create(Document&, const Position&, const Position&);
+    static Range* createAdjustedToTreeScope(const TreeScope&, const Position&);
 
     void dispose();
 
@@ -68,8 +68,8 @@ public:
 
     Node* commonAncestorContainer() const;
     static Node* commonAncestorContainer(const Node* containerA, const Node* containerB);
-    void setStart(RawPtr<Node> container, int offset, ExceptionState& = ASSERT_NO_EXCEPTION);
-    void setEnd(RawPtr<Node> container, int offset, ExceptionState& = ASSERT_NO_EXCEPTION);
+    void setStart(Node* container, int offset, ExceptionState& = ASSERT_NO_EXCEPTION);
+    void setEnd(Node* container, int offset, ExceptionState& = ASSERT_NO_EXCEPTION);
     void collapse(bool toStart);
     bool isNodeFullyContained(Node&) const;
     bool isPointInRange(Node* refNode, int offset, ExceptionState&) const;
@@ -83,17 +83,17 @@ public:
     bool intersectsNode(Node* refNode, ExceptionState&);
     static bool intersectsNode(Node* refNode, const Position& start, const Position& end, ExceptionState&);
     void deleteContents(ExceptionState&);
-    RawPtr<DocumentFragment> extractContents(ExceptionState&);
-    RawPtr<DocumentFragment> cloneContents(ExceptionState&);
-    void insertNode(RawPtr<Node>, ExceptionState&);
+    DocumentFragment* extractContents(ExceptionState&);
+    DocumentFragment* cloneContents(ExceptionState&);
+    void insertNode(Node*, ExceptionState&);
     String toString() const;
 
     String text() const;
 
-    RawPtr<DocumentFragment> createContextualFragment(const String& html, ExceptionState&);
+    DocumentFragment* createContextualFragment(const String& html, ExceptionState&);
 
     void detach();
-    RawPtr<Range> cloneRange() const;
+    Range* cloneRange() const;
 
     void setStartAfter(Node*, ExceptionState& = ASSERT_NO_EXCEPTION);
     void setEndBefore(Node*, ExceptionState& = ASSERT_NO_EXCEPTION);
@@ -101,7 +101,7 @@ public:
     void selectNode(Node*, ExceptionState& = ASSERT_NO_EXCEPTION);
     void selectNodeContents(Node*, ExceptionState&);
     static bool selectNodeContents(Node*, Position&, Position&);
-    void surroundContents(RawPtr<Node>, ExceptionState&);
+    void surroundContents(Node*, ExceptionState&);
     void setStartBefore(Node*, ExceptionState& = ASSERT_NO_EXCEPTION);
 
     const Position startPosition() const { return m_start.toPosition(); }
@@ -158,11 +158,11 @@ private:
     void checkExtractPrecondition(ExceptionState&);
 
     enum ActionType { DELETE_CONTENTS, EXTRACT_CONTENTS, CLONE_CONTENTS };
-    RawPtr<DocumentFragment> processContents(ActionType, ExceptionState&);
-    static RawPtr<Node> processContentsBetweenOffsets(ActionType, RawPtr<DocumentFragment>, Node*, unsigned startOffset, unsigned endOffset, ExceptionState&);
-    static void processNodes(ActionType, HeapVector<Member<Node>>&, RawPtr<Node> oldContainer, RawPtr<Node> newContainer, ExceptionState&);
+    DocumentFragment* processContents(ActionType, ExceptionState&);
+    static Node* processContentsBetweenOffsets(ActionType, DocumentFragment*, Node*, unsigned startOffset, unsigned endOffset, ExceptionState&);
+    static void processNodes(ActionType, HeapVector<Member<Node>>&, Node* oldContainer, Node* newContainer, ExceptionState&);
     enum ContentsProcessDirection { ProcessContentsForward, ProcessContentsBackward };
-    static RawPtr<Node> processAncestorsAndTheirSiblings(ActionType, Node* container, ContentsProcessDirection, RawPtr<Node> clonedContainer, Node* commonRoot, ExceptionState&);
+    static Node* processAncestorsAndTheirSiblings(ActionType, Node* container, ContentsProcessDirection, Node* clonedContainer, Node* commonRoot, ExceptionState&);
 
     Member<Document> m_ownerDocument; // Cannot be null.
     RangeBoundaryPoint m_start;

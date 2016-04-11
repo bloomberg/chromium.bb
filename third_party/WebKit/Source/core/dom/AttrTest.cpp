@@ -14,7 +14,7 @@ class AttrTest : public ::testing::Test {
 protected:
     void SetUp() override;
 
-    RawPtr<Attr> createAttribute();
+    Attr* createAttribute();
     const AtomicString& value() const { return m_value; }
 
 private:
@@ -28,14 +28,14 @@ void AttrTest::SetUp()
     m_value = "value";
 }
 
-RawPtr<Attr> AttrTest::createAttribute()
+Attr* AttrTest::createAttribute()
 {
     return m_document->createAttribute("name", ASSERT_NO_EXCEPTION);
 }
 
 TEST_F(AttrTest, InitialValueState)
 {
-    RawPtr<Attr> attr = createAttribute();
+    Attr* attr = createAttribute();
     EXPECT_EQ(emptyAtom, attr->value());
     EXPECT_EQ(emptyString(), attr->toNode()->nodeValue());
     EXPECT_EQ(String(), attr->textContent());
@@ -43,7 +43,7 @@ TEST_F(AttrTest, InitialValueState)
 
 TEST_F(AttrTest, SetValue)
 {
-    RawPtr<Attr> attr = createAttribute();
+    Attr* attr = createAttribute();
     attr->setValue(value());
     EXPECT_EQ(value(), attr->value());
     EXPECT_EQ(value(), attr->toNode()->nodeValue());
@@ -53,7 +53,7 @@ TEST_F(AttrTest, SetValue)
 
 TEST_F(AttrTest, SetNodeValue)
 {
-    RawPtr<Attr> attr = createAttribute();
+    Attr* attr = createAttribute();
     attr->toNode()->setNodeValue(value());
     EXPECT_EQ(value(), attr->value());
     EXPECT_EQ(value(), attr->toNode()->nodeValue());
@@ -63,7 +63,7 @@ TEST_F(AttrTest, SetNodeValue)
 
 TEST_F(AttrTest, SetTextContent)
 {
-    RawPtr<Attr> attr = createAttribute();
+    Attr* attr = createAttribute();
     // Node::setTextContent() does nothing for Attr.
     attr->setTextContent(value());
     EXPECT_EQ(emptyAtom, attr->value());
@@ -73,7 +73,7 @@ TEST_F(AttrTest, SetTextContent)
 
 TEST_F(AttrTest, LengthOfContents)
 {
-    RawPtr<Attr> attr = createAttribute();
+    Attr* attr = createAttribute();
     EXPECT_EQ(0u, attr->lengthOfContents());
     attr->setValue(value());
     EXPECT_EQ(0u, attr->lengthOfContents());

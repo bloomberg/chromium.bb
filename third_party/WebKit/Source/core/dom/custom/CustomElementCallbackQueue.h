@@ -43,7 +43,7 @@ namespace blink {
 class CustomElementCallbackQueue : public GarbageCollectedFinalized<CustomElementCallbackQueue> {
     WTF_MAKE_NONCOPYABLE(CustomElementCallbackQueue);
 public:
-    static RawPtr<CustomElementCallbackQueue> create(RawPtr<Element>);
+    static CustomElementCallbackQueue* create(Element*);
 
     typedef int ElementQueueId;
     ElementQueueId owner() const { return m_owner; }
@@ -58,13 +58,13 @@ public:
 
     bool processInElementQueue(ElementQueueId);
 
-    void append(RawPtr<CustomElementProcessingStep> invocation) { m_queue.append(invocation); }
+    void append(CustomElementProcessingStep* invocation) { m_queue.append(invocation); }
     bool inCreatedCallback() const { return m_inCreatedCallback; }
 
     DECLARE_TRACE();
 
 private:
-    explicit CustomElementCallbackQueue(RawPtr<Element>);
+    explicit CustomElementCallbackQueue(Element*);
 
     Member<Element> m_element;
     HeapVector<Member<CustomElementProcessingStep>> m_queue;

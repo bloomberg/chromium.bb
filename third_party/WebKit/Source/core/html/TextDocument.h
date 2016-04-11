@@ -39,7 +39,7 @@ public:
 private:
     TextDocument(const DocumentInit&);
 
-    RawPtr<DocumentParser> createParser() override;
+    DocumentParser* createParser() override;
 };
 
 } // namespace blink

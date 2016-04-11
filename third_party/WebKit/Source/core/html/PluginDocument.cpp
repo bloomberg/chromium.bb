@@ -168,7 +168,7 @@ PluginDocument::PluginDocument(const DocumentInit& initializer)
     lockCompatibilityMode();
 }
 
-RawPtr<DocumentParser> PluginDocument::createParser()
+DocumentParser* PluginDocument::createParser()
 {
     return PluginDocumentParser::create(this);
 }

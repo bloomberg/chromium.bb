@@ -30,7 +30,7 @@
 
 namespace blink {
 
-NodeIteratorBase::NodeIteratorBase(RawPtr<Node> rootNode, unsigned whatToShow, RawPtr<NodeFilter> nodeFilter)
+NodeIteratorBase::NodeIteratorBase(Node* rootNode, unsigned whatToShow, NodeFilter* nodeFilter)
     : m_root(rootNode)
     , m_whatToShow(whatToShow)
     , m_filter(nodeFilter)

@@ -35,7 +35,7 @@
 
 namespace blink {
 
-RawPtr<MutationObserverRegistration> MutationObserverRegistration::create(MutationObserver& observer, Node* registrationNode, MutationObserverOptions options, const HashSet<AtomicString>& attributeFilter)
+MutationObserverRegistration* MutationObserverRegistration::create(MutationObserver& observer, Node* registrationNode, MutationObserverOptions options, const HashSet<AtomicString>& attributeFilter)
 {
     return new MutationObserverRegistration(observer, registrationNode, options, attributeFilter);
 }
@@ -83,7 +83,7 @@ void MutationObserverRegistration::observedSubtreeNodeWillDetach(Node& node)
 
         DCHECK(m_registrationNode);
         DCHECK(!m_registrationNodeKeepAlive);
-        m_registrationNodeKeepAlive = RawPtr<Node>(m_registrationNode.get()); // Balanced in clearTransientRegistrations.
+        m_registrationNodeKeepAlive = m_registrationNode.get(); // Balanced in clearTransientRegistrations.
     }
     m_transientRegistrationNodes->add(&node);
 }

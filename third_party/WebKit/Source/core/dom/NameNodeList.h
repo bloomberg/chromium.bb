@@ -32,7 +32,7 @@ namespace blink {
 // NodeList which lists all Nodes in a Element with a given "name" attribute
 class NameNodeList final : public LiveNodeList {
 public:
-    static RawPtr<NameNodeList> create(ContainerNode& rootNode, CollectionType type, const AtomicString& name)
+    static NameNodeList* create(ContainerNode& rootNode, CollectionType type, const AtomicString& name)
     {
         ASSERT_UNUSED(type, type == NameNodeListType);
         return new NameNodeList(rootNode, name);

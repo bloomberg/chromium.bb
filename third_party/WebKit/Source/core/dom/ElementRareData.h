@@ -52,7 +52,7 @@ public:
 
     ~ElementRareData();
 
-    void setPseudoElement(PseudoId, RawPtr<PseudoElement>);
+    void setPseudoElement(PseudoId, PseudoElement*);
     PseudoElement* pseudoElement(PseudoId) const;
 
     short tabIndex() const { return m_tabindex; }
@@ -81,14 +81,14 @@ public:
     }
 
     NamedNodeMap* attributeMap() const { return m_attributeMap.get(); }
-    void setAttributeMap(RawPtr<NamedNodeMap> attributeMap) { m_attributeMap = attributeMap; }
+    void setAttributeMap(NamedNodeMap* attributeMap) { m_attributeMap = attributeMap; }
 
     ComputedStyle* ensureComputedStyle() const { return m_computedStyle.get(); }
     void setComputedStyle(PassRefPtr<ComputedStyle> computedStyle) { m_computedStyle = computedStyle; }
     void clearComputedStyle() { m_computedStyle = nullptr; }
 
     ClassList* classList() const { return m_classList.get(); }
-    void setClassList(RawPtr<ClassList> classList) { m_classList = classList.leakRef(); }
+    void setClassList(ClassList* classList) { m_classList = classList; }
     void clearClassListValueForQuirksMode()
     {
         if (!m_classList)
@@ -97,7 +97,7 @@ public:
     }
 
     DatasetDOMStringMap* dataset() const { return m_dataset.get(); }
-    void setDataset(RawPtr<DatasetDOMStringMap> dataset) { m_dataset = dataset; }
+    void setDataset(DatasetDOMStringMap* dataset) { m_dataset = dataset; }
 
     LayoutSize minimumSizeForResizing() const { return m_minimumSizeForResizing; }
     void setMinimumSizeForResizing(LayoutSize size) { m_minimumSizeForResizing = size; }
@@ -118,7 +118,7 @@ public:
     void decrementCompositorProxiedProperties(uint32_t properties);
     CompositorProxiedPropertySet* proxiedPropertyCounts() const { return m_proxiedProperties.get(); }
 
-    void setCustomElementDefinition(RawPtr<CustomElementDefinition> definition) { m_customElementDefinition = definition; }
+    void setCustomElementDefinition(CustomElementDefinition* definition) { m_customElementDefinition = definition; }
     CustomElementDefinition* customElementDefinition() const { return m_customElementDefinition.get(); }
 
     AttrNodeList& ensureAttrNodeList();
@@ -208,7 +208,7 @@ inline void ElementRareData::clearPseudoElements()
     setPseudoElement(PseudoIdFirstLetter, nullptr);
 }
 
-inline void ElementRareData::setPseudoElement(PseudoId pseudoId, RawPtr<PseudoElement> element)
+inline void ElementRareData::setPseudoElement(PseudoId pseudoId, PseudoElement* element)
 {
     switch (pseudoId) {
     case PseudoIdBefore:

@@ -51,7 +51,7 @@ class CORE_EXPORT DOMTokenList : public GarbageCollectedFinalized<DOMTokenList>,
     DEFINE_WRAPPERTYPEINFO();
     WTF_MAKE_NONCOPYABLE(DOMTokenList);
 public:
-    static RawPtr<DOMTokenList> create(DOMTokenListObserver* observer = nullptr)
+    static DOMTokenList* create(DOMTokenListObserver* observer = nullptr)
     {
         return new DOMTokenList(observer);
     }

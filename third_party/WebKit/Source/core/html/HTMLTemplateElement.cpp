@@ -61,15 +61,15 @@ DocumentFragment* HTMLTemplateElement::content() const
     return m_content.get();
 }
 
-RawPtr<Node> HTMLTemplateElement::cloneNode(bool deep)
+Node* HTMLTemplateElement::cloneNode(bool deep)
 {
     if (!deep)
         return cloneElementWithoutChildren();
 
-    RawPtr<Node> clone = cloneElementWithChildren();
+    Node* clone = cloneElementWithChildren();
     if (m_content)
-        content()->cloneChildNodes(toHTMLTemplateElement(clone.get())->content());
-    return clone.release();
+        content()->cloneChildNodes(toHTMLTemplateElement(clone)->content());
+    return clone;
 }
 
 void HTMLTemplateElement::didMoveToNewDocument(Document& oldDocument)

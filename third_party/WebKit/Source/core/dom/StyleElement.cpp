@@ -101,12 +101,12 @@ void StyleElement::removedFrom(Element* element, ContainerNode* insertionPoint)
         m_registeredAsCandidate = false;
     }
 
-    RawPtr<StyleSheet> removedSheet = m_sheet.get();
+    StyleSheet* removedSheet = m_sheet.get();
 
     if (m_sheet)
         clearSheet(element);
     if (removedSheet)
-        document.styleEngine().setNeedsActiveStyleUpdate(removedSheet.get(), AnalyzedStyleUpdate);
+        document.styleEngine().setNeedsActiveStyleUpdate(removedSheet, AnalyzedStyleUpdate);
 }
 
 void StyleElement::clearDocumentData(Document& document, Element* element)
@@ -183,20 +183,20 @@ StyleElement::ProcessingResult StyleElement::createSheet(Element* e, const Strin
         || csp->allowInlineStyle(e->document().url(), m_startPosition.m_line, text);
 
     // Clearing the current sheet may remove the cache entry so create the new sheet first
-    RawPtr<CSSStyleSheet> newSheet = nullptr;
+    CSSStyleSheet* newSheet = nullptr;
 
     // If type is empty or CSS, this is a CSS style sheet.
     const AtomicString& type = this->type();
     if (isCSS(e, type) && passesContentSecurityPolicyChecks) {
-        RawPtr<MediaQuerySet> mediaQueries = MediaQuerySet::create(media());
+        MediaQuerySet* mediaQueries = MediaQuerySet::create(media());
 
         MediaQueryEvaluator screenEval("screen", true);
         MediaQueryEvaluator printEval("print", true);
-        if (screenEval.eval(mediaQueries.get()) || printEval.eval(mediaQueries.get())) {
+        if (screenEval.eval(mediaQueries) || printEval.eval(mediaQueries)) {
             m_loading = true;
             TextPosition startPosition = m_startPosition == TextPosition::belowRangePosition() ? TextPosition::minimumPosition() : m_startPosition;
             newSheet = document.styleEngine().createSheet(e, text, startPosition);
-            newSheet->setMediaQueries(mediaQueries.release());
+            newSheet->setMediaQueries(mediaQueries);
             m_loading = false;
         }
     }
@@ -204,7 +204,7 @@ StyleElement::ProcessingResult StyleElement::createSheet(Element* e, const Strin
     if (m_sheet)
         clearSheet(e);
 
-    m_sheet = newSheet.release();
+    m_sheet = newSheet;
     if (m_sheet)
         m_sheet->contents()->checkLoaded();
 

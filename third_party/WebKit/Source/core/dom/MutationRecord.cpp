@@ -42,7 +42,7 @@ namespace {
 
 class ChildListRecord : public MutationRecord {
 public:
-    ChildListRecord(RawPtr<Node> target, RawPtr<StaticNodeList> added, RawPtr<StaticNodeList> removed, RawPtr<Node> previousSibling, RawPtr<Node> nextSibling)
+    ChildListRecord(Node* target, StaticNodeList* added, StaticNodeList* removed, Node* previousSibling, Node* nextSibling)
         : m_target(target)
         , m_addedNodes(added)
         , m_removedNodes(removed)
@@ -78,7 +78,7 @@ private:
 
 class RecordWithEmptyNodeLists : public MutationRecord {
 public:
-    RecordWithEmptyNodeLists(RawPtr<Node> target, const String& oldValue)
+    RecordWithEmptyNodeLists(Node* target, const String& oldValue)
         : m_target(target)
         , m_oldValue(oldValue)
     {
@@ -113,7 +113,7 @@ private:
 
 class AttributesRecord : public RecordWithEmptyNodeLists {
 public:
-    AttributesRecord(RawPtr<Node> target, const QualifiedName& name, const AtomicString& oldValue)
+    AttributesRecord(Node* target, const QualifiedName& name, const AtomicString& oldValue)
         : RecordWithEmptyNodeLists(target, oldValue)
         , m_attributeName(name.localName())
         , m_attributeNamespace(name.namespaceURI())
@@ -131,7 +131,7 @@ private:
 
 class CharacterDataRecord : public RecordWithEmptyNodeLists {
 public:
-    CharacterDataRecord(RawPtr<Node> target, const String& oldValue)
+    CharacterDataRecord(Node* target, const String& oldValue)
         : RecordWithEmptyNodeLists(target, oldValue)
     {
     }
@@ -142,7 +142,7 @@ private:
 
 class MutationRecordWithNullOldValue : public MutationRecord {
 public:
-    MutationRecordWithNullOldValue(RawPtr<MutationRecord> record)
+    MutationRecordWithNullOldValue(MutationRecord* record)
         : m_record(record)
     {
     }
@@ -188,22 +188,22 @@ const AtomicString& CharacterDataRecord::type()
 
 } // namespace
 
-RawPtr<MutationRecord> MutationRecord::createChildList(RawPtr<Node> target, RawPtr<StaticNodeList> added, RawPtr<StaticNodeList> removed, RawPtr<Node> previousSibling, RawPtr<Node> nextSibling)
+MutationRecord* MutationRecord::createChildList(Node* target, StaticNodeList* added, StaticNodeList* removed, Node* previousSibling, Node* nextSibling)
 {
     return new ChildListRecord(target, added, removed, previousSibling, nextSibling);
 }
 
-RawPtr<MutationRecord> MutationRecord::createAttributes(RawPtr<Node> target, const QualifiedName& name, const AtomicString& oldValue)
+MutationRecord* MutationRecord::createAttributes(Node* target, const QualifiedName& name, const AtomicString& oldValue)
 {
     return new AttributesRecord(target, name, oldValue);
 }
 
-RawPtr<MutationRecord> MutationRecord::createCharacterData(RawPtr<Node> target, const String& oldValue)
+MutationRecord* MutationRecord::createCharacterData(Node* target, const String& oldValue)
 {
     return new CharacterDataRecord(target, oldValue);
 }
 
-RawPtr<MutationRecord> MutationRecord::createWithNullOldValue(RawPtr<MutationRecord> record)
+MutationRecord* MutationRecord::createWithNullOldValue(MutationRecord* record)
 {
     return new MutationRecordWithNullOldValue(record);
 }

@@ -38,7 +38,7 @@ namespace blink {
 
 class EmptyNodeList final : public NodeList {
 public:
-    static RawPtr<EmptyNodeList> create(Node& rootNode)
+    static EmptyNodeList* create(Node& rootNode)
     {
         return new EmptyNodeList(rootNode);
     }

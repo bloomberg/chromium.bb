@@ -52,7 +52,7 @@ public:
 private:
     explicit PluginDocument(const DocumentInit&);
 
-    RawPtr<DocumentParser> createParser() override;
+    DocumentParser* createParser() override;
 
     Member<Node> m_pluginNode;
 };

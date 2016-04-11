@@ -11,9 +11,9 @@ namespace blink {
 
 class CustomElementSyncMicrotaskQueue : public CustomElementMicrotaskQueueBase {
 public:
-    static RawPtr<CustomElementSyncMicrotaskQueue> create() { return new CustomElementSyncMicrotaskQueue(); }
+    static CustomElementSyncMicrotaskQueue* create() { return new CustomElementSyncMicrotaskQueue(); }
 
-    void enqueue(RawPtr<CustomElementMicrotaskStep>);
+    void enqueue(CustomElementMicrotaskStep*);
 
 private:
     CustomElementSyncMicrotaskQueue() { }

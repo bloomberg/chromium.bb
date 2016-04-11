@@ -40,9 +40,9 @@ class Node;
 template <typename NodeType>
 class StaticNodeTypeList final : public NodeList {
 public:
-    static RawPtr<StaticNodeTypeList> adopt(HeapVector<Member<NodeType>>& nodes);
+    static StaticNodeTypeList* adopt(HeapVector<Member<NodeType>>& nodes);
 
-    static RawPtr<StaticNodeTypeList> createEmpty()
+    static StaticNodeTypeList* createEmpty()
     {
         return new StaticNodeTypeList;
     }
@@ -62,11 +62,11 @@ typedef StaticNodeTypeList<Node> StaticNodeList;
 typedef StaticNodeTypeList<Element> StaticElementList;
 
 template <typename NodeType>
-RawPtr<StaticNodeTypeList<NodeType>> StaticNodeTypeList<NodeType>::adopt(HeapVector<Member<NodeType>>& nodes)
+StaticNodeTypeList<NodeType>* StaticNodeTypeList<NodeType>::adopt(HeapVector<Member<NodeType>>& nodes)
 {
-    RawPtr<StaticNodeTypeList<NodeType>> nodeList = new StaticNodeTypeList<NodeType>;
+    StaticNodeTypeList<NodeType>* nodeList = new StaticNodeTypeList<NodeType>;
     nodeList->m_nodes.swap(nodes);
-    return nodeList.release();
+    return nodeList;
 }
 
 template <typename NodeType>

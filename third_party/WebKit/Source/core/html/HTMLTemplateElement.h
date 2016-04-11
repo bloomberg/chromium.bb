@@ -48,7 +48,7 @@ public:
     DocumentFragment* content() const;
 
 private:
-    RawPtr<Node> cloneNode(bool deep) override;
+    Node* cloneNode(bool deep) override;
     void didMoveToNewDocument(Document& oldDocument) override;
 
     explicit HTMLTemplateElement(Document&);

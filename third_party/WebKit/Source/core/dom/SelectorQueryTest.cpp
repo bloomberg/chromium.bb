@@ -13,14 +13,14 @@ namespace blink {
 
 TEST(SelectorQueryTest, NotMatchingPseudoElement)
 {
-    RawPtr<Document> document = Document::create();
-    RawPtr<HTMLHtmlElement> html = HTMLHtmlElement::create(*document);
-    document->appendChild(html.release());
+    Document* document = Document::create();
+    HTMLHtmlElement* html = HTMLHtmlElement::create(*document);
+    document->appendChild(html);
     document->documentElement()->setInnerHTML("<body><style>span::before { content: 'X' }</style><span></span></body>", ASSERT_NO_EXCEPTION);
 
     CSSSelectorList selectorList = CSSParser::parseSelector(CSSParserContext(*document, nullptr), nullptr, "span::before");
     OwnPtr<SelectorQuery> query = SelectorQuery::adopt(std::move(selectorList));
-    RawPtr<Element> elm = query->queryFirst(*document);
+    Element* elm = query->queryFirst(*document);
     EXPECT_EQ(nullptr, elm);
 
     selectorList = CSSParser::parseSelector(CSSParserContext(*document, nullptr), nullptr, "span");

@@ -38,7 +38,7 @@ class NamedNodeMap final : public GarbageCollected<NamedNodeMap>, public ScriptW
     DEFINE_WRAPPERTYPEINFO();
     friend class Element;
 public:
-    static RawPtr<NamedNodeMap> create(Element* element)
+    static NamedNodeMap* create(Element* element)
     {
         return new NamedNodeMap(element);
     }
@@ -50,16 +50,16 @@ public:
 
     // Public DOM interface.
 
-    RawPtr<Attr> getNamedItem(const AtomicString&) const;
-    RawPtr<Attr> removeNamedItem(const AtomicString& name, ExceptionState&);
+    Attr* getNamedItem(const AtomicString&) const;
+    Attr* removeNamedItem(const AtomicString& name, ExceptionState&);
 
-    RawPtr<Attr> getNamedItemNS(const AtomicString& namespaceURI, const AtomicString& localName) const;
-    RawPtr<Attr> removeNamedItemNS(const AtomicString& namespaceURI, const AtomicString& localName, ExceptionState&);
+    Attr* getNamedItemNS(const AtomicString& namespaceURI, const AtomicString& localName) const;
+    Attr* removeNamedItemNS(const AtomicString& namespaceURI, const AtomicString& localName, ExceptionState&);
 
-    RawPtr<Attr> setNamedItem(Attr*, ExceptionState&);
-    RawPtr<Attr> setNamedItemNS(Attr*, ExceptionState&);
+    Attr* setNamedItem(Attr*, ExceptionState&);
+    Attr* setNamedItemNS(Attr*, ExceptionState&);
 
-    RawPtr<Attr> item(unsigned index) const;
+    Attr* item(unsigned index) const;
     size_t length() const;
 
     Element* element() const { return m_element; }

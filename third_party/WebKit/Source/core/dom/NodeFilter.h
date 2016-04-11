@@ -66,19 +66,19 @@ public:
         SHOW_NOTATION                  = 0x00000800
     };
 
-    static RawPtr<NodeFilter> create(RawPtr<NodeFilterCondition> condition)
+    static NodeFilter* create(NodeFilterCondition* condition)
     {
         return new NodeFilter(condition);
     }
 
-    static RawPtr<NodeFilter> create()
+    static NodeFilter* create()
     {
         return new NodeFilter();
     }
 
     unsigned acceptNode(Node*, ExceptionState&) const;
 
-    void setCondition(RawPtr<NodeFilterCondition> condition)
+    void setCondition(NodeFilterCondition* condition)
     {
         m_condition = condition;
     }
@@ -86,7 +86,7 @@ public:
     DECLARE_TRACE();
 
 private:
-    explicit NodeFilter(RawPtr<NodeFilterCondition> condition) : m_condition(condition) { }
+    explicit NodeFilter(NodeFilterCondition* condition) : m_condition(condition) { }
 
     NodeFilter() { }
 

@@ -75,7 +75,7 @@ public:
         CharacterDataOldValue = 1 << 6,
     };
 
-    static RawPtr<MutationObserver> create(RawPtr<MutationCallback>);
+    static MutationObserver* create(MutationCallback*);
     static void resumeSuspendedObservers();
     static void deliverMutations();
 
@@ -86,7 +86,7 @@ public:
     void disconnect();
     void observationStarted(MutationObserverRegistration*);
     void observationEnded(MutationObserverRegistration*);
-    void enqueueMutationRecord(RawPtr<MutationRecord>);
+    void enqueueMutationRecord(MutationRecord*);
     void setHasTransientRegistration();
 
     HeapHashSet<Member<Node>> getObservedNodes() const;
@@ -98,7 +98,7 @@ public:
 private:
     struct ObserverLessThan;
 
-    explicit MutationObserver(RawPtr<MutationCallback>);
+    explicit MutationObserver(MutationCallback*);
     void deliver();
     bool shouldBeSuspended() const;
     void cancelInspectorAsyncTasks();

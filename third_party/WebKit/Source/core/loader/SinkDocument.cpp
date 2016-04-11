@@ -53,7 +53,7 @@ SinkDocument::SinkDocument(const DocumentInit& initializer)
     lockCompatibilityMode();
 }
 
-RawPtr<DocumentParser> SinkDocument::createParser()
+DocumentParser* SinkDocument::createParser()
 {
     return SinkDocumentParser::create(this);
 }

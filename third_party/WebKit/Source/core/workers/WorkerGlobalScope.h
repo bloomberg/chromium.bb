@@ -137,7 +137,7 @@ public:
     using SecurityContext::getSecurityOrigin;
     using SecurityContext::contentSecurityPolicy;
 
-    void addConsoleMessage(RawPtr<ConsoleMessage>) final;
+    void addConsoleMessage(ConsoleMessage*) final;
     ConsoleMessageStorage* messageStorage();
 
     void exceptionHandled(int exceptionId, bool isHandled);

@@ -33,7 +33,7 @@ namespace blink {
 
 class ChildNodeList final : public NodeList {
 public:
-    static RawPtr<ChildNodeList> create(ContainerNode& rootNode)
+    static ChildNodeList* create(ContainerNode& rootNode)
     {
         return new ChildNodeList(rootNode);
     }

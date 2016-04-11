@@ -69,7 +69,7 @@ public:
 
     friend class IgnoringPendingStylesheet;
 
-    static RawPtr<StyleEngine> create(Document& document) { return new StyleEngine(document); }
+    static StyleEngine* create(Document& document) { return new StyleEngine(document); }
 
     ~StyleEngine();
 
@@ -90,7 +90,7 @@ public:
     void modifiedStyleSheetCandidateNode(Node*);
     void watchedSelectorsChanged();
 
-    void injectAuthorSheet(RawPtr<StyleSheetContents> authorSheet);
+    void injectAuthorSheet(StyleSheetContents* authorSheet);
 
     void clearMediaQueryRuleSetStyleSheets();
     void updateStyleSheetsInImport(DocumentStyleSheetCollector& parentCollector);
@@ -145,7 +145,7 @@ public:
     StyleInvalidator& styleInvalidator() { return m_styleInvalidator; }
 
     CSSFontSelector* fontSelector() { return m_fontSelector.get(); }
-    void setFontSelector(RawPtr<CSSFontSelector>);
+    void setFontSelector(CSSFontSelector*);
 
     void removeFontFaceRules(const HeapVector<Member<const StyleRuleFontFace>>&);
     void clearFontCache();
@@ -156,7 +156,7 @@ public:
     bool shouldClearResolver() const;
     void resolverChanged(StyleResolverUpdateMode);
 
-    RawPtr<CSSStyleSheet> createSheet(Element*, const String& text, TextPosition startPosition);
+    CSSStyleSheet* createSheet(Element*, const String& text, TextPosition startPosition);
     void removeSheet(StyleSheetContents*);
 
     void collectScopedStyleFeaturesTo(RuleFeatureSet&) const;
@@ -203,7 +203,7 @@ private:
 
     void createResolver();
 
-    static RawPtr<CSSStyleSheet> parseSheet(Element*, const String& text, TextPosition startPosition);
+    static CSSStyleSheet* parseSheet(Element*, const String& text, TextPosition startPosition);
 
     const DocumentStyleSheetCollection* documentStyleSheetCollection() const
     {

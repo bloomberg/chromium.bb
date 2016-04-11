@@ -153,7 +153,7 @@ static unsigned computePresentationAttributeCacheHash(const PresentationAttribut
     return WTF::hashInts(key.tagName->existingHash(), attributeHash);
 }
 
-RawPtr<StylePropertySet> computePresentationAttributeStyle(Element& element)
+StylePropertySet* computePresentationAttributeStyle(Element& element)
 {
     DEFINE_STATIC_LOCAL(PresentationAttributeCacheCleaner, cacheCleaner, ());
 
@@ -187,7 +187,7 @@ RawPtr<StylePropertySet> computePresentationAttributeStyle(Element& element)
     if (!cacheHash || cacheValue->value)
         return style;
 
-    RawPtr<PresentationAttributeCacheEntry> newEntry = new PresentationAttributeCacheEntry;
+    PresentationAttributeCacheEntry* newEntry = new PresentationAttributeCacheEntry;
     newEntry->key = cacheKey;
     newEntry->value = style;
 
@@ -196,9 +196,9 @@ RawPtr<StylePropertySet> computePresentationAttributeStyle(Element& element)
         // FIXME: Discarding the entire cache when it gets too big is probably bad
         // since it creates a perf "cliff". Perhaps we should use an LRU?
         presentationAttributeCache().clear();
-        presentationAttributeCache().set(cacheHash, newEntry.release());
+        presentationAttributeCache().set(cacheHash, newEntry);
     } else {
-        cacheValue->value = newEntry.release();
+        cacheValue->value = newEntry;
     }
 
     return style;

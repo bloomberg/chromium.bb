@@ -26,7 +26,7 @@ RemoteSecurityContext::RemoteSecurityContext()
     // grantUniversalAccess().
 }
 
-RawPtr<RemoteSecurityContext> RemoteSecurityContext::create()
+RemoteSecurityContext* RemoteSecurityContext::create()
 {
     return new RemoteSecurityContext();
 }

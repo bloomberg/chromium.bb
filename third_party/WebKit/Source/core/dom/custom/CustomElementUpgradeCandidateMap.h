@@ -43,7 +43,7 @@ namespace blink {
 class CustomElementUpgradeCandidateMap final : public CustomElementObserver {
     WTF_MAKE_NONCOPYABLE(CustomElementUpgradeCandidateMap);
 public:
-    static RawPtr<CustomElementUpgradeCandidateMap> create();
+    static CustomElementUpgradeCandidateMap* create();
     ~CustomElementUpgradeCandidateMap() override;
 
     // API for CustomElementRegistrationContext to save and take candidates
@@ -51,7 +51,7 @@ public:
     typedef HeapLinkedHashSet<WeakMember<Element>> ElementSet;
 
     void add(const CustomElementDescriptor&, Element*);
-    RawPtr<ElementSet> takeUpgradeCandidatesFor(const CustomElementDescriptor&);
+    ElementSet* takeUpgradeCandidatesFor(const CustomElementDescriptor&);
 
     DECLARE_VIRTUAL_TRACE();
 

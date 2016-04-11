@@ -52,7 +52,7 @@ public:
     bool isShadowInsertionPoint() const;
     bool isContentInsertionPoint() const;
 
-    RawPtr<StaticNodeList> getDistributedNodes();
+    StaticNodeList* getDistributedNodes();
 
     virtual bool canAffectSelector() const { return false; }
 
@@ -60,9 +60,9 @@ public:
     void detach(const AttachContext& = AttachContext()) override;
 
     size_t distributedNodesSize() const { return m_distributedNodes.size(); }
-    Node* distributedNodeAt(size_t index)  const { return m_distributedNodes.at(index).get(); }
-    Node* firstDistributedNode() const { return m_distributedNodes.isEmpty() ? 0 : m_distributedNodes.first().get(); }
-    Node* lastDistributedNode() const { return m_distributedNodes.isEmpty() ? 0 : m_distributedNodes.last().get(); }
+    Node* distributedNodeAt(size_t index)  const { return m_distributedNodes.at(index); }
+    Node* firstDistributedNode() const { return m_distributedNodes.isEmpty() ? 0 : m_distributedNodes.first(); }
+    Node* lastDistributedNode() const { return m_distributedNodes.isEmpty() ? 0 : m_distributedNodes.last(); }
     Node* distributedNodeNextTo(const Node* node) const { return m_distributedNodes.nextTo(node); }
     Node* distributedNodePreviousTo(const Node* node) const { return m_distributedNodes.previousTo(node); }
 

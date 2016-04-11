@@ -66,7 +66,7 @@ public:
     }
 
     void reportBlockedScriptExecutionToInspector(const String& directiveText) final;
-    void addConsoleMessage(RawPtr<ConsoleMessage>) final;
+    void addConsoleMessage(ConsoleMessage*) final;
     void logExceptionToConsole(const String& errorMessage, int scriptId, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtr<ScriptCallStack>) final;
 
     DECLARE_VIRTUAL_TRACE();

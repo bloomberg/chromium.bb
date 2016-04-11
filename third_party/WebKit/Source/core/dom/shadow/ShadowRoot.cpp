@@ -111,7 +111,7 @@ ShadowRoot* ShadowRoot::olderShadowRootForBindings() const
     return older;
 }
 
-RawPtr<Node> ShadowRoot::cloneNode(bool, ExceptionState& exceptionState)
+Node* ShadowRoot::cloneNode(bool, ExceptionState& exceptionState)
 {
     exceptionState.throwDOMException(NotSupportedError, "ShadowRoot nodes are not clonable.");
     return nullptr;
@@ -129,8 +129,8 @@ void ShadowRoot::setInnerHTML(const String& markup, ExceptionState& exceptionSta
         return;
     }
 
-    if (RawPtr<DocumentFragment> fragment = createFragmentForInnerOuterHTML(markup, host(), AllowScriptingContent, "innerHTML", exceptionState))
-        replaceChildrenWithFragment(this, fragment.release(), exceptionState);
+    if (DocumentFragment* fragment = createFragmentForInnerOuterHTML(markup, host(), AllowScriptingContent, "innerHTML", exceptionState))
+        replaceChildrenWithFragment(this, fragment, exceptionState);
 }
 
 void ShadowRoot::recalcStyle(StyleRecalcChange change)
@@ -252,7 +252,7 @@ HTMLShadowElement* ShadowRoot::shadowInsertionPointOfYoungerShadowRoot() const
     return m_shadowRootRareData ? m_shadowRootRareData->shadowInsertionPointOfYoungerShadowRoot() : 0;
 }
 
-void ShadowRoot::setShadowInsertionPointOfYoungerShadowRoot(RawPtr<HTMLShadowElement> shadowInsertionPoint)
+void ShadowRoot::setShadowInsertionPointOfYoungerShadowRoot(HTMLShadowElement* shadowInsertionPoint)
 {
     if (!m_shadowRootRareData && !shadowInsertionPoint)
         return;

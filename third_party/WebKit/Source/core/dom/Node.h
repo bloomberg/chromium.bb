@@ -210,7 +210,7 @@ public:
     ContainerNode* parentElementOrDocumentFragment() const;
     Node* previousSibling() const { return m_previous; }
     Node* nextSibling() const { return m_next; }
-    RawPtr<NodeList> childNodes();
+    NodeList* childNodes();
     Node* firstChild() const;
     Node* lastChild() const;
     Node& treeRoot() const;
@@ -227,13 +227,13 @@ public:
 
     const KURL& baseURI() const;
 
-    RawPtr<Node> insertBefore(RawPtr<Node> newChild, Node* refChild, ExceptionState& = ASSERT_NO_EXCEPTION);
-    RawPtr<Node> replaceChild(RawPtr<Node> newChild, RawPtr<Node> oldChild, ExceptionState& = ASSERT_NO_EXCEPTION);
-    RawPtr<Node> removeChild(RawPtr<Node> child, ExceptionState& = ASSERT_NO_EXCEPTION);
-    RawPtr<Node> appendChild(RawPtr<Node> newChild, ExceptionState& = ASSERT_NO_EXCEPTION);
+    Node* insertBefore(Node* newChild, Node* refChild, ExceptionState& = ASSERT_NO_EXCEPTION);
+    Node* replaceChild(Node* newChild, Node* oldChild, ExceptionState& = ASSERT_NO_EXCEPTION);
+    Node* removeChild(Node* child, ExceptionState& = ASSERT_NO_EXCEPTION);
+    Node* appendChild(Node* newChild, ExceptionState& = ASSERT_NO_EXCEPTION);
 
     bool hasChildren() const { return firstChild(); }
-    virtual RawPtr<Node> cloneNode(bool deep) = 0;
+    virtual Node* cloneNode(bool deep) = 0;
     void normalize();
 
     bool isEqualNode(Node*) const;
@@ -638,12 +638,12 @@ public:
     virtual void* preDispatchEventHandler(Event*) { return nullptr; }
     virtual void postDispatchEventHandler(Event*, void* /*dataFromPreDispatch*/) { }
 
-    void dispatchScopedEvent(RawPtr<Event>);
+    void dispatchScopedEvent(Event*);
 
     virtual void handleLocalEvents(Event&);
 
     void dispatchSubtreeModifiedEvent();
-    DispatchEventResult dispatchDOMActivateEvent(int detail, RawPtr<Event> underlyingEvent);
+    DispatchEventResult dispatchDOMActivateEvent(int detail, Event* underlyingEvent);
 
     DispatchEventResult dispatchMouseEvent(const PlatformMouseEvent&, const AtomicString& eventType, int clickCount = 0, Node* relatedTarget = nullptr);
 
@@ -669,7 +669,7 @@ public:
     void incrementConnectedSubframeCount();
     void decrementConnectedSubframeCount();
 
-    RawPtr<StaticNodeList> getDestinationInsertionPoints();
+    StaticNodeList* getDestinationInsertionPoints();
     HTMLSlotElement* assignedSlot() const;
     HTMLSlotElement* assignedSlotForBinding();
 
@@ -914,9 +914,9 @@ DEFINE_COMPARISON_OPERATORS_WITH_REFERENCES_REFCOUNTED(Node)
     DEFINE_TYPE_CASTS(thisType, Node, node, is##thisType(*node), is##thisType(node))
 
 #define DECLARE_NODE_FACTORY(T) \
-    static RawPtr<T> create(Document&)
+    static T* create(Document&)
 #define DEFINE_NODE_FACTORY(T) \
-RawPtr<T> T::create(Document& document) \
+T* T::create(Document& document) \
 { \
     return new T(document); \
 }

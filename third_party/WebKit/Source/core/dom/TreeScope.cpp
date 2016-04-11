@@ -437,7 +437,7 @@ Element* TreeScope::adjustedFocusedElement() const
         return nullptr;
     }
 
-    RawPtr<EventPath> eventPath = new EventPath(*element);
+    EventPath* eventPath = new EventPath(*element);
     for (size_t i = 0; i < eventPath->size(); ++i) {
         if (eventPath->at(i).node() == rootNode()) {
             // eventPath->at(i).target() is one of the followings:

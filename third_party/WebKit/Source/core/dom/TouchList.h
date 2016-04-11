@@ -37,19 +37,19 @@ namespace blink {
 class CORE_EXPORT TouchList final : public GarbageCollected<TouchList>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RawPtr<TouchList> create()
+    static TouchList* create()
     {
         return new TouchList;
     }
 
-    static RawPtr<TouchList> create(const HeapVector<Member<Touch>>& touches)
+    static TouchList* create(const HeapVector<Member<Touch>>& touches)
     {
-        RawPtr<TouchList> list = new TouchList;
+        TouchList* list = new TouchList;
         list->m_values.appendVector(touches);
-        return list.release();
+        return list;
     }
 
-    static RawPtr<TouchList> adopt(HeapVector<Member<Touch>>& touches)
+    static TouchList* adopt(HeapVector<Member<Touch>>& touches)
     {
         return new TouchList(touches);
     }
@@ -59,7 +59,7 @@ public:
     Touch* item(unsigned);
     const Touch* item(unsigned) const;
 
-    void append(const RawPtr<Touch> touch) { m_values.append(touch); }
+    void append(Touch* touch) { m_values.append(touch); }
 
     DECLARE_TRACE();
 

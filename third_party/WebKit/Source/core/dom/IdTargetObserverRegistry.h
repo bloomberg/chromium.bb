@@ -40,7 +40,7 @@ class IdTargetObserverRegistry final : public GarbageCollectedFinalized<IdTarget
     WTF_MAKE_NONCOPYABLE(IdTargetObserverRegistry);
     friend class IdTargetObserver;
 public:
-    static RawPtr<IdTargetObserverRegistry> create();
+    static IdTargetObserverRegistry* create();
     DECLARE_TRACE();
     void notifyObservers(const AtomicString& id);
     bool hasObservers(const AtomicString& id) const;

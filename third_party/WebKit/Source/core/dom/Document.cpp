@@ -381,7 +381,7 @@ private:
     void performTask(ExecutionContext* context) override
     {
         Document* document = toDocument(context);
-        if (RawPtr<Element> element = document->autofocusElement()) {
+        if (Element* element = document->autofocusElement()) {
             document->setAutofocusElement(0);
             element->focus();
         }
@@ -661,7 +661,7 @@ String Document::compatMode() const
     return inQuirksMode() ? "BackCompat" : "CSS1Compat";
 }
 
-void Document::setDoctype(RawPtr<DocumentType> docType)
+void Document::setDoctype(DocumentType* docType)
 {
     // This should never be called more than once.
     DCHECK(!m_docType || !docType);
@@ -706,7 +706,7 @@ AtomicString Document::convertLocalName(const AtomicString& name)
     return isHTMLDocument() ? name.lower() : name;
 }
 
-RawPtr<Element> Document::createElement(const AtomicString& name, ExceptionState& exceptionState)
+Element* Document::createElement(const AtomicString& name, ExceptionState& exceptionState)
 {
     if (!isValidName(name)) {
         exceptionState.throwDOMException(InvalidCharacterError, "The tag name provided ('" + name + "') is not a valid name.");
@@ -719,14 +719,14 @@ RawPtr<Element> Document::createElement(const AtomicString& name, ExceptionState
     return Element::create(QualifiedName(nullAtom, name, nullAtom), this);
 }
 
-RawPtr<Element> Document::createElement(const AtomicString& localName, const AtomicString& typeExtension, ExceptionState& exceptionState)
+Element* Document::createElement(const AtomicString& localName, const AtomicString& typeExtension, ExceptionState& exceptionState)
 {
     if (!isValidName(localName)) {
         exceptionState.throwDOMException(InvalidCharacterError, "The tag name provided ('" + localName + "') is not a valid name.");
         return nullptr;
     }
 
-    RawPtr<Element> element;
+    Element* element;
 
     if (CustomElement::isValidName(localName) && registrationContext()) {
         element = registrationContext()->createCustomTagElement(*this, QualifiedName(nullAtom, convertLocalName(localName), xhtmlNamespaceURI));
@@ -737,9 +737,9 @@ RawPtr<Element> Document::createElement(const AtomicString& localName, const Ato
     }
 
     if (!typeExtension.isEmpty())
-        CustomElementRegistrationContext::setIsAttributeAndTypeExtension(element.get(), typeExtension);
+        CustomElementRegistrationContext::setIsAttributeAndTypeExtension(element, typeExtension);
 
-    return element.release();
+    return element;
 }
 
 static inline QualifiedName createQualifiedName(const AtomicString& namespaceURI, const AtomicString& qualifiedName, ExceptionState& exceptionState)
@@ -757,7 +757,7 @@ static inline QualifiedName createQualifiedName(const AtomicString& namespaceURI
     return qName;
 }
 
-RawPtr<Element> Document::createElementNS(const AtomicString& namespaceURI, const AtomicString& qualifiedName, ExceptionState& exceptionState)
+Element* Document::createElementNS(const AtomicString& namespaceURI, const AtomicString& qualifiedName, ExceptionState& exceptionState)
 {
     QualifiedName qName(createQualifiedName(namespaceURI, qualifiedName, exceptionState));
     if (qName == QualifiedName::null())
@@ -766,22 +766,22 @@ RawPtr<Element> Document::createElementNS(const AtomicString& namespaceURI, cons
     return createElement(qName, false);
 }
 
-RawPtr<Element> Document::createElementNS(const AtomicString& namespaceURI, const AtomicString& qualifiedName, const AtomicString& typeExtension, ExceptionState& exceptionState)
+Element* Document::createElementNS(const AtomicString& namespaceURI, const AtomicString& qualifiedName, const AtomicString& typeExtension, ExceptionState& exceptionState)
 {
     QualifiedName qName(createQualifiedName(namespaceURI, qualifiedName, exceptionState));
     if (qName == QualifiedName::null())
         return nullptr;
 
-    RawPtr<Element> element;
+    Element* element;
     if (CustomElement::isValidName(qName.localName()) && registrationContext())
         element = registrationContext()->createCustomTagElement(*this, qName);
     else
         element = createElement(qName, false);
 
     if (!typeExtension.isEmpty())
-        CustomElementRegistrationContext::setIsAttributeAndTypeExtension(element.get(), typeExtension);
+        CustomElementRegistrationContext::setIsAttributeAndTypeExtension(element, typeExtension);
 
-    return element.release();
+    return element;
 }
 
 ScriptValue Document::registerElement(ScriptState* scriptState, const AtomicString& name, const ElementRegistrationOptions& options, ExceptionState& exceptionState, CustomElement::NameSet validNames)
@@ -844,22 +844,22 @@ LocalFrame* Document::executingFrame()
     return window->frame();
 }
 
-RawPtr<DocumentFragment> Document::createDocumentFragment()
+DocumentFragment* Document::createDocumentFragment()
 {
     return DocumentFragment::create(*this);
 }
 
-RawPtr<Text> Document::createTextNode(const String& data)
+Text* Document::createTextNode(const String& data)
 {
     return Text::create(*this, data);
 }
 
-RawPtr<Comment> Document::createComment(const String& data)
+Comment* Document::createComment(const String& data)
 {
     return Comment::create(*this, data);
 }
 
-RawPtr<CDATASection> Document::createCDATASection(const String& data, ExceptionState& exceptionState)
+CDATASection* Document::createCDATASection(const String& data, ExceptionState& exceptionState)
 {
     if (isHTMLDocument()) {
         exceptionState.throwDOMException(NotSupportedError, "This operation is not supported for HTML documents.");
@@ -872,7 +872,7 @@ RawPtr<CDATASection> Document::createCDATASection(const String& data, ExceptionS
     return CDATASection::create(*this, data);
 }
 
-RawPtr<ProcessingInstruction> Document::createProcessingInstruction(const String& target, const String& data, ExceptionState& exceptionState)
+ProcessingInstruction* Document::createProcessingInstruction(const String& target, const String& data, ExceptionState& exceptionState)
 {
     if (!isValidName(target)) {
         exceptionState.throwDOMException(InvalidCharacterError, "The target provided ('" + target + "') is not a valid name.");
@@ -885,18 +885,18 @@ RawPtr<ProcessingInstruction> Document::createProcessingInstruction(const String
     return ProcessingInstruction::create(*this, target, data);
 }
 
-RawPtr<Text> Document::createEditingTextNode(const String& text)
+Text* Document::createEditingTextNode(const String& text)
 {
     return Text::createEditingText(*this, text);
 }
 
-bool Document::importContainerNodeChildren(ContainerNode* oldContainerNode, RawPtr<ContainerNode> newContainerNode, ExceptionState& exceptionState)
+bool Document::importContainerNodeChildren(ContainerNode* oldContainerNode, ContainerNode* newContainerNode, ExceptionState& exceptionState)
 {
     for (Node& oldChild : NodeTraversal::childrenOf(*oldContainerNode)) {
-        RawPtr<Node> newChild = importNode(&oldChild, true, exceptionState);
+        Node* newChild = importNode(&oldChild, true, exceptionState);
         if (exceptionState.hadException())
             return false;
-        newContainerNode->appendChild(newChild.release(), exceptionState);
+        newContainerNode->appendChild(newChild, exceptionState);
         if (exceptionState.hadException())
             return false;
     }
@@ -904,7 +904,7 @@ bool Document::importContainerNodeChildren(ContainerNode* oldContainerNode, RawP
     return true;
 }
 
-RawPtr<Node> Document::importNode(Node* importedNode, bool deep, ExceptionState& exceptionState)
+Node* Document::importNode(Node* importedNode, bool deep, ExceptionState& exceptionState)
 {
     switch (importedNode->getNodeType()) {
     case TEXT_NODE:
@@ -927,7 +927,7 @@ RawPtr<Node> Document::importNode(Node* importedNode, bool deep, ExceptionState&
             exceptionState.throwDOMException(NamespaceError, "The imported node has an invalid namespace.");
             return nullptr;
         }
-        RawPtr<Element> newElement = createElement(oldElement->tagQName(), false);
+        Element* newElement = createElement(oldElement->tagQName(), false);
 
         newElement->cloneDataFromElement(*oldElement);
 
@@ -941,7 +941,7 @@ RawPtr<Node> Document::importNode(Node* importedNode, bool deep, ExceptionState&
                 return nullptr;
         }
 
-        return newElement.release();
+        return newElement;
     }
     case ATTRIBUTE_NODE:
         return Attr::create(*this, QualifiedName(nullAtom, AtomicString(toAttr(importedNode)->name()), nullAtom), toAttr(importedNode)->value());
@@ -953,11 +953,11 @@ RawPtr<Node> Document::importNode(Node* importedNode, bool deep, ExceptionState&
             return nullptr;
         }
         DocumentFragment* oldFragment = toDocumentFragment(importedNode);
-        RawPtr<DocumentFragment> newFragment = createDocumentFragment();
+        DocumentFragment* newFragment = createDocumentFragment();
         if (deep && !importContainerNodeChildren(oldFragment, newFragment, exceptionState))
             return nullptr;
 
-        return newFragment.release();
+        return newFragment;
     }
     case DOCUMENT_NODE:
         exceptionState.throwDOMException(NotSupportedError, "The node provided is a document, which may not be imported.");
@@ -968,7 +968,7 @@ RawPtr<Node> Document::importNode(Node* importedNode, bool deep, ExceptionState&
     return nullptr;
 }
 
-RawPtr<Node> Document::adoptNode(RawPtr<Node> source, ExceptionState& exceptionState)
+Node* Document::adoptNode(Node* source, ExceptionState& exceptionState)
 {
     EventQueueScope scope;
 
@@ -977,8 +977,8 @@ RawPtr<Node> Document::adoptNode(RawPtr<Node> source, ExceptionState& exceptionS
         exceptionState.throwDOMException(NotSupportedError, "The node provided is of type '" + source->nodeName() + "', which may not be adopted.");
         return nullptr;
     case ATTRIBUTE_NODE: {
-        Attr* attr = toAttr(source.get());
-        if (RawPtr<Element> ownerElement = attr->ownerElement())
+        Attr* attr = toAttr(source);
+        if (Element* ownerElement = attr->ownerElement())
             ownerElement->removeAttributeNode(attr, exceptionState);
         break;
     }
@@ -990,14 +990,14 @@ RawPtr<Node> Document::adoptNode(RawPtr<Node> source, ExceptionState& exceptionS
         }
 
         if (source->isFrameOwnerElement()) {
-            HTMLFrameOwnerElement* frameOwnerElement = toHTMLFrameOwnerElement(source.get());
+            HTMLFrameOwnerElement* frameOwnerElement = toHTMLFrameOwnerElement(source);
             if (frame() && frame()->tree().isDescendantOf(frameOwnerElement->contentFrame())) {
                 exceptionState.throwDOMException(HierarchyRequestError, "The node provided is a frame which contains this document.");
                 return nullptr;
             }
         }
         if (source->parentNode()) {
-            source->parentNode()->removeChild(source.get(), exceptionState);
+            source->parentNode()->removeChild(source, exceptionState);
             if (exceptionState.hadException())
                 return nullptr;
             RELEASE_ASSERT(!source->parentNode());
@@ -1032,9 +1032,9 @@ bool Document::hasValidNamespaceForAttributes(const QualifiedName& qName)
 }
 
 // FIXME: This should really be in a possible ElementFactory class
-RawPtr<Element> Document::createElement(const QualifiedName& qName, bool createdByParser)
+Element* Document::createElement(const QualifiedName& qName, bool createdByParser)
 {
-    RawPtr<Element> e = nullptr;
+    Element* e = nullptr;
 
     // FIXME: Use registered namespaces and look up in a hash to find the right factory.
     if (qName.namespaceURI() == xhtmlNamespaceURI)
@@ -1052,7 +1052,7 @@ RawPtr<Element> Document::createElement(const QualifiedName& qName, bool created
 
     DCHECK(qName == e->tagQName());
 
-    return e.release();
+    return e;
 }
 
 String Document::readyState() const
@@ -1198,7 +1198,7 @@ HeapVector<Member<Element>> Document::elementsFromPoint(int x, int y) const
     return TreeScope::elementsFromPoint(x, y);
 }
 
-RawPtr<Range> Document::caretRangeFromPoint(int x, int y)
+Range* Document::caretRangeFromPoint(int x, int y)
 {
     if (!layoutView())
         return nullptr;
@@ -1492,18 +1492,18 @@ Settings* Document::settings() const
     return m_frame ? m_frame->settings() : 0;
 }
 
-RawPtr<Range> Document::createRange()
+Range* Document::createRange()
 {
     return Range::create(*this);
 }
 
-RawPtr<NodeIterator> Document::createNodeIterator(Node* root, unsigned whatToShow, RawPtr<NodeFilter> filter)
+NodeIterator* Document::createNodeIterator(Node* root, unsigned whatToShow, NodeFilter* filter)
 {
     DCHECK(root);
     return NodeIterator::create(root, whatToShow, filter);
 }
 
-RawPtr<TreeWalker> Document::createTreeWalker(Node* root, unsigned whatToShow, RawPtr<NodeFilter> filter)
+TreeWalker* Document::createTreeWalker(Node* root, unsigned whatToShow, NodeFilter* filter)
 {
     DCHECK(root);
     return TreeWalker::create(root, whatToShow, filter);
@@ -1594,7 +1594,7 @@ void Document::updateStyleInvalidationIfNeeded()
 void Document::setupFontBuilder(ComputedStyle& documentStyle)
 {
     FontBuilder fontBuilder(*this);
-    RawPtr<CSSFontSelector> selector = styleEngine().fontSelector();
+    CSSFontSelector* selector = styleEngine().fontSelector();
     fontBuilder.createFontForDocument(selector, documentStyle);
 }
 
@@ -1788,13 +1788,6 @@ void Document::updateLayoutTree()
     RELEASE_ASSERT(!view()->isInPerformLayout());
     RELEASE_ASSERT(!view()->isPainting());
 
-    // Script can run below in WidgetUpdates, so protect the LocalFrame.
-    // TODO(esprehn): This should actually crash because of the ScriptForbiddenScope,
-    // for an example stack see crbug.com/536194, it seems like we should just use
-    // a PluginScriptForbiddenScope to block all script from running inside here
-    // to avoid the crash.
-    RawPtr<LocalFrame> protect(m_frame.get());
-
     TRACE_EVENT_BEGIN1("blink,devtools.timeline", "UpdateLayoutTree", "beginData", InspectorRecalculateStylesEvent::data(frame()));
     TRACE_EVENT_SCOPED_SAMPLING_STATE("blink", "UpdateLayoutTree");
 
@@ -1963,7 +1956,7 @@ void Document::updateLayout()
 
     ScriptForbiddenScope forbidScript;
 
-    RawPtr<FrameView> frameView = view();
+    FrameView* frameView = view();
     if (frameView && frameView->isInPerformLayout()) {
         // View layout should not be re-entrant.
         ASSERT_NOT_REACHED();
@@ -2279,10 +2272,10 @@ void Document::detach(const AttachContext& context)
     m_autofocusElement = nullptr;
 
     if (m_focusedElement.get()) {
-        RawPtr<Element> oldFocusedElement = m_focusedElement;
+        Element* oldFocusedElement = m_focusedElement;
         m_focusedElement = nullptr;
         if (frameHost())
-            frameHost()->chromeClient().focusedNodeChanged(oldFocusedElement.get(), nullptr);
+            frameHost()->chromeClient().focusedNodeChanged(oldFocusedElement, nullptr);
     }
     m_sequentialFocusNavigationStartingPoint = nullptr;
 
@@ -2419,7 +2412,7 @@ CanvasFontCache* Document::canvasFontCache()
     return m_canvasFontCache.get();
 }
 
-RawPtr<DocumentParser> Document::createParser()
+DocumentParser* Document::createParser()
 {
     if (isHTMLDocument()) {
         bool reportErrors = InspectorInstrumentation::collectingHTMLParseErrors(this);
@@ -2513,7 +2506,7 @@ void Document::cancelParsing()
     setReadyState(Complete);
 }
 
-RawPtr<DocumentParser> Document::implicitOpen(ParserSynchronizationPolicy parserSyncPolicy)
+DocumentParser* Document::implicitOpen(ParserSynchronizationPolicy parserSyncPolicy)
 {
     detachParser();
 
@@ -2560,9 +2553,9 @@ HTMLBodyElement* Document::firstBodyElement() const
     return 0;
 }
 
-void Document::setBody(RawPtr<HTMLElement> prpNewBody, ExceptionState& exceptionState)
+void Document::setBody(HTMLElement* prpNewBody, ExceptionState& exceptionState)
 {
-    RawPtr<HTMLElement> newBody = prpNewBody;
+    HTMLElement* newBody = prpNewBody;
 
     if (!newBody) {
         exceptionState.throwDOMException(HierarchyRequestError, ExceptionMessages::argumentNullOrIncorrectType(1, "HTMLElement"));
@@ -2583,9 +2576,9 @@ void Document::setBody(RawPtr<HTMLElement> prpNewBody, ExceptionState& exception
         return;
 
     if (oldBody)
-        documentElement()->replaceChild(newBody.release(), oldBody, exceptionState);
+        documentElement()->replaceChild(newBody, oldBody, exceptionState);
     else
-        documentElement()->appendChild(newBody.release(), exceptionState);
+        documentElement()->appendChild(newBody, exceptionState);
 }
 
 HTMLHeadElement* Document::head() const
@@ -2642,7 +2635,7 @@ void Document::close()
     if (!scriptableDocumentParser() || !scriptableDocumentParser()->wasCreatedByScript() || !scriptableDocumentParser()->isParsing())
         return;
 
-    if (RawPtr<DocumentParser> parser = m_parser)
+    if (DocumentParser* parser = m_parser)
         parser->finish();
 
     if (!m_frame) {
@@ -2665,11 +2658,6 @@ void Document::implicitClose()
         suppressLoadEvent();
         return;
     }
-
-    // The call to dispatchWindowLoadEvent (from documentWasClosed()) can detach
-    // the LocalDOMWindow and cause it (and its attached Document) to be
-    // destroyed.
-    RawPtr<LocalDOMWindow> protectedWindow(this->domWindow());
 
     m_loadEventProgress = LoadEventInProgress;
 
@@ -2696,8 +2684,8 @@ void Document::implicitClose()
     if (svgExtensions())
         accessSVGExtensions().dispatchSVGLoadEventToOutermostSVGElements();
 
-    if (protectedWindow)
-        protectedWindow->documentWasClosed();
+    if (this->domWindow())
+        this->domWindow()->documentWasClosed();
 
     if (frame()) {
         frame()->loader().client()->dispatchDidHandleOnloadEvents();
@@ -2757,14 +2745,12 @@ bool Document::dispatchBeforeUnloadEvent(ChromeClient& chromeClient, bool isRelo
     if (processingBeforeUnload())
         return false;
 
-    RawPtr<Document> protect(this);
-
-    RawPtr<BeforeUnloadEvent> beforeUnloadEvent = BeforeUnloadEvent::create();
+    BeforeUnloadEvent* beforeUnloadEvent = BeforeUnloadEvent::create();
     m_loadEventProgress = BeforeUnloadEventInProgress;
-    m_domWindow->dispatchEvent(beforeUnloadEvent.get(), this);
+    m_domWindow->dispatchEvent(beforeUnloadEvent, this);
     m_loadEventProgress = BeforeUnloadEventCompleted;
     if (!beforeUnloadEvent->defaultPrevented())
-        defaultEventHandler(beforeUnloadEvent.get());
+        defaultEventHandler(beforeUnloadEvent);
     if (!frame() || beforeUnloadEvent->returnValue().isNull())
         return true;
 
@@ -2784,7 +2770,6 @@ bool Document::dispatchBeforeUnloadEvent(ChromeClient& chromeClient, bool isRelo
 void Document::dispatchUnloadEvents()
 {
     PluginScriptForbiddenScope forbidPluginDestructorScripting;
-    RawPtr<Document> protect(this);
     if (m_parser)
         m_parser->stopParsing();
 
@@ -2813,12 +2798,9 @@ void Document::dispatchUnloadEvents()
             if (!m_frame)
                 return;
 
-            // The DocumentLoader (and thus its DocumentLoadTiming) might get destroyed
-            // while dispatching the event, so protect it to prevent writing the end
-            // time into freed memory.
-            RawPtr<DocumentLoader> documentLoader = m_frame->loader().provisionalDocumentLoader();
+            DocumentLoader* documentLoader = m_frame->loader().provisionalDocumentLoader();
             m_loadEventProgress = UnloadEventInProgress;
-            RawPtr<Event> unloadEvent(Event::create(EventTypeNames::unload));
+            Event* unloadEvent(Event::create(EventTypeNames::unload));
             if (documentLoader && !documentLoader->timing().unloadEventStart() && !documentLoader->timing().unloadEventEnd()) {
                 DocumentLoadTiming& timing = documentLoader->timing();
                 DCHECK(timing.navigationStart());
@@ -2989,10 +2971,10 @@ EventTarget* Document::errorEventTarget()
 
 void Document::logExceptionToConsole(const String& errorMessage, int scriptId, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtr<ScriptCallStack> callStack)
 {
-    RawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage, sourceURL, lineNumber, columnNumber);
+    ConsoleMessage* consoleMessage = ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage, sourceURL, lineNumber, columnNumber);
     consoleMessage->setScriptId(scriptId);
     consoleMessage->setCallStack(callStack);
-    addConsoleMessage(consoleMessage.release());
+    addConsoleMessage(consoleMessage);
 }
 
 void Document::setURL(const KURL& url)
@@ -3385,16 +3367,16 @@ bool Document::canAcceptChild(const Node& newChild, const Node* oldChild, Except
     return true;
 }
 
-RawPtr<Node> Document::cloneNode(bool deep)
+Node* Document::cloneNode(bool deep)
 {
-    RawPtr<Document> clone = cloneDocumentWithoutChildren();
+    Document* clone = cloneDocumentWithoutChildren();
     clone->cloneDataFromDocument(*this);
     if (deep)
-        cloneChildNodes(clone.get());
-    return clone.release();
+        cloneChildNodes(clone);
+    return clone;
 }
 
-RawPtr<Document> Document::cloneDocumentWithoutChildren()
+Document* Document::cloneDocumentWithoutChildren()
 {
     DocumentInit init(url());
     if (isXMLDocument()) {
@@ -3524,12 +3506,12 @@ void Document::styleResolverMayHaveChanged()
     }
 }
 
-void Document::setHoverNode(RawPtr<Node> newHoverNode)
+void Document::setHoverNode(Node* newHoverNode)
 {
     m_hoverNode = newHoverNode;
 }
 
-void Document::setActiveHoverElement(RawPtr<Element> newActiveElement)
+void Document::setActiveHoverElement(Element* newActiveElement)
 {
     if (!newActiveElement) {
         m_activeHoverElement.clear();
@@ -3601,26 +3583,26 @@ void Document::setAnnotatedRegions(const Vector<AnnotatedRegionValue>& regions)
     setAnnotatedRegionsDirty(false);
 }
 
-bool Document::setFocusedElement(RawPtr<Element> prpNewFocusedElement, const FocusParams& params)
+bool Document::setFocusedElement(Element* prpNewFocusedElement, const FocusParams& params)
 {
     DCHECK(!m_lifecycle.inDetach());
 
     m_clearFocusedElementTimer.stop();
 
-    RawPtr<Element> newFocusedElement = prpNewFocusedElement;
+    Element* newFocusedElement = prpNewFocusedElement;
 
     // Make sure newFocusedNode is actually in this document
     if (newFocusedElement && (newFocusedElement->document() != this))
         return true;
 
-    if (NodeChildRemovalTracker::isBeingRemoved(newFocusedElement.get()))
+    if (NodeChildRemovalTracker::isBeingRemoved(newFocusedElement))
         return true;
 
     if (m_focusedElement == newFocusedElement)
         return true;
 
     bool focusChangeBlocked = false;
-    RawPtr<Element> oldFocusedElement = m_focusedElement;
+    Element* oldFocusedElement = m_focusedElement;
     m_focusedElement = nullptr;
 
     // Remove focus from the existing focus node (if any)
@@ -3630,7 +3612,7 @@ bool Document::setFocusedElement(RawPtr<Element> prpNewFocusedElement, const Foc
         // Dispatch the blur event and let the node do any other blur related activities (important for text fields)
         // If page lost focus, blur event will have already been dispatched
         if (page() && (page()->focusController().isFocused())) {
-            oldFocusedElement->dispatchBlurEvent(newFocusedElement.get(), params.type, params.sourceCapabilities);
+            oldFocusedElement->dispatchBlurEvent(newFocusedElement, params.type, params.sourceCapabilities);
 
             if (m_focusedElement) {
                 // handler shifted focus
@@ -3638,10 +3620,10 @@ bool Document::setFocusedElement(RawPtr<Element> prpNewFocusedElement, const Foc
                 newFocusedElement = nullptr;
             }
 
-            oldFocusedElement->dispatchFocusOutEvent(EventTypeNames::focusout, newFocusedElement.get(), params.sourceCapabilities); // DOM level 3 name for the bubbling blur event.
+            oldFocusedElement->dispatchFocusOutEvent(EventTypeNames::focusout, newFocusedElement, params.sourceCapabilities); // DOM level 3 name for the bubbling blur event.
             // FIXME: We should remove firing DOMFocusOutEvent event when we are sure no content depends
             // on it, probably when <rdar://problem/8503958> is resolved.
-            oldFocusedElement->dispatchFocusOutEvent(EventTypeNames::DOMFocusOut, newFocusedElement.get(), params.sourceCapabilities); // DOM level 2 name for compatibility.
+            oldFocusedElement->dispatchFocusOutEvent(EventTypeNames::DOMFocusOut, newFocusedElement, params.sourceCapabilities); // DOM level 2 name for compatibility.
 
             if (m_focusedElement) {
                 // handler shifted focus
@@ -3660,7 +3642,7 @@ bool Document::setFocusedElement(RawPtr<Element> prpNewFocusedElement, const Foc
     }
 
     if (newFocusedElement)
-        updateLayoutTreeForNode(newFocusedElement.get());
+        updateLayoutTreeForNode(newFocusedElement);
     if (newFocusedElement && newFocusedElement->isFocusable()) {
         if (newFocusedElement->isRootEditableElement() && !acceptsEditingFocus(*newFocusedElement)) {
             // delegate blocks focus change
@@ -3683,7 +3665,7 @@ bool Document::setFocusedElement(RawPtr<Element> prpNewFocusedElement, const Foc
         // Dispatch the focus event and let the node do any other focus related activities (important for text fields)
         // If page lost focus, event will be dispatched on page focus, don't duplicate
         if (page() && (page()->focusController().isFocused())) {
-            m_focusedElement->dispatchFocusEvent(oldFocusedElement.get(), params.type, params.sourceCapabilities);
+            m_focusedElement->dispatchFocusEvent(oldFocusedElement, params.type, params.sourceCapabilities);
 
 
             if (m_focusedElement != newFocusedElement) {
@@ -3691,7 +3673,7 @@ bool Document::setFocusedElement(RawPtr<Element> prpNewFocusedElement, const Foc
                 focusChangeBlocked = true;
                 goto SetFocusedElementDone;
             }
-            m_focusedElement->dispatchFocusInEvent(EventTypeNames::focusin, oldFocusedElement.get(), params.type, params.sourceCapabilities); // DOM level 3 bubbling focus event.
+            m_focusedElement->dispatchFocusInEvent(EventTypeNames::focusin, oldFocusedElement, params.type, params.sourceCapabilities); // DOM level 3 bubbling focus event.
 
             if (m_focusedElement != newFocusedElement) {
                 // handler shifted focus
@@ -3701,7 +3683,7 @@ bool Document::setFocusedElement(RawPtr<Element> prpNewFocusedElement, const Foc
 
             // FIXME: We should remove firing DOMFocusInEvent event when we are sure no content depends
             // on it, probably when <rdar://problem/8503958> is m.
-            m_focusedElement->dispatchFocusInEvent(EventTypeNames::DOMFocusIn, oldFocusedElement.get(), params.type, params.sourceCapabilities); // DOM level 2 for compatibility.
+            m_focusedElement->dispatchFocusInEvent(EventTypeNames::DOMFocusIn, oldFocusedElement, params.type, params.sourceCapabilities); // DOM level 2 for compatibility.
 
             if (m_focusedElement != newFocusedElement) {
                 // handler shifted focus
@@ -3735,11 +3717,11 @@ bool Document::setFocusedElement(RawPtr<Element> prpNewFocusedElement, const Foc
     if (!focusChangeBlocked && m_focusedElement) {
         // Create the AXObject cache in a focus change because Chromium relies on it.
         if (AXObjectCache* cache = axObjectCache())
-            cache->handleFocusedUIElementChanged(oldFocusedElement.get(), newFocusedElement.get());
+            cache->handleFocusedUIElementChanged(oldFocusedElement, newFocusedElement);
     }
 
     if (!focusChangeBlocked && frameHost())
-        frameHost()->chromeClient().focusedNodeChanged(oldFocusedElement.get(), m_focusedElement.get());
+        frameHost()->chromeClient().focusedNodeChanged(oldFocusedElement, m_focusedElement.get());
 
 SetFocusedElementDone:
     updateLayoutTree();
@@ -3975,7 +3957,7 @@ void Document::didSplitTextNode(Text& oldNode)
     // FIXME: This should update markers for spelling and grammar checking.
 }
 
-void Document::setWindowAttributeEventListener(const AtomicString& eventType, RawPtr<EventListener> listener)
+void Document::setWindowAttributeEventListener(const AtomicString& eventType, EventListener* listener)
 {
     LocalDOMWindow* domWindow = this->domWindow();
     if (!domWindow)
@@ -3998,12 +3980,12 @@ EventQueue* Document::getEventQueue() const
     return m_domWindow->getEventQueue();
 }
 
-void Document::enqueueAnimationFrameEvent(RawPtr<Event> event)
+void Document::enqueueAnimationFrameEvent(Event* event)
 {
     ensureScriptedAnimationController().enqueueEvent(event);
 }
 
-void Document::enqueueUniqueAnimationFrameEvent(RawPtr<Event> event)
+void Document::enqueueUniqueAnimationFrameEvent(Event* event)
 {
     ensureScriptedAnimationController().enqueuePerFrameEvent(event);
 }
@@ -4011,16 +3993,16 @@ void Document::enqueueUniqueAnimationFrameEvent(RawPtr<Event> event)
 void Document::enqueueScrollEventForNode(Node* target)
 {
     // Per the W3C CSSOM View Module only scroll events fired at the document should bubble.
-    RawPtr<Event> scrollEvent = target->isDocumentNode() ? Event::createBubble(EventTypeNames::scroll) : Event::create(EventTypeNames::scroll);
+    Event* scrollEvent = target->isDocumentNode() ? Event::createBubble(EventTypeNames::scroll) : Event::create(EventTypeNames::scroll);
     scrollEvent->setTarget(target);
-    ensureScriptedAnimationController().enqueuePerFrameEvent(scrollEvent.release());
+    ensureScriptedAnimationController().enqueuePerFrameEvent(scrollEvent);
 }
 
 void Document::enqueueResizeEvent()
 {
-    RawPtr<Event> event = Event::create(EventTypeNames::resize);
+    Event* event = Event::create(EventTypeNames::resize);
     event->setTarget(domWindow());
-    ensureScriptedAnimationController().enqueuePerFrameEvent(event.release());
+    ensureScriptedAnimationController().enqueuePerFrameEvent(event);
 }
 
 void Document::enqueueMediaQueryChangeListeners(HeapVector<Member<MediaQueryListListener>>& listeners)
@@ -4030,9 +4012,9 @@ void Document::enqueueMediaQueryChangeListeners(HeapVector<Member<MediaQueryList
 
 void Document::enqueueVisualViewportChangedEvent()
 {
-    RawPtr<Event> event = Event::create(EventTypeNames::visualviewportchanged);
+    Event* event = Event::create(EventTypeNames::visualviewportchanged);
     event->setTarget(this);
-    ensureScriptedAnimationController().enqueuePerFrameEvent(event.release());
+    ensureScriptedAnimationController().enqueuePerFrameEvent(event);
 }
 
 void Document::dispatchEventsForPrinting()
@@ -4062,13 +4044,13 @@ void Document::registerEventFactory(PassOwnPtr<EventFactoryBase> eventFactory)
     eventFactories().add(eventFactory);
 }
 
-RawPtr<Event> Document::createEvent(ExecutionContext* executionContext, const String& eventType, ExceptionState& exceptionState)
+Event* Document::createEvent(ExecutionContext* executionContext, const String& eventType, ExceptionState& exceptionState)
 {
-    RawPtr<Event> event = nullptr;
+    Event* event = nullptr;
     for (const auto& factory : eventFactories()) {
         event = factory->create(executionContext, eventType);
         if (event)
-            return event.release();
+            return event;
     }
     exceptionState.throwDOMException(NotSupportedError, "The provided event type ('" + eventType + "') is invalid.");
     return nullptr;
@@ -4660,7 +4642,7 @@ HTMLScriptElement* Document::currentScriptForBinding() const
     return nullptr;
 }
 
-void Document::pushCurrentScript(RawPtr<HTMLScriptElement> newCurrentScript)
+void Document::pushCurrentScript(HTMLScriptElement* newCurrentScript)
 {
     DCHECK(newCurrentScript);
     m_currentScriptStack.append(newCurrentScript);
@@ -4719,7 +4701,7 @@ Document& Document::topDocument() const
     return *doc;
 }
 
-RawPtr<Document> Document::contextDocument()
+Document* Document::contextDocument()
 {
     if (m_contextDocument)
         return m_contextDocument;
@@ -4728,14 +4710,14 @@ RawPtr<Document> Document::contextDocument()
     return nullptr;
 }
 
-RawPtr<Attr> Document::createAttribute(const AtomicString& name, ExceptionState& exceptionState)
+Attr* Document::createAttribute(const AtomicString& name, ExceptionState& exceptionState)
 {
     if (isHTMLDocument() && name != name.lower())
         UseCounter::count(*this, UseCounter::HTMLDocumentCreateAttributeNameNotLowercase);
     return createAttributeNS(nullAtom, name, exceptionState, true);
 }
 
-RawPtr<Attr> Document::createAttributeNS(const AtomicString& namespaceURI, const AtomicString& qualifiedName, ExceptionState& exceptionState, bool shouldIgnoreNamespaceChecks)
+Attr* Document::createAttributeNS(const AtomicString& namespaceURI, const AtomicString& qualifiedName, ExceptionState& exceptionState, bool shouldIgnoreNamespaceChecks)
 {
     AtomicString prefix, localName;
     if (!parseQualifiedName(qualifiedName, prefix, localName, exceptionState))
@@ -4768,58 +4750,58 @@ bool Document::hasSVGRootNode() const
     return isSVGSVGElement(documentElement());
 }
 
-RawPtr<HTMLCollection> Document::images()
+HTMLCollection* Document::images()
 {
     return ensureCachedCollection<HTMLCollection>(DocImages);
 }
 
-RawPtr<HTMLCollection> Document::applets()
+HTMLCollection* Document::applets()
 {
     return ensureCachedCollection<HTMLCollection>(DocApplets);
 }
 
-RawPtr<HTMLCollection> Document::embeds()
+HTMLCollection* Document::embeds()
 {
     return ensureCachedCollection<HTMLCollection>(DocEmbeds);
 }
 
-RawPtr<HTMLCollection> Document::scripts()
+HTMLCollection* Document::scripts()
 {
     return ensureCachedCollection<HTMLCollection>(DocScripts);
 }
 
-RawPtr<HTMLCollection> Document::links()
+HTMLCollection* Document::links()
 {
     return ensureCachedCollection<HTMLCollection>(DocLinks);
 }
 
-RawPtr<HTMLCollection> Document::forms()
+HTMLCollection* Document::forms()
 {
     return ensureCachedCollection<HTMLCollection>(DocForms);
 }
 
-RawPtr<HTMLCollection> Document::anchors()
+HTMLCollection* Document::anchors()
 {
     return ensureCachedCollection<HTMLCollection>(DocAnchors);
 }
 
-RawPtr<HTMLAllCollection> Document::allForBinding()
+HTMLAllCollection* Document::allForBinding()
 {
     UseCounter::count(*this, UseCounter::DocumentAll);
     return all();
 }
 
-RawPtr<HTMLAllCollection> Document::all()
+HTMLAllCollection* Document::all()
 {
     return ensureCachedCollection<HTMLAllCollection>(DocAll);
 }
 
-RawPtr<HTMLCollection> Document::windowNamedItems(const AtomicString& name)
+HTMLCollection* Document::windowNamedItems(const AtomicString& name)
 {
     return ensureCachedCollection<WindowNameCollection>(WindowNamedItems, name);
 }
 
-RawPtr<DocumentNameCollection> Document::documentNamedItems(const AtomicString& name)
+DocumentNameCollection* Document::documentNamedItems(const AtomicString& name)
 {
     return ensureCachedCollection<DocumentNameCollection>(DocumentNamedItems, name);
 }
@@ -4840,17 +4822,12 @@ void Document::finishedParsing()
         m_documentTiming.markDomContentLoadedEventEnd();
     setParsingState(FinishedParsing);
 
-    // The microtask checkpoint or the loader's finishedParsing() method may invoke script that causes this object to
-    // be dereferenced (when this document is in an iframe and the onload causes the iframe's src to change).
-    // Keep it alive until we are done.
-    RawPtr<Document> protect(this);
-
     // Ensure Custom Element callbacks are drained before DOMContentLoaded.
     // FIXME: Remove this ad-hoc checkpoint when DOMContentLoaded is dispatched in a
     // queued task, which will do a checkpoint anyway. https://crbug.com/425790
     Microtask::performCheckpoint(V8PerIsolateData::mainThreadIsolate());
 
-    if (RawPtr<LocalFrame> frame = this->frame()) {
+    if (LocalFrame* frame = this->frame()) {
         // Don't update the layout tree if we haven't requested the main resource yet to avoid
         // adding extra latency. Note that the first layout tree update can be expensive since it
         // triggers the parsing of the default stylesheets which are compiled-in.
@@ -4868,8 +4845,8 @@ void Document::finishedParsing()
 
         frame->loader().finishedParsing();
 
-        TRACE_EVENT_INSTANT1("devtools.timeline", "MarkDOMContent", TRACE_EVENT_SCOPE_THREAD, "data", InspectorMarkLoadEvent::data(frame.get()));
-        InspectorInstrumentation::domContentLoadedEventFired(frame.get());
+        TRACE_EVENT_INSTANT1("devtools.timeline", "MarkDOMContent", TRACE_EVENT_SCOPE_THREAD, "data", InspectorMarkLoadEvent::data(frame));
+        InspectorInstrumentation::domContentLoadedEventFired(frame);
     }
 
     // Schedule dropping of the ElementDataCache. We keep it alive for a while after parsing finishes
@@ -5244,7 +5221,7 @@ void Document::reportBlockedScriptExecutionToInspector(const String& directiveTe
     InspectorInstrumentation::scriptExecutionBlockedByCSP(this, directiveText);
 }
 
-void Document::addConsoleMessage(RawPtr<ConsoleMessage> consoleMessage)
+void Document::addConsoleMessage(ConsoleMessage* consoleMessage)
 {
     if (!isContextThread()) {
         m_taskRunner->postTask(BLINK_FROM_HERE, AddConsoleMessageTask::create(consoleMessage->source(), consoleMessage->level(), consoleMessage->message()));
@@ -5480,7 +5457,7 @@ void Document::cancelIdleCallback(int id)
     m_scriptedIdleTaskController->cancelCallback(id);
 }
 
-RawPtr<Touch> Document::createTouch(DOMWindow* window, EventTarget* target, int identifier, double pageX, double pageY, double screenX, double screenY, double radiusX, double radiusY, float rotationAngle, float force) const
+Touch* Document::createTouch(DOMWindow* window, EventTarget* target, int identifier, double pageX, double pageY, double screenX, double screenY, double radiusX, double radiusY, float rotationAngle, float force) const
 {
     // Match behavior from when these types were integers, and avoid surprises from someone explicitly
     // passing Infinity/NaN.
@@ -5509,7 +5486,7 @@ RawPtr<Touch> Document::createTouch(DOMWindow* window, EventTarget* target, int 
     return Touch::create(frame, target, identifier, FloatPoint(screenX, screenY), FloatPoint(pageX, pageY), FloatSize(radiusX, radiusY), rotationAngle, force, String());
 }
 
-RawPtr<TouchList> Document::createTouchList(HeapVector<Member<Touch>>& touches) const
+TouchList* Document::createTouchList(HeapVector<Member<Touch>>& touches) const
 {
     return TouchList::adopt(touches);
 }
@@ -5579,7 +5556,7 @@ bool Document::threadedParsingEnabledForTesting()
 
 void Document::setContextFeatures(ContextFeatures& features)
 {
-    m_contextFeatures = RawPtr<ContextFeatures>(features);
+    m_contextFeatures = &features;
 }
 
 static LayoutObject* nearestCommonHoverAncestor(LayoutObject* obj1, LayoutObject* obj2)
@@ -5615,10 +5592,10 @@ void Document::updateHoverActiveState(const HitTestRequest& request, Element* in
     if (oldActiveElement && !request.active()) {
         // The oldActiveElement layoutObject is null, dropped on :active by setting display: none,
         // for instance. We still need to clear the ActiveChain as the mouse is released.
-        for (RawPtr<Node> node = oldActiveElement; node; node = FlatTreeTraversal::parent(*node)) {
+        for (Node* node = oldActiveElement; node; node = FlatTreeTraversal::parent(*node)) {
             DCHECK(!node->isTextNode());
             node->setActive(false);
-            m_userActionElements.setInActiveChain(node.get(), false);
+            m_userActionElements.setInActiveChain(node, false);
         }
         setActiveHoverElement(nullptr);
     } else {
@@ -5642,7 +5619,7 @@ void Document::updateHoverActiveState(const HitTestRequest& request, Element* in
     // at the time the mouse went down.
     bool mustBeInActiveChain = request.active() && request.move();
 
-    RawPtr<Node> oldHoverNode = hoverNode();
+    Node* oldHoverNode = hoverNode();
 
     // Check to see if the hovered node has changed.
     // If it hasn't, we do not need to do anything.
@@ -5659,7 +5636,7 @@ void Document::updateHoverActiveState(const HitTestRequest& request, Element* in
 
     // Locate the common ancestor layout object for the two layoutObjects.
     LayoutObject* ancestor = nearestCommonHoverAncestor(oldHoverObj, newHoverObj);
-    RawPtr<Node> ancestorNode(ancestor ? ancestor->node() : 0);
+    Node* ancestorNode(ancestor ? ancestor->node() : 0);
 
     HeapVector<Member<Node>, 32> nodesToRemoveFromChain;
     HeapVector<Member<Node>, 32> nodesToAddToChain;
@@ -5669,7 +5646,7 @@ void Document::updateHoverActiveState(const HitTestRequest& request, Element* in
         // (for instance by setting display:none in the :hover pseudo-class). In this case, the old hovered element (and its ancestors)
         // must be updated, to ensure it's normal style is re-applied.
         if (oldHoverNode && !oldHoverObj) {
-            for (Node* node = oldHoverNode.get(); node; node = node->parentNode()) {
+            for (Node* node = oldHoverNode; node; node = node->parentNode()) {
                 if (!mustBeInActiveChain || (node->isElementNode() && toElement(node)->inActiveChain()))
                     nodesToRemoveFromChain.append(node);
             }
@@ -5890,11 +5867,6 @@ void Document::platformColorsChanged()
 
 v8::Local<v8::Object> Document::wrap(v8::Isolate* isolate, v8::Local<v8::Object> creationContext)
 {
-    // It's possible that no one except for the new wrapper owns this object at
-    // this moment, so we have to prevent GC to collect this object until the
-    // object gets associated with the wrapper.
-    RawPtr<Document> protect(this);
-
     DCHECK(!DOMDataStore::containsWrapper(this, isolate));
 
     const WrapperTypeInfo* wrapperType = wrapperTypeInfo();

@@ -40,11 +40,11 @@ namespace blink {
 class CustomElementCallbackInvocation : public CustomElementProcessingStep {
     WTF_MAKE_NONCOPYABLE(CustomElementCallbackInvocation);
 public:
-    static RawPtr<CustomElementCallbackInvocation> createInvocation(RawPtr<CustomElementLifecycleCallbacks>, CustomElementLifecycleCallbacks::CallbackType);
-    static RawPtr<CustomElementCallbackInvocation> createAttributeChangedInvocation(RawPtr<CustomElementLifecycleCallbacks>, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue);
+    static CustomElementCallbackInvocation* createInvocation(CustomElementLifecycleCallbacks*, CustomElementLifecycleCallbacks::CallbackType);
+    static CustomElementCallbackInvocation* createAttributeChangedInvocation(CustomElementLifecycleCallbacks*, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue);
 
 protected:
-    CustomElementCallbackInvocation(RawPtr<CustomElementLifecycleCallbacks> callbacks)
+    CustomElementCallbackInvocation(CustomElementLifecycleCallbacks* callbacks)
         : m_callbacks(callbacks)
     {
     }

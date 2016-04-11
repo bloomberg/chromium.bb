@@ -43,7 +43,7 @@ class QualifiedName;
 
 class MutationObserverRegistration final : public GarbageCollectedFinalized<MutationObserverRegistration> {
 public:
-    static RawPtr<MutationObserverRegistration> create(MutationObserver&, Node*, MutationObserverOptions, const HashSet<AtomicString>& attributeFilter);
+    static MutationObserverRegistration* create(MutationObserver&, Node*, MutationObserverOptions, const HashSet<AtomicString>& attributeFilter);
     ~MutationObserverRegistration();
 
     void resetObservation(MutationObserverOptions, const HashSet<AtomicString>& attributeFilter);

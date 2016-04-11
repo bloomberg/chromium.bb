@@ -169,7 +169,7 @@ bool InsertionPoint::isContentInsertionPoint() const
     return isHTMLContentElement(*this) && isActive();
 }
 
-RawPtr<StaticNodeList> InsertionPoint::getDistributedNodes()
+StaticNodeList* InsertionPoint::getDistributedNodes()
 {
     updateDistribution();
 

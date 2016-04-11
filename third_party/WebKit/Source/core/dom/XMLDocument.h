@@ -34,17 +34,17 @@ namespace blink {
 class XMLDocument final : public Document {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RawPtr<XMLDocument> create(const DocumentInit& initializer = DocumentInit())
+    static XMLDocument* create(const DocumentInit& initializer = DocumentInit())
     {
         return new XMLDocument(initializer, XMLDocumentClass);
     }
 
-    static RawPtr<XMLDocument> createXHTML(const DocumentInit& initializer = DocumentInit())
+    static XMLDocument* createXHTML(const DocumentInit& initializer = DocumentInit())
     {
         return new XMLDocument(initializer, XMLDocumentClass | XHTMLDocumentClass);
     }
 
-    static RawPtr<XMLDocument> createSVG(const DocumentInit& initializer = DocumentInit())
+    static XMLDocument* createSVG(const DocumentInit& initializer = DocumentInit())
     {
         return new XMLDocument(initializer, XMLDocumentClass | SVGDocumentClass);
     }

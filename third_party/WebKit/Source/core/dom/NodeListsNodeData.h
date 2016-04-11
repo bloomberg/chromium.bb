@@ -42,22 +42,22 @@ public:
         return toChildNodeList(m_childNodeList);
     }
 
-    RawPtr<ChildNodeList> ensureChildNodeList(ContainerNode& node)
+    ChildNodeList* ensureChildNodeList(ContainerNode& node)
     {
         if (m_childNodeList)
             return toChildNodeList(m_childNodeList);
-        RawPtr<ChildNodeList> list = ChildNodeList::create(node);
-        m_childNodeList = list.get();
-        return list.release();
+        ChildNodeList* list = ChildNodeList::create(node);
+        m_childNodeList = list;
+        return list;
     }
 
-    RawPtr<EmptyNodeList> ensureEmptyChildNodeList(Node& node)
+    EmptyNodeList* ensureEmptyChildNodeList(Node& node)
     {
         if (m_childNodeList)
             return toEmptyNodeList(m_childNodeList);
-        RawPtr<EmptyNodeList> list = EmptyNodeList::create(node);
-        m_childNodeList = list.get();
-        return list.release();
+        EmptyNodeList* list = EmptyNodeList::create(node);
+        m_childNodeList = list;
+        return list;
     }
 
 #if !ENABLE(OILPAN)
@@ -96,7 +96,7 @@ public:
     typedef HeapHashMap<QualifiedName, WeakMember<TagCollection>> TagCollectionCacheNS;
 
     template<typename T>
-    RawPtr<T> addCache(ContainerNode& node, CollectionType collectionType, const AtomicString& name)
+    T* addCache(ContainerNode& node, CollectionType collectionType, const AtomicString& name)
     {
         NodeListAtomicNameCacheMap::AddResult result = m_atomicNameCaches.add(namedNodeListKey(collectionType, name), nullptr);
         if (!result.isNewEntry) {
@@ -107,13 +107,13 @@ public:
 #endif
         }
 
-        RawPtr<T> list = T::create(node, collectionType, name);
-        result.storedValue->value = list.get();
-        return list.release();
+        T* list = T::create(node, collectionType, name);
+        result.storedValue->value = list;
+        return list;
     }
 
     template<typename T>
-    RawPtr<T> addCache(ContainerNode& node, CollectionType collectionType)
+    T* addCache(ContainerNode& node, CollectionType collectionType)
     {
         NodeListAtomicNameCacheMap::AddResult result = m_atomicNameCaches.add(namedNodeListKey(collectionType, starAtom), nullptr);
         if (!result.isNewEntry) {
@@ -124,9 +124,9 @@ public:
 #endif
         }
 
-        RawPtr<T> list = T::create(node, collectionType);
-        result.storedValue->value = list.get();
-        return list.release();
+        T* list = T::create(node, collectionType);
+        result.storedValue->value = list;
+        return list;
     }
 
     template<typename T>
@@ -135,16 +135,16 @@ public:
         return static_cast<T*>(m_atomicNameCaches.get(namedNodeListKey(collectionType, starAtom)));
     }
 
-    RawPtr<TagCollection> addCache(ContainerNode& node, const AtomicString& namespaceURI, const AtomicString& localName)
+    TagCollection* addCache(ContainerNode& node, const AtomicString& namespaceURI, const AtomicString& localName)
     {
         QualifiedName name(nullAtom, localName, namespaceURI);
         TagCollectionCacheNS::AddResult result = m_tagCollectionCacheNS.add(name, nullptr);
         if (!result.isNewEntry)
             return result.storedValue->value;
 
-        RawPtr<TagCollection> list = TagCollection::create(node, namespaceURI, localName);
-        result.storedValue->value = list.get();
-        return list.release();
+        TagCollection* list = TagCollection::create(node, namespaceURI, localName);
+        result.storedValue->value = list;
+        return list;
     }
 
 #if !ENABLE(OILPAN)
@@ -166,7 +166,7 @@ public:
     }
 #endif
 
-    static RawPtr<NodeListsNodeData> create()
+    static NodeListsNodeData* create()
     {
         return new NodeListsNodeData;
     }
@@ -237,19 +237,19 @@ inline bool NodeListsNodeData::deleteThisAndUpdateNodeRareDataIfAboutToRemoveLas
 #endif
 
 template <typename Collection>
-inline RawPtr<Collection> ContainerNode::ensureCachedCollection(CollectionType type)
+inline Collection* ContainerNode::ensureCachedCollection(CollectionType type)
 {
     return ensureNodeLists().addCache<Collection>(*this, type);
 }
 
 template <typename Collection>
-inline RawPtr<Collection> ContainerNode::ensureCachedCollection(CollectionType type, const AtomicString& name)
+inline Collection* ContainerNode::ensureCachedCollection(CollectionType type, const AtomicString& name)
 {
     return ensureNodeLists().addCache<Collection>(*this, type, name);
 }
 
 template <typename Collection>
-inline RawPtr<Collection> ContainerNode::ensureCachedCollection(CollectionType type, const AtomicString& namespaceURI, const AtomicString& localName)
+inline Collection* ContainerNode::ensureCachedCollection(CollectionType type, const AtomicString& namespaceURI, const AtomicString& localName)
 {
     ASSERT_UNUSED(type, type == TagCollectionType);
     return ensureNodeLists().addCache(*this, namespaceURI, localName);

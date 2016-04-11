@@ -45,10 +45,10 @@ typedef StaticNodeTypeList<Node> StaticNodeList;
 class MutationRecord : public GarbageCollectedFinalized<MutationRecord>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RawPtr<MutationRecord> createChildList(RawPtr<Node> target, RawPtr<StaticNodeList> added, RawPtr<StaticNodeList> removed, RawPtr<Node> previousSibling, RawPtr<Node> nextSibling);
-    static RawPtr<MutationRecord> createAttributes(RawPtr<Node> target, const QualifiedName&, const AtomicString& oldValue);
-    static RawPtr<MutationRecord> createCharacterData(RawPtr<Node> target, const String& oldValue);
-    static RawPtr<MutationRecord> createWithNullOldValue(RawPtr<MutationRecord>);
+    static MutationRecord* createChildList(Node* target, StaticNodeList* added, StaticNodeList* removed, Node* previousSibling, Node* nextSibling);
+    static MutationRecord* createAttributes(Node* target, const QualifiedName&, const AtomicString& oldValue);
+    static MutationRecord* createCharacterData(Node* target, const String& oldValue);
+    static MutationRecord* createWithNullOldValue(MutationRecord*);
 
     MutationRecord() { }
 
