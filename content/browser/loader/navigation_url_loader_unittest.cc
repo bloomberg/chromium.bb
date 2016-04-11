@@ -11,7 +11,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "content/browser/frame_host/navigation_request_info.h"
-#include "content/browser/loader/navigation_url_loader_delegate.h"
 #include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/streams/stream.h"
@@ -27,6 +26,7 @@
 #include "content/public/common/resource_response.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/test/test_navigation_url_loader_delegate.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
@@ -62,84 +62,6 @@ class StreamProtocolHandler
   StreamRegistry* registry_;
 
   DISALLOW_COPY_AND_ASSIGN(StreamProtocolHandler);
-};
-
-class TestNavigationURLLoaderDelegate : public NavigationURLLoaderDelegate {
- public:
-  TestNavigationURLLoaderDelegate()
-      : net_error_(0), on_request_handled_counter_(0) {}
-
-  const net::RedirectInfo& redirect_info() const { return redirect_info_; }
-  ResourceResponse* redirect_response() const {
-    return redirect_response_.get();
-  }
-  ResourceResponse* response() const { return response_.get(); }
-  StreamHandle* body() const { return body_.get(); }
-  int net_error() const { return net_error_; }
-  int on_request_handled_counter() const { return on_request_handled_counter_; }
-
-  void WaitForRequestRedirected() {
-    request_redirected_.reset(new base::RunLoop);
-    request_redirected_->Run();
-    request_redirected_.reset();
-  }
-
-  void WaitForResponseStarted() {
-    response_started_.reset(new base::RunLoop);
-    response_started_->Run();
-    response_started_.reset();
-  }
-
-  void WaitForRequestFailed() {
-    request_failed_.reset(new base::RunLoop);
-    request_failed_->Run();
-    request_failed_.reset();
-  }
-
-  void ReleaseBody() {
-    body_.reset();
-  }
-
-  // NavigationURLLoaderDelegate implementation.
-  void OnRequestRedirected(
-      const net::RedirectInfo& redirect_info,
-      const scoped_refptr<ResourceResponse>& response) override {
-    redirect_info_ = redirect_info;
-    redirect_response_ = response;
-    ASSERT_TRUE(request_redirected_);
-    request_redirected_->Quit();
-  }
-
-  void OnResponseStarted(const scoped_refptr<ResourceResponse>& response,
-                         std::unique_ptr<StreamHandle> body) override {
-    response_ = response;
-    body_ = std::move(body);
-    ASSERT_TRUE(response_started_);
-    response_started_->Quit();
-  }
-
-  void OnRequestFailed(bool in_cache, int net_error) override {
-    net_error_ = net_error;
-    ASSERT_TRUE(request_failed_);
-    request_failed_->Quit();
-  }
-
-  void OnRequestStarted(base::TimeTicks timestamp) override {
-    ASSERT_FALSE(timestamp.is_null());
-    ++on_request_handled_counter_;
-  }
-
- private:
-  net::RedirectInfo redirect_info_;
-  scoped_refptr<ResourceResponse> redirect_response_;
-  scoped_refptr<ResourceResponse> response_;
-  std::unique_ptr<StreamHandle> body_;
-  int net_error_;
-  int on_request_handled_counter_;
-
-  std::unique_ptr<base::RunLoop> request_redirected_;
-  std::unique_ptr<base::RunLoop> response_started_;
-  std::unique_ptr<base::RunLoop> request_failed_;
 };
 
 class RequestBlockingResourceDispatcherHostDelegate

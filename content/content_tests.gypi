@@ -158,6 +158,8 @@
       'test/test_frame_navigation_observer.h',
       'test/test_navigation_url_loader.cc',
       'test/test_navigation_url_loader.h',
+      'test/test_navigation_url_loader_delegate.cc',
+      'test/test_navigation_url_loader_delegate.h',
       'test/test_navigation_url_loader_factory.cc',
       'test/test_navigation_url_loader_factory.h',
       'test/test_render_frame.cc',
