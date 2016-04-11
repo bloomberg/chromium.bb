@@ -112,6 +112,8 @@ void DialogClientView::UpdateDialogButtons() {
     delete cancel_button_;
     cancel_button_ = NULL;
   }
+
+  SetupFocusChain();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -233,8 +235,6 @@ void DialogClientView::ViewHierarchyChanged(
     else if (details.child == extra_view_)
       extra_view_ = nullptr;
   }
-
-  SetupFocusChain();
 }
 
 void DialogClientView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
@@ -286,6 +286,7 @@ void DialogClientView::CreateExtraView() {
   if (extra_view_) {
     extra_view_->SetGroup(kButtonGroup);
     AddChildView(extra_view_);
+    SetupFocusChain();
   }
 }
 
@@ -352,11 +353,10 @@ void DialogClientView::SetupFocusChain() {
       std::remove(child_views.begin(), child_views.end(), nullptr),
       child_views.end());
 
-  // Setup focus.
-  for (size_t i = 0; i < child_views.size(); i++) {
-    child_views[i]->SetNextFocusableView(
-        i + 1 != child_views.size() ? child_views[i + 1] : nullptr);
-  }
+  // Setup focus by reordering views. It is not safe to use SetNextFocusableView
+  // since child views may be added externally to this view.
+  for (size_t i = 0; i < child_views.size(); i++)
+    ReorderChildView(child_views[i], i);
 }
 
 }  // namespace views

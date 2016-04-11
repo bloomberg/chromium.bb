@@ -17,14 +17,15 @@ namespace views {
 
 class TestDialogClientView : public DialogClientView {
  public:
-  TestDialogClientView(View* contents_view,
-                       DialogDelegate* dialog_delegate)
-      : DialogClientView(contents_view),
-        dialog_(dialog_delegate) {}
+  explicit TestDialogClientView(DialogDelegateView* dialog_delegate_view)
+      : DialogClientView(dialog_delegate_view),
+        dialog_delegate_view_(dialog_delegate_view) {}
   ~TestDialogClientView() override {}
 
   // DialogClientView implementation.
-  DialogDelegate* GetDialogDelegate() const override { return dialog_; }
+  DialogDelegate* GetDialogDelegate() const override {
+    return dialog_delegate_view_;
+  }
 
   View* GetContentsView() { return contents_view(); }
 
@@ -33,11 +34,13 @@ class TestDialogClientView : public DialogClientView {
   }
 
  private:
-  DialogDelegate* dialog_;
+  DialogDelegateView* dialog_delegate_view_;
 
   DISALLOW_COPY_AND_ASSIGN(TestDialogClientView);
 };
 
+// Base class for tests. Also acts as the dialog delegate and contents view for
+// TestDialogClientView.
 class DialogClientViewTest : public ViewsTestBase,
                              public DialogDelegateView {
  public:
@@ -49,14 +52,14 @@ class DialogClientViewTest : public ViewsTestBase,
   // testing::Test implementation.
   void SetUp() override {
     dialog_buttons_ = ui::DIALOG_BUTTON_NONE;
-    contents_.reset(new StaticSizedView(gfx::Size(100, 200)));
-    client_view_.reset(new TestDialogClientView(contents_.get(), this));
-
+    client_view_.reset(new TestDialogClientView(this));
+    // Add this i.e. the contents view as a child of |client_view_|. This is
+    // generally done when the client view is added to the view hierarchy.
+    client_view_->AddChildViewAt(this, 0);
     ViewsTestBase::SetUp();
   }
 
   // DialogDelegateView implementation.
-  View* GetContentsView() override { return contents_.get(); }
   View* CreateExtraView() override { return extra_view_; }
   bool GetExtraViewPadding(int* padding) override {
     if (extra_view_padding_)
@@ -76,11 +79,11 @@ class DialogClientViewTest : public ViewsTestBase,
   // the requested amount, but height should always match exactly.
   void CheckContentsIsSetToPreferredSize() {
     const gfx::Rect client_bounds = GetUpdatedClientBounds();
-    const gfx::Size preferred_size = contents_->GetPreferredSize();
-    EXPECT_EQ(preferred_size.height(), contents_->bounds().height());
-    EXPECT_LE(preferred_size.width(), contents_->bounds().width());
-    EXPECT_EQ(contents_->bounds().origin(), client_bounds.origin());
-    EXPECT_EQ(contents_->bounds().right(), client_bounds.right());
+    const gfx::Size preferred_size = this->GetPreferredSize();
+    EXPECT_EQ(preferred_size.height(), this->bounds().height());
+    EXPECT_LE(preferred_size.width(), this->bounds().width());
+    EXPECT_EQ(this->bounds().origin(), client_bounds.origin());
+    EXPECT_EQ(this->bounds().right(), client_bounds.right());
   }
 
   // Sets the buttons to show in the dialog and refreshes the dialog.
@@ -106,8 +109,6 @@ class DialogClientViewTest : public ViewsTestBase,
   TestDialogClientView* client_view() { return client_view_.get(); }
 
  private:
-  // The contents of the dialog.
-  scoped_ptr<View> contents_;
   // The DialogClientView that's being tested.
   scoped_ptr<TestDialogClientView> client_view_;
   // The bitmask of buttons to show in the dialog.
@@ -202,6 +203,11 @@ TEST_F(DialogClientViewTest, SetupFocusChain) {
             client_view()->GetContentsView()->GetNextFocusableView());
   EXPECT_EQ(client_view()->cancel_button(), extra_view->GetNextFocusableView());
   EXPECT_EQ(nullptr, client_view()->cancel_button()->GetNextFocusableView());
+
+  // Add a dummy view to the client view.
+  View* dummy_view = new StaticSizedView(gfx::Size(200, 200));
+  client_view()->AddChildView(dummy_view);
+  EXPECT_EQ(dummy_view, client_view()->cancel_button()->GetNextFocusableView());
 }
 
 // Test that the contents view gets its preferred size in the basic dialog
