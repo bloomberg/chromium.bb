@@ -70,6 +70,13 @@ void ChildHistogramMessageFilter::OnGetChildHistogramData(int sequence_number) {
 }
 
 void ChildHistogramMessageFilter::UploadAllHistograms(int sequence_number) {
+  // If a persistent allocator is in use, it needs to occasionally update
+  // some internal histograms. An upload is happening so this is a good time.
+  base::PersistentHistogramAllocator* global_allocator =
+      base::GlobalHistogramAllocator::Get();
+  if (global_allocator)
+    global_allocator->UpdateTrackingHistograms();
+
   if (!histogram_delta_serialization_) {
     histogram_delta_serialization_.reset(
         new base::HistogramDeltaSerialization("ChildProcess"));
