@@ -296,6 +296,11 @@ message SystemProfileProto {
       CONNECTION_4G = 5;
       CONNECTION_BLUETOOTH = 6;
       CONNECTION_NONE = 7;
+      // As an alternative to connection_type_is_ambiguous above,
+      // CONNECTION_AMBIGUOUS can be used for connection_type instead. This is
+      // to be used in logs processing as a more convenient way to manage the
+      // ambiguous case when breaking down stats by connection_type.
+      CONNECTION_AMBIGUOUS = 8;
     }
     // The connection type according to NetworkChangeNotifier.
     optional ConnectionType connection_type = 2;
