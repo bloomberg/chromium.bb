@@ -190,6 +190,18 @@ std::vector<RandomSelector::WeightAndValue> GetDefaultCommandsForCpu(
 
 }  // namespace internal
 
+PerfProvider::CollectionParams::CollectionParams()
+    : CollectionParams(
+        base::TimeDelta::FromSeconds(2) /* collection_duration */,
+        base::TimeDelta::FromHours(3) /* periodic_interval */,
+        PerfProvider::CollectionParams::TriggerParams( /* resume_from_suspend */
+            10 /* sampling_factor */,
+            base::TimeDelta::FromSeconds(5)) /* max_collection_delay */,
+        PerfProvider::CollectionParams::TriggerParams( /* restore_session */
+            10 /* sampling_factor */,
+            base::TimeDelta::FromSeconds(10)) /* max_collection_delay */) {
+}
+
 PerfProvider::CollectionParams::CollectionParams(
     base::TimeDelta collection_duration,
     base::TimeDelta periodic_interval,
@@ -207,19 +219,8 @@ PerfProvider::CollectionParams::TriggerParams::TriggerParams(
     : sampling_factor_(sampling_factor),
       max_collection_delay_(max_collection_delay.ToInternalValue()) {}
 
-const PerfProvider::CollectionParams PerfProvider::kDefaultParameters(
-  /* collection_duration = */ base::TimeDelta::FromSeconds(2),
-  /* periodic_interval = */ base::TimeDelta::FromHours(3),
-  /* resume_from_suspend = */ PerfProvider::CollectionParams::TriggerParams(
-      /* sampling_factor = */ 10,
-      /* max_collection_delay = */ base::TimeDelta::FromSeconds(5)),
-  /* restore_session = */ PerfProvider::CollectionParams::TriggerParams(
-      /* sampling_factor = */ 10,
-      /* max_collection_delay = */ base::TimeDelta::FromSeconds(10)));
-
 PerfProvider::PerfProvider()
-    : collection_params_(kDefaultParameters),
-      login_observer_(this),
+    : login_observer_(this),
       next_profiling_interval_start_(base::TimeTicks::Now()),
       weak_factory_(this) {
 }

@@ -6,6 +6,7 @@
 
 #include "ash/host/ash_window_tree_host_init_params.h"
 #include "ash/host/ash_window_tree_host_unified.h"
+#include "base/lazy_instance.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/events/event.h"
@@ -23,7 +24,8 @@ namespace ash {
 
 namespace {
 
-AshWindowTreeHost::Factory creation_factory;
+base::LazyInstance<AshWindowTreeHost::Factory> creation_factory =
+    LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
@@ -58,8 +60,8 @@ void AshWindowTreeHost::TranslateLocatedEvent(ui::LocatedEvent* event) {
 // static
 AshWindowTreeHost* AshWindowTreeHost::Create(
     const AshWindowTreeHostInitParams& init_params) {
-  if (!creation_factory.is_null())
-    return creation_factory.Run(init_params);
+  if (!creation_factory.Get().is_null())
+    return creation_factory.Get().Run(init_params);
 
   if (init_params.offscreen)
     return new AshWindowTreeHostUnified(init_params.initial_bounds);
@@ -76,7 +78,7 @@ AshWindowTreeHost* AshWindowTreeHost::Create(
 
 // static
 void AshWindowTreeHost::SetFactory(const Factory& factory) {
-  creation_factory = factory;
+  creation_factory.Get() = factory;
 }
 
 }  // namespace ash
