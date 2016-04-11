@@ -72,8 +72,7 @@ void DefaultBrowserHandler::OnDefaultBrowserWorkerFinished(
   base::FundamentalValue can_be_default(
       state != shell_integration::UNKNOWN_DEFAULT &&
       !IsDisabledByPolicy(default_browser_policy_) &&
-      shell_integration::CanSetAsDefaultBrowser() !=
-          shell_integration::SET_DEFAULT_NOT_ALLOWED);
+      shell_integration::CanSetAsDefaultBrowser());
 
   web_ui()->CallJavascriptFunction("Settings.updateDefaultBrowserState",
                                    is_default, can_be_default);

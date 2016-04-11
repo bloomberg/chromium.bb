@@ -154,7 +154,9 @@ class FakeProtocolClientWorker
                           : shell_integration::IS_DEFAULT;
   }
 
-  void SetAsDefaultImpl() override {}
+  void SetAsDefaultImpl(const base::Closure& on_finished_callback) override {
+    on_finished_callback.Run();
+  }
 
  private:
   bool force_failure_;

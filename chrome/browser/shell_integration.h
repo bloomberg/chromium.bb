@@ -22,48 +22,37 @@ class CommandLine;
 
 namespace shell_integration {
 
-// Sets Chrome as the default browser (only for the current user). Returns
-// false if this operation fails.
+// Sets Chrome as the default browser (only for the current user). Returns false
+// if this operation fails. This does not work on Windows version 8 or higher.
+// Prefer to use the DefaultBrowserWorker class below since it works on all OSs.
 bool SetAsDefaultBrowser();
-
-// Initiates an OS shell flow which (if followed by the user) should set
-// Chrome as the default browser. Returns false if the flow cannot be
-// initialized, if it is not supported (introduced for Windows 8) or if the
-// user cancels the operation. This is a blocking call and requires a FILE
-// thread. If Chrome is already default browser, no interactive dialog will be
-// shown and this method returns true.
-bool SetAsDefaultBrowserInteractive();
 
 // Sets Chrome as the default client application for the given protocol
 // (only for the current user). Returns false if this operation fails.
+// Prefer to use the DefaultProtocolClientWorker class below since it works on
+// all OSs.
 bool SetAsDefaultProtocolClient(const std::string& protocol);
 
-// Initiates an OS shell flow which (if followed by the user) should set
-// Chrome as the default handler for |protocol|. Returns false if the flow
-// cannot be initialized, if it is not supported (introduced for Windows 8)
-// or if the user cancels the operation. This is a blocking call and requires
-// a FILE thread. If Chrome is already default for |protocol|, no interactive
-// dialog will be shown and this method returns true.
-bool SetAsDefaultProtocolClientInteractive(const std::string& protocol);
-
-// Windows 8 and Windows 10 introduced different ways to set the default
-// browser.
+// The different types of permissions required to set a default web client.
 enum DefaultWebClientSetPermission {
   // The browser distribution is not permitted to be made default.
   SET_DEFAULT_NOT_ALLOWED,
   // No special permission or interaction is required to set the default
   // browser. This is used in Linux, Mac and Windows 7 and under.
   SET_DEFAULT_UNATTENDED,
-  // On Windows 8, a browser can be made default only in an interactive flow.
+  // On Windows 8+, a browser can be made default only in an interactive flow.
   SET_DEFAULT_INTERACTIVE,
 };
 
-// Returns requirements for making the running browser the user's default.
-DefaultWebClientSetPermission CanSetAsDefaultBrowser();
+// Returns requirements for making the running browser either the default
+// browser or the default client application for a specific protocols for the
+// current user.
+DefaultWebClientSetPermission GetDefaultWebClientSetPermission();
 
-// Returns requirements for making the running browser the user's default
-// client application for specific protocols.
-DefaultWebClientSetPermission CanSetAsDefaultProtocolClient();
+// Returns true if the running browser can be set as the default browser,
+// whether user interaction is needed or not. Use
+// GetDefaultWebClientSetPermission() if this distinction is important.
+bool CanSetAsDefaultBrowser();
 
 // Returns true if making the running browser the default client for any
 // protocol requires elevated privileges.
@@ -232,7 +221,11 @@ class DefaultWebClientWorker
 
   // Implementation of CheckIsDefault() and SetAsDefault() for subclasses.
   virtual DefaultWebClientState CheckIsDefaultImpl() = 0;
-  virtual void SetAsDefaultImpl() = 0;
+
+  // The callback may be run synchronously or at an arbitrary time later on this
+  // thread.
+  // Note: Subclasses MUST make sure |on_finished_callback| is executed.
+  virtual void SetAsDefaultImpl(const base::Closure& on_finished_callback) = 0;
 
   // Reports the result for the set-as-default operation.
   void ReportSetDefaultResult(DefaultWebClientState state);
@@ -268,7 +261,7 @@ class DefaultBrowserWorker : public DefaultWebClientWorker {
   DefaultWebClientState CheckIsDefaultImpl() override;
 
   // Set Chrome as the default browser.
-  void SetAsDefaultImpl() override;
+  void SetAsDefaultImpl(const base::Closure& on_finished_callback) override;
 
   DISALLOW_COPY_AND_ASSIGN(DefaultBrowserWorker);
 };
@@ -292,7 +285,7 @@ class DefaultProtocolClientWorker : public DefaultWebClientWorker {
   DefaultWebClientState CheckIsDefaultImpl() override;
 
   // Set Chrome as the default handler for this protocol.
-  void SetAsDefaultImpl() override;
+  void SetAsDefaultImpl(const base::Closure& on_finished_callback) override;
 
   std::string protocol_;
 

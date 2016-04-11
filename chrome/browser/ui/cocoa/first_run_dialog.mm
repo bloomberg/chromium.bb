@@ -140,8 +140,7 @@ bool ShowFirstRunDialog(Profile* profile) {
                                              ofType:@"nib"];
   if ((self = [super initWithWindowNibPath:nibpath owner:self])) {
     // Bound to the dialog checkboxes.
-    makeDefaultBrowser_ = shell_integration::CanSetAsDefaultBrowser() !=
-                          shell_integration::SET_DEFAULT_NOT_ALLOWED;
+    makeDefaultBrowser_ = shell_integration::CanSetAsDefaultBrowser();
     statsEnabled_ = StatsCheckboxDefault();
   }
   return self;

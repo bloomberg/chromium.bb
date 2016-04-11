@@ -53,7 +53,7 @@ bool IsIdentifierDefaultProtocolClient(NSString* identifier,
 // applies only for the current user. Returns false if this cannot be done, or
 // if the operation fails.
 bool SetAsDefaultBrowser() {
-  if (CanSetAsDefaultBrowser() != SET_DEFAULT_UNATTENDED)
+  if (CanSetAsDefaultBrowser())
     return false;
 
   // We really do want the outer bundle here, not the main bundle since setting
@@ -73,7 +73,7 @@ bool SetAsDefaultProtocolClient(const std::string& protocol) {
   if (protocol.empty())
     return false;
 
-  if (CanSetAsDefaultProtocolClient() != SET_DEFAULT_UNATTENDED)
+  if (GetDefaultWebClientSetPermission() != SET_DEFAULT_UNATTENDED)
     return false;
 
   // We really do want the main bundle here since it makes sense to set an
@@ -89,12 +89,12 @@ bool SetAsDefaultProtocolClient(const std::string& protocol) {
   return return_code == noErr;
 }
 
-DefaultWebClientSetPermission CanSetAsDefaultBrowser() {
-  if (chrome::GetChannel() != version_info::Channel::CANARY) {
-    return SET_DEFAULT_UNATTENDED;
+DefaultWebClientSetPermission GetDefaultWebClientSetPermission() {
+  if (chrome::GetChannel() == version_info::Channel::CANARY) {
+    return SET_DEFAULT_NOT_ALLOWED;
   }
 
-  return SET_DEFAULT_NOT_ALLOWED;
+  return SET_DEFAULT_UNATTENDED;
 }
 
 base::string16 GetApplicationNameForProtocol(const GURL& url) {

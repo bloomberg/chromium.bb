@@ -230,8 +230,7 @@ void OnCheckIsDefaultBrowserFinished(
     // default browser.
     ResetCheckDefaultBrowserPref(profile_path);
   } else if (show_prompt && state == shell_integration::NOT_DEFAULT &&
-             shell_integration::CanSetAsDefaultBrowser() !=
-                 shell_integration::SET_DEFAULT_NOT_ALLOWED) {
+             shell_integration::CanSetAsDefaultBrowser()) {
     ShowPrompt();
   }
 }

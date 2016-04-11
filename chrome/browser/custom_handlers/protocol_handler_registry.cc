@@ -53,7 +53,7 @@ bool ShouldRemoveHandlersNotInOS() {
   // difference (http://crbug.com/88255).
   return false;
 #else
-  return shell_integration::CanSetAsDefaultProtocolClient() !=
+  return shell_integration::GetDefaultWebClientSetPermission() !=
          shell_integration::SET_DEFAULT_NOT_ALLOWED;
 #endif
 }

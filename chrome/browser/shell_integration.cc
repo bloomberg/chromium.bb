@@ -24,6 +24,11 @@
 #include "chromeos/chromeos_switches.h"
 #endif
 
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#include "chrome/browser/shell_integration_win.h"
+#endif
+
 #if !defined(OS_WIN)
 #include "chrome/common/channel_info.h"
 #include "chrome/grit/chromium_strings.h"
@@ -40,20 +45,8 @@ const struct AppModeInfo* gAppModeInfo = nullptr;
 
 }  // namespace
 
-#if !defined(OS_WIN)
-bool SetAsDefaultBrowserInteractive() {
-  return false;
-}
-
-bool SetAsDefaultProtocolClientInteractive(const std::string& protocol) {
-  return false;
-}
-#endif  // !defined(OS_WIN)
-
-DefaultWebClientSetPermission CanSetAsDefaultProtocolClient() {
-  // Allowed as long as the browser can become the operating system default
-  // browser.
-  return CanSetAsDefaultBrowser();
+bool CanSetAsDefaultBrowser() {
+  return GetDefaultWebClientSetPermission() != SET_DEFAULT_NOT_ALLOWED;
 }
 
 #if !defined(OS_WIN)
@@ -187,8 +180,10 @@ void DefaultWebClientWorker::CheckIsDefault(bool is_following_set_as_default) {
 
 void DefaultWebClientWorker::SetAsDefault() {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-  SetAsDefaultImpl();
-  CheckIsDefault(true);
+
+  // SetAsDefaultImpl will make sure the callback is executed exactly once.
+  SetAsDefaultImpl(
+      base::Bind(&DefaultWebClientWorker::CheckIsDefault, this, true));
 }
 
 void DefaultWebClientWorker::ReportSetDefaultResult(
@@ -237,8 +232,9 @@ DefaultWebClientState DefaultBrowserWorker::CheckIsDefaultImpl() {
   return GetDefaultBrowser();
 }
 
-void DefaultBrowserWorker::SetAsDefaultImpl() {
-  switch (CanSetAsDefaultBrowser()) {
+void DefaultBrowserWorker::SetAsDefaultImpl(
+    const base::Closure& on_finished_callback) {
+  switch (GetDefaultWebClientSetPermission()) {
     case SET_DEFAULT_NOT_ALLOWED:
       NOTREACHED();
       break;
@@ -246,10 +242,21 @@ void DefaultBrowserWorker::SetAsDefaultImpl() {
       SetAsDefaultBrowser();
       break;
     case SET_DEFAULT_INTERACTIVE:
-      if (interactive_permitted_)
-        SetAsDefaultBrowserInteractive();
+#if defined(OS_WIN)
+      if (interactive_permitted_) {
+        // The Windows 8 API for choosing the default browser was deprecated on
+        // Windows 10.
+        if (base::win::GetVersion() >= base::win::VERSION_WIN10) {
+          win::SetAsDefaultBrowserUsingSystemSettings(on_finished_callback);
+          return;
+        } else {
+          win::SetAsDefaultBrowserUsingIntentPicker();
+        }
+      }
+#endif  // defined(OS_WIN)
       break;
   }
+  on_finished_callback.Run();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -274,8 +281,9 @@ DefaultWebClientState DefaultProtocolClientWorker::CheckIsDefaultImpl() {
   return IsDefaultProtocolClient(protocol_);
 }
 
-void DefaultProtocolClientWorker::SetAsDefaultImpl() {
-  switch (CanSetAsDefaultProtocolClient()) {
+void DefaultProtocolClientWorker::SetAsDefaultImpl(
+    const base::Closure& on_finished_callback) {
+  switch (GetDefaultWebClientSetPermission()) {
     case SET_DEFAULT_NOT_ALLOWED:
       // Not allowed, do nothing.
       break;
@@ -283,11 +291,14 @@ void DefaultProtocolClientWorker::SetAsDefaultImpl() {
       SetAsDefaultProtocolClient(protocol_);
       break;
     case SET_DEFAULT_INTERACTIVE:
-      if (interactive_permitted_) {
-        SetAsDefaultProtocolClientInteractive(protocol_);
-      }
+#if defined(OS_WIN)
+      // TODO(pmonette): Implement a working flow for Windows 10.
+      if (interactive_permitted_)
+        win::SetAsDefaultProtocolClientUsingIntentPicker(protocol_);
+#endif  // defined(OS_WIN)
       break;
   }
+  on_finished_callback.Run();
 }
 
 }  // namespace shell_integration

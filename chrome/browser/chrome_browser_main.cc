@@ -1459,10 +1459,11 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
       return chrome::RESULT_CODE_NORMAL_EXIT_EXP2;
     // At this point the user is willing to try chrome again.
     if (answer == TryChromeDialogView::TRY_CHROME_AS_DEFAULT) {
-      // Only set in the unattended case, the interactive case is Windows 8.
-      if (shell_integration::CanSetAsDefaultBrowser() ==
-          shell_integration::SET_DEFAULT_UNATTENDED)
+      // Only set in the unattended case. This is not true on Windows 8+.
+      if (shell_integration::GetDefaultWebClientSetPermission() ==
+          shell_integration::SET_DEFAULT_UNATTENDED) {
         shell_integration::SetAsDefaultBrowser();
+      }
     }
 #else
     // We don't support retention experiments on Mac or Linux.

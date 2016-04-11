@@ -579,6 +579,7 @@
       'browser/shell_integration_android.cc',
       'browser/shell_integration_chromeos.cc',
       'browser/shell_integration_mac.mm',
+      'browser/shell_integration_win.h',
       'browser/shell_integration_win.cc',
       'browser/site_details.cc',
       'browser/site_details.h',

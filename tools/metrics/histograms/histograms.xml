@@ -7646,6 +7646,26 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="DefaultBrowser.SettingsInteraction.ConcludeReason"
+    enum="SettingsInteractionConcludeReason">
+  <owner>pmonette@chromium.org</owner>
+  <summary>
+    The reason why the default browser settings interaction concluded on Windows
+    10.
+  </summary>
+</histogram>
+
+<histogram name="DefaultBrowser.SettingsInteraction.RegistryWatcherDuration"
+    units="ms">
+  <owner>pmonette@chromium.org</owner>
+  <summary>
+    The registry keys for the default browser protocols (http/https) are
+    monitored to know when the user finished interacting with the system
+    settings. This is how long it took for the last registry watcher to get
+    signaled.
+  </summary>
+</histogram>
+
 <histogram name="DefaultBrowser.State" enum="DefaultBrowserState">
   <owner>gab@chromium.org</owner>
   <summary>Whether Chrome was the default browser when it started up.</summary>
@@ -82667,6 +82687,15 @@ To add a new entry, add it with any value and run test to compute valid value.
   </int>
   <int value="7" label="No errors, not default">
     No errors were encountered yet Chrome is still not the default web client.
+  </int>
+</enum>
+
+<enum name="SettingsInteractionConcludeReason" type="int">
+  <int value="0" label="Registry watcher">
+    A change to the protocol registry key was detected.
+  </int>
+  <int value="1" label="Timeout">
+    The timer fired before a change to the protocol registry key was detected.
   </int>
 </enum>
 

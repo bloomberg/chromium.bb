@@ -27,7 +27,9 @@ class FakeExternalProtocolHandlerWorker
     return os_state_;
   }
 
-  void SetAsDefaultImpl() override {}
+  void SetAsDefaultImpl(const base::Closure& on_finished_callback) override {
+    on_finished_callback.Run();
+  }
 
   shell_integration::DefaultWebClientState os_state_;
 };

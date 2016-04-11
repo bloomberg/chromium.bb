@@ -215,7 +215,7 @@ bool SetAsDefaultProtocolClient(const std::string& protocol) {
   return SetDefaultWebClient(protocol);
 }
 
-DefaultWebClientSetPermission CanSetAsDefaultBrowser() {
+DefaultWebClientSetPermission GetDefaultWebClientSetPermission() {
   return SET_DEFAULT_UNATTENDED;
 }
 
