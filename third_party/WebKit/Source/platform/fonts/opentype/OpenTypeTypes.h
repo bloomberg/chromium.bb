@@ -63,12 +63,6 @@ typedef UInt32 Fixed;
 typedef UInt16 Offset;
 typedef UInt16 GlyphID;
 
-// OTTag is native because it's only compared against constants, so we don't
-// do endian conversion here but make sure constants are in big-endian order.
-// Note that multi-character literal is implementation-defined in C++0x.
-typedef uint32_t Tag;
-#define OT_MAKE_TAG(ch1, ch2, ch3, ch4) ((((uint32_t)(ch4)) << 24) | (((uint32_t)(ch3)) << 16) | (((uint32_t)(ch2)) << 8) | ((uint32_t)(ch1)))
-
 template <typename T> static const T* validateTable(const RefPtr<SharedBuffer>& buffer, size_t count = 1)
 {
     if (!buffer || buffer->size() < sizeof(T) * count)

@@ -353,11 +353,10 @@ PassRefPtr<OpenTypeVerticalData> FontPlatformData::verticalData() const
     return FontCache::fontCache()->getVerticalData(typeface()->uniqueID(), *this);
 }
 
-PassRefPtr<SharedBuffer> FontPlatformData::openTypeTable(uint32_t table) const
+PassRefPtr<SharedBuffer> FontPlatformData::openTypeTable(SkFontTableTag tag) const
 {
     RefPtr<SharedBuffer> buffer;
 
-    SkFontTableTag tag = WTF::bswap32(table);
     const size_t tableSize = m_typeface->getTableSize(tag);
     if (tableSize) {
         Vector<char> tableBuffer(tableSize);

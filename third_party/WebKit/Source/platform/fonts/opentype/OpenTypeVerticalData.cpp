@@ -24,6 +24,7 @@
 
 #include "platform/fonts/opentype/OpenTypeVerticalData.h"
 
+#include "SkTypeface.h"
 #include "platform/SharedBuffer.h"
 #include "platform/fonts/SimpleFontData.h"
 #include "platform/fonts/GlyphPage.h"
@@ -34,11 +35,14 @@
 namespace blink {
 namespace OpenType {
 
-const uint32_t HheaTag = OT_MAKE_TAG('h', 'h', 'e', 'a');
-const uint32_t HmtxTag = OT_MAKE_TAG('h', 'm', 't', 'x');
-const uint32_t VheaTag = OT_MAKE_TAG('v', 'h', 'e', 'a');
-const uint32_t VmtxTag = OT_MAKE_TAG('v', 'm', 't', 'x');
-const uint32_t VORGTag = OT_MAKE_TAG('V', 'O', 'R', 'G');
+// The input characters are big-endian (first is most significant).
+#define OT_MAKE_TAG(ch1, ch2, ch3, ch4) ((((uint32_t)(ch1)) << 24) | (((uint32_t)(ch2)) << 16) | (((uint32_t)(ch3)) << 8) | ((uint32_t)(ch4)))
+
+const SkFontTableTag HheaTag = OT_MAKE_TAG('h', 'h', 'e', 'a');
+const SkFontTableTag HmtxTag = OT_MAKE_TAG('h', 'm', 't', 'x');
+const SkFontTableTag VheaTag = OT_MAKE_TAG('v', 'h', 'e', 'a');
+const SkFontTableTag VmtxTag = OT_MAKE_TAG('v', 'm', 't', 'x');
+const SkFontTableTag VORGTag = OT_MAKE_TAG('V', 'O', 'R', 'G');
 
 #pragma pack(1)
 
