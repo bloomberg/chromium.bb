@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "ash/system/chromeos/devicetype_utils.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
@@ -236,7 +237,6 @@ void HelpHandler::GetLocalizedValues(base::DictionaryValue* localized_strings) {
 #endif
     {"productName", IDS_PRODUCT_NAME},
     {"updateCheckStarted", IDS_UPGRADE_CHECK_STARTED},
-    {"upToDate", IDS_UPGRADE_UP_TO_DATE},
     {"updating", IDS_UPGRADE_UPDATING},
 #if defined(OS_CHROMEOS) || defined(OS_WIN)
     {"updateDisabledByPolicy", IDS_UPGRADE_DISABLED_BY_POLICY},
@@ -300,6 +300,14 @@ void HelpHandler::GetLocalizedValues(base::DictionaryValue* localized_strings) {
     localized_strings->SetString(resources[i].name,
                                  l10n_util::GetStringUTF16(resources[i].ids));
   }
+
+#if defined(OS_CHROMEOS)
+  localized_strings->SetString("upToDate", ash::SubstituteChromeOSDeviceType(
+      IDS_UPGRADE_UP_TO_DATE));
+#else
+  localized_strings->SetString("upToDate", l10n_util::GetStringUTF16(
+      IDS_UPGRADE_UP_TO_DATE));
+#endif
 
   localized_strings->SetString("updateObsoleteSystem",
                                ObsoleteSystem::LocalizedObsoleteString());

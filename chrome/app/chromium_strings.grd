@@ -593,7 +593,7 @@ Chromium is unable to recover your settings.
       </if>
       <if expr="chromeos">
         <message name="IDS_UPGRADE_UP_TO_DATE" desc="Status label: Already up to date (Chromium OS)">
-          Your device is up to date.
+          Your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> is up to date.
         </message>
       </if>
       <if expr="not chromeos">
