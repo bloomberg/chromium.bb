@@ -9,6 +9,7 @@
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "public/web/WebHitTestResult.h"
+#include "public/web/WebSettings.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebRemoteFrameImpl.h"
@@ -393,6 +394,49 @@ TEST(RemoteFrameThrottlingTest, ThrottledLocalRoot)
     testing::runPendingTasks();
     EXPECT_EQ(DocumentLifecycle::VisualUpdatePending, frameDocument->lifecycle().state());
     webView->close();
+}
+
+TEST_F(FrameThrottlingTest, ScrollingCoordinatorShouldSkipThrottledFrame)
+{
+    webView().settings()->setAcceleratedCompositingEnabled(true);
+
+    // Create a hidden frame which is throttled.
+    SimRequest mainResource("https://example.com/", "text/html");
+    SimRequest frameResource("https://example.com/iframe.html", "text/html");
+
+    loadURL("https://example.com/");
+    mainResource.complete("<iframe id=frame sandbox src=iframe.html></iframe>");
+    frameResource.complete("<style> html { background-image: linear-gradient(red, blue); background-attachment: fixed; } </style>");
+
+    // Move the frame offscreen to throttle it.
+    auto* frameElement = toHTMLIFrameElement(document().getElementById("frame"));
+    frameElement->setAttribute(styleAttr, "transform: translateY(480px)");
+    EXPECT_FALSE(frameElement->contentDocument()->view()->canThrottleRendering());
+    compositeFrame();
+    EXPECT_TRUE(frameElement->contentDocument()->view()->canThrottleRendering());
+
+    // Change style of the frame's content to make it in VisualUpdatePending state.
+    frameElement->contentDocument()->body()->setAttribute(styleAttr, "background: green");
+    // Change root frame's layout so that the next lifecycle update will call
+    // ScrollingCoordinator::updateAfterCompositingChangeIfNeeded().
+    document().body()->setAttribute(styleAttr, "margin: 20px");
+    EXPECT_EQ(DocumentLifecycle::VisualUpdatePending, frameElement->contentDocument()->lifecycle().state());
+
+    DocumentLifecycle::AllowThrottlingScope throttlingScope(document().lifecycle());
+    // This will call ScrollingCoordinator::updateAfterCompositingChangeIfNeeded() and should not
+    // cause assert failure about isAllowedToQueryCompositingState() in the throttled frame.
+    document().view()->updateAllLifecyclePhases();
+    testing::runPendingTasks();
+    EXPECT_EQ(DocumentLifecycle::VisualUpdatePending, frameElement->contentDocument()->lifecycle().state());
+    // The fixed background in the throttled sub frame should not cause main thread scrolling.
+    EXPECT_FALSE(document().view()->shouldScrollOnMainThread());
+
+    // Scroll down to unthrottle the frame.
+    webView().mainFrameImpl()->frameView()->setScrollPosition(DoublePoint(0, 480), ProgrammaticScroll);
+    document().view()->updateAllLifecyclePhases();
+    testing::runPendingTasks();
+    // The fixed background in the throttled sub frame should be considered.
+    EXPECT_TRUE(document().view()->shouldScrollOnMainThread());
 }
 
 } // namespace blink
