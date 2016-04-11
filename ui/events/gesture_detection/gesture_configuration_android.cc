@@ -57,8 +57,6 @@ class GestureConfigurationAndroid : public GestureConfiguration {
     set_min_pinch_update_span_delta(0.f);
     set_min_scaling_span_in_pixels(
         ViewConfiguration::GetMinScalingSpanInDips());
-    set_min_scaling_touch_major(
-        ViewConfiguration::GetMinScalingTouchMajorInDips());
     set_show_press_delay_in_ms(ViewConfiguration::GetTapTimeoutInMs());
     set_span_slop(ViewConfiguration::GetTouchSlopInDips() * 2.f);
     set_fling_touchscreen_tap_suppression_enabled(true);

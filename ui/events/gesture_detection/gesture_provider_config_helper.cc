@@ -50,7 +50,6 @@ ScaleGestureDetector::Config BuildScaleGestureDetectorConfig(
     const GestureConfiguration& gesture_config) {
   ScaleGestureDetector::Config config;
   config.span_slop = gesture_config.span_slop();
-  config.min_scaling_touch_major = gesture_config.min_scaling_touch_major();
   config.min_scaling_span = gesture_config.min_scaling_span_in_pixels();
   config.min_pinch_update_span_delta =
       gesture_config.min_pinch_update_span_delta();

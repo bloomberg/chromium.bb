@@ -29,9 +29,6 @@ class GESTURE_DETECTION_EXPORT ScaleGestureDetector {
     // a radius of average pointer deviation from the focal point.
     float span_slop;
 
-    // Minimum accepted value for TouchMajor while scaling (in dips).
-    float min_scaling_touch_major;
-
     // Minimum span needed to initiate a scaling gesture (in dips).
     float min_scaling_span;
 
@@ -89,11 +86,6 @@ class GESTURE_DETECTION_EXPORT ScaleGestureDetector {
     ANCHORED_SCALE_MODE_STYLUS
   };
 
-  // The TouchMajor/TouchMinor elements of a MotionEvent can flutter/jitter on
-  // some hardware/driver combos. Smooth out to get kinder, gentler behavior.
-  void AddTouchHistory(const MotionEvent& ev);
-  void ResetTouchHistory();
-
   void ResetScaleWithSpan(float span);
 
   ScaleGestureListener* const listener_;
@@ -113,15 +105,6 @@ class GESTURE_DETECTION_EXPORT ScaleGestureDetector {
   bool in_progress_;
   float span_slop_;
   float min_span_;
-
-  // Bounds for recently seen values.
-  float touch_upper_;
-  float touch_lower_;
-  float touch_history_last_accepted_;
-  int touch_history_direction_;
-  base::TimeTicks touch_history_last_accepted_time_;
-  float touch_min_major_;
-  float touch_max_major_;
 
   float anchored_scale_start_x_;
   float anchored_scale_start_y_;

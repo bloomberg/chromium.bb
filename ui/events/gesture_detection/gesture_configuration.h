@@ -22,7 +22,6 @@ class GESTURE_DETECTION_EXPORT GestureConfiguration {
   float default_radius() const { return default_radius_; }
   void set_default_radius(float radius) {
     default_radius_ = radius;
-    min_scaling_touch_major_ = default_radius_ * 2;
     min_gesture_bounds_length_ = default_radius_;
   }
   bool double_tap_enabled() const { return double_tap_enabled_; }
@@ -140,7 +139,6 @@ class GESTURE_DETECTION_EXPORT GestureConfiguration {
   void set_min_scaling_span_in_pixels(float val) {
     min_scaling_span_in_pixels_ = val;
   }
-  float min_scaling_touch_major() const { return min_scaling_touch_major_; }
   float min_swipe_velocity() const { return min_swipe_velocity_; }
   void set_min_swipe_velocity(float val) { min_swipe_velocity_ = val; }
   int scroll_debounce_interval_in_ms() const {
@@ -192,9 +190,6 @@ class GESTURE_DETECTION_EXPORT GestureConfiguration {
   }
   void set_min_gesture_bounds_length(float val) {
     min_gesture_bounds_length_ = val;
-  }
-  void set_min_scaling_touch_major(float val) {
-    min_scaling_touch_major_ = val;
   }
   void set_span_slop(float val) { span_slop_ = val; }
 
@@ -253,7 +248,6 @@ class GESTURE_DETECTION_EXPORT GestureConfiguration {
   // Only used with --compensate-for-unstable-pinch-zoom.
   float min_pinch_update_span_delta_;
   float min_scaling_span_in_pixels_;
-  float min_scaling_touch_major_;
   float min_swipe_velocity_;
   int scroll_debounce_interval_in_ms_;
   int semi_long_press_time_in_ms_;

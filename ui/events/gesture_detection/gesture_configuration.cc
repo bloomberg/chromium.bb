@@ -53,8 +53,6 @@ GestureConfiguration::GestureConfiguration()
       // If this is too small, we currently can get single finger pinch zoom.
       // See crbug.com/357237 for details.
       min_scaling_span_in_pixels_(125),
-      // The default value of min_scaling_touch_major_ is 2 * default_radius_.
-      min_scaling_touch_major_(50),
       min_swipe_velocity_(20),
       // TODO(jdduke): Disable and remove entirely when issues with intermittent
       // scroll end detection on the Pixel are resolved, crbug.com/353702.

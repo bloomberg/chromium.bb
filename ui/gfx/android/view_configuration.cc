@@ -28,8 +28,7 @@ struct ViewConfigurationData {
         min_fling_velocity_in_dips_s_(0),
         touch_slop_in_dips_(0),
         double_tap_slop_in_dips_(0),
-        min_scaling_span_in_dips_(0),
-        min_scaling_touch_major_in_dips_(0) {
+        min_scaling_span_in_dips_(0) {
     JNIEnv* env = AttachCurrentThread();
     j_view_configuration_helper_.Reset(
         Java_ViewConfigurationHelper_createWithListener(
@@ -47,8 +46,7 @@ struct ViewConfigurationData {
            Java_ViewConfigurationHelper_getMinimumFlingVelocity(env, obj),
            Java_ViewConfigurationHelper_getTouchSlop(env, obj),
            Java_ViewConfigurationHelper_getDoubleTapSlop(env, obj),
-           Java_ViewConfigurationHelper_getMinScalingSpan(env, obj),
-           Java_ViewConfigurationHelper_getMinScalingTouchMajor(env, obj));
+           Java_ViewConfigurationHelper_getMinScalingSpan(env, obj));
   }
 
   ~ViewConfigurationData() {}
@@ -57,11 +55,10 @@ struct ViewConfigurationData {
                           float minimum_fling_velocity,
                           float touch_slop,
                           float double_tap_slop,
-                          float min_scaling_span,
-                          float min_scaling_touch_major) {
+                          float min_scaling_span) {
     base::AutoLock autolock(lock_);
     Update(maximum_fling_velocity, minimum_fling_velocity, touch_slop,
-           double_tap_slop, min_scaling_span, min_scaling_touch_major);
+           double_tap_slop, min_scaling_span);
   }
 
   int double_tap_timeout_in_ms() const { return double_tap_timeout_in_ms_; }
@@ -94,25 +91,18 @@ struct ViewConfigurationData {
     return min_scaling_span_in_dips_;
   }
 
-  int min_scaling_touch_major_in_dips() {
-    base::AutoLock autolock(lock_);
-    return min_scaling_touch_major_in_dips_;
-  }
-
  private:
   void Update(float maximum_fling_velocity,
               float minimum_fling_velocity,
               float touch_slop,
               float double_tap_slop,
-              float min_scaling_span,
-              float min_scaling_touch_major) {
+              float min_scaling_span) {
     DCHECK_LE(minimum_fling_velocity, maximum_fling_velocity);
     max_fling_velocity_in_dips_s_ = maximum_fling_velocity;
     min_fling_velocity_in_dips_s_ = minimum_fling_velocity;
     touch_slop_in_dips_ = touch_slop;
     double_tap_slop_in_dips_ = double_tap_slop;
     min_scaling_span_in_dips_ = min_scaling_span;
-    min_scaling_touch_major_in_dips_ = min_scaling_touch_major;
   }
 
   base::Lock lock_;
@@ -132,7 +122,6 @@ struct ViewConfigurationData {
   int touch_slop_in_dips_;
   int double_tap_slop_in_dips_;
   int min_scaling_span_in_dips_;
-  int min_scaling_touch_major_in_dips_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ViewConfigurationData);
@@ -150,11 +139,10 @@ static void UpdateSharedViewConfiguration(JNIEnv* env,
                                           jfloat minimum_fling_velocity,
                                           jfloat touch_slop,
                                           jfloat double_tap_slop,
-                                          jfloat min_scaling_span,
-                                          jfloat min_scaling_touch_major) {
+                                          jfloat min_scaling_span) {
   g_view_configuration.Get().SynchronizedUpdate(
       maximum_fling_velocity, minimum_fling_velocity, touch_slop,
-      double_tap_slop, min_scaling_span, min_scaling_touch_major);
+      double_tap_slop, min_scaling_span);
 }
 
 int ViewConfiguration::GetDoubleTapTimeoutInMs() {
@@ -191,10 +179,6 @@ int ViewConfiguration::GetDoubleTapSlopInDips() {
 
 int ViewConfiguration::GetMinScalingSpanInDips() {
   return g_view_configuration.Get().min_scaling_span_in_dips();
-}
-
-int ViewConfiguration::GetMinScalingTouchMajorInDips() {
-  return g_view_configuration.Get().min_scaling_touch_major_in_dips();
 }
 
 bool ViewConfiguration::RegisterViewConfiguration(JNIEnv* env) {

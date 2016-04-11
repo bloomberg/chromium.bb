@@ -25,8 +25,7 @@ public class ViewConfigurationHelper {
 
     // Fallback constants when resource lookup fails, see
     // ui/android/java/res/values/dimens.xml.
-    private static final float MIN_SCALING_SPAN_MM = 27.0f;
-    private static final float MIN_SCALING_TOUCH_MAJOR_DIP = 48.0f;
+    private static final float MIN_SCALING_SPAN_MM = 12.0f;
 
     private final Context mAppContext;
     private ViewConfiguration mViewConfiguration;
@@ -65,7 +64,7 @@ public class ViewConfigurationHelper {
         mDensity = mAppContext.getResources().getDisplayMetrics().density;
         assert mDensity > 0;
         nativeUpdateSharedViewConfiguration(getMaximumFlingVelocity(), getMinimumFlingVelocity(),
-                getTouchSlop(), getDoubleTapSlop(), getMinScalingSpan(), getMinScalingTouchMajor());
+                getTouchSlop(), getDoubleTapSlop(), getMinScalingSpan());
     }
 
     @CalledByNative
@@ -113,36 +112,18 @@ public class ViewConfigurationHelper {
         return toDips(getScaledMinScalingSpan());
     }
 
-    @CalledByNative
-    private float getMinScalingTouchMajor() {
-        return toDips(getScaledMinScalingTouchMajor());
-    }
-
     private int getScaledMinScalingSpan() {
         final Resources res = mAppContext.getResources();
-        int id = res.getIdentifier("config_minScalingSpan", "dimen", "android");
-        // Fall back to a sensible default if the internal identifier does not exist.
-        if (id == 0) id = R.dimen.config_min_scaling_span;
+        // The correct minimum scaling span depends on how we recognize scale
+        // gestures. Since we've deviated from Android, don't use the Android
+        // system value here.
+        int id = R.dimen.config_min_scaling_span;
         try {
             return res.getDimensionPixelSize(id);
         } catch (Resources.NotFoundException e) {
             assert false : "MinScalingSpan resource lookup failed.";
             return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_MM, MIN_SCALING_SPAN_MM,
                     res.getDisplayMetrics());
-        }
-    }
-
-    private int getScaledMinScalingTouchMajor() {
-        final Resources res = mAppContext.getResources();
-        int id = res.getIdentifier("config_minScalingTouchMajor", "dimen", "android");
-        // Fall back to a sensible default if the internal identifier does not exist.
-        if (id == 0) id = R.dimen.config_min_scaling_touch_major;
-        try {
-            return res.getDimensionPixelSize(id);
-        } catch (Resources.NotFoundException e) {
-            assert false : "MinScalingTouchMajor resource lookup failed.";
-            return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-                    MIN_SCALING_TOUCH_MAJOR_DIP, res.getDisplayMetrics());
         }
     }
 
@@ -161,6 +142,5 @@ public class ViewConfigurationHelper {
     }
 
     private native void nativeUpdateSharedViewConfiguration(float maximumFlingVelocity,
-            float minimumFlingVelocity, float touchSlop, float doubleTapSlop, float minScalingSpan,
-            float minScalingTouchMajor);
+            float minimumFlingVelocity, float touchSlop, float doubleTapSlop, float minScalingSpan);
 }
