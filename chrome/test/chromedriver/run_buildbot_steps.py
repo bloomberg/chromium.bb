@@ -31,11 +31,6 @@ GS_SERVER_LOGS_URL = GS_CHROMEDRIVER_DATA_BUCKET + '/server_logs'
 SERVER_LOGS_LINK = (
     'http://chromedriver-data.storage.googleapis.com/server_logs')
 TEST_LOG_FORMAT = '%s_log.json'
-GS_GIT_LOG_URL = (
-    'https://chromium.googlesource.com/chromium/src/+/%s?format=json')
-GS_SEARCH_PATTERN = (
-    r'Cr-Commit-Position: refs/heads/master@{#(\d+)}')
-CR_REV_URL = 'https://cr-rev.appspot.com/_ah/api/crrev/v1/redirect/%s'
 
 SCRIPT_DIR = os.path.join(_THIS_DIR, os.pardir, os.pardir, os.pardir, os.pardir,
                           os.pardir, os.pardir, os.pardir, 'scripts')
@@ -394,56 +389,18 @@ def _CleanTmpDir():
         os.remove(file_path)
 
 
-def _GetCommitPositionFromGitHash(snapshot_hashcode):
-  json_url = GS_GIT_LOG_URL % snapshot_hashcode
-  try:
-    response = urllib2.urlopen(json_url)
-  except urllib2.HTTPError as error:
-    util.PrintAndFlush('HTTP Error %d' % error.getcode())
-    return None
-  except urllib2.URLError as error:
-    util.PrintAndFlush('URL Error %s' % error.message)
-    return None
-  data = json.loads(response.read()[4:])
-  if 'message' in data:
-    message = data['message'].split('\n')
-    message = [line for line in message if line.strip()]
-    search_pattern = re.compile(GS_SEARCH_PATTERN)
-    result = search_pattern.search(message[len(message)-1])
-    if result:
-      return result.group(1)
-  util.PrintAndFlush('Failed to get commit position number for %s' %
-                     snapshot_hashcode)
-  return None
-
-
-def _GetGitHashFromCommitPosition(commit_position):
-  json_url = CR_REV_URL % commit_position
-  try:
-    response = urllib2.urlopen(json_url)
-  except urllib2.HTTPError as error:
-    util.PrintAndFlush('HTTP Error %d' % error.getcode())
-    return None
-  except urllib2.URLError as error:
-    util.PrintAndFlush('URL Error %s' % error.message)
-    return None
-  data = json.loads(response.read())
-  if 'git_sha' in data:
-    return data['git_sha']
-  util.PrintAndFlush('Failed to get git hash for %s' % commit_position)
-  return None
-
-
 def _WaitForLatestSnapshot(commit_position):
   util.MarkBuildStepStart('wait_for_snapshot')
-  while True:
-    snapshot_position = archive.GetLatestSnapshotVersion()
+  for attempt in range(0, 200):
+    snapshot_position = archive.GetLatestSnapshotPosition()
     if commit_position is not None and snapshot_position is not None:
       if int(snapshot_position) >= int(commit_position):
         break
       util.PrintAndFlush('Waiting for snapshot >= %s, found %s' %
                          (commit_position, snapshot_position))
     time.sleep(60)
+  if int(snapshot_position) < int(commit_position):
+    raise Exception('Failed to find a snapshot version >= %s' % commit_position)
   util.PrintAndFlush('Got snapshot commit position %s' % snapshot_position)
 
 
@@ -508,7 +465,7 @@ def main():
   if not options.revision:
     commit_position = None
   else:
-    commit_position = _GetCommitPositionFromGitHash(options.revision)
+    commit_position = archive.GetCommitPositionFromGitHash(options.revision)
 
   if platform == 'android':
     if not options.revision and options.update_log:
