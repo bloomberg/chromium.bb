@@ -87,7 +87,7 @@
 	wl_display.sync request immediately after binding to ensure that they
 	receive all the capability events.
       </description>
-      <arg name="capabilty" type="uint"/>
+      <arg name="capability" type="uint"/>
     </event>
 
     <enum name="present_method">
