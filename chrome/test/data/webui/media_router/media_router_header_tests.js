@@ -174,19 +174,19 @@ cr.define('media_router_header', function() {
 
       // Tests the |computeArrowDropIcon_| function.
       test('compute arrow drop icon', function() {
-        assertEquals('arrow-drop-up',
+        assertEquals('media-router:arrow-drop-up',
             header.computeArrowDropIcon_(
                 media_router.MediaRouterView.CAST_MODE_LIST));
-        assertEquals('arrow-drop-down',
+        assertEquals('media-router:arrow-drop-down',
             header.computeArrowDropIcon_(
                 media_router.MediaRouterView.FILTER));
-        assertEquals('arrow-drop-down',
+        assertEquals('media-router:arrow-drop-down',
             header.computeArrowDropIcon_(
                 media_router.MediaRouterView.ISSUE));
-        assertEquals('arrow-drop-down',
+        assertEquals('media-router:arrow-drop-down',
             header.computeArrowDropIcon_(
                 media_router.MediaRouterView.ROUTE_DETAILS));
-        assertEquals('arrow-drop-down',
+        assertEquals('media-router:arrow-drop-down',
             header.computeArrowDropIcon_(
                 media_router.MediaRouterView.SINK_LIST));
       });

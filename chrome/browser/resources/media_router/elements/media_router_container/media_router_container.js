@@ -694,20 +694,17 @@ Polymer({
   /**
    * @param {!media_router.CastMode} castMode The cast mode to determine an
    *     icon for.
-   * @return {string} The Polymer <iron-icon> icon to use. The format is
-   *     <iconset>:<icon>, where <iconset> is the set ID and <icon> is the name
-   *     of the icon. <iconset>: may be omitted if <icon> is from the default
-   *     set.
+   * @return {string} The icon to use.
    * @private
    */
   computeCastModeIcon_: function(castMode) {
     switch (castMode.type) {
       case media_router.CastModeType.DEFAULT:
-        return 'av:web';
+        return 'media-router:web';
       case media_router.CastModeType.TAB_MIRROR:
-        return 'tab';
+        return 'media-router:tab';
       case media_router.CastModeType.DESKTOP_MIRROR:
-        return 'hardware:laptop';
+        return 'media-router:laptop';
       default:
         return '';
     }
@@ -915,10 +912,7 @@ Polymer({
 
   /**
    * @param {!media_router.Sink} sink The sink to determine an icon for.
-   * @return {string} The Polymer <iron-icon> icon to use. The format is
-   *     <iconset>:<icon>, where <iconset> is the set ID and <icon> is the name
-   *     of the icon. <iconset>: may be ommitted if <icon> is from the default
-   *     set.
+   * @return {string} The icon to use.
    * @private
    */
   computeSinkIcon_: function(sink) {
@@ -926,15 +920,15 @@ Polymer({
       case media_router.SinkIconType.CAST:
         return 'media-router:chromecast';
       case media_router.SinkIconType.CAST_AUDIO:
-        return 'hardware:speaker';
+        return 'media-router:speaker';
       case media_router.SinkIconType.CAST_AUDIO_GROUP:
-        return 'hardware:speaker-group';
+        return 'media-router:speaker-group';
       case media_router.SinkIconType.GENERIC:
-        return 'hardware:tv';
+        return 'media-router:tv';
       case media_router.SinkIconType.HANGOUT:
         return 'media-router:hangout';
       default:
-        return 'hardware:tv';
+        return 'media-router:tv';
     }
   },
 
