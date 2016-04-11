@@ -65,11 +65,20 @@ RTCDTMFSender::RTCDTMFSender(ExecutionContext* context, MediaStreamTrack* track,
     , m_stopped(false)
     , m_scheduledEventTimer(this, &RTCDTMFSender::scheduledEventTimerFired)
 {
+    ThreadState::current()->registerPreFinalizer(this);
     m_handler->setClient(this);
 }
 
 RTCDTMFSender::~RTCDTMFSender()
 {
+}
+
+void RTCDTMFSender::dispose()
+{
+    // Promptly clears a raw reference from content/ to an on-heap object
+    // so that content/ doesn't access it in a lazy sweeping phase.
+    m_handler->setClient(nullptr);
+    m_handler.clear();
 }
 
 bool RTCDTMFSender::canInsertDTMF() const
@@ -139,7 +148,7 @@ ExecutionContext* RTCDTMFSender::getExecutionContext() const
 void RTCDTMFSender::stop()
 {
     m_stopped = true;
-    m_handler->setClient(0);
+    m_handler->setClient(nullptr);
 }
 
 void RTCDTMFSender::scheduleDispatchEvent(Event* event)

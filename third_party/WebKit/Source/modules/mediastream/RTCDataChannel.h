@@ -49,6 +49,7 @@ class MODULES_EXPORT RTCDataChannel final
     , WTF_NON_EXPORTED_BASE(public WebRTCDataChannelHandlerClient) {
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(RTCDataChannel);
     DEFINE_WRAPPERTYPEINFO();
+    USING_PRE_FINALIZER(RTCDataChannel, dispose);
 public:
     static RTCDataChannel* create(ExecutionContext*, PassOwnPtr<WebRTCDataChannelHandler>);
     static RTCDataChannel* create(ExecutionContext*, WebRTCPeerConnectionHandler*, const String& label, const WebRTCDataChannelInit&, ExceptionState&);
@@ -93,8 +94,6 @@ public:
     const AtomicString& interfaceName() const override;
     ExecutionContext* getExecutionContext() const override;
 
-    // Oilpan: need to eagerly finalize m_handler
-    EAGERLY_FINALIZE();
     DECLARE_VIRTUAL_TRACE();
 
     // WebRTCDataChannelHandlerClient
@@ -106,6 +105,7 @@ public:
 
 private:
     RTCDataChannel(ExecutionContext*, PassOwnPtr<WebRTCDataChannelHandler>);
+    void dispose();
 
     void scheduleDispatchEvent(Event*);
     void scheduledEventTimerFired(Timer<RTCDataChannel>*);

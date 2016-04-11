@@ -65,6 +65,7 @@ class SourceBuffer final
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(SourceBuffer);
     USING_GARBAGE_COLLECTED_MIXIN(SourceBuffer);
     DEFINE_WRAPPERTYPEINFO();
+    USING_PRE_FINALIZER(SourceBuffer, dispose);
 public:
     static SourceBuffer* create(PassOwnPtr<WebSourceBuffer>, MediaSource*, GenericEventQueue*);
     static const AtomicString& segmentsKeyword();
@@ -113,12 +114,11 @@ public:
     // WebSourceBufferClient interface
     std::vector<WebMediaPlayer::TrackId> initializationSegmentReceived(const std::vector<MediaTrackInfo>&) override;
 
-    // Oilpan: eagerly release owned m_webSourceBuffer
-    EAGERLY_FINALIZE();
     DECLARE_VIRTUAL_TRACE();
 
 private:
     SourceBuffer(PassOwnPtr<WebSourceBuffer>, MediaSource*, GenericEventQueue*);
+    void dispose();
 
     bool isRemoved() const;
     void scheduleEvent(const AtomicString& eventName);

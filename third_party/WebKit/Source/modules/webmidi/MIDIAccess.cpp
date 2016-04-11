@@ -54,6 +54,7 @@ MIDIAccess::MIDIAccess(PassOwnPtr<MIDIAccessor> accessor, bool sysexEnabled, con
     , m_sysexEnabled(sysexEnabled)
     , m_hasPendingActivity(false)
 {
+    ThreadState::current()->registerPreFinalizer(this);
     m_accessor->setClient(this);
     for (size_t i = 0; i < ports.size(); ++i) {
         const MIDIAccessInitializer::PortDescriptor& port = ports[i];
@@ -67,6 +68,11 @@ MIDIAccess::MIDIAccess(PassOwnPtr<MIDIAccessor> accessor, bool sysexEnabled, con
 
 MIDIAccess::~MIDIAccess()
 {
+}
+
+void MIDIAccess::dispose()
+{
+    m_accessor.clear();
 }
 
 EventListener* MIDIAccess::onstatechange()

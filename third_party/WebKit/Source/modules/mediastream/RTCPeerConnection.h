@@ -69,6 +69,7 @@ class RTCPeerConnection final
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(RTCPeerConnection);
     DEFINE_WRAPPERTYPEINFO();
     USING_GARBAGE_COLLECTED_MIXIN(RTCPeerConnection);
+    USING_PRE_FINALIZER(RTCPeerConnection, dispose);
 public:
     // TODO(hbos): Create with expired RTCCertificate should fail, see crbug.com/565278.
     static RTCPeerConnection* create(ExecutionContext*, const Dictionary&, const Dictionary&, ExceptionState&);
@@ -161,8 +162,6 @@ public:
         return !m_closed && !m_stopped;
     }
 
-    // Oilpan: need to eagerly finalize m_peerHandler
-    EAGERLY_FINALIZE();
     DECLARE_VIRTUAL_TRACE();
 
 private:
@@ -183,6 +182,7 @@ private:
     };
 
     RTCPeerConnection(ExecutionContext*, RTCConfiguration*, WebMediaConstraints, ExceptionState&);
+    void dispose();
 
     void scheduleDispatchEvent(Event*);
     void scheduleDispatchEvent(Event*, PassOwnPtr<BoolFunction>);

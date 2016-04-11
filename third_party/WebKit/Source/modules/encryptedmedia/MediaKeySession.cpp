@@ -322,6 +322,7 @@ MediaKeySession::MediaKeySession(ScriptState* scriptState, MediaKeys* mediaKeys,
     , m_actionTimer(this, &MediaKeySession::actionTimerFired)
 {
     WTF_LOG(Media, "MediaKeySession(%p)::MediaKeySession", this);
+    ThreadState::current()->registerPreFinalizer(this);
 
     // Create the matching Chromium object. It will not be usable until
     // initializeNewSession() is called in response to the user calling
@@ -364,13 +365,13 @@ MediaKeySession::MediaKeySession(ScriptState* scriptState, MediaKeys* mediaKeys,
 MediaKeySession::~MediaKeySession()
 {
     WTF_LOG(Media, "MediaKeySession(%p)::~MediaKeySession", this);
+}
+
+void MediaKeySession::dispose()
+{
+    // Promptly clears a raw reference from content/ to an on-heap object
+    // so that content/ doesn't access it in a lazy sweeping phase.
     m_session.clear();
-#if !ENABLE(OILPAN)
-    // MediaKeySession and m_asyncEventQueue always become unreachable
-    // together. So MediaKeySession and m_asyncEventQueue are destructed in the
-    // same GC. We don't need to call cancelAllEvents explicitly in Oilpan.
-    m_asyncEventQueue->cancelAllEvents();
-#endif
 }
 
 String MediaKeySession::sessionId() const

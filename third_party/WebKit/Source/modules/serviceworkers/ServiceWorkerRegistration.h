@@ -37,6 +37,7 @@ class ServiceWorkerRegistration final
     DEFINE_WRAPPERTYPEINFO();
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(ServiceWorkerRegistration);
     USING_GARBAGE_COLLECTED_MIXIN(ServiceWorkerRegistration);
+    USING_PRE_FINALIZER(ServiceWorkerRegistration, dispose);
 public:
     // EventTarget overrides.
     const AtomicString& interfaceName() const override;
@@ -67,12 +68,11 @@ public:
 
     ~ServiceWorkerRegistration() override;
 
-    // Eager finalization needed to promptly release owned WebServiceWorkerRegistration.
-    EAGERLY_FINALIZE();
     DECLARE_VIRTUAL_TRACE();
 
 private:
     ServiceWorkerRegistration(ExecutionContext*, PassOwnPtr<WebServiceWorkerRegistration::Handle>);
+    void dispose();
 
     // ActiveScriptWrappable overrides.
     bool hasPendingActivity() const final;

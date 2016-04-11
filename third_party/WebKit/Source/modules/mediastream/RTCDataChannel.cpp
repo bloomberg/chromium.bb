@@ -75,13 +75,20 @@ RTCDataChannel::RTCDataChannel(ExecutionContext* context, PassOwnPtr<WebRTCDataC
     , m_scheduledEventTimer(this, &RTCDataChannel::scheduledEventTimerFired)
     , m_bufferedAmountLowThreshold(0U)
 {
+    ThreadState::current()->registerPreFinalizer(this);
     m_handler->setClient(this);
 }
 
 RTCDataChannel::~RTCDataChannel()
 {
-    // Notify the client that the channel is gone.
-    m_handler->setClient(0);
+}
+
+void RTCDataChannel::dispose()
+{
+    // Promptly clears a raw reference from content/ to an on-heap object
+    // so that content/ doesn't access it in a lazy sweeping phase.
+    m_handler->setClient(nullptr);
+    m_handler.clear();
 }
 
 RTCDataChannel::ReadyState RTCDataChannel::getHandlerState() const

@@ -413,6 +413,7 @@ RTCPeerConnection::RTCPeerConnection(ExecutionContext* context, RTCConfiguration
     , m_stopped(false)
     , m_closed(false)
 {
+    ThreadState::current()->registerPreFinalizer(this);
     Document* document = toDocument(getExecutionContext());
 
     // If we fail, set |m_closed| and |m_stopped| to true, to avoid hitting the assert in the destructor.
@@ -447,6 +448,13 @@ RTCPeerConnection::~RTCPeerConnection()
     // This checks that close() or stop() is called before the destructor.
     // We are assuming that a wrapper is always created when RTCPeerConnection is created.
     DCHECK(m_closed || m_stopped);
+}
+
+void RTCPeerConnection::dispose()
+{
+    // Promptly clears a raw reference from content/ to an on-heap object
+    // so that content/ doesn't access it in a lazy sweeping phase.
+    m_peerHandler.clear();
 }
 
 ScriptPromise RTCPeerConnection::createOffer(ScriptState* scriptState, const RTCOfferOptions& options)

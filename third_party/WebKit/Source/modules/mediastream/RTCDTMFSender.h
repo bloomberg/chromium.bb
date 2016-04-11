@@ -45,6 +45,7 @@ class RTCDTMFSender final
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(RTCDTMFSender);
     USING_GARBAGE_COLLECTED_MIXIN(RTCDTMFSender);
     DEFINE_WRAPPERTYPEINFO();
+    USING_PRE_FINALIZER(RTCDTMFSender, dispose);
 public:
     static RTCDTMFSender* create(ExecutionContext*, WebRTCPeerConnectionHandler*, MediaStreamTrack*, ExceptionState&);
     ~RTCDTMFSender() override;
@@ -68,12 +69,11 @@ public:
     // ActiveDOMObject
     void stop() override;
 
-    // Oilpan: need to eagerly finalize m_handler
-    EAGERLY_FINALIZE();
     DECLARE_VIRTUAL_TRACE();
 
 private:
     RTCDTMFSender(ExecutionContext*, MediaStreamTrack*, PassOwnPtr<WebRTCDTMFSenderHandler>);
+    void dispose();
 
     void scheduleDispatchEvent(Event*);
     void scheduledEventTimerFired(Timer<RTCDTMFSender>*);

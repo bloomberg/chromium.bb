@@ -128,6 +128,7 @@ SourceBuffer::SourceBuffer(PassOwnPtr<WebSourceBuffer> webSourceBuffer, MediaSou
     ASSERT(m_webSourceBuffer);
     ASSERT(m_source);
     ASSERT(m_source->mediaElement());
+    ThreadState::current()->registerPreFinalizer(this);
     m_audioTracks = AudioTrackList::create(*m_source->mediaElement());
     m_videoTracks = VideoTrackList::create(*m_source->mediaElement());
     m_webSourceBuffer->setClient(this);
@@ -135,18 +136,14 @@ SourceBuffer::SourceBuffer(PassOwnPtr<WebSourceBuffer> webSourceBuffer, MediaSou
 
 SourceBuffer::~SourceBuffer()
 {
-    // Oilpan: a SourceBuffer might be finalized without having been
-    // explicitly removed first, hence the asserts below will not
-    // hold.
-#if !ENABLE(OILPAN)
-    m_audioTracks->shutdown();
-    m_videoTracks->shutdown();
-    ASSERT(isRemoved());
-    ASSERT(!m_loader);
-    ASSERT(!m_stream);
-    ASSERT(!m_webSourceBuffer);
-#endif
     WTF_LOG(Media, "SourceBuffer(%p)::~SourceBuffer", this);
+}
+
+void SourceBuffer::dispose()
+{
+    // Promptly clears a raw reference from content/ to an on-heap object
+    // so that content/ doesn't access it in a lazy sweeping phase.
+    m_webSourceBuffer.clear();
 }
 
 const AtomicString& SourceBuffer::segmentsKeyword()

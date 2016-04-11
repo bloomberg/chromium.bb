@@ -106,6 +106,7 @@ ServiceWorkerRegistration::ServiceWorkerRegistration(ExecutionContext* execution
 {
     ASSERT(m_handle);
     ASSERT(!m_handle->registration()->proxy());
+    ThreadState::current()->registerPreFinalizer(this);
 
     if (!executionContext)
         return;
@@ -116,6 +117,13 @@ ServiceWorkerRegistration::ServiceWorkerRegistration(ExecutionContext* execution
 
 ServiceWorkerRegistration::~ServiceWorkerRegistration()
 {
+}
+
+void ServiceWorkerRegistration::dispose()
+{
+    // Promptly clears a raw reference from content/ to an on-heap object
+    // so that content/ doesn't access it in a lazy sweeping phase.
+    m_handle.clear();
 }
 
 DEFINE_TRACE(ServiceWorkerRegistration)

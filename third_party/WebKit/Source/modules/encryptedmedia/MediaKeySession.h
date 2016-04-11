@@ -67,6 +67,7 @@ class MediaKeySession final
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(MediaKeySession);
     DEFINE_WRAPPERTYPEINFO();
     USING_GARBAGE_COLLECTED_MIXIN(MediaKeySession);
+    USING_PRE_FINALIZER(MediaKeySession, dispose);
 public:
     static MediaKeySession* create(ScriptState*, MediaKeys*, WebEncryptedMediaSessionType);
     ~MediaKeySession() override;
@@ -93,9 +94,6 @@ public:
     // ActiveDOMObject
     void stop() override;
 
-    // Oilpan: eagerly release owned m_session, which in turn
-    // drops the client reference back to this MediaKeySession object.
-    EAGERLY_FINALIZE();
     DECLARE_VIRTUAL_TRACE();
 
 private:
@@ -104,6 +102,7 @@ private:
     friend class LoadSessionResultPromise;
 
     MediaKeySession(ScriptState*, MediaKeys*, WebEncryptedMediaSessionType);
+    void dispose();
 
     void actionTimerFired(Timer<MediaKeySession>*);
 

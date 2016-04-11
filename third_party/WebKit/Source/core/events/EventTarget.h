@@ -223,18 +223,9 @@ private:
 template <typename T>
 class RefCountedGarbageCollectedEventTargetWithInlineData : public EventTargetWithInlineData {
 public:
-    GC_PLUGIN_IGNORE("491488")
-    void* operator new(size_t size)
-    {
-        // If T is eagerly finalized, it needs to be allocated accordingly.
-        // Redefinition of the operator is needed to accomplish that, as otherwise
-        // it would be allocated using GarbageCollected<EventTarget>'s operator new.
-        // EventTarget is not eagerly finalized.
-        return allocateObject(size, IsEagerlyFinalizedType<T>::value);
-    }
-
     DEFINE_INLINE_VIRTUAL_TRACE()
     {
+        static_assert(!IsEagerlyFinalizedType<T>::value, "EventTargets do not support eager finalization.");
         EventTargetWithInlineData::trace(visitor);
     }
 };

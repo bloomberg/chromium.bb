@@ -53,6 +53,7 @@ class MIDIAccess final : public RefCountedGarbageCollectedEventTargetWithInlineD
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(MIDIAccess);
     DEFINE_WRAPPERTYPEINFO();
     USING_GARBAGE_COLLECTED_MIXIN(MIDIAccess);
+    USING_PRE_FINALIZER(MIDIAccess, dispose);
 public:
     static MIDIAccess* create(PassOwnPtr<MIDIAccessor> accessor, bool sysexEnabled, const Vector<MIDIAccessInitializer::PortDescriptor>& ports, ExecutionContext* executionContext)
     {
@@ -99,11 +100,11 @@ public:
     // Eager finalization needed to promptly release m_accessor. Otherwise
     // its client back reference could end up being unsafely used during
     // the lazy sweeping phase.
-    EAGERLY_FINALIZE();
     DECLARE_VIRTUAL_TRACE();
 
 private:
     MIDIAccess(PassOwnPtr<MIDIAccessor>, bool sysexEnabled, const Vector<MIDIAccessInitializer::PortDescriptor>&, ExecutionContext*);
+    void dispose();
 
     OwnPtr<MIDIAccessor> m_accessor;
     bool m_sysexEnabled;
