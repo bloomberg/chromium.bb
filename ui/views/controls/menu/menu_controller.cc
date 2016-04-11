@@ -1030,7 +1030,10 @@ ui::PostDispatchAction MenuController::OnWillDispatchKeyEvent(
   else
     OnKeyDown(key_code);
 
-  TerminateNestedMessageLoopIfNecessary();
+  // MenuController may have been deleted, so check for an active instance
+  // before accessing member variables.
+  if (GetActiveInstance())
+    TerminateNestedMessageLoopIfNecessary();
 
   return ui::POST_DISPATCH_NONE;
 }
