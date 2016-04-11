@@ -146,11 +146,9 @@ sk_sp<SkDrawLooper> CreateShadowDrawLooper(SkColor color) {
   layer_info.fPaintBits |= SkLayerDrawLooper::kColorFilter_Bit;
   layer_info.fColorMode = SkXfermode::kDst_Mode;
   layer_info.fOffset.set(0, 1);
-  skia::RefPtr<SkMaskFilter> blur_mask =
-      skia::AdoptRef(SkBlurMaskFilter::Create(
-          kNormal_SkBlurStyle, 0.5, SkBlurMaskFilter::kHighQuality_BlurFlag));
   SkPaint* layer_paint = looper_builder.addLayer(layer_info);
-  layer_paint->setMaskFilter(blur_mask.get());
+  layer_paint->setMaskFilter(SkBlurMaskFilter::Make(
+      kNormal_SkBlurStyle, 0.5, SkBlurMaskFilter::kHighQuality_BlurFlag));
   layer_paint->setColorFilter(
       SkColorFilter::MakeModeFilter(color, SkXfermode::kSrcIn_Mode));
 

@@ -158,15 +158,12 @@ sk_sp<SkDrawLooper> CreateShadowDrawLooper(
     layer_info.fOffset.set(SkIntToScalar(shadow.x()),
                            SkIntToScalar(shadow.y()));
 
+    SkPaint* paint = looper_builder.addLayer(layer_info);
     // SkBlurMaskFilter's blur radius defines the range to extend the blur from
     // original mask, which is half of blur amount as defined in ShadowValue.
-    skia::RefPtr<SkMaskFilter> blur_mask = skia::AdoptRef(
-        SkBlurMaskFilter::Create(kNormal_SkBlurStyle,
-                                 RadiusToSigma(shadow.blur() / 2),
-                                 SkBlurMaskFilter::kHighQuality_BlurFlag));
-
-    SkPaint* paint = looper_builder.addLayer(layer_info);
-    paint->setMaskFilter(blur_mask.get());
+    paint->setMaskFilter(SkBlurMaskFilter::Make(
+        kNormal_SkBlurStyle, RadiusToSigma(shadow.blur() / 2),
+        SkBlurMaskFilter::kHighQuality_BlurFlag));
     paint->setColorFilter(
         SkColorFilter::MakeModeFilter(shadow.color(),
                                       SkXfermode::kSrcIn_Mode));
