@@ -1,9 +1,9 @@
 Wayland protocols
 -----------------
 
-wayland-protocols contains Wayland protocols that adds functionality not
-available in the Wayland core protocol. Such protocols either adds
-completely new functionality, or extends the functionality of some other
+wayland-protocols contains Wayland protocols that add functionality not
+available in the Wayland core protocol. Such protocols either add
+completely new functionality, or extend the functionality of some other
 protocol either in Wayland core, or some other protocol in
 wayland-protocols.
 
@@ -29,7 +29,7 @@ A deprecated protocol is a protocol that has either been replaced by some
 other protocol, or declared undesirable for some other reason. No more
 changes will be made to a deprecated protocol.
 
-Depending on which of the above state the protocol is in, the protocol
+Depending on which of the above states the protocol is in, the protocol
 is placed within the toplevel directory containing the protocols with the
 same state. Stable protocols are placed in the +stable/+ directory,
 unstable protocols are placed in the +unstable/+ directory, and
@@ -72,8 +72,8 @@ Unstable naming convention
 Unstable protocols have a special naming convention in order to make it
 possible to make discoverable backward incompatible changes.
 
-An unstable protocol has at least two versions; the major version which
-represents backward incompatible changes, and the minor versions which
+An unstable protocol has at least two versions: the major version, which
+represents backward incompatible changes, and the minor version, which
 represents backward compatible changes to the interfaces in the protocol.
 
 The major version is part of the XML file name, the protocol name in the
@@ -100,7 +100,7 @@ During the development of a new protocol it is possible that backward
 incompatible changes are needed. Such a change needs to be represented
 in the major and minor versions of the protocol.
 
-Assuming a backward incompatible change is needed, the procedure how to
+Assuming a backward incompatible change is needed, the procedure for how to
 do so is the following:
 
   . Make a copy of the XML file with the major version increased by +1+.
