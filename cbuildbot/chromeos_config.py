@@ -635,7 +635,7 @@ _waterfall_config_map = {
         'link-depthcharge-full-firmware',
 
         # Toolchain Builders.
-        'internal-toolchain-minor',
+        'internal-minor-toolchain',
 
         # LLVM
         'llvm-toolchain-group',
@@ -1304,20 +1304,6 @@ def GetConfig():
   ])
 
   _CreateConfigsForBoards(telemetry, _telemetry_boards, 'telemetry')
-
-  _toolchain_minor = site_config.AddWithoutTemplate(
-      'toolchain-minor',
-      boards=[
-          'x86-generic', 'arm-generic', 'amd64-generic'
-      ],
-      build_type=constants.TOOLCHAIN_TYPE,
-      build_timeout=12 * 60 * 60 if IS_RELEASE_BRANCH else (7 * 60 + 50) * 60,
-      latest_toolchain=True,
-      prebuilts=False,
-      trybot_list=False,
-      gcc_githash='svn-mirror/google/gcc-4_9',
-      description='Test next minor toolchain revision',
-  )
 
   site_config.Add(
       'x86-generic-asan',
@@ -2017,13 +2003,6 @@ def GetConfig():
       lakitu_test_customizations,
   )
 
-  site_config.Add(
-      'internal-toolchain-minor',
-      config_lib.BuildConfig(), _toolchain_minor, internal, official,
-      boards=['x86-alex', 'stumpy', 'daisy', 'lakitu'],
-      description=_toolchain_minor['description'] + ' (internal)',
-  )
-
   _release = site_config.AddTemplate(
       'release',
       full,
@@ -2168,6 +2147,28 @@ def GetConfig():
           'x86-alex-toolchain-llvm', _llvm_grouped,
           boards=['x86-alex'],
       ),
+  )
+
+  _toolchain_minor = site_config.Add(
+      'minor-toolchain',
+      _toolchain,
+      boards=[
+          'x86-generic', 'arm-generic', 'amd64-generic'
+      ],
+      build_type=constants.TOOLCHAIN_TYPE,
+      build_timeout=12 * 60 * 60 if IS_RELEASE_BRANCH else (7 * 60 + 50) * 60,
+      latest_toolchain=True,
+      prebuilts=False,
+      trybot_list=False,
+      gcc_githash='svn-mirror/google/gcc-4_9',
+      description='Test next minor toolchain revision',
+  )
+
+  site_config.Add(
+      'internal-minor-toolchain',
+      config_lib.BuildConfig(), _toolchain_minor, internal, official,
+      boards=['x86-alex', 'stumpy', 'daisy', 'lakitu'],
+      description=_toolchain_minor['description'] + ' (internal)',
   )
 
   ### Master release config.

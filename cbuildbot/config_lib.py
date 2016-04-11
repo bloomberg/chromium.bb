@@ -52,7 +52,7 @@ CONFIG_TYPE_DUMP_ORDER = (
     CONFIG_TYPE_FACTORY,
     CONFIG_TYPE_FIRMWARE,
     'toolchain-major',
-    'toolchain-minor',
+    'minor-toolchain',
     'master-toolchain',
     'llvm-toolchain-group',
     'llvm',

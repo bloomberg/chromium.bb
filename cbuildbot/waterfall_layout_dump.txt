@@ -55,7 +55,7 @@ glados-paladin
 gru-release
 guado_moblab-paladin
 guado_moblab-release
-internal-toolchain-minor
+internal-minor-toolchain
 [ivybridge-release-group]
   link-release
   parrot_ivb-release

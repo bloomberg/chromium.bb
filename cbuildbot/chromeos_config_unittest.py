@@ -133,8 +133,8 @@ class CBuildBotTest(GenerateChromeosConfigTestBase):
       else:
         # If your config really needs multiple boards, add it here.
         WHITELIST = ('toolchain-llvm',
-                     'toolchain-minor',
-                     'internal-toolchain-minor')
+                     'minor-toolchain',
+                     'internal-minor-toolchain')
         if build_name not in WHITELIST:
           self.assertLessEqual(
               len(config['boards']), 1,

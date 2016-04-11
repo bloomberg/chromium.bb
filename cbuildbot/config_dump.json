@@ -1546,6 +1546,12 @@
             "amd64-generic"
         ]
     },
+    "amd64-generic-payloads": {
+        "_template": "payloads",
+        "boards": [
+            "amd64-generic"
+        ]
+    },
     "amd64-generic-pre-cq": {
         "_template": "pre-cq",
         "boards": [
@@ -1775,6 +1781,12 @@
         ],
         "vm_tests": [],
         "vm_tests_override": null
+    },
+    "arm-generic-payloads": {
+        "_template": "payloads",
+        "boards": [
+            "arm-generic"
+        ]
     },
     "arm-generic-pre-cq": {
         "_template": "pre-cq",
@@ -9217,7 +9229,8 @@
             "-chrome_internal"
         ]
     },
-    "internal-toolchain-minor": {
+    "internal-minor-toolchain": {
+        "_template": "toolchain",
         "active_waterfall": "chromeos",
         "boards": [
             "x86-alex",
@@ -9225,20 +9238,10 @@
             "daisy",
             "lakitu"
         ],
-        "build_timeout": 28200,
-        "build_type": "toolchain",
-        "chromeos_official": true,
         "description": "Test next minor toolchain revision (internal)",
         "gcc_githash": "svn-mirror/google/gcc-4_9",
-        "hw_tests_override": [
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 3,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}"
-        ],
-        "internal": true,
         "latest_toolchain": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
+        "trybot_list": false,
         "useflags": [
             "chrome_internal"
         ]
@@ -11969,6 +11972,18 @@
         "useflags": [
             "-chrome_internal"
         ]
+    },
+    "minor-toolchain": {
+        "_template": "toolchain",
+        "boards": [
+            "x86-generic",
+            "arm-generic",
+            "amd64-generic"
+        ],
+        "description": "Test next minor toolchain revision",
+        "gcc_githash": "svn-mirror/google/gcc-4_9",
+        "latest_toolchain": true,
+        "trybot_list": false
     },
     "mixed-a-pre-cq": {
         "_template": "compile-only-pre-cq",
@@ -20967,23 +20982,6 @@
             "-chrome_internal"
         ]
     },
-    "toolchain-minor": {
-        "boards": [
-            "x86-generic",
-            "arm-generic",
-            "amd64-generic"
-        ],
-        "build_timeout": 28200,
-        "build_type": "toolchain",
-        "description": "Test next minor toolchain revision",
-        "gcc_githash": "svn-mirror/google/gcc-4_9",
-        "hw_tests_override": [
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 3,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}"
-        ],
-        "latest_toolchain": true
-    },
     "tricky-chrome-pfq": {
         "_template": "chrome-pfq",
         "active_waterfall": "chromeos",
@@ -25766,6 +25764,12 @@
     "x86-generic-paladin": {
         "_template": "paladin",
         "active_waterfall": "chromiumos",
+        "boards": [
+            "x86-generic"
+        ]
+    },
+    "x86-generic-payloads": {
+        "_template": "payloads",
         "boards": [
             "x86-generic"
         ]
