@@ -109,11 +109,13 @@ scoped_refptr<PlatformSharedBuffer> Broker::GetSharedBuffer(size_t num_bytes) {
 
   std::deque<PlatformHandle> incoming_platform_handles;
   if (WaitForBrokerMessage(sync_channel_.get(),
-                           BrokerMessageType::BUFFER_RESPONSE, 1,
+                           BrokerMessageType::BUFFER_RESPONSE, 2,
                            &incoming_platform_handles)) {
-    return PlatformSharedBuffer::CreateFromPlatformHandle(
-        num_bytes, false /* read_only */,
-        ScopedPlatformHandle(incoming_platform_handles.front()));
+    ScopedPlatformHandle rw_handle(incoming_platform_handles.front());
+    incoming_platform_handles.pop_front();
+    ScopedPlatformHandle ro_handle(incoming_platform_handles.front());
+    return PlatformSharedBuffer::CreateFromPlatformHandlePair(
+        num_bytes, std::move(rw_handle), std::move(ro_handle));
   }
 
   return nullptr;

@@ -45,6 +45,14 @@ class MOJO_SYSTEM_IMPL_EXPORT PlatformSharedBuffer
       bool read_only,
       ScopedPlatformHandle platform_handle);
 
+  // Creates a shared buffer of size |num_bytes| from the existing pair of
+  // read/write and read-only handles |rw_platform_handle| and
+  // |ro_platform_handle|. Returns null on failure.
+  static PlatformSharedBuffer* CreateFromPlatformHandlePair(
+      size_t num_bytes,
+      ScopedPlatformHandle rw_platform_handle,
+      ScopedPlatformHandle ro_platform_handle);
+
   // Creates a shared buffer of size |num_bytes| from the existing shared memory
   // handle |handle|.
   static PlatformSharedBuffer* CreateFromSharedMemoryHandle(
@@ -102,6 +110,9 @@ class MOJO_SYSTEM_IMPL_EXPORT PlatformSharedBuffer
   // claimed |num_bytes_|.)
   bool InitFromPlatformHandle(ScopedPlatformHandle platform_handle);
 
+  bool InitFromPlatformHandlePair(ScopedPlatformHandle rw_platform_handle,
+                                  ScopedPlatformHandle ro_platform_handle);
+
   void InitFromSharedMemoryHandle(base::SharedMemoryHandle handle);
 
   const size_t num_bytes_;
@@ -109,6 +120,10 @@ class MOJO_SYSTEM_IMPL_EXPORT PlatformSharedBuffer
 
   base::Lock lock_;
   scoped_ptr<base::SharedMemory> shared_memory_;
+
+  // A separate read-only shared memory for platforms that need it (i.e. Linux
+  // with sync broker).
+  scoped_ptr<base::SharedMemory> ro_shared_memory_;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformSharedBuffer);
 };

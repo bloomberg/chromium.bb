@@ -61,18 +61,24 @@ void BrokerHost::SendChannel(ScopedPlatformHandle handle) {
 
 void BrokerHost::OnBufferRequest(size_t num_bytes) {
   scoped_refptr<PlatformSharedBuffer> buffer;
+  scoped_refptr<PlatformSharedBuffer> read_only_buffer;
   if (num_bytes <= kMaxSharedBufferSize) {
     buffer = PlatformSharedBuffer::Create(num_bytes);
+    if (buffer)
+      read_only_buffer = buffer->CreateReadOnlyDuplicate();
+    if (!read_only_buffer)
+      buffer = nullptr;
   } else {
     LOG(ERROR) << "Shared buffer request too large: " << num_bytes;
   }
 
   Channel::MessagePtr message = CreateBrokerMessage(
-      BrokerMessageType::BUFFER_RESPONSE, buffer ? 1 : 0, nullptr);
+      BrokerMessageType::BUFFER_RESPONSE, buffer ? 2 : 0, nullptr);
   if (buffer) {
     ScopedPlatformHandleVectorPtr handles;
-    handles.reset(new PlatformHandleVector(1));
+    handles.reset(new PlatformHandleVector(2));
     handles->at(0) = buffer->PassPlatformHandle().release();
+    handles->at(1) = read_only_buffer->PassPlatformHandle().release();
     message->SetHandles(std::move(handles));
   }
 

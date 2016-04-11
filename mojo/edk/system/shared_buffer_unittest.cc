@@ -312,10 +312,8 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(CreateAndPassReadOnlyBuffer,
   WriteMessage(h, "ok");
 }
 
-#if defined(OS_ANDROID) || (defined(OS_POSIX) && !defined(OS_MACOSX))
+#if defined(OS_ANDROID)
 // Android multi-process tests are not executing the new process. This is flaky.
-// Non-OSX posix uses a sync broker to create shared memory. Creating read-only
-// duplicates in child processes is not currently supported via the sync broker.
 #define MAYBE_CreateAndPassFromChildReadOnlyBuffer \
     DISABLED_CreateAndPassFromChildReadOnlyBuffer
 #else

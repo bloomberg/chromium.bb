@@ -74,6 +74,27 @@ PlatformSharedBuffer* PlatformSharedBuffer::CreateFromPlatformHandle(
 }
 
 // static
+PlatformSharedBuffer* PlatformSharedBuffer::CreateFromPlatformHandlePair(
+    size_t num_bytes,
+    ScopedPlatformHandle rw_platform_handle,
+    ScopedPlatformHandle ro_platform_handle) {
+  DCHECK_GT(num_bytes, 0u);
+  DCHECK(rw_platform_handle.is_valid());
+  DCHECK(ro_platform_handle.is_valid());
+
+  PlatformSharedBuffer* rv = new PlatformSharedBuffer(num_bytes, false);
+  if (!rv->InitFromPlatformHandlePair(std::move(rw_platform_handle),
+                                      std::move(ro_platform_handle))) {
+    // We can't just delete it directly, due to the "in destructor" (debug)
+    // check.
+    scoped_refptr<PlatformSharedBuffer> deleter(rv);
+    return nullptr;
+  }
+
+  return rv;
+}
+
+// static
 PlatformSharedBuffer* PlatformSharedBuffer::CreateFromSharedMemoryHandle(
     size_t num_bytes,
     bool read_only,
@@ -91,7 +112,7 @@ size_t PlatformSharedBuffer::GetNumBytes() const {
 }
 
 bool PlatformSharedBuffer::IsReadOnly() const {
-    return read_only_;
+  return read_only_;
 }
 
 scoped_ptr<PlatformSharedBufferMapping> PlatformSharedBuffer::Map(
@@ -170,6 +191,16 @@ base::SharedMemoryHandle PlatformSharedBuffer::DuplicateSharedMemoryHandle() {
 
 PlatformSharedBuffer* PlatformSharedBuffer::CreateReadOnlyDuplicate() {
   DCHECK(shared_memory_);
+
+  if (ro_shared_memory_) {
+    base::AutoLock locker(lock_);
+    base::SharedMemoryHandle handle;
+    handle = base::SharedMemory::DuplicateHandle(ro_shared_memory_->handle());
+    if (handle == base::SharedMemory::NULLHandle())
+      return nullptr;
+    return CreateFromSharedMemoryHandle(num_bytes_, true, handle);
+  }
+
   base::SharedMemoryHandle handle;
   bool success;
   {
@@ -225,6 +256,26 @@ bool PlatformSharedBuffer::InitFromPlatformHandle(
 
   shared_memory_.reset(new base::SharedMemory(handle, read_only_));
   return true;
+}
+
+bool PlatformSharedBuffer::InitFromPlatformHandlePair(
+    ScopedPlatformHandle rw_platform_handle,
+    ScopedPlatformHandle ro_platform_handle) {
+#if defined(OS_WIN) || defined(OS_MACOSX)
+  NOTREACHED();
+  return false;
+#else
+  DCHECK(!shared_memory_);
+
+  base::SharedMemoryHandle handle(rw_platform_handle.release().handle, false);
+  shared_memory_.reset(new base::SharedMemory(handle, false));
+
+  base::SharedMemoryHandle ro_handle(ro_platform_handle.release().handle,
+                                     false);
+  ro_shared_memory_.reset(new base::SharedMemory(ro_handle, true));
+
+  return true;
+#endif
 }
 
 void PlatformSharedBuffer::InitFromSharedMemoryHandle(
