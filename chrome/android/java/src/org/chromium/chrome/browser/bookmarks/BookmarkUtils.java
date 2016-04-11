@@ -46,6 +46,9 @@ public class BookmarkUtils {
     /**
      * If the tab has already been bookmarked, start {@link BookmarkEditActivity} for the
      * bookmark. If not, add the bookmark to bookmarkmodel, and show a snackbar notifying the user.
+     *
+     * Note: Takes ownership of bookmarkModel, and will call |destroy| on it when finished.
+     *
      * @param idToAdd The bookmark ID if the tab has already been bookmarked.
      * @param bookmarkModel The bookmark model.
      * @param tab The tab to add or edit a bookmark.
@@ -61,6 +64,7 @@ public class BookmarkUtils {
         if (idToAdd != Tab.INVALID_BOOKMARK_ID) {
             startEditActivity(activity, new BookmarkId(idToAdd, BookmarkType.NORMAL),
                     webContentsToSave);
+            bookmarkModel.destroy();
             return;
         }
 
@@ -73,7 +77,7 @@ public class BookmarkUtils {
         bookmarkModel.addBookmarkAsync(parent, bookmarkModel.getChildCount(parent), tab.getTitle(),
                 tab.getUrl(), webContentsToSave,
                 createAddBookmarkCallback(bookmarkModel, snackbarManager, activity,
-                        webContentsToSave));
+                                               webContentsToSave));
     }
 
     /**
@@ -227,10 +231,7 @@ public class BookmarkUtils {
      * Gets whether bookmark manager should load offline page initially.
      */
     private static boolean shouldShowOfflinePageAtFirst(OfflinePageBridge bridge) {
-        if (bridge == null || bridge.getAllPages().isEmpty() || OfflinePageUtils.isConnected()) {
-            return false;
-        }
-        return true;
+        return !OfflinePageUtils.isConnected() && bridge != null && bridge.hasPages();
     }
 
     /**
@@ -255,17 +256,14 @@ public class BookmarkUtils {
     private static String getFirstUrlToLoad(Activity activity) {
         BookmarkModel model = new BookmarkModel();
         OfflinePageBridge bridge = model.getOfflinePageBridge();
-        try {
-            if (shouldShowOfflinePageAtFirst(bridge)) {
-                return BookmarkUIState.createFilterUrl(BookmarkFilter.OFFLINE_PAGES,
-                        false).toString();
-            }
-            String lastUsedUrl = getLastUsedUrl(activity);
-            if (!TextUtils.isEmpty(lastUsedUrl)) return lastUsedUrl;
-            return UrlConstants.BOOKMARKS_URL;
-        } finally {
-            model.destroy();
+        model.destroy();
+
+        if (shouldShowOfflinePageAtFirst(bridge)) {
+            return BookmarkUIState.createFilterUrl(BookmarkFilter.OFFLINE_PAGES, false).toString();
         }
+
+        String lastUsedUrl = getLastUsedUrl(activity);
+        return TextUtils.isEmpty(lastUsedUrl) ? UrlConstants.BOOKMARKS_URL : lastUsedUrl;
     }
 
     /**

@@ -228,15 +228,6 @@ void OfflinePageModel::MarkPageForDeletion(int64_t offline_id,
                  weak_ptr_factory_.GetWeakPtr(), offline_page_item, callback));
 }
 
-void OfflinePageModel::DeletePageByOfflineId(
-    int64_t offline_id,
-    const DeletePageCallback& callback) {
-  DCHECK(is_loaded_);
-  std::vector<int64_t> offline_ids_to_delete;
-  offline_ids_to_delete.push_back(offline_id);
-  DeletePagesByOfflineId(offline_ids_to_delete, callback);
-}
-
 void OfflinePageModel::DeletePagesByOfflineId(
     const std::vector<int64_t>& offline_ids,
     const DeletePageCallback& callback) {

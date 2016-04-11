@@ -4,10 +4,15 @@
 
 package org.chromium.chrome.browser.offlinepages;
 
+import org.chromium.base.Callback;
+
 import java.util.List;
 
 /**
  * Manages the storage space policy for offline pages.
+ *
+ * When created, it records the size on disk that is being used, this value never changes after
+ * creation so make a new OfflinePageStorageSpacePolicy whenever a new measurement is desired.
  */
 public class OfflinePageStorageSpacePolicy {
     /**
@@ -19,19 +24,39 @@ public class OfflinePageStorageSpacePolicy {
      */
     private static final long MINIMUM_CLEANUP_SIZE_BYTES = 5 * (1 << 20); // 5MB
 
-    private OfflinePageBridge mOfflinePageBridge;
+    private long mSizeOfAllPages;
+    private long mSizeOfPagesToCleanUp;
 
     /**
-     * @param offlinePageBridge An object to access offline page functionality.
+     * Asynchronously creates an OffinePageStorageSpacePolicy which is prefilled with information
+     * about the state of the disk usage of Offline Pages.
      */
-    public OfflinePageStorageSpacePolicy(OfflinePageBridge offlinePageBridge) {
+    public static void create(final OfflinePageBridge offlinePageBridge,
+            final Callback<OfflinePageStorageSpacePolicy> callback) {
         assert offlinePageBridge != null;
-        mOfflinePageBridge = offlinePageBridge;
+        offlinePageBridge.getAllPages(new OfflinePageBridge.MultipleOfflinePageItemCallback() {
+            @Override
+            public void onResult(List<OfflinePageItem> allPages) {
+                callback.onResult(new OfflinePageStorageSpacePolicy(offlinePageBridge, allPages));
+            }
+        });
+    }
+
+    /**
+     * Creates a policy object with the given list of offline pages.
+     *
+     * @param offlinePageBridge An object to access offline page functionality.
+     * @param offlinePages The list of all offline pages.
+     */
+    private OfflinePageStorageSpacePolicy(
+            OfflinePageBridge offlinePageBridge, List<OfflinePageItem> offlinePages) {
+        mSizeOfAllPages = getTotalSize(offlinePages);
+        mSizeOfPagesToCleanUp = getTotalSize(offlinePageBridge.getPagesToCleanUp());
     }
 
     /** @return Whether there exists offline pages that could be cleaned up to make space. */
     public boolean hasPagesToCleanUp() {
-        return getSizeOfPagesToCleanUp() > 0;
+        return mSizeOfPagesToCleanUp > 0;
     }
 
     /**
@@ -45,11 +70,11 @@ public class OfflinePageStorageSpacePolicy {
 
     /** @return Total size, in bytes, of all saved pages. */
     public long getSizeOfAllPages() {
-        return getTotalSize(mOfflinePageBridge.getAllPages());
+        return mSizeOfAllPages;
     }
 
     private long getSizeOfPagesToCleanUp() {
-        return getTotalSize(mOfflinePageBridge.getPagesToCleanUp());
+        return mSizeOfPagesToCleanUp;
     }
 
     private long getTotalSize(List<OfflinePageItem> offlinePages) {

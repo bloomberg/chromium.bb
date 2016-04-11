@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.bookmarks;
 
+import org.chromium.base.Callback;
 import org.chromium.base.ObserverList;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
@@ -286,24 +287,34 @@ public class BookmarkModel extends BookmarkBridge {
     }
 
     /**
-     * Gets a list of bookmark IDs of bookmarks that match a specified filter.
+     * Gets a list of bookmark IDs for all offline pages.
      *
-     * @param filter Filter to be applied to the bookmarks.
-     * @return A list of bookmark IDs of bookmarks matching the filter.
+     * @return A list of bookmark IDs of bookmarks matching the offline pages filter.
      */
-    public List<BookmarkId> getBookmarkIDsByFilter(BookmarkFilter filter) {
+    public void getBookmarkIDsByFilter(
+            BookmarkFilter filter, final Callback<List<BookmarkId>> callback) {
         assert filter == BookmarkFilter.OFFLINE_PAGES;
         assert mOfflinePageBridge != null;
 
-        List<OfflinePageItem> offlinePages = mOfflinePageBridge.getAllPages();
+        mOfflinePageBridge.getAllPages(new OfflinePageBridge.MultipleOfflinePageItemCallback() {
+            @Override
+            public void onResult(List<OfflinePageItem> offlinePages) {
+                callback.onResult(filterBookmarkIdsByOfflinePages(offlinePages));
+            }
+        });
+    }
+
+    /**
+     * Gets all bookmarks that correspond to the given list of offline pages, in MRU order.
+     * @see http://crbug.com/537806
+     */
+    private List<BookmarkId> filterBookmarkIdsByOfflinePages(List<OfflinePageItem> offlinePages) {
         Collections.sort(offlinePages, sOfflinePageComparator);
 
-        // We are going to filter out all of the offline pages without a matching bookmark.
-        // http://crbug.com/537806
         HashSet<BookmarkId> existingBookmarks =
-                new HashSet<BookmarkId>(getAllBookmarkIDsOrderedByCreationDate());
+                new HashSet<>(getAllBookmarkIDsOrderedByCreationDate());
 
-        List<BookmarkId> bookmarkIds = new ArrayList<BookmarkId>();
+        List<BookmarkId> bookmarkIds = new ArrayList<>();
         for (OfflinePageItem offlinePage : offlinePages) {
             BookmarkId bookmarkId = getBookmarkIdForOfflineClientId(offlinePage.getClientId());
             if (existingBookmarks.contains(bookmarkId)) {

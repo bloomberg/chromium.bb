@@ -11,6 +11,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import org.chromium.base.Callback;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
@@ -23,6 +24,7 @@ import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.OfflinePageMod
 import org.chromium.chrome.browser.offlinepages.OfflinePageFreeUpSpaceCallback;
 import org.chromium.chrome.browser.offlinepages.OfflinePageFreeUpSpaceDialog;
 import org.chromium.chrome.browser.offlinepages.OfflinePageStorageSpaceHeader;
+import org.chromium.chrome.browser.offlinepages.OfflinePageStorageSpacePolicy;
 import org.chromium.components.bookmarks.BookmarkId;
 
 import java.util.ArrayList;
@@ -43,6 +45,7 @@ class BookmarkItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     private Context mContext;
     private BookmarkPromoHeader mPromoHeaderManager;
     private OfflinePageStorageSpaceHeader mOfflineStorageHeader;
+    private OfflinePageBridge mOfflinePageBridge;
 
     private List<List<? extends Object>> mSections;
     private List<Object> mPromoHeaderSection = new ArrayList<>();
@@ -55,6 +58,7 @@ class BookmarkItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     private BookmarkModelObserver mBookmarkModelObserver = new BookmarkModelObserver() {
         @Override
         public void bookmarkNodeChanged(BookmarkItem node) {
+            assert mDelegate != null;
             int position = getPositionForBookmark(node.getId());
             if (position >= 0) notifyItemChanged(position);
         }
@@ -62,6 +66,7 @@ class BookmarkItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         @Override
         public void bookmarkNodeRemoved(BookmarkItem parent, int oldIndex, BookmarkItem node,
                 boolean isDoingExtensiveChanges) {
+            assert mDelegate != null;
             if (node.isFolder()) {
                 mDelegate.notifyStateChange(BookmarkItemsAdapter.this);
             } else {
@@ -74,6 +79,7 @@ class BookmarkItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
         @Override
         public void bookmarkModelChanged() {
+            assert mDelegate != null;
             mDelegate.notifyStateChange(BookmarkItemsAdapter.this);
         }
     };
@@ -207,6 +213,8 @@ class BookmarkItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        assert mDelegate != null;
+
         switch (viewType) {
             case PROMO_HEADER_VIEW:
                 return mPromoHeaderManager.createHolder(parent);
@@ -256,6 +264,7 @@ class BookmarkItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
     @Override
     public void onPromoHeaderShowingChanged(boolean isShowing) {
+        assert mDelegate != null;
         if (mDelegate.getCurrentState() != BookmarkUIState.STATE_ALL_BOOKMARKS
                 && mDelegate.getCurrentState() != BookmarkUIState.STATE_FOLDER) {
             return;
@@ -274,8 +283,8 @@ class BookmarkItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         mDelegate.addUIObserver(this);
         mDelegate.getModel().addObserver(mBookmarkModelObserver);
         mPromoHeaderManager = new BookmarkPromoHeader(mContext, this);
-        OfflinePageBridge offlinePageBridge = mDelegate.getModel().getOfflinePageBridge();
-        if (offlinePageBridge != null) {
+        mOfflinePageBridge = mDelegate.getModel().getOfflinePageBridge();
+        if (mOfflinePageBridge != null) {
             mOfflinePageModelObserver = new OfflinePageModelObserver() {
                 @Override
                 public void offlinePageModelChanged() {
@@ -293,21 +302,13 @@ class BookmarkItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                     }
                 }
             };
-            offlinePageBridge.addObserver(mOfflinePageModelObserver);
+            mOfflinePageBridge.addObserver(mOfflinePageModelObserver);
 
-            mOfflineStorageHeader = new OfflinePageStorageSpaceHeader(
-                    mContext, offlinePageBridge, new OfflinePageFreeUpSpaceCallback() {
+            OfflinePageStorageSpacePolicy.create(
+                    mOfflinePageBridge, new Callback<OfflinePageStorageSpacePolicy>() {
                         @Override
-                        public void onFreeUpSpaceDone() {
-                            refreshOfflinePagesFilterView();
-                            mDelegate.getSnackbarManager().showSnackbar(
-                                    OfflinePageFreeUpSpaceDialog.createStorageClearedSnackbar(
-                                            mContext));
-                        }
-
-                        @Override
-                        public void onFreeUpSpaceCancelled() {
-                            // No need to refresh, as result outcome should be the same here.
+                        public void onResult(OfflinePageStorageSpacePolicy policy) {
+                            setOfflineStorageHeader(policy);
                         }
                     });
         }
@@ -317,17 +318,23 @@ class BookmarkItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     public void onDestroy() {
         mDelegate.removeUIObserver(this);
         mDelegate.getModel().removeObserver(mBookmarkModelObserver);
+        mDelegate = null;
+
         mPromoHeaderManager.destroy();
 
-        OfflinePageBridge offlinePageBridge = mDelegate.getModel().getOfflinePageBridge();
-        if (offlinePageBridge != null) {
-            offlinePageBridge.removeObserver(mOfflinePageModelObserver);
+        if (mOfflinePageBridge != null) {
+            mOfflinePageBridge.removeObserver(mOfflinePageModelObserver);
+            mOfflinePageBridge = null;
+        }
+
+        if (mOfflineStorageHeader != null) {
             mOfflineStorageHeader.destroy();
         }
     }
 
     @Override
     public void onAllBookmarksStateSet() {
+        assert mDelegate != null;
         List<BookmarkId> bookmarkIds =
                 mDelegate.getModel().getAllBookmarkIDsOrderedByCreationDate();
         RecordHistogram.recordCountHistogram("EnhancedBookmarks.AllBookmarksCount",
@@ -337,6 +344,7 @@ class BookmarkItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
     @Override
     public void onFolderStateSet(BookmarkId folder) {
+        assert mDelegate != null;
         setBookmarks(mDelegate.getModel().getChildIDs(folder, true, false),
                 mDelegate.getModel().getChildIDs(folder, false, true));
     }
@@ -344,10 +352,23 @@ class BookmarkItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     @Override
     public void onFilterStateSet(BookmarkFilter filter) {
         assert filter == BookmarkFilter.OFFLINE_PAGES;
-        List<BookmarkId> bookmarkIds = mDelegate.getModel().getBookmarkIDsByFilter(filter);
-        RecordHistogram.recordCountHistogram("OfflinePages.OfflinePageCount", bookmarkIds.size());
-        setBookmarks(null, mDelegate.getModel().getBookmarkIDsByFilter(filter));
-        mDelegate.getModel().getOfflinePageBridge().checkOfflinePageMetadata();
+        assert mDelegate != null;
+        assert mOfflinePageBridge != null;
+
+        setBookmarks(null, new ArrayList<BookmarkId>());
+        mOfflinePageBridge.checkOfflinePageMetadata();
+        BookmarkModel bookmarkModel = mDelegate.getModel();
+        bookmarkModel.getBookmarkIDsByFilter(
+                BookmarkFilter.OFFLINE_PAGES, new Callback<List<BookmarkId>>() {
+                    @Override
+                    public void onResult(List<BookmarkId> bookmarkIds) {
+                        if (mDelegate == null) return;
+                        RecordHistogram.recordCountHistogram(
+                                "OfflinePages.OfflinePageCount", bookmarkIds.size());
+
+                        setBookmarks(null, bookmarkIds);
+                    }
+                });
     }
 
     @Override
@@ -359,7 +380,34 @@ class BookmarkItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         }
     }
 
+    private void setOfflineStorageHeader(OfflinePageStorageSpacePolicy policy) {
+        if (mOfflinePageBridge == null) return;
+
+        mOfflineStorageHeader = new OfflinePageStorageSpaceHeader(
+                mContext, mOfflinePageBridge, policy, new OfflinePageFreeUpSpaceCallback() {
+                    @Override
+                    public void onFreeUpSpaceDone() {
+                        if (mDelegate == null) return;
+
+                        refreshOfflinePagesFilterView();
+                        mDelegate.getSnackbarManager().showSnackbar(
+                                OfflinePageFreeUpSpaceDialog.createStorageClearedSnackbar(
+                                        mContext));
+                    }
+
+                    @Override
+                    public void onFreeUpSpaceCancelled() {
+                        // No need to refresh, as result outcome should
+                        // be the same here.
+                    }
+                });
+
+        updateHeader();
+    }
+
     private void updateHeader() {
+        if (mDelegate == null) return;
+
         int currentUIState = mDelegate.getCurrentState();
         if (currentUIState == BookmarkUIState.STATE_LOADING) return;
 
@@ -380,8 +428,17 @@ class BookmarkItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     }
 
     private void refreshOfflinePagesFilterView() {
-        if (mDelegate.getCurrentState() != BookmarkUIState.STATE_FILTER) return;
-        setBookmarks(null,
-                mDelegate.getModel().getBookmarkIDsByFilter(BookmarkFilter.OFFLINE_PAGES));
+        if (mDelegate == null || mDelegate.getCurrentState() != BookmarkUIState.STATE_FILTER) {
+            return;
+        }
+        setBookmarks(null, new ArrayList<BookmarkId>());
+        mDelegate.getModel().getBookmarkIDsByFilter(
+                BookmarkFilter.OFFLINE_PAGES, new Callback<List<BookmarkId>>() {
+                    @Override
+                    public void onResult(List<BookmarkId> bookmarkIds) {
+                        if (mDelegate == null) return;
+                        setBookmarks(null, bookmarkIds);
+                    }
+                });
     }
 }

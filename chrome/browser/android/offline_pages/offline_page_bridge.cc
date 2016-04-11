@@ -244,19 +244,6 @@ void OfflinePageBridge::MarkPageAccessed(JNIEnv* env,
   offline_page_model_->MarkPageAccessed(offline_id);
 }
 
-void OfflinePageBridge::DeletePage(JNIEnv* env,
-                                   const JavaParamRef<jobject>& obj,
-                                   const JavaParamRef<jobject>& j_callback_obj,
-                                   jlong offline_id) {
-  DCHECK(j_callback_obj);
-
-  ScopedJavaGlobalRef<jobject> j_callback_ref;
-  j_callback_ref.Reset(env, j_callback_obj);
-
-  offline_page_model_->DeletePageByOfflineId(
-      offline_id, base::Bind(&DeletePageCallback, j_callback_ref));
-}
-
 void OfflinePageBridge::DeletePages(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,

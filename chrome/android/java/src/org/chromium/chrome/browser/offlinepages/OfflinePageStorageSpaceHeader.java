@@ -31,10 +31,11 @@ public class OfflinePageStorageSpaceHeader {
      * @param offlinePageBridge An object to access offline page functionality.
      */
     public OfflinePageStorageSpaceHeader(Context context, OfflinePageBridge offlinePageBridge,
+            OfflinePageStorageSpacePolicy offlinePageStorageSpacePolicy,
             OfflinePageFreeUpSpaceCallback callback) {
         assert offlinePageBridge != null;
         mOfflinePageBridge = offlinePageBridge;
-        mOfflinePageStorageSpacePolicy = new OfflinePageStorageSpacePolicy(mOfflinePageBridge);
+        mOfflinePageStorageSpacePolicy = offlinePageStorageSpacePolicy;
         mContext = context;
         mCallback = callback;
     }

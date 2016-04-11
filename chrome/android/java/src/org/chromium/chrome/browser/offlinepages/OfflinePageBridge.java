@@ -55,7 +55,7 @@ public class OfflinePageBridge {
     private static Integer sFeatureMode;
 
     /**
-     * Callback used to saving an offline page.
+     * Callback used when saving an offline page.
      */
     public interface SavePageCallback {
         /**
@@ -71,7 +71,7 @@ public class OfflinePageBridge {
     }
 
     /**
-     * Callback used to deleting an offline page.
+     * Callback used when deleting an offline page.
      */
     public interface DeletePageCallback {
         /**
@@ -231,38 +231,29 @@ public class OfflinePageBridge {
 
     /**
      * Gets all available offline pages, returning results via the provided callback.
-     * TODO(http://crbug.com/589526): Rename to just OfflinePageBridge#getAllPages and remove the
-     * synchronous method.
      *
      * @param callback The callback to run when the operation completes.
      */
     @VisibleForTesting
-    public void getAllPagesAsync(final MultipleOfflinePageItemCallback callback) {
+    public void getAllPages(final MultipleOfflinePageItemCallback callback) {
         runWhenLoaded(new Runnable() {
             @Override
             public void run() {
-                callback.onResult(getAllPages());
+                callback.onResult(getAllPagesInternal());
             }
         });
     }
 
-    /** Returns via callback whether we have any offline pages at all. */
-    @VisibleForTesting
-    public void hasPages(final HasPagesCallback callback) {
+    /** Returns whether we have any offline pages at all. */
+    public boolean hasPages() {
         // TODO(dewittj): Make this something faster than a full scan.
-        getAllPagesAsync(new MultipleOfflinePageItemCallback() {
-            @Override
-            public void onResult(List<OfflinePageItem> allPages) {
-                callback.onResult(!allPages.isEmpty());
-            }
-        });
+        return !getAllPagesInternal().isEmpty();
     }
 
     /**
-     * @return Gets all available offline pages. Requires that the model is already loaded.
-     * This function is deprecated. Use OfflinePageBridge#getAllPagesAsync.
+     * @return All available offline pages. Requires that the model is already loaded.
      */
-    public List<OfflinePageItem> getAllPages() {
+    private List<OfflinePageItem> getAllPagesInternal() {
         assert mIsNativeOfflinePageModelLoaded;
         List<OfflinePageItem> result = new ArrayList<OfflinePageItem>();
         nativeGetAllPages(mNativeOfflinePageBridge, result);
@@ -437,19 +428,10 @@ public class OfflinePageBridge {
      */
     public void deletePage(final ClientId clientId, DeletePageCallback callback) {
         assert mIsNativeOfflinePageModelLoaded;
+        ArrayList<ClientId> ids = new ArrayList<ClientId>();
+        ids.add(clientId);
 
-        recordFreeSpaceHistograms("OfflinePages.DeletePage.FreeSpacePercentage",
-                "OfflinePages.DeletePage.FreeSpaceMB");
-
-        DeletePageCallback callbackWrapper = wrapCallbackWithHistogramReporting(callback);
-        Set<Long> ids = getOfflineIdsForClientId(clientId);
-        if (ids.size() == 0) {
-            callback.onDeletePageDone(DeletePageResult.NOT_FOUND);
-            return;
-        }
-        for (Long offlineId : ids) {
-            nativeDeletePage(mNativeOfflinePageBridge, callbackWrapper, offlineId);
-        }
+        deletePagesByClientId(ids, callback);
     }
 
     /**
@@ -675,8 +657,6 @@ public class OfflinePageBridge {
     private native void nativeSavePage(long nativeOfflinePageBridge, SavePageCallback callback,
             WebContents webContents, String clientNamespace, String clientId);
     private native void nativeMarkPageAccessed(long nativeOfflinePageBridge, long offlineId);
-    private native void nativeDeletePage(
-            long nativeOfflinePageBridge, DeletePageCallback callback, long offlineId);
     private native void nativeDeletePages(
             long nativeOfflinePageBridge, DeletePageCallback callback, long[] offlineIds);
     private native void nativeGetPagesToCleanUp(

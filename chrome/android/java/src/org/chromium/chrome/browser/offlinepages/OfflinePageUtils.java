@@ -11,6 +11,7 @@ import android.content.IntentFilter;
 import android.os.BatteryManager;
 import android.os.Environment;
 
+import org.chromium.base.Callback;
 import org.chromium.base.Log;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
@@ -230,8 +231,20 @@ public class OfflinePageUtils {
             @Override
             public void onAction(Object actionData) {
                 RecordUserAction.record("OfflinePages.SaveStatusSnackbar.FreeUpSpaceButtonClicked");
-                OfflinePageStorageSpacePolicy policy =
-                        new OfflinePageStorageSpacePolicy(offlinePageBridge);
+                Callback<OfflinePageStorageSpacePolicy> callback =
+                        getStorageSpacePolicyCallback(offlinePageBridge, snackbarManager, activity);
+
+                OfflinePageStorageSpacePolicy.create(offlinePageBridge, callback);
+            }
+        };
+    }
+
+    private static Callback<OfflinePageStorageSpacePolicy> getStorageSpacePolicyCallback(
+            final OfflinePageBridge offlinePageBridge, final SnackbarManager snackbarManager,
+            final Activity activity) {
+        return new Callback<OfflinePageStorageSpacePolicy>() {
+            @Override
+            public void onResult(OfflinePageStorageSpacePolicy policy) {
                 if (policy.hasPagesToCleanUp()) {
                     OfflinePageFreeUpSpaceCallback callback = new OfflinePageFreeUpSpaceCallback() {
                         @Override

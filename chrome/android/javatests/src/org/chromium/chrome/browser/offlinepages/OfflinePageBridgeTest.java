@@ -13,6 +13,7 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.DeletePageCallback;
+import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.MultipleOfflinePageItemCallback;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.OfflinePageModelObserver;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.SavePageCallback;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -28,6 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 /** Unit tests for {@link OfflinePageBridge}. */
@@ -302,36 +304,36 @@ public class OfflinePageBridgeTest extends ChromeActivityTestCaseBase<ChromeActi
     private void deletePage(final ClientId bookmarkId, final int expectedResult)
             throws InterruptedException {
         final Semaphore semaphore = new Semaphore(0);
+        final AtomicInteger deletePageResultRef = new AtomicInteger();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
                 mOfflinePageBridge.deletePage(bookmarkId, new DeletePageCallback() {
                     @Override
                     public void onDeletePageDone(int deletePageResult) {
-                        assertEquals("Delete result incorrect.", expectedResult, deletePageResult);
+                        deletePageResultRef.set(deletePageResult);
                         semaphore.release();
                     }
                 });
             }
         });
         assertTrue(semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertEquals("Delete result incorrect.", expectedResult, deletePageResultRef.get());
     }
 
-    private List<OfflinePageItem> getAllPages()
-            throws InterruptedException {
+    private List<OfflinePageItem> getAllPages() throws InterruptedException {
         final List<OfflinePageItem> result = new ArrayList<OfflinePageItem>();
         final Semaphore semaphore = new Semaphore(0);
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                mOfflinePageBridge.getAllPagesAsync(
-                        new OfflinePageBridge.MultipleOfflinePageItemCallback() {
-                            @Override
-                            public void onResult(List<OfflinePageItem> pages) {
-                                result.addAll(pages);
-                                semaphore.release();
-                            }
-                        });
+                mOfflinePageBridge.getAllPages(new MultipleOfflinePageItemCallback() {
+                    @Override
+                    public void onResult(List<OfflinePageItem> pages) {
+                        result.addAll(pages);
+                        semaphore.release();
+                    }
+                });
             }
         });
         assertTrue(semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -354,7 +356,7 @@ public class OfflinePageBridgeTest extends ChromeActivityTestCaseBase<ChromeActi
             @Override
             public void run() {
                 mOfflinePageBridge.getPagesByClientId(
-                        clientId, new OfflinePageBridge.MultipleOfflinePageItemCallback() {
+                        clientId, new MultipleOfflinePageItemCallback() {
                             @Override
                             public void onResult(List<OfflinePageItem> items) {
                                 if (!items.isEmpty()) {

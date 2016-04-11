@@ -161,12 +161,12 @@ public class OfflinePageBridgeTest {
     }
 
     /**
-     * Tests OfflinePageBridge#GetAllPagesAsync() callback when there are no pages and model is
+     * Tests OfflinePageBridge#GetAllPages() callback when there are no pages and model is
      * loaded.
      */
     @Test
     @Feature({"OfflinePages"})
-    public void testGetAllPagesAsync_listOfPagesEmpty() {
+    public void testGetAllPages_listOfPagesEmpty() {
         doNothing().when(mBridge).nativeGetAllPages(anyLong(), anyListOf(OfflinePageItem.class));
 
         mBridge.offlinePageModelLoaded();
@@ -176,7 +176,7 @@ public class OfflinePageBridgeTest {
         // Pausing main looper to defer the execution of callback.  This ensures that the callback
         // is posted to the UI thread instead of being directly invoked.
         Robolectric.pauseMainLooper();
-        mBridge.getAllPagesAsync(callback);
+        mBridge.getAllPages(callback);
         verify(callback, times(0)).onResult(anyListOf(OfflinePageItem.class));
 
         // Un-pausing the looper to resume execution.
@@ -185,11 +185,11 @@ public class OfflinePageBridgeTest {
     }
 
     /**
-     * Tests OfflinePageBridge#GetAllPagesAsync() callback when there are pages and model is loaded.
+     * Tests OfflinePageBridge#GetAllPages() callback when there are pages and model is loaded.
      */
     @Test
     @Feature({"OfflinePages"})
-    public void testGetAllPagesAsync_listOfPagesNonEmpty() {
+    public void testGetAllPages_listOfPagesNonEmpty() {
         final int itemCount = 2;
         doAnswer(createMultipleItemAnswer(itemCount)).when(mBridge).nativeGetAllPages(
                 anyLong(), anyListOf(OfflinePageItem.class));
@@ -200,7 +200,7 @@ public class OfflinePageBridgeTest {
         // Pausing main looper to defer the execution of callback.  This ensures that the callback
         // is posted to the UI thread instead of being directly invoked.
         Robolectric.pauseMainLooper();
-        mBridge.getAllPagesAsync(callback);
+        mBridge.getAllPages(callback);
         verify(callback, times(0)).onResult(anyListOf(OfflinePageItem.class));
 
         // Un-pausing the looper to resume execution.
@@ -209,16 +209,16 @@ public class OfflinePageBridgeTest {
     }
 
     /**
-     * Tests OfflinePageBridge#GetAllPagesAsync() callback when there are no pages and model is
+     * Tests OfflinePageBridge#GetAllPages() callback when there are no pages and model is
      * not loaded.
      */
     @Test
     @Feature({"OfflinePages"})
-    public void testGetAllPagesAsync_listOfPagesEmpty_modelLoadedLater() {
+    public void testGetAllPages_listOfPagesEmpty_modelLoadedLater() {
         doNothing().when(mBridge).nativeGetAllPages(anyLong(), anyListOf(OfflinePageItem.class));
 
         MultipleOfflinePageItemCallback callback = createMultipleItemCallback(0);
-        mBridge.getAllPagesAsync(callback);
+        mBridge.getAllPages(callback);
 
         Robolectric.runUiThreadTasks();
         verify(callback, times(0)).onResult(anyListOf(OfflinePageItem.class));
@@ -230,18 +230,18 @@ public class OfflinePageBridgeTest {
     }
 
     /**
-     * Tests OfflinePageBridge#GetAllPagesAsync() callback when there are pages and model is not
+     * Tests OfflinePageBridge#GetAllPages() callback when there are pages and model is not
      * loaded.
      */
     @Test
     @Feature({"OfflinePages"})
-    public void testGetAllPagesAsync_listOfPagesNonEmpty_modelLoadedLater() {
+    public void testGetAllPages_listOfPagesNonEmpty_modelLoadedLater() {
         final int itemCount = 2;
         doAnswer(createMultipleItemAnswer(itemCount)).when(mBridge).nativeGetAllPages(
                 anyLong(), anyListOf(OfflinePageItem.class));
 
         MultipleOfflinePageItemCallback callback = createMultipleItemCallback(itemCount);
-        mBridge.getAllPagesAsync(callback);
+        mBridge.getAllPages(callback);
 
         Robolectric.runUiThreadTasks();
         verify(callback, times(0)).onResult(anyListOf(OfflinePageItem.class));

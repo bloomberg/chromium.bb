@@ -80,11 +80,6 @@ class OfflinePageBridge : public OfflinePageModel::Observer,
                         const base::android::JavaParamRef<jobject>& obj,
                         jlong offline_id);
 
-  void DeletePage(JNIEnv* env,
-                  const base::android::JavaParamRef<jobject>& obj,
-                  const base::android::JavaParamRef<jobject>& j_callback_obj,
-                  jlong offline_id);
-
   void DeletePages(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,

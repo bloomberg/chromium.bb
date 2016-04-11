@@ -106,6 +106,13 @@ class OfflinePageModelTest
                                   ClientId client_id,
                                   OfflinePageArchiver::ArchiverResult result);
 
+  void DeletePage(int64_t offline_id,
+                  const OfflinePageModel::DeletePageCallback& callback) {
+    std::vector<int64_t> offline_ids;
+    offline_ids.push_back(offline_id);
+    model()->DeletePagesByOfflineId(offline_ids, callback);
+  }
+
   OfflinePageModel* model() { return model_.get(); }
 
   int64_t last_save_offline_id() const { return last_save_offline_id_; }
@@ -557,9 +564,8 @@ TEST_F(OfflinePageModelTest, DeletePageSuccessful) {
   ResetResults();
 
   // Delete one page.
-  model()->DeletePageByOfflineId(
-      offline1,
-      base::Bind(&OfflinePageModelTest::OnDeletePageDone, AsWeakPtr()));
+  DeletePage(offline1,
+             base::Bind(&OfflinePageModelTest::OnDeletePageDone, AsWeakPtr()));
 
   PumpLoop();
 
@@ -570,9 +576,8 @@ TEST_F(OfflinePageModelTest, DeletePageSuccessful) {
   EXPECT_EQ(kTestUrl2, store->GetAllPages()[0].url);
 
   // Delete another page.
-  model()->DeletePageByOfflineId(
-      offline2,
-      base::Bind(&OfflinePageModelTest::OnDeletePageDone, AsWeakPtr()));
+  DeletePage(offline2,
+             base::Bind(&OfflinePageModelTest::OnDeletePageDone, AsWeakPtr()));
 
   ResetResults();
 
@@ -585,8 +590,8 @@ TEST_F(OfflinePageModelTest, DeletePageSuccessful) {
 }
 
 TEST_F(OfflinePageModelTest, DeletePageNotFound) {
-  model()->DeletePageByOfflineId(
-      1234LL, base::Bind(&OfflinePageModelTest::OnDeletePageDone, AsWeakPtr()));
+  DeletePage(1234LL,
+             base::Bind(&OfflinePageModelTest::OnDeletePageDone, AsWeakPtr()));
   EXPECT_EQ(DeletePageResult::NOT_FOUND, last_delete_result());
 }
 
@@ -599,9 +604,8 @@ TEST_F(OfflinePageModelTest, DeletePageStoreFailureOnRemove) {
   // Try to delete this page.
   GetStore()->set_test_scenario(
       OfflinePageTestStore::TestScenario::REMOVE_FAILED);
-  model()->DeletePageByOfflineId(
-      offline_id,
-      base::Bind(&OfflinePageModelTest::OnDeletePageDone, AsWeakPtr()));
+  DeletePage(offline_id,
+             base::Bind(&OfflinePageModelTest::OnDeletePageDone, AsWeakPtr()));
   PumpLoop();
   EXPECT_EQ(DeletePageResult::STORE_FAILURE, last_delete_result());
 }
