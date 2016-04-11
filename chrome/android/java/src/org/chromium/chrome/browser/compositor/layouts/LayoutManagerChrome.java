@@ -119,12 +119,12 @@ public class LayoutManagerChrome
 
         @Override
         public void didCloseTab(int tabId, boolean incognito) {
-            tabClosed(tabId, incognito);
+            tabClosed(tabId, incognito, false);
         }
 
         @Override
         public void tabPendingClosure(Tab tab) {
-            tabClosed(tab.getId(), tab.isIncognito());
+            tabClosed(tab.getId(), tab.isIncognito(), false);
         }
 
         @Override
@@ -140,6 +140,11 @@ public class LayoutManagerChrome
         @Override
         public void didMoveTab(Tab tab, int newIndex, int curIndex) {
             tabMoved(tab.getId(), curIndex, newIndex, tab.isIncognito());
+        }
+
+        @Override
+        public void tabRemoved(Tab tab) {
+            tabClosed(tab.getId(), tab.isIncognito(), true);
         }
     }
 
@@ -461,19 +466,21 @@ public class LayoutManagerChrome
 
     /**
      * Should be called when a tab closed event is triggered.
-     * @param id        The id of the closed tab.
-     * @param nextId    The id of the next tab that will be visible, if any.
-     * @param incognito Whether or not the closed tab is incognito.
+     * @param id         The id of the closed tab.
+     * @param nextId     The id of the next tab that will be visible, if any.
+     * @param incognito  Whether or not the closed tab is incognito.
+     * @param tabRemoved Whether the tab was removed from the model (e.g. for reparenting), rather
+     *                   than closed and destroyed.
      */
-    protected void tabClosed(int id, int nextId, boolean incognito) {
+    protected void tabClosed(int id, int nextId, boolean incognito, boolean tabRemoved) {
         if (getActiveLayout() != null) getActiveLayout().onTabClosed(time(), id, nextId, incognito);
     }
 
-    private void tabClosed(int tabId, boolean incognito) {
+    private void tabClosed(int tabId, boolean incognito, boolean tabRemoved) {
         Tab currentTab =
                 getTabModelSelector() != null ? getTabModelSelector().getCurrentTab() : null;
         int nextTabId = currentTab != null ? currentTab.getId() : Tab.INVALID_TAB_ID;
-        tabClosed(tabId, nextTabId, incognito);
+        tabClosed(tabId, nextTabId, incognito, tabRemoved);
     }
 
     /**

@@ -98,7 +98,7 @@ public class LayoutManagerChromePhone extends LayoutManagerChrome {
     }
 
     @Override
-    protected void tabClosed(int id, int nextId, boolean incognito) {
+    protected void tabClosed(int id, int nextId, boolean incognito, boolean tabRemoved) {
         boolean showOverview = nextId == Tab.INVALID_TAB_ID;
         Layout overviewLayout = useAccessibilityLayout() ? mOverviewListLayout : mOverviewLayout;
         if (getActiveLayout() != overviewLayout && showOverview) {
@@ -109,7 +109,8 @@ public class LayoutManagerChromePhone extends LayoutManagerChrome {
         getActiveLayout().onTabClosed(time(), id, nextId, incognito);
         Tab nextTab = getTabById(nextId);
         if (nextTab != null) nextTab.requestFocus();
-        if (getActiveLayout() != overviewLayout && showOverview && !animationsEnabled()) {
+        boolean animate = !tabRemoved && animationsEnabled();
+        if (getActiveLayout() != overviewLayout && showOverview && !animate) {
             startShowing(overviewLayout, false);
         }
     }

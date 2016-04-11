@@ -118,11 +118,6 @@ public class LayoutManagerChromeTablet extends LayoutManagerChrome {
     }
 
     @Override
-    protected void tabClosed(int id, int nextId, boolean incognito) {
-        super.tabClosed(id, nextId, incognito);
-    }
-
-    @Override
     protected void tabClosureCommitted(int id, boolean incognito) {
         super.tabClosureCommitted(id, incognito);
         if (mTitleCache != null) mTitleCache.remove(id);
