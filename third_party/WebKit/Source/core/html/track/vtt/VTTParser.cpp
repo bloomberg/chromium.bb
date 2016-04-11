@@ -321,7 +321,7 @@ public:
     explicit VTTTreeBuilder(Document& document)
         : m_document(&document) { }
 
-    RawPtr<DocumentFragment> buildFromString(const String& cueText);
+    DocumentFragment* buildFromString(const String& cueText);
 
 private:
     void constructTreeFromToken(Document&);
@@ -333,13 +333,13 @@ private:
     Member<Document> m_document;
 };
 
-RawPtr<DocumentFragment> VTTTreeBuilder::buildFromString(const String& cueText)
+DocumentFragment* VTTTreeBuilder::buildFromString(const String& cueText)
 {
     // Cue text processing based on
     // 5.4 WebVTT cue text parsing rules, and
     // 5.5 WebVTT cue text DOM construction rules
 
-    RawPtr<DocumentFragment> fragment = DocumentFragment::create(document());
+    DocumentFragment* fragment = DocumentFragment::create(document());
 
     if (cueText.isEmpty()) {
         fragment->parserAppendChild(Text::create(document(), ""));
@@ -354,10 +354,10 @@ RawPtr<DocumentFragment> VTTTreeBuilder::buildFromString(const String& cueText)
     while (tokenizer.nextToken(m_token))
         constructTreeFromToken(document());
 
-    return fragment.release();
+    return fragment;
 }
 
-RawPtr<DocumentFragment> VTTParser::createDocumentFragmentFromCueText(Document& document, const String& cueText)
+DocumentFragment* VTTParser::createDocumentFragmentFromCueText(Document& document, const String& cueText)
 {
     VTTTreeBuilder treeBuilder(document);
     return treeBuilder.buildFromString(cueText);
@@ -503,7 +503,7 @@ void VTTTreeBuilder::constructTreeFromToken(Document& document)
         if (nodeType == VTTNodeTypeRubyText && currentType != VTTNodeTypeRuby)
             break;
 
-        RawPtr<VTTElement> child = VTTElement::create(nodeType, &document);
+        VTTElement* child = VTTElement::create(nodeType, &document);
         if (!m_token.classes().isEmpty())
             child->setAttribute(classAttr, m_token.classes());
 

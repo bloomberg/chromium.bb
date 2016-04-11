@@ -56,7 +56,7 @@ struct VTTDisplayParameters {
 
 class VTTCueBox final : public HTMLDivElement {
 public:
-    static RawPtr<VTTCueBox> create(Document& document)
+    static VTTCueBox* create(Document& document)
     {
         return new VTTCueBox(document);
     }
@@ -110,7 +110,7 @@ public:
     // Applies CSS override style from user settings.
     void applyUserOverrideCSSProperties();
 
-    RawPtr<DocumentFragment> getCueAsHTML();
+    DocumentFragment* getCueAsHTML();
 
     const String& regionId() const { return m_regionId; }
     void setRegionId(const String&);
@@ -154,7 +154,7 @@ private:
 
     Document& document() const;
 
-    RawPtr<VTTCueBox> getDisplayTree();
+    VTTCueBox* getDisplayTree();
 
     void cueDidChange() override;
 

@@ -30,20 +30,20 @@ void CueTimeline::addCues(TextTrack* track, const TextTrackCueList* cues)
     updateActiveCues(mediaElement().currentTime());
 }
 
-void CueTimeline::addCue(TextTrack* track, RawPtr<TextTrackCue> cue)
+void CueTimeline::addCue(TextTrack* track, TextTrackCue* cue)
 {
     ASSERT(track->mode() != TextTrack::disabledKeyword());
     addCueInternal(cue);
     updateActiveCues(mediaElement().currentTime());
 }
 
-void CueTimeline::addCueInternal(RawPtr<TextTrackCue> cue)
+void CueTimeline::addCueInternal(TextTrackCue* cue)
 {
     // Negative duration cues need be treated in the interval tree as
     // zero-length cues.
     double endTime = std::max(cue->startTime(), cue->endTime());
 
-    CueInterval interval = m_cueTree.createInterval(cue->startTime(), endTime, cue.get());
+    CueInterval interval = m_cueTree.createInterval(cue->startTime(), endTime, cue);
     if (!m_cueTree.contains(interval))
         m_cueTree.add(interval);
 }
@@ -55,19 +55,19 @@ void CueTimeline::removeCues(TextTrack*, const TextTrackCueList* cues)
     updateActiveCues(mediaElement().currentTime());
 }
 
-void CueTimeline::removeCue(TextTrack*, RawPtr<TextTrackCue> cue)
+void CueTimeline::removeCue(TextTrack*, TextTrackCue* cue)
 {
     removeCueInternal(cue);
     updateActiveCues(mediaElement().currentTime());
 }
 
-void CueTimeline::removeCueInternal(RawPtr<TextTrackCue> cue)
+void CueTimeline::removeCueInternal(TextTrackCue* cue)
 {
     // Negative duration cues need to be treated in the interval tree as
     // zero-length cues.
     double endTime = std::max(cue->startTime(), cue->endTime());
 
-    CueInterval interval = m_cueTree.createInterval(cue->startTime(), endTime, cue.get());
+    CueInterval interval = m_cueTree.createInterval(cue->startTime(), endTime, cue);
     m_cueTree.remove(interval);
 
     size_t index = m_currentlyActiveCues.find(interval);
@@ -112,11 +112,11 @@ static bool eventTimeCueCompare(const std::pair<double, TextTrackCue*>& a, const
     return a.second->cueIndex() < b.second->cueIndex();
 }
 
-static RawPtr<Event> createEventWithTarget(const AtomicString& eventName, RawPtr<EventTarget> eventTarget)
+static Event* createEventWithTarget(const AtomicString& eventName, EventTarget* eventTarget)
 {
-    RawPtr<Event> event = Event::create(eventName);
+    Event* event = Event::create(eventName);
     event->setTarget(eventTarget);
-    return event.release();
+    return event;
 }
 
 void CueTimeline::updateActiveCues(double movieTime)

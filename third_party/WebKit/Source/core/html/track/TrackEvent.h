@@ -39,18 +39,18 @@ class CORE_EXPORT TrackEvent final : public Event {
 public:
     ~TrackEvent() override;
 
-    static RawPtr<TrackEvent> create()
+    static TrackEvent* create()
     {
         return new TrackEvent;
     }
 
-    static RawPtr<TrackEvent> create(const AtomicString& type, const TrackEventInit& initializer)
+    static TrackEvent* create(const AtomicString& type, const TrackEventInit& initializer)
     {
         return new TrackEvent(type, initializer);
     }
 
     template <typename T>
-    static RawPtr<TrackEvent> create(const AtomicString& type, T* track)
+    static TrackEvent* create(const AtomicString& type, T* track)
     {
         return new TrackEvent(type, track);
     }

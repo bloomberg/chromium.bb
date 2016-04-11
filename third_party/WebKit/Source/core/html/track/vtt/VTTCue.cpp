@@ -465,7 +465,7 @@ void VTTCue::createVTTNodeTree()
 void VTTCue::copyVTTNodeToDOMTree(ContainerNode* vttNode, ContainerNode* parent)
 {
     for (Node* node = vttNode->firstChild(); node; node = node->nextSibling()) {
-        RawPtr<Node> clonedNode;
+        Node* clonedNode;
         if (node->isVTTElement())
             clonedNode = toVTTElement(node)->createEquivalentHTMLElement(document());
         else
@@ -476,12 +476,12 @@ void VTTCue::copyVTTNodeToDOMTree(ContainerNode* vttNode, ContainerNode* parent)
     }
 }
 
-RawPtr<DocumentFragment> VTTCue::getCueAsHTML()
+DocumentFragment* VTTCue::getCueAsHTML()
 {
     createVTTNodeTree();
-    RawPtr<DocumentFragment> clonedFragment = DocumentFragment::create(document());
-    copyVTTNodeToDOMTree(m_vttNodeTree.get(), clonedFragment.get());
-    return clonedFragment.release();
+    DocumentFragment* clonedFragment = DocumentFragment::create(document());
+    copyVTTNodeToDOMTree(m_vttNodeTree.get(), clonedFragment);
+    return clonedFragment;
 }
 
 void VTTCue::setRegionId(const String& regionId)
@@ -796,7 +796,7 @@ void VTTCue::updatePastAndFutureNodes(double movieTime)
     }
 }
 
-RawPtr<VTTCueBox> VTTCue::getDisplayTree()
+VTTCueBox* VTTCue::getDisplayTree()
 {
     ASSERT(track() && track()->isRendered() && isActive());
 
@@ -875,7 +875,7 @@ void VTTCue::updateDisplay(HTMLDivElement& container)
     if (m_cueAlignment != Middle)
         UseCounter::count(document(), UseCounter::VTTCueRenderAlignNotMiddle);
 
-    RawPtr<VTTCueBox> displayBox = getDisplayTree();
+    VTTCueBox* displayBox = getDisplayTree();
     VTTRegion* region = 0;
     if (track()->regions())
         region = track()->regions()->getRegionById(regionId());
@@ -884,17 +884,17 @@ void VTTCue::updateDisplay(HTMLDivElement& container)
         // If cue has an empty region identifier or there is no WebVTT region
         // whose region identifier is identical to cue's region identifier, run
         // the following substeps:
-        if (displayBox->hasChildren() && !container.contains(displayBox.get())) {
+        if (displayBox->hasChildren() && !container.contains(displayBox)) {
             // Note: the display tree of a cue is removed when the active flag of the cue is unset.
             container.appendChild(displayBox);
         }
     } else {
         // Let region be the WebVTT region whose region identifier matches the
         // region identifier of cue.
-        RawPtr<HTMLDivElement> regionNode = region->getDisplayTree(document());
+        HTMLDivElement* regionNode = region->getDisplayTree(document());
 
         // Append the region to the viewport, if it was not already.
-        if (!container.contains(regionNode.get()))
+        if (!container.contains(regionNode))
             container.appendChild(regionNode);
 
         region->appendVTTCueBox(displayBox);

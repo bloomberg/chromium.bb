@@ -44,9 +44,9 @@ enum VTTNodeType {
 
 class VTTElement final : public Element {
 public:
-    static RawPtr<VTTElement> create(const VTTNodeType, Document*);
-    static RawPtr<VTTElement> create(const QualifiedName&, Document*);
-    RawPtr<HTMLElement> createEquivalentHTMLElement(Document&);
+    static VTTElement* create(const VTTNodeType, Document*);
+    static VTTElement* create(const QualifiedName&, Document*);
+    HTMLElement* createEquivalentHTMLElement(Document&);
 
     RawPtr<Element> cloneElementWithoutAttributesAndChildren() override;
 

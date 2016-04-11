@@ -99,7 +99,7 @@ public:
 
     void scheduleChangeEvent()
     {
-        RawPtr<Event> event = Event::create(EventTypeNames::change);
+        Event* event = Event::create(EventTypeNames::change);
         event->setTarget(this);
         m_mediaElement->scheduleEvent(event);
     }
@@ -116,7 +116,7 @@ public:
 private:
     void scheduleTrackEvent(const AtomicString& eventName, T* track)
     {
-        RawPtr<Event> event = TrackEvent::create(eventName, track);
+        Event* event = TrackEvent::create(eventName, track);
         event->setTarget(this);
         m_mediaElement->scheduleEvent(event);
     }

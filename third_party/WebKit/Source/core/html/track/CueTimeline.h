@@ -33,9 +33,9 @@ public:
     CueTimeline(HTMLMediaElement&);
 
     void addCues(TextTrack*, const TextTrackCueList*);
-    void addCue(TextTrack*, RawPtr<TextTrackCue>);
+    void addCue(TextTrack*, TextTrackCue*);
     void removeCues(TextTrack*, const TextTrackCueList*);
-    void removeCue(TextTrack*, RawPtr<TextTrackCue>);
+    void removeCue(TextTrack*, TextTrackCue*);
 
     void hideCues(TextTrack*, const TextTrackCueList*);
 
@@ -52,8 +52,8 @@ public:
 private:
     HTMLMediaElement& mediaElement() const { return *m_mediaElement; }
 
-    void addCueInternal(RawPtr<TextTrackCue>);
-    void removeCueInternal(RawPtr<TextTrackCue>);
+    void addCueInternal(TextTrackCue*);
+    void removeCueInternal(TextTrackCue*);
 
     Member<HTMLMediaElement> m_mediaElement;
 

@@ -71,28 +71,28 @@ VTTElement::VTTElement(VTTNodeType nodeType, Document* document)
 {
 }
 
-RawPtr<VTTElement> VTTElement::create(VTTNodeType nodeType, Document* document)
+VTTElement* VTTElement::create(VTTNodeType nodeType, Document* document)
 {
     return new VTTElement(nodeType, document);
 }
 
 RawPtr<Element> VTTElement::cloneElementWithoutAttributesAndChildren()
 {
-    RawPtr<VTTElement> clone = create(static_cast<VTTNodeType>(m_webVTTNodeType), &document());
+    VTTElement* clone = create(static_cast<VTTNodeType>(m_webVTTNodeType), &document());
     clone->setLanguage(m_language);
-    return clone.release();
+    return clone;
 }
 
-RawPtr<HTMLElement> VTTElement::createEquivalentHTMLElement(Document& document)
+HTMLElement* VTTElement::createEquivalentHTMLElement(Document& document)
 {
-    RawPtr<HTMLElement> htmlElement = nullptr;
+    HTMLElement* htmlElement = nullptr;
     switch (m_webVTTNodeType) {
     case VTTNodeTypeClass:
     case VTTNodeTypeLanguage:
     case VTTNodeTypeVoice:
         htmlElement = HTMLElementFactory::createHTMLElement(HTMLNames::spanTag.localName(), document);
-        htmlElement.get()->setAttribute(HTMLNames::titleAttr, getAttribute(voiceAttributeName()));
-        htmlElement.get()->setAttribute(HTMLNames::langAttr, getAttribute(langAttributeName()));
+        htmlElement->setAttribute(HTMLNames::titleAttr, getAttribute(voiceAttributeName()));
+        htmlElement->setAttribute(HTMLNames::langAttr, getAttribute(langAttributeName()));
         break;
     case VTTNodeTypeItalic:
         htmlElement = HTMLElementFactory::createHTMLElement(HTMLNames::iTag.localName(), document);
@@ -113,7 +113,7 @@ RawPtr<HTMLElement> VTTElement::createEquivalentHTMLElement(Document& document)
         ASSERT_NOT_REACHED();
     }
 
-    htmlElement.get()->setAttribute(HTMLNames::classAttr, getAttribute(HTMLNames::classAttr));
+    htmlElement->setAttribute(HTMLNames::classAttr, getAttribute(HTMLNames::classAttr));
     return htmlElement;
 }
 

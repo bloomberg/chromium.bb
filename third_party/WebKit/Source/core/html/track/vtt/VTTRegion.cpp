@@ -318,7 +318,7 @@ const AtomicString& VTTRegion::textTrackRegionShadowPseudoId()
     return trackRegionShadowPseudoId;
 }
 
-RawPtr<HTMLDivElement> VTTRegion::getDisplayTree(Document& document)
+HTMLDivElement* VTTRegion::getDisplayTree(Document& document)
 {
     if (!m_regionDisplayTree) {
         m_regionDisplayTree = HTMLDivElement::create(document);
@@ -341,11 +341,11 @@ void VTTRegion::willRemoveVTTCueBox(VTTCueBox* box)
     m_cueContainer->setInlineStyleProperty(CSSPropertyTop, m_currentTop, CSSPrimitiveValue::UnitType::Pixels);
 }
 
-void VTTRegion::appendVTTCueBox(RawPtr<VTTCueBox> displayBox)
+void VTTRegion::appendVTTCueBox(VTTCueBox* displayBox)
 {
     ASSERT(m_cueContainer);
 
-    if (m_cueContainer->contains(displayBox.get()))
+    if (m_cueContainer->contains(displayBox))
         return;
 
     m_cueContainer->appendChild(displayBox);
