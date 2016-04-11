@@ -4,12 +4,13 @@
 
 #include "skia/ext/bitmap_platform_device_mac.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "skia/ext/skia_utils_mac.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkClipStack.h"
 #include "third_party/skia/include/core/SkMatrix.h"
 #include "third_party/skia/include/core/SkRegion.h"
-#include "third_party/skia/include/core/SkClipStack.h"
 
 namespace skia {
 
@@ -23,7 +24,7 @@ class BitmapPlatformDeviceMacTest : public testing::Test {
         NULL, kWidth, kHeight, /*is_opaque=*/true));
   }
 
-  scoped_ptr<BitmapPlatformDevice> bitmap_;
+  std::unique_ptr<BitmapPlatformDevice> bitmap_;
 };
 
 TEST_F(BitmapPlatformDeviceMacTest, ClipRectTransformWithTranslate) {

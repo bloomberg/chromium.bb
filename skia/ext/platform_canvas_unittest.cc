@@ -9,7 +9,6 @@
 #include <stdint.h>
 
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "skia/ext/platform_device.h"
 #include "testing/gtest/include/gtest/gtest.h"

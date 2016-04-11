@@ -5,7 +5,8 @@
 #ifndef SKIA_EXT_SK_DISCARDABLE_MEMORY_CHROME_H_
 #define SKIA_EXT_SK_DISCARDABLE_MEMORY_CHROME_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "third_party/skia/src/core/SkDiscardableMemory.h"
 
 namespace base {
@@ -36,9 +37,9 @@ public:
 private:
   friend class SkDiscardableMemory;
 
-  SkDiscardableMemoryChrome(scoped_ptr<base::DiscardableMemory> memory);
+  SkDiscardableMemoryChrome(std::unique_ptr<base::DiscardableMemory> memory);
 
-  scoped_ptr<base::DiscardableMemory> discardable_;
+  std::unique_ptr<base::DiscardableMemory> discardable_;
 };
 
 #endif  // SKIA_EXT_SK_DISCARDABLE_MEMORY_CHROME_H_

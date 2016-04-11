@@ -7,10 +7,11 @@
 #import <AppKit/AppKit.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/logging.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsobject.h"
-#include "base/memory/scoped_ptr.h"
 #include "skia/ext/bitmap_platform_device_mac.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkRegion.h"
@@ -191,7 +192,7 @@ SkBitmap CGImageToSkBitmap(CGImageRef image) {
   int width = CGImageGetWidth(image);
   int height = CGImageGetHeight(image);
 
-  scoped_ptr<skia::BitmapPlatformDevice> device(
+  std::unique_ptr<skia::BitmapPlatformDevice> device(
       skia::BitmapPlatformDevice::Create(NULL, width, height, false));
 
   CGContextRef context = device->GetBitmapContext();

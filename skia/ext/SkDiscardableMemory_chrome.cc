@@ -26,7 +26,7 @@ void SkDiscardableMemoryChrome::unlock() {
 }
 
 SkDiscardableMemoryChrome::SkDiscardableMemoryChrome(
-    scoped_ptr<base::DiscardableMemory> memory)
+    std::unique_ptr<base::DiscardableMemory> memory)
     : discardable_(std::move(memory)) {}
 
 base::trace_event::MemoryAllocatorDump*
