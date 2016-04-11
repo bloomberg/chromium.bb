@@ -115,55 +115,80 @@ cr.define('settings_device_page', function() {
         fakeSystemDisplay.addDisplayForTest(display);
       };
 
-      // This promise will get resolved third, after a second display is added.
-      var promise3 = new PromiseResolver();
-      var onDisplayChanged2 = function() {
-        fakeSystemDisplay.getInfo(function(displays) {
-          Polymer.dom.flush();
-          expectEquals(2, Object.keys(displayPage.displays).length);
-          expectEquals(2, displays.length);
-          expectEquals(displays[1].id, displayPage.displays[displays[1].id].id);
-          expectEquals(displays[0].id, displayPage.selectedDisplay.id);
-          expectTrue(displayPage.hasMultipleDisplays_(displayPage.displays));
-          promise3.resolve();
-        });
-      };
-
-      // This promise will get resolved second, after a display gets added.
-      var promise2 = new PromiseResolver();
-      var onDisplayChanged1 = function() {
-        // Request the display info. The callback will be triggered after
-        // the SettingsDisplay callback has been called.
-        fakeSystemDisplay.getInfo(function(displays) {
-          Polymer.dom.flush();
-          expectEquals(1, Object.keys(displayPage.displays).length);
-          expectEquals(1, displays.length);
-          expectEquals(displays[0].id, displayPage.displays[displays[0].id].id);
-          expectEquals(displays[0].id, displayPage.selectedDisplay.id);
-          expectFalse(displayPage.isMirrored_(displayPage.selectedDisplay));
-          expectFalse(displayPage.hasMultipleDisplays_(displayPage.displays));
-          promise2.resolve();
-
-          fakeSystemDisplay.onDisplayChanged.removeListener(onDisplayChanged1);
-          fakeSystemDisplay.onDisplayChanged.addListener(onDisplayChanged2);
-          addDisplay(2);
-          fakeSystemDisplay.onDisplayChanged.callListeners();
-        });
-      };
-
-      // This promise will get resolved first, after the initial getInfo is
-      // called from SettingsDisplay.attached().
-      var promise1 = fakeSystemDisplay.getInfoCalled.promise.then(function() {
+      // First, wait for the initial call to getInfo.
+      var promise = fakeSystemDisplay.getInfoCalled.promise.then(function() {
         expectTrue(!!displayPage.displays);
-        expectEquals(0, Object.keys(displayPage.displays).length);
-        // Add a new listener, which will be called after the SettingsDisplay
-        // listener is called.
-        fakeSystemDisplay.onDisplayChanged.addListener(onDisplayChanged1);
+        expectEquals(0, displayPage.displays.length);
+
+        // Add a display.
         addDisplay(1);
         fakeSystemDisplay.onDisplayChanged.callListeners();
-      });
 
-      return Promise.all([promise1, promise2.promise, promise3.promise]);
+        setTimeout(function() {
+          // There should be a single display which should be primary and
+          // selected. Mirroring should be disabled.
+          expectEquals(1, displayPage.displays.length);
+          expectEquals(
+              displayPage.displays[0].id, displayPage.selectedDisplay.id);
+          expectEquals(
+              displayPage.displays[0].id, displayPage.primaryDisplayId);
+          expectFalse(displayPage.showMirror_(displayPage.displays));
+          expectFalse(displayPage.isMirrored_(displayPage.displays));
+
+          // Add a second display.
+          addDisplay(2);
+          fakeSystemDisplay.onDisplayChanged.callListeners();
+
+          setTimeout(function() {
+            // There should be two displays, the first should be primary and
+            // selected. Mirroring should be enabled but set to false.
+            expectEquals(2, displayPage.displays.length);
+            expectEquals(
+                displayPage.displays[0].id, displayPage.selectedDisplay.id);
+            expectEquals(
+                displayPage.displays[0].id, displayPage.primaryDisplayId);
+            expectTrue(displayPage.showMirror_(displayPage.displays));
+            expectFalse(displayPage.isMirrored_(displayPage.displays));
+
+            // Select the second display and make it primary. Also change the
+            // orientation of the second display.
+            displayPage.onSelectDisplayTap_({model: {index: 1}});
+            expectEquals(
+                displayPage.displays[1].id, displayPage.selectedDisplay.id);
+
+            displayPage.onMakePrimaryTap_();
+            displayPage.onSetOrientation_({detail: {selected: '90'}});
+            fakeSystemDisplay.onDisplayChanged.callListeners();
+
+            setTimeout(function() {
+              // Confirm that the second display is selected, primary, and
+              // rotated.
+              expectEquals(2, displayPage.displays.length);
+              expectEquals(
+                  displayPage.displays[1].id, displayPage.selectedDisplay.id);
+              expectTrue(displayPage.displays[1].isPrimary);
+              expectEquals(
+                  displayPage.displays[1].id, displayPage.primaryDisplayId);
+              expectEquals(90, displayPage.displays[1].rotation);
+
+              // Mirror the displays.
+              displayPage.onMirroredTap_();
+              fakeSystemDisplay.onDisplayChanged.callListeners();
+
+              setTimeout(function() {
+                // Confirm that there is now only one display and that it
+                // is primary and mirroring is enabled.
+                expectEquals(1, displayPage.displays.length);
+                expectEquals(
+                    displayPage.displays[0].id, displayPage.selectedDisplay.id);
+                expectTrue(displayPage.displays[0].isPrimary);
+                expectTrue(displayPage.showMirror_(displayPage.displays));
+                expectTrue(displayPage.isMirrored_(displayPage.displays));
+              });
+            });
+          });
+        });
+        return promise;
+      });
     });
-  });
 });

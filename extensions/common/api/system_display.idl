@@ -40,10 +40,9 @@ namespace system.display {
     // The user-friendly name (e.g. "HP LCD monitor").
     DOMString name;
 
-    // Identifier of the display that is being mirrored on the display unit.
-    // If mirroring is not in progress, set to an empty string.
-    // Currently exposed only on ChromeOS. Will be empty string on other
-    // platforms.
+    // Chrome OS only. Identifier of the display that is being mirrored if
+    // mirroring is enabled, otherwise empty. This will be set for all displays
+    // (including the display being mirrored).
     DOMString mirroringSourceId;
 
     // True if this is the primary display.
@@ -81,12 +80,10 @@ namespace system.display {
   };
 
   dictionary DisplayProperties {
-    // If set and not empty, starts mirroring between this and the display with
-    // the provided id (the system will determine which of the displays is
-    // actually mirrored).
-    // If set and not empty, stops mirroring between this and the display with
-    // the specified id (if mirroring is in progress).
-    // If set, no other parameter may be set.
+    // Chrome OS only. If set and not empty, enables mirroring for this display.
+    // Otherwise disables mirroring for this display. This value should indicate
+    // the id of the source display to mirror, which must not be the same as the
+    // id passed to setDisplayProperties. If set, no other property may be set.
     DOMString? mirroringSourceId;
 
     // If set to true, makes the display primary. No-op if set to false.

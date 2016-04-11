@@ -34,18 +34,18 @@ bool SystemDisplaySetDisplayPropertiesFunction::RunSync() {
   SetError("Function available only on ChromeOS.");
   return false;
 #else
-  if (!KioskModeInfo::IsKioskEnabled(extension())) {
+  if (extension() && !KioskModeInfo::IsKioskEnabled(extension())) {
     SetError("The extension needs to be kiosk enabled to use the function.");
     return false;
   }
   std::string error;
   scoped_ptr<SetDisplayProperties::Params> params(
       SetDisplayProperties::Params::Create(*args_));
-  bool success =
+  bool result =
       DisplayInfoProvider::Get()->SetInfo(params->id, params->info, &error);
-  if (!success)
+  if (!result)
     SetError(error);
-  return true;
+  return result;
 #endif
 }
 

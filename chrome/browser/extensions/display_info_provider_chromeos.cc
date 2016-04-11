@@ -174,7 +174,7 @@ void UpdateDisplayLayout(const gfx::Rect& primary_display_bounds,
 
   ash::Shell::GetInstance()
       ->display_configuration_controller()
-      ->SetDisplayLayout(std::move(layout), false /* user_action */);
+      ->SetDisplayLayout(std::move(layout), true /* user_action */);
 }
 
 // Validates that parameters passed to the SetInfo function are valid for the
@@ -319,14 +319,14 @@ bool DisplayInfoProviderChromeOS::SetInfo(const std::string& display_id_str,
   // Process 'isPrimary' parameter.
   if (info.is_primary && *info.is_primary && target.id() != primary.id()) {
     display_configuration_controller->SetPrimaryDisplayId(
-        display_id, false /* user_action */);
+        display_id, true /* user_action */);
   }
 
   // Process 'mirroringSourceId' parameter.
   if (info.mirroring_source_id) {
     bool mirror = !info.mirroring_source_id->empty();
     display_configuration_controller->SetMirrorMode(mirror,
-                                                    false /* user_action */);
+                                                    true /* user_action */);
   }
 
   // Process 'overscan' parameter.
@@ -342,7 +342,7 @@ bool DisplayInfoProviderChromeOS::SetInfo(const std::string& display_id_str,
   if (info.rotation) {
     display_configuration_controller->SetDisplayRotation(
         display_id, DegreesToRotation(*info.rotation),
-        gfx::Display::ROTATION_SOURCE_ACTIVE, false /* user_action */);
+        gfx::Display::ROTATION_SOURCE_ACTIVE, true /* user_action */);
   }
 
   // Process new display origin parameters.

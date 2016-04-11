@@ -32,17 +32,26 @@
     </style>
     <div class="settings-box first layout vertical">
       <div class="display-section">$i18n{displayArrangement}</div>
-      <!-- TODO(stevenjb): Placeholder -->
-      <div class="display-area"></div>
+      <div class="display-area">
+        <!-- TODO(stevenjb): Support layout -->
+        <template is="dom-repeat" items="[[displays]]">
+          <paper-button toggles active="[[isSelected_(item, selectedDisplay)]]"
+              on-tap="onSelectDisplayTap_" id="[[item.id]]">
+            [[item.name]]
+          </paper-button>
+        </template>
+      </div>
     </div>
     <div class="settings-box layout vertical">
       <div class="display-section">[[selectedDisplay.name]]</div>
-      <div class="settings-box embedded first self-stretch"
-           hidden$="[[!hasMultipleDisplays_(displays)]]">
-        <paper-checkbox class="flex" checked="[[isMirrored_(selectedDisplay)]]">
+      <div class="settings-box embedded first self-stretch">
+        <paper-checkbox class="flex" checked="[[isMirrored_(displays)]]"
+            hidden$="[[!showMirror_(displays)]]" on-tap="onMirroredTap_">
           $i18n{displayMirror}
         </paper-checkbox>
-        <paper-button hidden$="[[selectedDisplay.isPrimary]]">
+        <paper-button
+            hidden$="[[!showMakePrimary_(selectedDisplay, primaryDisplayId)]]"
+            on-tap="onMakePrimaryTap_">
           $i18n{displayMakePrimary}
         </paper-button>
       </div>
@@ -55,9 +64,9 @@
         <div class="start">$i18n{displayOrientation}</div>
         <paper-dropdown-menu>
           <paper-listbox class="dropdown-content"
-            selected="[[selectedDisplay.rotation]]"
-            attr-for-selected="value"
-            on-iron-activate="onSetOrientation_">
+              selected="[[selectedDisplay.rotation]]"
+              attr-for-selected="value"
+              on-iron-activate="onSetOrientation_">
             <paper-item value="0">$i18n{displayOrientationStandard}
             </paper-item>
             <paper-item value="90">90</paper-item>
