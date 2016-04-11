@@ -59,7 +59,7 @@ base::FilePath GetExpectedInputAudioFileName(const base::FilePath& base_file,
   return base_file.AddExtension(IntToStringType(render_process_id))
                   .AddExtension(FILE_PATH_LITERAL("source_input"))
                   .AddExtension(IntToStringType(kExpectedStreamId))
-                  .AddExtension(FILE_PATH_LITERAL("pcm"));
+                  .AddExtension(FILE_PATH_LITERAL("wav"));
 }
 
 }  // namespace

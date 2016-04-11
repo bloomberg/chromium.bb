@@ -36,7 +36,7 @@ namespace {
 const base::FilePath::CharType kDebugRecordingFileNameAddition[] =
     FILE_PATH_LITERAL("source_input");
 const base::FilePath::CharType kDebugRecordingFileNameExtension[] =
-    FILE_PATH_LITERAL("pcm");
+    FILE_PATH_LITERAL("wav");
 #endif
 
 void LogMessage(int stream_id, const std::string& msg, bool add_prefix) {
