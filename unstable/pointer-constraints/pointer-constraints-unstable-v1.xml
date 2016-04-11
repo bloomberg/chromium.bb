@@ -25,12 +25,12 @@
     DEALINGS IN THE SOFTWARE.
   </copyright>
 
-  <description summary="Protocol for constraining pointer motions">
+  <description summary="protocol for constraining pointer motions">
     This protocol specifies a set of interfaces used for adding constraints to
     the motion of a pointer. Possible constraints include confining pointer
     motions to a given region, or locking it to its current position.
 
-    In order to contrain the pointer, a client must first bind the global
+    In order to constrain the pointer, a client must first bind the global
     interface "wp_pointer_constraints" which, if a compositor supports pointer
     constraints, is exposed by the registry. Using the bound global object, the
     client uses the request that corresponds to the type of constraint it wants
@@ -38,9 +38,9 @@
 
     Warning! The protocol described in this file is experimental and backward
     incompatible changes may be made. Backward compatible changes may be added
-    together with the corresponding interface version bump.  Backward
+    together with the corresponding interface version bump. Backward
     incompatible changes are done by bumping the version number in the protocol
-    and interface names and resetting the interface version.  Once the protocol
+    and interface names and resetting the interface version. Once the protocol
     is to be declared stable, the 'z' prefix and the version number in the
     protocol and interface names are removed and the interface version number is
     reset.
@@ -49,7 +49,7 @@
   <interface name="zwp_pointer_constraints_v1" version="1">
     <description summary="constrain the movement of a pointer">
       The global interface exposing pointer constraining functionality. It
-      exposes two requests; lock_pointer for locking the pointer to its
+      exposes two requests: lock_pointer for locking the pointer to its
       position, and confine_pointer for locking the pointer to a region.
 
       The lock_pointer and confine_pointer requests create the objects
@@ -75,7 +75,7 @@
     <enum name="lifetime">
       <description summary="constraint lifetime">
 	These values represent different lifetime semantics. They are passed
-	as argument to the factory requests to specify how the constraint
+	as arguments to the factory requests to specify how the constraint
 	lifetimes should be managed.
       </description>
       <entry name="oneshot" value="1">
@@ -233,9 +233,9 @@
       </description>
 
       <arg name="surface_x" type="fixed"
-	   summary="x coordinate in surface-relative coordinates"/>
+	   summary="x coordinate in surface local coordinates"/>
       <arg name="surface_y" type="fixed"
-	   summary="y coordinate in surface-relative coordinates"/>
+	   summary="y coordinate in surface local coordinates"/>
     </request>
 
     <request name="set_region">
