@@ -48,6 +48,9 @@
 #if defined(OS_ANDROID)
 #include "ui/gfx/android/device_display_info.h"
 #endif  // OS_ANDROID
+#if defined(MOJO_SHELL_CLIENT) && defined(USE_AURA)
+#include "content/common/mojo/mojo_shell_connection_impl.h"
+#endif
 
 namespace content {
 
@@ -250,6 +253,16 @@ enum BlockStatusHistogram {
   BLOCK_STATUS_ALL_DOMAINS_BLOCKED,
   BLOCK_STATUS_MAX
 };
+
+bool ShouldDisableHardwareAcceleration() {
+#if defined(MOJO_SHELL_CLIENT) && defined(USE_AURA)
+  // TODO(rjkroege): Remove this when https://crbug.com/602519 is fixed.
+  if (IsRunningInMojoShell())
+    return true;
+#endif
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableGpu);
+}
 
 }  // namespace anonymous
 
@@ -913,7 +926,7 @@ bool GpuDataManagerImplPrivate::ShouldDisableAcceleratedVideoDecode(
     return true;
 
   // Accelerated decode is never available with --disable-gpu.
-  return command_line->HasSwitch(switches::kDisableGpu);
+  return ShouldDisableHardwareAcceleration();
 }
 
 void GpuDataManagerImplPrivate::GetDisabledExtensions(
@@ -974,7 +987,7 @@ GpuDataManagerImplPrivate::GpuDataManagerImplPrivate(GpuDataManagerImpl* owner)
   swiftshader_path_ =
       base::CommandLine::ForCurrentProcess()->GetSwitchValuePath(
           switches::kSwiftShaderPath);
-  if (command_line->HasSwitch(switches::kDisableGpu))
+  if (ShouldDisableHardwareAcceleration())
     DisableHardwareAcceleration();
 
 #if defined(OS_MACOSX)
