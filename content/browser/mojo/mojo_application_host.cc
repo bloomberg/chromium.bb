@@ -10,6 +10,7 @@
 #include "content/common/mojo/mojo_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "ipc/ipc_sender.h"
+#include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
 
 namespace content {
@@ -82,6 +83,22 @@ void MojoApplicationHost::Activate(IPC::Sender* sender,
   base::PlatformFile client_file = client_handle_.release().handle;
   did_activate_ = sender->Send(new MojoMsg_Activate(
       IPC::GetPlatformFileForTransit(client_file, true)));
+}
+
+std::string MojoApplicationHost::InitWithToken() {
+  DCHECK(!client_handle_.is_valid()) << "Already initialized!";
+  DCHECK(!did_activate_);
+
+  std::string token = mojo::edk::GenerateRandomToken();
+  mojo::ScopedMessagePipeHandle pipe =
+      mojo::edk::CreateParentMessagePipe(token);
+  DCHECK(pipe.is_valid());
+  application_setup_.reset(new ApplicationSetupImpl(
+      &service_registry_,
+      mojo::MakeRequest<mojom::ApplicationSetup>(std::move(pipe))));
+
+  did_activate_ = true;
+  return token;
 }
 
 void MojoApplicationHost::OverrideIOTaskRunnerForTest(

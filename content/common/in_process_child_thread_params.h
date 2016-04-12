@@ -22,7 +22,8 @@ class CONTENT_EXPORT InProcessChildThreadParams {
   InProcessChildThreadParams(
       const std::string& channel_name,
       scoped_refptr<base::SequencedTaskRunner> io_runner,
-      mojo::MessagePipeHandle handle = mojo::MessagePipeHandle());
+      mojo::MessagePipeHandle handle = mojo::MessagePipeHandle(),
+      const std::string& application_token = std::string());
   InProcessChildThreadParams(const InProcessChildThreadParams& other);
   ~InProcessChildThreadParams();
 
@@ -31,11 +32,15 @@ class CONTENT_EXPORT InProcessChildThreadParams {
     return io_runner_;
   }
   mojo::MessagePipeHandle handle() const { return handle_; }
+  const std::string& application_token() const {
+    return application_token_;
+  }
 
  private:
   std::string channel_name_;
   scoped_refptr<base::SequencedTaskRunner> io_runner_;
   mojo::MessagePipeHandle handle_;
+  std::string application_token_;
 };
 
 }  // namespace content

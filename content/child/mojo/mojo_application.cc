@@ -12,6 +12,7 @@
 #include "content/common/mojo/channel_init.h"
 #include "content/common/mojo/mojo_messages.h"
 #include "ipc/ipc_message.h"
+#include "mojo/edk/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 
 namespace content {
@@ -32,6 +33,23 @@ bool MojoApplication::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
+}
+
+void MojoApplication::InitWithToken(std::string token) {
+  mojo::ScopedMessagePipeHandle handle =
+      mojo::edk::CreateChildMessagePipe(token);
+  DCHECK(handle.is_valid());
+
+  mojom::ApplicationSetupPtr application_setup;
+  application_setup.Bind(
+      mojo::InterfacePtrInfo<mojom::ApplicationSetup>(std::move(handle), 0u));
+
+  mojo::shell::mojom::InterfaceProviderPtr services;
+  mojo::shell::mojom::InterfaceProviderPtr exposed_services;
+  service_registry_.Bind(GetProxy(&exposed_services));
+  application_setup->ExchangeInterfaceProviders(GetProxy(&services),
+                                                std::move(exposed_services));
+  service_registry_.BindRemoteServiceProvider(std::move(services));
 }
 
 void MojoApplication::OnActivate(

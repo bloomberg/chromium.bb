@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_MOJO_MOJO_APPLICATION_HOST_H_
 
 #include <memory>
+#include <string>
 
 #include "base/macros.h"
 #include "base/process/process_handle.h"
@@ -41,6 +42,10 @@ class CONTENT_EXPORT MojoApplicationHost {
   //  2- Activate establishes the actual connection to the peer process.
   bool Init();
   void Activate(IPC::Sender* sender, base::ProcessHandle process_handle);
+
+  // Use a shared token to initialize the application. Returns a token to pass
+  // to the child process.
+  std::string InitWithToken();
 
   ServiceRegistry* service_registry() { return &service_registry_; }
 

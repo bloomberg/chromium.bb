@@ -77,7 +77,6 @@ class CONTENT_EXPORT UtilityProcessHostImpl
   bool OnMessageReceived(const IPC::Message& message) override;
   void OnProcessLaunchFailed() override;
   void OnProcessCrashed(int exit_code) override;
-  void OnProcessLaunched() override;
 
   // Cleans up |this| as a result of a failed Start().
   void NotifyAndDelete();

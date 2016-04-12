@@ -306,6 +306,7 @@ struct ChildThreadImpl::Options {
   scoped_refptr<base::SequencedTaskRunner> browser_process_io_runner;
   std::vector<IPC::MessageFilter*> startup_filters;
   mojo::MessagePipeHandle in_process_message_pipe_handle;
+  std::string in_process_application_token;
 
  private:
   Options();

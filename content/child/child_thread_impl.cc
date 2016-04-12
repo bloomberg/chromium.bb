@@ -266,6 +266,7 @@ ChildThreadImpl::Options::Builder::InBrowserProcess(
   options_.browser_process_io_runner = params.io_runner();
   options_.channel_name = params.channel_name();
   options_.in_process_message_pipe_handle = params.handle();
+  options_.in_process_application_token = params.application_token();
   return *this;
 }
 
@@ -390,6 +391,16 @@ void ChildThreadImpl::Init(const Options& options) {
   }
 
   mojo_application_.reset(new MojoApplication(GetIOTaskRunner()));
+  std::string mojo_application_token;
+  if (!IsInBrowserProcess()) {
+    mojo_application_token =
+        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+            switches::kMojoApplicationChannelToken);
+  } else {
+    mojo_application_token = options.in_process_application_token;
+  }
+  if (!mojo_application_token.empty())
+    mojo_application_->InitWithToken(mojo_application_token);
 
   sync_message_filter_ = channel_->CreateSyncMessageFilter();
   thread_safe_sender_ = new ThreadSafeSender(

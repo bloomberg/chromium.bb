@@ -31,6 +31,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/utility_process_host_client.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/mojo_channel_switches.h"
 #include "content/public/common/process_type.h"
 #include "content/public/common/sandbox_type.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
@@ -247,12 +248,6 @@ bool UtilityProcessHostImpl::StartProcess() {
   if (is_batch_mode_)
     return true;
 
-  bool mojo_result = mojo_application_host_->Init();
-  if (!mojo_result) {
-    NotifyAndDelete();
-    return false;
-  }
-
   // Name must be set or metrics_service will crash in any test which
   // launches a UtilityProcessHost.
   process_.reset(new BrowserChildProcessHostImpl(PROCESS_TYPE_UTILITY, this));
@@ -264,6 +259,8 @@ bool UtilityProcessHostImpl::StartProcess() {
     return false;
   }
 
+  std::string mojo_token = mojo_application_host_->InitWithToken();
+
   if (RenderProcessHost::run_renderer_in_process()) {
     DCHECK(g_utility_main_thread_factory);
     // See comment in RenderProcessHostImpl::Init() for the background on why we
@@ -271,9 +268,9 @@ bool UtilityProcessHostImpl::StartProcess() {
     in_process_thread_.reset(
         g_utility_main_thread_factory(InProcessChildThreadParams(
             channel_id, BrowserThread::UnsafeGetMessageLoopForThread(
-                            BrowserThread::IO)->task_runner())));
+                            BrowserThread::IO)->task_runner(),
+            mojo::MessagePipeHandle(), mojo_token)));
     in_process_thread_->Start();
-    OnProcessLaunched();
   } else {
     const base::CommandLine& browser_command_line =
         *base::CommandLine::ForCurrentProcess();
@@ -350,6 +347,9 @@ bool UtilityProcessHostImpl::StartProcess() {
       cmd_line->AppendSwitch(switches::kUtilityProcessRunningElevated);
 #endif
 
+    cmd_line->AppendSwitchASCII(switches::kMojoApplicationChannelToken,
+                                mojo_token);
+
     process_->Launch(
         new UtilitySandboxedProcessLauncherDelegate(exposed_dir_,
                                                     run_elevated_,
@@ -394,17 +394,6 @@ void UtilityProcessHostImpl::OnProcessCrashed(int exit_code) {
       FROM_HERE,
       base::Bind(&UtilityProcessHostClient::OnProcessCrashed, client_.get(),
             exit_code));
-}
-
-void UtilityProcessHostImpl::OnProcessLaunched() {
-  DCHECK(mojo_application_host_);
-  base::ProcessHandle handle;
-  if (RenderProcessHost::run_renderer_in_process())
-    handle = base::GetCurrentProcessHandle();
-  else
-    handle = process_->GetData().handle;
-
-  mojo_application_host_->Activate(this, handle);
 }
 
 void UtilityProcessHostImpl::NotifyAndDelete() {

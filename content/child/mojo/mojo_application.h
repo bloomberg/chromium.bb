@@ -5,10 +5,13 @@
 #ifndef CONTENT_CHILD_MOJO_MOJO_APPLICATION_H_
 #define CONTENT_CHILD_MOJO_MOJO_APPLICATION_H_
 
+#include <string>
+
 #include "base/macros.h"
 #include "content/common/mojo/channel_init.h"
 #include "content/common/mojo/service_registry_impl.h"
 #include "ipc/ipc_platform_file.h"
+#include "mojo/public/cpp/system/message_pipe.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -29,6 +32,10 @@ class MojoApplication {
   explicit MojoApplication(
       scoped_refptr<base::SequencedTaskRunner> io_task_runner);
   virtual ~MojoApplication();
+
+  // TODO(amistry): Remove OnMessageReceived() when all bootstrapping has
+  // migrated to these functions.
+  void InitWithToken(std::string token);
 
   bool OnMessageReceived(const IPC::Message& msg);
 
