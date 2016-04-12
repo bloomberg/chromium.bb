@@ -163,6 +163,9 @@ def GetSecondaryAbi(apk_zipfile, shared_library):
 
 def MergeBinaries(apk, out_apk, secondary_abi_out_dir, shared_library):
   shutil.copyfile(apk, out_apk)
+  # Remove existing signatures
+  subprocess.check_call(['zip', '-d', out_apk, 'META-INF/*.SF',
+                         'META-INF/*.RSA'])
   with zipfile.ZipFile(out_apk, 'a') as apk_zip:
     secondary_abi = GetSecondaryAbi(apk_zip, shared_library)
     build_utils.AddToZipHermetic(
