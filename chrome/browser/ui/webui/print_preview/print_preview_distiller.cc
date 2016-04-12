@@ -21,6 +21,7 @@
 #include "chrome/common/prerender_messages.h"
 #include "components/dom_distiller/content/browser/distiller_javascript_utils.h"
 #include "components/printing/common/print_messages.h"
+#include "content/public/browser/navigation_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -135,25 +136,10 @@ class PrintPreviewDistiller::WebContentsDelegateImpl
         render_frame_host->GetRoutingID(), true));
   }
 
-  void DidFinishLoad(content::RenderFrameHost* render_frame_host,
-                     const GURL& validated_url) override {
-    // Ask the page to trigger an anchor navigation once the distilled
-    // contents are added to the page.
-    dom_distiller::RunIsolatedJavaScript(
-        web_contents()->GetMainFrame(),
-        "navigate_on_initial_content_load = true;");
-  }
-
-  void DidNavigateMainFrame(
-      const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) override {
-    // The second content loads signals that the distilled contents have
-    // been delivered to the page via inline JavaScript execution.
-    if (web_contents()->GetController().GetEntryCount() > 1) {
-      RenderViewHost* rvh = web_contents()->GetRenderViewHost();
-      rvh->Send(new PrintMsg_InitiatePrintPreview(rvh->GetRoutingID(), false));
-      rvh->Send(new PrintMsg_PrintPreview(rvh->GetRoutingID(), *settings_));
-    }
+  void DoPrintPreview() {
+    RenderViewHost* rvh = web_contents()->GetRenderViewHost();
+    rvh->Send(new PrintMsg_InitiatePrintPreview(rvh->GetRoutingID(), false));
+    rvh->Send(new PrintMsg_PrintPreview(rvh->GetRoutingID(), *settings_));
   }
 
   void DidGetRedirectForResourceRequest(
@@ -167,6 +153,21 @@ class PrintPreviewDistiller::WebContentsDelegateImpl
 
   void RenderProcessGone(base::TerminationStatus status) override {
     on_failed_callback_.Run();
+  }
+
+  void DidNavigateMainFrame(
+      const content::LoadCommittedDetails& details,
+      const content::FrameNavigateParams& params) override {
+    // Wait until we are done distilling the article and the target
+    // WebContents is ready for printing.
+    // The navigation to notify print preview that content is on the page will
+    // be an in-page navigation.
+    if (!details.is_in_page)
+      return;
+    // TODO(mvendra, wychen): resources (images, web fonts) are not necessarily
+    //                        ready at this point - so deferring the call to
+    //                        DoPrintPreview could be warranted
+    DoPrintPreview();
   }
 
   void Observe(int type,

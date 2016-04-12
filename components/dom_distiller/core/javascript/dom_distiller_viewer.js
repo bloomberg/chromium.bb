@@ -10,14 +10,6 @@ function addToPage(html) {
   div.innerHTML = html;
   document.getElementById('content').appendChild(div);
   fillYouTubePlaceholders();
-
-  if (typeof navigate_on_initial_content_load !== 'undefined' &&
-      navigate_on_initial_content_load) {
-    navigate_on_initial_content_load = false;
-    setTimeout(function() {
-        window.location = window.location + "#loaded";
-    }, 0);
-  }
 }
 
 function fillYouTubePlaceholders() {
@@ -48,6 +40,14 @@ function fillYouTubePlaceholders() {
 function showLoadingIndicator(isLastPage) {
   document.getElementById('loadingIndicator').className =
       isLastPage ? 'hidden' : 'visible';
+  // This function will be one of the last things to occur when a page is
+  // loaded. This is temporarily used to signal print preview to generate
+  // a PDF.
+  if (isLastPage) {
+    setTimeout(function() {
+        window.location = window.location + "#loaded";
+    }, 0);
+  }
 }
 
 // Sets the title.
