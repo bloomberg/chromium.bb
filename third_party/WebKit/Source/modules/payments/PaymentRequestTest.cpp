@@ -76,6 +76,17 @@ TEST_F(PaymentRequestTest, ItemListRequired)
     EXPECT_EQ(V8TypeError, getExceptionState().code());
 }
 
+TEST_F(PaymentRequestTest, ItemListIsNotEmpty)
+{
+    PaymentDetails details;
+    details.setItems(HeapVector<PaymentItem>());
+
+    PaymentRequest::create(getScriptState(), Vector<String>(1, "foo"), details, getExceptionState());
+
+    EXPECT_TRUE(getExceptionState().hadException());
+    EXPECT_EQ(V8TypeError, getExceptionState().code());
+}
+
 TEST_F(PaymentRequestTest, AtLeastOnePaymentDetailsItemRequired)
 {
     PaymentDetails details;
