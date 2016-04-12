@@ -18,6 +18,27 @@ Polymer({
     },
 
     /**
+     * The localized strings used by |this|.
+     * @private {!Object}
+     */
+    i18n_: {
+      readOnly: true,
+      type: Object,
+      value: function() {
+        var strings = {};
+        [
+         'startCastingButtonText',
+         'stopCastingButtonText',
+         'dropDownButtonTitle',
+        ]
+        .forEach(function(s) {
+          strings[s] = loadTimeData.getString(s);
+        });
+        return strings;
+      },
+    },
+
+    /**
      * The route to show.
      * @type {?media_router.Route}
      */
@@ -25,26 +46,6 @@ Polymer({
       type: Object,
       value: null,
       observer: 'maybeLoadCustomController_',
-    },
-
-    /**
-     * The text for the start casting button.
-     * @private {string}
-     */
-    startCastingButtonText_: {
-      type: String,
-      readOnly: true,
-      value: loadTimeData.getString('startCastingButton'),
-    },
-
-    /**
-     * The text for the stop casting button.
-     * @private {string}
-     */
-    stopCastingButtonText_: {
-      type: String,
-      readOnly: true,
-      value: function() { return loadTimeData.getString('stopCastingButton'); },
     },
 
     /**

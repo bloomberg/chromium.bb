@@ -17,12 +17,12 @@
     <template is="dom-if"
         if="[[computeShowFirstRunFlow_(showFirstRunFlow, currentView_)]]">
       <div id="first-run-flow">
-        <div id="first-run-title">[[firstRunFlowTitle_]]</div>
+        <div id="first-run-title">[[i18n_.firstRunFlowTitle]]</div>
         <div id="first-run-text">
-          <span>[[firstRunFlowText_]]</span>
+          <span>[[i18n_.firstRunFlowText]]</span>
           <a href="[[firstRunFlowLearnMoreUrl]]" target="_blank">
             <span class="first-run-learn-more">
-              [[firstRunFlowLearnMore_]]
+              [[i18n_.learnMoreText]]
             </span>
           </a>
         </div>
@@ -33,10 +33,10 @@
             </paper-checkbox>
           </div>
           <div>
-            <span>[[firstRunFlowCloudPrefText_]]</span>
+            <span>[[i18n_.firstRunFlowCloudPrefText]]</span>
             <a href="[[firstRunFlowCloudPrefLearnMoreUrl]]" target="_blank">
               <span class="first-run-learn-more">
-                [[firstRunFlowLearnMore_]]
+                [[i18n_.learnMoreText]]
               </span>
             </a>
           </div>
@@ -44,7 +44,7 @@
         <div id="first-run-button-container">
           <paper-button id="first-run-button" class="button"
               on-tap="acknowledgeFirstRunFlow_">
-            <span>[[firstRunFlowButtonText_]]</span>
+            <span>[[i18n_.firstRunFlowButtonText]]</span>
           </paper-button>
         </div>
       </div>
@@ -70,7 +70,7 @@
           </template>
           <div id="share-screen-text"
               hidden$="[[computeShareScreenSubheadingHidden_(castModeList)]]">
-            <span>[[shareYourScreenSubheadingText_]]</span>
+            <span>[[i18n_.shareYourScreenSubheadingText]]</span>
           </div>
           <template is="dom-repeat" id="nonDefaultCastModeList"
               items="[[computeNonDefaultCastModeList_(castModeList)]]">
@@ -98,7 +98,7 @@
           </paper-spinner>
           <a href="[[deviceMissingUrl]]" target="_blank"
               hidden$="[[!computeSpinnerHidden_(justOpened_)]]">
-            [[deviceMissingText_]]
+            [[i18n_.deviceMissingText]]
           </a>
         </div>
         <paper-menu id="sink-list" role="presentation"
@@ -157,7 +157,7 @@
         <template is="dom-if" if="[[isUserSearching_]]">
           <div id="no-search-matches"
               hidden$="[[computeNoMatchesHidden_(searchResultsToShow_, isUserSearching_)]]">
-            <span>[[searchNoMatchesText_]]</span>
+            <span>[[i18n_.searchNoMatchesText]]</span>
           </div>
           <paper-menu id="search-results" selected="0" role="presentation"
               hidden$="[[computeSearchResultsHidden_(isUserSearching_, searchResultsToShow_)]]">

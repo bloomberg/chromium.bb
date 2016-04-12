@@ -57,18 +57,6 @@ Polymer({
     },
 
     /**
-     * The text for when there are no devices.
-     * @private {string}
-     */
-    deviceMissingText_: {
-      type: String,
-      readOnly: true,
-      value: function() {
-        return loadTimeData.getString('deviceMissing');
-      },
-    },
-
-    /**
      * The URL to open when the device missing link is clicked.
      * @type {string}
      */
@@ -96,29 +84,6 @@ Polymer({
     },
 
     /**
-     * The text for the first run flow button.
-     * @private {string}
-     */
-    firstRunFlowButtonText_: {
-      type: String,
-      readOnly: true,
-      value: function() {
-        return loadTimeData.getString('firstRunFlowButton');
-      },
-    },
-
-    /**
-     * The text for the learn more link about cloud services in the first run
-     * flow.
-     * @private {string}
-     */
-    firstRunFlowLearnMore_: {
-      type: String,
-      readOnly: true,
-      value: loadTimeData.getString('learnMoreText'),
-    },
-
-    /**
      * The URL to open when the cloud services pref learn more link is clicked.
      * @type {string}
      */
@@ -128,48 +93,12 @@ Polymer({
     },
 
     /**
-     * The text for the cloud services preference description in the first run
-     * flow.
-     * @private {string}
-     */
-    firstRunFlowCloudPrefText_: {
-      type: String,
-      readOnly: true,
-      value: loadTimeData.valueExists('firstRunFlowCloudPrefText') ?
-          loadTimeData.getString('firstRunFlowCloudPrefText') : '',
-    },
-
-    /**
      * The URL to open when the first run flow learn more link is clicked.
      * @type {string}
      */
     firstRunFlowLearnMoreUrl: {
       type: String,
       value: '',
-    },
-
-    /**
-     * The text description for the first run flow.
-     * @private {string}
-     */
-    firstRunFlowText_: {
-      type: String,
-      readOnly: true,
-      value: function() {
-        return loadTimeData.getString('firstRunFlowText');
-      },
-    },
-
-    /**
-     * The header of the first run flow.
-     * @private {string}
-     */
-    firstRunFlowTitle_: {
-      type: String,
-      readOnly: true,
-      value: function() {
-        return loadTimeData.getString('firstRunFlowTitle');
-      },
     },
 
     /**
@@ -189,6 +118,37 @@ Polymer({
     headerTextTooltip: {
       type: String,
       value: '',
+    },
+
+    /**
+     * The localized strings used by |this|.
+     * @private {!Object}
+     */
+    i18n_: {
+      readOnly: true,
+      type: Object,
+      value: function() {
+        var strings = {};
+        [
+         'deviceMissingText',
+         'firstRunFlowButtonText',
+         'firstRunFlowCloudPrefText',
+         'firstRunFlowText',
+         'firstRunFlowTitle',
+         'issueHeaderText',
+         'learnMoreText',
+         'searchButtonTitle',
+         'searchInputLabel',
+         'searchNoMatchesText',
+         'selectCastModeHeaderText',
+         'shareYourScreenSubheadingText',
+        ]
+        .forEach(function(s) {
+          strings[s] = loadTimeData.valueExists(s) ?
+              loadTimeData.getString(s) : '';
+        });
+        return strings;
+      },
     },
 
     /**
@@ -243,18 +203,6 @@ Polymer({
       type: Object,
       value: null,
       observer: 'maybeShowIssueView_',
-    },
-
-    /**
-     * The header text.
-     * @private {string}
-     */
-    issueHeaderText_: {
-      type: String,
-      readOnly: true,
-      value: function() {
-        return loadTimeData.getString('issueHeader');
-      },
     },
 
     /**
@@ -328,30 +276,6 @@ Polymer({
     },
 
     /**
-     * Title text for the search button.
-     * @private {string}
-     */
-    searchButtonTitle_: {
-      type: String,
-      readOnly: true,
-      value: function() {
-        return loadTimeData.getString('searchButtonTitle');
-      },
-    },
-
-    /**
-     * Label text for the user search input.
-     * @private {string}
-     */
-    searchInputLabel_: {
-      type: String,
-      readOnly: true,
-      value: function() {
-        return loadTimeData.getString('searchInputLabel');
-      },
-    },
-
-    /**
      * Search text entered by the user into the sink search input.
      * @private {string}
      */
@@ -362,48 +286,12 @@ Polymer({
     },
 
     /**
-     * Text to display when a user search returns no matches.
-     * @private {string}
-     */
-    searchNoMatchesText_: {
-      type: String,
-      readOnly: true,
-      value: function() {
-        return loadTimeData.getString('searchNoMatches');
-      },
-    },
-
-    /**
      * Sinks to display that match |searchInputText_|.
      * @private {!Array<!media_router.Sink>}
      */
     searchResultsToShow_: {
       type: Array,
       value: [],
-    },
-
-    /**
-     * The header text when the cast mode list is shown.
-     * @private {string}
-     */
-    selectCastModeHeaderText_: {
-      type: String,
-      readOnly: true,
-      value: function() {
-        return loadTimeData.getString('selectCastModeHeader');
-      },
-    },
-
-    /**
-     * The subheading text for the non-cast-enabled app cast mode list.
-     * @private {string}
-     */
-    shareYourScreenSubheadingText_: {
-      type: String,
-      readOnly: true,
-      value: function() {
-        return loadTimeData.getString('shareYourScreenSubheading');
-      },
     },
 
     /**
@@ -752,9 +640,9 @@ Polymer({
   computeHeaderText_: function(view, headerText) {
     switch (view) {
       case media_router.MediaRouterView.CAST_MODE_LIST:
-        return this.selectCastModeHeaderText_;
+        return this.i18n_.selectCastModeHeaderText;
       case media_router.MediaRouterView.ISSUE:
-        return this.issueHeaderText_;
+        return this.i18n_.issueHeaderText;
       case media_router.MediaRouterView.ROUTE_DETAILS:
         return this.currentRoute_ ?
             this.sinkMap_[this.currentRoute_.sinkId].name : '';

@@ -10,7 +10,7 @@
       <template is="dom-if" if="[[computeBackButtonShown_(view)]]">
         <div id="back-button-container">
           <paper-icon-button id="back-button" icon="[[arrowDropIcon_]]"
-              on-tap="onBackButtonClick_" title="[[backButtonTitle_]]">
+              on-tap="onBackButtonClick_" title="[[i18n_.backButtonTitle]]">
           </paper-icon-button>
         </div>
       </template>
@@ -21,13 +21,13 @@
           <paper-icon-button icon="[[computeArrowDropIcon_(view)]]"
               id="arrow-drop-icon" disabled$="[[arrowDropIconDisabled]]"
               hidden$="[[computeArrowDropIconHidden_(view)]]"
-              title="[[dropDownButtonTitle_]]">
+              title="[[i18n_.dropDownButtonTitle]]">
           </paper-icon-button>
         </div>
       </div>
       <div id="close-button-container">
         <paper-icon-button icon="media-router:close" id="close-button"
-            on-tap="onCloseButtonClick_" title="[[closeButtonTitle_]]">
+            on-tap="onCloseButtonClick_" title="[[i18n_.closeButtonTitle]]">
         </paper-icon-button>
       </div>
       <template is="dom-if" if="[[showEmail]]">

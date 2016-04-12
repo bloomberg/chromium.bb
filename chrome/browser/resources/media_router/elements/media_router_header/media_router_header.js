@@ -27,42 +27,6 @@ Polymer({
     },
 
     /**
-     * Title text for the back button.
-     * @private {string}
-     */
-    backButtonTitle_: {
-      type: String,
-      readOnly: true,
-      value: function() {
-        return loadTimeData.getString('backButtonTitle');
-      },
-    },
-
-    /**
-     * Title text for the close button.
-     * @private {string}
-     */
-    closeButtonTitle_: {
-      type: String,
-      readOnly: true,
-      value: function() {
-        return loadTimeData.getString('closeButtonTitle');
-      },
-    },
-
-    /**
-     * Title text for the drop down button.
-     * @private {string}
-     */
-    dropDownButtonTitle_: {
-      type: String,
-      readOnly: true,
-      value: function() {
-        return loadTimeData.getString('dropDownButtonTitle');
-      },
-    },
-
-    /**
      * The header text to show.
      * @type {string}
      */
@@ -89,6 +53,27 @@ Polymer({
       type: Number,
       readOnly: true,
       value: 52,
+    },
+
+    /**
+     * The localized strings used by |this|.
+     * @private {!Object}
+     */
+    i18n_: {
+      readOnly: true,
+      type: Object,
+      value: function() {
+        var strings = {};
+        [
+         'backButtonTitle',
+         'closeButtonTitle',
+         'dropDownButtonTitle',
+        ]
+        .forEach(function(s) {
+          strings[s] = loadTimeData.getString(s);
+        });
+        return strings;
+      },
     },
 
     /**
