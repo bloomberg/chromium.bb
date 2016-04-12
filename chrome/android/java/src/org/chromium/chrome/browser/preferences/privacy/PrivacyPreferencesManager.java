@@ -369,6 +369,23 @@ public class PrivacyPreferencesManager implements CrashReportingPermissionManage
     }
 
     /**
+     * Check whether to allow UMA uploading.
+     *
+     * TODO(asvitkine): This is temporary split up from isUploadPermitted() above with
+     * the |mCrashUploadingCommandLineDisabled| check removed, in order to diagnose if
+     * that check is responsible for decreased UMA uploads in M49. http://crbug.com/602703
+     *
+     * This function should not result in a native call as it can be called in circumstances where
+     * natives are not guaranteed to be loaded.
+     *
+     * @return whether to allow UMA uploading.
+     */
+    @Override
+    public boolean isUmaUploadPermitted() {
+        return isNetworkAvailable() && (allowUploadCrashDump() || isUploadEnabledForTests());
+    }
+
+    /**
      * Check whether not to disable uploading crash dump by command line flag.
      * If command line flag disables crash dump uploading, do not retry, but also do not delete.
      * TODO(jchinlee): this is not quite a boolean. Depending on other refactoring, change to enum.

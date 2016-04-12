@@ -134,6 +134,11 @@ public class MinidumpUploadCallableTest extends CrashTestCase {
         }
 
         @Override
+        public boolean isUmaUploadPermitted() {
+            return mIsPermitted;
+        }
+
+        @Override
         public boolean isUploadUserPermitted() {
             return mIsUserPermitted;
         }
