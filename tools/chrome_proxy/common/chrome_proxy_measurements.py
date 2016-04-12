@@ -77,6 +77,9 @@ class ChromeProxyValidation(page_test.PageTest):
     # Enable the chrome proxy (data reduction proxy).
     options.AppendExtraBrowserArgs('--enable-spdy-proxy-auth')
 
+    # Disable quic option, otherwise request headers won't be visible.
+    options.AppendExtraBrowserArgs('--disable-quic')
+
   def WillNavigateToPage(self, page, tab):
     WaitForViaHeader(tab)
 
