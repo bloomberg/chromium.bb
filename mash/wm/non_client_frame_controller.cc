@@ -256,6 +256,12 @@ bool NonClientFrameController::CanMinimize() const {
           mus::mojom::kResizeBehaviorCanMinimize) != 0;
 }
 
+bool NonClientFrameController::ShouldShowWindowTitle() const {
+  // Only draw the title if the client hasn't declared any additional client
+  // areas which might conflict with it.
+  return window_ && window_->additional_client_areas().empty();
+}
+
 views::ClientView* NonClientFrameController::CreateClientView(
     views::Widget* widget) {
   return new ClientViewMus(widget, GetContentsView(), this);
