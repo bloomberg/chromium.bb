@@ -189,7 +189,36 @@ void HistoryController::UpdateForCommit(RenderFrameImpl* frame,
     case blink::WebBackForwardCommit:
       if (!provisional_entry_)
         return;
-      current_entry_.reset(provisional_entry_.release());
+
+      // If the current entry is null, this must be a main frame commit.
+      DCHECK(current_entry_ || frame->IsMainFrame());
+
+      // Commit the provisional entry, but only if it is a plausible transition.
+      // Do not commit it if the navigation is in a subframe and the provisional
+      // entry's main frame item does not match the current entry's main frame,
+      // which can happen if multiple forward navigations occur.  In that case,
+      // committing the provisional entry would corrupt it, leading to a URL
+      // spoof.  See https://crbug.com/597322.  (Note that the race in this bug
+      // does not affect main frame navigations, only navigations in subframes.)
+      //
+      // Note that we cannot compare the provisional entry against |item|, since
+      // |item| may have redirected to a different URL and ISN.  We also cannot
+      // compare against the main frame's URL, since that may have changed due
+      // to a replaceState.  (Even origin can change on replaceState in certain
+      // modes.)
+      //
+      // It would be safe to additionally check the ISNs of all parent frames
+      // (and not just the root), but that is less critical because it won't
+      // lead to a URL spoof.
+      if (frame->IsMainFrame() ||
+          current_entry_->root().itemSequenceNumber() ==
+              provisional_entry_->root().itemSequenceNumber()) {
+        current_entry_.reset(provisional_entry_.release());
+      }
+
+      // We're guaranteed to have a current entry now.
+      DCHECK(current_entry_);
+
       if (HistoryEntry::HistoryNode* node =
               current_entry_->GetHistoryNodeForFrame(frame)) {
         node->set_item(item);

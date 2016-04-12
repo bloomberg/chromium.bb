@@ -17,6 +17,7 @@
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/common/page_state_serialization.h"
 #include "content/common/site_isolation_policy.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_view_host.h"
@@ -3582,6 +3583,151 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
 
   EXPECT_EQ(frame_url_1, frame->current_url());
+}
+
+// Ensure that we do not corrupt a NavigationEntry's PageState if a subframe
+// forward navigation commits after we've already started another forward
+// navigation in the main frame.  See https://crbug.com/597322.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       ForwardInSubframeWithPendingForward) {
+  // Navigate to a page with an iframe.
+  GURL url_a(embedded_test_server()->GetURL(
+      "/navigation_controller/page_with_data_iframe.html"));
+  GURL frame_url_a1("data:text/html,Subframe");
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+
+  NavigationController& controller = shell()->web_contents()->GetController();
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  ASSERT_EQ(1U, root->child_count());
+  EXPECT_EQ(url_a, root->current_url());
+  FrameTreeNode* frame = root->child_at(0);
+  EXPECT_EQ(frame_url_a1, frame->current_url());
+
+  // Navigate the iframe to a second page.
+  GURL frame_url_a2 = embedded_test_server()->GetURL(
+      "/navigation_controller/simple_page_1.html");
+  NavigateFrameToURL(frame, frame_url_a2);
+
+  EXPECT_EQ(2, controller.GetEntryCount());
+  EXPECT_EQ(1, controller.GetLastCommittedEntryIndex());
+  EXPECT_EQ(url_a, root->current_url());
+  EXPECT_EQ(frame_url_a2, frame->current_url());
+
+  // Navigate the top-level frame to another page with an iframe.
+  GURL url_b(embedded_test_server()->GetURL(
+      "/navigation_controller/page_with_iframe.html"));
+  GURL frame_url_b1(url::kAboutBlankURL);
+  EXPECT_TRUE(NavigateToURL(shell(), url_b));
+  EXPECT_EQ(3, controller.GetEntryCount());
+  EXPECT_EQ(url_b, root->current_url());
+  EXPECT_EQ(frame_url_b1, root->child_at(0)->current_url());
+
+  // Go back two entries. The original frame URL should be back.
+  ASSERT_TRUE(controller.CanGoToOffset(-2));
+  controller.GoToOffset(-2);
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
+  EXPECT_EQ(url_a, root->current_url());
+  EXPECT_EQ(frame_url_a1, root->child_at(0)->current_url());
+
+  // Go forward two times in a row, being careful that the subframe commits
+  // after the second forward navigation begins but before the main frame
+  // commits.
+  TestNavigationManager subframe_delayer(shell()->web_contents(), frame_url_a2);
+  TestNavigationManager mainframe_delayer(shell()->web_contents(), url_b);
+  controller.GoForward();
+  subframe_delayer.WaitForWillStartRequest();
+  controller.GoForward();
+  mainframe_delayer.WaitForWillStartRequest();
+  EXPECT_EQ(2, controller.GetPendingEntryIndex());
+
+  // Let the subframe commit.
+  subframe_delayer.ResumeNavigation();
+  subframe_delayer.WaitForNavigationFinished();
+  EXPECT_EQ(1, controller.GetLastCommittedEntryIndex());
+  EXPECT_EQ(url_a, root->current_url());
+  EXPECT_EQ(frame_url_a2, root->child_at(0)->current_url());
+
+  // Let the main frame commit.
+  mainframe_delayer.ResumeNavigation();
+  mainframe_delayer.WaitForNavigationFinished();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  EXPECT_EQ(2, controller.GetLastCommittedEntryIndex());
+  EXPECT_EQ(url_b, root->current_url());
+  EXPECT_EQ(frame_url_b1, root->child_at(0)->current_url());
+
+  // Check the PageState of the previous entry to ensure it isn't corrupted.
+  NavigationEntry* entry = controller.GetEntryAtIndex(1);
+  EXPECT_EQ(url_a, entry->GetURL());
+  ExplodedPageState exploded_state;
+  EXPECT_TRUE(
+      DecodePageState(entry->GetPageState().ToEncodedData(), &exploded_state));
+  EXPECT_EQ(url_a, GURL(exploded_state.top.url_string.string()));
+  EXPECT_EQ(frame_url_a2,
+            GURL(exploded_state.top.children.at(0).url_string.string()));
+}
+
+// Ensure that forward navigations in cloned tabs can commit if they redirect to
+// a different site than before.  This causes the navigation's item sequence
+// number to change, meaning that we can't use it for determining whether the
+// commit matches the history item.  See https://crbug.com/600238.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       ForwardRedirectWithNoCommittedEntry) {
+  NavigationController& controller = shell()->web_contents()->GetController();
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  // Put 2 pages in history.
+  GURL url_1(embedded_test_server()->GetURL(
+      "/navigation_controller/simple_page_1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), url_1));
+
+  GURL url_2(embedded_test_server()->GetURL(
+      "/navigation_controller/simple_page_2.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), url_2));
+
+  EXPECT_EQ(url_2, root->current_url());
+  EXPECT_EQ(2, controller.GetEntryCount());
+  EXPECT_EQ(1, controller.GetLastCommittedEntryIndex());
+
+  // Do a replaceState to a URL that will redirect when we come back to it via
+  // session history.
+  GURL url_3(embedded_test_server()->GetURL(
+      "foo.com", "/navigation_controller/page_with_links.html"));
+  {
+    TestNavigationObserver observer(shell()->web_contents());
+    std::string script =
+        "history.replaceState({}, '', '/server-redirect?" + url_3.spec() + "')";
+    EXPECT_TRUE(ExecuteScript(root->current_frame_host(), script));
+    observer.Wait();
+  }
+
+  // Go back.
+  controller.GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
+  EXPECT_EQ(url_1, root->current_url());
+
+  // Clone the tab without navigating it.
+  std::unique_ptr<WebContentsImpl> new_tab(
+      static_cast<WebContentsImpl*>(shell()->web_contents()->Clone()));
+  NavigationController& new_controller = new_tab->GetController();
+  FrameTreeNode* new_root = new_tab->GetFrameTree()->root();
+  EXPECT_TRUE(new_controller.IsInitialNavigation());
+  EXPECT_TRUE(new_controller.NeedsReload());
+
+  // Go forward in the new tab.
+  {
+    TestNavigationObserver observer(new_tab.get());
+    new_controller.GoForward();
+    observer.Wait();
+  }
+  EXPECT_TRUE(new_root->current_frame_host()->IsRenderFrameLive());
+  EXPECT_EQ(url_3, new_root->current_url());
 }
 
 }  // namespace content
