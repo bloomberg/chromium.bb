@@ -5,9 +5,9 @@
 #ifndef COMPONENTS_DOM_DISTILLER_IOS_DISTILLER_PAGE_IOS_H_
 #define COMPONENTS_DOM_DISTILLER_IOS_DISTILLER_PAGE_IOS_H_
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/dom_distiller/core/distiller_page.h"
 #include "ios/web/public/web_state/web_state_observer.h"
@@ -49,8 +49,8 @@ class DistillerPageIOS : public DistillerPage {
   web::BrowserState* browser_state_;
   GURL url_;
   std::string script_;
-  scoped_ptr<ios::WebControllerProvider> provider_;
-  scoped_ptr<DistillerWebStateObserver> web_state_observer_;
+  std::unique_ptr<ios::WebControllerProvider> provider_;
+  std::unique_ptr<DistillerWebStateObserver> web_state_observer_;
   base::WeakPtrFactory<DistillerPageIOS> weak_ptr_factory_;
 };
 

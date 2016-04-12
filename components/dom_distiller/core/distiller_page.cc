@@ -39,7 +39,7 @@ std::string GetDistillerScriptWithOptions(
     return "";
   }
 
-  scoped_ptr<base::Value> options_value(
+  std::unique_ptr<base::Value> options_value(
       dom_distiller::proto::json::DomDistillerOptions::WriteToValue(options));
   std::string options_json;
   if (!base::JSONWriter::Write(*options_value, &options_json)) {
@@ -91,7 +91,7 @@ void DistillerPage::OnDistillationDone(const GURL& page_url,
   DCHECK(!ready_);
   ready_ = true;
 
-  scoped_ptr<dom_distiller::proto::DomDistillerResult> distiller_result(
+  std::unique_ptr<dom_distiller::proto::DomDistillerResult> distiller_result(
       new dom_distiller::proto::DomDistillerResult());
   bool found_content;
   if (value->IsType(base::Value::TYPE_NULL)) {

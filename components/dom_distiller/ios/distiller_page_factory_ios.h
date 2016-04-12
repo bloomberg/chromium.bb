@@ -5,7 +5,8 @@
 #ifndef COMPONENTS_DOM_DISTILLER_IOS_DISTILLER_PAGE_FACTORY_IOS_H_
 #define COMPONENTS_DOM_DISTILLER_IOS_DISTILLER_PAGE_FACTORY_IOS_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "components/dom_distiller/core/distiller_page.h"
 
 namespace web {
@@ -24,10 +25,10 @@ class DistillerPageFactoryIOS : public DistillerPageFactory {
   DistillerPageFactoryIOS(web::BrowserState* browser_state);
 
   // Implementation of DistillerPageFactory:
-  scoped_ptr<DistillerPage> CreateDistillerPage(
+  std::unique_ptr<DistillerPage> CreateDistillerPage(
       const gfx::Size& view_size) const override;
-  scoped_ptr<DistillerPage> CreateDistillerPageWithHandle(
-      scoped_ptr<SourcePageHandle> handle) const override;
+  std::unique_ptr<DistillerPage> CreateDistillerPageWithHandle(
+      std::unique_ptr<SourcePageHandle> handle) const override;
 
  private:
   web::BrowserState* browser_state_;

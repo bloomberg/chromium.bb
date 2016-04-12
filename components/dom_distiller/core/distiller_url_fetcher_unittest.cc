@@ -54,8 +54,8 @@ class DistillerURLFetcherTest : public testing::Test {
     CHECK_EQ(expected_response, response_);
   }
 
-  scoped_ptr<dom_distiller::DistillerURLFetcher> url_fetcher_;
-  scoped_ptr<net::FakeURLFetcherFactory> factory_;
+  std::unique_ptr<dom_distiller::DistillerURLFetcher> url_fetcher_;
+  std::unique_ptr<net::FakeURLFetcherFactory> factory_;
   std::string response_;
 };
 

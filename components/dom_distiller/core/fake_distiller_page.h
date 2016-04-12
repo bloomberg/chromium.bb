@@ -16,13 +16,13 @@ class MockDistillerPageFactory : public DistillerPageFactory {
   MockDistillerPageFactory();
   ~MockDistillerPageFactory() override;
   MOCK_CONST_METHOD0(CreateDistillerPageImpl, DistillerPage*());
-  scoped_ptr<DistillerPage> CreateDistillerPage(
+  std::unique_ptr<DistillerPage> CreateDistillerPage(
       const gfx::Size& render_view_size) const override {
-    return scoped_ptr<DistillerPage>(CreateDistillerPageImpl());
+    return std::unique_ptr<DistillerPage>(CreateDistillerPageImpl());
   }
-  scoped_ptr<DistillerPage> CreateDistillerPageWithHandle(
-      scoped_ptr<SourcePageHandle> handle) const override {
-    return scoped_ptr<DistillerPage>(CreateDistillerPageImpl());
+  std::unique_ptr<DistillerPage> CreateDistillerPageWithHandle(
+      std::unique_ptr<SourcePageHandle> handle) const override {
+    return std::unique_ptr<DistillerPage>(CreateDistillerPageImpl());
   }
 };
 

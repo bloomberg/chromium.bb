@@ -4,6 +4,7 @@
 
 #include "components/dom_distiller/ios/distiller_page_factory_ios.h"
 
+#include "base/memory/ptr_util.h"
 #include "components/dom_distiller/ios/distiller_page_ios.h"
 #include "ios/web/public/browser_state.h"
 
@@ -14,15 +15,15 @@ DistillerPageFactoryIOS::DistillerPageFactoryIOS(
     : browser_state_(browser_state) {
 }
 
-scoped_ptr<DistillerPage> DistillerPageFactoryIOS::CreateDistillerPage(
+std::unique_ptr<DistillerPage> DistillerPageFactoryIOS::CreateDistillerPage(
     const gfx::Size& view_size) const {
-  return make_scoped_ptr<DistillerPage>(new DistillerPageIOS(browser_state_));
+  return base::WrapUnique<DistillerPage>(new DistillerPageIOS(browser_state_));
 }
 
-scoped_ptr<DistillerPage>
+std::unique_ptr<DistillerPage>
 DistillerPageFactoryIOS::CreateDistillerPageWithHandle(
-    scoped_ptr<SourcePageHandle> handle) const {
-  return make_scoped_ptr<DistillerPage>(new DistillerPageIOS(browser_state_));
+    std::unique_ptr<SourcePageHandle> handle) const {
+  return base::WrapUnique<DistillerPage>(new DistillerPageIOS(browser_state_));
 }
 
 }  // namespace dom_distiller

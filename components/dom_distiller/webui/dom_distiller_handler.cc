@@ -108,7 +108,7 @@ void DomDistillerHandler::HandleRequestEntries(const base::ListValue* args) {
        ++it) {
     const ArticleEntry& article = *it;
     DCHECK(IsEntryValid(article));
-    scoped_ptr<base::DictionaryValue> entry(new base::DictionaryValue());
+    std::unique_ptr<base::DictionaryValue> entry(new base::DictionaryValue());
     entry->SetString("entry_id", article.entry_id());
     std::string title = (!article.has_title() || article.title().empty())
                             ? article.entry_id()

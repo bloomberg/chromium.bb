@@ -5,10 +5,10 @@
 #ifndef COMPONENTS_DOM_DISTILLER_CONTENT_BROWSER_DISTILLER_PAGE_WEB_CONTENTS_H_
 #define COMPONENTS_DOM_DISTILLER_CONTENT_BROWSER_DISTILLER_PAGE_WEB_CONTENTS_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/dom_distiller/core/distiller_page.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -39,10 +39,10 @@ class DistillerPageWebContentsFactory : public DistillerPageFactory {
       : DistillerPageFactory(), browser_context_(browser_context) {}
   ~DistillerPageWebContentsFactory() override {}
 
-  scoped_ptr<DistillerPage> CreateDistillerPage(
+  std::unique_ptr<DistillerPage> CreateDistillerPage(
       const gfx::Size& render_view_size) const override;
-  scoped_ptr<DistillerPage> CreateDistillerPageWithHandle(
-      scoped_ptr<SourcePageHandle> handle) const override;
+  std::unique_ptr<DistillerPage> CreateDistillerPageWithHandle(
+      std::unique_ptr<SourcePageHandle> handle) const override;
 
  private:
   content::BrowserContext* browser_context_;
@@ -52,10 +52,10 @@ class DistillerPageWebContents : public DistillerPage,
                                  public content::WebContentsDelegate,
                                  public content::WebContentsObserver {
  public:
-  DistillerPageWebContents(
-      content::BrowserContext* browser_context,
-      const gfx::Size& render_view_size,
-      scoped_ptr<SourcePageHandleWebContents> optional_web_contents_handle);
+  DistillerPageWebContents(content::BrowserContext* browser_context,
+                           const gfx::Size& render_view_size,
+                           std::unique_ptr<SourcePageHandleWebContents>
+                               optional_web_contents_handle);
   ~DistillerPageWebContents() override;
 
   // content::WebContentsDelegate implementation.
@@ -110,7 +110,7 @@ class DistillerPageWebContents : public DistillerPage,
   // The JavaScript to inject to extract content.
   std::string script_;
 
-  scoped_ptr<SourcePageHandleWebContents> source_page_handle_;
+  std::unique_ptr<SourcePageHandleWebContents> source_page_handle_;
 
   content::BrowserContext* browser_context_;
   gfx::Size render_view_size_;

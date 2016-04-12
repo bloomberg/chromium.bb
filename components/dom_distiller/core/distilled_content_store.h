@@ -5,13 +5,13 @@
 #ifndef COMPONENTS_DOM_DISTILLER_CORE_DOM_DISTILLER_CONTENT_STORE_H_
 #define COMPONENTS_DOM_DISTILLER_CORE_DOM_DISTILLER_CONTENT_STORE_H_
 
+#include <memory>
 #include <string>
 
 #include "base/bind.h"
 #include "base/containers/hash_tables.h"
 #include "base/containers/mru_cache.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/dom_distiller/core/article_entry.h"
 #include "components/dom_distiller/core/proto/distilled_article.pb.h"
 
@@ -24,8 +24,9 @@ const int kDefaultMaxNumCachedEntries = 32;
 // ArticleEntry.
 class DistilledContentStore {
  public:
-  typedef base::Callback<
-      void(bool /* success */, scoped_ptr<DistilledArticleProto>)> LoadCallback;
+  typedef base::Callback<void(bool /* success */,
+                              std::unique_ptr<DistilledArticleProto>)>
+      LoadCallback;
   typedef base::Callback<void(bool /* success */)> SaveCallback;
 
   virtual void SaveContent(const ArticleEntry& entry,
@@ -77,7 +78,7 @@ class InMemoryContentStore : public DistilledContentStore {
   void EraseUrlToIdMapping(const DistilledArticleProto& proto);
 
   typedef base::MRUCache<std::string,
-                         scoped_ptr<DistilledArticleProto, CacheDeletor>>
+                         std::unique_ptr<DistilledArticleProto, CacheDeletor>>
 
       ContentMap;
   typedef base::hash_map<std::string, std::string> UrlMap;

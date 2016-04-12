@@ -5,11 +5,11 @@
 #ifndef COMPONENTS_DOM_DISTILLER_CORE_DISTILLER_PAGE_H_
 #define COMPONENTS_DOM_DISTILLER_CORE_DISTILLER_PAGE_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "third_party/dom_distiller_js/dom_distiller.pb.h"
@@ -30,9 +30,10 @@ class SourcePageHandle {
 // thrown away without ever being used.
 class DistillerPage {
  public:
-  typedef base::Callback<
-      void(scoped_ptr<proto::DomDistillerResult> distilled_page,
-           bool distillation_successful)> DistillerPageCallback;
+  typedef base::Callback<void(
+      std::unique_ptr<proto::DomDistillerResult> distilled_page,
+      bool distillation_successful)>
+      DistillerPageCallback;
 
   DistillerPage();
   virtual ~DistillerPage();
@@ -75,10 +76,10 @@ class DistillerPageFactory {
   // Constructs and returns a new DistillerPage. The implementation of this
   // should be very cheap, since the pages can be thrown away without being
   // used.
-  virtual scoped_ptr<DistillerPage> CreateDistillerPage(
+  virtual std::unique_ptr<DistillerPage> CreateDistillerPage(
       const gfx::Size& render_view_size) const = 0;
-  virtual scoped_ptr<DistillerPage> CreateDistillerPageWithHandle(
-      scoped_ptr<SourcePageHandle> handle) const = 0;
+  virtual std::unique_ptr<DistillerPage> CreateDistillerPageWithHandle(
+      std::unique_ptr<SourcePageHandle> handle) const = 0;
 };
 
 }  // namespace dom_distiller

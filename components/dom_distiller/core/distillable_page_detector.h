@@ -5,10 +5,10 @@
 #ifndef COMPONENTS_DOM_DISTILLER_CORE_DISTILLABLE_PAGE_DETECTOR_H_
 #define COMPONENTS_DOM_DISTILLER_CORE_DISTILLABLE_PAGE_DETECTOR_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/dom_distiller/core/proto/adaboost.pb.h"
 
 namespace dom_distiller {
@@ -22,7 +22,7 @@ class DistillablePageDetector {
   static const DistillablePageDetector* GetDefault();
   static const DistillablePageDetector* GetNewModel();
   static const DistillablePageDetector* GetLongPageModel();
-  explicit DistillablePageDetector(scoped_ptr<AdaBoostProto> proto);
+  explicit DistillablePageDetector(std::unique_ptr<AdaBoostProto> proto);
   ~DistillablePageDetector();
 
   // Returns true if the model classifies the vector of features as a
@@ -32,7 +32,7 @@ class DistillablePageDetector {
   double Score(const std::vector<double>& features) const;
   double GetThreshold() const;
  private:
-  scoped_ptr<AdaBoostProto> proto_;
+  std::unique_ptr<AdaBoostProto> proto_;
   double threshold_;
   DISALLOW_COPY_AND_ASSIGN(DistillablePageDetector);
 };

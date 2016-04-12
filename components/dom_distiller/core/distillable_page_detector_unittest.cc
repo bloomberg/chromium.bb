@@ -4,6 +4,7 @@
 
 #include "components/dom_distiller/core/distillable_page_detector.h"
 
+#include "base/memory/ptr_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace dom_distiller {
@@ -21,7 +22,7 @@ class Builder {
     return *this;
   }
 
-  scoped_ptr<DistillablePageDetector> Build() {
+  std::unique_ptr<DistillablePageDetector> Build() {
     int num_features = 0;
     for (int i = 0; i < proto_.stump_size(); ++i) {
       num_features =
@@ -29,8 +30,8 @@ class Builder {
     }
     proto_.set_num_features(num_features);
     proto_.set_num_stumps(proto_.stump_size());
-    return make_scoped_ptr(new DistillablePageDetector(
-        make_scoped_ptr(new AdaBoostProto(proto_))));
+    return base::WrapUnique(new DistillablePageDetector(
+        base::WrapUnique(new AdaBoostProto(proto_))));
   }
 
  private:
@@ -40,7 +41,7 @@ class Builder {
 }
 
 TEST(DomDistillerDistillablePageDetectorTest, TestCalculateThreshold) {
-  scoped_ptr<DistillablePageDetector> detector =
+  std::unique_ptr<DistillablePageDetector> detector =
       Builder().Stump(0, 1.0, 1.0).Stump(0, 1.4, 2.0).Build();
 
   EXPECT_DOUBLE_EQ(1.5, detector->GetThreshold());
@@ -61,7 +62,7 @@ TEST(DomDistillerDistillablePageDetectorTest, TestCalculateThreshold) {
 }
 
 TEST(DomDistillerDistillablePageDetectorTest, TestScoreAndClassify) {
-  scoped_ptr<DistillablePageDetector> detector =
+  std::unique_ptr<DistillablePageDetector> detector =
       Builder().Stump(0, 1.0, 1.0).Stump(0, 1.4, 2.0).Build();
   EXPECT_DOUBLE_EQ(1.5, detector->GetThreshold());
 
@@ -92,7 +93,7 @@ TEST(DomDistillerDistillablePageDetectorTest, TestScoreAndClassify) {
 }
 
 TEST(DomDistillerDistillablePageDetectorTest, TestScoreWrongNumberFeatures) {
-  scoped_ptr<DistillablePageDetector> detector =
+  std::unique_ptr<DistillablePageDetector> detector =
       Builder().Stump(0, 1.0, 1.0).Stump(0, 1.4, 2.0).Build();
   EXPECT_DOUBLE_EQ(1.5, detector->GetThreshold());
 

@@ -6,10 +6,10 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 
 #include "base/json/json_reader.h"
-#include "base/memory/scoped_ptr.h"
 #include "third_party/re2/src/re2/re2.h"
 #include "url/gurl.h"
 
@@ -152,7 +152,7 @@ std::vector<double> CalculateDerivedFeaturesFromJSON(
     return std::vector<double>();
   }
 
-  scoped_ptr<base::Value> json = base::JSONReader::Read(stringified);
+  std::unique_ptr<base::Value> json = base::JSONReader::Read(stringified);
   if (!json) {
     return std::vector<double>();
   }

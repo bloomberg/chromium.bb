@@ -44,8 +44,9 @@ TaskTracker::~TaskTracker() {
   DCHECK(viewers_.empty());
 }
 
-void TaskTracker::StartDistiller(DistillerFactory* factory,
-                                 scoped_ptr<DistillerPage> distiller_page) {
+void TaskTracker::StartDistiller(
+    DistillerFactory* factory,
+    std::unique_ptr<DistillerPage> distiller_page) {
   if (distiller_) {
     return;
   }
@@ -82,7 +83,8 @@ void TaskTracker::AddSaveCallback(const SaveCallback& callback) {
   }
 }
 
-scoped_ptr<ViewerHandle> TaskTracker::AddViewer(ViewRequestDelegate* delegate) {
+std::unique_ptr<ViewerHandle> TaskTracker::AddViewer(
+    ViewRequestDelegate* delegate) {
   viewers_.push_back(delegate);
   if (content_ready_) {
     // Distillation for this task has already completed, and so the delegate can
@@ -91,7 +93,7 @@ scoped_ptr<ViewerHandle> TaskTracker::AddViewer(ViewRequestDelegate* delegate) {
         FROM_HERE, base::Bind(&TaskTracker::NotifyViewer,
                               weak_ptr_factory_.GetWeakPtr(), delegate));
   }
-  return scoped_ptr<ViewerHandle>(new ViewerHandle(base::Bind(
+  return std::unique_ptr<ViewerHandle>(new ViewerHandle(base::Bind(
       &TaskTracker::RemoveViewer, weak_ptr_factory_.GetWeakPtr(), delegate)));
 }
 
@@ -140,7 +142,7 @@ void TaskTracker::ScheduleSaveCallbacks(bool distillation_succeeded) {
 }
 
 void TaskTracker::OnDistillerFinished(
-    scoped_ptr<DistilledArticleProto> distilled_article) {
+    std::unique_ptr<DistilledArticleProto> distilled_article) {
   if (content_ready_) {
     return;
   }
@@ -165,7 +167,7 @@ void TaskTracker::CancelPendingSources() {
 
 void TaskTracker::OnBlobFetched(
     bool success,
-    scoped_ptr<DistilledArticleProto> distilled_article) {
+    std::unique_ptr<DistilledArticleProto> distilled_article) {
   blob_fetcher_running_ = false;
 
   if (content_ready_) {
@@ -191,7 +193,7 @@ void TaskTracker::ContentSourceFinished() {
 }
 
 void TaskTracker::DistilledArticleReady(
-    scoped_ptr<DistilledArticleProto> distilled_article) {
+    std::unique_ptr<DistilledArticleProto> distilled_article) {
   DCHECK(!content_ready_);
 
   if (distilled_article->pages_size() == 0) {

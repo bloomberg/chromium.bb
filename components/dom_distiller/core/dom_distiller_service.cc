@@ -42,10 +42,10 @@ void RunArticleAvailableCallback(
 }  // namespace
 
 DomDistillerService::DomDistillerService(
-    scoped_ptr<DomDistillerStoreInterface> store,
-    scoped_ptr<DistillerFactory> distiller_factory,
-    scoped_ptr<DistillerPageFactory> distiller_page_factory,
-    scoped_ptr<DistilledPagePrefs> distilled_page_prefs)
+    std::unique_ptr<DomDistillerStoreInterface> store,
+    std::unique_ptr<DistillerFactory> distiller_factory,
+    std::unique_ptr<DistillerPageFactory> distiller_page_factory,
+    std::unique_ptr<DistilledPagePrefs> distilled_page_prefs)
     : store_(std::move(store)),
       content_store_(new InMemoryContentStore(kDefaultMaxNumCachedEntries)),
       distiller_factory_(std::move(distiller_factory)),
@@ -59,21 +59,21 @@ syncer::SyncableService* DomDistillerService::GetSyncableService() const {
   return store_->GetSyncableService();
 }
 
-scoped_ptr<DistillerPage> DomDistillerService::CreateDefaultDistillerPage(
+std::unique_ptr<DistillerPage> DomDistillerService::CreateDefaultDistillerPage(
     const gfx::Size& render_view_size) {
   return distiller_page_factory_->CreateDistillerPage(render_view_size);
 }
 
-scoped_ptr<DistillerPage>
+std::unique_ptr<DistillerPage>
 DomDistillerService::CreateDefaultDistillerPageWithHandle(
-    scoped_ptr<SourcePageHandle> handle) {
+    std::unique_ptr<SourcePageHandle> handle) {
   return distiller_page_factory_->CreateDistillerPageWithHandle(
       std::move(handle));
 }
 
 const std::string DomDistillerService::AddToList(
     const GURL& url,
-    scoped_ptr<DistillerPage> distiller_page,
+    std::unique_ptr<DistillerPage> distiller_page,
     const ArticleAvailableCallback& article_cb) {
   ArticleEntry entry;
   const bool is_already_added = store_->GetEntryByUrl(url, &entry);
@@ -128,9 +128,9 @@ std::vector<ArticleEntry> DomDistillerService::GetEntries() const {
   return store_->GetEntries();
 }
 
-scoped_ptr<ArticleEntry> DomDistillerService::RemoveEntry(
+std::unique_ptr<ArticleEntry> DomDistillerService::RemoveEntry(
     const std::string& entry_id) {
-  scoped_ptr<ArticleEntry> entry(new ArticleEntry);
+  std::unique_ptr<ArticleEntry> entry(new ArticleEntry);
   entry->set_entry_id(entry_id);
   TaskTracker* task_tracker = GetTaskTrackerForEntry(*entry);
   if (task_tracker != NULL) {
@@ -138,27 +138,28 @@ scoped_ptr<ArticleEntry> DomDistillerService::RemoveEntry(
   }
 
   if (!store_->GetEntryById(entry_id, entry.get())) {
-    return scoped_ptr<ArticleEntry>();
+    return std::unique_ptr<ArticleEntry>();
   }
 
   if (store_->RemoveEntry(*entry)) {
     return entry;
   }
-  return scoped_ptr<ArticleEntry>();
+  return std::unique_ptr<ArticleEntry>();
 }
 
-scoped_ptr<ViewerHandle> DomDistillerService::ViewEntry(
+std::unique_ptr<ViewerHandle> DomDistillerService::ViewEntry(
     ViewRequestDelegate* delegate,
-    scoped_ptr<DistillerPage> distiller_page,
+    std::unique_ptr<DistillerPage> distiller_page,
     const std::string& entry_id) {
   ArticleEntry entry;
   if (!store_->GetEntryById(entry_id, &entry)) {
-    return scoped_ptr<ViewerHandle>();
+    return std::unique_ptr<ViewerHandle>();
   }
 
   TaskTracker* task_tracker = nullptr;
   bool was_created = GetOrCreateTaskTrackerForEntry(entry, &task_tracker);
-  scoped_ptr<ViewerHandle> viewer_handle = task_tracker->AddViewer(delegate);
+  std::unique_ptr<ViewerHandle> viewer_handle =
+      task_tracker->AddViewer(delegate);
   if (was_created) {
     task_tracker->StartDistiller(distiller_factory_.get(),
                                  std::move(distiller_page));
@@ -168,17 +169,18 @@ scoped_ptr<ViewerHandle> DomDistillerService::ViewEntry(
   return viewer_handle;
 }
 
-scoped_ptr<ViewerHandle> DomDistillerService::ViewUrl(
+std::unique_ptr<ViewerHandle> DomDistillerService::ViewUrl(
     ViewRequestDelegate* delegate,
-    scoped_ptr<DistillerPage> distiller_page,
+    std::unique_ptr<DistillerPage> distiller_page,
     const GURL& url) {
   if (!url.is_valid()) {
-    return scoped_ptr<ViewerHandle>();
+    return std::unique_ptr<ViewerHandle>();
   }
 
   TaskTracker* task_tracker = nullptr;
   bool was_created = GetOrCreateTaskTrackerForUrl(url, &task_tracker);
-  scoped_ptr<ViewerHandle> viewer_handle = task_tracker->AddViewer(delegate);
+  std::unique_ptr<ViewerHandle> viewer_handle =
+      task_tracker->AddViewer(delegate);
   // If a distiller is already running for one URL, don't start another.
   if (was_created) {
     task_tracker->StartDistiller(distiller_factory_.get(),

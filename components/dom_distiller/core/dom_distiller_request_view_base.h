@@ -5,11 +5,11 @@
 #ifndef COMPONENTS_DOM_DISTILLER_CORE_DOM_DISTILLER_REQUEST_VIEW_BASE_H_
 #define COMPONENTS_DOM_DISTILLER_CORE_DOM_DISTILLER_REQUEST_VIEW_BASE_H_
 
+#include <memory>
 #include <sstream>
 #include <string>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "components/dom_distiller/core/distilled_page_prefs.h"
 #include "components/dom_distiller/core/dom_distiller_service.h"
 #include "components/dom_distiller/core/task_tracker.h"
@@ -36,7 +36,7 @@ class DomDistillerRequestViewBase : public ViewRequestDelegate,
 
   void OnArticleUpdated(ArticleDistillationUpdate article_update) override;
 
-  void TakeViewerHandle(scoped_ptr<ViewerHandle> viewer_handle);
+  void TakeViewerHandle(std::unique_ptr<ViewerHandle> viewer_handle);
 
  protected:
   // DistilledPagePrefs::Observer implementation:
@@ -54,7 +54,7 @@ class DomDistillerRequestViewBase : public ViewRequestDelegate,
 
   // The handle to the view request towards the DomDistillerService. It
   // needs to be kept around to ensure the distillation request finishes.
-  scoped_ptr<ViewerHandle> viewer_handle_;
+  std::unique_ptr<ViewerHandle> viewer_handle_;
 
   // Number of pages of the distilled article content that have been rendered by
   // the viewer.

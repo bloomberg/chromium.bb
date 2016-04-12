@@ -5,11 +5,11 @@
 #ifndef COMPONENTS_DOM_DISTILLER_CONTENT_BROWSER_DOM_DISTILLER_VIEWER_SOURCE_H_
 #define COMPONENTS_DOM_DISTILLER_CONTENT_BROWSER_DOM_DISTILLER_VIEWER_SOURCE_H_
 
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/dom_distiller/content/browser/distiller_ui_handle.h"
 #include "content/public/browser/url_data_source.h"
 
@@ -23,10 +23,9 @@ class ViewRequestDelegate;
 // Serves HTML and resources for viewing distilled articles.
 class DomDistillerViewerSource : public content::URLDataSource {
  public:
-  DomDistillerViewerSource(
-      DomDistillerServiceInterface* dom_distiller_service,
-      const std::string& scheme,
-      scoped_ptr<DistillerUIHandle> ui_handle);
+  DomDistillerViewerSource(DomDistillerServiceInterface* dom_distiller_service,
+                           const std::string& scheme,
+                           std::unique_ptr<DistillerUIHandle> ui_handle);
   ~DomDistillerViewerSource() override;
 
   class RequestViewerHandle;
@@ -57,7 +56,7 @@ class DomDistillerViewerSource : public content::URLDataSource {
 
   // An object for accessing chrome-specific UI controls including external
   // feedback and opening the distiller settings.
-  scoped_ptr<DistillerUIHandle> distiller_ui_handle_;
+  std::unique_ptr<DistillerUIHandle> distiller_ui_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(DomDistillerViewerSource);
 };

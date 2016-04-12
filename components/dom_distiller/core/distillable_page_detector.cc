@@ -20,7 +20,7 @@ const DistillablePageDetector* DistillablePageDetector::GetDefault() {
         ResourceBundle::GetSharedInstance()
             .GetRawDataResource(IDR_DISTILLABLE_PAGE_SERIALIZED_MODEL)
             .as_string();
-    scoped_ptr<AdaBoostProto> proto(new AdaBoostProto);
+    std::unique_ptr<AdaBoostProto> proto(new AdaBoostProto);
     CHECK(proto->ParseFromString(serialized_proto));
     detector = new DistillablePageDetector(std::move(proto));
   }
@@ -34,7 +34,7 @@ const DistillablePageDetector* DistillablePageDetector::GetNewModel() {
         ResourceBundle::GetSharedInstance()
             .GetRawDataResource(IDR_DISTILLABLE_PAGE_SERIALIZED_MODEL_NEW)
             .as_string();
-    scoped_ptr<AdaBoostProto> proto(new AdaBoostProto);
+    std::unique_ptr<AdaBoostProto> proto(new AdaBoostProto);
     CHECK(proto->ParseFromString(serialized_proto));
     detector = new DistillablePageDetector(std::move(proto));
   }
@@ -48,7 +48,7 @@ const DistillablePageDetector* DistillablePageDetector::GetLongPageModel() {
         ResourceBundle::GetSharedInstance()
             .GetRawDataResource(IDR_LONG_PAGE_SERIALIZED_MODEL)
             .as_string();
-    scoped_ptr<AdaBoostProto> proto(new AdaBoostProto);
+    std::unique_ptr<AdaBoostProto> proto(new AdaBoostProto);
     CHECK(proto->ParseFromString(serialized_proto));
     detector = new DistillablePageDetector(std::move(proto));
   }
@@ -56,7 +56,7 @@ const DistillablePageDetector* DistillablePageDetector::GetLongPageModel() {
 }
 
 DistillablePageDetector::DistillablePageDetector(
-    scoped_ptr<AdaBoostProto> proto)
+    std::unique_ptr<AdaBoostProto> proto)
     : proto_(std::move(proto)), threshold_(0.0) {
   CHECK(proto_->num_stumps() == proto_->stump_size());
   for (int i = 0; i < proto_->num_stumps(); ++i) {

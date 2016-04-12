@@ -5,9 +5,9 @@
 #ifndef COMPONENTS_DOM_DISTILLER_CORE_ARTICLE_ATTACHMENTS_DATA_H_
 #define COMPONENTS_DOM_DISTILLER_CORE_ARTICLE_ATTACHMENTS_DATA_H_
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "components/dom_distiller/core/proto/distilled_article.pb.h"
 #include "sync/api/attachments/attachment.h"
 #include "sync/protocol/article_specifics.pb.h"
@@ -24,7 +24,7 @@ namespace dom_distiller {
 // be rather opaque.
 class ArticleAttachmentsData {
  public:
-  static scoped_ptr<ArticleAttachmentsData> GetFromAttachmentMap(
+  static std::unique_ptr<ArticleAttachmentsData> GetFromAttachmentMap(
       const sync_pb::ArticleAttachments& attachments_key,
       const syncer::AttachmentMap& attachment_map);
 

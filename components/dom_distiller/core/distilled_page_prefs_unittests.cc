@@ -54,8 +54,8 @@ class DistilledPagePrefsTest : public testing::Test {
     distilled_page_prefs_.reset(new DistilledPagePrefs(pref_service_.get()));
   }
 
-  scoped_ptr<user_prefs::TestingPrefServiceSyncable> pref_service_;
-  scoped_ptr<DistilledPagePrefs> distilled_page_prefs_;
+  std::unique_ptr<user_prefs::TestingPrefServiceSyncable> pref_service_;
+  std::unique_ptr<DistilledPagePrefs> distilled_page_prefs_;
 
  private:
   base::MessageLoop message_loop_;

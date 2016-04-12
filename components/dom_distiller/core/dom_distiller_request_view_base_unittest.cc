@@ -26,8 +26,8 @@ class DomDistillerRequestViewTest : public testing::Test {
     distilled_page_prefs_.reset(new DistilledPagePrefs(pref_service_.get()));
   }
 
-  scoped_ptr<user_prefs::TestingPrefServiceSyncable> pref_service_;
-  scoped_ptr<DistilledPagePrefs> distilled_page_prefs_;
+  std::unique_ptr<user_prefs::TestingPrefServiceSyncable> pref_service_;
+  std::unique_ptr<DistilledPagePrefs> distilled_page_prefs_;
 };
 
 TEST_F(DomDistillerRequestViewTest, TestTitleEscaped) {
@@ -41,7 +41,7 @@ TEST_F(DomDistillerRequestViewTest, TestTitleEscaped) {
 
   // Make sure title is properly escaped from quotes.
   {
-    scoped_ptr<DistilledArticleProto> article_proto(
+    std::unique_ptr<DistilledArticleProto> article_proto(
         new DistilledArticleProto());
     article_proto->set_title(has_quotes);
 
@@ -54,7 +54,7 @@ TEST_F(DomDistillerRequestViewTest, TestTitleEscaped) {
 
   // Make sure title is properly escaped from special characters.
   {
-    scoped_ptr<DistilledArticleProto> article_proto(
+    std::unique_ptr<DistilledArticleProto> article_proto(
         new DistilledArticleProto());
     article_proto->set_title(has_special_chars);
 
@@ -75,7 +75,7 @@ TEST_F(DomDistillerRequestViewTest, TestTitleNeverEmpty) {
 
   // Test that the title actually gets shown.
   {
-    scoped_ptr<DistilledArticleProto> article_proto(
+    std::unique_ptr<DistilledArticleProto> article_proto(
         new DistilledArticleProto());
     article_proto->set_title(valid_title);
 
@@ -87,7 +87,7 @@ TEST_F(DomDistillerRequestViewTest, TestTitleNeverEmpty) {
 
   // Test empty string title
   {
-    scoped_ptr<DistilledArticleProto> article_proto(
+    std::unique_ptr<DistilledArticleProto> article_proto(
         new DistilledArticleProto());
     article_proto->set_title("");
 
@@ -99,7 +99,7 @@ TEST_F(DomDistillerRequestViewTest, TestTitleNeverEmpty) {
 
   // Test no title.
   {
-    scoped_ptr<DistilledArticleProto> article_proto(
+    std::unique_ptr<DistilledArticleProto> article_proto(
         new DistilledArticleProto());
 
     handle.OnArticleReady(article_proto.get());
@@ -118,7 +118,7 @@ TEST_F(DomDistillerRequestViewTest, TestContentNeverEmpty) {
 
   // Test single page content
   {
-    scoped_ptr<DistilledArticleProto> article_proto(
+    std::unique_ptr<DistilledArticleProto> article_proto(
         new DistilledArticleProto());
     (*(article_proto->add_pages())).set_html(valid_content);
 
@@ -131,7 +131,7 @@ TEST_F(DomDistillerRequestViewTest, TestContentNeverEmpty) {
 
   // Test multiple page content
   {
-    scoped_ptr<DistilledArticleProto> article_proto(
+    std::unique_ptr<DistilledArticleProto> article_proto(
         new DistilledArticleProto());
     (*(article_proto->add_pages())).set_html(valid_content);
     (*(article_proto->add_pages())).set_html(valid_content);
@@ -146,7 +146,7 @@ TEST_F(DomDistillerRequestViewTest, TestContentNeverEmpty) {
 
   // Test empty string content
   {
-    scoped_ptr<DistilledArticleProto> article_proto(
+    std::unique_ptr<DistilledArticleProto> article_proto(
         new DistilledArticleProto());
     (*(article_proto->add_pages())).set_html("");
 
@@ -159,7 +159,7 @@ TEST_F(DomDistillerRequestViewTest, TestContentNeverEmpty) {
 
   // Test page no content
   {
-    scoped_ptr<DistilledArticleProto> article_proto(
+    std::unique_ptr<DistilledArticleProto> article_proto(
         new DistilledArticleProto());
     article_proto->add_pages();
 
@@ -172,7 +172,7 @@ TEST_F(DomDistillerRequestViewTest, TestContentNeverEmpty) {
 
   // Test no page.
   {
-    scoped_ptr<DistilledArticleProto> article_proto(
+    std::unique_ptr<DistilledArticleProto> article_proto(
         new DistilledArticleProto());
 
     handle.OnArticleReady(article_proto.get());
@@ -191,7 +191,7 @@ TEST_F(DomDistillerRequestViewTest, TestContentNeverEmpty) {
     page_proto->data.set_html("");
     pages.push_back(page_proto);
 
-    scoped_ptr<ArticleDistillationUpdate> article_update(
+    std::unique_ptr<ArticleDistillationUpdate> article_update(
         new ArticleDistillationUpdate(pages, false, false));
 
     handle.OnArticleUpdated(*article_update.get());
@@ -217,7 +217,7 @@ TEST_F(DomDistillerRequestViewTest, TestLoadingIndicator) {
       new base::RefCountedData<DistilledPageProto>();
   pages.push_back(page_proto);
 
-  scoped_ptr<ArticleDistillationUpdate> article_update(
+  std::unique_ptr<ArticleDistillationUpdate> article_update(
       new ArticleDistillationUpdate(pages, true, false));
 
   handle.OnArticleUpdated(*article_update.get());

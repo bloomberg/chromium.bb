@@ -39,7 +39,7 @@ const char kDatabaseUMAClientName[] = "DomDistillerStore";
 namespace dom_distiller {
 
 DomDistillerStore::DomDistillerStore(
-    scoped_ptr<ProtoDatabase<ArticleEntry>> database,
+    std::unique_ptr<ProtoDatabase<ArticleEntry>> database,
     const base::FilePath& database_dir)
     : database_(std::move(database)),
       database_loaded_(false),
@@ -51,7 +51,7 @@ DomDistillerStore::DomDistillerStore(
 }
 
 DomDistillerStore::DomDistillerStore(
-    scoped_ptr<ProtoDatabase<ArticleEntry>> database,
+    std::unique_ptr<ProtoDatabase<ArticleEntry>> database,
     const std::vector<ArticleEntry>& initial_data,
     const base::FilePath& database_dir)
     : database_(std::move(database)),
@@ -82,14 +82,14 @@ bool DomDistillerStore::GetEntryByUrl(const GURL& url, ArticleEntry* entry) {
 
 void DomDistillerStore::UpdateAttachments(
     const std::string& entry_id,
-    scoped_ptr<ArticleAttachmentsData> attachments_data,
+    std::unique_ptr<ArticleAttachmentsData> attachments_data,
     const UpdateAttachmentsCallback& callback) {
   if (!GetEntryById(entry_id, nullptr)) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                                   base::Bind(callback, false));
   }
 
-  scoped_ptr<sync_pb::ArticleAttachments> article_attachments(
+  std::unique_ptr<sync_pb::ArticleAttachments> article_attachments(
       new sync_pb::ArticleAttachments());
   syncer::AttachmentList attachment_list;
   attachments_data->CreateSyncAttachments(&attachment_list,
@@ -104,7 +104,7 @@ void DomDistillerStore::UpdateAttachments(
 
 void DomDistillerStore::OnAttachmentsWrite(
     const std::string& entry_id,
-    scoped_ptr<sync_pb::ArticleAttachments> article_attachments,
+    std::unique_ptr<sync_pb::ArticleAttachments> article_attachments,
     const UpdateAttachmentsCallback& callback,
     const syncer::AttachmentStore::Result& result) {
   bool success = false;
@@ -174,8 +174,8 @@ void DomDistillerStore::OnAttachmentsRead(
     const sync_pb::ArticleAttachments& attachments_proto,
     const GetAttachmentsCallback& callback,
     const syncer::AttachmentStore::Result& result,
-    scoped_ptr<syncer::AttachmentMap> attachments,
-    scoped_ptr<syncer::AttachmentIdList> missing) {
+    std::unique_ptr<syncer::AttachmentMap> attachments,
+    std::unique_ptr<syncer::AttachmentIdList> missing) {
   bool success = false;
   switch (result) {
     case syncer::AttachmentStore::UNSPECIFIED_ERROR:
@@ -186,7 +186,7 @@ void DomDistillerStore::OnAttachmentsRead(
       success = true;
       break;
   }
-  scoped_ptr<ArticleAttachmentsData> attachments_data;
+  std::unique_ptr<ArticleAttachmentsData> attachments_data;
   if (success) {
     attachments_data = ArticleAttachmentsData::GetFromAttachmentMap(
         attachments_proto, *attachments);
@@ -279,9 +279,10 @@ std::vector<ArticleEntry> DomDistillerStore::GetEntries() const {
 
 // syncer::SyncableService implementation.
 SyncMergeResult DomDistillerStore::MergeDataAndStartSyncing(
-    ModelType type, const SyncDataList& initial_sync_data,
-    scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
-    scoped_ptr<syncer::SyncErrorFactory> error_handler) {
+    ModelType type,
+    const SyncDataList& initial_sync_data,
+    std::unique_ptr<syncer::SyncChangeProcessor> sync_processor,
+    std::unique_ptr<syncer::SyncErrorFactory> error_handler) {
   DCHECK_EQ(syncer::ARTICLES, type);
   DCHECK(!sync_processor_);
   DCHECK(!error_factory_);
@@ -368,7 +369,7 @@ void DomDistillerStore::OnDatabaseInit(bool success) {
 }
 
 void DomDistillerStore::OnDatabaseLoad(bool success,
-                                       scoped_ptr<EntryVector> entries) {
+                                       std::unique_ptr<EntryVector> entries) {
   if (!success) {
     DVLOG(1) << "DOM Distiller database load failed.";
     database_.reset();
@@ -424,9 +425,9 @@ bool DomDistillerStore::ApplyChangesToDatabase(
   if (change_list.empty()) {
     return true;
   }
-  scoped_ptr<ProtoDatabase<ArticleEntry>::KeyEntryVector> entries_to_save(
+  std::unique_ptr<ProtoDatabase<ArticleEntry>::KeyEntryVector> entries_to_save(
       new ProtoDatabase<ArticleEntry>::KeyEntryVector());
-  scoped_ptr<std::vector<std::string> > keys_to_remove(
+  std::unique_ptr<std::vector<std::string>> keys_to_remove(
       new std::vector<std::string>());
 
   for (SyncChangeList::const_iterator it = change_list.begin();

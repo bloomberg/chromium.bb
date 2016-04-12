@@ -16,10 +16,11 @@ syncer::AttachmentIdList GetAttachmentIds(
   return ids;
 }
 
-scoped_ptr<ArticleAttachmentsData> ArticleAttachmentsData::GetFromAttachmentMap(
+std::unique_ptr<ArticleAttachmentsData>
+ArticleAttachmentsData::GetFromAttachmentMap(
     const sync_pb::ArticleAttachments& attachments_key,
     const syncer::AttachmentMap& attachment_map) {
-  scoped_ptr<ArticleAttachmentsData> data(new ArticleAttachmentsData);
+  std::unique_ptr<ArticleAttachmentsData> data(new ArticleAttachmentsData);
   syncer::AttachmentMap::const_iterator iter =
       attachment_map.find(syncer::AttachmentId::CreateFromProto(
           attachments_key.distilled_article()));

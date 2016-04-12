@@ -4,12 +4,12 @@
 
 #include "components/dom_distiller/core/dom_distiller_request_view_base.h"
 
+#include <memory>
 #include <sstream>
 #include <string>
 #include <utility>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "components/dom_distiller/core/distilled_page_prefs.h"
 #include "components/dom_distiller/core/dom_distiller_service.h"
 #include "components/dom_distiller/core/experiments.h"
@@ -114,7 +114,7 @@ void DomDistillerRequestViewBase::OnChangeFontScaling(float scaling) {
 }
 
 void DomDistillerRequestViewBase::TakeViewerHandle(
-    scoped_ptr<ViewerHandle> viewer_handle) {
+    std::unique_ptr<ViewerHandle> viewer_handle) {
   viewer_handle_ = std::move(viewer_handle);
   // Getting the viewer handle means this is not an error page, send
   // the viewer JavaScript and show the loading indicator.

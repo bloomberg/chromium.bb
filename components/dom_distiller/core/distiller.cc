@@ -31,17 +31,17 @@ const size_t kMaxPagesInArticle = 32;
 namespace dom_distiller {
 
 DistillerFactoryImpl::DistillerFactoryImpl(
-    scoped_ptr<DistillerURLFetcherFactory> distiller_url_fetcher_factory,
+    std::unique_ptr<DistillerURLFetcherFactory> distiller_url_fetcher_factory,
     const dom_distiller::proto::DomDistillerOptions& dom_distiller_options)
     : distiller_url_fetcher_factory_(std::move(distiller_url_fetcher_factory)),
       dom_distiller_options_(dom_distiller_options) {}
 
 DistillerFactoryImpl::~DistillerFactoryImpl() {}
 
-scoped_ptr<Distiller> DistillerFactoryImpl::CreateDistillerForUrl(
+std::unique_ptr<Distiller> DistillerFactoryImpl::CreateDistillerForUrl(
     const GURL& unused) {
   // This default implementation has the same behavior for all URLs.
-  scoped_ptr<DistillerImpl> distiller(new DistillerImpl(
+  std::unique_ptr<DistillerImpl> distiller(new DistillerImpl(
       *distiller_url_fetcher_factory_, dom_distiller_options_));
   return std::move(distiller);
 }
@@ -100,7 +100,7 @@ DistillerImpl::DistilledPageData* DistillerImpl::GetPageAtIndex(size_t index)
 }
 
 void DistillerImpl::DistillPage(const GURL& url,
-                                scoped_ptr<DistillerPage> distiller_page,
+                                std::unique_ptr<DistillerPage> distiller_page,
                                 const DistillationFinishedCallback& finished_cb,
                                 const DistillationUpdateCallback& update_cb) {
   DCHECK(AreAllPagesFinished());
@@ -138,7 +138,7 @@ void DistillerImpl::DistillNextPage() {
 void DistillerImpl::OnPageDistillationFinished(
     int page_num,
     const GURL& page_url,
-    scoped_ptr<proto::DomDistillerResult> distiller_result,
+    std::unique_ptr<proto::DomDistillerResult> distiller_result,
     bool distillation_successful) {
   DCHECK(started_pages_index_.find(page_num) != started_pages_index_.end());
   if (distillation_successful) {
@@ -364,7 +364,7 @@ void DistillerImpl::RunDistillerCallbackIfDone() {
   DCHECK(!finished_cb_.is_null());
   if (AreAllPagesFinished()) {
     bool first_page = true;
-    scoped_ptr<DistilledArticleProto> article_proto(
+    std::unique_ptr<DistilledArticleProto> article_proto(
         new DistilledArticleProto());
     // Stitch the pages back into the article.
     for (std::map<int, size_t>::iterator it = finished_pages_index_.begin();

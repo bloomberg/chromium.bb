@@ -22,8 +22,9 @@ class MockDistillerFactory : public DistillerFactory {
   MockDistillerFactory();
   virtual ~MockDistillerFactory();
   MOCK_METHOD0(CreateDistillerImpl, Distiller*());
-  scoped_ptr<Distiller> CreateDistillerForUrl(const GURL& unused) override {
-    return scoped_ptr<Distiller>(CreateDistillerImpl());
+  std::unique_ptr<Distiller> CreateDistillerForUrl(
+      const GURL& unused) override {
+    return std::unique_ptr<Distiller>(CreateDistillerImpl());
   }
 };
 
@@ -41,11 +42,11 @@ class FakeDistiller : public Distiller {
   MOCK_METHOD0(Die, void());
 
   void DistillPage(const GURL& url,
-                   scoped_ptr<DistillerPage> distiller_page,
+                   std::unique_ptr<DistillerPage> distiller_page,
                    const DistillationFinishedCallback& article_callback,
                    const DistillationUpdateCallback& page_callback) override;
 
-  void RunDistillerCallback(scoped_ptr<DistilledArticleProto> proto);
+  void RunDistillerCallback(std::unique_ptr<DistilledArticleProto> proto);
   void RunDistillerUpdateCallback(const ArticleDistillationUpdate& update);
 
   GURL GetUrl() { return url_; }
@@ -55,8 +56,9 @@ class FakeDistiller : public Distiller {
   }
 
  private:
-  void PostDistillerCallback(scoped_ptr<DistilledArticleProto> proto);
-  void RunDistillerCallbackInternal(scoped_ptr<DistilledArticleProto> proto);
+  void PostDistillerCallback(std::unique_ptr<DistilledArticleProto> proto);
+  void RunDistillerCallbackInternal(
+      std::unique_ptr<DistilledArticleProto> proto);
 
   bool execute_callback_;
   GURL url_;

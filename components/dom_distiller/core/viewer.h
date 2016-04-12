@@ -5,10 +5,10 @@
 #ifndef COMPONENTS_DOM_DISTILLER_CORE_VIEWER_H_
 #define COMPONENTS_DOM_DISTILLER_CORE_VIEWER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "components/dom_distiller/core/distilled_page_prefs.h"
 #include "ui/gfx/geometry/size.h"
@@ -79,7 +79,7 @@ const std::string GetJavaScript();
 
 // Based on the given path, calls into the DomDistillerServiceInterface for
 // viewing distilled content based on the |path|.
-scoped_ptr<ViewerHandle> CreateViewRequest(
+std::unique_ptr<ViewerHandle> CreateViewRequest(
     DomDistillerServiceInterface* dom_distiller_service,
     const std::string& path,
     ViewRequestDelegate* view_request_delegate,

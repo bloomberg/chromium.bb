@@ -35,7 +35,7 @@ class TestDomDistillerService : public DomDistillerServiceInterface {
                                  const ArticleAvailableCallback&));
   const std::string AddToList(
       const GURL& url,
-      scoped_ptr<DistillerPage> distiller_page,
+      std::unique_ptr<DistillerPage> distiller_page,
       const ArticleAvailableCallback& article_cb) override {
     return AddToList(url, distiller_page.get(), article_cb);
   }
@@ -45,30 +45,30 @@ class TestDomDistillerService : public DomDistillerServiceInterface {
   MOCK_METHOD1(AddObserver, void(DomDistillerObserver*));
   MOCK_METHOD1(RemoveObserver, void(DomDistillerObserver*));
   MOCK_METHOD0(ViewUrlImpl, ViewerHandle*());
-  scoped_ptr<ViewerHandle> ViewUrl(
+  std::unique_ptr<ViewerHandle> ViewUrl(
       ViewRequestDelegate*,
-      scoped_ptr<DistillerPage> distiller_page,
+      std::unique_ptr<DistillerPage> distiller_page,
       const GURL&) override {
-    return scoped_ptr<ViewerHandle>(ViewUrlImpl());
+    return std::unique_ptr<ViewerHandle>(ViewUrlImpl());
   }
   MOCK_METHOD0(ViewEntryImpl, ViewerHandle*());
-  scoped_ptr<ViewerHandle> ViewEntry(
+  std::unique_ptr<ViewerHandle> ViewEntry(
       ViewRequestDelegate*,
-      scoped_ptr<DistillerPage> distiller_page,
+      std::unique_ptr<DistillerPage> distiller_page,
       const std::string&) override {
-    return scoped_ptr<ViewerHandle>(ViewEntryImpl());
+    return std::unique_ptr<ViewerHandle>(ViewEntryImpl());
   }
   MOCK_METHOD0(RemoveEntryImpl, ArticleEntry*());
-  scoped_ptr<ArticleEntry> RemoveEntry(const std::string&) override {
-    return scoped_ptr<ArticleEntry>(RemoveEntryImpl());
+  std::unique_ptr<ArticleEntry> RemoveEntry(const std::string&) override {
+    return std::unique_ptr<ArticleEntry>(RemoveEntryImpl());
   }
-  scoped_ptr<DistillerPage> CreateDefaultDistillerPage(
+  std::unique_ptr<DistillerPage> CreateDefaultDistillerPage(
       const gfx::Size& render_view_size) override {
-    return scoped_ptr<DistillerPage>();
+    return std::unique_ptr<DistillerPage>();
   }
-  scoped_ptr<DistillerPage> CreateDefaultDistillerPageWithHandle(
-      scoped_ptr<SourcePageHandle> handle) override {
-    return scoped_ptr<DistillerPage>();
+  std::unique_ptr<DistillerPage> CreateDefaultDistillerPageWithHandle(
+      std::unique_ptr<SourcePageHandle> handle) override {
+    return std::unique_ptr<DistillerPage>();
   }
   DistilledPagePrefs* GetDistilledPagePrefs() override;
 };
@@ -78,18 +78,18 @@ class DomDistillerViewerTest : public testing::Test {
   void SetUp() override { service_.reset(new TestDomDistillerService()); }
 
  protected:
-  scoped_ptr<ViewerHandle> CreateViewRequest(
+  std::unique_ptr<ViewerHandle> CreateViewRequest(
       const std::string& path,
       ViewRequestDelegate* view_request_delegate) {
     return viewer::CreateViewRequest(
         service_.get(), path, view_request_delegate, gfx::Size());
   }
 
-  scoped_ptr<TestDomDistillerService> service_;
+  std::unique_ptr<TestDomDistillerService> service_;
 };
 
 TEST_F(DomDistillerViewerTest, TestCreatingViewUrlRequest) {
-  scoped_ptr<FakeViewRequestDelegate> view_request_delegate(
+  std::unique_ptr<FakeViewRequestDelegate> view_request_delegate(
       new FakeViewRequestDelegate());
   ViewerHandle* viewer_handle(new ViewerHandle(ViewerHandle::CancelCallback()));
   EXPECT_CALL(*service_.get(), ViewUrlImpl())
@@ -101,7 +101,7 @@ TEST_F(DomDistillerViewerTest, TestCreatingViewUrlRequest) {
 }
 
 TEST_F(DomDistillerViewerTest, TestCreatingViewEntryRequest) {
-  scoped_ptr<FakeViewRequestDelegate> view_request_delegate(
+  std::unique_ptr<FakeViewRequestDelegate> view_request_delegate(
       new FakeViewRequestDelegate());
   ViewerHandle* viewer_handle(new ViewerHandle(ViewerHandle::CancelCallback()));
   EXPECT_CALL(*service_.get(), ViewEntryImpl())
@@ -112,7 +112,7 @@ TEST_F(DomDistillerViewerTest, TestCreatingViewEntryRequest) {
 }
 
 TEST_F(DomDistillerViewerTest, TestCreatingInvalidViewRequest) {
-  scoped_ptr<FakeViewRequestDelegate> view_request_delegate(
+  std::unique_ptr<FakeViewRequestDelegate> view_request_delegate(
       new FakeViewRequestDelegate());
   EXPECT_CALL(*service_.get(), ViewEntryImpl()).Times(0);
   EXPECT_CALL(*service_.get(), ViewUrlImpl()).Times(0);

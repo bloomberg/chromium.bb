@@ -51,7 +51,7 @@ class DistillerJsRenderFrameObserver : public content::RenderFrameObserver {
   //mojo::StrongBinding<DistillerPageNotifierService> binding_;
 
   // Handle to "distiller" JavaScript object functionality.
-  scoped_ptr<DistillerNativeJavaScript> native_javascript_handle_;
+  std::unique_ptr<DistillerNativeJavaScript> native_javascript_handle_;
   base::WeakPtrFactory<DistillerJsRenderFrameObserver> weak_factory_;
 };
 

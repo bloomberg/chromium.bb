@@ -4,11 +4,11 @@
 
 #include "components/dom_distiller/core/viewer.h"
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/json/json_writer.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -267,7 +267,7 @@ const std::string GetJavaScript() {
       .as_string();
 }
 
-scoped_ptr<ViewerHandle> CreateViewRequest(
+std::unique_ptr<ViewerHandle> CreateViewRequest(
     DomDistillerServiceInterface* dom_distiller_service,
     const std::string& path,
     ViewRequestDelegate* view_request_delegate,
@@ -285,7 +285,7 @@ scoped_ptr<ViewerHandle> CreateViewRequest(
   if (has_valid_entry_id && has_valid_url) {
     // It is invalid to specify a query param for both |kEntryIdKey| and
     // |kUrlKey|.
-    return scoped_ptr<ViewerHandle>();
+    return std::unique_ptr<ViewerHandle>();
   }
 
   if (has_valid_entry_id) {
@@ -301,7 +301,7 @@ scoped_ptr<ViewerHandle> CreateViewRequest(
   }
 
   // It is invalid to not specify a query param for |kEntryIdKey| or |kUrlKey|.
-  return scoped_ptr<ViewerHandle>();
+  return std::unique_ptr<ViewerHandle>();
 }
 
 const std::string GetDistilledPageThemeJs(DistilledPagePrefs::Theme theme) {

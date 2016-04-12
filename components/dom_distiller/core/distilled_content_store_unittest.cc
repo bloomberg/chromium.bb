@@ -53,7 +53,8 @@ DistilledArticleProto CreateDistilledArticleForEntry(
 
 class InMemoryContentStoreTest : public testing::Test {
  public:
-  void OnLoadCallback(bool success, scoped_ptr<DistilledArticleProto> proto) {
+  void OnLoadCallback(bool success,
+                      std::unique_ptr<DistilledArticleProto> proto) {
     load_success_ = success;
     loaded_proto_ = std::move(proto);
   }
@@ -69,10 +70,10 @@ class InMemoryContentStoreTest : public testing::Test {
     loaded_proto_.reset();
   }
 
-  scoped_ptr<InMemoryContentStore> store_;
+  std::unique_ptr<InMemoryContentStore> store_;
   bool save_success_;
   bool load_success_;
-  scoped_ptr<DistilledArticleProto> loaded_proto_;
+  std::unique_ptr<DistilledArticleProto> loaded_proto_;
 };
 
 // Tests whether saving and then loading a single article works as expected.

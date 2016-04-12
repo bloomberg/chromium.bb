@@ -4,10 +4,10 @@
 
 #include "components/dom_distiller/content/browser/distiller_page_web_contents.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/callback.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/dom_distiller/content/browser/distiller_javascript_utils.h"
@@ -38,29 +38,30 @@ SourcePageHandleWebContents::~SourcePageHandleWebContents() {
   }
 }
 
-scoped_ptr<DistillerPage> DistillerPageWebContentsFactory::CreateDistillerPage(
+std::unique_ptr<DistillerPage>
+DistillerPageWebContentsFactory::CreateDistillerPage(
     const gfx::Size& render_view_size) const {
   DCHECK(browser_context_);
-  return scoped_ptr<DistillerPage>(new DistillerPageWebContents(
+  return std::unique_ptr<DistillerPage>(new DistillerPageWebContents(
       browser_context_, render_view_size,
-      scoped_ptr<SourcePageHandleWebContents>()));
+      std::unique_ptr<SourcePageHandleWebContents>()));
 }
 
-scoped_ptr<DistillerPage>
+std::unique_ptr<DistillerPage>
 DistillerPageWebContentsFactory::CreateDistillerPageWithHandle(
-    scoped_ptr<SourcePageHandle> handle) const {
+    std::unique_ptr<SourcePageHandle> handle) const {
   DCHECK(browser_context_);
-  scoped_ptr<SourcePageHandleWebContents> web_contents_handle =
-      scoped_ptr<SourcePageHandleWebContents>(
+  std::unique_ptr<SourcePageHandleWebContents> web_contents_handle =
+      std::unique_ptr<SourcePageHandleWebContents>(
           static_cast<SourcePageHandleWebContents*>(handle.release()));
-  return scoped_ptr<DistillerPage>(new DistillerPageWebContents(
+  return std::unique_ptr<DistillerPage>(new DistillerPageWebContents(
       browser_context_, gfx::Size(), std::move(web_contents_handle)));
 }
 
 DistillerPageWebContents::DistillerPageWebContents(
     content::BrowserContext* browser_context,
     const gfx::Size& render_view_size,
-    scoped_ptr<SourcePageHandleWebContents> optional_web_contents_handle)
+    std::unique_ptr<SourcePageHandleWebContents> optional_web_contents_handle)
     : state_(IDLE),
       source_page_handle_(nullptr),
       browser_context_(browser_context),
@@ -166,7 +167,7 @@ void DistillerPageWebContents::DidFailLoad(
     content::WebContentsObserver::Observe(NULL);
     DCHECK(state_ == LOADING_PAGE || state_ == EXECUTING_JAVASCRIPT);
     state_ = PAGELOAD_FAILED;
-    scoped_ptr<base::Value> empty = base::Value::CreateNullValue();
+    std::unique_ptr<base::Value> empty = base::Value::CreateNullValue();
     OnWebContentsDistillationDone(GURL(), base::TimeTicks(), empty.get());
   }
 }

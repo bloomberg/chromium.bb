@@ -133,7 +133,7 @@ IN_PROC_BROWSER_TEST_F(DomDistillerDistillablePageUtilsTest,
 
 IN_PROC_BROWSER_TEST_F(DomDistillerDistillablePageUtilsTest,
                        TestIsDistillablePage) {
-  scoped_ptr<AdaBoostProto> proto(new AdaBoostProto);
+  std::unique_ptr<AdaBoostProto> proto(new AdaBoostProto);
   proto->set_num_features(kDerivedFeaturesCount);
   proto->set_num_stumps(1);
 
@@ -141,7 +141,7 @@ IN_PROC_BROWSER_TEST_F(DomDistillerDistillablePageUtilsTest,
   stump->set_feature_number(0);
   stump->set_weight(1);
   stump->set_split(-1);
-  scoped_ptr<DistillablePageDetector> detector(
+  std::unique_ptr<DistillablePageDetector> detector(
       new DistillablePageDetector(std::move(proto)));
   EXPECT_DOUBLE_EQ(0.5, detector->GetThreshold());
   // The first value of the first feature is either 0 or 1. Since the stump's
@@ -158,14 +158,14 @@ IN_PROC_BROWSER_TEST_F(DomDistillerDistillablePageUtilsTest,
 
 IN_PROC_BROWSER_TEST_F(DomDistillerDistillablePageUtilsTest,
                        TestIsNotDistillablePage) {
-  scoped_ptr<AdaBoostProto> proto(new AdaBoostProto);
+  std::unique_ptr<AdaBoostProto> proto(new AdaBoostProto);
   proto->set_num_features(kDerivedFeaturesCount);
   proto->set_num_stumps(1);
   StumpProto* stump = proto->add_stump();
   stump->set_feature_number(0);
   stump->set_weight(-1);
   stump->set_split(-1);
-  scoped_ptr<DistillablePageDetector> detector(
+  std::unique_ptr<DistillablePageDetector> detector(
       new DistillablePageDetector(std::move(proto)));
   EXPECT_DOUBLE_EQ(-0.5, detector->GetThreshold());
   // The first value of the first feature is either 0 or 1. Since the stump's

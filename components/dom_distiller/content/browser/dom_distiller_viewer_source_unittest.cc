@@ -18,7 +18,7 @@ class DomDistillerViewerSourceTest : public testing::Test {
   }
 
  protected:
-  scoped_ptr<DomDistillerViewerSource> source_;
+  std::unique_ptr<DomDistillerViewerSource> source_;
 };
 
 TEST_F(DomDistillerViewerSourceTest, TestMimeType) {

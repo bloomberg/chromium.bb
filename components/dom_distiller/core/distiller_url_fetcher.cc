@@ -43,10 +43,10 @@ void DistillerURLFetcher::FetchURL(const std::string& url,
   url_fetcher_->Start();
 }
 
-scoped_ptr<URLFetcher> DistillerURLFetcher::CreateURLFetcher(
+std::unique_ptr<URLFetcher> DistillerURLFetcher::CreateURLFetcher(
     net::URLRequestContextGetter* context_getter,
     const std::string& url) {
-  scoped_ptr<net::URLFetcher> fetcher =
+  std::unique_ptr<net::URLFetcher> fetcher =
       URLFetcher::Create(GURL(url), URLFetcher::GET, this);
   fetcher->SetRequestContext(context_getter);
   static const int kMaxRetries = 5;

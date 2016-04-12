@@ -49,7 +49,7 @@ void InMemoryContentStore::LoadContent(
       }
     }
   }
-  scoped_ptr<DistilledArticleProto> distilled_article;
+  std::unique_ptr<DistilledArticleProto> distilled_article;
   if (success) {
     distilled_article.reset(new DistilledArticleProto(*it->second));
   } else {
@@ -63,7 +63,7 @@ void InMemoryContentStore::LoadContent(
 void InMemoryContentStore::InjectContent(const ArticleEntry& entry,
                                          const DistilledArticleProto& proto) {
   cache_.Put(entry.entry_id(),
-             scoped_ptr<DistilledArticleProto, CacheDeletor>(
+             std::unique_ptr<DistilledArticleProto, CacheDeletor>(
                  new DistilledArticleProto(proto), CacheDeletor(this)));
   AddUrlToIdMapping(entry, proto);
 }

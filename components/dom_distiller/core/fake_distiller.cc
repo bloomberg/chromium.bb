@@ -42,7 +42,7 @@ FakeDistiller::~FakeDistiller() {
 
 void FakeDistiller::DistillPage(
     const GURL& url,
-    scoped_ptr<DistillerPage> distiller_page,
+    std::unique_ptr<DistillerPage> distiller_page,
     const DistillationFinishedCallback& article_callback,
     const DistillationUpdateCallback& page_callback) {
   url_ = url;
@@ -52,14 +52,14 @@ void FakeDistiller::DistillPage(
     base::ResetAndReturn(&distillation_initiated_callback_).Run();
   }
   if (execute_callback_) {
-    scoped_ptr<DistilledArticleProto> proto(new DistilledArticleProto);
+    std::unique_ptr<DistilledArticleProto> proto(new DistilledArticleProto);
     proto->add_pages()->set_url(url_.spec());
     PostDistillerCallback(std::move(proto));
   }
 }
 
 void FakeDistiller::RunDistillerCallback(
-    scoped_ptr<DistilledArticleProto> proto) {
+    std::unique_ptr<DistilledArticleProto> proto) {
   ASSERT_FALSE(execute_callback_) << "Cannot explicitly run the distiller "
                                      "callback for a fake distiller created "
                                      "with automatic callback execution.";
@@ -71,16 +71,15 @@ void FakeDistiller::RunDistillerUpdateCallback(
   page_callback_.Run(update);
 }
 
-
 void FakeDistiller::PostDistillerCallback(
-    scoped_ptr<DistilledArticleProto> proto) {
+    std::unique_ptr<DistilledArticleProto> proto) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&FakeDistiller::RunDistillerCallbackInternal,
                             base::Unretained(this), base::Passed(&proto)));
 }
 
 void FakeDistiller::RunDistillerCallbackInternal(
-    scoped_ptr<DistilledArticleProto> proto) {
+    std::unique_ptr<DistilledArticleProto> proto) {
   EXPECT_FALSE(article_callback_.is_null());
 
   base::AutoReset<bool> dont_delete_this_in_callback(&destruction_allowed_,

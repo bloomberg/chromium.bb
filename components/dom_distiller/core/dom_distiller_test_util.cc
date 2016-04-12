@@ -94,7 +94,7 @@ DomDistillerStore* CreateStoreWithFakeDB(
     FakeDB<ArticleEntry>* fake_db,
     const FakeDB<ArticleEntry>::EntryMap& store_model) {
   return new DomDistillerStore(
-      scoped_ptr<leveldb_proto::ProtoDatabase<ArticleEntry> >(fake_db),
+      std::unique_ptr<leveldb_proto::ProtoDatabase<ArticleEntry>>(fake_db),
       EntryMapToList(store_model), FakeDB<ArticleEntry>::DirectoryForTestDB());
 }
 
