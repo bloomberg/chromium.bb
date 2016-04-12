@@ -750,9 +750,13 @@ FileManager.prototype = /** @struct */ {
     // files. But it does not work for folders (e.g., dialog for loading
     // unpacked extensions).
     if (allowedPaths === AllowedPaths.NATIVE_PATH &&
-        !DialogType.isFolderDialog(this.launchParams_.type) &&
-        this.launchParams_.type != DialogType.SELECT_SAVEAS_FILE) {
-      allowedPaths = AllowedPaths.ANY_PATH;
+        !DialogType.isFolderDialog(this.launchParams_.type)) {
+      if (this.launchParams_.type == DialogType.SELECT_SAVEAS_FILE) {
+        // Only drive can create snapshot files for saving.
+        allowedPaths = AllowedPaths.NATIVE_OR_DRIVE_PATH;
+      } else {
+        allowedPaths = AllowedPaths.ANY_PATH;
+      }
     }
 
     // VolumeManagerWrapper hides virtual file system related event and data
