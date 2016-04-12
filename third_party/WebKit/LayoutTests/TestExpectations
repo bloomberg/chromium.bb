@@ -509,7 +509,7 @@ crbug.com/596780 virtual/spv2/compositing/rtl/rtl-iframe-relative.html [ Failure
 crbug.com/596780 virtual/spv2/compositing/visibility/layer-visible-content.html [ Failure ]
 
 # This test has a paint invalidation failure that needs to be investigated.
-crbug.com/600618 virtual/spv2/svg/as-image/svg-image-with-data-uri.html [ Failure ]
+crbug.com/600618 virtual/spv2/svg/as-image/svg-image-with-data-uri.html [ Failure Crash ]
 
 # In imported/web-platform-tests/html/, we prefer checking in failure
 # expectation files. The following tests with [ Failure ] don't have failure
