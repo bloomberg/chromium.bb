@@ -1,0 +1,26 @@
+# Changes to Mojo interfaces require a security review to avoid
+# introducing new sandbox escapes.
+per-file *.mojom=set noparent
+per-file *.mojom=dcheng@chromium.org
+per-file *.mojom=inferno@chromium.org
+per-file *.mojom=jln@chromium.org
+per-file *.mojom=jschuh@chromium.org
+per-file *.mojom=kenrb@chromium.org
+per-file *.mojom=mkwst@chromium.org
+per-file *.mojom=nasko@chromium.org
+per-file *.mojom=palmer@chromium.org
+per-file *.mojom=tsepez@chromium.org
+per-file *.mojom=wfh@chromium.org
+
+# Type converters also need a security review.
+per-file *_type_converters.*=set noparent
+per-file *_type_converters.*=dcheng@chromium.org
+per-file *_type_converters.*=inferno@chromium.org
+per-file *_type_converters.*=jln@chromium.org
+per-file *_type_converters.*=jschuh@chromium.org
+per-file *_type_converters.*=kenrb@chromium.org
+per-file *_type_converters.*=mkwst@chromium.org
+per-file *_type_converters.*=nasko@chromium.org
+per-file *_type_converters.*=palmer@chromium.org
+per-file *_type_converters.*=tsepez@chromium.org
+per-file *_type_converters.*=wfh@chromium.org
