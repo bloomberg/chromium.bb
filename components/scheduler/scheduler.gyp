@@ -54,6 +54,9 @@
       # GN version: //components/scheduler:test_support
       'target_name': 'scheduler_test_support',
       'type': 'static_library',
+      'dependencies': [
+        '../../third_party/WebKit/public/blink.gyp:blink',
+      ],
       'include_dirs': [
         '../..',
       ],

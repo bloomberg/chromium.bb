@@ -163,6 +163,12 @@ source_set("test_support") {
   sources = [
     "test/lazy_scheduler_message_loop_delegate_for_tests.cc",
     "test/lazy_scheduler_message_loop_delegate_for_tests.h",
+    "test/renderer_scheduler_test_support.cc",
+    "test/renderer_scheduler_test_support.h",
+  ]
+
+  deps = [
+    "//third_party/WebKit/public:blink",
   ]
 
   public_deps = [

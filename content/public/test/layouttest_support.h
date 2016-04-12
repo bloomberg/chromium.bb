@@ -143,6 +143,9 @@ void DisableAutoResizeMode(RenderView* render_view,
 std::string DumpBackForwardList(std::vector<PageState>& page_state,
                                 size_t current_index);
 
+// Run all pending idle tasks immediately, and then invoke callback.
+void SchedulerRunIdleTasks(const base::Closure& callback);
+
 }  // namespace content
 
 #endif  // CONTENT_PUBLIC_TEST_LAYOUTTEST_SUPPORT_H_

@@ -126,7 +126,8 @@ RendererSchedulerImpl::MainThreadOnly::MainThreadOnly(
       have_reported_blocking_intervention_since_navigation(false),
       has_visible_render_widget_with_touch_handler(false),
       begin_frame_not_expected_soon(false),
-      expensive_task_blocking_allowed(true) {}
+      expensive_task_blocking_allowed(true),
+      in_idle_period_for_testing(false) {}
 
 RendererSchedulerImpl::MainThreadOnly::~MainThreadOnly() {}
 
@@ -383,10 +384,20 @@ void RendererSchedulerImpl::OnRendererForegrounded() {
 }
 
 void RendererSchedulerImpl::EndIdlePeriod() {
+  if (MainThreadOnly().in_idle_period_for_testing)
+    return;
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
                "RendererSchedulerImpl::EndIdlePeriod");
   helper_.CheckOnValidThread();
   idle_helper_.EndIdlePeriod();
+}
+
+void RendererSchedulerImpl::EndIdlePeriodForTesting(
+    const base::Closure& callback,
+    base::TimeTicks time_remaining) {
+  MainThreadOnly().in_idle_period_for_testing = false;
+  EndIdlePeriod();
+  callback.Run();
 }
 
 // static
@@ -572,6 +583,16 @@ bool RendererSchedulerImpl::ShouldYieldForHighPriorityWork() {
 base::TimeTicks RendererSchedulerImpl::CurrentIdleTaskDeadlineForTesting()
     const {
   return idle_helper_.CurrentIdleTaskDeadline();
+}
+
+void RendererSchedulerImpl::RunIdleTasksForTesting(
+    const base::Closure& callback) {
+  MainThreadOnly().in_idle_period_for_testing = true;
+  IdleTaskRunner()->PostIdleTask(
+      FROM_HERE,
+      base::Bind(&RendererSchedulerImpl::EndIdlePeriodForTesting,
+                 weak_factory_.GetWeakPtr(), callback));
+  idle_helper_.EnableLongIdlePeriod();
 }
 
 void RendererSchedulerImpl::MaybeUpdatePolicy() {

@@ -305,6 +305,7 @@ static_library("layouttest_support") {
     ":test_support",
     "//cc",
     "//cc/blink",
+    "//components/scheduler:test_support",
     "//components/test_runner:test_runner",
     "//content/browser:for_content_tests",
     "//content/public/common",

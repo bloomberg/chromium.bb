@@ -11,6 +11,7 @@
 #include "base/lazy_instance.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
+#include "components/scheduler/test/renderer_scheduler_test_support.h"
 #include "components/test_runner/test_common.h"
 #include "components/test_runner/web_frame_test_proxy.h"
 #include "components/test_runner/web_test_proxy.h"
@@ -451,6 +452,12 @@ std::string DumpBackForwardList(std::vector<PageState>& page_state,
   }
   result.append("===============================================\n");
   return result;
+}
+
+void SchedulerRunIdleTasks(const base::Closure& callback) {
+    scheduler::RendererScheduler* scheduler =
+        content::RenderThreadImpl::current()->GetRendererScheduler();
+    scheduler::RunIdleTasksForTesting(scheduler, callback);
 }
 
 }  // namespace content

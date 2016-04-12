@@ -97,6 +97,8 @@
       # Sources list duplicated in GN build.
       'test/lazy_scheduler_message_loop_delegate_for_tests.cc',
       'test/lazy_scheduler_message_loop_delegate_for_tests.h',
+      'test/renderer_scheduler_test_support.h',
+      'test/renderer_scheduler_test_support.cc',
     ],
   },
 }

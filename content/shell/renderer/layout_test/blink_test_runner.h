@@ -155,6 +155,7 @@ class BlinkTestRunner : public RenderViewObserver,
     blink::WebLocalFrame* frame,
     const blink::WebPluginParams& params) override;
   float GetDeviceScaleFactorForTest() const override;
+  void RunIdleTasks(const base::Closure& callback) override;
 
   // Resets a RenderView to a known state for layout tests. It is used both when
   // a RenderView is created and when reusing an existing RenderView for the

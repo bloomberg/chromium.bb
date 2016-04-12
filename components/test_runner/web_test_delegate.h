@@ -278,6 +278,9 @@ class WebTestDelegate {
     const blink::WebPluginParams& params) = 0;
 
   virtual float GetDeviceScaleFactorForTest() const = 0;
+
+  // Run all pending idle tasks, and then run callback.
+  virtual void RunIdleTasks(const base::Closure& callback) = 0;
 };
 
 }  // namespace test_runner

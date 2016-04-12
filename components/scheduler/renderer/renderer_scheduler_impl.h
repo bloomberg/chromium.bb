@@ -106,6 +106,9 @@ class SCHEDULER_EXPORT RendererSchedulerImpl
   TaskCostEstimator* GetTimerTaskCostEstimatorForTesting();
   IdleTimeEstimator* GetIdleTimeEstimatorForTesting();
   base::TimeTicks CurrentIdleTaskDeadlineForTesting() const;
+  void RunIdleTasksForTesting(const base::Closure& callback);
+  void EndIdlePeriodForTesting(const base::Closure& callback,
+                               base::TimeTicks time_remaining);
 
   base::TickClock* tick_clock() const;
 
@@ -343,6 +346,7 @@ class SCHEDULER_EXPORT RendererSchedulerImpl
     bool has_visible_render_widget_with_touch_handler;
     bool begin_frame_not_expected_soon;
     bool expensive_task_blocking_allowed;
+    bool in_idle_period_for_testing;
     std::set<WebViewSchedulerImpl*> web_view_schedulers_;  // Not owned.
   };
 

@@ -991,6 +991,7 @@
       'dependencies': [
         'content.gyp:content_renderer',
         'test_support_content',
+        '../components/scheduler/scheduler.gyp:scheduler_test_support',
         '../components/test_runner/test_runner.gyp:test_runner',
         '../skia/skia.gyp:skia',
         '../ui/accessibility/accessibility.gyp:ax_gen',

@@ -704,6 +704,10 @@ float BlinkTestRunner::GetDeviceScaleFactorForTest() const {
   return render_view()->GetDeviceScaleFactorForTest();
 }
 
+void BlinkTestRunner::RunIdleTasks(const base::Closure& callback) {
+    SchedulerRunIdleTasks(callback);
+}
+
 bool BlinkTestRunner::AddMediaStreamVideoSourceAndTrack(
     blink::WebMediaStream* stream) {
   DCHECK(stream);

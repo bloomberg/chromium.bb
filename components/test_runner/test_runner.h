@@ -588,6 +588,11 @@ class TestRunner : public WebTestRunner {
   void ResolveBeforeInstallPromptPromise(int request_id,
                                          const std::string& platform);
 
+  // Immediately run all pending idle tasks, including all pending
+  // requestIdleCallback calls.  Invoke the callback when all
+  // idle tasks are complete.
+  void RunIdleTasks(v8::Local<v8::Function> callback);
+
   // Calls setlocale(LC_ALL, ...) for a specified locale.
   // Resets between tests.
   void SetPOSIXLocale(const std::string& locale);

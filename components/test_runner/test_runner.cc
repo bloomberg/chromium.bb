@@ -190,6 +190,7 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void ResetTestHelperControllers();
   void ResolveBeforeInstallPromptPromise(int request_id,
                                          const std::string& platform);
+  void RunIdleTasks(v8::Local<v8::Function> callback);
   void SendBluetoothManualChooserEvent(const std::string& event,
                                        const std::string& argument);
   void SetAcceptLanguages(const std::string& accept_languages);
@@ -474,6 +475,8 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
                  &TestRunnerBindings::ResetTestHelperControllers)
       .SetMethod("resolveBeforeInstallPromptPromise",
                  &TestRunnerBindings::ResolveBeforeInstallPromptPromise)
+      .SetMethod("runIdleTasks",
+                 &TestRunnerBindings::RunIdleTasks)
       .SetMethod("selectionAsMarkup", &TestRunnerBindings::SelectionAsMarkup)
 
       // The Bluetooth functions are specified at
@@ -1460,6 +1463,12 @@ void TestRunnerBindings::ResolveBeforeInstallPromptPromise(
     return;
 
   runner_->ResolveBeforeInstallPromptPromise(request_id, platform);
+}
+
+void TestRunnerBindings::RunIdleTasks(v8::Local<v8::Function> callback) {
+  if (!runner_)
+    return;
+  runner_->RunIdleTasks(callback);
 }
 
 std::string TestRunnerBindings::PlatformName() {
@@ -2950,6 +2959,11 @@ void TestRunner::ResolveBeforeInstallPromptPromise(
     int request_id,
     const std::string& platform) {
   test_interfaces_->GetAppBannerClient()->ResolvePromise(request_id, platform);
+}
+
+void TestRunner::RunIdleTasks(v8::Local<v8::Function> callback) {
+    delegate_->RunIdleTasks(
+        CreateClosureThatPostsV8Callback(callback));
 }
 
 void TestRunner::SetPOSIXLocale(const std::string& locale) {
