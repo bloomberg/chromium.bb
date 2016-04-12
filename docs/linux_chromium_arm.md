@@ -38,11 +38,6 @@ gn args:
 
     target_cpu = "arm"
 
-Or the following gyp settings:
-
-    GYP_CROSSCOMPILE=1
-    GYP_DEFINES="target_arch=arm"
-
 ## Testing
 
 ### Automated Build and Testing

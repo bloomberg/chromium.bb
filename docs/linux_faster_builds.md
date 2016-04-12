@@ -66,13 +66,8 @@ enormous (nearly 1gb in debug mode) files. If you dynamically link, you save a
 lot of time linking for a bit of time during startup, which is fine especially
 when you're in an edit/compile/test cycle.
 
-Run gyp with the `-Dcomponent=shared_library` flag to put it in this
-configuration.  (Or set those flags via the `GYP_DEFINES` environment variable.)
-
-e.g.
-
-    build/gyp_chromium -D component=shared_library
-    ninja -C out/Debug chrome
+Add the flag `is_component_build=true` in your build args (to edit build args
+run `gn args out/foo` where `out/foo` is your build directory).
 
 See the
 [component build page](http://www.chromium.org/developers/how-tos/component-build)
@@ -103,17 +98,8 @@ If you're working on UI bits where you don't care to trace into WebKit you can
 cut down the size and slowness of debug builds significantly by building WebKit
 without debug symbols.
 
-Set the gyp variable `remove_webcore_debug_symbols=1`, either via the
-`GYP_DEFINES` environment variable, the `-D` flag to gyp, or by adding the
-following to `~/.gyp/include.gypi`:
-
-```
-{
-  'variables': {
-    'remove_webcore_debug_symbols': 1,
-  },
-}
-```
+Set the GN build arg `remove_webcore_debug_symbols=true` (to edit build args
+run `gn args out/foo` where `out/foo` is your build directory).
 
 ## Tune ccache for multiple working directories
 

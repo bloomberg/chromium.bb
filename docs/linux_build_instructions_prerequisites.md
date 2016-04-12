@@ -156,17 +156,6 @@ Note 3: some of these packages might not be explicitly necessary as they come as
 dependencies, there is no harm in including them however.
 ***
 
-*** note
-Note 4: to build on 64 bit systems use, instead of
-`GYP_DEFINES=target_arch=x64`, as mentioned in the general notes for building on
-64 bit:
-
-```shell
-export GYP_DEFINES="target_arch=x64"
-gclient runhooks --force
-```
-***
-
 #### Gentoo setup
 
     emerge www-client/chromium

@@ -17,9 +17,8 @@ Here's an overview of the steps you'll run:
 
 1.  **gclient**. A checkout involves pulling nearly 100 different SVN
     repositories of code. This process is managed with a tool called `gclient`.
-1.  **GN** / **gyp**. Cross-platform build configuration systems (GYP is the
-    older one, GN is the one being transitioned to). It generates ninja build
-    files. Running `gn`/`gyp` is analogous to the `./configure` step seen in
+1.  **GN**. Cross-platform build configuration system.  It generates ninja
+    build files. Running `gn` is analogous to the `./configure` step seen in
     most other software.
 1.  **ninja**. The actual build itself uses `ninja`. A prebuilt binary is in
     `depot_tools` and should already be in your path if you followed the steps
@@ -42,7 +41,7 @@ your checkout.
 
 ## Compilation
 
-The weird "`src/`" directory is an artifact of `gclient`. Start with:
+The "`src/`" directory is an artifact of `gclient`. Start with:
 
     $ cd src
 
@@ -89,18 +88,12 @@ to see what ninja is actually doing.
 
 ### Clean builds
 
-If you're using GN, you can clean the build directory (`out/Default` in this
-example):
+You can clean the build directory (`out/Default` in this example):
 
     gn clean out/Default
 
 This will delete all files except a bootstrap ninja file necessary for
 recreating the build.
-
-If you're using GYP, do:
-
-    rm -rf out
-    gclient runhooks
 
 Ninja can also be used to clean a build with `ninja -C out/Debug -t clean` but
 this will not be as complete as the above methods.

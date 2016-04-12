@@ -270,8 +270,8 @@ https://groups.google.com/a/chromium.org/forum/#!searchin/chromium-dev/gdb-add-i
 for more info.
 
 You can improve GDB load time significantly at the cost of link time by
-plitting symbols from the object files. In GN, set `use_debug_fission=false` in
-your "gn args". In GYP add `linux_use_debug_fission=0` to your `GYP_DEFINES`.
+splitting symbols from the object files. In GN, set `use_debug_fission=false` in
+your "gn args".
 
 ## Core files
 
@@ -428,10 +428,9 @@ some instances in webkit that are ignorable. On systems with prelink and address
 space randomization (e.g. Fedora), you may also see valgrind errors in libstdc++
 on startup and in gnome-breakpad.
 
-Valgrind doesn't seem to play nice with tcmalloc. To disable tcmalloc run GYP
+Valgrind doesn't seem to play nice with tcmalloc. To disable tcmalloc set the GN arg:
 
-    $ cd $CHROMIUM_ROOT/src
-    $ build/gyp_chromium -Duse_allocator=none
+    use_allocator="none"
 
 and rebuild.
 

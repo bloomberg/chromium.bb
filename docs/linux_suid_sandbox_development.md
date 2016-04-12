@@ -1,5 +1,9 @@
 # Linux SUID Sandbox Development
 
+*IMPORTANT NOTE: The Linux SUID sandbox is almost but not completely removed.
+See https://bugs.chromium.org/p/chromium/issues/detail?id=598454
+This page is mostly out-of-date.*
+
 For context see [LinuxSUIDSandbox](linux_suid_sandbox.md)
 
 We need a SUID helper binary to turn on the sandbox on Linux.

@@ -280,6 +280,10 @@ requires the Eclipse knows correct include paths and pre-processor definitions.
 After fighting with with a number of approaches, I've found the below to work
 best for me.
 
+*The instrcutions below are out-of-date since it references GYP. Please see
+`gn help gen` for how to generate an Eclipse CDT file in GN. If you use
+Eclipse and make it work, please update this documentation.*
+
 1.  From a shell in your src directory, run
     `GYP_GENERATORS=ninja,eclipse build/gyp_chromium`
     1.  This generates <project root>/out/Debug/eclipse-cdt-settings.xml which
