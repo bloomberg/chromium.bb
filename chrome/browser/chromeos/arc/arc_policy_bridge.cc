@@ -24,24 +24,43 @@ namespace arc {
 
 namespace {
 
+const char* kArcGlobalAppRestrictions = "globalAppRestrictions";
+
 // invert_bool_value: If the Chrome policy and the ARC policy with boolean value
 // have opposite semantics, set this to true so the bool is inverted before
 // being added. Otherwise, set it to false.
-void AddPolicy(const std::string arc_policy_name,
-               const std::string policy_name,
+void AddPolicy(const std::string& arc_policy_name,
+               const std::string& policy_name,
                const policy::PolicyMap& policy_map,
                bool invert_bool_value,
-               base::DictionaryValue& filtered_policies) {
+               base::DictionaryValue* filtered_policies) {
   const base::Value* const policy_value = policy_map.GetValue(policy_name);
   if (policy_value) {
     if (invert_bool_value && policy_value->IsType(base::Value::TYPE_BOOLEAN)) {
       bool bool_value;
       policy_value->GetAsBoolean(&bool_value);
-      filtered_policies.SetBoolean(arc_policy_name, !bool_value);
+      filtered_policies->SetBoolean(arc_policy_name, !bool_value);
     } else {
-      filtered_policies.Set(arc_policy_name,
-                            policy_value->CreateDeepCopy().release());
+      filtered_policies->Set(arc_policy_name, policy_value->CreateDeepCopy());
     }
+  }
+}
+
+void AddGlobalAppRestriction(const std::string& arc_app_restriction_name,
+                             const std::string& policy_name,
+                             const policy::PolicyMap& policy_map,
+                             base::DictionaryValue* filtered_policies) {
+  const base::Value* const policy_value = policy_map.GetValue(policy_name);
+  if (policy_value) {
+    base::DictionaryValue* global_app_restrictions = nullptr;
+    if (!filtered_policies->GetDictionary(kArcGlobalAppRestrictions,
+                                          &global_app_restrictions)) {
+      global_app_restrictions = new base::DictionaryValue();
+      filtered_policies->Set(kArcGlobalAppRestrictions,
+                             global_app_restrictions);
+    }
+    global_app_restrictions->SetWithoutPathExpansion(
+        arc_app_restriction_name, policy_value->CreateDeepCopy());
   }
 }
 
@@ -69,7 +88,15 @@ std::string GetFilteredJSONPolicies(const policy::PolicyMap& policy_map) {
 
   // Keep them sorted by the ARC policy names.
   AddPolicy("cameraDisabled", policy::key::kVideoCaptureAllowed, policy_map,
-            true, filtered_policies);
+            true, &filtered_policies);
+
+  // Add global app restrictions.
+  AddGlobalAppRestriction("com.android.browser:URLBlacklist",
+                          policy::key::kURLBlacklist, policy_map,
+                          &filtered_policies);
+  AddGlobalAppRestriction("com.android.browser:URLWhitelist",
+                          policy::key::kURLWhitelist, policy_map,
+                          &filtered_policies);
 
   std::string policy_json;
   JSONStringValueSerializer serializer(&policy_json);

@@ -14,6 +14,7 @@
 #include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/core/common/policy_types.h"
 #include "mojo/public/cpp/bindings/string.h"
+#include "policy/policy_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -115,7 +116,37 @@ TEST_F(ArcPolicyBridgeTest, VideoCaptureAllowedTest) {
       PolicyStringCallback("{\"cameraDisabled\":true}"));
 }
 
-TEST_F(ArcPolicyBridgeTest, AllPoliciesTest) {
+TEST_F(ArcPolicyBridgeTest, URLBlacklistTest) {
+  base::ListValue blacklist;
+  blacklist.Append(new base::StringValue("www.blacklist1.com"));
+  blacklist.Append(new base::StringValue("www.blacklist2.com"));
+  policy_map().Set(policy::key::kURLBlacklist, policy::POLICY_LEVEL_MANDATORY,
+                   policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
+                   blacklist.DeepCopy(), nullptr);
+  policy_bridge()->GetPolicies(
+      PolicyStringCallback("{\"globalAppRestrictions\":"
+                           "{\"com.android.browser:URLBlacklist\":"
+                           "[\"www.blacklist1.com\","
+                           "\"www.blacklist2.com\""
+                           "]}}"));
+}
+
+TEST_F(ArcPolicyBridgeTest, URLWhitelistTest) {
+  base::ListValue whitelist;
+  whitelist.Append(new base::StringValue("www.whitelist1.com"));
+  whitelist.Append(new base::StringValue("www.whitelist2.com"));
+  policy_map().Set(policy::key::kURLWhitelist, policy::POLICY_LEVEL_MANDATORY,
+                   policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
+                   whitelist.DeepCopy(), nullptr);
+  policy_bridge()->GetPolicies(
+      PolicyStringCallback("{\"globalAppRestrictions\":"
+                           "{\"com.android.browser:URLWhitelist\":"
+                           "[\"www.whitelist1.com\","
+                           "\"www.whitelist2.com\""
+                           "]}}"));
+}
+
+TEST_F(ArcPolicyBridgeTest, MultiplePoliciesTest) {
   // Keep them in alphabetical order.
   policy_map().Set(
       "ArcApplicationPolicy", policy::POLICY_LEVEL_MANDATORY,
