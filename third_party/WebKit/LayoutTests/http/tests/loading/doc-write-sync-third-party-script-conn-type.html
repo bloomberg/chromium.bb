@@ -6,14 +6,14 @@
     var jsLoaded = false;
     var loadSuccess = false;
     if (window.internals) {
-        internals.settings.setDisallowFetchForDocWrittenScriptsInMainFrame(true);
+        internals.settings.setDisallowFetchForDocWrittenScriptsInMainFrameOnSlowConnections(true);
         internals.setNetworkStateNotifierTestOnly(true);
         internals.setNetworkConnectionInfo('cellular3g', 2.0);
         internals.evictAllResources();
 
         window.addEventListener('beforeunload', function() {
             internals.setNetworkStateNotifierTestOnly(false);
-            internals.settings.setDisallowFetchForDocWrittenScriptsInMainFrame(false);
+            internals.settings.setDisallowFetchForDocWrittenScriptsInMainFrameOnSlowConnections(false);
         }, false);
     }
     document.write('<scr' + 'ipt src="' + src + '" onload="loadSuccess=true"></scr' + 'ipt>');
@@ -23,5 +23,4 @@
         assert_true(jsLoaded);
         assert_true(loadSuccess);
     }, "Document.written scripts are not blocked in a fast connection");
-
 </script>

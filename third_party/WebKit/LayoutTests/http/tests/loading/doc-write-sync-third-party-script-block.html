@@ -2,9 +2,9 @@
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 <script>
-    var sameOrigin = 'http://127.0.0.1:8000'
-    var crossOrigin = 'http://localhost:8000' 
-    var filePath = '/loading/resources/js-loaded.js'
+    var sameOrigin = 'http://127.0.0.1:8000';
+    var crossOrigin = 'http://localhost:8000';
+    var filePath = '/loading/resources/js-loaded.js';
     var jsLoaded = false;
     var loadSuccess = false;
 
@@ -17,18 +17,17 @@
         assert_true(jsLoaded);
         assert_true(loadSuccess);
     }, "Blocking of scripts doesn't come into effect since feature is disabled");
-    
 </script>
 <script>
     if (window.internals) {
-        internals.settings.setDisallowFetchForDocWrittenScriptsInMainFrame(true);
+        internals.settings.setDisallowFetchForDocWrittenScriptsInMainFrameOnSlowConnections(true);
         internals.setNetworkStateNotifierTestOnly(true);
         internals.setNetworkConnectionInfo('cellular2g', 1.0);
         internals.evictAllResources();
 
         // Reset the state of the singleton network state notifier.
         window.addEventListener('beforeunload', function() {
-            internals.settings.setDisallowFetchForDocWrittenScriptsInMainFrame(false);
+            internals.settings.setDisallowFetchForDocWrittenScriptsInMainFrameOnSlowConnections(false);
             internals.setNetworkStateNotifierTestOnly(false);
         }, false);
     }
@@ -59,7 +58,6 @@
         assert_true(jsLoaded);
         assert_true(loadSuccess);
     }, "cross-origin script not blocked since it is cached");
-    
 </script>
 <script>
     jsLoaded = false;

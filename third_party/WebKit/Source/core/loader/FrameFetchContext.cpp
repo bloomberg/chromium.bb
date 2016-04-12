@@ -75,6 +75,38 @@
 
 namespace blink {
 
+namespace {
+
+bool shouldDisallowFetchForMainFrameScript(const ResourceRequest& request, FetchRequest::DeferOption defer, const Document& document)
+{
+    // Only scripts inserted via document.write are candidates for having their
+    // fetch disallowed.
+    if (!document.isInDocumentWrite())
+        return false;
+
+    if (!document.settings())
+        return false;
+
+    const bool isSlowConnection = networkStateNotifier().connectionType() == WebConnectionTypeCellular2G;
+    const bool disallowFetch = document.settings()->disallowFetchForDocWrittenScriptsInMainFrame() || (document.settings()->disallowFetchForDocWrittenScriptsInMainFrameOnSlowConnections() && isSlowConnection);
+    if (!disallowFetch)
+        return false;
+
+    // Only block synchronously loaded (parser blocking) scripts.
+    if (defer != FetchRequest::NoDefer)
+        return false;
+
+    // Avoid blocking same origin scripts, as they may be used to render main
+    // page content, whereas cross-origin scripts inserted via document.write
+    // are likely to be third party content.
+    if (request.url().host() == document.getSecurityOrigin()->domain())
+        return false;
+
+    return true;
+}
+
+} // namespace
+
 FrameFetchContext::FrameFetchContext(DocumentLoader* loader, Document* document)
     : m_document(document)
     , m_documentLoader(loader)
@@ -205,28 +237,8 @@ WebCachePolicy FrameFetchContext::resourceRequestCachePolicy(const ResourceReque
     // For users on slow connections, we want to avoid blocking the parser in
     // the main frame on script loads inserted via document.write, since it can
     // add significant delays before page content is displayed on the screen.
-    if (type == Resource::Script && isMainFrame()) {
-        const bool isInDocumentWrite = m_document && m_document->isInDocumentWrite();
-        const bool disallowFetchForDocWriteScripts = frame()->settings() && frame()->settings()->disallowFetchForDocWrittenScriptsInMainFrame();
-
-        if (isInDocumentWrite && disallowFetchForDocWriteScripts) {
-            // only synchronously loaded scripts should be blocked
-            const bool isSync = defer == FetchRequest::NoDefer;
-
-            // Not blocking same origin scripts as they may be used to render main page content
-            // whereas cross-origin scripts inserted via document.write are likely
-            // for third party content.
-            const bool isThirdParty = request.url().host() != m_document->getSecurityOrigin()->domain();
-
-            // Only blocking in slow connections where the performance penalty is worst case.
-            // For now we restrict slow connections to 2G, in future this might be expanded using the
-            // network quality estimator.
-            const bool isSlowConnection = networkStateNotifier().connectionType() == WebConnectionTypeCellular2G;
-
-            if (isSync && isThirdParty && isSlowConnection)
-                return WebCachePolicy::ReturnCacheDataDontLoad;
-        }
-    }
+    if (type == Resource::Script && isMainFrame() && m_document && shouldDisallowFetchForMainFrameScript(request, defer, *m_document))
+        return WebCachePolicy::ReturnCacheDataDontLoad;
 
     if (request.isConditional())
         return WebCachePolicy::ValidatingCacheData;

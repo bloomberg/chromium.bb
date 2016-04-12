@@ -6543,11 +6543,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Fast start
         </message>
       </if>
-      <message name="IDS_FLAGS_LOW_PRIORITY_IFRAMES_UI_NAME" desc="Name of the flag to enable the low priority iframes experiment.">
-        Low priority iframes.
+      <message name="IDS_FLAGS_DISALLOW_DOC_WRITTEN_SCRIPTS_UI_NAME" desc="Name of the flag to disallow fetch of scripts inserted into the main frame by document.write.">
+        Block scripts loaded via document.write
       </message>
-      <message name="IDS_FLAGS_LOW_PRIORITY_IFRAMES_UI_DESCRIPTION" desc="Description of the flag to enable the low priority iframes experiment.">
-        Reduces the load priority of iframe resources.
+      <message name="IDS_FLAGS_DISALLOW_DOC_WRITTEN_SCRIPTS_UI_DESCRIPTION" desc="Description of the flag to disallow fetch of scripts inserted into the main frame by document.write.">
+        Disallows fetches for third-party parser-blocking scripts inserted into the main frame via document.write.
       </message>
       <if expr="is_win">
         <message name="IDS_FLAGS_PPAPI_WIN32K_LOCKDOWN_NAME" desc="Name of the flag to enable PPAPI win32k lockdown experiment.">
@@ -8811,7 +8811,7 @@ I don't think this site should be blocked!
       </message>
       <message name="IDS_MEDIA_TAB_CAPTURE_WITH_AUDIO_NOTIFICATION_TEXT_DELEGATED" desc="label used in screen capture notification UI to show the screen sharing status when the stream is consumed by a tab instead of the app initiating the window picker">
         <ph name="APP_NAME">$1<ex>Google Cast</ex></ph> is sharing a Chrome tab and audio with <ph name="TAB_NAME">$2<ex>https://google.com</ex></ph>.
-      </message>      
+      </message>
       <message name="IDS_MEDIA_SCREEN_CAPTURE_NOTIFICATION_STOP" desc="Text shown on the button that stops screen capture.">
         Stop sharing
       </message>
