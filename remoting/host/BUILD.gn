@@ -598,17 +598,16 @@ if (is_mac) {  # TODO(GYP) Mac build of remoting host.
         "/MANIFEST:EMBED",
         "/MANIFESTINPUT:" +
             rebase_path("win/dpi_aware.manifest", root_build_dir),
-        "/MANIFESTUAC",
         "/ENTRY:HostEntryPoint",
 
         # "/NODEFAULTLIB",
       ]
 
       if (is_official_build) {
-        ldflags += [
-          "/MANIFESTUAC:level=2",
-          "/MANIFESTUAC:uiAccess=true",
-        ]
+        ldflags +=
+            [ "/MANIFESTUAC:level='requiresAdministrator' uiAccess='true'" ]
+      } else {
+        ldflags += [ "/MANIFESTUAC" ]
       }
     }
 
