@@ -151,7 +151,7 @@
       'Android Tests (trial)(dbg)': 'none',
       'Android Tests (x86 emulator)': 'android_gn_debug_static_bot_x86',
       'Android Asan Builder Tests (dbg)':
-          'android_asan_gn_debug_bot_minimal_symbols',
+          'android_asan_gn_clang_debug_bot_minimal_symbols',
       'Android Builder (dbg)': 'android_gn_debug_static_bot',
       'CFI Linux CF': 'gn_cfi_diag_release_bot',
       'CFI Linux ToT': 'gn_cfi_release_bot',
@@ -856,8 +856,8 @@
   # is not necessarily so (i.e., we might have mac, win, and linux
   # bots all using the 'gn_release_bot' config).
   'configs': {
-    'android_asan_gn_debug_bot_minimal_symbols': [
-      'android', 'asan', 'gn', 'debug_bot_minimal_symbols',
+    'android_asan_gn_clang_debug_bot_minimal_symbols': [
+      'android', 'asan', 'gn', 'clang', 'debug_bot_minimal_symbols',
     ],
 
     'android_cast_gn_debug_static_bot': [
