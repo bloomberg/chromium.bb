@@ -222,6 +222,7 @@ class MetaBuildWrapper(object):
 
   def CmdAnalyze(self):
     vals = self.Lookup()
+    self.ClobberIfNeeded(vals)
     if vals['type'] == 'gn':
       return self.RunGNAnalyze(vals)
     else:
@@ -230,7 +231,6 @@ class MetaBuildWrapper(object):
   def CmdGen(self):
     vals = self.Lookup()
     self.ClobberIfNeeded(vals)
-
     if vals['type'] == 'gn':
       return self.RunGNGen(vals)
     else:
