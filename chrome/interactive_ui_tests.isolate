@@ -44,6 +44,7 @@
     ['OS=="linux" or OS=="mac" or OS=="win"', {
       'variables': {
         'files': [
+          '../content/test/data/',
           '../net/data/ssl/certificates/',
           '../net/tools/testserver/',
           '../ppapi/tests/test_case.html',

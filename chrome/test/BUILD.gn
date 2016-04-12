@@ -296,6 +296,7 @@ if (!is_android) {
 
     data = [
       "data/",
+      "//content/test/data/",
       "//net/data/ssl/certificates/",
       "//net/tools/testserver/",
       "//ppapi/tests/test_case.html",

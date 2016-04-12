@@ -236,6 +236,10 @@ bool FrameMatchesName(const std::string& name, RenderFrameHost* frame);
 bool FrameIsChildOfMainFrame(RenderFrameHost* frame);
 bool FrameHasSourceUrl(const GURL& url, RenderFrameHost* frame);
 
+// Finds the child frame at the specified |index| for |frame| and returns its
+// RenderFrameHost.  Returns nullptr if such child frame does not exist.
+RenderFrameHost* ChildFrameAt(RenderFrameHost* frame, size_t index);
+
 // Executes the WebUI resource test runner injecting each resource ID in
 // |js_resource_ids| prior to executing the tests.
 //

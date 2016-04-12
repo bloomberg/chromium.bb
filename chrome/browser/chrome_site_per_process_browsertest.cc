@@ -70,10 +70,10 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
   EXPECT_TRUE(NavigateIframeToURL(active_web_contents, "test", cross_site_url));
 
   // Find the subframe's RenderFrameHost.
-  content::RenderFrameHost* frame_host = FrameMatchingPredicate(
-      active_web_contents,
-      base::Bind(&content::FrameHasSourceUrl, cross_site_url));
+  content::RenderFrameHost* frame_host =
+      ChildFrameAt(active_web_contents->GetMainFrame(), 0);
   ASSERT_TRUE(frame_host);
+  EXPECT_EQ(cross_site_url, frame_host->GetLastCommittedURL());
   EXPECT_TRUE(frame_host->IsCrossProcessSubframe());
 
   // Check that JS storage APIs can be accessed successfully.
