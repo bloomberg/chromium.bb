@@ -4163,6 +4163,10 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   return _lastRegisteredRequestURL;
 }
 
+- (CRWWebControllerPendingNavigationInfo*)pendingNavigationInfo {
+  return _pendingNavigationInfo;
+}
+
 - (void)simulateLoadRequestWithURL:(const GURL&)URL {
   _lastRegisteredRequestURL = URL;
   _loadPhase = web::LOAD_REQUESTED;
@@ -4176,10 +4180,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
 - (void)resetExternalRequest {
   _externalRequest.reset();
-}
-
-- (CRWWebControllerPendingNavigationInfo*)pendingNavigationInfo {
-  return _pendingNavigationInfo;
 }
 
 - (void)resetPendingNavigationInfo {

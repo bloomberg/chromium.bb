@@ -104,8 +104,6 @@ static NSString* const kScriptImmediateName = @"crwebinvokeimmediate";
 // Downloader for PassKit files. Lazy initialized.
 @property(nonatomic, readonly) CRWPassKitDownloader* passKitDownloader;
 
-- (CRWWebControllerPendingNavigationInfo*)pendingNavigationInfo;
-
 // Designated initializer.
 - (instancetype)initWithWebState:(std::unique_ptr<web::WebStateImpl>)webState;
 
@@ -214,6 +212,10 @@ static NSString* const kScriptImmediateName = @"crwebinvokeimmediate";
 
 // Last URL change registered for load request.
 @property(nonatomic, readonly) GURL lastRegisteredRequestURL;
+
+// Pending information for an in-progress page navigation.
+@property(nonatomic, readonly)
+    CRWWebControllerPendingNavigationInfo* pendingNavigationInfo;
 
 // Returns YES if the object is being deallocated.
 @property(nonatomic, readonly) BOOL isBeingDestroyed;
