@@ -828,6 +828,8 @@ crbug.com/555703 [ Android ] http/tests/media/media-source/mediasource-config-ch
 
 crbug.com/517449 [ Android ] css3/images/optimize-contrast-image.html [ Failure ]
 
+crbug.com/602268 [ Android ] svg/overflow/overflow-on-outermost-svg-element-in-xhtml-defaults.xhtml [ Pass Failure ]
+
 crbug.com/309675 compositing/gestures/gesture-tapHighlight-simple-longPress.html [ Failure ]
 
 crbug.com/245556 compositing/transitions/transform-on-large-layer.html [ Failure ]
