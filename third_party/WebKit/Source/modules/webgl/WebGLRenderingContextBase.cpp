@@ -97,11 +97,11 @@
 #include "public/platform/WebGraphicsContext3D.h"
 #include "public/platform/WebGraphicsContext3DProvider.h"
 #include "public/platform/callback/WebClosure.h"
-#include "wtf/ArrayBufferContents.h"
 #include "wtf/Functional.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/StringUTF8Adaptor.h"
+#include "wtf/typed_arrays/ArrayBufferContents.h"
 
 namespace blink {
 

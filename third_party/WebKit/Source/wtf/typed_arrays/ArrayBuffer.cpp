@@ -23,10 +23,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "wtf/ArrayBuffer.h"
+#include "wtf/typed_arrays/ArrayBuffer.h"
 
-#include "wtf/ArrayBufferView.h"
 #include "wtf/RefPtr.h"
+#include "wtf/typed_arrays/ArrayBufferView.h"
 
 namespace WTF {
 

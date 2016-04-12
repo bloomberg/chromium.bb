@@ -44,9 +44,9 @@
 #include "platform/geometry/FloatSize.h"
 #include "platform/graphics/GraphicsTypes.h"
 #include "platform/graphics/ImageBuffer.h"
-#include "wtf/ArrayBufferContents.h"
 #include "wtf/MathExtras.h"
 #include "wtf/OwnPtr.h"
+#include "wtf/typed_arrays/ArrayBufferContents.h"
 
 namespace blink {
 

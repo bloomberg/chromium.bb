@@ -24,57 +24,57 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef Uint8Array_h
-#define Uint8Array_h
+#ifndef Int8Array_h
+#define Int8Array_h
 
-#include "wtf/IntegralTypedArrayBase.h"
+#include "wtf/typed_arrays/IntegralTypedArrayBase.h"
 
 namespace WTF {
 
 class ArrayBuffer;
 
-class Uint8Array : public IntegralTypedArrayBase<unsigned char> {
+class Int8Array final : public IntegralTypedArrayBase<signed char> {
 public:
-    static inline PassRefPtr<Uint8Array> create(unsigned length);
-    static inline PassRefPtr<Uint8Array> create(const unsigned char* array, unsigned length);
-    static inline PassRefPtr<Uint8Array> create(PassRefPtr<ArrayBuffer>, unsigned byteOffset, unsigned length);
+    static inline PassRefPtr<Int8Array> create(unsigned length);
+    static inline PassRefPtr<Int8Array> create(const signed char* array, unsigned length);
+    static inline PassRefPtr<Int8Array> create(PassRefPtr<ArrayBuffer>, unsigned byteOffset, unsigned length);
 
-    using TypedArrayBase<unsigned char>::set;
-    using IntegralTypedArrayBase<unsigned char>::set;
+    using TypedArrayBase<signed char>::set;
+    using IntegralTypedArrayBase<signed char>::set;
 
     ViewType type() const override
     {
-        return TypeUint8;
+        return TypeInt8;
     }
 
-protected:
-    inline Uint8Array(PassRefPtr<ArrayBuffer>, unsigned byteOffset, unsigned length);
+private:
+    inline Int8Array(PassRefPtr<ArrayBuffer>, unsigned byteOffset, unsigned length);
     // Make constructor visible to superclass.
-    friend class TypedArrayBase<unsigned char>;
+    friend class TypedArrayBase<signed char>;
 };
 
-PassRefPtr<Uint8Array> Uint8Array::create(unsigned length)
+PassRefPtr<Int8Array> Int8Array::create(unsigned length)
 {
-    return TypedArrayBase<unsigned char>::create<Uint8Array>(length);
+    return TypedArrayBase<signed char>::create<Int8Array>(length);
 }
 
-PassRefPtr<Uint8Array> Uint8Array::create(const unsigned char* array, unsigned length)
+PassRefPtr<Int8Array> Int8Array::create(const signed char* array, unsigned length)
 {
-    return TypedArrayBase<unsigned char>::create<Uint8Array>(array, length);
+    return TypedArrayBase<signed char>::create<Int8Array>(array, length);
 }
 
-PassRefPtr<Uint8Array> Uint8Array::create(PassRefPtr<ArrayBuffer> buffer, unsigned byteOffset, unsigned length)
+PassRefPtr<Int8Array> Int8Array::create(PassRefPtr<ArrayBuffer> buffer, unsigned byteOffset, unsigned length)
 {
-    return TypedArrayBase<unsigned char>::create<Uint8Array>(buffer, byteOffset, length);
+    return TypedArrayBase<signed char>::create<Int8Array>(buffer, byteOffset, length);
 }
 
-Uint8Array::Uint8Array(PassRefPtr<ArrayBuffer> buffer, unsigned byteOffset, unsigned length)
-: IntegralTypedArrayBase<unsigned char>(buffer, byteOffset, length)
+Int8Array::Int8Array(PassRefPtr<ArrayBuffer> buffer, unsigned byteOffset, unsigned length)
+    : IntegralTypedArrayBase<signed char>(buffer, byteOffset, length)
 {
 }
 
 } // namespace WTF
 
-using WTF::Uint8Array;
+using WTF::Int8Array;
 
-#endif // Uint8Array_h
+#endif // Int8Array_h

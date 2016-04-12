@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "wtf/ArrayBufferBuilder.h"
+#include "wtf/typed_arrays/ArrayBufferBuilder.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/Assertions.h"

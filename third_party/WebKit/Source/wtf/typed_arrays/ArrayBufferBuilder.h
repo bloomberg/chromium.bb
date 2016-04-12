@@ -32,10 +32,10 @@
 #define ArrayBufferBuilder_h
 
 #include "wtf/Allocator.h"
-#include "wtf/ArrayBuffer.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/RefPtr.h"
 #include "wtf/text/WTFString.h"
+#include "wtf/typed_arrays/ArrayBuffer.h"
 
 namespace WTF {
 

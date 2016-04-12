@@ -23,9 +23,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "ArrayBufferView.h"
+#include "wtf/typed_arrays/ArrayBufferView.h"
 
-#include "ArrayBuffer.h"
+#include "wtf/typed_arrays/ArrayBuffer.h"
 
 namespace WTF {
 

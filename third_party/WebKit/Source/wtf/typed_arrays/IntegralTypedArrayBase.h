@@ -28,7 +28,7 @@
 #define IntegralTypedArrayBase_h
 
 #include "wtf/MathExtras.h"
-#include "wtf/TypedArrayBase.h"
+#include "wtf/typed_arrays/TypedArrayBase.h"
 #include <limits>
 
 namespace WTF {

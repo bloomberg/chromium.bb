@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2009 Apple Inc. All rights reserved.
+ * Copyright (C) 2009 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -23,57 +24,57 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef Int16Array_h
-#define Int16Array_h
+#ifndef Uint16Array_h
+#define Uint16Array_h
 
-#include "wtf/IntegralTypedArrayBase.h"
+#include "wtf/typed_arrays/IntegralTypedArrayBase.h"
 
 namespace WTF {
 
 class ArrayBuffer;
 
-class Int16Array final : public IntegralTypedArrayBase<short> {
+class Uint16Array final : public IntegralTypedArrayBase<unsigned short> {
 public:
-    static inline PassRefPtr<Int16Array> create(unsigned length);
-    static inline PassRefPtr<Int16Array> create(const short* array, unsigned length);
-    static inline PassRefPtr<Int16Array> create(PassRefPtr<ArrayBuffer>, unsigned byteOffset, unsigned length);
+    static inline PassRefPtr<Uint16Array> create(unsigned length);
+    static inline PassRefPtr<Uint16Array> create(const unsigned short* array, unsigned length);
+    static inline PassRefPtr<Uint16Array> create(PassRefPtr<ArrayBuffer>, unsigned byteOffset, unsigned length);
 
-    using TypedArrayBase<short>::set;
-    using IntegralTypedArrayBase<short>::set;
+    using TypedArrayBase<unsigned short>::set;
+    using IntegralTypedArrayBase<unsigned short>::set;
 
     ViewType type() const override
     {
-        return TypeInt16;
+        return TypeUint16;
     }
 
 private:
-    inline Int16Array(PassRefPtr<ArrayBuffer>, unsigned byteOffset, unsigned length);
+    inline Uint16Array(PassRefPtr<ArrayBuffer>, unsigned byteOffset, unsigned length);
     // Make constructor visible to superclass.
-    friend class TypedArrayBase<short>;
+    friend class TypedArrayBase<unsigned short>;
 };
 
-PassRefPtr<Int16Array> Int16Array::create(unsigned length)
+PassRefPtr<Uint16Array> Uint16Array::create(unsigned length)
 {
-    return TypedArrayBase<short>::create<Int16Array>(length);
+    return TypedArrayBase<unsigned short>::create<Uint16Array>(length);
 }
 
-PassRefPtr<Int16Array> Int16Array::create(const short* array, unsigned length)
+PassRefPtr<Uint16Array> Uint16Array::create(const unsigned short* array, unsigned length)
 {
-    return TypedArrayBase<short>::create<Int16Array>(array, length);
+    return TypedArrayBase<unsigned short>::create<Uint16Array>(array, length);
 }
 
-PassRefPtr<Int16Array> Int16Array::create(PassRefPtr<ArrayBuffer> buffer, unsigned byteOffset, unsigned length)
+PassRefPtr<Uint16Array> Uint16Array::create(PassRefPtr<ArrayBuffer> buffer, unsigned byteOffset, unsigned length)
 {
-    return TypedArrayBase<short>::create<Int16Array>(buffer, byteOffset, length);
+    return TypedArrayBase<unsigned short>::create<Uint16Array>(buffer, byteOffset, length);
 }
 
-Int16Array::Int16Array(PassRefPtr<ArrayBuffer> buffer, unsigned byteOffset, unsigned length)
-    : IntegralTypedArrayBase<short>(buffer, byteOffset, length)
+Uint16Array::Uint16Array(PassRefPtr<ArrayBuffer> buffer, unsigned byteOffset, unsigned length)
+    : IntegralTypedArrayBase<unsigned short>(buffer, byteOffset, length)
 {
 }
 
 } // namespace WTF
 
-using WTF::Int16Array;
+using WTF::Uint16Array;
 
-#endif // Int16Array_h
+#endif // Uint16Array_h

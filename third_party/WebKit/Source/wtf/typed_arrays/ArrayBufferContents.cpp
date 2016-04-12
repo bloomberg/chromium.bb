@@ -24,7 +24,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "wtf/ArrayBufferContents.h"
+#include "wtf/typed_arrays/ArrayBufferContents.h"
 
 #include "wtf/Assertions.h"
 #include "wtf/PartitionAlloc.h"

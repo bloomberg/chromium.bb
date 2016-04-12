@@ -42,8 +42,8 @@
 #include "public/platform/WebExternalTextureLayer.h"
 #include "public/platform/WebGraphicsContext3D.h"
 #include "public/platform/WebGraphicsContext3DProvider.h"
-#include "wtf/ArrayBufferContents.h"
 #include "wtf/CheckedNumeric.h"
+#include "wtf/typed_arrays/ArrayBufferContents.h"
 #include <algorithm>
 
 namespace blink {

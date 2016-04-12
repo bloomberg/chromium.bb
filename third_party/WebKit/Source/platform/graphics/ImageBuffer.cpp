@@ -54,12 +54,12 @@
 #include "third_party/skia/include/core/SkPicture.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "third_party/skia/include/gpu/gl/GrGLTypes.h"
-#include "wtf/ArrayBufferContents.h"
 #include "wtf/CheckedNumeric.h"
 #include "wtf/MathExtras.h"
 #include "wtf/Vector.h"
 #include "wtf/text/Base64.h"
 #include "wtf/text/WTFString.h"
+#include "wtf/typed_arrays/ArrayBufferContents.h"
 
 namespace blink {
 

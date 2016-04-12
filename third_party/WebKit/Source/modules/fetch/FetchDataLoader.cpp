@@ -5,9 +5,9 @@
 #include "modules/fetch/FetchDataLoader.h"
 
 #include "core/html/parser/TextResourceDecoder.h"
-#include "wtf/ArrayBufferBuilder.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/WTFString.h"
+#include "wtf/typed_arrays/ArrayBufferBuilder.h"
 
 namespace blink {
 

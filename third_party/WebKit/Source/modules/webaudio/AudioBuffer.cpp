@@ -27,6 +27,7 @@
  */
 
 #include "modules/webaudio/AudioBuffer.h"
+
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
@@ -34,7 +35,7 @@
 #include "platform/audio/AudioBus.h"
 #include "platform/audio/AudioFileReader.h"
 #include "platform/audio/AudioUtilities.h"
-#include "wtf/Float32Array.h"
+#include "wtf/typed_arrays/Float32Array.h"
 
 namespace blink {
 

@@ -27,8 +27,8 @@
 #ifndef TypedArrayBase_h
 #define TypedArrayBase_h
 
-#include "wtf/ArrayBuffer.h"
-#include "wtf/ArrayBufferView.h"
+#include "wtf/typed_arrays/ArrayBuffer.h"
+#include "wtf/typed_arrays/ArrayBufferView.h"
 
 namespace WTF {
 

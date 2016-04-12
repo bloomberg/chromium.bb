@@ -26,12 +26,11 @@
 #ifndef ArrayBufferView_h
 #define ArrayBufferView_h
 
-#include "wtf/ArrayBuffer.h"
-
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 #include "wtf/WTFExport.h"
+#include "wtf/typed_arrays/ArrayBuffer.h"
 #include <limits.h>
 
 namespace WTF {
@@ -104,7 +103,7 @@ protected:
     void* m_baseAddress;
 
     unsigned m_byteOffset : 31;
-    bool m_isNeuterable : 1;
+    unsigned m_isNeuterable : 1;
 
 private:
     friend class ArrayBuffer;

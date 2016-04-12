@@ -30,13 +30,13 @@
 
 #include "wtf/WTF.h"
 
-#include "wtf/ArrayBufferContents.h"
 #include "wtf/Assertions.h"
 #include "wtf/Functional.h"
 #include "wtf/Partitions.h"
 #include "wtf/Threading.h"
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/StringStatics.h"
+#include "wtf/typed_arrays/ArrayBufferContents.h"
 
 namespace WTF {
 
