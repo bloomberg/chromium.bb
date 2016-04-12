@@ -161,6 +161,8 @@ void ClearBrowserDataHandler::GetLocalizedValues(
         : IDS_CLEAR_BROWSING_DATA_SOME_STUFF_REMAINS },
     { "clearBrowserDataHistoryNoticeTitle",
         IDS_CLEAR_BROWSING_DATA_HISTORY_NOTICE_TITLE },
+    { "clearBrowserDataHistoryNoticeOk",
+        IDS_CLEAR_BROWSING_DATA_HISTORY_NOTICE_OK },
     { "deleteBrowsingHistoryCheckbox", IDS_DEL_BROWSING_HISTORY_CHKBOX },
     { "deleteDownloadHistoryCheckbox", IDS_DEL_DOWNLOAD_HISTORY_CHKBOX },
     { "deleteCacheCheckbox", IDS_DEL_CACHE_CHKBOX },
