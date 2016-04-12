@@ -386,6 +386,20 @@ void ShellSurface::OnSurfaceCommit() {
       gfx::Rect hit_test_bounds =
           surface_->GetHitTestBounds() + surface_origin.OffsetFromOrigin();
 
+      // Prevent window from being activated when hit test bounds are empty.
+      bool activatable = activatable_ && !hit_test_bounds.IsEmpty();
+      if (activatable != CanActivate()) {
+        set_can_activate(activatable);
+
+        // Activate or deactivate window if activation state changed.
+        aura::client::ActivationClient* activation_client =
+            ash::Shell::GetInstance()->activation_client();
+        if (activatable)
+          activation_client->ActivateWindow(widget_->GetNativeWindow());
+        else if (widget_->IsActive())
+          activation_client->DeactivateWindow(widget_->GetNativeWindow());
+      }
+
       // When maximized, only allow the shelf to recognize this window if the
       // hit-test bounds contains the widget bounds. This prevents shaped
       // windows that might only occupy a small area of the widget from dimming
