@@ -1629,4 +1629,28 @@ TEST_F(CookiesTreeModelTest, CanonicalizeCookieSource) {
       cookie_settings, GURL("http://example4.com"));
 }
 
+TEST_F(CookiesTreeModelTest, CookiesFilterWithoutSource) {
+  // CanonicalCookies don't persist their source_ field. This is a regression
+  // test for crbug.com/601582.
+  LocalDataContainer* container =
+      new LocalDataContainer(mock_browsing_data_cookie_helper_.get(),
+                             mock_browsing_data_database_helper_.get(),
+                             mock_browsing_data_local_storage_helper_.get(),
+                             mock_browsing_data_session_storage_helper_.get(),
+                             mock_browsing_data_appcache_helper_.get(),
+                             mock_browsing_data_indexed_db_helper_.get(),
+                             mock_browsing_data_file_system_helper_.get(),
+                             mock_browsing_data_quota_helper_.get(),
+                             mock_browsing_data_channel_id_helper_.get(),
+                             mock_browsing_data_service_worker_helper_.get(),
+                             mock_browsing_data_cache_storage_helper_.get(),
+                             mock_browsing_data_flash_lso_helper_.get());
+  CookiesTreeModel cookies_model(container, special_storage_policy(), false);
+
+  mock_browsing_data_cookie_helper_->
+      AddCookieSamples(GURL(), "A=1");
+  mock_browsing_data_cookie_helper_->Notify();
+  EXPECT_EQ("A", GetDisplayedCookies(&cookies_model));
+}
+
 }  // namespace

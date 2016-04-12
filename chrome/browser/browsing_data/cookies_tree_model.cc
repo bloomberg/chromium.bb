@@ -1221,8 +1221,6 @@ void CookiesTreeModel::PopulateCookieInfoWithFilter(
   for (CookieList::iterator it = container->cookie_list_.begin();
        it != container->cookie_list_.end(); ++it) {
     GURL source = CanonicalizeCookieSource(*it);
-    if (!source.SchemeIsHTTPOrHTTPS())
-      continue;
     if (source.is_empty() || !group_by_cookie_source_) {
       std::string domain = it->Domain();
       if (domain.length() > 1 && domain[0] == '.')
@@ -1232,6 +1230,8 @@ void CookiesTreeModel::PopulateCookieInfoWithFilter(
       source = GURL(std::string(url::kHttpScheme) +
                     url::kStandardSchemeSeparator + domain + "/");
     }
+    if (!source.SchemeIsHTTPOrHTTPS())
+      continue;
 
     if (filter.empty() || (CookieTreeHostNode::TitleForUrl(source)
                                .find(filter) != base::string16::npos)) {
