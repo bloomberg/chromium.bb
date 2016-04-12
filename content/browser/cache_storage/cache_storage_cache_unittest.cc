@@ -1089,16 +1089,18 @@ TEST_P(CacheStorageCacheTestP, WriteSideData) {
   response.response_time = response_time;
   EXPECT_TRUE(Put(no_body_request_, response));
 
-  const int kSize1 = 10;
+  const size_t kSize1 = 10;
   scoped_refptr<net::IOBuffer> buffer1(new net::IOBuffer(kSize1));
+  memset(buffer1->data(), 0, kSize1);
   EXPECT_TRUE(
       WriteSideData(no_body_request_.url, response_time, buffer1, kSize1));
 
   // TODO(horo): Check the content of the saved side data when we will implement
   // ReadMetadata() method in BlobReader.
 
-  const int kSize2 = 20;
+  const size_t kSize2 = 20;
   scoped_refptr<net::IOBuffer> buffer2(new net::IOBuffer(kSize2));
+  memset(buffer2->data(), 0, kSize2);
   EXPECT_TRUE(
       WriteSideData(no_body_request_.url, response_time, buffer2, kSize2));
 
@@ -1113,8 +1115,9 @@ TEST_P(CacheStorageCacheTestP, WriteSideData_QuotaExeeded) {
   response.response_time = response_time;
   EXPECT_TRUE(Put(no_body_request_, response));
 
-  const int kSize = 1024 * 1024;
+  const size_t kSize = 1024 * 1024;
   scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kSize));
+  memset(buffer->data(), 0, kSize);
   EXPECT_FALSE(
       WriteSideData(no_body_request_.url, response_time, buffer, kSize));
   EXPECT_EQ(CACHE_STORAGE_ERROR_QUOTA_EXCEEDED, callback_error_);
@@ -1132,8 +1135,9 @@ TEST_P(CacheStorageCacheTestP, WriteSideData_QuotaManagerModified) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, quota_manager_proxy_->notify_storage_modified_count());
 
-  const int kSize = 10;
+  const size_t kSize = 10;
   scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kSize));
+  memset(buffer->data(), 0, kSize);
   EXPECT_TRUE(
       WriteSideData(no_body_request_.url, response_time, buffer, kSize));
   base::RunLoop().RunUntilIdle();
@@ -1147,8 +1151,9 @@ TEST_P(CacheStorageCacheTestP, WriteSideData_DifferentTimeStamp) {
   response.response_time = response_time;
   EXPECT_TRUE(Put(no_body_request_, response));
 
-  const int kSize = 10;
+  const size_t kSize = 10;
   scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kSize));
+  memset(buffer->data(), 0, kSize);
   EXPECT_FALSE(WriteSideData(no_body_request_.url,
                              response_time + base::TimeDelta::FromSeconds(1),
                              buffer, kSize));
@@ -1157,8 +1162,9 @@ TEST_P(CacheStorageCacheTestP, WriteSideData_DifferentTimeStamp) {
 }
 
 TEST_P(CacheStorageCacheTestP, WriteSideData_NotFound) {
-  const int kSize = 10;
+  const size_t kSize = 10;
   scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kSize));
+  memset(buffer->data(), 0, kSize);
   EXPECT_FALSE(WriteSideData(GURL("http://www.example.com/not_exist"),
                              base::Time::Now(), buffer, kSize));
   EXPECT_EQ(CACHE_STORAGE_ERROR_NOT_FOUND, callback_error_);
