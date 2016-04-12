@@ -8,3 +8,5 @@ mac/gn
 mac/clang-format
 win/gn.exe
 win/clang-format.exe
+android/doclava/
+android/doclava.tar.gz
