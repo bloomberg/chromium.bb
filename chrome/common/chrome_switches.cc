@@ -654,16 +654,6 @@ const char kInstantProcess[]                = "instant-process";
 // The URL for the interests API.
 const char kInterestsURL[]                  = "interests-url";
 
-// Disable latest shipping ECMAScript 6 features.
-const char kDisableJavaScriptHarmonyShipping[] =
-    "disable-javascript-harmony-shipping";
-
-// Enables experimental Harmony (ECMAScript 6) features.
-const char kJavaScriptHarmony[]             = "javascript-harmony";
-
-// Enables experimental WebAssembly.
-const char kEnableWasm[]                    = "enable-wasm";
-
 // Dumps IPC messages sent from renderer processes to the browser process to
 // the given directory. Used primarily to gather samples for IPC fuzzing.
 const char kIpcDumpDirectory[]              = "ipc-dump-directory";

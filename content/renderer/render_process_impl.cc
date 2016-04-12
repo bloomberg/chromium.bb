@@ -14,12 +14,39 @@
 
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/feature_list.h"
 #include "base/sys_info.h"
 #include "content/child/site_isolation_stats_gatherer.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "v8/include/v8.h"
+
+namespace {
+
+const base::Feature kV8_ES2015_TailCalls_Feature {
+  "V8_ES2015_TailCalls", base::FEATURE_DISABLED_BY_DEFAULT
+};
+
+const base::Feature kV8SerializeEagerFeature{"V8_Serialize_Eager",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kV8SerializeAgeCodeFeature{
+    "V8_Serialize_Age_Code", base::FEATURE_DISABLED_BY_DEFAULT};
+
+void SetV8FlagIfFeature(const base::Feature& feature, const char* v8_flag) {
+  if (base::FeatureList::IsEnabled(feature)) {
+    v8::V8::SetFlagsFromString(v8_flag, strlen(v8_flag));
+  }
+}
+
+void SetV8FlagIfHasSwitch(const char* switch_name, const char* v8_flag) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(switch_name)) {
+    v8::V8::SetFlagsFromString(v8_flag, strlen(v8_flag));
+  }
+}
+
+}  // namespace
 
 namespace content {
 
@@ -48,8 +75,17 @@ RenderProcessImpl::RenderProcessImpl()
                                static_cast<int>(optimize_flag.size()));
   }
 
+  SetV8FlagIfFeature(kV8_ES2015_TailCalls_Feature, "--harmony-tailcalls");
+  SetV8FlagIfFeature(kV8SerializeEagerFeature, "--serialize_eager");
+  SetV8FlagIfFeature(kV8SerializeAgeCodeFeature, "--serialize_age_code");
+  SetV8FlagIfHasSwitch(switches::kDisableJavaScriptHarmonyShipping,
+                       "--noharmony-shipping");
+  SetV8FlagIfHasSwitch(switches::kJavaScriptHarmony, "--harmony");
+  SetV8FlagIfHasSwitch(switches::kEnableWasm, "--expose-wasm");
+
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
+
   if (command_line.HasSwitch(switches::kJavaScriptFlags)) {
     std::string flags(
         command_line.GetSwitchValueASCII(switches::kJavaScriptFlags));

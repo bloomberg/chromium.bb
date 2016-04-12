@@ -576,6 +576,16 @@ const char kInProcessGPU[]                  = "in-process-gpu";
 // connection from the browser before killing itself.
 const char kIPCConnectionTimeout[]          = "ipc-connection-timeout";
 
+// Disable latest shipping ECMAScript 6 features.
+const char kDisableJavaScriptHarmonyShipping[] =
+    "disable-javascript-harmony-shipping";
+
+// Enables experimental Harmony (ECMAScript 6) features.
+const char kJavaScriptHarmony[]             = "javascript-harmony";
+
+// Enables experimental WebAssembly.
+const char kEnableWasm[]                    = "enable-wasm";
+
 // Specifies the flags passed to JS engine
 const char kJavaScriptFlags[]               = "js-flags";
 

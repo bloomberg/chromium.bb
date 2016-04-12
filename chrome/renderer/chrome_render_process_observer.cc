@@ -15,7 +15,6 @@
 #include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/macros.h"
@@ -31,7 +30,6 @@
 #include "build/build_config.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/media/media_resource_provider.h"
 #include "chrome/common/net/net_resource_provider.h"
 #include "chrome/common/render_messages.h"
@@ -237,28 +235,6 @@ void CreateResourceUsageReporter(
   new ResourceUsageReporterImpl(observer, std::move(request));
 }
 
-const base::Feature kV8_ES2015_TailCalls_Feature {
-  "V8_ES2015_TailCalls", base::FEATURE_DISABLED_BY_DEFAULT
-};
-
-const base::Feature kV8SerializeEagerFeature{"V8_Serialize_Eager",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kV8SerializeAgeCodeFeature{
-    "V8_Serialize_Age_Code", base::FEATURE_DISABLED_BY_DEFAULT};
-
-void SetV8FlagIfFeature(const base::Feature& feature, const char* v8_flag) {
-  if (base::FeatureList::IsEnabled(feature)) {
-    v8::V8::SetFlagsFromString(v8_flag, strlen(v8_flag));
-  }
-}
-
-void SetV8FlagIfHasSwitch(const char* switch_name, const char* v8_flag) {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(switch_name)) {
-    v8::V8::SetFlagsFromString(v8_flag, strlen(v8_flag));
-  }
-}
-
 }  // namespace
 
 bool ChromeRenderProcessObserver::is_incognito_process_ = false;
@@ -271,14 +247,6 @@ ChromeRenderProcessObserver::ChromeRenderProcessObserver()
 #if defined(ENABLE_AUTOFILL_DIALOG)
   WebRuntimeFeatures::enableRequestAutocomplete(true);
 #endif
-
-  SetV8FlagIfFeature(kV8_ES2015_TailCalls_Feature, "--harmony-tailcalls");
-  SetV8FlagIfFeature(kV8SerializeEagerFeature, "--serialize_eager");
-  SetV8FlagIfFeature(kV8SerializeAgeCodeFeature, "--serialize_age_code");
-  SetV8FlagIfHasSwitch(switches::kDisableJavaScriptHarmonyShipping,
-                       "--noharmony-shipping");
-  SetV8FlagIfHasSwitch(switches::kJavaScriptHarmony, "--harmony");
-  SetV8FlagIfHasSwitch(switches::kEnableWasm, "--expose-wasm");
 
   RenderThread* thread = RenderThread::Get();
   resource_delegate_.reset(new RendererResourceDelegate());
