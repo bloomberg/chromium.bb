@@ -376,11 +376,20 @@ SdchProblemCode SdchManager::AddSdchDictionary(
         if (value != "1.0")
           return SDCH_DICTIONARY_UNSUPPORTED_VERSION;
       } else if (name == "max-age") {
-        int64_t seconds;
-        // TODO(eroman): crbug.com/596541 -- should not accept a leading +.
-        base::StringToInt64(value, &seconds);
-        expiration = base::Time::Now() + base::TimeDelta::FromSeconds(seconds);
+        // max-age must be a non-negative number. If it is very large saturate
+        // to 2^32 - 1. If it is invalid then treat it as expired.
+        // TODO(eroman): crbug.com/602691 be stricter on failure.
+        uint32_t seconds = std::numeric_limits<uint32_t>::max();
+        ParseIntError parse_int_error;
+        if (ParseUint32(value, &seconds, &parse_int_error) ||
+            parse_int_error == ParseIntError::FAILED_OVERFLOW) {
+          expiration =
+              base::Time::Now() + base::TimeDelta::FromSeconds(seconds);
+        } else {
+          expiration = base::Time();
+        }
       } else if (name == "port") {
+        // TODO(eroman): crbug.com/602691 be stricter on failure.
         int port;
         if (ParseInt32(value, ParseIntFormat::NON_NEGATIVE, &port))
           ports.insert(port);

@@ -556,6 +556,10 @@ TEST_F(SdchManagerTest, GetDictionaryNotification) {
 TEST_F(SdchManagerTest, ExpirationCheckedProperly) {
   // Create an SDCH dictionary with an expiration time in the past.
   std::string dictionary_domain("x.y.z.google.com");
+  // TODO(eroman): "max-age: -1" is invalid -- it is not a valid production of
+  // delta-seconds (1*DIGIT). This test works because currently an invalid
+  // max-age results in the dictionary being considered expired on loading
+  // (crbug.com/602691)
   std::string dictionary_text(base::StringPrintf("Domain: %s\nMax-age: -1\n\n",
                                                  dictionary_domain.c_str()));
   dictionary_text.append(
