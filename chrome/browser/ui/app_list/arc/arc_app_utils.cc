@@ -29,7 +29,7 @@ class LaunchAppWithoutSize {
   // This will launch the request and after the return the creator does not
   // need to delete the object anymore.
   bool LaunchAndRelease() {
-    landscape_ = gfx::Rect(0, 0, NEXUS7_WIDTH, NEXUS7_HEIGHT);
+    landscape_ = gfx::Rect(0, 0, NEXUS5_WIDTH, NEXUS5_HEIGHT);
     if (!ash::Shell::HasInstance()) {
       // Skip this if there is no Ash shell.
       LaunchAppWithRect(context_, app_id_, landscape_);
@@ -45,10 +45,10 @@ class LaunchAppWithoutSize {
 
  private:
   // Default sizes to use.
-  static const int NEXUS7_WIDTH = 1170;
-  static const int NEXUS7_HEIGHT = 800;
-  static const int NEXUS6_WIDTH = 410;
-  static const int NEXUS6_HEIGHT = 730;
+  static const int NEXUS7_WIDTH = 960;
+  static const int NEXUS7_HEIGHT = 600;
+  static const int NEXUS5_WIDTH = 360;
+  static const int NEXUS5_HEIGHT = 640;
 
   // Constants which are (for now) defined by constants coming from Wayland.
   static const int WINDOW_TITLE_HEIGHT = 30;
@@ -61,7 +61,7 @@ class LaunchAppWithoutSize {
   // function.
   void Callback(bool can_handle) {
     gfx::Size target_size = can_handle ? landscape_.size() :
-        gfx::Size(NEXUS6_WIDTH, NEXUS6_HEIGHT);
+        gfx::Size(NEXUS7_WIDTH, NEXUS7_HEIGHT);
     LaunchAppWithRect(context_, app_id_, getTargetRect(target_size));
     // Now that we are done, we can delete ourselves.
     delete this;
