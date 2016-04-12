@@ -1060,10 +1060,10 @@ void PaintLayer::setShouldIsolateCompositedDescendants(bool shouldIsolateComposi
         compositedLayerMapping()->setNeedsGraphicsLayerUpdate(GraphicsLayerUpdateLocal);
 }
 
-bool PaintLayer::hasAncestorWithFilterOutsets() const
+bool PaintLayer::hasAncestorWithFilterThatMovesPixels() const
 {
     for (const PaintLayer* curr = this; curr; curr = curr->parent()) {
-        if (curr->hasFilterOutsets())
+        if (curr->hasFilterThatMovesPixels())
             return true;
     }
     return false;
@@ -1121,10 +1121,9 @@ LayoutRect PaintLayer::transparencyClipBox(const PaintLayer* layer, const PaintL
 
         // We don't use fragment boxes when collecting a transformed layer's bounding box, since it always
         // paints unfragmented.
-        LayoutRect clipRect = layer->physicalBoundingBox(layer);
+        LayoutRect clipRect = layer->physicalBoundingBox(LayoutPoint());
         expandClipRectForDescendantsAndReflection(clipRect, layer, layer, transparencyBehavior, subPixelAccumulation, globalPaintFlags);
-        clipRect.expand(layer->filterOutsets());
-        LayoutRect result = transform.mapRect(clipRect);
+        LayoutRect result = enclosingLayoutRect(transform.mapRect(layer->mapRectForFilter(FloatRect(clipRect))));
         if (!paginationLayer)
             return result;
 
@@ -1142,7 +1141,7 @@ LayoutRect PaintLayer::transparencyClipBox(const PaintLayer* layer, const PaintL
 
     LayoutRect clipRect = layer->fragmentsBoundingBox(rootLayer);
     expandClipRectForDescendantsAndReflection(clipRect, layer, rootLayer, transparencyBehavior, subPixelAccumulation, globalPaintFlags);
-    clipRect.expand(layer->filterOutsets());
+    clipRect = layer->mapLayoutRectForFilter(clipRect);
     clipRect.move(subPixelAccumulation);
     return clipRect;
 }
@@ -2244,9 +2243,8 @@ LayoutRect PaintLayer::boundingBoxForCompositing(const PaintLayer* ancestorLayer
 
         // Only enlarge by the filter outsets if we know the filter is going to be rendered in software.
         // Accelerated filters will handle their own outsets.
-        if (paintsWithFilters()) {
-            result.expand(filterOutsets());
-        }
+        if (paintsWithFilters())
+            result = mapLayoutRectForFilter(result);
     }
 
     if (transform() && paintsWithTransform(GlobalPaintNormalPhase) && (this != ancestorLayer || options == MaybeIncludeTransformForAncestorLayer))
@@ -2732,27 +2730,34 @@ FilterEffect* PaintLayer::lastFilterEffect() const
     return builder->lastEffect();
 }
 
-bool PaintLayer::hasFilterOutsets() const
+FloatRect PaintLayer::mapRectForFilter(const FloatRect& rect) const
 {
-    if (!layoutObject()->hasFilterInducingProperty())
+    if (!hasFilterThatMovesPixels())
+        return rect;
+    // Ensure the filter-chain is refreshed wrt reference filters.
+    updateFilterEffectBuilder();
+
+    FilterOperations filterOperations = computeFilterOperations(layoutObject()->styleRef());
+    return filterOperations.mapRect(rect);
+}
+
+LayoutRect PaintLayer::mapLayoutRectForFilter(const LayoutRect& rect) const
+{
+    if (!hasFilterThatMovesPixels())
+        return rect;
+    return enclosingLayoutRect(mapRectForFilter(FloatRect(rect)));
+}
+
+bool PaintLayer::hasFilterThatMovesPixels() const
+{
+    if (!hasFilterInducingProperty())
         return false;
     const ComputedStyle& style = layoutObject()->styleRef();
-    if (style.hasFilter() && style.filter().hasOutsets())
+    if (style.hasFilter() && style.filter().hasFilterThatMovesPixels())
         return true;
     if (RuntimeEnabledFeatures::cssBoxReflectFilterEnabled() && style.hasBoxReflect())
         return true;
     return false;
-}
-
-FilterOutsets PaintLayer::filterOutsets() const
-{
-    if (!layoutObject()->hasFilterInducingProperty())
-        return FilterOutsets();
-
-    // Ensure the filter-chain is refreshed wrt reference filters.
-    updateFilterEffectBuilder();
-
-    return layoutObject()->style()->filter().outsets();
 }
 
 void PaintLayer::updateOrRemoveFilterEffectBuilder()

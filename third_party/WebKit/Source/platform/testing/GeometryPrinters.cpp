@@ -118,6 +118,15 @@ void PrintTo(const FloatSize& size, std::ostream* os)
         << size.height() << ")";
 }
 
+void PrintTo(const IntRect& rect, std::ostream* os)
+{
+    *os << "IntRect("
+        << rect.x() << ", "
+        << rect.y() << ", "
+        << rect.width() << ", "
+        << rect.height() << ")";
+}
+
 void PrintTo(const LayoutRect& rect, std::ostream* os)
 {
     ScopedFloatFlags scope(*os);

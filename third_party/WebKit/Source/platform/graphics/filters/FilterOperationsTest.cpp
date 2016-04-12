@@ -29,28 +29,51 @@
 
 namespace blink {
 
-TEST(FilterOperationsTest, getOutsetsBlur)
+TEST(FilterOperationsTest, mapRectNoFilter)
+{
+    FilterOperations ops;
+    EXPECT_FALSE(ops.hasFilterThatMovesPixels());
+    EXPECT_EQ(FloatRect(0, 0, 10, 10), ops.mapRect(FloatRect(0, 0, 10, 10)));
+}
+
+TEST(FilterOperationsTest, mapRectBlur)
 {
     FilterOperations ops;
     ops.operations().append(BlurFilterOperation::create(Length(20.0, Fixed)));
-    EXPECT_TRUE(ops.hasOutsets());
-    FilterOutsets outsets = ops.outsets();
-    EXPECT_EQ(57, outsets.top());
-    EXPECT_EQ(57, outsets.right());
-    EXPECT_EQ(57, outsets.bottom());
-    EXPECT_EQ(57, outsets.left());
+    EXPECT_TRUE(ops.hasFilterThatMovesPixels());
+    EXPECT_EQ(IntRect(-57, -57, 124, 124),
+        enclosingIntRect(ops.mapRect(FloatRect(0, 0, 10, 10))));
 }
 
-TEST(FilterOperationsTest, getOutsetsDropShadow)
+TEST(FilterOperationsTest, mapRectDropShadow)
 {
     FilterOperations ops;
     ops.operations().append(DropShadowFilterOperation::create(IntPoint(3, 8), 20, Color(1, 2, 3)));
-    EXPECT_TRUE(ops.hasOutsets());
-    FilterOutsets outsets = ops.outsets();
-    EXPECT_EQ(49, outsets.top());
-    EXPECT_EQ(60, outsets.right());
-    EXPECT_EQ(65, outsets.bottom());
-    EXPECT_EQ(54, outsets.left());
+    EXPECT_TRUE(ops.hasFilterThatMovesPixels());
+    EXPECT_EQ(IntRect(-54, -49, 124, 124),
+        enclosingIntRect(ops.mapRect(FloatRect(0, 0, 10, 10))));
+}
+
+TEST(FilterOperationsTest, mapRectBoxReflect)
+{
+    FilterOperations ops;
+    ops.operations().append(BoxReflectFilterOperation::create(VerticalReflection, 100));
+    EXPECT_TRUE(ops.hasFilterThatMovesPixels());
+
+    // original IntRect(0, 0, 10, 10) + reflection IntRect(90, 90, 10, 10)
+    EXPECT_EQ(FloatRect(0, 0, 10, 100), ops.mapRect(FloatRect(0, 0, 10, 10)));
+}
+
+TEST(FilterOperationsTest, mapRectDropShadowAndBoxReflect)
+{
+    // This is a case where the order of filter operations matters, and it's
+    // important that the bounds be filtered in the correct order.
+    FilterOperations ops;
+    ops.operations().append(DropShadowFilterOperation::create(IntPoint(100, 200), 0, Color::black));
+    ops.operations().append(BoxReflectFilterOperation::create(VerticalReflection, 50));
+    EXPECT_TRUE(ops.hasFilterThatMovesPixels());
+    EXPECT_EQ(FloatRect(0, -160, 110, 370),
+        ops.mapRect(FloatRect(0, 0, 10, 10)));
 }
 
 } // namespace blink

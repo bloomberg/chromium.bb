@@ -34,8 +34,6 @@
 
 namespace blink {
 
-typedef IntRectOutsets FilterOutsets;
-
 class PLATFORM_EXPORT FilterOperations {
     DISALLOW_NEW();
 public:
@@ -66,8 +64,10 @@ public:
 
     bool canInterpolateWith(const FilterOperations&) const;
 
-    bool hasOutsets() const;
-    FilterOutsets outsets() const;
+    // Maps "forward" to determine which pixels in a destination rect are
+    // affected by pixels in the source rect.
+    // See also FilterEffect::mapRect.
+    FloatRect mapRect(const FloatRect&) const;
 
     bool hasFilterThatAffectsOpacity() const;
     bool hasFilterThatMovesPixels() const;

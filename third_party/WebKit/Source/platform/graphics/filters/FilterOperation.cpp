@@ -25,9 +25,23 @@
 
 #include "platform/graphics/filters/FilterOperation.h"
 
+#include "platform/LengthFunctions.h"
 #include "platform/animation/AnimationUtilities.h"
+#include "platform/graphics/filters/FEGaussianBlur.h"
+#include "platform/graphics/filters/FilterEffect.h"
+#include "platform/graphics/filters/SkiaImageFilterBuilder.h"
 
 namespace blink {
+
+static inline FloatSize outsetSizeForBlur(float stdDeviation)
+{
+    IntSize kernelSize = FEGaussianBlur::calculateUnscaledKernelSize(FloatPoint(stdDeviation, stdDeviation));
+    FloatSize outset;
+    // We take the half kernel size and multiply it with three, because we run box blur three times.
+    outset.setWidth(3 * kernelSize.width() * 0.5f);
+    outset.setHeight(3 * kernelSize.height() * 0.5f);
+    return outset;
+}
 
 FilterOperation* FilterOperation::blend(const FilterOperation* from, const FilterOperation* to, double progress)
 {
@@ -41,6 +55,14 @@ DEFINE_TRACE(ReferenceFilterOperation)
 {
     visitor->trace(m_filter);
     FilterOperation::trace(visitor);
+}
+
+FloatRect ReferenceFilterOperation::mapRect(const FloatRect& rect) const
+{
+    const auto* lastEffect = m_filter ? m_filter->lastEffect() : nullptr;
+    if (!lastEffect)
+        return rect;
+    return lastEffect->mapRectRecursive(rect);
 }
 
 FilterOperation* BasicColorMatrixFilterOperation::blend(const FilterOperation* from, double progress) const
@@ -120,6 +142,17 @@ FilterOperation* BasicComponentTransferFilterOperation::blend(const FilterOperat
     return BasicComponentTransferFilterOperation::create(result, m_type);
 }
 
+FloatRect BlurFilterOperation::mapRect(const FloatRect& rect) const
+{
+    // Matches FEGaussianBlur::mapRect.
+    float stdDeviation = floatValueForLength(m_stdDeviation, 0);
+    FloatSize outsetSize = outsetSizeForBlur(stdDeviation);
+    FloatRect mappedRect = rect;
+    mappedRect.inflateX(outsetSize.width());
+    mappedRect.inflateY(outsetSize.height());
+    return mappedRect;
+}
+
 FilterOperation* BlurFilterOperation::blend(const FilterOperation* from, double progress) const
 {
     LengthType lengthType = m_stdDeviation.type();
@@ -128,6 +161,17 @@ FilterOperation* BlurFilterOperation::blend(const FilterOperation* from, double 
 
     const BlurFilterOperation* fromOp = toBlurFilterOperation(from);
     return BlurFilterOperation::create(m_stdDeviation.blend(fromOp->m_stdDeviation, progress, ValueRangeNonNegative));
+}
+
+FloatRect DropShadowFilterOperation::mapRect(const FloatRect& rect) const
+{
+    FloatSize outsetSize = outsetSizeForBlur(m_stdDeviation);
+    FloatRect mappedRect = rect;
+    mappedRect.inflateX(outsetSize.width());
+    mappedRect.inflateY(outsetSize.height());
+    mappedRect.moveBy(m_location);
+    mappedRect.unite(rect);
+    return mappedRect;
 }
 
 FilterOperation* DropShadowFilterOperation::blend(const FilterOperation* from, double progress) const
@@ -144,6 +188,21 @@ FilterOperation* DropShadowFilterOperation::blend(const FilterOperation* from, d
         blink::blend(fromOp->location(), m_location, progress),
         blink::blend(fromOp->stdDeviation(), m_stdDeviation, progress),
         blink::blend(fromOp->getColor(), m_color, progress));
+}
+
+FloatRect BoxReflectFilterOperation::mapRect(const FloatRect& rect) const
+{
+    // Reflection about any line is self-inverse, so this matrix works for both
+    // forward and reverse mapping.
+    SkMatrix flipMatrix = SkiaImageFilterBuilder().matrixForBoxReflectFilter(
+        m_direction, m_offset);
+
+    SkRect reflection(rect);
+    flipMatrix.mapRect(&reflection);
+
+    FloatRect result = rect;
+    result.unite(reflection);
+    return result;
 }
 
 FilterOperation* BoxReflectFilterOperation::blend(const FilterOperation* from, double progress) const

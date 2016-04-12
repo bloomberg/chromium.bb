@@ -14,11 +14,11 @@
             {
               "position": [-12, -12],
               "transformOrigin": [112, 112],
-              "bounds": [212, 256],
+              "bounds": [212, 257],
               "drawsContent": true,
               "repaintRects": [
-                [0, 0, 256, 256],
-                [0, 0, 156, 256]
+                [-1, -1, 258, 258],
+                [-1, -1, 158, 258]
               ],
               "paintInvalidationClients": [
                 "LayoutBlockFlow DIV id='resize' class='drop-shadow'"

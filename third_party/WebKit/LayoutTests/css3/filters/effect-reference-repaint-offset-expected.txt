@@ -6,7 +6,7 @@
       "contentsOpaque": true,
       "drawsContent": true,
       "repaintRects": [
-        [8, 8, 390, 390]
+        [198, 198, 200, 200]
       ],
       "paintInvalidationClients": [
         "LayoutBlockFlow DIV class='box'"

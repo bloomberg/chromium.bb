@@ -232,6 +232,10 @@ PLATFORM_EXPORT IntRect enclosingIntRect(const NSRect&);
 #endif
 #endif
 
+// Redeclared here to avoid ODR issues.
+// See platform/testing/GeometryPrinters.h.
+void PrintTo(const IntRect&, std::ostream*);
+
 } // namespace blink
 
 WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(blink::IntRect);

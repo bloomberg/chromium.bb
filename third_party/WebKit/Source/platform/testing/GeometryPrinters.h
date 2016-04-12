@@ -37,6 +37,7 @@ void PrintTo(const FloatRect&, std::ostream*);
 void PrintTo(const FloatRoundedRect&, std::ostream*);
 void PrintTo(const FloatRoundedRect::Radii&, std::ostream*);
 void PrintTo(const FloatSize&, std::ostream*);
+void PrintTo(const IntRect&, std::ostream*);
 void PrintTo(const LayoutRect&, std::ostream*);
 
 } // namespace blink

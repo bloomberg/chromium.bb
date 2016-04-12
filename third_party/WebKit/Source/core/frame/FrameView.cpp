@@ -1380,7 +1380,7 @@ bool FrameView::invalidateViewportConstrainedObjects()
 
         // If the fixed layer has a blur/drop-shadow filter applied on at least one of its parents, we cannot
         // scroll using the fast path, otherwise the outsets of the filter will be moved around the page.
-        if (layer->hasAncestorWithFilterOutsets())
+        if (layer->hasAncestorWithFilterThatMovesPixels())
             return false;
 
         TRACE_EVENT_INSTANT1(

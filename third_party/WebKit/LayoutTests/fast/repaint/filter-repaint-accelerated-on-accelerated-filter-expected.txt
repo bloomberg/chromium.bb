@@ -17,8 +17,8 @@
               "drawsContent": true,
               "backgroundColor": "#008000",
               "repaintRects": [
-                [-12, -12, 256, 256],
-                [-12, -12, 156, 256]
+                [-13, -13, 258, 258],
+                [-13, -13, 158, 258]
               ],
               "paintInvalidationClients": [
                 "LayoutBlockFlow DIV id='resize' class='drop-shadow accelerated'"

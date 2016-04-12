@@ -326,7 +326,7 @@ public:
 
     PaintLayer* enclosingLayerForPaintInvalidationCrossingFrameBoundaries() const;
 
-    bool hasAncestorWithFilterOutsets() const;
+    bool hasAncestorWithFilterThatMovesPixels() const;
 
     bool canUseConvertToLayerCoords() const
     {
@@ -469,8 +469,16 @@ public:
     bool paintsWithFilters() const;
     bool paintsWithBackdropFilters() const;
     FilterEffect* lastFilterEffect() const;
-    bool hasFilterOutsets() const;
-    FilterOutsets filterOutsets() const;
+
+    // Maps "forward" to determine which pixels in a destination rect are
+    // affected by pixels in the source rect.
+    // See also FilterEffect::mapRect.
+    FloatRect mapRectForFilter(const FloatRect&) const;
+
+    // Calls the above, rounding outwards.
+    LayoutRect mapLayoutRectForFilter(const LayoutRect&) const;
+
+    bool hasFilterThatMovesPixels() const;
 
     PaintLayerFilterInfo* filterInfo() const { return m_rareData ? m_rareData->filterInfo.get() : nullptr; }
     PaintLayerFilterInfo& ensureFilterInfo();

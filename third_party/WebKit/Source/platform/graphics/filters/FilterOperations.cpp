@@ -28,20 +28,9 @@
 #include "platform/LengthFunctions.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/filters/FEGaussianBlur.h"
+#include <numeric>
 
 namespace blink {
-
-static inline IntSize outsetSizeForBlur(float stdDeviation)
-{
-    IntSize kernelSize = FEGaussianBlur::calculateUnscaledKernelSize(FloatPoint(stdDeviation, stdDeviation));
-
-    IntSize outset;
-    // We take the half kernel size and multiply it with three, because we run box blur three times.
-    outset.setWidth(3 * kernelSize.width() * 0.5f);
-    outset.setHeight(3 * kernelSize.height() * 0.5f);
-
-    return outset;
-}
 
 FilterOperations::FilterOperations()
 {
@@ -101,69 +90,13 @@ bool FilterOperations::hasReferenceFilter() const
     return false;
 }
 
-bool FilterOperations::hasOutsets() const
+FloatRect FilterOperations::mapRect(const FloatRect& rect) const
 {
-    for (size_t i = 0; i < m_operations.size(); ++i) {
-        FilterOperation::OperationType operationType = m_operations.at(i)->type();
-        if (operationType == FilterOperation::BLUR
-            || operationType == FilterOperation::DROP_SHADOW
-            || operationType == FilterOperation::REFERENCE
-            || operationType == FilterOperation::BOX_REFLECT)
-            return true;
-    }
-    return false;
-}
-
-FilterOutsets FilterOperations::outsets() const
-{
-    FilterOutsets totalOutsets;
-    for (size_t i = 0; i < m_operations.size(); ++i) {
-        FilterOperation* filterOperation = m_operations.at(i).get();
-        switch (filterOperation->type()) {
-        case FilterOperation::BLUR: {
-            BlurFilterOperation* blurOperation = toBlurFilterOperation(filterOperation);
-            float stdDeviation = floatValueForLength(blurOperation->stdDeviation(), 0);
-            IntSize outsetSize = outsetSizeForBlur(stdDeviation);
-            FilterOutsets outsets(outsetSize.height(), outsetSize.width(), outsetSize.height(), outsetSize.width());
-            totalOutsets += outsets;
-            break;
-        }
-        case FilterOperation::DROP_SHADOW: {
-            DropShadowFilterOperation* dropShadowOperation = toDropShadowFilterOperation(filterOperation);
-            IntSize outsetSize = outsetSizeForBlur(dropShadowOperation->stdDeviation());
-            FilterOutsets outsets(
-                std::max(0, outsetSize.height() - dropShadowOperation->y()),
-                std::max(0, outsetSize.width() + dropShadowOperation->x()),
-                std::max(0, outsetSize.height() + dropShadowOperation->y()),
-                std::max(0, outsetSize.width() - dropShadowOperation->x())
-            );
-            totalOutsets += outsets;
-            break;
-        }
-        case FilterOperation::REFERENCE: {
-            ReferenceFilterOperation* referenceOperation = toReferenceFilterOperation(filterOperation);
-            if (referenceOperation->getFilter() && referenceOperation->getFilter()->lastEffect()) {
-                FloatRect outsetRect(0, 0, 1, 1);
-                outsetRect = referenceOperation->getFilter()->lastEffect()->mapRectRecursive(outsetRect);
-                FilterOutsets outsets(
-                    std::max(0.0f, -outsetRect.y()),
-                    std::max(0.0f, outsetRect.x() + outsetRect.width() - 1),
-                    std::max(0.0f, outsetRect.y() + outsetRect.height() - 1),
-                    std::max(0.0f, -outsetRect.x())
-                );
-                totalOutsets += outsets;
-            }
-            break;
-        }
-        case FilterOperation::BOX_REFLECT: {
-            // Already accounted for at all call sites.
-            break;
-        }
-        default:
-            break;
-        }
-    }
-    return totalOutsets;
+    auto accumulateMappedRect = [](const FloatRect& rect, const Member<FilterOperation>& op)
+    {
+        return op->mapRect(rect);
+    };
+    return std::accumulate(m_operations.begin(), m_operations.end(), rect, accumulateMappedRect);
 }
 
 bool FilterOperations::hasFilterThatAffectsOpacity() const
