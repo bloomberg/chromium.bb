@@ -32,8 +32,8 @@ namespace {
 std::unique_ptr<ScrollState> BeginState(const gfx::Point& point) {
   ScrollStateData scroll_state_data;
   scroll_state_data.is_beginning = true;
-  scroll_state_data.start_position_x = point.x();
-  scroll_state_data.start_position_y = point.y();
+  scroll_state_data.position_x = point.x();
+  scroll_state_data.position_y = point.y();
   std::unique_ptr<ScrollState> scroll_state(new ScrollState(scroll_state_data));
   return scroll_state;
 }
@@ -43,8 +43,8 @@ std::unique_ptr<ScrollState> UpdateState(const gfx::Point& point,
   ScrollStateData scroll_state_data;
   scroll_state_data.delta_x = delta.x();
   scroll_state_data.delta_y = delta.y();
-  scroll_state_data.start_position_x = point.x();
-  scroll_state_data.start_position_y = point.y();
+  scroll_state_data.position_x = point.x();
+  scroll_state_data.position_y = point.y();
   std::unique_ptr<ScrollState> scroll_state(new ScrollState(scroll_state_data));
   return scroll_state;
 }

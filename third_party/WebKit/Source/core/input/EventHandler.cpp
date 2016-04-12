@@ -2341,8 +2341,8 @@ WebInputEventResult EventHandler::handleGestureScrollBegin(const PlatformGesture
     if (RuntimeEnabledFeatures::scrollCustomizationEnabled()) {
         m_currentScrollChain.clear();
         OwnPtr<ScrollStateData> scrollStateData = adoptPtr(new ScrollStateData());
-        scrollStateData->start_position_x = gestureEvent.position().x();
-        scrollStateData->start_position_y = gestureEvent.position().y();
+        scrollStateData->position_x = gestureEvent.position().x();
+        scrollStateData->position_y = gestureEvent.position().y();
         scrollStateData->is_beginning = true;
         scrollStateData->from_user_input = true;
         scrollStateData->delta_consumed_for_scroll_sequence = m_deltaConsumedForScrollSequence;

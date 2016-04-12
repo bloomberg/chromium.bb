@@ -2661,8 +2661,8 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBegin(
 
   ClearCurrentlyScrollingLayer();
 
-  gfx::Point viewport_point(scroll_state->start_position_x(),
-                            scroll_state->start_position_y());
+  gfx::Point viewport_point(scroll_state->position_x(),
+                            scroll_state->position_y());
 
   gfx::PointF device_viewport_point = gfx::ScalePoint(
       gfx::PointF(viewport_point), active_tree_->device_scale_factor());
@@ -2721,8 +2721,8 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimatedBegin(
     return scroll_status;
   }
   ScrollStateData scroll_state_data;
-  scroll_state_data.start_position_x = viewport_point.x();
-  scroll_state_data.start_position_y = viewport_point.y();
+  scroll_state_data.position_x = viewport_point.x();
+  scroll_state_data.position_y = viewport_point.y();
   scroll_state_data.is_in_inertial_phase = true;
   ScrollState scroll_state(scroll_state_data);
 
@@ -2815,8 +2815,8 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimated(
   }
 
   ScrollStateData scroll_state_data;
-  scroll_state_data.start_position_x = viewport_point.x();
-  scroll_state_data.start_position_y = viewport_point.y();
+  scroll_state_data.position_x = viewport_point.x();
+  scroll_state_data.position_y = viewport_point.y();
   scroll_state_data.is_in_inertial_phase = true;
   ScrollState scroll_state(scroll_state_data);
 
@@ -2977,8 +2977,8 @@ gfx::Vector2dF LayerTreeHostImpl::ScrollSingleNode(
 void LayerTreeHostImpl::ApplyScroll(ScrollNode* scroll_node,
                                     ScrollState* scroll_state) {
   DCHECK(scroll_state);
-  gfx::Point viewport_point(scroll_state->start_position_x(),
-                            scroll_state->start_position_y());
+  gfx::Point viewport_point(scroll_state->position_x(),
+                            scroll_state->position_y());
   const gfx::Vector2dF delta(scroll_state->delta_x(), scroll_state->delta_y());
   gfx::Vector2dF applied_delta;
   // TODO(tdresser): Use a more rational epsilon. See crbug.com/510550 for

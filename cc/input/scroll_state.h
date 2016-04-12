@@ -30,14 +30,14 @@ class CC_EXPORT ScrollState {
   // Pops the first layer off of |scroll_chain_| and calls
   // |DistributeScroll| on it.
   void DistributeToScrollChainDescendant();
-  // Positive when scrolling left.
+  // Positive when scrolling right.
   double delta_x() const { return data_.delta_x; }
-  // Positive when scrolling up.
+  // Positive when scrolling down.
   double delta_y() const { return data_.delta_y; }
-  // The location the scroll started at. For touch, the starting
+  // The location associated with this scroll update. For touch, this is the
   // position of the finger. For mouse, the location of the cursor.
-  int start_position_x() const { return data_.start_position_x; }
-  int start_position_y() const { return data_.start_position_y; }
+  int position_x() const { return data_.position_x; }
+  int position_y() const { return data_.position_y; }
 
   double velocity_x() const { return data_.velocity_x; }
   double velocity_y() const { return data_.velocity_y; }

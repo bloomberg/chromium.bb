@@ -29,8 +29,8 @@ ScrollState* ScrollState::create(ScrollStateInit init)
     OwnPtr<ScrollStateData> scrollStateData = adoptPtr(new ScrollStateData());
     scrollStateData->delta_x = init.deltaX();
     scrollStateData->delta_y = init.deltaY();
-    scrollStateData->start_position_x = init.startPositionX();
-    scrollStateData->start_position_y = init.startPositionY();
+    scrollStateData->position_x = init.positionX();
+    scrollStateData->position_y = init.positionY();
     scrollStateData->velocity_x = init.velocityX();
     scrollStateData->velocity_y = init.velocityY();
     scrollStateData->is_beginning = init.isBeginning();

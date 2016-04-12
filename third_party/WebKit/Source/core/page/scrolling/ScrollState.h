@@ -32,11 +32,11 @@ public:
     void consumeDelta(double x, double y, ExceptionState&);
     // Pops the first element off of |m_scrollChain| and calls |distributeScroll| on it.
     void distributeToScrollChainDescendant();
-    int startPositionX() { return m_data->start_position_x; };
-    int startPositionY() { return m_data->start_position_y; };
-    // Positive when scrolling left.
+    int positionX() { return m_data->position_x; };
+    int positionY() { return m_data->position_y; };
+    // Positive when scrolling right.
     double deltaX() const { return m_data->delta_x; };
-    // Positive when scrolling up.
+    // Positive when scrolling down.
     double deltaY() const { return m_data->delta_y; };
     // Indicates the smallest delta the input device can produce. 0 for unquantized inputs.
     double deltaGranularity() const { return m_data->delta_granularity; };

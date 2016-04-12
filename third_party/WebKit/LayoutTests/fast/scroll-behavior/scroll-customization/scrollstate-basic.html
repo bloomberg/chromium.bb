@@ -32,8 +32,8 @@ if ('ScrollState' in window) {
     var init = {
       deltaX: 12.5,
       deltaY: 14.9,
-      startPositionX: 16.82,
-      startPositionY: 82.17,
+      positionX: 16.82,
+      positionY: 82.17,
       velocityX: 23.7,
       velocityY: 2.5,
       isBeginning: true,
@@ -47,8 +47,8 @@ if ('ScrollState' in window) {
     var scrollState = new ScrollState(init);
     assert_equals(scrollState.deltaX, init.deltaX);
     assert_equals(scrollState.deltaY, init.deltaY);
-    assert_equals(scrollState.startPositionX, Math.floor(init.startPositionX));
-    assert_equals(scrollState.startPositionY, Math.floor(init.startPositionY));
+    assert_equals(scrollState.positionX, Math.floor(init.positionX));
+    assert_equals(scrollState.positionY, Math.floor(init.positionY));
     assert_equals(scrollState.velocityX, init.velocityX);
     assert_equals(scrollState.velocityY, init.velocityY);
     assert_equals(scrollState.isBeginning, init.isBeginning);

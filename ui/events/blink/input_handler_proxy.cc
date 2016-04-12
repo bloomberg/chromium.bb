@@ -128,8 +128,8 @@ cc::ScrollState CreateScrollStateForGesture(const WebGestureEvent& event) {
   cc::ScrollStateData scroll_state_data;
   switch (event.type) {
     case WebInputEvent::GestureScrollBegin:
-      scroll_state_data.start_position_x = event.x;
-      scroll_state_data.start_position_y = event.y;
+      scroll_state_data.position_x = event.x;
+      scroll_state_data.position_y = event.y;
       scroll_state_data.is_beginning = true;
       break;
     case WebInputEvent::GestureFlingStart:
@@ -515,8 +515,8 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::ScrollByMouseWheel(
     }
   } else {
     cc::ScrollStateData scroll_state_begin_data;
-    scroll_state_begin_data.start_position_x = wheel_event.x;
-    scroll_state_begin_data.start_position_y = wheel_event.y;
+    scroll_state_begin_data.position_x = wheel_event.x;
+    scroll_state_begin_data.position_y = wheel_event.y;
     scroll_state_begin_data.is_beginning = true;
     cc::ScrollState scroll_state_begin(scroll_state_begin_data);
     cc::InputHandler::ScrollStatus scroll_status = input_handler_->ScrollBegin(
@@ -535,8 +535,8 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::ScrollByMouseWheel(
         cc::ScrollStateData scroll_state_update_data;
         scroll_state_update_data.delta_x = scroll_delta.x();
         scroll_state_update_data.delta_y = scroll_delta.y();
-        scroll_state_update_data.start_position_x = wheel_event.x;
-        scroll_state_update_data.start_position_y = wheel_event.y;
+        scroll_state_update_data.position_x = wheel_event.x;
+        scroll_state_update_data.position_y = wheel_event.y;
         cc::ScrollState scroll_state_update(scroll_state_update_data);
 
         scroll_result = input_handler_->ScrollBy(&scroll_state_update);

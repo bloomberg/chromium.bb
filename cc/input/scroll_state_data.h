@@ -22,9 +22,9 @@ class CC_EXPORT ScrollStateData {
   // Scroll delta in viewport coordinates (DIP).
   double delta_x;
   double delta_y;
-  // Scroll position in viewport coordinates (DIP).
-  int start_position_x;
-  int start_position_y;
+  // Pointer (i.e. cursor/touch point) position in viewport coordinates (DIP).
+  int position_x;
+  int position_y;
   // Scroll velocity in DIP/seconds.
   double velocity_x;
   double velocity_y;

@@ -11,8 +11,8 @@
 {
     readonly attribute double deltaX;
     readonly attribute double deltaY;
-    readonly attribute long startPositionX;
-    readonly attribute long startPositionY;
+    readonly attribute long positionX;
+    readonly attribute long positionY;
     readonly attribute double velocityX;
     readonly attribute double velocityY;
     readonly attribute boolean isBeginning;

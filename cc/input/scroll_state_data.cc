@@ -9,8 +9,8 @@ namespace cc {
 ScrollStateData::ScrollStateData()
     : delta_x(0),
       delta_y(0),
-      start_position_x(0),
-      start_position_y(0),
+      position_x(0),
+      position_y(0),
       velocity_x(0),
       velocity_y(0),
       is_beginning(false),
