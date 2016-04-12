@@ -6,6 +6,3 @@ AudioDirectiveListTest.*
 
 # http://crbug.com/523462
 PluginsFieldTrialTest.NoPrefLeftBehind
-
-# Fails under valgrind Linux, see http://crbug.com/587664
-DataReductionProxyConfigServiceClientTest.HTTPRequests

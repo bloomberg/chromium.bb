@@ -730,17 +730,17 @@ TEST_F(DataReductionProxyConfigServiceClientTest, HTTPRequests) {
   } tests[] = {
       {
           // Request should not be logged because data saver is disabled.
-          "http://www.example.com/", false, false,
+          "http://www.one.example.com/", false, false,
       },
       {
-          "http://www.example.com/", true, true,
+          "http://www.two.example.com/", true, true,
       },
       {
-          "https://www.example.com/", false, false,
+          "https://www.three.example.com/", false, false,
       },
       {
           // Request should not be logged because request is HTTPS.
-          "https://www.example.com/", true, false,
+          "https://www.four.example.com/", true, false,
       },
       {
           // Request to localhost should not be logged.
@@ -762,7 +762,7 @@ TEST_F(DataReductionProxyConfigServiceClientTest, HTTPRequests) {
         test_url_request_context()->CreateRequest(GURL(tests[i].url), net::IDLE,
                                                   &test_delegate));
     request->Start();
-    base::RunLoop().RunUntilIdle();
+    RunUntilIdle();
 
     histogram_tester.ExpectTotalCount(
         "DataReductionProxy.ConfigService.HTTPRequests",
