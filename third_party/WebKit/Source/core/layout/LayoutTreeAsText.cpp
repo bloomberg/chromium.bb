@@ -557,7 +557,8 @@ enum LayerPaintPhase {
 
 static void write(TextStream& ts, PaintLayer& layer,
     const LayoutRect& layerBounds, const LayoutRect& backgroundClipRect, const LayoutRect& clipRect,
-    LayerPaintPhase paintPhase = LayerPaintPhaseAll, int indent = 0, LayoutAsTextBehavior behavior = LayoutAsTextBehaviorNormal)
+    LayerPaintPhase paintPhase = LayerPaintPhaseAll, int indent = 0, LayoutAsTextBehavior behavior = LayoutAsTextBehaviorNormal,
+    const PaintLayer* markedLayer = nullptr)
 {
     IntRect adjustedLayoutBounds = pixelSnappedIntRect(layerBounds);
     IntRect adjustedLayoutBoundsWithScrollbars = adjustedLayoutBounds;
@@ -573,6 +574,9 @@ static void write(TextStream& ts, PaintLayer& layer,
         adjustedLayoutBoundsWithScrollbars.setWidth(layoutView->viewWidth(IncludeScrollbars));
         adjustedLayoutBoundsWithScrollbars.setHeight(layoutView->viewHeight(IncludeScrollbars));
     }
+
+    if (markedLayer)
+        ts << (markedLayer == &layer ? "*" : " ");
 
     writeIndent(ts, indent);
 
@@ -648,7 +652,7 @@ static Vector<PaintLayerStackingNode*> normalFlowListFor(PaintLayerStackingNode*
 }
 
 void LayoutTreeAsText::writeLayers(TextStream& ts, const PaintLayer* rootLayer, PaintLayer* layer,
-    const LayoutRect& paintRect, int indent, LayoutAsTextBehavior behavior)
+    const LayoutRect& paintRect, int indent, LayoutAsTextBehavior behavior, const PaintLayer* markedLayer)
 {
     // Calculate the clip rects we should use.
     LayoutRect layerBounds;
@@ -668,7 +672,7 @@ void LayoutTreeAsText::writeLayers(TextStream& ts, const PaintLayer* rootLayer, 
     Vector<PaintLayerStackingNode*>* negList = layer->stackingNode()->negZOrderList();
     bool paintsBackgroundSeparately = negList && negList->size() > 0;
     if (shouldPaint && paintsBackgroundSeparately)
-        write(ts, *layer, layerBounds, damageRect.rect(), clipRectToApply.rect(), LayerPaintPhaseBackground, indent, behavior);
+        write(ts, *layer, layerBounds, damageRect.rect(), clipRectToApply.rect(), LayerPaintPhaseBackground, indent, behavior, markedLayer);
 
     if (negList) {
         int currIndent = indent;
@@ -678,11 +682,11 @@ void LayoutTreeAsText::writeLayers(TextStream& ts, const PaintLayer* rootLayer, 
             ++currIndent;
         }
         for (unsigned i = 0; i != negList->size(); ++i)
-            writeLayers(ts, rootLayer, negList->at(i)->layer(), paintRect, currIndent, behavior);
+            writeLayers(ts, rootLayer, negList->at(i)->layer(), paintRect, currIndent, behavior, markedLayer);
     }
 
     if (shouldPaint)
-        write(ts, *layer, layerBounds, damageRect.rect(), clipRectToApply.rect(), paintsBackgroundSeparately ? LayerPaintPhaseForeground : LayerPaintPhaseAll, indent, behavior);
+        write(ts, *layer, layerBounds, damageRect.rect(), clipRectToApply.rect(), paintsBackgroundSeparately ? LayerPaintPhaseForeground : LayerPaintPhaseAll, indent, behavior, markedLayer);
 
     Vector<PaintLayerStackingNode*> normalFlowList = normalFlowListFor(layer->stackingNode());
     if (!normalFlowList.isEmpty()) {
@@ -693,7 +697,7 @@ void LayoutTreeAsText::writeLayers(TextStream& ts, const PaintLayer* rootLayer, 
             ++currIndent;
         }
         for (unsigned i = 0; i != normalFlowList.size(); ++i)
-            writeLayers(ts, rootLayer, normalFlowList.at(i)->layer(), paintRect, currIndent, behavior);
+            writeLayers(ts, rootLayer, normalFlowList.at(i)->layer(), paintRect, currIndent, behavior, markedLayer);
     }
 
     if (Vector<PaintLayerStackingNode*>* posList = layer->stackingNode()->posZOrderList()) {
@@ -704,7 +708,7 @@ void LayoutTreeAsText::writeLayers(TextStream& ts, const PaintLayer* rootLayer, 
             ++currIndent;
         }
         for (unsigned i = 0; i != posList->size(); ++i)
-            writeLayers(ts, rootLayer, posList->at(i)->layer(), paintRect, currIndent, behavior);
+            writeLayers(ts, rootLayer, posList->at(i)->layer(), paintRect, currIndent, behavior, markedLayer);
     }
 }
 
@@ -766,19 +770,19 @@ static void writeSelection(TextStream& ts, const LayoutObject* o)
     }
 }
 
-static String externalRepresentation(LayoutBox* layoutObject, LayoutAsTextBehavior behavior)
+static String externalRepresentation(LayoutBox* layoutObject, LayoutAsTextBehavior behavior, const PaintLayer* markedLayer = nullptr)
 {
     TextStream ts;
     if (!layoutObject->hasLayer())
         return ts.release();
 
     PaintLayer* layer = layoutObject->layer();
-    LayoutTreeAsText::writeLayers(ts, layer, layer, layer->rect(), 0, behavior);
+    LayoutTreeAsText::writeLayers(ts, layer, layer, layer->rect(), 0, behavior, markedLayer);
     writeSelection(ts, layoutObject);
     return ts.release();
 }
 
-String externalRepresentation(LocalFrame* frame, LayoutAsTextBehavior behavior)
+String externalRepresentation(LocalFrame* frame, LayoutAsTextBehavior behavior, const PaintLayer* markedLayer)
 {
     if (!(behavior & LayoutAsTextDontUpdateLayout))
         frame->document()->updateLayout();
@@ -793,7 +797,7 @@ String externalRepresentation(LocalFrame* frame, LayoutAsTextBehavior behavior)
         printContext.begin(size.width(), size.height());
     }
 
-    return externalRepresentation(toLayoutBox(layoutObject), behavior);
+    return externalRepresentation(toLayoutBox(layoutObject), behavior, markedLayer);
 }
 
 String externalRepresentation(Element* element, LayoutAsTextBehavior behavior)

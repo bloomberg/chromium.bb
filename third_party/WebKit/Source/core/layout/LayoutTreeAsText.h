@@ -58,7 +58,7 @@ enum LayoutAsTextBehaviorFlags {
 typedef unsigned LayoutAsTextBehavior;
 
 // You don't need pageWidthInPixels if you don't specify LayoutAsTextInPrintingMode.
-CORE_EXPORT String externalRepresentation(LocalFrame*, LayoutAsTextBehavior = LayoutAsTextBehaviorNormal);
+CORE_EXPORT String externalRepresentation(LocalFrame*, LayoutAsTextBehavior = LayoutAsTextBehaviorNormal, const PaintLayer* markedLayer = nullptr);
 CORE_EXPORT String externalRepresentation(Element*, LayoutAsTextBehavior = LayoutAsTextBehaviorNormal);
 void write(TextStream&, const LayoutObject&, int indent = 0, LayoutAsTextBehavior = LayoutAsTextBehaviorNormal);
 
@@ -69,7 +69,7 @@ class LayoutTreeAsText {
 // not being done).
 public:
 static void writeLayoutObject(TextStream&, const LayoutObject&, LayoutAsTextBehavior);
-static void writeLayers(TextStream&, const PaintLayer* rootLayer, PaintLayer*, const LayoutRect& paintDirtyRect, int indent = 0, LayoutAsTextBehavior = LayoutAsTextBehaviorNormal);
+static void writeLayers(TextStream&, const PaintLayer* rootLayer, PaintLayer*, const LayoutRect& paintDirtyRect, int indent = 0, LayoutAsTextBehavior = LayoutAsTextBehaviorNormal, const PaintLayer* markedLayer = nullptr);
 static void writeLineBoxTree(TextStream&, const LayoutBlockFlow&, int indent = 0);
 };
 
