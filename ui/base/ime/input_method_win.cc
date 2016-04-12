@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <cwctype>
 
 #include "base/auto_reset.h"
 #include "base/command_line.h"
@@ -166,7 +167,8 @@ void InputMethodWin::DispatchKeyEvent(ui::KeyEvent* event) {
   }
 
   // If only 1 WM_CHAR per the key event, set it as the character of it.
-  if (char_msgs.size() == 1)
+  if (char_msgs.size() == 1 &&
+      !std::iswcntrl(static_cast<wint_t>(char_msgs[0].wParam)))
     event->set_character(static_cast<base::char16>(char_msgs[0].wParam));
 
   // Dispatches the key events to the Chrome IME extension which is listening to
