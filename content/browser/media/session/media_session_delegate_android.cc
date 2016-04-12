@@ -20,7 +20,11 @@ MediaSessionDelegateAndroid::MediaSessionDelegateAndroid(
     : media_session_(media_session) {
 }
 
-MediaSessionDelegateAndroid::~MediaSessionDelegateAndroid() = default;
+MediaSessionDelegateAndroid::~MediaSessionDelegateAndroid() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  DCHECK(env);
+  Java_MediaSessionDelegate_tearDown(env, j_media_session_delegate_.obj());
+}
 
 void MediaSessionDelegateAndroid::Initialize() {
   JNIEnv* env = base::android::AttachCurrentThread();

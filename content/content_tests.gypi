@@ -296,6 +296,7 @@
     ],
     'content_browsertests_android_sources': [
       'browser/accessibility/android_granularity_movement_browsertest.cc',
+      'browser/media/session/media_session_delegate_android_browsertest.cc',
       'shell/android/browsertests_apk/content_browser_tests_jni_onload.cc',
     ],
     'content_browsertests_webrtc_sources': [
