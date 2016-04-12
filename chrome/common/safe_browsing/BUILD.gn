@@ -10,6 +10,5 @@ proto_library("proto") {
     "client_model.proto",
     "crx_info.proto",
     "csd.proto",
-    "download_file_types.proto",
   ]
 }

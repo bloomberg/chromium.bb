@@ -622,8 +622,8 @@
     },
     {
       # Protobuf compiler / generator for the safebrowsing client
-      # model proto, the client-side detection (csd) request
-      # proto, and the download file types proto.
+      # model proto and the client-side detection (csd) request
+      # protocol buffer.
 
       # GN version: //chrome/common/safe_browsing:proto
       'target_name': 'safe_browsing_proto',
@@ -631,8 +631,7 @@
       'sources': [
         'common/safe_browsing/client_model.proto',
         'common/safe_browsing/crx_info.proto',
-        'common/safe_browsing/csd.proto',
-        'common/safe_browsing/download_file_types.proto',
+        'common/safe_browsing/csd.proto'
       ],
       'variables': {
         'proto_in_dir': 'common/safe_browsing',
