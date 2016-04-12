@@ -12,6 +12,7 @@ import android.graphics.drawable.Drawable;
 import android.view.ContextThemeWrapper;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.Surface;
 import android.view.View;
 import android.widget.PopupMenu;
 
@@ -81,10 +82,24 @@ public class AppMenuHandler {
         if (!mDelegate.shouldShowAppMenu() || isAppMenuShowing()) return false;
         boolean isByPermanentButton = false;
 
+        int rotation = mActivity.getWindowManager().getDefaultDisplay().getRotation();
         if (anchorView == null) {
             // This fixes the bug where the bottom of the menu starts at the top of
             // the keyboard, instead of overlapping the keyboard as it should.
             int displayHeight = mActivity.getResources().getDisplayMetrics().heightPixels;
+            int widthHeight = mActivity.getResources().getDisplayMetrics().widthPixels;
+
+            // In appcompat 23.2.1, DisplayMetrics are not updated after rotation change. This is a
+            // workaround for it. See crbug.com/599048.
+            // TODO(ianwen): Remove the rotation check after we roll to 23.3.0.
+            if (rotation == Surface.ROTATION_0 || rotation == Surface.ROTATION_180) {
+                displayHeight = Math.max(displayHeight, widthHeight);
+            } else if (rotation == Surface.ROTATION_90 || rotation == Surface.ROTATION_270) {
+                displayHeight = Math.min(displayHeight, widthHeight);
+            } else {
+                assert false : "Rotation unexpected";
+            }
+
             Rect rect = new Rect();
             mActivity.getWindow().getDecorView().getWindowVisibleDisplayFrame(rect);
             int statusBarHeight = rect.top;
@@ -130,7 +145,6 @@ public class AppMenuHandler {
             appRect.right = mActivity.getWindow().getDecorView().getWidth();
             appRect.bottom = mActivity.getWindow().getDecorView().getHeight();
         }
-        int rotation = mActivity.getWindowManager().getDefaultDisplay().getRotation();
         Point pt = new Point();
         mActivity.getWindowManager().getDefaultDisplay().getSize(pt);
         mAppMenu.show(wrapper, anchorView, isByPermanentButton,
