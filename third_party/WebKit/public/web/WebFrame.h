@@ -557,12 +557,10 @@ public:
 
     bool inShadowTree() const { return m_scope == WebTreeScopeType::Shadow; }
 
-#if ENABLE(OILPAN)
     static void traceFrames(Visitor*, WebFrame*);
     static void traceFrames(InlinedGlobalMarkingVisitor, WebFrame*);
     void clearWeakFrames(Visitor*);
     void clearWeakFrames(InlinedGlobalMarkingVisitor);
-#endif
 #endif
 
 protected:
@@ -577,7 +575,6 @@ protected:
 
 private:
 #if BLINK_IMPLEMENTATION
-#if ENABLE(OILPAN)
     friend class OpenedFrameTracker;
 
     static void traceFrame(Visitor*, WebFrame*);
@@ -590,7 +587,6 @@ private:
     void clearWeakFramesImpl(VisitorDispatcher);
     template <typename VisitorDispatcher>
     static void traceFrameImpl(VisitorDispatcher, WebFrame*);
-#endif
 #endif
 
     const WebTreeScopeType m_scope;
