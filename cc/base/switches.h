@@ -46,6 +46,8 @@ CC_EXPORT extern const char kShowScreenSpaceRects[];
 CC_EXPORT extern const char kUIShowScreenSpaceRects[];
 CC_EXPORT extern const char kShowReplicaScreenSpaceRects[];
 CC_EXPORT extern const char kUIShowReplicaScreenSpaceRects[];
+CC_EXPORT extern const char kEnableLayerLists[];
+CC_EXPORT extern const char kUIEnableLayerLists[];
 
 // Unit test related.
 CC_EXPORT extern const char kCCLayerTreeTestNoTimeout[];

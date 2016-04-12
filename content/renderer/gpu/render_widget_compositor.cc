@@ -326,6 +326,8 @@ void RenderWidgetCompositor::Initialize(float device_scale_factor) {
         settings.top_controls_hide_threshold = hide_threshold;
   }
 
+  settings.use_layer_lists = cmd->HasSwitch(cc::switches::kEnableLayerLists);
+
   settings.renderer_settings.allow_antialiasing &=
       !cmd->HasSwitch(cc::switches::kDisableCompositedAntialiasing);
   // The means the renderer compositor has 2 possible modes:

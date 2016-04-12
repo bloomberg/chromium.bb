@@ -100,6 +100,7 @@ LayerTreeSettings::LayerTreeSettings()
       wait_for_beginframe_interval(true),
       abort_commit_before_output_surface_creation(true),
       use_mouse_wheel_gestures(false),
+      use_layer_lists(false),
       max_staging_buffer_usage_in_bytes(32 * 1024 * 1024),
       memory_policy_(64 * 1024 * 1024,
                      gpu::MemoryAllocation::CUTOFF_ALLOW_EVERYTHING,
