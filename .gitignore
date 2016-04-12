@@ -367,6 +367,7 @@ vs-chromium-project.txt
 /third_party/lighttpd
 /third_party/llvm
 /third_party/llvm-allocated-type
+/third_party/llvm-bootstrap
 /third_party/llvm-build
 /third_party/lss
 /third_party/mesa/src
