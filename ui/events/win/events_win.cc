@@ -13,7 +13,6 @@
 #include "ui/events/keycodes/keyboard_code_conversion_win.h"
 #include "ui/events/win/system_event_state_lookup.h"
 #include "ui/gfx/geometry/point.h"
-#include "ui/gfx/win/dpi.h"
 
 namespace ui {
 
