@@ -183,6 +183,7 @@ mojom("mojo_bindings_blink") {
     "platform/modules/payments/payment_request.mojom",
     "platform/modules/permissions/permission.mojom",
     "platform/modules/permissions/permission_status.mojom",
+    "platform/modules/wake_lock/wake_lock_service.mojom",
   ]
   for_blink = true
   variant = "wtf"
@@ -196,6 +197,7 @@ mojom("mojo_bindings") {
     "platform/modules/notifications/notification.mojom",
     "platform/modules/permissions/permission.mojom",
     "platform/modules/permissions/permission_status.mojom",
+    "platform/modules/wake_lock/wake_lock_service.mojom",
   ]
 }
 

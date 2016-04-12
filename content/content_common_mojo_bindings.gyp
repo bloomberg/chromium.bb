@@ -25,7 +25,6 @@
           'common/service_worker/embedded_worker_setup.mojom',
           'common/storage_partition_service.mojom',
           'common/vr_service.mojom',
-          'common/wake_lock_service.mojom',
 
           # NOTE: Sources duplicated in
           # //content/public/common/BUILD.gn:mojo_bindings.

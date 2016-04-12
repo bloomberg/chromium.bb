@@ -1881,7 +1881,7 @@ void RenderFrameHostImpl::RegisterMojoServices() {
     // WakeLockServiceContext is owned by WebContentsImpl so it will outlive
     // this RenderFrameHostImpl, hence a raw pointer can be bound to service
     // factory callback.
-    GetServiceRegistry()->AddService<mojom::WakeLockService>(
+    GetServiceRegistry()->AddService<blink::mojom::WakeLockService>(
         base::Bind(&WakeLockServiceContext::CreateService,
                    base::Unretained(wake_lock_service_context),
                    GetProcess()->GetID(), GetRoutingID()));

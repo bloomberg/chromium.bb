@@ -81,6 +81,7 @@ include_rules = [
   "+third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerResponseType.h",
   "+third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerState.h",
   "+third_party/WebKit/public/platform/modules/vr/WebVR.h",
+  "+third_party/WebKit/public/platform/modules/wake_lock/wake_lock_service.mojom.h",
   "+third_party/WebKit/public/web/WebAXEnums.h",
   "+third_party/WebKit/public/web/WebCompositionUnderline.h",
   "+third_party/WebKit/public/web/WebConsoleMessage.h",

@@ -38,6 +38,7 @@
             'platform/modules/notifications/notification.mojom',
             'platform/modules/permissions/permission.mojom',
             'platform/modules/permissions/permission_status.mojom',
+            'platform/modules/wake_lock/wake_lock_service.mojom',
         ],
         'blink_android_mojo_sources': [
             'platform/modules/payments/payment_request.mojom',

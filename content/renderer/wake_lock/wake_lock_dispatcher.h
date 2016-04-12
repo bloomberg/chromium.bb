@@ -5,9 +5,9 @@
 #ifndef CONTENT_RENDERER_WAKE_LOCK_WAKE_LOCK_DISPATCHER_H_
 #define CONTENT_RENDERER_WAKE_LOCK_WAKE_LOCK_DISPATCHER_H_
 
-#include "content/common/wake_lock_service.mojom.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "third_party/WebKit/public/platform/modules/wake_lock/WebWakeLockClient.h"
+#include "third_party/WebKit/public/platform/modules/wake_lock/wake_lock_service.mojom.h"
 
 namespace content {
 
@@ -23,7 +23,7 @@ class WakeLockDispatcher : public RenderFrameObserver,
   // WebWakeLockClient implementation.
   void requestKeepScreenAwake(bool keepScreenAwake) override;
 
-  mojom::WakeLockServicePtr wake_lock_service_;
+  blink::mojom::WakeLockServicePtr wake_lock_service_;
 };
 
 }  // namespace content

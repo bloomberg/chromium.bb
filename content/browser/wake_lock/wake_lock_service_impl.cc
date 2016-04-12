@@ -14,7 +14,7 @@ WakeLockServiceImpl::WakeLockServiceImpl(
     base::WeakPtr<WakeLockServiceContext> context,
     int render_process_id,
     int render_frame_id,
-    mojo::InterfaceRequest<mojom::WakeLockService> request)
+    mojo::InterfaceRequest<blink::mojom::WakeLockService> request)
     : context_(context),
       render_process_id_(render_process_id),
       render_frame_id_(render_frame_id),
