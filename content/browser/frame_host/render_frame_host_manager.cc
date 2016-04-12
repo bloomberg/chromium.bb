@@ -801,27 +801,29 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
   // Reuse the current RenderFrameHost if its SiteInstance matches the
   // navigation's.
   bool no_renderer_swap = current_site_instance == dest_site_instance.get();
-  if (SiteIsolationPolicy::AreCrossProcessFramesPossible()) {
-    // Check if the current renderer should be changed for the navigation.
-    no_renderer_swap |=
-        render_frame_host_->IsRenderFrameLive() &&
-        ShouldMakeNetworkRequestForURL(request.common_params().url) &&
-        !IsRendererTransferNeededForNavigation(render_frame_host_.get(),
-                                               request.common_params().url);
-  } else {
-    // Subframe navigations will use the current renderer.
-    no_renderer_swap |= !frame_tree_node_->IsMainFrame();
 
+  if (frame_tree_node_->IsMainFrame()) {
     // Renderer-initiated main frame navigations that may require a
     // SiteInstance swap are sent to the browser via the OpenURL IPC and are
     // afterwards treated as browser-initiated navigations. NavigationRequests
     // marked as renderer-initiated are created by receiving a BeginNavigation
-    // IPC, and will then proceed in the same renderer that sent the IPC due to
-    // the condition below.
-    // TODO(carlosk): Have renderer-initated main frame navigations swap
-    // processes if needed when it no longer breaks OAuth popups (see
-    // https://crbug.com/440266).
-    no_renderer_swap |= !request.browser_initiated();
+    // IPC, and will then proceed in the same renderer. In site-per-process
+    // mode, it is possible for renderer-intiated navigations to be allowed to
+    // go cross-process. Check it first.
+    bool can_renderer_initiate_transfer =
+        render_frame_host_->IsRenderFrameLive() &&
+        ShouldMakeNetworkRequestForURL(request.common_params().url) &&
+        IsRendererTransferNeededForNavigation(render_frame_host_.get(),
+                                              request.common_params().url);
+
+    no_renderer_swap |=
+        !request.browser_initiated() && !can_renderer_initiate_transfer;
+  } else {
+    // Subframe navigations will use the current renderer, unless specifically
+    // allowed to swap processes.
+    no_renderer_swap |= !CanSubframeSwapProcess(request.common_params().url,
+                                                request.source_site_instance(),
+                                                request.dest_site_instance());
   }
 
   if (no_renderer_swap) {
@@ -2142,34 +2144,11 @@ RenderFrameHostImpl* RenderFrameHostManager::UpdateStateForNavigate(
     bool dest_is_view_source_mode,
     const GlobalRequestID& transferred_request_id,
     int bindings) {
-  if (!frame_tree_node_->IsMainFrame()) {
-    // Don't swap for subframes unless we are in an OOPIF-enabled mode.  We can
-    // get here in tests for subframes (e.g., NavigateFrameToURL).
-    if (!SiteIsolationPolicy::AreCrossProcessFramesPossible())
-      return render_frame_host_.get();
-
-    // If dest_url is a unique origin like about:blank, then the need for a swap
-    // is determined by the source_instance.
-    GURL resolved_url = dest_url;
-    if (url::Origin(resolved_url).unique()) {
-      // If there is no source_instance for a unique origin, then we should
-      // avoid a process swap.
-      if (!source_instance)
-        return render_frame_host_.get();
-
-      // Use source_instance to determine if a swap is needed.
-      resolved_url = source_instance->GetSiteURL();
-    }
-
-    // If we are in an OOPIF mode that only applies to some sites, only swap if
-    // the policy determines that a transfer would have been needed.  We can get
-    // here for session restore.
-    if (!IsRendererTransferNeededForNavigation(render_frame_host_.get(),
-                                               resolved_url)) {
-      DCHECK(!dest_instance ||
-             dest_instance == render_frame_host_->GetSiteInstance());
-      return render_frame_host_.get();
-    }
+  if (!frame_tree_node_->IsMainFrame() &&
+      !CanSubframeSwapProcess(dest_url, source_instance, dest_instance)) {
+    // Note: Do not add code here to determine whether the subframe should swap
+    // or not. Add it to CanSubframeSwapProcess instead.
+    return render_frame_host_.get();
   }
 
   SiteInstance* current_instance = render_frame_host_->GetSiteInstance();
@@ -2571,6 +2550,41 @@ void RenderFrameHostManager::SendPageMessage(IPC::Message* msg) {
 
   msg->set_routing_id(render_frame_host_->GetRoutingID());
   render_frame_host_->Send(msg);
+}
+
+bool RenderFrameHostManager::CanSubframeSwapProcess(
+    const GURL& dest_url,
+    SiteInstance* source_instance,
+    SiteInstance* dest_instance) {
+  // Don't swap for subframes unless we are in an OOPIF-enabled mode.  We can
+  // get here in tests for subframes (e.g., NavigateFrameToURL).
+  if (!SiteIsolationPolicy::AreCrossProcessFramesPossible())
+    return false;
+
+  // If dest_url is a unique origin like about:blank, then the need for a swap
+  // is determined by the source_instance.
+  GURL resolved_url = dest_url;
+  if (url::Origin(resolved_url).unique()) {
+    // If there is no source_instance for a unique origin, then we should avoid
+    // a process swap.
+    if (!source_instance)
+      return false;
+
+    // Use source_instance to determine if a swap is needed.
+    resolved_url = source_instance->GetSiteURL();
+  }
+
+  // If we are in an OOPIF mode that only applies to some sites, only swap if
+  // the policy determines that a transfer would have been needed.  We can get
+  // here for session restore.
+  if (!IsRendererTransferNeededForNavigation(render_frame_host_.get(),
+                                             resolved_url)) {
+    DCHECK(!dest_instance ||
+           dest_instance == render_frame_host_->GetSiteInstance());
+    return false;
+  }
+
+  return true;
 }
 
 }  // namespace content

@@ -737,6 +737,11 @@ class CONTENT_EXPORT RenderFrameHostManager
   void UpdatePendingWebUIOnCurrentFrameHost(const GURL& dest_url,
                                             int entry_bindings);
 
+  // Returns true if a subframe can navigate cross-process.
+  bool CanSubframeSwapProcess(const GURL& dest_url,
+                              SiteInstance* source_instance,
+                              SiteInstance* dest_instance);
+
   // For use in creating RenderFrameHosts.
   FrameTreeNode* frame_tree_node_;
 
