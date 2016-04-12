@@ -51,7 +51,7 @@ public class CleanupReferenceTest extends InstrumentationTestCase {
         // While this is only a 'hint' to the VM, it's generally effective and sufficient on
         // dalvik. If this changes in future, maybe try allocating a few gargantuan objects
         // too, to force the GC to work.
-        System.gc();
+        Runtime.getRuntime().gc();
     }
 
     @SuppressFBWarnings("DLS_DEAD_LOCAL_STORE")
