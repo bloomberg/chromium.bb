@@ -134,6 +134,23 @@ public class ImeTest extends ContentShellTestBase {
 
     @SmallTest
     @Feature({"TextInput", "Main"})
+    public void testDeleteSurroundingTextWithZeroValue() throws Throwable {
+        commitText("hello", 1);
+        waitAndVerifyUpdateSelection(0, 5, 5, -1, -1);
+        deleteSurroundingText(0, 0);
+
+        setSelection(0, 0);
+        waitAndVerifyUpdateSelection(1, 0, 0, -1, -1);
+        deleteSurroundingText(0, 0);
+
+        setSelection(2, 2);
+        waitAndVerifyUpdateSelection(2, 2, 2, -1, -1);
+        deleteSurroundingText(0, 0);
+        assertTextsAroundCursor("he", "", "llo");
+    }
+
+    @SmallTest
+    @Feature({"TextInput", "Main"})
     public void testCommitWhileComposingText() throws Throwable {
         setComposingText("h", 1);
         waitAndVerifyUpdateSelection(0, 1, 1, 0, 1);
