@@ -23,7 +23,6 @@ enum RequestRedirect { "follow", "error", "manual" };
     Exposed=(Window,Worker),
     RaisesException=Constructor,
     DependentLifetime,
-    GarbageCollected,
 ] interface Request {
     readonly attribute ByteString method;
     readonly attribute USVString url;

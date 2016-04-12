@@ -24,7 +24,6 @@
  */
 
 [
-    GarbageCollected,
 ] interface TypeConversions {
     attribute long testLong;
     [EnforceRange, ImplementedAs=testLong] attribute long testEnforceRangeLong;

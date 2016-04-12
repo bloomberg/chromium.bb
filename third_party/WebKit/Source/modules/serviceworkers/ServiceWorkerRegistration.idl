@@ -7,7 +7,6 @@
     ActiveScriptWrappable,
     DependentLifetime,
     Exposed=(Window,Worker),
-    GarbageCollected,
 ] interface ServiceWorkerRegistration : EventTarget {
     [Unforgeable] readonly attribute ServiceWorker? installing;
     [Unforgeable] readonly attribute ServiceWorker? waiting;

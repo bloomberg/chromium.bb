@@ -6,7 +6,6 @@
     Constructor(Element element, DOMString[] attributeArray),
     ConstructorCallWith=ExecutionContext,
     Exposed=(Window,CompositorWorker),
-    GarbageCollected,
     RaisesException=Constructor,
     RuntimeEnabled=CompositorWorker,
 ] interface CompositorProxy {

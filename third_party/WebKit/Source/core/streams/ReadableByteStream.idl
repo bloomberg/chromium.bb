@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 [
-    GarbageCollected,
     Exposed=(Window,Worker),
 ] interface ReadableByteStream {
     [CallWith=ExecutionContext, RaisesException, ImplementedAs=getBytesReader] ReadableByteStreamReader getReader();

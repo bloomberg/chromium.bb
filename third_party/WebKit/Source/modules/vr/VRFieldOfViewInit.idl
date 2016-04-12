@@ -5,7 +5,6 @@
 // http://mozvr.github.io/webvr-spec/webvr.html#vrfieldofview
 [
     RuntimeEnabled=WebVR,
-    GarbageCollected
 ] dictionary VRFieldOfViewInit {
     double upDegrees = 0.0;
     double rightDegrees = 0.0;

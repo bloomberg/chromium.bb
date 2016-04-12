@@ -28,7 +28,6 @@
 [
     ImplementedAs=SVGAnimatedEnumerationBase,
     SetWrapperReferenceTo(SVGElement contextElement),
-    GarbageCollected,
 ] interface SVGAnimatedEnumeration {
     [RaisesException=Setter] attribute unsigned short baseVal;
     readonly attribute unsigned short animVal;

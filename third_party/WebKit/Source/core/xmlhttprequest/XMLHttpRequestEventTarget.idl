@@ -27,7 +27,6 @@
 // https://xhr.spec.whatwg.org/#xmlhttprequesteventtarget
 
 [
-    GarbageCollected,
     Exposed=(Window,DedicatedWorker,SharedWorker)
 ] interface XMLHttpRequestEventTarget : EventTarget {
     // event handlers

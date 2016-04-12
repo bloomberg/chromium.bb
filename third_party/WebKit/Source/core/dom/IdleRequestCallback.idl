@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 [
-  GarbageCollected,
   RuntimeEnabled=RequestIdleCallback,
 ] callback interface IdleRequestCallback {
     void handleEvent(IdleDeadline deadline);

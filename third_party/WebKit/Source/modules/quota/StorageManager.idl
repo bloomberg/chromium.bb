@@ -8,7 +8,6 @@ enum PersistentStoragePermission { "default", "denied", "granted" };
 
 [
     Exposed=(Window,Worker),
-    GarbageCollected,
     RuntimeEnabled=DurableStorage,
 ] interface StorageManager {
     [Exposed=Window, CallWith=ScriptState] Promise<boolean> requestPersistent();

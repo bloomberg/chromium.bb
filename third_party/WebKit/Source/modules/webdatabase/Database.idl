@@ -27,7 +27,6 @@
  */
 
 [
-    GarbageCollected,
     NoInterfaceObject
 ] interface Database {
     readonly attribute DOMString version;

@@ -91,7 +91,6 @@ from utilities import idl_filename_to_component, read_pickle_files, write_pickle
 INHERITED_EXTENDED_ATTRIBUTES = set([
     'ActiveScriptWrappable',
     'DependentLifetime',
-    'GarbageCollected',
 ])
 
 # Main variable (filled in and exported)
@@ -184,8 +183,7 @@ def compute_global_type_info():
             implemented_as_interfaces[interface_name] = interface_info['implemented_as']
 
         inherited_extended_attributes = interface_info['inherited_extended_attributes']
-        if 'GarbageCollected' in inherited_extended_attributes:
-            garbage_collected_interfaces.add(interface_name)
+        garbage_collected_interfaces.add(interface_name)
 
     interfaces_info['ancestors'] = ancestors
     interfaces_info['callback_interfaces'] = callback_interfaces

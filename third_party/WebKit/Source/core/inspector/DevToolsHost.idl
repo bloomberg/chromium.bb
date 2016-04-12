@@ -31,7 +31,6 @@
  */
 
 [
-    GarbageCollected,
     NoInterfaceObject,
 ] interface DevToolsHost {
     float zoomFactor();

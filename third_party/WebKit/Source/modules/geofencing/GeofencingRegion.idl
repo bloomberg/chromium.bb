@@ -5,7 +5,6 @@
 [
     RuntimeEnabled=Geofencing,
     NoInterfaceObject,
-    GarbageCollected,
 ] interface GeofencingRegion {
     readonly attribute DOMString id;
 };

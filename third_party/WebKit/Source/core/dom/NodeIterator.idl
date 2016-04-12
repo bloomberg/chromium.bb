@@ -22,7 +22,6 @@
 
 [
     SetWrapperReferenceTo(NodeFilter filter),
-    GarbageCollected,
 ] interface NodeIterator {
     [SameObject] readonly attribute Node root;
     readonly attribute Node referenceNode;

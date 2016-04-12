@@ -34,7 +34,6 @@
 // TODO(philipj): None of the optional DOMString arguments in this interface
 // should have a default value.
 [
-    GarbageCollected,
     NoInterfaceObject
 ] interface WorkerPerformance : EventTarget {
     DOMHighResTimeStamp now();

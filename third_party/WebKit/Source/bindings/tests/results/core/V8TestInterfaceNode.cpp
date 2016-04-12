@@ -26,7 +26,7 @@ namespace blink {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-const WrapperTypeInfo V8TestInterfaceNode::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceNode::domTemplate, V8TestInterfaceNode::refObject, V8TestInterfaceNode::derefObject, V8TestInterfaceNode::trace, 0, 0, V8TestInterfaceNode::preparePrototypeAndInterfaceObject, V8TestInterfaceNode::installConditionallyEnabledProperties, "TestInterfaceNode", &V8Node::wrapperTypeInfo, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::NodeClassId, WrapperTypeInfo::InheritFromEventTarget, WrapperTypeInfo::Dependent, WrapperTypeInfo::GarbageCollectedObject };
+const WrapperTypeInfo V8TestInterfaceNode::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceNode::domTemplate, V8TestInterfaceNode::trace, 0, 0, V8TestInterfaceNode::preparePrototypeAndInterfaceObject, V8TestInterfaceNode::installConditionallyEnabledProperties, "TestInterfaceNode", &V8Node::wrapperTypeInfo, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::NodeClassId, WrapperTypeInfo::InheritFromEventTarget, WrapperTypeInfo::Dependent };
 #if defined(COMPONENT_BUILD) && defined(WIN32) && COMPILER(CLANG)
 #pragma clang diagnostic pop
 #endif
@@ -110,7 +110,7 @@ static void eventHandlerAttributeAttributeGetter(const v8::FunctionCallbackInfo<
 {
     v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceNode* impl = V8TestInterfaceNode::toImpl(holder);
-    EventListener* cppValue(impl->eventHandlerAttribute());
+    EventListener* cppValue(WTF::getPtr(impl->eventHandlerAttribute()));
     v8SetReturnValue(info, cppValue ? v8::Local<v8::Value>(V8AbstractEventListener::cast(cppValue)->getListenerObject(impl->getExecutionContext())) : v8::Local<v8::Value>(v8::Null(info.GetIsolate())));
 }
 
@@ -217,7 +217,7 @@ static void reflectUrlStringAttributeAttributeSetterCallback(const v8::FunctionC
 static void testInterfaceEmptyMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceNode* impl = V8TestInterfaceNode::toImpl(info.Holder());
-    v8SetReturnValueFast(info, WTF::getPtr(impl->testInterfaceEmptyMethod()), impl);
+    v8SetReturnValueFast(info, impl->testInterfaceEmptyMethod(), impl);
 }
 
 static void testInterfaceEmptyMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -228,7 +228,7 @@ static void testInterfaceEmptyMethodMethodCallback(const v8::FunctionCallbackInf
 static void perWorldBindingsTestInterfaceEmptyMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceNode* impl = V8TestInterfaceNode::toImpl(info.Holder());
-    v8SetReturnValueFast(info, WTF::getPtr(impl->perWorldBindingsTestInterfaceEmptyMethod()), impl);
+    v8SetReturnValueFast(info, impl->perWorldBindingsTestInterfaceEmptyMethod(), impl);
 }
 
 static void perWorldBindingsTestInterfaceEmptyMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -239,7 +239,7 @@ static void perWorldBindingsTestInterfaceEmptyMethodMethodCallback(const v8::Fun
 static void perWorldBindingsTestInterfaceEmptyMethodMethodForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceNode* impl = V8TestInterfaceNode::toImpl(info.Holder());
-    v8SetReturnValueForMainWorld(info, WTF::getPtr(impl->perWorldBindingsTestInterfaceEmptyMethod()));
+    v8SetReturnValueForMainWorld(info, impl->perWorldBindingsTestInterfaceEmptyMethod());
 }
 
 static void perWorldBindingsTestInterfaceEmptyMethodMethodCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -260,14 +260,14 @@ static void perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArgMethod(con
             --numArgsPassed;
         }
         if (UNLIKELY(numArgsPassed <= 0)) {
-            v8SetReturnValueFast(info, WTF::getPtr(impl->perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArg()), impl);
+            v8SetReturnValueFast(info, impl->perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArg(), impl);
             return;
         }
         optionalBooleanArgument = toBoolean(info.GetIsolate(), info[0], exceptionState);
         if (exceptionState.throwIfNeeded())
             return;
     }
-    v8SetReturnValueFast(info, WTF::getPtr(impl->perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArg(optionalBooleanArgument)), impl);
+    v8SetReturnValueFast(info, impl->perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArg(optionalBooleanArgument), impl);
 }
 
 static void perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -288,14 +288,14 @@ static void perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArgMethodForM
             --numArgsPassed;
         }
         if (UNLIKELY(numArgsPassed <= 0)) {
-            v8SetReturnValueForMainWorld(info, WTF::getPtr(impl->perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArg()));
+            v8SetReturnValueForMainWorld(info, impl->perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArg());
             return;
         }
         optionalBooleanArgument = toBoolean(info.GetIsolate(), info[0], exceptionState);
         if (exceptionState.throwIfNeeded())
             return;
     }
-    v8SetReturnValueForMainWorld(info, WTF::getPtr(impl->perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArg(optionalBooleanArgument)));
+    v8SetReturnValueForMainWorld(info, impl->perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArg(optionalBooleanArgument));
 }
 
 static void perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArgMethodCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -354,14 +354,6 @@ v8::Local<v8::Object> V8TestInterfaceNode::findInstanceInPrototypeChain(v8::Loca
 TestInterfaceNode* V8TestInterfaceNode::toImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value)
 {
     return hasInstance(value, isolate) ? toImpl(v8::Local<v8::Object>::Cast(value)) : 0;
-}
-
-void V8TestInterfaceNode::refObject(ScriptWrappable* scriptWrappable)
-{
-}
-
-void V8TestInterfaceNode::derefObject(ScriptWrappable* scriptWrappable)
-{
 }
 
 } // namespace blink

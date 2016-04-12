@@ -29,7 +29,6 @@
  */
 
 [
-    GarbageCollected,
 ] interface SourceBufferList : EventTarget {
     readonly attribute unsigned long length;
     [ImplementedAs=item] getter SourceBuffer (unsigned long index);

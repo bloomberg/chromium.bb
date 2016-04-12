@@ -59,14 +59,10 @@ public:
     {% else %}
     {{exported}}static const WrapperTypeInfo wrapperTypeInfo;
     {% endif %}
-    static void refObject(ScriptWrappable*);
-    static void derefObject(ScriptWrappable*);
     template<typename VisitorDispatcher>
     static void trace(VisitorDispatcher visitor, ScriptWrappable* scriptWrappable)
     {
-        {% if gc_type == 'GarbageCollectedObject' %}
         visitor->trace(scriptWrappable->toImpl<{{cpp_class}}>());
-        {% endif %}
     }
     {% if has_visit_dom_wrapper %}
     static void visitDOMWrapper(v8::Isolate*, ScriptWrappable*, const v8::Persistent<v8::Object>&);

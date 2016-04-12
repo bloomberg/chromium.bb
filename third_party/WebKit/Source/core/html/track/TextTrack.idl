@@ -29,7 +29,6 @@ enum TextTrackMode { "disabled",  "hidden",  "showing" };
 enum TextTrackKind { "subtitles",  "captions",  "descriptions",  "chapters",  "metadata" };
 
 [
-    GarbageCollected,
     SetWrapperReferenceFrom=owner,
 ] interface TextTrack : EventTarget {
     readonly attribute TextTrackKind kind;

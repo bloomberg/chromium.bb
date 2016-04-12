@@ -6,7 +6,6 @@
 
 [
     Constructor(MediaMetadataInit metadata),
-    GarbageCollected,
     RuntimeEnabled=MediaSession,
 ] interface MediaMetadata {
     readonly attribute DOMString title;

@@ -26,7 +26,6 @@
 [
     ImplementedAs=SVGRectTearOff,
     SetWrapperReferenceTo(SVGElement contextElement),
-    GarbageCollected,
 ] interface SVGRect {
     [RaisesException=Setter] attribute unrestricted float x;
     [RaisesException=Setter] attribute unrestricted float y;

@@ -5,7 +5,6 @@
 // http://wicg.github.io/webusb/#idl-def-usbintransferresult
 
 [
-    GarbageCollected,
     OriginTrialEnabled=WebUSB,
 ] interface USBInTransferResult {
     readonly attribute DataView data;

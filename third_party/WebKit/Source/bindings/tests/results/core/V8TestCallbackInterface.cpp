@@ -84,7 +84,7 @@ void V8TestCallbackInterface::voidMethodBooleanArg(bool boolArg)
     ScriptController::callFunction(m_scriptState->getExecutionContext(), m_callback.newLocal(m_scriptState->isolate()), v8::Undefined(m_scriptState->isolate()), 1, argv, m_scriptState->isolate());
 }
 
-void V8TestCallbackInterface::voidMethodSequenceArg(const Vector<RefPtr<TestInterfaceEmpty>>& sequenceArg)
+void V8TestCallbackInterface::voidMethodSequenceArg(const HeapVector<Member<TestInterfaceEmpty>>& sequenceArg)
 {
     if (!canInvokeCallback())
         return;

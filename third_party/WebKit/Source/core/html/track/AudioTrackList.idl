@@ -5,7 +5,6 @@
 // https://html.spec.whatwg.org/#audiotracklist
 
 [
-    GarbageCollected,
     RuntimeEnabled=AudioVideoTracks,
     SetWrapperReferenceFrom=owner,
 ] interface AudioTrackList : EventTarget {

@@ -30,7 +30,6 @@
 
 [
     NoInterfaceObject,
-    GarbageCollected,
 ] interface EntrySync {
     readonly attribute boolean isFile;
     readonly attribute boolean isDirectory;

@@ -29,7 +29,6 @@
  */
 
 [
-    GarbageCollected,
     Exposed=(Window,Worker)
 ] interface CryptoKey {
     readonly attribute DOMString type;

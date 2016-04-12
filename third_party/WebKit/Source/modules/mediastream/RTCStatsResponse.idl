@@ -23,7 +23,6 @@
  */
 
 [
-    GarbageCollected,
     NoInterfaceObject
 ] interface RTCStatsResponse {
     sequence<RTCStatsReport> result();

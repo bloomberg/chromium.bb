@@ -7,7 +7,6 @@
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8BindingForTesting.h"
 #include "core/testing/GarbageCollectedScriptWrappable.h"
-#include "core/testing/RefCountedScriptWrappable.h"
 #include "platform/heap/Heap.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/Vector.h"
@@ -60,21 +59,6 @@ public:
     // This should be public in order to access a Persistent<X> object.
     Persistent<GarbageCollectedScriptWrappable> m_scriptWrappable;
 };
-
-TEST_F(ToV8Test, refCountedScriptWrappable)
-{
-    RefPtr<RefCountedScriptWrappable> object = RefCountedScriptWrappable::create("hello");
-
-    TEST_TOV8("hello", object);
-    TEST_TOV8("hello", object.get());
-    TEST_TOV8("hello", object.release());
-
-    ASSERT_FALSE(object);
-
-    TEST_TOV8("null", object);
-    TEST_TOV8("null", object.get());
-    TEST_TOV8("null", object.release());
-}
 
 TEST_F(ToV8Test, garbageCollectedScriptWrappable)
 {
@@ -164,15 +148,6 @@ TEST_F(ToV8Test, scriptValue)
     ScriptValue value(m_scope.getScriptState(), v8::Number::New(m_scope.isolate(), 1234));
 
     TEST_TOV8("1234", value);
-}
-
-TEST_F(ToV8Test, vector)
-{
-    Vector<RefPtr<RefCountedScriptWrappable>> v;
-    v.append(RefCountedScriptWrappable::create("foo"));
-    v.append(RefCountedScriptWrappable::create("bar"));
-
-    TEST_TOV8("foo,bar", v);
 }
 
 TEST_F(ToV8Test, stringVectors)

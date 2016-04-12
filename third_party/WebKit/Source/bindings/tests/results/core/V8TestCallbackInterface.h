@@ -30,7 +30,7 @@ public:
     void voidMethod() override;
     bool booleanMethod() override;
     void voidMethodBooleanArg(bool boolArg) override;
-    void voidMethodSequenceArg(const Vector<RefPtr<TestInterfaceEmpty>>& sequenceArg) override;
+    void voidMethodSequenceArg(const HeapVector<Member<TestInterfaceEmpty>>& sequenceArg) override;
     void voidMethodFloatArg(float floatArg) override;
     void voidMethodTestInterfaceEmptyArg(TestInterfaceEmpty* testInterfaceEmptyArg) override;
     void voidMethodTestInterfaceEmptyStringArg(TestInterfaceEmpty* testInterfaceEmptyArg, const String& stringArg) override;

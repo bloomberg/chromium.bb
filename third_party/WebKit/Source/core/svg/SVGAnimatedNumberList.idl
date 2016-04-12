@@ -27,7 +27,6 @@
 
 [
     SetWrapperReferenceTo(SVGElement contextElement),
-    GarbageCollected,
 ] interface SVGAnimatedNumberList {
     readonly attribute SVGNumberList baseVal;
     readonly attribute SVGNumberList animVal;

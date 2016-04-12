@@ -27,7 +27,6 @@
  */
 
 [
-    GarbageCollected,
 ] interface AudioParam {
     attribute float value;
     readonly attribute float defaultValue;

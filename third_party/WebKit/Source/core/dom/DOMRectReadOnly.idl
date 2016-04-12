@@ -8,7 +8,6 @@
     Constructor(unrestricted double x, unrestricted double y,
                 unrestricted double width, unrestricted double height),
     // FIXME: Exposed=(Window,Worker)
-    GarbageCollected,
     RuntimeEnabled=GeometryInterfaces,
 ] interface DOMRectReadOnly {
     readonly attribute unrestricted double x;

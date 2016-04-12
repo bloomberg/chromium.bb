@@ -8,7 +8,6 @@ typedef object JSON;
     ActiveScriptWrappable,
     DependentLifetime,
     Exposed=ServiceWorker,
-    GarbageCollected,
     NoInterfaceObject,
 ] interface Body {
     readonly attribute boolean bodyUsed;

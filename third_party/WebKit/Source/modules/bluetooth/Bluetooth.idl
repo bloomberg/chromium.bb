@@ -5,7 +5,6 @@
 // https://webbluetoothchrome.github.io/web-bluetooth/#idl-def-bluetooth
 
 [
-    GarbageCollected,
     NoInterfaceObject,
     OriginTrialEnabled=WebBluetooth,
 ] interface Bluetooth {

@@ -5,7 +5,6 @@
 // https://slightlyoff.github.io/ServiceWorker/spec/service_worker/index.html#service-worker-client-interface
 [
     Exposed=ServiceWorker,
-    GarbageCollected,
     ImplementedAs=ServiceWorkerClient,
 ] interface Client {
     [RuntimeEnabled=ServiceWorkerClientAttributes] readonly attribute USVString url;

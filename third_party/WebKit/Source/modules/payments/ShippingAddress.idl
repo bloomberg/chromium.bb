@@ -7,7 +7,6 @@
 
 [
     RuntimeEnabled=PaymentRequest,
-    GarbageCollected,
 ] interface ShippingAddress {
     readonly attribute DOMString regionCode;
     readonly attribute sequence<DOMString> addressLine;

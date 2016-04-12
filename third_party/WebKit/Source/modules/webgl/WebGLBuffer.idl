@@ -24,6 +24,5 @@
  */
 
 [
-    GarbageCollected,
 ] interface WebGLBuffer {
 };

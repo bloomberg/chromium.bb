@@ -36,7 +36,6 @@
 // TODO(philipj): None of the optional DOMString arguments in this interface
 // should have a default value.
 [
-  GarbageCollected
 ] interface Performance : EventTarget {
     DOMHighResTimeStamp now();
 

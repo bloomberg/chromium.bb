@@ -27,7 +27,7 @@ namespace blink {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-const WrapperTypeInfo V8TestInterface3::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterface3::domTemplate, V8TestInterface3::refObject, V8TestInterface3::derefObject, V8TestInterface3::trace, 0, V8TestInterface3::visitDOMWrapper, V8TestInterface3::preparePrototypeAndInterfaceObject, V8TestInterface3::installConditionallyEnabledProperties, "TestInterface3", 0, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::NotInheritFromEventTarget, WrapperTypeInfo::Dependent, WrapperTypeInfo::RefCountedObject };
+const WrapperTypeInfo V8TestInterface3::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterface3::domTemplate, V8TestInterface3::trace, 0, V8TestInterface3::visitDOMWrapper, V8TestInterface3::preparePrototypeAndInterfaceObject, V8TestInterface3::installConditionallyEnabledProperties, "TestInterface3", 0, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::NotInheritFromEventTarget, WrapperTypeInfo::Dependent };
 #if defined(COMPONENT_BUILD) && defined(WIN32) && COMPILER(CLANG)
 #pragma clang diagnostic pop
 #endif
@@ -67,12 +67,12 @@ static void keysMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "keys", "TestInterface3", info.Holder(), info.GetIsolate());
     TestInterface3* impl = V8TestInterface3::toImpl(info.Holder());
     ScriptState* scriptState = ScriptState::current(info.GetIsolate());
-    RawPtr<Iterator> result = impl->iterableKeys(scriptState, exceptionState);
+    Iterator* result = impl->iterableKeys(scriptState, exceptionState);
     if (exceptionState.hadException()) {
         exceptionState.throwIfNeeded();
         return;
     }
-    v8SetReturnValue(info, result.release());
+    v8SetReturnValue(info, result);
 }
 
 static void keysMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -85,12 +85,12 @@ static void valuesMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "values", "TestInterface3", info.Holder(), info.GetIsolate());
     TestInterface3* impl = V8TestInterface3::toImpl(info.Holder());
     ScriptState* scriptState = ScriptState::current(info.GetIsolate());
-    RawPtr<Iterator> result = impl->valuesForBinding(scriptState, exceptionState);
+    Iterator* result = impl->valuesForBinding(scriptState, exceptionState);
     if (exceptionState.hadException()) {
         exceptionState.throwIfNeeded();
         return;
     }
-    v8SetReturnValue(info, result.release());
+    v8SetReturnValue(info, result);
 }
 
 static void valuesMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -103,12 +103,12 @@ static void entriesMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "entries", "TestInterface3", info.Holder(), info.GetIsolate());
     TestInterface3* impl = V8TestInterface3::toImpl(info.Holder());
     ScriptState* scriptState = ScriptState::current(info.GetIsolate());
-    RawPtr<Iterator> result = impl->entriesForBinding(scriptState, exceptionState);
+    Iterator* result = impl->entriesForBinding(scriptState, exceptionState);
     if (exceptionState.hadException()) {
         exceptionState.throwIfNeeded();
         return;
     }
-    v8SetReturnValue(info, result.release());
+    v8SetReturnValue(info, result);
 }
 
 static void entriesMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -154,12 +154,12 @@ static void iteratorMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "iterator", "TestInterface3", info.Holder(), info.GetIsolate());
     TestInterface3* impl = V8TestInterface3::toImpl(info.Holder());
     ScriptState* scriptState = ScriptState::current(info.GetIsolate());
-    RawPtr<Iterator> result = impl->iterator(scriptState, exceptionState);
+    Iterator* result = impl->iterator(scriptState, exceptionState);
     if (exceptionState.hadException()) {
         exceptionState.throwIfNeeded();
         return;
     }
-    v8SetReturnValue(info, result.release());
+    v8SetReturnValue(info, result);
 }
 
 static void iteratorMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -275,16 +275,6 @@ v8::Local<v8::Object> V8TestInterface3::findInstanceInPrototypeChain(v8::Local<v
 TestInterface3* V8TestInterface3::toImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value)
 {
     return hasInstance(value, isolate) ? toImpl(v8::Local<v8::Object>::Cast(value)) : 0;
-}
-
-void V8TestInterface3::refObject(ScriptWrappable* scriptWrappable)
-{
-    scriptWrappable->toImpl<TestInterface3>()->ref();
-}
-
-void V8TestInterface3::derefObject(ScriptWrappable* scriptWrappable)
-{
-    scriptWrappable->toImpl<TestInterface3>()->deref();
 }
 
 } // namespace blink

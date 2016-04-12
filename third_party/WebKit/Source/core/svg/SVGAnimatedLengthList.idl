@@ -27,7 +27,6 @@
 
 [
     SetWrapperReferenceTo(SVGElement contextElement),
-    GarbageCollected,
 ] interface SVGAnimatedLengthList {
     readonly attribute SVGLengthList baseVal;
     readonly attribute SVGLengthList animVal;

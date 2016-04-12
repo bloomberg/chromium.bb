@@ -10,7 +10,6 @@
     Constructor(sequence<DOMString> supportedMethods, PaymentDetails details, optional PaymentOptions options, optional object data),
     ConstructorCallWith=ScriptState,
     RaisesException=Constructor,
-    GarbageCollected,
 ] interface PaymentRequest : EventTarget {
     [CallWith=ScriptState] Promise<PaymentResponse> show();
     [RaisesException] void abort();

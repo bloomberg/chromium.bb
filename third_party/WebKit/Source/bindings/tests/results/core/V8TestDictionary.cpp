@@ -563,7 +563,7 @@ void V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
         if (testInterfaceSequenceMemberValue.IsEmpty() || testInterfaceSequenceMemberValue->IsUndefined()) {
             // Do nothing.
         } else {
-            Vector<RefPtr<TestInterfaceImplementation>> testInterfaceSequenceMember = (toRefPtrNativeArray<TestInterface, V8TestInterface>(testInterfaceSequenceMemberValue, 0, isolate, exceptionState));
+            HeapVector<Member<TestInterfaceImplementation>> testInterfaceSequenceMember = (toMemberNativeArray<TestInterface, V8TestInterface>(testInterfaceSequenceMemberValue, 0, isolate, exceptionState));
             if (exceptionState.hadException())
                 return;
             impl.setTestInterfaceSequenceMember(testInterfaceSequenceMember);
@@ -798,7 +798,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
         if (!v8CallBoolean(dictionary->CreateDataProperty(isolate->GetCurrentContext(), v8String(isolate, "testInterfaceSequenceMember"), toV8(impl.testInterfaceSequenceMember(), creationContext, isolate))))
             return false;
     } else {
-        if (!v8CallBoolean(dictionary->CreateDataProperty(isolate->GetCurrentContext(), v8String(isolate, "testInterfaceSequenceMember"), toV8(Vector<RefPtr<TestInterfaceImplementation>>(), creationContext, isolate))))
+        if (!v8CallBoolean(dictionary->CreateDataProperty(isolate->GetCurrentContext(), v8String(isolate, "testInterfaceSequenceMember"), toV8(HeapVector<Member<TestInterfaceImplementation>>(), creationContext, isolate))))
             return false;
     }
 

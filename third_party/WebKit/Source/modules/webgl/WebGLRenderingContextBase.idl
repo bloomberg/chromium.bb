@@ -45,7 +45,6 @@ typedef unrestricted float GLclampf;
     // be put on implementing interface
     // DoNotCheckConstants, // need to put on implementing interface
     NoInterfaceObject, // Always used on target of 'implements'
-    GarbageCollected,
 ] interface WebGLRenderingContextBase {
 
     readonly attribute HTMLCanvasElement canvas;

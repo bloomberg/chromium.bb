@@ -45,7 +45,6 @@ enum NotificationPermission {
     Constructor(DOMString title, optional NotificationOptions options),
     DependentLifetime,
     Exposed=(Window,Worker),
-    GarbageCollected,
     MeasureAs=NotificationCreated,
     RaisesException=Constructor,
     RuntimeEnabled=Notifications,

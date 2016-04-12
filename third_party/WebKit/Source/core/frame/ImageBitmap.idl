@@ -6,7 +6,6 @@
 
 [
     Exposed=(Window,Worker),
-    GarbageCollected,
 ] interface ImageBitmap {
     readonly attribute unsigned long width;
     readonly attribute unsigned long height;

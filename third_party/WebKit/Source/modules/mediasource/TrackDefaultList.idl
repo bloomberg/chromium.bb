@@ -8,7 +8,6 @@
 [
     Constructor(optional sequence<TrackDefault> trackDefaults = []),
     RaisesException=Constructor,
-    GarbageCollected,
     RuntimeEnabled=MediaSourceExperimental,
 ] interface TrackDefaultList {
     readonly attribute unsigned long length;

@@ -531,9 +531,9 @@ public:
     bool isNull() const { return m_type == SpecificTypeNone; }
 
     bool isTestInterface2() const { return m_type == SpecificTypeTestInterface2; }
-    PassRefPtr<TestInterface2> getAsTestInterface2() const;
-    void setTestInterface2(PassRefPtr<TestInterface2>);
-    static TestInterface2OrUint8Array fromTestInterface2(PassRefPtr<TestInterface2>);
+    TestInterface2* getAsTestInterface2() const;
+    void setTestInterface2(TestInterface2*);
+    static TestInterface2OrUint8Array fromTestInterface2(TestInterface2*);
 
     bool isUint8Array() const { return m_type == SpecificTypeUint8Array; }
     DOMUint8Array* getAsUint8Array() const;
@@ -553,7 +553,7 @@ private:
     };
     SpecificTypes m_type;
 
-    RefPtr<TestInterface2> m_testInterface2;
+    Member<TestInterface2> m_testInterface2;
     Member<DOMUint8Array> m_uint8Array;
 
     friend CORE_EXPORT v8::Local<v8::Value> toV8(const TestInterface2OrUint8Array&, v8::Local<v8::Object>, v8::Isolate*);
@@ -637,9 +637,9 @@ public:
     bool isNull() const { return m_type == SpecificTypeNone; }
 
     bool isTestInterface() const { return m_type == SpecificTypeTestInterface; }
-    PassRefPtr<TestInterfaceImplementation> getAsTestInterface() const;
-    void setTestInterface(PassRefPtr<TestInterfaceImplementation>);
-    static TestInterfaceOrLong fromTestInterface(PassRefPtr<TestInterfaceImplementation>);
+    TestInterfaceImplementation* getAsTestInterface() const;
+    void setTestInterface(TestInterfaceImplementation*);
+    static TestInterfaceOrLong fromTestInterface(TestInterfaceImplementation*);
 
     bool isLong() const { return m_type == SpecificTypeLong; }
     int getAsLong() const;
@@ -659,7 +659,7 @@ private:
     };
     SpecificTypes m_type;
 
-    RefPtr<TestInterfaceImplementation> m_testInterface;
+    Member<TestInterfaceImplementation> m_testInterface;
     int m_long;
 
     friend CORE_EXPORT v8::Local<v8::Value> toV8(const TestInterfaceOrLong&, v8::Local<v8::Object>, v8::Isolate*);
@@ -690,14 +690,14 @@ public:
     bool isNull() const { return m_type == SpecificTypeNone; }
 
     bool isTestInterface() const { return m_type == SpecificTypeTestInterface; }
-    PassRefPtr<TestInterfaceImplementation> getAsTestInterface() const;
-    void setTestInterface(PassRefPtr<TestInterfaceImplementation>);
-    static TestInterfaceOrTestInterfaceEmpty fromTestInterface(PassRefPtr<TestInterfaceImplementation>);
+    TestInterfaceImplementation* getAsTestInterface() const;
+    void setTestInterface(TestInterfaceImplementation*);
+    static TestInterfaceOrTestInterfaceEmpty fromTestInterface(TestInterfaceImplementation*);
 
     bool isTestInterfaceEmpty() const { return m_type == SpecificTypeTestInterfaceEmpty; }
-    PassRefPtr<TestInterfaceEmpty> getAsTestInterfaceEmpty() const;
-    void setTestInterfaceEmpty(PassRefPtr<TestInterfaceEmpty>);
-    static TestInterfaceOrTestInterfaceEmpty fromTestInterfaceEmpty(PassRefPtr<TestInterfaceEmpty>);
+    TestInterfaceEmpty* getAsTestInterfaceEmpty() const;
+    void setTestInterfaceEmpty(TestInterfaceEmpty*);
+    static TestInterfaceOrTestInterfaceEmpty fromTestInterfaceEmpty(TestInterfaceEmpty*);
 
     TestInterfaceOrTestInterfaceEmpty(const TestInterfaceOrTestInterfaceEmpty&);
     ~TestInterfaceOrTestInterfaceEmpty();
@@ -712,8 +712,8 @@ private:
     };
     SpecificTypes m_type;
 
-    RefPtr<TestInterfaceImplementation> m_testInterface;
-    RefPtr<TestInterfaceEmpty> m_testInterfaceEmpty;
+    Member<TestInterfaceImplementation> m_testInterface;
+    Member<TestInterfaceEmpty> m_testInterfaceEmpty;
 
     friend CORE_EXPORT v8::Local<v8::Value> toV8(const TestInterfaceOrTestInterfaceEmpty&, v8::Local<v8::Object>, v8::Isolate*);
 };

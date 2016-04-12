@@ -30,7 +30,6 @@
 
 [
     NoInterfaceObject,
-    GarbageCollected,
 ] interface FileWriterSync {
     // synchronous write/modify methods
     [RaisesException] void write(Blob data);

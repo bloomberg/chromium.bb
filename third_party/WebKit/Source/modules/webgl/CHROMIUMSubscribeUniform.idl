@@ -7,7 +7,6 @@ typedef unsigned long GLenum;
 [
     DoNotCheckConstants,
     NoInterfaceObject,
-    GarbageCollected,
     SetWrapperReferenceFrom=canvas,
 ] interface CHROMIUMSubscribeUniform {
     const GLenum SUBSCRIBED_VALUES_BUFFER_CHROMIUM =      0x924B;

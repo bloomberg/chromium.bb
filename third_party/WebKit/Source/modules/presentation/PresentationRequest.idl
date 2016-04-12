@@ -10,7 +10,6 @@
     ConstructorCallWith=ExecutionContext,
     Constructor(DOMString url),
     DependentLifetime,
-    GarbageCollected,
     MeasureAs=PresentationRequestConstructor,
     RaisesException=Constructor,
     RuntimeEnabled=Presentation,

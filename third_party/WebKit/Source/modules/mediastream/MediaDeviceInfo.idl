@@ -30,7 +30,6 @@ enum MediaDeviceKind {
 };
 
 [
-    GarbageCollected,
     NoInterfaceObject
 ] interface MediaDeviceInfo {
     readonly attribute DOMString deviceId;

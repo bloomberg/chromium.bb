@@ -32,7 +32,6 @@
 // https://groups.google.com/a/chromium.org/d/msg/blink-dev/g5YRCGpC9vs/b4OJz71NmPwJ
 
 [
-    GarbageCollected,
     NoInterfaceObject
 ] interface MemoryInfo {
     [Measure] readonly attribute unsigned long totalJSHeapSize;

@@ -4,7 +4,6 @@
 
 [
     NoInterfaceObject,
-    GarbageCollected,
     SetWrapperReferenceFrom=canvas,
 ] interface EXTColorBufferFloat {
 };

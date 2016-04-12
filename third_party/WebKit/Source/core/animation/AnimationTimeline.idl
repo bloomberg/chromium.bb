@@ -9,7 +9,6 @@
 
 [
     RuntimeEnabled=WebAnimationsAPI,
-    GarbageCollected,
 ] interface AnimationTimeline {
     attribute double? currentTime;
     attribute double playbackRate;

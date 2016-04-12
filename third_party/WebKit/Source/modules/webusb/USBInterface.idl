@@ -7,7 +7,6 @@
 [
     Constructor(USBConfiguration configuration, octet interfaceNumber),
     RaisesException=Constructor,
-    GarbageCollected,
     OriginTrialEnabled=WebUSB,
 ] interface USBInterface {
     readonly attribute octet interfaceNumber;

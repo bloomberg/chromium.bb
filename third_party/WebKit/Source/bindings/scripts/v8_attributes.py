@@ -186,7 +186,6 @@ def getter_context(interface, attribute, context):
     # exceptions), we need to use a local variable.
     # FIXME: check if compilers are smart enough to inline this, and if so,
     # always use a local variable (for readability and CG simplicity).
-    release = False
     if 'ImplementedInPrivateScript' in extended_attributes:
         if (not idl_type.is_wrapper_type and
             not idl_type.is_basic_type and
@@ -195,9 +194,6 @@ def getter_context(interface, attribute, context):
 
         context['cpp_value_original'] = cpp_value
         cpp_value = 'result'
-        # EventHandler has special handling
-        if base_idl_type != 'EventHandler':
-            release = idl_type.release
     elif (idl_type.is_explicit_nullable or
         base_idl_type == 'EventHandler' or
         'CachedAttribute' in extended_attributes or
@@ -206,16 +202,13 @@ def getter_context(interface, attribute, context):
         context['is_getter_raises_exception']):
         context['cpp_value_original'] = cpp_value
         cpp_value = 'cppValue'
-        # EventHandler has special handling
-        if base_idl_type != 'EventHandler':
-            release = idl_type.release
 
     def v8_set_return_value_statement(for_main_world=False):
         if context['is_keep_alive_for_gc'] or 'CachedAttribute' in extended_attributes:
             return 'v8SetReturnValue(info, v8Value)'
         return idl_type.v8_set_return_value(
             cpp_value, extended_attributes=extended_attributes, script_wrappable='impl',
-            release=release, for_main_world=for_main_world, is_static=attribute.is_static)
+            for_main_world=for_main_world, is_static=attribute.is_static)
 
     context.update({
         'cpp_value': cpp_value,
@@ -250,7 +243,13 @@ def getter_expression(interface, attribute, context):
         arguments.append('exceptionState')
     if attribute.idl_type.use_output_parameter_for_result:
         arguments.append('result')
-    return '%s(%s)' % (getter_name, ', '.join(arguments))
+
+    expression = '%s(%s)' % (getter_name, ', '.join(arguments))
+    # Needed to handle getter expressions returning Type& as the
+    # use site for |expression| expects Type*.
+    if attribute.idl_type.is_interface_type and len(arguments) == 0:
+        return 'WTF::getPtr(%s)' % expression
+    return expression
 
 
 CONTENT_ATTRIBUTE_GETTER_NAMES = {
@@ -393,9 +392,6 @@ def setter_expression(interface, attribute, context):
             arguments.append('V8EventListenerList::findOrCreateWrapper<V8ErrorHandler>(v8Value, true, ScriptState::current(info.GetIsolate()))')
         else:
             arguments.append('V8EventListenerList::getEventListener(ScriptState::current(info.GetIsolate()), v8Value, true, ListenerFindOrCreate)')
-    elif idl_type.is_interface_type:
-        # FIXME: should be able to eliminate WTF::getPtr in most or all cases
-        arguments.append('WTF::getPtr(cppValue)')
     else:
         arguments.append('cppValue')
     if context['is_setter_raises_exception']:

@@ -202,7 +202,7 @@ def merge_interface_dependencies(definitions, component, target_interface, depen
             # cpp class to obtain partial interface's cpp class.
             # e.g.. V8WindowPartial.cpp:
             #   DOMWindow* impl = V8Window::toImpl(holder);
-            #   RawPtr<...> cppValue(DOMWindowQuota::webkitStorageInfo(impl));
+            #   DOMWindowQuota* cppValue(DOMWindowQuota::webkitStorageInfo(impl));
             # TODO(tasak): remove ImplementedAs extended attributes
             # from all partial interfaces. Instead, rename all cpp/header
             # files correctly. ImplementedAs should not be allowed in

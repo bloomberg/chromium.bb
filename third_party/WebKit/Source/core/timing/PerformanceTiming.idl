@@ -32,7 +32,6 @@
 
 [
     Exposed=Window,
-    GarbageCollected
 ] interface PerformanceTiming {
     readonly attribute unsigned long long navigationStart;
     readonly attribute unsigned long long unloadEventStart;

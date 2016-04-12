@@ -22,7 +22,7 @@ namespace blink {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-const WrapperTypeInfo V8TestInterfaceCheckSecurity::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceCheckSecurity::domTemplate, V8TestInterfaceCheckSecurity::refObject, V8TestInterfaceCheckSecurity::derefObject, V8TestInterfaceCheckSecurity::trace, 0, 0, V8TestInterfaceCheckSecurity::preparePrototypeAndInterfaceObject, V8TestInterfaceCheckSecurity::installConditionallyEnabledProperties, "TestInterfaceCheckSecurity", 0, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::NotInheritFromEventTarget, WrapperTypeInfo::Independent, WrapperTypeInfo::RefCountedObject };
+const WrapperTypeInfo V8TestInterfaceCheckSecurity::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceCheckSecurity::domTemplate, V8TestInterfaceCheckSecurity::trace, 0, 0, V8TestInterfaceCheckSecurity::preparePrototypeAndInterfaceObject, V8TestInterfaceCheckSecurity::installConditionallyEnabledProperties, "TestInterfaceCheckSecurity", 0, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::NotInheritFromEventTarget, WrapperTypeInfo::Independent };
 #if defined(COMPONENT_BUILD) && defined(WIN32) && COMPILER(CLANG)
 #pragma clang diagnostic pop
 #endif
@@ -480,16 +480,6 @@ v8::Local<v8::Object> V8TestInterfaceCheckSecurity::findInstanceInPrototypeChain
 TestInterfaceCheckSecurity* V8TestInterfaceCheckSecurity::toImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value)
 {
     return hasInstance(value, isolate) ? toImpl(v8::Local<v8::Object>::Cast(value)) : 0;
-}
-
-void V8TestInterfaceCheckSecurity::refObject(ScriptWrappable* scriptWrappable)
-{
-    scriptWrappable->toImpl<TestInterfaceCheckSecurity>()->ref();
-}
-
-void V8TestInterfaceCheckSecurity::derefObject(ScriptWrappable* scriptWrappable)
-{
-    scriptWrappable->toImpl<TestInterfaceCheckSecurity>()->deref();
 }
 
 } // namespace blink

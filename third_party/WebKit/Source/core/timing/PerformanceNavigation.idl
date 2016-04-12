@@ -32,7 +32,6 @@
 
 [
     Exposed=Window,
-    GarbageCollected
 ] interface PerformanceNavigation {
     const unsigned short TYPE_NAVIGATE = 0;
     const unsigned short TYPE_RELOAD = 1;

@@ -28,7 +28,7 @@ namespace blink {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-const WrapperTypeInfo V8TestSpecialOperations::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestSpecialOperations::domTemplate, V8TestSpecialOperations::refObject, V8TestSpecialOperations::derefObject, V8TestSpecialOperations::trace, 0, 0, V8TestSpecialOperations::preparePrototypeAndInterfaceObject, V8TestSpecialOperations::installConditionallyEnabledProperties, "TestSpecialOperations", 0, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::NotInheritFromEventTarget, WrapperTypeInfo::Independent, WrapperTypeInfo::RefCountedObject };
+const WrapperTypeInfo V8TestSpecialOperations::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestSpecialOperations::domTemplate, V8TestSpecialOperations::trace, 0, 0, V8TestSpecialOperations::preparePrototypeAndInterfaceObject, V8TestSpecialOperations::installConditionallyEnabledProperties, "TestSpecialOperations", 0, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::NotInheritFromEventTarget, WrapperTypeInfo::Independent };
 #if defined(COMPONENT_BUILD) && defined(WIN32) && COMPILER(CLANG)
 #pragma clang diagnostic pop
 #endif
@@ -185,16 +185,6 @@ v8::Local<v8::Object> V8TestSpecialOperations::findInstanceInPrototypeChain(v8::
 TestSpecialOperations* V8TestSpecialOperations::toImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value)
 {
     return hasInstance(value, isolate) ? toImpl(v8::Local<v8::Object>::Cast(value)) : 0;
-}
-
-void V8TestSpecialOperations::refObject(ScriptWrappable* scriptWrappable)
-{
-    scriptWrappable->toImpl<TestSpecialOperations>()->ref();
-}
-
-void V8TestSpecialOperations::derefObject(ScriptWrappable* scriptWrappable)
-{
-    scriptWrappable->toImpl<TestSpecialOperations>()->deref();
 }
 
 } // namespace blink

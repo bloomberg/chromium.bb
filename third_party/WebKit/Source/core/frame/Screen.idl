@@ -29,7 +29,6 @@
 // http://dev.w3.org/csswg/cssom-view/#the-screen-interface
 
 [
-    GarbageCollected,
 ] interface Screen {
     readonly attribute long availWidth;
     readonly attribute long availHeight;

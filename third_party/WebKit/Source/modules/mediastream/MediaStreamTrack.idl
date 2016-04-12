@@ -25,7 +25,6 @@
 [
     ActiveScriptWrappable,
     DependentLifetime,
-    GarbageCollected,
 ] interface MediaStreamTrack : EventTarget {
     readonly attribute DOMString kind;
     readonly attribute DOMString id;

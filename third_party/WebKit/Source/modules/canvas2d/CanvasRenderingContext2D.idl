@@ -36,7 +36,6 @@ enum ImageSmoothingQuality {"low", "medium", "high"};
 
 [
     SetWrapperReferenceFrom=canvas,
-    GarbageCollected,
 ] interface CanvasRenderingContext2D {
     // back-reference to the canvas
     readonly attribute HTMLCanvasElement canvas;

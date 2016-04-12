@@ -31,7 +31,6 @@
 // https://w3c.github.io/FileAPI/#FileReaderSync
 
 [
-    GarbageCollected,
     Exposed=Worker,
     Constructor,
 ] interface FileReaderSync {

@@ -27,7 +27,6 @@
  */
 
 [
-    GarbageCollected,
 ] interface AudioListener {
     [DeprecateAs=AudioListenerDopplerFactor] attribute float dopplerFactor;  // same as OpenAL (default 1.0)
     [DeprecateAs=AudioListenerSpeedOfSound] attribute float speedOfSound;   // in meters / second (default 343.3)

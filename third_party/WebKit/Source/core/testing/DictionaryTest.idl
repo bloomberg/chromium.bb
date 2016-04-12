@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 [
-    GarbageCollected
 ] interface DictionaryTest {
     void set(optional InternalDictionary testingDictionary);
     InternalDictionary get();

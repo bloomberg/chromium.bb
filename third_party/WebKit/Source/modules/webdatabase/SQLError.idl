@@ -27,7 +27,6 @@
  */
 
 [
-    GarbageCollected,
     NoInterfaceObject
 ] interface SQLError {
     readonly attribute unsigned long code;

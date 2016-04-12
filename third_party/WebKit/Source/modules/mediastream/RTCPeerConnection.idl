@@ -67,7 +67,6 @@ enum RTCIceConnectionState {
     // should be optional.
     Constructor(Dictionary rtcConfiguration, optional Dictionary mediaConstraints),
     ConstructorCallWith=ExecutionContext,
-    GarbageCollected,
     NoInterfaceObject,
     RaisesException=Constructor,
 ] interface RTCPeerConnection : EventTarget {

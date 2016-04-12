@@ -7,7 +7,6 @@
 // https://github.com/DHNishi/IsNativeAppInstalled/blob/master/explainer.md
 
 [
-    GarbageCollected,
     RuntimeEnabled=InstalledApp
 ] interface RelatedApplication {
     readonly attribute DOMString platform;

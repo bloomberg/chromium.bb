@@ -113,13 +113,13 @@ void V8ArrayBufferOrArrayBufferViewOrDictionary::toImpl(v8::Isolate* isolate, v8
         return;
 
     if (V8ArrayBuffer::hasInstance(v8Value, isolate)) {
-        RawPtr<TestArrayBuffer> cppValue = V8ArrayBuffer::toImpl(v8::Local<v8::Object>::Cast(v8Value));
+        TestArrayBuffer* cppValue = V8ArrayBuffer::toImpl(v8::Local<v8::Object>::Cast(v8Value));
         impl.setArrayBuffer(cppValue);
         return;
     }
 
     if (V8ArrayBufferView::hasInstance(v8Value, isolate)) {
-        RawPtr<TestArrayBufferView> cppValue = V8ArrayBufferView::toImpl(v8::Local<v8::Object>::Cast(v8Value));
+        TestArrayBufferView* cppValue = V8ArrayBufferView::toImpl(v8::Local<v8::Object>::Cast(v8Value));
         impl.setArrayBufferView(cppValue);
         return;
     }
@@ -563,13 +563,13 @@ void V8NodeOrNodeList::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
         return;
 
     if (V8Node::hasInstance(v8Value, isolate)) {
-        RawPtr<Node> cppValue = V8Node::toImpl(v8::Local<v8::Object>::Cast(v8Value));
+        Node* cppValue = V8Node::toImpl(v8::Local<v8::Object>::Cast(v8Value));
         impl.setNode(cppValue);
         return;
     }
 
     if (V8NodeList::hasInstance(v8Value, isolate)) {
-        RawPtr<NodeList> cppValue = V8NodeList::toImpl(v8::Local<v8::Object>::Cast(v8Value));
+        NodeList* cppValue = V8NodeList::toImpl(v8::Local<v8::Object>::Cast(v8Value));
         impl.setNodeList(cppValue);
         return;
     }
@@ -683,13 +683,13 @@ void V8StringOrArrayBufferOrArrayBufferView::toImpl(v8::Isolate* isolate, v8::Lo
         return;
 
     if (V8ArrayBuffer::hasInstance(v8Value, isolate)) {
-        RawPtr<TestArrayBuffer> cppValue = V8ArrayBuffer::toImpl(v8::Local<v8::Object>::Cast(v8Value));
+        TestArrayBuffer* cppValue = V8ArrayBuffer::toImpl(v8::Local<v8::Object>::Cast(v8Value));
         impl.setArrayBuffer(cppValue);
         return;
     }
 
     if (V8ArrayBufferView::hasInstance(v8Value, isolate)) {
-        RawPtr<TestArrayBufferView> cppValue = V8ArrayBufferView::toImpl(v8::Local<v8::Object>::Cast(v8Value));
+        TestArrayBufferView* cppValue = V8ArrayBufferView::toImpl(v8::Local<v8::Object>::Cast(v8Value));
         impl.setArrayBufferView(cppValue);
         return;
     }
@@ -1055,20 +1055,20 @@ TestInterface2OrUint8Array::TestInterface2OrUint8Array()
 {
 }
 
-PassRefPtr<TestInterface2> TestInterface2OrUint8Array::getAsTestInterface2() const
+TestInterface2* TestInterface2OrUint8Array::getAsTestInterface2() const
 {
     ASSERT(isTestInterface2());
     return m_testInterface2;
 }
 
-void TestInterface2OrUint8Array::setTestInterface2(PassRefPtr<TestInterface2> value)
+void TestInterface2OrUint8Array::setTestInterface2(TestInterface2* value)
 {
     ASSERT(isNull());
     m_testInterface2 = value;
     m_type = SpecificTypeTestInterface2;
 }
 
-TestInterface2OrUint8Array TestInterface2OrUint8Array::fromTestInterface2(PassRefPtr<TestInterface2> value)
+TestInterface2OrUint8Array TestInterface2OrUint8Array::fromTestInterface2(TestInterface2* value)
 {
     TestInterface2OrUint8Array container;
     container.setTestInterface2(value);
@@ -1101,6 +1101,7 @@ TestInterface2OrUint8Array& TestInterface2OrUint8Array::operator=(const TestInte
 
 DEFINE_TRACE(TestInterface2OrUint8Array)
 {
+    visitor->trace(m_testInterface2);
     visitor->trace(m_uint8Array);
 }
 
@@ -1113,13 +1114,13 @@ void V8TestInterface2OrUint8Array::toImpl(v8::Isolate* isolate, v8::Local<v8::Va
         return;
 
     if (V8TestInterface2::hasInstance(v8Value, isolate)) {
-        RefPtr<TestInterface2> cppValue = V8TestInterface2::toImpl(v8::Local<v8::Object>::Cast(v8Value));
+        TestInterface2* cppValue = V8TestInterface2::toImpl(v8::Local<v8::Object>::Cast(v8Value));
         impl.setTestInterface2(cppValue);
         return;
     }
 
     if (V8Uint8Array::hasInstance(v8Value, isolate)) {
-        RawPtr<DOMUint8Array> cppValue = V8Uint8Array::toImpl(v8::Local<v8::Object>::Cast(v8Value));
+        DOMUint8Array* cppValue = V8Uint8Array::toImpl(v8::Local<v8::Object>::Cast(v8Value));
         impl.setUint8Array(cppValue);
         return;
     }
@@ -1212,7 +1213,7 @@ void V8TestInterfaceGarbageCollectedOrString::toImpl(v8::Isolate* isolate, v8::L
         return;
 
     if (V8TestInterfaceGarbageCollected::hasInstance(v8Value, isolate)) {
-        RawPtr<TestInterfaceGarbageCollected> cppValue = V8TestInterfaceGarbageCollected::toImpl(v8::Local<v8::Object>::Cast(v8Value));
+        TestInterfaceGarbageCollected* cppValue = V8TestInterfaceGarbageCollected::toImpl(v8::Local<v8::Object>::Cast(v8Value));
         impl.setTestInterfaceGarbageCollected(cppValue);
         return;
     }
@@ -1254,20 +1255,20 @@ TestInterfaceOrLong::TestInterfaceOrLong()
 {
 }
 
-PassRefPtr<TestInterfaceImplementation> TestInterfaceOrLong::getAsTestInterface() const
+TestInterfaceImplementation* TestInterfaceOrLong::getAsTestInterface() const
 {
     ASSERT(isTestInterface());
     return m_testInterface;
 }
 
-void TestInterfaceOrLong::setTestInterface(PassRefPtr<TestInterfaceImplementation> value)
+void TestInterfaceOrLong::setTestInterface(TestInterfaceImplementation* value)
 {
     ASSERT(isNull());
     m_testInterface = value;
     m_type = SpecificTypeTestInterface;
 }
 
-TestInterfaceOrLong TestInterfaceOrLong::fromTestInterface(PassRefPtr<TestInterfaceImplementation> value)
+TestInterfaceOrLong TestInterfaceOrLong::fromTestInterface(TestInterfaceImplementation* value)
 {
     TestInterfaceOrLong container;
     container.setTestInterface(value);
@@ -1300,6 +1301,7 @@ TestInterfaceOrLong& TestInterfaceOrLong::operator=(const TestInterfaceOrLong&) 
 
 DEFINE_TRACE(TestInterfaceOrLong)
 {
+    visitor->trace(m_testInterface);
 }
 
 void V8TestInterfaceOrLong::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, TestInterfaceOrLong& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState)
@@ -1311,7 +1313,7 @@ void V8TestInterfaceOrLong::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8
         return;
 
     if (V8TestInterface::hasInstance(v8Value, isolate)) {
-        RefPtr<TestInterfaceImplementation> cppValue = V8TestInterface::toImpl(v8::Local<v8::Object>::Cast(v8Value));
+        TestInterfaceImplementation* cppValue = V8TestInterface::toImpl(v8::Local<v8::Object>::Cast(v8Value));
         impl.setTestInterface(cppValue);
         return;
     }
@@ -1361,40 +1363,40 @@ TestInterfaceOrTestInterfaceEmpty::TestInterfaceOrTestInterfaceEmpty()
 {
 }
 
-PassRefPtr<TestInterfaceImplementation> TestInterfaceOrTestInterfaceEmpty::getAsTestInterface() const
+TestInterfaceImplementation* TestInterfaceOrTestInterfaceEmpty::getAsTestInterface() const
 {
     ASSERT(isTestInterface());
     return m_testInterface;
 }
 
-void TestInterfaceOrTestInterfaceEmpty::setTestInterface(PassRefPtr<TestInterfaceImplementation> value)
+void TestInterfaceOrTestInterfaceEmpty::setTestInterface(TestInterfaceImplementation* value)
 {
     ASSERT(isNull());
     m_testInterface = value;
     m_type = SpecificTypeTestInterface;
 }
 
-TestInterfaceOrTestInterfaceEmpty TestInterfaceOrTestInterfaceEmpty::fromTestInterface(PassRefPtr<TestInterfaceImplementation> value)
+TestInterfaceOrTestInterfaceEmpty TestInterfaceOrTestInterfaceEmpty::fromTestInterface(TestInterfaceImplementation* value)
 {
     TestInterfaceOrTestInterfaceEmpty container;
     container.setTestInterface(value);
     return container;
 }
 
-PassRefPtr<TestInterfaceEmpty> TestInterfaceOrTestInterfaceEmpty::getAsTestInterfaceEmpty() const
+TestInterfaceEmpty* TestInterfaceOrTestInterfaceEmpty::getAsTestInterfaceEmpty() const
 {
     ASSERT(isTestInterfaceEmpty());
     return m_testInterfaceEmpty;
 }
 
-void TestInterfaceOrTestInterfaceEmpty::setTestInterfaceEmpty(PassRefPtr<TestInterfaceEmpty> value)
+void TestInterfaceOrTestInterfaceEmpty::setTestInterfaceEmpty(TestInterfaceEmpty* value)
 {
     ASSERT(isNull());
     m_testInterfaceEmpty = value;
     m_type = SpecificTypeTestInterfaceEmpty;
 }
 
-TestInterfaceOrTestInterfaceEmpty TestInterfaceOrTestInterfaceEmpty::fromTestInterfaceEmpty(PassRefPtr<TestInterfaceEmpty> value)
+TestInterfaceOrTestInterfaceEmpty TestInterfaceOrTestInterfaceEmpty::fromTestInterfaceEmpty(TestInterfaceEmpty* value)
 {
     TestInterfaceOrTestInterfaceEmpty container;
     container.setTestInterfaceEmpty(value);
@@ -1407,6 +1409,8 @@ TestInterfaceOrTestInterfaceEmpty& TestInterfaceOrTestInterfaceEmpty::operator=(
 
 DEFINE_TRACE(TestInterfaceOrTestInterfaceEmpty)
 {
+    visitor->trace(m_testInterface);
+    visitor->trace(m_testInterfaceEmpty);
 }
 
 void V8TestInterfaceOrTestInterfaceEmpty::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, TestInterfaceOrTestInterfaceEmpty& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState)
@@ -1418,13 +1422,13 @@ void V8TestInterfaceOrTestInterfaceEmpty::toImpl(v8::Isolate* isolate, v8::Local
         return;
 
     if (V8TestInterface::hasInstance(v8Value, isolate)) {
-        RefPtr<TestInterfaceImplementation> cppValue = V8TestInterface::toImpl(v8::Local<v8::Object>::Cast(v8Value));
+        TestInterfaceImplementation* cppValue = V8TestInterface::toImpl(v8::Local<v8::Object>::Cast(v8Value));
         impl.setTestInterface(cppValue);
         return;
     }
 
     if (V8TestInterfaceEmpty::hasInstance(v8Value, isolate)) {
-        RefPtr<TestInterfaceEmpty> cppValue = V8TestInterfaceEmpty::toImpl(v8::Local<v8::Object>::Cast(v8Value));
+        TestInterfaceEmpty* cppValue = V8TestInterfaceEmpty::toImpl(v8::Local<v8::Object>::Cast(v8Value));
         impl.setTestInterfaceEmpty(cppValue);
         return;
     }

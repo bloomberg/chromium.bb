@@ -28,7 +28,6 @@
 
 [
     SetWrapperReferenceTo(SVGElement contextElement),
-    GarbageCollected,
 ] interface SVGAnimatedNumber {
     [RaisesException=Setter] attribute float baseVal;
     readonly attribute float animVal;

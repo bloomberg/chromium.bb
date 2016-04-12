@@ -29,7 +29,6 @@
  */
 
 [
-    GarbageCollected,
     Constructor(RTCIceCandidateInit candidateInitDict),
     RaisesException=Constructor
 ] interface RTCIceCandidate {

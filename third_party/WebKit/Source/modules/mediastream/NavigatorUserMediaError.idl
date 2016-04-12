@@ -23,7 +23,6 @@
  */
 
 [
-    GarbageCollected,
     NoInterfaceObject
 ] interface NavigatorUserMediaError {
     readonly attribute DOMString name;

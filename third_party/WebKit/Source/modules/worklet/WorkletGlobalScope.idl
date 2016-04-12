@@ -7,7 +7,6 @@
 [
     Exposed=Worklet,
     RuntimeEnabled=Worklet,
-    GarbageCollected,
 ] interface WorkletGlobalScope {
     [Replaceable] readonly attribute WorkletConsole console;
 };

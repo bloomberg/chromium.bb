@@ -22,7 +22,6 @@
 
 [
     Constructor,
-    GarbageCollected,
 ] interface XMLSerializer {
     DOMString serializeToString(Node root);
 };

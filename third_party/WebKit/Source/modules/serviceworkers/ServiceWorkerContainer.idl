@@ -30,7 +30,6 @@
 
 // https://slightlyoff.github.io/ServiceWorker/spec/service_worker/index.html#service-worker-container-interface
 [
-    GarbageCollected,
 ] interface ServiceWorkerContainer : EventTarget {
     [Unforgeable] readonly attribute ServiceWorker? controller;
     [CallWith=ScriptState] readonly attribute Promise<ServiceWorkerRegistration> ready;

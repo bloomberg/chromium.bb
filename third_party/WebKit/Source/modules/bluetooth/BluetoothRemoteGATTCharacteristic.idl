@@ -7,7 +7,6 @@
 // Implement BluetoothRemoteGATTCharacteristic interface: https://crbug.com/483344
 
 [
-    GarbageCollected,
     DependentLifetime,
     OriginTrialEnabled=WebBluetooth,
 ] interface BluetoothRemoteGATTCharacteristic : EventTarget {//: CharacteristicEventHandlers {

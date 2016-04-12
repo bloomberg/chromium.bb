@@ -37,7 +37,6 @@
     Constructor(DOMString scriptURL, optional DOMString name = null),
     ConstructorCallWith=ExecutionContext,
     DependentLifetime,
-    GarbageCollected,
     // TODO(philipj): Exposed=(Window,Worker),
     RaisesException=Constructor,
     RuntimeEnabled=SharedWorker,

@@ -82,7 +82,7 @@ namespace blink {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-const WrapperTypeInfo V8TestObject::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestObject::domTemplate, V8TestObject::refObject, V8TestObject::derefObject, V8TestObject::trace, 0, 0, V8TestObject::preparePrototypeAndInterfaceObject, V8TestObject::installConditionallyEnabledProperties, "TestObject", 0, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::NotInheritFromEventTarget, WrapperTypeInfo::Independent, WrapperTypeInfo::RefCountedObject };
+const WrapperTypeInfo V8TestObject::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestObject::domTemplate, V8TestObject::trace, 0, 0, V8TestObject::preparePrototypeAndInterfaceObject, V8TestObject::installConditionallyEnabledProperties, "TestObject", 0, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::NotInheritFromEventTarget, WrapperTypeInfo::Independent };
 #if defined(COMPONENT_BUILD) && defined(WIN32) && COMPILER(CLANG)
 #pragma clang diagnostic pop
 #endif
@@ -227,10 +227,10 @@ static void readonlyTestInterfaceEmptyAttributeAttributeGetter(const v8::Functio
 {
     v8::Local<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toImpl(holder);
-    RefPtr<TestInterfaceEmpty> cppValue(impl->readonlyTestInterfaceEmptyAttribute());
-    if (cppValue && DOMDataStore::setReturnValue(info.GetReturnValue(), cppValue.get()))
+    TestInterfaceEmpty* cppValue(WTF::getPtr(impl->readonlyTestInterfaceEmptyAttribute()));
+    if (cppValue && DOMDataStore::setReturnValue(info.GetReturnValue(), cppValue))
         return;
-    v8::Local<v8::Value> v8Value(toV8(cppValue.get(), holder, info.GetIsolate()));
+    v8::Local<v8::Value> v8Value(toV8(cppValue, holder, info.GetIsolate()));
     if (!v8Value.IsEmpty()) {
         V8HiddenValue::setHiddenValue(ScriptState::current(info.GetIsolate()), holder, v8AtomicString(info.GetIsolate(), "readonlyTestInterfaceEmptyAttribute"), v8Value);
         v8SetReturnValue(info, v8Value);
@@ -795,7 +795,7 @@ static void testInterfaceEmptyAttributeAttributeSetter(v8::Local<v8::Value> v8Va
         exceptionState.throwIfNeeded();
         return;
     }
-    impl->setTestInterfaceEmptyAttribute(WTF::getPtr(cppValue));
+    impl->setTestInterfaceEmptyAttribute(cppValue);
 }
 
 static void testInterfaceEmptyAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -827,7 +827,7 @@ static void testObjectAttributeAttributeSetter(v8::Local<v8::Value> v8Value, con
         exceptionState.throwIfNeeded();
         return;
     }
-    impl->setTestObjectAttribute(WTF::getPtr(cppValue));
+    impl->setTestObjectAttribute(cppValue);
 }
 
 static void testObjectAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -1020,8 +1020,8 @@ static void nodeFilterAttributeAttributeSetter(v8::Local<v8::Value> v8Value, con
 {
     v8::Local<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toImpl(holder);
-    RawPtr<NodeFilter> cppValue = toNodeFilter(v8Value, info.Holder(), ScriptState::current(info.GetIsolate()));
-    impl->setNodeFilterAttribute(WTF::getPtr(cppValue));
+    NodeFilter* cppValue = toNodeFilter(v8Value, info.Holder(), ScriptState::current(info.GetIsolate()));
+    impl->setNodeFilterAttribute(cppValue);
 }
 
 static void nodeFilterAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -1034,7 +1034,7 @@ static void serializedScriptValueAttributeAttributeGetter(const v8::FunctionCall
 {
     v8::Local<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toImpl(holder);
-    v8SetReturnValue(info, impl->serializedScriptValueAttribute() ? impl->serializedScriptValueAttribute()->deserialize() : v8::Local<v8::Value>(v8::Null(info.GetIsolate())));
+    v8SetReturnValue(info, WTF::getPtr(impl->serializedScriptValueAttribute()) ? WTF::getPtr(impl->serializedScriptValueAttribute())->deserialize() : v8::Local<v8::Value>(v8::Null(info.GetIsolate())));
 }
 
 static void serializedScriptValueAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -1050,7 +1050,7 @@ static void serializedScriptValueAttributeAttributeSetter(v8::Local<v8::Value> v
     RefPtr<SerializedScriptValue> cppValue = SerializedScriptValueFactory::instance().create(info.GetIsolate(), v8Value, nullptr, nullptr, nullptr, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
-    impl->setSerializedScriptValueAttribute(WTF::getPtr(cppValue));
+    impl->setSerializedScriptValueAttribute(cppValue);
 }
 
 static void serializedScriptValueAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -1134,7 +1134,7 @@ static void windowAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v
         exceptionState.throwIfNeeded();
         return;
     }
-    impl->setWindowAttribute(WTF::getPtr(cppValue));
+    impl->setWindowAttribute(cppValue);
 }
 
 static void windowAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -1166,7 +1166,7 @@ static void documentAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const
         exceptionState.throwIfNeeded();
         return;
     }
-    impl->setDocumentAttribute(WTF::getPtr(cppValue));
+    impl->setDocumentAttribute(cppValue);
 }
 
 static void documentAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -1198,7 +1198,7 @@ static void documentFragmentAttributeAttributeSetter(v8::Local<v8::Value> v8Valu
         exceptionState.throwIfNeeded();
         return;
     }
-    impl->setDocumentFragmentAttribute(WTF::getPtr(cppValue));
+    impl->setDocumentFragmentAttribute(cppValue);
 }
 
 static void documentFragmentAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -1230,7 +1230,7 @@ static void documentTypeAttributeAttributeSetter(v8::Local<v8::Value> v8Value, c
         exceptionState.throwIfNeeded();
         return;
     }
-    impl->setDocumentTypeAttribute(WTF::getPtr(cppValue));
+    impl->setDocumentTypeAttribute(cppValue);
 }
 
 static void documentTypeAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -1262,7 +1262,7 @@ static void elementAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const 
         exceptionState.throwIfNeeded();
         return;
     }
-    impl->setElementAttribute(WTF::getPtr(cppValue));
+    impl->setElementAttribute(cppValue);
 }
 
 static void elementAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -1294,7 +1294,7 @@ static void nodeAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8:
         exceptionState.throwIfNeeded();
         return;
     }
-    impl->setNodeAttribute(WTF::getPtr(cppValue));
+    impl->setNodeAttribute(cppValue);
 }
 
 static void nodeAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -1326,7 +1326,7 @@ static void shadowRootAttributeAttributeSetter(v8::Local<v8::Value> v8Value, con
         exceptionState.throwIfNeeded();
         return;
     }
-    impl->setShadowRootAttribute(WTF::getPtr(cppValue));
+    impl->setShadowRootAttribute(cppValue);
 }
 
 static void shadowRootAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -1358,7 +1358,7 @@ static void arrayBufferAttributeAttributeSetter(v8::Local<v8::Value> v8Value, co
         exceptionState.throwIfNeeded();
         return;
     }
-    impl->setArrayBufferAttribute(WTF::getPtr(cppValue));
+    impl->setArrayBufferAttribute(cppValue);
 }
 
 static void arrayBufferAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -1390,7 +1390,7 @@ static void float32ArrayAttributeAttributeSetter(v8::Local<v8::Value> v8Value, c
         exceptionState.throwIfNeeded();
         return;
     }
-    impl->setFloat32ArrayAttribute(WTF::getPtr(cppValue));
+    impl->setFloat32ArrayAttribute(cppValue);
 }
 
 static void float32ArrayAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -1422,7 +1422,7 @@ static void uint8ArrayAttributeAttributeSetter(v8::Local<v8::Value> v8Value, con
         exceptionState.throwIfNeeded();
         return;
     }
-    impl->setUint8ArrayAttribute(WTF::getPtr(cppValue));
+    impl->setUint8ArrayAttribute(cppValue);
 }
 
 static void uint8ArrayAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -1549,7 +1549,7 @@ static void testInterfaceEmptyArrayAttributeAttributeSetter(v8::Local<v8::Value>
     v8::Local<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "testInterfaceEmptyArrayAttribute", "TestObject", holder, info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(holder);
-    Vector<RefPtr<TestInterfaceEmpty>> cppValue = (toRefPtrNativeArray<TestInterfaceEmpty, V8TestInterfaceEmpty>(v8Value, 0, info.GetIsolate(), exceptionState));
+    HeapVector<Member<TestInterfaceEmpty>> cppValue = (toMemberNativeArray<TestInterfaceEmpty, V8TestInterfaceEmpty>(v8Value, 0, info.GetIsolate(), exceptionState));
     if (exceptionState.throwIfNeeded())
         return;
     impl->setTestInterfaceEmptyArrayAttribute(cppValue);
@@ -1676,7 +1676,7 @@ static void testInterfaceOrNullAttributeAttributeSetter(v8::Local<v8::Value> v8V
         exceptionState.throwIfNeeded();
         return;
     }
-    impl->setTestInterfaceOrNullAttribute(WTF::getPtr(cppValue));
+    impl->setTestInterfaceOrNullAttribute(cppValue);
 }
 
 static void testInterfaceOrNullAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -1817,7 +1817,7 @@ static void eventHandlerAttributeAttributeGetter(const v8::FunctionCallbackInfo<
 {
     v8::Local<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toImpl(holder);
-    EventListener* cppValue(impl->eventHandlerAttribute());
+    EventListener* cppValue(WTF::getPtr(impl->eventHandlerAttribute()));
     v8SetReturnValue(info, cppValue ? v8::Local<v8::Value>(V8AbstractEventListener::cast(cppValue)->getListenerObject(impl->getExecutionContext())) : v8::Local<v8::Value>(v8::Null(info.GetIsolate())));
 }
 
@@ -2347,7 +2347,7 @@ static void checkSecurityForNodeReadonlyDocumentAttributeAttributeGetter(const v
     v8::Local<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toImpl(holder);
     ExceptionState exceptionState(ExceptionState::GetterContext, "checkSecurityForNodeReadonlyDocumentAttribute", "TestObject", holder, info.GetIsolate());
-    if (!BindingSecurity::shouldAllowAccessTo(info.GetIsolate(), callingDOMWindow(info.GetIsolate()), impl->checkSecurityForNodeReadonlyDocumentAttribute(), exceptionState)) {
+    if (!BindingSecurity::shouldAllowAccessTo(info.GetIsolate(), callingDOMWindow(info.GetIsolate()), WTF::getPtr(impl->checkSecurityForNodeReadonlyDocumentAttribute()), exceptionState)) {
         v8SetReturnValueNull(info);
         exceptionState.throwIfNeeded();
         return;
@@ -2691,10 +2691,10 @@ static void perWorldBindingsReadonlyTestInterfaceEmptyAttributeAttributeGetter(c
 {
     v8::Local<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toImpl(holder);
-    RefPtr<TestInterfaceEmpty> cppValue(impl->perWorldBindingsReadonlyTestInterfaceEmptyAttribute());
-    if (cppValue && DOMDataStore::setReturnValue(info.GetReturnValue(), cppValue.get()))
+    TestInterfaceEmpty* cppValue(WTF::getPtr(impl->perWorldBindingsReadonlyTestInterfaceEmptyAttribute()));
+    if (cppValue && DOMDataStore::setReturnValue(info.GetReturnValue(), cppValue))
         return;
-    v8::Local<v8::Value> v8Value(toV8(cppValue.get(), holder, info.GetIsolate()));
+    v8::Local<v8::Value> v8Value(toV8(cppValue, holder, info.GetIsolate()));
     if (!v8Value.IsEmpty()) {
         V8HiddenValue::setHiddenValue(ScriptState::current(info.GetIsolate()), holder, v8AtomicString(info.GetIsolate(), "perWorldBindingsReadonlyTestInterfaceEmptyAttribute"), v8Value);
         v8SetReturnValue(info, v8Value);
@@ -2710,10 +2710,10 @@ static void perWorldBindingsReadonlyTestInterfaceEmptyAttributeAttributeGetterFo
 {
     v8::Local<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toImpl(holder);
-    RefPtr<TestInterfaceEmpty> cppValue(impl->perWorldBindingsReadonlyTestInterfaceEmptyAttribute());
-    if (cppValue && DOMDataStore::setReturnValueForMainWorld(info.GetReturnValue(), cppValue.get()))
+    TestInterfaceEmpty* cppValue(WTF::getPtr(impl->perWorldBindingsReadonlyTestInterfaceEmptyAttribute()));
+    if (cppValue && DOMDataStore::setReturnValueForMainWorld(info.GetReturnValue(), cppValue))
         return;
-    v8::Local<v8::Value> v8Value(toV8(cppValue.get(), holder, info.GetIsolate()));
+    v8::Local<v8::Value> v8Value(toV8(cppValue, holder, info.GetIsolate()));
     if (!v8Value.IsEmpty()) {
         V8HiddenValue::setHiddenValue(ScriptState::current(info.GetIsolate()), holder, v8AtomicString(info.GetIsolate(), "perWorldBindingsReadonlyTestInterfaceEmptyAttribute"), v8Value);
         v8SetReturnValue(info, v8Value);
@@ -3012,7 +3012,7 @@ static void locationAttributeSetter(v8::Local<v8::Value> v8Value, const v8::Func
 {
     v8::Local<v8::Object> holder = info.Holder();
     TestObject* proxyImpl = V8TestObject::toImpl(holder);
-    RawPtr<TestNode> impl = WTF::getPtr(proxyImpl->location());
+    TestNode* impl = WTF::getPtr(proxyImpl->location());
     if (!impl)
         return;
     V8StringResource<> cppValue = v8Value;
@@ -3044,7 +3044,7 @@ static void locationWithExceptionAttributeSetter(v8::Local<v8::Value> v8Value, c
     v8::Local<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "locationWithException", "TestObject", holder, info.GetIsolate());
     TestObject* proxyImpl = V8TestObject::toImpl(holder);
-    RawPtr<TestNode> impl = WTF::getPtr(proxyImpl->locationWithException());
+    TestNode* impl = WTF::getPtr(proxyImpl->locationWithException());
     if (!impl)
         return;
     V8StringResource<> cppValue = v8Value;
@@ -3076,7 +3076,7 @@ static void locationWithCallWithAttributeSetter(v8::Local<v8::Value> v8Value, co
 {
     v8::Local<v8::Object> holder = info.Holder();
     TestObject* proxyImpl = V8TestObject::toImpl(holder);
-    RawPtr<TestNode> impl = WTF::getPtr(proxyImpl->locationWithCallWith());
+    TestNode* impl = WTF::getPtr(proxyImpl->locationWithCallWith());
     if (!impl)
         return;
     V8StringResource<> cppValue = v8Value;
@@ -3109,7 +3109,7 @@ static void locationByteStringAttributeSetter(v8::Local<v8::Value> v8Value, cons
     v8::Local<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "locationByteString", "TestObject", holder, info.GetIsolate());
     TestObject* proxyImpl = V8TestObject::toImpl(holder);
-    RawPtr<TestNode> impl = WTF::getPtr(proxyImpl->locationByteString());
+    TestNode* impl = WTF::getPtr(proxyImpl->locationByteString());
     if (!impl)
         return;
     V8StringResource<> cppValue = toByteString(info.GetIsolate(), v8Value, exceptionState);
@@ -3140,7 +3140,7 @@ static void locationWithPerWorldBindingsAttributeSetter(v8::Local<v8::Value> v8V
 {
     v8::Local<v8::Object> holder = info.Holder();
     TestObject* proxyImpl = V8TestObject::toImpl(holder);
-    RawPtr<TestNode> impl = WTF::getPtr(proxyImpl->locationWithPerWorldBindings());
+    TestNode* impl = WTF::getPtr(proxyImpl->locationWithPerWorldBindings());
     if (!impl)
         return;
     V8StringResource<> cppValue = v8Value;
@@ -3171,7 +3171,7 @@ static void locationWithPerWorldBindingsAttributeSetterForMainWorld(v8::Local<v8
 {
     v8::Local<v8::Object> holder = info.Holder();
     TestObject* proxyImpl = V8TestObject::toImpl(holder);
-    RawPtr<TestNode> impl = WTF::getPtr(proxyImpl->locationWithPerWorldBindings());
+    TestNode* impl = WTF::getPtr(proxyImpl->locationWithPerWorldBindings());
     if (!impl)
         return;
     V8StringResource<> cppValue = v8Value;
@@ -3202,7 +3202,7 @@ static void locationLegacyInterfaceTypeCheckingAttributeSetter(v8::Local<v8::Val
 {
     v8::Local<v8::Object> holder = info.Holder();
     TestObject* proxyImpl = V8TestObject::toImpl(holder);
-    RawPtr<TestNode> impl = WTF::getPtr(proxyImpl->locationLegacyInterfaceTypeChecking());
+    TestNode* impl = WTF::getPtr(proxyImpl->locationLegacyInterfaceTypeChecking());
     if (!impl)
         return;
     V8StringResource<> cppValue = v8Value;
@@ -3221,10 +3221,10 @@ static void locationGarbageCollectedAttributeGetter(const v8::FunctionCallbackIn
 {
     v8::Local<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toImpl(holder);
-    RawPtr<TestInterfaceGarbageCollected> cppValue(impl->locationGarbageCollected());
-    if (cppValue && DOMDataStore::setReturnValue(info.GetReturnValue(), cppValue.get()))
+    TestInterfaceGarbageCollected* cppValue(WTF::getPtr(impl->locationGarbageCollected()));
+    if (cppValue && DOMDataStore::setReturnValue(info.GetReturnValue(), cppValue))
         return;
-    v8::Local<v8::Value> v8Value(toV8(cppValue.get(), holder, info.GetIsolate()));
+    v8::Local<v8::Value> v8Value(toV8(cppValue, holder, info.GetIsolate()));
     if (!v8Value.IsEmpty()) {
         V8HiddenValue::setHiddenValue(ScriptState::current(info.GetIsolate()), holder, v8AtomicString(info.GetIsolate(), "locationGarbageCollected"), v8Value);
         v8SetReturnValue(info, v8Value);
@@ -3241,7 +3241,7 @@ static void locationGarbageCollectedAttributeSetter(v8::Local<v8::Value> v8Value
     v8::Local<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "locationGarbageCollected", "TestObject", holder, info.GetIsolate());
     TestObject* proxyImpl = V8TestObject::toImpl(holder);
-    RawPtr<TestInterfaceGarbageCollected> impl = WTF::getPtr(proxyImpl->locationGarbageCollected());
+    TestInterfaceGarbageCollected* impl = WTF::getPtr(proxyImpl->locationGarbageCollected());
     if (!impl)
         return;
     TestInterfaceGarbageCollected* cppValue = V8TestInterfaceGarbageCollected::toImplWithTypeCheck(info.GetIsolate(), v8Value);
@@ -3250,7 +3250,7 @@ static void locationGarbageCollectedAttributeSetter(v8::Local<v8::Value> v8Value
         exceptionState.throwIfNeeded();
         return;
     }
-    impl->setAttr1(WTF::getPtr(cppValue));
+    impl->setAttr1(cppValue);
 }
 
 static void locationGarbageCollectedAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -3361,10 +3361,10 @@ static void raisesExceptionTestInterfaceEmptyAttributeAttributeGetter(const v8::
     v8::Local<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toImpl(holder);
     ExceptionState exceptionState(ExceptionState::GetterContext, "raisesExceptionTestInterfaceEmptyAttribute", "TestObject", holder, info.GetIsolate());
-    RefPtr<TestInterfaceEmpty> cppValue(impl->raisesExceptionTestInterfaceEmptyAttribute(exceptionState));
+    TestInterfaceEmpty* cppValue(impl->raisesExceptionTestInterfaceEmptyAttribute(exceptionState));
     if (UNLIKELY(exceptionState.throwIfNeeded()))
         return;
-    v8SetReturnValueFast(info, WTF::getPtr(cppValue.release()), impl);
+    v8SetReturnValueFast(info, cppValue, impl);
 }
 
 static void raisesExceptionTestInterfaceEmptyAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -3383,7 +3383,7 @@ static void raisesExceptionTestInterfaceEmptyAttributeAttributeSetter(v8::Local<
         exceptionState.throwIfNeeded();
         return;
     }
-    impl->setRaisesExceptionTestInterfaceEmptyAttribute(WTF::getPtr(cppValue), exceptionState);
+    impl->setRaisesExceptionTestInterfaceEmptyAttribute(cppValue, exceptionState);
     exceptionState.throwIfNeeded();
 }
 
@@ -3440,7 +3440,7 @@ static void reflectTestInterfaceAttributeAttributeGetter(const v8::FunctionCallb
 {
     v8::Local<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toImpl(holder);
-    v8SetReturnValueFast(info, WTF::getPtr(impl->fastGetAttribute(HTMLNames::reflecttestinterfaceattributeAttr)), impl);
+    v8SetReturnValueFast(info, impl->fastGetAttribute(HTMLNames::reflecttestinterfaceattributeAttr), impl);
 }
 
 static void reflectTestInterfaceAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -3460,7 +3460,7 @@ static void reflectTestInterfaceAttributeAttributeSetter(v8::Local<v8::Value> v8
         return;
     }
     CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
-    impl->setAttribute(HTMLNames::reflecttestinterfaceattributeAttr, WTF::getPtr(cppValue));
+    impl->setAttribute(HTMLNames::reflecttestinterfaceattributeAttr, cppValue);
 }
 
 static void reflectTestInterfaceAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -3474,7 +3474,7 @@ static void reflectReflectedNameAttributeTestAttributeAttributeGetter(const v8::
 {
     v8::Local<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toImpl(holder);
-    v8SetReturnValueFast(info, WTF::getPtr(impl->fastGetAttribute(HTMLNames::reflectedNameAttributeAttr)), impl);
+    v8SetReturnValueFast(info, impl->fastGetAttribute(HTMLNames::reflectedNameAttributeAttr), impl);
 }
 
 static void reflectReflectedNameAttributeTestAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -3494,7 +3494,7 @@ static void reflectReflectedNameAttributeTestAttributeAttributeSetter(v8::Local<
         return;
     }
     CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
-    impl->setAttribute(HTMLNames::reflectedNameAttributeAttr, WTF::getPtr(cppValue));
+    impl->setAttribute(HTMLNames::reflectedNameAttributeAttr, cppValue);
 }
 
 static void reflectReflectedNameAttributeTestAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -4102,7 +4102,7 @@ static void locationPutForwardsAttributeSetter(v8::Local<v8::Value> v8Value, con
 {
     v8::Local<v8::Object> holder = info.Holder();
     TestObject* proxyImpl = V8TestObject::toImpl(holder);
-    RawPtr<TestNode> impl = WTF::getPtr(proxyImpl->locationPutForwards());
+    TestNode* impl = WTF::getPtr(proxyImpl->locationPutForwards());
     if (!impl)
         return;
     V8StringResource<> cppValue = v8Value;
@@ -4305,7 +4305,7 @@ static void legacyInterfaceTypeCheckingTestInterfaceAttributeAttributeSetter(v8:
     v8::Local<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toImpl(holder);
     TestInterfaceImplementation* cppValue = V8TestInterface::toImplWithTypeCheck(info.GetIsolate(), v8Value);
-    impl->setLegacyInterfaceTypeCheckingTestInterfaceAttribute(WTF::getPtr(cppValue));
+    impl->setLegacyInterfaceTypeCheckingTestInterfaceAttribute(cppValue);
 }
 
 static void legacyInterfaceTypeCheckingTestInterfaceAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -4331,7 +4331,7 @@ static void legacyInterfaceTypeCheckingTestInterfaceOrNullAttributeAttributeSett
     v8::Local<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toImpl(holder);
     TestInterfaceImplementation* cppValue = V8TestInterface::toImplWithTypeCheck(info.GetIsolate(), v8Value);
-    impl->setLegacyInterfaceTypeCheckingTestInterfaceOrNullAttribute(WTF::getPtr(cppValue));
+    impl->setLegacyInterfaceTypeCheckingTestInterfaceOrNullAttribute(cppValue);
 }
 
 static void legacyInterfaceTypeCheckingTestInterfaceOrNullAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -4483,7 +4483,7 @@ static void sameObjectAttributeAttributeSetter(v8::Local<v8::Value> v8Value, con
         exceptionState.throwIfNeeded();
         return;
     }
-    impl->setSameObjectAttribute(WTF::getPtr(cppValue));
+    impl->setSameObjectAttribute(cppValue);
 }
 
 static void sameObjectAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -4620,7 +4620,7 @@ static void testInterfaceAttributeAttributeSetter(v8::Local<v8::Value> v8Value, 
         exceptionState.throwIfNeeded();
         return;
     }
-    impl->setTestInterfaceAttribute(WTF::getPtr(cppValue));
+    impl->setTestInterfaceAttribute(cppValue);
 }
 
 static void testInterfaceAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -4652,7 +4652,7 @@ static void testInterfaceGarbageCollectedAttributeAttributeSetter(v8::Local<v8::
         exceptionState.throwIfNeeded();
         return;
     }
-    impl->setTestInterfaceGarbageCollectedAttribute(WTF::getPtr(cppValue));
+    impl->setTestInterfaceGarbageCollectedAttribute(cppValue);
 }
 
 static void testInterfaceGarbageCollectedAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -4684,7 +4684,7 @@ static void testInterfaceGarbageCollectedOrNullAttributeAttributeSetter(v8::Loca
         exceptionState.throwIfNeeded();
         return;
     }
-    impl->setTestInterfaceGarbageCollectedOrNullAttribute(WTF::getPtr(cppValue));
+    impl->setTestInterfaceGarbageCollectedOrNullAttribute(cppValue);
 }
 
 static void testInterfaceGarbageCollectedOrNullAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -4775,10 +4775,10 @@ static void nodeAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Valu
 {
     v8::Local<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toImpl(holder);
-    RawPtr<Node> result = nullptr;
+    Node* result = nullptr;
     if (!V8TestObject::PrivateScript::nodeAttributeAttributeGetter(toLocalFrame(toFrameIfNotDetached(info.GetIsolate()->GetCurrentContext())), impl, &result))
         return;
-    v8SetReturnValueFast(info, WTF::getPtr(result.release()), impl);
+    v8SetReturnValueFast(info, result, impl);
 }
 
 static void nodeAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -6136,9 +6136,9 @@ static void voidMethodArrayTestInterfaceEmptyArgMethod(const v8::FunctionCallbac
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
-    Vector<RefPtr<TestInterfaceEmpty>> arrayTestInterfaceEmptyArg;
+    HeapVector<Member<TestInterfaceEmpty>> arrayTestInterfaceEmptyArg;
     {
-        arrayTestInterfaceEmptyArg = (toRefPtrNativeArray<TestInterfaceEmpty, V8TestInterfaceEmpty>(info[0], 1, info.GetIsolate(), exceptionState));
+        arrayTestInterfaceEmptyArg = (toMemberNativeArray<TestInterfaceEmpty, V8TestInterfaceEmpty>(info[0], 1, info.GetIsolate(), exceptionState));
         if (exceptionState.throwIfNeeded())
             return;
     }
@@ -6263,9 +6263,9 @@ static void voidMethodSequenceTestInterfaceEmptyArgMethod(const v8::FunctionCall
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
-    Vector<RefPtr<TestInterfaceEmpty>> testInterfaceEmptySequenceArg;
+    HeapVector<Member<TestInterfaceEmpty>> testInterfaceEmptySequenceArg;
     {
-        testInterfaceEmptySequenceArg = (toRefPtrNativeArray<TestInterfaceEmpty, V8TestInterfaceEmpty>(info[0], 1, info.GetIsolate(), exceptionState));
+        testInterfaceEmptySequenceArg = (toMemberNativeArray<TestInterfaceEmpty, V8TestInterfaceEmpty>(info[0], 1, info.GetIsolate(), exceptionState));
         if (exceptionState.throwIfNeeded())
             return;
     }
@@ -6889,11 +6889,11 @@ static void voidMethodNodeFilterArgMethod(const v8::FunctionCallbackInfo<v8::Val
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
-    RawPtr<NodeFilter> nodeFilterArg;
+    NodeFilter* nodeFilterArg;
     {
         nodeFilterArg = toNodeFilter(info[0], info.Holder(), ScriptState::current(info.GetIsolate()));
     }
-    impl->voidMethodNodeFilterArg(nodeFilterArg.release());
+    impl->voidMethodNodeFilterArg(nodeFilterArg);
 }
 
 static void voidMethodNodeFilterArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -6954,7 +6954,7 @@ static void voidMethodXPathNSResolverArgMethod(const v8::FunctionCallbackInfo<v8
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
-    RawPtr<XPathNSResolver> xPathNSResolverArg;
+    XPathNSResolver* xPathNSResolverArg;
     {
         xPathNSResolverArg = toXPathNSResolver(ScriptState::current(info.GetIsolate()), info[0]);
         if (!xPathNSResolverArg) {
@@ -6962,7 +6962,7 @@ static void voidMethodXPathNSResolverArgMethod(const v8::FunctionCallbackInfo<v8
             return;
         }
     }
-    impl->voidMethodXPathNSResolverArg(xPathNSResolverArg.release());
+    impl->voidMethodXPathNSResolverArg(xPathNSResolverArg);
 }
 
 static void voidMethodXPathNSResolverArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -7695,7 +7695,7 @@ static void voidMethodVariadicTestInterfaceEmptyArgMethod(const v8::FunctionCall
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodVariadicTestInterfaceEmptyArg", "TestObject", info.Holder(), info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(info.Holder());
-    Vector<RefPtr<TestInterfaceEmpty>> variadicTestInterfaceEmptyArgs;
+    HeapVector<Member<TestInterfaceEmpty>> variadicTestInterfaceEmptyArgs;
     {
         for (int i = 0; i < info.Length(); ++i) {
             if (!V8TestInterfaceEmpty::hasInstance(info[i], info.GetIsolate())) {
@@ -7724,7 +7724,7 @@ static void voidMethodTestInterfaceEmptyArgVariadicTestInterfaceEmptyArgMethod(c
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     TestInterfaceEmpty* testInterfaceEmptyArg;
-    Vector<RefPtr<TestInterfaceEmpty>> variadicTestInterfaceEmptyArgs;
+    HeapVector<Member<TestInterfaceEmpty>> variadicTestInterfaceEmptyArgs;
     {
         testInterfaceEmptyArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[0]);
         if (!testInterfaceEmptyArg) {
@@ -9137,8 +9137,8 @@ static void callWithScriptStateScriptArgumentsVoidMethodMethod(const v8::Functio
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     ScriptState* scriptState = ScriptState::current(info.GetIsolate());
-    RawPtr<ScriptArguments> scriptArguments(ScriptArguments::create(scriptState, info, 0));
-    impl->callWithScriptStateScriptArgumentsVoidMethod(scriptState, scriptArguments.release());
+    ScriptArguments* scriptArguments(ScriptArguments::create(scriptState, info, 0));
+    impl->callWithScriptStateScriptArgumentsVoidMethod(scriptState, scriptArguments);
 }
 
 static void callWithScriptStateScriptArgumentsVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -9160,8 +9160,8 @@ static void callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArgMethod
         }
         if (UNLIKELY(numArgsPassed <= 0)) {
             ScriptState* scriptState = ScriptState::current(info.GetIsolate());
-            RawPtr<ScriptArguments> scriptArguments(ScriptArguments::create(scriptState, info, 1));
-            impl->callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArg(scriptState, scriptArguments.release());
+            ScriptArguments* scriptArguments(ScriptArguments::create(scriptState, info, 1));
+            impl->callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArg(scriptState, scriptArguments);
             return;
         }
         optionalBooleanArg = toBoolean(info.GetIsolate(), info[0], exceptionState);
@@ -9169,8 +9169,8 @@ static void callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArgMethod
             return;
     }
     ScriptState* scriptState = ScriptState::current(info.GetIsolate());
-    RawPtr<ScriptArguments> scriptArguments(ScriptArguments::create(scriptState, info, 1));
-    impl->callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArg(scriptState, scriptArguments.release(), optionalBooleanArg);
+    ScriptArguments* scriptArguments(ScriptArguments::create(scriptState, info, 1));
+    impl->callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArg(scriptState, scriptArguments, optionalBooleanArg);
 }
 
 static void callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -10038,7 +10038,7 @@ void postMessageImpl(const char* interfaceName, TestObject* instance, const v8::
         exceptionState.throwIfNeeded();
         return;
     }
-    RawPtr<MessagePortArray> ports = new MessagePortArray;
+    MessagePortArray* ports = new MessagePortArray;
     ArrayBufferArray arrayBuffers;
     ImageBitmapArray imageBitmaps;
     if (info.Length() > 1) {
@@ -10048,12 +10048,12 @@ void postMessageImpl(const char* interfaceName, TestObject* instance, const v8::
             return;
         }
     }
-    RefPtr<SerializedScriptValue> message = SerializedScriptValueFactory::instance().create(info.GetIsolate(), info[0], ports.get(), &arrayBuffers, &imageBitmaps, exceptionState);
+    RefPtr<SerializedScriptValue> message = SerializedScriptValueFactory::instance().create(info.GetIsolate(), info[0], ports, &arrayBuffers, &imageBitmaps, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
     // FIXME: Only pass context/exceptionState if instance really requires it.
     ExecutionContext* context = currentExecutionContext(info.GetIsolate());
-    instance->postMessage(context, message.release(), ports.get(), exceptionState);
+    instance->postMessage(context, message.release(), ports, exceptionState);
     exceptionState.throwIfNeeded();
 }
 
@@ -10259,12 +10259,12 @@ static void raisesExceptionTestInterfaceEmptyVoidMethodMethod(const v8::Function
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "raisesExceptionTestInterfaceEmptyVoidMethod", "TestObject", info.Holder(), info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(info.Holder());
-    RefPtr<TestInterfaceEmpty> result = impl->raisesExceptionTestInterfaceEmptyVoidMethod(exceptionState);
+    TestInterfaceEmpty* result = impl->raisesExceptionTestInterfaceEmptyVoidMethod(exceptionState);
     if (exceptionState.hadException()) {
         exceptionState.throwIfNeeded();
         return;
     }
-    v8SetReturnValue(info, result.release());
+    v8SetReturnValue(info, result);
 }
 
 static void raisesExceptionTestInterfaceEmptyVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -10276,12 +10276,12 @@ static void raisesExceptionXPathNSResolverVoidMethodMethod(const v8::FunctionCal
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "raisesExceptionXPathNSResolverVoidMethod", "TestObject", info.Holder(), info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(info.Holder());
-    RawPtr<XPathNSResolver> result = impl->raisesExceptionXPathNSResolverVoidMethod(exceptionState);
+    XPathNSResolver* result = impl->raisesExceptionXPathNSResolverVoidMethod(exceptionState);
     if (exceptionState.hadException()) {
         exceptionState.throwIfNeeded();
         return;
     }
-    v8SetReturnValue(info, result.release());
+    v8SetReturnValue(info, result);
 }
 
 static void raisesExceptionXPathNSResolverVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -10570,7 +10570,7 @@ static void legacyInterfaceTypeCheckingVoidMethodTestInterfaceEmptyVariadicArgMe
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "legacyInterfaceTypeCheckingVoidMethodTestInterfaceEmptyVariadicArg", "TestObject", info.Holder(), info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(info.Holder());
-    Vector<RefPtr<TestInterfaceEmpty>> testInterfaceEmptyArg;
+    HeapVector<Member<TestInterfaceEmpty>> testInterfaceEmptyArg;
     {
         for (int i = 0; i < info.Length(); ++i) {
             if (!V8TestInterfaceEmpty::hasInstance(info[i], info.GetIsolate())) {
@@ -10855,10 +10855,10 @@ static void nodeMethodWithNodeArgumentImplementedInPrivateScriptMethod(const v8:
             return;
         }
     }
-    RawPtr<Node> result = nullptr;
+    Node* result = nullptr;
     if (!V8TestObject::PrivateScript::nodeMethodWithNodeArgumentImplementedInPrivateScriptMethod(toLocalFrame(toFrameIfNotDetached(info.GetIsolate()->GetCurrentContext())), impl, value, &result))
         return;
-    v8SetReturnValue(info, result.release());
+    v8SetReturnValue(info, result);
 }
 
 static void nodeMethodWithNodeArgumentImplementedInPrivateScriptMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -10903,10 +10903,10 @@ static void nodeMethodWithVariousArgumentsImplementedInPrivateScriptMethod(const
         if (!string.prepare())
             return;
     }
-    RawPtr<Node> result = nullptr;
+    Node* result = nullptr;
     if (!V8TestObject::PrivateScript::nodeMethodWithVariousArgumentsImplementedInPrivateScriptMethod(toLocalFrame(toFrameIfNotDetached(info.GetIsolate()->GetCurrentContext())), impl, document, node, value1, value2, string, &result))
         return;
-    v8SetReturnValue(info, result.release());
+    v8SetReturnValue(info, result);
 }
 
 static void nodeMethodWithVariousArgumentsImplementedInPrivateScriptMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -10946,12 +10946,12 @@ static void keysMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "keys", "TestObject", info.Holder(), info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     ScriptState* scriptState = ScriptState::current(info.GetIsolate());
-    RawPtr<Iterator> result = impl->keysForBinding(scriptState, exceptionState);
+    Iterator* result = impl->keysForBinding(scriptState, exceptionState);
     if (exceptionState.hadException()) {
         exceptionState.throwIfNeeded();
         return;
     }
-    v8SetReturnValue(info, result.release());
+    v8SetReturnValue(info, result);
 }
 
 static void keysMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -10964,12 +10964,12 @@ static void valuesMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "values", "TestObject", info.Holder(), info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     ScriptState* scriptState = ScriptState::current(info.GetIsolate());
-    RawPtr<Iterator> result = impl->valuesForBinding(scriptState, exceptionState);
+    Iterator* result = impl->valuesForBinding(scriptState, exceptionState);
     if (exceptionState.hadException()) {
         exceptionState.throwIfNeeded();
         return;
     }
-    v8SetReturnValue(info, result.release());
+    v8SetReturnValue(info, result);
 }
 
 static void valuesMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -10982,12 +10982,12 @@ static void entriesMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "entries", "TestObject", info.Holder(), info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     ScriptState* scriptState = ScriptState::current(info.GetIsolate());
-    RawPtr<Iterator> result = impl->entriesForBinding(scriptState, exceptionState);
+    Iterator* result = impl->entriesForBinding(scriptState, exceptionState);
     if (exceptionState.hadException()) {
         exceptionState.throwIfNeeded();
         return;
     }
-    v8SetReturnValue(info, result.release());
+    v8SetReturnValue(info, result);
 }
 
 static void entriesMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -11152,12 +11152,12 @@ static void setMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
             return;
     }
     ScriptState* scriptState = ScriptState::current(info.GetIsolate());
-    RefPtr<TestObject> result = impl->setForBinding(scriptState, key, value, exceptionState);
+    TestObject* result = impl->setForBinding(scriptState, key, value, exceptionState);
     if (exceptionState.hadException()) {
         exceptionState.throwIfNeeded();
         return;
     }
-    v8SetReturnValue(info, result.release());
+    v8SetReturnValue(info, result);
 }
 
 static void setMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -11192,12 +11192,12 @@ static void iteratorMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "iterator", "TestObject", info.Holder(), info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     ScriptState* scriptState = ScriptState::current(info.GetIsolate());
-    RawPtr<Iterator> result = impl->iterator(scriptState, exceptionState);
+    Iterator* result = impl->iterator(scriptState, exceptionState);
     if (exceptionState.hadException()) {
         exceptionState.throwIfNeeded();
         return;
     }
-    v8SetReturnValue(info, result.release());
+    v8SetReturnValue(info, result);
 }
 
 static void iteratorMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -11938,16 +11938,6 @@ void V8TestObject::preparePrototypeAndInterfaceObject(v8::Local<v8::Context> con
     prototypeObject->CreateDataProperty(context, unscopablesSymbol, unscopeables).FromJust();
 }
 
-void V8TestObject::refObject(ScriptWrappable* scriptWrappable)
-{
-    scriptWrappable->toImpl<TestObject>()->ref();
-}
-
-void V8TestObject::derefObject(ScriptWrappable* scriptWrappable)
-{
-    scriptWrappable->toImpl<TestObject>()->deref();
-}
-
 bool V8TestObject::PrivateScript::voidMethodImplementedInPrivateScriptMethod(LocalFrame* frame, TestObject* holderImpl)
 {
     if (!frame)
@@ -12070,7 +12060,7 @@ bool V8TestObject::PrivateScript::stringMethodWithStringArgumentImplementedInPri
     return true;
 }
 
-bool V8TestObject::PrivateScript::nodeMethodWithNodeArgumentImplementedInPrivateScriptMethod(LocalFrame* frame, TestObject* holderImpl, Node* value, RawPtr<Node>* result)
+bool V8TestObject::PrivateScript::nodeMethodWithNodeArgumentImplementedInPrivateScriptMethod(LocalFrame* frame, TestObject* holderImpl, Node* value, Node** result)
 {
     if (!frame)
         return false;
@@ -12100,7 +12090,7 @@ bool V8TestObject::PrivateScript::nodeMethodWithNodeArgumentImplementedInPrivate
     return true;
 }
 
-bool V8TestObject::PrivateScript::nodeMethodWithVariousArgumentsImplementedInPrivateScriptMethod(LocalFrame* frame, TestObject* holderImpl, Document* document, Node* node, int value1, double value2, String string, RawPtr<Node>* result)
+bool V8TestObject::PrivateScript::nodeMethodWithVariousArgumentsImplementedInPrivateScriptMethod(LocalFrame* frame, TestObject* holderImpl, Document* document, Node* node, int value1, double value2, String string, Node** result)
 {
     if (!frame)
         return false;
@@ -12304,7 +12294,7 @@ bool V8TestObject::PrivateScript::stringAttributeAttributeSetter(LocalFrame* fra
     return PrivateScriptRunner::runDOMAttributeSetter(scriptState, scriptStateInUserScript, "TestObject", "stringAttribute", holder, v8String(scriptState->isolate(), cppValue));
 }
 
-bool V8TestObject::PrivateScript::nodeAttributeAttributeGetter(LocalFrame* frame, TestObject* holderImpl, RawPtr<Node>* result)
+bool V8TestObject::PrivateScript::nodeAttributeAttributeGetter(LocalFrame* frame, TestObject* holderImpl, Node** result)
 {
     if (!frame)
         return false;

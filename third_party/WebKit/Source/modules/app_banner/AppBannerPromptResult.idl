@@ -5,7 +5,6 @@
 enum AppBannerPromptOutcome { "accepted", "dismissed" };
 
 [
-    GarbageCollected,
     RuntimeEnabled=AppBanner,
 ] interface AppBannerPromptResult {
     readonly attribute DOMString platform;

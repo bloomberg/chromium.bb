@@ -28,7 +28,6 @@
 
 [
     NoInterfaceObject,
-    GarbageCollected,
 ] interface SQLResultSetRowList {
     readonly attribute unsigned long length;
     [RaisesException, CallWith=ScriptState] getter any item(unsigned long index);

@@ -5,7 +5,6 @@
 // http://mozvr.github.io/webvr-spec/webvr.html#vrdevice
 [
     RuntimeEnabled=WebVR,
-    GarbageCollected,
 ] interface VRDevice {
     // An identifier for the distinct hardware unit that this
     // VR Device is a part of.  All VRDevice/Sensors that come

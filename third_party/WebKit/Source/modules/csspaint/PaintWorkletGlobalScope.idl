@@ -8,7 +8,6 @@
     Exposed=PaintWorklet,
     Global=(Worklet,PaintWorklet),
     RuntimeEnabled=CSSPaintAPI,
-    GarbageCollected,
 ] interface PaintWorkletGlobalScope : WorkletGlobalScope {
     [RaisesException] void registerPaint(DOMString name, Function paintCtor);
 };

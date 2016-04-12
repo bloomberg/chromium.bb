@@ -25,7 +25,6 @@
 // http://dev.w3.org/2011/webrtc/editor/webrtc.html#idl-def-RTCDataChannel
 
 [
-    GarbageCollected,
     NoInterfaceObject,
 ] interface RTCDataChannel : EventTarget {
     readonly attribute DOMString label;

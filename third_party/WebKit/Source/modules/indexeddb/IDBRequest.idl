@@ -40,7 +40,6 @@ enum IDBRequestReadyState {
     ActiveScriptWrappable,
     DependentLifetime,
     Exposed=(Window,Worker),
-    GarbageCollected,
 ] interface IDBRequest : EventTarget {
     [RaisesException=Getter, CachedAttribute=isResultDirty] readonly attribute any result;
     [RaisesException=Getter] readonly attribute DOMException error;

@@ -36,7 +36,6 @@ enum IDBCursorDirection {
 
 [
     Exposed=(Window,Worker),
-    GarbageCollected
 ] interface IDBCursor {
     [CallWith=ScriptState] readonly attribute any source;
     readonly attribute IDBCursorDirection direction;

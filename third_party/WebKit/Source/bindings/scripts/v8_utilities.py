@@ -185,7 +185,7 @@ def activity_logging_world_check(member):
 CALL_WITH_ARGUMENTS = {
     'ScriptState': 'scriptState',
     'ExecutionContext': 'executionContext',
-    'ScriptArguments': 'scriptArguments.release()',
+    'ScriptArguments': 'scriptArguments',
     'CurrentWindow': 'currentDOMWindow(info.GetIsolate())',
     'EnteredWindow': 'enteredDOMWindow(info.GetIsolate())',
     'Document': 'document',
@@ -322,14 +322,6 @@ def exposed(member, interface):
         raise ValueError('Interface members\' exposure sets must be a subset of the interface\'s.')
 
     return exposure_set.code()
-
-
-# [GarbageCollected]
-def gc_type(definition):
-    extended_attributes = definition.extended_attributes
-    if 'GarbageCollected' in extended_attributes:
-        return 'GarbageCollectedObject'
-    return 'RefCountedObject'
 
 
 # [ImplementedAs]

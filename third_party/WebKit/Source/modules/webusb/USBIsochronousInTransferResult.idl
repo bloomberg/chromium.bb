@@ -5,7 +5,6 @@
 // https://wicg.github.io/webusb/#idl-def-usbisochronousintransferresult
 
 [
-    GarbageCollected,
     OriginTrialEnabled=WebUSB,
 ] interface USBIsochronousInTransferResult {
     readonly attribute DataView data;

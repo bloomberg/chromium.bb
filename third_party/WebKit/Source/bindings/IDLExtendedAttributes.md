@@ -923,21 +923,6 @@ Usage: `[DeprecateAs]` can be specified on methods, attributes, and constants.
 
 The deprecation message show on the console can be specified via the [UseCounter::deprecationMessage](https://code.google.com/p/chromium/codesearch#chromium/src/third_party/WebKit/Source/core/frame/UseCounter.cpp&q=UseCounter::deprecationMessage&l=615) method.
 
-### [GarbageCollected] _(i)_
-
-Summary: The `[GarbageCollected]` attribute signals that the object is kept on the Oilpan heap and handled by its garbage collector.
-
-Usage: `[GarbageCollected]` can be specified on interfaces, and is inherited:
-
-```webidl
-[
-    GarbageCollected,
-] interface BatteryManager { ... };
-```
-
-In order to generate correct binding layer code for an interface, `[GarbageCollected]` must be supplied if the object is an Oilpan-based object.
-
-
 ### [Iterable] _(i)_
 
 Summary: Installs a @@iterator method.

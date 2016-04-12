@@ -31,7 +31,6 @@
     Exposed=(Window,Worker),
     ImplementedAs=DOMURL,
     RaisesException=Constructor,
-    GarbageCollected,
 ] interface URL {
     // TODO(philipj): Implement domainToASCII() and domainToUnicode().
     // crbug.com/493908

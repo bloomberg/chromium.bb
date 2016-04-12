@@ -34,7 +34,6 @@ enum AudioContextState {
     Constructor,
     ConstructorCallWith=Document,
     DependentLifetime,
-    GarbageCollected,
     ImplementedAs=AbstractAudioContext,
     NoInterfaceObject,
     RaisesException=Constructor,

@@ -7,7 +7,6 @@
 [
     // FIXME: Constructor(sequence<unrestricted double> numberSequence)
     // FIXME: Exposed=(Window,Worker)
-    GarbageCollected,
     RuntimeEnabled=GeometryInterfaces,
 ] interface DOMMatrixReadOnly {
     // These attributes are simple aliases for certain elements of the 4x4 matrix

@@ -34,7 +34,7 @@ namespace blink {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-const WrapperTypeInfo V8ArrayBufferView::wrapperTypeInfo = { gin::kEmbedderBlink, 0, V8ArrayBufferView::refObject, V8ArrayBufferView::derefObject, V8ArrayBufferView::trace, 0, 0, V8ArrayBufferView::preparePrototypeAndInterfaceObject, V8ArrayBufferView::installConditionallyEnabledProperties, "ArrayBufferView", 0, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::NotInheritFromEventTarget, WrapperTypeInfo::Independent, WrapperTypeInfo::GarbageCollectedObject };
+const WrapperTypeInfo V8ArrayBufferView::wrapperTypeInfo = { gin::kEmbedderBlink, 0, V8ArrayBufferView::trace, 0, 0, V8ArrayBufferView::preparePrototypeAndInterfaceObject, V8ArrayBufferView::installConditionallyEnabledProperties, "ArrayBufferView", 0, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::NotInheritFromEventTarget, WrapperTypeInfo::Independent };
 #if defined(COMPONENT_BUILD) && defined(WIN32) && COMPILER(CLANG)
 #pragma clang diagnostic pop
 #endif
@@ -84,14 +84,6 @@ TestArrayBufferView* V8ArrayBufferView::toImpl(v8::Local<v8::Object> object)
 TestArrayBufferView* V8ArrayBufferView::toImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value)
 {
     return hasInstance(value, isolate) ? toImpl(v8::Local<v8::Object>::Cast(value)) : 0;
-}
-
-void V8ArrayBufferView::refObject(ScriptWrappable* scriptWrappable)
-{
-}
-
-void V8ArrayBufferView::derefObject(ScriptWrappable* scriptWrappable)
-{
 }
 
 } // namespace blink

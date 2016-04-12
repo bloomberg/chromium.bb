@@ -27,7 +27,6 @@
 
 [
     Exposed=(Window,Worker),
-    GarbageCollected
 ] interface IDBFactory {
     [CallWith=ScriptState, ImplementedAs=getDatabaseNames, RaisesException, Measure] IDBRequest webkitGetDatabaseNames();
 

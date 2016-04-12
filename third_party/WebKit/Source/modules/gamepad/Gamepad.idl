@@ -24,7 +24,6 @@
  */
 
 [
-    GarbageCollected,
 ] interface Gamepad {
     readonly attribute DOMString id;
     readonly attribute unsigned long index;

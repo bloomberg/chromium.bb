@@ -24,7 +24,6 @@
  */
 
 [
-    GarbageCollected,
     NoInterfaceObject
 ] interface DeprecatedStorageQuota {
     [CallWith=ExecutionContext] void queryUsageAndQuota(StorageUsageCallback usageCallback, optional StorageErrorCallback errorCallback);

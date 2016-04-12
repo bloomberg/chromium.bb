@@ -5,7 +5,6 @@
 // http://mozvr.github.io/webvr-spec/webvr.html#vrpositionstate
 [
     RuntimeEnabled=WebVR,
-    GarbageCollected,
 ] interface VRPositionState {
     readonly attribute double timeStamp;
     readonly attribute DOMPoint? position;

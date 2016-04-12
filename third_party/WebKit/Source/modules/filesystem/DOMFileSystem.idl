@@ -32,7 +32,6 @@
 [
     ActiveScriptWrappable,
     DependentLifetime,
-    GarbageCollected,
     NoInterfaceObject,
 ] interface DOMFileSystem {
     readonly attribute DOMString name;

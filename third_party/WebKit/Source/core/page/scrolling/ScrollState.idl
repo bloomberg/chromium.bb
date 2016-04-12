@@ -6,7 +6,6 @@
 
 [
   Constructor(optional ScrollStateInit scrollStateInit),
-  GarbageCollected,
   RuntimeEnabled = ScrollCustomization,
 ] interface ScrollState
 {

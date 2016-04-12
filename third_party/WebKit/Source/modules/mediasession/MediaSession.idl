@@ -8,7 +8,6 @@
     Constructor(),
     ConstructorCallWith=ExecutionContext,
     RaisesException=Constructor,
-    GarbageCollected,
     RuntimeEnabled=MediaSession,
 ] interface MediaSession {
     attribute MediaMetadata? metadata;

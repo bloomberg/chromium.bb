@@ -26,7 +26,6 @@
 // https://html.spec.whatwg.org/#time-ranges
 
 [
-    GarbageCollected,
 ] interface TimeRanges {
     readonly attribute unsigned long length;
     [RaisesException] double start(unsigned long index);

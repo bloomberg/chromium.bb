@@ -4,7 +4,6 @@
 
 [
     RuntimeEnabled=CustomElementsV1,
-    GarbageCollected,
 ] interface CustomElementsRegistry {
     [CallWith=ScriptState, CustomElementCallbacks, RaisesException] void define(DOMString name, Function constructor, optional ElementRegistrationOptions options);
 };

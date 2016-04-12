@@ -25,8 +25,6 @@ public:
     CORE_EXPORT static TestArrayBufferView* toImpl(v8::Local<v8::Object> object);
     CORE_EXPORT static TestArrayBufferView* toImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
     CORE_EXPORT static const WrapperTypeInfo wrapperTypeInfo;
-    static void refObject(ScriptWrappable*);
-    static void derefObject(ScriptWrappable*);
     template<typename VisitorDispatcher>
     static void trace(VisitorDispatcher visitor, ScriptWrappable* scriptWrappable)
     {

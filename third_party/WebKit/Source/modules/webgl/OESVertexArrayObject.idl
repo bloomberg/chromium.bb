@@ -26,7 +26,6 @@
 [
     DoNotCheckConstants,
     NoInterfaceObject,
-    GarbageCollected,
     SetWrapperReferenceFrom=canvas,
 ] interface OESVertexArrayObject {
     const unsigned long VERTEX_ARRAY_BINDING_OES = 0x85B5;

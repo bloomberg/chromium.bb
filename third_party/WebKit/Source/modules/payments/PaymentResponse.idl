@@ -6,7 +6,6 @@
 
 [
     RuntimeEnabled=PaymentRequest,
-    GarbageCollected,
 ] interface PaymentResponse {
     readonly attribute DOMString methodName;
     [CallWith=ScriptState, RaisesException] readonly attribute object details;

@@ -4,7 +4,6 @@
 
 [
     RuntimeEnabled=CSSTypedOM,
-    GarbageCollected
 ] interface StylePropertyMap {
     [RaisesException] void append(DOMString property, (StyleValue or sequence<StyleValue> or DOMString) value);
     [RaisesException, ImplementedAs=remove] void delete(DOMString property);

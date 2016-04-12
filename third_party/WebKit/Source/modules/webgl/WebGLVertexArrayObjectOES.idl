@@ -25,6 +25,5 @@
 
 [
     NoInterfaceObject,
-    GarbageCollected,
 ] interface WebGLVertexArrayObjectOES {
 };

@@ -7,7 +7,6 @@
 // Implement BluetoothCharacteristicProperties interface: http://crbug.com/483345
 
 [
-    GarbageCollected,
     OriginTrialEnabled=WebBluetooth,
 ] interface BluetoothCharacteristicProperties {
     readonly attribute boolean broadcast;

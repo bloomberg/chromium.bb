@@ -24,7 +24,6 @@
  */
 
 [
-    GarbageCollected,
     NoInterfaceObject,
     DependentLifetime
 ] interface RTCDTMFSender : EventTarget {

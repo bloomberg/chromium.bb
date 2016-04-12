@@ -28,7 +28,6 @@
 [
     ImplementedAs=SVGPreserveAspectRatioTearOff,
     SetWrapperReferenceTo(SVGElement contextElement),
-    GarbageCollected,
 ] interface SVGPreserveAspectRatio {
     // Alignment types
     const unsigned short SVG_PRESERVEASPECTRATIO_UNKNOWN = 0;

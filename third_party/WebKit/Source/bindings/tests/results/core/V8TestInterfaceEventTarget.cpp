@@ -22,7 +22,7 @@ namespace blink {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-const WrapperTypeInfo V8TestInterfaceEventTarget::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceEventTarget::domTemplate, V8TestInterfaceEventTarget::refObject, V8TestInterfaceEventTarget::derefObject, V8TestInterfaceEventTarget::trace, 0, 0, V8TestInterfaceEventTarget::preparePrototypeAndInterfaceObject, V8TestInterfaceEventTarget::installConditionallyEnabledProperties, "TestInterfaceEventTarget", &V8EventTarget::wrapperTypeInfo, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::InheritFromEventTarget, WrapperTypeInfo::Independent, WrapperTypeInfo::GarbageCollectedObject };
+const WrapperTypeInfo V8TestInterfaceEventTarget::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceEventTarget::domTemplate, V8TestInterfaceEventTarget::trace, 0, 0, V8TestInterfaceEventTarget::preparePrototypeAndInterfaceObject, V8TestInterfaceEventTarget::installConditionallyEnabledProperties, "TestInterfaceEventTarget", &V8EventTarget::wrapperTypeInfo, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::InheritFromEventTarget, WrapperTypeInfo::Independent };
 #if defined(COMPONENT_BUILD) && defined(WIN32) && COMPILER(CLANG)
 #pragma clang diagnostic pop
 #endif
@@ -42,7 +42,7 @@ namespace TestInterfaceEventTargetV8Internal {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-const WrapperTypeInfo V8TestInterfaceEventTargetConstructor::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceEventTargetConstructor::domTemplate, V8TestInterfaceEventTarget::refObject, V8TestInterfaceEventTarget::derefObject, V8TestInterfaceEventTarget::trace, 0, 0, V8TestInterfaceEventTarget::preparePrototypeAndInterfaceObject, V8TestInterfaceEventTarget::installConditionallyEnabledProperties, "TestInterfaceEventTarget", 0, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::InheritFromEventTarget, WrapperTypeInfo::Independent, WrapperTypeInfo::GarbageCollectedObject };
+const WrapperTypeInfo V8TestInterfaceEventTargetConstructor::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceEventTargetConstructor::domTemplate, V8TestInterfaceEventTarget::trace, 0, 0, V8TestInterfaceEventTarget::preparePrototypeAndInterfaceObject, V8TestInterfaceEventTarget::installConditionallyEnabledProperties, "TestInterfaceEventTarget", 0, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::InheritFromEventTarget, WrapperTypeInfo::Independent };
 #if defined(COMPONENT_BUILD) && defined(WIN32) && COMPILER(CLANG)
 #pragma clang diagnostic pop
 #endif
@@ -59,7 +59,7 @@ static void V8TestInterfaceEventTargetConstructorCallback(const v8::FunctionCall
         return;
     }
     Document& document = *toDocument(currentExecutionContext(info.GetIsolate()));
-    RawPtr<TestInterfaceEventTarget> impl = TestInterfaceEventTarget::createForJSConstructor(document);
+    TestInterfaceEventTarget* impl = TestInterfaceEventTarget::createForJSConstructor(document);
     v8::Local<v8::Object> wrapper = info.Holder();
     wrapper = impl->associateWithWrapper(info.GetIsolate(), &V8TestInterfaceEventTargetConstructor::wrapperTypeInfo, wrapper);
     v8SetReturnValue(info, wrapper);
@@ -114,14 +114,6 @@ v8::Local<v8::Object> V8TestInterfaceEventTarget::findInstanceInPrototypeChain(v
 TestInterfaceEventTarget* V8TestInterfaceEventTarget::toImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value)
 {
     return hasInstance(value, isolate) ? toImpl(v8::Local<v8::Object>::Cast(value)) : 0;
-}
-
-void V8TestInterfaceEventTarget::refObject(ScriptWrappable* scriptWrappable)
-{
-}
-
-void V8TestInterfaceEventTarget::derefObject(ScriptWrappable* scriptWrappable)
-{
 }
 
 } // namespace blink

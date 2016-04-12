@@ -33,7 +33,6 @@
 // http://dev.w3.org/fxtf/geometry/#DOMRect
 
 [
-    GarbageCollected,
 ] interface ClientRect {
     readonly attribute float top;
     readonly attribute float right;

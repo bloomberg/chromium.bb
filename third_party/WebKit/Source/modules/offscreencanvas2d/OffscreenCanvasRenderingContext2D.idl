@@ -5,7 +5,6 @@
 // Note: The official spec is WIP at wiki.whatwg.org/wiki/OffscreenCanvas.
 
 [
-    GarbageCollected,
     Exposed=(Window,Worker),
     RuntimeEnabled=ExperimentalCanvasFeatures,
 ] interface OffscreenCanvasRenderingContext2D {

@@ -19,7 +19,6 @@
 */
 
 [
-    GarbageCollected,
     ImplementedAs=DOMPlugin
 ] interface Plugin {
     readonly attribute DOMString name;

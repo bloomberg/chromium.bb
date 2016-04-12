@@ -20,7 +20,6 @@
 // https://html.spec.whatwg.org/#the-navigator-object
 
 [
-    GarbageCollected,
 ] interface Navigator {
     // objects implementing this interface also implement the interfaces given below
 

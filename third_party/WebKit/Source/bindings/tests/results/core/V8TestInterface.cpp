@@ -44,7 +44,7 @@ namespace blink {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-WrapperTypeInfo V8TestInterface::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterface::domTemplate, V8TestInterface::refObject, V8TestInterface::derefObject, V8TestInterface::trace, V8TestInterface::toActiveScriptWrappable, V8TestInterface::visitDOMWrapper, V8TestInterface::preparePrototypeAndInterfaceObject, V8TestInterface::installConditionallyEnabledProperties, "TestInterface", &V8TestInterfaceEmpty::wrapperTypeInfo, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::NotInheritFromEventTarget, WrapperTypeInfo::Dependent, WrapperTypeInfo::RefCountedObject };
+WrapperTypeInfo V8TestInterface::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterface::domTemplate, V8TestInterface::trace, V8TestInterface::toActiveScriptWrappable, V8TestInterface::visitDOMWrapper, V8TestInterface::preparePrototypeAndInterfaceObject, V8TestInterface::installConditionallyEnabledProperties, "TestInterface", &V8TestInterfaceEmpty::wrapperTypeInfo, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::NotInheritFromEventTarget, WrapperTypeInfo::Dependent };
 #if defined(COMPONENT_BUILD) && defined(WIN32) && COMPILER(CLANG)
 #pragma clang diagnostic pop
 #endif
@@ -86,7 +86,7 @@ static void testInterfaceAttributeAttributeSetter(v8::Local<v8::Value> v8Value, 
         exceptionState.throwIfNeeded();
         return;
     }
-    impl->setTestInterfaceAttribute(WTF::getPtr(cppValue));
+    impl->setTestInterfaceAttribute(cppValue);
 }
 
 static void testInterfaceAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -350,7 +350,7 @@ static void staticStringAttributeAttributeSetterCallback(const v8::FunctionCallb
 
 static void staticReturnDOMWrapperAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    v8SetReturnValue(info, TestInterfaceImplementation::staticReturnDOMWrapperAttribute(), info.GetIsolate()->GetCurrentContext()->Global());
+    v8SetReturnValue(info, WTF::getPtr(TestInterfaceImplementation::staticReturnDOMWrapperAttribute()), info.GetIsolate()->GetCurrentContext()->Global());
 }
 
 static void staticReturnDOMWrapperAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -368,7 +368,7 @@ static void staticReturnDOMWrapperAttributeAttributeSetter(v8::Local<v8::Value> 
         exceptionState.throwIfNeeded();
         return;
     }
-    TestInterfaceImplementation::setStaticReturnDOMWrapperAttribute(WTF::getPtr(cppValue));
+    TestInterfaceImplementation::setStaticReturnDOMWrapperAttribute(cppValue);
 }
 
 static void staticReturnDOMWrapperAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -389,10 +389,10 @@ static void staticReadOnlyStringAttributeAttributeGetterCallback(const v8::Funct
 
 static void staticReadOnlyReturnDOMWrapperAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    RefPtr<TestInterfaceImplementation> cppValue(TestInterfaceImplementation::staticReadOnlyReturnDOMWrapperAttribute());
-    if (cppValue && DOMDataStore::setReturnValue(info.GetReturnValue(), cppValue.get()))
+    TestInterfaceImplementation* cppValue(WTF::getPtr(TestInterfaceImplementation::staticReadOnlyReturnDOMWrapperAttribute()));
+    if (cppValue && DOMDataStore::setReturnValue(info.GetReturnValue(), cppValue))
         return;
-    v8::Local<v8::Value> v8Value(toV8(cppValue.get(), holder, info.GetIsolate()));
+    v8::Local<v8::Value> v8Value(toV8(cppValue, holder, info.GetIsolate()));
     if (!v8Value.IsEmpty()) {
         V8HiddenValue::setHiddenValue(ScriptState::current(info.GetIsolate()), holder, v8AtomicString(info.GetIsolate(), "staticReadOnlyReturnDOMWrapperAttribute"), v8Value);
         v8SetReturnValue(info, v8Value);
@@ -431,7 +431,7 @@ static void legacyInterfaceTypeCheckingAttributeAttributeSetter(v8::Local<v8::Va
     v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
     TestInterfaceEmpty* cppValue = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), v8Value);
-    impl->setLegacyInterfaceTypeCheckingAttribute(WTF::getPtr(cppValue));
+    impl->setLegacyInterfaceTypeCheckingAttribute(cppValue);
 }
 
 static void legacyInterfaceTypeCheckingAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -654,7 +654,7 @@ static void implementsNodeAttributeAttributeSetter(v8::Local<v8::Value> v8Value,
         exceptionState.throwIfNeeded();
         return;
     }
-    impl->setImplementsNodeAttribute(WTF::getPtr(cppValue));
+    impl->setImplementsNodeAttribute(cppValue);
 }
 
 static void implementsNodeAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -667,7 +667,7 @@ static void implementsEventHandlerAttributeAttributeGetter(const v8::FunctionCal
 {
     v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
-    EventListener* cppValue(impl->implementsEventHandlerAttribute());
+    EventListener* cppValue(WTF::getPtr(impl->implementsEventHandlerAttribute()));
     v8SetReturnValue(info, cppValue ? v8::Local<v8::Value>(V8AbstractEventListener::cast(cppValue)->getListenerObject(impl->getExecutionContext())) : v8::Local<v8::Value>(v8::Null(info.GetIsolate())));
 }
 
@@ -713,7 +713,7 @@ static void implementsRuntimeEnabledNodeAttributeAttributeSetter(v8::Local<v8::V
         exceptionState.throwIfNeeded();
         return;
     }
-    impl->setImplementsRuntimeEnabledNodeAttribute(WTF::getPtr(cppValue));
+    impl->setImplementsRuntimeEnabledNodeAttribute(cppValue);
 }
 
 static void implementsRuntimeEnabledNodeAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -1458,12 +1458,12 @@ static void implementsComplexMethodMethod(const v8::FunctionCallbackInfo<v8::Val
         }
     }
     ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    RefPtr<TestInterfaceEmpty> result = impl->implementsComplexMethod(executionContext, strArg, testInterfaceEmptyArg, exceptionState);
+    TestInterfaceEmpty* result = impl->implementsComplexMethod(executionContext, strArg, testInterfaceEmptyArg, exceptionState);
     if (exceptionState.hadException()) {
         exceptionState.throwIfNeeded();
         return;
     }
-    v8SetReturnValue(info, result.release());
+    v8SetReturnValue(info, result);
 }
 
 static void implementsComplexMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -1817,12 +1817,12 @@ static void iteratorMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "iterator", "TestInterface", info.Holder(), info.GetIsolate());
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
     ScriptState* scriptState = ScriptState::current(info.GetIsolate());
-    RawPtr<Iterator> result = impl->iterator(scriptState, exceptionState);
+    Iterator* result = impl->iterator(scriptState, exceptionState);
     if (exceptionState.hadException()) {
         exceptionState.throwIfNeeded();
         return;
     }
-    v8SetReturnValue(info, result.release());
+    v8SetReturnValue(info, result);
 }
 
 static void iteratorMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -2242,16 +2242,6 @@ void V8TestInterface::preparePrototypeAndInterfaceObject(v8::Local<v8::Context> 
 ActiveScriptWrappable* V8TestInterface::toActiveScriptWrappable(v8::Local<v8::Object> wrapper)
 {
     return toImpl(wrapper);
-}
-
-void V8TestInterface::refObject(ScriptWrappable* scriptWrappable)
-{
-    scriptWrappable->toImpl<TestInterfaceImplementation>()->ref();
-}
-
-void V8TestInterface::derefObject(ScriptWrappable* scriptWrappable)
-{
-    scriptWrappable->toImpl<TestInterfaceImplementation>()->deref();
 }
 
 bool V8TestInterface::PrivateScript::shortMethodWithShortArgumentImplementedInPrivateScriptMethod(LocalFrame* frame, TestInterface* holderImpl, int value, int* result)

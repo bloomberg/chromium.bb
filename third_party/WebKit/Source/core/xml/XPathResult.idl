@@ -20,7 +20,6 @@
 // http://www.w3.org/TR/DOM-Level-3-XPath/xpath.html#XPathResult
 
 [
-    GarbageCollected
 ] interface XPathResult {
     // XPathResultType
     const unsigned short ANY_TYPE                       = 0;

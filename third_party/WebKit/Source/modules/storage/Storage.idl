@@ -26,7 +26,6 @@
 // https://html.spec.whatwg.org/multipage/webstorage.html#the-storage-interface
 
 [
-    GarbageCollected
 ] interface Storage {
     // TODO(philipj): [NotEnumerable] should not be used anywhere in this interface.
     [NotEnumerable, RaisesException=Getter] readonly attribute unsigned long length;

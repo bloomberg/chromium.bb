@@ -24,7 +24,6 @@
  */
 
 [
-    GarbageCollected,
     NoInterfaceObject
 ] interface SpeechSynthesisVoice {
     readonly attribute DOMString voiceURI;

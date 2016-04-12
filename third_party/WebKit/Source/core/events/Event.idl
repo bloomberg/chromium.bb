@@ -23,7 +23,6 @@
 [
     Constructor(DOMString type, optional EventInit eventInitDict),
     Exposed=(Window,Worker),
-    GarbageCollected,
 ] interface Event {
     readonly attribute DOMString type;
     readonly attribute EventTarget? target;

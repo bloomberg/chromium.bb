@@ -27,7 +27,6 @@
 
 // TODO(philipj): MediaList should be an [ArrayClass].
 [
-    GarbageCollected
 ] interface MediaList {
     // TODO(philipj): [TreatNullAs=EmptyString] stringifier attribute DOMString mediaText;
     attribute DOMString? mediaText;

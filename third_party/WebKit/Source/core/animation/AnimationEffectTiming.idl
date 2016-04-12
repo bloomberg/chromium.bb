@@ -7,7 +7,6 @@
 
 [
     RuntimeEnabled=WebAnimationsAPI,
-    GarbageCollected,
 ] interface AnimationEffectTiming {
     attribute double delay;
     attribute double endDelay;

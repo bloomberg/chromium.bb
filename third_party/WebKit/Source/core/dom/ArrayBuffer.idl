@@ -5,7 +5,6 @@
 // https://www.khronos.org/registry/typedarray/specs/latest/#ARRAYBUFFER
 
 [
-    GarbageCollected,
     ImplementedAs=DOMArrayBuffer,
     NoInterfaceObject,
 ] interface ArrayBuffer {

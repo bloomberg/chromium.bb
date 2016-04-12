@@ -11,7 +11,6 @@ enum RecordingState { "inactive", "recording", "paused" };
     ConstructorCallWith=ExecutionContext,
     Constructor(MediaStream stream, optional MediaRecorderOptions options),
     DependentLifetime,
-    GarbageCollected,
     RaisesException=Constructor,
     RuntimeEnabled=MediaRecorder,
 ] interface MediaRecorder : EventTarget {

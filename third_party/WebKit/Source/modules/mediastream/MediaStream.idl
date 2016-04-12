@@ -25,7 +25,6 @@
 // http://w3c.github.io/mediacapture-main/getusermedia.html#idl-def-MediaStream
 
 [
-    GarbageCollected,
     Constructor,
     Constructor(MediaStream stream),
     Constructor(MediaStreamTrack[] tracks),

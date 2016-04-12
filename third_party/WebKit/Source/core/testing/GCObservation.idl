@@ -29,7 +29,6 @@
  */
 
 [
-    GarbageCollected,
 ] interface GCObservation {
     // Technically, this is true if the object was "near death"; the
     // object may have been kept alive through a weak handle. Having

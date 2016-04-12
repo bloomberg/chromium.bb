@@ -29,7 +29,6 @@
 [
     CustomConstructor,
     Exposed=(Window,Worker),
-    GarbageCollected,
     Measure,
 ] interface MessageChannel {
     readonly attribute MessagePort port1;

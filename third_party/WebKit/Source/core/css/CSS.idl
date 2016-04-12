@@ -31,7 +31,6 @@
 
 [
     ImplementedAs=DOMWindowCSS,
-    GarbageCollected
 ] interface CSS {
     static boolean supports(DOMString property, DOMString value);
     static boolean supports(DOMString conditionText);

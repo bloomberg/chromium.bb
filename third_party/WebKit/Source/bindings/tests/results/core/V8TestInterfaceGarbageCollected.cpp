@@ -26,7 +26,7 @@ namespace blink {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-const WrapperTypeInfo V8TestInterfaceGarbageCollected::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceGarbageCollected::domTemplate, V8TestInterfaceGarbageCollected::refObject, V8TestInterfaceGarbageCollected::derefObject, V8TestInterfaceGarbageCollected::trace, 0, 0, V8TestInterfaceGarbageCollected::preparePrototypeAndInterfaceObject, V8TestInterfaceGarbageCollected::installConditionallyEnabledProperties, "TestInterfaceGarbageCollected", &V8EventTarget::wrapperTypeInfo, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::InheritFromEventTarget, WrapperTypeInfo::Independent, WrapperTypeInfo::GarbageCollectedObject };
+const WrapperTypeInfo V8TestInterfaceGarbageCollected::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceGarbageCollected::domTemplate, V8TestInterfaceGarbageCollected::trace, 0, 0, V8TestInterfaceGarbageCollected::preparePrototypeAndInterfaceObject, V8TestInterfaceGarbageCollected::installConditionallyEnabledProperties, "TestInterfaceGarbageCollected", &V8EventTarget::wrapperTypeInfo, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::InheritFromEventTarget, WrapperTypeInfo::Independent };
 #if defined(COMPONENT_BUILD) && defined(WIN32) && COMPILER(CLANG)
 #pragma clang diagnostic pop
 #endif
@@ -61,7 +61,7 @@ static void attr1AttributeSetter(v8::Local<v8::Value> v8Value, const v8::Functio
         exceptionState.throwIfNeeded();
         return;
     }
-    impl->setAttr1(WTF::getPtr(cppValue));
+    impl->setAttr1(cppValue);
 }
 
 static void attr1AttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -98,12 +98,12 @@ static void keysMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "keys", "TestInterfaceGarbageCollected", info.Holder(), info.GetIsolate());
     TestInterfaceGarbageCollected* impl = V8TestInterfaceGarbageCollected::toImpl(info.Holder());
     ScriptState* scriptState = ScriptState::current(info.GetIsolate());
-    RawPtr<Iterator> result = impl->keysForBinding(scriptState, exceptionState);
+    Iterator* result = impl->keysForBinding(scriptState, exceptionState);
     if (exceptionState.hadException()) {
         exceptionState.throwIfNeeded();
         return;
     }
-    v8SetReturnValue(info, result.release());
+    v8SetReturnValue(info, result);
 }
 
 static void keysMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -116,12 +116,12 @@ static void valuesMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "values", "TestInterfaceGarbageCollected", info.Holder(), info.GetIsolate());
     TestInterfaceGarbageCollected* impl = V8TestInterfaceGarbageCollected::toImpl(info.Holder());
     ScriptState* scriptState = ScriptState::current(info.GetIsolate());
-    RawPtr<Iterator> result = impl->valuesForBinding(scriptState, exceptionState);
+    Iterator* result = impl->valuesForBinding(scriptState, exceptionState);
     if (exceptionState.hadException()) {
         exceptionState.throwIfNeeded();
         return;
     }
-    v8SetReturnValue(info, result.release());
+    v8SetReturnValue(info, result);
 }
 
 static void valuesMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -134,12 +134,12 @@ static void entriesMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "entries", "TestInterfaceGarbageCollected", info.Holder(), info.GetIsolate());
     TestInterfaceGarbageCollected* impl = V8TestInterfaceGarbageCollected::toImpl(info.Holder());
     ScriptState* scriptState = ScriptState::current(info.GetIsolate());
-    RawPtr<Iterator> result = impl->entriesForBinding(scriptState, exceptionState);
+    Iterator* result = impl->entriesForBinding(scriptState, exceptionState);
     if (exceptionState.hadException()) {
         exceptionState.throwIfNeeded();
         return;
     }
-    v8SetReturnValue(info, result.release());
+    v8SetReturnValue(info, result);
 }
 
 static void entriesMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -225,12 +225,12 @@ static void addMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
             return;
     }
     ScriptState* scriptState = ScriptState::current(info.GetIsolate());
-    RawPtr<TestInterfaceGarbageCollected> result = impl->addForBinding(scriptState, value, exceptionState);
+    TestInterfaceGarbageCollected* result = impl->addForBinding(scriptState, value, exceptionState);
     if (exceptionState.hadException()) {
         exceptionState.throwIfNeeded();
         return;
     }
-    v8SetReturnValue(info, result.release());
+    v8SetReturnValue(info, result);
 }
 
 static void addMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -289,12 +289,12 @@ static void iteratorMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "iterator", "TestInterfaceGarbageCollected", info.Holder(), info.GetIsolate());
     TestInterfaceGarbageCollected* impl = V8TestInterfaceGarbageCollected::toImpl(info.Holder());
     ScriptState* scriptState = ScriptState::current(info.GetIsolate());
-    RawPtr<Iterator> result = impl->iterator(scriptState, exceptionState);
+    Iterator* result = impl->iterator(scriptState, exceptionState);
     if (exceptionState.hadException()) {
         exceptionState.throwIfNeeded();
         return;
     }
-    v8SetReturnValue(info, result.release());
+    v8SetReturnValue(info, result);
 }
 
 static void iteratorMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -314,7 +314,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
         if (!str.prepare())
             return;
     }
-    RawPtr<TestInterfaceGarbageCollected> impl = TestInterfaceGarbageCollected::create(str);
+    TestInterfaceGarbageCollected* impl = TestInterfaceGarbageCollected::create(str);
     v8::Local<v8::Object> wrapper = info.Holder();
     wrapper = impl->associateWithWrapper(info.GetIsolate(), &V8TestInterfaceGarbageCollected::wrapperTypeInfo, wrapper);
     v8SetReturnValue(info, wrapper);
@@ -392,14 +392,6 @@ v8::Local<v8::Object> V8TestInterfaceGarbageCollected::findInstanceInPrototypeCh
 TestInterfaceGarbageCollected* V8TestInterfaceGarbageCollected::toImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value)
 {
     return hasInstance(value, isolate) ? toImpl(v8::Local<v8::Object>::Cast(value)) : 0;
-}
-
-void V8TestInterfaceGarbageCollected::refObject(ScriptWrappable* scriptWrappable)
-{
-}
-
-void V8TestInterfaceGarbageCollected::derefObject(ScriptWrappable* scriptWrappable)
-{
 }
 
 } // namespace blink

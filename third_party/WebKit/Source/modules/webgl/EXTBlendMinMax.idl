@@ -5,7 +5,6 @@
 [
     DoNotCheckConstants,
     NoInterfaceObject,
-    GarbageCollected,
     SetWrapperReferenceFrom=canvas,
 ] interface EXTBlendMinMax {
     const unsigned long MIN_EXT              = 0x8007;

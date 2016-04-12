@@ -4,6 +4,5 @@
 
 [
     RuntimeEnabled=UnsafeES3APIs,
-    GarbageCollected
 ] interface WebGLSampler {
 };

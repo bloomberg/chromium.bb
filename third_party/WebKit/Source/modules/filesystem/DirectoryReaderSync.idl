@@ -30,7 +30,6 @@
 
 [
     NoInterfaceObject,
-    GarbageCollected,
 ] interface DirectoryReaderSync {
     [RaisesException] EntrySync[] readEntries();
 };

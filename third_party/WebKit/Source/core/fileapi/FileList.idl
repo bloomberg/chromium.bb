@@ -27,7 +27,6 @@
 
 [
     Exposed=(Window,Worker),
-    GarbageCollected
 ] interface FileList {
     getter File? item(unsigned long index);
     readonly attribute unsigned long length;

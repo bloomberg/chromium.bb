@@ -26,7 +26,6 @@
 // https://html.spec.whatwg.org/#texttracklist
 
 [
-    GarbageCollected,
     SetWrapperReferenceFrom=owner,
 ] interface TextTrackList : EventTarget {
     readonly attribute unsigned long length;

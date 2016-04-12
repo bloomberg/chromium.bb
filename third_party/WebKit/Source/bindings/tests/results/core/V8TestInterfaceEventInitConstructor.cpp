@@ -24,7 +24,7 @@ namespace blink {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-const WrapperTypeInfo V8TestInterfaceEventInitConstructor::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceEventInitConstructor::domTemplate, V8TestInterfaceEventInitConstructor::refObject, V8TestInterfaceEventInitConstructor::derefObject, V8TestInterfaceEventInitConstructor::trace, 0, 0, V8TestInterfaceEventInitConstructor::preparePrototypeAndInterfaceObject, V8TestInterfaceEventInitConstructor::installConditionallyEnabledProperties, "TestInterfaceEventInitConstructor", &V8Event::wrapperTypeInfo, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::NotInheritFromEventTarget, WrapperTypeInfo::Independent, WrapperTypeInfo::GarbageCollectedObject };
+const WrapperTypeInfo V8TestInterfaceEventInitConstructor::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceEventInitConstructor::domTemplate, V8TestInterfaceEventInitConstructor::trace, 0, 0, V8TestInterfaceEventInitConstructor::preparePrototypeAndInterfaceObject, V8TestInterfaceEventInitConstructor::installConditionallyEnabledProperties, "TestInterfaceEventInitConstructor", &V8Event::wrapperTypeInfo, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::NotInheritFromEventTarget, WrapperTypeInfo::Independent };
 #if defined(COMPONENT_BUILD) && defined(WIN32) && COMPILER(CLANG)
 #pragma clang diagnostic pop
 #endif
@@ -83,7 +83,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
         if (exceptionState.throwIfNeeded())
             return;
     }
-    RawPtr<TestInterfaceEventInitConstructor> impl = TestInterfaceEventInitConstructor::create(type, testInterfaceEventInit);
+    TestInterfaceEventInitConstructor* impl = TestInterfaceEventInitConstructor::create(type, testInterfaceEventInit);
     v8::Local<v8::Object> wrapper = info.Holder();
     wrapper = impl->associateWithWrapper(info.GetIsolate(), &V8TestInterfaceEventInitConstructor::wrapperTypeInfo, wrapper);
     v8SetReturnValue(info, wrapper);
@@ -150,14 +150,6 @@ v8::Local<v8::Object> V8TestInterfaceEventInitConstructor::findInstanceInPrototy
 TestInterfaceEventInitConstructor* V8TestInterfaceEventInitConstructor::toImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value)
 {
     return hasInstance(value, isolate) ? toImpl(v8::Local<v8::Object>::Cast(value)) : 0;
-}
-
-void V8TestInterfaceEventInitConstructor::refObject(ScriptWrappable* scriptWrappable)
-{
-}
-
-void V8TestInterfaceEventInitConstructor::derefObject(ScriptWrappable* scriptWrappable)
-{
 }
 
 } // namespace blink

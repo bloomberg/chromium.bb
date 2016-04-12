@@ -4,7 +4,6 @@
 
 // See https://slightlyoff.github.io/ServiceWorker/spec/service_worker/index.html#cache-storage
 [
-    GarbageCollected,
     Exposed=(Window,Worker),
 ] interface CacheStorage {
   [CallWith=ScriptState, RaisesException] Promise<boolean> has(DOMString cacheName);

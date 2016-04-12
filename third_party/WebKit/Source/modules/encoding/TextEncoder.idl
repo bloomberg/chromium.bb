@@ -33,7 +33,6 @@
     Constructor(optional DOMString utfLabel = "utf-8"),
     ConstructorCallWith=ExecutionContext,
     RaisesException=Constructor,
-    GarbageCollected,
     MeasureAs=TextEncoderConstructor
 ] interface TextEncoder {
     readonly attribute DOMString encoding;

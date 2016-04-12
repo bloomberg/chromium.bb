@@ -32,7 +32,6 @@
     Constructor,
     Constructor(Path2D path),
     Constructor(DOMString text),
-    GarbageCollected,
     Exposed(Worker ExperimentalCanvasFeatures, Window StableBlinkFeatures),
 ] interface Path2D {
 

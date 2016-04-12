@@ -33,7 +33,6 @@
 
 [
     ActiveScriptWrappable,
-    GarbageCollected,
     DependentLifetime,
     Constructor,
     ConstructorCallWith=ExecutionContext,

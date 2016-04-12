@@ -22,7 +22,7 @@ namespace blink {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-const WrapperTypeInfo V8TestInterfaceConstructor3::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceConstructor3::domTemplate, V8TestInterfaceConstructor3::refObject, V8TestInterfaceConstructor3::derefObject, V8TestInterfaceConstructor3::trace, 0, 0, V8TestInterfaceConstructor3::preparePrototypeAndInterfaceObject, V8TestInterfaceConstructor3::installConditionallyEnabledProperties, "TestInterfaceConstructor3", 0, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::NotInheritFromEventTarget, WrapperTypeInfo::Independent, WrapperTypeInfo::RefCountedObject };
+const WrapperTypeInfo V8TestInterfaceConstructor3::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceConstructor3::domTemplate, V8TestInterfaceConstructor3::trace, 0, 0, V8TestInterfaceConstructor3::preparePrototypeAndInterfaceObject, V8TestInterfaceConstructor3::installConditionallyEnabledProperties, "TestInterfaceConstructor3", 0, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::NotInheritFromEventTarget, WrapperTypeInfo::Independent };
 #if defined(COMPONENT_BUILD) && defined(WIN32) && COMPILER(CLANG)
 #pragma clang diagnostic pop
 #endif
@@ -46,7 +46,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
         if (!stringArg.prepare())
             return;
     }
-    RefPtr<TestInterfaceConstructor3> impl = TestInterfaceConstructor3::create(stringArg);
+    TestInterfaceConstructor3* impl = TestInterfaceConstructor3::create(stringArg);
     v8::Local<v8::Object> wrapper = info.Holder();
     wrapper = impl->associateWithWrapper(info.GetIsolate(), &V8TestInterfaceConstructor3::wrapperTypeInfo, wrapper);
     v8SetReturnValue(info, wrapper);
@@ -103,16 +103,6 @@ v8::Local<v8::Object> V8TestInterfaceConstructor3::findInstanceInPrototypeChain(
 TestInterfaceConstructor3* V8TestInterfaceConstructor3::toImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value)
 {
     return hasInstance(value, isolate) ? toImpl(v8::Local<v8::Object>::Cast(value)) : 0;
-}
-
-void V8TestInterfaceConstructor3::refObject(ScriptWrappable* scriptWrappable)
-{
-    scriptWrappable->toImpl<TestInterfaceConstructor3>()->ref();
-}
-
-void V8TestInterfaceConstructor3::derefObject(ScriptWrappable* scriptWrappable)
-{
-    scriptWrappable->toImpl<TestInterfaceConstructor3>()->deref();
 }
 
 } // namespace blink

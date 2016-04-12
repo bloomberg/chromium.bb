@@ -5,7 +5,6 @@
 [
     RuntimeEnabled=ExperimentalCanvasFeatures,
     SetWrapperReferenceFrom=canvas,
-    GarbageCollected,
 ] interface ImageBitmapRenderingContext {
     // back-reference to the canvas
     readonly attribute HTMLCanvasElement canvas;

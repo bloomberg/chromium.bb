@@ -35,7 +35,6 @@
     LegacyTreatAsPartialInterface,
     NoInterfaceObject, // Always used on target of 'implements'
     Exposed=(Window,Worker),
-    GarbageCollected,
 ] interface AbstractWorker {
     attribute EventHandler onerror;
 };

@@ -5,7 +5,6 @@
 [
     NoInterfaceObject,
     DoNotCheckConstants,
-    GarbageCollected,
     SetWrapperReferenceFrom=canvas,
 ] interface WebGLCompressedTextureASTC {
     /* Compressed Texture Formats */

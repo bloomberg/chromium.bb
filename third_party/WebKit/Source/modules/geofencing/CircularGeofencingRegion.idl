@@ -5,7 +5,6 @@
 [
     RuntimeEnabled=Geofencing,
     Exposed=(Window,Worker),
-    GarbageCollected,
     Constructor(CircularGeofencingRegionInit init)
 ] interface CircularGeofencingRegion : GeofencingRegion {
     const double MIN_RADIUS = 1.0;

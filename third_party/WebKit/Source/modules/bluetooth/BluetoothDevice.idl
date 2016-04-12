@@ -12,7 +12,6 @@ enum VendorIDSource {
 };
 
 [
-    GarbageCollected,
     DependentLifetime,
     OriginTrialEnabled=WebBluetooth,
 ] interface BluetoothDevice : EventTarget

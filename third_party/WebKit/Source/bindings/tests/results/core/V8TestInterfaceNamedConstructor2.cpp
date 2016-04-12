@@ -22,7 +22,7 @@ namespace blink {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-const WrapperTypeInfo V8TestInterfaceNamedConstructor2::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceNamedConstructor2::domTemplate, V8TestInterfaceNamedConstructor2::refObject, V8TestInterfaceNamedConstructor2::derefObject, V8TestInterfaceNamedConstructor2::trace, 0, 0, V8TestInterfaceNamedConstructor2::preparePrototypeAndInterfaceObject, V8TestInterfaceNamedConstructor2::installConditionallyEnabledProperties, "TestInterfaceNamedConstructor2", 0, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::NotInheritFromEventTarget, WrapperTypeInfo::Independent, WrapperTypeInfo::RefCountedObject };
+const WrapperTypeInfo V8TestInterfaceNamedConstructor2::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceNamedConstructor2::domTemplate, V8TestInterfaceNamedConstructor2::trace, 0, 0, V8TestInterfaceNamedConstructor2::preparePrototypeAndInterfaceObject, V8TestInterfaceNamedConstructor2::installConditionallyEnabledProperties, "TestInterfaceNamedConstructor2", 0, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::NotInheritFromEventTarget, WrapperTypeInfo::Independent };
 #if defined(COMPONENT_BUILD) && defined(WIN32) && COMPILER(CLANG)
 #pragma clang diagnostic pop
 #endif
@@ -42,7 +42,7 @@ namespace TestInterfaceNamedConstructor2V8Internal {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-const WrapperTypeInfo V8TestInterfaceNamedConstructor2Constructor::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceNamedConstructor2Constructor::domTemplate, V8TestInterfaceNamedConstructor2::refObject, V8TestInterfaceNamedConstructor2::derefObject, V8TestInterfaceNamedConstructor2::trace, 0, 0, V8TestInterfaceNamedConstructor2::preparePrototypeAndInterfaceObject, V8TestInterfaceNamedConstructor2::installConditionallyEnabledProperties, "TestInterfaceNamedConstructor2", 0, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::NotInheritFromEventTarget, WrapperTypeInfo::Independent, WrapperTypeInfo::RefCountedObject };
+const WrapperTypeInfo V8TestInterfaceNamedConstructor2Constructor::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceNamedConstructor2Constructor::domTemplate, V8TestInterfaceNamedConstructor2::trace, 0, 0, V8TestInterfaceNamedConstructor2::preparePrototypeAndInterfaceObject, V8TestInterfaceNamedConstructor2::installConditionallyEnabledProperties, "TestInterfaceNamedConstructor2", 0, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::NotInheritFromEventTarget, WrapperTypeInfo::Independent };
 #if defined(COMPONENT_BUILD) && defined(WIN32) && COMPILER(CLANG)
 #pragma clang diagnostic pop
 #endif
@@ -68,7 +68,7 @@ static void V8TestInterfaceNamedConstructor2ConstructorCallback(const v8::Functi
         if (!stringArg.prepare())
             return;
     }
-    RefPtr<TestInterfaceNamedConstructor2> impl = TestInterfaceNamedConstructor2::createForJSConstructor(stringArg);
+    TestInterfaceNamedConstructor2* impl = TestInterfaceNamedConstructor2::createForJSConstructor(stringArg);
     v8::Local<v8::Object> wrapper = info.Holder();
     wrapper = impl->associateWithWrapper(info.GetIsolate(), &V8TestInterfaceNamedConstructor2Constructor::wrapperTypeInfo, wrapper);
     v8SetReturnValue(info, wrapper);
@@ -123,16 +123,6 @@ v8::Local<v8::Object> V8TestInterfaceNamedConstructor2::findInstanceInPrototypeC
 TestInterfaceNamedConstructor2* V8TestInterfaceNamedConstructor2::toImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value)
 {
     return hasInstance(value, isolate) ? toImpl(v8::Local<v8::Object>::Cast(value)) : 0;
-}
-
-void V8TestInterfaceNamedConstructor2::refObject(ScriptWrappable* scriptWrappable)
-{
-    scriptWrappable->toImpl<TestInterfaceNamedConstructor2>()->ref();
-}
-
-void V8TestInterfaceNamedConstructor2::derefObject(ScriptWrappable* scriptWrappable)
-{
-    scriptWrappable->toImpl<TestInterfaceNamedConstructor2>()->deref();
 }
 
 } // namespace blink

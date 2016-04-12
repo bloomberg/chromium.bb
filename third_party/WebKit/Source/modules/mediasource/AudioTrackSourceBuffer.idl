@@ -4,7 +4,6 @@
 
 // https://w3c.github.io/media-source/#audio-track-extensions
 [
-    GarbageCollected,
     ImplementedAs=SourceBufferTrackBaseSupplement,
     RuntimeEnabled=AudioVideoTracks
 ] partial interface AudioTrack {

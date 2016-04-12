@@ -26,7 +26,6 @@
 // http://w3c.github.io/deviceorientation/spec-source-orientation.html#devicemotion
 
 [
-    GarbageCollected,
     NoInterfaceObject
 ] interface DeviceAcceleration {
     readonly attribute double? x;

@@ -6,7 +6,6 @@
 
 [
     Constructor(optional (USVString or URLSearchParams) init = ""),
-    GarbageCollected,
     Exposed=(Window,Worker)
 ] interface URLSearchParams {
     void append(USVString name, USVString value);

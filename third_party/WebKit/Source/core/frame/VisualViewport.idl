@@ -28,7 +28,6 @@
 
 [
     RuntimeEnabled=VisualViewportAPI,
-    GarbageCollected,
 ] interface VisualViewport {
     attribute double scrollTop;
     attribute double scrollLeft;

@@ -10,7 +10,6 @@ enum TrackDefaultType { "audio", "video", "text" };
 [
     Constructor(TrackDefaultType type, DOMString language, DOMString label, sequence<DOMString> kinds, optional DOMString byteStreamTrackID = ""),
     RaisesException=Constructor,
-    GarbageCollected,
     RuntimeEnabled=MediaSourceExperimental,
 ] interface TrackDefault {
     readonly attribute TrackDefaultType type;

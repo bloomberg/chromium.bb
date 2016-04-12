@@ -6,7 +6,6 @@
 
 [
     Iterable,
-    GarbageCollected,
     NoInterfaceObject,
 ] interface Iterator {
     [CallWith=ScriptState, RaisesException] any next(optional any value);

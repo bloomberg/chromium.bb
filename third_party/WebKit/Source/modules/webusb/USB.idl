@@ -5,7 +5,6 @@
 // http://wicg.github.io/webusb/#device-enumeration
 
 [
-    GarbageCollected,
     NoInterfaceObject,
     OriginTrialEnabled=WebUSB,
 ] interface USB : EventTarget {

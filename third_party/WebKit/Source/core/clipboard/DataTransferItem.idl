@@ -31,7 +31,6 @@
 // https://html.spec.whatwg.org/#the-datatransferitem-interface
 
 [
-    GarbageCollected,
 ] interface DataTransferItem {
     readonly attribute DOMString kind;
     readonly attribute DOMString type;

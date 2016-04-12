@@ -12,7 +12,6 @@ callback IntersectionObserverCallback = void (sequence<IntersectionObserverEntry
 [
     CustomConstructor(IntersectionObserverCallback callback, IntersectionObserverInit options),
     Custom=VisitDOMWrapper,
-    GarbageCollected,
     RuntimeEnabled=IntersectionObserver,
 ] interface IntersectionObserver {
     void observe(Element target);

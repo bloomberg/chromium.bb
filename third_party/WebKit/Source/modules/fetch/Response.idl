@@ -15,7 +15,6 @@ enum ResponseType { "basic", "cors", "default", "error", "opaque", "opaqueredire
     DependentLifetime,
     Exposed=(Window,Worker),
     RaisesException=Constructor,
-    GarbageCollected,
 ] interface Response {
     [CallWith=ExecutionContext] static Response error();
     [CallWith=ExecutionContext, RaisesException] static Response redirect(USVString url, optional unsigned short status = 302);

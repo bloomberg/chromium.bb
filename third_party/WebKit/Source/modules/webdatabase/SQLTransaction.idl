@@ -31,7 +31,6 @@
 typedef sequence<any> ObjectArray;
 
 [
-    GarbageCollected,
     NoInterfaceObject,
 ] interface SQLTransaction {
     // The spec defines |arguments| to be an "optional ObjectArray" though it defines the

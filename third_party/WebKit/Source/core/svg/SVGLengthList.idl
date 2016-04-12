@@ -29,7 +29,6 @@
 [
     ImplementedAs=SVGLengthListTearOff,
     SetWrapperReferenceTo(SVGElement contextElement),
-    GarbageCollected,
 ] interface SVGLengthList {
     readonly attribute unsigned long length;
     [ImplementedAs=length] readonly attribute unsigned long numberOfItems;

@@ -107,9 +107,9 @@ const v8::FunctionCallbackInfo<v8::Value>& info
     {% endif %}
     {# v8SetReturnValue #}
     {% if attribute.is_keep_alive_for_gc %}
-    if ({{attribute.cpp_value}} && DOMDataStore::setReturnValue{{world_suffix}}(info.GetReturnValue(), {{attribute.cpp_value}}.get()))
+    if ({{attribute.cpp_value}} && DOMDataStore::setReturnValue{{world_suffix}}(info.GetReturnValue(), {{attribute.cpp_value}}))
         return;
-    v8::Local<v8::Value> v8Value(toV8({{attribute.cpp_value}}.get(), holder, info.GetIsolate()));
+    v8::Local<v8::Value> v8Value(toV8({{attribute.cpp_value}}, holder, info.GetIsolate()));
     if (!v8Value.IsEmpty()) {
         V8HiddenValue::setHiddenValue(ScriptState::current(info.GetIsolate()), holder, v8AtomicString(info.GetIsolate(), "{{attribute.name}}"), v8Value);
         {{attribute.v8_set_return_value}};

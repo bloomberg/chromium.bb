@@ -27,7 +27,6 @@
  */
 
 [
-    GarbageCollected,
 ] interface AudioBuffer {
     readonly attribute long length; // in sample-frames
     readonly attribute double duration; // in seconds

@@ -30,11 +30,10 @@ public:
     }
     CORE_EXPORT static TestInterfaceCheckSecurity* toImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
     CORE_EXPORT static const WrapperTypeInfo wrapperTypeInfo;
-    static void refObject(ScriptWrappable*);
-    static void derefObject(ScriptWrappable*);
     template<typename VisitorDispatcher>
     static void trace(VisitorDispatcher visitor, ScriptWrappable* scriptWrappable)
     {
+        visitor->trace(scriptWrappable->toImpl<TestInterfaceCheckSecurity>());
     }
     static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 0;
     static void installConditionallyEnabledProperties(v8::Local<v8::Object>, v8::Isolate*) { }

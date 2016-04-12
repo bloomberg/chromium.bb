@@ -30,11 +30,10 @@ public:
     }
     CORE_EXPORT static TestInterfaceCustomConstructor* toImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
     CORE_EXPORT static const WrapperTypeInfo wrapperTypeInfo;
-    static void refObject(ScriptWrappable*);
-    static void derefObject(ScriptWrappable*);
     template<typename VisitorDispatcher>
     static void trace(VisitorDispatcher visitor, ScriptWrappable* scriptWrappable)
     {
+        visitor->trace(scriptWrappable->toImpl<TestInterfaceCustomConstructor>());
     }
     static void constructorCallback(const v8::FunctionCallbackInfo<v8::Value>&);
     static void constructorCustom(const v8::FunctionCallbackInfo<v8::Value>&);

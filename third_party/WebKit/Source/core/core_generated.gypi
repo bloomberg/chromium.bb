@@ -47,8 +47,6 @@
       '<(bindings_core_v8_output_dir)/V8LayerRect.h',
       '<(bindings_core_v8_output_dir)/V8LayerRectList.cpp',
       '<(bindings_core_v8_output_dir)/V8LayerRectList.h',
-      '<(bindings_core_v8_output_dir)/V8RefCountedScriptWrappable.cpp',
-      '<(bindings_core_v8_output_dir)/V8RefCountedScriptWrappable.h',
       '<(bindings_core_v8_output_dir)/V8InternalDictionary.cpp',
       '<(bindings_core_v8_output_dir)/V8InternalDictionary.h',
       '<(bindings_core_v8_output_dir)/V8InternalDictionaryDerived.cpp',

@@ -27,7 +27,6 @@
 
 [
     Exposed=(Window,Worker),
-    GarbageCollected
 ] interface IDBKeyRange {
     [ImplementedAs=lowerValue, CallWith=ScriptState] readonly attribute any lower;
     [ImplementedAs=upperValue, CallWith=ScriptState] readonly attribute any upper;

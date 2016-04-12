@@ -5,7 +5,6 @@
 // https://wicg.github.io/webusb/#idl-def-usbisochronousouttransferpacket
 
 [
-    GarbageCollected,
     OriginTrialEnabled=WebUSB,
 ] interface USBIsochronousOutTransferPacket {
     readonly attribute USBTransferStatus status;

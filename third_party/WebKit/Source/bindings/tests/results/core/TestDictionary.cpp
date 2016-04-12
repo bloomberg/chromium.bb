@@ -19,7 +19,7 @@ TestDictionary::TestDictionary()
     setStringOrNullMember(String("default string value"));
     setStringSequenceMember(Vector<String>());
     setTestInterfaceGarbageCollectedSequenceMember(HeapVector<Member<TestInterfaceGarbageCollected>>());
-    setTestInterfaceSequenceMember(Vector<RefPtr<TestInterfaceImplementation>>());
+    setTestInterfaceSequenceMember(HeapVector<Member<TestInterfaceImplementation>>());
     setUnrestrictedDoubleMember(3.14);
 }
 
@@ -39,6 +39,9 @@ DEFINE_TRACE(TestDictionary)
     visitor->trace(m_testInterfaceGarbageCollectedMember);
     visitor->trace(m_testInterfaceGarbageCollectedOrNullMember);
     visitor->trace(m_testInterfaceGarbageCollectedSequenceMember);
+    visitor->trace(m_testInterfaceMember);
+    visitor->trace(m_testInterfaceOrNullMember);
+    visitor->trace(m_testInterfaceSequenceMember);
     visitor->trace(m_uint8ArrayMember);
 }
 

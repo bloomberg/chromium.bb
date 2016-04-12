@@ -15,7 +15,6 @@ enum MediaKeyStatus {
 };
 
 [
-    GarbageCollected,
 ] interface MediaKeyStatusMap {
     readonly attribute unsigned long size;
     readonly maplike <BufferSource, MediaKeyStatus>;

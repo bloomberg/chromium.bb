@@ -35,6 +35,7 @@
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Noncopyable.h"
+#include "wtf/TypeTraits.h"
 #include <v8.h>
 
 namespace blink {
@@ -59,6 +60,10 @@ public:
     template<typename T>
     T* toImpl()
     {
+        // All ScriptWrappables are managed by the Blink GC heap; check that
+        // |T| is a garbage collected type.
+        static_assert(sizeof(T) && WTF::IsGarbageCollectedType<T>::value, "Classes implementing ScriptWrappable must be garbage collected.");
+
         // Check if T* is castable to ScriptWrappable*, which means T doesn't
         // have two or more ScriptWrappable as superclasses. If T has two
         // ScriptWrappable as superclasses, conversions from T* to
@@ -168,31 +173,7 @@ private:
         scriptWrappable->disposeWrapper(data);
 
         auto wrapperTypeInfo = reinterpret_cast<WrapperTypeInfo*>(data.GetInternalField(v8DOMWrapperTypeIndex));
-        if (wrapperTypeInfo->isGarbageCollected()) {
-            // derefObject() for garbage collected objects is very cheap, so
-            // we don't delay derefObject to the second pass.
-            //
-            // More importantly, we've already disposed the wrapper at this
-            // moment, so the ScriptWrappable may have already been collected
-            // by GC by the second pass.  We shouldn't use a pointer to the
-            // ScriptWrappable in secondWeakCallback in case of garbage
-            // collected objects.  Thus calls derefObject right now.
-            wrapperTypeInfo->derefObject(scriptWrappable);
-        } else {
-            // For reference counted objects, let's delay the destruction of
-            // the object to the second pass.
-            data.SetSecondPassCallback(secondWeakCallback);
-        }
-    }
-
-    static void secondWeakCallback(const v8::WeakCallbackInfo<ScriptWrappable>& data)
-    {
-        // FIXME: I noticed that 50%~ of minor GC cycle times can be consumed
-        // inside data.GetParameter()->deref(), which causes Node destructions. We should
-        // make Node destructions incremental.
-        auto scriptWrappable = reinterpret_cast<ScriptWrappable*>(data.GetInternalField(v8DOMWrapperObjectIndex));
-        auto wrapperTypeInfo = reinterpret_cast<WrapperTypeInfo*>(data.GetInternalField(v8DOMWrapperTypeIndex));
-        wrapperTypeInfo->derefObject(scriptWrappable);
+        wrapperTypeInfo->wrapperDestroyed();
     }
 
     v8::Persistent<v8::Object> m_wrapper;

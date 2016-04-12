@@ -32,7 +32,6 @@
 
 [
     // TODO(philipj): Exposed=(Window,Worker)
-    GarbageCollected,
 ] interface PerformanceEntry {
     readonly attribute DOMString name;
     readonly attribute DOMString entryType;

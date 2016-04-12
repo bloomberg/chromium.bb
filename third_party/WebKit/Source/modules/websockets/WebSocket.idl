@@ -39,7 +39,6 @@ enum BinaryType { "blob", "arraybuffer" };
     ConstructorCallWith=ExecutionContext,
     DependentLifetime,
     Exposed=(Window,Worker),
-    GarbageCollected,
     ImplementedAs=DOMWebSocket,
     RaisesException=Constructor,
 ] interface WebSocket : EventTarget {

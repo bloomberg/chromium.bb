@@ -27,7 +27,6 @@
 
 // FIXME: DOMStringList has been removed from the spec. crbug.com/460726
 [
-    GarbageCollected,
 ] interface DOMStringList {
     readonly attribute unsigned long length;
     getter DOMString? (unsigned long index);

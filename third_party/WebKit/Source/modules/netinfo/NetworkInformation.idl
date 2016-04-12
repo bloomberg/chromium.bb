@@ -19,7 +19,6 @@ typedef unrestricted double Megabit;
     ActiveScriptWrappable,
     DependentLifetime,
     Exposed=(Window,Worker),
-    GarbageCollected,
     RuntimeEnabled=NetworkInformation,
 ] interface NetworkInformation : EventTarget {
     [MeasureAs=NetInfoType] readonly attribute ConnectionType type;

@@ -7,7 +7,6 @@
 typedef (DOMString or ArrayBuffer or NFCMessage) NFCPushMessage;
 
 [
-  GarbageCollected,
   RuntimeEnabled=WebNFC,
 ] interface NFC {
     [CallWith=ScriptState] Promise<void> push (NFCPushMessage message, optional NFCPushOptions options);

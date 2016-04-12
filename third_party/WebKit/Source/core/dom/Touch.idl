@@ -28,7 +28,6 @@
 [
     Constructor(TouchInit initDict),
     ConstructorCallWith=Document,
-    GarbageCollected,
 ] interface Touch {
     readonly attribute long identifier;
     readonly attribute EventTarget target;

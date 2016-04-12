@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 [
-    GarbageCollected,
 ] interface PrivateScriptTest {
     [ImplementedInPrivateScript] void doNothing();
     [ImplementedInPrivateScript] short return123();

@@ -28,7 +28,6 @@
 
 [
     RuntimeEnabled=WebVTTRegions,
-    GarbageCollected,
 ] interface VTTRegionList {
     readonly attribute unsigned long length;
     getter VTTRegion item(unsigned long index);

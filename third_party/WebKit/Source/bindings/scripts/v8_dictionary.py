@@ -125,7 +125,7 @@ def member_context(dictionary, member):
         'enum_values': unwrapped_idl_type.enum_values,
         'has_method_name': has_method_name_for_dictionary_member(member),
         'idl_type': idl_type.base_type,
-        'is_interface_type': idl_type.is_interface_type and not (idl_type.is_dictionary_type or is_deprecated_dictionary),
+        'is_interface_type': idl_type.is_interface_type and not is_deprecated_dictionary,
         'is_nullable': idl_type.is_nullable,
         'is_object': unwrapped_idl_type.name == 'Object' or is_deprecated_dictionary,
         'is_required': member.is_required,

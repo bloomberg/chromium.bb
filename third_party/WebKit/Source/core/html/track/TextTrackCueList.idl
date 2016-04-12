@@ -26,7 +26,6 @@
 // https://html.spec.whatwg.org/#texttrackcuelist
 
 [
-    GarbageCollected,
 ] interface TextTrackCueList {
     readonly attribute unsigned long length;
     getter TextTrackCue (unsigned long index);

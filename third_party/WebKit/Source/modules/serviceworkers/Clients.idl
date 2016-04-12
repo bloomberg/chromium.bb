@@ -5,7 +5,6 @@
 // https://slightlyoff.github.io/ServiceWorker/spec/service_worker/#clients-interface
 [
     Exposed=ServiceWorker,
-    GarbageCollected,
     ImplementedAs=ServiceWorkerClients,
 ] interface Clients {
     [RuntimeEnabled=ServiceWorkerClientsGetID, CallWith=ScriptState] Promise<any> get(DOMString id);

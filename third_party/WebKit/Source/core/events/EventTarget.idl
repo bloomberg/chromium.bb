@@ -22,7 +22,6 @@
 
 [
     CheckSecurity=Receiver,
-    GarbageCollected,
     Exposed=(Window,Worker)
 ] interface EventTarget {
     [Custom] void addEventListener(DOMString type, EventListener? listener, optional (EventListenerOptions or boolean) options);

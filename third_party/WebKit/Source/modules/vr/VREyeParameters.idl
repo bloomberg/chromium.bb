@@ -5,7 +5,6 @@
 // http://mozvr.github.io/webvr-spec/webvr.html#eyeparameters
 [
     RuntimeEnabled=WebVR,
-    GarbageCollected
 ] interface VREyeParameters {
   /* These values are expected to be static per-device/per-user */
   readonly attribute VRFieldOfView minimumFieldOfView;

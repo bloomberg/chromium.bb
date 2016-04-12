@@ -25,7 +25,6 @@
 [
     ImplementedAs=SVGAngleTearOff,
     SetWrapperReferenceTo(SVGElement contextElement),
-    GarbageCollected,
 ] interface SVGAngle {
     // Angle Unit Types
     const unsigned short SVG_ANGLETYPE_UNKNOWN = 0;

@@ -111,11 +111,11 @@ CPP_SPECIAL_CONVERSION_RULES = {
     'Date': 'double',
     'Dictionary': 'Dictionary',
     'EventHandler': 'EventListener*',
-    'NodeFilter': 'RawPtr<NodeFilter>',
+    'NodeFilter': 'NodeFilter*',
     'Promise': 'ScriptPromise',
     'ScriptValue': 'ScriptValue',
     # FIXME: Eliminate custom bindings for XPathNSResolver  http://crbug.com/345529
-    'XPathNSResolver': 'RawPtr<XPathNSResolver>',
+    'XPathNSResolver': 'XPathNSResolver*',
     'boolean': 'bool',
     'unrestricted double': 'double',
     'unrestricted float': 'float',
@@ -161,7 +161,7 @@ def cpp_type(idl_type, extended_attributes=None, raw_type=False, used_as_rvalue_
     else:
         native_array_element_type = idl_type.native_array_element_type
     if native_array_element_type:
-        vector_type = cpp_ptr_type('Vector', 'HeapVector', native_array_element_type.gc_type)
+        vector_type = cpp_ptr_type('Vector', 'HeapVector', native_array_element_type.is_gc_type)
         vector_template_type = cpp_template_type(vector_type, native_array_element_type.cpp_type_args(used_in_cpp_sequence=True))
         if used_as_rvalue_type:
             return 'const %s&' % vector_template_type
@@ -192,11 +192,11 @@ def cpp_type(idl_type, extended_attributes=None, raw_type=False, used_as_rvalue_
         return 'Flexible' + idl_type.base_type + 'View'
     if idl_type.is_interface_type:
         implemented_as_class = idl_type.implemented_as
-        if raw_type or (used_as_rvalue_type and idl_type.is_garbage_collected):
+        if raw_type or (used_as_rvalue_type and idl_type.is_garbage_collected) or not used_in_cpp_sequence:
             return implemented_as_class + '*'
-        new_type = 'Member' if used_in_cpp_sequence else 'RawPtr'
-        ptr_type = cpp_ptr_type(('PassRefPtr' if used_as_rvalue_type else 'RefPtr'), new_type, idl_type.gc_type)
-        return cpp_template_type(ptr_type, implemented_as_class)
+        if not used_in_cpp_sequence:
+            return implemented_as_class + '*'
+        return cpp_template_type('Member', implemented_as_class)
     if idl_type.is_dictionary:
         return base_idl_type
     if idl_type.is_union_type:
@@ -255,8 +255,8 @@ def cpp_template_type(template, inner_type):
     return format_string.format(template=template, inner_type=inner_type)
 
 
-def cpp_ptr_type(old_type, new_type, gc_type):
-    if gc_type == 'GarbageCollectedObject':
+def cpp_ptr_type(old_type, new_type, is_gc_type):
+    if is_gc_type:
         return new_type
     return old_type
 
@@ -301,12 +301,11 @@ IdlType.set_garbage_collected_types = classmethod(
         cls.garbage_collected_types.update(new_garbage_collected_types))
 
 
-def gc_type(idl_type):
-    if idl_type.is_garbage_collected or idl_type.is_dictionary or idl_type.is_union_type:
-        return 'GarbageCollectedObject'
-    return 'RefCountedObject'
+def is_gc_type(idl_type):
+    return idl_type.is_garbage_collected or idl_type.is_dictionary or idl_type.is_union_type
 
-IdlTypeBase.gc_type = property(gc_type)
+
+IdlTypeBase.is_gc_type = property(is_gc_type)
 
 
 def is_traceable(idl_type):
@@ -588,7 +587,7 @@ def v8_value_to_cpp_value_array_or_sequence(native_array_element_type, v8_value,
     if (native_array_element_type.is_interface_type and
         native_array_element_type.name != 'Dictionary'):
         this_cpp_type = None
-        ref_ptr_type = cpp_ptr_type('RefPtr', 'Member', native_array_element_type.gc_type)
+        ref_ptr_type = 'Member'
         expression_format = '(to{ref_ptr_type}NativeArray<{native_array_element_type}, V8{native_array_element_type}>({v8_value}, {index}, {isolate}, exceptionState))'
     else:
         ref_ptr_type = None
@@ -792,8 +791,8 @@ V8_SET_RETURN_VALUE = {
     'ScriptValue': 'v8SetReturnValue(info, {cpp_value})',
     'SerializedScriptValue': 'v8SetReturnValue(info, {cpp_value})',
     # DOMWrapper
-    'DOMWrapperForMainWorld': 'v8SetReturnValueForMainWorld(info, WTF::getPtr({cpp_value}))',
-    'DOMWrapperFast': 'v8SetReturnValueFast(info, WTF::getPtr({cpp_value}), {script_wrappable})',
+    'DOMWrapperForMainWorld': 'v8SetReturnValueForMainWorld(info, {cpp_value})',
+    'DOMWrapperFast': 'v8SetReturnValueFast(info, {cpp_value}, {script_wrappable})',
     'DOMWrapperDefault': 'v8SetReturnValue(info, {cpp_value})',
     # Note that static attributes and operations do not check whether |this| is
     # an instance of the interface nor |this|'s creation context is the same as
@@ -812,7 +811,7 @@ V8_SET_RETURN_VALUE = {
 }
 
 
-def v8_set_return_value(idl_type, cpp_value, extended_attributes=None, script_wrappable='', release=False, for_main_world=False, is_static=False):
+def v8_set_return_value(idl_type, cpp_value, extended_attributes=None, script_wrappable='', for_main_world=False, is_static=False):
     """Returns a statement that converts a C++ value to a V8 value and sets it as a return value.
 
     """
@@ -837,17 +836,11 @@ def v8_set_return_value(idl_type, cpp_value, extended_attributes=None, script_wr
         this_v8_conversion_type += 'Static'
 
     format_string = V8_SET_RETURN_VALUE[this_v8_conversion_type]
-    # FIXME: oilpan: Remove .release() once we remove all RefPtrs from generated code.
-    if release:
-        cpp_value = '%s.release()' % cpp_value
     statement = format_string.format(cpp_value=cpp_value, script_wrappable=script_wrappable)
     return statement
 
 
 IdlTypeBase.v8_set_return_value = v8_set_return_value
-
-IdlType.release = property(lambda self: self.is_interface_type)
-IdlUnionType.release = False
 
 
 CPP_VALUE_TO_V8_VALUE = {

@@ -28,7 +28,6 @@
 enum ScrollRestoration {"auto", "manual"};
 
 [
-    GarbageCollected,
 ] interface History {
     readonly attribute unsigned long length;
     [RuntimeEnabled=ScrollRestoration, Measure] attribute ScrollRestoration scrollRestoration;

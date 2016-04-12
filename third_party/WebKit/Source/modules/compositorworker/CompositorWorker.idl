@@ -6,7 +6,6 @@
     DependentLifetime,
     Constructor(DOMString scriptUrl),
     ConstructorCallWith=ExecutionContext,
-    GarbageCollected,
     RaisesException=Constructor,
     RuntimeEnabled=CompositorWorker,
 ] interface CompositorWorker : EventTarget {

@@ -251,7 +251,7 @@ ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
 {% endif %}
 {% if method.is_call_with_script_arguments %}
 {# [CallWith=ScriptArguments] #}
-RawPtr<ScriptArguments> scriptArguments(ScriptArguments::create(scriptState, info, {{method.number_of_arguments}}));
+ScriptArguments* scriptArguments(ScriptArguments::create(scriptState, info, {{method.number_of_arguments}}));
 {% endif %}
 {% if method.is_call_with_document %}
 {# [ConstructorCallWith=Document] #}
@@ -475,7 +475,7 @@ void postMessageImpl(const char* interfaceName, {{cpp_class}}* instance, const v
         exceptionState.throwIfNeeded();
         return;
     }
-    RawPtr<MessagePortArray> ports = new MessagePortArray;
+    MessagePortArray* ports = new MessagePortArray;
     ArrayBufferArray arrayBuffers;
     ImageBitmapArray imageBitmaps;
     if (info.Length() > 1) {
@@ -485,12 +485,12 @@ void postMessageImpl(const char* interfaceName, {{cpp_class}}* instance, const v
             return;
         }
     }
-    RefPtr<SerializedScriptValue> message = SerializedScriptValueFactory::instance().create(info.GetIsolate(), info[0], ports.get(), &arrayBuffers, &imageBitmaps, exceptionState);
+    RefPtr<SerializedScriptValue> message = SerializedScriptValueFactory::instance().create(info.GetIsolate(), info[0], ports, &arrayBuffers, &imageBitmaps, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
     // FIXME: Only pass context/exceptionState if instance really requires it.
     ExecutionContext* context = currentExecutionContext(info.GetIsolate());
-    instance->postMessage(context, message.release(), ports.get(), exceptionState);
+    instance->postMessage(context, message.release(), ports, exceptionState);
     exceptionState.throwIfNeeded();
 }
 {% endmacro %}

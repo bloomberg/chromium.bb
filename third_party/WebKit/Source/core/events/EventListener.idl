@@ -21,7 +21,6 @@
 // https://dom.spec.whatwg.org/#callbackdef-eventlistener
 
 [
-    GarbageCollected
 ] callback interface EventListener {
     void handleEvent(Event event);
 };

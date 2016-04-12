@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 [
-    GarbageCollected
 ] interface UnionTypesTest {
     attribute (double or DOMString or DOMString[]) doubleOrStringOrStringArrayAttribute;
 

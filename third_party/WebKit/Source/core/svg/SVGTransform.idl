@@ -24,7 +24,6 @@
 [
     ImplementedAs=SVGTransformTearOff,
     SetWrapperReferenceTo(SVGElement contextElement),
-    GarbageCollected,
 ] interface SVGTransform {
     // Transform Types
     const unsigned short SVG_TRANSFORM_UNKNOWN = 0;

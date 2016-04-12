@@ -7,7 +7,6 @@
 
 [
     Exposed=(Window,Worker),
-    GarbageCollected,
     RuntimeEnabled=Permissions
 ] interface Permissions {
     [CallWith=ScriptState, Measure] Promise<PermissionStatus> query(Dictionary permission);

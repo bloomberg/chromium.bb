@@ -5,7 +5,6 @@
 [
     NoInterfaceObject,
     RuntimeEnabled=Geofencing,
-    GarbageCollected,
 ] interface Geofencing {
     [CallWith=ScriptState] Promise registerRegion(GeofencingRegion region);
     [CallWith=ScriptState] Promise unregisterRegion(DOMString regionId);

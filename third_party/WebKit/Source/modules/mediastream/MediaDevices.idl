@@ -7,7 +7,6 @@
 // http://w3c.github.io/mediacapture-main/#mediadevices-interface-extensions
 
 [
-    GarbageCollected,
     RuntimeEnabled=MediaDevices
 ]
 interface MediaDevices {

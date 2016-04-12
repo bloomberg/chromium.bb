@@ -215,23 +215,16 @@ private:
 };
 
 template<>
-inline void DOMWrapperMap<ScriptWrappable>::PersistentValueMapTraits::Dispose(v8::Isolate*, v8::Global<v8::Object> value, ScriptWrappable* key)
+inline void DOMWrapperMap<ScriptWrappable>::PersistentValueMapTraits::Dispose(v8::Isolate*, v8::Global<v8::Object> value, ScriptWrappable*)
 {
-    auto wrapperTypeInfo = toWrapperTypeInfo(value);
-    if (wrapperTypeInfo->isGarbageCollected())
-        wrapperTypeInfo->derefObject();
-    else
-        wrapperTypeInfo->derefObject(toScriptWrappable(value));
+    toWrapperTypeInfo(value)->wrapperDestroyed();
 }
 
 template<>
 inline void DOMWrapperMap<ScriptWrappable>::PersistentValueMapTraits::DisposeWeak(const v8::WeakCallbackInfo<WeakCallbackDataType>& data)
 {
     auto wrapperTypeInfo = reinterpret_cast<WrapperTypeInfo*>(data.GetInternalField(v8DOMWrapperTypeIndex));
-    if (wrapperTypeInfo->isGarbageCollected())
-        wrapperTypeInfo->derefObject();
-    else
-        wrapperTypeInfo->derefObject(KeyFromWeakCallbackInfo(data));
+    wrapperTypeInfo->wrapperDestroyed();
 }
 
 } // namespace blink

@@ -28,7 +28,6 @@
     Constructor,
     ConstructorCallWith=ExecutionContext,
     DependentLifetime,
-    GarbageCollected,
     NoInterfaceObject,
 ] interface SpeechRecognition : EventTarget {
     [LegacyInterfaceTypeChecking] attribute SpeechGrammarList grammars;

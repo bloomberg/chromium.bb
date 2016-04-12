@@ -31,7 +31,6 @@
 // https://hg.mozilla.org/mozilla-central/file/012853bd80b7/dom/webidl/XSLTProcessor.webidl
 
 [
-    GarbageCollected,
     Constructor,
     ConstructorCallWith=Document,
     RuntimeEnabled=XSLT,

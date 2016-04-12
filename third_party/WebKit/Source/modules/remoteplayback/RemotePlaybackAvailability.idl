@@ -5,7 +5,6 @@
 // https://w3c.github.io/remote-playback/#idl-def-remoteplaybackavailability
 
 [
-    GarbageCollected,
     RuntimeEnabled=RemotePlayback,
 ] interface RemotePlaybackAvailability : EventTarget {
     readonly attribute boolean value;

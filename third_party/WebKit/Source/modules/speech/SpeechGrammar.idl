@@ -25,7 +25,6 @@
 
 [
     Constructor,
-    GarbageCollected,
     NoInterfaceObject,
 ] interface SpeechGrammar {
     [URL,CallWith=ExecutionContext] attribute DOMString src;

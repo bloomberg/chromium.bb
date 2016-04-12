@@ -9,7 +9,6 @@ callback PerformanceObserverCallback = void (PerformanceObserverEntryList entrie
 [
     CustomConstructor(PerformanceObserverCallback callback),
     RuntimeEnabled=PerformanceObserver,
-    GarbageCollected,
 ] interface PerformanceObserver {
     [RaisesException] void observe(PerformanceObserverInit options);
     void disconnect();

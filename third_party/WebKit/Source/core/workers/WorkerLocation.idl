@@ -30,7 +30,6 @@
 
 [
     Exposed=Worker,
-    GarbageCollected,
 ] interface WorkerLocation {
 };
 

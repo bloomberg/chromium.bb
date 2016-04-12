@@ -34,7 +34,6 @@
     Constructor(optional DOMString message = "", optional DOMString name = "Error"),
     Exposed=(Window,Worker),
     DoNotCheckConstants,
-    GarbageCollected,
 ] exception DOMException {
 
     readonly attribute unsigned short   code;

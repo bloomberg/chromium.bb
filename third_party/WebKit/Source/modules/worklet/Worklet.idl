@@ -6,7 +6,6 @@
 
 [
     DependentLifetime,
-    GarbageCollected,
     RuntimeEnabled=Worklet,
 ] interface Worklet {
     [CallWith=ScriptState] Promise<void> import(DOMString url);

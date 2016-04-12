@@ -5,7 +5,6 @@
 [
     NoInterfaceObject,
     DoNotCheckConstants,
-    GarbageCollected,
     SetWrapperReferenceFrom=canvas,
 ] interface EXTsRGB {
     const unsigned long SRGB_EXT                                     = 0x8C40;

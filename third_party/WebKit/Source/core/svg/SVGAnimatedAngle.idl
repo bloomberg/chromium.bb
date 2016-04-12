@@ -27,7 +27,6 @@
 
 [
     SetWrapperReferenceTo(SVGElement contextElement),
-    GarbageCollected,
 ] interface SVGAnimatedAngle {
     readonly attribute SVGAngle baseVal;
     readonly attribute SVGAngle animVal;

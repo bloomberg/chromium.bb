@@ -12,7 +12,6 @@
 [
     Constructor(optional InputDeviceCapabilitiesInit deviceInitDict),
     RuntimeEnabled=InputDeviceCapabilities,
-    GarbageCollected,
 ] interface InputDeviceCapabilities {
     
     // Whether this device dispatches touch events for movement.  This is used to detect

@@ -22,7 +22,6 @@
 
 [
     SetWrapperReferenceTo(NodeFilter filter),
-    GarbageCollected,
 ] interface TreeWalker {
     [SameObject] readonly attribute Node root;
     readonly attribute unsigned long whatToShow;

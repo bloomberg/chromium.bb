@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 [
-    GarbageCollected,
     // We don't expose the interface now, because the name is not stable
     // enough. We will expose it in the future.
     NoInterfaceObject,

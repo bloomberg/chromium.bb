@@ -21,7 +21,6 @@ enum OrientationType {
 };
 
 [
-    GarbageCollected,
     RuntimeEnabled=ScreenOrientation
 ] interface ScreenOrientation : EventTarget {
     [MeasureAs=ScreenOrientationAngle] readonly attribute unsigned short angle;
