@@ -67,28 +67,42 @@ class KioskProfileLoader::CryptohomedChecker
   ~CryptohomedChecker() {}
 
   void StartCheck() {
-    chromeos::DBusThreadManager::Get()->GetCryptohomeClient()->IsMounted(
-        base::Bind(&CryptohomedChecker::OnCryptohomeIsMounted,
-                   AsWeakPtr()));
+    DBusThreadManager::Get()
+        ->GetCryptohomeClient()
+        ->WaitForServiceToBeAvailable(base::Bind(
+            &CryptohomedChecker::OnServiceAvailibityChecked, AsWeakPtr()));
   }
 
  private:
+  void Retry() {
+    const int kMaxRetryTimes = 5;
+    ++retry_count_;
+    if (retry_count_ > kMaxRetryTimes) {
+      LOG(ERROR) << "Could not talk to cryptohomed for launching kiosk app.";
+      ReportCheckResult(KioskAppLaunchError::CRYPTOHOMED_NOT_RUNNING);
+      return;
+    }
+
+    const int retry_delay_in_milliseconds = 500 * (1 << retry_count_);
+    base::MessageLoop::current()->PostDelayedTask(
+        FROM_HERE, base::Bind(&CryptohomedChecker::StartCheck, AsWeakPtr()),
+        base::TimeDelta::FromMilliseconds(retry_delay_in_milliseconds));
+  }
+
+  void OnServiceAvailibityChecked(bool service_is_ready) {
+    if (!service_is_ready) {
+      Retry();
+      return;
+    }
+
+    DBusThreadManager::Get()->GetCryptohomeClient()->IsMounted(
+        base::Bind(&CryptohomedChecker::OnCryptohomeIsMounted, AsWeakPtr()));
+  }
+
   void OnCryptohomeIsMounted(chromeos::DBusMethodCallStatus call_status,
                              bool is_mounted) {
     if (call_status != chromeos::DBUS_METHOD_CALL_SUCCESS) {
-      const int kMaxRetryTimes = 5;
-      ++retry_count_;
-      if (retry_count_ > kMaxRetryTimes) {
-        LOG(ERROR) << "Could not talk to cryptohomed for launching kiosk app.";
-        ReportCheckResult(KioskAppLaunchError::CRYPTOHOMED_NOT_RUNNING);
-        return;
-      }
-
-      const int retry_delay_in_milliseconds = 500 * (1 << retry_count_);
-      base::MessageLoop::current()->PostDelayedTask(
-          FROM_HERE,
-          base::Bind(&CryptohomedChecker::StartCheck, AsWeakPtr()),
-          base::TimeDelta::FromMilliseconds(retry_delay_in_milliseconds));
+      Retry();
       return;
     }
 
