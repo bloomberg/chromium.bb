@@ -504,9 +504,7 @@ bool IsTabletDevice(std::string* reason) {
   bool slate_power_profile = (role == PlatformRoleSlate);
 
   bool is_tablet = false;
-  bool is_tablet_pc = false;
   if (mobile_power_profile || slate_power_profile) {
-    is_tablet_pc = !GetSystemMetrics(SM_TABLETPC);
     is_tablet = !GetSystemMetrics(SM_CONVERTIBLESLATEMODE);
     if (!is_tablet) {
       if (reason) {
@@ -524,7 +522,7 @@ bool IsTabletDevice(std::string* reason) {
     if (reason)
       *reason += "Device role is not mobile or slate.\n";
   }
-  return is_tablet && is_tablet_pc;
+  return is_tablet;
 }
 
 bool DisplayVirtualKeyboard() {
