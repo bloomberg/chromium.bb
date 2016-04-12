@@ -16,8 +16,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 
   const int kBufferSize = 1024;
   uint8_t* buffer = new uint8_t[kBufferSize];
-  BrotliState* state = new BrotliState();
-  BrotliStateInit(state);
+  BrotliState* state = BrotliCreateState(0, 0, 0);
 
   if (addend == 0)
     addend = size;
@@ -40,8 +39,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
       break;
   }
 
-  BrotliStateCleanup(state);
-  delete state;
+  BrotliDestroyState(state);
   delete[] buffer;
   return 0;
 }
