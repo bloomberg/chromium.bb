@@ -114,6 +114,7 @@
       # but this seems like a really good place to store them.
       'postbuild_name': 'Tweak Info.plist',
       'action': ['<(tweak_info_plist_path)',
+                 '--plist=${TARGET_BUILD_DIR}/${INFOPLIST_PATH}',
                  '--breakpad=<(mac_breakpad_compiled_in)',
                  '--breakpad_uploads=<(mac_breakpad_uploads)',
                  '--keystone=0',

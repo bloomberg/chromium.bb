@@ -74,6 +74,7 @@
           # never placed into the app mode loader.
           'postbuild_name': 'Tweak Info.plist',
           'action': ['<(tweak_info_plist_path)',
+                     '--plist=${TARGET_BUILD_DIR}/${INFOPLIST_PATH}',
                      '--breakpad=0',
                      '--keystone=0',
                      '--scm=0'],

@@ -524,6 +524,7 @@
               # Modify the Info.plist as needed.
               'postbuild_name': 'Tweak Info.plist',
               'action': ['../build/mac/tweak_info_plist.py',
+                         '--plist=${TARGET_BUILD_DIR}/${INFOPLIST_PATH}',
                          '--scm=1',
                          '--version=<(content_shell_version)'],
             },
@@ -619,6 +620,7 @@
               # but this seems like a really good place to store them.
               'postbuild_name': 'Tweak Info.plist',
               'action': ['../build/mac/tweak_info_plist.py',
+                         '--plist=${TARGET_BUILD_DIR}/${INFOPLIST_PATH}',
                          '--breakpad=1',
                          '--keystone=0',
                          '--scm=1',
@@ -709,6 +711,7 @@
               # never placed into the helper.
               'postbuild_name': 'Tweak Info.plist',
               'action': ['../build/mac/tweak_info_plist.py',
+                         '--plist=${TARGET_BUILD_DIR}/${INFOPLIST_PATH}',
                          '--breakpad=0',
                          '--keystone=0',
                          '--scm=0',
