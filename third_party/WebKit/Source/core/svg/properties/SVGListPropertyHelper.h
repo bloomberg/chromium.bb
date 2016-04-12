@@ -55,9 +55,6 @@ public:
 
     ~SVGListPropertyHelper()
     {
-#if !ENABLE(OILPAN)
-        clear();
-#endif
     }
 
     // used from Blink C++ code:
@@ -207,7 +204,7 @@ void SVGListPropertyHelper<Derived, ItemProperty>::clear()
     typename HeapVector<Member<ItemPropertyType>>::const_iterator itEnd = m_values.end();
     for (; it != itEnd; ++it) {
         ASSERT((*it)->ownerList() == this);
-        (*it)->setOwnerList(0);
+        (*it)->setOwnerList(nullptr);
     }
 
     m_values.clear();

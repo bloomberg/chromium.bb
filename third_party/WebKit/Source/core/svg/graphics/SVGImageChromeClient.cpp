@@ -88,7 +88,6 @@ void SVGImageChromeClient::animationTimerFired(Timer<SVGImageChromeClient>*)
     if (!m_image)
         return;
 
-#if ENABLE(OILPAN)
     // The SVGImageChromeClient object's lifetime is dependent on
     // the ImageObserver (an ImageResource) of its image. Should it
     // be dead and about to be lazily swept out, do not proceed.
@@ -97,7 +96,6 @@ void SVGImageChromeClient::animationTimerFired(Timer<SVGImageChromeClient>*)
     // this explicit lifetime check.
     if (Heap::willObjectBeLazilySwept(m_image->getImageObserver()))
         return;
-#endif
 
     // serviceScriptedAnimations runs requestAnimationFrame callbacks, but SVG
     // images can't have any so we assert there's no script.

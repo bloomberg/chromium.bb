@@ -204,16 +204,6 @@ SVGSMILElement::SVGSMILElement(const QualifiedName& tagName, Document& doc)
 
 SVGSMILElement::~SVGSMILElement()
 {
-#if !ENABLE(OILPAN)
-    clearResourceAndEventBaseReferences();
-    smilEndEventSender().cancelEvent(this);
-    smilBeginEventSender().cancelEvent(this);
-    smilRepeatEventSender().cancelEvent(this);
-    smilRepeatNEventSender().cancelEvent(this);
-    clearConditions();
-
-    unscheduleIfScheduled();
-#endif
 }
 
 void SVGSMILElement::clearResourceAndEventBaseReferences()
