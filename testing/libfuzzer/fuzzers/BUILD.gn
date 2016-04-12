@@ -133,15 +133,6 @@ fuzzer_test("url_parse_fuzzer") {
   ]
 }
 
-fuzzer_test("vp9_parser_fuzzer") {
-  sources = [
-    "vp9_parser_fuzzer.cc",
-  ]
-  deps = [
-    "//media",
-  ]
-}
-
 fuzzer_test("base_json_reader_fuzzer") {
   sources = [
     "base_json_reader_fuzzer.cc",
