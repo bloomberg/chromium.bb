@@ -2448,10 +2448,10 @@
     ]
   },
 
-  "ArcApplicationPolicy": {
+  "ArcPolicy": {
     "os": ["chromeos"],
     "can_be_recommended": false,
-    "test_policy": { "ArcApplicationPolicy": "" }
+    "test_policy": { "ArcPolicy": "" }
   },
 
   "----- Chrome OS device policies ---------------------------------------": {},

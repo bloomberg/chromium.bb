@@ -8241,7 +8241,7 @@
       unable to use ARC.''',
     },
     {
-      'name': 'ArcApplicationPolicy',
+      'name': 'ArcPolicy',
       'type': 'string',
       'schema': { 'type': 'string' },
       'supported_on': ['chrome_os:50-'],
@@ -8251,14 +8251,10 @@
       },
       'example_value': '',
       'id': 318,
-      'caption': '''Configure ARC apps''',
+      'caption': '''Configure ARC''',
       'tags': [],
       'desc':
-      '''Specifies the ARC application policy as JSON string which can be
-      handed-off as-is to the ARC runtime. At the moment, this setting is used
-      solely to specify force-installation of the apps.
-
-      If this policy is left not set, no apps are installed automatically.'''
+      '''Specifies a set of policies that will be handed over to the ARC runtime. The value must be valid JSON.'''
     },
     {
       'name': 'AllowKioskAppControlChromeVersion',

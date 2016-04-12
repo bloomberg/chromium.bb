@@ -66817,7 +66817,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="316"
       label="Configure the required domain name for remote access clients"/>
   <int value="317" label="ARC Enabled"/>
-  <int value="318" label="Configure ARC apps"/>
+  <int value="318" label="Configure ARC"/>
   <int value="319"
       label="Allow the auto launched with zero delay kiosk app to control
              ChromeOS version"/>

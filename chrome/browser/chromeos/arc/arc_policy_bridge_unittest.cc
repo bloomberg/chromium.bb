@@ -75,10 +75,10 @@ TEST_F(ArcPolicyBridgeTest, EmptyPolicyTest) {
   policy_bridge()->GetPolicies(PolicyStringCallback("{}"));
 }
 
-TEST_F(ArcPolicyBridgeTest, ArcApplicationPolicyTest) {
+TEST_F(ArcPolicyBridgeTest, ArcPolicyTest) {
   policy_map().Set(
-      "ArcApplicationPolicy", policy::POLICY_LEVEL_MANDATORY,
-      policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
+      "ArcPolicy", policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
+      policy::POLICY_SOURCE_CLOUD,
       new base::StringValue(
           "{\"applications\":"
               "[{\"packageName\":\"com.google.android.apps.youtube.kids\","
@@ -149,8 +149,8 @@ TEST_F(ArcPolicyBridgeTest, URLWhitelistTest) {
 TEST_F(ArcPolicyBridgeTest, MultiplePoliciesTest) {
   // Keep them in alphabetical order.
   policy_map().Set(
-      "ArcApplicationPolicy", policy::POLICY_LEVEL_MANDATORY,
-      policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
+      "ArcPolicy", policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
+      policy::POLICY_SOURCE_CLOUD,
       new base::StringValue("{\"applications\":"
               "[{\"packageName\":\"com.google.android.apps.youtube.kids\","
                 "\"installType\":\"REQUIRED\","

@@ -66,10 +66,10 @@ void AddGlobalAppRestriction(const std::string& arc_app_restriction_name,
 
 std::string GetFilteredJSONPolicies(const policy::PolicyMap& policy_map) {
   base::DictionaryValue filtered_policies;
-  // Parse ArcApplicationPolicy as JSON string before adding other policies to
-  // the dictionary.
+  // Parse ArcPolicy as JSON string before adding other policies to the
+  // dictionary.
   const base::Value* const app_policy_value =
-      policy_map.GetValue(policy::key::kArcApplicationPolicy);
+      policy_map.GetValue(policy::key::kArcPolicy);
   if (app_policy_value) {
     std::string app_policy_string;
     app_policy_value->GetAsString(&app_policy_string);
@@ -81,7 +81,7 @@ std::string GetFilteredJSONPolicies(const policy::PolicyMap& policy_map) {
       // JSONStringValues which are based on StringPiece instead of string.
       filtered_policies.MergeDictionary(app_policy_dict.get());
     } else {
-      LOG(ERROR) << "Value of ArcApplicationPolicy has invalid format: "
+      LOG(ERROR) << "Value of ArcPolicy has invalid format: "
                  << app_policy_string;
     }
   }
