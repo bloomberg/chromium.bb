@@ -37,12 +37,8 @@ class TestSkTypeface : public SkTypeface {
         data_(data, data + dataLength) {}
 
  protected:
-#ifdef SK_SUPPORT_NEW_ONCREATESCALERCONTEXT
   SkScalerContext* onCreateScalerContext(const SkScalerContextEffects&,
                                          const SkDescriptor*) const override {
-#else
-  SkScalerContext* onCreateScalerContext(const SkDescriptor*) const override {
-#endif
     ADD_FAILURE();
     return nullptr;
   }
