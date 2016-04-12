@@ -140,6 +140,12 @@ void GetCertChainInfo(CFArrayRef cert_chain, CertVerifyResult* verify_result) {
     CC_SHA256(spki_bytes.data(), spki_bytes.size(), sha256.data());
     verify_result->public_key_hashes.push_back(sha256);
 
+    // Ignore the signature algorithm for the trust anchor.
+    if ((verify_result->cert_status & CERT_STATUS_AUTHORITY_INVALID) == 0 &&
+        i == count - 1) {
+      continue;
+    }
+
     int sig_alg = OBJ_obj2nid(x509_cert->sig_alg->algorithm);
     if (sig_alg == NID_md2WithRSAEncryption) {
       verify_result->has_md2 = true;
@@ -164,6 +170,62 @@ void GetCertChainInfo(CFArrayRef cert_chain, CertVerifyResult* verify_result) {
 
   verify_result->verified_cert =
       X509Certificate::CreateFromHandle(verified_cert, verified_chain);
+}
+
+// The iOS APIs don't expose an API-stable set of reasons for certificate
+// validation failures. However, internally, the reason is tracked, and it's
+// converted to user-facing localized strings.
+//
+// In the absence of a consistent API, convert the English strings to their
+// localized counterpart, and then compare that with the error properties. If
+// they're equal, it's a strong sign that this was the cause for the error.
+// While this will break if/when iOS changes the contents of these strings,
+// it's sufficient enough for now.
+//
+// TODO(rsleevi): https://crbug.com/601915 - Use a less brittle solution when
+// possible.
+CertStatus GetFailureFromTrustProperties(CFArrayRef properties) {
+  CertStatus reason = 0;
+
+  if (!properties)
+    return CERT_STATUS_INVALID;
+
+  const CFIndex properties_length = CFArrayGetCount(properties);
+  if (properties_length == 0)
+    return CERT_STATUS_INVALID;
+
+  CFBundleRef bundle =
+      CFBundleGetBundleWithIdentifier(CFSTR("com.apple.Security"));
+  CFStringRef date_string =
+      CFSTR("One or more certificates have expired or are not valid yet.");
+  CFStringRef date_error = CFBundleCopyLocalizedString(
+      bundle, date_string, date_string, CFSTR("SecCertificate"));
+  CFStringRef trust_string = CFSTR("Root certificate is not trusted.");
+  CFStringRef trust_error = CFBundleCopyLocalizedString(
+      bundle, trust_string, trust_string, CFSTR("SecCertificate"));
+  CFStringRef weak_string =
+      CFSTR("One or more certificates is using a weak key size.");
+  CFStringRef weak_error = CFBundleCopyLocalizedString(
+      bundle, weak_string, weak_string, CFSTR("SecCertificate"));
+
+  for (CFIndex i = 0; i < properties_length; ++i) {
+    CFDictionaryRef dict = reinterpret_cast<CFDictionaryRef>(
+        const_cast<void*>(CFArrayGetValueAtIndex(properties, i)));
+    CFStringRef error = reinterpret_cast<CFStringRef>(
+        const_cast<void*>(CFDictionaryGetValue(dict, CFSTR("value"))));
+
+    if (CFEqual(error, date_error)) {
+      reason |= CERT_STATUS_DATE_INVALID;
+    } else if (CFEqual(error, trust_error)) {
+      reason |= CERT_STATUS_AUTHORITY_INVALID;
+    } else if (CFEqual(error, weak_error)) {
+      reason |= CERT_STATUS_WEAK_KEY;
+    } else {
+      reason |= CERT_STATUS_INVALID;
+    }
+  }
+
+  return reason;
 }
 
 }  // namespace
@@ -207,20 +269,20 @@ int CertVerifyProcIOS::VerifyInternal(
   if (CFArrayGetCount(final_chain) == 0)
     return ERR_FAILED;
 
-  GetCertChainInfo(final_chain, verify_result);
-
   // TODO(sleevi): Support CRLSet revocation.
-  // TODO(svaldez): Add specific error codes for trust errors resulting from
-  // expired/not-yet-valid certs.
   switch (trust_result) {
     case kSecTrustResultUnspecified:
     case kSecTrustResultProceed:
       break;
     case kSecTrustResultDeny:
       verify_result->cert_status |= CERT_STATUS_AUTHORITY_INVALID;
+      break;
     default:
-      verify_result->cert_status |= CERT_STATUS_INVALID;
+      CFArrayRef properties = SecTrustCopyProperties(trust_ref);
+      verify_result->cert_status |= GetFailureFromTrustProperties(properties);
   }
+
+  GetCertChainInfo(final_chain, verify_result);
 
   // Perform hostname verification independent of SecTrustEvaluate.
   if (!verify_result->verified_cert->VerifyNameMatch(

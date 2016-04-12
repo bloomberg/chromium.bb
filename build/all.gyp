@@ -261,6 +261,10 @@
         ['use_openssl==1', {
           'dependencies': [
             '../third_party/boringssl/boringssl.gyp:*',
+          ],
+        }],
+        ['use_openssl==1 and OS!="ios"', {
+          'dependencies': [
             '../third_party/boringssl/boringssl_tests.gyp:*',
           ],
         }],

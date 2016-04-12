@@ -103,6 +103,9 @@ bool SupportsDetectingKnownRoots() {
   // the verified certificate chain and detect known roots.
   if (base::android::BuildInfo::GetInstance()->sdk_int() < 17)
     return false;
+#elif defined(OS_IOS) && defined(USE_OPENSSL)
+  // iOS does not expose the APIs necessary to get the known system roots.
+  return false;
 #endif
   return true;
 }
@@ -223,6 +226,10 @@ TEST_F(CertVerifyProcTest, PaypalNullCertParsing) {
                      &verify_result);
 #if defined(USE_NSS_VERIFIER) || defined(OS_ANDROID)
   EXPECT_EQ(ERR_CERT_COMMON_NAME_INVALID, error);
+#elif defined(OS_IOS) && TARGET_IPHONE_SIMULATOR
+  // iOS returns a ERR_CERT_INVALID error on the simulator, while returning
+  // ERR_CERT_AUTHORITY_INVALID on the real device.
+  EXPECT_EQ(ERR_CERT_INVALID, error);
 #else
   // TOOD(bulach): investigate why macosx and win aren't returning
   // ERR_CERT_INVALID or ERR_CERT_COMMON_NAME_INVALID.
@@ -275,6 +282,29 @@ TEST_F(CertVerifyProcTest, MAYBE_IntermediateCARequireExplicitPolicy) {
                      &verify_result);
   EXPECT_EQ(OK, error);
   EXPECT_EQ(0u, verify_result.cert_status);
+}
+
+TEST_F(CertVerifyProcTest, RejectExpiredCert) {
+  base::FilePath certs_dir = GetTestCertsDirectory();
+
+  // Load root_ca_cert.pem into the test root store.
+  ScopedTestRoot test_root(
+      ImportCertFromFile(certs_dir, "root_ca_cert.pem").get());
+
+  CertificateList certs = CreateCertificateListFromFile(
+      certs_dir, "expired_cert.pem", X509Certificate::FORMAT_AUTO);
+  ASSERT_EQ(1U, certs.size());
+
+  X509Certificate::OSCertHandles intermediates;
+  scoped_refptr<X509Certificate> cert = X509Certificate::CreateFromHandle(
+      certs[0]->os_cert_handle(), intermediates);
+
+  int flags = 0;
+  CertVerifyResult verify_result;
+  int error = Verify(cert.get(), "127.0.0.1", flags, NULL, empty_cert_list_,
+                     &verify_result);
+  EXPECT_EQ(ERR_CERT_DATE_INVALID, error);
+  EXPECT_TRUE(verify_result.cert_status & CERT_STATUS_DATE_INVALID);
 }
 
 // Test that verifying an ECDSA certificate doesn't crash on XP. (See
@@ -1103,8 +1133,8 @@ TEST_F(CertVerifyProcTest, IsIssuedByKnownRootIgnoresTestRoots) {
   EXPECT_FALSE(verify_result.is_issued_by_known_root);
 }
 
-#if defined(USE_NSS_CERTS) || defined(OS_IOS) || defined(OS_WIN) || \
-    defined(OS_MACOSX)
+#if defined(USE_NSS_VERIFIER) || defined(OS_WIN) || \
+    (defined(OS_MACOSX) && !defined(OS_IOS))
 // Test that CRLSets are effective in making a certificate appear to be
 // revoked.
 TEST_F(CertVerifyProcTest, CRLSet) {

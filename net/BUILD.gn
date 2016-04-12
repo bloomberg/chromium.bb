@@ -323,6 +323,12 @@ if (!is_nacl) {
       "cert/cert_verify_proc_ios.h",
       "cert/x509_certificate_openssl_ios.cc",
     ]
+
+    net_shared_deps += [
+      "//third_party/nss:nspr",
+      "//third_party/nss",
+      "//net/third_party/nss/ssl:libssl",
+    ]
   }
 
   if (is_chromecast && use_nss_certs) {
@@ -374,15 +380,11 @@ if (!is_nacl) {
     ]
 
     net_shared_sources -= [ "disk_cache/blockfile/file_posix.cc" ]
-    net_shared_deps += [
-      "//third_party/nss:nspr",
-      "//third_party/nss",
-      "//net/third_party/nss/ssl:libssl",
-    ]
   }
 
   if (is_ios && !use_nss_verifier) {
-    net_shared_sources += [ "cert/test_root_certs_mac.cc" ]
+    net_shared_unfiltered_sources += [ "cert/test_root_certs_mac.cc" ]
+    net_shared_sources -= [ "cert/x509_certificate_ios.cc" ]
   }
 
   if (is_ios || is_mac) {
@@ -1431,6 +1433,8 @@ bundle_data("net_unittests_bundle_data") {
     "data/url_request_unittest",
     "data/verify_certificate_chain_unittest",
     "data/verify_name_match_unittest/names",
+    "third_party/nist-pkits/certs",
+    "third_party/nist-pkits/crls",
   ]
   outputs = [
     "{{bundle_resources_dir}}/" +
@@ -1476,7 +1480,7 @@ test("net_unittests") {
   ]
   data_deps = []
 
-  if (!is_ios) {
+  if (use_openssl) {
     data_deps += [ "third_party/nist-pkits/" ]
   }
 

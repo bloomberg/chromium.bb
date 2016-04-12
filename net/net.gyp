@@ -370,6 +370,8 @@
                     'data/verify_certificate_chain_unittest/',
                     'data/verify_name_match_unittest/names/',
                     'data/verify_signed_data_unittest/',
+                    'third_party/nist-pkits/certs/',
+                    'third_party/nist-pkits/crls/',
                   ],
                   'test_data_prefix': 'net',
                 },
