@@ -17,8 +17,7 @@ namespace {
 
 String getDisabledMessage(const String& featureName)
 {
-    // TODO(chasej): Update message with URL to experiments site, when live
-    return "The '" + featureName + "' feature is currently enabled in limited trials. Please see [Phosphor console URL] for information on enabling a trial for your site.";
+    return "The '" + featureName + "' feature is currently enabled in limited trials. Please see https://bit.ly/OriginTrials for information on enabling a trial for your site.";
 }
 
 String getInvalidTokenMessage(const String& featureName)
