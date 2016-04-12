@@ -114,7 +114,7 @@ class SYNC_EXPORT SyncError {
   // Reset the error to it's default (unset) values.
   void Clear();
 
-  // scoped_ptr is necessary because Location objects aren't assignable.
+  // unique_ptr is necessary because Location objects aren't assignable.
   std::unique_ptr<tracked_objects::Location> location_;
   std::string message_;
   ModelType model_type_;

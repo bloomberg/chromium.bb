@@ -34,7 +34,7 @@ AttachmentServiceProxy AttachmentServiceProxyForTest::Create() {
   // WeakPtrFactory here and pass it to the ctor so that it may initialize its
   // base class and own the WeakPtrFactory.
   //
-  // We must pass by scoped_ptr because WeakPtrFactory has no copy constructor.
+  // We must pass by unique_ptr because WeakPtrFactory has no copy constructor.
   std::unique_ptr<base::WeakPtrFactory<AttachmentService>> weak_ptr_factory(
       new base::WeakPtrFactory<AttachmentService>(wrapped.get()));
 

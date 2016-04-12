@@ -143,7 +143,7 @@ class SYNC_EXPORT HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
     ~URLFetchState();
     // Our hook into the network layer is a URLFetcher. USED ONLY ON THE IO
     // LOOP, so we can block created_on_loop_ while the fetch is in progress.
-    // NOTE: This is not a scoped_ptr for a reason. It must be deleted on the
+    // NOTE: This is not a unique_ptr for a reason. It must be deleted on the
     // same thread that created it, which isn't the same thread |this| gets
     // deleted on. We must manually delete url_poster_ on the IO loop.
     net::URLFetcher* url_poster;

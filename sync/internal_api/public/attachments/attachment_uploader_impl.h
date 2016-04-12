@@ -8,8 +8,8 @@
 #include <stdint.h>
 
 #include <string>
+#include <unordered_map>
 
-#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/macros.h"
 #include "base/threading/non_thread_safe.h"
 #include "google_apis/gaia/oauth2_token_service_request.h"
@@ -81,8 +81,7 @@ class SYNC_EXPORT AttachmentUploaderImpl : public AttachmentUploader,
  private:
   class UploadState;
   typedef std::string UniqueId;
-  typedef base::ScopedPtrHashMap<UniqueId, std::unique_ptr<UploadState>>
-      StateMap;
+  typedef std::unordered_map<UniqueId, std::unique_ptr<UploadState>> StateMap;
 
   void OnUploadStateStopped(const UniqueId& unique_id);
 

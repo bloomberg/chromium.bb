@@ -32,7 +32,7 @@ class SYNC_EXPORT ConflictResolution {
   static ConflictResolution UseRemote();
   static ConflictResolution UseNew(std::unique_ptr<EntityData> data);
 
-  // Move constructor since we can't copy a scoped_ptr.
+  // Move constructor since we can't copy a unique_ptr.
   ConflictResolution(ConflictResolution&& other);
   ~ConflictResolution();
 

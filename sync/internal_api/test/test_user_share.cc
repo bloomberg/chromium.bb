@@ -30,12 +30,12 @@ void TestUserShare::SetUp() {
   dir_maker_->SetUp();
 
   // The pointer is owned by dir_maker_, we should not be storing it in a
-  // scoped_ptr.  We must be careful to ensure the scoped_ptr never deletes it.
+  // unique_ptr.  We must be careful to ensure the unique_ptr never deletes it.
   user_share_->directory.reset(dir_maker_->directory());
 }
 
 void TestUserShare::TearDown() {
-  // Ensure the scoped_ptr doesn't delete the memory we don't own.
+  // Ensure the unique_ptr doesn't delete the memory we don't own.
   ignore_result(user_share_->directory.release());
 
   user_share_.reset();
@@ -49,7 +49,7 @@ bool TestUserShare::Reload() {
   syncer::syncable::DirectoryBackingStore* saved_store =
       user_share_->directory->store_.release();
 
-  // Ensure the scoped_ptr doesn't delete the memory we don't own.
+  // Ensure the unique_ptr doesn't delete the memory we don't own.
   ignore_result(user_share_->directory.release());
   user_share_.reset(new UserShare());
   dir_maker_->SetUpWith(saved_store);

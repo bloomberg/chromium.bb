@@ -8,9 +8,9 @@
 #include <stdint.h>
 
 #include <string>
+#include <unordered_map>
 #include <vector>
 
-#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/threading/non_thread_safe.h"
@@ -86,7 +86,7 @@ class AttachmentDownloaderImpl : public AttachmentDownloader,
 
   struct DownloadState;
   typedef std::string AttachmentUrl;
-  typedef base::ScopedPtrHashMap<AttachmentUrl, std::unique_ptr<DownloadState>>
+  typedef std::unordered_map<AttachmentUrl, std::unique_ptr<DownloadState>>
       StateMap;
   typedef std::vector<DownloadState*> StateList;
 

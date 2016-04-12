@@ -291,7 +291,7 @@ void ModelTypeWorkerTest::InitializeWithState(
     const UpdateResponseDataList& initial_pending_updates) {
   DCHECK(!worker_);
 
-  // We don't get to own this object.  The |worker_| keeps a scoped_ptr to it.
+  // We don't get to own this object.  The |worker_| keeps a unique_ptr to it.
   mock_type_processor_ = new MockModelTypeProcessor();
   mock_type_processor_->SetDisconnectCallback(base::Bind(
       &ModelTypeWorkerTest::DisconnectProcessor, base::Unretained(this)));

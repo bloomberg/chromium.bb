@@ -26,7 +26,7 @@ namespace syncer_v2 {
 // data and metadata. Also store keeps one record for global metadata.
 //
 // To create store call one of Create*Store static factory functions. Model type
-// controls store's lifetime with returned scoped_ptr. Call to Create*Store
+// controls store's lifetime with returned unique_ptr. Call to Create*Store
 // function triggers asynchronous store backend initialization, callback will be
 // called with results when initialization is done.
 //

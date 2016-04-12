@@ -37,7 +37,7 @@ class SYNC_EXPORT AttachmentServiceProxyForTest
     ~OwningCore() override;
 
     std::unique_ptr<AttachmentService> wrapped_;
-    // WeakPtrFactory for wrapped_.  See Create() for why this is a scoped_ptr.
+    // WeakPtrFactory for wrapped_. See Create() for why this is a unique_ptr.
     std::unique_ptr<base::WeakPtrFactory<AttachmentService>> weak_ptr_factory_;
 
     DISALLOW_COPY_AND_ASSIGN(OwningCore);
