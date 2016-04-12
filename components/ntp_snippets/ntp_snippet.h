@@ -79,6 +79,10 @@ class NTPSnippet {
     expiry_date_ = expiry_date;
   }
 
+  // Public for testing.
+  static base::Time TimeFromJsonString(const std::string& timestamp_str);
+  static std::string TimeToJsonString(const base::Time& time);
+
  private:
   const GURL url_;
   std::string site_title_;
