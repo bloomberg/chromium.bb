@@ -28,30 +28,6 @@ function test()
                 InspectorTest.editNodePartAndRun(node, "webkit-html-attribute", "bar=\"edited attribute\"", done, true);
             }
         },
-
-        function testEditShadowDOMAsHTML(next)
-        {
-            InspectorTest.domActionTestForNodeId("testEditAuthorShadowDOMAsHTML", "authorShadowDOMElement", testBody, next);
-
-            function testBody(node, done)
-            {
-                var treeOutline = InspectorTest.firstElementsTreeOutline();
-                var treeElement = treeOutline.findTreeElement(node);
-                treeOutline.toggleEditAsHTML(node);
-                InspectorTest.runAfterPendingDispatches(step2);
-
-                function step2()
-                {
-                    InspectorTest.addResult(treeElement._editing.codeMirror.getValue());
-                    treeElement._editing.codeMirror.setValue("<span foo=\"shadow-span\"><span id=\"inner-shadow-span\">Shadow span contents</span></span>");
-                    var event = InspectorTest.createKeyEvent("Enter");
-                    event.isMetaOrCtrlForTest = true;
-                    treeElement._htmlEditElement.dispatchEvent(event);
-                    InspectorTest.runAfterPendingDispatches(InspectorTest.expandElementsTree.bind(InspectorTest, done));
-                }
-            }
-        }
-
     ]);
 }
 
@@ -64,8 +40,6 @@ Tests that user can mutate author shadow DOM by means of elements panel.
 </p>
 
 <div>
-    <div id="testEditAuthorShadowDOMAsHTML"></div>
-
     <div id="testSetAuthorShadowDOMElementAttribute"></div>
 </div>
 <script>
@@ -76,7 +50,6 @@ function createRootWithContents(id, html)
     root.innerHTML = html;
 }
 
-createRootWithContents("testEditAuthorShadowDOMAsHTML", "<div id='authorShadowDOMElement'></div>");
 createRootWithContents("testSetAuthorShadowDOMElementAttribute", "<div foo='attribute value' id='shadow-node-to-set-attribute'></div>");
 </script>
 </body>
