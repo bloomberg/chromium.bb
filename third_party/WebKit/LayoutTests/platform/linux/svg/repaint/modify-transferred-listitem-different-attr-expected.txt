@@ -62,16 +62,6 @@
           "reason": "full"
         },
         {
-          "object": "LayoutSVGText text id='source'",
-          "rect": [58, 45, 50, 16],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutSVGText text id='target'",
-          "rect": [23, 8, 80, 23],
-          "reason": "full"
-        },
-        {
           "object": "LayoutSVGText text id='target'",
           "rect": [23, 8, 85, 23],
           "reason": "full"

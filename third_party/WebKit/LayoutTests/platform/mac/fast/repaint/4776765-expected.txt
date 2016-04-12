@@ -18,11 +18,6 @@
         },
         {
           "object": "LayoutBlockFlow DIV",
-          "rect": [3, 37, 794, 46],
-          "reason": "outline"
-        },
-        {
-          "object": "LayoutBlockFlow DIV",
           "rect": [3, 37, 794, 64],
           "reason": "outline"
         },

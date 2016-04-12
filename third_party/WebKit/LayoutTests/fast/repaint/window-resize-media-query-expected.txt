@@ -19,11 +19,6 @@
         },
         {
           "object": "LayoutView #document",
-          "rect": [0, 0, 200, 200],
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutView #document",
           "rect": [0, 0, 200, 300],
           "reason": "style change"
         }
@@ -44,11 +39,6 @@
           "object": "LayoutBlockFlow BODY",
           "rect": [0, 0, 0, 0],
           "reason": "became visible"
-        },
-        {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [0, 0, 200, 8],
-          "reason": "forced by layout"
         },
         {
           "object": "LayoutBlockFlow HTML",
@@ -109,11 +99,6 @@
         {
           "object": "LayoutBlockFlow HTML",
           "rect": [0, 0, 300, 8],
-          "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [0, 0, 250, 8],
           "reason": "forced by layout"
         },
         {

@@ -38,17 +38,7 @@
         },
         {
           "object": "LayoutBlockFlow DIV class='linkbar'",
-          "rect": [24, 1011, 737, 21],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutBlockFlow DIV class='linkbar'",
           "rect": [24, 1010, 737, 22],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutBlockFlow P",
-          "rect": [24, 1011, 737, 21],
           "reason": "bounds change"
         },
         {

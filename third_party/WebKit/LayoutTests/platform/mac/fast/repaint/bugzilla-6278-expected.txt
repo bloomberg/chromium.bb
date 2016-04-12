@@ -128,11 +128,6 @@
         },
         {
           "object": "LayoutTableCell TD id='target'",
-          "rect": [304, 132, 2, 199],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutTableCell TD id='target'",
           "rect": [254, 132, 52, 235],
           "reason": "location change"
         },

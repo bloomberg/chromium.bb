@@ -38,17 +38,7 @@
         },
         {
           "object": "LayoutBlockFlow P",
-          "rect": [8, 16, 769, 20],
-          "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutBlockFlow P",
           "rect": [8, 52, 784, 20],
-          "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutBlockFlow P",
-          "rect": [8, 52, 769, 20],
           "reason": "forced by layout"
         },
         {

@@ -12,11 +12,6 @@
           "reason": "location change"
         },
         {
-          "object": "LayoutBlockFlow (floating) DIV id='container'",
-          "rect": [348, 88, 260, 100],
-          "reason": "location change"
-        },
-        {
           "object": "LayoutBlockFlow (floating) DIV id='keep_outer' class='outer'",
           "rect": [88, 88, 260, 100],
           "reason": "location change"

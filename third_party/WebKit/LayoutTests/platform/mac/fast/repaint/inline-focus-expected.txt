@@ -33,27 +33,12 @@
         },
         {
           "object": "LayoutBlockFlow (anonymous)",
-          "rect": [0, 0, 800, 18],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutBlockFlow (anonymous)",
           "rect": [-5, -5, 805, 28],
           "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow BODY",
-          "rect": [0, 0, 800, 52],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutBlockFlow BODY",
           "rect": [-5, -5, 805, 57],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [0, 0, 800, 232],
           "reason": "bounds change"
         },
         {

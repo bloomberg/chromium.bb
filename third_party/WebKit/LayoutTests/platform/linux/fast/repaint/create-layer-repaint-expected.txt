@@ -10,11 +10,6 @@
           "object": "LayoutBlockFlow DIV id='test' class='stretchy'",
           "rect": [28, 56, 500, 50],
           "reason": "style change"
-        },
-        {
-          "object": "LayoutBlockFlow DIV id='test' class='stretchy'",
-          "rect": [28, 56, 250, 50],
-          "reason": "style change"
         }
       ]
     }

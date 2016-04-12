@@ -72,11 +72,6 @@
           "reason": "forced by layout"
         },
         {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [0, 0, 785, 850],
-          "reason": "forced by layout"
-        },
-        {
           "object": "LayoutTableCell TD",
           "rect": [8, 322, 769, 60],
           "reason": "location change"

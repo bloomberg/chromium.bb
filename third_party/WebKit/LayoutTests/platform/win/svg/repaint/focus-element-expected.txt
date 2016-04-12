@@ -8,11 +8,6 @@
       "paintInvalidations": [
         {
           "object": "LayoutSVGRect rect id='rect'",
-          "rect": [58, 58, 50, 50],
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutSVGRect rect id='rect'",
           "rect": [57, 57, 52, 52],
           "reason": "style change"
         }

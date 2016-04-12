@@ -397,11 +397,6 @@
           "reason": "outline"
         },
         {
-          "object": "LayoutInline SPAN id='test'",
-          "rect": [5, 153, 89, 45],
-          "reason": "outline"
-        },
-        {
           "object": "LayoutText #text",
           "rect": [0, 0, 0, 0],
           "reason": "layoutObject removal"
@@ -409,11 +404,6 @@
         {
           "object": "LayoutText #text",
           "rect": [8, 156, 86, 39],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [8, 156, 83, 39],
           "reason": "full"
         },
         {

@@ -21,11 +21,6 @@
                   "object": "LayoutBlockFlow DIV id='resize' class='drop-shadow accelerated'",
                   "rect": [-13, -13, 258, 258],
                   "reason": "border box change"
-                },
-                {
-                  "object": "LayoutBlockFlow DIV id='resize' class='drop-shadow accelerated'",
-                  "rect": [-13, -13, 158, 258],
-                  "reason": "border box change"
                 }
               ]
             }

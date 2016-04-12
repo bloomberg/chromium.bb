@@ -18,27 +18,12 @@
         },
         {
           "object": "LayoutBlockFlow A id='link'",
-          "rect": [31, 84, 761, 18],
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutBlockFlow A id='link'",
           "rect": [31, 79, 766, 28],
           "reason": "style change"
         },
         {
           "object": "LayoutBlockFlow UL",
-          "rect": [8, 84, 784, 18],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutBlockFlow UL",
           "rect": [8, 79, 789, 28],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutListItem LI",
-          "rect": [31, 84, 761, 18],
           "reason": "bounds change"
         },
         {

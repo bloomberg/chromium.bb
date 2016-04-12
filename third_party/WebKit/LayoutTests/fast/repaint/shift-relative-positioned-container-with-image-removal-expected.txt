@@ -42,11 +42,6 @@
           "reason": "forced by layout"
         },
         {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [0, 0, 785, 735],
-          "reason": "forced by layout"
-        },
-        {
           "object": "LayoutIFrame IFRAME id='iframe'",
           "rect": [8, 86, 732, 94],
           "reason": "layoutObject removal"

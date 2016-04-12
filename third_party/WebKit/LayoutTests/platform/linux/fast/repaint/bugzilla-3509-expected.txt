@@ -13,11 +13,6 @@
         },
         {
           "object": "LayoutBlockFlow DIV id='im'",
-          "rect": [11, 131, 50, 100],
-          "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutBlockFlow DIV id='im'",
           "rect": [11, 131, 100, 100],
           "reason": "forced by layout"
         },

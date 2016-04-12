@@ -30,11 +30,6 @@
           "object": "LayoutBlockFlow (positioned) DIV id='target2' class='border-box'",
           "rect": [0, 200, 440, 140],
           "reason": "content box change"
-        },
-        {
-          "object": "LayoutBlockFlow (positioned) DIV id='target2' class='border-box'",
-          "rect": [0, 200, 400, 100],
-          "reason": "content box change"
         }
       ]
     }

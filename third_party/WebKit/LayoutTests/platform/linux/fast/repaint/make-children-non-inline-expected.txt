@@ -228,11 +228,6 @@
         },
         {
           "object": "LayoutBlockFlow DIV",
-          "rect": [8, 64, 784, 180],
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutBlockFlow DIV",
           "rect": [8, 64, 784, 280],
           "reason": "style change"
         },

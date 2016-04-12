@@ -37,11 +37,6 @@
           "reason": "full"
         },
         {
-          "object": "LayoutSVGText text id='status'",
-          "rect": [90, 116, 44, 17],
-          "reason": "full"
-        },
-        {
           "object": "RootInlineBox",
           "rect": [0, 0, 0, 0],
           "reason": "full"

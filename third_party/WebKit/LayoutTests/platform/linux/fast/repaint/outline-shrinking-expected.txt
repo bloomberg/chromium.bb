@@ -12,18 +12,8 @@
           "reason": "bounds change"
         },
         {
-          "object": "LayoutBlockFlow BODY",
-          "rect": [8, 16, 784, 202],
-          "reason": "bounds change"
-        },
-        {
           "object": "LayoutBlockFlow DIV id='t'",
           "rect": [4, 114, 108, 108],
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutBlockFlow DIV id='t'",
-          "rect": [8, 118, 100, 100],
           "reason": "style change"
         }
       ]

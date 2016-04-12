@@ -24,11 +24,6 @@
         },
         {
           "object": "LayoutBlockFlow DIV",
-          "rect": [8, 8, 866, 216],
-          "reason": "border box change"
-        },
-        {
-          "object": "LayoutBlockFlow DIV",
           "rect": [137, 144, 607, 548],
           "reason": "incremental"
         },
@@ -45,11 +40,6 @@
         {
           "object": "LayoutBlockFlow HTML",
           "rect": [0, 0, 874, 780],
-          "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [0, 0, 874, 232],
           "reason": "forced by layout"
         },
         {

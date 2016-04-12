@@ -473,22 +473,12 @@
         },
         {
           "object": "LayoutText #text",
-          "rect": [65, 386, 304, 36],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutText #text",
           "rect": [14, 386, 355, 36],
           "reason": "bounds change"
         },
         {
           "object": "LayoutText #text",
           "rect": [14, 404, 355, 36],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [301, 404, 67, 18],
           "reason": "bounds change"
         },
         {

@@ -77,11 +77,6 @@
           "reason": "forced by layout"
         },
         {
-          "object": "LayoutBlockFlow DIV id='firstLine'",
-          "rect": [8, 8, 100, 100],
-          "reason": "forced by layout"
-        },
-        {
           "object": "LayoutBlockFlow DIV id='root'",
           "rect": [0, 0, 0, 0],
           "reason": "selection"

@@ -8,11 +8,6 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow (positioned) DIV id='t' class='green translated'",
-          "rect": [125, 325, 50, 50],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow (positioned) DIV id='t' class='green translated'",
           "rect": [100, 300, 100, 100],
           "reason": "location change"
         }

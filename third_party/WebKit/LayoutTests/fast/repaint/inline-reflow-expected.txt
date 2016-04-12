@@ -148,11 +148,6 @@
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='div2' class='container'",
-          "rect": [0, 300, 200, 20],
-          "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutBlockFlow (positioned) DIV id='div2' class='container'",
           "rect": [0, 300, 300, 20],
           "reason": "forced by layout"
         },

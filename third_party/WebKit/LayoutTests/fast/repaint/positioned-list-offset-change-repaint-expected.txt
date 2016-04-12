@@ -23,17 +23,7 @@
         },
         {
           "object": "LayoutImage IMG",
-          "rect": [8, 60, 114, 232],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutImage IMG",
           "rect": [8, 60, 214, 232],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutListItem (positioned) LI",
-          "rect": [8, 60, 114, 236],
           "reason": "location change"
         },
         {

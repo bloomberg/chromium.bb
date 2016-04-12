@@ -58,11 +58,6 @@
         },
         {
           "object": "LayoutSVGRect rect id='r'",
-          "rect": [0, 0, 10, 10],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGRect rect id='r'",
           "rect": [0, 0, 100, 100],
           "reason": "location change"
         },

@@ -63,11 +63,6 @@
                 },
                 {
                   "object": "LayoutView #document",
-                  "rect": [0, 500, 285, 150],
-                  "reason": "style change"
-                },
-                {
-                  "object": "LayoutView #document",
                   "rect": [285, 500, 15, 150],
                   "reason": "scroll"
                 },

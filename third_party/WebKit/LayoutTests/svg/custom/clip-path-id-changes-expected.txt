@@ -12,11 +12,6 @@
           "reason": "full"
         },
         {
-          "object": "LayoutSVGContainer g",
-          "rect": [0, 0, 100, 100],
-          "reason": "full"
-        },
-        {
           "object": "LayoutSVGRoot svg",
           "rect": [100, 0, 100, 200],
           "reason": "incremental"

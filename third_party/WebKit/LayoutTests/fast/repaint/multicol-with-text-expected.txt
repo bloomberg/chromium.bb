@@ -28,11 +28,6 @@
         },
         {
           "object": "LayoutMultiColumnFlowThread (anonymous)",
-          "rect": [8, 8, 470, 20],
-          "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutMultiColumnFlowThread (anonymous)",
           "rect": [8, 8, 630, 20],
           "reason": "forced by layout"
         },

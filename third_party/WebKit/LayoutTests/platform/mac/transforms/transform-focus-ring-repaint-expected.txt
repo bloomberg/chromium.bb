@@ -20,11 +20,6 @@
             },
             {
               "object": "LayoutBlockFlow (positioned) DIV id='target'",
-              "rect": [3, 3, 200, 200],
-              "reason": "style change"
-            },
-            {
-              "object": "LayoutBlockFlow (positioned) DIV id='target'",
               "rect": [0, 0, 406, 546],
               "reason": "style change"
             }

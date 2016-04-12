@@ -47,11 +47,6 @@
           "reason": "style change"
         },
         {
-          "object": "LayoutSVGText text",
-          "rect": [16, 40, 318, 168],
-          "reason": "style change"
-        },
-        {
           "object": "RootInlineBox",
           "rect": [0, 0, 0, 0],
           "reason": "full"

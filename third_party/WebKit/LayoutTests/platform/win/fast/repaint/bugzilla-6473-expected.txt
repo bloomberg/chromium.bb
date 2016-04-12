@@ -27,11 +27,6 @@
           "reason": "style change"
         },
         {
-          "object": "LayoutBlockFlow DIV id='allcontent'",
-          "rect": [8, 130, 784, 18],
-          "reason": "style change"
-        },
-        {
           "object": "LayoutText #text",
           "rect": [8, 146, 70, 17],
           "reason": "location change"

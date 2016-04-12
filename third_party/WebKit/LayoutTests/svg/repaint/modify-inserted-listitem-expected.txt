@@ -20,11 +20,6 @@
           "object": "LayoutSVGRoot svg",
           "rect": [18, 18, 20, 30],
           "reason": "bounds change"
-        },
-        {
-          "object": "LayoutSVGRoot svg",
-          "rect": [28, 38, 10, 10],
-          "reason": "bounds change"
         }
       ]
     }

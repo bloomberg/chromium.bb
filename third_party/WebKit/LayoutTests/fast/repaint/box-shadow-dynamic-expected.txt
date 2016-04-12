@@ -13,16 +13,6 @@
         },
         {
           "object": "LayoutBlockFlow DIV",
-          "rect": [18, 70, 55, 55],
-          "reason": "border box change"
-        },
-        {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [18, 190, 55, 35],
-          "reason": "border box change"
-        },
-        {
-          "object": "LayoutBlockFlow DIV",
           "rect": [18, 190, 55, 55],
           "reason": "border box change"
         },

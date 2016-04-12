@@ -318,11 +318,6 @@
         },
         {
           "object": "LayoutText #text",
-          "rect": [151, 180, 40, 19],
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutText #text",
           "rect": [149, 180, 45, 20],
           "reason": "style change"
         },

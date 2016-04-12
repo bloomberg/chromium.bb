@@ -98,11 +98,6 @@
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='box'",
-          "rect": [100, 100, 100, 162],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow (positioned) DIV id='box'",
           "rect": [66, 85, 168, 192],
           "reason": "location change"
         },

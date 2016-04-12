@@ -48,11 +48,6 @@
         },
         {
           "object": "LayoutText #text",
-          "rect": [11, 11, 57, 17],
-          "reason": "selection"
-        },
-        {
-          "object": "LayoutText #text",
           "rect": [11, 33, 79, 17],
           "reason": "selection"
         }

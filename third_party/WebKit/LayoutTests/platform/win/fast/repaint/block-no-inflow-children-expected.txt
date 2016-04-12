@@ -18,18 +18,8 @@
         },
         {
           "object": "LayoutBlockFlow DIV id='target'",
-          "rect": [0, 0, 48, 18],
-          "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutBlockFlow DIV id='target'",
           "rect": [0, 0, 64, 18],
           "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [0, 0, 48, 17],
-          "reason": "full"
         },
         {
           "object": "LayoutText #text",

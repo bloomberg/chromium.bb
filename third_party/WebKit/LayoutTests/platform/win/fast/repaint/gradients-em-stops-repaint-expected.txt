@@ -28,11 +28,6 @@
         },
         {
           "object": "LayoutBlockFlow DIV class='indicator'",
-          "rect": [345, 19, 80, 20],
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutBlockFlow DIV class='indicator'",
           "rect": [345, 19, 240, 20],
           "reason": "style change"
         },

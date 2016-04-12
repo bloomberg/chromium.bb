@@ -22,11 +22,6 @@
           "reason": "bounds change"
         },
         {
-          "object": "LayoutBlockFlow (positioned) DIV id='container'",
-          "rect": [8, 88, 84, 20],
-          "reason": "bounds change"
-        },
-        {
           "object": "LayoutInline SPAN id='outer'",
           "rect": [7, 87, 86, 22],
           "reason": "style change"

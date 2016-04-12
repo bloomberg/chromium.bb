@@ -28,17 +28,7 @@
         },
         {
           "object": "LayoutBlockFlow (anonymous)",
-          "rect": [18, 110, 200, 18],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutBlockFlow (anonymous)",
           "rect": [16, 108, 202, 22],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutBlockFlow (anonymous)",
-          "rect": [18, 148, 200, 18],
           "reason": "bounds change"
         },
         {

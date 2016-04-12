@@ -18,11 +18,6 @@
         },
         {
           "object": "LayoutTableCell TD",
-          "rect": [2, 102, 102, 100],
-          "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutTableCell TD",
           "rect": [2, 102, 102, 200],
           "reason": "forced by layout"
         },

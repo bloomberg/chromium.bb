@@ -12,18 +12,8 @@
           "reason": "style change"
         },
         {
-          "object": "LayoutSVGContainer g",
-          "rect": [10, 10, 150, 230],
-          "reason": "style change"
-        },
-        {
           "object": "LayoutSVGRect rect",
           "rect": [6, 6, 158, 58],
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutSVGRect rect",
-          "rect": [10, 10, 150, 50],
           "reason": "style change"
         },
         {
@@ -33,17 +23,7 @@
         },
         {
           "object": "LayoutSVGRect rect",
-          "rect": [10, 70, 150, 50],
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutSVGRect rect",
           "rect": [6, 126, 158, 58],
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutSVGRect rect",
-          "rect": [10, 130, 150, 50],
           "reason": "style change"
         },
         {
@@ -52,18 +32,8 @@
           "reason": "style change"
         },
         {
-          "object": "LayoutSVGRect rect",
-          "rect": [10, 190, 150, 50],
-          "reason": "style change"
-        },
-        {
           "object": "LayoutSVGRoot svg",
           "rect": [6, 6, 158, 238],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutSVGRoot svg",
-          "rect": [10, 10, 150, 230],
           "reason": "bounds change"
         }
       ]

@@ -83,11 +83,6 @@
         },
         {
           "object": "LayoutTextFragment (anonymous)",
-          "rect": [8, 28, 7, 19],
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutTextFragment (anonymous)",
           "rect": [63, 28, 9, 19],
           "reason": "style change"
         },

@@ -152,11 +152,6 @@
           "reason": "bounds change"
         },
         {
-          "object": "LayoutText #text",
-          "rect": [65, 404, 304, 36],
-          "reason": "bounds change"
-        },
-        {
           "object": "RootInlineBox",
           "rect": [0, 0, 0, 0],
           "reason": "full"

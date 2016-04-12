@@ -83,7 +83,7 @@
         },
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [10, 183, 306, 254],
+          "rect": [10, 63, 306, 374],
           "reason": "bounds change"
         },
         {
@@ -93,37 +93,12 @@
         },
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [10, 183, 306, 254],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
           "rect": [10, 63, 306, 374],
           "reason": "bounds change"
         },
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [10, 183, 306, 254],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
           "rect": [10, 63, 306, 374],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [10, 183, 306, 254],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [10, 63, 306, 374],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [10, 183, 306, 254],
           "reason": "bounds change"
         },
         {
@@ -132,48 +107,23 @@
           "reason": "bounds change"
         },
         {
-          "object": "LayoutSVGRoot (positioned) svg",
-          "rect": [10, 183, 306, 254],
-          "reason": "bounds change"
-        },
-        {
           "object": "LayoutSVGTSpan tspan",
           "rect": [10, 63, 306, 374],
           "reason": "bounds change"
         },
         {
           "object": "LayoutSVGTSpan tspan",
-          "rect": [10, 183, 306, 254],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutSVGTSpan tspan",
-          "rect": [10, 63, 306, 374],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutSVGTSpan tspan",
-          "rect": [10, 183, 306, 254],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutSVGTSpan tspan id='modify'",
           "rect": [10, 63, 306, 374],
           "reason": "bounds change"
         },
         {
           "object": "LayoutSVGTSpan tspan id='modify'",
-          "rect": [10, 183, 306, 254],
+          "rect": [10, 63, 306, 374],
           "reason": "bounds change"
         },
         {
           "object": "LayoutSVGText text",
           "rect": [10, 63, 306, 374],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutSVGText text",
-          "rect": [10, 183, 306, 254],
           "reason": "full"
         },
         {

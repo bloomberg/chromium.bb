@@ -23,11 +23,6 @@
         },
         {
           "object": "LayoutText #text",
-          "rect": [30, 30, 39, 23],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutText #text",
           "rect": [30, 30, 44, 23],
           "reason": "full"
         },

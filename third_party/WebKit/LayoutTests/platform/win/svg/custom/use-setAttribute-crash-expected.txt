@@ -23,11 +23,6 @@
         },
         {
           "object": "LayoutSVGContainer svg:use id='use'",
-          "rect": [53, 53, 10, 10],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutSVGContainer svg:use id='use'",
           "rect": [33, 33, 50, 50],
           "reason": "full"
         },
@@ -38,11 +33,6 @@
         },
         {
           "object": "LayoutSVGEllipse svg:circle id='circle'",
-          "rect": [8, 8, 5, 5],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutSVGEllipse svg:circle id='circle'",
           "rect": [8, 8, 25, 25],
           "reason": "full"
         },
@@ -50,11 +40,6 @@
           "object": "LayoutSVGEllipse svg:circle id='circle'",
           "rect": [33, 33, 50, 50],
           "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGRoot svg:svg id='svg'",
-          "rect": [53, 53, 10, 10],
-          "reason": "full"
         },
         {
           "object": "LayoutSVGRoot svg:svg id='svg'",

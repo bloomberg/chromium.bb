@@ -13,18 +13,8 @@
         },
         {
           "object": "LayoutBlockFlow div id='contentBox'",
-          "rect": [8, 68, 102, 405],
-          "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutBlockFlow div id='contentBox'",
           "rect": [8, 68, 402, 405],
           "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutSVGContainer use",
-          "rect": [9, 219, 100, 100],
-          "reason": "bounds change"
         },
         {
           "object": "LayoutSVGContainer use",
@@ -43,28 +33,13 @@
         },
         {
           "object": "LayoutSVGRect rect",
-          "rect": [9, 219, 50, 50],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGRect rect",
           "rect": [9, 69, 200, 200],
           "reason": "location change"
         },
         {
           "object": "LayoutSVGRoot svg",
-          "rect": [9, 219, 100, 100],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutSVGRoot svg",
           "rect": [9, 69, 400, 400],
           "reason": "bounds change"
-        },
-        {
-          "object": "LayoutSVGViewportContainer svg id='targetSymbol'",
-          "rect": [9, 219, 100, 100],
-          "reason": "location change"
         },
         {
           "object": "LayoutSVGViewportContainer svg id='targetSymbol'",

@@ -133,11 +133,6 @@
         },
         {
           "object": "LayoutBlockFlow DIV id='content'",
-          "rect": [148, 128, 644, 100],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow DIV id='content'",
           "rect": [138, 128, 654, 100],
           "reason": "location change"
         },
@@ -168,22 +163,12 @@
         },
         {
           "object": "LayoutBlockFlow P",
-          "rect": [148, 128, 644, 100],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow P",
           "rect": [138, 128, 654, 100],
           "reason": "location change"
         },
         {
           "object": "LayoutText #text",
           "rect": [400, 128, 389, 159],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [148, 128, 640, 99],
           "reason": "location change"
         },
         {

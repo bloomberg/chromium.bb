@@ -8,11 +8,6 @@
       "paintInvalidations": [
         {
           "object": "LayoutTable TABLE id='tbl'",
-          "rect": [8, 8, 56, 52],
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutTable TABLE id='tbl'",
           "rect": [8, 8, 58, 54],
           "reason": "style change"
         },
@@ -20,11 +15,6 @@
           "object": "LayoutTableCell TD",
           "rect": [0, 0, 0, 0],
           "reason": "full"
-        },
-        {
-          "object": "LayoutTableCell TD",
-          "rect": [8, 8, 56, 52],
-          "reason": "location change"
         },
         {
           "object": "LayoutTableCell TD",

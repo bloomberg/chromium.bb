@@ -48,11 +48,6 @@
         },
         {
           "object": "LayoutSVGRect rect",
-          "rect": [0, 0, 100, 200],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutSVGRect rect",
           "rect": [0, 0, 200, 200],
           "reason": "full"
         },
@@ -79,11 +74,6 @@
         {
           "object": "LayoutSVGText text",
           "rect": [100, 85, 100, 19],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutSVGViewportContainer svg id='inner'",
-          "rect": [0, 0, 100, 200],
           "reason": "full"
         },
         {

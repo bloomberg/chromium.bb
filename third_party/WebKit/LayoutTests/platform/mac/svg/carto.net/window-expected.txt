@@ -263,11 +263,6 @@
         },
         {
           "object": "LayoutSVGContainer g id='Windows'",
-          "rect": [38, 92, 760, 443],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutSVGContainer g id='Windows'",
           "rect": [38, 81, 760, 454],
           "reason": "bounds change"
         },
@@ -295,11 +290,6 @@
           "object": "LayoutSVGContainer g id='navWindow'",
           "rect": [624, 92, 174, 158],
           "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGContainer g id='navWindow'",
-          "rect": [624, 92, 174, 158],
-          "reason": "bounds change"
         },
         {
           "object": "LayoutSVGContainer g id='navWindow'",
@@ -375,11 +365,6 @@
           "object": "LayoutSVGContainer g id='windowTitlebarGroupnavWindow'",
           "rect": [757, 94, 36, 11],
           "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGContainer g id='windowTitlebarGroupnavWindow'",
-          "rect": [757, 94, 36, 11],
-          "reason": "bounds change"
         },
         {
           "object": "LayoutSVGContainer g id='windowTitlebarGroupnavWindow'",

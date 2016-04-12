@@ -12,11 +12,6 @@
           "reason": "bounds change"
         },
         {
-          "object": "LayoutBlockFlow BODY",
-          "rect": [0, 16, 800, 336],
-          "reason": "bounds change"
-        },
-        {
           "object": "LayoutBlockFlow DIV",
           "rect": [-60, 52, 160, 50],
           "reason": "layoutObject removal"
@@ -59,11 +54,6 @@
         {
           "object": "LayoutBlockFlow HTML",
           "rect": [-60, 0, 860, 352],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [0, 0, 800, 352],
           "reason": "bounds change"
         },
         {

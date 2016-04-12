@@ -12,11 +12,6 @@
           "reason": "bounds change"
         },
         {
-          "object": "LayoutBlockFlow BODY",
-          "rect": [0, 16, 800, 336],
-          "reason": "bounds change"
-        },
-        {
           "object": "LayoutBlockFlow DIV",
           "rect": [-50, 52, 150, 150],
           "reason": "location change"
@@ -47,18 +42,8 @@
           "reason": "bounds change"
         },
         {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [0, 0, 800, 352],
-          "reason": "bounds change"
-        },
-        {
           "object": "LayoutGrid DIV id='container'",
           "rect": [-50, 52, 250, 300],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutGrid DIV id='container'",
-          "rect": [0, 52, 200, 300],
           "reason": "bounds change"
         }
       ]

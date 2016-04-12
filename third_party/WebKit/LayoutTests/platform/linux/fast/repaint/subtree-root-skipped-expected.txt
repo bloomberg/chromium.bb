@@ -18,11 +18,6 @@
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='div'",
-          "rect": [8, 298, 10, 10],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow (positioned) DIV id='div'",
           "rect": [8, 288, 10, 20],
           "reason": "location change"
         },
@@ -30,11 +25,6 @@
           "object": "LayoutBlockFlow DIV id='inner-editor'",
           "rect": [10, 11, 150, 16],
           "reason": "invalidate paint rectangle"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [10, 11, 27, 16],
-          "reason": "full"
         },
         {
           "object": "LayoutText #text",

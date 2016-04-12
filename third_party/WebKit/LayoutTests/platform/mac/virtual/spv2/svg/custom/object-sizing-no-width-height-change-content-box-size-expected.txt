@@ -13,11 +13,6 @@
         },
         {
           "object": "LayoutBlockFlow div id='contentBox'",
-          "rect": [8, 8, 202, 405],
-          "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutBlockFlow div id='contentBox'",
           "rect": [8, 8, 402, 405],
           "reason": "forced by layout"
         },
@@ -38,18 +33,8 @@
         },
         {
           "object": "LayoutSVGRect rect",
-          "rect": [9, 109, 200, 200],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGRect rect",
           "rect": [9, 9, 400, 400],
           "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGRoot svg",
-          "rect": [9, 109, 200, 200],
-          "reason": "forced by layout"
         },
         {
           "object": "LayoutSVGRoot svg",

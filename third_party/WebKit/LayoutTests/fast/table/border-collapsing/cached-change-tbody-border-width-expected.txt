@@ -78,17 +78,7 @@
         },
         {
           "object": "LayoutTableCell TD",
-          "rect": [8, 8, 56, 52],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutTableCell TD",
           "rect": [8, 8, 56, 53],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutTableCell TD",
-          "rect": [62, 8, 55, 52],
           "reason": "location change"
         },
         {
@@ -118,17 +108,7 @@
         },
         {
           "object": "LayoutTableCell TD",
-          "rect": [9, 109, 54, 51],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutTableCell TD",
           "rect": [8, 108, 55, 53],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutTableCell TD",
-          "rect": [63, 109, 54, 51],
           "reason": "location change"
         },
         {

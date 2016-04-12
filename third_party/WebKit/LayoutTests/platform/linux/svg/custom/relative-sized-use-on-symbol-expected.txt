@@ -13,11 +13,6 @@
         },
         {
           "object": "LayoutBlockFlow div id='contentBox'",
-          "rect": [8, 52, 102, 405],
-          "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutBlockFlow div id='contentBox'",
           "rect": [8, 52, 402, 405],
           "reason": "forced by layout"
         },

@@ -12,11 +12,6 @@
           "reason": "full"
         },
         {
-          "object": "LayoutTable TABLE",
-          "rect": [8, 8, 113, 54],
-          "reason": "full"
-        },
-        {
           "object": "LayoutTableCell TD",
           "rect": [0, 0, 0, 0],
           "reason": "full"
@@ -64,11 +59,6 @@
         {
           "object": "LayoutTableSection TBODY",
           "rect": [10, 10, 165, 50],
-          "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutTableSection TBODY",
-          "rect": [10, 10, 110, 50],
           "reason": "forced by layout"
         }
       ]

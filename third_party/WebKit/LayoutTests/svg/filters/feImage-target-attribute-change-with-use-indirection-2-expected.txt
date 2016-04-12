@@ -8,11 +8,6 @@
       "paintInvalidations": [
         {
           "object": "LayoutSVGContainer use id='use'",
-          "rect": [0, 0, 50, 100],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutSVGContainer use id='use'",
           "rect": [0, 0, 100, 100],
           "reason": "location change"
         },
@@ -20,11 +15,6 @@
           "object": "LayoutSVGRect rect",
           "rect": [0, 0, 110, 110],
           "reason": "full"
-        },
-        {
-          "object": "LayoutSVGRect rect id='rect'",
-          "rect": [0, 0, 50, 100],
-          "reason": "location change"
         },
         {
           "object": "LayoutSVGRect rect id='rect'",

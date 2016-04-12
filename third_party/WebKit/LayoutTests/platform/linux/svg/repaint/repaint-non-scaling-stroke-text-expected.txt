@@ -18,18 +18,8 @@
         },
         {
           "object": "LayoutSVGContainer g",
-          "rect": [13, 17, 38, 20],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutSVGContainer g",
           "rect": [9, 13, 46, 28],
           "reason": "bounds change"
-        },
-        {
-          "object": "LayoutSVGInlineText #text",
-          "rect": [13, 17, 38, 20],
-          "reason": "style change"
         },
         {
           "object": "LayoutSVGInlineText #text",
@@ -38,18 +28,8 @@
         },
         {
           "object": "LayoutSVGRoot svg",
-          "rect": [13, 17, 38, 20],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutSVGRoot svg",
           "rect": [9, 13, 46, 28],
           "reason": "bounds change"
-        },
-        {
-          "object": "LayoutSVGText text id='t'",
-          "rect": [13, 17, 38, 20],
-          "reason": "style change"
         },
         {
           "object": "LayoutSVGText text id='t'",

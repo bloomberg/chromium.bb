@@ -8,11 +8,6 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow (positioned) DIV id='target'",
-          "rect": [45, 45, 190, 310],
-          "reason": "outline"
-        },
-        {
-          "object": "LayoutBlockFlow (positioned) DIV id='target'",
           "rect": [45, 45, 310, 310],
           "reason": "outline"
         }

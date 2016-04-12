@@ -53,11 +53,6 @@
         },
         {
           "object": "LayoutTable TABLE",
-          "rect": [8, 102, 70, 82],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutTable TABLE",
           "rect": [8, 194, 103, 82],
           "reason": "full"
         },
@@ -138,21 +133,11 @@
         },
         {
           "object": "LayoutTableCell TD",
-          "rect": [22, 102, 56, 30],
-          "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutTableCell TD",
           "rect": [22, 154, 81, 30],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutTableCell TD",
-          "rect": [22, 154, 56, 30],
-          "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutTableCell TD",
           "rect": [0, 0, 0, 0],
           "reason": "full"
         },
@@ -175,20 +160,10 @@
           "object": "LayoutTableCell TD",
           "rect": [0, 0, 0, 0],
           "reason": "full"
-        },
-        {
-          "object": "LayoutTableCell TD",
-          "rect": [22, 286, 56, 30],
-          "reason": "forced by layout"
         },
         {
           "object": "LayoutTableCell TD",
           "rect": [22, 286, 81, 30],
-          "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutTableCell TD",
-          "rect": [22, 338, 56, 30],
           "reason": "forced by layout"
         },
         {
@@ -208,22 +183,12 @@
         },
         {
           "object": "LayoutTableCell TD id='d3'",
-          "rect": [22, 316, 56, 22],
-          "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutTableCell TD id='d3'",
           "rect": [22, 316, 81, 22],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutTableSection TBODY",
           "rect": [12, 106, 87, 74],
-          "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutTableSection TBODY",
-          "rect": [12, 106, 62, 74],
           "reason": "forced by layout"
         },
         {

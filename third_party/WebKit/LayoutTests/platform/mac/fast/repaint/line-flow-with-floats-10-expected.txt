@@ -173,11 +173,6 @@
         },
         {
           "object": "LayoutText #text",
-          "rect": [65, 404, 304, 36],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutText #text",
           "rect": [368, 422, 1, 54],
           "reason": "incremental"
         },

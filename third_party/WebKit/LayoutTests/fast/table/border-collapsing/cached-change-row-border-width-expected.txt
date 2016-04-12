@@ -33,17 +33,7 @@
         },
         {
           "object": "LayoutTableCell TD",
-          "rect": [8, 8, 56, 52],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutTableCell TD",
           "rect": [8, 8, 56, 54],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutTableCell TD",
-          "rect": [8, 58, 56, 52],
           "reason": "location change"
         },
         {

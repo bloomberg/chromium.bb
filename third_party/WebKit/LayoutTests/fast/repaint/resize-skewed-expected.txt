@@ -8,11 +8,6 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow (positioned) DIV id='skewed'",
-          "rect": [0, 50, 600, 500],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutBlockFlow (positioned) DIV id='skewed'",
           "rect": [0, 50, 700, 500],
           "reason": "bounds change"
         }

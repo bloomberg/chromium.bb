@@ -13,11 +13,6 @@
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='scrollable'",
-          "rect": [8, 50, 120, 120],
-          "reason": "border box change"
-        },
-        {
-          "object": "LayoutBlockFlow (positioned) DIV id='scrollable'",
           "rect": [8, 50, 320, 120],
           "reason": "border box change"
         },

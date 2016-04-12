@@ -28,17 +28,7 @@
         },
         {
           "object": "LayoutBlockFlow DIV class='item'",
-          "rect": [0, 101, 200, 52],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow DIV class='item'",
           "rect": [0, 52, 200, 150],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow DIV class='item'",
-          "rect": [0, 251, 200, 52],
           "reason": "location change"
         },
         {

@@ -18,11 +18,6 @@
         },
         {
           "object": "LayoutBlockFlow (positioned) A id='link' class='updated'",
-          "rect": [48, 108, 82, 20],
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutBlockFlow (positioned) A id='link' class='updated'",
           "rect": [43, 103, 91, 30],
           "reason": "style change"
         },

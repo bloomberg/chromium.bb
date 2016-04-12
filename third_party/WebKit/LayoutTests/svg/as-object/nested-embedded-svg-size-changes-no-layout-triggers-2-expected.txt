@@ -53,11 +53,6 @@
         },
         {
           "object": "LayoutEmbeddedObject OBJECT",
-          "rect": [0, 0, 300, 150],
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutEmbeddedObject OBJECT",
           "rect": [0, 0, 402, 202],
           "reason": "style change"
         },

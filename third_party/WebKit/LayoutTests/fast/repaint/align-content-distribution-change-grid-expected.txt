@@ -38,27 +38,12 @@
         },
         {
           "object": "LayoutBlockFlow DIV class='item'",
-          "rect": [0, 77, 200, 50],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow DIV class='item'",
           "rect": [0, 52, 200, 100],
           "reason": "location change"
         },
         {
           "object": "LayoutBlockFlow DIV class='item'",
-          "rect": [0, 177, 200, 50],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow DIV class='item'",
           "rect": [0, 152, 200, 100],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow DIV class='item'",
-          "rect": [0, 277, 200, 50],
           "reason": "location change"
         },
         {

@@ -32,11 +32,6 @@
           "reason": "full"
         },
         {
-          "object": "LayoutText #text",
-          "rect": [8, 74, 69, 19],
-          "reason": "full"
-        },
-        {
           "object": "RootInlineBox",
           "rect": [0, 0, 0, 0],
           "reason": "full"

@@ -18,11 +18,6 @@
         },
         {
           "object": "LayoutBlockFlow (relative positioned) DIV id='box' class='rotated'",
-          "rect": [58, 50, 204, 204],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow (relative positioned) DIV id='box' class='rotated'",
           "rect": [16, 8, 288, 288],
           "reason": "location change"
         }

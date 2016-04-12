@@ -20,11 +20,6 @@
           "object": "LayoutSVGViewportContainer svg id='inner'",
           "rect": [0, 0, 200, 200],
           "reason": "full"
-        },
-        {
-          "object": "LayoutSVGViewportContainer svg id='inner'",
-          "rect": [0, 0, 100, 100],
-          "reason": "full"
         }
       ]
     }

@@ -33,18 +33,8 @@
         },
         {
           "object": "LayoutMultiColumnFlowThread (anonymous)",
-          "rect": [9, 9, 400, 100],
-          "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutMultiColumnFlowThread (anonymous)",
           "rect": [9, 9, 525, 100],
           "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [234, 15, 50, 50],
-          "reason": "full"
         },
         {
           "object": "LayoutText #text",

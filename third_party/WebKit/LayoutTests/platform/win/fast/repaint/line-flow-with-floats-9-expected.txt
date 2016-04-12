@@ -377,11 +377,6 @@
           "reason": "forced by layout"
         },
         {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [0, 0, 485, 600],
-          "reason": "forced by layout"
-        },
-        {
           "object": "LayoutBlockFlow P",
           "rect": [8, 572, 418, 18],
           "reason": "incremental"
@@ -424,11 +419,6 @@
         {
           "object": "LayoutText #text",
           "rect": [14, 404, 355, 36],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [301, 422, 67, 18],
           "reason": "bounds change"
         },
         {

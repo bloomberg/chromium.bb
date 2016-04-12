@@ -8,22 +8,12 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow (relative positioned) (floating) DIV class='imgContainer'",
-          "rect": [8, 8, 114, 236],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow (relative positioned) (floating) DIV class='imgContainer'",
           "rect": [8, 8, 194, 236],
           "reason": "location change"
         },
         {
           "object": "LayoutBlockFlow (relative positioned) DIV id='shiftMe'",
           "rect": [0, 0, 0, 0],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutImage IMG",
-          "rect": [8, 8, 114, 232],
           "reason": "location change"
         },
         {

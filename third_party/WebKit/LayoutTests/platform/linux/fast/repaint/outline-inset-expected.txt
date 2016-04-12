@@ -13,16 +13,6 @@
         },
         {
           "object": "LayoutBlockFlow DIV",
-          "rect": [19, 29, 200, 40],
-          "reason": "outline"
-        },
-        {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [19, 191, 200, 40],
-          "reason": "outline"
-        },
-        {
-          "object": "LayoutBlockFlow DIV",
           "rect": [19, 191, 200, 60],
           "reason": "outline"
         },

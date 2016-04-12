@@ -68,11 +68,6 @@
         },
         {
           "object": "LayoutTableCell TD",
-          "rect": [62, 8, 55, 52],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutTableCell TD",
           "rect": [61, 7, 57, 53],
           "reason": "location change"
         },
@@ -85,11 +80,6 @@
           "object": "LayoutTableCell TD",
           "rect": [7, 58, 56, 53],
           "reason": "bounds change"
-        },
-        {
-          "object": "LayoutTableCell TD",
-          "rect": [63, 59, 54, 51],
-          "reason": "location change"
         },
         {
           "object": "LayoutTableCell TD",

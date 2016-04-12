@@ -40,11 +40,6 @@
         },
         {
           "object": "LayoutBlockFlow HTML",
-          "rect": [0, 0, 200, 8],
-          "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutBlockFlow HTML",
           "rect": [0, 0, 300, 8],
           "reason": "forced by layout"
         },
@@ -105,11 +100,6 @@
         {
           "object": "LayoutBlockFlow HTML",
           "rect": [0, 0, 300, 8],
-          "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [0, 0, 250, 8],
           "reason": "forced by layout"
         },
         {

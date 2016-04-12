@@ -38,17 +38,7 @@
         },
         {
           "object": "LayoutText #text",
-          "rect": [86, 114, 44, 13],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutText #text",
           "rect": [84, 114, 48, 13],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutText (anonymous)",
-          "rect": [9, 84, 44, 14],
           "reason": "full"
         },
         {

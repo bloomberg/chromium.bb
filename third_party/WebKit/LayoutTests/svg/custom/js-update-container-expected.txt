@@ -12,18 +12,8 @@
           "reason": "full"
         },
         {
-          "object": "LayoutSVGContainer g id='group'",
-          "rect": [0, 0, 40, 40],
-          "reason": "full"
-        },
-        {
           "object": "LayoutSVGRect rect",
           "rect": [0, 0, 76, 76],
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutSVGRect rect",
-          "rect": [0, 0, 40, 40],
           "reason": "style change"
         },
         {

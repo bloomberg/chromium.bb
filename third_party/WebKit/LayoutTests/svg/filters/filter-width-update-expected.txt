@@ -8,11 +8,6 @@
       "paintInvalidations": [
         {
           "object": "LayoutSVGRect rect",
-          "rect": [0, 0, 40, 140],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutSVGRect rect",
           "rect": [0, 0, 140, 140],
           "reason": "full"
         },

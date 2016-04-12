@@ -13,11 +13,6 @@
         },
         {
           "object": "LayoutSVGPath polygon id='target'",
-          "rect": [18, 18, 20, 20],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutSVGPath polygon id='target'",
           "rect": [18, 18, 30, 20],
           "reason": "full"
         }

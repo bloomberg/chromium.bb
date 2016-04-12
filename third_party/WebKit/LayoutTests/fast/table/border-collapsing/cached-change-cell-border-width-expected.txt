@@ -48,11 +48,6 @@
         },
         {
           "object": "LayoutTableCell TD id='foo'",
-          "rect": [8, 8, 55, 52],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutTableCell TD id='foo'",
           "rect": [8, 8, 59, 54],
           "reason": "location change"
         },

@@ -73,11 +73,6 @@
         },
         {
           "object": "LayoutSVGRoot (positioned) svg",
-          "rect": [59, 143, 95, 23],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutSVGRoot (positioned) svg",
           "rect": [59, 43, 95, 123],
           "reason": "bounds change"
         },

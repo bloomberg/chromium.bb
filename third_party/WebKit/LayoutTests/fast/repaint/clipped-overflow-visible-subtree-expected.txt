@@ -13,11 +13,6 @@
         },
         {
           "object": "LayoutBlockFlow (floating) DIV",
-          "rect": [308, 8, 300, 100],
-          "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow (floating) DIV",
           "rect": [8, 8, 300, 100],
           "reason": "location change"
         },

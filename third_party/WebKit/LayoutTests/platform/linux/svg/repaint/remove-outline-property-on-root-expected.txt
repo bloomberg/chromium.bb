@@ -17,28 +17,13 @@
           "reason": "bounds change"
         },
         {
-          "object": "LayoutBlockFlow BODY",
-          "rect": [8, 8, 784, 105],
-          "reason": "bounds change"
-        },
-        {
           "object": "LayoutBlockFlow HTML",
           "rect": [-2, -2, 802, 123],
           "reason": "bounds change"
         },
         {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [0, 0, 800, 121],
-          "reason": "bounds change"
-        },
-        {
           "object": "LayoutSVGRoot svg",
           "rect": [-2, -2, 120, 120],
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutSVGRoot svg",
-          "rect": [8, 8, 100, 100],
           "reason": "style change"
         },
         {

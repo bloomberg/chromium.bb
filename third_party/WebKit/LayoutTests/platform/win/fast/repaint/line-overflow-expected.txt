@@ -83,17 +83,7 @@
         },
         {
           "object": "LayoutBlockFlow BODY",
-          "rect": [8, 16, 784, 262],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutBlockFlow BODY",
           "rect": [7, 16, 785, 262],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [8, 78, 200, 200],
           "reason": "bounds change"
         },
         {
@@ -119,11 +109,6 @@
         {
           "object": "LayoutText #text",
           "rect": [115, 114, 37, 18],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [8, 132, 192, 71],
           "reason": "bounds change"
         },
         {

@@ -108,11 +108,6 @@
         },
         {
           "object": "LayoutText #text",
-          "rect": [8, 132, 192, 72],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutText #text",
           "rect": [8, 114, 200, 90],
           "reason": "bounds change"
         },
