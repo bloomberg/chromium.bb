@@ -14,6 +14,7 @@ import org.chromium.chromoting.help.HelpSingleton;
 public class RemotingApplication extends Application {
     @Override
     public void onCreate() {
+        super.onCreate();
         AccountSwitcherFactory.setInstance(new AccountSwitcherFactory());
         HelpSingleton.setInstance(new HelpAndFeedbackBasic());
     }
