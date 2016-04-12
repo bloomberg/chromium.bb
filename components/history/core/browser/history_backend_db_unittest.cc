@@ -519,6 +519,24 @@ TEST_F(HistoryBackendDBTest, MigrateDownloadMimeType) {
   }
 }
 
+bool IsValidRFC4122Ver4GUID(const std::string& guid) {
+  // base::IsValidGUID() doesn't restrict its validation to version (or subtype)
+  // 4 GUIDs as described in RFC 4122. So we check if base::IsValidGUID() thinks
+  // it's a valid GUID first, and then check the additional constraints.
+  //
+  // * Bits 4-7 of time_hi_and_version should be set to 0b0100 == 4
+  //   => guid[14] == '4'
+  //
+  // * Bits 6-7 of clk_seq_hi_res should be set to 0b10
+  //   => guid[19] in {'8','9','A','B'}
+  //
+  // * All other bits should be random or pseudo random.
+  //   => http://dilbert.com/strip/2001-10-25
+  return base::IsValidGUID(guid) && guid[14] == '4' &&
+         (guid[19] == '8' || guid[19] == '9' || guid[19] == 'A' ||
+          guid[19] == 'B');
+}
+
 TEST_F(HistoryBackendDBTest, MigrateHashHttpMethodAndGenerateGuids) {
   const size_t kDownloadCount = 100;
   ASSERT_NO_FATAL_FAILURE(CreateDBVersion(29));
@@ -583,7 +601,7 @@ TEST_F(HistoryBackendDBTest, MigrateHashHttpMethodAndGenerateGuids) {
       std::unordered_set<std::string> guids;
       while (s.Step()) {
         std::string guid = s.ColumnString(0);
-        EXPECT_TRUE(base::IsValidGUID(guid));
+        EXPECT_TRUE(IsValidRFC4122Ver4GUID(guid));
         EXPECT_EQ(guid, base::ToUpperASCII(guid));
         guids.insert(guid);
       }
