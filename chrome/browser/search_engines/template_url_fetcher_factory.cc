@@ -9,7 +9,6 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/search_engines/template_url_fetcher.h"
-#include "content/public/browser/storage_partition.h"
 
 // static
 TemplateURLFetcher* TemplateURLFetcherFactory::GetForProfile(
@@ -44,8 +43,7 @@ KeyedService* TemplateURLFetcherFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   return new TemplateURLFetcher(
       TemplateURLServiceFactory::GetForProfile(static_cast<Profile*>(profile)),
-      content::BrowserContext::GetDefaultStoragePartition(profile)->
-          GetURLRequestContext());
+      profile->GetRequestContext());
 }
 
 content::BrowserContext* TemplateURLFetcherFactory::GetBrowserContextToUse(

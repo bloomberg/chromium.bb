@@ -24,7 +24,6 @@
 #include "content/common/cache_storage/cache_storage_types.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/storage_partition.h"
 #include "content/public/common/referrer.h"
 #include "content/public/test/mock_special_storage_policy.h"
 #include "content/public/test/test_browser_context.h"
@@ -306,8 +305,7 @@ class CacheStorageCacheTest : public testing::Test {
         "blob", CreateMockBlobProtocolHandler(blob_storage_context->context()));
 
     net::URLRequestContext* url_request_context =
-        BrowserContext::GetDefaultStoragePartition(&browser_context_)->
-            GetURLRequestContext()->GetURLRequestContext();
+        browser_context_.GetRequestContext()->GetURLRequestContext();
 
     url_request_context->set_job_factory(url_request_job_factory_.get());
 
@@ -315,9 +313,8 @@ class CacheStorageCacheTest : public testing::Test {
 
     cache_ = make_scoped_refptr(new TestCacheStorageCache(
         GURL(kOrigin), kCacheName, temp_dir_.path(),
-        BrowserContext::GetDefaultStoragePartition(&browser_context_)->
-            GetURLRequestContext(),
-        quota_manager_proxy_, blob_storage_context->context()->AsWeakPtr()));
+        browser_context_.GetRequestContext(), quota_manager_proxy_,
+        blob_storage_context->context()->AsWeakPtr()));
   }
 
   void TearDown() override {
@@ -614,8 +611,8 @@ class CacheStorageCacheTest : public testing::Test {
 
  protected:
   base::ScopedTempDir temp_dir_;
-  TestBrowserThreadBundle browser_thread_bundle_;
   TestBrowserContext browser_context_;
+  TestBrowserThreadBundle browser_thread_bundle_;
   std::unique_ptr<net::URLRequestJobFactoryImpl> url_request_job_factory_;
   scoped_refptr<MockSpecialStoragePolicy> quota_policy_;
   scoped_refptr<MockQuotaManager> mock_quota_manager_;

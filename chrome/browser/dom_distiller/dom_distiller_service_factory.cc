@@ -18,7 +18,6 @@
 #include "components/leveldb_proto/proto_database_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/storage_partition.h"
 
 namespace dom_distiller {
 
@@ -71,9 +70,7 @@ KeyedService* DomDistillerServiceFactory::BuildServiceInstanceFor(
   scoped_ptr<DistillerPageFactory> distiller_page_factory(
       new DistillerPageWebContentsFactory(profile));
   scoped_ptr<DistillerURLFetcherFactory> distiller_url_fetcher_factory(
-      new DistillerURLFetcherFactory(
-          content::BrowserContext::GetDefaultStoragePartition(profile)->
-              GetURLRequestContext()));
+      new DistillerURLFetcherFactory(profile->GetRequestContext()));
 
   dom_distiller::proto::DomDistillerOptions options;
   if (VLOG_IS_ON(1)) {

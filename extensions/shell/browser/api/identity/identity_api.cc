@@ -9,7 +9,6 @@
 
 #include "base/guid.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/storage_partition.h"
 #include "extensions/common/manifest_handlers/oauth2_manifest_handler.h"
 #include "extensions/shell/browser/shell_oauth2_token_service.h"
 #include "extensions/shell/common/api/identity.h"
@@ -110,10 +109,7 @@ void IdentityGetAuthTokenFunction::OnGetTokenSuccess(
   }
 
   // Use the logging-in-user access token to mint an access token for this app.
-  mint_token_flow_->Start(
-      content::BrowserContext::GetDefaultStoragePartition(browser_context())->
-          GetURLRequestContext(),
-      access_token);
+  mint_token_flow_->Start(browser_context()->GetRequestContext(), access_token);
 }
 
 void IdentityGetAuthTokenFunction::OnGetTokenFailure(

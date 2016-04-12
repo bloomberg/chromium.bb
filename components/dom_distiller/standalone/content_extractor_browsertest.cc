@@ -31,7 +31,6 @@
 #include "components/pref_registry/testing_pref_service_syncable.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/storage_partition.h"
 #include "content/public/common/isolated_world_ids.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/shell/browser/shell.h"
@@ -140,9 +139,7 @@ scoped_ptr<DomDistillerService> CreateDomDistillerService(
   scoped_ptr<DistillerPageFactory> distiller_page_factory(
       new DistillerPageWebContentsFactory(context));
   scoped_ptr<DistillerURLFetcherFactory> distiller_url_fetcher_factory(
-      new DistillerURLFetcherFactory(
-          content::BrowserContext::GetDefaultStoragePartition(context)->
-              GetURLRequestContext()));
+      new DistillerURLFetcherFactory(context->GetRequestContext()));
 
   dom_distiller::proto::DomDistillerOptions options;
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(kExtractTextOnly)) {

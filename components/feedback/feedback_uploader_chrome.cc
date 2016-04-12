@@ -17,7 +17,6 @@
 #include "components/variations/net/variations_http_headers.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/storage_partition.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_fetcher.h"
 #include "url/gurl.h"
@@ -63,9 +62,7 @@ void FeedbackUploaderChrome::DispatchReport(const std::string& data) {
   fetcher->SetExtraRequestHeaders(headers.ToString());
 
   fetcher->SetUploadData(kProtoBufMimeType, data);
-  fetcher->SetRequestContext(
-      content::BrowserContext::GetDefaultStoragePartition(context_)->
-          GetURLRequestContext());
+  fetcher->SetRequestContext(context_->GetRequestContext());
   fetcher->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES |
                         net::LOAD_DO_NOT_SEND_COOKIES);
   fetcher->Start();

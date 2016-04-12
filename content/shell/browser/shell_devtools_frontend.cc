@@ -18,7 +18,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
 #include "content/shell/browser/shell.h"
@@ -228,10 +227,8 @@ void ShellDevToolsFrontend::HandleMessageFromDevToolsFrontend(
     net::URLFetcher* fetcher =
         net::URLFetcher::Create(gurl, net::URLFetcher::GET, this).release();
     pending_requests_[fetcher] = request_id;
-    fetcher->SetRequestContext(
-        BrowserContext::GetDefaultStoragePartition(
-            web_contents()->GetBrowserContext())->
-                GetURLRequestContext());
+    fetcher->SetRequestContext(web_contents()->GetBrowserContext()->
+        GetRequestContext());
     fetcher->SetExtraRequestHeaders(headers);
     fetcher->SaveResponseWithWriter(
         std::unique_ptr<net::URLFetcherResponseWriter>(

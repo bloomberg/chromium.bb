@@ -300,6 +300,8 @@ BrowsingDataRemover::BrowsingDataRemover(
     content::BrowserContext* browser_context)
     : profile_(Profile::FromBrowserContext(browser_context)),
       is_removing_(false),
+      main_context_getter_(browser_context->GetRequestContext()),
+      media_context_getter_(browser_context->GetMediaRequestContext()),
 #if BUILDFLAG(ANDROID_JAVA_UI)
       webapp_registry_(new WebappRegistry()),
 #endif
@@ -642,15 +644,16 @@ void BrowsingDataRemover::RemoveImpl(const TimeRange& time_range,
         UserMetricsAction("ClearBrowsingData_ChannelIDs"));
     // Since we are running on the UI thread don't call GetURLRequestContext().
     scoped_refptr<net::URLRequestContextGetter> rq_context =
-        content::BrowserContext::GetDefaultStoragePartition(profile_)->
-          GetURLRequestContext();
-    waiting_for_clear_channel_ids_ = true;
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::Bind(&ClearChannelIDsOnIOThread, delete_begin_, delete_end_,
-                    std::move(rq_context),
-                    base::Bind(&BrowsingDataRemover::OnClearedChannelIDs,
-                              weak_ptr_factory_.GetWeakPtr())));
+        profile_->GetRequestContext();
+    if (rq_context) {
+      waiting_for_clear_channel_ids_ = true;
+      BrowserThread::PostTask(
+          BrowserThread::IO, FROM_HERE,
+          base::Bind(&ClearChannelIDsOnIOThread, delete_begin_, delete_end_,
+                     std::move(rq_context),
+                     base::Bind(&BrowsingDataRemover::OnClearedChannelIDs,
+                                weak_ptr_factory_.GetWeakPtr())));
+    }
   }
 
   if (remove_mask & REMOVE_LOCAL_STORAGE) {

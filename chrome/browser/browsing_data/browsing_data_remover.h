@@ -422,6 +422,10 @@ class BrowsingDataRemover : public KeyedService
   // to artificially delay completion. Used for testing.
   static CompletionInhibitor* completion_inhibitor_;
 
+  // Used to delete data from HTTP cache.
+  scoped_refptr<net::URLRequestContextGetter> main_context_getter_;
+  scoped_refptr<net::URLRequestContextGetter> media_context_getter_;
+
 #if defined(ENABLE_PLUGINS)
   // Used to delete plugin data.
   scoped_ptr<content::PluginDataRemover> plugin_data_remover_;

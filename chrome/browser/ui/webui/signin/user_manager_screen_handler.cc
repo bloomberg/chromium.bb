@@ -49,7 +49,6 @@
 #include "components/proximity_auth/screenlock_bridge.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "content/public/browser/notification_service.h"
-#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
@@ -431,9 +430,8 @@ void UserManagerScreenHandler::HandleAuthenticatedLaunchUser(
     // change makes use of a token so we do that... if it's available.
     if (!oauth_client_) {
       oauth_client_.reset(new gaia::GaiaOAuthClient(
-          content::BrowserContext::GetDefaultStoragePartition(
-              web_ui()->GetWebContents()->GetBrowserContext())->
-                  GetURLRequestContext()));
+          web_ui()->GetWebContents()->GetBrowserContext()
+              ->GetRequestContext()));
     }
 
     const std::string token = entry->GetPasswordChangeDetectionToken();

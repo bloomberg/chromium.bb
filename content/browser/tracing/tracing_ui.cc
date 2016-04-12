@@ -29,7 +29,6 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/trace_uploader.h"
 #include "content/public/browser/tracing_controller.h"
 #include "content/public/browser/tracing_delegate.h"
@@ -295,9 +294,7 @@ void TracingUI::DoUploadInternal(const std::string& file_contents,
       weak_factory_.GetWeakPtr());
 
   trace_uploader_ = delegate_->GetTraceUploader(
-      BrowserContext::GetDefaultStoragePartition(
-          web_ui()->GetWebContents()->GetBrowserContext())->
-              GetURLRequestContext());
+      web_ui()->GetWebContents()->GetBrowserContext()->GetRequestContext());
   DCHECK(trace_uploader_);
   trace_uploader_->DoUpload(file_contents, upload_mode, nullptr,
                             progress_callback, done_callback);

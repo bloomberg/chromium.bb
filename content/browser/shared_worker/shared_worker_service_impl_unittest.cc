@@ -23,7 +23,6 @@
 #include "content/common/message_port_messages.h"
 #include "content/common/view_messages.h"
 #include "content/common/worker_messages.h"
-#include "content/public/browser/storage_partition.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
@@ -47,16 +46,15 @@ class SharedWorkerServiceImplTest : public testing::Test {
   SharedWorkerServiceImplTest()
       : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
         browser_context_(new TestBrowserContext()),
-        partition_(new WorkerStoragePartition(
-            BrowserContext::GetDefaultStoragePartition(browser_context_.get())->
-                GetURLRequestContext(),
-            NULL,
-            NULL,
-            NULL,
-            NULL,
-            NULL,
-            NULL,
-            NULL)) {
+        partition_(
+            new WorkerStoragePartition(browser_context_->GetRequestContext(),
+                                       NULL,
+                                       NULL,
+                                       NULL,
+                                       NULL,
+                                       NULL,
+                                       NULL,
+                                       NULL)) {
     SharedWorkerServiceImpl::GetInstance()
         ->ChangeUpdateWorkerDependencyFuncForTesting(
             &SharedWorkerServiceImplTest::MockUpdateWorkerDependency);

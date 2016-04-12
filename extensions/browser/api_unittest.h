@@ -49,7 +49,6 @@ class ApiUnitTest : public ExtensionsTest {
  protected:
   // SetUp creates and loads an empty, unpacked Extension.
   void SetUp() override;
-  void TearDown() override;
 
   // Creates a background page for |extension_|, and sets it for the WebContents
   // to be used in API calls.

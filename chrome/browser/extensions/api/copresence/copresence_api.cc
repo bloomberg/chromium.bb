@@ -22,7 +22,6 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/storage_partition.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
@@ -171,8 +170,7 @@ void CopresenceService::HandleStatusUpdate(
 }
 
 net::URLRequestContextGetter* CopresenceService::GetRequestContext() const {
-  return content::BrowserContext::GetDefaultStoragePartition(browser_context_)->
-      GetURLRequestContext();
+  return browser_context_->GetRequestContext();
 }
 
 std::string CopresenceService::GetPlatformVersionString() const {

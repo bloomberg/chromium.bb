@@ -156,8 +156,8 @@ class PrecacheManagerTest : public testing::Test {
   }
 
   // Must be declared first so that it is destroyed last.
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
   content::TestBrowserContext browser_context_;
+  content::TestBrowserThreadBundle test_browser_thread_bundle_;
   PrecacheManagerUnderTest precache_manager_;
   TestURLFetcherCallback url_callback_;
   net::FakeURLFetcherFactory factory_;

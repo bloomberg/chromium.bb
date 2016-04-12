@@ -125,6 +125,10 @@ DownloadManagerDelegate* ShellBrowserContext::GetDownloadManagerDelegate()  {
   return download_manager_delegate_.get();
 }
 
+net::URLRequestContextGetter* ShellBrowserContext::GetRequestContext()  {
+  return GetDefaultStoragePartition(this)->GetURLRequestContext();
+}
+
 ShellURLRequestContextGetter*
 ShellBrowserContext::CreateURLRequestContextGetter(
     ProtocolHandlerMap* protocol_handlers,
@@ -148,23 +152,20 @@ net::URLRequestContextGetter* ShellBrowserContext::CreateRequestContext(
 
 net::URLRequestContextGetter*
     ShellBrowserContext::GetMediaRequestContext()  {
-  return BrowserContext::GetDefaultStoragePartition(this)->
-      GetURLRequestContext();
+  return GetRequestContext();
 }
 
 net::URLRequestContextGetter*
     ShellBrowserContext::GetMediaRequestContextForRenderProcess(
         int renderer_child_id)  {
-  return BrowserContext::GetDefaultStoragePartition(this)->
-      GetURLRequestContext();
+  return GetRequestContext();
 }
 
 net::URLRequestContextGetter*
     ShellBrowserContext::GetMediaRequestContextForStoragePartition(
         const base::FilePath& partition_path,
         bool in_memory) {
-  return BrowserContext::GetDefaultStoragePartition(this)->
-      GetURLRequestContext();
+  return GetRequestContext();
 }
 
 net::URLRequestContextGetter*

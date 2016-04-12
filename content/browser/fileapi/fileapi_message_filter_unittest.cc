@@ -18,14 +18,11 @@
 #include "content/browser/streams/stream_registry.h"
 #include "content/common/fileapi/file_system_messages.h"
 #include "content/common/fileapi/webblob_messages.h"
-#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/storage_partition.h"
 #include "content/public/common/common_param_traits.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_file_system_context.h"
 #include "net/base/io_buffer.h"
 #include "storage/browser/blob/blob_storage_context.h"
@@ -49,7 +46,7 @@ const char kFakeContentType[] = "fake/type";
 class FileAPIMessageFilterTest : public testing::Test {
  public:
   FileAPIMessageFilterTest()
-      : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {
+      : io_browser_thread_(BrowserThread::IO, &message_loop_) {
   }
 
  protected:
@@ -71,17 +68,18 @@ class FileAPIMessageFilterTest : public testing::Test {
 
     filter_ = new FileAPIMessageFilter(
         0 /* process_id */,
-        BrowserContext::GetDefaultStoragePartition(&browser_context_)->
-            GetURLRequestContext(),
+        browser_context_.GetRequestContext(),
         file_system_context_.get(),
         blob_storage_context_,
         stream_context_);
 
     // Complete initialization.
-    base::MessageLoop::current()->RunUntilIdle();
+    message_loop_.RunUntilIdle();
   }
 
-  TestBrowserThreadBundle browser_thread_bundle_;
+  base::MessageLoop message_loop_;
+  TestBrowserThread io_browser_thread_;
+
   TestBrowserContext browser_context_;
   scoped_refptr<storage::FileSystemContext> file_system_context_;
   StreamContext* stream_context_;
@@ -94,15 +92,14 @@ TEST_F(FileAPIMessageFilterTest, CloseChannelWithInflightRequest) {
   scoped_refptr<FileAPIMessageFilter> filter(
       new FileAPIMessageFilter(
           0 /* process_id */,
-          BrowserContext::GetDefaultStoragePartition(&browser_context_)->
-              GetURLRequestContext(),
+          browser_context_.GetRequestContext(),
           file_system_context_.get(),
           ChromeBlobStorageContext::GetFor(&browser_context_),
           StreamContext::GetFor(&browser_context_)));
   filter->OnChannelConnected(0);
 
   // Complete initialization.
-  base::MessageLoop::current()->RunUntilIdle();
+  message_loop_.RunUntilIdle();
 
   int request_id = 0;
   const GURL kUrl("filesystem:http://example.com/temporary/foo");
@@ -113,23 +110,21 @@ TEST_F(FileAPIMessageFilterTest, CloseChannelWithInflightRequest) {
   filter->OnChannelClosing();
 
   // This shouldn't cause DCHECK failure.
-  base::MessageLoop::current()->RunUntilIdle();
+  message_loop_.RunUntilIdle();
 }
 
 TEST_F(FileAPIMessageFilterTest, MultipleFilters) {
   scoped_refptr<FileAPIMessageFilter> filter1(
       new FileAPIMessageFilter(
           0 /* process_id */,
-          BrowserContext::GetDefaultStoragePartition(&browser_context_)->
-              GetURLRequestContext(),
+          browser_context_.GetRequestContext(),
           file_system_context_.get(),
           ChromeBlobStorageContext::GetFor(&browser_context_),
           StreamContext::GetFor(&browser_context_)));
   scoped_refptr<FileAPIMessageFilter> filter2(
       new FileAPIMessageFilter(
           1 /* process_id */,
-          BrowserContext::GetDefaultStoragePartition(&browser_context_)->
-              GetURLRequestContext(),
+          browser_context_.GetRequestContext(),
           file_system_context_.get(),
           ChromeBlobStorageContext::GetFor(&browser_context_),
           StreamContext::GetFor(&browser_context_)));
@@ -137,7 +132,7 @@ TEST_F(FileAPIMessageFilterTest, MultipleFilters) {
   filter2->OnChannelConnected(1);
 
   // Complete initialization.
-  base::MessageLoop::current()->RunUntilIdle();
+  message_loop_.RunUntilIdle();
 
   int request_id = 0;
   const GURL kUrl("filesystem:http://example.com/temporary/foo");
@@ -148,7 +143,7 @@ TEST_F(FileAPIMessageFilterTest, MultipleFilters) {
   filter2->OnChannelClosing();
 
   // This shouldn't cause DCHECK failure.
-  base::MessageLoop::current()->RunUntilIdle();
+  message_loop_.RunUntilIdle();
 }
 
 TEST_F(FileAPIMessageFilterTest, BuildEmptyStream) {
@@ -184,7 +179,7 @@ TEST_F(FileAPIMessageFilterTest, BuildEmptyStream) {
   EXPECT_EQ(0, bytes_read);
 
   // Run loop to finish transfer.
-  base::MessageLoop::current()->RunUntilIdle();
+  message_loop_.RunUntilIdle();
 
   EXPECT_EQ(Stream::STREAM_COMPLETE,
             stream->ReadRawData(buffer.get(), kBufferSize, &bytes_read));
@@ -214,7 +209,7 @@ TEST_F(FileAPIMessageFilterTest, BuildNonEmptyStream) {
   EXPECT_TRUE(filter_->OnMessageReceived(finish_message));
 
   // Run loop to finish transfer and commit finalize command.
-  base::MessageLoop::current()->RunUntilIdle();
+  message_loop_.RunUntilIdle();
 
   scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kFakeData.size()));
   int bytes_read = 0;
@@ -261,7 +256,7 @@ TEST_F(FileAPIMessageFilterTest, BuildStreamWithSharedMemory) {
   EXPECT_TRUE(filter_->OnMessageReceived(finish_message));
 
   // Run loop to finish transfer and commit finalize command.
-  base::MessageLoop::current()->RunUntilIdle();
+  message_loop_.RunUntilIdle();
 
   scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kFakeData.size()));
   int bytes_read = 0;

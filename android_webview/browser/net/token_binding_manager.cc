@@ -6,7 +6,6 @@
 
 #include "android_webview/browser/aw_browser_context.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/storage_partition.h"
 #include "net/ssl/channel_id_service.h"
 #include "net/ssl/channel_id_store.h"
 #include "net/url_request/url_request_context.h"
@@ -85,8 +84,7 @@ TokenBindingManager::TokenBindingManager() : enabled_(false) {}
 void TokenBindingManager::GetKey(const std::string& host,
                                  KeyReadyCallback callback) {
   scoped_refptr<net::URLRequestContextGetter> context_getter =
-      content::BrowserContext::GetDefaultStoragePartition(
-          AwBrowserContext::GetDefault())->GetURLRequestContext();
+      AwBrowserContext::GetDefault()->GetRequestContext();
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&GetKeyImpl, host, callback, context_getter));
@@ -95,8 +93,7 @@ void TokenBindingManager::GetKey(const std::string& host,
 void TokenBindingManager::DeleteKey(const std::string& host,
                                     DeletionCompleteCallback callback) {
   scoped_refptr<net::URLRequestContextGetter> context_getter =
-      content::BrowserContext::GetDefaultStoragePartition(
-          AwBrowserContext::GetDefault())->GetURLRequestContext();
+      AwBrowserContext::GetDefault()->GetRequestContext();
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&DeleteKeyImpl, host, callback, context_getter, false));
@@ -104,8 +101,7 @@ void TokenBindingManager::DeleteKey(const std::string& host,
 
 void TokenBindingManager::DeleteAllKeys(DeletionCompleteCallback callback) {
   scoped_refptr<net::URLRequestContextGetter> context_getter =
-      content::BrowserContext::GetDefaultStoragePartition(
-          AwBrowserContext::GetDefault())->GetURLRequestContext();
+      AwBrowserContext::GetDefault()->GetRequestContext();
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&DeleteKeyImpl, "", callback, context_getter, true));

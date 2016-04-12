@@ -11,7 +11,6 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher.h"
 #include "chrome/browser/profiles/profile.h"
-#include "content/public/browser/storage_partition.h"
 #include "net/base/load_flags.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
@@ -129,8 +128,7 @@ scoped_ptr<chrome::BitmapFetcher> BitmapFetcherService::CreateFetcher(
       new chrome::BitmapFetcher(url, this));
 
   new_fetcher->Init(
-      content::BrowserContext::GetDefaultStoragePartition(context_)->
-          GetURLRequestContext(),
+      context_->GetRequestContext(),
       std::string(),
       net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE,
       net::LOAD_NORMAL);

@@ -6,8 +6,6 @@
 
 #include <vector>
 
-#include "content/public/browser/storage_partition.h"
-
 namespace extensions {
 
 ShellOAuth2TokenServiceDelegate::ShellOAuth2TokenServiceDelegate(
@@ -42,8 +40,7 @@ ShellOAuth2TokenServiceDelegate::CreateAccessTokenFetcher(
 
 net::URLRequestContextGetter*
 ShellOAuth2TokenServiceDelegate::GetRequestContext() const {
-  return content::BrowserContext::GetDefaultStoragePartition(browser_context_)->
-      GetURLRequestContext();
+  return browser_context_->GetRequestContext();
 }
 
 std::vector<std::string> ShellOAuth2TokenServiceDelegate::GetAccounts() {

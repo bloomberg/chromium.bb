@@ -8,7 +8,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/storage_partition.h"
 #include "content/shell/browser/shell_browser_context.h"
 
 namespace content {
@@ -37,9 +36,7 @@ void ShellAccessTokenStore::LoadAccessTokens(
 
 void ShellAccessTokenStore::GetRequestContextOnUIThread(
     content::ShellBrowserContext* shell_browser_context) {
-  system_request_context_ =
-      BrowserContext::GetDefaultStoragePartition(shell_browser_context)->
-          GetURLRequestContext();
+  system_request_context_ = shell_browser_context->GetRequestContext();
 }
 
 void ShellAccessTokenStore::RespondOnOriginatingThread(

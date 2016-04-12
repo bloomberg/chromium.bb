@@ -39,7 +39,6 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
@@ -782,8 +781,7 @@ std::string GetCookies(BrowserContext* browser_context, const GURL& url) {
   std::string cookies;
   base::WaitableEvent event(true, false);
   net::URLRequestContextGetter* context_getter =
-      BrowserContext::GetDefaultStoragePartition(browser_context)->
-          GetURLRequestContext();
+      browser_context->GetRequestContext();
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
@@ -799,8 +797,7 @@ bool SetCookie(BrowserContext* browser_context,
   bool result = false;
   base::WaitableEvent event(true, false);
   net::URLRequestContextGetter* context_getter =
-      BrowserContext::GetDefaultStoragePartition(browser_context)->
-          GetURLRequestContext();
+      browser_context->GetRequestContext();
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,

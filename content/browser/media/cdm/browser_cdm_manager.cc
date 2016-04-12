@@ -23,7 +23,6 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_process_host_observer.h"
-#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "media/base/cdm_config.h"
 #include "media/base/cdm_factory.h"
@@ -292,9 +291,9 @@ media::CdmFactory* BrowserCdmManager::GetCdmFactory() {
     if (!cdm_factory_) {
       // Obtain http request context for the current render process.
       net::URLRequestContextGetter* context_getter =
-          BrowserContext::GetDefaultStoragePartition(
-              RenderProcessHost::FromID(render_process_id_)->
-                  GetBrowserContext())->GetURLRequestContext();
+          RenderProcessHost::FromID(render_process_id_)
+              ->GetBrowserContext()
+              ->GetRequestContext();
       DCHECK(context_getter);
 
       cdm_factory_.reset(new media::AndroidCdmFactory(

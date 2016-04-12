@@ -14,7 +14,6 @@
 #include "chrome/browser/local_discovery/service_discovery_shared_client.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/storage_partition.h"
 #include "net/url_request/url_request_context_getter.h"
 
 namespace extensions {
@@ -145,8 +144,7 @@ void GcdPrivateAPIImpl::OnServiceResolved(int session_id,
 
   if (!context_getter_) {
     context_getter_ = new PrivetV3ContextGetter(
-        content::BrowserContext::GetDefaultStoragePartition(browser_context_)->
-            GetURLRequestContext()->GetNetworkTaskRunner());
+        browser_context_->GetRequestContext()->GetNetworkTaskRunner());
   }
 
   session_data.session.reset(new PrivetV3Session(

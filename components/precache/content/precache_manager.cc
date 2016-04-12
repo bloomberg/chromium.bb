@@ -23,7 +23,6 @@
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/storage_partition.h"
 #include "net/base/network_change_notifier.h"
 
 using content::BrowserThread;
@@ -280,15 +279,13 @@ void PrecacheManager::OnHostsReceived(
     hosts.push_back(host_count.first);
 
   // Start precaching.
-  precache_fetcher_.reset(new PrecacheFetcher(
-      hosts,
-      content::BrowserContext::GetDefaultStoragePartition(browser_context_)->
-            GetURLRequestContext(),
-      GURL(variations::GetVariationParamValue(
-          kPrecacheFieldTrialName, kConfigURLParam)),
-      variations::GetVariationParamValue(
-          kPrecacheFieldTrialName, kManifestURLPrefixParam),
-      this));
+  precache_fetcher_.reset(
+      new PrecacheFetcher(hosts, browser_context_->GetRequestContext(),
+                          GURL(variations::GetVariationParamValue(
+                              kPrecacheFieldTrialName, kConfigURLParam)),
+                          variations::GetVariationParamValue(
+                              kPrecacheFieldTrialName, kManifestURLPrefixParam),
+                          this));
   precache_fetcher_->Start();
 }
 

@@ -314,6 +314,10 @@ DownloadManagerDelegate* OffTheRecordProfileImpl::GetDownloadManagerDelegate() {
       GetDownloadManagerDelegate();
 }
 
+net::URLRequestContextGetter* OffTheRecordProfileImpl::GetRequestContext() {
+  return GetDefaultStoragePartition(this)->GetURLRequestContext();
+}
+
 net::URLRequestContextGetter* OffTheRecordProfileImpl::CreateRequestContext(
     content::ProtocolHandlerMap* protocol_handlers,
     content::URLRequestInterceptorScopedVector request_interceptors) {
@@ -342,10 +346,6 @@ OffTheRecordProfileImpl::GetMediaRequestContextForStoragePartition(
     bool in_memory) {
   return io_data_->GetIsolatedAppRequestContextGetter(partition_path, in_memory)
       .get();
-}
-
-net::URLRequestContextGetter* OffTheRecordProfileImpl::GetRequestContext() {
-  return GetDefaultStoragePartition(this)->GetURLRequestContext();
 }
 
 net::URLRequestContextGetter*

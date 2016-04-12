@@ -16,7 +16,6 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/load_flags.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
@@ -118,8 +117,7 @@ void ChromeOmniboxNavigationObserver::Observe(
                     content::NotificationService::AllSources());
   if (fetcher_) {
     fetcher_->SetRequestContext(
-        content::BrowserContext::GetDefaultStoragePartition(
-            controller->GetBrowserContext())->GetURLRequestContext());
+        controller->GetBrowserContext()->GetRequestContext());
   }
   WebContentsObserver::Observe(web_contents);
   // DidStartNavigationToPendingEntry() will be called for this load as well.

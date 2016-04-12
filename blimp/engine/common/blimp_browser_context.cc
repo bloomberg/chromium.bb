@@ -105,21 +105,25 @@ BlimpBrowserContext::GetSystemRequestContextGetter() {
   return system_context_getter_.get();
 }
 
+net::URLRequestContextGetter* BlimpBrowserContext::GetRequestContext() {
+  return GetDefaultStoragePartition(this)->GetURLRequestContext();
+}
+
 net::URLRequestContextGetter* BlimpBrowserContext::GetMediaRequestContext() {
-  return resource_context_->url_request_context_getter().get();
+  return GetRequestContext();
 }
 
 net::URLRequestContextGetter*
 BlimpBrowserContext::GetMediaRequestContextForRenderProcess(
     int renderer_child_id) {
-  return resource_context_->url_request_context_getter().get();
+  return GetRequestContext();
 }
 
 net::URLRequestContextGetter*
 BlimpBrowserContext::GetMediaRequestContextForStoragePartition(
     const base::FilePath& partition_path,
     bool in_memory) {
-  return resource_context_->url_request_context_getter().get();
+  return GetRequestContext();
 }
 
 content::ResourceContext* BlimpBrowserContext::GetResourceContext() {

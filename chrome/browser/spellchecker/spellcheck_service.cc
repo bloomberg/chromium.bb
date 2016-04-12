@@ -29,7 +29,6 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/storage_partition.h"
 #include "ipc/ipc_platform_file.h"
 
 using content::BrowserThread;
@@ -88,9 +87,7 @@ SpellcheckService::SpellcheckService(content::BrowserContext* context)
       &language_code,
       &country_code);
   feedback_sender_.reset(new spellcheck::FeedbackSender(
-      content::BrowserContext::GetDefaultStoragePartition(context)->
-            GetURLRequestContext(),
-      language_code, country_code));
+      context->GetRequestContext(), language_code, country_code));
 
   pref_change_registrar_.Add(
       prefs::kSpellCheckDictionaries,
@@ -229,10 +226,7 @@ void SpellcheckService::LoadHunspellDictionaries() {
     std::string dictionary;
     dictionary_value->GetAsString(&dictionary);
     hunspell_dictionaries_.push_back(new SpellcheckHunspellDictionary(
-        dictionary,
-        content::BrowserContext::GetDefaultStoragePartition(context_)->
-            GetURLRequestContext(),
-        this));
+        dictionary, context_->GetRequestContext(), this));
     hunspell_dictionaries_.back()->AddObserver(this);
     hunspell_dictionaries_.back()->Load();
   }

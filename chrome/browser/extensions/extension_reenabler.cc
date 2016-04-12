@@ -10,7 +10,6 @@
 #include "chrome/browser/extensions/webstore_data_fetcher.h"
 #include "chrome/browser/extensions/webstore_inline_installer.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
@@ -84,8 +83,7 @@ ExtensionReenabler::ExtensionReenabler(
   if (!referrer_url_.is_empty()) {
     webstore_data_fetcher_.reset(new WebstoreDataFetcher(
         this,
-        content::BrowserContext::GetDefaultStoragePartition(browser_context_)->
-            GetURLRequestContext(),
+        browser_context_->GetRequestContext(),
         referrer_url_,
         extension->id()));
     webstore_data_fetcher_->Start();

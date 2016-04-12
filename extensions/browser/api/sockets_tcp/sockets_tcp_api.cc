@@ -5,7 +5,6 @@
 #include "extensions/browser/api/sockets_tcp/sockets_tcp_api.h"
 
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/storage_partition.h"
 #include "content/public/common/socket_permission_request.h"
 #include "extensions/browser/api/socket/tcp_socket.h"
 #include "extensions/browser/api/socket/tls_socket.h"
@@ -456,8 +455,7 @@ bool SocketsTcpSecureFunction::Prepare() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   params_ = api::sockets_tcp::Secure::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
-  url_request_getter_ = content::BrowserContext::GetDefaultStoragePartition(
-      browser_context())->GetURLRequestContext();
+  url_request_getter_ = browser_context()->GetRequestContext();
   return true;
 }
 

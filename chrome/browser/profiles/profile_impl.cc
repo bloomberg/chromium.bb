@@ -915,6 +915,10 @@ PrefService* ProfileImpl::GetOffTheRecordPrefs() {
   return otr_prefs_.get();
 }
 
+net::URLRequestContextGetter* ProfileImpl::GetRequestContext() {
+  return GetDefaultStoragePartition(this)->GetURLRequestContext();
+}
+
 net::URLRequestContextGetter* ProfileImpl::GetMediaRequestContext() {
   // Return the default media context.
   return io_data_.GetMediaRequestContextGetter().get();
@@ -940,10 +944,6 @@ ProfileImpl::GetMediaRequestContextForStoragePartition(
 
 content::ResourceContext* ProfileImpl::GetResourceContext() {
   return io_data_.GetResourceContext();
-}
-
-net::URLRequestContextGetter* ProfileImpl::GetRequestContext() {
-  return GetDefaultStoragePartition(this)->GetURLRequestContext();
 }
 
 net::URLRequestContextGetter* ProfileImpl::GetRequestContextForExtensions() {

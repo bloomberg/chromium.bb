@@ -9,16 +9,14 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/devtools/devtools_agent_host_impl.h"
 #include "content/browser/devtools/shared_worker_devtools_agent_host.h"
 #include "content/browser/shared_worker/shared_worker_instance.h"
 #include "content/browser/shared_worker/worker_storage_partition.h"
-#include "content/public/browser/browser_context.h"
-#include "content/public/browser/storage_partition.h"
 #include "content/public/test/test_browser_context.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
@@ -50,18 +48,17 @@ class SharedWorkerDevToolsManagerTest : public testing::Test {
   typedef SharedWorkerDevToolsAgentHost::WorkerState WorkerState;
 
   SharedWorkerDevToolsManagerTest()
-      : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
+      : ui_thread_(BrowserThread::UI, &message_loop_),
         browser_context_(new TestBrowserContext()),
-        partition_(new WorkerStoragePartition(
-            BrowserContext::GetDefaultStoragePartition(browser_context_.get())->
-                GetURLRequestContext(),
-            NULL,
-            NULL,
-            NULL,
-            NULL,
-            NULL,
-            NULL,
-            NULL)),
+        partition_(
+            new WorkerStoragePartition(browser_context_->GetRequestContext(),
+                                       NULL,
+                                       NULL,
+                                       NULL,
+                                       NULL,
+                                       NULL,
+                                       NULL,
+                                       NULL)),
         partition_id_(*partition_.get()) {}
 
  protected:
@@ -93,7 +90,8 @@ class SharedWorkerDevToolsManagerTest : public testing::Test {
     EXPECT_EQ(size, manager_->workers_.size());
   }
 
-  TestBrowserThreadBundle browser_thread_bundle_;
+  base::MessageLoopForIO message_loop_;
+  BrowserThreadImpl ui_thread_;
   std::unique_ptr<TestBrowserContext> browser_context_;
   std::unique_ptr<WorkerStoragePartition> partition_;
   const WorkerStoragePartitionId partition_id_;

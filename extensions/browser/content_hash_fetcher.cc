@@ -21,7 +21,6 @@
 #include "base/version.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/storage_partition.h"
 #include "crypto/sha2.h"
 #include "extensions/browser/computed_hashes.h"
 #include "extensions/browser/content_hash_tree.h"
@@ -463,9 +462,7 @@ void ContentHashFetcher::DoFetch(const Extension* extension, bool force) {
   GURL url =
       delegate_->GetSignatureFetchUrl(extension->id(), *extension->version());
   ContentHashFetcherJob* job = new ContentHashFetcherJob(
-      content::BrowserContext::GetDefaultStoragePartition(context_)->
-          GetURLRequestContext(),
-      delegate_->GetPublicKey(), extension->id(),
+      context_->GetRequestContext(), delegate_->GetPublicKey(), extension->id(),
       extension->path(), url, force,
       base::Bind(&ContentHashFetcher::JobFinished,
                  weak_ptr_factory_.GetWeakPtr()));

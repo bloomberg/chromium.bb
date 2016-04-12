@@ -8,7 +8,6 @@
 #include "chromecast/browser/cast_browser_context.h"
 #include "chromecast/browser/cast_content_browser_client.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_client.h"
 
 namespace chromecast {
@@ -23,8 +22,7 @@ CastAccessTokenStore::~CastAccessTokenStore() {
 }
 
 void CastAccessTokenStore::GetRequestContextGetterOnUIThread() {
-  request_context_ = content::BrowserContext::GetDefaultStoragePartition(
-      browser_context_)->GetURLRequestContext();
+  request_context_ = browser_context_->GetRequestContext();
 }
 
 void CastAccessTokenStore::RespondOnOriginatingThread() {
