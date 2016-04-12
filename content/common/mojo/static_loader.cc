@@ -13,9 +13,9 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/simple_thread.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "mojo/shell/public/cpp/application_runner.h"
-#include "mojo/shell/public/cpp/shell_client.h"
-#include "mojo/shell/public/interfaces/shell_client.mojom.h"
+#include "services/shell/public/cpp/application_runner.h"
+#include "services/shell/public/cpp/shell_client.h"
+#include "services/shell/public/interfaces/shell_client.mojom.h"
 
 namespace content {
 

@@ -20,8 +20,8 @@ source_set("lib") {
     "//mash/session/public/interfaces",
     "//mojo/common",
     "//mojo/public/cpp/bindings",
-    "//mojo/shell/public/cpp",
-    "//mojo/shell/public/cpp:sources",
+    "//services/shell/public/cpp",
+    "//services/shell/public/cpp:sources",
   ]
 
   data_deps = [
@@ -45,8 +45,8 @@ mojo_native_application("session") {
     "//mash/session/public/interfaces",
     "//mojo/common",
     "//mojo/public/cpp/bindings",
-    "//mojo/shell/public/cpp",
-    "//mojo/shell/public/cpp:sources",
+    "//services/shell/public/cpp",
+    "//services/shell/public/cpp:sources",
   ]
 
   data_deps = [

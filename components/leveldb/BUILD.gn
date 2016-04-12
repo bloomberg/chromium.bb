@@ -25,7 +25,7 @@ source_set("lib") {
     "//mojo/common",
     "//mojo/message_pump",
     "//mojo/platform_handle",
-    "//mojo/shell/public/cpp",
+    "//services/shell/public/cpp",
     "//third_party/leveldatabase",
   ]
 }
@@ -45,7 +45,7 @@ mojo_native_application("leveldb") {
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/system",
     "//mojo/services/tracing/public/cpp",
-    "//mojo/shell/public/cpp",
+    "//services/shell/public/cpp",
   ]
 
   data_deps = [
@@ -72,9 +72,9 @@ test("leveldb_service_unittests") {
     "//mojo/common",
     "//mojo/platform_handle",
     "//mojo/public/cpp/bindings",
-    "//mojo/shell/public/cpp:shell_test_support",
-    "//mojo/shell/public/cpp:sources",
-    "//mojo/shell/public/cpp/test:run_all_shelltests",
+    "//services/shell/public/cpp:shell_test_support",
+    "//services/shell/public/cpp:sources",
+    "//services/shell/public/cpp/test:run_all_shelltests",
     "//third_party/leveldatabase",
   ]
 

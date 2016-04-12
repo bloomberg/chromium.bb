@@ -16,7 +16,7 @@
 #include "build/build_config.h"
 #include "components/filesystem/directory_impl.h"
 #include "components/filesystem/lock_table.h"
-#include "mojo/shell/public/cpp/connection.h"
+#include "services/shell/public/cpp/connection.h"
 #include "url/gurl.h"
 
 namespace filesystem {

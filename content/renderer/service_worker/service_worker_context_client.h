@@ -22,7 +22,7 @@
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/common/service_worker_event_status.mojom.h"
 #include "ipc/ipc_listener.h"
-#include "mojo/shell/public/interfaces/interface_provider.mojom.h"
+#include "services/shell/public/interfaces/interface_provider.mojom.h"
 #include "third_party/WebKit/public/platform/WebGeofencingEventType.h"
 #include "third_party/WebKit/public/platform/WebMessagePortChannel.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerError.h"

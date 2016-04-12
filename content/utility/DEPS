@@ -3,7 +3,7 @@ include_rules = [
   "+content/child",
   "+content/public/utility",
   "+media/mojo/services",
-  "+mojo/shell",
-  "+mojo/shell",
+  "+services/shell",
+  "+services/shell",
   "+sandbox/win/src",
 ]

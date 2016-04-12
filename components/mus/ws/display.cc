@@ -20,7 +20,7 @@
 #include "components/mus/ws/window_tree_binding.h"
 #include "mojo/common/common_type_converters.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
-#include "mojo/shell/public/interfaces/connector.mojom.h"
+#include "services/shell/public/interfaces/connector.mojom.h"
 #include "ui/base/cursor/cursor.h"
 
 namespace mus {

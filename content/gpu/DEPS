@@ -5,7 +5,7 @@ include_rules = [
   "+libEGL",
   "+libGLESv2",
   "+media/mojo/services",
-  "+mojo/shell",
+  "+services/shell",
   "+sandbox",
   "+skia",
 ]

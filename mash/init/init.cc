@@ -8,8 +8,8 @@
 #include "base/command_line.h"
 #include "base/guid.h"
 #include "mash/login/public/interfaces/login.mojom.h"
-#include "mojo/shell/public/cpp/connection.h"
-#include "mojo/shell/public/cpp/connector.h"
+#include "services/shell/public/cpp/connection.h"
+#include "services/shell/public/cpp/connector.h"
 
 namespace mash {
 namespace init {

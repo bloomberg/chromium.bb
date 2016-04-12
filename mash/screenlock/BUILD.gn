@@ -23,8 +23,8 @@ mojo_native_application("screenlock") {
     "//mojo/common",
     "//mojo/public/cpp/bindings",
     "//mojo/services/tracing/public/cpp",
-    "//mojo/shell/public/cpp",
-    "//mojo/shell/public/cpp:sources",
+    "//services/shell/public/cpp",
+    "//services/shell/public/cpp:sources",
     "//ui/views",
     "//ui/views/mus:for_mojo_application",
   ]

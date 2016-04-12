@@ -15,10 +15,10 @@
 #include "mash/example/window_type_launcher/window_type_launcher.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/process_delegate.h"
-#include "mojo/shell/public/cpp/shell_connection.h"
-#include "mojo/shell/public/interfaces/shell_client.mojom.h"
-#include "mojo/shell/runner/common/client_util.h"
-#include "mojo/shell/runner/init.h"
+#include "services/shell/public/cpp/shell_connection.h"
+#include "services/shell/public/interfaces/shell_client.mojom.h"
+#include "services/shell/runner/common/client_util.h"
+#include "services/shell/runner/init.h"
 
 namespace {
 

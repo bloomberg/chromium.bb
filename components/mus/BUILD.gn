@@ -20,7 +20,7 @@ mojo_native_application("mus") {
     ":resources_200",
     ":resources_strings",
     "//mojo/platform_handle:for_shared_library",
-    "//mojo/shell/public/cpp:sources",
+    "//services/shell/public/cpp:sources",
   ]
 
   if (is_win) {
@@ -81,7 +81,7 @@ source_set("lib") {
     "//components/resource_provider/public/cpp",
     "//mojo/common:common_base",
     "//mojo/services/tracing/public/cpp",
-    "//mojo/shell/public/cpp",
+    "//services/shell/public/cpp",
     "//ui/events",
     "//ui/events/ozone:events_ozone_layout",
     "//ui/gl:gl",

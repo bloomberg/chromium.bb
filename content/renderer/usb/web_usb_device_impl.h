@@ -14,7 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "device/usb/public/interfaces/device.mojom.h"
 #include "device/usb/public/interfaces/device_manager.mojom.h"
-#include "mojo/shell/public/interfaces/interface_provider.mojom.h"
+#include "services/shell/public/interfaces/interface_provider.mojom.h"
 #include "third_party/WebKit/public/platform/modules/webusb/WebUSBDevice.h"
 #include "third_party/WebKit/public/platform/modules/webusb/WebUSBDeviceInfo.h"
 #include "third_party/WebKit/public/platform/modules/webusb/WebUSBError.h"

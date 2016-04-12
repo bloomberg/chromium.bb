@@ -9,7 +9,7 @@
 #include "cc/resources/shared_bitmap_manager.h"
 #include "cc/surfaces/surface_id_allocator.h"
 #include "components/mus/public/cpp/window.h"
-#include "mojo/shell/public/interfaces/connector.mojom.h"
+#include "services/shell/public/interfaces/connector.mojom.h"
 #include "ui/compositor/reflector.h"
 #include "ui/gl/gl_bindings.h"
 

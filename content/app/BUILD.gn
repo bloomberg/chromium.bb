@@ -31,7 +31,7 @@ content_app_deps = [
   "//content/public/common:common_sources",
   "//content/public/common:mojo_bindings",
   "//crypto",
-  "//mojo/shell/public/interfaces",
+  "//services/shell/public/interfaces",
   "//mojo/edk/system",
   "//ui/base",
   "//ui/gfx",

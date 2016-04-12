@@ -26,8 +26,8 @@ source_set("lib") {
     "//mojo/message_pump",
     "//mojo/platform_handle",
     "//mojo/services/tracing/public/cpp",
-    "//mojo/shell/public/cpp",
-    "//mojo/shell/public/interfaces",
+    "//services/shell/public/cpp",
+    "//services/shell/public/interfaces",
     "//url",
   ]
 }

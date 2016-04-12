@@ -29,7 +29,7 @@ source_set("mus") {
     "//mojo/converters/geometry",
     "//mojo/converters/input_events",
     "//mojo/converters/surfaces",
-    "//mojo/shell/public/cpp",
+    "//services/shell/public/cpp",
     "//third_party/WebKit/public:blink",
     "//ui/events:events",
     "//ui/events:events_base",

@@ -13,7 +13,7 @@
 #include "components/mus/ws/user_id_tracker.h"
 #include "components/mus/ws/window_server.h"
 #include "components/mus/ws/window_tree.h"
-#include "mojo/shell/public/interfaces/connector.mojom.h"
+#include "services/shell/public/interfaces/connector.mojom.h"
 #include "ui/events/event.h"
 
 namespace mus {

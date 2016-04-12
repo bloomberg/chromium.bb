@@ -10,7 +10,7 @@
 #include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
 #include "media/mojo/interfaces/service_factory.mojom.h"
-#include "mojo/shell/public/interfaces/interface_provider.mojom.h"
+#include "services/shell/public/interfaces/interface_provider.mojom.h"
 #include "url/gurl.h"
 
 namespace content {

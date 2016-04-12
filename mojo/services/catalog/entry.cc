@@ -6,8 +6,8 @@
 
 #include "base/values.h"
 #include "mojo/services/catalog/store.h"
-#include "mojo/shell/public/cpp/names.h"
 #include "mojo/util/filename_util.h"
+#include "services/shell/public/cpp/names.h"
 #include "url/gurl.h"
 
 namespace catalog {

@@ -21,7 +21,7 @@ component("bitmap_uploader") {
     "//mojo/converters/surfaces",
     "//mojo/gles2",
     "//mojo/public/c/system:for_component",
-    "//mojo/shell/public/cpp",
-    "//mojo/shell/public/interfaces",
+    "//services/shell/public/cpp",
+    "//services/shell/public/interfaces",
   ]
 }

@@ -9,7 +9,7 @@
 #include "chromecast/browser/media/cast_mojo_media_client.h"
 #include "media/base/media_log.h"
 #include "media/mojo/services/service_factory_impl.h"
-#include "mojo/shell/public/cpp/connection.h"
+#include "services/shell/public/cpp/connection.h"
 
 namespace {
 void CreateServiceFactory(

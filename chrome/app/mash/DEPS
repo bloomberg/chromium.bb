@@ -9,5 +9,5 @@ include_rules = [
   "+components/mus",
   "+components/resource_provider",
   "+mash",
-  "+mojo/shell",
+  "+services/shell",
 ]

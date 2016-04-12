@@ -1,4 +1,4 @@
 include_rules = [
   "+mojo/message_pump",
-  "+mojo/shell/public/interfaces",
+  "+services/shell/public/interfaces",
 ]

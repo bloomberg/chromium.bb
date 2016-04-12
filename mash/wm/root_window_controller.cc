@@ -21,7 +21,7 @@
 #include "mash/wm/window_layout.h"
 #include "mash/wm/window_manager.h"
 #include "mash/wm/window_manager_application.h"
-#include "mojo/shell/public/cpp/connector.h"
+#include "services/shell/public/cpp/connector.h"
 
 namespace mash {
 namespace wm {

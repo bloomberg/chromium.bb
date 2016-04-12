@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "content/common/process_control.mojom.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "mojo/shell/public/interfaces/shell_client.mojom.h"
+#include "services/shell/public/interfaces/shell_client.mojom.h"
 
 namespace mojo {
 namespace shell {

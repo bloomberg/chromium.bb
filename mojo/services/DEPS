@@ -2,5 +2,5 @@ include_rules = [
   "-mojo",
   "+mojo/common",
   "+mojo/public",
-  "+mojo/shell/public",
+  "+services/shell/public",
 ]

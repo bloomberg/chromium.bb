@@ -54,7 +54,7 @@ source_set("gpu_sources") {
     "//gpu/ipc/service",
     "//ipc",
     "//media/mojo/services:application_factory",
-    "//mojo/shell/public/interfaces",
+    "//services/shell/public/interfaces",
     "//skia",
     "//ui/events/ipc",
     "//ui/gfx/ipc",

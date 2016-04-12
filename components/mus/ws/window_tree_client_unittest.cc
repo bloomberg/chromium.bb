@@ -17,7 +17,7 @@
 #include "components/mus/ws/test_change_tracker.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
-#include "mojo/shell/public/cpp/shell_test.h"
+#include "services/shell/public/cpp/shell_test.h"
 
 using mojo::Array;
 using mojo::Callback;

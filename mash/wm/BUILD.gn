@@ -73,7 +73,7 @@ source_set("lib") {
     "//mojo/converters/geometry",
     "//mojo/converters/input_events",
     "//mojo/services/tracing/public/cpp",
-    "//mojo/shell/public/cpp",
+    "//services/shell/public/cpp",
     "//skia",
     "//ui/aura",
     "//ui/events",
@@ -97,7 +97,7 @@ mojo_native_application("wm") {
   deps = [
     ":lib",
     ":resources",
-    "//mojo/shell/public/cpp",
+    "//services/shell/public/cpp",
   ]
 
   # TODO(beng): This target relies on //mash/session, but there is a cycle so we
@@ -156,7 +156,7 @@ source_set("unittests") {
     "//mojo/gles2",
     "//mojo/platform_handle",
     "//mojo/public/cpp/system",
-    "//mojo/shell/public/cpp:shell_test_support",
+    "//services/shell/public/cpp:shell_test_support",
     "//testing/gtest",
     "//ui/base",
     "//ui/events",

@@ -11,7 +11,7 @@
 #include "components/profile_service/profile_service_impl.h"
 #include "components/profile_service/user_id_map.h"
 #include "mojo/public/cpp/bindings/callback.h"
-#include "mojo/shell/public/cpp/connection.h"
+#include "services/shell/public/cpp/connection.h"
 
 namespace profile {
 

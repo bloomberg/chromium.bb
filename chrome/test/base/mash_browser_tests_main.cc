@@ -14,12 +14,12 @@
 #include "chrome/test/base/mojo_test_connector.h"
 #include "content/public/common/mojo_shell_connection.h"
 #include "content/public/test/test_launcher.h"
-#include "mojo/shell/public/cpp/connector.h"
-#include "mojo/shell/public/cpp/shell_client.h"
-#include "mojo/shell/public/cpp/shell_connection.h"
-#include "mojo/shell/runner/common/switches.h"
-#include "mojo/shell/runner/host/child_process.h"
-#include "mojo/shell/runner/init.h"
+#include "services/shell/public/cpp/connector.h"
+#include "services/shell/public/cpp/shell_client.h"
+#include "services/shell/public/cpp/shell_connection.h"
+#include "services/shell/runner/common/switches.h"
+#include "services/shell/runner/host/child_process.h"
+#include "services/shell/runner/init.h"
 
 namespace {
 

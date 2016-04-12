@@ -6,8 +6,8 @@
 
 #include "base/single_thread_task_runner.h"
 #include "media/mojo/services/mojo_renderer_impl.h"
-#include "mojo/shell/public/cpp/connect.h"
-#include "mojo/shell/public/interfaces/interface_provider.mojom.h"
+#include "services/shell/public/cpp/connect.h"
+#include "services/shell/public/interfaces/interface_provider.mojom.h"
 
 namespace media {
 

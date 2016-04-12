@@ -19,9 +19,9 @@
 #include "ipc/ipc_sender.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/public/cpp/system/message_pipe.h"
-#include "mojo/shell/public/cpp/connector.h"
-#include "mojo/shell/public/interfaces/shell.mojom.h"
-#include "mojo/shell/public/interfaces/shell_client.mojom.h"
+#include "services/shell/public/cpp/connector.h"
+#include "services/shell/public/interfaces/shell.mojom.h"
+#include "services/shell/public/interfaces/shell_client.mojom.h"
 
 namespace content {
 namespace {

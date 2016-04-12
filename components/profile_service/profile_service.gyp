@@ -31,6 +31,7 @@
         '../../components/filesystem/filesystem.gyp:filesystem_lib',
         '../../components/leveldb/leveldb.gyp:leveldb_lib',
         '../../mojo/mojo_base.gyp:mojo_application_base',
+        '../../mojo/mojo_base.gyp:mojo_application_bindings',
         '../../mojo/mojo_base.gyp:tracing_service',
         '../../mojo/mojo_edk.gyp:mojo_system_impl',
         '../../mojo/mojo_public.gyp:mojo_cpp_bindings',

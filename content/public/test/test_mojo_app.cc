@@ -8,8 +8,8 @@
 
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
-#include "mojo/shell/public/cpp/connection.h"
-#include "mojo/shell/public/cpp/connector.h"
+#include "services/shell/public/cpp/connection.h"
+#include "services/shell/public/cpp/connector.h"
 
 namespace content {
 

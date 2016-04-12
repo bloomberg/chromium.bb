@@ -9,8 +9,8 @@
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "base/values.h"
-#include "mojo/shell/public/cpp/capabilities.h"
-#include "mojo/shell/public/cpp/names.h"
+#include "services/shell/public/cpp/capabilities.h"
+#include "services/shell/public/cpp/names.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace catalog {

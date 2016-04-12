@@ -1,0 +1,6 @@
+include_rules = [
+  "+mojo",
+
+  "-services",
+  "+services/shell",
+]

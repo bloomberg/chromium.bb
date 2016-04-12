@@ -79,8 +79,8 @@ source_set("proxy") {
     "//media/mojo/interfaces",
     "//mojo/common",
     "//mojo/public/c/system:for_component",
-    "//mojo/shell/public/cpp:sources",
-    "//mojo/shell/public/interfaces",
+    "//services/shell/public/cpp:sources",
+    "//services/shell/public/interfaces",
   ]
 }
 
@@ -92,7 +92,7 @@ source_set("cdm_service") {
     "//media/mojo/interfaces",
     "//mojo/common",
     "//mojo/public/c/system:for_component",
-    "//mojo/shell/public/interfaces",
+    "//services/shell/public/interfaces",
     "//url",
   ]
 
@@ -183,7 +183,7 @@ source_set("application") {
     "//base",
     "//media",
     "//media/mojo/interfaces",
-    "//mojo/shell/public/cpp",
+    "//services/shell/public/cpp",
   ]
 }
 
@@ -199,7 +199,7 @@ source_set("application_factory") {
     ":application",
     "//base",
     "//media",
-    "//mojo/shell/public/cpp:sources",
+    "//services/shell/public/cpp:sources",
   ]
 
   if (enable_test_mojo_media_client) {
@@ -236,7 +236,7 @@ mojo_native_application("media") {
     "//media",
     "//mojo/logging",
     "//mojo/public/c/system:for_shared_library",
-    "//mojo/shell/public/cpp:sources",
+    "//services/shell/public/cpp:sources",
   ]
 }
 
@@ -261,7 +261,7 @@ mojo_native_application("media_apptests") {
     "//media/base:test_support",
     "//media/mojo/common",
     "//media/mojo/interfaces",
-    "//mojo/shell/public/cpp:test_support",
+    "//services/shell/public/cpp:test_support",
     "//testing/gmock",
     "//testing/gtest",
   ]

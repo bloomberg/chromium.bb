@@ -12,9 +12,9 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "media/mojo/interfaces/service_factory.mojom.h"
-#include "mojo/shell/public/cpp/interface_factory.h"
-#include "mojo/shell/public/cpp/message_loop_ref.h"
-#include "mojo/shell/public/cpp/shell_client.h"
+#include "services/shell/public/cpp/interface_factory.h"
+#include "services/shell/public/cpp/message_loop_ref.h"
+#include "services/shell/public/cpp/shell_client.h"
 #include "url/gurl.h"
 
 namespace media {

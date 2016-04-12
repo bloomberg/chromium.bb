@@ -8,7 +8,7 @@
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "base/memory/ptr_util.h"
-#include "mojo/shell/public/cpp/connector.h"
+#include "services/shell/public/cpp/connector.h"
 
 namespace ash {
 

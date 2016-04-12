@@ -7,7 +7,7 @@
 
 #include "base/callback_forward.h"
 #include "content/common/content_export.h"
-#include "mojo/shell/public/interfaces/shell_client.mojom.h"
+#include "services/shell/public/interfaces/shell_client.mojom.h"
 
 namespace mojo {
 class Connection;

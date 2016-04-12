@@ -3,7 +3,7 @@ include_rules = [
   "+components/mus/common/util.h",
   "+components/mus/public",
   "+components/prefs",
-  "+mojo/shell",
+  "+services/shell",
   "+mojo/common",
   "+mojo/converters",
   "+mojo/public",

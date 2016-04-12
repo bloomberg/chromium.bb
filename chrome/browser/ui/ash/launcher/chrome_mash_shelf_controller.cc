@@ -10,7 +10,7 @@
 #include "chrome/grit/theme_resources.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/common/mojo_shell_connection.h"
-#include "mojo/shell/public/cpp/connector.h"
+#include "services/shell/public/cpp/connector.h"
 #include "skia/public/type_converters.h"
 #include "ui/base/resource/resource_bundle.h"
 

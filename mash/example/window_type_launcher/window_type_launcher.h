@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "mojo/shell/public/cpp/shell_client.h"
+#include "services/shell/public/cpp/shell_client.h"
 
 namespace views {
 class AuraInit;

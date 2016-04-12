@@ -9,7 +9,7 @@
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "mojo/platform_handle/platform_handle_functions.h"
-#include "mojo/shell/public/cpp/connection.h"
+#include "services/shell/public/cpp/connection.h"
 
 static_assert(static_cast<uint32_t>(SkTypeface::kNormal) ==
                   static_cast<uint32_t>(font_service::TypefaceStyle::NORMAL),

@@ -6,7 +6,7 @@
 
 #include "base/message_loop/message_loop.h"
 #include "components/leveldb/leveldb_service_impl.h"
-#include "mojo/shell/public/cpp/connection.h"
+#include "services/shell/public/cpp/connection.h"
 
 namespace leveldb {
 

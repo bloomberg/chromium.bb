@@ -8,7 +8,7 @@
 #include "media/mojo/services/test_mojo_media_client.h"
 #include "mojo/logging/init_logging.h"
 #include "mojo/public/c/system/main.h"
-#include "mojo/shell/public/cpp/application_runner.h"
+#include "services/shell/public/cpp/application_runner.h"
 
 MojoResult MojoMain(MojoHandle mojo_handle) {
   // Enable logging.

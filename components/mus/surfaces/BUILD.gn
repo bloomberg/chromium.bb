@@ -29,7 +29,7 @@ source_set("surfaces") {
     "//mojo/converters/geometry",
     "//mojo/converters/surfaces",
     "//mojo/services/tracing/public/cpp",
-    "//mojo/shell/public/cpp",
+    "//services/shell/public/cpp",
     "//ui/gfx",
     "//ui/gl",
     "//ui/mojo/geometry:interfaces",

@@ -14,9 +14,9 @@
 #include "content/public/common/content_switches.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
-#include "mojo/shell/public/cpp/shell_client.h"
-#include "mojo/shell/public/cpp/shell_connection.h"
-#include "mojo/shell/runner/common/client_util.h"
+#include "services/shell/public/cpp/shell_client.h"
+#include "services/shell/public/cpp/shell_connection.h"
+#include "services/shell/runner/common/client_util.h"
 
 namespace content {
 namespace {

@@ -36,8 +36,8 @@
 #include "media/mojo/interfaces/renderer.mojom.h"
 #include "media/mojo/interfaces/service_factory.mojom.h"
 #include "media/mojo/services/mojo_renderer_impl.h"
-#include "mojo/shell/public/cpp/application_test_base.h"
-#include "mojo/shell/public/cpp/connect.h"
+#include "services/shell/public/cpp/application_test_base.h"
+#include "services/shell/public/cpp/connect.h"
 
 // TODO(dalecurtis): The mojo renderer is in another process, so we have no way
 // currently to get hashes for video and audio samples.  This also means that

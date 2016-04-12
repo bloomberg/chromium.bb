@@ -16,6 +16,6 @@ source_set("cpp") {
     "//base",
     "//mojo/public/cpp/bindings",
     "//mojo/services/tracing/public/interfaces",
-    "//mojo/shell/public/cpp",
+    "//services/shell/public/cpp",
   ]
 }

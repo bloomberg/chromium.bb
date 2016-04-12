@@ -89,9 +89,9 @@ source_set("chromeos") {
     "//media",
     "//media/mojo/interfaces",
     "//mojo/common",
-    "//mojo/shell/public/cpp",
     "//net",
     "//ppapi/proxy:ipc",  # For PpapiMsg_LoadPlugin
+    "//services/shell/public/cpp",
 
     # TODO: care about enable_basic_printing and enable_print_preview.
     "//printing",

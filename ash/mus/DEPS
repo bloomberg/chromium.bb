@@ -10,7 +10,7 @@ include_rules = [
   "+mojo/converters",
   "+mojo/public",
   "+mojo/services/tracing/public",
-  "+mojo/shell/public",
+  "+services/shell/public",
   "+skia/public",
   "+third_party/khronos/GLES2/gl2.h",
 ]

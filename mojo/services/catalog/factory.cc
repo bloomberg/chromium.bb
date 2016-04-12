@@ -6,8 +6,8 @@
 
 #include "base/bind.h"
 #include "mojo/services/catalog/catalog.h"
-#include "mojo/shell/public/cpp/connection.h"
-#include "mojo/shell/public/cpp/shell_connection.h"
+#include "services/shell/public/cpp/connection.h"
+#include "services/shell/public/cpp/shell_connection.h"
 
 namespace catalog {
 

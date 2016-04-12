@@ -19,8 +19,8 @@ source_set("lib") {
     "//mojo/public/cpp/bindings",
     "//mojo/services/catalog/public/interfaces",
     "//mojo/services/tracing/public/cpp",
-    "//mojo/shell/public/cpp",
-    "//mojo/shell/public/interfaces",
+    "//services/shell/public/cpp",
+    "//services/shell/public/interfaces",
     "//ui/views",
     "//ui/views/mus:for_mojo_application",
     "//url",
@@ -34,7 +34,7 @@ mojo_native_application("quick_launch") {
 
   deps = [
     ":lib",
-    "//mojo/shell/public/cpp",
+    "//services/shell/public/cpp",
     "//ui/views/mus:for_mojo_application",
   ]
 

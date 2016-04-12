@@ -10,7 +10,7 @@ include_rules = [
   "+content/app/strings/grit",  # For generated headers
   "+content/public/child",
   "+media/base",
-  "+mojo/shell",
-  "+mojo/shell",
+  "+services/shell",
+  "+services/shell",
   "+v8/include/v8.h"
 ]

@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "content/public/browser/mojo_app_connection.h"
-#include "mojo/shell/public/interfaces/interface_provider.mojom.h"
+#include "services/shell/public/interfaces/interface_provider.mojom.h"
 
 namespace content {
 

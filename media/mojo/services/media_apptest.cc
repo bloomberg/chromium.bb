@@ -21,7 +21,7 @@
 #include "media/mojo/interfaces/renderer.mojom.h"
 #include "media/mojo/interfaces/service_factory.mojom.h"
 #include "media/mojo/services/mojo_demuxer_stream_impl.h"
-#include "mojo/shell/public/cpp/application_test_base.h"
+#include "services/shell/public/cpp/application_test_base.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using testing::Exactly;

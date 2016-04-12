@@ -12,7 +12,7 @@
 #include "components/mus/public/cpp/window_tree_delegate.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "components/mus/public/interfaces/window_tree_host.mojom.h"
-#include "mojo/shell/public/cpp/interface_factory.h"
+#include "services/shell/public/cpp/interface_factory.h"
 
 namespace mus {
 

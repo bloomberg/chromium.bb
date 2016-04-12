@@ -1355,8 +1355,8 @@ if (!is_android) {
       ]
 
       deps += [
-        "//mojo/shell/background:lib",
-        "//mojo/shell/background/tests:test_support",
+        "//services/shell/background:lib",
+        "//services/shell/background/tests:test_support",
       ]
 
       data_deps += [

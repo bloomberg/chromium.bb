@@ -5,8 +5,8 @@
 #include "ui/views/mus/screen_mus.h"
 
 #include "mojo/converters/geometry/geometry_type_converters.h"
-#include "mojo/shell/public/cpp/connection.h"
-#include "mojo/shell/public/cpp/connector.h"
+#include "services/shell/public/cpp/connection.h"
+#include "services/shell/public/cpp/connector.h"
 #include "ui/gfx/display_finder.h"
 #include "ui/gfx/display_observer.h"
 #include "ui/views/mus/screen_mus_delegate.h"

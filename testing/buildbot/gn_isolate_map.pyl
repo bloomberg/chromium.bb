@@ -378,7 +378,7 @@
     "type": "unknown",
   },
   "mojo_shell_unittests": {
-    "label": "//mojo/shell:mojo_shell_unittests",
+    "label": "//services/shell:mojo_shell_unittests",
     "type": "unknown",
   },
   "mojo_surfaces_lib_unittests": {

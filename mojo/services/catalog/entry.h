@@ -10,7 +10,7 @@
 
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
-#include "mojo/shell/public/cpp/capabilities.h"
+#include "services/shell/public/cpp/capabilities.h"
 
 namespace base {
 class DictionaryValue;

@@ -5,7 +5,7 @@
 #include "base/macros.h"
 #include "components/resource_provider/test.mojom.h"
 #include "mojo/public/cpp/bindings/string.h"
-#include "mojo/shell/public/cpp/shell_test.h"
+#include "services/shell/public/cpp/shell_test.h"
 
 namespace resource_provider {
 namespace test {

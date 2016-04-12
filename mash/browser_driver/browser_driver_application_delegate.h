@@ -14,7 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "components/mus/public/interfaces/accelerator_registrar.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/shell/public/cpp/shell_client.h"
+#include "services/shell/public/cpp/shell_client.h"
 
 namespace mash {
 namespace browser_driver {

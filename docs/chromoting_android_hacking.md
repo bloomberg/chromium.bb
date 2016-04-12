@@ -72,7 +72,7 @@ display log messages to the `LogCat` pane.
 <classpathentry kind="src" path="mojo/public/java/src"/>
 <classpathentry kind="src" path="mojo/android/system/src"/>
 <classpathentry kind="src" path="mojo/android/javatests/src"/>
-<classpathentry kind="src" path="mojo/shell/android/apk/src"/>
+<classpathentry kind="src" path="services/shell/android/apk/src"/>
 <classpathentry kind="src" path="mojo/services/native_viewport/android/src"/>
 <classpathentry kind="src" path="testing/android/java/src"/>
 <classpathentry kind="src" path="printing/android/java/src"/>

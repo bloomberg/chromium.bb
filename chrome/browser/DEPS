@@ -37,7 +37,7 @@ include_rules = [
   "+media/mojo",  # For mojo media services.
   "+mojo/converters",
   "+mojo/runner/child",
-  "+mojo/shell/public/cpp",
+  "+services/shell/public/cpp",
   "+policy",  # For generated headers and source
   "+ppapi/c",  # For various types.
   "+ppapi/host",

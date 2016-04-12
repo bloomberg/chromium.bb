@@ -19,7 +19,7 @@
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_property.h"
 #include "mojo/common/common_type_converters.h"
-#include "mojo/shell/public/cpp/connector.h"
+#include "services/shell/public/cpp/connector.h"
 #include "skia/public/type_converters.h"
 #include "ui/aura/mus/mus_util.h"
 #include "ui/base/resource/resource_bundle.h"

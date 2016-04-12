@@ -14,7 +14,7 @@
 #include "mojo/services/catalog/entry.h"
 #include "mojo/services/catalog/manifest_provider.h"
 #include "mojo/services/catalog/store.h"
-#include "mojo/shell/public/cpp/names.h"
+#include "services/shell/public/cpp/names.h"
 #include "url/gurl.h"
 #include "url/url_util.h"
 

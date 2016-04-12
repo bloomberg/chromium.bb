@@ -9,8 +9,8 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "components/mus/public/cpp/event_matcher.h"
-#include "mojo/shell/public/cpp/connection.h"
-#include "mojo/shell/public/cpp/connector.h"
+#include "services/shell/public/cpp/connection.h"
+#include "services/shell/public/cpp/connector.h"
 
 namespace mash {
 namespace browser_driver {

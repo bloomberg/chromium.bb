@@ -6,8 +6,8 @@
 #define COMPONENTS_MUS_PUBLIC_CPP_TESTS_WINDOW_SERVER_SHELLTEST_BASE_H_
 
 #include "base/macros.h"
-#include "mojo/shell/public/cpp/connection.h"
-#include "mojo/shell/public/cpp/shell_test.h"
+#include "services/shell/public/cpp/connection.h"
+#include "services/shell/public/cpp/shell_test.h"
 
 namespace mus {
 

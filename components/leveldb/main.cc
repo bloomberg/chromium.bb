@@ -5,7 +5,7 @@
 #include "base/macros.h"
 #include "components/leveldb/leveldb_app.h"
 #include "mojo/public/c/system/main.h"
-#include "mojo/shell/public/cpp/application_runner.h"
+#include "services/shell/public/cpp/application_runner.h"
 
 MojoResult MojoMain(MojoHandle application_request) {
   mojo::ApplicationRunner runner(new leveldb::LevelDBApp());

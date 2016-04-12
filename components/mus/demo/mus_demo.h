@@ -18,8 +18,8 @@
 #include "components/mus/public/cpp/window_tree_delegate.h"
 #include "components/mus/public/interfaces/window_tree_host.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "mojo/shell/public/cpp/connector.h"
-#include "mojo/shell/public/cpp/shell_client.h"
+#include "services/shell/public/cpp/connector.h"
+#include "services/shell/public/cpp/shell_client.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace bitmap_uploader {

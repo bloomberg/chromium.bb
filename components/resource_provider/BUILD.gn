@@ -19,7 +19,7 @@ if (is_android) {
     deps = [
       ":java_library",
       ":resource_provider_lib",
-      "//mojo/shell/public/cpp",
+      "//services/shell/public/cpp",
     ]
   }
 
@@ -37,7 +37,7 @@ if (is_android) {
       "//components/resource_provider/public/interfaces",
       "//mojo/platform_handle:for_shared_library",
       "//mojo/public/c/system:for_shared_library",
-      "//mojo/shell/public/cpp",
+      "//services/shell/public/cpp",
       "//url",
     ]
   }
@@ -74,7 +74,7 @@ if (is_android) {
       ":lib",
       "//base",
       "//components/resource_provider/public/interfaces",
-      "//mojo/shell/public/cpp",
+      "//services/shell/public/cpp",
       "//url",
     ]
 
@@ -105,7 +105,7 @@ source_set("lib") {
     "//mojo/common:common_base",
     "//mojo/platform_handle",
     "//mojo/services/tracing/public/cpp",
-    "//mojo/shell/public/cpp",
+    "//services/shell/public/cpp",
     "//url",
   ]
 }
@@ -121,9 +121,9 @@ test("resource_provider_unittests") {
     ":test_interfaces",
     "//base",
     "//components/resource_provider/public/interfaces",
-    "//mojo/shell/background:main",
-    "//mojo/shell/public/cpp:shell_test_support",
-    "//mojo/shell/public/cpp/test:run_all_shelltests",
+    "//services/shell/background:main",
+    "//services/shell/public/cpp:shell_test_support",
+    "//services/shell/public/cpp/test:run_all_shelltests",
     "//testing/gtest",
     "//url",
   ]
@@ -152,8 +152,8 @@ mojo_native_application("test_app") {
     "//base",
     "//components/resource_provider/public/cpp",
     "//components/resource_provider/public/interfaces",
-    "//mojo/shell/public/cpp",
-    "//mojo/shell/public/interfaces",
+    "//services/shell/public/cpp",
+    "//services/shell/public/interfaces",
   ]
 
   data_deps = [

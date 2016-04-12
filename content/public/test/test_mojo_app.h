@@ -8,8 +8,8 @@
 #include "base/macros.h"
 #include "content/public/test/test_mojo_service.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/shell/public/cpp/interface_factory.h"
-#include "mojo/shell/public/cpp/shell_client.h"
+#include "services/shell/public/cpp/interface_factory.h"
+#include "services/shell/public/cpp/shell_client.h"
 
 namespace content {
 

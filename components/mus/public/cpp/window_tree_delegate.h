@@ -8,7 +8,7 @@
 #include <string>
 
 #include "components/mus/public/interfaces/window_tree.mojom.h"
-#include "mojo/shell/public/interfaces/interface_provider.mojom.h"
+#include "services/shell/public/interfaces/interface_provider.mojom.h"
 
 namespace mus {
 

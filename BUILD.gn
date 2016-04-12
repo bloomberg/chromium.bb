@@ -186,8 +186,8 @@ group("both_gn_and_gyp") {
       "//mojo/edk/system:mojo_system_unittests",
       "//mojo/edk/test:mojo_public_bindings_unittests",
       "//mojo/edk/test:mojo_public_system_unittests",
-      "//mojo/shell/public/cpp",
       "//net:net_perftests",
+      "//services/shell/public/cpp",
       "//third_party/WebKit/Source/platform:blink_heap_unittests",
       "//third_party/WebKit/Source/platform:blink_platform_unittests",
       "//third_party/WebKit/Source/web:webkit_unit_tests",
@@ -493,7 +493,7 @@ group("both_gn_and_gyp") {
       "//gpu/command_buffer/client:gles2_implementation_no_check",
       "//gpu/khronos_glcts_support:khronos_glcts_test",  # TODO(GYP) crbug.com/471903 to make this complete.
       "//mojo/edk/test:mojo_public_system_perftests",
-      "//mojo/shell/public/cpp",
+      "//services/shell/public/cpp",
       "//testing/gmock:gmock_main",
       "//third_party/codesighs:nm2tsv",
     ]

@@ -15,9 +15,9 @@
 #include "mojo/services/catalog/public/interfaces/catalog.mojom.h"
 #include "mojo/services/catalog/public/interfaces/resolver.mojom.h"
 #include "mojo/services/catalog/types.h"
-#include "mojo/shell/public/cpp/shell_client.h"
-#include "mojo/shell/public/interfaces/shell_client.mojom.h"
-#include "mojo/shell/public/interfaces/shell_resolver.mojom.h"
+#include "services/shell/public/cpp/shell_client.h"
+#include "services/shell/public/interfaces/shell_client.mojom.h"
+#include "services/shell/public/interfaces/shell_resolver.mojom.h"
 
 namespace base {
 class TaskRunner;

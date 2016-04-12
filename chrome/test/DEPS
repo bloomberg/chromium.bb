@@ -9,6 +9,7 @@ include_rules = [
   "+device/bluetooth/dbus",
   "+extensions",
   "+mojo",
+  "+services",
 
   # Tests under chrome/ shouldn't need to access the internals of content/ and
   # as such are allowed only content/public. If you find yourself wanting to

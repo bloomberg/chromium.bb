@@ -2,7 +2,7 @@ include_rules = [
   "+cc",
   "+components/gpu",
   "+gpu",
-  "+mojo/shell",
+  "+services/shell",
   "+mojo/common",
   "+mojo/converters",
   "+mojo/public",

@@ -40,7 +40,7 @@ source_set("lib") {
     "//mojo/converters/geometry",
     "//mojo/converters/input_events",
     "//mojo/services/tracing/public/cpp",
-    "//mojo/shell/public/cpp",
+    "//services/shell/public/cpp",
     "//skia/public",
     "//ui/app_list/shower",
     "//ui/aura",
@@ -78,7 +78,7 @@ mojo_native_application("mus") {
     ":resources_100",
     ":resources_200",
     ":resources_strings",
-    "//mojo/shell/public/cpp",
+    "//services/shell/public/cpp",
   ]
 
   data_deps = [

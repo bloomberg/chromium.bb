@@ -8,7 +8,7 @@
 #include "components/mus/ws/window_manager_access_policy.h"
 #include "components/mus/ws/window_server.h"
 #include "components/mus/ws/window_tree.h"
-#include "mojo/shell/public/interfaces/connector.mojom.h"
+#include "services/shell/public/interfaces/connector.mojom.h"
 
 namespace mus {
 namespace ws {

@@ -9,9 +9,9 @@
 #include "components/leveldb/public/interfaces/leveldb.mojom.h"
 #include "mojo/common/common_type_converters.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "mojo/shell/public/cpp/shell_connection.h"
-#include "mojo/shell/public/cpp/shell_test.h"
 #include "mojo/util/capture_util.h"
+#include "services/shell/public/cpp/shell_connection.h"
+#include "services/shell/public/cpp/shell_test.h"
 
 using filesystem::FileError;
 using mojo::Capture;

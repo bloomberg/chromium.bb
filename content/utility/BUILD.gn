@@ -29,9 +29,9 @@ source_set("utility") {
     "//media/mojo/services:application_factory",
     "//mojo/common",
     "//mojo/public/cpp/bindings",
-    "//mojo/shell",
-    "//mojo/shell/public/cpp:cpp_for_chromium",
-    "//mojo/shell/public/interfaces",
+    "//services/shell",
+    "//services/shell/public/cpp:cpp_for_chromium",
+    "//services/shell/public/interfaces",
     "//third_party/WebKit/public:blink_headers",
     "//url",
   ]

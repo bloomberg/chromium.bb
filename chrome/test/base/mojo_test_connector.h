@@ -9,8 +9,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/process/process_handle.h"
 #include "base/test/launcher/test_launcher.h"
-#include "mojo/shell/background/background_shell.h"
-#include "mojo/shell/public/interfaces/shell_client.mojom.h"
+#include "services/shell/background/background_shell.h"
+#include "services/shell/public/interfaces/shell_client.mojom.h"
 
 namespace base {
 class CommandLine;

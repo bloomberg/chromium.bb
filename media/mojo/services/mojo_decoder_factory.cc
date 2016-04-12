@@ -8,7 +8,7 @@
 #include "media/mojo/interfaces/audio_decoder.mojom.h"
 #include "media/mojo/services/mojo_audio_decoder.h"
 #include "media/mojo/services/mojo_video_decoder.h"
-#include "mojo/shell/public/cpp/connect.h"
+#include "services/shell/public/cpp/connect.h"
 
 namespace media {
 

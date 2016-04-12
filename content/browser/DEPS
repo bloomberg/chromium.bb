@@ -25,6 +25,7 @@ include_rules = [
   "+media/midi",  # For Web MIDI API
   "+media/mojo",  # For mojo media services.
   "+mojo",
+  "+services",
   "+sql",
   "+ui/aura_extra",
   "+ui/views/mus",  # http://crbug.com/555767

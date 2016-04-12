@@ -10,7 +10,7 @@
 #include "components/profile_service/public/interfaces/profile.mojom.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "mojo/shell/public/cpp/connection.h"
+#include "services/shell/public/cpp/connection.h"
 
 namespace filesystem {
 class LockTable;

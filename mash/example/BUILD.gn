@@ -11,6 +11,6 @@ group("example") {
     "//mash/example/views_examples",
     "//mash/example/window_type_launcher",
     "//mash/wm",
-    "//mojo/shell/standalone",
+    "//services/shell/standalone",
   ]
 }

@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "mojo/shell/public/interfaces/shell_client.mojom.h"
+#include "services/shell/public/interfaces/shell_client.mojom.h"
 
 namespace mojo {
 class ShellClient;

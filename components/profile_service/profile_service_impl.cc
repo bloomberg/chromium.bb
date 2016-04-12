@@ -12,8 +12,8 @@
 #include "components/filesystem/directory_impl.h"
 #include "components/filesystem/lock_table.h"
 #include "components/filesystem/public/interfaces/types.mojom.h"
-#include "mojo/shell/public/cpp/connection.h"
-#include "mojo/shell/public/cpp/message_loop_ref.h"
+#include "services/shell/public/cpp/connection.h"
+#include "services/shell/public/cpp/message_loop_ref.h"
 
 namespace profile {
 

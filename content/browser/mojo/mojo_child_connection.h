@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/process/process_handle.h"
-#include "mojo/shell/public/interfaces/shell.mojom.h"
+#include "services/shell/public/interfaces/shell.mojom.h"
 
 namespace mojo {
 class Connection;

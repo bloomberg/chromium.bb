@@ -4,7 +4,7 @@
 
 #include "components/font_service/font_service_app.h"
 #include "mojo/public/c/system/main.h"
-#include "mojo/shell/public/cpp/application_runner.h"
+#include "services/shell/public/cpp/application_runner.h"
 
 MojoResult MojoMain(MojoHandle shell_handle) {
   mojo::ApplicationRunner runner(new font_service::FontServiceApp);

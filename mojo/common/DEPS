@@ -1,7 +1,7 @@
 include_rules = [
   # common must not depend on embedder.
   "-mojo",
-  "+mojo/shell/public/cpp",
+  "+services/shell/public/cpp",
   "+mojo/common",
   "+mojo/message_pump",
   "+mojo/public",

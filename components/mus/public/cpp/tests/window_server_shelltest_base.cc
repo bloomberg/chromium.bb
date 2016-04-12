@@ -8,8 +8,8 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/mus/common/args.h"
-#include "mojo/shell/public/cpp/shell_client.h"
-#include "mojo/shell/public/cpp/shell_test.h"
+#include "services/shell/public/cpp/shell_client.h"
+#include "services/shell/public/cpp/shell_test.h"
 #include "ui/gl/gl_switches.h"
 
 namespace mus {

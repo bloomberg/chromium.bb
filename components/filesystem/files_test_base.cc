@@ -8,8 +8,8 @@
 
 #include "components/filesystem/public/interfaces/directory.mojom.h"
 #include "components/filesystem/public/interfaces/types.mojom.h"
-#include "mojo/shell/public/cpp/connector.h"
 #include "mojo/util/capture_util.h"
+#include "services/shell/public/cpp/connector.h"
 
 namespace filesystem {
 

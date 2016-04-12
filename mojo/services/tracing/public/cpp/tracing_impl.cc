@@ -10,7 +10,7 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/platform_thread.h"
 #include "base/trace_event/trace_event_impl.h"
-#include "mojo/shell/public/cpp/connector.h"
+#include "services/shell/public/cpp/connector.h"
 
 #ifdef NDEBUG
 #include "base/command_line.h"

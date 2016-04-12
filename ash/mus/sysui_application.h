@@ -11,7 +11,7 @@
 #include "mash/shelf/public/interfaces/shelf.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/services/tracing/public/cpp/tracing_impl.h"
-#include "mojo/shell/public/cpp/shell_client.h"
+#include "services/shell/public/cpp/shell_client.h"
 
 namespace ash {
 namespace sysui {

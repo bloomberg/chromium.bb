@@ -9,9 +9,9 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "mojo/shell/loader.h"
-#include "mojo/shell/public/cpp/shell_client.h"
-#include "mojo/shell/public/cpp/shell_connection.h"
+#include "services/shell/loader.h"
+#include "services/shell/public/cpp/shell_client.h"
+#include "services/shell/public/cpp/shell_connection.h"
 
 namespace content {
 

@@ -148,7 +148,8 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
                          const base::FilePath& path);
 
   // Returns a Mojo User ID associated with this BrowserContext. This ID is not
-  // persistent across runs. See mojo/shell/public/interfaces/connector.mojom.
+  // persistent across runs. See
+  // services/shell/public/interfaces/connector.mojom.
   static const std::string& GetMojoUserIdFor(BrowserContext* browser_context);
 
   ~BrowserContext() override;

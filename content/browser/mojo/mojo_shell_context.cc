@@ -35,13 +35,13 @@
 #include "mojo/services/catalog/factory.h"
 #include "mojo/services/catalog/manifest_provider.h"
 #include "mojo/services/catalog/store.h"
-#include "mojo/shell/connect_params.h"
-#include "mojo/shell/loader.h"
-#include "mojo/shell/native_runner.h"
-#include "mojo/shell/public/cpp/identity.h"
-#include "mojo/shell/public/cpp/shell_client.h"
-#include "mojo/shell/public/interfaces/connector.mojom.h"
-#include "mojo/shell/runner/host/in_process_native_runner.h"
+#include "services/shell/connect_params.h"
+#include "services/shell/loader.h"
+#include "services/shell/native_runner.h"
+#include "services/shell/public/cpp/identity.h"
+#include "services/shell/public/cpp/shell_client.h"
+#include "services/shell/public/interfaces/connector.mojom.h"
+#include "services/shell/runner/host/in_process_native_runner.h"
 
 namespace content {
 

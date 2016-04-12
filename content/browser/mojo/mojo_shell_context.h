@@ -14,8 +14,8 @@
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "content/common/content_export.h"
-#include "mojo/shell/public/interfaces/connector.mojom.h"
-#include "mojo/shell/shell.h"
+#include "services/shell/public/interfaces/connector.mojom.h"
+#include "services/shell/shell.h"
 
 namespace catalog {
 class Factory;

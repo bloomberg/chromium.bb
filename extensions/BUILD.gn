@@ -185,7 +185,7 @@ test("extensions_unittests") {
     "//mojo/edk/js",
     "//mojo/edk/system",
     "//mojo/public/cpp/bindings",
-    "//mojo/shell/public/interfaces",
+    "//services/shell/public/interfaces",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/leveldatabase",

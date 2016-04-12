@@ -15,8 +15,8 @@
 #include "mojo/services/catalog/public/interfaces/resolver.mojom.h"
 #include "mojo/services/catalog/store.h"
 #include "mojo/services/catalog/types.h"
-#include "mojo/shell/public/cpp/interface_factory.h"
-#include "mojo/shell/public/interfaces/shell_resolver.mojom.h"
+#include "services/shell/public/cpp/interface_factory.h"
+#include "services/shell/public/interfaces/shell_resolver.mojom.h"
 
 namespace catalog {
 

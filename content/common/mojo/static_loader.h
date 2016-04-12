@@ -10,7 +10,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "mojo/shell/loader.h"
+#include "services/shell/loader.h"
 
 namespace base {
 class SimpleThread;

@@ -14,7 +14,7 @@ source_set("cpp") {
     "//base",
     "//components/leveldb/public/interfaces",
     "//mojo/common",
-    "//mojo/shell/public/cpp",
+    "//services/shell/public/cpp",
     "//third_party/leveldatabase",
   ]
 }

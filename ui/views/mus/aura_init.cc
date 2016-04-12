@@ -11,7 +11,7 @@
 #include "base/path_service.h"
 #include "build/build_config.h"
 #include "components/resource_provider/public/cpp/resource_loader.h"
-#include "mojo/shell/public/cpp/connector.h"
+#include "services/shell/public/cpp/connector.h"
 #include "ui/aura/env.h"
 #include "ui/base/ime/input_method_initializer.h"
 #include "ui/base/resource/resource_bundle.h"

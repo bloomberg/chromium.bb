@@ -8,7 +8,7 @@
 
 #include "components/resource_provider/file_utils.h"
 #include "components/resource_provider/resource_provider_impl.h"
-#include "mojo/shell/public/cpp/connection.h"
+#include "services/shell/public/cpp/connection.h"
 #include "url/gurl.h"
 
 namespace resource_provider {
