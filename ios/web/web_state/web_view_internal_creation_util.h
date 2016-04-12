@@ -5,19 +5,12 @@
 #ifndef IOS_WEB_WEB_STATE_WEB_VIEW_INTERNAL_CREATION_UTIL_H_
 #define IOS_WEB_WEB_STATE_WEB_VIEW_INTERNAL_CREATION_UTIL_H_
 
-#import <UIKit/UIKit.h>
-
-@class WKWebView;
-@class WKWebViewConfiguration;
+#import <CoreGraphics/CoreGraphics.h>
+#import <WebKit/WebKit.h>
 
 // This file is a collection of functions that vend web views.
 namespace web {
 class BrowserState;
-
-// Returns a new UIWebView for displaying regular web content.
-// Note: Callers are responsible for releasing the returned UIWebView.
-// DEPRECATED: Please use the WKWebView equivalent instead.
-UIWebView* CreateWebView(CGRect frame);
 
 // Creates a new WKWebView for displaying regular web content and registers a
 // user agent for it.
