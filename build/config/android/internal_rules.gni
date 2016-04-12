@@ -1590,10 +1590,6 @@ template("java_library_impl") {
   _template_name = target_name
 
   _final_deps = []
-  _final_datadeps = []
-  if (defined(invoker.datadeps)) {
-    _final_datadeps = invoker.datadeps
-  }
 
   _supports_android =
       defined(invoker.supports_android) && invoker.supports_android
@@ -1727,9 +1723,10 @@ template("java_library_impl") {
     }
   }
 
+  _has_lint_target = false
   if (_supports_android) {
     if (_chromium_code) {
-      _final_datadeps += [ ":${_template_name}__lint" ]
+      _has_lint_target = true
       android_lint("${_template_name}__lint") {
         android_manifest = _android_manifest
         build_config = _build_config
@@ -1742,11 +1739,22 @@ template("java_library_impl") {
       }
 
       if (_run_findbugs) {
-        _final_datadeps += [ ":${_template_name}__findbugs" ]
         findbugs("${_template_name}__findbugs") {
           build_config = _build_config
           jar_path = _jar_path
           deps = build_config_deps + [ ":$_compile_java_target" ]
+        }
+      }
+
+      # Use an intermediate group() rather as the data_deps target in order to
+      # avoid lint artifacts showing up as runtime_deps (while still having lint
+      # run in parallel to other targets).
+      group("${_template_name}__analysis") {
+        public_deps = [
+          ":${_template_name}__lint",
+        ]
+        if (_run_findbugs) {
+          public_deps += [ ":${_template_name}__findbugs" ]
         }
       }
     }
@@ -1764,9 +1772,16 @@ template("java_library_impl") {
   }
 
   group(target_name) {
-    forward_variables_from(invoker, [ "visibility" ])
+    data_deps = []
+    forward_variables_from(invoker,
+                           [
+                             "data_deps",
+                             "visibility",
+                           ])
     public_deps = _final_deps
-    data_deps = _final_datadeps
+    if (_has_lint_target) {
+      data_deps += [ ":${_template_name}__analysis" ]
+    }
   }
 }
 
