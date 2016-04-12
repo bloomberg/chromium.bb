@@ -134,9 +134,7 @@ static void read_inter_mode_probs(FRAME_CONTEXT *fc, aom_reader *r) {
   for (i = 0; i < REFMV_MODE_CONTEXTS; ++i)
     av1_diff_update_prob(r, &fc->refmv_prob[i]);
   for (i = 0; i < DRL_MODE_CONTEXTS; ++i)
-    av1_diff_update_prob(r, &fc->drl_prob0[i]);
-  for (i = 0; i < DRL_MODE_CONTEXTS; ++i)
-    av1_diff_update_prob(r, &fc->drl_prob1[i]);
+    av1_diff_update_prob(r, &fc->drl_prob[i]);
 #else
   int j;
   for (i = 0; i < INTER_MODE_CONTEXTS; ++i)

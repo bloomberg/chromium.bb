@@ -3321,15 +3321,12 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
         uint8_t backup_zcoeff_blk[256];
         int64_t tmp_ref_rd = this_rd;
         int ref_idx;
-
         // TODO(jingning): This should be deprecated shortly.
         int idx_offset = (mbmi->mode == NEARMV) ? 1 : 0;
-
         int ref_set =
             AOMMIN(2, mbmi_ext->ref_mv_count[ref_frame_type] - 1 - idx_offset);
-
-        uint8_t drl0_ctx = 0;
-        uint8_t drl_ctx = 0;
+        uint8_t drl_ctx = av1_drl_ctx(mbmi_ext->ref_mv_stack[ref_frame_type],
+                                      idx_offset);
 
         // Dummy
         int_mv backup_fmv[2];
@@ -3340,13 +3337,7 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
         memcpy(backup_zcoeff_blk, x->zcoeff_blk[mbmi->tx_size],
                sizeof(backup_zcoeff_blk[0]) * ctx->num_4x4_blk);
 
-        if (mbmi->mode == NEARMV) {
-          drl0_ctx = av1_drl_ctx(mbmi_ext->ref_mv_stack[ref_frame_type], 1);
-          rate2 += cpi->drl_mode_cost0[drl0_ctx][0];
-        } else {
-          drl_ctx = av1_drl_ctx(mbmi_ext->ref_mv_stack[ref_frame_type], 0);
-          rate2 += cpi->drl_mode_cost0[drl_ctx][0];
-        }
+        rate2 += cpi->drl_mode_cost[drl_ctx][0];
 
         if (this_rd < INT64_MAX) {
           if (RDCOST(x->rdmult, x->rddiv,
@@ -3408,23 +3399,20 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
                                            dummy_filter_cache);
           }
 
-          if (this_mode == NEARMV) {
-            tmp_rate += cpi->drl_mode_cost0[drl0_ctx][1];
-            if (mbmi_ext->ref_mv_count[ref_frame_type] > 3) {
-              uint8_t drl1_ctx =
-                  av1_drl_ctx(mbmi_ext->ref_mv_stack[ref_frame_type], 2);
-              tmp_rate += cpi->drl_mode_cost1[drl1_ctx][ref_idx];
-            }
+          for (i = 0; i < mbmi->ref_mv_idx; ++i) {
+            uint8_t drl1_ctx = 0;
+            drl1_ctx = av1_drl_ctx(mbmi_ext->ref_mv_stack[ref_frame_type],
+                                   i + idx_offset);
+            tmp_rate += cpi->drl_mode_cost[drl1_ctx][1];
           }
 
-          if (this_mode == NEWMV) {
-            tmp_rate += cpi->drl_mode_cost0[drl_ctx][1];
-
-            if (mbmi_ext->ref_mv_count[ref_frame_type] > 2) {
-              uint8_t this_drl_ctx =
-                  av1_drl_ctx(mbmi_ext->ref_mv_stack[ref_frame_type], 1);
-              tmp_rate += cpi->drl_mode_cost0[this_drl_ctx][ref_idx];
-            }
+          if (mbmi_ext->ref_mv_count[ref_frame_type] >
+              mbmi->ref_mv_idx + idx_offset + 1 &&
+              ref_idx < ref_set - 1) {
+            uint8_t drl1_ctx =
+                av1_drl_ctx(mbmi_ext->ref_mv_stack[ref_frame_type],
+                            mbmi->ref_mv_idx + idx_offset);
+            tmp_rate += cpi->drl_mode_cost[drl1_ctx][0];
           }
 
           if (tmp_alt_rd < INT64_MAX) {

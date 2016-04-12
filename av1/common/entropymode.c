@@ -245,7 +245,7 @@ static const aom_prob default_refmv_prob[REFMV_MODE_CONTEXTS] = {
 };
 
 static const aom_prob default_drl_prob[DRL_MODE_CONTEXTS] = {
-    128, 128, 128,
+    128, 160, 180, 128, 160
 };
 #endif
 
@@ -373,8 +373,7 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
   av1_copy(fc->newmv_prob, default_newmv_prob);
   av1_copy(fc->zeromv_prob, default_zeromv_prob);
   av1_copy(fc->refmv_prob, default_refmv_prob);
-  av1_copy(fc->drl_prob0, default_drl_prob);
-  av1_copy(fc->drl_prob1, default_drl_prob);
+  av1_copy(fc->drl_prob, default_drl_prob);
 #endif
   av1_copy(fc->inter_mode_probs, default_inter_mode_probs);
 #if CONFIG_MISC_FIXES
@@ -419,11 +418,8 @@ void av1_adapt_inter_frame_probs(AV1_COMMON *cm) {
     fc->refmv_prob[i] = mode_mv_merge_probs(pre_fc->refmv_prob[i],
                                             counts->refmv_mode[i]);
   for (i = 0; i < DRL_MODE_CONTEXTS; ++i)
-    fc->drl_prob0[i] = mode_mv_merge_probs(pre_fc->drl_prob0[i],
-                                           counts->drl_mode0[i]);
-  for (i = 0; i < DRL_MODE_CONTEXTS; ++i)
-    fc->drl_prob1[i] = mode_mv_merge_probs(pre_fc->drl_prob1[i],
-                                           counts->drl_mode1[i]);
+    fc->drl_prob[i] = mode_mv_merge_probs(pre_fc->drl_prob[i],
+                                          counts->drl_mode[i]);
 #else
   for (i = 0; i < INTER_MODE_CONTEXTS; i++)
     aom_tree_merge_probs(av1_inter_mode_tree, pre_fc->inter_mode_probs[i],
