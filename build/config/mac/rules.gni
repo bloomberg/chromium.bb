@@ -54,13 +54,16 @@ template("framework_bundle") {
                              "output_name",
                              "visibility",
                            ])
+    output_name = _output_name
+    output_prefix_override = true
+    output_extension = ""
   }
 
   bundle_data(_shared_library_bundle_data) {
     visibility = [ ":$_framework_target" ]
     forward_variables_from(invoker, [ "testonly" ])
     sources = [
-      "$root_out_dir/${shlib_prefix}${_shared_library_target}${shlib_extension}",
+      "$root_out_dir/${_output_name}",
     ]
     outputs = [
       "{{bundle_executable_dir}}/$_output_name",

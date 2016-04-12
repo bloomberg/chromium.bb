@@ -893,7 +893,7 @@ test("ui_base_unittests") {
 
   if (is_mac) {
     deps += [
-      ":ui_unittests Framework",
+      ":ui_unittests_framework",
       "//third_party/mozilla",
     ]
   }
@@ -951,11 +951,12 @@ test("ui_base_unittests") {
 }
 
 if (is_mac) {
-  mac_framework_bundle("ui_unittests Framework") {
+  mac_framework_bundle("ui_unittests_framework") {
     testonly = true
     deps = [
       "//ui/resources:ui_test_pak_bundle_data",
     ]
     info_plist = "test/framework-Info.plist"
+    output_name = "ui_unittests Framework"
   }
 }
