@@ -213,8 +213,8 @@ void WebmMuxer::AddVideoTrack(const gfx::Size& frame_size, double frame_rate) {
   DCHECK_EQ(0ull, video_track->crop_left());
   DCHECK_EQ(0ull, video_track->crop_top());
   DCHECK_EQ(0ull, video_track->crop_bottom());
+  DCHECK_EQ(0.0f, video_track->frame_rate());
 
-  video_track->set_frame_rate(frame_rate);
   video_track->set_default_duration(base::Time::kNanosecondsPerSecond /
                                     frame_rate);
   // Segment's timestamps should be in milliseconds, DCHECK it. See
