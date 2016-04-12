@@ -288,6 +288,9 @@ axis_source_handler(struct widget *widget, struct input *input,
 	const char *axis_source;
 	struct eventdemo *e = data;
 
+	if (!log_axis)
+		return;
+
 	e->print_pointer_frame = true;
 
 	switch (source) {
@@ -315,6 +318,9 @@ axis_stop_handler(struct widget *widget, struct input *input,
 {
 	struct eventdemo *e = data;
 
+	if (!log_axis)
+		return;
+
 	e->print_pointer_frame = true;
 	printf("axis stop time: %d, axis: %s\n",
 	       time,
@@ -327,6 +333,9 @@ axis_discrete_handler(struct widget *widget, struct input *input,
 		      uint32_t axis, int32_t discrete, void *data)
 {
 	struct eventdemo *e = data;
+
+	if (!log_axis)
+		return;
 
 	e->print_pointer_frame = true;
 	printf("axis discrete axis: %d value: %d\n", axis, discrete);
