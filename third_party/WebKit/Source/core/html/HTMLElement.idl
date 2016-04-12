@@ -55,6 +55,9 @@ interface HTMLElement : Element {
     // CSS Object Model (CSSOM)
     // http://dev.w3.org/csswg/cssom/#the-elementcssinlinestyle-interface
     [SameObject, PerWorldBindings, PutForwards=cssText] readonly attribute CSSStyleDeclaration style;
+    // Typed OM
+    // https://drafts.css-houdini.org/css-typed-om/#inline-stylepropertymap-objects
+    [RuntimeEnabled=CSSTypedOM] readonly attribute StylePropertyMap styleMap;
 
     // Non-standard APIs
     [TreatNullAs=NullString, CustomElementCallbacks, RaisesException=Setter, MeasureAs=HTMLElementInnerText] attribute DOMString innerText;

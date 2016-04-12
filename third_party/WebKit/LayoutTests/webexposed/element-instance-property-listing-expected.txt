@@ -220,6 +220,7 @@ namespace http://www.w3.org/1999/xhtml
     property slot
     property spellcheck
     property style
+    property styleMap
     property tabIndex
     property tagName
     property textContent
@@ -1308,6 +1309,7 @@ namespace http://www.w3.org/2000/svg
     property slot
     property spellcheck
     property style
+    property styleMap
     property tabIndex
     property tagName
     property textContent

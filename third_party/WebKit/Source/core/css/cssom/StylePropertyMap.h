@@ -23,9 +23,9 @@ public:
     virtual ~StylePropertyMap() { }
 
     // Accessors.
-    StyleValue* get(const String& propertyName);
-    HeapVector<Member<StyleValue>> getAll(const String& propertyName);
-    bool has(const String& propertyName);
+    StyleValue* get(const String& propertyName, ExceptionState&);
+    HeapVector<Member<StyleValue>> getAll(const String& propertyName, ExceptionState&);
+    bool has(const String& propertyName, ExceptionState&);
 
     virtual StyleValue* get(CSSPropertyID) = 0;
     virtual HeapVector<Member<StyleValue>> getAll(CSSPropertyID) = 0;
@@ -46,6 +46,8 @@ public:
 
 protected:
     StylePropertyMap() { }
+
+    IterationSource* startIteration(ScriptState*, ExceptionState&) override { return nullptr; }
 };
 
 } // namespace blink

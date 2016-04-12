@@ -3440,6 +3440,13 @@ CSSStyleDeclaration* Element::style()
     return &ensureElementRareData().ensureInlineCSSStyleDeclaration(this);
 }
 
+StylePropertyMap* Element::styleMap()
+{
+    if (!isStyledElement())
+        return nullptr;
+    return &ensureElementRareData().ensureInlineStylePropertyMap(this);
+}
+
 MutableStylePropertySet& Element::ensureMutableInlineStyle()
 {
     DCHECK(isStyledElement());
@@ -3510,20 +3517,21 @@ void Element::inlineStyleChanged()
     InspectorInstrumentation::didInvalidateStyleAttr(this);
 }
 
-bool Element::setInlineStyleProperty(CSSPropertyID propertyID, CSSValueID identifier, bool important)
+void Element::setInlineStyleProperty(CSSPropertyID propertyID, CSSValueID identifier, bool important)
 {
-    DCHECK(isStyledElement());
-    ensureMutableInlineStyle().setProperty(propertyID, cssValuePool().createIdentifierValue(identifier), important);
-    inlineStyleChanged();
-    return true;
+    setInlineStyleProperty(propertyID, cssValuePool().createIdentifierValue(identifier), important);
 }
 
-bool Element::setInlineStyleProperty(CSSPropertyID propertyID, double value, CSSPrimitiveValue::UnitType unit, bool important)
+void Element::setInlineStyleProperty(CSSPropertyID propertyID, double value, CSSPrimitiveValue::UnitType unit, bool important)
+{
+    setInlineStyleProperty(propertyID, cssValuePool().createValue(value, unit), important);
+}
+
+void Element::setInlineStyleProperty(CSSPropertyID propertyID, CSSValue* value, bool important)
 {
     DCHECK(isStyledElement());
-    ensureMutableInlineStyle().setProperty(propertyID, cssValuePool().createValue(value, unit), important);
+    ensureMutableInlineStyle().setProperty(propertyID, value, important);
     inlineStyleChanged();
-    return true;
 }
 
 bool Element::setInlineStyleProperty(CSSPropertyID propertyID, const String& value, bool important)

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+
+<div id="testElement"></div>
+
+<script>
+
+// Append
+test(function() {
+  assert_throws(new TypeError(), function() {
+    testElement.styleMap.append('width', new SimpleLength(60, 'px'));
+  });
+}, "Attempting to append to a property that doesn't support multiple values throws");
+
+test(function() {
+  // TODO(meade): Use a property that supports multiple values when that is available.
+  assert_throws(new TypeError(), function() {
+    testElement.styleMap.append('width', new NumberValue(70));
+  });
+}, "Appending an invalid type to a property throws");
+
+test(function() {
+  assert_throws(new TypeError(), function() {
+    testElement.styleMap.append('lemons', new NumberValue(6));
+  });
+}, "Attempting to append to an invalid property throws");
+
+</script>

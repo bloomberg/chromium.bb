@@ -23,6 +23,7 @@
 #define ElementRareData_h
 
 #include "core/animation/ElementAnimations.h"
+#include "core/css/cssom/InlineStylePropertyMap.h"
 #include "core/dom/Attr.h"
 #include "core/dom/CompositorProxiedPropertySet.h"
 #include "core/dom/DatasetDOMStringMap.h"
@@ -70,6 +71,9 @@ public:
     }
 
     CSSStyleDeclaration& ensureInlineCSSStyleDeclaration(Element* ownerElement);
+    InlineStylePropertyMap& ensureInlineStylePropertyMap(Element* ownerElement);
+
+    InlineStylePropertyMap* inlineStylePropertyMap() { return m_cssomMapWrapper.get(); }
 
     void clearShadow() { m_shadow = nullptr; }
     ElementShadow* shadow() const { return m_shadow.get(); }
@@ -150,6 +154,7 @@ private:
     Member<NamedNodeMap> m_attributeMap;
     Member<AttrNodeList> m_attrNodeList;
     Member<InlineCSSStyleDeclaration> m_cssomWrapper;
+    Member<InlineStylePropertyMap> m_cssomMapWrapper;
     OwnPtr<CompositorProxiedPropertySet> m_proxiedProperties;
 
     Member<ElementAnimations> m_elementAnimations;

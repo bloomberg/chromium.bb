@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+
+<div id="testElement"></div>
+
+<script>
+
+test(function() {
+  testElement.style = '';
+  assert_array_equals(testElement.styleMap.getProperties(), []);
+}, "getProperties returns an empty list when no properties have been set");
+
+test(function() {
+  testElement.style = '';
+  testElement.styleMap.set('width', new SimpleLength(10, 'px'));
+  assert_array_equals(testElement.styleMap.getProperties(), ['width']);
+}, "getProperties returns the name of a property if it is set");
+
+test(function() {
+  testElement.styleMap.set('width', new SimpleLength(10, 'px'));
+  assert_array_equals(testElement.styleMap.getProperties(), ['width']);
+
+  testElement.styleMap.get('height');
+  assert_array_equals(testElement.styleMap.getProperties(), ['width']);
+}, "Accessing another property doesn't add a spurious result");
+
+test(function() {
+  testElement.styleMap.set('width', new SimpleLength(10, 'px'));
+  assert_array_equals(testElement.styleMap.getProperties(), ['width']);
+
+  testElement.styleMap.delete('width');
+  assert_array_equals(testElement.styleMap.getProperties(), []);
+}, "property name does not appear in result after deletion");
+
+test(function() {
+  testElement.styleMap.set('width', new SimpleLength(10, 'px'));
+  assert_array_equals(testElement.styleMap.getProperties(), ['width']);
+
+  testElement.styleMap.set('border-top-width', new SimpleLength(10, 'px'));
+  var result = testElement.styleMap.getProperties();
+  // TODO(meade): The spec should describe an order for this.
+  assert_equals(2, result.length, 2);
+  assert_true(result.indexOf('width') >= 0);
+  assert_true(result.indexOf('border-top-width') >= 0);
+}, "getProperties returns multiple properties if they are set.");
+
+</script>

@@ -29,6 +29,8 @@
  */
 
 #include "core/dom/ElementRareData.h"
+
+#include "core/css/cssom/InlineStylePropertyMap.h"
 #include "core/dom/CompositorProxiedPropertySet.h"
 #include "core/style/ComputedStyle.h"
 
@@ -39,7 +41,7 @@ struct SameSizeAsElementRareData : NodeRareData {
     LayoutSize sizeForResizing;
     IntSize scrollOffset;
     void* pointers[13];
-    Member<void*> persistentMember[2];
+    Member<void*> persistentMember[3];
 };
 
 CSSStyleDeclaration& ElementRareData::ensureInlineCSSStyleDeclaration(Element* ownerElement)
@@ -47,6 +49,14 @@ CSSStyleDeclaration& ElementRareData::ensureInlineCSSStyleDeclaration(Element* o
     if (!m_cssomWrapper)
         m_cssomWrapper = new InlineCSSStyleDeclaration(ownerElement);
     return *m_cssomWrapper;
+}
+
+InlineStylePropertyMap& ElementRareData::ensureInlineStylePropertyMap(Element* ownerElement)
+{
+    if (!m_cssomMapWrapper) {
+        m_cssomMapWrapper = new InlineStylePropertyMap(ownerElement);
+    }
+    return *m_cssomMapWrapper;
 }
 
 AttrNodeList& ElementRareData::ensureAttrNodeList()
@@ -65,6 +75,7 @@ DEFINE_TRACE_AFTER_DISPATCH(ElementRareData)
     visitor->trace(m_attrNodeList);
     visitor->trace(m_elementAnimations);
     visitor->trace(m_cssomWrapper);
+    visitor->trace(m_cssomMapWrapper);
     visitor->trace(m_customElementDefinition);
     visitor->trace(m_generatedBefore);
     visitor->trace(m_generatedAfter);

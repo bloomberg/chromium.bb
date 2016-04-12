@@ -69,6 +69,7 @@ class ScrollToOptions;
 class ShadowRoot;
 class ShadowRootInit;
 class StylePropertySet;
+class StylePropertyMap;
 
 enum SpellcheckAttributeState {
     SpellcheckAttributeTrue,
@@ -244,6 +245,7 @@ public:
     AttrNodeList* attrNodeList();
 
     CSSStyleDeclaration* style();
+    StylePropertyMap* styleMap();
 
     const QualifiedName& tagQName() const { return m_tagName; }
     String tagName() const { return nodeName(); }
@@ -279,9 +281,11 @@ public:
 
     const StylePropertySet* inlineStyle() const { return elementData() ? elementData()->m_inlineStyle.get() : nullptr; }
 
-    bool setInlineStyleProperty(CSSPropertyID, CSSValueID identifier, bool important = false);
-    bool setInlineStyleProperty(CSSPropertyID, double value, CSSPrimitiveValue::UnitType, bool important = false);
+    void setInlineStyleProperty(CSSPropertyID, CSSValueID identifier, bool important = false);
+    void setInlineStyleProperty(CSSPropertyID, double value, CSSPrimitiveValue::UnitType, bool important = false);
+    void setInlineStyleProperty(CSSPropertyID, CSSValue*, bool important = false);
     bool setInlineStyleProperty(CSSPropertyID, const String& value, bool important = false);
+
     bool removeInlineStyleProperty(CSSPropertyID);
     void removeAllInlineStyleProperties();
 

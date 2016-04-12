@@ -2040,6 +2040,7 @@ interface HTMLElement : Element
     getter outerText
     getter spellcheck
     getter style
+    getter styleMap
     getter tabIndex
     getter title
     getter translate

@@ -8,9 +8,9 @@
 ] interface StylePropertyMap {
     [RaisesException] void append(DOMString property, (StyleValue or sequence<StyleValue> or DOMString) value);
     [RaisesException, ImplementedAs=remove] void delete(DOMString property);
-    StyleValue? get(DOMString property);
-    sequence<StyleValue> getAll(DOMString property);
-    boolean has(DOMString property);
+    [RaisesException] StyleValue? get(DOMString property);
+    [RaisesException] sequence<StyleValue> getAll(DOMString property);
+    [RaisesException] boolean has(DOMString property);
     [RaisesException] void set(DOMString property, (StyleValue or sequence<StyleValue> or DOMString) value);
     iterable<DOMString, (StyleValue or sequence<StyleValue>)>;
     sequence<DOMString> getProperties();
