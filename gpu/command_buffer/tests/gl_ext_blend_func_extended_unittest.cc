@@ -13,6 +13,7 @@
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/command_buffer/tests/gl_manager.h"
 #include "gpu/command_buffer/tests/gl_test_utils.h"
+#include "gpu/config/gpu_test_config.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_switches.h"
@@ -470,10 +471,11 @@ TEST_P(EXTBlendFuncExtendedES3DrawTest, ES3GettersArray) {
     return;
 
   // TODO(zmo): Figure out why this fails on AMD. crbug.com/585132.
-  std::string renderer(
-      reinterpret_cast<const char*>(glGetString(GL_RENDERER)));
-  if (renderer.find("AMD Radeon HD 6450") != std::string::npos)
+  gpu::GPUTestBotConfig bot_config;
+  if (bot_config.LoadCurrentConfig(nullptr) &&
+      bot_config.Matches("linux amd")) {
     return;
+  }
 
   const GLint kTestArraySize = 2;
   const GLint kFragData0Location = 2;
