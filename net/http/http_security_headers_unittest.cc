@@ -138,6 +138,16 @@ TEST_F(HttpSecurityHeadersTest, BogusHeaders) {
                                &include_subdomains));
   EXPECT_FALSE(ParseHSTSHeader("max-age=-3488923", &max_age,
                                &include_subdomains));
+  EXPECT_FALSE(
+      ParseHSTSHeader("max-age=+3488923", &max_age, &include_subdomains));
+  EXPECT_FALSE(
+      ParseHSTSHeader("max-age=13####", &max_age, &include_subdomains));
+  EXPECT_FALSE(ParseHSTSHeader("max-age=9223372036854775807#####", &max_age,
+                               &include_subdomains));
+  EXPECT_FALSE(ParseHSTSHeader("max-age=18446744073709551615####", &max_age,
+                               &include_subdomains));
+  EXPECT_FALSE(ParseHSTSHeader("max-age=999999999999999999999999$.&#!",
+                               &max_age, &include_subdomains));
   EXPECT_FALSE(ParseHSTSHeader("max-age=3488923     e", &max_age,
                                &include_subdomains));
   EXPECT_FALSE(ParseHSTSHeader("max-age=3488923     includesubdomain",
@@ -388,56 +398,56 @@ TEST_F(HttpSecurityHeadersTest, ValidSTSHeaders) {
   EXPECT_TRUE(ParseHSTSHeader(
       "max-age=39408299  ;incLudesUbdOmains", &max_age,
       &include_subdomains));
-  expect_max_age = base::TimeDelta::FromSeconds(
-      std::min(kMaxHSTSAgeSecs, static_cast<int64_t>(INT64_C(39408299))));
+  expect_max_age =
+      base::TimeDelta::FromSeconds(std::min(kMaxHSTSAgeSecs, 39408299u));
   EXPECT_EQ(expect_max_age, max_age);
   EXPECT_TRUE(include_subdomains);
 
   EXPECT_TRUE(ParseHSTSHeader(
       "max-age=394082038  ; incLudesUbdOmains", &max_age,
       &include_subdomains));
-  expect_max_age = base::TimeDelta::FromSeconds(
-      std::min(kMaxHSTSAgeSecs, static_cast<int64_t>(INT64_C(394082038))));
+  expect_max_age =
+      base::TimeDelta::FromSeconds(std::min(kMaxHSTSAgeSecs, 394082038u));
   EXPECT_EQ(expect_max_age, max_age);
   EXPECT_TRUE(include_subdomains);
 
   EXPECT_TRUE(ParseHSTSHeader(
       "max-age=394082038  ; incLudesUbdOmains;", &max_age,
       &include_subdomains));
-  expect_max_age = base::TimeDelta::FromSeconds(
-      std::min(kMaxHSTSAgeSecs, static_cast<int64_t>(INT64_C(394082038))));
+  expect_max_age =
+      base::TimeDelta::FromSeconds(std::min(kMaxHSTSAgeSecs, 394082038u));
   EXPECT_EQ(expect_max_age, max_age);
   EXPECT_TRUE(include_subdomains);
 
   EXPECT_TRUE(ParseHSTSHeader(
       ";; max-age=394082038  ; incLudesUbdOmains; ;", &max_age,
       &include_subdomains));
-  expect_max_age = base::TimeDelta::FromSeconds(
-      std::min(kMaxHSTSAgeSecs, static_cast<int64_t>(INT64_C(394082038))));
+  expect_max_age =
+      base::TimeDelta::FromSeconds(std::min(kMaxHSTSAgeSecs, 394082038u));
   EXPECT_EQ(expect_max_age, max_age);
   EXPECT_TRUE(include_subdomains);
 
   EXPECT_TRUE(ParseHSTSHeader(
       ";; max-age=394082038  ;", &max_age,
       &include_subdomains));
-  expect_max_age = base::TimeDelta::FromSeconds(
-      std::min(kMaxHSTSAgeSecs, static_cast<int64_t>(INT64_C(394082038))));
+  expect_max_age =
+      base::TimeDelta::FromSeconds(std::min(kMaxHSTSAgeSecs, 394082038u));
   EXPECT_EQ(expect_max_age, max_age);
   EXPECT_FALSE(include_subdomains);
 
   EXPECT_TRUE(ParseHSTSHeader(
       ";;    ; ; max-age=394082038;;; includeSubdomains     ;;  ;", &max_age,
       &include_subdomains));
-  expect_max_age = base::TimeDelta::FromSeconds(
-      std::min(kMaxHSTSAgeSecs, static_cast<int64_t>(INT64_C(394082038))));
+  expect_max_age =
+      base::TimeDelta::FromSeconds(std::min(kMaxHSTSAgeSecs, 394082038u));
   EXPECT_EQ(expect_max_age, max_age);
   EXPECT_TRUE(include_subdomains);
 
   EXPECT_TRUE(ParseHSTSHeader(
       "incLudesUbdOmains   ; max-age=394082038 ;;", &max_age,
       &include_subdomains));
-  expect_max_age = base::TimeDelta::FromSeconds(
-      std::min(kMaxHSTSAgeSecs, static_cast<int64_t>(INT64_C(394082038))));
+  expect_max_age =
+      base::TimeDelta::FromSeconds(std::min(kMaxHSTSAgeSecs, 394082038u));
   EXPECT_EQ(expect_max_age, max_age);
   EXPECT_TRUE(include_subdomains);
 
@@ -529,8 +539,8 @@ static void TestValidPKPHeaders(HashValueTag tag) {
   EXPECT_TRUE(ParseAsHPKPHeader(
       "max-age=39408299  ;" + backup_pin + ";" + good_pin + ";  ", chain_hashes,
       &max_age, &include_subdomains, &hashes, &report_uri));
-  expect_max_age = base::TimeDelta::FromSeconds(
-      std::min(kMaxHPKPAgeSecs, static_cast<int64_t>(INT64_C(39408299))));
+  expect_max_age =
+      base::TimeDelta::FromSeconds(std::min(kMaxHPKPAgeSecs, 39408299u));
   EXPECT_EQ(expect_max_age, max_age);
   EXPECT_FALSE(include_subdomains);
 
@@ -538,8 +548,8 @@ static void TestValidPKPHeaders(HashValueTag tag) {
       "max-age=39408038  ;    cybers=39408038  ;  includeSubdomains; " +
           good_pin + ";" + backup_pin + ";   ",
       chain_hashes, &max_age, &include_subdomains, &hashes, &report_uri));
-  expect_max_age = base::TimeDelta::FromSeconds(
-      std::min(kMaxHPKPAgeSecs, static_cast<int64_t>(INT64_C(394082038))));
+  expect_max_age =
+      base::TimeDelta::FromSeconds(std::min(kMaxHPKPAgeSecs, 394082038u));
   EXPECT_EQ(expect_max_age, max_age);
   EXPECT_TRUE(include_subdomains);
 

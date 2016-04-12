@@ -367,9 +367,6 @@ class NET_EXPORT TransportSecurityState
                              const HostPortPair& host_port_pair,
                              const SSLInfo& ssl_info);
 
-  // The maximum number of seconds for which we'll cache an HSTS request.
-  static const long int kMaxHSTSAgeSecs;
-
  private:
   friend class TransportSecurityStateTest;
   FRIEND_TEST_ALL_PREFIXES(HttpSecurityHeadersTest, UpdateDynamicPKPOnly);
