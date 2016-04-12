@@ -879,10 +879,6 @@ crbug.com/528062 [ Win ] http/tests/security/contentSecurityPolicy/cached-frame-
 crbug.com/528062 [ Win ] http/tests/security/xssAuditor/cached-frame.html [ Failure ]
 crbug.com/528062 [ Win ] http/tests/security/xssAuditor/chunked-big-script.html [ Failure ]
 
-crbug.com/539725 [ Linux Debug ] inspector/elements/shadow/elements-panel-shadow-selection-on-refresh.html [ Failure ]
-crbug.com/577870 [ Win ] inspector/elements/shadow/elements-panel-shadow-selection-on-refresh.html [ Pass Failure Timeout ]
-crbug.com/577870 [ Linux Release ] inspector/elements/shadow/elements-panel-shadow-selection-on-refresh.html [ Pass Failure Timeout ]
-
 crbug.com/392706 virtual/threaded/animations/play-state-initially-paused.html [ Failure ]
 
 crbug.com/402379 [ Win7 Debug ] storage/indexeddb/cursor-continue-validity.html [ Pass ]

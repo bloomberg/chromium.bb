@@ -1,0 +1,54 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/elements-test.js"></script>
+<script src="./elements-panel-shadow-selection-on-refresh.js"></script>
+<script>
+
+function test()
+{
+    InspectorTest.runTestSuite([
+        function setup(next)
+        {
+            WebInspector.settingForTest("showUAShadowDOM").set(true);
+            InspectorTest.expandElementsTree(next);
+        },
+
+        function testOpenShadowRoot(next)
+        {
+            InspectorTest.findNode(isOpenShadowRoot, InspectorTest.selectReloadAndDump.bind(null, next));
+        },
+
+        function testClosedShadowRoot(next)
+        {
+            InspectorTest.findNode(isClosedShadowRoot, InspectorTest.selectReloadAndDump.bind(null, next));
+        },
+    ]);
+
+    function isOpenShadowRoot(node)
+    {
+        return node && node.shadowRootType() === WebInspector.DOMNode.ShadowRootTypes.Open;
+    }
+
+    function isClosedShadowRoot(node)
+    {
+        return node && node.shadowRootType() === WebInspector.DOMNode.ShadowRootTypes.Closed;
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests that elements panel preserves selected shadow DOM node on page refresh.
+</p>
+<span id="hostElement"></span><span id="closedHostElement"></span>
+<script>
+var root = document.getElementById("hostElement").createShadowRoot();
+root.innerHTML = "<input type='text'>";
+var closedRoot = document.getElementById("closedHostElement").attachShadow({mode: 'closed'});
+closedRoot.innerHTML = "<button></button>";
+</script>
+</body>
+</html>
