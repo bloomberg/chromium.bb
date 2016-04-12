@@ -683,7 +683,7 @@ bool HWNDMessageHandler::IsMinimized() const {
 }
 
 bool HWNDMessageHandler::IsMaximized() const {
-  return !!::IsZoomed(hwnd());
+  return !!::IsZoomed(hwnd()) && !IsFullscreen();
 }
 
 bool HWNDMessageHandler::IsFullscreen() const {

@@ -47,12 +47,6 @@ void FullscreenHandler::SetFullscreenImpl(bool fullscreen) {
 
   // Save current window state if not already fullscreen.
   if (!fullscreen_) {
-    // Save current window information.  We force the window into restored mode
-    // before going fullscreen because Windows doesn't seem to hide the
-    // taskbar if the window is in the maximized state.
-    saved_window_info_.maximized = !!::IsZoomed(hwnd_);
-    if (saved_window_info_.maximized)
-      ::SendMessage(hwnd_, WM_SYSCOMMAND, SC_RESTORE, 0);
     saved_window_info_.style = GetWindowLong(hwnd_, GWL_STYLE);
     saved_window_info_.ex_style = GetWindowLong(hwnd_, GWL_EXSTYLE);
     GetWindowRect(hwnd_, &saved_window_info_.window_rect);
@@ -90,8 +84,6 @@ void FullscreenHandler::SetFullscreenImpl(bool fullscreen) {
     SetWindowPos(hwnd_, NULL, new_rect.x(), new_rect.y(), new_rect.width(),
                  new_rect.height(),
                  SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
-    if (saved_window_info_.maximized)
-      ::SendMessage(hwnd_, WM_SYSCOMMAND, SC_MAXIMIZE, 0);
   }
 }
 

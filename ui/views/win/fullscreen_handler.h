@@ -34,7 +34,6 @@ class FullscreenHandler {
   // Information saved before going into fullscreen mode, used to restore the
   // window afterwards.
   struct SavedWindowInfo {
-    bool maximized;
     LONG style;
     LONG ex_style;
     RECT window_rect;

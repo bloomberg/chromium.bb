@@ -842,6 +842,56 @@ TEST_F(WidgetTestInteractive, FullscreenBoundsReducedOnActivationLoss) {
   widget1.CloseNow();
   widget2.CloseNow();
 }
+
+// Ensure the window rect and client rects are correct with a window that was
+// maximized.
+TEST_F(WidgetTestInteractive, FullscreenMaximizedWindowBounds) {
+  Widget widget;
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
+  params.native_widget = new DesktopNativeWidgetAura(&widget);
+  params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  widget.set_frame_type(Widget::FRAME_TYPE_FORCE_CUSTOM);
+  widget.Init(params);
+  widget.SetBounds(gfx::Rect(0, 0, 200, 200));
+  widget.Show();
+
+  widget.Maximize();
+  EXPECT_TRUE(widget.IsMaximized());
+
+  widget.SetFullscreen(true);
+  EXPECT_TRUE(widget.IsFullscreen());
+  EXPECT_FALSE(widget.IsMaximized());
+  // Ensure that the StopIgnoringPosChanges task in HWNDMessageHandler runs.
+  // This task is queued when a widget becomes fullscreen.
+  RunPendingMessages();
+
+  aura::WindowTreeHost* host = widget.GetNativeWindow()->GetHost();
+  HWND hwnd = host->GetAcceleratedWidget();
+
+  HMONITOR monitor = ::MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
+  ASSERT_TRUE(!!monitor);
+  MONITORINFO monitor_info;
+  monitor_info.cbSize = sizeof(monitor_info);
+  ASSERT_TRUE(::GetMonitorInfo(monitor, &monitor_info));
+
+  gfx::Rect monitor_bounds(monitor_info.rcMonitor);
+  gfx::Rect window_bounds = widget.GetWindowBoundsInScreen();
+  gfx::Rect client_area_bounds = host->GetBounds();
+
+  EXPECT_EQ(window_bounds, monitor_bounds);
+  EXPECT_EQ(monitor_bounds, client_area_bounds);
+
+  // Setting not fullscreen should return it to maximized.
+  widget.SetFullscreen(false);
+  EXPECT_FALSE(widget.IsFullscreen());
+  EXPECT_TRUE(widget.IsMaximized());
+
+  client_area_bounds = host->GetBounds();
+  EXPECT_TRUE(monitor_bounds.Contains(client_area_bounds));
+  EXPECT_NE(monitor_bounds, client_area_bounds);
+
+  widget.CloseNow();
+}
 #endif  // defined(OS_WIN)
 
 #if !defined(OS_CHROMEOS)
