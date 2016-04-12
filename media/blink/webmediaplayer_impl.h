@@ -207,7 +207,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
     GONE,
     PLAYING,
     PAUSED,
-    PAUSED_SEEK,
+    PAUSED_BUT_NOT_IDLE,
     ENDED,
   };
 

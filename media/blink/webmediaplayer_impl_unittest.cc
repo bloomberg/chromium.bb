@@ -129,6 +129,7 @@ class WebMediaPlayerImplTest : public testing::Test {
   void SetPaused(bool is_paused) { wmpi_->paused_ = is_paused; }
   void SetSeeking(bool is_seeking) { wmpi_->seeking_ = is_seeking; }
   void SetEnded(bool is_ended) { wmpi_->ended_ = is_ended; }
+  void SetFullscreen(bool is_fullscreen) { wmpi_->fullscreen_ = is_fullscreen; }
 
   void SetMetadata(bool has_audio, bool has_video) {
     wmpi_->SetNetworkState(blink::WebMediaPlayer::NetworkStateLoaded);
@@ -332,7 +333,20 @@ TEST_F(WebMediaPlayerImplTest, ComputePlayState_Paused_Seek) {
   SetSeeking(true);
 
   state = ComputePlayState();
-  EXPECT_EQ(WebMediaPlayerImpl::DelegateState::PAUSED_SEEK,
+  EXPECT_EQ(WebMediaPlayerImpl::DelegateState::PAUSED_BUT_NOT_IDLE,
+            state.delegate_state);
+  EXPECT_FALSE(state.is_memory_reporting_enabled);
+  EXPECT_FALSE(state.is_suspended);
+}
+
+TEST_F(WebMediaPlayerImplTest, ComputePlayState_Paused_Fullscreen) {
+  WebMediaPlayerImpl::PlayState state;
+  SetMetadata(true, true);
+  SetReadyState(blink::WebMediaPlayer::ReadyStateHaveFutureData);
+  SetFullscreen(true);
+
+  state = ComputePlayState();
+  EXPECT_EQ(WebMediaPlayerImpl::DelegateState::PAUSED_BUT_NOT_IDLE,
             state.delegate_state);
   EXPECT_FALSE(state.is_memory_reporting_enabled);
   EXPECT_FALSE(state.is_suspended);
