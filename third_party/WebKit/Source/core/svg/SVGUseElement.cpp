@@ -63,15 +63,12 @@ inline SVGUseElement::SVGUseElement(Document& document)
     , m_needsShadowTreeRecreation(false)
 {
     ASSERT(hasCustomStyleCallbacks());
+    ThreadState::current()->registerPreFinalizer(this);
 
     addToPropertyMap(m_x);
     addToPropertyMap(m_y);
     addToPropertyMap(m_width);
     addToPropertyMap(m_height);
-
-#if ENABLE(OILPAN)
-    ThreadState::current()->registerPreFinalizer(this);
-#endif
 }
 
 SVGUseElement* SVGUseElement::create(Document& document)
@@ -84,12 +81,6 @@ SVGUseElement* SVGUseElement::create(Document& document)
 
 SVGUseElement::~SVGUseElement()
 {
-#if !ENABLE(OILPAN)
-    clearShadowTree();
-    cancelShadowTreeRecreation();
-    svgUseLoadEventSender().cancelEvent(this);
-    dispose();
-#endif
 }
 
 void SVGUseElement::dispose()

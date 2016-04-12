@@ -32,11 +32,6 @@ class SVGViewSpec final : public GarbageCollectedFinalized<SVGViewSpec>, public 
     DEFINE_WRAPPERTYPEINFO();
     USING_GARBAGE_COLLECTED_MIXIN(SVGViewSpec);
 public:
-#if !ENABLE(OILPAN)
-    using RefCounted<SVGViewSpec>::ref;
-    using RefCounted<SVGViewSpec>::deref;
-#endif
-
     static SVGViewSpec* create(SVGSVGElement* contextElement)
     {
         return new SVGViewSpec(contextElement);

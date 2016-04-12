@@ -61,9 +61,6 @@ DEFINE_NODE_FACTORY(SVGTextPathElement)
 
 SVGTextPathElement::~SVGTextPathElement()
 {
-#if !ENABLE(OILPAN)
-    clearResourceReferences();
-#endif
 }
 
 DEFINE_TRACE(SVGTextPathElement)

@@ -43,11 +43,6 @@ inline SVGStyleElement::SVGStyleElement(Document& document, bool createdByParser
 
 SVGStyleElement::~SVGStyleElement()
 {
-#if !ENABLE(OILPAN)
-    StyleElement::clearDocumentData(document(), this);
-
-    styleErrorEventSender().cancelEvent(this);
-#endif
 }
 
 SVGStyleElement* SVGStyleElement::create(Document& document, bool createdByParser)
