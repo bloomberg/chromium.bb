@@ -13,7 +13,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
-#include "chrome/browser/extensions/bundle_installer.h"
 #include "chrome/browser/extensions/extension_install_prompt_show_params.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/permissions_updater.h"
@@ -46,7 +45,6 @@
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/image/image_skia.h"
 
-using extensions::BundleInstaller;
 using extensions::Extension;
 using extensions::Manifest;
 using extensions::PermissionMessage;
@@ -64,7 +62,7 @@ bool AllowWebstoreData(ExtensionInstallPrompt::PromptType type) {
 static const int kTitleIds[ExtensionInstallPrompt::NUM_PROMPT_TYPES] = {
     IDS_EXTENSION_INSTALL_PROMPT_TITLE,
     IDS_EXTENSION_INSTALL_PROMPT_TITLE,
-    0,  // Heading for bundle installs depends on the bundle contents.
+    0,  // Deprecated.
     IDS_EXTENSION_RE_ENABLE_PROMPT_TITLE,
     IDS_EXTENSION_PERMISSIONS_PROMPT_TITLE,
     0,  // External installs use different strings for extensions/apps/themes.
@@ -73,7 +71,7 @@ static const int kTitleIds[ExtensionInstallPrompt::NUM_PROMPT_TYPES] = {
     IDS_EXTENSION_REMOTE_INSTALL_PROMPT_TITLE,
     IDS_EXTENSION_REPAIR_PROMPT_TITLE,
     IDS_EXTENSION_DELEGATED_INSTALL_PROMPT_TITLE,
-    0,  // Heading for delegated bundle installs depends on the bundle contents.
+    0,  // Deprecated.
 };
 static const int kButtons[ExtensionInstallPrompt::NUM_PROMPT_TYPES] = {
     ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL,
@@ -197,8 +195,6 @@ std::string ExtensionInstallPrompt::PromptTypeToString(PromptType type) {
       return "INSTALL_PROMPT";
     case ExtensionInstallPrompt::INLINE_INSTALL_PROMPT:
       return "INLINE_INSTALL_PROMPT";
-    case ExtensionInstallPrompt::BUNDLE_INSTALL_PROMPT:
-      return "BUNDLE_INSTALL_PROMPT";
     case ExtensionInstallPrompt::RE_ENABLE_PROMPT:
       return "RE_ENABLE_PROMPT";
     case ExtensionInstallPrompt::PERMISSIONS_PROMPT:
@@ -213,9 +209,9 @@ std::string ExtensionInstallPrompt::PromptTypeToString(PromptType type) {
       return "REPAIR_PROMPT";
     case ExtensionInstallPrompt::DELEGATED_PERMISSIONS_PROMPT:
       return "DELEGATED_PERMISSIONS_PROMPT";
-    case ExtensionInstallPrompt::DELEGATED_BUNDLE_PERMISSIONS_PROMPT:
-      return "DELEGATED_BUNDLE_PERMISSIONS_PROMPT";
     case ExtensionInstallPrompt::LAUNCH_PROMPT_DEPRECATED:
+    case ExtensionInstallPrompt::BUNDLE_INSTALL_PROMPT_DEPRECATED:
+    case ExtensionInstallPrompt::DELEGATED_BUNDLE_PERMISSIONS_PROMPT_DEPRECATED:
       NOTREACHED();
       // fall through:
     case ExtensionInstallPrompt::UNSET_PROMPT_TYPE:
@@ -230,7 +226,6 @@ ExtensionInstallPrompt::Prompt::Prompt(PromptType type)
       is_showing_details_for_retained_files_(false),
       is_showing_details_for_retained_devices_(false),
       extension_(NULL),
-      bundle_(NULL),
       average_rating_(0.0),
       rating_count_(0),
       show_user_count_(false),
@@ -305,10 +300,6 @@ void ExtensionInstallPrompt::Prompt::SetWebstoreData(
 
 base::string16 ExtensionInstallPrompt::Prompt::GetDialogTitle() const {
   int id = kTitleIds[type_];
-  if (type_ == BUNDLE_INSTALL_PROMPT ||
-      type_ == DELEGATED_BUNDLE_PERMISSIONS_PROMPT) {
-    return bundle_->GetHeadingTextFor(BundleInstaller::Item::STATE_PENDING);
-  }
   if (type_ == DELEGATED_PERMISSIONS_PROMPT) {
     return l10n_util::GetStringFUTF16(id, base::UTF8ToUTF16(extension_->name()),
                                       base::UTF8ToUTF16(delegated_username_));
@@ -730,9 +721,9 @@ void ExtensionInstallPrompt::OnImageLoaded(const gfx::Image& image) {
 }
 
 void ExtensionInstallPrompt::LoadImageIfNeeded() {
-  // Don't override an icon that was passed in. Also, bundle installs don't have
-  // an icon (or a specific extension), and profile_| can be null in unit tests.
-  if (!extension_ || !icon_.empty() || !profile_) {
+  // Don't override an icon that was passed in. Also, |profile_| can be null in
+  // unit tests.
+  if (!icon_.empty() || !profile_) {
     ShowConfirmation();
     return;
   }
@@ -773,8 +764,7 @@ void ExtensionInstallPrompt::ShowConfirmation() {
         &extension_->permissions_data()->active_permissions();
     // For delegated installs, all optional permissions are pre-approved by the
     // person who triggers the install, so add them to the list.
-    if (prompt_->type() == DELEGATED_PERMISSIONS_PROMPT ||
-        prompt_->type() == DELEGATED_BUNDLE_PERMISSIONS_PROMPT) {
+    if (prompt_->type() == DELEGATED_PERMISSIONS_PROMPT) {
       const PermissionSet& optional_permissions =
           extensions::PermissionsParser::GetOptionalPermissions(extension_);
       permissions_wrapper = PermissionSet::CreateUnion(*permissions_to_display,
@@ -819,11 +809,6 @@ void ExtensionInstallPrompt::ShowConfirmation() {
     case REPAIR_PROMPT:
     case DELEGATED_PERMISSIONS_PROMPT: {
       prompt_->set_extension(extension_);
-      break;
-    }
-    case BUNDLE_INSTALL_PROMPT:
-    case DELEGATED_BUNDLE_PERMISSIONS_PROMPT: {
-      DCHECK(prompt_->bundle());
       break;
     }
     case LAUNCH_PROMPT_DEPRECATED:

@@ -36,7 +36,6 @@ class WebContents;
 }
 
 namespace extensions {
-class BundleInstaller;
 class CrxInstallError;
 class Extension;
 class ExtensionInstallUI;
@@ -56,7 +55,7 @@ class ExtensionInstallPrompt {
     UNSET_PROMPT_TYPE = -1,
     INSTALL_PROMPT = 0,
     INLINE_INSTALL_PROMPT,
-    BUNDLE_INSTALL_PROMPT,
+    BUNDLE_INSTALL_PROMPT_DEPRECATED,
     RE_ENABLE_PROMPT,
     PERMISSIONS_PROMPT,
     EXTERNAL_INSTALL_PROMPT,
@@ -65,7 +64,7 @@ class ExtensionInstallPrompt {
     REMOTE_INSTALL_PROMPT,
     REPAIR_PROMPT,
     DELEGATED_PERMISSIONS_PROMPT,
-    DELEGATED_BUNDLE_PERMISSIONS_PROMPT,
+    DELEGATED_BUNDLE_PERMISSIONS_PROMPT_DEPRECATED,
     NUM_PROMPT_TYPES
   };
 
@@ -151,14 +150,6 @@ class ExtensionInstallPrompt {
     size_t GetRetainedDeviceCount() const;
     base::string16 GetRetainedDeviceMessageString(size_t index) const;
 
-    // Populated for BUNDLE_INSTALL_PROMPT and
-    // DELEGATED_BUNDLE_PERMISSIONS_PROMPT.
-    const extensions::BundleInstaller* bundle() const { return bundle_; }
-    void set_bundle(const extensions::BundleInstaller* bundle) {
-      bundle_ = bundle;
-    }
-
-    // Populated for all other types.
     const extensions::Extension* extension() const { return extension_; }
     void set_extension(const extensions::Extension* extension) {
       extension_ = extension;
@@ -219,9 +210,8 @@ class ExtensionInstallPrompt {
     bool is_showing_details_for_retained_files_;
     bool is_showing_details_for_retained_devices_;
 
-    // The extension or bundle being installed.
+    // The extension being installed.
     const extensions::Extension* extension_;
-    const extensions::BundleInstaller* bundle_;
 
     std::string delegated_username_;
 
@@ -365,8 +355,7 @@ class ExtensionInstallPrompt {
   // The extensions installation icon.
   SkBitmap icon_;
 
-  // The extension we are showing the UI for, if type is not
-  // BUNDLE_INSTALL_PROMPT or DELEGATED_BUNDLE_PERMISSIONS_PROMPT.
+  // The extension we are showing the UI for.
   const extensions::Extension* extension_;
 
   // A custom set of permissions to show in the install prompt instead of the

@@ -77,12 +77,6 @@ class ExtensionInstallDialogView : public views::DialogDelegateView,
   // Creates a layout consisting of dialog header, extension name and icon.
   views::GridLayout* CreateLayout(int left_column_width, int column_set_id);
 
-  bool is_bundle_install() const {
-    return prompt_->type() == ExtensionInstallPrompt::BUNDLE_INSTALL_PROMPT ||
-           prompt_->type() ==
-               ExtensionInstallPrompt::DELEGATED_BUNDLE_PERMISSIONS_PROMPT;
-  }
-
   bool is_external_install() const {
     return prompt_->type() == ExtensionInstallPrompt::EXTERNAL_INSTALL_PROMPT;
   }
@@ -124,15 +118,6 @@ class BulletedView : public views::View {
   explicit BulletedView(views::View* view);
  private:
   DISALLOW_COPY_AND_ASSIGN(BulletedView);
-};
-
-// A simple view that prepends a view with an icon with the help of a grid
-// layout.
-class IconedView : public views::View {
- public:
-  IconedView(views::View* view, const gfx::ImageSkia& image);
- private:
-  DISALLOW_COPY_AND_ASSIGN(IconedView);
 };
 
 // A view to display text with an expandable details section.

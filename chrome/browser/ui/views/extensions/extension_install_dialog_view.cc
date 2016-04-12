@@ -20,7 +20,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/experience_sampling_private/experience_sampling.h"
-#include "chrome/browser/extensions/bundle_installer.h"
 #include "chrome/browser/extensions/extension_install_prompt_show_params.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -29,6 +28,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "components/constrained_window/constrained_window_views.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/extension.h"
@@ -54,7 +54,6 @@
 
 using content::OpenURLParams;
 using content::Referrer;
-using extensions::BundleInstaller;
 using extensions::ExperienceSamplingEvent;
 
 namespace {
@@ -64,12 +63,6 @@ const int kBulletWidth = 20;
 
 // Size of extension icon in top left of dialog.
 const int kIconSize = 64;
-
-// Size of the icons of individual extensions for bundle installs.
-const int kSmallIconSize = 32;
-
-// Padding between extension icon and title for bundle installs.
-const int kSmallIconPadding = 6;
 
 // The maximum height of the scroll view before it will show a scrollbar.
 const int kScrollViewMaxHeight = 250;
@@ -163,36 +156,6 @@ BulletedView::BulletedView(views::View* view) {
                         0);
   layout->StartRow(0, 0);
   layout->AddView(new views::Label(PrepareForDisplay(base::string16(), true)));
-  layout->AddView(view);
-}
-
-IconedView::IconedView(views::View* view, const gfx::ImageSkia& image) {
-  views::GridLayout* layout = new views::GridLayout(this);
-  SetLayoutManager(layout);
-  views::ColumnSet* column_set = layout->AddColumnSet(0);
-  column_set->AddColumn(views::GridLayout::CENTER,
-                        views::GridLayout::LEADING,
-                        0,
-                        views::GridLayout::FIXED,
-                        kSmallIconSize,
-                        0);
-  column_set->AddPaddingColumn(0, kSmallIconPadding);
-  column_set->AddColumn(views::GridLayout::LEADING,
-                        views::GridLayout::CENTER,
-                        0,
-                        views::GridLayout::USE_PREF,
-                        0,  // No fixed width.
-                        0);
-  layout->StartRow(0, 0);
-
-  gfx::Size size(image.width(), image.height());
-  if (size.width() > kSmallIconSize || size.height() > kSmallIconSize)
-    size = gfx::Size(kSmallIconSize, kSmallIconSize);
-  views::ImageView* image_view = new views::ImageView;
-  image_view->SetImage(image);
-  image_view->SetImageSize(size);
-
-  layout->AddView(image_view);
   layout->AddView(view);
 }
 
@@ -329,24 +292,6 @@ void ExtensionInstallDialogView::InitView() {
   scroll_view_->SetContents(scrollable);
   layout->AddView(scroll_view_, 4, 1);
 
-  if (is_bundle_install()) {
-    BundleInstaller::ItemList items = prompt_->bundle()->GetItemsWithState(
-        BundleInstaller::Item::STATE_PENDING);
-    scroll_layout->AddPaddingRow(0, views::kRelatedControlSmallVerticalSpacing);
-    for (const BundleInstaller::Item& item : items) {
-      scroll_layout->StartRow(0, column_set_id);
-      views::Label* extension_label =
-          new views::Label(item.GetNameForDisplay());
-      extension_label->SetMultiLine(true);
-      extension_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-      extension_label->SizeToFit(
-          scrollable_width - kSmallIconSize - kSmallIconPadding);
-      gfx::ImageSkia image = gfx::ImageSkia::CreateFrom1xBitmap(item.icon);
-      scroll_layout->AddView(new IconedView(extension_label, image));
-    }
-    scroll_layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
-  }
-
   if (prompt_->ShouldShowPermissions()) {
     bool has_permissions =
         prompt_->GetPermissionCount(
@@ -457,18 +402,8 @@ bool ExtensionInstallDialogView::AddPermissions(
   layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
   layout->StartRow(0, column_set_id);
-  views::Label* permissions_header = NULL;
-  if (is_bundle_install()) {
-    // We need to pass the FontList in the constructor, rather than calling
-    // SetFontList later, because otherwise SizeToFit mis-judges the width
-    // of the line.
-    permissions_header =
-        new views::Label(prompt_->GetPermissionsHeading(perm_type),
-                         rb.GetFontList(ui::ResourceBundle::MediumFont));
-  } else {
-    permissions_header =
-        new views::Label(prompt_->GetPermissionsHeading(perm_type));
-  }
+  views::Label* permissions_header =
+      new views::Label(prompt_->GetPermissionsHeading(perm_type));
   permissions_header->SetMultiLine(true);
   permissions_header->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   permissions_header->SizeToFit(left_column_width);

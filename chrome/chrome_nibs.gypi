@@ -33,7 +33,6 @@
       'app/nibs/EditSearchEngine.xib',
       'app/nibs/ExclusiveAccessBubble.xib',
       'app/nibs/ExtensionInstalledBubble.xib',
-      'app/nibs/ExtensionInstallPromptBundle.xib',
       'app/nibs/ExtensionInstallPromptNoWarnings.xib',
       'app/nibs/ExtensionInstallPromptWebstoreData.xib',
       'app/nibs/ExtensionInstallPrompt.xib',
@@ -52,7 +51,6 @@
     'mac_untranslated_xibs': [
       'app/nibs/BookmarkBarFolderWindow.xib',
       'app/nibs/DevicePermissionsPrompt.xib',
-      'app/nibs/ExtensionInstalledBubbleBundle.xib',
       'app/nibs/FindBar.xib',
       'app/nibs/GlobalErrorBubble.xib',
       'app/nibs/HungRendererDialog.xib',

@@ -17,7 +17,6 @@ class ExtensionInstalledBubble;
 @class BubbleSyncPromoController;
 
 namespace extensions {
-class BundleInstaller;
 class Extension;
 }
 
@@ -40,7 +39,6 @@ const int kAppsBubbleArrowOffset = 4;
 enum ExtensionType {
   kApp,
   kExtension,
-  kBundle,
 };
 
 }  // namespace extension_installed_bubble
@@ -52,7 +50,6 @@ enum ExtensionType {
 @interface ExtensionInstalledBubbleController : BaseBubbleController {
  @private
   const extensions::Extension* extension_;  // weak
-  const extensions::BundleInstaller* bundle_;  // weak
   Browser* browser_;  // weak
   base::scoped_nsobject<NSImage> icon_;
 
@@ -82,14 +79,8 @@ enum ExtensionType {
   IBOutlet NSButton* manageShortcutLink_;
   // Only shown if the sign-in promo is active.
   IBOutlet NSView* promoContainer_;
-  // Only shown for bundle installs.
-  IBOutlet NSTextField* installedHeadingMsg_;
-  IBOutlet NSView* installedItemsView_;
-  IBOutlet NSTextField* failedHeadingMsg_;
-  IBOutlet NSView* failedItemsView_;
 }
 
-@property(nonatomic, readonly) const extensions::BundleInstaller* bundle;
 @property(nonatomic, readonly) ExtensionInstalledBubble* installedBubble;
 @property(nonatomic, readonly) NSView* heading;
 @property(nonatomic, readonly) NSView* closeButton;
@@ -104,12 +95,6 @@ enum ExtensionType {
 // Initialize the window. It will be shown by the BubbleManager.
 - (id)initWithParentWindow:(NSWindow*)parentWindow
            extensionBubble:(ExtensionInstalledBubble*)extensionBubble;
-
-// Initialize the window, and show it. BubbleManager is not currently used for
-// displaying the "Bundle Installed" bubble.
-- (id)initWithParentWindow:(NSWindow*)parentWindow
-                    bundle:(const extensions::BundleInstaller*)bundle
-                   browser:(Browser*)browser;
 
 // Action for close button.
 - (IBAction)closeWindow:(id)sender;

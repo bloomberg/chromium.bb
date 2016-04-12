@@ -31,8 +31,8 @@ class ExtensionInstallViewDelegate {
   virtual ~ExtensionInstallViewDelegate() {}
 };
 
-// Displays the extension or bundle install prompt, and notifies the
-// Delegate of success or failure.
+// Displays the extension install prompt, and notifies the Delegate of success
+// or failure.
 @interface ExtensionInstallViewController : NSViewController
                                            <NSOutlineViewDataSource,
                                             NSOutlineViewDelegate> {

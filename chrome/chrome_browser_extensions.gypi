@@ -558,8 +558,6 @@
       'browser/extensions/browser_context_keyed_service_factories.h',
       'browser/extensions/browser_extension_window_controller.cc',
       'browser/extensions/browser_extension_window_controller.h',
-      'browser/extensions/bundle_installer.cc',
-      'browser/extensions/bundle_installer.h',
       'browser/extensions/chrome_app_sorting.cc',
       'browser/extensions/chrome_app_sorting.h',
       'browser/extensions/chrome_component_extension_resource_manager.cc',
