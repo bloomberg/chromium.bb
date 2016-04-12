@@ -40,13 +40,17 @@ bool StaticBitmapImage::currentFrameKnownToBeOpaque(MetadataMode)
 void StaticBitmapImage::draw(SkCanvas* canvas, const SkPaint& paint, const FloatRect& dstRect,
     const FloatRect& srcRect, RespectImageOrientationEnum, ImageClampingMode clampMode)
 {
-    ASSERT(dstRect.width() >= 0 && dstRect.height() >= 0);
-    ASSERT(srcRect.width() >= 0 && srcRect.height() >= 0);
+    // Note: Sizes < 0 should never happen, except that the layout arithmetic
+    // may overflow in degenerate use cases, so we need to check for negatives,
+    // rather than only handle the isEmpty() case. See layout test
+    // fast/canvas/bug544329.html
+    if (dstRect.width() <= 0 || dstRect.height() <= 0 || srcRect.width() <= 0 || srcRect.height() <= 0)
+        return;
 
     FloatRect adjustedSrcRect = srcRect;
     adjustedSrcRect.intersect(FloatRect(0, 0, m_image->width(), m_image->height()));
 
-    if (adjustedSrcRect.isEmpty() || dstRect.isEmpty())
+    if (adjustedSrcRect.isEmpty())
         return; // Nothing to draw.
 
     ASSERT(adjustedSrcRect.width() <= m_image->width() && adjustedSrcRect.height() <= m_image->height());

@@ -1,0 +1,10 @@
+<p>Regression test for crbug.com/544329. Test passes by not crashing.</p>
+<canvas id='c' style="padding-right: 4294967292; border-right: 124px solid black;"></canvas>
+<script>
+if (window.testRunner) {
+	testRunner.dumpAsText();
+}
+var canvas = document.getElementById('c');
+var ctx = canvas.getContext('2d');
+ctx.getImageData(0, 0, 1, 1);
+</script>
