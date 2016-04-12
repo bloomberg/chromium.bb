@@ -202,7 +202,7 @@ void ExternalPopupMenu::didAcceptIndices(const WebVector<int>& indices)
         return;
     }
 
-    HTMLSelectElement* ownerElement = m_ownerElement.get();
+    HTMLSelectElement* ownerElement = m_ownerElement;
     ownerElement->popupDidHide();
 
     if (indices.size() == 0) {

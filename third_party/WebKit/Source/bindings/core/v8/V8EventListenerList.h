@@ -95,11 +95,11 @@ RawPtr<V8EventListener> V8EventListenerList::findOrCreateWrapper(v8::Local<v8::V
     if (wrapper)
         return wrapper;
 
-    V8EventListener* wrapperPtr = WrapperType::create(object, isAttribute, scriptState);
-    if (wrapperPtr)
-        V8HiddenValue::setHiddenValue(scriptState, object, wrapperProperty, v8::External::New(isolate, wrapperPtr));
+    wrapper = WrapperType::create(object, isAttribute, scriptState);
+    if (wrapper)
+        V8HiddenValue::setHiddenValue(scriptState, object, wrapperProperty, v8::External::New(isolate, wrapper));
 
-    return wrapperPtr;
+    return wrapper;
 }
 
 } // namespace blink
