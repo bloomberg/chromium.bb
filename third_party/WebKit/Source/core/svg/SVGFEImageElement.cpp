@@ -43,14 +43,10 @@ DEFINE_NODE_FACTORY(SVGFEImageElement)
 
 SVGFEImageElement::~SVGFEImageElement()
 {
-#if ENABLE(OILPAN)
     if (m_cachedImage) {
         m_cachedImage->removeClient(this);
         m_cachedImage = nullptr;
     }
-#else
-    clearResourceReferences();
-#endif
 }
 
 DEFINE_TRACE(SVGFEImageElement)

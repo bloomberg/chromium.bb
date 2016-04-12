@@ -43,9 +43,6 @@ DEFINE_NODE_FACTORY(SVGMPathElement)
 
 SVGMPathElement::~SVGMPathElement()
 {
-#if !ENABLE(OILPAN)
-    clearResourceReferences();
-#endif
 }
 
 void SVGMPathElement::buildPendingResource()

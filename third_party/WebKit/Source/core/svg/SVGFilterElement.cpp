@@ -57,11 +57,6 @@ inline SVGFilterElement::SVGFilterElement(Document& document)
 
 SVGFilterElement::~SVGFilterElement()
 {
-#if !ENABLE(OILPAN)
-    for (SVGResourceClient* filterClient : m_clientsToAdd)
-        filterClient->filterWillBeDestroyed(this);
-    m_clientsToAdd.clear();
-#endif
 }
 
 DEFINE_NODE_FACTORY(SVGFilterElement)

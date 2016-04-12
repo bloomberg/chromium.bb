@@ -126,11 +126,6 @@ public:
     void setCursorElement(SVGCursorElement*);
     void setCursorImageValue(CSSCursorImageValue*);
 
-#if !ENABLE(OILPAN)
-    void cursorElementRemoved();
-    void cursorImageValueRemoved();
-#endif
-
     SVGElement* correspondingElement() const;
     void setCorrespondingElement(SVGElement*);
     SVGUseElement* correspondingUseElement() const;

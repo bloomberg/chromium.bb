@@ -210,10 +210,6 @@ void SVGAnimateElement::resetAnimatedType()
 
 static inline void applyCSSPropertyToTarget(SVGElement* targetElement, CSSPropertyID id, const String& value)
 {
-#if !ENABLE(OILPAN)
-    ASSERT_WITH_SECURITY_IMPLICATION(!targetElement->m_deletionHasBegun);
-#endif
-
     MutableStylePropertySet* propertySet = targetElement->ensureAnimatedSMILStyleProperties();
     if (!propertySet->setProperty(id, value, false, 0))
         return;
@@ -223,9 +219,6 @@ static inline void applyCSSPropertyToTarget(SVGElement* targetElement, CSSProper
 
 static inline void removeCSSPropertyFromTarget(SVGElement* targetElement, CSSPropertyID id)
 {
-#if !ENABLE(OILPAN)
-    ASSERT_WITH_SECURITY_IMPLICATION(!targetElement->m_deletionHasBegun);
-#endif
     targetElement->ensureAnimatedSMILStyleProperties()->removeProperty(id);
     targetElement->setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::Animation));
 }
@@ -270,9 +263,6 @@ static inline void removeCSSPropertyFromTargetAndInstances(SVGElement* targetEle
 
 static inline void notifyTargetAboutAnimValChange(SVGElement* targetElement, const QualifiedName& attributeName)
 {
-#if !ENABLE(OILPAN)
-    ASSERT_WITH_SECURITY_IMPLICATION(!targetElement->m_deletionHasBegun);
-#endif
     targetElement->invalidateSVGAttributes();
     targetElement->svgAttributeChanged(attributeName);
 }

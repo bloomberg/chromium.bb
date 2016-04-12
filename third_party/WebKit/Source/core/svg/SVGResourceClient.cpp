@@ -59,6 +59,9 @@ void SVGResourceClient::clearFilterReferences()
 void SVGResourceClient::filterWillBeDestroyed(SVGFilterElement* filter)
 {
     m_internalFilterReferences.remove(filter);
+    // TODO(Oilpan): Currently filterNeedsInvalidation() is not called when
+    // the filter is removed from m_internalFilterReferences by weak processing.
+    // It needs to be called.
     filterNeedsInvalidation();
 }
 

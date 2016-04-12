@@ -40,11 +40,6 @@ DEFINE_NODE_FACTORY(SVGCursorElement)
 
 SVGCursorElement::~SVGCursorElement()
 {
-    // The below teardown is all handled by weak pointer processing in oilpan.
-#if !ENABLE(OILPAN)
-    for (const auto& client : m_clients)
-        client->cursorElementRemoved();
-#endif
 }
 
 void SVGCursorElement::addClient(SVGElement* element)
@@ -52,17 +47,6 @@ void SVGCursorElement::addClient(SVGElement* element)
     m_clients.add(element);
     element->setCursorElement(this);
 }
-
-#if !ENABLE(OILPAN)
-void SVGCursorElement::removeClient(SVGElement* element)
-{
-    HashSet<SVGElement*>::iterator it = m_clients.find(element);
-    if (it != m_clients.end()) {
-        m_clients.remove(it);
-        element->cursorElementRemoved();
-    }
-}
-#endif
 
 void SVGCursorElement::removeReferencedElement(SVGElement* element)
 {

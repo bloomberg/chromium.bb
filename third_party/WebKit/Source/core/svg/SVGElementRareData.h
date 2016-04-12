@@ -36,12 +36,8 @@ class SVGElementRareData : public GarbageCollectedFinalized<SVGElementRareData> 
     WTF_MAKE_NONCOPYABLE(SVGElementRareData);
 public:
     SVGElementRareData(SVGElement* owner)
-#if ENABLE(OILPAN)
         : m_owner(owner)
         , m_cursorElement(nullptr)
-#else
-        : m_cursorElement(nullptr)
-#endif
         , m_cursorImageValue(nullptr)
         , m_correspondingElement(nullptr)
         , m_instancesUpdatesBlocked(false)
@@ -91,9 +87,7 @@ public:
     void processWeakMembers(Visitor*);
 
 private:
-#if ENABLE(OILPAN)
     Member<SVGElement> m_owner;
-#endif
     SVGElementSet m_outgoingReferences;
     SVGElementSet m_incomingReferences;
     HeapHashSet<WeakMember<SVGElement>> m_elementInstances;

@@ -45,23 +45,21 @@ DEFINE_TRACE(SVGElementRareData)
 
 void SVGElementRareData::processWeakMembers(Visitor* visitor)
 {
-#if ENABLE(OILPAN)
-        ASSERT(m_owner);
-        if (!Heap::isHeapObjectAlive(m_cursorElement))
-            m_cursorElement = nullptr;
+    ASSERT(m_owner);
+    if (!Heap::isHeapObjectAlive(m_cursorElement))
+        m_cursorElement = nullptr;
 
-        if (!Heap::isHeapObjectAlive(m_cursorImageValue)) {
-            // The owning SVGElement is still alive and if it is pointing to an SVGCursorElement
-            // we unregister it when the CSSCursorImageValue dies.
-            if (m_cursorElement) {
-                m_cursorElement->removeReferencedElement(m_owner);
-                m_cursorElement = nullptr;
-            }
-            m_cursorImageValue = nullptr;
+    if (!Heap::isHeapObjectAlive(m_cursorImageValue)) {
+        // The owning SVGElement is still alive and if it is pointing to an SVGCursorElement
+        // we unregister it when the CSSCursorImageValue dies.
+        if (m_cursorElement) {
+            m_cursorElement->removeReferencedElement(m_owner);
+            m_cursorElement = nullptr;
         }
-        ASSERT(!m_cursorElement || Heap::isHeapObjectAlive(m_cursorElement));
-        ASSERT(!m_cursorImageValue || Heap::isHeapObjectAlive(m_cursorImageValue));
-#endif
+        m_cursorImageValue = nullptr;
+    }
+    ASSERT(!m_cursorElement || Heap::isHeapObjectAlive(m_cursorElement));
+    ASSERT(!m_cursorImageValue || Heap::isHeapObjectAlive(m_cursorImageValue));
 }
 
 AffineTransform* SVGElementRareData::animateMotionTransform()
