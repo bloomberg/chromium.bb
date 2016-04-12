@@ -88,6 +88,14 @@ class StoragePartitionImpl : public StoragePartition,
                  const base::Time end,
                  const base::Closure& callback) override;
 
+  void ClearData(uint32_t remove_mask,
+                 uint32_t quota_storage_remove_mask,
+                 const OriginMatcherFunction& origin_matcher,
+                 const CookieMatcherFunction& cookie_matcher,
+                 const base::Time begin,
+                 const base::Time end,
+                 const base::Closure& callback) override;
+
   void Flush() override;
 
   WebRTCIdentityStore* GetWebRTCIdentityStore();
@@ -130,6 +138,7 @@ class StoragePartitionImpl : public StoragePartition,
                            RemoveQuotaManagedIgnoreDevTools);
   FRIEND_TEST_ALL_PREFIXES(StoragePartitionImplTest, RemoveCookieForever);
   FRIEND_TEST_ALL_PREFIXES(StoragePartitionImplTest, RemoveCookieLastHour);
+  FRIEND_TEST_ALL_PREFIXES(StoragePartitionImplTest, RemoveCookieWithMatcher);
   FRIEND_TEST_ALL_PREFIXES(StoragePartitionImplTest,
                            RemoveUnprotectedLocalStorageForever);
   FRIEND_TEST_ALL_PREFIXES(StoragePartitionImplTest,
@@ -166,10 +175,12 @@ class StoragePartitionImpl : public StoragePartition,
       PlatformNotificationContextImpl* platform_notification_context,
       BackgroundSyncContextImpl* background_sync_context);
 
+  // We will never have both remove_origin be populated and a cookie_matcher.
   void ClearDataImpl(uint32_t remove_mask,
                      uint32_t quota_storage_remove_mask,
                      const GURL& remove_origin,
                      const OriginMatcherFunction& origin_matcher,
+                     const CookieMatcherFunction& cookie_matcher,
                      net::URLRequestContextGetter* rq_context,
                      const base::Time begin,
                      const base::Time end,

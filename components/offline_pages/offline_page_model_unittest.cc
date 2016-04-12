@@ -51,6 +51,11 @@ const ClientId kTestPageBookmarkId2(BOOKMARK_NAMESPACE, "5678");
 const ClientId kTestPageBookmarkId3(BOOKMARK_NAMESPACE, "42");
 const int64_t kTestFileSize = 876543LL;
 
+bool URLSpecContains(std::string contains_value, const GURL& url) {
+  std::string spec = url.spec();
+  return spec.find(contains_value) != std::string::npos;
+}
+
 }  // namespace
 
 class OfflinePageModelTest
@@ -589,9 +594,63 @@ TEST_F(OfflinePageModelTest, DeletePageSuccessful) {
   EXPECT_EQ(0u, store->GetAllPages().size());
 }
 
+TEST_F(OfflinePageModelTest, DeletePageByPredicate) {
+  OfflinePageTestStore* store = GetStore();
+
+  // Save one page.
+  SavePage(kTestUrl, kTestPageBookmarkId1);
+  int64_t offline1 = last_save_offline_id();
+  EXPECT_EQ(SavePageResult::SUCCESS, last_save_result());
+  EXPECT_EQ(1u, store->GetAllPages().size());
+
+  ResetResults();
+
+  // Save another page.
+  SavePage(kTestUrl2, kTestPageBookmarkId2);
+  int64_t offline2 = last_save_offline_id();
+  EXPECT_EQ(SavePageResult::SUCCESS, last_save_result());
+  EXPECT_EQ(2u, store->GetAllPages().size());
+
+  ResetResults();
+
+  // Delete the second page.
+  model()->DeletePagesByURLPredicate(
+      base::Bind(&URLSpecContains, "page.com"),
+      base::Bind(&OfflinePageModelTest::OnDeletePageDone, AsWeakPtr()));
+
+  PumpLoop();
+
+  EXPECT_EQ(last_deleted_offline_id(), offline2);
+  EXPECT_EQ(last_deleted_client_id(), kTestPageBookmarkId2);
+  EXPECT_EQ(DeletePageResult::SUCCESS, last_delete_result());
+  ASSERT_EQ(1u, store->GetAllPages().size());
+  EXPECT_EQ(kTestUrl, store->GetAllPages()[0].url);
+
+  ResetResults();
+
+  // Delete the first page.
+  model()->DeletePagesByURLPredicate(
+      base::Bind(&URLSpecContains, "example.com"),
+      base::Bind(&OfflinePageModelTest::OnDeletePageDone, AsWeakPtr()));
+
+  PumpLoop();
+
+  EXPECT_EQ(last_deleted_offline_id(), offline1);
+  EXPECT_EQ(last_deleted_client_id(), kTestPageBookmarkId1);
+  EXPECT_EQ(DeletePageResult::SUCCESS, last_delete_result());
+  EXPECT_EQ(0u, store->GetAllPages().size());
+}
+
 TEST_F(OfflinePageModelTest, DeletePageNotFound) {
   DeletePage(1234LL,
              base::Bind(&OfflinePageModelTest::OnDeletePageDone, AsWeakPtr()));
+  EXPECT_EQ(DeletePageResult::NOT_FOUND, last_delete_result());
+
+  ResetResults();
+
+  model()->DeletePagesByURLPredicate(
+      base::Bind(&URLSpecContains, "page.com"),
+      base::Bind(&OfflinePageModelTest::OnDeletePageDone, AsWeakPtr()));
   EXPECT_EQ(DeletePageResult::NOT_FOUND, last_delete_result());
 }
 

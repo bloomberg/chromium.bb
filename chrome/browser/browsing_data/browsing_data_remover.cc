@@ -16,9 +16,9 @@
 #include "build/build_config.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browsing_data/browsing_data_filter_builder.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover_factory.h"
-#include "chrome/browser/browsing_data/origin_filter_builder.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/domain_reliability/service_factory.h"
@@ -45,6 +45,8 @@
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/browsing_data/storage_partition_http_cache_data_remover.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/content_settings/core/common/content_settings.h"
+#include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
@@ -157,12 +159,21 @@ base::Callback<void(T)> IgnoreArgument(const base::Closure& callback) {
 }
 
 // Helper to create callback for BrowsingDataRemover::DoesOriginMatchMask.
-bool DoesOriginMatchMask(
+bool DoesOriginMatchMaskAndUrls(
     int origin_type_mask,
+    const base::Callback<bool(const GURL&)>& predicate,
     const GURL& origin,
     storage::SpecialStoragePolicy* special_storage_policy) {
-  return BrowsingDataHelper::DoesOriginMatchMask(
-      origin, origin_type_mask, special_storage_policy);
+  return predicate.Run(origin) &&
+         BrowsingDataHelper::DoesOriginMatchMask(origin, origin_type_mask,
+                                                 special_storage_policy);
+}
+
+bool ForwardPrimaryPatternCallback(
+    const base::Callback<bool(const ContentSettingsPattern&)> predicate,
+    const ContentSettingsPattern& primary_pattern,
+    const ContentSettingsPattern& secondary_pattern) {
+  return predicate.Run(primary_pattern);
 }
 
 void ClearHostnameResolutionCacheOnIOThread(IOThread* io_thread) {
@@ -205,6 +216,19 @@ void ClearCookiesOnIOThread(base::Time delete_begin,
       rq_context->GetURLRequestContext()->cookie_store();
   cookie_store->DeleteAllCreatedBetweenAsync(delete_begin, delete_end,
                                              IgnoreArgument<int>(callback));
+}
+
+void ClearCookiesWithPredicateOnIOThread(
+    base::Time delete_begin,
+    base::Time delete_end,
+    net::CookieStore::CookiePredicate predicate,
+    net::URLRequestContextGetter* rq_context,
+    const base::Closure& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  net::CookieStore* cookie_store =
+      rq_context->GetURLRequestContext()->cookie_store();
+  cookie_store->DeleteAllCreatedBetweenWithPredicateAsync(
+      delete_begin, delete_end, predicate, IgnoreArgument<int>(callback));
 }
 
 void OnClearedChannelIDsOnIOThread(net::URLRequestContextGetter* rq_context,
@@ -329,13 +353,23 @@ void BrowsingDataRemover::SetRemoving(bool is_removing) {
 void BrowsingDataRemover::Remove(const TimeRange& time_range,
                                  int remove_mask,
                                  int origin_type_mask) {
-  RemoveImpl(time_range, remove_mask, GURL(), origin_type_mask);
+  BrowsingDataFilterBuilder builder(BrowsingDataFilterBuilder::BLACKLIST);
+  RemoveImpl(time_range, remove_mask, builder, origin_type_mask);
 }
 
-void BrowsingDataRemover::RemoveImpl(const TimeRange& time_range,
-                                     int remove_mask,
-                                     const GURL& remove_url,
-                                     int origin_type_mask) {
+void BrowsingDataRemover::RemoveWithFilter(
+    const TimeRange& time_range,
+    int remove_mask,
+    int origin_type_mask,
+    const BrowsingDataFilterBuilder& origin_filter) {
+  RemoveImpl(time_range, remove_mask, origin_filter, origin_type_mask);
+}
+
+void BrowsingDataRemover::RemoveImpl(
+    const TimeRange& time_range,
+    int remove_mask,
+    const BrowsingDataFilterBuilder& filter_builder,
+    int origin_type_mask) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // crbug.com/140910: Many places were calling this with base::Time() as
@@ -348,18 +382,10 @@ void BrowsingDataRemover::RemoveImpl(const TimeRange& time_range,
   remove_mask_ = remove_mask;
   origin_type_mask_ = origin_type_mask;
 
-  // TODO(msramek): Replace |remove_origin| with |filter| in all backends.
-  const url::Origin remove_origin(remove_url);
-  OriginFilterBuilder builder(OriginFilterBuilder::BLACKLIST);
-  if (!remove_url.is_empty()) {
-    // Make sure that only URLs representing origins, with no extra components,
-    // are passed to this class.
-    DCHECK_EQ(remove_url, remove_url.GetOrigin());
-    builder.SetMode(OriginFilterBuilder::WHITELIST);
-    builder.AddOrigin(url::Origin(remove_origin));
-  }
-  base::Callback<bool(const GURL& url)> same_origin_filter =
-      builder.BuildSameOriginFilter();
+  base::Callback<bool(const GURL& url)> same_domain_filter =
+      filter_builder.BuildSameDomainFilter();
+  base::Callback<bool(const ContentSettingsPattern& url)> same_pattern_filter =
+      filter_builder.BuildWebsiteSettingsPatternMatchesFilter();
 
   PrefService* prefs = profile_->GetPrefs();
   bool may_delete_history = prefs->GetBoolean(
@@ -395,20 +421,11 @@ void BrowsingDataRemover::RemoveImpl(const TimeRange& time_range,
         HistoryServiceFactory::GetForProfile(
             profile_, ServiceAccessType::EXPLICIT_ACCESS);
     if (history_service) {
-      // Selective history deletion is currently done through HistoryUI ->
-      // HistoryBackend -> HistoryService, and that is for individual URLs,
-      // not origins. The code below is currently unused, as the only callsite
-      // supplying |remove_url| is the unittest.
-      // TODO(msramek): Make it possible to delete history per origin, not just
-      // per URL, and use that functionality here.
-      std::set<GURL> restrict_urls;
-      if (!remove_url.is_empty())
-        restrict_urls.insert(remove_url);
+      // TODO(dmurph): Support all backends with filter (crbug.com/113621).
       content::RecordAction(UserMetricsAction("ClearBrowsingData_History"));
       waiting_for_clear_history_ = true;
-
       history_service->ExpireLocalAndRemoteHistoryBetween(
-          WebHistoryServiceFactory::GetForProfile(profile_), restrict_urls,
+          WebHistoryServiceFactory::GetForProfile(profile_), std::set<GURL>(),
           delete_begin_, delete_end_,
           base::Bind(&BrowsingDataRemover::OnHistoryDeletionDone,
                      weak_ptr_factory_.GetWeakPtr()),
@@ -418,7 +435,8 @@ void BrowsingDataRemover::RemoveImpl(const TimeRange& time_range,
       // The extension activity contains details of which websites extensions
       // were active on. It therefore indirectly stores details of websites a
       // user has visited so best clean from here as well.
-      extensions::ActivityLog::GetInstance(profile_)->RemoveURLs(restrict_urls);
+      extensions::ActivityLog::GetInstance(profile_)->RemoveURLs(
+          std::set<GURL>());
 #endif
     }
 
@@ -431,6 +449,7 @@ void BrowsingDataRemover::RemoveImpl(const TimeRange& time_range,
 
     // The power consumption history by origin contains details of websites
     // that were visited.
+    // TODO(dmurph): Support all backends with filter (crbug.com/113621).
     power::OriginPowerMap* origin_power_map =
         power::OriginPowerMapFactory::GetForBrowserContext(profile_);
     if (origin_power_map)
@@ -440,6 +459,7 @@ void BrowsingDataRemover::RemoveImpl(const TimeRange& time_range,
     // reveals some history: we have no mechanism to track when these items were
     // created, so we'll clear them all. Better safe than sorry.
     if (g_browser_process->io_thread()) {
+      // TODO(dmurph): Support all backends with filter (crbug.com/113621).
       waiting_for_clear_hostname_resolution_cache_ = true;
       BrowserThread::PostTaskAndReply(
           BrowserThread::IO, FROM_HERE,
@@ -449,6 +469,7 @@ void BrowsingDataRemover::RemoveImpl(const TimeRange& time_range,
                      weak_ptr_factory_.GetWeakPtr()));
     }
     if (profile_->GetNetworkPredictor()) {
+      // TODO(dmurph): Support all backends with filter (crbug.com/113621).
       waiting_for_clear_network_predictor_ = true;
       BrowserThread::PostTaskAndReply(
           BrowserThread::IO, FROM_HERE,
@@ -461,6 +482,7 @@ void BrowsingDataRemover::RemoveImpl(const TimeRange& time_range,
     // As part of history deletion we also delete the auto-generated keywords.
     TemplateURLService* keywords_model =
         TemplateURLServiceFactory::GetForProfile(profile_);
+
     if (keywords_model && !keywords_model->loaded()) {
       template_url_sub_ = keywords_model->RegisterOnLoadedCallback(
           base::Bind(&BrowsingDataRemover::OnKeywordsLoaded,
@@ -468,8 +490,9 @@ void BrowsingDataRemover::RemoveImpl(const TimeRange& time_range,
       keywords_model->Load();
       waiting_for_clear_keyword_data_ = true;
     } else if (keywords_model) {
-      keywords_model->RemoveAutoGeneratedForOriginBetween(
-          remove_url, delete_begin_, delete_end_);
+      // TODO(dmurph): Support all backends with filter (crbug.com/113621).
+      keywords_model->RemoveAutoGeneratedForOriginBetween(GURL(), delete_begin_,
+                                                          delete_end_);
     }
 
     // The PrerenderManager keeps history of prerendered pages, so clear that.
@@ -479,6 +502,7 @@ void BrowsingDataRemover::RemoveImpl(const TimeRange& time_range,
     prerender::PrerenderManager* prerender_manager =
         prerender::PrerenderManagerFactory::GetForProfile(profile_);
     if (prerender_manager) {
+      // TODO(dmurph): Support all backends with filter (crbug.com/113621).
       prerender_manager->ClearData(
           prerender::PrerenderManager::CLEAR_PRERENDER_CONTENTS |
           prerender::PrerenderManager::CLEAR_PRERENDER_HISTORY);
@@ -486,7 +510,7 @@ void BrowsingDataRemover::RemoveImpl(const TimeRange& time_range,
 
     // If the caller is removing history for all hosts, then clear ancillary
     // historical information.
-    if (remove_url.is_empty()) {
+    if (filter_builder.IsEmptyBlacklist()) {
       // We also delete the list of recently closed tabs. Since these expire,
       // they can't be more than a day old, so we can simply clear them all.
       sessions::TabRestoreService* tab_service =
@@ -508,6 +532,7 @@ void BrowsingDataRemover::RemoveImpl(const TimeRange& time_range,
     // The saved Autofill profiles and credit cards can include the origin from
     // which these profiles and credit cards were learned.  These are a form of
     // history, so clear them as well.
+    // TODO(dmurph): Support all backends with filter (crbug.com/113621).
     scoped_refptr<autofill::AutofillWebDataService> web_data_service =
         WebDataServiceFactory::GetAutofillWebDataForProfile(
             profile_, ServiceAccessType::EXPLICIT_ACCESS);
@@ -589,8 +614,8 @@ void BrowsingDataRemover::RemoveImpl(const TimeRange& time_range,
     content::RecordAction(UserMetricsAction("ClearBrowsingData_Downloads"));
     content::DownloadManager* download_manager =
         BrowserContext::GetDownloadManager(profile_);
-    download_manager->RemoveDownloadsByURLAndTime(
-        same_origin_filter, delete_begin_, delete_end_);
+    download_manager->RemoveDownloadsByURLAndTime(same_domain_filter,
+                                                  delete_begin_, delete_end_);
     DownloadPrefs* download_prefs = DownloadPrefs::FromDownloadManager(
         download_manager);
     download_prefs->SetSaveFilePath(download_prefs->DownloadPath());
@@ -621,13 +646,24 @@ void BrowsingDataRemover::RemoveImpl(const TimeRange& time_range,
         scoped_refptr<net::URLRequestContextGetter> sb_context =
             sb_service->url_request_context();
         ++waiting_for_clear_cookies_count_;
-        BrowserThread::PostTask(
-            BrowserThread::IO, FROM_HERE,
-            base::Bind(&ClearCookiesOnIOThread, delete_begin_, delete_end_,
-                       base::RetainedRef(std::move(sb_context)),
-                       UIThreadTrampoline(
-                           base::Bind(&BrowsingDataRemover::OnClearedCookies,
-                                      weak_ptr_factory_.GetWeakPtr()))));
+        if (filter_builder.IsEmptyBlacklist()) {
+          BrowserThread::PostTask(
+              BrowserThread::IO, FROM_HERE,
+              base::Bind(&ClearCookiesOnIOThread, delete_begin_, delete_end_,
+                         base::RetainedRef(std::move(sb_context)),
+                         UIThreadTrampoline(
+                             base::Bind(&BrowsingDataRemover::OnClearedCookies,
+                                        weak_ptr_factory_.GetWeakPtr()))));
+        } else {
+          BrowserThread::PostTask(
+              BrowserThread::IO, FROM_HERE,
+              base::Bind(&ClearCookiesWithPredicateOnIOThread, delete_begin_,
+                         delete_end_, filter_builder.BuildDomainCookieFilter(),
+                         base::RetainedRef(std::move(sb_context)),
+                         UIThreadTrampoline(
+                             base::Bind(&BrowsingDataRemover::OnClearedCookies,
+                                        weak_ptr_factory_.GetWeakPtr()))));
+        }
       }
     }
 
@@ -704,13 +740,17 @@ void BrowsingDataRemover::RemoveImpl(const TimeRange& time_range,
 #endif
 
   if (remove_mask & REMOVE_SITE_USAGE_DATA) {
-    HostContentSettingsMapFactory::GetForProfile(profile_)
-        ->ClearSettingsForOneType(CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT);
+    ClearSettingsForOneTypeWithPredicate(
+        HostContentSettingsMapFactory::GetForProfile(profile_),
+        CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT,
+        base::Bind(&ForwardPrimaryPatternCallback, same_pattern_filter));
   }
 
   if (remove_mask & REMOVE_SITE_USAGE_DATA || remove_mask & REMOVE_HISTORY) {
-    HostContentSettingsMapFactory::GetForProfile(profile_)
-        ->ClearSettingsForOneType(CONTENT_SETTINGS_TYPE_APP_BANNER);
+    ClearSettingsForOneTypeWithPredicate(
+        HostContentSettingsMapFactory::GetForProfile(profile_),
+        CONTENT_SETTINGS_TYPE_APP_BANNER,
+        base::Bind(&ForwardPrimaryPatternCallback, same_pattern_filter));
   }
 
   if (remove_mask & REMOVE_PASSWORDS) {
@@ -725,7 +765,7 @@ void BrowsingDataRemover::RemoveImpl(const TimeRange& time_range,
           base::Bind(&BrowsingDataRemover::OnClearedPasswords,
                      weak_ptr_factory_.GetWeakPtr());
       password_store->RemoveLoginsByURLAndTime(
-          same_origin_filter, delete_begin_, delete_end_, on_cleared_passwords);
+          same_domain_filter, delete_begin_, delete_end_, on_cleared_passwords);
     }
   }
 
@@ -758,6 +798,7 @@ void BrowsingDataRemover::RemoveImpl(const TimeRange& time_range,
     }
   }
 
+  // TODO(dmurph): Support all backends with filter (crbug.com/113621).
   if (remove_mask & REMOVE_FORM_DATA) {
     content::RecordAction(UserMetricsAction("ClearBrowsingData_Autofill"));
     scoped_refptr<autofill::AutofillWebDataService> web_data_service =
@@ -861,10 +902,15 @@ void BrowsingDataRemover::RemoveImpl(const TimeRange& time_range,
           content::StoragePartition::QUOTA_MANAGED_STORAGE_MASK_PERSISTENT;
     }
 
+    content::StoragePartition::CookieMatcherFunction cookie_matcher;
+    if (!filter_builder.IsEmptyBlacklist()) {
+      cookie_matcher = filter_builder.BuildDomainCookieFilter();
+    }
     storage_partition->ClearData(
-        storage_partition_remove_mask, quota_storage_remove_mask, remove_url,
-        base::Bind(&DoesOriginMatchMask, origin_type_mask_), delete_begin_,
-        delete_end_,
+        storage_partition_remove_mask, quota_storage_remove_mask,
+        base::Bind(&DoesOriginMatchMaskAndUrls, origin_type_mask_,
+                   same_domain_filter),
+        cookie_matcher, delete_begin_, delete_end_,
         base::Bind(&BrowsingDataRemover::OnClearedStoragePartitionData,
                    weak_ptr_factory_.GetWeakPtr()));
   }
@@ -947,8 +993,10 @@ void BrowsingDataRemover::RemoveImpl(const TimeRange& time_range,
       offline_pages::IsOfflinePagesEnabled()) {
     waiting_for_clear_offline_page_data_ = true;
     offline_pages::OfflinePageModelFactory::GetForBrowserContext(profile_)
-        ->ClearAll(base::Bind(&BrowsingDataRemover::OnClearedOfflinePageData,
-                              weak_ptr_factory_.GetWeakPtr()));
+        ->DeletePagesByURLPredicate(
+            same_domain_filter,
+            base::Bind(&BrowsingDataRemover::OnClearedOfflinePageData,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 #endif
 
@@ -986,6 +1034,24 @@ void BrowsingDataRemover::OverrideWebappRegistryForTesting(
   webapp_registry_.reset(webapp_registry.release());
 }
 #endif
+
+void BrowsingDataRemover::ClearSettingsForOneTypeWithPredicate(
+    HostContentSettingsMap* content_settings_map,
+    ContentSettingsType content_type,
+    const base::Callback<bool(const ContentSettingsPattern& primary_pattern,
+                              const ContentSettingsPattern& secondary_pattern)>&
+        predicate) {
+  ContentSettingsForOneType settings;
+  content_settings_map->GetSettingsForOneType(content_type, std::string(),
+                                              &settings);
+  for (const ContentSettingPatternSource& setting : settings) {
+    if (predicate.Run(setting.primary_pattern, setting.secondary_pattern)) {
+      content_settings_map->SetWebsiteSettingCustomScope(
+          setting.primary_pattern, setting.secondary_pattern, content_type,
+          std::string(), nullptr);
+    }
+  }
+}
 
 base::Time BrowsingDataRemover::CalculateBeginDeleteTime(
     TimePeriod time_period) {
@@ -1233,7 +1299,8 @@ void BrowsingDataRemover::OnClearedWebappHistory() {
   NotifyIfDone();
 }
 
-void BrowsingDataRemover::OnClearedOfflinePageData() {
+void BrowsingDataRemover::OnClearedOfflinePageData(
+    offline_pages::OfflinePageModel::DeletePageResult result) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   waiting_for_clear_offline_page_data_ = false;
   NotifyIfDone();

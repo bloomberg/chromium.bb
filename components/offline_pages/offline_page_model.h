@@ -176,6 +176,11 @@ class OfflinePageModel : public KeyedService, public base::SupportsUserData {
   // Wipes out all the data by deleting all saved files and clearing the store.
   void ClearAll(const base::Closure& callback);
 
+  // Deletes offline pages matching the URL predicate.
+  void DeletePagesByURLPredicate(
+      const base::Callback<bool(const GURL&)>& predicate,
+      const DeletePageCallback& callback);
+
   // Returns true if there're offline pages.
   bool HasOfflinePages() const;
 
@@ -306,6 +311,12 @@ class OfflinePageModel : public KeyedService, public base::SupportsUserData {
   // Actually does the work of deleting, requires the model is loaded.
   void DoDeletePagesByOfflineId(const std::vector<int64_t>& offline_ids,
                                 const DeletePageCallback& callback);
+
+  // Similar to DoDeletePagesByOfflineId, does actual work of deleting, and
+  // requires that the model is loaded.
+  void DoDeletePagesByURLPredicate(
+      const base::Callback<bool(const GURL&)>& predicate,
+      const DeletePageCallback& callback);
 
   // Persistent store for offline page metadata.
   scoped_ptr<OfflinePageMetadataStore> store_;

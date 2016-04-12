@@ -279,6 +279,34 @@ void OfflinePageModel::ClearAll(const base::Closure& callback) {
                  weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
+void OfflinePageModel::DeletePagesByURLPredicate(
+    const base::Callback<bool(const GURL&)>& predicate,
+    const DeletePageCallback& callback) {
+  if (!is_loaded_) {
+    delayed_tasks_.push_back(
+        base::Bind(&OfflinePageModel::DoDeletePagesByURLPredicate,
+                   weak_ptr_factory_.GetWeakPtr(), predicate, callback));
+
+    return;
+  }
+  DoDeletePagesByURLPredicate(predicate, callback);
+}
+
+void OfflinePageModel::DoDeletePagesByURLPredicate(
+    const base::Callback<bool(const GURL&)>& predicate,
+    const DeletePageCallback& callback) {
+  DCHECK(is_loaded_);
+
+  std::vector<int64_t> offline_ids;
+  for (const auto& id_page_pair : offline_pages_) {
+    if (!id_page_pair.second.IsMarkedForDeletion() &&
+        predicate.Run(id_page_pair.second.url)) {
+      offline_ids.push_back(id_page_pair.first);
+    }
+  }
+  DoDeletePagesByOfflineId(offline_ids, callback);
+}
+
 bool OfflinePageModel::HasOfflinePages() const {
   // Since offline pages feature is enabled by default,
   // NetErrorTabHelper::SetHasOfflinePages might call this before the model is

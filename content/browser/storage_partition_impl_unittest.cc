@@ -69,6 +69,14 @@ const uint32_t kAllQuotaRemoveMask =
     StoragePartition::REMOVE_DATA_MASK_INDEXEDDB |
     StoragePartition::REMOVE_DATA_MASK_WEBSQL;
 
+bool AlwaysTrueCookiePredicate(const net::CanonicalCookie& cookie) {
+  return true;
+}
+
+bool AlwaysFalseCookiePredicate(const net::CanonicalCookie& cookie) {
+  return false;
+}
+
 class AwaitCompletionHelper {
  public:
   AwaitCompletionHelper() : start_(false), already_quit_(false) {}
@@ -299,6 +307,19 @@ void ClearCookies(content::StoragePartition* partition,
       StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL,
       GURL(), StoragePartition::OriginMatcherFunction(),
       delete_begin, delete_end, run_loop->QuitClosure());
+}
+
+void ClearCookiesWithMatcher(
+    content::StoragePartition* partition,
+    const base::Time delete_begin,
+    const base::Time delete_end,
+    const StoragePartition::CookieMatcherFunction& cookie_matcher,
+    base::RunLoop* run_loop) {
+  partition->ClearData(StoragePartition::REMOVE_DATA_MASK_COOKIES,
+                       StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL,
+                       StoragePartition::OriginMatcherFunction(),
+                       cookie_matcher, delete_begin, delete_end,
+                       run_loop->QuitClosure());
 }
 
 void ClearStuff(uint32_t remove_mask,
@@ -826,6 +847,38 @@ TEST_F(StoragePartitionImplTest, RemoveCookieLastHour) {
                             base::Time::Max(), &run_loop));
   run_loop.Run();
 
+  EXPECT_FALSE(tester.ContainsCookie());
+}
+
+TEST_F(StoragePartitionImplTest, RemoveCookieWithMatcher) {
+  RemoveCookieTester tester(browser_context());
+  StoragePartition::CookieMatcherFunction true_predicate =
+      base::Bind(&AlwaysTrueCookiePredicate);
+
+  StoragePartition::CookieMatcherFunction false_predicate =
+      base::Bind(&AlwaysFalseCookiePredicate);
+
+  tester.AddCookie();
+  ASSERT_TRUE(tester.ContainsCookie());
+
+  StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
+      BrowserContext::GetDefaultStoragePartition(browser_context()));
+  partition->SetURLRequestContext(browser_context()->GetRequestContext());
+
+  // Return false from our predicate, and make sure the cookies is still around.
+  base::RunLoop run_loop;
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&ClearCookiesWithMatcher, partition, base::Time(),
+                            base::Time::Max(), false_predicate, &run_loop));
+  run_loop.RunUntilIdle();
+  EXPECT_TRUE(tester.ContainsCookie());
+
+  // Now we return true from our predicate.
+  base::RunLoop run_loop2;
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&ClearCookiesWithMatcher, partition, base::Time(),
+                            base::Time::Max(), true_predicate, &run_loop2));
+  run_loop2.RunUntilIdle();
   EXPECT_FALSE(tester.ContainsCookie());
 }
 

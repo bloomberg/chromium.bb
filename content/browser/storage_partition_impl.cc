@@ -57,21 +57,24 @@ void OnClearedCookies(const base::Closure& callback, int num_deleted) {
   callback.Run();
 }
 
+// Cookie matcher and storage_origin are never both populated.
 void ClearCookiesOnIOThread(
     const scoped_refptr<net::URLRequestContextGetter>& rq_context,
     const base::Time begin,
     const base::Time end,
     const GURL& storage_origin,
+    const StoragePartition::CookieMatcherFunction& cookie_matcher,
     const base::Closure& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  net::CookieStore* cookie_store = rq_context->
-      GetURLRequestContext()->cookie_store();
-  if (storage_origin.is_empty()) {
-    cookie_store->DeleteAllCreatedBetweenAsync(
-        begin,
-        end,
-        base::Bind(&OnClearedCookies, callback));
-  } else {
+  DCHECK(cookie_matcher.is_null() || storage_origin.is_empty());
+  net::CookieStore* cookie_store =
+      rq_context->GetURLRequestContext()->cookie_store();
+  if (!cookie_matcher.is_null()) {
+    cookie_store->DeleteAllCreatedBetweenWithPredicateAsync(
+        begin, end, cookie_matcher, base::Bind(&OnClearedCookies, callback));
+    return;
+  }
+  if (!storage_origin.is_empty()) {
     // TODO(mkwst): It's not clear whether removing host cookies is the correct
     // behavior. We might want to remove all domain-matching cookies instead.
     // Also, this code path may be dead anyways.
@@ -79,7 +82,10 @@ void ClearCookiesOnIOThread(
         begin, end,
         StoragePartitionImpl::CreatePredicateForHostCookies(storage_origin),
         base::Bind(&OnClearedCookies, callback));
+    return;
   }
+  cookie_store->DeleteAllCreatedBetweenAsync(
+      begin, end, base::Bind(&OnClearedCookies, callback));
 }
 
 void CheckQuotaManagedDataDeletionStatus(size_t* deletion_task_count,
@@ -303,6 +309,7 @@ struct StoragePartitionImpl::DataDeletionHelper {
   void ClearDataOnUIThread(
       const GURL& storage_origin,
       const OriginMatcherFunction& origin_matcher,
+      const CookieMatcherFunction& cookie_matcher,
       const base::FilePath& path,
       net::URLRequestContextGetter* rq_context,
       DOMStorageContextWrapper* dom_storage_context,
@@ -614,6 +621,7 @@ void StoragePartitionImpl::ClearDataImpl(
     uint32_t quota_storage_remove_mask,
     const GURL& storage_origin,
     const OriginMatcherFunction& origin_matcher,
+    const CookieMatcherFunction& cookie_matcher,
     net::URLRequestContextGetter* rq_context,
     const base::Time begin,
     const base::Time end,
@@ -624,16 +632,10 @@ void StoragePartitionImpl::ClearDataImpl(
                                                       callback);
   // |helper| deletes itself when done in
   // DataDeletionHelper::DecrementTaskCountOnUI().
-  helper->ClearDataOnUIThread(storage_origin,
-                              origin_matcher,
-                              GetPath(),
-                              rq_context,
-                              dom_storage_context_.get(),
-                              quota_manager_.get(),
-                              special_storage_policy_.get(),
-                              webrtc_identity_store_.get(),
-                              begin,
-                              end);
+  helper->ClearDataOnUIThread(
+      storage_origin, origin_matcher, cookie_matcher, GetPath(), rq_context,
+      dom_storage_context_.get(), quota_manager_.get(),
+      special_storage_policy_.get(), webrtc_identity_store_.get(), begin, end);
 }
 
 void StoragePartitionImpl::
@@ -766,6 +768,7 @@ void StoragePartitionImpl::DataDeletionHelper::DecrementTaskCountOnUI() {
 void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
     const GURL& storage_origin,
     const OriginMatcherFunction& origin_matcher,
+    const CookieMatcherFunction& cookie_matcher,
     const base::FilePath& path,
     net::URLRequestContextGetter* rq_context,
     DOMStorageContextWrapper* dom_storage_context,
@@ -786,8 +789,8 @@ void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
     IncrementTaskCountOnUI();
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&ClearCookiesOnIOThread,
-                   make_scoped_refptr(rq_context), begin, end, storage_origin,
+        base::Bind(&ClearCookiesOnIOThread, make_scoped_refptr(rq_context),
+                   begin, end, storage_origin, cookie_matcher,
                    decrement_callback));
   }
 
@@ -862,13 +865,9 @@ void StoragePartitionImpl::ClearDataForOrigin(
     net::URLRequestContextGetter* request_context_getter,
     const base::Closure& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  ClearDataImpl(remove_mask,
-                quota_storage_remove_mask,
-                storage_origin,
-                OriginMatcherFunction(),
-                request_context_getter,
-                base::Time(),
-                base::Time::Max(),
+  ClearDataImpl(remove_mask, quota_storage_remove_mask, storage_origin,
+                OriginMatcherFunction(), CookieMatcherFunction(),
+                request_context_getter, base::Time(), base::Time::Max(),
                 callback);
 }
 
@@ -881,7 +880,20 @@ void StoragePartitionImpl::ClearData(
     const base::Time end,
     const base::Closure& callback) {
   ClearDataImpl(remove_mask, quota_storage_remove_mask, storage_origin,
-                origin_matcher, GetURLRequestContext(), begin, end, callback);
+                origin_matcher, CookieMatcherFunction(), GetURLRequestContext(),
+                begin, end, callback);
+}
+
+void StoragePartitionImpl::ClearData(
+    uint32_t remove_mask,
+    uint32_t quota_storage_remove_mask,
+    const OriginMatcherFunction& origin_matcher,
+    const CookieMatcherFunction& cookie_matcher,
+    const base::Time begin,
+    const base::Time end,
+    const base::Closure& callback) {
+  ClearDataImpl(remove_mask, quota_storage_remove_mask, GURL(), origin_matcher,
+                cookie_matcher, GetURLRequestContext(), begin, end, callback);
 }
 
 void StoragePartitionImpl::Flush() {
