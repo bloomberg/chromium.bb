@@ -1451,10 +1451,10 @@ class _ChangelistCodereviewBase(object):
 
   @classmethod
   def IssueSetting(cls, branch):
-    return 'branch.%s.%s' % (branch, cls.IssueSettingPrefix())
+    return 'branch.%s.%s' % (branch, cls.IssueSettingSuffix())
 
   @classmethod
-  def IssueSettingPrefix(cls):
+  def IssueSettingSuffix(cls):
     """Returns name of git config setting which stores issue number for a given
     branch."""
     raise NotImplementedError()
@@ -1675,7 +1675,7 @@ class _RietveldChangelistImpl(_ChangelistCodereviewBase):
     return self._rpc_server
 
   @classmethod
-  def IssueSettingPrefix(cls):
+  def IssueSettingSuffix(cls):
     return 'rietveldissue'
 
   def PatchsetSetting(self):
@@ -1968,7 +1968,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     return self._gerrit_server
 
   @classmethod
-  def IssueSettingPrefix(cls):
+  def IssueSettingSuffix(cls):
     return 'gerritissue'
 
   def EnsureAuthenticated(self):
@@ -4576,7 +4576,7 @@ def CMDcheckout(parser, args):
 
   branches = []
   for cls in _CODEREVIEW_IMPLEMENTATIONS.values():
-    branches.extend(find_issues(cls.IssueSettingPrefix()))
+    branches.extend(find_issues(cls.IssueSettingSuffix()))
   if len(branches) == 0:
     print 'No branch found for issue %s.' % target_issue
     return 1
