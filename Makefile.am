@@ -116,6 +116,7 @@ pkgconfig_DATA =
 if SYSTEM_TEST_LIBS
 TEST_CFLAGS = $(GTEST_CFLAGS) $(GMOCK_CFLAGS)
 TEST_LIBS = $(GTEST_LIBS) -lgtest_main $(GMOCK_LIBS)
+TEST_DEPS =
 else
 TEST_CFLAGS = \
 	-I$(top_srcdir)/src/testing/include \
@@ -123,6 +124,7 @@ TEST_CFLAGS = \
 	-I$(top_srcdir)/src/testing/gtest \
 	-I$(top_srcdir)/src/testing
 TEST_LIBS = src/testing/libtesting.a
+TEST_DEPS = $(TEST_LIBS)
 endif
 
 ## Libraries
@@ -524,6 +526,7 @@ endif
 src_client_linux_linux_client_unittest_shlib_DEPENDENCIES = \
 	src/client/linux/linux_dumper_unittest_helper \
 	src/client/linux/libbreakpad_client.a \
+	$(TEST_DEPS) \
 	src/libbreakpad.a
 
 src_client_linux_linux_client_unittest_SOURCES =
