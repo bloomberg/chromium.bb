@@ -14,6 +14,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/metrics/histogram.h"
 #include "base/process/process.h"
 #include "base/profiler/scoped_tracker.h"
@@ -120,6 +121,7 @@
 #include "skia/public/type_converters.h"
 #include "third_party/WebKit/public/web/WebSandboxFlags.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/accessibility/ax_tree_combiner.h"
 #include "ui/base/layout.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
@@ -181,6 +183,44 @@ void SetAccessibilityModeOnFrame(AccessibilityMode mode,
 void ResetAccessibility(RenderFrameHost* rfh) {
   static_cast<RenderFrameHostImpl*>(rfh)->AccessibilityReset();
 }
+
+using AXTreeSnapshotCallback =
+      base::Callback<void(const ui::AXTreeUpdate&)>;
+
+// Helper class used by WebContentsImpl::RequestAXTreeSnapshot.
+// Handles the callbacks from parallel snapshot requests to each frame,
+// and feeds the results to an AXTreeCombiner, which converts them into a
+// single combined accessibility tree.
+class AXTreeSnapshotCombiner : public base::RefCounted<AXTreeSnapshotCombiner> {
+ public:
+  explicit AXTreeSnapshotCombiner(AXTreeSnapshotCallback callback)
+      : callback_(callback) {
+  }
+
+  AXTreeSnapshotCallback AddFrame(bool is_root) {
+    // Adds a reference to |this|.
+    return base::Bind(&AXTreeSnapshotCombiner::ReceiveSnapshot,
+                      this,
+                      is_root);
+  }
+
+  void ReceiveSnapshot(bool is_root, const ui::AXTreeUpdate& snapshot) {
+    combiner_.AddTree(snapshot, is_root);
+  }
+
+ private:
+  friend class base::RefCounted<AXTreeSnapshotCombiner>;
+
+  // This is called automatically after the last call to ReceiveSnapshot
+  // when there are no more references to this object.
+  ~AXTreeSnapshotCombiner() {
+    combiner_.Combine();
+    callback_.Run(combiner_.combined());
+  }
+
+  ui::AXTreeCombiner combiner_;
+  AXTreeSnapshotCallback callback_;
+};
 
 }  // namespace
 
@@ -855,10 +895,16 @@ void WebContentsImpl::RemoveAccessibilityMode(AccessibilityMode mode) {
 }
 
 void WebContentsImpl::RequestAXTreeSnapshot(AXTreeSnapshotCallback callback) {
-  // TODO(dmazzoni): http://crbug.com/475608 This only returns the
-  // accessibility tree from the main frame and everything in the
-  // same site instance.
-  GetMainFrame()->RequestAXTreeSnapshot(callback);
+  // Send a request to each of the frames in parallel. Each one will return
+  // an accessibility tree snapshot, and AXTreeSnapshotCombiner will combine
+  // them into a single tree and call |callback| with that result, then
+  // delete |combiner|.
+  AXTreeSnapshotCombiner* combiner = new AXTreeSnapshotCombiner(callback);
+  for (FrameTreeNode* frame_tree_node : frame_tree_.Nodes()) {
+    bool is_root = frame_tree_node->parent() == nullptr;
+    frame_tree_node->current_frame_host()->RequestAXTreeSnapshot(
+        combiner->AddFrame(is_root));
+  }
 }
 
 WebUI* WebContentsImpl::CreateSubframeWebUI(const GURL& url,

@@ -9,6 +9,9 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
+#include "content/test/content_browser_test_utils_internal.h"
+#include "net/dns/mock_host_resolver.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_tree.h"
@@ -38,6 +41,19 @@ class AXTreeSnapshotWaiter {
 
   DISALLOW_COPY_AND_ASSIGN(AXTreeSnapshotWaiter);
 };
+
+void DumpRolesAndNamesAsText(const ui::AXNode* node,
+                             int indent,
+                             std::string* dst) {
+  for (int i = 0; i < indent; i++)
+    *dst += "  ";
+  *dst += ui::ToString(node->data().role);
+  if (node->data().HasStringAttribute(ui::AX_ATTR_NAME))
+    *dst += " '" + node->data().GetStringAttribute(ui::AX_ATTR_NAME) + "'";
+  *dst += "\n";
+  for (int i = 0; i < node->child_count(); ++i)
+    DumpRolesAndNamesAsText(node->children()[i], indent + 1, dst);
+}
 
 }  // namespace
 
@@ -73,6 +89,56 @@ IN_PROC_BROWSER_TEST_F(SnapshotAXTreeBrowserTest,
   ASSERT_EQ(ui::AX_ROLE_GROUP, group->data().role);
   ui::AXNode* button = group->ChildAtIndex(0);
   ASSERT_EQ(ui::AX_ROLE_BUTTON, button->data().role);
+}
+
+IN_PROC_BROWSER_TEST_F(SnapshotAXTreeBrowserTest,
+                       SnapshotAccessibilityTreeFromMultipleFrames) {
+  host_resolver()->AddRule("*", "127.0.0.1");
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  NavigateToURL(shell(), embedded_test_server()->GetURL(
+      "/accessibility/snapshot/outer.html"));
+
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  FrameTreeNode* root_frame = web_contents->GetFrameTree()->root();
+
+  NavigateFrameToURL(root_frame->child_at(0), GURL("data:text/plain,Alpha"));
+  NavigateFrameToURL(root_frame->child_at(1), embedded_test_server()->GetURL(
+      "/accessibility/snapshot/inner.html"));
+
+  AXTreeSnapshotWaiter waiter;
+  web_contents->RequestAXTreeSnapshot(
+      base::Bind(&AXTreeSnapshotWaiter::ReceiveSnapshot,
+                 base::Unretained(&waiter)));
+  waiter.Wait();
+
+  // Dump the whole tree if one of the assertions below fails
+  // to aid in debugging why it failed.
+  SCOPED_TRACE(waiter.snapshot().ToString());
+
+  ui::AXTree tree(waiter.snapshot());
+  ui::AXNode* root = tree.root();
+  std::string dump;
+  DumpRolesAndNamesAsText(root, 0, &dump);
+  EXPECT_EQ(
+      "rootWebArea\n"
+      "  group\n"
+      "    button 'Before'\n"
+      "    iframe\n"
+      "      group\n"
+      "        pre\n"
+      "          staticText 'Alpha'\n"
+      "    button 'Middle'\n"
+      "    iframe\n"
+      "      group\n"
+      "        group\n"
+      "          button 'Inside Before'\n"
+      "          iframe\n"
+      "            group\n"
+      "          button 'Inside After'\n"
+      "    button 'After'\n",
+      dump);
 }
 
 }  // namespace content

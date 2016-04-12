@@ -38,6 +38,8 @@
         'ax_text_utils.h',
         'ax_tree.cc',
         'ax_tree.h',
+        'ax_tree_combiner.cc',
+        'ax_tree_combiner.h',
         'ax_tree_data.cc',
         'ax_tree_data.h',
         'ax_tree_serializer.cc',
@@ -118,6 +120,7 @@
       'dependencies': [
         '../../base/base.gyp:base',
         '../../base/base.gyp:run_all_unittests',
+        '../../skia/skia.gyp:skia',
         '../../testing/gtest.gyp:gtest',
         '../gfx/gfx.gyp:gfx',
         '../gfx/gfx.gyp:gfx_geometry',
@@ -128,6 +131,7 @@
       'sources': [
         'ax_generated_tree_unittest.cc',
         'ax_text_utils_unittest.cc',
+        'ax_tree_combiner_unittest.cc',
         'ax_tree_serializer_unittest.cc',
         'ax_tree_unittest.cc',
         'platform/ax_platform_node_win_unittest.cc'
