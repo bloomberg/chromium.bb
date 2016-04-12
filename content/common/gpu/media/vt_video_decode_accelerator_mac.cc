@@ -301,6 +301,7 @@ VTVideoDecodeAccelerator::VTVideoDecodeAccelerator(
       last_sps_id_(-1),
       last_pps_id_(-1),
       config_changed_(false),
+      waiting_for_idr_(true),
       missing_idr_logged_(false),
       gpu_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       decoder_thread_("VTDecoderThread"),
@@ -558,6 +559,17 @@ void VTVideoDecodeAccelerator::DecodeTask(
       case media::H264NALU::kIDRSlice:
         // Compute the |pic_order_cnt| for the picture from the first slice.
         if (!has_slice) {
+          // Verify that we are not trying to decode a slice without an IDR.
+          if (waiting_for_idr_) {
+            if (nalu.nal_unit_type == media::H264NALU::kIDRSlice) {
+              waiting_for_idr_ = false;
+            } else {
+              // We can't compute anything yet, bail on this frame.
+              has_slice = true;
+              break;
+            }
+          }
+
           media::H264SliceHeader slice_hdr;
           result = parser_.ParseSliceHeader(nalu, &slice_hdr);
           if (result == media::H264Parser::kUnsupportedStream) {
@@ -646,7 +658,7 @@ void VTVideoDecodeAccelerator::DecodeTask(
   }
 
   // If no IDR has been seen yet, skip decoding.
-  if (has_slice && !session_ && config_changed_) {
+  if (has_slice && (!session_ || waiting_for_idr_) && config_changed_) {
     if (!missing_idr_logged_) {
       LOG(ERROR) << "Illegal attempt to decode without IDR. "
                  << "Discarding decode requests until next IDR.";
@@ -941,12 +953,7 @@ bool VTVideoDecodeAccelerator::ProcessTaskQueue() {
     case TASK_RESET:
       DCHECK_EQ(task.type, pending_flush_tasks_.front());
       if (reorder_queue_.size() == 0) {
-        last_sps_id_ = -1;
-        last_pps_id_ = -1;
-        last_sps_.clear();
-        last_spsext_.clear();
-        last_pps_.clear();
-        poc_.Reset();
+        waiting_for_idr_ = true;
         pending_flush_tasks_.pop();
         client_->NotifyResetDone();
         task_queue_.pop();
