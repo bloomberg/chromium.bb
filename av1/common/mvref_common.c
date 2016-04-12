@@ -295,6 +295,60 @@ static void handle_sec_rect_block(const MB_MODE_INFO * const candidate,
   }
 }
 
+static int add_col_ref_mv(const AV1_COMMON *cm,
+                          const MV_REF *prev_frame_mvs_base,
+                          const MACROBLOCKD *xd,
+                          int mi_row, int mi_col,
+                          MV_REFERENCE_FRAME ref_frame,
+                          int blk_row, int blk_col,
+                          uint8_t *refmv_count,
+                          CANDIDATE_MV *ref_mv_stack,
+                          int16_t *mode_context) {
+  const MV_REF *prev_frame_mvs =
+      prev_frame_mvs_base + blk_row * cm->mi_cols + blk_col;
+  POSITION mi_pos;
+  int ref, idx;
+  int coll_blk_count = 0;
+
+  mi_pos.row = blk_row;
+  mi_pos.col = blk_col;
+
+  if (!is_inside(&xd->tile, mi_col, mi_row, cm->mi_rows, &mi_pos))
+    return coll_blk_count;
+
+  for (ref = 0; ref < 2; ++ref) {
+    if (prev_frame_mvs->ref_frame[ref] == ref_frame) {
+      int_mv this_refmv = prev_frame_mvs->mv[ref];
+      lower_mv_precision(&this_refmv.as_mv, cm->allow_high_precision_mv);
+      clamp_mv_ref(&this_refmv.as_mv,
+                   xd->n8_w << 3, xd->n8_h << 3, xd);
+
+      if (abs(this_refmv.as_mv.row) >= 16 ||
+          abs(this_refmv.as_mv.col) >= 16)
+        mode_context[ref_frame] |= (1 << ZEROMV_OFFSET);
+
+      for (idx = 0; idx < *refmv_count; ++idx)
+        if (this_refmv.as_int == ref_mv_stack[idx].this_mv.as_int)
+          break;
+
+      if (idx < *refmv_count)
+        ref_mv_stack[idx].weight += 2;
+
+      if (idx == *refmv_count &&
+          *refmv_count < MAX_REF_MV_STACK_SIZE) {
+        ref_mv_stack[idx].this_mv.as_int = this_refmv.as_int;
+        ref_mv_stack[idx].pred_mv = prev_frame_mvs->pred_mv[ref];
+        ref_mv_stack[idx].weight = 2;
+        ++(*refmv_count);
+      }
+
+      ++coll_blk_count;
+    }
+  }
+
+  return coll_blk_count;
+}
+
 static void setup_ref_mv_list(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                               MV_REFERENCE_FRAME ref_frame,
                               uint8_t *refmv_count,
@@ -337,51 +391,16 @@ static void setup_ref_mv_list(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 
   if (prev_frame_mvs_base && cm->show_frame && cm->last_show_frame &&
       rf[1] == NONE) {
-    int ref;
     int blk_row, blk_col;
     int coll_blk_count = 0;
 
     for (blk_row = 0; blk_row < xd->n8_h; ++blk_row) {
       for (blk_col = 0; blk_col < xd->n8_w; ++blk_col) {
-        const MV_REF *prev_frame_mvs =
-            prev_frame_mvs_base + blk_row * cm->mi_cols + blk_col;
-
-        POSITION mi_pos;
-        mi_pos.row = blk_row;
-        mi_pos.col = blk_col;
-
-        if (!is_inside(&xd->tile, mi_col, mi_row, cm->mi_rows, &mi_pos))
-          continue;
-
-        for (ref = 0; ref < 2; ++ref) {
-          if (prev_frame_mvs->ref_frame[ref] == ref_frame) {
-            int_mv this_refmv = prev_frame_mvs->mv[ref];
-            lower_mv_precision(&this_refmv.as_mv, cm->allow_high_precision_mv);
-            clamp_mv_ref(&this_refmv.as_mv,
-                         xd->n8_w << 3, xd->n8_h << 3, xd);
-
-            if (abs(this_refmv.as_mv.row) >= 16 ||
-                abs(this_refmv.as_mv.col) >= 16)
-              mode_context[ref_frame] |= (1 << ZEROMV_OFFSET);
-
-            for (idx = 0; idx < *refmv_count; ++idx)
-              if (this_refmv.as_int == ref_mv_stack[idx].this_mv.as_int)
-                break;
-
-            if (idx < *refmv_count)
-              ref_mv_stack[idx].weight += 2;
-
-            if (idx == *refmv_count &&
-                *refmv_count < MAX_REF_MV_STACK_SIZE) {
-              ref_mv_stack[idx].this_mv.as_int = this_refmv.as_int;
-              ref_mv_stack[idx].pred_mv = prev_frame_mvs->pred_mv[ref];
-              ref_mv_stack[idx].weight = 2;
-              ++(*refmv_count);
-            }
-
-            ++coll_blk_count;
-          }
-        }
+        coll_blk_count += add_col_ref_mv(cm, prev_frame_mvs_base, xd,
+                                         mi_row, mi_col, ref_frame,
+                                         blk_row, blk_col,
+                                         refmv_count, ref_mv_stack,
+                                         mode_context);
       }
     }
     if (coll_blk_count == 0)
