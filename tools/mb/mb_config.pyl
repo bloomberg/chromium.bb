@@ -69,13 +69,14 @@
       'ChromiumOS amd64-generic Compile': 'tbd',
       'ChromiumOS daisy Compile': 'tbd',
       'ChromiumOS x86-generic Compile': 'tbd',
-      'Linux ChromiumOS Builder (dbg)': 'tbd',
-      'Linux ChromiumOS Full': 'tbd',
-      'Linux ChromiumOS Ozone Builder': 'tbd',
 
       'Linux ChromiumOS Builder': 'swarming_chromeos_gyp_release_bot',
+      'Linux ChromiumOS Builder (dbg)': 'swarming_chromeos_gyp_debug_bot',
+      'Linux ChromiumOS Full': 'swarming_chromeos_gyp_release_bot',
       'Linux ChromiumOS GN (dbg)': 'chromeos_gn_debug_bot',
       'Linux ChromiumOS GN': 'chromeos_ozone_gn_release_bot',
+      'Linux ChromiumOS Ozone Builder':
+          'swarming_chromeos_ozone_gyp_release_bot',
       'Linux ChromiumOS Ozone Tests (1)': 'none',
       'Linux ChromiumOS Tests (1)': 'none',
       'Linux ChromiumOS Tests (dbg)(1)': 'none',
@@ -124,7 +125,6 @@
       'CrWinAsan': 'tbd',
       'CrWinAsan(dll)': 'tbd',
       'CrWinAsanCov': 'tbd',
-      'CrWinClang(shared)': 'tbd',
       'CrWinClang64(dll)': 'tbd',
       'CrWinClangGoma': 'tbd',
       'CrWinClangLLD': 'tbd',
@@ -186,6 +186,8 @@
       'CrWinAsanCov tester': 'none',
       'CrWinClang tester': 'none',
       'CrWinClang(dbg) tester': 'none',
+      'CrWinClang(shared)':
+        'swarming_gyp_clang_shared_release_bot_minimal_symbols_x86',
       'CrWinClang(shared) tester': 'none',
       'CrWinClang64 tester': 'none',
       'CrWinClang64(dbg) tester': 'none',
@@ -666,13 +668,10 @@
       'chromeos_x86-generic_chromium_compile_only_ng': 'tbd',
       'linux_chromium_browser_side_navigation_rel': 'tbd',
       'linux_chromium_chromeos_asan_rel_ng': 'tbd',
-      'linux_chromium_chromeos_asan_variable': 'tbd',
       'linux_chromium_chromeos_compile_dbg_ng': 'tbd',
       'linux_chromium_chromeos_dbg_ng': 'tbd',
       'linux_chromium_chromeos_msan_rel_ng': 'tbd',
       'linux_chromium_chromeos_ozone_rel_ng': 'tbd',
-      'linux_chromium_chromeos_variable': 'tbd',
-      'linux_chromium_variable': 'tbd',
 
       'cast_shell_linux': 'cast_gn_release_trybot',
       'chromeos_amd64-generic_variable': 'findit',
@@ -685,9 +684,11 @@
       'linux_chromium_asan_variable': 'findit',
       'linux_chromium_cast_variable': 'findit',
       'linux_chromium_cfi_rel_ng': 'gn_cfi_release_trybot',
+      'linux_chromium_chromeos_asan_variable': 'findit',
       'linux_chromium_chromeos_compile_rel_ng':
         'swarming_chromeos_gyp_release_trybot',
       'linux_chromium_chromeos_rel_ng': 'swarming_chromeos_gyp_release_trybot',
+      'linux_chromium_chromeos_variable': 'findit',
       'linux_chromium_chromeos_variable_chrome': 'findit',
       'linux_chromium_clobber_rel_ng': 'gn_release_trybot',
       'linux_chromium_compile_dbg_32_ng': 'swarming_gyp_debug_trybot_x86',
@@ -703,6 +704,7 @@
       'linux_chromium_practice_rel_ng': 'gyp_release_trybot',
       'linux_chromium_rel_ng': 'swarming_gpu_tests_gn_release_trybot',
       'linux_chromium_tsan_rel_ng': 'swarming_tsan_gyp_release_trybot',
+      'linux_chromium_variable': 'findit',
       'linux_chromium_variable_32': 'findit',
       'linux_chromium_variable_chrome': 'findit',
       'linux_chromium_variable_clobber': 'findit',
@@ -727,7 +729,6 @@
       'mac_chromium_10.10_rel_ng': 'tbd',
       'mac_chromium_archive_rel_ng': 'tbd',
       'mac_chromium_asan_rel_ng': 'tbd',
-      'mac_chromium_asan_variable': 'tbd',
       'mac_chromium_compile_dbg_ng': 'tbd',
       'mac_chromium_compile_rel_ng': 'tbd',
       'mac_chromium_dbg_ng': 'tbd',
@@ -740,6 +741,7 @@
       'ios_rel_device': 'ios_gyp',
       'ios_rel_device_gn': 'ios_gn',
       'ios_rel_device_ninja': 'ios_gyp',
+      'mac_chromium_asan_variable': 'findit',
       'mac_chromium_gn_dbg': 'gn_debug_static_bot',
       'mac_chromium_gn_rel': 'gn_release_trybot',
       'mac_chromium_gn_upload': 'gn_release_bot',
@@ -1251,12 +1253,20 @@
       'swarming', 'asan', 'lsan', 'release_trybot',
     ],
 
+    'swarming_chromeos_gyp_debug_bot': [
+      'swarming', 'chromeos_with_codecs', 'gyp', 'debug_bot',
+    ],
+
     'swarming_chromeos_gyp_release_bot': [
       'swarming', 'chromeos_with_codecs', 'gyp', 'release_bot',
     ],
 
     'swarming_chromeos_gyp_release_trybot': [
       'swarming', 'chromeos_with_codecs', 'gyp', 'release_trybot',
+    ],
+
+    'swarming_chromeos_ozone_gyp_release_bot': [
+      'chromeos_with_codecs', 'goma', 'gyp', 'ozone', 'static', 'swarming',
     ],
 
     'swarming_msan_gyp_release_trybot': [
@@ -1406,6 +1416,11 @@
     'swarming_gyp_clang_official_release_trybot_minimal_symbols_x86': [
       'swarming', 'gyp', 'clang', 'official', 'release_trybot',
       'minimal_symbols', 'x86',
+    ],
+
+    'swarming_gyp_clang_shared_release_bot_minimal_symbols_x86': [
+      'swarming', 'gyp', 'clang', 'shared_release_bot', 'minimal_symbols',
+      'x86',
     ],
 
     'swarming_gyp_debug_bot_minimal_symbols_x64': [
@@ -1568,8 +1583,9 @@
     },
 
     'chrome_with_codecs': {
-      'gn_args': 'ffmpeg_branding="Chrome" proprietary_codecs=true',
-      'gyp_defines': 'ffmpeg_branding=Chrome proprietary_codecs=1',
+      'gn_args': 'ffmpeg_branding="Chrome"',
+      'gyp_defines': 'ffmpeg_branding=Chrome',
+      'mixins': ['proprietary_codecs'],
     },
 
     'chromeos': {
@@ -1578,9 +1594,9 @@
     },
 
     'chromeos_with_codecs': {
-      'gn_args': 'ffmpeg_branding="ChromeOS" proprietary_codecs=true',
-      'gyp_defines': 'ffmpeg_branding=ChromeOS proprietary_codecs=1',
-      'mixins': ['chromeos'],
+      'gn_args': 'ffmpeg_branding="ChromeOS"',
+      'gyp_defines': 'ffmpeg_branding=ChromeOS',
+      'mixins': ['chromeos', 'proprietary_codecs'],
     },
 
     'clang_no_chrome_plugins': {
@@ -1785,6 +1801,10 @@
     'shared': {
       'gn_args': 'is_component_build=true',
       'gyp_defines': 'component=shared_library',
+    },
+
+    'shared_release_bot': {
+      'mixins': ['shared', 'release', 'goma']
     },
 
     'static': {
