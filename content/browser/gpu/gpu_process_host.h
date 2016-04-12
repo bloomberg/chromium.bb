@@ -211,7 +211,8 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
                      const std::string& key,
                      const std::string& shader);
 
-  bool LaunchGpuProcess(const std::string& channel_id);
+  bool LaunchGpuProcess(const std::string& channel_id,
+                        gpu::GpuPreferences* gpu_preferences);
 
   void SendOutstandingReplies();
 

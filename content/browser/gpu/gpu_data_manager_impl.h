@@ -31,6 +31,7 @@ class CommandLine;
 }
 
 namespace gpu {
+struct GpuPreferences;
 struct VideoMemoryUsageStats;
 }
 
@@ -113,7 +114,11 @@ class CONTENT_EXPORT GpuDataManagerImpl
   void AppendRendererCommandLine(base::CommandLine* command_line) const;
 
   // Insert switches into gpu process command line: kUseGL, etc.
-  void AppendGpuCommandLine(base::CommandLine* command_line) const;
+  // If the gpu_preferences isn't a nullptr, the gpu_preferences will be set
+  // for some GPU switches which have been replaced by GpuPreferences, and those
+  // switches will not be append to the command_line anymore.
+  void AppendGpuCommandLine(base::CommandLine* command_line,
+                            gpu::GpuPreferences* gpu_preferences) const;
 
   // Update WebPreferences for renderer based on blacklisting decisions.
   void UpdateRendererWebPrefs(WebPreferences* prefs) const;

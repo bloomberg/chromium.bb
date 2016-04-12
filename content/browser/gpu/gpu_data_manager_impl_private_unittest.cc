@@ -642,7 +642,7 @@ TEST_F(GpuDataManagerImplPrivateTest, GpuDriverBugListSingle) {
   manager->gpu_driver_bugs_.insert(5);
 
   base::CommandLine command_line(0, NULL);
-  manager->AppendGpuCommandLine(&command_line);
+  manager->AppendGpuCommandLine(&command_line, nullptr);
 
   EXPECT_TRUE(command_line.HasSwitch(switches::kGpuDriverBugWorkarounds));
   std::string args = command_line.GetSwitchValueASCII(
@@ -656,7 +656,7 @@ TEST_F(GpuDataManagerImplPrivateTest, GpuDriverBugListMultiple) {
   manager->gpu_driver_bugs_.insert(7);
 
   base::CommandLine command_line(0, NULL);
-  manager->AppendGpuCommandLine(&command_line);
+  manager->AppendGpuCommandLine(&command_line, nullptr);
 
   EXPECT_TRUE(command_line.HasSwitch(switches::kGpuDriverBugWorkarounds));
   std::string args = command_line.GetSwitchValueASCII(

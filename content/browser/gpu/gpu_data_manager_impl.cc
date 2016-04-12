@@ -157,9 +157,10 @@ void GpuDataManagerImpl::AppendRendererCommandLine(
 }
 
 void GpuDataManagerImpl::AppendGpuCommandLine(
-    base::CommandLine* command_line) const {
+    base::CommandLine* command_line,
+    gpu::GpuPreferences* gpu_preferences) const {
   base::AutoLock auto_lock(lock_);
-  private_->AppendGpuCommandLine(command_line);
+  private_->AppendGpuCommandLine(command_line, gpu_preferences);
 }
 
 void GpuDataManagerImpl::UpdateRendererWebPrefs(

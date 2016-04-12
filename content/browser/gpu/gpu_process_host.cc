@@ -550,13 +550,14 @@ bool GpuProcessHost::Init() {
   if (!SetupMojo())
     return false;
 
+  gpu::GpuPreferences gpu_preferences = GetGpuPreferencesFromCommandLine();
   if (in_process_) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     DCHECK(g_gpu_main_thread_factory);
     in_process_gpu_thread_.reset(
         g_gpu_main_thread_factory(InProcessChildThreadParams(
             channel_id, base::MessageLoop::current()->task_runner()),
-            GetGpuPreferencesFromCommandLine()));
+            gpu_preferences));
     base::Thread::Options options;
 #if defined(OS_WIN)
     // WGL needs to create its own window and pump messages on it.
@@ -568,11 +569,11 @@ bool GpuProcessHost::Init() {
     in_process_gpu_thread_->StartWithOptions(options);
 
     OnProcessLaunched();  // Fake a callback that the process is ready.
-  } else if (!LaunchGpuProcess(channel_id)) {
+  } else if (!LaunchGpuProcess(channel_id, &gpu_preferences)) {
     return false;
   }
 
-  if (!Send(new GpuMsg_Initialize(GetGpuPreferencesFromCommandLine())))
+  if (!Send(new GpuMsg_Initialize(gpu_preferences)))
     return false;
 
   return true;
@@ -949,7 +950,8 @@ void GpuProcessHost::StopGpuProcess() {
   Send(new GpuMsg_Finalize());
 }
 
-bool GpuProcessHost::LaunchGpuProcess(const std::string& channel_id) {
+bool GpuProcessHost::LaunchGpuProcess(const std::string& channel_id,
+                                      gpu::GpuPreferences* gpu_preferences) {
   if (!(gpu_enabled_ &&
       GpuDataManagerImpl::GetInstance()->ShouldUseSwiftShader()) &&
       !hardware_gpu_enabled_) {
@@ -1007,8 +1009,8 @@ bool GpuProcessHost::LaunchGpuProcess(const std::string& channel_id) {
   GetContentClient()->browser()->AppendExtraCommandLineSwitches(
       cmd_line, process_->GetData().id);
 
-  GpuDataManagerImpl::GetInstance()->AppendGpuCommandLine(cmd_line);
-
+  GpuDataManagerImpl::GetInstance()->AppendGpuCommandLine(cmd_line,
+                                                          gpu_preferences);
   if (cmd_line->HasSwitch(switches::kUseGL)) {
     swiftshader_rendering_ =
         (cmd_line->GetSwitchValueASCII(switches::kUseGL) == "swiftshader");
