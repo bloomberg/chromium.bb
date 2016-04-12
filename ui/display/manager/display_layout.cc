@@ -5,6 +5,7 @@
 #include "ui/display/manager/display_layout.h"
 
 #include <algorithm>
+#include <set>
 #include <sstream>
 
 #include "base/logging.h"
@@ -12,6 +13,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "ui/gfx/display.h"
+#include "ui/gfx/geometry/insets.h"
 
 namespace display {
 namespace  {
@@ -32,6 +34,13 @@ bool IsIdInList(int64_t id, const DisplayIdList& list) {
       std::find_if(list.begin(), list.end(),
                    [id](int64_t display_id) { return display_id == id; });
   return iter != list.end();
+}
+
+gfx::Display* FindDisplayById(DisplayList* display_list, int64_t id) {
+  auto iter = std::find_if(
+      display_list->begin(), display_list->end(),
+      [id](const gfx::Display& display) { return display.id() == id; });
+  return &(*iter);
 }
 
 }  // namespace
@@ -150,6 +159,29 @@ DisplayLayout::DisplayLayout()
 
 DisplayLayout::~DisplayLayout() {}
 
+void DisplayLayout::ApplyToDisplayList(DisplayList* display_list,
+                                       std::vector<int64_t>* updated_ids,
+                                       int minimum_offset_overlap) const {
+  // Layout from primary, then dependent displays.
+  std::set<int64_t> parents;
+  parents.insert(primary_id);
+  while (parents.size()) {
+    int64_t parent_id = *parents.begin();
+    parents.erase(parent_id);
+    for (const DisplayPlacement& placement : placement_list) {
+      if (placement.parent_display_id == parent_id) {
+        if (ApplyDisplayPlacement(placement,
+                                  display_list,
+                                  minimum_offset_overlap) &&
+            updated_ids) {
+          updated_ids->push_back(placement.display_id);
+        }
+        parents.insert(placement.display_id);
+      }
+    }
+  }
+}
+
 // static
 bool DisplayLayout::Validate(const DisplayIdList& list,
                              const DisplayLayout& layout) {
@@ -251,6 +283,62 @@ DisplayPlacement DisplayLayout::FindPlacementById(int64_t display_id) const {
                    });
   return (iter == placement_list.end()) ? DisplayPlacement()
                                         : DisplayPlacement(*iter);
+}
+
+// static
+bool DisplayLayout::ApplyDisplayPlacement(const DisplayPlacement& placement,
+                                          DisplayList* display_list,
+                                          int minimum_offset_overlap) {
+  const gfx::Display& parent_display =
+      *FindDisplayById(display_list, placement.parent_display_id);
+  DCHECK(parent_display.is_valid());
+  gfx::Display* target_display =
+      FindDisplayById(display_list, placement.display_id);
+  gfx::Rect old_bounds(target_display->bounds());
+  DCHECK(target_display);
+
+  const gfx::Rect& parent_bounds = parent_display.bounds();
+  const gfx::Rect& target_bounds = target_display->bounds();
+  gfx::Point new_target_origin = parent_bounds.origin();
+
+  DisplayPlacement::Position position = placement.position;
+
+  // Ignore the offset in case the target display doesn't share edges with
+  // the parent display.
+  int offset = placement.offset;
+  if (position == DisplayPlacement::TOP ||
+      position == DisplayPlacement::BOTTOM) {
+    offset = std::min(
+        offset, parent_bounds.width() - minimum_offset_overlap);
+    offset = std::max(
+        offset, -target_bounds.width() + minimum_offset_overlap);
+  } else {
+    offset = std::min(
+        offset, parent_bounds.height() - minimum_offset_overlap);
+    offset = std::max(
+        offset, -target_bounds.height() + minimum_offset_overlap);
+  }
+  switch (position) {
+    case DisplayPlacement::TOP:
+      new_target_origin.Offset(offset, -target_bounds.height());
+      break;
+    case DisplayPlacement::RIGHT:
+      new_target_origin.Offset(parent_bounds.width(), offset);
+      break;
+    case DisplayPlacement::BOTTOM:
+      new_target_origin.Offset(offset, parent_bounds.height());
+      break;
+    case DisplayPlacement::LEFT:
+      new_target_origin.Offset(-target_bounds.width(), offset);
+      break;
+  }
+
+  gfx::Insets insets = target_display->GetWorkAreaInsets();
+  target_display->set_bounds(
+      gfx::Rect(new_target_origin, target_bounds.size()));
+  target_display->UpdateWorkAreaFromInsets(insets);
+
+  return old_bounds != target_display->bounds();
 }
 
 }  // namespace display

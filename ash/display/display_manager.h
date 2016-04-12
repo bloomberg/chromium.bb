@@ -403,11 +403,6 @@ private:
                           display::DisplayList* display_list,
                           std::vector<int64_t>* updated_ids);
 
-  // Apply the display placement to the display layout.
-  // Returns true if the display bounds has been updated.
-  bool ApplyDisplayPlacement(const display::DisplayPlacement& placement,
-                             display::DisplayList* display_list);
-
   Delegate* delegate_;  // not owned.
 
   std::unique_ptr<ScreenAsh> screen_;
