@@ -33,10 +33,6 @@ config("jingle_unexported_configs") {
     "../../third_party/libyuv/include",
     "../../third_party/usrsctp/usrsctplib",
   ]
-
-  if (is_win && current_cpu == "x86") {
-    defines += [ "_USE_32BIT_TIME_T" ]
-  }
 }
 
 # From third_party/libjingle/libjingle.gyp's target_defaults.

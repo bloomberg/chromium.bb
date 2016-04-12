@@ -151,13 +151,6 @@
         'include_dirs': [
           '../third_party/platformsdk_win7/files/Include',
         ],
-        'conditions' : [
-          ['target_arch == "ia32"', {
-            'defines': [
-              '_USE_32BIT_TIME_T',
-            ],
-          }],
-        ],
       }],
       ['OS=="linux"', {
         'defines': [
