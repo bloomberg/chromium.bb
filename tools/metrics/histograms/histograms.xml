@@ -65207,9 +65207,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <enum name="DirectWriteFontLoaderType" type="int">
   <int value="0" label="File: system font directory"/>
-  <int value="1" label="File: sandbox whitelisted"/>
-  <int value="2" label="File: outside sandbox whitelist"/>
-  <int value="3" label="Other"/>
+  <int value="1" label="File: outside sandbox whitelist"/>
+  <int value="2" label="Non-file loader"/>
 </enum>
 
 <enum name="DirectWriteLoadFamilyResult" type="int">
