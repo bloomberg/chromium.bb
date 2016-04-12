@@ -85,6 +85,7 @@ class RenderThreadManager {
 
   // RT thread method.
   void DidDrawGLProcess();
+  bool HasFrameForHardwareRendererOnRT() const;
 
   // UI thread methods.
   void ResetRequestDrawGLCallback();

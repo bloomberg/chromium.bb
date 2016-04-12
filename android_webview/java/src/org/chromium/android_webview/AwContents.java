@@ -252,6 +252,8 @@ public class AwContents implements SmartClipProvider,
     // This can be accessed on any thread after construction. See AwContentsIoThreadClient.
     private final AwSettings mSettings;
     private final ScrollAccessibilityHelper mScrollAccessibilityHelper;
+    private final boolean mSupportsFunctorDetachedCallback;
+    private boolean mFunctorDetachedCallbackPending;
 
     private boolean mIsPaused;
     private boolean mIsViewVisible;
@@ -763,6 +765,13 @@ public class AwContents implements SmartClipProvider,
 
         setNewAwContents(nativeInit(mBrowserContext));
 
+        mSupportsFunctorDetachedCallback =
+                mNativeGLDelegate.setDrawGLFunctionDetachedCallback(mContainerView, new Runnable() {
+                    @Override
+                    public void run() {
+                        onFunctorDetached();
+                    }
+                });
         onContainerViewChanged();
     }
 
@@ -1133,8 +1142,10 @@ public class AwContents implements SmartClipProvider,
 
             mCleanupReference.cleanupNow();
             mCleanupReference = null;
-            mAwGLFunctor.destroy();
-            mAwGLFunctor = null;
+            if (!mFunctorDetachedCallbackPending) {
+                mAwGLFunctor.destroy();
+                mAwGLFunctor = null;
+            }
         }
 
         assert mContentViewCore == null;
@@ -2333,6 +2344,16 @@ public class AwContents implements SmartClipProvider,
         mAwViewMethods.onDetachedFromWindow();
     }
 
+    // Note short term fix. This is only called for the original container view, not the
+    // FullScreenView.
+    public void onFunctorDetached() {
+        mFunctorDetachedCallbackPending = false;
+        if (isDestroyed(NO_WARN) && mAwGLFunctor != null) {
+            mAwGLFunctor.destroy();
+            mAwGLFunctor = null;
+        }
+    }
+
     /**
      * @see android.view.View#onWindowFocusChanged()
      */
@@ -2928,6 +2949,8 @@ public class AwContents implements SmartClipProvider,
                     globalVisibleRect.top, globalVisibleRect.right, globalVisibleRect.bottom);
             if (did_draw && canvas.isHardwareAccelerated() && !FORCE_AUXILIARY_BITMAP_RENDERING) {
                 did_draw = mNativeGLDelegate.requestDrawGL(canvas, false, mContainerView);
+                mFunctorDetachedCallbackPending |=
+                        (mSupportsFunctorDetachedCallback && did_draw && !isFullScreen());
             }
             if (did_draw) {
                 int scrollXDiff = mContainerView.getScrollX() - scrollX;
@@ -3096,7 +3119,6 @@ public class AwContents implements SmartClipProvider,
             }
             mIsAttachedToWindow = false;
             hideAutofillPopup();
-            mAwGLFunctor.deleteHardwareRenderer();
             mAwGLFunctor.onDetachedFromWindow();
             nativeOnDetachedFromWindow(mNativeAwContents);
 

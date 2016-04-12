@@ -280,11 +280,12 @@ void RenderThreadManager::DrawGL(AwDrawGLInfo* draw_info) {
   // Set the correct FBO before kModeDraw. The GL commands run in kModeDraw
   // require a correctly bound FBO. The FBO remains until the next kModeDraw.
   // So kModeProcess between kModeDraws has correctly bound FBO, too.
-  if (draw_info->mode == AwDrawGLInfo::kModeDraw) {
-    if (!hardware_renderer_) {
-      hardware_renderer_.reset(new HardwareRenderer(this));
-      hardware_renderer_->CommitFrame();
-    }
+  if (draw_info->mode == AwDrawGLInfo::kModeDraw && !hardware_renderer_ &&
+      HasFrameForHardwareRendererOnRT()) {
+    hardware_renderer_.reset(new HardwareRenderer(this));
+    hardware_renderer_->CommitFrame();
+  }
+  if (hardware_renderer_) {
     hardware_renderer_->SetBackingFrameBufferObject(
         state_restore.framebuffer_binding_ext());
   }
@@ -310,7 +311,8 @@ void RenderThreadManager::DrawGL(AwDrawGLInfo* draw_info) {
     return;
   }
 
-  hardware_renderer_->DrawGL(draw_info, state_restore);
+  if (hardware_renderer_)
+    hardware_renderer_->DrawGL(draw_info, state_restore);
   DeferredGpuCommandService::GetInstance()->PerformIdleWork(false);
 }
 
@@ -354,6 +356,11 @@ void RenderThreadManager::DeleteHardwareRendererOnUI() {
 bool RenderThreadManager::HasFrameOnUI() const {
   base::AutoLock lock(lock_);
   return hardware_renderer_has_frame_ || child_frame_.get();
+}
+
+bool RenderThreadManager::HasFrameForHardwareRendererOnRT() const {
+  base::AutoLock lock(lock_);
+  return !!child_frame_;
 }
 
 void RenderThreadManager::InitializeHardwareDrawIfNeededOnUI() {
