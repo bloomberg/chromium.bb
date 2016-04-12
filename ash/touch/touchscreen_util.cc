@@ -274,9 +274,9 @@ void AssociateTouchscreens(
   AssociateToSingleDisplay(&displays, &devices);
 
   for (const DisplayInfo* display : displays)
-    VLOG(1) << "Unmatched display " << display->name();
+    LOG(WARNING) << "Unmatched display " << display->name();
   for (const ui::TouchscreenDevice* device : devices)
-    VLOG(1) << "Unmatched device " << device->name;
+    LOG(WARNING) << "Unmatched device " << device->name;
 }
 
 }  // namespace ash
