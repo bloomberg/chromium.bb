@@ -17,6 +17,7 @@
 #include "base/memory/weak_ptr.h"
 #include "content/common/cache_storage/cache_storage_types.h"
 #include "content/common/service_worker/service_worker_types.h"
+#include "net/base/io_buffer.h"
 #include "net/disk_cache/disk_cache.h"
 #include "storage/common/quota/quota_status_code.h"
 
@@ -84,6 +85,18 @@ class CONTENT_EXPORT CacheStorageCache
   void MatchAll(std::unique_ptr<ServiceWorkerFetchRequest> request,
                 const CacheStorageCacheQueryParams& match_params,
                 const ResponsesCallback& callback);
+
+  // Writes the side data (ex: V8 code cache) for the specified cache entry.
+  // If it doesn't exist, or the |expected_response_time| differs from the
+  // entry's, CACHE_STORAGE_ERROR_NOT_FOUND is returned.
+  // Note: This "side data" is same meaning as "metadata" in HTTPCache. We use
+  // "metadata" in cache_storage.proto for the pair of headers of a request and
+  // a response. To avoid the confusion we use "side data" here.
+  void WriteSideData(const CacheStorageCache::ErrorCallback& callback,
+                     const GURL& url,
+                     base::Time expected_response_time,
+                     scoped_refptr<net::IOBuffer> buffer,
+                     int buf_len);
 
   // Runs given batch operations. This corresponds to the Batch Cache Operations
   // algorithm in the spec.
@@ -193,6 +206,37 @@ class CONTENT_EXPORT CacheStorageCache
   void MatchAllDidReadMetadata(std::unique_ptr<MatchAllContext> context,
                                const Entries::iterator& iter,
                                std::unique_ptr<CacheMetadata> metadata);
+
+  // WriteSideData callbacks
+  void WriteSideDataImpl(const ErrorCallback& callback,
+                         const GURL& url,
+                         base::Time expected_response_time,
+                         scoped_refptr<net::IOBuffer> buffer,
+                         int buf_len);
+  void WriteSideDataDidGetUsageAndQuota(const ErrorCallback& callback,
+                                        const GURL& url,
+                                        base::Time expected_response_time,
+                                        scoped_refptr<net::IOBuffer> buffer,
+                                        int buf_len,
+                                        storage::QuotaStatusCode status_code,
+                                        int64_t usage,
+                                        int64_t quota);
+  void WriteSideDataDidOpenEntry(const ErrorCallback& callback,
+                                 base::Time expected_response_time,
+                                 scoped_refptr<net::IOBuffer> buffer,
+                                 int buf_len,
+                                 std::unique_ptr<disk_cache::Entry*> entry_ptr,
+                                 int rv);
+  void WriteSideDataDidReadMetaData(const ErrorCallback& callback,
+                                    base::Time expected_response_time,
+                                    scoped_refptr<net::IOBuffer> buffer,
+                                    int buf_len,
+                                    disk_cache::ScopedEntryPtr entry,
+                                    std::unique_ptr<CacheMetadata> headers);
+  void WriteSideDataDidWrite(const ErrorCallback& callback,
+                             disk_cache::ScopedEntryPtr entry,
+                             int expected_bytes,
+                             int rv);
 
   // Puts the request and response object in the cache. The response body (if
   // present) is stored in the cache, but not the request body. Returns OK on

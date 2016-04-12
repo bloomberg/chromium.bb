@@ -57,7 +57,7 @@ class CacheStorageCacheDataHandle
 
 typedef base::Callback<void(std::unique_ptr<CacheMetadata>)> MetadataCallback;
 
-enum EntryIndex { INDEX_HEADERS = 0, INDEX_RESPONSE_BODY };
+enum EntryIndex { INDEX_HEADERS = 0, INDEX_RESPONSE_BODY, INDEX_SIDE_DATA };
 
 // The maximum size of each cache. Ultimately, cache size
 // is controlled per-origin by the QuotaManager.
@@ -351,6 +351,24 @@ void CacheStorageCache::MatchAll(
   scheduler_->ScheduleOperation(base::Bind(&CacheStorageCache::MatchAllImpl,
                                            weak_ptr_factory_.GetWeakPtr(),
                                            base::Passed(std::move(context))));
+}
+
+void CacheStorageCache::WriteSideData(const ErrorCallback& callback,
+                                      const GURL& url,
+                                      base::Time expected_response_time,
+                                      scoped_refptr<net::IOBuffer> buffer,
+                                      int buf_len) {
+  if (!LazyInitialize()) {
+    callback.Run(CACHE_STORAGE_ERROR_STORAGE);
+    return;
+  }
+  ErrorCallback pending_callback =
+      base::Bind(&CacheStorageCache::PendingErrorCallback,
+                 weak_ptr_factory_.GetWeakPtr(), callback);
+
+  scheduler_->ScheduleOperation(base::Bind(
+      &CacheStorageCache::WriteSideDataImpl, weak_ptr_factory_.GetWeakPtr(),
+      pending_callback, url, expected_response_time, buffer, buf_len));
 }
 
 void CacheStorageCache::BatchOperation(
@@ -762,6 +780,114 @@ void CacheStorageCache::MatchAllDidReadMetadata(
   context->out_responses->push_back(response);
   context->out_blob_data_handles->push_back(*blob_data_handle);
   MatchAllProcessNextEntry(std::move(context), iter + 1);
+}
+
+void CacheStorageCache::WriteSideDataImpl(const ErrorCallback& callback,
+                                          const GURL& url,
+                                          base::Time expected_response_time,
+                                          scoped_refptr<net::IOBuffer> buffer,
+                                          int buf_len) {
+  DCHECK_NE(BACKEND_UNINITIALIZED, backend_state_);
+  if (backend_state_ != BACKEND_OPEN) {
+    callback.Run(CACHE_STORAGE_ERROR_STORAGE);
+    return;
+  }
+
+  quota_manager_proxy_->GetUsageAndQuota(
+      base::ThreadTaskRunnerHandle::Get().get(), origin_,
+      storage::kStorageTypeTemporary,
+      base::Bind(&CacheStorageCache::WriteSideDataDidGetUsageAndQuota,
+                 weak_ptr_factory_.GetWeakPtr(), callback, url,
+                 expected_response_time, buffer, buf_len));
+}
+
+void CacheStorageCache::WriteSideDataDidGetUsageAndQuota(
+    const ErrorCallback& callback,
+    const GURL& url,
+    base::Time expected_response_time,
+    scoped_refptr<net::IOBuffer> buffer,
+    int buf_len,
+    storage::QuotaStatusCode status_code,
+    int64_t usage,
+    int64_t quota) {
+  if (status_code != storage::kQuotaStatusOk || quota - usage < buf_len) {
+    callback.Run(CACHE_STORAGE_ERROR_QUOTA_EXCEEDED);
+    return;
+  }
+  std::unique_ptr<disk_cache::Entry*> scoped_entry_ptr(
+      new disk_cache::Entry*());
+  disk_cache::Entry** entry_ptr = scoped_entry_ptr.get();
+  net::CompletionCallback open_entry_callback = base::Bind(
+      &CacheStorageCache::WriteSideDataDidOpenEntry,
+      weak_ptr_factory_.GetWeakPtr(), callback, expected_response_time, buffer,
+      buf_len, base::Passed(std::move(scoped_entry_ptr)));
+
+  int rv = backend_->OpenEntry(url.spec(), entry_ptr, open_entry_callback);
+  if (rv != net::ERR_IO_PENDING)
+    open_entry_callback.Run(rv);
+}
+
+void CacheStorageCache::WriteSideDataDidOpenEntry(
+    const ErrorCallback& callback,
+    base::Time expected_response_time,
+    scoped_refptr<net::IOBuffer> buffer,
+    int buf_len,
+    std::unique_ptr<disk_cache::Entry*> entry_ptr,
+    int rv) {
+  if (rv != net::OK) {
+    callback.Run(CACHE_STORAGE_ERROR_NOT_FOUND);
+    return;
+  }
+  disk_cache::ScopedEntryPtr entry(*entry_ptr);
+
+  ReadMetadata(*entry_ptr,
+               base::Bind(&CacheStorageCache::WriteSideDataDidReadMetaData,
+                          weak_ptr_factory_.GetWeakPtr(), callback,
+                          expected_response_time, buffer, buf_len,
+                          base::Passed(std::move(entry))));
+}
+
+void CacheStorageCache::WriteSideDataDidReadMetaData(
+    const ErrorCallback& callback,
+    base::Time expected_response_time,
+    scoped_refptr<net::IOBuffer> buffer,
+    int buf_len,
+    disk_cache::ScopedEntryPtr entry,
+    std::unique_ptr<CacheMetadata> headers) {
+  if (!headers ||
+      headers->response().response_time() !=
+          expected_response_time.ToInternalValue()) {
+    callback.Run(CACHE_STORAGE_ERROR_NOT_FOUND);
+    return;
+  }
+  // Get a temporary copy of the entry pointer before passing it in base::Bind.
+  disk_cache::Entry* temp_entry_ptr = entry.get();
+
+  net::CompletionCallback write_side_data_callback = base::Bind(
+      &CacheStorageCache::WriteSideDataDidWrite, weak_ptr_factory_.GetWeakPtr(),
+      callback, base::Passed(std::move(entry)), buf_len);
+
+  int rv = temp_entry_ptr->WriteData(
+      INDEX_SIDE_DATA, 0 /* offset */, buffer.get(), buf_len,
+      write_side_data_callback, true /* truncate */);
+
+  if (rv != net::ERR_IO_PENDING)
+    write_side_data_callback.Run(rv);
+}
+
+void CacheStorageCache::WriteSideDataDidWrite(const ErrorCallback& callback,
+                                              disk_cache::ScopedEntryPtr entry,
+                                              int expected_bytes,
+                                              int rv) {
+  if (rv != expected_bytes) {
+    entry->Doom();
+    UpdateCacheSize();
+    callback.Run(CACHE_STORAGE_ERROR_NOT_FOUND);
+    return;
+  }
+
+  UpdateCacheSize();
+  callback.Run(CACHE_STORAGE_OK);
 }
 
 void CacheStorageCache::Put(const CacheStorageBatchOperation& operation,

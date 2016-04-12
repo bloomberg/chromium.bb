@@ -476,6 +476,20 @@ class CacheStorageCacheTest : public testing::Test {
     return callback_closed_;
   }
 
+  bool WriteSideData(const GURL& url,
+                     base::Time expected_response_time,
+                     scoped_refptr<net::IOBuffer> buffer,
+                     int buf_len) {
+    base::RunLoop run_loop;
+    cache_->WriteSideData(
+        base::Bind(&CacheStorageCacheTest::ErrorTypeCallback,
+                   base::Unretained(this), base::Unretained(&run_loop)),
+        url, expected_response_time, buffer, buf_len);
+    run_loop.Run();
+
+    return callback_error_ == CACHE_STORAGE_OK;
+  }
+
   int64_t Size() {
     // Storage notification happens after an operation completes. Let the any
     // notifications complete before calling Size.
@@ -1067,6 +1081,87 @@ TEST_P(CacheStorageCacheTestP, PutResponseType) {
   EXPECT_TRUE(TestResponseType(blink::WebServiceWorkerResponseTypeDefault));
   EXPECT_TRUE(TestResponseType(blink::WebServiceWorkerResponseTypeError));
   EXPECT_TRUE(TestResponseType(blink::WebServiceWorkerResponseTypeOpaque));
+}
+
+TEST_P(CacheStorageCacheTestP, WriteSideData) {
+  base::Time response_time(base::Time::Now());
+  ServiceWorkerResponse response;
+  response.response_time = response_time;
+  EXPECT_TRUE(Put(no_body_request_, response));
+
+  const int kSize1 = 10;
+  scoped_refptr<net::IOBuffer> buffer1(new net::IOBuffer(kSize1));
+  EXPECT_TRUE(
+      WriteSideData(no_body_request_.url, response_time, buffer1, kSize1));
+
+  // TODO(horo): Check the content of the saved side data when we will implement
+  // ReadMetadata() method in BlobReader.
+
+  const int kSize2 = 20;
+  scoped_refptr<net::IOBuffer> buffer2(new net::IOBuffer(kSize2));
+  EXPECT_TRUE(
+      WriteSideData(no_body_request_.url, response_time, buffer2, kSize2));
+
+  ASSERT_TRUE(Delete(no_body_request_));
+}
+
+TEST_P(CacheStorageCacheTestP, WriteSideData_QuotaExeeded) {
+  mock_quota_manager_->SetQuota(GURL(kOrigin), storage::kStorageTypeTemporary,
+                                1024 * 1024);
+  base::Time response_time(base::Time::Now());
+  ServiceWorkerResponse response;
+  response.response_time = response_time;
+  EXPECT_TRUE(Put(no_body_request_, response));
+
+  const int kSize = 1024 * 1024;
+  scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kSize));
+  EXPECT_FALSE(
+      WriteSideData(no_body_request_.url, response_time, buffer, kSize));
+  EXPECT_EQ(CACHE_STORAGE_ERROR_QUOTA_EXCEEDED, callback_error_);
+  ASSERT_TRUE(Delete(no_body_request_));
+}
+
+TEST_P(CacheStorageCacheTestP, WriteSideData_QuotaManagerModified) {
+  base::Time response_time(base::Time::Now());
+  ServiceWorkerResponse response;
+  response.response_time = response_time;
+  EXPECT_EQ(0, quota_manager_proxy_->notify_storage_modified_count());
+  EXPECT_TRUE(Put(no_body_request_, response));
+  // Storage notification happens after the operation returns, so continue the
+  // event loop.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, quota_manager_proxy_->notify_storage_modified_count());
+
+  const int kSize = 10;
+  scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kSize));
+  EXPECT_TRUE(
+      WriteSideData(no_body_request_.url, response_time, buffer, kSize));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(2, quota_manager_proxy_->notify_storage_modified_count());
+  ASSERT_TRUE(Delete(no_body_request_));
+}
+
+TEST_P(CacheStorageCacheTestP, WriteSideData_DifferentTimeStamp) {
+  base::Time response_time(base::Time::Now());
+  ServiceWorkerResponse response;
+  response.response_time = response_time;
+  EXPECT_TRUE(Put(no_body_request_, response));
+
+  const int kSize = 10;
+  scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kSize));
+  EXPECT_FALSE(WriteSideData(no_body_request_.url,
+                             response_time + base::TimeDelta::FromSeconds(1),
+                             buffer, kSize));
+  EXPECT_EQ(CACHE_STORAGE_ERROR_NOT_FOUND, callback_error_);
+  ASSERT_TRUE(Delete(no_body_request_));
+}
+
+TEST_P(CacheStorageCacheTestP, WriteSideData_NotFound) {
+  const int kSize = 10;
+  scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kSize));
+  EXPECT_FALSE(WriteSideData(GURL("http://www.example.com/not_exist"),
+                             base::Time::Now(), buffer, kSize));
+  EXPECT_EQ(CACHE_STORAGE_ERROR_NOT_FOUND, callback_error_);
 }
 
 TEST_F(CacheStorageCacheTest, CaselessServiceWorkerResponseHeaders) {
