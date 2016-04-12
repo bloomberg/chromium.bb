@@ -27,9 +27,9 @@ Polymer({
       value: function() {
         var strings = {};
         [
-         'startCastingButtonText',
-         'stopCastingButtonText',
-         'dropDownButtonTitle',
+          'startCastingButtonText',
+          'stopCastingButtonText',
+          'dropDownButtonTitle',
         ]
         .forEach(function(s) {
           strings[s] = loadTimeData.getString(s);

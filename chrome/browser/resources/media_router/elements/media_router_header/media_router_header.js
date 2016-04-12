@@ -65,9 +65,9 @@ Polymer({
       value: function() {
         var strings = {};
         [
-         'backButtonTitle',
-         'closeButtonTitle',
-         'dropDownButtonTitle',
+          'backButtonTitle',
+          'closeButtonTitle',
+          'dropDownButtonTitle',
         ]
         .forEach(function(s) {
           strings[s] = loadTimeData.getString(s);

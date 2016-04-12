@@ -130,18 +130,18 @@ Polymer({
       value: function() {
         var strings = {};
         [
-         'deviceMissingText',
-         'firstRunFlowButtonText',
-         'firstRunFlowCloudPrefText',
-         'firstRunFlowText',
-         'firstRunFlowTitle',
-         'issueHeaderText',
-         'learnMoreText',
-         'searchButtonTitle',
-         'searchInputLabel',
-         'searchNoMatchesText',
-         'selectCastModeHeaderText',
-         'shareYourScreenSubheadingText',
+          'deviceMissingText',
+          'firstRunFlowButtonText',
+          'firstRunFlowCloudPrefText',
+          'firstRunFlowText',
+          'firstRunFlowTitle',
+          'issueHeaderText',
+          'learnMoreText',
+          'searchButtonTitle',
+          'searchInputLabel',
+          'searchNoMatchesText',
+          'selectCastModeHeaderText',
+          'shareYourScreenSubheadingText',
         ]
         .forEach(function(s) {
           strings[s] = loadTimeData.valueExists(s) ?
@@ -640,9 +640,9 @@ Polymer({
   computeHeaderText_: function(view, headerText) {
     switch (view) {
       case media_router.MediaRouterView.CAST_MODE_LIST:
-        return this.i18n_.selectCastModeHeaderText;
+        return this.i18n_['selectCastModeHeaderText'];
       case media_router.MediaRouterView.ISSUE:
-        return this.i18n_.issueHeaderText;
+        return this.i18n_['issueHeaderText'];
       case media_router.MediaRouterView.ROUTE_DETAILS:
         return this.currentRoute_ ?
             this.sinkMap_[this.currentRoute_.sinkId].name : '';
