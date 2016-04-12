@@ -74,7 +74,8 @@ void PepperPlatformAudioOutput::OnStateChanged(
 
 void PepperPlatformAudioOutput::OnDeviceAuthorized(
     media::OutputDeviceStatus device_status,
-    const media::AudioParameters& output_params) {
+    const media::AudioParameters& output_params,
+    const std::string& matched_device_id) {
   NOTREACHED();
 }
 

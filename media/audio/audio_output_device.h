@@ -109,7 +109,8 @@ class MEDIA_EXPORT AudioOutputDevice
   // AudioOutputIPCDelegate methods.
   void OnStateChanged(AudioOutputIPCDelegateState state) override;
   void OnDeviceAuthorized(OutputDeviceStatus device_status,
-                          const media::AudioParameters& output_params) override;
+                          const media::AudioParameters& output_params,
+                          const std::string& matched_device_id) override;
   void OnStreamCreated(base::SharedMemoryHandle handle,
                        base::SyncSocket::Handle socket_handle,
                        int length) override;
@@ -174,6 +175,10 @@ class MEDIA_EXPORT AudioOutputDevice
   // ID of hardware output device to be used (provided session_id_ is zero)
   const std::string device_id_;
   const url::Origin security_origin_;
+
+  // If |device_id_| is empty and |session_id_| is not, |matched_device_id_| is
+  // received in OnDeviceAuthorized().
+  std::string matched_device_id_;
 
   // Our audio thread callback class.  See source file for details.
   class AudioThreadCallback;

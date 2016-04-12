@@ -77,8 +77,16 @@ class AudioManagerBase::CompareByParams {
   const DispatcherParams* dispatcher_;
 };
 
-static bool IsDefaultDeviceId(const std::string& device_id) {
+// static
+bool AudioManagerBase::IsDefaultDeviceId(const std::string& device_id) {
   return device_id.empty() || device_id == AudioManagerBase::kDefaultDeviceId;
+}
+
+// static
+bool AudioManagerBase::UseSessionIdToSelectDevice(
+    int session_id,
+    const std::string& device_id) {
+  return session_id && device_id.empty();
 }
 
 AudioManagerBase::AudioManagerBase(AudioLogFactory* audio_log_factory)

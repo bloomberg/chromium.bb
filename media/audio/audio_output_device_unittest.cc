@@ -164,7 +164,8 @@ void AudioOutputDeviceTest::ReceiveAuthorization(OutputDeviceStatus status) {
   if (device_status_ != OUTPUT_DEVICE_STATUS_OK)
     EXPECT_CALL(*audio_output_ipc_, CloseStream());
 
-  audio_device_->OnDeviceAuthorized(device_status_, default_audio_parameters_);
+  audio_device_->OnDeviceAuthorized(device_status_, default_audio_parameters_,
+                                    kDefaultDeviceId);
   io_loop_.RunUntilIdle();
 }
 

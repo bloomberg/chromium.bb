@@ -99,7 +99,10 @@ class CONTENT_EXPORT AudioDeviceFactory {
   // functions to provide alternate audio device implementations.
   // If the return value of either of these function is NULL, we fall back
   // on the default implementation.
-  virtual scoped_refptr<media::AudioRendererSink> CreateAudioRendererMixerSink(
+
+  // Creates a final sink in the rendering pipeline, which represents the actual
+  // output device.
+  virtual scoped_refptr<media::AudioRendererSink> CreateFinalAudioRendererSink(
       int render_frame_id,
       int sesssion_id,
       const std::string& device_id,
@@ -126,6 +129,12 @@ class CONTENT_EXPORT AudioDeviceFactory {
   // The current globally registered factory. This is NULL when we should
   // create the default AudioRendererSinks.
   static AudioDeviceFactory* factory_;
+
+  static scoped_refptr<media::AudioRendererSink> NewFinalAudioRendererSink(
+      int render_frame_id,
+      int session_id,
+      const std::string& device_id,
+      const url::Origin& security_origin);
 
   DISALLOW_COPY_AND_ASSIGN(AudioDeviceFactory);
 };

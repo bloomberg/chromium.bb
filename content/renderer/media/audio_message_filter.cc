@@ -187,13 +187,14 @@ void AudioMessageFilter::OnChannelClosing() {
 void AudioMessageFilter::OnDeviceAuthorized(
     int stream_id,
     media::OutputDeviceStatus device_status,
-    const media::AudioParameters& output_params) {
+    const media::AudioParameters& output_params,
+    const std::string& matched_device_id) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   media::AudioOutputIPCDelegate* delegate = delegates_.Lookup(stream_id);
   if (!delegate)
     return;
 
-  delegate->OnDeviceAuthorized(device_status, output_params);
+  delegate->OnDeviceAuthorized(device_status, output_params, matched_device_id);
 }
 
 void AudioMessageFilter::OnStreamCreated(

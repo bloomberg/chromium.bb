@@ -24,6 +24,8 @@ enum OutputDeviceStatus {
 
 using OutputDeviceStatusCB = base::Callback<void(OutputDeviceStatus)>;
 
+// Output device information returned by
+// AudioRendererSink::GetOutputDeviceInfo()
 class MEDIA_EXPORT OutputDeviceInfo {
  public:
   // Use this constructor to initialize with "no info available" values.

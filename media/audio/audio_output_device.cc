@@ -16,6 +16,7 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "media/audio/audio_manager_base.h"
 #include "media/audio/audio_output_controller.h"
 #include "media/base/limits.h"
 
@@ -141,7 +142,11 @@ bool AudioOutputDevice::SetVolume(double volume) {
 OutputDeviceInfo AudioOutputDevice::GetOutputDeviceInfo() {
   CHECK(!task_runner()->BelongsToCurrentThread());
   did_receive_auth_.Wait();
-  return OutputDeviceInfo(device_id_, device_status_, output_params_);
+  return OutputDeviceInfo(
+      AudioManagerBase::UseSessionIdToSelectDevice(session_id_, device_id_)
+          ? matched_device_id_
+          : device_id_,
+      device_status_, output_params_);
 }
 
 void AudioOutputDevice::RequestDeviceAuthorizationOnIOThread() {
@@ -276,7 +281,8 @@ void AudioOutputDevice::OnStateChanged(AudioOutputIPCDelegateState state) {
 
 void AudioOutputDevice::OnDeviceAuthorized(
     OutputDeviceStatus device_status,
-    const media::AudioParameters& output_params) {
+    const media::AudioParameters& output_params,
+    const std::string& matched_device_id) {
   DCHECK(task_runner()->BelongsToCurrentThread());
   DCHECK_EQ(state_, AUTHORIZING);
 
@@ -295,6 +301,19 @@ void AudioOutputDevice::OnDeviceAuthorized(
     state_ = AUTHORIZED;
     if (!did_receive_auth_.IsSignaled()) {
       output_params_ = output_params;
+
+      // It's possible to not have a matched device obtained via session id. It
+      // means matching output device through |session_id_| failed and the
+      // default device is used.
+      DCHECK(AudioManagerBase::UseSessionIdToSelectDevice(session_id_,
+                                                          device_id_) ||
+             matched_device_id_.empty());
+      matched_device_id_ = matched_device_id;
+
+      DVLOG(1) << "AudioOutputDevice authorized, session_id: " << session_id_
+               << ", device_id: " << device_id_
+               << ", matched_device_id: " << matched_device_id_;
+
       did_receive_auth_.Signal();
     }
     if (start_on_authorized_)

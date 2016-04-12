@@ -76,10 +76,11 @@ class MockAudioRendererHost : public AudioRendererHost {
         shared_memory_length_(0) {}
 
   // A list of mock methods.
-  MOCK_METHOD3(OnDeviceAuthorized,
+  MOCK_METHOD4(OnDeviceAuthorized,
                void(int stream_id,
                     media::OutputDeviceStatus device_status,
-                    const media::AudioParameters& output_params));
+                    const media::AudioParameters& output_params,
+                    const std::string& matched_device_id));
   MOCK_METHOD2(OnStreamCreated, void(int stream_id, int length));
   MOCK_METHOD1(OnStreamPlaying, void(int stream_id));
   MOCK_METHOD1(OnStreamPaused, void(int stream_id));
@@ -117,8 +118,10 @@ class MockAudioRendererHost : public AudioRendererHost {
 
   void OnNotifyDeviceAuthorized(int stream_id,
                                 media::OutputDeviceStatus device_status,
-                                const media::AudioParameters& output_params) {
-    OnDeviceAuthorized(stream_id, device_status, output_params);
+                                const media::AudioParameters& output_params,
+                                const std::string& matched_device_id) {
+    OnDeviceAuthorized(stream_id, device_status, output_params,
+                       matched_device_id);
   }
 
   void OnNotifyStreamCreated(
@@ -234,7 +237,7 @@ class AudioRendererHostTest : public testing::Test {
                   : media::OUTPUT_DEVICE_STATUS_ERROR_NOT_FOUND;
 
     EXPECT_CALL(*host_.get(),
-                OnDeviceAuthorized(kStreamId, expected_device_status, _));
+                OnDeviceAuthorized(kStreamId, expected_device_status, _, _));
 
     if (expected_device_status == media::OUTPUT_DEVICE_STATUS_OK) {
       EXPECT_CALL(*host_.get(), OnStreamCreated(kStreamId, _));

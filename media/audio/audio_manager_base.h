@@ -49,6 +49,17 @@ class MEDIA_EXPORT AudioManagerBase : public AudioManager {
   // stream, otherwise stream initialization may fail.
   static const char kLoopbackInputDeviceId[];
 
+  // Returns true if |device_id| corresponds to the default device.
+  static bool IsDefaultDeviceId(const std::string& device_id);
+
+  // If |device_id| is not empty, |session_id| should be ignored and the output
+  // device should be selected basing on |device_id|.
+  // If |device_id| is empty and |session_id| is nonzero, output device
+  // associated with the opened input device designated by |session_id| should
+  // be used.
+  static bool UseSessionIdToSelectDevice(int session_id,
+                                         const std::string& device_id);
+
   ~AudioManagerBase() override;
 
   // AudioManager:

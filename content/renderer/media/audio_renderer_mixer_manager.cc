@@ -10,7 +10,7 @@
 #include "base/bind_helpers.h"
 #include "build/build_config.h"
 #include "content/renderer/media/audio_device_factory.h"
-#include "media/audio/audio_output_device.h"
+#include "media/audio/audio_manager_base.h"
 #include "media/base/audio_hardware_config.h"
 #include "media/base/audio_renderer_mixer.h"
 #include "media/base/audio_renderer_mixer_input.h"
@@ -27,14 +27,23 @@ AudioRendererMixerManager::~AudioRendererMixerManager() {
 
 media::AudioRendererMixerInput* AudioRendererMixerManager::CreateInput(
     int source_render_frame_id,
+    int session_id,
     const std::string& device_id,
     const url::Origin& security_origin) {
+  // base::Unretained() is safe since AudioRendererMixerManager lives on the
+  // renderer thread and is destroyed on renderer thread destruction.
   return new media::AudioRendererMixerInput(
       base::Bind(&AudioRendererMixerManager::GetMixer, base::Unretained(this),
                  source_render_frame_id),
       base::Bind(&AudioRendererMixerManager::RemoveMixer,
                  base::Unretained(this), source_render_frame_id),
-      device_id,
+      // TODO(olka) remove the dependency on AudioManagerBase,
+      // https://crbug.com/02581
+      media::AudioManagerBase::UseSessionIdToSelectDevice(session_id, device_id)
+          ? AudioDeviceFactory::GetOutputDeviceInfo(
+                source_render_frame_id, session_id, device_id, security_origin)
+                .device_id()
+          : device_id,
       security_origin);
 }
 

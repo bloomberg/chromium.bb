@@ -36,9 +36,9 @@ class MEDIA_EXPORT AudioOutputIPCDelegate {
 
   // Called when an authorization request for an output device has been
   // completed
-  virtual void OnDeviceAuthorized(
-      OutputDeviceStatus device_status,
-      const media::AudioParameters& output_params) = 0;
+  virtual void OnDeviceAuthorized(OutputDeviceStatus device_status,
+                                  const media::AudioParameters& output_params,
+                                  const std::string& matched_device_id) = 0;
 
   // Called when an audio stream has been created.
   // The shared memory |handle| points to a memory section that's used to

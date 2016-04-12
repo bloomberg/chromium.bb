@@ -79,7 +79,7 @@ class WebRtcAudioRendererTest : public testing::Test,
   }
   MOCK_METHOD1(CreateAudioCapturerSource,
                scoped_refptr<media::AudioCapturerSource>(int));
-  MOCK_METHOD4(CreateAudioRendererMixerSink,
+  MOCK_METHOD4(CreateFinalAudioRendererSink,
                scoped_refptr<media::AudioRendererSink>(int,
                                                        int,
                                                        const std::string&,

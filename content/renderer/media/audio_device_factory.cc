@@ -47,21 +47,13 @@ bool IsMixable(AudioDeviceFactory::SourceType source_type) {
 
 scoped_refptr<media::SwitchableAudioRendererSink> NewMixableSink(
     int render_frame_id,
+    int session_id,
     const std::string& device_id,
     const url::Origin& security_origin) {
   RenderThreadImpl* render_thread = RenderThreadImpl::current();
   return scoped_refptr<media::AudioRendererMixerInput>(
       render_thread->GetAudioRendererMixerManager()->CreateInput(
-          render_frame_id, device_id, security_origin));
-}
-
-scoped_refptr<media::AudioRendererSink> NewUnmixableSink(
-    int render_frame_id,
-    int session_id,
-    const std::string& device_id,
-    const url::Origin& security_origin) {
-  return NewOutputDevice(render_frame_id, session_id, device_id,
-                         security_origin);
+          render_frame_id, session_id, device_id, security_origin));
 }
 
 }  // namespace
@@ -72,15 +64,8 @@ AudioDeviceFactory::NewAudioRendererMixerSink(
     int session_id,
     const std::string& device_id,
     const url::Origin& security_origin) {
-  if (factory_) {
-    scoped_refptr<media::AudioRendererSink> sink =
-        factory_->CreateAudioRendererMixerSink(render_frame_id, session_id,
-                                               device_id, security_origin);
-    if (sink)
-      return sink;
-  }
-  return NewOutputDevice(render_frame_id, session_id, device_id,
-                         security_origin);
+  return NewFinalAudioRendererSink(render_frame_id, session_id, device_id,
+                                   security_origin);
 }
 
 // static
@@ -100,10 +85,11 @@ AudioDeviceFactory::NewAudioRendererSink(SourceType source_type,
   }
 
   if (IsMixable(source_type))
-    return NewMixableSink(render_frame_id, device_id, security_origin);
-
-  return NewUnmixableSink(render_frame_id, session_id, device_id,
+    return NewMixableSink(render_frame_id, session_id, device_id,
                           security_origin);
+
+  return NewFinalAudioRendererSink(render_frame_id, session_id, device_id,
+                                   security_origin);
 }
 
 // static
@@ -124,7 +110,8 @@ AudioDeviceFactory::NewSwitchableAudioRendererSink(
   }
 
   if (IsMixable(source_type))
-    return NewMixableSink(render_frame_id, device_id, security_origin);
+    return NewMixableSink(render_frame_id, session_id, device_id,
+                          security_origin);
 
   // AudioOutputDevice is not RestartableAudioRendererSink, so we can't return
   // anything for those who wants to create an unmixable sink.
@@ -155,11 +142,14 @@ media::OutputDeviceInfo AudioDeviceFactory::GetOutputDeviceInfo(
     int session_id,
     const std::string& device_id,
     const url::Origin& security_origin) {
-  scoped_refptr<media::AudioOutputDevice> device =
-      NewOutputDevice(render_frame_id, session_id, device_id, security_origin);
+  scoped_refptr<media::AudioRendererSink> sink = NewFinalAudioRendererSink(
+      render_frame_id, session_id, device_id, security_origin);
 
-  const media::OutputDeviceInfo& device_info = device->GetOutputDeviceInfo();
-  device->Stop();  // Must be stopped.
+  const media::OutputDeviceInfo& device_info = sink->GetOutputDeviceInfo();
+
+  // TODO(olka): Cache it and reuse, http://crbug.com/586161
+  sink->Stop();  // Must be stopped.
+
   return device_info;
 }
 
@@ -170,6 +160,25 @@ AudioDeviceFactory::AudioDeviceFactory() {
 
 AudioDeviceFactory::~AudioDeviceFactory() {
   factory_ = NULL;
+}
+
+// static
+scoped_refptr<media::AudioRendererSink>
+AudioDeviceFactory::NewFinalAudioRendererSink(
+    int render_frame_id,
+    int session_id,
+    const std::string& device_id,
+    const url::Origin& security_origin) {
+  if (factory_) {
+    scoped_refptr<media::AudioRendererSink> sink =
+        factory_->CreateFinalAudioRendererSink(render_frame_id, session_id,
+                                               device_id, security_origin);
+    if (sink)
+      return sink;
+  }
+
+  return NewOutputDevice(render_frame_id, session_id, device_id,
+                         security_origin);
 }
 
 }  // namespace content
