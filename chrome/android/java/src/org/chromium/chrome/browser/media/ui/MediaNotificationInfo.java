@@ -43,7 +43,7 @@ public class MediaNotificationInfo {
      */
     public static final class Builder {
 
-        private MediaMetadata mMetadata;
+        private MediaMetadata mMetadata = null;
         private boolean mIsPaused = false;
         private String mOrigin = "";
         private int mTabId = Tab.INVALID_TAB_ID;
@@ -260,11 +260,14 @@ public class MediaNotificationInfo {
                 && icon == other.icon
                 && mActions == other.mActions
                 && id == other.id
-                && metadata.equals(other.metadata)
+                && (metadata == other.metadata
+                        || (metadata != null && metadata.equals(other.metadata)))
                 && TextUtils.equals(origin, other.origin)
                 && (image == other.image || (image != null && image.sameAs(other.image)))
-                && contentIntent.equals(other.contentIntent)
-                && listener.equals(other.listener);
+                && (contentIntent == other.contentIntent
+                        || (contentIntent != null && contentIntent.equals(other.contentIntent)))
+                && (listener == other.listener
+                        || (listener != null && listener.equals(other.listener)));
     }
 
     @Override
