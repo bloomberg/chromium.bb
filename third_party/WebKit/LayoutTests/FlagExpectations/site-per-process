@@ -85,6 +85,9 @@ http/tests/xmlhttprequest/origin-whitelisting-ip-addresses.html [ Failure ]
 #                            cross-origin-iframe.html layout test failure
 http/tests/bluetooth/https/requestDevice/cross-origin-iframe.html [ Failure ]
 
+# https://crbug.com/602421 - TODO(csharrison): Fix flaky line number reporting.
+http/tests/security/mixedContent/insecure-srcset-in-main-frame-blocked.html [ Pass Failure ]
+
 # TODO(alexmos,lukasza): Triage these failures and assign more specific bugs.
 
 # No repro (maybe flaky? maybe really fixed? maybe repros only in debug build?):
