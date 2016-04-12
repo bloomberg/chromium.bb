@@ -211,6 +211,7 @@ if (!is_android) {
 
       if (enable_package_mash_services) {
         deps += [ "//chrome/app/mash" ]
+        data_deps += [ "//chrome/app:mojo_manifests" ]
       }
     }
 
