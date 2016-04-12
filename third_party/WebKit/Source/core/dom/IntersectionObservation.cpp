@@ -198,6 +198,7 @@ void IntersectionObservation::computeIntersectionObservations(DOMHighResTimeStam
     //       have a coincident edge or corner), we consider the intersection to have
     //       "crossed" a zero threshold, but not crossed any non-zero threshold.
     unsigned newThresholdIndex;
+    float newVisibleRatio = 0;
     if (geometry.targetRect.isEmpty()) {
         newThresholdIndex = geometry.doesIntersect ? 1 : 0;
     } else if (!geometry.doesIntersect) {
@@ -205,7 +206,7 @@ void IntersectionObservation::computeIntersectionObservations(DOMHighResTimeStam
     } else {
         float intersectionArea = geometry.intersectionRect.size().width().toFloat() * geometry.intersectionRect.size().height().toFloat();
         float targetArea = geometry.targetRect.size().width().toFloat() * geometry.targetRect.size().height().toFloat();
-        float newVisibleRatio = intersectionArea / targetArea;
+        newVisibleRatio = intersectionArea / targetArea;
         newThresholdIndex = observer().firstThresholdGreaterThan(newVisibleRatio);
     }
     if (m_lastThresholdIndex != newThresholdIndex) {
@@ -213,6 +214,7 @@ void IntersectionObservation::computeIntersectionObservations(DOMHighResTimeStam
         IntRect* rootBoundsPointer = m_shouldReportRootBounds ? &snappedRootBounds : nullptr;
         IntersectionObserverEntry* newEntry = new IntersectionObserverEntry(
             timestamp,
+            newVisibleRatio,
             pixelSnappedIntRect(geometry.targetRect),
             rootBoundsPointer,
             pixelSnappedIntRect(geometry.intersectionRect),

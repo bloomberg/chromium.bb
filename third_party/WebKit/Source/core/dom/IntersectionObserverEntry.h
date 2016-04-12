@@ -18,10 +18,11 @@ class Element;
 class IntersectionObserverEntry final : public GarbageCollectedFinalized<IntersectionObserverEntry>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    IntersectionObserverEntry(DOMHighResTimeStamp timestamp, const IntRect& boundingClientRect, const IntRect* rootBounds, const IntRect& intersectionRect, Element*);
+    IntersectionObserverEntry(DOMHighResTimeStamp timestamp, double intersectionRatio, const IntRect& boundingClientRect, const IntRect* rootBounds, const IntRect& intersectionRect, Element*);
     ~IntersectionObserverEntry();
 
     double time() const { return m_time; }
+    double intersectionRatio() const { return m_intersectionRatio; }
     ClientRect* boundingClientRect() const { return m_boundingClientRect; }
     ClientRect* rootBounds() const { return m_rootBounds; }
     ClientRect* intersectionRect() const { return m_intersectionRect; }
@@ -31,6 +32,7 @@ public:
 
 private:
     DOMHighResTimeStamp m_time;
+    double m_intersectionRatio;
     Member<ClientRect> m_boundingClientRect;
     Member<ClientRect> m_rootBounds;
     Member<ClientRect> m_intersectionRect;

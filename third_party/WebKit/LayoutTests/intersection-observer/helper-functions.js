@@ -4,6 +4,10 @@
 setPrintTestResultsLazily();
 self.jsTestIsAsync = true;
 
+function rectArea(rect) {
+  return (rect.left - rect.right) * (rect.bottom - rect.top);
+}
+
 function rectToString(rect) {
   return "[" + rect.left + ", " + rect.right + ", " + rect.top + ", " + rect.bottom + "]";
 }
@@ -18,4 +22,11 @@ function entryToString(entry) {
       "rootBounds=" + rectToString(entry.rootBounds) + "\n" +
       "target=" + entry.target + "\n" +
       "time=" + entry.time);
+}
+
+function intersectionRatio(entry) {
+  var targetArea = rectArea(entry.boundingClientRect);
+  if (!targetArea)
+    return 0;
+  return rectArea(entry.intersectionRect) / targetArea;
 }

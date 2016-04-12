@@ -18,6 +18,7 @@ PASS entries[0].rootBounds.left is 0
 PASS entries[0].rootBounds.right is 785
 PASS entries[0].rootBounds.top is 0
 PASS entries[0].rootBounds.bottom is 600
+PASS entries[0].intersectionRatio is within 0.0001 of 0.12
 PASS entries[0].target is [object HTMLDivElement]
 PASS entries.length is 2
 PASS entries[1].boundingClientRect.left is 8
@@ -32,6 +33,7 @@ PASS entries[1].rootBounds.left is 0
 PASS entries[1].rootBounds.right is 785
 PASS entries[1].rootBounds.top is 0
 PASS entries[1].rootBounds.bottom is 600
+PASS entries[1].intersectionRatio is within 0.0001 of 0.52
 PASS entries[1].target is [object HTMLDivElement]
 PASS entries.length is 3
 PASS entries[2].boundingClientRect.left is 8
@@ -46,6 +48,7 @@ PASS entries[2].rootBounds.left is 0
 PASS entries[2].rootBounds.right is 785
 PASS entries[2].rootBounds.top is 0
 PASS entries[2].rootBounds.bottom is 600
+PASS entries[2].intersectionRatio is within 0.0001 of 0.92
 PASS entries[2].target is [object HTMLDivElement]
 PASS entries.length is 4
 PASS entries[3].boundingClientRect.left is 8
@@ -60,6 +63,7 @@ PASS entries[3].rootBounds.left is 0
 PASS entries[3].rootBounds.right is 785
 PASS entries[3].rootBounds.top is 0
 PASS entries[3].rootBounds.bottom is 600
+PASS entries[3].intersectionRatio is within 0.0001 of 1
 PASS entries[3].target is [object HTMLDivElement]
 PASS entries.length is 5
 PASS entries[4].boundingClientRect.left is 8
@@ -74,6 +78,7 @@ PASS entries[4].rootBounds.left is 0
 PASS entries[4].rootBounds.right is 785
 PASS entries[4].rootBounds.top is 0
 PASS entries[4].rootBounds.bottom is 600
+PASS entries[4].intersectionRatio is within 0.0001 of 0.68
 PASS entries[4].target is [object HTMLDivElement]
 PASS entries.length is 6
 PASS entries[5].boundingClientRect.left is 8
@@ -88,6 +93,7 @@ PASS entries[5].rootBounds.left is 0
 PASS entries[5].rootBounds.right is 785
 PASS entries[5].rootBounds.top is 0
 PASS entries[5].rootBounds.bottom is 600
+PASS entries[5].intersectionRatio is within 0.0001 of 0.48
 PASS entries[5].target is [object HTMLDivElement]
 PASS entries.length is 7
 PASS entries[6].boundingClientRect.left is 8
@@ -102,6 +108,7 @@ PASS entries[6].rootBounds.left is 0
 PASS entries[6].rootBounds.right is 785
 PASS entries[6].rootBounds.top is 0
 PASS entries[6].rootBounds.bottom is 600
+PASS entries[6].intersectionRatio is within 0.0001 of 0.08
 PASS entries[6].target is [object HTMLDivElement]
 PASS entries.length is 8
 PASS entries[7].boundingClientRect.left is 8
@@ -116,6 +123,7 @@ PASS entries[7].rootBounds.left is 0
 PASS entries[7].rootBounds.right is 785
 PASS entries[7].rootBounds.top is 0
 PASS entries[7].rootBounds.bottom is 600
+PASS entries[7].intersectionRatio is within 0.0001 of 0
 PASS entries[7].target is [object HTMLDivElement]
 PASS successfullyParsed is true
 

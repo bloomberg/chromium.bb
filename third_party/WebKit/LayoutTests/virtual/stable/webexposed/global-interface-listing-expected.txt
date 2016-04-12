@@ -2973,6 +2973,7 @@ interface IntersectionObserver
 interface IntersectionObserverEntry
     attribute @@toStringTag
     getter boundingClientRect
+    getter intersectionRatio
     getter intersectionRect
     getter rootBounds
     getter target

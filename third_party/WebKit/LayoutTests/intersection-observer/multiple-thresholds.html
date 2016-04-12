@@ -45,6 +45,7 @@ function step1() {
     shouldBeEqualToNumber("entries[0].rootBounds.right", 785);
     shouldBeEqualToNumber("entries[0].rootBounds.top", 0);
     shouldBeEqualToNumber("entries[0].rootBounds.bottom", 600);
+    shouldBeCloseTo("entries[0].intersectionRatio", intersectionRatio(entries[0]), .0001);
     shouldEvaluateToSameObject("entries[0].target", target);
   }
   document.scrollingElement.scrollTop = 160;
@@ -67,6 +68,7 @@ function step2() {
     shouldBeEqualToNumber("entries[1].rootBounds.right", 785);
     shouldBeEqualToNumber("entries[1].rootBounds.top", 0);
     shouldBeEqualToNumber("entries[1].rootBounds.bottom", 600);
+    shouldBeCloseTo("entries[1].intersectionRatio", intersectionRatio(entries[1]), .0001);
     shouldEvaluateToSameObject("entries[1].target", target);
   }
   document.scrollingElement.scrollTop = 200;
@@ -89,6 +91,7 @@ function step3() {
     shouldBeEqualToNumber("entries[2].rootBounds.right", 785);
     shouldBeEqualToNumber("entries[2].rootBounds.top", 0);
     shouldBeEqualToNumber("entries[2].rootBounds.bottom", 600);
+    shouldBeCloseTo("entries[2].intersectionRatio", intersectionRatio(entries[2]), .0001);
     shouldEvaluateToSameObject("entries[2].target", target);
   }
   document.scrollingElement.scrollTop = 240;
@@ -111,6 +114,7 @@ function step4() {
     shouldBeEqualToNumber("entries[3].rootBounds.right", 785);
     shouldBeEqualToNumber("entries[3].rootBounds.top", 0);
     shouldBeEqualToNumber("entries[3].rootBounds.bottom", 600);
+    shouldBeCloseTo("entries[3].intersectionRatio", intersectionRatio(entries[3]), .0001);
     shouldEvaluateToSameObject("entries[3].target", target);
   }
   document.scrollingElement.scrollTop = 740;
@@ -133,6 +137,7 @@ function step5() {
     shouldBeEqualToNumber("entries[4].rootBounds.right", 785);
     shouldBeEqualToNumber("entries[4].rootBounds.top", 0);
     shouldBeEqualToNumber("entries[4].rootBounds.bottom", 600);
+    shouldBeCloseTo("entries[4].intersectionRatio", intersectionRatio(entries[4]), .0001);
     shouldEvaluateToSameObject("entries[4].target", target);
   }
   document.scrollingElement.scrollTop = 760;
@@ -155,6 +160,7 @@ function step6() {
     shouldBeEqualToNumber("entries[5].rootBounds.right", 785);
     shouldBeEqualToNumber("entries[5].rootBounds.top", 0);
     shouldBeEqualToNumber("entries[5].rootBounds.bottom", 600);
+    shouldBeCloseTo("entries[5].intersectionRatio", intersectionRatio(entries[5]), .0001);
     shouldEvaluateToSameObject("entries[5].target", target);
   }
   document.scrollingElement.scrollTop = 800;
@@ -177,6 +183,7 @@ function step7() {
     shouldBeEqualToNumber("entries[6].rootBounds.right", 785);
     shouldBeEqualToNumber("entries[6].rootBounds.top", 0);
     shouldBeEqualToNumber("entries[6].rootBounds.bottom", 600);
+    shouldBeCloseTo("entries[6].intersectionRatio", intersectionRatio(entries[6]), .0001);
     shouldEvaluateToSameObject("entries[6].target", target);
   }
   document.scrollingElement.scrollTop = 820;
@@ -199,6 +206,7 @@ function step8() {
     shouldBeEqualToNumber("entries[7].rootBounds.right", 785);
     shouldBeEqualToNumber("entries[7].rootBounds.top", 0);
     shouldBeEqualToNumber("entries[7].rootBounds.bottom", 600);
+    shouldBeCloseTo("entries[7].intersectionRatio", intersectionRatio(entries[7]), .0001);
     shouldEvaluateToSameObject("entries[7].target", target);
   }
   finishJSTest();
