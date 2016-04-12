@@ -313,11 +313,9 @@ bool LayoutListItem::updateMarkerLocation()
 
     if (markerParent != lineBoxParent) {
         m_marker->remove();
-        // If markerParent is now an anonymous block with no children, this is the time to attempt to remove it
-        // as it might have gone away after addChild().
-        if (markerParent && markerParent->isAnonymousBlock() && !toLayoutBlock(markerParent)->firstChild() && !toLayoutBlock(markerParent)->continuation())
-            markerParent->destroy();
         lineBoxParent->addChild(m_marker, firstNonMarkerChild(lineBoxParent));
+        // TODO(rhogan): lineBoxParent and markerParent may be deleted by addChild, so they are not safe to reference here.
+        // Once we have a safe way of referencing them delete markerParent if it is an empty anonymous block.
         m_marker->updateMarginsAndContent();
         return true;
     }
