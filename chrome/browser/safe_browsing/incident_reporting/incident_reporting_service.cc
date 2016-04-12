@@ -11,7 +11,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
@@ -44,6 +43,12 @@
 #include "net/url_request/url_request_context_getter.h"
 
 namespace safe_browsing {
+
+#if !defined(GOOGLE_CHROME_BUILD)
+// Chromium-only flag to disable incident uploads.
+extern const base::Feature kIncidentReportingDisableUpload{
+    "IncidentReportingDisableUpload", base::FEATURE_ENABLED_BY_DEFAULT};
+#endif
 
 // Enables reporting of suspicious modules loaded in the process. If this
 // feature is disabled, incidents get pruned instead of reported.
@@ -1057,6 +1062,12 @@ void IncidentReportingService::CancelAllReportUploads() {
 
 void IncidentReportingService::OnKillSwitchResult(UploadContext* context,
                                                   bool is_killswitch_on) {
+#if !defined(GOOGLE_CHROME_BUILD)
+  if (base::FeatureList::IsEnabled(kIncidentReportingDisableUpload)) {
+    is_killswitch_on = true;
+  }
+#endif
+
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!is_killswitch_on) {
     // Initiate the upload.

@@ -223,6 +223,15 @@ class IncidentReportingServiceTest : public testing::Test {
         enabled ? "Enabled" : "Disabled");
     field_trial_->group();
 
+#if !defined(GOOGLE_CHROME_BUILD)
+    base::FeatureList::ClearInstanceForTesting();
+    std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
+    // Disable kIncidentReportingDisableUpload (enable mocked upload).
+    feature_list->InitializeFromCommandLine(
+        std::string(), safe_browsing::kIncidentReportingDisableUpload.name);
+    base::FeatureList::SetInstance(std::move(feature_list));
+#endif
+
     instance_.reset(new TestIncidentReportingService(
         task_runner_, base::Bind(&IncidentReportingServiceTest::PreProfileAdd,
                                  base::Unretained(this)),

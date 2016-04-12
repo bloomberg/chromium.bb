@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -45,6 +46,10 @@ class URLRequestContextGetter;
 }
 
 namespace safe_browsing {
+
+#if !defined(GOOGLE_CHROME_BUILD)
+extern const base::Feature kIncidentReportingDisableUpload;
+#endif
 
 class ClientDownloadRequest;
 class ClientIncidentReport;
