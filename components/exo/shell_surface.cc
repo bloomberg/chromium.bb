@@ -674,8 +674,9 @@ void ShellSurface::CreateShellSurfaceWidget(ui::WindowShowState show_state) {
                                         &params.bounds);
     }
   }
-  params.activatable = activatable_ ? views::Widget::InitParams::ACTIVATABLE_YES
-                                    : views::Widget::InitParams::ACTIVATABLE_NO;
+  bool activatable = activatable_ && !surface_->GetHitTestBounds().IsEmpty();
+  params.activatable = activatable ? views::Widget::InitParams::ACTIVATABLE_YES
+                                   : views::Widget::InitParams::ACTIVATABLE_NO;
 
   // Note: NativeWidget owns this widget.
   widget_ = new ShellSurfaceWidget(this);
@@ -703,6 +704,11 @@ void ShellSurface::CreateShellSurfaceWidget(ui::WindowShowState show_state) {
           ash::wm::ToWindowShowState(
               ash::wm::WINDOW_STATE_TYPE_AUTO_POSITIONED) == show_state &&
           initial_bounds_.IsEmpty());
+
+  // Don't allow the shelf to recognize this window until we have some
+  // initial contents.
+  ash::wm::GetWindowState(widget_->GetNativeWindow())
+      ->set_ignored_by_shelf(true);
 }
 
 void ShellSurface::Configure() {
