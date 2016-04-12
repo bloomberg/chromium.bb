@@ -395,19 +395,22 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Linux NVIDIA only.
     self.Fail('deqp/functional/gles3/fbostatequery.html',
         ['linux', 'nvidia'], bug=483282)
+    self.Fail('deqp/functional/gles3/vertexarrays.html',
+        ['linux', 'nvidia', 'debug'], bug=483282)
 
     # Linux AMD only.
     # It looks like AMD shader compiler rejects many valid ES3 semantics.
+    self.Fail('deqp/data/gles3/shaders/conversions.html',
+        ['linux', 'amd'], bug=483282)
     self.Skip('deqp/data/gles3/shaders/arrays.html',
         ['linux', 'amd'], bug=483282)
     self.Skip('deqp/data/gles3/shaders/qualification_order.html',
         ['linux', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/internalformatquery.html',
+        ['linux', 'amd'], bug=483282)
     self.Fail('deqp/functional/gles3/texturestatequery.html',
         ['linux', 'amd'], bug=483282)
-    self.Fail('conformance2/renderbuffers/framebuffer-texture-layer.html',
-        ['linux', 'amd'], bug=295792)
-
-    self.Fail('deqp/data/gles3/shaders/conversions.html',
+    self.Fail('deqp/functional/gles3/vertexarrays.html',
         ['linux', 'amd'], bug=483282)
     self.Fail('deqp/functional/gles3/buffercopy.html',
         ['linux', 'amd'], bug=483282)
@@ -417,12 +420,15 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'amd'], bug=483282)
     self.Fail('deqp/functional/gles3/shaderprecision.html',
         ['linux', 'amd'], bug=483282)
+
     self.Fail('conformance2/misc/uninitialized-test-2.html',
         ['linux', 'amd'], bug=483282)
     self.Fail('conformance2/reading/read-pixels-pack-parameters.html',
         ['linux', 'amd'], bug=483282)
     self.Fail('conformance2/reading/read-pixels-into-pixel-pack-buffer.html',
         ['linux', 'amd'], bug=483282)
+    self.Fail('conformance2/renderbuffers/framebuffer-texture-layer.html',
+        ['linux', 'amd'], bug=295792)
     self.Fail('conformance2/textures/misc/tex-mipmap-levels.html',
         ['linux', 'amd'], bug=483282)
 
