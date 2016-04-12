@@ -18,7 +18,9 @@
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_helper.h"
+#include "ui/gl/scoped_api.h"
 #include "ui/gl/scoped_binders.h"
+#include "ui/gl/scoped_cgl.h"
 
 // Note that this must be included after gl_bindings.h to avoid conflicts.
 #include <OpenGL/CGLIOSurface.h>
@@ -188,6 +190,170 @@ GLenum DataType(BufferFormat format) {
 
 }  // namespace
 
+class GLImageIOSurface::RGBConverter
+    : public base::RefCounted<GLImageIOSurface::RGBConverter> {
+ public:
+  static scoped_refptr<RGBConverter> GetForCurrentContext();
+  bool CopyTexImage(IOSurfaceRef io_surface, const gfx::Size& size);
+
+ private:
+  friend class base::RefCounted<RGBConverter>;
+  RGBConverter(CGLContextObj cgl_context);
+  ~RGBConverter();
+
+  unsigned framebuffer_ = 0;
+  unsigned vertex_shader_ = 0;
+  unsigned fragment_shader_ = 0;
+  unsigned program_ = 0;
+  int size_location_ = -1;
+  unsigned vertex_buffer_ = 0;
+  base::ScopedTypeRef<CGLContextObj> cgl_context_;
+
+  static base::LazyInstance<
+      std::map<CGLContextObj, GLImageIOSurface::RGBConverter*>>
+      g_rgb_converters;
+  static base::LazyInstance<base::ThreadChecker>
+      g_rgb_converters_thread_checker;
+};
+
+base::LazyInstance<std::map<CGLContextObj, GLImageIOSurface::RGBConverter*>>
+    GLImageIOSurface::RGBConverter::g_rgb_converters;
+
+base::LazyInstance<base::ThreadChecker>
+    GLImageIOSurface::RGBConverter::g_rgb_converters_thread_checker;
+
+scoped_refptr<GLImageIOSurface::RGBConverter>
+GLImageIOSurface::RGBConverter::GetForCurrentContext() {
+  CGLContextObj current_context = CGLGetCurrentContext();
+  DCHECK(current_context);
+  DCHECK(g_rgb_converters_thread_checker.Get().CalledOnValidThread());
+  auto found = g_rgb_converters.Get().find(current_context);
+  if (found != g_rgb_converters.Get().end())
+    return make_scoped_refptr(found->second);
+  return make_scoped_refptr(new RGBConverter(current_context));
+}
+
+GLImageIOSurface::RGBConverter::RGBConverter(CGLContextObj cgl_context)
+    : cgl_context_(cgl_context, base::scoped_policy::RETAIN) {
+  gfx::ScopedSetGLToRealGLApi scoped_set_gl_api;
+  glGenFramebuffersEXT(1, &framebuffer_);
+  vertex_buffer_ = gfx::GLHelper::SetupQuadVertexBuffer();
+  vertex_shader_ = gfx::GLHelper::LoadShader(
+      GL_VERTEX_SHADER,
+      base::StringPrintf("%s\n%s", kGLSLVersion, kVertexShader).c_str());
+  fragment_shader_ = gfx::GLHelper::LoadShader(
+      GL_FRAGMENT_SHADER,
+      base::StringPrintf("%s\n%s\n%s", kGLSLVersion, kTextureRectangleRequired,
+                         kFragmentShader)
+          .c_str());
+  program_ = gfx::GLHelper::SetupProgram(vertex_shader_, fragment_shader_);
+
+  gfx::ScopedUseProgram use_program(program_);
+  size_location_ = glGetUniformLocation(program_, "a_texScale");
+  DCHECK_NE(-1, size_location_);
+  int y_sampler_location = glGetUniformLocation(program_, "a_y_texture");
+  DCHECK_NE(-1, y_sampler_location);
+  int uv_sampler_location = glGetUniformLocation(program_, "a_uv_texture");
+  DCHECK_NE(-1, uv_sampler_location);
+
+  glUniform1i(y_sampler_location, 0);
+  glUniform1i(uv_sampler_location, 1);
+
+  DCHECK(g_rgb_converters_thread_checker.Get().CalledOnValidThread());
+  DCHECK(g_rgb_converters.Get().find(cgl_context) ==
+         g_rgb_converters.Get().end());
+  g_rgb_converters.Get()[cgl_context] = this;
+}
+
+GLImageIOSurface::RGBConverter::~RGBConverter() {
+  DCHECK(g_rgb_converters_thread_checker.Get().CalledOnValidThread());
+  DCHECK(g_rgb_converters.Get()[cgl_context_] == this);
+  g_rgb_converters.Get().erase(cgl_context_.get());
+  {
+    gfx::ScopedCGLSetCurrentContext(cgl_context_.get());
+    gfx::ScopedSetGLToRealGLApi scoped_set_gl_api;
+    glDeleteProgram(program_);
+    glDeleteShader(vertex_shader_);
+    glDeleteShader(fragment_shader_);
+    glDeleteBuffersARB(1, &vertex_buffer_);
+    glDeleteFramebuffersEXT(1, &framebuffer_);
+  }
+  cgl_context_.reset();
+}
+
+bool GLImageIOSurface::RGBConverter::CopyTexImage(IOSurfaceRef io_surface,
+                                                  const gfx::Size& size) {
+  gfx::ScopedSetGLToRealGLApi scoped_set_gl_api;
+  DCHECK_EQ(CGLGetCurrentContext(), cgl_context_.get());
+  glTexImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGB, size.width(), size.height(),
+               0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+  GLint target_texture = 0;
+  glGetIntegerv(GL_TEXTURE_BINDING_RECTANGLE_ARB, &target_texture);
+  DCHECK(target_texture);
+
+  // Note that state restoration is done explicitly in the ScopedClosureRunner
+  // instead of scoped binders to avoid https://crbug.com/601729.
+  GLint old_active_texture = -1;
+  glGetIntegerv(GL_ACTIVE_TEXTURE, &old_active_texture);
+  GLint old_texture0_binding = -1;
+  glActiveTexture(GL_TEXTURE0);
+  glGetIntegerv(GL_TEXTURE_BINDING_RECTANGLE_ARB, &old_texture0_binding);
+  GLint old_texture1_binding = -1;
+  glActiveTexture(GL_TEXTURE1);
+  glGetIntegerv(GL_TEXTURE_BINDING_RECTANGLE_ARB, &old_texture1_binding);
+
+  unsigned y_texture = 0;
+  glGenTextures(1, &y_texture);
+  unsigned uv_texture = 0;
+  glGenTextures(1, &uv_texture);
+
+  base::ScopedClosureRunner destroy_resources_runner(base::BindBlock(^{
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_RECTANGLE_ARB, old_texture0_binding);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_RECTANGLE_ARB, old_texture1_binding);
+    glActiveTexture(old_active_texture);
+
+    glDeleteTextures(1, &y_texture);
+    glDeleteTextures(1, &uv_texture);
+  }));
+
+  CGLError cgl_error = kCGLNoError;
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_RECTANGLE_ARB, y_texture);
+  cgl_error = CGLTexImageIOSurface2D(cgl_context_, GL_TEXTURE_RECTANGLE_ARB,
+                                     GL_RED, size.width(), size.height(),
+                                     GL_RED, GL_UNSIGNED_BYTE, io_surface, 0);
+  if (cgl_error != kCGLNoError) {
+    LOG(ERROR) << "Error in CGLTexImageIOSurface2D for the Y plane. "
+               << cgl_error;
+    return false;
+  }
+  glActiveTexture(GL_TEXTURE1);
+  glBindTexture(GL_TEXTURE_RECTANGLE_ARB, uv_texture);
+  cgl_error = CGLTexImageIOSurface2D(cgl_context_, GL_TEXTURE_RECTANGLE_ARB,
+                                     GL_RG, size.width() / 2, size.height() / 2,
+                                     GL_RG, GL_UNSIGNED_BYTE, io_surface, 1);
+  if (cgl_error != kCGLNoError) {
+    LOG(ERROR) << "Error in CGLTexImageIOSurface2D for the UV plane. "
+               << cgl_error;
+    return false;
+  }
+
+  gfx::ScopedFrameBufferBinder framebuffer_binder(framebuffer_);
+  gfx::ScopedViewport viewport(0, 0, size.width(), size.height());
+  glFramebufferTexture2DEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                            GL_TEXTURE_RECTANGLE_ARB, target_texture, 0);
+  DCHECK_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_COMPLETE),
+            glCheckFramebufferStatusEXT(GL_FRAMEBUFFER));
+  gfx::ScopedUseProgram use_program(program_);
+  glUniform2f(size_location_, size.width(), size.height());
+  gfx::GLHelper::DrawQuad(vertex_buffer_);
+  glFramebufferTexture2DEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                            GL_TEXTURE_RECTANGLE_ARB, 0, 0);
+  return true;
+}
+
 GLImageIOSurface::GLImageIOSurface(const gfx::Size& size,
                                    unsigned internalformat)
     : size_(size),
@@ -240,13 +406,6 @@ bool GLImageIOSurface::InitializeWithCVPixelBuffer(
 
 void GLImageIOSurface::Destroy(bool have_context) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (have_context && framebuffer_) {
-    glDeleteProgram(program_);
-    glDeleteShader(vertex_shader_);
-    glDeleteShader(fragment_shader_);
-    glDeleteBuffersARB(1, &vertex_buffer_);
-    glDeleteFramebuffersEXT(1, &framebuffer_);
-  }
   io_surface_.reset();
   cv_pixel_buffer_.reset();
 }
@@ -301,99 +460,8 @@ bool GLImageIOSurface::CopyTexImage(unsigned target) {
     return false;
   }
 
-  // Ensure that all textures bound to IOSurfaces be destroyed before the
-  // function exits. If they are not destroyed they may cause deadlocks between
-  // VTDecompressionSession at CGLContextDestroy.
-  // https://crbug.com/598388
-  unsigned y_texture = 0;
-  glGenTextures(1, &y_texture);
-  unsigned uv_texture = 0;
-  glGenTextures(1, &uv_texture);
-  base::ScopedClosureRunner destroy_resources_runner(base::BindBlock(^{
-    glDeleteTextures(1, &y_texture);
-    glDeleteTextures(1, &uv_texture);
-  }));
-
-  if (!framebuffer_) {
-    glGenFramebuffersEXT(1, &framebuffer_);
-    vertex_buffer_ = gfx::GLHelper::SetupQuadVertexBuffer();
-    vertex_shader_ = gfx::GLHelper::LoadShader(
-        GL_VERTEX_SHADER,
-        base::StringPrintf("%s\n%s", kGLSLVersion, kVertexShader).c_str());
-    fragment_shader_ = gfx::GLHelper::LoadShader(
-        GL_FRAGMENT_SHADER,
-        base::StringPrintf("%s\n%s\n%s", kGLSLVersion,
-                           kTextureRectangleRequired, kFragmentShader)
-            .c_str());
-    program_ = gfx::GLHelper::SetupProgram(vertex_shader_, fragment_shader_);
-    gfx::ScopedUseProgram use_program(program_);
-
-    size_location_ = glGetUniformLocation(program_, "a_texScale");
-    DCHECK_NE(-1, size_location_);
-    int y_sampler_location = glGetUniformLocation(program_, "a_y_texture");
-    DCHECK_NE(-1, y_sampler_location);
-    int uv_sampler_location = glGetUniformLocation(program_, "a_uv_texture");
-    DCHECK_NE(-1, uv_sampler_location);
-
-    glUniform1i(y_sampler_location, 0);
-    glUniform1i(uv_sampler_location, 1);
-  }
-
-  CGLContextObj cgl_context =
-      static_cast<CGLContextObj>(gfx::GLContext::GetCurrent()->GetHandle());
-
-  GLint target_texture = 0;
-  glGetIntegerv(GL_TEXTURE_BINDING_RECTANGLE_ARB, &target_texture);
-  DCHECK(target_texture);
-  glTexImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGB, size_.width(),
-               size_.height(), 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
-
-  CGLError cgl_error = kCGLNoError;
-  {
-    DCHECK(io_surface_);
-
-    gfx::ScopedActiveTexture active_texture0(GL_TEXTURE0);
-    gfx::ScopedTextureBinder texture_y_binder(GL_TEXTURE_RECTANGLE_ARB,
-                                              y_texture);
-    cgl_error = CGLTexImageIOSurface2D(
-        cgl_context, GL_TEXTURE_RECTANGLE_ARB, GL_RED, size_.width(),
-        size_.height(), GL_RED, GL_UNSIGNED_BYTE, io_surface_.get(), 0);
-    if (cgl_error != kCGLNoError) {
-      LOG(ERROR) << "Error in CGLTexImageIOSurface2D for the Y plane. "
-                 << cgl_error;
-      return false;
-    }
-    {
-      gfx::ScopedActiveTexture active_texture1(GL_TEXTURE1);
-      gfx::ScopedTextureBinder texture_uv_binder(GL_TEXTURE_RECTANGLE_ARB,
-                                                 uv_texture);
-      cgl_error = CGLTexImageIOSurface2D(
-          cgl_context, GL_TEXTURE_RECTANGLE_ARB, GL_RG, size_.width() / 2,
-          size_.height() / 2, GL_RG, GL_UNSIGNED_BYTE, io_surface_.get(), 1);
-      if (cgl_error != kCGLNoError) {
-        LOG(ERROR) << "Error in CGLTexImageIOSurface2D for the UV plane. "
-                   << cgl_error;
-        return false;
-      }
-
-      gfx::ScopedFrameBufferBinder framebuffer_binder(framebuffer_);
-      gfx::ScopedViewport viewport(0, 0, size_.width(), size_.height());
-      glViewport(0, 0, size_.width(), size_.height());
-      glFramebufferTexture2DEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                                GL_TEXTURE_RECTANGLE_ARB, target_texture, 0);
-      DCHECK_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_COMPLETE),
-                glCheckFramebufferStatusEXT(GL_FRAMEBUFFER));
-
-      gfx::ScopedUseProgram use_program(program_);
-      glUniform2f(size_location_, size_.width(), size_.height());
-
-      gfx::GLHelper::DrawQuad(vertex_buffer_);
-      // Detach the output texture from the fbo.
-      glFramebufferTexture2DEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                                GL_TEXTURE_RECTANGLE_ARB, 0, 0);
-    }
-  }
-  return true;
+  rgb_converter_ = RGBConverter::GetForCurrentContext();
+  return rgb_converter_->CopyTexImage(io_surface_.get(), size_);
 }
 
 bool GLImageIOSurface::CopyTexSubImage(unsigned target,

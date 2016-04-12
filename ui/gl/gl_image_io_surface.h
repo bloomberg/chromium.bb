@@ -69,6 +69,8 @@ class GL_EXPORT GLImageIOSurface : public GLImage {
   ~GLImageIOSurface() override;
 
  private:
+  class RGBConverter;
+
   const gfx::Size size_;
   const unsigned internalformat_;
   gfx::BufferFormat format_;
@@ -77,13 +79,9 @@ class GL_EXPORT GLImageIOSurface : public GLImage {
   gfx::GenericSharedMemoryId io_surface_id_;
   base::ThreadChecker thread_checker_;
 
-  // GL state to support 420v IOSurface conversion to RGB.
-  unsigned framebuffer_ = 0;
-  unsigned vertex_shader_ = 0;
-  unsigned fragment_shader_ = 0;
-  unsigned program_ = 0;
-  int size_location_ = -1;
-  unsigned vertex_buffer_ = 0;
+  // GL state to support 420v IOSurface conversion to RGB. This is retained
+  // to avoid re-creating the necessary GL programs every frame.
+  scoped_refptr<RGBConverter> rgb_converter_;
 
   DISALLOW_COPY_AND_ASSIGN(GLImageIOSurface);
 };
