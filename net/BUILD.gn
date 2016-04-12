@@ -1704,6 +1704,7 @@ test("net_unittests") {
     sources += [ "base/address_tracker_linux_unittest.cc" ]
     set_sources_assignment_filter(sources_assignment_filter)
     isolate_file = "net_unittests.isolate"
+    shard_timeout = 300
   }
 
   # Symbols for crashes when running tests on swarming.

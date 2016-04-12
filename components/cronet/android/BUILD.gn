@@ -700,6 +700,10 @@ test("cronet_unittests") {
     "//net",
     "//testing/gtest",
   ]
+
+  if (is_android) {
+    shard_timeout = 180
+  }
 }
 
 _package_dir = "$root_out_dir/cronet"

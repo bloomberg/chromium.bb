@@ -2173,6 +2173,9 @@ template("test_runner_script") {
         rebase_path(invoker.isolate_file, root_build_dir),
       ]
     }
+    if (defined(invoker.shard_timeout)) {
+      test_runner_args += [ "--shard-timeout=${invoker.shard_timeout}" ]
+    }
     if (_incremental_install) {
       test_runner_args += [
         "--test-apk-incremental-install-script",

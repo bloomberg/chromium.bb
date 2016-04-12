@@ -566,6 +566,7 @@
           ],
           'variables': {
             'test_suite_name': 'cronet_unittests',
+            'shard_timeout': 180,
           },
           'includes': [
             '../build/apk_test.gypi',
