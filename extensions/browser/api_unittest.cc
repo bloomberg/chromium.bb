@@ -53,6 +53,12 @@ void ApiUnitTest::SetUp() {
                    .Build();
 }
 
+void ApiUnitTest::TearDown() {
+  extension_ = nullptr;
+  contents_.reset();
+  ExtensionsTest::TearDown();
+}
+
 void ApiUnitTest::CreateBackgroundPage() {
   if (!contents_) {
     GURL url = BackgroundInfo::GetBackgroundURL(extension());

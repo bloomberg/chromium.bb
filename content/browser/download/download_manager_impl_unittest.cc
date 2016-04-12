@@ -416,7 +416,6 @@ class MockBrowserContext : public BrowserContext {
   MOCK_METHOD1(CreateZoomLevelDelegateMock,
                ZoomLevelDelegate*(const base::FilePath&));
   MOCK_CONST_METHOD0(IsOffTheRecord, bool());
-  MOCK_METHOD0(GetRequestContext, net::URLRequestContextGetter*());
   MOCK_METHOD0(GetMediaRequestContext,
                net::URLRequestContextGetter*());
   MOCK_METHOD1(GetMediaRequestContextForRenderProcess,

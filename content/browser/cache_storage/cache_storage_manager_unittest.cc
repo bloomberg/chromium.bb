@@ -26,6 +26,7 @@
 #include "content/browser/quota/mock_quota_manager_proxy.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cache_storage_usage_info.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/test/mock_special_storage_policy.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -74,7 +75,8 @@ class CacheStorageManagerTest : public testing::Test {
         "blob", CreateMockBlobProtocolHandler(blob_storage_context->context()));
 
     net::URLRequestContext* url_request_context =
-        browser_context_.GetRequestContext()->GetURLRequestContext();
+        BrowserContext::GetDefaultStoragePartition(&browser_context_)->
+              GetURLRequestContext()->GetURLRequestContext();
 
     url_request_context->set_job_factory(url_request_job_factory_.get());
 
@@ -99,7 +101,8 @@ class CacheStorageManagerTest : public testing::Test {
         quota_manager_proxy_);
 
     cache_manager_->SetBlobParametersForCache(
-        browser_context_.GetRequestContext(),
+        BrowserContext::GetDefaultStoragePartition(&browser_context_)->
+            GetURLRequestContext(),
         blob_storage_context->context()->AsWeakPtr());
   }
 
@@ -336,8 +339,8 @@ class CacheStorageManagerTest : public testing::Test {
   // Temporary directory must be allocated first so as to be destroyed last.
   base::ScopedTempDir temp_dir_;
 
-  TestBrowserContext browser_context_;
   TestBrowserThreadBundle browser_thread_bundle_;
+  TestBrowserContext browser_context_;
   std::unique_ptr<net::URLRequestJobFactoryImpl> url_request_job_factory_;
   storage::BlobStorageContext* blob_storage_context_;
 

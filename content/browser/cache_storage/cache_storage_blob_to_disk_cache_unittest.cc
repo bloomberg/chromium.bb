@@ -14,7 +14,9 @@
 #include "base/test/null_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "content/browser/fileapi/chrome_blob_storage_context.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/disk_cache/disk_cache.h"
@@ -92,10 +94,11 @@ class TestCacheStorageBlobToDiskCache : public CacheStorageBlobToDiskCache {
 class CacheStorageBlobToDiskCacheTest : public testing::Test {
  protected:
   CacheStorageBlobToDiskCacheTest()
-      : browser_context_(new TestBrowserContext()),
-        browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
-
-        url_request_context_getter_(browser_context_->GetRequestContext()),
+      : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
+        browser_context_(new TestBrowserContext()),
+        url_request_context_getter_(
+            BrowserContext::GetDefaultStoragePartition(browser_context_.get())->
+                GetURLRequestContext()),
         cache_storage_blob_to_disk_cache_(
             new TestCacheStorageBlobToDiskCache()),
         data_(kTestData),
@@ -188,8 +191,8 @@ class CacheStorageBlobToDiskCacheTest : public testing::Test {
     callback_called_ = true;
   }
 
-  std::unique_ptr<TestBrowserContext> browser_context_;
   TestBrowserThreadBundle browser_thread_bundle_;
+  std::unique_ptr<TestBrowserContext> browser_context_;
   std::unique_ptr<net::URLRequestJobFactoryImpl> url_request_job_factory_;
   storage::BlobStorageContext* blob_storage_context_;
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;

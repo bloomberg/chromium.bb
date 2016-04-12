@@ -18,6 +18,7 @@
 #include "base/time/time.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_constants.h"
@@ -239,7 +240,8 @@ void ProfileAuthDataTest::PopulateBrowserContext(
 
 net::URLRequestContext* ProfileAuthDataTest::GetRequestContext(
     content::BrowserContext* browser_context) {
-  return browser_context->GetRequestContext()->GetURLRequestContext();
+  return content::BrowserContext::GetDefaultStoragePartition(browser_context)->
+      GetURLRequestContext()->GetURLRequestContext();
 }
 
 net::HttpAuthCache* ProfileAuthDataTest::GetProxyAuth(

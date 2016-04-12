@@ -24,6 +24,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_switches.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
@@ -574,7 +575,10 @@ void InstallVerifier::BeginFetch() {
     ids_to_sign.insert(operation.ids.begin(), operation.ids.end());
   }
 
-  signer_.reset(new InstallSigner(context_->GetRequestContext(), ids_to_sign));
+  signer_.reset(new InstallSigner(
+      content::BrowserContext::GetDefaultStoragePartition(context_)->
+          GetURLRequestContext(),
+      ids_to_sign));
   signer_->GetSignature(base::Bind(&InstallVerifier::SignatureCallback,
                                    weak_factory_.GetWeakPtr()));
 }

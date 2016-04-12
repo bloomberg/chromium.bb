@@ -11,6 +11,7 @@
 #include "chrome/common/channel_info.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/storage_partition.h"
 
 namespace extensions {
 
@@ -19,7 +20,8 @@ namespace extensions {
 ChromeUpdateClientConfig::ChromeUpdateClientConfig(
     content::BrowserContext* context)
     : impl_(base::CommandLine::ForCurrentProcess(),
-            context->GetRequestContext(),
+            content::BrowserContext::GetDefaultStoragePartition(context)->
+                GetURLRequestContext(),
             true) {}
 
 int ChromeUpdateClientConfig::InitialDelay() const {

@@ -94,10 +94,6 @@ bool CastBrowserContext::IsOffTheRecord() const {
   return false;
 }
 
-net::URLRequestContextGetter* CastBrowserContext::GetRequestContext() {
-  return GetDefaultStoragePartition(this)->GetURLRequestContext();
-}
-
 net::URLRequestContextGetter* CastBrowserContext::GetMediaRequestContext() {
   return url_request_context_factory_->GetMediaGetter();
 }

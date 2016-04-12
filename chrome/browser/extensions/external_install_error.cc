@@ -26,6 +26,7 @@
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/grit/generated_resources.h"
+#include "content/public/browser/storage_partition.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/uninstall_reason.h"
@@ -301,7 +302,10 @@ ExternalInstallError::ExternalInstallError(
       ExtensionInstallPrompt::EXTERNAL_INSTALL_PROMPT));
 
   webstore_data_fetcher_.reset(new WebstoreDataFetcher(
-      this, browser_context_->GetRequestContext(), GURL(), extension_id_));
+      this,
+      content::BrowserContext::GetDefaultStoragePartition(browser_context_)->
+          GetURLRequestContext(),
+      GURL(), extension_id_));
   webstore_data_fetcher_->Start();
 }
 

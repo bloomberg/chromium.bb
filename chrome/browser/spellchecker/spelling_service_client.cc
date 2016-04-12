@@ -23,6 +23,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/storage_partition.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_fetcher.h"
@@ -110,7 +111,9 @@ bool SpellingServiceClient::RequestTextCheck(
   net::URLFetcher* fetcher = CreateURLFetcher(url).release();
   data_use_measurement::DataUseUserData::AttachToFetcher(
       fetcher, data_use_measurement::DataUseUserData::SPELL_CHECKER);
-  fetcher->SetRequestContext(context->GetRequestContext());
+  fetcher->SetRequestContext(
+      content::BrowserContext::GetDefaultStoragePartition(context)->
+          GetURLRequestContext());
   fetcher->SetUploadData("application/json", request);
   fetcher->SetLoadFlags(
       net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES);

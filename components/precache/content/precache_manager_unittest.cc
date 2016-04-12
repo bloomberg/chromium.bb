@@ -141,6 +141,15 @@ class PrecacheManagerTest : public testing::Test {
                  base::Bind(&TestURLFetcherCallback::CreateURLFetcher,
                             base::Unretained(&url_callback_))) {}
 
+  ~PrecacheManagerTest() {
+    // precache_manager_'s constructor releases a PrecacheDatabase and deletes
+    // it on the DB thread. PrecacheDatabase already has a pending Init call
+    // which will assert in debug builds because the directory passed to it is
+    // deleted. So manually ensure that the task is run before browser_context_
+    // is destructed.
+    base::MessageLoop::current()->RunUntilIdle();
+  }
+
  protected:
   void SetUp() override {
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
@@ -156,8 +165,8 @@ class PrecacheManagerTest : public testing::Test {
   }
 
   // Must be declared first so that it is destroyed last.
-  content::TestBrowserContext browser_context_;
   content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::TestBrowserContext browser_context_;
   PrecacheManagerUnderTest precache_manager_;
   TestURLFetcherCallback url_callback_;
   net::FakeURLFetcherFactory factory_;

@@ -50,6 +50,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/gpu_data_manager.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "media/audio/audio_manager.h"
@@ -399,7 +400,9 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
       metrics::CastMetricsServiceClient::Create(
           content::BrowserThread::GetBlockingPool(),
           cast_browser_process_->pref_service(),
-          cast_browser_process_->browser_context()->GetRequestContext()));
+          content::BrowserContext::GetDefaultStoragePartition(
+              cast_browser_process_->browser_context())->
+                  GetURLRequestContext()));
 
   if (!PlatformClientAuth::Initialize())
     LOG(ERROR) << "PlatformClientAuth::Initialize failed.";

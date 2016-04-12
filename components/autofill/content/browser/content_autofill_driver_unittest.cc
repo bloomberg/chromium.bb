@@ -23,6 +23,7 @@
 #include "components/autofill/core/common/form_data_predictions.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_details.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/frame_navigate_params.h"
 #include "content/public/test/mock_render_process_host.h"
@@ -204,7 +205,8 @@ TEST_F(ContentAutofillDriverTest, GetURLRequestContext) {
   net::URLRequestContextGetter* request_context =
       driver_->GetURLRequestContext();
   net::URLRequestContextGetter* expected_request_context =
-      web_contents()->GetBrowserContext()->GetRequestContext();
+      content::BrowserContext::GetDefaultStoragePartition(
+          web_contents()->GetBrowserContext())->GetURLRequestContext();
   EXPECT_EQ(request_context, expected_request_context);
 }
 

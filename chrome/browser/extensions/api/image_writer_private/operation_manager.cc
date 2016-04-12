@@ -19,6 +19,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/storage_partition.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_registry.h"
@@ -79,13 +80,14 @@ void OperationManager::StartWriteFromUrl(
     return callback.Run(false, error::kOperationAlreadyInProgress);
   }
 
-  scoped_refptr<Operation> operation(
-      new WriteFromUrlOperation(weak_factory_.GetWeakPtr(),
-                                extension_id,
-                                browser_context_->GetRequestContext(),
-                                url,
-                                hash,
-                                device_path));
+  scoped_refptr<Operation> operation(new WriteFromUrlOperation(
+      weak_factory_.GetWeakPtr(),
+      extension_id,
+      content::BrowserContext::GetDefaultStoragePartition(browser_context_)->
+          GetURLRequestContext(),
+      url,
+      hash,
+      device_path));
   operations_[extension_id] = operation;
   BrowserThread::PostTask(BrowserThread::FILE,
                           FROM_HERE,

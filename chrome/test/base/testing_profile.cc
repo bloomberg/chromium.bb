@@ -792,10 +792,6 @@ DownloadManagerDelegate* TestingProfile::GetDownloadManagerDelegate() {
   return NULL;
 }
 
-net::URLRequestContextGetter* TestingProfile::GetRequestContext() {
-  return GetDefaultStoragePartition(this)->GetURLRequestContext();
-}
-
 net::URLRequestContextGetter* TestingProfile::GetMediaRequestContext() {
   return NULL;
 }
@@ -811,6 +807,10 @@ TestingProfile::GetMediaRequestContextForStoragePartition(
     const base::FilePath& partition_path,
     bool in_memory) {
   return NULL;
+}
+
+net::URLRequestContextGetter* TestingProfile::GetRequestContext() {
+  return GetDefaultStoragePartition(this)->GetURLRequestContext();
 }
 
 net::URLRequestContextGetter* TestingProfile::GetRequestContextForExtensions() {

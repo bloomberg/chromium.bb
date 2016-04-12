@@ -93,25 +93,24 @@ bool HeadlessBrowserContext::IsOffTheRecord() const {
   return false;
 }
 
-net::URLRequestContextGetter* HeadlessBrowserContext::GetRequestContext() {
-  return GetDefaultStoragePartition(this)->GetURLRequestContext();
-}
-
 net::URLRequestContextGetter* HeadlessBrowserContext::GetMediaRequestContext() {
-  return GetRequestContext();
+  return content::BrowserContext::GetDefaultStoragePartition(this)->
+      GetURLRequestContext();
 }
 
 net::URLRequestContextGetter*
 HeadlessBrowserContext::GetMediaRequestContextForRenderProcess(
     int renderer_child_id) {
-  return GetRequestContext();
+  return content::BrowserContext::GetDefaultStoragePartition(this)->
+      GetURLRequestContext();
 }
 
 net::URLRequestContextGetter*
 HeadlessBrowserContext::GetMediaRequestContextForStoragePartition(
     const base::FilePath& partition_path,
     bool in_memory) {
-  return GetRequestContext();
+  return content::BrowserContext::GetDefaultStoragePartition(this)->
+      GetURLRequestContext();
 }
 
 content::ResourceContext* HeadlessBrowserContext::GetResourceContext() {
