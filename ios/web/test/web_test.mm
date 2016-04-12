@@ -159,68 +159,21 @@ void WebTestWithWebController::WaitForCondition(ConditionBlock condition) {
 }
 
 NSString* WebTestWithWebController::EvaluateJavaScriptAsString(
-    NSString* script) const {
+    NSString* script) {
+  return RunJavaScript(script);
+}
+
+NSString* WebTestWithWebController::RunJavaScript(NSString* script) {
   __block base::scoped_nsobject<NSString> evaluationResult;
   [webController_ evaluateJavaScript:script
-                 stringResultHandler:^(NSString* result, NSError* error) {
-                     DCHECK([result isKindOfClass:[NSString class]]);
-                     evaluationResult.reset([result copy]);
+                 stringResultHandler:^(NSString* result, NSError*) {
+                   DCHECK([result isKindOfClass:[NSString class]]);
+                   evaluationResult.reset([result copy]);
                  }];
   base::test::ios::WaitUntilCondition(^bool() {
     return evaluationResult;
   });
   return [[evaluationResult retain] autorelease];
-}
-
-NSString* WebTestWithWebController::RunJavaScript(NSString* script) {
-  // The platform JSON serializer is used to safely escape the |script| and
-  // decode the result while preserving unicode encoding that can be lost when
-  // converting to Chromium string types.
-  NSError* error = nil;
-  NSData* data = [NSJSONSerialization dataWithJSONObject:@[ script ]
-                                                 options:0
-                                                   error:&error];
-  DCHECK(data && !error);
-  base::scoped_nsobject<NSString> jsonString(
-      [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
-  // 'eval' is used because it is the only way to stay 100% compatible with
-  // stringByEvaluatingJavaScriptFromString in the event that the script is a
-  // statement.
-  NSString* wrappedScript = [NSString stringWithFormat:
-      @"try {"
-      @"  JSON.stringify({"  // Expression for the success case.
-      @"    result: '' + eval(%@[0]),"  // '' + converts result to string.
-      @"    toJSON: null"  // Use default JSON stringifier.
-      @"  });"
-      @"} catch(e) {"
-      @"  JSON.stringify({"  // Expression for the exception case.
-      @"    exception: e.toString(),"
-      @"    toJSON: null"  // Use default JSON stringifier.
-      @"  });"
-      @"}", jsonString.get()];
-
-  // Run asyncronious JavaScript evaluation and wait for its completion.
-  __block base::scoped_nsobject<NSData> evaluationData;
-  [webController_ evaluateJavaScript:wrappedScript
-                 stringResultHandler:^(NSString* result, NSError* error) {
-                   DCHECK([result length]);
-                   evaluationData.reset([[result dataUsingEncoding:
-                       NSUTF8StringEncoding] retain]);
-                 }];
-  base::test::ios::WaitUntilCondition(^bool() {
-    return evaluationData;
-  });
-
-  // The output is wrapped in a JSON dictionary to distinguish between an
-  // exception string and a result string.
-  NSDictionary* dictionary = [NSJSONSerialization
-      JSONObjectWithData:evaluationData
-                 options:0
-                   error:&error];
-  DCHECK(dictionary && !error);
-  NSString* exception = [dictionary objectForKey:@"exception"];
-  CHECK(!exception) << "Script error: " << [exception UTF8String];
-  return [dictionary objectForKey:@"result"];
 }
 
 CRWWebController* WebTestWithWebController::CreateWebController() {

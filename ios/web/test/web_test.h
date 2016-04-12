@@ -76,7 +76,7 @@ class WebTestWithWebController : public WebTest,
   // background tasks have completed and |condition| evaluates to true.
   void WaitForCondition(ConditionBlock condition);
   // Evaluates JavaScript and returns result as a string.
-  NSString* EvaluateJavaScriptAsString(NSString* script) const;
+  NSString* EvaluateJavaScriptAsString(NSString* script);
   // Runs the given JavaScript and returns the result as a string. This method
   // is a drop-in replacement for stringByEvaluatingJavaScriptFromString with
   // the additional functionality that any JavaScript exceptions are caught and
