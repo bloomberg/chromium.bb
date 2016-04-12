@@ -130,10 +130,6 @@ Polymer({
     },
   },
 
-  listeners: {
-    'focus': 'onFocus_',
-  },
-
   attached: function() {
     // isRTL() only works after i18n_template.js runs to set <html dir>.
     // Set the back button icon based on text direction.
