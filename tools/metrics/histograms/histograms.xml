@@ -87769,6 +87769,10 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="Net.DailyContentLength"/>
   <affected-histogram name="Net.DailyContentLength_DataReductionProxyEnabled"/>
   <affected-histogram name="Net.DailyContentLength_ViaDataReductionProxy"/>
+  <affected-histogram
+      name="Net.DailyContentSavingPercent_DataReductionProxyEnabled"/>
+  <affected-histogram
+      name="Net.DailyContentSavingPercent_ViaDataReductionProxy"/>
   <affected-histogram name="Net.DailyOriginalContentLength"/>
   <affected-histogram
       name="Net.DailyOriginalContentLength_DataReductionProxyEnabled"/>
