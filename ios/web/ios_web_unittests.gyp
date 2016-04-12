@@ -47,7 +47,6 @@
         'string_util_unittest.cc',
         'test/crw_fake_web_controller_observer_unittest.mm',
         'test/run_all_unittests.cc',
-        'ui_web_view_util_unittest.mm',
         'url_scheme_util_unittest.mm',
         'url_util_unittest.cc',
         'web_state/crw_pass_kit_downloader_unittest.mm',

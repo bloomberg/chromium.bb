@@ -36,7 +36,6 @@
 #import "ios/web/public/web_state/js/crw_js_injection_manager.h"
 #import "ios/web/public/web_state/ui/crw_native_content_provider.h"
 #import "ios/web/public/web_state/ui/crw_web_view_content_view.h"
-#import "ios/web/ui_web_view_util.h"
 #include "ios/web/web_state/blocked_popup_info.h"
 #import "ios/web/web_state/error_translation_util.h"
 #include "ios/web/web_state/frame_info.h"
