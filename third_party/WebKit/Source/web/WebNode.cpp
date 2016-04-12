@@ -62,29 +62,6 @@ namespace blink {
 
 namespace {
 
-class NodeDispatchEventTask: public SuspendableTask {
-    WTF_MAKE_NONCOPYABLE(NodeDispatchEventTask);
-public:
-    NodeDispatchEventTask(const WebPrivatePtr<Node>& node, WebDOMEvent event)
-        : m_event(event)
-    {
-        m_node = node;
-    }
-
-    ~NodeDispatchEventTask()
-    {
-        m_node.reset();
-    }
-
-    void run() override
-    {
-        m_node->dispatchEvent(m_event);
-    }
-private:
-    WebPrivatePtr<Node> m_node;
-    WebDOMEvent m_event;
-};
-
 class NodeDispatchSimulatedClickTask: public SuspendableTask {
     WTF_MAKE_NONCOPYABLE(NodeDispatchSimulatedClickTask);
 public:
@@ -214,12 +191,6 @@ bool WebNode::isDocumentNode() const
 bool WebNode::isDocumentTypeNode() const
 {
     return m_private->getNodeType() == Node::DOCUMENT_TYPE_NODE;
-}
-
-void WebNode::dispatchEvent(const WebDOMEvent& event)
-{
-    if (!event.isNull())
-        m_private->getExecutionContext()->postSuspendableTask(adoptPtr(new NodeDispatchEventTask(m_private, event)));
 }
 
 void WebNode::simulateClick()

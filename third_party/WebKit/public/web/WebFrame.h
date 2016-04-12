@@ -61,6 +61,7 @@ namespace blink {
 class Frame;
 class OpenedFrameTracker;
 class Visitor;
+class WebDOMEvent;
 class WebData;
 class WebDataSource;
 class WebDocument;

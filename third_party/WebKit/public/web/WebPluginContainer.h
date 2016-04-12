@@ -45,6 +45,7 @@ class WebString;
 class WebURL;
 class WebURLRequest;
 class WebLayer;
+class WebDOMMessageEvent;
 struct WebPoint;
 struct WebRect;
 
@@ -59,7 +60,12 @@ public:
     // Returns the element containing this plugin.
     virtual WebElement element() = 0;
 
+    // Synchronously dispatches the progress event.
     virtual void dispatchProgressEvent(const WebString& type, bool lengthComputable, unsigned long long loaded, unsigned long long total, const WebString& url) = 0;
+
+    // Enqueue's a task to dispatch the event.
+    // TODO(esprehn): Why are progress events sync and message events async!?
+    virtual void enqueueMessageEvent(const WebDOMMessageEvent&) = 0;
 
     virtual void invalidate() = 0;
     virtual void invalidateRect(const WebRect&) = 0;

@@ -317,7 +317,7 @@ void LoadablePluginPlaceholder::DidFinishIconRepositionForTestingCallback() {
           &value, element.document().frame()->mainWorldScriptContext()));
   blink::WebDOMMessageEvent msg_event(message_data);
 
-  element.dispatchEvent(msg_event);
+  plugin()->container()->enqueueMessageEvent(msg_event);
 }
 
 void LoadablePluginPlaceholder::SetPluginInfo(

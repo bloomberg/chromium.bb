@@ -37,7 +37,9 @@
 #include "core/HTMLNames.h"
 #include "core/clipboard/DataObject.h"
 #include "core/clipboard/DataTransfer.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/events/DragEvent.h"
+#include "core/events/EventQueue.h"
 #include "core/events/GestureEvent.h"
 #include "core/events/KeyboardEvent.h"
 #include "core/events/MouseEvent.h"
@@ -87,6 +89,7 @@
 #include "public/platform/WebURL.h"
 #include "public/platform/WebURLError.h"
 #include "public/platform/WebURLRequest.h"
+#include "public/web/WebDOMMessageEvent.h"
 #include "public/web/WebElement.h"
 #include "public/web/WebInputEvent.h"
 #include "public/web/WebPlugin.h"
@@ -400,6 +403,12 @@ void WebPluginContainerImpl::dispatchProgressEvent(const WebString& type, bool l
         event = ResourceProgressEvent::create(type, lengthComputable, loaded, total, url);
     }
     m_element->dispatchEvent(event);
+}
+
+void WebPluginContainerImpl::enqueueMessageEvent(const WebDOMMessageEvent& event)
+{
+    static_cast<Event*>(event)->setTarget(m_element);
+    m_element->getExecutionContext()->getEventQueue()->enqueueEvent(event);
 }
 
 void WebPluginContainerImpl::invalidate()

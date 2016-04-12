@@ -372,7 +372,7 @@ void MessageChannel::PostMessageToJavaScriptImpl(
   //     TODO(dmichael):  Add origin if we change to a more iframe-like origin
   //                      policy (see crbug.com/81537)
   WebDOMMessageEvent msg_event(message_data);
-  container->element().dispatchEvent(msg_event);
+  container->enqueueMessageEvent(msg_event);
 }
 
 PluginObject* MessageChannel::GetPluginObject(v8::Isolate* isolate) {

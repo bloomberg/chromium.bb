@@ -98,6 +98,7 @@ public:
     // WebPluginContainer methods
     WebElement element() override;
     void dispatchProgressEvent(const WebString& type, bool lengthComputable, unsigned long long loaded, unsigned long long total, const WebString& url) override;
+    void enqueueMessageEvent(const WebDOMMessageEvent&) override;
     void invalidate() override;
     void invalidateRect(const WebRect&) override;
     void scrollRect(const WebRect&) override;
