@@ -219,7 +219,7 @@ bool TaskQueueImpl::PostDelayedTaskImpl(
 }
 
 void TaskQueueImpl::PushOntoDelayedIncomingQueueFromMainThread(
-    Task&& pending_task,
+    const Task& pending_task,
     base::TimeTicks now) {
   main_thread_only().task_queue_manager->DidQueueTask(pending_task);
 
@@ -230,7 +230,8 @@ void TaskQueueImpl::PushOntoDelayedIncomingQueueFromMainThread(
   TraceQueueSize(false);
 }
 
-void TaskQueueImpl::PushOntoDelayedIncomingQueueLocked(Task&& pending_task) {
+void TaskQueueImpl::PushOntoDelayedIncomingQueueLocked(
+    const Task& pending_task) {
   any_thread().task_queue_manager->DidQueueTask(pending_task);
 
   int thread_hop_task_sequence_number =
@@ -242,7 +243,8 @@ void TaskQueueImpl::PushOntoDelayedIncomingQueueLocked(Task&& pending_task) {
       thread_hop_task_sequence_number));
 }
 
-void TaskQueueImpl::PushOntoImmediateIncomingQueueLocked(Task&& pending_task) {
+void TaskQueueImpl::PushOntoImmediateIncomingQueueLocked(
+    const Task& pending_task) {
   if (any_thread().immediate_incoming_queue.empty())
     any_thread().time_domain->RegisterAsUpdatableTaskQueue(this);
   if (any_thread().pump_policy == PumpPolicy::AUTO &&
@@ -254,9 +256,9 @@ void TaskQueueImpl::PushOntoImmediateIncomingQueueLocked(Task&& pending_task) {
   TraceQueueSize(true);
 }
 
-void TaskQueueImpl::ScheduleDelayedWorkTask(const Task pending_task) {
+void TaskQueueImpl::ScheduleDelayedWorkTask(const Task& pending_task) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
-  main_thread_only().delayed_incoming_queue.push(std::move(pending_task));
+  main_thread_only().delayed_incoming_queue.push(pending_task);
   main_thread_only().time_domain->ScheduleDelayedWork(
       this, pending_task.delayed_run_time,
       main_thread_only().time_domain->Now());

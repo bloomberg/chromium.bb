@@ -220,14 +220,14 @@ class SCHEDULER_EXPORT TaskQueueImpl final : public TaskQueue {
 
   // Push the task onto the |delayed_incoming_queue|. Lock-free main thread
   // only fast path.
-  void PushOntoDelayedIncomingQueueFromMainThread(Task&& pending_task,
+  void PushOntoDelayedIncomingQueueFromMainThread(const Task& pending_task,
                                                   base::TimeTicks now);
 
   // Push the task onto the |delayed_incoming_queue|.  Slow path from other
   // threads.
-  void PushOntoDelayedIncomingQueueLocked(Task&& pending_task);
+  void PushOntoDelayedIncomingQueueLocked(const Task& pending_task);
 
-  void ScheduleDelayedWorkTask(const Task pending_task);
+  void ScheduleDelayedWorkTask(const Task& pending_task);
 
   // Enqueues any delayed tasks which should be run now on the
   // |delayed_work_queue|.  Must be called from the main thread.
@@ -257,7 +257,7 @@ class SCHEDULER_EXPORT TaskQueueImpl final : public TaskQueue {
   // Push the task onto the |immediate_incoming_queue| and for auto pumped
   // queues it calls MaybePostDoWorkOnMainRunner if the Incoming queue was
   // empty.
-  void PushOntoImmediateIncomingQueueLocked(Task&& pending_task);
+  void PushOntoImmediateIncomingQueueLocked(const Task& pending_task);
 
   void TraceQueueSize(bool is_locked) const;
   static void QueueAsValueInto(const std::queue<Task>& queue,

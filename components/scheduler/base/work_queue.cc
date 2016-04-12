@@ -41,14 +41,14 @@ bool WorkQueue::GetFrontTaskEnqueueOrder(EnqueueOrder* enqueue_order) const {
   return true;
 }
 
-void WorkQueue::Push(TaskQueueImpl::Task&& task) {
+void WorkQueue::Push(const TaskQueueImpl::Task& task) {
   bool was_empty = work_queue_.empty();
   work_queue_.push(task);
   if (was_empty && work_queue_sets_)
     work_queue_sets_->OnPushQueue(this);
 }
 
-void WorkQueue::PushAndSetEnqueueOrder(TaskQueueImpl::Task&& task,
+void WorkQueue::PushAndSetEnqueueOrder(const TaskQueueImpl::Task& task,
                                        EnqueueOrder enqueue_order) {
   bool was_empty = work_queue_.empty();
   work_queue_.push(task);
