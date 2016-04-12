@@ -1506,6 +1506,9 @@ TEST_F(WindowTreeClientTest, SetWindowVisibilityNotifications) {
   Id window_1_1 = wt_client1()->NewWindow(1);
   ASSERT_TRUE(window_1_1);
   ASSERT_TRUE(wt_client1()->SetWindowVisibility(window_1_1, true));
+  // Setting to the same value should return true.
+  EXPECT_TRUE(wt_client1()->SetWindowVisibility(window_1_1, true));
+
   Id window_1_2 = wt_client1()->NewWindow(2);
   ASSERT_TRUE(window_1_2);
   ASSERT_TRUE(wt_client1()->SetWindowVisibility(window_1_2, true));
