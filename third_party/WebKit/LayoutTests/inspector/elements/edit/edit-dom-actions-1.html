@@ -1,0 +1,92 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/elements-test.js"></script>
+<script src="edit-dom-test.js"></script>
+<script>
+
+function test()
+{
+    // Save time on style updates.
+    WebInspector.StylesSidebarPane.prototype.update = function() {};
+    WebInspector.MetricsSidebarPane.prototype.update = function() {};
+
+    InspectorTest.runTestSuite([
+        function testSetUp(next)
+        {
+            InspectorTest.expandElementsTree(next);
+        },
+
+        function testRemove(next)
+        {
+            InspectorTest.domActionTestForNodeId("testRemove", "node-to-remove", testBody, next);
+
+            function testBody(node, done)
+            {
+                var treeElement = InspectorTest.firstElementsTreeOutline().findTreeElement(node);
+                treeElement.remove();
+                InspectorTest.runAfterPendingDispatches(done);
+            }
+        },
+
+        function testSetNodeName(next)
+        {
+            InspectorTest.domActionTestForNodeId("testSetNodeName", "node-to-set-name", testBody, next);
+
+            function testBody(node, done)
+            {
+                InspectorTest.editNodePartAndRun(node, "webkit-html-tag-name", "span", done);
+            }
+        },
+
+        function testSetNodeNameInput(next)
+        {
+            InspectorTest.domActionTestForNodeId("testSetNodeNameInput", "node-to-set-name-input", testBody, next);
+
+            function testBody(node, done)
+            {
+                InspectorTest.editNodePartAndRun(node, "webkit-html-tag-name", "input", done);
+            }
+        },
+
+        function testSetNodeValue(next)
+        {
+            InspectorTest.domActionTestForNodeId("testSetNodeValue", "node-to-set-value", testBody, next);
+
+            function testBody(node, done)
+            {
+                InspectorTest.editNodePartAndRun(node, "webkit-html-text-node", "  \n  Edited Text  \n  ", done);
+            }
+        },
+    ]);
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests that user can mutate DOM by means of elements panel.
+</p>
+
+<div>
+    <div id="testRemove">
+        <div id="node-to-remove"></div>
+    </div>
+
+    <div id="testSetNodeName">
+        <div id="node-to-set-name"></div>
+    </div>
+
+    <div id="testSetNodeNameInput">
+        <div id="node-to-set-name-input"></div>
+    </div>
+
+    <div id="testSetNodeValue">
+        <div id="node-to-set-value">
+          Text
+        </div>
+    </div>
+</div>
+</body>
+</html>
