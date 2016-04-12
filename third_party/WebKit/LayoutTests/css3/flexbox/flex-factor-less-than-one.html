@@ -1,6 +1,12 @@
 <!DOCTYPE html>
 <link href="resources/flexbox.css" rel="stylesheet">
 <style>
+
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
 .container {
   height: 100px;
   width: 100px;
@@ -153,6 +159,19 @@
   <div class="child-flex-grow-0-75 basis-0" data-expected-width="90">
     <div style="width: 90px;"></div>
   </div>
+</div>
+
+<!-- centering should still center; same for other justify-content values -->
+<div class="flexbox container justify-content-center">
+  <div class="child-flex-grow-0-5" data-expected-width="50" data-offset-x="26"></div>
+</div>
+
+<div class="flexbox container justify-content-space-around">
+  <div class="child-flex-grow-0-5" data-expected-width="50" data-offset-x="26"></div>
+</div>
+
+<div class="flexbox container justify-content-flex-end">
+  <div class="child-flex-grow-0-5" data-expected-width="50" data-offset-x="51"></div>
 </div>
 
 </body>

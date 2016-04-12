@@ -794,7 +794,7 @@ void LayoutFlexibleBox::layoutFlexItems(bool relayoutChildren, SubtreeLayoutScop
         // availableFreeSpace is the initial amount of free space in this flexbox.
         // remainingFreeSpace starts out at the same value but as we place and lay out
         // flex items we subtract from it. Note that both values can be negative.
-        LayoutUnit availableFreeSpace = containerMainInnerSize - sumFlexBaseSize;
+        const LayoutUnit availableFreeSpace = containerMainInnerSize - sumFlexBaseSize;
         LayoutUnit remainingFreeSpace = availableFreeSpace;
         FlexSign flexSign = (sumHypotheticalMainSize < containerMainInnerSize) ? PositiveFlexibility : NegativeFlexibility;
         InflexibleFlexItemSize inflexibleItems;
@@ -804,6 +804,16 @@ void LayoutFlexibleBox::layoutFlexItems(bool relayoutChildren, SubtreeLayoutScop
             ASSERT(inflexibleItems.size() > 0);
         }
 
+        // Recalculate the remaining free space. The adjustment for flex factors between 0..1 means we can't just
+        // use remainingFreeSpace here.
+        remainingFreeSpace = containerMainInnerSize;
+        for (size_t i = 0; i < orderedChildren.size(); ++i) {
+            LayoutBox* child = orderedChildren[i];
+            if (child->isOutOfFlowPositioned())
+                continue;
+            remainingFreeSpace -= (childSizes[i] + mainAxisBorderAndPaddingExtentForChild(*child)
+                + (isHorizontalFlow() ? child->marginWidth() : child->marginHeight()));
+        }
         layoutAndPlaceChildren(crossAxisOffset, orderedChildren, childSizes, remainingFreeSpace, relayoutChildren, layoutScope, lineContexts);
     }
     if (hasLineIfEmpty()) {
