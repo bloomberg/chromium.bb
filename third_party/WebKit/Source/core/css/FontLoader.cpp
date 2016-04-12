@@ -48,11 +48,15 @@ FontLoader::FontLoader(CSSFontSelector* fontSelector, Document* document)
     , m_fontSelector(fontSelector)
     , m_document(document)
 {
+    ThreadState::current()->registerPreFinalizer(this);
 }
 
 FontLoader::~FontLoader()
 {
-#if ENABLE(OILPAN)
+}
+
+void FontLoader::dispose()
+{
     if (!m_document) {
         ASSERT(m_fontsToBeginLoading.isEmpty());
         return;
@@ -61,7 +65,6 @@ FontLoader::~FontLoader()
     // This will decrement the request counts on the ResourceFetcher for all the
     // fonts that were pending at the time the FontLoader dies.
     clearPendingFonts();
-#endif
 }
 
 void FontLoader::addFontToBeginLoading(FontResource* fontResource)

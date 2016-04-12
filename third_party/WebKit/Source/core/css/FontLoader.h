@@ -17,21 +17,19 @@ class Document;
 class FontResource;
 
 class FontLoader : public GarbageCollectedFinalized<FontLoader> {
+    USING_PRE_FINALIZER(FontLoader, dispose);
 public:
     static FontLoader* create(CSSFontSelector* fontSelector, Document* document)
     {
         return new FontLoader(fontSelector, document);
     }
     ~FontLoader();
+    void dispose();
 
     void addFontToBeginLoading(FontResource*);
     void loadPendingFonts();
     void fontFaceInvalidated();
     void didFailToDecode(FontResource*);
-
-#if !ENABLE(OILPAN)
-    void clearDocumentAndFontSelector();
-#endif
 
     DECLARE_TRACE();
 
