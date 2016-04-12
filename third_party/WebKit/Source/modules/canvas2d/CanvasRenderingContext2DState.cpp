@@ -321,6 +321,9 @@ SkImageFilter* CanvasRenderingContext2DState::getFilter(Element* styleResolution
 
         SkiaImageFilterBuilder imageFilterBuilder;
         FilterEffect* lastEffect = filterEffectBuilder->lastEffect();
+        if (lastEffect) {
+            lastEffect->determineFilterPrimitiveSubregion();
+        }
         m_resolvedFilter = imageFilterBuilder.build(lastEffect, ColorSpaceDeviceRGB);
         if (m_resolvedFilter) {
             updateFilterReferences(toHTMLCanvasElement(styleResolutionHost), context, filterStyle->filter());

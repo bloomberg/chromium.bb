@@ -221,19 +221,9 @@ SkImageFilter::CropRect FilterEffect::getCropRect() const
         FloatRect rect = filterPrimitiveSubregion();
         rect.scale(getFilter()->scale());
         return SkImageFilter::CropRect(rect);
+    } else {
+        return SkImageFilter::CropRect(SkRect::MakeEmpty(), 0);
     }
-
-    uint32_t flags = 0;
-    FloatRect rect = applyEffectBoundaries(rect);
-
-    rect.scale(getFilter()->scale());
-
-    flags |= hasX() ? SkImageFilter::CropRect::kHasLeft_CropEdge : 0;
-    flags |= hasY() ? SkImageFilter::CropRect::kHasTop_CropEdge : 0;
-    flags |= hasWidth() ? SkImageFilter::CropRect::kHasWidth_CropEdge : 0;
-    flags |= hasHeight() ? SkImageFilter::CropRect::kHasHeight_CropEdge : 0;
-
-    return SkImageFilter::CropRect(rect, flags);
 }
 
 static int getImageFilterIndex(ColorSpace colorSpace, bool requiresPMColorValidation)
