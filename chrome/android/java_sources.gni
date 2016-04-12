@@ -292,6 +292,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/download/DownloadNotifier.java",
   "java/src/org/chromium/chrome/browser/download/DownloadSharedPreferenceEntry.java",
   "java/src/org/chromium/chrome/browser/download/DownloadSnackbarController.java",
+  "java/src/org/chromium/chrome/browser/download/DownloadUmaStatsEntry.java",
   "java/src/org/chromium/chrome/browser/download/OMADownloadHandler.java",
   "java/src/org/chromium/chrome/browser/download/SystemDownloadNotifier.java",
   "java/src/org/chromium/chrome/browser/externalauth/ExternalAuthUtils.java",

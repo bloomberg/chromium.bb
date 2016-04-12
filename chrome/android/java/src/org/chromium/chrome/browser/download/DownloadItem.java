@@ -15,6 +15,7 @@ public class DownloadItem {
     private boolean mUseAndroidDownloadManager;
     private DownloadInfo mDownloadInfo;
     private long mDownloadId = INVALID_DOWNLOAD_ID;
+    private long mStartTime;
 
     public DownloadItem(boolean useAndroidDownloadManager, DownloadInfo info) {
         mUseAndroidDownloadManager = useAndroidDownloadManager;
@@ -78,5 +79,23 @@ public class DownloadItem {
      */
     public void setDownloadInfo(DownloadInfo info) {
         mDownloadInfo = info;
+    }
+
+    /**
+     * Sets the download start time.
+     *
+     * @param startTime Download start time from System.currentTimeMillis().
+     */
+    public void setStartTime(long startTime) {
+        mStartTime = startTime;
+    }
+
+    /**
+     * Gets the download start time.
+     *
+     * @return Download start time from System.currentTimeMillis().
+     */
+    public long getStartTime() {
+        return mStartTime;
     }
 }

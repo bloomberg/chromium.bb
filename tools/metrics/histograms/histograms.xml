@@ -22484,11 +22484,25 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="MobileDownload.BytesDownloaded" units="KB">
+  <owner>qinmin@chromium.org</owner>
+  <summary>
+    Android: Records the total data downloaded by completion status.
+  </summary>
+</histogram>
+
 <histogram name="MobileDownload.DownloadResumption"
     enum="MobileDownloadResumption">
   <owner>qinmin@chromium.org</owner>
   <summary>
     Android: Records user interaction on the download resumption button.
+  </summary>
+</histogram>
+
+<histogram name="MobileDownload.DownloadTime" units="ms">
+  <owner>qinmin@chromium.org</owner>
+  <summary>
+    Android: Records the total time for a download by completion status.
   </summary>
 </histogram>
 
@@ -22498,6 +22512,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     Android: Records the reason that Chrome fails to intercept a download and
     pass it to the Android DownloadManager.
+  </summary>
+</histogram>
+
+<histogram name="MobileDownload.InterruptionsCount">
+  <owner>qinmin@chromium.org</owner>
+  <summary>
+    Android: Records the total interruptions for a download by completion
+    status.
   </summary>
 </histogram>
 
@@ -89130,6 +89152,30 @@ To add a new entry, add it with any value and run test to compute valid value.
              capabilities, between EnumerateDevices() and
              OnDevicesInfoEnumerated()."/>
   <affected-histogram name="Media.VideoCaptureManager"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="MobileDownloadBytesDownloadedTypes" separator=".">
+  <suffix name="ChromeNetworkStack.Failure"/>
+  <suffix name="ChromeNetworkStack.Success"/>
+  <suffix name="DownloadManager.Failure"/>
+  <suffix name="DownloadManager.Success"/>
+  <affected-histogram name="MobileDownload.BytesDownloaded"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="MobileDownloadDownloadTimeTypes" separator=".">
+  <suffix name="ChromeNetworkStack.Cancel"/>
+  <suffix name="ChromeNetworkStack.Failure"/>
+  <suffix name="ChromeNetworkStack.Success"/>
+  <suffix name="DownloadManager.Failure"/>
+  <suffix name="DownloadManager.Success"/>
+  <affected-histogram name="MobileDownload.DownloadTime"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="MobileDownloadInterruptionsCountTypes" separator=".">
+  <suffix name="ChromeNetworkStack.Cancel"/>
+  <suffix name="ChromeNetworkStack.Failure"/>
+  <suffix name="ChromeNetworkStack.Success"/>
+  <affected-histogram name="MobileDownload.InterruptionsCount"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="MobileFreSignInChoiceEntryType" separator=".">

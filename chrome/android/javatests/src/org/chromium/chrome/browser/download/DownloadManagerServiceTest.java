@@ -17,6 +17,7 @@ import android.test.suitebuilder.annotation.SmallTest;
 import android.util.Log;
 import android.util.Pair;
 
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
@@ -279,6 +280,12 @@ public class DownloadManagerServiceTest extends InstrumentationTestCase {
         protected void resumeDownload(DownloadItem item, boolean hasUserGesture) {
             mResumed = true;
         }
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        RecordHistogram.disableForTests();
     }
 
     private static Handler getTestHandler() {
