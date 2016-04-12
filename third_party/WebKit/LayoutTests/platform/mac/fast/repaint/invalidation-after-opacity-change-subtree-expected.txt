@@ -5,41 +5,117 @@
       "bounds": [785, 2350],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [8, 2195, 777, 109],
-        [8, 2195, 777, 109],
-        [8, 2195, 653, 109],
-        [8, 2195, 653, 109],
-        [8, 2045, 777, 109],
-        [8, 2045, 777, 109],
-        [8, 2045, 774, 109],
-        [8, 2045, 774, 109],
-        [8, 2000, 777, 350],
-        [8, 2000, 777, 350]
-      ],
-      "paintInvalidationClients": [
-        "LayoutBlockFlow DIV id='container'",
-        "LayoutBlockFlow (positioned) DIV id='absolute'",
-        "LayoutBlockFlow P",
-        "LayoutText #text",
-        "InlineTextBox 'This test checks that switching opacity'",
-        "InlineTextBox 'invalidates the full subtree.'",
-        "LayoutBlockFlow P",
-        "LayoutText #text",
-        "InlineTextBox 'This text should be visible in the'",
-        "InlineTextBox 'output.'",
-        "LayoutBlockFlow DIV id='container'",
-        "LayoutBlockFlow (positioned) DIV id='absolute'",
-        "LayoutBlockFlow P",
-        "RootInlineBox",
-        "LayoutText #text",
-        "InlineTextBox 'This test checks that switching opacity'",
-        "InlineTextBox 'invalidates the full subtree.'",
-        "LayoutBlockFlow P",
-        "RootInlineBox",
-        "LayoutText #text",
-        "InlineTextBox 'This text should be visible in the'",
-        "InlineTextBox 'output.'"
+      "paintInvalidations": [
+        {
+          "object": "InlineTextBox 'This test checks that switching opacity'",
+          "rect": [0, 0, 0, 0],
+          "reason": "layer"
+        },
+        {
+          "object": "InlineTextBox 'This test checks that switching opacity'",
+          "rect": [0, 0, 0, 0],
+          "reason": "style change"
+        },
+        {
+          "object": "InlineTextBox 'This text should be visible in the'",
+          "rect": [0, 0, 0, 0],
+          "reason": "layer"
+        },
+        {
+          "object": "InlineTextBox 'This text should be visible in the'",
+          "rect": [0, 0, 0, 0],
+          "reason": "style change"
+        },
+        {
+          "object": "InlineTextBox 'invalidates the full subtree.'",
+          "rect": [0, 0, 0, 0],
+          "reason": "layer"
+        },
+        {
+          "object": "InlineTextBox 'invalidates the full subtree.'",
+          "rect": [0, 0, 0, 0],
+          "reason": "style change"
+        },
+        {
+          "object": "InlineTextBox 'output.'",
+          "rect": [0, 0, 0, 0],
+          "reason": "layer"
+        },
+        {
+          "object": "InlineTextBox 'output.'",
+          "rect": [0, 0, 0, 0],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='absolute'",
+          "rect": [8, 2000, 777, 350],
+          "reason": "layer"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='absolute'",
+          "rect": [8, 2000, 777, 350],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='container'",
+          "rect": [0, 0, 0, 0],
+          "reason": "layer"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='container'",
+          "rect": [0, 0, 0, 0],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutBlockFlow P",
+          "rect": [8, 2045, 777, 109],
+          "reason": "layer"
+        },
+        {
+          "object": "LayoutBlockFlow P",
+          "rect": [8, 2195, 777, 109],
+          "reason": "layer"
+        },
+        {
+          "object": "LayoutBlockFlow P",
+          "rect": [8, 2045, 777, 109],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutBlockFlow P",
+          "rect": [8, 2195, 777, 109],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [8, 2045, 774, 109],
+          "reason": "layer"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [8, 2195, 653, 109],
+          "reason": "layer"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [8, 2045, 774, 109],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [8, 2195, 653, 109],
+          "reason": "style change"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        }
       ]
     }
   ]

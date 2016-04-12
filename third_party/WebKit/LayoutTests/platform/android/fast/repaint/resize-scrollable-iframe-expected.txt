@@ -1,0 +1,40 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [293, 393, 15, 15],
+        [293, 108, 15, 285],
+        [108, 108, 200, 300],
+        [93, 193, 15, 15],
+        [93, 108, 200, 285],
+        [93, 108, 15, 85],
+        [8, 393, 285, 15],
+        [8, 213, 784, 200],
+        [8, 208, 300, 200],
+        [8, 193, 285, 200],
+        [8, 193, 85, 15],
+        [8, 108, 784, 304],
+        [8, 108, 285, 285]
+      ],
+      "paintInvalidationClients": [
+        "InlineBox",
+        "RootInlineBox",
+        "LayoutBlockFlow (anonymous)",
+        "LayoutBlockFlow (anonymous)",
+        "RootInlineBox",
+        "LayoutIFrame IFRAME id='iframe'",
+        "LayoutView #document",
+        "LayoutView #document",
+        "LayoutView #document",
+        "HorizontalScrollbar",
+        "LayoutView #document",
+        "VerticalScrollbar"
+      ]
+    }
+  ]
+}
+

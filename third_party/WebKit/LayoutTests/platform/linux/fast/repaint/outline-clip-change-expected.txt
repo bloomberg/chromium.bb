@@ -5,18 +5,42 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [48, 108, 82, 20],
-        [48, 108, 82, 19],
-        [43, 103, 91, 30]
-      ],
-      "paintInvalidationClients": [
-        "RootInlineBox",
-        "InlineTextBox 'Lorem Ipsum'",
-        "LayoutBlockFlow (positioned) A id='link' class='updated'",
-        "RootInlineBox",
-        "LayoutText #text",
-        "InlineTextBox 'Lorem Ipsum'"
+      "paintInvalidations": [
+        {
+          "object": "InlineTextBox 'Lorem Ipsum'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'Lorem Ipsum'",
+          "rect": [0, 0, 0, 0],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) A id='link' class='updated'",
+          "rect": [48, 108, 82, 20],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) A id='link' class='updated'",
+          "rect": [43, 103, 91, 30],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [48, 108, 82, 19],
+          "reason": "style change"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        }
       ]
     }
   ]

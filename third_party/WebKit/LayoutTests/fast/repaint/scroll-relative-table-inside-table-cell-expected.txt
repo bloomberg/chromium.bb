@@ -5,17 +5,32 @@
       "bounds": [1566, 1781],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [1114, 1764, 435, 15],
-        [1114, 1314, 435, 450],
-        [1114, 1314, 435, 450],
-        [1112, 1312, 454, 469]
-      ],
-      "paintInvalidationClients": [
-        "LayoutTableCell (relative positioned) TD id='cellToScroll' class='relative'",
-        "HorizontalScrollbar",
-        "LayoutBlockFlow (relative positioned) DIV class='relative red'",
-        "LayoutBlockFlow (positioned) DIV class='absolute green'"
+      "paintInvalidations": [
+        {
+          "object": "HorizontalScrollbar",
+          "rect": [0, 0, 0, 0],
+          "reason": "scroll"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV class='absolute green'",
+          "rect": [1114, 1314, 435, 450],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow (relative positioned) DIV class='relative red'",
+          "rect": [1114, 1314, 435, 450],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutTableCell (relative positioned) TD id='cellToScroll' class='relative'",
+          "rect": [1112, 1312, 454, 469],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutTableCell (relative positioned) TD id='cellToScroll' class='relative'",
+          "rect": [1114, 1764, 435, 15],
+          "reason": "scroll"
+        }
       ]
     }
   ]

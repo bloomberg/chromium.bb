@@ -5,11 +5,12 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [61, 44, 50, 25]
-      ],
-      "paintInvalidationClients": [
-        "LayoutBlockFlow DIV id='target'"
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow DIV id='target'",
+          "rect": [61, 44, 50, 25],
+          "reason": "incremental"
+        }
       ]
     }
   ]

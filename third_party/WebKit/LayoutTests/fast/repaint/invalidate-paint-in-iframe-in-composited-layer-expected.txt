@@ -11,11 +11,12 @@
           "transformOrigin": [100, 100],
           "bounds": [304, 200],
           "drawsContent": true,
-          "repaintRects": [
-            [10, 10, 50, 50]
-          ],
-          "paintInvalidationClients": [
-            "LayoutBlockFlow DIV"
+          "paintInvalidations": [
+            {
+              "object": "LayoutBlockFlow DIV",
+              "rect": [10, 10, 50, 50],
+              "reason": "style change"
+            }
           ]
         }
       ]

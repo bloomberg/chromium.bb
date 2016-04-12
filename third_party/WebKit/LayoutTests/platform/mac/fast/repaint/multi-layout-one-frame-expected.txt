@@ -5,25 +5,67 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [146, 11, 125, 13],
-        [146, 11, 43, 13],
-        [146, 11, 38, 13],
-        [11, 11, 125, 13],
-        [11, 11, 43, 13],
-        [11, 11, 38, 13]
-      ],
-      "paintInvalidationClients": [
-        "InlineTextBox ''",
-        "RootInlineBox",
-        "InlineTextBox ''",
-        "RootInlineBox",
-        "LayoutBlockFlow DIV id='inner-editor'",
-        "LayoutText #text",
-        "InlineTextBox 'PASSED'",
-        "LayoutBlockFlow DIV id='inner-editor'",
-        "LayoutText #text",
-        "InlineTextBox 'PASSED'"
+      "paintInvalidations": [
+        {
+          "object": "InlineTextBox ''",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox ''",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'PASSED'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'PASSED'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='inner-editor'",
+          "rect": [11, 11, 125, 13],
+          "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='inner-editor'",
+          "rect": [146, 11, 125, 13],
+          "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [11, 11, 38, 13],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [11, 11, 43, 13],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [146, 11, 38, 13],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [146, 11, 43, 13],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        }
       ]
     }
   ]

@@ -5,14 +5,27 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [8, 10, 200, 97]
-      ],
-      "paintInvalidationClients": [
-        "LayoutTableCell TD",
-        "LayoutTableCell TD",
-        "LayoutTableCell TD",
-        "LayoutTableRow TR id='first'"
+      "paintInvalidations": [
+        {
+          "object": "LayoutTableCell TD",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutTableRow TR id='first'",
+          "rect": [8, 10, 200, 97],
+          "reason": "style change"
+        }
       ]
     }
   ]

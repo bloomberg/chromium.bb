@@ -5,14 +5,27 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [775, 39, 17, 78]
-      ],
-      "paintInvalidationClients": [
-        "LayoutBlockFlow HTML",
-        "LayoutBlockFlow BODY",
-        "LayoutText #text",
-        "InlineTextBox 'Testing both hit testing'"
+      "paintInvalidations": [
+        {
+          "object": "InlineTextBox 'Testing both hit testing'",
+          "rect": [0, 0, 0, 0],
+          "reason": "selection"
+        },
+        {
+          "object": "LayoutBlockFlow BODY",
+          "rect": [0, 0, 0, 0],
+          "reason": "selection"
+        },
+        {
+          "object": "LayoutBlockFlow HTML",
+          "rect": [0, 0, 0, 0],
+          "reason": "selection"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [775, 39, 17, 78],
+          "reason": "selection"
+        }
       ]
     }
   ]

@@ -5,15 +5,27 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [18, 153, 201, 47],
-        [18, 153, 132, 47]
-      ],
-      "paintInvalidationClients": [
-        "InlineTextBox '\u1EA6\u1EA4\u1EAA\u1EA8\u1EB0'",
-        "LayoutText #text",
-        "RootInlineBox",
-        "LayoutBlockFlow DIV id='stacked'"
+      "paintInvalidations": [
+        {
+          "object": "InlineTextBox '\u1EA6\u1EA4\u1EAA\u1EA8\u1EB0'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='stacked'",
+          "rect": [18, 153, 201, 47],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [18, 153, 132, 47],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        }
       ]
     }
   ]

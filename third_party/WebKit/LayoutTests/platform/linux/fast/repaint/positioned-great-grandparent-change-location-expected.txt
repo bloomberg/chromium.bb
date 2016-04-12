@@ -5,20 +5,52 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [100, 200, 100, 100],
-        [100, 200, 38, 19],
-        [100, 100, 100, 100],
-        [100, 100, 38, 19]
-      ],
-      "paintInvalidationClients": [
-        "LayoutBlockFlow (positioned) DIV id='great-grandparent'",
-        "LayoutBlockFlow (positioned) DIV",
-        "LayoutBlockFlow (positioned) DIV",
-        "LayoutBlockFlow (positioned) DIV",
-        "RootInlineBox",
-        "LayoutText #text",
-        "InlineTextBox 'Target'"
+      "paintInvalidations": [
+        {
+          "object": "InlineTextBox 'Target'",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV",
+          "rect": [100, 200, 100, 100],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV",
+          "rect": [100, 100, 100, 100],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='great-grandparent'",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [100, 200, 38, 19],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [100, 100, 38, 19],
+          "reason": "location change"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        }
       ]
     }
   ]

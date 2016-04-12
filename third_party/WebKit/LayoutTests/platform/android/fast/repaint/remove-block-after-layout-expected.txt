@@ -1,0 +1,23 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [8, 108, 100, 100],
+        [8, 108, 90, 39]
+      ],
+      "paintInvalidationClients": [
+        "InlineTextBox 'This div should'",
+        "InlineTextBox 'disappear.'",
+        "LayoutText #text",
+        "RootInlineBox",
+        "RootInlineBox",
+        "LayoutBlockFlow (positioned) DIV id='target'"
+      ]
+    }
+  ]
+}
+

@@ -5,22 +5,62 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [488, 8, 80, 20],
-        [8, 8, 630, 20],
-        [8, 8, 470, 20]
-      ],
-      "paintInvalidationClients": [
-        "RootInlineBox",
-        "RootInlineBox",
-        "RootInlineBox",
-        "InlineTextBox '\n'",
-        "InlineTextBox '\n'",
-        "InlineTextBox '\n'",
-        "LayoutMultiColumnFlowThread (anonymous)",
-        "RootInlineBox",
-        "LayoutText #text",
-        "InlineTextBox 'PASS'"
+      "paintInvalidations": [
+        {
+          "object": "InlineTextBox '\n'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox '\n'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox '\n'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'PASS'",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutMultiColumnFlowThread (anonymous)",
+          "rect": [8, 8, 470, 20],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutMultiColumnFlowThread (anonymous)",
+          "rect": [8, 8, 630, 20],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [488, 8, 80, 20],
+          "reason": "location change"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        }
       ]
     }
   ]

@@ -5,15 +5,27 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [12, 47, 136, 16],
-        [12, 47, 58, 16]
-      ],
-      "paintInvalidationClients": [
-        "LayoutBlockFlow DIV id='inner-editor'",
-        "RootInlineBox",
-        "LayoutText #text",
-        "InlineTextBox 'some text'"
+      "paintInvalidations": [
+        {
+          "object": "InlineTextBox 'some text'",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='inner-editor'",
+          "rect": [12, 47, 136, 16],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [12, 47, 58, 16],
+          "reason": "location change"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        }
       ]
     }
   ]

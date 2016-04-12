@@ -5,18 +5,42 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [8, 8, 194, 237],
-        [8, 8, 194, 232],
-        [8, 8, 114, 237],
-        [8, 8, 114, 232]
-      ],
-      "paintInvalidationClients": [
-        "LayoutBlockFlow (relative positioned) DIV id='shiftMe'",
-        "LayoutBlockFlow (relative positioned) (floating) DIV class='imgContainer'",
-        "RootInlineBox",
-        "LayoutImage IMG",
-        "LayoutText #text"
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow (relative positioned) (floating) DIV class='imgContainer'",
+          "rect": [8, 8, 114, 237],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow (relative positioned) (floating) DIV class='imgContainer'",
+          "rect": [8, 8, 194, 237],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow (relative positioned) DIV id='shiftMe'",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutImage IMG",
+          "rect": [8, 8, 114, 232],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutImage IMG",
+          "rect": [8, 8, 194, 232],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        }
       ]
     }
   ]

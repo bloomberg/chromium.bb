@@ -5,13 +5,17 @@
       "bounds": [800, 2016],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [100, 1150, 100, 100],
-        [100, 1150, 100, 100]
-      ],
-      "paintInvalidationClients": [
-        "LayoutBlockFlow (positioned) DIV id='moveMe' class='fixed clipped'",
-        "LayoutBlockFlow (positioned) DIV class='absolute green'"
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow (positioned) DIV class='absolute green'",
+          "rect": [100, 1150, 100, 100],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='moveMe' class='fixed clipped'",
+          "rect": [100, 1150, 100, 100],
+          "reason": "style change"
+        }
       ]
     }
   ]

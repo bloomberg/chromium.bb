@@ -5,21 +5,57 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [293, 135, 15, 15],
-        [293, 50, 15, 85],
-        [93, 135, 15, 15],
-        [93, 50, 15, 85],
-        [8, 135, 285, 15],
-        [8, 135, 85, 15],
-        [8, 50, 300, 100],
-        [8, 50, 100, 100]
-      ],
-      "paintInvalidationClients": [
-        "LayoutBlockFlow (positioned) DIV id='scrollable'",
-        "LayoutBlockFlow (positioned) DIV id='scrollable'",
-        "HorizontalScrollbar",
-        "VerticalScrollbar"
+      "paintInvalidations": [
+        {
+          "object": "HorizontalScrollbar",
+          "rect": [0, 0, 0, 0],
+          "reason": "scroll"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='scrollable'",
+          "rect": [8, 50, 100, 100],
+          "reason": "border box change"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='scrollable'",
+          "rect": [8, 50, 300, 100],
+          "reason": "border box change"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='scrollable'",
+          "rect": [8, 135, 85, 15],
+          "reason": "scroll"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='scrollable'",
+          "rect": [8, 135, 285, 15],
+          "reason": "scroll"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='scrollable'",
+          "rect": [93, 50, 15, 85],
+          "reason": "scroll"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='scrollable'",
+          "rect": [293, 50, 15, 85],
+          "reason": "scroll"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='scrollable'",
+          "rect": [93, 135, 15, 15],
+          "reason": "scroll"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='scrollable'",
+          "rect": [293, 135, 15, 15],
+          "reason": "scroll"
+        },
+        {
+          "object": "VerticalScrollbar",
+          "rect": [0, 0, 0, 0],
+          "reason": "scroll"
+        }
       ]
     }
   ]

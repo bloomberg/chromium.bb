@@ -5,23 +5,67 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [303, 420, 67, 19],
-        [297, 420, 72, 19],
-        [8, 400, 418, 39]
-      ],
-      "paintInvalidationClients": [
-        "InlineTextBox 'turns,\n'",
-        "InlineTextBox 'quarrelling all the while, and fighting for the'",
-        "RootInlineBox",
-        "InlineTextBox 'hedgehogs; and in\n'",
-        "InlineTextBox 'a very short time '",
-        "InlineTextBox ''",
-        "RootInlineBox",
-        "LayoutBlockFlow P",
-        "LayoutInline SPAN id='theQueen'",
-        "LayoutText #text",
-        "InlineTextBox 'the Queen'"
+      "paintInvalidations": [
+        {
+          "object": "InlineTextBox ''",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'a very short time '",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'hedgehogs; and in\n'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'quarrelling all the while, and fighting for the'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'the Queen'",
+          "rect": [0, 0, 0, 0],
+          "reason": "style change"
+        },
+        {
+          "object": "InlineTextBox 'turns,\n'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutBlockFlow P",
+          "rect": [8, 400, 418, 39],
+          "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutInline SPAN id='theQueen'",
+          "rect": [0, 0, 0, 0],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [303, 420, 67, 19],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [297, 420, 72, 19],
+          "reason": "style change"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        }
       ]
     }
   ]

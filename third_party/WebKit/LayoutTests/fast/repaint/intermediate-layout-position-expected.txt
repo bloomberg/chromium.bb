@@ -5,16 +5,27 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [10, 170, 42, 20],
-        [8, 172, 46, 20],
-        [8, 74, 46, 20]
-      ],
-      "paintInvalidationClients": [
-        "LayoutBlockFlow DIV",
-        "LayoutBlockFlow DIV id='target'",
-        "LayoutTable TABLE",
-        "LayoutTableCell TD id='cell'"
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [8, 74, 46, 20],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='target'",
+          "rect": [0, 0, 0, 0],
+          "reason": "became visible"
+        },
+        {
+          "object": "LayoutTable TABLE",
+          "rect": [8, 172, 46, 20],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutTableCell TD id='cell'",
+          "rect": [10, 170, 42, 20],
+          "reason": "incremental"
+        }
       ]
     }
   ]

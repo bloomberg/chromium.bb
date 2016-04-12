@@ -5,15 +5,22 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [8, 84, 100, 100],
-        [8, 84, 100, 100],
-        [8, 84, 100, 100]
-      ],
-      "paintInvalidationClients": [
-        "LayoutBlockFlow (floating) DIV class='green'",
-        "LayoutBlockFlow (floating) DIV class='red'",
-        "LayoutBlockFlow (floating) DIV class='green'"
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow (floating) DIV class='green'",
+          "rect": [8, 84, 100, 100],
+          "reason": "layer"
+        },
+        {
+          "object": "LayoutBlockFlow (floating) DIV class='green'",
+          "rect": [8, 84, 100, 100],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutBlockFlow (floating) DIV class='red'",
+          "rect": [8, 84, 100, 100],
+          "reason": "background obscuration change"
+        }
       ]
     }
   ]

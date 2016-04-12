@@ -1,0 +1,25 @@
+{
+  "bounds": [800, 2016],
+  "children": [
+    {
+      "bounds": [800, 2016],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [250, 230, 100, 100],
+        [250, 230, 100, 100],
+        [250, 230, 100, 100],
+        [250, 230, 100, 100],
+        [250, 230, 100, 100]
+      ],
+      "paintInvalidationClients": [
+        "LayoutBlockFlow (positioned) DIV id='moveMe' class='absolute clipped'",
+        "LayoutBlockFlow (relative positioned) DIV class='relative reflected'",
+        "LayoutBlockFlow DIV class='green'",
+        "LayoutReplica (anonymous)",
+        "LayoutBlockFlow (positioned) DIV class='absolute red'"
+      ]
+    }
+  ]
+}
+

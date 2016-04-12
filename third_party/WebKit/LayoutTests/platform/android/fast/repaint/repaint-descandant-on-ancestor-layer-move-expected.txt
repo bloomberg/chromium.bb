@@ -1,0 +1,28 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [428, 38, 300, 20],
+        [428, 38, 256, 19],
+        [408, 18, 300, 20],
+        [28, 38, 300, 20],
+        [28, 38, 256, 19],
+        [8, 18, 300, 20]
+      ],
+      "paintInvalidationClients": [
+        "LayoutBlockFlow (positioned) DIV id='container'",
+        "RootInlineBox",
+        "LayoutBlockFlow (relative positioned) DIV",
+        "RootInlineBox",
+        "LayoutText #text",
+        "InlineTextBox 'There should only be one copy of this text.'",
+        "LayoutText #text"
+      ]
+    }
+  ]
+}
+

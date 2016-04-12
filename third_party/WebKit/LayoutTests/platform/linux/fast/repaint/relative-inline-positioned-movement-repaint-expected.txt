@@ -5,12 +5,17 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [8, 7, 784, 21]
-      ],
-      "paintInvalidationClients": [
-        "RootInlineBox",
-        "LayoutBlockFlow BODY"
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow BODY",
+          "rect": [8, 7, 784, 21],
+          "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        }
       ],
       "children": [
         {
@@ -18,9 +23,17 @@
           "bounds": [348, 21],
           "drawsContent": true,
           "backfaceVisibility": "hidden",
-          "paintInvalidationClients": [
-            "InlineTextBox 'When this layer moves it shouldn't generate a repaint rect.'",
-            "InlineFlowBox"
+          "paintInvalidations": [
+            {
+              "object": "InlineFlowBox",
+              "rect": [0, 0, 0, 0],
+              "reason": "full"
+            },
+            {
+              "object": "InlineTextBox 'When this layer moves it shouldn't generate a repaint rect.'",
+              "rect": [0, 0, 0, 0],
+              "reason": "full"
+            }
           ]
         }
       ]

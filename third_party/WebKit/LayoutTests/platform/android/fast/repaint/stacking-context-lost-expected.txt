@@ -1,0 +1,34 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidationClients": [
+        "LayoutBlockFlow (relative positioned) DIV id='inner'"
+      ],
+      "children": [
+        {
+          "position": [278, 278],
+          "bounds": [100, 100],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backfaceVisibility": "hidden",
+          "backgroundColor": "#008000",
+          "repaintRects": [
+            [0, 0, 100, 100],
+            [0, 0, 100, 100],
+            [0, 0, 100, 100]
+          ],
+          "paintInvalidationClients": [
+            "LayoutBlockFlow (relative positioned) DIV id='outer'",
+            "LayoutBlockFlow (relative positioned) DIV id='inner'",
+            "LayoutBlockFlow (relative positioned) DIV id='outer'"
+          ]
+        }
+      ]
+    }
+  ]
+}
+

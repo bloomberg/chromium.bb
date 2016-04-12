@@ -5,12 +5,17 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [8, 28, 140, 140],
-        [-12, 28, 280, 280]
-      ],
-      "paintInvalidationClients": [
-        "LayoutImage IMG id='box' class='smaller'"
+      "paintInvalidations": [
+        {
+          "object": "LayoutImage IMG id='box' class='smaller'",
+          "rect": [-12, 28, 280, 280],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutImage IMG id='box' class='smaller'",
+          "rect": [8, 28, 140, 140],
+          "reason": "style change"
+        }
       ]
     }
   ]

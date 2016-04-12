@@ -5,12 +5,17 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [1, 35, 12, 15]
-      ],
-      "paintInvalidationClients": [
-        "LayoutBlockFlow OPTION id='option'",
-        "RootInlineBox"
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow OPTION id='option'",
+          "rect": [1, 35, 12, 15],
+          "reason": "style change"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        }
       ]
     }
   ]

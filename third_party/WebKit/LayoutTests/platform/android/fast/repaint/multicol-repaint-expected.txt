@@ -1,0 +1,29 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [234, 15, 300, 50],
+        [234, 15, 50, 50],
+        [9, 9, 525, 100],
+        [9, 9, 400, 100]
+      ],
+      "paintInvalidationClients": [
+        "RootInlineBox",
+        "RootInlineBox",
+        "InlineTextBox '\u00A0'",
+        "InlineTextBox '\n'",
+        "InlineFlowBox",
+        "InlineTextBox ''",
+        "LayoutMultiColumnFlowThread (anonymous)",
+        "RootInlineBox",
+        "LayoutText #text",
+        "InlineTextBox 'XXXXXX'"
+      ]
+    }
+  ]
+}
+

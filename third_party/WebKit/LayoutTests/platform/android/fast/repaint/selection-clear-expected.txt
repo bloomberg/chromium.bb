@@ -1,0 +1,43 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [8, 208, 100, 100],
+        [8, 108, 100, 100],
+        [8, 48, 88, 119],
+        [8, 48, 4, 19],
+        [8, 8, 100, 200],
+        [8, 8, 100, 100]
+      ],
+      "paintInvalidationClients": [
+        "InlineTextBox 'FAIL: Test did'",
+        "InlineTextBox 'not run'",
+        "LayoutText #text",
+        "RootInlineBox",
+        "RootInlineBox",
+        "LayoutBlockFlow HTML",
+        "LayoutBlockFlow BODY",
+        "LayoutBlockFlow DIV id='root'",
+        "LayoutBlockFlow DIV id='firstLine'",
+        "LayoutBlockFlow DIV id='firstLine'",
+        "RootInlineBox",
+        "LayoutText #text",
+        "InlineTextBox '\u00A0'",
+        "LayoutText #text",
+        "InlineTextBox '\u00A0'",
+        "LayoutBlockFlow (anonymous)",
+        "LayoutBlockFlow (anonymous)",
+        "RootInlineBox",
+        "LayoutBR BR",
+        "InlineTextBox '\n'",
+        "LayoutBR BR",
+        "InlineTextBox '\n'"
+      ]
+    }
+  ]
+}
+

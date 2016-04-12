@@ -5,12 +5,32 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "paintInvalidationClients": [
-        "LayoutBlockFlow (anonymous)",
-        "LayoutInline SPAN id='outer'",
-        "LayoutText #text",
-        "LayoutBlockFlow (anonymous)",
-        "LayoutInline SPAN id='outer'"
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow (anonymous)",
+          "rect": [0, 0, 0, 0],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutBlockFlow (anonymous)",
+          "rect": [0, 0, 0, 0],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutInline SPAN id='outer'",
+          "rect": [0, 0, 0, 0],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutInline SPAN id='outer'",
+          "rect": [0, 0, 0, 0],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [0, 0, 0, 0],
+          "reason": "outline"
+        }
       ]
     }
   ]

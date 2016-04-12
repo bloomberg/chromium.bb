@@ -1,0 +1,18 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidationClients": [
+        "LayoutBlockFlow (anonymous)",
+        "LayoutInline SPAN id='outer'",
+        "LayoutText #text",
+        "LayoutBlockFlow (anonymous)",
+        "LayoutInline SPAN id='outer'"
+      ]
+    }
+  ]
+}
+

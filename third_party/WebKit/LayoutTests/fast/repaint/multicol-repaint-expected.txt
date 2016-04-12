@@ -5,23 +5,67 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [234, 15, 300, 50],
-        [234, 15, 50, 50],
-        [9, 9, 525, 100],
-        [9, 9, 400, 100]
-      ],
-      "paintInvalidationClients": [
-        "RootInlineBox",
-        "RootInlineBox",
-        "InlineTextBox '\u00A0'",
-        "InlineTextBox '\n'",
-        "InlineFlowBox",
-        "InlineTextBox ''",
-        "LayoutMultiColumnFlowThread (anonymous)",
-        "RootInlineBox",
-        "LayoutText #text",
-        "InlineTextBox 'XXXXXX'"
+      "paintInvalidations": [
+        {
+          "object": "InlineFlowBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox '\n'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox ''",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'XXXXXX'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox '\u00A0'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutMultiColumnFlowThread (anonymous)",
+          "rect": [9, 9, 400, 100],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutMultiColumnFlowThread (anonymous)",
+          "rect": [9, 9, 525, 100],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [234, 15, 50, 50],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [234, 15, 300, 50],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        }
       ]
     }
   ]

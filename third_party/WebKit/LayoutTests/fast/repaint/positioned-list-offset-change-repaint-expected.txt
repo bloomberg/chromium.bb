@@ -5,22 +5,62 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [8, 60, 214, 236],
-        [8, 60, 214, 232],
-        [8, 60, 114, 236],
-        [8, 60, 114, 232]
-      ],
-      "paintInvalidationClients": [
-        "RootInlineBox",
-        "InlineBox",
-        "InlineBox",
-        "LayoutBlockFlow (positioned) UL id='list'",
-        "LayoutListItem (positioned) LI",
-        "RootInlineBox",
-        "LayoutListMarker (anonymous)",
-        "LayoutImage IMG",
-        "LayoutText #text"
+      "paintInvalidations": [
+        {
+          "object": "InlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) UL id='list'",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutImage IMG",
+          "rect": [8, 60, 114, 232],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutImage IMG",
+          "rect": [8, 60, 214, 232],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutListItem (positioned) LI",
+          "rect": [8, 60, 114, 236],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutListItem (positioned) LI",
+          "rect": [8, 60, 214, 236],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutListMarker (anonymous)",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        }
       ]
     }
   ]

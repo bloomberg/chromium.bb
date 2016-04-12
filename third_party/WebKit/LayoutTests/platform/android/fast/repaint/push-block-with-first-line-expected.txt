@@ -1,0 +1,25 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [8, 68, 784, 20],
+        [8, 68, 140, 20],
+        [8, 8, 784, 60],
+        [8, 8, 784, 20],
+        [8, 8, 140, 20]
+      ],
+      "paintInvalidationClients": [
+        "LayoutBlockFlow DIV id='spacer'",
+        "LayoutBlockFlow DIV class='test'",
+        "RootInlineBox",
+        "LayoutText #text",
+        "InlineTextBox 'JOCULAR'"
+      ]
+    }
+  ]
+}
+

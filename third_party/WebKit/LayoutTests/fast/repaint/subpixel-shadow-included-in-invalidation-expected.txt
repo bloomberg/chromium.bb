@@ -3,8 +3,8 @@ Tests whether a repaint rect encompasses box-shadow with subpixel offset when th
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS Subpixel shadow was repainted.
-PASS successfullyParsed is true
+FAIL Unexpected error: Uncaught TypeError: Cannot read property 'some' of undefined
+FAIL successfullyParsed should be true. Was false.
 
 TEST COMPLETE
 

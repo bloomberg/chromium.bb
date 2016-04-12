@@ -5,85 +5,307 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [78, 286, 25, 82],
-        [74, 286, 29, 82],
-        [23, 317, 71, 19],
-        [23, 225, 32, 19],
-        [23, 133, 71, 19],
-        [22, 338, 81, 30],
-        [22, 338, 56, 30],
-        [22, 316, 81, 22],
-        [22, 316, 56, 22],
-        [22, 286, 81, 30],
-        [22, 286, 56, 30],
-        [22, 224, 89, 22],
-        [22, 154, 81, 30],
-        [22, 154, 56, 30],
-        [22, 132, 81, 22],
-        [22, 102, 81, 30],
-        [22, 102, 56, 30],
-        [12, 198, 95, 74],
-        [12, 106, 87, 74],
-        [12, 106, 62, 74],
-        [8, 194, 103, 82],
-        [8, 102, 95, 82],
-        [8, 102, 70, 82],
-        [8, 10, 91, 82]
-      ],
-      "paintInvalidationClients": [
-        "InlineTextBox 'ipsum dolor'",
-        "LayoutText #text",
-        "RootInlineBox",
-        "LayoutTableCell TD id='d'",
-        "InlineTextBox 'dolor'",
-        "LayoutText #text",
-        "RootInlineBox",
-        "LayoutTableCell TD id='d2'",
-        "RootInlineBox",
-        "InlineTextBox 'Lorem'",
-        "RootInlineBox",
-        "InlineTextBox 'sit amet'",
-        "RootInlineBox",
-        "InlineTextBox 'Lorem'",
-        "RootInlineBox",
-        "InlineTextBox 'sit amet'",
-        "RootInlineBox",
-        "InlineTextBox 'ipsum dolor'",
-        "LayoutTableCell TD",
-        "LayoutTableCell TD",
-        "LayoutTableCell TD",
-        "LayoutTableCell TD",
-        "LayoutTableCell TD",
-        "LayoutTableCell TD",
-        "LayoutTable TABLE id='t'",
-        "LayoutTable TABLE",
-        "LayoutTableCell TD",
-        "LayoutTableCell TD",
-        "LayoutTableCell TD",
-        "LayoutTableCell TD",
-        "LayoutTableCell TD",
-        "LayoutTableSection TBODY",
-        "LayoutTableCell TD",
-        "RootInlineBox",
-        "LayoutTableCell TD",
-        "RootInlineBox",
-        "LayoutTable TABLE",
-        "LayoutTableCell TD",
-        "LayoutTableCell TD",
-        "LayoutTableCell TD",
-        "LayoutTableCell TD",
-        "LayoutTableCell TD",
-        "LayoutTableSection TBODY",
-        "LayoutTable TABLE",
-        "LayoutTableCell TD",
-        "RootInlineBox",
-        "LayoutTableCell TD id='d3'",
-        "RootInlineBox",
-        "LayoutText #text",
-        "InlineTextBox 'ipsum dolor'",
-        "LayoutTableCell TD",
-        "RootInlineBox"
+      "paintInvalidations": [
+        {
+          "object": "InlineTextBox 'Lorem'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'Lorem'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'dolor'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'ipsum dolor'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'ipsum dolor'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'ipsum dolor'",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'sit amet'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'sit amet'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutTable TABLE",
+          "rect": [8, 102, 95, 82],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutTable TABLE",
+          "rect": [8, 102, 70, 82],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutTable TABLE",
+          "rect": [8, 194, 103, 82],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutTable TABLE",
+          "rect": [78, 286, 25, 82],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutTable TABLE",
+          "rect": [74, 286, 29, 82],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutTable TABLE id='t'",
+          "rect": [8, 10, 91, 82],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "rect": [22, 102, 81, 30],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "rect": [22, 102, 56, 30],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "rect": [22, 154, 81, 30],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "rect": [22, 154, 56, 30],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "rect": [22, 286, 56, 30],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "rect": [22, 286, 81, 30],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "rect": [22, 338, 56, 30],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "rect": [22, 338, 81, 30],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutTableCell TD id='d'",
+          "rect": [22, 132, 81, 22],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutTableCell TD id='d2'",
+          "rect": [22, 224, 89, 22],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutTableCell TD id='d3'",
+          "rect": [22, 316, 56, 22],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutTableCell TD id='d3'",
+          "rect": [22, 316, 81, 22],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutTableSection TBODY",
+          "rect": [12, 106, 87, 74],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutTableSection TBODY",
+          "rect": [12, 106, 62, 74],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutTableSection TBODY",
+          "rect": [12, 198, 95, 74],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [23, 133, 71, 19],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [23, 225, 32, 19],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [23, 317, 71, 19],
+          "reason": "location change"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        }
       ]
     }
   ]

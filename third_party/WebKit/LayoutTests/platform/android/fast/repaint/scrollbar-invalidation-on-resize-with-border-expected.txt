@@ -1,0 +1,27 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [303, 145, 15, 15],
+        [303, 60, 15, 85],
+        [103, 145, 15, 15],
+        [103, 60, 15, 85],
+        [18, 145, 285, 15],
+        [18, 145, 85, 15],
+        [8, 50, 320, 120],
+        [8, 50, 120, 120]
+      ],
+      "paintInvalidationClients": [
+        "LayoutBlockFlow (positioned) DIV id='scrollable'",
+        "LayoutBlockFlow (positioned) DIV id='scrollable'",
+        "HorizontalScrollbar",
+        "VerticalScrollbar"
+      ]
+    }
+  ]
+}
+

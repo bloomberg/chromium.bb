@@ -5,20 +5,47 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [10, 11, 150, 16],
-        [10, 11, 35, 16],
-        [10, 11, 27, 16],
-        [8, 298, 10, 10],
-        [8, 288, 10, 20]
-      ],
-      "paintInvalidationClients": [
-        "InlineTextBox ''",
-        "RootInlineBox",
-        "LayoutBlockFlow DIV id='inner-editor'",
-        "LayoutText #text",
-        "InlineTextBox 'PASS'",
-        "LayoutBlockFlow (positioned) DIV id='div'"
+      "paintInvalidations": [
+        {
+          "object": "InlineTextBox ''",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'PASS'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='div'",
+          "rect": [8, 298, 10, 10],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='div'",
+          "rect": [8, 288, 10, 20],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='inner-editor'",
+          "rect": [10, 11, 150, 16],
+          "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [10, 11, 27, 16],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [10, 11, 35, 16],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        }
       ]
     }
   ]

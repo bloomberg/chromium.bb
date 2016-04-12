@@ -1,0 +1,23 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [762, 8, 15, 300],
+        [8, 8, 769, 300],
+        [8, 8, 300, 300],
+        [8, 8, 300, 300]
+      ],
+      "paintInvalidationClients": [
+        "LayoutBlockFlow DIV id='innerDiv'",
+        "VerticalScrollbar",
+        "LayoutBlockFlow DIV",
+        "LayoutBlockFlow DIV"
+      ]
+    }
+  ]
+}
+

@@ -1,0 +1,35 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [381, 267, 284, 59],
+        [306, 377, 124, 156],
+        [306, 34, 124, 182],
+        [71, 267, 284, 59]
+      ],
+      "paintInvalidationClients": [
+        "LayoutText #text",
+        "InlineTextBox 'The color of this text'",
+        "InlineTextBox 'in the reflection'",
+        "InlineTextBox 'should be green'",
+        "LayoutText #text",
+        "InlineTextBox 'The color of this text'",
+        "InlineTextBox 'in the reflection'",
+        "InlineTextBox 'should be green'",
+        "LayoutText #text",
+        "InlineTextBox 'The color of this text'",
+        "InlineTextBox 'in the reflection'",
+        "InlineTextBox 'should be green'",
+        "LayoutText #text",
+        "InlineTextBox 'The color of this text'",
+        "InlineTextBox 'in the reflection'",
+        "InlineTextBox 'should be green'"
+      ]
+    }
+  ]
+}
+

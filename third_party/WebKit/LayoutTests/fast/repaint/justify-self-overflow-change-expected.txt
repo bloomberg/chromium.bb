@@ -5,26 +5,62 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [150, 52, 50, 300],
-        [0, 52, 200, 300],
-        [0, 52, 150, 300],
-        [0, 52, 150, 150],
-        [0, 16, 800, 336],
-        [0, 0, 800, 352],
-        [-50, 52, 250, 300],
-        [-50, 52, 150, 300],
-        [-50, 52, 150, 150],
-        [-50, 16, 850, 336],
-        [-50, 0, 850, 352]
-      ],
-      "paintInvalidationClients": [
-        "LayoutBlockFlow HTML",
-        "LayoutBlockFlow BODY",
-        "LayoutGrid DIV id='container'",
-        "LayoutBlockFlow DIV class='item1'",
-        "LayoutBlockFlow DIV",
-        "LayoutBlockFlow DIV class='item2'"
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow BODY",
+          "rect": [-50, 16, 850, 336],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutBlockFlow BODY",
+          "rect": [0, 16, 800, 336],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [-50, 52, 150, 150],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [0, 52, 150, 150],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV class='item1'",
+          "rect": [-50, 52, 150, 300],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV class='item1'",
+          "rect": [0, 52, 150, 300],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV class='item2'",
+          "rect": [150, 52, 50, 300],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutBlockFlow HTML",
+          "rect": [-50, 0, 850, 352],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutBlockFlow HTML",
+          "rect": [0, 0, 800, 352],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutGrid DIV id='container'",
+          "rect": [-50, 52, 250, 300],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutGrid DIV id='container'",
+          "rect": [0, 52, 200, 300],
+          "reason": "bounds change"
+        }
       ]
     }
   ]

@@ -1,0 +1,68 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [200, 0, 100, 200],
+        [0, 300, 300, 20],
+        [0, 300, 200, 20],
+        [0, 200, 200, 100],
+        [0, 0, 300, 200],
+        [0, 0, 200, 300]
+      ],
+      "paintInvalidationClients": [
+        "RootInlineBox",
+        "RootInlineBox",
+        "RootInlineBox",
+        "RootInlineBox",
+        "RootInlineBox",
+        "RootInlineBox",
+        "RootInlineBox",
+        "RootInlineBox",
+        "RootInlineBox",
+        "RootInlineBox",
+        "RootInlineBox",
+        "RootInlineBox",
+        "RootInlineBox",
+        "RootInlineBox",
+        "RootInlineBox",
+        "InlineTextBox 'A A A A A'",
+        "InlineTextBox 'AA AA AA'",
+        "InlineTextBox 'AA AAA AAA'",
+        "InlineTextBox 'AAA AAAA'",
+        "InlineTextBox 'AAAA AAAAA'",
+        "InlineTextBox 'AAAAA'",
+        "InlineTextBox 'AAAAAA'",
+        "InlineTextBox 'AAAAAAA'",
+        "InlineTextBox 'AAAAAA'",
+        "InlineTextBox 'AAAAA'",
+        "InlineTextBox 'AAAAA AAAA'",
+        "InlineTextBox 'AAAA AAA'",
+        "InlineTextBox 'AAA AAA AA'",
+        "InlineTextBox 'AA AA AA A'",
+        "InlineTextBox 'A A A A'",
+        "RootInlineBox",
+        "InlineTextBox 'A A A A A'",
+        "LayoutBlockFlow (positioned) DIV id='div1' class='container'",
+        "RootInlineBox",
+        "LayoutText #text",
+        "InlineTextBox 'A A A A A AA AA'",
+        "InlineTextBox 'AA AA AAA AAA'",
+        "InlineTextBox 'AAA AAAA AAAA'",
+        "InlineTextBox 'AAAAA AAAAA'",
+        "InlineTextBox 'AAAAAA AAAAAAA'",
+        "InlineTextBox 'AAAAAA AAAAA'",
+        "InlineTextBox 'AAAAA AAAA AAAA'",
+        "InlineTextBox 'AAA AAA AAA AA'",
+        "InlineTextBox 'AA AA AA A A A'",
+        "InlineTextBox 'A A'",
+        "LayoutBlockFlow (positioned) DIV id='div2' class='container'",
+        "RootInlineBox"
+      ]
+    }
+  ]
+}
+

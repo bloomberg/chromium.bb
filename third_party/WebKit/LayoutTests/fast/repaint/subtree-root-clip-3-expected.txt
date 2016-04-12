@@ -5,13 +5,17 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [15, 60, 100, 100],
-        [15, 60, 100, 100]
-      ],
-      "paintInvalidationClients": [
-        "LayoutBlockFlow DIV",
-        "LayoutBlockFlow DIV id='target'"
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [15, 60, 100, 100],
+          "reason": "background obscuration change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='target'",
+          "rect": [15, 60, 100, 100],
+          "reason": "bounds change"
+        }
       ]
     }
   ]

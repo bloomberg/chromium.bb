@@ -5,11 +5,12 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [357, 199, 3, 22]
-      ],
-      "paintInvalidationClients": [
-        "LayoutBlockFlow DIV id='editable'"
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow DIV id='editable'",
+          "rect": [357, 199, 3, 22],
+          "reason": "invalidate paint rectangle"
+        }
       ]
     }
   ]

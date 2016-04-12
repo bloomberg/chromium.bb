@@ -1,0 +1,45 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [300, 302, 80, 176],
+        [300, 300, 80, 179],
+        [151, 87, 1, 1],
+        [135, 361, 159, 194],
+        [135, 360, 160, 196],
+        [100, 100, 100, 180],
+        [61, 87, 178, 206]
+      ],
+      "paintInvalidationClients": [
+        "LayoutBlockFlow (positioned) DIV id='box'",
+        "RootInlineBox",
+        "LayoutInline (relative positioned) SPAN id='child'",
+        "InlineFlowBox",
+        "InlineFlowBox",
+        "InlineFlowBox",
+        "InlineFlowBox",
+        "InlineFlowBox",
+        "InlineFlowBox",
+        "InlineFlowBox",
+        "InlineFlowBox",
+        "InlineFlowBox",
+        "LayoutText #text",
+        "InlineTextBox 'A B C'",
+        "InlineTextBox 'D E F'",
+        "InlineTextBox 'G H I'",
+        "InlineTextBox 'J K L'",
+        "InlineTextBox 'M N O'",
+        "InlineTextBox 'P Q R'",
+        "InlineTextBox 'S T U'",
+        "InlineTextBox 'V W X'",
+        "InlineTextBox 'Y Z'",
+        "LayoutText #text"
+      ]
+    }
+  ]
+}
+

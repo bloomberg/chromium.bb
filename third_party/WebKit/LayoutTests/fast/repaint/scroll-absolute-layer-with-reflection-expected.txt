@@ -5,19 +5,32 @@
       "bounds": [800, 2016],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [250, 230, 100, 100],
-        [250, 230, 100, 100],
-        [250, 230, 100, 100],
-        [250, 230, 100, 100],
-        [250, 230, 100, 100]
-      ],
-      "paintInvalidationClients": [
-        "LayoutBlockFlow (positioned) DIV id='moveMe' class='absolute clipped'",
-        "LayoutBlockFlow (relative positioned) DIV class='relative reflected'",
-        "LayoutBlockFlow DIV class='green'",
-        "LayoutReplica (anonymous)",
-        "LayoutBlockFlow (positioned) DIV class='absolute red'"
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow (positioned) DIV class='absolute red'",
+          "rect": [250, 230, 100, 100],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='moveMe' class='absolute clipped'",
+          "rect": [250, 230, 100, 100],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutBlockFlow (relative positioned) DIV class='relative reflected'",
+          "rect": [250, 230, 100, 100],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV class='green'",
+          "rect": [250, 230, 100, 100],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutReplica (anonymous)",
+          "rect": [250, 230, 100, 100],
+          "reason": "location change"
+        }
       ]
     }
   ]

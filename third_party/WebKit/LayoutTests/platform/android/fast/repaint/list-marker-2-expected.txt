@@ -1,0 +1,29 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [48, 100, 100, 100],
+        [48, 100, 100, 50],
+        [30, 185, 7, 19],
+        [30, 155, 762, 50],
+        [30, 135, 7, 19],
+        [30, 100, 762, 104]
+      ],
+      "paintInvalidationClients": [
+        "InlineBox",
+        "InlineBox",
+        "RootInlineBox",
+        "LayoutListItem LI",
+        "LayoutListItem LI",
+        "RootInlineBox",
+        "LayoutListMarker (anonymous)",
+        "LayoutImage IMG id='target'"
+      ]
+    }
+  ]
+}
+

@@ -1,0 +1,19 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [19, 148, 126, 41]
+      ],
+      "paintInvalidationClients": [
+        "InlineTextBox '\u1EA6\u1EA4\u1EAA\u1EA8\u1EB0'",
+        "LayoutText #text",
+        "RootInlineBox"
+      ]
+    }
+  ]
+}
+

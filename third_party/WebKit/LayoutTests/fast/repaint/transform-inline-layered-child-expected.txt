@@ -5,39 +5,137 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [300, 301, 80, 161],
-        [300, 300, 80, 162],
-        [147, 85, 1, 1],
-        [139, 359, 151, 181],
-        [139, 359, 151, 181],
-        [100, 100, 100, 162],
-        [66, 85, 168, 192]
-      ],
-      "paintInvalidationClients": [
-        "LayoutBlockFlow (positioned) DIV id='box'",
-        "RootInlineBox",
-        "LayoutInline (relative positioned) SPAN id='child'",
-        "InlineFlowBox",
-        "InlineFlowBox",
-        "InlineFlowBox",
-        "InlineFlowBox",
-        "InlineFlowBox",
-        "InlineFlowBox",
-        "InlineFlowBox",
-        "InlineFlowBox",
-        "InlineFlowBox",
-        "LayoutText #text",
-        "InlineTextBox 'A B C'",
-        "InlineTextBox 'D E F'",
-        "InlineTextBox 'G H I'",
-        "InlineTextBox 'J K L'",
-        "InlineTextBox 'M N O'",
-        "InlineTextBox 'P Q R'",
-        "InlineTextBox 'S T U'",
-        "InlineTextBox 'V W X'",
-        "InlineTextBox 'Y Z'",
-        "LayoutText #text"
+      "paintInvalidations": [
+        {
+          "object": "InlineFlowBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "InlineFlowBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "InlineFlowBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "InlineFlowBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "InlineFlowBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "InlineFlowBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "InlineFlowBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "InlineFlowBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "InlineFlowBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'A B C'",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'D E F'",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'G H I'",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'J K L'",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'M N O'",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'P Q R'",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'S T U'",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'V W X'",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'Y Z'",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='box'",
+          "rect": [100, 100, 100, 162],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='box'",
+          "rect": [66, 85, 168, 192],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutInline (relative positioned) SPAN id='child'",
+          "rect": [300, 300, 80, 162],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutInline (relative positioned) SPAN id='child'",
+          "rect": [139, 359, 151, 181],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [300, 301, 80, 161],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [139, 359, 151, 181],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [147, 85, 1, 1],
+          "reason": "location change"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        }
       ]
     }
   ]

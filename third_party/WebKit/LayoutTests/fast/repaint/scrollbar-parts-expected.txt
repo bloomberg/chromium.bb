@@ -5,13 +5,27 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [93, 8, 15, 85],
-        [8, 93, 85, 15]
-      ],
-      "paintInvalidationClients": [
-        "HorizontalScrollbar",
-        "VerticalScrollbar"
+      "paintInvalidations": [
+        {
+          "object": "HorizontalScrollbar",
+          "rect": [0, 0, 0, 0],
+          "reason": "scroll"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [8, 93, 85, 15],
+          "reason": "scroll"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [93, 8, 15, 85],
+          "reason": "scroll"
+        },
+        {
+          "object": "VerticalScrollbar",
+          "rect": [0, 0, 0, 0],
+          "reason": "scroll"
+        }
       ]
     }
   ]

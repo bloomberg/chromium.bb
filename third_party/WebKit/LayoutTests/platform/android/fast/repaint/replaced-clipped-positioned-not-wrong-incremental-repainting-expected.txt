@@ -1,0 +1,24 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [8, 8, 194, 237],
+        [8, 8, 194, 232],
+        [8, 8, 114, 237],
+        [8, 8, 114, 232]
+      ],
+      "paintInvalidationClients": [
+        "LayoutBlockFlow (relative positioned) DIV id='shiftMe'",
+        "LayoutBlockFlow (relative positioned) (floating) DIV class='imgContainer'",
+        "RootInlineBox",
+        "LayoutImage IMG",
+        "LayoutText #text"
+      ]
+    }
+  ]
+}
+

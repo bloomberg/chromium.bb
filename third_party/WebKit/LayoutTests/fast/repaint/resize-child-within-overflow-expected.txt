@@ -5,11 +5,12 @@
       "bounds": [800, 1000],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [400, 0, 200, 1000]
-      ],
-      "paintInvalidationClients": [
-        "LayoutBlockFlow (positioned) DIV class='container'"
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow (positioned) DIV class='container'",
+          "rect": [400, 0, 200, 1000],
+          "reason": "incremental"
+        }
       ]
     }
   ]

@@ -5,33 +5,112 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [28, 363, 20, 20],
-        [14, 363, 48, 65],
-        [8, 340, 418, 99]
-      ],
-      "paintInvalidationClients": [
-        "InlineTextBox 'other parts of\n'",
-        "InlineTextBox 'the ground, Alice soon came to the conclusion that it'",
-        "RootInlineBox",
-        "InlineTextBox 'was a very\n'",
-        "InlineTextBox 'difficult game indeed.\n'",
-        "RootInlineBox",
-        "InlineTextBox 'The players all played at once without waiting\n'",
-        "InlineTextBox 'for'",
-        "RootInlineBox",
-        "InlineTextBox 'turns,\n'",
-        "InlineTextBox 'quarrelling all the while, and fighting for the'",
-        "RootInlineBox",
-        "InlineTextBox 'hedgehogs; and in\n'",
-        "InlineTextBox 'a very short time '",
-        "InlineTextBox 'the Queen'",
-        "RootInlineBox",
-        "LayoutBlockFlow P",
-        "LayoutBlockFlow (floating) SPAN id='blueFloat'",
-        "RootInlineBox",
-        "LayoutText #text",
-        "InlineTextBox 'foo'"
+      "paintInvalidations": [
+        {
+          "object": "InlineTextBox 'The players all played at once without waiting\n'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'a very short time '",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'difficult game indeed.\n'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'foo'",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'for'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'hedgehogs; and in\n'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'other parts of\n'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'quarrelling all the while, and fighting for the'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'the Queen'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'the ground, Alice soon came to the conclusion that it'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'turns,\n'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'was a very\n'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutBlockFlow (floating) SPAN id='blueFloat'",
+          "rect": [14, 363, 48, 65],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutBlockFlow P",
+          "rect": [8, 340, 418, 99],
+          "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [28, 363, 20, 20],
+          "reason": "location change"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        }
       ]
     }
   ]

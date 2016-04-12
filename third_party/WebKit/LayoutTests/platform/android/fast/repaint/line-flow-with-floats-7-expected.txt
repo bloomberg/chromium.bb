@@ -1,0 +1,29 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [303, 420, 67, 19],
+        [297, 420, 72, 19],
+        [8, 400, 418, 39]
+      ],
+      "paintInvalidationClients": [
+        "InlineTextBox 'turns,\n'",
+        "InlineTextBox 'quarrelling all the while, and fighting for the'",
+        "RootInlineBox",
+        "InlineTextBox 'hedgehogs; and in\n'",
+        "InlineTextBox 'a very short time '",
+        "InlineTextBox ''",
+        "RootInlineBox",
+        "LayoutBlockFlow P",
+        "LayoutInline SPAN id='theQueen'",
+        "LayoutText #text",
+        "InlineTextBox 'the Queen'"
+      ]
+    }
+  ]
+}
+

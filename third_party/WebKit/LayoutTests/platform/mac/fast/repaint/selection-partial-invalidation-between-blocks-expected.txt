@@ -5,21 +5,57 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [11, 33, 79, 18],
-        [11, 11, 61, 18],
-        [11, 11, 57, 18]
-      ],
-      "paintInvalidationClients": [
-        "LayoutBlockFlow HTML",
-        "LayoutBlockFlow BODY",
-        "LayoutTable TABLE",
-        "LayoutTableCell TD id='firstCell'",
-        "LayoutText #text",
-        "InlineTextBox 'First cell'",
-        "LayoutTableCell TD id='secondCell'",
-        "LayoutText #text",
-        "InlineTextBox 'Second cell'"
+      "paintInvalidations": [
+        {
+          "object": "InlineTextBox 'First cell'",
+          "rect": [0, 0, 0, 0],
+          "reason": "selection"
+        },
+        {
+          "object": "InlineTextBox 'Second cell'",
+          "rect": [0, 0, 0, 0],
+          "reason": "selection"
+        },
+        {
+          "object": "LayoutBlockFlow BODY",
+          "rect": [0, 0, 0, 0],
+          "reason": "selection"
+        },
+        {
+          "object": "LayoutBlockFlow HTML",
+          "rect": [0, 0, 0, 0],
+          "reason": "selection"
+        },
+        {
+          "object": "LayoutTable TABLE",
+          "rect": [0, 0, 0, 0],
+          "reason": "selection"
+        },
+        {
+          "object": "LayoutTableCell TD id='firstCell'",
+          "rect": [0, 0, 0, 0],
+          "reason": "selection"
+        },
+        {
+          "object": "LayoutTableCell TD id='secondCell'",
+          "rect": [0, 0, 0, 0],
+          "reason": "selection"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [11, 11, 61, 18],
+          "reason": "selection"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [11, 11, 57, 18],
+          "reason": "selection"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [11, 33, 79, 18],
+          "reason": "selection"
+        }
       ]
     }
   ]

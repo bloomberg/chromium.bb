@@ -1,0 +1,28 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [488, 8, 80, 20],
+        [8, 8, 630, 20],
+        [8, 8, 470, 20]
+      ],
+      "paintInvalidationClients": [
+        "RootInlineBox",
+        "RootInlineBox",
+        "RootInlineBox",
+        "InlineTextBox '\n'",
+        "InlineTextBox '\n'",
+        "InlineTextBox '\n'",
+        "LayoutMultiColumnFlowThread (anonymous)",
+        "RootInlineBox",
+        "LayoutText #text",
+        "InlineTextBox 'PASS'"
+      ]
+    }
+  ]
+}
+

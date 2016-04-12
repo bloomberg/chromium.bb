@@ -5,29 +5,87 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [18, 148, 200, 18],
-        [18, 110, 200, 18],
-        [16, 146, 202, 21],
-        [16, 146, 88, 21],
-        [16, 108, 202, 21],
-        [16, 108, 88, 59]
-      ],
-      "paintInvalidationClients": [
-        "InlineTextBox 'CONTENTS'",
-        "RootInlineBox",
-        "InlineTextBox 'CONTENTS'",
-        "RootInlineBox",
-        "LayoutBlockFlow (anonymous)",
-        "RootInlineBox",
-        "LayoutInline SPAN id='outer'",
-        "InlineFlowBox",
-        "LayoutBlockFlow (anonymous)",
-        "RootInlineBox",
-        "LayoutInline SPAN id='outer'",
-        "InlineFlowBox",
-        "LayoutBlockFlow (anonymous)",
-        "LayoutInline SPAN id='outer'"
+      "paintInvalidations": [
+        {
+          "object": "InlineFlowBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "style change"
+        },
+        {
+          "object": "InlineFlowBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "style change"
+        },
+        {
+          "object": "InlineTextBox 'CONTENTS'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'CONTENTS'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutBlockFlow (anonymous)",
+          "rect": [18, 110, 200, 18],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutBlockFlow (anonymous)",
+          "rect": [16, 108, 202, 21],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutBlockFlow (anonymous)",
+          "rect": [18, 148, 200, 18],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutBlockFlow (anonymous)",
+          "rect": [16, 146, 202, 21],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutBlockFlow (anonymous)",
+          "rect": [0, 0, 0, 0],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutInline SPAN id='outer'",
+          "rect": [16, 108, 88, 59],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutInline SPAN id='outer'",
+          "rect": [16, 146, 88, 21],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutInline SPAN id='outer'",
+          "rect": [0, 0, 0, 0],
+          "reason": "style change"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        }
       ]
     }
   ]

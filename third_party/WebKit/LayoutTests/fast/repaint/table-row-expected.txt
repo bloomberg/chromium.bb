@@ -5,14 +5,22 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [10, 10, 102, 100],
-        [8, 10, 106, 100]
-      ],
-      "paintInvalidationClients": [
-        "LayoutTableCell TD",
-        "LayoutTableRow TR id='target' class='green'",
-        "LayoutTableCell TD"
+      "paintInvalidations": [
+        {
+          "object": "LayoutTableCell TD",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "rect": [10, 10, 102, 100],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutTableRow TR id='target' class='green'",
+          "rect": [8, 10, 106, 100],
+          "reason": "style change"
+        }
       ]
     }
   ]

@@ -5,30 +5,92 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [293, 108, 101, 100],
-        [112, 194, 182, 18],
-        [112, 108, 182, 104],
-        [112, 108, 100, 100],
-        [8, 108, 784, 104]
-      ],
-      "paintInvalidationClients": [
-        "InlineBox",
-        "InlineTextBox '\n'",
-        "InlineTextBox 'This span should disappear.\n'",
-        "InlineFlowBox",
-        "InlineBox",
-        "RootInlineBox",
-        "InlineTextBox 'This span should disappear.\n'",
-        "LayoutText #text",
-        "InlineFlowBox",
-        "LayoutInline SPAN id='target'",
-        "InlineBox",
-        "InlineTextBox '\n'",
-        "InlineBox",
-        "RootInlineBox",
-        "LayoutBlockFlow (anonymous)",
-        "LayoutBlockFlow DIV"
+      "paintInvalidations": [
+        {
+          "object": "InlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineFlowBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineFlowBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox '\n'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox '\n'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'This span should disappear.\n'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'This span should disappear.\n'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutBlockFlow (anonymous)",
+          "rect": [8, 108, 784, 104],
+          "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [293, 108, 101, 100],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [112, 108, 100, 100],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutInline SPAN id='target'",
+          "rect": [112, 108, 182, 104],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [112, 194, 182, 18],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        }
       ]
     }
   ]

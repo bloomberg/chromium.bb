@@ -5,27 +5,62 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [762, 8, 15, 300],
-        [10, 8, 302, 300],
-        [10, 8, 302, 300],
-        [8, 8, 769, 300],
-        [8, 8, 306, 300],
-        [8, 8, 306, 300],
-        [8, 8, 306, 300],
-        [8, 8, 306, 300]
-      ],
-      "paintInvalidationClients": [
-        "LayoutBlockFlow DIV id='innerDiv'",
-        "VerticalScrollbar",
-        "LayoutTable TABLE",
-        "LayoutTableCell TD",
-        "LayoutTableCell TD",
-        "LayoutTableSection TBODY",
-        "LayoutTableRow TR",
-        "LayoutTableCell TD",
-        "LayoutTableRow TR",
-        "LayoutTableCell TD"
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow DIV id='innerDiv'",
+          "rect": [8, 8, 769, 300],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='innerDiv'",
+          "rect": [762, 8, 15, 300],
+          "reason": "scroll"
+        },
+        {
+          "object": "LayoutTable TABLE",
+          "rect": [8, 8, 306, 300],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "rect": [10, 8, 302, 300],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "rect": [10, 8, 302, 300],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutTableRow TR",
+          "rect": [8, 8, 306, 300],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutTableRow TR",
+          "rect": [8, 8, 306, 300],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutTableSection TBODY",
+          "rect": [8, 8, 306, 300],
+          "reason": "location change"
+        },
+        {
+          "object": "VerticalScrollbar",
+          "rect": [0, 0, 0, 0],
+          "reason": "scroll"
+        }
       ]
     }
   ]

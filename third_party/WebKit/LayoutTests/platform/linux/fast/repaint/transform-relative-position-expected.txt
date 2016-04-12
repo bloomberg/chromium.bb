@@ -5,12 +5,17 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [108, 152, 202, 202],
-        [66, 110, 286, 286]
-      ],
-      "paintInvalidationClients": [
-        "LayoutBlockFlow (relative positioned) DIV id='box' class='rotated'"
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow (relative positioned) DIV id='box' class='rotated'",
+          "rect": [108, 152, 202, 202],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow (relative positioned) DIV id='box' class='rotated'",
+          "rect": [66, 110, 286, 286],
+          "reason": "location change"
+        }
       ]
     }
   ]

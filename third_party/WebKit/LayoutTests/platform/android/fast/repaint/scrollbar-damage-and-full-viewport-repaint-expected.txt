@@ -1,0 +1,19 @@
+{
+  "bounds": [1000, 600],
+  "children": [
+    {
+      "bounds": [1000, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [101, 51, 85, 185],
+        [1, 236, 185, 15]
+      ],
+      "paintInvalidationClients": [
+        "HorizontalScrollbar",
+        "LayoutBlockFlow DIV id='child'"
+      ]
+    }
+  ]
+}
+

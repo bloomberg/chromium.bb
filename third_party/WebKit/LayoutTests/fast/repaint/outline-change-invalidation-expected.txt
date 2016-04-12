@@ -5,22 +5,57 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [31, 84, 761, 18],
-        [31, 84, 761, 18],
-        [31, 79, 766, 28],
-        [31, 79, 766, 28],
-        [8, 84, 784, 18],
-        [8, 79, 789, 28]
-      ],
-      "paintInvalidationClients": [
-        "RootInlineBox",
-        "InlineBox",
-        "InlineTextBox 'Lorem Ipsum'",
-        "LayoutBlockFlow UL",
-        "LayoutListItem LI",
-        "LayoutBlockFlow A id='link'",
-        "RootInlineBox"
+      "paintInvalidations": [
+        {
+          "object": "InlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'Lorem Ipsum'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutBlockFlow A id='link'",
+          "rect": [31, 84, 761, 18],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutBlockFlow A id='link'",
+          "rect": [31, 79, 766, 28],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutBlockFlow UL",
+          "rect": [8, 84, 784, 18],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutBlockFlow UL",
+          "rect": [8, 79, 789, 28],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutListItem LI",
+          "rect": [31, 84, 761, 18],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutListItem LI",
+          "rect": [31, 79, 766, 28],
+          "reason": "bounds change"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        }
       ]
     }
   ]

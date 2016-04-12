@@ -5,17 +5,37 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [8, 108, 100, 100],
-        [8, 108, 90, 39]
-      ],
-      "paintInvalidationClients": [
-        "InlineTextBox 'This div should'",
-        "InlineTextBox 'disappear.'",
-        "LayoutText #text",
-        "RootInlineBox",
-        "RootInlineBox",
-        "LayoutBlockFlow (positioned) DIV id='target'"
+      "paintInvalidations": [
+        {
+          "object": "InlineTextBox 'This div should'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'disappear.'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='target'",
+          "rect": [8, 108, 100, 100],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [8, 108, 90, 39],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        }
       ]
     }
   ]

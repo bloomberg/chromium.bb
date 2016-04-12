@@ -5,35 +5,97 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [58, 238, 10, 10],
-        [48, 218, 10, 10],
-        [48, 198, 10, 10],
-        [18, 238, 40, 10],
-        [18, 228, 10, 10],
-        [18, 218, 30, 10],
-        [18, 208, 10, 10],
-        [18, 198, 30, 10]
-      ],
-      "paintInvalidationClients": [
-        "LayoutBlockFlow HTML",
-        "LayoutBlockFlow BODY",
-        "LayoutText #text",
-        "InlineTextBox 'Foo'",
-        "LayoutBR BR",
-        "InlineTextBox '\n'",
-        "LayoutBR BR",
-        "InlineTextBox '\n'",
-        "LayoutText #text",
-        "InlineTextBox 'Bar'",
-        "LayoutBR BR",
-        "InlineTextBox '\n'",
-        "LayoutBR BR",
-        "InlineTextBox '\n'",
-        "LayoutText #text",
-        "InlineTextBox 'Bazz'",
-        "LayoutBR BR",
-        "InlineTextBox '\n'"
+      "paintInvalidations": [
+        {
+          "object": "InlineTextBox '\n'",
+          "rect": [0, 0, 0, 0],
+          "reason": "selection"
+        },
+        {
+          "object": "InlineTextBox '\n'",
+          "rect": [0, 0, 0, 0],
+          "reason": "selection"
+        },
+        {
+          "object": "InlineTextBox '\n'",
+          "rect": [0, 0, 0, 0],
+          "reason": "selection"
+        },
+        {
+          "object": "InlineTextBox '\n'",
+          "rect": [0, 0, 0, 0],
+          "reason": "selection"
+        },
+        {
+          "object": "InlineTextBox '\n'",
+          "rect": [0, 0, 0, 0],
+          "reason": "selection"
+        },
+        {
+          "object": "InlineTextBox 'Bar'",
+          "rect": [0, 0, 0, 0],
+          "reason": "selection"
+        },
+        {
+          "object": "InlineTextBox 'Bazz'",
+          "rect": [0, 0, 0, 0],
+          "reason": "selection"
+        },
+        {
+          "object": "InlineTextBox 'Foo'",
+          "rect": [0, 0, 0, 0],
+          "reason": "selection"
+        },
+        {
+          "object": "LayoutBR BR",
+          "rect": [48, 198, 10, 10],
+          "reason": "selection"
+        },
+        {
+          "object": "LayoutBR BR",
+          "rect": [18, 208, 10, 10],
+          "reason": "selection"
+        },
+        {
+          "object": "LayoutBR BR",
+          "rect": [48, 218, 10, 10],
+          "reason": "selection"
+        },
+        {
+          "object": "LayoutBR BR",
+          "rect": [18, 228, 10, 10],
+          "reason": "selection"
+        },
+        {
+          "object": "LayoutBR BR",
+          "rect": [58, 238, 10, 10],
+          "reason": "selection"
+        },
+        {
+          "object": "LayoutBlockFlow BODY",
+          "rect": [0, 0, 0, 0],
+          "reason": "selection"
+        },
+        {
+          "object": "LayoutBlockFlow HTML",
+          "rect": [0, 0, 0, 0],
+          "reason": "selection"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [18, 198, 30, 10],
+          "reason": "selection"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [18, 218, 30, 10],
+          "reason": "selection"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [18, 238, 40, 10],
+          "reason": "selection"
+        }
       ]
     }
   ]
