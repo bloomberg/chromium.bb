@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_PRINTING_CLOUD_PRINT_GCD_API_FLOW_H_
 #define CHROME_BROWSER_PRINTING_CLOUD_PRINT_GCD_API_FLOW_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
@@ -57,12 +58,12 @@ class GCDApiFlow {
   GCDApiFlow();
   virtual ~GCDApiFlow();
 
-  static scoped_ptr<GCDApiFlow> Create(
+  static std::unique_ptr<GCDApiFlow> Create(
       net::URLRequestContextGetter* request_context,
       OAuth2TokenService* token_service,
       const std::string& account_id);
 
-  virtual void Start(scoped_ptr<Request> request) = 0;
+  virtual void Start(std::unique_ptr<Request> request) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GCDApiFlow);

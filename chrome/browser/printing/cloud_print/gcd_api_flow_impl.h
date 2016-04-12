@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_PRINTING_CLOUD_PRINT_GCD_API_FLOW_IMPL_H_
 #define CHROME_BROWSER_PRINTING_CLOUD_PRINT_GCD_API_FLOW_IMPL_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "chrome/browser/printing/cloud_print/gcd_api_flow.h"
 #include "net/url_request/url_fetcher.h"
@@ -27,7 +29,7 @@ class GCDApiFlowImpl : public GCDApiFlow,
 
   ~GCDApiFlowImpl() override;
 
-  void Start(scoped_ptr<Request> request) override;
+  void Start(std::unique_ptr<Request> request) override;
 
   // net::URLFetcherDelegate implementation:
   void OnURLFetchComplete(const net::URLFetcher* source) override;
@@ -42,12 +44,12 @@ class GCDApiFlowImpl : public GCDApiFlow,
  private:
   void CreateRequest(const GURL& url);
 
-  scoped_ptr<net::URLFetcher> url_fetcher_;
-  scoped_ptr<OAuth2TokenService::Request> oauth_request_;
+  std::unique_ptr<net::URLFetcher> url_fetcher_;
+  std::unique_ptr<OAuth2TokenService::Request> oauth_request_;
   scoped_refptr<net::URLRequestContextGetter> request_context_;
   OAuth2TokenService* token_service_;
   std::string account_id_;
-  scoped_ptr<Request> request_;
+  std::unique_ptr<Request> request_;
 
   DISALLOW_COPY_AND_ASSIGN(GCDApiFlowImpl);
 };

@@ -4,15 +4,18 @@
 
 #include "chrome/browser/printing/cloud_print/privet_http_asynchronous_factory.h"
 
+#include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/printing/cloud_print/privet_http_asynchronous_factory_impl.h"
 
 namespace cloud_print {
 
 // static
-scoped_ptr<PrivetHTTPAsynchronousFactory>
+std::unique_ptr<PrivetHTTPAsynchronousFactory>
 PrivetHTTPAsynchronousFactory::CreateInstance(
     net::URLRequestContextGetter* request_context) {
-  return make_scoped_ptr<PrivetHTTPAsynchronousFactory>(
+  return base::WrapUnique<PrivetHTTPAsynchronousFactory>(
       new PrivetHTTPAsynchronousFactoryImpl(request_context));
 }
 

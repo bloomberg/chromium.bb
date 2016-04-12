@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
@@ -105,7 +106,7 @@ class PrintingMessageFilter : public content::BrowserMessageFilter {
                         bool* cancel);
 #endif
 
-  scoped_ptr<BooleanPrefMember, content::BrowserThread::DeleteOnUIThread>
+  std::unique_ptr<BooleanPrefMember, content::BrowserThread::DeleteOnUIThread>
       is_printing_enabled_;
 
   const int render_process_id_;

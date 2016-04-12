@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_PRINTING_CLOUD_PRINT_PRIVET_HTTP_ASYNCHRONOUS_FACTORY_H_
 #define CHROME_BROWSER_PRINTING_CLOUD_PRINT_PRIVET_HTTP_ASYNCHRONOUS_FACTORY_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace net {
 class HostPortPair;
@@ -21,7 +21,8 @@ class PrivetHTTPClient;
 
 class PrivetHTTPResolution {
  public:
-  using ResultCallback = base::Callback<void(scoped_ptr<PrivetHTTPClient>)>;
+  using ResultCallback =
+      base::Callback<void(std::unique_ptr<PrivetHTTPClient>)>;
 
   virtual ~PrivetHTTPResolution() {}
 
@@ -39,10 +40,10 @@ class PrivetHTTPAsynchronousFactory {
 
   virtual ~PrivetHTTPAsynchronousFactory() {}
 
-  static scoped_ptr<PrivetHTTPAsynchronousFactory> CreateInstance(
+  static std::unique_ptr<PrivetHTTPAsynchronousFactory> CreateInstance(
       net::URLRequestContextGetter* request_context);
 
-  virtual scoped_ptr<PrivetHTTPResolution> CreatePrivetHTTP(
+  virtual std::unique_ptr<PrivetHTTPResolution> CreatePrivetHTTP(
       const std::string& service_name) = 0;
 };
 

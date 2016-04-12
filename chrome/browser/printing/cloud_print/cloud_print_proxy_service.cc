@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <stack>
 #include <vector>
 
@@ -135,7 +136,7 @@ void CloudPrintProxyService::GetPrinters(const PrintersCallback& callback) {
   if (!list_path.empty()) {
     std::string printers_json;
     base::ReadFileToString(list_path, &printers_json);
-    scoped_ptr<base::Value> value = base::JSONReader::Read(printers_json);
+    std::unique_ptr<base::Value> value = base::JSONReader::Read(printers_json);
     base::ListValue* list = NULL;
     std::vector<std::string> printers;
     if (value && value->GetAsList(&list) && list) {

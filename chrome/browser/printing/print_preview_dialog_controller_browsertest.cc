@@ -2,10 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/printing/print_preview_dialog_controller.h"
+
+#include <memory>
+
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
@@ -13,7 +16,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
-#include "chrome/browser/printing/print_preview_dialog_controller.h"
 #include "chrome/browser/task_management/task_management_browsertest_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -89,7 +91,7 @@ class PrintPreviewDialogClonedObserver : public WebContentsObserver {
         new RequestPrintPreviewObserver(new_web_contents));
   }
 
-  scoped_ptr<RequestPrintPreviewObserver> request_preview_dialog_observer_;
+  std::unique_ptr<RequestPrintPreviewObserver> request_preview_dialog_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(PrintPreviewDialogClonedObserver);
 };
@@ -201,7 +203,7 @@ class PrintPreviewDialogControllerBrowserTest : public InProcessBrowserTest {
     return cloned_tab_observer_->request_preview_dialog_observer();
   }
 
-  scoped_ptr<PrintPreviewDialogClonedObserver> cloned_tab_observer_;
+  std::unique_ptr<PrintPreviewDialogClonedObserver> cloned_tab_observer_;
   WebContents* initiator_;
 
   DISALLOW_COPY_AND_ASSIGN(PrintPreviewDialogControllerBrowserTest);

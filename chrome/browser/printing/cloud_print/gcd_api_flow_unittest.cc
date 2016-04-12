@@ -4,6 +4,7 @@
 
 #include "chrome/browser/printing/cloud_print/gcd_api_flow.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -60,7 +61,7 @@ class GCDApiFlowTest : public testing::Test {
     token_service_.AddAccount(account_id_);
     ui_thread_.Stop();  // HACK: Fake being on the UI thread
 
-    scoped_ptr<MockDelegate> delegate(new MockDelegate);
+    std::unique_ptr<MockDelegate> delegate(new MockDelegate);
     mock_delegate_ = delegate.get();
     EXPECT_CALL(*mock_delegate_, GetURL())
         .WillRepeatedly(Return(
@@ -75,7 +76,7 @@ class GCDApiFlowTest : public testing::Test {
   net::TestURLFetcherFactory fetcher_factory_;
   FakeOAuth2TokenService token_service_;
   std::string account_id_;
-  scoped_ptr<GCDApiFlowImpl> gcd_flow_;
+  std::unique_ptr<GCDApiFlowImpl> gcd_flow_;
   MockDelegate* mock_delegate_;
 };
 

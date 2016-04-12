@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_PRINTING_CLOUD_PRINT_PRIVET_HTTP_H_
 #define CHROME_BROWSER_PRINTING_CLOUD_PRINT_PRIVET_HTTP_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
@@ -51,11 +52,11 @@ class PrivetHTTPClient {
   virtual const std::string& GetName() = 0;
 
   // Creates operation to query basic information about local device.
-  virtual scoped_ptr<PrivetJSONOperation> CreateInfoOperation(
+  virtual std::unique_ptr<PrivetJSONOperation> CreateInfoOperation(
       const PrivetJSONOperation::ResultCallback& callback) = 0;
 
   // Creates a URL fetcher for PrivetV1.
-  virtual scoped_ptr<PrivetURLFetcher> CreateURLFetcher(
+  virtual std::unique_ptr<PrivetURLFetcher> CreateURLFetcher(
       const GURL& url,
       net::URLFetcher::RequestType request_type,
       PrivetURLFetcher::Delegate* delegate) = 0;
@@ -176,7 +177,7 @@ class PrivetLocalPrintOperation {
 
   // For testing, inject an alternative PWG raster converter.
   virtual void SetPWGRasterConverterForTesting(
-      scoped_ptr<printing::PWGRasterConverter> pwg_raster_converter) = 0;
+      std::unique_ptr<printing::PWGRasterConverter> pwg_raster_converter) = 0;
 
   virtual PrivetHTTPClient* GetHTTPClient() = 0;
 };
@@ -186,27 +187,27 @@ class PrivetV1HTTPClient {
  public:
   virtual ~PrivetV1HTTPClient() {}
 
-  static scoped_ptr<PrivetV1HTTPClient> CreateDefault(
-      scoped_ptr<PrivetHTTPClient> info_client);
+  static std::unique_ptr<PrivetV1HTTPClient> CreateDefault(
+      std::unique_ptr<PrivetHTTPClient> info_client);
 
   // A name for the HTTP client, e.g. the device name for the privet device.
   virtual const std::string& GetName() = 0;
 
   // Creates operation to query basic information about local device.
-  virtual scoped_ptr<PrivetJSONOperation> CreateInfoOperation(
+  virtual std::unique_ptr<PrivetJSONOperation> CreateInfoOperation(
       const PrivetJSONOperation::ResultCallback& callback) = 0;
 
   // Creates operation to register local device using Privet v1 protocol.
-  virtual scoped_ptr<PrivetRegisterOperation> CreateRegisterOperation(
+  virtual std::unique_ptr<PrivetRegisterOperation> CreateRegisterOperation(
       const std::string& user,
       PrivetRegisterOperation::Delegate* delegate) = 0;
 
   // Creates operation to query capabilities of local printer.
-  virtual scoped_ptr<PrivetJSONOperation> CreateCapabilitiesOperation(
+  virtual std::unique_ptr<PrivetJSONOperation> CreateCapabilitiesOperation(
       const PrivetJSONOperation::ResultCallback& callback) = 0;
 
   // Creates operation to submit print job to local printer.
-  virtual scoped_ptr<PrivetLocalPrintOperation> CreateLocalPrintOperation(
+  virtual std::unique_ptr<PrivetLocalPrintOperation> CreateLocalPrintOperation(
       PrivetLocalPrintOperation::Delegate* delegate) = 0;
 };
 

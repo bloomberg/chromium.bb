@@ -4,6 +4,8 @@
 
 #include "chrome/browser/printing/print_job_worker.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
@@ -170,7 +172,7 @@ void PrintJobWorker::GetSettings(
 }
 
 void PrintJobWorker::SetSettings(
-    scoped_ptr<base::DictionaryValue> new_settings) {
+    std::unique_ptr<base::DictionaryValue> new_settings) {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
 
   BrowserThread::PostTask(
@@ -184,7 +186,7 @@ void PrintJobWorker::SetSettings(
 }
 
 void PrintJobWorker::UpdatePrintSettings(
-    scoped_ptr<base::DictionaryValue> new_settings) {
+    std::unique_ptr<base::DictionaryValue> new_settings) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   PrintingContext::Result result =
       printing_context_->UpdatePrintSettings(*new_settings);

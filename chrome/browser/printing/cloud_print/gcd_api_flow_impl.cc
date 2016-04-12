@@ -5,6 +5,8 @@
 #include "chrome/browser/printing/cloud_print/gcd_api_flow_impl.h"
 
 #include <stddef.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/json/json_reader.h"
@@ -34,7 +36,7 @@ GCDApiFlowImpl::GCDApiFlowImpl(net::URLRequestContextGetter* request_context,
 GCDApiFlowImpl::~GCDApiFlowImpl() {
 }
 
-void GCDApiFlowImpl::Start(scoped_ptr<Request> request) {
+void GCDApiFlowImpl::Start(std::unique_ptr<Request> request) {
   request_ = std::move(request);
   OAuth2TokenService::ScopeSet oauth_scopes;
   oauth_scopes.insert(request_->GetOAuthScope());
@@ -101,7 +103,7 @@ void GCDApiFlowImpl::OnURLFetchComplete(const net::URLFetcher* source) {
   }
 
   base::JSONReader reader;
-  scoped_ptr<const base::Value> value(reader.Read(response_str));
+  std::unique_ptr<const base::Value> value(reader.Read(response_str));
   const base::DictionaryValue* dictionary_value = NULL;
 
   if (!value || !value->GetAsDictionary(&dictionary_value)) {

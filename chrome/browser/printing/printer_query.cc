@@ -4,6 +4,8 @@
 
 #include "chrome/browser/printing/printer_query.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/message_loop/message_loop.h"
@@ -88,8 +90,9 @@ void PrinterQuery::GetSettings(
                                is_scripted));
 }
 
-void PrinterQuery::SetSettings(scoped_ptr<base::DictionaryValue> new_settings,
-                               const base::Closure& callback) {
+void PrinterQuery::SetSettings(
+    std::unique_ptr<base::DictionaryValue> new_settings,
+    const base::Closure& callback) {
   StartWorker(callback);
 
   worker_->PostTask(FROM_HERE,

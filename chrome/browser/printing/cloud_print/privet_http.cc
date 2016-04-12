@@ -4,18 +4,20 @@
 
 #include "chrome/browser/printing/cloud_print/privet_http.h"
 
+#include <memory>
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/printing/cloud_print/privet_http_impl.h"
 
 namespace cloud_print {
 
 // static
-scoped_ptr<PrivetV1HTTPClient> PrivetV1HTTPClient::CreateDefault(
-    scoped_ptr<PrivetHTTPClient> info_client) {
+std::unique_ptr<PrivetV1HTTPClient> PrivetV1HTTPClient::CreateDefault(
+    std::unique_ptr<PrivetHTTPClient> info_client) {
   if (!info_client)
-    return scoped_ptr<PrivetV1HTTPClient>();
-  return make_scoped_ptr<PrivetV1HTTPClient>(
+    return std::unique_ptr<PrivetV1HTTPClient>();
+  return base::WrapUnique<PrivetV1HTTPClient>(
       new PrivetV1HTTPClientImpl(std::move(info_client)));
 }
 

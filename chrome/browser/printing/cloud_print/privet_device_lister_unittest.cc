@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/printing/cloud_print/privet_device_lister_impl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -115,29 +118,29 @@ class MockServiceDiscoveryClient : public ServiceDiscoveryClient {
 
   // Create a service watcher object listening for DNS-SD service announcements
   // on service type |service_type|.
-  scoped_ptr<ServiceWatcher> CreateServiceWatcher(
+  std::unique_ptr<ServiceWatcher> CreateServiceWatcher(
       const std::string& service_type,
       const ServiceWatcher::UpdatedCallback& callback) override {
-    return make_scoped_ptr(
+    return base::WrapUnique(
         new MockServiceWatcher(service_type, callback, mock_delegate_));
   }
 
   // Create a service resolver object for getting detailed service information
   // for the service called |service_name|.
-  scoped_ptr<ServiceResolver> CreateServiceResolver(
+  std::unique_ptr<ServiceResolver> CreateServiceResolver(
       const std::string& service_name,
       const ServiceResolver::ResolveCompleteCallback& callback) override {
-    return make_scoped_ptr(
+    return base::WrapUnique(
         new MockServiceResolver(service_name, callback, mock_delegate_));
   }
 
   // Not used in this test.
-  scoped_ptr<LocalDomainResolver> CreateLocalDomainResolver(
+  std::unique_ptr<LocalDomainResolver> CreateLocalDomainResolver(
       const std::string& domain,
       net::AddressFamily address_family,
       const LocalDomainResolver::IPAddressCallback& callback) override {
     NOTREACHED();
-    return scoped_ptr<LocalDomainResolver>();
+    return std::unique_ptr<LocalDomainResolver>();
   }
 
  private:

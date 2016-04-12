@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/printing/print_preview_dialog_controller.h"
+
+#include <memory>
+
 #include "chrome/browser/printing/print_preview_test.h"
 #include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -152,7 +155,7 @@ TEST_F(PrintPreviewDialogControllerUnitTest, ProxyGetOrCreatePreviewDialog) {
   EXPECT_NE(initiator, preview_dialog);
 
   // Create the proxy web contents.
-  scoped_ptr<WebContents> proxy(
+  std::unique_ptr<WebContents> proxy(
       content::WebContentsTester::CreateTestWebContents(profile(), nullptr));
   TestWebContentsDelegate delegate;
   proxy->SetDelegate(&delegate);
@@ -190,7 +193,7 @@ TEST_F(PrintPreviewDialogControllerUnitTest, ProxyNoGetOrCreatePreviewDialog) {
   ASSERT_TRUE(dialog_controller);
 
   // Create the proxy web contents.
-  scoped_ptr<WebContents> proxy(
+  std::unique_ptr<WebContents> proxy(
       content::WebContentsTester::CreateTestWebContents(profile(), nullptr));
   TestWebContentsDelegate delegate;
   proxy->SetDelegate(&delegate);

@@ -7,6 +7,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/run_loop.h"
 #include "base/thread_task_runner_handle.h"
 #include "chrome/browser/local_discovery/test_service_discovery_client.h"
@@ -157,7 +159,7 @@ class PrivetLocalPrinterListerTest : public testing::Test {
   content::TestBrowserThreadBundle test_thread_bundle;
   scoped_refptr<TestServiceDiscoveryClient> test_service_discovery_client_;
   scoped_refptr<net::TestURLRequestContextGetter> url_request_context_;
-  scoped_ptr<PrivetLocalPrinterLister> local_printer_lister_;
+  std::unique_ptr<PrivetLocalPrinterLister> local_printer_lister_;
   net::TestURLFetcherFactory fetcher_factory_;
   StrictMock<MockLocalPrinterListerDelegate> delegate_;
 };

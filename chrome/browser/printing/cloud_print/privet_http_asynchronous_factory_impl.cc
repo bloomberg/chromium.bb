@@ -4,6 +4,8 @@
 
 #include "chrome/browser/printing/cloud_print/privet_http_asynchronous_factory_impl.h"
 
+#include <memory>
+
 #include "chrome/browser/local_discovery/endpoint_resolver.h"
 #include "chrome/browser/printing/cloud_print/privet_http_impl.h"
 
@@ -17,10 +19,10 @@ PrivetHTTPAsynchronousFactoryImpl::PrivetHTTPAsynchronousFactoryImpl(
 PrivetHTTPAsynchronousFactoryImpl::~PrivetHTTPAsynchronousFactoryImpl() {
 }
 
-scoped_ptr<PrivetHTTPResolution>
+std::unique_ptr<PrivetHTTPResolution>
 PrivetHTTPAsynchronousFactoryImpl::CreatePrivetHTTP(
     const std::string& service_name) {
-  return scoped_ptr<PrivetHTTPResolution>(
+  return std::unique_ptr<PrivetHTTPResolution>(
       new ResolutionImpl(service_name, request_context_.get()));
 }
 
@@ -58,10 +60,10 @@ void PrivetHTTPAsynchronousFactoryImpl::ResolutionImpl::ResolveComplete(
     const ResultCallback& callback,
     const net::IPEndPoint& endpoint) {
   if (endpoint.address().empty())
-    return callback.Run(scoped_ptr<PrivetHTTPClient>());
+    return callback.Run(std::unique_ptr<PrivetHTTPClient>());
 
   net::HostPortPair new_address = net::HostPortPair::FromIPEndPoint(endpoint);
-  callback.Run(scoped_ptr<PrivetHTTPClient>(
+  callback.Run(std::unique_ptr<PrivetHTTPClient>(
       new PrivetHTTPClientImpl(name_, new_address, request_context_.get())));
 }
 

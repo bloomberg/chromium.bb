@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_PRINTING_CLOUD_PRINT_PRIVET_TRAFFIC_DETECTOR_H_
 #define CHROME_BROWSER_PRINTING_CLOUD_PRINT_PRIVET_TRAFFIC_DETECTOR_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/cancelable_callback.h"
 #include "base/macros.h"
@@ -57,7 +59,7 @@ class PrivetTrafficDetector
   net::NetworkInterfaceList networks_;
   net::AddressFamily address_family_;
   net::IPEndPoint recv_addr_;
-  scoped_ptr<net::DatagramServerSocket> socket_;
+  std::unique_ptr<net::DatagramServerSocket> socket_;
   scoped_refptr<net::IOBufferWithSize> io_buffer_;
   base::Time start_time_;
   int restart_attempts_;

@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_PRINTING_PWG_RASTER_CONVERTER_H_
 #define CHROME_BROWSER_PRINTING_PWG_RASTER_CONVERTER_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace base {
 class FilePath;
@@ -37,7 +38,7 @@ class PWGRasterConverter {
           ResultCallback;
   virtual ~PWGRasterConverter() {}
 
-  static scoped_ptr<PWGRasterConverter> CreateDefault();
+  static std::unique_ptr<PWGRasterConverter> CreateDefault();
 
   // Generates conversion settings to be used with converter from printer
   // capabilities and page size.

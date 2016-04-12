@@ -4,6 +4,8 @@
 
 #include "chrome/browser/printing/cloud_print/gcd_api_flow.h"
 
+#include <memory>
+
 #include "chrome/browser/printing/cloud_print/gcd_api_flow_impl.h"
 #include "chrome/browser/printing/cloud_print/gcd_constants.h"
 #include "chrome/common/cloud_print/cloud_print_constants.h"
@@ -27,11 +29,11 @@ void GCDApiFlow::Request::GetUploadData(std::string* upload_type,
   *upload_data = std::string();
 }
 
-scoped_ptr<GCDApiFlow> GCDApiFlow::Create(
+std::unique_ptr<GCDApiFlow> GCDApiFlow::Create(
     net::URLRequestContextGetter* request_context,
     OAuth2TokenService* token_service,
     const std::string& account_id) {
-  return scoped_ptr<GCDApiFlow>(
+  return std::unique_ptr<GCDApiFlow>(
       new GCDApiFlowImpl(request_context, token_service, account_id));
 }
 

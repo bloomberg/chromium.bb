@@ -5,6 +5,7 @@
 #include "chrome/browser/printing/pwg_raster_converter.h"
 
 #include <algorithm>
+#include <memory>
 #include <utility>
 
 #include "base/bind_helpers.h"
@@ -140,7 +141,7 @@ class PwgUtilityProcessHostClient : public content::UtilityProcessHostClient {
   void RunCallbackOnUIThread(bool success);
   void OnFilesReadyOnUIThread();
 
-  scoped_ptr<FileHandlers, BrowserThread::DeleteOnFileThread> files_;
+  std::unique_ptr<FileHandlers, BrowserThread::DeleteOnFileThread> files_;
   PdfRenderSettings settings_;
   PwgRasterSettings bitmap_settings_;
   PWGRasterConverter::ResultCallback callback_;
@@ -290,8 +291,8 @@ void PWGRasterConverterImpl::Start(
 }  // namespace
 
 // static
-scoped_ptr<PWGRasterConverter> PWGRasterConverter::CreateDefault() {
-  return scoped_ptr<PWGRasterConverter>(new PWGRasterConverterImpl());
+std::unique_ptr<PWGRasterConverter> PWGRasterConverter::CreateDefault() {
+  return std::unique_ptr<PWGRasterConverter>(new PWGRasterConverterImpl());
 }
 
 // static

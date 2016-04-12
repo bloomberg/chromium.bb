@@ -4,6 +4,7 @@
 
 #include "chrome/browser/printing/cloud_print/privet_confirm_api_flow.h"
 
+#include <memory>
 #include <set>
 
 #include "base/json/json_reader.h"
@@ -47,7 +48,7 @@ TEST(PrivetConfirmApiFlowTest, Parsing) {
       "123", base::Bind(&MockDelegate::Callback, base::Unretained(&delegate)));
   EXPECT_CALL(delegate, Callback(GCDApiFlow::SUCCESS)).Times(1);
 
-  scoped_ptr<base::Value> value =
+  std::unique_ptr<base::Value> value =
       base::JSONReader::Read(kSampleConfirmResponse);
   const base::DictionaryValue* dictionary = NULL;
   ASSERT_TRUE(value->GetAsDictionary(&dictionary));

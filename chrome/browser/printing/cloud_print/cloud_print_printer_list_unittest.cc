@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <set>
 
 #include "base/json/json_reader.h"
@@ -53,7 +54,7 @@ TEST(CloudPrintPrinterListTest, Parsing) {
   CloudPrintPrinterList::DeviceList devices;
   EXPECT_CALL(delegate, OnDeviceListReady(_)).WillOnce(SaveArg<0>(&devices));
 
-  scoped_ptr<base::Value> value =
+  std::unique_ptr<base::Value> value =
       base::JSONReader::Read(kSampleSuccessResponseOAuth);
   const base::DictionaryValue* dictionary = NULL;
   ASSERT_TRUE(value->GetAsDictionary(&dictionary));

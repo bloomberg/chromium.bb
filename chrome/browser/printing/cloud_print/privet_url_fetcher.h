@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_PRINTING_CLOUD_PRINT_PRIVET_URL_FETCHER_H_
 #define CHROME_BROWSER_PRINTING_CLOUD_PRINT_PRIVET_URL_FETCHER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/files/file_util.h"
@@ -136,7 +137,7 @@ class PrivetURLFetcher : public net::URLFetcherDelegate {
   std::string upload_data_;
   std::string upload_content_type_;
   base::FilePath upload_file_path_;
-  scoped_ptr<net::URLFetcher> url_fetcher_;
+  std::unique_ptr<net::URLFetcher> url_fetcher_;
 
   base::WeakPtrFactory<PrivetURLFetcher> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(PrivetURLFetcher);

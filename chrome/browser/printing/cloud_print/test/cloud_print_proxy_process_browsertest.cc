@@ -7,6 +7,8 @@
 // line switch.
 
 #include <stdint.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -269,7 +271,7 @@ int CloudPrintMockService_Main(SetExpectationsCallback set_expectations) {
   std::string startup_channel_name =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kProcessChannelID);
-  scoped_ptr<IPC::ChannelProxy> startup_channel;
+  std::unique_ptr<IPC::ChannelProxy> startup_channel;
   startup_channel =
       IPC::ChannelProxy::Create(startup_channel_name,
                                 IPC::Channel::MODE_CLIENT,
@@ -338,15 +340,15 @@ class CloudPrintProxyPolicyStartupTest : public base::MultiProcessTest,
   base::ScopedTempDir temp_user_data_dir_;
 
   std::string startup_channel_id_;
-  scoped_ptr<IPC::ChannelProxy> startup_channel_;
-  scoped_ptr<ChromeContentClient> content_client_;
-  scoped_ptr<ChromeContentBrowserClient> browser_content_client_;
+  std::unique_ptr<IPC::ChannelProxy> startup_channel_;
+  std::unique_ptr<ChromeContentClient> content_client_;
+  std::unique_ptr<ChromeContentBrowserClient> browser_content_client_;
 
 #if defined(OS_MACOSX)
   base::ScopedTempDir temp_dir_;
   base::FilePath executable_path_, bundle_path_;
-  scoped_ptr<MockLaunchd> mock_launchd_;
-  scoped_ptr<Launchd::ScopedInstance> scoped_launchd_instance_;
+  std::unique_ptr<MockLaunchd> mock_launchd_;
+  std::unique_ptr<Launchd::ScopedInstance> scoped_launchd_instance_;
 #endif
 
  private:

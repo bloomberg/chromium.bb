@@ -2,10 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/printing/cloud_print/privet_notifications.h"
+
+#include <memory>
+
 #include "base/thread_task_runner_handle.h"
 #include "chrome/browser/printing/cloud_print/privet_http_asynchronous_factory.h"
 #include "chrome/browser/printing/cloud_print/privet_http_impl.h"
-#include "chrome/browser/printing/cloud_print/privet_notifications.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -49,7 +52,7 @@ class MockPrivetHttpFactory : public PrivetHTTPAsynchronousFactory {
 
     void Start(const net::HostPortPair& address,
                const ResultCallback& callback) override {
-      callback.Run(scoped_ptr<PrivetHTTPClient>(new PrivetHTTPClientImpl(
+      callback.Run(std::unique_ptr<PrivetHTTPClient>(new PrivetHTTPClientImpl(
           name_, net::HostPortPair("1.2.3.4", 8080), request_context_.get())));
     }
 
@@ -68,9 +71,9 @@ class MockPrivetHttpFactory : public PrivetHTTPAsynchronousFactory {
       : request_context_(request_context) {
   }
 
-  scoped_ptr<PrivetHTTPResolution> CreatePrivetHTTP(
+  std::unique_ptr<PrivetHTTPResolution> CreatePrivetHTTP(
       const std::string& name) override {
-    return scoped_ptr<PrivetHTTPResolution>(
+    return std::unique_ptr<PrivetHTTPResolution>(
         new MockResolution(name, request_context_.get()));
   }
 
@@ -84,7 +87,7 @@ class PrivetNotificationsListenerTest : public ::testing::Test {
       : request_context_(new net::TestURLRequestContextGetter(
             base::ThreadTaskRunnerHandle::Get())) {
     notification_listener_.reset(new PrivetNotificationsListener(
-        scoped_ptr<PrivetHTTPAsynchronousFactory>(
+        std::unique_ptr<PrivetHTTPAsynchronousFactory>(
             new MockPrivetHttpFactory(request_context_.get())),
         &mock_delegate_));
 
@@ -113,7 +116,7 @@ class PrivetNotificationsListenerTest : public ::testing::Test {
 
  protected:
   StrictMock<MockPrivetNotificationsListenerDeleagate> mock_delegate_;
-  scoped_ptr<PrivetNotificationsListener> notification_listener_;
+  std::unique_ptr<PrivetNotificationsListener> notification_listener_;
   base::MessageLoop message_loop_;
   scoped_refptr<net::TestURLRequestContextGetter> request_context_;
   net::TestURLFetcherFactory fetcher_factory_;

@@ -5,7 +5,9 @@
 #include "chrome/browser/printing/cloud_print/privet_http_impl.h"
 
 #include <stddef.h>
+
 #include <algorithm>
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -690,7 +692,7 @@ void PrivetLocalPrintOperationImpl::SetPageSize(const gfx::Size& page_size) {
 }
 
 void PrivetLocalPrintOperationImpl::SetPWGRasterConverterForTesting(
-    scoped_ptr<printing::PWGRasterConverter> pwg_raster_converter) {
+    std::unique_ptr<printing::PWGRasterConverter> pwg_raster_converter) {
   pwg_raster_converter_ = std::move(pwg_raster_converter);
 }
 #endif  // ENABLE_PRINT_PREVIEW
@@ -708,13 +710,13 @@ const std::string& PrivetHTTPClientImpl::GetName() {
   return name_;
 }
 
-scoped_ptr<PrivetJSONOperation> PrivetHTTPClientImpl::CreateInfoOperation(
+std::unique_ptr<PrivetJSONOperation> PrivetHTTPClientImpl::CreateInfoOperation(
     const PrivetJSONOperation::ResultCallback& callback) {
-  return scoped_ptr<PrivetJSONOperation>(
+  return std::unique_ptr<PrivetJSONOperation>(
       new PrivetInfoOperationImpl(this, callback));
 }
 
-scoped_ptr<PrivetURLFetcher> PrivetHTTPClientImpl::CreateURLFetcher(
+std::unique_ptr<PrivetURLFetcher> PrivetHTTPClientImpl::CreateURLFetcher(
     const GURL& url,
     net::URLFetcher::RequestType request_type,
     PrivetURLFetcher::Delegate* delegate) {
@@ -723,7 +725,7 @@ scoped_ptr<PrivetURLFetcher> PrivetHTTPClientImpl::CreateURLFetcher(
   replacements.SetHostStr(host);
   std::string port = base::UintToString(host_port_.port());
   replacements.SetPortStr(port);
-  return scoped_ptr<PrivetURLFetcher>(
+  return std::unique_ptr<PrivetURLFetcher>(
       new PrivetURLFetcher(url.ReplaceComponents(replacements), request_type,
                            context_getter_, delegate));
 }
@@ -761,7 +763,7 @@ void PrivetHTTPClientImpl::OnPrivetInfoDone(
 }
 
 PrivetV1HTTPClientImpl::PrivetV1HTTPClientImpl(
-    scoped_ptr<PrivetHTTPClient> info_client)
+    std::unique_ptr<PrivetHTTPClient> info_client)
     : info_client_(std::move(info_client)) {}
 
 PrivetV1HTTPClientImpl::~PrivetV1HTTPClientImpl() {
@@ -771,34 +773,35 @@ const std::string& PrivetV1HTTPClientImpl::GetName() {
   return info_client()->GetName();
 }
 
-scoped_ptr<PrivetJSONOperation> PrivetV1HTTPClientImpl::CreateInfoOperation(
+std::unique_ptr<PrivetJSONOperation>
+PrivetV1HTTPClientImpl::CreateInfoOperation(
     const PrivetJSONOperation::ResultCallback& callback) {
   return info_client()->CreateInfoOperation(callback);
 }
 
-scoped_ptr<PrivetRegisterOperation>
+std::unique_ptr<PrivetRegisterOperation>
 PrivetV1HTTPClientImpl::CreateRegisterOperation(
     const std::string& user,
     PrivetRegisterOperation::Delegate* delegate) {
-  return scoped_ptr<PrivetRegisterOperation>(
+  return std::unique_ptr<PrivetRegisterOperation>(
       new PrivetRegisterOperationImpl(info_client(), user, delegate));
 }
 
-scoped_ptr<PrivetJSONOperation>
+std::unique_ptr<PrivetJSONOperation>
 PrivetV1HTTPClientImpl::CreateCapabilitiesOperation(
     const PrivetJSONOperation::ResultCallback& callback) {
-  return scoped_ptr<PrivetJSONOperation>(new PrivetJSONOperationImpl(
+  return std::unique_ptr<PrivetJSONOperation>(new PrivetJSONOperationImpl(
       info_client(), kPrivetCapabilitiesPath, "", callback));
 }
 
-scoped_ptr<PrivetLocalPrintOperation>
+std::unique_ptr<PrivetLocalPrintOperation>
 PrivetV1HTTPClientImpl::CreateLocalPrintOperation(
     PrivetLocalPrintOperation::Delegate* delegate) {
 #if defined(ENABLE_PRINT_PREVIEW)
-  return scoped_ptr<PrivetLocalPrintOperation>(
+  return std::unique_ptr<PrivetLocalPrintOperation>(
       new PrivetLocalPrintOperationImpl(info_client(), delegate));
 #else
-  return scoped_ptr<PrivetLocalPrintOperation>();
+  return std::unique_ptr<PrivetLocalPrintOperation>();
 #endif  // ENABLE_PRINT_PREVIEW
 }
 

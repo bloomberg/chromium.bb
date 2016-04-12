@@ -4,9 +4,10 @@
 
 #include "chrome/browser/printing/printer_manager_dialog.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/environment.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/nix/xdg_util.h"
 #include "base/process/kill.h"
@@ -27,7 +28,7 @@ const char kGNOMEPrinterConfigCommand[] = "system-config-printer";
 // manager dialog.
 void DetectAndOpenPrinterConfigDialog() {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-  scoped_ptr<Environment> env(Environment::Create());
+  std::unique_ptr<Environment> env(Environment::Create());
 
   const char* command = NULL;
   switch (base::nix::GetDesktopEnvironment(env.get())) {

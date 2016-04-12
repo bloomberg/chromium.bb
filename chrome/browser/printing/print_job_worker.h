@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_PRINTING_PRINT_JOB_WORKER_H_
 #define CHROME_BROWSER_PRINTING_PRINT_JOB_WORKER_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread.h"
 #include "chrome/browser/printing/printer_query.h"
@@ -52,7 +53,7 @@ class PrintJobWorker {
       bool is_scripted);
 
   // Set the new print settings.
-  void SetSettings(scoped_ptr<base::DictionaryValue> new_settings);
+  void SetSettings(std::unique_ptr<base::DictionaryValue> new_settings);
 
   // Starts the printing loop. Every pages are printed as soon as the data is
   // available. Makes sure the new_document is the right one.
@@ -116,7 +117,7 @@ class PrintJobWorker {
       bool is_scripted);
 
   // Called on the UI thread to update the print settings.
-  void UpdatePrintSettings(scoped_ptr<base::DictionaryValue> new_settings);
+  void UpdatePrintSettings(std::unique_ptr<base::DictionaryValue> new_settings);
 
   // Reports settings back to owner_.
   void GetSettingsDone(PrintingContext::Result result);
@@ -127,10 +128,10 @@ class PrintJobWorker {
   void UseDefaultSettings();
 
   // Printing context delegate.
-  scoped_ptr<PrintingContext::Delegate> printing_context_delegate_;
+  std::unique_ptr<PrintingContext::Delegate> printing_context_delegate_;
 
   // Information about the printer setting.
-  scoped_ptr<PrintingContext> printing_context_;
+  std::unique_ptr<PrintingContext> printing_context_;
 
   // The printed document. Only has read-only access.
   scoped_refptr<PrintedDocument> document_;

@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/bind.h"
@@ -52,7 +53,7 @@ void StopWorker(int document_cookie) {
 scoped_refptr<base::RefCountedBytes> GetDataFromHandle(
     base::SharedMemoryHandle handle,
     uint32_t data_size) {
-  scoped_ptr<base::SharedMemory> shared_buf(
+  std::unique_ptr<base::SharedMemory> shared_buf(
       new base::SharedMemory(handle, true));
   if (!shared_buf->Map(data_size)) {
     NOTREACHED();

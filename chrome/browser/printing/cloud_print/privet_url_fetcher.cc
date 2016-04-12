@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <limits>
+#include <memory>
 
 #include "base/bind.h"
 #include "base/debug/dump_without_crashing.h"
@@ -309,7 +310,7 @@ void PrivetURLFetcher::OnURLFetchCompleteParseData(
   }
 
   base::JSONReader json_reader(base::JSON_ALLOW_TRAILING_COMMAS);
-  scoped_ptr<base::Value> value = json_reader.ReadToValue(response_str);
+  std::unique_ptr<base::Value> value = json_reader.ReadToValue(response_str);
   if (!value) {
     delegate_->OnError(this, JSON_PARSE_ERROR);
     return;

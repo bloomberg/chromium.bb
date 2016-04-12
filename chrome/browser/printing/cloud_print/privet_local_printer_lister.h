@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_PRINTING_CLOUD_PRINT_PRIVET_LOCAL_PRINTER_LISTER_H_
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/memory/linked_ptr.h"
@@ -62,13 +63,13 @@ class PrivetLocalPrinterLister : PrivetDeviceLister::Delegate {
                         const base::DictionaryValue* json_value);
 
   void OnPrivetResolved(const std::string& name,
-                        scoped_ptr<PrivetHTTPClient> http_client);
+                        std::unique_ptr<PrivetHTTPClient> http_client);
 
-  scoped_ptr<PrivetHTTPAsynchronousFactory> privet_http_factory_;
+  std::unique_ptr<PrivetHTTPAsynchronousFactory> privet_http_factory_;
   DeviceContextMap device_contexts_;
   Delegate* delegate_;
 
-  scoped_ptr<PrivetDeviceLister> privet_lister_;
+  std::unique_ptr<PrivetDeviceLister> privet_lister_;
 };
 
 }  // namespace cloud_print

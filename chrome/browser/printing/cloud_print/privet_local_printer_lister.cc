@@ -5,6 +5,8 @@
 #include "chrome/browser/printing/cloud_print/privet_local_printer_lister.h"
 
 #include <stddef.h>
+
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -18,9 +20,9 @@ struct PrivetLocalPrinterLister::DeviceContext {
   DeviceContext() : has_local_printing(false) {
   }
 
-  scoped_ptr<PrivetHTTPResolution> privet_resolution;
-  scoped_ptr<PrivetHTTPClient> privet_client;
-  scoped_ptr<PrivetJSONOperation> info_operation;
+  std::unique_ptr<PrivetHTTPResolution> privet_resolution;
+  std::unique_ptr<PrivetHTTPClient> privet_client;
+  std::unique_ptr<PrivetJSONOperation> info_operation;
   DeviceDescription description;
 
   bool has_local_printing;
@@ -81,7 +83,7 @@ void PrivetLocalPrinterLister::DeviceCacheFlushed() {
 
 void PrivetLocalPrinterLister::OnPrivetResolved(
     const std::string& name,
-    scoped_ptr<PrivetHTTPClient> http_client) {
+    std::unique_ptr<PrivetHTTPClient> http_client) {
   if (!http_client) {
     // Remove device if we can't resolve it.
     device_contexts_.erase(name);

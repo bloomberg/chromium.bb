@@ -6,9 +6,9 @@
 #define CHROME_BROWSER_PRINTING_CLOUD_PRINT_PRIVET_NOTIFICATIONS_H_
 
 #include <map>
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/notifications/notification_delegate.h"
 #include "chrome/browser/printing/cloud_print/privet_device_lister.h"
 #include "chrome/browser/printing/cloud_print/privet_http.h"
@@ -51,7 +51,7 @@ class PrivetNotificationsListener  {
   };
 
   PrivetNotificationsListener(
-      scoped_ptr<PrivetHTTPAsynchronousFactory> privet_http_factory,
+      std::unique_ptr<PrivetHTTPAsynchronousFactory> privet_http_factory,
       Delegate* delegate);
   virtual ~PrivetNotificationsListener();
 
@@ -71,14 +71,15 @@ class PrivetNotificationsListener  {
 
     bool notification_may_be_active;
     bool registered;
-    scoped_ptr<PrivetJSONOperation> info_operation;
-    scoped_ptr<PrivetHTTPResolution> privet_http_resolution;
-    scoped_ptr<PrivetHTTPClient> privet_http;
+    std::unique_ptr<PrivetJSONOperation> info_operation;
+    std::unique_ptr<PrivetHTTPResolution> privet_http_resolution;
+    std::unique_ptr<PrivetHTTPClient> privet_http;
   };
 
-  using DeviceContextMap = std::map<std::string, scoped_ptr<DeviceContext>>;
+  using DeviceContextMap =
+      std::map<std::string, std::unique_ptr<DeviceContext>>;
 
-  void CreateInfoOperation(scoped_ptr<PrivetHTTPClient> http_client);
+  void CreateInfoOperation(std::unique_ptr<PrivetHTTPClient> http_client);
   void OnPrivetInfoDone(DeviceContext* device,
                         const base::DictionaryValue* json_value);
 
@@ -86,8 +87,8 @@ class PrivetNotificationsListener  {
   void NotifyDeviceRemoved();
 
   Delegate* delegate_;
-  scoped_ptr<PrivetDeviceLister> device_lister_;
-  scoped_ptr<PrivetHTTPAsynchronousFactory> privet_http_factory_;
+  std::unique_ptr<PrivetDeviceLister> device_lister_;
+  std::unique_ptr<PrivetHTTPAsynchronousFactory> privet_http_factory_;
   DeviceContextMap devices_seen_;
   int devices_active_;
 };
@@ -122,10 +123,10 @@ class PrivetNotificationService
   void StartLister();
 
   content::BrowserContext* profile_;
-  scoped_ptr<PrivetDeviceLister> device_lister_;
+  std::unique_ptr<PrivetDeviceLister> device_lister_;
   scoped_refptr<local_discovery::ServiceDiscoverySharedClient>
       service_discovery_client_;
-  scoped_ptr<PrivetNotificationsListener> privet_notifications_listener_;
+  std::unique_ptr<PrivetNotificationsListener> privet_notifications_listener_;
   BooleanPrefMember enable_privet_notification_member_;
 
 #if defined(ENABLE_MDNS)
