@@ -19,10 +19,10 @@
 #include "base/threading/thread.h"
 #include "components/sync_driver/backend_data_type_configurer.h"
 #include "components/sync_driver/fake_sync_client.h"
+#include "sync/api/fake_model_type_service.h"
 #include "sync/engine/commit_queue.h"
 #include "sync/internal_api/public/activation_context.h"
 #include "sync/internal_api/public/shared_model_type_processor.h"
-#include "sync/internal_api/public/test/fake_model_type_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace sync_driver_v2 {
@@ -161,7 +161,6 @@ class NonUIModelTypeControllerTest : public testing::Test,
     controller_ = new TestNonUIModelTypeController(
         ui_loop_.task_runner(), model_thread_runner_, base::Closure(),
         syncer::DICTIONARY, this);
-    InitializeTypeProcessor();
   }
 
   void TearDown() override {
@@ -176,26 +175,21 @@ class NonUIModelTypeControllerTest : public testing::Test,
   }
 
  protected:
-  void InitializeTypeProcessor() {
-    if (!model_thread_runner_ ||
-        model_thread_runner_->BelongsToCurrentThread()) {
-      // TODO(crbug.com/543407): Move the processor stuff out.
-      type_processor_ =
-          service_->SetUpProcessor(new syncer_v2::SharedModelTypeProcessor(
-              syncer::DICTIONARY, service_.get()));
-    } else {
-      model_thread_runner_->PostTask(
-          FROM_HERE,
-          base::Bind(&NonUIModelTypeControllerTest::InitializeTypeProcessor,
-                     base::Unretained(this)));
-      RunQueuedModelThreadTasks();
-    }
+  scoped_ptr<syncer_v2::ModelTypeChangeProcessor> CreateProcessor(
+      syncer::ModelType type,
+      syncer_v2::ModelTypeService* service) {
+    scoped_ptr<syncer_v2::SharedModelTypeProcessor> processor =
+        make_scoped_ptr(new syncer_v2::SharedModelTypeProcessor(type, service));
+    type_processor_ = processor.get();
+    return std::move(processor);
   }
 
   void InitializeModelTypeService() {
     if (!model_thread_runner_ ||
         model_thread_runner_->BelongsToCurrentThread()) {
-      service_.reset(new syncer_v2::FakeModelTypeService());
+      service_.reset(new syncer_v2::FakeModelTypeService(
+          base::Bind(&NonUIModelTypeControllerTest::CreateProcessor,
+                     base::Unretained(this))));
     } else {
       model_thread_runner_->PostTask(
           FROM_HERE,
@@ -218,53 +212,39 @@ class NonUIModelTypeControllerTest : public testing::Test,
     }
   }
 
-  void TestTypeProcessor(bool isAllowingChanges, bool isConnected) {
+  void ExpectProcessorConnected(bool isConnected) {
     if (model_thread_runner_->BelongsToCurrentThread()) {
-      EXPECT_EQ(isAllowingChanges, type_processor_->IsAllowingChanges());
+      DCHECK(type_processor_);
       EXPECT_EQ(isConnected, type_processor_->IsConnected());
     } else {
       model_thread_runner_->PostTask(
           FROM_HERE,
-          base::Bind(&NonUIModelTypeControllerTest::TestTypeProcessor,
-                     base::Unretained(this), isAllowingChanges, isConnected));
+          base::Bind(&NonUIModelTypeControllerTest::ExpectProcessorConnected,
+                     base::Unretained(this), isConnected));
       RunQueuedModelThreadTasks();
     }
   }
 
   void OnMetadataLoaded() {
     if (model_thread_runner_->BelongsToCurrentThread()) {
-      type_processor_->OnMetadataLoaded(
-          make_scoped_ptr(new syncer_v2::MetadataBatch()));
+      if (!type_processor_->IsAllowingChanges()) {
+        type_processor_->OnMetadataLoaded(
+            make_scoped_ptr(new syncer_v2::MetadataBatch()));
+      }
     } else {
       model_thread_runner_->PostTask(
           FROM_HERE, base::Bind(&NonUIModelTypeControllerTest::OnMetadataLoaded,
                                 base::Unretained(this)));
-      RunQueuedModelThreadTasks();
     }
   }
 
   void LoadModels() {
-    OnMetadataLoadedOnModelThread();
     controller_->LoadModels(base::Bind(
         &NonUIModelTypeControllerTest::LoadModelsDone, base::Unretained(this)));
+    OnMetadataLoaded();
 
     if (auto_run_tasks_) {
       RunAllTasks();
-    }
-  }
-
-  void OnMetadataLoadedOnModelThread() {
-    if (model_thread_runner_->BelongsToCurrentThread()) {
-      if (!type_processor_->IsAllowingChanges()) {
-        OnMetadataLoaded();
-      }
-    } else {
-      model_thread_runner_->PostTask(
-          FROM_HERE,
-          base::Bind(
-              &NonUIModelTypeControllerTest::OnMetadataLoadedOnModelThread,
-              base::Unretained(this)));
-      RunQueuedModelThreadTasks();
     }
   }
 
@@ -353,7 +333,6 @@ TEST_F(NonUIModelTypeControllerTest, InitialState) {
 }
 
 TEST_F(NonUIModelTypeControllerTest, LoadModelsOnBackendThread) {
-  TestTypeProcessor(false, false);  // not enabled, not connected.
   SetAutoRunTasks(false);
   LoadModels();
   EXPECT_EQ(sync_driver::DataTypeController::MODEL_STARTING,
@@ -363,7 +342,7 @@ TEST_F(NonUIModelTypeControllerTest, LoadModelsOnBackendThread) {
             controller_->state());
   EXPECT_TRUE(load_models_callback_called_);
   EXPECT_FALSE(load_models_error_.IsSet());
-  TestTypeProcessor(true, false);  // enabled, not connected.
+  ExpectProcessorConnected(false);
 }
 
 TEST_F(NonUIModelTypeControllerTest, LoadModelsTwice) {
@@ -381,7 +360,7 @@ TEST_F(NonUIModelTypeControllerTest, ActivateDataTypeOnBackendThread) {
   EXPECT_EQ(sync_driver::DataTypeController::MODEL_LOADED,
             controller_->state());
   RegisterWithBackend();
-  TestTypeProcessor(true, true);  // enabled, connected.
+  ExpectProcessorConnected(true);
 
   StartAssociating();
   EXPECT_EQ(sync_driver::DataTypeController::RUNNING, controller_->state());
@@ -390,7 +369,7 @@ TEST_F(NonUIModelTypeControllerTest, ActivateDataTypeOnBackendThread) {
 TEST_F(NonUIModelTypeControllerTest, Stop) {
   LoadModels();
   RegisterWithBackend();
-  TestTypeProcessor(true, true);  // enabled, connected.
+  ExpectProcessorConnected(true);
 
   StartAssociating();
 

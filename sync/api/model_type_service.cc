@@ -26,30 +26,32 @@ ConflictResolution ModelTypeService::ResolveConflict(
   return ConflictResolution::UseRemote();
 }
 
-ModelTypeChangeProcessor* ModelTypeService::change_processor() const {
-  return change_processor_.get();
+void ModelTypeService::OnSyncStarting(
+    const ModelTypeChangeProcessor::StartCallback& start_callback) {
+  CreateChangeProcessor();
+  change_processor_->OnSyncStarting(start_callback);
 }
 
-ModelTypeChangeProcessor* ModelTypeService::GetOrCreateChangeProcessor() {
+void ModelTypeService::DisableSync() {
+  DCHECK(change_processor_);
+  change_processor_->DisableSync();
+  change_processor_.reset();
+}
+
+void ModelTypeService::CreateChangeProcessor() {
   if (!change_processor_) {
-    change_processor_ = change_processor_factory_.Run(type(), this);
+    change_processor_ = change_processor_factory_.Run(type_, this);
     DCHECK(change_processor_);
     OnChangeProcessorSet();
   }
+}
+
+ModelTypeChangeProcessor* ModelTypeService::change_processor() const {
   return change_processor_.get();
 }
 
 void ModelTypeService::clear_change_processor() {
   change_processor_.reset();
-}
-
-void ModelTypeService::OnSyncStarting(
-    const ModelTypeChangeProcessor::StartCallback& start_callback) {
-  GetOrCreateChangeProcessor()->OnSyncStarting(start_callback);
-}
-
-syncer::ModelType ModelTypeService::type() const {
-  return type_;
 }
 
 }  // namespace syncer_v2

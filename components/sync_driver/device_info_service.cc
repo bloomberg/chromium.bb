@@ -376,7 +376,7 @@ void DeviceInfoService::OnReadAllMetadata(
   // we want this class to be as similar to other services as possible so follow
   // the convention.
   if (metadata_records->size() > 0 || !global_metadata.empty()) {
-    GetOrCreateChangeProcessor();
+    CreateChangeProcessor();
   }
 
   // Set this after OnChangeProcessorSet so that we can correctly avoid giving

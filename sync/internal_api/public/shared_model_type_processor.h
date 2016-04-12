@@ -43,12 +43,6 @@ class SYNC_EXPORT SharedModelTypeProcessor : public ModelTypeProcessor,
       syncer::ModelType type,
       ModelTypeService* service);
 
-  // Indicates that we no longer want to do any sync-related things for this
-  // data type. Severs all ties to the sync thread, deletes all local sync
-  // metadata, and then destroys the SharedModelTypeProcessor.
-  // TODO(crbug.com/584365): This needs to be called from DataTypeController.
-  void Disable();
-
   // Whether the processor is allowing changes to its model type. If this is
   // false, the service should not allow any changes to its data.
   bool IsAllowingChanges() const;
@@ -64,6 +58,7 @@ class SYNC_EXPORT SharedModelTypeProcessor : public ModelTypeProcessor,
               MetadataChangeList* metadata_change_list) override;
   void OnMetadataLoaded(std::unique_ptr<MetadataBatch> batch) override;
   void OnSyncStarting(const StartCallback& callback) override;
+  void DisableSync() override;
 
   // ModelTypeProcessor implementation.
   void ConnectSync(std::unique_ptr<CommitQueue> worker) override;

@@ -2,20 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sync/internal_api/public/test/fake_model_type_service.h"
+#include "sync/api/fake_model_type_service.h"
+
+#include <string>
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
-#include "sync/internal_api/public/shared_model_type_processor.h"
+#include "sync/api/fake_model_type_change_processor.h"
 
 namespace syncer_v2 {
 
 FakeModelTypeService::FakeModelTypeService()
-    : ModelTypeService(
-          base::Bind(&FakeModelTypeService::CreateProcessorForTestWrapper,
-                     base::Unretained(this)),
-          syncer::PREFERENCES),
-      processor_(nullptr) {}
+    : FakeModelTypeService(base::Bind(&FakeModelTypeChangeProcessor::Create)) {}
+
+FakeModelTypeService::FakeModelTypeService(
+    const ChangeProcessorFactory& change_processor_factory)
+    : ModelTypeService(change_processor_factory, syncer::PREFERENCES) {}
 
 FakeModelTypeService::~FakeModelTypeService() {}
 
@@ -46,23 +48,5 @@ std::string FakeModelTypeService::GetClientTag(const EntityData& entity_data) {
 }
 
 void FakeModelTypeService::OnChangeProcessorSet() {}
-
-ModelTypeChangeProcessor* FakeModelTypeService::CreateProcessorForTest(
-    syncer::ModelType type,
-    ModelTypeService* service) {
-  return processor_;
-}
-
-std::unique_ptr<ModelTypeChangeProcessor>
-FakeModelTypeService::CreateProcessorForTestWrapper(syncer::ModelType type,
-                                                    ModelTypeService* service) {
-  return base::WrapUnique(CreateProcessorForTest(type, service));
-}
-
-SharedModelTypeProcessor* FakeModelTypeService::SetUpProcessor(
-    ModelTypeChangeProcessor* processor) {
-  processor_ = processor;
-  return static_cast<SharedModelTypeProcessor*>(GetOrCreateChangeProcessor());
-}
 
 }  // namespace syncer_v2

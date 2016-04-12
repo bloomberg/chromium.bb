@@ -17,6 +17,7 @@
 #include "components/sync_driver/local_device_info_provider_mock.h"
 #include "sync/api/data_batch.h"
 #include "sync/api/entity_data.h"
+#include "sync/api/fake_model_type_change_processor.h"
 #include "sync/api/metadata_batch.h"
 #include "sync/api/model_type_store.h"
 #include "sync/internal_api/public/test/model_type_store_test_util.h"
@@ -116,10 +117,11 @@ EntityDataPtr SpecificsToEntity(const DeviceInfoSpecifics& specifics) {
 // in members that can then be accessed. TODO(skym): If this ends up being
 // useful for other model type unittests it should be moved out to a shared
 // location.
-class FakeModelTypeChangeProcessor : public ModelTypeChangeProcessor {
+class RecordingModelTypeChangeProcessor
+    : public syncer_v2::FakeModelTypeChangeProcessor {
  public:
-  FakeModelTypeChangeProcessor() {}
-  ~FakeModelTypeChangeProcessor() override {}
+  RecordingModelTypeChangeProcessor() {}
+  ~RecordingModelTypeChangeProcessor() override {}
 
   void Put(const std::string& client_tag,
            scoped_ptr<EntityData> entity_data,
@@ -135,8 +137,6 @@ class FakeModelTypeChangeProcessor : public ModelTypeChangeProcessor {
   void OnMetadataLoaded(scoped_ptr<MetadataBatch> batch) override {
     std::swap(metadata_, batch);
   }
-
-  void OnSyncStarting(const StartCallback& callback) override {}
 
   const std::map<std::string, scoped_ptr<EntityData>>& put_map() const {
     return put_map_;
@@ -180,7 +180,7 @@ class DeviceInfoServiceTest : public testing::Test,
   scoped_ptr<ModelTypeChangeProcessor> CreateModelTypeChangeProcessor(
       syncer::ModelType type,
       ModelTypeService* service) {
-    processor_ = new FakeModelTypeChangeProcessor();
+    processor_ = new RecordingModelTypeChangeProcessor();
     return make_scoped_ptr(processor_);
   }
 
@@ -277,7 +277,7 @@ class DeviceInfoServiceTest : public testing::Test,
     return service_.get();
   }
 
-  FakeModelTypeChangeProcessor* processor() {
+  RecordingModelTypeChangeProcessor* processor() {
     EXPECT_TRUE(processor_);
     return processor_;
   }
@@ -313,7 +313,7 @@ class DeviceInfoServiceTest : public testing::Test,
 
   // A non-owning pointer to the processor given to the service. Will be nullptr
   // before being given to the service, to make ownership easier.
-  FakeModelTypeChangeProcessor* processor_ = nullptr;
+  RecordingModelTypeChangeProcessor* processor_ = nullptr;
 
   // A monotonically increasing label for generated specifics objects with data
   // that is slightly different from eachother.

@@ -186,7 +186,7 @@ bool SharedModelTypeProcessor::IsConnected() const {
   return !!worker_;
 }
 
-void SharedModelTypeProcessor::Disable() {
+void SharedModelTypeProcessor::DisableSync() {
   DCHECK(CalledOnValidThread());
   std::unique_ptr<MetadataChangeList> change_list =
       service_->CreateMetadataChangeList();
@@ -196,10 +196,6 @@ void SharedModelTypeProcessor::Disable() {
   change_list->ClearDataTypeState();
   // Nothing to do if this fails, so just ignore the error it might return.
   service_->ApplySyncChanges(std::move(change_list), EntityChangeList());
-
-  // Destroy this object.
-  // TODO(pavely): Revisit whether there's a better way to do this deletion.
-  service_->clear_change_processor();
 }
 
 void SharedModelTypeProcessor::ConnectSync(

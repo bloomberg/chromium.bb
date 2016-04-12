@@ -53,6 +53,10 @@ class SYNC_EXPORT ModelTypeChangeProcessor {
   // metadata has been loaded, the info is collected and given to |callback|.
   // Once called, this can only be called again if sync is disconnected.
   virtual void OnSyncStarting(const StartCallback& callback) = 0;
+
+  // Indicates that sync is being disabled permanently for this data type. All
+  // metadata should be erased from storage.
+  virtual void DisableSync() = 0;
 };
 
 }  // namespace syncer_v2

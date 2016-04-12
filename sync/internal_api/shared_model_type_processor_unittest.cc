@@ -8,19 +8,20 @@
 #include <stdint.h>
 
 #include <map>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "sync/api/fake_model_type_service.h"
 #include "sync/engine/commit_queue.h"
 #include "sync/internal_api/public/activation_context.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/data_batch_impl.h"
 #include "sync/internal_api/public/non_blocking_sync_common.h"
 #include "sync/internal_api/public/simple_metadata_change_list.h"
-#include "sync/internal_api/public/test/fake_model_type_service.h"
 #include "sync/protocol/data_type_state.pb.h"
 #include "sync/protocol/sync.pb.h"
 #include "sync/syncable/syncable_util.h"
@@ -185,12 +186,14 @@ class SimpleStore {
 class SharedModelTypeProcessorTest : public ::testing::Test,
                                      public FakeModelTypeService {
  public:
-  SharedModelTypeProcessorTest() {}
+  SharedModelTypeProcessorTest()
+      : FakeModelTypeService(
+            base::Bind(&SharedModelTypeProcessor::CreateAsChangeProcessor)) {}
 
   ~SharedModelTypeProcessorTest() override {}
 
   void InitializeToMetadataLoaded() {
-    ASSERT_TRUE(GetOrCreateChangeProcessor());
+    CreateChangeProcessor();
     sync_pb::DataTypeState data_type_state(db_.data_type_state());
     data_type_state.set_initial_sync_done(true);
     db_.set_data_type_state(data_type_state);
@@ -224,14 +227,6 @@ class SharedModelTypeProcessorTest : public ::testing::Test,
   void DisconnectSync() {
     type_processor()->DisconnectSync();
     mock_queue_ = nullptr;
-  }
-
-  // Disable sync for this SharedModelTypeProcessor.  Should cause sync state to
-  // be discarded.
-  void Disable() {
-    type_processor()->Disable();
-    mock_queue_ = nullptr;
-    EXPECT_FALSE(type_processor());
   }
 
   // Local data modification.  Emulates signals from the model thread.
@@ -435,13 +430,6 @@ class SharedModelTypeProcessorTest : public ::testing::Test,
     return static_cast<SharedModelTypeProcessor*>(change_processor());
   }
 
- protected:
-  syncer_v2::ModelTypeChangeProcessor* CreateProcessorForTest(
-      syncer::ModelType type,
-      ModelTypeService* service) override {
-    return new SharedModelTypeProcessor(kModelType, service);
-  }
-
  private:
   void OnReadyToConnect(syncer::SyncError error,
                         std::unique_ptr<ActivationContext> context) {
@@ -572,7 +560,7 @@ class SharedModelTypeProcessorTest : public ::testing::Test,
 
 // Test that an initial sync handles local and remote items properly.
 TEST_F(SharedModelTypeProcessorTest, InitialSync) {
-  GetOrCreateChangeProcessor();
+  CreateChangeProcessor();
   OnMetadataLoaded();
   OnSyncStarting();
 
@@ -1287,13 +1275,13 @@ TEST_F(SharedModelTypeProcessorTest, Disable) {
   WriteItem(kTag2, kValue2);
   EXPECT_TRUE(HasCommitRequestForTag(kTag2));
 
-  Disable();
+  DisableSync();
 
   // The third item is added after disable.
   WriteItem(kTag3, kValue3);
 
   // Now we re-enable.
-  GetOrCreateChangeProcessor();
+  CreateChangeProcessor();
   OnMetadataLoaded();
   OnSyncStarting();
   OnInitialSyncDone();
