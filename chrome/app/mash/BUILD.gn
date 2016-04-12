@@ -16,6 +16,7 @@ source_set("mash") {
     "//components/mus:lib",
     "//components/resource_provider:lib",
     "//content/public/common",
+    "//mash/browser_driver:lib",
     "//mash/quick_launch:lib",
     "//mash/session:lib",
     "//mash/task_viewer:lib",
@@ -46,6 +47,7 @@ mojo_application_manifest("manifest") {
     "//ash/mus:manifest",
     "//components/mus:manifest",
     "//components/resource_provider:manifest",
+    "//mash/browser_driver:manifest",
     "//mash/quick_launch:manifest",
     "//mash/session:manifest",
     "//mash/task_viewer:manifest",
@@ -53,6 +55,7 @@ mojo_application_manifest("manifest") {
   ]
   packaged_applications = [
     "ash_sysui",
+    "browser_driver",
     "desktop_wm",
     "mash_session",
     "mus",

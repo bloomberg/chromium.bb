@@ -8,17 +8,32 @@ import("//mojo/public/mojo_application_manifest.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//tools/grit/repack.gni")
 
-mojo_native_application("browser_driver") {
+source_set("lib") {
   sources = [
     "browser_driver_application_delegate.cc",
     "browser_driver_application_delegate.h",
-    "main.cc",
   ]
 
   deps = [
     "//base",
     "//components/mus/public/cpp",
     "//components/mus/public/interfaces",
+    "//mojo/shell/public/cpp:sources",
+  ]
+
+  data_deps = [
+    "//components/mus",
+  ]
+}
+
+mojo_native_application("browser_driver") {
+  sources = [
+    "main.cc",
+  ]
+
+  deps = [
+    ":lib",
+    "//base",
     "//mojo/public/cpp/bindings",
     "//mojo/shell/public/cpp",
     "//mojo/shell/public/cpp:sources",

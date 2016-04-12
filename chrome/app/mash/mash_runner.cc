@@ -11,11 +11,13 @@
 #include "base/debug/debugger.h"
 #include "base/i18n/icu_util.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/process/launch.h"
 #include "components/mus/mus_app.h"
 #include "components/resource_provider/resource_provider_app.h"
 #include "content/public/common/content_switches.h"
+#include "mash/browser_driver/browser_driver_application_delegate.h"
 #include "mash/quick_launch/quick_launch_application.h"
 #include "mash/session/session.h"
 #include "mash/task_viewer/task_viewer.h"
@@ -83,25 +85,29 @@ class DefaultShellClient : public mojo::ShellClient,
   // TODO(sky): move this into mash.
   scoped_ptr<mojo::ShellClient> CreateShellClient(const std::string& name) {
     if (name == "mojo:ash_sysui")
-      return make_scoped_ptr(new ash::sysui::SysUIApplication);
+      return base::WrapUnique(new ash::sysui::SysUIApplication);
     if (name == "mojo:desktop_wm")
-      return make_scoped_ptr(new mash::wm::WindowManagerApplication);
+      return base::WrapUnique(new mash::wm::WindowManagerApplication);
     if (name == "mojo:mash_session")
-      return make_scoped_ptr(new mash::session::Session);
+      return base::WrapUnique(new mash::session::Session);
     if (name == "mojo:mus")
-      return make_scoped_ptr(new mus::MandolineUIServicesApp);
+      return base::WrapUnique(new mus::MandolineUIServicesApp);
     if (name == "mojo:quick_launch")
-      return make_scoped_ptr(new mash::quick_launch::QuickLaunchApplication);
+      return base::WrapUnique(new mash::quick_launch::QuickLaunchApplication);
     if (name == "mojo:resource_provider") {
-      return make_scoped_ptr(
+      return base::WrapUnique(
           new resource_provider::ResourceProviderApp("mojo:resource_provider"));
     }
     if (name == "mojo:task_viewer")
-      return make_scoped_ptr(new mash::task_viewer::TaskViewer);
+      return base::WrapUnique(new mash::task_viewer::TaskViewer);
 #if defined(OS_LINUX)
     if (name == "mojo:font_service")
-      return make_scoped_ptr(new font_service::FontServiceApp);
+      return base::WrapUnique(new font_service::FontServiceApp);
 #endif
+    if (name == "mojo:browser_driver") {
+      return base::WrapUnique(
+          new mash::browser_driver::BrowserDriverApplicationDelegate());
+    }
     return nullptr;
   }
 
