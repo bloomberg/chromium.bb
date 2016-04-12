@@ -868,7 +868,6 @@ void VTVideoDecodeAccelerator::ReusePictureBuffer(int32_t picture_id) {
   DCHECK(gpu_thread_checker_.CalledOnValidThread());
   DCHECK(picture_info_map_.count(picture_id));
   PictureInfo* picture_info = picture_info_map_.find(picture_id)->second.get();
-  DCHECK_EQ(CFGetRetainCount(picture_info->cv_image), 2);
   picture_info->cv_image.reset();
   picture_info->gl_image->Destroy(false);
   picture_info->gl_image = nullptr;
