@@ -1112,6 +1112,14 @@ public:
         FormValidationShowedMessage = 1294,
         WebAnimationsEasingAsFunctionLinear = 1295,
         WebAnimationsEasingAsFunctionOther = 1296,
+        V8Document_Images_AttributeGetter = 1297,
+        V8Document_Embeds_AttributeGetter = 1298,
+        V8Document_Plugins_AttributeGetter = 1299,
+        V8Document_Links_AttributeGetter = 1300,
+        V8Document_Forms_AttributeGetter = 1301,
+        V8Document_Scripts_AttributeGetter = 1302,
+        V8Document_Anchors_AttributeGetter = 1303,
+        V8Document_Applets_AttributeGetter = 1304,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

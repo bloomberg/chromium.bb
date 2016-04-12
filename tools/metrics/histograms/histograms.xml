@@ -70696,6 +70696,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1294" label="FormValidationShowedMessage"/>
   <int value="1295" label="WebAnimationsEasingAsFunctionLinear"/>
   <int value="1296" label="WebAnimationsEasingAsFunctionOther"/>
+  <int value="1297" label="V8Document_Images_AttributeGetter"/>
+  <int value="1298" label="V8Document_Embeds_AttributeGetter"/>
+  <int value="1299" label="V8Document_Plugins_AttributeGetter"/>
+  <int value="1300" label="V8Document_Links_AttributeGetter"/>
+  <int value="1301" label="V8Document_Forms_AttributeGetter"/>
+  <int value="1302" label="V8Document_Scripts_AttributeGetter"/>
+  <int value="1303" label="V8Document_Anchors_AttributeGetter"/>
+  <int value="1304" label="V8Document_Applets_AttributeGetter"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">

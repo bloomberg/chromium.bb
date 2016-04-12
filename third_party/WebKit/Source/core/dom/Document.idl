@@ -103,12 +103,12 @@ interface Document : Node {
     [CustomElementCallbacks] attribute DOMString dir;
     [RaisesException=Setter, CustomElementCallbacks, PerWorldBindings] attribute HTMLElement? body;
     readonly attribute HTMLHeadElement? head;
-    [SameObject] readonly attribute HTMLCollection images;
-    [SameObject] readonly attribute HTMLCollection embeds;
-    [SameObject, ImplementedAs=embeds] readonly attribute HTMLCollection plugins;
-    [SameObject] readonly attribute HTMLCollection links;
-    [SameObject] readonly attribute HTMLCollection forms;
-    [SameObject] readonly attribute HTMLCollection scripts;
+    [SameObject, Measure] readonly attribute HTMLCollection images;
+    [SameObject, Measure] readonly attribute HTMLCollection embeds;
+    [SameObject, ImplementedAs=embeds, Measure] readonly attribute HTMLCollection plugins;
+    [SameObject, Measure] readonly attribute HTMLCollection links;
+    [SameObject, Measure] readonly attribute HTMLCollection forms;
+    [SameObject, Measure] readonly attribute HTMLCollection scripts;
     [PerWorldBindings] NodeList getElementsByName(DOMString elementName);
     [ImplementedAs=currentScriptForBinding] readonly attribute HTMLScriptElement? currentScript;
 
@@ -137,8 +137,8 @@ interface Document : Node {
 
     // FIXME: *Color are on HTMLDocument.
 
-    readonly attribute HTMLCollection anchors;
-    readonly attribute HTMLCollection applets;
+    [Measure] readonly attribute HTMLCollection anchors;
+    [Measure] readonly attribute HTMLCollection applets;
 
     // FIXME: clear(), captureEvents(), releaseEvents() and all are on HTMLDocument.
 
