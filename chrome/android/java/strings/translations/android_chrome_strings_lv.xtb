@@ -25,6 +25,7 @@ Lai izmantotu fizisko tīmekli, ir jābūt ieslēgtam Bluetooth savienojumam un 
 <translation id="1285320974508926690">Nekad netulkot šo vietni</translation>
 <translation id="1291207594882862231">Dzēst vēsturi, sīkfailus, vietnes datus, kešatmiņu…</translation>
 <translation id="129553762522093515">Nesen aizvērtas</translation>
+<translation id="13410144310025252">Skatiet tās pārlūkā Chrome</translation>
 <translation id="1346090444609141578">Šeit nav nevienas saglabātas lapas</translation>
 <translation id="1369915414381695676">Tika pievienota vietne <ph name="SITE_NAME" /></translation>
 <translation id="1373696734384179344">Nepietiek vietas, lai lejupielādētu atlasīto saturu.</translation>
@@ -193,6 +194,7 @@ Lai pielāgotu meklēšanas vienumu, nospiediet un turiet to. Lai veiktu precīz
 <translation id="3656115297268584622">Ieslēdziet atrašanās vietas pakalpojumu <ph name="BEGIN_LINK" />Android iestatījumos<ph name="END_LINK" />.</translation>
 <translation id="3661699943263275414">Trešo pušu vietnes var saglabāt un lasīt sīkfailu datus</translation>
 <translation id="3672452749423051839">Navigācijas kļūdu ieteikumi</translation>
+<translation id="3716158070938632480">Tuvumā ir tīmekļa lapas</translation>
 <translation id="3732088672634061408">Nevarēja izgūt intereses.</translation>
 <translation id="3738139272394829648">Meklēšana pieskaroties</translation>
 <translation id="3809549525127675114">Tika pabeigta videoklipa “<ph name="VIDEO_TITLE" />” atskaņošana</translation>
@@ -372,7 +374,6 @@ Lietojuma statistikas datos tiek ietverta tāda informācija kā preferences, kl
 <translation id="5911030830365207728">Google tulkotājs</translation>
 <translation id="5916664084637901428">Iesl.</translation>
 <translation id="5939518447894949180">Atiestatīt</translation>
-<translation id="5965336165840183977">Tādējādi tiek dzēsti dati visās jūsu ierīcēs. Jūs netiksiet izrakstīts no sava Google konta. Saglabātie vietņu iestatījumi netiks dzēsti un var atspoguļot jūsu pārlūkošanas ieradumus.</translation>
 <translation id="5968595432776860642">Notiek videoklipa “<ph name="VIDEO_TITLE" />” atskaņošana</translation>
 <translation id="6010869025736512584">Notiek piekļūšana video ievadei</translation>
 <translation id="6012342843556706400">Pārlūkam Chrome ir nepieciešama piekļuve atrašanās vietai, lai kopīgotu to ar šo vietni.</translation>
@@ -392,7 +393,6 @@ Lietojuma statistikas datos tiek ietverta tāda informācija kā preferences, kl
 <translation id="6159335304067198720">Datu lietojuma samazinājums: <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">Uzziniet vairāk</translation>
 <translation id="6192792657125177640">Izņēmumi</translation>
-<translation id="6231464350722415003">Atļaujiet JavaScript izmantošanu jūsu norādītās vietnēs, vienlaicīgi bloķējot to pārējās vietnēs.</translation>
 <translation id="6232535412751077445">Iespējojot funkciju “Nesekot”, jūsu pārlūkošanas datplūsmā tiks iekļauts pieprasījums. Rezultāts būs atkarīgs no tā, vai vietne nodrošinās atbildi uz pieprasījumu un kā pieprasījums tiks interpretēts.
 
 Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums reklāmas, kuru pamatā nav citas jūsu apmeklētās vietnes. Tomēr daudzas vietnes apkopos un izmantos jūsu pārlūkošanas datus, piemēram, lai uzlabotu drošību, nodrošinātu saturu, reklāmas un ieteikumus un ģenerētu pārskatu statistiku.</translation>
@@ -480,7 +480,6 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> izmanto jūsu atrašanās vietas informāciju, lai rādītu vietējās meklēšanas rezultātus</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />Palīdzība<ph name="END_LINK" /></translation>
 <translation id="7299721129597238157">Dzēst grāmatzīmi</translation>
-<translation id="7346217184097589238">Saglabātie vietņu iestatījumi netiks dzēsti un var atspoguļot jūsu pārlūkošanas ieradumus.</translation>
 <translation id="7347770551817603360">Saturs bezsaistē</translation>
 <translation id="7363354739009474003">Notiek videoklipa “<ph name="VIDEO_TITLE" />” ielāde</translation>
 <translation id="7366340029385295517">Notiek apraide uz ekrānu “<ph name="SCREEN_NAME" />”</translation>
@@ -491,6 +490,7 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="7408644312175185557">Skatiet cilnes ar citām jaunākajām lietotnēm tālruņa ekrānā Pārskats.</translation>
 <translation id="7423098979219808738">Vispirms jautāt</translation>
 <translation id="7437998757836447326">Izrakstīšanās no pārlūka Chrome</translation>
+<translation id="7464701184726199289">Tādējādi visās ierīcēs tiek notīrīti sinhronizētie dati. Saglabātie vietņu iestatījumi netiks dzēsti, un tie var atspoguļot jūsu pārlūkošanas ieradumus. <ph name="BEGIN_LINK" />Uzziniet vairāk<ph name="END_LINK" />.</translation>
 <translation id="7473891865547856676">Nē, paldies!</translation>
 <translation id="7475192538862203634">Ja šis ziņojums tiek rādīts bieži, izmēģiniet šos <ph name="BEGIN_LINK" />ieteikumus<ph name="END_LINK" />.</translation>
 <translation id="748127970106343339">Ierīces akreditācijas datu dzēšanas apstiprināšana</translation>
@@ -542,7 +542,11 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="8068648041423924542">Nevar atlasīt sertifikātu.</translation>
 <translation id="8069239273282989646">Pēc saspiešanas</translation>
 <translation id="8073388330009372546">Atvērt attēlu jaunā cilnē</translation>
+<translation id="8076014560081431679">Saglabātie vietņu iestatījumi netiks dzēsti, un tie var atspoguļot jūsu pārlūkošanas ieradumus. <ph name="BEGIN_LINK" />Uzziniet vairāk<ph name="END_LINK" />.</translation>
 <translation id="8084156870963450514">Pierakstieties, lai piekļūtu visam savam tīmekļa saturam jebkurā ierīcē.</translation>
+<translation id="8098570222830891427">Jūsu tuvumā esošās ierīces pārraida tīmekļa lapas, izmantojot Bluetooth savienojumu. Chrome meklēs lapas un parādīs tās, kad aktivizēsiet savu ierīci. Šīs lapas tiks pārbaudītas Google pakalpojumā, lai uzlabotu lapu rezultātu kvalitāti.
+
+Fizisko tīmekli varat kontrolēt Chrome iestatījumos.</translation>
 <translation id="8106211421800660735">Kredītkartes numurs</translation>
 <translation id="813082847718468539">Skatīt informāciju par vietni</translation>
 <translation id="8137558756159375272">Izmantojot meklēšanu pieskaroties, atlasītais vārds un pašreiz skatītā lapa tiek nosūtīta kā konteksts pakalpojumam Google meklēšana. Varat to izslēgt lapā <ph name="BEGIN_LINK" />Iestatījumi<ph name="END_LINK" />.</translation>

@@ -556,7 +556,6 @@
 <translation id="7186367841673660872">Bu sayfa,<ph name="ORIGINAL_LANGUAGE" />dilinden<ph name="LANGUAGE_LANGUAGE" />diline çevrilmiştir</translation>
 <translation id="719464814642662924">Visa</translation>
 <translation id="720210938761809882">Sayfa engellendi</translation>
-<translation id="7208899522964477531"><ph name="SITE_NAME" /> sitesinde <ph name="SEARCH_TERMS" /> terimlerini ara</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> güvenlik standartlarına uymuyor.</translation>
 <translation id="721197778055552897">Bu sorun hakkında <ph name="BEGIN_LINK" />daha fazla<ph name="END_LINK" /> bilgi edinin.</translation>
 <translation id="7219179957768738017">Bağlantı <ph name="SSL_VERSION" /> kullanıyor.</translation>
@@ -638,7 +637,6 @@ Hatırlatma! Bir dahaki sefere Gizli mod <ph name="SHORTCUT_KEY" /> kullanışl�
 <translation id="7951415247503192394">(32 bit)</translation>
 <translation id="7956713633345437162">Mobil yer işaretleri</translation>
 <translation id="7961015016161918242">Hiçbir Zaman</translation>
-<translation id="7977590112176369853">&lt;sorgu girin&gt;</translation>
 <translation id="7983301409776629893"><ph name="ORIGINAL_LANGUAGE" /> dilini her zaman <ph name="TARGET_LANGUAGE" /> diline çevir</translation>
 <translation id="7995512525968007366">Belirtilmedi</translation>
 <translation id="8012647001091218357">Şu anda ebeveynlerinize erişemedik. Lütfen tekrar deneyin.</translation>
@@ -719,7 +717,6 @@ Hatırlatma! Bir dahaki sefere Gizli mod <ph name="SHORTCUT_KEY" /> kullanışl�
 <translation id="8903921497873541725">Yakınlaştır</translation>
 <translation id="8931333241327730545">Bu kartı Google Hesabınıza kaydetmek istiyor musunuz?</translation>
 <translation id="8932102934695377596">Saatiniz geri</translation>
-<translation id="8940229512486821554"><ph name="EXTENSION_NAME" /> komutunu çalıştır: <ph name="SEARCH_TERMS" /></translation>
 <translation id="8954894007019320973">(Dev.)</translation>
 <translation id="8971063699422889582">Sunucu sertifikasının süresi doldu.</translation>
 <translation id="8987927404178983737">Ay</translation>

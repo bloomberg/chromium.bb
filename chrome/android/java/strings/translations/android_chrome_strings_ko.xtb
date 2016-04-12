@@ -25,6 +25,7 @@
 <translation id="1285320974508926690">이 사이트 번역 안함</translation>
 <translation id="1291207594882862231">방문 기록, 쿠키, 사이트 데이터, 캐시 삭제…</translation>
 <translation id="129553762522093515">최근에 닫은 탭</translation>
+<translation id="13410144310025252">Chrome에서 보기</translation>
 <translation id="1346090444609141578">저장된 페이지 없음</translation>
 <translation id="1369915414381695676"><ph name="SITE_NAME" /> 사이트 추가됨</translation>
 <translation id="1373696734384179344">선택한 콘텐츠를 다운로드할 공간이 부족합니다.</translation>
@@ -193,6 +194,7 @@
 <translation id="3656115297268584622"><ph name="BEGIN_LINK" />Android 설정<ph name="END_LINK" />에서 위치를 사용 설정하세요.</translation>
 <translation id="3661699943263275414">타사 웹사이트에서 쿠키 데이터를 저장하고 읽을 수 있도록 허용</translation>
 <translation id="3672452749423051839">탐색 오류 시 추천사항 표시</translation>
+<translation id="3716158070938632480">주변에 웹페이지 있음</translation>
 <translation id="3732088672634061408">관심분야를 검색하지 못했습니다.</translation>
 <translation id="3738139272394829648">터치하여 검색</translation>
 <translation id="3809549525127675114">'<ph name="VIDEO_TITLE" />' 재생 완료</translation>
@@ -372,7 +374,6 @@
 <translation id="5911030830365207728">Google 번역</translation>
 <translation id="5916664084637901428">사용</translation>
 <translation id="5939518447894949180">초기화</translation>
-<translation id="5965336165840183977">이렇게 하면 동기화된 데이터가 모든 기기에서 삭제되지만 Google 계정에서 로그아웃되지는 않습니다. 저장된 사이트 설정은 삭제되지 않으며 인터넷 사용 습관을 반영할 수 있습니다.</translation>
 <translation id="5968595432776860642">'<ph name="VIDEO_TITLE" />' 재생 중</translation>
 <translation id="6010869025736512584">비디오 입력 장치에 액세스 중</translation>
 <translation id="6012342843556706400">이 사이트에 공유하려면 Chrome에 위치 정보 액세스 권한이 있어야 합니다.</translation>
@@ -392,7 +393,6 @@
 <translation id="6159335304067198720"><ph name="PERCENT" /> 데이터 절약</translation>
 <translation id="6165508094623778733">자세히 알아보기</translation>
 <translation id="6192792657125177640">예외</translation>
-<translation id="6231464350722415003">지정한 웹사이트에서만 자바스크립트를 허용하고 나머지 웹사이트에서는 차단합니다.</translation>
 <translation id="6232535412751077445">‘추적 안함’을 사용하도록 설정하면 요청이 사용자의 인터넷 사용 트래픽에 포함됩니다. 웹사이트가 요청에 응답하는지 여부와 요청이 해석되는 방법에 따라 결과가 결정됩니다.
 
 예를 들어 어떤 웹사이트는 사용자가 방문한 다른 웹사이트를 기반으로 하지 않는 광고를 표시하여 이 요청에 응답할 수 있습니다. 그러나 대부분의 웹사이트에서는 보안을 개선하거나 웹사이트에 콘텐츠, 광고, 권장사항 등을 제공하거나 보고서 통계를 생성하기 위해 사용자의 인터넷 사용 기록을 계속 수집하고 사용합니다.</translation>
@@ -480,7 +480,6 @@
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" />이(가) 사용자 위치 정보를 사용하여 지역 검색결과 표시</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />도움말<ph name="END_LINK" /></translation>
 <translation id="7299721129597238157">북마크 삭제</translation>
-<translation id="7346217184097589238">저장된 사이트 설정은 삭제되지 않으며 인터넷 사용 습관을 반영할 수 있습니다.</translation>
 <translation id="7347770551817603360">오프라인 콘텐츠</translation>
 <translation id="7363354739009474003">'<ph name="VIDEO_TITLE" />' 로드 중</translation>
 <translation id="7366340029385295517"><ph name="SCREEN_NAME" />(으)로 전송 중</translation>
@@ -491,6 +490,7 @@
 <translation id="7408644312175185557">휴대전화의 최근 사용 화면에서 최근에 사용한 앱과 탭을 확인할 수 있습니다.</translation>
 <translation id="7423098979219808738">우선 확인</translation>
 <translation id="7437998757836447326">Chrome에서 로그아웃</translation>
+<translation id="7464701184726199289">모든 기기에서 동기화된 데이터가 삭제됩니다. 저장된 사이트 설정은 삭제되지 않으며 인터넷 사용 습관이 반영될 수 있습니다. <ph name="BEGIN_LINK" />자세히 알아보기<ph name="END_LINK" /></translation>
 <translation id="7473891865547856676">건너뛰기</translation>
 <translation id="7475192538862203634">이 메시지가 자주 표시된다면 다음 <ph name="BEGIN_LINK" />권장사항<ph name="END_LINK" />을 시도해 보세요.</translation>
 <translation id="748127970106343339">기기 사용자 인증 정보 삭제 확인</translation>
@@ -542,7 +542,11 @@
 <translation id="8068648041423924542">인증서를 선택할 수 없습니다.</translation>
 <translation id="8069239273282989646">압축 후</translation>
 <translation id="8073388330009372546">새 탭에서 이미지 열기</translation>
+<translation id="8076014560081431679">저장된 사이트 설정은 삭제되지 않으며 인터넷 사용 습관이 반영될 수 있습니다. <ph name="BEGIN_LINK" />자세히 알아보기<ph name="END_LINK" /></translation>
 <translation id="8084156870963450514">모든 기기에서 모든 웹 항목에 액세스하려면 로그인하세요.</translation>
+<translation id="8098570222830891427">주변 기기에서 블루투스를 사용하여 웹페이지를 전송합니다. 내 기기의 대기 모드가 해제되었을 때 Chrome에서 페이지를 스캔하고 표시합니다. 이 페이지는 페이지 결과의 품질을 높이기 위해 Google 서비스를 거칩니다.
+
+Chrome 설정에서 피지컬 웹을 관리할 수 있습니다.</translation>
 <translation id="8106211421800660735">신용카드 번호</translation>
 <translation id="813082847718468539">사이트 정보 보기</translation>
 <translation id="8137558756159375272">터치하여 검색에서 선택한 단어와 현재 페이지를 Google 검색에 컨텍스트로 발송하세요. <ph name="BEGIN_LINK" />설정<ph name="END_LINK" />에서 이 기능을 사용 중지할 수 있습니다.</translation>
@@ -551,7 +555,7 @@
 <translation id="8173098127580644436">전체</translation>
 <translation id="8200772114523450471">다시 시작</translation>
 <translation id="8209050860603202033">이미지 열기</translation>
-<translation id="8215250379351058554"><ph name="SITE" />에서 연결할 항목:</translation>
+<translation id="8215250379351058554"><ph name="SITE" />에서 다음과 연결하려고 합니다:</translation>
 <translation id="8218346974737627104">로그인 확인</translation>
 <translation id="8218934717680664417">이제 터치 한 번으로 검색할 수 있습니다.</translation>
 <translation id="8223946939421658889">다음 기간의 데이터 삭제</translation>

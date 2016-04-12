@@ -69,7 +69,6 @@ Jeśli jednak zalogujesz się teraz, informacje Chrome, takie jak zakładki, his
 <translation id="3080151273017101988">Kontynuuj działanie aplikacji w tle po zamknięciu przeglądarki Google Chrome</translation>
 <translation id="3089968997497233615">Dostępna jest nowa, bezpieczniejsza wersja przeglądarki Google Chrome.</translation>
 <translation id="3149510190863420837">Aplikacje Chrome</translation>
-<translation id="3197823471738295152">Urządzenie używa aktualnej wersji oprogramowania.</translation>
 <translation id="3282568296779691940">Zaloguj się w Chrome</translation>
 <translation id="3311976847535831054">Ten komputer nie będzie już otrzymywać aktualizacji Google Chrome w wersji 32-bitowej. Uaktualnij Chrome do wersji 64-bitowej.</translation>
 <translation id="3360895254066713204">Pomoc Chrome</translation>
@@ -89,7 +88,7 @@ Jeśli jednak zalogujesz się teraz, informacje Chrome, takie jak zakładki, his
 <translation id="3881912906674381083">Chrome sprawdził, że wydawcą certyfikatu tej witryny jest <ph name="ISSUER" />. Serwer dostarczył informacje o certyfikacie, korzystając z protokołu Certificate Transparency, ale Chrome nie rozpoznał żadnego z dzienników.</translation>
 <translation id="3889417619312448367">Odinstaluj Google Chrome</translation>
 <translation id="396182988103551265">Aby nadal uruchamiać aplikacje, możesz korzystać ze skrótu <ph name="APPS_ICON_IMAGE" /> na pasku zakładek w Chrome.</translation>
-<translation id="4042449298237264661">Google Chrome nie będzie już aktualizować się na tym komputerze, bo nie jest zgodny z Windows XP ani Windows Vista.</translation>
+<translation id="4042449298237264661">Google Chrome nie będzie już aktualizować się na tym komputerze, bo Windows XP i Windows Vista nie są już obsługiwane.</translation>
 <translation id="4050175100176540509">W najnowszej wersji zostały wprowadzone ważne poprawki bezpieczeństwa i nowe funkcje.</translation>
 <translation id="4053720452172726777">Dostosowywanie i kontrolowanie Google Chrome</translation>
 <translation id="4147555960264124640">Logujesz się na zarządzane konto i przekazujesz jego administratorowi kontrolę nad swoim profilem Google Chrome. Twoje dane Chrome, takie jak aplikacje, zakładki, historia, hasła i inne ustawienia, zostaną trwale powiązane z użytkownikiem <ph name="USER_NAME" />. Będzie można je usunąć w Panelu kont Google, ale nie będzie można ich powiązać z innym kontem. <ph name="LEARN_MORE" /></translation>
@@ -100,7 +99,7 @@ Jeśli jednak zalogujesz się teraz, informacje Chrome, takie jak zakładki, his
 <translation id="4309555186815777032">(wymaga <ph name="BEGIN_BUTTON" />ponownego uruchomienia<ph name="END_BUTTON" /> Chrome)</translation>
 <translation id="4331809312908958774">Chrome OS
 </translation>
-<translation id="437002079035561265">Google Chrome nie będzie już aktualizować się na tym komputerze, bo ten system Linux nie będzie już obsługiwany.</translation>
+<translation id="437002079035561265">Google Chrome nie będzie już aktualizować się na tym komputerze, bo ten system Linux nie jest już obsługiwany.</translation>
 <translation id="4407807842708586359">System operacyjny Google Chrome</translation>
 <translation id="4458285410772214805">Wyloguj się i zaloguj ponownie, by zmiana zaczęła obowiązywać.</translation>
 <translation id="4480040274068703980">System operacyjny Chrome nie może zsynchronizować danych z powodu błędu logowania.</translation>
@@ -157,7 +156,7 @@ Jeśli jednak zalogujesz się teraz, informacje Chrome, takie jak zakładki, his
 <translation id="629218512217695915">Użyj hasła wygenerowanego przez Chrome</translation>
 <translation id="6368958679917195344">Opracowanie systemu operacyjnego Chrome było możliwe dzięki dodatkowemu <ph name="BEGIN_LINK_CROS_OSS" />oprogramowaniu typu open source<ph name="END_LINK_CROS_OSS" />.</translation>
 <translation id="6400076122676892962">Google Chrome wkrótce przestanie aktualizować się na tym komputerze, bo nie będzie już zgodny z Mac OS X 10.6, 10.7 ani 10.8.</translation>
-<translation id="6470176598693778404">Google Chrome nie będzie już aktualizować się na tym komputerze, bo nie jest zgodny z Mac OS X 10.6, 10.7 ani 10.8.</translation>
+<translation id="6470176598693778404">Google Chrome nie będzie już aktualizować się na tym komputerze, bo Mac OS X 10.6, 10.7 i 10.8 nie są już obsługiwane.</translation>
 <translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{Trwa pobieranie pliku. Czy chcesz je anulować i wyjść z Google Chrome?}few{Trwa pobieranie # plików. Czy chcesz je anulować i wyjść z Google Chrome?}many{Trwa pobieranie # plików. Czy chcesz je anulować i wyjść z Google Chrome?}other{Trwa pobieranie # pliku. Czy chcesz je anulować i wyjść z Google Chrome?}}</translation>
 <translation id="6598387184982954187">Używasz adresu <ph name="PROFILE_EMAIL" /> do synchronizowania danych w Chrome. Aby zaktualizować ustawienia synchronizacji lub używać Chrome bez konta Google, wejdź na stronę <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6600954340915313787">Skopiowana do Chrome</translation>

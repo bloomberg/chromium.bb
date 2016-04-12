@@ -557,7 +557,6 @@
 <translation id="7186367841673660872">이 페이지는<ph name="ORIGINAL_LANGUAGE" />에서<ph name="LANGUAGE_LANGUAGE" />로 번역되었습니다.</translation>
 <translation id="719464814642662924">Visa</translation>
 <translation id="720210938761809882">페이지 차단됨</translation>
-<translation id="7208899522964477531"><ph name="SITE_NAME" />에서 <ph name="SEARCH_TERMS" /> 검색</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" />에서 보안 기준을 준수하지 않습니다.</translation>
 <translation id="721197778055552897">이 문제에 대해 <ph name="BEGIN_LINK" />자세히 알아보기<ph name="END_LINK" /></translation>
 <translation id="7219179957768738017"><ph name="SSL_VERSION" /> 연결입니다.</translation>
@@ -639,7 +638,6 @@
 <translation id="7951415247503192394">(32비트)</translation>
 <translation id="7956713633345437162">모바일 북마크</translation>
 <translation id="7961015016161918242">사용하지 않음</translation>
-<translation id="7977590112176369853">&lt;검색어 입력&gt;</translation>
 <translation id="7983301409776629893"><ph name="ORIGINAL_LANGUAGE" />를 항상 <ph name="TARGET_LANGUAGE" />로 번역</translation>
 <translation id="7995512525968007366">지정되지 않음</translation>
 <translation id="8012647001091218357">현재 부모님께 연락할 수 없습니다. 나중에 다시 시도해 주세요.</translation>
@@ -719,7 +717,6 @@
 <translation id="8903921497873541725">확대</translation>
 <translation id="8931333241327730545">이 카드를 Google 계정에 저장하시겠습니까?</translation>
 <translation id="8932102934695377596">시간이 너무 먼 과거로 설정되어 있습니다.</translation>
-<translation id="8940229512486821554"><ph name="EXTENSION_NAME" /> 명령어 실행: <ph name="SEARCH_TERMS" /></translation>
 <translation id="8954894007019320973">(계속)</translation>
 <translation id="8971063699422889582">서버 인증서가 만료되었습니다.</translation>
 <translation id="8987927404178983737">월</translation>

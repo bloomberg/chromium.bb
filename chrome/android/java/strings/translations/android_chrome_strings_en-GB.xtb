@@ -25,6 +25,7 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 <translation id="1285320974508926690">Never translate this site</translation>
 <translation id="1291207594882862231">Clear history, cookies, site data, cache…</translation>
 <translation id="129553762522093515">Recently closed</translation>
+<translation id="13410144310025252">View them in Chrome</translation>
 <translation id="1346090444609141578">No saved pages here</translation>
 <translation id="1369915414381695676">Site <ph name="SITE_NAME" /> added</translation>
 <translation id="1373696734384179344">Insufficient memory to download the selected content.</translation>
@@ -193,8 +194,10 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="3656115297268584622">Turn on location in <ph name="BEGIN_LINK" />Android Settings<ph name="END_LINK" />.</translation>
 <translation id="3661699943263275414">Third-party websites can save and read cookie data</translation>
 <translation id="3672452749423051839">Navigation error suggestions</translation>
+<translation id="3716158070938632480">Web pages are nearby</translation>
 <translation id="3732088672634061408">Could not retrieve interests.</translation>
 <translation id="3738139272394829648">Touch to Search</translation>
+<translation id="3744111561329211289">Background sync</translation>
 <translation id="3809549525127675114">Finished “<ph name="VIDEO_TITLE" />”</translation>
 <translation id="3828029223314399057">Search bookmarks</translation>
 <translation id="3871171699884605801">Browsing history can’t be cleared with accounts for kids</translation>
@@ -283,6 +286,7 @@ Just open Chrome on your computer, go to the menu and select “Sign in to Chrom
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">Allow</translation>
 <translation id="5040262127954254034">Privacy</translation>
+<translation id="5056549851600133418">Articles for you</translation>
 <translation id="5063480226653192405">Usage</translation>
 <translation id="5100237604440890931">Collapsed – click to expand.</translation>
 <translation id="5107381076085091558">Download paused.</translation>
@@ -372,7 +376,6 @@ However, you aren't invisible. Going incognito doesn't hide your browsing from y
 <translation id="5911030830365207728">Google Translate</translation>
 <translation id="5916664084637901428">On</translation>
 <translation id="5939518447894949180">Reset</translation>
-<translation id="5965336165840183977">This clears synced data from all devices. You won’t be signed out of your Google account. Saved site settings will not be deleted and may reflect your browsing habits.</translation>
 <translation id="5968595432776860642">Playing “<ph name="VIDEO_TITLE" />”</translation>
 <translation id="6010869025736512584">Accessing video input</translation>
 <translation id="6012342843556706400">Chrome needs location access to share it with this site.</translation>
@@ -392,7 +395,6 @@ However, you aren't invisible. Going incognito doesn't hide your browsing from y
 <translation id="6159335304067198720"><ph name="PERCENT" /> data savings</translation>
 <translation id="6165508094623778733">Learn more</translation>
 <translation id="6192792657125177640">Exceptions</translation>
-<translation id="6231464350722415003">Allow JavaScript on websites that you specify while blocking it for the rest of the web</translation>
 <translation id="6232535412751077445">Enabling “Do Not Track” means that a request will be included with your browsing traffic. Any effect depends on whether a website responds to the request and how the request is interpreted.
 
 For example, some websites may respond to this request by showing you ads that aren’t based on other websites that you’ve visited. Many websites will still collect and use your browsing data – for example to improve security, to provide content, ads and recommendations and to generate reporting statistics.</translation>
@@ -480,7 +482,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> uses your location to show local search results</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />Help<ph name="END_LINK" /></translation>
 <translation id="7299721129597238157">Delete bookmark</translation>
-<translation id="7346217184097589238">Saved site settings will not be deleted and may reflect your browsing habits.</translation>
 <translation id="7347770551817603360">Offline content</translation>
 <translation id="7363354739009474003">Loading “<ph name="VIDEO_TITLE" />”</translation>
 <translation id="7366340029385295517">Casting to <ph name="SCREEN_NAME" /></translation>
@@ -491,6 +492,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7408644312175185557">See your tabs with other recent apps on your phone’s Overview screen.</translation>
 <translation id="7423098979219808738">Ask first</translation>
 <translation id="7437998757836447326">Sign out of Chrome</translation>
+<translation id="7464701184726199289">This clears synced data from all devices. Saved site settings will not be deleted and may reflect your browsing habits. <ph name="BEGIN_LINK" />Find out more<ph name="END_LINK" /></translation>
 <translation id="7473891865547856676">No Thanks</translation>
 <translation id="7475192538862203634">If you’re seeing this frequently, try these <ph name="BEGIN_LINK" />suggestions<ph name="END_LINK" />.</translation>
 <translation id="748127970106343339">Confirm device credential deletion</translation>
@@ -500,6 +502,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7501135638693251872">All bookmarks</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7562080006725997899">Clear browsing data</translation>
+<translation id="756809126120519699">Cleared Chrome data</translation>
 <translation id="7588950540487816470">Physical web</translation>
 <translation id="7596558890252710462">Operating system</translation>
 <translation id="7599840151813361502">You won’t be signed out of your <ph name="BEGIN_LINK" />Google Accounts<ph name="END_LINK" /></translation>
@@ -542,7 +545,12 @@ However, you aren’t invisible. Going incognito doesn’t hide your browsing fr
 <translation id="8068648041423924542">Unable to select certificate.</translation>
 <translation id="8069239273282989646">After compression</translation>
 <translation id="8073388330009372546">Open image in new tab</translation>
+<translation id="8076014560081431679">Saved site settings will not be deleted and may reflect your browsing habits. <ph name="BEGIN_LINK" />Find out more<ph name="END_LINK" /></translation>
 <translation id="8084156870963450514">Sign in to access all your web stuff from any device</translation>
+<translation id="8087000398470557479">This content is from <ph name="DOMAIN_NAME" />, delivered by Google.</translation>
+<translation id="8098570222830891427">Devices near to you are broadcasting web pages over Bluetooth. Chrome will scan for pages and display them when you wake up your device. These pages will go through a Google service to improve the quality of page results.
+
+You can control the Physical Web in Chrome Settings.</translation>
 <translation id="8106211421800660735">Credit card number</translation>
 <translation id="813082847718468539">View site information</translation>
 <translation id="8137558756159375272">Touch to Search sends the selected word and the current page as context to Google Search. You can turn it off in <ph name="BEGIN_LINK" />Settings<ph name="END_LINK" />.</translation>
@@ -603,6 +611,7 @@ However, you aren’t invisible. Going incognito doesn’t hide your browsing fr
 <translation id="8931159598799892500">Chrome + Physical Web</translation>
 <translation id="8941248009481596111">Your connection to this site is private.</translation>
 <translation id="8941729603749328384">www.example.com</translation>
+<translation id="8942627711005830162">Open in other window</translation>
 <translation id="8959122750345127698">Navigation is unreachable: <ph name="URL" /></translation>
 <translation id="8979340629087822094">past day</translation>
 <translation id="8987061207681586800">Make Chrome yours</translation>

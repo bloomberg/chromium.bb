@@ -4,52 +4,32 @@
 <translation id="1008557486741366299">後で</translation>
 <translation id="1047726139967079566">ブックマークに追加...</translation>
 <translation id="1172898394251786223">次の項目</translation>
-<translation id="168328519870909584"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> では現在、悪意のあるユーザーが、お使いのデバイスに危険なアプリ（写真、パスワード、メッセージ、クレジット カード番号などを盗み取るか削除するアプリ）をインストールしようとしている可能性があります。</translation>
 <translation id="2320166752086256636">キーボードを非表示</translation>
 <translation id="2467815441875554965">コンテキスト検索</translation>
 <translation id="2704606927547763573">コピーしました</translation>
 <translation id="2747003861858887689">前の項目</translation>
 <translation id="2780046210906776326">メールアカウントなし</translation>
-<translation id="2803306138276472711"><ph name="SITE" /> では最近、Google セーフ ブラウジングにより、<ph name="BEGIN_LINK" />不正なソフトウェアが検出されました<ph name="END_LINK" />。通常は安全なウェブサイトであっても、不正なソフトウェアに感染している場合があります。</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />、<ph name="ADDITIONAL_INFO" />、<ph name="INDEX" /> / <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3335947283844343239">閉じたタブを開く</translation>
 <translation id="3414292259312108062">このパスワードは<ph name="BEGIN_LINK" />Googleの保存パスワード<ph name="END_LINK" />として保存され、次回から自動入力されます。</translation>
 <translation id="3567664240939803299">Google Smart Lock でこのサイトのパスワードを保存しますか？</translation>
-<translation id="3586931643579894722">詳細を非表示</translation>
-<translation id="3736520371357197498">危険なプログラムが削除されるより前に<ph name="BEGIN_LINK" />この安全でないサイトにアクセスする<ph name="END_LINK" />場合は、セキュリティ上のリスクについてご承知おきください。</translation>
 <translation id="385051799172605136">戻る</translation>
-<translation id="4098354747657067197">偽のサイトにアクセスしようとしています</translation>
 <translation id="4121993058175073134">エクスポート データのみを送信するには、設定アプリでメール アカウントを設定してください。</translation>
 <translation id="4399225372525667111">ChromeではこのサイトのURLが正しいことを確認できません。</translation>
-<translation id="4522570452068850558">詳細</translation>
 <translation id="4728558894243024398">プラットフォーム</translation>
 <translation id="473775607612524610">アップデート</translation>
 <translation id="5317780077021120954">保存</translation>
-<translation id="5337705430875057403"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> では、悪意のあるユーザーによって、ソフトウェアのインストールや個人情報（パスワード、電話番号、クレジット カードなど）の入力といった危険な操作を行うよう誘導される可能性があります。</translation>
 <translation id="605721222689873409">YY</translation>
-<translation id="6075880972317537864"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> では、悪意のあるユーザーが、パスワード、メッセージ、クレジット カード番号などの情報を盗み取ろうとしている可能性があります。</translation>
 <translation id="6149061208933997199">パスワードを使用</translation>
 <translation id="6196207969502475924">音声検索</translation>
-<translation id="6221345481584921695"><ph name="BEGIN_LINK" /> では最近、Google セーフ ブラウジングにより、<ph name="END_LINK" />不正なソフトウェアが検出されました<ph name="SITE" />。通常は安全なウェブサイトであっても、不正なソフトウェアに感染している場合があります。今回の悪意のあるコンテンツは、不正なソフトウェアの既知の配布元である「<ph name="SUBRESOURCE_HOST" />」からもたらされました。</translation>
-<translation id="6264485186158353794">セキュリティで保護されたページに戻る</translation>
 <translation id="6314335155547195432">パスワードを生成</translation>
 <translation id="6344783595350022745">テキストを消去</translation>
 <translation id="6456425917241817154">自動生成パスワード</translation>
 <translation id="6535543971741225613">アクセスしようとしているサイトに不審な動作が見られます。ChromeではこのURLが正しいことを確認できません。セキュリティ上の理由により、今すぐこのサイトへのアクセスを中止し、明日もう一度お試しいただくか、別のサイトをご利用ください。</translation>
-<translation id="6740369132746915122"><ph name="BEGIN_LINK" />この安全でないサイトにアクセス<ph name="END_LINK" />する場合は、セキュリティ上のリスクについてご承知おきください。</translation>
 <translation id="7222245588540287464">コンテキスト検索を有効にするかどうかです。</translation>
-<translation id="724691107663265825">アクセス先のサイトで不正なソフトウェアを検出しました。</translation>
 <translation id="7456847797759667638">場所を開く...</translation>
 <translation id="7481312909269577407">進む</translation>
 <translation id="7484580869648358686">警告: 不正なソフトウェアが存在する可能性があります</translation>
-<translation id="7779249319235708104">アクセス先でフィッシング行為を検出しました</translation>
 <translation id="7961015016161918242">使用しない</translation>
-<translation id="820854170120587500"><ph name="SITE" /> では最近、Google セーフ ブラウジングにより、フィッシング行為が検出されました。<ph name="BEGIN_LINK" />フィッシング サイト<ph name="END_LINK" />は、他のウェブサイトになりすましてユーザーを欺こうとするサイトです。</translation>
-<translation id="834457929814110454">有害なプログラムが削除されるより前に<ph name="BEGIN_LINK" />このサイトにアクセスする<ph name="END_LINK" />場合は、セキュリティ上のリスクについてご承知おきください。</translation>
-<translation id="8543181531796978784"><ph name="BEGIN_ERROR_LINK" />検出の問題をご報告<ph name="END_ERROR_LINK" />ください。<ph name="BEGIN_LINK" />安全でないこのサイトにアクセス<ph name="END_LINK" />する場合は、セキュリティ上のリスクがあることをご承知おきください。</translation>
-<translation id="8761567432415473239"><ph name="SITE" /> では最近、Google セーフ ブラウジングにより<ph name="BEGIN_LINK" />有害なプログラムが検出<ph name="END_LINK" />されました。</translation>
-<translation id="8996941253935762404">この先のサイトには有害なプログラムがあります</translation>
-<translation id="9035022520814077154">セキュリティ エラー</translation>
-<translation id="9040185888511745258"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> の攻撃者が、閲覧環境を損なうプログラムをインストールさせようとしている可能性があります（ホームページを改ざんする、アクセス先のサイトに追加の広告を表示するなど）。</translation>
 </translationbundle>

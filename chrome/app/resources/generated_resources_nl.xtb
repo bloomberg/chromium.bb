@@ -277,7 +277,6 @@
 <translation id="1407050882688520094">Je hebt certificaten waarmee deze certificeringsinstanties worden geïdentificeerd:</translation>
 <translation id="1407489512183974736">Midden bijsnijden</translation>
 <translation id="1408789165795197664">Geavanceerd...</translation>
-<translation id="1408803555324839240">De nieuwe gebruiker met beperkte rechten kan niet worden gemaakt. Controleer of je correct bent ingelogd en probeer het opnieuw.</translation>
 <translation id="1409390508152595145">Gebruiker met beperkte rechten maken</translation>
 <translation id="1410616244180625362"><ph name="HOST" /> toegang tot je camera blijven geven</translation>
 <translation id="1413372529771027206">Je telefoon die voor Smart Lock wordt gebruikt, is gewijzigd. Typ je wachtwoord om Smart Lock voor Chromebook te updaten op dit apparaat. De volgende keer kun je gewoon op je afbeelding klikken om door te gaan.</translation>
@@ -618,7 +617,7 @@
 <translation id="1891196807951270080">Het lokaal opslaan van onlangs bezochte pagina's voor offline gebruik inschakelen. Offline pagina's moeten hiervoor zijn ingeschakeld.</translation>
 <translation id="1891668193654680795">Dit certificaat vertrouwen voor het identificeren van softwareontwikkelaars.</translation>
 <translation id="189210018541388520">Openen in volledig scherm</translation>
-<translation id="1892754076732315533">Een vereenvoudigde nieuwe gebruikerservaring bij het starten van een door de pagina geactiveerde weergave op volledig scherm of muisaanwijzervergrendeling.</translation>
+<translation id="1892754076732315533">Een eenvoudigere manier voor  het activeren van volledig scherm en muisaanwijzervergrendeling.</translation>
 <translation id="1893046049133338222">ARC: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="1893406696975231168">Cloudregistratieproces mislukt</translation>
 <translation id="189358972401248634">Andere talen</translation>
@@ -1600,7 +1599,6 @@ Controleer je e-mail op <ph name="ACCOUNT_EMAIL" /> voor deze en verdere instruc
 <translation id="3277710850168074473">Vereiste voor gebruikersgebaar voor het afspelen van media-elementen. Als je dit inschakelt, werkt de functie voor automatisch afspelen.</translation>
 <translation id="3280237271814976245">Opslaan &amp;als...</translation>
 <translation id="3280431534455935878">Voorbereiden</translation>
-<translation id="3284674070818187654">Google kan je browsegeschiedenis gebruiken om Zoeken en andere Google-services te personaliseren. Je kunt dit beheren via myaccount.google.com.</translation>
 <translation id="3285322247471302225">Nieuw &amp;tabblad</translation>
 <translation id="3288047731229977326">Extensies die in de ontwikkelaarmodus worden uitgevoerd, kunnen je computer beschadigen. Als je geen ontwikkelaar bent, moet je deze extensies uitschakelen, die in de ontwikkelaarsmodus worden uitgevoerd, om beveiligd te blijven.</translation>
 <translation id="3289566588497100676">Eenvoudige invoer van symbolen</translation>
@@ -1707,7 +1705,6 @@ van <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3413122095806433232">CA-uitgevers: <ph name="LOCATION" /></translation>
 <translation id="3414856743105198592">Als je het verwisselbare medium formatteert, worden alle gegevens gewist. Wil je doorgaan?</translation>
 <translation id="3414952576877147120">Grootte:</translation>
-<translation id="3416248389957650982">myaccount.google.com openen na inloggen</translation>
 <translation id="3420980393175304359">Van persoon wisselen</translation>
 <translation id="3423858849633684918">Start <ph name="PRODUCT_NAME" /> opnieuw</translation>
 <translation id="3425233587047449821">Nieuwe Koreaanse IME</translation>
@@ -1922,7 +1919,6 @@ van <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3694027410380121301">Selecteer vorig tabblad</translation>
 <translation id="3694122362646626770">Websites</translation>
 <translation id="3694678678240097321">Vereisen dat een gebruiker een app toestemming geeft om een script op de pagina uit te voeren, als de extensie toestemming heeft gevraagd voor uitvoering op alle URL's.</translation>
-<translation id="36954862089075551">Kan de nieuwe gebruiker niet maken. Controleer de ruimte op je harde schijf en je rechten, en probeer het opnieuw.</translation>
 <translation id="3695919544155087829">Geef het wachtwoord op dat is gebruikt voor het versleutelen van dit certificaatbestand.</translation>
 <translation id="3696411085566228381">geen</translation>
 <translation id="3697100740575341996">Je IT-beheerder heeft Chrome Goodies uitgeschakeld voor je apparaat. <ph name="MORE_INFO_LINK" /></translation>
@@ -2350,7 +2346,6 @@ Druk op een toets om door te gaan met verkennen.</translation>
 <translation id="4345703751611431217">Incompatibiliteit van software: meer informatie</translation>
 <translation id="4348766275249686434">Fouten verzamelen</translation>
 <translation id="4350019051035968019">Dit apparaat kan niet worden ingeschreven bij het domein waarbij je account hoort, omdat het apparaat is aangewezen voor beheer door een ander domein.</translation>
-<translation id="4352333825734680558">De nieuwe gebruiker met beperkte rechten kan niet worden gemaakt. Controleer je netwerkverbinding en probeer het later opnieuw.</translation>
 <translation id="4358697938732213860">Een adres toevoegen</translation>
 <translation id="4359408040881008151">Geïnstalleerd vanwege afhankelijke extensie(s).</translation>
 <translation id="4361190688154226069">Targeting op basis van rechthoeken in weergaven</translation>
@@ -3023,7 +3018,6 @@ Druk op een toets om door te gaan met verkennen.</translation>
 <translation id="5388588172257446328">Gebruikersnaam:</translation>
 <translation id="5390284375844109566">Geïndexeerde database</translation>
 <translation id="5392544185395226057">Ondersteuning voor systeemeigen client inschakelen.</translation>
-<translation id="5393125431335030955">Deze plug-in werkt alleen op het bureaublad.</translation>
 <translation id="5396126354477659676"><ph name="PEPPER_PLUGIN_NAME" /> op <ph name="PEPPER_PLUGIN_DOMAIN" /> vraagt om toegang tot je computer.</translation>
 <translation id="539755880180803351">Annoteert webformulieren met tijdelijke tekst als deze velden bevatten die automatisch kunnen worden ingevuld.</translation>
 <translation id="5397578532367286026">Het gebruik en de geschiedenis van deze gebruiker kunnen worden bekeken door de beheerder (<ph name="MANAGER_EMAIL" />) op chrome.com.</translation>
@@ -3288,7 +3282,6 @@ Druk op een toets om door te gaan met verkennen.</translation>
 <translation id="57646104491463491">Bijgewerkt op</translation>
 <translation id="5765491088802881382">Er zijn geen netwerken beschikbaar</translation>
 <translation id="5765780083710877561">Beschrijving:</translation>
-<translation id="5770385044111747894">NPAPI</translation>
 <translation id="5771585441665576801">Transliteratie (geia → γεια)</translation>
 <translation id="5771816112378578655">Instellen wordt uitgevoerd...</translation>
 <translation id="5771849619911534867">Apparaatscan is gestopt.</translation>
@@ -3923,7 +3916,6 @@ Sommige functies zijn wellicht niet beschikbaar. Controleer of het profiel besta
 <translation id="6793649375377511437">Informatie over Google Copresence</translation>
 <translation id="6797493596609571643">Er is een fout opgetreden.</translation>
 <translation id="6798954102094737107">Plug-in: <ph name="PLUGIN_NAME" /></translation>
-<translation id="6799646767877093143">Deze site gebruikt een plug-in (<ph name="PLUGIN_NAME" />) die binnenkort niet meer wordt ondersteund.</translation>
 <translation id="6802031077390104172"><ph name="USAGE" /> (<ph name="OID" />)</translation>
 <translation id="6804671422566312077">Alle bladwijzers openen in een &amp;nieuw venster</translation>
 <translation id="6805647936811177813">Log in bij <ph name="TOKEN_NAME" /> om het klantcertificaat van <ph name="HOST_NAME" /> te importeren.</translation>
@@ -4921,7 +4913,6 @@ Resterende tijd berekenen</translation>
 <translation id="8267698848189296333">Inloggen als <ph name="USERNAME" /></translation>
 <translation id="8272443605911821513">Beheer je extensies door op 'Extensies' te klikken in het menu 'Meer tools'.</translation>
 <translation id="8273972836055206582"><ph name="FULLSCREEN_ORIGIN" /> wordt nu op volledig scherm weergegeven en wil je muisaanwijzer uitschakelen.</translation>
-<translation id="8274860189261120948">Automatisch inloggen bij websites met de opgeslagen inloggegevens. Wanneer de functie is uitgeschakeld, wordt je elke keer om bevestiging gevraagd voordat je wordt ingelogd bij een website.</translation>
 <translation id="8275038454117074363">Importeren</translation>
 <translation id="8276560076771292512">Cache wissen en geforceerd opnieuw laden</translation>
 <translation id="8279388322240498158">Op Engels gebaseerd toetsenbord voor Soranî</translation>
@@ -5106,7 +5097,6 @@ Tijd berekenen tot vol</translation>
 <translation id="8571108619753148184">Server 4</translation>
 <translation id="8572832761467613633">Alleen Flash</translation>
 <translation id="8572981282494768930">Niet toestaan dat sites toegang krijgen tot je camera en microfoon</translation>
-<translation id="8574794171590710404">Deze site gebruikt een plug-in (<ph name="PLUGIN_NAME" />) die niet wordt ondersteund.</translation>
 <translation id="857779305329188634">Experimentele QUIC-protocolondersteuning inschakelen.</translation>
 <translation id="8579285237314169903"><ph name="NUMBER_OF_FILES" /> items synchroniseren...</translation>
 <translation id="8579549103199280730">Standaard vragen</translation>
@@ -5114,7 +5104,6 @@ Tijd berekenen tot vol</translation>
 <translation id="8581690024797204327">256</translation>
 <translation id="8581809080475256101">Druk op Vooruit &gt; contextmenu om de geschiedenis te bekijken</translation>
 <translation id="8584280235376696778">Video &amp;openen op nieuw tabblad</translation>
-<translation id="8585103164112230633">De websites beheren en bekijken die deze persoon bezoekt via</translation>
 <translation id="8589311641140863898">Experimental Extension APIs</translation>
 <translation id="8590375307970699841">Automatische updates instellen</translation>
 <translation id="8592071947729879125">Iframe-rechten beperken.</translation>
@@ -5263,7 +5252,6 @@ Tijd berekenen tot vol</translation>
 <translation id="878069093594050299">Dit certificaat is geverifieerd voor de volgende certificaatdoeleinden:</translation>
 <translation id="8782565991310229362">Starten van kiosk-app geannuleerd.</translation>
 <translation id="8783093612333542422">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; wil een printer &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; met je delen.</translation>
-<translation id="878431691778285679">Het lijkt erop dat je al een gebruiker met die naam beheert.<ph name="LINE_BREAK" />Wil je <ph name="BEGIN_LINK" /><ph name="PROFILE_NAME" /> importeren naar dit apparaat<ph name="END_LINK" />?</translation>
 <translation id="8784626084144195648">Gemiddelde van gegroepeerde gegevens</translation>
 <translation id="8785135611469711856">Plug-in reageert niet</translation>
 <translation id="8787254343425541995">Proxy's voor gedeelde netwerken toestaan</translation>

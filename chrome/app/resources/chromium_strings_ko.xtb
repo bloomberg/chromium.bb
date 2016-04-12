@@ -48,7 +48,7 @@
 <translation id="2535480412977113886">계정의 로그인 세부정보가 오래되어 Chromium OS에서 데이터를 동기화하지 못했습니다.</translation>
 <translation id="2558641060352364164">이 사이트에서 곧 지원이 중단되는 Chromium 프레임 플러그인을 사용하고 있습니다. 플러그인을 제거하고 최신 브라우저로 업그레이드하세요.</translation>
 <translation id="2572494885440352020">Chromium 도우미</translation>
-<translation id="2595977381794111014">앱에 계속 액세스하려면 Chromium 북마크바의 <ph name="APPS_ICON_IMAGE" /> 단축키를 사용하세요.</translation>
+<translation id="2595977381794111014">이제 앱에 액세스하려면 Chromium 북마크바의 <ph name="APPS_ICON_IMAGE" /> 단축키를 사용하세요.</translation>
 <translation id="2602806952220118310">Chromium - 알림</translation>
 <translation id="2636877269779209383">Chromium이 이 사이트와 카메라를 공유하려면 카메라 액세스가 필요합니다.</translation>
 <translation id="2648074677641340862">설치 중 운영체제 오류가 발생했습니다. Chromium을 다시 다운로드하세요.</translation>
@@ -68,7 +68,6 @@
 <translation id="3130323860337406239">Chromium이 마이크를 사용 중입니다.</translation>
 <translation id="313551035350905294">관리 계정으로 로그인하고 Chromium 프로필에 대한 관리자 제어권을 부여하려고 합니다. 이렇게 하면 앱, 북마크, 방문 기록, 비밀번호 및 기타 설정 등 Chromium 데이터가 <ph name="USER_NAME" />에 영구적으로 연결됩니다. Google 계정 대시보드를 통해 이 데이터를 삭제할 수 있지만 다른 계정에 연결할 수는 없습니다.</translation>
 <translation id="3190315855212034486">Chromium이 다운되었습니다. 다시 시작하시겠습니까?</translation>
-<translation id="3197823471738295152">기기가 최신 버전입니다.</translation>
 <translation id="3244477511402911926">Chromium 알림 센터</translation>
 <translation id="3256316712990552818">Chromium에 복사됨</translation>
 <translation id="3258596308407688501">Chromium에서 데이터 디렉토리를 읽고 쓸 수 없습니다.

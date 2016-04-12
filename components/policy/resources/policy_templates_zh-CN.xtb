@@ -62,7 +62,6 @@
 
       如果此政策未设置或设为 false，系统将不会在 TLS 中启用 RC4 加密套件。您也可以将此政策设为 true，以便与过时的服务器保持兼容。但这只是一种权宜之计，对服务器进行重新配置才是正确之道。</translation>
 <translation id="1297182715641689552">使用 .pac 代理脚本</translation>
-<translation id="1300635491585192248">连上网络时一律预测网络操作（移动网络除外）</translation>
 <translation id="1304973015437969093">要静默安装的扩展程序/应用的 ID 和更新网址</translation>
 <translation id="1310699457130669094">您可以在此指定代理 .pac 文件的网址。只有当您在“选择如何指定代理服务器设置”中选择了手动代理设置后，此政策才会生效。如果您选择了其他任何模式来设置代理政策，就不应设置此政策。要查看详细示例，请访问：<ph name="PROXY_HELP_URL" /></translation>
 <translation id="1313457536529613143">指定系统在屏幕变暗或屏幕关闭不久后察觉到用户活动时，对屏幕变暗延迟时间的调整幅度（百分比）。
@@ -434,7 +433,6 @@
       如果该政策未设置，用户可选择是否使用数据压缩代理功能。</translation>
 <translation id="2587719089023392205">将 <ph name="PRODUCT_NAME" /> 设为默认浏览器</translation>
 <translation id="2592091433672667839">在零售模式登录屏幕上显示屏幕保护程序之前的闲置时间</translation>
-<translation id="260705825237536216">配置 ARC 应用</translation>
 <translation id="2623014935069176671">等待首个用户活动</translation>
 <translation id="262740370354162807">允许将文档提交到 <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2633084400146331575">启用语音反馈</translation>
@@ -515,7 +513,6 @@
           如果此政策的值设置为 True 或未设置此政策，则播放音频时机器不会被视为闲置。这样就不会导致闲置超时，系统也不会执行闲置操作。不过，在达到指定的超时值后，屏幕会变暗、关闭和锁定（而不考虑音频活动）。
 
           如果此政策的值设置为 False，则音频活动不会影响系统将机器视为闲置状态。</translation>
-<translation id="2948381198510798695"><ph name="PRODUCT_NAME" />将对于此处给定的主机列表绕过任何代理。只有当您在“选择如何指定代理服务器设置”中选择了手动代理设置后，此政策才会生效。如果您选择了其他任何模式来设置代理政策，就不应设置此政策。要查看详细示例，请访问：<ph name="PROXY_HELP_URL" />。</translation>
 <translation id="2956777931324644324">此政策自36版<ph name="PRODUCT_NAME" />起已停止使用。
 
       用于指定是否启用TLS网域绑定证书扩展程序。
@@ -746,7 +743,6 @@
 
       每个列表条目都包含一个字典，其“extension-id”字段必须包含扩展程序 ID，而其“update-url”字段必须包含更新网址。</translation>
 <translation id="3891357445869647828">启用 JavaScript</translation>
-<translation id="389421284571827139">可让您指定 <ph name="PRODUCT_NAME" />使用的代理服务器，并禁止用户更改代理设置。如果您选择从不使用代理服务器，而总是直接连接，就会忽略其他所有选项。如果您选择自动检测代理服务器，就会忽略其他所有选项。要查看详细示例，请访问：<ph name="PROXY_HELP_URL" />。如果您启用了此设置， <ph name="PRODUCT_NAME" />就会忽略通过命令行指定的所有代理相关选项。如果未设置此政策，用户就可以自行选择代理设置。</translation>
 <translation id="3907986150060929099">为公开会话设置建议的语言区域</translation>
 <translation id="391531815696899618">当此政策设为 True 时，在 <ph name="PRODUCT_OS_NAME" />的“文件”应用中停用 Google 云端硬盘同步功能。在这种情况下，系统不会将任何数据上传到 Google 云端硬盘。
 
@@ -966,13 +962,6 @@
           此值必须是一个字符串化的 JSON 字典数组。每个字典都必须采用 { "pattern": "$URL_PATTERN", "filter" : $FILTER } 样式，其中 $URL_PATTERN 是内容设置格式，而 $FILTER 会限制相应浏览器可自动从哪些客户端证书中进行选择。无论是否设置了过滤器，系统都只会选择与该服务器的证书请求相匹配的证书。如果 $FILTER 采用 { "ISSUER": { "CN": "$ISSUER_CN" } } 样式，系统则只会选择由 CommonName 为 $ISSUER_CN 的证书颁发机构颁发的客户端证书。如果 $FILTER 是空字典 {}，那么系统在选择客户端证书时便不会受到额外限制。
 
           如果未设置此政策，系统将不会为任何网站自动选择证书。</translation>
-<translation id="4980301635509504364">允许或拒绝视频捕获。
-
-      如果启用或未配置此政策（默认），则系统会在收到视频捕获设备使用请求时提示用户；但对于 VideoCaptureAllowedUrls 列表中配置的网址，系统不会提示用户，而是直接授予访问权限。
-
-      如果停用此政策，则系统一律不提示用户，只有 VideoCaptureAllowedUrls 中配置的网址可以使用视频捕获设备。
-
-      此政策会影响所有类型的视频输入（而不仅仅是内置摄像头）。</translation>
 <translation id="4980635395568992380">数据类型：</translation>
 <translation id="4983201894483989687">允许运行过期的插件</translation>
 <translation id="4988291787868618635">闲置延迟时间已过时执行的操作</translation>
@@ -1061,9 +1050,6 @@
 <translation id="5307432759655324440">隐身模式的可用性</translation>
 <translation id="5318185076587284965">允许远程访问主机使用中继服务器</translation>
 <translation id="5330684698007383292">允许 <ph name="PRODUCT_FRAME_NAME" />处理以下内容类型</translation>
-<translation id="5345267406698765263">以 JSON 字符串形式指定 ARC 应用政策，以便以原样将其传递给 ARC 运行时。目前，此设置仅适用于指定强制安装应用。
-
-如果未设置这项政策，则系统不会自动安装任何应用。</translation>
 <translation id="5365946944967967336">在工具栏上显示“主页”按钮</translation>
 <translation id="5366977351895725771">如果此政策的值设置为 False，此用户将无法创建受监管用户。不过，所有目前受监管的用户帐户仍然可供访问。
 
@@ -1154,9 +1140,6 @@
 
       如果此政策未设置或设为 false，<ph name="PRODUCT_NAME" /> 将使用现有的在线撤消检查设置。</translation>
 <translation id="5732972008943405952">首次运行时，从默认浏览器导入自动填充表单数据</translation>
-<translation id="5761030451068906335">配置 <ph name="PRODUCT_NAME" />的代理设置。
-
-      此政策尚未做好投入使用的准备，请勿使用。</translation>
 <translation id="5765780083710877561">说明：</translation>
 <translation id="5770738360657678870">开发者版（可能不稳定）</translation>
 <translation id="5774856474228476867">默认搜索服务提供商的搜索网址</translation>
@@ -1181,13 +1164,6 @@
       有关可用变量的列表，请访问 http://www.chromium.org/administrators/policy-list-3/user-data-directory-variables。
 
       如果此政策未设置，系统将使用默认的个人资料目录。</translation>
-<translation id="5819660021114910752">指定该设备使用的时区。对于当前的会话，用户可以覆盖指定的时区。不过，当用户退出当前会话后，系统会将时区重新设为指定的时区。如果提供的值无效，系统仍会启用此政策，但会采用“GMT”时区。如果提供的是空字符串，此政策将被忽略。
-
-      如果不使用此政策，系统将继续使用当前在使用的时区，不过，用户可以更改时区，并且所做更改持续有效。因此，任何用户所做的更改都会对登录屏幕和所有其他用户造成影响。
-
-      新设备在出厂时的时区设置是“美国/太平洋”。
-
-      值的格式遵循“IANA 时区数据库”中的时区名称所采用的格式（请访问 https://zh.wikipedia.org/wiki/%E6%97%B6%E5%8C%BA%E4%BF%A1%E6%81%AF%E6%95%B0%E6%8D%AE%E5%BA%93）。基本上，大多数时区都可以采用“洲/大城市”或“洋/大城市”的格式表示。</translation>
 <translation id="5826047473100157858">指定用户是否可以在 <ph name="PRODUCT_NAME" />中以隐身模式打开网页。如果选择“已启用”或未设置此政策，则允许以隐身模式打开网页。如果选择“已停用”，则不能以隐身模式打开网页。如果选择“强制”，则只能以隐身模式打开网页。</translation>
 <translation id="5836064773277134605">限制远程访问主机使用的UDP端口范围</translation>
 <translation id="5845159892130426052">启用 ShowModalDialog API，有效期至 2015 年 4 月 30 日</translation>
@@ -1369,7 +1345,6 @@
 
       如果此政策未设置，默认情况下，受企业管理的用户不能使用 Smart Lock，不受管理的用户则能够使用 Smart Lock。</translation>
 <translation id="6491139795995924304">允许在设备上使用蓝牙功能</translation>
-<translation id="6513756852541213407">可让您指定 <ph name="PRODUCT_NAME" />使用的代理服务器，并禁止用户更改代理设置。如果您选择永不使用代理服务器，而总是直接连接，就会忽略其他所有选项。如果您选择使用系统代理设置或自动检测代理服务器，就会忽略其他所有选项。如果您选择固定服务器代理模式，可在“代理服务器的地址或网址”以及“代理绕过规则的逗号分隔列表”中进一步指定选项。如果您选择使用 .pac 代理脚本，必须在“代理 .pac 文件的网址”中指定该脚本的网址。要查看详细示例，请访问：<ph name="PROXY_HELP_URL" />。如果您启用了此设置，<ph name="PRODUCT_NAME" />就会忽略通过命令行指定的所有代理相关选项。如果未设置此政策，用户就可以自行选择代理设置。</translation>
 <translation id="6520802717075138474">首次运行时，从默认浏览器导入搜索引擎</translation>
 <translation id="653608967792832033">指定在使用电池供电时用户停止输入后隔多久锁定屏幕。
 
@@ -1450,7 +1425,6 @@
 
       如果此政策未设置，系统将启用网络联想查询功能，但用户可以自行更改。</translation>
 <translation id="6658245400435704251">指定一个时间（以秒为单位），即从更新首次推送到服务器起设备随机延迟更新下载的最大时间。设备的这一等待时间一部分会按照实际时间计算，而剩下的部分则取决于更新检查的次数。在任何情况下，分配的时间上限都是固定的，因此设备绝不会一直等待下载某个更新。</translation>
-<translation id="6672934768721876104">此政策已弃用，请改用 ProxyMode。可让您指定 <ph name="PRODUCT_NAME" />使用的代理服务器，并禁止用户更改代理设置。如果您选择从不使用代理服务器，而总是直接连接，就会忽略其他所有选项。如果您选择使用系统代理设置或自动检测代理服务器，就会忽略其他所有选项。如果您选择手动代理设置，可在“代理服务器的地址或网址”、“代理 .pac 文件的网址”以及“代理绕过规则的逗号分隔列表”中进一步指定选项。要查看详细示例，请访问：<ph name="PROXY_HELP_URL" />。如果您启用了此设置， <ph name="PRODUCT_NAME" />就会忽略通过命令行指定的所有代理相关选项。如果未设置此政策，用户就可以自行选择代理设置。</translation>
 <translation id="6689792153960219308">报告硬件状态</translation>
 <translation id="6693751878507293182">如果您启用了此设置，<ph name="PRODUCT_NAME" />就不会自动搜索和安装缺少的插件。如果停用或未设置此选项，就会启用插件查找程序。</translation>
 <translation id="6697474194550078937">限制通过 SAML 验证身份的用户可离线登录的时长。

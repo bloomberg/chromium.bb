@@ -72,7 +72,6 @@
 
       Politika ayarlanmamışsa veya yanlış seçeneğine ayarlanmışsa, TLS'deki RC4 şifre paketleri etkinleştirilmez. Aksi takdirde, eski bir sunucuyla uyumluluğun korunması için doğru seçeneğine ayarlanabilir. Bu geçici bir tedbirdir ve sunucu yeniden yapılandırılmalıdır.</translation>
 <translation id="1297182715641689552">.pac proxy komut dosyası kullan</translation>
-<translation id="1300635491585192248">Hücresel olmayan herhangi bir ağda, ağ işlemlerini tahmin et</translation>
 <translation id="1304973015437969093">Uzantı/Uygulama kimlikleri ve güncelleme URL'leri sessizce yüklenir</translation>
 <translation id="1310699457130669094">Bir proxy .pac dosyasının URL'sini burada belirtebilirsiniz.
 
@@ -510,7 +509,6 @@
       Bu politika hiç ayarlanmazsa; kullanıcı, veri sıkıştırma proxy'si özelliğinin kullanılıp kullanılmayacağını seçebilir.</translation>
 <translation id="2587719089023392205"><ph name="PRODUCT_NAME" /> ürününü varsayılan tarayıcım olarak ayarla</translation>
 <translation id="2592091433672667839">Perakende modunda oturum açma ekranında ekran koruyucunun devreye girmesi için geçecek boşta kalma süresi</translation>
-<translation id="260705825237536216">ARC uygulamalarını yapılandır</translation>
 <translation id="2623014935069176671">İlk kullanıcı etkinliğini bekle</translation>
 <translation id="262740370354162807">Dokümanların <ph name="CLOUD_PRINT_NAME" /> için gönderilmesini etkinleştir</translation>
 <translation id="2633084400146331575">Sözlü geribildirimi etkinleştir</translation>
@@ -597,14 +595,6 @@
           Bu politika True olarak ayarlanırsa veya ayarlanmadan bırakılırsa, ses yürütülürken kullanıcı boşta sayılmaz. Böylece hiçbir zaman boşta kalma zaman aşımı süresi dolmaz ve boşta kalma eylemi uygulanmaz. Ancak, ses etkinliği ne olursa olsun, yapılandırılmış zaman aşımı sürelerinden sonra ekran karartma, ekran kapatma ve ekran kilitleme işlemi uygulanır.
 
           Bu politika False olarak ayarlanırsa, ses etkinliği kullanıcının boşta olarak algılanmasını önlemez.</translation>
-<translation id="2948381198510798695"><ph name="PRODUCT_NAME" />, burada belirtilen ana makine listesi için tüm proxy'leri atlar.
-
-          Bu politika yalnızca 'Proxy sunucu ayarlarının nasıl belirtileceğini seçin' alanında el ile proxy ayarlarını seçtiyseniz uygulanır.
-
-          Proxy politikalarının ayarlanmasıyla ilgili olarak başka bir mod seçtiyseniz, bu politikayı ayarlamadan bırakmanız gerekir.
-
-          Daha ayrıntılı örnekler için şu adresi ziyaret edin:
-          <ph name="PROXY_HELP_URL" /></translation>
 <translation id="2956777931324644324">Bu politika, <ph name="PRODUCT_NAME" /> 36. sürümü itibariyle geri çekilmiştir.
 
       TLS alan adına bağlı sertifikalar uzantısının etkinleştirilip etkinleştirilmeyeceğini belirtir.
@@ -849,18 +839,6 @@
 
       Her bir liste girişi, 'extension-id' alanında uzantı kimliği ve 'update-url' alanında güncelleme URL'si bulunması gereken bir sözlük içerir.</translation>
 <translation id="3891357445869647828">JavaScript’i Etkinleştir</translation>
-<translation id="389421284571827139"><ph name="PRODUCT_NAME" /> tarafından kullanılan proxy sunucuyu belirlemenize olanak sağlar ve kullanıcıların proxy ayarlarını değiştirmelerini önler.
-
-      Hiç proxy sunucu kullanmamayı ve her zaman doğrudan bağlanmayı seçerseniz diğer tüm seçenekler yoksayılır.
-
-      Proxy sunucuyu otomatik algılamayı seçerseniz, diğer tüm seçenekler yoksayılır.
-
-      Ayrıntılı örnekler için şu adresi ziyaret edin:
-      <ph name="PROXY_HELP_URL" />.
-
-      Bu ayarı etkinleştirirseniz, <ph name="PRODUCT_NAME" /> komut satırında belirtilen proxy ile ilgili tüm seçenekleri yoksayar. 
-
-      Bu politikaları ayarlanmadan bırakmanız, kullanıcıların proxy ayarlarını kendilerinin yapabilmesine olanak tanır.</translation>
 <translation id="3907986150060929099">Herkese açık oturum için önerilen yerel ayarları belirt</translation>
 <translation id="391531815696899618">Doğru seçeneğine ayarlanırsa <ph name="PRODUCT_OS_NAME" /> Files uygulamasında Google Drive'ın senkronizasyonunu devre dışı bırakır. Bu durumda Google Drive'a veri yüklenmez.
 
@@ -1109,17 +1087,6 @@ politikayı geçersiz kılamaz.
           Değer, dizeleştirilmiş bir JSON sözlükleri dizisi olmalıdır. Her sözlük { "pattern": "$URL_PATTERN", "filter" : $FILTER } biçiminde olmalıdır; burada $URL_PATTERN içerik ayarı kalıbıdır. $FILTER, tarayıcının otomatik olarak seçeceği istemci sertifikalarını kısıtlar. Filtre ayarı ne olursa olsun, sadece sunucunun sertifika isteğiyle eşleşen sertifikalar seçilir. $FILTER ifadesi { "ISSUER": { "CN": "$ISSUER_CN" } } biçimindeyse, bunun yanı sıra sadece CommonName $ISSUER_CN olarak belirtilmiş bir sertifika tarafından yayınlanan istemci sertifikaları seçilir. $FILTER boş bir sözlük {} olursa, istemci sertifikalarının seçimi üzerinde başka kısıtlanma uygulanmaz.
 
           Bu politika ayarlanmadan bırakılırsa hiçbir site otomatik olarak seçilmez.</translation>
-<translation id="4980301635509504364">Video yakalamaya izin ver veya reddet.
-
-      Bu politika etkinleştirilirse veya yapılandırılmazsa (varsayılan) kullanıcıdan video
-      yakalama için erişim istenir (VideoCaptureAllowedUrls listesinde yapılandırılan
-      URL'ler hariçtir; bu URL'ler için istek yapılmadan erişim izni verilir).
-
-      Bu politika devre dışı bırakıldığında, kullanıcıya hiç soru sorulmaz ve video 
-      yakalama yalnızca VideoCaptureAllowedUrls içinde yapılandırılmış olan URL'ler
-      için kullanılabilir
-
-      Bu politika yalnızca dahili kamerayı değil, her tür video girişini etkiler.</translation>
 <translation id="4980635395568992380">Veri türü:</translation>
 <translation id="4983201894483989687">Eski eklentilerin çalıştırılmasına izin ver</translation>
 <translation id="4988291787868618635">Boşta kalma gecikme süresine ulaşıldığında uygulanacak işlem</translation>
@@ -1226,11 +1193,6 @@ politikayı geçersiz kılamaz.
 <translation id="5307432759655324440">Gizli modun kullanılabilirliği</translation>
 <translation id="5318185076587284965">Uzaktan erişen ana makine tarafından geçiş sunucuları kullanılmasını etkinleştir</translation>
 <translation id="5330684698007383292"><ph name="PRODUCT_FRAME_NAME" /> için aşağıdaki içerik türlerini işlemeye izin ver</translation>
-<translation id="5345267406698765263">ARC uygulama politikasını, ARC çalışma zamanına olduğu gibi aktarılabilen
-      JSON dizesi olarak belirtir. Şu anda, bu ayar yalnızca uygulamaların
-      kurulumunun zorlanmasını belirtmek için kullanılmaktadır.
-
-      Bu politika ayarlanmadan bırakılırsa hiçbir uygulama otomatik olarak yüklenmez.</translation>
 <translation id="5365946944967967336">Araç çubuğunda Ana Sayfa düğmesini göster</translation>
 <translation id="5366977351895725771">False (yanlış) olarak ayarlanırsa, bu kullanıcının denetlenen kullanıcı oluşturma yetkisi devre dışı bırakılır. Mevcut tüm denetlenen kullanıcılar kullanılabilir olmaya devam eder.
 
@@ -1330,7 +1292,6 @@ politikayı geçersiz kılamaz.
 
       Bu politika ayarlanmazsa veya yanlış değerine ayarlanırsa <ph name="PRODUCT_NAME" />, varolan çevrimiçi iptal kontrolü ayarlarını kullanır.</translation>
 <translation id="5732972008943405952">İlk çalıştırmada, otomatik doldurma formu verilerini varsayılan tarayıcıdan içe aktar</translation>
-<translation id="5761030451068906335"><ph name="PRODUCT_NAME" /> için proxy ayarlarını yapılandırır. Bu politika henüz kullanıma hazır değildir, lütfen kullanmayın.</translation>
 <translation id="5765780083710877561">Açıklama:</translation>
 <translation id="5770738360657678870">Yeni geliştirilenler kanalı (kararsız olabilir)</translation>
 <translation id="5774856474228476867">Varsayılan arama sağlayıcı arama URL'si</translation>
@@ -1355,13 +1316,6 @@ politikayı geçersiz kılamaz.
       Kullanılabilecek değişkenlerin listesi için https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables adresine bakın.
 
       Bu ayar ayarlanmadan bırakılırsa, varsayılan profil dizini kullanılır.</translation>
-<translation id="5819660021114910752">Cihazda kullanılacak saat dilimini belirtir. Kullanıcılar belirtilen saat dilimini mevcut oturum için geçersiz kılabilirler. Ancak, çıkış yapınca saat dilimi belirtilen dilime geri döner. Geçersiz bir değer sağlanırsa, politika yine etkinleştirilir ve bu durumda saat dilimi olarak "GMT" kullanılır. Boş bir dize sağlanırsa politika yoksayılır.
-
-      Bu politika kullanılmazsa, o anda etkin olan saat dilimi kullanımda kalır, ancak kullanıcılar saat dilimini değiştirebilirler ve bu değişiklik kalıcı olur. Bu durumda bir kullanıcının yaptığı değişiklik giriş ekranını ve diğer tüm kullanıcıları etkiler.
-
-      Yeni cihazlarda saat dilimi "ABD/Pasifik" olarak ayarlıdır.
-
-      Değerin biçimi "IANA Saat Dilimleri Veritabanı" (bkz."https://tr.wikipedia.org/wiki/IANA_zaman_dilimi_veritaban%C4%B1") içindeki saat dilimi adlarına uygundur. Özellikle, saat dilimlerinin çoğu "kıta/büyük_kent" veya "okyanus/büyük_kent" olarak anılır.</translation>
 <translation id="5826047473100157858">Kullanıcının <ph name="PRODUCT_NAME" /> içinde Gizli modda sayfa açıp açamayacağını belirtir.
 
       'Etkin' değeri seçilirse veya politika ayarlanmadan bırakılırsa, sayfalar Gizli modda açılabilir.
@@ -1572,22 +1526,6 @@ politikayı geçersiz kılamaz.
 
       Bu politika ayarlanmadan bırakılırsa, varsayılan olarak kuruluş tarafından yönetilen kullanıcılara izin verilmezken, yönetilmeyen kullanıcılara izin verilir.</translation>
 <translation id="6491139795995924304">Cihazda Bluetooth'a izin ver</translation>
-<translation id="6513756852541213407"><ph name="PRODUCT_NAME" /> tarafından kullanılan proxy sunucuyu belirlemenize olanak sağlar ve kullanıcıların proxy ayarlarını değiştirmelerini önler. 
-
-          Hiç proxy sunucu kullanmamayı ve her zaman doğrudan bağlanmayı seçerseniz diğer tüm seçenekler yoksayılır. 
-
-          Sistem proxy ayarlarını kullanmayı veya proxy sunucuyu otomatik olarak algılamayı seçerseniz diğer tüm seçenekler yoksayılır.
-          
-          Sabit sunuculu proxy modunu seçerseniz, 'Proxy sunucunun adresi veya URL'si' ve 'Proxy atlama kurallarının noktalı virgül ile ayrılmış listesi' içinde daha başka seçenekler belirtebilirsiniz.
-          
-          .pac proxy komut dosyasını kullanmayı seçerseniz, komut dosyasının URL'sini 'proxy .pac dosyasının URL'si' içinde belirtmeniz gerekir.
-
-          Ayrıntılı örnekler için şu adresi ziyaret edin:
-          <ph name="PROXY_HELP_URL" />. 
-
-          Bu ayarı etkinleştirirseniz, <ph name="PRODUCT_NAME" /> komut satırında belirtilen proxy ile ilgili tüm seçenekleri yoksayar.
-
-          Bu politikayı ayarlanmadan bırakmanız, kullanıcıların proxy ayarlarını kendilerinin yapabilmelerine olanak tanır.</translation>
 <translation id="6520802717075138474">İlk çalıştırmada arama motorlarını varsayılan tarayıcıdan içe aktar</translation>
 <translation id="653608967792832033">Pil gücüyle çalışırken, ekranın kilitlenmesinden önce kullanıcı girişi olmadan geçecek süreyi belirtir.
 
@@ -1667,20 +1605,6 @@ politikayı geçersiz kılamaz.
 
       Bu politika ayarlanmadan bırakılırsa ağ tahmini etkinleştirilir, ancak isteyen kullanıcı bu ayarı değiştirebilir.</translation>
 <translation id="6658245400435704251">Bir güncelleme sunucuya ilk gönderildiği andan itibaren bir cihazın rastgele şekilde güncelleme yüklemesini geciktirebileceği süreyi saniye olarak belirtir. Cihaz bu sürenin bir kısmında gerçek zaman olarak, geri kalan kısmında ise güncelleme denetlemelerinin sayısınca bekleyebilir. Cihazın bir güncellemeyi sürekli bekler durumda kalmaması için, dağılım her durumda üst sınır olarak sabit bir süre ile kısıtlıdır.</translation>
-<translation id="6672934768721876104">Bu politika onaylanmadı bunun yerine ProxyMode'u kullanın.
-
-          <ph name="PRODUCT_NAME" /> tarafından kullanılan proxy sunucuyu belirlemenize olanak sağlar ve kullanıcıların proxy ayarlarını değiştirmelerini önler.
-
-          Hiç proxy sunucu kullanmamayı ve her zaman doğrudan bağlanmayı seçerseniz diğer tüm seçenekler göz ardı edilir.
-
-          Sistem proxy ayarlarını kullanmayı veya proxy sunucuyu otomatik olarak algılamayı seçerseniz diğer tüm seçenekler göz ardı edilir.
-
-          El ile proxy ayarlarını seçerseniz, 'Proxy sunucunun adresi veya URL'si', 'Proxy .pac dosyasının URL'si' ve 'Proxy atlama kurallarının noktalı virgül ile ayrılmış listesi' içinde daha başka seçenekler belirtebilirsiniz.
-
-          Ayrıntılı örnekler için şu adresi ziyaret edin:
-          <ph name="PROXY_HELP_URL" />.
-
-          Bu ayarı etkinleştirirseniz, <ph name="PRODUCT_NAME" /> komut satırında proxy ile ilgili belirtilen tüm seçenekler göz ardı edilir.</translation>
 <translation id="6689792153960219308">Donanım durumunu bildir</translation>
 <translation id="6693751878507293182">Bu ayarı etkinleştirirseniz, <ph name="PRODUCT_NAME" /> ürününde eksik eklentilerin otomatik olarak aranması ve kurulumu devre dışı bırakılır.
 

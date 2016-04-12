@@ -25,6 +25,7 @@
 <translation id="1285320974508926690">Nunca traduzir este site</translation>
 <translation id="1291207594882862231">Limpar histórico, cookies, dados do site, cache…</translation>
 <translation id="129553762522093515">Recentemente fechadas</translation>
+<translation id="13410144310025252">Ver no Chrome</translation>
 <translation id="1346090444609141578">Nenhuma página salva aqui</translation>
 <translation id="1369915414381695676">Site <ph name="SITE_NAME" /> adicionado</translation>
 <translation id="1373696734384179344">Memória insuficiente para fazer o download do conteúdo selecionado.</translation>
@@ -193,6 +194,7 @@ Para ajustar seu termo de pesquisa, mantenha-o pressionado para selecionar. Para
 <translation id="3656115297268584622">Ative o local nas <ph name="BEGIN_LINK" />Configurações do Android<ph name="END_LINK" />.</translation>
 <translation id="3661699943263275414">Websites de terceiros podem salvar e ler dados de cookies</translation>
 <translation id="3672452749423051839">Sugestões de erro de navegação</translation>
+<translation id="3716158070938632480">Há páginas da Web nas proximidades</translation>
 <translation id="3732088672634061408">Não foi possível recuperar interesses.</translation>
 <translation id="3738139272394829648">Tocar para pesquisar</translation>
 <translation id="3809549525127675114">"<ph name="VIDEO_TITLE" />" concluído</translation>
@@ -371,7 +373,6 @@ Basta abrir o Chrome no computador, ir até o menu e selecionar “Fazer login n
 <translation id="5911030830365207728">Google Tradutor</translation>
 <translation id="5916664084637901428">Ativado</translation>
 <translation id="5939518447894949180">Redefinir</translation>
-<translation id="5965336165840183977">Limpa os dados sincronizados de todos os dispositivos. Você não será desconectado da sua Conta do Google. As configurações salvas em sites não serão excluídas e podem refletir seus hábitos de navegação.</translation>
 <translation id="5968595432776860642">Reproduzindo “<ph name="VIDEO_TITLE" />”</translation>
 <translation id="6010869025736512584">Acessando entrada de vídeo</translation>
 <translation id="6012342843556706400">O Chrome precisa ter acesso ao local para compartilhá-lo com este site.</translation>
@@ -391,7 +392,6 @@ Basta abrir o Chrome no computador, ir até o menu e selecionar “Fazer login n
 <translation id="6159335304067198720">Economia de dados de <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">Saiba mais</translation>
 <translation id="6192792657125177640">Exceções</translation>
-<translation id="6231464350722415003">Permitir JavaScript em websites que você especificar, bloqueando-o para o restante da Web</translation>
 <translation id="6232535412751077445">A ativação de "Não rastrear" significa que uma solicitação será incluída no tráfego de navegação. Todo efeito depende de um website responder à solicitação e de como a solicitação é interpretada.
 
 Por exemplo, alguns websites podem responder a esta solicitação mostrando anúncios que não tenham como base outros websites que você visitou. Muitos websites continuarão coletando seus dados de navegação, por exemplo, para melhorar a segurança, fornecer conteúdo, anúncios e recomendações e para gerar relatórios estatísticos.</translation>
@@ -479,7 +479,6 @@ Por exemplo, alguns websites podem responder a esta solicitação mostrando anú
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> usa sua localização para mostrar resultados de pesquisa locais</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />Ajuda<ph name="END_LINK" /></translation>
 <translation id="7299721129597238157">Excluir favorito</translation>
-<translation id="7346217184097589238">As configurações salvas em sites não serão excluídas e podem refletir seus hábitos de navegação.</translation>
 <translation id="7347770551817603360">Conteúdo off-line</translation>
 <translation id="7363354739009474003">Carregando "<ph name="VIDEO_TITLE" />"</translation>
 <translation id="7366340029385295517">Transmitindo em <ph name="SCREEN_NAME" /></translation>
@@ -490,6 +489,7 @@ Por exemplo, alguns websites podem responder a esta solicitação mostrando anú
 <translation id="7408644312175185557">Veja suas guias com outros aplicativos recentes na tela "Visão geral" do seu smartphone.</translation>
 <translation id="7423098979219808738">Perguntar primeiro</translation>
 <translation id="7437998757836447326">Sair do Google Chrome</translation>
+<translation id="7464701184726199289">Isso limpa os dados sincronizados de todos os dispositivos. As configurações salvas em sites não são excluídas e podem refletir seus hábitos de navegação. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="7473891865547856676">Não, obrigado</translation>
 <translation id="7475192538862203634">Se estiver vendo isso com frequência, tente estas <ph name="BEGIN_LINK" />sugestões<ph name="END_LINK" />.</translation>
 <translation id="748127970106343339">Confirmar exclusão da credencial do dispositivo</translation>
@@ -541,7 +541,11 @@ No entanto, você não fica invisível. O modo anônimo não oculta sua navegaç
 <translation id="8068648041423924542">Não foi possível selecionar certificado.</translation>
 <translation id="8069239273282989646">Após compactação</translation>
 <translation id="8073388330009372546">Abrir imagem em nova guia</translation>
+<translation id="8076014560081431679">As configurações salvas em sites não são excluídas e podem refletir seus hábitos de navegação. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="8084156870963450514">Faça login para acessar tudo o que você tem na Web, a partir de qualquer dispositivo</translation>
+<translation id="8098570222830891427">Dispositivos próximos a você estão transmitindo páginas da Web por Bluetooth. O Chrome procurará e exibirá páginas quando você ativar seu dispositivo. Elas passarão por um serviço do Google para melhorar a qualidade dos resultados de páginas.
+
+É possível controlar a Web física nas configurações do Chrome.</translation>
 <translation id="8106211421800660735">Número do cartão de crédito</translation>
 <translation id="813082847718468539">Visualizar informações do site</translation>
 <translation id="8137558756159375272">"Toque para pesquisar" envia a palavra selecionada e a página atual como contexto para a Pesquisa Google. Desative esse recurso em <ph name="BEGIN_LINK" />Configurações<ph name="END_LINK" />.</translation>

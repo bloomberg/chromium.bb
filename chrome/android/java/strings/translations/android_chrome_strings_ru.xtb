@@ -25,6 +25,7 @@
 <translation id="1285320974508926690">Никогда не переводить этот сайт</translation>
 <translation id="1291207594882862231">Удалить файлы cookie и данные сайтов, очистить историю и кеш…</translation>
 <translation id="129553762522093515">Недавно закрытые</translation>
+<translation id="13410144310025252">Открыть в Chrome</translation>
 <translation id="1346090444609141578">Сохраненных страниц нет</translation>
 <translation id="1369915414381695676">Добавлен сайт <ph name="SITE_NAME" /></translation>
 <translation id="1373696734384179344">Недостаточно памяти для скачивания выбранного контента.</translation>
@@ -193,8 +194,10 @@
 <translation id="3656115297268584622">Включите определение местоположения в <ph name="BEGIN_LINK" />настройках Android<ph name="END_LINK" />.</translation>
 <translation id="3661699943263275414">Сторонние веб-сайты могут сохранять и читать файлы cookie</translation>
 <translation id="3672452749423051839">Подсказки при ошибке навигации</translation>
+<translation id="3716158070938632480">Интернет вокруг нас нашел веб-страницы.</translation>
 <translation id="3732088672634061408">Не удалось получить данные об интересах</translation>
 <translation id="3738139272394829648">Быстрый поиск</translation>
+<translation id="3744111561329211289">Фоновая синхронизация</translation>
 <translation id="3809549525127675114">Воспроизведение видео "<ph name="VIDEO_TITLE" />" завершено</translation>
 <translation id="3828029223314399057">Искать в закладках</translation>
 <translation id="3871171699884605801">Историю просмотров нельзя очистить из детского аккаунта</translation>
@@ -283,6 +286,7 @@
 <translation id="5016205925109358554">С засечками</translation>
 <translation id="5039804452771397117">Разрешить</translation>
 <translation id="5040262127954254034">Личные данные</translation>
+<translation id="5056549851600133418">Статьи для вас</translation>
 <translation id="5063480226653192405">Использование</translation>
 <translation id="5100237604440890931">Свернуто. Нажмите, чтобы развернуть.</translation>
 <translation id="5107381076085091558">Скачивание приостановлено.</translation>
@@ -372,7 +376,6 @@
 <translation id="5911030830365207728">Google Переводчик</translation>
 <translation id="5916664084637901428">ВКЛ</translation>
 <translation id="5939518447894949180">Сбросить</translation>
-<translation id="5965336165840183977">Синхронизированные данные будут удалены со всех устройств. Вы останетесь в аккаунте Google. Настройки сайтов не изменятся, а следовательно сохранятся и данные о вашей работе в Интернете.</translation>
 <translation id="5968595432776860642">Воспроизведение видео "<ph name="VIDEO_TITLE" />"</translation>
 <translation id="6010869025736512584">Доступ к видеовходу</translation>
 <translation id="6012342843556706400">Предоставьте браузеру Chrome доступ к геоданным, чтобы продолжить работу на этом сайте.</translation>
@@ -392,7 +395,6 @@
 <translation id="6159335304067198720">Сжатие данных: <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">Подробнее...</translation>
 <translation id="6192792657125177640">Исключения</translation>
-<translation id="6231464350722415003">Разрешить JavaScript на указанных сайтах и блокировать на всех остальных</translation>
 <translation id="6232535412751077445">Если вы запретите отслеживание, в запросы браузера будет включена специальная команда. Сайты могут интерпретировать ее и отвечать на нее по-разному.
 
 Например, некоторые сайты перестанут показывать рекламу, подобранную на основе посещенных вами страниц. Другие сайты продолжат собирать и использовать данные о работе в браузере (например, для повышения уровня безопасности, предоставления контента, демонстрации рекламы и рекомендаций или формирования статистических отчетов).</translation>
@@ -480,7 +482,6 @@
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> использует ваше местоположение, чтобы показывать результаты поиска по адресам.</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />Справка<ph name="END_LINK" /></translation>
 <translation id="7299721129597238157">Удалить закладку</translation>
-<translation id="7346217184097589238">Настройки сайтов не изменятся, а следовательно сохранятся и данные о вашей работе в Интернете.</translation>
 <translation id="7347770551817603360">Офлайн-контент</translation>
 <translation id="7363354739009474003">Загрузка видео "<ph name="VIDEO_TITLE" />"…</translation>
 <translation id="7366340029385295517">Транслируется на экран устройства "<ph name="SCREEN_NAME" />"</translation>
@@ -491,6 +492,7 @@
 <translation id="7408644312175185557">Просматривайте вкладки в списке недавно использованных приложений, нажав значок "Обзор" на устройстве.</translation>
 <translation id="7423098979219808738">Всегда спрашивать</translation>
 <translation id="7437998757836447326">Выход из Chrome</translation>
+<translation id="7464701184726199289">Синхронизированные данные будут удалены со всех устройств. Настройки сайтов не изменятся, поэтому данные о вашей работе в Интернете сохранятся. <ph name="BEGIN_LINK" />Подробнее…<ph name="END_LINK" /></translation>
 <translation id="7473891865547856676">Пропустить</translation>
 <translation id="7475192538862203634">Если эта проблема возникает часто, узнайте, <ph name="BEGIN_LINK" />как ее решить<ph name="END_LINK" />.</translation>
 <translation id="748127970106343339">Подтвердите удаление учетных данных устройства</translation>
@@ -500,6 +502,7 @@
 <translation id="7501135638693251872">Все закладки</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7562080006725997899">Очистить историю</translation>
+<translation id="756809126120519699">Данные Chrome удалены</translation>
 <translation id="7588950540487816470">Интернет вокруг нас</translation>
 <translation id="7596558890252710462">Операционная система</translation>
 <translation id="7599840151813361502">Вам не придется повторно входить в свои <ph name="BEGIN_LINK" />аккаунты Google<ph name="END_LINK" />.</translation>
@@ -542,7 +545,12 @@
 <translation id="8068648041423924542">Невозможно выбрать сертификат.</translation>
 <translation id="8069239273282989646">После сжатия</translation>
 <translation id="8073388330009372546">Открыть в новой вкладке</translation>
+<translation id="8076014560081431679">Настройки сайтов не изменятся, поэтому данные о вашей работе в Интернете сохранятся. <ph name="BEGIN_LINK" />Подробнее…<ph name="END_LINK" /></translation>
 <translation id="8084156870963450514">Войдите в аккаунт и получите доступ к своим данным, например вкладкам и истории просмотров, на любом устройстве</translation>
+<translation id="8087000398470557479">Контент с сайта <ph name="DOMAIN_NAME" />. Получен с помощью Google.</translation>
+<translation id="8098570222830891427">Просматривайте веб-страницы, связанные с объектами вокруг вас. Chrome будет искать их с помощью Bluetooth, когда ваше устройство разблокировано. Чтобы улучшить работу функции, страницы будут отправляться через сервис Google.
+
+Включить или отключить Интернет вокруг нас можно в настройках Chrome.</translation>
 <translation id="8106211421800660735">Номер карты</translation>
 <translation id="813082847718468539">Сведения о сайте</translation>
 <translation id="8137558756159375272">Функция "Нажмите для поиска" отправляет в Google выбранное слово, а также текущую страницу в качестве контекста. Включить или отключить эту функцию можно в <ph name="BEGIN_LINK" />настройках<ph name="END_LINK" />.</translation>
@@ -605,6 +613,7 @@
 <translation id="8931159598799892500">Chrome + Интернет вокруг нас</translation>
 <translation id="8941248009481596111">Подключение к веб-сайту защищено</translation>
 <translation id="8941729603749328384">www.example.com</translation>
+<translation id="8942627711005830162">Открыть в новом окне</translation>
 <translation id="8959122750345127698">Страница не найдена: <ph name="URL" /></translation>
 <translation id="8979340629087822094">вчерашний день</translation>
 <translation id="8987061207681586800">Ваш персональный Chrome</translation>

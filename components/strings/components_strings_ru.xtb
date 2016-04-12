@@ -289,6 +289,7 @@
 <translation id="3788090790273268753">Срок действия сертификата для этого сайта истекает в 2016 году. Кроме того, в цепочке присутствует сертификат с подписью SHA-1.</translation>
 <translation id="382518646247711829">Если вы используете прокси-сервер...</translation>
 <translation id="3828924085048779000">Пустые кодовые фразы запрещены.</translation>
+<translation id="3845539888601087042">Показана история со всех устройств, на которых используется этот аккаунт. <ph name="BEGIN_LINK" />Подробнее…<ph name="END_LINK" /></translation>
 <translation id="385051799172605136">Назад</translation>
 <translation id="3858027520442213535">Обновить дату и время</translation>
 <translation id="3884278016824448484">Конфликт идентификаторов устройств</translation>
@@ -409,6 +410,7 @@
 <translation id="5421136146218899937">Очистить историю...</translation>
 <translation id="5430298929874300616">Удалить закладку</translation>
 <translation id="5431657950005405462">Файл не найден</translation>
+<translation id="5435775191620395718">Показана история только с этого устройства. <ph name="BEGIN_LINK" />Подробнее…<ph name="END_LINK" /></translation>
 <translation id="5439770059721715174">Ошибка проверки схемы, <ph name="ERROR_PATH" />: <ph name="ERROR" /></translation>
 <translation id="5447330194051379405">Показать сохраненные страницы</translation>
 <translation id="5452270690849572955">Страница <ph name="HOST_NAME" /> не найдена</translation>
@@ -556,7 +558,6 @@
 <translation id="7186367841673660872">Эта страница была переведена автоматически<ph name="ORIGINAL_LANGUAGE" />&gt;<ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="719464814642662924">Visa</translation>
 <translation id="720210938761809882">Страница заблокирована</translation>
-<translation id="7208899522964477531">Искать на <ph name="SITE_NAME" />  <ph name="SEARCH_TERMS" /></translation>
 <translation id="7210863904660874423">Сайт <ph name="HOST_NAME" /> не соответствует стандартам безопасности.</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Подробнее <ph name="END_LINK" /> об этой неполадке.</translation>
 <translation id="7219179957768738017">В этом подключении используется протокол <ph name="SSL_VERSION" />.</translation>
@@ -638,7 +639,6 @@
 <translation id="7951415247503192394">(32 бит)</translation>
 <translation id="7956713633345437162">Закладки на мобильном</translation>
 <translation id="7961015016161918242">Нет</translation>
-<translation id="7977590112176369853">&lt;введите запрос&gt;</translation>
 <translation id="7983301409776629893">Всегда переводить <ph name="ORIGINAL_LANGUAGE" /> на <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="7995512525968007366">Не указано</translation>
 <translation id="8012647001091218357">Не удалось связаться с вашими родителями. Повторите попытку.</translation>
@@ -698,6 +698,7 @@
 <translation id="8730621377337864115">Готово</translation>
 <translation id="8738058698779197622">Для создания безопасного подключения необходимо, чтобы показания системных часов были верны. Причина в том, что сертификаты для идентификации сайтов имеют ограниченный срок действия. Если часы на устройстве неточны, Chromium не может проверить актуальность этих сертификатов.</translation>
 <translation id="8740359287975076522">Не удается найти &lt;abbr id="dnsDefinition"&gt;DNS-адрес&lt;/abbr&gt; сайта <ph name="HOST_NAME" />. Выполняется диагностика.</translation>
+<translation id="8741995161408053644">История просмотра также может храниться в вашем аккаунте Google: <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="8790007591277257123">&amp;Повторить удаление</translation>
 <translation id="8798099450830957504">По умолчанию</translation>
 <translation id="8804164990146287819">Политика конфиденциальности</translation>
@@ -718,7 +719,6 @@
 <translation id="8903921497873541725">Увеличить</translation>
 <translation id="8931333241327730545">Сохранить эту карту в аккаунте Google?</translation>
 <translation id="8932102934695377596">Часы отстают</translation>
-<translation id="8940229512486821554">Выполнить команду расширения <ph name="EXTENSION_NAME" />: <ph name="SEARCH_TERMS" /></translation>
 <translation id="8954894007019320973">(Продолж.)</translation>
 <translation id="8971063699422889582">Сертификат сервера устарел.</translation>
 <translation id="8987927404178983737">Месяц</translation>

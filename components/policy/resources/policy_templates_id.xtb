@@ -64,8 +64,6 @@
 
       Jika kebijakan tidak disetel, atau disetel ke False, maka cipher suite RC4 di TLS tidak akan diaktifkan. Jika kebijakan disetel ke True, kebijakan akan tetap berlaku untuk mempertahankan kompatibilitas dengan server yang sudah usang. Tindakan ini hanya untuk sementara dan server sebaiknya dikonfigurasi ulang.</translation>
 <translation id="1297182715641689552">Gunakan skrip proxy .pac</translation>
-<translation id="1300635491585192248">Memprediksi tindakan jaringan pada jaringan apa pun selain jaringan
-          seluler</translation>
 <translation id="1304973015437969093">ID Ekstensi/Aplikasi dan URL pembaruan akan dipasang di latar belakang</translation>
 <translation id="1310699457130669094">Anda dapat menentukan URL ke file .pac proxy di sini. Kebijakan ini hanya berlaku jika Anda telah memilih setelan proxy manual di 'Pilih cara menentukan setelan server proxy'. Anda harus membiarkan kebijakan ini tidak disetel jika telah memilih mode lain untuk kebijakan proxy setelan. Untuk contoh mendetail, kunjungi: <ph name="PROXY_HELP_URL" /></translation>
 <translation id="1313457536529613143">Menentukan persentase yang digunakan untuk menskalakan penundaan layar redup saat mengamati aktivitas pengguna selagi layar diredupkan atau tak lama setelah layar dimatikan.
@@ -457,7 +455,6 @@
       Jika kebijakan ini dibiarkan tidak disetel, pengguna dapat memilih untuk menggunakan atau tidak menggunakan fitur proxy kompresi data.</translation>
 <translation id="2587719089023392205">Setel <ph name="PRODUCT_NAME" /> sebagai Browser Default</translation>
 <translation id="2592091433672667839">Durasi keadaan tidak aktif sebelum tirai layar ditampilkan di layar masuk dalam mode eceran</translation>
-<translation id="260705825237536216">Konfigurasi aplikasi ARC</translation>
 <translation id="2623014935069176671">Tunggu aktivitas pengguna awal</translation>
 <translation id="262740370354162807">Aktifkan penyerahan dokumen ke <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2633084400146331575">Aktifkan masukan lisan</translation>
@@ -539,7 +536,6 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
           Jika kebijakan ini disetel ke True atau tidak disetel, pengguna tidak dianggap menganggur saat audio berputar. Hal ini mencegah waktu tunggu menganggur tercapai dan mencegah tindakan menganggur. Namun, peredupan layar, mematikan layar, dan penguncian layar akan dilakukan setelah waktu tunggu yang dikonfigurasikan, terlepas dari aktivitas audio.
 
           Jika kebijakan ini disetel ke False, aktivitas audio tidak mencegah pengguna untuk dianggap menganggur.</translation>
-<translation id="2948381198510798695"><ph name="PRODUCT_NAME" /> akan mengabaikan setiap proxy untuk daftar host yang diberikan di sini. Kebijakan ini hanya berlaku jika Anda telah memilih setelan proxy manual di 'Pilih cara menentukan setelan server proxy'. Anda harus membiarkan kebijakan ini tidak disetel jika telah memilih setiap mode lain untuk kebijakan proxy setelan. Untuk contoh yang lebih mendetail, kunjungi: <ph name="PROXY_HELP_URL" /></translation>
 <translation id="2956777931324644324">Kebijakan ini dihentikan sejak <ph name="PRODUCT_NAME" /> versi 36.
 
       Menentukan apakah ekstensi sertifikat terikat domain TLS sebaiknya diaktifkan atau tidak.
@@ -772,7 +768,6 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 
       Setiap entri cantuman berisi kamus yang harus menyertakan ID ekstensi dalam bidang 'extension-id', dan URL pembaruannya dalam bidang 'update-url'.</translation>
 <translation id="3891357445869647828">Mengaktifkan JavaScript</translation>
-<translation id="389421284571827139">Memungkinkan Anda menentukan server proxy yang digunakan oleh <ph name="PRODUCT_NAME" /> dan mencegah pengguna mengubah setelan proxy. Jika Anda memilih untuk tidak pernah menggunakan server proxy dan selalu terhubung secara langsung, semua opsi lain akan diabaikan. Jika Anda memilih untuk mendeteksi server proxy secara otomatis, semua opsi lain akan diabaikan. Untuk contoh mendetail, kunjungi: <ph name="PROXY_HELP_URL" /> Jika Anda mengaktifkan setelan ini, <ph name="PRODUCT_NAME" /> akan mengabaikan semua opsi yang berhubungan dengan proxy yang ditentukan dari baris perintah. Membiarkan kebijakan ini tidak disetel akan memungkinkan pengguna memilih setelan proxy mereka sendiri.</translation>
 <translation id="3907986150060929099">Menyetel bahasa yang disarankan untuk sesi publik</translation>
 <translation id="391531815696899618">Menonaktifkan sinkronisasi Google Drive di aplikasi File <ph name="PRODUCT_OS_NAME" /> ketika disetel ke True. Dalam kasus ini, tidak ada data yang diunggah ke Google Drive.
 
@@ -992,16 +987,6 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
           Nilai harus berupa rangkaian kamus dengan string JSON. Setiap kamus harus memiliki bentuk { "pattern": "$URL_PATTERN", "filter" : $FILTER }, dengan $URL_PATTERN yang merupakan pola setelan konten. $FILTER membatasi asal sertifikat klien yang akan dipilih browser secara otomatis. Terlepas dari filter, hanya sertifikat yang cocok dengan permintaan sertifikat server yang akan dipilih. Selain itu, jika $FILTER memiliki bentuk { "ISSUER": { "CN": "$ISSUER_CN" } }, hanya sertifikat klien yang dikeluarkan oleh sertifikat dengan CommonName $ISSUER_CN yang akan dipilih. Jika $FILTER berupa kamus kosong {}, pemilihan sertifikat klien tidak lagi dibatasi.
 
           Jika kebijakan ini tidak disetel, tidak akan ada pemilihan otomatis untuk situs apa pun.</translation>
-<translation id="4980301635509504364">Mengizinkan atau menolak tangkapan video.
-
-      Jika diaktifkan atau tidak dikonfigurasi (default), pengguna akan dimintai
-      akses tangkapan video kecuali untuk URL yang dikonfigurasi di
-      daftar VideoCaptureAllowedUrls yang akan diberikan akses tanpa meminta.
-
-      Saat kebijakan ini dinonaktifkan, pengguna tidak akan pernah diminta dan tangkapan
-      video hanya tersedia untuk URL yang dikonfigurasi dalam VideoCaptureAllowedUrls.
-
-      Kebijakan ini memengaruhi semua jenis masukan video, bukan hanya kamera yang ada di dalamnya.</translation>
 <translation id="4980635395568992380">Jenis data:</translation>
 <translation id="4983201894483989687">Izinkan menjalankan plugin yang kedaluwarsa</translation>
 <translation id="4988291787868618635">Tindakan yang akan diambil saat penundaan waktu menganggur tercapai</translation>
@@ -1090,11 +1075,6 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 <translation id="5307432759655324440">Ketersediaan mode penyamaran</translation>
 <translation id="5318185076587284965">Aktifkan penggunaan server relay oleh hosting akses jarak jauh</translation>
 <translation id="5330684698007383292">Izinkan <ph name="PRODUCT_FRAME_NAME" /> menangani jenis konten berikut</translation>
-<translation id="5345267406698765263">Menentukan kebijakan aplikasi ARC sebagai string JSON yang dapat
-      dikirimkan apa adanya ke waktu proses ARC. Saat ini, setelan ini hanya digunakan
-      untuk menentukan pemasangan paksa aplikasi.
-
-      Jika kebijakan ini tidak disetel, tidak ada aplikasi yang akan dipasang secara otomatis.</translation>
 <translation id="5365946944967967336">Tampilkan tombol Beranda di bilah alat</translation>
 <translation id="5366977351895725771">Jika disetel ke false, pembuatan pengguna yang dilindungi oleh pengguna ini akan dinonaktifkan. Pengguna diawasi mana pun yang sudah ada akan tetap tersedia.
 
@@ -1185,7 +1165,6 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 
       Jika kebijakan tidak disetel, atau disetel ke false, <ph name="PRODUCT_NAME" /> akan menggunakan setelan pemeriksaan pembatalan online yang ada.</translation>
 <translation id="5732972008943405952">Mengimpor data formulir isiotomatis dari browser default saat pertama kali dijalankan</translation>
-<translation id="5761030451068906335">Mengonfigurasi setelan proxy untuk <ph name="PRODUCT_NAME" />. Kebijakan ini belum siap untuk digunakan, jangan menggunakannya.</translation>
 <translation id="5765780083710877561">Deskripsi:</translation>
 <translation id="5770738360657678870">Saluran pengembang (mungkin tidak stabil)</translation>
 <translation id="5774856474228476867">URL penelusuran penyedia penelusuran default</translation>
@@ -1210,13 +1189,6 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
       Buka http://www.chromium.org/administrators/policy-list-3/user-data-directory-variables untuk melihat daftar variabel yang dapat digunakan.
 
       Jika setelan ini tidak disetel, direktori profil default akan digunakan.</translation>
-<translation id="5819660021114910752">Menetapkan zona waktu yang akan digunakan pada perangkat. Pengguna dapat mengganti zona waktu yang ditetapkan untuk sesi saat ini. Akan tetapi, zona waktu tersebut akan disetel kembali ke zona waktu yang ditetapkan saat pengguna keluar. Jika pengguna memberikan nilai yang tidak valid, kebijakan akan tetap diaktifkan menggunakan "GMT". Jika pengguna memberikan string kosong, kebijakan ini akan diabaikan.
-
-      Jika kebijakan ini tidak digunakan, zona waktu yang saat ini aktif akan tetap digunakan, tapi pengguna dapat mengubah zona waktu dan perubahan ini bersifat tetap. Oleh karena itu, bila ada seorang pengguna yang mengubahnya, maka layar masuk dan semua pengguna lain akan ikut terpengaruh.
-
-      Perangkat baru akan dimulai dengan zona waktu yang disetel ke "Amerika Serikat/Pasifik".
-
-      Format nilai akan mengikuti nama zona waktu dalam "Basis Data Zona Waktu IANA" (lihat "https://en.wikipedia.org/wiki/Tz_database"). Terutama sebagian besar zona waktu dapat dirujuk menurut "continent/large_city" atau "ocean/large_city".</translation>
 <translation id="5826047473100157858">Menentukan apakah pengguna dapat membuka laman dalam mode Penyamaran di <ph name="PRODUCT_NAME" />. Jika 'Aktifkan' dipilih atau kebijakan dibiarkan tidak disetel, laman dapat dibuka dalam mode Penyamaran. Jika 'Nonaktifkan' dipilih, laman tidak dapat dibuka dalam mode Penyamaran. Jika 'Paksa' dipilih, laman dapat dibuka HANYA dalam mode Penyamaran.</translation>
 <translation id="5836064773277134605">Batasi jangkauan port UDP yang digunakan oleh hosting akses jarak jauh</translation>
 <translation id="5845159892130426052">Mengaktifkan API ShowModalDialog sampai 30.04.2015</translation>
@@ -1404,7 +1376,6 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 
       Jika kebijakan ini tidak disetel, defaultnya tidak diizinkan untuk pengguna yang dikelola perusahaan dan diizinkan untuk pengguna yang tidak dikelola.</translation>
 <translation id="6491139795995924304">Izinkan bluetooth di perangkat</translation>
-<translation id="6513756852541213407">Memungkinkan Anda menentukan server proxy yang digunakan oleh <ph name="PRODUCT_NAME" /> dan mencegah pengguna mengubah setelan proxy. Jika Anda memilih untuk tidak pernah menggunakan server proxy dan selalu tersambung secara langsung, semua opsi lain akan diabaikan. Jika Anda memilih menggunakan setelan proxy sistem atau mendeteksi server proxy secara otomatis, semua opsi lain akan diabaikan. Jika Anda memilih mode proxy server tetap, Anda dapat menentukan opsi lebih lanjut di 'Alamat atau URL server proxy' dan 'Daftar peraturan pengabaian proxy yang dipisahkan koma'. Jika Anda memilih untuk menggunakan skrip .pac proxy, Anda harus menentukan URL dalam skrip di 'URL ke file .pac proxy'. Untuk contoh mendetail, kunjungi: <ph name="PROXY_HELP_URL" /> Jika Anda mengaktifkan setelan ini, <ph name="PRODUCT_NAME" /> akan mengabaikan semua opsi yang berhubungan dengan proxy yang ditentukan dalam baris perintah. Membiarkan kebijakan ini tanpa disetel akan memungkinkan pengguna memilih sendiri setelan proxy.</translation>
 <translation id="6520802717075138474">Impor mesin telusur dari browser default saat pertama kali dijalankan</translation>
 <translation id="653608967792832033">Menentukan panjang waktu tanpa masukan pengguna sebelum layar terkunci ketika menggunakan daya baterai.
 
@@ -1484,7 +1455,6 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 
       Jika kebijakan ini tidak disetel, prediksi jaringan akan diaktifkan namun pengguna dapat mengubahnya.</translation>
 <translation id="6658245400435704251">Menentukan jumlah waktu (dalam detik) sebuah perangkat dapat menunda pengunduhan pembaruannya secara acak dari saat pembaruan tersebut pertama kali didorong ke server. Perangkat dapat menunggu dengan sebagian dari waktu ini dari segi prediksi waktu penyelesaian tugas dan sisa waktunya dari segi jumlah pemeriksaan pembaruan. Dalam keadaan apa pun, penyebaran dibatasi dengan jumlah waktu yang konstan sehingga perangkat tidak akan terus menunggu pengunduhan pembaruan selamanya.</translation>
-<translation id="6672934768721876104">Kebijakan ini sudah usang, gunakan ProxyMode sebagai gantinya. Memungkinkan Anda menentukan server proxy yang digunakan oleh <ph name="PRODUCT_NAME" /> dan mencegah pengguna mengubah setelan proxy. Jika Anda memilih untuk tidak pernah menggunakan server proxy dan selalu tersambung secara langsung, semua opsi lain akan diabaikan. Jika Anda memilih menggunakan setelan proxy sistem atau mendeteksi server proxy secara otomatis, semua opsi lain akan diabaikan. Jika Anda memilih setelan proxy manual, Anda dapat menentukan opsi lebih lanjut di 'Alamat atau URL server proxy', 'URL ke file .pac proxy', dan 'Daftar peraturan pengabaian proxy yang dipisahkan koma'. Untuk contoh mendetailnya, kunjungi: <ph name="PROXY_HELP_URL" /> Jika Anda mengaktifkan setelan ini, <ph name="PRODUCT_NAME" /> mengabaikan semua opsi yang berhubungan dengan proxy yang ditentukan dari baris perintah. Membiarkan kebijakan ini tidak disetel akan mengizinkan pengguna memilih setelan proxy sendiri.</translation>
 <translation id="6689792153960219308">Melaporkan status perangkat keras</translation>
 <translation id="6693751878507293182">Jika Anda menyetel setelan ini untuk mengaktifkan penelusuran otomatis, pemasangan plugin yang hilang akan dinonaktifkan dalam <ph name="PRODUCT_NAME" />. Menyetel opsi ini menjadi nonaktif atau membiarkannya tidak disetel akan mengaktifkan pencari plugin.</translation>
 <translation id="6697474194550078937">Membatasi waktu yang dapat digunakan pengguna yang diautentikasi melalui SAML masuk saat offline.
@@ -1867,7 +1837,7 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 
       Jika kebijakan disetel ke false, daftar antarmuka tidak akan dilaporkan.</translation>
 <translation id="8146727383888924340">Memungkinkan pengguna menukarkan penawaran melalui Pendaftaran Chrome OS</translation>
-<translation id="8148785525797916822">Menyembunyikan peringatan yang muncul ketika <ph name="PRODUCT_NAME" /> berjalan di komputer atau sistem operasi yang sudah tidak didukung.</translation>
+<translation id="8148785525797916822">Menyembunyikan peringatan yang muncul saat <ph name="PRODUCT_NAME" /> dijalankan di komputer atau sistem operasi yang tidak didukung.</translation>
 <translation id="8148901634826284024">Mengaktifkan fitur aksesibilitas mode kontras tinggi.
 
           Jika kebijakan ini disetel ke true, mode kontras tinggi akan selalu diaktifkan.

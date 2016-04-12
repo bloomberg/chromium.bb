@@ -4,52 +4,32 @@
 <translation id="1008557486741366299">Không phải Bây giờ</translation>
 <translation id="1047726139967079566">Đánh dấu Trang Này...</translation>
 <translation id="1172898394251786223">Trường tiếp theo</translation>
-<translation id="168328519870909584">Những kẻ tấn công hiện đang truy cập <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> có thể cố cài đặt các ứng dụng nguy hiểm trên thiết bị của bạn để lấy cắp hoặc xóa thông tin của bạn (ví dụ: ảnh, mật khẩu, thư và thẻ tín dụng).</translation>
 <translation id="2320166752086256636">Ẩn bàn phím</translation>
 <translation id="2467815441875554965">Tìm kiếm theo ngữ cảnh</translation>
 <translation id="2704606927547763573">Đã sao chép</translation>
 <translation id="2747003861858887689">Trường trước</translation>
 <translation id="2780046210906776326">Ko có TK email nào</translation>
-<translation id="2803306138276472711">Duyệt web an toàn của Google gần đây <ph name="BEGIN_LINK" />đã phát hiện phần mềm độc hại<ph name="END_LINK" /> trên <ph name="SITE" />. Các trang web thường được coi là an toàn đôi khi vẫn bị nhiễm phần mềm độc hại.</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> trong số <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3335947283844343239">Mở lại Tab đã Đóng</translation>
 <translation id="3414292259312108062">Chrome sẽ lưu mật khẩu này vào <ph name="BEGIN_LINK" />Mật khẩu đã lưu của Google<ph name="END_LINK" /> và tự động điền mật khẩu cho bạn để bạn không phải tự ghi nhớ.</translation>
 <translation id="3567664240939803299">Bạn có muốn Google Smart Lock lưu mật khẩu của mình cho trang web này không?</translation>
-<translation id="3586931643579894722">Ẩn chi tiết</translation>
-<translation id="3736520371357197498">Nếu bạn hiểu các rủi ro bảo mật, bạn có thể <ph name="BEGIN_LINK" />truy cập trang web không an toàn này<ph name="END_LINK" /> trước khi các chương trình nguy hiểm bị xóa.</translation>
 <translation id="385051799172605136">Quay lại</translation>
-<translation id="4098354747657067197">Trang web lừa đảo phía trước</translation>
 <translation id="4121993058175073134">Để gửi dữ liệu đã xuất, hãy định cấu hình tài khoản email trong ứng dụng Cài đặt.</translation>
 <translation id="4399225372525667111">Chrome không thể xác minh rằng URL của trang web này chính xác.</translation>
-<translation id="4522570452068850558">Chi tiết</translation>
 <translation id="4728558894243024398">Nền tảng</translation>
 <translation id="473775607612524610">Cập nhật</translation>
 <translation id="5317780077021120954">Lưu</translation>
-<translation id="5337705430875057403">Kẻ tấn công trên <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> có thể đánh lừa bạn làm một việc gì đó nguy hiểm như cài đặt phần mềm hoặc tiết lộ thông tin cá nhân của bạn (ví dụ: mật khẩu, số điện thoại hoặc thẻ tín dụng).</translation>
 <translation id="605721222689873409">YY</translation>
-<translation id="6075880972317537864">Những kẻ tấn công trên <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> có thể cố gắng đánh lừa bạn để ăn cắp thông tin của bạn (ví dụ: mật khẩu, thư hoặc thẻ tín dụng).</translation>
 <translation id="6149061208933997199">Sử dụng mật khẩu</translation>
 <translation id="6196207969502475924">Tìm kiếm bằng giọng nói</translation>
-<translation id="6221345481584921695">Duyệt web an toàn của Google gần đây <ph name="BEGIN_LINK" />đã phát hiện phần mềm độc hại<ph name="END_LINK" /> trên <ph name="SITE" />. Các trang web thường được coi là an toàn đôi khi vẫn bị nhiễm phần mềm độc hại. Nội dung độc hại xuất phát từ <ph name="SUBRESOURCE_HOST" />, một nguồn phát tán phần mềm độc hại đã xác định.</translation>
-<translation id="6264485186158353794">Quay lại an toàn</translation>
 <translation id="6314335155547195432">Tạo mật khẩu</translation>
 <translation id="6344783595350022745">Xóa văn bản</translation>
 <translation id="6456425917241817154">Chrome đã tạo mật khẩu</translation>
 <translation id="6535543971741225613">Trang web bạn đang cố gắng truy cập có hoạt động lạ và Chrome không thể xác minh URL của trang web là chính xác. Vì lý do bảo mật, bạn không nên tiếp tục và có lẽ nên thử lại vào ngày mai hoặc truy cập vào một trang web khác.</translation>
-<translation id="6740369132746915122">Nếu bạn hiểu rủi ro với bảo mật của mình, bạn có thể <ph name="BEGIN_LINK" />truy cập trang web không an toàn này<ph name="END_LINK" />.</translation>
 <translation id="7222245588540287464">Dù tính năng Tìm kiếm theo ngữ cảnh đã bật hay chưa.</translation>
-<translation id="724691107663265825">Trang web sắp truy cập chứa phần mềm độc hại</translation>
 <translation id="7456847797759667638">Mở Vị trí...</translation>
 <translation id="7481312909269577407">Chuyển tiếp</translation>
 <translation id="7484580869648358686">Cảnh báo: Phần mềm độc hại có thể không có ngay ở đây!</translation>
-<translation id="7779249319235708104">Cảnh báo tấn công lừa đảo</translation>
 <translation id="7961015016161918242">Chưa bao giờ</translation>
-<translation id="820854170120587500">Duyệt web an toàn của Google gần đây đã phát hiện lừa đảo trên <ph name="SITE" />. <ph name="BEGIN_LINK" />Trang web lừa đảo<ph name="END_LINK" /> giả vờ là trang web khác để đánh lừa bạn.</translation>
-<translation id="834457929814110454">Nếu bạn hiểu các rủi ro về bảo mật, bạn có thể <ph name="BEGIN_LINK" />truy cập trang này<ph name="END_LINK" /> trước khi các chương trình độc hại bị xóa.</translation>
-<translation id="8543181531796978784">Bạn có thể <ph name="BEGIN_ERROR_LINK" />báo cáo sự cố đã phát hiện<ph name="END_ERROR_LINK" /> hoặc nếu bạn hiểu rủi ro với bảo mật của mình, hãy <ph name="BEGIN_LINK" />truy cập trang web không an toàn này<ph name="END_LINK" />.</translation>
-<translation id="8761567432415473239">Gần đây, Duyệt web an toàn của Google <ph name="BEGIN_LINK" />tìm thấy chương trình độc hại<ph name="END_LINK" /> trên trang <ph name="SITE" />.</translation>
-<translation id="8996941253935762404">Trang web sắp truy cập chứa chương trình độc hại</translation>
-<translation id="9035022520814077154">Lỗi bảo mật</translation>
-<translation id="9040185888511745258">Những kẻ tấn công trên trang <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> có thể đánh lừa bạn cài đặt các chương trình ảnh hưởng đến trải nghiệm duyệt web của bạn (ví dụ: bằng cách thay đổi trang chủ của bạn hoặc hiển thị thêm quảng cáo trên các trang bạn truy cập).</translation>
 </translationbundle>

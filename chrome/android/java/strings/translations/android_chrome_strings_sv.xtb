@@ -25,6 +25,7 @@ Bluetooth och Plats måste vara aktiverade om du vill använda Physical Web-tjä
 <translation id="1285320974508926690">Översätt aldrig den här webbplatsen</translation>
 <translation id="1291207594882862231">Rensa historiken, cookies, webbplatsdata, cacheminnet …</translation>
 <translation id="129553762522093515">Nyligen stängda</translation>
+<translation id="13410144310025252">Visa dem i Chrome</translation>
 <translation id="1346090444609141578">Inga sparade sidor här</translation>
 <translation id="1369915414381695676">Webbplatsen <ph name="SITE_NAME" /> har lagts till</translation>
 <translation id="1373696734384179344">Det finns inte tillräckligt med minne för att hämta det valda innehållet.</translation>
@@ -193,6 +194,7 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="3656115297268584622">Aktivera plats i <ph name="BEGIN_LINK" />Android-inställningarna<ph name="END_LINK" />.</translation>
 <translation id="3661699943263275414">Webbplatser från tredje part kan spara och läsa cookiedata</translation>
 <translation id="3672452749423051839">Förslag vid navigeringsfel</translation>
+<translation id="3716158070938632480">Det finns webbsidor i närheten</translation>
 <translation id="3732088672634061408">Det gick inte att hämta intressen.</translation>
 <translation id="3738139272394829648">Tryck för att söka</translation>
 <translation id="3809549525127675114">Uppspelningen av <ph name="VIDEO_TITLE" /> har avslutats</translation>
@@ -372,7 +374,6 @@ Du är dock inte osynlig. Trots inkognitoläget kan din arbetsgivare, din intern
 <translation id="5911030830365207728">Google Översätt</translation>
 <translation id="5916664084637901428">På</translation>
 <translation id="5939518447894949180">Återställ</translation>
-<translation id="5965336165840183977">Detta rensar synkroniserad data från alla enheter. Du loggas inte ut från Google-kontot. Webbplatsinställningar som har sparats raderas inte och kan visa dina surfvanor.</translation>
 <translation id="5968595432776860642">Spelar upp <ph name="VIDEO_TITLE" /></translation>
 <translation id="6010869025736512584">Får åtkomst till videoindata</translation>
 <translation id="6012342843556706400">Chrome behöver tillgång till platsinformation för att kunna dela den på den här webbplatsen.</translation>
@@ -392,7 +393,6 @@ Du är dock inte osynlig. Trots inkognitoläget kan din arbetsgivare, din intern
 <translation id="6159335304067198720">Sparat utrymme: <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">Läs mer</translation>
 <translation id="6192792657125177640">Undantag</translation>
-<translation id="6231464350722415003">Tillåt JavaScript på webbplatser som du anger och blockera det för resten av webben</translation>
 <translation id="6232535412751077445">Om du aktiverar Do Not Track inkluderas en begäran i din surftrafik. Eventuella effekter beror på om webbplatsen svarar på begäran och hur begäran tolkas.
 
 Vissa webbplatser kan till exempel svara på begäran genom att visa annonser som inte baseras på andra webbplatser du har besökt. Många webbplatser samlar ändå in och använder din webbinformation – till exempel för att förbättra säkerheten, tillhandahålla innehåll, annonser och rekommendationer samt generera rapportstatistik.</translation>
@@ -480,7 +480,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> använder din platsinformation för att visa lokala sökresultat</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />Hjälp<ph name="END_LINK" /></translation>
 <translation id="7299721129597238157">Ta bort bokmärke</translation>
-<translation id="7346217184097589238">Webbplatsinställningar som har sparats raderas inte och kan visa dina surfvanor.</translation>
 <translation id="7347770551817603360">Offlineinnehåll</translation>
 <translation id="7363354739009474003">Läser in <ph name="VIDEO_TITLE" /></translation>
 <translation id="7366340029385295517">Castar till <ph name="SCREEN_NAME" /></translation>
@@ -491,6 +490,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="7408644312175185557">Visa flikar tillsammans med de senaste apparna på skärmen Översikt på mobilen.</translation>
 <translation id="7423098979219808738">Fråga först</translation>
 <translation id="7437998757836447326">Logga ut från Chrome</translation>
+<translation id="7464701184726199289">Inställningarna rensar synkroniserad data från alla enheter. Sparade webbplatsinställningar raderas inte och kan visa dina surfvanor. <ph name="BEGIN_LINK" />Läs mer<ph name="END_LINK" /></translation>
 <translation id="7473891865547856676">Nej tack</translation>
 <translation id="7475192538862203634">Om du ser detta ofta provar du de här <ph name="BEGIN_LINK" />förslagen<ph name="END_LINK" />.</translation>
 <translation id="748127970106343339">Bekräfta borttagning av användaruppgifter för enheten</translation>
@@ -542,7 +542,11 @@ Du är dock inte osynlig. Trots inkognitoläget kan din arbetsgivare, din intern
 <translation id="8068648041423924542">Det går inte att välja certifikat.</translation>
 <translation id="8069239273282989646">Efter komprimering</translation>
 <translation id="8073388330009372546">Öppna bild i ny flik</translation>
+<translation id="8076014560081431679">Sparade webbplatsinställningar raderas inte och kan visa dina surfvanor. <ph name="BEGIN_LINK" />Läs mer<ph name="END_LINK" /></translation>
 <translation id="8084156870963450514">Logga in för att komma åt alla dina grejer på webben från vilken enhet som helst</translation>
+<translation id="8098570222830891427">Webbsidor sänds via Bluetooth av enheter i närheten. Chrome söker efter sidor och visar dem när du startar enheten. Sidorna skickas via en tjänst från Google för att förbättra kvaliteten på sidresultaten.
+
+Du kan styra Physical Web i inställningarna för Chrome.</translation>
 <translation id="8106211421800660735">Kreditkortsnummer</translation>
 <translation id="813082847718468539">Visa information om webbplatsen</translation>
 <translation id="8137558756159375272">Funktionen Tryck för att söka skickar det markerade ordet till Google Sök med den aktuella sidan som kontext. Du kan stänga av funktionen i <ph name="BEGIN_LINK" />Inställningar<ph name="END_LINK" />.</translation>

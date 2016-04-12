@@ -277,7 +277,6 @@
 <translation id="1407050882688520094">您有证书可标识以下证书授权中心：</translation>
 <translation id="1407489512183974736">居中并裁剪</translation>
 <translation id="1408789165795197664">高级...</translation>
-<translation id="1408803555324839240">糟糕！无法创建新的受监管用户。请确保您已成功登录，然后重试。</translation>
 <translation id="1409390508152595145">创建受监管用户</translation>
 <translation id="1410616244180625362">继续允许 <ph name="HOST" /> 使用您的摄像头</translation>
 <translation id="1413372529771027206">Smart Lock 的配对手机已更改。请输入您的密码，以便更新此设备上的 Smart Lock（Chromebook 版）。下次，您只需点击自己的个人资料照片即可进入。</translation>
@@ -1594,7 +1593,6 @@
 <translation id="3277710850168074473">播放媒体元素时的用户手势要求。停用此项将允许自动播放。</translation>
 <translation id="3280237271814976245">另存为(&amp;A)...</translation>
 <translation id="3280431534455935878">正在准备</translation>
-<translation id="3284674070818187654">Google 可以使用您的浏览记录对 Google 搜索和其他 Google 服务进行个性化设置。您可以在 myaccount.google.com 上控制是否允许 Google 进行此类设置。</translation>
 <translation id="3285322247471302225">打开新的标签页(&amp;T)</translation>
 <translation id="3288047731229977326">以开发者模式运行的扩展程序可能会损害您的计算机。如果您不是开发者，那么，为安全起见，应停用以开发者模式运行的扩展程序。</translation>
 <translation id="3289566588497100676">简单符号输入</translation>
@@ -1698,7 +1696,6 @@
 <translation id="3413122095806433232">CA 证书颁发者：<ph name="LOCATION" /></translation>
 <translation id="3414856743105198592">格式化可移动设备会删除其中的所有数据。您要继续吗？</translation>
 <translation id="3414952576877147120">大小：</translation>
-<translation id="3416248389957650982">登录后打开 myaccount.google.com</translation>
 <translation id="3420980393175304359">切换用户</translation>
 <translation id="3423858849633684918">请重新启动 <ph name="PRODUCT_NAME" /></translation>
 <translation id="3425233587047449821">新版韩语 IME</translation>
@@ -1913,7 +1910,6 @@
 <translation id="3694027410380121301">选择上一个标签</translation>
 <translation id="3694122362646626770">网站</translation>
 <translation id="3694678678240097321">对于要在网页上运行脚本的扩展程序，如果相应扩展程序请求了在所有网址上运行的权限，则需要获得用户同意。</translation>
-<translation id="36954862089075551">糟糕！无法创建新用户。请检查您的硬盘空间和权限，然后重试。</translation>
 <translation id="3695919544155087829">请输入用于加密该证书文件的密码。</translation>
 <translation id="3696411085566228381">无</translation>
 <translation id="3697100740575341996">您的 IT 管理员已停用了您设备的 Chrome 附赠服务。<ph name="MORE_INFO_LINK" /></translation>
@@ -2340,7 +2336,6 @@
 <translation id="4345703751611431217">软件不兼容：了解详情</translation>
 <translation id="4348766275249686434">收集各项错误</translation>
 <translation id="4350019051035968019">该设备无法注册到您的帐户所属的网域，因为它已标记为受其他网域管理。</translation>
-<translation id="4352333825734680558">糟糕！无法创建新的受监管用户。请检查您的网络连接，稍后再重试。</translation>
 <translation id="4358697938732213860">添加地址</translation>
 <translation id="4359408040881008151">安装此扩展程序是因为某个/些扩展程序需要安装它才能正常使用。</translation>
 <translation id="4361190688154226069">在视图中以矩形表示触摸目标区域</translation>
@@ -3008,7 +3003,6 @@
 <translation id="5388588172257446328">用户名：</translation>
 <translation id="5390284375844109566">索引型数据库</translation>
 <translation id="5392544185395226057">启用 Native Client 支持。</translation>
-<translation id="5393125431335030955">该插件只能在桌面模式下运行。</translation>
 <translation id="5396126354477659676"><ph name="PEPPER_PLUGIN_DOMAIN" /> 上的 <ph name="PEPPER_PLUGIN_NAME" /> 想要访问您的计算机。</translation>
 <translation id="539755880180803351">以占位符文字的形式，使用自动填充的字段类型预测内容对网络表单进行注释。</translation>
 <translation id="5397578532367286026">管理员 (<ph name="MANAGER_EMAIL" />) 可在 chrome.com 上查看该用户的使用情况和历史记录。</translation>
@@ -3273,7 +3267,6 @@
 <translation id="57646104491463491">修改日期</translation>
 <translation id="5765491088802881382">没有可用网络</translation>
 <translation id="5765780083710877561">说明：</translation>
-<translation id="5770385044111747894">NPAPI</translation>
 <translation id="5771585441665576801">音译(geia → γεια)</translation>
 <translation id="5771816112378578655">正在设置...</translation>
 <translation id="5771849619911534867">设备扫描已停止。</translation>
@@ -3905,7 +3898,6 @@
 <translation id="6793649375377511437">Google Copresence 信息</translation>
 <translation id="6797493596609571643">糟糕，出问题了。</translation>
 <translation id="6798954102094737107">插件：<ph name="PLUGIN_NAME" /></translation>
-<translation id="6799646767877093143">此网站使用的插件 (<ph name="PLUGIN_NAME" />) 很快将不再受支持。</translation>
 <translation id="6802031077390104172"><ph name="USAGE" /> (<ph name="OID" />)</translation>
 <translation id="6804671422566312077">在新窗口中打开所有书签(&amp;N)</translation>
 <translation id="6805647936811177813">请登录“<ph name="TOKEN_NAME" />”，从 <ph name="HOST_NAME" /> 导入客户端证书。</translation>
@@ -4890,7 +4882,6 @@
 <translation id="8267698848189296333">目前登录的帐户是 <ph name="USERNAME" /></translation>
 <translation id="8272443605911821513">点击“更多工具”菜单中的“扩展程序”，可以管理您的扩展程序。</translation>
 <translation id="8273972836055206582"><ph name="FULLSCREEN_ORIGIN" /> 现处于全屏模式并意图隐藏鼠标指针。</translation>
-<translation id="8274860189261120948">使用存储的凭据自动登录网站。停用该功能时，系统会在您每次登录网站之前要求您进行确认。</translation>
 <translation id="8275038454117074363">导入</translation>
 <translation id="8276560076771292512">清空缓存并硬性重新加载</translation>
 <translation id="8279388322240498158">索拉尼库尔德语（英文字母）键盘</translation>
@@ -5074,7 +5065,6 @@
 <translation id="8571108619753148184">服务器 4</translation>
 <translation id="8572832761467613633">仅限 Flash</translation>
 <translation id="8572981282494768930">不允许网站使用您的摄像头和麦克风</translation>
-<translation id="8574794171590710404">此网站使用的插件 (<ph name="PLUGIN_NAME" />) 不受支持。</translation>
 <translation id="857779305329188634">启用实验性 QUIC 协议支持。</translation>
 <translation id="8579285237314169903">正在同步 <ph name="NUMBER_OF_FILES" /> 个文件…</translation>
 <translation id="8579549103199280730">默认询问</translation>
@@ -5082,7 +5072,6 @@
 <translation id="8581690024797204327">256</translation>
 <translation id="8581809080475256101">点按该按钮可前进，点按上下文菜单可查看历史记录</translation>
 <translation id="8584280235376696778">在新标签页中打开视频(&amp;O)</translation>
-<translation id="8585103164112230633">控制和查看此用户通过以下所选帐户访问的网站</translation>
 <translation id="8589311641140863898">实验性扩展程序 API</translation>
 <translation id="8590375307970699841">设置自动更新</translation>
 <translation id="8592071947729879125">限制 iframe 的权限。</translation>
@@ -5201,7 +5190,7 @@
 <translation id="8737685506611670901">打开<ph name="PROTOCOL" />链接而非“<ph name="REPLACED_HANDLER_TITLE" />”</translation>
 <translation id="8737709691285775803">Shill</translation>
 <translation id="8741881454555234096">改善触摸手势位置，以便弥补触摸操作分辨率低于鼠标操作这一劣势。</translation>
-<translation id="8743712320294854924">在任务栏中显示展开的输入法选项。</translation>
+<translation id="8743712320294854924">在工具栏中显示展开的输入法选项。</translation>
 <translation id="874420130893181774">传统拼音输入法</translation>
 <translation id="8744525654891896746">为该受监管用户选择头像</translation>
 <translation id="8744641000906923997">罗马字</translation>
@@ -5230,7 +5219,6 @@
 <translation id="878069093594050299">此证书已通过验证，具有以下用法：</translation>
 <translation id="8782565991310229362">已取消启动信息亭模式下的应用。</translation>
 <translation id="8783093612333542422">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt;希望与您共享打印机&lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt;。</translation>
-<translation id="878431691778285679">看起来您已在管理使用此名称的用户。<ph name="LINE_BREAK" />要<ph name="BEGIN_LINK" />将<ph name="PROFILE_NAME" />导入该设备<ph name="END_LINK" />吗？</translation>
 <translation id="8784626084144195648">按区段计算的平均值</translation>
 <translation id="8785135611469711856">插件没有响应</translation>
 <translation id="8787254343425541995">允许共享网络使用代理</translation>
@@ -5271,7 +5259,7 @@
 <translation id="8847988622838149491">USB</translation>
 <translation id="8848709220963126773">使用 Shift 键进行模式切换</translation>
 <translation id="8852742364582744935">以下应用和扩展程序已添加完毕：</translation>
-<translation id="8853611566624224021">从 Quirks Server 中检索 icc 显示文件，以对显示颜色进行校准。</translation>
+<translation id="8853611566624224021">启用从 Quirks Server 中检索 icc 显示文件，以对显示颜色进行校准。</translation>
 <translation id="885381502874625531">白俄罗斯语键盘</translation>
 <translation id="8856844195561710094">无法停止蓝牙设备查找功能。</translation>
 <translation id="885701979325669005">存储空间</translation>
@@ -5334,7 +5322,7 @@
 <translation id="894360074127026135">Netscape International Step-Up</translation>
 <translation id="8944779739948852228">已检测到打印机</translation>
 <translation id="8946359700442089734">此<ph name="IDS_SHORT_PRODUCT_NAME" />设备上未完全启用调试功能。</translation>
-<translation id="8946784827990177241">支持 WebUSB。</translation>
+<translation id="8946784827990177241">启用 WebUSB 支持。</translation>
 <translation id="89515141420106838">启用专门搜索打印机驱动程序的“Chrome 网上应用店扩展程序列表”应用。此应用会在 Chrome 网上应用店中搜索支持通过 USB 打印机打印（使用特定 USB ID）的扩展程序。</translation>
 <translation id="895347679606913382">即将开始下载...</translation>
 <translation id="8954952943849489823">移动失败，出现意外错误：$1</translation>

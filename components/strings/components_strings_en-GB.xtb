@@ -290,6 +290,7 @@
 <translation id="3788090790273268753">The certificate for this site expires in 2016, and the certificate chain contains a certificate signed using SHA-1.</translation>
 <translation id="382518646247711829">If you use a proxy server...</translation>
 <translation id="3828924085048779000">Empty passphrase is not allowed.</translation>
+<translation id="3845539888601087042">Showing history from your signed-in devices. <ph name="BEGIN_LINK" />Find out more<ph name="END_LINK" />.</translation>
 <translation id="385051799172605136">Back</translation>
 <translation id="3858027520442213535">Update date and time</translation>
 <translation id="3884278016824448484">Conflicting device identifier</translation>
@@ -410,6 +411,7 @@
 <translation id="5421136146218899937">Clear browsing data...</translation>
 <translation id="5430298929874300616">Remove bookmark</translation>
 <translation id="5431657950005405462">Your file was not found</translation>
+<translation id="5435775191620395718">Showing history from this device. <ph name="BEGIN_LINK" />Find out more<ph name="END_LINK" />.</translation>
 <translation id="5439770059721715174">Schema validation error at "<ph name="ERROR_PATH" />": <ph name="ERROR" /></translation>
 <translation id="5447330194051379405">Show all saved pages</translation>
 <translation id="5452270690849572955">This <ph name="HOST_NAME" /> page can’t be found</translation>
@@ -557,7 +559,6 @@
 <translation id="7186367841673660872">This page has been translated from<ph name="ORIGINAL_LANGUAGE" />to<ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="719464814642662924">Visa</translation>
 <translation id="720210938761809882">Page blocked</translation>
-<translation id="7208899522964477531">Search <ph name="SITE_NAME" /> for <ph name="SEARCH_TERMS" /></translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> doesn't adhere to security standards.</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Learn more<ph name="END_LINK" /> about this problem.</translation>
 <translation id="7219179957768738017">The connection uses <ph name="SSL_VERSION" />.</translation>
@@ -639,7 +640,6 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY" /> may come in handy next time.</tr
 <translation id="7951415247503192394">(32-bit)</translation>
 <translation id="7956713633345437162">Mobile bookmarks</translation>
 <translation id="7961015016161918242">Never</translation>
-<translation id="7977590112176369853">&lt;enter query&gt;</translation>
 <translation id="7983301409776629893">Always translate <ph name="ORIGINAL_LANGUAGE" /> to <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="7995512525968007366">Not Specified</translation>
 <translation id="8012647001091218357">We could not reach your parents at the moment. Please try again.</translation>
@@ -700,6 +700,7 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY" /> may come in handy next time.</tr
 <translation id="8730621377337864115">Finished</translation>
 <translation id="8738058698779197622">To establish a secure connection, your clock needs to be set correctly. This is because the certificates that websites use to identify themselves are only valid for specific periods of time. Since your device's clock is incorrect, Chromium cannot verify these certificates.</translation>
 <translation id="8740359287975076522"><ph name="HOST_NAME" />’s &lt;abbr id="dnsDefinition"&gt;DNS address&lt;/abbr&gt; could not be found. Diagnosing the problem.</translation>
+<translation id="8741995161408053644">Your Google Account may have other forms of browsing history at <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="8790007591277257123">&amp;Redo delete</translation>
 <translation id="8798099450830957504">Default</translation>
 <translation id="8804164990146287819">Privacy Policy</translation>
@@ -720,7 +721,6 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY" /> may come in handy next time.</tr
 <translation id="8903921497873541725">Zoom in</translation>
 <translation id="8931333241327730545">Do you want to save this card to your Google Account?</translation>
 <translation id="8932102934695377596">Your clock is behind</translation>
-<translation id="8940229512486821554">Run <ph name="EXTENSION_NAME" /> command: <ph name="SEARCH_TERMS" /></translation>
 <translation id="8954894007019320973">(Cont.)</translation>
 <translation id="8971063699422889582">Server's certificate has expired.</translation>
 <translation id="8987927404178983737">Month</translation>

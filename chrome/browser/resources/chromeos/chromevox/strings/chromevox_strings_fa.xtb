@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fa">
-<translation id="1012173283529841972">مورد لیست</translation>
+<translation id="1012173283529841972">مورد فهرست</translation>
 <translation id="1013742170491673792">srched</translation>
 <translation id="1023866615269196768">گسترش یافت.</translation>
 <translation id="1025074108959230262">حالت چسبان غیرفعال شد</translation>
@@ -14,7 +14,7 @@
 <translation id="1106741348836243114">بازخورد صوتی (نمادهای شنیداری) را روشن یا خاموش کنید.</translation>
 <translation id="1120743664840974483">{«ا»: «اسب»، «ب»: «بازی»، «پ»: «پروین»، «ت»: «ترانه»، «ث»: «ثریا»، «ج»: «جوجه»، «چ»: «چرخ»، «ح»: «حریم»، « خ»:«خصوصی »، « د»: «دفترچه»، «ذ»: «ذلیل»، «ر»: «روز»، «ز»: «زمان»، «ژ»: «ژولیت»، «س»: «سیاست»، «ش»: «شنبه»، «ص»: «صفحه»، «ض»: «ضروری»، «ط»: «طراوت»، «ظ»: «ظهر»، «ع»: «عصر»، « غ»: «غروب»، «ف»: «فروش»، «ق»: «قلب»، «ک»: «کودکان»، «گ»: «گوشی»، «ل»: «لوله»، «م»: «مرز»، «ن»: «نامناسب»، «و»: «ویلا»، «ه»: «هیاهو»، «ی»: «یادآور»}</translation>
 <translation id="113582498867142724">مجموعه <ph name="TAG" /> با <ph name="NUM" /> مورد</translation>
-<translation id="1155043339247954670">مورد لیست بعدی وجود ندارد.</translation>
+<translation id="1155043339247954670">مورد فهرست بعدی وجود ندارد.</translation>
 <translation id="1157782847298808853">راهنمای صفحه‌کلید</translation>
 <translation id="1157843803349774103"><ph name="VALUE" />، <ph name="NAME" />، کادر ترکیبی</translation>
 <translation id="1167230103353892028"><ph name="NAME" />، مورد منو، با منوی فرعی</translation>
@@ -69,14 +69,14 @@
 <translation id="174268867904053074">گرافیک بعدی</translation>
 <translation id="1781173782405573156">کلید عبور</translation>
 <translation id="1787176709638001873">نوشتار ویرایش گذرواژه</translation>
-<translation id="1810107444790159527">کادر لیست</translation>
+<translation id="1810107444790159527">کادر فهرست</translation>
 <translation id="1828385960365606039">مه</translation>
 <translation id="1834891354138622109">ستون</translation>
 <translation id="1865601187525349519">پایان نوشتار</translation>
 <translation id="1876229593313240038">doc</translation>
 <translation id="188130072164734898">تاریخ و زمان کنونی را بگویید.</translation>
 <translation id="1902396333223336119">سلول</translation>
-<translation id="1905379170753160525">نمایش لیست عناوین</translation>
+<translation id="1905379170753160525">نمایش فهرست عناوین</translation>
 <translation id="1912556590115083156">vlnk</translation>
 <translation id="1913761808037590218">‎#ed</translation>
 <translation id="1954623340234317532">کنترل هفته از سال</translation>
@@ -96,7 +96,7 @@
 <translation id="2100350898815792233">همه علائم نگارشی</translation>
 <translation id="2119965627982867824">spnbtn</translation>
 <translation id="2121067395472282800">کلید دسترسی: <ph name="KEY" /></translation>
-<translation id="2155457205053847599">با انتخاب گزینه‌ای از لیست زیر، جدول بریل ۶ نقطه‌ای فعلی را تغییر دهید.</translation>
+<translation id="2155457205053847599">با انتخاب گزینه‌ای از فهرست زیر، جدول بریل ۶ نقطه‌ای فعلی را تغییر دهید.</translation>
 <translation id="2169714232367507776">کلیک روی مورد کنونی</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{پرانتز بسته}one{# پرانتز بسته}other{# پرانتز بسته}}</translation>
 <translation id="2199994615414171367">عبارت ریاضی قبلی</translation>
@@ -181,7 +181,7 @@
 <translation id="3104705064753753826">alrt dlg</translation>
 <translation id="3109724472072898302">جمع شده</translation>
 <translation id="3134461040845705080">rdonly</translation>
-<translation id="3138767756593758860">نمایش لیست علامت مشخصه‌ها</translation>
+<translation id="3138767756593758860">نمایش فهرست علامت مشخصه‌ها</translation>
 <translation id="3143851963874289911">cll</translation>
 <translation id="3149472044574196936">خط بعدی</translation>
 <translation id="3155083529632865074">دکمه قبلی موجود نیست.</translation>
@@ -251,7 +251,7 @@
 <translation id="3389259863310851658">فیلد قبلی فرم</translation>
 <translation id="3390225400784126843">عنصر متفاوت بعدی.</translation>
 <translation id="3392045790598181549"><ph name="NAME" />، مورد منو</translation>
-<translation id="3406283310380167331">نمایش لیست فرم‌ها</translation>
+<translation id="3406283310380167331">نمایش فهرست فرم‌ها</translation>
 <translation id="3422338090358345848">باز کردن کاوشگر صفحه‌کلید</translation>
 <translation id="3457000393508828486">فشردن مختصر</translation>
 <translation id="3462439746547587373"><ph name="NAME" />، دکمه</translation>
@@ -269,7 +269,7 @@
 <translation id="3650317109285159359">chkmnuitm</translation>
 <translation id="3655855170848725876">{COUNT,plural, =1{علامت دلار}one{# علامت دلار}other{# علامت دلار}}</translation>
 <translation id="3659787053479271466">هشدار</translation>
-<translation id="3665563998540286755"><ph name="VALUE" />، کادر لیست</translation>
+<translation id="3665563998540286755"><ph name="VALUE" />، کادر فهرست</translation>
 <translation id="3687295507293856493">حدس در مورد عنوان ستون سلول کنونی</translation>
 <translation id="3692274950075847560">ج: <ph name="RESULT" /></translation>
 <translation id="3712520970944678024">کنترل گفتگو</translation>
@@ -279,7 +279,7 @@
 <translation id="3777255250339039212">h1</translation>
 <translation id="3793710123303304873">از گفتگو خارج شد.</translation>
 <translation id="3795836767122514678">+{COUNT,plural, =1{#}one{#}other{#}}</translation>
-<translation id="3801735343383419236">لیست تکمیل خودکار</translation>
+<translation id="3801735343383419236">فهرست تکمیل خودکار</translation>
 <translation id="3810838688059735925">فیلم</translation>
 <translation id="3816633764618089385">رسانه بعدی</translation>
 <translation id="3819376190738087562">پرشی وجود ندارد.</translation>
@@ -329,7 +329,7 @@
 <translation id="4300318234632215983">اعلان نشانی وب پشت یک پیوند</translation>
 <translation id="4301352596632316575">منوی فرعی دارد</translation>
 <translation id="4342180618051828363">{COUNT,plural, =1{نقطه}=3{سه نقطه}one{# نقطه}other{# نقطه}}</translation>
-<translation id="4347461890115250064">لیست بعدی موجود نیست.</translation>
+<translation id="4347461890115250064">فهرست بعدی موجود نیست.</translation>
 <translation id="4367650418938037324">‏برگ ML ریاضی</translation>
 <translation id="4372435075475052704">حداقل: <ph name="X" /></translation>
 <translation id="4372705107434148843">توقف گفتار</translation>
@@ -382,7 +382,7 @@
 <translation id="4975416682604111799">میلی‌ثانیه</translation>
 <translation id="49787999531187221">‏ChromeVox اکنون غیرفعال است.</translation>
 <translation id="4979404613699303341">دکمه قبلی</translation>
-<translation id="4982773647088557172"><ph name="VALUE" />، <ph name="NAME" />، کادر لیست</translation>
+<translation id="4982773647088557172"><ph name="VALUE" />، <ph name="NAME" />، کادر فهرست</translation>
 <translation id="4983588134362688868">رفتن به بالای صفحه</translation>
 <translation id="4986606102545753256"><ph name="NAME" />، پنجره</translation>
 <translation id="4993152509206108683">نرخ <ph name="PERCENT" /> درصد</translation>
@@ -395,7 +395,7 @@
 <translation id="5041394372352067729">انتقال صفحه‌نمایش بریل به بالای صفحه</translation>
 <translation id="5042770794184672516">افزایش میزان صدای گفتار</translation>
 <translation id="5050015258024679800">عنوان قبلی سطح ۴</translation>
-<translation id="5054047268577924192">مورد قبلی لیست</translation>
+<translation id="5054047268577924192">مورد قبلی فهرست</translation>
 <translation id="5075936896689244141">نقشه کلید بعدی</translation>
 <translation id="5078661581131202757">انتخاب فایل</translation>
 <translation id="5080758118274074384">دوبار کلیک شد</translation>
@@ -413,7 +413,7 @@
 <translation id="5184944171021383281">فیلد بعدی فرم وجود ندارد.</translation>
 <translation id="5189244881767082992">خط</translation>
 <translation id="5203930734796605961"><ph name="KEY" /> قبلاً به یک دستور اختصاص داده شده است.</translation>
-<translation id="5205493599117157272">لیست <ph name="TYPE" />.</translation>
+<translation id="5205493599117157272">فهرست <ph name="TYPE" />.</translation>
 <translation id="520883772648104506">دکمه رادیویی بعدی موجود نیست.</translation>
 <translation id="5263344797180442561">h2</translation>
 <translation id="528468243742722775">پایان</translation>
@@ -446,7 +446,7 @@
 <translation id="5534303576632885660">hdr</translation>
 <translation id="5546092960038624944">عنوان سطح ۵ قبلی وجود ندارد.</translation>
 <translation id="556042886152191864">دکمه</translation>
-<translation id="5561345396546889625">لیست بعدی</translation>
+<translation id="5561345396546889625">فهرست بعدی</translation>
 <translation id="5562645715554321347">hdnggrp</translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5585044216466955529">ویرایش نوشتار، ورودی ایمیل</translation>
@@ -466,7 +466,7 @@
 <translation id="5681643281275621376">def</translation>
 <translation id="5682113568322255809">علامت مشخصه</translation>
 <translation id="5683155931978483559">کادر انتخاب قبلی</translation>
-<translation id="5684277895745049190">لیست</translation>
+<translation id="5684277895745049190">فهرست</translation>
 <translation id="5700650669149824506">عنوان سطح ۴ قبلی وجود ندارد.</translation>
 <translation id="5703716265115423771">پایین آوردن صدا</translation>
 <translation id="5709192780268610569">بدون شرح طولانی</translation>
@@ -481,7 +481,7 @@
 <translation id="5819072574982403430">مورد درختی</translation>
 <translation id="5826479389509458994">ردیف <ph name="ROW" /> ستون <ph name="COL" /></translation>
 <translation id="5850707923114094062">حرکت به عقب</translation>
-<translation id="5851548754964597211">لیست برگه</translation>
+<translation id="5851548754964597211">فهرست برگه</translation>
 <translation id="5859752971144398932">از «یافتن در صفحه» خارج شد.</translation>
 <translation id="5866042630553435010">علامت‌گذاری نیمه</translation>
 <translation id="5869546221129391014">جدولی</translation>
@@ -498,7 +498,7 @@
 <translation id="5968607524793740041">نمایش منوی بافت</translation>
 <translation id="5983179082906765664">افزایش جزئیات پیمایش</translation>
 <translation id="5999630716831179808">صداها</translation>
-<translation id="6000417740266304866">با انتخاب گزینه‌ای از لیست زیر، جدول بریل ۸ نقطه‌ای فعلی را تغییر دهید.</translation>
+<translation id="6000417740266304866">با انتخاب گزینه‌ای از فهرست زیر، جدول بریل ۸ نقطه‌ای فعلی را تغییر دهید.</translation>
 <translation id="6006050241733874051">فرم</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{اریب وارو}one{# اریب وارو}other{# اریب وارو}}</translation>
 <translation id="6037602951055904232">حرکت به جلو</translation>
@@ -521,7 +521,7 @@
 <translation id="6307969636681130414">فشرده شده</translation>
 <translation id="6324551002951139333">اشتباه دستوری شناسایی شد</translation>
 <translation id="6348657800373377022">کادر ترکیبی</translation>
-<translation id="6355910664415701303">مورد قبلی لیست وجود ندارد.</translation>
+<translation id="6355910664415701303">مورد قبلی فهرست وجود ندارد.</translation>
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">عنوان قبلی</translation>
 <translation id="6387719785439924554">جدا</translation>
@@ -532,11 +532,11 @@
 <translation id="6444046323172968959">گفتگوی هشدار</translation>
 <translation id="6459511626086141404">نقشه کلید مسطح</translation>
 <translation id="6468049171101508116">دکمه بعدی</translation>
-<translation id="6491972999578897419">صدای کنونی را با انتخاب یک گزینه از لیست زیر تغییر دهید.</translation>
+<translation id="6491972999578897419">صدای کنونی را با انتخاب یک گزینه از فهرست زیر تغییر دهید.</translation>
 <translation id="6493991254603208962">کم کردن روشنایی</translation>
 <translation id="6508059270146105198">انتقال صفحه‌نمایش بریل به پایین صفحه</translation>
 <translation id="6536864053412760904">‏کد ML ریاضی</translation>
-<translation id="6550720799683018100">نقشه کلید کنونی را با انتخاب یک گزینه از لیست زیر تغییر دهید.</translation>
+<translation id="6550720799683018100">نقشه کلید کنونی را با انتخاب یک گزینه از فهرست زیر تغییر دهید.</translation>
 <translation id="6561818612645211875">رفتن به شروع ردیف کنونی</translation>
 <translation id="6587021927234520429">عنوان سطح ۴ بعدی وجود ندارد.</translation>
 <translation id="6601344353291556895">توضیحات طولانی را فعال کنید.</translation>
@@ -564,13 +564,13 @@
 <translation id="6901540140423170855">تاریخ</translation>
 <translation id="6910211073230771657">حذف شد</translation>
 <translation id="6911965441508464308">سلولی در بالا وجود ندارد.</translation>
-<translation id="6919104639734799681">نمایش لیست جدول‌ها</translation>
+<translation id="6919104639734799681">نمایش فهرست جدول‌ها</translation>
 <translation id="6964088412282673743">کنترل قبلی وجود ندارد.</translation>
 <translation id="6996566555547746822">کادر ترکیبی بعدی</translation>
 <translation id="7005146664810010831">نشانی وب پیدا نشد</translation>
 <translation id="7010712454773919705">‏کلید تغییردهنده ChromeVox</translation>
 <translation id="7031651751836475482">lstitm</translation>
-<translation id="7037042857287298941">لیست قبلی</translation>
+<translation id="7037042857287298941">فهرست قبلی</translation>
 <translation id="7041173719775863268">پایان انتخاب</translation>
 <translation id="7086377898680121060">زیاد کردن روشنایی</translation>
 <translation id="7095834689119144465">فقط ویرایش عددی نوشتار</translation>
@@ -682,7 +682,7 @@
 <translation id="8345569862449483843">{COUNT,plural, =1{پوند}one{# علامت پوند}other{# علامت پوند}}</translation>
 <translation id="8374154622594089836">ماه</translation>
 <translation id="8378855320830505539">منطقه</translation>
-<translation id="8382679411218029383">تکمیل خودکار درون خطی و لیست</translation>
+<translation id="8382679411218029383">تکمیل خودکار درون خطی و فهرست</translation>
 <translation id="8428603554127842284">سطح <ph name="DEPTH" /></translation>
 <translation id="842922884199979200">عنوان سطح ۳ بعدی وجود ندارد.</translation>
 <translation id="8430049249787218991">mnubr</translation>
@@ -698,22 +698,22 @@
 <translation id="8561322612995434619">پنجره بازشو دارد</translation>
 <translation id="8571096049907249734">چندانتخاب</translation>
 <translation id="8584721346566392021">h5</translation>
-<translation id="8587549812518406253">مورد لیست بعدی</translation>
+<translation id="8587549812518406253">مورد فهرست بعدی</translation>
 <translation id="860150890330522909">کادر تأیید <ph name="NAME" /> علامت‌گذاری شد</translation>
 <translation id="8603071050456974042">‏پانل ChromeVox</translation>
 <translation id="8606621670302093223">کنترل تاریخ</translation>
 <translation id="8631359288236106450"><ph name="COUNT" /> مورد انتخاب شده</translation>
 <translation id="8638532244051952400">اعلام مختصات سلول کنونی</translation>
-<translation id="8650576015643545550">لیست قبلی موجود نیست.</translation>
+<translation id="8650576015643545550">فهرست قبلی موجود نیست.</translation>
 <translation id="8651481478098336970">بی‌صدا کردن</translation>
 <translation id="8653031188082306838">urled</translation>
-<translation id="8653646212587894517">نمایش لیست پیوندها</translation>
+<translation id="8653646212587894517">نمایش فهرست پیوندها</translation>
 <translation id="8664519043722036194">ثانیه</translation>
 <translation id="867187640362843212">عنوان ۵</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{میله}one{# میله عمودی}other{# میله عمودی}}</translation>
 <translation id="8735450637152821465">شروع انتخاب</translation>
 <translation id="8743786158317878347">ورود به محتوای سازمان یافته، مانند جداول</translation>
-<translation id="8747966237988593539">لیست سفارش داده شده</translation>
+<translation id="8747966237988593539">فهرست سفارش داده شده</translation>
 <translation id="8759334257841767240">پیوند بعدی موجود نیست.</translation>
 <translation id="8767968232364267681">عنوان بعدی سطح ۴</translation>
 <translation id="8770473310765924354">خروج از محتوای سازمان یافته، مانند جداول</translation>

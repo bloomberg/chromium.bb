@@ -4,52 +4,32 @@
 <translation id="1008557486741366299">Şimdi Değil</translation>
 <translation id="1047726139967079566">Bu Sayfaya Yer İşareti Koy...</translation>
 <translation id="1172898394251786223">Sonraki alan</translation>
-<translation id="168328519870909584">Şu anda <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> sitesinde bulunan saldırganlar, cihazınıza bilgilerinizi (örneğin fotoğraflar, şifreler, mesajlar ve kredi kartları) çalacak veya silecek tehlikeli uygulamalar yüklemeyi deneyebilir.</translation>
 <translation id="2320166752086256636">Klavyeyi gizle</translation>
 <translation id="2467815441875554965">Bağlama Dayalı Arama</translation>
 <translation id="2704606927547763573">Kopyalandı</translation>
 <translation id="2747003861858887689">Önceki alan</translation>
 <translation id="2780046210906776326">E-posta Hesabı Yok</translation>
-<translation id="2803306138276472711">Google Güvenli Tarama yakın bir zamanda <ph name="SITE" /> sitesinde <ph name="BEGIN_LINK" />kötü amaçlı yazılım<ph name="END_LINK" /> tespit etti. Normalde güvenli olan web sitelerine bazen kötü amaçlı yazılımlar bulaşır.</translation>
 <translation id="3244271242291266297">AA</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> / <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3335947283844343239">Kapatılan Sekmeyi Tekrar Aç</translation>
 <translation id="3414292259312108062">Chrome, daha sonra hatırlamak zorunda kalmamanız için bunu <ph name="BEGIN_LINK" />Google kayıtlı şifrelerinizde<ph name="END_LINK" /> depolar ve sizin için otomatik olarak doldurur.</translation>
 <translation id="3567664240939803299">Google Smart Lock'un bu sitedeki şifrenizi kaydetmesini ister misiniz?</translation>
-<translation id="3586931643579894722">Ayrıntıları gizle</translation>
-<translation id="3736520371357197498">Güvenliğinizle ilgili riskleri anlıyorsanız tehlikeli programlar kaldırılmadan önce <ph name="BEGIN_LINK" />güvenli olmayan bu siteyi ziyaret edebilirsiniz<ph name="END_LINK" />.</translation>
 <translation id="385051799172605136">Geri</translation>
-<translation id="4098354747657067197">Yanıltıcı bir siteye girmek üzeresiniz</translation>
 <translation id="4121993058175073134">Net-export verilerini göndermek için lütfen Ayarlar uygulamasında e-posta hesabınızı yapılandırın.</translation>
 <translation id="4399225372525667111">Chrome bu sitenin URL'sinin doğruluğunu onaylayamıyor.</translation>
-<translation id="4522570452068850558">Ayrıntılar</translation>
 <translation id="4728558894243024398">Platform</translation>
 <translation id="473775607612524610">Güncelle</translation>
 <translation id="5317780077021120954">Kaydet</translation>
-<translation id="5337705430875057403"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> sitesindeki saldırganlar, yazılım yükleme veya kişisel bilgilerinizi (örneğin, şifreler, telefon numaraları veya kredi kartları) ortaya çıkarma gibi tehlikeli şeyler yapmak için sizi kandırabilir.</translation>
 <translation id="605721222689873409">YY</translation>
-<translation id="6075880972317537864"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> sitesindeki saldırganlar, bilgilerinizi (örneğin şifreler, mesajlar veya kredi kartları) çalmak için sizi kandırmayı deneyebilir.</translation>
 <translation id="6149061208933997199">Şifre Kullan</translation>
 <translation id="6196207969502475924">Sesli Arama</translation>
-<translation id="6221345481584921695">Google Güvenli Tarama yakın bir zamanda <ph name="SITE" /> sitesinde <ph name="BEGIN_LINK" />kötü amaçlı yazılım tespit etti<ph name="END_LINK" />. Normalde güvenli olan web sitelerine bazen kötü amaçlı yazılımlar bulaşır. Kötü amaçlı içerik, kötü amaçlı yazılım dağıtımcısı olduğu bilinen <ph name="SUBRESOURCE_HOST" /> kaynağından gelmektedir.</translation>
-<translation id="6264485186158353794">Güvenliğe geri dön</translation>
 <translation id="6314335155547195432">Şifre Oluştur</translation>
 <translation id="6344783595350022745">Metni Temizle</translation>
 <translation id="6456425917241817154">Chrome'un Oluşturduğu Şifre</translation>
 <translation id="6535543971741225613">Erişmeye çalıştığınız site garip davranıyor ve Chrome bu URL'nin doğruluğunu onaylayamıyor. Güvenlik nedenleriyle devam etmemelisiniz; belki de yarın deneyebilir veya başka bir yere gidebilirsiniz.</translation>
-<translation id="6740369132746915122">Güvenliğiniz açısından riskleri anlıyorsanız <ph name="BEGIN_LINK" />güvenli olmayan bu siteyi ziyaret edebilirsiniz<ph name="END_LINK" />.</translation>
 <translation id="7222245588540287464">Bağlama Dayalı Arama'nın etkin olup olmadığı.</translation>
-<translation id="724691107663265825">Gideceğiniz site kötü amaçlı yazılım içeriyor</translation>
 <translation id="7456847797759667638">Konumu Aç...</translation>
 <translation id="7481312909269577407">İleri</translation>
 <translation id="7484580869648358686">Uyarı: Burada Yanlış Giden Bir Şeyler Var!</translation>
-<translation id="7779249319235708104">Gideceğiniz yerde kimlik avı saldırısı var</translation>
 <translation id="7961015016161918242">Hiçbir Zaman</translation>
-<translation id="820854170120587500">Google Güvenli Tarama yakın bir zamanda <ph name="SITE" /> sitesinde kimlik avı yapıldığını tespit etti. <ph name="BEGIN_LINK" />Kimlik avı siteleri<ph name="END_LINK" />, sizi aldatmak için başka web siteleri gibi görünür.</translation>
-<translation id="834457929814110454">Güvenliğinize ilişkin riskleri anladıysanız <ph name="BEGIN_LINK" />bu siteyi<ph name="END_LINK" /> zararlı programlar kaldırılmadan önce ziyaret edebilirsiniz.</translation>
-<translation id="8543181531796978784"><ph name="BEGIN_ERROR_LINK" />Bir tespit sorununu bildirebilir<ph name="END_ERROR_LINK" /> veya güvenliğiniz açısından riskleri anlıyorsanız <ph name="BEGIN_LINK" />güvenli olmayan bu siteyi ziyaret edebilirsiniz<ph name="END_LINK" />.</translation>
-<translation id="8761567432415473239">Google Güvenli Tarama, yakın zamanda <ph name="SITE" /> sitesinde <ph name="BEGIN_LINK" />zararlı programlar buldu<ph name="END_LINK" />.</translation>
-<translation id="8996941253935762404">Girmekte olduğunuz site zararlı programlar içermektedir</translation>
-<translation id="9035022520814077154">Güvenlik hatası</translation>
-<translation id="9040185888511745258"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> sitesindeki saldırganlar web'e göz atma deneyiminize zarar veren programları yüklemeniz için sizi kandırmayı (örneğin ana sayfanızı değiştirerek ya da ziyaret ettiğiniz sitelerde ek reklamlar görüntüleyerek) deneyebilirler.</translation>
 </translationbundle>

@@ -30,7 +30,7 @@
 <translation id="1929939181775079593">‏Chromium אינו מגיב. להפעיל מחדש עכשיו?</translation>
 <translation id="1967743265616885482">‏מודול בעל אותו שם מתנגש עם Chromium.</translation>
 <translation id="2077129598763517140">השתמש בהאצת חומרה כשניתן</translation>
-<translation id="2103655854491303969">‏Chromium App Launcher סיים את דרכו.</translation>
+<translation id="2103655854491303969">‏Chromium App Launcher יוצא משימוש.</translation>
 <translation id="2117181891440368863">‏Chromium אימת שהגורם שהנפיק את אישור האתר הזה הוא <ph name="ISSUER" />. השרת סיפק פרטים על שקיפות האישור, אבל הם אינם חוקיים.</translation>
 <translation id="2119636228670142020">‏מידע על &amp;מערכת ההפעלה של Chromium‏</translation>
 <translation id="2158734852934720349">‏רישיונות קוד פתוח של מערכת ההפעלה של Chromium</translation>
@@ -66,7 +66,6 @@
 <translation id="3130323860337406239">‏Chromium משתמש במיקרופון שלך.</translation>
 <translation id="313551035350905294">‏אתה נכנס עם חשבון מנוהל ונותן למנהל המערכת שלו שליטה על הפרופיל שלך ב-Chromium. הנתונים שלך ב-Chromium, כמו יישומים, סימניות, היסטוריה, סיסמאות והגדרות אחרות ייקשרו באופן קבוע ל-<ph name="USER_NAME" />. תוכל למחוק את הנתונים האלה באמצעות לוח הבקרה של חשבונות Google, אבל לא תוכל לשייך את הנתונים האלה לחשבון אחר.</translation>
 <translation id="3190315855212034486">‏וואו! Chromium קרס. להפעיל מחדש עכשיו?</translation>
-<translation id="3197823471738295152">המכשיר שלך מעודכן.</translation>
 <translation id="3244477511402911926">‏מרכז ההתראות של Chromium</translation>
 <translation id="3256316712990552818">‏הועתק אל Chromium</translation>
 <translation id="3258596308407688501">‏Chromium אינו יכול לקרוא ולכתוב בספריית הנתונים שלו: <ph name="USER_DATA_DIRECTORY" /></translation>

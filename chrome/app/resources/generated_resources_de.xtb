@@ -277,7 +277,6 @@
 <translation id="1407050882688520094">In Ihren gespeicherten Zertifikaten sind folgende Zertifizierungsstellen angegeben:</translation>
 <translation id="1407489512183974736">Zugeschnitten zentrieren</translation>
 <translation id="1408789165795197664">Erweitert...</translation>
-<translation id="1408803555324839240">Der neue betreute Nutzer konnte nicht erstellt werden. Bitte vergewissern Sie sich, dass Sie ordnungsgemäß angemeldet sind, und versuchen Sie es erneut.</translation>
 <translation id="1409390508152595145">Betreuten Nutzer erstellen</translation>
 <translation id="1410616244180625362"><ph name="HOST" /> weiterhin Zugriff auf Ihre Kamera gestatten</translation>
 <translation id="1413372529771027206">Das für Smart Lock verwendete Smartphone wurde geändert. Geben Sie Ihr Passwort ein, um Smart Lock für Chromebooks auf diesem Gerät zu aktualisieren. Nächstes Mal können Sie einfach auf Ihr Bild klicken, um das Gerät zu verwenden.</translation>
@@ -1595,7 +1594,6 @@ Eine Anleitung und weitere Informationen wurden per E-Mail an <ph name="ACCOUNT_
 <translation id="3277710850168074473">Anforderung einer Nutzerbewegung für die Wiedergabe von Medienelementen. Bei Deaktivierung dieser Option ist die automatische Wiedergabe möglich.</translation>
 <translation id="3280237271814976245">Speichern &amp;unter...</translation>
 <translation id="3280431534455935878">In Vorbereitung</translation>
-<translation id="3284674070818187654">Google kann die Suche und andere Google-Dienste anhand Ihres Browserverlaufs für Sie personalisieren. Sie können dies unter myaccount.google.com steuern.</translation>
 <translation id="3285322247471302225">Neuer &amp;Tab</translation>
 <translation id="3288047731229977326">Erweiterungen im Entwicklermodus können auf Ihrem Computer Schaden anrichten. Wenn Sie kein Entwickler sind, sollten Sie diese Erweiterungen im Entwicklermodus deaktivieren, um sicher zu sein.</translation>
 <translation id="3289566588497100676">Einfache Symboleingabe</translation>
@@ -1702,7 +1700,6 @@ von <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3413122095806433232">Aussteller von Zertifizierungsstellen: <ph name="LOCATION" /></translation>
 <translation id="3414856743105198592">Durch die Formatierung der Wechselmedien werden alle Daten gelöscht. Möchten Sie fortfahren?</translation>
 <translation id="3414952576877147120">Größe:</translation>
-<translation id="3416248389957650982">Nach dem Anmelden myaccount.google.com öffnen</translation>
 <translation id="3420980393175304359">Person wechseln</translation>
 <translation id="3423858849633684918"><ph name="PRODUCT_NAME" /> neu starten</translation>
 <translation id="3425233587047449821">Neuer koreanischer IME</translation>
@@ -1917,7 +1914,6 @@ von <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3694027410380121301">Vorherigen Tab auswählen</translation>
 <translation id="3694122362646626770">Websites</translation>
 <translation id="3694678678240097321">Für die Ausführung eines Skripts auf der Seite durch eine Erweiterung ist die Zustimmung des Nutzers erforderlich, falls die Erweiterung die Berechtigung zur Ausführung auf allen URLs angefordert hat.</translation>
-<translation id="36954862089075551">Hoppla! Der neue Nutzer konnte nicht erstellt werden. Bitte überprüfen Sie Ihren Festplattenspeicherplatz und Ihre Berechtigungen und versuchen Sie es dann erneut.</translation>
 <translation id="3695919544155087829">Geben Sie das Passwort ein, das für die Verschlüsselung dieser Zertifikatdatei verwendet wurde.</translation>
 <translation id="3696411085566228381">keine</translation>
 <translation id="3697100740575341996">Ihr IT-Administrator hat Chrome-Extras für Ihr Gerät deaktiviert. <ph name="MORE_INFO_LINK" /></translation>
@@ -2345,7 +2341,6 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="4345703751611431217">Softwareinkompatibilität: weitere Informationen</translation>
 <translation id="4348766275249686434">Fehler erfassen</translation>
 <translation id="4350019051035968019">Dieses Gerät kann nicht in der Domain registriert werden, zu der Ihr Konto gehört, weil das Gerät für die Verwaltung in einer anderen Domain gekennzeichnet wurde.</translation>
-<translation id="4352333825734680558">Hoppla! Der neue betreute Nutzer konnte nicht erstellt werden. Bitte überprüfen Sie Ihre Netzwerkverbindung und versuchen Sie es erneut.</translation>
 <translation id="4358697938732213860">Adresse hinzufügen</translation>
 <translation id="4359408040881008151">Wurde aufgrund der abhängigen Erweiterungen installiert</translation>
 <translation id="4361190688154226069">Zielbestimmung in Ansichten mithilfe von Rechtecken</translation>
@@ -3015,7 +3010,6 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="5388588172257446328">Nutzername:</translation>
 <translation id="5390284375844109566">Indexierte Datenbank</translation>
 <translation id="5392544185395226057">Support für Native Client aktivieren</translation>
-<translation id="5393125431335030955">Dieses Plug-in funktioniert nur auf dem Desktop.</translation>
 <translation id="5396126354477659676">Das Plug-in <ph name="PEPPER_PLUGIN_NAME" /> auf <ph name="PEPPER_PLUGIN_DOMAIN" /> möchte auf Ihren Computer zugreifen.</translation>
 <translation id="539755880180803351">Versieht Web-Formulare mit AutoFill-Eingabevorschlägen als Platzhaltertext</translation>
 <translation id="5397578532367286026">Die Nutzung und der Verlauf des Nutzers sind für den Manager (<ph name="MANAGER_EMAIL" />) unter chrome.com einsehbar.</translation>
@@ -3280,7 +3274,6 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="57646104491463491">Änderungsdatum</translation>
 <translation id="5765491088802881382">Keine Netzwerke verfügbar</translation>
 <translation id="5765780083710877561">Beschreibung:</translation>
-<translation id="5770385044111747894">NPAPI</translation>
 <translation id="5771585441665576801">Transliteration (geia → γεια)</translation>
 <translation id="5771816112378578655">Einrichtung läuft...</translation>
 <translation id="5771849619911534867">Suche nach Geräten abgebrochen</translation>
@@ -3913,7 +3906,6 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="6793649375377511437">Google Copresence-Infos</translation>
 <translation id="6797493596609571643">Hoppla, ein Fehler ist aufgetreten.</translation>
 <translation id="6798954102094737107">Plug-in: <ph name="PLUGIN_NAME" /></translation>
-<translation id="6799646767877093143">Diese Website verwendet ein Plug-in (<ph name="PLUGIN_NAME" />), das bald nicht mehr unterstützt wird.</translation>
 <translation id="6802031077390104172"><ph name="USAGE" /> (<ph name="OID" />)</translation>
 <translation id="6804671422566312077">Alle Lesezeichen in &amp;neuem Fenster öffnen</translation>
 <translation id="6805647936811177813">Melden Sie sich in <ph name="TOKEN_NAME" /> an, um das Clientzertifikat von <ph name="HOST_NAME" /> herunterzuladen.</translation>
@@ -4909,7 +4901,6 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="8267698848189296333">Als <ph name="USERNAME" /> anmelden</translation>
 <translation id="8272443605911821513">Zum Verwalten Ihrer Erweiterungen klicken Sie im Menü "Mehr Tools" auf "Erweiterungen".</translation>
 <translation id="8273972836055206582"><ph name="FULLSCREEN_ORIGIN" /> wird nun im Vollbildmodus angezeigt und möchte Ihren Mauszeiger deaktivieren.</translation>
-<translation id="8274860189261120948">Sie werden mit gespeicherten Anmeldedaten automatisch auf Websites angemeldet. Wenn diese Funktion deaktiviert ist, werden Sie bei jeder Anmeldung auf einer Website nach einer Bestätigung gefragt.</translation>
 <translation id="8275038454117074363">Importieren</translation>
 <translation id="8276560076771292512">Cache leeren und vollständig aktualisieren</translation>
 <translation id="8279388322240498158">Sorani-Tastatur nach englischem Layout</translation>
@@ -5093,7 +5084,6 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="8571108619753148184">Server 4</translation>
 <translation id="8572832761467613633">Nur Flash</translation>
 <translation id="8572981282494768930">Websites dürfen nicht auf Ihre Kamera und Ihr Mikrofon zugreifen.</translation>
-<translation id="8574794171590710404">Diese Website verwendet ein nicht unterstütztes Plug-in (<ph name="PLUGIN_NAME" />).</translation>
 <translation id="857779305329188634">Aktivierung der Unterstützung des experimentellen QUIC-Protokolls</translation>
 <translation id="8579285237314169903"><ph name="NUMBER_OF_FILES" /> Elemente werden synchronisiert...</translation>
 <translation id="8579549103199280730">Standardmäßig nachfragen</translation>
@@ -5101,7 +5091,6 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="8581690024797204327">256</translation>
 <translation id="8581809080475256101">Drücken, um weiterzugehen. Kontextmenü, um Verlauf aufzurufen</translation>
 <translation id="8584280235376696778">&amp;Video in neuem Tab öffnen</translation>
-<translation id="8585103164112230633">Von dieser Person besuchte Websites einsehen über</translation>
 <translation id="8589311641140863898">Experimentelle Erweiterungs-APIs</translation>
 <translation id="8590375307970699841">Automatische Updates einrichten</translation>
 <translation id="8592071947729879125">iFrame-Berechtigungen beschränken</translation>
@@ -5249,7 +5238,6 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="878069093594050299">Dieses Zertifikat wurde für folgende Verwendungszwecke verifiziert:</translation>
 <translation id="8782565991310229362">Starten der Kioskanwendung wurde abgebrochen.</translation>
 <translation id="8783093612333542422">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; möchte den Drucker &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; für Sie freigeben.</translation>
-<translation id="878431691778285679">Offenbar verwalten Sie bereits einen Nutzer dieses Namens.<ph name="LINE_BREAK" />Möchten Sie <ph name="BEGIN_LINK" /><ph name="PROFILE_NAME" /> auf dieses Gerät importieren<ph name="END_LINK" />?</translation>
 <translation id="8784626084144195648">Gruppendurchschnitt</translation>
 <translation id="8785135611469711856">Plug-in reagiert nicht</translation>
 <translation id="8787254343425541995">Proxys für freigegebene Netzwerke zulassen</translation>
@@ -5574,5 +5562,5 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="994289308992179865">Sch&amp;leife</translation>
 <translation id="996250603853062861">Sichere Verbindung wird hergestellt...</translation>
 <translation id="996987097147224996">Drücken Sie Strg+Leertaste, um die vorherige Eingabemethode auszuwählen.</translation>
-<translation id="998747458861718449">Prüfe&amp;n</translation>
+<translation id="998747458861718449">Untersuchen</translation>
 </translationbundle>

@@ -4,52 +4,32 @@
 <translation id="1008557486741366299">Ne most</translation>
 <translation id="1047726139967079566">Könyvjelző hozzáadása ehhez az oldalhoz...</translation>
 <translation id="1172898394251786223">Következő mező</translation>
-<translation id="168328519870909584">Előfordulhat, hogy a(z) <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> webhely támadói veszélyes alkalmazásokat kísérelnek meg telepíteni eszközére, amelyek ellopják vagy törlik adatait (például fotóit, jelszavait, üzeneteit és hitelkártyaadatait).</translation>
 <translation id="2320166752086256636">Billentyűzet elrejtése</translation>
 <translation id="2467815441875554965">Kontextusfüggő keresés</translation>
 <translation id="2704606927547763573">Másolt</translation>
 <translation id="2747003861858887689">Előző mező</translation>
 <translation id="2780046210906776326">Nincs e-mail fiók</translation>
-<translation id="2803306138276472711">A Google – Biztonságos böngészés nemrég <ph name="BEGIN_LINK" />rosszindulatú programot<ph name="END_LINK" /> észlelt a(z) <ph name="SITE" /> webhelyen. A rendes esetben biztonságos webhelyek néha rosszindulatú programokkal fertőzöttek.</translation>
 <translation id="3244271242291266297">HH</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="NUM_SUGGESTIONS" />/<ph name="INDEX" />. javaslat</translation>
 <translation id="3335947283844343239">Bezárt lap megnyitása</translation>
 <translation id="3414292259312108062">A Chrome eltárolja ezt a jelszót a <ph name="BEGIN_LINK" />mentett Google-jelszavak<ph name="END_LINK" /> közé, és szükség esetén automatikusan beilleszti, így Önnek nem kell megjegyeznie.</translation>
 <translation id="3567664240939803299">Szeretné, hogy a Google Smart Lock mentse a webhely jelszavát?</translation>
-<translation id="3586931643579894722">Részletek elrejtése</translation>
-<translation id="3736520371357197498">Ha tisztában van a biztonságát fenyegető kockázatokkal, a veszélyes programok eltávolítása előtt is <ph name="BEGIN_LINK" />felkeresheti a nem biztonságos webhelyet<ph name="END_LINK" />.</translation>
 <translation id="385051799172605136">Vissza</translation>
-<translation id="4098354747657067197">Megtévesztő webhely megnyitására készül</translation>
 <translation id="4121993058175073134">Net-export adatok küldéséhez, kérjük, konfigurálja e-mail fiókját a Beállítások alkalmazásban.</translation>
 <translation id="4399225372525667111">A Chrome nem tudja ellenőrizni, hogy az oldalhoz tartozó URL helyes-e.</translation>
-<translation id="4522570452068850558">Részletek</translation>
 <translation id="4728558894243024398">Platform</translation>
 <translation id="473775607612524610">Frissítés</translation>
 <translation id="5317780077021120954">Mentés</translation>
-<translation id="5337705430875057403">A(z) <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> webhely támadói megpróbálhatják becsapni Önt, hogy például veszélyes szoftvert telepítsen vagy felfedje személyes adatait (jelszavát, telefonszámát, hitelkártyaszámát stb.).</translation>
 <translation id="605721222689873409">ÉÉ</translation>
-<translation id="6075880972317537864">A(z) <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> támadói megpróbálhatják becsapni Önt, hogy ellopják adatait (például jelszavait, üzeneteit vagy hitelkártya-adatait).</translation>
 <translation id="6149061208933997199">Jelszó használata</translation>
 <translation id="6196207969502475924">Hangalapú keresés</translation>
-<translation id="6221345481584921695">A Google – Biztonságos böngészés nemrég <ph name="BEGIN_LINK" />rosszindulatú programokat<ph name="END_LINK" /> észlelt a következő webhelyen: <ph name="SITE" />. A rendes esetben biztonságos webhelyek néha rosszindulatú programokkal fertőződnek. A rosszindulatú tartalom az ilyen programok következő ismert terjesztőjétől származik: <ph name="SUBRESOURCE_HOST" />.</translation>
-<translation id="6264485186158353794">Vissza a biztonsághoz</translation>
 <translation id="6314335155547195432">Jelszó létrehozása</translation>
 <translation id="6344783595350022745">Szöveg törlése</translation>
 <translation id="6456425917241817154">A Chrome által generált jelszó</translation>
 <translation id="6535543971741225613">Az elérni próbált webhely szokatlanul viselkedik, és a Chrome nem tudja ellenőrizni, hogy annak URL-je helyes-e. Az Ön biztonsága érdekében kérjük, ne folytassa, vagy próbálja újra holnap, illetve egy másik helyről.</translation>
-<translation id="6740369132746915122">Ha megértette a biztonsági kockázatokat, <ph name="BEGIN_LINK" />megnyithatja ezt a nem biztonságos webhelyet<ph name="END_LINK" />.</translation>
 <translation id="7222245588540287464">A Kontextusfüggő keresés engedélyezett-e vagy sem.</translation>
-<translation id="724691107663265825">A megnyíló oldal rosszindulatú programot tartalmaz</translation>
 <translation id="7456847797759667638">Hely megnyitása...</translation>
 <translation id="7481312909269577407">Előre</translation>
 <translation id="7484580869648358686">Figyelem! Valami nincs rendben!</translation>
-<translation id="7779249319235708104">Adathalászati támadás várható</translation>
 <translation id="7961015016161918242">Soha</translation>
-<translation id="820854170120587500">A Google – Biztonságos böngészés nemrég adathalászatot észlelt a következő webhelyen: <ph name="SITE" />. Az <ph name="BEGIN_LINK" />adathalász webhelyek<ph name="END_LINK" /> más webhelynek tettetik magukat, hogy félrevezessék Önt.</translation>
-<translation id="834457929814110454">Ha tisztában van a biztonságát fenyegető kockázatokkal, a veszélyes programok eltávolítása előtt is <ph name="BEGIN_LINK" />felkeresheti ezt a webhelyet<ph name="END_LINK" />.</translation>
-<translation id="8543181531796978784">Lehetősége van arra, hogy <ph name="BEGIN_ERROR_LINK" />jelentse az észlelési problémát<ph name="END_ERROR_LINK" />, ha pedig tisztában van a biztonságát fenyegető kockázatokkal, <ph name="BEGIN_LINK" />felkeresheti a nem biztonságos webhelyet<ph name="END_LINK" />.</translation>
-<translation id="8761567432415473239">A Google Biztonságos Böngészés nemrég <ph name="BEGIN_LINK" />ártalmas programokat talált<ph name="END_LINK" /> a következő webhelyen: <ph name="SITE" />.</translation>
-<translation id="8996941253935762404">A felkeresni kívánt webhely ártalmas programokat tartalmaz</translation>
-<translation id="9035022520814077154">Biztonsági hiba</translation>
-<translation id="9040185888511745258">A(z) <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> webhelyen lévő támadók megpróbálhatják rávenni Önt olyan programok telepítésére, amelyek károsak a böngészési élmény szempontjából (például módosítják a kezdőlapot vagy plusz hirdetéseket jelenítenek meg a felkeresett webhelyeken).</translation>
 </translationbundle>

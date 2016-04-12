@@ -64,8 +64,6 @@
 
       Jos tätä käytäntöä ei aseteta tai jos sen arvo on epätosi, TLS:n RC4-salaustekniikoita ei oteta käyttöön. Jos yhteensopivuus vanhentuneen palvelimen kanssa täytyy varmistaa, arvoksi voidaan asettaa tosi. Tämä on kuitenkin tilapäinen toimenpide, ja palvelimen määritykset tulee tehdä uudelleen.</translation>
 <translation id="1297182715641689552">Käytä .pac-välityspalvelinkoodia</translation>
-<translation id="1300635491585192248">Ennakoi verkon toimia muilla verkkoyhteyksillä paitsi
-          mobiiliyhteydellä</translation>
 <translation id="1304973015437969093">Laajennuksien ja sovellusten tunnukset ja päivitys-URL-osoitteet asennetaan taustalla</translation>
 <translation id="1310699457130669094">Voit määrittää välityspalvelimen .pac-tiedoston URL-osoitteen täällä. Käytäntö tulee voimaan vain, jos olet valinnut manuaaliset välityspalvelimen asetukset kohdassa Valitse, miten välityspalvelimen asetukset määritetään. Jätä tämä käytäntö määrittämättä, jos olet valinnut toisen välityspalvelinkäytäntöjen määritystavan. Lisää asetuksia ja esimerkkejä näet osoitteesta <ph name="PROXY_HELP_URL" /></translation>
 <translation id="1313457536529613143">Määrittää prosenttimäärän, jolla näytön himmennyksen viive skaalataan, kun käyttäjän toimia huomataan näytön ollessa himmennettynä tai pian näytön sammuttamisen jälkeen.
@@ -453,7 +451,6 @@ Jos tämä asetus ei ole käytössä, käyttäjät eivät voi tulostaa tuotteest
       Jos tätä käytäntöä ei ole määritetty, tietojen pakkauksen välitysominaisuuden käyttö on käyttäjän päätettävissä.</translation>
 <translation id="2587719089023392205">Aseta <ph name="PRODUCT_NAME" /> oletusselaimeksi</translation>
 <translation id="2592091433672667839">Käyttämättömyysaika, jonka kuluttua näytönsäästäjä näytetään kirjautumisruudulla jälleenmyyntitilassa</translation>
-<translation id="260705825237536216">Määritä ARC-sovellukset.</translation>
 <translation id="2623014935069176671">Odota alkuperäisen käyttäjän toimintaa</translation>
 <translation id="262740370354162807">Salli asiakirjojen lähettäminen palveluun <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2633084400146331575">Ota äänipalaute käyttöön</translation>
@@ -534,7 +531,6 @@ Kaikki luettelon kohteet ovat tunnuksia, joiden perusteella erotetaan laitteesee
           Jos tälle käytännölle asetetaan tosiarvo tai sille ei aseteta mitään arvoa, ääntä toistavan laitteen katsotaan olevan käytössä. Tämä estää käyttämättömyysajan seurannan ja sitä vastaavan toimenpiteen. Ruudun himmennyksen, ruudun sammutuksen ja ruudun lukituksen viiveet pysyvät kuitenkin käytössä riippumatta äänitoiminnasta.
 
           Jos tälle käytännölle asetetaan epätosiarvo, ääntä toistavan laitteen voidaan katsoa olevan käyttämättömänä.</translation>
-<translation id="2948381198510798695"><ph name="PRODUCT_NAME" /> ohittaa tässä annettujen isäntien kaikki välityspalvelimet. Käytäntö tulee voimaan vain, jos olet valinnut manuaaliset välityspalvelimen asetukset kohdassa Valitse, miten välityspalvelimen asetukset määritetään. Jätä tämä käytäntö määrittämättä, jos olet valinnut toisen välityspalvelinkäytäntöjen määritystavan. Lisää asetuksia ja esimerkkejä näet osoitteesta <ph name="PROXY_HELP_URL" /></translation>
 <translation id="2956777931324644324">Tämä käytäntö on poistettu käytöstä tuotteen <ph name="PRODUCT_NAME" /> versiosta 36 alkaen.
 
       Määrittää, tuleeko TLS domain-bound -varmennelaajennuksien olla käytössä.
@@ -767,7 +763,6 @@ Jos tätä asetusta ei ole määritetty, kaikentyyppisiä sovelluksia ja laajenn
 
       Luettelon jokainen merkintä sisältää sanakirjan, jonka tulee sisältää laajennuksen tunnus (extension-id-kenttä) sekä sen päivitysosoite (update-url-kenttä).</translation>
 <translation id="3891357445869647828">Ota JavaScript käyttöön</translation>
-<translation id="389421284571827139">Voit määrittää tuotteen <ph name="PRODUCT_NAME" /> käyttämään välityspalvelinta ja estää käyttäjiä muuttamasta välityspalvelimen asetuksia. Jos et halua käyttää välityspalvelinta ja haluat muodostaa aina suoran yhteyden, kaikki muut vaihtoehdot ohitetaan. Jos haluat etsiä välityspalvelimen automaattisesti, kaikki muut vaihtoehdot ohitetaan. Saat yksityiskohtaisia esimerkkejä osoitteesta <ph name="PROXY_HELP_URL" />. Jos otat tämän asetuksen käyttöön, <ph name="PRODUCT_NAME" /> ohittaa kaikki komentorivillä annetut välityspalvelimiin liittyvät käskyt. Jos et määritä näitä käytäntöjä, käyttäjät voivat valita välityspalvelinasetukset itse.</translation>
 <translation id="3907986150060929099">Asettaa julkisten käyttökertojen suositellut kielet</translation>
 <translation id="391531815696899618">Jos arvo on tosi, Google Driven synkronointi tuotteen <ph name="PRODUCT_OS_NAME" /> Tiedostot-sovelluksen kanssa poistetaan käytöstä. Tällöin mitään tietoja ei lähetetä Google Driveen.
 
@@ -990,16 +985,6 @@ Jos tätä asetusta ei ole määritetty, kaikentyyppisiä sovelluksia ja laajenn
           Arvon täytyy olla joukko merkkijonoina annettuja JSON-sanakirjamerkintöjä. Jokaisen merkinnän muoto on { "pattern": "$URL_PATTERN", "filter" : $FILTER }. Tässä $URL_PATTERN on sisältöasetuksen malli. Suodatusarvo $FILTER määrittää, mitkä asiakasvarmenteet ovat selaimen valittavissa automaattisesti. Suodatusarvosta huolimatta selain voi valita vain varmenteita, jotka vastaavat palvelimen varmennepyyntöä. Lisäksi jos $FILTER annetaan muodossa { "ISSUER": { "CN": "$ISSUER_CN" } }, selain valitsee vain asiakasvarmenteita, joihin liittyvään varmenteeseen merkitty nimi on $ISSUER_CN. Jos $FILTER on tyhjä sanastomerkintä {}, asiakasvarmenteiden valintaan ei sovelleta lisärajoituksia.
 
           Jos tätä käytäntöä ei aseteta, varmenteiden automaattista valintaa ei käytetä millään sivustolla.</translation>
-<translation id="4980301635509504364">Salli tai estä videokaappaukset.
-
-      Jos tämä on otettu käyttöön tai tätä ei ole määritetty (oletus), käyttäjältä pyydetään
-      lupaa videokaappauksen tekemiseen, paitsi niiden URL-osoitteiden osalta, jotka
-      on määritetty VideoCaptureAllowedUrls-luettelossa. Nämä osoitteet sallitaan ilman erillistä lupaa.
-
-      Kun tämä käytäntö ei ole käytössä, käyttäjältä ei koskaan kysytä lupaa ja
-      videokaappaus on käytössä vain VideoCaptureAllowedUrls-luettelossa määritellyille URL-osoitteille.
-
-      Tämä käytäntö vaikuttaa kaikentyyppisiin videotuloihin, ei ainoastaan sisäänrakennettuun kameraan.</translation>
 <translation id="4980635395568992380">Tietotyyppi:</translation>
 <translation id="4983201894483989687">Salli vanhentuneiden laajennuksien käyttö</translation>
 <translation id="4988291787868618635">Toiminto, joka suoritetaan käyttämättömyysajan kuluttua</translation>
@@ -1088,11 +1073,6 @@ Jos tätä asetusta ei ole määritetty, kaikentyyppisiä sovelluksia ja laajenn
 <translation id="5307432759655324440">Incognito-tilan saatavuus</translation>
 <translation id="5318185076587284965">Salli etäkäytön isännän käyttää relay-palvelimia</translation>
 <translation id="5330684698007383292">Anna tuotteen <ph name="PRODUCT_FRAME_NAME" /> käsitellä seuraavia sisältötyyppejä</translation>
-<translation id="5345267406698765263">Määrittää ARC-sovelluskäytännön JSON-merkkijonona, joka voidaan
-      toimittaa ARC-suorituspalvelulle sellaisenaan. Tällä hetkellä tätä asetusta
-      käytetään vain sovellusten pakotetun asennuksen määrittämiseen.
-
-      Jos tätä käytäntöä ei ole määritetty, sovelluksia ei asenneta automaattisesti.</translation>
 <translation id="5365946944967967336">Näytä etusivupainike työkalupalkissa</translation>
 <translation id="5366977351895725771">Jos asetuksen arvo on epätosi, tämä käyttäjä ei voi luoda valvottuja käyttäjiä. Kaikki aiemmin luodut valvotut käyttäjät ovat kuitenkin käytettävissä.
 
@@ -1183,7 +1163,6 @@ Jos käytäntöä ei määritetä, käyttäjät voivat valita, tuleeko hylly pii
 
       Jos tätä käytäntöä ei ole määritetty tai sen arvoksi on asetettu epätosi, <ph name="PRODUCT_NAME" /> käyttää olemassa olevia verkon peruuttamisen tarkistusasetuksia.</translation>
 <translation id="5732972008943405952">Tuo automaattisen täytön lomaketiedot oletusselaimesta ensimmäisen käynnistyksen yhteydessä</translation>
-<translation id="5761030451068906335">Määrittää välityspalvelimen asetukset tuotteelle <ph name="PRODUCT_NAME" />. Tämä käytäntö ei ole vielä valmis käyttöön – älä käytä sitä.</translation>
 <translation id="5765780083710877561">Kuvaus:</translation>
 <translation id="5770738360657678870">Kehittäjäversio (saattaa olla epävakaa)</translation>
 <translation id="5774856474228476867">Oletushakupalvelun haku-URL-osoite</translation>
@@ -1208,13 +1187,6 @@ Jos käytäntöä ei määritetä, käyttäjät voivat valita, tuleeko hylly pii
       Osoitteessa http://www.chromium.org/administrators/policy-list-3/user-data-directory-variables näet luettelon muuttujista, joita voit käyttää.
 
       Jos tätä käytäntöä ei ole määritetty, käytetään oletusprofiilin hakemistoa.</translation>
-<translation id="5819660021114910752">Määrittää laitteessa käytettävän aikavyöhykkeen. Käyttäjät voivat ohittaa nykyisen istunnon määritetyn aikavyöhykkeen. Jos kirjaudut ulos, aikavyöhyke vaihdetaan takaisin määritettyyn aikavyöhykkeeseen. Jos virheellinen arvo syötetään, käytäntö on edelleen aktivoituna ja käyttää GMT-aikavyöhykettä sen sijaan. Jos merkkijono on tyhjä, käytäntö ohitetaan.
-
-      Jos tätä käytäntöä ei käytetä, kulloinkin aktiivinen aikavyöhyke pysyy käytössä. Käyttäjät voivat kuitenkin vaihtaa aikavyöhykettä, jolloin muutos on pysyvä. Tällöin käyttäjän tekemä muutos vaikuttaa kirjautumisruutuun ja kaikkiin muihin käyttäjiin.
-
-      Uusien laitteiden aikavyöhyke on aluksi "US/Pacific".
-
-      Arvon muoto noudattaa aikavyöhykkeiden nimiä IANA Time Zone Databasen mukaisesti (osoitteessa https://en.wikipedia.org/wiki/Tz_database). Useimpiin aikavyöhykkeisiin voidaan viitata seuraavasti: "maanosa/suuri_kaupunki" tai "valtameri/suuri_kaupunki".</translation>
 <translation id="5826047473100157858">Määrittää, voiko käyttäjä avata sivuja incognito-tilassa tuotteessa <ph name="PRODUCT_NAME" />. Jos "Käytössä" on valittu tai käytäntöä ei ole määritetty, sivuja voi avata incognito-tilassa. Jos "Ei käytössä" on valittu, sivuja ei voi avata incognito-tilassa. Jos "Pakotettu" on valittu, sivuja voidaan avata VAIN incognito-tilassa.</translation>
 <translation id="5836064773277134605">Rajoita etäkäytön isännän käyttämää UDP-porttialuetta</translation>
 <translation id="5845159892130426052">Pidä ShowModalDialog-sovellusliittymä käytössä versioon 2015.04.30 saakka</translation>
@@ -1402,7 +1374,6 @@ Jos tämä asetus ei ole käytössä tai jos sen arvo on false, tulostuskomento 
 
       Jos tätä käytäntöä ei aseteta, oletusarvo on yrityksen hallinnoimilla käyttäjillä Ei sallittu ja muilla kuin hallinnoiduilla käyttäjillä Sallittu.</translation>
 <translation id="6491139795995924304">Salli Bluetoothin käyttäminen laitteella</translation>
-<translation id="6513756852541213407">Voit määrittää tuotteen <ph name="PRODUCT_NAME" /> käyttämään välityspalvelinta ja estää käyttäjiä muuttamasta välityspalvelimen asetuksia. Jos et halua käyttää välityspalvelinta ja haluat muodostaa aina suoran yhteyden, kaikki muut vaihtoehdot ohitetaan. Jos haluat käyttää järjestelmän välityspalvelinasetuksia tai etsiä välityspalvelimen automaattisesti, kaikki muut vaihtoehdot ohitetaan. Jos haluat käyttää kiinteää välityspalvelinta, voit määrittää lisää vaihtoehtoja kentissä "Välityspalvelimen osoite tai URL-osoite" ja "Välityspalvelimen ohitussääntöjen pilkuilla erotettu luettelo". Jos haluat käyttää .pac-välityspalvelinkoodia, sinun tulee kirjoittaa koodin URL-osoite kenttään "Välityspalvelimen .pac-tiedoston URL-osoite". Näet esimerkkejä osoitteessa <ph name="PROXY_HELP_URL" /> Jos otat tämän asetuksen käyttöön, <ph name="PRODUCT_NAME" /> ohittaa kaikki komentorivillä annetut välityspalvelimiin liittyvät käskyt.</translation>
 <translation id="6520802717075138474">Tuo hakukoneet oletusselaimesta ensimmäisellä käyttökerralla</translation>
 <translation id="653608967792832033">Määrittää käyttämättömyysajan, jonka kuluttua näyttö lukitaan, kun laitetta käytetään akkuvirralla.
 
@@ -1482,7 +1453,6 @@ Jos tämä asetus ei ole käytössä tai jos sen arvo on false, tulostuskomento 
 
       Jos tätä käytäntöä ei aseteta, verkon ennakointi otetaan käyttöön, mutta käyttäjä voi muokata asetusta.</translation>
 <translation id="6658245400435704251">Määrittää sekunteina ajan, jonka laite voi viivyttää päivityksen lataamista siitä hetkestä, kun päivitys on lähetetty palvelimelle. Osa odotusajasta voidaan määrittää aikana ja loput päivitystarkistusten määränä. Hajonnalle on kuitenkin yläraja, joten laite ei koskaan jää odottamaan päivityksen lataamista loputtomasti.</translation>
-<translation id="6672934768721876104">Tämä käytäntö on vanhentunut, käytä sen sijaan käytäntöä ProxyMode. Voit määrittää tuotteen <ph name="PRODUCT_NAME" /> käyttämän välityspalvelimen ja estää käyttäjiä muuttamasta välityspalvelimen asetuksia. Jos et halua käyttää välityspalvelinta ja haluat muodostaa aina suoran yhteyden, kaikki muut vaihtoehdot ohitetaan. Jos haluat käyttää järjestelmän välityspalvelinasetuksia tai etsiä välityspalvelimen automaattisesti, kaikki muut vaihtoehdot ohitetaan. Jos haluat määrittää välityspalvelimen asetukset manuaalisesti, voit määrittää lisää vaihtoehtoja kentissä "Välityspalvelimen osoite tai URL-osoite" ja "Välityspalvelimen ohitussääntöjen pilkuilla erotettu luettelo" ja "Välityspalvelimen .pac-tiedoston URL-osoite". Näet esimerkkejä osoitteessa <ph name="PROXY_HELP_URL" /> Jos otat tämän asetuksen käyttöön, <ph name="PRODUCT_NAME" /> ohittaa kaikki komentorivillä annetut välityspalvelimiin liittyvät käskyt. Jos tätä käytäntöä ei ole määritetty, käyttäjät voivat valita haluamansa välityspalvelimen asetukset.</translation>
 <translation id="6689792153960219308">Laitteiston tilan raportointi</translation>
 <translation id="6693751878507293182">Jos otat tämän asetuksen käyttöön, automaattinen haku ja puuttuvien laajennuksien asentaminen poistetaan käytöstä tuotteessa <ph name="PRODUCT_NAME" />. Jos poistat asetuksen käytöstä tai et määritä sitä, laajennuksien etsintä on käytössä.</translation>
 <translation id="6697474194550078937">Rajoita sitä, kuinka kauan SAML-todennuksen käyttäjä voi kirjautua sisään offline-tilassa.

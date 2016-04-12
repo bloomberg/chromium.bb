@@ -4,52 +4,32 @@
 <translation id="1008557486741366299">Teraz nie</translation>
 <translation id="1047726139967079566">Pridať túto stránku medzi záložky...</translation>
 <translation id="1172898394251786223">Ďalšie pole</translation>
-<translation id="168328519870909584">Útočníci, ktorí sa momentálne nachádzajú na stránkach <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />, sa môžu pokúsiť nainštalovať na vaše zariadenie nebezpečné aplikácie, ktoré ukradnú alebo odstránia vaše informácie (napríklad fotky, heslá, správy a kreditné karty).</translation>
 <translation id="2320166752086256636">Skryť klávesnicu</translation>
 <translation id="2467815441875554965">Kontextové vyhľadávanie</translation>
 <translation id="2704606927547763573">Skopírované</translation>
 <translation id="2747003861858887689">Predchádzajúce pole</translation>
 <translation id="2780046210906776326">Žiadne e-mailové účty</translation>
-<translation id="2803306138276472711">Funkcia Bezpečné prehliadanie Google nedávno <ph name="BEGIN_LINK" />zistila malvér<ph name="END_LINK" /> na stránkach <ph name="SITE" />. Webové stránky, ktoré sú zvyčajne bezpečné, môžu byť niekedy nakazené malvérom.</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> z <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3335947283844343239">Znova otvoriť zatvorenú kartu</translation>
 <translation id="3414292259312108062">Prehliadač Chrome ho uchová do priečinka <ph name="BEGIN_LINK" />Uložené heslá Google<ph name="END_LINK" /> a automaticky ho bude dopĺňať, takže si ho nemusíte pamätať.</translation>
 <translation id="3567664240939803299">Chcete, aby funkcia Google Smart Lock uložila vaše heslo pre tento web?</translation>
-<translation id="3586931643579894722">Skryť podrobnosti</translation>
-<translation id="3736520371357197498">Ak si uvedomujete bezpečnostné riziko, môžete <ph name="BEGIN_LINK" />tieto nebezpečné stránky navštíviť<ph name="END_LINK" /> ešte skôr, ako budú nebezpečné programy odstránené.</translation>
 <translation id="385051799172605136">Naspäť</translation>
-<translation id="4098354747657067197">Nasledujúce stránky sú klamlivé</translation>
 <translation id="4121993058175073134">Ak chcete odoslať údaje čistého exportu, v aplikácii Nastavenia nakonfigurujte svoj e-mailový účet.</translation>
 <translation id="4399225372525667111">Prehliadaču Chrome sa nepodarilo verifikovať, či je webová adresa pre tieto stránky správna.</translation>
-<translation id="4522570452068850558">Podrobnosti</translation>
 <translation id="4728558894243024398">Platforma</translation>
 <translation id="473775607612524610">Aktualizovať</translation>
 <translation id="5317780077021120954">Uložiť</translation>
-<translation id="5337705430875057403">Útočníci na webe <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> sa vás môžu pokúsiť naviesť vykonať niečo nebezpečné, ako je inštalovanie softvéru alebo odhalenie osobných informácií (napr. heslá, telefónne čísla alebo kreditné karty).</translation>
 <translation id="605721222689873409">RR</translation>
-<translation id="6075880972317537864">Útočníci na webe <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> sa vás môžu pokúsiť oklamať a ukradnúť vám vaše údaje (napríklad heslá, správy alebo kreditné karty).</translation>
 <translation id="6149061208933997199">Použiť heslo</translation>
 <translation id="6196207969502475924">Hlasové vyhľadávanie</translation>
-<translation id="6221345481584921695">Funkcia Bezpečné prehliadanie Google nedávno <ph name="BEGIN_LINK" />zistila malvér<ph name="END_LINK" /> na stránkach <ph name="SITE" />. Webové stránky, ktoré sú zvyčajne bezpečné, môžu byť niekedy nakazené malvérom. Škodlivý obsah pochádza od hostiteľa <ph name="SUBRESOURCE_HOST" />, ktorý je známym distribútorom malvéru.</translation>
-<translation id="6264485186158353794">Naspäť do bezpečného režimu</translation>
 <translation id="6314335155547195432">Generovanie hesla</translation>
 <translation id="6344783595350022745">Prehľadný text</translation>
 <translation id="6456425917241817154">Heslo vygenerované prehliadačom Chrome</translation>
 <translation id="6535543971741225613">Stránky, ktoré sa snažíte otvoriť, sa správajú čudne a prehliadaču Chrome sa nepodarilo verifikovať, či je ich webová adresa správna. Z bezpečnostných dôvodov by ste preto nemali pokračovať. Skúste to buď zajtra, alebo prejdite na iné stránky.</translation>
-<translation id="6740369132746915122">Ak si uvedomujete bezpečnostné riziko, môžete <ph name="BEGIN_LINK" />tieto nebezpečné stránky navštíviť<ph name="END_LINK" />.</translation>
 <translation id="7222245588540287464">Určuje, či je alebo nie je povolené kontextové vyhľadávanie.</translation>
-<translation id="724691107663265825">Nasledujúce stránky obsahujú malvér</translation>
 <translation id="7456847797759667638">Otvoriť umiestnenie...</translation>
 <translation id="7481312909269577407">Dopredu</translation>
 <translation id="7484580869648358686">Upozornenie: Niečo tu nesedí!</translation>
-<translation id="7779249319235708104">Na nasledovných stránkach hrozí útok s neoprávneným získavaním údajov</translation>
 <translation id="7961015016161918242">Nikdy</translation>
-<translation id="820854170120587500">Funkcia Bezpečné prehliadanie Google nedávno zistila na webe <ph name="SITE" /> neoprávnené získavanie údajov. <ph name="BEGIN_LINK" />Weby, ktoré neoprávnene získavajú údaje,<ph name="END_LINK" /> sa vydávajú za iné weby, aby vás oklamali.</translation>
-<translation id="834457929814110454">Ak si uvedomujete bezpečnostné riziko, môžete <ph name="BEGIN_LINK" />tieto stránky navštíviť<ph name="END_LINK" /> ešte skôr, ako budú škodlivé programy odstránené.</translation>
-<translation id="8543181531796978784">Môžete buď <ph name="BEGIN_ERROR_LINK" />nahlásiť problém s zisťovaním<ph name="END_ERROR_LINK" />, alebo <ph name="BEGIN_LINK" />tieto nebezpečné stránky navštíviť<ph name="END_LINK" /> (ak si uvedomujete bezpečnostné riziko).</translation>
-<translation id="8761567432415473239">Bezpečné prehliadanie Google nedávno <ph name="BEGIN_LINK" />zistilo škodlivé programy<ph name="END_LINK" /> na webe <ph name="SITE" />.</translation>
-<translation id="8996941253935762404">Webové stránky, ktoré sa chystáte navštíviť, obsahujú škodlivé programy</translation>
-<translation id="9035022520814077154">Chyba zabezpečenia</translation>
-<translation id="9040185888511745258">Útočníci na webe <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> sa vás môžu pokúsiť podvodom presvedčiť, aby ste si nainštalovali programy poškodzujúce vaše prostredie prehliadania (napríklad zmenou vašej domovskej stránky alebo zobrazovaním ďalších reklám na stránkach, ktoré navštevujete).</translation>
 </translationbundle>

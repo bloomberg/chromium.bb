@@ -277,7 +277,6 @@
 <translation id="1407050882688520094">您的檔案具備可以識別這些憑證授權的憑證：</translation>
 <translation id="1407489512183974736">置中並剪裁</translation>
 <translation id="1408789165795197664">進階...</translation>
-<translation id="1408803555324839240">糟糕！您無法建立新的受監管使用者。請確認您已登入系統，然後再試一次。</translation>
 <translation id="1409390508152595145">建立受監管使用者</translation>
 <translation id="1410616244180625362">繼續允許 <ph name="HOST" /> 存取您的攝影機</translation>
 <translation id="1413372529771027206">您用來設定 Smart Lock 的手機已變更。如要在個裝置上更新 Chromebook 專用 Smart Lock，請輸入您的密碼。下次只要點選您的圖片即可解鎖。</translation>
@@ -1599,7 +1598,6 @@
 <translation id="3277710850168074473">播放媒體時的使用者手勢需求。停用這項設定將允許自動播放功能。</translation>
 <translation id="3280237271814976245">另存新檔(&amp;A)...</translation>
 <translation id="3280431534455935878">準備中</translation>
-<translation id="3284674070818187654">Google 可能會使用您的瀏覽紀錄，為您提供個人化的搜尋服務和其他各項 Google 服務。您可以前往 myaccount.google.com 控管這項設定。</translation>
 <translation id="3285322247471302225">新增分頁(&amp;T)</translation>
 <translation id="3288047731229977326">在開發人員模式中執行擴充功能可能會損害您的電腦。如果您不是開發人員，最好在開發人員模式中停用這些擴充功能，以策安全。</translation>
 <translation id="3289566588497100676">簡易符號輸入</translation>
@@ -1705,7 +1703,6 @@
 <translation id="3413122095806433232">CA 發行者：<ph name="LOCATION" /></translation>
 <translation id="3414856743105198592">將卸除式媒體格式化會清除所有資料，您要繼續嗎？</translation>
 <translation id="3414952576877147120">空間大小：</translation>
-<translation id="3416248389957650982">登入後開啟 myaccount.google.com</translation>
 <translation id="3420980393175304359">切換使用者</translation>
 <translation id="3423858849633684918">請重新啟動 <ph name="PRODUCT_NAME" /></translation>
 <translation id="3425233587047449821">新版韓文輸入法編輯器</translation>
@@ -1920,7 +1917,6 @@
 <translation id="3694027410380121301">選取前一個分頁</translation>
 <translation id="3694122362646626770">網站</translation>
 <translation id="3694678678240097321">如果擴充功能要求在所有網址上執行的權限，則需獲得使用者同意才能在網頁上執行指令碼。</translation>
-<translation id="36954862089075551">糟糕！無法建立新的使用者。請檢查您的硬碟空間和權限，然後再試一次。</translation>
 <translation id="3695919544155087829">請輸入對這個憑證檔案進行加密時使用的密碼。</translation>
 <translation id="3696411085566228381">無</translation>
 <translation id="3697100740575341996">IT 管理員已在您的裝置上停用 Chrome Goodies。<ph name="MORE_INFO_LINK" /></translation>
@@ -2347,7 +2343,6 @@
 <translation id="4345703751611431217">軟體不相容：瞭解詳情</translation>
 <translation id="4348766275249686434">收集錯誤資訊</translation>
 <translation id="4350019051035968019">這台裝置已標示為由其他網域管理，因此無法註冊到您帳戶所屬的網域。</translation>
-<translation id="4352333825734680558">糟糕！無法建立新的受監管使用者。請檢查您的網路連線，然後再試一次。</translation>
 <translation id="4358697938732213860">新增地址</translation>
 <translation id="4359408040881008151">您已安裝相依的擴充功能，因此必須一併安裝這個擴充功能。</translation>
 <translation id="4361190688154226069">顯示矩形觸控目標</translation>
@@ -3017,7 +3012,6 @@
 <translation id="5388588172257446328">使用者名稱：</translation>
 <translation id="5390284375844109566">索引資料庫</translation>
 <translation id="5392544185395226057">啟用 Native Client 支援。</translation>
-<translation id="5393125431335030955">這個外掛程式只能在電腦上執行。</translation>
 <translation id="5396126354477659676"><ph name="PEPPER_PLUGIN_DOMAIN" /> 上的 <ph name="PEPPER_PLUGIN_NAME" /> 外掛程式要求存取您的電腦。</translation>
 <translation id="539755880180803351">使用自動填入的欄位類型建議為網路表單加上註解，做為預留位置文字。</translation>
 <translation id="5397578532367286026">管理員 (<ph name="MANAGER_EMAIL" />) 可以在 chrome.com 瞭解這名使用者的使用情形和紀錄。</translation>
@@ -3282,7 +3276,6 @@
 <translation id="57646104491463491">已修改日期</translation>
 <translation id="5765491088802881382">沒有可用的網路</translation>
 <translation id="5765780083710877561">說明：</translation>
-<translation id="5770385044111747894">NPAPI</translation>
 <translation id="5771585441665576801">音譯 (geia → γεια)</translation>
 <translation id="5771816112378578655">設定中...</translation>
 <translation id="5771849619911534867">已停止掃描裝置。</translation>
@@ -3914,7 +3907,6 @@
 <translation id="6793649375377511437">Google 共存資訊</translation>
 <translation id="6797493596609571643">糟糕，發生錯誤。</translation>
 <translation id="6798954102094737107">外掛程式：<ph name="PLUGIN_NAME" /></translation>
-<translation id="6799646767877093143">我們即將停止支援這個網站使用的外掛程式 (<ph name="PLUGIN_NAME" />)。</translation>
 <translation id="6802031077390104172"><ph name="USAGE" /> (<ph name="OID" />)</translation>
 <translation id="6804671422566312077">在新視窗中開啟所有書籤(&amp;N)</translation>
 <translation id="6805647936811177813">登入 <ph name="TOKEN_NAME" /> 即可從 <ph name="HOST_NAME" /> 匯入用戶端憑證。</translation>
@@ -4905,7 +4897,6 @@
 <translation id="8267698848189296333">正在以 <ph name="USERNAME" /> 的身分登入</translation>
 <translation id="8272443605911821513">如要管理擴充功能，只需按一下 [其他工具] 選單裡的 [擴充功能] 即可。</translation>
 <translation id="8273972836055206582"><ph name="FULLSCREEN_ORIGIN" /> 已顯示為全螢幕，並要求停用滑鼠游標。</translation>
-<translation id="8274860189261120948">自動使用已儲存的憑證登入網站。如果停用這項功能，每當您登入網站時，都必須向系統確認您的登入憑證。</translation>
 <translation id="8275038454117074363">匯入</translation>
 <translation id="8276560076771292512">清除快取並強制重新載入</translation>
 <translation id="8279388322240498158">索拉尼庫爾德式英文鍵盤</translation>
@@ -5089,7 +5080,6 @@
 <translation id="8571108619753148184">伺服器 4</translation>
 <translation id="8572832761467613633">僅限 Flash</translation>
 <translation id="8572981282494768930">不允許任何網站使用您的攝影機和麥克風</translation>
-<translation id="8574794171590710404">我們已停止支援這個網站使用的外掛程式 (<ph name="PLUGIN_NAME" />)。</translation>
 <translation id="857779305329188634">啟用實驗性 QUIC 通訊協定支援。</translation>
 <translation id="8579285237314169903">正在同步處理 <ph name="NUMBER_OF_FILES" /> 個項目...</translation>
 <translation id="8579549103199280730">預設詢問</translation>
@@ -5097,7 +5087,6 @@
 <translation id="8581690024797204327">256</translation>
 <translation id="8581809080475256101">按下即可繼續，內容選單會顯示歷史紀錄</translation>
 <translation id="8584280235376696778">在新分頁中開啟影片(&amp;O)</translation>
-<translation id="8585103164112230633">控管及查看這位使用者透過以下帳戶造訪的網站</translation>
 <translation id="8589311641140863898">實驗性擴充功能 API</translation>
 <translation id="8590375307970699841">設定自動更新</translation>
 <translation id="8592071947729879125">限制 iframe 權限。</translation>
@@ -5245,7 +5234,6 @@
 <translation id="878069093594050299">此憑證已驗證可用於下列用途：</translation>
 <translation id="8782565991310229362">Kiosk 應用程式已取消執行。</translation>
 <translation id="8783093612333542422">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; 想要與您共用印表機 &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt;。</translation>
-<translation id="878431691778285679">您已經在管理使用該名稱的使用者。<ph name="LINE_BREAK" />您要<ph name="BEGIN_LINK" />將「<ph name="PROFILE_NAME" />」匯入這個裝置嗎<ph name="END_LINK" />？</translation>
 <translation id="8784626084144195648">二進位化平均</translation>
 <translation id="8785135611469711856">外掛程式未回應</translation>
 <translation id="8787254343425541995">允許共用網路使用 Proxy</translation>

@@ -25,6 +25,7 @@ Du skal aktivere Bluetooth og Placering for at kunne bruge Fysisk web.</translat
 <translation id="1285320974508926690">Oversæt aldrig dette website</translation>
 <translation id="1291207594882862231">Ryd historik, cookies, websitedata, cache...</translation>
 <translation id="129553762522093515">Senest lukkede</translation>
+<translation id="13410144310025252">Se dem i Chrome</translation>
 <translation id="1346090444609141578">Der er ingen gemte sider her</translation>
 <translation id="1369915414381695676">Websitet <ph name="SITE_NAME" /> blev tilføjet</translation>
 <translation id="1373696734384179344">Der er ikke nok hukommelse til at downloade det valgte indhold.</translation>
@@ -193,6 +194,7 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="3656115297268584622">Slå placering til i <ph name="BEGIN_LINK" />Android Indstillinger<ph name="END_LINK" />.</translation>
 <translation id="3661699943263275414">Tredjepartswebsites kan gemme og læse cookiedata</translation>
 <translation id="3672452749423051839">Forslag ved navigationsfejl</translation>
+<translation id="3716158070938632480">Der er websider i nærheden</translation>
 <translation id="3732088672634061408">Interesser kunne ikke hentes.</translation>
 <translation id="3738139272394829648">Tryk for at søge</translation>
 <translation id="3809549525127675114">Afspilningen af "<ph name="VIDEO_TITLE" />" er slut</translation>
@@ -372,7 +374,6 @@ Du er dog ikke usynlig. Inkognitotilstanden skjuler ikke dine søgninger fra din
 <translation id="5911030830365207728">Google Oversæt</translation>
 <translation id="5916664084637901428">Til</translation>
 <translation id="5939518447894949180">Nulstil</translation>
-<translation id="5965336165840183977">Dette rydder synkroniserede data fra alle enheder. Du logges ikke ud af din Google-konto. Gemte websiteindstillinger slettes ikke og kan afspejle dine søgevaner.</translation>
 <translation id="5968595432776860642">Afspiller "<ph name="VIDEO_TITLE" />"</translation>
 <translation id="6010869025736512584">Åbner videoinput</translation>
 <translation id="6012342843556706400">Chrome skal have adgang til din placering for at kunne dele den med dette website.</translation>
@@ -392,7 +393,6 @@ Du er dog ikke usynlig. Inkognitotilstanden skjuler ikke dine søgninger fra din
 <translation id="6159335304067198720"><ph name="PERCENT" /> sparet data</translation>
 <translation id="6165508094623778733">Flere oplysninger</translation>
 <translation id="6192792657125177640">Undtagelser</translation>
-<translation id="6231464350722415003">Tillad JavaScript på de websites, du angiver, mens det blokeres på resten af internettet</translation>
 <translation id="6232535412751077445">Aktivering af "Do Not Track" betyder, at en anmodning medtages i din browsertrafik. Effekten afhænger af, om et website reagerer på anmodningen, og hvordan anmodningen fortolkes.
 
 Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, som ikke er baseret på andre websites, du har besøgt. Mange websites vil fortsat indsamle og bruge browserdata til f.eks. at forbedre sikkerheden, til at levere indhold, annoncer og anbefalinger og til at generere rapporteringsstatistik.</translation>
@@ -480,7 +480,6 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> anvender din placering til at vise lokale søgeresultater</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />Hjælp<ph name="END_LINK" /></translation>
 <translation id="7299721129597238157">Slet bogmærke</translation>
-<translation id="7346217184097589238">Gemte websiteindstillinger slettes ikke og kan afspejle dine søgevaner.</translation>
 <translation id="7347770551817603360">Offlineindhold</translation>
 <translation id="7363354739009474003">Indlæser "<ph name="VIDEO_TITLE" />"</translation>
 <translation id="7366340029385295517">Caster til <ph name="SCREEN_NAME" /></translation>
@@ -491,6 +490,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="7408644312175185557">Se dine faner med andre apps, du har brugt for nylig, på skærmen Oversigt på din telefon.</translation>
 <translation id="7423098979219808738">Spørg først</translation>
 <translation id="7437998757836447326">Log ud af Chrome</translation>
+<translation id="7464701184726199289">Dette rydder synkroniserede data fra alle enheder. Gemte websiteindstillinger slettes ikke og kan afspejle dine søgevaner. <ph name="BEGIN_LINK" />Få flere oplysninger<ph name="END_LINK" /></translation>
 <translation id="7473891865547856676">Nej tak</translation>
 <translation id="7475192538862203634">Hvis du ser dette jævnligt, kan du prøve disse <ph name="BEGIN_LINK" />forslag<ph name="END_LINK" />.</translation>
 <translation id="748127970106343339">Bekræft sletning af loginoplysningerne for enheden</translation>
@@ -542,7 +542,11 @@ Husk, at du ikke er usynlig. Inkognitotilstanden skjuler ikke dine søgninger fo
 <translation id="8068648041423924542">Certifikatet kunne ikke vælges.</translation>
 <translation id="8069239273282989646">Efter komprimering</translation>
 <translation id="8073388330009372546">Åbn billede på ny fane</translation>
+<translation id="8076014560081431679">Gemte websiteindstillinger slettes ikke og kan afspejle dine søgevaner. <ph name="BEGIN_LINK" />Få flere oplysninger<ph name="END_LINK" /></translation>
 <translation id="8084156870963450514">Log ind for at få adgang til alle dine webting fra en enhver enhed</translation>
+<translation id="8098570222830891427">Der er enheder i nærheden, som udsender websider via Bluetooth. Chrome scanner efter disse sider og viser dem, når du starter din enhed. Siderne går gennem en Google-tjeneste for at forbedre kvaliteten af sideresultaterne.
+
+Du kan kontrollere Fysisk web i Chrome-indstillingerne.</translation>
 <translation id="8106211421800660735">Kreditkortnummer</translation>
 <translation id="813082847718468539">Se websiteoplysninger</translation>
 <translation id="8137558756159375272">Funktionen "Tryk for at søge" sender det markerede ord og den aktuelle side som kontekst til Google Søgning. Du kan slå den fra under <ph name="BEGIN_LINK" />Indstillinger<ph name="END_LINK" />.</translation>

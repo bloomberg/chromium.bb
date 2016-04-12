@@ -277,7 +277,6 @@
 <translation id="1407050882688520094">Olet tallentanut seuraavat varmenteen myöntäjät tunnistavat varmenteet:</translation>
 <translation id="1407489512183974736">Rajaa keskelle</translation>
 <translation id="1408789165795197664">Lisäasetukset...</translation>
-<translation id="1408803555324839240">Hups, uuden valvotun käyttäjän luominen epäonnistui. Varmista, että olet kirjautunut sisään, ja yritä uudelleen.</translation>
 <translation id="1409390508152595145">Luo valvottu käyttäjä</translation>
 <translation id="1410616244180625362">Anna sivuston <ph name="HOST" /> käyttää edelleen kameraasi</translation>
 <translation id="1413372529771027206">Smart Lockin kanssa käytetty puhelin on muuttunut. Päivitä Smart Lock Chromebookille kirjoittamalla salasanasi. Seuraavan kerran voit aloittaa käytön klikkaamalla kuvaa.</translation>
@@ -1600,7 +1599,6 @@ Nämä tiedot ja tarkemmat ohjeet ovat sähköpostissasi (<ph name="ACCOUNT_EMAI
 <translation id="3277710850168074473">Käyttäjän toimenpiteiden vaatimus mediaelementtien toistossa. Tämän poistaminen käytöstä mahdollistaa automaattisen toiston.</translation>
 <translation id="3280237271814976245">Tallenna &amp;nimellä...</translation>
 <translation id="3280431534455935878">Valmistellaan</translation>
-<translation id="3284674070818187654">Google voi muokata hakua ja muita Googlen palveluita selaushistoriasi perusteella. Voit hallinnoida tätä osoitteessa myaccount.google.com.</translation>
 <translation id="3285322247471302225">Uusi välileh&amp;ti</translation>
 <translation id="3288047731229977326">Kehittäjätilassa olevat laajennukset voivat vahingoittaa tietokonettasi. Jos et ole kehittäjä, poista kehittäjätilassa olevat laajennukset käytöstä varmuuden vuoksi.</translation>
 <translation id="3289566588497100676">Helppo merkkien syöttö</translation>
@@ -1706,7 +1704,6 @@ verkkotunnuksesta <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3413122095806433232">Varmenteiden myöntäjät: <ph name="LOCATION" /></translation>
 <translation id="3414856743105198592">Siirrettävän tietovälineen alustaminen poistaa kaikki sen tiedot. Haluatko jatkaa?</translation>
 <translation id="3414952576877147120">Koko:</translation>
-<translation id="3416248389957650982">Siirry osoitteeseen myaccount.google.com kirjauduttuasi sisään</translation>
 <translation id="3420980393175304359">Vaihda henkilö</translation>
 <translation id="3423858849633684918">Käynnistä <ph name="PRODUCT_NAME" /> uudelleen</translation>
 <translation id="3425233587047449821">Uusi koreankielinen syöttötavan muokkaus</translation>
@@ -1921,7 +1918,6 @@ verkkotunnuksesta <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3694027410380121301">Valitse edellinen välilehti</translation>
 <translation id="3694122362646626770">Verkkosivustot</translation>
 <translation id="3694678678240097321">Pyydä käyttäjältä lupaa laajennuksen halutessa suorittaa sivulla koodia, jos laajennus pyysi lupaa suorittaa koodia kaikissa URL-osoitteissa.</translation>
-<translation id="36954862089075551">Hups! Uutta käyttäjää ei voitu luoda. Tarkista kiintolevytila ja käyttöluvat ja yritä sitten uudelleen.</translation>
 <translation id="3695919544155087829">Anna salasana, jota käytettiin tämän varmennetiedoston salaamiseen.</translation>
 <translation id="3696411085566228381">ei mitään</translation>
 <translation id="3697100740575341996">IT-järjestelmänvalvojasi on poistanut Chrome Goodies -tarjoukset käytöstä laitteellasi. <ph name="MORE_INFO_LINK" /></translation>
@@ -2345,7 +2341,6 @@ Kaikkien käyttäjien täytyy kirjautua ulos jatkaakseen käyttöä.</translatio
 <translation id="4345703751611431217">Ohjelmistojen yhteensopimattomuus: lisätietoja</translation>
 <translation id="4348766275249686434">Kerää virheet</translation>
 <translation id="4350019051035968019">Tätä laitetta ei voi rekisteröidä verkkotunnukselle, johon tilisi kuuluu, koska laite on merkitty eri verkkotunnuksen hallinnoitavaksi.</translation>
-<translation id="4352333825734680558">Hups! Uutta valvottua käyttäjää ei voitu luoda. Tarkista verkkoyhteytesi ja yritä myöhemmin uudelleen.</translation>
 <translation id="4358697938732213860">Lisää osoite</translation>
 <translation id="4359408040881008151">Asennettiin, koska muut laajennukset ovat riippuvaisia tästä laajennuksesta.</translation>
 <translation id="4361190688154226069">Suorakulmaan perustuva kohdistaminen näkymissä</translation>
@@ -3013,7 +3008,6 @@ Kaikkien käyttäjien täytyy kirjautua ulos jatkaakseen käyttöä.</translatio
 <translation id="5388588172257446328">Käyttäjätunnus:</translation>
 <translation id="5390284375844109566">Indeksoitu tietokanta</translation>
 <translation id="5392544185395226057">Ota Asiakassovelluksen tuki käyttöön.</translation>
-<translation id="5393125431335030955">Tämä laajennus toimii vain työpöytätilassa.</translation>
 <translation id="5396126354477659676"><ph name="PEPPER_PLUGIN_NAME" /> -laajennus verkkotunnuksessa <ph name="PEPPER_PLUGIN_DOMAIN" /> haluaa käyttää tietokonettasi.</translation>
 <translation id="539755880180803351">Merkitsee verkkolomakkeisiin automaattisen täytön ennusteita paikkamerkkeinä.</translation>
 <translation id="5397578532367286026">Hallinnoija (<ph name="MANAGER_EMAIL" />) voi tarkkailla tämän käyttäjän käyttö- ja historiatietoja osoitteessa chrome.com.</translation>
@@ -3278,7 +3272,6 @@ Kaikkien käyttäjien täytyy kirjautua ulos jatkaakseen käyttöä.</translatio
 <translation id="57646104491463491">Muokkauspäivämäärä</translation>
 <translation id="5765491088802881382">Ei verkkoja saatavilla</translation>
 <translation id="5765780083710877561">Kuvaus:</translation>
-<translation id="5770385044111747894">NPAPI</translation>
 <translation id="5771585441665576801">Translitterointi (geia → γεια)</translation>
 <translation id="5771816112378578655">Synkronointia valmistellaan...</translation>
 <translation id="5771849619911534867">Laitteiden etsintä päättyi.</translation>
@@ -3913,7 +3906,6 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="6793649375377511437">Googlen Copresence-tiedot</translation>
 <translation id="6797493596609571643">Hups… Jokin meni vikaan.</translation>
 <translation id="6798954102094737107">Laajennus: <ph name="PLUGIN_NAME" /></translation>
-<translation id="6799646767877093143">Tämä sivusto käyttää laajennusta (<ph name="PLUGIN_NAME" />), jonka tuki päättyy pian.</translation>
 <translation id="6802031077390104172"><ph name="USAGE" /> (<ph name="OID" />)</translation>
 <translation id="6804671422566312077">Avaa kaikki kirjanmerkit uudessa ikkunassa</translation>
 <translation id="6805647936811177813">Kirjaudu sisään laitteeseen <ph name="TOKEN_NAME" /> ja tuo asiakkaan varmenne osoitteesta <ph name="HOST_NAME" />.</translation>
@@ -4905,7 +4897,6 @@ Tallenna avaintiedosto suojattuun sijaintiin. Tarvitset sitä, jos haluat luoda 
 <translation id="8267698848189296333">Kirjaudutaan käyttäjänä <ph name="USERNAME" /></translation>
 <translation id="8272443605911821513">Hallinnoi laajennuksiasi valitsemalla Lisätyökalut-valikossa Laajennukset.</translation>
 <translation id="8273972836055206582"><ph name="FULLSCREEN_ORIGIN" /> on koko ruudun kokoinen ja haluaa poistaa hiiren osoittimen käytöstä.</translation>
-<translation id="8274860189261120948">Kirjaudu automaattisesti verkkosivustoille käyttämällä tallennettuja kirjautumistietoja. Jos tämä toiminto ei ole käytössä, sinua pyydetään vahvistamaan kirjautuminen aina, kun kirjaudut sivustolle.</translation>
 <translation id="8275038454117074363">Tuo</translation>
 <translation id="8276560076771292512">Tyhjennä välimuisti ja pakota päivitys</translation>
 <translation id="8279388322240498158">Soranîn englantiin perustuva näppäimistö</translation>
@@ -5089,7 +5080,6 @@ Tallenna avaintiedosto suojattuun sijaintiin. Tarvitset sitä, jos haluat luoda 
 <translation id="8571108619753148184">Palvelin 4</translation>
 <translation id="8572832761467613633">Vain Flash</translation>
 <translation id="8572981282494768930">Älä anna sivustojen käyttää kameraa ja mikrofonia</translation>
-<translation id="8574794171590710404">Tämä sivusto käyttää laajennusta (<ph name="PLUGIN_NAME" />), jota ei tueta.</translation>
 <translation id="857779305329188634">Ota käyttöön kokeellinen QUIC-protokollan tuki.</translation>
 <translation id="8579285237314169903">Synkronoidaan <ph name="NUMBER_OF_FILES" /> kohdetta…</translation>
 <translation id="8579549103199280730">Kysy oletuksena</translation>
@@ -5097,7 +5087,6 @@ Tallenna avaintiedosto suojattuun sijaintiin. Tarvitset sitä, jos haluat luoda 
 <translation id="8581690024797204327">256</translation>
 <translation id="8581809080475256101">Siirry eteenpäin painamalla tai avaa historia kontekstivalikon kautta.</translation>
 <translation id="8584280235376696778">Avaa vide&amp;o uudessa välilehdessä</translation>
-<translation id="8585103164112230633">Hallinnoi ja tarkastele tämän henkilön verkkosivustovierailuja osoitteesta</translation>
 <translation id="8589311641140863898">Kokeelliset laajennussovellusliittymät</translation>
 <translation id="8590375307970699841">Ota käyttöön automaattiset päivitykset</translation>
 <translation id="8592071947729879125">Rajoita iframe-kehysten käyttöoikeuksia.</translation>
@@ -5245,7 +5234,6 @@ Tallenna avaintiedosto suojattuun sijaintiin. Tarvitset sitä, jos haluat luoda 
 <translation id="878069093594050299">Tämä varmenne on vahvistettu seuraaville käyttötarkoituksille:</translation>
 <translation id="8782565991310229362">Kioskisovelluksen käynnistäminen peruutettiin.</translation>
 <translation id="8783093612333542422">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; haluaa jakaa tulostimen &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; kanssasi.</translation>
-<translation id="878431691778285679">Vaikuttaa siltä, että hallinnoit jo tämännimistä käyttäjää.<ph name="LINE_BREAK" />Haluatko <ph name="BEGIN_LINK" />viedä käyttäjän <ph name="PROFILE_NAME" /> tähän laitteeseen<ph name="END_LINK" />?</translation>
 <translation id="8784626084144195648">Rajoitetun joukon keskiarvo</translation>
 <translation id="8785135611469711856">Laajennus ei vastaa</translation>
 <translation id="8787254343425541995">Salli välityspalvelimet jaetuilla verkoilla</translation>

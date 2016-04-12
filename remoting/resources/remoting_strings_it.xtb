@@ -165,6 +165,7 @@ Remote Desktop</translation>
 <translation id="4918086044614829423">Accetto</translation>
 <translation id="492843737083352574">Ho difficoltà con la tastiera o il mouse.</translation>
 <translation id="4973800994433240357">Se scarichi il programma di installazione di Chromoting Host, accetti i <ph name="LINK_BEGIN" />Termini di servizio<ph name="LINK_END" /> di Google.</translation>
+<translation id="4985296110227979402">Devi eseguire prima la configurazione del computer per poter effettuare l'accesso remoto</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (offline)</translation>
 <translation id="5070121137485264635">L'host remoto richiede l'autenticazione su un sito web di terze parti. Per continuare, devi concedere a Chrome Remote Desktop ulteriori autorizzazioni per accedere a questo indirizzo:</translation>
 <translation id="5156271271724754543">Inserisci lo stesso PIN in entrambe le caselle.</translation>
@@ -174,6 +175,7 @@ Remote Desktop</translation>
 <translation id="5222676887888702881">Esci</translation>
 <translation id="5254120496627797685">Se esci da questa pagina, la sessione Chrome Remote Desktop verrà terminata.</translation>
 <translation id="5308380583665731573">Connessione</translation>
+<translation id="533625276787323658">Non ci sono computer a cui connettersi</translation>
 <translation id="5363265567587775042">Chiedi al proprietario del computer a cui vuoi accedere di fare clic su "<ph name="SHARE" />" e fornirti il codice di accesso.</translation>
 <translation id="5379087427956679853">Chrome Remote Desktop ti consente di condividere in modo sicuro il computer sul Web. Entrambi gli utenti devono eseguire l'app Chrome Remote Desktop, reperibile all'indirizzo <ph name="URL" />.</translation>
 <translation id="5394895745784982830">Per Mac (OS X 10.6 e versioni successive)</translation>

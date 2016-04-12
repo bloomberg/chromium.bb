@@ -4,52 +4,32 @@
 <translation id="1008557486741366299">Ikke nå</translation>
 <translation id="1047726139967079566">Legg til bokmerke for denne siden</translation>
 <translation id="1172898394251786223">Neste felt</translation>
-<translation id="168328519870909584">Hackere som for øyeblikket er på <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />, prøver kanskje å installere farlige apper på enheten din. Disse appene kan stjele eller slette informasjonen din (for eksempel bilder, passord, meldinger og kredittkortinformasjon).</translation>
 <translation id="2320166752086256636">Skjul tastaturet</translation>
 <translation id="2467815441875554965">Kontekstbasert søk</translation>
 <translation id="2704606927547763573">Kopiert</translation>
 <translation id="2747003861858887689">Forrige felt</translation>
 <translation id="2780046210906776326">Ingen e-postkontoer</translation>
-<translation id="2803306138276472711">Google Safe Browsing oppdaget nylig <ph name="BEGIN_LINK" />skadelig programvare<ph name="END_LINK" /> på <ph name="SITE" />. Nettsteder som vanligvis er sikre, kan noen ganger være infisert av skadelig programvare.</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> av <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3335947283844343239">Åpne lukkede faner igjen</translation>
 <translation id="3414292259312108062">Chrome lagrer dette i <ph name="BEGIN_LINK" />Google-lagrede passord<ph name="END_LINK" />. Deretter legges det inn automatisk, slik at du ikke trenger å huske det selv.</translation>
 <translation id="3567664240939803299">Vil du at Google Smart Lock skal lagre passordet ditt for dette nettstedet?</translation>
-<translation id="3586931643579894722">Skjul detaljer</translation>
-<translation id="3736520371357197498">Hvis du forstår sikkerhetsrisikoen, kan du <ph name="BEGIN_LINK" />gå til det usikre nettstedet<ph name="END_LINK" /> før de farlige programmene er fjernet.</translation>
 <translation id="385051799172605136">Tilbake</translation>
-<translation id="4098354747657067197">Villedende nettsted i sikte</translation>
 <translation id="4121993058175073134">For å sende data for netteksport må du konfigurere e-postkontoen din i Innstillinger-appen.</translation>
 <translation id="4399225372525667111">Chrome kan ikke bekrefte at nettadressen for dette nettstedet er korrekt.</translation>
-<translation id="4522570452068850558">Detaljer</translation>
 <translation id="4728558894243024398">Plattform</translation>
 <translation id="473775607612524610">Oppdater</translation>
 <translation id="5317780077021120954">Lagre</translation>
-<translation id="5337705430875057403">Angripere på <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> prøver kanskje å lure deg til å gjøre farlige ting som å installere programvare eller avsløre personopplysningene dine (for eksempel passord, telefonnumre eller kredittkortinformasjon).</translation>
 <translation id="605721222689873409">ÅÅ</translation>
-<translation id="6075880972317537864">Hackere på <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> prøver kanskje å lure deg for å stjele informasjonen din (for eksempel passord, e-post eller kredittkortinformasjon).</translation>
 <translation id="6149061208933997199">Bruk passord</translation>
 <translation id="6196207969502475924">Google Talesøk</translation>
-<translation id="6221345481584921695">Google Safe Browsing oppdaget nylig <ph name="BEGIN_LINK" />skadelig programvare<ph name="END_LINK" /> på <ph name="SITE" />. Nettsteder som vanligvis er trygge, kan noen ganger være infisert med skadelig programvare. Det skadelige innholdet kommer fra <ph name="SUBRESOURCE_HOST" />, som er en kjent distributør av skadelig programvare.</translation>
-<translation id="6264485186158353794">Til trygg havn</translation>
 <translation id="6314335155547195432">Generer passord</translation>
 <translation id="6344783595350022745">Klar tekst</translation>
 <translation id="6456425917241817154">Passord generert av Chrome</translation>
 <translation id="6535543971741225613">Nettstedet du prøver å gå til oppfører seg rart, og Chrome kan derfor ikke bekrefte at nettadressen er korrekt. Av sikkerhetsmessige grunner bør du ikke fortsette, og heller prøve igjen i morgen eller gå et annet sted.</translation>
-<translation id="6740369132746915122">Hvis du forstår sikkerhetsrisikoen, kan du <ph name="BEGIN_LINK" />gå til dette usikre nettstedet<ph name="END_LINK" />.</translation>
 <translation id="7222245588540287464">Hvorvidt Kontekstbasert søk er aktivert eller ikke.</translation>
-<translation id="724691107663265825">Nettstedet du er på vei til, inneholder skadelig programvare</translation>
 <translation id="7456847797759667638">Åpne sted</translation>
 <translation id="7481312909269577407">Frem</translation>
 <translation id="7484580869648358686">Advarsel: Det er noe som ikke stemmer!</translation>
-<translation id="7779249319235708104">Du er på vei mot et nettfiskingangrep</translation>
 <translation id="7961015016161918242">Aldri</translation>
-<translation id="820854170120587500">Google Safe Browsing oppdaget nylig nettfisking på <ph name="SITE" />. <ph name="BEGIN_LINK" />Nettsteder som driver med nettfisking<ph name="END_LINK" />, later som om de er andre nettsteder for å lure deg.</translation>
-<translation id="834457929814110454">Hvis du forstår sikkerhetsrisikoen, kan du <ph name="BEGIN_LINK" />gå til det usikre nettstedet<ph name="END_LINK" /> før de farlige programmene er fjernet.</translation>
-<translation id="8543181531796978784">Du kan <ph name="BEGIN_ERROR_LINK" />rapportere et påvisningsproblem<ph name="END_ERROR_LINK" /> eller, hvis du forstår sikkerhetsrisikoen, <ph name="BEGIN_LINK" />gå til dette usikre nettstedet<ph name="END_LINK" />.</translation>
-<translation id="8761567432415473239">Google Safe Browsing oppdaget nylig <ph name="BEGIN_LINK" />skadelige programmer<ph name="END_LINK" /> på <ph name="SITE" />.</translation>
-<translation id="8996941253935762404">Nettstedet du er i ferd med å åpne, inneholder skadelige programmer</translation>
-<translation id="9035022520814077154">Sikkerhetsfeil</translation>
-<translation id="9040185888511745258">Angripere på <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> kan forsøke å lure deg til å installere programmer som ødelegger surfeopplevelsen din (for eksempel ved å endre startsiden din eller vise ekstra annonser på nettstedene du besøker).</translation>
 </translationbundle>

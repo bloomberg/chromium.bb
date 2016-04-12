@@ -557,7 +557,6 @@
 <translation id="7186367841673660872">Diese Seite wurde von<ph name="ORIGINAL_LANGUAGE" />in<ph name="LANGUAGE_LANGUAGE" />übersetzt.</translation>
 <translation id="719464814642662924">Visa</translation>
 <translation id="720210938761809882">Seite blockiert</translation>
-<translation id="7208899522964477531"><ph name="SITE_NAME" /> nach <ph name="SEARCH_TERMS" /> durchsuchen</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> erfüllt die Sicherheitsstandards nicht.</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Weitere Informationen<ph name="END_LINK" /> zu diesem Problem.</translation>
 <translation id="7219179957768738017">Die Verbindung verwendet <ph name="SSL_VERSION" />.</translation>
@@ -639,7 +638,6 @@ Geheimtipp: Verwenden Sie nächstes Mal den Inkognitomodus (<ph name="SHORTCUT_K
 <translation id="7951415247503192394">(32-Bit)</translation>
 <translation id="7956713633345437162">Mobile Lesezeichen</translation>
 <translation id="7961015016161918242">Nie</translation>
-<translation id="7977590112176369853">&lt;Suchanfrage eingeben&gt;</translation>
 <translation id="7983301409776629893"><ph name="ORIGINAL_LANGUAGE" /> immer auf <ph name="TARGET_LANGUAGE" /> übersetzen</translation>
 <translation id="7995512525968007366">Nicht angegeben</translation>
 <translation id="8012647001091218357">Wir können deine Eltern momentan nicht erreichen. Bitte versuche es später erneut.</translation>
@@ -720,7 +718,6 @@ Geheimtipp: Verwenden Sie nächstes Mal den Inkognitomodus (<ph name="SHORTCUT_K
 <translation id="8903921497873541725">Vergrößern</translation>
 <translation id="8931333241327730545">Möchten Sie diese Karte in Ihrem Google-Konto speichern?</translation>
 <translation id="8932102934695377596">Ihre Uhr geht nach.</translation>
-<translation id="8940229512486821554"><ph name="EXTENSION_NAME" />-Befehl ausführen: <ph name="SEARCH_TERMS" /></translation>
 <translation id="8954894007019320973">(Fortsetzung)</translation>
 <translation id="8971063699422889582">Das Serverzertifikat ist abgelaufen.</translation>
 <translation id="8987927404178983737">Monat</translation>

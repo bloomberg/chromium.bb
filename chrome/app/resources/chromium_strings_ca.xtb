@@ -25,7 +25,7 @@
 <translation id="1779356040007214683">Perquè Chromium sigui més segur, hem desactivat algunes de les extensions que no apareixen a <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> i que és possible que s'hagin afegit sense que ho sapigueu.</translation>
 <translation id="1808667845054772817">Torna a instal·lar Chromium</translation>
 <translation id="1816404578968201294">Chromium necessita accedir a la ubicació per compartir-la amb aquest lloc.</translation>
-<translation id="1869480248812203386">Si voleu col·laborar perquè Chromium sigui més segur i més fàcil d'utilitzar, informeu automàticament Google dels detalls sobre possibles incidents de seguretat.</translation>
+<translation id="1869480248812203386">Si voleu col·laborar perquè Chromium sigui més segur i més fàcil d'utilitzar, informeu automàticament Google dels detalls sobre possibles incidències de seguretat.</translation>
 <translation id="1881322772814446296">Esteu a punt d'iniciar la sessió amb un compte gestionat i d'atorgar el control del vostre perfil de Chromium a l'administrador corresponent. Les dades de Chromium, com ara aplicacions, adreces d'interès, historial, contrasenyes i altres configuracions, s'enllaçaran permanentment amb <ph name="USER_NAME" />. Podreu suprimir aquestes dades mitjançant el Tauler de Comptes de Google, però no les podreu associar amb un altre compte. De manera opcional, podeu crear un perfil nou per mantenir les vostres dades de Chromium a part. <ph name="LEARN_MORE" /></translation>
 <translation id="1929939181775079593">Chromium no respon. Voleu tornar-lo a iniciar ara?</translation>
 <translation id="1967743265616885482">Se sap que un mòdul amb el mateix nom entra en conflicte amb Chromium.</translation>
@@ -66,7 +66,6 @@
 <translation id="3130323860337406239">Chromium està utilitzant el micròfon.</translation>
 <translation id="313551035350905294">Esteu iniciant la sessió amb un compte gestionat i atorgant el control del vostre perfil de Chromium a l'administrador corresponent. Les dades de Chromium, com ara aplicacions, adreces d'interès, historial, contrasenyes i altres configuracions, s'enllaçaran permanentment amb <ph name="USER_NAME" />. Aquestes dades es podran suprimir a través del tauler de control de comptes de Google, però no es podran associar amb un altre compte.</translation>
 <translation id="3190315855212034486">Chromium s'ha bloquejat. Voleu tornar-lo a iniciar?</translation>
-<translation id="3197823471738295152">El dispositiu està actualitzat.</translation>
 <translation id="3244477511402911926">Centre de notificacions de Chromium</translation>
 <translation id="3256316712990552818">Copiada a Chromium</translation>
 <translation id="3258596308407688501">Chromium no pot llegir ni escriure en el directori de dades:

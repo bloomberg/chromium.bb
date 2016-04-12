@@ -25,6 +25,7 @@ Pentru a folosi Webul material, trebuie să activezi Bluetooth și Locația.</tr
 <translation id="1285320974508926690">Nu traduce niciodată acest site</translation>
 <translation id="1291207594882862231">Șterge istoricul, cookie-urile, datele privind site-urile și memoria cache…</translation>
 <translation id="129553762522093515">Închise recent</translation>
+<translation id="13410144310025252">Afișează-le în Chrome</translation>
 <translation id="1346090444609141578">Nu există pagini salvate aici</translation>
 <translation id="1369915414381695676">Site-ul <ph name="SITE_NAME" /> a fost adăugat</translation>
 <translation id="1373696734384179344">Memorie insuficientă pentru descărcarea conținutului selectat.</translation>
@@ -193,6 +194,7 @@ Pentru a ajusta termenii căutării, apasă lung pentru a selecta. Pentru a rafi
 <translation id="3656115297268584622">Activează localizarea din <ph name="BEGIN_LINK" />Setările Android<ph name="END_LINK" />.</translation>
 <translation id="3661699943263275414">Site-urile terță parte pot să salveze și să citească datele asociate cookie-urilor</translation>
 <translation id="3672452749423051839">Sugestii pentru erori de navigare</translation>
+<translation id="3716158070938632480">Există pagini web în apropiere</translation>
 <translation id="3732088672634061408">Interesele nu au putut fi preluate.</translation>
 <translation id="3738139272394829648">Atinge pentru a căuta</translation>
 <translation id="3809549525127675114">Videoclipul „<ph name="VIDEO_TITLE" />” s-a terminat</translation>
@@ -372,7 +374,6 @@ Totuși, nu ești invizibil(ă). Trecerea în modul incognito nu ascunde activit
 <translation id="5911030830365207728">Google Traducere</translation>
 <translation id="5916664084637901428">Activat</translation>
 <translation id="5939518447894949180">Resetează</translation>
-<translation id="5965336165840183977">Astfel, se vor șterge datele sincronizate de pe toate dispozitivele. Nu vei fi deconectat(ă) de la Contul Google. Setările salvate pentru site-uri nu vor fi șterse și pot reflecta obiceiurile de navigare.</translation>
 <translation id="5968595432776860642">Se redă „<ph name="VIDEO_TITLE" />”</translation>
 <translation id="6010869025736512584">Se accesează intrarea video</translation>
 <translation id="6012342843556706400">Chrome are nevoie de acces la locație pentru a-l acorda acestui site.</translation>
@@ -392,7 +393,6 @@ Totuși, nu ești invizibil(ă). Trecerea în modul incognito nu ascunde activit
 <translation id="6159335304067198720">Economie de date de <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">Află mai multe</translation>
 <translation id="6192792657125177640">Excepții</translation>
-<translation id="6231464350722415003">Permite accesul serviciului JavaScript la site-urile pe care le specifici în timp ce îl restricționezi pentru restul site-urilor</translation>
 <translation id="6232535412751077445">Dacă activezi opțiunea „Nu urmări”, o solicitare va fi inclusă împreună cu traficul de navigare. Efectul variază în funcție de răspunsul site-ului la solicitare și în funcție de modul în care este interpretată solicitarea.
 
 De exemplu, unele site-uri pot răspunde la această solicitare afișând anunțuri care nu se bazează pe alte site-uri accesate de tine. Numeroase site-uri vor culege și vor utiliza în continuare datele de navigare. De exemplu, pentru a îmbunătăți securitatea, pentru a oferi conținut, anunțuri și recomandări și pentru a genera statistici de raportare.</translation>
@@ -480,7 +480,6 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> folosește locația ta pentru a afișa rezultate locale ale căutării</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />Ajutor<ph name="END_LINK" /></translation>
 <translation id="7299721129597238157">Ștergeți marcajul</translation>
-<translation id="7346217184097589238">Setările salvate pentru site-uri nu vor fi șterse și pot reflecta obiceiurile de navigare.</translation>
 <translation id="7347770551817603360">Conținut offline</translation>
 <translation id="7363354739009474003">Se încarcă videoclipul „<ph name="VIDEO_TITLE" />”</translation>
 <translation id="7366340029385295517">Se proiectează pe <ph name="SCREEN_NAME" /></translation>
@@ -491,6 +490,7 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="7408644312175185557">Vezi filele împreună cu alte aplicații recente pe ecranul Recente de pe telefon.</translation>
 <translation id="7423098979219808738">Mai întâi întreabă</translation>
 <translation id="7437998757836447326">Deconectează-te de la Chrome</translation>
+<translation id="7464701184726199289">Astfel, datele sincronizate vor fi șterse de pe toate dispozitivele. Setările salvate pentru site-uri nu vor fi șterse și pot reflecta obiceiurile de navigare. <ph name="BEGIN_LINK" />Află mai multe<ph name="END_LINK" /></translation>
 <translation id="7473891865547856676">Nu, mulțumesc</translation>
 <translation id="7475192538862203634">Dacă acest mesaj apare frecvent, încearcă următoarele <ph name="BEGIN_LINK" />sugestii<ph name="END_LINK" />.</translation>
 <translation id="748127970106343339">Confirmă ștergerea datelor de conectare de pe dispozitiv</translation>
@@ -542,7 +542,11 @@ Cu toate acestea, nu ești invizibil(ă). Trecerea în modul incognito nu ascund
 <translation id="8068648041423924542">Certificatul nu poate fi selectat.</translation>
 <translation id="8069239273282989646">După comprimare</translation>
 <translation id="8073388330009372546">Vedeți imaginea în filă nouă</translation>
+<translation id="8076014560081431679">Setările salvate pentru site-uri nu vor fi șterse și pot reflecta obiceiurile de navigare. <ph name="BEGIN_LINK" />Află mai multe<ph name="END_LINK" /></translation>
 <translation id="8084156870963450514">Conectează-te pentru a-ți accesa tot conținutul de pe web folosind orice dispozitiv</translation>
+<translation id="8098570222830891427">Dispozitive din apropierea ta difuzează pagini web prin Bluetooth. Chrome va căuta astfel de pagini și le va afișa când activezi dispozitivul. Aceste pagini vor fi procesate de un serviciu Google pentru a îmbunătăți calitatea rezultatelor cu pagini.
+
+Poți să controlezi Webul material din Setările Chrome.</translation>
 <translation id="8106211421800660735">Numărul cardului de credit</translation>
 <translation id="813082847718468539">Afișează informațiile privind site-ul</translation>
 <translation id="8137558756159375272">Funcția Atinge pentru a căuta trimite cuvântul selectat și pagina actuală drept context către Căutare Google. Poți dezactiva această funcție din <ph name="BEGIN_LINK" />Setări<ph name="END_LINK" />.</translation>

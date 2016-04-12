@@ -93,11 +93,12 @@
 <translation id="4975562563186953947"><ph name="SELECTED_COUNT" /> انتخاب شد</translation>
 <translation id="49969490063480558">لطفاً قسمت بعد از «<ph name="ATSIGN" />» را وارد کنید. «<ph name="INVALIDADDRESS" />» ناقص است.</translation>
 <translation id="5034860022980953847">نشانگر پیشرفت</translation>
-<translation id="5048533449481078685">علامت گذار لیست</translation>
+<translation id="5048533449481078685">علامت گذار فهرست</translation>
 <translation id="5117590920725113268">نمایش ماه بعدی</translation>
 <translation id="512758898067543763">عنوان ردیف</translation>
 <translation id="5164977714490026579">مقدار باید بیشتر یا مساوی با <ph name="MINIMUM" /> باشد.</translation>
 <translation id="5307600278924710095">لطفاً قسمت قبل از «<ph name="ATSIGN" />» را وارد کنید. «<ph name="INVALIDADDRESS" />» ناقص است.</translation>
+<translation id="5317780077021120954">ذخیره</translation>
 <translation id="5406322316791861025">شکل</translation>
 <translation id="5453733299334684579">مورد درختی</translation>
 <translation id="5466621249238537318">لطفاً یک یا چند فایل را انتخاب کنید.</translation>
@@ -140,7 +141,7 @@
 <translation id="7057186640035488495">زمان فیلم</translation>
 <translation id="709897737746224366">لطفاً با قالب درخواستی مطابقت دهید.</translation>
 <translation id="7223624360433298498">مدت سپری شده</translation>
-<translation id="7263440858009898357">لطفاً یک مورد را در لیست انتخاب کنید.</translation>
+<translation id="7263440858009898357">لطفاً یک مورد را در فهرست انتخاب کنید.</translation>
 <translation id="727747134524199931">عنوان ستون</translation>
 <translation id="7364796246159120393">انتخاب فایل</translation>
 <translation id="739024184232394898">موارد دیگر...</translation>

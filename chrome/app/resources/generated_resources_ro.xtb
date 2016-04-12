@@ -277,7 +277,6 @@
 <translation id="1407050882688520094">Există certificate care identifică aceste autorități de certificare:</translation>
 <translation id="1407489512183974736">Pe centru, decupat</translation>
 <translation id="1408789165795197664">Avansate...</translation>
-<translation id="1408803555324839240">Hopa! Nu poate fi creat un utilizator monitorizat nou. Asigurați-vă că v-ați conectat în mod corect și încercați din nou.</translation>
 <translation id="1409390508152595145">Creați un utilizator monitorizat</translation>
 <translation id="1410616244180625362">Permiteți în continuare accesul <ph name="HOST" /> la camera dvs.</translation>
 <translation id="1413372529771027206">Telefonul folosit pentru Smart Lock s-a schimbat. Introdu parola pentru a actualiza Smart Lock pentru Chromebook pe acest dispozitiv. Data viitoare, pentru acces, trebuie doar să dai clic pe imaginea ta.</translation>
@@ -1599,7 +1598,6 @@ Pentru instrucțiuni suplimentare, verifică e-mailurile la adresa <ph name="ACC
 <translation id="3277710850168074473">Necesitatea utilizării gesturilor pentru redarea elementelor media. Dacă dezactivați această opțiune, redarea automată va fi permisă.</translation>
 <translation id="3280237271814976245">Salvează c&amp;a...</translation>
 <translation id="3280431534455935878">Se pregătește</translation>
-<translation id="3284674070818187654">Google poate folosi istoricul de navigare pentru a personaliza Căutarea și alte servicii Google. Poți controla acest aspect la myaccount.google.com.</translation>
 <translation id="3285322247471302225">Filă &amp;nouă</translation>
 <translation id="3288047731229977326">Extensiile care rulează în modul pentru dezvoltatori pot afecta computerul. Dacă nu sunteți dezvoltator, se recomandă să dezactivați aceste extensii, pentru siguranță.</translation>
 <translation id="3289566588497100676">Introducere ușoară a simbolurilor</translation>
@@ -1705,7 +1703,6 @@ De la <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3413122095806433232">Emitenți CA: <ph name="LOCATION" /></translation>
 <translation id="3414856743105198592">Formatarea suportului media amovibil va șterge toate datele. Doriți să continuați?</translation>
 <translation id="3414952576877147120">Dimensiune:</translation>
-<translation id="3416248389957650982">Deschide myaccount.google.com după conectare</translation>
 <translation id="3420980393175304359">Comută la altă persoană</translation>
 <translation id="3423858849633684918">Repornește <ph name="PRODUCT_NAME" /></translation>
 <translation id="3425233587047449821">Noul instrument IME pentru coreeană</translation>
@@ -1920,7 +1917,6 @@ De la <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3694027410380121301">Selectează fila anterioară</translation>
 <translation id="3694122362646626770">Site-uri</translation>
 <translation id="3694678678240097321">Solicită consimțământul utilizatorului pentru o extensie care rulează un script pe pagină, dacă extensia a solicitat permisiunea de a rula la toate adresele URL.</translation>
-<translation id="36954862089075551">Hopa! Utilizatorul nu a putut fi creat. Verificați spațiul de pe hard disk și permisiunile, apoi încercați din nou.</translation>
 <translation id="3695919544155087829">Introdu parola care a fost utilizată pentru a cripta acest fișier certificat.</translation>
 <translation id="3696411085566228381">niciuna</translation>
 <translation id="3697100740575341996">Administratorul IT a dezactivat accesoriile Chrome pentru dispozitivul dvs. <ph name="MORE_INFO_LINK" /></translation>
@@ -2348,7 +2344,6 @@ Apăsați pe orice tastă pentru a continua explorarea.</translation>
 <translation id="4345703751611431217">Incompatibilitate software: aflați mai multe</translation>
 <translation id="4348766275249686434">Culege erorile</translation>
 <translation id="4350019051035968019">Acest dispozitiv nu poate fi înregistrat pe domeniul căruia îi aparține contul dvs., deoarece dispozitivul este asociat pentru gestionare de alt domeniu.</translation>
-<translation id="4352333825734680558">Hopa! Utilizatorul monitorizat nu a putut fi creat. Verificați conexiunea la rețea și încercați din nou mai târziu.</translation>
 <translation id="4358697938732213860">Adaugă o adresă</translation>
 <translation id="4359408040881008151">Instalată din cauza extensiilor dependente.</translation>
 <translation id="4361190688154226069">Identificare bazată pe dreptunghiuri în vizualizări</translation>
@@ -2780,7 +2775,7 @@ Apăsați pe orice tastă pentru a continua explorarea.</translation>
 <translation id="5039804452771397117">Permite</translation>
 <translation id="5045550434625856497">Parolă incorectă</translation>
 <translation id="5048179823246820836">Nordică</translation>
-<translation id="5048294425697652159">Activează Quirks Client pentru calibrarea afișării.</translation>
+<translation id="5048294425697652159">Activează Quirks Client pentru calibrarea afișajului.</translation>
 <translation id="5053604404986157245">Parola TPM generată aleatoriu nu este disponibilă. Acest lucru este normal după utilizarea Powerwash.</translation>
 <translation id="5053803681436838483">Adresă de expediere nouă...</translation>
 <translation id="5055309315264875868">Afișează un link în pagina cu setări a managerului de parole, pentru a gestiona parolele sincronizate online.</translation>
@@ -3022,7 +3017,6 @@ Apăsați pe orice tastă pentru a continua explorarea.</translation>
 <translation id="5388588172257446328">Nume de utilizator:</translation>
 <translation id="5390284375844109566">Bază de date indexată</translation>
 <translation id="5392544185395226057">Activează compatibilitatea pentru Clientul nativ.</translation>
-<translation id="5393125431335030955">Acest plugin funcționează numai pe desktop.</translation>
 <translation id="5396126354477659676">Pluginul <ph name="PEPPER_PLUGIN_NAME" /> de pe <ph name="PEPPER_PLUGIN_DOMAIN" /> dorește să vă acceseze computerul.</translation>
 <translation id="539755880180803351">Adnotează formularele web cu predicțiile de introducere din câmpul de completare automată ca text substituent.</translation>
 <translation id="5397578532367286026">Datele privind utilizarea și istoricul ale acestui utilizator pot fi examinate de administrator (<ph name="MANAGER_EMAIL" />) pe chrome.com.</translation>
@@ -3287,7 +3281,6 @@ Apăsați pe orice tastă pentru a continua explorarea.</translation>
 <translation id="57646104491463491">Data modificării</translation>
 <translation id="5765491088802881382">Nu există rețele disponibile</translation>
 <translation id="5765780083710877561">Descriere:</translation>
-<translation id="5770385044111747894">NPAPI</translation>
 <translation id="5771585441665576801">Transliterație (geia → γεια)</translation>
 <translation id="5771816112378578655">Se configurează...</translation>
 <translation id="5771849619911534867">Căutarea de dispozitive oprită.</translation>
@@ -3920,7 +3913,6 @@ Apăsați pe orice tastă pentru a continua explorarea.</translation>
 <translation id="6793649375377511437">Informații de coprezență Google</translation>
 <translation id="6797493596609571643">Hopa! A apărut o eroare.</translation>
 <translation id="6798954102094737107">Plugin: <ph name="PLUGIN_NAME" /></translation>
-<translation id="6799646767877093143">Acest site folosește un plugin (<ph name="PLUGIN_NAME" />) care nu va mai fi acceptat în curând.</translation>
 <translation id="6802031077390104172"><ph name="USAGE" /> (<ph name="OID" />)</translation>
 <translation id="6804671422566312077">Deschideți toate marcajele într-o &amp;fereastră nouă</translation>
 <translation id="6805647936811177813">Conectează-te la <ph name="TOKEN_NAME" /> pentru a importa certificatul client din <ph name="HOST_NAME" />.</translation>
@@ -4914,7 +4906,6 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="8267698848189296333">Te conectezi ca <ph name="USERNAME" /></translation>
 <translation id="8272443605911821513">Gestionați extensiile dând clic pe Extensii în meniul „Mai multe instrumente”.</translation>
 <translation id="8273972836055206582"><ph name="FULLSCREEN_ORIGIN" /> este acum în modul ecran complet și dorește să dezactiveze cursorul mouse-ului dvs.</translation>
-<translation id="8274860189261120948">Te conectezi automat la site-uri folosind datele de conectare stocate. Când funcția este dezactivată, ți se va solicita confirmarea de fiecare dată înainte de a te conecta la un site.</translation>
 <translation id="8275038454117074363">Importă</translation>
 <translation id="8276560076771292512">Goliți memoria cache și reîncărcați forțat</translation>
 <translation id="8279388322240498158">Tastatură kurdă sorani bazată pe engleză</translation>
@@ -5098,7 +5089,6 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="8571108619753148184">Server 4</translation>
 <translation id="8572832761467613633">Numai pentru Flash</translation>
 <translation id="8572981282494768930">Nu permite site-urilor să acceseze camera și microfonul</translation>
-<translation id="8574794171590710404">Acest site folosește un plugin (<ph name="PLUGIN_NAME" />) care nu este acceptat.</translation>
 <translation id="857779305329188634">Activați compatibilitatea cu protocolul experimental QUIC.</translation>
 <translation id="8579285237314169903">Se sincronizează <ph name="NUMBER_OF_FILES" /> (de) elemente...</translation>
 <translation id="8579549103199280730">Întreabă-mă mereu</translation>
@@ -5106,7 +5096,6 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="8581690024797204327">256</translation>
 <translation id="8581809080475256101">Apasă pentru a naviga înainte sau folosește meniul contextual pentru a vedea istoricul</translation>
 <translation id="8584280235376696778">&amp;Deschide videoclipul într-o filă nouă</translation>
-<translation id="8585103164112230633">Controlează și vezi site-urile pe care le accesează această persoană din</translation>
 <translation id="8589311641140863898">API-uri ale extensiilor experimentale</translation>
 <translation id="8590375307970699841">Configurează actualizările automate</translation>
 <translation id="8592071947729879125">Restricționează permisiunile iframe.</translation>
@@ -5254,7 +5243,6 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="878069093594050299">Acest certificat a fost confirmat pentru următoarele utilizări:</translation>
 <translation id="8782565991310229362">Lansarea aplicațiilor de tip chioșc a fost anulată.</translation>
 <translation id="8783093612333542422">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; dorește să îți permită accesul la o imprimantă &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt;.</translation>
-<translation id="878431691778285679">Se pare că gestionați deja un utilizator cu acel nume.<ph name="LINE_BREAK" />Doriți să <ph name="BEGIN_LINK" />importați <ph name="PROFILE_NAME" /> pe acest dispozitiv.<ph name="END_LINK" />?</translation>
 <translation id="8784626084144195648">Medie limitată</translation>
 <translation id="8785135611469711856">Plugin inactiv</translation>
 <translation id="8787254343425541995">Permiteți proxy-uri pentru rețelele utilizate în comun</translation>
@@ -5295,7 +5283,7 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="8847988622838149491">USB</translation>
 <translation id="8848709220963126773">Comutare mod tastă Shift</translation>
 <translation id="8852742364582744935">Au fost adăugate următoarele aplicații și extensii:</translation>
-<translation id="8853611566624224021">Activează preluarea fișierelor de afișare icc din Quirks Server pentru calibrarea afișării color.</translation>
+<translation id="8853611566624224021">Activează preluarea fișierelor de afișare icc din Quirks Server pentru calibrarea culorilor afișajului.</translation>
 <translation id="885381502874625531">Tastatură belarusă</translation>
 <translation id="8856844195561710094">Oprirea descoperirii dispozitivelor Bluetooth a eșuat.</translation>
 <translation id="885701979325669005">Stocare</translation>

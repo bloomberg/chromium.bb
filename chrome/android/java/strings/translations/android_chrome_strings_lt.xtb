@@ -25,6 +25,7 @@ Kad galėtumėte naudoti Fizinį žiniatinklį, būtina įgalinti „Bluetooth�
 <translation id="1285320974508926690">Niekada neversti šios svetainės</translation>
 <translation id="1291207594882862231">Išvalykite istoriją, slapukus, svetainės duomenis, talpyklą…</translation>
 <translation id="129553762522093515">Neseniai uždarytas</translation>
+<translation id="13410144310025252">Peržiūrėkite tinklalapius naršyklėje „Chrome“</translation>
 <translation id="1346090444609141578">Čia nėra jokių išsaugotų puslapių</translation>
 <translation id="1369915414381695676">Pridėta svetainė <ph name="SITE_NAME" /></translation>
 <translation id="1373696734384179344">Nepakanka atminties pasirinktam turiniui atsisiųsti.</translation>
@@ -193,6 +194,7 @@ Jei norite koreguoti paieškos terminą, paspauskite ir laikykite, kad jį pasir
 <translation id="3656115297268584622">Įjunkite vietovę <ph name="BEGIN_LINK" />„Android“ nustatymuose<ph name="END_LINK" />.</translation>
 <translation id="3661699943263275414">Trečiųjų šalių svetainės gali saugoti ir nuskaityti slapukų duomenis</translation>
 <translation id="3672452749423051839">Naršymo klaidų pasiūlymai</translation>
+<translation id="3716158070938632480">Tinklalapius transliuojantys įrenginiai yra netoliese</translation>
 <translation id="3732088672634061408">Nepavyko gauti pomėgių.</translation>
 <translation id="3738139272394829648">Paieška palietus</translation>
 <translation id="3809549525127675114">Baigta leisti „<ph name="VIDEO_TITLE" />“</translation>
@@ -373,7 +375,6 @@ Tačiau nesate nematomi. Kai naudojate inkognito režimą, jūsų darbdavys, int
 <translation id="5911030830365207728">„Google“ vertėjas</translation>
 <translation id="5916664084637901428">Įjungta</translation>
 <translation id="5939518447894949180">Nustatyti iš naujo</translation>
-<translation id="5965336165840183977">Sinchronizuoti duomenys bus išvalyti iš visų įrenginių. Nebūsite atjungti nuo „Google“ paskyros. Išsaugoti svetainių nustatymai nebus ištrinti ir gali nurodyti jūsų naršymo įpročius.</translation>
 <translation id="5968595432776860642">Leidžiamas „<ph name="VIDEO_TITLE" />“</translation>
 <translation id="6010869025736512584">Pasiekiama vaizdo įrašų įvestis</translation>
 <translation id="6012342843556706400">„Chrome“ reikia galimybės pasiekti vietovės informaciją, kad ją būtų galima bendrinti su šia svetaine.</translation>
@@ -393,7 +394,6 @@ Tačiau nesate nematomi. Kai naudojate inkognito režimą, jūsų darbdavys, int
 <translation id="6159335304067198720">Sutaupyta duomenų: <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">Sužinokite daugiau</translation>
 <translation id="6192792657125177640">Išimtys</translation>
-<translation id="6231464350722415003">Leisti „JavaScript“ nurodytose svetainėse, tačiau blokuoti visur kitur žiniatinklyje</translation>
 <translation id="6232535412751077445">Įgalinus funkciją „Nestebėti“, užklausa bus įtraukta į naršymo srautą. Poveikis priklauso nuo to, ar svetainė atsako į užklausą ir kaip užklausa interpretuojama.
 
 Pavyzdžiui, kai kurios svetainės gali atsakyti į šią užklausą rodydamos jums skelbimus, nepagrįstus kitomis svetainėmis, kuriose lankėtės. Daugelis svetainių vis tiek rinks ir naudos jūsų naršymo duomenis, kad, pvz., patobulintų saugą, teiktų turinį, skelbimus bei rekomendacijas ir sugeneruotų ataskaitų teikimo statistiką.</translation>
@@ -481,7 +481,6 @@ Pavyzdžiui, kai kurios svetainės gali atsakyti į šią užklausą rodydamos j
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> naudoja vietovės informaciją vietinės paieškos rezultatams rodyti</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />Pagalba<ph name="END_LINK" /></translation>
 <translation id="7299721129597238157">Ištrinti žymę</translation>
-<translation id="7346217184097589238">Išsaugoti svetainės duomenys nebus ištrinti ir gali parodyti jūsų naršymo įpročius.</translation>
 <translation id="7347770551817603360">Neprisijungus pasiekiamas turinys</translation>
 <translation id="7363354739009474003">Įkeliamas „<ph name="VIDEO_TITLE" />“</translation>
 <translation id="7366340029385295517">Perduodama į ekraną „<ph name="SCREEN_NAME" />“</translation>
@@ -492,6 +491,7 @@ Pavyzdžiui, kai kurios svetainės gali atsakyti į šią užklausą rodydamos j
 <translation id="7408644312175185557">Peržiūrėkite skirtukų lapus naudodami kitas naujausias programas telefono „Apžvalgos“ ekrane.</translation>
 <translation id="7423098979219808738">Pirmiausia paklausti</translation>
 <translation id="7437998757836447326">Atsijungimas nuo „Chrome“</translation>
+<translation id="7464701184726199289">Taip sinchronizuoti duomenys bus išvalyti iš visų įrenginių. Išsaugoti svetainių nustatymai nebus ištrinti ir gali nurodyti naršymo įpročius. <ph name="BEGIN_LINK" />Sužinokite daugiau<ph name="END_LINK" /></translation>
 <translation id="7473891865547856676">Ne, ačiū</translation>
 <translation id="7475192538862203634">Jei tai rodoma dažnai, peržiūrėkite šiuos <ph name="BEGIN_LINK" />pasiūlymus<ph name="END_LINK" />.</translation>
 <translation id="748127970106343339">Patvirtinti įrenginio prisijungimo duomenų ištrynimą</translation>
@@ -543,7 +543,11 @@ Tačiau nesate nematomi. Kai naudojate inkognito režimą, jūsų darbdavys, int
 <translation id="8068648041423924542">Nepavyko pasirinkti sertifikato.</translation>
 <translation id="8069239273282989646">Suglaudinus</translation>
 <translation id="8073388330009372546">Atid. vaizdą nauj. skirt. lap.</translation>
+<translation id="8076014560081431679">Išsaugoti svetainių nustatymai nebus ištrinti ir gali nurodyti naršymo įpročius. <ph name="BEGIN_LINK" />Sužinokite daugiau<ph name="END_LINK" /></translation>
 <translation id="8084156870963450514">Prisijunkite, kad pasiektumėte visus žiniatinklio elementus bet kuriuo įrenginiu.</translation>
+<translation id="8098570222830891427">Netoliese esantys įrenginiai transliuoja tinklalapius „Bluetooth“ ryšiu. Kai suaktyvinsite įrenginį, „Chrome“ nuskaitys puslapius ir rodys juos. Šie puslapiai bus siunčiami naudojant „Google“ paslaugą siekiant patobulinti puslapių rezultatų kokybę.
+
+Fizinį žiniatinklį galite valdyti „Chrome“ nustatymuose.</translation>
 <translation id="8106211421800660735">Kredito kortelės numeris</translation>
 <translation id="813082847718468539">Žiūrėti svetainės informaciją</translation>
 <translation id="8137558756159375272">Paieška palietus siunčia pasirinktą žodį ir esamą puslapį kaip kontekstą „Google“ paieškai. Galite išjungti šią funkciją <ph name="BEGIN_LINK" />nustatymuose<ph name="END_LINK" />.</translation>

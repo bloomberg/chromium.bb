@@ -63,8 +63,6 @@
 
       Ha a házirend nincs beállítva, illetve értéke hamis, akkor a TLS protokoll RC4 rejtjelezési csomagjai nem lesznek engedélyezve. Igaz értékre állítva megmarad a kompatibilitás az elavult szerverekkel. Ez átmeneti intézkedés, a szervert újra kell konfigurálni.</translation>
 <translation id="1297182715641689552">Használjon .pac proxyszkriptet</translation>
-<translation id="1300635491585192248">A hálózati műveletek előrejelzése bármely nem mobilos
-          hálózaton</translation>
 <translation id="1304973015437969093">Bővítmény- és alkalmazásazonosítók és frissítési URL-ek csendes telepítése</translation>
 <translation id="1310699457130669094">Itt megadhatja egy proxy .pac fájl URL-jét. Ez a házirend csak akkor lép érvénybe, ha a manuális proxybeállításokat választotta a "Válassza ki, hogyan adja meg a proxyszerver beállításait" résznél. Ha valamilyen más módját választotta a proxyházirendek beállításának, akkor hagyja ezt a házirendet konfigurálatlanul. További részletes példákért látogassa meg a következő oldalt: <ph name="PROXY_HELP_URL" /></translation>
 <translation id="1313457536529613143">Azt a százalékot adja meg, amelynek alapján a képernyő-elsötétítési késleltetés skálázódik, ha az elsötétedés során, vagy röviddel a képernyő kikapcsolódása után felhasználói tevékenység történik.
@@ -455,7 +453,6 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
       Ha a szabály nincs beállítva, a felhasználó eldöntheti, hogy használja-e a rendelkezésre álló adattömörítő proxyfunkciót.</translation>
 <translation id="2587719089023392205">A <ph name="PRODUCT_NAME" /> legyen az alapértelmezett böngészőm</translation>
 <translation id="2592091433672667839">Inaktivitás időtartama, mielőtt megjelenne a képernyőkímélő a bejelentkezési képernyőn kiállító módban</translation>
-<translation id="260705825237536216">ARC-alkalmazások konfigurálása</translation>
 <translation id="2623014935069176671">Várakozás a kezdeti felhasználói tevékenységre</translation>
 <translation id="262740370354162807">A dokumentumok <ph name="CLOUD_PRINT_NAME" /> szolgáltatás részére való benyújtásának engedélyezése</translation>
 <translation id="2633084400146331575">Hangos visszajelzések engedélyezése</translation>
@@ -536,7 +533,6 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
           Ha a házirend Igaz értékre van állítva, vagy nincs beállítva, a rendszer nem tekinti tétlennek a felhasználót hanglejátszás közben. Ez meggátolja a tétlenségi késleltetés elérését és a vonatkozó művelet végrehajtását, ám a képernyő-elsötétítést, képernyő-kikapcsolást és képernyő-lezárást a rendszer az audiotevékenységre tekintet nélkül ugyanúgy elvégzi a beállított időtartamok elteltével.
 
           Ha a házirend Hamis értékre van állítva, az audiotevékenység nem gátolja meg, hogy a rendszer tétlennek tekintse a felhasználót.</translation>
-<translation id="2948381198510798695">A(z) <ph name="PRODUCT_NAME" /> figyelmen kívül hagy bármilyen proxyt a listán megadott gazdagépek esetében. Ez a házirend csak akkor lép érvénybe, ha a manuális proxybeállításokat választotta a "Válassza ki, hogyan adja meg a proxyszerver beállításait" résznél. Ha valamilyen más módját választotta a proxyházirendek beállításának, akkor hagyja ezt a házirendet konfigurálatlanul. További részletes példákért látogassa meg a következő oldalt: <ph name="PROXY_HELP_URL" /></translation>
 <translation id="2956777931324644324">Ezt a házirendet a <ph name="PRODUCT_NAME" /> 36-os verziójától kezdve visszavontuk.
 
       Azt adja meg, hogy a TLS-domainhez kötött tanúsítványbővítmények engedélyezve legyenek-e.
@@ -769,7 +765,6 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
 
       A listabejegyzések szótárának tartalmaznia kell a bővítményazonosítót az „extension-id” mezőben, valamint annak frissített URL-jét az „update-url” mezőben.</translation>
 <translation id="3891357445869647828">JavaScript engedélyezése</translation>
-<translation id="389421284571827139">Lehetővé teszi a(z) <ph name="PRODUCT_NAME" /> által használt proxyszerver meghatározását, és megakadályozza, hogy a felhasználók megváltoztassák a proxybeállításokat. Ha úgy dönt, hogy soha nem használ proxyszervert, és mindig közvetlenül kapcsolódik, a rendszer az összes többi opciót figyelmen kívül hagyja. Ha a proxyszerver automatikus érzékelését választja, a rendszer az összes többi opciót figyelmen kívül hagyja. A részletes példákért látogasson el a következő címre: <ph name="PROXY_HELP_URL" />. Ha engedélyezi ezt a beállítást, a(z) <ph name="PRODUCT_NAME" /> figyelmen kívül hagy minden proxyval kapcsolatos opciót a parancssorból. Ha beállítatlanul hagyja ezeket a házirendeket, akkor a felhasználók maguk választhatják ki proxybeállításaikat.</translation>
 <translation id="3907986150060929099">Beállítja a nyilvános munkamenet ajánlott nyelv- és országkódjait</translation>
 <translation id="391531815696899618">Igaz érték esetén letiltja a Google Drive szinkronizálását a <ph name="PRODUCT_OS_NAME" /> Fájlok alkalmazásában. Ebben az esetben nem lesznek feltöltve adatok a Google Drive-ra.
 
@@ -989,16 +984,6 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
           Az értéknek szöveges karakterláncként megadott JSON-könyvtárak tömbjének kell lennie. A könyvtárakat a { "pattern": "$URL_PATTERN", "filter" : $FILTER } formátumban kell megadni, ahol az $URL_PATTERN egy tartalombeállítási mintát jelöl. A $FILTER korlátozza azt, hogy a böngésző melyik ügyféltanúsítványok közül választhat automatikusan. A szűrőtől függetlenül csak olyan tanúsítványokat választhat, amelyek megfelelnek a szerver tanúsítványkérelmének. Ezenkívül ha a $FILTER formátuma { "ISSUER": { "CN": "$ISSUER_CN" } }, akkor a böngésző csak olyan ügyféltanúsítványokat választ, amelyeket az $ISSUER_CN nevű tanúsítványkibocsátó adott ki. Ha a $FILTER egy üres könyvtár („{}”), akkor az ügyféltanúsítványok kiválaszthatósága nem lesz tovább korlátozva.
 
           Ha nem állítja be ezt a házirendet, akkor semmilyen webhely esetében nem történik automatikus kiválasztás.</translation>
-<translation id="4980301635509504364">Videorögzítés engedélyezése vagy tiltása.
-
-      Ha engedélyezett, vagy ha nincs beállítva (alapértelmezett), a böngésző
-      – a VideoCaptureAllowedUrls listában beállított URL-ek kivételével, amelyek
-      kérdés nélkül megkapják – videorögzítési hozzáférést kér a felhasználótól.
-
-      Ha le van tiltva, akkor a felhasználó sosem kap kérdést, és a videorögzítés
-      csak a VideoCaptureAllowedUrls listában beállított URL-ek számára érhető el.
-
-      Ez a házirend minden videobemenetre érvényes, nem csak a beépített kamerára.</translation>
 <translation id="4980635395568992380">Adattípus:</translation>
 <translation id="4983201894483989687">Elavult bővítmények futtatásának engedélyezése</translation>
 <translation id="4988291787868618635">A tétlenségi késleltetés elteltével végzendő művelet</translation>
@@ -1087,11 +1072,6 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
 <translation id="5307432759655324440">Inkognitómód elérhetősége</translation>
 <translation id="5318185076587284965">Relay szerverek használatának engedélyezése a távoli gazdagép számára</translation>
 <translation id="5330684698007383292">A következő tartalomtípusok kezelésének engedélyezése a(z) <ph name="PRODUCT_FRAME_NAME" /> számára</translation>
-<translation id="5345267406698765263">Az ARC-házirendet JSON-karakterláncként adja meg, amely változtatás
-      nélkül hozzáadható az ARC-futáshoz. A beállítás pillanatnyilag csak az
-      alkalmazások kényszerített telepítésére szolgál.
-
-      Ha nincs beállítva ez a házirend, akkor egyik alkalmazás telepítése sem történik meg automatikusan.</translation>
 <translation id="5365946944967967336">Kezdőoldal gomb megjelenítése az eszköztáron</translation>
 <translation id="5366977351895725771">Ha „hamis” értékre van állítva, a felhasználó nem hozhat létre felügyelt felhasználókat. Az összes meglévő felügyelt felhasználó továbbra is elérhető lesz.
 
@@ -1182,7 +1162,6 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
 
       Ha a házirend nincs beállítva, vagy ha az értéke hamis, akkor a <ph name="PRODUCT_NAME" /> a meglévő online visszavonás-ellenőrzési beállításokat használja.</translation>
 <translation id="5732972008943405952">Automatikus kitöltés űrlapadatainak importálása az alapértelmezett böngészőből az első indításkor</translation>
-<translation id="5761030451068906335">Konfigurálja a(z) <ph name="PRODUCT_NAME" /> proxybeállításait. Ez a házirend még nem áll készen a használatra, úgyhogy kérjük, ne használja.</translation>
 <translation id="5765780083710877561">Leírás:</translation>
 <translation id="5770738360657678870">Fejlesztői csatorna (instabil lehet)</translation>
 <translation id="5774856474228476867">Az alapértelmezett keresési szolgáltató kereső URL-je</translation>
@@ -1207,13 +1186,6 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
       A használható változók listájáért lásd: https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
 
       Ha nincs megadva ez a beállítás, akkor az alkalmazás a profil alapértelmezett mappáját használja.</translation>
-<translation id="5819660021114910752">Meghatározza az eszköz által használandó időzónát. A felhasználók az aktuális munkamenet idejére felülbírálhatják a megadott időzónát. Kijelentkezéskor azonban visszaáll a megadott időzóna. Érvénytelen érték megadása esetén a házirend a „GMT” értékkel működik. Üres karakterlánc megadásakor a házirendet a rendszer figyelmen kívül hagyja.
-
-      Ha a házirend nincs használatban, akkor a jelenleg aktív időzóna marad érvényben, azonban a felhasználók megváltoztathatják az időzónát, és ez a módosítás így is marad. Így az egyik felhasználó által végrehajtott módosítás befolyással van a bejelentkezési képernyőre és az összes többi felhasználóra is.
-
-      Az új eszközöknél a kezdeti időzóna-beállítás „USA/Csendes-óceáni”.
-
-      Az érték formátuma megfelel az időzónák „IANA Time Zone Database” adatbázisban (lásd: „https://en.wikipedia.org/wiki/Tz_database”) található neveinek. A legtöbb időzónára lehetséges „földrész/nagyváros” vagy „óceán/nagyváros” formátumban hivatkozni.</translation>
 <translation id="5826047473100157858">Meghatározza, hogy a felhasználó megnyithat-e oldalakat inkognitó módban a(z) <ph name="PRODUCT_NAME" /> böngészőben. Ha az "Engedélyezve" lehetőség van kiválasztva, vagy ha a házirend beállítatlanul marad, az oldalakat meg lehet nyitni inkognitómódban. Ha a "Letiltva" lehetőség van kiválasztva, az oldalakat nem lehet megnyitni inkognitómódban. Ha a "Kényszerített" lehetőség van kiválasztva, az oldalakat CSAK inkognitómódban lehet megnyitni.</translation>
 <translation id="5836064773277134605">A távoli gazdagép által használt UDP porttartomány korlátozása</translation>
 <translation id="5845159892130426052">A ShowModalDialog API engedélyezése 2015.04.30-ig</translation>
@@ -1401,7 +1373,6 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
 
       Ha nem állítja be a házirendet, akkor az alapértelmezett beállítás lép érvénybe, amely a vállalati felügyelt felhasználók esetében „letiltott”, a nem felügyelt felhasználók esetében pedig „engedélyezett”.</translation>
 <translation id="6491139795995924304">Bluetooth engedélyezése az eszközön</translation>
-<translation id="6513756852541213407">Lehetővé teszi a(z) <ph name="PRODUCT_NAME" /> által használt proxyszerver meghatározását, és megakadályozza, hogy a felhasználók megváltoztassák a proxybeállításokat. Ha úgy dönt, hogy soha nem használ proxyszervert, és mindig közvetlenül kapcsolódik, a rendszer az összes többi beállítást figyelmen kívül hagyja. Ha úgy dönt, hogy a rendszer proxybeállításait használja, vagy automatikusan érzékeli a proxyszervert, a rendszer az összes többi beállítást figyelmen kívül hagyja. Ha a fix szerverproxy módot választja, további beállításokat adhat meg "A proxyszerver címe vagy URL-je" és a "Proxy figyelmen kívül hagyásával kapcsolatos szabályok vesszővel elválasztott listája" lehetőségeknél. Ha .pac proxyszkriptet használ, meg kell adnia a szkript URL-jét "A proxy .pac fájl URL-je" lehetőségnél. Részletes példákért látogassa meg a következő címet: <ph name="PROXY_HELP_URL" /> Ha engedélyezi ezt a beállítást, a(z) <ph name="PRODUCT_NAME" /> figyelmen kívül hagy minden proxyval kapcsolatos beállítást a parancssorból. Ha beállítatlanul hagyja ezt a házirendet, akkor a felhasználók saját maguk választhatják ki a proxybeállításaikat.</translation>
 <translation id="6520802717075138474">Keresőmotorok importálása az alapértelmezett böngészőből az első indításkor</translation>
 <translation id="653608967792832033">Az a felhasználói bevitel nélkül eltöltött idő, amely után a rendszer lezárja a képernyőt, ha akkumulátorról működik.
 
@@ -1481,7 +1452,6 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
 
       Ha nem állítja be a házirendet, a hálózati előrejelzés aktív lesz, de a felhasználó módosíthatja a beállítást.</translation>
 <translation id="6658245400435704251">Meghatározza a másodpercek számát, amely alatt egy eszköz véletlenszerűen késleltetheti egy frissítés letöltését annak első megjelenésétől a szerveren. Az eszköz ennek az időnek egy részét kivárhatja normál idő szerint, a hátralévő részét pedig a frissítések keresésének száma szerint. A szórás felső határa konstans időmennyiség, így az eszköz soha nem ragad le örökre arra várva, hogy letöltsön egy frissítést.</translation>
-<translation id="6672934768721876104">Ez a házirend elavult, használja helyette a ProxyMode-ot. Lehetővé teszi a(z) <ph name="PRODUCT_NAME" /> által használt proxyszerver meghatározását, és megakadályozza, hogy a felhasználók megváltoztassák a proxybeállításokat. Ha úgy dönt, hogy soha nem használ proxyszervert és mindig közvetlenül kapcsolódik, a rendszer az összes többi beállítást figyelmen kívül hagyja. Ha úgy dönt, hogy a rendszer proxybeállításait használja, vagy automatikusan érzékeli a proxyszervert, a rendszer az összes többi beállítást figyelmen kívül hagyja. Ha a manuális proxybeállításokat választja, további beállításokat adhat meg a "Proxyszerver címe vagy URL-je", az "URL egy proxy .pac fájlhoz" és a "Proxy figyelmen kívül hagyásával kapcsolatos szabályok vesszővel elválasztott listája" lehetőségeknél. A részletes példákért látogassa meg a következő címet: <ph name="PROXY_HELP_URL" /> Ha engedélyezi ezt a beállítást, a(z) <ph name="PRODUCT_NAME" /> figyelmen kívül hagy minden proxyval kapcsolatos beállítást a parancssorból. Ha beállítatlanul hagyja ezt a házirendet, akkor a felhasználók saját maguk választhatják ki a proxybeállításaikat.</translation>
 <translation id="6689792153960219308">Hardverállapot jelentése</translation>
 <translation id="6693751878507293182">Ha engedélyezi ezt a beállítást, akkor azzal letiltja a hiányzó bővítmények automatikus keresését és telepítését a következőben: <ph name="PRODUCT_NAME" />. Ha nem engedélyezi, illetve konfigurálatlanul hagyja ezt a beállítást, akkor a bővítménykereső aktiválódik.</translation>
 <translation id="6697474194550078937">Azon időtartam korlátozása, amennyit egy SAML révén hitelesített felhasználó offline bejelentkezve eltölthet.

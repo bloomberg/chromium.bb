@@ -25,6 +25,7 @@ A Fizikai web használatához be kell kapcsolnia a Bluetooth funkciót és a hel
 <translation id="1285320974508926690">Ezt a webhelyet soha ne fordítsa le</translation>
 <translation id="1291207594882862231">Előzmények, cookie-k, webhelyadatok és a gyorsítótár törlése…</translation>
 <translation id="129553762522093515">Mostanában bezárt</translation>
+<translation id="13410144310025252">Megtekintés Chrome-ban</translation>
 <translation id="1346090444609141578">Nincsenek mentett oldalak</translation>
 <translation id="1369915414381695676">A(z) <ph name="SITE_NAME" /> webhely hozzáadva</translation>
 <translation id="1373696734384179344">Nincs elegendő memória a kiválasztott tartalom letöltéséhez.</translation>
@@ -193,6 +194,7 @@ A keresési kifejezés módosításához hosszú nyomva tartással hajthat végr
 <translation id="3656115297268584622">Kapcsolja be a helyszolgáltatást az <ph name="BEGIN_LINK" />Android-beállításokban<ph name="END_LINK" />.</translation>
 <translation id="3661699943263275414">A hamardik felek webhelyei menthetik és olvashatják a cookie-adatokat</translation>
 <translation id="3672452749423051839">Navigálási hibákkal kapcsolatos javaslatok</translation>
+<translation id="3716158070938632480">Weboldalak találhatók a közelben</translation>
 <translation id="3732088672634061408">Nem sikerült lekérni az érdeklődési köröket.</translation>
 <translation id="3738139272394829648">Érintéssel keresés</translation>
 <translation id="3809549525127675114">A(z) „<ph name="VIDEO_TITLE" />” lejátszása befejeződött</translation>
@@ -372,7 +374,6 @@ Mindazonáltal Ön nem lesz láthatatlan. Az inkognitómód használatával nem 
 <translation id="5911030830365207728">Google Fordító</translation>
 <translation id="5916664084637901428">Be</translation>
 <translation id="5939518447894949180">Visszaállítás</translation>
-<translation id="5965336165840183977">Ezzel eltávolítja a szinkronizált adatokat az összes eszközről. A rendszer nem jelentkezteti ki a Google-fiókjából. A mentett webhelybeállítások nem törlődnek, és tájékozódási alapul szolgálhatnak böngészési szokásait illetően.</translation>
 <translation id="5968595432776860642">„<ph name="VIDEO_TITLE" />” lejátszása</translation>
 <translation id="6010869025736512584">Hozzáférés videobemenethez</translation>
 <translation id="6012342843556706400">A Chrome-nak rendelkeznie kell hozzáféréssel a tartózkodási helyhez, hogy megoszthassa ezzel a webhellyel.</translation>
@@ -392,7 +393,6 @@ Mindazonáltal Ön nem lesz láthatatlan. Az inkognitómód használatával nem 
 <translation id="6159335304067198720"><ph name="PERCENT" />-os adatmegtakarítás</translation>
 <translation id="6165508094623778733">További információ</translation>
 <translation id="6192792657125177640">Kivételek</translation>
-<translation id="6231464350722415003">JavaScript engedélyezése az Ön által megadott webhelyeken, míg az internet egyéb helyein annak letiltása</translation>
 <translation id="6232535412751077445">A „Nincs nyomon követés” engedélyezése azt jelenti, hogy a böngészési forgalommal együtt kérelmet is küld a rendszer. Ennek hatása attól függ, hogy a webhely reagál-e a kérelemre, és hogyan értelmezi azt.
 
 Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jelenítenek meg, amelyek nem a már felkeresett egyéb webhelyeken alapulnak. Számos webhely ilyenkor is gyűjti és felhasználja a böngészési adatokat (például a biztonság növelése, továbbá tartalom, hirdetések és ajánlatok biztosítása, valamint jelentésekhez használt statisztika előállítása céljából).</translation>
@@ -480,7 +480,6 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="7244362611678346589">A(z) <ph name="SEARCH_ENGINE_URL" /> az Ön tartózkodási helye alapján jelenít meg helyi keresési eredményeket</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />Súgó<ph name="END_LINK" /></translation>
 <translation id="7299721129597238157">Könyvjelző törlése</translation>
-<translation id="7346217184097589238">A mentett webhelybeállítások nem törlődnek, és tájékozódási alapul szolgálhatnak böngészési szokásait illetően.</translation>
 <translation id="7347770551817603360">Offline tartalom</translation>
 <translation id="7363354739009474003">A(z) „<ph name="VIDEO_TITLE" />” betöltése</translation>
 <translation id="7366340029385295517">Átküldés a következőre: <ph name="SCREEN_NAME" /></translation>
@@ -491,6 +490,7 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="7408644312175185557">Telefonja Áttekintés képernyőjén a lapokat láthatja a legutóbbi alkalmazásokkal együtt.</translation>
 <translation id="7423098979219808738">Kérdezzen rá</translation>
 <translation id="7437998757836447326">Kijelentkezés a Chrome-ból</translation>
+<translation id="7464701184726199289">Az összes eszközről törli a szinkronizált adatokat. A mentett webhelybeállítások nem törlődnek, és tájékozódási alapul szolgálhatnak böngészési szokásait illetően. <ph name="BEGIN_LINK" />További információ.<ph name="END_LINK" /></translation>
 <translation id="7473891865547856676">Nem, köszönöm</translation>
 <translation id="7475192538862203634">Ha gyakran látja ezt, próbálja ki ezeket a <ph name="BEGIN_LINK" />javaslatokat<ph name="END_LINK" />.</translation>
 <translation id="748127970106343339">Eszközhitelesítési adatok törlésének megerősítése</translation>
@@ -542,7 +542,11 @@ Mindazonáltal Ön nem lesz láthatatlan. Az inkognitómód használatával nem 
 <translation id="8068648041423924542">A tanúsítvány kiválasztása nem sikerült.</translation>
 <translation id="8069239273282989646">Tömörítés után</translation>
 <translation id="8073388330009372546">Kép megnyitása új lapon</translation>
+<translation id="8076014560081431679">A mentett webhelybeállítások nem törlődnek, és tájékozódási alapul szolgálhatnak böngészési szokásait illetően. <ph name="BEGIN_LINK" />További információ.<ph name="END_LINK" /></translation>
 <translation id="8084156870963450514">Jelentkezzen be, hogy bármely eszközről hozzáférhessen valamennyi internetes dolgához</translation>
+<translation id="8098570222830891427">Az Ön közelében található eszközök weboldalakat sugároznak Bluetooth-on keresztül. A Chrome megkeresi és megjeleníti ezeket a weboldalakat, miután Ön felébresztette eszközét. Ezek az oldalak egy adott Google-szolgáltatáson mennek keresztül az oldaltalálatok minőségének javítása érdekében.
+
+A Fizikai webet a Chrome-beállításokban szabályozhatja.</translation>
 <translation id="8106211421800660735">Hitelkártya száma</translation>
 <translation id="813082847718468539">Az oldalinformációk megtekintése</translation>
 <translation id="8137558756159375272">Az Érintéssel keresés elküldi a kiválasztott szót és az aktuális oldalt kontextusként a Google Keresés számára. A funkciót a <ph name="BEGIN_LINK" />Beállítások<ph name="END_LINK" /> szakaszban kikapcsolhatja.</translation>

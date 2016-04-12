@@ -277,7 +277,6 @@
 <translation id="1407050882688520094">На датотеци постоје сертификати који идентификују следеће ауторитете за издавање сертификата:</translation>
 <translation id="1407489512183974736">Опсеци централно</translation>
 <translation id="1408789165795197664">Напредне опције</translation>
-<translation id="1408803555324839240">Упс! Није могуће направити новог корисника под надзором. Проверите да ли сте исправно пријављени и покушајте поново.</translation>
 <translation id="1409390508152595145">Направи корисника под надзором</translation>
 <translation id="1410616244180625362">И даље дозвољавај да <ph name="HOST" /> приступа камери</translation>
 <translation id="1413372529771027206">Телефон коришћен за Smart Lock је промењен. Унесите лозинку да бисте ажурирали Smart Lock за Chromebook на овом уређају. Следећи пут можете само да кликнете на слику да бисте приступили.</translation>
@@ -1519,7 +1518,7 @@
 <translation id="3160041952246459240">На датотеци постоје сертификати који идентификују следеће сервере:</translation>
 <translation id="316125635462764134">Уклони апликацију</translation>
 <translation id="3162559335345991374">Wi-Fi мрежа коју користите ће можда захтевати да посетите страницу за пријављивање.</translation>
-<translation id="316307797510303346">Контролишите и прегледајте веб-сајтове које ова особа посећује са адресе <ph name="CUSTODIAN_EMAIL" />.
+<translation id="316307797510303346">Контролишите и прегледајте веб-сајтове које ова особа посећује са <ph name="CUSTODIAN_EMAIL" />.
     Детаљи за пријављивање на налог су застарели.</translation>
 <translation id="3166571619128686629">Кликните или кажите „Ok Google“ да бисте започели гласовну претрагу</translation>
 <translation id="3170072451822350649">Можете и да прескочите пријављивање и да <ph name="LINK_START" />прегледате као гост<ph name="LINK_END" />.</translation>
@@ -1596,7 +1595,6 @@
 <translation id="3277710850168074473">Кориснички покрети као услов за пуштање медијских елемената. Ако ово онемогућите, омогућићете аутоплеј.</translation>
 <translation id="3280237271814976245">Сачувај &amp;као...</translation>
 <translation id="3280431534455935878">Припрема</translation>
-<translation id="3284674070818187654">Google може да користи вашу историју прегледања да би персонализовао Претрагу и друге Google услуге. Ово можете да контролишете на myaccount.google.com.</translation>
 <translation id="3285322247471302225">Нова &amp;картица</translation>
 <translation id="3288047731229977326">Додаци покренути у режиму програмера могу да нашкоде рачунару. Ако нисте програмер, требало би да онемогућите ове додатке покренуте у режиму програмера да бисте се заштитили.</translation>
 <translation id="3289566588497100676">Лаки унос симбола</translation>
@@ -1703,7 +1701,6 @@
 <translation id="3413122095806433232">CA издаваоци: <ph name="LOCATION" /></translation>
 <translation id="3414856743105198592">Форматирањем уклоњивих медија бришете све податке. Да ли желите да наставите?</translation>
 <translation id="3414952576877147120">Величина:</translation>
-<translation id="3416248389957650982">Отворите myaccount.google.com када се пријавите</translation>
 <translation id="3420980393175304359">Други корисник</translation>
 <translation id="3423858849633684918">Рестартујте <ph name="PRODUCT_NAME" /></translation>
 <translation id="3425233587047449821">Нови IME за корејски</translation>
@@ -1918,7 +1915,6 @@
 <translation id="3694027410380121301">Изабери претходну картицу</translation>
 <translation id="3694122362646626770">Веб-сајтови</translation>
 <translation id="3694678678240097321">Захтева пристанак корисника за додатак који користи скрипт на страници ако додатак затражи дозволу за покретање на свим URL-овима.</translation>
-<translation id="36954862089075551">Упс! Прављење новог корисника није успело. Проверите да ли имате довољно простора на хард-диску и одговарајуће дозволе и покушајте поново.</translation>
 <translation id="3695919544155087829">Унесите лозинку која је коришћена за шифровање ове датотеке сертификата.</translation>
 <translation id="3696411085566228381">ништа</translation>
 <translation id="3697100740575341996">IT администратор је онемогућио Chrome забавне стварчице за уређај. <ph name="MORE_INFO_LINK" /></translation>
@@ -2346,7 +2342,6 @@
 <translation id="4345703751611431217">Софтвер није компатибилан: Сазнајте више</translation>
 <translation id="4348766275249686434">Прикупљај грешке</translation>
 <translation id="4350019051035968019">Овај уређај не може да се региструје на домену коме припада ваш налог јер је означен као уређај којим управља други домен.</translation>
-<translation id="4352333825734680558">Упс! Прављење новог корисника под надзором није успело. Проверите мрежну везу и покушајте поново касније.</translation>
 <translation id="4358697938732213860">Додај адресу</translation>
 <translation id="4359408040881008151">Инсталиран је због зависних додатака.</translation>
 <translation id="4361190688154226069">Циљање у приказима засновано на правоугаоним површинама</translation>
@@ -3021,7 +3016,6 @@
 <translation id="5388588172257446328">Корисничко име:</translation>
 <translation id="5390284375844109566">Индексирана база података</translation>
 <translation id="5392544185395226057">Омогућите подршку за Native Client.</translation>
-<translation id="5393125431335030955">Ова додатна компонента функционише само на рачунару.</translation>
 <translation id="5396126354477659676">Додатна компонента <ph name="PEPPER_PLUGIN_NAME" /> на домену <ph name="PEPPER_PLUGIN_DOMAIN" /> жели да приступи рачунару.</translation>
 <translation id="539755880180803351">Означава веб-обрасце са типом поља са предвиђањима помоћу аутоматског попуњавања који функционишу као текст резервисаног места.</translation>
 <translation id="5397578532367286026">Менаџер (<ph name="MANAGER_EMAIL" />) може да прегледа коришћење и историју овог корисника на chrome.com.</translation>
@@ -3288,7 +3282,6 @@
 <translation id="57646104491463491">Датум измене</translation>
 <translation id="5765491088802881382">Ниједна мрежа није доступна</translation>
 <translation id="5765780083710877561">Опис:</translation>
-<translation id="5770385044111747894">NPAPI</translation>
 <translation id="5771585441665576801">Транслитерација (geia → γεια)</translation>
 <translation id="5771816112378578655">Подешавање је у току...</translation>
 <translation id="5771849619911534867">Скенирање уређаја је заустављено.</translation>
@@ -3922,7 +3915,6 @@
 <translation id="6793649375377511437">Информације о Google Copresence-у</translation>
 <translation id="6797493596609571643">Упс, нешто није у реду.</translation>
 <translation id="6798954102094737107">Додатна компонента: <ph name="PLUGIN_NAME" /></translation>
-<translation id="6799646767877093143">Овај сајт користи додатну компоненту (<ph name="PLUGIN_NAME" />) која ускоро више неће бити подржана.</translation>
 <translation id="6802031077390104172"><ph name="USAGE" /> (<ph name="OID" />)</translation>
 <translation id="6804671422566312077">Отвори све обележиваче у &amp;новом прозору</translation>
 <translation id="6805647936811177813">Пријавите се на <ph name="TOKEN_NAME" /> да бисте увезли сертификат клијента са <ph name="HOST_NAME" />.</translation>
@@ -4344,7 +4336,7 @@
 <translation id="7444983668544353857">Онемогући <ph name="NETWORKDEVICE" /></translation>
 <translation id="7445786591457833608">Није могуће преводити овај језик</translation>
 <translation id="7447657194129453603">Статус мреже:</translation>
-<translation id="744859430125590922">Контролишите и прегледајте веб-сајтове које ово особа посећује са <ph name="CUSTODIAN_EMAIL" />.</translation>
+<translation id="744859430125590922">Контролишите и прегледајте веб-сајтове које ова особа посећује са <ph name="CUSTODIAN_EMAIL" />.</translation>
 <translation id="7453008956351770337">Када изаберете овај штампач, дајете дозволу за приступ штампачу следећем додатку:</translation>
 <translation id="7455133967321480974">Користи глобалну подразумевану вредност (Блокирај)</translation>
 <translation id="7456142309650173560">програмер</translation>
@@ -4913,7 +4905,6 @@
 <translation id="8267698848189296333">Пријављујете се као <ph name="USERNAME" /></translation>
 <translation id="8272443605911821513">Управљајте додацима кликом на Додаци у менију „Још алатки“.</translation>
 <translation id="8273972836055206582"><ph name="FULLSCREEN_ORIGIN" /> је сада у режиму целог екрана и жели да онемогући курсор.</translation>
-<translation id="8274860189261120948">Аутоматски се пријављујте на веб-сајтове помоћу сачуваних акредитива. Када је ова функција онемогућена, тражићемо потврду пре сваког пријављивања на веб-сајт.</translation>
 <translation id="8275038454117074363">Увези</translation>
 <translation id="8276560076771292512">Испразни кеш и поново учитај са сервера</translation>
 <translation id="8279388322240498158">Сорани курдска тастатура заснована на енглеском</translation>
@@ -5098,7 +5089,6 @@
 <translation id="8571108619753148184">4. сервер</translation>
 <translation id="8572832761467613633">Само за Flash</translation>
 <translation id="8572981282494768930">Не дозвољавај сајтовима да приступају мојој камери и микрофону</translation>
-<translation id="8574794171590710404">Овај сајт користи додатну компоненту (<ph name="PLUGIN_NAME" />) која није подржана.</translation>
 <translation id="857779305329188634">Омогућавање подршке за експериментални QUIC протокол.</translation>
 <translation id="8579285237314169903">Синхронизују се ставке (<ph name="NUMBER_OF_FILES" />)...</translation>
 <translation id="8579549103199280730">Подразумевано питај</translation>
@@ -5106,7 +5096,6 @@
 <translation id="8581690024797204327">256</translation>
 <translation id="8581809080475256101">Притисните да бисте ишли унапред или отворите контекстуални мени да бисте видели историју</translation>
 <translation id="8584280235376696778">&amp;Отвори видео снимак у новој картици</translation>
-<translation id="8585103164112230633">Контролишите и прегледајте веб-сајтове које ова особа посећује са</translation>
 <translation id="8589311641140863898">Експериментални API-ји додатка</translation>
 <translation id="8590375307970699841">Подеси аутоматска ажурирања</translation>
 <translation id="8592071947729879125">Ограничи дозволе за iframe.</translation>
@@ -5254,7 +5243,6 @@
 <translation id="878069093594050299">Овај сертификат је верификован за следеће употребе:</translation>
 <translation id="8782565991310229362">Покретање киоск апликације је отказано.</translation>
 <translation id="8783093612333542422">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; жели да дели штампач &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; са вама.</translation>
-<translation id="878431691778285679">Изгледа да већ управљате корисником са тим именом.<ph name="LINE_BREAK" />Да ли сте желели да <ph name="BEGIN_LINK" />увезете корисника <ph name="PROFILE_NAME" /> на овај уређај<ph name="END_LINK" />?</translation>
 <translation id="8784626084144195648">Просек агрегације</translation>
 <translation id="8785135611469711856">Додатна компонента се не одазива</translation>
 <translation id="8787254343425541995">Дозволи проксије за дељене мреже</translation>

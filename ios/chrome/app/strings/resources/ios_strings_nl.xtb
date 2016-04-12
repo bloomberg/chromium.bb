@@ -4,52 +4,32 @@
 <translation id="1008557486741366299">Niet nu</translation>
 <translation id="1047726139967079566">Bladwijzer instellen voor deze pagina...</translation>
 <translation id="1172898394251786223">Volgend veld</translation>
-<translation id="168328519870909584">Cybercriminelen op <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />  proberen mogelijk gevaarlijke apps op je apparaat te installeren waarmee je gegevens kunnen worden gestolen of verwijderd (bijvoorbeeld foto's, wachtwoorden, berichten en creditcardgegevens).</translation>
 <translation id="2320166752086256636">Toetsenbord verbergen</translation>
 <translation id="2467815441875554965">Contextueel zoeken</translation>
 <translation id="2704606927547763573">Gekopieerd</translation>
 <translation id="2747003861858887689">Vorig veld</translation>
 <translation id="2780046210906776326">Geen e-mailaccounts</translation>
-<translation id="2803306138276472711">Google Safe Browsing heeft onlangs <ph name="BEGIN_LINK" />malware gedetecteerd<ph name="END_LINK" /> op <ph name="SITE" />. Websites die normaal gesproken veilig zijn, worden soms geïnfecteerd met malware.</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> van <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3335947283844343239">Open gesloten tabblad opnieuw</translation>
 <translation id="3414292259312108062">Chrome slaat dit op in je <ph name="BEGIN_LINK" />door Google opgeslagen wachtwoorden<ph name="END_LINK" /> en vult dit automatisch voor je aan, zodat je je wachtwoord niet zelf hoeft te onthouden.</translation>
 <translation id="3567664240939803299">Wil je dat Google Smart Lock je wachtwoord voor deze site opslaat?</translation>
-<translation id="3586931643579894722">Details verbergen</translation>
-<translation id="3736520371357197498">Als je de beveiligingsrisico's begrijpt, kun je <ph name="BEGIN_LINK" />deze onveilige site bezoeken<ph name="END_LINK" /> voordat de gevaarlijke programma's zijn verwijderd.</translation>
 <translation id="385051799172605136">Vorige</translation>
-<translation id="4098354747657067197">Misleidende site gedetecteerd</translation>
 <translation id="4121993058175073134">Als je netto-exportgegevens wilt verzenden, configureer je je e-mailaccount in de app Instellingen.</translation>
 <translation id="4399225372525667111">Chrome kan niet verifiëren of de URL voor deze site correct is.</translation>
-<translation id="4522570452068850558">Details</translation>
 <translation id="4728558894243024398">Platform</translation>
 <translation id="473775607612524610">Updaten</translation>
 <translation id="5317780077021120954">Opslaan</translation>
-<translation id="5337705430875057403">Cybercriminelen op <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> proberen je mogelijk te misleiden om iets gevaarlijks te doen, zoals software installeren of je persoonlijke gegevens bekendmaken (bijvoorbeeld wachtwoorden, telefoonnummers of creditcards).</translation>
 <translation id="605721222689873409">JJ</translation>
-<translation id="6075880972317537864">Cybercriminelen op <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> proberen je mogelijk te misleiden om je gegevens te stelen (bijvoorbeeld wachtwoorden, berichten of creditcarddetails).</translation>
 <translation id="6149061208933997199">Wachtwoord gebruiken</translation>
 <translation id="6196207969502475924">Gesproken zoekopdrachten</translation>
-<translation id="6221345481584921695">Google Safe Browsing heeft onlangs <ph name="BEGIN_LINK" />malware gedetecteerd<ph name="END_LINK" /> op <ph name="SITE" />. Websites die normaal gesproken veilig zijn, worden soms geïnfecteerd met malware. De schadelijke inhoud is afkomstig van <ph name="SUBRESOURCE_HOST" />, een bekende distributeur van malware.</translation>
-<translation id="6264485186158353794">Terug naar veilige website</translation>
 <translation id="6314335155547195432">Wachtwoord genereren</translation>
 <translation id="6344783595350022745">Tekst wissen</translation>
 <translation id="6456425917241817154">Gegenereerd Chrome-wachtw.</translation>
 <translation id="6535543971741225613">De site die je probeert te openen, gedraagt zich vreemd en Chrome kan niet verifiëren of de URL voor deze site correct is. Voor je eigen veiligheid moet je niet doorgaan. Je kunt het morgen opnieuw proberen of naar een andere site gaan.</translation>
-<translation id="6740369132746915122">Als je de veiligheidsrisico's begrijpt, kun je <ph name="BEGIN_LINK" />deze onveilige site bezoeken<ph name="END_LINK" />.</translation>
 <translation id="7222245588540287464">Of contextueel zoeken al dan niet is ingeschakeld.</translation>
-<translation id="724691107663265825">De volgende website bevat malware</translation>
 <translation id="7456847797759667638">Open locatie...</translation>
 <translation id="7481312909269577407">Vooruit</translation>
 <translation id="7484580869648358686">Waarschuwing: hier klopt iets niet!</translation>
-<translation id="7779249319235708104">Dreigende phishingaanval</translation>
 <translation id="7961015016161918242">Nooit</translation>
-<translation id="820854170120587500">Google Safe Browsing heeft onlangs phishing gedetecteerd op <ph name="SITE" />. <ph name="BEGIN_LINK" />Phishingsites<ph name="END_LINK" /> doen zich voor als een andere website om je te misleiden.</translation>
-<translation id="834457929814110454">Als je de beveiligingsrisico's begrijpt, kun je <ph name="BEGIN_LINK" />deze site bezoeken<ph name="END_LINK" /> voordat de schadelijke programma's zijn verwijderd.</translation>
-<translation id="8543181531796978784">Je kunt <ph name="BEGIN_ERROR_LINK" />een detectieprobleem melden<ph name="END_ERROR_LINK" />. Als je de veiligheidsrisico's begrijpt, kun je ook <ph name="BEGIN_LINK" />deze onveilige site bezoeken<ph name="END_LINK" />.</translation>
-<translation id="8761567432415473239">Google Safe Browsing heeft onlangs <ph name="BEGIN_LINK" />schadelijke programma's gevonden<ph name="END_LINK" /> op <ph name="SITE" />.</translation>
-<translation id="8996941253935762404">De volgende site bevat schadelijke programma's</translation>
-<translation id="9035022520814077154">Beveiligingsfout</translation>
-<translation id="9040185888511745258">Cybercriminelen op <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> proberen je mogelijk over te halen om programma's te installeren die schadelijk zijn voor je surfervaring (door bijvoorbeeld je startpagina te wijzigen of extra advertenties weer te geven op sites die je bezoekt).</translation>
 </translationbundle>

@@ -555,7 +555,6 @@
 <translation id="7186367841673660872">ఈ పేజీ<ph name="ORIGINAL_LANGUAGE" />నుండి<ph name="LANGUAGE_LANGUAGE" />కు అనువదించబడింది</translation>
 <translation id="719464814642662924">వీసా</translation>
 <translation id="720210938761809882">పేజీ బ్లాక్ చేయబడింది</translation>
-<translation id="7208899522964477531"><ph name="SITE_NAME" /> కోసం <ph name="SEARCH_TERMS" /> శోధించండి</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> భద్రతా ప్రమాణాలకు కట్టుబడి లేదు.</translation>
 <translation id="721197778055552897">ఈ సమస్య గురించి <ph name="BEGIN_LINK" />మరింత తెలుసుకోండి <ph name="END_LINK" />.</translation>
 <translation id="7219179957768738017">కనెక్షన్ <ph name="SSL_VERSION" />ని ఉపయోగిస్తుంది.</translation>
@@ -637,7 +636,6 @@
 <translation id="7951415247503192394">(32-బిట్)</translation>
 <translation id="7956713633345437162">మొబైల్ బుక్‌మార్క్‌లు</translation>
 <translation id="7961015016161918242">ఎప్పుడూ లేదు</translation>
-<translation id="7977590112176369853">&lt;ప్రశ్నను ఎంటర్ చెయ్యండి&gt;</translation>
 <translation id="7983301409776629893">ఎల్లప్పుడూ <ph name="ORIGINAL_LANGUAGE" />ను <ph name="TARGET_LANGUAGE" />కు అనువదించు</translation>
 <translation id="7995512525968007366">పేర్కొనబడలేదు</translation>
 <translation id="8012647001091218357">మేము ప్రస్తుతం మీ తల్లిదండ్రులను సంప్రదించలేకపోయాము. దయచేసి మళ్లీ ప్రయత్నించండి.</translation>
@@ -718,7 +716,6 @@
 <translation id="8903921497873541725">దగ్గరికి జూమ్ చెయ్యి</translation>
 <translation id="8931333241327730545">మీరు ఈ కార్డ్‌ను మీ Google ఖాతాకి సేవ్ చేయాలనుకుంటున్నారా?</translation>
 <translation id="8932102934695377596">మీ గడియారం సమయం గతంలో ఉంది</translation>
-<translation id="8940229512486821554"><ph name="EXTENSION_NAME" /> ఆదేశాన్ని అమలు చెయ్యి: <ph name="SEARCH_TERMS" /></translation>
 <translation id="8954894007019320973">(కొనసాగు .)</translation>
 <translation id="8971063699422889582">సర్వర్ యొక్క ప్రమాణపత్రం గడువు ముగిసింది.</translation>
 <translation id="8987927404178983737">నెల</translation>

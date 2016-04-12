@@ -82,7 +82,7 @@
 <translation id="4254339807215791271">ഉള്ളടക്ക വിവരം</translation>
 <translation id="4360991593054037559">സാധുവായ മൂല്യം നൽകുക. സാധുവായ ഏറ്റവുമടുത്ത രണ്ട് മൂല്യങ്ങൾ <ph name="VALID_VALUE_LOW" />, <ph name="VALID_VALUE_HIGHER" /> എന്നിവയാണ്.</translation>
 <translation id="4413860115965805769">മെനു ബട്ടൺ</translation>
-<translation id="4522570452068850558">വിശദാംശങ്ങള്‍‌</translation>
+<translation id="4522570452068850558">വിശദാംശങ്ങൾ‌</translation>
 <translation id="4597532268155981612">ഫോം</translation>
 <translation id="4661075872484491155">ട്രീ</translation>
 <translation id="4664250907885839816">'<ph name="ATSIGN" />' എന്നതിനുശേഷം വരുന്ന ഭാഗത്തിൽ '<ph name="INVALIDCHARACTER" />' ചിഹ്നം ഉണ്ടാകരുത്.</translation>
@@ -98,6 +98,7 @@
 <translation id="512758898067543763">വരി ശീർഷകം</translation>
 <translation id="5164977714490026579">മൂല്യം <ph name="MINIMUM" /> എന്നതില്‍ കൂടുതലോ സമമോ ആയിരിക്കണം.</translation>
 <translation id="5307600278924710095">'<ph name="ATSIGN" />' എന്നതിനുശേഷം ഒരു ഭാഗം നൽകുക.'<ph name="INVALIDADDRESS" />' അപൂർണ്ണമാണ്.</translation>
+<translation id="5317780077021120954">സംരക്ഷിക്കുക</translation>
 <translation id="5406322316791861025">ആകാരം</translation>
 <translation id="5453733299334684579">ട്രീ ഇനം</translation>
 <translation id="5466621249238537318">ഒന്നോ അതില്‍ക്കൂടുതലോ ഫയലുകള്‍ ദയവായി തിരഞ്ഞെടുക്കുക.</translation>

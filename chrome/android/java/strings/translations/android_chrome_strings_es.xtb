@@ -25,6 +25,7 @@ Debes activar la ubicación y el Bluetooth para utilizar la Web física.</transl
 <translation id="1285320974508926690">No traducir nunca este sitio</translation>
 <translation id="1291207594882862231">Borrar el historial, las cookies, los datos del sitio web, la caché…</translation>
 <translation id="129553762522093515">Cerrado recientemente</translation>
+<translation id="13410144310025252">Ver en Chrome</translation>
 <translation id="1346090444609141578">No tienes páginas guardadas</translation>
 <translation id="1369915414381695676">Se ha añadido el sitio <ph name="SITE_NAME" /></translation>
 <translation id="1373696734384179344">No hay memoria suficiente para descargar el contenido seleccionado.</translation>
@@ -75,7 +76,7 @@ Debes activar la ubicación y el Bluetooth para utilizar la Web física.</transl
 <translation id="1994173015038366702">URL del sitio</translation>
 <translation id="2001120796168634316">Guardar para más tarde</translation>
 <translation id="200669432486043882">Sustituir archivo</translation>
-<translation id="2038563949887743358">Activar opción para solicitar sitio de escritorio</translation>
+<translation id="2038563949887743358">Activar opción para ver como ordenador</translation>
 <translation id="2073235970478114994">Cargar imágenes</translation>
 <translation id="2079545284768500474">Deshacer</translation>
 <translation id="2082238445998314030">Resultado <ph name="RESULT_NUMBER" /> de <ph name="TOTAL_RESULTS" /></translation>
@@ -193,6 +194,7 @@ Para ajustar el término de búsqueda, mantén pulsado el texto para seleccionar
 <translation id="3656115297268584622">Activa la ubicación en los <ph name="BEGIN_LINK" />ajustes de Android<ph name="END_LINK" />.</translation>
 <translation id="3661699943263275414">Los sitios web externos pueden guardar y leer datos de cookies</translation>
 <translation id="3672452749423051839">Sugerencias para errores de navegación</translation>
+<translation id="3716158070938632480">Hay páginas web cercanas</translation>
 <translation id="3732088672634061408">No se han podido recuperar los intereses.</translation>
 <translation id="3738139272394829648">Tocar para buscar</translation>
 <translation id="3809549525127675114">"<ph name="VIDEO_TITLE" />" ha finalizado</translation>
@@ -372,7 +374,6 @@ No obstante, tus acciones no serán totalmente invisibles. El uso del modo incó
 <translation id="5911030830365207728">Traductor de Google</translation>
 <translation id="5916664084637901428">Activar</translation>
 <translation id="5939518447894949180">Restablecer</translation>
-<translation id="5965336165840183977">Se borrarán los datos sincronizados de todos los dispositivos. No se cerrará la sesión en tu cuenta de Google. No se eliminará la configuración guardada de los sitios web, lo cual puede reflejar tus hábitos de navegación.</translation>
 <translation id="5968595432776860642">Reproduciendo "<ph name="VIDEO_TITLE" />"</translation>
 <translation id="6010869025736512584">Accediendo a la entrada de vídeo</translation>
 <translation id="6012342843556706400">Chrome necesita acceder a la información de ubicación para compartirla con este sitio web.</translation>
@@ -392,7 +393,6 @@ No obstante, tus acciones no serán totalmente invisibles. El uso del modo incó
 <translation id="6159335304067198720"><ph name="PERCENT" /> de ahorro de datos</translation>
 <translation id="6165508094623778733">Más información</translation>
 <translation id="6192792657125177640">Excepciones</translation>
-<translation id="6231464350722415003">Permitir JavaScript en sitios web especificados al bloquearlo para el resto de la Web</translation>
 <translation id="6232535412751077445">Al habilitar la opción No realizar seguimiento, se incluirá una solicitud con el tráfico de navegación. El efecto dependerá de si algún sitio web responde a la solicitud y de cómo se interpreta.
 
 Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anuncios no basados en otros sitios web que hayas visitado. Muchos sitios web seguirán recopilando y utilizando tus datos de navegación (por ejemplo, para mejorar la seguridad, para proporcionar contenido, anuncios y recomendaciones o para generar estadísticas de informes).</translation>
@@ -480,7 +480,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> utiliza tu ubicación para mostrar resultados de búsqueda locales</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />Ayuda<ph name="END_LINK" /></translation>
 <translation id="7299721129597238157">Eliminar marcador</translation>
-<translation id="7346217184097589238">No se eliminará la configuración guardada de los sitios web, lo cual puede reflejar tus hábitos de navegación.</translation>
 <translation id="7347770551817603360">Contenido sin conexión</translation>
 <translation id="7363354739009474003">Cargando "<ph name="VIDEO_TITLE" />"</translation>
 <translation id="7366340029385295517">Enviando contenido a <ph name="SCREEN_NAME" /></translation>
@@ -490,7 +489,8 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="7400448254438078120">No se puede enviar el vídeo debido a las restricciones del sitio</translation>
 <translation id="7408644312175185557">Consulta tus pestañas con otras aplicaciones recientes en la pantalla Visión general de tu teléfono.</translation>
 <translation id="7423098979219808738">Preguntar antes</translation>
-<translation id="7437998757836447326">Salir de Chrome</translation>
+<translation id="7437998757836447326">Cerrar sesión en Chrome</translation>
+<translation id="7464701184726199289">Se borrarán los datos sincronizados de todos los dispositivos. No se eliminará la configuración guardada de los sitios web, lo cual puede reflejar tus hábitos de navegación. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
 <translation id="7473891865547856676">No, gracias</translation>
 <translation id="7475192538862203634">Si este mensaje aparece con frecuencia, prueba estas <ph name="BEGIN_LINK" />sugerencias<ph name="END_LINK" />.</translation>
 <translation id="748127970106343339">Confirmar eliminación de credencial de dispositivo</translation>
@@ -542,7 +542,11 @@ No obstante, tus acciones no serán totalmente invisibles. El uso del modo incó
 <translation id="8068648041423924542">No se puede seleccionar el certificado.</translation>
 <translation id="8069239273282989646">Después de comprimir</translation>
 <translation id="8073388330009372546">Abrir en pestaña nueva</translation>
+<translation id="8076014560081431679">No se eliminará la configuración guardada de los sitios web, lo cual puede reflejar tus hábitos de navegación. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
 <translation id="8084156870963450514">Inicia sesión para acceder a todo tu contenido web desde cualquier dispositivo</translation>
+<translation id="8098570222830891427">Dispositivos cercanos con los que transmites páginas web por Bluetooth. Chrome busca páginas y las muestra cuando activas el dispositivo. Estas páginas se envían a un servicio de Google para mejorar la calidad de los resultados de páginas.
+
+Puedes controlar la Web física en la configuración de privacidad de Chrome.</translation>
 <translation id="8106211421800660735">Número de la tarjeta de crédito</translation>
 <translation id="813082847718468539">Ver información del sitio</translation>
 <translation id="8137558756159375272">La función Tocar para buscar envía la palabra seleccionada y la página actual como contexto a la Búsqueda de Google. Puedes desactivarla en la <ph name="BEGIN_LINK" />configuración<ph name="END_LINK" />.</translation>
@@ -613,7 +617,7 @@ Para obtener nuevas licencias, conéctate a Internet y reproduce el contenido de
 <translation id="9038649477754266430">Utilizar un servicio de predicciones para que las páginas se carguen más rápido</translation>
 <translation id="9050666287014529139">Frase de contraseña</translation>
 <translation id="9060538597317784206">Ver la aplicación <ph name="APP_NAME" /> en Play Store. Valoración: <ph name="APP_RATING" />.</translation>
-<translation id="9063523880881406963">Desactivar opción para solicitar sitio de escritorio</translation>
+<translation id="9063523880881406963">Desactivar opción para ver como ordenador</translation>
 <translation id="9065203028668620118">Editar</translation>
 <translation id="9070377983101773829">Iniciar búsqueda por voz</translation>
 <translation id="9086455579313502267">No ha sido posible acceder a la red</translation>

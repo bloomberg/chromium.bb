@@ -69,7 +69,6 @@
 <translation id="3080151273017101988">Не отключать работающие в фоновом режиме сервисы при закрытии браузера</translation>
 <translation id="3089968997497233615">Доступна новая, более безопасная версия Google Chrome.</translation>
 <translation id="3149510190863420837">Приложения Chrome</translation>
-<translation id="3197823471738295152">Операционная система обновлена.</translation>
 <translation id="3282568296779691940">Войдите в Chrome</translation>
 <translation id="3311976847535831054">Обновление 32-разрядной версии Google Chrome на этом компьютере прекращено. Установите 64-разрядную версию браузера.</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
@@ -212,6 +211,7 @@
 <translation id="8032142183999901390">После удаления вашего аккаунта из Chrome может понадобиться перезагрузить открытые вкладки, чтобы изменения вступили в силу.</translation>
 <translation id="8037887340639533879">Невозможно выполнить обновление, так как приложение Google Chrome не найдено</translation>
 <translation id="8129812357326543296">О браузере &amp;Google Chrome</translation>
+<translation id="8183957050892517584">Chrome будет хранить ваши данные в защищенном виде, поэтому их не придется вводить повторно.</translation>
 <translation id="8205111949707227942">(Необязательно) Помогите улучшить Chrome OS, разрешив автоматическую отправку статистики использования и отчетов о сбоях в Google.</translation>
 <translation id="8227755444512189073">Браузеру Google Chrome требуется запустить внешнее приложение для обработки ссылок <ph name="SCHEME" />. Запрошенная ссылка: <ph name="PROTOLINK" />.</translation>
 <translation id="8255190535488645436">Google Chrome использует камеру и микрофон.</translation>

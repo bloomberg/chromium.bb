@@ -25,6 +25,7 @@
 <translation id="1285320974508926690">このサイトは翻訳しない</translation>
 <translation id="1291207594882862231">履歴、Cookie、サイトデータ、キャッシュを消去…</translation>
 <translation id="129553762522093515">最近閉じたタブ</translation>
+<translation id="13410144310025252">Chrome でページを表示</translation>
 <translation id="1346090444609141578">ここに保存されているページはありません</translation>
 <translation id="1369915414381695676">サイト <ph name="SITE_NAME" /> を追加しました</translation>
 <translation id="1373696734384179344">選択したコンテンツをダウンロードするにはメモリが不足しています。</translation>
@@ -193,6 +194,7 @@
 <translation id="3656115297268584622"><ph name="BEGIN_LINK" />Android 設定<ph name="END_LINK" />で位置情報サービスを有効にしてください。</translation>
 <translation id="3661699943263275414">サードパーティのウェブサイトに Cookie データの保存と読み取りを許可する</translation>
 <translation id="3672452749423051839">アクセスエラー時の候補表示</translation>
+<translation id="3716158070938632480">ウェブページが近くにあります</translation>
 <translation id="3732088672634061408">興味や関心を取得できませんでした。</translation>
 <translation id="3738139272394829648">タップして検索</translation>
 <translation id="3809549525127675114">「<ph name="VIDEO_TITLE" />」が終了しました</translation>
@@ -372,7 +374,6 @@
 <translation id="5911030830365207728">Google 翻訳</translation>
 <translation id="5916664084637901428">オン</translation>
 <translation id="5939518447894949180">リセット</translation>
-<translation id="5965336165840183977">すべての端末から同期データを消去します。Google アカウントからのログアウトは行われません。保存済みのサイトの設定は消去されず、普段の閲覧行動を反映した設定などが残る可能性もあります。</translation>
 <translation id="5968595432776860642">「<ph name="VIDEO_TITLE" />」を再生しています</translation>
 <translation id="6010869025736512584">ビデオ入力にアクセスしています</translation>
 <translation id="6012342843556706400">このサイトと位置情報を共有するには Chrome に位置情報へのアクセスを許可する必要があります。</translation>
@@ -392,7 +393,6 @@
 <translation id="6159335304067198720"><ph name="PERCENT" /> のデータを削減</translation>
 <translation id="6165508094623778733">詳しく見る</translation>
 <translation id="6192792657125177640">例外</translation>
-<translation id="6231464350722415003">指定するウェブサイト上で JavaScript を許可し、その他のウェブサイト上ではブロックします</translation>
 <translation id="6232535412751077445">「トラッキング拒否」を有効にすると、リクエストが閲覧トラフィックに含まれるようになります。ウェブサイトがリクエストに応答するかどうか、またリクエストがどのように解釈されるかによって、この影響は異なります。
 
 たとえば一部のウェブサイトでは、このリクエストに対して、ユーザーが過去にアクセスしたウェブサイトとは関係のない広告が表示されます。トラッキングを拒否しても、実際のところ多くのウェブサイトではユーザーの閲覧データが収集され利用されています。その用途としては、セキュリティの強化、コンテンツ、サービス、広告、おすすめの表示、レポート統計情報の作成などが挙げられます。</translation>
@@ -480,7 +480,6 @@
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> では地域の検索結果を表示するためにユーザーの位置情報が使用されます</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />ヘルプ<ph name="END_LINK" /></translation>
 <translation id="7299721129597238157">ブックマークを削除</translation>
-<translation id="7346217184097589238">保存済みのサイトの設定は消去されず、普段の閲覧行動を反映した設定などが残る可能性もあります。</translation>
 <translation id="7347770551817603360">オフライン コンテンツ</translation>
 <translation id="7363354739009474003">「<ph name="VIDEO_TITLE" />」を読み込んでいます</translation>
 <translation id="7366340029385295517"><ph name="SCREEN_NAME" />にキャストしています</translation>
@@ -491,6 +490,7 @@
 <translation id="7408644312175185557">スマートフォンの [概要] 画面にタブと最近使ったアプリを表示します。</translation>
 <translation id="7423098979219808738">最初に確認する</translation>
 <translation id="7437998757836447326">Chromeからログアウト</translation>
+<translation id="7464701184726199289">すべての端末から同期データを消去します。保存済みのサイト設定は削除されず、普段の閲覧行動を反映した設定などが残る場合があります。<ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
 <translation id="7473891865547856676">スキップ</translation>
 <translation id="7475192538862203634">このメッセージが繰り返し表示される場合は、こちらの<ph name="BEGIN_LINK" />ヒント<ph name="END_LINK" />をお試しください。</translation>
 <translation id="748127970106343339">デバイス認証情報の削除を確認する</translation>
@@ -542,7 +542,11 @@
 <translation id="8068648041423924542">証明書を選択できません</translation>
 <translation id="8069239273282989646">圧縮後</translation>
 <translation id="8073388330009372546">新しいタブで画像を開く</translation>
+<translation id="8076014560081431679">保存済みのサイト設定は削除されず、普段の閲覧行動を反映した設定などが残る場合があります。<ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
 <translation id="8084156870963450514">ログインすると、どのデバイスからもウェブ上の自分のデータにアクセスできます</translation>
+<translation id="8098570222830891427">近くのデバイスから Bluetooth を介してウェブページが送信されています。端末がアクティブになったとき、Chrome ではこうしたページがスキャンされ、表示されます。スキャンされたページは Google サービスに送られ、ページ結果の品質向上に使用されます。
+
+フィジカル ウェブの管理は Chrome のプライバシー設定で行うことができます。</translation>
 <translation id="8106211421800660735">クレジットカード番号</translation>
 <translation id="813082847718468539">サイト情報を表示</translation>
 <translation id="8137558756159375272">「タップして検索」では選択したキーワードと現在のページがコンテキストとして Google 検索に送信されます。これは [<ph name="BEGIN_LINK" />設定<ph name="END_LINK" />] で無効にすることができます。</translation>

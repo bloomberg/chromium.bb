@@ -4,52 +4,32 @@
 <translation id="1008557486741366299">ليس الآن</translation>
 <translation id="1047726139967079566">وضع إشارة مرجعية على هذه الصفحة...</translation>
 <translation id="1172898394251786223">الحقل التالي</translation>
-<translation id="168328519870909584">قد يحاول المهاجمون الموجودون حاليًا على <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> تثبيت تطبيقات خطيرة على جهازك والتي تسرق معلوماتك أو تحذفها (على سبيل المثال، الصور وكلمات المرور والرسائل وبطاقات الائتمان).</translation>
 <translation id="2320166752086256636">إخفاء لوحة المفاتيح</translation>
 <translation id="2467815441875554965">البحث السياقي</translation>
 <translation id="2704606927547763573">تم النسخ</translation>
 <translation id="2747003861858887689">الحقل السابق</translation>
 <translation id="2780046210906776326">لا تتوفر حسابات بريد إلكتروني</translation>
-<translation id="2803306138276472711">‏اكتشف التصفح الآمن من Google مؤخرًا <ph name="BEGIN_LINK" />برامج ضارة<ph name="END_LINK" /> على <ph name="SITE" />. أحيانًا تصاب مواقع الويب الآمنة في الوضع العادي ببرامج ضارة.</translation>
 <translation id="3244271242291266297">الشهر</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />، و<ph name="ADDITIONAL_INFO" />، و<ph name="INDEX" /> من <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3335947283844343239">إعادة فتح علامة التبويب المغلقة</translation>
 <translation id="3414292259312108062">‏سيخزن Chrome ذلك في <ph name="BEGIN_LINK" />كلمات مرور Chrome المحفوظة<ph name="END_LINK" /> ويكتبها تلقائيًا بالنيابة عنك حتى لا تضطر لحفظها بنفسك.</translation>
 <translation id="3567664240939803299">‏هل تريد من Google Smart Lock حفظ كلمة المرور لهذا الموقع؟</translation>
-<translation id="3586931643579894722">إخفاء التفاصيل</translation>
-<translation id="3736520371357197498">إذا كنت على دراية بالمخاطر على أمنك، يمكنك <ph name="BEGIN_LINK" />زيارة هذا الموقع غير الآمن<ph name="END_LINK" /> قبل أن تتم إزالة البرامج الخطيرة.</translation>
 <translation id="385051799172605136">الرجوع إلى الوراء</translation>
-<translation id="4098354747657067197">موقع مخادع في انتظارك</translation>
 <translation id="4121993058175073134">لإرسال بيانات تصدير الشبكة، الرجاء تهيئة حساب بريدك الإلكتروني في التطبيق "الإعدادات".</translation>
 <translation id="4399225372525667111">‏يتعذر على متصفح Chrome التحقق من صحة عنوان URL لموقع الويب هذا.</translation>
-<translation id="4522570452068850558">التفاصيل</translation>
 <translation id="4728558894243024398">النظام الأساسي</translation>
 <translation id="473775607612524610">تحديث</translation>
 <translation id="5317780077021120954">حفظ</translation>
-<translation id="5337705430875057403">قد يخدعك المخترقون الموجودون على <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> بفعل شيء خطير كتثبيت البرامج أو الكشف عن معلوماتك الشخصية (على سبيل المثال، كلمات المرور، أرقام الهواتف، أو بطاقات الائتمان).</translation>
 <translation id="605721222689873409">العام</translation>
-<translation id="6075880972317537864">قد يحاول المستهدفون الموجودون على <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> الاحتيال عليك لسرقة معلوماتك (على سبيل المثال، كلمات المرور أو الرسائل أو بطاقات الائتمان).</translation>
 <translation id="6149061208933997199">استخدام كلمة المرور</translation>
 <translation id="6196207969502475924">البحث الصوتي</translation>
-<translation id="6221345481584921695">‏اكتشف التصفح الآمن من Google‬ مؤخرًا <ph name="BEGIN_LINK" />برامج ضارة<ph name="END_LINK" /> على <ph name="SITE" />. أحيانًا تصاب مواقع الويب الآمنة في الوضع العادي ببرامج ضارة. مصدر محتوى البرامج الضارة <ph name="SUBRESOURCE_HOST" />، وهو ناشر معروف للبرامج الضارة.</translation>
-<translation id="6264485186158353794">الرجوع إلى وضع الأمان</translation>
 <translation id="6314335155547195432">إنشاء كلمة المرور</translation>
 <translation id="6344783595350022745">محو النص</translation>
 <translation id="6456425917241817154">‏تم إنشاء كلمة المرور من قبل Chrome</translation>
 <translation id="6535543971741225613">‏يتصرف موقع الويب الذي تحاول الدخول إليه بغرابة، ويتعذر على متصفح Chrome التحقق من صحة عنوان URL لموقع الويب هذا. لأسباب تتعلق بالأمان، لا يجب عليك المتابعة، ربما عليك المحاولة مجددًا غدًا أو الانتقال إلى موقع ويب آخر.</translation>
-<translation id="6740369132746915122">إذا كنت تدرك المخاطر المتعلقة بالأمان، يمكنك <ph name="BEGIN_LINK" />زيارة هذا الموقع غير الآمن<ph name="END_LINK" />.</translation>
 <translation id="7222245588540287464">تحديد ما إذا كان البحث السياقي ممكنًا.</translation>
-<translation id="724691107663265825">يحتوي موقع الويب المقصود على برامج ضارة</translation>
 <translation id="7456847797759667638">فتح موقع...</translation>
 <translation id="7481312909269577407">إلى الأمام</translation>
 <translation id="7484580869648358686">تحذير: هناك شيء غير سليم هنا.</translation>
-<translation id="7779249319235708104">هجمة تصيّد مقصودة</translation>
 <translation id="7961015016161918242">مطلقًا</translation>
-<translation id="820854170120587500">‏اكتشف التصفح الآمن من Google‬ مؤخرًا تصيّدًا على <ph name="SITE" />. <ph name="BEGIN_LINK" />مواقع التصيّد<ph name="END_LINK" /> تتظاهر بكونها مواقع ويب أخرى للاحتيال عليك.</translation>
-<translation id="834457929814110454">إذا كنت على دراية بالمخاطر التي تهدد أمانك، يمكنك <ph name="BEGIN_LINK" />زيارة هذا الموقع<ph name="END_LINK" /> قبل أن تتم إزالة البرامج الضارة.</translation>
-<translation id="8543181531796978784">يمكنك <ph name="BEGIN_ERROR_LINK" />الإبلاغ عن اكتشاف مشكلة<ph name="END_ERROR_LINK" /> أو، إذا كنت تدرك المخاطر المتعلقة بالأمان، يمكنك <ph name="BEGIN_LINK" />زيارة هذا الموقع غير الآمن<ph name="END_LINK" />.</translation>
-<translation id="8761567432415473239">‏عثر ‏‫التصفح الآمن من Google‬ مؤخرًا <ph name="BEGIN_LINK" />على برامج ضارة<ph name="END_LINK" /> في <ph name="SITE" />.</translation>
-<translation id="8996941253935762404">تحتوي مقدمة الموقع على برامج ضارة</translation>
-<translation id="9035022520814077154">خطأ متعلق بالأمان</translation>
-<translation id="9040185888511745258">قد يحاول المهاجمون في <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> خداعك من خلال تثبيت برامج تضر بتجربة التصفح (على سبيل المثال، من خلال تغيير صفحتك الرئيسية أو عرض إعلانات إضافية على المواقع التي تزورها).</translation>
 </translationbundle>

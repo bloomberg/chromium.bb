@@ -557,7 +557,6 @@
 <translation id="7186367841673660872">এই পৃষ্ঠাটি<ph name="ORIGINAL_LANGUAGE" />থেকে<ph name="LANGUAGE_LANGUAGE" />তে অনুবাদ করা হয়েছে</translation>
 <translation id="719464814642662924">Visa</translation>
 <translation id="720210938761809882">পৃষ্ঠা অবরুদ্ধ করা আছে</translation>
-<translation id="7208899522964477531"><ph name="SITE_NAME" />-এ <ph name="SEARCH_TERMS" /> অনুসন্ধান করুন</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> নিরাপত্তা মান মেনে চলে না।</translation>
 <translation id="721197778055552897">এই সমস্যাটি সম্পর্কে <ph name="BEGIN_LINK" />আরো জানুন<ph name="END_LINK" />৷</translation>
 <translation id="7219179957768738017">এই সংযোগটি <ph name="SSL_VERSION" />টি ব্যবহার করে</translation>
@@ -639,7 +638,6 @@
 <translation id="7951415247503192394">(৩২-বিট)</translation>
 <translation id="7956713633345437162">মোবাইল বুকমার্ক</translation>
 <translation id="7961015016161918242">কখনই নয়</translation>
-<translation id="7977590112176369853">&lt;ক্যোয়ারী লিখুন&gt;</translation>
 <translation id="7983301409776629893">সর্বদা <ph name="ORIGINAL_LANGUAGE" />-কে <ph name="TARGET_LANGUAGE" />-তে অনুবাদ করুন</translation>
 <translation id="7995512525968007366">নির্দিষ্ট করে উল্লেখ করা নেই</translation>
 <translation id="8012647001091218357">এই মুহূর্তে আমরা আপনার পিতামাতার কাছে পৌঁছাতে পারিনি৷ অনুগ্রহ করে আবার চেষ্টা করুন৷</translation>
@@ -720,7 +718,6 @@
 <translation id="8903921497873541725">জুম বাড়ান</translation>
 <translation id="8931333241327730545">আপনি কি আপনার Google অ্যাকাউন্টে এই কার্ড সংরক্ষণ করতে চান?</translation>
 <translation id="8932102934695377596">আপনার ঘড়ির সময় পিছিয়ে রয়েছে</translation>
-<translation id="8940229512486821554"><ph name="EXTENSION_NAME" />আদেশটি <ph name="SEARCH_TERMS" />চালনা করুন</translation>
 <translation id="8954894007019320973">(চলছে)</translation>
 <translation id="8971063699422889582">সার্ভারের শংসাপত্রের মেয়াদ ফুরিয়েছে৷</translation>
 <translation id="8987927404178983737">মাস</translation>

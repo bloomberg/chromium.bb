@@ -4,52 +4,32 @@
 <translation id="1008557486741366299">Jetzt nicht</translation>
 <translation id="1047726139967079566">Lesezeichen für diese Seite erstellen</translation>
 <translation id="1172898394251786223">Nächstes Feld</translation>
-<translation id="168328519870909584">Hacker, die derzeit auf <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> zugreifen, versuchen unter Umständen, gefährliche Programme auf Ihrem Gerät zu installieren, um Ihre Daten zu stehlen oder zu löschen, zum Beispiel Fotos, Passwörter, Nachrichten und Kreditkartendaten.</translation>
 <translation id="2320166752086256636">Tastatur ausblenden</translation>
 <translation id="2467815441875554965">Kontextsuche</translation>
 <translation id="2704606927547763573">Kopiert</translation>
 <translation id="2747003861858887689">Vorheriges Feld</translation>
 <translation id="2780046210906776326">Keine E-Mail-Konten vorhanden</translation>
-<translation id="2803306138276472711">Google Safe Browsing hat kürzlich <ph name="BEGIN_LINK" />Malware<ph name="END_LINK" /> auf <ph name="SITE" /> gefunden. Websites, die in der Regel sicher sind, können gelegentlich mit Malware infiziert sein.</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> von <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3335947283844343239">Geschlossenen Tab wieder öffnen</translation>
 <translation id="3414292259312108062">Chrome speichert dieses Passwort in Ihren <ph name="BEGIN_LINK" />in Google gespeicherten Passwörtern<ph name="END_LINK" /> und fügt es automatisch für Sie ein. Sie müssen es sich also nicht merken.</translation>
 <translation id="3567664240939803299">Soll Google Smart Lock Ihr Passwort für diese Website speichern?</translation>
-<translation id="3586931643579894722">Details ausblenden</translation>
-<translation id="3736520371357197498">Wenn Sie die Sicherheitsrisiken kennen, können Sie <ph name="BEGIN_LINK" />diese unsichere Website aufrufen<ph name="END_LINK" />, bevor die gefährlichen Programme entfernt wurden.</translation>
 <translation id="385051799172605136">Zurück</translation>
-<translation id="4098354747657067197">Es folgt eine betrügerische Website</translation>
 <translation id="4121993058175073134">Zum Senden von Exportdaten E-Mail-Konto in App "Einstellungen" konfigurieren</translation>
 <translation id="4399225372525667111">Chrome kann die Richtigkeit dieser Website-URL nicht bestätigen.</translation>
-<translation id="4522570452068850558">Details</translation>
 <translation id="4728558894243024398">Plattform</translation>
 <translation id="473775607612524610">Aktualisieren</translation>
 <translation id="5317780077021120954">Speichern</translation>
-<translation id="5337705430875057403">Angreifer auf <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> versuchen unter Umständen auf betrügerische Weise, Sie zur Installation von Software zu bewegen oder Ihnen personenbezogene Daten zu entlocken, zum Beispiel Passwörter, Telefonnummern oder Kreditkartendaten.</translation>
 <translation id="605721222689873409">JJ</translation>
-<translation id="6075880972317537864">Angreifer auf <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> versuchen unter Umständen, Ihnen auf betrügerische Weise Informationen zu entlocken, zum Beispiel Passwörter, Nachrichten oder Kreditkartendaten.</translation>
 <translation id="6149061208933997199">Passwort verwenden</translation>
 <translation id="6196207969502475924">Sprachsuche</translation>
-<translation id="6221345481584921695">Google Safe Browsing hat kürzlich <ph name="BEGIN_LINK" />Malware<ph name="END_LINK" /> auf <ph name="SITE" /> gefunden. Websites, die in der Regel sicher sind, können gelegentlich mit Malware infiziert sein. Der schädliche Inhalt stammt von <ph name="SUBRESOURCE_HOST" />, einem bekannten Verteiler von Malware.</translation>
-<translation id="6264485186158353794">Zurück zu sicherer Website</translation>
 <translation id="6314335155547195432">Passwort erstellen</translation>
 <translation id="6344783595350022745">Text entfernen</translation>
 <translation id="6456425917241817154">Passwort von Chrome erstellt</translation>
 <translation id="6535543971741225613">Die Website, auf die Sie zugreifen möchten, verhält sich seltsam und Chrome kann die Richtigkeit dieser URL nicht bestätigen. Aus Sicherheitsgründen sollten Sie nicht fortfahren. Versuchen Sie es morgen erneut oder besuchen Sie eine andere Website.</translation>
-<translation id="6740369132746915122">Wenn Sie die Sicherheitsrisiken kennen, können Sie <ph name="BEGIN_LINK" />diese unsichere Website aufrufen<ph name="END_LINK" />.</translation>
 <translation id="7222245588540287464">Gibt an, ob die Kontextsuche aktiviert ist.</translation>
-<translation id="724691107663265825">Malware auf nachfolgender Website</translation>
 <translation id="7456847797759667638">Adresse öffnen...</translation>
 <translation id="7481312909269577407">Vorwärts</translation>
 <translation id="7484580869648358686">Warnung: Irgendetwas stimmt hier nicht!</translation>
-<translation id="7779249319235708104">Vorsicht vor Phishingangriff</translation>
 <translation id="7961015016161918242">Nie</translation>
-<translation id="820854170120587500">Google Safe Browsing hat kürzlich Phishingaktivitäten auf <ph name="SITE" /> festgestellt. <ph name="BEGIN_LINK" />Phishingwebsites<ph name="END_LINK" /> geben sich als andere Websites aus, um Sie zu täuschen.</translation>
-<translation id="834457929814110454">Wenn Sie die Sicherheitsrisiken kennen, können Sie <ph name="BEGIN_LINK" />diese Website aufrufen<ph name="END_LINK" />, bevor die schädlichen Programme entfernt wurden.</translation>
-<translation id="8543181531796978784">Sie können ein <ph name="BEGIN_ERROR_LINK" />Erkennungsproblem melden<ph name="END_ERROR_LINK" /> oder, wenn Sie die Sicherheitsrisiken kennen, <ph name="BEGIN_LINK" />diese unsichere Website aufrufen<ph name="END_LINK" />.</translation>
-<translation id="8761567432415473239">Google Safe Browsing hat vor Kurzem <ph name="BEGIN_LINK" />schädliche Programme<ph name="END_LINK" /> auf <ph name="SITE" /> gefunden.</translation>
-<translation id="8996941253935762404">Die Website, die Sie aufrufen möchten, enthält schädliche Programme.</translation>
-<translation id="9035022520814077154">Sicherheitsfehler</translation>
-<translation id="9040185888511745258">Unbefugte Dritte könnten auf <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> versuchen, Sie zur Installation von Programmen zu bewegen, die sich nachteilig auf Ihre Browsernutzung auswirken. Dabei kann zum Beispiel Ihre Startseite geändert werden oder es erscheinen zusätzliche Anzeigen auf von Ihnen besuchten Websites.</translation>
 </translationbundle>

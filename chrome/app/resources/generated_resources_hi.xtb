@@ -277,7 +277,6 @@
 <translation id="1407050882688520094">आपके पास इन प्रमाणपत्र अधिकारियों की पहचान करने वाली फ़ाइल पर प्रमाणपत्र हैं:</translation>
 <translation id="1407489512183974736">मध्य में काटा गया</translation>
 <translation id="1408789165795197664">उन्नत...</translation>
-<translation id="1408803555324839240">ओह! नया पर्यवेक्षित उपयोगकर्ता नहीं बनाया जा सका. कृपया सुनिश्चित करें कि आप ठीक से साइन इन हैं और फिर से प्रयास करें.</translation>
 <translation id="1409390508152595145">पर्यवेक्षित उपयोगकर्ता बनाएं</translation>
 <translation id="1410616244180625362"><ph name="HOST" /> को अपना कैमरा एक्सेस करते रहने दें</translation>
 <translation id="1413372529771027206">Smart Lock के लिए उपयोग किया गया आपका फ़ोन बदल गया है. इस डिवाइस पर Chromebook के लिए Smart Lock को अपडेट करने के लिए अपना पासवर्ड लिखें. अगली बार, प्रवेश करने के लिए आप अपने चित्र पर क्‍लिक कर सकते हैं.</translation>
@@ -1599,7 +1598,6 @@
 <translation id="3277710850168074473">मीडिया तत्वों को चलाने के लिए उपयोगकर्ता हावभाव की आवश्यकता. इसे अक्षम करने से स्वत: चलाएं काम करने लगेगा.</translation>
 <translation id="3280237271814976245">इस &amp;रूप में सहेजें...</translation>
 <translation id="3280431534455935878">तैयार कर रहा है</translation>
-<translation id="3284674070818187654">खोज और अन्य Google सेवाओं को वैयक्तिकृत करने के लिए Google आपके ब्राउज़िंग इतिहास का उपयोग कर सकता है. आप इसे myaccount.google.com पर नियंत्रित कर सकते हैं.</translation>
 <translation id="3285322247471302225">नया &amp;टैब</translation>
 <translation id="3288047731229977326">डेवलपर मोड में चलने वाले एक्सटेंशन आपके कंप्यूटर को नुकसान पहुंचा सकते हैं. यदि आप कोई डेवलपर नहीं हैं, तो सुरक्षित रहने के लिए आपको डेवलपर मोड मे चलने वाले इन एक्सटेंशन को अक्षम करना चाहिए.</translation>
 <translation id="3289566588497100676">आसान प्रतीक इनपुट</translation>
@@ -1706,7 +1704,6 @@
 <translation id="3413122095806433232">CA जारीकर्ता: <ph name="LOCATION" /></translation>
 <translation id="3414856743105198592">निकालने योग्य मीडिया को स्‍वरूपित करने से संपूर्ण डेटा मिट जाएगा. क्‍या आप जारी रखना चाहते हैं?</translation>
 <translation id="3414952576877147120">आकार:</translation>
-<translation id="3416248389957650982">प्रवेश करने के बाद myaccount.google.com खोलें</translation>
 <translation id="3420980393175304359">व्यक्ति स्विच करें</translation>
 <translation id="3423858849633684918">कृपया <ph name="PRODUCT_NAME" /> को पुन: लॉन्‍च करें</translation>
 <translation id="3425233587047449821">नई कोरियाई IME</translation>
@@ -1921,7 +1918,6 @@
 <translation id="3694027410380121301">पिछला टैब को चुनें</translation>
 <translation id="3694122362646626770">वेबसाइट</translation>
 <translation id="3694678678240097321">यदि एक्सटेंशन ने सभी url पर चलाने की अनुमति मांगी हो, तो पृष्ठ पर चल रही स्क्रिप्ट के लिए उपयोगकर्ता की सहमति आवश्यक है.</translation>
-<translation id="36954862089075551">ओह! नया उपयोगकर्ता नहीं बनाया जा सका. कृपया अपने हार्ड डिस्क का स्थान जांचें और फिर से प्रयास करें.</translation>
 <translation id="3695919544155087829">कृपया वह पासवर्ड डालें जिसका उपयोग इस प्रमाणपत्र फ़ाइल को एन्क्रिप्ट करने के लिए किया गया था.</translation>
 <translation id="3696411085566228381">कोई नहीं</translation>
 <translation id="3697100740575341996">आपके IT व्यवस्थापक ने आपके डिवाइस के लिए Chrome Goodies को अक्षम कर दिया है. <ph name="MORE_INFO_LINK" /></translation>
@@ -2348,7 +2344,6 @@
 <translation id="4345703751611431217">सॉफ़्टवेयर असंगतता: अधिक जानें</translation>
 <translation id="4348766275249686434">त्रुटियां एकत्रित करें</translation>
 <translation id="4350019051035968019">इस डिवाइस को उस डोमेन पर नामांकित नहीं किया जा सकता जिससे आपका खाता संबंधित है क्योंकि डिवाइस को भिन्न डोमेन द्वारा प्रबंधित करने के लिए चिह्नित किया गया है.</translation>
-<translation id="4352333825734680558">ओह! नया पर्यवेक्षित उपयोगकर्ता नहीं बनाया जा सकता. कृपया अपना नेटवर्क कनेक्शन जांचें और बाद में फिर से प्रयास करें.</translation>
 <translation id="4358697938732213860">कोई पता जोड़ें</translation>
 <translation id="4359408040881008151">निर्भर एक्सटेंशन के कारण इंस्टॉल किया गया.</translation>
 <translation id="4361190688154226069">दृश्यों में रेक्ट-आधारित लक्ष्यीकरण</translation>
@@ -3023,7 +3018,6 @@
 <translation id="5388588172257446328">उपयोगकर्ता नाम:</translation>
 <translation id="5390284375844109566">अनुक्रमित डेटाबेस</translation>
 <translation id="5392544185395226057">स्‍थानीय क्‍लाइंट के लिए समर्थन सक्षम करें.</translation>
-<translation id="5393125431335030955">यह प्लग इन केवल डेस्कटॉप पर काम करता है.</translation>
 <translation id="5396126354477659676"><ph name="PEPPER_PLUGIN_DOMAIN" /> पर <ph name="PEPPER_PLUGIN_NAME" /> आपके कंप्यूटर की पहुंच चाहता है.</translation>
 <translation id="539755880180803351">वेब फ़ॉर्म पर स्वतः-भरण फ़ील्‍ड प्रकार के पूर्वानुमानों के साथ प्‍लेसहोल्‍डर टेक्‍स्‍ट के रूप में टिप्पणी करता है.</translation>
 <translation id="5397578532367286026">इस उपयोगकर्ता के उपयोग और इतिहास की प्रबंधक (<ph name="MANAGER_EMAIL" />) द्वारा chrome.com पर समीक्षा की जा सकती है.</translation>
@@ -3288,7 +3282,6 @@
 <translation id="57646104491463491">संशोधन की तिथि</translation>
 <translation id="5765491088802881382">कोई नेटवर्क उपलब्ध नहीं हैं</translation>
 <translation id="5765780083710877561">वर्णन:</translation>
-<translation id="5770385044111747894">NPAPI</translation>
 <translation id="5771585441665576801">लिप्यंतरण (geia → γεια)</translation>
 <translation id="5771816112378578655">सेटअप प्रगति में है...</translation>
 <translation id="5771849619911534867">डिवाइस स्कैन बंद हो गया है.</translation>
@@ -3923,7 +3916,6 @@
 <translation id="6793649375377511437">Google Copresence जानकारी</translation>
 <translation id="6797493596609571643">ओह... कुछ गलत हो गया.</translation>
 <translation id="6798954102094737107">प्‍लग इन: <ph name="PLUGIN_NAME" /></translation>
-<translation id="6799646767877093143">यह साइट (<ph name="PLUGIN_NAME" />) प्लग इन का उपयोग करती है जो जल्दी ही असमर्थित हो जाएगा.</translation>
 <translation id="6802031077390104172"><ph name="USAGE" /> (<ph name="OID" />)</translation>
 <translation id="6804671422566312077">सभी बुकमार्क &amp;नई विंडो में खोलें</translation>
 <translation id="6805647936811177813"><ph name="HOST_NAME" /> से क्लाइंट प्रमाणपत्र आयात करने के लिए, कृपया <ph name="TOKEN_NAME" /> में प्रवेश करें.</translation>
@@ -4920,7 +4912,6 @@
 <translation id="8267698848189296333"><ph name="USERNAME" /> के रूप में प्रवेश करना</translation>
 <translation id="8272443605911821513">"अधिक टूल" मेनू में एक्सटेंशन पर क्लिक करके अपने एक्सटेंशन प्रबंधित करें.</translation>
 <translation id="8273972836055206582"><ph name="FULLSCREEN_ORIGIN" /> अब पूर्ण स्‍क्रीन है और आपके माउस कर्सर को अक्षम करना चाहता है.</translation>
-<translation id="8274860189261120948">संग्रहीत क्रेडेंशियल का उपयोग करके वेबसाइट में अपने आप प्रवेश करें. सुविधा के अक्षम होने पर, किसी वेबसाइट में प्रवेश करने से पहले आपसे हर बार पुष्टि के लिए कहा जाएगा.</translation>
 <translation id="8275038454117074363">आयात करें</translation>
 <translation id="8276560076771292512">संचय और कठिन पुन: लोड खाली करें</translation>
 <translation id="8279388322240498158">सोरानी कुर्दिश अंग्रेज़ी-आधारित कीबोर्ड</translation>
@@ -5104,7 +5095,6 @@
 <translation id="8571108619753148184">सर्वर 4</translation>
 <translation id="8572832761467613633">केवल Flash</translation>
 <translation id="8572981282494768930">साइटों को आपका कैमरा और माइक्रोफ़ोन एक्सेस न करने दें</translation>
-<translation id="8574794171590710404">यह साइट (<ph name="PLUGIN_NAME" />) प्लग इन का उपयोग करती है जो असमर्थित है.</translation>
 <translation id="857779305329188634">प्रयोगात्मक QUIC प्रोटोकॉल समर्थन को सक्षम करता है.</translation>
 <translation id="8579285237314169903"><ph name="NUMBER_OF_FILES" /> आइटम समन्‍वयित कर रहा है...</translation>
 <translation id="8579549103199280730">डिफ़ॉल्ट रूप से पूछें</translation>
@@ -5112,7 +5102,6 @@
 <translation id="8581690024797204327">256</translation>
 <translation id="8581809080475256101">आगे जाने के लिए इसे दबाएं, इतिहास देखने के लिए प्रसंग मेनू पर जाएं</translation>
 <translation id="8584280235376696778">वीडियो नए टैब में &amp;खोलें</translation>
-<translation id="8585103164112230633">इस व्यक्ति द्वारा देखी जाने वाली वेबसाइट नियंत्रित करें और देखें</translation>
 <translation id="8589311641140863898">प्रायोगिक एक्सटेंशन API</translation>
 <translation id="8590375307970699841">स्वचालित अपडेट सेट अप करें</translation>
 <translation id="8592071947729879125">iframe अनुमतियों को प्रतिबंधित करें.</translation>
@@ -5260,7 +5249,6 @@
 <translation id="878069093594050299">इस प्रमाणपत्र को निम्न उपयोगों के लिए सत्यापित किया गया है:</translation>
 <translation id="8782565991310229362">कियोस्क ऐप्स  लॉन्च रद्द किया गया.</translation>
 <translation id="8783093612333542422">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; आपके साथ &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; प्रिंटर साझा करना चाहता है.</translation>
-<translation id="878431691778285679">ऐसा लगता है आप पहले से ही उस नाम से किसी उपयोगकर्ता को प्रबंधित कर रहे हैं.<ph name="LINE_BREAK" />क्या आप<ph name="BEGIN_LINK" /> <ph name="PROFILE_NAME" /> को इस डिवाइस में निर्यात करना चाहते थे<ph name="END_LINK" />?</translation>
 <translation id="8784626084144195648">बिन औसत</translation>
 <translation id="8785135611469711856">प्‍लग इन उदासीन है</translation>
 <translation id="8787254343425541995">साझा किए गए नेटवर्क के लिए प्रॉक्‍सी की अनुमति दें</translation>

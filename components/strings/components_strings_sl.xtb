@@ -558,7 +558,6 @@
 <translation id="7186367841673660872">Ta stran je bila prevedena iz jezika<ph name="ORIGINAL_LANGUAGE" />v jezik<ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="719464814642662924">Visa</translation>
 <translation id="720210938761809882">Stran je blokirana</translation>
-<translation id="7208899522964477531">V iskalniku <ph name="SITE_NAME" /> poišči <ph name="SEARCH_TERMS" /></translation>
 <translation id="7210863904660874423">Spletno mesto <ph name="HOST_NAME" /> ne upošteva varnostnih standardov.</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Več o<ph name="END_LINK" /> tej težavi.</translation>
 <translation id="7219179957768738017">Povezava uporablja <ph name="SSL_VERSION" />.</translation>
@@ -640,7 +639,6 @@ Pst! Naslednjič vam lahko pride prav bližnjica <ph name="SHORTCUT_KEY" /> za n
 <translation id="7951415247503192394">(32-bitno)</translation>
 <translation id="7956713633345437162">Zaznamki mobilne naprave</translation>
 <translation id="7961015016161918242">Nikoli</translation>
-<translation id="7977590112176369853">&lt;vnesite poizvedbo&gt;</translation>
 <translation id="7983301409776629893">Vedno prevedi iz jezika <ph name="ORIGINAL_LANGUAGE" /> v jezik <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="7995512525968007366">Ni navedeno</translation>
 <translation id="8012647001091218357">Trenutno ni mogoče vzpostaviti stika s starši. Poskusi znova pozneje.</translation>
@@ -721,7 +719,6 @@ Pst! Naslednjič vam lahko pride prav bližnjica <ph name="SHORTCUT_KEY" /> za n
 <translation id="8903921497873541725">Povečaj</translation>
 <translation id="8931333241327730545">Ali želite to kartico shraniti v Google Račun?</translation>
 <translation id="8932102934695377596">Ura zaostaja</translation>
-<translation id="8940229512486821554">Zaženi <ph name="EXTENSION_NAME" /> ukaz: <ph name="SEARCH_TERMS" /></translation>
 <translation id="8954894007019320973">(Nadalj.)</translation>
 <translation id="8971063699422889582">Potrdilo strežnika je poteklo.</translation>
 <translation id="8987927404178983737">Mesec</translation>

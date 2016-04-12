@@ -4,52 +4,32 @@
 <translation id="1008557486741366299">Ne dabar</translation>
 <translation id="1047726139967079566">Įtraukti šį puslapį į žymes...</translation>
 <translation id="1172898394251786223">Kitas laukas</translation>
-<translation id="168328519870909584">Šiuo metu svetainės <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> užpuolėjai gali jūsų įrenginyje bandyti įdiegti pavojingas programas, kurios vagia arba ištrina informaciją (pvz., nuotraukas, slaptažodžius, pranešimus ir kredito kortelių numerius).</translation>
 <translation id="2320166752086256636">Slėpti klaviatūrą</translation>
 <translation id="2467815441875554965">Kontekstinė paieška</translation>
 <translation id="2704606927547763573">Nukopij.</translation>
 <translation id="2747003861858887689">Ankstesnis laukas</translation>
 <translation id="2780046210906776326">Nėra el. pašto pask.</translation>
-<translation id="2803306138276472711">„Google“ saugaus naršymo sistema neseniai <ph name="BEGIN_LINK" />aptiko kenkėjiškų programų<ph name="END_LINK" /> svetainėje <ph name="SITE" />. Kartais svetainės, kurios paprastai yra saugios, užkrečiamos kenkėjiškomis programomis.</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> iš <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3335947283844343239">Iš naujo atidarykite uždarytą skirtuką</translation>
 <translation id="3414292259312108062">„Chrome“ išsaugos šį slaptažodį <ph name="BEGIN_LINK" />„Google“ išsaugotuose slaptažodžiuose<ph name="END_LINK" /> ir jis bus automatiškai įvestas už jus, kad jums nereikėtų jo įsiminti.</translation>
 <translation id="3567664240939803299">Ar norite, kad „Google Smart Lock“ išsaugotų svetainės slaptažodį?</translation>
-<translation id="3586931643579894722">Slėpti išsamią informaciją</translation>
-<translation id="3736520371357197498">Jei suprantate, kokia rizika gali kilti jūsų saugai, galite <ph name="BEGIN_LINK" />apsilankyti šioje nesaugioje svetainėje<ph name="END_LINK" />, kol iš jos dar nepašalintos pavojingos programos.</translation>
 <translation id="385051799172605136">Grįžti</translation>
-<translation id="4098354747657067197">Ketinate apsilankyti apgaulingoje svetainėje</translation>
 <translation id="4121993058175073134">Jei n. siųsti tinklo eksp. duom., sukonf. el. pšt. pask. nust. progr.</translation>
 <translation id="4399225372525667111">„Chrome“ negali patikrinti, ar šios svetainės URL tinkamas.</translation>
-<translation id="4522570452068850558">Išsami informacija</translation>
 <translation id="4728558894243024398">Platforma</translation>
 <translation id="473775607612524610">Atnaujinti</translation>
 <translation id="5317780077021120954">Išsaugoti</translation>
-<translation id="5337705430875057403">Svetainės <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> užpuolėjai gali bandyti apgaulingai priversti atlikti pavojingus veiksmus, pvz., įdiegti programinę įrangą ar atskleisti asmeninę informaciją (pvz., slaptažodžius, telefonų numerius ar kredito kortelių informaciją).</translation>
 <translation id="605721222689873409">MM</translation>
-<translation id="6075880972317537864">Svetainės <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> užpuolėjai gali bandyti apgaule pavogti jūsų informaciją (pvz., slaptažodžius, pranešimus ar kredito kortelių numerius).</translation>
 <translation id="6149061208933997199">Naudoti slaptažodį</translation>
 <translation id="6196207969502475924">Paieška balsu</translation>
-<translation id="6221345481584921695">„Google“ saugaus naršymo sistema neseniai <ph name="BEGIN_LINK" />aptiko kenkėjišką programą<ph name="END_LINK" /> svetainėje <ph name="SITE" />. Svetainės, kurios paprastai yra saugios, kartais užkrečiamos kenkėjiškomis programomis. Kenkėjiškas turinys gautas iš <ph name="SUBRESOURCE_HOST" />, žinomo kenkėjiškų programų platintojo.</translation>
-<translation id="6264485186158353794">Grįžti prie saugumo</translation>
 <translation id="6314335155547195432">Generuoti slaptažodį</translation>
 <translation id="6344783595350022745">Išvalyti tekstą</translation>
 <translation id="6456425917241817154">„Chrome“ sugeneruotas slaptažodis</translation>
 <translation id="6535543971741225613">Bandomos pasiekti svetainės elgsena keista. „Chrome“ negali patikrinti, ar šios svetainės URL tinkamas. Saugumo sumetimais neturėtumėte tęsti. Verčiau pabandykite dar kartą rytoj arba apsilankykite kitu adresu.</translation>
-<translation id="6740369132746915122">Jei suprantate saugos riziką, galite <ph name="BEGIN_LINK" />apsilankyti nesaugioje svetainėje<ph name="END_LINK" />.</translation>
 <translation id="7222245588540287464">Nesvarbu, ar Kontekstinė paieška yra įgalinta.</translation>
-<translation id="724691107663265825">Svetainėje, kurioje ketinate apsilankyti, yra kenkėjiškų programų</translation>
 <translation id="7456847797759667638">Atidaryti vietą...</translation>
 <translation id="7481312909269577407">Persiųsti</translation>
 <translation id="7484580869648358686">Įspėjimas: kažkas čia ne taip!</translation>
-<translation id="7779249319235708104">Tikėtinas sukčiavimas</translation>
 <translation id="7961015016161918242">Niekada</translation>
-<translation id="820854170120587500">„Google“ saugaus naršymo sistema neseniai aptiko sukčiavimą svetainėje <ph name="SITE" />. <ph name="BEGIN_LINK" />Sukčiavimo svetainės<ph name="END_LINK" /> apsimeta kitomis svetainėmis, kad jus apgautų.</translation>
-<translation id="834457929814110454">Jei suprantate, kokia rizika gali kilti jūsų saugai, galite <ph name="BEGIN_LINK" />apsilankyti šioje svetainėje<ph name="END_LINK" />, kol iš jos dar nepašalintos kenkėjiškos programos.</translation>
-<translation id="8543181531796978784">Galite <ph name="BEGIN_ERROR_LINK" />pranešti apie aptikimo problemą<ph name="END_ERROR_LINK" /> arba, jei suprantate saugos riziką, galite <ph name="BEGIN_LINK" />apsilankyti šioje nesaugioje svetainėje<ph name="END_LINK" />.</translation>
-<translation id="8761567432415473239">„Google“ saugaus naršymo funkcija neseniai <ph name="BEGIN_LINK" />rado kenkėjiškų programų<ph name="END_LINK" /> <ph name="SITE" />.</translation>
-<translation id="8996941253935762404">Pateiktoje svetainėje yra kenkėjiškų programų</translation>
-<translation id="9035022520814077154">Saugos klaida</translation>
-<translation id="9040185888511745258">Užgrobėjai <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> gali bandyti apgaule priversti jus įdiegti naršymo funkcijas trikdančių programų (pvz., pakeitę pagrindinį puslapį ar rodydami papildomų skelbimų svetainėse, kuriose lankotės).</translation>
 </translationbundle>

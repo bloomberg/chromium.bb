@@ -51,7 +51,7 @@
 <translation id="1152117524387175066">Informa de l'estat del botó per a desenvolupadors en iniciar.
 
       Si la política s'estableix com a falsa, no s'informarà de l'estat del botó per a desenvolupadors.</translation>
-<translation id="1160939557934457296">Desactivació de l'accés des de la pàgina d'advertiment de navegació segura</translation>
+<translation id="1160939557934457296">Desactivació de l'accés des de la pàgina d'advertiment de Navegació segura</translation>
 <translation id="1198465924256827162">La freqüència, en mil·lisegons, amb què s'envien càrregues per informar sobre l'estat del dispositiu.
 
       Si aquesta política no s'estableix, s'envien cada 3 hores de manera
@@ -64,7 +64,6 @@
 
       Si la política no s'estableix o s'estableix en "false", els sistemes de xifratge RC4 de TLS no s'activaran. En cas contrari, es pot establir en "true" per conservar la compatibilitat amb un servidor obsolet. Es tracta d'una mesura temporal i el servidor s'ha de tornar a configurar.</translation>
 <translation id="1297182715641689552">Fes servir un script de servidor intermediari .pac</translation>
-<translation id="1300635491585192248">Prediu accions de xarxa en qualsevol xarxa que no sigui mòbil</translation>
 <translation id="1304973015437969093">Identificadors de les extensions i de les aplicacions i URL de les actualitzacions que s'instal·laran en silenci</translation>
 <translation id="1310699457130669094">Podeu especificar un URL a un fitxer .pac del servidor intermediari. Aquesta política només té efecte si heu seleccionat la configuració manual del servidor intermediari a "Triar la manera d'especificar la configuració del servidor intermediari". No heu de definir aquesta política si heu seleccionat alguna altra manera de definir les polítiques del servidor intermediari. Per obtenir exemples més detallats, visiteu: <ph name="PROXY_HELP_URL" /></translation>
 <translation id="1313457536529613143">Especifica el percentatge d'ajust del temps d'espera d'inactivitat de la pantalla quan s'observa l'activitat de l'usuari amb la pantalla atenuada o poc després de desactivar-la.
@@ -457,7 +456,6 @@ Si aquesta opció està desactivada o no especificada, no apareix cap botó gran
       Si no configureu aquesta política, els usuaris podran triar si volen fer servir la funció del servidor intermediari de compressió de dades.</translation>
 <translation id="2587719089023392205">Estableix <ph name="PRODUCT_NAME" /> com a navegador predeterminat</translation>
 <translation id="2592091433672667839">La durada de la inactivitat abans no es mostri el protector de pantalla es mostra a la pantalla d'inici de sessió en mode de venta</translation>
-<translation id="260705825237536216">Configura les aplicacions ARC</translation>
 <translation id="2623014935069176671">Espereu que hi hagi una activitat inicial de l'usuari.</translation>
 <translation id="262740370354162807">Activa l'enviament de documents a <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2633084400146331575">Activa els comentaris per veu</translation>
@@ -487,11 +485,11 @@ Si aquesta opció està desactivada o no especificada, no apareix cap botó gran
 
 Cada entrada de la llista especifica un identificador, que s'utilitza internament per diferenciar els diversos comptes locals del dispositiu.</translation>
 <translation id="2769952903507981510">Configuració del nom de domini necessari per als amfitrions d'accés remot</translation>
-<translation id="2785954641789149745">Activa la funció de navegació segura de <ph name="PRODUCT_NAME" /> i impedeix que els usuaris canviïn la configuració.
+<translation id="2785954641789149745">Activa la funció de Navegació segura de <ph name="PRODUCT_NAME" /> i impedeix que els usuaris canviïn la configuració.
 
-      Si activeu aquesta configuració, la Navegació segura sempre estarà activa.
+      Si activeu aquesta configuració, Navegació segura sempre estarà activa.
 
-      Si desactiveu aquesta configuració, la Navegació segura mai no estarà activa.
+      Si desactiveu aquesta configuració, Navegació segura mai no estarà activa.
 
       Si activeu o desactiveu aquesta configuració, els usuaris no podran canviar ni ignorar la configuració "Activa la protecció contra contra pesca i programari maliciós" a <ph name="PRODUCT_NAME" />.
 
@@ -538,7 +536,6 @@ Cada entrada de la llista especifica un identificador, que s'utilitza internamen
           Si aquesta política es defineix en vertadera o no es defineix, l'usuari no es considera inactiu mentre l'àudio es reprodueix. Això evita que s'arribi al temps d'espera d'inactivitat i es prengui l'acció corresponent. Tanmateix, l'atenuació de pantalla, la desactivació de pantalla i el bloqueig de pantalla sí que es duen a terme passats els temps d'espera configurats.
 
           Si aquesta política es defineix en falsa, l'activitat d'àudio no impedeix que l'usuari es consideri inactiu.</translation>
-<translation id="2948381198510798695"><ph name="PRODUCT_NAME" /> evitarà qualsevol servidor intermediari de la llista d'amfitrions proporcionada. Aquesta política només té efecte si s'ha seleccionat la configuració manual del servidor intermediari a "Triar la manera d'especificar la configuració del servidor intermediari". No heu de definir aquesta política si heu seleccionat cap altra manera de definir les polítiques del servidor intermediari. Per obtenir exemples més detallats, visiteu: <ph name="PROXY_HELP_URL" /></translation>
 <translation id="2956777931324644324">Aquesta política s'ha retirat a partir de <ph name="PRODUCT_NAME" />, versió 36.
 
       Especifica si l'extensió de certificats lligats al domini TLS ha d'estar activada.
@@ -772,7 +769,6 @@ Si no es configura aquesta opció, no s'aplicarà cap restricció sobre els tipu
 
       Cada entrada de la llista conté un diccionari que ha d'incloure l'identificador de l'extensió al camp "extension-id" i l'URL d'actualització al camp "update-url".</translation>
 <translation id="3891357445869647828">Activa JavaScript</translation>
-<translation id="389421284571827139">Us permet especificar el servidor intermediari utilitzat per <ph name="PRODUCT_NAME" /> i impedeix que els usuaris canviïn la configuració del servidor intermediari. Si decidiu no utilitzar mai un servidor intermediari i sempre us connecteu directament, s'ignoraran totes les altres opcions. Si escolliu detectar automàticament el servidor intermediari, s'ignoraran totes les altres opcions. Per obtenir exemples detallats, visiteu: <ph name="PROXY_HELP_URL" /> Si activeu aquest paràmetre, <ph name="PRODUCT_NAME" /> ignorarà totes les opcions relacionades amb el servidor intermediari especificades a la línia d'ordres. Si no es defineixen aquestes polítiques, els usuaris podran escollir la configuració del servidor intermediari.</translation>
 <translation id="3907986150060929099">Estableix les configuracions regionals recomanades per a una sessió pública</translation>
 <translation id="391531815696899618">Quan aquesta política s'estableix en True, desactiva la sincronització de Google Drive a l'aplicació Fitxers de <ph name="PRODUCT_OS_NAME" />. En aquest cas, no es pengen dades a Google Drive.
 
@@ -982,7 +978,7 @@ Si no es configura aquesta opció, no s'aplicarà cap restricció sobre els tipu
 
           Aquesta política només es respecta si la política "DefaultSearchProviderEnabled" està activada.</translation>
 <translation id="489803897780524242">Paràmetre que controla la ubicació del terme de cerca del proveïdor de cerca predeterminat</translation>
-<translation id="4899708173828500852">Activa la navegació segura</translation>
+<translation id="4899708173828500852">Activa Navegació segura</translation>
 <translation id="4906194810004762807">Freqüència d'actualització de la política de dispositiu</translation>
 <translation id="4928632305180102854">Controla si <ph name="PRODUCT_OS_NAME" /> permet que es creïn comptes d'usuari. Si aquesta política es defineix a «false» (fals), els usuaris que encara no tinguin cap compte no podran iniciar la sessió.
 
@@ -993,13 +989,6 @@ Si no es configura aquesta opció, no s'aplicarà cap restricció sobre els tipu
           El valor ha de ser un conjunt de diccionaris JSON escrits en cadenes. Cada diccionari ha de tenir la forma { "pattern": "$URL_PATTERN", "filter" : $FILTER }, on $URL_PATTERN és un patró que estableix el contingut. $FILTER restringeix els certificats de client que el navegador seleccionarà automàticament. Sigui quin sigui el filtre, només se seleccionaran els certificats que compleixin la sol·licitud de certificat del servidor. Si $FILTER té la forma { "ISSUER": { "CN": "$ISSUER_CN" } }, hi ha una restricció més: només se seleccionen el certificats de client emesos per un certificat que té $ISSUER_CN com a nom comú (CommonName). Si $FILTER és el diccionari buit {}, la selecció de certificats de client no té restriccions addicionals.
 
           Si aquesta política es deixa sense establir, no se seleccionaran certificats automàticament a cap lloc web.</translation>
-<translation id="4980301635509504364">Permet o rebutja la captura de vídeo.
-
-      Si està activada o no està configurada (de manera predeterminada), es demanarà a l'usuari que confirmi l'accés a la captura de vídeo, amb excepció dels URL configurats a la llista VideoCaptureAllowedUrls, als quals es podrà accedir sense cap confirmació.
-
-      Quan aquesta política està desactivada, no es demanarà mai cap confirmació a l'usuari i la captura de vídeo només estarà disponible als URL configurats a VideoCaptureAllowedUrls.
-
-      Aquesta política afecta tots els tipus d'entrada de vídeo i no només els de la càmera integrada.</translation>
 <translation id="4980635395568992380">Tipus de dades:</translation>
 <translation id="4983201894483989687">Permet que s'executin els connectors que estiguin obsolets</translation>
 <translation id="4988291787868618635">Acció que cal dur a terme quan s'arriba al retard d'inactivitat</translation>
@@ -1088,13 +1077,6 @@ Si no es configura aquesta opció, no s'aplicarà cap restricció sobre els tipu
 <translation id="5307432759655324440">Disponibilitat del mode d'incògnit</translation>
 <translation id="5318185076587284965">Permet que l'amfitrió d'accés remot pugui utilitzar els servidors de tramesa</translation>
 <translation id="5330684698007383292">Permet que <ph name="PRODUCT_FRAME_NAME" /> gestioni els tipus de contingut següents</translation>
-<translation id="5345267406698765263">Especifica la política de l'aplicació ARC com una cadena JSON
-      que es pot transmetre sense modificar al temps d'execució d'ARC. De moment,
-      aquesta opció de configuració només s'utilitza per especificar la instal·lació forçosa
-      de les aplicacions.
-
-      Si aquesta política es deixa sense establir, no s'instal·la
-      automàticament cap aplicació.</translation>
 <translation id="5365946944967967336">Mostra el botó Pàgina d'inici a la barra d'eines</translation>
 <translation id="5366977351895725771">Si es defineix com a fals, la creació d'usuaris supervisats per part d'aquest usuari es desactivarà. Els usuaris supervisats existents continuaran estant disponibles.
 
@@ -1127,7 +1109,7 @@ Si no es configura aquesta opció, no s'aplicarà cap restricció sobre els tipu
 <translation id="5469484020713359236">Permet definir una llista de patrons d'URL per especificar els llocs que poden emmagatzemar galetes. Si no es defineix aquesta política, s'utilitzarà per a tots els llocs el valor global predeterminat indicat en la política "DefaultCookiesSetting" (si s'ha definit) o el valor personalitzat que hagi definit l'usuari.</translation>
 <translation id="5469825884154817306">Bloqueja les imatges en aquests llocs</translation>
 <translation id="5475361623548884387">Activa la impressió</translation>
-<translation id="5496487987837463732">Si s'estableix aquesta política en "false", els usuaris no poden decidir que s'enviï als servidors de Google informació sobre els errors de seguretat que trobin. Si aquesta opció de configuració s'estableix en "true" o no es configura, els usuaris poden enviar informació quan trobin un error de SSL o un advertiment de la Navegació segura.</translation>
+<translation id="5496487987837463732">Si s'estableix aquesta política en "false", els usuaris no poden decidir que s'enviï als servidors de Google informació sobre els errors de seguretat que trobin. Si aquesta opció de configuració s'estableix en "true" o no es configura, els usuaris poden enviar informació quan trobin un error de SSL o un advertiment de Navegació segura.</translation>
 <translation id="5499375345075963939">Aquesta política només està activa en mode de venda.
 
       Si s'estableix el valor d'aquesta política en un valor diferent a 0, la sessió de l'usuari de la demostració que tingui iniciada la sessió actualment es tancarà automàticament després d'un període d'inactivitat d'una durada determinada.
@@ -1185,9 +1167,6 @@ Si la política no es defineix, els usuaris podran triar si el prestatge s'ha d'
 
       Si aquesta política no està definida o si es defineix com a "false", <ph name="PRODUCT_NAME" /> utilitzarà la configuració de la comprovació de revocació en línia existent.</translation>
 <translation id="5732972008943405952">Importa les dades d'emplenament automàtic de formularis des del navegador predeterminat quan s'inicia per primera vegada</translation>
-<translation id="5761030451068906335">Configura el servidor intermediari per a <ph name="PRODUCT_NAME" />.
-
-      Aquesta política encara no està llesta; no la feu servir.</translation>
 <translation id="5765780083710877561">Descripció:</translation>
 <translation id="5770738360657678870">Canal per a desenvolupadors (pot ser inestable)</translation>
 <translation id="5774856474228476867">URL de cerca del proveïdor de cerques predeterminat</translation>
@@ -1212,13 +1191,6 @@ Si la política no es defineix, els usuaris podran triar si el prestatge s'ha d'
       Visiteu l'enllaç https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables per veure una llista de les variables que es poden utilitzar.
 
       Si no es defineix aquesta opció, s'utilitzarà el directori de perfil predeterminat.</translation>
-<translation id="5819660021114910752">Especifica la zona horària que ha d'utilitzar el dispositiu. Els usuaris poden canviar la zona horària de la sessió en curs, però es tornarà a restablir en tancar la sessió. Si no es proporciona un valor vàlid, la política farà servir la zona horària GMT per mantenir-se activa. Si es proporciona una cadena buida, la política s'ignorarà.
-
-      Si no es fa servir aquesta política, es continuarà utilitzant la zona horària activa en aquell moment, tot i que els usuaris podran canviar-la de manera permanent. Per tant, els canvis que facin els usuaris afectaran la pantalla d'inici de sessió i la resta d'usuaris.
-
-      Els dispositius nous s'inicien amb la zona horària definida com a US/Pacific.
-
-      El format del valor es regeix pels noms de les zones horàries, que podeu consultar a la base de dades de zones horàries IANA (vegeu https://en.wikipedia.org/wiki/Tz_database). En concret, la majoria de zones horàries es descriuen amb el format "continent/ciutat_gran" o "oceà/ciutat_gran".</translation>
 <translation id="5826047473100157858">Especifica si l'usuari pot obrir les pàgines en mode d'incògnit a <ph name="PRODUCT_NAME" />. Si se selecciona l'opció "activat" o no es defineix la política, les pàgines es podran obrir en mode d'incògnit. Si se selecciona l'opció "desactivat", les pàgines no es podran obrir en mode d'incògnit. Si se selecciona l'opció "forçat", les pàgines NOMÉS es podran obrir en mode d'incògnit.</translation>
 <translation id="5836064773277134605">Restringeix l'interval de port UDP utilitzat per l'amfitrió d'accés remot</translation>
 <translation id="5845159892130426052">Activa l'API de ShowModalDialog fins al 30/04/2015</translation>
@@ -1407,7 +1379,6 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 
       Si aquesta política no s'estableix, el valor predeterminat no es permet als usuaris gestionats per l'empresa i es permet als usuaris no gestionats.</translation>
 <translation id="6491139795995924304">Permet el Bluetooth al dispositiu</translation>
-<translation id="6513756852541213407">Permet especificar el servidor intermediari utilitzat per <ph name="PRODUCT_NAME" /> i impedeix que els usuaris en canviïn la configuració. Si decidiu no utilitzar mai un servidor intermediari i connectar-vos sempre directament, s'ignoraran totes les altres opcions. Si decidiu utilitzar la configuració del servidor intermediari del sistema o la detecció automàtica del servidor intermediari, s'ignoraran totes les altres opcions. Si escolliu el mode fix de servidor intermediari, podreu especificar més opcions a "l'adreça o URL del servidor intermediari" i a la "Llista de regles d'evitació de servidors intermediaris separada per comes". Si escolliu utilitzar un script de servidor intermediari .pac, haureu d'especificar l'URL de l'script a "URL a un fitxer de servidor intermediari .pac". Per consultar exemples més detallats, visiteu: <ph name="PROXY_HELP_URL" /> Si activeu aquest paràmetre, <ph name="PRODUCT_NAME" /> ignorarà totes les opcions relacionades amb el servidor intermediari especificades a la línia d'ordres. Si no es defineix aquesta política, els usuaris podran escollir la configuració del servidor intermediari.</translation>
 <translation id="6520802717075138474">Importació dels motors de cerca des del navegador predeterminat en la primera execució</translation>
 <translation id="653608967792832033">Indica el temps sense activitat per part de l'usuari després del qual la pantalla es bloqueja quan el dispositiu funciona amb bateria.
 
@@ -1487,7 +1458,6 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 
       Si aquesta política no s'estableix, la predicció de xarxa s'activarà però l'usuari podrà canviar-la.</translation>
 <translation id="6658245400435704251">Especifica el nombre de segons fins a què un dispositiu pot retardar aleatòriament la baixada d'una actualització des del moment en què l'actualització es transmet per primera vegada des del servidor. El dispositiu pot esperar una part d'aquest temps en termes de rellotge i la part restant en termes de nombre de comprovacions d'actualitzacions. En qualsevol cas, la dispersió tendeix cap amunt a una quantitat constant de temps, de manera que un dispositiu mai no es quedi encallat mentre espera que es baixi una actualització.</translation>
-<translation id="6672934768721876104">Aquesta política està obsoleta; feu servir ProxyMode en lloc seu. Us permet especificar el servidor intermediari que <ph name="PRODUCT_NAME" /> utilitza i impedeix que els usuaris en modifiquin la configuració. Si trieu que mai no es faci servir un connector intermediari i voleu connectar-vos directament, s'ignoraran totes les altres opcions. Si trieu fer servir la configuració del servidor intermediari o bé detectar el servidor intermediari automàticament, s'ignoraran totes les altres opcions. Si trieu configurar manualment el servidor intermediari, podreu especificar més opcions a "Adreça o URL del servidor intermediari", a "URL del fitxer .pac d'un servidor intermediari" i a "Regles d'evitació de servidors intermediaris separada per comes". Si voleu consultar-ne exemples detallats, visiteu: <ph name="PROXY_HELP_URL" />. Si activeu aquest paràmetre, <ph name="PRODUCT_NAME" /> ignorarà totes les opcions relacionades amb els servidors intermediaris que hi hagi a la línia d'ordres. Si no es defineix aquesta política, els usuaris podran escollir la configuració del servidor intermediari.</translation>
 <translation id="6689792153960219308">Informa de l'estat del maquinari</translation>
 <translation id="6693751878507293182">Si es defineix aquest paràmetre com a activat, es desactivaran la cerca automàtica i la instal·lació dels connectors que falten a <ph name="PRODUCT_NAME" />. Si es defineix aquest paràmetre com a desactivat o si es deixa sense definir, el cercador de connectors quedarà actiu.</translation>
 <translation id="6697474194550078937">Limita el temps durant el qual un usuari autenticat amb SAML pot iniciar la sessió fora de línia.
@@ -1637,7 +1607,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
       Si aquesta política s'estableix en "true" o es deixa sense establir, l'usuari podrà activar o desactivar el Bluetooth com vulgui.
 
       Si aquesta política s'estableix, l'usuari no la podrà canviar ni substituir.</translation>
-<translation id="7216442368414164495">Permet que els usuaris activin els informes ampliats de la Navegació segura</translation>
+<translation id="7216442368414164495">Permet que els usuaris activin els informes ampliats de Navegació segura</translation>
 <translation id="7227967227357489766">Defineix la llista d'usuaris que poden iniciar la sessió al dispositiu. El text introduït té el format <ph name="USER_WHITELIST_ENTRY_FORMAT" />, com ara <ph name="USER_WHITELIST_ENTRY_EXAMPLE" />. Perquè els usuaris arbitraris puguin accedir a un domini, utilitzeu text que tingui el format <ph name="USER_WHITELIST_ENTRY_WILDCARD" />.
 
       Si no es configura aquesta política, no hi ha cap restricció sobre on poden iniciar la sessió els usuaris. Tingueu en compte que per crear usuaris nous, la política <ph name="DEVICEALLOWNEWUSERS_POLICY_NAME" /> també ha d'estar configurada adequadament.</translation>

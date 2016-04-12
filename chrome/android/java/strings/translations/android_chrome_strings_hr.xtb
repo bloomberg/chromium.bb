@@ -25,6 +25,7 @@ Da biste upotrebljavali Fizički web, morate uključiti Bluetooth i Lokaciju.</t
 <translation id="1285320974508926690">Nikad nemoj prevoditi ovu web-lokaciju</translation>
 <translation id="1291207594882862231">Brisanje povijesti, kolačića, podataka web-lokacija, predmemorije...</translation>
 <translation id="129553762522093515">Nedavno zatvoreno</translation>
+<translation id="13410144310025252">Pogledajte ih u Chromeu</translation>
 <translation id="1346090444609141578">Ovdje nema spremljenih stranica</translation>
 <translation id="1369915414381695676">Dodana je web-lokacija <ph name="SITE_NAME" /></translation>
 <translation id="1373696734384179344">Nema dovoljno memorije za preuzimanje odabranog sadržaja.</translation>
@@ -193,6 +194,7 @@ Da biste prilagodili pojam za pretraživanje, dugo pritisnite za odabir. Da bist
 <translation id="3656115297268584622">Uključite lokaciju u <ph name="BEGIN_LINK" />Postavkama Androida<ph name="END_LINK" />.</translation>
 <translation id="3661699943263275414">Web-lokacije trećih strana mogu spremati i čitati podatke kolačića</translation>
 <translation id="3672452749423051839">Prijedlozi pogreške kretanja</translation>
+<translation id="3716158070938632480">U blizini postoje web-stranice</translation>
 <translation id="3732088672634061408">Interesi nisu dohvaćeni.</translation>
 <translation id="3738139272394829648">Dodirnite za pretraživanje</translation>
 <translation id="3809549525127675114">Videozapis "<ph name="VIDEO_TITLE" />" je završen</translation>
@@ -372,7 +374,6 @@ Međutim, niste nevidljivi. Anonimni način neće sakriti vaše pregledavanje od
 <translation id="5911030830365207728">Google prevoditelj</translation>
 <translation id="5916664084637901428">Uključi</translation>
 <translation id="5939518447894949180">Ponovno postavi</translation>
-<translation id="5965336165840183977">Izbrisat će se sinkronizirani podaci sa svih uređaja. Nećete se odjaviti s Google računa. Spremljene postavke web-lokacija neće se izbrisati i mogu odražavati vaše navike tijekom pregledavanja.</translation>
 <translation id="5968595432776860642">Reproducira se "<ph name="VIDEO_TITLE" />"</translation>
 <translation id="6010869025736512584">Pristupanje videoulazu</translation>
 <translation id="6012342843556706400">Chrome treba imati pristup lokaciji da bi je dijelio s ovom web-lokacijom.</translation>
@@ -392,7 +393,6 @@ Međutim, niste nevidljivi. Anonimni način neće sakriti vaše pregledavanje od
 <translation id="6159335304067198720"><ph name="PERCENT" /> manji podatkovni promet</translation>
 <translation id="6165508094623778733">Saznajte više</translation>
 <translation id="6192792657125177640">Iznimke</translation>
-<translation id="6231464350722415003">Dopušta se JavaScript na web-lokacijama koje navedete, ali se blokira za ostatak weba</translation>
 <translation id="6232535412751077445">Omogućivanje opcije "Nemoj pratiti" znači da će se u promet pregledavanja uključiti zahtjev. Učinak ovisi o tome odgovara li web-lokacija na taj zahtjev i kako se zahtjev tumači.
 
 Na primjer, neke web-lokacije na taj zahtjev mogu odgovoriti tako da vam prikažu oglase koji se ne temelje na drugim web-lokacijama koje ste posjetili. Mnoge web-lokacije i dalje će prikupljati i upotrebljavati vaše podatke o pregledavanju, primjerice, za poboljšanje sigurnosti, pružanje sadržaja, oglasa i preporuka, kao i za generiranje statističkih izvješća.</translation>
@@ -480,7 +480,6 @@ Na primjer, neke web-lokacije na taj zahtjev mogu odgovoriti tako da vam prikaž
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> upotrebljava vašu lokaciju za prikazivanje lokalnih rezultata pretraživanja</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />Pomoć<ph name="END_LINK" /></translation>
 <translation id="7299721129597238157">Izbriši oznaku</translation>
-<translation id="7346217184097589238">Spremljene postavke web-lokacija neće se izbrisati i mogu odražavati vaše navike tijekom pregledavanja.</translation>
 <translation id="7347770551817603360">Offline sadržaj</translation>
 <translation id="7363354739009474003">Učitavanje videozapisa "<ph name="VIDEO_TITLE" />"</translation>
 <translation id="7366340029385295517">Emitiranje na uređaj <ph name="SCREEN_NAME" /></translation>
@@ -491,6 +490,7 @@ Na primjer, neke web-lokacije na taj zahtjev mogu odgovoriti tako da vam prikaž
 <translation id="7408644312175185557">Prikažite kartice s ostalim nedavnim aplikacijama na zaslonu Pregled na telefonu.</translation>
 <translation id="7423098979219808738">Prvo pitaj</translation>
 <translation id="7437998757836447326">Odjava s Chromea</translation>
+<translation id="7464701184726199289">Sinkronizirani podaci izbrisat će se sa svih uređaja. Spremljene postavke web-lokacije neće se izbrisati i mogu odražavati vaše navike prilikom pregledavanja. <ph name="BEGIN_LINK" />Saznajte više<ph name="END_LINK" /></translation>
 <translation id="7473891865547856676">Ne, hvala</translation>
 <translation id="7475192538862203634">Ako se to često prikazuje, pokušajte s ovim <ph name="BEGIN_LINK" />prijedlozima<ph name="END_LINK" />.</translation>
 <translation id="748127970106343339">Potvrđivanje brisanja vjerodajnice uređaja</translation>
@@ -542,7 +542,11 @@ No niste nevidljivi. Anonimni način neće sakriti vaše pregledavanje od poslod
 <translation id="8068648041423924542">Ne može se odabrati certifikat.</translation>
 <translation id="8069239273282989646">Nakon kompresije</translation>
 <translation id="8073388330009372546">Otvori sliku u novoj kartici</translation>
+<translation id="8076014560081431679">Spremljene postavke web-lokacije neće se izbrisati i mogu odražavati vaše navike prilikom pregledavanja. <ph name="BEGIN_LINK" />Saznajte više<ph name="END_LINK" /></translation>
 <translation id="8084156870963450514">Prijavite se za pristup svim svojim sadržajima na webu s bilo kojeg uređaja</translation>
+<translation id="8098570222830891427">Uređaji u blizini emitiraju web-stranice Bluetoothom. Chrome će tražiti stranice i prikazati ih kada aktivirate uređaj. Googleova služba obradit će te stranice radi poboljšanja kvalitete rezultata stranica.
+
+Fizičkim webom možete upravljati u Chromeovim postavkama.</translation>
 <translation id="8106211421800660735">Broj kreditne kartice</translation>
 <translation id="813082847718468539">Prikaz informacija o web-mjestu</translation>
 <translation id="8137558756159375272">Značajka Dodirnite za pretraživanje Google pretraživanju šalje odabranu riječ i trenutačnu stranicu kao kontekst. Možete je isključiti u <ph name="BEGIN_LINK" />Postavkama<ph name="END_LINK" />.</translation>

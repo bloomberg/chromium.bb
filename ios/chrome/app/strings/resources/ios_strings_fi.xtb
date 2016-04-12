@@ -4,52 +4,32 @@
 <translation id="1008557486741366299">Ei nyt</translation>
 <translation id="1047726139967079566">Aseta tämä sivu kirjanmerkiksi...</translation>
 <translation id="1172898394251786223">Seuraava kenttä</translation>
-<translation id="168328519870909584">Sivustolle <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> hyökännyt taho voi yrittää asentaa laitteellesi vaarallisia ohjelmia, jotka varastavat tai poistavat tietojasi, kuten kuviasi, salasanojasi, viestejäsi ja luottokorttiesi tietoja.</translation>
 <translation id="2320166752086256636">Piilota näppäimistö</translation>
 <translation id="2467815441875554965">Kontekstihaku</translation>
 <translation id="2704606927547763573">Kopioitu</translation>
 <translation id="2747003861858887689">Edellinen kenttä</translation>
 <translation id="2780046210906776326">Ei sähköpostitilejä</translation>
-<translation id="2803306138276472711">Google-selaussuoja havaitsi sivustossa <ph name="SITE" /> äskettäin <ph name="BEGIN_LINK" />haittaohjelmia<ph name="END_LINK" />. Tavallisesti turvalliset sivustot voivat joskus saada haittaohjelmatartunnan.</translation>
 <translation id="3244271242291266297">KK</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" />/<ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3335947283844343239">Avaa suljettu välilehti uudelleen</translation>
 <translation id="3414292259312108062">Chrome tallentaa tämän <ph name="BEGIN_LINK" />Googlen tallennettuihin salasanoihin<ph name="END_LINK" /> ja täyttää sen automaattisesti, joten sinun ei tarvitse muistaa salasanaa itse.</translation>
 <translation id="3567664240939803299">Haluatko, että Google Smart Lock tallentaa salasanasi tälle sivustolle?</translation>
-<translation id="3586931643579894722">Piilota lisätiedot</translation>
-<translation id="3736520371357197498">Jos ymmärrät käyntiä koskevat turvallisuusriskit, voit <ph name="BEGIN_LINK" />siirtyä vaarantuneeseen sivustoon<ph name="END_LINK" /> jo ennen haitallisten ohjelmien poistamista.</translation>
 <translation id="385051799172605136">Edellinen</translation>
-<translation id="4098354747657067197">Seuraava sivusto on petollinen</translation>
 <translation id="4121993058175073134">Tee sähköp.tilin määritykset asetuksissa lähettääksesi nettovientitiet.</translation>
 <translation id="4399225372525667111">Chrome ei voi varmistaa, onko tämän sivuston URL-osoite oikea.</translation>
-<translation id="4522570452068850558">Tiedot</translation>
 <translation id="4728558894243024398">Käyttöympäristö</translation>
 <translation id="473775607612524610">Päivitä</translation>
 <translation id="5317780077021120954">Tallenna</translation>
-<translation id="5337705430875057403">Sivustoon <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> hyökännyt taho voi yrittää huijata sinua tekemään jotain vaarallista, kuten asentamaan ohjelmistoja tai paljastamaan henkilötietojasi (esimerkiksi salasanoja, puhelinnumeroita tai luottokorttitietoja).</translation>
 <translation id="605721222689873409">VV</translation>
-<translation id="6075880972317537864">Sivustoon <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> hyökännyt taho voi yrittää varastaa tietojasi (esimerkiksi salasanoja, viestejä tai luottokorttien tietoja) huijaamalla sinua.</translation>
 <translation id="6149061208933997199">Käytä salasanaa</translation>
 <translation id="6196207969502475924">Puhehaku</translation>
-<translation id="6221345481584921695">Google-selaussuoja havaitsi sivustossa <ph name="SITE" /> äskettäin <ph name="BEGIN_LINK" />haittaohjelmia<ph name="END_LINK" />. Tavallisesti turvalliset sivustot voivat joskus saada haittaohjelmatartunnan. Haitallinen sisältö on peräisin tunnetusta haittaohjelmien jakelusivustosta nimeltä <ph name="SUBRESOURCE_HOST" />.</translation>
-<translation id="6264485186158353794">Takaisin suojaukseen</translation>
 <translation id="6314335155547195432">Luo salasana</translation>
 <translation id="6344783595350022745">Tyhjennä teksti</translation>
 <translation id="6456425917241817154">Salasanan loi Chrome</translation>
 <translation id="6535543971741225613">Käyttämäsi sivusto toimii epäilyttävästi, eikä Chrome voi varmistaa, onko sen URL-osoite oikea. Emme suosittele jatkamaan sivustoon. Voit yrittää käyttää sivustoa uudelleen huomenna tai siirtyä toiseen sivustoon.</translation>
-<translation id="6740369132746915122">Jos ymmärrät tietoturvariskit, voit <ph name="BEGIN_LINK" />vierailla tällä vaarallisella sivustolla<ph name="END_LINK" />.</translation>
 <translation id="7222245588540287464">Onko kontekstihaku käytössä.</translation>
-<translation id="724691107663265825">Seuraava verkkosivusto sisältää haittaohjelmia</translation>
 <translation id="7456847797759667638">Avaa sijainti...</translation>
 <translation id="7481312909269577407">Seuraava</translation>
 <translation id="7484580869648358686">Varoitus: jotain on vialla!</translation>
-<translation id="7779249319235708104">Pyytämässäsi sivustossa on käynnissä tietojenkalasteluhyökkäys</translation>
 <translation id="7961015016161918242">Ei koskaan</translation>
-<translation id="820854170120587500">Google-selaussuoja havaitsi äskettäin tietojenkalasteluyrityksen sivustossa <ph name="SITE" />. <ph name="BEGIN_LINK" />Tietojenkalastelusivustot<ph name="END_LINK" /> yrittävät huijata käyttäjiä tekeytymällä toisiksi sivustoiksi.</translation>
-<translation id="834457929814110454">Jos ymmärrät käyntiä koskevat turvallisuusriskit, voit <ph name="BEGIN_LINK" />siirtyä tähän sivustoon<ph name="END_LINK" /> jo ennen haitallisten ohjelmien poistamista.</translation>
-<translation id="8543181531796978784">Voit <ph name="BEGIN_ERROR_LINK" />ilmoittaa löytyneestä ongelmasta<ph name="END_ERROR_LINK" /> tai <ph name="BEGIN_LINK" />siirtyä mahdollisesti haitalliselle sivustolle<ph name="END_LINK" />, jos ymmärrät tietoturvariskit.</translation>
-<translation id="8761567432415473239">Google-selaussuoja <ph name="BEGIN_LINK" />löysi hiljattain haitallisia ohjelmia<ph name="END_LINK" /> sivustolta <ph name="SITE" />.</translation>
-<translation id="8996941253935762404">Sivusto sisältää haitallisia ohjelmia</translation>
-<translation id="9035022520814077154">Suojausvirhe</translation>
-<translation id="9040185888511745258">Sivuston <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> hyökkääjät saattavat yrittää huijata sinua asentamaan ohjelmia, jotka ovat haitallisia selauskokemuksellesi (esimerkiksi vaihtamalla aloitussivusi tai näyttämällä ylimääräisiä mainoksia käymilläsi sivustoilla).</translation>
 </translationbundle>

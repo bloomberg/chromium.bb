@@ -277,7 +277,6 @@
 <translation id="1407050882688520094">V súbore máte certifikáty, ktoré identifikujú tieto certifikačné autority:</translation>
 <translation id="1407489512183974736">Orezať na stred</translation>
 <translation id="1408789165795197664">Rozšírené...</translation>
-<translation id="1408803555324839240">Ojoj! Nového kontrolovaného používateľa sa nepodarilo vytvoriť. Skontrolujte, či ste správne prihlásený/-á, a skúste to znova.</translation>
 <translation id="1409390508152595145">Vytvoriť kontrolovaného používateľa</translation>
 <translation id="1410616244180625362">Aj naďalej povoliť stránkam <ph name="HOST" /> prístup ku kamere</translation>
 <translation id="1413372529771027206">Telefón používaný pre funkciu Smart Lock bol zmenený. Ak chcete funkciu Smart Lock pre Chromebook na tomto zariadení aktualizovať, zadajte heslo. Nabudúce budete môcť zariadenie otvoriť iba kliknutím na fotku.</translation>
@@ -1601,7 +1600,6 @@ Tieto webové stránky by podľa mňa nemali byť blokované.</translation>
 <translation id="3277710850168074473">Požadovať používateľské gesto na prehrávanie prvkov médií. Vypnutie tohto príznaku umožní automatické prehrávanie.</translation>
 <translation id="3280237271814976245">Uložiť &amp;ako...</translation>
 <translation id="3280431534455935878">Prebieha príprava</translation>
-<translation id="3284674070818187654">Google môže použiť vašu históriu prehliadania na prispôsobenie Vyhľadávania a ďalších služieb Google. Túto funkciu môžete vypnúť na adrese myaccount.google.com.</translation>
 <translation id="3285322247471302225">Nová &amp;karta</translation>
 <translation id="3288047731229977326">Rozšírenia spustené v režime pre vývojárov môžu poškodiť váš počítač. Ak nie ste vývojár, mali by ste v záujme bezpečnosti rozšírenia spustené v režime vývojára zakázať.</translation>
 <translation id="3289566588497100676">Jednoduché vkladanie symbolov</translation>
@@ -1707,7 +1705,6 @@ z domény <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3413122095806433232">Vydavatelia CA: <ph name="LOCATION" /></translation>
 <translation id="3414856743105198592">Formátovaním vymeniteľných médií sa vymažú všetky dáta. Chcete pokračovať?</translation>
 <translation id="3414952576877147120">Veľkosť:</translation>
-<translation id="3416248389957650982">Po prihlásení otvoriť adresu myaccount.google.com</translation>
 <translation id="3420980393175304359">Prepnutie osoby</translation>
 <translation id="3423858849633684918">Reštartujte <ph name="PRODUCT_NAME" /></translation>
 <translation id="3425233587047449821">Nová metóda vstupu pre kórejčinu</translation>
@@ -1922,7 +1919,6 @@ z domény <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3694027410380121301">Vybrať predchádzajúcu kartu</translation>
 <translation id="3694122362646626770">Webové stránky</translation>
 <translation id="3694678678240097321">Vyžaduje súhlas používateľa pre rozšírenie vykonávajúce skript na stránke v prípade, že toto rozšírenie žiada o povolenie spustiť skript na všetkých webových adresách.</translation>
-<translation id="36954862089075551">Ojoj! Kontrolovaný používateľ sa nedá vytvoriť. Skontrolujte priestor na pevnom disku a svoje povolenia a skúste to znova.</translation>
 <translation id="3695919544155087829">Zadajte heslo, ktoré bolo použité na zašifrovanie tohto súboru certifikátu.</translation>
 <translation id="3696411085566228381">žiadne</translation>
 <translation id="3697100740575341996">Váš správca IT zakázal na vašom zariadení propagačné ponuky Chrome Goodies. <ph name="MORE_INFO_LINK" /></translation>
@@ -2350,7 +2346,6 @@ Ak chcete pokračovať v práci, stlačte ľubovoľný kláves.</translation>
 <translation id="4345703751611431217">Nekompatibilita softvéru: viac informácií</translation>
 <translation id="4348766275249686434">Zhromažďovanie chýb</translation>
 <translation id="4350019051035968019">Toto zariadenie nemôže byť zaregistrované do domény vášho účtu, pretože je označené ako spravované inou doménou.</translation>
-<translation id="4352333825734680558">Ojoj! Nie je možné vytvoriť nového kontrolovaného používateľa. Skontrolujte svoje pripojenie k sieti a skúste to znova neskôr.</translation>
 <translation id="4358697938732213860">Pridať adresu</translation>
 <translation id="4359408040881008151">Nainštalované pre závislé rozšírenia.</translation>
 <translation id="4361190688154226069">Zacielenie prostredníctvom plochy v tvare obdĺžnika v zobrazeniach</translation>
@@ -3024,7 +3019,6 @@ Ak chcete pokračovať v práci, stlačte ľubovoľný kláves.</translation>
 <translation id="5388588172257446328">Používateľské meno:</translation>
 <translation id="5390284375844109566">Indexovaná databáza</translation>
 <translation id="5392544185395226057">Povolí podporu pre technológiu Native Client.</translation>
-<translation id="5393125431335030955">Tento doplnok funguje iba v režime pracovnej plochy.</translation>
 <translation id="5396126354477659676">Doplnok <ph name="PEPPER_PLUGIN_NAME" /> na stránkach <ph name="PEPPER_PLUGIN_DOMAIN" /> chce získať prístup k vášmu počítaču.</translation>
 <translation id="539755880180803351">Pridá k webovým formulárom anotácie tak, že ako zástupný text vloží typ poľa predpovedaný funkciou Automatické dopĺňanie.</translation>
 <translation id="5397578532367286026">Aktivitu a históriu tohto používateľa môže skontrolovať správca (<ph name="MANAGER_EMAIL" />) na adrese chrome.com.</translation>
@@ -3289,7 +3283,6 @@ Ak chcete pokračovať v práci, stlačte ľubovoľný kláves.</translation>
 <translation id="57646104491463491">Dátum úpravy</translation>
 <translation id="5765491088802881382">Žiadne siete nie sú k dispozícii</translation>
 <translation id="5765780083710877561">Popis:</translation>
-<translation id="5770385044111747894">NPAPI</translation>
 <translation id="5771585441665576801">Prepis (geia → γεια)</translation>
 <translation id="5771816112378578655">Prebieha inštalácia...</translation>
 <translation id="5771849619911534867">Skenovanie zariadenia bolo zastavené.</translation>
@@ -3924,7 +3917,6 @@ Niektoré funkcie nemusia byť k dispozícii.  Skontrolujte, či profil existuje
 <translation id="6793649375377511437">Google Copresence Info</translation>
 <translation id="6797493596609571643">Hops, niečo sa pokazilo.</translation>
 <translation id="6798954102094737107">Doplnok: <ph name="PLUGIN_NAME" /></translation>
-<translation id="6799646767877093143">Tieto stránky používajú doplnok (<ph name="PLUGIN_NAME" />), ktorého podpora sa čoskoro ukončí.</translation>
 <translation id="6802031077390104172"><ph name="USAGE" /> (<ph name="OID" />)</translation>
 <translation id="6804671422566312077">Otvoriť všetky záložky v &amp;novom okne</translation>
 <translation id="6805647936811177813">Ak chcete importovať certifikát klienta z adresy <ph name="HOST_NAME" />, prihláste sa do <ph name="TOKEN_NAME" />.</translation>
@@ -4920,7 +4912,6 @@ Súbor kľúča uložte na bezpečné miesto. Budete ho potrebovať na vytvoreni
 <translation id="8267698848189296333">Prihlasovanie pomocou účtu <ph name="USERNAME" /></translation>
 <translation id="8272443605911821513">Ak chcete spravovať rozšírenia, kliknite v ponuke Ďalšie nástroje na možnosť Rozšírenia.</translation>
 <translation id="8273972836055206582">Stránka <ph name="FULLSCREEN_ORIGIN" /> je teraz zobrazená na celú obrazovku a chce zakázať kurzor myši.</translation>
-<translation id="8274860189261120948">Prihlasovať sa na weby automaticky pomocou uložených poverení. Keď je táto funkcia zakázaná, zobrazí sa pred každým prihlásením na web výzva s potvrdením.</translation>
 <translation id="8275038454117074363">Importovať</translation>
 <translation id="8276560076771292512">Vymazať vyrovnávaciu pamäť a vynútiť opätovné načítanie</translation>
 <translation id="8279388322240498158">Kurdská klávesnica (sorání) s anglickým rozložením</translation>
@@ -5105,7 +5096,6 @@ Prebieha výpočet času do úplného nabitia</translation>
 <translation id="8571108619753148184">Server 4</translation>
 <translation id="8572832761467613633">Iba Flash</translation>
 <translation id="8572981282494768930">Nepovoliť webovým stránkam používať vašu kameru a mikrofón</translation>
-<translation id="8574794171590710404">Tieto stránky používajú nepodporovaný doplnok (<ph name="PLUGIN_NAME" />)</translation>
 <translation id="857779305329188634">Povolí podporu experimentálneho protokolu QUIC.</translation>
 <translation id="8579285237314169903">Synchronizujú sa položky (počet: <ph name="NUMBER_OF_FILES" />)...</translation>
 <translation id="8579549103199280730">Opýtať sa v predvolenom nastavení</translation>
@@ -5113,7 +5103,6 @@ Prebieha výpočet času do úplného nabitia</translation>
 <translation id="8581690024797204327">256</translation>
 <translation id="8581809080475256101">Stlačením tohto tlačidla prejdete dopredu, históriu si zobrazíte pomocou kontextovej ponuky</translation>
 <translation id="8584280235376696778">&amp;Otvoriť video na novej karte</translation>
-<translation id="8585103164112230633">Kontrolovať a zobrazovať weby, ktoré táto osoba navštívila v rámci účtu</translation>
 <translation id="8589311641140863898">Experimentálne rozhrania API rozšírení</translation>
 <translation id="8590375307970699841">Nastaviť automatické aktualizácie</translation>
 <translation id="8592071947729879125">Obmedziť povolenia prvku iframe</translation>
@@ -5261,7 +5250,6 @@ Prebieha výpočet času do úplného nabitia</translation>
 <translation id="878069093594050299">Tento certifikát bol overený pre nasledujúce typy použitia:</translation>
 <translation id="8782565991310229362">Spustenie aplikácie pre režim kiosku sa zrušilo.</translation>
 <translation id="8783093612333542422">Používateľ &lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; chce s vami zdieľať tlačiareň &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt;.</translation>
-<translation id="878431691778285679">Zdá sa, že používateľa s týmto menom už spravujete.<ph name="LINE_BREAK" />Chcete používateľa <ph name="PROFILE_NAME" /> <ph name="BEGIN_LINK" />importovať do tohto zariadenia<ph name="END_LINK" />?</translation>
 <translation id="8784626084144195648">Vyhladený priemer</translation>
 <translation id="8785135611469711856">Doplnok nereaguje</translation>
 <translation id="8787254343425541995">Povoliť servery proxy pre zdieľané siete</translation>

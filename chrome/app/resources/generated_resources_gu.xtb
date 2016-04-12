@@ -277,7 +277,6 @@
 <translation id="1407050882688520094">તમારી પાસે ફાઇલ પર પ્રમાણપત્રો છે જે આ પ્રમાણપત્ર અધિકારીઓને ઓળખે છે:</translation>
 <translation id="1407489512183974736">મધ્યમાં કાપેલું</translation>
 <translation id="1408789165795197664">વિગતવાર...</translation>
-<translation id="1408803555324839240">અરેરે! નવા નિરિક્ષિત વપરાશકર્તાઓ બનાવી શકાયા નથી. કૃપા કરીને તમે બરાબર સાઇન ઇન કર્યું છે તેની ખાતરી કરો અને ફરીથી પ્રયાસ કરો.</translation>
 <translation id="1409390508152595145">નિરીક્ષણ કરેલ વપરાશકર્તા બનાવો</translation>
 <translation id="1410616244180625362"><ph name="HOST" /> ને તમારા કૅમેરાને ઍક્સેસ કરવા દેવાનું ચાલુ રાખો</translation>
 <translation id="1413372529771027206">Smart Lock માટે વપરાતો તમારો ફોન બદલાઈ ગયો છે. આ ઉપકરણ પર Chromebook માટે Smart Lock અપડેટ કરવા તમારો પાસવર્ડ લખો. આગલી વખતે, દાખલ થવા માટે તમે ફક્ત તમારા ચિત્ર પર ક્લિક કરી શકો છો.</translation>
@@ -1596,7 +1595,6 @@
 <translation id="3277710850168074473">મીડિયા તત્વો ચલાવવા માટે વપરાશકર્તા હાવભાવ આવશ્યકતા. આને અક્ષમ કરવું એ ઑટોપ્લેને કાર્ય કરવાની મંજૂરી આપશે.</translation>
 <translation id="3280237271814976245">આ &amp;રૂપમાં સાચવો...</translation>
 <translation id="3280431534455935878">તૈયારી કરી રહ્યાં છીએ</translation>
-<translation id="3284674070818187654">Google, શોધ અને અન્ય Google સેવાઓને વ્યક્તિગત કરવા માટે તમારા બ્રાઉઝિંગ ઇતિહાસનો ઉપયોગ કરી શકે છે. તમે આને myaccount.google.com પર નિયંત્રિત કરી શકો છો.</translation>
 <translation id="3285322247471302225">નવું &amp;ટૅબ</translation>
 <translation id="3288047731229977326">વિકાસકર્તા મોડમાં ચાલી રહેલા એક્સટેન્શન્સ તમારા કમ્પ્યુટરને નુકસાન પહોંચાડી શકે છે. જો તમે વિકાસકર્તા નથી, તો તમે સુરક્ષિત રહેવા માટે વિકાસકર્તા મોડમાં ચાલી રહેલા આ એક્સ્ટેન્શન્સને અક્ષમ કરવા જોઈએ.</translation>
 <translation id="3289566588497100676">સરળ પ્રતીક ઇનપુટ</translation>
@@ -1703,7 +1701,6 @@
 <translation id="3413122095806433232">CA રજૂકર્તાઓ: <ph name="LOCATION" /></translation>
 <translation id="3414856743105198592">દૂર કરવા યોગ્ય મીડિયાને ફોર્મેટ કરવાથી તમામ ડેટા ભૂંસાઈ જાય છે. શું તમે ચાલુ રાખવા ઈચ્છો છો?</translation>
 <translation id="3414952576877147120">કદ:</translation>
-<translation id="3416248389957650982">સાઇન ઇન કર્યા પછી myaccount.google.com ખોલો</translation>
 <translation id="3420980393175304359">વ્યક્તિ પર સ્વિચ કરો</translation>
 <translation id="3423858849633684918">કૃપા કરીને <ph name="PRODUCT_NAME" /> ને ફરીથી લોંચ કરો</translation>
 <translation id="3425233587047449821">નવું કોરિયન IME</translation>
@@ -1918,7 +1915,6 @@
 <translation id="3694027410380121301">પહેલાનું ટૅબ પસંદ કરો</translation>
 <translation id="3694122362646626770">વેબસાઇટ્સ</translation>
 <translation id="3694678678240097321">જો એક્સ્ટેન્શને બધા url પર ચાલવા માટેની પરવાનગીની વિનંતી કરી છે, તો પૃષ્ઠ પર ચાલી રહેલા એક્સ્ટેન્શન માટે વપરાશકર્તા સંમતિની જરૂર રહે છે.</translation>
-<translation id="36954862089075551">અરેરે! નવો વપરાશકર્તા બનાવી શકાયો નથી. કૃપા કરીને તમારું હાર્ડ ડ્રાઇવ સ્થાન અને પરવાનગીઓ તપાસો અને ફરી પ્રયાસ કરો.</translation>
 <translation id="3695919544155087829">કૃપા કરીને આ પ્રમાણપત્ર ફાઇલને એન્ક્રિપ્ટ કરવા માટે ઉપયોગમાં લેવાયો હતો તે પાસવર્ડ દાખલ કરો.</translation>
 <translation id="3696411085566228381">કોઈ નહીં</translation>
 <translation id="3697100740575341996">તમારા IT વ્યવસ્થાપકે તમારા ઉપકરણ માટે Chrome ગુડીઝ અક્ષમ કરેલ છે. <ph name="MORE_INFO_LINK" /></translation>
@@ -2346,7 +2342,6 @@
 <translation id="4345703751611431217">સૉફ્ટવેર અસંગતતા: વધુ જાણો</translation>
 <translation id="4348766275249686434">ભૂલો એકત્રિત કરો</translation>
 <translation id="4350019051035968019">તમારું એકાઉન્ટ જે ડોમેનથી સંબંધિત છે તેમાં આ ઉપકરણની નોંધણી કરી શકાતી નથી કારણ કે ઉપકરણને સંચાલન માટે કોઈ ભિન્ન ડોમેન દ્વારા ચિહ્નિત કરેલ છે.</translation>
-<translation id="4352333825734680558">અરેરે! નવા નિરીક્ષણ કરેલા વપરાશકર્તા બનાવી શકાયા નથી. કૃપા કરીને તમારું નેટવર્ક કનેક્શન તપાસો અને પછીથી ફરી પ્રયાસ કરો.</translation>
 <translation id="4358697938732213860">એક સરનામું ઉમેરો</translation>
 <translation id="4359408040881008151">નિર્ભર એક્સ્ટેન્શન(એક્સ્ટેન્શન્સ)ને લીધે ઇન્સ્ટોલ કર્યું.</translation>
 <translation id="4361190688154226069">દૃશ્યોમાં લંબ-આધારિત લક્ષ્યીકરણ</translation>
@@ -3018,7 +3013,6 @@
 <translation id="5388588172257446328">વપરાશકર્તાનામ:</translation>
 <translation id="5390284375844109566">અનુક્રમિત ડેટાબેસ</translation>
 <translation id="5392544185395226057">મૂળ ક્લાઇન્ટ માટે સપોર્ટ સક્ષમ કરો.</translation>
-<translation id="5393125431335030955">આ પ્લગિનન ફ઼ક્ત ડેસ્કટોપ પર કામ કરે છે.</translation>
 <translation id="5396126354477659676"><ph name="PEPPER_PLUGIN_DOMAIN" /> પરનું <ph name="PEPPER_PLUGIN_NAME" /> તમારા કમ્પ્યુટરને ઍક્સેસ કરવા માગે છે.</translation>
 <translation id="539755880180803351">સ્વતઃભરો ફીલ્ડ પ્રકાર અનુમાનોવાળા વેબ ફોર્મ્સને પ્લેસહોલ્ડર ટેક્સ્ટ તરીકે એનોટેટ કરે છે.</translation>
 <translation id="5397578532367286026">આ વપરાશકર્તાના ઉપયોગ અને ઇતિહાસની chrome.com પર સંચાલક (<ph name="MANAGER_EMAIL" />) દ્વારા સમીક્ષા કરવામાં આવી શકે છે.</translation>
@@ -3284,7 +3278,6 @@
 <translation id="57646104491463491">ફેરફાર કર્યાની તારીખ</translation>
 <translation id="5765491088802881382">નેટવર્ક્સ ઉપલબ્ધ નથી</translation>
 <translation id="5765780083710877561">વર્ણન:</translation>
-<translation id="5770385044111747894">NPAPI</translation>
 <translation id="5771585441665576801">લિવ્યંતરણ (geia → γεια)</translation>
 <translation id="5771816112378578655">સેટઅપની પ્રક્રિયા ચાલુ છે...</translation>
 <translation id="5771849619911534867">ઉપકરણને સ્કેન કરવાનું રોક્યું.</translation>
@@ -3918,7 +3911,6 @@
 <translation id="6793649375377511437">Google Copresence માહિતી</translation>
 <translation id="6797493596609571643">અરેરે, કંઈક ખોટું થયું.</translation>
 <translation id="6798954102094737107">પ્લગિન: <ph name="PLUGIN_NAME" /></translation>
-<translation id="6799646767877093143">આ સાઇટ એક પ્લગિન (<ph name="PLUGIN_NAME" />) નો ઉપયોગ કરે છે જે ટૂંક સમયમાં અસમર્થિત હશે.</translation>
 <translation id="6802031077390104172"><ph name="USAGE" /> (<ph name="OID" />)</translation>
 <translation id="6804671422566312077">બધાં બુકમાર્ક્સને &amp;નવી વિંડોમાં ખોલો</translation>
 <translation id="6805647936811177813"><ph name="HOST_NAME" /> તરફથી ક્લાયંટ પ્રમાણપત્ર આયાત કરવા માટે કૃપા કરીને <ph name="TOKEN_NAME" /> પર સાઇન ઇન કરો.</translation>
@@ -4909,7 +4901,6 @@
 <translation id="8267698848189296333"><ph name="USERNAME" /> તરીકે સાઇન ઇન કરી રહ્યાં છે</translation>
 <translation id="8272443605911821513">"વધુ સાધનો" મેનૂમાં એક્સટેન્શન્સને ક્લિક કરીને તમારા એક્સટેન્શન્સનું સંચાલન કરો.</translation>
 <translation id="8273972836055206582"><ph name="FULLSCREEN_ORIGIN" /> હવે પૂર્ણ સ્ક્રીન છે અને તે તમારા માઉસ કર્સરને છુપાવવા માગે છે.</translation>
-<translation id="8274860189261120948">સંગ્રહિત ઓળખપત્રોનો ઉપયોગ કરીને વેબસાઇટ્સમાં આપમેળે સાઇન ઇન કરો. જ્યારે સુવિધા અક્ષમ હોય છે, ત્યારે વેબસાઇટમાં સાઇન કરતાં પહેલાં દર વખતે તમને પુષ્ટિકરણ માટે કહેવામાં આવશે.</translation>
 <translation id="8275038454117074363">આયાત કરો</translation>
 <translation id="8276560076771292512">કેશ ખાલી કરો અને સખત રીતે ફરીથી લોડ કરો</translation>
 <translation id="8279388322240498158">સોરાની કુર્દિશ અંગ્રેજી-આધારિત કીબોર્ડ</translation>
@@ -5095,7 +5086,6 @@
 <translation id="8571108619753148184">સર્વર 4</translation>
 <translation id="8572832761467613633">માત્ર Flash</translation>
 <translation id="8572981282494768930">સાઇટ્સને તમારા કૅમેરા અને માઇક્રોફોનને ઍક્સેસ કરવાની મંજૂરી આપશો નહીં</translation>
-<translation id="8574794171590710404">આ સાઇટ એક પ્લગિન (<ph name="PLUGIN_NAME" />) નો ઉપયોગ કરે છે જે અસમર્થિત છે.</translation>
 <translation id="857779305329188634">પ્રાયોગિક QUIC પ્રોટોકોલ સમર્થનને સક્ષમ કરો.</translation>
 <translation id="8579285237314169903"><ph name="NUMBER_OF_FILES" /> આઇટમ્સ સમન્વયિત કરી રહ્યાં છે...</translation>
 <translation id="8579549103199280730">ડિફોલ્ટ દ્વારા કહો</translation>
@@ -5103,7 +5093,6 @@
 <translation id="8581690024797204327">256</translation>
 <translation id="8581809080475256101">આગળ જવા માટે દબાવો, ઇતિહાસ જોવા માટે સંદર્ભ મેનૂ પર જાઓ</translation>
 <translation id="8584280235376696778">નવા ટૅબમાં વિડિઓ &amp;ખોલો</translation>
-<translation id="8585103164112230633">જેમાંથી આ વ્યક્તિ મુલાકાત લે છે તે વેબસાઇટ્સ જુઓ અને નિયંત્રિત કરો</translation>
 <translation id="8589311641140863898">પ્રાયોગિક એક્સ્ટેંશન API</translation>
 <translation id="8590375307970699841">સ્વચાલિત અપડેટ્સ સેટ કરો</translation>
 <translation id="8592071947729879125">Iframe પરવાનગીઓ પ્રતિબંધિત કરો.</translation>
@@ -5251,7 +5240,6 @@
 <translation id="878069093594050299">આ પ્રમાણપત્ર નીચેના ઉપયોગો માટે ચકાસવામાં આવ્યું છે:</translation>
 <translation id="8782565991310229362">કિઓસ્ક એપ્લિકેશન લોન્ચ રદ કર્યું.</translation>
 <translation id="8783093612333542422">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt;, તમારી સાથે એક &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; પ્રિન્ટર શેર કરવા માગે છે.</translation>
-<translation id="878431691778285679">એવું લાગે છે કે તમે પહેલાંથી જ તે નામના વપરાશકર્તાનું સંચાલન કરી રહ્યાં છો.<ph name="LINE_BREAK" />શું તમે <ph name="BEGIN_LINK" />આ ઉપકરણ પર <ph name="PROFILE_NAME" /> આયાત કરવા માંગો છો<ph name="END_LINK" />?</translation>
 <translation id="8784626084144195648">બિન કરેલ સરેરાશ</translation>
 <translation id="8785135611469711856">પ્લગિન પ્રતિભાવવિહીન</translation>
 <translation id="8787254343425541995">શેર કરેલા નેટવર્ક્સ માટે પ્રોક્સીસને મંજૂરી આપો</translation>

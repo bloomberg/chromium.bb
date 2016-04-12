@@ -25,6 +25,7 @@ Du må ha slått på Bluetooth og Posisjon for å bruke det fysiske nettet.</tra
 <translation id="1285320974508926690">Oversett aldri dette nettstedet</translation>
 <translation id="1291207594882862231">Slett loggoppføringer, informasjonskapsler, nettstedsdata, bufferen …</translation>
 <translation id="129553762522093515">Nylig lukket</translation>
+<translation id="13410144310025252">Se dem i Chrome</translation>
 <translation id="1346090444609141578">Det er ingen lagrede sider her</translation>
 <translation id="1369915414381695676">Nettstedet <ph name="SITE_NAME" /> er lagt til</translation>
 <translation id="1373696734384179344">Det er ikke nok ledig minne til å laste ned det valgte innholdet.</translation>
@@ -73,6 +74,7 @@ Du må ha slått på Bluetooth og Posisjon for å bruke det fysiske nettet.</tra
 <translation id="1974060860693918893">Avansert</translation>
 <translation id="1984937141057606926">Tillatt – unntatt fra tredjeparter.</translation>
 <translation id="1994173015038366702">Nettadressen til nettstedet</translation>
+<translation id="2001120796168634316">Lagre koblngssiden til senere</translation>
 <translation id="200669432486043882">Bytt ut fil</translation>
 <translation id="2038563949887743358">Slå på Bruk skrivebordsversjon</translation>
 <translation id="2073235970478114994">Last inn bilder</translation>
@@ -90,7 +92,7 @@ Du må ha slått på Bluetooth og Posisjon for å bruke det fysiske nettet.</tra
 <translation id="2206488550163399966"><ph name="APP_NAME" />, nettprogram. <ph name="APP_URL" /></translation>
 <translation id="2268044343513325586">Finstem</translation>
 <translation id="2315043854645842844">Operativsystemet har ikke støtte for sertifikatvalg på klientsiden.</translation>
-<translation id="2316129865977710310">Nei, takk</translation>
+<translation id="2316129865977710310">Nei takk</translation>
 <translation id="2321958826496381788">Dra glidebryteren til du kan lese dette uten problemer. Når du har dobbelttrykket på et avsnitt, bør teksten være minst like stor som dette.</translation>
 <translation id="2329597144923131178">Logg på for å få bokmerkene, loggen, passordene og de andre innstillingene dine på alle enhetene du bruker.</translation>
 <translation id="2343328333327081434">Installerer …</translation>
@@ -130,6 +132,7 @@ Du må ha slått på Bluetooth og Posisjon for å bruke det fysiske nettet.</tra
 <translation id="2762000892062317888">akkurat nå</translation>
 <translation id="2770465223704140727">Fjern fra listen</translation>
 <translation id="278029852808208386">Ingen Bluetooth-enheter ble funnet. <ph name="BEGIN_LINK" />Søk igjen<ph name="END_LINK" />.</translation>
+<translation id="2811892995384186721">Ser du ikke enheten din? <ph name="BEGIN_LINK" />Få hjelp<ph name="END_LINK" /></translation>
 <translation id="2836148919159985482">Trykk på tilbakeknappen for å avslutte fullskjerm.</translation>
 <translation id="2842985007712546952">Overordnet mappe</translation>
 <translation id="2870560284913253234">Nettsted</translation>
@@ -191,6 +194,7 @@ Hvis du vil endre søkeordet, kan du trykke på det og holde for å merke det. H
 <translation id="3656115297268584622">Slå på posisjonstjenesten i <ph name="BEGIN_LINK" />Android-innstillingene<ph name="END_LINK" />.</translation>
 <translation id="3661699943263275414">Tredjepartsnettsteder kan lagre og lese data i informasjonskapsler.</translation>
 <translation id="3672452749423051839">Forslag ved navigasjonsfeil</translation>
+<translation id="3716158070938632480">Det finnes nettsider i nærheten</translation>
 <translation id="3732088672634061408">Kunne ikke hente interesser.</translation>
 <translation id="3738139272394829648">Trykk for å søke</translation>
 <translation id="3809549525127675114"><ph name="VIDEO_TITLE" /> er ferdig</translation>
@@ -370,7 +374,6 @@ Du er imidlertid ikke usynlig. Inkognito-modusen skjuler ikke surfingen din for 
 <translation id="5911030830365207728">Google Oversetter</translation>
 <translation id="5916664084637901428">På</translation>
 <translation id="5939518447894949180">Tilbakestill</translation>
-<translation id="5965336165840183977">Dette fjerner synkroniserte data fra alle enheter. Du blir ikke logget av Google-kontoen din. Lagrede nettstedsinnstillinger blir ikke slettet, og disse kan gjenspeile nettvanene dine.</translation>
 <translation id="5968595432776860642">Spiller av <ph name="VIDEO_TITLE" /> ...</translation>
 <translation id="6010869025736512584">Åpner videoinngang</translation>
 <translation id="6012342843556706400">Chrome må ha tilgang til posisjonen din for å kunne dele den med dette nettstedet.</translation>
@@ -390,7 +393,6 @@ Du er imidlertid ikke usynlig. Inkognito-modusen skjuler ikke surfingen din for 
 <translation id="6159335304067198720"><ph name="PERCENT" /> datasparing</translation>
 <translation id="6165508094623778733">Les mer</translation>
 <translation id="6192792657125177640">Unntak</translation>
-<translation id="6231464350722415003">Tillater Javascript på nettstedene du oppgir, og blokkerer Javascript på alle andre nettsteder.</translation>
 <translation id="6232535412751077445">Hvis du slår på «Deaktivering av sporing», blir det sendt en forespørsel sammen med nettrafikken din. Hvilke virkninger dette eventuelt får, avhenger av om det aktuelle nettstedet svarer på forespørselen eller ikke, samt hvordan forespørselen tolkes.
 
 Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg annonser som ikke er basert på andre nettsteder du har besøkt. Mange nettsteder samler likevel inn og bruker nettlesingsdataene dine – for eksempel for å forbedre sikkerheten, for å levere innhold, annonser og anbefalinger og for å generere rapporteringsstatistikk.</translation>
@@ -478,18 +480,18 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> bruker posisjonen din for å vise lokale søkeresultater</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />Hjelp<ph name="END_LINK" /></translation>
 <translation id="7299721129597238157">Slett bokmerket</translation>
-<translation id="7346217184097589238">Lagrede nettstedsinnstillinger blir ikke slettet, og disse kan gjenspeile nettvanene dine.</translation>
 <translation id="7347770551817603360">Innhold uten nett</translation>
 <translation id="7363354739009474003">Laster inn <ph name="VIDEO_TITLE" /> ...</translation>
 <translation id="7366340029385295517">Caster til <ph name="SCREEN_NAME" /></translation>
 <translation id="7375125077091615385">Type:</translation>
-<translation id="7378627244592794276">Nei, takk</translation>
+<translation id="7378627244592794276">Nei takk</translation>
 <translation id="7400418766976504921">Nettadresse</translation>
 <translation id="7400448254438078120">Videoen kan ikke castes på grunn av restriksjoner på nettstedet.</translation>
 <translation id="7408644312175185557">Se fanene dine sammen med andre nylig brukte apper på oversiktsskjermen på telefonen.</translation>
 <translation id="7423098979219808738">Spør først.</translation>
 <translation id="7437998757836447326">Logg av Chrome</translation>
-<translation id="7473891865547856676">Nei, takk</translation>
+<translation id="7464701184726199289">Dette sletter synkroniserte data fra alle enheter. Lagrede nettstedsinnstillinger slettes ikke og kan gjenspeile nettleserbruken din. <ph name="BEGIN_LINK" />Finn ut mer<ph name="END_LINK" /></translation>
+<translation id="7473891865547856676">Nei takk</translation>
 <translation id="7475192538862203634">Hvis du ser dette ofte, kan du prøve disse <ph name="BEGIN_LINK" />forslagene<ph name="END_LINK" />.</translation>
 <translation id="748127970106343339">Bekreft sletting av enhetslegitimasjon</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (oppdatert <ph name="TIME_SINCE_UPDATE" />)</translation>
@@ -522,7 +524,7 @@ Du er imidlertid ikke usynlig. Inkognitomodus skjuler ikke surfingen din for arb
 <translation id="7784213092572143271">Siden er lagret</translation>
 <translation id="7788788617745289808">Chrome må ha tilgang til kameraet for å kunne dele det med dette nettstedet.</translation>
 <translation id="7791543448312431591">Legg til</translation>
-<translation id="780301667611848630">Nei, takk</translation>
+<translation id="780301667611848630">Nei takk</translation>
 <translation id="7829298379596169484">Åpner lydinngang</translation>
 <translation id="7846076177841592234">Opphev valget</translation>
 <translation id="7851858861565204677">Andre enheter</translation>
@@ -540,7 +542,11 @@ Du er imidlertid ikke usynlig. Inkognitomodus skjuler ikke surfingen din for arb
 <translation id="8068648041423924542">Kan ikke velge sertifikat.</translation>
 <translation id="8069239273282989646">Etter komprimering</translation>
 <translation id="8073388330009372546">Åpne bildet i en ny fane</translation>
+<translation id="8076014560081431679">Lagrede nettstedsinnstillinger slettes ikke og kan gjenspeile nettleserbruken din. <ph name="BEGIN_LINK" />Finn ut mer<ph name="END_LINK" /></translation>
 <translation id="8084156870963450514">Logg på, så får du tilgang til alt du har på nettet, på alle enheter du bruker</translation>
+<translation id="8098570222830891427">Enheter i nærheten av deg kringkaster nettsider via Bluetooth. Chrome søker etter sider og viser dem når du vekker enheten. Disse sidene går gjennom en Google-tjeneste for å forbedre kvaliteten på sideresultatene.
+
+Du kan kontrollere det fysiske nettet i Chrome-innstillingene.</translation>
 <translation id="8106211421800660735">Kredittkortnummer</translation>
 <translation id="813082847718468539">Vis nettstedsinformasjon</translation>
 <translation id="8137558756159375272">Trykk for å søke sender det valgte ordet og den aktive siden som kontekst til Google Søk. Du kan slå av dette i <ph name="BEGIN_LINK" />Innstillinger<ph name="END_LINK" />.</translation>
@@ -549,6 +555,7 @@ Du er imidlertid ikke usynlig. Inkognitomodus skjuler ikke surfingen din for arb
 <translation id="8173098127580644436">tidenes morgen</translation>
 <translation id="8200772114523450471">Fortsett</translation>
 <translation id="8209050860603202033">Åpne bildet</translation>
+<translation id="8215250379351058554"><ph name="SITE" /> vil koble til:</translation>
 <translation id="8218346974737627104">Bekreft påloggingen</translation>
 <translation id="8218934717680664417">Nå kan du søke med ett trykk</translation>
 <translation id="8223946939421658889">Slett data fra</translation>

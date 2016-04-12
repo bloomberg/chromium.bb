@@ -30,7 +30,7 @@
 <translation id="1929939181775079593">Chromium tidak merespons. Luncurkan ulang sekarang?</translation>
 <translation id="1967743265616885482">Modul dengan nama yang sama biasanya konflik dengan Chromium.</translation>
 <translation id="2077129598763517140">Gunakan percepatan perangkat keras saat tersedia</translation>
-<translation id="2103655854491303969">Peluncur Aplikasi Chromium tidak akan tersedia lagi.</translation>
+<translation id="2103655854491303969">Peluncur Aplikasi Chromium tidak akan digunakan lagi.</translation>
 <translation id="2117181891440368863">Chromium memverifikasi bahwa <ph name="ISSUER" /> menerbitkan sertifikat situs web ini. Server memberikan informasi Transparansi Sertifikat, namun informasi tersebut tidak valid.</translation>
 <translation id="2119636228670142020">Tentang &amp;Chromium OS</translation>
 <translation id="2158734852934720349">Lisensi sumber terbuka Chromium OS</translation>
@@ -66,7 +66,6 @@
 <translation id="3130323860337406239">Chromium menggunakan mikrofon Anda.</translation>
 <translation id="313551035350905294">Anda masuk dengan akun yang dikelola dan memberikan administratornya kendali atas profil Chromium Anda. Data Chromium Anda, seperti aplikasi, bookmark, riwayat, sandi, dan setelan lain selamanya akan dikaitkan ke <ph name="USER_NAME" />. Anda dapat menghapus data ini melalui Dasbor Akun Google, namun Anda tidak akan dapat mengaitkan data ini dengan akun yang lain.</translation>
 <translation id="3190315855212034486">Aduh! Chromium ngadat. Luncurkan ulang sekarang?</translation>
-<translation id="3197823471738295152">Perangkat Anda sudah diperbarui.</translation>
 <translation id="3244477511402911926">Pusat Notifikasi Chromium</translation>
 <translation id="3256316712990552818">Disalin ke Chromium</translation>
 <translation id="3258596308407688501">Chromium tidak dapat membaca dan menulis ke direktori datanya:

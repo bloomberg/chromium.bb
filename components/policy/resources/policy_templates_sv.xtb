@@ -72,8 +72,6 @@
 
       Om principen inte har ställts in eller är inställd på falskt kommer RC4-krypteringssviter inte att aktiveras. Principen kan ställas in som sant om kompatibilitet med en föråldrad server önskas bibehållas. Detta är en nödlösning, och servern bör omkonfigureras.</translation>
 <translation id="1297182715641689552">Använd en PAC-proxyskript</translation>
-<translation id="1300635491585192248">Förutsäg nätverksåtgärder i ett nätverk som inte
-          är ett mobilnätverk</translation>
 <translation id="1304973015437969093">Tilläggs-/app-id:n och uppdateringsadresser som ska installeras obemärkt</translation>
 <translation id="1310699457130669094">Här kan du ange webbadressen till en PAC-fil för proxy.
 
@@ -511,7 +509,6 @@
       Om policyn inte anges kommer proxyfunktionen för datakomprimering kommer användaren att kunna välja om han eller hon vill använda den.</translation>
 <translation id="2587719089023392205">Gör <ph name="PRODUCT_NAME" /> till min standardwebbläsare</translation>
 <translation id="2592091433672667839">Inaktivitetstid innan skärmsläckaren visas på inloggningsskärmen i återförsäljarläge</translation>
-<translation id="260705825237536216">Konfigurera ARC-appar</translation>
 <translation id="2623014935069176671">Vänta på inledande användaraktivitet</translation>
 <translation id="262740370354162807">Aktivera sändning av dokument till <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2633084400146331575">Aktivera talad feedback.</translation>
@@ -598,14 +595,6 @@
           Om policyn är inställd på sant eller inte alls inställd räknas det inte som att användaren är inaktiv så länge ljud spelas upp. Detta förhindrar att inaktivitetstiden uppnås och att någon åtgärd vidtas. Däremot utförs skärmdämpning, skärmavstängning och skärmlåsning efter den inställda tiden oberoende av ljudaktivitet.
 
           Om policyn är inställd på falskt förhindrar inte ljudaktivitet att användaren räknas som inaktiv.</translation>
-<translation id="2948381198510798695"><ph name="PRODUCT_NAME" /> förbigår proxyn för listan med värdenheter som anges här.
-
-          Den här policyn används bara om du har valt manuella proxyinställningar vid Välj hur inställningar för proxyserver ska anges.
-
-          Ange inte den här policyn om du har valt något annat läge för inställning av proxypolicyer.
-
-          Mer detaljerade exempel finns på:
-          <ph name="PROXY_HELP_URL" /></translation>
 <translation id="2956777931324644324">Den här policyn har gäller inte för version 36 och senare av <ph name="PRODUCT_NAME" />.
 
       Anger om domänbundna TLS-certifikattillägg ska aktiveras.
@@ -856,18 +845,6 @@
 
       Varje post i listan innehåller en ordbok som måste innehålla tilläggets ID i fältet extension-id och dess uppdateringsadress i fältet update-url.</translation>
 <translation id="3891357445869647828">Aktivera JavaScript</translation>
-<translation id="389421284571827139">Policyn gör att du kan ange vilken proxyserver som ska användas av <ph name="PRODUCT_NAME" /> och förhindrar att användare ändrar proxyinställningar.
-
-      Om du väljer att aldrig använda en proxyserver och alltid ansluta direkt ignoreras alla andra alternativ.
-
-      Om du väljer att identifiera proxyserver automatiskt ignoreras alla andra alternativ.
-
-      Detaljerade exempel finns på
-      <ph name="PROXY_HELP_URL" />
-
-      Om du aktiverar inställningen ignorerar <ph name="PRODUCT_NAME" /> alla proxyrelaterade alternativ som anges på kommandoraden.
-
-      Om dessa policyer inte anges kan användarna välja sina egna proxyinställningar.</translation>
 <translation id="3907986150060929099">Anger de rekommenderade språkkoderna för en offentlig session</translation>
 <translation id="391531815696899618">När inställningen här är Sant inaktiveras Google Drive-synkronisering i appen Filer i <ph name="PRODUCT_OS_NAME" />. Då överförs ingen data till Google Drive.
 
@@ -1115,16 +1092,6 @@
           Värdet måste vara JSON-ordlistor i strängformat i en matris. Varje ordlista måste ha formen { "pattern": "$URL_PATTERN", "filter" : $FILTER }, där $URL_PATTERN är ett innehållsinställningsmönster. $FILTER begränsar vilka klientcertifikat webbläsaren automatiskt väljer mellan. Oavsett vilket filter som används väljs bara certifikat som matchar serverns certifikatbegäran. Om $FILTER har formen { "ISSUER": { "CN": "$ISSUER_CN" } } är det dessutom endast klientcertifikat som har skapats av ett certifikat med CommonName $ISSUER_CN som väljs. Om $FILTER är en tom ordlista {} begränsas inte valet av klientcertifikat ytterligare.
 
           Om principen inte anges görs inga automatiska val för någon webbplats.</translation>
-<translation id="4980301635509504364">Tillåta eller neka videoinspelning.
-
-      Om detta alternativ är aktiverat eller inte konfigurerat (standard), kommer användaren att bli tillfrågad om
-      videoinspelningsåtkomst förutom för de webbadresser som har angetts på
-      listan VideoCaptureAllowedUrls. De ges åtkomst automatiskt.
-
-      När den här principen är inaktiverad får användaren aldrig någon fråga och
-      bara de webbadresser som har angetts i VideoCaptureAllowedUrls får spela in video.
-
-      Den här principen gäller alla typer av videoingångar och inte enbart den inbyggda kameran.</translation>
 <translation id="4980635395568992380">Datatyp:</translation>
 <translation id="4983201894483989687">Tillåt att föråldrade plugin-program körs</translation>
 <translation id="4988291787868618635">Åtgärd som ska vidtas när inaktivitetstiden har gått</translation>
@@ -1235,11 +1202,6 @@
 <translation id="5307432759655324440">Tillgänglighet för inkognitoläge</translation>
 <translation id="5318185076587284965">Aktivera reläserveranvändning via värden för fjärråtkomst</translation>
 <translation id="5330684698007383292">Tillåt att <ph name="PRODUCT_FRAME_NAME" /> hanterar följande innehållstyper</translation>
-<translation id="5345267406698765263">Anger principen för ARC-appar som en JSON-sträng som kan
-      lämnas över för ACR-körning i befintligt skick. För närvarande används inställningen
-      endast till att ange framtvingad installation av apparna.
-
-      Inga appar installeras automatiskt om principen inte är angiven.</translation>
 <translation id="5365946944967967336">Visa knappen Startsida i verktygsfältet</translation>
 <translation id="5366977351895725771">Om "false" anges inaktiveras alternativet att skapa övervakade användare för den här användaren. Eventuella befintliga övervakade användare är fortfarande tillgängliga.
 
@@ -1339,7 +1301,6 @@
 
       Om ingen inställning görs för principen eller om den har värdet falskt använder <ph name="PRODUCT_NAME" /> de befintliga inställningarna för kontroller för återkallning online.</translation>
 <translation id="5732972008943405952">Importera formuläruppgifter för Autofyll från standardwebbläsaren första gången den körs</translation>
-<translation id="5761030451068906335">Konfigurerar proxyinställningarna för <ph name="PRODUCT_NAME" />. Använd inte policyn. Den är inte redo ännu.</translation>
 <translation id="5765780083710877561">Beskrivning:</translation>
 <translation id="5770738360657678870">Kanal för utvecklare (kan vara instabil)</translation>
 <translation id="5774856474228476867">Sökadress för standardsökleverantör</translation>
@@ -1364,13 +1325,6 @@
       En lista med variabler som kan användas finns på https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
 
       Om inget har ställts in används profilens standardkatalog.</translation>
-<translation id="5819660021114910752">Anger vilken tidszon som används på enheten. En användare kan åsidosätta den angivna tidszonen under sin pågående session, men tidszonen återställs när användaren loggar ut. Om ett ogiltigt värde anges aktiveras principen ändå men med GMT i stället. Om tomma strängen anges ignoreras principen.
-
-      Om den här principen inte används kommer den tidszon som just nu är aktiv att användas även i fortsättningen. Användarna kan fortfarande ändra tidszon och ändringar sparas. Om en användare ändrar inställningen påverkar det alltså inloggningsskärmen och alla andra användare.
-
-      På nya enheter används tidszonen US/Pacific.
-
-      Värdet ska följa tidszonernas namn i IANA Time Zone Database (se https://en.wikipedia.org/wiki/Tz_database). De flesta tidszoner går att hänvisa till enligt mönstret kontinent/storstad eller världshav/storstad.</translation>
 <translation id="5826047473100157858">Policyn anger om användaren får öppna sidor i inkognitoläge i <ph name="PRODUCT_NAME" />.
 
       Om policyn är aktiverad eller inte anges kan sidor öppnas i inkognitoläge.
@@ -1580,22 +1534,6 @@
 
       Standardinställningen om den här principen inte konfigureras är att företagshanterade användare inte ges tillstånd medan användare som inte hanteras av någon annan ges tillstånd.</translation>
 <translation id="6491139795995924304">Tillåt Bluetooth på enheten</translation>
-<translation id="6513756852541213407">Policyn gör att du kan ange vilken proxyserver som ska användas av <ph name="PRODUCT_NAME" /> och förhindrar att användarna ändrar proxyinställningarna.
-
-          Om du väljer att aldrig använda en proxyserver och alltid ansluta direkt ignoreras alla andra alternativ.
-
-          Om du väljer att använda datorns proxyinställningar eller identifiera proxyserver automatiskt ignoreras alla andra alternativ.
-
-         Om du väljer läget för fast serverproxy kan du ange fler alternativ i fälten "Proxyserverns adress eller webbadress" och "Kommaavgränsad lista med regler för proxybypass".
-
-          Om du väljer att använda ett PAC-proxyskript måste du ange webbadressen till skriptet i fältet "Webbadress till en PAC-proxyfil".
-
-          Mer detaljerade exempel finns på:
-          <ph name="PROXY_HELP_URL" />
-
-         Om du aktiverar den här inställningen ignorerar <ph name="PRODUCT_NAME" /> alla proxyrelaterade alternativ som anges från kommandoraden.
-
-          Om du inte ställer in policyn kan användarna välja egna proxyinställningar.</translation>
 <translation id="6520802717075138474">Importera sökmotorer från standardwebbläsaren första gången den körs</translation>
 <translation id="653608967792832033">Anger efter hur lång tid utan indata från användaren som skärmen ska låsas när enheten går på batteri.
 
@@ -1675,21 +1613,6 @@
 
       Om policyn inte ställs in aktiveras nätverksförslag, men användaren kan då ändra det.</translation>
 <translation id="6658245400435704251">Anger hur många sekunder en hämtning av en uppdatering via en enhet får försenas slumpmässigt från den tidpunkt då uppdateringen först skickades till servern. Enheten kan hållas i vänteläge dels under en vanlig tidsperiod, dels beroende på antalet uppdateringskontroller. Spridningen är alltid bunden till en övre tidsgräns så att en enhet aldrig fastnar för gott medan en uppdatering håller på att laddas ned.</translation>
-<translation id="6672934768721876104">Den här policyn gäller inte längre. Använd ProxyMode istället.
-
-      Den innebär att du kan ange vilken proxyserver som ska användas av <ph name="PRODUCT_NAME" /> och förhindrar att användarna ändrar proxyinställningarna.
-
-      Om du väljer att aldrig använda en proxyserver och alltid ansluta direkt ignoreras alla andra alternativ.
-
-      Om du väljer att använda datorns proxyinställningar eller identifiera proxyservern automatiskt ignoreras alla andra inställningar.
-
-      Om du väljer manuella proxyinställningar kan du ange fler alternativ i proxyserverns adress eller webbadress, Webbadress till en PAC-proxyfil och Kommaavgränsad lista med regler för proxybypass.
-
-      Detaljerade exempel finns på <ph name="PROXY_HELP_URL" />
-
-      Om du aktiverar den här inställningen ignorerar <ph name="PRODUCT_NAME" /> alla proxyrelaterade alternativ från kommandoraden.
-
-      Om du inte anger policyn kan användarna själva välja sina proxyinställningar.</translation>
 <translation id="6689792153960219308">Rapportera maskinvarustatus</translation>
 <translation id="6693751878507293182">Om inställningen är aktiverad inaktiveras automatisk sökning efter och installation av plugin-program som saknas i <ph name="PRODUCT_NAME" />.
 

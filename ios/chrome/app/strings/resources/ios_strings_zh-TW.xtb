@@ -4,52 +4,32 @@
 <translation id="1008557486741366299">現在不要</translation>
 <translation id="1047726139967079566">把此頁加入書籤...</translation>
 <translation id="1172898394251786223">下一個欄位</translation>
-<translation id="168328519870909584">攻擊者目前可能會試圖透過 <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> 在您的裝置上安裝危險的應用程式，藉此竊取或刪除您的資訊 (例如相片、密碼、郵件或信用卡資料)。</translation>
 <translation id="2320166752086256636">隱藏鍵盤</translation>
 <translation id="2467815441875554965">內容比對搜尋</translation>
 <translation id="2704606927547763573">已複製</translation>
 <translation id="2747003861858887689">上一個欄位</translation>
 <translation id="2780046210906776326">無電子郵件帳戶</translation>
-<translation id="2803306138276472711">Google 安全瀏覽功能最近在 <ph name="SITE" /> 上<ph name="BEGIN_LINK" />偵測到惡意軟體<ph name="END_LINK" />。即使是平常可以安全使用的網站，有時也會遭到惡意軟體感染。</translation>
 <translation id="3244271242291266297">月</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />，<ph name="ADDITIONAL_INFO" /> (第 <ph name="INDEX" /> 項建議，共 <ph name="NUM_SUGGESTIONS" /> 項)</translation>
 <translation id="3335947283844343239">重新開啟先前關閉的分頁</translation>
 <translation id="3414292259312108062">Chrome 會將這組密碼儲存在您的 <ph name="BEGIN_LINK" />Google 儲存的密碼<ph name="END_LINK" />中，並為您自動填入這組密碼，即使您記不住也沒關係。</translation>
 <translation id="3567664240939803299">您要讓 Google Smart Lock 儲存您在這個網站的密碼嗎？</translation>
-<translation id="3586931643579894722">隱藏詳細資訊</translation>
-<translation id="3736520371357197498">如果您瞭解安全性風險，也可以選擇在危險程式尚未遭到移除的狀態下<ph name="BEGIN_LINK" />造訪這個不安全的網站<ph name="END_LINK" />。</translation>
 <translation id="385051799172605136">返回</translation>
-<translation id="4098354747657067197">您即將前往詐騙網站</translation>
 <translation id="4121993058175073134">如要傳送淨匯出資料，請在「設定」應用程式中設定您的電子郵件帳戶。</translation>
 <translation id="4399225372525667111">Chrome 無法驗證這個網站的網址是否正確。</translation>
-<translation id="4522570452068850558">詳細資訊</translation>
 <translation id="4728558894243024398">平台</translation>
 <translation id="473775607612524610">更新</translation>
 <translation id="5317780077021120954">儲存</translation>
-<translation id="5337705430875057403">攻擊者可能會試圖透過 <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> 誘使您做一些危險的事，例如安裝軟體或提供個人資訊 (包括密碼、電話號碼或信用卡資料)。</translation>
 <translation id="605721222689873409">年</translation>
-<translation id="6075880972317537864">攻擊者可能會試圖透過 <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> 騙取您的資訊 (例如密碼、郵件或信用卡資料)。</translation>
 <translation id="6149061208933997199">使用密碼</translation>
 <translation id="6196207969502475924">語音搜尋</translation>
-<translation id="6221345481584921695">Google 安全瀏覽功能最近在 <ph name="SITE" /> 上<ph name="BEGIN_LINK" />偵測到惡意軟體<ph name="END_LINK" />。即使是平常可以安全使用的網站，有時也會遭到惡意軟體感染。這些惡意內容來自已知的惡意軟體散佈網站 <ph name="SUBRESOURCE_HOST" />。</translation>
-<translation id="6264485186158353794">返回安全性瀏覽</translation>
 <translation id="6314335155547195432">產生密碼</translation>
 <translation id="6344783595350022745">清除文字</translation>
 <translation id="6456425917241817154">Chrome 產生的密碼</translation>
 <translation id="6535543971741225613">您嘗試存取的網站行為異常，且 Chrome 無法驗證該網站的網址是否正確。為了安全起見，建議您不要繼續瀏覽，請等到明天再試一次，或是造訪別的網站。</translation>
-<translation id="6740369132746915122">在您瞭解安全性風險後，您可以<ph name="BEGIN_LINK" />造訪這個不安全的網站<ph name="END_LINK" />。</translation>
 <translation id="7222245588540287464">是否啟用內容比對搜尋。</translation>
-<translation id="724691107663265825">您要造訪的網站含有惡意軟體</translation>
 <translation id="7456847797759667638">開啟位置...</translation>
 <translation id="7481312909269577407">下一頁</translation>
 <translation id="7484580869648358686">警告：這裡有些不對勁！</translation>
-<translation id="7779249319235708104">您要造訪的網頁含有網路詐騙攻擊</translation>
 <translation id="7961015016161918242">永不</translation>
-<translation id="820854170120587500">Google 安全瀏覽功能最近在 <ph name="SITE" /> 上偵測到網路詐騙行為。<ph name="BEGIN_LINK" />詐騙網站<ph name="END_LINK" />會偽裝成其他網站，藉此騙取您的資訊。</translation>
-<translation id="834457929814110454">如果您瞭解安全性風險，也可以選擇在有害程式尚未遭到移除的狀態下<ph name="BEGIN_LINK" />造訪這個網站<ph name="END_LINK" />。</translation>
-<translation id="8543181531796978784">您可以<ph name="BEGIN_ERROR_LINK" />回報偵測問題<ph name="END_ERROR_LINK" />。或者在您瞭解安全性風險後，仍然可以<ph name="BEGIN_LINK" />前往這個不安全的網站<ph name="END_LINK" />。</translation>
-<translation id="8761567432415473239">Google 安全瀏覽最近在「<ph name="SITE" />」<ph name="BEGIN_LINK" />發現了有害程式<ph name="END_LINK" />。</translation>
-<translation id="8996941253935762404">您要瀏覽的網站含有有害程式</translation>
-<translation id="9035022520814077154">安全性錯誤</translation>
-<translation id="9040185888511745258">攻擊者企圖在 <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> 誘使您安裝有害瀏覽體驗的程式 (比如竄改您的首頁，或在您造訪的網站上另外顯示廣告)。</translation>
 </translationbundle>

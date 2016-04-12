@@ -277,7 +277,6 @@ Na následující obrazovce prosím zadejte zpětnou vazbu, která nám problém
 <translation id="1407050882688520094">Máte založené certifikáty, které identifikují tyto certifikační autority:</translation>
 <translation id="1407489512183974736">Ořezat na střed</translation>
 <translation id="1408789165795197664">Rozšířená nastavení...</translation>
-<translation id="1408803555324839240">Jejda! Vytváření nového dozorovaného uživatele se nezdařilo. Zkontrolujte, zda jste správně přihlášeni, a zkuste to znovu.</translation>
 <translation id="1409390508152595145">Vytvořit dozorovaného uživatele</translation>
 <translation id="1410616244180625362">Povolit webu <ph name="HOST" /> přístup ke kameře i nadále</translation>
 <translation id="1413372529771027206">Telefon používaný pro Smart Lock se změnil. Chcete-li funkci Smart Lock pro Chromebook v tomto zařízení aktualizovat, zadejte heslo. Příště budete moci zařízení otevřít pouhým kliknutím na fotku.</translation>
@@ -1597,7 +1596,6 @@ Tyto i další pokyny naleznete v e-mailu, který byl odeslán na adresu <ph n
 <translation id="3277710850168074473">Pro přehrávání prvků médií požadovat uživatelská gesta. Deaktivace tohoto příznaku umožní automatické přehrávání.</translation>
 <translation id="3280237271814976245">Uložit &amp;jako...</translation>
 <translation id="3280431534455935878">Příprava</translation>
-<translation id="3284674070818187654">Google vaši historii procházení může používat k přizpůsobení Vyhledávání a dalších služeb Google. Tuto funkci můžete ovládat na stránce myaccount.google.com.</translation>
 <translation id="3285322247471302225">Nová kar&amp;ta</translation>
 <translation id="3288047731229977326">Rozšíření spuštěná v režimu pro vývojáře mohou poškodit počítač. Pokud nejste vývojář, měli byste s ohledem na svou bezpečnost rozšíření spuštěná v tomto režimu deaktivovat.</translation>
 <translation id="3289566588497100676">Snadné zadávání symbolů</translation>
@@ -1701,7 +1699,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="3413122095806433232">Vydavatelé CA: <ph name="LOCATION" /></translation>
 <translation id="3414856743105198592">Formátování vyměnitelného média vymaže všechna data. Chcete pokračovat?</translation>
 <translation id="3414952576877147120">Velikost:</translation>
-<translation id="3416248389957650982">Po přihlášení otevřít stránku myaccount.google.com</translation>
 <translation id="3420980393175304359">Přepnout uživatele</translation>
 <translation id="3423858849633684918">Restartujte prosím <ph name="PRODUCT_NAME" /></translation>
 <translation id="3425233587047449821">Nový editor IME korejštiny</translation>
@@ -1916,7 +1913,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="3694027410380121301">Vybrat předchozí kartu</translation>
 <translation id="3694122362646626770">Webové stránky</translation>
 <translation id="3694678678240097321">Vyžadovat souhlas uživatele, když rozšíření spustí skript na stránce a požádá o oprávnění k jeho spuštění na všech adresách URL.</translation>
-<translation id="36954862089075551">Jejda! Vytváření nového uživatele se nezdařilo. Zkontrolujte místo na disku a oprávnění a zkuste to znovu.</translation>
 <translation id="3695919544155087829">Zadejte heslo, které bylo použito k zašifrování tohoto souboru certifikátu.</translation>
 <translation id="3696411085566228381">žádné</translation>
 <translation id="3697100740575341996">Váš správce IT pro vaše zařízení využití propagačních nabídek Chrome Goodies zakázal. <ph name="MORE_INFO_LINK" /></translation>
@@ -2343,7 +2339,6 @@ Chcete-li pokračovat v práci, stiskněte libovolnou klávesu.</translation>
 <translation id="4345703751611431217">Nekompatibilní software: další informace</translation>
 <translation id="4348766275249686434">Shromažďování chyb</translation>
 <translation id="4350019051035968019">Toto zařízení nelze zaregistrovat do domény, do které patří váš účet, protože je označeno pro správu jinou doménou.</translation>
-<translation id="4352333825734680558">Jejda! Vytváření nového dozorovaného uživatele se nezdařilo. Zkontrolujte připojení k síti a zkuste to znovu.</translation>
 <translation id="4358697938732213860">Přidat adresu</translation>
 <translation id="4359408040881008151">Rozšíření bylo nainstalováno kvůli závislým rozšířením.</translation>
 <translation id="4361190688154226069">Cílení založené na obdélníku v zobrazeních</translation>
@@ -3014,7 +3009,6 @@ Chcete-li pokračovat v práci, stiskněte libovolnou klávesu.</translation>
 <translation id="5388588172257446328">Uživatelské jméno:</translation>
 <translation id="5390284375844109566">Indexovaná databáze</translation>
 <translation id="5392544185395226057">Aktivuje podporu modulu Native Client.</translation>
-<translation id="5393125431335030955">Tento plugin lze spustit pouze v tradičním rozhraní systému Windows.</translation>
 <translation id="5396126354477659676">Plugin <ph name="PEPPER_PLUGIN_NAME" /> v doméně <ph name="PEPPER_PLUGIN_DOMAIN" /> chce získat přístup do vašeho počítače.</translation>
 <translation id="539755880180803351">Označí webové formuláře tak, že jako zástupný text vloží typ pole předpovídaný Automatickým vyplňováním.</translation>
 <translation id="5397578532367286026">Údaje o využití a historii tohoto uživatele si správce (<ph name="MANAGER_EMAIL" />) může prohlédnout na webu chrome.com.</translation>
@@ -3279,7 +3273,6 @@ Chcete-li pokračovat v práci, stiskněte libovolnou klávesu.</translation>
 <translation id="57646104491463491">Datum úpravy</translation>
 <translation id="5765491088802881382">K dispozici nejsou žádné sítě</translation>
 <translation id="5765780083710877561">Popis:</translation>
-<translation id="5770385044111747894">NPAPI</translation>
 <translation id="5771585441665576801">Přepis (geia → γεια)</translation>
 <translation id="5771816112378578655">Probíhá nastavování...</translation>
 <translation id="5771849619911534867">Prohledávání zařízení bylo zastaveno.</translation>
@@ -3914,7 +3907,6 @@ Některé funkce nemusí být dostupné. Zkontrolujte, zda profil existuje a zda
 <translation id="6793649375377511437">Informace o blízkých zařízeních Google</translation>
 <translation id="6797493596609571643">Jejda, něco se pokazilo.</translation>
 <translation id="6798954102094737107">Plugin: <ph name="PLUGIN_NAME" /></translation>
-<translation id="6799646767877093143">Tento web používá plugin (<ph name="PLUGIN_NAME" />), který již brzy nebude podporován.</translation>
 <translation id="6802031077390104172"><ph name="USAGE" /> (<ph name="OID" />)</translation>
 <translation id="6804671422566312077">Otevřít všechny záložky v &amp;novém okně</translation>
 <translation id="6805647936811177813">Chcete-li importovat certifikát klienta z adresy <ph name="HOST_NAME" />, přihlaste se prosím do zařízení <ph name="TOKEN_NAME" />.</translation>
@@ -4907,7 +4899,6 @@ Výpočet zbývajícího času</translation>
 <translation id="8267698848189296333">Přihlašování pomocí účtu <ph name="USERNAME" /></translation>
 <translation id="8272443605911821513">Chcete-li spravovat rozšíření, klikněte v nabídce Nástroje na příkaz Rozšíření.</translation>
 <translation id="8273972836055206582">Stránka <ph name="FULLSCREEN_ORIGIN" /> se nyní zobrazuje na celou obrazovku a chce deaktivovat ukazatel myši.</translation>
-<translation id="8274860189261120948">Přihlašovat se na weby automaticky pomocí uložených identifikačních údajů. Když je tato funkce vypnutá, budete před každým přihlášením na web požádáni o potvrzení.</translation>
 <translation id="8275038454117074363">Importovat</translation>
 <translation id="8276560076771292512">Vymazání mezipaměti a úplné opětovné načtení</translation>
 <translation id="8279388322240498158">Kurdská klávesnice (sorání) s anglickým rozložením</translation>
@@ -5092,7 +5083,6 @@ Výpočet času zbývajícího do úplného nabití</translation>
 <translation id="8571108619753148184">Server 4</translation>
 <translation id="8572832761467613633">Pouze Flash</translation>
 <translation id="8572981282494768930">Nedovolit webům používat vaši kameru a mikrofon</translation>
-<translation id="8574794171590710404">Tento web používá plugin (<ph name="PLUGIN_NAME" />), který není podporován.</translation>
 <translation id="857779305329188634">Aktivuje podporu experimentálního protokolu QUIC.</translation>
 <translation id="8579285237314169903">Synchronizace <ph name="NUMBER_OF_FILES" /> položek...</translation>
 <translation id="8579549103199280730">Zeptat se ve výchozím nastavení</translation>
@@ -5100,7 +5090,6 @@ Výpočet času zbývajícího do úplného nabití</translation>
 <translation id="8581690024797204327">256</translation>
 <translation id="8581809080475256101">Stisknutím přejdete vpřed. V kontextové nabídce můžete zobrazit historii</translation>
 <translation id="8584280235376696778">&amp;Otevřít video v nové kartě</translation>
-<translation id="8585103164112230633">Umožnit kontrolu a zobrazení webových stránek, které tento uživatel navštěvuje, z adresy</translation>
 <translation id="8589311641140863898">Experimentální rozhraní API rozšíření</translation>
 <translation id="8590375307970699841">Nastavit automatické aktualizace</translation>
 <translation id="8592071947729879125">Omezit oprávnění v prvcích iframe</translation>
@@ -5248,7 +5237,6 @@ Výpočet času zbývajícího do úplného nabití</translation>
 <translation id="878069093594050299">Tento certifikát byl ověřen pro následující použití:</translation>
 <translation id="8782565991310229362">Spouštění aplikací pro režim veřejného terminálu bylo zrušeno.</translation>
 <translation id="8783093612333542422">Uživatel &lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; s vámi chce sdílet tiskárnu &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt;.</translation>
-<translation id="878431691778285679">Zdá se, že uživatele s tímto jménem již spravujete. <ph name="LINE_BREAK" />Chtěli jste <ph name="BEGIN_LINK" />importovat profil <ph name="PROFILE_NAME" /> do tohoto zařízení<ph name="END_LINK" />?</translation>
 <translation id="8784626084144195648">Vyhlazený průměr</translation>
 <translation id="8785135611469711856">Plugin nereaguje</translation>
 <translation id="8787254343425541995">Povolit proxy servery u sdílených sítí</translation>

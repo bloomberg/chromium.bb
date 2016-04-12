@@ -111,7 +111,7 @@
 <translation id="241124561063364910">efterfulgt af</translation>
 <translation id="2417569100218200841">Indholdsoplysninger</translation>
 <translation id="2422937916923936891">Afkrydsningsfelt til menupunkt</translation>
-<translation id="2429669115401274487">PM</translation>
+<translation id="2429669115401274487">e.m.</translation>
 <translation id="2435413342408885429"><ph name="KEY" /> er nu den nye ChromeVox-ændringstast.</translation>
 <translation id="2450814015951372393">Afkrydsningsfelt</translation>
 <translation id="2462626033734746142">Gruppe af alternativknapper</translation>
@@ -137,7 +137,7 @@
 <translation id="2706462751667573066">Op</translation>
 <translation id="2717271541250958000">tabpnl</translation>
 <translation id="2723001399770238859">lyd</translation>
-<translation id="2732718972699418926">AM</translation>
+<translation id="2732718972699418926">f.m.</translation>
 <translation id="2749275490991666823">Kontrolleret</translation>
 <translation id="27527859628328957">Gå til næste element, der kan fokuseres på</translation>
 <translation id="2770781857296573485">Start udforskning af grupper</translation>
@@ -510,7 +510,7 @@
 <translation id="6169420925157477918">Billede med lang beskrivelse</translation>
 <translation id="6172087735260766220">Der kunne ikke opnås adgang til tilgængelig tekst fra den kopibeskyttede PDF-fil.</translation>
 <translation id="6186305613600865047">Gå til bunden af siden</translation>
-<translation id="6193330012414963395">AM PM</translation>
+<translation id="6193330012414963395">f.m. e.m.</translation>
 <translation id="622484624075952240">Ned</translation>
 <translation id="6236061028292614533">Næste overskrift</translation>
 <translation id="6254901459154107917">Næste tekstområde, som kan redigeres</translation>

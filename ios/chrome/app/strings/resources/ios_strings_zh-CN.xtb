@@ -4,52 +4,32 @@
 <translation id="1008557486741366299">以后再说</translation>
 <translation id="1047726139967079566">为此页添加书签...</translation>
 <translation id="1172898394251786223">下一个字段</translation>
-<translation id="168328519870909584"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> 上的现有攻击程序可能会试图通过在您的设备上安装危险应用来窃取或删除您的信息（例如：照片、密码、通讯内容和信用卡信息）。</translation>
 <translation id="2320166752086256636">隐藏键盘</translation>
 <translation id="2467815441875554965">环境相关搜索</translation>
 <translation id="2704606927547763573">已复制</translation>
 <translation id="2747003861858887689">上一个字段</translation>
 <translation id="2780046210906776326">没有电子邮件帐户</translation>
-<translation id="2803306138276472711">Google安全浏览功能最近在<ph name="SITE" />上<ph name="BEGIN_LINK" />检测到了恶意软件<ph name="END_LINK" />。平常非常安全的网站有时也会感染恶意软件。</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />，<ph name="ADDITIONAL_INFO" />，第 <ph name="INDEX" /> 项建议（共 <ph name="NUM_SUGGESTIONS" /> 项）</translation>
 <translation id="3335947283844343239">重新打开关闭的标签页</translation>
 <translation id="3414292259312108062">Chrome 会将此密码存储在 <ph name="BEGIN_LINK" />Google 保存的密码<ph name="END_LINK" />中，并会在需要时自动填充此密码，因此您记不住它也没有关系。</translation>
 <translation id="3567664240939803299">您想让 Google Smart Lock 保存您在此网站上使用的密码吗？</translation>
-<translation id="3586931643579894722">隐藏详细信息</translation>
-<translation id="3736520371357197498">如果您了解自己将面临的安全风险，则可以在危险程序被清除前<ph name="BEGIN_LINK" />访问这个不安全的网站<ph name="END_LINK" />。</translation>
 <translation id="385051799172605136">后退</translation>
-<translation id="4098354747657067197">您要访问的网站是欺骗性网站</translation>
 <translation id="4121993058175073134">要发送净导出数据，请在“设置”应用中指定您的电子邮件帐户。</translation>
 <translation id="4399225372525667111">Chrome 浏览器无法确认此网站的网址是否正确。</translation>
-<translation id="4522570452068850558">详细信息</translation>
 <translation id="4728558894243024398">平台</translation>
 <translation id="473775607612524610">更新</translation>
 <translation id="5317780077021120954">保存</translation>
-<translation id="5337705430875057403"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> 上的攻击程序可能会诱骗您做一些危险的事情，如安装软件或泄露您的个人信息（例如密码、电话号码或信用卡信息）。</translation>
 <translation id="605721222689873409">YY</translation>
-<translation id="6075880972317537864"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />上的攻击程序可能会试图骗取您的信息（例如：密码、通讯内容或信用卡信息）。</translation>
 <translation id="6149061208933997199">使用密码</translation>
 <translation id="6196207969502475924">语音搜索</translation>
-<translation id="6221345481584921695">Google安全浏览功能最近在<ph name="SITE" />上<ph name="BEGIN_LINK" />检测到了恶意软件<ph name="END_LINK" />。平常非常安全的网站有时也会感染恶意软件。检测到的恶意内容来自于<ph name="SUBRESOURCE_HOST" />，这是个出了名的恶意软件散布方。</translation>
-<translation id="6264485186158353794">返回安全连接</translation>
 <translation id="6314335155547195432">生成密码</translation>
 <translation id="6344783595350022745">明文</translation>
 <translation id="6456425917241817154">Chrome 生成的密码</translation>
 <translation id="6535543971741225613">您尝试访问的网站存在异常行为。Chrome 浏览器无法确认其网址是否正确。出于安全考虑，请不要继续访问，建议您改日重试或访问其他网站。</translation>
-<translation id="6740369132746915122">如果您了解自己将面临的安全风险，则可以<ph name="BEGIN_LINK" />访问这个不安全的网站<ph name="END_LINK" />。</translation>
 <translation id="7222245588540287464">是否启用环境相关搜索。</translation>
-<translation id="724691107663265825">要访问的网站包含恶意软件</translation>
 <translation id="7456847797759667638">打开位置...</translation>
 <translation id="7481312909269577407">前进</translation>
 <translation id="7484580869648358686">警告：此页面包含危险内容！</translation>
-<translation id="7779249319235708104">继续访问可能会遭到网上诱骗攻击</translation>
 <translation id="7961015016161918242">一律不</translation>
-<translation id="820854170120587500">Google安全浏览功能最近在<ph name="SITE" />上检测到了网上诱骗行为。<ph name="BEGIN_LINK" />网上诱骗网站<ph name="END_LINK" />会假冒其他网站来欺骗您。</translation>
-<translation id="834457929814110454">如果您了解自己将面临的安全风险，则可以在有害程序被清除之前<ph name="BEGIN_LINK" />访问此网站<ph name="END_LINK" />。</translation>
-<translation id="8543181531796978784">您可以<ph name="BEGIN_ERROR_LINK" />报告检测问题<ph name="END_ERROR_LINK" />；或者，如果您了解自己将面临的安全风险，则可以<ph name="BEGIN_LINK" />访问这个不安全的网站<ph name="END_LINK" />。</translation>
-<translation id="8761567432415473239">Google安全浏览功能最近在<ph name="SITE" />上<ph name="BEGIN_LINK" />发现了有害程序<ph name="END_LINK" />。</translation>
-<translation id="8996941253935762404">您要访问的网站包含有害程序</translation>
-<translation id="9035022520814077154">安全错误</translation>
-<translation id="9040185888511745258"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />上的攻击程序可能会试图骗您安装有损浏览体验（例如，更改您的主页或在您访问的网站上显示额外的广告）的程序。</translation>
 </translationbundle>

@@ -68,7 +68,6 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="3130323860337406239">Chromium está utilizando el micrófono.</translation>
 <translation id="313551035350905294">Estás iniciando sesión con una cuenta administrada, por lo que concedes a su administrador el control sobre tu perfil de Chromium. Tus datos de Chromium, como aplicaciones, marcadores, historial, contraseñas y otras opciones quedarán vinculados de forma permanente a <ph name="USER_NAME" />. Podrás eliminar estos datos mediante el panel de control de cuentas de Google, pero no podrás asociarlos a otra cuenta.</translation>
 <translation id="3190315855212034486">¡Vaya! Se ha producido un fallo en Chromium. ¿Quieres reiniciar el navegador ahora?</translation>
-<translation id="3197823471738295152">El dispositivo está actualizado.</translation>
 <translation id="3244477511402911926">Centro de notificaciones de Chromium</translation>
 <translation id="3256316712990552818">Copiada a Chromium</translation>
 <translation id="3258596308407688501">Chromium no puede leer el directorio de datos ni escribir en él:

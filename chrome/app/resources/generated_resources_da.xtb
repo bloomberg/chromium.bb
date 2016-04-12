@@ -277,7 +277,6 @@
 <translation id="1407050882688520094">Du har certifikatfiler, som identificerer følgende certifikatautoriteter:</translation>
 <translation id="1407489512183974736">Centrér, beskær</translation>
 <translation id="1408789165795197664">Avanceret...</translation>
-<translation id="1408803555324839240">Ups! Den nye administrerede bruger kunne ikke oprettes. Sørg for at være logget korrekt ind, og prøv igen.</translation>
 <translation id="1409390508152595145">Opret administreret bruger</translation>
 <translation id="1410616244180625362">Tillad fortsat, at <ph name="HOST" /> har adgang til dit kamera</translation>
 <translation id="1413372529771027206">Den telefon, du bruger til Smart Lock, er ændret. Indtast din adgangskode for at opdatere Smart Lock til Chromebook på denne telefon. Næste gang skal du blot klikke på dit billede for at få adgang.</translation>
@@ -1597,7 +1596,6 @@ Gå til din e-mail, <ph name="ACCOUNT_EMAIL" />, for at se denne og flere vejled
 <translation id="3277710850168074473">Påkrævede bevægelser fra brugeren ved afspilning af medieelementer. Hvis du deaktiverer dette, tillader du automatisk afspilning.</translation>
 <translation id="3280237271814976245">Gem &amp;som...</translation>
 <translation id="3280431534455935878">Forbereder</translation>
-<translation id="3284674070818187654">Google kan bruge din browserhistorik til at personliggøre Søgning og andre Google-tjenester. Du kan administrere dette på myaccount.google.com.</translation>
 <translation id="3285322247471302225">Ny &amp;fane</translation>
 <translation id="3288047731229977326">Udvidelser, der kører i udviklertilstand, kan skade din computer. Hvis du ikke er udvikler, skal du deaktivere udvidelserne, der kører i udviklertilstand, af hensyn til sikkerheden.</translation>
 <translation id="3289566588497100676">Nem indtastning af symboler</translation>
@@ -1704,7 +1702,6 @@ Fra <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3413122095806433232">CA-udstedere: <ph name="LOCATION" /></translation>
 <translation id="3414856743105198592">Formatering af de flytbare medier kommer til at slette alle data. Vil du fortsætte?</translation>
 <translation id="3414952576877147120">Størrelse:</translation>
-<translation id="3416248389957650982">Åbn myaccount.google.com, når du er logget ind</translation>
 <translation id="3420980393175304359">Skift person</translation>
 <translation id="3423858849633684918">Genstart <ph name="PRODUCT_NAME" /></translation>
 <translation id="3425233587047449821">Ny koreansk IME</translation>
@@ -1919,7 +1916,6 @@ Fra <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3694027410380121301">Vælg forrige fane</translation>
 <translation id="3694122362646626770">Websites</translation>
 <translation id="3694678678240097321">Kræve brugerens samtykke til en udvidelse, der kører et script på siden, hvis udvidelsen har anmodet om tilladelse til at køre på alle webadresser.</translation>
-<translation id="36954862089075551">Hov! Den nye bruger kunne ikke oprettes. Kontrollér, om der er ledig plads på din harddisk, og at du har de rette tilladelser, og prøv igen.</translation>
 <translation id="3695919544155087829">Angiv den adgangskode, der blev brugt til at kryptere denne certifikatfil.</translation>
 <translation id="3696411085566228381">ingen</translation>
 <translation id="3697100740575341996">Din it-administrator har deaktiveret Chrome Goodies for din enhed. <ph name="MORE_INFO_LINK" /></translation>
@@ -2346,7 +2342,6 @@ Tryk på en vilkårlig tast for at fortsætte udforskningen.</translation>
 <translation id="4345703751611431217">Manglende softwarekompatibilitet: Få flere oplysninger</translation>
 <translation id="4348766275249686434">Saml fejl</translation>
 <translation id="4350019051035968019">Denne enhed kan ikke tilmeldes det domæne, som din konto hører under, da enheden er markeret til administration på et andet domæne.</translation>
-<translation id="4352333825734680558">Hov! Den nye administrerede bruger kunne ikke oprettes. Kontrollér din netværksforbindelse, og prøv igen senere.</translation>
 <translation id="4358697938732213860">Tilføj en adresse</translation>
 <translation id="4359408040881008151">Installeret på grund af andre udvidelser, der er afhængige af den.</translation>
 <translation id="4361190688154226069">Visning af målretningsområde i rektangel</translation>
@@ -3019,7 +3014,6 @@ Tryk på en vilkårlig tast for at fortsætte udforskningen.</translation>
 <translation id="5388588172257446328">Brugernavn:</translation>
 <translation id="5390284375844109566">Indekseret database</translation>
 <translation id="5392544185395226057">Aktivér understøttelse af Native Client.</translation>
-<translation id="5393125431335030955">Dette plugin fungerer kun på en computer.</translation>
 <translation id="5396126354477659676"><ph name="PEPPER_PLUGIN_NAME" /> på <ph name="PEPPER_PLUGIN_DOMAIN" /> vil have adgang til din computer.</translation>
 <translation id="539755880180803351">Angiver forudsigelser som pladsholdertekst i webformularer med Autofyld-felttyper.</translation>
 <translation id="5397578532367286026">Denne brugers forbrug og historik kan ses af administratoren (<ph name="MANAGER_EMAIL" />) på chrome.com.</translation>
@@ -3284,7 +3278,6 @@ Tryk på en vilkårlig tast for at fortsætte udforskningen.</translation>
 <translation id="57646104491463491">Dato for ændring</translation>
 <translation id="5765491088802881382">Der er ingen tilgængelige netværk</translation>
 <translation id="5765780083710877561">Beskrivelse:</translation>
-<translation id="5770385044111747894">NPAPI</translation>
 <translation id="5771585441665576801">Translitteration (geia → γεια)</translation>
 <translation id="5771816112378578655">Konfigurationen er i gang...</translation>
 <translation id="5771849619911534867">Enhedsscanning blev stoppet.</translation>
@@ -3918,7 +3911,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6793649375377511437">Oplysninger om Google Copresence</translation>
 <translation id="6797493596609571643">Ups! Der opstod en fejl.</translation>
 <translation id="6798954102094737107">Plugin: <ph name="PLUGIN_NAME" /></translation>
-<translation id="6799646767877093143">Dette website benytter et plugin (<ph name="PLUGIN_NAME" />), som snart ikke understøttes længere.</translation>
 <translation id="6802031077390104172"><ph name="USAGE" /> (<ph name="OID" />)</translation>
 <translation id="6804671422566312077">Åbn alle bogmærker i &amp;nyt vindue</translation>
 <translation id="6805647936811177813">Log ind på <ph name="TOKEN_NAME" /> for at importere klientcertifikatet fra <ph name="HOST_NAME" />.</translation>
@@ -4913,7 +4905,6 @@ Beregner resterende tid</translation>
 <translation id="8267698848189296333">Logger ind som <ph name="USERNAME" /></translation>
 <translation id="8272443605911821513">Administrer dine udvidelser ved at klikke på Udvidelser i menuen "Flere værktøjer".</translation>
 <translation id="8273972836055206582"><ph name="FULLSCREEN_ORIGIN" /> er nu i fuld skærm og ønsker at skjule din musemarkør.</translation>
-<translation id="8274860189261120948">Log automatisk ind på websites med gemte loginoplysninger. Når funktionen er slået fra, bliver du bedt om at bekræfte, hver gang du vil logge ind på et website.</translation>
 <translation id="8275038454117074363">Importer</translation>
 <translation id="8276560076771292512">Tom cache og intensiv genindlæsning</translation>
 <translation id="8279388322240498158">Sorani-kurdisk tastatur (engelskbaseret)</translation>
@@ -5097,7 +5088,6 @@ Beregner resterende tid</translation>
 <translation id="8571108619753148184">Server 4</translation>
 <translation id="8572832761467613633">Kun Flash</translation>
 <translation id="8572981282494768930">Tillad ikke, at websites får adgang til dit kamera og din mikrofon</translation>
-<translation id="8574794171590710404">Dette website benytter et plugin (<ph name="PLUGIN_NAME" />), som ikke understøttes.</translation>
 <translation id="857779305329188634">Aktivér eksperimenterende QUIC-protokolsupport.</translation>
 <translation id="8579285237314169903"><ph name="NUMBER_OF_FILES" /> elementer synkroniseres...</translation>
 <translation id="8579549103199280730">Spørg mig som standard</translation>
@@ -5105,7 +5095,6 @@ Beregner resterende tid</translation>
 <translation id="8581690024797204327">256</translation>
 <translation id="8581809080475256101">Tryk for at gå videre til genvejsmenuen for at se historik</translation>
 <translation id="8584280235376696778">&amp;Åbn video på ny fane</translation>
-<translation id="8585103164112230633">Bestem og se, hvilke websites denne person besøger fra</translation>
 <translation id="8589311641140863898">Eksperimentelle udvidelses-API'er</translation>
 <translation id="8590375307970699841">Konfigurer automatiske opdateringer</translation>
 <translation id="8592071947729879125">Begræns iframe-tilladelser.</translation>
@@ -5254,7 +5243,6 @@ Beregner resterende tid</translation>
 <translation id="878069093594050299">Dette certifikat er blevet bekræftet til følgende brug:</translation>
 <translation id="8782565991310229362">Start af kioskapplikationen blev annulleret.</translation>
 <translation id="8783093612333542422">&lt;Strong&gt;<ph name="SENDER" />&lt;/ Strong&gt; vil dele en printer &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/ Strong&gt; med dig.</translation>
-<translation id="878431691778285679">Det ser ud, som om du allerede administrerer en bruger med det navn.<ph name="LINE_BREAK" />Vil du <ph name="BEGIN_LINK" />importere <ph name="PROFILE_NAME" /> til denne enhed<ph name="END_LINK" />?</translation>
 <translation id="8784626084144195648">Kasseret gennemsnit</translation>
 <translation id="8785135611469711856">Plugin svarer ikke</translation>
 <translation id="8787254343425541995">Tillad proxyer til delte netværk</translation>

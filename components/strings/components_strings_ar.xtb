@@ -290,6 +290,7 @@
 <translation id="3788090790273268753">‏تنتهي صلاحية شهادة هذا الموقع في 2016، وتتضمن سلسلة الشهادات شهادة موقعة باستخدام SHA-1.</translation>
 <translation id="382518646247711829">إذا كنت تستخدم خادمًا وكيلاً...</translation>
 <translation id="3828924085048779000">غير مسموح باستخدام عبارة مرور فارغة.</translation>
+<translation id="3845539888601087042">عرض السجلّ من الأجهزة التي تم تسجيل الدخول عليها. <ph name="BEGIN_LINK" />مزيد من المعلومات<ph name="END_LINK" />.</translation>
 <translation id="385051799172605136">الرجوع إلى الوراء</translation>
 <translation id="3858027520442213535">تحديث التاريخ والوقت</translation>
 <translation id="3884278016824448484">معرف جهاز متضارب</translation>
@@ -410,6 +411,7 @@
 <translation id="5421136146218899937">محو بيانات التصفح...</translation>
 <translation id="5430298929874300616">إزالة إشارة مرجعية</translation>
 <translation id="5431657950005405462">لم يتم العثور على ملفك</translation>
+<translation id="5435775191620395718">عرض السجل من هذا الجهاز. <ph name="BEGIN_LINK" />مزيد من المعلومات<ph name="END_LINK" />.</translation>
 <translation id="5439770059721715174">حدث خطأ في مصادقة المخطط على "<ph name="ERROR_PATH" />": <ph name="ERROR" /></translation>
 <translation id="5447330194051379405">عرض كل الصفحات المحفوظة</translation>
 <translation id="5452270690849572955">لا يمكن العثور على صفحة <ph name="HOST_NAME" /> هذه.</translation>
@@ -556,7 +558,6 @@
 <translation id="7186367841673660872">تمت ترجمة هذه الصفحة من اللغة<ph name="ORIGINAL_LANGUAGE" />إلى اللغة<ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="719464814642662924">Visa</translation>
 <translation id="720210938761809882">تمّ حظر الصفحة</translation>
-<translation id="7208899522964477531">البحث  في الموقع <ph name="SITE_NAME" /> عن "<ph name="SEARCH_TERMS" />"</translation>
 <translation id="7210863904660874423">لا يلتزم <ph name="HOST_NAME" /> بمعايير الأمان.</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />مزيد من المعلومات<ph name="END_LINK" /> حول هذه المشكلة.</translation>
 <translation id="7219179957768738017">الاتصال يستخدم <ph name="SSL_VERSION" />.</translation>
@@ -638,7 +639,6 @@
 <translation id="7951415247503192394">(32 بت)</translation>
 <translation id="7956713633345437162">الإشارات المرجعية على الجوال</translation>
 <translation id="7961015016161918242">مطلقًا</translation>
-<translation id="7977590112176369853">&lt;أدخل طلب البحث&gt;</translation>
 <translation id="7983301409776629893">الترجمة من اللغة <ph name="ORIGINAL_LANGUAGE" /> إلى اللغة <ph name="TARGET_LANGUAGE" /> دومًا</translation>
 <translation id="7995512525968007366">غير محدد</translation>
 <translation id="8012647001091218357">لم نتمكن من الوصول إلى والديك في الوقت الحالي. يُرجى إعادة المحاولة مرة أخرى.</translation>
@@ -699,6 +699,7 @@
 <translation id="8730621377337864115">تم</translation>
 <translation id="8738058698779197622">‏لإنشاء اتصال آمن، فإنك بحاجة إلى ضبط ساعتك بشكل صحيح. وذلك لأن الشهادات التي تستخدمها مواقع الويب لتعريف نفسها تكون صالحة فقط لفترات محددة من الوقت. فإذا كانت ساعة جهازك غير صحيحة، فلن يتمكن Chromium من التحقق من هذه الشهادات.</translation>
 <translation id="8740359287975076522">‏تعذر العثور على &lt;/abbr&gt;عنوان نظام أسماء النطاقات (DNS)‏&lt;abbr id="dnsDefinition"&gt; لـ <ph name="HOST_NAME" />. جارٍ تشخيص المشكلة.</translation>
+<translation id="8741995161408053644">‏قد يتضمن حسابك في Google على نماذج أخرى من سجل التصفح في <ph name="BEGIN_LINK" /> history.google.com <ph name="END_LINK" />.</translation>
 <translation id="8790007591277257123">إعادة الح&amp;ذف</translation>
 <translation id="8798099450830957504">الافتراضي</translation>
 <translation id="8804164990146287819">سياسة الخصوصية</translation>
@@ -719,7 +720,6 @@
 <translation id="8903921497873541725">تكبير</translation>
 <translation id="8931333241327730545">‏هل تريد حفظ هذه البطاقة إلى حسابك في Google؟</translation>
 <translation id="8932102934695377596">توقيت ساعتك متأخر عن الوقت الحالي</translation>
-<translation id="8940229512486821554">تشغيل الأمر <ph name="EXTENSION_NAME" />:<ph name="SEARCH_TERMS" /></translation>
 <translation id="8954894007019320973">(يتبع)</translation>
 <translation id="8971063699422889582">انتهت صلاحية شهادة الخادم.</translation>
 <translation id="8987927404178983737">شهر</translation>

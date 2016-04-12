@@ -277,7 +277,6 @@
 <translation id="1407050882688520094">これらの認証局を識別するための証明書がファイルに格納されています:</translation>
 <translation id="1407489512183974736">中央トリミング</translation>
 <translation id="1408789165795197664">詳細...</translation>
-<translation id="1408803555324839240">新しい監視対象ユーザーを作成できませんでした。正常にログインしていることを確認して、もう一度お試しください。</translation>
 <translation id="1409390508152595145">監視対象ユーザーを作成</translation>
 <translation id="1410616244180625362"><ph name="HOST" /> によるカメラへのアクセスを引き続き許可する</translation>
 <translation id="1413372529771027206">Smart Lock に使用するスマートフォンが変更されました。このデバイスで Smart Lock for Chromebook を更新するにはパスワードを入力してください。次回からはアカウント画像をクリックするだけでログインできます。</translation>
@@ -1600,7 +1599,6 @@
 <translation id="3277710850168074473">メディア要素を再生するためのユーザー操作の要件。無効にした場合、自動再生が可能になります。</translation>
 <translation id="3280237271814976245">名前を付けて保存(&amp;A)...</translation>
 <translation id="3280431534455935878">準備中</translation>
-<translation id="3284674070818187654">検索やその他の Google サービスをカスタマイズする目的で、Google が閲覧履歴を使用することがあります。myaccount.google.com でこの動作を変更できます。</translation>
 <translation id="3285322247471302225">新しいタブ(&amp;T)</translation>
 <translation id="3288047731229977326">デベロッパー モードで実行される拡張機能はパソコンにダメージを与える恐れがあります。デベロッパーでない場合は、安全のため、デベロッパー モードで実行されているこれらの拡張機能を無効にしてください。</translation>
 <translation id="3289566588497100676">簡単な記号入力</translation>
@@ -1707,7 +1705,6 @@
 <translation id="3413122095806433232">認証局発行元: <ph name="LOCATION" /></translation>
 <translation id="3414856743105198592">リムーバブル メディアをフォーマットすると、すべてのデータが消去されます。続行しますか？</translation>
 <translation id="3414952576877147120">サイズ:</translation>
-<translation id="3416248389957650982">ログイン後に myaccount.google.com を開く</translation>
 <translation id="3420980393175304359">ユーザーの切り替え</translation>
 <translation id="3423858849633684918"><ph name="PRODUCT_NAME" /> を再起動してください</translation>
 <translation id="3425233587047449821">新しい韓国語 IME</translation>
@@ -1922,7 +1919,6 @@
 <translation id="3694027410380121301">前のタブを選択</translation>
 <translation id="3694122362646626770">ウェブサイト</translation>
 <translation id="3694678678240097321">ページ上でスクリプトを実行する拡張機能が全 URL での実行許可をリクエストした場合、ユーザーの同意を求めます。</translation>
-<translation id="36954862089075551">新しいユーザーを作成できませんでした。ハード ドライブの空き容量と権限を確認してからもう一度お試しください。</translation>
 <translation id="3695919544155087829">この証明書ファイルの暗号化に使用したパスワードを入力してください。</translation>
 <translation id="3696411085566228381">なし</translation>
 <translation id="3697100740575341996">IT 管理者が、お使いのデバイスに対して Chrome Goodies を無効にしています。<ph name="MORE_INFO_LINK" /></translation>
@@ -2350,7 +2346,6 @@
 <translation id="4345703751611431217">ソフトウェア非互換性: 詳細</translation>
 <translation id="4348766275249686434">エラーを収集する</translation>
 <translation id="4350019051035968019">このデバイスは、別のドメインの管理対象として指定されているため、現在のアカウントの所属先ドメインに登録することはできません。</translation>
-<translation id="4352333825734680558">新しい監視対象ユーザーを作成できませんでした。ネットワーク接続を確認し、しばらくしてからもう一度お試しください。</translation>
 <translation id="4358697938732213860">住所を追加</translation>
 <translation id="4359408040881008151">依存関係にある拡張機能によってインストールされました。</translation>
 <translation id="4361190688154226069">目標を四角形のエリアから認識する</translation>
@@ -3025,7 +3020,6 @@
 <translation id="5388588172257446328">ユーザー名:</translation>
 <translation id="5390284375844109566">Indexed Database</translation>
 <translation id="5392544185395226057">ネイティブ クライアントに対応できるようにします。</translation>
-<translation id="5393125431335030955">このプラグインは、デスクトップでのみ使用できます。</translation>
 <translation id="5396126354477659676"><ph name="PEPPER_PLUGIN_DOMAIN" /> の <ph name="PEPPER_PLUGIN_NAME" /> がお使いのパソコンへのアクセスを求めています。</translation>
 <translation id="539755880180803351">自動入力欄型の予測機能をプレースホルダ テキストとしてウェブ フォームに追加します。</translation>
 <translation id="5397578532367286026">このユーザーの利用状況や履歴は、chrome.com で管理者（<ph name="MANAGER_EMAIL" />）によって確認されます。</translation>
@@ -3290,7 +3284,6 @@
 <translation id="57646104491463491">更新日</translation>
 <translation id="5765491088802881382">ネットワークが利用できません</translation>
 <translation id="5765780083710877561">説明:</translation>
-<translation id="5770385044111747894">NPAPI</translation>
 <translation id="5771585441665576801">文字変換（geia → γεια）</translation>
 <translation id="5771816112378578655">セットアップ中...</translation>
 <translation id="5771849619911534867">デバイス スキャンが停止しました。</translation>
@@ -3923,7 +3916,6 @@
 <translation id="6793649375377511437">Google Copresence について</translation>
 <translation id="6797493596609571643">エラーが発生しました。</translation>
 <translation id="6798954102094737107">プラグイン: <ph name="PLUGIN_NAME" /></translation>
-<translation id="6799646767877093143">このサイトではサポートがまもなく終了するプラグイン（<ph name="PLUGIN_NAME" />）が使用されています。</translation>
 <translation id="6802031077390104172"><ph name="USAGE" />（<ph name="OID" />）</translation>
 <translation id="6804671422566312077">すべてのブックマークを新しいウィンドウで開く(&amp;N)</translation>
 <translation id="6805647936811177813"><ph name="HOST_NAME" /> からクライアント証明書をインポートするには <ph name="TOKEN_NAME" /> にログインしてください。</translation>
@@ -4920,7 +4912,6 @@
 <translation id="8267698848189296333"><ph name="USERNAME" /> としてログイン</translation>
 <translation id="8272443605911821513">拡張機能を管理するには、[その他のツール] メニューの [拡張機能] をクリックします。</translation>
 <translation id="8273972836055206582">現在 <ph name="FULLSCREEN_ORIGIN" /> は全画面表示で、マウス カーソルは無効になります。</translation>
-<translation id="8274860189261120948">保存されている認証情報を使用してウェブサイトに自動的にログインします。この機能が無効になっている場合、ウェブサイトにログインするときに毎回確認を求められます。</translation>
 <translation id="8275038454117074363">インポート</translation>
 <translation id="8276560076771292512">キャッシュの消去とハード再読み込み</translation>
 <translation id="8279388322240498158">ソラニークルド語キーボード（英語ベース）</translation>
@@ -5104,7 +5095,6 @@
 <translation id="8571108619753148184">サーバー 4</translation>
 <translation id="8572832761467613633">Flash のみ</translation>
 <translation id="8572981282494768930">カメラやマイクへのアクセスをサイトに許可しない</translation>
-<translation id="8574794171590710404">このサイトではサポートされていないプラグイン（<ph name="PLUGIN_NAME" />）が使用されています。</translation>
 <translation id="857779305329188634">QUIC プロトコルのサポート（試験運用中）を有効にします。</translation>
 <translation id="8579285237314169903"><ph name="NUMBER_OF_FILES" /> 個のアイテムを同期しています...</translation>
 <translation id="8579549103199280730">デフォルトで確認</translation>
@@ -5112,7 +5102,6 @@
 <translation id="8581690024797204327">256</translation>
 <translation id="8581809080475256101">ボタンを押して次に進みます。履歴を表示するにはコンテキスト メニューを選択します</translation>
 <translation id="8584280235376696778">動画を新しいタブで開く(&amp;O)</translation>
-<translation id="8585103164112230633">このユーザーが次からアクセスするウェブサイトを管理、表示する</translation>
 <translation id="8589311641140863898">試験運用版の拡張機能 API</translation>
 <translation id="8590375307970699841">自動更新を設定</translation>
 <translation id="8592071947729879125">iframe の権限を制限する。</translation>
@@ -5260,7 +5249,6 @@
 <translation id="878069093594050299">この証明書は、以下の用途に使用できることが確認されています:</translation>
 <translation id="8782565991310229362">キオスク アプリケーションの起動がキャンセルされました。</translation>
 <translation id="8783093612333542422">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; さんがあなたと &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; プリンタを共有をすることを希望しています。</translation>
-<translation id="878431691778285679">この名前でユーザーを既に管理しているようです。<ph name="LINE_BREAK" /><ph name="BEGIN_LINK" />このデバイスに <ph name="PROFILE_NAME" /> をインポート<ph name="END_LINK" />しますか？</translation>
 <translation id="8784626084144195648">ビニング平均</translation>
 <translation id="8785135611469711856">プラグイン応答なし</translation>
 <translation id="8787254343425541995">共有ネットワークのプロキシを許可する</translation>

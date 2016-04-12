@@ -4,52 +4,32 @@
 <translation id="1008557486741366299">Не сада</translation>
 <translation id="1047726139967079566">Обележи ову страницу...</translation>
 <translation id="1172898394251786223">Следеће поље</translation>
-<translation id="168328519870909584">Нападачи који су тренутно на <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> ће можда покушати да инсталирају опасне апликације на уређај које краду или бришу податке (на пример, слике, лозинке, поруке и бројеве кредитних картица).</translation>
 <translation id="2320166752086256636">Сакриј тастатуру</translation>
 <translation id="2467815441875554965">Контекстуална претрага</translation>
 <translation id="2704606927547763573">Копирано</translation>
 <translation id="2747003861858887689">Претходно поље</translation>
 <translation id="2780046210906776326">Нема налога е-поште</translation>
-<translation id="2803306138276472711">Google безбедно прегледање је недавно <ph name="BEGIN_LINK" />открило малвер<ph name="END_LINK" /> на <ph name="SITE" />. Веб-сајтови који су обично безбедни се понекад заразе малвером.</translation>
 <translation id="3244271242291266297">ММ</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> од <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3335947283844343239">Поново отвори затворену картицу</translation>
 <translation id="3414292259312108062">Chrome ће ово сачувати у вашим <ph name="BEGIN_LINK" />Google сачуваним лозинкама<ph name="END_LINK" /> и аутоматски унети тако да не морате да памтите.</translation>
 <translation id="3567664240939803299">Желите ли да Google Smart Lock сачува лозинку за овај сајт?</translation>
-<translation id="3586931643579894722">Сакриј детаље</translation>
-<translation id="3736520371357197498">Ако разумете безбедносне ризике, можете да <ph name="BEGIN_LINK" />посетите овај небезбедни сајт<ph name="END_LINK" /> пре него што уклонимо опасне програме.</translation>
 <translation id="385051799172605136">Назад</translation>
-<translation id="4098354747657067197">Пред вама је обмањујући сајт</translation>
 <translation id="4121993058175073134">За слање података нето извоза подесите налог е-поште у апликацији Подешавања.</translation>
 <translation id="4399225372525667111">Chrome не може да верификује да је URL адреса овог сајта исправна.</translation>
-<translation id="4522570452068850558">Детаљи</translation>
 <translation id="4728558894243024398">Платформа</translation>
 <translation id="473775607612524610">Ажурирај</translation>
 <translation id="5317780077021120954">Сачувај</translation>
-<translation id="5337705430875057403">Нападачи на <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> могу да вас преваре како бисте урадили нешто опасно, на пример, да инсталирате софтвер или откријете личне податке (попут лозинки, бројева телефона или бројева кредитних картица).</translation>
 <translation id="605721222689873409">ГГ</translation>
-<translation id="6075880972317537864">Нападачи на <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> ће можда покушати да вас преваре да би вам украли податке (на пример, лозинке, поруке или бројеве кредитних картица).</translation>
 <translation id="6149061208933997199">Користи лозинку</translation>
 <translation id="6196207969502475924">Гласовна претрага</translation>
-<translation id="6221345481584921695">Google безбедно прегледање је недавно <ph name="BEGIN_LINK" />открило малвер<ph name="END_LINK" /> на <ph name="SITE" />. Веб-сајтови који су обично безбедни се понекад заразе малвером. Злонамеран садржај потиче са <ph name="SUBRESOURCE_HOST" />, који је познати дистрибутер малвера.</translation>
-<translation id="6264485186158353794">Назад на безбедно</translation>
 <translation id="6314335155547195432">Генериши лозинку</translation>
 <translation id="6344783595350022745">Обриши текст</translation>
 <translation id="6456425917241817154">Лозинку генерише Chrome</translation>
 <translation id="6535543971741225613">Сајт коме покушавате да приступите се понаша чудно и Chrome не може да верификује да је URL адреса исправна. Из безбедносних разлога не би требало да наставите, а можда би требало да поново покушате сутра или да одете на неки други сајт.</translation>
-<translation id="6740369132746915122">Ако схватате безбедносне ризике, можете да <ph name="BEGIN_LINK" />посетите овај небезбедан сајт<ph name="END_LINK" />.</translation>
 <translation id="7222245588540287464">Да ли је Контекстуална претрага омогућена или није.</translation>
-<translation id="724691107663265825">Сајт који покушавате да посетите садржи малвер</translation>
 <translation id="7456847797759667638">Отвори локацију...</translation>
 <translation id="7481312909269577407">Проследи</translation>
 <translation id="7484580869648358686">Упозорење: Овде нешто није у реду!</translation>
-<translation id="7779249319235708104">Очекује вас напад „пецањем“</translation>
 <translation id="7961015016161918242">Никад</translation>
-<translation id="820854170120587500">Google безбедно прегледање је недавно открило „пецање“ на <ph name="SITE" />. <ph name="BEGIN_LINK" />Сајтови са „пецањем“<ph name="END_LINK" /> се представљају као неки други веб-сајтови да би вас преварили.</translation>
-<translation id="834457929814110454">Ако разумете безбедносне ризике, можете да <ph name="BEGIN_LINK" />посетите овај сајт<ph name="END_LINK" /> пре него што уклонимо штетне програме.</translation>
-<translation id="8543181531796978784">Можете да <ph name="BEGIN_ERROR_LINK" />пријавите проблем са откривањем<ph name="END_ERROR_LINK" /> или, ако схватате безбедносне ризике, <ph name="BEGIN_LINK" />посетите овај небезбедан сајт<ph name="END_LINK" />.</translation>
-<translation id="8761567432415473239">Google безбедно прегледање је недавно <ph name="BEGIN_LINK" />открило штетне програме<ph name="END_LINK" /> на <ph name="SITE" />.</translation>
-<translation id="8996941253935762404">Сајт који ћете посетити садржи штетне програме</translation>
-<translation id="9035022520814077154">Безбедносна грешка</translation>
-<translation id="9040185888511745258">Нападачи на <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> могу да покушају да вас преваре да бисте инсталирали програме који штете доживљају прегледања (на пример, тако што мењају почетну страницу или приказују додатне огласе на сајтовима које посећујете).</translation>
 </translationbundle>

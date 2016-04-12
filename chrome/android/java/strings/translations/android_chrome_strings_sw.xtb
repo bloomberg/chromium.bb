@@ -25,6 +25,7 @@ Lazima uwashe Bluetooth na kipengele cha Mahali ili uweze kutumia Wavuti Kila Ma
 <translation id="1285320974508926690">Kamwe usitafsiri tovuti hii</translation>
 <translation id="1291207594882862231">Futa historia, vidakuzi, data ya tovuti, akiba…</translation>
 <translation id="129553762522093515">Vilivyofungwa hivi karibuni</translation>
+<translation id="13410144310025252">Viangalie katika Chrome</translation>
 <translation id="1346090444609141578">Hapana kurasa zilizohifadhiwa hapa</translation>
 <translation id="1369915414381695676">Tovuti <ph name="SITE_NAME" /> imeongezwa</translation>
 <translation id="1373696734384179344">Hakuna hifadhi ya kutosha ya kupakua maudhui yaliyochaguliwa.</translation>
@@ -193,6 +194,7 @@ Ili kurekebisha hoja yako ya utafutaji, bonyeza kwa muda mrefu ili kuchagua. Ili
 <translation id="3656115297268584622">Washa eneo katika <ph name="BEGIN_LINK" />Mipangilio ya Android<ph name="END_LINK" />.</translation>
 <translation id="3661699943263275414">Tovuti nyingine zinaweza kuhifadhi na kusoma data ya vidakuzi</translation>
 <translation id="3672452749423051839">Mapendekezo ya hitilafu ya kuelekea unapotaka</translation>
+<translation id="3716158070938632480">Kurasa za wavuti zipo karibu</translation>
 <translation id="3732088672634061408">Haikuweza kuleta mambo yanayokuvutia.</translation>
 <translation id="3738139272394829648">Gusa ili Utafute</translation>
 <translation id="3809549525127675114">Imekamilisha kucheza “<ph name="VIDEO_TITLE" />”</translation>
@@ -372,7 +374,6 @@ Hata hivyo, huonekani. Kuvinjari katika hali fiche hakufichi kuvinjari kwako kus
 <translation id="5911030830365207728">Google Tafsiri</translation>
 <translation id="5916664084637901428">Imewashwa</translation>
 <translation id="5939518447894949180">Weka upya</translation>
-<translation id="5965336165840183977">Hatua hii hufuta data iliyosawazishwa kwenye vifaa vyote. Hutaondolewa kwenye akaunti yako ya Google. Mipangilio iliyohifadhiwa ya tovuti haitafutwa na inaweza kuonyesha tabia zako za kuvinjari.</translation>
 <translation id="5968595432776860642">Inacheza “<ph name="VIDEO_TITLE" />”</translation>
 <translation id="6010869025736512584">Inafikia vifaa vya kuingiza sauti ya video</translation>
 <translation id="6012342843556706400">Chrome inahitaji idhini ya kufikia mahali ili ipashiriki na tovuti hii.</translation>
@@ -392,7 +393,6 @@ Hata hivyo, huonekani. Kuvinjari katika hali fiche hakufichi kuvinjari kwako kus
 <translation id="6159335304067198720"><ph name="PERCENT" /> ya data imeokolewa</translation>
 <translation id="6165508094623778733">Pata maelezo zaidi</translation>
 <translation id="6192792657125177640">Vighairi</translation>
-<translation id="6231464350722415003">Ruhusu JavaScript kwenye tovuti unazobainisha huku ukiizuia kwenye wavuti mwingine wote</translation>
 <translation id="6232535412751077445">Kuwasha ‘Usifuatilie’ kunamaanisha kuwa ombi litajumuishwa pamoja na maelezo yako mengine ya kuvinjari. Athari yoyote itategemea ikiwa tovuti inajibu ombi, na namna ombi litakavyofasiriwa.
 
 Kwa mfano, baadhi ya tovuti zinaweza kujibu ombi hili kwa kukuonyesha matangazo ambayo hayalingani na tovuti nyingine ulizotembelea. Tovuti nyingi bado zitakusanya na kutumia data yako ya kuvinjari — kwa mfano ili kuboresha usalama, kutoa maudhui, matangazo na mapendekezo, na kuzalisha takwimu za kuripoti.</translation>
@@ -480,7 +480,6 @@ Kwa mfano, baadhi ya tovuti zinaweza kujibu ombi hili kwa kukuonyesha matangazo 
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> hutumia mahali ulipo ili kuonyesha matokeo ya utafutaji wa karibu</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />Usaidizi<ph name="END_LINK" /></translation>
 <translation id="7299721129597238157">Futa alamisho</translation>
-<translation id="7346217184097589238">Mipangilio ya tovuti iliyohifadhiwa haitafutwa na inaweza kuonyesha tabia zako za kuvinjari.</translation>
 <translation id="7347770551817603360">Maudhui ya nje ya mtandao</translation>
 <translation id="7363354739009474003">Inapakia "<ph name="VIDEO_TITLE" />"</translation>
 <translation id="7366340029385295517">Inatuma kwenye <ph name="SCREEN_NAME" /></translation>
@@ -491,6 +490,7 @@ Kwa mfano, baadhi ya tovuti zinaweza kujibu ombi hili kwa kukuonyesha matangazo 
 <translation id="7408644312175185557">Angalia vichupo vyako pamoja na programu nyingine za hivi majuzi kwenye skrini ya simu ya Muhtasari.</translation>
 <translation id="7423098979219808738">Uliza kwanza</translation>
 <translation id="7437998757836447326">Ondoka kwenye Chrome</translation>
+<translation id="7464701184726199289">Hatua hii itafuta data iliyosawazishwa kwenye vifaa vyote. Mipangilio ya tovuti iliyohifadhiwa haitafutwa na inaweza kuonyesha mtindo wako wa kuvinjari. <ph name="BEGIN_LINK" />Pata maelezo zaidi<ph name="END_LINK" /></translation>
 <translation id="7473891865547856676">La Asante</translation>
 <translation id="7475192538862203634">Ikiwa unaona hili kila mara, jaribu <ph name="BEGIN_LINK" />mapendekezo<ph name="END_LINK" /> haya.</translation>
 <translation id="748127970106343339">Thibitisha ufutaji wa kitambulisho cha kifaa</translation>
@@ -542,7 +542,11 @@ Hata hivyo, unaonekana. Kuvinjari katika hali fiche hakufichi kuvinjari kwako ku
 <translation id="8068648041423924542">Imeshindwa kuchagua cheti.</translation>
 <translation id="8069239273282989646">Baada ya kushindiliwa</translation>
 <translation id="8073388330009372546">Fungua picha katika kichupo kipya</translation>
+<translation id="8076014560081431679">Mipangilio ya tovuti iliyohifadhiwa haitafutwa na inaweza kuonyesha mtindo wako wa kuvinjari. <ph name="BEGIN_LINK" />Pata maelezo zaidi<ph name="END_LINK" /></translation>
 <translation id="8084156870963450514">Ingia katika akaunti ili ufikie mambo yako yote ya wavuti kutoka kwenye kifaa chochote</translation>
+<translation id="8098570222830891427">Vifaa vilivyo karibu vinatuma kurasa za wavuti kupitia Bluetooth. Chrome itachanganua kurasa na kuzionyesha ukifungua kifaa chako. Kurasa hizi zitapitishwa katika huduma ya Google ili kuimarisha ubora wa matokeo ya kurasa.
+
+Unaweza kudhibiti Wavuti Kila Mahali katika Mipangilio ya Chrome.</translation>
 <translation id="8106211421800660735">Nambari ya kadi ya malipo</translation>
 <translation id="813082847718468539">Angalia maelezo ya tovuti</translation>
 <translation id="8137558756159375272">Gusa ili Kutafuta kunatuma neno lililochaguliwa na ukurasa wa sasa kama muktadha kwenye Tafuta na Google. Unaweza kuizima katika <ph name="BEGIN_LINK" />Mipangilio<ph name="END_LINK" />.</translation>

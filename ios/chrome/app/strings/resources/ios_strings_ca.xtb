@@ -4,52 +4,32 @@
 <translation id="1008557486741366299">Ara no</translation>
 <translation id="1047726139967079566">Afegeix aquesta pàgina a les adreces d'interès...</translation>
 <translation id="1172898394251786223">Camp següent</translation>
-<translation id="168328519870909584">Els atacants del lloc <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> poden provar d'instal·lar aplicacions perilloses al dispositiu per robar o eliminar informació (com ara fotos, contrasenyes, missatges i targetes de crèdit).</translation>
 <translation id="2320166752086256636">Amaga el teclat</translation>
 <translation id="2467815441875554965">Cerca contextual</translation>
 <translation id="2704606927547763573">Copiada</translation>
 <translation id="2747003861858887689">Camp anterior</translation>
 <translation id="2780046210906776326">Cap compte de correu</translation>
-<translation id="2803306138276472711">Navegació segura de Google ha <ph name="BEGIN_LINK" />detectat programari maliciós<ph name="END_LINK" /> recentment a la pàgina <ph name="SITE" />. De vegades, els llocs web que acostumen a ser segurs s'infecten amb programari maliciós.</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> de <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3335947283844343239">Torna a obrir la pestanya tancada</translation>
 <translation id="3414292259312108062">Chrome l'emmagatzemarà a les <ph name="BEGIN_LINK" />contrasenyes desades a Google<ph name="END_LINK" /> i l'emplenarà automàticament perquè no us calgui recordar-la.</translation>
 <translation id="3567664240939803299">Voleu que Google Smart Lock desi la vostra contrasenya per a aquest lloc?</translation>
-<translation id="3586931643579894722">Oculta els detalls</translation>
-<translation id="3736520371357197498">Si enteneu el risc que suposa per a la vostra seguretat, podeu <ph name="BEGIN_LINK" />visitar aquest lloc no segur<ph name="END_LINK" /> abans que no s'hagin suprimit els programes perillosos.</translation>
 <translation id="385051799172605136">Enrere</translation>
-<translation id="4098354747657067197">Aquest lloc web és enganyós</translation>
 <translation id="4121993058175073134">Definiu el vostre compte de correu electrònic a l'aplicació Configuració per enviar dades d'exportació de xarxa.</translation>
 <translation id="4399225372525667111">Chrome no pot verificar que l'URL d'aquest lloc sigui correcte.</translation>
-<translation id="4522570452068850558">Detalls</translation>
 <translation id="4728558894243024398">Plataforma</translation>
 <translation id="473775607612524610">Actualitza</translation>
 <translation id="5317780077021120954">Desa</translation>
-<translation id="5337705430875057403">Els atacants de <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> us poden enganyar perquè feu alguna acció perillosa, com ara instal·lar programari o revelar informació personal (per exemple, contrasenyes, números de telèfon o targetes de crèdit).</translation>
 <translation id="605721222689873409">AA</translation>
-<translation id="6075880972317537864">Els atacants que són a <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> poden mirar de robar-vos la informació (per exemple, les contrasenyes, els missatges o les targetes de crèdit).</translation>
 <translation id="6149061208933997199">Fes servir la contrasenya</translation>
 <translation id="6196207969502475924">Cerca per veu</translation>
-<translation id="6221345481584921695">Navegació segura de Google ha <ph name="BEGIN_LINK" />detectat programari maliciós<ph name="END_LINK" /> recentment a <ph name="SITE" />. De vegades, els llocs web que acostumen a ser segurs s'infecten amb programari maliciós. El contingut maliciós prové de l'amfitrió <ph name="SUBRESOURCE_HOST" />, un distribuïdor conegut de programari maliciós.</translation>
-<translation id="6264485186158353794">Torna a l'àrea de seguretat</translation>
 <translation id="6314335155547195432">Genera una contrasenya</translation>
 <translation id="6344783595350022745">Esborra el text</translation>
 <translation id="6456425917241817154">Contrasenya generada per Chrome</translation>
 <translation id="6535543971741225613">El lloc al qual proveu d'accedir té un comportament inusual, i Chrome no pot verificar que l'URL sigui correcte. Per motius de seguretat, no hauríeu de continuar i tornar-ho a provar demà o dirigir-vos a un altre lloc.</translation>
-<translation id="6740369132746915122">Si enteneu els riscos que suposa per a la vostra seguretat, podeu <ph name="BEGIN_LINK" />visitar aquest lloc no segur<ph name="END_LINK" />.</translation>
 <translation id="7222245588540287464">Si la Cerca contextual està activada o no ho està.</translation>
-<translation id="724691107663265825">Aquest lloc conté programari maliciós</translation>
 <translation id="7456847797759667638">Obre la ubicació...</translation>
 <translation id="7481312909269577407">Endavant</translation>
 <translation id="7484580869648358686">Advertiment: alguna cosa no funciona bé.</translation>
-<translation id="7779249319235708104">Atac de pesca</translation>
 <translation id="7961015016161918242">Mai</translation>
-<translation id="820854170120587500">Navegació segura de Google ha detectat activitat de pesca recentment a <ph name="SITE" />. Amb els <ph name="BEGIN_LINK" />llocs de pesca<ph name="END_LINK" /> s'imiten altres llocs web per tal d'enganyar els usuaris.</translation>
-<translation id="834457929814110454">Si enteneu el risc que suposa per a la vostra seguretat, podeu <ph name="BEGIN_LINK" />visitar aquest lloc<ph name="END_LINK" /> abans que no s'hagin suprimit els programes perjudicials.</translation>
-<translation id="8543181531796978784">Podeu <ph name="BEGIN_ERROR_LINK" />informar d'un problema de detecció<ph name="END_ERROR_LINK" /> o, si enteneu els riscos que això comporta per a la vostra seguretat, <ph name="BEGIN_LINK" />visiteu aquest lloc no segur<ph name="END_LINK" />.</translation>
-<translation id="8761567432415473239">Recentment, amb Navegació segura de Google s'han <ph name="BEGIN_LINK" />detectat programes perjudicials<ph name="END_LINK" /> al lloc <ph name="SITE" />.</translation>
-<translation id="8996941253935762404">El lloc al qual accediu conté programes perjudicials</translation>
-<translation id="9035022520814077154">Error de seguretat</translation>
-<translation id="9040185888511745258">És possible que els atacants del lloc <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> provin d'enganyar-vos perquè instal·leu programes que poden perjudicar la vostra experiència de navegació (per exemple, us poden canviar la pàgina d'inici o mostrar anuncis addicionals als llocs que visiteu).</translation>
 </translationbundle>

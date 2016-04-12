@@ -30,12 +30,13 @@
 <translation id="1929939181775079593">Chromium svarer ikke. Vil du starte den på nytt nå?</translation>
 <translation id="1967743265616885482">Vi har tidligere lagt merke til at en modul med det samme navnet, har kommet i konflikt med Chromium.</translation>
 <translation id="2077129598763517140">Bruk maskinvareakselerasjon når det er tilgjengelig</translation>
+<translation id="2103655854491303969">Chromium-appvelgeren forsvinner.</translation>
 <translation id="2117181891440368863">Chromium bekreftet at sertifikatet for dette nettstedet er utstedt av <ph name="ISSUER" />. Tjeneren oppga informasjon om sertifikatåpenhet, men den var ugyldig.</translation>
 <translation id="2119636228670142020">Om &amp;Chromium OS</translation>
 <translation id="2158734852934720349">Åpen kildekode-lisenser for Chromium OS</translation>
 <translation id="2241627712206172106">Hvis du deler en datamaskin med andre, kan venner og familie surfe hver for seg og konfigurere Chromium akkurat slik de vil.</translation>
 <translation id="225614027745146050">Velkommen</translation>
-<translation id="2316129865977710310">Nei, takk</translation>
+<translation id="2316129865977710310">Nei takk</translation>
 <translation id="2347108572062610441">Denne utvidelsen har endret hvilken side som vises når du starter Chromium.</translation>
 <translation id="2372704305038231957">Det kan hende 32-bit-versjonen av Chromium ikke fungerer skikkelig, fordi den ikke støttes på dette Linux-systemet lenger. Oppgrader til 64-bit-versjonen av Chromium.</translation>
 <translation id="2389622953163669926">{NUM_DOWNLOAD,plural, =1{En nedlasting pågår for øyeblikket. Vil du avbryte nedlastingen og avslutte Chromium?}other{# nedlastinger pågår for øyeblikket. Vil du avbryte nedlastingene og avslutte Chromium?}}</translation>
@@ -45,6 +46,7 @@
 <translation id="2535480412977113886">Chromium kunne ikke synkronisere dataene fordi påloggingsopplysningene dine er foreldede.</translation>
 <translation id="2558641060352364164">Dette nettstedet bruker Chromium Frame-programtillegget. Støtten for dette programtillegget utløper snart, og du bør derfor avinstallere det og oppgradere til en nyere nettleser.</translation>
 <translation id="2572494885440352020">Chromium-hjelper</translation>
+<translation id="2595977381794111014">Du har fortsatt tilgang til appene dine via <ph name="APPS_ICON_IMAGE" />-snarveien i bokmerkeraden i Chromium.</translation>
 <translation id="2602806952220118310">Chromium – varsler</translation>
 <translation id="2636877269779209383">Chromium må ha tilgang til kameraet ditt for å kunne dele det med dette nettstedet.</translation>
 <translation id="2648074677641340862">Det oppsto en systemfeil under installering. Last ned Chromium på nytt.</translation>
@@ -64,7 +66,6 @@
 <translation id="3130323860337406239">Chromium bruker mikrofonen din.</translation>
 <translation id="313551035350905294">Du er i ferd med å logge deg på med en administrert konto og gir administratoren kontroll over Chromium-profilen din. Chromium-dataene dine, som apper, bokmerker, loggen, passord og andre innstillinger, blir permanent knyttet til <ph name="USER_NAME" />. Du kan slette disse dataene via Google Konto-oversikten, men du kan ikke knytte disse dataene til en annen konto.</translation>
 <translation id="3190315855212034486">Chromium har krasjet. Vil du starte den på nytt nå?</translation>
-<translation id="3197823471738295152">Enheten er oppdatert.</translation>
 <translation id="3244477511402911926">Varselssenter for Chromium</translation>
 <translation id="3256316712990552818">Kopiert til Chromium</translation>
 <translation id="3258596308407688501">Chromium kan ikke lese og skrive til egen datakatalog:
@@ -179,7 +180,7 @@ Chromium kan ikke gjenopprette innstillingen dine.</translation>
 <translation id="7419987137528340081">Hvis du foretrekker å holde eksisterende Chromium-data separat, kan du opprette en ny Chromium-bruker for <ph name="USER_NAME" />.</translation>
 <translation id="7421823331379285070">Chromium krever Windows XP eller nyere. Enkelte funksjoner vil kanskje ikke fungere.</translation>
 <translation id="7463979740390522693">Chromium – varsler (<ph name="QUANTITY" /> uleste)</translation>
-<translation id="7473891865547856676">Nei, takk</translation>
+<translation id="7473891865547856676">Nei takk</translation>
 <translation id="7483335560992089831">Kan ikke installere den samme Chromium-versjonen som kjører. Lukk Chromium og prøv på nytt.</translation>
 <translation id="750717762378961310">Denne filen er skadelig, og Chromium har blokkert den.</translation>
 <translation id="7549178288319965365">Om Chromium OS</translation>

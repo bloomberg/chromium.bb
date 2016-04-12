@@ -69,7 +69,6 @@
 <translation id="3080151273017101988">关闭 Google Chrome 后继续运行后台应用</translation>
 <translation id="3089968997497233615">Google Chrome 浏览器现已推出更安全的新版本。</translation>
 <translation id="3149510190863420837">Chrome 应用</translation>
-<translation id="3197823471738295152">您的设备已更新到最新版本。</translation>
 <translation id="3282568296779691940">登录 Chrome</translation>
 <translation id="3311976847535831054">此计算机将不再接收 32 位 Google Chrome 更新。请升级到 64 位 Google Chrome。</translation>
 <translation id="3360895254066713204">Chrome 浏览器帮助应用</translation>
@@ -88,7 +87,7 @@
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3881912906674381083">Chrome 已证实此网站的证书是由<ph name="ISSUER" />签发的。服务器提供了 Certificate Transparency 信息，但 Chrome 无法识别任何 Certificate Transparency 日志。</translation>
 <translation id="3889417619312448367">卸载 Google Chrome</translation>
-<translation id="396182988103551265">请使用 Chrome 书签栏中的 <ph name="APPS_ICON_IMAGE" /> 快捷方式来继续访问您的应用。</translation>
+<translation id="396182988103551265">请使用 Chrome 书签栏中的 <ph name="APPS_ICON_IMAGE" /> 快捷方式继续访问您的应用。</translation>
 <translation id="4042449298237264661">此计算机将不会再收到 Google Chrome 更新，因为 Windows XP 和 Windows Vista 不再受支持。</translation>
 <translation id="4050175100176540509">最新版本不仅在安全性方面做出了重要改进，还提供了多项新功能。</translation>
 <translation id="4053720452172726777">自定义及控制 Google Chrome</translation>

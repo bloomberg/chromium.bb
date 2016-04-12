@@ -66,7 +66,6 @@
 <translation id="3130323860337406239">Chromium está usando tu micrófono.</translation>
 <translation id="313551035350905294">Accediste con una cuenta administrada y le diste a su administrador el control sobre tu perfil de Chromium. Tus datos de Chromium, como las aplicaciones, los marcadores, el historial, las contraseñas y otros parámetros de configuración quedarán vinculados a <ph name="USER_NAME" /> de forma permanente. Podrás eliminar estos datos a través del Panel de control de cuentas de Google, pero no podrás relacionar estos datos con otra cuenta.</translation>
 <translation id="3190315855212034486">¡Vaya! Se ha producido un bloqueo en Chromium. ¿Quieres reiniciar el navegador ahora?</translation>
-<translation id="3197823471738295152">El dispositivo está actualizado.</translation>
 <translation id="3244477511402911926">Centro de notificaciones de Chromium</translation>
 <translation id="3256316712990552818">Se copió en Chromium.</translation>
 <translation id="3258596308407688501">Chromium no puede leer y escribir en su directorio de datos: <ph name="USER_DATA_DIRECTORY" /></translation>

@@ -82,7 +82,7 @@
 <translation id="1821930232296380041">پارامترهای درخواست یا درخواست نامعتبر</translation>
 <translation id="1871208020102129563">‏تنظیم پروکسی به گونه‌ای است که از سرورهای ثابت پروکسی استفاده کند و از آدرس اسکریپت pac. استفاده نکند.</translation>
 <translation id="1871625979288021266">درگاه ناامن مسدود شد</translation>
-<translation id="1883255238294161206">کوچک کردن لیست</translation>
+<translation id="1883255238294161206">کوچک کردن فهرست</translation>
 <translation id="1898423065542865115">فیلتر کردن</translation>
 <translation id="1911837502049945214"><ph name="HOST_NAME" /> گواهی ثبت ورود شما را نپذیرفت، یا ممکن است گواهی ثبت ورود شما منقضی شده باشد.</translation>
 <translation id="194030505837763158">رفتن به <ph name="LINK" /></translation>
@@ -201,7 +201,7 @@
 <translation id="2985306909656435243">‏اگر فعال شود، Chromium برای پر کردن سریع‌تر فرم، یک کپی از کارت شما در این دستگاه ذخیره می‌کند.</translation>
 <translation id="2991174974383378012">اشتراک‌گذاری با وب‌سایت‌ها</translation>
 <translation id="3005723025932146533">نمایش کپی ذخیره شده</translation>
-<translation id="3010559122411665027">ورودی لیست "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
+<translation id="3010559122411665027">ورودی فهرست "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
 <translation id="3024663005179499861">نوع خط‌مشی اشتباه است</translation>
 <translation id="3032412215588512954">می‌خواهید این سایت را تازه‌سازی کنید؟</translation>
 <translation id="3037605927509011580">اوه، نه!</translation>
@@ -374,7 +374,7 @@
 <translation id="4926049483395192435">باید مشخص شود.</translation>
 <translation id="4930497775425430760">این پیام را به این دلیل می‌بینید که والدینتان باید اولین باری که از سایت جدیدی بازدید می‌کنید آن را تأیید کنند.</translation>
 <translation id="495170559598752135">عملکردها</translation>
-<translation id="4958444002117714549">بزرگ کردن لیست</translation>
+<translation id="4958444002117714549">بزرگ کردن فهرست</translation>
 <translation id="498957508165411911">از <ph name="ORIGINAL_LANGUAGE" /> به <ph name="TARGET_LANGUAGE" /> ترجمه شود؟</translation>
 <translation id="5002932099480077015">‏اگر فعال شود، Chrome یک کپی از کارت شما را برای پرکردن سریع‌تر فرم در این دستگاه ذخیره می‌کند.</translation>
 <translation id="5019198164206649151">پشتیبان‌گیری ذخیره در وضعیت نادرست است</translation>
@@ -557,7 +557,6 @@
 <translation id="7186367841673660872">این صفحه از <ph name="ORIGINAL_LANGUAGE" /> به <ph name="LANGUAGE_LANGUAGE" /> ترجمه شده است</translation>
 <translation id="719464814642662924">ویزا</translation>
 <translation id="720210938761809882">صفحه مسدودشده</translation>
-<translation id="7208899522964477531">جستجوی <ph name="SITE_NAME" /> برای <ph name="SEARCH_TERMS" /></translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> از استانداردهای امنیتی پیروی نمی‌کند.</translation>
 <translation id="721197778055552897">دربارهٔ این مشکل <ph name="BEGIN_LINK" />بیشتر بیاموزید<ph name="END_LINK" />.</translation>
 <translation id="7219179957768738017">اتصال از <ph name="SSL_VERSION" /> استفاده می‌کند.</translation>
@@ -639,7 +638,6 @@
 <translation id="7951415247503192394">(۳۲ بیت)</translation>
 <translation id="7956713633345437162">نشانک‌های تلفن‌ همراه</translation>
 <translation id="7961015016161918242">هرگز</translation>
-<translation id="7977590112176369853">&lt;واردکردن پرسش&gt;</translation>
 <translation id="7983301409776629893">همیشه <ph name="ORIGINAL_LANGUAGE" /> به <ph name="TARGET_LANGUAGE" /> ترجمه شود</translation>
 <translation id="7995512525968007366">تعیین نشده</translation>
 <translation id="8012647001091218357">در حال حاضر نمی‌توانیم با والدینتان ارتباط برقرار کنیم. لطفاً دوباره امتحان کنید.</translation>
@@ -720,7 +718,6 @@
 <translation id="8903921497873541725">بزرگ‌نمایی</translation>
 <translation id="8931333241327730545">‏می‌خواهید این کارت را در حساب Google خود ذخیره کنید؟</translation>
 <translation id="8932102934695377596">ساعت شما عقب است</translation>
-<translation id="8940229512486821554">اجرای فرمان <ph name="EXTENSION_NAME" />: <ph name="SEARCH_TERMS" /></translation>
 <translation id="8954894007019320973">(ادامه)</translation>
 <translation id="8971063699422889582">گواهی سرور منقضی شده است.</translation>
 <translation id="8987927404178983737">ماه</translation>

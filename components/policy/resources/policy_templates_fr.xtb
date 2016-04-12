@@ -72,8 +72,6 @@ Cette règle n'est respectée que si la règle "DefaultSearchProviderEnabled" es
 
       Si cette règle n'est pas configurée, ou si elle est définie sur "False", les suites de chiffrement RC4 dans TLS ne seront pas activées. La règle peut être définie sur "True" pour assurer la compatibilité avec un serveur obsolète. Il s'agit là d'une solution provisoire, et le serveur devrait être reconfiguré.</translation>
 <translation id="1297182715641689552">Utiliser un script de proxy .pac</translation>
-<translation id="1300635491585192248">Prédire les actions réseau sur tous les réseaux,
-          sauf les réseaux mobiles</translation>
 <translation id="1304973015437969093">Identifiants d'extension ou d'application et URL de mise à jour à installer en arrière-plan</translation>
 <translation id="1310699457130669094">Vous pouvez spécifier ici une URL pointant vers un fichier .pac de proxy. 
 
@@ -510,7 +508,6 @@ Cette règle n'est respectée que si la règle "DefaultSearchProviderEnabled" es
       Si cette règle n'est pas définie, l'utilisateur peut décider s'il veut ou non utiliser la fonctionnalité de proxy pour la compression de données.</translation>
 <translation id="2587719089023392205">Définir <ph name="PRODUCT_NAME" /> comme navigateur par défaut</translation>
 <translation id="2592091433672667839">Durée d'inactivité préalable à l'affichage de l'économiseur d'écran sur l'écran de connexion en mode Point de vente</translation>
-<translation id="260705825237536216">Configurer les applications ARC</translation>
 <translation id="2623014935069176671">Attendre l'activité utilisateur initiale</translation>
 <translation id="262740370354162807">Activer l'envoi de documents à <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2633084400146331575">Activer les commentaires audio</translation>
@@ -597,14 +594,6 @@ Si cette règle est définie sur "False", les utilisateurs ne pourront pas jouer
                      Lorsque cette règle est définie sur True ou si elle n'est pas définie, l'utilisateur n'est pas considéré comme inactif pendant la lecture audio. Le délai d'inactivité ne peut ainsi pas être atteint et l'action à prendre en cas d'inactivité n'est pas appliquée. L'assombrissement, l'arrêt et le verrouillage de l'écran sont toutefois appliqués au terme des délais configurés, indépendamment de l'activité audio.
 
                     Si cette règle est définie sur False, l'activité audio n'empêche pas l'utilisateur d'être considéré comme inactif.</translation>
-<translation id="2948381198510798695"><ph name="PRODUCT_NAME" /> contournera tout serveur proxy pour la liste d'hôtes spécifiée ici. 
-
-Cette règle ne prend effet que si vous avez sélectionné les paramètres de proxy manuels dans l'option "Sélectionner le mode de spécification des paramètres de serveur proxy". 
-
-Vous ne devriez pas configurer cette règle si vous avez sélectionné un autre mode de spécification des règles de proxy. 
-
-Pour plus d'exemples détaillés, accédez à l'adresse : 
-<ph name="PROXY_HELP_URL" /></translation>
 <translation id="2956777931324644324">Cette règle a été supprimée dès la version 36 de <ph name="PRODUCT_NAME" />.
 
       Elle indique si l'extension des certificats TLS liés au domaine doit être activée.
@@ -855,18 +844,6 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 
        Chaque entrée de la liste contient un dictionnaire qui doit inclure l'identifiant d'extension dans le champ "extension-id", ainsi que son adresse URL dans le champ "update-url".</translation>
 <translation id="3891357445869647828">Activer JavaScript</translation>
-<translation id="389421284571827139">Permet de spécifier le serveur proxy utilisé par <ph name="PRODUCT_NAME" /> et empêche les utilisateurs de modifier les paramètres du proxy. 
-
-Si vous choisissez de ne jamais utiliser de serveur proxy et de toujours vous connecter directement, toutes les autres options sont ignorées. 
-
-Si vous choisissez de détecter automatiquement le serveur proxy, toutes les autres options sont ignorées. 
-
-Pour des exemples détaillés, accédez au site : 
-<ph name="PROXY_HELP_URL" /> 
-
-Si vous activez ce paramètre, <ph name="PRODUCT_NAME" /> ignore toutes les options liées au proxy spécifiées à partir de la ligne de commande. 
-
-Le fait de ne pas définir ces règles permet aux utilisateurs de sélectionner eux-mêmes les paramètres du proxy.</translation>
 <translation id="3907986150060929099">Définir les paramètres régionaux recommandés pour une session publique</translation>
 <translation id="391531815696899618">Désactive la synchronisation de Google Drive dans l'application Fichiers de <ph name="PRODUCT_OS_NAME" /> lorsque ce paramètre est défini sur "True". Dans ce cas, aucune donnée n'est importée dans Google Drive.
 
@@ -1115,16 +1092,6 @@ Cette option doit être définie lorsque la règle "DefaultSearchProviderEnabled
           La valeur doit être un ensemble de dictionnaires convertis au format JSON à l'aide de la méthode JSON.stringify(). Chaque dictionnaire doit avoir le format { "pattern": "$URL_PATTERN", "filter": $FILTER }, où $URL_PATTERN correspond à un schéma de paramètre de contenu. La valeur $FILTER limite les certificats client à partir desquels le navigateur effectue une sélection automatique. Indépendamment du filtre, seuls les certificats correspondant à la demande de certificats du serveur sont sélectionnés. De plus, si $FILTER a le format { "ISSUER": { "CN": "$ISSUER_CN" } }, seuls les certificats client émis par un certificat dont la valeur CommonName est $ISSUER_CN sont sélectionnés. Si $FILTER correspond à la valeur {} vide du dictionnaire, la sélection de certificats client ne fait pas l'objet de restrictions supplémentaires.
 
           Si cette règle n'est pas définie, la sélection automatique n'est effectuée pour aucun site.</translation>
-<translation id="4980301635509504364">Permet d'autoriser ou d'interdire la capture vidéo.
-
-      Si cette règle est activée ou n'est pas configurée (par défaut), l'utilisateur est invité à accepter
-      l'accès à la capture vidéo, excepté pour les URL configurées dans la
-      liste VideoCaptureAllowedUrls qui bénéficient d'un accès instantané.
-
-      Lorsque cette règle est désactivée, l'utilisateur ne reçoit pas de message d'invitation,
-       et la capture vidéo n'est disponible que pour les URL configurées dans VideoCaptureAllowedUrls.
-
-      Cette règle a une incidence sur tous les types d'entrée vidéo, et pas uniquement sur la caméra intégrée.</translation>
 <translation id="4980635395568992380">Type de données :</translation>
 <translation id="4983201894483989687">Autoriser l'exécution de plug-ins obsolètes</translation>
 <translation id="4988291787868618635">Action à effectuer au terme du délai d'inactivité</translation>
@@ -1237,11 +1204,6 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 <translation id="5307432759655324440">Disponibilité du mode navigation privée</translation>
 <translation id="5318185076587284965">Autoriser l'hôte d'accès à distance à utiliser des serveurs de relais</translation>
 <translation id="5330684698007383292">Autoriser <ph name="PRODUCT_FRAME_NAME" /> à gérer les types de contenu suivants</translation>
-<translation id="5345267406698765263">Précise la règle relative aux applications ARC sous forme d'une chaîne JSON qui
-      peut être remise telle quelle à l'exécution d'ARC. À l'heure actuelle, ce
-      paramètre n'est utilisé que pour indiquer l'installation forcée des applications.
-
-      Si cette règle n'est pas définie, aucune application n'est installée automatiquement.</translation>
 <translation id="5365946944967967336">Afficher le bouton Accueil sur la barre d'outils</translation>
 <translation id="5366977351895725771">Si cette règle est associée à la valeur "false", la création de comptes utilisateur supervisés par cet utilisateur est désactivée. Les utilisateurs supervisés existants restent disponibles.
 
@@ -1342,7 +1304,6 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 
       Si cette règle n'est pas définie ou si elle est définie sur "False", les paramètres de vérification en ligne de la révocation sont utilisés dans <ph name="PRODUCT_NAME" />.</translation>
 <translation id="5732972008943405952">Importer les données de saisie automatique du navigateur par défaut à la première exécution</translation>
-<translation id="5761030451068906335">Configurer les paramètres de proxy pour <ph name="PRODUCT_NAME" />. Cette règle n'est pas encore prête, veuillez donc ne pas l'utiliser pour le moment.</translation>
 <translation id="5765780083710877561">Description :</translation>
 <translation id="5770738360657678870">Version en développement (peut être instable)</translation>
 <translation id="5774856474228476867">URL de recherche du moteur de recherche par défaut</translation>
@@ -1367,13 +1328,6 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
       Vous pouvez consulter la liste des variables utilisables à l'adresse https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
 
       Si vous ne définissez pas ce paramètre, le répertoire de profil par défaut est utilisé.</translation>
-<translation id="5819660021114910752">Indique le fuseau horaire à utiliser sur l'appareil. Les utilisateurs peuvent changer le fuseau horaire spécifié pour la session en cours. Cependant, en cas de déconnexion, le paramètre est de nouveau défini sur le fuseau horaire spécifié. Si une valeur non valide est utilisée, la règle est toutefois activée avec le fuseau horaire "GMT". Si une chaîne vide est utilisée, cette règle est ignorée.
-
-      Si la règle n'est pas appliquée, le fuseau horaire actif continue d'être utilisé. Les utilisateurs peuvent néanmoins changer le fuseau horaire ; la modification est alors permanente. En conséquence, toute modification apportée par un utilisateur a une incidence sur l'écran de connexion de tous les autres utilisateurs.
-
-      Le fuseau horaire est défini sur "États-Unis/Pacifique" pour tous les nouveaux appareils.
-
-      Le format de la valeur correspond aux noms des fuseaux horaires de la "IANA Time Zone Database" (voir la page https://fr.wikipedia.org/wiki/Tz_database). La plupart des fuseaux horaires se présentent sous la forme "continent/grande_ville" ou "océan/grande_ville".</translation>
 <translation id="5826047473100157858">Indique si l'utilisateur peut ouvrir des pages en mode navigation privée dans <ph name="PRODUCT_NAME" />. 
 
 Si l'option "Activé" est sélectionnée ou si la règle n'est pas configurée, les pages peuvent être ouvertes en mode navigation privée. 
@@ -1581,22 +1535,6 @@ Si cette règle n'est pas configurée, la valeur par défaut globale est utilis�
 
       Si cette règle n'est pas définie, le paramètre sera désactivé par défaut pour les utilisateurs gérés par une entreprise et activé par défaut pour les utilisateurs non gérés.</translation>
 <translation id="6491139795995924304">Autoriser le Bluetooth sur l'appareil</translation>
-<translation id="6513756852541213407">Permet de définir le serveur proxy utilisé par <ph name="PRODUCT_NAME" /> et empêche les utilisateurs de modifier les paramètres du proxy. 
-
-Si vous choisissez de ne jamais utiliser de serveur proxy et de demander une connexion directe systématique, toutes les autres options sont ignorées. 
-
-Si vous décidez d'utiliser les paramètres de proxy du système ou de demander la détection automatique du serveur proxy, toutes les autres options sont ignorées. 
-
-Si vous choisissez le mode serveur proxy déterminé, vous pouvez définir des options supplémentaires dans "Adresse ou URL du serveur proxy" et "Liste de règles de contournement de proxy séparées par des virgules". 
-
-Si vous décidez d'utiliser un script de proxy .pac, vous devez indiquer l'URL du script dans "URL d'un fichier .pac de proxy". 
-
-Pour consulter des exemples détaillés, accédez à : 
-<ph name="PROXY_HELP_URL" />.
-
-Si vous activez ce paramètre, <ph name="PRODUCT_NAME" /> ignore toutes les options de proxy spécifiées sur la ligne de commande.
-
-Si cette règle n'est pas configurée, les utilisateurs sont autorisés à sélectionner eux-mêmes les paramètres du proxy.</translation>
 <translation id="6520802717075138474">Importer les moteurs de recherche du navigateur par défaut à la première exécution</translation>
 <translation id="653608967792832033">Indiquer le délai d'inactivité au terme duquel l'écran est verrouillé en cas d'utilisation de la batterie
 
@@ -1676,22 +1614,6 @@ Si cette règle n'est pas configurée, les utilisateurs sont autorisés à séle
 
       Si vous ne définissez pas cette règle, la prédiction de réseau sera activée, mais les utilisateurs pourront la modifier.</translation>
 <translation id="6658245400435704251">Indique le nombre maximal de secondes pendant lesquelles un appareil peut retarder de façon aléatoire le téléchargement d'une mise à jour à partir du moment où celle-ci est disponible sur le serveur. L'appareil peut attendre pendant une certaine partie de ce temps en termes de temps de l'horloge et pendant la partie restante en termes de nombre de recherches de mise à jour. Dans tous les cas, le facteur de dispersion est limité à une quantité de temps constante, de sorte qu'un appareil ne reste jamais bloqué dans l'attente d'une mise à jour.</translation>
-<translation id="6672934768721876104">Cette règle est obsolète. Utilisez plutôt ProxyMode. 
-
-Permet de spécifier le serveur proxy utilisé par <ph name="PRODUCT_NAME" /> et empêche les utilisateurs de modifier les paramètres du proxy. 
-
-Si vous choisissez de ne jamais utiliser de serveur proxy et de toujours vous connecter directement, toutes les autres options sont ignorées. 
-
-Si vous choisissez d'utiliser les paramètres proxy du système ou la détection automatique du serveur proxy, toutes les autres options sont ignorées. 
-
-Si vous sélectionnez les paramètres de proxy manuels, vous pouvez spécifier des options supplémentaires dans "Adresse ou URL du serveur proxy", "URL d'un fichier .pac de proxy" et "Liste de règles de contournement de proxy séparées par des virgules". 
-
-Pour des exemples détaillés, accédez au site : 
-<ph name="PROXY_HELP_URL" /> 
-
-Si vous activez ce paramètre, <ph name="PRODUCT_NAME" /> ignore toutes les options liées au proxy spécifiées à partir de la ligne de commande. 
-
-Si cette règle n'est pas configurée, les utilisateurs peuvent choisir eux-mêmes leurs paramètres de proxy.</translation>
 <translation id="6689792153960219308">Envoyer des rapports sur l'état du matériel</translation>
 <translation id="6693751878507293182">Si vous activez ce paramètre, la recherche et l'installation automatique des plug-ins manquants seront désactivées dans <ph name="PRODUCT_NAME" />. 
 

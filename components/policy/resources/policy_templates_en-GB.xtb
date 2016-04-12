@@ -70,7 +70,6 @@
 
       If the policy is not set, or is set to false, then RC4 cipher suites in TLS will not be enabled. Otherwise it may be set to true to retain compatibility with an outdated server. This is a stopgap measure and the server should be reconfigured.</translation>
 <translation id="1297182715641689552">Use a .pac proxy script</translation>
-<translation id="1300635491585192248">Predict network actions on any network that is not cellular</translation>
 <translation id="1304973015437969093">Extension/App IDs and update URLs to be silently installed</translation>
 <translation id="1310699457130669094">You can specify a URL to a proxy .pac file here.
 
@@ -96,6 +95,7 @@
 <translation id="1359553908012294236">If this policy is set to true or not configured, <ph name="PRODUCT_NAME" /> will enable guest logins. Guest logins are <ph name="PRODUCT_NAME" /> profiles where all windows are in incognito mode.
 
       If this policy is set to false, <ph name="PRODUCT_NAME" /> will not allow guest profiles to be started.</translation>
+<translation id="1363275621236827384">Enable queries to Quirks Server for hardware profiles</translation>
 <translation id="1397855852561539316">Default search provider suggest URL</translation>
 <translation id="1398889361882383850">Allows you to set whether websites are allowed to automatically run plugins. Automatically running plugins can be either allowed for all websites or denied for all websites.
 
@@ -504,7 +504,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       If this policy is left not set, the data compression proxy feature will be available for the user to choose whether to use it or not.</translation>
 <translation id="2587719089023392205">Set <ph name="PRODUCT_NAME" /> as Default Browser</translation>
 <translation id="2592091433672667839">Duration of inactivity before the screen saver is shown on the sign-in screen in retail mode</translation>
-<translation id="260705825237536216">Configure ARC apps</translation>
 <translation id="2623014935069176671">Wait for initial user activity</translation>
 <translation id="262740370354162807">Enable submission of documents to <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2633084400146331575">Enable spoken feedback</translation>
@@ -591,14 +590,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
           If this policy is set to True or is unset, the user is not considered to be idle while audio is playing. This prevents the idle timeout from being reached and the idle action from being taken. However, screen dimming, screen off and screen lock will be performed after the configured timeouts, irrespective of audio activity.
 
           If this policy is set to False, audio activity does not prevent the user from being considered idle.</translation>
-<translation id="2948381198510798695"><ph name="PRODUCT_NAME" /> will bypass any proxy for the list of hosts given here.
-
-          This policy only takes effect if you have selected manual proxy settings at 'Choose how to specify proxy server settings'.
-
-          You should leave this policy unset if you have selected any other mode for setting proxy policies.
-
-          For more detailed examples, visit:
-          <ph name="PROXY_HELP_URL" /></translation>
 <translation id="2956777931324644324">This policy has been retired as of <ph name="PRODUCT_NAME" /> version 36.
 
       Specifies whether the TLS domain-bound certificates extension should be enabled.
@@ -758,6 +749,13 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 
       The policy value should be specified in milliseconds. Values are clamped to a range of 30 seconds to 24 hours.</translation>
 <translation id="3528000905991875314">Enable alternate error pages</translation>
+<translation id="3538538104630456270">The associated setting was used before re-authentication on viewing passwords was introduced. Since then, the setting, and hence this policy, had no effect on the behaviour of Chrome. The current behaviour of Chrome is now the same as if the the policy was set to disable showing passwords in clear text in the password manager settings page. That means that the settings page contains just a placeholder, and only upon the user clicking "Show" (and re-authenticating, if applicable) Chrome shows the password. Original description of the policy follows below.
+
+          Controls whether the user may show passwords in clear text in the password manager.
+
+          If you disable this setting, the password manager does not allow showing stored passwords in clear text in the password manager window.
+
+          If you enable or do not set this policy, users can view their passwords in clear text in the password manager.</translation>
 <translation id="3547954654003013442">Proxy settings</translation>
 <translation id="3570008976476035109">Block plug-ins on these sites</translation>
 <translation id="3591584750136265240">Configure the login authentication behaviour</translation>
@@ -850,18 +848,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
       Each list entry contains a dictionary that must include the extension ID in the 'extension-id' field, and its update URL in the 'update-url' field.</translation>
 <translation id="3891357445869647828">Enable JavaScript</translation>
-<translation id="389421284571827139">Allows you to specify the proxy server used by <ph name="PRODUCT_NAME" /> and prevents users from changing proxy settings.
-
-      If you choose to never use a proxy server and always connect directly, all other options are ignored.
-
-      If you choose to auto-detect the proxy server, all other options are ignored.
-
-      For detailed examples, visit:
-      <ph name="PROXY_HELP_URL" />
-
-      If you enable this setting, <ph name="PRODUCT_NAME" /> ignores all proxy-related options specified from the command line.
-
-      Leaving these policies unset will allow the users to choose the proxy settings on their own.</translation>
 <translation id="3907986150060929099">Set the recommended locales for a public session</translation>
 <translation id="391531815696899618">Disables Google Drive syncing in the <ph name="PRODUCT_OS_NAME" /> Files app when set to True. In that case, no data is uploaded to Google Drive.
 
@@ -1109,16 +1095,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
           The value must be an array of stringified JSON dictionaries. Each dictionary must have the form { "pattern": "$URL_PATTERN", "filter" : $FILTER }, where $URL_PATTERN is a content setting pattern. $FILTER restricts from which client certificates the browser will automatically select. Independent of the filter, only certificates will be selected that match the server's certificate request. If $FILTER has the form { "ISSUER": { "CN": "$ISSUER_CN" } }, additionally only client certificates are selected that are issued by a certificate with the CommonName $ISSUER_CN. If $FILTER is the empty dictionary {}, the selection of client certificates is not additionally restricted.
 
           If this policy is left not set, no auto-selection will be done for any site.</translation>
-<translation id="4980301635509504364">Allow or deny video capture.
-
-      If enabled or not configured (default), the user will be prompted for
-      video capture access except for URLs configured in the
-      VideoCaptureAllowedUrls list which will be granted access without prompting.
-
-      When this policy is disabled, the user will never be prompted and video
-      capture only be available to URLs configured in VideoCaptureAllowedUrls.
-
-      This policy affects all types of video inputs and not only the built-in camera.</translation>
 <translation id="4980635395568992380">Data Types</translation>
 <translation id="4983201894483989687">Allow running plug-ins that are outdated</translation>
 <translation id="4988291787868618635">Action to take when the idle delay is reached</translation>
@@ -1229,11 +1205,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="5307432759655324440">Incognito mode availability</translation>
 <translation id="5318185076587284965">Enable the use of relay servers by the remote access host</translation>
 <translation id="5330684698007383292">Allow <ph name="PRODUCT_FRAME_NAME" /> to handle the following content types</translation>
-<translation id="5345267406698765263">Specifies the ARC application policy as JSON string which can be
-      handed-off as-is to the ARC runtime. At the moment, this setting is used
-      solely to specify force-installation of the apps.
-
-      If this policy is left unset, no apps are installed automatically.</translation>
 <translation id="5365946944967967336">Show Home button on the toolbar</translation>
 <translation id="5366977351895725771">If set to false, supervised-user creation by this user will be disabled. Any existing supervised users will still be available.
 
@@ -1334,9 +1305,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
       If this policy is not set or it is set to false then <ph name="PRODUCT_NAME" /> will use the existing online revocation checking settings.</translation>
 <translation id="5732972008943405952">Import autofill form data from default browser on first run</translation>
-<translation id="5761030451068906335">Configures the proxy settings for <ph name="PRODUCT_NAME" />.
-
-      This policy isn't ready for usage yet, please don't use it.</translation>
 <translation id="5765780083710877561">Description:</translation>
 <translation id="5770738360657678870">Dev channel (may be unstable)</translation>
 <translation id="5774856474228476867">Default search provider search URL</translation>
@@ -1361,13 +1329,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       See https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables for a list of variables that can be used.
 
       If this setting is left not set the default profile directory will be used.</translation>
-<translation id="5819660021114910752">Specifies the timezone to be used for the device. Users can override the specified timezone for the current session. However, on logout it is set back to the specified timezone. If an invalid value is provided, the policy is still activated using "GMT" instead. If an empty string is provided, the policy is ignored.
-
-      If this policy is not used, the currently active timezone will remain in use. However, users can change the timezone and the change is persistent. Thus a change by one user affects the login screen and all other users.
-
-      New devices start out with the timezone set to "US/Pacific".
-
-      The format of the value follows the names of timezones in the "IANA Time Zone Database" (see "https://en.wikipedia.org/wiki/Tz_database"). In particular, most timezones can be referred to by "continent/large_city" or "ocean/large_city".</translation>
 <translation id="5826047473100157858">Specifies whether the user may open pages in Incognito mode in <ph name="PRODUCT_NAME" />.
 
       If 'Enabled' is selected or the policy is left unset, pages may be opened in Incognito mode.
@@ -1573,22 +1534,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
       If this policy is left not set, the default is not allowed for enterprise-managed users and allowed for non-managed users.</translation>
 <translation id="6491139795995924304">Allow bluetooth on device</translation>
-<translation id="6513756852541213407">Allows you to specify the proxy server used by <ph name="PRODUCT_NAME" /> and prevents users from changing proxy settings.
-
-          If you choose to never use a proxy server and always connect directly, all other options are ignored.
-
-          If you choose to use system proxy settings or auto-detect the proxy server, all other options are ignored.
-
-          If you choose fixed server proxy mode, you can specify further options in 'Address or URL of proxy server' and 'Comma-separated list of proxy bypass rules'.
-
-          If you choose to use a .pac proxy script, you must specify the URL to the script in 'URL to a proxy .pac file'.
-
-          For detailed examples, visit:
-          <ph name="PROXY_HELP_URL" />
-
-          If you enable this setting, <ph name="PRODUCT_NAME" /> ignores all proxy-related options specified from the command line.
-
-          Leaving this policy unset will allow the users to choose the proxy settings on their own.</translation>
 <translation id="6520802717075138474">Import search engines from default browser on first run</translation>
 <translation id="653608967792832033">Specifies the length of time without user input after which the screen is locked when running on battery power.
 
@@ -1668,22 +1613,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
       If this policy is left not set, network prediction will be enabled but the user will be able to change it.</translation>
 <translation id="6658245400435704251">Specifies the number of seconds up to which a device may randomly delay its download of an update from the time the update was first pushed out to the server. The device may wait a portion of this time in terms of wall-clock-time and the remaining portion in terms of the number of update checks. In any case, the scatter is upper bounded to a constant amount of time so that a device does not ever get stuck waiting to download an update forever.</translation>
-<translation id="6672934768721876104">This policy is deprecated, use ProxyMode instead.
-
-          Allows you to specify the proxy server used by <ph name="PRODUCT_NAME" /> and prevents users from changing proxy settings.
-
-          If you choose to never use a proxy server and always connect directly, all other options are ignored.
-
-          If you choose to use system proxy settings or auto detect the proxy server, all other options are ignored.
-
-          If you choose manual proxy settings, you can specify further options in 'Address or URL of proxy server', 'URL to a proxy .pac file' and 'Comma-separated list of proxy bypass rules'.
-
-          For detailed examples, visit:
-          <ph name="PROXY_HELP_URL" />
-
-          If you enable this setting, <ph name="PRODUCT_NAME" /> ignores all proxy-related options specified from the command line.
-
-          Leaving this policy unset will allow the users to choose the proxy settings on their own.</translation>
 <translation id="6689792153960219308">Report hardware status</translation>
 <translation id="6693751878507293182">If you set this setting to enabled the automatic search and installation of missing plug-ins will be disabled in <ph name="PRODUCT_NAME" />.
 
@@ -1827,6 +1756,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
       If this policy is left unset, the user may change the list of pinned apps in the launcher.</translation>
 <translation id="7132877481099023201">URLs that will be granted access to video capture devices without prompt</translation>
+<translation id="7167436895080860385">Allow users to show passwords in Password Manager (deprecated)</translation>
 <translation id="7173856672248996428">Ephemeral profile</translation>
 <translation id="7187256234726597551">If true, remote attestation is allowed for the device and a certificate will automatically be generated and uploaded to the Device Management Server.
 
@@ -2156,6 +2086,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="8197918588508433925">This policy specifies the allowed extensions to use Enterprise Platform Keys API chrome.enterprise.platformKeysPrivate.challengeUserKey() for remote attestation. Extensions must be added to this list to use the API.
 
           If an extension is not in the list, or the list is not set, the call to the API will fail with an error code.</translation>
+<translation id="8214600119442850823">Configures the password manager.</translation>
 <translation id="8244525275280476362">Maximum fetch delay after a policy invalidation</translation>
 <translation id="8256688113167012935">Controls the account name <ph name="PRODUCT_OS_NAME" /> shows on the login screen for the corresponding device-local account.
 
@@ -2343,6 +2274,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="8858642179038618439">Force YouTube Safety Mode</translation>
 <translation id="8864975621965365890">Suppresses the turn-down prompt that appears when a site is rendered by <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="8870318296973696995">Homepage</translation>
+<translation id="8889588091638298603">The Quirks Server provides hardware-specific configuration files, like ICC display profiles to adjust monitor calibration. When this policy is set to false, the device will not attempt to contact the Quirks Server to download configuration files. If this policy is true or not configured then <ph name="PRODUCT_OS_NAME" /> will automatically contact the Quirks Server and download configuration files, if available, and store them on the device. Such files might, for example, be used to improve display quality of attached monitors.</translation>
 <translation id="8905426178924715309">This policy is deprecated, please use ForceGoogleSafeSearch and ForceYouTubeSafetyMode instead. This policy will be ignored if either the ForceGoogleSafeSearch or ForceYouTubeSafetyMode policies are set.
 
       Forces queries in Google Web Search to be done with SafeSearch set to active and prevents users from changing this setting. This setting also forces Safety Mode on YouTube.

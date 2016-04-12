@@ -557,7 +557,6 @@
 <translation id="7186367841673660872">Цю сторінку перекладено. Мова оригіналу:<ph name="ORIGINAL_LANGUAGE" />мова перекладу:<ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="719464814642662924">Visa</translation>
 <translation id="720210938761809882">Сторінку заблоковано</translation>
-<translation id="7208899522964477531">Пошук у <ph name="SITE_NAME" /> за словами <ph name="SEARCH_TERMS" /></translation>
 <translation id="7210863904660874423">Хост <ph name="HOST_NAME" /> не відповідає стандартам безпеки.</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Докладніше<ph name="END_LINK" /> про цю проблему.</translation>
 <translation id="7219179957768738017">З'єднання використовує версію <ph name="SSL_VERSION" />.</translation>
@@ -639,7 +638,6 @@
 <translation id="7951415247503192394">(32-розрядна версія)</translation>
 <translation id="7956713633345437162">Закладки для мобільних пристроїв</translation>
 <translation id="7961015016161918242">Ніколи</translation>
-<translation id="7977590112176369853">&lt;уведіть запит&gt;</translation>
 <translation id="7983301409776629893">Завжди перекладати цю мовну пару: <ph name="ORIGINAL_LANGUAGE" /> – <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="7995512525968007366">Не вказано</translation>
 <translation id="8012647001091218357">Не вдалося зв’язатися з вашими батьками. Повторіть спробу.</translation>
@@ -719,7 +717,6 @@
 <translation id="8903921497873541725">Збільшити масштаб</translation>
 <translation id="8931333241327730545">Зберегти цю картку у вашому обліковому записі Google?</translation>
 <translation id="8932102934695377596">Ваш годинник запізнюється</translation>
-<translation id="8940229512486821554">Запустити команду розширення <ph name="EXTENSION_NAME" />: <ph name="SEARCH_TERMS" /></translation>
 <translation id="8954894007019320973">(Продовж.)</translation>
 <translation id="8971063699422889582">Термін дії сертифіката сервера завершився.</translation>
 <translation id="8987927404178983737">Місяць</translation>

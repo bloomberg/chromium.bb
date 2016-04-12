@@ -69,7 +69,6 @@ En iniciar la sessió, sigui amb l'usuari que sigui, es combinarà amb <ph name=
 <translation id="3080151273017101988">Continua executant aplicacions de segon pla en tancar Google Chrome</translation>
 <translation id="3089968997497233615">Hi ha disponible una nova versió més segura de Google Chrome.</translation>
 <translation id="3149510190863420837">Aplicacions de Chrome</translation>
-<translation id="3197823471738295152">El dispositiu està actualitzat.</translation>
 <translation id="3282568296779691940">Inicia la sessió a Chrome</translation>
 <translation id="3311976847535831054">Aquest ordinador ja no rebrà més actualitzacions de Google Chrome de 32 bits. Feu l'actualització a Google Chrome de 64 bits.</translation>
 <translation id="3360895254066713204">Aplicació auxiliar de Chrome</translation>
@@ -178,7 +177,7 @@ En iniciar la sessió, sigui amb l'usuari que sigui, es combinarà amb <ph name=
 <translation id="7106741999175697885">Gestor de tasques - Google Chrome</translation>
 <translation id="7125719106133729027">No s'ha pogut fer l'actualització de Chrome a la versió més recent, de manera que esteu perdent funcions noves i correccions de seguretat magnífiques. Cal que torneu a instal·lar Chrome manualment.</translation>
 <translation id="7161904924553537242">Us donem la benvinguda a Google Chrome.</translation>
-<translation id="7164397146364144019">Si voleu col·laborar perquè Chrome sigui més segur i fàcil d'utilitzar, informeu automàticament Google dels detalls sobre possibles incidents de seguretat.</translation>
+<translation id="7164397146364144019">Si voleu col·laborar perquè Chrome sigui més segur i fàcil d'utilitzar, informeu automàticament Google dels detalls sobre possibles incidències de seguretat.</translation>
 <translation id="7185038942300673794"><ph name="EXTENSION_NAME" /> s'ha afegit a Chrome.</translation>
 <translation id="7191567847629796517">Google Chrome OS no admet que s'iniciï una aplicació externa per gestionar els enllaços de <ph name="SCHEME" />. L'enllaç sol·licitat és <ph name="PROTOLINK" />.</translation>
 <translation id="7196020411877309443">Per què veig aquest missatge?</translation>

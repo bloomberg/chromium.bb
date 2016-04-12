@@ -46,7 +46,7 @@
 <translation id="2535480412977113886">您的帐户登录详细信息已过期，Chromium操作系统无法同步您的数据。</translation>
 <translation id="2558641060352364164">此网站使用的 Chromium 内嵌框架插件即将不受支持。请卸载该插件，然后升级到新型浏览器。</translation>
 <translation id="2572494885440352020">Chromium 帮助程序</translation>
-<translation id="2595977381794111014">请使用 Chromium 书签栏中的 <ph name="APPS_ICON_IMAGE" /> 快捷方式来继续访问您的应用。</translation>
+<translation id="2595977381794111014">请使用 Chromium 书签栏中的 <ph name="APPS_ICON_IMAGE" /> 快捷方式继续访问您的应用。</translation>
 <translation id="2602806952220118310">Chromium - 通知</translation>
 <translation id="2636877269779209383">Chromium 需要具有摄像头使用权限，才能批准此网站的分享请求。</translation>
 <translation id="2648074677641340862">安装过程中出现操作系统错误。请重新下载 Chromium。</translation>
@@ -66,7 +66,6 @@
 <translation id="3130323860337406239">Chromium 正在使用您的麦克风。</translation>
 <translation id="313551035350905294">您目前是以托管帐户登录，该帐户的管理员将能够控制您的 Chromium 个人资料。您的 Chromium 数据（例如您的应用、书签、历史记录、密码和其他设置）将永久绑定到 <ph name="USER_NAME" />。您可以通过 Google 帐户信息中心删除这些数据，但无法将这些数据关联到其他帐户。</translation>
 <translation id="3190315855212034486">哎呀！Chromium 崩溃了。要立即重新启动吗？</translation>
-<translation id="3197823471738295152">您的设备已更新到最新版本。</translation>
 <translation id="3244477511402911926">Chromium 通知中心</translation>
 <translation id="3256316712990552818">已复制到 Chromium</translation>
 <translation id="3258596308407688501">Chromium 无法读写其数据目录：

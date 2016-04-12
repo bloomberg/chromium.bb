@@ -64,8 +64,6 @@
 
       Hvis politikken ikke er angivet eller er angivet til Falsk, aktiveres RC4-krypteringsprogrammer i TLS ikke. Alternativt kan den angives til Sandt for at bevare kompatibiliteten med en forældet server. Dette er en midlertidig løsning, og serveren bør rekonfigureres.</translation>
 <translation id="1297182715641689552">Brug et .pac-proxyscript</translation>
-<translation id="1300635491585192248">Forudsig netværkshandlinger på ethvert netværk, der ikke er
-          mobilnetværk</translation>
 <translation id="1304973015437969093">Udvidelses-/app-id'er og opdateringswebadresser skal installeres ubemærket</translation>
 <translation id="1310699457130669094">Du kan angive en webadresse til en proxy .pac-fil her. Denne politik fungerer kun, hvis du har valgt indstillinger for manuel proxy i "Vælg, hvordan du kan angive indstillinger for proxyserver". Du bør ikke angive denne politik, hvis du har valgt en anden tilstand for angivelse af proxypolitikker. Få detaljerede eksempler på: <ph name="PROXY_HELP_URL" /></translation>
 <translation id="1313457536529613143">Angiver den procentdel, som nedtoningsforsinkelsen på skærmen skaleres, når der observeres brugeraktivitet, mens skærmen er nedtonet, eller umiddelbart efter skærmen slukkes.
@@ -457,7 +455,6 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
       Hvis denne politik ikke er angivet, vil proxyfunktionen til datakomprimering være tilgængelig for brugeren.</translation>
 <translation id="2587719089023392205">Angiv <ph name="PRODUCT_NAME" /> som standardbrowser</translation>
 <translation id="2592091433672667839">Varighed af inaktivitet, før pauseskærmen vises på loginskærmen i detailtilstand</translation>
-<translation id="260705825237536216">Konfigurer ARC-apps</translation>
 <translation id="2623014935069176671">Vent på første aktivitet fra brugeren</translation>
 <translation id="262740370354162807">Aktiver indsendelse af dokumenter til <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2633084400146331575">Aktivér talefeedback</translation>
@@ -538,7 +535,6 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
           Hvis denne politik indstilles til Sand eller ikke indstilles, betragtes brugeren ikke som inaktiv, mens lyden afspilles. Dette forhindrer inaktivitetstimeout og inaktivitetshandlinger i at blive effektueret. Men skærmnedtoning, skærmsluk og skærmlås udføres efter de konfigurerede timeouter uanset lydaktivitet.
 
           Hvis politikken indstilles til Falsk, forhindrer lydaktiviteten ikke brugeren i at blive betragtet som inaktiv.</translation>
-<translation id="2948381198510798695"><ph name="PRODUCT_NAME" /> vil omgå alle proxyer for den værtsliste, der vises her. Denne politik træder kun i kraft, hvis du har valgt indstillinger for manuel proxy i "Vælg, hvordan du vil angive indstillinger for proxyserver". Denne politik bør ikke angives, hvis du har valgt en anden form for angivelse af proxypolitikker. Få flere detaljerede eksempler på: <ph name="PROXY_HELP_URL" /></translation>
 <translation id="2956777931324644324">Denne politik udgik fra og med <ph name="PRODUCT_NAME" /> version 36.
 
       Angiver, om udvidelsen for certifikater, der er bundet af TLS-domænet, skal aktiveres.
@@ -779,7 +775,6 @@ Hvis denne politik ikke er indstillet, er standardfrekvensen 3 minutter. Minimum
 
       Alle poster på listen indeholder en ordbog, der skal indeholde udvidelses-id'et i feltet "udvidelses-id" samt webadressen til opdatering i feltet "opdateringswebadresse".</translation>
 <translation id="3891357445869647828">Aktiver JavaScript</translation>
-<translation id="389421284571827139">Giver dig mulighed for at angive den proxyserver, der anvendes af <ph name="PRODUCT_NAME" />, og forhindrer brugerne i at ændre proxyindstillingerne. Hvis du vælger aldrig at bruge en proxyserver og altid opretter forbindelse direkte, ignoreres alle andre valgmuligheder. Hvis du vælger at registrere proxyserveren automatisk, ignoreres alle andre valgmuligheder. Få detaljerede eksempler på: <ph name="PROXY_HELP_URL" /> Hvis du aktiverer denne indstilling, ignorerer <ph name="PRODUCT_NAME" /> alle proxyrelaterede valgmuligheder, der specificeres fra kommandolinjen. Hvis disse politikker ikke angives, kan brugerne selv vælge proxyindstillingerne.</translation>
 <translation id="3907986150060929099">Indstil de anbefalede landestandarder for en offentlig session</translation>
 <translation id="391531815696899618">Deaktiverer Google Drev-synkronisering i appen Filer i <ph name="PRODUCT_OS_NAME" />, når den er angivet til Sand. I dette tilfælde uploades der ingen data til Google Drev.
 
@@ -1003,16 +998,6 @@ Mens selve politikken understøttes på ovenstående platforme, kan den funktion
           Værdien skal være en matrix af JSON-ordbøger i strengformat. Alle ordbøgerne skal have formatet { "pattern": "$URL_PATTERN", "filter" : $FILTER }, hvor $URL_PATTERN er et mønster for indholdsangivelse. $FILTER begrænser, hvilke klientcertifikater browseren automatisk vælger fra. Uafhængigt af filteret vælges der kun certifikater, der stemmer overens med serverens certifikatanmodning. Hvis $FILTER har formatet { "ISSUER": { "CN": "$ISSUER_CN" } }, vælges der desuden kun klientcertifikater, der er udstedt af et certifikat med CommonName $ISSUER_CN. Hvis $FILTER er den tomme ordbog {}, begrænses valget af klientcertifikater ikke yderligere.
 
           Hvis denne politik ikke indstilles, vil valget blive foretaget automatisk på alle websites.</translation>
-<translation id="4980301635509504364">Tillad eller afvis videooptagelse.
-
-      Hvis denne funktion er aktiveret eller ikke er konfigureret (standard), vil brugeren blive bedt om give
-      tilladelse til videooptagelse, undtagen for webadresser, der er konfigureret på listen
-      VideoCaptureAllowedUrls, som vil være tilladt automatisk.
-
-      Når denne politik er deaktiveret, vil brugeren aldrig blive bedt om at tillade den, og videooptagelse
-      vil kun være muligt for webadresser, der er konfigureret i VideoCaptureAllowedUrls.
-
-      Denne politik påvirker alle typer af videoinput, og ikke kun det indbyggede kamera.</translation>
 <translation id="4980635395568992380">Datatype:</translation>
 <translation id="4983201894483989687">Tillad, at der køres forældede plugins</translation>
 <translation id="4988291787868618635">Påkrævet handling for inaktivitetsforsinkelse</translation>
@@ -1104,11 +1089,6 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
 <translation id="5307432759655324440">Inkognitotilstandens tilgængelighed</translation>
 <translation id="5318185076587284965">Aktivér brugen af relæservere for hosten for fjernadgang</translation>
 <translation id="5330684698007383292">Tillad, at <ph name="PRODUCT_FRAME_NAME" /> håndterer følgende indholdstyper</translation>
-<translation id="5345267406698765263">Angiver politikken for ARC-apps som en JSON-streng, der kan
-      overdrages, som den er, til ARC-kørsel. For øjeblikket bruges denne
-      indstilling udelukkende til at angive tvungen installation af applikationerne.
-
-      Hvis politikken ikke er angivet, installeres ingen apps automatisk.</translation>
 <translation id="5365946944967967336">Vis knap til startsiden på værktøjslinjen</translation>
 <translation id="5366977351895725771">Hvis dette er angivet som falsk, vil oprettelse af administrerede brugere være deaktiveret for denne bruger. Alle eksisterende administrerede brugere vil stadig være tilgængelige.
 
@@ -1199,7 +1179,6 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
 
       Hvis denne politik ikke er angivet eller angivet som falsk, vil <ph name="PRODUCT_NAME" /> anvende de eksisterende indstillinger for onlinesøgning efter tilbagekaldelser.</translation>
 <translation id="5732972008943405952">Importér formulardata for AutoFyld fra standardbrowseren ved første visning</translation>
-<translation id="5761030451068906335">Konfigurerer proxyindstillinger for <ph name="PRODUCT_NAME" />. Denne politik er ikke klar til brug endnu, så brug den ikke.</translation>
 <translation id="5765780083710877561">Beskrivelse:</translation>
 <translation id="5770738360657678870">Udviklerkanal (kan være ustabil)</translation>
 <translation id="5774856474228476867">Søgewebadresse for standardsøgemaskinen</translation>
@@ -1224,13 +1203,6 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
       Du kan se en liste over variabler, der kan anvendes, på http://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
 
       Hvis denne indstilling ikke angives, anvendes standardprofilmappen.</translation>
-<translation id="5819660021114910752">Angiver den tidszone, der skal gælde for enheden. Brugerne kan tilsidesætte den angivne tidszone for den aktuelle session, men når der logges ud, anvendes den angivne tidszone igen. Hvis der angives en ugyldig værdi, aktiveres politikken med "GMT" i stedet. Hvis der angives en tom streng, ignoreres politikken.
-
-      Hvis denne politik ikke anvendes, benyttes den aktive tidszone, men brugerne kan dog skifte tidszone, og ændringen gemmes i så fald. En ændring, der foretages af én bruger, påvirker således loginskærmen og alle andre brugere.
-
-      Nye enheder er som udgangspunkt angivet med tidszonen "Pacific Standard Time".
-
-      Formatet for værdierne følger navnene på tidszonerne i "IANA Time Zone Database" (se "https://en.wikipedia.org/wiki/Tz_database"). De fleste tidszoner betegnes som "continent/large_city" eller "ocean/large_city".</translation>
 <translation id="5826047473100157858">Angiver, om brugeren kan åbne sider i inkognitotilstand i <ph name="PRODUCT_NAME" />. Hvis "Aktiveret" er valgt, eller hvis politikken ikke angives, kan siderne åbnes i inkognitotilstand. Hvis "Deaktiveret" er valgt, kan sider ikke åbnes i inkognitotilstand. Hvis "Tvunget" er valgt, kan siderne kun åbnes i inkognitotilstand.</translation>
 <translation id="5836064773277134605">Begræns rækkevidden for den UDP-port, der bruges af hosten for fjernadgang</translation>
 <translation id="5845159892130426052">Aktivér ShowModalDialog API v2015.04.30</translation>
@@ -1413,22 +1385,6 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 
       Hvis denne politik ikke angives, er det som standard ikke tilladt for virksomhedsadministrerede brugere og tilladt for ikke-administrerede brugere.</translation>
 <translation id="6491139795995924304">Tillad Bluetooth på enheden</translation>
-<translation id="6513756852541213407">Giver dig mulighed for at angive den proxyserver, der anvendes af <ph name="PRODUCT_NAME" /> og forhindrer brugerne i at skifte proxyindstillinger.
-
-          Hvis du vælger aldrig at anvende en proxyserver og altid tilslutte direkte, vil alle andre indstillinger blive ignoreret.
-
-          Hvis du vælger at anvende systemproxyindstillinger eller automatisk registrering af proxyserveren, ville alle andre indstillinger blive ignoreret.
-
-          Hvis du vælger tilstanden for fast proxyserver, kan du angive flere indstillinger i "Adresse eller webadresse for proxyserveren" og "Kommasepareret liste over regler for proxytilsidesættelse".
-
-          Hvis du vælger at anvende et .pac-proxyscript, skal du angive webadressen til scriptet i "Webadresse til en proxy .pac-fil".
-
-          Se detaljerede eksempler på:
-          <ph name="PROXY_HELP_URL" />
-
-          Hvis du aktiverer denne indstilling, ignorerer <ph name="PRODUCT_NAME" /> alle proxyrelaterede indstillinger, der er angivet via kommandolinjen.
-
-          Hvis denne politik ikke angives, kan brugerne selv vælge deres egne proxyindstillinger.</translation>
 <translation id="6520802717075138474">Import af søgemaskiner fra standardbrowseren ved første visning</translation>
 <translation id="653608967792832033">Angiver den tid uden brugerinput, der udløser skærmlåsen, når enheden kører på batteri.
 
@@ -1508,7 +1464,6 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 
       Hvis denne politik ikke indstilles, aktiveres netværksforudsigelse, men brugeren vil kunne ændre det.</translation>
 <translation id="6658245400435704251">Angiver det antal sekunder, som en enhed på en tilfældig måde maksimalt kan forsinke en download af en opdatering fra det tidspunkt, hvor opdateringen først blev sendt ud til serveren. Enheden kan afsætte en del af denne tid i form af faktisk ventetid og den igangværende tid i form af det antal af opdateringer, der skal kontrolleres. Uanset hvad, er spredningen bundet af en øvre grænse til en konstant mængde af tid, således at en enhed aldrig kommer til at sidde fast og til evig tid vente på, at en opdatering downloades.</translation>
-<translation id="6672934768721876104">Denne politik er forældet, brug ProxyMode i stedet. Giver dig mulighed for at angive den proxyserver, der anvendes af <ph name="PRODUCT_NAME" />, og forhindrer brugerne i at ændre proxyindstillingerne. Hvis du vælger aldrig at bruge en proxyserver og altid oprette forbindelse direkte, ignoreres alle andre valgmuligheder. Hvis du vælger indstillinger for systemproxy eller automatisk registrering af proxyserver, ignoreres alle andre muligheder. Hvis du vælger indstillinger for manuel proxy, kan du angive yderligere indstillinger i "Adresse eller webadresse på proxyserver", "Webadresse til en proxy .pac-fil" og "Komma-adskilt liste over regler for tilsidesættelse af proxy". Få detaljerede eksempler på: <ph name="PROXY_HELP_URL" /> Hvis du aktiverer denne indstilling, ignorerer <ph name="PRODUCT_NAME" /> alle proxyrelaterede valgmuligheder, der angives via kommandolinjen. Hvis denne politik ikke angives, kan brugerne selv vælge proxyindstillingerne.</translation>
 <translation id="6689792153960219308">Rapportér hardwarestatus</translation>
 <translation id="6693751878507293182">Hvis du aktiverer denne indstilling, deaktiveres den automatiske søgning og installation af de manglende plugins i <ph name="PRODUCT_NAME" />. Hvis denne valgmulighed deaktiveres eller ikke angives, vil pluginfinderen være aktiv.</translation>
 <translation id="6697474194550078937">Begræns den tid, hvor en bruger, der er godkendt via SAML, kan logge ind offline.

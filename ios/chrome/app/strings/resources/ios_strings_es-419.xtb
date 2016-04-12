@@ -4,52 +4,32 @@
 <translation id="1008557486741366299">Ahora no</translation>
 <translation id="1047726139967079566">Agregar esta página a marcadores...</translation>
 <translation id="1172898394251786223">Campo siguiente</translation>
-<translation id="168328519870909584">Los atacantes que se encuentran actualmente en <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> podrían intentar instalar aplicaciones peligrosas en tu dispositivo con el objetivo de robarte información o borrarla (por ejemplo, fotos, contraseñas, mensajes y tarjetas de crédito).</translation>
 <translation id="2320166752086256636">Ocultar el teclado</translation>
 <translation id="2467815441875554965">Búsqueda contextual</translation>
 <translation id="2704606927547763573">Copiado</translation>
 <translation id="2747003861858887689">Campo anterior</translation>
 <translation id="2780046210906776326">Sin cuenta de correo</translation>
-<translation id="2803306138276472711">La Navegación segura de Google <ph name="BEGIN_LINK" />detectó software malicioso<ph name="END_LINK" /> en <ph name="SITE" /> recientemente. A veces, los sitios web que suelen ser seguros contienen software malicioso.</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> de <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3335947283844343239">Volver a abrir pestaña cerrada</translation>
 <translation id="3414292259312108062">Chrome almacenará esto en tus <ph name="BEGIN_LINK" />contraseñas de Google guardadas<ph name="END_LINK" /> y las autocompletará para que no tengas que recordarlas.</translation>
 <translation id="3567664240939803299">¿Deseas que Google Smart Lock guarde tu contraseña para este sitio?</translation>
-<translation id="3586931643579894722">Ocultar detalles</translation>
-<translation id="3736520371357197498">Si comprendes los riesgos para tu seguridad, puedes <ph name="BEGIN_LINK" />visitar este sitio no seguro<ph name="END_LINK" /> antes de que se hayan eliminado los programas peligrosos.</translation>
 <translation id="385051799172605136">Atrás</translation>
-<translation id="4098354747657067197">Sitio engañoso</translation>
 <translation id="4121993058175073134">Configura cuenta en Configuración p/ enviar datos exportaciones netas.</translation>
 <translation id="4399225372525667111">Chrome no puede verificar si la URL de este sitio es correcta.</translation>
-<translation id="4522570452068850558">Detalles</translation>
 <translation id="4728558894243024398">Plataforma</translation>
 <translation id="473775607612524610">Actualizar</translation>
 <translation id="5317780077021120954">Guardar</translation>
-<translation id="5337705430875057403">Los atacantes de <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> podrían engañarte para que hagas algo peligroso, como instalar software o divulgar información personal (por ejemplo, contraseñas, números de teléfono o tarjetas de crédito).</translation>
 <translation id="605721222689873409">AA</translation>
-<translation id="6075880972317537864">Los atacantes de <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> podrían intentar engañarte para robar información (por ejemplo, contraseñas, mensajes o tarjetas de crédito).</translation>
 <translation id="6149061208933997199">Usar contraseña</translation>
 <translation id="6196207969502475924">Búsqueda por voz</translation>
-<translation id="6221345481584921695">La Navegación segura de Google <ph name="BEGIN_LINK" />detectó software malicioso<ph name="END_LINK" /> en <ph name="SITE" /> recientemente. A veces, los sitios web que suelen ser seguros contienen software malicioso. El contenido malicioso proviene de <ph name="SUBRESOURCE_HOST" />, un conocido distribuidor de software malicioso.</translation>
-<translation id="6264485186158353794">Volver a seguridad</translation>
 <translation id="6314335155547195432">Generar contraseña</translation>
 <translation id="6344783595350022745">Borrar texto</translation>
 <translation id="6456425917241817154">Generada por Chrome</translation>
 <translation id="6535543971741225613">Este sitio está actuando de manera extraña y Chrome no puede verificar si su URL es correcta. Por razones de seguridad, no deberías continuar. Puedes volver a intentarlo mañana o dirigirte a otro sitio.</translation>
-<translation id="6740369132746915122">Si comprendes los riesgos para tu seguridad, puedes <ph name="BEGIN_LINK" />visitar este sitio no seguro<ph name="END_LINK" />.</translation>
 <translation id="7222245588540287464">Permite habilitar o inhabilitar la búsqueda contextual.</translation>
-<translation id="724691107663265825">Este sitio web contiene software malicioso</translation>
 <translation id="7456847797759667638">Abrir ubicación...</translation>
 <translation id="7481312909269577407">Reenviar</translation>
 <translation id="7484580869648358686">Advertencia: aquí hay algo que está mal</translation>
-<translation id="7779249319235708104">Presencia de ataque de suplantación de identidad</translation>
 <translation id="7961015016161918242">Nunca</translation>
-<translation id="820854170120587500">La Navegación segura de Google detectó suplantación de identidad en <ph name="SITE" /> recientemente. <ph name="BEGIN_LINK" />Los sitios de suplantación de identidad<ph name="END_LINK" /> imitan a otros sitios web para engañarte.</translation>
-<translation id="834457929814110454">Si comprendes los riesgos de seguridad, puedes <ph name="BEGIN_LINK" />visitar este sitio<ph name="END_LINK" /> antes de que se hayan eliminado los programas peligrosos.</translation>
-<translation id="8543181531796978784">Puedes <ph name="BEGIN_ERROR_LINK" />informar un problema de detección<ph name="END_ERROR_LINK" /> o, si comprendes los riesgos de seguridad, puedes <ph name="BEGIN_LINK" />visitar el sitio no seguro<ph name="END_LINK" />.</translation>
-<translation id="8761567432415473239">La navegación segura de Google <ph name="BEGIN_LINK" />encontró programas peligrosos<ph name="END_LINK" /> recientemente en <ph name="SITE" />.</translation>
-<translation id="8996941253935762404">El siguiente sitio contiene programas peligrosos</translation>
-<translation id="9035022520814077154">Error de seguridad</translation>
-<translation id="9040185888511745258">Los atacantes del sitio <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> podrían intentar engañarte para que instales programas que pueden afectar la navegación (por ejemplo, podrían cambiar la página principal o mostrar más anuncios en los sitios que visitas).</translation>
 </translationbundle>

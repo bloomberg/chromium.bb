@@ -25,6 +25,7 @@ Aby korzystać z internetu rzeczy, musisz włączyć Bluetooth i Lokalizację.</
 <translation id="1285320974508926690">Nigdy nie tłumacz tej witryny</translation>
 <translation id="1291207594882862231">Wyczyść historię, pliki cookie, dane witryn, pamięć podręczną…</translation>
 <translation id="129553762522093515">Ostatnio zamknięte</translation>
+<translation id="13410144310025252">Zobacz je w Chrome</translation>
 <translation id="1346090444609141578">Nie ma tu zapisanych stron</translation>
 <translation id="1369915414381695676">Strona <ph name="SITE_NAME" /> została dodana</translation>
 <translation id="1373696734384179344">Za mało pamięci, by pobrać te treści.</translation>
@@ -193,6 +194,7 @@ Aby dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je zaznaczyć
 <translation id="3656115297268584622">Włącz lokalizację w <ph name="BEGIN_LINK" />ustawieniach Androida<ph name="END_LINK" />.</translation>
 <translation id="3661699943263275414">Witryny innych firm mogą zapisywać dane w plikach cookie i je odczytywać</translation>
 <translation id="3672452749423051839">Podpowiedzi przy błędach nawigacji</translation>
+<translation id="3716158070938632480">Znaleziono strony internetowe w pobliżu</translation>
 <translation id="3732088672634061408">Nie udało się pobrać zainteresowań.</translation>
 <translation id="3738139272394829648">Dotknij, by wyszukać</translation>
 <translation id="3809549525127675114">Zakończono odtwarzanie „<ph name="VIDEO_TITLE" />”</translation>
@@ -372,7 +374,6 @@ To jednak nie oznacza, że Cię nie widać. Nawet gdy przejdziesz w tryb incogni
 <translation id="5911030830365207728">Tłumacz Google</translation>
 <translation id="5916664084637901428">Włączone</translation>
 <translation id="5939518447894949180">Resetuj</translation>
-<translation id="5965336165840183977">Spowoduje to wyczyszczenie synchronizowanych danych ze wszystkich urządzeń. Nie wylogujemy Cię z konta Google. Zapisane ustawienia witryny nie zostaną usunięte i mogą odzwierciedlać Twoje nawyki przeglądania.</translation>
 <translation id="5968595432776860642">Odtwarzam „<ph name="VIDEO_TITLE" />”</translation>
 <translation id="6010869025736512584">Otwieram wejście wideo</translation>
 <translation id="6012342843556706400">Aby zezwolić stronie na wykorzystanie danych o lokalizacji, Chrome musi mieć do nich dostęp.</translation>
@@ -392,7 +393,6 @@ To jednak nie oznacza, że Cię nie widać. Nawet gdy przejdziesz w tryb incogni
 <translation id="6159335304067198720">Oszczędność danych: <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">Więcej informacji</translation>
 <translation id="6192792657125177640">Wyjątki</translation>
-<translation id="6231464350722415003">Zezwalaj na JavaScript na określonych stronach i blokuj go wszędzie indziej</translation>
 <translation id="6232535412751077445">Włączenie opcji „Bez śledzenia” oznacza, że podczas przeglądania będzie wysyłane żądanie. Jego wynik zależy od tego, czy strona na nie odpowie oraz jak zostanie ono zinterpretowane.
 
 Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy bez związku ze stronami odwiedzonymi przez Ciebie wcześniej. Wiele stron będzie nadal gromadzić dane przeglądarki i używać ich na przykład do poprawy bezpieczeństwa, pokazywania treści, reklam i rekomendacji oraz do generowania statystyk.</translation>
@@ -480,7 +480,6 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> korzysta z danych o Twojej lokalizacji, by pokazywać wyniki wyszukiwania lokalnego</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />Pomoc<ph name="END_LINK" /></translation>
 <translation id="7299721129597238157">Usuń zakładkę</translation>
-<translation id="7346217184097589238">Zapisane ustawienia witryny nie zostaną usunięte i mogą odzwierciedlać Twoje nawyki przeglądania.</translation>
 <translation id="7347770551817603360">Treść offline</translation>
 <translation id="7363354739009474003">Wczytuję „<ph name="VIDEO_TITLE" />”</translation>
 <translation id="7366340029385295517">Przesyłam na ekran <ph name="SCREEN_NAME" /></translation>
@@ -491,6 +490,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="7408644312175185557">Pokazuj karty razem z ostatnio używanymi aplikacjami na ekranie Przegląd na telefonie.</translation>
 <translation id="7423098979219808738">Najpierw zapytaj</translation>
 <translation id="7437998757836447326">Wyloguj się z Chrome</translation>
+<translation id="7464701184726199289">Spowoduje to usunięcie zsynchronizowanych danych ze wszystkich urządzeń. Zapisane ustawienia witryn nie zostaną usunięte i mogą zawierać informacje o Twoim korzystaniu z przeglądarki. <ph name="BEGIN_LINK" />Więcej informacji<ph name="END_LINK" /></translation>
 <translation id="7473891865547856676">Nie, dziękuję</translation>
 <translation id="7475192538862203634">Jeśli często widzisz ten komunikat, przeczytaj te <ph name="BEGIN_LINK" />wskazówki<ph name="END_LINK" />.</translation>
 <translation id="748127970106343339">Potwierdź usunięcie z urządzenia danych logowania</translation>
@@ -542,7 +542,11 @@ To jednak nie oznacza, że Cię nie widać. Nawet gdy przejdziesz w tryb incogni
 <translation id="8068648041423924542">Nie można wybrać certyfikatu.</translation>
 <translation id="8069239273282989646">Po skompresowaniu</translation>
 <translation id="8073388330009372546">Otwórz grafikę w nowej karcie</translation>
+<translation id="8076014560081431679">Zapisane ustawienia witryn nie zostaną usunięte i mogą zawierać informacje o Twoim korzystaniu z przeglądarki. <ph name="BEGIN_LINK" />Więcej informacji<ph name="END_LINK" /></translation>
 <translation id="8084156870963450514">Zaloguj się, by móc korzystać ze wszystkich swoich rzeczy związanych z internetem na dowolnym urządzeniu</translation>
+<translation id="8098570222830891427">Urządzenia w pobliżu przekazują strony internetowe przy użyciu Bluetooth. Chrome wyszuka te strony i wyświetli je, gdy wybudzisz urządzenie. Następnie trafią one do usługi Google, która zwiększy trafność wyników.
+
+Internet rzeczy możesz skonfigurować w ustawieniach Chrome.</translation>
 <translation id="8106211421800660735">Numer karty kredytowej</translation>
 <translation id="813082847718468539">Wyświetl informacje o witrynie</translation>
 <translation id="8137558756159375272">Funkcja „Dotknij, by wyszukać” wysyła zaznaczone słowo i bieżącą stronę jako kontekst do wyszukiwarki Google. Możesz ją wyłączyć w <ph name="BEGIN_LINK" />ustawieniach<ph name="END_LINK" />.</translation>

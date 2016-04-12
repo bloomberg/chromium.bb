@@ -25,6 +25,7 @@ Vous devez activer le Bluetooth et les services de localisation pour utiliser le
 <translation id="1285320974508926690">Ne jamais traduire ce site</translation>
 <translation id="1291207594882862231">Effacer l'historique, vider le cache, supprimer les cookies et les données du site…</translation>
 <translation id="129553762522093515">Récemment fermés</translation>
+<translation id="13410144310025252">Affichez-les dans Chrome.</translation>
 <translation id="1346090444609141578">Aucune page enregistrée ici</translation>
 <translation id="1369915414381695676">Site "<ph name="SITE_NAME" />" ajouté</translation>
 <translation id="1373696734384179344">Mémoire insuffisante pour télécharger le contenu sélectionné.</translation>
@@ -193,6 +194,7 @@ Pour modifier le terme de recherche, appuyez sur celui-ci de manière prolongée
 <translation id="3656115297268584622">Activez le service de localisation dans les <ph name="BEGIN_LINK" />paramètres Android<ph name="END_LINK" />.</translation>
 <translation id="3661699943263275414">Les sites tiers peuvent enregistrer et lire les données des cookies.</translation>
 <translation id="3672452749423051839">Suggestions en cas d'erreur de navigation</translation>
+<translation id="3716158070938632480">Pages Web à proximité</translation>
 <translation id="3732088672634061408">Impossible de récupérer les centres d'intérêt.</translation>
 <translation id="3738139272394829648">Appuyer pour rechercher</translation>
 <translation id="3809549525127675114">Lecture de la vidéo "<ph name="VIDEO_TITLE" />" terminée.</translation>
@@ -373,7 +375,6 @@ Vous n'êtes cependant pas devenu invisible. L'utilisation du mode navigation pr
 <translation id="5911030830365207728">Google Traduction</translation>
 <translation id="5916664084637901428">Activé</translation>
 <translation id="5939518447894949180">Réinitialiser</translation>
-<translation id="5965336165840183977">Les données synchronisées seront effacées de tous les appareils. Vous ne serez pas déconnecté de votre compte Google. Les paramètres de site enregistrés ne seront pas supprimés et peuvent donner des indications sur vos habitudes de navigation.</translation>
 <translation id="5968595432776860642">Lecture de la vidéo "<ph name="VIDEO_TITLE" />" en cours…</translation>
 <translation id="6010869025736512584">Accès à l'entrée vidéo en cours…</translation>
 <translation id="6012342843556706400">Chrome doit disposer de l'accès à votre position pour la partager avec ce site.</translation>
@@ -393,7 +394,6 @@ Vous n'êtes cependant pas devenu invisible. L'utilisation du mode navigation pr
 <translation id="6159335304067198720">Économies de données de <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">En savoir plus</translation>
 <translation id="6192792657125177640">Exceptions</translation>
-<translation id="6231464350722415003">Autoriser le langage JavaScript sur les sites Web que vous spécifiez, tout en le bloquant pour le reste du Web</translation>
 <translation id="6232535412751077445">Si vous interdisez le suivi, une demande sera incluse dans le trafic lié à votre navigation. Les résultats obtenus dépendent de la réponse du site (s'il répond ou non) et de la manière dont il interprète la demande.
 
 Par exemple, certains sites Web peuvent répondre à cette demande en diffusant des annonces qui ne sont pas déterminées en fonction des autres sites Web que vous avez consultés. Toutefois, nombre d'entre eux recueillent et utilisent vos données de navigation afin, par exemple, d'améliorer la sécurité ou d'afficher du contenu, des services, des annonces et des recommandations, ou encore pour générer des rapports statistiques.</translation>
@@ -481,7 +481,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="7244362611678346589">Le site <ph name="SEARCH_ENGINE_URL" /> utilise votre position pour afficher les résultats de recherche à proximité.</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />Aide<ph name="END_LINK" /></translation>
 <translation id="7299721129597238157">Supprimer le favori</translation>
-<translation id="7346217184097589238">Les paramètres de site enregistrés ne seront pas supprimés et peuvent donner des indications sur vos habitudes de navigation.</translation>
 <translation id="7347770551817603360">Contenu hors connexion</translation>
 <translation id="7363354739009474003">Chargement de la vidéo "<ph name="VIDEO_TITLE" />" en cours…</translation>
 <translation id="7366340029385295517">Diffusion sur "<ph name="SCREEN_NAME" />" en cours…</translation>
@@ -492,6 +491,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="7408644312175185557">Affichez vos onglets ainsi que d'autres applications récemment utilisées sur l'écran "Aperçu" de votre téléphone.</translation>
 <translation id="7423098979219808738">Demander d'abord</translation>
 <translation id="7437998757836447326">Se déconnecter de Chrome</translation>
+<translation id="7464701184726199289">Les données synchronisées seront effacées de tous les appareils. Les paramètres de site enregistrés ne seront pas supprimés et peuvent donner des indications sur vos habitudes de navigation. <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /></translation>
 <translation id="7473891865547856676">Non, merci</translation>
 <translation id="7475192538862203634">Si vous rencontrez souvent ce problème, essayez les <ph name="BEGIN_LINK" />suggestions<ph name="END_LINK" /> suivantes.</translation>
 <translation id="748127970106343339">Confirmer la suppression de l'identifiant de l'appareil</translation>
@@ -543,7 +543,11 @@ Vous n'êtes cependant pas devenu invisible. L'utilisation du mode navigation pr
 <translation id="8068648041423924542">Impossible de sélectionner le certificat</translation>
 <translation id="8069239273282989646">Après compression</translation>
 <translation id="8073388330009372546">Ouvrir image dans autre onglet</translation>
+<translation id="8076014560081431679">Les paramètres de site enregistrés ne seront pas supprimés et peuvent donner des indications sur vos habitudes de navigation. <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /></translation>
 <translation id="8084156870963450514">Connectez-vous pour accéder à tous vos contenus Web sur n'importe quel appareil.</translation>
+<translation id="8098570222830891427">Des appareils à proximité diffusent des pages Web via le Bluetooth. Chrome recherche les pages à proximité et les affiche lorsque vous réactivez votre l'appareil. Ces pages sont analysées par un service Google pour améliorer la qualité des résultats.
+
+Vous pouvez contrôler le Web physique dans les paramètres de Chrome.</translation>
 <translation id="8106211421800660735">N° de carte</translation>
 <translation id="813082847718468539">Afficher des informations à propos du site</translation>
 <translation id="8137558756159375272">La fonction "Appuyer pour rechercher" transmet le mot sélectionné et la page actuelle en tant que contexte vers la fonction de recherche Google. Vous pouvez la désactiver dans les <ph name="BEGIN_LINK" />paramètres<ph name="END_LINK" />.</translation>

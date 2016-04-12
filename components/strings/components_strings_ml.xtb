@@ -260,7 +260,7 @@
 <translation id="3549761410225185768"><ph name="NUM_TABS_MORE" /> എണ്ണം കൂടി...</translation>
 <translation id="3566021033012934673">നിങ്ങളുടെ കണക്ഷൻ സ്വകാര്യമല്ല</translation>
 <translation id="3583757800736429874">&amp;നീക്കുന്നത് വീണ്ടും ചെയ്യുക</translation>
-<translation id="3586931643579894722">വിശദാംശങ്ങള്‍ മറയ്‌ക്കുക‍‌</translation>
+<translation id="3586931643579894722">വിശദാംശങ്ങൾ മറയ്‌ക്കുക‍‌</translation>
 <translation id="3587482841069643663">എല്ലാം</translation>
 <translation id="3608308818141211642">ക്ലയന്റും സെർവറും ഒരു പൊതുവായ SSL പ്രോട്ടോക്കോൾ പതിപ്പിനെയോ സൈഫർ സ്യൂട്ടിനെയോ പിന്തുണയ്‌ക്കുന്നില്ല. ഇത് സെർവറിന് ഇനി സുരക്ഷിതമല്ലെന്ന് കണക്കാക്കുന്ന RC4 ആവശ്യമുള്ളപ്പോൾ സംഭവിക്കാനിടയുണ്ട്.</translation>
 <translation id="3609138628363401169">സെര്‍‌വര്‍‌ TLS പുനരാലോചന വിപുലീകരണത്തെ പിന്തുണയ്‌ക്കുന്നില്ല.</translation>
@@ -344,7 +344,7 @@
 <translation id="4506176782989081258">മൂല്യനിർണ്ണയ പിശക്: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4506599922270137252">സിസ്റ്റം അഡ്‌മിനെ ബന്ധപ്പെടുന്നു</translation>
 <translation id="450710068430902550">അഡ്‌മിനിസ്‌ട്രേറ്ററുമായി പങ്കിടുന്നു</translation>
-<translation id="4522570452068850558">വിശദാംശങ്ങള്‍‌</translation>
+<translation id="4522570452068850558">വിശദാംശങ്ങൾ‌</translation>
 <translation id="4535734014498033861">പ്രോക്സി സെര്‍വര്‍ കണക്ഷന്‍ പരാജപ്പെട്ടു.</translation>
 <translation id="4587425331216688090">Chrome-ൽ നിന്ന് വിലാസം നീക്കംചെയ്യണോ?</translation>
 <translation id="4592951414987517459"><ph name="DOMAIN" /> എന്നതിലേക്കുള്ള നിങ്ങളുടെ കണക്ഷനെ ആധുനിക സൈഫർ സ്യൂട്ട് ഉപയോഗിച്ച് എൻക്രിപ്റ്റുചെയ്‌തിരിക്കുന്നു.</translation>
@@ -523,7 +523,7 @@
 <translation id="6800914069727136216">ഉള്ളടക്ക പായ്‌ക്കിൽ</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6830600606572693159"><ph name="URL" /> എന്നതിലെ വെബ്പേജ് നിലവില്‍ ലഭ്യമല്ല.  അത് ഓവര്‍ലോഡ് ആയിരിക്കുകയോ പുനര്‍നിര്‍മ്മാണത്തിലായിരിക്കുകയോ ആവാം.</translation>
-<translation id="6831043979455480757">വിവര്‍‌ത്തനം ചെയ്യുക</translation>
+<translation id="6831043979455480757">വിവർത്തനം ചെയ്യുക</translation>
 <translation id="6839929833149231406">ഏരിയ</translation>
 <translation id="6851123334996048122">നിങ്ങളുടെ കണക്ഷൻ പരിശോധിക്കാൻ
           <ph name="BEGIN_BOLD" />
@@ -555,7 +555,6 @@
 <translation id="7186367841673660872">ഈ പേജ്<ph name="ORIGINAL_LANGUAGE" />ല്‍‌ നിന്നും<ph name="LANGUAGE_LANGUAGE" />ലേക്ക് വിവര്‍‌ത്തനം ചെയ്‌തു</translation>
 <translation id="719464814642662924">Visa</translation>
 <translation id="720210938761809882">പേജ് തടഞ്ഞു</translation>
-<translation id="7208899522964477531"><ph name="SEARCH_TERMS" /> നായി <ph name="SITE_NAME" /> തിരയുക</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" />, സുരക്ഷാ മാനദണ്ഡങ്ങൾ പാലിക്കുന്നില്ല.</translation>
 <translation id="721197778055552897">ഈ പ്രശ്‌നത്തെക്കുറിച്ച് <ph name="BEGIN_LINK" />കൂടുതൽ‍ മനസിലാക്കുക<ph name="END_LINK" />.</translation>
 <translation id="7219179957768738017">കണക്ഷന്‍ <ph name="SSL_VERSION" /> ഉപയോഗിക്കുന്നു.</translation>
@@ -637,8 +636,7 @@
 <translation id="7951415247503192394">(32-ബിറ്റ്)</translation>
 <translation id="7956713633345437162">മൊബൈൽ ബുക്ക്‌മാർക്കുകൾ</translation>
 <translation id="7961015016161918242">ഒരിക്കലും</translation>
-<translation id="7977590112176369853">&lt;ചോദ്യം നല്‍കുക&gt;</translation>
-<translation id="7983301409776629893">എല്ലായ്‌പ്പോഴും <ph name="ORIGINAL_LANGUAGE" /> നെ <ph name="TARGET_LANGUAGE" /> ലേക്ക് വിവര്‍‌ത്തനം ചെയ്യുക</translation>
+<translation id="7983301409776629893">എല്ലായ്‌പ്പോഴും <ph name="ORIGINAL_LANGUAGE" /> നെ <ph name="TARGET_LANGUAGE" /> ലേക്ക് വിവർത്തനം ചെയ്യുക</translation>
 <translation id="7995512525968007366">വ്യക്തമാക്കിയിട്ടില്ല</translation>
 <translation id="8012647001091218357">ഇപ്പോൾ ഞങ്ങൾക്ക് നിങ്ങളുടെ രക്ഷകർത്താക്കളെ ബന്ധപ്പെടാനായില്ല. വീണ്ടും ശ്രമിക്കുക.</translation>
 <translation id="8034522405403831421">ഈ പേജ് <ph name="SOURCE_LANGUAGE" />-ലാണ്. <ph name="TARGET_LANGUAGE" />-ലേക്ക് വിവർത്തനം ചെയ്യണോ?</translation>
@@ -718,7 +716,6 @@
 <translation id="8903921497873541725">സൂം ഇന്‍</translation>
 <translation id="8931333241327730545">ഈ കാർഡ് നിങ്ങളുടെ Google അക്കൗണ്ടിൽ സംരക്ഷിക്കണോ?</translation>
 <translation id="8932102934695377596">നിങ്ങളുടെ ക്ലോക്ക് വളരെ പിന്നിലാണ്</translation>
-<translation id="8940229512486821554"><ph name="EXTENSION_NAME" /> കമാന്‍റ്:<ph name="SEARCH_TERMS" /></translation>
 <translation id="8954894007019320973">(തുടര്‍.)</translation>
 <translation id="8971063699422889582">സെര്‍വറിന്‍റെ സര്‍ട്ടിഫിക്കറ്റ് കാലഹരണപ്പെട്ടു.</translation>
 <translation id="8987927404178983737">മാസം</translation>

@@ -277,7 +277,6 @@
 <translation id="1407050882688520094">Tem certificados em arquivo que identificam estas autoridades de certificação:</translation>
 <translation id="1407489512183974736">Cortado no centro</translation>
 <translation id="1408789165795197664">Avançadas...</translation>
-<translation id="1408803555324839240">Ups! Não foi possível criar o novo utilizador supervisionado. Certifique-se de que a sua sessão foi iniciada corretamente e tente novamente.</translation>
 <translation id="1409390508152595145">Criar utilizador supervisionado.</translation>
 <translation id="1410616244180625362">Continuar a permitir que <ph name="HOST" /> aceda à sua câmara</translation>
 <translation id="1413372529771027206">O telemóvel utilizado para o Smart Lock foi alterado. Introduza a palavra-passe para atualizar o Smart Lock para Chromebook neste dispositivo. Posteriormente, basta clicar na sua imagem para entrar.</translation>
@@ -1601,7 +1600,6 @@ Verifique o seu email em <ph name="ACCOUNT_EMAIL" /> para obter estas e outras i
 <translation id="3277710850168074473">Necessidade de gesto por parte do utilizador para a reprodução de elementos multimédia. Se desativar esta opção, permite que a reprodução automática funcione.</translation>
 <translation id="3280237271814976245">Guard&amp;ar como...</translation>
 <translation id="3280431534455935878">A preparar</translation>
-<translation id="3284674070818187654">A Google pode utilizar o seu histórico de navegação para personalizar a Pesquisa Google e outros serviços Google. Pode controlar isto em myaccount.google.com.</translation>
 <translation id="3285322247471302225">Novo &amp;Separador</translation>
 <translation id="3288047731229977326">As extensões que funcionam no modo de programador podem danificar o seu computador. Se não é programador, deverá desativar as extensões que sejam executadas neste modo para se manter protegido.</translation>
 <translation id="3289566588497100676">Introdução simples de símbolos</translation>
@@ -1707,7 +1705,6 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3413122095806433232">Emissores de AC: <ph name="LOCATION" /></translation>
 <translation id="3414856743105198592">A formatação do suporte de dados amovível apagará todos os dados. Pretende continuar?</translation>
 <translation id="3414952576877147120">Tamanho:</translation>
-<translation id="3416248389957650982">Abrir myaccount.google.com depois de iniciar sessão</translation>
 <translation id="3420980393175304359">Mudar de pessoa</translation>
 <translation id="3423858849633684918">Reiniciar o <ph name="PRODUCT_NAME" /></translation>
 <translation id="3425233587047449821">Novo IME coreano</translation>
@@ -1922,7 +1919,6 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3694027410380121301">Seleccionar o separador anterior</translation>
 <translation id="3694122362646626770">Websites</translation>
 <translation id="3694678678240097321">Exija o consentimento do utilizador para uma extensão que execute um script na página se a extensão tiver pedido autorização para ser executada em todos os URLs.</translation>
-<translation id="36954862089075551">Ups! Não foi possível criar o novo utilizador. Verifique o espaço no disco rígido e as permissões e tente novamente.</translation>
 <translation id="3695919544155087829">Introduza a palavra-passe utilizada para encriptar o ficheiro deste certificado.</translation>
 <translation id="3696411085566228381">nenhuns</translation>
 <translation id="3697100740575341996">O administrador de TI desativou os Diversos do Chrome para o seu dispositivo. <ph name="MORE_INFO_LINK" /></translation>
@@ -2350,7 +2346,6 @@ Prima qualquer tecla para continuar a explorar.</translation>
 <translation id="4345703751611431217">Incompatibilidade de software: saiba mais</translation>
 <translation id="4348766275249686434">Recolher erros</translation>
 <translation id="4350019051035968019">Não é possível inscrever este dispositivo no domínio a que pertence a sua conta, porque está marcado para gestão por um domínio diferente.</translation>
-<translation id="4352333825734680558">Ups! Não foi possível criar o novo utilizador supervisionado. Verifique a ligação de rede e tente novamente mais tarde.</translation>
 <translation id="4358697938732213860">Adicionar um endereço</translation>
 <translation id="4359408040881008151">Instalada devido a extensão(ões) dependente(s).</translation>
 <translation id="4361190688154226069">Atribuição do destino com base no retângulo nas vistas</translation>
@@ -3024,7 +3019,6 @@ Prima qualquer tecla para continuar a explorar.</translation>
 <translation id="5388588172257446328">Nome de utilizador:</translation>
 <translation id="5390284375844109566">Base de dados indexada</translation>
 <translation id="5392544185395226057">Ative o suporte do Native Client.</translation>
-<translation id="5393125431335030955">Este plug-in apenas funciona no computador.</translation>
 <translation id="5396126354477659676">O <ph name="PEPPER_PLUGIN_NAME" /> em <ph name="PEPPER_PLUGIN_DOMAIN" /> pretende aceder ao seu computador.</translation>
 <translation id="539755880180803351">Anota formulários web com previsões do tipo de campo de Preenchimento Automático como texto de placeholder.</translation>
 <translation id="5397578532367286026">A utilização e o histórico deste utilizador podem ser consultados pelo gestor (<ph name="MANAGER_EMAIL" />) em chrome.com.</translation>
@@ -3290,7 +3284,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="57646104491463491">Data modificada</translation>
 <translation id="5765491088802881382">Não existe nenhuma rede disponível</translation>
 <translation id="5765780083710877561">Descrição:</translation>
-<translation id="5770385044111747894">NPAPI</translation>
 <translation id="5771585441665576801">Transliteração (geia → γεια)</translation>
 <translation id="5771816112378578655">Configuração em curso...</translation>
 <translation id="5771849619911534867">Análise ao dispositivo interrompida.</translation>
@@ -3923,7 +3916,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="6793649375377511437">Google Copresence Info</translation>
 <translation id="6797493596609571643">Ups... algo correu mal.</translation>
 <translation id="6798954102094737107">Plug-in: <ph name="PLUGIN_NAME" /></translation>
-<translation id="6799646767877093143">Este site utiliza um plug-in (<ph name="PLUGIN_NAME" />) que em breve deixará de ser compatível.</translation>
 <translation id="6802031077390104172"><ph name="USAGE" /> (<ph name="OID" />)</translation>
 <translation id="6804671422566312077">Abrir Todos os Marcadores numa &amp;Nova Janela</translation>
 <translation id="6805647936811177813">Inicie sessão no <ph name="TOKEN_NAME" /> para importar o certificado de cliente de <ph name="HOST_NAME" />.</translation>
@@ -4917,7 +4909,6 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8267698848189296333">A iniciar sessão como <ph name="USERNAME" /></translation>
 <translation id="8272443605911821513">Faça a gestão das suas extensões clicando em Extensões no menu "Mais ferramentas".</translation>
 <translation id="8273972836055206582"><ph name="FULLSCREEN_ORIGIN" /> está agora em ecrã inteiro e pretende desativar o cursor do rato.</translation>
-<translation id="8274860189261120948">Iniciar sessão automaticamente nos Websites através das credenciais armazenadas. Quando a funcionalidade está desativada, é-lhe pedida sempre uma confirmação antes de iniciar sessão num Website.</translation>
 <translation id="8275038454117074363">Importar</translation>
 <translation id="8276560076771292512">Esvaziar Cache e Atualização Pesada</translation>
 <translation id="8279388322240498158">Teclado curdo sorani baseado no inglês</translation>
@@ -5101,7 +5092,6 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8571108619753148184">Servidor 4</translation>
 <translation id="8572832761467613633">Apenas Flash</translation>
 <translation id="8572981282494768930">Não permitir que os sites acedam à sua câmara e ao seu microfone</translation>
-<translation id="8574794171590710404">Este site utiliza um plug-in (<ph name="PLUGIN_NAME" />) que não é suportado.</translation>
 <translation id="857779305329188634">Ativar suporte de protocolo QUIC experimental.</translation>
 <translation id="8579285237314169903">A sincronizar <ph name="NUMBER_OF_FILES" /> itens...</translation>
 <translation id="8579549103199280730">Perguntar por predefinição</translation>
@@ -5109,7 +5099,6 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8581690024797204327">256</translation>
 <translation id="8581809080475256101">Premir para avançar, menu de contexto para ver o histórico</translation>
 <translation id="8584280235376696778">&amp;Abrir vídeo num novo separador</translation>
-<translation id="8585103164112230633">Controlar e ver os Websites que esta pessoa visitou</translation>
 <translation id="8589311641140863898">APIs de extensões experimentais</translation>
 <translation id="8590375307970699841">Configurar actualizações automáticas</translation>
 <translation id="8592071947729879125">Restringir autorizações de iframe.</translation>
@@ -5257,7 +5246,6 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="878069093594050299">Este certificado foi confirmado para as seguintes utilizações:</translation>
 <translation id="8782565991310229362">A iniciação da aplicação de quiosque foi cancelada.</translation>
 <translation id="8783093612333542422">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; pretende partilhar uma impressora &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; consigo.</translation>
-<translation id="878431691778285679">Aparentemente, já está a fazer a gestão de um utilizador com esse nome.<ph name="LINE_BREAK" />Pretendia <ph name="BEGIN_LINK" />importar <ph name="PROFILE_NAME" /> para este dispositivo<ph name="END_LINK" />?</translation>
 <translation id="8784626084144195648">Média arquivada</translation>
 <translation id="8785135611469711856">Plug-in sem resposta</translation>
 <translation id="8787254343425541995">Permitir proxies para redes partilhadas</translation>

@@ -4,52 +4,32 @@
 <translation id="1008557486741366299">Не сейчас</translation>
 <translation id="1047726139967079566">Добавить страницу в закладки…</translation>
 <translation id="1172898394251786223">Следующее поле</translation>
-<translation id="168328519870909584">Через сайт <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> на ваш компьютер могут установить вредоносное ПО для кражи или удаления личной информации (например, фотографий, паролей, сообщений и реквизитов банковских карт).</translation>
 <translation id="2320166752086256636">Скрыть клавиатуру</translation>
 <translation id="2467815441875554965">Контекстный поиск</translation>
 <translation id="2704606927547763573">Скопировано</translation>
 <translation id="2747003861858887689">Предыдущее поле</translation>
 <translation id="2780046210906776326">Создайте аккаунт</translation>
-<translation id="2803306138276472711">Система Google по проверке безопасности сайтов недавно обнаружила на <ph name="SITE" /> <ph name="BEGIN_LINK" />вредоносное ПО<ph name="END_LINK" />. Будьте внимательны, иногда даже на безопасных сайтах появляются вирусы.</translation>
 <translation id="3244271242291266297">ММ</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> из <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3335947283844343239">Открыть закрытую вкладку</translation>
 <translation id="3414292259312108062">Этот пароль будет добавлен в <ph name="BEGIN_LINK" />список сохраненных паролей<ph name="END_LINK" />, чтобы Chrome мог автоматически вводить его в соответствующие поля.</translation>
 <translation id="3567664240939803299">Сохранить пароль для этого сайта в Google Smart Lock?</translation>
-<translation id="3586931643579894722">Скрыть подробности</translation>
-<translation id="3736520371357197498">Если вы готовы подвергнуть риску ваши личные данные, вы можете <ph name="BEGIN_LINK" />перейти на зараженный сайт<ph name="END_LINK" />, не дожидаясь удаления вредоносного ПО.</translation>
 <translation id="385051799172605136">Назад</translation>
-<translation id="4098354747657067197">Осторожно, поддельный сайт!</translation>
 <translation id="4121993058175073134">Чтобы отправлять очищенные данные для экспорта, задайте соответствующие параметры аккаунта электронной почты в приложении "Настройки".</translation>
 <translation id="4399225372525667111">Не удалось проверить подлинность URL.</translation>
-<translation id="4522570452068850558">Подробнее</translation>
 <translation id="4728558894243024398">Платформа</translation>
 <translation id="473775607612524610">Обновление</translation>
 <translation id="5317780077021120954">Сохранить</translation>
-<translation id="5337705430875057403">Посещение сайта <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> может привести к установке вредоносного ПО или хищению вашей личной информации (например, паролей, телефонных номеров и данных кредитных карт).</translation>
 <translation id="605721222689873409">ГГ</translation>
-<translation id="6075880972317537864">Посещение сайта <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> может привести к краже вашей личной информации (например, паролей, сообщений и реквизитов банковских карт).</translation>
 <translation id="6149061208933997199">Использовать пароль</translation>
 <translation id="6196207969502475924">Голосовой поиск</translation>
-<translation id="6221345481584921695">Система Google по проверке безопасности сайтов недавно обнаружила на <ph name="SITE" /> <ph name="BEGIN_LINK" />вредоносное ПО<ph name="END_LINK" />. Его источником является <ph name="SUBRESOURCE_HOST" />, не раз замеченным в распространении вирусов. Будьте внимательны, иногда даже на безопасных сайтах появляются вредоносные программы.</translation>
-<translation id="6264485186158353794">Назад к безопасности</translation>
 <translation id="6314335155547195432">Создать пароль</translation>
 <translation id="6344783595350022745">Очистить</translation>
 <translation id="6456425917241817154">Пароль от Chrome</translation>
 <translation id="6535543971741225613">Сайт, на который вы собираетесь перейти, подозрителен: Chrome не может проверить подлинность URL. В целях безопасности мы рекомендуем повторить попытку через некоторое время или отказаться от просмотра этой страницы.</translation>
-<translation id="6740369132746915122">Если вы готовы подвергнуть риску свои личные данные, то можете <ph name="BEGIN_LINK" />перейти на зараженный сайт<ph name="END_LINK" />.</translation>
 <translation id="7222245588540287464">Включить или отключить Контекстный поиск</translation>
-<translation id="724691107663265825">Осторожно, вредоносное ПО!</translation>
 <translation id="7456847797759667638">Открыть адрес...</translation>
 <translation id="7481312909269577407">Вперед</translation>
 <translation id="7484580869648358686">Внимание! Обнаружена проблема!</translation>
-<translation id="7779249319235708104">Осторожно, фишинг!</translation>
 <translation id="7961015016161918242">Нет</translation>
-<translation id="820854170120587500">Система Google по проверке безопасности сайтов недавно обнаружила, что <ph name="SITE" /> – это <ph name="BEGIN_LINK" />фишинговый сайт<ph name="END_LINK" />. Такие сайты пытаются получить ваши личные данные, имитируя нужные вам веб-страницы.</translation>
-<translation id="834457929814110454">Если вы готовы подвергнуть риску ваши личные данные, вы можете <ph name="BEGIN_LINK" />перейти на зараженный сайт<ph name="END_LINK" />, не дожидаясь удаления вредоносного ПО.</translation>
-<translation id="8543181531796978784"><ph name="BEGIN_ERROR_LINK" />Сообщите о зараженном сайте<ph name="END_ERROR_LINK" />. Если вы готовы подвергнуть риску личные данные, то можете <ph name="BEGIN_LINK" />перейти на страницу<ph name="END_LINK" />.</translation>
-<translation id="8761567432415473239">Система Google по проверке безопасности сайтов недавно обнаружила на <ph name="SITE" /> <ph name="BEGIN_LINK" />вредоносное ПО<ph name="END_LINK" />.</translation>
-<translation id="8996941253935762404">Сайт содержит нежелательное ПО</translation>
-<translation id="9035022520814077154">Ошибка безопасности</translation>
-<translation id="9040185888511745258">Сайт <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> может установить на ваше устройство вредоносное ПО, которое будет мешать работе браузера (например, меняя стартовую страницу или показывая дополнительную рекламу на сайтах).</translation>
 </translationbundle>

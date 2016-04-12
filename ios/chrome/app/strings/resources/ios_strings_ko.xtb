@@ -4,52 +4,32 @@
 <translation id="1008557486741366299">나중에 하기</translation>
 <translation id="1047726139967079566">페이지 북마크...</translation>
 <translation id="1172898394251786223">다음 필드</translation>
-<translation id="168328519870909584">현재 <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />의 공격자가 사용 중인 기기에 사용자 정보(예: 사진, 비밀번호, 메시지, 신용카드)를 도용하거나 삭제하는 위험한 앱을 설치하려고 시도할 수 있습니다.</translation>
 <translation id="2320166752086256636">키보드 숨기기</translation>
 <translation id="2467815441875554965">문맥 검색</translation>
 <translation id="2704606927547763573">복사됨</translation>
 <translation id="2747003861858887689">이전 필드</translation>
 <translation id="2780046210906776326">이메일 계정이 없음</translation>
-<translation id="2803306138276472711">최근 Google 세이프 브라우징이 <ph name="SITE" />에서 <ph name="BEGIN_LINK" />멀웨어를 감지<ph name="END_LINK" />했습니다. 평소에 안전한 웹사이트도 멀웨어에 감염될 때가 있습니다.</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" />/<ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3335947283844343239">닫은 탭 다시 열기</translation>
 <translation id="3414292259312108062">Chrome은 이 비밀번호를 <ph name="BEGIN_LINK" />Google에 저장된 비밀번호<ph name="END_LINK" />에 저장하고 자동완성 기능을 지원하므로 직접 기억할 필요가 없습니다.</translation>
 <translation id="3567664240939803299">Google Smart Lock에서 이 사이트의 비밀번호를 저장하도록 하시겠습니까?</translation>
-<translation id="3586931643579894722">세부정보 숨기기</translation>
-<translation id="3736520371357197498">보안 관련 위험을 이해한다면 위험한 프로그램이 삭제되기 전에 <ph name="BEGIN_LINK" />안전하지 않은 사이트<ph name="END_LINK" />에 방문해도 됩니다.</translation>
 <translation id="385051799172605136">뒤로</translation>
-<translation id="4098354747657067197">사기성 사이트로 이동</translation>
 <translation id="4121993058175073134">순 내보내기 데이터를 전송하려면 설정 앱에서 이메일 계정을 설정하시기 바랍니다.</translation>
 <translation id="4399225372525667111">Chrome은 이 사이트의 URL이 올바른지 확인할 수 없습니다.</translation>
-<translation id="4522570452068850558">세부정보</translation>
 <translation id="4728558894243024398">플랫폼</translation>
 <translation id="473775607612524610">업데이트</translation>
 <translation id="5317780077021120954">저장</translation>
-<translation id="5337705430875057403"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> 공격자가 소프트웨어를 설치하거나 개인정보(예: 비밀번호, 전화번호, 신용카드 정보)를 공개하는 등의 위험한 행동을 하도록 사용자를 속일 수 있습니다.</translation>
 <translation id="605721222689873409">YY</translation>
-<translation id="6075880972317537864"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> 공격자는 정보(예: 비밀번호, 메시지, 신용카드)를 도용하기 위해 사용자를 속일 수 있습니다.</translation>
 <translation id="6149061208933997199">비밀번호 사용</translation>
 <translation id="6196207969502475924">음성 검색</translation>
-<translation id="6221345481584921695">Google 세이프 브라우징이 최근 <ph name="SITE" />에서 <ph name="BEGIN_LINK" />멀웨어를 감지<ph name="END_LINK" />했습니다. 평소에 안전한 웹사이트도 멀웨어에 감염될 수가 있습니다. 악성 콘텐츠의 출처는 알려진 멀웨어 배포자인 <ph name="SUBRESOURCE_HOST" />입니다.</translation>
-<translation id="6264485186158353794">안전 페이지로 돌아가기</translation>
 <translation id="6314335155547195432">비밀번호 생성</translation>
 <translation id="6344783595350022745">텍스트 삭제</translation>
 <translation id="6456425917241817154">Chrome에서 생성한 비밀번호</translation>
 <translation id="6535543971741225613">액세스하려는 사이트가 이상하게 작동하고 있으며 Chrome은 이 사이트의 URL이 올바른지 확인할 수 없습니다. 보안을 위해 더 이상 진행하지 마시고 내일 다시 시도하거나 다른 사이트를 방문하세요.</translation>
-<translation id="6740369132746915122">보안 관련 위험에 대해 알고 있으면 <ph name="BEGIN_LINK" />안전하지 않은 사이트를 방문<ph name="END_LINK" />해도 됩니다.</translation>
 <translation id="7222245588540287464">문맥 검색 사용 설정 여부입니다.</translation>
-<translation id="724691107663265825">다음 사이트에 멀웨어가 있습니다.</translation>
 <translation id="7456847797759667638">위치 열기...</translation>
 <translation id="7481312909269577407">앞으로</translation>
 <translation id="7484580869648358686">경고: 문제가 있습니다.</translation>
-<translation id="7779249319235708104">피싱 공격 가능성 있음</translation>
 <translation id="7961015016161918242">사용하지 않음</translation>
-<translation id="820854170120587500">Google 세이프 브라우징이 최근 <ph name="SITE" />에서 피싱을 감지했습니다. <ph name="BEGIN_LINK" />피싱 사이트<ph name="END_LINK" />는 사용자를 속이기 위해 다른 웹사이트인 것처럼 가장합니다.</translation>
-<translation id="834457929814110454">보안 관련 위험을 이해한다면 악성 프로그램이 삭제되기 전에 <ph name="BEGIN_LINK" />이 사이트를 방문<ph name="END_LINK" />해도 됩니다.</translation>
-<translation id="8543181531796978784"><ph name="BEGIN_ERROR_LINK" />감지 문제를 신고<ph name="END_ERROR_LINK" />할 수 있으며, 보안에 미치는 위험을 감수한다면 <ph name="BEGIN_LINK" />이 안전하지 않은 사이트를 방문<ph name="END_LINK" />할 수 있습니다.</translation>
-<translation id="8761567432415473239">Google 세이프 브라우징 결과 <ph name="SITE" />에서 최근 <ph name="BEGIN_LINK" />악성 프로그램이 발견<ph name="END_LINK" />되었습니다.</translation>
-<translation id="8996941253935762404">방문하려는 사이트에 유해한 프로그램이 있습니다.</translation>
-<translation id="9035022520814077154">보안 오류</translation>
-<translation id="9040185888511745258"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />에 있는 해커가 브라우저 환경에 악영향을 미치는 프로그램을 설치하도록 속임수(예를 들어, 방문하는 사이트의 홈페이지를 변경하거나 추가로 광고를 표시)를 시도할 수 있습니다.</translation>
 </translationbundle>

@@ -48,7 +48,7 @@
 <translation id="8284835137979141223"><ph name="VENDOR_NAME" /> എന്നതിൽ നിന്നുള്ള <ph name="PRODUCT_NAME" /></translation>
 <translation id="8341840687457896278">മറ്റൊരു (<ph name="EXTENSION_NAME" />) വിപുലീകരണം വ്യത്യസ്‌ത ക്രെഡൻഷ്യലുകൾ നൽകിയതിനാൽ ഒരു നെറ്റ്‌വർക്ക് അഭ്യർത്ഥനയിലേക്ക് ക്രെഡൻഷ്യലുകൾ നൽകുന്നതിൽ ഈ വിപുലീകരണം പരാജയപ്പെട്ടു.</translation>
 <translation id="8602184400052594090">മാനിഫെസ്റ്റ് ഫയല്‍ നഷ്ടപ്പെട്ടിരിക്കുന്നു അല്ലെങ്കില്‍ റീഡ് ചെയ്യാന്‍ കഴിയുന്നില്ല.</translation>
-<translation id="8636666366616799973">പാക്കേജ് അസാധുവാണ്. വിശദാംശങ്ങള്‍: '<ph name="ERROR_MESSAGE" />'.</translation>
+<translation id="8636666366616799973">പാക്കേജ് അസാധുവാണ്. വിശദാംശങ്ങൾ: '<ph name="ERROR_MESSAGE" />'.</translation>
 <translation id="8670869118777164560">മറ്റൊരു വിപുലീകരണം (<ph name="EXTENSION_NAME" />), <ph name="ACTUAL_REDIRECT_DESTINATION" />-ലേക്ക് ഒരു നെറ്റ്‌വർക്ക് അഭ്യർത്ഥനയെ റീഡയറക്റ്റുചെയ്‌തതിനാൽ അതിനെ <ph name="ATTEMPTED_REDIRECT_DESTINATION" />-ലേക്ക് റീഡയറക്റ്റുചെയ്യുന്നതിന് ഈ വിപുലീകരണം പരാജയപ്പെട്ടു.</translation>
 <translation id="8712265948125780616">വിപുലീകരണ അൺ‌പാക്കർ</translation>
 <translation id="8825366169884721447">പരിഷ്‌ക്കാരം മറ്റൊരു (<ph name="EXTENSION_NAME" />) വിപുലീകരണവുമായി വൈരുദ്ധ്യം സൃഷ്‌ടിക്കുന്നതിനാൽ ഒരു നെറ്റ്‌വർക്ക് അഭ്യർത്ഥനയുടെ അഭ്യർത്ഥന തലക്കെട്ട് "<ph name="HEADER_NAME" />" പരിഷ്‌ക്കരിക്കുന്നതിൽ ഈ വിപുലീകരണം പരാജയപ്പെട്ടു.</translation>

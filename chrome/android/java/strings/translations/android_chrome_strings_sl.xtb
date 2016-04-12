@@ -25,6 +25,7 @@
 <translation id="1285320974508926690">Nikoli ne prevedi tega spletnega mesta</translation>
 <translation id="1291207594882862231">Izbris zgodovine, piškotkov, podatkov spletnih mest, predpomnilnika …</translation>
 <translation id="129553762522093515">Nedavno zaprto</translation>
+<translation id="13410144310025252">Ogled v Chromu</translation>
 <translation id="1346090444609141578">Tu ni shranjenih strani</translation>
 <translation id="1369915414381695676">Spletno mesto <ph name="SITE_NAME" /> je bilo dodano</translation>
 <translation id="1373696734384179344">Za prenos izbrane vsebine ni dovolj pomnilnika.</translation>
@@ -193,6 +194,7 @@ Prijavljate se z upravljanim računom in s tem njegovemu skrbniku omogočate nad
 <translation id="3656115297268584622">Lokacijsko storitev vklopite v <ph name="BEGIN_LINK" />nastavitvah sistema Android<ph name="END_LINK" />.</translation>
 <translation id="3661699943263275414">Druga spletna mesta lahko shranjujejo in berejo podatke piškotkov</translation>
 <translation id="3672452749423051839">Predlogi za napake pri krmarjenju</translation>
+<translation id="3716158070938632480">Spletne strani so v bližini</translation>
 <translation id="3732088672634061408">Zanimanj ni bilo mogoče pridobiti.</translation>
 <translation id="3738139272394829648">Dotaknite se za iskanje</translation>
 <translation id="3809549525127675114">Predvajanje videoposnetka »<ph name="VIDEO_TITLE" />« je končano</translation>
@@ -372,7 +374,6 @@ Kljub temu niste nevidni. Če uporabljate način brez beleženja zgodovine, ne s
 <translation id="5911030830365207728">Google Prevajalnik</translation>
 <translation id="5916664084637901428">Vklopljeno</translation>
 <translation id="5939518447894949180">Ponastavi</translation>
-<translation id="5965336165840183977">S tem izbrišete sinhronizirane podatke iz vseh naprav. Ne boste odjavljeni iz Google Računa. Shranjene nastavitve mest ne bodo izbrisane in morda kažejo vaše navade brskanja.</translation>
 <translation id="5968595432776860642">Predvajanje: »<ph name="VIDEO_TITLE" />«</translation>
 <translation id="6010869025736512584">Dostopanje do videovhoda</translation>
 <translation id="6012342843556706400">Chrome potrebuje dostop do lokacije, če želite, da temu spletnemu mestu omogoči dostop do nje.</translation>
@@ -392,7 +393,6 @@ Kljub temu niste nevidni. Če uporabljate način brez beleženja zgodovine, ne s
 <translation id="6159335304067198720">Prihranek pri prenosu podatkov: <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">Več o tem</translation>
 <translation id="6192792657125177640">Izjeme</translation>
-<translation id="6231464350722415003">Dovoli JavaScript na spletnih mestih, ki jih določite, drugod po spletu pa ga blokira.</translation>
 <translation id="6232535412751077445">Če omogočite možnost »Ne sledi«, bo zahteva vključena v vaš promet brskanja. Učinek je odvisen od odziva spletnega mesta na zahtevo in od tega, kako si zahtevo razlaga.
 
 Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažejo oglase, ki ne temeljijo na drugih spletnih mestih, ki ste jih obiskali. Veliko spletnih mest bo še vedno zbiralo in uporabljalo vaše podatke o brskanju, na primer za izboljšanje varnosti, zagotavljanje vsebine, oglasov in priporočil ter za pridobivanje statističnih podatkov za poročanje.</translation>
@@ -480,7 +480,6 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> uporablja vašo lokacijo za prikaz lokalnih rezultatov iskanja</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />Pomoč<ph name="END_LINK" /></translation>
 <translation id="7299721129597238157">Izbriši zaznamek</translation>
-<translation id="7346217184097589238">Shranjene nastavitve mest ne bodo izbrisane in morda kažejo vaše navade brskanja.</translation>
 <translation id="7347770551817603360">Vsebina brez povezave</translation>
 <translation id="7363354739009474003">Nalaganje videoposnetka »<ph name="VIDEO_TITLE" />«</translation>
 <translation id="7366340029385295517">Predvajanje na zaslonu <ph name="SCREEN_NAME" /></translation>
@@ -491,6 +490,7 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="7408644312175185557">Oglejte si zavihke z drugimi nedavnimi aplikacijami na zaslonu za pregled v telefonu.</translation>
 <translation id="7423098979219808738">Najprej vprašaj</translation>
 <translation id="7437998757836447326">Odjava iz Google Chroma</translation>
+<translation id="7464701184726199289">S tem bodo sinhronizirani podatki izbrisani iz vseh naprav. Shranjene nastavitve spletnih mest ne bodo izbrisane in morda odražajo vaše brskalne navade. <ph name="BEGIN_LINK" />Več o tem<ph name="END_LINK" /></translation>
 <translation id="7473891865547856676">Ne, hvala</translation>
 <translation id="7475192538862203634">Če se to pogosto pokaže, poskusite te <ph name="BEGIN_LINK" />predloge<ph name="END_LINK" />.</translation>
 <translation id="748127970106343339">Potrditev izbrisa poverilnice naprave</translation>
@@ -542,7 +542,11 @@ Kljub temu niste nevidni. Če uporabljate način brez beleženja zgodovine, brsk
 <translation id="8068648041423924542">Izbira potrdila ni mogoča</translation>
 <translation id="8069239273282989646">Po stiskanju</translation>
 <translation id="8073388330009372546">Odpri sliko na novem zavihku</translation>
+<translation id="8076014560081431679">Shranjene nastavitve spletnih mest ne bodo izbrisane in morda odražajo vaše brskalne navade. <ph name="BEGIN_LINK" />Več o tem<ph name="END_LINK" /></translation>
 <translation id="8084156870963450514">Prijavite se za dostop do vseh vaših spletnih stvari iz poljubne naprave</translation>
+<translation id="8098570222830891427">Naprave v vaši bližini oddajajo spletne strani prek Bluetootha. Chrome bo iskal strani in jih prikazal, ko preklopite napravo iz stanja pripravljenosti. Te strani bo zaradi izboljšanja kakovosti rezultatov za strani obdelala Googlova storitev.
+
+Fizični splet lahko nadzirate v Chromovih nastavitvah.</translation>
 <translation id="8106211421800660735">Številka kreditne kartice</translation>
 <translation id="813082847718468539">Ogled podatkov o mestu</translation>
 <translation id="8137558756159375272">»Dotaknite se za iskanje« pošlje izbrano besedo in trenutno strank kot kontekst Iskanju Google. To lahko izklopite v <ph name="BEGIN_LINK" />nastavitvah<ph name="END_LINK" />.</translation>

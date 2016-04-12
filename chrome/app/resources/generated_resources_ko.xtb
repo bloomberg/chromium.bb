@@ -277,7 +277,6 @@
 <translation id="1407050882688520094">다음 인증기관을 식별하는 인증서가 등록되어 있습니다.</translation>
 <translation id="1407489512183974736">가운데 부분 자르기</translation>
 <translation id="1408789165795197664">고급...</translation>
-<translation id="1408803555324839240">죄송합니다. 새 관리 대상 사용자를 생성할 수 없습니다. 올바르게 로그인했는지 확인한 후 다시 시도해 주세요.</translation>
 <translation id="1409390508152595145">관리 대상 사용자 만들기</translation>
 <translation id="1410616244180625362"><ph name="HOST" />에서 카메라에 액세스하도록 계속 허용</translation>
 <translation id="1413372529771027206">Smart Lock에 사용되는 휴대전화가 변경되었습니다. 비밀번호를 입력하여 이 기기의 Chromebook용 Smart Lock을 업데이트하세요. 이후에 비밀번호를 입력하려면 내 사진을 클릭하기만 하면 됩니다.</translation>
@@ -390,7 +389,7 @@
 <translation id="1545786162090505744">URL(검색어 자리에 % 입력)</translation>
 <translation id="1546280085599573572">홈 버튼을 클릭하면 표시되는 페이지가 이 확장 프로그램으로 인해 변경되었습니다.</translation>
 <translation id="1546795794523394272">Chromebox 화상회의 시스템에 오신 것을 환영합니다!</translation>
-<translation id="1547572086206517271">새로고침해야 함</translation>
+<translation id="1547572086206517271">새로고침 필요</translation>
 <translation id="1547964879613821194">영어(캐나다)</translation>
 <translation id="1548132948283577726">비밀번호를 저장하지 않은 사이트가 표시됩니다.</translation>
 <translation id="1549045574060481141">다운로드 확인</translation>
@@ -619,7 +618,7 @@
 <translation id="1891196807951270080">오프라인 사용을 위해 최근 방문한 페이지를 로컬에 저장하도록 설정합니다. 오프라인 페이지가 사용 설정되어야 합니다.</translation>
 <translation id="1891668193654680795">소프트웨어 제작자를 식별하기 위해 이 인증서를 신뢰합니다.</translation>
 <translation id="189210018541388520">전체화면 열기</translation>
-<translation id="1892754076732315533">페이지 트리거 전체화면 또는 마우스 포인터 잠금 상태로 전환될 때 제공되는 새롭고 간소화된 사용자 환경입니다.</translation>
+<translation id="1892754076732315533">페이지 트리거 전체화면 또는 마우스 포인터 잠금 상태로 전환될 때 제공되는 새롭고 심플한 사용자 환경입니다.</translation>
 <translation id="1893046049133338222">ARC: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="1893406696975231168">클라우드 프로비전 플로 실패함</translation>
 <translation id="189358972401248634">다른 언어</translation>
@@ -1438,7 +1437,7 @@
 <translation id="3039828483675273919">$1개 항목 이동 중...</translation>
 <translation id="304009983491258911">SIM 카드 PIN 변경</translation>
 <translation id="3045551944631926023">표시 탭만 자동 새로고침</translation>
-<translation id="3046910703532196514">웹페이지, 완료</translation>
+<translation id="3046910703532196514">웹페이지, 전부</translation>
 <translation id="3047477924825107454"><ph name="MANAGER_EMAIL" />님이 관리하는 어린이용 계정입니다.</translation>
 <translation id="304826556400666995">탭 음소거 해제</translation>
 <translation id="3053013834507634016">인증서 키 사용</translation>
@@ -1601,7 +1600,6 @@
 <translation id="3277710850168074473">미디어 요소 재생에 관련된 사용자 동작 요구사항입니다. 이 기능을 사용 중지하면 자동 재생이 실행됩니다.</translation>
 <translation id="3280237271814976245">다른 이름으로 저장(&amp;A)...</translation>
 <translation id="3280431534455935878">준비 중</translation>
-<translation id="3284674070818187654">검색 및 다른 Google 서비스를 맞춤설정하기 위하여 Google에서 인터넷 사용 기록을 사용할 수 있습니다. myaccount.google.com에서 제어할 수 있습니다.</translation>
 <translation id="3285322247471302225">새 탭(&amp;T)</translation>
 <translation id="3288047731229977326">개발자 모드로 실행 중인 확장 프로그램은 컴퓨터에 해를 줄 수 있습니다. 개발자가 아닌 경우 컴퓨터를 안전하게 사용하려면 개발자 모드로 실행 중인 확장 프로그램을 사용 중지해야 합니다.</translation>
 <translation id="3289566588497100676">쉬운 기호 입력</translation>
@@ -1708,7 +1706,6 @@
 <translation id="3413122095806433232">CA 발행기관: <ph name="LOCATION" /></translation>
 <translation id="3414856743105198592">이동식 미디어를 포맷하면 데이터가 모두 삭제됩니다. 계속하시겠습니까?</translation>
 <translation id="3414952576877147120">크기:</translation>
-<translation id="3416248389957650982">로그인 후 myaccount.google.com 열기</translation>
 <translation id="3420980393175304359">사용자 전환</translation>
 <translation id="3423858849633684918"><ph name="PRODUCT_NAME" />을(를) 다시 시작하세요.</translation>
 <translation id="3425233587047449821">새로운 한국어 IME</translation>
@@ -1923,7 +1920,6 @@
 <translation id="3694027410380121301">이전 탭 선택</translation>
 <translation id="3694122362646626770">웹사이트</translation>
 <translation id="3694678678240097321">확장 프로그램이 모든 URL에서 실행되기 위한 권한을 요청한 경우, 페이지에서 스크립트를 실행하기 위해 사용자 동의가 필요합니다.</translation>
-<translation id="36954862089075551">새로운 사용자를 만들지 못했습니다. 하드 드라이브 공간 및 권한을 확인한 다음 다시 시도해 주세요.</translation>
 <translation id="3695919544155087829">인증서 파일을 암호화할 때 사용한 비밀번호를 입력하세요.</translation>
 <translation id="3696411085566228381">없음</translation>
 <translation id="3697100740575341996">IT 관리자가 내 기기에 Chrome Goodies를 이용할 수 없도록 설정했습니다. <ph name="MORE_INFO_LINK" /></translation>
@@ -2350,7 +2346,6 @@
 <translation id="4345703751611431217">소프트웨어 비호환성: 자세히 알아보기</translation>
 <translation id="4348766275249686434">오류 수집</translation>
 <translation id="4350019051035968019">이 기기는 다른 도메인에서 관리하는 것으로 표시되어 있기 때문에 사용자의 계정이 속한 도메인에 등록할 수 없습니다.</translation>
-<translation id="4352333825734680558">새로운 관리 대상 사용자를 만들지 못했습니다. 네트워크 연결을 확인한 다음 나중에 다시 시도해 주세요.</translation>
 <translation id="4358697938732213860">주소 추가</translation>
 <translation id="4359408040881008151">함께 설치된 확장 프로그램입니다.</translation>
 <translation id="4361190688154226069">보기에 사각형 기반 타겟팅 사용</translation>
@@ -2614,7 +2609,7 @@
 <translation id="4792711294155034829">문제 신고(&amp;R)...</translation>
 <translation id="479280082949089240">이 페이지에서 설정된 쿠키</translation>
 <translation id="4793866834012505469">음성 모델 재교육</translation>
-<translation id="479536056609751218">웹페이지, HTML 전용</translation>
+<translation id="479536056609751218">웹페이지, HTML만</translation>
 <translation id="479989351350248267">검색</translation>
 <translation id="4801257000660565496">애플리케이션 바로가기 만들기</translation>
 <translation id="4801448226354548035">계정 숨기기</translation>
@@ -3025,7 +3020,6 @@
 <translation id="5388588172257446328">사용자 이름:</translation>
 <translation id="5390284375844109566">색인화된 데이터베이스</translation>
 <translation id="5392544185395226057">기본 클라이언트 지원을 사용하도록 설정합니다.</translation>
-<translation id="5393125431335030955">이 플러그인은 데스크톱에서만 작동합니다.</translation>
 <translation id="5396126354477659676"><ph name="PEPPER_PLUGIN_DOMAIN" />의 <ph name="PEPPER_PLUGIN_NAME" />이(가) 사용자 컴퓨터에 액세스하려고 합니다.</translation>
 <translation id="539755880180803351">자리표시자 텍스트로 자동완성 필드 유형을 사용하여 웹 양식 메모를 답니다.</translation>
 <translation id="5397578532367286026">관리자(<ph name="MANAGER_EMAIL" />)는 chrome.com에서 해당 사용자의 사용 및 방문 기록을 검토할 수 있습니다.</translation>
@@ -3290,7 +3284,6 @@
 <translation id="57646104491463491">수정된 날짜</translation>
 <translation id="5765491088802881382">사용할 수 있는 네트워크가 없습니다.</translation>
 <translation id="5765780083710877561">설명:</translation>
-<translation id="5770385044111747894">NPAPI</translation>
 <translation id="5771585441665576801">음역(geia → γεια)</translation>
 <translation id="5771816112378578655">설정 진행 중...</translation>
 <translation id="5771849619911534867">기기 검색이 중단되었습니다.</translation>
@@ -3767,7 +3760,7 @@
 <translation id="6519437681804756269">[<ph name="TIMESTAMP" />]
         <ph name="FILE_INFO" />
         <ph name="EVENT_NAME" /></translation>
-<translation id="6526654154229718724">키보드 잠금 모드를 사용하는 실험 전체화면을 종료하려면 ESC 키를 길게 누르세요.</translation>
+<translation id="6526654154229718724">실험적 키보드 잠금 모드를 사용하는 전체화면을 종료하려면 ESC 키를 길게 누르세요.</translation>
 <translation id="6527303717912515753">공유</translation>
 <translation id="6528546217685656218">이 클라이언트 인증서의 비공개 키가 없거나 잘못되었습니다.</translation>
 <translation id="653019979737152879"><ph name="FILE_NAME" />을(를) 동기화하는 중...</translation>
@@ -3925,7 +3918,6 @@
 <translation id="6793649375377511437">Google Copresence 정보</translation>
 <translation id="6797493596609571643">문제가 발생했습니다.</translation>
 <translation id="6798954102094737107">플러그인: <ph name="PLUGIN_NAME" /></translation>
-<translation id="6799646767877093143">이 사이트는 곧 지원이 중단되는 플러그인(<ph name="PLUGIN_NAME" />)을 사용합니다.</translation>
 <translation id="6802031077390104172"><ph name="USAGE" />(<ph name="OID" />)</translation>
 <translation id="6804671422566312077">모든 북마크를 새 창에서 열기(&amp;N)</translation>
 <translation id="6805647936811177813"><ph name="TOKEN_NAME" />에 로그인하여 <ph name="HOST_NAME" />에서 클라이언트 인증서를 가져오세요.</translation>
@@ -4922,7 +4914,6 @@
 <translation id="8267698848189296333"><ph name="USERNAME" />(으)로 로그인</translation>
 <translation id="8272443605911821513">'추가 도구' 메뉴에서 확장 프로그램을 클릭하여 확장 프로그램을 관리할 수 있습니다.</translation>
 <translation id="8273972836055206582"><ph name="FULLSCREEN_ORIGIN" />이(가) 현재 전체화면으로 전환되었으며 마우스 커서를 사용 중지하려고 합니다.</translation>
-<translation id="8274860189261120948">저장된 사용자 인증 정보를 사용하여 자동으로 웹사이트에 로그인합니다. 이 기능이 꺼져 있는 경우에는 웹사이트에 로그인할 때마다 확인 요청 메시지가 표시됩니다.</translation>
 <translation id="8275038454117074363">가져오기</translation>
 <translation id="8276560076771292512">캐시 비우기 및 강력 새로고침</translation>
 <translation id="8279388322240498158">소라니 쿠르드어 영어 기반 키보드</translation>
@@ -5107,7 +5098,6 @@
 <translation id="8571108619753148184">서버 4</translation>
 <translation id="8572832761467613633">Flash만 해당</translation>
 <translation id="8572981282494768930">내 카메라 및 마이크에 대한 모든 사이트의 액세스를 허용 안 함</translation>
-<translation id="8574794171590710404">이 사이트는 지원되지 않는 플러그인(<ph name="PLUGIN_NAME" />)을 사용합니다.</translation>
 <translation id="857779305329188634">실험용 QUIC 프로토콜 지원을 사용하도록 설정합니다.</translation>
 <translation id="8579285237314169903"><ph name="NUMBER_OF_FILES" />개 항목 동기화 중...</translation>
 <translation id="8579549103199280730">기본적으로 확인</translation>
@@ -5115,7 +5105,6 @@
 <translation id="8581690024797204327">256</translation>
 <translation id="8581809080475256101">앞으로 이동하려면 앞으로 버튼을 누르고, 방문 기록을 보려면 컨텍스트 메뉴 키를 누릅니다.</translation>
 <translation id="8584280235376696778">새 탭에서 동영상 열기(&amp;O)</translation>
-<translation id="8585103164112230633">이 사용자가 방문하는 웹사이트를 관리 및 조회</translation>
 <translation id="8589311641140863898">실험실 확장 프로그램 API</translation>
 <translation id="8590375307970699841">자동 업데이트 설정</translation>
 <translation id="8592071947729879125">iframe 권한 제한</translation>
@@ -5263,7 +5252,6 @@
 <translation id="878069093594050299">이 인증서는 다음 용도로 확인되었습니다.</translation>
 <translation id="8782565991310229362">키오스크 애플리케이션 실행이 취소되었습니다.</translation>
 <translation id="8783093612333542422">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt;님이 프린터(&lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt;) 공유를 요청했습니다.</translation>
-<translation id="878431691778285679">이미 해당 이름으로 사용자를 관리 중인 것 같습니다.<ph name="LINE_BREAK" /><ph name="BEGIN_LINK" /><ph name="PROFILE_NAME" />을(를) 이 기기로 가져오시겠습니까<ph name="END_LINK" />?</translation>
 <translation id="8784626084144195648">비닝 평균</translation>
 <translation id="8785135611469711856">플러그인 응답 없음</translation>
 <translation id="8787254343425541995">공유 네트워크에서 프록시 허용</translation>

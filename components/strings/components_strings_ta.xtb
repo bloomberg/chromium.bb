@@ -548,7 +548,6 @@
 <translation id="7186367841673660872">இந்தப் பக்கமானது<ph name="ORIGINAL_LANGUAGE" />இலிருந்து<ph name="LANGUAGE_LANGUAGE" />க்கு மொழிபெயர்க்கப்பட்டது</translation>
 <translation id="719464814642662924">Visa</translation>
 <translation id="720210938761809882">பக்கம் தடுக்கப்பட்டது</translation>
-<translation id="7208899522964477531"><ph name="SITE_NAME" /> தளத்தில் <ph name="SEARCH_TERMS" /> என்பதைத் தேடு</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> பாதுகாப்புத் தரநிலைகளுக்கு உட்படவில்லை.</translation>
 <translation id="721197778055552897">இந்த சிக்கல் குறித்து <ph name="BEGIN_LINK" />மேலும் அறிக<ph name="END_LINK" />.</translation>
 <translation id="7219179957768738017">இணைப்பு <ph name="SSL_VERSION" /> ஐப் பயன்படுத்துகிறது.</translation>
@@ -630,7 +629,6 @@
 <translation id="7951415247503192394">(32-பிட்)</translation>
 <translation id="7956713633345437162">மொபைல் புக்மார்க்குகள்</translation>
 <translation id="7961015016161918242">எப்போதும் இல்லை</translation>
-<translation id="7977590112176369853">&lt;வினவலை உள்ளிடுக&gt;</translation>
 <translation id="7983301409776629893"><ph name="ORIGINAL_LANGUAGE" /> ஐ <ph name="TARGET_LANGUAGE" /> க்கு எப்போதும் மொழிபெயர்ப்பு செய்க</translation>
 <translation id="7995512525968007366">குறிப்பிடப்படவில்லை</translation>
 <translation id="8012647001091218357">தற்போது எங்களால் உங்கள் பெற்றோர்களைத் தொடர்புகொள்ள முடியவில்லை. மீண்டும் முயற்சிக்கவும்.</translation>
@@ -707,7 +705,6 @@
 <translation id="8903921497873541725">பெரிதாக்கு</translation>
 <translation id="8931333241327730545">இந்தக் கார்டை உங்கள் Google கணக்கில் சேமிக்க வேண்டுமா?</translation>
 <translation id="8932102934695377596">உங்கள் கடிகாரம் மிகவும் பின்தங்கி இருக்கிறது</translation>
-<translation id="8940229512486821554"><ph name="EXTENSION_NAME" /> கட்டளையை இயக்கு: <ph name="SEARCH_TERMS" /></translation>
 <translation id="8954894007019320973">(தொடர்கிறது)</translation>
 <translation id="8971063699422889582">சேவையகச் சான்றிதழ் காலாவதியானது.</translation>
 <translation id="8987927404178983737">மாதம்</translation>

@@ -277,7 +277,6 @@
 <translation id="1407050882688520094">Tienes certificados archivados que identifican a estas entidades de certificación:</translation>
 <translation id="1407489512183974736">Centrar imagen recortada</translation>
 <translation id="1408789165795197664">Avanzado...</translation>
-<translation id="1408803555324839240">No se pudo crear el nuevo usuario supervisado. Asegúrate de haber accedido correctamente y vuelve a intentarlo.</translation>
 <translation id="1409390508152595145">Crear usuario supervisado</translation>
 <translation id="1410616244180625362">Seguir permitiendo que <ph name="HOST" /> acceda a la cámara</translation>
 <translation id="1413372529771027206">El teléfono utilizado para Smart Lock cambió. Escribe tu contraseña para actualizar Smart Lock para Chromebook en este dispositivo. La próxima vez, puedes simplemente hacer clic en la imagen para ingresar.</translation>
@@ -1596,7 +1595,6 @@ Revisa tu correo electrónico <ph name="ACCOUNT_EMAIL" /> para consultar estas y
 <translation id="3277710850168074473">Requisito de gesto del usuario para la reproducción de elementos multimedia. Si se inhabilita esta función, podrá funcionar la reproducción automática.</translation>
 <translation id="3280237271814976245">Gu&amp;ardar como...</translation>
 <translation id="3280431534455935878">Preparando la descarga</translation>
-<translation id="3284674070818187654">Es posible que Google use tu historial de navegación para personalizar Búsqueda y otros servicios de Google. Puedes controlar esta configuración en myaccount.google.com.</translation>
 <translation id="3285322247471302225">Nueva pes&amp;taña en</translation>
 <translation id="3288047731229977326">Las extensiones que se ejecutan en modo de programador pueden dañar tu computadora. Si no eres programador, debes inhabilitar las extensiones que se ejecutan en modo de programador para mantenerte protegido.</translation>
 <translation id="3289566588497100676">Ingreso fácil de símbolos</translation>
@@ -1703,7 +1701,6 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3413122095806433232">Emisores de certificados: <ph name="LOCATION" /></translation>
 <translation id="3414856743105198592">El formato de los medios extraíbles borrará todos los datos. ¿Deseas continuar?</translation>
 <translation id="3414952576877147120">Tamaño:</translation>
-<translation id="3416248389957650982">Abrir myaccount.google.com después de acceder</translation>
 <translation id="3420980393175304359">Cambiar de persona</translation>
 <translation id="3423858849633684918">Se debe reiniciar <ph name="PRODUCT_NAME" /></translation>
 <translation id="3425233587047449821">Nuevo IME coreano</translation>
@@ -1918,7 +1915,6 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3694027410380121301">Seleccionar la pestaña anterior</translation>
 <translation id="3694122362646626770">Sitios web</translation>
 <translation id="3694678678240097321">Requiere el consentimiento del usuario para utilizar una extensión que ejecuta una secuencia de comandos en la página si la extensión solicitó permiso para ejecutarse en todas las URL.</translation>
-<translation id="36954862089075551">No se pudo crear el usuario. Comprueba los permisos y el espacio del disco rígido, y vuelve a intentarlo.</translation>
 <translation id="3695919544155087829">Ingresa la contraseña que fue utilizada para encriptar este archivo de certificado.</translation>
 <translation id="3696411085566228381">ninguno</translation>
 <translation id="3697100740575341996">El administrador de TI inhabilitó los accesorios de Chrome para tu dispositivo. <ph name="MORE_INFO_LINK" /></translation>
@@ -2346,7 +2342,6 @@ Presiona cualquier tecla para seguir navegando.</translation>
 <translation id="4345703751611431217">Incompatibilidad de software: más información</translation>
 <translation id="4348766275249686434">Recopilar errores</translation>
 <translation id="4350019051035968019">Este dispositivo no se puede registrar en el dominio al que pertenece tu cuenta porque ya lo administra otro dominio.</translation>
-<translation id="4352333825734680558">No se pudo crear el usuario supervisado. Comprueba la conexión de red y vuelve a intentarlo más tarde.</translation>
 <translation id="4358697938732213860">Agregar una dirección</translation>
 <translation id="4359408040881008151">Instalada a causa de las extensiones dependientes</translation>
 <translation id="4361190688154226069">Destino basado en rectángulo en las vistas</translation>
@@ -3020,7 +3015,6 @@ Presiona cualquier tecla para seguir con navegando.</translation>
 <translation id="5388588172257446328">Nombre de usuario:</translation>
 <translation id="5390284375844109566">Base de datos indexada</translation>
 <translation id="5392544185395226057">Activar asistencia para Native Client</translation>
-<translation id="5393125431335030955">El complemento solamente funciona en el escritorio.</translation>
 <translation id="5396126354477659676"><ph name="PEPPER_PLUGIN_NAME" /> del dominio <ph name="PEPPER_PLUGIN_DOMAIN" /> desea acceder a tu computadora.</translation>
 <translation id="539755880180803351">Anota los formularios web con las predicciones del tipo de campo Autocompletar como texto del marcador.</translation>
 <translation id="5397578532367286026">El administrador (<ph name="MANAGER_EMAIL" />) puede revisar el uso y el historial de este usuario en la página chrome.com.</translation>
@@ -3285,7 +3279,6 @@ Presiona cualquier tecla para seguir con navegando.</translation>
 <translation id="57646104491463491">Fecha de modificación</translation>
 <translation id="5765491088802881382">No hay redes disponibles</translation>
 <translation id="5765780083710877561">Descripción:</translation>
-<translation id="5770385044111747894">NPAPI</translation>
 <translation id="5771585441665576801">Transliteración (geia → γεια)</translation>
 <translation id="5771816112378578655">Configuración en progreso...</translation>
 <translation id="5771849619911534867">Se detuvo la búsqueda de dispositivos.</translation>
@@ -3918,7 +3911,6 @@ Presiona cualquier tecla para seguir con navegando.</translation>
 <translation id="6793649375377511437">Información de copresencia de Google</translation>
 <translation id="6797493596609571643">Se produjo un error.</translation>
 <translation id="6798954102094737107">Complemento: <ph name="PLUGIN_NAME" /></translation>
-<translation id="6799646767877093143">Este sitio usa un complemento (<ph name="PLUGIN_NAME" />) que pronto no se admitirá.</translation>
 <translation id="6802031077390104172"><ph name="USAGE" /> (<ph name="OID" />)</translation>
 <translation id="6804671422566312077">Abrir todos los marcadores en una ventana &amp;nueva</translation>
 <translation id="6805647936811177813">Accede a <ph name="TOKEN_NAME" /> para importar el certificado de cliente desde <ph name="HOST_NAME" />.</translation>
@@ -4912,7 +4904,6 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8267698848189296333">Acceder como <ph name="USERNAME" /></translation>
 <translation id="8272443605911821513">Para administrar tus extensiones, haz clic en Extensiones en el menú "Más herramientas".</translation>
 <translation id="8273972836055206582"><ph name="FULLSCREEN_ORIGIN" /> se está visualizando en pantalla completa y desea inhabilitar el cursor del mouse.</translation>
-<translation id="8274860189261120948">Accede automáticamente a los sitios web con las credenciales almacenadas. Si la función está inhabilitada, deberás confirmar siempre tu identidad para acceder a un sitio web.</translation>
 <translation id="8275038454117074363">Importar</translation>
 <translation id="8276560076771292512">Vaciar caché y volver a cargar de manera forzada</translation>
 <translation id="8279388322240498158">Teclado kurdo sorani basado en el inglés</translation>
@@ -5096,7 +5087,6 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8571108619753148184">Servidor 4</translation>
 <translation id="8572832761467613633">Solo Flash</translation>
 <translation id="8572981282494768930">No permitir que ningún sitio acceda a la cámara ni al micrófono</translation>
-<translation id="8574794171590710404">Este sitio usa un complemento (<ph name="PLUGIN_NAME" />) que no se admite.</translation>
 <translation id="857779305329188634">Permite habilitar la admisión del protocolo QUIC experimental.</translation>
 <translation id="8579285237314169903">Sincronizando <ph name="NUMBER_OF_FILES" /> elementos…</translation>
 <translation id="8579549103199280730">Preguntar de forma predeterminada</translation>
@@ -5104,7 +5094,6 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8581690024797204327">256</translation>
 <translation id="8581809080475256101">Presiona para avanzar; usa el menú contextual para consultar el historial</translation>
 <translation id="8584280235376696778">Abrir video en una nueva pestaña</translation>
-<translation id="8585103164112230633">Controlar y ver los sitios web que esta persona visita desde</translation>
 <translation id="8589311641140863898">Extensión experimental API</translation>
 <translation id="8590375307970699841">Configurar actualizaciones automáticas</translation>
 <translation id="8592071947729879125">Restringe los permisos de iframe.</translation>
@@ -5252,7 +5241,6 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="878069093594050299">Este certificado se verificó para los siguientes usos:</translation>
 <translation id="8782565991310229362">Se canceló el inicio de la aplicación del kiosco.</translation>
 <translation id="8783093612333542422">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; quiere compartir una impresora (&lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt;) contigo.</translation>
-<translation id="878431691778285679">Parece que ya administras un usuario que tiene ese nombre.<ph name="LINE_BREAK" />¿Quieres <ph name="BEGIN_LINK" />importar a <ph name="PROFILE_NAME" /> a este dispositivo<ph name="END_LINK" />?</translation>
 <translation id="8784626084144195648">Promedio de datos agrupados</translation>
 <translation id="8785135611469711856">El complemento no responde</translation>
 <translation id="8787254343425541995">Permitir proxies para redes compartidas</translation>

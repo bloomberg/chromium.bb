@@ -277,7 +277,6 @@
 <translation id="1407050882688520094">คุณมีใบรับรองของไฟล์ซึ่งระบุตัวตนของผู้ออกใบรับรองต่อไปนี้:</translation>
 <translation id="1407489512183974736">ครอบตัดที่กึ่งกลาง</translation>
 <translation id="1408789165795197664">ขั้นสูง...</translation>
-<translation id="1408803555324839240">อ๊ะ! ไม่สามารถสร้างผู้ใช้ภายใต้การดูแลรายใหม่ได้ โปรดตรวจสอบว่าคุณได้ลงชื่อเข้าใช้อย่างถูกต้องและพยายามอีกครั้ง</translation>
 <translation id="1409390508152595145">สร้างผู้ใช้ภายใต้การดูแล</translation>
 <translation id="1410616244180625362">อนุญาตให้ <ph name="HOST" /> เข้าถึงกล้องต่อไป</translation>
 <translation id="1413372529771027206">โทรศัพท์ที่ใช้สำหรับ Smart Lock มีการเปลี่ยนแปลง โปรดพิมพ์รหัสผ่านเพื่ออัปเดต Smart Lock สำหรับ Chromebook บนอุปกรณ์นี้ คุณจะสามารถคลิกรูปภาพเพื่อป้อนรหัสผ่านได้ในครั้งถัดไป</translation>
@@ -1599,7 +1598,6 @@
 <translation id="3277710850168074473">ข้อกำหนดท่าทางสัมผัสของผู้ใช้สำหรับการเล่นเอลิเมนต์สื่อ การปิดใช้คุณลักษณะนี้จะอนุญาตให้เล่นอัตโนมัติได้</translation>
 <translation id="3280237271814976245">บันทึกใ&amp;ห้เป็น...</translation>
 <translation id="3280431534455935878">กำลังเตรียม</translation>
-<translation id="3284674070818187654">Google อาจใช้ประวัติการเข้าชมของคุณเพื่อปรับเปลี่ยน Search และบริการอื่นๆ ของ Google ในแบบของคุณ คุณสามารถควบคุมคุณลักษณะนี้ได้ที่ myaccount.google.com</translation>
 <translation id="3285322247471302225">แ&amp;ท็บใหม่</translation>
 <translation id="3288047731229977326">ส่วนขยายที่ทำงานอยู่ในโหมดนักพัฒนาซอฟต์แวร์อาจเป็นอันตรายต่อคอมพิวเตอร์ของคุณ หากคุณไม่ใช่นักพัฒนาซอฟต์แวร์ คุณควรปิดส่วนขยายที่ทำงานอยู่ในโหมดนักพัฒนาซอฟต์แวร์เพื่อรักษาความปลอดภัย</translation>
 <translation id="3289566588497100676">การป้อนสัญลักษณ์แบบง่าย</translation>
@@ -1705,7 +1703,6 @@
 <translation id="3413122095806433232">ผู้ออก CA: <ph name="LOCATION" /></translation>
 <translation id="3414856743105198592">การฟอร์แมตอุปกรณ์แบบถอดได้จะทำให้ข้อมูลทั้งหมดถูกลบออก คุณต้องการดำเนินการต่อหรือไม่</translation>
 <translation id="3414952576877147120">ขนาด:</translation>
-<translation id="3416248389957650982">เปิด myaccount.google.com หลังจากลงชื่อเข้าใช้</translation>
 <translation id="3420980393175304359">เปลี่ยนบุคคล</translation>
 <translation id="3423858849633684918">โปรดเปิดใช้งาน <ph name="PRODUCT_NAME" /> ใหม่</translation>
 <translation id="3425233587047449821">IME ภาษาเกาหลีใหม่</translation>
@@ -1920,7 +1917,6 @@
 <translation id="3694027410380121301">เลือกแท็บก่อนหน้า</translation>
 <translation id="3694122362646626770">เว็บไซต์</translation>
 <translation id="3694678678240097321">การเรียกใช้สคริปต์บนหน้านี้ของส่วนขยายต้องได้รับการยินยอมจากผู้ใช้ หากส่วนขยายขอสิทธิ์ในการทำงานบนทุก URL</translation>
-<translation id="36954862089075551">อ๊ะ! ไม่สามารถสร้างผู้ใช้ใหม่ได้ โปรดตรวจสอบพื้นที่ว่างในฮาร์ดไดร์ฟและสิทธิ์ของคุณ และลองอีกครั้ง</translation>
 <translation id="3695919544155087829">โปรดป้อนรหัสผ่านที่ใช้เข้ารหัสไฟล์ใบรับรองนี้</translation>
 <translation id="3696411085566228381">ไม่มี</translation>
 <translation id="3697100740575341996">ผู้ดูแลระบบไอทีของคุณปิดใช้ Chrome Goodies สำหรับอุปกรณ์ <ph name="MORE_INFO_LINK" /></translation>
@@ -2348,7 +2344,6 @@
 <translation id="4345703751611431217">ความเข้ากันไม่ได้ของซอฟต์แวร์: เรียนรู้เพิ่มเติม</translation>
 <translation id="4348766275249686434">รวบรวมข้อผิดพลาด</translation>
 <translation id="4350019051035968019">ไม่สามารถลงทะเบียนอุปกรณ์นี้กับโดเมนที่บัญชีของคุณใช้อยู่ได้ เนื่องจากอุปกรณ์มีการทำเครื่องหมายไว้ว่าได้รับการจัดการจากโดเมนอื่น</translation>
-<translation id="4352333825734680558">อ๊ะ! ไม่สามารถสร้างผู้ใช้ใหม่ภายใต้การดูแลได้ โปรดตรวจสอบการเชื่อมต่อเครือข่ายและลองอีกครั้งในภายหลัง</translation>
 <translation id="4358697938732213860">เพิ่มที่อยู่</translation>
 <translation id="4359408040881008151">ติดตั้งแล้วเนื่องจากมีส่วนขยายที่ต้องพึ่งพา</translation>
 <translation id="4361190688154226069">การกำหนดเป้าหมายแบบรูปสี่เหลี่ยมผืนผ้าในมุมมองต่างๆ</translation>
@@ -3022,7 +3017,6 @@
 <translation id="5388588172257446328">ชื่อผู้ใช้:</translation>
 <translation id="5390284375844109566">ฐานข้อมูลที่มีการจัดทำดัชนี</translation>
 <translation id="5392544185395226057">เปิดใช้งานการสนับสนุนสำหรับ Native Client</translation>
-<translation id="5393125431335030955">ปลั๊กอินนี้จะทำงานบนเดสก์ท็อปเท่านั้น</translation>
 <translation id="5396126354477659676"><ph name="PEPPER_PLUGIN_NAME" /> บน <ph name="PEPPER_PLUGIN_DOMAIN" /> ต้องการเข้าถึงคอมพิวเตอร์ของคุณ</translation>
 <translation id="539755880180803351">ป้อนข้อมูลในเว็บฟอร์มด้วยการคาดคะเนประเภทฟิลด์การป้อนอัตโนมัติเป็นข้อความตัวยึด</translation>
 <translation id="5397578532367286026">การใช้งานและประวัติของผู้ใช้รายนี้อาจถูกตรวจสอบโดยผู้จัดการ (<ph name="MANAGER_EMAIL" />) บน chrome.com</translation>
@@ -3287,7 +3281,6 @@
 <translation id="57646104491463491">วันที่แก้ไข</translation>
 <translation id="5765491088802881382">ไม่พบเครือข่ายใด</translation>
 <translation id="5765780083710877561">คำอธิบาย:</translation>
-<translation id="5770385044111747894">NPAPI</translation>
 <translation id="5771585441665576801">การทับศัพท์ (geia → γεια)</translation>
 <translation id="5771816112378578655">กำลังดำเนินการตั้งค่า...</translation>
 <translation id="5771849619911534867">การสแกนอุปกรณ์หยุดทำงาน</translation>
@@ -3920,7 +3913,6 @@
 <translation id="6793649375377511437">ข้อมูล Google Copresence</translation>
 <translation id="6797493596609571643">อ๊ะ เกิดข้อผิดพลาดบางอย่าง</translation>
 <translation id="6798954102094737107">ปลั๊กอิน: <ph name="PLUGIN_NAME" /></translation>
-<translation id="6799646767877093143">เว็บไซต์นี้ใช้ปลั๊กอิน (<ph name="PLUGIN_NAME" />) ซึ่งจะยกเลิกการสนับสนุนในเร็วๆ นี้</translation>
 <translation id="6802031077390104172"><ph name="USAGE" /> (<ph name="OID" />)</translation>
 <translation id="6804671422566312077">เปิดบุ๊กมาร์กทั้งหมดใน&amp;หน้าต่างใหม่</translation>
 <translation id="6805647936811177813">โปรดลงชื่อเข้าใช้ <ph name="TOKEN_NAME" /> เพื่อนำเข้าใบรับรองไคลเอ็นต์จาก <ph name="HOST_NAME" /></translation>
@@ -4914,7 +4906,6 @@
 <translation id="8267698848189296333">ลงชื่อเข้าใช้ด้วย <ph name="USERNAME" /></translation>
 <translation id="8272443605911821513">จัดการส่วนขยายของคุณโดยคลิกที่ "ส่วนขยาย" ในเมนู "เครื่องมือเพิ่มเติม"</translation>
 <translation id="8273972836055206582"><ph name="FULLSCREEN_ORIGIN" /> แสดงแบบเต็มหน้าจออยู่และต้องการปิดใช้งานเคอร์เซอร์เมาส์</translation>
-<translation id="8274860189261120948">ลงชื่อเข้าใช้เว็บไซต์โดยอัตโนมัติโดยใช้ข้อมูลรับรองที่เก็บไว้ เมื่อคุณลักษณะนี้ปิดอยู่ ระบบจะขอให้คุณยืนยันทุกครั้งก่อนลงชื่อเข้าใช้เว็บไซต์</translation>
 <translation id="8275038454117074363">การนำเข้า</translation>
 <translation id="8276560076771292512">ล้างแคชและโหลดซ้ำแบบดึงข้อมูลใหม่ทั้งหมด</translation>
 <translation id="8279388322240498158">แป้นพิมพ์ภาษาเคิร์ดโซรานีแบบอังกฤษ</translation>
@@ -5098,7 +5089,6 @@
 <translation id="8571108619753148184">เซิร์ฟเวอร์ 4</translation>
 <translation id="8572832761467613633">Flash เท่านั้น</translation>
 <translation id="8572981282494768930">ไม่อนุญาตให้ไซต์เข้าถึงกล้องและไมโครโฟนของคุณ</translation>
-<translation id="8574794171590710404">เว็บไซต์นี้ใช้ปลั๊กอิน (<ph name="PLUGIN_NAME" />) ที่ไม่ได้รับการสนับสนุน</translation>
 <translation id="857779305329188634">เปิดใช้งานการสนับสนุนโปรโตคอลทดลอง QUIC</translation>
 <translation id="8579285237314169903">กำลังซิงค์ <ph name="NUMBER_OF_FILES" /> รายการ...</translation>
 <translation id="8579549103199280730">ถามโดยค่าเริ่มต้น</translation>
@@ -5106,7 +5096,6 @@
 <translation id="8581690024797204327">256</translation>
 <translation id="8581809080475256101">กดเพื่อไปต่อที่เมนูตามบริบทเพื่อดูประวัติ</translation>
 <translation id="8584280235376696778">เ&amp;ปิดวิดีโอในแท็บใหม่</translation>
-<translation id="8585103164112230633">ควบคุมและดูเว็บไซต์ที่บุคคลนี้เข้าชมจาก</translation>
 <translation id="8589311641140863898">API ส่วนขยายที่อยู่ในช่วงทดลอง</translation>
 <translation id="8590375307970699841">ติดตั้งการอัปเดตอัตโนมัติ</translation>
 <translation id="8592071947729879125">จำกัดสิทธิ์ของ iframe</translation>
@@ -5254,7 +5243,6 @@
 <translation id="878069093594050299">ใบรับรองนี้ได้รับการตรวจสอบเพื่อการใช้งานดังต่อไปนี้:</translation>
 <translation id="8782565991310229362">การเรียกใช้แอปพลิเคชันคีออสก์ถูกยกเลิก</translation>
 <translation id="8783093612333542422">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; ต้องการแชร์เครื่องพิมพ์ &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; กับคุณ</translation>
-<translation id="878431691778285679">ดูเหมือนว่าคุณกำลังจัดการผู้ใช้ที่ชื่อนั้นอยู่แล้ว<ph name="LINE_BREAK" />คุณต้องการ <ph name="BEGIN_LINK" />นำเข้า <ph name="PROFILE_NAME" /> มายังอุปกรณ์นี้<ph name="END_LINK" />ไหม</translation>
 <translation id="8784626084144195648">เฉลี่ยรวม</translation>
 <translation id="8785135611469711856">ปลั๊กอินไม่ตอบสนอง</translation>
 <translation id="8787254343425541995">อนุญาตให้ใช้พร็อกซีสำหรับเครือข่ายที่แชร์ไว้</translation>

@@ -553,7 +553,6 @@
 <translation id="7186367841673660872">Ова страница је преведена са језика:<ph name="ORIGINAL_LANGUAGE" />на<ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="719464814642662924">Visa</translation>
 <translation id="720210938761809882">Страница је блокирана</translation>
-<translation id="7208899522964477531">Претражи <ph name="SEARCH_TERMS" /> на <ph name="SITE_NAME" /></translation>
 <translation id="7210863904660874423">Хост <ph name="HOST_NAME" /> не поштује безбедносне стандарде.</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Сазнајте више<ph name="END_LINK" /> о овом проблему.</translation>
 <translation id="7219179957768738017">Веза користи <ph name="SSL_VERSION" />.</translation>
@@ -635,7 +634,6 @@
 <translation id="7951415247503192394">(32-битни)</translation>
 <translation id="7956713633345437162">Обележивачи на мобилном уређају</translation>
 <translation id="7961015016161918242">Никад</translation>
-<translation id="7977590112176369853">&lt;унесите упит&gt;</translation>
 <translation id="7983301409776629893">Увек преводи са језика: <ph name="ORIGINAL_LANGUAGE" /> на <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="7995512525968007366">Није наведено</translation>
 <translation id="8012647001091218357">Тренутно не можемо да контактирамо родитеље. Покушај поново.</translation>
@@ -709,7 +707,6 @@
 <translation id="8903921497873541725">Увећавање</translation>
 <translation id="8931333241327730545">Да ли желите да сачувате ову картицу на Google налог?</translation>
 <translation id="8932102934695377596">Сат вам касни</translation>
-<translation id="8940229512486821554">Покрените <ph name="EXTENSION_NAME" /> команду: <ph name="SEARCH_TERMS" /></translation>
 <translation id="8954894007019320973">(наставак)</translation>
 <translation id="8971063699422889582">Сертификат сервера је истекао.</translation>
 <translation id="8987927404178983737">Месец</translation>

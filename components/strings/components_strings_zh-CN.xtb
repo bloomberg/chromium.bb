@@ -539,7 +539,6 @@
 <translation id="7186367841673660872">已将此网页从<ph name="ORIGINAL_LANGUAGE" />翻译成<ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="719464814642662924">Visa</translation>
 <translation id="720210938761809882">已拦截网页</translation>
-<translation id="7208899522964477531">用 <ph name="SITE_NAME" /> 搜索“<ph name="SEARCH_TERMS" />”</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> 不符合相关安全标准。</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />详细了解<ph name="END_LINK" />此问题。</translation>
 <translation id="7219179957768738017">该连接使用 <ph name="SSL_VERSION" />。</translation>
@@ -621,7 +620,6 @@
 <translation id="7951415247503192394">（32 位）</translation>
 <translation id="7956713633345437162">移动设备书签</translation>
 <translation id="7961015016161918242">一律不</translation>
-<translation id="7977590112176369853">&lt;输入查询&gt;</translation>
 <translation id="7983301409776629893">一律将<ph name="ORIGINAL_LANGUAGE" />翻译成<ph name="TARGET_LANGUAGE" /></translation>
 <translation id="7995512525968007366">未指定</translation>
 <translation id="8012647001091218357">我们暂时无法与您父母取得联系，请重试。</translation>
@@ -695,7 +693,6 @@
 <translation id="8903921497873541725">放大</translation>
 <translation id="8931333241327730545">要将此卡的信息保存到您的 Google 帐户吗？</translation>
 <translation id="8932102934695377596">您的时钟慢了</translation>
-<translation id="8940229512486821554">运行 <ph name="EXTENSION_NAME" /> 命令：<ph name="SEARCH_TERMS" /></translation>
 <translation id="8954894007019320973">（续）</translation>
 <translation id="8971063699422889582">服务器的证书已过期。</translation>
 <translation id="8987927404178983737">月</translation>

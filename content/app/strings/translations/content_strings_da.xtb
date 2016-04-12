@@ -22,7 +22,7 @@
 <translation id="1758486001363313524">Andet...</translation>
 <translation id="1806710327868736751">alert_dialog</translation>
 <translation id="1821985195704844674">trægitter</translation>
-<translation id="1822429046913737220">AM/PM</translation>
+<translation id="1822429046913737220">f.m./e.m.</translation>
 <translation id="1832974991323546415">afspil på en enhed via fjernadgang</translation>
 <translation id="1842960171412779397">vælg</translation>
 <translation id="1880518467580572141">kontur</translation>
@@ -98,6 +98,7 @@
 <translation id="512758898067543763">rækkeoverskrift</translation>
 <translation id="5164977714490026579">Værdien skal være større end eller lig med <ph name="MINIMUM" />.</translation>
 <translation id="5307600278924710095">Angiv den del, der kommer før "<ph name="ATSIGN" />". "<ph name="INVALIDADDRESS" />" er ufuldstændig.</translation>
+<translation id="5317780077021120954">Gem</translation>
 <translation id="5406322316791861025">tal</translation>
 <translation id="5453733299334684579">træelement</translation>
 <translation id="5466621249238537318">Vælg en eller flere filer.</translation>

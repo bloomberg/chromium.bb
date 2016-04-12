@@ -554,7 +554,6 @@
 <translation id="7186367841673660872">Ezt az oldalt<ph name="ORIGINAL_LANGUAGE" />nyelvről fordítottuk<ph name="LANGUAGE_LANGUAGE" />nyelvre.</translation>
 <translation id="719464814642662924">Visa</translation>
 <translation id="720210938761809882">Az oldal letiltva</translation>
-<translation id="7208899522964477531">Keresés <ph name="SITE_NAME" /> keresővel a következő kifejezésre: "<ph name="SEARCH_TERMS" />"</translation>
 <translation id="7210863904660874423">A(z) <ph name="HOST_NAME" /> nem felel meg a biztonsági szabványoknak.</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />További információ<ph name="END_LINK" /> erről a hibáról.</translation>
 <translation id="7219179957768738017">A kapcsolat a következőt használja: <ph name="SSL_VERSION" />.</translation>
@@ -636,7 +635,6 @@ Pszt! Az inkognitómód (<ph name="SHORTCUT_KEY" />) hasznos lehet a következő
 <translation id="7951415247503192394">(32 bites)</translation>
 <translation id="7956713633345437162">Mobil könyvjelzők</translation>
 <translation id="7961015016161918242">Soha</translation>
-<translation id="7977590112176369853">&lt;lekérdezés megadása&gt;</translation>
 <translation id="7983301409776629893">A(z) <ph name="ORIGINAL_LANGUAGE" /> nyelvű szövegeket mindig fordítsa <ph name="TARGET_LANGUAGE" /> nyelvre</translation>
 <translation id="7995512525968007366">Nincs megadva</translation>
 <translation id="8012647001091218357">Jelenleg nem tudjuk elérni szüleidet. Próbálkozz újra.</translation>
@@ -717,7 +715,6 @@ Pszt! Az inkognitómód (<ph name="SHORTCUT_KEY" />) hasznos lehet a következő
 <translation id="8903921497873541725">Nagyítás</translation>
 <translation id="8931333241327730545">Menti ezt a kártyát a Google-fiókjába?</translation>
 <translation id="8932102934695377596">Késik az órája</translation>
-<translation id="8940229512486821554"><ph name="EXTENSION_NAME" /> futtatása a következő paranccsal: <ph name="SEARCH_TERMS" /></translation>
 <translation id="8954894007019320973">(Folyt.)</translation>
 <translation id="8971063699422889582">A szerver tanúsítványa lejárt.</translation>
 <translation id="8987927404178983737">hónap</translation>

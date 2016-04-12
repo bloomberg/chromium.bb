@@ -69,7 +69,6 @@ Se esegui comunque l'accesso, le informazioni di Chrome come Preferiti, cronolog
 <translation id="3080151273017101988">Continua a eseguire applicazioni in background dopo la chiusura di Google Chrome</translation>
 <translation id="3089968997497233615">È disponibile una nuova versione più sicura di Google Chrome.</translation>
 <translation id="3149510190863420837">Applicazioni Chrome</translation>
-<translation id="3197823471738295152">Il dispositivo è aggiornato.</translation>
 <translation id="3282568296779691940">Accedi a Chrome</translation>
 <translation id="3311976847535831054">Questo computer non riceverà più gli aggiornamenti di Google Chrome a 32 bit. Esegui l'upgrade a Google Chrome a 64 bit.</translation>
 <translation id="3360895254066713204">Supporto Chrome</translation>
@@ -212,6 +211,7 @@ Se esegui comunque l'accesso, le informazioni di Chrome come Preferiti, cronolog
 <translation id="8032142183999901390">Dopo avere rimosso il tuo account da Chrome, potresti dover ricaricare le schede aperte perché le modifiche vengano applicate.</translation>
 <translation id="8037887340639533879">Impossibile trovare un'installazione di Google Chrome da aggiornare.</translation>
 <translation id="8129812357326543296">Informazioni su &amp;Google Chrome</translation>
+<translation id="8183957050892517584">Chrome memorizzerà in sicurezza i tuoi dati personali affinché tu non debba digitarli di nuovo.</translation>
 <translation id="8205111949707227942">Facoltativo: aiutaci a migliorare Google Chrome OS inviando automaticamente a Google le statistiche sull'utilizzo e segnalazioni sugli arresti anomali.</translation>
 <translation id="8227755444512189073">Google Chrome deve avviare un'applicazione esterna per gestire i link <ph name="SCHEME" />. Il link richiesto è <ph name="PROTOLINK" />.</translation>
 <translation id="8255190535488645436">Google Chrome sta utilizzando videocamera e microfono.</translation>

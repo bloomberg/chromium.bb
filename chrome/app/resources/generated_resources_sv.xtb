@@ -277,7 +277,6 @@
 <translation id="1407050882688520094">Du har sparade certifikat som identifierar dessa certifikatutfärdare:</translation>
 <translation id="1407489512183974736">Centrera och beskär</translation>
 <translation id="1408789165795197664">Avancerat ...</translation>
-<translation id="1408803555324839240">Det gick tyvärr inte att skapa den nya övervakade användaren. Se till att du är rätt inloggad och försök igen.</translation>
 <translation id="1409390508152595145">Skapa en övervakad användare</translation>
 <translation id="1410616244180625362">Fortsätt tillåta att <ph name="HOST" /> använder kameran</translation>
 <translation id="1413372529771027206">Mobilen som används för Smart Lock har ändrats. Ange ditt lösenord för att uppdatera Smart Lock för Chromebook på den här enheten. Nästa gång klickar du bara på bilden för att öppna den.</translation>
@@ -1601,7 +1600,6 @@ Läs din e-post på <ph name="ACCOUNT_EMAIL" />. Där finns dessa och andra anvi
 <translation id="3277710850168074473">Krav på användarrörelser för uppspelning av media. Om du inaktiverar detta fungerar automatisk uppspelning.</translation>
 <translation id="3280237271814976245">Spara so&amp;m...</translation>
 <translation id="3280431534455935878">Förbereder</translation>
-<translation id="3284674070818187654">Google kan använda webbhistoriken för att anpassa Sök och andra tjänster från Google. Du kan styra detta på myaccount.google.com.</translation>
 <translation id="3285322247471302225">Ny &amp;flik</translation>
 <translation id="3288047731229977326">Tillägg som körs i utvecklarläge kan skada datorn. Om du inte är en utvecklare bör du inaktivera tillägg som körs i utvecklarläge för att skydda dig.</translation>
 <translation id="3289566588497100676">Enkel symbolinmatning</translation>
@@ -1708,7 +1706,6 @@ Från <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3413122095806433232">CA-utfärdare: <ph name="LOCATION" /></translation>
 <translation id="3414856743105198592">Om du formaterar det flyttbara mediet raderas alla data. Vill du fortsätta?</translation>
 <translation id="3414952576877147120">Storlek:</translation>
-<translation id="3416248389957650982">Öppna myaccount.google.com när du har loggat in</translation>
 <translation id="3420980393175304359">Byt till ett annat konto</translation>
 <translation id="3423858849633684918">Starta om <ph name="PRODUCT_NAME" /></translation>
 <translation id="3425233587047449821">Nytt IME för koreanska</translation>
@@ -1923,7 +1920,6 @@ Från <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3694027410380121301">Välj föregående flik</translation>
 <translation id="3694122362646626770">Webbplatser</translation>
 <translation id="3694678678240097321">Användaren måste ge sitt tillstånd för att ett tillägg ska få köra skript på sidan om tillägget har begärt behörighet att köras på alla webbadresser.</translation>
-<translation id="36954862089075551">Hoppsan! Det gick inte att skapa den nya användaren. Kontrollera hårddiskutrymmet och dina behörigheter och försök igen.</translation>
 <translation id="3695919544155087829">Ange lösenordet som användes vid krypteringen av certifikatfilen.</translation>
 <translation id="3696411085566228381">ingen</translation>
 <translation id="3697100740575341996">IT-administratören har inaktiverat godbitar från Chrome för din enhet. <ph name="MORE_INFO_LINK" /></translation>
@@ -2351,7 +2347,6 @@ Tryck på någon tangent om du vill fortsätta utforska.</translation>
 <translation id="4345703751611431217">Inkompatibel programvara: läs mer</translation>
 <translation id="4348766275249686434">Samla in fel</translation>
 <translation id="4350019051035968019">Det går inte att registrera enheten på samma domän som dina konton eftersom enheten har registrerats som hanterad av en annan domän.</translation>
-<translation id="4352333825734680558">Hoppsan! Den nya övervakade användaren gick inte att skapa. Kontrollera nätverksanslutningen och försök igen senare.</translation>
 <translation id="4358697938732213860">Lägg till en adress</translation>
 <translation id="4359408040881008151">Installerades på grund av ett eller flera tillägg som är beroende av detta tillägg.</translation>
 <translation id="4361190688154226069">Rektangelbaserad inriktning i visningar</translation>
@@ -3026,7 +3021,6 @@ Tryck på någon tangent om du vill fortsätta utforska.</translation>
 <translation id="5388588172257446328">Användarnamn:</translation>
 <translation id="5390284375844109566">Indexerad databas</translation>
 <translation id="5392544185395226057">Aktivera stöd för Native Client.</translation>
-<translation id="5393125431335030955">Det här pluginprogrammet fungerar bara på skrivbordet.</translation>
 <translation id="5396126354477659676"><ph name="PEPPER_PLUGIN_NAME" /> på <ph name="PEPPER_PLUGIN_DOMAIN" /> vill ha åtkomst till datorn.</translation>
 <translation id="539755880180803351">Fyller i webbformulär med förslag från Autofyll som platshållartext.</translation>
 <translation id="5397578532367286026">Användning och historik för den här användaren kan granskas av den ansvarige (<ph name="MANAGER_EMAIL" />) på chrome.com.</translation>
@@ -3291,7 +3285,6 @@ Tryck på någon tangent om du vill fortsätta utforska.</translation>
 <translation id="57646104491463491">Datum ändrad</translation>
 <translation id="5765491088802881382">Det finns inga nätverk</translation>
 <translation id="5765780083710877561">Beskrivning:</translation>
-<translation id="5770385044111747894">NPAPI</translation>
 <translation id="5771585441665576801">Translitterera (geia → γεια)</translation>
 <translation id="5771816112378578655">Konfigurationen pågår...</translation>
 <translation id="5771849619911534867">Enhetssökning stoppades.</translation>
@@ -3926,7 +3919,6 @@ Tryck på någon tangent om du vill fortsätta utforska.</translation>
 <translation id="6793649375377511437">Information om Google Copresence</translation>
 <translation id="6797493596609571643">Hoppsan! Ett fel uppstod.</translation>
 <translation id="6798954102094737107">Pluginprogram: <ph name="PLUGIN_NAME" /></translation>
-<translation id="6799646767877093143">Webbplatsen använder ett pluginprogram (<ph name="PLUGIN_NAME" />) som snart slutar stödjas.</translation>
 <translation id="6802031077390104172"><ph name="USAGE" /> (<ph name="OID" />)</translation>
 <translation id="6804671422566312077">Öppna alla bokmärken i &amp;nytt fönster</translation>
 <translation id="6805647936811177813">Logga in på <ph name="TOKEN_NAME" /> om du vill importera klientcertifikat från <ph name="HOST_NAME" />.</translation>
@@ -4919,7 +4911,6 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8267698848189296333">Loggar in som <ph name="USERNAME" /></translation>
 <translation id="8272443605911821513">Hantera dina tillägg genom att klicka på Tillägg i menyn Fler verktyg.</translation>
 <translation id="8273972836055206582"><ph name="FULLSCREEN_ORIGIN" /> är nu i helskärmsläge och försöker inaktivera muspekaren.</translation>
-<translation id="8274860189261120948">Logga in automatiskt på webbplatser med hjälp av lagrade inloggningsuppgifter. När funktionen är inaktiverad måste du bekräfta inloggningen varje gång du besöker en webbplats.</translation>
 <translation id="8275038454117074363">Importera</translation>
 <translation id="8276560076771292512">Tomt cacheminne och hård inläsning</translation>
 <translation id="8279388322240498158">Tangentbord på sorani/kurdiska och engelska</translation>
@@ -5103,7 +5094,6 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8571108619753148184">Server 4</translation>
 <translation id="8572832761467613633">Enbart Flash</translation>
 <translation id="8572981282494768930">Tillåt inte att webbplatser kommer åt kameran och mikrofonen</translation>
-<translation id="8574794171590710404">Webbplatsen använder ett pluginprogram (<ph name="PLUGIN_NAME" />) som inte stöds.</translation>
 <translation id="857779305329188634">Aktivera experimentellt stöd för QUIC-protokollet.</translation>
 <translation id="8579285237314169903">Synkroniserar <ph name="NUMBER_OF_FILES" /> objekt ...</translation>
 <translation id="8579549103199280730">Fråga som standard</translation>
@@ -5111,7 +5101,6 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8581690024797204327">256</translation>
 <translation id="8581809080475256101">Tryck här om du vill fortsätta till nästa, visa historiken med snabbmenyn</translation>
 <translation id="8584280235376696778">&amp;Öppna video i ny flik</translation>
-<translation id="8585103164112230633">Styr och visa vilka webbplatser den här personen besöker från</translation>
 <translation id="8589311641140863898">Tillägg med experimentella programmeringsgränssnitt</translation>
 <translation id="8590375307970699841">Konfigurera automatiska uppdateringar</translation>
 <translation id="8592071947729879125">Begränsa iframe-behörigheter.</translation>
@@ -5259,7 +5248,6 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="878069093594050299">Certifikatet har verifierats för följande användningsområden:</translation>
 <translation id="8782565991310229362">Starten av kioskappen avbröts.</translation>
 <translation id="8783093612333542422">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; vill dela skrivaren &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; med dig.</translation>
-<translation id="878431691778285679">Det ser ut som om du redan hanterar en användare med det namnet.<ph name="LINE_BREAK" />Ville du <ph name="BEGIN_LINK" />importera <ph name="PROFILE_NAME" /> till den här enheten<ph name="END_LINK" />?</translation>
 <translation id="8784626084144195648">Fackmedelvärde</translation>
 <translation id="8785135611469711856">Pluginprogrammet svarar inte</translation>
 <translation id="8787254343425541995">Tillåt proxyservrar för delade nätverk</translation>

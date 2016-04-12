@@ -4,52 +4,32 @@
 <translation id="1008557486741366299">اکنون نه</translation>
 <translation id="1047726139967079566">نشانک گذاری این صفحه...</translation>
 <translation id="1172898394251786223">فیلد بعدی</translation>
-<translation id="168328519870909584">ممکن است مهاجمین حاضر در <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> تلاش کنند برنامه‌های خطرناکی در دستگاهتان نصب کنند که اطلاعات شما (مانند عکس‌ها، گذرواژه‌ها، پیام‌ها و کارت‌های اعتباری) را سرقت یا حذف می‌کنند.</translation>
 <translation id="2320166752086256636">پنهان کردن صفحه‌کلید</translation>
 <translation id="2467815441875554965">جستجوی زمینه‌ای</translation>
 <translation id="2704606927547763573">کپی شد</translation>
 <translation id="2747003861858887689">فیلد قبلی</translation>
 <translation id="2780046210906776326">حساب ایمیلی وجود ندارد</translation>
-<translation id="2803306138276472711">‏Google Safe Browsing به تازگی در <ph name="SITE" />، ‏<ph name="BEGIN_LINK" />بدافزار شناسایی کرده است<ph name="END_LINK" />. گاهی اوقات وب‌سایت‌هایی که معمولاً ایمن هستند با بدافزار آلوده می‌شوند.</translation>
 <translation id="3244271242291266297">ماه</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />، ‏<ph name="ADDITIONAL_INFO" />، ‏<ph name="INDEX" /> از <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3335947283844343239">باز کردن مجدد برگه بسته شده</translation>
 <translation id="3414292259312108062">‏Chrome این گذرواژه را در <ph name="BEGIN_LINK" />گذرواژه‌های ذخیره‌شده Google<ph name="END_LINK" /> شما ذخیره می‌کند و به صورت خودکار آن را برایتان وارد می‌کند، بنابراین نیازی نیست آن را به خاطر بسپارید.</translation>
 <translation id="3567664240939803299">‏آیا می‌خواهید  Google Smart Lock گذرواژه شما را برای این سایت ذخیره کند؟</translation>
-<translation id="3586931643579894722">عدم نمایش جزئیات</translation>
-<translation id="3736520371357197498">اگر خطرات امنیتی که متوجه شما هستند را درک می‌کنید، می‌توانید قبل از حذف شدن برنامه‌های خطرناک از <ph name="BEGIN_LINK" />این سایت غیرایمن بازدید کنید<ph name="END_LINK" />.</translation>
 <translation id="385051799172605136">بازگشت</translation>
-<translation id="4098354747657067197">سایت پیش‌رو فریب‌کار است</translation>
 <translation id="4121993058175073134">برای ارسال داده‌های صادراتی شبکه، لطفاً حساب ایمیل‌تان را در برنامه تنظیمات پیکربندی کنید.</translation>
 <translation id="4399225372525667111">‏Chrome نمی‌تواند صحت نشانی وب این سایت را تأیید کند.</translation>
-<translation id="4522570452068850558">جزئیات</translation>
 <translation id="4728558894243024398">پلت فورم</translation>
 <translation id="473775607612524610">به‌روزرسانی</translation>
 <translation id="5317780077021120954">ذخیره</translation>
-<translation id="5337705430875057403">مهاجمان <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> ممکن است شما را فریب دهند و به انجام کارهای خطرناکی مثل نصب نرم‌افزار یا ارائه اطلاعات شخصی‌تان (مثلاً گذرواژه، شماره تلفن یا کارت‌های اعتباری) ترغیب کنند.</translation>
 <translation id="605721222689873409">سال</translation>
-<translation id="6075880972317537864">ممکن است مهاجمین در <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> سعی کنند برای سرقت اطلاعات شما (مانند گذرواژه‌ها، پیام‌ها یا کارت‌های اعتباری) شما را فریب دهند.</translation>
 <translation id="6149061208933997199">استفاده از گذرواژه</translation>
 <translation id="6196207969502475924">جستجوی صوتی</translation>
-<translation id="6221345481584921695">‏Google Safe Browsing به تازگی در <ph name="SITE" />، ‏<ph name="BEGIN_LINK" />بدافزار شناسایی کرده است<ph name="END_LINK" />. گاهی اوقات وب‌سایت‌هایی که معمولاً امن هستند، با بدافزار آلوده می‌شوند. منبع محتوای مخرب <ph name="SUBRESOURCE_HOST" /> است که یک توزیع‌کننده بدافزار شناخته شده، می‌باشد.</translation>
-<translation id="6264485186158353794">بازگشت به ایمنی</translation>
 <translation id="6314335155547195432">تولید گذرواژه</translation>
 <translation id="6344783595350022745">پاک‌کردن نوشتار</translation>
 <translation id="6456425917241817154">‏گذرواژه ایجادشده توسط Chrome</translation>
 <translation id="6535543971741225613">‏سایتی که در صدد دسترسی به آن هستید رفتار عادی ندارد، Chrome نمی‌تواند صحت نشانی وب را تأیید کند. به دلایل امنیتی، نباید ادامه دهید و شاید بهتر باشد فردا یا در جایی دیگر امتحان کنید.</translation>
-<translation id="6740369132746915122">اگر از خطراتی که امنیت شما را تهدید می‌کند مطلع هستید، می‌توانید <ph name="BEGIN_LINK" />از این سایت ناامن دیدن کنید<ph name="END_LINK" />.</translation>
 <translation id="7222245588540287464">آیا جستجوی متنی فعال است یا نه.</translation>
-<translation id="724691107663265825">وب‌سایت پیش رو حاوی بدافزار است</translation>
 <translation id="7456847797759667638">باز کردن مکان...</translation>
 <translation id="7481312909269577407">ارسال کردن</translation>
 <translation id="7484580869648358686">اخطار: چیزی در اینجا اشتباه است!</translation>
-<translation id="7779249319235708104">حمله فیشینگ پیش رو است</translation>
 <translation id="7961015016161918242">هرگز</translation>
-<translation id="820854170120587500">‏Google Safe Browsing به تازگی در <ph name="SITE" /> فیشینگ شناسایی کرده است. <ph name="BEGIN_LINK" />سایت‌های فیشینگ<ph name="END_LINK" /> برای فریب شما وانمود می‌کنند که سایت‌های دیگری هستند.</translation>
-<translation id="834457929814110454">اگر خطرات امنیتی‌ای که متوجه شما هستند را درک می‌کنید، می‌توانید قبل از حذف شدن برنامه‌های خطرناک، <ph name="BEGIN_LINK" />از این سایت بازدید کنید<ph name="END_LINK" />.</translation>
-<translation id="8543181531796978784">می‌توانید <ph name="BEGIN_ERROR_LINK" />یک مشکل شناسایی‌شده را گزارش کنید<ph name="END_ERROR_LINK" /> یا اگر از خطراتی که امنیت شما را تهدید می‌کنند مطلع شدید، <ph name="BEGIN_LINK" />از این سایت ناامن دیدن کنید<ph name="END_LINK" />.</translation>
-<translation id="8761567432415473239">‏مرور ایمن Google اخیراً <ph name="BEGIN_LINK" />برنامه‌های خطرناک<ph name="END_LINK" /> را در <ph name="SITE" /> پیدا کرده است.</translation>
-<translation id="8996941253935762404">سایت در پیش‌رو حاوی برنامه‌های خطرناک است</translation>
-<translation id="9035022520814077154">خطای امنیتی</translation>
-<translation id="9040185888511745258">ممکن است مهاجمان در <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> با فریب شما تلاش کنند شما را به نصب برنامه‌هایی تشویق کنند که به تجربه مرورتان آسیب می‌رساند (برای مثال با تغییر صفحه اصلی‌تان یا نشان دادن آگهی‌های زیادی در سایت‌هایی که بازدید می‌کنید).</translation>
 </translationbundle>

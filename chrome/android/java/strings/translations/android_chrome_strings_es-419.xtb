@@ -25,6 +25,7 @@ Debes activar Bluetooth y la Ubicación para poder utilizar la Web física.</tra
 <translation id="1285320974508926690">Nunca traducir este sitio</translation>
 <translation id="1291207594882862231">Borra el historial, las cookies, los datos del sitio, la caché…</translation>
 <translation id="129553762522093515">Cerrado recientemente</translation>
+<translation id="13410144310025252">Ver en Chrome</translation>
 <translation id="1346090444609141578">No hay páginas guardadas aquí</translation>
 <translation id="1369915414381695676">Se agregó el sitio <ph name="SITE_NAME" />.</translation>
 <translation id="1373696734384179344">Memoria insuficiente para descargar el contenido seleccionado</translation>
@@ -193,6 +194,7 @@ Para ajustar el término de búsqueda, mantén presionado el texto y seleccióna
 <translation id="3656115297268584622">Activar ubicación en <ph name="BEGIN_LINK" />Configuración de Android<ph name="END_LINK" /></translation>
 <translation id="3661699943263275414">Los sitios web de terceros pueden guardar y leer datos de cookies.</translation>
 <translation id="3672452749423051839">Sugerencias relacionadas con errores de navegación</translation>
+<translation id="3716158070938632480">Páginas web cercanas</translation>
 <translation id="3732088672634061408">No se pudieron recuperar los intereses.</translation>
 <translation id="3738139272394829648">Tocar para buscar</translation>
 <translation id="3809549525127675114">"<ph name="VIDEO_TITLE" />" finalizado</translation>
@@ -373,7 +375,6 @@ Sin embargo, no vas a pasar completamente desapercibido. El modo de navegación 
 <translation id="5911030830365207728">Google Traductor</translation>
 <translation id="5916664084637901428">Activada</translation>
 <translation id="5939518447894949180">Restablecer</translation>
-<translation id="5965336165840183977">Si presionas este botón, se borrarán los datos sincronizados de todos tus dispositivos. No saldrás de tu cuenta de Google. La configuración guardada del sitio no se borrará y es posible que refleje tus hábitos de navegación.</translation>
 <translation id="5968595432776860642">Reproduciendo "<ph name="VIDEO_TITLE" />"</translation>
 <translation id="6010869025736512584">Accediendo a la entrada de video</translation>
 <translation id="6012342843556706400">Chrome necesita acceso a la ubicación para compartirla con este sitio.</translation>
@@ -393,7 +394,6 @@ Sin embargo, no vas a pasar completamente desapercibido. El modo de navegación 
 <translation id="6159335304067198720"><ph name="PERCENT" /> de ahorro de datos</translation>
 <translation id="6165508094623778733">Más información</translation>
 <translation id="6192792657125177640">Excepciones</translation>
-<translation id="6231464350722415003">Admite JavaScript en los sitios web que especifiques a la vez que lo bloquea en el resto de la Web.</translation>
 <translation id="6232535412751077445">Si se habilita la opción de "No realizar seguimiento", se incluirá una solicitud con tu tráfico de navegación. Los efectos dependerán de si hay algún sitio web que responda a la solicitud y de cómo se interprete.
 
 Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncios que no están basados en otros sitios web que hayas visitado. Muchos sitios web seguirán recopilando y utilizando tus datos de navegación, por ejemplo, para mejorar la seguridad, proporcionar contenido, anuncios y recomendaciones, y generar estadísticas de informes.</translation>
@@ -481,7 +481,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> usa tu ubicación para mostrar resultados de la búsqueda a nivel local.</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />Ayuda<ph name="END_LINK" /></translation>
 <translation id="7299721129597238157">Eliminar marcador</translation>
-<translation id="7346217184097589238">La configuración guardada del sitio no se borrará y es posible que refleje tus hábitos de navegación.</translation>
 <translation id="7347770551817603360">Contenido sin conexión</translation>
 <translation id="7363354739009474003">Cargando "<ph name="VIDEO_TITLE" />"</translation>
 <translation id="7366340029385295517">Transmitiendo a <ph name="SCREEN_NAME" /></translation>
@@ -492,6 +491,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="7408644312175185557">Consulta las pestañas con otras apps recientes en la pantalla Recientes del teléfono.</translation>
 <translation id="7423098979219808738">Preguntar primero</translation>
 <translation id="7437998757836447326">Salir de Chrome</translation>
+<translation id="7464701184726199289">Esta opción borra los datos sincronizados en todos los dispositivos. Las opciones de configuración de sitios guardadas no se borrarán y es posible que reflejen tus hábitos de navegación. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
 <translation id="7473891865547856676">No, gracias</translation>
 <translation id="7475192538862203634">Si el mensaje aparece con frecuencia, intenta seguir estas <ph name="BEGIN_LINK" />sugerencias<ph name="END_LINK" />.</translation>
 <translation id="748127970106343339">Confirmar eliminación de credencial de dispositivo</translation>
@@ -543,7 +543,11 @@ Sin embargo, no vas a pasar completamente desapercibido. El modo de navegación 
 <translation id="8068648041423924542">No es posible seleccionar un certificado</translation>
 <translation id="8069239273282989646">Poscompresión</translation>
 <translation id="8073388330009372546">Abrir imagen en pestaña nueva</translation>
+<translation id="8076014560081431679">Las opciones de configuración de sitios guardadas no se borrarán y es posible que reflejen tus hábitos de navegación. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
 <translation id="8084156870963450514">Accede a tu cuenta para ver tu contenido web en cualquier dispositivo.</translation>
+<translation id="8098570222830891427">Los dispositivos cercanos están transmitiendo páginas web a través de Bluetooth. Chrome buscará páginas y las mostrará cuando actives tu dispositivo. Estas páginas pasarán por un servicio de Google que mejorará la calidad de los resultados.
+
+Puedes controlar la Web física desde la configuración de Chrome.</translation>
 <translation id="8106211421800660735">Número de tarjeta de crédito</translation>
 <translation id="813082847718468539">Consulta la información del sitio</translation>
 <translation id="8137558756159375272">La función Tocar para buscar envía la palabra seleccionada y la página actual como contexto a la Búsqueda de Google. Para desactivarla, accede a <ph name="BEGIN_LINK" />Configuración<ph name="END_LINK" />.</translation>

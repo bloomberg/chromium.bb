@@ -37,7 +37,7 @@
 <translation id="4559767610552730302">বোকে</translation>
 <translation id="4935975195727477204">গাজানিয়া ফুল</translation>
 <translation id="5045550434625856497">ভুল পাসওয়ার্ড</translation>
-<translation id="5097002363526479830">নেটওয়ার্কের সাথে সংযোগ করতে ব্যর্থ '<ph name="NAME" />': <ph name="DETAILS" /></translation>
+<translation id="5097002363526479830">'<ph name="NAME" />': <ph name="DETAILS" /> নেটওয়ার্কে সংযোগ করা গেল না </translation>
 <translation id="515594325917491223">দাবা</translation>
 <translation id="5257456363153333584">ফড়িং</translation>
 <translation id="5431825016875453137">VPN / L2TP খুলুন</translation>

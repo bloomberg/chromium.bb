@@ -277,7 +277,6 @@
 <translation id="1407050882688520094">Vannak olyan tanúsítványok, amelyek a következő tanúsítványkibocsátókat azonosítják:</translation>
 <translation id="1407489512183974736">Középre, levágva</translation>
 <translation id="1408789165795197664">Speciális...</translation>
-<translation id="1408803555324839240">Hoppá! Nem hozható létre az új felügyelt felhasználó. Ellenőrizze, hogy megfelelően van-e bejelentkezve, majd próbálkozzon újra.</translation>
 <translation id="1409390508152595145">Felügyelt felhasználó létrehozása</translation>
 <translation id="1410616244180625362">A(z) <ph name="HOST" /> továbbra is hozzáférhet az Ön kamerájához</translation>
 <translation id="1413372529771027206">A Smart Lock funkciónál használt telefon módosult. Írja be a jelszavát a Smart Lock Chromebookhoz ezen az eszközön való frissítéséhez. Legközelebb már beléphet egyszerűen úgy is, hogy a képre kattint.</translation>
@@ -1600,7 +1599,6 @@ Miután létrehozott egy új felügyelt felhasználót, bármikor és bármilyen
 <translation id="3277710850168074473">A médiaelemek lejátszásához szükséges felhasználói kézmozdulat. Ennek letiltásával engedélyezi az automatikus lejátszás működését.</translation>
 <translation id="3280237271814976245">Mentés &amp;másként...</translation>
 <translation id="3280431534455935878">Előkészítés</translation>
-<translation id="3284674070818187654">A Google felhasználhatja a keresési előzményeket a Keresés és más Google-szolgáltatások személyre szabására. Ez a myaccount.google.com oldalon szabályozható.</translation>
 <translation id="3285322247471302225">Új lap</translation>
 <translation id="3288047731229977326">A fejlesztői módban futó bővítmények kárt okozhatnak számítógépén. Ha Ön nem fejlesztő, akkor a biztonság kedvéért kapcsolja ki a fejlesztői módban futó bővítményeket.</translation>
 <translation id="3289566588497100676">Egyszerű szimbólumbevitel</translation>
@@ -1707,7 +1705,6 @@ Innen: <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3413122095806433232">CA kibocsátók: <ph name="LOCATION" /></translation>
 <translation id="3414856743105198592">A cserélhető adathordozók formázása minden adatot töröl. Szeretné folytatni?</translation>
 <translation id="3414952576877147120">Méret:</translation>
-<translation id="3416248389957650982">A myaccount.google.com megnyitása bejelentkezés után</translation>
 <translation id="3420980393175304359">Felhasználóváltás</translation>
 <translation id="3423858849633684918">Kérjük, indítsa újra a <ph name="PRODUCT_NAME" /> alkalmazást</translation>
 <translation id="3425233587047449821">Új koreai IME</translation>
@@ -1922,7 +1919,6 @@ Innen: <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3694027410380121301">Előző lap kiválasztása</translation>
 <translation id="3694122362646626770">Webhelyek</translation>
 <translation id="3694678678240097321">Kérje a felhasználó beleegyezését olyan bővítményekhez, amelyek szkripteket futtatnak az oldalon, ha a bővítmény engedélyt kért arra, hogy valamennyi URL-en fusson.</translation>
-<translation id="36954862089075551">Hoppá! Nem sikerült létrehozni az új felhasználót. Kérjük, ellenőrizze a merevlemezen rendelkezésre álló helyet és az engedélyeket, majd próbálja újra.</translation>
 <translation id="3695919544155087829">Adja meg a jelszót, amelyet jelen tanúsítványfájl kódolásához használt.</translation>
 <translation id="3696411085566228381">nincs</translation>
 <translation id="3697100740575341996">IT-rendszergazdája letiltotta a Chrome Goodies szolgáltatást az Ön eszközén. <ph name="MORE_INFO_LINK" /></translation>
@@ -2348,7 +2344,6 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="4345703751611431217">Nem kompatibilis szoftver: további információ</translation>
 <translation id="4348766275249686434">Hibák gyűjtése</translation>
 <translation id="4350019051035968019">Ez az eszköz nem regisztrálható annál a domainnél, amelyhez fiókja tartozik, mert az eszköz felügyeletére egy másik domain van kijelölve.</translation>
-<translation id="4352333825734680558">Hoppá! Nem sikerült az új felügyelt felhasználó létrehozása. Kérjük, ellenőrizze a hálózati kapcsolatot, és próbálja újra később.</translation>
 <translation id="4358697938732213860">Cím hozzáadása</translation>
 <translation id="4359408040881008151">Telepítve az ezt nélkülözni nem tudó bővítmény(ek) miatt.</translation>
 <translation id="4361190688154226069">Téglalap alapú célzás a nézetekben</translation>
@@ -3023,7 +3018,6 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="5388588172257446328">Felhasználónév:</translation>
 <translation id="5390284375844109566">Indexelt adatbázis</translation>
 <translation id="5392544185395226057">Natív kliens támogatásának engedélyezése.</translation>
-<translation id="5393125431335030955">Ez a beépülő modul csak az asztalon működik.</translation>
 <translation id="5396126354477659676">A(z) <ph name="PEPPER_PLUGIN_NAME" /> webhelyen található <ph name="PEPPER_PLUGIN_DOMAIN" /> bővítmény hozzá akar férni a számítógéphez.</translation>
 <translation id="539755880180803351">Az internetes űrlapokat automatikus kitöltési következtetésekkel mint helyőrző szöveggel látja el.</translation>
 <translation id="5397578532367286026">A felhasználó használati adatait és előzményeit a kezelő (<ph name="MANAGER_EMAIL" />) a chrome.com webhelyen tekintheti meg.</translation>
@@ -3289,7 +3283,6 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="57646104491463491">Módosítás dátuma</translation>
 <translation id="5765491088802881382">Nincs elérhető hálózat</translation>
 <translation id="5765780083710877561">Leírás:</translation>
-<translation id="5770385044111747894">NPAPI</translation>
 <translation id="5771585441665576801">Átírás (geia → γεια)</translation>
 <translation id="5771816112378578655">A telepítés folyamatban...</translation>
 <translation id="5771849619911534867">Az eszközkeresés leállt.</translation>
@@ -3922,7 +3915,6 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="6793649375377511437">Google Copresence információk</translation>
 <translation id="6797493596609571643">Hoppá, hiba történt.</translation>
 <translation id="6798954102094737107">Beépülő modul: <ph name="PLUGIN_NAME" /></translation>
-<translation id="6799646767877093143">Ez a webhely olyan beépülő modult használ (<ph name="PLUGIN_NAME" />), amelynek támogatása hamarosan megszűnik.</translation>
 <translation id="6802031077390104172"><ph name="USAGE" /> (<ph name="OID" />)</translation>
 <translation id="6804671422566312077">Összes könyvjelző megnyitása új &amp;ablakban</translation>
 <translation id="6805647936811177813">Kérjük jelentkezzen be a(z) <ph name="TOKEN_NAME" /> szolgáltatásba az ügyféltanúsítvány importálásához a(z) <ph name="HOST_NAME" /> webhelyről.</translation>
@@ -4916,7 +4908,6 @@ A kulcsfájlt tartsa biztonságos helyen. Szüksége lesz rá ahhoz, hogy új ve
 <translation id="8267698848189296333">Bejelentkezés mint <ph name="USERNAME" /></translation>
 <translation id="8272443605911821513">Bővítményeit a „További eszközök” menü Bővítmények elemére kattintva kezelheti.</translation>
 <translation id="8273972836055206582">A(z) <ph name="FULLSCREEN_ORIGIN" /> oldal most teljes képernyős nézetben van, és le akarja tiltani az egérmutatót.</translation>
-<translation id="8274860189261120948">Automatikus bejelentkezés webhelyekre a tárolt hitelesítő adatokkal. Ha a funkció ki van kapcsolva, akkor a rendszer minden alkalommal megerősítést kér Öntől, mielőtt bejelentkezne valamilyen webhelyre.</translation>
 <translation id="8275038454117074363">Importálás</translation>
 <translation id="8276560076771292512">Gyorsítótár ürítése és teljes újratöltés</translation>
 <translation id="8279388322240498158">Sorani kurd angol alapú billentyűzet</translation>
@@ -5101,7 +5092,6 @@ letiltásához nyomja le a Ctrl+Alt+Z billentyűkombinációt.</translation>
 <translation id="8571108619753148184">4. szerver</translation>
 <translation id="8572832761467613633">Csak Flash</translation>
 <translation id="8572981282494768930">Ne engedje, hogy webhelyek hozzáférjenek a kamerához és a mikrofonhoz</translation>
-<translation id="8574794171590710404">Ez a webhely nem támogatott beépülő modult használ (<ph name="PLUGIN_NAME" />).</translation>
 <translation id="857779305329188634">A kísérleti QUIC protokolltámogatás engedélyezése.</translation>
 <translation id="8579285237314169903"><ph name="NUMBER_OF_FILES" /> elem szinkronizálása…</translation>
 <translation id="8579549103199280730">Alapértelmezés szerint rákérdez</translation>
@@ -5109,7 +5099,6 @@ letiltásához nyomja le a Ctrl+Alt+Z billentyűkombinációt.</translation>
 <translation id="8581690024797204327">256</translation>
 <translation id="8581809080475256101">Nyomja meg az előrelépéshez, illetve választhatja a helyi menüt az előzmények megtekintéséshez</translation>
 <translation id="8584280235376696778">&amp;Videó megnyitása új lapon</translation>
-<translation id="8585103164112230633">Az adott személy által felkeresett webhelyek ellenőrzése és megtekintése</translation>
 <translation id="8589311641140863898">Kísérleti Bővítmények API-jai</translation>
 <translation id="8590375307970699841">Automatikus frissítések beállítása</translation>
 <translation id="8592071947729879125">Iframe-engedélyek korlátozása.</translation>
@@ -5257,7 +5246,6 @@ letiltásához nyomja le a Ctrl+Alt+Z billentyűkombinációt.</translation>
 <translation id="878069093594050299">Ezt a tanúsítványt a következő célokra lehet felhasználni:</translation>
 <translation id="8782565991310229362">Kiosk-alkalmazás indítása visszavonva.</translation>
 <translation id="8783093612333542422">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; szeretné megosztani Önnel a(z) &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; nyomtatót.</translation>
-<translation id="878431691778285679">Úgy tűnik, Ön már kezel egy ilyen nevű felhasználót.<ph name="LINE_BREAK" />Inkább <ph name="BEGIN_LINK" />importálni szeretné <ph name="PROFILE_NAME" /> felhasználót erre az eszközre<ph name="END_LINK" />?</translation>
 <translation id="8784626084144195648">Kidobottak átlaga</translation>
 <translation id="8785135611469711856">Beépülő modul nem válaszol</translation>
 <translation id="8787254343425541995">Proxyk engedélyezése a megosztott hálózatoknál</translation>

@@ -25,6 +25,7 @@ Per poter utilizzare il Physical Web, devi attivare il Bluetooth e la geolocaliz
 <translation id="1285320974508926690">Non tradurre mai questo sito</translation>
 <translation id="1291207594882862231">Cancella la cronologia, i cookie, i dati dei siti, la cache…</translation>
 <translation id="129553762522093515">Chiuse di recente</translation>
+<translation id="13410144310025252">Visualizzali in Chrome</translation>
 <translation id="1346090444609141578">Nessuna pagina salvata qui</translation>
 <translation id="1369915414381695676">Sito <ph name="SITE_NAME" /> aggiunto</translation>
 <translation id="1373696734384179344">Memoria non sufficiente per scaricare i contenuti selezionati.</translation>
@@ -193,8 +194,10 @@ Per modificare il termine di ricerca, premi a lungo per selezionarlo. Per perfez
 <translation id="3656115297268584622">Attiva la geolocalizzazione nelle <ph name="BEGIN_LINK" />Impostazioni Android<ph name="END_LINK" />.</translation>
 <translation id="3661699943263275414">I siti web di terze parti possono salvare e leggere i dati dei cookie</translation>
 <translation id="3672452749423051839">Suggerimenti per gli errori di navigazione</translation>
+<translation id="3716158070938632480">Pagine web nelle vicinanze</translation>
 <translation id="3732088672634061408">Impossibile recuperare gli interessi.</translation>
 <translation id="3738139272394829648">Tocca per cercare</translation>
+<translation id="3744111561329211289">Sincronizzazione in background</translation>
 <translation id="3809549525127675114">"<ph name="VIDEO_TITLE" />" terminato</translation>
 <translation id="3828029223314399057">Cerca tra i Preferiti</translation>
 <translation id="3871171699884605801">Impossibile cancellare la cronologia di navigazione con account di minori</translation>
@@ -283,6 +286,7 @@ Apri Chrome sul computer, apri il menu e seleziona "Accedi a Chrome…"</transla
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">Consenti</translation>
 <translation id="5040262127954254034">Privacy</translation>
+<translation id="5056549851600133418">Articoli per te</translation>
 <translation id="5063480226653192405">Utilizzo</translation>
 <translation id="5100237604440890931">Compresso. Fai clic per espandere.</translation>
 <translation id="5107381076085091558">Download sospeso.</translation>
@@ -372,7 +376,6 @@ Tuttavia, le tue attività non sono invisibili. L'attivazione della modalità di
 <translation id="5911030830365207728">Google Traduttore</translation>
 <translation id="5916664084637901428">On</translation>
 <translation id="5939518447894949180">Ripristina</translation>
-<translation id="5965336165840183977">Questa operazione elimina i dati sincronizzati da tutti i dispositivi. Non verrai disconnesso dal tuo account Google. Le impostazioni del sito salvate non verranno eliminate e potrebbero rispecchiare le tue abitudini di navigazione.</translation>
 <translation id="5968595432776860642">"<ph name="VIDEO_TITLE" />" in riproduzione</translation>
 <translation id="6010869025736512584">Accesso all'input video in corso</translation>
 <translation id="6012342843556706400">Chrome deve avere accesso alla posizione per condividerla con questo sito.</translation>
@@ -392,7 +395,6 @@ Tuttavia, le tue attività non sono invisibili. L'attivazione della modalità di
 <translation id="6159335304067198720">Riduzioni dei dati: <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">Ulteriori informazioni</translation>
 <translation id="6192792657125177640">Eccezioni</translation>
-<translation id="6231464350722415003">Consenti JavaScript sui siti web da te specificati e bloccalo per tutti gli altri siti web</translation>
 <translation id="6232535412751077445">Se attivi l'opzione "Non tenere traccia", verrà inclusa una richiesta nel tuo traffico di navigazione. Gli effetti dipendono dall'eventuale risposta dei siti web alla richiesta e dall'interpretazione di quest'ultima.
 
 Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annunci non basati su altri siti web visitati. Molti siti web continueranno tuttavia a raccogliere e a utilizzare i dati di navigazione, ad esempio per aumentare la sicurezza, fornire contenuti, annunci e consigli, nonché per generare statistiche sui rapporti.</translation>
@@ -480,7 +482,6 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> utilizza la tua posizione per mostrare i risultati della ricerca locale.</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />Guida<ph name="END_LINK" /></translation>
 <translation id="7299721129597238157">Elimina preferito</translation>
-<translation id="7346217184097589238">Le impostazioni del sito salvate non verranno eliminate e potrebbero rispecchiare le tue abitudini di navigazione.</translation>
 <translation id="7347770551817603360">Contenuto offline</translation>
 <translation id="7363354739009474003">Caricamento di "<ph name="VIDEO_TITLE" />" in corso</translation>
 <translation id="7366340029385295517">Trasmissione su <ph name="SCREEN_NAME" /> in corso</translation>
@@ -491,6 +492,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="7408644312175185557">Visualizza le tue schede insieme ad altre app recenti nella schermata Panoramica del telefono.</translation>
 <translation id="7423098979219808738">Chiedi prima</translation>
 <translation id="7437998757836447326">Esci da Chrome</translation>
+<translation id="7464701184726199289">Questa operazione comporta la cancellazione dei dati sincronizzati da tutti i dispositivi. Le impostazioni del sito salvate non verranno eliminate e potrebbero rispecchiare le tue abitudini di navigazione. <ph name="BEGIN_LINK" />Ulteriori informazioni<ph name="END_LINK" /></translation>
 <translation id="7473891865547856676">No grazie</translation>
 <translation id="7475192538862203634">Se il problema si verifica di frequente, prova questi <ph name="BEGIN_LINK" />suggerimenti<ph name="END_LINK" />.</translation>
 <translation id="748127970106343339">Conferma eliminazione credenziali dispositivo</translation>
@@ -500,6 +502,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="7501135638693251872">Tutti i Preferiti</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7562080006725997899">Cancellazione dei dati di navigazione in corso</translation>
+<translation id="756809126120519699">Dati di Chrome cancellati</translation>
 <translation id="7588950540487816470">Physical Web</translation>
 <translation id="7596558890252710462">Sistema operativo</translation>
 <translation id="7599840151813361502">Non uscirai dai tuoi <ph name="BEGIN_LINK" />account Google<ph name="END_LINK" /></translation>
@@ -542,7 +545,12 @@ Tuttavia, le tue attività non sono invisibili. L'attivazione della modalità di
 <translation id="8068648041423924542">Impossibile selezionare il certificato.</translation>
 <translation id="8069239273282989646">Dopo la compressione</translation>
 <translation id="8073388330009372546">Immagine in nuova scheda</translation>
+<translation id="8076014560081431679">Le impostazioni del sito salvate non verranno eliminate e potrebbero rispecchiare le tue abitudini di navigazione. <ph name="BEGIN_LINK" />Ulteriori informazioni<ph name="END_LINK" /></translation>
 <translation id="8084156870963450514">Esegui l'accesso per accedere a tutti i tuoi contenuti web da qualsiasi dispositivo</translation>
+<translation id="8087000398470557479">Questi contenuti derivano da <ph name="DOMAIN_NAME" /> e sono offerti da Google.</translation>
+<translation id="8098570222830891427">Alcuni dispositivi nelle tue vicinanze stanno trasmettendo pagine web tramite Bluetooth. Chrome cerca pagine nelle vicinanze quando attivi il tuo dispositivo. Tali pagine passeranno attraverso un servizio di Google per migliorare la qualità dei risultati.
+
+Puoi gestire il Physical Web nelle impostazioni di Chrome.</translation>
 <translation id="8106211421800660735">Numero carta di credito</translation>
 <translation id="813082847718468539">Visualizza informazioni sul sito</translation>
 <translation id="8137558756159375272">La funzione Tocca per cercare invia la parola selezionata e la pagina corrente come contesto alla Ricerca Google. Puoi disattivare la funzione nelle <ph name="BEGIN_LINK" />Impostazioni<ph name="END_LINK" />.</translation>
@@ -605,6 +613,7 @@ Per ottenere nuove licenze, connettiti a Internet e riproduci i contenuti scaric
 <translation id="8931159598799892500">Chrome + Physical Web</translation>
 <translation id="8941248009481596111">La tua connessione a questo sito è privata.</translation>
 <translation id="8941729603749328384">www.example.com</translation>
+<translation id="8942627711005830162">Apri nell'altra finestra</translation>
 <translation id="8959122750345127698">Navigazione inaccessibile: <ph name="URL" /></translation>
 <translation id="8979340629087822094">ultimo giorno</translation>
 <translation id="8987061207681586800">Personalizza Chrome</translation>

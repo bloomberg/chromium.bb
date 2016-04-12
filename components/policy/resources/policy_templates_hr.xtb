@@ -64,8 +64,6 @@
 
       Ako se to pravilo ne postavi ili se postavi na "False", RC4 paketi šifri u TLS-u neće biti omogućeni. U protivnom se može postaviti na "True" radi održanja kompatibilnosti sa zastarjelim poslužiteljem. To je privremena mjera i poslužitelj se treba ponovo konfigurirati.</translation>
 <translation id="1297182715641689552">Upotrijebi .pac proxy skriptu</translation>
-<translation id="1300635491585192248">Predvidi mrežne radnje na bilo kojoj mreži koja nije
-          mobilna</translation>
 <translation id="1304973015437969093">ID-jevi proširenja/aplikacija i URL-ovi ažuriranja koja će se instalirati u pozadini</translation>
 <translation id="1310699457130669094">Ovdje možete odrediti URL za .pac datoteku proxy poslužitelja. Ovo pravilo vrijedi samo ako ste odabrali ručne postavke proxy poslužitelja u stavci "Odabir načina određivanja postavki proxy poslužitelja". Ne postavljajte ovo pravilo ako ste odabrali bilo koji drugi način postavljanja pravila za proxy poslužitelje. Za podrobne primjere posjetite: <ph name="PROXY_HELP_URL" /></translation>
 <translation id="1313457536529613143">Određuje postotak odgode skaliranja zatamnjivanja zaslona kada se uoči aktivnosti korisnika dok se zaslon zatamnjuje ili ubrzo nakon što se zaslon isključi.
@@ -457,7 +455,6 @@
       Ako se to pravilo ne postavi, korisnici će moći odlučivati hoće li upotrebljavati značajku proxyja za kompresiju podataka.</translation>
 <translation id="2587719089023392205">Postavi <ph name="PRODUCT_NAME" /> kao zadani preglednik</translation>
 <translation id="2592091433672667839">Trajanje neaktivnosti prije nego što se čuvar zaslona prikaže na zaslonu prijave u prodajnom načinu</translation>
-<translation id="260705825237536216">Konfiguriraj ARC aplikacije</translation>
 <translation id="2623014935069176671">Pričekaj početnu aktivnost korisnika</translation>
 <translation id="262740370354162807">Omogući slanje dokumenata na uslugu <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2633084400146331575">Omogućavanje govornih povratnih informacija</translation>
@@ -538,7 +535,6 @@
           Ako je ovo pravilo postavljeno na istinito ili ako nije postavljeno, korisnik se ne smatra neaktivnim tijekom reprodukcije zvuka. Time se sprječava privremeni prekid neaktivnosti i izvršavanje radnje predviđene nakon isteka razdoblja neaktivnosti. Međutim, zatamnjivanje, isključivanje i zaključavanje zaslona izvršit će se nakon konfiguriranih privremenih prekida bez obzira na reprodukciju zvuka.
 
           Ako je pravilo postavljeno na lažno, korisnik se može smatrati neaktivnim bez obzira na zvučnu aktivnost.</translation>
-<translation id="2948381198510798695"><ph name="PRODUCT_NAME" /> će zaobići sve proxy poslužitelje pomoću ovdje navedenog popisa hostova. Ovo pravilo vrijedit će samo ako ste odabrali ručne postavke proxy poslužitelja u stavci "Odabir načina određivanja postavki proxy poslužitelja". Ne postavljajte ovo pravilo ako ste odabrali bilo koji drugi način postavljanja pravila za proxy poslužitelje. Za podrobne primjere posjetite: <ph name="PROXY_HELP_URL" /></translation>
 <translation id="2956777931324644324">To je pravilo ukinuto od verzije <ph name="PRODUCT_NAME" /> 36.
 
       Određuje hoće li proširenje TLS certifikata vezanih uz domenu biti omogućeno.
@@ -767,7 +763,6 @@
 
       Svaki unos popisa sadrži rječnik koji mora uključivati ID proširenja u polju "extension-id" i njegov URL za ažuriranje u polju "update-url".</translation>
 <translation id="3891357445869647828">Omogući JavaScript</translation>
-<translation id="389421284571827139">Omogućuje određivanje proxy poslužitelja koji <ph name="PRODUCT_NAME" /> upotrebljava i sprječava korisnike da promijene postavke proxy poslužitelja. Ako odaberete da se proxy poslužitelj nikad ne upotrebljava i da se veza uvijek uspostavlja izravno, sve se ostale opcije zanemaruju. Ako odaberete automatsko otkrivanje proxy poslužitelja, sve se ostale opcije zanemaruju. Za podrobne primjere posjetite: <ph name="PROXY_HELP_URL" /> Ako omogućite ovu postavku, <ph name="PRODUCT_NAME" /> zanemaruje sve opcije u vezi s proxy poslužiteljem određene naredbenim retkom. Ako ova pravila nisu postavljena, korisnici će moći sami odabrati postavke proxy poslužitelja.</translation>
 <translation id="3907986150060929099">Postavi preporučene jezike za javnu sesiju</translation>
 <translation id="391531815696899618">Onemogućuje sinkronizaciju Google diska u aplikaciji Datoteke za <ph name="PRODUCT_OS_NAME" /> kada je postavljeno na točno. U tom se slučaju nikakvi podaci ne prenose na Google disk.
 
@@ -987,16 +982,6 @@
           Vrijednost mora biti polje JSON rječnika u nizovima. Svaki rječnik mora biti u obliku { "pattern": "$URL_PATTERN", "filter" : $FILTER }, pri čemu je $URL_PATTERN uzorak postavke sadržaja. $FILTER ograničava između kojih će klijentskih certifikata preglednik automatski birati. Neovisno o filtru, birat će se samo certifikati koji se podudaraju sa zahtjevom poslužitelja za certifikat. Ako je $FILTER u obliku { "ISSUER": { "CN": "$ISSUER_CN" } }, dodatno se biraju samo klijentski certifikati koje izdaje certifikat koji ima CommonName $ISSUER_CN. Ako je $FILTER prazan rječnik {}, odabir klijentskih certifikata nije dodatno ograničen.
 
           Ako se to pravilo ne postavi, neće biti automatskog odabira ni za jednu web-lokaciju.</translation>
-<translation id="4980301635509504364">Dopusti ili odbij videosnimanje.
-
-      Ako je to pravilo omogućeno ili nije konfigurirano (zadano), korisniku će se nuditi
-      pristup videosnimanju, osim za URL-ove konfigurirane na popisu
-      VideoCaptureAllowedUrls koji će dobiti pristup bez postavljanja upita.
-
-      Kada je to pravilo onemogućeno, korisniku se nikad neće postaviti upit i snimanje
-      će biti dostupno samo URL-ovima konfiguriranima na VideoCaptureAllowedUrls.
-
-      To pravilo utječe na sve vrste videoulaza, a ne samo na ugrađenu kameru.</translation>
 <translation id="4980635395568992380">Vrste podataka:</translation>
 <translation id="4983201894483989687">Dopusti pokretanje dodataka koji su zastarjeli</translation>
 <translation id="4988291787868618635">Radnja koja će se izvršiti kada nastupi odgoda neaktivnosti</translation>
@@ -1089,11 +1074,6 @@
 <translation id="5307432759655324440">Pristupačnost anonimnog načina rada</translation>
 <translation id="5318185076587284965">Omogući hostu za daljinski pristup upotrebu relejnih poslužitelja</translation>
 <translation id="5330684698007383292">Dopusti proizvodu <ph name="PRODUCT_FRAME_NAME" /> rukovanje sljedećim vrstama sadržaja</translation>
-<translation id="5345267406698765263">Navodi pravilo ARC aplikacija kao JSON niz koji se može
-      poslati u trenutačnom obliku u vrijeme izvođenja ARC-a. Ta se postavka
-      trenutačno upotrebljava samo za navođenje prisilne instalacije aplikacija.
-
-      Ako se to pravilo ne postavi, aplikacije se neće instalirati automatski.</translation>
 <translation id="5365946944967967336">Prikaži gumb Početna na alatnoj traci</translation>
 <translation id="5366977351895725771">Ako je postavljeno na netočno, korisnik neće moći izrađivati nadzirane korisnike. Postojeći nadzirani korisnici i dalje će biti dostupni.
 
@@ -1184,7 +1164,6 @@
 
       Ako to pravilo nije postavljeno ili je postavljeno kao netočno, tada će <ph name="PRODUCT_NAME" /> upotrijebiti postojeće mrežne postavke provjere opoziva.</translation>
 <translation id="5732972008943405952">Uvoz podataka za automatsko popunjavanje obrazaca iz zadanog preglednika pri prvom pokretanju</translation>
-<translation id="5761030451068906335">Konfigurira proxy postavke za uslugu <ph name="PRODUCT_NAME" />. To pravilo nije još spremno za upotrebu, nemojte ga upotrebljavati.</translation>
 <translation id="5765780083710877561">Opis:</translation>
 <translation id="5770738360657678870">Razvojni kanal (možda je nestabilan)</translation>
 <translation id="5774856474228476867">URL zadanog davatelja usluge pretraživanja</translation>
@@ -1209,13 +1188,6 @@
       Popis varijabli koje se mogu upotrijebiti potražite na http://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
 
       Ako se ta postavka ne postavi, upotrebljavat će se zadani direktorij profila.</translation>
-<translation id="5819660021114910752">Određuje vremensku zonu koja će se upotrebljavati za uređaj. Korisnici mogu nadjačati navedenu vremensku zonu za trenutačnu sesiju, no ona će se nakon odjave vratiti na navedenu vremensku zonu. Ako se navede nevažeća vrijednost, pravilo se i dalje aktivira oznakom "GMT". Ako se navede prazan niz, pravilo se zanemaruje.
-
-      Ako se to pravilo ne upotrebljava, i dalje će se upotrebljavati trenutačno aktivna vremenska zona, no korisnici će je moći trajno promijeniti. Zato promjena koju izvrši jedan korisnik utječe na zaslon za prijavu i sve druge korisnike.
-
-      Na novim je uređajima početno postavljena vremenska zona "SAD/Pacifik".
-
-      Format vrijednosti slijedi nazive vremenskih zona navedenih u bazi podataka vremenskih zona organizacije IANA (pogledajte "https://en.wikipedia.org/wiki/Tz_database"). To konkretno znači da se većina vremenskih zona može navesti kao "kontinent/veliki_grad" ili "ocean/veliki_grad".</translation>
 <translation id="5826047473100157858">Određuje može li korisnik otvarati stranice u anonimnom načinu u proizvodu <ph name="PRODUCT_NAME" />. Ako je odabrano "Enabled" (omogućeno) ili pravilo nije postavljeno, stranice se mogu otvarati u anonimnom načinu. Ako je odabrano "Disabled" (onemogućeno), stranice se ne mogu otvarati u anonimnom načinu. Ako je odabrano "Forced" (prisilno), stranice se mogu otvarati SAMO u anonimnom načinu.</translation>
 <translation id="5836064773277134605">Ograniči raspon UDP priključaka koji upotrebljava host za daljinski pristup</translation>
 <translation id="5845159892130426052">Omogući ShowModalDialog API putem 2015.04.30</translation>
@@ -1402,7 +1374,6 @@
 
       Ako se pravilo ne postavi, zadana postavka nije dopuštena korisnicima kojima upravlja organizacija, a dopuštena je neupravljanim korisnicima.</translation>
 <translation id="6491139795995924304">Omogući Bluetooth na uređaju</translation>
-<translation id="6513756852541213407">Omogućuje određivanje proxy poslužitelja koji <ph name="PRODUCT_NAME" /> upotrebljava i sprječava korisnike da promijene postavke proxy poslužitelja. Ako odaberete da se proxy poslužitelj nikad ne upotrebljava i da se veza uvijek uspostavlja izravno, sve se ostale opcije zanemaruju. Ako odaberete upotrebu sistemskih postavki proxy poslužitelja ili automatsko otkrivanje proxy poslužitelja, sve se ostale opcije zanemaruju. Ako odaberete način fiksnog proxy poslužitelja, možete odrediti dodatne opcije pod "Adresa ili URL proxy poslužitelja" i "Popis pravila proxy zaobilaženja odvojenih zarezima". Ako odaberete upotrebu .pac skripte proxy proslužitelja, morate navesti URL prema skripti pod "URL prema .pac datoteci proxy poslužitelja". Za podrobne primjere posjetite: <ph name="PROXY_HELP_URL" /> Ako omogućite ovu postavku, <ph name="PRODUCT_NAME" /> zanemaruje sve opcije u vezi s proxy poslužiteljem određene naredbenim retkom. Ako ovo pravilo nije postavljeno, korisnici će moći sami odabrati postavke proxy poslužitelja.</translation>
 <translation id="6520802717075138474">Uvoz tražilica iz zadanog preglednika pri prvom pokretanju</translation>
 <translation id="653608967792832033">Određuje koliko vremena treba proteći bez aktivnosti korisnika da bi se zaslon zaključao tijekom rada s baterijskim napajanjem.
 
@@ -1482,7 +1453,6 @@
 
       Ako se to pravilo ne postavi, mrežno predviđanje bit će omogućeno, no korisnik će to moći promijeniti.</translation>
 <translation id="6658245400435704251">Određuje do koliko sekundi uređaj može nasumično odgađati preuzimanje ažuriranja od trenutka kad je ažuriranje prvi put poslano na poslužitelj. Uređaj može dio tog vremena čekati u smislu stvarnog proteka vremena, a preostalo vrijeme u smislu broja provjera ažuriranja. U bilo kojem slučaju, gornja granica raspršivanja konstantan je iznos vremena tako da uređaj nikad ne može zauvijek zapeti čekajući ažuriranje.</translation>
-<translation id="6672934768721876104">Ovo je pravilo zastarjelo. Umjesto njega upotrijebite ProxyMode. Omogućuje određivanje proxy poslužitelja koji <ph name="PRODUCT_NAME" /> upotrebljava i sprječava korisnike da promijene postavke proxy poslužitelja. Ako odaberete da se proxy poslužitelj nikad ne upotrebljava i da se veza uvijek uspostavlja izravno, sve se ostale opcije zanemaruju. Ako odaberete upotrebu sistemskih postavki proxy poslužitelja ili automatsko otkrivanje proxy poslužitelja, sve se ostale opcije zanemaruju. Ako odaberete ručne postavke proxy poslužitelja, možete odrediti dodatne opcije pod "Adresa ili URL proxy poslužitelja", "URL prema .pac datoteci proxy poslužitelja" i "Popis pravila proxy zaobilaženja odvojenih zarezima". Za podrobne primjere posjetite <ph name="PROXY_HELP_URL" />. Ako omogućite ovu postavku, <ph name="PRODUCT_NAME" /> će zanemariti sve opcije u vezi s proxy poslužiteljem određene naredbenim retkom. Ako ovo pravilo nije postavljeno, korisnici će moći sami odabrati postavke proxy poslužitelja.</translation>
 <translation id="6689792153960219308">Izvješćivanje o statusu hardvera</translation>
 <translation id="6693751878507293182">Ako omogućite ovu postavku, automatsko pretraživanje i instalacija dodataka koji nedostaju bit će onemogućeni u proizvodu <ph name="PRODUCT_NAME" />. Ako onemogućite ovu opciju ili ju ne postavite, alat za traženje dodataka bit će aktivan.</translation>
 <translation id="6697474194550078937">Ograničite vrijeme tijekom kojeg se korisnik autentificiran putem SAML-a može prijaviti izvanmrežno.

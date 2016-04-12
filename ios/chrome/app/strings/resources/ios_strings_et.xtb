@@ -4,52 +4,32 @@
 <translation id="1008557486741366299">Mitte praegu</translation>
 <translation id="1047726139967079566">Lisa selle lehe järjehoidja...</translation>
 <translation id="1172898394251786223">Järgmine väli</translation>
-<translation id="168328519870909584">Saidil <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> olevad ründajad võivad proovida installida teie seadmesse ohtlikke rakendusi, mis varastavad teie teavet või kustutavad selle (nt fotod, paroolid, sõnumid ja krediitkaardiandmed).</translation>
 <translation id="2320166752086256636">Peida klaviatuur</translation>
 <translation id="2467815441875554965">Kontekstipõhine otsing</translation>
 <translation id="2704606927547763573">Kopeeritud</translation>
 <translation id="2747003861858887689">Eelmine väli</translation>
 <translation id="2780046210906776326">Pole meilikontosid</translation>
-<translation id="2803306138276472711">Google'i ohutu sirvimise teenus <ph name="BEGIN_LINK" />tuvastas hiljuti pahavara<ph name="END_LINK" /> saidil <ph name="SITE" />. Tavaliselt turvalisi veebisaite võidakse mõnikord nakatada pahavaraga.</translation>
 <translation id="3244271242291266297">kk</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> <ph name="NUM_SUGGESTIONS" />-st</translation>
 <translation id="3335947283844343239">Ava uuesti suletud vaheleht</translation>
 <translation id="3414292259312108062">Chrome salvestab selle <ph name="BEGIN_LINK" />Google'i salvestatud paroolide<ph name="END_LINK" /> hulka ja täidab parooli automaatselt, nii et te ei pea seda meeles pidama.</translation>
 <translation id="3567664240939803299">Kas soovite, et Smart Lock salvestaks selle saidi puhul teie parooli?</translation>
-<translation id="3586931643579894722">Peida üksikasjad</translation>
-<translation id="3736520371357197498">Kui mõistate, kuidas teie turvalisust ohustatakse, siis võite <ph name="BEGIN_LINK" />seda ebaturvalist saiti külastada<ph name="END_LINK" /> enne, kui ohtlikud programmid on eemaldatud.</translation>
 <translation id="385051799172605136">Tagasi</translation>
-<translation id="4098354747657067197">Avatav sait on petturlik</translation>
 <translation id="4121993058175073134">Netiekspordi andmete saatmiseks seadistage meilikonto rakenduses Seaded.</translation>
 <translation id="4399225372525667111">Chrome ei suuda kinnitada, et selle saidi URL on õige.</translation>
-<translation id="4522570452068850558">Üksikasjad</translation>
 <translation id="4728558894243024398">Platvorm</translation>
 <translation id="473775607612524610">Värskenda</translation>
 <translation id="5317780077021120954">Salvesta</translation>
-<translation id="5337705430875057403">Ründajad saidil <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> võivad teid meelitada ohtlikele tegevustele, nagu tarkvara installimine või isiklike andmete avaldamine (nt paroolid, telefoninumbrid või krediitkaardid).</translation>
 <translation id="605721222689873409">aa</translation>
-<translation id="6075880972317537864">Ründajad saidil <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> võivad proovida teid petta, et varastada teie teavet (nt paroole, sõnumeid või krediitkaardiandmeid).</translation>
 <translation id="6149061208933997199">Kasuta parooli</translation>
 <translation id="6196207969502475924">Häälotsing</translation>
-<translation id="6221345481584921695">Google'i ohutu sirvimise teenus <ph name="BEGIN_LINK" />tuvastas hiljuti pahavara<ph name="END_LINK" /> saidil <ph name="SITE" />. Tavaliselt turvalisi veebisaite võidakse mõnikord nakatada pahavaraga. Pahatahtlik sisu pärineb hostilt <ph name="SUBRESOURCE_HOST" />, mis on tuntud pahavara levitaja.</translation>
-<translation id="6264485186158353794">Tagasi turvalisusse</translation>
 <translation id="6314335155547195432">Parooli loomine</translation>
 <translation id="6344783595350022745">Lihttekst</translation>
 <translation id="6456425917241817154">Chrome'i loodud parool</translation>
 <translation id="6535543971741225613">Sait, mida üritate avada, käitub kummaliselt ja Chrome ei suuda kinnitada, et selle URL on õige. Turvakaalutlustel ei soovitata teil jätkata. Proovige homme uuesti või külastage muud saiti.</translation>
-<translation id="6740369132746915122">Kui mõistate ohtusid oma turvalisusele, võite <ph name="BEGIN_LINK" />seda ebaturvalist saiti külastada<ph name="END_LINK" />.</translation>
 <translation id="7222245588540287464">Olenemata sellest, kas kontekstipõhine otsing on lubatud.</translation>
-<translation id="724691107663265825">Avatav veebisait sisaldab pahavara</translation>
 <translation id="7456847797759667638">Ava asukoht...</translation>
 <translation id="7481312909269577407">Edasta</translation>
 <translation id="7484580869648358686">Hoiatus: siin on midagi valesti.</translation>
-<translation id="7779249319235708104">Saidil on andmepüügirünnak</translation>
 <translation id="7961015016161918242">Mitte kunagi</translation>
-<translation id="820854170120587500">Google'i ohutu sirvimise teenus tuvastas hiljuti andmepüügi saidil <ph name="SITE" />. <ph name="BEGIN_LINK" />Andmepüügi saidid<ph name="END_LINK" /> teesklevad teie petmiseks, et tegemist on teise saidiga.</translation>
-<translation id="834457929814110454">Kui mõistate, kuidas teie turvalisust ohustatakse, siis võite <ph name="BEGIN_LINK" />seda saiti külastada<ph name="END_LINK" /> enne, kui kahjulikud programmid on eemaldatud.</translation>
-<translation id="8543181531796978784">Võite <ph name="BEGIN_ERROR_LINK" />teavitada tuvastusprobleemist<ph name="END_ERROR_LINK" />. Kui mõistate ohtusid oma turvalisusele, võite <ph name="BEGIN_LINK" />seda ebaturvalist saiti külastada<ph name="END_LINK" />.</translation>
-<translation id="8761567432415473239">Google'i ohutu sirvimine <ph name="BEGIN_LINK" />tuvastas hiljuti kahjulikud programmid<ph name="END_LINK" /> saidil <ph name="SITE" />.</translation>
-<translation id="8996941253935762404">Sait, mille soovite avada, sisaldab kahjulikke programme</translation>
-<translation id="9035022520814077154">Turvaviga</translation>
-<translation id="9040185888511745258">Saidil <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> asuvad ründajad võivad proovida meelitada teid installima programme, mis kahjustavad sirvimiskogemust (nt muudavad avalehte või kuvavad külastatavatel saitidel lisareklaame).</translation>
 </translationbundle>

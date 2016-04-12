@@ -165,6 +165,7 @@ Desktop ng Chrome</translation>
 <translation id="4918086044614829423">Tanggapin</translation>
 <translation id="492843737083352574">Nagkakaroon ako ng mga problema sa aking keyboard o mouse.</translation>
 <translation id="4973800994433240357">Sa pamamagitan ng pagda-download ng Chromoting Host Installer, sumasang-ayon ka sa <ph name="LINK_BEGIN" />Mga Tuntunin ng Serbisyo<ph name="LINK_END" /> ng Google.</translation>
+<translation id="4985296110227979402">Kailangan mo munang i-set up ang iyong computer para sa remote na access</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (offline)</translation>
 <translation id="5070121137485264635">Hinihiling sa iyo ng remote host na magpatunay sa isang website ng third-party. Upang makapagpatuloy, dapat mong bigyan ng mga karagdagang pahintulot ang Remote na Desktop ng Chrome upang ma-access ang address na ito:</translation>
 <translation id="5156271271724754543">Pakilagay ang parehong PIN sa parehong kahon.</translation>
@@ -174,6 +175,7 @@ Desktop ng Chrome</translation>
 <translation id="5222676887888702881">Mag-sign out</translation>
 <translation id="5254120496627797685">Tatapusin ng pag-alis sa pahinang ito ang iyong session sa Remote na Desktop ng Chrome.</translation>
 <translation id="5308380583665731573">Kumonekta</translation>
+<translation id="533625276787323658">Walang mapagkokonektahan</translation>
 <translation id="5363265567587775042">Hilingin sa user na may-ari ng computer na gusto mong i-access na i-click ang “<ph name="SHARE" />” at ibigay sa iyo ang access code.</translation>
 <translation id="5379087427956679853">Binibigyang-daan ka ng Remote na Desktop ng Chrome na ligtas na maibahagi ang iyong computer sa Web. Dapat na nagpapatakbo ang parehong user ng app ng Remote na Desktop ng Chrome, na matatagpuan sa <ph name="URL" />.</translation>
 <translation id="5394895745784982830">Para sa Mac (OS X 10.6 at mas bago)</translation>

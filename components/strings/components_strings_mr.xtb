@@ -289,6 +289,7 @@
 <translation id="3788090790273268753">या साइटसाठी असलेले प्रमाणपत्र 2016 मध्‍ये कालबाह्य होते आणि प्रमाणपत्र श्रृंखलेमध्‍ये SHA-1 वापरून स्वाक्षरी केलेले प्रमाणपत्र असते.</translation>
 <translation id="382518646247711829">आपण प्रॉक्सी सर्व्हर वापरत असल्यास...</translation>
 <translation id="3828924085048779000">रिक्त सांकेतिक वाक्यांशाची परवानगी नाही.</translation>
+<translation id="3845539888601087042">आपल्या साइन-इन केलेल्या डिव्हाइसेस वरील इतिहास दर्शवित आहे. <ph name="BEGIN_LINK" />अधिक जाणून घ्या<ph name="END_LINK" />.</translation>
 <translation id="385051799172605136">मागील</translation>
 <translation id="3858027520442213535">तारीख आणि वेळ अद्यतनित करा</translation>
 <translation id="3884278016824448484">संघर्ष करणारा डिव्हाइस अभिज्ञापक</translation>
@@ -409,6 +410,7 @@
 <translation id="5421136146218899937">ब्राउझिंग डेटा साफ करा...</translation>
 <translation id="5430298929874300616">बुकमार्क काढा</translation>
 <translation id="5431657950005405462">आपली फाईल आढळली नाही</translation>
+<translation id="5435775191620395718">या डिव्हाइस वरील इतिहास दर्शवित आहे. <ph name="BEGIN_LINK" />अधिक जाणून घ्या<ph name="END_LINK" /></translation>
 <translation id="5439770059721715174">"<ph name="ERROR_PATH" />" वर स्कीमा प्रमाणीकरण त्रुटी: <ph name="ERROR" /></translation>
 <translation id="5447330194051379405">सर्व जतन केलेली पृष्ठे दर्शवा</translation>
 <translation id="5452270690849572955">हे <ph name="HOST_NAME" /> पृष्ठ शोधले जाऊ शकत नाही</translation>
@@ -557,7 +559,6 @@
 <translation id="7186367841673660872">हे पृष्ठ<ph name="ORIGINAL_LANGUAGE" />मधून<ph name="LANGUAGE_LANGUAGE" />मध्ये अनुवादित केले गेले आहे</translation>
 <translation id="719464814642662924">Visa</translation>
 <translation id="720210938761809882">पृष्ठ अवरोधित</translation>
-<translation id="7208899522964477531"><ph name="SEARCH_TERMS" /> साठी <ph name="SITE_NAME" /> शोधा</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> नी सुरक्षितता मानकांचे पालन केले नाही.</translation>
 <translation id="721197778055552897">या समस्येबद्दल <ph name="BEGIN_LINK" />अधिक जाणून घ्या<ph name="END_LINK" />.</translation>
 <translation id="7219179957768738017">कनेक्शन <ph name="SSL_VERSION" /> वापरते.</translation>
@@ -639,7 +640,6 @@
 <translation id="7951415247503192394">(32-बिट)</translation>
 <translation id="7956713633345437162">Mobile बुकमार्क</translation>
 <translation id="7961015016161918242">कधीही नाही</translation>
-<translation id="7977590112176369853">&lt;क्वेरी प्रविष्ट करा&gt;</translation>
 <translation id="7983301409776629893"> नेहमी <ph name="ORIGINAL_LANGUAGE" /> मधून <ph name="TARGET_LANGUAGE" /> मध्ये अनुवाद करा</translation>
 <translation id="7995512525968007366">निर्दिष्ट केलेले नाही</translation>
 <translation id="8012647001091218357">आम्ही याक्षणी आपल्या पालकांपर्यंत पोहोचू शकलो नाही. कृपया पुन्हा प्रयत्न करा.</translation>
@@ -697,6 +697,7 @@
 <translation id="8730621377337864115">पूर्ण झाले</translation>
 <translation id="8738058698779197622">एक सुरक्षित कनेक्‍शन स्‍थापित करण्‍यापूर्वी, आपले घड्‍याळ योग्यरित्या सेट केले असणे आवश्यक आहे. कारण वेबसाइट त्यांना स्‍वत:ला ओळखण्‍यासाठी वापरतात ती प्रमाणपत्रे केवळ निर्दिष्‍ट केलेल्‍या कालावधीसाठी वैध असतात. आपल्‍या डिव्‍हाइसचे घड्‍याळ चुकीचे असल्‍यामुळे, Chromium ही प्रमाणपत्रे सत्यापित करू शकत नाही.</translation>
 <translation id="8740359287975076522"><ph name="HOST_NAME" />चा &lt;abbr id="dnsDefinition"&gt;DNS पत्ता&lt;/abbr&gt; शोधणे शक्य झाले नाही. समस्येचे निराकरण करीत आहे.</translation>
+<translation id="8741995161408053644">आपल्या Google खात्यात ब्राउझिंग इतिहासाची इतर स्वरूपे  <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> वर असू शकतात.</translation>
 <translation id="8790007591277257123">&amp;पुन्हा करा हटवा</translation>
 <translation id="8798099450830957504">डीफॉल्ट</translation>
 <translation id="8804164990146287819">गोपनीयता धोरण</translation>
@@ -717,7 +718,6 @@
 <translation id="8903921497873541725">झूम वाढवा</translation>
 <translation id="8931333241327730545">आपण आपल्या Google खात्यात हे कार्ड जतन करू इच्छिता?</translation>
 <translation id="8932102934695377596">आपले घड्याळ मागे आहे</translation>
-<translation id="8940229512486821554">Run <ph name="EXTENSION_NAME" /> कमांडः <ph name="SEARCH_TERMS" /></translation>
 <translation id="8954894007019320973">(सुरू)</translation>
 <translation id="8971063699422889582">सर्व्हरचे प्रमाणपत्र कालबाह्य झाले आहे.</translation>
 <translation id="8987927404178983737">महिना</translation>
