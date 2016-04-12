@@ -48,6 +48,8 @@ void RegisterViewSurface(int surface_id, jobject j_surface);
 
 void UnregisterViewSurface(int surface_id);
 
+gfx::ScopedJavaSurface GetViewSurface(int surface_id);
+
 void CreateSurfaceTextureSurface(int surface_texture_id,
                                  int client_id,
                                  gfx::SurfaceTexture* surface_texture);

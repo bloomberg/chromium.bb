@@ -36,6 +36,10 @@ class CONTENT_EXPORT GpuSurfaceTracker : public gpu::GpuSurfaceLookup {
   // Returns the native widget associated with a given surface_id.
   gfx::AcceleratedWidget AcquireNativeWidget(int surface_id) override;
 
+#if defined(OS_ANDROID)
+  gfx::ScopedJavaSurface AcquireJavaSurface(int surface_id) override;
+#endif
+
   // Gets the global instance of the surface tracker.
   static GpuSurfaceTracker* Get() { return GetInstance(); }
 

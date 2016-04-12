@@ -9,6 +9,8 @@
 
 #if defined(OS_ANDROID)
 #include <android/native_window_jni.h>
+#include "content/browser/android/child_process_launcher_android.h"
+#include "ui/gl/android/scoped_java_surface.h"
 #endif  // defined(OS_ANDROID)
 
 namespace content {
@@ -73,6 +75,12 @@ gfx::AcceleratedWidget GpuSurfaceTracker::AcquireNativeWidget(int surface_id) {
 
   return it->second;
 }
+
+#if defined(OS_ANDROID)
+gfx::ScopedJavaSurface GpuSurfaceTracker::AcquireJavaSurface(int surface_id) {
+  return GetViewSurface(surface_id);
+}
+#endif
 
 std::size_t GpuSurfaceTracker::GetSurfaceCount() {
   base::AutoLock lock(lock_);

@@ -484,6 +484,20 @@ public class ChildProcessLauncher {
         sViewSurfaceMap.remove(surfaceId);
     }
 
+    @CalledByNative
+    private static Surface getViewSurface(int surfaceId) {
+        Surface surface = sViewSurfaceMap.get(surfaceId);
+        if (surface == null) {
+            Log.e(TAG, "Invalid surfaceId.");
+            return null;
+        }
+        if (!surface.isValid()) {
+            Log.e(TAG, "Requested surface is not valid.");
+            return null;
+        }
+        return surface;
+    }
+
     private static void registerSurfaceTextureSurface(
             int surfaceTextureId, int clientId, Surface surface) {
         Pair<Integer, Integer> key = new Pair<Integer, Integer>(surfaceTextureId, clientId);
@@ -826,14 +840,8 @@ public class ChildProcessLauncher {
                     Log.e(TAG, "Illegal callback for non-GPU process.");
                     return null;
                 }
-
-                Surface surface = sViewSurfaceMap.get(surfaceId);
+                Surface surface = ChildProcessLauncher.getViewSurface(surfaceId);
                 if (surface == null) {
-                    Log.e(TAG, "Invalid surfaceId.");
-                    return null;
-                }
-                if (!surface.isValid()) {
-                    Log.e(TAG, "Requested surface is not valid.");
                     return null;
                 }
                 return new SurfaceWrapper(surface);

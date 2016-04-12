@@ -28,7 +28,7 @@ class GPU_EXPORT GpuSurfaceLookup {
   virtual gfx::AcceleratedWidget AcquireNativeWidget(int surface_id) = 0;
 
 #if defined(OS_ANDROID)
-  virtual gfx::ScopedJavaSurface AcquireJavaSurface(int surface_id);
+  virtual gfx::ScopedJavaSurface AcquireJavaSurface(int surface_id) = 0;
 #endif
 
  private:

@@ -24,11 +24,4 @@ void GpuSurfaceLookup::InitInstance(GpuSurfaceLookup* lookup) {
   g_instance = lookup;
 }
 
-#if defined(OS_ANDROID)
-gfx::ScopedJavaSurface GpuSurfaceLookup::AcquireJavaSurface(int surface_id) {
-  NOTIMPLEMENTED();
-  return gfx::ScopedJavaSurface();
-}
-#endif
-
 }  // namespace gpu

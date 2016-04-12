@@ -247,6 +247,13 @@ void UnregisterViewSurface(int surface_id) {
   Java_ChildProcessLauncher_unregisterViewSurface(env, surface_id);
 }
 
+gfx::ScopedJavaSurface GetViewSurface(int surface_id) {
+  JNIEnv* env = AttachCurrentThread();
+  DCHECK(env);
+  return gfx::ScopedJavaSurface::AcquireExternalSurface(
+      Java_ChildProcessLauncher_getViewSurface(env, surface_id).obj());
+}
+
 void CreateSurfaceTextureSurface(int surface_texture_id,
                                  int client_id,
                                  gfx::SurfaceTexture* surface_texture) {
