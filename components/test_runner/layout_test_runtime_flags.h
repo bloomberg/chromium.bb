@@ -100,6 +100,17 @@ class TEST_RUNNER_EXPORT LayoutTestRuntimeFlags {
   // Contents of Accept-Language HTTP header requested by the test.
   DEFINE_STRING_LAYOUT_TEST_RUNTIME_FLAG(accept_languages)
 
+  // Flags influencing behavior of MockContentSettingsClient.
+  DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG(images_allowed)
+  DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG(media_allowed)
+  DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG(scripts_allowed)
+  DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG(storage_allowed)
+  DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG(plugins_allowed)
+  DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG(displaying_insecure_content_allowed)
+  DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG(running_insecure_content_allowed)
+  DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG(
+      dump_web_content_settings_client_callbacks)
+
 #undef DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG
 #undef DEFINE_STRING_LAYOUT_TEST_RUNTIME_FLAG
 

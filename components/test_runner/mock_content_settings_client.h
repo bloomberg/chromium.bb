@@ -2,20 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_TEST_RUNNER_WEB_CONTENT_SETTINGS_H_
-#define COMPONENTS_TEST_RUNNER_WEB_CONTENT_SETTINGS_H_
+#ifndef COMPONENTS_TEST_RUNNER_MOCK_CONTENT_SETTINGS_CLIENT_H_
+#define COMPONENTS_TEST_RUNNER_MOCK_CONTENT_SETTINGS_CLIENT_H_
 
 #include "base/macros.h"
 #include "third_party/WebKit/public/web/WebContentSettingsClient.h"
 
 namespace test_runner {
 
+class LayoutTestRuntimeFlags;
 class WebTestDelegate;
 
-class WebContentSettings : public blink::WebContentSettingsClient {
+class MockContentSettingsClient : public blink::WebContentSettingsClient {
  public:
-  WebContentSettings();
-  ~WebContentSettings() override;
+  // Caller has to guarantee that |layout_test_runtime_flags| lives longer
+  // than the MockContentSettingsClient being constructed here.
+  MockContentSettingsClient(LayoutTestRuntimeFlags* layout_test_runtime_flags);
+
+  ~MockContentSettingsClient() override;
 
   // blink::WebContentSettingsClient:
   bool allowImage(bool enabledPerSettings,
@@ -31,36 +35,16 @@ class WebContentSettings : public blink::WebContentSettingsClient {
                                    const blink::WebSecurityOrigin&,
                                    const blink::WebURL&) override;
 
-  // Hooks to set the different policies.
-  void SetImagesAllowed(bool);
-  void SetMediaAllowed(bool);
-  void SetScriptsAllowed(bool);
-  void SetStorageAllowed(bool);
-  void SetPluginsAllowed(bool);
-  void SetDisplayingInsecureContentAllowed(bool);
-  void SetRunningInsecureContentAllowed(bool);
-
   void SetDelegate(WebTestDelegate*);
-  void SetDumpCallbacks(bool);
-
-  // Resets the policy to allow everything, except for running insecure content.
-  void Reset();
 
  private:
   WebTestDelegate* delegate_;
-  bool dump_callbacks_;
 
-  bool images_allowed_;
-  bool media_allowed_;
-  bool scripts_allowed_;
-  bool storage_allowed_;
-  bool plugins_allowed_;
-  bool displaying_insecure_content_allowed_;
-  bool running_insecure_content_allowed_;
+  LayoutTestRuntimeFlags* flags_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebContentSettings);
+  DISALLOW_COPY_AND_ASSIGN(MockContentSettingsClient);
 };
 
 }  // namespace test_runner
 
-#endif  // COMPONENTS_TEST_RUNNER_WEB_CONTENT_SETTINGS_H_
+#endif  // COMPONENTS_TEST_RUNNER_MOCK_CONTENT_SETTINGS_CLIENT_H_

@@ -33,6 +33,15 @@ void LayoutTestRuntimeFlags::Reset() {
 
   set_accept_languages("");
 
+  set_dump_web_content_settings_client_callbacks(false);
+  set_images_allowed(true);
+  set_media_allowed(true);
+  set_scripts_allowed(true);
+  set_storage_allowed(true);
+  set_plugins_allowed(true);
+  set_displaying_insecure_content_allowed(false);
+  set_running_insecure_content_allowed(false);
+
   // No need to report the initial state - only the future delta is important.
   tracked_dictionary().ResetChangeTracking();
 }

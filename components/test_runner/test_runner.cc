@@ -16,6 +16,7 @@
 #include "build/build_config.h"
 #include "components/test_runner/app_banner_client.h"
 #include "components/test_runner/layout_dump.h"
+#include "components/test_runner/mock_content_settings_client.h"
 #include "components/test_runner/mock_credential_manager_client.h"
 #include "components/test_runner/mock_screen_orientation_client.h"
 #include "components/test_runner/mock_web_speech_recognizer.h"
@@ -24,7 +25,6 @@
 #include "components/test_runner/spell_check_client.h"
 #include "components/test_runner/test_interfaces.h"
 #include "components/test_runner/test_preferences.h"
-#include "components/test_runner/web_content_settings.h"
 #include "components/test_runner/web_task.h"
 #include "components/test_runner/web_test_delegate.h"
 #include "components/test_runner/web_test_proxy.h"
@@ -1574,7 +1574,8 @@ TestRunner::TestRunner(TestInterfaces* interfaces)
       test_interfaces_(interfaces),
       delegate_(nullptr),
       web_view_(nullptr),
-      web_content_settings_(new WebContentSettings()),
+      mock_content_settings_client_(
+          new MockContentSettingsClient(&layout_test_runtime_flags_)),
       credential_manager_client_(new MockCredentialManagerClient),
       mock_screen_orientation_client_(new MockScreenOrientationClient),
       spellcheck_(new SpellCheckClient(this)),
@@ -1589,7 +1590,7 @@ void TestRunner::Install(WebFrame* frame) {
 
 void TestRunner::SetDelegate(WebTestDelegate* delegate) {
   delegate_ = delegate;
-  web_content_settings_->SetDelegate(delegate);
+  mock_content_settings_client_->SetDelegate(delegate);
   spellcheck_->SetDelegate(delegate);
   if (speech_recognizer_)
     speech_recognizer_->SetDelegate(delegate);
@@ -1674,8 +1675,6 @@ void TestRunner::Reset() {
   tooltip_text_ = std::string();
   web_history_item_count_ = 0;
   intercept_post_message_ = false;
-
-  web_content_settings_->Reset();
 
   SetUseMockTheme(true);
 
@@ -1910,7 +1909,7 @@ bool TestRunner::shouldDumpResourceResponseMIMETypes() const {
 }
 
 WebContentSettingsClient* TestRunner::GetWebContentSettings() const {
-  return web_content_settings_.get();
+  return mock_content_settings_client_.get();
 }
 
 void TestRunner::InitializeWebViewWithMocks(blink::WebView* web_view) {
@@ -2734,35 +2733,44 @@ void TestRunner::DumpResourceResponseMIMETypes() {
 }
 
 void TestRunner::SetImagesAllowed(bool allowed) {
-  web_content_settings_->SetImagesAllowed(allowed);
+  layout_test_runtime_flags_.set_images_allowed(allowed);
+  OnLayoutTestRuntimeFlagsChanged();
 }
 
 void TestRunner::SetMediaAllowed(bool allowed) {
-  web_content_settings_->SetMediaAllowed(allowed);
+  layout_test_runtime_flags_.set_media_allowed(allowed);
+  OnLayoutTestRuntimeFlagsChanged();
 }
 
 void TestRunner::SetScriptsAllowed(bool allowed) {
-  web_content_settings_->SetScriptsAllowed(allowed);
+  layout_test_runtime_flags_.set_scripts_allowed(allowed);
+  OnLayoutTestRuntimeFlagsChanged();
 }
 
 void TestRunner::SetStorageAllowed(bool allowed) {
-  web_content_settings_->SetStorageAllowed(allowed);
+  layout_test_runtime_flags_.set_storage_allowed(allowed);
+  OnLayoutTestRuntimeFlagsChanged();
 }
 
 void TestRunner::SetPluginsAllowed(bool allowed) {
-  web_content_settings_->SetPluginsAllowed(allowed);
+  layout_test_runtime_flags_.set_plugins_allowed(allowed);
+  OnLayoutTestRuntimeFlagsChanged();
 }
 
 void TestRunner::SetAllowDisplayOfInsecureContent(bool allowed) {
-  web_content_settings_->SetDisplayingInsecureContentAllowed(allowed);
+  layout_test_runtime_flags_.set_displaying_insecure_content_allowed(allowed);
+  OnLayoutTestRuntimeFlagsChanged();
 }
 
 void TestRunner::SetAllowRunningOfInsecureContent(bool allowed) {
-  web_content_settings_->SetRunningInsecureContentAllowed(allowed);
+  layout_test_runtime_flags_.set_running_insecure_content_allowed(allowed);
+  OnLayoutTestRuntimeFlagsChanged();
 }
 
 void TestRunner::DumpPermissionClientCallbacks() {
-  web_content_settings_->SetDumpCallbacks(true);
+  layout_test_runtime_flags_.set_dump_web_content_settings_client_callbacks(
+      true);
+  OnLayoutTestRuntimeFlagsChanged();
 }
 
 void TestRunner::DumpWindowStatusChanges() {
