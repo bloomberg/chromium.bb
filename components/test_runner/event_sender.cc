@@ -397,11 +397,6 @@ std::vector<std::string> MakeMenuItemStringsFor(
 // WebKit impl and layout test results.
 const float kScrollbarPixelsPerTick = 40.0f;
 
-bool NeedsShiftModifier(int keyCode) {
-  // If code is an uppercase letter, assign a SHIFT key to eventDown.modifier.
-  return (keyCode & 0xFF) >= 'A' && (keyCode & 0xFF) <= 'Z';
-}
-
 // Get the edit command corresponding to a keyboard event.
 // Returns true if the specified event corresponds to an edit command, the name
 // of the edit command will be stored in |*name|.
@@ -1529,14 +1524,14 @@ void EventSender::KeyDown(const std::string& code_str,
         return;
       }
       text = code = code_str16[0];
-      needs_shift_key_modifier = NeedsShiftModifier(code);
-      if ((code & 0xFF) >= 'a' && (code & 0xFF) <= 'z')
+      needs_shift_key_modifier = base::IsAsciiUpper(code & 0xFF);
+      if (base::IsAsciiLower(code & 0xFF))
         code -= 'a' - 'A';
-      if ((code >= 'A' && code <= 'Z') || (code >= 'a' && code <= 'z')) {
+      if (base::IsAsciiAlpha(code)) {
         domString.assign("Key");
         domString.push_back(
             base::ToUpperASCII(static_cast<base::char16>(code)));
-      } else if (code >= '0' && code <= '9') {
+      } else if (base::IsAsciiDigit(code)) {
         domString.assign("Digit");
         domString.push_back(code);
       } else if (code == ' ') {

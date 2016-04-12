@@ -17,6 +17,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/stl_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -92,7 +93,7 @@ TrigramChar TrigramCharForChar(char c) {
       char ch = static_cast<char>(i);
       if (ch == '\t')
         ch = ' ';
-      if (ch >= 'A' && ch <= 'Z')
+      if (base::IsAsciiUpper(ch))
         ch = ch - 'A' + 'a';
 
       bool is_binary_char = ch < 9 || (ch >= 14 && ch < 32) || ch == 127;

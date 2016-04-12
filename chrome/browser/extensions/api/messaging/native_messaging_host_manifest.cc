@@ -8,6 +8,7 @@
 
 #include "base/json/json_file_value_serializer.h"
 #include "base/logging.h"
+#include "base/strings/string_util.h"
 #include "base/values.h"
 
 namespace extensions {
@@ -24,8 +25,8 @@ bool NativeMessagingHostManifest::IsValidName(const std::string& name) {
     char c = name[i];
 
     // Verify that only the following characters are used: [a-z0-9._].
-    if (!((c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') ||
-          c == '.' || c == '_')) {
+    if (!(base::IsAsciiLower(c) || base::IsAsciiDigit(c) || c == '.' ||
+          c == '_')) {
       return false;
     }
 

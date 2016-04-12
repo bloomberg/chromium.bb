@@ -214,7 +214,7 @@ base::string16 Accelerator::GetShortcutText() const {
     // accent' for '0'). For display in the menu (e.g. Ctrl-0 for the
     // default zoom level), we leave VK_[0-9] alone without translation.
     wchar_t key;
-    if (key_code_ >= '0' && key_code_ <= '9')
+    if (base::IsAsciiDigit(key_code_))
       key = static_cast<wchar_t>(key_code_);
     else
       key = LOWORD(::MapVirtualKeyW(key_code_, MAPVK_VK_TO_CHAR));

@@ -14,6 +14,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/values.h"
@@ -50,12 +51,7 @@ scoped_ptr<base::Value> NetLogSpdyStreamWindowUpdateCallback(
 }
 
 bool ContainsUppercaseAscii(const std::string& str) {
-  for (std::string::const_iterator i(str.begin()); i != str.end(); ++i) {
-    if (*i >= 'A' && *i <= 'Z') {
-      return true;
-    }
-  }
-  return false;
+  return std::any_of(str.begin(), str.end(), base::IsAsciiUpper<char>);
 }
 
 }  // namespace

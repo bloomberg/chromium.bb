@@ -14,7 +14,7 @@
 // *** This file must be included after url_canon_internal as we depend on some
 // functions in it. ***
 
-
+#include "base/strings/string_util.h"
 #include "url/url_file.h"
 #include "url/url_parse_internal.h"
 
@@ -40,7 +40,7 @@ static int FileDoDriveSpec(const CHAR* spec, int begin, int end,
   // and that it is followed by a colon/pipe.
 
   // Normalize Windows drive letters to uppercase
-  if (spec[after_slashes] >= 'a' && spec[after_slashes] <= 'z')
+  if (base::IsAsciiLower(spec[after_slashes]))
     output->push_back(spec[after_slashes] - 'a' + 'A');
   else
     output->push_back(static_cast<char>(spec[after_slashes]));

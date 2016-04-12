@@ -533,9 +533,8 @@ void GetKeyCode(const std::string& char_text,
       base::string16 char_text16 = base::UTF8ToUTF16(char_text);
       DCHECK_EQ(char_text16.size(), 1U);
       vk_text = vk_code = char_text16[0];
-      *needs_shift_modifier =
-          (vk_code & 0xFF) >= 'A' && (vk_code & 0xFF) <= 'Z';
-      if ((vk_code & 0xFF) >= 'a' && (vk_code & 0xFF) <= 'z')
+      *needs_shift_modifier = base::IsAsciiUpper(vk_code & 0xFF);
+      if (base::IsAsciiLower(vk_code & 0xFF))
         vk_code -= 'a' - 'A';
       *generate_char = true;
     }

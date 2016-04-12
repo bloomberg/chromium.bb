@@ -248,8 +248,7 @@ void InMemoryURLIndexTest::SetUp() {
       proto_file.getline(sql_cmd_line, kCommandBufferMaxSize);
       if (!proto_file.eof()) {
         // We only process lines which begin with a upper-case letter.
-        // TODO(mrossetti): Can iswupper() be used here?
-        if (sql_cmd_line[0] >= 'A' && sql_cmd_line[0] <= 'Z') {
+        if (base::IsAsciiUpper(sql_cmd_line[0])) {
           std::string sql_cmd(sql_cmd_line);
           sql::Statement sql_stmt(db.GetUniqueStatement(sql_cmd_line));
           EXPECT_TRUE(sql_stmt.Run());

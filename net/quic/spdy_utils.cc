@@ -10,6 +10,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "net/spdy/spdy_frame_builder.h"
 #include "net/spdy/spdy_framer.h"
 #include "net/spdy/spdy_protocol.h"
@@ -19,10 +20,6 @@ using std::string;
 using std::vector;
 
 namespace net {
-
-bool ascii_isupper(unsigned char c) {
-  return c >= 'A' && c <= 'Z';
-}
 
 // static
 string SpdyUtils::SerializeUncompressedHeaders(const SpdyHeaderBlock& headers) {
@@ -122,7 +119,7 @@ bool SpdyUtils::CopyAndValidateTrailers(const QuicHeaderList& header_list,
       return false;
     }
 
-    if (std::any_of(name.begin(), name.end(), ascii_isupper)) {
+    if (std::any_of(name.begin(), name.end(), base::IsAsciiUpper<char>)) {
       DVLOG(1) << "Malformed header: Header name " << name
                << " contains upper-case characters.";
       return false;

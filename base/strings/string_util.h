@@ -337,7 +337,15 @@ inline bool IsAsciiWhitespace(Char c) {
 }
 template <typename Char>
 inline bool IsAsciiAlpha(Char c) {
-  return ((c >= 'A') && (c <= 'Z')) || ((c >= 'a') && (c <= 'z'));
+  return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z');
+}
+template <typename Char>
+inline bool IsAsciiUpper(Char c) {
+  return c >= 'A' && c <= 'Z';
+}
+template <typename Char>
+inline bool IsAsciiLower(Char c) {
+  return c >= 'a' && c <= 'z';
 }
 template <typename Char>
 inline bool IsAsciiDigit(Char c) {

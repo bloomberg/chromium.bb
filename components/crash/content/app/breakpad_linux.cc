@@ -213,7 +213,7 @@ void my_uint64tos(char* output, uint64_t i, unsigned i_len) {
 
 #if !defined(OS_CHROMEOS)
 bool my_isxdigit(char c) {
-  return (c >= '0' && c <= '9') || ((c | 0x20) >= 'a' && (c | 0x20) <= 'f');
+  return base::IsAsciiDigit(c) || ((c | 0x20) >= 'a' && (c | 0x20) <= 'f');
 }
 #endif
 

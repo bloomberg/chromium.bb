@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/strings/string_util.h"
 #include "components/test_runner/test_runner_export.h"
 #include "third_party/WebKit/public/web/WebNavigationPolicy.h"
 
@@ -15,7 +16,7 @@ class GURL;
 namespace test_runner {
 
 inline bool IsASCIIAlpha(char ch) {
-  return (ch | 0x20) >= 'a' && (ch | 0x20) <= 'z';
+  return base::IsAsciiLower(ch | 0x20);
 }
 
 inline bool IsNotASCIIAlpha(char ch) {

@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/strings/string_util.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_codes.h"
@@ -74,7 +75,7 @@ ui::KeyboardCode GetKeyboardCode(const caca_event_t& event) {
   };
 
   int key_code = caca_get_event_key_ch(&event);
-  if (key_code >= 'a' && key_code <= 'z')
+  if (base::IsAsciiLower(key_code))
     return static_cast<ui::KeyboardCode>(key_code - ('a' - 'A'));
   if (key_code >= '0' && key_code <= 'Z')
     return static_cast<ui::KeyboardCode>(key_code);
@@ -86,7 +87,7 @@ ui::KeyboardCode GetKeyboardCode(const caca_event_t& event) {
 
 int ModifierFromKey(const caca_event_t& event) {
   int key_code = caca_get_event_key_ch(&event);
-  if (key_code >= 'A' && key_code <= 'Z')
+  if (base::IsAsciiUpper(key_code))
     return ui::EF_SHIFT_DOWN;
   if ((key_code >= CACA_KEY_CTRL_A && key_code <= CACA_KEY_CTRL_G) ||
       (key_code >= CACA_KEY_CTRL_J && key_code <= CACA_KEY_CTRL_L) ||

@@ -655,7 +655,7 @@ HttpVersion HttpResponseHeaders::ParseVersion(
   ++p;  // from / to first digit.
   ++dot;  // from . to second digit.
 
-  if (!(*p >= '0' && *p <= '9' && *dot >= '0' && *dot <= '9')) {
+  if (!(base::IsAsciiDigit(*p) && base::IsAsciiDigit(*dot))) {
     DVLOG(1) << "malformed version number";
     return HttpVersion();
   }
@@ -710,7 +710,7 @@ void HttpResponseHeaders::ParseStatusLine(
     ++p;
 
   std::string::const_iterator code = p;
-  while (p < line_end && *p >= '0' && *p <= '9')
+  while (p < line_end && base::IsAsciiDigit(*p))
     ++p;
 
   if (p == code) {

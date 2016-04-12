@@ -116,9 +116,8 @@ int BackupDatabase(sqlite3* src, sqlite3* dst, const char* db_name) {
 // just use clean names to start with.
 bool ValidAttachmentPoint(const char* attachment_point) {
   for (size_t i = 0; attachment_point[i]; ++i) {
-    if (!((attachment_point[i] >= '0' && attachment_point[i] <= '9') ||
-          (attachment_point[i] >= 'a' && attachment_point[i] <= 'z') ||
-          (attachment_point[i] >= 'A' && attachment_point[i] <= 'Z') ||
+    if (!(base::IsAsciiDigit(attachment_point[i]) ||
+          base::IsAsciiAlpha(attachment_point[i]) ||
           attachment_point[i] == '_')) {
       return false;
     }

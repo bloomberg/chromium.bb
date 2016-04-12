@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 
 namespace net {
 
@@ -51,7 +52,7 @@ bool ParseIntHelper(const base::StringPiece& input,
     return SetError(ParseIntError::FAILED_PARSE, optional_error);
 
   bool starts_with_negative = input[0] == '-';
-  bool starts_with_digit = input[0] >= '0' && input[0] <= '9';
+  bool starts_with_digit = base::IsAsciiDigit(input[0]);
 
   if (!starts_with_digit) {
     if (format == ParseIntFormat::NON_NEGATIVE || !starts_with_negative)

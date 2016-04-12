@@ -113,8 +113,8 @@ std::string FilterStringForXRequestedWithValue(const std::string& s) {
     char c = s[i];
     // Allow ASCII digits, letters, periods, commas, and underscores. (Ignore
     // all other characters.)
-    if ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z') ||
-        (c >= 'a' && c <= 'z') || (c == '.') || (c == ',') || (c == '_'))
+    if (base::IsAsciiDigit(c) || base::IsAsciiAlpha(c) || (c == '.') ||
+        (c == ',') || (c == '_'))
       rv.push_back(c);
   }
   return rv;
