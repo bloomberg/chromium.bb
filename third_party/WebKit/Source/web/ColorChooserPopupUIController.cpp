@@ -49,23 +49,18 @@ ColorChooserPopupUIController::ColorChooserPopupUIController(LocalFrame* frame, 
     , m_popup(nullptr)
     , m_locale(Locale::defaultLocale())
 {
-#if ENABLE(OILPAN)
     ThreadState::current()->registerPreFinalizer(this);
-#endif
 }
 
 ColorChooserPopupUIController::~ColorChooserPopupUIController()
 {
-#if !ENABLE(OILPAN)
-    closePopup();
-#endif
-    // ~ColorChooserUIController ends the ColorChooser.
 }
 
 void ColorChooserPopupUIController::dispose()
 {
     // Finalized earlier so as to access m_chromeClient while alive.
     closePopup();
+    // ~ColorChooserUIController calls endChooser().
 }
 
 DEFINE_TRACE(ColorChooserPopupUIController)

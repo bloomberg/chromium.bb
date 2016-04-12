@@ -320,12 +320,8 @@ void WebPluginContainerImpl::setWebLayer(WebLayer* layer)
 
     m_webLayer = layer;
 
-#if ENABLE(OILPAN)
-    if (!m_element)
-        return;
-#endif
-
-    m_element->setNeedsCompositingUpdate();
+    if (m_element)
+        m_element->setNeedsCompositingUpdate();
 }
 
 bool WebPluginContainerImpl::supportsPaginatedPrint() const
@@ -607,24 +603,18 @@ WebLayer* WebPluginContainerImpl::platformLayer() const
 
 v8::Local<v8::Object> WebPluginContainerImpl::scriptableObject(v8::Isolate* isolate)
 {
-#if ENABLE(OILPAN)
     // With Oilpan, on plugin element detach dispose() will be called to safely
     // clear out references, including the pre-emptive destruction of the plugin.
     //
     // It clearly has no scriptable object if in such a disposed state.
     if (!m_webPlugin)
         return v8::Local<v8::Object>();
-#endif
 
     v8::Local<v8::Object> object = m_webPlugin->v8ScriptableObject(isolate);
 
     // If the plugin has been destroyed and the reference on the stack is the
     // only one left, then don't return the scriptable object.
-#if ENABLE(OILPAN)
     if (!m_webPlugin)
-#else
-    if (hasOneRef())
-#endif
         return v8::Local<v8::Object>();
 
     return object;
@@ -661,19 +651,13 @@ WebPluginContainerImpl::WebPluginContainerImpl(HTMLPlugInElement* element, WebPl
     , m_wantsWheelEvents(false)
     , m_isDisposed(false)
 {
-#if ENABLE(OILPAN)
     ThreadState::current()->registerPreFinalizer(this);
-#endif
 }
 
 WebPluginContainerImpl::~WebPluginContainerImpl()
 {
-#if ENABLE(OILPAN)
     // The plugin container must have been disposed of by now.
     DCHECK(!m_webPlugin);
-#else
-    dispose();
-#endif
 }
 
 void WebPluginContainerImpl::dispose()

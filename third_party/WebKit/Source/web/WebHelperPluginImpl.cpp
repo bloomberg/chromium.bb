@@ -56,14 +56,12 @@ WebHelperPluginImpl::WebHelperPluginImpl()
 
 WebHelperPluginImpl::~WebHelperPluginImpl()
 {
-#if ENABLE(OILPAN)
-    // FIXME: Oilpan: it is potentially problematic to support plugin
+    // TODO(Oilpan): it is potentially problematic to support plugin
     // disposal during an Oilpan GC. If it happens, we need to know
     // and evaluate possible ways to handle it.
     DCHECK(!ThreadState::current()->sweepForbidden());
     if (m_pluginContainer)
         m_pluginContainer->dispose();
-#endif
 }
 
 bool WebHelperPluginImpl::initialize(const String& pluginType, WebLocalFrameImpl* frame)

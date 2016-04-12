@@ -2490,13 +2490,13 @@ TEST_F(WebViewTest, DeleteElementWithRegisteredHandler)
 
     TrackExceptionState exceptionState;
     div->remove(exceptionState);
-#if ENABLE(OILPAN)
+
     // For oilpan we have to force a GC to ensure the event handlers have been removed when
     // checking below. We do a precise GC (collectAllGarbage does not scan the stack)
     // to ensure the div element dies. This is also why the Document is in a Persistent
     // since we want that to stay around.
     Heap::collectAllGarbage();
-#endif
+
     EXPECT_FALSE(registry.hasEventHandlers(EventHandlerRegistry::ScrollEvent));
 }
 

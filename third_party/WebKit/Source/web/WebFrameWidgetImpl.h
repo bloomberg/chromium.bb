@@ -68,6 +68,8 @@ public:
     static WebFrameWidgetImpl* create(WebWidgetClient*, WebLocalFrame*);
     static WebFrameWidgetsSet& allInstances();
 
+    ~WebFrameWidgetImpl();
+
     // WebWidget functions:
     void close() override;
     WebSize size() override;
@@ -160,14 +162,8 @@ public:
 
 private:
     friend class WebFrameWidget; // For WebFrameWidget::create.
-#if ENABLE(OILPAN)
-    friend class GarbageCollectedFinalized<WebFrameWidgetImpl>;
-#else
-    friend class WTF::RefCounted<WebFrameWidgetImpl>;
-#endif
 
     explicit WebFrameWidgetImpl(WebWidgetClient*, WebLocalFrame*);
-    ~WebFrameWidgetImpl();
 
     // Perform a hit test for a point relative to the root frame of the page.
     HitTestResult hitTestResultForRootFramePos(const IntPoint& posInRootFrame);
@@ -225,9 +221,7 @@ private:
 
     WebColor m_baseBackgroundColor;
 
-#if ENABLE(OILPAN)
     SelfKeepAlive<WebFrameWidgetImpl> m_selfKeepAlive;
-#endif
 };
 
 DEFINE_TYPE_CASTS(WebFrameWidgetImpl, WebFrameWidget, widget, widget->forSubframe(), widget.forSubframe());
