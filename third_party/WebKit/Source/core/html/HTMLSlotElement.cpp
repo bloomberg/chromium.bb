@@ -151,6 +151,11 @@ Node* HTMLSlotElement::distributedNodePreviousTo(const Node& node) const
     return m_distributedNodes[index - 1].get();
 }
 
+AtomicString HTMLSlotElement::name() const
+{
+    return normalizeSlotName(fastGetAttribute(HTMLNames::nameAttr));
+}
+
 void HTMLSlotElement::attach(const AttachContext& context)
 {
     for (auto& node : m_distributedNodes) {

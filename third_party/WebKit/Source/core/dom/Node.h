@@ -300,6 +300,10 @@ public:
 
     bool canParticipateInFlatTree() const;
     bool isSlotOrActiveInsertionPoint() const;
+    bool slottable() const { return isElementNode() || isTextNode(); }
+    AtomicString slotName() const;
+
+    static AtomicString normalizeSlotName(const AtomicString&);
 
     bool hasCustomStyleCallbacks() const { return getFlag(HasCustomStyleCallbacksFlag); }
 

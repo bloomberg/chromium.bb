@@ -995,6 +995,21 @@ bool Node::isSlotOrActiveInsertionPoint() const
     return isHTMLSlotElement(*this) || isActiveInsertionPoint(*this);
 }
 
+AtomicString Node::slotName() const
+{
+    DCHECK(slottable());
+    if (isElementNode())
+        return normalizeSlotName(toElement(*this).fastGetAttribute(HTMLNames::slotAttr));
+    DCHECK(isTextNode());
+    return emptyAtom;
+}
+
+// static
+AtomicString Node::normalizeSlotName(const AtomicString& name)
+{
+    return (name.isNull() || name.isEmpty()) ? emptyAtom : name;
+}
+
 bool Node::isInV1ShadowTree() const
 {
     ShadowRoot* shadowRoot = containingShadowRoot();
