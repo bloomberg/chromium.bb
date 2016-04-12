@@ -14,6 +14,7 @@ package metrics;
 
 import "cast_logs.proto";
 import "histogram_event.proto";
+import "memory_leak_report.proto";
 import "omnibox_event.proto";
 import "profiler_event.proto";
 import "system_profile.proto";
@@ -73,4 +74,7 @@ message ChromeUserMetricsExtension {
 
   // Additional data related with Cast-enabled devices.
   optional CastLogsProto cast_logs = 12;
+
+  // Memory leak reports generated since the last UMA upload.
+  repeated MemoryLeakReportProto memory_leak_report = 13;
 }
