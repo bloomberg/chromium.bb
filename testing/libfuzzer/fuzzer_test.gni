@@ -36,20 +36,6 @@ template("fuzzer_test") {
       test_deps += invoker.deps
     }
 
-    if (defined(invoker.libfuzzer_options) && !defined(invoker.dict)) {
-      # Copy libfuzzer_options to output if dict is not provided.
-      copy(target_name + "_libfuzzer_options_copy") {
-        sources = [
-          invoker.libfuzzer_options,
-        ]
-        outputs = [
-          "$root_build_dir/" + target_name + ".options",
-        ]
-      }
-
-      test_deps += [ ":" + target_name + "_libfuzzer_options_copy" ]
-    }
-
     if (defined(invoker.seed_corpus)) {
       depfile = "$root_build_dir/$target_name" + ".seed_corpus.d"
       out = "$root_build_dir/$target_name" + "_seed_corpus.zip"
@@ -79,36 +65,41 @@ template("fuzzer_test") {
       test_deps += [ ":" + target_name + "_seed_corpus" ]
     }
 
-    if (defined(invoker.dict)) {
-      # Copy dictionary to output.
-      copy(target_name + "_dict_copy") {
-        sources = [
-          invoker.dict,
-        ]
-        outputs = [
-          "$root_build_dir/" + target_name + ".dict",
-        ]
+    if (defined(invoker.dict) || defined(invoker.libfuzzer_options)) {
+      if (defined(invoker.dict)) {
+        # Copy dictionary to output.
+        copy(target_name + "_dict_copy") {
+          sources = [
+            invoker.dict,
+          ]
+          outputs = [
+            "$root_build_dir/" + target_name + ".dict",
+          ]
+        }
+        test_deps += [ ":" + target_name + "_dict_copy" ]
       }
 
-      test_deps += [ ":" + target_name + "_dict_copy" ]
-
-      # Generate new .options file or update an existing one.
+      # Generate .options file.
       config_name = target_name + ".options"
       action(config_name) {
         script = "//testing/libfuzzer/gen_fuzzer_config.py"
         args = [
           "--config",
           rebase_path("$root_build_dir/" + config_name),
-          "--dict",
-          rebase_path("$root_build_dir/" + invoker.target_name + ".dict"),
         ]
 
-        if (defined(invoker.libfuzzer_options)) {
+        if (defined(invoker.dict)) {
           args += [
-            "--libfuzzer_options",
-            rebase_path(invoker.libfuzzer_options),
+            "--dict",
+            rebase_path("$root_build_dir/" + invoker.target_name + ".dict"),
           ]
         }
+
+        if (defined(invoker.libfuzzer_options)) {
+          args += [ "--libfuzzer_options" ]
+          args += invoker.libfuzzer_options
+        }
+
         outputs = [
           "$root_build_dir/$config_name",
         ]

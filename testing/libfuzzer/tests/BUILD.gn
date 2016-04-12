@@ -37,7 +37,10 @@ fuzzer_test("test_config_only") {
   sources = [
     "../fuzzers/empty_fuzzer.cc",
   ]
-  libfuzzer_options = "fuzzer_config_only_test.options"
+  libfuzzer_options = [
+    "some_test_option=test_value",
+    "max_len=1024",
+  ]
 }
 
 fuzzer_test("test_config_and_dict") {
@@ -45,7 +48,11 @@ fuzzer_test("test_config_and_dict") {
     "../fuzzers/empty_fuzzer.cc",
   ]
   dict = "test.dict"
-  libfuzzer_options = "fuzzer_config_and_dict_test.options"
+  libfuzzer_options = [
+    "max_len=random(1337, 31337)",
+    "timeout   =   666",
+    "use_traces=1",
+  ]
 }
 
 fuzzer_test("test_dict_from_subdir") {

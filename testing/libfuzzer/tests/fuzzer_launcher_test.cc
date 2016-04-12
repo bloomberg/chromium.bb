@@ -49,11 +49,10 @@ TEST(FuzzerConfigTest, ConfigOnly) {
   std::vector<std::string> fuzzer_args = base::SplitString(
       output, "\n", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
 
-  EXPECT_EQ(3UL, fuzzer_args.size());
+  EXPECT_EQ(2UL, fuzzer_args.size());
 
-  EXPECT_EQ(fuzzer_args[0], "max_len=random(1337, 31337)");
-  EXPECT_EQ(fuzzer_args[1], "timeout=666");
-  EXPECT_EQ(fuzzer_args[2], "use_traces=1");
+  EXPECT_EQ(fuzzer_args[0], "some_test_option=test_value");
+  EXPECT_EQ(fuzzer_args[1], "max_len=1024");
 }
 
 
@@ -73,10 +72,10 @@ TEST(FuzzerConfigTest, ConfigAndDict) {
 
   EXPECT_EQ(4UL, fuzzer_args.size());
 
-  EXPECT_EQ(fuzzer_args[0], "max_len=random(1337, 31337)");
-  EXPECT_EQ(fuzzer_args[1], "timeout=666");
-  EXPECT_EQ(fuzzer_args[2], "use_traces=1");
-  EXPECT_EQ(fuzzer_args[3], "dict=test_config_and_dict.dict");
+  EXPECT_EQ(fuzzer_args[0], "dict=test_config_and_dict.dict");
+  EXPECT_EQ(fuzzer_args[1], "max_len=random(1337, 31337)");
+  EXPECT_EQ(fuzzer_args[2], "timeout=666");
+  EXPECT_EQ(fuzzer_args[3], "use_traces=1");
 }
 
 

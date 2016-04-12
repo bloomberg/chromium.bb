@@ -1919,7 +1919,7 @@ fuzzer_test("net_unescape_url_component_fuzzer") {
     "//net",
   ]
   dict = "base/unescape_url_component_fuzzer.dict"
-  libfuzzer_options = "base/unescape_url_component_fuzzer.options"
+  libfuzzer_options = [ "max_len = 2048" ]
 }
 
 fuzzer_test("net_websocket_frame_parser_fuzzer") {

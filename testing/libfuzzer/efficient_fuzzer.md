@@ -89,6 +89,7 @@ magic numbers etc. The easiest way to diagnose this problem is to generate a
 * change the code (e.g. disable crc checks while fuzzing)
 * prepare [corpus seed](#Corpus-Seed)
 * prepare [fuzzer dictionary](#Fuzzer-Dictionary)
+* specify [custom options](#Custom-Options)
 
 ## Coverage
 
@@ -165,6 +166,28 @@ fuzzer_test("my_protocol_fuzzer") {
 
 Make sure to submit dictionary file to git. The dictionary will be used
 automatically by ClusterFuzz once it picks up new fuzzer version (once a day).
+
+
+### Custom Options
+
+It is possible to specify [libFuzzer parameters](http://llvm.org/docs/LibFuzzer.html#usage)
+for any fuzzer being run at ClusterFuzz. Custom options will overwrite default
+values provided by ClusterFuzz.
+
+Just list all parameters in `libfuzzer_options` variable of build target:
+
+```
+fuzzer_test("my_protocol_fuzzer") {
+  ...
+  libfuzzer_options = [
+    "max_len=2048",
+    "use_traces=1",
+  ]
+}
+```
+
+Please note that `dict` parameter should be provided [separately](#Fuzzer-Dictionary).
+Other options may be passed through `libfuzzer_options` property.
 
 
 [ClusterFuzz status]: ./clusterfuzz.md#Status-Links

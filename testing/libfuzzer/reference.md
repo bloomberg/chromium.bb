@@ -40,14 +40,18 @@ Most common flags are:
 A fuller list of options can be found at [libFuzzer Usage] page and by running
 the binary with `-help=1`.
 
-To specify these options for ClusterFuzz, create `<my_fuzzer>.options` file:
+To specify these options for ClusterFuzz, list all parameters in
+`libfuzzer_options` target attribute:
 
 ```
-[libfuzzer]
-max_len=500
+fuzzer_test("my_fuzzer") {
+  ...
+  libfuzzer_options = [
+    "max_len=2048",
+    "use_traces=1",
+  ]
+}
 ```
-
-and specify the file in `libfuzzer_options` target attribute.
 
 [libFuzzer Usage]: http://llvm.org/docs/LibFuzzer.html#usage
 

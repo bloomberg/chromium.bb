@@ -14,34 +14,33 @@ import os
 import sys
 
 
-OPTIONS_FILE_TEMPLATE = '''# This is automatically generated fuzzer config.
+CONFIG_HEADER = '''# This is an automatically generated config for libFuzzer.
 [libfuzzer]
-dict = %(dict)s
 '''
 
 def main():
   parser = argparse.ArgumentParser(description="Generate fuzzer config.")
   parser.add_argument('--config', required=True)
-  parser.add_argument('--dict', required=True)
-  parser.add_argument('--libfuzzer_options', required=False)
+  parser.add_argument('--dict')
+  parser.add_argument('--libfuzzer_options', nargs='+', default=[])
   args = parser.parse_args()
 
-  config_path = args.config
-  # Dict will be copied into build directory, use only its basename for config.
-  dict_name = os.path.basename(args.dict)
-
-  if not args.libfuzzer_options:
-    # Generate .options file with initialized 'dict' option.
-    with open(config_path, 'w') as options_file:
-      options_file.write(OPTIONS_FILE_TEMPLATE % {'dict': dict_name})
+  # Script shouldn't be invoked without both arguments, but just in case.
+  if not args.dict and not args.libfuzzer_options:
     return
 
-  # Append 'dict' option to an existing .options file.
-  initial_config = open(args.libfuzzer_options).read()
+  config_path = args.config
+  # Generate .options file.
   with open(config_path, 'w') as options_file:
-    options_file.write(initial_config)
-    options_file.write('\ndict = %s\n' % dict_name)
+    options_file.write(CONFIG_HEADER)
 
+    # Dict will be copied into build directory, need only basename for config.
+    if args.dict:
+      options_file.write('dict = %s\n' % os.path.basename(args.dict))
+
+    for option in args.libfuzzer_options:
+      options_file.write(option)
+      options_file.write('\n')
 
 if __name__ == '__main__':
   main()

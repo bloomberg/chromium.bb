@@ -130,5 +130,7 @@ fuzzer_test("media_pipeline_integration_fuzzer") {
     "//testing/gmock",
     "//ui/gfx:test_support",
   ]
-  libfuzzer_options = "media_pipeline_integration_fuzzer.options"
+
+  # This is done to avoid DEATH of ASan with "Thread limit exceeded" error.
+  libfuzzer_options = [ "runs=500000" ]
 }
