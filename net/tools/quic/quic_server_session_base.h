@@ -13,6 +13,7 @@
 #include <string>
 #include <vector>
 
+#include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/quic/crypto/quic_compressed_certs_cache.h"

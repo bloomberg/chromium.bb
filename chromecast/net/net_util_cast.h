@@ -6,13 +6,14 @@
 #define CHROMECAST_NET_NET_UTIL_H_
 
 #include <string>
-#include <unordered_set>
+
+#include "base/containers/hash_tables.h"
 
 namespace chromecast {
 
 // Gets the list of interfaces that should be ignored. The interfaces returned
 // by this function will not be used to connect to the internet.
-std::unordered_set<std::string> GetIgnoredInterfaces();
+base::hash_set<std::string> GetIgnoredInterfaces();
 
 }  // namespace chromecast
 

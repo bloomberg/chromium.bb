@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <unordered_set>
 #include <vector>
 
 #include "base/bind.h"
@@ -101,7 +100,7 @@ class AddressTrackerLinuxTest : public testing::Test {
     return tracker_->GetAddressMap();
   }
 
-  const std::unordered_set<int> GetOnlineLinks() const {
+  const base::hash_set<int> GetOnlineLinks() const {
     return tracker_->GetOnlineLinks();
   }
 
@@ -113,7 +112,7 @@ class AddressTrackerLinuxTest : public testing::Test {
     return tracker_->GetThreadsWaitingForConnectionTypeInitForTesting();
   }
 
-  std::unordered_set<std::string> ignored_interfaces_;
+  base::hash_set<std::string> ignored_interfaces_;
   scoped_ptr<AddressTrackerLinux> tracker_;
   AddressTrackerLinux::GetInterfaceNameFunction original_get_interface_name_;
 };

@@ -11,6 +11,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "base/containers/hash_tables.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"

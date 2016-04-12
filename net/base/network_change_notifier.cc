@@ -5,7 +5,6 @@
 #include "net/base/network_change_notifier.h"
 
 #include <limits>
-#include <unordered_set>
 
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
@@ -529,7 +528,7 @@ NetworkChangeNotifier* NetworkChangeNotifier::Create() {
 #endif
   return NULL;
 #elif defined(OS_LINUX)
-  return new NetworkChangeNotifierLinux(std::unordered_set<std::string>());
+  return new NetworkChangeNotifierLinux(base::hash_set<std::string>());
 #elif defined(OS_MACOSX)
   return new NetworkChangeNotifierMac();
 #else

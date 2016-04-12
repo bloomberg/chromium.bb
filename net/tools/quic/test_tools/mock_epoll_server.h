@@ -8,9 +8,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <unordered_map>
-#include <unordered_set>
-
 #include "base/logging.h"
 #include "base/macros.h"
 #include "net/tools/epoll_server/epoll_server.h"
@@ -55,7 +52,7 @@ class FakeTimeEpollServer : public EpollServer {
 
 class MockEpollServer : public FakeTimeEpollServer {
  public:  // type definitions
-  using EventQueue = std::unordered_multimap<int64_t, struct epoll_event>;
+  typedef base::hash_multimap<int64_t, struct epoll_event> EventQueue;
 
   MockEpollServer();
   ~MockEpollServer() override;
@@ -84,7 +81,7 @@ class MockEpollServer : public FakeTimeEpollServer {
     WaitForEventsAndExecuteCallbacks();
   }
 
-  std::unordered_set<AlarmCB*>::size_type NumberOfAlarms() const {
+  base::hash_set<AlarmCB*>::size_type NumberOfAlarms() const {
     return all_alarms_.size();
   }
 

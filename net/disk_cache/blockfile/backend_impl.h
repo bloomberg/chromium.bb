@@ -9,8 +9,7 @@
 
 #include <stdint.h>
 
-#include <unordered_map>
-
+#include "base/containers/hash_tables.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -294,7 +293,7 @@ class NET_EXPORT_PRIVATE BackendImpl : public Backend {
   void OnExternalCacheHit(const std::string& key) override;
 
  private:
-  using EntriesMap = std::unordered_map<CacheAddr, EntryImpl*>;
+  typedef base::hash_map<CacheAddr, EntryImpl*> EntriesMap;
   class IteratorImpl;
 
   // Creates a new backing file for the cache index.

@@ -59,8 +59,6 @@
 
 #include "net/android/network_change_notifier_android.h"
 
-#include <unordered_set>
-
 #include "base/android/build_info.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
@@ -95,7 +93,7 @@ class NetworkChangeNotifierAndroid::DnsConfigServiceThread
                          base::Bind(base::DoNothing),
                          // We're only interested in tunnel interface changes.
                          base::Bind(NotifyNetworkChangeNotifierObservers),
-                         std::unordered_set<std::string>()) {}
+                         base::hash_set<std::string>()) {}
 
   ~DnsConfigServiceThread() override {
     NetworkChangeNotifier::RemoveNetworkChangeObserver(this);

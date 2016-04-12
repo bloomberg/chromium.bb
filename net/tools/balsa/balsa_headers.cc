@@ -5,13 +5,12 @@
 #include "net/tools/balsa/balsa_headers.h"
 
 #include <stdio.h>
-
 #include <algorithm>
 #include <string>
-#include <unordered_set>
 #include <utility>
 #include <vector>
 
+#include "base/containers/hash_tables.h"
 #include "base/logging.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
@@ -34,10 +33,14 @@ const char kContentLength[] = "Content-Length";
 const char kTransferEncoding[] = "Transfer-Encoding";
 const char kSpaceChar = ' ';
 
-std::unordered_set<base::StringPiece,
-                   net::StringPieceCaseHash,
-                   net::StringPieceCaseEqual>
-    g_multivalued_headers;
+#if defined(COMPILER_MSVC)
+base::hash_set<base::StringPiece,
+               net::StringPieceCaseCompare> g_multivalued_headers;
+#else
+base::hash_set<base::StringPiece,
+               net::StringPieceCaseHash,
+               net::StringPieceCaseEqual> g_multivalued_headers;
+#endif
 
 void InitMultivaluedHeaders() {
   g_multivalued_headers.insert("accept");

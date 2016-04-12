@@ -5,10 +5,9 @@
 #ifndef CHROMECAST_BASE_DEVICE_CAPABILITIES_IMPL_H_
 #define CHROMECAST_BASE_DEVICE_CAPABILITIES_IMPL_H_
 
-#include <memory>
 #include <string>
-#include <unordered_map>
 
+#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list_threadsafe.h"
@@ -71,8 +70,8 @@ class DeviceCapabilitiesImpl : public DeviceCapabilities {
 
   // Map from capability key to corresponding ValidatorInfo. Gets updated
   // in Register()/Unregister().
-  using ValidatorMap =
-      std::unordered_map<std::string, std::unique_ptr<ValidatorInfo>>;
+  typedef base::ScopedPtrHashMap<std::string, std::unique_ptr<ValidatorInfo>>
+      ValidatorMap;
 
   // Internal constructor used by static DeviceCapabilities::Create*() methods.
   DeviceCapabilitiesImpl();

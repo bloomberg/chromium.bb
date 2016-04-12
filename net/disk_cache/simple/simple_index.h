@@ -8,11 +8,10 @@
 #include <stdint.h>
 
 #include <list>
-#include <unordered_map>
-#include <unordered_set>
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/hash_tables.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
@@ -118,7 +117,7 @@ class NET_EXPORT_PRIVATE SimpleIndex
   // entry.
   bool UpdateEntrySize(uint64_t entry_hash, int64_t entry_size);
 
-  using EntrySet = std::unordered_map<uint64_t, EntryMetadata>;
+  typedef base::hash_map<uint64_t, EntryMetadata> EntrySet;
 
   static void InsertInEntrySet(uint64_t entry_hash,
                                const EntryMetadata& entry_metadata,
@@ -187,7 +186,7 @@ class NET_EXPORT_PRIVATE SimpleIndex
 
   // This stores all the entry_hash of entries that are removed during
   // initialization.
-  std::unordered_set<uint64_t> removed_entries_;
+  base::hash_set<uint64_t> removed_entries_;
   bool initialized_;
   IndexInitMethod init_method_;
 

@@ -17,7 +17,7 @@
 #include "net/base/net_export.h"
 
 #if !defined(NDEBUG)
-#include <unordered_set>
+#include "base/containers/hash_tables.h"
 #endif
 
 namespace net {
@@ -300,7 +300,7 @@ class PriorityQueue : public base::NonThreadSafe {
 
 #if !defined(NDEBUG)
   unsigned next_id_;
-  std::unordered_set<unsigned> valid_ids_;
+  base::hash_set<unsigned> valid_ids_;
 #endif
 
   ListVector lists_;

@@ -7,7 +7,6 @@
 
 #include <memory>
 #include <string>
-#include <unordered_map>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
@@ -57,7 +56,7 @@ class CastResourceDelegate : public ui::ResourceBundle::Delegate {
   void ClearAllExtraLocalizedStrings();
 
  private:
-  using ExtraLocaledStringMap = std::unordered_map<int, base::string16>;
+  typedef base::hash_map<int, base::string16> ExtraLocaledStringMap;
 
   ExtraLocaledStringMap extra_localized_strings_;
 

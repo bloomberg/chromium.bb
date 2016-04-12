@@ -9,8 +9,7 @@
 
 #include <stdint.h>
 
-#include <unordered_map>
-
+#include "base/containers/hash_tables.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -199,7 +198,7 @@ class NET_EXPORT_PRIVATE BackendImplV3 : public Backend {
 
  private:
   friend class EvictionV3;
-  using EntriesMap = std::unordered_map<CacheAddr, EntryImplV3*>;
+  typedef base::hash_map<CacheAddr, EntryImplV3*> EntriesMap;
   class IteratorImpl;
   class NotImplementedIterator;
   class Worker;

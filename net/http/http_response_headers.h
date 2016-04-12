@@ -9,9 +9,9 @@
 #include <stdint.h>
 
 #include <string>
-#include <unordered_set>
 #include <vector>
 
+#include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_piece.h"
@@ -323,7 +323,7 @@ class NET_EXPORT HttpResponseHeaders
  private:
   friend class base::RefCountedThreadSafe<HttpResponseHeaders>;
 
-  using HeaderSet = std::unordered_set<std::string>;
+  typedef base::hash_set<std::string> HeaderSet;
 
   // The members of this structure point into raw_headers_.
   struct ParsedHeader;
