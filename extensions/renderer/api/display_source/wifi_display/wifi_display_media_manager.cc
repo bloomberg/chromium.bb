@@ -37,29 +37,20 @@ class WiFiDisplayVideoSink : public content::MediaStreamVideoSink {
       const blink::WebMediaStreamTrack& track,
       const content::VideoCaptureDeliverFrameCB& callback)
       : track_(track),
-        sink_added_(false),
         callback_(callback) {
   }
 
   ~WiFiDisplayVideoSink() override {
-    Stop();
+    DisconnectFromTrack();
   }
 
   void Start() {
-    DCHECK(!sink_added_);
-    sink_added_ = true;
     // Callback is invoked on IO thread.
-    AddToVideoTrack(this, callback_, track_);
-  }
-
-  void Stop() {
-    if (sink_added_)
-      RemoveFromVideoTrack(this, track_);
+    ConnectToTrack(track_, callback_);
   }
 
  private:
   blink::WebMediaStreamTrack track_;
-  bool sink_added_;
   content::VideoCaptureDeliverFrameCB callback_;
   DISALLOW_COPY_AND_ASSIGN(WiFiDisplayVideoSink);
 };
