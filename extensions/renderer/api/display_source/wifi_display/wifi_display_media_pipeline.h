@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
+#include "extensions/common/mojo/wifi_display_session_service.mojom.h"
 #include "extensions/renderer/api/display_source/wifi_display/wifi_display_media_packetizer.h"
 #include "extensions/renderer/api/display_source/wifi_display/wifi_display_video_encoder.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
@@ -31,15 +32,18 @@ namespace extensions {
 // Threading: should belong to IO thread.
 class WiFiDisplayMediaPipeline {
  public:
-  using MediaPacketCallback =
-      base::Callback<void(const std::vector<uint8_t>&)>;
   using ErrorCallback = base::Callback<void(const std::string&)>;
   using InitCompletionCallback = base::Callback<void(bool)>;
+  using RegisterMediaServiceCallback =
+    base::Callback<void(WiFiDisplayMediaServiceRequest, const base::Closure&)>;
 
   static std::unique_ptr<WiFiDisplayMediaPipeline> Create(
       wds::SessionType type,
       const WiFiDisplayVideoEncoder::InitParameters& video_parameters,
       const wds::AudioCodec& audio_codec,
+      const std::string& sink_ip_address,
+      const std::pair<int, int>& sink_rtp_ports,
+      const RegisterMediaServiceCallback& service_callback,
       const ErrorCallback& error_callback);
   ~WiFiDisplayMediaPipeline();
   // Note: to be called only once.
@@ -57,12 +61,16 @@ class WiFiDisplayMediaPipeline {
       wds::SessionType type,
       const WiFiDisplayVideoEncoder::InitParameters& video_parameters,
       const wds::AudioCodec& audio_codec,
+      const std::string& sink_ip_address,
+      const std::pair<int, int>& sink_rtp_ports,
+      const RegisterMediaServiceCallback& service_callback,
       const ErrorCallback& error_callback);
 
   void CreateVideoEncoder();
   void CreateMediaPacketizer();
   void OnVideoEncoderCreated(
       scoped_refptr<WiFiDisplayVideoEncoder> video_encoder);
+  void OnMediaServiceRegistered();
 
   void OnEncodedVideoFrame(const WiFiDisplayEncodedFrame& frame);
 
@@ -75,9 +83,13 @@ class WiFiDisplayMediaPipeline {
   wds::SessionType type_;
   WiFiDisplayVideoEncoder::InitParameters video_parameters_;
   wds::AudioCodec audio_codec_;
+  std::string sink_ip_address_;
+  std::pair<int, int> sink_rtp_ports_;
 
+  RegisterMediaServiceCallback service_callback_;
   ErrorCallback error_callback_;
   InitCompletionCallback init_completion_callback_;
+  WiFiDisplayMediaServicePtr media_service_;
 
   base::WeakPtrFactory<WiFiDisplayMediaPipeline> weak_factory_;
 

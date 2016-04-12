@@ -23,7 +23,7 @@ interface WiFiDisplaySessionService {
 
 interface WiFiDisplaySessionServiceClient {
   // Notification of a successfull connection to a sink.
-  OnConnected(string ip_address);
+  OnConnected(string local_ip_address, string sink_ip_address);
 
   // Notification of a handled connection request.
   OnConnectRequestHandled(bool success, string error_message);
@@ -42,4 +42,14 @@ interface WiFiDisplaySessionServiceClient {
   // Invoked to transmit a controlling message from
   // the connected sink.
   OnMessage(string data);
+};
+
+// This interface is used to send media stream to the
+// connected sink.
+interface WiFiDisplayMediaService {
+  // Sets the destination point for sending media stream.
+  SetDesinationPoint(string ip_address, int32 port) => (bool success);
+
+  // Sends media packet to the destination point.
+  SendMediaPacket(array<uint8> packet);
 };

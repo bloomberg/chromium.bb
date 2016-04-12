@@ -40,7 +40,8 @@ class WiFiDisplaySession: public DisplaySourceSession,
   void Terminate(const CompletionCallback& callback) override;
 
   // WiFiDisplaySessionServiceClient overrides.
-  void OnConnected(const mojo::String& ip_address) override;
+  void OnConnected(const mojo::String& local_ip_address,
+                   const mojo::String& sink_ip_address) override;
   void OnConnectRequestHandled(bool success,
                                const mojo::String& error) override;
   void OnTerminated() override;
@@ -76,7 +77,7 @@ class WiFiDisplaySession: public DisplaySourceSession,
   scoped_ptr<WiFiDisplayMediaManager> media_manager_;
   WiFiDisplaySessionServicePtr service_;
   mojo::Binding<WiFiDisplaySessionServiceClient> binding_;
-  std::string ip_address_;
+  std::string local_ip_address_;
   std::map<int, scoped_ptr<base::Timer>> timers_;
 
   DisplaySourceSessionParams params_;

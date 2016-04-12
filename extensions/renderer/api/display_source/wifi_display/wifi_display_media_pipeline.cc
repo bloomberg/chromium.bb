@@ -15,6 +15,7 @@ namespace extensions {
 namespace {
 
 const char kErrorVideoEncoderError[] = "Unrepairable video encoder error";
+const char kErrorUnableSendMedia[] = "Unable to send media";
 
 }  // namespace
 
@@ -22,10 +23,16 @@ WiFiDisplayMediaPipeline::WiFiDisplayMediaPipeline(
     wds::SessionType type,
     const WiFiDisplayVideoEncoder::InitParameters& video_parameters,
     const wds::AudioCodec& audio_codec,
+    const std::string& sink_ip_address,
+    const std::pair<int, int>& sink_rtp_ports,
+    const RegisterMediaServiceCallback& service_callback,
     const ErrorCallback& error_callback)
   : type_(type),
     video_parameters_(video_parameters),
     audio_codec_(audio_codec),
+    sink_ip_address_(sink_ip_address),
+    sink_rtp_ports_(sink_rtp_ports),
+    service_callback_(service_callback),
     error_callback_(error_callback),
     weak_factory_(this) {
 }
@@ -35,11 +42,17 @@ std::unique_ptr<WiFiDisplayMediaPipeline> WiFiDisplayMediaPipeline::Create(
     wds::SessionType type,
     const WiFiDisplayVideoEncoder::InitParameters& video_parameters,
     const wds::AudioCodec& audio_codec,
+    const std::string& sink_ip_address,
+    const std::pair<int, int>& sink_rtp_ports,
+    const RegisterMediaServiceCallback& service_callback,
     const ErrorCallback& error_callback) {
   return std::unique_ptr<WiFiDisplayMediaPipeline>(
       new WiFiDisplayMediaPipeline(type,
                                    video_parameters,
                                    audio_codec,
+                                   sink_ip_address,
+                                   sink_rtp_ports,
+                                   service_callback,
                                    error_callback));
 }
 
@@ -70,7 +83,10 @@ void WiFiDisplayMediaPipeline::Initialize(
     return;
   }
 
-  init_completion_callback_.Run(true);
+  service_callback_.Run(
+      mojo::GetProxy(&media_service_),
+      base::Bind(&WiFiDisplayMediaPipeline::OnMediaServiceRegistered,
+                 weak_factory_.GetWeakPtr()));
 }
 
 void WiFiDisplayMediaPipeline::CreateVideoEncoder() {
@@ -128,7 +144,21 @@ void WiFiDisplayMediaPipeline::OnVideoEncoderCreated(
       weak_factory_.GetWeakPtr());
   auto error_callback = base::Bind(error_callback_, kErrorVideoEncoderError);
   video_encoder_->SetCallbacks(encoded_callback, error_callback);
-  init_completion_callback_.Run(true);
+
+  service_callback_.Run(
+      mojo::GetProxy(&media_service_),
+      base::Bind(&WiFiDisplayMediaPipeline::OnMediaServiceRegistered,
+                 weak_factory_.GetWeakPtr()));
+}
+
+void WiFiDisplayMediaPipeline::OnMediaServiceRegistered() {
+  DCHECK(media_service_);
+  auto error_callback = base::Bind(error_callback_, kErrorUnableSendMedia);
+  media_service_.set_connection_error_handler(error_callback);
+  media_service_->SetDesinationPoint(
+      sink_ip_address_,
+      static_cast<int32_t>(sink_rtp_ports_.first),
+      init_completion_callback_);
 }
 
 void WiFiDisplayMediaPipeline::OnEncodedVideoFrame(
@@ -143,7 +173,8 @@ void WiFiDisplayMediaPipeline::OnEncodedVideoFrame(
 
 bool WiFiDisplayMediaPipeline::OnPacketizedMediaDatagramPacket(
     WiFiDisplayMediaDatagramPacket media_datagram_packet) {
-  NOTIMPLEMENTED();
+  DCHECK(media_service_);
+  media_service_->SendMediaPacket(std::move(media_datagram_packet));
   return true;
 }
 

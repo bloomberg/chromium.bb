@@ -157,7 +157,8 @@ void WiFiDisplaySessionServiceImpl::OnSinksUpdated(
     auto on_message = base::Bind(&WiFiDisplaySessionServiceImpl::OnSinkMessage,
                                  weak_factory_.GetWeakPtr());
     connection->SetMessageReceivedCallback(on_message);
-    client_->OnConnected(connection->GetLocalAddress());
+    client_->OnConnected(connection->GetLocalAddress(),
+                         connection->GetSinkAddress());
   }
 
   if (actual_state == SINK_STATE_DISCONNECTED) {

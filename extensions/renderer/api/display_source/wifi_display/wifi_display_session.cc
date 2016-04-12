@@ -75,13 +75,16 @@ void WiFiDisplaySession::Terminate(const CompletionCallback& callback) {
   teminate_completion_callback_ = callback;
 }
 
-void WiFiDisplaySession::OnConnected(const mojo::String& ip_address) {
+void WiFiDisplaySession::OnConnected(const mojo::String& local_ip_address,
+                                     const mojo::String& sink_ip_address) {
   DCHECK_EQ(DisplaySourceSession::Established, state_);
-  ip_address_ = ip_address;
+  local_ip_address_ = local_ip_address;
   media_manager_.reset(
       new WiFiDisplayMediaManager(
           params_.video_track,
           params_.audio_track,
+          sink_ip_address,
+          params_.render_frame->GetServiceRegistry(),
           base::Bind(
               &WiFiDisplaySession::OnMediaError,
               weak_factory_.GetWeakPtr())));
@@ -125,7 +128,7 @@ void WiFiDisplaySession::OnMessage(const mojo::String& data) {
 }
 
 std::string WiFiDisplaySession::GetLocalIPAddress() const {
-  return ip_address_;
+  return local_ip_address_;
 }
 
 int WiFiDisplaySession::GetNextCSeq(int* initial_peer_cseq) const {
