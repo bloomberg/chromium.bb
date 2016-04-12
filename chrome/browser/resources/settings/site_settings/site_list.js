@@ -270,7 +270,7 @@ Polymer({
   /**
    * Converts a string origin/pattern to a URL.
    * @param {string} originOrPattern The origin/pattern to convert to URL.
-   * @return {!URL} The URL to return (or null if origin is not a valid URL).
+   * @return {URL} The URL to return (or null if origin is not a valid URL).
    * @private
    */
   toUrl_: function(originOrPattern) {
@@ -286,6 +286,7 @@ Polymer({
    * Converts an unordered site list to an ordered array, sorted by site name
    * then protocol and de-duped (by origin).
    * @param {!Array<SiteException>} sites A list of sites to sort and de-dup.
+   * @return {!Array<SiteException>} Sorted and de-duped list.
    * @private
    */
   toSiteArray_: function(sites) {

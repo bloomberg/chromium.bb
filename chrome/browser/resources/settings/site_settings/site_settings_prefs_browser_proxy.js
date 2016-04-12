@@ -10,6 +10,7 @@
 /**
  * @typedef {{embeddingOrigin: string,
  *            origin: string,
+ *            originForDisplay: string,
  *            setting: string,
  *            source: string}}
  */

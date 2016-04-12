@@ -70,6 +70,7 @@ Polymer({
       // TODO(finnur): Send down the full SiteException, not just a string.
       this.siteChanged_({
         origin: site,
+        originForDisplay: '',
         embeddingOrigin: '',
         setting: '',
         source: '',
