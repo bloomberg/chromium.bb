@@ -9,7 +9,9 @@ Currently, the tool only supports Linux, Android, and Mac. Support for other
 platforms is planned.
 """
 
+import collections
 import errno
+import glob
 import optparse
 import os
 import Queue
@@ -21,6 +23,10 @@ import threading
 
 
 CONCURRENT_TASKS=4
+
+# The BINARY_INFO tuple describes a binary as dump_syms identifies it.
+BINARY_INFO = collections.namedtuple('BINARY_INFO',
+                                     ['platform', 'arch', 'hash', 'name'])
 
 
 def GetCommandOutput(command):
@@ -137,6 +143,15 @@ def mkdir_p(path):
     else: raise
 
 
+def GetBinaryInfoFromHeaderInfo(header_info):
+  """Given a standard symbol header information line, returns BINARY_INFO."""
+  # header info is of the form "MODULE $PLATFORM $ARCH $HASH $BINARY"
+  info_split = header_info.strip().split(' ', 5)
+  if len(info_split) != 5 or info_split[0] != 'MODULE':
+    return None
+  return BINARY_INFO(*info_split[1:])
+
+
 def GenerateSymbols(options, binaries):
   """Dumps the symbols of binary and places them in the given directory."""
 
@@ -144,18 +159,47 @@ def GenerateSymbols(options, binaries):
   print_lock = threading.Lock()
 
   def _Worker():
+    dump_syms = GetDumpSymsBinary(options.build_dir)
     while True:
-      binary = queue.get()
-
       should_dump_syms = True
       reason = "no reason"
+      binary = queue.get()
 
-      output_path = os.path.join(
-          options.symbols_dir, os.path.basename(binary))
-      if os.path.isdir(output_path):
-        if os.path.getmtime(binary) < os.path.getmtime(output_path):
+      run_once = True
+      while run_once:
+        run_once = False
+
+        if not dump_syms:
           should_dump_syms = False
-          reason = "symbols are more current than binary"
+          reason = "Could not locate dump_syms executable."
+          break
+
+        binary_info = GetBinaryInfoFromHeaderInfo(
+            GetCommandOutput([dump_syms, '-i', binary]))
+        if not binary_info:
+          should_dump_syms = False
+          reason = "Could not obtain binary information."
+          break
+
+        # See if the output file already exists.
+        output_path = os.path.join(options.symbols_dir, binary_info.name,
+                                   binary_info.hash, binary_info.name + '.sym')
+        if os.path.isfile(output_path):
+          should_dump_syms = False
+          reason = "Symbol file already found."
+          break
+
+        # See if there is a symbol file already found next to the binary
+        potential_symbol_files = glob.glob('%s.breakpad*' % binary)
+        for potential_symbol_file in potential_symbol_files:
+          with open(potential_symbol_file, 'rt') as f:
+            symbol_info = GetBinaryInfoFromHeaderInfo(f.readline())
+          if symbol_info == binary_info:
+            mkdir_p(os.path.dirname(output_path))
+            shutil.copyfile(potential_symbol_file, output_path)
+            should_dump_syms = False
+            reason = "Found local symbol file."
+            break
 
       if not should_dump_syms:
         if options.verbose:
@@ -168,20 +212,11 @@ def GenerateSymbols(options, binaries):
         with print_lock:
           print "Generating symbols for %s" % binary
 
-      if os.path.isdir(output_path):
-        os.utime(output_path, None)
-
-      syms = GetCommandOutput([GetDumpSymsBinary(options.build_dir), '-r',
-                               binary])
-      module_line = re.match("MODULE [^ ]+ [^ ]+ ([0-9A-F]+) (.*)\n", syms)
-      output_path = os.path.join(options.symbols_dir, module_line.group(2),
-                                 module_line.group(1))
-      mkdir_p(output_path)
-      symbol_file = "%s.sym" % module_line.group(2)
+      syms = GetCommandOutput([dump_syms, '-r', binary])
+      mkdir_p(os.path.dirname(output_path))
       try:
-        f = open(os.path.join(output_path, symbol_file), 'w')
-        f.write(syms)
-        f.close()
+        with open(output_path, 'wb') as f:
+          f.write(syms)
       except Exception, e:
         # Not much we can do about this.
         with print_lock:
