@@ -7,10 +7,13 @@
 
 #include <stdint.h>
 
-namespace device {
-namespace usb {
+#include "base/memory/ref_counted.h"
 
-class DeviceInfo;
+namespace device {
+
+class UsbDevice;
+
+namespace usb {
 
 // An implementation of this interface must be provided to a DeviceManager in
 // order to implement device permission checks.
@@ -19,13 +22,15 @@ class PermissionProvider {
   PermissionProvider();
   virtual ~PermissionProvider();
 
-  virtual bool HasDevicePermission(const DeviceInfo& device_info) const = 0;
+  virtual bool HasDevicePermission(
+      scoped_refptr<const UsbDevice> device) const = 0;
   virtual bool HasConfigurationPermission(
       uint8_t requested_configuration,
-      const DeviceInfo& device_info) const = 0;
-  virtual bool HasFunctionPermission(uint8_t requested_function,
-                                     uint8_t configuration_value,
-                                     const DeviceInfo& device_info) const = 0;
+      scoped_refptr<const UsbDevice> device) const = 0;
+  virtual bool HasFunctionPermission(
+      uint8_t requested_function,
+      uint8_t configuration_value,
+      scoped_refptr<const UsbDevice> device) const = 0;
   virtual void IncrementConnectionCount() = 0;
   virtual void DecrementConnectionCount() = 0;
 };

@@ -58,9 +58,6 @@ struct AlternateInterfaceInfo {
 
 struct InterfaceInfo {
   uint8 interface_number;
-  // Interface number of the first interface in the function to which this
-  // interface belongs.
-  uint8 first_interface;
   array<AlternateInterfaceInfo> alternates;
 };
 
@@ -68,22 +65,6 @@ struct ConfigurationInfo {
   uint8 configuration_value;
   string? configuration_name;
   array<InterfaceInfo> interfaces;
-};
-
-struct WebUsbFunctionSubset {
-  uint8 first_interface;
-  array<string> origins;
-};
-
-struct WebUsbConfigurationSubset {
-  uint8 configuration_value;
-  array<string> origins;
-  array<WebUsbFunctionSubset> functions;
-};
-
-struct WebUsbDescriptorSet {
-  array<string> origins;
-  array<WebUsbConfigurationSubset> configurations;
 };
 
 struct DeviceInfo {
@@ -104,7 +85,6 @@ struct DeviceInfo {
   string? serial_number;
   uint8 active_configuration;
   array<ConfigurationInfo> configurations;
-  WebUsbDescriptorSet? webusb_allowed_origins;
 };
 
 struct ControlTransferParams {

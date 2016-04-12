@@ -152,11 +152,11 @@ void UsbChooserContext::GrantDevicePermission(const GURL& requesting_origin,
 bool UsbChooserContext::HasDevicePermission(
     const GURL& requesting_origin,
     const GURL& embedding_origin,
-    const device::usb::DeviceInfo& device_info) {
+    scoped_refptr<const device::UsbDevice> device) {
   auto it = ephemeral_devices_.find(
       std::make_pair(requesting_origin, embedding_origin));
   if (it != ephemeral_devices_.end() &&
-      ContainsValue(it->second, device_info.guid)) {
+      ContainsValue(it->second, device->guid())) {
     return true;
   }
 
@@ -165,13 +165,13 @@ bool UsbChooserContext::HasDevicePermission(
   for (const scoped_ptr<base::DictionaryValue>& device_dict : device_list) {
     int vendor_id;
     int product_id;
-    std::string serial_number;
+    base::string16 serial_number;
     if (device_dict->GetInteger(kVendorIdKey, &vendor_id) &&
-        device_info.vendor_id == vendor_id &&
+        device->vendor_id() == vendor_id &&
         device_dict->GetInteger(kProductIdKey, &product_id) &&
-        device_info.product_id == product_id &&
+        device->product_id() == product_id &&
         device_dict->GetString(kSerialNumberKey, &serial_number) &&
-        device_info.serial_number == serial_number) {
+        device->serial_number() == serial_number) {
       return true;
     }
   }

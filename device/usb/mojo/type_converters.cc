@@ -186,7 +186,6 @@ TypeConverter<mojo::Array<device::usb::InterfaceInfoPtr>,
       // number, so add a new InterfaceInfo to the array and map the number.
       auto info = device::usb::InterfaceInfo::New();
       info->interface_number = interfaces[i].interface_number;
-      info->first_interface = interfaces[i].first_interface;
       iter = interface_map
                  .insert(
                      std::make_pair(interfaces[i].interface_number, info.get()))
@@ -208,46 +207,6 @@ TypeConverter<device::usb::ConfigurationInfoPtr, device::UsbConfigDescriptor>::
   info->configuration_value = config.configuration_value;
   info->interfaces =
       mojo::Array<device::usb::InterfaceInfoPtr>::From(config.interfaces);
-  return info;
-}
-
-// static
-device::usb::WebUsbFunctionSubsetPtr TypeConverter<
-    device::usb::WebUsbFunctionSubsetPtr,
-    device::WebUsbFunctionSubset>::Convert(const device::WebUsbFunctionSubset&
-                                               function) {
-  device::usb::WebUsbFunctionSubsetPtr info =
-      device::usb::WebUsbFunctionSubset::New();
-  info->first_interface = function.first_interface;
-  info->origins = mojo::Array<mojo::String>::From(function.origins);
-  return info;
-}
-
-// static
-device::usb::WebUsbConfigurationSubsetPtr
-TypeConverter<device::usb::WebUsbConfigurationSubsetPtr,
-              device::WebUsbConfigurationSubset>::
-    Convert(const device::WebUsbConfigurationSubset& config) {
-  device::usb::WebUsbConfigurationSubsetPtr info =
-      device::usb::WebUsbConfigurationSubset::New();
-  info->configuration_value = config.configuration_value;
-  info->origins = mojo::Array<mojo::String>::From(config.origins);
-  info->functions =
-      mojo::Array<device::usb::WebUsbFunctionSubsetPtr>::From(config.functions);
-  return info;
-}
-
-// static
-device::usb::WebUsbDescriptorSetPtr TypeConverter<
-    device::usb::WebUsbDescriptorSetPtr,
-    device::WebUsbAllowedOrigins>::Convert(const device::WebUsbAllowedOrigins&
-                                               allowed_origins) {
-  device::usb::WebUsbDescriptorSetPtr info =
-      device::usb::WebUsbDescriptorSet::New();
-  info->origins = mojo::Array<mojo::String>::From(allowed_origins.origins);
-  info->configurations =
-      mojo::Array<device::usb::WebUsbConfigurationSubsetPtr>::From(
-          allowed_origins.configurations);
   return info;
 }
 
@@ -275,10 +234,6 @@ TypeConverter<device::usb::DeviceInfoPtr, device::UsbDevice>::Convert(
   info->active_configuration = config ? config->configuration_value : 0;
   info->configurations = mojo::Array<device::usb::ConfigurationInfoPtr>::From(
       device.configurations());
-  if (device.webusb_allowed_origins()) {
-    info->webusb_allowed_origins = device::usb::WebUsbDescriptorSet::From(
-        *device.webusb_allowed_origins());
-  }
   return info;
 }
 

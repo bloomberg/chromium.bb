@@ -17,9 +17,7 @@
 #include "device/usb/usb_service.h"
 
 namespace device {
-namespace usb {
-class DeviceInfo;
-}
+class UsbDevice;
 }
 
 class UsbChooserContext : public ChooserContextBase,
@@ -49,7 +47,7 @@ class UsbChooserContext : public ChooserContextBase,
   // access to a device with |device_info|.
   bool HasDevicePermission(const GURL& requesting_origin,
                            const GURL& embedding_origin,
-                           const device::usb::DeviceInfo& device_info);
+                           scoped_refptr<const device::UsbDevice> device);
 
  private:
   // ChooserContextBase implementation.

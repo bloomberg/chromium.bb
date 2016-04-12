@@ -186,10 +186,10 @@ bool DeviceImpl::HasControlTransferPermission(
       return false;
 
     return permission_provider_->HasFunctionPermission(
-        interface->first_interface, config->configuration_value, *device_info_);
+        interface->first_interface, config->configuration_value, device_);
   } else if (config) {
     return permission_provider_->HasConfigurationPermission(
-        config->configuration_value, *device_info_);
+        config->configuration_value, device_);
   } else {
     // Client must already have device permission to have gotten this far.
     return true;
@@ -231,7 +231,7 @@ void DeviceImpl::SetConfiguration(uint8_t value,
   }
 
   if (permission_provider_ &&
-      permission_provider_->HasConfigurationPermission(value, *device_info_)) {
+      permission_provider_->HasConfigurationPermission(value, device_)) {
     device_handle_->SetConfiguration(value, WrapMojoCallback(callback));
   } else {
     callback.Run(false);
@@ -264,7 +264,7 @@ void DeviceImpl::ClaimInterface(uint8_t interface_number,
   if (permission_provider_ &&
       permission_provider_->HasFunctionPermission(interface_it->first_interface,
                                                   config->configuration_value,
-                                                  *device_info_)) {
+                                                  device_)) {
     device_handle_->ClaimInterface(interface_number,
                                    WrapMojoCallback(callback));
   } else {

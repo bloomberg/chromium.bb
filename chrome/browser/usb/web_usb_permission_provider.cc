@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/stl_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/usb/usb_chooser_context.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
@@ -16,16 +17,14 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
-#include "device/usb/public/interfaces/device.mojom.h"
+#include "device/usb/usb_device.h"
+#include "device/usb/webusb_descriptors.h"
 
 using content::WebContents;
-using device::usb::WebUsbDescriptorSet;
-using device::usb::WebUsbConfigurationSubsetPtr;
-using device::usb::WebUsbFunctionSubsetPtr;
 
 namespace {
 
-bool FindOriginInDescriptorSet(const WebUsbDescriptorSet* set,
+bool FindOriginInDescriptorSet(const device::WebUsbAllowedOrigins* set,
                                const GURL& origin,
                                const uint8_t* configuration_value,
                                const uint8_t* first_interface) {
@@ -35,24 +34,19 @@ bool FindOriginInDescriptorSet(const WebUsbDescriptorSet* set,
 
   if (!set)
     return false;
-  for (size_t i = 0; i < set->origins.size(); ++i)
-    if (origin.spec() == set->origins[i])
-      return true;
-  for (size_t i = 0; i < set->configurations.size(); ++i) {
-    const WebUsbConfigurationSubsetPtr& config = set->configurations[i];
+  if (ContainsValue(set->origins, origin))
+    return true;
+  for (const auto& configuration : set->configurations) {
     if (configuration_value &&
-        *configuration_value != config->configuration_value)
+        *configuration_value != configuration.configuration_value)
       continue;
-    for (size_t j = 0; i < config->origins.size(); ++j)
-      if (origin.spec() == config->origins[j])
-        return true;
-    for (size_t j = 0; j < config->functions.size(); ++j) {
-      const WebUsbFunctionSubsetPtr& function = config->functions[j];
-      if (first_interface && *first_interface != function->first_interface)
+    if (ContainsValue(configuration.origins, origin))
+      return true;
+    for (const auto& function : configuration.functions) {
+      if (first_interface && *first_interface != function.first_interface)
         continue;
-      for (size_t k = 0; k < function->origins.size(); ++k)
-        if (origin.spec() == function->origins[k])
-          return true;
+      if (ContainsValue(function.origins, origin))
+        return true;
     }
   }
   return false;
@@ -75,7 +69,7 @@ WebUSBPermissionProvider::GetWeakPtr() {
 }
 
 bool WebUSBPermissionProvider::HasDevicePermission(
-    const device::usb::DeviceInfo& device_info) const {
+    scoped_refptr<const device::UsbDevice> device) const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   WebContents* web_contents =
       WebContents::FromRenderFrameHost(render_frame_host_);
@@ -88,18 +82,18 @@ bool WebUSBPermissionProvider::HasDevicePermission(
   UsbChooserContext* chooser_context =
       UsbChooserContextFactory::GetForProfile(profile);
 
-  return FindOriginInDescriptorSet(device_info.webusb_allowed_origins.get(),
+  return FindOriginInDescriptorSet(device->webusb_allowed_origins(),
                                    requesting_origin, nullptr, nullptr) &&
          chooser_context->HasDevicePermission(requesting_origin,
-                                              embedding_origin, device_info);
+                                              embedding_origin, device);
 }
 
 bool WebUSBPermissionProvider::HasConfigurationPermission(
     uint8_t requested_configuration_value,
-    const device::usb::DeviceInfo& device_info) const {
+    scoped_refptr<const device::UsbDevice> device) const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   return FindOriginInDescriptorSet(
-      device_info.webusb_allowed_origins.get(),
+      device->webusb_allowed_origins(),
       render_frame_host_->GetLastCommittedURL().GetOrigin(),
       &requested_configuration_value, nullptr);
 }
@@ -107,10 +101,10 @@ bool WebUSBPermissionProvider::HasConfigurationPermission(
 bool WebUSBPermissionProvider::HasFunctionPermission(
     uint8_t requested_function,
     uint8_t configuration_value,
-    const device::usb::DeviceInfo& device_info) const {
+    scoped_refptr<const device::UsbDevice> device) const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   return FindOriginInDescriptorSet(
-      device_info.webusb_allowed_origins.get(),
+      device->webusb_allowed_origins(),
       render_frame_host_->GetLastCommittedURL().GetOrigin(),
       &configuration_value, &requested_function);
 }

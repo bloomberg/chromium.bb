@@ -9,6 +9,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "device/usb/mojo/permission_provider.h"
+#include "device/usb/usb_device.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace device {
@@ -20,14 +21,15 @@ class MockPermissionProvider : public PermissionProvider {
   ~MockPermissionProvider() override;
 
   base::WeakPtr<PermissionProvider> GetWeakPtr();
-  MOCK_CONST_METHOD1(HasDevicePermission, bool(const DeviceInfo& device_info));
+  MOCK_CONST_METHOD1(HasDevicePermission,
+                     bool(scoped_refptr<const UsbDevice> device));
   MOCK_CONST_METHOD2(HasConfigurationPermission,
                      bool(uint8_t requested_configuration,
-                          const DeviceInfo& device_info));
+                          scoped_refptr<const UsbDevice> device));
   MOCK_CONST_METHOD3(HasFunctionPermission,
                      bool(uint8_t requested_function,
                           uint8_t configuration_value,
-                          const DeviceInfo& device_info));
+                          scoped_refptr<const UsbDevice> device));
 
   MOCK_METHOD0(IncrementConnectionCount, void());
   MOCK_METHOD0(DecrementConnectionCount, void());

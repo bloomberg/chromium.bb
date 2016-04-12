@@ -28,14 +28,14 @@ class WebUSBPermissionProvider : public device::usb::PermissionProvider {
 
   // device::usb::PermissionProvider implementation.
   bool HasDevicePermission(
-      const device::usb::DeviceInfo& device_info) const override;
+      scoped_refptr<const device::UsbDevice> device) const override;
   bool HasConfigurationPermission(
       uint8_t requested_configuration,
-      const device::usb::DeviceInfo& device_info) const override;
+      scoped_refptr<const device::UsbDevice> device) const override;
   bool HasFunctionPermission(
       uint8_t requested_function,
       uint8_t configuration_value,
-      const device::usb::DeviceInfo& device_info) const override;
+      scoped_refptr<const device::UsbDevice> device) const override;
   void IncrementConnectionCount() override;
   void DecrementConnectionCount() override;
 

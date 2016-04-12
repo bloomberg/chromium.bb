@@ -12,7 +12,6 @@
 #include "device/usb/usb_descriptors.h"
 #include "device/usb/usb_device_filter.h"
 #include "device/usb/usb_device_handle.h"
-#include "device/usb/webusb_descriptors.h"
 #include "mojo/public/cpp/bindings/array.h"
 #include "mojo/public/cpp/bindings/type_converter.h"
 
@@ -94,27 +93,6 @@ struct TypeConverter<device::usb::ConfigurationInfoPtr,
                      device::UsbConfigDescriptor> {
   static device::usb::ConfigurationInfoPtr Convert(
       const device::UsbConfigDescriptor& config);
-};
-
-template <>
-struct TypeConverter<device::usb::WebUsbFunctionSubsetPtr,
-                     device::WebUsbFunctionSubset> {
-  static device::usb::WebUsbFunctionSubsetPtr Convert(
-      const device::WebUsbFunctionSubset& function);
-};
-
-template <>
-struct TypeConverter<device::usb::WebUsbConfigurationSubsetPtr,
-                     device::WebUsbConfigurationSubset> {
-  static device::usb::WebUsbConfigurationSubsetPtr Convert(
-      const device::WebUsbConfigurationSubset& config);
-};
-
-template <>
-struct TypeConverter<device::usb::WebUsbDescriptorSetPtr,
-                     device::WebUsbAllowedOrigins> {
-  static device::usb::WebUsbDescriptorSetPtr Convert(
-      const device::WebUsbAllowedOrigins& allowed_origins);
 };
 
 template <>
