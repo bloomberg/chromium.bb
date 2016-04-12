@@ -35,6 +35,7 @@ Polymer({
 
   /** @override */
   attached: function() {
+    this.PermissionStringValues = settings.PermissionStringValues;
     this.addWebUIListener('contentSettingSitePermissionChanged',
         this.sitePermissionChanged_.bind(this));
   },
@@ -51,9 +52,7 @@ Polymer({
     prefsProxy.getExceptionList(this.category).then(function(exceptionList) {
       for (var i = 0; i < exceptionList.length; ++i) {
         if (exceptionList[i].origin == site.origin) {
-          // TODO(finnur): Convert to use attrForSelected.
-          this.$.permission.selected = exceptionList[i].setting ==
-              settings.PermissionStringValues.ALLOW ? 0 : 1;
+          this.$.permission.selected = exceptionList[i].setting;
           this.$.details.hidden = false;
         }
       }
@@ -91,12 +90,15 @@ Polymer({
    * @param {!{detail: !{item: !{innerText: string}}}} event
    */
   onPermissionMenuIronActivate_: function(event) {
-    // TODO(finnur): Compare with event.detail.item.dataset.permission directly
-    //     once attrForSelected is in use.
-    var action = event.detail.item.innerText;
-    var value = (action == this.i18n_.allowAction) ?
-        settings.PermissionValues.ALLOW :
-        settings.PermissionValues.BLOCK;
+    var action = event.detail.item.dataset.permissionValue;
+    var value = '';
+    if (action == settings.PermissionStringValues.ALLOW)
+      value = settings.PermissionValues.ALLOW;
+    else if (action == settings.PermissionStringValues.BLOCK)
+      value = settings.PermissionValues.BLOCK;
+    else
+      assertNotReached('Invalid menu item ' + action);
+
     this.setCategoryPermissionForOrigin(
         this.site.origin, '', value, this.category);
   },
