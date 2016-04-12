@@ -1992,6 +1992,7 @@ static struct ivi_layout_interface ivi_layout_interface = {
 	.add_listener_create_surface	= ivi_layout_add_listener_create_surface,
 	.add_listener_remove_surface	= ivi_layout_add_listener_remove_surface,
 	.add_listener_configure_surface	= ivi_layout_add_listener_configure_surface,
+	.get_surface				= shell_get_ivi_layout_surface,
 	.get_surfaces				= ivi_layout_get_surfaces,
 	.get_id_of_surface			= ivi_layout_get_id_of_surface,
 	.get_surface_from_id			= ivi_layout_get_surface_from_id,

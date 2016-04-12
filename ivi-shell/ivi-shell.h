@@ -73,4 +73,9 @@ void
 shell_surface_send_configure(struct weston_surface *surface,
 			     int32_t width, int32_t height);
 
+struct ivi_layout_surface;
+
+struct ivi_layout_surface *
+shell_get_ivi_layout_surface(struct weston_surface *surface);
+
 #endif /* WESTON_IVI_SHELL_H */

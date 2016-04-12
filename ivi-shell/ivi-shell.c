@@ -93,6 +93,18 @@ get_ivi_shell_surface(struct weston_surface *surface)
 	return shsurf;
 }
 
+struct ivi_layout_surface *
+shell_get_ivi_layout_surface(struct weston_surface *surface)
+{
+	struct ivi_shell_surface *shsurf;
+
+	shsurf = get_ivi_shell_surface(surface);
+	if (!shsurf)
+		return NULL;
+
+	return shsurf->layout_surface;
+}
+
 void
 shell_surface_send_configure(struct weston_surface *surface,
 			     int32_t width, int32_t height)

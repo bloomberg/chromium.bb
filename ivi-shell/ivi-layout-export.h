@@ -567,6 +567,15 @@ struct ivi_layout_interface {
 				void *target, size_t size,
 				int32_t x, int32_t y,
 				int32_t width, int32_t height);
+
+	/**
+	 * Returns the ivi_layout_surface or NULL
+	 *
+	 * NULL is returned if there is no ivi_layout_surface corresponding
+	 * to the given weston_surface.
+	 */
+	struct ivi_layout_surface *
+		(*get_surface)(struct weston_surface *surface);
 };
 
 #ifdef __cplusplus
