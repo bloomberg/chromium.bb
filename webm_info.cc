@@ -33,7 +33,7 @@ using libwebm::Indent;
 using libwebm::kNanosecondsPerSecond;
 using libwebm::kNanosecondsPerSecondi;
 
-const char VERSION_STRING[] = "1.0.3.0";
+const char VERSION_STRING[] = "1.0.3.1";
 
 struct Options {
   Options();
@@ -476,6 +476,116 @@ bool OutputTracks(const mkvparser::Segment& segment, const Options& options,
                 indent->indent_str().c_str(), display_height);
         fprintf(o, "%sDisplayUnit   : %" PRId64 "\n",
                 indent->indent_str().c_str(), display_unit);
+      }
+
+      const mkvparser::Colour* const colour = video_track->GetColour();
+      if (colour) {
+        // TODO(fgalligan): Add support for Colour's address and size.
+        fprintf(o, "%sColour:\n", indent->indent_str().c_str());
+        indent->Adjust(libwebm::kIncreaseIndent);
+
+        const int64_t matrix_coefficients = colour->matrix_coefficients;
+        const int64_t bits_per_channel = colour->bits_per_channel;
+        const int64_t chroma_subsampling_horz = colour->chroma_subsampling_horz;
+        const int64_t chroma_subsampling_vert = colour->chroma_subsampling_vert;
+        const int64_t cb_subsampling_horz = colour->cb_subsampling_horz;
+        const int64_t cb_subsampling_vert = colour->cb_subsampling_vert;
+        const int64_t chroma_siting_horz = colour->chroma_siting_horz;
+        const int64_t chroma_siting_vert = colour->chroma_siting_vert;
+        const int64_t range = colour->range;
+        const int64_t transfer_characteristics =
+            colour->transfer_characteristics;
+        const int64_t primaries = colour->primaries;
+        const int64_t max_cll = colour->max_cll;
+        const int64_t max_fall = colour->max_fall;
+        if (matrix_coefficients != mkvparser::Colour::kValueNotPresent)
+          fprintf(o, "%sMatrixCoefficients      : %" PRId64 "\n",
+                  indent->indent_str().c_str(), matrix_coefficients);
+        if (bits_per_channel != mkvparser::Colour::kValueNotPresent)
+          fprintf(o, "%sBitsPerChannel          : %" PRId64 "\n",
+                  indent->indent_str().c_str(), bits_per_channel);
+        if (chroma_subsampling_horz != mkvparser::Colour::kValueNotPresent)
+          fprintf(o, "%sChromaSubsamplingHorz   : %" PRId64 "\n",
+                  indent->indent_str().c_str(), chroma_subsampling_horz);
+        if (chroma_subsampling_vert != mkvparser::Colour::kValueNotPresent)
+          fprintf(o, "%sChromaSubsamplingVert   : %" PRId64 "\n",
+                  indent->indent_str().c_str(), chroma_subsampling_vert);
+        if (cb_subsampling_horz != mkvparser::Colour::kValueNotPresent)
+          fprintf(o, "%sCbSubsamplingHorz       : %" PRId64 "\n",
+                  indent->indent_str().c_str(), cb_subsampling_horz);
+        if (cb_subsampling_vert != mkvparser::Colour::kValueNotPresent)
+          fprintf(o, "%sCbSubsamplingVert       : %" PRId64 "\n",
+                  indent->indent_str().c_str(), cb_subsampling_vert);
+        if (chroma_siting_horz != mkvparser::Colour::kValueNotPresent)
+          fprintf(o, "%sChromaSitingHorz        : %" PRId64 "\n",
+                  indent->indent_str().c_str(), chroma_siting_horz);
+        if (chroma_siting_vert != mkvparser::Colour::kValueNotPresent)
+          fprintf(o, "%sChromaSitingVert        : %" PRId64 "\n",
+                  indent->indent_str().c_str(), chroma_siting_vert);
+        if (range != mkvparser::Colour::kValueNotPresent)
+          fprintf(o, "%sRange                   : %" PRId64 "\n",
+                  indent->indent_str().c_str(), range);
+        if (transfer_characteristics != mkvparser::Colour::kValueNotPresent)
+          fprintf(o, "%sTransferCharacteristics : %" PRId64 "\n",
+                  indent->indent_str().c_str(), transfer_characteristics);
+        if (primaries != mkvparser::Colour::kValueNotPresent)
+          fprintf(o, "%sPrimaries               : %" PRId64 "\n",
+                  indent->indent_str().c_str(), primaries);
+        if (max_cll != mkvparser::Colour::kValueNotPresent)
+          fprintf(o, "%sMaxCLL                  : %" PRId64 "\n",
+                  indent->indent_str().c_str(), max_cll);
+        if (max_fall != mkvparser::Colour::kValueNotPresent)
+          fprintf(o, "%sMaxFALL                 : %" PRId64 "\n",
+                  indent->indent_str().c_str(), max_fall);
+
+        const mkvparser::MasteringMetadata* const metadata =
+            colour->mastering_metadata;
+        if (metadata) {
+          // TODO(fgalligan): Add support for MasteringMetadata's address and
+          // size.
+          fprintf(o, "%sMasteringMetadata:\n", indent->indent_str().c_str());
+          indent->Adjust(libwebm::kIncreaseIndent);
+
+          const mkvparser::PrimaryChromaticity* const red = metadata->r;
+          const mkvparser::PrimaryChromaticity* const green = metadata->g;
+          const mkvparser::PrimaryChromaticity* const blue = metadata->b;
+          const mkvparser::PrimaryChromaticity* const white =
+              metadata->white_point;
+          const float max = metadata->luminance_max;
+          const float min = metadata->luminance_min;
+          if (red) {
+            fprintf(o, "%sPrimaryRChromaticityX   : %g\n",
+                    indent->indent_str().c_str(), red->x);
+            fprintf(o, "%sPrimaryRChromaticityY   : %g\n",
+                    indent->indent_str().c_str(), red->y);
+          }
+          if (green) {
+            fprintf(o, "%sPrimaryGChromaticityX   : %g\n",
+                    indent->indent_str().c_str(), green->x);
+            fprintf(o, "%sPrimaryGChromaticityY   : %g\n",
+                    indent->indent_str().c_str(), green->y);
+          }
+          if (blue) {
+            fprintf(o, "%sPrimaryBChromaticityX   : %g\n",
+                    indent->indent_str().c_str(), blue->x);
+            fprintf(o, "%sPrimaryBChromaticityY   : %g\n",
+                    indent->indent_str().c_str(), blue->y);
+          }
+          if (white) {
+            fprintf(o, "%sWhitePointChromaticityX : %g\n",
+                    indent->indent_str().c_str(), white->x);
+            fprintf(o, "%sWhitePointChromaticityY : %g\n",
+                    indent->indent_str().c_str(), white->y);
+          }
+          if (max != mkvparser::MasteringMetadata::kValueNotPresent)
+            fprintf(o, "%sLuminanceMax            : %g\n",
+                    indent->indent_str().c_str(), max);
+          if (min != mkvparser::MasteringMetadata::kValueNotPresent)
+            fprintf(o, "%sLuminanceMin            : %g\n",
+                    indent->indent_str().c_str(), min);
+          indent->Adjust(libwebm::kDecreaseIndent);
+        }
+        indent->Adjust(libwebm::kDecreaseIndent);
       }
     } else if (track_type == mkvparser::Track::kAudio) {
       const mkvparser::AudioTrack* const audio_track =
