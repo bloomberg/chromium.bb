@@ -35,10 +35,13 @@
 #include "core/css/CSSValuePair.h"
 #include "core/css/CSSValuePool.h"
 #include "core/css/parser/CSSParserValues.h"
+#include "core/css/parser/CSSPropertyParserHelpers.h"
 #include "core/style/GridArea.h"
 #include "platform/RuntimeEnabledFeatures.h"
 
 namespace blink {
+
+using namespace CSSPropertyParserHelpers;
 
 void CSSPropertyParser::addProperty(CSSPropertyID propId, CSSValue* value, bool important, bool implicit)
 {
@@ -58,166 +61,6 @@ void CSSPropertyParser::addProperty(CSSPropertyID propId, CSSValue* value, bool 
     m_parsedProperties->append(CSSProperty(propId, value, important, setFromShorthand, shorthandIndex, implicit));
 }
 
-bool CSSPropertyParser::validCalculationUnit(CSSParserValue* value, Units unitflags, ReleaseParsedCalcValueCondition releaseCalc)
-{
-    bool mustBeNonNegative = unitflags & (FNonNeg | FPositiveInteger);
-
-    if (!parseCalculation(value, mustBeNonNegative ? ValueRangeNonNegative : ValueRangeAll))
-        return false;
-
-    bool b = false;
-    switch (m_parsedCalculation->category()) {
-    case CalcLength:
-        b = (unitflags & FLength);
-        break;
-    case CalcNumber:
-        b = (unitflags & FNumber);
-        if (!b && (unitflags & (FInteger | FPositiveInteger)) && m_parsedCalculation->isInt())
-            b = true;
-        if (b && mustBeNonNegative && m_parsedCalculation->isNegative())
-            b = false;
-        // Always resolve calc() to a UnitType::Number in the CSSParserValue if there are no non-numbers specified in the unitflags.
-        if (b && !(unitflags & ~(FInteger | FNumber | FPositiveInteger | FNonNeg))) {
-            double number = m_parsedCalculation->doubleValue();
-            if ((unitflags & FPositiveInteger) && number <= 0) {
-                b = false;
-            } else {
-                delete value->calcFunction;
-                value->setUnit(CSSPrimitiveValue::UnitType::Number);
-                value->fValue = number;
-                value->isInt = m_parsedCalculation->isInt();
-            }
-            m_parsedCalculation.release();
-            return b;
-        }
-        break;
-    case CalcPercent:
-        b = (unitflags & FPercent);
-        if (b && mustBeNonNegative && m_parsedCalculation->isNegative())
-            b = false;
-        break;
-    case CalcPercentLength:
-        b = (unitflags & FPercent) && (unitflags & FLength);
-        break;
-    case CalcPercentNumber:
-        b = (unitflags & FPercent) && (unitflags & FNumber);
-        break;
-    case CalcAngle:
-        b = (unitflags & FAngle);
-        break;
-    case CalcTime:
-        b = (unitflags & FTime);
-        break;
-    case CalcFrequency:
-        b = (unitflags & FFrequency);
-        break;
-    case CalcOther:
-        break;
-    }
-    if (!b || releaseCalc == ReleaseParsedCalcValue)
-        m_parsedCalculation.release();
-    return b;
-}
-
-inline bool CSSPropertyParser::shouldAcceptUnitLessValues(CSSParserValue* value, Units unitflags, CSSParserMode cssParserMode)
-{
-    // Quirks mode for certain properties and presentation attributes accept unit-less values for certain units.
-    return (unitflags & (FLength | FAngle))
-        && (!value->fValue // 0 can always be unitless.
-            || isUnitLessLengthParsingEnabledForMode(cssParserMode) // HTML and SVG attribute values can always be unitless.
-            || (cssParserMode == HTMLQuirksMode && (unitflags & FUnitlessQuirk)));
-}
-
-inline bool isCalculation(CSSParserValue* value)
-{
-    return value->m_unit == CSSParserValue::CalcFunction;
-}
-
-bool CSSPropertyParser::validUnit(CSSParserValue* value, Units unitflags, CSSParserMode cssParserMode, ReleaseParsedCalcValueCondition releaseCalc)
-{
-    if (isCalculation(value))
-        return validCalculationUnit(value, unitflags, releaseCalc);
-
-    if (unitflags & FNonNeg && value->fValue < 0)
-        return false;
-    switch (value->unit()) {
-    case CSSPrimitiveValue::UnitType::Number:
-        if (unitflags & FNumber)
-            return true;
-        if (shouldAcceptUnitLessValues(value, unitflags, cssParserMode)) {
-            value->setUnit((unitflags & FLength) ? CSSPrimitiveValue::UnitType::Pixels : CSSPrimitiveValue::UnitType::Degrees);
-            return true;
-        }
-        if ((unitflags & FInteger) && value->isInt)
-            return true;
-        if ((unitflags & FPositiveInteger) && value->isInt && value->fValue > 0)
-            return true;
-        return false;
-    case CSSPrimitiveValue::UnitType::Percentage:
-        return unitflags & FPercent;
-    case CSSPrimitiveValue::UnitType::QuirkyEms:
-        if (cssParserMode != UASheetMode)
-            return false;
-    /* fallthrough intentional */
-    case CSSPrimitiveValue::UnitType::Ems:
-    case CSSPrimitiveValue::UnitType::Rems:
-    case CSSPrimitiveValue::UnitType::Chs:
-    case CSSPrimitiveValue::UnitType::Exs:
-    case CSSPrimitiveValue::UnitType::Pixels:
-    case CSSPrimitiveValue::UnitType::Centimeters:
-    case CSSPrimitiveValue::UnitType::Millimeters:
-    case CSSPrimitiveValue::UnitType::Inches:
-    case CSSPrimitiveValue::UnitType::Points:
-    case CSSPrimitiveValue::UnitType::Picas:
-    case CSSPrimitiveValue::UnitType::UserUnits:
-    case CSSPrimitiveValue::UnitType::ViewportWidth:
-    case CSSPrimitiveValue::UnitType::ViewportHeight:
-    case CSSPrimitiveValue::UnitType::ViewportMin:
-    case CSSPrimitiveValue::UnitType::ViewportMax:
-        return unitflags & FLength;
-    case CSSPrimitiveValue::UnitType::Milliseconds:
-    case CSSPrimitiveValue::UnitType::Seconds:
-        return unitflags & FTime;
-    case CSSPrimitiveValue::UnitType::Degrees:
-    case CSSPrimitiveValue::UnitType::Radians:
-    case CSSPrimitiveValue::UnitType::Gradians:
-    case CSSPrimitiveValue::UnitType::Turns:
-        return unitflags & FAngle;
-    case CSSPrimitiveValue::UnitType::DotsPerPixel:
-    case CSSPrimitiveValue::UnitType::DotsPerInch:
-    case CSSPrimitiveValue::UnitType::DotsPerCentimeter:
-        return unitflags & FResolution;
-    default:
-        return false;
-    }
-}
-
-CSSPrimitiveValue* CSSPropertyParser::createPrimitiveNumericValue(CSSParserValue* value)
-{
-    if (m_parsedCalculation) {
-        ASSERT(isCalculation(value));
-        return CSSPrimitiveValue::create(m_parsedCalculation.release());
-    }
-
-    ASSERT((value->unit() >= CSSPrimitiveValue::UnitType::Number && value->unit() <= CSSPrimitiveValue::UnitType::Kilohertz)
-        || (value->unit() >= CSSPrimitiveValue::UnitType::Turns && value->unit() <= CSSPrimitiveValue::UnitType::Chs)
-        || (value->unit() >= CSSPrimitiveValue::UnitType::ViewportWidth && value->unit() <= CSSPrimitiveValue::UnitType::ViewportMax)
-        || (value->unit() >= CSSPrimitiveValue::UnitType::DotsPerPixel && value->unit() <= CSSPrimitiveValue::UnitType::DotsPerCentimeter));
-    return cssValuePool().createValue(value->fValue, value->unit());
-}
-
-static inline bool isComma(CSSParserValue* value)
-{
-    ASSERT(value);
-    return value->m_unit == CSSParserValue::Operator && value->iValue == ',';
-}
-
-static inline bool isForwardSlashOperator(CSSParserValue* value)
-{
-    ASSERT(value);
-    return value->m_unit == CSSParserValue::Operator && value->iValue == '/';
-}
-
 void CSSPropertyParser::addExpandedPropertyForValue(CSSPropertyID propId, CSSValue* value, bool important)
 {
     const StylePropertyShorthand& shorthand = shorthandForProperty(propId);
@@ -231,44 +74,6 @@ void CSSPropertyParser::addExpandedPropertyForValue(CSSPropertyID propId, CSSVal
     const CSSPropertyID* longhands = shorthand.properties();
     for (unsigned i = 0; i < shorthandLength; ++i)
         addProperty(longhands[i], value, important);
-}
-
-bool CSSPropertyParser::legacyParseAndApplyValue(CSSPropertyID propertyID, bool important)
-{
-    CSSValue* result = legacyParseValue(propertyID);
-    if (!result)
-        return false;
-    addProperty(propertyID, result, important);
-    return true;
-}
-
-CSSValue* CSSPropertyParser::legacyParseValue(CSSPropertyID unresolvedProperty)
-{
-    CSSPropertyID propId = resolveCSSPropertyID(unresolvedProperty);
-
-    // Note: m_parsedCalculation is used to pass the calc value to validUnit and then cleared at the end of this function.
-    // FIXME: This is to avoid having to pass parsedCalc to all validUnit callers.
-    ASSERT(!m_parsedCalculation);
-
-    CSSValue* parsedValue = nullptr;
-
-    switch (propId) {
-    case CSSPropertyGridAutoFlow:
-        ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
-        parsedValue = parseGridAutoFlow(*m_valueList);
-        break;
-
-    // Everything else is handled in CSSPropertyParser.cpp
-    default:
-        return nullptr;
-    }
-
-    ASSERT(!m_parsedCalculation);
-    if (parsedValue) {
-        if (!m_valueList->current() || inShorthand())
-            return parsedValue;
-    }
-    return nullptr;
 }
 
 bool CSSPropertyParser::legacyParseShorthand(CSSPropertyID propertyID, bool important)
@@ -289,6 +94,8 @@ bool CSSPropertyParser::parseGridShorthand(bool important)
     ShorthandScope scope(this, CSSPropertyGrid);
     ASSERT(shorthandForProperty(CSSPropertyGrid).length() == 8);
 
+    CSSParserTokenRange rangeCopy = m_range;
+
     // 1- <grid-template>
     if (consumeGridTemplateShorthand(important)) {
         // It can only be specified the explicit or the implicit grid properties in a single grid declaration.
@@ -301,25 +108,26 @@ bool CSSPropertyParser::parseGridShorthand(bool important)
         return true;
     }
 
+    m_range = rangeCopy;
+
     // 2- <grid-auto-flow> [ <grid-auto-rows> [ / <grid-auto-columns> ]? ]
-    if (!legacyParseAndApplyValue(CSSPropertyGridAutoFlow, important))
+    CSSValueList* gridAutoFlow = consumeGridAutoFlow(m_range);
+    if (!gridAutoFlow)
         return false;
 
     CSSValue* autoColumnsValue = nullptr;
     CSSValue* autoRowsValue = nullptr;
 
-    if (m_valueList->current()) {
-        autoRowsValue = parseGridTrackSize(*m_valueList);
+    if (!m_range.atEnd()) {
+        autoRowsValue = consumeGridTrackSize(m_range, m_context.mode());
         if (!autoRowsValue)
             return false;
-        if (m_valueList->current()) {
-            if (!isForwardSlashOperator(m_valueList->current()) || !m_valueList->next())
-                return false;
-            autoColumnsValue = parseGridTrackSize(*m_valueList);
+        if (consumeSlashIncludingWhitespace(m_range)) {
+            autoColumnsValue = consumeGridTrackSize(m_range, m_context.mode());
             if (!autoColumnsValue)
                 return false;
         }
-        if (m_valueList->current())
+        if (!m_range.atEnd())
             return false;
     } else {
         // Other omitted values are set to their initial values.
@@ -331,6 +139,7 @@ bool CSSPropertyParser::parseGridShorthand(bool important)
     if (!autoColumnsValue)
         autoColumnsValue = autoRowsValue;
 
+    addProperty(CSSPropertyGridAutoFlow, gridAutoFlow, important);
     addProperty(CSSPropertyGridAutoColumns, autoColumnsValue, important);
     addProperty(CSSPropertyGridAutoRows, autoRowsValue, important);
 
@@ -365,64 +174,6 @@ bool allTracksAreFixedSized(CSSValueList& valueList)
             return false;
     }
     return true;
-}
-
-
-CSSValue* CSSPropertyParser::parseGridTrackSize(CSSParserValueList& inputList, TrackSizeRestriction restriction)
-{
-    ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
-
-    CSSParserValue* currentValue = inputList.current();
-    inputList.next();
-
-    if (currentValue->id == CSSValueAuto)
-        return restriction == AllowAll ? cssValuePool().createIdentifierValue(CSSValueAuto) : nullptr;
-
-    if (currentValue->m_unit == CSSParserValue::Function && currentValue->function->id == CSSValueMinmax) {
-        // The spec defines the following grammar: minmax( <track-breadth> , <track-breadth> )
-        CSSParserValueList* arguments = currentValue->function->args.get();
-        if (!arguments || arguments->size() != 3 || !isComma(arguments->valueAt(1)))
-            return nullptr;
-
-        CSSPrimitiveValue* minTrackBreadth = parseGridBreadth(arguments->valueAt(0), restriction);
-        if (!minTrackBreadth)
-            return nullptr;
-
-        CSSPrimitiveValue* maxTrackBreadth = parseGridBreadth(arguments->valueAt(2));
-        if (!maxTrackBreadth)
-            return nullptr;
-
-        CSSFunctionValue* result = CSSFunctionValue::create(CSSValueMinmax);
-        result->append(minTrackBreadth);
-        result->append(maxTrackBreadth);
-        return result;
-    }
-
-    return parseGridBreadth(currentValue, restriction);
-}
-
-CSSPrimitiveValue* CSSPropertyParser::parseGridBreadth(CSSParserValue* currentValue, TrackSizeRestriction restriction)
-{
-    if (currentValue->id == CSSValueMinContent || currentValue->id == CSSValueMaxContent || currentValue->id == CSSValueAuto)
-        return restriction == AllowAll ? cssValuePool().createIdentifierValue(currentValue->id) : nullptr;
-
-    if (currentValue->unit() == CSSPrimitiveValue::UnitType::Fraction) {
-        if (restriction == FixedSizeOnly)
-            return nullptr;
-
-        double flexValue = currentValue->fValue;
-
-        // Fractional unit is a non-negative dimension.
-        if (flexValue < 0)
-            return nullptr;
-
-        return cssValuePool().createValue(flexValue, CSSPrimitiveValue::UnitType::Fraction);
-    }
-
-    if (!validUnit(currentValue, FNonNeg | FLength | FPercent))
-        return nullptr;
-
-    return createPrimitiveNumericValue(currentValue);
 }
 
 static Vector<String> parseGridTemplateAreasColumnNames(const String& gridRowNames)
@@ -515,61 +266,6 @@ bool parseGridTemplateAreasRow(const String& gridRowNames, NamedGridAreaMap& gri
         }
         currentCol = lookAheadCol - 1;
     }
-
-    return true;
-}
-
-CSSValue* CSSPropertyParser::parseGridAutoFlow(CSSParserValueList& list)
-{
-    // [ row | column ] || dense
-    ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
-
-    CSSParserValue* value = list.current();
-    if (!value)
-        return nullptr;
-
-    CSSValueList* parsedValues = CSSValueList::createSpaceSeparated();
-
-    // First parameter.
-    CSSValueID firstId = value->id;
-    if (firstId != CSSValueRow && firstId != CSSValueColumn && firstId != CSSValueDense)
-        return nullptr;
-    parsedValues->append(cssValuePool().createIdentifierValue(firstId));
-
-    // Second parameter, if any.
-    value = list.next();
-    if (value) {
-        switch (firstId) {
-        case CSSValueRow:
-        case CSSValueColumn:
-            if (value->id != CSSValueDense)
-                return parsedValues;
-            break;
-        case CSSValueDense:
-            if (value->id != CSSValueRow && value->id != CSSValueColumn)
-                return parsedValues;
-            break;
-        default:
-            return parsedValues;
-        }
-        parsedValues->append(cssValuePool().createIdentifierValue(value->id));
-        list.next();
-    }
-
-    return parsedValues;
-}
-
-bool CSSPropertyParser::parseCalculation(CSSParserValue* value, ValueRange range)
-{
-    ASSERT(isCalculation(value));
-
-    CSSParserTokenRange args = value->calcFunction->args;
-
-    ASSERT(!m_parsedCalculation);
-    m_parsedCalculation = CSSCalcValue::create(args, range);
-
-    if (!m_parsedCalculation)
-        return false;
 
     return true;
 }

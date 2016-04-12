@@ -2923,6 +2923,23 @@ static CSSValue* consumeBackgroundSize(CSSPropertyID unresolvedProperty, CSSPars
     return CSSValuePair::create(horizontal, vertical, CSSValuePair::KeepIdenticalValues);
 }
 
+CSSValueList* consumeGridAutoFlow(CSSParserTokenRange& range)
+{
+    CSSPrimitiveValue* rowOrColumnValue = consumeIdent<CSSValueRow, CSSValueColumn>(range);
+    CSSPrimitiveValue* denseAlgorithm = consumeIdent<CSSValueDense>(range);
+    if (!rowOrColumnValue) {
+        rowOrColumnValue = consumeIdent<CSSValueRow, CSSValueColumn>(range);
+        if (!rowOrColumnValue && !denseAlgorithm)
+            return nullptr;
+    }
+    CSSValueList* parsedValues = CSSValueList::createSpaceSeparated();
+    if (rowOrColumnValue)
+        parsedValues->append(rowOrColumnValue);
+    if (denseAlgorithm)
+        parsedValues->append(denseAlgorithm);
+    return parsedValues;
+}
+
 static CSSValue* consumeBackgroundComponent(CSSPropertyID unresolvedProperty, CSSParserTokenRange& range, const CSSParserContext& context)
 {
     switch (unresolvedProperty) {
@@ -3101,7 +3118,7 @@ static CSSPrimitiveValue* consumeGridBreadth(CSSParserTokenRange& range, CSSPars
 }
 
 // TODO(rob.buis): This needs a bool parameter so we can disallow <auto-track-list> for the grid shorthand.
-static CSSValue* consumeGridTrackSize(CSSParserTokenRange& range, CSSParserMode cssParserMode, TrackSizeRestriction restriction = AllowAll)
+CSSValue* consumeGridTrackSize(CSSParserTokenRange& range, CSSParserMode cssParserMode, TrackSizeRestriction restriction)
 {
     const CSSParserToken& token = range.peek();
     if (restriction == AllowAll && identMatches<CSSValueAuto>(token.id()))
@@ -3636,16 +3653,10 @@ CSSValue* CSSPropertyParser::parseSingleValue(CSSPropertyID unresolvedProperty)
     case CSSPropertyGridTemplateAreas:
         ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
         return consumeGridTemplateAreas(m_range);
+    case CSSPropertyGridAutoFlow:
+        ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
+        return consumeGridAutoFlow(m_range);
     default:
-        CSSParserValueList valueList(m_range);
-        if (valueList.size()) {
-            m_valueList = &valueList;
-            if (CSSValue* result = legacyParseValue(unresolvedProperty)) {
-                while (!m_range.atEnd())
-                    m_range.consume();
-                return result;
-            }
-        }
         return nullptr;
     }
 }
