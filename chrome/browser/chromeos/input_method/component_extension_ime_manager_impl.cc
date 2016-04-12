@@ -24,6 +24,8 @@
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/browser/extension_pref_value_map.h"
+#include "extensions/browser/extension_pref_value_map_factory.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_l10n_util.h"
@@ -105,6 +107,12 @@ void DoLoadExtension(Profile* profile,
     return;
   const std::string loaded_extension_id =
       GetComponentLoader(profile)->Add(manifest, file_path);
+  // Register IME extension with ExtensionPrefValueMap.
+  ExtensionPrefValueMapFactory::GetForBrowserContext(profile)
+      ->RegisterExtension(extension_id,
+                          base::Time(),  // install_time.
+                          true,          // is_enabled.
+                          true);         // is_incognito_enabled.
   DCHECK_EQ(loaded_extension_id, extension_id);
 }
 
