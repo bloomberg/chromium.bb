@@ -527,6 +527,31 @@ enum PropertyTreeOption {
   DONT_BUILD_PROPERTY_TREES
 };
 
+static void MarkMasksAndAddChildToDescendantsIfRequired(
+    LayerImpl* child_layer,
+    LayerImplList* descendants,
+    const int current_render_surface_layer_list_id) {
+  // If the child is its own render target, then it has a render surface.
+  if (child_layer->has_render_surface() &&
+      child_layer->render_target() == child_layer->render_surface() &&
+      !child_layer->render_surface()->layer_list().empty() &&
+      !child_layer->render_surface()->content_rect().IsEmpty()) {
+    // This child will contribute its render surface, which means
+    // we need to mark just the mask layer (and replica mask layer)
+    // with the id.
+    MarkMasksWithRenderSurfaceLayerListId(child_layer,
+                                          current_render_surface_layer_list_id);
+    descendants->push_back(child_layer);
+  }
+}
+
+static void SetLayerOrDescendantIsDrawnIfRequired(LayerImpl* layer,
+                                                  LayerImpl* child_layer) {
+  if (child_layer->layer_or_descendant_is_drawn()) {
+    layer->set_layer_or_descendant_is_drawn(true);
+  }
+}
+
 void CalculateRenderSurfaceLayerList(
     LayerImpl* layer,
     PropertyTrees* property_trees,
@@ -564,6 +589,17 @@ void CalculateRenderSurfaceLayerList(
                                                 property_trees->effect_tree)) {
     if (layer->render_surface())
       layer->ClearRenderSurfaceLayerList();
+    for (auto* child_layer : layer->children()) {
+      CalculateRenderSurfaceLayerList(
+          child_layer, property_trees, render_surface_layer_list, descendants,
+          nearest_occlusion_immune_ancestor, layer_is_drawn,
+          can_render_to_separate_surface, current_render_surface_layer_list_id,
+          max_texture_size);
+
+      MarkMasksAndAddChildToDescendantsIfRequired(
+          child_layer, descendants, current_render_surface_layer_list_id);
+      SetLayerOrDescendantIsDrawnIfRequired(layer, child_layer);
+    }
     return;
   }
 
@@ -632,23 +668,9 @@ void CalculateRenderSurfaceLayerList(
         can_render_to_separate_surface, current_render_surface_layer_list_id,
         max_texture_size);
 
-    // If the child is its own render target, then it has a render surface.
-    if (child_layer->has_render_surface() &&
-        child_layer->render_target() == child_layer->render_surface() &&
-        !child_layer->render_surface()->layer_list().empty() &&
-        !child_layer->render_surface()->content_rect().IsEmpty()) {
-      // This child will contribute its render surface, which means
-      // we need to mark just the mask layer (and replica mask layer)
-      // with the id.
-      MarkMasksWithRenderSurfaceLayerListId(
-          child_layer, current_render_surface_layer_list_id);
-      descendants->push_back(child_layer);
-    }
-
-    if (child_layer->layer_or_descendant_is_drawn()) {
-      bool layer_or_descendant_is_drawn = true;
-      layer->set_layer_or_descendant_is_drawn(layer_or_descendant_is_drawn);
-    }
+    MarkMasksAndAddChildToDescendantsIfRequired(
+        child_layer, descendants, current_render_surface_layer_list_id);
+    SetLayerOrDescendantIsDrawnIfRequired(layer, child_layer);
   }
 
   if (render_to_separate_surface && !IsRootLayer(layer) &&
