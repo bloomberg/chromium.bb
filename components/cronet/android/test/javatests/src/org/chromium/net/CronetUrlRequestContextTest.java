@@ -420,8 +420,12 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         mTestFramework.mCronetEngine.shutdown();
     }
 
+    /**
     @SmallTest
     @Feature({"Cronet"})
+    https://crbug.com/596929
+    */
+    @FlakyTest
     public void testShutdown() throws Exception {
         mTestFramework = startCronetTestFramework();
         TestUrlRequestCallback callback = new ShutdownTestUrlRequestCallback();
