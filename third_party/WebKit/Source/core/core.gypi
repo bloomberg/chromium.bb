@@ -1792,7 +1792,6 @@
             'imagebitmap/ImageBitmapFactories.h',
             'imagebitmap/ImageBitmapSource.cpp',
             'imagebitmap/ImageBitmapSource.h',
-            'inspector/AsyncOperationMap.h',
             'inspector/ConsoleAPITypes.h',
             'inspector/ConsoleMessage.cpp',
             'inspector/ConsoleMessage.h',
