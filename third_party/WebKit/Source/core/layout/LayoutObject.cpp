@@ -1576,15 +1576,19 @@ void LayoutObject::incrementallyInvalidatePaint(const LayoutBoxModelObject& pain
 
 void LayoutObject::fullyInvalidatePaint(const LayoutBoxModelObject& paintInvalidationContainer, PaintInvalidationReason invalidationReason, const LayoutRect& oldBounds, const LayoutRect& newBounds)
 {
-    // Otherwise do full paint invalidation.
-    LayoutRect invalidationRect = oldBounds;
-    adjustInvalidationRectForCompositedScrolling(invalidationRect, paintInvalidationContainer);
-    invalidatePaintUsingContainer(paintInvalidationContainer, invalidationRect, invalidationReason);
-    if (newBounds != oldBounds) {
-        invalidationRect = newBounds;
+    // The following logic avoids invalidating twice if one set of bounds contains the other.
+    if (!newBounds.contains(oldBounds)) {
+        LayoutRect invalidationRect = oldBounds;
         adjustInvalidationRectForCompositedScrolling(invalidationRect, paintInvalidationContainer);
         invalidatePaintUsingContainer(paintInvalidationContainer, invalidationRect, invalidationReason);
+
+        if (oldBounds.contains(newBounds))
+            return;
     }
+
+    LayoutRect invalidationRect = newBounds;
+    adjustInvalidationRectForCompositedScrolling(invalidationRect, paintInvalidationContainer);
+    invalidatePaintUsingContainer(paintInvalidationContainer, invalidationRect, invalidationReason);
 }
 
 void LayoutObject::invalidatePaintForOverflow()
