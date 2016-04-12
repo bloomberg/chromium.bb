@@ -33,6 +33,16 @@ component("sandbox") {
   ]
 }
 
+component("seatbelt") {
+  sources = [
+    "seatbelt.cc",
+    "seatbelt.h",
+    "seatbelt_export.h",
+  ]
+  libs = [ "sandbox" ]
+  defines = [ "SEATBELT_IMPLEMENTATION" ]
+}
+
 test("sandbox_mac_unittests") {
   sources = [
     "bootstrap_sandbox_unittest.mm",

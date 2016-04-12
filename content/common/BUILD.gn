@@ -241,6 +241,7 @@ source_set("common") {
       ":libvt_generate_stubs",
       "//content:resources",
       "//content/app/resources",
+      "//sandbox/mac:seatbelt",
       "//third_party/WebKit/public:image_resources",
       "//third_party/WebKit/public:resources",
       "//ui/accelerated_widget_mac",

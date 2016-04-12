@@ -604,6 +604,7 @@
     ['OS=="mac"', {
       'dependencies': [
         '../media/media.gyp:media',
+        '../sandbox/sandbox.gyp:seatbelt',
         'app/resources/content_resources.gyp:content_resources',
         '../ui/accelerated_widget_mac/accelerated_widget_mac.gyp:accelerated_widget_mac'
       ],

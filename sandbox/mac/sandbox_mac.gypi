@@ -5,6 +5,26 @@
 {
   'targets': [
     {
+      'target_name': 'seatbelt',
+      'type' : '<(component)',
+      'sources': [
+        'seatbelt.cc',
+        'seatbelt.h',
+        'seatbelt_export.h',
+      ],
+      'defines': [
+        'SEATBELT_IMPLEMENTATION',
+      ],
+      'include_dirs': [
+        '../..',
+      ],
+      'link_settings': {
+        'libraries': [
+          '$(SDKROOT)/usr/lib/libsandbox.dylib',
+        ],
+      }
+    },
+    {
       'target_name': 'sandbox',
       'type': '<(component)',
       'sources': [

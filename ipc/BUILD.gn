@@ -197,6 +197,10 @@ test("ipc_tests") {
     "//crypto",
     "//testing/gtest",
   ]
+
+  if (is_mac) {
+    deps += [ "//sandbox/mac:seatbelt" ]
+  }
 }
 
 test("ipc_perftests") {

@@ -9,9 +9,6 @@
 #include <stdint.h>
 
 #include <CoreFoundation/CFTimeZone.h>
-extern "C" {
-#include <sandbox.h>
-}
 #include <signal.h>
 #include <sys/param.h>
 
@@ -39,6 +36,7 @@ extern "C" {
 #include "content/grit/content_resources.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
+#include "sandbox/mac/seatbelt.h"
 #include "third_party/icu/source/common/unicode/uchar.h"
 #include "ui/base/layout.h"
 #include "ui/gl/gl_surface.h"
@@ -46,11 +44,6 @@ extern "C" {
 extern "C" {
 void CGSSetDenyWindowServerConnections(bool);
 void CGSShutdownServerConnections();
-
-int sandbox_init_with_parameters(const char* profile,
-                                 uint64_t flags,
-                                 const char* const parameters[],
-                                 char** errorbuf);
 };
 
 namespace content {
@@ -152,13 +145,10 @@ bool SandboxCompiler::CompileAndApplyProfile(std::string* error) {
   // The parameters array must be null terminated.
   params.push_back(static_cast<const char*>(0));
 
-  if (sandbox_init_with_parameters(profile_str_.c_str(), 0, params.data(),
-                                   &error_internal)) {
+  if (sandbox::Seatbelt::InitWithParams(profile_str_.c_str(), 0, params.data(),
+                                        &error_internal)) {
     error->assign(error_internal);
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-    sandbox_free_error(error_internal);
-#pragma clang diagnostic pop
+    sandbox::Seatbelt::FreeError(error_internal);
     return false;
   }
   return true;

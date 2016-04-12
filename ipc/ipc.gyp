@@ -89,6 +89,11 @@
             '../testing/android/native_test.gyp:native_test_native_code',
           ],
         }],
+        ['OS == "mac"', {
+          'dependencies': [
+            '../sandbox/sandbox.gyp:seatbelt',
+          ],
+        }],
       ],
     },
     {
