@@ -49,6 +49,12 @@ config("sender_config") {
   include_dirs = [ "src" ]
 }
 
+config("breakpad_unittest_config") {
+  # One of the breakpad unit tests test that we can detect the proper build-id.
+  # We must override the build-id for this one target.
+  ldflags = [ "-Wl,--build-id=0x000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f" ]
+}
+
 # {micro,mini}dump_stackwalk and minidump_dump are tool-type executables
 # that do not build on Windows.
 if (!is_win) {
@@ -418,6 +424,8 @@ if (is_linux || is_android) {
       sources = [
         "src/common/linux/http_upload.cc",
         "src/common/linux/http_upload.h",
+        "src/common/linux/symbol_upload.cc",
+        "src/common/linux/symbol_upload.h",
         "src/tools/linux/symupload/sym_upload.cc",
       ]
 
@@ -690,6 +698,9 @@ if (is_linux || is_android) {
     # linux_syscall_support.h hand written asm syscalls.
     # See https://crbug.com/556393
     configs -= [ "//build/config/compiler:clang_stackrealign" ]
+
+    # Add the breakpad unittest config at the end to override all configs.
+    configs += [ ":breakpad_unittest_config" ]
   }
 
   executable("linux_dumper_unittest_helper") {

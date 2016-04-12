@@ -432,6 +432,8 @@
             'src/tools/linux/symupload/sym_upload.cc',
             'src/common/linux/http_upload.cc',
             'src/common/linux/http_upload.h',
+            'src/common/linux/symbol_upload.cc',
+            'src/common/linux/symbol_upload.h',
           ],
           'include_dirs': [
             'src',
@@ -688,6 +690,11 @@
             'src/tools/linux/md2core/minidump_memory_range_unittest.cc',
           ],
 
+          # The build-id is required to test the minidump writer.
+          'ldflags': [
+            "-Wl,--build-id=0x000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+          ],
+
           'include_dirs': [
             'linux', # Use our copy of breakpad_googletest_includes.h
             'src',
@@ -711,6 +718,10 @@
                 'isolate_file': 'breakpad_unittests.isolate',
               },
               'includes': [ '../build/android/test_runner.gypi' ],
+              'ldflags!': [
+                # We are overriding the build-id above so remove the default.
+                '-Wl,--build-id=sha1',
+              ],
             }],
             ['clang==1 and target_arch=="ia32"', {
               'cflags!': [
