@@ -40,8 +40,8 @@ void SlotAssignment::resolveAssignment(ShadowRoot& shadowRoot)
     }
 
     for (Node& child : NodeTraversal::childrenOf(*shadowRoot.host())) {
-        if (child.isElementNode() && isActiveInsertionPoint(child)) {
-            // TODO(hayato): Support re-distribution across v0 and v1 shadow trees
+        if (child.isInsertionPoint()) {
+            // A re-distribution across v0 and v1 shadow trees is not supported.
             detachNotAssignedNode(child);
             continue;
         }
