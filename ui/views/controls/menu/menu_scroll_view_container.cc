@@ -8,6 +8,7 @@
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/accessibility/ax_view_state.h"
+#include "ui/compositor/layer.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/views/border.h"
@@ -34,12 +35,16 @@ static const int kBorderPaddingDueToRoundedCorners = 1;
 
 class MenuScrollButton : public View {
  public:
+  static const char kViewClassName[];
+
   MenuScrollButton(SubmenuView* host, bool is_up)
       : host_(host),
         is_up_(is_up),
         // Make our height the same as that of other MenuItemViews.
         pref_height_(MenuItemView::pref_menu_height()) {
   }
+
+  const char* GetClassName() const override { return kViewClassName; }
 
   gfx::Size GetPreferredSize() const override {
     return gfx::Size(MenuConfig::instance().scroll_arrow_height * 2 - 1,
@@ -120,6 +125,9 @@ class MenuScrollButton : public View {
   DISALLOW_COPY_AND_ASSIGN(MenuScrollButton);
 };
 
+// static
+const char MenuScrollButton::kViewClassName[] = "MenuScrollButton";
+
 }  // namespace
 
 // MenuScrollView --------------------------------------------------------------
@@ -134,9 +142,17 @@ class MenuScrollButton : public View {
 
 class MenuScrollViewContainer::MenuScrollView : public View {
  public:
+  static const char kViewClassName[];
+
   explicit MenuScrollView(View* child) {
+    SetPaintToLayer(true);
+    layer()->SetMasksToBounds(true);
+    // TODO(bruthig): Paint bounds opaquely.  See http://crbug.com/601135.
+    layer()->SetFillsBoundsOpaquely(false);
     AddChildView(child);
   }
+
+  const char* GetClassName() const override { return kViewClassName; }
 
   void ScrollRectToVisible(const gfx::Rect& rect) override {
     // NOTE: this assumes we only want to scroll in the y direction.
@@ -169,7 +185,15 @@ class MenuScrollViewContainer::MenuScrollView : public View {
   DISALLOW_COPY_AND_ASSIGN(MenuScrollView);
 };
 
+// static
+const char MenuScrollViewContainer::MenuScrollView::kViewClassName[] =
+    "MenuScrollViewContainer::MenuScrollView";
+
 // MenuScrollViewContainer ----------------------------------------------------
+
+// static
+const char MenuScrollViewContainer::kViewClassName[] =
+    "MenuScrollViewContainer";
 
 MenuScrollViewContainer::MenuScrollViewContainer(SubmenuView* content_view)
     : content_view_(content_view),
@@ -199,6 +223,10 @@ bool MenuScrollViewContainer::HasBubbleBorder() {
 void MenuScrollViewContainer::SetBubbleArrowOffset(int offset) {
   DCHECK(HasBubbleBorder());
   bubble_border_->set_arrow_offset(offset);
+}
+
+const char* MenuScrollViewContainer::GetClassName() const {
+  return kViewClassName;
 }
 
 gfx::Size MenuScrollViewContainer::GetPreferredSize() const {

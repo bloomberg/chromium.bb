@@ -19,6 +19,8 @@ class SubmenuView;
 // the preferred height of the SubmenuView is bigger than our bounds.
 class MenuScrollViewContainer : public View {
  public:
+  static const char kViewClassName[];
+
   explicit MenuScrollViewContainer(SubmenuView* content_view);
 
   // Returns the buttons for scrolling up/down.
@@ -32,6 +34,7 @@ class MenuScrollViewContainer : public View {
   void SetBubbleArrowOffset(int offset);
 
   // View overrides.
+  const char* GetClassName() const override;
   gfx::Size GetPreferredSize() const override;
   void Layout() override;
   void OnPaintBackground(gfx::Canvas* canvas) override;
