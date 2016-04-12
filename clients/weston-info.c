@@ -226,7 +226,7 @@ print_output_info(void *data)
 	wl_list_for_each(mode, &output->modes, link) {
 		printf("\tmode:\n");
 
-		printf("\t\twidth: %d px, height: %d px, refresh: %.f Hz,\n",
+		printf("\t\twidth: %d px, height: %d px, refresh: %.3f Hz,\n",
 		       mode->width, mode->height,
 		       (float) mode->refresh / 1000);
 
