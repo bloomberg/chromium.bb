@@ -5,8 +5,9 @@
 #ifndef COMPONENTS_DRIVE_FILE_SYSTEM_DOWNLOAD_OPERATION_H_
 #define COMPONENTS_DRIVE_FILE_SYSTEM_DOWNLOAD_OPERATION_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "components/drive/file_errors.h"
 #include "components/drive/file_system_interface.h"
@@ -86,7 +87,7 @@ class DownloadOperation {
   // Part of EnsureFileDownloaded(). Called upon the completion of precondition
   // check.
   void EnsureFileDownloadedAfterCheckPreCondition(
-      scoped_ptr<DownloadParams> params,
+      std::unique_ptr<DownloadParams> params,
       const ClientContext& context,
       base::FilePath* drive_file_path,
       base::FilePath* cache_file_path,
@@ -96,7 +97,7 @@ class DownloadOperation {
   // Part of EnsureFileDownloaded(). Called after the actual downloading.
   void EnsureFileDownloadedAfterDownloadFile(
       const base::FilePath& drive_file_path,
-      scoped_ptr<DownloadParams> params,
+      std::unique_ptr<DownloadParams> params,
       google_apis::DriveApiErrorCode gdata_error,
       const base::FilePath& downloaded_file_path);
 
@@ -104,8 +105,8 @@ class DownloadOperation {
   // completed.
   void EnsureFileDownloadedAfterUpdateLocalState(
       const base::FilePath& file_path,
-      scoped_ptr<DownloadParams> params,
-      scoped_ptr<ResourceEntry> entry_after_update,
+      std::unique_ptr<DownloadParams> params,
+      std::unique_ptr<ResourceEntry> entry_after_update,
       base::FilePath* cache_file_path,
       FileError error);
 

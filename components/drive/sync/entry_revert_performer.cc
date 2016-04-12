@@ -21,7 +21,7 @@ namespace {
 FileError FinishRevert(ResourceMetadata* metadata,
                        const std::string& local_id,
                        google_apis::DriveApiErrorCode status,
-                       scoped_ptr<google_apis::FileResource> file_resource,
+                       std::unique_ptr<google_apis::FileResource> file_resource,
                        FileChange* changed_files) {
   ResourceEntry entry;
   std::string parent_resource_id;
@@ -103,7 +103,7 @@ void EntryRevertPerformer::RevertEntry(const std::string& local_id,
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
 
-  scoped_ptr<ResourceEntry> entry(new ResourceEntry);
+  std::unique_ptr<ResourceEntry> entry(new ResourceEntry);
   ResourceEntry* entry_ptr = entry.get();
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(),
@@ -118,7 +118,7 @@ void EntryRevertPerformer::RevertEntry(const std::string& local_id,
 void EntryRevertPerformer::RevertEntryAfterPrepare(
     const ClientContext& context,
     const FileOperationCallback& callback,
-    scoped_ptr<ResourceEntry> entry,
+    std::unique_ptr<ResourceEntry> entry,
     FileError error) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
@@ -142,7 +142,7 @@ void EntryRevertPerformer::RevertEntryAfterGetFileResource(
     const FileOperationCallback& callback,
     const std::string& local_id,
     google_apis::DriveApiErrorCode status,
-    scoped_ptr<google_apis::FileResource> entry) {
+    std::unique_ptr<google_apis::FileResource> entry) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
 

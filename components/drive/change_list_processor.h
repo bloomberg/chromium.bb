@@ -8,12 +8,12 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "components/drive/file_errors.h"
 #include "components/drive/file_errors.h"
@@ -119,7 +119,7 @@ class ChangeListProcessor {
   // it is full resource lists (false) or change lists (true).
   //
   // Must be run on the same task runner as |resource_metadata_| uses.
-  FileError Apply(scoped_ptr<google_apis::AboutResource> about_resource,
+  FileError Apply(std::unique_ptr<google_apis::AboutResource> about_resource,
                   ScopedVector<ChangeList> change_lists,
                   bool is_delta_update);
 
@@ -130,7 +130,7 @@ class ChangeListProcessor {
   static FileError RefreshDirectory(
       ResourceMetadata* resource_metadata,
       const DirectoryFetchInfo& directory_fetch_info,
-      scoped_ptr<ChangeList> change_list,
+      std::unique_ptr<ChangeList> change_list,
       std::vector<ResourceEntry>* out_refreshed_entries);
 
   // Sets |entry|'s parent_local_id.
@@ -149,7 +149,7 @@ class ChangeListProcessor {
   // metadata. |about_resource| must not be null.
   FileError ApplyEntryMap(
       int64_t changestamp,
-      scoped_ptr<google_apis::AboutResource> about_resource);
+      std::unique_ptr<google_apis::AboutResource> about_resource);
 
   // Apply |entry| to resource_metadata_.
   FileError ApplyEntry(const ResourceEntry& entry);
@@ -162,7 +162,7 @@ class ChangeListProcessor {
 
   ResourceEntryMap entry_map_;
   ParentResourceIdMap parent_resource_id_map_;
-  scoped_ptr<FileChange> changed_files_;
+  std::unique_ptr<FileChange> changed_files_;
 
   DISALLOW_COPY_AND_ASSIGN(ChangeListProcessor);
 };

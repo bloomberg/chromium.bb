@@ -7,10 +7,10 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/task_runner_util.h"
 #include "components/drive/drive.pb.h"
 #include "components/drive/file_cache.h"
@@ -34,7 +34,7 @@ class OpenFileOperationTest : public OperationTestBase {
         temp_dir()));
   }
 
-  scoped_ptr<OpenFileOperation> operation_;
+  std::unique_ptr<OpenFileOperation> operation_;
 };
 
 TEST_F(OpenFileOperationTest, OpenExistingFile) {

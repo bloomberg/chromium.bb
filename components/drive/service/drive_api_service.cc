@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "components/drive/drive_api_util.h"
 #include "google_apis/drive/auth_service.h"
@@ -124,7 +125,7 @@ const char kChangeListFields[] =
 void ExtractOpenUrlAndRun(const std::string& app_id,
                           const AuthorizeAppCallback& callback,
                           DriveApiErrorCode error,
-                          scoped_ptr<FileResource> value) {
+                          std::unique_ptr<FileResource> value) {
   DCHECK(!callback.is_null());
 
   if (!value) {
@@ -147,14 +148,14 @@ void ExtractOpenUrlAndRun(const std::string& app_id,
 
 void ExtractShareUrlAndRun(const GetShareUrlCallback& callback,
                            DriveApiErrorCode error,
-                           scoped_ptr<FileResource> value) {
+                           std::unique_ptr<FileResource> value) {
   callback.Run(error, value ? value->share_link() : GURL());
 }
 
 // Ignores the |entry|, and runs the |callback|.
-void EntryActionCallbackAdapter(
-    const EntryActionCallback& callback,
-    DriveApiErrorCode error, scoped_ptr<FileResource> entry) {
+void EntryActionCallbackAdapter(const EntryActionCallback& callback,
+                                DriveApiErrorCode error,
+                                std::unique_ptr<FileResource> entry) {
   callback.Run(error);
 }
 
@@ -193,7 +194,7 @@ google_apis::CancelCallback BatchRequestConfigurator::MultipartUploadNewFile(
   DCHECK(CalledOnValidThread());
   DCHECK(!callback.is_null());
 
-  scoped_ptr<google_apis::BatchableDelegate> delegate(
+  std::unique_ptr<google_apis::BatchableDelegate> delegate(
       new google_apis::drive::MultipartUploadNewFileDelegate(
           task_runner_.get(), title, parent_resource_id, content_type,
           content_length, options.modified_date, options.last_viewed_by_me_date,
@@ -220,7 +221,7 @@ BatchRequestConfigurator::MultipartUploadExistingFile(
   DCHECK(CalledOnValidThread());
   DCHECK(!callback.is_null());
 
-  scoped_ptr<google_apis::BatchableDelegate> delegate(
+  std::unique_ptr<google_apis::BatchableDelegate> delegate(
       new google_apis::drive::MultipartUploadExistingFileDelegate(
           task_runner_.get(), options.title, resource_id,
           options.parent_resource_id, content_type, content_length,
@@ -854,9 +855,9 @@ void DriveAPIService::OnOAuth2RefreshTokenChanged() {
   }
 }
 
-scoped_ptr<BatchRequestConfiguratorInterface>
+std::unique_ptr<BatchRequestConfiguratorInterface>
 DriveAPIService::StartBatchRequest() {
-  scoped_ptr<google_apis::drive::BatchUploadRequest> request(
+  std::unique_ptr<google_apis::drive::BatchUploadRequest> request(
       new google_apis::drive::BatchUploadRequest(sender_.get(),
                                                  url_generator_));
   const base::WeakPtr<google_apis::drive::BatchUploadRequest> weak_ref =
@@ -868,7 +869,7 @@ DriveAPIService::StartBatchRequest() {
   // the sender is deleted. Resolve the circulating dependency and fix it.
   const google_apis::CancelCallback callback =
       sender_->StartRequestWithAuthRetry(request.release());
-  return make_scoped_ptr<BatchRequestConfiguratorInterface>(
+  return base::WrapUnique<BatchRequestConfiguratorInterface>(
       new BatchRequestConfigurator(weak_ref, sender_->blocking_task_runner(),
                                    url_generator_, callback));
 }

@@ -127,7 +127,7 @@ class ChangeListProcessorTest : public testing::Test {
   // Applies the |changes| to |metadata_| as a full resource list of changestamp
   // |kBaseResourceListChangestamp|.
   FileError ApplyFullResourceList(ScopedVector<ChangeList> changes) {
-    scoped_ptr<google_apis::AboutResource> about_resource(
+    std::unique_ptr<google_apis::AboutResource> about_resource(
         new google_apis::AboutResource);
     about_resource->set_largest_change_id(kBaseResourceListChangestamp);
     about_resource->set_root_folder_id(kRootId);
@@ -141,7 +141,7 @@ class ChangeListProcessorTest : public testing::Test {
   // should contain their changestamp in themselves.
   FileError ApplyChangeList(ScopedVector<ChangeList> changes,
                             FileChange* changed_files) {
-    scoped_ptr<google_apis::AboutResource> about_resource(
+    std::unique_ptr<google_apis::AboutResource> about_resource(
         new google_apis::AboutResource);
     about_resource->set_largest_change_id(kBaseResourceListChangestamp);
     about_resource->set_root_folder_id(kRootId);
@@ -156,8 +156,8 @@ class ChangeListProcessorTest : public testing::Test {
 
   // Gets the resource entry for the path from |metadata_| synchronously.
   // Returns null if the entry does not exist.
-  scoped_ptr<ResourceEntry> GetResourceEntry(const std::string& path) {
-    scoped_ptr<ResourceEntry> entry(new ResourceEntry);
+  std::unique_ptr<ResourceEntry> GetResourceEntry(const std::string& path) {
+    std::unique_ptr<ResourceEntry> entry(new ResourceEntry);
     FileError error = metadata_->GetResourceEntryByPath(
         base::FilePath::FromUTF8Unsafe(path), entry.get());
     if (error != FILE_ERROR_OK)
@@ -167,11 +167,11 @@ class ChangeListProcessorTest : public testing::Test {
 
   content::TestBrowserThreadBundle thread_bundle_;
   base::ScopedTempDir temp_dir_;
-  scoped_ptr<ResourceMetadataStorage,
-             test_util::DestroyHelperForTests> metadata_storage_;
-  scoped_ptr<FakeFreeDiskSpaceGetter> fake_free_disk_space_getter_;
-  scoped_ptr<FileCache, test_util::DestroyHelperForTests> cache_;
-  scoped_ptr<ResourceMetadata, test_util::DestroyHelperForTests> metadata_;
+  std::unique_ptr<ResourceMetadataStorage, test_util::DestroyHelperForTests>
+      metadata_storage_;
+  std::unique_ptr<FakeFreeDiskSpaceGetter> fake_free_disk_space_getter_;
+  std::unique_ptr<FileCache, test_util::DestroyHelperForTests> cache_;
+  std::unique_ptr<ResourceMetadata, test_util::DestroyHelperForTests> metadata_;
 };
 
 }  // namespace
@@ -204,7 +204,7 @@ TEST_F(ChangeListProcessorTest, ApplyFullResourceList) {
   };
 
   for (size_t i = 0; i < arraysize(kExpected); ++i) {
-    scoped_ptr<ResourceEntry> entry = GetResourceEntry(kExpected[i].path);
+    std::unique_ptr<ResourceEntry> entry = GetResourceEntry(kExpected[i].path);
     ASSERT_TRUE(entry) << "for path: " << kExpected[i].path;
     EXPECT_EQ(kExpected[i].id, entry->resource_id());
 
@@ -362,7 +362,7 @@ TEST_F(ChangeListProcessorTest, DeltaFileRenamedInDirectory) {
   EXPECT_EQ(16767, changestamp);
   EXPECT_FALSE(GetResourceEntry(
       "drive/root/Directory 1/SubDirectory File 1.txt"));
-  scoped_ptr<ResourceEntry> new_entry(
+  std::unique_ptr<ResourceEntry> new_entry(
       GetResourceEntry("drive/root/Directory 1/New SubDirectory File 1.txt"));
   ASSERT_TRUE(new_entry);
 
@@ -515,7 +515,7 @@ TEST_F(ChangeListProcessorTest, RefreshDirectory) {
   EXPECT_EQ(FILE_ERROR_OK, ApplyFullResourceList(CreateBaseChangeList()));
 
   // Create change list.
-  scoped_ptr<ChangeList> change_list(new ChangeList);
+  std::unique_ptr<ChangeList> change_list(new ChangeList);
 
   // Add a new file to the change list.
   ResourceEntry new_file;
@@ -559,7 +559,7 @@ TEST_F(ChangeListProcessorTest, RefreshDirectory_WrongParentId) {
   EXPECT_EQ(FILE_ERROR_OK, ApplyFullResourceList(CreateBaseChangeList()));
 
   // Create change list and add a new file to it.
-  scoped_ptr<ChangeList> change_list(new ChangeList);
+  std::unique_ptr<ChangeList> change_list(new ChangeList);
   ResourceEntry new_file;
   new_file.set_title("new_file");
   new_file.set_resource_id("new_file_id");

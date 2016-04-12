@@ -5,11 +5,11 @@
 #ifndef COMPONENTS_DRIVE_SYNC_ENTRY_REVERT_PERFORMER_H_
 #define COMPONENTS_DRIVE_SYNC_ENTRY_REVERT_PERFORMER_H_
 
+#include <memory>
 #include <set>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "components/drive/file_errors.h"
@@ -59,7 +59,7 @@ class EntryRevertPerformer {
   // Part of RevertEntry(). Called after local metadata look up.
   void RevertEntryAfterPrepare(const ClientContext& context,
                                const FileOperationCallback& callback,
-                               scoped_ptr<ResourceEntry> entry,
+                               std::unique_ptr<ResourceEntry> entry,
                                FileError error);
 
   // Part of RevertEntry(). Called after GetFileResource is completed.
@@ -67,7 +67,7 @@ class EntryRevertPerformer {
       const FileOperationCallback& callback,
       const std::string& local_id,
       google_apis::DriveApiErrorCode status,
-      scoped_ptr<google_apis::FileResource> entry);
+      std::unique_ptr<google_apis::FileResource> entry);
 
   // Part of RevertEntry(). Called after local metadata is updated.
   void RevertEntryAfterFinishRevert(const FileOperationCallback& callback,

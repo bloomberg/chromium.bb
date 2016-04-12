@@ -33,7 +33,7 @@ FileError TruncateOnBlockingPool(internal::ResourceMetadata* metadata,
   DCHECK(metadata);
   DCHECK(cache);
 
-  scoped_ptr<base::ScopedClosureRunner> file_closer;
+  std::unique_ptr<base::ScopedClosureRunner> file_closer;
   FileError error = cache->OpenForWrite(local_id, &file_closer);
   if (error != FILE_ERROR_OK)
     return error;
@@ -103,7 +103,7 @@ void TruncateOperation::TruncateAfterEnsureFileDownloadedByPath(
     const FileOperationCallback& callback,
     FileError error,
     const base::FilePath& local_file_path,
-    scoped_ptr<ResourceEntry> entry) {
+    std::unique_ptr<ResourceEntry> entry) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
 

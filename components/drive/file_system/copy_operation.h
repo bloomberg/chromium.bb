@@ -5,12 +5,12 @@
 #ifndef COMPONENTS_DRIVE_FILE_SYSTEM_COPY_OPERATION_H_
 #define COMPONENTS_DRIVE_FILE_SYSTEM_COPY_OPERATION_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "components/drive/file_errors.h"
@@ -126,7 +126,7 @@ class CopyOperation {
   void UpdateAfterServerSideOperation(
       const FileOperationCallback& callback,
       google_apis::DriveApiErrorCode status,
-      scoped_ptr<google_apis::FileResource> entry);
+      std::unique_ptr<google_apis::FileResource> entry);
 
   // Part of CopyResourceOnServer and TransferFileFromLocalToRemote.
   // Called after local state update is done.
@@ -165,7 +165,7 @@ class CopyOperation {
   internal::FileCache* cache_;
 
   // Uploading a new file is internally implemented by creating a dirty file.
-  scoped_ptr<CreateFileOperation> create_file_operation_;
+  std::unique_ptr<CreateFileOperation> create_file_operation_;
 
   base::ThreadChecker thread_checker_;
 

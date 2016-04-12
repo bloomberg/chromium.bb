@@ -128,7 +128,8 @@ bool FileCache::FreeDiskSpaceIfNeededFor(int64_t num_bytes) {
   // Put all entries in priority queue where latest entry becomes top.
   std::priority_queue<CacheInfo, std::vector<CacheInfo>, CacheInfoLatestCompare>
       cache_info_queue;
-  scoped_ptr<ResourceMetadataStorage::Iterator> it = storage_->GetIterator();
+  std::unique_ptr<ResourceMetadataStorage::Iterator> it =
+      storage_->GetIterator();
   for (; !it->IsAtEnd(); it->Advance()) {
     if (IsEvictable(it->GetID(), it->GetValue())) {
       const ResourceEntry& entry = it->GetValue();
@@ -194,7 +195,8 @@ uint64_t FileCache::CalculateEvictableCacheSize() {
   uint64_t evictable_cache_size = 0;
   int64_t cache_size = 0;
 
-  scoped_ptr<ResourceMetadataStorage::Iterator> it = storage_->GetIterator();
+  std::unique_ptr<ResourceMetadataStorage::Iterator> it =
+      storage_->GetIterator();
   for (; !it->IsAtEnd(); it->Advance()) {
     if (IsEvictable(it->GetID(), it->GetValue()) &&
         base::GetFileSize(GetCacheFilePath(it->GetID()), &cache_size)) {
@@ -357,7 +359,7 @@ FileError FileCache::MarkAsMounted(const std::string& id,
 
 FileError FileCache::OpenForWrite(
     const std::string& id,
-    scoped_ptr<base::ScopedClosureRunner>* file_closer) {
+    std::unique_ptr<base::ScopedClosureRunner>* file_closer) {
   AssertOnSequencedWorkerPool();
 
   // Marking a file dirty means its entry and actual file blob must exist in
@@ -493,7 +495,8 @@ bool FileCache::Initialize() {
 
   // Older versions do not clear MD5 when marking entries dirty.
   // Clear MD5 of all dirty entries to deal with old data.
-  scoped_ptr<ResourceMetadataStorage::Iterator> it = storage_->GetIterator();
+  std::unique_ptr<ResourceMetadataStorage::Iterator> it =
+      storage_->GetIterator();
   for (; !it->IsAtEnd(); it->Advance()) {
     if (it->GetValue().file_specific_info().cache_state().is_dirty()) {
       ResourceEntry new_entry(it->GetValue());
@@ -683,7 +686,7 @@ bool FileCache::RenameCacheFilesToNewFormat() {
 bool FileCache::MigrateCacheFiles(const base::FilePath& from,
                                   const base::FilePath& to,
                                   ResourceMetadataStorage* metadata_storage) {
-  scoped_ptr<ResourceMetadataStorage::Iterator> it =
+  std::unique_ptr<ResourceMetadataStorage::Iterator> it =
       metadata_storage->GetIterator();
   for (; !it->IsAtEnd(); it->Advance()) {
     const ResourceEntry& entry = it->GetValue();

@@ -20,7 +20,7 @@ namespace test_util {
 
 bool SetUpTestEntries(FakeDriveService* drive_service) {
   DriveApiErrorCode error = DRIVE_OTHER_ERROR;
-  scoped_ptr<FileResource> entry;
+  std::unique_ptr<FileResource> entry;
 
   drive_service->AddNewFileWithResourceId(
       "2_file_resource_id",

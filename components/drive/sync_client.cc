@@ -51,7 +51,7 @@ void CollectBacklog(ResourceMetadata* metadata,
   DCHECK(to_fetch);
   DCHECK(to_update);
 
-  scoped_ptr<ResourceMetadata::Iterator> it = metadata->GetIterator();
+  std::unique_ptr<ResourceMetadata::Iterator> it = metadata->GetIterator();
   for (; !it->IsAtEnd(); it->Advance()) {
     const std::string& local_id = it->GetID();
     const ResourceEntry& entry = it->GetValue();
@@ -87,7 +87,7 @@ void CollectBacklog(ResourceMetadata* metadata,
 void CheckExistingPinnedFiles(ResourceMetadata* metadata,
                               FileCache* cache,
                               std::vector<std::string>* local_ids) {
-  scoped_ptr<ResourceMetadata::Iterator> it = metadata->GetIterator();
+  std::unique_ptr<ResourceMetadata::Iterator> it = metadata->GetIterator();
   for (; !it->IsAtEnd(); it->Advance()) {
     const ResourceEntry& entry = it->GetValue();
     const FileCacheEntry& cache_state =
@@ -480,7 +480,7 @@ void SyncClient::OnTaskComplete(SyncType type,
 void SyncClient::OnFetchFileComplete(const std::string& local_id,
                                      FileError error,
                                      const base::FilePath& local_path,
-                                     scoped_ptr<ResourceEntry> entry) {
+                                     std::unique_ptr<ResourceEntry> entry) {
   DCHECK(thread_checker_.CalledOnValidThread());
   OnTaskComplete(FETCH, local_id, error);
   if (error == FILE_ERROR_ABORT) {

@@ -55,7 +55,7 @@ TEST(DriveAPIServiceTest, BatchRequestConfiguratorWithAuthFailure) {
 
   {
     google_apis::DriveApiErrorCode error = google_apis::HTTP_SUCCESS;
-    scoped_ptr<google_apis::FileResource> file_resource;
+    std::unique_ptr<google_apis::FileResource> file_resource;
     configurator.MultipartUploadNewFile(
         "text/plain", 10, "", "title",
         base::FilePath(FILE_PATH_LITERAL("/file")), UploadNewFileOptions(),
@@ -66,7 +66,7 @@ TEST(DriveAPIServiceTest, BatchRequestConfiguratorWithAuthFailure) {
   }
   {
     google_apis::DriveApiErrorCode error = google_apis::HTTP_SUCCESS;
-    scoped_ptr<google_apis::FileResource> file_resource;
+    std::unique_ptr<google_apis::FileResource> file_resource;
     configurator.MultipartUploadExistingFile(
         "text/plain", 10, "resource_id",
         base::FilePath(FILE_PATH_LITERAL("/file")), UploadExistingFileOptions(),

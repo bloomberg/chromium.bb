@@ -137,7 +137,7 @@ void DriveAppRegistry::Update() {
 
 void DriveAppRegistry::UpdateAfterGetAppList(
     google_apis::DriveApiErrorCode gdata_error,
-    scoped_ptr<google_apis::AppList> app_list) {
+    std::unique_ptr<google_apis::AppList> app_list) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   DCHECK(is_updating_);

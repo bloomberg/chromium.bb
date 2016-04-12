@@ -128,7 +128,7 @@ ChangeListProcessor::~ChangeListProcessor() {
 }
 
 FileError ChangeListProcessor::Apply(
-    scoped_ptr<google_apis::AboutResource> about_resource,
+    std::unique_ptr<google_apis::AboutResource> about_resource,
     ScopedVector<ChangeList> change_lists,
     bool is_delta_update) {
   DCHECK(about_resource);
@@ -204,7 +204,7 @@ FileError ChangeListProcessor::Apply(
 
 FileError ChangeListProcessor::ApplyEntryMap(
     int64_t changestamp,
-    scoped_ptr<google_apis::AboutResource> about_resource) {
+    std::unique_ptr<google_apis::AboutResource> about_resource) {
   DCHECK(about_resource);
 
   // Create the entry for "My Drive" directory with the latest changestamp.
@@ -411,7 +411,7 @@ FileError ChangeListProcessor::ApplyEntry(const ResourceEntry& entry) {
 FileError ChangeListProcessor::RefreshDirectory(
     ResourceMetadata* resource_metadata,
     const DirectoryFetchInfo& directory_fetch_info,
-    scoped_ptr<ChangeList> change_list,
+    std::unique_ptr<ChangeList> change_list,
     std::vector<ResourceEntry>* out_refreshed_entries) {
   DCHECK(!directory_fetch_info.empty());
 

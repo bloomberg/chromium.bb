@@ -103,7 +103,7 @@ FileError ResourceMetadata::Reset() {
     return error;
 
   // Remove all root entries.
-  scoped_ptr<Iterator> it = GetIterator();
+  std::unique_ptr<Iterator> it = GetIterator();
   for (; !it->IsAtEnd(); it->Advance()) {
     if (it->GetValue().parent_local_id().empty()) {
       error = RemoveEntryRecursively(it->GetID());
@@ -441,7 +441,7 @@ FileError ResourceMetadata::GetChildId(const std::string& parent_local_id,
   return storage_->GetChild(parent_local_id, base_name, out_child_id);
 }
 
-scoped_ptr<ResourceMetadata::Iterator> ResourceMetadata::GetIterator() {
+std::unique_ptr<ResourceMetadata::Iterator> ResourceMetadata::GetIterator() {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
 
   return storage_->GetIterator();

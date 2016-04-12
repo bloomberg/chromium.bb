@@ -7,10 +7,10 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "components/drive/drive.pb.h"
 #include "components/drive/file_system_metadata.h"
 #include "components/drive/resource_metadata.h"
@@ -70,13 +70,14 @@ typedef std::vector<MetadataSearchResult> MetadataSearchResultVector;
 // Used to get a resource entry from the file system.
 // If |error| is not FILE_ERROR_OK, |entry_info| is set to NULL.
 typedef base::Callback<void(FileError error,
-                            scoped_ptr<ResourceEntry> entry)>
+                            std::unique_ptr<ResourceEntry> entry)>
     GetResourceEntryCallback;
 
 // Used to get files from the file system.
 typedef base::Callback<void(FileError error,
                             const base::FilePath& file_path,
-                            scoped_ptr<ResourceEntry> entry)> GetFileCallback;
+                            std::unique_ptr<ResourceEntry> entry)>
+    GetFileCallback;
 
 // Used to get file content from the file system.
 // If the file content is available in local cache, |local_file| is filled with
@@ -84,11 +85,11 @@ typedef base::Callback<void(FileError error,
 // the server, |local_file| is empty.
 typedef base::Callback<void(FileError error,
                             const base::FilePath& local_file,
-                            scoped_ptr<ResourceEntry> entry)>
+                            std::unique_ptr<ResourceEntry> entry)>
     GetFileContentInitializedCallback;
 
 // Used to get list of entries under a directory.
-typedef base::Callback<void(scoped_ptr<ResourceEntryVector> entries)>
+typedef base::Callback<void(std::unique_ptr<ResourceEntryVector> entries)>
     ReadDirectoryEntriesCallback;
 
 // Used to get drive content search results.
@@ -96,13 +97,14 @@ typedef base::Callback<void(scoped_ptr<ResourceEntryVector> entries)>
 typedef base::Callback<void(
     FileError error,
     const GURL& next_link,
-    scoped_ptr<std::vector<SearchResultInfo> > result_paths)> SearchCallback;
+    std::unique_ptr<std::vector<SearchResultInfo>> result_paths)>
+    SearchCallback;
 
 // Callback for SearchMetadata(). On success, |error| is FILE_ERROR_OK, and
 // |result| contains the search result.
-typedef base::Callback<void(
-    FileError error,
-    scoped_ptr<MetadataSearchResultVector> result)> SearchMetadataCallback;
+typedef base::Callback<void(FileError error,
+                            std::unique_ptr<MetadataSearchResultVector> result)>
+    SearchMetadataCallback;
 
 // Callback for SearchByHashesCallback. On success, vector contains hash and
 // corresponding files. The vector can include multiple entries for one hash.

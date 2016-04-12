@@ -7,12 +7,12 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/callback_forward.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/drive/file_errors.h"
 #include "components/drive/file_system_interface.h"
 #include "google_apis/drive/drive_api_error_codes.h"
@@ -145,13 +145,13 @@ class FakeFileSystem : public FileSystemInterface {
       const google_apis::GetContentCallback& get_content_callback,
       const FileOperationCallback& completion_callback,
       FileError error,
-      scoped_ptr<ResourceEntry> entry);
+      std::unique_ptr<ResourceEntry> entry);
   void GetFileContentAfterGetFileResource(
       const GetFileContentInitializedCallback& initialized_callback,
       const google_apis::GetContentCallback& get_content_callback,
       const FileOperationCallback& completion_callback,
       google_apis::DriveApiErrorCode gdata_error,
-      scoped_ptr<google_apis::FileResource> gdata_entry);
+      std::unique_ptr<google_apis::FileResource> gdata_entry);
   void GetFileContentAfterDownloadFile(
       const FileOperationCallback& completion_callback,
       google_apis::DriveApiErrorCode gdata_error,
@@ -171,17 +171,17 @@ class FakeFileSystem : public FileSystemInterface {
   void GetResourceEntryAfterGetAboutResource(
       const GetResourceEntryCallback& callback,
       google_apis::DriveApiErrorCode gdata_error,
-      scoped_ptr<google_apis::AboutResource> about_resource);
+      std::unique_ptr<google_apis::AboutResource> about_resource);
   void GetResourceEntryAfterGetParentEntryInfo(
       const base::FilePath& base_name,
       const GetResourceEntryCallback& callback,
       FileError error,
-      scoped_ptr<ResourceEntry> parent_entry);
+      std::unique_ptr<ResourceEntry> parent_entry);
   void GetResourceEntryAfterGetFileList(
       const base::FilePath& base_name,
       const GetResourceEntryCallback& callback,
       google_apis::DriveApiErrorCode gdata_error,
-      scoped_ptr<google_apis::FileList> file_list);
+      std::unique_ptr<google_apis::FileList> file_list);
 
   DriveServiceInterface* drive_service_;  // Not owned.
   base::ScopedTempDir cache_dir_;

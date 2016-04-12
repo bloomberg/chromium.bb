@@ -8,12 +8,12 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <set>
 #include <string>
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/cancellation_flag.h"
 #include "base/threading/thread_checker.h"
@@ -122,8 +122,9 @@ class FileCache {
   // Opens the cache file corresponding to |id| for write. |file_closer| should
   // be kept alive until writing finishes.
   // This method must be called before writing to cache files.
-  FileError OpenForWrite(const std::string& id,
-                         scoped_ptr<base::ScopedClosureRunner>* file_closer);
+  FileError OpenForWrite(
+      const std::string& id,
+      std::unique_ptr<base::ScopedClosureRunner>* file_closer);
 
   // Returns true if the cache file corresponding to |id| is write-opened.
   bool IsOpenedForWrite(const std::string& id);

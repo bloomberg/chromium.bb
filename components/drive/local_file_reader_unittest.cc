@@ -7,12 +7,12 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/rand_util.h"
 #include "base/threading/thread.h"
@@ -57,8 +57,8 @@ class LocalFileReaderTest : public ::testing::Test {
 
   base::MessageLoop message_loop_;
   base::ScopedTempDir temp_dir_;
-  scoped_ptr<base::Thread> worker_thread_;
-  scoped_ptr<LocalFileReader> file_reader_;
+  std::unique_ptr<base::Thread> worker_thread_;
+  std::unique_ptr<LocalFileReader> file_reader_;
 };
 
 TEST_F(LocalFileReaderTest, NonExistingFile) {

@@ -7,11 +7,11 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
@@ -249,7 +249,8 @@ class DriveAPIService : public DriveServiceInterface,
       const std::string& email,
       google_apis::drive::PermissionRole role,
       const google_apis::EntryActionCallback& callback) override;
-  scoped_ptr<BatchRequestConfiguratorInterface> StartBatchRequest() override;
+  std::unique_ptr<BatchRequestConfiguratorInterface> StartBatchRequest()
+      override;
 
  private:
   // AuthServiceObserver override.
@@ -261,8 +262,9 @@ class DriveAPIService : public DriveServiceInterface,
   OAuth2TokenService* oauth2_token_service_;
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
-  scoped_ptr<google_apis::RequestSender> sender_;
-  scoped_ptr<google_apis::FilesListRequestRunner> files_list_request_runner_;
+  std::unique_ptr<google_apis::RequestSender> sender_;
+  std::unique_ptr<google_apis::FilesListRequestRunner>
+      files_list_request_runner_;
   base::ObserverList<DriveServiceObserver> observers_;
   google_apis::DriveApiUrlGenerator url_generator_;
   const std::string custom_user_agent_;

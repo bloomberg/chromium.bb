@@ -28,7 +28,7 @@ class EntryRevertPerformerTest : public file_system::OperationTestBase {
                                              metadata()));
   }
 
-  scoped_ptr<EntryRevertPerformer> performer_;
+  std::unique_ptr<EntryRevertPerformer> performer_;
 };
 
 TEST_F(EntryRevertPerformerTest, RevertEntry) {

@@ -6,10 +6,10 @@
 #define COMPONENTS_DRIVE_FILE_SYSTEM_OPEN_FILE_OPERATION_H_
 
 #include <map>
+#include <memory>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "components/drive/file_errors.h"
@@ -70,26 +70,26 @@ class OpenFileOperation {
   void OpenFileAfterFileDownloaded(const OpenFileCallback& callback,
                                    FileError error,
                                    const base::FilePath& local_file_path,
-                                   scoped_ptr<ResourceEntry> entry);
+                                   std::unique_ptr<ResourceEntry> entry);
 
   // Part of OpenFile(). Called after opening the cache file.
   void OpenFileAfterOpenForWrite(
       const base::FilePath& local_file_path,
       const std::string& local_id,
       const OpenFileCallback& callback,
-      scoped_ptr<base::ScopedClosureRunner>* file_closer,
+      std::unique_ptr<base::ScopedClosureRunner>* file_closer,
       FileError error);
 
   // Closes the file with |local_id|.
   void CloseFile(const std::string& local_id,
-                 scoped_ptr<base::ScopedClosureRunner> file_closer);
+                 std::unique_ptr<base::ScopedClosureRunner> file_closer);
 
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   OperationDelegate* delegate_;
   internal::FileCache* cache_;
 
-  scoped_ptr<CreateFileOperation> create_file_operation_;
-  scoped_ptr<DownloadOperation> download_operation_;
+  std::unique_ptr<CreateFileOperation> create_file_operation_;
+  std::unique_ptr<DownloadOperation> download_operation_;
 
   // The map from local id for an opened file to the number how many times
   // the file is opened.

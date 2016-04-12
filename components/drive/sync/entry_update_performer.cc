@@ -133,11 +133,12 @@ FileError PrepareUpdate(ResourceMetadata* metadata,
   return FILE_ERROR_OK;
 }
 
-FileError FinishUpdate(ResourceMetadata* metadata,
-                       FileCache* cache,
-                       scoped_ptr<EntryUpdatePerformer::LocalState> local_state,
-                       scoped_ptr<google_apis::FileResource> file_resource,
-                       FileChange* changed_files) {
+FileError FinishUpdate(
+    ResourceMetadata* metadata,
+    FileCache* cache,
+    std::unique_ptr<EntryUpdatePerformer::LocalState> local_state,
+    std::unique_ptr<google_apis::FileResource> file_resource,
+    FileChange* changed_files) {
   ResourceEntry entry;
   FileError error =
       metadata->GetResourceEntryById(local_state->entry.local_id(), &entry);
@@ -256,7 +257,7 @@ void EntryUpdatePerformer::UpdateEntry(const std::string& local_id,
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
 
-  scoped_ptr<LocalState> local_state(new LocalState);
+  std::unique_ptr<LocalState> local_state(new LocalState);
   LocalState* const local_state_ptr = local_state.get();
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(),
@@ -270,7 +271,7 @@ void EntryUpdatePerformer::UpdateEntry(const std::string& local_id,
 void EntryUpdatePerformer::UpdateEntryAfterPrepare(
     const ClientContext& context,
     const FileOperationCallback& callback,
-    scoped_ptr<LocalState> local_state,
+    std::unique_ptr<LocalState> local_state,
     FileError error) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
@@ -324,7 +325,7 @@ void EntryUpdatePerformer::UpdateEntryAfterPrepare(
       // Not locking the loader intentionally here to avoid making the UI
       // unresponsive while uploading large files.
       // FinishUpdate() is responsible to resolve conflicts caused by this.
-      scoped_ptr<base::ScopedClosureRunner> null_loader_lock;
+      std::unique_ptr<base::ScopedClosureRunner> null_loader_lock;
 
       UploadNewFileOptions options;
       options.modified_date = last_modified;
@@ -355,10 +356,11 @@ void EntryUpdatePerformer::UpdateEntryAfterPrepare(
           local_state_ptr->cache_file_path,
           local_state_ptr->entry.file_specific_info().content_mime_type(),
           options, context,
-          base::Bind(&EntryUpdatePerformer::UpdateEntryAfterUpdateResource,
-                     weak_ptr_factory_.GetWeakPtr(), context, callback,
-                     base::Passed(&local_state),
-                     base::Passed(scoped_ptr<base::ScopedClosureRunner>())));
+          base::Bind(
+              &EntryUpdatePerformer::UpdateEntryAfterUpdateResource,
+              weak_ptr_factory_.GetWeakPtr(), context, callback,
+              base::Passed(&local_state),
+              base::Passed(std::unique_ptr<base::ScopedClosureRunner>())));
     }
     return;
   }
@@ -367,7 +369,7 @@ void EntryUpdatePerformer::UpdateEntryAfterPrepare(
   if (local_state->entry.file_info().is_directory() &&
       local_state->entry.resource_id().empty()) {
     // Lock the loader to avoid race conditions.
-    scoped_ptr<base::ScopedClosureRunner> loader_lock =
+    std::unique_ptr<base::ScopedClosureRunner> loader_lock =
         loader_controller_->GetLock();
 
     AddNewDirectoryOptions options;
@@ -401,16 +403,16 @@ void EntryUpdatePerformer::UpdateEntryAfterPrepare(
       base::Bind(&EntryUpdatePerformer::UpdateEntryAfterUpdateResource,
                  weak_ptr_factory_.GetWeakPtr(), context, callback,
                  base::Passed(&local_state),
-                 base::Passed(scoped_ptr<base::ScopedClosureRunner>())));
+                 base::Passed(std::unique_ptr<base::ScopedClosureRunner>())));
 }
 
 void EntryUpdatePerformer::UpdateEntryAfterUpdateResource(
     const ClientContext& context,
     const FileOperationCallback& callback,
-    scoped_ptr<LocalState> local_state,
-    scoped_ptr<base::ScopedClosureRunner> loader_lock,
+    std::unique_ptr<LocalState> local_state,
+    std::unique_ptr<base::ScopedClosureRunner> loader_lock,
     google_apis::DriveApiErrorCode status,
-    scoped_ptr<google_apis::FileResource> entry) {
+    std::unique_ptr<google_apis::FileResource> entry) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
 

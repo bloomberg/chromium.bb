@@ -161,7 +161,7 @@ FileError TryToCopyLocally(internal::ResourceMetadata* metadata,
 // Stores the entry returned from the server and returns its path.
 FileError UpdateLocalStateForServerSideOperation(
     internal::ResourceMetadata* metadata,
-    scoped_ptr<google_apis::FileResource> file_resource,
+    std::unique_ptr<google_apis::FileResource> file_resource,
     ResourceEntry* entry,
     base::FilePath* file_path) {
   DCHECK(file_resource);
@@ -551,7 +551,7 @@ void CopyOperation::CopyResourceOnServer(
 void CopyOperation::UpdateAfterServerSideOperation(
     const FileOperationCallback& callback,
     google_apis::DriveApiErrorCode status,
-    scoped_ptr<google_apis::FileResource> entry) {
+    std::unique_ptr<google_apis::FileResource> entry) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
 

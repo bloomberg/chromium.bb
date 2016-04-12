@@ -5,11 +5,11 @@
 #ifndef COMPONENTS_DRIVE_FILE_SYSTEM_MOVE_OPERATION_H_
 #define COMPONENTS_DRIVE_FILE_SYSTEM_MOVE_OPERATION_H_
 
+#include <memory>
 #include <set>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "components/drive/file_errors.h"

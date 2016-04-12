@@ -14,7 +14,8 @@ namespace internal {
 
 void RemoveStaleCacheFiles(FileCache* cache,
                            ResourceMetadata* resource_metadata) {
-  scoped_ptr<ResourceMetadata::Iterator> it = resource_metadata->GetIterator();
+  std::unique_ptr<ResourceMetadata::Iterator> it =
+      resource_metadata->GetIterator();
   for (; !it->IsAtEnd(); it->Advance()) {
     const ResourceEntry& entry = it->GetValue();
     const FileCacheEntry& cache_state =

@@ -95,10 +95,10 @@ class FileCacheTest : public testing::Test {
   base::ScopedTempDir temp_dir_;
   base::FilePath cache_files_dir_;
 
-  scoped_ptr<ResourceMetadataStorage, test_util::DestroyHelperForTests>
+  std::unique_ptr<ResourceMetadataStorage, test_util::DestroyHelperForTests>
       metadata_storage_;
-  scoped_ptr<FileCache, test_util::DestroyHelperForTests> cache_;
-  scoped_ptr<FakeFreeDiskSpaceGetter> fake_free_disk_space_getter_;
+  std::unique_ptr<FileCache, test_util::DestroyHelperForTests> cache_;
+  std::unique_ptr<FakeFreeDiskSpaceGetter> fake_free_disk_space_getter_;
 };
 
 TEST_F(FileCacheTest, RecoverFilesFromCacheDirectory) {
@@ -529,7 +529,7 @@ TEST_F(FileCacheTest, OpenForWrite) {
   EXPECT_FALSE(entry.file_specific_info().cache_state().is_dirty());
 
   // Open (1).
-  scoped_ptr<base::ScopedClosureRunner> file_closer1;
+  std::unique_ptr<base::ScopedClosureRunner> file_closer1;
   EXPECT_EQ(FILE_ERROR_OK, cache_->OpenForWrite(id, &file_closer1));
   EXPECT_TRUE(cache_->IsOpenedForWrite(id));
 
@@ -538,7 +538,7 @@ TEST_F(FileCacheTest, OpenForWrite) {
   EXPECT_TRUE(entry.file_specific_info().cache_state().is_dirty());
 
   // Open (2).
-  scoped_ptr<base::ScopedClosureRunner> file_closer2;
+  std::unique_ptr<base::ScopedClosureRunner> file_closer2;
   EXPECT_EQ(FILE_ERROR_OK, cache_->OpenForWrite(id, &file_closer2));
   EXPECT_TRUE(cache_->IsOpenedForWrite(id));
 
@@ -576,7 +576,7 @@ TEST_F(FileCacheTest, UpdateMd5) {
                                          FileCache::FILE_OPERATION_COPY));
 
   // Modify the cache file.
-  scoped_ptr<base::ScopedClosureRunner> file_closer;
+  std::unique_ptr<base::ScopedClosureRunner> file_closer;
   EXPECT_EQ(FILE_ERROR_OK, cache_->OpenForWrite(id, &file_closer));
   base::FilePath cache_file_path;
   EXPECT_EQ(FILE_ERROR_OK, cache_->GetFile(id, &cache_file_path));
@@ -615,7 +615,7 @@ TEST_F(FileCacheTest, ClearDirty) {
                                          FileCache::FILE_OPERATION_COPY));
 
   // Open the file.
-  scoped_ptr<base::ScopedClosureRunner> file_closer;
+  std::unique_ptr<base::ScopedClosureRunner> file_closer;
   EXPECT_EQ(FILE_ERROR_OK, cache_->OpenForWrite(id, &file_closer));
 
   // Entry is dirty.

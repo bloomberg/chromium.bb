@@ -5,9 +5,10 @@
 #ifndef COMPONENTS_DRIVE_FILE_SYSTEM_SEARCH_OPERATION_H_
 #define COMPONENTS_DRIVE_FILE_SYSTEM_SEARCH_OPERATION_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "components/drive/file_errors.h"
@@ -55,16 +56,15 @@ class SearchOperation {
 
  private:
   // Part of Search(), called after the FileList is fetched from the server.
-  void SearchAfterGetFileList(
-      const SearchCallback& callback,
-      google_apis::DriveApiErrorCode gdata_error,
-      scoped_ptr<google_apis::FileList> file_list);
+  void SearchAfterGetFileList(const SearchCallback& callback,
+                              google_apis::DriveApiErrorCode gdata_error,
+                              std::unique_ptr<google_apis::FileList> file_list);
 
   // Part of Search(), called after |result| is filled on the blocking pool.
   void SearchAfterResolveSearchResult(
       const SearchCallback& callback,
       const GURL& next_link,
-      scoped_ptr<std::vector<SearchResultInfo> > result,
+      std::unique_ptr<std::vector<SearchResultInfo>> result,
       FileError error);
 
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;

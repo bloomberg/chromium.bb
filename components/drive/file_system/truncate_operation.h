@@ -7,9 +7,10 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "components/drive/file_errors.h"
@@ -62,7 +63,7 @@ class TruncateOperation {
       const FileOperationCallback& callback,
       FileError error,
       const base::FilePath& local_file_path,
-      scoped_ptr<ResourceEntry> resource_entry);
+      std::unique_ptr<ResourceEntry> resource_entry);
 
   // Part of Truncate(). Called after TruncateOnBlockingPool() is complete.
   void TruncateAfterTruncateOnBlockingPool(
@@ -75,7 +76,7 @@ class TruncateOperation {
   internal::ResourceMetadata* metadata_;
   internal::FileCache* cache_;
 
-  scoped_ptr<DownloadOperation> download_operation_;
+  std::unique_ptr<DownloadOperation> download_operation_;
 
   base::ThreadChecker thread_checker_;
 

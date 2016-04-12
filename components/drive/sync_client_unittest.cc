@@ -4,10 +4,11 @@
 
 #include "components/drive/sync_client.h"
 
+#include <memory>
+
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/test_timeouts.h"
@@ -162,7 +163,7 @@ class SyncClientTest : public testing::Test {
   // Adds a file to the service root and |resource_ids_|.
   void AddFileEntry(const std::string& title) {
     google_apis::DriveApiErrorCode error = google_apis::DRIVE_FILE_ERROR;
-    scoped_ptr<google_apis::FileResource> entry;
+    std::unique_ptr<google_apis::FileResource> entry;
     drive_service_->AddNewFile(
         "text/plain",
         kRemoteContent,
@@ -251,21 +252,21 @@ class SyncClientTest : public testing::Test {
 
   content::TestBrowserThreadBundle thread_bundle_;
   base::ScopedTempDir temp_dir_;
-  scoped_ptr<TestingPrefServiceSimple> pref_service_;
-  scoped_ptr<test_util::FakeNetworkChangeNotifier>
+  std::unique_ptr<TestingPrefServiceSimple> pref_service_;
+  std::unique_ptr<test_util::FakeNetworkChangeNotifier>
       fake_network_change_notifier_;
-  scoped_ptr<EventLogger> logger_;
-  scoped_ptr<SyncClientTestDriveService> drive_service_;
+  std::unique_ptr<EventLogger> logger_;
+  std::unique_ptr<SyncClientTestDriveService> drive_service_;
   file_system::OperationDelegate delegate_;
-  scoped_ptr<JobScheduler> scheduler_;
-  scoped_ptr<ResourceMetadataStorage,
-             test_util::DestroyHelperForTests> metadata_storage_;
-  scoped_ptr<FileCache, test_util::DestroyHelperForTests> cache_;
-  scoped_ptr<ResourceMetadata, test_util::DestroyHelperForTests> metadata_;
-  scoped_ptr<AboutResourceLoader> about_resource_loader_;
-  scoped_ptr<LoaderController> loader_controller_;
-  scoped_ptr<ChangeListLoader> change_list_loader_;
-  scoped_ptr<SyncClient> sync_client_;
+  std::unique_ptr<JobScheduler> scheduler_;
+  std::unique_ptr<ResourceMetadataStorage, test_util::DestroyHelperForTests>
+      metadata_storage_;
+  std::unique_ptr<FileCache, test_util::DestroyHelperForTests> cache_;
+  std::unique_ptr<ResourceMetadata, test_util::DestroyHelperForTests> metadata_;
+  std::unique_ptr<AboutResourceLoader> about_resource_loader_;
+  std::unique_ptr<LoaderController> loader_controller_;
+  std::unique_ptr<ChangeListLoader> change_list_loader_;
+  std::unique_ptr<SyncClient> sync_client_;
 
   std::map<std::string, std::string> resource_ids_;  // Name-to-id map.
 };
@@ -295,7 +296,7 @@ TEST_F(SyncClientTest, StartProcessingBacklog) {
 
   // Removed entry is not found.
   google_apis::DriveApiErrorCode status = google_apis::DRIVE_OTHER_ERROR;
-  scoped_ptr<google_apis::FileResource> server_entry;
+  std::unique_ptr<google_apis::FileResource> server_entry;
   drive_service_->GetFileResource(
       resource_ids_["removed"],
       google_apis::test_util::CreateCopyResultCallback(&status, &server_entry));

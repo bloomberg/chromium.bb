@@ -6,12 +6,12 @@
 #define COMPONENTS_DRIVE_SYNC_CLIENT_H_
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
@@ -164,7 +164,7 @@ class SyncClient {
   void OnFetchFileComplete(const std::string& local_id,
                            FileError error,
                            const base::FilePath& local_path,
-                           scoped_ptr<ResourceEntry> entry);
+                           std::unique_ptr<ResourceEntry> entry);
 
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   file_system::OperationDelegate* operation_delegate_;
@@ -172,10 +172,10 @@ class SyncClient {
   FileCache* cache_;
 
   // Used to fetch pinned files.
-  scoped_ptr<file_system::DownloadOperation> download_operation_;
+  std::unique_ptr<file_system::DownloadOperation> download_operation_;
 
   // Used to update entry metadata.
-  scoped_ptr<EntryUpdatePerformer> entry_update_performer_;
+  std::unique_ptr<EntryUpdatePerformer> entry_update_performer_;
 
   // Sync tasks to be processed.
   SyncTasks tasks_;

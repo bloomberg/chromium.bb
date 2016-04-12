@@ -5,9 +5,10 @@
 #ifndef COMPONENTS_DRIVE_SYNC_REMOVE_PERFORMER_H_
 #define COMPONENTS_DRIVE_SYNC_REMOVE_PERFORMER_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "components/drive/file_errors.h"
@@ -86,7 +87,7 @@ class RemovePerformer {
       const FileOperationCallback& callback,
       const std::string& local_id,
       google_apis::DriveApiErrorCode status,
-      scoped_ptr<google_apis::FileResource> file_resource);
+      std::unique_ptr<google_apis::FileResource> file_resource);
 
   // Part of UnparentResource().
   void UnparentResourceAfterUpdateRemoteState(
@@ -98,7 +99,7 @@ class RemovePerformer {
   file_system::OperationDelegate* delegate_;
   JobScheduler* scheduler_;
   ResourceMetadata* metadata_;
-  scoped_ptr<EntryRevertPerformer> entry_revert_performer_;
+  std::unique_ptr<EntryRevertPerformer> entry_revert_performer_;
 
   base::ThreadChecker thread_checker_;
 

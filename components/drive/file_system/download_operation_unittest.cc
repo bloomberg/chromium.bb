@@ -33,7 +33,7 @@ class DownloadOperationTest : public OperationTestBase {
         temp_dir()));
   }
 
-  scoped_ptr<DownloadOperation> operation_;
+  std::unique_ptr<DownloadOperation> operation_;
 };
 
 TEST_F(DownloadOperationTest,
@@ -49,7 +49,7 @@ TEST_F(DownloadOperationTest,
 
   FileError error = FILE_ERROR_FAILED;
   base::FilePath file_path;
-  scoped_ptr<ResourceEntry> entry;
+  std::unique_ptr<ResourceEntry> entry;
   operation_->EnsureFileDownloadedByPath(
       file_in_root,
       ClientContext(USER_INITIATED),
@@ -78,7 +78,7 @@ TEST_F(DownloadOperationTest,
 
   FileError error = FILE_ERROR_OK;
   base::FilePath file_path;
-  scoped_ptr<ResourceEntry> entry;
+  std::unique_ptr<ResourceEntry> entry;
   operation_->EnsureFileDownloadedByPath(
       file_in_root,
       ClientContext(USER_INITIATED),
@@ -104,7 +104,7 @@ TEST_F(DownloadOperationTest,
       FILE_PATH_LITERAL("drive/root/Duplicate Name.txt"));
   FileError error = FILE_ERROR_FAILED;
   base::FilePath file_path;
-  scoped_ptr<ResourceEntry> entry;
+  std::unique_ptr<ResourceEntry> entry;
   operation_->EnsureFileDownloadedByPath(
       cached_file,
       ClientContext(USER_INITIATED),
@@ -170,7 +170,7 @@ TEST_F(DownloadOperationTest,
 
   FileError error = FILE_ERROR_OK;
   base::FilePath file_path;
-  scoped_ptr<ResourceEntry> entry;
+  std::unique_ptr<ResourceEntry> entry;
   operation_->EnsureFileDownloadedByPath(
       file_in_root,
       ClientContext(USER_INITIATED),
@@ -207,7 +207,7 @@ TEST_F(DownloadOperationTest, EnsureFileDownloadedByPath_FromCache) {
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   base::FilePath file_path;
-  scoped_ptr<ResourceEntry> entry;
+  std::unique_ptr<ResourceEntry> entry;
   operation_->EnsureFileDownloadedByPath(
       file_in_root,
       ClientContext(USER_INITIATED),
@@ -228,7 +228,7 @@ TEST_F(DownloadOperationTest, EnsureFileDownloadedByPath_HostedDocument) {
 
   FileError error = FILE_ERROR_FAILED;
   base::FilePath file_path;
-  scoped_ptr<ResourceEntry> entry;
+  std::unique_ptr<ResourceEntry> entry;
   operation_->EnsureFileDownloadedByPath(
       file_in_root,
       ClientContext(USER_INITIATED),
@@ -256,7 +256,7 @@ TEST_F(DownloadOperationTest, EnsureFileDownloadedByLocalId) {
 
   FileError error = FILE_ERROR_OK;
   base::FilePath file_path;
-  scoped_ptr<ResourceEntry> entry;
+  std::unique_ptr<ResourceEntry> entry;
   operation_->EnsureFileDownloadedByLocalId(
       GetLocalId(file_in_root),
       ClientContext(USER_INITIATED),
@@ -282,7 +282,7 @@ TEST_F(DownloadOperationTest,
 
   {
     FileError initialized_error = FILE_ERROR_FAILED;
-    scoped_ptr<ResourceEntry> entry, entry_dontcare;
+    std::unique_ptr<ResourceEntry> entry, entry_dontcare;
     base::FilePath local_path, local_path_dontcare;
     google_apis::test_util::TestGetContentCallback get_content_callback;
     FileError completion_error = FILE_ERROR_FAILED;
@@ -315,7 +315,7 @@ TEST_F(DownloadOperationTest,
 
   {
     FileError initialized_error = FILE_ERROR_FAILED;
-    scoped_ptr<ResourceEntry> entry, entry_dontcare;
+    std::unique_ptr<ResourceEntry> entry, entry_dontcare;
     base::FilePath local_path, local_path_dontcare;
     google_apis::test_util::TestGetContentCallback get_content_callback;
     FileError completion_error = FILE_ERROR_FAILED;
@@ -372,7 +372,7 @@ TEST_F(DownloadOperationTest, EnsureFileDownloadedByLocalId_FromCache) {
   fake_service()->set_offline(true);
 
   base::FilePath file_path;
-  scoped_ptr<ResourceEntry> entry;
+  std::unique_ptr<ResourceEntry> entry;
   operation_->EnsureFileDownloadedByLocalId(
       GetLocalId(file_in_root),
       ClientContext(USER_INITIATED),
@@ -417,9 +417,9 @@ TEST_F(DownloadOperationTest, EnsureFileDownloadedByPath_DirtyCache) {
   // Record values passed to GetFileContentInitializedCallback().
   FileError init_error;
   base::FilePath init_path;
-  scoped_ptr<ResourceEntry> init_entry;
+  std::unique_ptr<ResourceEntry> init_entry;
   base::FilePath file_path;
-  scoped_ptr<ResourceEntry> entry;
+  std::unique_ptr<ResourceEntry> entry;
   base::Closure cancel_callback = operation_->EnsureFileDownloadedByPath(
       file_in_root,
       ClientContext(USER_INITIATED),
@@ -461,7 +461,7 @@ TEST_F(DownloadOperationTest, EnsureFileDownloadedByPath_LocallyCreatedFile) {
 
   // Empty cache file should be returned.
   base::FilePath cache_file_path;
-  scoped_ptr<ResourceEntry> entry;
+  std::unique_ptr<ResourceEntry> entry;
   operation_->EnsureFileDownloadedByPath(
       file_path,
       ClientContext(USER_INITIATED),
@@ -487,7 +487,7 @@ TEST_F(DownloadOperationTest, CancelBeforeDownloadStarts) {
   // Start operation.
   FileError error = FILE_ERROR_OK;
   base::FilePath file_path;
-  scoped_ptr<ResourceEntry> entry;
+  std::unique_ptr<ResourceEntry> entry;
   base::Closure cancel_closure = operation_->EnsureFileDownloadedByLocalId(
       GetLocalId(file_in_root),
       ClientContext(USER_INITIATED),

@@ -7,13 +7,13 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/drive/drive.pb.h"
 #include "components/drive/file_errors.h"
 
@@ -44,7 +44,7 @@ class ResourceMetadataStorage {
   // Object to iterate over entries stored in this storage.
   class Iterator {
    public:
-    explicit Iterator(scoped_ptr<leveldb::Iterator> it);
+    explicit Iterator(std::unique_ptr<leveldb::Iterator> it);
     ~Iterator();
 
     // Returns true if this iterator cannot advance any more and does not point
@@ -65,7 +65,7 @@ class ResourceMetadataStorage {
 
    private:
     ResourceEntry entry_;
-    scoped_ptr<leveldb::Iterator> it_;
+    std::unique_ptr<leveldb::Iterator> it_;
 
     DISALLOW_COPY_AND_ASSIGN(Iterator);
   };
@@ -118,7 +118,7 @@ class ResourceMetadataStorage {
   FileError RemoveEntry(const std::string& id);
 
   // Returns an object to iterate over entries stored in this storage.
-  scoped_ptr<Iterator> GetIterator();
+  std::unique_ptr<Iterator> GetIterator();
 
   // Returns the ID of the parent's child.
   FileError GetChild(const std::string& parent_id,
@@ -161,7 +161,7 @@ class ResourceMetadataStorage {
   bool cache_file_scan_is_needed_;
 
   // Entries stored in this storage.
-  scoped_ptr<leveldb::DB> resource_map_;
+  std::unique_ptr<leveldb::DB> resource_map_;
 
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 

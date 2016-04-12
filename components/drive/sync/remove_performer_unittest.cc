@@ -50,7 +50,7 @@ TEST_F(RemovePerformerTest, RemoveFile) {
 
   // Verify the file is indeed removed in the server.
   google_apis::DriveApiErrorCode gdata_error = google_apis::DRIVE_OTHER_ERROR;
-  scoped_ptr<google_apis::FileResource> gdata_entry;
+  std::unique_ptr<google_apis::FileResource> gdata_entry;
   fake_service()->GetFileResource(
       resource_id,
       google_apis::test_util::CreateCopyResultCallback(&gdata_error,
@@ -79,7 +79,7 @@ TEST_F(RemovePerformerTest, RemoveShared) {
 
   // Prepare a shared file to the root folder.
   google_apis::DriveApiErrorCode gdata_error = google_apis::DRIVE_OTHER_ERROR;
-  scoped_ptr<google_apis::FileResource> gdata_entry;
+  std::unique_ptr<google_apis::FileResource> gdata_entry;
   fake_service()->AddNewFile(
       "text/plain",
       "dummy content",

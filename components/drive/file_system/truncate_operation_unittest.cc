@@ -28,7 +28,7 @@ class TruncateOperationTest : public OperationTestBase {
         metadata(), cache(), temp_dir()));
   }
 
-  scoped_ptr<TruncateOperation> operation_;
+  std::unique_ptr<TruncateOperation> operation_;
 };
 
 TEST_F(TruncateOperationTest, Truncate) {

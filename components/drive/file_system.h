@@ -7,11 +7,11 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
@@ -214,7 +214,7 @@ class FileSystem : public FileSystemInterface,
   void OnGetAboutResource(
       const GetAvailableSpaceCallback& callback,
       google_apis::DriveApiErrorCode status,
-      scoped_ptr<google_apis::AboutResource> about_resource);
+      std::unique_ptr<google_apis::AboutResource> about_resource);
 
   // Part of CheckForUpdates(). Called when
   // ChangeListLoader::CheckForUpdates() is complete.
@@ -266,17 +266,17 @@ class FileSystem : public FileSystemInterface,
   FileError last_update_check_error_;
 
   // Used to load about resource.
-  scoped_ptr<internal::AboutResourceLoader> about_resource_loader_;
+  std::unique_ptr<internal::AboutResourceLoader> about_resource_loader_;
 
   // Used to control ChangeListLoader.
-  scoped_ptr<internal::LoaderController> loader_controller_;
+  std::unique_ptr<internal::LoaderController> loader_controller_;
 
   // The loader is used to load the change lists.
-  scoped_ptr<internal::ChangeListLoader> change_list_loader_;
+  std::unique_ptr<internal::ChangeListLoader> change_list_loader_;
 
-  scoped_ptr<internal::DirectoryLoader> directory_loader_;
+  std::unique_ptr<internal::DirectoryLoader> directory_loader_;
 
-  scoped_ptr<internal::SyncClient> sync_client_;
+  std::unique_ptr<internal::SyncClient> sync_client_;
 
   base::ObserverList<FileSystemObserver> observers_;
 
@@ -286,19 +286,20 @@ class FileSystem : public FileSystemInterface,
   base::FilePath temporary_file_directory_;
 
   // Implementation of each file system operation.
-  scoped_ptr<file_system::CopyOperation> copy_operation_;
-  scoped_ptr<file_system::CreateDirectoryOperation> create_directory_operation_;
-  scoped_ptr<file_system::CreateFileOperation> create_file_operation_;
-  scoped_ptr<file_system::MoveOperation> move_operation_;
-  scoped_ptr<file_system::OpenFileOperation> open_file_operation_;
-  scoped_ptr<file_system::RemoveOperation> remove_operation_;
-  scoped_ptr<file_system::TouchOperation> touch_operation_;
-  scoped_ptr<file_system::TruncateOperation> truncate_operation_;
-  scoped_ptr<file_system::DownloadOperation> download_operation_;
-  scoped_ptr<file_system::SearchOperation> search_operation_;
-  scoped_ptr<file_system::GetFileForSavingOperation>
+  std::unique_ptr<file_system::CopyOperation> copy_operation_;
+  std::unique_ptr<file_system::CreateDirectoryOperation>
+      create_directory_operation_;
+  std::unique_ptr<file_system::CreateFileOperation> create_file_operation_;
+  std::unique_ptr<file_system::MoveOperation> move_operation_;
+  std::unique_ptr<file_system::OpenFileOperation> open_file_operation_;
+  std::unique_ptr<file_system::RemoveOperation> remove_operation_;
+  std::unique_ptr<file_system::TouchOperation> touch_operation_;
+  std::unique_ptr<file_system::TruncateOperation> truncate_operation_;
+  std::unique_ptr<file_system::DownloadOperation> download_operation_;
+  std::unique_ptr<file_system::SearchOperation> search_operation_;
+  std::unique_ptr<file_system::GetFileForSavingOperation>
       get_file_for_saving_operation_;
-  scoped_ptr<file_system::SetPropertyOperation> set_property_operation_;
+  std::unique_ptr<file_system::SetPropertyOperation> set_property_operation_;
 
   base::ThreadChecker thread_checker_;
 

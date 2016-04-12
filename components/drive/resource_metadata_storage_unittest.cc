@@ -69,8 +69,8 @@ class ResourceMetadataStorageTest : public testing::Test {
 
   content::TestBrowserThreadBundle thread_bundle_;
   base::ScopedTempDir temp_dir_;
-  scoped_ptr<ResourceMetadataStorage,
-             test_util::DestroyHelperForTests> storage_;
+  std::unique_ptr<ResourceMetadataStorage, test_util::DestroyHelperForTests>
+      storage_;
 };
 
 TEST_F(ResourceMetadataStorageTest, LargestChangestamp) {
@@ -164,7 +164,8 @@ TEST_F(ResourceMetadataStorageTest, Iterator) {
 
   // Iterate and check the result.
   std::map<std::string, ResourceEntry> found_entries;
-  scoped_ptr<ResourceMetadataStorage::Iterator> it = storage_->GetIterator();
+  std::unique_ptr<ResourceMetadataStorage::Iterator> it =
+      storage_->GetIterator();
   ASSERT_TRUE(it);
   for (; !it->IsAtEnd(); it->Advance()) {
     const ResourceEntry& entry = it->GetValue();

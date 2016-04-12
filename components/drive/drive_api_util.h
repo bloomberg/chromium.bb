@@ -5,10 +5,10 @@
 #ifndef COMPONENTS_DRIVE_DRIVE_API_UTIL_H_
 #define COMPONENTS_DRIVE_DRIVE_API_UTIL_H_
 
+#include <memory>
 #include <string>
 
 #include "base/md5.h"
-#include "base/memory/scoped_ptr.h"
 #include "google_apis/drive/drive_api_error_codes.h"
 #include "google_apis/drive/drive_common_callbacks.h"
 

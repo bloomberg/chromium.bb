@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -17,7 +18,6 @@
 #include "base/i18n/icu_string_conversions.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -44,7 +44,8 @@ std::string ReadStringFromGDocFile(const base::FilePath& file_path,
 
   JSONFileValueDeserializer reader(file_path);
   std::string error_message;
-  scoped_ptr<base::Value> root_value(reader.Deserialize(NULL, &error_message));
+  std::unique_ptr<base::Value> root_value(
+      reader.Deserialize(NULL, &error_message));
   if (!root_value) {
     LOG(WARNING) << "Failed to parse " << file_path.value() << " as JSON."
                  << " error = " << error_message;

@@ -6,13 +6,13 @@
 #define COMPONENTS_DRIVE_DRIVE_APP_REGISTRY_H_
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
@@ -110,7 +110,7 @@ class DriveAppRegistry {
   // Part of Update(). Runs upon the completion of fetching the Drive apps
   // data from the server.
   void UpdateAfterGetAppList(google_apis::DriveApiErrorCode gdata_error,
-                             scoped_ptr<google_apis::AppList> app_list);
+                             std::unique_ptr<google_apis::AppList> app_list);
 
   // Part of UninstallApp(). Receives the response from the server.
   void OnAppUninstalled(const std::string& app_id,

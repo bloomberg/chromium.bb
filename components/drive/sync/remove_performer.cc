@@ -185,7 +185,7 @@ void RemovePerformer::UnparentResourceAfterGetFileResource(
     const FileOperationCallback& callback,
     const std::string& local_id,
     google_apis::DriveApiErrorCode status,
-    scoped_ptr<google_apis::FileResource> file_resource) {
+    std::unique_ptr<google_apis::FileResource> file_resource) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
 

@@ -467,7 +467,8 @@ class DriveServiceInterface : public DriveServiceBatchOperationsInterface {
       const google_apis::EntryActionCallback& callback) = 0;
 
   // Starts batch request and returns |BatchRequestConfigurator|.
-  virtual scoped_ptr<BatchRequestConfiguratorInterface> StartBatchRequest() = 0;
+  virtual std::unique_ptr<BatchRequestConfiguratorInterface>
+  StartBatchRequest() = 0;
 };
 
 }  // namespace drive

@@ -5,9 +5,10 @@
 #ifndef COMPONENTS_DRIVE_FILE_SYSTEM_GET_FILE_FOR_SAVING_OPERATION_H_
 #define COMPONENTS_DRIVE_FILE_SYSTEM_GET_FILE_FOR_SAVING_OPERATION_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "components/drive/file_errors.h"
@@ -71,25 +72,25 @@ class GetFileForSavingOperation {
   void GetFileForSavingAfterDownload(const GetFileCallback& callback,
                                      FileError error,
                                      const base::FilePath& cache_path,
-                                     scoped_ptr<ResourceEntry> entry);
+                                     std::unique_ptr<ResourceEntry> entry);
   void GetFileForSavingAfterOpenForWrite(
       const GetFileCallback& callback,
       const base::FilePath& cache_path,
-      scoped_ptr<ResourceEntry> entry,
-      scoped_ptr<base::ScopedClosureRunner>* file_closer,
+      std::unique_ptr<ResourceEntry> entry,
+      std::unique_ptr<base::ScopedClosureRunner>* file_closer,
       FileError error);
   void GetFileForSavingAfterWatch(const GetFileCallback& callback,
                                   const base::FilePath& cache_path,
-                                  scoped_ptr<ResourceEntry> entry,
+                                  std::unique_ptr<ResourceEntry> entry,
                                   bool success);
   // Called when the cache file for |local_id| is written.
   void OnWriteEvent(const std::string& local_id,
-                    scoped_ptr<base::ScopedClosureRunner> file_closer);
+                    std::unique_ptr<base::ScopedClosureRunner> file_closer);
 
   EventLogger* logger_;
-  scoped_ptr<CreateFileOperation> create_file_operation_;
-  scoped_ptr<DownloadOperation> download_operation_;
-  scoped_ptr<internal::FileWriteWatcher> file_write_watcher_;
+  std::unique_ptr<CreateFileOperation> create_file_operation_;
+  std::unique_ptr<DownloadOperation> download_operation_;
+  std::unique_ptr<internal::FileWriteWatcher> file_write_watcher_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   OperationDelegate* delegate_;
   internal::ResourceMetadata* metadata_;

@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/i18n/string_search.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
@@ -55,15 +56,16 @@ bool CompareByTimestamp(const ResourceEntry& a, const ResourceEntry& b) {
 }
 
 struct ResultCandidateComparator {
-  bool operator()(const scoped_ptr<ResultCandidate>& a,
-                  const scoped_ptr<ResultCandidate>& b) const {
+  bool operator()(const std::unique_ptr<ResultCandidate>& a,
+                  const std::unique_ptr<ResultCandidate>& b) const {
     return CompareByTimestamp(a->entry, b->entry);
   }
 };
 
-typedef std::priority_queue<scoped_ptr<ResultCandidate>,
-                            std::vector<scoped_ptr<ResultCandidate>>,
-                            ResultCandidateComparator> ResultCandidateQueue;
+typedef std::priority_queue<std::unique_ptr<ResultCandidate>,
+                            std::vector<std::unique_ptr<ResultCandidate>>,
+                            ResultCandidateComparator>
+    ResultCandidateQueue;
 
 // Classifies the given entry as hidden if it's not under specific directories.
 class HiddenEntryClassifier {
@@ -155,8 +157,8 @@ FileError MaybeAddEntryToResult(
   // Make space for |entry| when appropriate.
   if (result_candidates->size() == at_most_num_matches)
     result_candidates->pop();
-  result_candidates->push(make_scoped_ptr(
-      new ResultCandidate(it->GetID(), entry, highlighted)));
+  result_candidates->push(
+      base::WrapUnique(new ResultCandidate(it->GetID(), entry, highlighted)));
   return FILE_ERROR_OK;
 }
 
@@ -192,7 +194,8 @@ FileError SearchMetadataOnBlockingPool(ResourceMetadata* resource_metadata,
                                                 mydrive.local_id());
 
   // Iterate over entries.
-  scoped_ptr<ResourceMetadata::Iterator> it = resource_metadata->GetIterator();
+  std::unique_ptr<ResourceMetadata::Iterator> it =
+      resource_metadata->GetIterator();
   for (; !it->IsAtEnd(); it->Advance()) {
     FileError error = MaybeAddEntryToResult(
         resource_metadata, it.get(), queries, predicate, at_most_num_matches,
@@ -225,10 +228,11 @@ FileError SearchMetadataOnBlockingPool(ResourceMetadata* resource_metadata,
 }
 
 // Runs the SearchMetadataCallback and updates the histogram.
-void RunSearchMetadataCallback(const SearchMetadataCallback& callback,
-                               const base::TimeTicks& start_time,
-                               scoped_ptr<MetadataSearchResultVector> results,
-                               FileError error) {
+void RunSearchMetadataCallback(
+    const SearchMetadataCallback& callback,
+    const base::TimeTicks& start_time,
+    std::unique_ptr<MetadataSearchResultVector> results,
+    FileError error) {
   if (error != FILE_ERROR_OK)
     results.reset();
   callback.Run(error, std::move(results));
@@ -266,7 +270,7 @@ void SearchMetadata(
 
   const base::TimeTicks start_time = base::TimeTicks::Now();
 
-  scoped_ptr<MetadataSearchResultVector> results(
+  std::unique_ptr<MetadataSearchResultVector> results(
       new MetadataSearchResultVector);
   MetadataSearchResultVector* results_ptr = results.get();
   base::PostTaskAndReplyWithResult(

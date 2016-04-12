@@ -22,7 +22,7 @@ class MoveOperationTest : public OperationTestBase {
                                       metadata()));
   }
 
-  scoped_ptr<MoveOperation> operation_;
+  std::unique_ptr<MoveOperation> operation_;
 };
 
 TEST_F(MoveOperationTest, MoveFileInSameDirectory) {

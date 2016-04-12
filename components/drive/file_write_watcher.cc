@@ -139,7 +139,7 @@ void FileWriteWatcher::FileWriteWatcherImpl::StartWatchOnFileThread(
   }
 
   // Start watching |path|.
-  scoped_ptr<PathWatchInfo> info(new PathWatchInfo(on_write_callback));
+  std::unique_ptr<PathWatchInfo> info(new PathWatchInfo(on_write_callback));
   bool ok = info->watcher.Watch(
       path,
       false,  // recursive

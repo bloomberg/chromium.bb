@@ -142,22 +142,23 @@ class OperationTestBase : public testing::Test {
  private:
   content::TestBrowserThreadBundle thread_bundle_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
-  scoped_ptr<TestingPrefServiceSimple> pref_service_;
+  std::unique_ptr<TestingPrefServiceSimple> pref_service_;
   base::ScopedTempDir temp_dir_;
 
   LoggingDelegate delegate_;
-  scoped_ptr<EventLogger> logger_;
-  scoped_ptr<FakeDriveService> fake_drive_service_;
-  scoped_ptr<JobScheduler> scheduler_;
-  scoped_ptr<internal::ResourceMetadataStorage,
-             test_util::DestroyHelperForTests> metadata_storage_;
-  scoped_ptr<FakeFreeDiskSpaceGetter> fake_free_disk_space_getter_;
-  scoped_ptr<internal::FileCache, test_util::DestroyHelperForTests> cache_;
-  scoped_ptr<internal::ResourceMetadata, test_util::DestroyHelperForTests>
+  std::unique_ptr<EventLogger> logger_;
+  std::unique_ptr<FakeDriveService> fake_drive_service_;
+  std::unique_ptr<JobScheduler> scheduler_;
+  std::unique_ptr<internal::ResourceMetadataStorage,
+                  test_util::DestroyHelperForTests>
+      metadata_storage_;
+  std::unique_ptr<FakeFreeDiskSpaceGetter> fake_free_disk_space_getter_;
+  std::unique_ptr<internal::FileCache, test_util::DestroyHelperForTests> cache_;
+  std::unique_ptr<internal::ResourceMetadata, test_util::DestroyHelperForTests>
       metadata_;
-  scoped_ptr<internal::AboutResourceLoader> about_resource_loader_;
-  scoped_ptr<internal::LoaderController> loader_controller_;
-  scoped_ptr<internal::ChangeListLoader> change_list_loader_;
+  std::unique_ptr<internal::AboutResourceLoader> about_resource_loader_;
+  std::unique_ptr<internal::LoaderController> loader_controller_;
+  std::unique_ptr<internal::ChangeListLoader> change_list_loader_;
 };
 
 }  // namespace file_system

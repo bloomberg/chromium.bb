@@ -32,7 +32,7 @@ namespace {
 // temporally assigning a path.
 FileError ResolveSearchResultOnBlockingPool(
     internal::ResourceMetadata* resource_metadata,
-    scoped_ptr<google_apis::FileList> file_list,
+    std::unique_ptr<google_apis::FileList> file_list,
     std::vector<SearchResultInfo>* result) {
   DCHECK(resource_metadata);
   DCHECK(result);
@@ -118,13 +118,14 @@ void SearchOperation::Search(const std::string& search_query,
 void SearchOperation::SearchAfterGetFileList(
     const SearchCallback& callback,
     google_apis::DriveApiErrorCode gdata_error,
-    scoped_ptr<google_apis::FileList> file_list) {
+    std::unique_ptr<google_apis::FileList> file_list) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
 
   FileError error = GDataToFileError(gdata_error);
   if (error != FILE_ERROR_OK) {
-    callback.Run(error, GURL(), scoped_ptr<std::vector<SearchResultInfo> >());
+    callback.Run(error, GURL(),
+                 std::unique_ptr<std::vector<SearchResultInfo>>());
     return;
   }
 
@@ -132,7 +133,7 @@ void SearchOperation::SearchAfterGetFileList(
 
   GURL next_url = file_list->next_link();
 
-  scoped_ptr<std::vector<SearchResultInfo> > result(
+  std::unique_ptr<std::vector<SearchResultInfo>> result(
       new std::vector<SearchResultInfo>);
   if (file_list->items().empty()) {
     // Short cut. If the resource entry is empty, we don't need to refresh
@@ -159,14 +160,15 @@ void SearchOperation::SearchAfterGetFileList(
 void SearchOperation::SearchAfterResolveSearchResult(
     const SearchCallback& callback,
     const GURL& next_link,
-    scoped_ptr<std::vector<SearchResultInfo> > result,
+    std::unique_ptr<std::vector<SearchResultInfo>> result,
     FileError error) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
   DCHECK(result);
 
   if (error != FILE_ERROR_OK) {
-    callback.Run(error, GURL(), scoped_ptr<std::vector<SearchResultInfo> >());
+    callback.Run(error, GURL(),
+                 std::unique_ptr<std::vector<SearchResultInfo>>());
     return;
   }
 

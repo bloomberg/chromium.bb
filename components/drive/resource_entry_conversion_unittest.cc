@@ -4,6 +4,7 @@
 
 #include "components/drive/resource_entry_conversion.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "components/drive/drive.pb.h"
 #include "components/drive/drive_api_util.h"
@@ -212,7 +213,7 @@ TEST(ResourceEntryConversionTest,
 
 TEST(ResourceEntryConversionTest, ConvertChangeResourceToResourceEntry) {
   google_apis::ChangeResource change_resource;
-  change_resource.set_file(make_scoped_ptr(new google_apis::FileResource));
+  change_resource.set_file(base::WrapUnique(new google_apis::FileResource));
   change_resource.set_file_id("resource_id");
   change_resource.set_modification_date(GetTestTime());
 
@@ -241,7 +242,7 @@ TEST(ResourceEntryConversionTest, ConvertChangeResourceToResourceEntry) {
 TEST(ResourceEntryConversionTest,
      ConvertChangeResourceToResourceEntry_Trashed) {
   google_apis::ChangeResource change_resource;
-  change_resource.set_file(make_scoped_ptr(new google_apis::FileResource));
+  change_resource.set_file(base::WrapUnique(new google_apis::FileResource));
   change_resource.set_file_id("resource_id");
   change_resource.set_modification_date(GetTestTime());
 

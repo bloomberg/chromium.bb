@@ -7,13 +7,13 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
@@ -61,7 +61,7 @@ class LoaderController {
   // Increments the lock count and returns an object which decrements the count
   // on its destruction.
   // While the lock count is positive, tasks will be pending.
-  scoped_ptr<base::ScopedClosureRunner> GetLock();
+  std::unique_ptr<base::ScopedClosureRunner> GetLock();
 
   // Runs the task if the lock count is 0, otherwise it will be pending.
   void ScheduleRun(const base::Closure& task);
@@ -111,10 +111,10 @@ class AboutResourceLoader {
   void UpdateAboutResourceAfterGetAbout(
       int task_id,
       google_apis::DriveApiErrorCode status,
-      scoped_ptr<google_apis::AboutResource> about_resource);
+      std::unique_ptr<google_apis::AboutResource> about_resource);
 
   JobScheduler* scheduler_;
-  scoped_ptr<google_apis::AboutResource> cached_about_resource_;
+  std::unique_ptr<google_apis::AboutResource> cached_about_resource_;
 
   // Identifier to denote the latest UpdateAboutResource call.
   int current_update_task_id_;
@@ -185,7 +185,7 @@ class ChangeListLoader {
   void LoadAfterGetAboutResource(
       int64_t local_changestamp,
       google_apis::DriveApiErrorCode status,
-      scoped_ptr<google_apis::AboutResource> about_resource);
+      std::unique_ptr<google_apis::AboutResource> about_resource);
 
   // Part of Load().
   // This function should be called when the change list load is complete.
@@ -194,8 +194,9 @@ class ChangeListLoader {
 
   // Called when the loading about_resource_loader_->UpdateAboutResource is
   // completed.
-  void OnAboutResourceUpdated(google_apis::DriveApiErrorCode error,
-                              scoped_ptr<google_apis::AboutResource> resource);
+  void OnAboutResourceUpdated(
+      google_apis::DriveApiErrorCode error,
+      std::unique_ptr<google_apis::AboutResource> resource);
 
   // ================= Implementation for change list loading =================
 
@@ -207,7 +208,7 @@ class ChangeListLoader {
   // Part of LoadChangeListFromServer().
   // Called when the entire change list is loaded.
   void LoadChangeListFromServerAfterLoadChangeList(
-      scoped_ptr<google_apis::AboutResource> about_resource,
+      std::unique_ptr<google_apis::AboutResource> about_resource,
       bool is_delta_update,
       FileError error,
       ScopedVector<ChangeList> change_lists);
@@ -222,7 +223,7 @@ class ChangeListLoader {
 
   EventLogger* logger_;  // Not owned.
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
-  scoped_ptr<base::CancellationFlag> in_shutdown_;
+  std::unique_ptr<base::CancellationFlag> in_shutdown_;
   ResourceMetadata* resource_metadata_;  // Not owned.
   JobScheduler* scheduler_;  // Not owned.
   AboutResourceLoader* about_resource_loader_;  // Not owned.
@@ -232,7 +233,7 @@ class ChangeListLoader {
   FileOperationCallback pending_update_check_callback_;
 
   // Running feed fetcher.
-  scoped_ptr<FeedFetcher> change_feed_fetcher_;
+  std::unique_ptr<FeedFetcher> change_feed_fetcher_;
 
   // True if the full resource list is loaded (i.e. the resource metadata is
   // stored locally).

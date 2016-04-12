@@ -5,12 +5,14 @@
 #include "components/drive/change_list_loader.h"
 
 #include <stddef.h>
+
 #include <set>
 #include <utility>
 
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/synchronization/cancellation_flag.h"
@@ -65,7 +67,7 @@ class FullFeedFetcher : public ChangeListLoader::FeedFetcher {
  private:
   void OnFileListFetched(const FeedFetcherCallback& callback,
                          google_apis::DriveApiErrorCode status,
-                         scoped_ptr<google_apis::FileList> file_list) {
+                         std::unique_ptr<google_apis::FileList> file_list) {
     DCHECK(thread_checker_.CalledOnValidThread());
     DCHECK(!callback.is_null());
 
@@ -125,9 +127,10 @@ class DeltaFeedFetcher : public ChangeListLoader::FeedFetcher {
   }
 
  private:
-  void OnChangeListFetched(const FeedFetcherCallback& callback,
-                           google_apis::DriveApiErrorCode status,
-                           scoped_ptr<google_apis::ChangeList> change_list) {
+  void OnChangeListFetched(
+      const FeedFetcherCallback& callback,
+      google_apis::DriveApiErrorCode status,
+      std::unique_ptr<google_apis::ChangeList> change_list) {
     DCHECK(thread_checker_.CalledOnValidThread());
     DCHECK(!callback.is_null());
 
@@ -174,13 +177,12 @@ LoaderController::~LoaderController() {
   DCHECK(thread_checker_.CalledOnValidThread());
 }
 
-scoped_ptr<base::ScopedClosureRunner> LoaderController::GetLock() {
+std::unique_ptr<base::ScopedClosureRunner> LoaderController::GetLock() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   ++lock_count_;
-  return make_scoped_ptr(new base::ScopedClosureRunner(
-      base::Bind(&LoaderController::Unlock,
-                 weak_ptr_factory_.GetWeakPtr())));
+  return base::WrapUnique(new base::ScopedClosureRunner(
+      base::Bind(&LoaderController::Unlock, weak_ptr_factory_.GetWeakPtr())));
 }
 
 void LoaderController::ScheduleRun(const base::Closure& task) {
@@ -230,9 +232,8 @@ void AboutResourceLoader::GetAboutResource(
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(
-            callback,
-            google_apis::HTTP_NO_CONTENT,
-            base::Passed(scoped_ptr<google_apis::AboutResource>(
+            callback, google_apis::HTTP_NO_CONTENT,
+            base::Passed(std::unique_ptr<google_apis::AboutResource>(
                 new google_apis::AboutResource(*cached_about_resource_)))));
   } else {
     UpdateAboutResource(callback);
@@ -256,7 +257,7 @@ void AboutResourceLoader::UpdateAboutResource(
 void AboutResourceLoader::UpdateAboutResourceAfterGetAbout(
     int task_id,
     google_apis::DriveApiErrorCode status,
-    scoped_ptr<google_apis::AboutResource> about_resource) {
+    std::unique_ptr<google_apis::AboutResource> about_resource) {
   DCHECK(thread_checker_.CalledOnValidThread());
   FileError error = GDataToFileError(status);
 
@@ -266,7 +267,7 @@ void AboutResourceLoader::UpdateAboutResourceAfterGetAbout(
 
   if (error != FILE_ERROR_OK) {
     for (size_t i = 0; i < callbacks.size(); ++i)
-      callbacks[i].Run(status, scoped_ptr<google_apis::AboutResource>());
+      callbacks[i].Run(status, std::unique_ptr<google_apis::AboutResource>());
     return;
   }
 
@@ -283,7 +284,7 @@ void AboutResourceLoader::UpdateAboutResourceAfterGetAbout(
   for (size_t i = 0; i < callbacks.size(); ++i) {
     callbacks[i].Run(
         status,
-        make_scoped_ptr(new google_apis::AboutResource(*about_resource)));
+        base::WrapUnique(new google_apis::AboutResource(*about_resource)));
   }
 }
 
@@ -423,7 +424,7 @@ void ChangeListLoader::LoadAfterGetLargestChangestamp(
 void ChangeListLoader::LoadAfterGetAboutResource(
     int64_t local_changestamp,
     google_apis::DriveApiErrorCode status,
-    scoped_ptr<google_apis::AboutResource> about_resource) {
+    std::unique_ptr<google_apis::AboutResource> about_resource) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   FileError error = GDataToFileError(status);
@@ -477,7 +478,7 @@ void ChangeListLoader::OnChangeListLoadComplete(FileError error) {
 
 void ChangeListLoader::OnAboutResourceUpdated(
     google_apis::DriveApiErrorCode error,
-    scoped_ptr<google_apis::AboutResource> resource) {
+    std::unique_ptr<google_apis::AboutResource> resource) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (drive::GDataToFileError(error) != drive::FILE_ERROR_OK) {
@@ -511,13 +512,13 @@ void ChangeListLoader::LoadChangeListFromServer(int64_t start_changestamp) {
   change_feed_fetcher_->Run(
       base::Bind(&ChangeListLoader::LoadChangeListFromServerAfterLoadChangeList,
                  weak_ptr_factory_.GetWeakPtr(),
-                 base::Passed(make_scoped_ptr(new google_apis::AboutResource(
+                 base::Passed(base::WrapUnique(new google_apis::AboutResource(
                      *about_resource_loader_->cached_about_resource()))),
                  is_delta_update));
 }
 
 void ChangeListLoader::LoadChangeListFromServerAfterLoadChangeList(
-    scoped_ptr<google_apis::AboutResource> about_resource,
+    std::unique_ptr<google_apis::AboutResource> about_resource,
     bool is_delta_update,
     FileError error,
     ScopedVector<ChangeList> change_lists) {

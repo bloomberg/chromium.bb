@@ -5,9 +5,10 @@
 #ifndef COMPONENTS_DRIVE_SYNC_ENTRY_UPDATE_PERFORMER_H_
 #define COMPONENTS_DRIVE_SYNC_ENTRY_UPDATE_PERFORMER_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "components/drive/file_errors.h"
@@ -66,17 +67,17 @@ class EntryUpdatePerformer {
   // Part of UpdateEntry(). Called after local metadata look up.
   void UpdateEntryAfterPrepare(const ClientContext& context,
                                const FileOperationCallback& callback,
-                               scoped_ptr<LocalState> local_state,
+                               std::unique_ptr<LocalState> local_state,
                                FileError error);
 
   // Part of UpdateEntry(). Called after UpdateResource is completed.
   void UpdateEntryAfterUpdateResource(
       const ClientContext& context,
       const FileOperationCallback& callback,
-      scoped_ptr<LocalState> local_state,
-      scoped_ptr<base::ScopedClosureRunner> loader_lock,
+      std::unique_ptr<LocalState> local_state,
+      std::unique_ptr<base::ScopedClosureRunner> loader_lock,
       google_apis::DriveApiErrorCode status,
-      scoped_ptr<google_apis::FileResource> entry);
+      std::unique_ptr<google_apis::FileResource> entry);
 
   // Part of UpdateEntry(). Called after FinishUpdate is completed.
   void UpdateEntryAfterFinish(const FileOperationCallback& callback,
@@ -89,8 +90,8 @@ class EntryUpdatePerformer {
   ResourceMetadata* metadata_;
   FileCache* cache_;
   LoaderController* loader_controller_;
-  scoped_ptr<RemovePerformer> remove_performer_;
-  scoped_ptr<EntryRevertPerformer> entry_revert_performer_;
+  std::unique_ptr<RemovePerformer> remove_performer_;
+  std::unique_ptr<EntryRevertPerformer> entry_revert_performer_;
 
   base::ThreadChecker thread_checker_;
 

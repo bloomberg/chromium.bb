@@ -164,11 +164,11 @@ class ResourceMetadataTest : public testing::Test {
 
   base::ScopedTempDir temp_dir_;
   content::TestBrowserThreadBundle thread_bundle_;
-  scoped_ptr<ResourceMetadataStorage, test_util::DestroyHelperForTests>
+  std::unique_ptr<ResourceMetadataStorage, test_util::DestroyHelperForTests>
       metadata_storage_;
-  scoped_ptr<FakeFreeDiskSpaceGetter> fake_free_disk_space_getter_;
-  scoped_ptr<FileCache, test_util::DestroyHelperForTests> cache_;
-  scoped_ptr<ResourceMetadata, test_util::DestroyHelperForTests>
+  std::unique_ptr<FakeFreeDiskSpaceGetter> fake_free_disk_space_getter_;
+  std::unique_ptr<FileCache, test_util::DestroyHelperForTests> cache_;
+  std::unique_ptr<ResourceMetadata, test_util::DestroyHelperForTests>
       resource_metadata_;
 };
 
@@ -549,7 +549,8 @@ TEST_F(ResourceMetadataTest, GetResourceEntryById) {
 }
 
 TEST_F(ResourceMetadataTest, Iterate) {
-  scoped_ptr<ResourceMetadata::Iterator> it = resource_metadata_->GetIterator();
+  std::unique_ptr<ResourceMetadata::Iterator> it =
+      resource_metadata_->GetIterator();
   ASSERT_TRUE(it);
 
   int file_count = 0, directory_count = 0;

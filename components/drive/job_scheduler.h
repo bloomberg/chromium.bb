@@ -7,12 +7,12 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/id_map.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
 #include "components/drive/drive_uploader.h"
@@ -274,32 +274,31 @@ class JobScheduler
   bool OnJobDone(JobID job_id, google_apis::DriveApiErrorCode error);
 
   // Callback for job finishing with a FileListCallback.
-  void OnGetFileListJobDone(
-      JobID job_id,
-      const google_apis::FileListCallback& callback,
-      google_apis::DriveApiErrorCode error,
-      scoped_ptr<google_apis::FileList> file_list);
+  void OnGetFileListJobDone(JobID job_id,
+                            const google_apis::FileListCallback& callback,
+                            google_apis::DriveApiErrorCode error,
+                            std::unique_ptr<google_apis::FileList> file_list);
 
   // Callback for job finishing with a ChangeListCallback.
   void OnGetChangeListJobDone(
       JobID job_id,
       const google_apis::ChangeListCallback& callback,
       google_apis::DriveApiErrorCode error,
-      scoped_ptr<google_apis::ChangeList> change_list);
+      std::unique_ptr<google_apis::ChangeList> change_list);
 
   // Callback for job finishing with a FileResourceCallback.
   void OnGetFileResourceJobDone(
       JobID job_id,
       const google_apis::FileResourceCallback& callback,
       google_apis::DriveApiErrorCode error,
-      scoped_ptr<google_apis::FileResource> entry);
+      std::unique_ptr<google_apis::FileResource> entry);
 
   // Callback for job finishing with a AboutResourceCallback.
   void OnGetAboutResourceJobDone(
       JobID job_id,
       const google_apis::AboutResourceCallback& callback,
       google_apis::DriveApiErrorCode error,
-      scoped_ptr<google_apis::AboutResource> about_resource);
+      std::unique_ptr<google_apis::AboutResource> about_resource);
 
   // Callback for job finishing with a GetShareUrlCallback.
   void OnGetShareUrlJobDone(
@@ -309,11 +308,10 @@ class JobScheduler
       const GURL& share_url);
 
   // Callback for job finishing with a AppListCallback.
-  void OnGetAppListJobDone(
-      JobID job_id,
-      const google_apis::AppListCallback& callback,
-      google_apis::DriveApiErrorCode error,
-      scoped_ptr<google_apis::AppList> app_list);
+  void OnGetAppListJobDone(JobID job_id,
+                           const google_apis::AppListCallback& callback,
+                           google_apis::DriveApiErrorCode error,
+                           std::unique_ptr<google_apis::AppList> app_list);
 
   // Callback for job finishing with a EntryActionCallback.
   void OnEntryActionJobDone(JobID job_id,
@@ -334,7 +332,7 @@ class JobScheduler
       const google_apis::FileResourceCallback& callback,
       google_apis::DriveApiErrorCode error,
       const GURL& upload_location,
-      scoped_ptr<google_apis::FileResource> entry);
+      std::unique_ptr<google_apis::FileResource> entry);
 
   // Callback for DriveUploader::ResumeUploadFile().
   void OnResumeUploadFileDone(
@@ -343,7 +341,7 @@ class JobScheduler
       const google_apis::FileResourceCallback& callback,
       google_apis::DriveApiErrorCode error,
       const GURL& upload_location,
-      scoped_ptr<google_apis::FileResource> entry);
+      std::unique_ptr<google_apis::FileResource> entry);
 
   // Updates the progress status of the specified job.
   void UpdateProgress(JobID job_id, int64_t progress, int64_t total);
@@ -385,7 +383,7 @@ class JobScheduler
   bool disable_throttling_;
 
   // The queues of jobs.
-  scoped_ptr<JobQueue> queue_[NUM_QUEUES];
+  std::unique_ptr<JobQueue> queue_[NUM_QUEUES];
 
   // The list of queued job info indexed by job IDs.
   typedef IDMap<JobEntry, IDMapOwnPointer> JobIDMap;
@@ -397,7 +395,7 @@ class JobScheduler
   EventLogger* logger_;
   DriveServiceInterface* drive_service_;
   base::SequencedTaskRunner* blocking_task_runner_;
-  scoped_ptr<DriveUploaderInterface> uploader_;
+  std::unique_ptr<DriveUploaderInterface> uploader_;
 
   PrefService* pref_service_;
 

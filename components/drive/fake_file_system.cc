@@ -264,7 +264,7 @@ void FakeFileSystem::GetFileContentAfterGetResourceEntry(
     const google_apis::GetContentCallback& get_content_callback,
     const FileOperationCallback& completion_callback,
     FileError error,
-    scoped_ptr<ResourceEntry> entry) {
+    std::unique_ptr<ResourceEntry> entry) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (error != FILE_ERROR_OK) {
@@ -295,7 +295,7 @@ void FakeFileSystem::GetFileContentAfterGetFileResource(
     const google_apis::GetContentCallback& get_content_callback,
     const FileOperationCallback& completion_callback,
     google_apis::DriveApiErrorCode gdata_error,
-    scoped_ptr<google_apis::FileResource> gdata_entry) {
+    std::unique_ptr<google_apis::FileResource> gdata_entry) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   FileError error = GDataToFileError(gdata_error);
@@ -305,7 +305,7 @@ void FakeFileSystem::GetFileContentAfterGetFileResource(
   }
   DCHECK(gdata_entry);
 
-  scoped_ptr<ResourceEntry> entry(new ResourceEntry);
+  std::unique_ptr<ResourceEntry> entry(new ResourceEntry);
   std::string parent_resource_id;
   bool converted = ConvertFileResourceToResourceEntry(
       *gdata_entry, entry.get(), &parent_resource_id);
@@ -349,17 +349,17 @@ void FakeFileSystem::GetFileContentAfterDownloadFile(
 void FakeFileSystem::GetResourceEntryAfterGetAboutResource(
     const GetResourceEntryCallback& callback,
     google_apis::DriveApiErrorCode gdata_error,
-    scoped_ptr<google_apis::AboutResource> about_resource) {
+    std::unique_ptr<google_apis::AboutResource> about_resource) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   FileError error = GDataToFileError(gdata_error);
   if (error != FILE_ERROR_OK) {
-    callback.Run(error, scoped_ptr<ResourceEntry>());
+    callback.Run(error, std::unique_ptr<ResourceEntry>());
     return;
   }
 
   DCHECK(about_resource);
-  scoped_ptr<ResourceEntry> root(new ResourceEntry);
+  std::unique_ptr<ResourceEntry> root(new ResourceEntry);
   root->mutable_file_info()->set_is_directory(true);
   root->set_resource_id(about_resource->root_folder_id());
   root->set_title(util::kDriveMyDriveRootDirName);
@@ -370,11 +370,11 @@ void FakeFileSystem::GetResourceEntryAfterGetParentEntryInfo(
     const base::FilePath& base_name,
     const GetResourceEntryCallback& callback,
     FileError error,
-    scoped_ptr<ResourceEntry> parent_entry) {
+    std::unique_ptr<ResourceEntry> parent_entry) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (error != FILE_ERROR_OK) {
-    callback.Run(error, scoped_ptr<ResourceEntry>());
+    callback.Run(error, std::unique_ptr<ResourceEntry>());
     return;
   }
 
@@ -390,19 +390,19 @@ void FakeFileSystem::GetResourceEntryAfterGetFileList(
     const base::FilePath& base_name,
     const GetResourceEntryCallback& callback,
     google_apis::DriveApiErrorCode gdata_error,
-    scoped_ptr<google_apis::FileList> file_list) {
+    std::unique_ptr<google_apis::FileList> file_list) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   FileError error = GDataToFileError(gdata_error);
   if (error != FILE_ERROR_OK) {
-    callback.Run(error, scoped_ptr<ResourceEntry>());
+    callback.Run(error, std::unique_ptr<ResourceEntry>());
     return;
   }
 
   DCHECK(file_list);
   const ScopedVector<google_apis::FileResource>& entries = file_list->items();
   for (size_t i = 0; i < entries.size(); ++i) {
-    scoped_ptr<ResourceEntry> entry(new ResourceEntry);
+    std::unique_ptr<ResourceEntry> entry(new ResourceEntry);
     std::string parent_resource_id;
     bool converted = ConvertFileResourceToResourceEntry(
         *entries[i], entry.get(), &parent_resource_id);
@@ -416,7 +416,7 @@ void FakeFileSystem::GetResourceEntryAfterGetFileList(
     }
   }
 
-  callback.Run(FILE_ERROR_NOT_FOUND, scoped_ptr<ResourceEntry>());
+  callback.Run(FILE_ERROR_NOT_FOUND, std::unique_ptr<ResourceEntry>());
 }
 
 }  // namespace test_util

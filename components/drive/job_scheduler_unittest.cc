@@ -38,7 +38,7 @@ const int64_t kDummyDownloadFileSize = 0;
 void CopyTitleFromFileResourceCallback(
     std::vector<std::string>* title_list_out,
     google_apis::DriveApiErrorCode error_in,
-    scoped_ptr<google_apis::FileResource> entry_in) {
+    std::unique_ptr<google_apis::FileResource> entry_in) {
   title_list_out->push_back(entry_in->title());
 }
 
@@ -187,19 +187,19 @@ class JobSchedulerTest : public testing::Test {
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
-  scoped_ptr<TestingPrefServiceSimple> pref_service_;
-  scoped_ptr<test_util::FakeNetworkChangeNotifier>
+  std::unique_ptr<TestingPrefServiceSimple> pref_service_;
+  std::unique_ptr<test_util::FakeNetworkChangeNotifier>
       fake_network_change_notifier_;
-  scoped_ptr<EventLogger> logger_;
-  scoped_ptr<CancelTestableFakeDriveService> fake_drive_service_;
-  scoped_ptr<JobScheduler> scheduler_;
+  std::unique_ptr<EventLogger> logger_;
+  std::unique_ptr<CancelTestableFakeDriveService> fake_drive_service_;
+  std::unique_ptr<JobScheduler> scheduler_;
 };
 
 TEST_F(JobSchedulerTest, GetAboutResource) {
   ConnectToWifi();
 
   google_apis::DriveApiErrorCode error = google_apis::DRIVE_OTHER_ERROR;
-  scoped_ptr<google_apis::AboutResource> about_resource;
+  std::unique_ptr<google_apis::AboutResource> about_resource;
   scheduler_->GetAboutResource(
       google_apis::test_util::CreateCopyResultCallback(
           &error, &about_resource));
@@ -212,7 +212,7 @@ TEST_F(JobSchedulerTest, GetAppList) {
   ConnectToWifi();
 
   google_apis::DriveApiErrorCode error = google_apis::DRIVE_OTHER_ERROR;
-  scoped_ptr<google_apis::AppList> app_list;
+  std::unique_ptr<google_apis::AppList> app_list;
 
   scheduler_->GetAppList(
       google_apis::test_util::CreateCopyResultCallback(&error, &app_list));
@@ -226,7 +226,7 @@ TEST_F(JobSchedulerTest, GetAllFileList) {
   ConnectToWifi();
 
   google_apis::DriveApiErrorCode error = google_apis::DRIVE_OTHER_ERROR;
-  scoped_ptr<google_apis::FileList> file_list;
+  std::unique_ptr<google_apis::FileList> file_list;
 
   scheduler_->GetAllFileList(
       google_apis::test_util::CreateCopyResultCallback(&error, &file_list));
@@ -240,7 +240,7 @@ TEST_F(JobSchedulerTest, GetFileListInDirectory) {
   ConnectToWifi();
 
   google_apis::DriveApiErrorCode error = google_apis::DRIVE_OTHER_ERROR;
-  scoped_ptr<google_apis::FileList> file_list;
+  std::unique_ptr<google_apis::FileList> file_list;
 
   scheduler_->GetFileListInDirectory(
       fake_drive_service_->GetRootResourceId(),
@@ -255,7 +255,7 @@ TEST_F(JobSchedulerTest, Search) {
   ConnectToWifi();
 
   google_apis::DriveApiErrorCode error = google_apis::DRIVE_OTHER_ERROR;
-  scoped_ptr<google_apis::FileList> file_list;
+  std::unique_ptr<google_apis::FileList> file_list;
 
   scheduler_->Search(
       "File",  // search query
@@ -276,7 +276,7 @@ TEST_F(JobSchedulerTest, GetChangeList) {
 
   // Create a new directory.
   {
-    scoped_ptr<google_apis::FileResource> entry;
+    std::unique_ptr<google_apis::FileResource> entry;
     fake_drive_service_->AddNewDirectory(
         fake_drive_service_->GetRootResourceId(), "new directory",
         AddNewDirectoryOptions(),
@@ -286,7 +286,7 @@ TEST_F(JobSchedulerTest, GetChangeList) {
   }
 
   error = google_apis::DRIVE_OTHER_ERROR;
-  scoped_ptr<google_apis::ChangeList> change_list;
+  std::unique_ptr<google_apis::ChangeList> change_list;
   scheduler_->GetChangeList(
       old_largest_change_id + 1,
       google_apis::test_util::CreateCopyResultCallback(&error, &change_list));
@@ -301,7 +301,7 @@ TEST_F(JobSchedulerTest, GetRemainingChangeList) {
   fake_drive_service_->set_default_max_results(2);
 
   google_apis::DriveApiErrorCode error = google_apis::DRIVE_OTHER_ERROR;
-  scoped_ptr<google_apis::ChangeList> change_list;
+  std::unique_ptr<google_apis::ChangeList> change_list;
 
   scheduler_->GetChangeList(
       0,
@@ -331,7 +331,7 @@ TEST_F(JobSchedulerTest, GetRemainingFileList) {
   fake_drive_service_->set_default_max_results(2);
 
   google_apis::DriveApiErrorCode error = google_apis::DRIVE_OTHER_ERROR;
-  scoped_ptr<google_apis::FileList> file_list;
+  std::unique_ptr<google_apis::FileList> file_list;
 
   scheduler_->GetFileListInDirectory(
       fake_drive_service_->GetRootResourceId(),
@@ -360,7 +360,7 @@ TEST_F(JobSchedulerTest, GetFileResource) {
   ConnectToWifi();
 
   google_apis::DriveApiErrorCode error = google_apis::DRIVE_OTHER_ERROR;
-  scoped_ptr<google_apis::FileResource> entry;
+  std::unique_ptr<google_apis::FileResource> entry;
 
   scheduler_->GetFileResource(
       "2_file_resource_id",  // resource ID
@@ -407,7 +407,7 @@ TEST_F(JobSchedulerTest, CopyResource) {
   ConnectToWifi();
 
   google_apis::DriveApiErrorCode error = google_apis::DRIVE_OTHER_ERROR;
-  scoped_ptr<google_apis::FileResource> entry;
+  std::unique_ptr<google_apis::FileResource> entry;
 
   scheduler_->CopyResource(
       "2_file_resource_id",  // resource ID
@@ -425,7 +425,7 @@ TEST_F(JobSchedulerTest, UpdateResource) {
   ConnectToWifi();
 
   google_apis::DriveApiErrorCode error = google_apis::DRIVE_OTHER_ERROR;
-  scoped_ptr<google_apis::FileResource> entry;
+  std::unique_ptr<google_apis::FileResource> entry;
 
   scheduler_->UpdateResource(
       "2_file_resource_id",    // resource ID
@@ -473,7 +473,7 @@ TEST_F(JobSchedulerTest, AddNewDirectory) {
   ConnectToWifi();
 
   google_apis::DriveApiErrorCode error = google_apis::DRIVE_OTHER_ERROR;
-  scoped_ptr<google_apis::FileResource> entry;
+  std::unique_ptr<google_apis::FileResource> entry;
 
   scheduler_->AddNewDirectory(
       fake_drive_service_->GetRootResourceId(),  // Root directory.
@@ -490,7 +490,7 @@ TEST_F(JobSchedulerTest, PriorityHandling) {
   // following jobs from starting.
   google_apis::DriveApiErrorCode error_dontcare =
       google_apis::DRIVE_OTHER_ERROR;
-  scoped_ptr<google_apis::FileResource> entry_dontcare;
+  std::unique_ptr<google_apis::FileResource> entry_dontcare;
   for (int i = 0; i < GetMetadataQueueMaxJobCount(); ++i) {
     std::string resource_id("2_file_resource_id");
     scheduler_->GetFileResource(
@@ -539,7 +539,7 @@ TEST_F(JobSchedulerTest, NoConnectionUserInitiated) {
   std::string resource_id("2_file_resource_id");
 
   google_apis::DriveApiErrorCode error = google_apis::DRIVE_OTHER_ERROR;
-  scoped_ptr<google_apis::FileResource> entry;
+  std::unique_ptr<google_apis::FileResource> entry;
   scheduler_->GetFileResource(
       resource_id,
       ClientContext(USER_INITIATED),
@@ -555,7 +555,7 @@ TEST_F(JobSchedulerTest, NoConnectionBackground) {
   std::string resource_id("2_file_resource_id");
 
   google_apis::DriveApiErrorCode error = google_apis::DRIVE_OTHER_ERROR;
-  scoped_ptr<google_apis::FileResource> entry;
+  std::unique_ptr<google_apis::FileResource> entry;
   scheduler_->GetFileResource(
       resource_id,
       ClientContext(BACKGROUND),
@@ -600,7 +600,7 @@ TEST_F(JobSchedulerTest, DownloadFileCellularDisabled) {
   // Metadata should still work
   google_apis::DriveApiErrorCode metadata_error =
       google_apis::DRIVE_OTHER_ERROR;
-  scoped_ptr<google_apis::AboutResource> about_resource;
+  std::unique_ptr<google_apis::AboutResource> about_resource;
 
   // Try to get the metadata
   scheduler_->GetAboutResource(
@@ -655,7 +655,7 @@ TEST_F(JobSchedulerTest, DownloadFileWimaxDisabled) {
   // Metadata should still work
   google_apis::DriveApiErrorCode metadata_error =
       google_apis::DRIVE_OTHER_ERROR;
-  scoped_ptr<google_apis::AboutResource> about_resource;
+  std::unique_ptr<google_apis::AboutResource> about_resource;
 
   // Try to get the metadata
   scheduler_->GetAboutResource(
@@ -710,7 +710,7 @@ TEST_F(JobSchedulerTest, DownloadFileCellularEnabled) {
   // Metadata should still work
   google_apis::DriveApiErrorCode metadata_error =
       google_apis::DRIVE_OTHER_ERROR;
-  scoped_ptr<google_apis::AboutResource> about_resource;
+  std::unique_ptr<google_apis::AboutResource> about_resource;
 
   // Try to get the metadata
   scheduler_->GetAboutResource(
@@ -757,7 +757,7 @@ TEST_F(JobSchedulerTest, DownloadFileWimaxEnabled) {
   // Metadata should still work
   google_apis::DriveApiErrorCode metadata_error =
       google_apis::DRIVE_OTHER_ERROR;
-  scoped_ptr<google_apis::AboutResource> about_resource;
+  std::unique_ptr<google_apis::AboutResource> about_resource;
 
   // Try to get the metadata
   scheduler_->GetAboutResource(
@@ -789,8 +789,8 @@ TEST_F(JobSchedulerTest, JobInfo) {
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
   google_apis::DriveApiErrorCode error = google_apis::DRIVE_OTHER_ERROR;
-  scoped_ptr<google_apis::FileResource> entry;
-  scoped_ptr<google_apis::AboutResource> about_resource;
+  std::unique_ptr<google_apis::FileResource> entry;
+  std::unique_ptr<google_apis::AboutResource> about_resource;
   base::FilePath path;
 
   std::set<JobType> expected_types;
@@ -931,7 +931,7 @@ TEST_F(JobSchedulerTest, JobInfoProgress) {
   ASSERT_TRUE(google_apis::test_util::WriteStringToFile(path, "Hello"));
   google_apis::DriveApiErrorCode upload_error =
       google_apis::DRIVE_OTHER_ERROR;
-  scoped_ptr<google_apis::FileResource> entry;
+  std::unique_ptr<google_apis::FileResource> entry;
 
   scheduler_->UploadNewFile(
       fake_drive_service_->GetRootResourceId(), std::string("Hello").size(),
@@ -961,7 +961,7 @@ TEST_F(JobSchedulerTest, CancelPendingJob) {
 
   // Start the first job and record its job ID.
   google_apis::DriveApiErrorCode error1 = google_apis::DRIVE_OTHER_ERROR;
-  scoped_ptr<google_apis::FileResource> entry;
+  std::unique_ptr<google_apis::FileResource> entry;
   scheduler_->UploadNewFile(
       fake_drive_service_->GetRootResourceId(), std::string("Hello").size(),
       base::FilePath::FromUTF8Unsafe("dummy/path"), upload_path,
@@ -1005,7 +1005,7 @@ TEST_F(JobSchedulerTest, CancelRunningJob) {
   // Run as a cancelable task.
   fake_drive_service_->set_upload_new_file_cancelable(true);
   google_apis::DriveApiErrorCode error1 = google_apis::DRIVE_OTHER_ERROR;
-  scoped_ptr<google_apis::FileResource> entry;
+  std::unique_ptr<google_apis::FileResource> entry;
   scheduler_->UploadNewFile(
       fake_drive_service_->GetRootResourceId(), std::string("Hello").size(),
       base::FilePath::FromUTF8Unsafe("dummy/path"), upload_path,

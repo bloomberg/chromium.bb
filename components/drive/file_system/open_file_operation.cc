@@ -102,7 +102,7 @@ void OpenFileOperation::OpenFileAfterFileDownloaded(
     const OpenFileCallback& callback,
     FileError error,
     const base::FilePath& local_file_path,
-    scoped_ptr<ResourceEntry> entry) {
+    std::unique_ptr<ResourceEntry> entry) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
 
@@ -119,8 +119,8 @@ void OpenFileOperation::OpenFileAfterFileDownloaded(
     return;
   }
 
-  scoped_ptr<base::ScopedClosureRunner>* file_closer =
-      new scoped_ptr<base::ScopedClosureRunner>;
+  std::unique_ptr<base::ScopedClosureRunner>* file_closer =
+      new std::unique_ptr<base::ScopedClosureRunner>;
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(),
       FROM_HERE,
@@ -140,7 +140,7 @@ void OpenFileOperation::OpenFileAfterOpenForWrite(
     const base::FilePath& local_file_path,
     const std::string& local_id,
     const OpenFileCallback& callback,
-    scoped_ptr<base::ScopedClosureRunner>* file_closer,
+    std::unique_ptr<base::ScopedClosureRunner>* file_closer,
     FileError error) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
@@ -160,7 +160,7 @@ void OpenFileOperation::OpenFileAfterOpenForWrite(
 
 void OpenFileOperation::CloseFile(
     const std::string& local_id,
-    scoped_ptr<base::ScopedClosureRunner> file_closer) {
+    std::unique_ptr<base::ScopedClosureRunner> file_closer) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_GT(open_files_[local_id], 0);
 

@@ -28,13 +28,13 @@ class FakeFileSystemTest : public ::testing::Test {
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
-  scoped_ptr<FakeDriveService> fake_drive_service_;
-  scoped_ptr<FakeFileSystem> fake_file_system_;
+  std::unique_ptr<FakeDriveService> fake_drive_service_;
+  std::unique_ptr<FakeFileSystem> fake_file_system_;
 };
 
 TEST_F(FakeFileSystemTest, GetFileContent) {
   FileError initialize_error = FILE_ERROR_FAILED;
-  scoped_ptr<ResourceEntry> entry;
+  std::unique_ptr<ResourceEntry> entry;
   base::FilePath cache_file_path;
   google_apis::test_util::TestGetContentCallback get_content_callback;
   FileError completion_error = FILE_ERROR_FAILED;
@@ -96,7 +96,7 @@ TEST_F(FakeFileSystemTest, GetFileContent) {
 
 TEST_F(FakeFileSystemTest, GetFileContent_Directory) {
   FileError initialize_error = FILE_ERROR_FAILED;
-  scoped_ptr<ResourceEntry> entry;
+  std::unique_ptr<ResourceEntry> entry;
   base::FilePath cache_file_path;
   google_apis::test_util::TestGetContentCallback get_content_callback;
   FileError completion_error = FILE_ERROR_FAILED;
@@ -113,7 +113,7 @@ TEST_F(FakeFileSystemTest, GetFileContent_Directory) {
 
 TEST_F(FakeFileSystemTest, GetResourceEntry) {
   FileError error = FILE_ERROR_FAILED;
-  scoped_ptr<ResourceEntry> entry;
+  std::unique_ptr<ResourceEntry> entry;
   fake_file_system_->GetResourceEntry(
       util::GetDriveMyDriveRootPath().AppendASCII(
           "Directory 1/Sub Directory Folder"),
@@ -127,7 +127,7 @@ TEST_F(FakeFileSystemTest, GetResourceEntry) {
 
 TEST_F(FakeFileSystemTest, GetResourceEntry_Root) {
   FileError error = FILE_ERROR_FAILED;
-  scoped_ptr<ResourceEntry> entry;
+  std::unique_ptr<ResourceEntry> entry;
   fake_file_system_->GetResourceEntry(
       util::GetDriveMyDriveRootPath(),
       google_apis::test_util::CreateCopyResultCallback(&error, &entry));
@@ -142,7 +142,7 @@ TEST_F(FakeFileSystemTest, GetResourceEntry_Root) {
 
 TEST_F(FakeFileSystemTest, GetResourceEntry_Invalid) {
   FileError error = FILE_ERROR_FAILED;
-  scoped_ptr<ResourceEntry> entry;
+  std::unique_ptr<ResourceEntry> entry;
   fake_file_system_->GetResourceEntry(
       util::GetDriveMyDriveRootPath().AppendASCII("Invalid File Name"),
       google_apis::test_util::CreateCopyResultCallback(&error, &entry));

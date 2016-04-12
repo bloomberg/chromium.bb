@@ -2,19 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/drive/remove_stale_cache_files.h"
+
+#include <memory>
 #include <string>
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "components/drive/drive.pb.h"
 #include "components/drive/drive_test_util.h"
 #include "components/drive/fake_free_disk_space_getter.h"
 #include "components/drive/file_system_core_util.h"
-#include "components/drive/remove_stale_cache_files.h"
 #include "components/drive/resource_metadata.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "google_apis/drive/test_util.h"
@@ -50,12 +51,12 @@ class RemoveStaleCacheFilesTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
   base::ScopedTempDir temp_dir_;
 
-  scoped_ptr<ResourceMetadataStorage,
-             test_util::DestroyHelperForTests> metadata_storage_;
-  scoped_ptr<FileCache, test_util::DestroyHelperForTests> cache_;
-  scoped_ptr<ResourceMetadata, test_util::DestroyHelperForTests>
+  std::unique_ptr<ResourceMetadataStorage, test_util::DestroyHelperForTests>
+      metadata_storage_;
+  std::unique_ptr<FileCache, test_util::DestroyHelperForTests> cache_;
+  std::unique_ptr<ResourceMetadata, test_util::DestroyHelperForTests>
       resource_metadata_;
-  scoped_ptr<FakeFreeDiskSpaceGetter> fake_free_disk_space_getter_;
+  std::unique_ptr<FakeFreeDiskSpaceGetter> fake_free_disk_space_getter_;
 };
 
 TEST_F(RemoveStaleCacheFilesTest, RemoveStaleCacheFiles) {

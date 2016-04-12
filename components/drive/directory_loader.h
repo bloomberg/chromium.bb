@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
@@ -15,7 +16,6 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
 #include "components/drive/file_errors.h"
@@ -88,9 +88,9 @@ class DirectoryLoader {
   void ReadDirectoryAfterGetAboutResource(
       const std::string& local_id,
       google_apis::DriveApiErrorCode status,
-      scoped_ptr<google_apis::AboutResource> about_resource);
+      std::unique_ptr<google_apis::AboutResource> about_resource);
   void ReadDirectoryAfterCheckLocalState(
-      scoped_ptr<google_apis::AboutResource> about_resource,
+      std::unique_ptr<google_apis::AboutResource> about_resource,
       const std::string& local_id,
       const ResourceEntry* entry,
       const int64_t* local_changestamp,

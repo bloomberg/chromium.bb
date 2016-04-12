@@ -38,7 +38,7 @@ class DriveServiceInterface;
 typedef base::Callback<void(
     google_apis::DriveApiErrorCode error,
     const GURL& upload_location,
-    scoped_ptr<google_apis::FileResource> resource_entry)>
+    std::unique_ptr<google_apis::FileResource> resource_entry)>
     UploadCompletionCallback;
 
 class DriveUploaderInterface {
@@ -153,15 +153,15 @@ class DriveUploader : public DriveUploaderInterface {
  private:
   class RefCountedBatchRequest;
   struct UploadFileInfo;
-  typedef base::Callback<void(scoped_ptr<UploadFileInfo> upload_file_info)>
+  typedef base::Callback<void(std::unique_ptr<UploadFileInfo> upload_file_info)>
       StartInitiateUploadCallback;
 
   // Starts uploading a file with |upload_file_info|.
   google_apis::CancelCallback StartUploadFile(
-      scoped_ptr<UploadFileInfo> upload_file_info,
+      std::unique_ptr<UploadFileInfo> upload_file_info,
       const StartInitiateUploadCallback& start_initiate_upload_callback);
   void StartUploadFileAfterGetFileSize(
-      scoped_ptr<UploadFileInfo> upload_file_info,
+      std::unique_ptr<UploadFileInfo> upload_file_info,
       const StartInitiateUploadCallback& start_initiate_upload_callback,
       bool get_file_size_result);
 
@@ -175,7 +175,7 @@ class DriveUploader : public DriveUploaderInterface {
       const std::string& title,
       const UploadNewFileOptions& options,
       const scoped_refptr<RefCountedBatchRequest>& batch_request,
-      scoped_ptr<UploadFileInfo> upload_file_info);
+      std::unique_ptr<UploadFileInfo> upload_file_info);
 
   // Checks file size and call InitiateUploadExistingFile or
   // MultipartUploadExistingFile API.  Upon completion, OnUploadLocationReceived
@@ -187,25 +187,26 @@ class DriveUploader : public DriveUploaderInterface {
       const std::string& resource_id,
       const UploadExistingFileOptions& options,
       const scoped_refptr<RefCountedBatchRequest>& batch_request,
-      scoped_ptr<UploadFileInfo> upload_file_info);
+      std::unique_ptr<UploadFileInfo> upload_file_info);
 
   // DriveService callback for InitiateUpload.
-  void OnUploadLocationReceived(scoped_ptr<UploadFileInfo> upload_file_info,
-                                google_apis::DriveApiErrorCode code,
-                                const GURL& upload_location);
+  void OnUploadLocationReceived(
+      std::unique_ptr<UploadFileInfo> upload_file_info,
+      google_apis::DriveApiErrorCode code,
+      const GURL& upload_location);
 
   // Starts to get the current upload status for the file uploading.
   // Upon completion, OnUploadRangeResponseReceived should be called.
-  void StartGetUploadStatus(scoped_ptr<UploadFileInfo> upload_file_info);
+  void StartGetUploadStatus(std::unique_ptr<UploadFileInfo> upload_file_info);
 
   // Uploads the next chunk of data from the file.
-  void UploadNextChunk(scoped_ptr<UploadFileInfo> upload_file_info);
+  void UploadNextChunk(std::unique_ptr<UploadFileInfo> upload_file_info);
 
   // DriveService callback for ResumeUpload.
   void OnUploadRangeResponseReceived(
-      scoped_ptr<UploadFileInfo> upload_file_info,
+      std::unique_ptr<UploadFileInfo> upload_file_info,
       const google_apis::UploadRangeResponse& response,
-      scoped_ptr<google_apis::FileResource> entry);
+      std::unique_ptr<google_apis::FileResource> entry);
   void OnUploadProgress(const google_apis::ProgressCallback& callback,
                         int64_t start_position,
                         int64_t total_size,
@@ -213,13 +214,14 @@ class DriveUploader : public DriveUploaderInterface {
                         int64_t total_of_chunk);
 
   // Handles failed uploads.
-  void UploadFailed(scoped_ptr<UploadFileInfo> upload_file_info,
+  void UploadFailed(std::unique_ptr<UploadFileInfo> upload_file_info,
                     google_apis::DriveApiErrorCode error);
 
   // Handles completion/error of multipart uploading.
-  void OnMultipartUploadComplete(scoped_ptr<UploadFileInfo> upload_file_info,
-                                 google_apis::DriveApiErrorCode error,
-                                 scoped_ptr<google_apis::FileResource> entry);
+  void OnMultipartUploadComplete(
+      std::unique_ptr<UploadFileInfo> upload_file_info,
+      google_apis::DriveApiErrorCode error,
+      std::unique_ptr<google_apis::FileResource> entry);
 
   // The class is expected to run on UI thread.
   base::ThreadChecker thread_checker_;

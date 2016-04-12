@@ -932,7 +932,7 @@ void JobScheduler::OnGetFileListJobDone(
     JobID job_id,
     const google_apis::FileListCallback& callback,
     google_apis::DriveApiErrorCode error,
-    scoped_ptr<google_apis::FileList> file_list) {
+    std::unique_ptr<google_apis::FileList> file_list) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
 
@@ -944,7 +944,7 @@ void JobScheduler::OnGetChangeListJobDone(
     JobID job_id,
     const google_apis::ChangeListCallback& callback,
     google_apis::DriveApiErrorCode error,
-    scoped_ptr<google_apis::ChangeList> change_list) {
+    std::unique_ptr<google_apis::ChangeList> change_list) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
 
@@ -956,7 +956,7 @@ void JobScheduler::OnGetFileResourceJobDone(
     JobID job_id,
     const google_apis::FileResourceCallback& callback,
     google_apis::DriveApiErrorCode error,
-    scoped_ptr<google_apis::FileResource> entry) {
+    std::unique_ptr<google_apis::FileResource> entry) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
 
@@ -968,7 +968,7 @@ void JobScheduler::OnGetAboutResourceJobDone(
     JobID job_id,
     const google_apis::AboutResourceCallback& callback,
     google_apis::DriveApiErrorCode error,
-    scoped_ptr<google_apis::AboutResource> about_resource) {
+    std::unique_ptr<google_apis::AboutResource> about_resource) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
 
@@ -992,7 +992,7 @@ void JobScheduler::OnGetAppListJobDone(
     JobID job_id,
     const google_apis::AppListCallback& callback,
     google_apis::DriveApiErrorCode error,
-    scoped_ptr<google_apis::AppList> app_list) {
+    std::unique_ptr<google_apis::AppList> app_list) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
 
@@ -1029,7 +1029,7 @@ void JobScheduler::OnUploadCompletionJobDone(
     const google_apis::FileResourceCallback& callback,
     google_apis::DriveApiErrorCode error,
     const GURL& upload_location,
-    scoped_ptr<google_apis::FileResource> entry) {
+    std::unique_ptr<google_apis::FileResource> entry) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
 
@@ -1066,7 +1066,7 @@ void JobScheduler::OnResumeUploadFileDone(
     const google_apis::FileResourceCallback& callback,
     google_apis::DriveApiErrorCode error,
     const GURL& upload_location,
-    scoped_ptr<google_apis::FileResource> entry) {
+    std::unique_ptr<google_apis::FileResource> entry) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!original_task.is_null());
   DCHECK(!callback.is_null());

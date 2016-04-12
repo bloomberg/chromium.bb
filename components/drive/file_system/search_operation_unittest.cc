@@ -34,7 +34,7 @@ TEST_F(SearchOperationTest, ContentSearch) {
 
   FileError error = FILE_ERROR_FAILED;
   GURL next_link;
-  scoped_ptr<std::vector<SearchResultInfo> > results;
+  std::unique_ptr<std::vector<SearchResultInfo>> results;
 
   operation.Search("Directory", GURL(),
                    google_apis::test_util::CreateCopyResultCallback(
@@ -56,7 +56,7 @@ TEST_F(SearchOperationTest, ContentSearchWithNewEntry) {
 
   // Create a new directory in the drive service.
   google_apis::DriveApiErrorCode status = google_apis::DRIVE_OTHER_ERROR;
-  scoped_ptr<google_apis::FileResource> server_entry;
+  std::unique_ptr<google_apis::FileResource> server_entry;
   fake_service()->AddNewDirectory(
       fake_service()->GetRootResourceId(), "New Directory 1!",
       AddNewDirectoryOptions(),
@@ -73,7 +73,7 @@ TEST_F(SearchOperationTest, ContentSearchWithNewEntry) {
 
   FileError error = FILE_ERROR_FAILED;
   GURL next_link;
-  scoped_ptr<std::vector<SearchResultInfo> > results;
+  std::unique_ptr<std::vector<SearchResultInfo>> results;
 
   operation.Search("\"Directory 1\"", GURL(),
                    google_apis::test_util::CreateCopyResultCallback(
@@ -116,7 +116,7 @@ TEST_F(SearchOperationTest, ContentSearchEmptyResult) {
 
   FileError error = FILE_ERROR_FAILED;
   GURL next_link;
-  scoped_ptr<std::vector<SearchResultInfo> > results;
+  std::unique_ptr<std::vector<SearchResultInfo>> results;
 
   operation.Search("\"no-match query\"", GURL(),
                    google_apis::test_util::CreateCopyResultCallback(
@@ -133,12 +133,13 @@ TEST_F(SearchOperationTest, Lock) {
                             loader_controller());
 
   // Lock.
-  scoped_ptr<base::ScopedClosureRunner> lock = loader_controller()->GetLock();
+  std::unique_ptr<base::ScopedClosureRunner> lock =
+      loader_controller()->GetLock();
 
   // Search does not return the result as long as lock is alive.
   FileError error = FILE_ERROR_FAILED;
   GURL next_link;
-  scoped_ptr<std::vector<SearchResultInfo> > results;
+  std::unique_ptr<std::vector<SearchResultInfo>> results;
 
   operation.Search("\"Directory 1\"", GURL(),
                    google_apis::test_util::CreateCopyResultCallback(

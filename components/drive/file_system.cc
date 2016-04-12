@@ -88,7 +88,7 @@ FileError GetLocallyStoredResourceEntry(
 
 // Runs the callback with parameters.
 void RunGetResourceEntryCallback(const GetResourceEntryCallback& callback,
-                                 scoped_ptr<ResourceEntry> entry,
+                                 std::unique_ptr<ResourceEntry> entry,
                                  FileError error) {
   DCHECK(!callback.is_null());
 
@@ -169,7 +169,7 @@ void GetFileCallbackToFileOperationCallbackAdapter(
     const FileOperationCallback& callback,
     FileError error,
     const base::FilePath& unused_file_path,
-    scoped_ptr<ResourceEntry> unused_entry) {
+    std::unique_ptr<ResourceEntry> unused_entry) {
   callback.Run(error);
 }
 
@@ -217,12 +217,12 @@ uint64_t CalculateEvictableCacheSizeOnBlockingPool(internal::FileCache* cache) {
 // Excludes hosted documents from the given entries.
 // Used to implement ReadDirectory().
 void FilterHostedDocuments(const ReadDirectoryEntriesCallback& callback,
-                           scoped_ptr<ResourceEntryVector> entries) {
+                           std::unique_ptr<ResourceEntryVector> entries) {
   DCHECK(!callback.is_null());
 
   if (entries) {
     // TODO(kinaba): Stop handling hide_hosted_docs here. crbug.com/256520.
-    scoped_ptr<ResourceEntryVector> filtered(new ResourceEntryVector);
+    std::unique_ptr<ResourceEntryVector> filtered(new ResourceEntryVector);
     for (size_t i = 0; i < entries->size(); ++i) {
       if (entries->at(i).file_specific_info().is_hosted_document()) {
         continue;
@@ -252,7 +252,7 @@ bool CheckHashes(const std::set<std::string>& hashes,
 void RunSearchByHashesCallback(
     const SearchByHashesCallback& callback,
     FileError error,
-    scoped_ptr<MetadataSearchResultVector> original_result) {
+    std::unique_ptr<MetadataSearchResultVector> original_result) {
   std::vector<HashAndFilePath> result;
   if (error != FILE_ERROR_OK) {
     callback.Run(error, result);
@@ -648,7 +648,7 @@ void FileSystem::GetResourceEntryAfterRead(
   DVLOG_IF(1, error != FILE_ERROR_OK) << "ReadDirectory failed. "
                                       << FileErrorToString(error);
 
-  scoped_ptr<ResourceEntry> entry(new ResourceEntry);
+  std::unique_ptr<ResourceEntry> entry(new ResourceEntry);
   ResourceEntry* entry_ptr = entry.get();
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(),
@@ -696,7 +696,7 @@ void FileSystem::GetAvailableSpace(
 void FileSystem::OnGetAboutResource(
     const GetAvailableSpaceCallback& callback,
     google_apis::DriveApiErrorCode status,
-    scoped_ptr<google_apis::AboutResource> about_resource) {
+    std::unique_ptr<google_apis::AboutResource> about_resource) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
 

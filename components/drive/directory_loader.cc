@@ -123,7 +123,7 @@ class DirectoryLoader::FeedFetcher {
  private:
   void OnFileListFetched(const FileOperationCallback& callback,
                          google_apis::DriveApiErrorCode status,
-                         scoped_ptr<google_apis::FileList> file_list) {
+                         std::unique_ptr<google_apis::FileList> file_list) {
     DCHECK(thread_checker_.CalledOnValidThread());
     DCHECK(!callback.is_null());
 
@@ -134,7 +134,7 @@ class DirectoryLoader::FeedFetcher {
     }
 
     DCHECK(file_list);
-    scoped_ptr<ChangeList> change_list(new ChangeList(*file_list));
+    std::unique_ptr<ChangeList> change_list(new ChangeList(*file_list));
     GURL next_url = file_list->next_link();
 
     ResourceEntryVector* entries = new ResourceEntryVector;
@@ -333,7 +333,7 @@ void DirectoryLoader::ReadDirectoryAfterLoadParent(
 void DirectoryLoader::ReadDirectoryAfterGetAboutResource(
     const std::string& local_id,
     google_apis::DriveApiErrorCode status,
-    scoped_ptr<google_apis::AboutResource> about_resource) {
+    std::unique_ptr<google_apis::AboutResource> about_resource) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   FileError error = GDataToFileError(status);
@@ -366,7 +366,7 @@ void DirectoryLoader::ReadDirectoryAfterGetAboutResource(
 }
 
 void DirectoryLoader::ReadDirectoryAfterCheckLocalState(
-    scoped_ptr<google_apis::AboutResource> about_resource,
+    std::unique_ptr<google_apis::AboutResource> about_resource,
     const std::string& local_id,
     const ResourceEntry* entry,
     const int64_t* local_changestamp,
@@ -470,7 +470,8 @@ void DirectoryLoader::SendEntries(const std::string& local_id,
       continue;
 
     // Filter out entries which were already sent.
-    scoped_ptr<ResourceEntryVector> entries_to_send(new ResourceEntryVector);
+    std::unique_ptr<ResourceEntryVector> entries_to_send(
+        new ResourceEntryVector);
     for (size_t i = 0; i < entries.size(); ++i) {
       const ResourceEntry& entry = entries[i];
       if (!callback_state->sent_entry_names.count(entry.base_name())) {

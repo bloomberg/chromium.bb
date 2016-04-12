@@ -7,13 +7,13 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "components/drive/file_errors.h"
 #include "components/drive/resource_metadata_storage.h"
@@ -98,7 +98,7 @@ class ResourceMetadata {
                        std::string* out_child_id);
 
   // Returns an object to iterate over entries.
-  scoped_ptr<Iterator> GetIterator();
+  std::unique_ptr<Iterator> GetIterator();
 
   // Returns virtual file path of the entry.
   FileError GetFilePath(const std::string& id, base::FilePath* out_file_path);

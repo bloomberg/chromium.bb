@@ -4,10 +4,11 @@
 
 #include "components/drive/directory_loader.h"
 
+#include <memory>
+
 #include "base/callback_helpers.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
@@ -58,8 +59,9 @@ class TestDirectoryLoaderObserver : public ChangeListLoaderObserver {
   DISALLOW_COPY_AND_ASSIGN(TestDirectoryLoaderObserver);
 };
 
-void AccumulateReadDirectoryResult(ResourceEntryVector* out_entries,
-                                   scoped_ptr<ResourceEntryVector> entries) {
+void AccumulateReadDirectoryResult(
+    ResourceEntryVector* out_entries,
+    std::unique_ptr<ResourceEntryVector> entries) {
   ASSERT_TRUE(entries);
   out_entries->insert(out_entries->end(), entries->begin(), entries->end());
 }
@@ -110,9 +112,10 @@ class DirectoryLoaderTest : public testing::Test {
   }
 
   // Adds a new file to the root directory of the service.
-  scoped_ptr<google_apis::FileResource> AddNewFile(const std::string& title) {
+  std::unique_ptr<google_apis::FileResource> AddNewFile(
+      const std::string& title) {
     google_apis::DriveApiErrorCode error = google_apis::DRIVE_FILE_ERROR;
-    scoped_ptr<google_apis::FileResource> entry;
+    std::unique_ptr<google_apis::FileResource> entry;
     drive_service_->AddNewFile(
         "text/plain",
         "content text",
@@ -127,17 +130,17 @@ class DirectoryLoaderTest : public testing::Test {
 
   content::TestBrowserThreadBundle thread_bundle_;
   base::ScopedTempDir temp_dir_;
-  scoped_ptr<TestingPrefServiceSimple> pref_service_;
-  scoped_ptr<EventLogger> logger_;
-  scoped_ptr<FakeDriveService> drive_service_;
-  scoped_ptr<JobScheduler> scheduler_;
-  scoped_ptr<ResourceMetadataStorage,
-             test_util::DestroyHelperForTests> metadata_storage_;
-  scoped_ptr<FileCache, test_util::DestroyHelperForTests> cache_;
-  scoped_ptr<ResourceMetadata, test_util::DestroyHelperForTests> metadata_;
-  scoped_ptr<AboutResourceLoader> about_resource_loader_;
-  scoped_ptr<LoaderController> loader_controller_;
-  scoped_ptr<DirectoryLoader> directory_loader_;
+  std::unique_ptr<TestingPrefServiceSimple> pref_service_;
+  std::unique_ptr<EventLogger> logger_;
+  std::unique_ptr<FakeDriveService> drive_service_;
+  std::unique_ptr<JobScheduler> scheduler_;
+  std::unique_ptr<ResourceMetadataStorage, test_util::DestroyHelperForTests>
+      metadata_storage_;
+  std::unique_ptr<FileCache, test_util::DestroyHelperForTests> cache_;
+  std::unique_ptr<ResourceMetadata, test_util::DestroyHelperForTests> metadata_;
+  std::unique_ptr<AboutResourceLoader> about_resource_loader_;
+  std::unique_ptr<LoaderController> loader_controller_;
+  std::unique_ptr<DirectoryLoader> directory_loader_;
 };
 
 TEST_F(DirectoryLoaderTest, ReadDirectory_GrandRoot) {
@@ -227,7 +230,8 @@ TEST_F(DirectoryLoaderTest, ReadDirectory_MultipleCalls) {
 
 TEST_F(DirectoryLoaderTest, Lock) {
   // Lock the loader.
-  scoped_ptr<base::ScopedClosureRunner> lock = loader_controller_->GetLock();
+  std::unique_ptr<base::ScopedClosureRunner> lock =
+      loader_controller_->GetLock();
 
   // Start loading.
   TestDirectoryLoaderObserver observer(directory_loader_.get());
