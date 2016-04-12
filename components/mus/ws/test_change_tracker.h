@@ -146,8 +146,8 @@ class TestChangeTracker {
   void OnWindowViewportMetricsChanged(mojom::ViewportMetricsPtr old_bounds,
                                       mojom::ViewportMetricsPtr new_bounds);
   void OnWindowHierarchyChanged(Id window_id,
-                                Id new_parent_id,
                                 Id old_parent_id,
+                                Id new_parent_id,
                                 mojo::Array<mojom::WindowDataPtr> windows);
   void OnWindowReordered(Id window_id,
                          Id relative_window_id,

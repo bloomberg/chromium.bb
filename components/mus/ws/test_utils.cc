@@ -213,10 +213,10 @@ void TestWindowTreeClient::OnWindowViewportMetricsChanged(
 
 void TestWindowTreeClient::OnWindowHierarchyChanged(
     uint32_t window,
-    uint32_t new_parent,
     uint32_t old_parent,
+    uint32_t new_parent,
     mojo::Array<mojom::WindowDataPtr> windows) {
-  tracker_.OnWindowHierarchyChanged(window, new_parent, old_parent,
+  tracker_.OnWindowHierarchyChanged(window, old_parent, new_parent,
                                     std::move(windows));
 }
 

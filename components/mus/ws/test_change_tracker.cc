@@ -78,7 +78,7 @@ std::string ChangeToDescription(const Change& change,
 
     case CHANGE_TYPE_NODE_HIERARCHY_CHANGED:
       return base::StringPrintf(
-          "HierarchyChanged window=%s new_parent=%s old_parent=%s",
+          "HierarchyChanged window=%s old_parent=%s new_parent=%s",
           WindowIdToString(change.window_id).c_str(),
           WindowIdToString(change.window_id2).c_str(),
           WindowIdToString(change.window_id3).c_str());
@@ -306,14 +306,14 @@ void TestChangeTracker::OnWindowViewportMetricsChanged(
 
 void TestChangeTracker::OnWindowHierarchyChanged(
     Id window_id,
-    Id new_parent_id,
     Id old_parent_id,
+    Id new_parent_id,
     Array<mojom::WindowDataPtr> windows) {
   Change change;
   change.type = CHANGE_TYPE_NODE_HIERARCHY_CHANGED;
   change.window_id = window_id;
-  change.window_id2 = new_parent_id;
-  change.window_id3 = old_parent_id;
+  change.window_id2 = old_parent_id;
+  change.window_id3 = new_parent_id;
   WindowDatasToTestWindows(windows, &change.windows);
   AddChange(change);
 }

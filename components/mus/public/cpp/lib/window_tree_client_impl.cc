@@ -770,8 +770,8 @@ void WindowTreeClientImpl::OnWindowViewportMetricsChanged(
 
 void WindowTreeClientImpl::OnWindowHierarchyChanged(
     Id window_id,
-    Id new_parent_id,
     Id old_parent_id,
+    Id new_parent_id,
     mojo::Array<mojom::WindowDataPtr> windows) {
   Window* initial_parent =
       windows.size() ? GetWindowByServerId(windows[0]->parent_id) : NULL;

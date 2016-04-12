@@ -496,8 +496,8 @@ void WindowTree::ProcessWindowHierarchyChanged(const ServerWindow* window,
   const ClientWindowId client_window_id =
       window ? ClientWindowIdForWindow(window) : ClientWindowId();
   client()->OnWindowHierarchyChanged(
-      client_window_id.id, new_parent_client_window_id.id,
-      old_parent_client_window_id.id, WindowsToWindowDatas(to_send));
+      client_window_id.id, old_parent_client_window_id.id,
+      new_parent_client_window_id.id, WindowsToWindowDatas(to_send));
   window_server_->OnTreeMessagedClient(id_);
 }
 

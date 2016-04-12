@@ -203,8 +203,8 @@ class WindowTreeClientImpl : public WindowTreeConnection,
       mojom::ViewportMetricsPtr new_metrics) override;
   void OnWindowHierarchyChanged(
       Id window_id,
-      Id new_parent_id,
       Id old_parent_id,
+      Id new_parent_id,
       mojo::Array<mojom::WindowDataPtr> windows) override;
   void OnWindowReordered(Id window_id,
                          Id relative_window_id,

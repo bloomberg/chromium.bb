@@ -330,10 +330,10 @@ class TestWindowTreeClientImpl : public mojom::WindowTreeClient,
     // on Android.
   }
   void OnWindowHierarchyChanged(Id window,
-                                Id new_parent,
                                 Id old_parent,
+                                Id new_parent,
                                 Array<WindowDataPtr> windows) override {
-    tracker()->OnWindowHierarchyChanged(window, new_parent, old_parent,
+    tracker()->OnWindowHierarchyChanged(window, old_parent, new_parent,
                                         std::move(windows));
   }
   void OnWindowReordered(Id window_id,
@@ -962,8 +962,8 @@ TEST_F(WindowTreeClientTest, WindowHierarchyChangedAddingKnownToUnknown) {
     wt_client1_->WaitForChangeCount(1);
     // 2,1 should be IdToString(window_2_11), but window_2_11 is in the id
     // space of client2, not client1.
-    EXPECT_EQ("HierarchyChanged window=2,1 new_parent=null old_parent=" +
-                  IdToString(window_1_1),
+    EXPECT_EQ("HierarchyChanged window=2,1 old_parent=" +
+                  IdToString(window_1_1) + " new_parent=null",
               SingleChangeToDescription(*changes1()));
   }
 
@@ -973,7 +973,7 @@ TEST_F(WindowTreeClientTest, WindowHierarchyChangedAddingKnownToUnknown) {
     ASSERT_TRUE(wt_client2()->AddWindow(window_1_1, window_2_2));
     wt_client1_->WaitForChangeCount(1);
     EXPECT_EQ("HierarchyChanged window=" + IdToString(window_2_2) +
-                  " new_parent=" + IdToString(window_1_1) + " old_parent=null",
+                  " old_parent=null new_parent=" + IdToString(window_1_1),
               SingleChangeToDescription(*changes1()));
     // "window=2,3 parent=2,2]" should be,
     // WindowParentToString(window_2_21, window_2_2), but isn't because of
@@ -1069,7 +1069,7 @@ TEST_F(WindowTreeClientTest, DeleteWindow) {
     ASSERT_TRUE(wt_client2()->AddWindow(window_1_1, window_2_1));
     wt_client1_->WaitForChangeCount(1);
     EXPECT_EQ("HierarchyChanged window=" + IdToString(window_2_1) +
-                  " new_parent=" + IdToString(window_1_1) + " old_parent=null",
+                  " old_parent=null new_parent=" + IdToString(window_1_1),
               SingleChangeToDescription(*changes1()));
   }
 
@@ -1106,7 +1106,7 @@ TEST_F(WindowTreeClientTest, ReuseDeletedWindowId) {
     ASSERT_TRUE(wt_client2()->AddWindow(window_1_1, window_2_1));
     wt_client1_->WaitForChangeCount(1);
     EXPECT_EQ("HierarchyChanged window=" + IdToString(window_2_1) +
-                  " new_parent=" + IdToString(window_1_1) + " old_parent=null",
+                  " old_parent=null new_parent=" + IdToString(window_1_1),
               SingleChangeToDescription(*changes1()));
     EXPECT_EQ("[" + WindowParentToString(window_2_1, window_1_1) + "]",
               ChangeWindowDescription(*changes1()));
@@ -1131,7 +1131,7 @@ TEST_F(WindowTreeClientTest, ReuseDeletedWindowId) {
 
     wt_client1_->WaitForChangeCount(1);
     EXPECT_EQ("HierarchyChanged window=" + IdToString(window_2_1) +
-                  " new_parent=" + IdToString(window_1_1) + " old_parent=null",
+                  " old_parent=null new_parent=" + IdToString(window_1_1),
               SingleChangeToDescription(*changes1()));
     EXPECT_EQ("[" + WindowParentToString(window_2_1, window_1_1) + "]",
               ChangeWindowDescription(*changes1()));
@@ -1361,7 +1361,7 @@ TEST_F(WindowTreeClientTest, EmbedWithSameWindowId2) {
   {
     wt_client1_->WaitForChangeCount(1);
     EXPECT_EQ("HierarchyChanged window=" + IdToString(window_3_1) +
-                  " new_parent=" + IdToString(window_1_1) + " old_parent=null",
+                  " old_parent=null new_parent=" + IdToString(window_1_1),
               SingleChangeToDescription(*changes1()));
   }
 
@@ -1952,7 +1952,7 @@ TEST_F(WindowTreeClientTest, Ids) {
   const Id window_2_101_in_ws1 = BuildWindowId(connection_id_2(), 1);
   wt_client1()->WaitForChangeCount(1);
   EXPECT_EQ("HierarchyChanged window=" + IdToString(window_2_101_in_ws1) +
-                " new_parent=" + IdToString(window_1_100) + " old_parent=null",
+                " old_parent=null new_parent=" + IdToString(window_1_100),
             SingleChangeToDescription(*changes1()));
   changes1()->clear();
 
@@ -1971,8 +1971,8 @@ TEST_F(WindowTreeClientTest, Ids) {
   ASSERT_TRUE(wt_client1()->WaitForChangeCompleted(12));
   wt_client2()->WaitForChangeCount(1);
   EXPECT_EQ("HierarchyChanged window=" + IdToString(window_2_101) +
-                " new_parent=null old_parent=" +
-                IdToString(window_1_100_in_ws2),
+                " old_parent=" + IdToString(window_1_100_in_ws2) +
+                " new_parent=null",
             SingleChangeToDescription(*changes2()));
 }
 

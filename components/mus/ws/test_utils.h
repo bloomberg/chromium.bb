@@ -272,8 +272,8 @@ class TestWindowTreeClient : public mus::mojom::WindowTreeClient {
       mojom::ViewportMetricsPtr new_metrics) override;
   void OnWindowHierarchyChanged(
       uint32_t window,
-      uint32_t new_parent,
       uint32_t old_parent,
+      uint32_t new_parent,
       mojo::Array<mojom::WindowDataPtr> windows) override;
   void OnWindowReordered(uint32_t window_id,
                          uint32_t relative_window_id,

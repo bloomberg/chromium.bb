@@ -313,8 +313,8 @@ interface WindowTreeClient {
   // about. This is not sent for hierarchy changes of windows not known to this
   // client or not attached to the tree.
   OnWindowHierarchyChanged(uint32 window,
-                           uint32 new_parent,
                            uint32 old_parent,
+                           uint32 new_parent,
                            array<WindowData> windows);
 
   // Invoked when the order of windows within a parent changes.
