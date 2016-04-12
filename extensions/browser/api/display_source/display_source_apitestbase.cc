@@ -30,9 +30,9 @@ class MockDisplaySourceConnectionDelegate
 
   const DisplaySourceConnectionDelegate::Connection* connection()
       const override {
-    return (active_sink_ != nullptr &&
-           (*active_sink_).state == SINK_STATE_CONNECTED)
-      ? this : nullptr;
+    return (active_sink_ && active_sink_->state == SINK_STATE_CONNECTED)
+               ? this
+               : nullptr;
   }
 
   void GetAvailableSinks(const SinkInfoListCallback& sinks_callback,
@@ -51,7 +51,7 @@ class MockDisplaySourceConnectionDelegate
   void StartWatchingAvailableSinks() override;
 
   // DisplaySourceConnectionDelegate::Connection overrides
-  DisplaySourceSinkInfo GetConnectedSink() const override;
+  const DisplaySourceSinkInfo& GetConnectedSink() const override;
 
   void StopWatchingAvailableSinks() override;
 
@@ -104,8 +104,8 @@ void InitMockDisplaySourceConnectionDelegate(content::BrowserContext* profile) {
     profile, &CreateMockDelegate);
 }
 
-MockDisplaySourceConnectionDelegate::MockDisplaySourceConnectionDelegate() {
-  active_sink_ = nullptr;
+MockDisplaySourceConnectionDelegate::MockDisplaySourceConnectionDelegate()
+    : active_sink_(nullptr) {
   AddSink(CreateSinkInfo(1, "sink 1"), AUTHENTICATION_METHOD_PIN, "1234");
 }
 
@@ -160,9 +160,10 @@ void MockDisplaySourceConnectionDelegate::Connect(
 
 void MockDisplaySourceConnectionDelegate::Disconnect(
     const StringCallback& failure_callback) {
-  ASSERT_TRUE(active_sink_ != nullptr);
+  CHECK(active_sink_);
   ASSERT_EQ(active_sink_->state, SINK_STATE_CONNECTED);
   active_sink_->state = SINK_STATE_DISCONNECTED;
+  active_sink_ = nullptr;
   NotifySinksUpdated();
 }
 
@@ -170,16 +171,10 @@ void MockDisplaySourceConnectionDelegate::StartWatchingAvailableSinks() {
   AddSink(CreateSinkInfo(2, "sink 2"), AUTHENTICATION_METHOD_PBC, "");
 }
 
-DisplaySourceSinkInfo MockDisplaySourceConnectionDelegate::GetConnectedSink()
-    const {
-  EXPECT_TRUE(active_sink_ != nullptr);
-
-  DisplaySourceSinkInfo info;
-  info.id = active_sink_->id;
-  info.name = active_sink_->name;
-  info.state = active_sink_->state;
-
-  return info;
+const DisplaySourceSinkInfo&
+MockDisplaySourceConnectionDelegate::GetConnectedSink() const {
+  CHECK(active_sink_);
+  return *active_sink_;
 }
 
 void MockDisplaySourceConnectionDelegate::StopWatchingAvailableSinks() {}
@@ -210,6 +205,7 @@ void MockDisplaySourceConnectionDelegate::AddSink(
 }
 
 void MockDisplaySourceConnectionDelegate::OnSinkConnected() {
+  CHECK(active_sink_);
   active_sink_->state = SINK_STATE_CONNECTED;
   NotifySinksUpdated();
 }

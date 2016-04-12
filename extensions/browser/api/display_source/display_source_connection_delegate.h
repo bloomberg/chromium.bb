@@ -31,7 +31,7 @@ class DisplaySourceConnectionDelegate : public KeyedService {
   class Connection {
    public:
     // Returns the connected sink object.
-    virtual DisplaySourceSinkInfo GetConnectedSink() const = 0;
+    virtual const DisplaySourceSinkInfo& GetConnectedSink() const = 0;
 
     // Returns the local address of the source.
     virtual std::string GetLocalAddress() const = 0;
