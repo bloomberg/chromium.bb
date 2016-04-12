@@ -1560,6 +1560,29 @@ LRESULT HWNDMessageHandler::OnMouseRange(UINT message,
   return HandleMouseEventInternal(message, w_param, l_param, true);
 }
 
+// On some systems with a high-resolution track pad and running Windows 10,
+// using the scrolling gesture (two-finger scroll) on the track pad
+// causes it to also generate a WM_POINTERDOWN message if the window
+// isn't focused. This leads to a WM_POINTERACTIVATE message and the window
+// gaining focus and coming to the front. This code detects a
+// WM_POINTERACTIVATE coming from the track pad and kills the activation
+// of the window. NOTE: most other trackpad messages come in as mouse
+// messages, including WM_MOUSEWHEEL instead of WM_POINTERWHEEL.
+LRESULT HWNDMessageHandler::OnPointerActivate(UINT message,
+                                              WPARAM w_param,
+                                              LPARAM l_param) {
+  using GetPointerTypeFn = BOOL(WINAPI*)(UINT32, POINTER_INPUT_TYPE*);
+  UINT32 pointer_id = GET_POINTERID_WPARAM(w_param);
+  POINTER_INPUT_TYPE pointer_type;
+  static GetPointerTypeFn get_pointer_type = reinterpret_cast<GetPointerTypeFn>(
+      GetProcAddress(GetModuleHandleA("user32.dll"), "GetPointerType"));
+  if (get_pointer_type && get_pointer_type(pointer_id, &pointer_type) &&
+      pointer_type == PT_TOUCHPAD)
+    return PA_NOACTIVATE;
+  SetMsgHandled(FALSE);
+  return -1;
+}
+
 void HWNDMessageHandler::OnMove(const gfx::Point& point) {
   delegate_->HandleMove();
   SetMsgHandled(FALSE);

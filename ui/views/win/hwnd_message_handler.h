@@ -337,6 +337,9 @@ class VIEWS_EXPORT HWNDMessageHandler :
     CR_MESSAGE_HANDLER_EX(WM_NCMOUSELEAVE, OnMouseRange)
     CR_MESSAGE_HANDLER_EX(WM_SETCURSOR, OnSetCursor);
 
+    // Pointer events.
+    CR_MESSAGE_HANDLER_EX(WM_POINTERACTIVATE, OnPointerActivate)
+
     // Key events.
     CR_MESSAGE_HANDLER_EX(WM_KEYDOWN, OnKeyEvent)
     CR_MESSAGE_HANDLER_EX(WM_KEYUP, OnKeyEvent)
@@ -432,6 +435,7 @@ class VIEWS_EXPORT HWNDMessageHandler :
   void OnKillFocus(HWND focused_window);
   LRESULT OnMouseActivate(UINT message, WPARAM w_param, LPARAM l_param);
   LRESULT OnMouseRange(UINT message, WPARAM w_param, LPARAM l_param);
+  LRESULT OnPointerActivate(UINT message, WPARAM w_param, LPARAM l_param);
   void OnMove(const gfx::Point& point);
   void OnMoving(UINT param, const RECT* new_bounds);
   LRESULT OnNCActivate(UINT message, WPARAM w_param, LPARAM l_param);
