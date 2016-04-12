@@ -87,15 +87,9 @@ void ElementRuleCollector::clearMatchedRules()
 
 inline StyleRuleList* ElementRuleCollector::ensureStyleRuleList()
 {
-#if ENABLE(OILPAN)
     if (!m_styleRuleList)
         m_styleRuleList = new StyleRuleList();
     return m_styleRuleList;
-#else
-    if (!m_styleRuleList)
-        m_styleRuleList = StyleRuleList::create();
-    return m_styleRuleList.get();
-#endif
 }
 
 inline StaticCSSRuleList* ElementRuleCollector::ensureRuleList()

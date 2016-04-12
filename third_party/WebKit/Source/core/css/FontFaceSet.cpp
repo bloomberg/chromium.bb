@@ -125,9 +125,6 @@ FontFaceSet::FontFaceSet(Document& document)
 
 FontFaceSet::~FontFaceSet()
 {
-#if !ENABLE(OILPAN)
-    stop();
-#endif
 }
 
 Document* FontFaceSet::document() const

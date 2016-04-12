@@ -24,9 +24,7 @@ RemoteFontFaceSource::RemoteFontFaceSource(FontResource* font, FontLoader* fontL
     , m_period(display == FontDisplaySwap ? SwapPeriod : BlockPeriod)
     , m_isInterventionTriggered(false)
 {
-#if ENABLE(OILPAN)
     ThreadState::current()->registerPreFinalizer(this);
-#endif
     m_font->addClient(this);
 
     if (RuntimeEnabledFeatures::webFontsInterventionEnabled()) {
@@ -42,9 +40,6 @@ RemoteFontFaceSource::RemoteFontFaceSource(FontResource* font, FontLoader* fontL
 
 RemoteFontFaceSource::~RemoteFontFaceSource()
 {
-#if !ENABLE(OILPAN)
-    dispose();
-#endif
 }
 
 void RemoteFontFaceSource::dispose()

@@ -46,18 +46,11 @@ StyleRuleImport::StyleRuleImport(const String& href, MediaQuerySet* media)
     if (!m_mediaQueries)
         m_mediaQueries = MediaQuerySet::create(String());
 
-#if ENABLE(OILPAN)
     ThreadState::current()->registerPreFinalizer(this);
-#endif
 }
 
 StyleRuleImport::~StyleRuleImport()
 {
-#if !ENABLE(OILPAN)
-    if (m_styleSheet)
-        m_styleSheet->clearOwnerRule();
-    dispose();
-#endif
 }
 
 void StyleRuleImport::dispose()

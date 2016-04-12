@@ -46,10 +46,6 @@ public:
 
     Document* document() { return m_treeScope ? &m_treeScope->document() : nullptr; }
 
-#if !ENABLE(OILPAN)
-    void detachFromDocument();
-#endif
-
     CSSStyleSheet* anonymousNamedGetter(const AtomicString&);
 
     DECLARE_TRACE();
@@ -59,9 +55,6 @@ private:
     const HeapVector<Member<StyleSheet>>& styleSheets();
 
     Member<TreeScope> m_treeScope;
-#if !ENABLE(OILPAN)
-    Vector<RefPtr<StyleSheet>> m_detachedStyleSheets;
-#endif
 };
 
 } // namespace blink

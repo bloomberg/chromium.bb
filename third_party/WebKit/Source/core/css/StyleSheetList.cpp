@@ -38,20 +38,8 @@ StyleSheetList::StyleSheetList(TreeScope* treeScope)
 
 inline const HeapVector<Member<StyleSheet>>& StyleSheetList::styleSheets()
 {
-#if !ENABLE(OILPAN)
-    if (!m_treeScope)
-        return m_detachedStyleSheets;
-#endif
     return document()->styleEngine().styleSheetsForStyleSheetList(*m_treeScope);
 }
-
-#if !ENABLE(OILPAN)
-void StyleSheetList::detachFromDocument()
-{
-    m_detachedStyleSheets = document()->styleEngine().styleSheetsForStyleSheetList(*m_treeScope);
-    m_treeScope = nullptr;
-}
-#endif
 
 unsigned StyleSheetList::length()
 {
@@ -66,11 +54,6 @@ StyleSheet* StyleSheetList::item(unsigned index)
 
 HTMLStyleElement* StyleSheetList::getNamedItem(const AtomicString& name) const
 {
-#if !ENABLE(OILPAN)
-    if (!m_treeScope)
-        return nullptr;
-#endif
-
     // IE also supports retrieving a stylesheet by name, using the name/id of the <style> tag
     // (this is consistent with all the other collections)
     // ### Bad implementation because returns a single element (are IDs always unique?)

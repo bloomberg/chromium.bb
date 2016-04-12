@@ -48,9 +48,6 @@ MediaQueryList::MediaQueryList(ExecutionContext* context, MediaQueryMatcher* mat
 
 MediaQueryList::~MediaQueryList()
 {
-#if !ENABLE(OILPAN)
-    m_matcher->removeMediaQueryList(this);
-#endif
 }
 
 String MediaQueryList::media() const

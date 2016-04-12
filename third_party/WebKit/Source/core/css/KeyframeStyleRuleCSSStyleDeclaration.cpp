@@ -17,12 +17,6 @@ KeyframeStyleRuleCSSStyleDeclaration::KeyframeStyleRuleCSSStyleDeclaration(Mutab
 void KeyframeStyleRuleCSSStyleDeclaration::didMutate(MutationType type)
 {
     StyleRuleCSSStyleDeclaration::didMutate(type);
-
-#if !ENABLE(OILPAN)
-    if (!m_parentRule || !m_parentRule->parentRule())
-        return;
-#endif
-
     toCSSKeyframesRule(m_parentRule->parentRule())->styleChanged();
 }
 

@@ -94,11 +94,6 @@ public:
     CSSRule* parentRule() const { return m_parentRule; }
     CSSStyleSheet* parentStyleSheet() const { return m_parentStyleSheet; }
 
-#if !ENABLE(OILPAN)
-    void clearParentStyleSheet() { ASSERT(m_parentStyleSheet); m_parentStyleSheet = nullptr; }
-    void clearParentRule() { ASSERT(m_parentRule); m_parentRule = nullptr; }
-#endif
-
     const MediaQuerySet* queries() const { return m_mediaQueries.get(); }
 
     void reattach(MediaQuerySet*);

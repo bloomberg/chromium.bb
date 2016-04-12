@@ -68,7 +68,7 @@ public:
     }
 
 private:
-    // FIXME: Oilpan: RuleData is in the oilpan heap and this pointer
+    // TODO(Oilpan): RuleData is in the oilpan heap and this pointer
     // really should be traced. However, RuleData objects are
     // allocated inside larger TerminatedArray objects and we cannot
     // trace a raw rule data pointer at this point.
