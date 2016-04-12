@@ -1,63 +1,35 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Test that cues are being matched properly by the lang attribute and :lang() pseudo class.</title>
+<script src="../media-file.js"></script>
+<script src="../media-controls.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<style>
+::cue(:lang(ru)) { color: lime; }
+::cue(lang[lang="en"]) { color: purple; }
+::cue(c[lang="ru"]) { color: red; } /* Shouldn't work, no attribute 'lang' for 'c'. */
+</style>
+<video></video>
+<script>
+async_test(function(t) {
+    var video = document.querySelector('video');
+    video.src = findMediaFile('video', '../content/test');
+    
+    var track = document.createElement('track');
+    track.src = 'captions-webvtt/styling-lang.vtt';
+    track.kind = 'captions';
+    track.default = true;
+    video.appendChild(track);
 
-        <script src=../media-file.js></script>
-        <!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src=../video-test.js></script>
-        <script src=../media-controls.js></script>
-
-        <style>
-        ::cue(:lang(ru)) { color: lime; }
-        ::cue(lang[lang="en"]) { color: purple; }
-        ::cue(c[lang="ru"]) { color: red; } /* Shouldn't work, no attribute 'lang' for 'c'. */
-        </style>
-
-        <script>
-
-        var cueNode;
-        var seekedCount = 0;
-        var seekTimes = [0.1];
-
-        var info = [["rgb(128, 0, 128)", "rgb(0, 255, 0)", "rgb(128, 0, 128)"]];
-
-        function seeked()
-        {
-            if (testEnded)
-                return;
-
-            cueNode = textTrackDisplayElement(video, 'cue').firstElementChild.firstElementChild;
-            testExpected("getComputedStyle(cueNode).color", info[seekedCount][0]);
-            cueNode = cueNode.firstElementChild.firstElementChild;
-            testExpected("getComputedStyle(cueNode).color", info[seekedCount][1]);
-            cueNode = cueNode.firstElementChild.firstElementChild;
-            testExpected("getComputedStyle(cueNode).color", info[seekedCount][2]);
-
-            if (++seekedCount == info.length)
-                endTest();
-            else {
-                consoleWrite("");
-                run("video.currentTime = " + seekTimes[seekedCount]);
-            }
-        }
-
-        function loaded()
-        {
-            consoleWrite("Test that cues are being matched properly by the lang attribute and :lang() pseudo class.");
-            findMediaElement();
-            video.src = findMediaFile('video', '../content/test');
-            video.id = "testvideo";
-            waitForEvent('seeked', seeked);
-            waitForEvent('canplaythrough', function() { video.currentTime = seekTimes[0]; });
-        }
-
-        </script>
-    </head>
-    <body onload="loaded()">
-        <video controls >
-            <track src="captions-webvtt/styling-lang.vtt" kind="captions" default>
-        </video>
-    </body>
-</html>
+    video.onseeked = t.step_func_done(function() {
+        var cueNode = textTrackDisplayElement(video, 'cue').firstElementChild.firstElementChild;
+        assert_equals(getComputedStyle(cueNode).color, 'rgb(128, 0, 128)');
+        cueNode = cueNode.firstElementChild.firstElementChild;
+        assert_equals(getComputedStyle(cueNode).color, 'rgb(0, 255, 0)');
+        cueNode = cueNode.firstElementChild.firstElementChild;
+        assert_equals(getComputedStyle(cueNode).color, 'rgb(128, 0, 128)');
+    });
+    
+    video.currentTime = 0.1;
+});
+</script>

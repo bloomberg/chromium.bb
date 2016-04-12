@@ -1,48 +1,30 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Test that u, b, i WebVTT objects are being styled correctly.</title>
+<script src="../media-file.js"></script>
+<script src="../media-controls.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<video></video>
+<script>
+async_test(function(t) {
+    var video = document.querySelector('video');
+    video.src = findMediaFile('video', '../content/test');
+    
+    var track = document.createElement('track');
+    track.src = 'captions-webvtt/styling-default.vtt';
+    track.kind = 'captions';
+    track.default = true;
+    video.appendChild(track);
 
-        <script src=../media-file.js></script>
-        <!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src=../video-test.js></script>
-        <script src=../media-controls.js></script>
-
-        <script>
-
-        var cueNode;
-
-        function seeked()
-        {
-            if (testEnded)
-                return;
-
-            cueNode = textTrackDisplayElement(video, 'cue').firstElementChild;
-            testExpected("getComputedStyle(cueNode).fontWeight", "bold");
-            cueNode = cueNode.nextElementSibling;
-            testExpected("getComputedStyle(cueNode).fontStyle", "italic");
-            cueNode = cueNode.nextElementSibling;
-            testExpected("getComputedStyle(cueNode).textDecoration", "underline solid rgb(255, 255, 255)");
-
-            endTest();
-        }
-
-        function loaded()
-        {
-            consoleWrite("Test that u, b, i WebVTT objects are being styled correctly.");
-            findMediaElement();
-            video.src = findMediaFile('video', '../content/test');
-            video.id = "testvideo";
-            waitForEvent('seeked', seeked);
-            waitForEvent('canplaythrough', function() { video.currentTime = 0.1; });
-        }
-
-        </script>
-    </head>
-    <body onload="loaded()">
-        <video controls >
-            <track src="captions-webvtt/styling-default.vtt" kind="captions" default>
-        </video>
-    </body>
-</html>
+    video.onseeked = t.step_func_done(function() {
+        var cueNode = textTrackDisplayElement(video, 'cue').firstElementChild;
+        assert_equals(getComputedStyle(cueNode).fontWeight, 'bold');
+        cueNode = cueNode.nextElementSibling;
+        assert_equals(getComputedStyle(cueNode).fontStyle, 'italic');
+        cueNode = cueNode.nextElementSibling;
+        assert_equals(getComputedStyle(cueNode).textDecoration, 'underline solid rgb(255, 255, 255)');
+    });
+    
+    video.currentTime = 0.1;
+});
+</script>

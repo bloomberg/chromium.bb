@@ -1,71 +1,54 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Test that cues are being matched properly by :past and :future pseudo classes.</title>
+<script src="../media-file.js"></script>
+<script src="../media-controls.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<video></video>
+<style>
+video::cue {color: green}
+video::cue(:past) {color: lime}
+video::cue(:future) {color: gray}
+</style>
+<script>
+async_test(function(t) {
+    var seekTimeIndex = 0;
+    var seekTimes = [0.1, 0.3, 0.5, 0.7, 0.9];
 
-        <script src=../media-file.js></script>
-        <!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src=../video-test.js></script>
-        <script src=../media-controls.js></script>
+    var info = [["rgb(128, 128, 128)", "rgb(128, 128, 128)", "rgb(128, 128, 128)", "rgb(128, 128, 128)", "rgb(128, 128, 128)"],
+                ["rgb(0, 255, 0)", "rgb(128, 128, 128)", "rgb(128, 128, 128)", "rgb(128, 128, 128)", "rgb(128, 128, 128)"],
+                ["rgb(0, 255, 0)", "rgb(0, 255, 0)", "rgb(128, 128, 128)", "rgb(128, 128, 128)", "rgb(128, 128, 128)"],
+                ["rgb(0, 255, 0)", "rgb(0, 255, 0)", "rgb(0, 255, 0)", "rgb(128, 128, 128)", "rgb(0, 255, 0)"],
+                ["rgb(0, 255, 0)", "rgb(0, 255, 0)", "rgb(0, 255, 0)", "rgb(0, 255, 0)", "rgb(0, 255, 0)"]];
+            
+    var video = document.querySelector("video");
+    video.src = findMediaFile("video", "../content/test");
+    
+    var track = document.createElement("track");
+    track.src = "captions-webvtt/styling-timestamps.vtt";
+    track.kind = "captions";
+    track.default = true;
+    video.appendChild(track);
 
-        <style>
-        video::cue {color: green}
-        video::cue(:past) {color: lime}
-        video::cue(:future) {color: gray}
-        </style>
+    video.onseeked = t.step_func(function() {
+        assert_equals(video.currentTime, seekTimes[seekTimeIndex]);
+        var cueNode = textTrackDisplayElement(video, "cue").firstElementChild;
+        assert_equals(getComputedStyle(cueNode).color, info[seekTimeIndex][0]);
+        cueNode = cueNode.nextElementSibling;
+        assert_equals(getComputedStyle(cueNode).color, info[seekTimeIndex][1]);
+        cueNode = cueNode.nextElementSibling.firstElementChild.firstChild;
+        assert_equals(getComputedStyle(cueNode).color, info[seekTimeIndex][2]);
+        cueNode = cueNode.nextElementSibling;
+        assert_equals(getComputedStyle(cueNode).color, info[seekTimeIndex][3]);
+        cueNode = cueNode.parentNode;
+        assert_equals(getComputedStyle(cueNode).color, info[seekTimeIndex][4]);
 
-        <script>
+        if (++seekTimeIndex == info.length)
+            t.done();
+        else
+            video.currentTime = seekTimes[seekTimeIndex];
+    });
 
-        var cueNode;
-        var seekedCount = 0;
-        var seekTimes = [0.1, 0.3, 0.5, 0.7, 0.9];
-
-        var info = [["rgb(128, 128, 128)", "rgb(128, 128, 128)", "rgb(128, 128, 128)", "rgb(128, 128, 128)", "rgb(128, 128, 128)"],
-                    ["rgb(0, 255, 0)", "rgb(128, 128, 128)", "rgb(128, 128, 128)", "rgb(128, 128, 128)", "rgb(128, 128, 128)"],
-                    ["rgb(0, 255, 0)", "rgb(0, 255, 0)", "rgb(128, 128, 128)", "rgb(128, 128, 128)", "rgb(128, 128, 128)"],
-                    ["rgb(0, 255, 0)", "rgb(0, 255, 0)", "rgb(0, 255, 0)", "rgb(128, 128, 128)", "rgb(0, 255, 0)"],
-                    ["rgb(0, 255, 0)", "rgb(0, 255, 0)", "rgb(0, 255, 0)", "rgb(0, 255, 0)", "rgb(0, 255, 0)"]];
-
-        function seeked()
-        {
-            if (testEnded)
-                return;
-
-            cueNode = textTrackDisplayElement(video, 'cue').firstElementChild;
-            testExpected("getComputedStyle(cueNode).color", info[seekedCount][0]);
-            cueNode = cueNode.nextElementSibling;
-            testExpected("getComputedStyle(cueNode).color", info[seekedCount][1]);
-            cueNode = cueNode.nextElementSibling.firstElementChild.firstChild;
-            testExpected("getComputedStyle(cueNode).color", info[seekedCount][2]);
-            cueNode = cueNode.nextElementSibling;
-            testExpected("getComputedStyle(cueNode).color", info[seekedCount][3]);
-            cueNode = cueNode.parentNode;
-            testExpected("getComputedStyle(cueNode).color", info[seekedCount][4]);
-
-            if (++seekedCount == info.length)
-                endTest();
-            else {
-                consoleWrite("");
-                run("video.currentTime = " + seekTimes[seekedCount]);
-            }
-        }
-
-        function loaded()
-        {
-            consoleWrite("Test that cues are being matched properly by :past and :future pseudo classes.");
-            findMediaElement();
-            video.src = findMediaFile('video', '../content/test');
-            video.id = "testvideo";
-            waitForEvent('seeked', seeked);
-            waitForEventOnce('canplaythrough', function() { video.currentTime = seekTimes[0]; });
-        }
-
-        </script>
-    </head>
-    <body onload="loaded()">
-        <video controls >
-            <track src="captions-webvtt/styling-timestamps.vtt" kind="captions" default>
-        </video>
-    </body>
-</html>
+    video.currentTime = seekTimes[seekTimeIndex];
+});
+</script>

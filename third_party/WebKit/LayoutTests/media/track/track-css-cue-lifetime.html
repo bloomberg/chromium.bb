@@ -1,62 +1,45 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Test that the cue is styled properly throughout its lifetime.</title>
+<script src="../media-file.js"></script>
+<script src="../media-controls.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<style>
+video::cue(.red, .red2) { color:red }
+video::cue(.green) { color:green }
+</style>
+<video></video>
+<script>
+async_test(function(t) {
+    var seekTimeIndex = 0;
+    var step = 0.4;
+    var initialTime = 0.6;
+    var endTime = 3.0
+    
+    var video = document.querySelector('video');
+    video.src = findMediaFile('video', '../content/test');
 
-        <script src=../media-file.js></script>
-        <!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src=../video-test.js></script>
-        <script src=../media-controls.js></script>
+    var track = document.createElement('track');
+    track.src = 'captions-webvtt/styling-lifetime.vtt';
+    track.kind = 'captions';
+    track.default = true;
+    video.appendChild(track);
 
-        <style>
-        video::cue(.red, .red2) { color:red }
-        video::cue(.green) { color:green }
-        </style>
+    video.onseeked = t.step_func(function() {
+        var cueNode = textTrackDisplayElement(video, 'cue').firstElementChild;
+        assert_equals(getComputedStyle(cueNode).color, 'rgb(255, 0, 0)');
+        cueNode = cueNode.nextElementSibling;
+        assert_equals(getComputedStyle(cueNode).color, 'rgb(0, 128, 0)');
+        cueNode = cueNode.nextElementSibling;
+        assert_equals(getComputedStyle(cueNode).color, 'rgb(255, 0, 0)');
 
-        <script>
-
-        var cueNode;
-        var seekedCount = 0;
-        var step = 0.4;
-        var initialTime = 0.6;
-        var endTime = 3.0
-
-        function seeked()
-        {
-            if (testEnded)
-                return;
-
-            cueNode = textTrackDisplayElement(video, 'cue').firstElementChild;
-            testExpected("getComputedStyle(cueNode).color", "rgb(255, 0, 0)");
-            cueNode = cueNode.nextElementSibling;
-            testExpected("getComputedStyle(cueNode).color", "rgb(0, 128, 0)");
-            cueNode = cueNode.nextElementSibling;
-            testExpected("getComputedStyle(cueNode).color", "rgb(255, 0, 0)");
-
-            if (++seekedCount * step + initialTime > endTime)
-                endTest();
-            else {
-                consoleWrite("" + seekedCount);
-                run("video.currentTime = " + Math.round(initialTime + seekedCount * step * 10) / 10);
-            }
-        }
-
-        function loaded()
-        {
-            consoleWrite("Test that the cue is styled properly throughout its lifetime.");
-            findMediaElement();
-            video.src = findMediaFile('video', '../content/test');
-            video.id = "testvideo";
-            waitForEvent('seeked', seeked);
-            waitForEventOnce('canplaythrough', function() { video.currentTime = initialTime; });
-        }
-
-        </script>
-    </head>
-    <body onload="loaded()">
-        <video controls >
-            <track src="captions-webvtt/styling-lifetime.vtt" kind="captions" default>
-        </video>
-    </body>
-</html>
+        var seekTime = ++seekTimeIndex * step + initialTime;
+        if (seekTime > endTime)
+            t.done();
+        else
+            video.currentTime = seekTime;
+    });
+    
+    video.currentTime = initialTime;
+});
+</script>
