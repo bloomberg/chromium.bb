@@ -1201,6 +1201,9 @@ const char kLocalDiscoveryNotificationsEnabled[] =
 const char kPushMessagingAppIdentifierMap[] =
     "gcm.push_messaging_application_id_map";
 
+// Maps from origin to background budget information.
+const char kBackgroundBudgetMap[] = "push_messaging.background_budget_map";
+
 // Whether a user is allowed to use Easy Unlock.
 const char kEasyUnlockAllowed[] = "easy_unlock.allowed";
 

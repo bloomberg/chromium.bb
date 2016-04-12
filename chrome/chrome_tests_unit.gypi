@@ -208,6 +208,7 @@
       'browser/profiles/profile_manager_unittest.cc',
       'browser/profiles/profile_shortcut_manager_unittest_win.cc',
       'browser/push_messaging/push_messaging_app_identifier_unittest.cc',
+      'browser/push_messaging/background_budget_service_unittest.cc',
       'browser/push_messaging/push_messaging_notification_manager_unittest.cc',
       'browser/push_messaging/push_messaging_permission_context_unittest.cc',
       'browser/push_messaging/push_messaging_service_unittest.cc',

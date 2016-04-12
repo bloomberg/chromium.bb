@@ -409,6 +409,7 @@ extern const char kFullscreenAllowed[];
 extern const char kLocalDiscoveryNotificationsEnabled[];
 
 extern const char kPushMessagingAppIdentifierMap[];
+extern const char kBackgroundBudgetMap[];
 
 extern const char kEasyUnlockAllowed[];
 extern const char kEasyUnlockEnabled[];

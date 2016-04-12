@@ -41,8 +41,6 @@ class CONTENT_EXPORT PushMessagingService {
                                              bool success,
                                              bool not_found)>;
 
-  using ResultCallback = base::Callback<void(bool success)>;
-
   virtual ~PushMessagingService() {}
 
   // Returns the absolute URL exposed by the push server where the webapp server
@@ -93,21 +91,6 @@ class CONTENT_EXPORT PushMessagingService {
   // receiving a push message are supported. Influences permission request and
   // permission check behaviour.
   virtual bool SupportNonVisibleMessages() = 0;
-
-  // Provide a storage mechanism to read/write an opaque
-  // "notifications_shown_by_last_few_pushes" string associated with a Service
-  // Worker registration. Stored data is deleted when the associated
-  // registration is deleted.
-  static void GetNotificationsShownByLastFewPushes(
-      ServiceWorkerContext* service_worker_context,
-      int64_t service_worker_registration_id,
-      const StringCallback& callback);
-  static void SetNotificationsShownByLastFewPushes(
-      ServiceWorkerContext* service_worker_context,
-      int64_t service_worker_registration_id,
-      const GURL& origin,
-      const std::string& notifications_shown,
-      const ResultCallback& callback);
 
  protected:
   static void GetSenderId(BrowserContext* browser_context,
