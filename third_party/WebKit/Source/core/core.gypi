@@ -3352,8 +3352,6 @@
             'layout/svg/SVGTextLayoutEngineSpacing.h',
             'layout/svg/SVGTextMetrics.cpp',
             'layout/svg/SVGTextMetrics.h',
-            'layout/svg/SVGTextMetricsBuilder.cpp',
-            'layout/svg/SVGTextMetricsBuilder.h',
             'layout/svg/SVGTextQuery.cpp',
             'layout/svg/SVGTextQuery.h',
             'svg/ColorDistance.cpp',

@@ -37,7 +37,6 @@ public:
     SVGTextLayoutAttributes* layoutAttributes() { return &m_layoutAttributes; }
     const SVGTextLayoutAttributes* layoutAttributes() const { return &m_layoutAttributes; }
 
-    Vector<SVGTextMetrics>& metricsList() { return m_metrics; }
     const Vector<SVGTextMetrics>& metricsList() const { return m_metrics; }
 
     float scalingFactor() const { return m_scalingFactor; }
