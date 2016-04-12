@@ -28,6 +28,8 @@ class Extension;
 //                      bar which is shown while the Bubble is shown.
 //    GENERIC        -> The app menu. This case includes page actions that
 //                      don't specify a default icon.
+// NB: This bubble is using the temporarily-deprecated bubble manager interface
+// BubbleUi. Do not copy this pattern.
 class ExtensionInstalledBubble : public BubbleDelegate {
  public:
   // The behavior and content of this Bubble comes in these varieties:
