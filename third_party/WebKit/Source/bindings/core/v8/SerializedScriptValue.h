@@ -32,6 +32,7 @@
 #define SerializedScriptValue_h
 
 #include "bindings/core/v8/ScriptValue.h"
+#include "bindings/core/v8/Transferable.h"
 #include "core/CoreExport.h"
 #include "wtf/HashMap.h"
 #include "wtf/ThreadSafeRefCounted.h"
@@ -46,18 +47,17 @@ class ArrayBufferContents;
 namespace blink {
 
 class BlobDataHandle;
-class DOMArrayBufferBase;
 class ExceptionState;
-class ImageBitmap;
 class StaticBitmapImage;
+class TransferableArrayBuffer;
+class TransferableImageBitmap;
 class MessagePort;
 class WebBlobInfo;
 
 typedef HeapVector<Member<MessagePort>, 1> MessagePortArray;
-typedef HeapVector<Member<DOMArrayBufferBase>, 1> ArrayBufferArray;
 typedef HashMap<String, RefPtr<BlobDataHandle>> BlobDataHandleMap;
 typedef Vector<WebBlobInfo> WebBlobInfoArray;
-typedef HeapVector<Member<ImageBitmap>, 1> ImageBitmapArray;
+typedef HeapVector<Member<Transferable>> TransferableArray;
 
 class CORE_EXPORT SerializedScriptValue : public ThreadSafeRefCounted<SerializedScriptValue> {
 public:
@@ -92,7 +92,7 @@ public:
     // Also validates the elements per sections 4.1.13 and 4.1.15 of the WebIDL spec and section 8.3.3
     // of the HTML5 spec and generates exceptions as appropriate.
     // Returns true if the array was filled, or false if the passed value was not of an appropriate type.
-    static bool extractTransferables(v8::Isolate*, v8::Local<v8::Value>, int, MessagePortArray&, ArrayBufferArray&, ImageBitmapArray&, ExceptionState&);
+    static bool extractTransferables(v8::Isolate*, v8::Local<v8::Value>, int, MessagePortArray&, TransferableArray&, ExceptionState&);
 
     // Informs the V8 about external memory allocated and owned by this object. Large values should contribute
     // to GC counters to eventually trigger a GC, otherwise flood of postMessage() can cause OOM.
@@ -118,13 +118,13 @@ private:
     BlobDataHandleMap& blobDataHandles() { return m_blobDataHandles; }
     String& data() { return m_data; }
     void setData(const String& data) { m_data = data; }
-    void transferArrayBuffers(v8::Isolate*, ArrayBufferArray&, ExceptionState&);
-    void transferImageBitmaps(v8::Isolate*, ImageBitmapArray&, ExceptionState&);
+    void transferArrayBuffers(v8::Isolate*, TransferableArrayBuffer*, ExceptionState&);
+    void transferImageBitmaps(v8::Isolate*, TransferableImageBitmap*, ExceptionState&);
     ArrayBufferContentsArray* getArrayBufferContentsArray() { return m_arrayBufferContentsArray.get(); }
     ImageBitmapContentsArray* getImageBitmapContentsArray() { return m_imageBitmapContentsArray.get(); }
 
-    static PassOwnPtr<ArrayBufferContentsArray> createArrayBuffers(v8::Isolate*, ArrayBufferArray&, ExceptionState&);
-    static PassOwnPtr<ImageBitmapContentsArray> createImageBitmaps(v8::Isolate*, ImageBitmapArray&, ExceptionState&);
+    static PassOwnPtr<ArrayBufferContentsArray> createArrayBuffers(v8::Isolate*, TransferableArrayBuffer*, ExceptionState&);
+    static PassOwnPtr<ImageBitmapContentsArray> createImageBitmaps(v8::Isolate*, TransferableImageBitmap*, ExceptionState&);
 
 private:
     String m_data;

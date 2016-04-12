@@ -4,6 +4,9 @@
 
 #include "bindings/core/v8/ScriptValueSerializer.h"
 
+#include "bindings/core/v8/Transferable.h"
+#include "bindings/core/v8/TransferableArrayBuffer.h"
+#include "bindings/core/v8/TransferableImageBitmap.h"
 #include "bindings/core/v8/V8ArrayBuffer.h"
 #include "bindings/core/v8/V8ArrayBufferView.h"
 #include "bindings/core/v8/V8Blob.h"
@@ -685,7 +688,7 @@ static bool isHostObject(v8::Local<v8::Object> object)
     return object->InternalFieldCount();
 }
 
-ScriptValueSerializer::ScriptValueSerializer(SerializedScriptValueWriter& writer, MessagePortArray* messagePorts, ArrayBufferArray* arrayBuffers, ImageBitmapArray* imageBitmaps, WebBlobInfoArray* blobInfo, BlobDataHandleMap& blobDataHandles, v8::TryCatch& tryCatch, ScriptState* scriptState)
+ScriptValueSerializer::ScriptValueSerializer(SerializedScriptValueWriter& writer, MessagePortArray* messagePorts, TransferableArray* transferables, WebBlobInfoArray* blobInfo, BlobDataHandleMap& blobDataHandles, v8::TryCatch& tryCatch, ScriptState* scriptState)
     : m_scriptState(scriptState)
     , m_writer(writer)
     , m_tryCatch(tryCatch)
@@ -701,17 +704,19 @@ ScriptValueSerializer::ScriptValueSerializer(SerializedScriptValueWriter& writer
         for (size_t i = 0; i < messagePorts->size(); i++)
             m_transferredMessagePorts.set(toV8Object(messagePorts->at(i).get(), creationContext, isolate()), i);
     }
-    if (arrayBuffers) {
-        for (size_t i = 0; i < arrayBuffers->size(); i++)  {
-            v8::Local<v8::Object> v8ArrayBuffer = toV8Object(arrayBuffers->at(i).get(), creationContext, isolate());
+    if (!transferables)
+        return;
+    if (auto* arrayBuffers = TransferableArrayBuffer::get(*transferables)) {
+        for (size_t i = 0; i < arrayBuffers->getArray().size(); i++)  {
+            v8::Local<v8::Object> v8ArrayBuffer = toV8Object(arrayBuffers->getArray().at(i).get(), creationContext, isolate());
             // Coalesce multiple occurences of the same buffer to the first index.
             if (!m_transferredArrayBuffers.contains(v8ArrayBuffer))
                 m_transferredArrayBuffers.set(v8ArrayBuffer, i);
         }
     }
-    if (imageBitmaps) {
-        for (size_t i = 0; i < imageBitmaps->size(); i++) {
-            v8::Local<v8::Object> v8ImageBitmap = toV8Object(imageBitmaps->at(i).get(), creationContext, isolate());
+    if (auto* imageBitmaps = TransferableImageBitmap::get(*transferables)) {
+        for (size_t i = 0; i < imageBitmaps->getArray().size(); i++) {
+            v8::Local<v8::Object> v8ImageBitmap = toV8Object(imageBitmaps->getArray().at(i).get(), creationContext, isolate());
             if (!m_transferredImageBitmaps.contains(v8ImageBitmap))
                 m_transferredImageBitmaps.set(v8ImageBitmap, i);
         }

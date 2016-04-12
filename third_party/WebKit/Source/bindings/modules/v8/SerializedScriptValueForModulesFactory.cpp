@@ -11,7 +11,7 @@
 
 namespace blink {
 
-PassRefPtr<SerializedScriptValue> SerializedScriptValueForModulesFactory::create(v8::Isolate* isolate, v8::Local<v8::Value> value, MessagePortArray* messagePorts, ArrayBufferArray* arrayBuffers, ImageBitmapArray* imageBitmaps, WebBlobInfoArray* blobInfo, ExceptionState& exceptionState)
+PassRefPtr<SerializedScriptValue> SerializedScriptValueForModulesFactory::create(v8::Isolate* isolate, v8::Local<v8::Value> value, MessagePortArray* messagePorts, TransferableArray* transferables, WebBlobInfoArray* blobInfo, ExceptionState& exceptionState)
 {
     RefPtr<SerializedScriptValue> serializedValue = SerializedScriptValueFactory::create();
     SerializedScriptValueWriterForModules writer;
@@ -19,7 +19,7 @@ PassRefPtr<SerializedScriptValue> SerializedScriptValueForModulesFactory::create
     String errorMessage;
     {
         v8::TryCatch tryCatch(isolate);
-        status = SerializedScriptValueFactory::doSerialize(value, writer, messagePorts, arrayBuffers, imageBitmaps, blobInfo, serializedValue.get(), tryCatch, errorMessage, isolate);
+        status = SerializedScriptValueFactory::doSerialize(value, writer, messagePorts, transferables, blobInfo, serializedValue.get(), tryCatch, errorMessage, isolate);
         if (status == ScriptValueSerializer::JSException) {
             // If there was a JS exception thrown, re-throw it.
             exceptionState.rethrowV8Exception(tryCatch.Exception());
@@ -32,7 +32,7 @@ PassRefPtr<SerializedScriptValue> SerializedScriptValueForModulesFactory::create
         exceptionState.throwDOMException(DataCloneError, errorMessage);
         return serializedValue.release();
     case ScriptValueSerializer::Success:
-        transferData(serializedValue.get(), writer, arrayBuffers, imageBitmaps, exceptionState, isolate);
+        transferData(serializedValue.get(), writer, transferables, exceptionState, isolate);
         return serializedValue.release();
     case ScriptValueSerializer::JSException:
         ASSERT_NOT_REACHED();
@@ -50,9 +50,9 @@ PassRefPtr<SerializedScriptValue> SerializedScriptValueForModulesFactory::create
     return createFromWire(wireData);
 }
 
-ScriptValueSerializer::Status SerializedScriptValueForModulesFactory::doSerialize(v8::Local<v8::Value> value, SerializedScriptValueWriter& writer, MessagePortArray* messagePorts, ArrayBufferArray* arrayBuffers, ImageBitmapArray* imageBitmaps, WebBlobInfoArray* blobInfo, BlobDataHandleMap& blobDataHandles, v8::TryCatch& tryCatch, String& errorMessage, v8::Isolate* isolate)
+ScriptValueSerializer::Status SerializedScriptValueForModulesFactory::doSerialize(v8::Local<v8::Value> value, SerializedScriptValueWriter& writer, MessagePortArray* messagePorts, TransferableArray* transferables, WebBlobInfoArray* blobInfo, BlobDataHandleMap& blobDataHandles, v8::TryCatch& tryCatch, String& errorMessage, v8::Isolate* isolate)
 {
-    ScriptValueSerializerForModules serializer(writer, messagePorts, arrayBuffers, imageBitmaps, blobInfo, blobDataHandles, tryCatch, ScriptState::current(isolate));
+    ScriptValueSerializerForModules serializer(writer, messagePorts, transferables, blobInfo, blobDataHandles, tryCatch, ScriptState::current(isolate));
     ScriptValueSerializer::Status status = serializer.serialize(value);
     errorMessage = serializer.errorMessage();
     return status;
