@@ -46,8 +46,8 @@ class ModuleSystem : public ObjectBackedNativeHandler,
    public:
     virtual ~SourceMap() {}
     virtual v8::Local<v8::Value> GetSource(v8::Isolate* isolate,
-                                           const std::string& name) = 0;
-    virtual bool Contains(const std::string& name) = 0;
+                                           const std::string& name) const = 0;
+    virtual bool Contains(const std::string& name) const = 0;
   };
 
   class ExceptionHandler {
@@ -76,7 +76,7 @@ class ModuleSystem : public ObjectBackedNativeHandler,
   };
 
   // |source_map| is a weak pointer.
-  ModuleSystem(ScriptContext* context, SourceMap* source_map);
+  ModuleSystem(ScriptContext* context, const SourceMap* source_map);
   ~ModuleSystem() override;
 
   // Require the specified module. This is the equivalent of calling
@@ -220,7 +220,7 @@ class ModuleSystem : public ObjectBackedNativeHandler,
 
   // A map from module names to the JS source for that module. GetSource()
   // performs a lookup on this map.
-  SourceMap* source_map_;
+  const SourceMap* const source_map_;
 
   // A map from native handler names to native handlers.
   NativeHandlerMap native_handler_map_;

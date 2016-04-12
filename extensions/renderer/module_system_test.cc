@@ -105,13 +105,14 @@ class ModuleSystemTestEnvironment::StringSourceMap
   ~StringSourceMap() override {}
 
   v8::Local<v8::Value> GetSource(v8::Isolate* isolate,
-                                 const std::string& name) override {
-    if (source_map_.count(name) == 0)
+                                 const std::string& name) const override {
+    const auto& source_map_iter = source_map_.find(name);
+    if (source_map_iter == source_map_.end())
       return v8::Undefined(isolate);
-    return v8::String::NewFromUtf8(isolate, source_map_[name].c_str());
+    return v8::String::NewFromUtf8(isolate, source_map_iter->second.c_str());
   }
 
-  bool Contains(const std::string& name) override {
+  bool Contains(const std::string& name) const override {
     return source_map_.count(name);
   }
 

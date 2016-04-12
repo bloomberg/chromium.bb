@@ -139,7 +139,7 @@ std::string ModuleSystem::ExceptionHandler::CreateExceptionString(
                             error_message.c_str());
 }
 
-ModuleSystem::ModuleSystem(ScriptContext* context, SourceMap* source_map)
+ModuleSystem::ModuleSystem(ScriptContext* context, const SourceMap* source_map)
     : ObjectBackedNativeHandler(context),
       context_(context),
       source_map_(source_map),
