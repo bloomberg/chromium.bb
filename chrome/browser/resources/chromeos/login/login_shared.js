@@ -1,9 +1,15 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 /**
- * @fileoverview Common OOBE controller methods.
+ * @fileoverview Common OOBE controller methods. This method is shared between
+ * OOBE, login, and the lock screen. Add only methods that need to be shared
+ * between all *three* screens here, as each additional method increases the
+ * time it takes to show the lock screen.
+ *
+ * If a method needs to be shared between the oobe and login screens, add it to
+ * login_non_lock_shared.js.
  */
 
 <include src="test_util.js">
@@ -14,25 +20,11 @@
 <include src="../../../../../ui/login/bubble.js">
 <include src="../../../../../ui/login/display_manager.js">
 <include src="header_bar.js">
-<include src="network_dropdown.js">
-<include src="oobe_screen_reset_confirmation_overlay.js">
-<include src="oobe_screen_reset.js">
-<include src="oobe_screen_autolaunch.js">
-<include src="oobe_screen_enable_kiosk.js">
-<include src="oobe_screen_terms_of_service.js">
-<include src="oobe_screen_user_image.js">
+
+<include src="../../../../../ui/login/account_picker/user_pod_template.js">
+
 <include src="../../../../../ui/login/account_picker/screen_account_picker.js">
-<include src="screen_app_launch_splash.js">
-<include src="screen_error_message.js">
-<include src="screen_gaia_signin.js">
-<include src="screen_password_changed.js">
-<include src="screen_supervised_user_creation.js">
-<include src="screen_tpm_error.js">
-<include src="screen_wrong_hwid.js">
-<include src="screen_confirm_password.js">
-<include src="screen_fatal_error.js">
-<include src="screen_device_disabled.js">
-<include src="screen_unrecoverable_cryptohome_error.js">
+
 <include src="../../../../../ui/login/login_ui_tools.js">
 <include src="../../../../../ui/login/account_picker/user_pod_row.js">
 <include src="../../../../../ui/login/resource_loader.js">
@@ -99,6 +91,7 @@ cr.define('cr.ui', function() {
    * Update body class to switch between OOBE UI and Login UI.
    */
   Oobe.showOobeUI = function(showOobe) {
+    console.log('Oobe.showOobeUI(' + showOobe + ')');
     if (showOobe) {
       document.body.classList.add('oobe-display');
 
@@ -399,28 +392,12 @@ disableTextSelectAndDrag(function(e) {
          /text|password|search/.test(src.type);
 });
 
-// Register assets for async loading.
-[{
-  id: SCREEN_OOBE_ENROLLMENT,
-  html: [{ url: 'chrome://oobe/enrollment.html', targetID: 'inner-container' }],
-  css: ['chrome://oobe/enrollment.css'],
-  js: ['chrome://oobe/enrollment.js']
-}].forEach(cr.ui.login.ResourceLoader.registerAssets);
 
 (function() {
   'use strict';
 
   document.addEventListener('DOMContentLoaded', function() {
-    // Immediately load async assets.
-    // TODO(dconnelly): remove this at some point and only load as needed.
-    // See crbug.com/236426
-    cr.ui.login.ResourceLoader.loadAssets(SCREEN_OOBE_ENROLLMENT, function() {
-      // This screen is async-loaded so we manually trigger i18n processing.
-      i18nTemplate.process($('oauth-enrollment'), loadTimeData);
-      // Delayed binding since this isn't defined yet.
-      login.OAuthEnrollmentScreen.register();
-    });
-
-    cr.ui.Oobe.initialize();
+    Oobe.initialize();
   });
 })();
+

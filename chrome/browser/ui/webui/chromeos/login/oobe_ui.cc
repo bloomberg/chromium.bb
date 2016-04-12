@@ -93,6 +93,7 @@ OobeScreen kDimOverlayScreenIds[] = {
 };
 
 const char kStringsJSPath[] = "strings.js";
+const char kLockJSPath[] = "lock.js";
 const char kLoginJSPath[] = "login.js";
 const char kOobeJSPath[] = "oobe.js";
 const char kKeyboardUtilsJSPath[] = "keyboard_utils.js";
@@ -119,6 +120,12 @@ content::WebUIDataSource* CreateOobeUIDataSource(
     source->AddResourcePath(kCustomElementsHTMLPath,
                             IDR_CUSTOM_ELEMENTS_OOBE_HTML);
     source->AddResourcePath(kCustomElementsJSPath, IDR_CUSTOM_ELEMENTS_OOBE_JS);
+  } else if (display_type == OobeUI::kLockDisplay) {
+    source->SetDefaultResource(IDR_LOCK_HTML);
+    source->AddResourcePath(kLockJSPath, IDR_LOCK_JS);
+    source->AddResourcePath(kCustomElementsHTMLPath,
+                            IDR_CUSTOM_ELEMENTS_LOCK_HTML);
+    source->AddResourcePath(kCustomElementsJSPath, IDR_CUSTOM_ELEMENTS_LOCK_JS);
   } else {
     source->SetDefaultResource(IDR_LOGIN_HTML);
     source->AddResourcePath(kLoginJSPath, IDR_LOGIN_JS);

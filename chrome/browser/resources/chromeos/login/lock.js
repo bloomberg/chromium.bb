@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,8 +7,6 @@
  */
 
 <include src="login_shared.js">
-<include src="login_non_lock_shared.js">
-<include src="notification_card.js">
 
 cr.define('cr.ui.Oobe', function() {
   return {
@@ -17,24 +15,11 @@ cr.define('cr.ui.Oobe', function() {
      * be invoked to do final setup.
      */
     initialize: function() {
+      // TODO(jdufault): Remove this after resolving crbug.com/452599.
+      console.log('Start initializing LOCK OOBE');
+
       cr.ui.login.DisplayManager.initialize();
-      login.WrongHWIDScreen.register();
       login.AccountPickerScreen.register();
-      login.GaiaSigninScreen.register();
-      login.UserImageScreen.register(/* lazyInit= */ true);
-      login.ResetScreen.register();
-      login.AutolaunchScreen.register();
-      login.KioskEnableScreen.register();
-      login.ErrorMessageScreen.register();
-      login.TPMErrorMessageScreen.register();
-      login.PasswordChangedScreen.register();
-      login.SupervisedUserCreationScreen.register();
-      login.TermsOfServiceScreen.register();
-      login.AppLaunchSplashScreen.register();
-      login.ConfirmPasswordScreen.register();
-      login.FatalErrorScreen.register();
-      login.DeviceDisabledScreen.register();
-      login.UnrecoverableCryptohomeErrorScreen.register();
 
       cr.ui.Bubble.decorate($('bubble'));
       login.HeaderBar.decorate($('login-header-bar'));
