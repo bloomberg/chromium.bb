@@ -1,50 +1,30 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Ensure that a TextTrackCue won't be collected if it has a custom property.</title>
+<script src="../../resources/gc.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script>
+async_test(function(t) {
+    var video = document.createElement('video');
+    var trackElement = document.createElement('track');
 
-        <!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src=../video-test.js></script>
-        <script>
+    trackElement.onload = t.step_func(function() {
+        assert_equals(video.textTracks[0].cues.length, 4);
+        assert_equals(video.textTracks[0].cues[1].startTime, 31);
 
-            function forceGC()
-            {
-                if (window.GCController)
-                    return GCController.collectAll();
+        video.textTracks[0].cues[1].myProperty = 'tuna salad?';
+        assert_equals(video.textTracks[0].cues[1].myProperty, 'tuna salad?');
 
-                // Force garbage collection
-                for (var ndx = 0; ndx < 99000; ndx++)
-                    var str = new String("1234");
-            }
+        gc();
+        setTimeout(t.step_func_done(function() {
+            assert_equals(video.textTracks[0].cues.length, 4);
+            assert_equals(video.textTracks[0].cues[1].myProperty, 'tuna salad?');
+        }), 0);
+    });
 
-            function trackLoaded()
-            {
-                findMediaElement();
-
-                consoleWrite("** Validate.");
-                testExpected("video.textTracks[0].cues.length", 4);
-                testExpected("video.textTracks[0].cues[1].startTime", 31);
-
-                consoleWrite("<br>** Add a custom property to a cue.");
-                run("video.textTracks[0].cues[1].myProperty = 'tuna salad?'");
-                testExpected("video.textTracks[0].cues[1].myProperty", "tuna salad?");
-
-                consoleWrite("<br>** Force garbage collection.");
-                forceGC();
-                testExpected("video.textTracks[0].cues.length", 4);
-                testExpected("video.textTracks[0].cues[1].myProperty", "tuna salad?");
-
-                consoleWrite("");
-                endTest();
-            }
-
-        </script>
-    </head>
-    <body>
-        <p>Ensure that a TextTrackCue won't be collected if it has a custom property.</p>
-        <video>
-            <track src="captions-webvtt/tc013-settings.vtt" kind="captions" onload="trackLoaded()" default>
-        </video>
-    </body>
-</html>
+    trackElement.src = 'captions-webvtt/tc013-settings.vtt';
+    trackElement.kind = 'captions';
+    trackElement.default = true;
+    video.appendChild(trackElement);
+});
+</script>

@@ -1,55 +1,39 @@
 <!doctype html>
-<html>
-    <head>
-        <script src=../media-file.js></script>
-        <!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src=../video-test.js></script>
+<title>Test to ensure that no text track cues are active after the video is unloaded.</title>
+<script src="../media-file.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script>
+async_test(function(t) {
+    var eventCount = 0;
 
-        <script>
-            function clearSrc()
-            {
-                consoleWrite("<br>** Video and track loaded, one cue should be active **");
-                testExpected("trackElement.track.activeCues.length", 1);
+    function eventCallback() {
+        eventCount++;
+        if (eventCount == 3) {
+            assert_equals(trackElement.track.activeCues.length, 1);
+            video.src = '';
+        }
+    }
 
-                consoleWrite("<br>** Clear video 'src' and force reload **");
-                run("video.src = ''");
-                consoleWrite("");
-            }
+    var video = document.createElement('video');
+    video.src = findMediaFile('video', '../content/test');
+    var trackElement = document.createElement('track');
 
-            function videoError()
-            {
-                consoleWrite("** 'error' event, no cues should be active **)");
-                testExpected("event.target", video);
-                testExpected("video.error", null, "!=");
-                testExpected("video.error.code", MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED);
-                testExpected("video.networkState", HTMLMediaElement.NETWORK_NO_SOURCE);
-                testExpected("trackElement.track.activeCues.length", 0);
+    trackElement.onload = t.step_func(eventCallback);
+    trackElement.oncuechange = t.step_func(eventCallback);
+    video.oncanplaythrough = t.step_func(eventCallback);
 
-                consoleWrite("");
-                endTest();
-            }
+    video.onerror = t.step_func_done(function() {
+        assert_equals(event.target, video);
+        assert_not_equals(video.error, null);
+        assert_equals(video.error.code, MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED);
+        assert_equals(video.networkState, HTMLMediaElement.NETWORK_NO_SOURCE);
+        assert_equals(trackElement.track.activeCues.length, 0);
+    });
 
-            function setup()
-            {
-                consoleWrite("");
-
-                findMediaElement();
-                trackElement = document.querySelector('track');
-
-                waitForEventsAndCall([[video, 'canplaythrough'], [trackElement, 'load'], [trackElement, 'cuechange']], clearSrc);
-
-                video.src = findMediaFile("video", "../content/test");
-            }
-
-        </script>
-    </head>
-    <body onload="setup()">
-        <video controls onerror="videoError()">
-            <track src="captions-webvtt/captions-fast.vtt" kind="captions" default>
-        </video>
-
-        <p>Test to ensure that a no text track cues are active after the video is unloaded.</p>
-
-    </body>
-</html>
+    trackElement.src = 'captions-webvtt/captions-fast.vtt';
+    trackElement.kind = 'captions';
+    trackElement.default = true;
+    video.appendChild(trackElement);
+});
+</script>
