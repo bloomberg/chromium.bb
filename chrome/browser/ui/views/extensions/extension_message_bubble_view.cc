@@ -10,8 +10,8 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
-#include "chrome/browser/extensions/extension_message_bubble_controller.h"
 #include "chrome/browser/ui/layout_constants.h"
+#include "chrome/browser/ui/toolbar/toolbar_actions_bar_bubble_delegate.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/grit/locale_settings.h"
 #include "ui/accessibility/ax_view_state.h"
@@ -44,9 +44,9 @@ namespace extensions {
 ExtensionMessageBubbleView::ExtensionMessageBubbleView(
     views::View* anchor_view,
     views::BubbleBorder::Arrow arrow_location,
-    std::unique_ptr<extensions::ExtensionMessageBubbleController> controller)
+    std::unique_ptr<ToolbarActionsBarBubbleDelegate> delegate)
     : BubbleDelegateView(anchor_view, arrow_location),
-      controller_(std::move(controller)),
+      delegate_(std::move(delegate)),
       anchor_view_(anchor_view),
       headline_(NULL),
       learn_more_(NULL),
@@ -55,7 +55,7 @@ ExtensionMessageBubbleView::ExtensionMessageBubbleView(
       action_taken_(false),
       weak_factory_(this) {
   DCHECK(anchor_view->GetWidget());
-  set_close_on_deactivate(controller_->CloseOnDeactivate());
+  set_close_on_deactivate(delegate_->ShouldCloseOnDeactivate());
   set_close_on_esc(true);
 
   // Compensate for built-in vertical padding in the anchor view's image.
@@ -83,7 +83,10 @@ void ExtensionMessageBubbleView::OnWidgetDestroying(views::Widget* widget) {
   // we assume Dismiss was the action taken.
   if (!link_clicked_ && !action_taken_) {
     bool closed_on_deactivation = close_reason() == CloseReason::DEACTIVATION;
-    controller_->OnBubbleDismiss(closed_on_deactivation);
+    delegate_->OnBubbleClosed(
+        closed_on_deactivation
+            ? ToolbarActionsBarBubbleDelegate::CLOSE_DISMISS_DEACTIVATION
+            : ToolbarActionsBarBubbleDelegate::CLOSE_DISMISS_USER_ACTION);
   }
 }
 
@@ -100,8 +103,8 @@ ExtensionMessageBubbleView::~ExtensionMessageBubbleView() {}
 void ExtensionMessageBubbleView::ShowBubble() {
   // Since we delay in showing the bubble, the applicable extension(s) may
   // have been removed.
-  if (controller_->ShouldShow()) {
-    controller_->OnShown();
+  if (delegate_->ShouldShow()) {
+    delegate_->OnBubbleShown();
     GetWidget()->Show();
   } else {
     GetWidget()->Close();
@@ -116,9 +119,6 @@ void ExtensionMessageBubbleView::Init() {
                     kInsetBottomRight, kInsetBottomRight);
   SetLayoutManager(layout);
 
-  ExtensionMessageBubbleController::Delegate* delegate =
-      controller_->delegate();
-
   const int headline_column_set_id = 0;
   views::ColumnSet* top_columns = layout->AddColumnSet(headline_column_set_id);
   top_columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
@@ -126,7 +126,7 @@ void ExtensionMessageBubbleView::Init() {
   top_columns->AddPaddingColumn(1, 0);
   layout->StartRow(0, headline_column_set_id);
 
-  headline_ = new views::Label(delegate->GetTitle(),
+  headline_ = new views::Label(delegate_->GetHeadingText(),
                                rb.GetFontList(ui::ResourceBundle::MediumFont));
   layout->AddView(headline_);
 
@@ -142,14 +142,14 @@ void ExtensionMessageBubbleView::Init() {
   views::Label* message = new views::Label();
   message->SetMultiLine(true);
   message->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  message->SetText(delegate->GetMessageBody(
-      anchor_view_->id() == VIEW_ID_BROWSER_ACTION,
-      controller_->GetExtensionIdList().size()));
+  message->SetText(
+      delegate_->GetBodyText(anchor_view_->id() == VIEW_ID_BROWSER_ACTION));
   message->SizeToFit(views::Widget::GetLocalizedContentsWidth(
       IDS_EXTENSION_WIPEOUT_BUBBLE_WIDTH_CHARS));
   layout->AddView(message);
 
-  if (delegate->ShouldShowExtensionList()) {
+  base::string16 item_list_text = delegate_->GetItemListText();
+  if (!item_list_text.empty()) {
     const int extension_list_column_set_id = 2;
     views::ColumnSet* middle_columns =
         layout->AddColumnSet(extension_list_column_set_id);
@@ -164,13 +164,13 @@ void ExtensionMessageBubbleView::Init() {
     extensions->SetMultiLine(true);
     extensions->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
-    extensions->SetText(controller_->GetExtensionListForDisplay());
+    extensions->SetText(item_list_text);
     extensions->SizeToFit(views::Widget::GetLocalizedContentsWidth(
         IDS_EXTENSION_WIPEOUT_BUBBLE_WIDTH_CHARS));
     layout->AddView(extensions);
   }
 
-  base::string16 action_button = delegate->GetActionButtonLabel();
+  base::string16 action_button = delegate_->GetActionButtonText();
 
   const int action_row_column_set_id = 3;
   views::ColumnSet* bottom_columns =
@@ -187,7 +187,7 @@ void ExtensionMessageBubbleView::Init() {
   layout->StartRowWithPadding(0, action_row_column_set_id,
                               0, kMessageBubblePadding);
 
-  learn_more_ = new views::Link(delegate->GetLearnMoreLabel());
+  learn_more_ = new views::Link(delegate_->GetLearnMoreButtonText());
   learn_more_->set_listener(this);
   layout->AddView(learn_more_);
 
@@ -197,8 +197,8 @@ void ExtensionMessageBubbleView::Init() {
     layout->AddView(action_button_);
   }
 
-  dismiss_button_ = new views::LabelButton(this,
-      delegate->GetDismissButtonLabel());
+  dismiss_button_ =
+      new views::LabelButton(this, delegate_->GetDismissButtonText());
   dismiss_button_->SetStyle(views::Button::STYLE_BUTTON);
   layout->AddView(dismiss_button_);
 }
@@ -206,12 +206,14 @@ void ExtensionMessageBubbleView::Init() {
 void ExtensionMessageBubbleView::ButtonPressed(views::Button* sender,
                                                const ui::Event& event) {
   action_taken_ = true;
+  ToolbarActionsBarBubbleDelegate::CloseAction close_action;
   if (sender == action_button_) {
-    controller_->OnBubbleAction();
+    close_action = ToolbarActionsBarBubbleDelegate::CLOSE_EXECUTE;
   } else {
     DCHECK_EQ(dismiss_button_, sender);
-    controller_->OnBubbleDismiss(false);  // Not closed by deactivation.
+    close_action = ToolbarActionsBarBubbleDelegate::CLOSE_DISMISS_USER_ACTION;
   }
+  delegate_->OnBubbleClosed(close_action);
   GetWidget()->Close();
 }
 
@@ -219,7 +221,7 @@ void ExtensionMessageBubbleView::LinkClicked(views::Link* source,
                                              int event_flags) {
   DCHECK_EQ(learn_more_, source);
   link_clicked_ = true;
-  controller_->OnLinkClicked();
+  delegate_->OnBubbleClosed(ToolbarActionsBarBubbleDelegate::CLOSE_LEARN_MORE);
   GetWidget()->Close();
 }
 

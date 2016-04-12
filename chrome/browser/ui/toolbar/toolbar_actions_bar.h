@@ -7,6 +7,8 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
@@ -181,6 +183,9 @@ class ToolbarActionsBar : public ToolbarActionsModel::Observer {
   // Notifies the ToolbarActionsBar that the delegate finished animating.
   void OnAnimationEnded();
 
+  // Called when the active bubble is closed.
+  void OnBubbleClosed();
+
   // Returns true if the given |action| is visible on the main toolbar.
   bool IsActionVisibleOnMainBar(const ToolbarActionViewController* action)
       const;
@@ -337,16 +342,12 @@ class ToolbarActionsBar : public ToolbarActionsModel::Observer {
   // it is fully popped out.
   base::Closure popped_out_closure_;
 
-  // The controller of the extension message bubble to show once animation
-  // finishes, if any. This has priority over
-  // |pending_toolbar_bubble_controller_|.
-  std::unique_ptr<extensions::ExtensionMessageBubbleController>
-      pending_extension_bubble_controller_;
-
   // The controller for the toolbar action bubble to show once animation
   // finishes, if any.
-  std::unique_ptr<ToolbarActionsBarBubbleDelegate>
-      pending_toolbar_bubble_controller_;
+  std::unique_ptr<ToolbarActionsBarBubbleDelegate> pending_bubble_controller_;
+
+  // True if a bubble is currently being shown.
+  bool is_showing_bubble_;
 
   base::ObserverList<ToolbarActionsBarObserver> observers_;
 

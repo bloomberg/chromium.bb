@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_TOOLBAR_TOOLBAR_ACTIONS_BAR_BUBBLE_VIEWS_H_
 #define CHROME_BROWSER_UI_VIEWS_TOOLBAR_TOOLBAR_ACTIONS_BAR_BUBBLE_VIEWS_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/button/button.h"
@@ -42,6 +44,8 @@ class ToolbarActionsBarBubbleViews : public views::BubbleDelegateView,
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
+
+  views::View* anchor_view_;
 
   std::unique_ptr<ToolbarActionsBarBubbleDelegate> delegate_;
 

@@ -7,6 +7,8 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
@@ -239,9 +241,6 @@ class BrowserActionsContainer : public views::View,
   int GetChevronWidth() const override;
   void ShowToolbarActionBubble(
       std::unique_ptr<ToolbarActionsBarBubbleDelegate> controller) override;
-  void ShowExtensionMessageBubble(
-      std::unique_ptr<extensions::ExtensionMessageBubbleController> controller,
-      ToolbarActionViewController* anchor_action) override;
 
   // views::WidgetObserver:
   void OnWidgetClosing(views::Widget* widget) override;

@@ -66,14 +66,8 @@ class ToolbarActionsBarDelegate {
   // Returns the width (including padding) for the overflow chevron.
   virtual int GetChevronWidth() const = 0;
 
-  // Displays the bubble for the passed ExtensionMessageBubbleController,
-  // anchored to |anchor_action|. If |anchor_action| is null, it should be
-  // anchored to the hotdog menu.
-  virtual void ShowExtensionMessageBubble(
-      std::unique_ptr<extensions::ExtensionMessageBubbleController> controller,
-      ToolbarActionViewController* anchor_action) = 0;
-
-  // Shows the given |bubble| if no other bubbles are showing.
+  // Shows the given |bubble|. Must not be called if another bubble is showing
+  // or if the toolbar is animating.
   virtual void ShowToolbarActionBubble(
       std::unique_ptr<ToolbarActionsBarBubbleDelegate> bubble) = 0;
 };

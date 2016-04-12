@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/toolbar/toolbar_actions_bar_bubble_views.h"
 
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar_bubble_delegate.h"
+#include "chrome/browser/ui/view_ids.h"
 #include "chrome/grit/locale_settings.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/views/controls/button/label_button.h"
@@ -16,12 +17,15 @@ ToolbarActionsBarBubbleViews::ToolbarActionsBarBubbleViews(
     views::View* anchor_view,
     std::unique_ptr<ToolbarActionsBarBubbleDelegate> delegate)
     : views::BubbleDelegateView(anchor_view, views::BubbleBorder::TOP_RIGHT),
+      anchor_view_(anchor_view),
       delegate_(std::move(delegate)),
       heading_label_(nullptr),
       content_label_(nullptr),
       dismiss_button_(nullptr),
       action_button_(nullptr),
-      acknowledged_(false) {}
+      acknowledged_(false) {
+  set_close_on_deactivate(delegate_->ShouldCloseOnDeactivate());
+}
 
 ToolbarActionsBarBubbleViews::~ToolbarActionsBarBubbleViews() {}
 
@@ -68,7 +72,8 @@ void ToolbarActionsBarBubbleViews::Init() {
 
   // Add the content string.
   layout->StartRow(0, HEADER_AND_BODY_COLUMN_SET);
-  content_label_ = new views::Label(delegate_->GetBodyText());
+  content_label_ = new views::Label(
+      delegate_->GetBodyText(anchor_view_->id() == VIEW_ID_BROWSER_ACTION));
   content_label_->SetMultiLine(true);
   content_label_->SizeToFit(width);
   content_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);

@@ -59,10 +59,8 @@ void ExtensionMessageBubbleBrowserTest::TestBubbleAnchoredToAppMenu() {
           extensions::extension_action_test_util::NO_ACTION,
           extensions::Manifest::UNPACKED);
   extension_service()->AddExtension(no_action_extension.get());
-
   Browser* second_browser = new Browser(Browser::CreateParams(profile()));
   base::RunLoop().RunUntilIdle();
-
   CheckBubble(second_browser, ANCHOR_APP_MENU);
   CloseBubble(second_browser);
 }

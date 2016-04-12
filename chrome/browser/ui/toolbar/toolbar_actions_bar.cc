@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/extension_action_view_controller.h"
+#include "chrome/browser/ui/extensions/extension_message_bubble_bridge.h"
 #include "chrome/browser/ui/extensions/extension_message_bubble_factory.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -130,6 +131,7 @@ ToolbarActionsBar::ToolbarActionsBar(ToolbarActionsBarDelegate* delegate,
       is_drag_in_progress_(false),
       popped_out_action_(nullptr),
       is_popped_out_sticky_(false),
+      is_showing_bubble_(false),
       weak_ptr_factory_(this) {
   if (model_)  // |model_| can be null in unittests.
     model_observer_.Add(model_);
@@ -494,18 +496,23 @@ void ToolbarActionsBar::OnDragDrop(int dragged_index,
 }
 
 void ToolbarActionsBar::OnAnimationEnded() {
+  // Notify the observers now, since showing a bubble or popup could potentially
+  // cause another animation to start.
+  FOR_EACH_OBSERVER(ToolbarActionsBarObserver, observers_,
+                    OnToolbarActionsBarAnimationEnded());
+
   // Check if we were waiting for animation to complete to either show a
   // message bubble, or to show a popup.
-  if (pending_extension_bubble_controller_) {
-    MaybeShowExtensionBubble(std::move(pending_extension_bubble_controller_));
-  } else if (pending_toolbar_bubble_controller_) {
-    ShowToolbarActionBubble(std::move(pending_toolbar_bubble_controller_));
+  if (pending_bubble_controller_) {
+    ShowToolbarActionBubble(std::move(pending_bubble_controller_));
   } else if (!popped_out_closure_.is_null()) {
     popped_out_closure_.Run();
     popped_out_closure_.Reset();
   }
-  FOR_EACH_OBSERVER(ToolbarActionsBarObserver, observers_,
-                    OnToolbarActionsBarAnimationEnded());
+}
+
+void ToolbarActionsBar::OnBubbleClosed() {
+  is_showing_bubble_ = false;
 }
 
 bool ToolbarActionsBar::IsActionVisibleOnMainBar(
@@ -586,34 +593,26 @@ void ToolbarActionsBar::RemoveObserver(ToolbarActionsBarObserver* observer) {
 
 void ToolbarActionsBar::ShowToolbarActionBubble(
     std::unique_ptr<ToolbarActionsBarBubbleDelegate> bubble) {
-  DCHECK(bubble->GetAnchorActionId().empty() ||
-         GetActionForId(bubble->GetAnchorActionId()));
-  if (delegate_->IsAnimating())
-    pending_toolbar_bubble_controller_ = std::move(bubble);
-  else
+  if (delegate_->IsAnimating()) {
+    // If the toolbar is animating, we can't effectively anchor the bubble,
+    // so wait until animation stops.
+    pending_bubble_controller_ = std::move(bubble);
+  } else if (bubble->ShouldShow()) {
+    // We check ShouldShow() above since we show the bubble asynchronously, and
+    // it might no longer have been valid.
+    is_showing_bubble_ = true;
     delegate_->ShowToolbarActionBubble(std::move(bubble));
+  }
 }
 
 void ToolbarActionsBar::MaybeShowExtensionBubble(
     std::unique_ptr<extensions::ExtensionMessageBubbleController> controller) {
+  if (!controller->ShouldShow())
+    return;
+
   controller->HighlightExtensionsIfNecessary();  // Safe to call multiple times.
-  if (delegate_->IsAnimating()) {
-    // If the toolbar is animating, we can't effectively anchor the bubble,
-    // so wait until animation stops.
-    pending_extension_bubble_controller_ = std::move(controller);
-  } else if (controller->ShouldShow()) {
-    // We check ShouldShow() above because the affected extensions may have been
-    // removed since the controller was initialized.
-    const std::vector<std::string>& affected_extensions =
-        controller->GetExtensionIdList();
-    ToolbarActionViewController* anchor_action = nullptr;
-    for (const std::string& id : affected_extensions) {
-      anchor_action = GetActionForId(id);
-      if (anchor_action)
-        break;
-    }
-    delegate_->ShowExtensionMessageBubble(std::move(controller), anchor_action);
-  }
+  ShowToolbarActionBubble(scoped_ptr<ToolbarActionsBarBubbleDelegate>(
+      new ExtensionMessageBubbleBridge(std::move(controller))));
 }
 
 void ToolbarActionsBar::OnToolbarActionAdded(

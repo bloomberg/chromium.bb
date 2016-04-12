@@ -13,6 +13,7 @@
 #include "ui/views/controls/link_listener.h"
 
 class Profile;
+class ToolbarActionsBarBubbleDelegate;
 
 namespace views {
 class Label;
@@ -21,8 +22,6 @@ class View;
 }
 
 namespace extensions {
-
-class ExtensionMessageBubbleController;
 
 // This is a class that implements the UI for the bubble showing which
 // extensions look suspicious and have therefore been automatically disabled.
@@ -33,7 +32,7 @@ class ExtensionMessageBubbleView : public views::BubbleDelegateView,
   ExtensionMessageBubbleView(
       views::View* anchor_view,
       views::BubbleBorder::Arrow arrow_location,
-      std::unique_ptr<ExtensionMessageBubbleController> controller);
+      std::unique_ptr<ToolbarActionsBarBubbleDelegate> delegate);
 
   // Shows the bubble after a five-second delay.
   void Show();
@@ -62,8 +61,8 @@ class ExtensionMessageBubbleView : public views::BubbleDelegateView,
   void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) override;
 
-  // The controller for this bubble.
-  std::unique_ptr<ExtensionMessageBubbleController> controller_;
+  // The delegate for this bubble.
+  std::unique_ptr<ToolbarActionsBarBubbleDelegate> delegate_;
 
   // The view this bubble is anchored against.
   views::View* anchor_view_;

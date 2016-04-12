@@ -2,30 +2,34 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/cocoa/extensions/extension_message_bubble_bridge.h"
+#include "chrome/browser/ui/extensions/extension_message_bubble_bridge.h"
 
 #include <utility>
 
 #include "chrome/browser/extensions/extension_message_bubble_controller.h"
-#include "chrome/browser/ui/cocoa/extensions/toolbar_actions_bar_bubble_mac.h"
 
 ExtensionMessageBubbleBridge::ExtensionMessageBubbleBridge(
-    std::unique_ptr<extensions::ExtensionMessageBubbleController> controller,
-    bool anchored_to_extension)
-    : controller_(std::move(controller)),
-      anchored_to_extension_(anchored_to_extension) {}
+    std::unique_ptr<extensions::ExtensionMessageBubbleController> controller)
+    : controller_(std::move(controller)) {}
 
-ExtensionMessageBubbleBridge::~ExtensionMessageBubbleBridge() {
+ExtensionMessageBubbleBridge::~ExtensionMessageBubbleBridge() {}
+
+bool ExtensionMessageBubbleBridge::ShouldShow() {
+  return controller_->ShouldShow();
+}
+
+bool ExtensionMessageBubbleBridge::ShouldCloseOnDeactivate() {
+  return controller_->CloseOnDeactivate();
 }
 
 base::string16 ExtensionMessageBubbleBridge::GetHeadingText() {
   return controller_->delegate()->GetTitle();
 }
 
-base::string16 ExtensionMessageBubbleBridge::GetBodyText() {
+base::string16 ExtensionMessageBubbleBridge::GetBodyText(
+    bool anchored_to_action) {
   return controller_->delegate()->GetMessageBody(
-      anchored_to_extension_,
-      controller_->GetExtensionIdList().size());
+      anchored_to_action, controller_->GetExtensionIdList().size());
 }
 
 base::string16 ExtensionMessageBubbleBridge::GetItemListText() {
@@ -45,15 +49,15 @@ base::string16 ExtensionMessageBubbleBridge::GetLearnMoreButtonText() {
 }
 
 std::string ExtensionMessageBubbleBridge::GetAnchorActionId() {
-  return controller_->GetExtensionIdList().size() == 1u ?
-      controller_->GetExtensionIdList()[0] : std::string();
+  return controller_->GetExtensionIdList().size() == 1u
+             ? controller_->GetExtensionIdList()[0]
+             : std::string();
 }
 
-void ExtensionMessageBubbleBridge::OnBubbleShown() {
-}
+void ExtensionMessageBubbleBridge::OnBubbleShown() {}
 
 void ExtensionMessageBubbleBridge::OnBubbleClosed(CloseAction action) {
-  switch(action) {
+  switch (action) {
     case CLOSE_DISMISS_USER_ACTION:
     case CLOSE_DISMISS_DEACTIVATION: {
       bool close_by_deactivate = action == CLOSE_DISMISS_DEACTIVATION;
@@ -67,4 +71,8 @@ void ExtensionMessageBubbleBridge::OnBubbleClosed(CloseAction action) {
       controller_->OnLinkClicked();
       break;
   }
+}
+
+bool ExtensionMessageBubbleBridge::IsExtensionMessageBubble() {
+  return true;
 }

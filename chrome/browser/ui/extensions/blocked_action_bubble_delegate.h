@@ -19,8 +19,10 @@ class BlockedActionBubbleDelegate : public ToolbarActionsBarBubbleDelegate {
 
  private:
   // ToolbarActionsBarBubbleDelegate:
+  bool ShouldShow() override;
+  bool ShouldCloseOnDeactivate() override;
   base::string16 GetHeadingText() override;
-  base::string16 GetBodyText() override;
+  base::string16 GetBodyText(bool anchored_to_action) override;
   base::string16 GetItemListText() override;
   base::string16 GetActionButtonText() override;
   base::string16 GetDismissButtonText() override;
@@ -28,6 +30,7 @@ class BlockedActionBubbleDelegate : public ToolbarActionsBarBubbleDelegate {
   std::string GetAnchorActionId() override;
   void OnBubbleShown() override;
   void OnBubbleClosed(CloseAction action) override;
+  bool IsExtensionMessageBubble() override;
 
   base::Callback<void(CloseAction)> callback_;
   std::string extension_id_;

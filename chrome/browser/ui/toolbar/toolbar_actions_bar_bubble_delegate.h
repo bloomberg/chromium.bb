@@ -21,11 +21,21 @@ class ToolbarActionsBarBubbleDelegate {
 
   virtual ~ToolbarActionsBarBubbleDelegate() {}
 
+  // Returns true if the bubble should (still) be shown. Since bubbles are
+  // sometimes shown asynchronously, they may be invalid by the time they would
+  // be displayed.
+  virtual bool ShouldShow() = 0;
+
+  // Returns true if the bubble should close on deactivation.
+  virtual bool ShouldCloseOnDeactivate() = 0;
+
   // Gets the text for the bubble's heading (title).
   virtual base::string16 GetHeadingText() = 0;
 
   // Gets the text for the bubble's body.
-  virtual base::string16 GetBodyText() = 0;
+  // |anchored_to_action| is true if the bubble is being anchored to a specific
+  // action (rather than the overflow menu or the full container).
+  virtual base::string16 GetBodyText(bool anchored_to_action) = 0;
 
   // Gets the text for an optional item list to display. If this returns an
   // empty string, no list will be added.
@@ -54,6 +64,10 @@ class ToolbarActionsBarBubbleDelegate {
 
   // Called when the bubble is closed with the type of action the user took.
   virtual void OnBubbleClosed(CloseAction action) = 0;
+
+  // Returns true if this is for an ExtensionMessageBubbleController.
+  // TODO(devlin): We shouldn't need this.
+  virtual bool IsExtensionMessageBubble() = 0;
 };
 
 #endif  // CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_ACTIONS_BAR_BUBBLE_DELEGATE_H_

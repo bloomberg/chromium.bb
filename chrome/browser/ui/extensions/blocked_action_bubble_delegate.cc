@@ -16,11 +16,22 @@ BlockedActionBubbleDelegate::BlockedActionBubbleDelegate(
 
 BlockedActionBubbleDelegate::~BlockedActionBubbleDelegate() {}
 
+bool BlockedActionBubbleDelegate::ShouldShow() {
+  // TODO(devlin): Technically, this could be wrong if the extension no longer
+  // wants to run, was unloaded, etc. We should update this.
+  return true;
+}
+
+bool BlockedActionBubbleDelegate::ShouldCloseOnDeactivate() {
+  return true;
+}
+
 base::string16 BlockedActionBubbleDelegate::GetHeadingText() {
   return l10n_util::GetStringUTF16(IDS_EXTENSION_BLOCKED_ACTION_BUBBLE_HEADING);
 }
 
-base::string16 BlockedActionBubbleDelegate::GetBodyText() {
+base::string16 BlockedActionBubbleDelegate::GetBodyText(
+    bool anchored_to_action) {
   return l10n_util::GetStringUTF16(IDS_EXTENSION_BLOCKED_ACTION_BUBBLE_CONTENT);
 }
 
@@ -50,4 +61,8 @@ void BlockedActionBubbleDelegate::OnBubbleShown() {}
 
 void BlockedActionBubbleDelegate::OnBubbleClosed(CloseAction action) {
   base::ResetAndReturn(&callback_).Run(action);
+}
+
+bool BlockedActionBubbleDelegate::IsExtensionMessageBubble() {
+  return false;
 }

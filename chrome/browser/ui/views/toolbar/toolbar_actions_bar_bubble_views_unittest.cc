@@ -157,3 +157,25 @@ TEST_F(ToolbarActionsBarBubbleViewsTest, TestCloseOnDeactivation) {
             *delegate.close_action());
   EXPECT_TRUE(bubble_observer.widget_closed());
 }
+
+TEST_F(ToolbarActionsBarBubbleViewsTest, TestDontCloseOnDeactivation) {
+  scoped_ptr<views::Widget> anchor_widget = CreateAnchorWidget();
+  TestToolbarActionsBarBubbleDelegate delegate(HeadingString(), BodyString(),
+                                               ActionString());
+  delegate.set_dismiss_button_text(DismissString());
+  delegate.set_close_on_deactivate(false);
+  ToolbarActionsBarBubbleViews* bubble = new ToolbarActionsBarBubbleViews(
+      anchor_widget->GetContentsView(), delegate.GetDelegate());
+  views::Widget* bubble_widget =
+      views::BubbleDelegateView::CreateBubble(bubble);
+  views::test::TestWidgetObserver bubble_observer(bubble_widget);
+  bubble->Show();
+
+  EXPECT_FALSE(delegate.close_action());
+  // Activate another widget. The bubble shouldn't close.
+  anchor_widget->Activate();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(delegate.close_action());
+  bubble_widget->Close();
+  base::RunLoop().RunUntilIdle();
+}

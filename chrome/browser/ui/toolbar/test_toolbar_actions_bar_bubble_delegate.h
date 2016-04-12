@@ -33,6 +33,9 @@ class TestToolbarActionsBarBubbleDelegate {
   void set_item_list_text(const base::string16& item_list) {
     item_list_ = item_list;
   }
+  void set_close_on_deactivate(bool close_on_deactivate) {
+    close_on_deactivate_ = close_on_deactivate;
+  }
 
   const ToolbarActionsBarBubbleDelegate::CloseAction* close_action() const {
     return close_action_.get();
@@ -55,6 +58,9 @@ class TestToolbarActionsBarBubbleDelegate {
   base::string16 dismiss_;
   base::string16 learn_more_;
   base::string16 item_list_;
+
+  // Whether to close the bubble on deactivation.
+  bool close_on_deactivate_;
 
   DISALLOW_COPY_AND_ASSIGN(TestToolbarActionsBarBubbleDelegate);
 };

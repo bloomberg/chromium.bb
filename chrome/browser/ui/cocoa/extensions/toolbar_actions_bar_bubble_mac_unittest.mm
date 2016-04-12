@@ -92,6 +92,7 @@ ToolbarActionsBarBubbleMac* ToolbarActionsBarBubbleMacTest::CreateAndShowBubble(
       [[ToolbarActionsBarBubbleMac alloc]
           initWithParentWindow:test_window()
                    anchorPoint:NSZeroPoint
+              anchoredToAction:NO
                       delegate:delegate->GetDelegate()];
   EXPECT_FALSE(delegate->shown());
   [bubble showWindow:nil];

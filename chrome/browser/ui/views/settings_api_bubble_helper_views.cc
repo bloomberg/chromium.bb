@@ -11,6 +11,7 @@
 #include "chrome/browser/extensions/settings_api_bubble_delegate.h"
 #include "chrome/browser/extensions/settings_api_helpers.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/extensions/extension_message_bubble_bridge.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/extensions/extension_message_bubble_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -37,7 +38,9 @@ void ShowSettingsApiBubble(SettingsApiOverrideType type,
     return;
 
   ExtensionMessageBubbleView* bubble = new ExtensionMessageBubbleView(
-      anchor_view, arrow, std::move(settings_api_bubble));
+      anchor_view, arrow,
+      std::unique_ptr<ToolbarActionsBarBubbleDelegate>(
+          new ExtensionMessageBubbleBridge(std::move(settings_api_bubble))));
   views::BubbleDelegateView::CreateBubble(bubble);
   bubble->Show();
 }
@@ -111,7 +114,9 @@ void MaybeShowExtensionControlledNewTabPage(
       BrowserView::GetBrowserViewForBrowser(browser)
           ->toolbar()
           ->app_menu_button(),
-      views::BubbleBorder::TOP_RIGHT, std::move(ntp_overridden_bubble));
+      views::BubbleBorder::TOP_RIGHT,
+      std::unique_ptr<ToolbarActionsBarBubbleDelegate>(
+          new ExtensionMessageBubbleBridge(std::move(ntp_overridden_bubble))));
   views::BubbleDelegateView::CreateBubble(bubble);
   bubble->Show();
 }

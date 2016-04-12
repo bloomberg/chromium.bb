@@ -20,6 +20,9 @@ class ToolbarActionsBarBubbleDelegate;
   // Whether or not the bubble has been acknowledged.
   BOOL acknowledged_;
 
+  // True if the bubble is anchored to an action in the toolbar actions bar.
+  BOOL anchoredToAction_;
+
   // The action button. The exact meaning of this is dependent on the bubble.
   // Required.
   NSButton* actionButton_;
@@ -40,6 +43,7 @@ class ToolbarActionsBarBubbleDelegate;
 // Creates the bubble for a parent window but does not show it.
 - (id)initWithParentWindow:(NSWindow*)parentWindow
                anchorPoint:(NSPoint)anchorPoint
+          anchoredToAction:(BOOL)anchoredToAction
                   delegate:(std::unique_ptr<ToolbarActionsBarBubbleDelegate>)
                                delegate;
 
