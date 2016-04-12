@@ -1665,7 +1665,7 @@ static void joint_motion_search(AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
     tmp_mv.row >>= 3;
 
 #if CONFIG_REF_MV
-    av1_set_mvcost(x, refs[id]);
+    av1_set_mvcost(x, refs[id], id, mbmi->ref_mv_idx);
 #endif
     // Small-range full-pixel motion search.
     bestsme = av1_refining_search_8p_c(x, &tmp_mv, sadpb, search_range,
@@ -1859,7 +1859,7 @@ static int64_t rd_pick_best_sub8x8_mode(
           av1_set_mv_search_range(x, &bsi->ref_mv[0]->as_mv);
 
 #if CONFIG_REF_MV
-          av1_set_mvcost(x, mbmi->ref_frame[0]);
+          av1_set_mvcost(x, mbmi->ref_frame[0], 0, mbmi->ref_mv_idx);
 #endif
           bestsme = av1_full_pixel_search(
               cpi, x, bsize, &mvp_full, step_param, sadpb,
@@ -2219,7 +2219,7 @@ static void single_motion_search(AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
   av1_set_mv_search_range(x, &ref_mv);
 
 #if CONFIG_REF_MV
-  av1_set_mvcost(x, ref);
+  av1_set_mvcost(x, ref, 0, mbmi->ref_mv_idx);
 #endif
 
   // Work out the size of the first step in the mv step search.

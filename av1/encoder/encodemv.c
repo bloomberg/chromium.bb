@@ -280,8 +280,10 @@ static void inc_mvs(const MB_MODE_INFO *mbmi, const MB_MODE_INFO_EXT *mbmi_ext,
     const MV diff = { mvs[i].as_mv.row - ref->row,
                       mvs[i].as_mv.col - ref->col };
 #if CONFIG_REF_MV
-    int nmv_ctx = av1_nmv_ctx(mbmi_ext->ref_mv_count[mbmi->ref_frame[i]],
-                              mbmi_ext->ref_mv_stack[mbmi->ref_frame[i]]);
+    int8_t rf_type = av1_ref_frame_type(mbmi->ref_frame);
+    int nmv_ctx =
+        av1_nmv_ctx(mbmi_ext->ref_mv_count[rf_type],
+                    mbmi_ext->ref_mv_stack[rf_type], i, mbmi->ref_mv_idx);
     nmv_context_counts *counts = &nmv_counts[nmv_ctx];
 #else
     nmv_context_counts *counts = nmv_counts;

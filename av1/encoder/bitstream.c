@@ -511,9 +511,10 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const MODE_INFO *mi,
           if (b_mode == NEWMV) {
             for (ref = 0; ref < 1 + is_compound; ++ref) {
 #if CONFIG_REF_MV
-              int nmv_ctx =
-                  av1_nmv_ctx(mbmi_ext->ref_mv_count[mbmi->ref_frame[ref]],
-                              mbmi_ext->ref_mv_stack[mbmi->ref_frame[ref]]);
+              int8_t rf_type = av1_ref_frame_type(mbmi->ref_frame);
+              int nmv_ctx = av1_nmv_ctx(mbmi_ext->ref_mv_count[rf_type],
+                                        mbmi_ext->ref_mv_stack[rf_type], ref,
+                                        mbmi->ref_mv_idx);
               const nmv_context *nmvc = &cm->fc->nmvc[nmv_ctx];
 #endif
               av1_encode_mv(cpi, w, &mi->bmi[j].as_mv[ref].as_mv,
@@ -528,9 +529,10 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const MODE_INFO *mi,
         int_mv ref_mv;
         for (ref = 0; ref < 1 + is_compound; ++ref) {
 #if CONFIG_REF_MV
-          int nmv_ctx =
-              av1_nmv_ctx(mbmi_ext->ref_mv_count[mbmi->ref_frame[ref]],
-                          mbmi_ext->ref_mv_stack[mbmi->ref_frame[ref]]);
+          int8_t rf_type = av1_ref_frame_type(mbmi->ref_frame);
+          int nmv_ctx = av1_nmv_ctx(mbmi_ext->ref_mv_count[rf_type],
+                                    mbmi_ext->ref_mv_stack[rf_type], ref,
+                                    mbmi->ref_mv_idx);
           const nmv_context *nmvc = &cm->fc->nmvc[nmv_ctx];
 #endif
           ref_mv = mbmi_ext->ref_mvs[mbmi->ref_frame[ref]][0];

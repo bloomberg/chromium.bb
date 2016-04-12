@@ -35,7 +35,7 @@ static uint8_t add_ref_mv_candidate(
         // Add a new item to the list.
         if (index == *refmv_count) {
           ref_mv_stack[index].this_mv = this_refmv;
-          ref_mv_stack[index].pred_mv =
+          ref_mv_stack[index].pred_mv[0] =
               get_sub_block_pred_mv(candidate_mi, ref, col, block);
           ref_mv_stack[index].weight = 2 * len;
           ++(*refmv_count);
@@ -57,7 +57,7 @@ static uint8_t add_ref_mv_candidate(
           // Add a new item to the list.
           if (index == *refmv_count) {
             ref_mv_stack[index].this_mv = this_refmv;
-            ref_mv_stack[index].pred_mv =
+            ref_mv_stack[index].pred_mv[0] =
                 get_sub_block_pred_mv(candidate_mi, ref, col, alt_block);
             ref_mv_stack[index].weight = len;
             ++(*refmv_count);
@@ -89,6 +89,10 @@ static uint8_t add_ref_mv_candidate(
       if (index == *refmv_count) {
         ref_mv_stack[index].this_mv = this_refmv[0];
         ref_mv_stack[index].comp_mv = this_refmv[1];
+        ref_mv_stack[index].pred_mv[0] =
+            get_sub_block_pred_mv(candidate_mi, 0, col, block);
+        ref_mv_stack[index].pred_mv[1] =
+            get_sub_block_pred_mv(candidate_mi, 1, col, block);
         ref_mv_stack[index].weight = 2 * len;
         ++(*refmv_count);
 
@@ -117,6 +121,10 @@ static uint8_t add_ref_mv_candidate(
         if (index == *refmv_count) {
           ref_mv_stack[index].this_mv = this_refmv[0];
           ref_mv_stack[index].comp_mv = this_refmv[1];
+          ref_mv_stack[index].pred_mv[0] =
+              get_sub_block_pred_mv(candidate_mi, 0, col, block);
+          ref_mv_stack[index].pred_mv[1] =
+              get_sub_block_pred_mv(candidate_mi, 1, col, block);
           ref_mv_stack[index].weight = len;
           ++(*refmv_count);
 
@@ -296,7 +304,7 @@ static int add_col_ref_mv(const AV1_COMMON *cm,
 
       if (idx == *refmv_count && *refmv_count < MAX_REF_MV_STACK_SIZE) {
         ref_mv_stack[idx].this_mv.as_int = this_refmv.as_int;
-        ref_mv_stack[idx].pred_mv = prev_frame_mvs->pred_mv[ref];
+        ref_mv_stack[idx].pred_mv[0] = prev_frame_mvs->pred_mv[ref];
         ref_mv_stack[idx].weight = 2;
         ++(*refmv_count);
       }

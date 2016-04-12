@@ -324,16 +324,21 @@ static INLINE void lower_mv_precision(MV *mv, int allow_hp) {
 
 #if CONFIG_REF_MV
 static INLINE int av1_nmv_ctx(const uint8_t ref_mv_count,
-                              const CANDIDATE_MV *ref_mv_stack) {
-  if (ref_mv_stack[0].weight >= REF_CAT_LEVEL && ref_mv_count > 0) {
-    if (abs(ref_mv_stack[0].this_mv.as_mv.row -
-            ref_mv_stack[0].pred_mv.as_mv.row) <= 4 &&
-        abs(ref_mv_stack[0].this_mv.as_mv.col -
-            ref_mv_stack[0].pred_mv.as_mv.col) <= 4)
+                              const CANDIDATE_MV *ref_mv_stack, int ref,
+                              int ref_mv_idx) {
+  int_mv this_mv = (ref == 0) ? ref_mv_stack[ref_mv_idx].this_mv
+                              : ref_mv_stack[ref_mv_idx].comp_mv;
+
+  if (ref_mv_stack[ref_mv_idx].weight >= REF_CAT_LEVEL && ref_mv_count > 0) {
+    if (abs(this_mv.as_mv.row -
+            ref_mv_stack[ref_mv_idx].pred_mv[ref].as_mv.row) <= 4 &&
+        abs(this_mv.as_mv.col -
+            ref_mv_stack[ref_mv_idx].pred_mv[ref].as_mv.col) <= 4)
       return 2;
     else
       return 1;
   }
+
   return 0;
 }
 
