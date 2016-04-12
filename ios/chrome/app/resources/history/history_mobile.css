@@ -13,6 +13,7 @@ html {
 }
 
 body {
+  background-color: rgba(0, 0, 0, .05);
   color: rgb(76, 76, 76);
   font-size: initial;
   height: 100%;
@@ -32,6 +33,7 @@ body {
 }
 
 h1 {
+  color: rgb(34, 34, 34);
   font-weight: bold;
   margin-bottom: 12px;
 }
@@ -87,9 +89,21 @@ html[dir='rtl'] #search-field {
   background-position: right 16px center;
 }
 
-#notification-bar.alone {
+#notification-bar {
+  color: rgb(138, 138, 138);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-text-size-adjust: none;
+}
+
+#notification-bar span {
+  /* On desktop, notification spans are displayed as separate paragraphs.
+     On mobile, join them into a single paragraph. */
+  display: inline;
+}
+
+#top-container.overflow #notification-bar {
   float: none;
-  font-size: 75%;
   margin: 0;
   padding-bottom: 0;
   padding-top: 0;
@@ -121,6 +135,10 @@ button.remove-entry {
 
 button.remove-entry:active {
   opacity: 1.0;
+}
+
+.entry {
+  background-color: white;
 }
 
 .entry-box {

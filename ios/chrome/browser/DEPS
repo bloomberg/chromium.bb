@@ -8,6 +8,7 @@ include_rules = [
   "+components/bookmarks",
   "+components/browser_sync/browser",
   "+components/browser_sync/common",
+  "+components/browsing_data_ui",
   "+components/certificate_reporting",
   "+components/component_updater",
   "+components/content_settings/core",

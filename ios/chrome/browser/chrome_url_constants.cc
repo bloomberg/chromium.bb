@@ -79,6 +79,9 @@ const char kClearBrowsingDataMyActivityUrlInFooterURL[] =
 const char kClearBrowsingDataMyActivityUrlInDialogURL[] =
     "https://history.google.com/history/?utm_source=chrome_n";
 
+const char kHistoryMyActivityURL[] =
+    "https://history.google.com/history/?utm_source=chrome_h";
+
 const char kGoogleHistoryURL[] = "https://history.google.com";
 
 const char kGoogleMyAccountURL[] =
