@@ -409,7 +409,7 @@ bool V8DebuggerImpl::setScriptSource(const String16& sourceID, const String16& n
             *stackChanged = resultTuple->Get(1)->BooleanValue();
             // Call stack may have changed after if the edited function was on the stack.
             if (!preview && isPaused())
-                *newCallFrames = currentCallFrames();
+                newCallFrames->swap(currentCallFrames());
             return true;
         }
     // Compile error.

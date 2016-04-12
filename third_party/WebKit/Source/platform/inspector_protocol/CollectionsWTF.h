@@ -40,7 +40,7 @@ public:
     void prepend(const T& t) { m_impl.prepend(t); }
     void remove(size_t i) { m_impl.remove(i); }
     void clear() { m_impl.clear(); }
-    void swap(Vector& other) { m_impl.swap(other.m_impl); }
+    void swap(Vector<T>& other) { m_impl.swap(other.m_impl); }
     void removeLast() { m_impl.removeLast(); }
 
 private:
@@ -53,6 +53,7 @@ class Vector<OwnPtr<T>> {
 public:
     Vector() { }
     Vector(size_t capacity) : m_impl(capacity) { }
+    Vector(Vector<OwnPtr<T>>&& other) : m_impl(std::move(other.m_impl)) { }
     ~Vector() { }
 
     typedef OwnPtr<T>* iterator;
@@ -76,7 +77,8 @@ public:
     void prepend(PassOwnPtr<T> t) { m_impl.prepend(t); }
     void remove(size_t i) { m_impl.remove(i); }
     void clear() { m_impl.clear(); }
-    void swap(Vector& other) { m_impl.swap(other.m_impl); }
+    void swap(Vector<OwnPtr<T>>& other) { m_impl.swap(other.m_impl); }
+    void swap(Vector<OwnPtr<T>>&& other) { m_impl.swap(other.m_impl); }
     void removeLast() { m_impl.removeLast(); }
 
 private:

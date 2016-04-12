@@ -31,6 +31,7 @@
 #ifndef JavaScriptCallFrame_h
 #define JavaScriptCallFrame_h
 
+#include "platform/inspector_protocol/Collections.h"
 #include "platform/inspector_protocol/String16.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
@@ -69,7 +70,7 @@ private:
     v8::Global<v8::FunctionTemplate> m_wrapperTemplate;
 };
 
-using JavaScriptCallFrames = Vector<OwnPtr<JavaScriptCallFrame>>;
+using JavaScriptCallFrames = protocol::Vector<OwnPtr<JavaScriptCallFrame>>;
 
 } // namespace blink
 

@@ -474,7 +474,7 @@ void V8DebuggerAgentImpl::getBacktrace(ErrorString* errorString, OwnPtr<Array<Ca
 {
     if (!assertPaused(errorString))
         return;
-    m_pausedCallFrames = debugger().currentCallFrames();
+    m_pausedCallFrames.swap(debugger().currentCallFrames());
     *callFrames = currentCallFrames(errorString);
     if (!*callFrames)
         return;
@@ -640,8 +640,7 @@ void V8DebuggerAgentImpl::restartFrame(ErrorString* errorString,
         *errorString = "Internal error";
         return;
     }
-
-    m_pausedCallFrames = debugger().currentCallFrames();
+    m_pausedCallFrames.swap(debugger().currentCallFrames());
 
     *newCallFrames = currentCallFrames(errorString);
     if (!*newCallFrames)
@@ -1311,8 +1310,7 @@ V8DebuggerAgentImpl::SkipPauseRequest V8DebuggerAgentImpl::didPause(v8::Local<v8
         return RequestContinue;
 
     ASSERT(m_pausedContext.IsEmpty());
-    callFrames = debugger().currentCallFrames();
-    m_pausedCallFrames.swap(callFrames);
+    m_pausedCallFrames.swap(debugger().currentCallFrames());
     m_pausedContext.Reset(m_isolate, context);
     v8::HandleScope handles(m_isolate);
 

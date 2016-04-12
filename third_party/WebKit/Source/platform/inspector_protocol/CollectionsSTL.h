@@ -5,20 +5,14 @@
 #ifndef CollectionsSTL_h
 #define CollectionsSTL_h
 
-#include "wtf/Allocator.h"
-#include "wtf/HashMap.h"
+#include "platform/inspector_protocol/String16.h"
+#include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 
 #include <algorithm>
 #include <unordered_map>
 #include <vector>
 
-namespace std {
-template<>
-struct hash<String> {
-    std::size_t operator()(const String& k) const { return StringHash::hash(k); }
-};
-}
 
 namespace blink {
 namespace protocol {
@@ -62,6 +56,7 @@ class Vector<OwnPtr<T>> {
 public:
     Vector() { }
     Vector(size_t capacity) : m_impl(capacity) { }
+    Vector(Vector&& other) : m_impl(std::move(other.m_impl)) { }
     ~Vector() { }
 
     typedef typename std::vector<OwnPtr<T>>::iterator iterator;
@@ -86,6 +81,7 @@ public:
     void remove(size_t i) { m_impl.erase(m_impl.begin() + i); }
     void clear() { m_impl.clear(); }
     void swap(Vector& other) { m_impl.swap(other.m_impl); }
+    void swap(Vector&& other) { m_impl.swap(other.m_impl); }
     void removeLast() { m_impl.pop_back(); }
 
 private:
