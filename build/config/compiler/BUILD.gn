@@ -1338,7 +1338,11 @@ config("symbols") {
       ldflags = [ "/DEBUG" ]
     }
   } else {
-    cflags = [ "-g2" ]
+    if (is_ios) {
+      cflags = [ "-gdwarf-2" ]
+    } else {
+      cflags = [ "-g2" ]
+    }
     if (use_debug_fission) {
       cflags += [ "-gsplit-dwarf" ]
     }
