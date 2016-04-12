@@ -114,7 +114,7 @@ void WebUSBPermissionProvider::IncrementConnectionCount() {
   WebContents* web_contents =
       WebContents::FromRenderFrameHost(render_frame_host_);
   UsbTabHelper* tab_helper = UsbTabHelper::FromWebContents(web_contents);
-  tab_helper->IncrementConnectionCount();
+  tab_helper->IncrementConnectionCount(render_frame_host_);
 }
 
 void WebUSBPermissionProvider::DecrementConnectionCount() {
@@ -122,5 +122,5 @@ void WebUSBPermissionProvider::DecrementConnectionCount() {
   WebContents* web_contents =
       WebContents::FromRenderFrameHost(render_frame_host_);
   UsbTabHelper* tab_helper = UsbTabHelper::FromWebContents(web_contents);
-  tab_helper->DecrementConnectionCount();
+  tab_helper->DecrementConnectionCount(render_frame_host_);
 }

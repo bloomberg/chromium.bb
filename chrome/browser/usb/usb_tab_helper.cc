@@ -30,6 +30,7 @@ struct FrameUsbServices {
 #else
   scoped_ptr<WebUsbChooserService> chooser_service;
 #endif  // defined(OS_ANDROID)
+  int device_connection_count_ = 0;
 };
 
 // static
@@ -59,26 +60,37 @@ void UsbTabHelper::CreateChooserService(
   GetChooserService(render_frame_host, std::move(request));
 }
 
-void UsbTabHelper::IncrementConnectionCount() {
-  device_connection_count_++;
+void UsbTabHelper::IncrementConnectionCount(
+    RenderFrameHost* render_frame_host) {
+  auto it = frame_usb_services_.find(render_frame_host);
+  DCHECK(it != frame_usb_services_.end());
+  it->second->device_connection_count_++;
   NotifyTabStateChanged();
 }
 
-void UsbTabHelper::DecrementConnectionCount() {
-  DCHECK_GT(device_connection_count_, 0);
-  device_connection_count_--;
+void UsbTabHelper::DecrementConnectionCount(
+    RenderFrameHost* render_frame_host) {
+  auto it = frame_usb_services_.find(render_frame_host);
+  DCHECK(it != frame_usb_services_.end());
+  DCHECK_GT(it->second->device_connection_count_, 0);
+  it->second->device_connection_count_--;
   NotifyTabStateChanged();
 }
 
 bool UsbTabHelper::IsDeviceConnected() const {
-  return device_connection_count_ > 0;
+  for (const auto& map_entry : frame_usb_services_) {
+    if (map_entry.second->device_connection_count_ > 0)
+      return true;
+  }
+  return false;
 }
 
 UsbTabHelper::UsbTabHelper(WebContents* web_contents)
-    : content::WebContentsObserver(web_contents), device_connection_count_(0) {}
+    : content::WebContentsObserver(web_contents) {}
 
 void UsbTabHelper::RenderFrameDeleted(RenderFrameHost* render_frame_host) {
   frame_usb_services_.erase(render_frame_host);
+  NotifyTabStateChanged();
 }
 
 FrameUsbServices* UsbTabHelper::GetFrameUsbService(
