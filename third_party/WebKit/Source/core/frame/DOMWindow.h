@@ -44,7 +44,6 @@ typedef HeapVector<Member<MessagePort>, 1> MessagePortArray;
 
 class CORE_EXPORT DOMWindow : public EventTargetWithInlineData, public DOMWindowBase64 {
     DEFINE_WRAPPERTYPEINFO();
-    REFCOUNTED_EVENT_TARGET(DOMWindow);
 public:
     ~DOMWindow() override;
 

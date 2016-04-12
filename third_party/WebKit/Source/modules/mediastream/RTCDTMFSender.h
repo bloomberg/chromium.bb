@@ -42,7 +42,6 @@ class RTCDTMFSender final
     : public EventTargetWithInlineData
     , public WebRTCDTMFSenderHandlerClient
     , public ActiveDOMObject {
-    REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(RTCDTMFSender);
     USING_GARBAGE_COLLECTED_MIXIN(RTCDTMFSender);
     DEFINE_WRAPPERTYPEINFO();
     USING_PRE_FINALIZER(RTCDTMFSender, dispose);

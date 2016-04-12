@@ -59,7 +59,6 @@ class MODULES_EXPORT IDBRequest
     : public EventTargetWithInlineData
     , public ActiveScriptWrappable
     , public ActiveDOMObject {
-    REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(IDBRequest);
     DEFINE_WRAPPERTYPEINFO();
     USING_GARBAGE_COLLECTED_MIXIN(IDBRequest);
 public:

@@ -61,7 +61,6 @@ class CORE_EXPORT MessagePort
     , public ActiveDOMObject
     , public WebMessagePortChannelClient {
     DEFINE_WRAPPERTYPEINFO();
-    REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(MessagePort);
     USING_GARBAGE_COLLECTED_MIXIN(MessagePort);
 public:
     static MessagePort* create(ExecutionContext&);

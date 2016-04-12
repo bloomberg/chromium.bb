@@ -27,7 +27,6 @@ class PermissionStatus final
     , public ActiveScriptWrappable
     , public ActiveDOMObject
     , public WebPermissionObserver {
-    REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(PermissionStatus);
     USING_GARBAGE_COLLECTED_MIXIN(PermissionStatus);
     DEFINE_WRAPPERTYPEINFO();
 public:

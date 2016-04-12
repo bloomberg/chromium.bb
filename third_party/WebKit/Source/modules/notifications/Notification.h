@@ -59,7 +59,6 @@ class NotificationPermissionCallback;
 class ScriptState;
 
 class MODULES_EXPORT Notification final : public EventTargetWithInlineData, public ActiveScriptWrappable, public ActiveDOMObject, public WebNotificationDelegate {
-    REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(Notification);
     USING_GARBAGE_COLLECTED_MIXIN(Notification);
     DEFINE_WRAPPERTYPEINFO();
 public:

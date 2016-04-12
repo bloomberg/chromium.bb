@@ -43,7 +43,6 @@ class MediaQuerySet;
 // will be called whenever the value of the query changes.
 
 class CORE_EXPORT MediaQueryList final : public EventTargetWithInlineData, public ActiveScriptWrappable, public ActiveDOMObject {
-    REFCOUNTED_EVENT_TARGET(MediaQueryList);
     DEFINE_WRAPPERTYPEINFO();
     USING_GARBAGE_COLLECTED_MIXIN(MediaQueryList);
 public:

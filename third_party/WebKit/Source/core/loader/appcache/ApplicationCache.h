@@ -41,7 +41,6 @@ class LocalFrame;
 
 class ApplicationCache final : public EventTargetWithInlineData, public DOMWindowProperty {
     DEFINE_WRAPPERTYPEINFO();
-    REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(ApplicationCache);
     USING_GARBAGE_COLLECTED_MIXIN(ApplicationCache);
 public:
     static ApplicationCache* create(LocalFrame* frame)

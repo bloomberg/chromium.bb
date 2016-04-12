@@ -47,7 +47,6 @@ class SpeechRecognitionController;
 class SpeechRecognitionError;
 
 class MODULES_EXPORT SpeechRecognition final : public EventTargetWithInlineData, public PageLifecycleObserver, public ActiveScriptWrappable, public ActiveDOMObject {
-    REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(SpeechRecognition);
     USING_GARBAGE_COLLECTED_MIXIN(SpeechRecognition);
     DEFINE_WRAPPERTYPEINFO();
 public:

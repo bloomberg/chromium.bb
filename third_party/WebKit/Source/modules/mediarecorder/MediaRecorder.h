@@ -27,7 +27,6 @@ class MODULES_EXPORT MediaRecorder final
     , public WebMediaRecorderHandlerClient
     , public ActiveScriptWrappable
     , public ActiveDOMObject {
-    REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(MediaRecorder);
     USING_GARBAGE_COLLECTED_MIXIN(MediaRecorder);
     DEFINE_WRAPPERTYPEINFO();
 public:

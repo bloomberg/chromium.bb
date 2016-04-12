@@ -17,7 +17,6 @@ class ScriptPromiseResolver;
 // element. The object will be initialized with a default value passed via
 // ::take() and will then listen to availability changes.
 class RemotePlaybackAvailability final : public EventTargetWithInlineData, public ContextLifecycleObserver {
-    REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(RemotePlaybackAvailability);
     DEFINE_WRAPPERTYPEINFO();
     USING_GARBAGE_COLLECTED_MIXIN(RemotePlaybackAvailability);
 public:

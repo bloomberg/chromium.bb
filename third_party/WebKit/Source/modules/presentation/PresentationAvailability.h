@@ -29,7 +29,6 @@ class MODULES_EXPORT PresentationAvailability final
     , public ActiveDOMObject
     , public PageLifecycleObserver
     , public WebPresentationAvailabilityObserver {
-    REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(PresentationAvailability);
     USING_GARBAGE_COLLECTED_MIXIN(PresentationAvailability);
     DEFINE_WRAPPERTYPEINFO();
 public:

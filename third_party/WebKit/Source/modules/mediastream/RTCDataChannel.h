@@ -47,7 +47,6 @@ struct WebRTCDataChannelInit;
 class MODULES_EXPORT RTCDataChannel final
     : public EventTargetWithInlineData
     , WTF_NON_EXPORTED_BASE(public WebRTCDataChannelHandlerClient) {
-    REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(RTCDataChannel);
     DEFINE_WRAPPERTYPEINFO();
     USING_PRE_FINALIZER(RTCDataChannel, dispose);
 public:

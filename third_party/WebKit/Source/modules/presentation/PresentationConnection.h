@@ -28,7 +28,6 @@ class PresentationRequest;
 class PresentationConnection final
     : public EventTargetWithInlineData
     , public DOMWindowProperty {
-    REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(PresentationConnection);
     USING_GARBAGE_COLLECTED_MIXIN(PresentationConnection);
     DEFINE_WRAPPERTYPEINFO();
 public:

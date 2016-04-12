@@ -275,7 +275,6 @@ protected:
 };
 
 class MODULES_EXPORT AudioNode : public EventTargetWithInlineData {
-    REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(AudioNode);
     DEFINE_WRAPPERTYPEINFO();
     USING_PRE_FINALIZER(AudioNode, dispose);
 public:

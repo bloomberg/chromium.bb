@@ -24,7 +24,6 @@ class USB final
     , public ContextLifecycleObserver
     , public WebUSBClient::Observer {
     DEFINE_WRAPPERTYPEINFO();
-    REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(USB);
     USING_GARBAGE_COLLECTED_MIXIN(USB);
     USING_PRE_FINALIZER(USB, dispose);
 public:

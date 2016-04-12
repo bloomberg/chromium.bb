@@ -132,7 +132,6 @@ WILL_NOT_BE_EAGERLY_TRACED_CLASS(Node);
 // https://dom.spec.whatwg.org/#interface-node
 class CORE_EXPORT Node : NODE_BASE_CLASSES {
 #if !ENABLE(OILPAN)
-    DEFINE_EVENT_TARGET_REFCOUNTING(TreeShared<Node>);
 #endif
     DEFINE_WRAPPERTYPEINFO();
     friend class TreeScope;

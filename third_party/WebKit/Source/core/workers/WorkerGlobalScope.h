@@ -65,7 +65,6 @@ class WorkerThread;
 
 class CORE_EXPORT WorkerGlobalScope : public EventTargetWithInlineData, public SecurityContext, public WorkerOrWorkletGlobalScope, public Supplementable<WorkerGlobalScope>, public DOMWindowBase64 {
     DEFINE_WRAPPERTYPEINFO();
-    REFCOUNTED_EVENT_TARGET(WorkerGlobalScope);
     USING_GARBAGE_COLLECTED_MIXIN(WorkerGlobalScope);
 public:
     ~WorkerGlobalScope() override;

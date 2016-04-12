@@ -35,7 +35,6 @@ class ServiceWorkerRegistration final
     , public WebServiceWorkerRegistrationProxy
     , public Supplementable<ServiceWorkerRegistration> {
     DEFINE_WRAPPERTYPEINFO();
-    REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(ServiceWorkerRegistration);
     USING_GARBAGE_COLLECTED_MIXIN(ServiceWorkerRegistration);
     USING_PRE_FINALIZER(ServiceWorkerRegistration, dispose);
 public:

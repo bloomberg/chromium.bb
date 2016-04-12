@@ -66,7 +66,6 @@ class RTCPeerConnection final
     , public WebRTCPeerConnectionHandlerClient
     , public ActiveScriptWrappable
     , public ActiveDOMObject {
-    REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(RTCPeerConnection);
     DEFINE_WRAPPERTYPEINFO();
     USING_GARBAGE_COLLECTED_MIXIN(RTCPeerConnection);
     USING_PRE_FINALIZER(RTCPeerConnection, dispose);

@@ -39,7 +39,6 @@ class BluetoothRemoteGATTCharacteristic final
     , public WebBluetoothRemoteGATTCharacteristic {
     USING_PRE_FINALIZER(BluetoothRemoteGATTCharacteristic, dispose);
     DEFINE_WRAPPERTYPEINFO();
-    REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(BluetoothRemoteGATTCharacteristic);
     USING_GARBAGE_COLLECTED_MIXIN(BluetoothRemoteGATTCharacteristic);
 public:
     explicit BluetoothRemoteGATTCharacteristic(ExecutionContext*, PassOwnPtr<WebBluetoothRemoteGATTCharacteristicInit>);

@@ -18,7 +18,6 @@ namespace blink {
 class PresentationReceiver final
     : public EventTargetWithInlineData
     , DOMWindowProperty {
-    REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(PresentationReceiver);
     USING_GARBAGE_COLLECTED_MIXIN(PresentationReceiver);
     DEFINE_WRAPPERTYPEINFO();
 public:

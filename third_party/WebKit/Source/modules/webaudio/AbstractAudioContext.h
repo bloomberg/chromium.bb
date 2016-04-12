@@ -82,7 +82,6 @@ class WaveShaperNode;
 // For thread safety between the audio thread and the main thread, it has a rendering graph locking mechanism.
 
 class MODULES_EXPORT AbstractAudioContext : public EventTargetWithInlineData, public ActiveScriptWrappable, public ActiveDOMObject {
-    REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(AbstractAudioContext);
     USING_GARBAGE_COLLECTED_MIXIN(AbstractAudioContext);
     DEFINE_WRAPPERTYPEINFO();
 public:

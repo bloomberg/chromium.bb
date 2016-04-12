@@ -53,7 +53,6 @@ class MediaSource final
     , public HTMLMediaSource
     , public ActiveScriptWrappable
     , public ActiveDOMObject {
-    REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(MediaSource);
     DEFINE_WRAPPERTYPEINFO();
     USING_GARBAGE_COLLECTED_MIXIN(MediaSource);
 public:

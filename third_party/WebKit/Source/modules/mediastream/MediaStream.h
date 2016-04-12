@@ -43,7 +43,6 @@ class MODULES_EXPORT MediaStream final
     , public URLRegistrable
     , public MediaStreamDescriptorClient
     , public ContextLifecycleObserver {
-    REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(MediaStream);
     USING_GARBAGE_COLLECTED_MIXIN(MediaStream);
     DEFINE_WRAPPERTYPEINFO();
 public:

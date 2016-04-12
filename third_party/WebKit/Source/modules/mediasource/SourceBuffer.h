@@ -62,7 +62,6 @@ class SourceBuffer final
     , public ActiveDOMObject
     , public FileReaderLoaderClient
     , public WebSourceBufferClient {
-    REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(SourceBuffer);
     USING_GARBAGE_COLLECTED_MIXIN(SourceBuffer);
     DEFINE_WRAPPERTYPEINFO();
     USING_PRE_FINALIZER(SourceBuffer, dispose);

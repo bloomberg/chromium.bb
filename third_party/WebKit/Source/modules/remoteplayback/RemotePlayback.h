@@ -26,7 +26,6 @@ class RemotePlayback final
     : public EventTargetWithInlineData
     , public DOMWindowProperty
     , private WebRemotePlaybackClient {
-    REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(RemotePlayback);
     DEFINE_WRAPPERTYPEINFO();
     USING_GARBAGE_COLLECTED_MIXIN(RemotePlayback);
 public:

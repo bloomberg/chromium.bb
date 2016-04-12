@@ -64,7 +64,6 @@ class MediaKeySession final
     , public ActiveScriptWrappable
     , public ActiveDOMObject
     , private WebContentDecryptionModuleSession::Client {
-    REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(MediaKeySession);
     DEFINE_WRAPPERTYPEINFO();
     USING_GARBAGE_COLLECTED_MIXIN(MediaKeySession);
     USING_PRE_FINALIZER(MediaKeySession, dispose);

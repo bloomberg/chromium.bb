@@ -60,7 +60,6 @@ class ExecutionContext;
 class StringOrStringSequence;
 
 class MODULES_EXPORT DOMWebSocket : public EventTargetWithInlineData, public ActiveScriptWrappable, public ActiveDOMObject, public WebSocketChannelClient {
-    REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(DOMWebSocket);
     DEFINE_WRAPPERTYPEINFO();
     USING_GARBAGE_COLLECTED_MIXIN(DOMWebSocket);
 public:

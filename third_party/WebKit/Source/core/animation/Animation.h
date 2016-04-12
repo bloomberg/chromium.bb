@@ -60,7 +60,6 @@ class CORE_EXPORT Animation final
     , public CompositorAnimationDelegate
     , public CompositorAnimationPlayerClient {
     DEFINE_WRAPPERTYPEINFO();
-    REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(Animation);
     USING_GARBAGE_COLLECTED_MIXIN(Animation);
 public:
     enum AnimationPlayState {

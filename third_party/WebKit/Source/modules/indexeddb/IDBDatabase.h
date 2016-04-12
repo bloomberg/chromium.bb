@@ -58,7 +58,6 @@ class MODULES_EXPORT IDBDatabase final
     : public EventTargetWithInlineData
     , public ActiveScriptWrappable
     , public ActiveDOMObject {
-    REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(IDBDatabase);
     USING_GARBAGE_COLLECTED_MIXIN(IDBDatabase);
     DEFINE_WRAPPERTYPEINFO();
 public:

@@ -21,7 +21,6 @@ class PresentationRequest final
     : public EventTargetWithInlineData
     , public ActiveScriptWrappable
     , public ActiveDOMObject {
-    REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(PresentationRequest);
     USING_GARBAGE_COLLECTED_MIXIN(PresentationRequest);
     DEFINE_WRAPPERTYPEINFO();
 public:

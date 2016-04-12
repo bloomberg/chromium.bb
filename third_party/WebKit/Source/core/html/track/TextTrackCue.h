@@ -43,7 +43,6 @@ class TextTrack;
 
 class TextTrackCue : public EventTargetWithInlineData {
     DEFINE_WRAPPERTYPEINFO();
-    REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(TextTrackCue);
 public:
     static const AtomicString& cueShadowPseudoId()
     {
