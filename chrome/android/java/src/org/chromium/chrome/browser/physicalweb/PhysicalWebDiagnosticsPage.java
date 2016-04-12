@@ -4,10 +4,16 @@
 
 package org.chromium.chrome.browser.physicalweb;
 
+import android.Manifest;
+import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.content.res.Resources;
+import android.location.LocationManager;
+import android.net.ConnectivityManager;
 import android.os.Build;
+import android.support.v4.content.PermissionChecker;
 import android.text.Html;
 import android.text.util.Linkify;
 import android.view.LayoutInflater;
@@ -27,6 +33,10 @@ import java.util.Set;
  * Provides diagnostic information about the Physical Web feature.
  */
 public class PhysicalWebDiagnosticsPage implements NativePage {
+    private static final int RESULT_FAILURE = 0;
+    private static final int RESULT_SUCCESS = 1;
+    private static final int RESULT_INDETERMINATE = 2;
+
     private final Context mContext;
     private final int mBackgroundColor;
     private final int mThemeColor;
@@ -68,7 +78,7 @@ public class PhysicalWebDiagnosticsPage implements NativePage {
 
     private void appendResult(StringBuilder sb, boolean success, String successMessage,
             String failureMessage) {
-        int successValue = (success ? Utils.RESULT_SUCCESS : Utils.RESULT_FAILURE);
+        int successValue = (success ? RESULT_SUCCESS : RESULT_FAILURE);
         appendResult(sb, successValue, successMessage, failureMessage, null);
     }
 
@@ -76,21 +86,17 @@ public class PhysicalWebDiagnosticsPage implements NativePage {
             String failureMessage, String indeterminateMessage) {
         String color;
         String message;
-        switch (successValue) {
-            case Utils.RESULT_SUCCESS:
-                color = mSuccessColor;
-                message = successMessage;
-                break;
-            case Utils.RESULT_FAILURE:
-                color = mFailureColor;
-                message = failureMessage;
-                break;
-            case Utils.RESULT_INDETERMINATE:
-                color = mIndeterminateColor;
-                message = indeterminateMessage;
-                break;
-            default:
-                return;
+        if (successValue == RESULT_SUCCESS) {
+            color = mSuccessColor;
+            message = successMessage;
+        } else if (successValue == RESULT_FAILURE) {
+            color = mFailureColor;
+            message = failureMessage;
+        } else if (successValue == RESULT_INDETERMINATE) {
+            color = mIndeterminateColor;
+            message = indeterminateMessage;
+        } else {
+            return;
         }
 
         sb.append(String.format("<font color=\"%s\">%s</font><br/>", color, message));
@@ -98,29 +104,26 @@ public class PhysicalWebDiagnosticsPage implements NativePage {
 
     private void appendPrerequisitesReport(StringBuilder sb) {
         boolean isSdkVersionCorrect = isSdkVersionCorrect();
-        boolean isDataConnectionActive = Utils.isDataConnectionActive(mContext);
-        int bluetoothStatus = Utils.getBluetoothEnabledStatus(mContext);
-        boolean isLocationServicesEnabled = Utils.isLocationServicesEnabled(mContext);
-        boolean isLocationPermissionGranted = Utils.isLocationPermissionGranted(mContext);
+        boolean isDataConnectionActive = isDataConnectionActive();
+        int bluetoothStatus = getBluetoothEnabledStatus();
+        boolean isLocationServicesEnabled = isLocationServicesEnabled();
+        boolean isLocationPermissionGranted = isLocationPermissionGranted();
         boolean isPreferenceEnabled = PhysicalWeb.isPhysicalWebPreferenceEnabled(mContext);
         boolean isOnboarding = PhysicalWeb.isOnboarding(mContext);
 
-        int prerequisitesResult = Utils.RESULT_SUCCESS;
-        if (!isSdkVersionCorrect
-                || !isDataConnectionActive
-                || bluetoothStatus == Utils.RESULT_FAILURE
-                || !isLocationServicesEnabled
-                || !isLocationPermissionGranted
+        int prerequisitesResult = RESULT_SUCCESS;
+        if (!isSdkVersionCorrect || !isDataConnectionActive || (bluetoothStatus == RESULT_FAILURE)
+                || !isLocationServicesEnabled || !isLocationPermissionGranted
                 || !isPreferenceEnabled) {
-            prerequisitesResult = Utils.RESULT_FAILURE;
-        } else if (bluetoothStatus == Utils.RESULT_INDETERMINATE) {
-            prerequisitesResult = Utils.RESULT_INDETERMINATE;
+            prerequisitesResult = RESULT_FAILURE;
+        } else if (bluetoothStatus == RESULT_INDETERMINATE) {
+            prerequisitesResult = RESULT_INDETERMINATE;
         }
 
         sb.append("<h2>Status</h2>");
 
         sb.append("Physical Web is ");
-        appendResult(sb, prerequisitesResult != Utils.RESULT_FAILURE, "ON", "OFF");
+        appendResult(sb, prerequisitesResult != RESULT_FAILURE, "ON", "OFF");
 
         sb.append("<h2>Prerequisites</h2>");
 
@@ -147,7 +150,7 @@ public class PhysicalWebDiagnosticsPage implements NativePage {
 
         // Append instructions for how to verify Bluetooth is enabled when we are unable to check
         // programmatically.
-        if (bluetoothStatus == Utils.RESULT_INDETERMINATE) {
+        if (bluetoothStatus == RESULT_INDETERMINATE) {
             sb.append("<br/>To verify Bluetooth is enabled on this device, check that the "
                     + "Bluetooth icon is shown in the status bar.");
         }
@@ -191,6 +194,42 @@ public class PhysicalWebDiagnosticsPage implements NativePage {
 
     private boolean isSdkVersionCorrect() {
         return (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT);
+    }
+
+    private boolean isDataConnectionActive() {
+        ConnectivityManager cm =
+                (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
+        return (cm.getActiveNetworkInfo() != null
+                && cm.getActiveNetworkInfo().isConnectedOrConnecting());
+    }
+
+    private boolean isBluetoothPermissionGranted() {
+        return PermissionChecker.checkSelfPermission(mContext, Manifest.permission.BLUETOOTH)
+                == PackageManager.PERMISSION_GRANTED;
+    }
+
+    private int getBluetoothEnabledStatus() {
+        int statusResult = RESULT_INDETERMINATE;
+        if (isBluetoothPermissionGranted()) {
+            BluetoothAdapter bt = BluetoothAdapter.getDefaultAdapter();
+            statusResult = (bt != null && bt.isEnabled()) ? RESULT_SUCCESS : RESULT_FAILURE;
+        }
+        return statusResult;
+    }
+
+    private boolean isLocationServicesEnabled() {
+        LocationManager lm = (LocationManager) mContext.getSystemService(Context.LOCATION_SERVICE);
+        boolean isGpsProviderEnabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER);
+        boolean isNetworkProviderEnabled = lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+        return isGpsProviderEnabled || isNetworkProviderEnabled;
+    }
+
+    private boolean isLocationPermissionGranted() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+            return true;
+        }
+        return PermissionChecker.checkSelfPermission(mContext,
+                Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
     }
 
     private static Intent createListUrlsIntent(Context context) {
