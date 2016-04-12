@@ -138,7 +138,8 @@ enum BadMessageReason {
   RFH_INVALID_ORIGIN_ON_COMMIT = 114,
   BDH_UUID_REGISTERED = 115,
   BDH_CONSTRUCTION_FAILED = 116,
-  BDH_INVALID_OPERATION = 117,
+  BDH_INVALID_REFCOUNT_OPERATION = 117,
+  BDH_INVALID_URL_OPERATION = 118,
 
   // Please add new elements here. The naming convention is abbreviated class
   // name (e.g. RenderFrameHost becomes RFH) plus a unique description of the

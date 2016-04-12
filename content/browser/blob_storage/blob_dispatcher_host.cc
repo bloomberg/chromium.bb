@@ -63,7 +63,8 @@ void BlobDispatcherHost::OnRegisterBlobUUID(
     const std::set<std::string>& referenced_blob_uuids) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BlobStorageContext* context = this->context();
-  if (uuid.empty() || context->registry().HasEntry(uuid)) {
+  if (uuid.empty() || context->registry().HasEntry(uuid) ||
+      async_builder_.IsBeingBuilt(uuid)) {
     bad_message::ReceivedBadMessage(this, bad_message::BDH_UUID_REGISTERED);
     return;
   }
@@ -73,9 +74,9 @@ void BlobDispatcherHost::OnRegisterBlobUUID(
   switch (result) {
     case BlobTransportResult::BAD_IPC:
       blobs_inuse_map_.erase(uuid);
-      bad_message::ReceivedBadMessage(this, bad_message::BDH_INVALID_OPERATION);
+      bad_message::ReceivedBadMessage(this,
+                                      bad_message::BDH_CONSTRUCTION_FAILED);
       break;
-      ;
     case BlobTransportResult::CANCEL_REFERENCED_BLOB_BROKEN:
       // The async builder builds the blob as broken, and we just need to send
       // the cancel message back to the renderer.
@@ -208,7 +209,8 @@ void BlobDispatcherHost::OnIncrementBlobRefCount(const std::string& uuid) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BlobStorageContext* context = this->context();
   if (uuid.empty() || !context->registry().HasEntry(uuid)) {
-    bad_message::ReceivedBadMessage(this, bad_message::BDH_INVALID_OPERATION);
+    bad_message::ReceivedBadMessage(
+        this, bad_message::BDH_INVALID_REFCOUNT_OPERATION);
     return;
   }
   context->IncrementBlobRefCount(uuid);
@@ -218,7 +220,8 @@ void BlobDispatcherHost::OnIncrementBlobRefCount(const std::string& uuid) {
 void BlobDispatcherHost::OnDecrementBlobRefCount(const std::string& uuid) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (uuid.empty() || !IsInUseInHost(uuid)) {
-    bad_message::ReceivedBadMessage(this, bad_message::BDH_INVALID_OPERATION);
+    bad_message::ReceivedBadMessage(
+        this, bad_message::BDH_INVALID_REFCOUNT_OPERATION);
     return;
   }
   BlobStorageContext* context = this->context();
@@ -246,7 +249,8 @@ void BlobDispatcherHost::OnRegisterPublicBlobURL(const GURL& public_url,
   BlobStorageContext* context = this->context();
   if (uuid.empty() || !IsInUseInHost(uuid) ||
       context->registry().IsURLMapped(public_url)) {
-    bad_message::ReceivedBadMessage(this, bad_message::BDH_INVALID_OPERATION);
+    bad_message::ReceivedBadMessage(this,
+                                    bad_message::BDH_INVALID_URL_OPERATION);
     return;
   }
   context->RegisterPublicBlobURL(public_url, uuid);
@@ -256,7 +260,8 @@ void BlobDispatcherHost::OnRegisterPublicBlobURL(const GURL& public_url,
 void BlobDispatcherHost::OnRevokePublicBlobURL(const GURL& public_url) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!IsUrlRegisteredInHost(public_url)) {
-    bad_message::ReceivedBadMessage(this, bad_message::BDH_INVALID_OPERATION);
+    bad_message::ReceivedBadMessage(this,
+                                    bad_message::BDH_INVALID_URL_OPERATION);
     return;
   }
   context()->RevokePublicBlobURL(public_url);

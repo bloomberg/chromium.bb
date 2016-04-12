@@ -51312,7 +51312,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="Storage.Blob.Broken" units="BooleanBroken">
+<histogram name="Storage.Blob.Broken" enum="BooleanBroken">
   <owner>dmurph@chromium.org</owner>
   <summary>
     If a newly constructed blob is broken. See Storage.Blob.BrokenReason for a
@@ -51320,7 +51320,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="Storage.Blob.BrokenReason" units="BlobBrokenReason">
+<histogram name="Storage.Blob.BrokenReason" enum="BlobBrokenReason">
   <owner>dmurph@chromium.org</owner>
   <summary>
     The reason a blob is broken, reported only for broken blobs upon
@@ -61575,7 +61575,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="114" label="RFH_INVALID_ORIGIN_ON_COMMIT"/>
   <int value="115" label="BDH_UUID_REGISTERED"/>
   <int value="116" label="BDH_CONSTRUCTION_FAILED"/>
-  <int value="117" label="BDH_INVALID_OPERATION"/>
+  <int value="117" label="BDH_INVALID_REFCOUNT_OPERATION"/>
+  <int value="118" label="BDH_INVALID_URL_OPERATION"/>
 </enum>
 
 <enum name="BadMessageReasonExtensions" type="int">
