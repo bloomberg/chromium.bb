@@ -973,11 +973,12 @@ const char kPluginsMetadata[] = "plugins.metadata";
 const char kPluginsResourceCacheUpdate[] = "plugins.resource_cache_update";
 #endif
 
-// Boolean that indicates whether we should check if we are the default browser
-// on start-up.
-const char kCheckDefaultBrowser[] = "browser.check_default_browser";
-// Boolean that indicates whether the kCheckDefaultBrowser preference should be
-// reset on start-up.
+// Int64 containing the internal value of the time at which the default browser
+// infobar was last dismissed by the user.
+const char kDefaultBrowserLastDeclined[] =
+    "browser.default_browser_infobar_last_declined";
+// Boolean that indicates whether the kDefaultBrowserLastDeclined preference
+// should be reset on start-up.
 const char kResetCheckDefaultBrowser[] =
     "browser.should_reset_check_default_browser";
 

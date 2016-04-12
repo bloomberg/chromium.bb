@@ -59,6 +59,11 @@
             "group_name": "Enabled"
         }
     ],
+    "DefaultBrowserInfobar": [
+        {
+            "group_name": "SettingsText"
+        }
+    ],
     "DocumentWriteEvaluator": [
         {
             "enable_features": [

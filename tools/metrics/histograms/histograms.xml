@@ -64951,13 +64951,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </enum>
 
 <enum name="DefaultBrowserInfoBarUserInteraction" type="int">
-  <int value="0" label="Start set as default">
+  <int value="0" label="Accept">
     The user clicked the &quot;Set as default&quot; button.
   </int>
-  <int value="1" label="Don't ask again">
-    The user doesn't want to be reminded again.
+  <int value="1" label="Cancel">
+    The user clicked the &quot;Don't ask again&quot; button.
   </int>
-  <int value="2" label="Ignore info bar">
+  <int value="2" label="Ignore">
     The user did not interact with the info bar.
   </int>
 </enum>

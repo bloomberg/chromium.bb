@@ -77,10 +77,10 @@ IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest,
   ASSERT_TRUE(SetupSync());
   DisableVerifier();
   ASSERT_TRUE(AwaitStringPrefMatches(prefs::kHomePage));
-  ASSERT_TRUE(AwaitBooleanPrefMatches(prefs::kCheckDefaultBrowser));
+  ASSERT_TRUE(AwaitBooleanPrefMatches(prefs::kDisableScreenshots));
 
   // This pref is not syncable.
-  ChangeBooleanPref(0, prefs::kCheckDefaultBrowser);
+  ChangeBooleanPref(0, prefs::kDisableScreenshots);
 
   // This pref is syncable.
   ChangeStringPref(0, prefs::kHomePage, "http://news.google.com");
@@ -88,7 +88,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest,
   // Wait until the syncable pref is synced, then expect that the non-syncable
   // one is still out of sync.
   ASSERT_TRUE(AwaitStringPrefMatches(prefs::kHomePage));
-  ASSERT_FALSE(BooleanPrefMatches(prefs::kCheckDefaultBrowser));
+  ASSERT_FALSE(BooleanPrefMatches(prefs::kDisableScreenshots));
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest, E2E_ENABLED(StringPref)) {

@@ -2665,11 +2665,26 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="DefaultBrowserInfoBar_Cancel">
+  <owner>pmonette@chromium.org</owner>
+  <description>
+    The user clicked &quot;Don't ask again&quot; on the info bar.
+  </description>
+</action>
+
+<action name="DefaultBrowserInfoBar_Dismiss">
+  <owner>pmonette@chromium.org</owner>
+  <description>
+    The user dismissed the default browser info bar via the 'x'.
+  </description>
+</action>
+
 <action name="DefaultBrowserInfoBar_DontAskAgain">
   <owner>pmonette@chromium.org</owner>
   <description>
     The user clicked &quot;Don't ask again&quot; on the info bar.
   </description>
+  <obsolete>Renamed to DefaultBrowserInfoBar_Cancel in M52.</obsolete>
 </action>
 
 <action name="Delete">
