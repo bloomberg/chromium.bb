@@ -444,6 +444,10 @@ void BackgroundDownloader::OnTimer() {
       base::Bind(&BackgroundDownloader::OnDownloading, base::Unretained(this)));
 }
 
+bool BackgroundDownloader::TimerIsRunning() const {
+  return timer_.get() && timer_->IsRunning();
+}
+
 void BackgroundDownloader::DoStartDownload(const GURL& url) {
   DCHECK(thread_checker_.CalledOnValidThread());
   task_runner()->PostTask(FROM_HERE,
@@ -566,7 +570,7 @@ void BackgroundDownloader::OnDownloading() {
 void BackgroundDownloader::EndDownload(HRESULT error) {
   DCHECK(task_runner()->RunsTasksOnCurrentThread());
 
-  DCHECK(!timer_->IsRunning());
+  DCHECK(!TimerIsRunning());
 
   const base::Time download_end_time(base::Time::Now());
   const base::TimeDelta download_time =

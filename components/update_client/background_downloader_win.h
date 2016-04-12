@@ -85,6 +85,10 @@ class BackgroundDownloader : public CrxDownloader {
   void StartTimer();
   void OnTimer();
 
+  // Returns true if the timer is running or false if the timer is not
+  // created or not running at all.
+  bool TimerIsRunning() const;
+
   HRESULT QueueBitsJob(const GURL& url, IBackgroundCopyJob** job);
   HRESULT CreateOrOpenJob(const GURL& url, IBackgroundCopyJob** job);
   HRESULT InitializeNewJob(
