@@ -177,9 +177,6 @@ class MediaStreamManagerTest : public ::testing::Test {
   MediaStreamManagerTest()
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
         task_runner_(base::ThreadTaskRunnerHandle::Get()) {
-    // Create our own MediaStreamManager. Use fake devices to run on the bots.
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kUseFakeDeviceForMediaStream);
     audio_manager_.reset(new MockAudioManager());
     media_stream_manager_.reset(new MediaStreamManager(audio_manager_.get()));
 }
