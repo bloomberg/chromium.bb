@@ -10,18 +10,6 @@ This document will walk you through:
 * creating your first fuzzer.
 * running the fuzzer and verifying its vitals.
 
-## Check Out ToT Clang
-
-libFuzzer relies heavily on compile-time instrumentation. Because it is still
-under heavy development you need to use tot clang with libFuzzer ([crbug/598448]):
-
-```bash
-# In chrome/src
-LLVM_FORCE_HEAD_REVISION=1 ./tools/clang/scripts/update.py --force-local-build --without-android
-```
-
-To revert this run the same script without specifying `LLVM_FORCE_HEAD_REVISION`.
-
 ## Configure Build
 
 Use `use_libfuzzer` GN argument together with sanitizer to generate build files:
