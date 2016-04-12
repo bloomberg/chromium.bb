@@ -9011,11 +9011,13 @@ should be able to be added at any place in this file.
   <description>
     Recorded when the NPAPI removal infobar link is clicked.
   </description>
+  <obsolete>Deprecated due to NPAPI removal.</obsolete>
 </action>
 
 <action name="NPAPIRemovalInfobar.Shown">
   <owner>wfh@chromium.org</owner>
   <description>Recorded when the NPAPI removal infobar is shown.</description>
+  <obsolete>Deprecated due to NPAPI removal.</obsolete>
 </action>
 
 <action name="NTPPromoClosed">
@@ -11686,11 +11688,13 @@ should be able to be added at any place in this file.
 <action name="PluginLoaderPosix.LaunchUtilityProcess">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Deprecated due to NPAPI removal.</obsolete>
 </action>
 
 <action name="PluginLoaderPosix.UtilityProcessCrashed">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Deprecated due to NPAPI removal.</obsolete>
 </action>
 
 <action name="Plugin_200ForByteRange">
@@ -11743,6 +11747,7 @@ should be able to be added at any place in this file.
 <action name="Plugin_NPAPINotSupported">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Deprecated due to NPAPI removal.</obsolete>
 </action>
 
 <action name="Precache.Fetch.IntentReceived" not_user_triggered="true">

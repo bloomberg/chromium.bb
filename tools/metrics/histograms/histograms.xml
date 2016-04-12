@@ -21834,6 +21834,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Memory.Plugin" units="KB">
+  <obsolete>
+    Deprecated due to NPAPI removal.
+  </obsolete>
   <owner>hajimehoshi@chromium.org</owner>
   <owner>kenjibaheux@google.com</owner>
   <owner>kouhei@chromium.org</owner>
@@ -21844,6 +21847,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Memory.PluginProcessCount">
+  <obsolete>
+    Deprecated due to NPAPI removal.
+  </obsolete>
   <owner>hajimehoshi@chromium.org</owner>
   <owner>kenjibaheux@google.com</owner>
   <owner>kouhei@chromium.org</owner>
@@ -22246,6 +22252,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Memory.Swap.Plugin" units="KB">
+  <obsolete>
+    Deprecated due to NPAPI removal.
+  </obsolete>
   <owner>hajimehoshi@chromium.org</owner>
   <owner>kenjibaheux@google.com</owner>
   <owner>kouhei@chromium.org</owner>
@@ -38431,6 +38440,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Plugin.NpapiRemovalInfobar.Removed.PluginGroup"
     enum="PluginGroup">
+  <obsolete>
+    Deprecated due to NPAPI removal.
+  </obsolete>
   <owner>wfh@chromium.org</owner>
   <summary>
     The plugin group of an NPAPI plugin that is no longer supported. Recorded
@@ -38441,6 +38453,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Plugin.NpapiRemovalInfobar.RemovedSoon.PluginGroup"
     enum="PluginGroup">
+  <obsolete>
+    Deprecated due to NPAPI removal.
+  </obsolete>
   <owner>wfh@chromium.org</owner>
   <summary>
     The plugin group of an NPAPI plugin that will be unsupported soon. Recorded
@@ -38450,6 +38465,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Plugin.NPAPIStatus" enum="NPAPIPluginStatus">
+  <obsolete>
+    Deprecated due to NPAPI removal.
+  </obsolete>
   <owner>wfh@chromium.org</owner>
   <summary>
     Records whether NPAPI plugins are supported by the platform, and if so,
@@ -38524,6 +38542,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Plugin.SyncMessageTime" units="ms">
+  <obsolete>
+    Deprecated due to NPAPI removal.
+  </obsolete>
   <owner>gab@chromium.org</owner>
   <summary>
     Roundtrip times for synchronous IPC calls from the renderer to NPAPI plugin
