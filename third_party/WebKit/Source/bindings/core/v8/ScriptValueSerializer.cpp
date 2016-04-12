@@ -1636,10 +1636,10 @@ bool SerializedScriptValueReader::readImageBitmap(v8::Local<v8::Value>* value)
         return false;
     ImageBitmapOptions options;
     options.setPremultiplyAlpha("none");
-    RawPtr<ImageBitmap> imageBitmap = ImageBitmap::create(imageData, IntRect(0, 0, imageData->width(), imageData->height()), options, true);
-    if (!imageBitmap.get())
+    ImageBitmap* imageBitmap = ImageBitmap::create(imageData, IntRect(0, 0, imageData->width(), imageData->height()), options, true);
+    if (!imageBitmap)
         return false;
-    *value = toV8(imageBitmap.get(), m_scriptState->context()->Global(), isolate());
+    *value = toV8(imageBitmap, m_scriptState->context()->Global(), isolate());
     return !value->IsEmpty();
 }
 
@@ -2174,10 +2174,10 @@ bool ScriptValueDeserializer::tryGetTransferredImageBitmap(uint32_t index, v8::L
         return false;
     v8::Local<v8::Value> result = m_imageBitmaps.at(index);
     if (result.IsEmpty()) {
-        RawPtr<ImageBitmap> bitmap = ImageBitmap::create(m_imageBitmapContents->at(index));
+        ImageBitmap* bitmap = ImageBitmap::create(m_imageBitmapContents->at(index));
         v8::Isolate* isolate = m_reader.getScriptState()->isolate();
         v8::Local<v8::Object> creationContext = m_reader.getScriptState()->context()->Global();
-        result = toV8(bitmap.get(), creationContext, isolate);
+        result = toV8(bitmap, creationContext, isolate);
         if (result.IsEmpty())
             return false;
         m_imageBitmaps[index] = result;

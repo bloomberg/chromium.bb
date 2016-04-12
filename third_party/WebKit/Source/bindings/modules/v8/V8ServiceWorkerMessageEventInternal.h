@@ -46,7 +46,7 @@ void V8ServiceWorkerMessageEventInternal::constructorCustom(const v8::FunctionCa
             return;
     }
 
-    RawPtr<EventType> impl = EventType::create(type, eventInitDict);
+    EventType* impl = EventType::create(type, eventInitDict);
     v8::Local<v8::Object> wrapper = info.Holder();
     wrapper = impl->associateWithWrapper(info.GetIsolate(), &V8TypeOf<EventType>::Type::wrapperTypeInfo, wrapper);
 

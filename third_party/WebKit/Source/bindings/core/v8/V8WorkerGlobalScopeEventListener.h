@@ -43,9 +43,9 @@ class V8WorkerGlobalScopeEventListener final : public V8EventListener {
 public:
     static RawPtr<V8WorkerGlobalScopeEventListener> create(v8::Local<v8::Object> listener, bool isInline, ScriptState* scriptState)
     {
-        RawPtr<V8WorkerGlobalScopeEventListener> eventListener = new V8WorkerGlobalScopeEventListener(isInline, scriptState);
+        V8WorkerGlobalScopeEventListener* eventListener = new V8WorkerGlobalScopeEventListener(isInline, scriptState);
         eventListener->setListenerObject(listener);
-        return eventListener.release();
+        return eventListener;
     }
 
     void handleEvent(ScriptState*, Event*) override;

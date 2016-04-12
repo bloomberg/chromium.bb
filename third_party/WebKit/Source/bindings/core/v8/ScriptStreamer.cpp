@@ -565,10 +565,6 @@ void ScriptStreamer::notifyFinished(Resource* resource)
         m_stream->didFinishLoading();
     m_loadingFinished = true;
 
-    // Calling notifyFinishedToClient can result into the upper layers dropping
-    // references to ScriptStreamer. Keep it alive until this function ends.
-    RawPtr<ScriptStreamer> protect(this);
-
     notifyFinishedToClient();
 }
 

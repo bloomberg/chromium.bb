@@ -76,8 +76,8 @@ static v8::Local<v8::Value> getItem(HTMLAllCollection* collection, v8::Local<v8:
     if (!argument->IsNumber())
         UseCounter::countIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), indexedWithNonNumberFeature);
 
-    RawPtr<Element> result = collection->item(index->Value());
-    return toV8(result.release(), info.Holder(), info.GetIsolate());
+    Element* result = collection->item(index->Value());
+    return toV8(result, info.Holder(), info.GetIsolate());
 }
 
 void V8HTMLAllCollection::itemMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)

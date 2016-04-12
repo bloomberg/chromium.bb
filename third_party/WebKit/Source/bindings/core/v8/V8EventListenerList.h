@@ -95,9 +95,9 @@ RawPtr<V8EventListener> V8EventListenerList::findOrCreateWrapper(v8::Local<v8::V
     if (wrapper)
         return wrapper;
 
-    RawPtr<V8EventListener> wrapperPtr = WrapperType::create(object, isAttribute, scriptState);
+    V8EventListener* wrapperPtr = WrapperType::create(object, isAttribute, scriptState);
     if (wrapperPtr)
-        V8HiddenValue::setHiddenValue(scriptState, object, wrapperProperty, v8::External::New(isolate, wrapperPtr.get()));
+        V8HiddenValue::setHiddenValue(scriptState, object, wrapperProperty, v8::External::New(isolate, wrapperPtr));
 
     return wrapperPtr;
 }

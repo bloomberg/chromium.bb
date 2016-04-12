@@ -92,7 +92,7 @@ void V8EventTarget::addEventListenerMethodCustom(const v8::FunctionCallbackInfo<
         return;
     }
     V8StringResource<> type;
-    RawPtr<EventListener> listener;
+    EventListener* listener;
     EventListenerOptionsOrBoolean options;
     {
         type = info[0];
@@ -131,7 +131,7 @@ void V8EventTarget::removeEventListenerMethodCustom(const v8::FunctionCallbackIn
         return;
     }
     V8StringResource<> type;
-    RawPtr<EventListener> listener;
+    EventListener* listener;
     EventListenerOptionsOrBoolean options;
     {
         type = info[0];

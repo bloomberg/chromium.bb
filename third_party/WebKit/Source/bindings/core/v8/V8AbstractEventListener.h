@@ -80,11 +80,6 @@ public:
     // even if the user script is not compilable.
     v8::Local<v8::Object> getListenerObject(ExecutionContext* executionContext)
     {
-        // prepareListenerObject can potentially deref this event listener
-        // as it may attempt to compile a function (lazy event listener), get an error
-        // and invoke onerror callback which can execute arbitrary JS code.
-        // Protect this event listener to keep it alive.
-        RawPtr<V8AbstractEventListener> protect(this);
         prepareListenerObject(executionContext);
         return m_listener.newLocal(m_isolate);
     }

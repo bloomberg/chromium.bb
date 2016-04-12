@@ -192,7 +192,7 @@ void V8Window::postMessageMethodCustom(const v8::FunctionCallbackInfo<v8::Value>
     //   postMessage(message, targetOrigin, {sequence of transferrables})
     // Legacy non-standard implementations in webkit allowed:
     //   postMessage(message, {sequence of transferrables}, targetOrigin);
-    RawPtr<MessagePortArray> portArray = new MessagePortArray;
+    MessagePortArray* portArray = new MessagePortArray;
     ArrayBufferArray arrayBufferArray;
     ImageBitmapArray imageBitmapArray;
     int targetOriginArgIndex = 1;
@@ -210,11 +210,11 @@ void V8Window::postMessageMethodCustom(const v8::FunctionCallbackInfo<v8::Value>
     }
     TOSTRING_VOID(V8StringResource<TreatNullAndUndefinedAsNullString>, targetOrigin, info[targetOriginArgIndex]);
 
-    RefPtr<SerializedScriptValue> message = SerializedScriptValueFactory::instance().create(info.GetIsolate(), info[0], portArray.get(), &arrayBufferArray, &imageBitmapArray, exceptionState);
+    RefPtr<SerializedScriptValue> message = SerializedScriptValueFactory::instance().create(info.GetIsolate(), info[0], portArray, &arrayBufferArray, &imageBitmapArray, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
 
-    window->postMessage(message.release(), portArray.get(), targetOrigin, source, exceptionState);
+    window->postMessage(message.release(), portArray, targetOrigin, source, exceptionState);
     exceptionState.throwIfNeeded();
 }
 
@@ -239,11 +239,11 @@ void V8Window::openMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 
     // |impl| has to be a LocalDOMWindow, since RemoteDOMWindows wouldn't have
     // passed the BindingSecurity check above.
-    RawPtr<DOMWindow> openedWindow = toLocalDOMWindow(impl)->open(urlString, frameName, windowFeaturesString, callingDOMWindow(info.GetIsolate()), enteredDOMWindow(info.GetIsolate()));
+    DOMWindow* openedWindow = toLocalDOMWindow(impl)->open(urlString, frameName, windowFeaturesString, callingDOMWindow(info.GetIsolate()), enteredDOMWindow(info.GetIsolate()));
     if (!openedWindow)
         return;
 
-    v8SetReturnValueFast(info, openedWindow.release(), impl);
+    v8SetReturnValueFast(info, openedWindow, impl);
 }
 
 static bool namedPropertyFromDebuggerScopeExtension(v8::Local<v8::Name> name, const AtomicString& nameString, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -331,7 +331,7 @@ void V8Window::namedPropertyGetterCustom(v8::Local<v8::Name> name, const v8::Pro
         return;
     }
 
-    RawPtr<HTMLCollection> items = doc->windowNamedItems(propName);
+    HTMLCollection* items = doc->windowNamedItems(propName);
     if (!items->isEmpty()) {
         // TODO(esprehn): Firefox doesn't return an HTMLCollection here if there's
         // multiple with the same name, but Chrome and Safari does. What's the
@@ -340,7 +340,7 @@ void V8Window::namedPropertyGetterCustom(v8::Local<v8::Name> name, const v8::Pro
             v8SetReturnValueFast(info, items->item(0), window);
             return;
         }
-        v8SetReturnValueFast(info, items.release(), window);
+        v8SetReturnValueFast(info, items, window);
         return;
     }
 }

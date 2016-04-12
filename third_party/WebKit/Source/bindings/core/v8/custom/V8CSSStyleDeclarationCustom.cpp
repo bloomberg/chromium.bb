@@ -198,7 +198,7 @@ void V8CSSStyleDeclaration::namedPropertyGetterCustom(v8::Local<v8::Name> name, 
 
     CSSStyleDeclaration* impl = V8CSSStyleDeclaration::toImpl(info.Holder());
     // TODO(leviw): This API doesn't support custom properties.
-    RawPtr<CSSValue> cssValue = impl->getPropertyCSSValueInternal(resolvedProperty);
+    CSSValue* cssValue = impl->getPropertyCSSValueInternal(resolvedProperty);
     if (cssValue) {
         v8SetReturnValueStringOrNull(info, cssValue->cssText(), info.GetIsolate());
         return;

@@ -96,16 +96,16 @@ RawPtr<NodeFilter> toNodeFilter(v8::Local<v8::Value> callback, v8::Local<v8::Obj
 {
     if (callback->IsNull())
         return nullptr;
-    RawPtr<NodeFilter> filter = NodeFilter::create();
+    NodeFilter* filter = NodeFilter::create();
 
-    v8::Local<v8::Value> filterWrapper = toV8(filter.get(), creationContext, scriptState->isolate());
+    v8::Local<v8::Value> filterWrapper = toV8(filter, creationContext, scriptState->isolate());
     if (filterWrapper.IsEmpty())
         return nullptr;
 
-    RawPtr<NodeFilterCondition> condition = V8NodeFilterCondition::create(callback, filterWrapper.As<v8::Object>(), scriptState);
-    filter->setCondition(condition.release());
+    NodeFilterCondition* condition = V8NodeFilterCondition::create(callback, filterWrapper.As<v8::Object>(), scriptState);
+    filter->setCondition(condition);
 
-    return filter.release();
+    return filter;
 }
 
 bool toBooleanSlow(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState)

@@ -507,7 +507,7 @@ static v8::Local<v8::Value> getNamedProperty(HTMLDocument* htmlDocument, const A
     if (!htmlDocument->hasNamedItem(key) && !htmlDocument->hasExtraNamedItem(key))
         return v8Undefined();
 
-    RawPtr<DocumentNameCollection> items = htmlDocument->documentNamedItems(key);
+    DocumentNameCollection* items = htmlDocument->documentNamedItems(key);
     if (items->isEmpty())
         return v8Undefined();
 
@@ -519,7 +519,7 @@ static v8::Local<v8::Value> getNamedProperty(HTMLDocument* htmlDocument, const A
             return toV8(frame->domWindow(), creationContext, isolate);
         return toV8(element, creationContext, isolate);
     }
-    return toV8(RawPtr<HTMLCollection>(items.release()), creationContext, isolate);
+    return toV8(RawPtr<HTMLCollection>(items), creationContext, isolate);
 }
 
 static void getter(v8::Local<v8::Name> property, const v8::PropertyCallbackInfo<v8::Value>& info)

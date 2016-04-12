@@ -85,7 +85,7 @@ void V8CustomEvent::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>&
             return;
     }
 
-    RawPtr<CustomEvent> impl = CustomEvent::create(type, eventInitDict);
+    CustomEvent* impl = CustomEvent::create(type, eventInitDict);
     v8::Local<v8::Object> wrapper = info.Holder();
     wrapper = impl->associateWithWrapper(info.GetIsolate(), &V8CustomEvent::wrapperTypeInfo, wrapper);
 
@@ -93,7 +93,7 @@ void V8CustomEvent::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>&
     // |detail| as a hidden value to avoid cycle references.
     if (eventInitDict.hasDetail()) {
         v8::Local<v8::Value> v8Detail = eventInitDict.detail().v8Value();
-        storeDetail(ScriptState::current(info.GetIsolate()), impl.get(), wrapper, v8Detail);
+        storeDetail(ScriptState::current(info.GetIsolate()), impl, wrapper, v8Detail);
     }
     v8SetReturnValue(info, wrapper);
 }

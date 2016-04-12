@@ -267,7 +267,7 @@ bool WorkerOrWorkletScriptController::evaluate(const ScriptSourceCode& sourceCod
             V8ErrorHandler::storeExceptionOnErrorEventWrapper(m_scriptState.get(), *errorEvent, state.exception.v8Value(), m_scriptState->context()->Global());
         } else {
             ASSERT(!m_globalScope->shouldSanitizeScriptError(state.sourceURL, NotSharableCrossOrigin));
-            RawPtr<ErrorEvent> event = nullptr;
+            ErrorEvent* event = nullptr;
             if (state.m_errorEventFromImportedScript)
                 event = state.m_errorEventFromImportedScript.release();
             else

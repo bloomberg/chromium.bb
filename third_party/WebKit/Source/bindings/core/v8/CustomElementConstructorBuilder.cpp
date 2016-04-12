@@ -282,10 +282,10 @@ static void constructCustomElement(const v8::FunctionCallbackInfo<v8::Value>& in
 
     ExceptionState exceptionState(ExceptionState::ConstructionContext, "CustomElement", info.Holder(), info.GetIsolate());
     CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
-    RawPtr<Element> element = document->createElementNS(namespaceURI, tagName, maybeType->IsNull() ? nullAtom : type, exceptionState);
+    Element* element = document->createElementNS(namespaceURI, tagName, maybeType->IsNull() ? nullAtom : type, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
-    v8SetReturnValueFast(info, element.release(), document);
+    v8SetReturnValueFast(info, element, document);
 }
 
 } // namespace blink

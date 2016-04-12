@@ -36,9 +36,9 @@ WindowProxy* WindowProxyManager::windowProxy(DOMWrapperWorld& world)
         if (iter != m_isolatedWorlds.end()) {
             windowProxy = iter->value.get();
         } else {
-            RawPtr<WindowProxy> isolatedWorldWindowProxy = WindowProxy::create(m_isolate, m_frame, world);
-            windowProxy = isolatedWorldWindowProxy.get();
-            m_isolatedWorlds.set(world.worldId(), isolatedWorldWindowProxy.release());
+            WindowProxy* isolatedWorldWindowProxy = WindowProxy::create(m_isolate, m_frame, world);
+            windowProxy = isolatedWorldWindowProxy;
+            m_isolatedWorlds.set(world.worldId(), isolatedWorldWindowProxy);
         }
     }
     return windowProxy;
