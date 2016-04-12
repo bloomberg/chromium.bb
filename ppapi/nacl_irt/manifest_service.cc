@@ -102,11 +102,8 @@ bool ManifestService::OpenResource(const char* file, int* fd) {
   // inside NaClIPCAdapter.
   uint64_t file_token_lo = 0;
   uint64_t file_token_hi = 0;
-  if (!filter_->Send(new PpapiHostMsg_OpenResource(
-          file,
-          &ipc_fd,
-          &file_token_lo,
-          &file_token_hi))) {
+  if (!filter_->Send(new PpapiHostMsg_OpenResource(file, &file_token_lo,
+                                                   &file_token_hi, &ipc_fd))) {
     LOG(ERROR) << "ManifestService::OpenResource failed:" << file;
     *fd = -1;
     return false;

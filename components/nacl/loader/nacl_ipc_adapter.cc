@@ -504,16 +504,14 @@ bool NaClIPCAdapter::OnMessageReceived(const IPC::Message& msg) {
   // IPC to handle properly.
   if (type == PpapiHostMsg_OpenResource::ID) {
     base::PickleIterator iter = IPC::SyncMessage::GetDataIterator(&msg);
-    ppapi::proxy::SerializedHandle sh;
     uint64_t token_lo;
     uint64_t token_hi;
-    if (!IPC::ReadParam(&msg, &iter, &sh) ||
-        !IPC::ReadParam(&msg, &iter, &token_lo) ||
+    if (!IPC::ReadParam(&msg, &iter, &token_lo) ||
         !IPC::ReadParam(&msg, &iter, &token_hi)) {
       return false;
     }
 
-    if (sh.IsHandleValid() && (token_lo != 0 || token_hi != 0)) {
+    if (token_lo != 0 || token_hi != 0) {
       // We've received a valid file token. Instead of using the file
       // descriptor received, we send the file token to the browser in
       // exchange for a new file descriptor and file path information.
@@ -523,6 +521,11 @@ bool NaClIPCAdapter::OnMessageReceived(const IPC::Message& msg) {
       // We do not use file descriptors from the renderer with validation
       // caching; a compromised renderer should not be able to run
       // arbitrary code in a plugin process.
+      //
+      // We intentionally avoid deserializing the next parameter, which is an
+      // instance of SerializedHandle, since doing so takes ownership from the
+      // IPC stack. If we fail to get a resource from the file token, we will
+      // still need to read the original parameter in SaveOpenResourceMessage().
       DCHECK(!resolve_file_token_cb_.is_null());
 
       // resolve_file_token_cb_ must be invoked from the I/O thread.
@@ -627,6 +630,10 @@ scoped_ptr<IPC::Message> CreateOpenResourceReply(
   new_msg->set_reply();
   new_msg->WriteInt(IPC::SyncMessage::GetMessageId(orig_msg));
 
+  // Write empty file tokens.
+  new_msg->WriteUInt64(0);  // token_lo
+  new_msg->WriteUInt64(0);  // token_hi
+
   ppapi::proxy::SerializedHandle::WriteHeader(sh.header(),
                                               new_msg.get());
   new_msg->WriteBool(true);  // valid == true
@@ -635,9 +642,6 @@ scoped_ptr<IPC::Message> CreateOpenResourceReply(
   // descriptor provided for this message type, so this will be correct.
   new_msg->WriteInt(0);
 
-  // Write empty file tokens.
-  new_msg->WriteUInt64(0);  // token_lo
-  new_msg->WriteUInt64(0);  // token_hi
   return new_msg;
 }
 
@@ -648,23 +652,31 @@ void NaClIPCAdapter::SaveOpenResourceMessage(
   // The path where an invalid ipc_fd is returned isn't currently
   // covered by any tests.
   if (ipc_fd == IPC::InvalidPlatformFileForTransit()) {
+    base::PickleIterator iter = IPC::SyncMessage::GetDataIterator(&orig_msg);
+    uint64_t token_lo;
+    uint64_t token_hi;
+    ppapi::proxy::SerializedHandle orig_sh;
+
+    // These CHECKs could fail if the renderer sends this process a malformed
+    // message, but that's OK becuase in general the renderer can cause the NaCl
+    // loader process to exit.
+    CHECK(IPC::ReadParam(&orig_msg, &iter, &token_lo));
+    CHECK(IPC::ReadParam(&orig_msg, &iter, &token_hi));
+    CHECK(IPC::ReadParam(&orig_msg, &iter, &orig_sh));
+    CHECK(orig_sh.IsHandleValid());
+
     // The file token didn't resolve successfully, so we give the
     // original FD to the client without making a validated NaClDesc.
     // However, we must rewrite the message to clear the file tokens.
-    base::PickleIterator iter = IPC::SyncMessage::GetDataIterator(&orig_msg);
-    ppapi::proxy::SerializedHandle sh;
-
-    // We know that this can be read safely; see the original read in
-    // OnMessageReceived().
-    CHECK(IPC::ReadParam(&orig_msg, &iter, &sh));
-    scoped_ptr<IPC::Message> new_msg = CreateOpenResourceReply(orig_msg, sh);
+    scoped_ptr<IPC::Message> new_msg =
+        CreateOpenResourceReply(orig_msg, orig_sh);
 
     scoped_ptr<NaClDescWrapper> desc_wrapper(
         new NaClDescWrapper(NaClDescIoMakeFromHandle(
 #if defined(OS_WIN)
-            sh.descriptor().GetHandle(),
+            orig_sh.descriptor().GetHandle(),
 #else
-            sh.descriptor().fd,
+            orig_sh.descriptor().fd,
 #endif
             NACL_ABI_O_RDONLY)));
 

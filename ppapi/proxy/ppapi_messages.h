@@ -955,9 +955,9 @@ IPC_MESSAGE_CONTROL0(PpapiHostMsg_StartupInitializationComplete)
 // this message must be processed by ppapi/proxy/nacl_message_scanner.cc.
 IPC_SYNC_MESSAGE_CONTROL1_3(PpapiHostMsg_OpenResource,
                             std::string /* key */,
-                            ppapi::proxy::SerializedHandle /* fd */,
                             uint64_t /* file_token_lo */,
-                            uint64_t /* file_token_hi */)
+                            uint64_t /* file_token_hi */,
+                            ppapi::proxy::SerializedHandle /* fd */)
 
 // Logs the given message to the console of all instances.
 IPC_MESSAGE_CONTROL4(PpapiHostMsg_LogWithSource,
