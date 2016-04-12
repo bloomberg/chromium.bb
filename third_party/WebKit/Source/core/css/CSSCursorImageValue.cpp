@@ -53,19 +53,6 @@ CSSCursorImageValue::CSSCursorImageValue(CSSValue* imageValue, bool hotSpotSpeci
 
 CSSCursorImageValue::~CSSCursorImageValue()
 {
-    // The below teardown is all handled by weak pointer processing in oilpan.
-#if !ENABLE(OILPAN)
-    if (!isSVGCursor())
-        return;
-
-    String url = toCSSImageValue(m_imageValue.get())->url();
-
-    for (SVGElement* referencedElement : m_referencedElements) {
-        referencedElement->cursorImageValueRemoved();
-        if (SVGCursorElement* cursorElement = resourceReferencedByCursorElement(url, referencedElement->treeScope()))
-            cursorElement->removeClient(referencedElement);
-    }
-#endif
 }
 
 String CSSCursorImageValue::customCSSText() const
@@ -104,9 +91,6 @@ bool CSSCursorImageValue::updateIfSVGCursorIsUsed(Element* element)
             clearImageResource();
 
         SVGElement* svgElement = toSVGElement(element);
-#if !ENABLE(OILPAN)
-        m_referencedElements.add(svgElement);
-#endif
         svgElement->setCursorImageValue(this);
         cursorElement->addClient(svgElement);
         return true;
@@ -184,13 +168,6 @@ void CSSCursorImageValue::clearImageResource()
     m_cachedImage = nullptr;
     m_isCachePending = true;
 }
-
-#if !ENABLE(OILPAN)
-void CSSCursorImageValue::removeReferencedElement(SVGElement* element)
-{
-    m_referencedElements.remove(element);
-}
-#endif
 
 bool CSSCursorImageValue::equals(const CSSCursorImageValue& other) const
 {

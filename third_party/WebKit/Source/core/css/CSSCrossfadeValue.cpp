@@ -111,16 +111,11 @@ CSSCrossfadeValue::CSSCrossfadeValue(CSSValue* fromValue, CSSValue* toValue, CSS
     , m_cachedToImage(nullptr)
     , m_crossfadeSubimageObserver(this)
 {
-#if ENABLE(OILPAN)
     ThreadState::current()->registerPreFinalizer(this);
-#endif
 }
 
 CSSCrossfadeValue::~CSSCrossfadeValue()
 {
-#if !ENABLE(OILPAN)
-    dispose();
-#endif
 }
 
 void CSSCrossfadeValue::dispose()

@@ -44,14 +44,10 @@ CSSImageGeneratorValue::~CSSImageGeneratorValue()
 void CSSImageGeneratorValue::addClient(const LayoutObject* layoutObject, const IntSize& size)
 {
     ASSERT(layoutObject);
-#if !ENABLE(OILPAN)
-    ref();
-#else
     if (m_clients.isEmpty()) {
         ASSERT(!m_keepAlive);
         m_keepAlive = this;
     }
-#endif
 
     if (!size.isEmpty())
         m_sizes.add(size);
@@ -90,14 +86,10 @@ void CSSImageGeneratorValue::removeClient(const LayoutObject* layoutObject)
     if (!--sizeCount.count)
         m_clients.remove(layoutObject);
 
-#if !ENABLE(OILPAN)
-    deref();
-#else
     if (m_clients.isEmpty()) {
         ASSERT(m_keepAlive);
         m_keepAlive.clear();
     }
-#endif
 }
 
 Image* CSSImageGeneratorValue::getImage(const LayoutObject* layoutObject, const IntSize& size)

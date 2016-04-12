@@ -53,11 +53,6 @@ public:
     }
     ~CSSComputedStyleDeclaration() override;
 
-#if !ENABLE(OILPAN)
-    void ref() override;
-    void deref() override;
-#endif
-
     String getPropertyValue(CSSPropertyID) const;
     bool getPropertyPriority(CSSPropertyID) const;
 
@@ -108,9 +103,6 @@ private:
     Member<Node> m_node;
     PseudoId m_pseudoElementSpecifier;
     bool m_allowVisitedStyle;
-#if !ENABLE(OILPAN)
-    unsigned m_refCount;
-#endif
 };
 
 } // namespace blink

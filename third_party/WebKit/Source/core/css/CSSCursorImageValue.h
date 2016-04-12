@@ -50,10 +50,6 @@ public:
     StyleImage* cachedImage(float deviceScaleFactor) const;
     StyleImage* cacheImage(Document*, float deviceScaleFactor);
 
-#if !ENABLE(OILPAN)
-    void removeReferencedElement(SVGElement*);
-#endif
-
     bool equals(const CSSCursorImageValue&) const;
 
     DECLARE_TRACE_AFTER_DISPATCH();
@@ -71,10 +67,6 @@ private:
     IntPoint m_hotSpot;
     bool m_isCachePending;
     Member<StyleImage> m_cachedImage;
-
-#if !ENABLE(OILPAN)
-    HashSet<SVGElement*> m_referencedElements;
-#endif
 };
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSCursorImageValue, isCursorImageValue());

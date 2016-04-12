@@ -50,10 +50,6 @@ CSSImageSetValue::CSSImageSetValue()
 
 CSSImageSetValue::~CSSImageSetValue()
 {
-#if !ENABLE(OILPAN)
-    if (m_cachedImage && m_cachedImage->isImageResourceSet())
-        toStyleFetchedImageSet(*m_cachedImage).clearImageSetValue();
-#endif
 }
 
 void CSSImageSetValue::fillImageSet()

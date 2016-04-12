@@ -36,10 +36,6 @@ CSSFontFaceRule::CSSFontFaceRule(StyleRuleFontFace* fontFaceRule, CSSStyleSheet*
 
 CSSFontFaceRule::~CSSFontFaceRule()
 {
-#if !ENABLE(OILPAN)
-    if (m_propertiesCSSOMWrapper)
-        m_propertiesCSSOMWrapper->clearParentRule();
-#endif
 }
 
 CSSStyleDeclaration* CSSFontFaceRule::style() const

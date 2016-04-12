@@ -49,13 +49,6 @@ CSSGroupingRule::CSSGroupingRule(StyleRuleGroup* groupRule, CSSStyleSheet* paren
 
 CSSGroupingRule::~CSSGroupingRule()
 {
-#if !ENABLE(OILPAN)
-    ASSERT(m_childRuleCSSOMWrappers.size() == m_groupRule->childRules().size());
-    for (unsigned i = 0; i < m_childRuleCSSOMWrappers.size(); ++i) {
-        if (m_childRuleCSSOMWrappers[i])
-            m_childRuleCSSOMWrappers[i]->setParentRule(0);
-    }
-#endif
 }
 
 unsigned CSSGroupingRule::insertRule(const String& ruleString, unsigned index, ExceptionState& exceptionState)
