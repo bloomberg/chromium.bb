@@ -298,7 +298,7 @@
       'Android GN': 'android_gn_release_bot_minimal_symbols',
       'Android Tests (dbg)': 'swarming_android_gyp_debug_static_bot',
       'Android Tests': 'swarming_android_gyp_release_bot_minimal_symbols',
-      'Cast Android (dbg)': 'android_cast_gyp_debug_static_bot',
+      'Cast Android (dbg)': 'android_cast_gn_debug_static_bot',
       'Cast Linux': 'cast_gn_release_bot',
       'Linux Builder (dbg)': 'swarming_gn_debug_bot',
       'Linux Builder (dbg)(32)': 'swarming_gyp_debug_bot_no_symbols_x86',
@@ -617,7 +617,6 @@
       'android_archive_rel_ng': 'tbd',
       'android_coverage': 'tbd',
       'android_swarming_rel': 'tbd',
-      'cast_shell_android': 'tbd',
 
       'android_arm64_dbg_recipe': 'swarming_android_gyp_debug_trybot_arm64',
       'android_blink_rel': 'swarming_android_gyp_release_trybot',
@@ -640,6 +639,7 @@
       # TODO(crbug/597596): Switch this back to debug_trybot when cronet's
       # shared library loading is fixed.
       'android_cronet_tester': 'android_cronet_gn_debug_static_bot',
+      'cast_shell_android': 'android_cast_gn_debug_static_bot',
       'linux_android_dbg_ng': 'swarming_android_gyp_debug_trybot',
       'linux_android_rel_ng': 'swarming_android_gyp_release_trybot',
     },
@@ -861,8 +861,8 @@
       'android', 'asan', 'gn', 'debug_bot_minimal_symbols',
     ],
 
-    'android_cast_gyp_debug_static_bot': [
-      'android', 'cast', 'gyp', 'debug_static_bot',
+    'android_cast_gn_debug_static_bot': [
+      'android', 'cast', 'gn', 'debug_static_bot',
     ],
 
     'android_clang_no_chrome_plugins_asan_gn_debug_bot_minimal_symbols': [
