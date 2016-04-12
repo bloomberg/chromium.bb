@@ -27,7 +27,6 @@
 #include "platform/geometry/IntRect.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/RefCounted.h"
 
 namespace blink {
 

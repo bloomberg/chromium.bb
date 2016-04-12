@@ -34,9 +34,6 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/ClientRect.h"
 #include "platform/heap/Handle.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
-#include "wtf/RefPtr.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {

@@ -36,7 +36,6 @@
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "platform/transforms/AffineTransform.h"
-#include "wtf/RefCounted.h"
 
 namespace blink {
 

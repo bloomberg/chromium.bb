@@ -7,10 +7,9 @@
 
 #include "core/CoreExport.h"
 #include "core/css/CSSPrimitiveValue.h"
+#include "platform/heap/Handle.h"
 #include "public/platform/PointerProperties.h"
 #include "public/platform/WebDisplayMode.h"
-#include "wtf/RefCounted.h"
-#include "wtf/RefPtr.h"
 
 namespace blink {
 

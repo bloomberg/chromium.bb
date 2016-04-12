@@ -34,6 +34,7 @@
 #include "platform/text/SegmentedString.h"
 #include "wtf/HashMap.h"
 #include "wtf/OwnPtr.h"
+#include "wtf/RefCounted.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/StringHash.h"
 #include <libxml/tree.h>

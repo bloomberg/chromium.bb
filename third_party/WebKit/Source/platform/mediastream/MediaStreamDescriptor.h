@@ -35,8 +35,7 @@
 #include "platform/mediastream/MediaStreamComponent.h"
 #include "platform/mediastream/MediaStreamSource.h"
 #include "wtf/Allocator.h"
-#include "wtf/PassOwnPtr.h"
-#include "wtf/RefCounted.h"
+#include "wtf/Forward.h"
 #include "wtf/Vector.h"
 
 namespace blink {

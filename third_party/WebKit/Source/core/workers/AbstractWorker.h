@@ -36,8 +36,7 @@
 #include "core/events/EventListener.h"
 #include "core/events/EventTarget.h"
 #include "platform/heap/Handle.h"
-#include "wtf/RefCounted.h"
-#include "wtf/text/AtomicStringHash.h"
+#include "wtf/Forward.h"
 
 namespace blink {
 

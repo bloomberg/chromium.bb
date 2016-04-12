@@ -39,8 +39,6 @@
 #include "wtf/Allocator.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/RefCounted.h"
-#include "wtf/RefPtr.h"
 
 namespace blink {
 
@@ -125,8 +123,6 @@ protected:
     HTMLInputElement& element() const { return *m_element; }
 
 private:
-    // Not a RefPtr because the HTMLInputElement object owns this InputTypeView
-    // object.
     Member<HTMLInputElement> m_element;
 };
 

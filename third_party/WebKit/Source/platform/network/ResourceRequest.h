@@ -39,6 +39,7 @@
 #include "public/platform/WebAddressSpace.h"
 #include "public/platform/WebURLRequest.h"
 #include "wtf/OwnPtr.h"
+#include "wtf/RefCounted.h"
 
 namespace blink {
 

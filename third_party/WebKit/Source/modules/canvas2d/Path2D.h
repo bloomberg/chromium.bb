@@ -34,8 +34,6 @@
 #include "modules/canvas2d/CanvasPathMethods.h"
 #include "platform/heap/Handle.h"
 #include "platform/transforms/AffineTransform.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
 
 namespace blink {
 

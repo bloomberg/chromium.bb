@@ -12,7 +12,6 @@
 #include "core/inspector/ConsoleMessage.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
-#include "wtf/RefCounted.h"
 
 namespace blink {
 
@@ -49,14 +48,6 @@ public:
         SecurityContext::trace(visitor);
         ExecutionContext::trace(visitor);
     }
-
-#if !ENABLE(OILPAN)
-    using RefCounted<NullExecutionContext>::ref;
-    using RefCounted<NullExecutionContext>::deref;
-
-    void refExecutionContext() override { ref(); }
-    void derefExecutionContext() override { deref(); }
-#endif
 
 protected:
     const KURL& virtualURL() const override { return m_dummyURL; }

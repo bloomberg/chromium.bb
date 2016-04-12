@@ -11,6 +11,9 @@
 #include "core/animation/PropertyHandle.h"
 #include "core/animation/animatable/AnimatableValue.h"
 #include "wtf/Allocator.h"
+#include "wtf/Forward.h"
+#include "wtf/RefCounted.h"
+#include "wtf/RefPtr.h"
 
 namespace blink {
 

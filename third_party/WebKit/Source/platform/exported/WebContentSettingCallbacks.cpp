@@ -5,6 +5,7 @@
 #include "public/platform/WebContentSettingCallbacks.h"
 
 #include "platform/ContentSettingCallbacks.h"
+#include "wtf/RefCounted.h"
 
 namespace blink {
 

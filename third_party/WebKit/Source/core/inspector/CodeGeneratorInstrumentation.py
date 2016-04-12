@@ -112,7 +112,6 @@ template_instrumenting_agents_h = string.Template("""// Code generated from Insp
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
 
 namespace blink {
 

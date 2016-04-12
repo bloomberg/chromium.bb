@@ -34,7 +34,6 @@
 #include "platform/heap/Handle.h"
 #include "platform/text/TextDecoration.h"
 #include "wtf/Allocator.h"
-#include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 

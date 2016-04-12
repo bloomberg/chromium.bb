@@ -30,6 +30,8 @@
 #include "core/style/StyleDifference.h"
 #include "platform/Length.h"
 #include "platform/graphics/GraphicsTypes.h"
+#include "wtf/Forward.h"
+#include "wtf/RefCounted.h"
 
 namespace blink {
 

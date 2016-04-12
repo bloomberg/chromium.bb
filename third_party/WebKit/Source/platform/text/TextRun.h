@@ -32,7 +32,6 @@
 #include "platform/text/TextDirection.h"
 #include "platform/text/TextPath.h"
 #include "wtf/Allocator.h"
-#include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
 class SkTextBlob;

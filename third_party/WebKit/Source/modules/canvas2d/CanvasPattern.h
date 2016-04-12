@@ -30,8 +30,6 @@
 #include "core/svg/SVGMatrixTearOff.h"
 #include "platform/graphics/Pattern.h"
 #include "wtf/Forward.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
 
 namespace blink {
 

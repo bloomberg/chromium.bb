@@ -28,9 +28,8 @@
 
 #include "core/dom/Attribute.h"
 #include "core/html/parser/HTMLParserIdioms.h"
+#include "wtf/Forward.h"
 #include "wtf/PassOwnPtr.h"
-#include "wtf/RefCounted.h"
-#include "wtf/RefPtr.h"
 
 namespace blink {
 

@@ -33,7 +33,6 @@
 
 #include "core/editing/commands/EditAction.h"
 #include "platform/heap/Handle.h"
-#include "wtf/RefCounted.h"
 
 namespace blink {
 

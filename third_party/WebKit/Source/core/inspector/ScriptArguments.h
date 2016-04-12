@@ -33,7 +33,6 @@
 
 #include "bindings/core/v8/ScriptState.h"
 #include "wtf/Forward.h"
-#include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 

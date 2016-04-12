@@ -41,13 +41,12 @@
 #include "platform/weborigin/KURL.h"
 #include "public/platform/PointerProperties.h"
 #include "public/platform/WebDisplayMode.h"
-#include "wtf/HashSet.h"
-#include "wtf/RefCounted.h"
 
 namespace blink {
 
 class CORE_EXPORT Settings {
-    WTF_MAKE_NONCOPYABLE(Settings); USING_FAST_MALLOC(Settings);
+    WTF_MAKE_NONCOPYABLE(Settings);
+    USING_FAST_MALLOC(Settings);
 public:
     static PassOwnPtr<Settings> create();
 

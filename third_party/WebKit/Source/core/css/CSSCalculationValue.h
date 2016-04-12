@@ -36,9 +36,7 @@
 #include "core/css/CSSValue.h"
 #include "core/css/parser/CSSParserTokenRange.h"
 #include "platform/CalculationValue.h"
-#include "wtf/PassOwnPtr.h"
-#include "wtf/RefCounted.h"
-#include "wtf/RefPtr.h"
+#include "wtf/Forward.h"
 
 namespace blink {
 

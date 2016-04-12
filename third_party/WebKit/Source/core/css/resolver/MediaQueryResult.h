@@ -25,7 +25,6 @@
 
 #include "core/css/MediaQueryExp.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/RefCounted.h"
 
 namespace blink {
 

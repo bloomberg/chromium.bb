@@ -30,7 +30,6 @@
 #include "platform/graphics/Color.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Assertions.h"
-#include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
 class SkPaint;

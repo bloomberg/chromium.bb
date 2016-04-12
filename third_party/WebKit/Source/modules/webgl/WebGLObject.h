@@ -30,7 +30,6 @@
 #include "platform/graphics/GraphicsTypes3D.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Assertions.h"
-#include "wtf/RefCounted.h"
 
 namespace blink {
 class WebGraphicsContext3D;

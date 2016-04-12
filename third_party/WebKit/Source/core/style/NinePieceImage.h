@@ -31,6 +31,7 @@
 #include "platform/LayoutUnit.h"
 #include "platform/LengthBox.h"
 #include "wtf/Allocator.h"
+#include "wtf/RefCounted.h"
 
 namespace blink {
 

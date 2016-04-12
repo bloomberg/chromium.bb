@@ -6,6 +6,7 @@
 #define CompressibleString_h
 
 #include "platform/PlatformExport.h"
+#include "wtf/RefCounted.h"
 #include "wtf/text/Unicode.h"
 #include "wtf/text/WTFString.h"
 

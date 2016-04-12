@@ -28,7 +28,6 @@
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "platform/transforms/TransformationMatrix.h"
-#include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {

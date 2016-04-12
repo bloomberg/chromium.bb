@@ -34,7 +34,6 @@
 #include "platform/geometry/IntPoint.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/Referrer.h"
-#include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {

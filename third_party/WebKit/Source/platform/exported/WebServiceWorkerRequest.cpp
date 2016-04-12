@@ -9,6 +9,7 @@
 #include "public/platform/WebHTTPHeaderVisitor.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURLRequest.h"
+#include "wtf/RefCounted.h"
 
 namespace blink {
 

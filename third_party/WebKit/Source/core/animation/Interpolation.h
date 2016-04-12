@@ -7,7 +7,8 @@
 
 #include "core/CoreExport.h"
 #include "core/animation/InterpolableValue.h"
-#include "platform/heap/Handle.h"
+#include "wtf/Forward.h"
+#include "wtf/RefCounted.h"
 
 namespace blink {
 

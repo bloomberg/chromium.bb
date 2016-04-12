@@ -36,8 +36,6 @@
 #include "platform/AsyncMethodRunner.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Allocator.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
 
 // Mac OS X 10.6 SDK defines check() macro that interfares with our check() method

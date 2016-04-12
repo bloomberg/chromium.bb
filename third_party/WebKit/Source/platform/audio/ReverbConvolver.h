@@ -37,7 +37,6 @@
 #include "platform/audio/ReverbInputBuffer.h"
 #include "wtf/Allocator.h"
 #include "wtf/OwnPtr.h"
-#include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
 
 namespace blink {

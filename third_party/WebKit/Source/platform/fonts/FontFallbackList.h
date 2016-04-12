@@ -28,6 +28,7 @@
 #include "platform/fonts/shaping/ShapeCache.h"
 #include "wtf/Allocator.h"
 #include "wtf/Forward.h"
+#include "wtf/RefCounted.h"
 #include "wtf/WeakPtr.h"
 
 namespace blink {

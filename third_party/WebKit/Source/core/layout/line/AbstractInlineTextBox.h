@@ -36,6 +36,7 @@
 #include "core/layout/api/LineLayoutText.h"
 #include "core/layout/line/InlineTextBox.h"
 #include "wtf/HashMap.h"
+#include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 
 namespace blink {

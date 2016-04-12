@@ -28,8 +28,7 @@
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/html/track/vtt/VTTRegion.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
+#include "platform/heap/Handle.h"
 #include "wtf/Vector.h"
 
 namespace blink {

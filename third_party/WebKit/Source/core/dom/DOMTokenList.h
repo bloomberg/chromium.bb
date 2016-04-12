@@ -58,11 +58,6 @@ public:
 
     virtual ~DOMTokenList() { }
 
-#if !ENABLE(OILPAN)
-    virtual void ref() { RefCounted<DOMTokenList>::ref(); }
-    virtual void deref() { RefCounted<DOMTokenList>::deref(); }
-#endif
-
     virtual unsigned length() const { return m_tokens.size(); }
     virtual const AtomicString item(unsigned index) const;
 

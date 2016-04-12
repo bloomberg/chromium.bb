@@ -7,7 +7,6 @@
 
 #include "platform/PlatformExport.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/ThreadSafeRefCounted.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {

@@ -24,9 +24,8 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/dom/TreeScope.h"
+#include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
 
 namespace blink {

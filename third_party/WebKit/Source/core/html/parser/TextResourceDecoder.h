@@ -24,7 +24,6 @@
 #define TextResourceDecoder_h
 
 #include "core/CoreExport.h"
-#include "wtf/RefCounted.h"
 #include "wtf/text/TextEncoding.h"
 
 namespace blink {

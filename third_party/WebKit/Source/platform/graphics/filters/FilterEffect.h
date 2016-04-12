@@ -31,8 +31,7 @@
 #include "platform/heap/Handle.h"
 #include "third_party/skia/include/core/SkImageFilter.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/PassOwnPtr.h"
-#include "wtf/RefCounted.h"
+#include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 

@@ -35,9 +35,6 @@
 #include "core/CoreExport.h"
 #include "core/animation/Timing.h"
 #include "platform/heap/Handle.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
-#include "wtf/RefCounted.h"
 
 namespace blink {
 

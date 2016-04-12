@@ -43,7 +43,6 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebFileSystem.h"
 #include "wtf/Functional.h"
-#include "wtf/RefCounted.h"
 
 namespace blink {
 

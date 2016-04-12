@@ -23,7 +23,6 @@
 #include "core/CoreExport.h"
 #include "core/css/MediaQueryList.h"
 #include "platform/heap/Handle.h"
-#include "wtf/RefCounted.h"
 
 namespace blink {
 

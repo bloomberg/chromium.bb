@@ -8,6 +8,7 @@
 #include "platform/network/HTTPHeaderMap.h"
 #include "public/platform/WebHTTPHeaderVisitor.h"
 #include "wtf/HashMap.h"
+#include "wtf/RefCounted.h"
 
 namespace blink {
 

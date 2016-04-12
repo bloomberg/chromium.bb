@@ -16,6 +16,7 @@
 #include "public/platform/WebTraceLocation.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/Functional.h"
+#include "wtf/RefCounted.h"
 
 namespace blink {
 
