@@ -1582,6 +1582,8 @@ void Dispatcher::RequireGuestViewModules(ScriptContext* context) {
   // Require AppView.
   if (context->GetAvailability("appViewEmbedderInternal").is_available()) {
     module_system->Require("appView");
+
+    guest_view_required = true;
   }
 
   // Require ExtensionOptions.

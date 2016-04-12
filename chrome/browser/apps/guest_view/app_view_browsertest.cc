@@ -13,6 +13,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_process_host_observer.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/api/app_runtime/app_runtime_api.h"
@@ -27,6 +28,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 using extensions::ExtensionsAPIClient;
 using guest_view::GuestViewManager;
@@ -75,7 +77,8 @@ class RenderProcessHostObserverForExit
 
 }  // namespace
 
-class AppViewTest : public extensions::PlatformAppBrowserTest {
+class AppViewTest : public extensions::PlatformAppBrowserTest,
+                    public testing::WithParamInterface<bool> {
  public:
   AppViewTest() {
     GuestViewManager::set_factory_for_testing(&factory_);
@@ -129,6 +132,10 @@ class AppViewTest : public extensions::PlatformAppBrowserTest {
  private:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     extensions::PlatformAppBrowserTest::SetUpCommandLine(command_line);
+
+    bool use_cross_process_frames_for_guests = GetParam();
+    if (use_cross_process_frames_for_guests)
+      command_line->AppendSwitch(switches::kUseCrossProcessFramesForGuests);
   }
 
   void SetUpOnMainThread() override {
@@ -147,8 +154,10 @@ class AppViewTest : public extensions::PlatformAppBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(AppViewTest);
 };
 
+INSTANTIATE_TEST_CASE_P(AppViewTests, AppViewTest, testing::Bool());
+
 // Tests that <appview> is able to navigate to another installed app.
-IN_PROC_BROWSER_TEST_F(AppViewTest, TestAppViewWithUndefinedDataShouldSucceed) {
+IN_PROC_BROWSER_TEST_P(AppViewTest, TestAppViewWithUndefinedDataShouldSucceed) {
   const extensions::Extension* skeleton_app =
       InstallPlatformApp("app_view/shim/skeleton");
   TestHelper("testAppViewWithUndefinedDataShouldSucceed",
@@ -158,7 +167,7 @@ IN_PROC_BROWSER_TEST_F(AppViewTest, TestAppViewWithUndefinedDataShouldSucceed) {
 }
 
 // Tests that <appview> correctly processes parameters passed on connect.
-IN_PROC_BROWSER_TEST_F(AppViewTest, TestAppViewRefusedDataShouldFail) {
+IN_PROC_BROWSER_TEST_P(AppViewTest, TestAppViewRefusedDataShouldFail) {
   const extensions::Extension* skeleton_app =
       InstallPlatformApp("app_view/shim/skeleton");
   TestHelper("testAppViewRefusedDataShouldFail",
@@ -168,7 +177,7 @@ IN_PROC_BROWSER_TEST_F(AppViewTest, TestAppViewRefusedDataShouldFail) {
 }
 
 // Tests that <appview> correctly processes parameters passed on connect.
-IN_PROC_BROWSER_TEST_F(AppViewTest, TestAppViewGoodDataShouldSucceed) {
+IN_PROC_BROWSER_TEST_P(AppViewTest, TestAppViewGoodDataShouldSucceed) {
   const extensions::Extension* skeleton_app =
       InstallPlatformApp("app_view/shim/skeleton");
   TestHelper("testAppViewGoodDataShouldSucceed",
@@ -178,7 +187,7 @@ IN_PROC_BROWSER_TEST_F(AppViewTest, TestAppViewGoodDataShouldSucceed) {
 }
 
 // Tests that <appview> correctly handles multiple successive connects.
-IN_PROC_BROWSER_TEST_F(AppViewTest, TestAppViewMultipleConnects) {
+IN_PROC_BROWSER_TEST_P(AppViewTest, TestAppViewMultipleConnects) {
   const extensions::Extension* skeleton_app =
       InstallPlatformApp("app_view/shim/skeleton");
   TestHelper("testAppViewMultipleConnects",
@@ -188,7 +197,7 @@ IN_PROC_BROWSER_TEST_F(AppViewTest, TestAppViewMultipleConnects) {
 }
 
 // Tests that <appview> does not embed self (the app which owns appview).
-IN_PROC_BROWSER_TEST_F(AppViewTest, TestAppViewEmbedSelfShouldFail) {
+IN_PROC_BROWSER_TEST_P(AppViewTest, TestAppViewEmbedSelfShouldFail) {
   const extensions::Extension* skeleton_app =
       InstallPlatformApp("app_view/shim/skeleton");
   TestHelper("testAppViewEmbedSelfShouldFail",
@@ -197,7 +206,7 @@ IN_PROC_BROWSER_TEST_F(AppViewTest, TestAppViewEmbedSelfShouldFail) {
              NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(AppViewTest, KillGuestWithInvalidInstanceID) {
+IN_PROC_BROWSER_TEST_P(AppViewTest, KillGuestWithInvalidInstanceID) {
   const extensions::Extension* bad_app =
       LoadAndLaunchPlatformApp("app_view/bad_app", "AppViewTest.LAUNCHED");
 
@@ -221,7 +230,7 @@ IN_PROC_BROWSER_TEST_F(AppViewTest, KillGuestWithInvalidInstanceID) {
   exit_observer.WaitUntilRenderProcessHostKilled();
 }
 
-IN_PROC_BROWSER_TEST_F(AppViewTest, KillGuestCommunicatingWithWrongAppView) {
+IN_PROC_BROWSER_TEST_P(AppViewTest, KillGuestCommunicatingWithWrongAppView) {
   const extensions::Extension* host_app =
       LoadAndLaunchPlatformApp("app_view/host_app", "AppViewTest.LAUNCHED");
   const extensions::Extension* guest_app =
