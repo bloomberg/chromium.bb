@@ -110,8 +110,7 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 
 @interface CRWWKWebViewWebController ()<CRWSSLStatusUpdaterDataSource,
                                         CRWSSLStatusUpdaterDelegate,
-                                        WKNavigationDelegate,
-                                        WKUIDelegate> {
+                                        WKNavigationDelegate> {
   // The WKWebView managed by this instance.
   base::scoped_nsobject<WKWebView> _wkWebView;
 
@@ -216,9 +215,6 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 - (void)didBlockPopupWithURL:(GURL)popupURL
                    sourceURL:(GURL)sourceURL
               referrerPolicy:(const std::string&)referrerPolicyString;
-
-// Convenience method to inform CWRWebDelegate about a blocked popup.
-- (void)didBlockPopupWithURL:(GURL)popupURL sourceURL:(GURL)sourceURL;
 
 // Called when a load ends in an SSL error and certificate chain.
 - (void)handleSSLCertError:(NSError*)error;
@@ -1446,127 +1442,6 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 - (void)webViewWebContentProcessDidTerminate:(WKWebView*)webView {
   _certVerificationErrors->Clear();
   [self webViewWebProcessDidCrash];
-}
-
-#pragma mark WKUIDelegate Methods
-
-- (WKWebView*)webView:(WKWebView*)webView
-    createWebViewWithConfiguration:(WKWebViewConfiguration*)configuration
-               forNavigationAction:(WKNavigationAction*)navigationAction
-                    windowFeatures:(WKWindowFeatures*)windowFeatures {
-  if (self.shouldSuppressDialogs) {
-    [self didSuppressDialog];
-    return nil;
-  }
-
-  GURL requestURL = net::GURLWithNSURL(navigationAction.request.URL);
-
-  if (![self userIsInteracting]) {
-    NSString* referer = [self refererFromNavigationAction:navigationAction];
-    GURL referrerURL =
-        referer ? GURL(base::SysNSStringToUTF8(referer)) : [self currentURL];
-    if ([self shouldBlockPopupWithURL:requestURL sourceURL:referrerURL]) {
-      [self didBlockPopupWithURL:requestURL sourceURL:referrerURL];
-      // Desktop Chrome does not return a window for the blocked popups;
-      // follow the same approach by returning nil;
-      return nil;
-    }
-  }
-
-  CRWWebController* child = [self createChildWebController];
-  // WKWebView requires WKUIDelegate to return a child view created with
-  // exactly the same |configuration| object (exception is raised if config is
-  // different). |configuration| param and config returned by
-  // WKWebViewConfigurationProvider are different objects because WKWebView
-  // makes a shallow copy of the config inside init, so every WKWebView
-  // owns a separate shallow copy of WKWebViewConfiguration.
-  [child ensureWebViewCreatedWithConfiguration:configuration];
-  return [child webView];
-}
-
-- (void)webViewDidClose:(WKWebView*)webView {
-  if (self.sessionController.openedByDOM) {
-    [self.delegate webPageOrderedClose];
-  }
-}
-
-- (void)webView:(WKWebView*)webView
-    runJavaScriptAlertPanelWithMessage:(NSString*)message
-                      initiatedByFrame:(WKFrameInfo*)frame
-                     completionHandler:(void(^)())completionHandler {
-  if (self.shouldSuppressDialogs) {
-    [self didSuppressDialog];
-    completionHandler();
-    return;
-  }
-
-  SEL alertSelector = @selector(webController:
-           runJavaScriptAlertPanelWithMessage:
-                                   requestURL:
-                            completionHandler:);
-  if ([self.UIDelegate respondsToSelector:alertSelector]) {
-    [self.UIDelegate webController:self
-        runJavaScriptAlertPanelWithMessage:message
-                                requestURL:net::GURLWithNSURL(frame.request.URL)
-                         completionHandler:completionHandler];
-  } else if (completionHandler) {
-    completionHandler();
-  }
-}
-
-- (void)webView:(WKWebView*)webView
-    runJavaScriptConfirmPanelWithMessage:(NSString*)message
-                        initiatedByFrame:(WKFrameInfo*)frame
-                       completionHandler:
-        (void (^)(BOOL result))completionHandler {
-  if (self.shouldSuppressDialogs) {
-    [self didSuppressDialog];
-    completionHandler(NO);
-    return;
-  }
-
-  SEL confirmationSelector = @selector(webController:
-                runJavaScriptConfirmPanelWithMessage:
-                                          requestURL:
-                                   completionHandler:);
-  if ([self.UIDelegate respondsToSelector:confirmationSelector]) {
-    [self.UIDelegate webController:self
-        runJavaScriptConfirmPanelWithMessage:message
-                                  requestURL:
-            net::GURLWithNSURL(frame.request.URL)
-                           completionHandler:completionHandler];
-  } else if (completionHandler) {
-    completionHandler(NO);
-  }
-}
-
-- (void)webView:(WKWebView*)webView
-    runJavaScriptTextInputPanelWithPrompt:(NSString*)prompt
-                              defaultText:(NSString*)defaultText
-                         initiatedByFrame:(WKFrameInfo*)frame
-                        completionHandler:
-        (void (^)(NSString *result))completionHandler {
-  if (self.shouldSuppressDialogs) {
-    [self didSuppressDialog];
-    completionHandler(nil);
-    return;
-  }
-
-  SEL textInputSelector = @selector(webController:
-            runJavaScriptTextInputPanelWithPrompt:
-                                      defaultText:
-                                       requestURL:
-                                completionHandler:);
-  if ([self.UIDelegate respondsToSelector:textInputSelector]) {
-    GURL requestURL = net::GURLWithNSURL(frame.request.URL);
-    [self.UIDelegate webController:self
-        runJavaScriptTextInputPanelWithPrompt:prompt
-                                  defaultText:defaultText
-                                   requestURL:requestURL
-                            completionHandler:completionHandler];
-  } else if (completionHandler) {
-    completionHandler(nil);
-  }
 }
 
 @end

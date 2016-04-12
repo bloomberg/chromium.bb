@@ -82,7 +82,7 @@ static NSString* const kScriptImmediateName = @"crwebinvokeimmediate";
 
 // Category for methods used or implemented by implementation subclasses of
 // CRWWebController.
-@interface CRWWebController (ProtectedMethods)
+@interface CRWWebController (ProtectedMethods)<WKUIDelegate>
 
 #pragma mark Methods implemented by subclasses
 // Everything in this section must be implemented by subclasses.
@@ -145,6 +145,9 @@ static NSString* const kScriptImmediateName = @"crwebinvokeimmediate";
 
 // Called when web controller receives a new message from the web page.
 - (void)didReceiveScriptMessage:(WKScriptMessage*)message;
+
+// Convenience method to inform CWRWebDelegate about a blocked popup.
+- (void)didBlockPopupWithURL:(GURL)popupURL sourceURL:(GURL)sourceURL;
 
 #pragma mark - Optional methods for subclasses
 // Subclasses may overwrite methods in this section.
