@@ -165,4 +165,8 @@ source_set("unittests") {
     "//ui/mojo/geometry:interfaces",
     "//ui/mojo/geometry:util",
   ]
+
+  data_deps = [
+    ":wm",
+  ]
 }
