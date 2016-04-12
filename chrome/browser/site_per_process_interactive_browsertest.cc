@@ -106,3 +106,41 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest, DocumentHasFocus) {
   EXPECT_TRUE(document_has_focus(child2));
 }
 
+// Ensure that a cross-process subframe can receive keyboard events when in
+// focus.
+IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
+                       SubframeKeyboardEventRouting) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/frame_tree/page_with_one_frame.html"));
+  ui_test_utils::NavigateToURL(browser(), main_url);
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  GURL frame_url(
+      embedded_test_server()->GetURL("b.com", "/page_with_input_field.html"));
+  EXPECT_TRUE(NavigateIframeToURL(web_contents, "child0", frame_url));
+
+  // Focus the subframe and then its input field.  The return value
+  // "input-focus" will be sent once the input field's focus event fires.
+  content::RenderFrameHost* child =
+      ChildFrameAt(web_contents->GetMainFrame(), 0);
+  std::string result;
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      child, "window.focus(); focusInputField();", &result));
+  EXPECT_EQ("input-focus", result);
+
+  // The subframe should now be focused.
+  EXPECT_EQ(child, web_contents->GetFocusedFrame());
+
+  // Generate a few keyboard events and route them to currently focused frame.
+  SimulateKeyPress(web_contents, ui::VKEY_F, false, false, false, false);
+  SimulateKeyPress(web_contents, ui::VKEY_O, false, false, false, false);
+  SimulateKeyPress(web_contents, ui::VKEY_O, false, false, false, false);
+
+  // Verify that the input field in the subframe received the keystrokes.
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      child,
+      "window.domAutomationController.send(getInputFieldText());", &result));
+  EXPECT_EQ("FOO", result);
+}
+
