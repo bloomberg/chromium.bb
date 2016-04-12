@@ -117,9 +117,6 @@ class APP_LIST_EXPORT AppListViewDelegate {
   // Invoked when the app list is closing.
   virtual void ViewClosing() = 0;
 
-  // Returns the icon to be displayed in the window and taskbar.
-  virtual gfx::ImageSkia GetWindowIcon() = 0;
-
   // Open the settings UI.
   virtual void OpenSettings() = 0;
 

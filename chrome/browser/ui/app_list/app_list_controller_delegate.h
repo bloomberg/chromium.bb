@@ -69,9 +69,6 @@ class AppListControllerDelegate {
   // returns a 0x0 rectangle.
   virtual gfx::Rect GetAppListBounds();
 
-  // Get the application icon to be used, if any, for the app list.
-  virtual gfx::ImageSkia GetWindowIcon() = 0;
-
   // Control of pinning apps.
   virtual bool IsAppPinned(const std::string& extension_id) = 0;
   virtual void PinApp(const std::string& extension_id) = 0;

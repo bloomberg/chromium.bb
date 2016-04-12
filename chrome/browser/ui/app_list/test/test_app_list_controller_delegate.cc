@@ -21,10 +21,6 @@ gfx::NativeWindow TestAppListControllerDelegate::GetAppListWindow() {
   return NULL;
 }
 
-gfx::ImageSkia TestAppListControllerDelegate::GetWindowIcon() {
-  return gfx::ImageSkia();
-}
-
 bool TestAppListControllerDelegate::IsAppPinned(
     const std::string& extension_id) {
   return false;

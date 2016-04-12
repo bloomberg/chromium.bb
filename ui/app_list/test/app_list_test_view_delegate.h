@@ -72,7 +72,6 @@ class AppListTestViewDelegate : public AppListViewDelegate {
   void ViewInitialized() override {}
   void Dismiss() override;
   void ViewClosing() override {}
-  gfx::ImageSkia GetWindowIcon() override;
   void OpenSettings() override {}
   void OpenHelp() override {}
   void OpenFeedback() override {}

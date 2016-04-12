@@ -571,10 +571,6 @@ void AppListViewDelegate::ViewClosing() {
   }
 }
 
-gfx::ImageSkia AppListViewDelegate::GetWindowIcon() {
-  return controller_->GetWindowIcon();
-}
-
 void AppListViewDelegate::OpenSettings() {
   const extensions::Extension* extension =
       extensions::ExtensionRegistry::Get(profile_)->GetExtensionById(

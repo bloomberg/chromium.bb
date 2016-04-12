@@ -34,10 +34,6 @@ gfx::Rect AppListControllerDelegateAsh::GetAppListBounds() {
   return gfx::Rect();
 }
 
-gfx::ImageSkia AppListControllerDelegateAsh::GetWindowIcon() {
-  return gfx::ImageSkia();
-}
-
 bool AppListControllerDelegateAsh::IsAppPinned(
     const std::string& extension_id) {
   return ChromeLauncherController::instance()->IsAppPinned(extension_id);

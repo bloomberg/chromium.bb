@@ -87,10 +87,6 @@ void AppListTestViewDelegate::StopSpeechRecognition() {
   ++stop_speech_recognition_count_;
 }
 
-gfx::ImageSkia AppListTestViewDelegate::GetWindowIcon() {
-  return gfx::ImageSkia();
-}
-
 #if defined(TOOLKIT_VIEWS)
 views::View* AppListTestViewDelegate::CreateStartPageWebView(
     const gfx::Size& size) {

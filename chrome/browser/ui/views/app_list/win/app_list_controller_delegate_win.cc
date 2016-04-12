@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/views/app_list/win/app_list_controller_delegate_win.h"
 
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/app_list/app_list_icon_win.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
@@ -19,10 +18,4 @@ AppListControllerDelegateWin::~AppListControllerDelegateWin() {}
 
 bool AppListControllerDelegateWin::ForceNativeDesktop() const {
   return true;
-}
-
-gfx::ImageSkia AppListControllerDelegateWin::GetWindowIcon() {
-  gfx::ImageSkia* resource = ResourceBundle::GetSharedInstance().
-      GetImageSkiaNamed(GetAppListIconResourceId());
-  return *resource;
 }

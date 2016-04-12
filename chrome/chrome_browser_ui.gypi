@@ -2614,8 +2614,6 @@
       'browser/ui/app_list/app_list_controller_delegate.h',
       'browser/ui/app_list/app_list_controller_delegate_impl.cc',
       'browser/ui/app_list/app_list_controller_delegate_impl.h',
-      'browser/ui/app_list/app_list_icon_win.cc',
-      'browser/ui/app_list/app_list_icon_win.h',
       'browser/ui/app_list/app_list_model_builder.cc',
       'browser/ui/app_list/app_list_model_builder.h',
       'browser/ui/app_list/app_list_positioner.cc',

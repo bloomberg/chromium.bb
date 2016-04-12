@@ -16,7 +16,6 @@ class AppListControllerDelegateWin : public AppListControllerDelegateViews {
 
   // AppListControllerDelegate overrides:
   bool ForceNativeDesktop() const override;
-  gfx::ImageSkia GetWindowIcon() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AppListControllerDelegateWin);

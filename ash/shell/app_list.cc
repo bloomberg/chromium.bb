@@ -322,8 +322,6 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
     // Nothing needs to be done.
   }
 
-  gfx::ImageSkia GetWindowIcon() override { return gfx::ImageSkia(); }
-
   void OpenSettings() override {
     // Nothing needs to be done.
   }
