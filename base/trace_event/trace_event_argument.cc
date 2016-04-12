@@ -462,14 +462,11 @@ void TracedValue::AppendAsTraceFormat(std::string* out) const {
 
 void TracedValue::EstimateTraceMemoryOverhead(
     TraceEventMemoryOverhead* overhead) {
-  const size_t kPickleHeapAlign = 4096;  // Must be == Pickle::kPickleHeapAlign.
   overhead->Add("TracedValue",
-
                 /* allocated size */
-                bits::Align(pickle_.GetTotalAllocatedSize(), kPickleHeapAlign),
-
+                pickle_.GetTotalAllocatedSize(),
                 /* resident size */
-                bits::Align(pickle_.size(), kPickleHeapAlign));
+                pickle_.size());
 }
 
 }  // namespace trace_event
