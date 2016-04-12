@@ -309,6 +309,7 @@ html element audio
     property setSinkId
     property sinkId
     property src
+    property srcObject
     property textTracks
     property volume
     property webkitAudioDecodedByteCount
@@ -1033,6 +1034,7 @@ html element video
     property setSinkId
     property sinkId
     property src
+    property srcObject
     property textTracks
     property videoHeight
     property videoWidth

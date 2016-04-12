@@ -2243,6 +2243,7 @@ interface HTMLMediaElement : HTMLElement
     getter seeking
     getter sinkId
     getter src
+    getter srcObject
     getter textTracks
     getter volume
     getter webkitAudioDecodedByteCount
@@ -2268,6 +2269,7 @@ interface HTMLMediaElement : HTMLElement
     setter playbackRate
     setter preload
     setter src
+    setter srcObject
     setter volume
 interface HTMLMenuElement : HTMLElement
     attribute @@toStringTag

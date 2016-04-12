@@ -7,9 +7,7 @@
 // TODO(guidou): Add support for MediaSource and Blob, as defined in the spec.
 typedef MediaStream MediaProvider;
 
-[
-    RuntimeEnabled=SrcObject
-] partial interface HTMLMediaElement {
+partial interface HTMLMediaElement {
     // TODO(haraken): Per the spec, the srcObject should be defined in
     // HTMLMediaElement.idl. However, we cannot define srcObject in 
     // HTMLMediaElement.idl because of the dependency restriction from modules/
