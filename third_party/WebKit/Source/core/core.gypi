@@ -3948,6 +3948,7 @@
             'dom/TreeScopeTest.cpp',
             'dom/URLSearchParamsTest.cpp',
             'dom/shadow/FlatTreeTraversalTest.cpp',
+            'editing/EditingCommandTest.cpp',
             'editing/EditingStrategyTest.cpp',
             'editing/EditingTestBase.cpp',
             'editing/EditingTestBase.h',

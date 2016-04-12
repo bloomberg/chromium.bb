@@ -2303,6 +2303,42 @@ bool equalIgnoringASCIICase(const StringImpl* a, const LChar* b)
     return equalSubstringIgnoringASCIICase(a, 0, b, length);
 }
 
+template<typename CharacterType1, typename CharacterType2>
+int codePointCompareIgnoringASCIICase(unsigned l1, unsigned l2, const CharacterType1* c1, const CharacterType2* c2)
+{
+    const unsigned lmin = l1 < l2 ? l1 : l2;
+    unsigned pos = 0;
+    while (pos < lmin && toASCIILower(*c1) == toASCIILower(*c2)) {
+        ++c1;
+        ++c2;
+        ++pos;
+    }
+
+    if (pos < lmin)
+        return (toASCIILower(c1[0]) > toASCIILower(c2[0])) ? 1 : -1;
+
+    if (l1 == l2)
+        return 0;
+
+    return (l1 > l2) ? 1 : -1;
+}
+
+int codePointCompareIgnoringASCIICase(const StringImpl* string1, const LChar* string2)
+{
+    unsigned length1 = string1 ? string1->length() : 0;
+    size_t length2 = string2 ? strlen(reinterpret_cast<const char*>(string2)) : 0;
+
+    if (!string1)
+        return length2 > 0 ? -1 : 0;
+
+    if (!string2)
+        return length1 > 0 ? 1 : 0;
+
+    if (string1->is8Bit())
+        return codePointCompareIgnoringASCIICase(length1, length2, string1->characters8(), string2);
+    return codePointCompareIgnoringASCIICase(length1, length2, string1->characters16(), string2);
+}
+
 size_t StringImpl::sizeInBytes() const
 {
     size_t size = length();

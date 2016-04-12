@@ -516,6 +516,8 @@ inline bool equalIgnoringASCIICase(const CharacterTypeA* a, const CharacterTypeB
 WTF_EXPORT bool equalIgnoringASCIICase(const StringImpl*, const StringImpl*);
 WTF_EXPORT bool equalIgnoringASCIICase(const StringImpl*, const LChar*);
 
+WTF_EXPORT int codePointCompareIgnoringASCIICase(const StringImpl*, const LChar*);
+
 template<typename CharacterType>
 inline size_t find(const CharacterType* characters, unsigned length, CharacterType matchCharacter, unsigned index = 0)
 {

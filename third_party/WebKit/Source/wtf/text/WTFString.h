@@ -581,6 +581,8 @@ inline bool codePointCompareLessThan(const String& a, const String& b)
     return codePointCompare(a.impl(), b.impl()) < 0;
 }
 
+WTF_EXPORT int codePointCompareIgnoringASCIICase(const String&, const char*);
+
 template<size_t inlineCapacity>
 inline void append(Vector<UChar, inlineCapacity>& vector, const String& string)
 {

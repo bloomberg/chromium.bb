@@ -156,6 +156,11 @@ int codePointCompare(const String& a, const String& b)
     return codePointCompare(a.impl(), b.impl());
 }
 
+int codePointCompareIgnoringASCIICase(const String& a, const char* b)
+{
+    return codePointCompareIgnoringASCIICase(a.impl(), reinterpret_cast<const LChar*>(b));
+}
+
 void String::insert(const String& string, unsigned position)
 {
     if (string.isEmpty()) {

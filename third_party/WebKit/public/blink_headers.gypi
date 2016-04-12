@@ -62,6 +62,7 @@
       "platform/WebDisplayMode.h",
       "platform/WebDoublePoint.h",
       "platform/WebDragData.h",
+      'platform/WebEditingCommandType.h',
       "platform/WebEncryptedMediaClient.h",
       "platform/WebEncryptedMediaKeyInformation.h",
       "platform/WebEncryptedMediaRequest.h",

@@ -39,6 +39,7 @@
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/commands/CreateLinkCommand.h"
+#include "core/editing/commands/EditorCommandNames.h"
 #include "core/editing/commands/FormatBlockCommand.h"
 #include "core/editing/commands/IndentOutdentCommand.h"
 #include "core/editing/commands/InsertListCommand.h"
@@ -64,15 +65,50 @@
 #include "platform/UserGestureIndicator.h"
 #include "platform/scroll/Scrollbar.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebEditingCommandType.h"
+#include "wtf/StringExtras.h"
 #include "wtf/text/AtomicString.h"
+
+#include <iterator>
 
 namespace blink {
 
 using namespace HTMLNames;
 
+namespace {
+
+struct CommandNameEntry {
+    const char* name;
+    WebEditingCommandType type;
+};
+
+const CommandNameEntry kCommandNameEntries[] = {
+#define V(name) { #name, WebEditingCommandType::name },
+    FOR_EACH_BLINK_EDITING_COMMAND_NAME(V)
+#undef V
+};
+// Handles all commands except WebEditingCommandType::Invalid.
+static_assert(arraysize(kCommandNameEntries) + 1 == static_cast<size_t>(WebEditingCommandType::NumberOfCommandTypes),
+    "must handle all valid WebEditingCommandType");
+
+WebEditingCommandType WebEditingCommandTypeFromCommandName(const String& commandName)
+{
+    const CommandNameEntry* result = std::lower_bound(
+        std::begin(kCommandNameEntries), std::end(kCommandNameEntries), commandName,
+        [](const CommandNameEntry& entry, const String& needle)
+        {
+            return codePointCompareIgnoringASCIICase(needle, entry.name) > 0;
+        });
+    if (result != std::end(kCommandNameEntries) && codePointCompareIgnoringASCIICase(commandName, result->name) == 0)
+        return result->type;
+    return WebEditingCommandType::Invalid;
+}
+
+} // anonymous namespace
+
 class EditorInternalCommand {
 public:
-    int idForUserMetrics;
+    WebEditingCommandType commandType;
     bool (*execute)(LocalFrame&, Event*, EditorCommandSource, const String&);
     bool (*isSupportedFromDOM)(LocalFrame*);
     bool (*isEnabled)(LocalFrame&, Event*, EditorCommandSource);
@@ -83,8 +119,6 @@ public:
     // accessibility to simplify |Editor::Command::execute()|.
     bool allowExecutionWhenDisabled;
 };
-
-typedef HashMap<String, const EditorInternalCommand*, CaseFoldingHash> CommandMap;
 
 static const bool notTextInsertion = false;
 static const bool isTextInsertion = true;
@@ -1479,224 +1513,162 @@ static String valueFormatBlock(LocalFrame& frame, Event*)
 
 // Map of functions
 
-struct CommandEntry {
-    const char* name;
-    EditorInternalCommand command;
-};
-
-static const CommandMap& createCommandMap()
-{
-    // If you add new commands, you should assign new Id to each idForUserMetrics and update MappedEditingCommands
-    // in chrome/trunk/src/tools/metrics/histograms/histograms.xml.
-    static const CommandEntry commands[] = {
-        { "AlignCenter", {139, executeJustifyCenter, supportedFromMenuOrKeyBinding, enabledInRichlyEditableText, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "AlignJustified", {1, executeJustifyFull, supportedFromMenuOrKeyBinding, enabledInRichlyEditableText, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "AlignLeft", {2, executeJustifyLeft, supportedFromMenuOrKeyBinding, enabledInRichlyEditableText, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "AlignRight", {3, executeJustifyRight, supportedFromMenuOrKeyBinding, enabledInRichlyEditableText, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "BackColor", {4, executeBackColor, supported, enabledInRichlyEditableText, stateNone, valueBackColor, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "BackwardDelete", {5, executeDeleteBackward, supportedFromMenuOrKeyBinding, enabledInEditableText, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } }, // FIXME: remove BackwardDelete when Safari for Windows stops using it.
-        { "Bold", {6, executeToggleBold, supported, enabledInRichlyEditableText, stateBold, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "Copy", {7, executeCopy, supported, enabledCopy, stateNone, valueNull, notTextInsertion, allowExecutionWhenDisabled } },
-        { "CreateLink", {8, executeCreateLink, supported, enabledInRichlyEditableText, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "Cut", {9, executeCut, supported, enabledCut, stateNone, valueNull, notTextInsertion, allowExecutionWhenDisabled } },
-        { "DefaultParagraphSeparator", {10, executeDefaultParagraphSeparator, supported, enabled, stateNone, valueDefaultParagraphSeparator, notTextInsertion, doNotAllowExecutionWhenDisabled} },
-        { "Delete", {11, executeDelete, supported, enabledDelete, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "DeleteBackward", {12, executeDeleteBackward, supportedFromMenuOrKeyBinding, enabledInEditableText, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "DeleteBackwardByDecomposingPreviousCharacter", {13, executeDeleteBackwardByDecomposingPreviousCharacter, supportedFromMenuOrKeyBinding, enabledInEditableText, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "DeleteForward", {14, executeDeleteForward, supportedFromMenuOrKeyBinding, enabledInEditableText, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "DeleteToBeginningOfLine", {15, executeDeleteToBeginningOfLine, supportedFromMenuOrKeyBinding, enabledInEditableText, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "DeleteToBeginningOfParagraph", {16, executeDeleteToBeginningOfParagraph, supportedFromMenuOrKeyBinding, enabledInEditableText, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "DeleteToEndOfLine", {17, executeDeleteToEndOfLine, supportedFromMenuOrKeyBinding, enabledInEditableText, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "DeleteToEndOfParagraph", {18, executeDeleteToEndOfParagraph, supportedFromMenuOrKeyBinding, enabledInEditableText, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "DeleteToMark", {19, executeDeleteToMark, supportedFromMenuOrKeyBinding, enabledInEditableText, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "DeleteWordBackward", {20, executeDeleteWordBackward, supportedFromMenuOrKeyBinding, enabledInEditableText, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "DeleteWordForward", {21, executeDeleteWordForward, supportedFromMenuOrKeyBinding, enabledInEditableText, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "FindString", {22, executeFindString, supported, enabled, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "FontName", {23, executeFontName, supported, enabledInRichlyEditableText, stateNone, valueFontName, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "FontSize", {24, executeFontSize, supported, enabledInRichlyEditableText, stateNone, valueFontSize, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "FontSizeDelta", {25, executeFontSizeDelta, supported, enabledInRichlyEditableText, stateNone, valueFontSizeDelta, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "ForeColor", {26, executeForeColor, supported, enabledInRichlyEditableText, stateNone, valueForeColor, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "FormatBlock", {27, executeFormatBlock, supported, enabledInRichlyEditableText, stateNone, valueFormatBlock, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "ForwardDelete", {28, executeForwardDelete, supported, enabledInEditableText, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "HiliteColor", {29, executeBackColor, supported, enabledInRichlyEditableText, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "IgnoreSpelling", {30, executeIgnoreSpelling, supportedFromMenuOrKeyBinding, enabledInEditableText, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "Indent", {31, executeIndent, supported, enabledInRichlyEditableText, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "InsertBacktab", {32, executeInsertBacktab, supportedFromMenuOrKeyBinding, enabledInEditableText, stateNone, valueNull, isTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "InsertHTML", {33, executeInsertHTML, supported, enabledInEditableText, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "InsertHorizontalRule", {34, executeInsertHorizontalRule, supported, enabledInRichlyEditableText, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "InsertImage", {35, executeInsertImage, supported, enabledInRichlyEditableText, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "InsertLineBreak", {36, executeInsertLineBreak, supported, enabledInEditableText, stateNone, valueNull, isTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "InsertNewline", {37, executeInsertNewline, supportedFromMenuOrKeyBinding, enabledInEditableText, stateNone, valueNull, isTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "InsertNewlineInQuotedContent", {38, executeInsertNewlineInQuotedContent, supported, enabledInRichlyEditableText, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "InsertOrderedList", {39, executeInsertOrderedList, supported, enabledInRichlyEditableText, stateOrderedList, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "InsertParagraph", {40, executeInsertParagraph, supported, enabledInEditableText, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "InsertTab", {41, executeInsertTab, supportedFromMenuOrKeyBinding, enabledInEditableText, stateNone, valueNull, isTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "InsertText", {42, executeInsertText, supported, enabledInEditableText, stateNone, valueNull, isTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "InsertUnorderedList", {43, executeInsertUnorderedList, supported, enabledInRichlyEditableText, stateUnorderedList, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "Italic", {44, executeToggleItalic, supported, enabledInRichlyEditableText, stateItalic, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "JustifyCenter", {45, executeJustifyCenter, supported, enabledInRichlyEditableText, stateJustifyCenter, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "JustifyFull", {46, executeJustifyFull, supported, enabledInRichlyEditableText, stateJustifyFull, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "JustifyLeft", {47, executeJustifyLeft, supported, enabledInRichlyEditableText, stateJustifyLeft, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "JustifyNone", {48, executeJustifyLeft, supported, enabledInRichlyEditableText, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "JustifyRight", {49, executeJustifyRight, supported, enabledInRichlyEditableText, stateJustifyRight, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "MakeTextWritingDirectionLeftToRight", {50, executeMakeTextWritingDirectionLeftToRight, supportedFromMenuOrKeyBinding, enabledInRichlyEditableText, stateTextWritingDirectionLeftToRight, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "MakeTextWritingDirectionNatural", {51, executeMakeTextWritingDirectionNatural, supportedFromMenuOrKeyBinding, enabledInRichlyEditableText, stateTextWritingDirectionNatural, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "MakeTextWritingDirectionRightToLeft", {52, executeMakeTextWritingDirectionRightToLeft, supportedFromMenuOrKeyBinding, enabledInRichlyEditableText, stateTextWritingDirectionRightToLeft, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "MoveBackward", {53, executeMoveBackward, supportedFromMenuOrKeyBinding, enabledInEditableTextOrCaretBrowsing, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "MoveBackwardAndModifySelection", {54, executeMoveBackwardAndModifySelection, supportedFromMenuOrKeyBinding, enabledVisibleSelectionOrCaretBrowsing, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "MoveDown", {55, executeMoveDown, supportedFromMenuOrKeyBinding, enabledInEditableTextOrCaretBrowsing, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "MoveDownAndModifySelection", {56, executeMoveDownAndModifySelection, supportedFromMenuOrKeyBinding, enabledVisibleSelectionOrCaretBrowsing, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "MoveForward", {57, executeMoveForward, supportedFromMenuOrKeyBinding, enabledInEditableTextOrCaretBrowsing, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "MoveForwardAndModifySelection", {58, executeMoveForwardAndModifySelection, supportedFromMenuOrKeyBinding, enabledVisibleSelectionOrCaretBrowsing, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "MoveLeft", {59, executeMoveLeft, supportedFromMenuOrKeyBinding, enabledInEditableTextOrCaretBrowsing, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "MoveLeftAndModifySelection", {60, executeMoveLeftAndModifySelection, supportedFromMenuOrKeyBinding, enabledVisibleSelectionOrCaretBrowsing, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "MovePageDown", {61, executeMovePageDown, supportedFromMenuOrKeyBinding, enabledInEditableText, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "MovePageDownAndModifySelection", {62, executeMovePageDownAndModifySelection, supportedFromMenuOrKeyBinding, enabledVisibleSelection, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "MovePageUp", {63, executeMovePageUp, supportedFromMenuOrKeyBinding, enabledInEditableText, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "MovePageUpAndModifySelection", {64, executeMovePageUpAndModifySelection, supportedFromMenuOrKeyBinding, enabledVisibleSelection, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "MoveParagraphBackward", {65, executeMoveParagraphBackward, supportedFromMenuOrKeyBinding, enabledInEditableTextOrCaretBrowsing, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "MoveParagraphBackwardAndModifySelection", {66, executeMoveParagraphBackwardAndModifySelection, supportedFromMenuOrKeyBinding, enabledVisibleSelectionOrCaretBrowsing, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "MoveParagraphForward", {67, executeMoveParagraphForward, supportedFromMenuOrKeyBinding, enabledInEditableTextOrCaretBrowsing, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "MoveParagraphForwardAndModifySelection", {68, executeMoveParagraphForwardAndModifySelection, supportedFromMenuOrKeyBinding, enabledVisibleSelectionOrCaretBrowsing, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "MoveRight", {69, executeMoveRight, supportedFromMenuOrKeyBinding, enabledInEditableTextOrCaretBrowsing, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "MoveRightAndModifySelection", {70, executeMoveRightAndModifySelection, supportedFromMenuOrKeyBinding, enabledVisibleSelectionOrCaretBrowsing, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "MoveToBeginningOfDocument", {71, executeMoveToBeginningOfDocument, supportedFromMenuOrKeyBinding, enabledInEditableTextOrCaretBrowsing, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "MoveToBeginningOfDocumentAndModifySelection", {72, executeMoveToBeginningOfDocumentAndModifySelection, supportedFromMenuOrKeyBinding, enabledVisibleSelectionOrCaretBrowsing, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "MoveToBeginningOfLine", {73, executeMoveToBeginningOfLine, supportedFromMenuOrKeyBinding, enabledInEditableTextOrCaretBrowsing, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "MoveToBeginningOfLineAndModifySelection", {74, executeMoveToBeginningOfLineAndModifySelection, supportedFromMenuOrKeyBinding, enabledVisibleSelectionOrCaretBrowsing, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "MoveToBeginningOfParagraph", {75, executeMoveToBeginningOfParagraph, supportedFromMenuOrKeyBinding, enabledInEditableTextOrCaretBrowsing, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "MoveToBeginningOfParagraphAndModifySelection", {76, executeMoveToBeginningOfParagraphAndModifySelection, supportedFromMenuOrKeyBinding, enabledVisibleSelectionOrCaretBrowsing, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "MoveToBeginningOfSentence", {77, executeMoveToBeginningOfSentence, supportedFromMenuOrKeyBinding, enabledInEditableTextOrCaretBrowsing, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "MoveToBeginningOfSentenceAndModifySelection", {78, executeMoveToBeginningOfSentenceAndModifySelection, supportedFromMenuOrKeyBinding, enabledVisibleSelectionOrCaretBrowsing, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "MoveToEndOfDocument", {79, executeMoveToEndOfDocument, supportedFromMenuOrKeyBinding, enabledInEditableTextOrCaretBrowsing, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "MoveToEndOfDocumentAndModifySelection", {80, executeMoveToEndOfDocumentAndModifySelection, supportedFromMenuOrKeyBinding, enabledVisibleSelectionOrCaretBrowsing, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "MoveToEndOfLine", {81, executeMoveToEndOfLine, supportedFromMenuOrKeyBinding, enabledInEditableTextOrCaretBrowsing, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "MoveToEndOfLineAndModifySelection", {82, executeMoveToEndOfLineAndModifySelection, supportedFromMenuOrKeyBinding, enabledVisibleSelectionOrCaretBrowsing, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "MoveToEndOfParagraph", {83, executeMoveToEndOfParagraph, supportedFromMenuOrKeyBinding, enabledInEditableTextOrCaretBrowsing, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "MoveToEndOfParagraphAndModifySelection", {84, executeMoveToEndOfParagraphAndModifySelection, supportedFromMenuOrKeyBinding, enabledVisibleSelectionOrCaretBrowsing, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "MoveToEndOfSentence", {85, executeMoveToEndOfSentence, supportedFromMenuOrKeyBinding, enabledInEditableTextOrCaretBrowsing, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "MoveToEndOfSentenceAndModifySelection", {86, executeMoveToEndOfSentenceAndModifySelection, supportedFromMenuOrKeyBinding, enabledVisibleSelectionOrCaretBrowsing, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "MoveToLeftEndOfLine", {87, executeMoveToLeftEndOfLine, supportedFromMenuOrKeyBinding, enabledInEditableText, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "MoveToLeftEndOfLineAndModifySelection", {88, executeMoveToLeftEndOfLineAndModifySelection, supportedFromMenuOrKeyBinding, enabledInEditableText, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "MoveToRightEndOfLine", {89, executeMoveToRightEndOfLine, supportedFromMenuOrKeyBinding, enabledInEditableText, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "MoveToRightEndOfLineAndModifySelection", {90, executeMoveToRightEndOfLineAndModifySelection, supportedFromMenuOrKeyBinding, enabledInEditableText, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "MoveUp", {91, executeMoveUp, supportedFromMenuOrKeyBinding, enabledInEditableTextOrCaretBrowsing, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "MoveUpAndModifySelection", {92, executeMoveUpAndModifySelection, supportedFromMenuOrKeyBinding, enabledVisibleSelectionOrCaretBrowsing, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "MoveWordBackward", {93, executeMoveWordBackward, supportedFromMenuOrKeyBinding, enabledInEditableTextOrCaretBrowsing, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "MoveWordBackwardAndModifySelection", {94, executeMoveWordBackwardAndModifySelection, supportedFromMenuOrKeyBinding, enabledVisibleSelectionOrCaretBrowsing, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "MoveWordForward", {95, executeMoveWordForward, supportedFromMenuOrKeyBinding, enabledInEditableTextOrCaretBrowsing, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "MoveWordForwardAndModifySelection", {96, executeMoveWordForwardAndModifySelection, supportedFromMenuOrKeyBinding, enabledVisibleSelectionOrCaretBrowsing, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "MoveWordLeft", {97, executeMoveWordLeft, supportedFromMenuOrKeyBinding, enabledInEditableTextOrCaretBrowsing, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "MoveWordLeftAndModifySelection", {98, executeMoveWordLeftAndModifySelection, supportedFromMenuOrKeyBinding, enabledVisibleSelectionOrCaretBrowsing, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "MoveWordRight", {99, executeMoveWordRight, supportedFromMenuOrKeyBinding, enabledInEditableTextOrCaretBrowsing, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "MoveWordRightAndModifySelection", {100, executeMoveWordRightAndModifySelection, supportedFromMenuOrKeyBinding, enabledVisibleSelectionOrCaretBrowsing, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "Outdent", {101, executeOutdent, supported, enabledInRichlyEditableText, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "OverWrite", {102, executeToggleOverwrite, supportedFromMenuOrKeyBinding, enabledInRichlyEditableText, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "Paste", {103, executePaste, supported, enabledPaste, stateNone, valueNull, notTextInsertion, allowExecutionWhenDisabled } },
-        { "PasteAndMatchStyle", {104, executePasteAndMatchStyle, supported, enabledPaste, stateNone, valueNull, notTextInsertion, allowExecutionWhenDisabled } },
-        { "PasteGlobalSelection", {105, executePasteGlobalSelection, supportedFromMenuOrKeyBinding, enabledPaste, stateNone, valueNull, notTextInsertion, allowExecutionWhenDisabled } },
-        { "Print", {106, executePrint, supported, enabled, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "Redo", {107, executeRedo, supported, enabledRedo, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "RemoveFormat", {108, executeRemoveFormat, supported, enabledRangeInEditableText, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "ScrollPageBackward", {109, executeScrollPageBackward, supportedFromMenuOrKeyBinding, enabled, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "ScrollPageForward", {110, executeScrollPageForward, supportedFromMenuOrKeyBinding, enabled, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "ScrollLineUp", {111, executeScrollLineUp, supportedFromMenuOrKeyBinding, enabled, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "ScrollLineDown", {112, executeScrollLineDown, supportedFromMenuOrKeyBinding, enabled, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "ScrollToBeginningOfDocument", {113, executeScrollToBeginningOfDocument, supportedFromMenuOrKeyBinding, enabled, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "ScrollToEndOfDocument", {114, executeScrollToEndOfDocument, supportedFromMenuOrKeyBinding, enabled, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "SelectAll", {115, executeSelectAll, supported, enabled, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "SelectLine", {116, executeSelectLine, supportedFromMenuOrKeyBinding, enabledVisibleSelection, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "SelectParagraph", {117, executeSelectParagraph, supportedFromMenuOrKeyBinding, enabledVisibleSelection, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "SelectSentence", {118, executeSelectSentence, supportedFromMenuOrKeyBinding, enabledVisibleSelection, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "SelectToMark", {119, executeSelectToMark, supportedFromMenuOrKeyBinding, enabledVisibleSelectionAndMark, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "SelectWord", {120, executeSelectWord, supportedFromMenuOrKeyBinding, enabledVisibleSelection, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "SetMark", {121, executeSetMark, supportedFromMenuOrKeyBinding, enabledVisibleSelection, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "Strikethrough", {122, executeStrikethrough, supported, enabledInRichlyEditableText, stateStrikethrough, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "StyleWithCSS", {123, executeStyleWithCSS, supported, enabled, stateStyleWithCSS, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "Subscript", {124, executeSubscript, supported, enabledInRichlyEditableText, stateSubscript, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "Superscript", {125, executeSuperscript, supported, enabledInRichlyEditableText, stateSuperscript, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "SwapWithMark", {126, executeSwapWithMark, supportedFromMenuOrKeyBinding, enabledVisibleSelectionAndMark, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "ToggleBold", {127, executeToggleBold, supportedFromMenuOrKeyBinding, enabledInRichlyEditableText, stateBold, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "ToggleItalic", {128, executeToggleItalic, supportedFromMenuOrKeyBinding, enabledInRichlyEditableText, stateItalic, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "ToggleUnderline", {129, executeUnderline, supportedFromMenuOrKeyBinding, enabledInRichlyEditableText, stateUnderline, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "Transpose", {130, executeTranspose, supported, enableCaretInEditableText, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "Underline", {131, executeUnderline, supported, enabledInRichlyEditableText, stateUnderline, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "Undo", {132, executeUndo, supported, enabledUndo, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "Unlink", {133, executeUnlink, supported, enabledRangeInRichlyEditableText, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "Unscript", {134, executeUnscript, supportedFromMenuOrKeyBinding, enabledInRichlyEditableText, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "Unselect", {135, executeUnselect, supported, enabledVisibleSelection, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "UseCSS", {136, executeUseCSS, supported, enabled, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "Yank", {137, executeYank, supportedFromMenuOrKeyBinding, enabledInEditableText, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-        { "YankAndSelect", {138, executeYankAndSelect, supportedFromMenuOrKeyBinding, enabledInEditableText, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled } },
-    };
-
-    // These unsupported commands are listed here since they appear in the Microsoft
-    // documentation used as the starting point for our DOM executeCommand support.
-    //
-    // 2D-Position (not supported)
-    // AbsolutePosition (not supported)
-    // BlockDirLTR (not supported)
-    // BlockDirRTL (not supported)
-    // BrowseMode (not supported)
-    // ClearAuthenticationCache (not supported)
-    // CreateBookmark (not supported)
-    // DirLTR (not supported)
-    // DirRTL (not supported)
-    // EditMode (not supported)
-    // InlineDirLTR (not supported)
-    // InlineDirRTL (not supported)
-    // InsertButton (not supported)
-    // InsertFieldSet (not supported)
-    // InsertIFrame (not supported)
-    // InsertInputButton (not supported)
-    // InsertInputCheckbox (not supported)
-    // InsertInputFileUpload (not supported)
-    // InsertInputHidden (not supported)
-    // InsertInputImage (not supported)
-    // InsertInputPassword (not supported)
-    // InsertInputRadio (not supported)
-    // InsertInputReset (not supported)
-    // InsertInputSubmit (not supported)
-    // InsertInputText (not supported)
-    // InsertMarquee (not supported)
-    // InsertSelectDropDown (not supported)
-    // InsertSelectListBox (not supported)
-    // InsertTextArea (not supported)
-    // LiveResize (not supported)
-    // MultipleSelection (not supported)
-    // Open (not supported)
-    // PlayImage (not supported)
-    // Refresh (not supported)
-    // RemoveParaFormat (not supported)
-    // SaveAs (not supported)
-    // SizeToControl (not supported)
-    // SizeToControlHeight (not supported)
-    // SizeToControlWidth (not supported)
-    // Stop (not supported)
-    // StopImage (not supported)
-    // Unbookmark (not supported)
-
-    CommandMap& commandMap = *new CommandMap;
-#if ENABLE(ASSERT)
-    HashSet<int> idSet;
-#endif
-    for (size_t i = 0; i < WTF_ARRAY_LENGTH(commands); ++i) {
-        const CommandEntry& command = commands[i];
-        ASSERT(!commandMap.get(command.name));
-        commandMap.set(String(command.name), &command.command);
-#if ENABLE(ASSERT)
-        ASSERT(!idSet.contains(command.command.idForUserMetrics));
-        idSet.add(command.command.idForUserMetrics);
-#endif
-    }
-
-    return commandMap;
-}
-
 static const EditorInternalCommand* internalCommand(const String& commandName)
 {
-    static const CommandMap& commandMap = createCommandMap();
-    return commandName.isEmpty() ? 0 : commandMap.get(commandName);
+    static const EditorInternalCommand kEditorCommands[] = {
+        // Lists all commands in blink::WebEditingCommandType.
+        // Must be ordered by |commandType| for index lookup.
+        // Covered by unit tests in EditingCommandTest.cpp
+        { WebEditingCommandType::AlignJustified, executeJustifyFull, supportedFromMenuOrKeyBinding, enabledInRichlyEditableText, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::AlignLeft, executeJustifyLeft, supportedFromMenuOrKeyBinding, enabledInRichlyEditableText, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::AlignRight, executeJustifyRight, supportedFromMenuOrKeyBinding, enabledInRichlyEditableText, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::BackColor, executeBackColor, supported, enabledInRichlyEditableText, stateNone, valueBackColor, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::BackwardDelete, executeDeleteBackward, supportedFromMenuOrKeyBinding, enabledInEditableText, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled }, // FIXME: remove BackwardDelete when Safari for Windows stops using it.
+        { WebEditingCommandType::Bold, executeToggleBold, supported, enabledInRichlyEditableText, stateBold, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::Copy, executeCopy, supported, enabledCopy, stateNone, valueNull, notTextInsertion, allowExecutionWhenDisabled },
+        { WebEditingCommandType::CreateLink, executeCreateLink, supported, enabledInRichlyEditableText, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::Cut, executeCut, supported, enabledCut, stateNone, valueNull, notTextInsertion, allowExecutionWhenDisabled },
+        { WebEditingCommandType::DefaultParagraphSeparator, executeDefaultParagraphSeparator, supported, enabled, stateNone, valueDefaultParagraphSeparator, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::Delete, executeDelete, supported, enabledDelete, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::DeleteBackward, executeDeleteBackward, supportedFromMenuOrKeyBinding, enabledInEditableText, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::DeleteBackwardByDecomposingPreviousCharacter, executeDeleteBackwardByDecomposingPreviousCharacter, supportedFromMenuOrKeyBinding, enabledInEditableText, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::DeleteForward, executeDeleteForward, supportedFromMenuOrKeyBinding, enabledInEditableText, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::DeleteToBeginningOfLine, executeDeleteToBeginningOfLine, supportedFromMenuOrKeyBinding, enabledInEditableText, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::DeleteToBeginningOfParagraph, executeDeleteToBeginningOfParagraph, supportedFromMenuOrKeyBinding, enabledInEditableText, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::DeleteToEndOfLine, executeDeleteToEndOfLine, supportedFromMenuOrKeyBinding, enabledInEditableText, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::DeleteToEndOfParagraph, executeDeleteToEndOfParagraph, supportedFromMenuOrKeyBinding, enabledInEditableText, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::DeleteToMark, executeDeleteToMark, supportedFromMenuOrKeyBinding, enabledInEditableText, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::DeleteWordBackward, executeDeleteWordBackward, supportedFromMenuOrKeyBinding, enabledInEditableText, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::DeleteWordForward, executeDeleteWordForward, supportedFromMenuOrKeyBinding, enabledInEditableText, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::FindString, executeFindString, supported, enabled, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::FontName, executeFontName, supported, enabledInRichlyEditableText, stateNone, valueFontName, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::FontSize, executeFontSize, supported, enabledInRichlyEditableText, stateNone, valueFontSize, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::FontSizeDelta, executeFontSizeDelta, supported, enabledInRichlyEditableText, stateNone, valueFontSizeDelta, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::ForeColor, executeForeColor, supported, enabledInRichlyEditableText, stateNone, valueForeColor, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::FormatBlock, executeFormatBlock, supported, enabledInRichlyEditableText, stateNone, valueFormatBlock, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::ForwardDelete, executeForwardDelete, supported, enabledInEditableText, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::HiliteColor, executeBackColor, supported, enabledInRichlyEditableText, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::IgnoreSpelling, executeIgnoreSpelling, supportedFromMenuOrKeyBinding, enabledInEditableText, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::Indent, executeIndent, supported, enabledInRichlyEditableText, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::InsertBacktab, executeInsertBacktab, supportedFromMenuOrKeyBinding, enabledInEditableText, stateNone, valueNull, isTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::InsertHTML, executeInsertHTML, supported, enabledInEditableText, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::InsertHorizontalRule, executeInsertHorizontalRule, supported, enabledInRichlyEditableText, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::InsertImage, executeInsertImage, supported, enabledInRichlyEditableText, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::InsertLineBreak, executeInsertLineBreak, supported, enabledInEditableText, stateNone, valueNull, isTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::InsertNewline, executeInsertNewline, supportedFromMenuOrKeyBinding, enabledInEditableText, stateNone, valueNull, isTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::InsertNewlineInQuotedContent, executeInsertNewlineInQuotedContent, supported, enabledInRichlyEditableText, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::InsertOrderedList, executeInsertOrderedList, supported, enabledInRichlyEditableText, stateOrderedList, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::InsertParagraph, executeInsertParagraph, supported, enabledInEditableText, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::InsertTab, executeInsertTab, supportedFromMenuOrKeyBinding, enabledInEditableText, stateNone, valueNull, isTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::InsertText, executeInsertText, supported, enabledInEditableText, stateNone, valueNull, isTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::InsertUnorderedList, executeInsertUnorderedList, supported, enabledInRichlyEditableText, stateUnorderedList, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::Italic, executeToggleItalic, supported, enabledInRichlyEditableText, stateItalic, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::JustifyCenter, executeJustifyCenter, supported, enabledInRichlyEditableText, stateJustifyCenter, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::JustifyFull, executeJustifyFull, supported, enabledInRichlyEditableText, stateJustifyFull, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::JustifyLeft, executeJustifyLeft, supported, enabledInRichlyEditableText, stateJustifyLeft, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::JustifyNone, executeJustifyLeft, supported, enabledInRichlyEditableText, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::JustifyRight, executeJustifyRight, supported, enabledInRichlyEditableText, stateJustifyRight, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::MakeTextWritingDirectionLeftToRight, executeMakeTextWritingDirectionLeftToRight, supportedFromMenuOrKeyBinding, enabledInRichlyEditableText, stateTextWritingDirectionLeftToRight, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::MakeTextWritingDirectionNatural, executeMakeTextWritingDirectionNatural, supportedFromMenuOrKeyBinding, enabledInRichlyEditableText, stateTextWritingDirectionNatural, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::MakeTextWritingDirectionRightToLeft, executeMakeTextWritingDirectionRightToLeft, supportedFromMenuOrKeyBinding, enabledInRichlyEditableText, stateTextWritingDirectionRightToLeft, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::MoveBackward, executeMoveBackward, supportedFromMenuOrKeyBinding, enabledInEditableTextOrCaretBrowsing, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::MoveBackwardAndModifySelection, executeMoveBackwardAndModifySelection, supportedFromMenuOrKeyBinding, enabledVisibleSelectionOrCaretBrowsing, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::MoveDown, executeMoveDown, supportedFromMenuOrKeyBinding, enabledInEditableTextOrCaretBrowsing, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::MoveDownAndModifySelection, executeMoveDownAndModifySelection, supportedFromMenuOrKeyBinding, enabledVisibleSelectionOrCaretBrowsing, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::MoveForward, executeMoveForward, supportedFromMenuOrKeyBinding, enabledInEditableTextOrCaretBrowsing, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::MoveForwardAndModifySelection, executeMoveForwardAndModifySelection, supportedFromMenuOrKeyBinding, enabledVisibleSelectionOrCaretBrowsing, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::MoveLeft, executeMoveLeft, supportedFromMenuOrKeyBinding, enabledInEditableTextOrCaretBrowsing, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::MoveLeftAndModifySelection, executeMoveLeftAndModifySelection, supportedFromMenuOrKeyBinding, enabledVisibleSelectionOrCaretBrowsing, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::MovePageDown, executeMovePageDown, supportedFromMenuOrKeyBinding, enabledInEditableText, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::MovePageDownAndModifySelection, executeMovePageDownAndModifySelection, supportedFromMenuOrKeyBinding, enabledVisibleSelection, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::MovePageUp, executeMovePageUp, supportedFromMenuOrKeyBinding, enabledInEditableText, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::MovePageUpAndModifySelection, executeMovePageUpAndModifySelection, supportedFromMenuOrKeyBinding, enabledVisibleSelection, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::MoveParagraphBackward, executeMoveParagraphBackward, supportedFromMenuOrKeyBinding, enabledInEditableTextOrCaretBrowsing, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::MoveParagraphBackwardAndModifySelection, executeMoveParagraphBackwardAndModifySelection, supportedFromMenuOrKeyBinding, enabledVisibleSelectionOrCaretBrowsing, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::MoveParagraphForward, executeMoveParagraphForward, supportedFromMenuOrKeyBinding, enabledInEditableTextOrCaretBrowsing, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::MoveParagraphForwardAndModifySelection, executeMoveParagraphForwardAndModifySelection, supportedFromMenuOrKeyBinding, enabledVisibleSelectionOrCaretBrowsing, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::MoveRight, executeMoveRight, supportedFromMenuOrKeyBinding, enabledInEditableTextOrCaretBrowsing, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::MoveRightAndModifySelection, executeMoveRightAndModifySelection, supportedFromMenuOrKeyBinding, enabledVisibleSelectionOrCaretBrowsing, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::MoveToBeginningOfDocument, executeMoveToBeginningOfDocument, supportedFromMenuOrKeyBinding, enabledInEditableTextOrCaretBrowsing, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::MoveToBeginningOfDocumentAndModifySelection, executeMoveToBeginningOfDocumentAndModifySelection, supportedFromMenuOrKeyBinding, enabledVisibleSelectionOrCaretBrowsing, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::MoveToBeginningOfLine, executeMoveToBeginningOfLine, supportedFromMenuOrKeyBinding, enabledInEditableTextOrCaretBrowsing, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::MoveToBeginningOfLineAndModifySelection, executeMoveToBeginningOfLineAndModifySelection, supportedFromMenuOrKeyBinding, enabledVisibleSelectionOrCaretBrowsing, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::MoveToBeginningOfParagraph, executeMoveToBeginningOfParagraph, supportedFromMenuOrKeyBinding, enabledInEditableTextOrCaretBrowsing, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::MoveToBeginningOfParagraphAndModifySelection, executeMoveToBeginningOfParagraphAndModifySelection, supportedFromMenuOrKeyBinding, enabledVisibleSelectionOrCaretBrowsing, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::MoveToBeginningOfSentence, executeMoveToBeginningOfSentence, supportedFromMenuOrKeyBinding, enabledInEditableTextOrCaretBrowsing, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::MoveToBeginningOfSentenceAndModifySelection, executeMoveToBeginningOfSentenceAndModifySelection, supportedFromMenuOrKeyBinding, enabledVisibleSelectionOrCaretBrowsing, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::MoveToEndOfDocument, executeMoveToEndOfDocument, supportedFromMenuOrKeyBinding, enabledInEditableTextOrCaretBrowsing, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::MoveToEndOfDocumentAndModifySelection, executeMoveToEndOfDocumentAndModifySelection, supportedFromMenuOrKeyBinding, enabledVisibleSelectionOrCaretBrowsing, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::MoveToEndOfLine, executeMoveToEndOfLine, supportedFromMenuOrKeyBinding, enabledInEditableTextOrCaretBrowsing, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::MoveToEndOfLineAndModifySelection, executeMoveToEndOfLineAndModifySelection, supportedFromMenuOrKeyBinding, enabledVisibleSelectionOrCaretBrowsing, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::MoveToEndOfParagraph, executeMoveToEndOfParagraph, supportedFromMenuOrKeyBinding, enabledInEditableTextOrCaretBrowsing, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::MoveToEndOfParagraphAndModifySelection, executeMoveToEndOfParagraphAndModifySelection, supportedFromMenuOrKeyBinding, enabledVisibleSelectionOrCaretBrowsing, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::MoveToEndOfSentence, executeMoveToEndOfSentence, supportedFromMenuOrKeyBinding, enabledInEditableTextOrCaretBrowsing, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::MoveToEndOfSentenceAndModifySelection, executeMoveToEndOfSentenceAndModifySelection, supportedFromMenuOrKeyBinding, enabledVisibleSelectionOrCaretBrowsing, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::MoveToLeftEndOfLine, executeMoveToLeftEndOfLine, supportedFromMenuOrKeyBinding, enabledInEditableText, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::MoveToLeftEndOfLineAndModifySelection, executeMoveToLeftEndOfLineAndModifySelection, supportedFromMenuOrKeyBinding, enabledInEditableText, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::MoveToRightEndOfLine, executeMoveToRightEndOfLine, supportedFromMenuOrKeyBinding, enabledInEditableText, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::MoveToRightEndOfLineAndModifySelection, executeMoveToRightEndOfLineAndModifySelection, supportedFromMenuOrKeyBinding, enabledInEditableText, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::MoveUp, executeMoveUp, supportedFromMenuOrKeyBinding, enabledInEditableTextOrCaretBrowsing, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::MoveUpAndModifySelection, executeMoveUpAndModifySelection, supportedFromMenuOrKeyBinding, enabledVisibleSelectionOrCaretBrowsing, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::MoveWordBackward, executeMoveWordBackward, supportedFromMenuOrKeyBinding, enabledInEditableTextOrCaretBrowsing, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::MoveWordBackwardAndModifySelection, executeMoveWordBackwardAndModifySelection, supportedFromMenuOrKeyBinding, enabledVisibleSelectionOrCaretBrowsing, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::MoveWordForward, executeMoveWordForward, supportedFromMenuOrKeyBinding, enabledInEditableTextOrCaretBrowsing, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::MoveWordForwardAndModifySelection, executeMoveWordForwardAndModifySelection, supportedFromMenuOrKeyBinding, enabledVisibleSelectionOrCaretBrowsing, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::MoveWordLeft, executeMoveWordLeft, supportedFromMenuOrKeyBinding, enabledInEditableTextOrCaretBrowsing, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::MoveWordLeftAndModifySelection, executeMoveWordLeftAndModifySelection, supportedFromMenuOrKeyBinding, enabledVisibleSelectionOrCaretBrowsing, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::MoveWordRight, executeMoveWordRight, supportedFromMenuOrKeyBinding, enabledInEditableTextOrCaretBrowsing, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::MoveWordRightAndModifySelection, executeMoveWordRightAndModifySelection, supportedFromMenuOrKeyBinding, enabledVisibleSelectionOrCaretBrowsing, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::Outdent, executeOutdent, supported, enabledInRichlyEditableText, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::OverWrite, executeToggleOverwrite, supportedFromMenuOrKeyBinding, enabledInRichlyEditableText, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::Paste, executePaste, supported, enabledPaste, stateNone, valueNull, notTextInsertion, allowExecutionWhenDisabled },
+        { WebEditingCommandType::PasteAndMatchStyle, executePasteAndMatchStyle, supported, enabledPaste, stateNone, valueNull, notTextInsertion, allowExecutionWhenDisabled },
+        { WebEditingCommandType::PasteGlobalSelection, executePasteGlobalSelection, supportedFromMenuOrKeyBinding, enabledPaste, stateNone, valueNull, notTextInsertion, allowExecutionWhenDisabled },
+        { WebEditingCommandType::Print, executePrint, supported, enabled, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::Redo, executeRedo, supported, enabledRedo, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::RemoveFormat, executeRemoveFormat, supported, enabledRangeInEditableText, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::ScrollPageBackward, executeScrollPageBackward, supportedFromMenuOrKeyBinding, enabled, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::ScrollPageForward, executeScrollPageForward, supportedFromMenuOrKeyBinding, enabled, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::ScrollLineUp, executeScrollLineUp, supportedFromMenuOrKeyBinding, enabled, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::ScrollLineDown, executeScrollLineDown, supportedFromMenuOrKeyBinding, enabled, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::ScrollToBeginningOfDocument, executeScrollToBeginningOfDocument, supportedFromMenuOrKeyBinding, enabled, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::ScrollToEndOfDocument, executeScrollToEndOfDocument, supportedFromMenuOrKeyBinding, enabled, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::SelectAll, executeSelectAll, supported, enabled, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::SelectLine, executeSelectLine, supportedFromMenuOrKeyBinding, enabledVisibleSelection, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::SelectParagraph, executeSelectParagraph, supportedFromMenuOrKeyBinding, enabledVisibleSelection, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::SelectSentence, executeSelectSentence, supportedFromMenuOrKeyBinding, enabledVisibleSelection, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::SelectToMark, executeSelectToMark, supportedFromMenuOrKeyBinding, enabledVisibleSelectionAndMark, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::SelectWord, executeSelectWord, supportedFromMenuOrKeyBinding, enabledVisibleSelection, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::SetMark, executeSetMark, supportedFromMenuOrKeyBinding, enabledVisibleSelection, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::Strikethrough, executeStrikethrough, supported, enabledInRichlyEditableText, stateStrikethrough, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::StyleWithCSS, executeStyleWithCSS, supported, enabled, stateStyleWithCSS, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::Subscript, executeSubscript, supported, enabledInRichlyEditableText, stateSubscript, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::Superscript, executeSuperscript, supported, enabledInRichlyEditableText, stateSuperscript, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::SwapWithMark, executeSwapWithMark, supportedFromMenuOrKeyBinding, enabledVisibleSelectionAndMark, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::ToggleBold, executeToggleBold, supportedFromMenuOrKeyBinding, enabledInRichlyEditableText, stateBold, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::ToggleItalic, executeToggleItalic, supportedFromMenuOrKeyBinding, enabledInRichlyEditableText, stateItalic, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::ToggleUnderline, executeUnderline, supportedFromMenuOrKeyBinding, enabledInRichlyEditableText, stateUnderline, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::Transpose, executeTranspose, supported, enableCaretInEditableText, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::Underline, executeUnderline, supported, enabledInRichlyEditableText, stateUnderline, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::Undo, executeUndo, supported, enabledUndo, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::Unlink, executeUnlink, supported, enabledRangeInRichlyEditableText, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::Unscript, executeUnscript, supportedFromMenuOrKeyBinding, enabledInRichlyEditableText, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::Unselect, executeUnselect, supported, enabledVisibleSelection, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::UseCSS, executeUseCSS, supported, enabled, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::Yank, executeYank, supportedFromMenuOrKeyBinding, enabledInEditableText, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::YankAndSelect, executeYankAndSelect, supportedFromMenuOrKeyBinding, enabledInEditableText, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+        { WebEditingCommandType::AlignCenter, executeJustifyCenter, supportedFromMenuOrKeyBinding, enabledInRichlyEditableText, stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled },
+    };
+    // Handles all commands except WebEditingCommandType::Invalid.
+    static_assert(arraysize(kEditorCommands) + 1 == static_cast<size_t>(WebEditingCommandType::NumberOfCommandTypes), "must handle all valid WebEditingCommandType");
+
+    WebEditingCommandType commandType = WebEditingCommandTypeFromCommandName(commandName);
+    if (commandType == WebEditingCommandType::Invalid)
+        return nullptr;
+
+    int commandIndex = static_cast<int>(commandType) - 1;
+    DCHECK(commandIndex >= 0 && commandIndex < static_cast<int>(arraysize(kEditorCommands)));
+    return &kEditorCommands[commandIndex];
 }
 
 Editor::Command Editor::createCommand(const String& commandName)
@@ -1781,7 +1753,7 @@ bool Editor::Command::execute(const String& parameter, Event* triggeringEvent) c
     }
     frame().document()->updateLayoutIgnorePendingStylesheets();
     DEFINE_STATIC_LOCAL(SparseHistogram, commandHistogram, ("WebCore.Editing.Commands"));
-    commandHistogram.sample(m_command->idForUserMetrics);
+    commandHistogram.sample(static_cast<int>(m_command->commandType));
     return m_command->execute(*m_frame, triggeringEvent, m_source, parameter);
 }
 
@@ -1834,7 +1806,7 @@ bool Editor::Command::isTextInsertion() const
 
 int Editor::Command::idForHistogram() const
 {
-    return isSupported() ? m_command->idForUserMetrics : 0;
+    return isSupported() ? static_cast<int>(m_command->commandType) : 0;
 }
 
 } // namespace blink
