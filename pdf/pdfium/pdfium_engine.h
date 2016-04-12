@@ -9,12 +9,12 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "pdf/document_loader.h"
 #include "pdf/pdf_engine.h"
@@ -704,7 +704,7 @@ class PDFiumEngine : public PDFEngine,
   int progressive_paint_timeout_;
 
   // Shadow matrix for generating the page shadow bitmap.
-  scoped_ptr<ShadowMatrix> page_shadow_;
+  std::unique_ptr<ShadowMatrix> page_shadow_;
 
   // Set to true if the user is being prompted for their password. Will be set
   // to false after the user finishes getting their password.

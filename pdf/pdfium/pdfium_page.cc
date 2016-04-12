@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <memory>
 
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
@@ -204,7 +205,7 @@ base::Value* PDFiumPage::GetAccessibleContentAsValue(int rotation) {
 
   node->SetDouble(kPageWidth, width);
   node->SetDouble(kPageHeight, height);
-  scoped_ptr<base::ListValue> text(new base::ListValue());
+  std::unique_ptr<base::ListValue> text(new base::ListValue());
 
   int chars_count = FPDFText_CountChars(text_page);
   pp::Rect line_rect;
