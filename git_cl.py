@@ -4461,17 +4461,17 @@ def CMDformat(parser, args):
   top_dir = os.path.normpath(
       RunGit(["rev-parse", "--show-toplevel"]).rstrip('\n'))
 
-  # Locate the clang-format binary in the checkout
-  try:
-    clang_format_tool = clang_format.FindClangFormatToolInChromiumTree()
-  except clang_format.NotFoundError, e:
-    DieWithError(e)
-
   # Set to 2 to signal to CheckPatchFormatted() that this patch isn't
   # formatted. This is used to block during the presubmit.
   return_value = 0
 
   if clang_diff_files:
+    # Locate the clang-format binary in the checkout
+    try:
+      clang_format_tool = clang_format.FindClangFormatToolInChromiumTree()
+    except clang_format.NotFoundError, e:
+      DieWithError(e)
+
     if opts.full:
       cmd = [clang_format_tool]
       if not opts.dry_run and not opts.diff:
