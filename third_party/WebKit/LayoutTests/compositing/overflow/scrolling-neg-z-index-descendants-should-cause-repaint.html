@@ -46,7 +46,7 @@
         container.scrollTop = 100;
 
         if (window.internals) {
-            if (hasScrollbarRepaint(window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_REPAINT_RECTS)))
+            if (hasScrollbarRepaint(window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_PAINT_INVALIDATIONS)))
                 result += "PASS repainted when expected\n";
             else
                 result += "FAIL did not repaint when expected\n";

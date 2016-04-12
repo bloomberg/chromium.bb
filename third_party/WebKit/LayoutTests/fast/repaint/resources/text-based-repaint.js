@@ -68,8 +68,7 @@ function finishRepaintTest()
     // Force a style recalc.
     forceStyleRecalc();
 
-    var flags = window.internals.LAYER_TREE_INCLUDES_REPAINT_RECTS |
-        window.internals.LAYER_TREE_INCLUDES_PAINT_INVALIDATION_OBJECTS;
+    var flags = window.internals.LAYER_TREE_INCLUDES_PAINT_INVALIDATIONS;
 
     if (window.layerTreeAsTextAdditionalFlags)
         flags |= window.layerTreeAsTextAdditionalFlags;

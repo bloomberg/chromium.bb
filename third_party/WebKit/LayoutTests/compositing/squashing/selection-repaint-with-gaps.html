@@ -50,7 +50,7 @@
         selection.setBaseAndExtent(document.querySelector("#item1"), 0, document.querySelector("#item1"), 1);
 
         if (window.internals) {
-            document.querySelector('#case1').textContent = window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_REPAINT_RECTS);
+            document.querySelector('#case1').textContent = window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_PAINT_INVALIDATIONS);
             window.internals.stopTrackingRepaints(document);
         }
 
@@ -63,7 +63,7 @@
         selection.setBaseAndExtent(document.querySelector("#item1"), 0, document.querySelector("#item2"), 1);
 
         if (window.internals) {
-            document.querySelector('#case2').textContent = window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_REPAINT_RECTS);
+            document.querySelector('#case2').textContent = window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_PAINT_INVALIDATIONS);
             window.internals.stopTrackingRepaints(document);
         }
 

@@ -14,7 +14,7 @@ async_test(function(t) {
 
     video.addEventListener('ended', t.step_func(function() {
         var layerTree = internals.layerTreeAsText(
-            document, internals.LAYER_TREE_INCLUDES_REPAINT_RECTS);
+            document, internals.LAYER_TREE_INCLUDES_PAINT_INVALIDATIONS);
         var repaintRects = JSON.parse(layerTree).children[0].repaintRects;
         internals.stopTrackingRepaints(document);
 

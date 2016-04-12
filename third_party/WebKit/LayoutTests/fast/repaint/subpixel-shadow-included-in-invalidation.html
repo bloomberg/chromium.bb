@@ -35,7 +35,7 @@ if (!window.internals) {
         box.style.boxShadow = 'none';
 
         runAfterLayoutAndPaint(function() {
-            var layerTree = JSON.parse(internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_REPAINT_RECTS));
+            var layerTree = JSON.parse(internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_PAINT_INVALIDATIONS));
             var repaintRects = layerTree.children[0].repaintRects;
             var shadowRect = [1.4, 1.4, 100, 100];
             if (repaintRects.some(repaintRect => rectContainsRect(repaintRect, shadowRect)))

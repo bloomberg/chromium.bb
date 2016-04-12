@@ -127,7 +127,7 @@ public:
     void setSquashingContentsNeedDisplay();
     void setContentsNeedDisplay();
     // LayoutRect is in the coordinate space of the layer's layout object.
-    void setContentsNeedDisplayInRect(const LayoutRect&, PaintInvalidationReason);
+    void setContentsNeedDisplayInRect(const LayoutRect&, PaintInvalidationReason, const DisplayItemClient&);
 
     void invalidateDisplayItemClient(const DisplayItemClient&, PaintInvalidationReason);
 

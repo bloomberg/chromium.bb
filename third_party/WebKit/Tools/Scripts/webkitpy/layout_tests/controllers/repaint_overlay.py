@@ -139,8 +139,14 @@ function draw_layer_rects(context, result) {
         context.transform(t[0][0], t[0][1], t[1][0], t[1][1], t[3][0], t[3][1]);
         context.translate(-origin[0], -origin[1]);
     }
-    if (result.repaintRects)
+    if (result.repaintRects) {
         draw_rects(context, result.repaintRects);
+    } else if (result.paintInvalidations) {
+        var rects = [];
+        for (var i = 0; i < result.paintInvalidations.length; ++i)
+            rects.push(result.paintInvalidations[i].rect);
+        draw_rects(context, rects);
+    }
     if (result.children) {
         for (var i = 0; i < result.children.length; ++i)
             draw_layer_rects(context, result.children[i]);

@@ -2053,23 +2053,25 @@ struct SetContentsNeedsDisplayInRectFunctor {
         if (layer->drawsContent()) {
             IntRect layerDirtyRect = r;
             layerDirtyRect.move(-layer->offsetFromLayoutObject());
-            layer->setNeedsDisplayInRect(layerDirtyRect, invalidationReason);
+            layer->setNeedsDisplayInRect(layerDirtyRect, invalidationReason, client);
         }
     }
 
     IntRect r;
     PaintInvalidationReason invalidationReason;
+    const DisplayItemClient& client;
 };
 
 // r is in the coordinate space of the layer's layout object
-void CompositedLayerMapping::setContentsNeedDisplayInRect(const LayoutRect& r, PaintInvalidationReason invalidationReason)
+void CompositedLayerMapping::setContentsNeedDisplayInRect(const LayoutRect& r, PaintInvalidationReason invalidationReason, const DisplayItemClient& client)
 {
     // TODO(wangxianzhu): Enable the following assert after paint invalidation for spv2 is ready.
     // ASSERT(!RuntimeEnabledFeatures::slimmingPaintV2Enabled());
 
     SetContentsNeedsDisplayInRectFunctor functor = {
         enclosingIntRect(LayoutRect(r.location() + m_owningLayer.subpixelAccumulation(), r.size())),
-        invalidationReason
+        invalidationReason,
+        client
     };
     ApplyToGraphicsLayers(this, functor, ApplyToContentLayers);
 }

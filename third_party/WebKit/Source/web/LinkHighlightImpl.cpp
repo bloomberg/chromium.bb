@@ -329,6 +329,11 @@ void LinkHighlightImpl::notifyAnimationFinished(double, int)
     releaseResources();
 }
 
+class LinkHighlightDisplayItemClientForTracking : public DisplayItemClient {
+    String debugName() const final { return "LinkHighlight"; }
+    LayoutRect visualRect() const final { return LayoutRect(); }
+};
+
 void LinkHighlightImpl::updateGeometry()
 {
     // To avoid unnecessary updates (e.g. other entities have requested animations from our WebViewImpl),
@@ -348,7 +353,7 @@ void LinkHighlightImpl::updateGeometry()
             m_contentLayer->layer()->invalidate();
 
             if (m_currentGraphicsLayer && m_currentGraphicsLayer->isTrackingPaintInvalidations())
-                m_currentGraphicsLayer->trackPaintInvalidationRect(FloatRect(layer()->position().x, layer()->position().y, layer()->bounds().width, layer()->bounds().height));
+                m_currentGraphicsLayer->trackPaintInvalidation(LinkHighlightDisplayItemClientForTracking(), FloatRect(layer()->position().x, layer()->position().y, layer()->bounds().width, layer()->bounds().height), PaintInvalidationFull);
         }
     } else {
         clearGraphicsLayerLinkHighlightPointer();

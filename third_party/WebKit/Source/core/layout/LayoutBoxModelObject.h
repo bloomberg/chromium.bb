@@ -283,8 +283,10 @@ public:
 
     void invalidateTreeIfNeeded(const PaintInvalidationState&) override;
 
-    // Indicate that the contents of this layoutObject need to be repainted. Only has an effect if compositing is being used,
-    void setBackingNeedsPaintInvalidationInRect(const LayoutRect&, PaintInvalidationReason) const; // r is in the coordinate space of this layout object
+    // Indicate that the contents of this layoutObject need to be repainted.
+    // This only has an effect if compositing is being used.
+    // The rect is in the physical coordinate space of this layout object.
+    void setBackingNeedsPaintInvalidationInRect(const LayoutRect&, PaintInvalidationReason, const LayoutObject&) const;
 
     void invalidateDisplayItemClientOnBacking(const DisplayItemClient&, PaintInvalidationReason) const;
 

@@ -71,14 +71,16 @@ namespace blink {
 
 static bool s_drawDebugRedFill = true;
 
-// TODO(wangxianzhu): Remove this when we no longer invalidate rects.
-struct PaintInvalidationTrackingInfo {
+struct PaintInvalidationInfo {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-    Vector<FloatRect> invalidationRects;
-    Vector<String> invalidationObjects;
+    // This is for comparison only. Don't dereference because the client may have died.
+    const DisplayItemClient* client;
+    String clientDebugName;
+    FloatRect rect;
+    PaintInvalidationReason reason;
 };
 
-typedef HashMap<const GraphicsLayer*, PaintInvalidationTrackingInfo> PaintInvalidationTrackingMap;
+typedef HashMap<const GraphicsLayer*, Vector<PaintInvalidationInfo>> PaintInvalidationTrackingMap;
 static PaintInvalidationTrackingMap& paintInvalidationTrackingMap()
 {
     DEFINE_STATIC_LOCAL(PaintInvalidationTrackingMap, map, ());
@@ -537,43 +539,23 @@ bool GraphicsLayer::hasTrackedPaintInvalidations() const
 {
     PaintInvalidationTrackingMap::iterator it = paintInvalidationTrackingMap().find(this);
     if (it != paintInvalidationTrackingMap().end())
-        return !it->value.invalidationRects.isEmpty();
+        return !it->value.isEmpty();
     return false;
 }
 
-void GraphicsLayer::trackPaintInvalidationRect(const FloatRect& rect)
+void GraphicsLayer::trackPaintInvalidation(const DisplayItemClient& client, const FloatRect& rect, PaintInvalidationReason reason)
 {
-    if (rect.isEmpty())
-        return;
-
     // The caller must check isTrackingPaintInvalidations() before calling this method
     // to avoid constructing the rect unnecessarily.
     ASSERT(isTrackingPaintInvalidations());
 
-    paintInvalidationTrackingMap().add(this, PaintInvalidationTrackingInfo()).storedValue->value.invalidationRects.append(rect);
+    PaintInvalidationInfo info = { &client, client.debugName(), rect, reason };
+    paintInvalidationTrackingMap().add(this, Vector<PaintInvalidationInfo>()).storedValue->value.append(info);
 }
 
-void GraphicsLayer::trackPaintInvalidationObject(const String& objectDebugString)
+static bool comparePaintInvalidationInfo(const PaintInvalidationInfo& a, const PaintInvalidationInfo& b)
 {
-    if (objectDebugString.isEmpty())
-        return;
-
-    // The caller must check isTrackingPaintInvalidations() before calling this method
-    // because constructing the debug string will be costly.
-    ASSERT(isTrackingPaintInvalidations());
-
-    paintInvalidationTrackingMap().add(this, PaintInvalidationTrackingInfo()).storedValue->value.invalidationObjects.append(objectDebugString);
-}
-
-static bool compareFloatRects(const FloatRect& a, const FloatRect& b)
-{
-    if (a.x() != b.x())
-        return a.x() > b.x();
-    if (a.y() != b.y())
-        return a.y() > b.y();
-    if (a.width() != b.width())
-        return a.width() > b.width();
-    return a.height() > b.height();
+    return codePointCompareLessThan(a.clientDebugName, b.clientDebugName);
 }
 
 template <typename T>
@@ -725,27 +707,28 @@ PassRefPtr<JSONObject> GraphicsLayer::layerTreeAsJSON(LayerTreeFlags flags, Rend
 
     PaintInvalidationTrackingMap::iterator it = paintInvalidationTrackingMap().find(this);
     if (it != paintInvalidationTrackingMap().end()) {
-        if (flags & LayerTreeIncludesPaintInvalidationRects) {
-            Vector<FloatRect>& rects = it->value.invalidationRects;
-            if (!rects.isEmpty()) {
-                std::sort(rects.begin(), rects.end(), &compareFloatRects);
-                RefPtr<JSONArray> rectsJSON = JSONArray::create();
-                for (auto& rect : rects) {
-                    if (rect.isEmpty())
-                        continue;
-                    rectsJSON->pushArray(rectAsJSONArray(rect));
+        if (flags & LayerTreeIncludesPaintInvalidations) {
+            Vector<PaintInvalidationInfo>& infos = it->value;
+            if (!infos.isEmpty()) {
+                std::stable_sort(infos.begin(), infos.end(), &comparePaintInvalidationInfo);
+                RefPtr<JSONArray> paintInvalidationsJSON = JSONArray::create();
+                const DisplayItemClient* lastDisplayItemClientWithRect = nullptr;
+                for (auto& info : infos) {
+                    RefPtr<JSONObject> infoJSON = JSONObject::create();
+                    if (info.rect.isEmpty()) {
+                        // Entry with empty rect is from invalidateDisplayItemClient().
+                        // Skip the entry if the client is the same as the previous setNeedsDisplayInRect().
+                        if (info.client == lastDisplayItemClientWithRect)
+                            continue;
+                    } else {
+                        lastDisplayItemClientWithRect = info.client;
+                    }
+                    infoJSON->setString("object", info.clientDebugName);
+                    infoJSON->setArray("rect", rectAsJSONArray(info.rect));
+                    infoJSON->setString("reason", paintInvalidationReasonToString(info.reason));
+                    paintInvalidationsJSON->pushObject(infoJSON);
                 }
-                json->setArray("repaintRects", rectsJSON);
-            }
-        }
-
-        if (flags & LayerTreeIncludesPaintInvalidationObjects) {
-            Vector<String>& clients = it->value.invalidationObjects;
-            if (!clients.isEmpty()) {
-                RefPtr<JSONArray> clientsJSON = JSONArray::create();
-                for (auto& clientString : clients)
-                    clientsJSON->pushString(clientString);
-                json->setArray("paintInvalidationClients", clientsJSON);
+                json->setArray("paintInvalidations", paintInvalidationsJSON);
             }
         }
     }
@@ -1038,7 +1021,7 @@ void GraphicsLayer::setContentsNeedsDisplay()
     if (WebLayer* contentsLayer = contentsLayerIfRegistered()) {
         contentsLayer->invalidate();
         if (isTrackingPaintInvalidations())
-            trackPaintInvalidationRect(m_contentsRect);
+            trackPaintInvalidation(*this, m_contentsRect, PaintInvalidationFull);
     }
 }
 
@@ -1049,17 +1032,15 @@ void GraphicsLayer::setNeedsDisplay()
 
     // TODO(chrishtr): stop invalidating the rects once FrameView::paintRecursively does so.
     m_layer->layer()->invalidate();
-    if (isTrackingPaintInvalidations())
-        trackPaintInvalidationRect(FloatRect(FloatPoint(), m_size));
     for (size_t i = 0; i < m_linkHighlights.size(); ++i)
         m_linkHighlights[i]->invalidate();
-
     getPaintController().invalidateAll();
+
     if (isTrackingPaintInvalidations())
-        trackPaintInvalidationObject("##ALL##");
+        trackPaintInvalidation(*this, FloatRect(FloatPoint(), m_size), PaintInvalidationFull);
 }
 
-void GraphicsLayer::setNeedsDisplayInRect(const IntRect& rect, PaintInvalidationReason invalidationReason)
+void GraphicsLayer::setNeedsDisplayInRect(const IntRect& rect, PaintInvalidationReason invalidationReason, const DisplayItemClient& client)
 {
     if (!drawsContent())
         return;
@@ -1067,20 +1048,22 @@ void GraphicsLayer::setNeedsDisplayInRect(const IntRect& rect, PaintInvalidation
     m_layer->layer()->invalidateRect(rect);
     if (firstPaintInvalidationTrackingEnabled())
         m_debugInfo.appendAnnotatedInvalidateRect(rect, invalidationReason);
-    if (isTrackingPaintInvalidations())
-        trackPaintInvalidationRect(rect);
     for (size_t i = 0; i < m_linkHighlights.size(); ++i)
         m_linkHighlights[i]->invalidate();
+
+    if (isTrackingPaintInvalidations())
+        trackPaintInvalidation(client, rect, invalidationReason);
 }
 
-void GraphicsLayer::invalidateDisplayItemClient(const DisplayItemClient& displayItemClient, PaintInvalidationReason)
+void GraphicsLayer::invalidateDisplayItemClient(const DisplayItemClient& displayItemClient, PaintInvalidationReason invalidationReason)
 {
     if (!drawsContent())
         return;
 
     getPaintController().invalidate(displayItemClient);
+
     if (isTrackingPaintInvalidations())
-        trackPaintInvalidationObject(displayItemClient.debugName());
+        trackPaintInvalidation(displayItemClient, FloatRect(), invalidationReason);
 }
 
 void GraphicsLayer::setContentsRect(const IntRect& rect)

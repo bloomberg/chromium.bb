@@ -177,12 +177,11 @@
     // Flags for layerTreeAsText.
     // The values of these constants must be kept in sync with the values of LayerTreeFlags in GraphicsLayerClient.h.
     const unsigned short LAYER_TREE_INCLUDES_DEBUG_INFO = 1;
-    const unsigned short LAYER_TREE_INCLUDES_REPAINT_RECTS = 2;
+    const unsigned short LAYER_TREE_INCLUDES_PAINT_INVALIDATIONS = 2;
     const unsigned short LAYER_TREE_INCLUDES_PAINTING_PHASES = 4;
     const unsigned short LAYER_TREE_INCLUDES_ROOT_LAYER = 8;
     const unsigned short LAYER_TREE_INCLUDES_CLIP_AND_SCROLL_PARENTS = 16;
-    const unsigned short LAYER_TREE_INCLUDES_PAINT_INVALIDATION_OBJECTS = 32;
-    const unsigned short LAYER_TREE_INCLUDES_COMPOSITING_REASONS = 64;
+    const unsigned short LAYER_TREE_INCLUDES_COMPOSITING_REASONS = 32;
     [RaisesException] DOMString layerTreeAsText(Document document, optional unsigned short flags);
     [RaisesException] DOMString elementLayerTreeAsText(Element element, optional unsigned short flags);
 

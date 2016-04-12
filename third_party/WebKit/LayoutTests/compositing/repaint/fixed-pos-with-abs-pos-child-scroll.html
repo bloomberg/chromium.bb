@@ -42,7 +42,7 @@
       runAfterLayoutAndPaint(function() {
         if (window.internals)
           document.getElementById('layers').textContent = 
-            window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_REPAINT_RECTS);
+            window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_PAINT_INVALIDATIONS);
 
         if (window.testRunner)
             testRunner.notifyDone();
