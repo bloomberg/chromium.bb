@@ -64,10 +64,6 @@ class Window {
 
   WindowTreeConnection* connection() { return connection_; }
 
-  // Used to identify this Window on the server. Clients can not change this
-  // value.
-  Id server_id() const { return server_id_; }
-
   // The local_id is provided for client code. The local_id is not set or
   // manipulated by mus. The default value is -1.
   void set_local_id(int id) { local_id_ = id; }
@@ -197,7 +193,6 @@ class Window {
   bool is_modal() const { return is_modal_; }
 
   Window* GetChildByLocalId(int id);
-  Window* GetChildByServerId(Id id);
 
   void SetTextInputState(mojo::TextInputStatePtr state);
   void SetImeVisibility(bool visible, mojo::TextInputStatePtr state);
@@ -233,6 +228,10 @@ class Window {
   friend class WindowTreeClientImpl;
 
   Window(WindowTreeConnection* connection, Id id);
+
+  // Used to identify this Window on the server. Clients can not change this
+  // value.
+  Id server_id() const { return server_id_; }
 
   WindowTreeClientImpl* tree_client();
 

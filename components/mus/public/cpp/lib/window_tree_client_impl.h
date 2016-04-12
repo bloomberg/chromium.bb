@@ -122,6 +122,8 @@ class WindowTreeClientImpl : public WindowTreeConnection,
   // the last step of ~Window).
   void OnWindowDestroyed(Window* window);
 
+  Window* GetWindowByServerId(Id id);
+
   // WindowTreeConnection:
   Window* GetCaptureWindow() override;
 
@@ -163,7 +165,6 @@ class WindowTreeClientImpl : public WindowTreeConnection,
   // Overridden from WindowTreeConnection:
   void SetDeleteOnNoRoots(bool value) override;
   const std::set<Window*>& GetRoots() override;
-  Window* GetWindowById(Id id) override;
   Window* GetFocusedWindow() override;
   void ClearFocus() override;
   Window* NewWindow(const Window::SharedProperties* properties) override;

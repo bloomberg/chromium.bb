@@ -35,6 +35,11 @@ class UserWindowControllerImpl : public mojom::UserWindowController,
   void Initialize(RootWindowController* root_controller);
 
  private:
+  void AssignIdIfNecessary(mus::Window* window);
+
+  // Returns the window with the specified user id.
+  mus::Window* GetUserWindowById(uint32_t id);
+
   // A helper to get the container for user windows.
   mus::Window* GetUserWindowContainer() const;
 
@@ -52,6 +57,7 @@ class UserWindowControllerImpl : public mojom::UserWindowController,
   RootWindowController* root_controller_;
   mojom::UserWindowObserverPtr user_window_observer_;
   std::unique_ptr<WindowPropertyObserver> window_property_observer_;
+  uint32_t next_id_ = 1u;
 
   DISALLOW_COPY_AND_ASSIGN(UserWindowControllerImpl);
 };

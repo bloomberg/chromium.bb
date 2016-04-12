@@ -10,6 +10,8 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "components/mus/common/util.h"
+#include "components/mus/public/cpp/lib/window_private.h"
+#include "components/mus/public/cpp/lib/window_tree_client_impl.h"
 #include "components/mus/public/cpp/tests/window_server_test_base.h"
 #include "components/mus/public/cpp/window_observer.h"
 #include "components/mus/public/cpp/window_tree_connection.h"
@@ -23,6 +25,16 @@ namespace mus {
 namespace ws {
 
 namespace {
+
+Id server_id(mus::Window* window) {
+  return WindowPrivate(window).server_id();
+}
+
+mus::Window* GetChildWindowByServerId(WindowTreeConnection* connection,
+                                      uint32_t id) {
+  return static_cast<WindowTreeClientImpl*>(connection)
+      ->GetWindowByServerId(id);
+}
 
 int ValidIndexOf(const Window::Children& windows, Window* window) {
   Window::Children::const_iterator it =
@@ -338,7 +350,7 @@ TEST_F(WindowServerTest, Embed) {
 
   Window* window_in_embedded = GetFirstRoot(embedded);
   ASSERT_NE(nullptr, window_in_embedded);
-  EXPECT_EQ(window->server_id(), window_in_embedded->server_id());
+  EXPECT_EQ(server_id(window), server_id(window_in_embedded));
   EXPECT_EQ(nullptr, window_in_embedded->parent());
   EXPECT_TRUE(window_in_embedded->children().empty());
 }
@@ -358,7 +370,7 @@ TEST_F(WindowServerTest, EmbeddedDoesntSeeChild) {
   WindowTreeConnection* embedded = Embed(window).connection;
   ASSERT_NE(nullptr, embedded);
   Window* window_in_embedded = GetFirstRoot(embedded);
-  EXPECT_EQ(window->server_id(), window_in_embedded->server_id());
+  EXPECT_EQ(server_id(window), server_id(window_in_embedded));
   EXPECT_EQ(nullptr, window_in_embedded->parent());
   EXPECT_TRUE(window_in_embedded->children().empty());
 }
@@ -384,7 +396,8 @@ TEST_F(WindowServerTest, SetBounds) {
   WindowTreeConnection* embedded = Embed(window).connection;
   ASSERT_NE(nullptr, embedded);
 
-  Window* window_in_embedded = embedded->GetWindowById(window->server_id());
+  Window* window_in_embedded =
+      GetChildWindowByServerId(embedded, server_id(window));
   EXPECT_EQ(window->bounds(), window_in_embedded->bounds());
 
   window->SetBounds(gfx::Rect(0, 0, 100, 100));
@@ -404,7 +417,8 @@ TEST_F(WindowServerTest, SetBoundsSecurity) {
   WindowTreeConnection* embedded = Embed(window).connection;
   ASSERT_NE(nullptr, embedded);
 
-  Window* window_in_embedded = embedded->GetWindowById(window->server_id());
+  Window* window_in_embedded =
+      GetChildWindowByServerId(embedded, server_id(window));
   window->SetBounds(gfx::Rect(0, 0, 800, 600));
   ASSERT_TRUE(WaitForBoundsToChange(window_in_embedded));
 
@@ -430,7 +444,7 @@ TEST_F(WindowServerTest, DestroySecurity) {
 
   // The root can be destroyed, even though it was not created by the
   // connection.
-  Window* embed_root = embedded->GetWindowById(window->server_id());
+  Window* embed_root = GetChildWindowByServerId(embedded, server_id(window));
   WindowTracker tracker1(window);
   WindowTracker tracker2(embed_root);
   embed_root->Destroy();
@@ -477,42 +491,42 @@ TEST_F(WindowServerTest, Reorder) {
     window11->MoveToFront();
     // The |embedded| tree should be updated immediately.
     EXPECT_EQ(root_in_embedded->children().front(),
-              embedded->GetWindowById(window12->server_id()));
+              GetChildWindowByServerId(embedded, server_id(window12)));
     EXPECT_EQ(root_in_embedded->children().back(),
-              embedded->GetWindowById(window11->server_id()));
+              GetChildWindowByServerId(embedded, server_id(window11)));
 
     // The |window_manager()| tree is still not updated.
     EXPECT_EQ(window1->children().back(),
-              window_manager()->GetWindowById(window12->server_id()));
+              GetChildWindowByServerId(window_manager(), server_id(window12)));
 
     // Wait until |window_manager()| tree is updated.
     ASSERT_TRUE(WaitForOrderChange(
         window_manager(),
-        window_manager()->GetWindowById(window11->server_id())));
+        GetChildWindowByServerId(window_manager(), server_id(window11))));
     EXPECT_EQ(window1->children().front(),
-              window_manager()->GetWindowById(window12->server_id()));
+              GetChildWindowByServerId(window_manager(), server_id(window12)));
     EXPECT_EQ(window1->children().back(),
-              window_manager()->GetWindowById(window11->server_id()));
+              GetChildWindowByServerId(window_manager(), server_id(window11)));
   }
 
   {
     window11->MoveToBack();
     // |embedded| should be updated immediately.
     EXPECT_EQ(root_in_embedded->children().front(),
-              embedded->GetWindowById(window11->server_id()));
+              GetChildWindowByServerId(embedded, server_id(window11)));
     EXPECT_EQ(root_in_embedded->children().back(),
-              embedded->GetWindowById(window12->server_id()));
+              GetChildWindowByServerId(embedded, server_id(window12)));
 
     // |window_manager()| is also eventually updated.
     EXPECT_EQ(window1->children().back(),
-              window_manager()->GetWindowById(window11->server_id()));
+              GetChildWindowByServerId(window_manager(), server_id(window11)));
     ASSERT_TRUE(WaitForOrderChange(
         window_manager(),
-        window_manager()->GetWindowById(window11->server_id())));
+        GetChildWindowByServerId(window_manager(), server_id(window11))));
     EXPECT_EQ(window1->children().front(),
-              window_manager()->GetWindowById(window11->server_id()));
+              GetChildWindowByServerId(window_manager(), server_id(window11)));
     EXPECT_EQ(window1->children().back(),
-              window_manager()->GetWindowById(window12->server_id()));
+              GetChildWindowByServerId(window_manager(), server_id(window12)));
   }
 }
 
@@ -728,8 +742,8 @@ TEST_F(WindowServerTest, Focus) {
     embedded_root->SetFocus();
     ASSERT_TRUE(embedded_root->HasFocus());
     ASSERT_NE(nullptr, observer.last_gained_focus());
-    EXPECT_EQ(embedded_root->server_id(),
-              observer.last_gained_focus()->server_id());
+    EXPECT_EQ(server_id(embedded_root),
+              server_id(observer.last_gained_focus()));
 
     // |embedded_root| is the same as |window1|, make sure |window1| got
     // focus too.
@@ -744,9 +758,9 @@ TEST_F(WindowServerTest, Focus) {
     ASSERT_TRUE(window11->HasFocus());
     ASSERT_NE(nullptr, observer.last_gained_focus());
     ASSERT_NE(nullptr, observer.last_lost_focus());
-    EXPECT_EQ(window11->server_id(), observer.last_gained_focus()->server_id());
-    EXPECT_EQ(GetFirstRoot(embedded)->server_id(),
-              observer.last_lost_focus()->server_id());
+    EXPECT_EQ(server_id(window11), server_id(observer.last_gained_focus()));
+    EXPECT_EQ(server_id(GetFirstRoot(embedded)),
+              server_id(observer.last_lost_focus()));
   }
 
   {
@@ -757,9 +771,9 @@ TEST_F(WindowServerTest, Focus) {
     GetFirstRoot(embedded)->SetFocus();
     ASSERT_NE(nullptr, observer.last_gained_focus());
     ASSERT_NE(nullptr, observer.last_lost_focus());
-    EXPECT_EQ(window11->server_id(), observer.last_lost_focus()->server_id());
-    EXPECT_EQ(GetFirstRoot(embedded)->server_id(),
-              observer.last_gained_focus()->server_id());
+    EXPECT_EQ(server_id(window11), server_id(observer.last_lost_focus()));
+    EXPECT_EQ(server_id(GetFirstRoot(embedded)),
+              server_id(observer.last_gained_focus()));
   }
 }
 
@@ -782,8 +796,8 @@ TEST_F(WindowServerTest, ClearFocus) {
     embedded_root->SetFocus();
     ASSERT_TRUE(embedded_root->HasFocus());
     ASSERT_NE(nullptr, observer.last_gained_focus());
-    EXPECT_EQ(embedded_root->server_id(),
-              observer.last_gained_focus()->server_id());
+    EXPECT_EQ(server_id(embedded_root),
+              server_id(observer.last_gained_focus()));
 
     // |embedded_root| is the same as |window1|, make sure |window1| got
     // focus too.
@@ -856,10 +870,10 @@ TEST_F(WindowServerTest, Activation) {
   child11->SetFocus();
   ASSERT_TRUE(WaitForWindowToHaveFocus(child11));
   ASSERT_TRUE(WaitForWindowToHaveFocus(
-      window_manager()->GetWindowById(child11->server_id())));
-  EXPECT_EQ(child11->server_id(),
-            window_manager()->GetFocusedWindow()->server_id());
-  EXPECT_EQ(child11->server_id(), embedded1->GetFocusedWindow()->server_id());
+      GetChildWindowByServerId(window_manager(), server_id(child11))));
+  EXPECT_EQ(server_id(child11),
+            server_id(window_manager()->GetFocusedWindow()));
+  EXPECT_EQ(server_id(child11), server_id(embedded1->GetFocusedWindow()));
   EXPECT_EQ(nullptr, embedded2->GetFocusedWindow());
   EXPECT_GT(ValidIndexOf(parent->children(), child1),
             ValidIndexOf(parent->children(), child2));
@@ -871,10 +885,10 @@ TEST_F(WindowServerTest, Activation) {
   child21->SetFocus();
   ASSERT_TRUE(WaitForWindowToHaveFocus(child21));
   ASSERT_TRUE(WaitForWindowToHaveFocus(
-      window_manager()->GetWindowById(child21->server_id())));
-  EXPECT_EQ(child21->server_id(),
-            window_manager()->GetFocusedWindow()->server_id());
-  EXPECT_EQ(child21->server_id(), embedded2->GetFocusedWindow()->server_id());
+      GetChildWindowByServerId(window_manager(), server_id(child21))));
+  EXPECT_EQ(server_id(child21),
+            server_id(window_manager()->GetFocusedWindow()));
+  EXPECT_EQ(server_id(child21), server_id(embedded2->GetFocusedWindow()));
   EXPECT_TRUE(WaitForNoWindowToHaveFocus(embedded1));
   EXPECT_EQ(nullptr, embedded1->GetFocusedWindow());
   EXPECT_GT(ValidIndexOf(parent->children(), child2),

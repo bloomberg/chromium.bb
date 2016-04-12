@@ -66,9 +66,6 @@ class WindowTreeConnection {
   // Returns the root of this connection.
   virtual const std::set<Window*>& GetRoots() = 0;
 
-  // Returns a Window known to this connection.
-  virtual Window* GetWindowById(Id id) = 0;
-
   // Returns the Window with input capture; null if no window has requested
   // input capture, or if another app has capture.
   virtual Window* GetCaptureWindow() = 0;

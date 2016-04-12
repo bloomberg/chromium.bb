@@ -39,6 +39,7 @@ class WindowPrivate {
   bool parent_drawn() { return window_->parent_drawn_; }
 
   void set_server_id(Id id) { window_->server_id_ = id; }
+  Id server_id() { return window_->server_id_; }
 
   void set_connection(WindowTreeConnection* connection) {
     window_->connection_ = connection;

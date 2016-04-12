@@ -375,20 +375,6 @@ Window* Window::GetChildByLocalId(int id) {
   return nullptr;
 }
 
-Window* Window::GetChildByServerId(Id id) {
-  if (id == server_id_)
-    return this;
-  // TODO(beng): this could be improved depending on how we decide to own
-  // windows.
-  Children::const_iterator it = children_.begin();
-  for (; it != children_.end(); ++it) {
-    Window* window = (*it)->GetChildByServerId(id);
-    if (window)
-      return window;
-  }
-  return nullptr;
-}
-
 void Window::SetTextInputState(mojo::TextInputStatePtr state) {
   if (connection_)
     tree_client()->SetWindowTextInputState(server_id_, std::move(state));

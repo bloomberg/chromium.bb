@@ -111,10 +111,6 @@ class WindowTreeTest : public testing::Test {
 
   WindowServer* window_server() { return window_server_.get(); }
 
-  ServerWindow* GetWindowById(const WindowId& id) {
-    return window_server_->GetWindow(id);
-  }
-
   TestWindowTreeClient* wm_client() { return wm_client_; }
   mus::mojom::Cursor cursor_id() {
     return static_cast<mus::mojom::Cursor>(cursor_id_);
