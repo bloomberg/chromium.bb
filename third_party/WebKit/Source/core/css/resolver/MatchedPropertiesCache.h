@@ -25,7 +25,6 @@
 
 #include "core/css/StylePropertySet.h"
 #include "core/css/resolver/MatchResult.h"
-#include "platform/Timer.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
@@ -52,7 +51,6 @@ public:
 
 // Specialize the HashTraits for CachedMatchedProperties to check for dead
 // entries in the MatchedPropertiesCache.
-#if ENABLE(OILPAN)
 struct CachedMatchedPropertiesHashTraits : HashTraits<Member<CachedMatchedProperties>> {
     static const WTF::WeakHandlingFlag weakHandlingFlag = WTF::WeakHandlingInCollections;
 
@@ -84,7 +82,6 @@ struct CachedMatchedPropertiesHashTraits : HashTraits<Member<CachedMatchedProper
         return false;
     }
 };
-#endif
 
 class MatchedPropertiesCache {
     DISALLOW_NEW();
@@ -107,18 +104,7 @@ public:
     DECLARE_TRACE();
 
 private:
-#if ENABLE(OILPAN)
     using Cache = HeapHashMap<unsigned, Member<CachedMatchedProperties>, DefaultHash<unsigned>::Hash, HashTraits<unsigned>, CachedMatchedPropertiesHashTraits>;
-#else
-    // Every N additions to the matched declaration cache trigger a sweep where entries holding
-    // the last reference to a style declaration are garbage collected.
-    void sweep(Timer<MatchedPropertiesCache>*);
-
-    unsigned m_additionsSinceLastSweep;
-
-    using Cache = HashMap<unsigned, OwnPtr<CachedMatchedProperties>>;
-    Timer<MatchedPropertiesCache> m_sweepTimer;
-#endif
     Cache m_cache;
 };
 

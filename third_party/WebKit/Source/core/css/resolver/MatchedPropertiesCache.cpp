@@ -52,10 +52,6 @@ void CachedMatchedProperties::clear()
 }
 
 MatchedPropertiesCache::MatchedPropertiesCache()
-#if !ENABLE(OILPAN)
-    : m_additionsSinceLastSweep(0)
-    , m_sweepTimer(this, &MatchedPropertiesCache::sweep)
-#endif
 {
 }
 
@@ -83,15 +79,6 @@ const CachedMatchedProperties* MatchedPropertiesCache::find(unsigned hash, const
 
 void MatchedPropertiesCache::add(const ComputedStyle& style, const ComputedStyle& parentStyle, unsigned hash, const MatchedPropertiesVector& properties)
 {
-#if !ENABLE(OILPAN)
-    static const unsigned maxAdditionsBetweenSweeps = 100;
-    if (++m_additionsSinceLastSweep >= maxAdditionsBetweenSweeps
-        && !m_sweepTimer.isActive()) {
-        static const unsigned sweepTimeInSeconds = 60;
-        m_sweepTimer.startOneShot(sweepTimeInSeconds, BLINK_FROM_HERE);
-    }
-#endif
-
     ASSERT(hash);
     Cache::AddResult addResult = m_cache.add(hash, nullptr);
     if (addResult.isNewEntry)
@@ -125,28 +112,6 @@ void MatchedPropertiesCache::clearViewportDependent()
     }
     m_cache.removeAll(toRemove);
 }
-
-#if !ENABLE(OILPAN)
-void MatchedPropertiesCache::sweep(Timer<MatchedPropertiesCache>*)
-{
-    // Look for cache entries containing a style declaration with a single ref and remove them.
-    // This may happen when an element attribute mutation causes it to generate a new inlineStyle()
-    // or presentationAttributeStyle(), potentially leaving this cache with the last ref on the old one.
-    Vector<unsigned, 16> toRemove;
-    for (const auto& cacheEntry : m_cache) {
-        CachedMatchedProperties* cacheItem = cacheEntry.value.get();
-        Vector<MatchedProperties>& matchedProperties = cacheItem->matchedProperties;
-        for (size_t i = 0; i < matchedProperties.size(); ++i) {
-            if (matchedProperties[i].properties->hasOneRef()) {
-                toRemove.append(cacheEntry.key);
-                break;
-            }
-        }
-    }
-    m_cache.removeAll(toRemove);
-    m_additionsSinceLastSweep = 0;
-}
-#endif
 
 bool MatchedPropertiesCache::isCacheable(const ComputedStyle& style, const ComputedStyle& parentStyle)
 {

@@ -2522,11 +2522,6 @@ static void complete4Sides(CSSPrimitiveValue* side[4])
 
 static bool consumeRadii(CSSPrimitiveValue* horizontalRadii[4], CSSPrimitiveValue* verticalRadii[4], CSSParserTokenRange& range, CSSParserMode cssParserMode, bool useLegacyParsing)
 {
-#if ENABLE(OILPAN)
-    // Unconditionally zero initialize the arrays of raw pointers.
-    memset(horizontalRadii, 0, 4 * sizeof(horizontalRadii[0]));
-    memset(verticalRadii, 0, 4 * sizeof(verticalRadii[0]));
-#endif
     unsigned i = 0;
     for (; i < 4 && !range.atEnd() && range.peek().type() != DelimiterToken; ++i) {
         horizontalRadii[i] = consumeLengthOrPercent(range, cssParserMode, ValueRangeNonNegative);
@@ -2586,8 +2581,8 @@ static CSSBasicShapeInsetValue* consumeBasicShapeInset(CSSParserTokenRange& args
         shape->updateShapeSize1Value(top);
 
     if (consumeIdent<CSSValueRound>(args)) {
-        CSSPrimitiveValue* horizontalRadii[4];
-        CSSPrimitiveValue* verticalRadii[4];
+        CSSPrimitiveValue* horizontalRadii[4] = { 0 };
+        CSSPrimitiveValue* verticalRadii[4] = { 0 };
         if (!consumeRadii(horizontalRadii, verticalRadii, args, context.mode(), false))
             return nullptr;
         shape->setTopLeftRadius(CSSValuePair::create(horizontalRadii[0], verticalRadii[0], CSSValuePair::DropIdenticalValues));
@@ -2707,11 +2702,8 @@ static CSSValue* consumeBorderImageRepeat(CSSParserTokenRange& range)
 static CSSValue* consumeBorderImageSlice(CSSPropertyID property, CSSParserTokenRange& range, CSSParserMode cssParserMode)
 {
     bool fill = consumeIdent<CSSValueFill>(range);
-    CSSPrimitiveValue* slices[4];
-#if ENABLE(OILPAN)
-    // Unconditionally zero initialize the arrays of raw pointers.
-    memset(slices, 0, 4 * sizeof(slices[0]));
-#endif
+    CSSPrimitiveValue* slices[4] = { 0 };
+
     for (size_t index = 0; index < 4; ++index) {
         CSSPrimitiveValue* value = consumePercent(range, ValueRangeNonNegative);
         if (!value)
@@ -2737,11 +2729,8 @@ static CSSValue* consumeBorderImageSlice(CSSPropertyID property, CSSParserTokenR
 
 static CSSValue* consumeBorderImageOutset(CSSParserTokenRange& range)
 {
-    CSSPrimitiveValue* outsets[4];
-#if ENABLE(OILPAN)
-    // Unconditionally zero initialize the arrays of raw pointers.
-    memset(outsets, 0, 4 * sizeof(outsets[0]));
-#endif
+    CSSPrimitiveValue* outsets[4] = { 0 };
+
     CSSPrimitiveValue* value = nullptr;
     for (size_t index = 0; index < 4; ++index) {
         value = consumeNumber(range, ValueRangeNonNegative);
@@ -2759,11 +2748,8 @@ static CSSValue* consumeBorderImageOutset(CSSParserTokenRange& range)
 
 static CSSValue* consumeBorderImageWidth(CSSParserTokenRange& range)
 {
-    CSSPrimitiveValue* widths[4];
-#if ENABLE(OILPAN)
-    // Unconditionally zero initialize the arrays of raw pointers.
-    memset(widths, 0, 4 * sizeof(widths[0]));
-#endif
+    CSSPrimitiveValue* widths[4] = { 0 };
+
     CSSPrimitiveValue* value = nullptr;
     for (size_t index = 0; index < 4; ++index) {
         value = consumeNumber(range, ValueRangeNonNegative);
@@ -4333,12 +4319,9 @@ static bool consumeRepeatStyle(CSSParserTokenRange& range, CSSValue*& resultX, C
 bool CSSPropertyParser::consumeBackgroundShorthand(const StylePropertyShorthand& shorthand, bool important)
 {
     const unsigned longhandCount = shorthand.length();
-    CSSValue* longhands[10];
+    CSSValue* longhands[10] = { 0 };
     ASSERT(longhandCount <= 10);
-#if ENABLE(OILPAN)
-    // Zero initialize the array of raw pointers.
-    memset(&longhands, 0, sizeof(longhands));
-#endif
+
     bool implicit = false;
     do {
         bool parsedLonghand[10] = { false };
@@ -4673,8 +4656,8 @@ bool CSSPropertyParser::parseShorthand(CSSPropertyID unresolvedProperty, bool im
     case CSSPropertyListStyle:
         return consumeShorthandGreedily(listStyleShorthand(), important);
     case CSSPropertyBorderRadius: {
-        CSSPrimitiveValue* horizontalRadii[4];
-        CSSPrimitiveValue* verticalRadii[4];
+        CSSPrimitiveValue* horizontalRadii[4] = { 0 };
+        CSSPrimitiveValue* verticalRadii[4] = { 0 };
         if (!consumeRadii(horizontalRadii, verticalRadii, m_range, m_context.mode(), unresolvedProperty == CSSPropertyAliasWebkitBorderRadius))
             return false;
         addProperty(CSSPropertyBorderTopLeftRadius, CSSValuePair::create(horizontalRadii[0], verticalRadii[0], CSSValuePair::DropIdenticalValues), important);
