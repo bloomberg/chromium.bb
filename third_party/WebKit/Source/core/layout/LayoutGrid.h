@@ -93,6 +93,11 @@ public:
         return m_gridItemsIndexesMap.get(layoutBox);
     }
 
+    size_t autoRepeatCountForDirection(GridTrackSizingDirection direction) const
+    {
+        return direction == ForColumns ? m_autoRepeatColumns : m_autoRepeatRows;
+    }
+
 private:
     bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectLayoutGrid || LayoutBlock::isOfType(type); }
     void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const override;
@@ -117,6 +122,9 @@ private:
 
     void ensureGridSize(size_t maximumRowSize, size_t maximumColumnSize);
     void insertItemIntoGrid(LayoutBox&, const GridArea&);
+
+    size_t computeAutoRepeatTracksCount(GridTrackSizingDirection) const;
+
     void placeItemsOnGrid();
     void populateExplicitGridAndOrderIterator();
     PassOwnPtr<GridArea> createEmptyGridAreaAtSpecifiedPositionsOutsideGrid(const LayoutBox&, GridTrackSizingDirection, const GridSpan& specifiedPositions) const;
@@ -216,6 +224,9 @@ private:
 
     int m_smallestRowStart;
     int m_smallestColumnStart;
+
+    size_t m_autoRepeatColumns { 0 };
+    size_t m_autoRepeatRows { 0 };
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutGrid, isLayoutGrid());

@@ -1176,12 +1176,21 @@ void LayoutGrid::insertItemIntoGrid(LayoutBox& child, const GridArea& area)
     }
 }
 
+size_t LayoutGrid::computeAutoRepeatTracksCount(GridTrackSizingDirection direction) const
+{
+    // TODO(svillar): implement the algorithm to compute the number of auto repeat tracks.
+    return 0;
+}
+
 void LayoutGrid::placeItemsOnGrid()
 {
     if (!m_gridIsDirty)
         return;
 
     ASSERT(m_gridItemArea.isEmpty());
+
+    m_autoRepeatColumns = computeAutoRepeatTracksCount(ForColumns);
+    m_autoRepeatRows = computeAutoRepeatTracksCount(ForRows);
 
     populateExplicitGridAndOrderIterator();
 
@@ -1212,8 +1221,8 @@ void LayoutGrid::placeItemsOnGrid()
         insertItemIntoGrid(*child, area);
     }
 
-    ASSERT(gridRowCount() >= GridPositionsResolver::explicitGridRowCount(*style()));
-    ASSERT(gridColumnCount() >= GridPositionsResolver::explicitGridColumnCount(*style()));
+    DCHECK_GE(gridRowCount(), GridPositionsResolver::explicitGridRowCount(*style(), m_autoRepeatRows));
+    DCHECK_GE(gridColumnCount(), GridPositionsResolver::explicitGridColumnCount(*style(), m_autoRepeatColumns));
 
     placeSpecifiedMajorAxisItemsOnGrid(specifiedMajorAxisAutoGridItems);
     placeAutoMajorAxisItemsOnGrid(autoMajorAxisAutoGridItems);
@@ -1237,8 +1246,8 @@ void LayoutGrid::populateExplicitGridAndOrderIterator()
 
     m_smallestRowStart = m_smallestColumnStart = 0;
 
-    size_t maximumRowIndex = std::max<size_t>(1, GridPositionsResolver::explicitGridRowCount(*style()));
-    size_t maximumColumnIndex = std::max<size_t>(1, GridPositionsResolver::explicitGridColumnCount(*style()));
+    size_t maximumRowIndex = std::max<size_t>(1, GridPositionsResolver::explicitGridRowCount(*style(), m_autoRepeatRows));
+    size_t maximumColumnIndex = std::max<size_t>(1, GridPositionsResolver::explicitGridColumnCount(*style(), m_autoRepeatColumns));
 
     ASSERT(m_gridItemsIndexesMap.isEmpty());
     size_t childIndex = 0;
@@ -1250,8 +1259,8 @@ void LayoutGrid::populateExplicitGridAndOrderIterator()
         m_gridItemsIndexesMap.set(child, childIndex++);
 
         // This function bypasses the cache (cachedGridArea()) as it is used to build it.
-        GridSpan rowPositions = GridPositionsResolver::resolveGridPositionsFromStyle(*style(), *child, ForRows);
-        GridSpan columnPositions = GridPositionsResolver::resolveGridPositionsFromStyle(*style(), *child, ForColumns);
+        GridSpan rowPositions = GridPositionsResolver::resolveGridPositionsFromStyle(*style(), *child, ForRows, m_autoRepeatRows);
+        GridSpan columnPositions = GridPositionsResolver::resolveGridPositionsFromStyle(*style(), *child, ForColumns, m_autoRepeatColumns);
         m_gridItemArea.set(child, GridArea(rowPositions, columnPositions));
 
         // |positions| is 0 if we need to run the auto-placement algorithm.
@@ -1551,7 +1560,7 @@ void LayoutGrid::offsetAndBreadthForPositionedChild(const LayoutBox& child, Grid
     ASSERT(!isOrthogonalChild(child));
     bool isForColumns = direction == ForColumns;
 
-    GridSpan positions = GridPositionsResolver::resolveGridPositionsFromStyle(*style(), child, direction);
+    GridSpan positions = GridPositionsResolver::resolveGridPositionsFromStyle(*style(), child, direction, autoRepeatCountForDirection(direction));
     if (positions.isIndefinite()) {
         offset = LayoutUnit();
         breadth = isForColumns ? clientLogicalWidth() : clientLogicalHeight();
@@ -1566,14 +1575,15 @@ void LayoutGrid::offsetAndBreadthForPositionedChild(const LayoutBox& child, Grid
     GridPosition startPosition = isForColumns ? child.style()->gridColumnStart() : child.style()->gridRowStart();
     GridPosition endPosition = isForColumns ? child.style()->gridColumnEnd() : child.style()->gridRowEnd();
     int firstExplicitLine = smallestStart;
-    int lastExplicitLine = (isForColumns ? GridPositionsResolver::explicitGridColumnCount(styleRef()) : GridPositionsResolver::explicitGridRowCount(styleRef())) + smallestStart;
+    size_t autoRepeatCount = autoRepeatCountForDirection(direction);
+    int lastExplicitLine = (isForColumns ? GridPositionsResolver::explicitGridColumnCount(styleRef(), autoRepeatCount) : GridPositionsResolver::explicitGridRowCount(styleRef(), autoRepeatCount)) + smallestStart;
 
     bool startIsAuto = startPosition.isAuto()
-        || (startPosition.isNamedGridArea() && !GridPositionsResolver::isValidNamedLineOrArea(startPosition.namedGridLine(), styleRef(), GridPositionsResolver::initialPositionSide(direction)))
+        || (startPosition.isNamedGridArea() && !NamedLineCollection::isValidNamedLineOrArea(startPosition.namedGridLine(), styleRef(), GridPositionsResolver::initialPositionSide(direction)))
         || (startLine < firstExplicitLine)
         || (startLine > lastExplicitLine);
     bool endIsAuto = endPosition.isAuto()
-        || (endPosition.isNamedGridArea() && !GridPositionsResolver::isValidNamedLineOrArea(endPosition.namedGridLine(), styleRef(), GridPositionsResolver::finalPositionSide(direction)))
+        || (endPosition.isNamedGridArea() && !NamedLineCollection::isValidNamedLineOrArea(endPosition.namedGridLine(), styleRef(), GridPositionsResolver::finalPositionSide(direction)))
         || (endLine < firstExplicitLine)
         || (endLine > lastExplicitLine);
 
