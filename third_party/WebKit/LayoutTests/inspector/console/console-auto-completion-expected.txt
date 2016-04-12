@@ -1,0 +1,1 @@
+Tests that TextPrompt doesn't throw exception on some event sequence. crbug.com/587683

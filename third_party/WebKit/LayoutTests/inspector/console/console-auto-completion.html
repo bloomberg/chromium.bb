@@ -1,0 +1,38 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/console-test.js"></script>
+<script>
+
+var a = {};
+for (var i = 0; i < 1000; ++i)
+    a[i] = "property" + i;
+
+function test()
+{
+    var consoleView = WebInspector.ConsoleView.instance();
+    consoleView._prompt.setText("pro");
+
+    InspectorTest.addSniffer(consoleView._prompt._suggestBox, "updateSuggestions", suggestionsShown);
+    consoleView._prompt._element.dispatchEvent(new KeyboardEvent("keydown", { key: "p"}));
+    consoleView._prompt._element.dispatchEvent(new InputEvent("input", {}));
+
+    function suggestionsShown()
+    {
+        consoleView._prompt._element.dispatchEvent(new KeyboardEvent("keydown", { key: "e"}));
+        consoleView._prompt._element.dispatchEvent(new InputEvent("input", {}));
+        setTimeout(keyDownTab, 0);
+    }
+
+    function keyDownTab()
+    {
+        consoleView._prompt._element.dispatchEvent(new KeyboardEvent("keydown", { keyIdentifier: "U+0009" }));
+        InspectorTest.completeTest();
+    }
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests that TextPrompt doesn't throw exception on some event sequence. crbug.com/587683</p>
+</body>
+</html>
