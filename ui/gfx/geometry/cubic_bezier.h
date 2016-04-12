@@ -55,13 +55,10 @@ class GFX_EXPORT CubicBezier {
   // Clamps x to range [0, 1].
   double SlopeWithEpsilon(double x, double epsilon) const;
 
-  // Sets |min| and |max| to the bezier's minimum and maximium y values in the
-  // interval [0, 1].
-  // TODO(loyso): Implement this as two independent getters.
-  void Range(double* min, double* max) const {
-    *min = range_min_;
-    *max = range_max_;
-  }
+  // Gets the bezier's minimum y value in the interval [0, 1].
+  double range_min() const { return range_min_; }
+  // Gets the bezier's maximum y value in the interval [0, 1].
+  double range_max() const { return range_max_; }
 
  private:
   void InitCoefficients(double p1x, double p1y, double p2x, double p2y);

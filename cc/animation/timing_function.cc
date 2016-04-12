@@ -38,11 +38,8 @@ float CubicBezierTimingFunction::Velocity(double x) const {
 }
 
 void CubicBezierTimingFunction::Range(float* min, float* max) const {
-  double min_d = 0;
-  double max_d = 1;
-  bezier_.Range(&min_d, &max_d);
-  *min = static_cast<float>(min_d);
-  *max = static_cast<float>(max_d);
+  *min = static_cast<float>(bezier_.range_min());
+  *max = static_cast<float>(bezier_.range_max());
 }
 
 std::unique_ptr<TimingFunction> CubicBezierTimingFunction::Clone() const {
