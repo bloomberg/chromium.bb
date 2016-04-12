@@ -63,7 +63,11 @@ public:
         // have two or more ScriptWrappable as superclasses. If T has two
         // ScriptWrappable as superclasses, conversions from T* to
         // ScriptWrappable* are ambiguous.
-        ASSERT(static_cast<ScriptWrappable*>(static_cast<T*>(this)));
+#if !COMPILER(MSVC)
+        // MSVC 2013 doesn't support static_assert + constexpr well.
+        static_assert(!static_cast<ScriptWrappable*>(static_cast<T*>(nullptr)),
+            "Class T must not have two or more ScriptWrappable as its superclasses.");
+#endif
         return static_cast<T*>(this);
     }
 
