@@ -14,6 +14,8 @@ ShortcutInfo::ShortcutInfo(const GURL& shortcut_url)
       is_icon_generated(false) {
 }
 
+ShortcutInfo::ShortcutInfo(const ShortcutInfo& other) = default;
+
 ShortcutInfo::~ShortcutInfo() {
 }
 

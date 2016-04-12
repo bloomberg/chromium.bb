@@ -20,6 +20,7 @@ namespace history_report {
 class DeltaFileEntryWithData {
  public:
   explicit DeltaFileEntryWithData(DeltaFileEntry entry);
+  DeltaFileEntryWithData(const DeltaFileEntryWithData& other);
   ~DeltaFileEntryWithData();
 
   // Returns sequence number of this delta file entry.

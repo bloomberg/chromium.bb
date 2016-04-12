@@ -609,6 +609,9 @@ DownloadControllerAndroidImpl::DownloadInfoAndroid::DownloadInfoAndroid(
     has_user_gesture = info->HasUserGesture();
 }
 
+DownloadControllerAndroidImpl::DownloadInfoAndroid::DownloadInfoAndroid(
+    const DownloadInfoAndroid& other) = default;
+
 DownloadControllerAndroidImpl::DownloadInfoAndroid::~DownloadInfoAndroid() {}
 
 }  // namespace content

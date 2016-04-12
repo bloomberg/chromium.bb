@@ -66,6 +66,9 @@ void TestSynchronousCompositor::SetHardwareFrame(
 TestSynchronousCompositor::ReturnedResources::ReturnedResources()
     : output_surface_id(0u) {}
 
+TestSynchronousCompositor::ReturnedResources::ReturnedResources(
+    const ReturnedResources& other) = default;
+
 TestSynchronousCompositor::ReturnedResources::~ReturnedResources() {}
 
 }  // namespace content

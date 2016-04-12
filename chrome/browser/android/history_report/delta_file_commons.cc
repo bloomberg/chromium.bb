@@ -52,6 +52,9 @@ DeltaFileEntryWithData::DeltaFileEntryWithData(DeltaFileEntry entry)
       data_set_(false),
       is_bookmark_(false) {}
 
+DeltaFileEntryWithData::DeltaFileEntryWithData(
+    const DeltaFileEntryWithData& other) = default;
+
 DeltaFileEntryWithData::~DeltaFileEntryWithData() {}
 
 int64_t DeltaFileEntryWithData::SeqNo() const {

@@ -26,6 +26,7 @@ class ContentDetector {
     Result(const blink::WebRange& content_boundaries,
            const std::string& text,
            const GURL& intent_url);
+    Result(const Result& other);
     ~Result();
 
     bool valid;

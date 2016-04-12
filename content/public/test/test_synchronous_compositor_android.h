@@ -48,6 +48,7 @@ class CONTENT_EXPORT TestSynchronousCompositor : public SynchronousCompositor {
 
   struct ReturnedResources {
     ReturnedResources();
+    ReturnedResources(const ReturnedResources& other);
     ~ReturnedResources();
 
     uint32_t output_surface_id;

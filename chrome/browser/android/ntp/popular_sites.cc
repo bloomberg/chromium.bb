@@ -175,6 +175,8 @@ PopularSites::Site::Site(const base::string16& title,
       large_icon_url(large_icon_url),
       thumbnail_url(thumbnail_url) {}
 
+PopularSites::Site::Site(const Site& other) = default;
+
 PopularSites::Site::~Site() {}
 
 PopularSites::PopularSites(Profile* profile,

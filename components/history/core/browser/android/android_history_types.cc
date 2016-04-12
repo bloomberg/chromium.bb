@@ -78,6 +78,9 @@ HistoryAndBookmarkRow::HistoryAndBookmarkRow()
       url_id_(0) {
 }
 
+HistoryAndBookmarkRow::HistoryAndBookmarkRow(
+    const HistoryAndBookmarkRow& other) = default;
+
 HistoryAndBookmarkRow::~HistoryAndBookmarkRow() {
 }
 
@@ -99,6 +102,8 @@ HistoryAndBookmarkRow::ColumnID HistoryAndBookmarkRow::GetColumnID(
 
 SearchRow::SearchRow() : id_(0), keyword_id_(0) {
 }
+
+SearchRow::SearchRow(const SearchRow& other) = default;
 
 SearchRow::~SearchRow() {
 }

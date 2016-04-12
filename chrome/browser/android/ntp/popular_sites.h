@@ -38,6 +38,7 @@ class PopularSites {
          const GURL& favicon_url,
          const GURL& large_icon_url,
          const GURL& thumbnail_url);
+    Site(const Site& other);
     ~Site();
 
     base::string16 title;

@@ -129,6 +129,9 @@ DummySpnegoAuthenticator::SecurityContextQuery::SecurityContextQuery()
     : response_code(0), minor_response_code(0) {
 }
 
+DummySpnegoAuthenticator::SecurityContextQuery::SecurityContextQuery(
+    const SecurityContextQuery& other) = default;
+
 DummySpnegoAuthenticator::SecurityContextQuery::~SecurityContextQuery() {
 }
 

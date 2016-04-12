@@ -25,6 +25,8 @@ ContentDetector::Result::Result(const blink::WebRange& content_boundaries,
     intent_url(intent_url) {
 }
 
+ContentDetector::Result::Result(const Result& other) = default;
+
 ContentDetector::Result::~Result() {}
 
 ContentDetector::Result ContentDetector::FindTappedContent(

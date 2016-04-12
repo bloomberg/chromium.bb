@@ -65,6 +65,7 @@ class DownloadControllerAndroidImpl : public DownloadControllerAndroid {
   // Used to store all the information about an Android download.
   struct DownloadInfoAndroid {
     explicit DownloadInfoAndroid(net::URLRequest* request);
+    DownloadInfoAndroid(const DownloadInfoAndroid& other);
     ~DownloadInfoAndroid();
 
     // The URL from which we are downloading. This is the final URL after any

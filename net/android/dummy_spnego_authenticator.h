@@ -82,6 +82,7 @@ class DummySpnegoAuthenticator {
                          const char* expected_input_token,
                          const char* output_token);
     SecurityContextQuery();
+    SecurityContextQuery(const SecurityContextQuery& other);
     ~SecurityContextQuery();
 
     // Note that many of these fields only exist for compatibility with the

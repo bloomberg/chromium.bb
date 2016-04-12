@@ -31,6 +31,7 @@ struct ShortcutInfo {
   };
 
   explicit ShortcutInfo(const GURL& shortcut_url);
+  ShortcutInfo(const ShortcutInfo& other);
   ~ShortcutInfo();
 
   // Updates the info based on the given |manifest|.
