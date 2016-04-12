@@ -281,8 +281,13 @@ BluetoothDeviceAndroid::BluetoothDeviceAndroid(BluetoothAdapterAndroid* adapter)
     : BluetoothDevice(adapter) {}
 
 std::string BluetoothDeviceAndroid::GetDeviceName() const {
-  return ConvertJavaStringToUTF8(Java_ChromeBluetoothDevice_getDeviceName(
-      AttachCurrentThread(), j_device_.obj()));
+  auto device_name = Java_ChromeBluetoothDevice_getDeviceName(
+      AttachCurrentThread(), j_device_.obj());
+
+  if (device_name.is_null()) {
+    return "";
+  }
+  return ConvertJavaStringToUTF8(device_name);
 }
 
 void BluetoothDeviceAndroid::CreateGattConnectionImpl() {

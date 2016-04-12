@@ -115,6 +115,20 @@ TEST_F(BluetoothTest, LowEnergyDeviceNoUUIDs) {
 }
 #endif  // defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
 
+#if defined(OS_ANDROID)
+// GetDeviceName for Device with no name.
+TEST_F(BluetoothTest, GetDeviceName_NullName) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
+  InitWithFakeAdapter();
+  StartLowEnergyDiscoverySession();
+  BluetoothDevice* device = DiscoverLowEnergyDevice(5);
+  EXPECT_EQ("", device->GetDeviceName());
+}
+#endif  // defined(OS_ANDROID)
+
 // TODO(scheib): Test with a device with no name. http://crbug.com/506415
 // BluetoothDevice::GetAddressWithLocalizedDeviceTypeName() will run, which
 // requires string resources to be loaded. For that, something like

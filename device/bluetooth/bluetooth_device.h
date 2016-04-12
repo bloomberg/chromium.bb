@@ -484,6 +484,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
                            BluetoothGattConnection_ErrorAfterConnection);
   FRIEND_TEST_ALL_PREFIXES(BluetoothTest,
                            BluetoothGattConnection_DisconnectGatt_Cleanup);
+  FRIEND_TEST_ALL_PREFIXES(BluetoothTest, GetDeviceName_NullName);
 
   BluetoothDevice(BluetoothAdapter* adapter);
 

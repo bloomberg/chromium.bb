@@ -121,6 +121,14 @@ class Fakes {
 
                     break;
                 }
+                case 5: {
+                    ArrayList<ParcelUuid> uuids = null;
+                    mFakeScanner.mScanCallback.onScanResult(ScanSettings.CALLBACK_TYPE_ALL_MATCHES,
+                            new FakeScanResult(new FakeBluetoothDevice(
+                                                       this, "01:00:00:90:1E:BE", null),
+                                                                    uuids));
+                    break;
+                }
             }
         }
 

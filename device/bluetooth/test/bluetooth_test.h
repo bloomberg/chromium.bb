@@ -96,6 +96,8 @@ class BluetoothTestBase : public testing::Test {
   //      kTestDeviceAddress1.
   //   4: kTestDeviceNameEmpty with no advertised UUIDs and address
   //      kTestDeviceAddress2.
+  //   5: Device with no name, with no advertised UUIDs and address
+  //      kTestDeviceAddress1.
   virtual BluetoothDevice* DiscoverLowEnergyDevice(int device_ordinal);
 
   // Simulates success of implementation details of CreateGattConnection.
