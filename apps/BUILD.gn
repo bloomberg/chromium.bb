@@ -5,6 +5,8 @@
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
 
+assert(!is_android && !is_ios)
+
 static_library("apps") {
   sources = [
     "app_lifetime_monitor.cc",

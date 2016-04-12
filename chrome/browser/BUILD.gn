@@ -321,7 +321,6 @@ source_set("browser") {
     }
 
     deps += [
-      "//apps",
       "//cc",
       "//chrome/app/theme:theme_resources",
       "//chrome/browser/devtools",
@@ -363,7 +362,6 @@ source_set("browser") {
       "//components/visitedlink/browser",
       "//components/visitedlink/common",
       "//components/web_cache/browser",
-      "//components/web_modal",
       "//components/webusb",
       "//content/app/resources",
       "//device/core",
@@ -430,16 +428,6 @@ source_set("browser") {
     sources += [
       "net/disk_cache_dir_policy_handler.cc",
       "net/disk_cache_dir_policy_handler.h",
-    ]
-  }
-  if (!is_android && !is_ios) {
-    sources += [
-      "download/download_dir_policy_handler.cc",
-      "download/download_dir_policy_handler.h",
-    ]
-    deps += [
-      "//chrome/browser/policy:path_parser",
-      "//net:net_browser_services",
     ]
   }
   if (is_mac) {
@@ -736,13 +724,17 @@ source_set("browser") {
         rebase_path(gypi_values.chrome_browser_mobile_sources, ".", "//chrome")
   } else {
     # Non-mobile.
+    deps += [
+      "//apps",
+      "//chrome/browser/policy:path_parser",
+      "//chrome/browser/profile_resetter:profile_reset_report_proto",
+      "//components/feedback",
+      "//components/web_modal",
+      "//net:net_browser_services",
+    ]
     sources += rebase_path(gypi_values.chrome_browser_non_mobile_sources,
                            ".",
                            "//chrome")
-    deps += [
-      "//chrome/browser/profile_resetter:profile_reset_report_proto",
-      "//components/feedback",
-    ]
   }
 
   if (!is_chrome_branded) {
@@ -789,7 +781,6 @@ source_set("browser") {
 
     deps -= [
       "//components/storage_monitor",
-      "//components/web_modal",
       "//third_party/libaddressinput",
     ]
 

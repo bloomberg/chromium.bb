@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+assert(!is_android && !is_ios)
+
 static_library("web_modal") {
   sources = [
     "modal_dialog_host.cc",
@@ -44,20 +46,18 @@ static_library("test_support") {
   ]
 }
 
-if (!is_android && !is_ios) {
-  source_set("unit_tests") {
-    testonly = true
+source_set("unit_tests") {
+  testonly = true
 
-    sources = [
-      "web_contents_modal_dialog_manager_unittest.cc",
-    ]
+  sources = [
+    "web_contents_modal_dialog_manager_unittest.cc",
+  ]
 
-    deps = [
-      ":test_support",
-      ":web_modal",
-      "//base",
-      "//content/test:test_support",
-      "//testing/gtest",
-    ]
-  }
+  deps = [
+    ":test_support",
+    ":web_modal",
+    "//base",
+    "//content/test:test_support",
+    "//testing/gtest",
+  ]
 }

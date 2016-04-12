@@ -108,7 +108,6 @@ source_set("ui") {
     "//components/upload_list",
     "//components/user_prefs",
     "//components/version_ui",
-    "//components/web_modal",
     "//components/web_resource",
     "//content/public/common",
     "//crypto",

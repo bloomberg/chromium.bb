@@ -1204,6 +1204,8 @@
       'browser/download/download_crx_util.h',
       'browser/download/download_danger_prompt.cc',
       'browser/download/download_danger_prompt.h',
+      'browser/download/download_dir_policy_handler.cc',
+      'browser/download/download_dir_policy_handler.h',
       'browser/download/download_permission_request.cc',
       'browser/download/download_permission_request.h',
       'browser/download/download_shelf.cc',
@@ -3278,12 +3280,10 @@
       'conditions': [
         ['OS != "ios"', {
           'dependencies': [
-            'apps',
             'common_mojo_bindings',
             'common_net',
             'debugger',
             'installer_util',
-            '../third_party/re2/re2.gyp:re2',
             '../cc/cc.gyp:cc',
             '../components/components.gyp:about_handler',
             '../components/components.gyp:autofill_content_browser',
@@ -3332,7 +3332,6 @@
             '../components/components.gyp:visitedlink_common',
             '../components/components.gyp:wallpaper',
             '../components/components.gyp:web_cache_browser',
-            '../components/components.gyp:web_modal',
             '../components/components.gyp:web_resource',
             '../components/components.gyp:webusb',
             '../components/components_resources.gyp:components_resources',
@@ -3357,6 +3356,7 @@
             '../net/net.gyp:net_with_v8',
             '../storage/storage_browser.gyp:storage',
             '../storage/storage_common.gyp:storage_common',
+            '../third_party/re2/re2.gyp:re2',
             '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
             '../third_party/libaddressinput/libaddressinput.gyp:libaddressinput',
             '../third_party/libyuv/libyuv.gyp:libyuv',
@@ -3445,12 +3445,6 @@
           'sources': [
             'browser/net/disk_cache_dir_policy_handler.cc',
             'browser/net/disk_cache_dir_policy_handler.h',
-          ],
-        }],
-        ['OS!="android" and OS!="ios"', {
-          'sources': [
-            'browser/download/download_dir_policy_handler.cc',
-            'browser/download/download_dir_policy_handler.h',
           ],
         }],
         ['OS=="mac"', {
@@ -3732,10 +3726,12 @@
         }, {  # OS!="android" and OS!="ios" (non-Mobile).
           'sources': [ '<@(chrome_browser_non_mobile_sources)' ],
           'dependencies': [
-            '../components/components.gyp:feedback_component',
-            '../net/net.gyp:net_browser_services',
+            'apps',
             'policy_path_parser',
             'profile_reset_report_proto',
+            '../components/components.gyp:feedback_component',
+            '../components/components.gyp:web_modal',
+            '../net/net.gyp:net_browser_services',
           ]
         }],
         ['OS=="android"', {
@@ -3748,7 +3744,6 @@
           ],
           'dependencies!': [
             '../components/components.gyp:storage_monitor',
-            '../components/components.gyp:web_modal',
             '../third_party/libaddressinput/libaddressinput.gyp:libaddressinput',
           ],
           'sources': [
