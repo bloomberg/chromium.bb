@@ -4,6 +4,11 @@
 
 #include "ash/mus/sysui_application.h"
 
+#include <map>
+#include <set>
+#include <string>
+#include <vector>
+
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/host/ash_window_tree_host_init_params.h"
 #include "ash/host/ash_window_tree_host_platform.h"
@@ -20,6 +25,7 @@
 #include "base/path_service.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "components/mus/public/cpp/property_type_converters.h"
+#include "components/resource_provider/public/cpp/resource_loader.h"
 #include "mash/wm/public/interfaces/ash_window_type.mojom.h"
 #include "mash/wm/public/interfaces/container.mojom.h"
 #include "ui/aura/env.h"
@@ -45,6 +51,10 @@ namespace ash {
 namespace sysui {
 
 namespace {
+
+const char kResourceFileStrings[] = "ash_resources_strings.pak";
+const char kResourceFile100[] = "ash_resources_100_percent.pak";
+const char kResourceFile200[] = "ash_resources_200_percent.pak";
 
 // Tries to determine the corresponding mash container from widget init params.
 mash::wm::mojom::Container GetContainerId(
@@ -177,7 +187,6 @@ class AshInit {
  public:
   AshInit() : worker_pool_(new base::SequencedWorkerPool(2, "AshWorkerPool")) {
     ui::RegisterPathProvider();
-    InitializeResourceBundle();
   }
 
   ~AshInit() { worker_pool_->Shutdown(); }
@@ -185,6 +194,7 @@ class AshInit {
   aura::Window* root() { return ash::Shell::GetPrimaryRootWindow(); }
 
   void Initialize(mojo::Connector* connector) {
+    InitializeResourceBundle(connector);
     aura_init_.reset(new views::AuraInit(connector, "views_mus_resources.pak"));
     views::WindowManagerConnection::Create(connector);
 
@@ -222,24 +232,29 @@ class AshInit {
     SetupWallpaper(SkColorSetARGB(255, 0, 255, 0));
   }
 
-  void InitializeResourceBundle() {
-    // Load ash resources and en-US strings; not 'common' (Chrome) resources.
-    // TODO(msw): Do not load 'test' resources (include sys lang; rename paks?).
-    // TODO(msw): Use the ResourceProvider interface to load these pak files.
-    // TODO(msw): Check ResourceBundle::IsScaleFactorSupported; load 300% etc.
-    base::FilePath path;
-    PathService::Get(base::DIR_MODULE, &path);
-    base::FilePath ash_test_strings =
-        path.Append(FILE_PATH_LITERAL("ash_test_strings.pak"));
-    base::FilePath ash_test_resources_100 =
-        path.Append(FILE_PATH_LITERAL("ash_test_resources_100_percent.pak"));
-    base::FilePath ash_test_resources_200 =
-        path.Append(FILE_PATH_LITERAL("ash_test_resources_200_percent.pak"));
+  void InitializeResourceBundle(mojo::Connector* connector) {
+    if (ui::ResourceBundle::HasSharedInstance())
+      return;
 
-    ui::ResourceBundle::InitSharedInstanceWithPakPath(ash_test_strings);
+    std::set<std::string> resource_paths;
+    resource_paths.insert(kResourceFileStrings);
+    resource_paths.insert(kResourceFile100);
+    resource_paths.insert(kResourceFile200);
+
+    resource_provider::ResourceLoader loader(connector, resource_paths);
+    if (!loader.BlockUntilLoaded())
+      return;
+
+    // Load ash resources and en-US strings; not 'common' (Chrome) resources.
+    // TODO(msw): Check ResourceBundle::IsScaleFactorSupported; load 300% etc.
+    ui::ResourceBundle::InitSharedInstanceWithPakFileRegion(
+        loader.ReleaseFile(kResourceFileStrings),
+        base::MemoryMappedFile::Region::kWholeFile);
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    rb.AddDataPackFromPath(ash_test_resources_100, ui::SCALE_FACTOR_100P);
-    rb.AddDataPackFromPath(ash_test_resources_200, ui::SCALE_FACTOR_200P);
+    rb.AddDataPackFromFile(loader.ReleaseFile(kResourceFile100),
+                           ui::SCALE_FACTOR_100P);
+    rb.AddDataPackFromFile(loader.ReleaseFile(kResourceFile200),
+                           ui::SCALE_FACTOR_200P);
   }
 
   void SetupWallpaper(SkColor color) {

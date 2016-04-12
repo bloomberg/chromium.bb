@@ -31,6 +31,7 @@ source_set("lib") {
     "//components/mus/common:mus_common",
     "//components/mus/public/cpp",
     "//components/mus/public/interfaces",
+    "//components/resource_provider/public/cpp",
     "//components/user_manager",
     "//device/bluetooth",
     "//mash/shelf/public/interfaces",
@@ -57,12 +58,6 @@ source_set("lib") {
     "//ui/views/mus:for_mojo_application",
   ]
 
-  data_deps = [
-    "//ash/strings:ash_test_strings",
-    "//ash/resources:ash_test_resources_100_percent",
-    "//ash/resources:ash_test_resources_200_percent",
-  ]
-
   if (is_chromeos) {
     deps += [ "//chromeos" ]
   }
@@ -80,11 +75,51 @@ mojo_native_application("mus") {
   ]
   deps = [
     ":lib",
+    ":resources_100",
+    ":resources_200",
+    ":resources_strings",
     "//mojo/shell/public/cpp",
   ]
 
   data_deps = [
     ":manifest",
     "//components/mus",
+  ]
+
+  resources = [
+    "$root_out_dir/ash_resources_strings.pak",
+    "$root_out_dir/ash_resources_100_percent.pak",
+    "$root_out_dir/ash_resources_200_percent.pak",
+  ]
+}
+
+#TODO(msw): Do not load 'test' resources (include sys lang?).
+repack("resources_strings") {
+  sources = [
+    "$root_out_dir/ash_test_strings.pak",
+  ]
+  output = "$root_out_dir/ash_resources_strings.pak"
+  deps = [
+    "//ash/strings:ash_test_strings",
+  ]
+}
+
+repack("resources_100") {
+  sources = [
+    "$root_out_dir/ash_test_resources_100_percent.pak",
+  ]
+  output = "$root_out_dir/ash_resources_100_percent.pak"
+  deps = [
+    "//ash/resources:ash_test_resources_100_percent",
+  ]
+}
+
+repack("resources_200") {
+  sources = [
+    "$root_out_dir/ash_test_resources_200_percent.pak",
+  ]
+  output = "$root_out_dir/ash_resources_200_percent.pak"
+  deps = [
+    "//ash/resources:ash_test_resources_200_percent",
   ]
 }

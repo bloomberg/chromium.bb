@@ -9,50 +9,38 @@ import("//mojo/public/mojo_application_manifest.gni")
 import("//mojo/public/mojo_constants.gni")
 import("//tools/grit/repack.gni")
 
-if (is_android) {
-  import("//build/config/android/config.gni")
-  import("//build/config/android/rules.gni")
+mojo_native_application("mus") {
+  sources = [
+    "main.cc",
+  ]
 
-  source_set("mus") {
-    sources = [
-      "android_loader.cc",
-      "android_loader.h",
-    ]
+  deps = [
+    ":lib",
+    ":resources_100",
+    ":resources_200",
+    ":resources_strings",
+    "//mojo/platform_handle:for_shared_library",
+    "//mojo/shell/public/cpp:sources",
+  ]
 
-    deps = [
-      ":lib",
-      "public/interfaces",
-      "//mojo/public/cpp/bindings",
-      "//mojo/services/tracing/public/interfaces",
-      "//mojo/shell",
-      "//mojo/shell/public/cpp:sources",
-    ]
-  }
-} else {
-  mojo_native_application("mus") {
-    sources = [
-      "main.cc",
-    ]
-
-    deps = [
-      ":lib",
-      "//mojo/platform_handle:for_shared_library",
-      "//mojo/shell/public/cpp:sources",
-    ]
-
-    if (is_win) {
-      deps += [ ":copy_gl_libraries" ]
-    }
-
-    data_deps = [
-      ":manifest",
-    ]
+  if (is_win) {
+    deps += [ ":copy_gl_libraries" ]
   }
 
-  mojo_application_manifest("manifest") {
-    application_name = "mus"
-    source = "manifest.json"
-  }
+  data_deps = [
+    ":manifest",
+  ]
+
+  resources = [
+    "$root_out_dir/mus_app_resources_strings.pak",
+    "$root_out_dir/mus_app_resources_100.pak",
+    "$root_out_dir/mus_app_resources_200.pak",
+  ]
+}
+
+mojo_application_manifest("manifest") {
+  application_name = "mus"
+  source = "manifest.json"
 }
 
 if (is_win) {
@@ -102,9 +90,6 @@ source_set("lib") {
   ]
 
   data_deps = [
-    ":resources_100",
-    ":resources_200",
-    ":resources_strings",
     "//components/resource_provider",
   ]
 
@@ -122,7 +107,7 @@ repack("resources_strings") {
   sources = [
     "$root_gen_dir/ui/strings/app_locale_settings_en-US.pak",
   ]
-  output = "$root_out_dir/$mojo_application_subdir/mus/resources/mus_app_resources_strings.pak"
+  output = "$root_out_dir/mus_app_resources_strings.pak"
   deps = [
     "//ui/strings",
   ]
@@ -132,7 +117,7 @@ repack("resources_100") {
   sources = [
     "$root_gen_dir/ui/resources/ui_resources_100_percent.pak",
   ]
-  output = "$root_out_dir/$mojo_application_subdir/mus/resources/mus_app_resources_100.pak"
+  output = "$root_out_dir/mus_app_resources_100.pak"
   deps = [
     "//ui/resources",
   ]
@@ -142,7 +127,7 @@ repack("resources_200") {
   sources = [
     "$root_gen_dir/ui/resources/ui_resources_200_percent.pak",
   ]
-  output = "$root_out_dir/$mojo_application_subdir/mus/resources/mus_app_resources_200.pak"
+  output = "$root_out_dir/mus_app_resources_200.pak"
   deps = [
     "//ui/resources",
   ]
