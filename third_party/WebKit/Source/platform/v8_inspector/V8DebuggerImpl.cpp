@@ -830,4 +830,9 @@ const V8DebuggerImpl::ContextByIdMap* V8DebuggerImpl::contextGroup(int contextGr
     return m_contexts.get(contextGroupId);
 }
 
+V8InspectorSessionImpl* V8DebuggerImpl::sessionForContextGroup(int contextGroupId)
+{
+    return contextGroupId ? m_sessions.get(contextGroupId) : nullptr;
+}
+
 } // namespace blink

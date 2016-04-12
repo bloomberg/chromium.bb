@@ -44,6 +44,7 @@ namespace blink {
 class InjectedScriptHost;
 class RemoteObjectId;
 class V8FunctionCall;
+class V8InspectorSessionImpl;
 
 namespace protocol {
 class DictionaryValue;
@@ -93,16 +94,68 @@ public:
         Maybe<bool>* wasThrown,
         Maybe<protocol::Runtime::ExceptionDetails>*);
 
-    class ScopedGlobalObjectExtension {
-        PROTOCOL_DISALLOW_COPY(ScopedGlobalObjectExtension);
+    class Scope {
     public:
-        ScopedGlobalObjectExtension(InjectedScript* current, v8::MaybeLocal<v8::Object> extension);
-        ~ScopedGlobalObjectExtension();
+        bool initialize();
+        void installGlobalObjectExtension(v8::MaybeLocal<v8::Object> extension);
+        v8::Local<v8::Context> context() const { return m_context; }
+        InjectedScript* injectedScript() const { return m_injectedScript; }
+        const v8::TryCatch& tryCatch() const { return m_tryCatch; }
+
+    protected:
+        Scope(ErrorString*, V8DebuggerImpl*, int contextGroupId);
+        ~Scope();
+        virtual void findInjectedScript(V8InspectorSessionImpl*) = 0;
+
+        ErrorString* m_errorString;
+        V8DebuggerImpl* m_debugger;
+        int m_contextGroupId;
+        InjectedScript* m_injectedScript;
 
     private:
-        v8::Local<v8::Symbol> m_symbol;
+        void cleanup();
+
+        v8::HandleScope m_handleScope;
+        v8::TryCatch m_tryCatch;
         v8::Local<v8::Context> m_context;
+        v8::Local<v8::Symbol> m_extensionSymbol;
         v8::MaybeLocal<v8::Object> m_global;
+    };
+
+    class ContextScope: public Scope {
+        PROTOCOL_DISALLOW_COPY(ContextScope);
+    public:
+        ContextScope(ErrorString*, V8DebuggerImpl*, int contextGroupId, int executionContextId);
+        ~ContextScope();
+    private:
+        void findInjectedScript(V8InspectorSessionImpl*) override;
+        int m_executionContextId;
+    };
+
+    class ObjectScope: public Scope {
+        PROTOCOL_DISALLOW_COPY(ObjectScope);
+    public:
+        ObjectScope(ErrorString*, V8DebuggerImpl*, int contextGroupId, const String16& remoteObjectId);
+        ~ObjectScope();
+        const String16& objectGroupName() const { return m_objectGroupName; }
+        v8::Local<v8::Value> object() const { return m_object; }
+    private:
+        void findInjectedScript(V8InspectorSessionImpl*) override;
+        String16 m_remoteObjectId;
+        String16 m_objectGroupName;
+        v8::Local<v8::Value> m_object;
+    };
+
+    class CallFrameScope: public Scope {
+        PROTOCOL_DISALLOW_COPY(CallFrameScope);
+    public:
+        CallFrameScope(ErrorString*, V8DebuggerImpl*, int contextGroupId, const String16& remoteCallFrameId);
+        ~CallFrameScope();
+        size_t frameOrdinal() const { return m_frameOrdinal; }
+    private:
+        void findInjectedScript(V8InspectorSessionImpl*) override;
+        String16 m_remoteCallFrameId;
+        size_t m_frameOrdinal;
     };
 
 private:

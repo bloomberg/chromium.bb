@@ -95,43 +95,34 @@ void V8RuntimeAgentImpl::evaluate(
         }
     }
 
-    InjectedScript* injectedScript = m_session->findInjectedScript(errorString, contextId);
-    if (!injectedScript)
+    InjectedScript::ContextScope scope(errorString, m_debugger, m_session->contextGroupId(), contextId);
+    if (!scope.initialize())
         return;
-
-    v8::HandleScope scope(injectedScript->isolate());
-    v8::Local<v8::Context> context = injectedScript->context()->context();
-    v8::Context::Scope contextScope(context);
-
-    if (!injectedScript->canAccessInspectedWindow()) {
-        *errorString = "Can not access given context";
-        return;
-    }
 
     IgnoreExceptionsScope ignoreExceptionsScope(doNotPauseOnExceptionsAndMuteConsole.fromMaybe(false) ? m_debugger : nullptr);
     MuteConsoleScope muteConsoleScope(doNotPauseOnExceptionsAndMuteConsole.fromMaybe(false) ? m_debugger : nullptr);
-    v8::TryCatch tryCatch(injectedScript->isolate());
 
-    v8::MaybeLocal<v8::Object> commandLineAPI = includeCommandLineAPI.fromMaybe(false) ? injectedScript->commandLineAPI(errorString) : v8::MaybeLocal<v8::Object>();
-    if (includeCommandLineAPI.fromMaybe(false) && commandLineAPI.IsEmpty())
-        return;
-    InjectedScript::ScopedGlobalObjectExtension scopeExtension(injectedScript, commandLineAPI);
+    if (includeCommandLineAPI.fromMaybe(false)) {
+        v8::MaybeLocal<v8::Object> commandLineAPI = scope.injectedScript()->commandLineAPI(errorString);
+        if (commandLineAPI.IsEmpty())
+            return;
+        scope.installGlobalObjectExtension(commandLineAPI);
+    }
 
-    bool evalIsDisabled = !context->IsCodeGenerationFromStringsAllowed();
+    bool evalIsDisabled = !scope.context()->IsCodeGenerationFromStringsAllowed();
     // Temporarily enable allow evals for inspector.
     if (evalIsDisabled)
-        context->AllowCodeGenerationFromStrings(true);
-    v8::MaybeLocal<v8::Value> maybeResultValue = m_debugger->compileAndRunInternalScript(injectedScript->context()->context(), toV8String(injectedScript->isolate(), expression));
+        scope.context()->AllowCodeGenerationFromStrings(true);
+    v8::MaybeLocal<v8::Value> maybeResultValue = m_debugger->compileAndRunInternalScript(scope.context(), toV8String(m_debugger->isolate(), expression));
     if (evalIsDisabled)
-        context->AllowCodeGenerationFromStrings(false);
-    // InjectedScript may be gone after any evaluate call - find it again.
-    injectedScript = m_session->findInjectedScript(errorString, contextId);
-    if (!injectedScript)
-        return;
+        scope.context()->AllowCodeGenerationFromStrings(false);
 
-    injectedScript->wrapEvaluateResult(errorString,
+    // Re-initialize after running client's code, as it could have destroyed context or session.
+    if (!scope.initialize())
+        return;
+    scope.injectedScript()->wrapEvaluateResult(errorString,
         maybeResultValue,
-        tryCatch,
+        scope.tryCatch(),
         objectGroup.fromMaybe(""),
         returnByValue.fromMaybe(false),
         generatePreview.fromMaybe(false),
@@ -151,25 +142,10 @@ void V8RuntimeAgentImpl::callFunctionOn(ErrorString* errorString,
     OwnPtr<RemoteObject>* result,
     Maybe<bool>* wasThrown)
 {
-    OwnPtr<RemoteObjectId> remoteId = RemoteObjectId::parse(errorString, objectId);
-    if (!remoteId)
-        return;
-    InjectedScript* injectedScript = m_session->findInjectedScript(errorString, remoteId.get());
-    if (!injectedScript)
+    InjectedScript::ObjectScope scope(errorString, m_debugger, m_session->contextGroupId(), objectId);
+    if (!scope.initialize())
         return;
 
-    v8::HandleScope scope(injectedScript->isolate());
-    v8::Context::Scope contextScope(injectedScript->context()->context());
-
-    if (!injectedScript->canAccessInspectedWindow()) {
-        *errorString = "Can not access given context";
-        return;
-    }
-
-    String16 objectGroupName = injectedScript->objectGroupName(*remoteId);
-    v8::Local<v8::Value> object;
-    if (!injectedScript->findObject(errorString, *remoteId, &object))
-        return;
     OwnPtr<v8::Local<v8::Value>[]> argv = nullptr;
     int argc = 0;
     if (optionalArguments.isJust()) {
@@ -178,7 +154,7 @@ void V8RuntimeAgentImpl::callFunctionOn(ErrorString* errorString,
         argv = adoptArrayPtr(new v8::Local<v8::Value>[argc]);
         for (int i = 0; i < argc; ++i) {
             v8::Local<v8::Value> argumentValue;
-            if (!injectedScript->resolveCallArgument(errorString, arguments->get(i)).ToLocal(&argumentValue))
+            if (!scope.injectedScript()->resolveCallArgument(errorString, arguments->get(i)).ToLocal(&argumentValue))
                 return;
             argv[i] = argumentValue;
         }
@@ -187,16 +163,13 @@ void V8RuntimeAgentImpl::callFunctionOn(ErrorString* errorString,
     IgnoreExceptionsScope ignoreExceptionsScope(doNotPauseOnExceptionsAndMuteConsole.fromMaybe(false) ? m_debugger : nullptr);
     MuteConsoleScope muteConsoleScope(doNotPauseOnExceptionsAndMuteConsole.fromMaybe(false) ? m_debugger : nullptr);
 
-    v8::TryCatch tryCatch(injectedScript->isolate());
-
-    v8::MaybeLocal<v8::Value> maybeFunctionValue = m_debugger->compileAndRunInternalScript(injectedScript->context()->context(), toV8String(injectedScript->isolate(), "(" + expression + ")"));
-    // InjectedScript may be gone after any evaluate call - find it again.
-    injectedScript = m_session->findInjectedScript(errorString, remoteId.get());
-    if (!injectedScript)
+    v8::MaybeLocal<v8::Value> maybeFunctionValue = m_debugger->compileAndRunInternalScript(scope.context(), toV8String(m_debugger->isolate(), "(" + expression + ")"));
+    // Re-initialize after running client's code, as it could have destroyed context or session.
+    if (!scope.initialize())
         return;
 
-    if (tryCatch.HasCaught()) {
-        injectedScript->wrapEvaluateResult(errorString, maybeFunctionValue, tryCatch, objectGroupName, false, false, result, wasThrown, nullptr);
+    if (scope.tryCatch().HasCaught()) {
+        scope.injectedScript()->wrapEvaluateResult(errorString, maybeFunctionValue, scope.tryCatch(), scope.objectGroupName(), false, false, result, wasThrown, nullptr);
         return;
     }
 
@@ -206,18 +179,17 @@ void V8RuntimeAgentImpl::callFunctionOn(ErrorString* errorString,
         return;
     }
 
-    v8::MaybeLocal<v8::Object> remoteObjectAPI = injectedScript->remoteObjectAPI(errorString, objectGroupName);
+    v8::MaybeLocal<v8::Object> remoteObjectAPI = scope.injectedScript()->remoteObjectAPI(errorString, scope.objectGroupName());
     if (remoteObjectAPI.IsEmpty())
         return;
-    InjectedScript::ScopedGlobalObjectExtension scopeExtension(injectedScript, remoteObjectAPI);
+    scope.installGlobalObjectExtension(remoteObjectAPI);
 
-    v8::MaybeLocal<v8::Value> maybeResultValue = m_debugger->callFunction(functionValue.As<v8::Function>(), injectedScript->context()->context(), object, argc, argv.get());
-    // InjectedScript may be gone after any evaluate call - find it again.
-    injectedScript = m_session->findInjectedScript(errorString, remoteId.get());
-    if (!injectedScript)
+    v8::MaybeLocal<v8::Value> maybeResultValue = m_debugger->callFunction(functionValue.As<v8::Function>(), scope.context(), scope.object(), argc, argv.get());
+    // Re-initialize after running client's code, as it could have destroyed context or session.
+    if (!scope.initialize())
         return;
 
-    injectedScript->wrapEvaluateResult(errorString, maybeResultValue, tryCatch, objectGroupName, returnByValue.fromMaybe(false), generatePreview.fromMaybe(false), result, wasThrown, nullptr);
+    scope.injectedScript()->wrapEvaluateResult(errorString, maybeResultValue, scope.tryCatch(), scope.objectGroupName(), returnByValue.fromMaybe(false), generatePreview.fromMaybe(false), result, wasThrown, nullptr);
 }
 
 void V8RuntimeAgentImpl::getProperties(
@@ -232,44 +204,34 @@ void V8RuntimeAgentImpl::getProperties(
 {
     using protocol::Runtime::InternalPropertyDescriptor;
 
-    OwnPtr<RemoteObjectId> remoteId = RemoteObjectId::parse(errorString, objectId);
-    if (!remoteId)
-        return;
-    InjectedScript* injectedScript = m_session->findInjectedScript(errorString, remoteId.get());
-    if (!injectedScript)
+    InjectedScript::ObjectScope scope(errorString, m_debugger, m_session->contextGroupId(), objectId);
+    if (!scope.initialize())
         return;
 
     IgnoreExceptionsScope ignoreExceptionsScope(m_debugger);
     MuteConsoleScope muteConsoleScope(m_debugger);
 
-    v8::HandleScope handles(injectedScript->isolate());
-    v8::Local<v8::Context> context = injectedScript->context()->context();
-    v8::Context::Scope scope(context);
-    v8::Local<v8::Value> objectValue;
-    if (!injectedScript->findObject(errorString, *remoteId, &objectValue))
-        return;
-    if (!objectValue->IsObject()) {
+    if (!scope.object()->IsObject()) {
         *errorString = "Value with given id is not an object";
         return;
     }
 
-    v8::Local<v8::Object> object = objectValue.As<v8::Object>();
-    String16 objectGroupName = injectedScript->objectGroupName(*remoteId);
-    injectedScript->getProperties(errorString, object, objectGroupName, ownProperties.fromMaybe(false), accessorPropertiesOnly.fromMaybe(false), generatePreview.fromMaybe(false), result, exceptionDetails);
+    v8::Local<v8::Object> object = scope.object().As<v8::Object>();
+    scope.injectedScript()->getProperties(errorString, object, scope.objectGroupName(), ownProperties.fromMaybe(false), accessorPropertiesOnly.fromMaybe(false), generatePreview.fromMaybe(false), result, exceptionDetails);
     if (!errorString->isEmpty() || exceptionDetails->isJust() || accessorPropertiesOnly.fromMaybe(false))
         return;
     v8::Local<v8::Array> propertiesArray;
-    if (hasInternalError(errorString, !v8::Debug::GetInternalProperties(injectedScript->isolate(), objectValue).ToLocal(&propertiesArray)))
+    if (hasInternalError(errorString, !v8::Debug::GetInternalProperties(m_debugger->isolate(), scope.object()).ToLocal(&propertiesArray)))
         return;
     OwnPtr<protocol::Array<InternalPropertyDescriptor>> propertiesProtocolArray = protocol::Array<InternalPropertyDescriptor>::create();
     for (uint32_t i = 0; i < propertiesArray->Length(); i += 2) {
         v8::Local<v8::Value> name;
-        if (hasInternalError(errorString, !propertiesArray->Get(context, i).ToLocal(&name)) || !name->IsString())
+        if (hasInternalError(errorString, !propertiesArray->Get(scope.context(), i).ToLocal(&name)) || !name->IsString())
             return;
         v8::Local<v8::Value> value;
-        if (hasInternalError(errorString, !propertiesArray->Get(context, i + 1).ToLocal(&value)))
+        if (hasInternalError(errorString, !propertiesArray->Get(scope.context(), i + 1).ToLocal(&value)))
             return;
-        OwnPtr<RemoteObject> wrappedValue = injectedScript->wrapObject(errorString, value, objectGroupName);
+        OwnPtr<RemoteObject> wrappedValue = scope.injectedScript()->wrapObject(errorString, value, scope.objectGroupName());
         if (!wrappedValue)
             return;
         propertiesProtocolArray->addItem(InternalPropertyDescriptor::create()
@@ -283,16 +245,13 @@ void V8RuntimeAgentImpl::getProperties(
 
 void V8RuntimeAgentImpl::releaseObject(ErrorString* errorString, const String16& objectId)
 {
-    OwnPtr<RemoteObjectId> remoteId = RemoteObjectId::parse(errorString, objectId);
-    if (!remoteId)
-        return;
-    InjectedScript* injectedScript = m_session->findInjectedScript(errorString, remoteId.get());
-    if (!injectedScript)
+    InjectedScript::ObjectScope scope(errorString, m_debugger, m_session->contextGroupId(), objectId);
+    if (!scope.initialize())
         return;
     bool pausingOnNextStatement = m_debugger->pausingOnNextStatement();
     if (pausingOnNextStatement)
         m_debugger->setPauseOnNextStatement(false);
-    injectedScript->releaseObject(objectId);
+    scope.injectedScript()->releaseObject(objectId);
     if (pausingOnNextStatement)
         m_debugger->setPauseOnNextStatement(true);
 }
@@ -330,20 +289,15 @@ void V8RuntimeAgentImpl::compileScript(ErrorString* errorString,
         *errorString = "Runtime agent is not enabled";
         return;
     }
-    InjectedScript* injectedScript = m_session->findInjectedScript(errorString, executionContextId);
-    if (!injectedScript)
+    InjectedScript::ContextScope scope(errorString, m_debugger, m_session->contextGroupId(), executionContextId);
+    if (!scope.initialize())
         return;
 
-    v8::Isolate* isolate = injectedScript->isolate();
-    v8::HandleScope handles(isolate);
-    v8::Local<v8::Context> context = injectedScript->context()->context();
-    v8::Context::Scope scope(context);
-    v8::TryCatch tryCatch(isolate);
-    v8::Local<v8::Script> script = m_debugger->compileInternalScript(context, toV8String(isolate, expression), sourceURL);
+    v8::Local<v8::Script> script = m_debugger->compileInternalScript(scope.context(), toV8String(m_debugger->isolate(), expression), sourceURL);
     if (script.IsEmpty()) {
-        v8::Local<v8::Message> message = tryCatch.Message();
+        v8::Local<v8::Message> message = scope.tryCatch().Message();
         if (!message.IsEmpty())
-            *exceptionDetails = injectedScript->createExceptionDetails(message);
+            *exceptionDetails = scope.injectedScript()->createExceptionDetails(message);
         else
             *errorString = "Script compilation failed";
         return;
@@ -353,7 +307,7 @@ void V8RuntimeAgentImpl::compileScript(ErrorString* errorString,
         return;
 
     String16 scriptValueId = String16::number(script->GetUnboundScript()->GetId());
-    OwnPtr<v8::Global<v8::Script>> global = adoptPtr(new v8::Global<v8::Script>(isolate, script));
+    OwnPtr<v8::Global<v8::Script>> global = adoptPtr(new v8::Global<v8::Script>(m_debugger->isolate(), script));
     m_compiledScripts.set(scriptValueId, global.release());
     *scriptId = scriptValueId;
 }
@@ -371,45 +325,39 @@ void V8RuntimeAgentImpl::runScript(ErrorString* errorString,
         *errorString = "Runtime agent is not enabled";
         return;
     }
-    InjectedScript* injectedScript = m_session->findInjectedScript(errorString, executionContextId);
-    if (!injectedScript)
-        return;
-
-    IgnoreExceptionsScope ignoreExceptionsScope(doNotPauseOnExceptionsAndMuteConsole.fromMaybe(false) ? m_debugger : nullptr);
-    MuteConsoleScope muteConsoleScope(doNotPauseOnExceptionsAndMuteConsole.fromMaybe(false) ? m_debugger : nullptr);
 
     if (!m_compiledScripts.contains(scriptId)) {
         *errorString = "Script execution failed";
         return;
     }
 
-    v8::Isolate* isolate = injectedScript->isolate();
-    v8::HandleScope handles(isolate);
-    v8::Local<v8::Context> context = injectedScript->context()->context();
-    v8::Context::Scope scope(context);
-    OwnPtr<v8::Global<v8::Script>> scriptWrapper = m_compiledScripts.take(scriptId);
-    v8::Local<v8::Script> script = scriptWrapper->Get(isolate);
+    InjectedScript::ContextScope scope(errorString, m_debugger, m_session->contextGroupId(), executionContextId);
+    if (!scope.initialize())
+        return;
 
+    IgnoreExceptionsScope ignoreExceptionsScope(doNotPauseOnExceptionsAndMuteConsole.fromMaybe(false) ? m_debugger : nullptr);
+    MuteConsoleScope muteConsoleScope(doNotPauseOnExceptionsAndMuteConsole.fromMaybe(false) ? m_debugger : nullptr);
+
+    OwnPtr<v8::Global<v8::Script>> scriptWrapper = m_compiledScripts.take(scriptId);
+    v8::Local<v8::Script> script = scriptWrapper->Get(m_debugger->isolate());
     if (script.IsEmpty()) {
         *errorString = "Script execution failed";
         return;
     }
 
-    v8::MaybeLocal<v8::Object> commandLineAPI = includeCommandLineAPI.fromMaybe(false) ? injectedScript->commandLineAPI(errorString) : v8::MaybeLocal<v8::Object>();
-    if (includeCommandLineAPI.fromMaybe(false) && commandLineAPI.IsEmpty())
+    if (includeCommandLineAPI.fromMaybe(false)) {
+        v8::MaybeLocal<v8::Object> commandLineAPI = scope.injectedScript()->commandLineAPI(errorString);
+        if (commandLineAPI.IsEmpty())
+            return;
+        scope.installGlobalObjectExtension(commandLineAPI);
+    }
+
+    v8::MaybeLocal<v8::Value> maybeResultValue = m_debugger->runCompiledScript(scope.context(), script);
+
+    // Re-initialize after running client's code, as it could have destroyed context or session.
+    if (!scope.initialize())
         return;
-
-    InjectedScript::ScopedGlobalObjectExtension scopeExtension(injectedScript, commandLineAPI);
-
-    v8::TryCatch tryCatch(isolate);
-    v8::MaybeLocal<v8::Value> maybeResultValue = m_debugger->runCompiledScript(context, script);
-
-    // InjectedScript may be gone after any evaluate call - find it again.
-    injectedScript = m_session->findInjectedScript(errorString, executionContextId);
-    if (!injectedScript)
-        return;
-
-    injectedScript->wrapEvaluateResult(errorString, maybeResultValue, tryCatch, objectGroup.fromMaybe(""), false, false, result, nullptr, exceptionDetails);
+    scope.injectedScript()->wrapEvaluateResult(errorString, maybeResultValue, scope.tryCatch(), objectGroup.fromMaybe(""), false, false, result, nullptr, exceptionDetails);
 }
 
 void V8RuntimeAgentImpl::setInspectorState(protocol::DictionaryValue* state)

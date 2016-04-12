@@ -41,6 +41,7 @@
 #include "platform/v8_inspector/V8DebuggerImpl.h"
 #include "platform/v8_inspector/V8FunctionCall.h"
 #include "platform/v8_inspector/V8InjectedScriptHost.h"
+#include "platform/v8_inspector/V8InspectorSessionImpl.h"
 #include "platform/v8_inspector/V8StackTraceImpl.h"
 #include "platform/v8_inspector/V8StringUtil.h"
 #include "platform/v8_inspector/public/V8Debugger.h"
@@ -410,25 +411,120 @@ void InjectedScript::wrapEvaluateResult(ErrorString* errorString, v8::MaybeLocal
     }
 }
 
-InjectedScript::ScopedGlobalObjectExtension::ScopedGlobalObjectExtension(InjectedScript* current, v8::MaybeLocal<v8::Object> extension)
-    : m_context(current->context()->context())
+InjectedScript::Scope::Scope(ErrorString* errorString, V8DebuggerImpl* debugger, int contextGroupId)
+    : m_errorString(errorString)
+    , m_debugger(debugger)
+    , m_contextGroupId(contextGroupId)
+    , m_injectedScript(nullptr)
+    , m_handleScope(debugger->isolate())
+    , m_tryCatch(debugger->isolate())
+{
+}
+
+bool InjectedScript::Scope::initialize()
+{
+    cleanup();
+    // TODO(dgozman): what if we reattach to the same context group during evaluate? Introduce a session id?
+    V8InspectorSessionImpl* session = m_debugger->sessionForContextGroup(m_contextGroupId);
+    if (!session) {
+        *m_errorString = "Internal error";
+        return false;
+    }
+    findInjectedScript(session);
+    if (!m_injectedScript)
+        return false;
+    m_context = m_injectedScript->context()->context();
+    m_context->Enter();
+    return true;
+}
+
+void InjectedScript::Scope::installGlobalObjectExtension(v8::MaybeLocal<v8::Object> extension)
 {
     v8::Local<v8::Object> extensionObject;
-    if (!extension.ToLocal(&extensionObject))
+    if (m_context.IsEmpty() || !extension.ToLocal(&extensionObject))
         return;
 
-    m_symbol = V8Debugger::scopeExtensionSymbol(current->isolate());
+    m_extensionSymbol = V8Debugger::scopeExtensionSymbol(m_debugger->isolate());
     v8::Local<v8::Object> global = m_context->Global();
-    if (global->Set(m_context, m_symbol, extensionObject).FromMaybe(false))
+    if (global->Set(m_context, m_extensionSymbol, extensionObject).FromMaybe(false))
         m_global = global;
 }
 
-InjectedScript::ScopedGlobalObjectExtension::~ScopedGlobalObjectExtension()
+void InjectedScript::Scope::cleanup()
 {
     v8::Local<v8::Object> global;
-    if (!m_global.ToLocal(&global))
+    if (m_global.ToLocal(&global)) {
+        ASSERT(!m_context.IsEmpty());
+        global->Delete(m_context, m_extensionSymbol);
+        m_global = v8::MaybeLocal<v8::Object>();
+    }
+    if (!m_context.IsEmpty()) {
+        m_context->Exit();
+        m_context.Clear();
+    }
+}
+
+InjectedScript::Scope::~Scope()
+{
+    cleanup();
+}
+
+InjectedScript::ContextScope::ContextScope(ErrorString* errorString, V8DebuggerImpl* debugger, int contextGroupId, int executionContextId)
+    : InjectedScript::Scope(errorString, debugger, contextGroupId)
+    , m_executionContextId(executionContextId)
+{
+}
+
+InjectedScript::ContextScope::~ContextScope()
+{
+}
+
+void InjectedScript::ContextScope::findInjectedScript(V8InspectorSessionImpl* session)
+{
+    m_injectedScript = session->findInjectedScript(m_errorString, m_executionContextId);
+}
+
+InjectedScript::ObjectScope::ObjectScope(ErrorString* errorString, V8DebuggerImpl* debugger, int contextGroupId, const String16& remoteObjectId)
+    : InjectedScript::Scope(errorString, debugger, contextGroupId)
+    , m_remoteObjectId(remoteObjectId)
+{
+}
+
+InjectedScript::ObjectScope::~ObjectScope()
+{
+}
+
+void InjectedScript::ObjectScope::findInjectedScript(V8InspectorSessionImpl* session)
+{
+    OwnPtr<RemoteObjectId> remoteId = RemoteObjectId::parse(m_errorString, m_remoteObjectId);
+    if (!remoteId)
         return;
-    global->Delete(m_context, m_symbol);
+    InjectedScript* injectedScript = session->findInjectedScript(m_errorString, remoteId.get());
+    if (!injectedScript)
+        return;
+    m_objectGroupName = injectedScript->objectGroupName(*remoteId);
+    if (!injectedScript->findObject(m_errorString, *remoteId, &m_object))
+        return;
+    m_injectedScript = injectedScript;
+}
+
+InjectedScript::CallFrameScope::CallFrameScope(ErrorString* errorString, V8DebuggerImpl* debugger, int contextGroupId, const String16& remoteObjectId)
+    : InjectedScript::Scope(errorString, debugger, contextGroupId)
+    , m_remoteCallFrameId(remoteObjectId)
+{
+}
+
+InjectedScript::CallFrameScope::~CallFrameScope()
+{
+}
+
+void InjectedScript::CallFrameScope::findInjectedScript(V8InspectorSessionImpl* session)
+{
+    OwnPtr<RemoteCallFrameId> remoteId = RemoteCallFrameId::parse(m_errorString, m_remoteCallFrameId);
+    if (!remoteId)
+        return;
+    m_frameOrdinal = static_cast<size_t>(remoteId->frameOrdinal());
+    m_injectedScript = session->findInjectedScript(m_errorString, remoteId.get());
 }
 
 } // namespace blink
