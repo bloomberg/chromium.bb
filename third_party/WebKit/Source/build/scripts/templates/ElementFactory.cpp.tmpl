@@ -87,9 +87,9 @@ RawPtr<{{namespace}}Element> {{namespace}}ElementFactory::create{{namespace}}Ele
         return function(document, {% if namespace == 'HTML' %}formElement, {% endif %}createdByParser);
 
     if (document.registrationContext() && CustomElement::isValidName(localName)) {
-        RawPtr<Element> element = document.registrationContext()->createCustomTagElement(document, QualifiedName(nullAtom, localName, {{namespace_prefix}}NamespaceURI));
+        Element* element = document.registrationContext()->createCustomTagElement(document, QualifiedName(nullAtom, localName, {{namespace_prefix}}NamespaceURI));
         ASSERT_WITH_SECURITY_IMPLICATION(element->is{{namespace}}Element());
-        return static_pointer_cast<{{namespace}}Element>(element.release());
+        return to{{namespace}}Element(element);
     }
 
     return {{fallback_interface}}::create(QualifiedName(nullAtom, localName, {{namespace_prefix}}NamespaceURI), document);

@@ -257,7 +257,7 @@ void WebNode::querySelectorAll(const WebString& selector, WebVector<WebElement>&
     if (!m_private->isContainerNode())
         return;
     TrackExceptionState exceptionState;
-    RawPtr<StaticElementList> elements = toContainerNode(m_private.get())->querySelectorAll(selector, exceptionState);
+    StaticElementList* elements = toContainerNode(m_private.get())->querySelectorAll(selector, exceptionState);
     ec = exceptionState.code();
     if (exceptionState.hadException())
         return;

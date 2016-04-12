@@ -152,7 +152,7 @@ void ExternalPopupMenu::updateFromElement()
     if (m_shownDOMTreeVersion == m_ownerElement->document().domTreeVersion())
         return;
     m_needsUpdate = true;
-    m_ownerElement->document().postTask(BLINK_FROM_HERE, createSameThreadTask(&ExternalPopupMenu::update, RawPtr<ExternalPopupMenu>(this)));
+    m_ownerElement->document().postTask(BLINK_FROM_HERE, createSameThreadTask(&ExternalPopupMenu::update, this));
 }
 
 void ExternalPopupMenu::update()
@@ -202,7 +202,7 @@ void ExternalPopupMenu::didAcceptIndices(const WebVector<int>& indices)
         return;
     }
 
-    RawPtr<HTMLSelectElement> ownerElement(m_ownerElement.get());
+    HTMLSelectElement* ownerElement = m_ownerElement.get();
     ownerElement->popupDidHide();
 
     if (indices.size() == 0) {

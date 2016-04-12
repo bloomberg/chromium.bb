@@ -143,9 +143,9 @@ public:
         }
     }
 
-    RawPtr<T> release()
+    T* release()
     {
-        RawPtr<T> result = m_raw;
+        T* result = m_raw;
         assign(nullptr);
         return result;
     }

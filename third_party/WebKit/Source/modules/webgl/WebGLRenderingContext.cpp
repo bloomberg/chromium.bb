@@ -110,7 +110,7 @@ WebGLRenderingContext::~WebGLRenderingContext()
 
 void WebGLRenderingContext::setCanvasGetContextResult(RenderingContext& result)
 {
-    result.setWebGLRenderingContext(RawPtr<WebGLRenderingContext>(this));
+    result.setWebGLRenderingContext(this);
 }
 
 void WebGLRenderingContext::registerContextExtensions()

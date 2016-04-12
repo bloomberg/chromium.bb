@@ -39,7 +39,7 @@ class ExecutionContext;
 class EventFactoryBase {
     USING_FAST_MALLOC(EventFactoryBase);
 public:
-    virtual RawPtr<Event> create(ExecutionContext*, const String& eventType) = 0;
+    virtual Event* create(ExecutionContext*, const String& eventType) = 0;
     virtual ~EventFactoryBase() { }
 
 protected:
@@ -53,7 +53,7 @@ public:
         return adoptPtr(new EventFactory());
     }
 
-    RawPtr<Event> create(ExecutionContext*, const String& eventType) override;
+    Event* create(ExecutionContext*, const String& eventType) override;
 };
 
 } // namespace blink

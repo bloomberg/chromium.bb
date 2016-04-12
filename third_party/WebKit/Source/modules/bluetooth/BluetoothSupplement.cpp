@@ -20,8 +20,8 @@ BluetoothSupplement::BluetoothSupplement(WebBluetooth* bluetooth)
 
 void BluetoothSupplement::provideTo(LocalFrame& frame, WebBluetooth* bluetooth)
 {
-    RawPtr<BluetoothSupplement> bluetoothSupplement = new BluetoothSupplement(bluetooth);
-    Supplement<LocalFrame>::provideTo(frame, supplementName(), bluetoothSupplement.release());
+    BluetoothSupplement* bluetoothSupplement = new BluetoothSupplement(bluetooth);
+    Supplement<LocalFrame>::provideTo(frame, supplementName(), bluetoothSupplement);
 };
 
 WebBluetooth* BluetoothSupplement::from(LocalFrame* frame)

@@ -68,10 +68,10 @@ protected:
     bool shouldScheduleCallback() const;
 
     template <typename CB, typename CBArg>
-    void handleEventOrScheduleCallback(RawPtr<CB>, CBArg*);
+    void handleEventOrScheduleCallback(CB*, CBArg*);
 
     template <typename CB>
-    void handleEventOrScheduleCallback(RawPtr<CB>);
+    void handleEventOrScheduleCallback(CB*);
 
     Persistent<ErrorCallback> m_errorCallback;
     Persistent<DOMFileSystemBase> m_fileSystem;
