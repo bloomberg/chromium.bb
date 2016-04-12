@@ -10,6 +10,6 @@
 
 // This file is a wrapper for the file included immediately after this comment.
 // New projects should not include this file: include the file included below.
-#include "mkvmuxer/mkvmuxertypes.hpp"
+#include "mkvmuxer/mkvmuxertypes.h"
 
 #endif  // LIBWEBM_MKVMUXERTYPES_HPP_
