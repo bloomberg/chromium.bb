@@ -22,7 +22,7 @@ struct NativeMenuWin::ItemData {
   base::string16 label;
 
   // Someone needs to own submenus, it may as well be us.
-  scoped_ptr<NativeMenuWin> submenu;
+  std::unique_ptr<NativeMenuWin> submenu;
 
   // We need a pointer back to the containing menu in various circumstances.
   NativeMenuWin* native_menu_win;

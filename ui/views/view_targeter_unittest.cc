@@ -5,6 +5,7 @@
 #include "ui/views/view_targeter.h"
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "ui/events/event_targeter.h"
 #include "ui/events/event_utils.h"
 #include "ui/gfx/path.h"
@@ -617,7 +618,7 @@ TEST_F(ViewTargeterTest, HitTestCallsOnView) {
   v2->SetBoundsRect(v2_bounds);
   root_view->AddChildView(v2);
   ViewTargeter* view_targeter = new ViewTargeter(v2);
-  v2->SetEventTargeter(make_scoped_ptr(view_targeter));
+  v2->SetEventTargeter(base::WrapUnique(view_targeter));
 
   gfx::Point v1_centerpoint = v1_bounds.CenterPoint();
   gfx::Point v2_centerpoint = v2_bounds.CenterPoint();

@@ -5,8 +5,9 @@
 #ifndef UI_BASE_TEST_SCOPED_PREFERRED_SCROLLER_STYLE_LEGACY_MAC_H_
 #define UI_BASE_TEST_SCOPED_PREFERRED_SCROLLER_STYLE_LEGACY_MAC_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace base {
 namespace mac {
@@ -26,7 +27,7 @@ class ScopedPreferredScrollerStyle {
   ~ScopedPreferredScrollerStyle();
 
  private:
-  scoped_ptr<base::mac::ScopedObjCClassSwizzler> swizzler_;
+  std::unique_ptr<base::mac::ScopedObjCClassSwizzler> swizzler_;
 
   // True if the scrollbar style should overlay.
   bool overlay_;

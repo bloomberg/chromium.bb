@@ -4,6 +4,7 @@
 
 #include "ui/events/ozone/device/device_manager.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
 
 #if defined(USE_UDEV)
@@ -14,12 +15,12 @@
 
 namespace ui {
 
-scoped_ptr<DeviceManager> CreateDeviceManager() {
-TRACE_EVENT0("ozone", "CreateDeviceManager");
+std::unique_ptr<DeviceManager> CreateDeviceManager() {
+  TRACE_EVENT0("ozone", "CreateDeviceManager");
 #if defined(USE_UDEV)
-  return make_scoped_ptr(new DeviceManagerUdev());
+  return base::WrapUnique(new DeviceManagerUdev());
 #else
-  return make_scoped_ptr(new DeviceManagerManual());
+  return base::WrapUnique(new DeviceManagerManual());
 #endif
 }
 

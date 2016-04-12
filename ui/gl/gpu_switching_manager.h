@@ -7,10 +7,10 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/observer_list.h"
 #include "build/build_config.h"
@@ -74,7 +74,7 @@ class GL_EXPORT GpuSwitchingManager {
   bool supports_dual_gpus_set_;
 
   struct PlatformSpecific;
-  scoped_ptr<PlatformSpecific> platform_specific_;
+  std::unique_ptr<PlatformSpecific> platform_specific_;
 
   base::ObserverList<GpuSwitchingObserver> observer_list_;
 

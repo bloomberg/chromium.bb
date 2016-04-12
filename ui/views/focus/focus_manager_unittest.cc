@@ -135,11 +135,11 @@ TEST_F(FocusManagerTest, WidgetFocusChangeListener) {
   params.bounds = gfx::Rect(10, 10, 100, 100);
   params.parent = GetWidget()->GetNativeView();
 
-  scoped_ptr<Widget> widget1(new Widget);
+  std::unique_ptr<Widget> widget1(new Widget);
   widget1->Init(params);
   widget1->Show();
 
-  scoped_ptr<Widget> widget2(new Widget);
+  std::unique_ptr<Widget> widget2(new Widget);
   widget2->Init(params);
   widget2->Show();
 
@@ -839,7 +839,7 @@ TEST_F(FocusManagerTest, AdvanceFocusStaysInWidget) {
   GetContentsView()->AddChildView(widget_view);
 
   // Create a widget with two views, focus the second.
-  scoped_ptr<AdvanceFocusWidgetDelegate> delegate;
+  std::unique_ptr<AdvanceFocusWidgetDelegate> delegate;
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.child = true;

@@ -40,7 +40,7 @@ class NotificationListTest : public testing::Test {
   std::string AddNotification(
       const message_center::RichNotificationData& optional_fields) {
     std::string new_id;
-    scoped_ptr<Notification> notification(
+    std::unique_ptr<Notification> notification(
         MakeNotification(optional_fields, &new_id));
     notification_list_->AddNotification(std::move(notification));
     counter_++;
@@ -52,11 +52,11 @@ class NotificationListTest : public testing::Test {
   }
 
   // Construct a new notification for testing, but don't add it to the list yet.
-  scoped_ptr<Notification> MakeNotification(
+  std::unique_ptr<Notification> MakeNotification(
       const message_center::RichNotificationData& optional_fields,
       std::string* id_out) {
     *id_out = base::StringPrintf(kIdFormat, counter_);
-    scoped_ptr<Notification> notification(new Notification(
+    std::unique_ptr<Notification> notification(new Notification(
         message_center::NOTIFICATION_TYPE_SIMPLE, *id_out,
         UTF8ToUTF16(base::StringPrintf(kTitleFormat, counter_)),
         UTF8ToUTF16(base::StringPrintf(kMessageFormat, counter_)), gfx::Image(),
@@ -66,7 +66,7 @@ class NotificationListTest : public testing::Test {
     return notification;
   }
 
-  scoped_ptr<Notification> MakeNotification(std::string* id_out) {
+  std::unique_ptr<Notification> MakeNotification(std::string* id_out) {
     return MakeNotification(message_center::RichNotificationData(), id_out);
   }
 
@@ -103,7 +103,7 @@ class NotificationListTest : public testing::Test {
   static const char kExtensionId[];
 
  private:
-  scoped_ptr<NotificationList> notification_list_;
+  std::unique_ptr<NotificationList> notification_list_;
   NotificationBlockers blockers_;
   size_t counter_;
 
@@ -186,7 +186,7 @@ TEST_F(NotificationListTest, UpdateNotification) {
   std::string id0 = AddNotification();
   std::string replaced = id0 + "_replaced";
   EXPECT_EQ(1u, notification_list()->NotificationCount(blockers()));
-  scoped_ptr<Notification> notification(
+  std::unique_ptr<Notification> notification(
       new Notification(message_center::NOTIFICATION_TYPE_SIMPLE, replaced,
                        UTF8ToUTF16("newtitle"), UTF8ToUTF16("newbody"),
                        gfx::Image(), UTF8ToUTF16(kDisplaySource), GURL(),
@@ -206,7 +206,7 @@ TEST_F(NotificationListTest, GetNotificationsByNotifierId) {
   NotifierId id1(NotifierId::APPLICATION, "ext1");
   NotifierId id2(GURL("http://example.com"));
   NotifierId id3(NotifierId::SYSTEM_COMPONENT, "system-notifier");
-  scoped_ptr<Notification> notification(new Notification(
+  std::unique_ptr<Notification> notification(new Notification(
       message_center::NOTIFICATION_TYPE_SIMPLE, "id0", UTF8ToUTF16("title0"),
       UTF8ToUTF16("message0"), gfx::Image(), UTF8ToUTF16("source0"), GURL(),
       id0, message_center::RichNotificationData(), NULL));
@@ -384,7 +384,7 @@ TEST_F(NotificationListTest, PriorityPromotion) {
   EXPECT_EQ(0u, GetPopupCounts());
   message_center::RichNotificationData optional;
   optional.priority = 1;
-  scoped_ptr<Notification> notification(new Notification(
+  std::unique_ptr<Notification> notification(new Notification(
       message_center::NOTIFICATION_TYPE_SIMPLE, replaced,
       UTF8ToUTF16("newtitle"), UTF8ToUTF16("newbody"), gfx::Image(),
       UTF8ToUTF16(kDisplaySource), GURL(),
@@ -410,7 +410,7 @@ TEST_F(NotificationListTest, PriorityPromotionWithPopups) {
   // id0 promoted to LOW->DEFAULT, it'll appear as toast (popup).
   message_center::RichNotificationData priority;
   priority.priority = DEFAULT_PRIORITY;
-  scoped_ptr<Notification> notification(new Notification(
+  std::unique_ptr<Notification> notification(new Notification(
       message_center::NOTIFICATION_TYPE_SIMPLE, id0, UTF8ToUTF16("newtitle"),
       UTF8ToUTF16("newbody"), gfx::Image(), UTF8ToUTF16(kDisplaySource), GURL(),
       NotifierId(NotifierId::APPLICATION, kExtensionId), priority, NULL));
@@ -464,7 +464,7 @@ TEST_F(NotificationListTest, PriorityPromotionWithPopups) {
 
 TEST_F(NotificationListTest, WebNotificationUpdatePromotion) {
   std::string notification_id = "replaced-web-notification";
-  scoped_ptr<Notification> original_notification(new Notification(
+  std::unique_ptr<Notification> original_notification(new Notification(
       message_center::NOTIFICATION_TYPE_SIMPLE, notification_id,
       UTF8ToUTF16("Web Notification"), UTF8ToUTF16("Notification contents"),
       gfx::Image(), UTF8ToUTF16(kDisplaySource), GURL(),
@@ -478,7 +478,7 @@ TEST_F(NotificationListTest, WebNotificationUpdatePromotion) {
   notification_list()->MarkSinglePopupAsShown(notification_id, true);
   EXPECT_EQ(0u, GetPopupCounts());
 
-  scoped_ptr<Notification> replaced_notification(new Notification(
+  std::unique_ptr<Notification> replaced_notification(new Notification(
       message_center::NOTIFICATION_TYPE_SIMPLE, notification_id,
       UTF8ToUTF16("Web Notification Replacement"),
       UTF8ToUTF16("New notification contents"), gfx::Image(),
@@ -585,7 +585,7 @@ TEST_F(NotificationListTest, UpdateAfterMarkedAsShown) {
   EXPECT_TRUE(n1->IsRead());
 
   const std::string replaced("test-replaced-id");
-  scoped_ptr<Notification> notification(
+  std::unique_ptr<Notification> notification(
       new Notification(message_center::NOTIFICATION_TYPE_SIMPLE, replaced,
                        UTF8ToUTF16("newtitle"), UTF8ToUTF16("newbody"),
                        gfx::Image(), UTF8ToUTF16(kDisplaySource), GURL(),
@@ -627,7 +627,7 @@ TEST_F(NotificationListTest, UnreadCountNoNegative) {
   EXPECT_EQ(1u, notification_list()->UnreadCount(blockers()));
 
   // Updates the notification  and verifies unread_count doesn't change.
-  scoped_ptr<Notification> updated_notification(new Notification(
+  std::unique_ptr<Notification> updated_notification(new Notification(
       message_center::NOTIFICATION_TYPE_SIMPLE, id, UTF8ToUTF16("updated"),
       UTF8ToUTF16("updated"), gfx::Image(), base::string16(), GURL(),
       NotifierId(), RichNotificationData(), NULL));
@@ -638,7 +638,7 @@ TEST_F(NotificationListTest, UnreadCountNoNegative) {
 TEST_F(NotificationListTest, TestPushingShownNotification) {
   // Create a notification and mark it as shown.
   std::string id1;
-  scoped_ptr<Notification> notification(MakeNotification(&id1));
+  std::unique_ptr<Notification> notification(MakeNotification(&id1));
   notification->set_shown_as_popup(true);
 
   // Call PushNotification on this notification.
@@ -656,7 +656,7 @@ TEST_F(NotificationListTest, TestHasNotificationOfType) {
   EXPECT_FALSE(notification_list()->HasNotificationOfType(
       id, message_center::NOTIFICATION_TYPE_PROGRESS));
 
-  scoped_ptr<Notification> updated_notification(new Notification(
+  std::unique_ptr<Notification> updated_notification(new Notification(
       message_center::NOTIFICATION_TYPE_PROGRESS, id, UTF8ToUTF16("updated"),
       UTF8ToUTF16("updated"), gfx::Image(), base::string16(), GURL(),
       NotifierId(), RichNotificationData(), NULL));

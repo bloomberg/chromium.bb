@@ -30,7 +30,7 @@ void ClientNativePixmapFactory::SetInstance(
 }
 
 // static
-scoped_ptr<ClientNativePixmapFactory> ClientNativePixmapFactory::Create() {
+std::unique_ptr<ClientNativePixmapFactory> ClientNativePixmapFactory::Create() {
   TRACE_EVENT1("ozone", "ClientNativePixmapFactory::Create", "platform",
                GetOzonePlatformName());
   return PlatformObject<ClientNativePixmapFactory>::Create();

@@ -7,8 +7,10 @@
 #include <fcntl.h>
 #include <linux/input.h>
 #include <stddef.h>
+
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/worker_pool.h"
@@ -37,7 +39,7 @@ namespace ui {
 
 namespace {
 
-typedef base::Callback<void(scoped_ptr<EventConverterEvdev>)>
+typedef base::Callback<void(std::unique_ptr<EventConverterEvdev>)>
     OpenInputDeviceReplyCallback;
 
 struct OpenInputDeviceParams {
@@ -82,7 +84,7 @@ void SetGestureBoolProperty(GesturePropertyProvider* provider,
 
 #endif
 
-scoped_ptr<EventConverterEvdev> CreateConverter(
+std::unique_ptr<EventConverterEvdev> CreateConverter(
     const OpenInputDeviceParams& params,
     int fd,
     const EventDeviceInfo& devinfo) {
@@ -90,30 +92,31 @@ scoped_ptr<EventConverterEvdev> CreateConverter(
   // Touchpad or mouse: use gestures library.
   // EventReaderLibevdevCros -> GestureInterpreterLibevdevCros -> DispatchEvent
   if (devinfo.HasTouchpad() || devinfo.HasMouse()) {
-    scoped_ptr<GestureInterpreterLibevdevCros> gesture_interp =
-        make_scoped_ptr(new GestureInterpreterLibevdevCros(
+    std::unique_ptr<GestureInterpreterLibevdevCros> gesture_interp =
+        base::WrapUnique(new GestureInterpreterLibevdevCros(
             params.id, params.cursor, params.gesture_property_provider,
             params.dispatcher));
-    return make_scoped_ptr(new EventReaderLibevdevCros(
+    return base::WrapUnique(new EventReaderLibevdevCros(
         fd, params.path, params.id, devinfo, std::move(gesture_interp)));
   }
 #endif
 
   // Touchscreen: use TouchEventConverterEvdev.
   if (devinfo.HasTouchscreen()) {
-    scoped_ptr<TouchEventConverterEvdev> converter(new TouchEventConverterEvdev(
-        fd, params.path, params.id, devinfo, params.dispatcher));
+    std::unique_ptr<TouchEventConverterEvdev> converter(
+        new TouchEventConverterEvdev(fd, params.path, params.id, devinfo,
+                                     params.dispatcher));
     converter->Initialize(devinfo);
     return std::move(converter);
   }
 
   // Graphics tablet
   if (devinfo.HasTablet())
-    return make_scoped_ptr<EventConverterEvdev>(new TabletEventConverterEvdev(
+    return base::WrapUnique<EventConverterEvdev>(new TabletEventConverterEvdev(
         fd, params.path, params.id, params.cursor, devinfo, params.dispatcher));
 
   // Everything else: use EventConverterEvdevImpl.
-  return make_scoped_ptr<EventConverterEvdevImpl>(new EventConverterEvdevImpl(
+  return base::WrapUnique<EventConverterEvdevImpl>(new EventConverterEvdevImpl(
       fd, params.path, params.id, devinfo, params.cursor, params.dispatcher));
 }
 
@@ -123,11 +126,11 @@ scoped_ptr<EventConverterEvdev> CreateConverter(
 //
 // This takes a TaskRunner and runs the reply on that thread, so that we
 // can hop threads if necessary (back to the UI thread).
-void OpenInputDevice(scoped_ptr<OpenInputDeviceParams> params,
+void OpenInputDevice(std::unique_ptr<OpenInputDeviceParams> params,
                      scoped_refptr<base::TaskRunner> reply_runner,
                      const OpenInputDeviceReplyCallback& reply_callback) {
   const base::FilePath& path = params->path;
-  scoped_ptr<EventConverterEvdev> converter;
+  std::unique_ptr<EventConverterEvdev> converter;
 
   TRACE_EVENT1("evdev", "OpenInputDevice", "path", path.value());
 
@@ -166,7 +169,7 @@ void OpenInputDevice(scoped_ptr<OpenInputDeviceParams> params,
 // therefore should be run on a thread where latency is not critical. We
 // run it on the FILE thread.
 void CloseInputDevice(const base::FilePath& path,
-                      scoped_ptr<EventConverterEvdev> converter) {
+                      std::unique_ptr<EventConverterEvdev> converter) {
   TRACE_EVENT1("evdev", "CloseInputDevice", "path", path.value());
   converter.reset();
 }
@@ -174,7 +177,7 @@ void CloseInputDevice(const base::FilePath& path,
 }  // namespace
 
 InputDeviceFactoryEvdev::InputDeviceFactoryEvdev(
-    scoped_ptr<DeviceEventDispatcherEvdev> dispatcher,
+    std::unique_ptr<DeviceEventDispatcherEvdev> dispatcher,
     CursorDelegateEvdev* cursor)
     : task_runner_(base::ThreadTaskRunnerHandle::Get()),
       cursor_(cursor),
@@ -191,7 +194,7 @@ InputDeviceFactoryEvdev::~InputDeviceFactoryEvdev() {
 
 void InputDeviceFactoryEvdev::AddInputDevice(int id,
                                              const base::FilePath& path) {
-  scoped_ptr<OpenInputDeviceParams> params(new OpenInputDeviceParams);
+  std::unique_ptr<OpenInputDeviceParams> params(new OpenInputDeviceParams);
   params->id = id;
   params->path = path;
   params->cursor = cursor_;
@@ -224,7 +227,7 @@ void InputDeviceFactoryEvdev::OnStartupScanComplete() {
 }
 
 void InputDeviceFactoryEvdev::AttachInputDevice(
-    scoped_ptr<EventConverterEvdev> converter) {
+    std::unique_ptr<EventConverterEvdev> converter) {
   if (converter.get()) {
     const base::FilePath& path = converter->path();
 
@@ -255,7 +258,7 @@ void InputDeviceFactoryEvdev::DetachInputDevice(const base::FilePath& path) {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
 
   // Remove device from map.
-  scoped_ptr<EventConverterEvdev> converter(converters_[path]);
+  std::unique_ptr<EventConverterEvdev> converter(converters_[path]);
   converters_.erase(path);
 
   if (converter) {
@@ -289,7 +292,7 @@ void InputDeviceFactoryEvdev::UpdateInputDeviceSettings(
 
 void InputDeviceFactoryEvdev::GetTouchDeviceStatus(
     const GetTouchDeviceStatusReply& reply) {
-  scoped_ptr<std::string> status(new std::string);
+  std::unique_ptr<std::string> status(new std::string);
 #if defined(USE_EVDEV_GESTURES)
   DumpTouchDeviceStatus(gesture_property_provider_.get(), status.get());
 #endif
@@ -299,7 +302,7 @@ void InputDeviceFactoryEvdev::GetTouchDeviceStatus(
 void InputDeviceFactoryEvdev::GetTouchEventLog(
     const base::FilePath& out_dir,
     const GetTouchEventLogReply& reply) {
-  scoped_ptr<std::vector<base::FilePath>> log_paths(
+  std::unique_ptr<std::vector<base::FilePath>> log_paths(
       new std::vector<base::FilePath>);
 #if defined(USE_EVDEV_GESTURES)
   DumpTouchEventLog(converters_, gesture_property_provider_.get(), out_dir,

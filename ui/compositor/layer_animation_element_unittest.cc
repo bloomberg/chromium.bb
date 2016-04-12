@@ -4,8 +4,9 @@
 
 #include "ui/compositor/layer_animation_element.h"
 
+#include <memory>
+
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/compositor/layer_animation_delegate.h"
@@ -61,7 +62,7 @@ TEST(LayerAnimationElementTest, TransformElement) {
   base::TimeTicks effective_start_time;
   base::TimeDelta delta = base::TimeDelta::FromSeconds(1);
 
-  scoped_ptr<LayerAnimationElement> element(
+  std::unique_ptr<LayerAnimationElement> element(
       LayerAnimationElement::CreateTransformElement(target_transform, delta));
   element->set_animation_group_id(1);
 
@@ -101,10 +102,10 @@ TEST(LayerAnimationElementTest, InverseElementDurationNoScale) {
   gfx::Transform transform;
   base::TimeDelta delta;
 
-  scoped_ptr<LayerAnimationElement> base_element(
+  std::unique_ptr<LayerAnimationElement> base_element(
       LayerAnimationElement::CreateTransformElement(transform, delta));
 
-  scoped_ptr<LayerAnimationElement> inverse_element(
+  std::unique_ptr<LayerAnimationElement> inverse_element(
       LayerAnimationElement::CreateInverseTransformElement(transform,
                                                            base_element.get()));
   EXPECT_EQ(base_element->duration(), inverse_element->duration());
@@ -117,10 +118,10 @@ TEST(LayerAnimationElementTest, InverseElementDurationScaled) {
 
   ScopedAnimationDurationScaleMode faster_duration(
       ScopedAnimationDurationScaleMode::FAST_DURATION);
-  scoped_ptr<LayerAnimationElement> base_element(
+  std::unique_ptr<LayerAnimationElement> base_element(
       LayerAnimationElement::CreateTransformElement(transform, delta));
 
-  scoped_ptr<LayerAnimationElement> inverse_element(
+  std::unique_ptr<LayerAnimationElement> inverse_element(
       LayerAnimationElement::CreateInverseTransformElement(transform,
                                                            base_element.get()));
   EXPECT_EQ(base_element->duration(), inverse_element->duration());
@@ -136,9 +137,9 @@ TEST(LayerAnimationElementTest, InverseElementTargetCalculation) {
 
   transform.Scale3d(2.0, 2.0, 2.0);
 
-  scoped_ptr<LayerAnimationElement> base_element(
+  std::unique_ptr<LayerAnimationElement> base_element(
       LayerAnimationElement::CreateTransformElement(transform, delta));
-  scoped_ptr<LayerAnimationElement> inverse_element(
+  std::unique_ptr<LayerAnimationElement> inverse_element(
       LayerAnimationElement::CreateInverseTransformElement(identity,
                                                            base_element.get()));
 
@@ -169,7 +170,7 @@ TEST(LayerAnimationElementTest, BoundsElement) {
   base::TimeTicks start_time;
   base::TimeDelta delta = base::TimeDelta::FromSeconds(1);
 
-  scoped_ptr<LayerAnimationElement> element(
+  std::unique_ptr<LayerAnimationElement> element(
       LayerAnimationElement::CreateBoundsElement(target, delta));
 
   for (int i = 0; i < 2; ++i) {
@@ -205,7 +206,7 @@ TEST(LayerAnimationElementTest, OpacityElement) {
   base::TimeTicks start_time;
   base::TimeTicks effective_start_time;
   base::TimeDelta delta = base::TimeDelta::FromSeconds(1);
-  scoped_ptr<LayerAnimationElement> element(
+  std::unique_ptr<LayerAnimationElement> element(
       LayerAnimationElement::CreateOpacityElement(target, delta));
 
   for (int i = 0; i < 2; ++i) {
@@ -245,7 +246,7 @@ TEST(LayerAnimationElementTest, VisibilityElement) {
   bool target = false;
   base::TimeTicks start_time;
   base::TimeDelta delta = base::TimeDelta::FromSeconds(1);
-  scoped_ptr<LayerAnimationElement> element(
+  std::unique_ptr<LayerAnimationElement> element(
       LayerAnimationElement::CreateVisibilityElement(target, delta));
 
   for (int i = 0; i < 2; ++i) {
@@ -280,7 +281,7 @@ TEST(LayerAnimationElementTest, BrightnessElement) {
   float target = 1.0;
   base::TimeTicks start_time;
   base::TimeDelta delta = base::TimeDelta::FromSeconds(1);
-  scoped_ptr<LayerAnimationElement> element(
+  std::unique_ptr<LayerAnimationElement> element(
       LayerAnimationElement::CreateBrightnessElement(target, delta));
 
   for (int i = 0; i < 2; ++i) {
@@ -315,7 +316,7 @@ TEST(LayerAnimationElementTest, GrayscaleElement) {
   float target = 1.0;
   base::TimeTicks start_time;
   base::TimeDelta delta = base::TimeDelta::FromSeconds(1);
-  scoped_ptr<LayerAnimationElement> element(
+  std::unique_ptr<LayerAnimationElement> element(
       LayerAnimationElement::CreateGrayscaleElement(target, delta));
 
   for (int i = 0; i < 2; ++i) {
@@ -352,7 +353,7 @@ TEST(LayerAnimationElementTest, PauseElement) {
   base::TimeTicks start_time;
   base::TimeDelta delta = base::TimeDelta::FromSeconds(1);
 
-  scoped_ptr<LayerAnimationElement> element(
+  std::unique_ptr<LayerAnimationElement> element(
       LayerAnimationElement::CreatePauseElement(properties, delta));
 
   TestLayerAnimationDelegate delegate;
@@ -391,7 +392,7 @@ TEST(LayerAnimationElementTest, AbortOpacityElement) {
   base::TimeTicks start_time;
   base::TimeTicks effective_start_time;
   base::TimeDelta delta = base::TimeDelta::FromSeconds(1);
-  scoped_ptr<LayerAnimationElement> element(
+  std::unique_ptr<LayerAnimationElement> element(
       LayerAnimationElement::CreateOpacityElement(target, delta));
 
   // Choose a non-linear Tween type.
@@ -430,7 +431,7 @@ TEST(LayerAnimationElementTest, AbortTransformElement) {
   base::TimeTicks start_time;
   base::TimeTicks effective_start_time;
   base::TimeDelta delta = base::TimeDelta::FromSeconds(1);
-  scoped_ptr<LayerAnimationElement> element(
+  std::unique_ptr<LayerAnimationElement> element(
       LayerAnimationElement::CreateTransformElement(target_transform, delta));
 
   // Choose a non-linear Tween type.

@@ -54,7 +54,7 @@ class MESSAGE_CENTER_EXPORT NotificationIndeterminateProgressBar
   void AnimationProgressed(const gfx::Animation* animation) override;
   void AnimationEnded(const gfx::Animation* animation) override;
 
-  scoped_ptr<gfx::LinearAnimation> indeterminate_bar_animation_;
+  std::unique_ptr<gfx::LinearAnimation> indeterminate_bar_animation_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationIndeterminateProgressBar);
 };

@@ -7,11 +7,11 @@
 
 #include <X11/X.h>
 
+#include <memory>
 #include <unordered_map>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/ozone/public/cursor_factory_ozone.h"
 #include "ui/platform_window/x11/x11_cursor_ozone.h"

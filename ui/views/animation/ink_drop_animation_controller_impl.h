@@ -5,8 +5,9 @@
 #ifndef UI_VIEWS_ANIMATION_INK_DROP_ANIMATION_CONTROLLER_IMPL_H_
 #define UI_VIEWS_ANIMATION_INK_DROP_ANIMATION_CONTROLLER_IMPL_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/animation/ink_drop_animation_controller.h"
@@ -93,10 +94,10 @@ class VIEWS_EXPORT InkDropAnimationControllerImpl
   // The root Layer that parents the InkDropAnimation layers and the
   // InkDropHover layers. The |root_layer_| is the one that is added and removed
   // from the InkDropHost.
-  scoped_ptr<ui::Layer> root_layer_;
+  std::unique_ptr<ui::Layer> root_layer_;
 
   // The current InkDropHover. Lazily created using CreateInkDropHover();
-  scoped_ptr<InkDropHover> hover_;
+  std::unique_ptr<InkDropHover> hover_;
 
   // Tracks the logical hovered state of |this| as manipulated by the public
   // SetHovered() function.
@@ -104,10 +105,10 @@ class VIEWS_EXPORT InkDropAnimationControllerImpl
 
   // The current InkDropAnimation. Created on demand using
   // CreateInkDropAnimation().
-  scoped_ptr<InkDropAnimation> ink_drop_animation_;
+  std::unique_ptr<InkDropAnimation> ink_drop_animation_;
 
   // The timer used to delay the hover fade in after an ink drop animation.
-  scoped_ptr<base::Timer> hover_after_animation_timer_;
+  std::unique_ptr<base::Timer> hover_after_animation_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(InkDropAnimationControllerImpl);
 };

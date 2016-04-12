@@ -109,7 +109,7 @@ uint32_t NativeDisplayEventDispatcherX11::DispatchEvent(
 }
 
 void NativeDisplayEventDispatcherX11::SetTickClockForTest(
-    scoped_ptr<base::TickClock> tick_clock) {
+    std::unique_ptr<base::TickClock> tick_clock) {
   tick_clock_ = std::move(tick_clock);
   startup_time_ = tick_clock_->NowTicks();
 }

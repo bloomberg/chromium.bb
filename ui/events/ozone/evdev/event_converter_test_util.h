@@ -5,7 +5,7 @@
 #ifndef UI_EVENTS_OZONE_EVDEV_EVENT_CONVERTER_TEST_UTIL_H_
 #define UI_EVENTS_OZONE_EVDEV_EVENT_CONVERTER_TEST_UTIL_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
 
 #include "ui/events/ozone/evdev/event_dispatch_callback.h"
 
@@ -17,16 +17,16 @@ class DeviceEventDispatcherEvdev;
 class EventFactoryEvdev;
 class KeyboardLayoutEngine;
 
-scoped_ptr<DeviceManager> CreateDeviceManagerForTest();
+std::unique_ptr<DeviceManager> CreateDeviceManagerForTest();
 
-scoped_ptr<EventFactoryEvdev> CreateEventFactoryEvdevForTest(
+std::unique_ptr<EventFactoryEvdev> CreateEventFactoryEvdevForTest(
     CursorDelegateEvdev* cursor,
     DeviceManager* device_manager,
     KeyboardLayoutEngine* keyboard_layout_engine,
     const EventDispatchCallback& callback);
 
-scoped_ptr<DeviceEventDispatcherEvdev> CreateDeviceEventDispatcherEvdevForTest(
-    EventFactoryEvdev* event_factory);
+std::unique_ptr<DeviceEventDispatcherEvdev>
+CreateDeviceEventDispatcherEvdevForTest(EventFactoryEvdev* event_factory);
 
 }  // namespace ui
 

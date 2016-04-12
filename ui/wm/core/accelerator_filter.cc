@@ -42,7 +42,7 @@ bool IsSystemKey(ui::KeyboardCode key_code) {
 // AcceleratorFilter, public:
 
 AcceleratorFilter::AcceleratorFilter(
-    scoped_ptr<AcceleratorDelegate> delegate,
+    std::unique_ptr<AcceleratorDelegate> delegate,
     ui::AcceleratorHistory* accelerator_history)
     : delegate_(std::move(delegate)),
       accelerator_history_(accelerator_history) {

@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/json/json_string_value_serializer.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 
@@ -59,8 +60,8 @@ void GetSecondary(const base::ListValue* list,
 //      ...
 //    }
 //  }
-scoped_ptr<HistoryData::Associations> Parse(
-    scoped_ptr<base::DictionaryValue> dict) {
+std::unique_ptr<HistoryData::Associations> Parse(
+    std::unique_ptr<base::DictionaryValue> dict) {
   std::string version;
   if (!dict->GetStringWithoutPathExpansion(kKeyVersion, &version) ||
       version != kCurrentVersion) {
@@ -73,7 +74,8 @@ scoped_ptr<HistoryData::Associations> Parse(
     return nullptr;
   }
 
-  scoped_ptr<HistoryData::Associations> data(new HistoryData::Associations);
+  std::unique_ptr<HistoryData::Associations> data(
+      new HistoryData::Associations);
   for (base::DictionaryValue::Iterator it(*assoc_dict); !it.IsAtEnd();
        it.Advance()) {
     const base::DictionaryValue* entry_dict = NULL;
@@ -144,7 +146,7 @@ void HistoryDataStore::Load(
         &HistoryDataStore::OnDictionaryLoadedCallback, this, on_loaded));
   } else {
     OnDictionaryLoadedCallback(on_loaded,
-                               make_scoped_ptr(cached_dict_->DeepCopy()));
+                               base::WrapUnique(cached_dict_->DeepCopy()));
   }
 }
 
@@ -160,7 +162,7 @@ void HistoryDataStore::SetPrimary(const std::string& query,
 void HistoryDataStore::SetSecondary(
     const std::string& query,
     const HistoryData::SecondaryDeque& results) {
-  scoped_ptr<base::ListValue> results_list(new base::ListValue);
+  std::unique_ptr<base::ListValue> results_list(new base::ListValue);
   for (size_t i = 0; i < results.size(); ++i)
     results_list->AppendString(results[i]);
 
@@ -215,7 +217,7 @@ base::DictionaryValue* HistoryDataStore::GetEntryDict(
 
 void HistoryDataStore::OnDictionaryLoadedCallback(
     OnLoadedCallback callback,
-    scoped_ptr<base::DictionaryValue> dict) {
+    std::unique_ptr<base::DictionaryValue> dict) {
   if (!dict) {
     callback.Run(nullptr);
   } else {

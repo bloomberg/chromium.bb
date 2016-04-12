@@ -6,11 +6,12 @@
 #define UI_OZONE_PUBLIC_SURFACE_FACTORY_OZONE_H_
 
 #include <stdint.h>
+
+#include <memory>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/native_library.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/geometry/rect.h"
@@ -70,20 +71,20 @@ class OZONE_BASE_EXPORT SurfaceFactoryOzone {
   // Note: When used from content, this is called in the GPU process. The
   // platform must support creation of SurfaceOzoneEGL from the GPU process
   // using only the handle contained in gfx::AcceleratedWidget.
-  virtual scoped_ptr<SurfaceOzoneEGL> CreateEGLSurfaceForWidget(
+  virtual std::unique_ptr<SurfaceOzoneEGL> CreateEGLSurfaceForWidget(
       gfx::AcceleratedWidget widget);
 
   // Create an EGL surface that isn't backed by any buffers, and is used
   // for overlay-only displays. This will return NULL if this mode is
   // not supported.
-  virtual scoped_ptr<SurfaceOzoneEGL> CreateSurfacelessEGLSurfaceForWidget(
+  virtual std::unique_ptr<SurfaceOzoneEGL> CreateSurfacelessEGLSurfaceForWidget(
       gfx::AcceleratedWidget widget);
 
   // Create SurfaceOzoneCanvas for the specified gfx::AcceleratedWidget.
   //
   // Note: The platform must support creation of SurfaceOzoneCanvas from the
   // Browser Process using only the handle contained in gfx::AcceleratedWidget.
-  virtual scoped_ptr<SurfaceOzoneCanvas> CreateCanvasForWidget(
+  virtual std::unique_ptr<SurfaceOzoneCanvas> CreateCanvasForWidget(
       gfx::AcceleratedWidget widget);
 
   // Sets up GL bindings for the native surface. Takes two callback parameters

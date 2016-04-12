@@ -216,7 +216,7 @@ hb_blob_t* GetFontTable(hb_face_t* face, hb_tag_t tag, void* user_data) {
   if (!table_size)
     return 0;
 
-  scoped_ptr<char[]> buffer(new char[table_size]);
+  std::unique_ptr<char[]> buffer(new char[table_size]);
   if (!buffer)
     return 0;
   size_t actual_size = typeface->getTableData(tag, 0, table_size, buffer.get());

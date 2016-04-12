@@ -7,8 +7,9 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
@@ -24,14 +25,14 @@ class SurfaceFactoryCast : public SurfaceFactoryOzone {
  public:
   SurfaceFactoryCast();
   explicit SurfaceFactoryCast(
-      scoped_ptr<chromecast::CastEglPlatform> egl_platform);
+      std::unique_ptr<chromecast::CastEglPlatform> egl_platform);
   ~SurfaceFactoryCast() override;
 
   // SurfaceFactoryOzone implementation:
-  scoped_ptr<SurfaceOzoneCanvas> CreateCanvasForWidget(
+  std::unique_ptr<SurfaceOzoneCanvas> CreateCanvasForWidget(
       gfx::AcceleratedWidget widget) override;
   intptr_t GetNativeDisplay() override;
-  scoped_ptr<SurfaceOzoneEGL> CreateEGLSurfaceForWidget(
+  std::unique_ptr<SurfaceOzoneEGL> CreateEGLSurfaceForWidget(
       gfx::AcceleratedWidget widget) override;
   scoped_refptr<NativePixmap> CreateNativePixmap(
       gfx::AcceleratedWidget widget,
@@ -66,7 +67,7 @@ class SurfaceFactoryCast : public SurfaceFactoryOzone {
   void* window_;
   gfx::Size display_size_;
   gfx::Size new_display_size_;
-  scoped_ptr<chromecast::CastEglPlatform> egl_platform_;
+  std::unique_ptr<chromecast::CastEglPlatform> egl_platform_;
 
   // Overlays scheduled in current and previous frames:
   int overlay_count_;

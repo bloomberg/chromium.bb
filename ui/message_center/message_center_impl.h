@@ -7,11 +7,11 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -54,9 +54,10 @@ class MessageCenterImpl : public MessageCenter,
       const std::string& id) override;
   const NotificationList::Notifications& GetVisibleNotifications() override;
   NotificationList::PopupNotifications GetPopupNotifications() override;
-  void AddNotification(scoped_ptr<Notification> notification) override;
-  void UpdateNotification(const std::string& old_id,
-                          scoped_ptr<Notification> new_notification) override;
+  void AddNotification(std::unique_ptr<Notification> notification) override;
+  void UpdateNotification(
+      const std::string& old_id,
+      std::unique_ptr<Notification> new_notification) override;
   void RemoveNotification(const std::string& id, bool by_user) override;
   void RemoveAllNotifications(bool by_user, RemoveType type) override;
   void SetNotificationIcon(const std::string& notification_id,
@@ -94,10 +95,10 @@ class MessageCenterImpl : public MessageCenter,
                               bool enabled) override;
 
   // Unexposed methods:
-  void AddNotificationImmediately(scoped_ptr<Notification> notification);
+  void AddNotificationImmediately(std::unique_ptr<Notification> notification);
   void UpdateNotificationImmediately(
       const std::string& old_id,
-      scoped_ptr<Notification> new_notification);
+      std::unique_ptr<Notification> new_notification);
   void RemoveNotificationImmediately(const std::string& id, bool by_user);
 
  protected:
@@ -117,17 +118,17 @@ class MessageCenterImpl : public MessageCenter,
 
   void RemoveNotificationsForNotifierId(const NotifierId& notifier_id);
 
-  scoped_ptr<NotificationList> notification_list_;
+  std::unique_ptr<NotificationList> notification_list_;
   NotificationCache notification_cache_;
   base::ObserverList<MessageCenterObserver> observer_list_;
-  scoped_ptr<PopupTimersController> popup_timers_controller_;
-  scoped_ptr<base::OneShotTimer> quiet_mode_timer_;
+  std::unique_ptr<PopupTimersController> popup_timers_controller_;
+  std::unique_ptr<base::OneShotTimer> quiet_mode_timer_;
   NotifierSettingsProvider* settings_provider_;
   std::vector<NotificationBlocker*> blockers_;
 
   // Queue for the notifications to delay the addition/updates when the message
   // center is visible.
-  scoped_ptr<internal::ChangeQueue> notification_queue_;
+  std::unique_ptr<internal::ChangeQueue> notification_queue_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageCenterImpl);
 };

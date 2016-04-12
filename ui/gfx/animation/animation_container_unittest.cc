@@ -4,8 +4,9 @@
 
 #include "ui/gfx/animation/animation_container.h"
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/animation/animation_container_observer.h"
 #include "ui/gfx/animation/linear_animation.h"
@@ -65,7 +66,7 @@ class AnimationContainerTest: public testing::Test {
 TEST_F(AnimationContainerTest, Ownership) {
   TestAnimationDelegate delegate;
   scoped_refptr<AnimationContainer> container(new AnimationContainer());
-  scoped_ptr<Animation> animation(new TestAnimation(&delegate));
+  std::unique_ptr<Animation> animation(new TestAnimation(&delegate));
   animation->SetContainer(container.get());
   // Setting the container should up the ref count.
   EXPECT_FALSE(container->HasOneRef());

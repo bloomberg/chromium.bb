@@ -137,7 +137,7 @@ class MESSAGE_CENTER_EXPORT NotificationView
   ProportionalImageView* image_view_;
   NotificationProgressBarBase* progress_bar_view_;
   std::vector<NotificationButton*> action_buttons_;
-  scoped_ptr<views::ImageButton> close_button_;
+  std::unique_ptr<views::ImageButton> close_button_;
   std::vector<views::View*> separators_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationView);

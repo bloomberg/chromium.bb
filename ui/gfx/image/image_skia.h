@@ -5,11 +5,11 @@
 #ifndef UI_GFX_IMAGE_IMAGE_SKIA_H_
 #define UI_GFX_IMAGE_IMAGE_SKIA_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/gfx/gfx_export.h"
 #include "ui/gfx/image/image_skia_rep.h"
 
@@ -89,7 +89,7 @@ class GFX_EXPORT ImageSkia {
   // If you want to create a deep copy with ImageSkiaReps for supported
   // scale factors, you need to explicitly call
   // |EnsureRepsForSupportedScales()| first.
-  scoped_ptr<ImageSkia> DeepCopy() const;
+  std::unique_ptr<ImageSkia> DeepCopy() const;
 
   // Returns true if this object is backed by the same ImageSkiaStorage as
   // |other|. Will also return true if both images are isNull().

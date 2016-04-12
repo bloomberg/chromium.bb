@@ -6,11 +6,11 @@
 #define UI_OZONE_PLATFORM_DRM_GPU_DRM_DEVICE_MANAGER_H_
 
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace base {
@@ -29,7 +29,7 @@ typedef std::vector<scoped_refptr<DrmDevice>> DrmDeviceVector;
 // buffers for the window represented by the widget.
 class DrmDeviceManager {
  public:
-  DrmDeviceManager(scoped_ptr<DrmDeviceGenerator> drm_device_generator);
+  DrmDeviceManager(std::unique_ptr<DrmDeviceGenerator> drm_device_generator);
   ~DrmDeviceManager();
 
   // The first device registered is assumed to be the primary device.
@@ -53,7 +53,7 @@ class DrmDeviceManager {
   const DrmDeviceVector& GetDrmDevices() const;
 
  private:
-  scoped_ptr<DrmDeviceGenerator> drm_device_generator_;
+  std::unique_ptr<DrmDeviceGenerator> drm_device_generator_;
 
   DrmDeviceVector devices_;
 

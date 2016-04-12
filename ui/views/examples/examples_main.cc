@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/i18n/icu_util.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/power_monitor/power_monitor.h"
@@ -61,7 +62,7 @@ int main(int argc, char** argv) {
 
   // The ContextFactory must exist before any Compositors are created.
   bool context_factory_for_test = false;
-  scoped_ptr<ui::InProcessContextFactory> context_factory(
+  std::unique_ptr<ui::InProcessContextFactory> context_factory(
       new ui::InProcessContextFactory(context_factory_for_test, nullptr));
   context_factory->set_use_test_surface(false);
 
@@ -75,8 +76,8 @@ int main(int argc, char** argv) {
   CHECK(PathService::Get(ui::UI_TEST_PAK, &ui_test_pak_path));
   ui::ResourceBundle::InitSharedInstanceWithPakPath(ui_test_pak_path);
 
-  base::PowerMonitor power_monitor(make_scoped_ptr(
-      new base::PowerMonitorDeviceSource));
+  base::PowerMonitor power_monitor(
+      base::WrapUnique(new base::PowerMonitorDeviceSource));
 
 #if defined(OS_WIN)
     gfx::win::MaybeInitializeDirectWrite();
@@ -94,13 +95,13 @@ int main(int argc, char** argv) {
     wm::WMState wm_state;
 #endif
 #if !defined(OS_CHROMEOS) && defined(USE_AURA)
-    scoped_ptr<gfx::Screen> desktop_screen(views::CreateDesktopScreen());
+    std::unique_ptr<gfx::Screen> desktop_screen(views::CreateDesktopScreen());
     gfx::Screen::SetScreenInstance(desktop_screen.get());
 #endif
 
     views::examples::ShowExamplesWindow(
         views::examples::QUIT_ON_CLOSE, nullptr,
-        scoped_ptr<ScopedVector<views::examples::ExampleBase>>());
+        std::unique_ptr<ScopedVector<views::examples::ExampleBase>>());
 
     base::RunLoop().Run();
 

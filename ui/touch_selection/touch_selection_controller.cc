@@ -430,7 +430,8 @@ void TouchSelectionController::SetNeedsAnimate() {
   client_->SetNeedsAnimate();
 }
 
-scoped_ptr<TouchHandleDrawable> TouchSelectionController::CreateDrawable() {
+std::unique_ptr<TouchHandleDrawable>
+TouchSelectionController::CreateDrawable() {
   return client_->CreateDrawable();
 }
 

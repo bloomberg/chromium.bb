@@ -6,10 +6,11 @@
 
 #include <OpenGL/CGLRenderers.h>
 #include <OpenGL/CGLTypes.h>
+
+#include <memory>
 #include <vector>
 
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_implementation.h"

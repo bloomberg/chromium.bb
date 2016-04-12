@@ -122,9 +122,9 @@ class VIEWS_EXPORT TouchSelectionControllerImpl
 
   ui::TouchEditable* client_view_;
   Widget* client_widget_;
-  scoped_ptr<EditingHandleView> selection_handle_1_;
-  scoped_ptr<EditingHandleView> selection_handle_2_;
-  scoped_ptr<EditingHandleView> cursor_handle_;
+  std::unique_ptr<EditingHandleView> selection_handle_1_;
+  std::unique_ptr<EditingHandleView> selection_handle_2_;
+  std::unique_ptr<EditingHandleView> cursor_handle_;
   bool command_executed_;
   base::TimeTicks selection_start_time_;
 

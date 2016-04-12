@@ -4,9 +4,11 @@
 
 #include "ui/events/ozone/evdev/input_controller_evdev.h"
 
-#include <algorithm>
 #include <linux/input.h>
 
+#include <algorithm>
+
+#include "base/memory/ptr_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "ui/events/devices/device_data_manager.h"
 #include "ui/events/ozone/evdev/input_device_factory_evdev_proxy.h"
@@ -161,7 +163,7 @@ void InputControllerEvdev::GetTouchDeviceStatus(
   if (input_device_factory_)
     input_device_factory_->GetTouchDeviceStatus(reply);
   else
-    reply.Run(make_scoped_ptr(new std::string));
+    reply.Run(base::WrapUnique(new std::string));
 }
 
 void InputControllerEvdev::GetTouchEventLog(
@@ -170,7 +172,7 @@ void InputControllerEvdev::GetTouchEventLog(
   if (input_device_factory_)
     input_device_factory_->GetTouchEventLog(out_dir, reply);
   else
-    reply.Run(make_scoped_ptr(new std::vector<base::FilePath>));
+    reply.Run(base::WrapUnique(new std::vector<base::FilePath>));
 }
 
 void InputControllerEvdev::ScheduleUpdateDeviceSettings() {

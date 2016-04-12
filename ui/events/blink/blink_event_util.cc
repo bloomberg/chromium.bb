@@ -339,10 +339,10 @@ WebGestureEvent CreateWebGestureEventFromGestureEventData(
                                gfx::PointF(data.raw_x, data.raw_y), data.flags);
 }
 
-scoped_ptr<blink::WebInputEvent> ScaleWebInputEvent(
+std::unique_ptr<blink::WebInputEvent> ScaleWebInputEvent(
     const blink::WebInputEvent& event,
     float scale) {
-  scoped_ptr<blink::WebInputEvent> scaled_event;
+  std::unique_ptr<blink::WebInputEvent> scaled_event;
   if (scale == 1.f)
     return scaled_event;
   if (event.type == blink::WebMouseEvent::MouseWheel) {

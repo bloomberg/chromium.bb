@@ -330,10 +330,10 @@ void InterpolatedTransformAboutPivot::Init(const gfx::Point& pivot,
   to_pivot.Translate(SkIntToMScalar(-pivot.x()), SkIntToMScalar(-pivot.y()));
   from_pivot.Translate(SkIntToMScalar(pivot.x()), SkIntToMScalar(pivot.y()));
 
-  scoped_ptr<InterpolatedTransform> pre_transform(
-    new InterpolatedConstantTransform(to_pivot));
-  scoped_ptr<InterpolatedTransform> post_transform(
-    new InterpolatedConstantTransform(from_pivot));
+  std::unique_ptr<InterpolatedTransform> pre_transform(
+      new InterpolatedConstantTransform(to_pivot));
+  std::unique_ptr<InterpolatedTransform> post_transform(
+      new InterpolatedConstantTransform(from_pivot));
 
   pre_transform->SetChild(xform);
   xform->SetChild(post_transform.release());

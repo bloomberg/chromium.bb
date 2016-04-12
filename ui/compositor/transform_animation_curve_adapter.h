@@ -5,8 +5,9 @@
 #ifndef UI_COMPOSITOR_TRANSFORM_ANIMATION_CURVE_ADAPTER_H_
 #define UI_COMPOSITOR_TRANSFORM_ANIMATION_CURVE_ADAPTER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "cc/animation/animation_curve.h"
 #include "ui/compositor/compositor_export.h"
@@ -30,7 +31,7 @@ class COMPOSITOR_EXPORT TransformAnimationCurveAdapter
 
   // TransformAnimationCurve implementation.
   base::TimeDelta Duration() const override;
-  scoped_ptr<AnimationCurve> Clone() const override;
+  std::unique_ptr<AnimationCurve> Clone() const override;
   gfx::Transform GetValue(base::TimeDelta t) const override;
   bool AnimatedBoundsForBox(const gfx::BoxF& box,
                             gfx::BoxF* bounds) const override;
@@ -63,7 +64,7 @@ class COMPOSITOR_EXPORT InverseTransformCurveAdapter
   ~InverseTransformCurveAdapter() override;
 
   base::TimeDelta Duration() const override;
-  scoped_ptr<AnimationCurve> Clone() const override;
+  std::unique_ptr<AnimationCurve> Clone() const override;
   gfx::Transform GetValue(base::TimeDelta t) const override;
   bool AnimatedBoundsForBox(const gfx::BoxF& box,
                             gfx::BoxF* bounds) const override;

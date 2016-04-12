@@ -5,8 +5,9 @@
 #ifndef UI_BASE_IME_INPUT_METHOD_AURALINUX_H_
 #define UI_BASE_IME_INPUT_METHOD_AURALINUX_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/base/ime/composition_text.h"
 #include "ui/base/ime/input_method_base.h"
 #include "ui/base/ime/linux/linux_input_method_context.h"
@@ -73,8 +74,8 @@ class UI_BASE_IME_EXPORT InputMethodAuraLinux
                                    base::string16* result_text,
                                    bool is_handled);
 
-  scoped_ptr<LinuxInputMethodContext> context_;
-  scoped_ptr<LinuxInputMethodContext> context_simple_;
+  std::unique_ptr<LinuxInputMethodContext> context_;
+  std::unique_ptr<LinuxInputMethodContext> context_simple_;
 
   base::string16 result_text_;
 

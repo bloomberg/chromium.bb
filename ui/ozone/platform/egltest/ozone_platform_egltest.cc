@@ -11,6 +11,7 @@
 #include "base/environment.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/threading/thread_checker.h"
 #include "library_loaders/libeglplatform_shim.h"
@@ -50,7 +51,7 @@ const char kDefaultGlesSoname[] = "libGLESv2.so.2";
 // Get the library soname to load.
 std::string GetShimLibraryName() {
   std::string library;
-  scoped_ptr<base::Environment> env(base::Environment::Create());
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
   if (env->GetVar(kEglplatformShim, &library))
     return library;
   return kEglplatformShimDefault;
@@ -232,7 +233,7 @@ class SurfaceOzoneEgltest : public SurfaceOzoneEGL {
     return true;
   }
 
-  scoped_ptr<gfx::VSyncProvider> CreateVSyncProvider() override {
+  std::unique_ptr<gfx::VSyncProvider> CreateVSyncProvider() override {
     return nullptr;
   }
 
@@ -268,7 +269,7 @@ class SurfaceFactoryEgltest : public ui::SurfaceFactoryOzone {
 
   // SurfaceFactoryOzone:
   intptr_t GetNativeDisplay() override;
-  scoped_ptr<SurfaceOzoneEGL> CreateEGLSurfaceForWidget(
+  std::unique_ptr<SurfaceOzoneEGL> CreateEGLSurfaceForWidget(
       gfx::AcceleratedWidget widget) override;
   bool LoadEGLGLES2Bindings(
       AddGLLibraryCallback add_gl_library,
@@ -284,10 +285,11 @@ intptr_t SurfaceFactoryEgltest::GetNativeDisplay() {
   return eglplatform_shim_->ShimGetNativeDisplay();
 }
 
-scoped_ptr<SurfaceOzoneEGL> SurfaceFactoryEgltest::CreateEGLSurfaceForWidget(
+std::unique_ptr<SurfaceOzoneEGL>
+SurfaceFactoryEgltest::CreateEGLSurfaceForWidget(
     gfx::AcceleratedWidget widget) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return make_scoped_ptr<SurfaceOzoneEGL>(
+  return base::WrapUnique<SurfaceOzoneEGL>(
       new SurfaceOzoneEgltest(widget, eglplatform_shim_));
 }
 
@@ -362,24 +364,25 @@ class OzonePlatformEgltest : public OzonePlatform {
   GpuPlatformSupportHost* GetGpuPlatformSupportHost() override {
     return gpu_platform_support_host_.get();
   }
-  scoped_ptr<SystemInputInjector> CreateSystemInputInjector() override {
+  std::unique_ptr<SystemInputInjector> CreateSystemInputInjector() override {
     return nullptr;  // no input injection support.
   }
-  scoped_ptr<PlatformWindow> CreatePlatformWindow(
+  std::unique_ptr<PlatformWindow> CreatePlatformWindow(
       PlatformWindowDelegate* delegate,
       const gfx::Rect& bounds) override {
-    return make_scoped_ptr<PlatformWindow>(new EgltestWindow(
+    return base::WrapUnique<PlatformWindow>(new EgltestWindow(
         delegate, &eglplatform_shim_, event_factory_ozone_.get(), bounds));
   }
-  scoped_ptr<NativeDisplayDelegate> CreateNativeDisplayDelegate() override {
-    return make_scoped_ptr(new NativeDisplayDelegateOzone());
+  std::unique_ptr<NativeDisplayDelegate> CreateNativeDisplayDelegate()
+      override {
+    return base::WrapUnique(new NativeDisplayDelegateOzone());
   }
 
   void InitializeUI() override {
     device_manager_ = CreateDeviceManager();
     overlay_manager_.reset(new StubOverlayManager());
     KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(
-        make_scoped_ptr(new StubKeyboardLayoutEngine()));
+        base::WrapUnique(new StubKeyboardLayoutEngine()));
     event_factory_ozone_.reset(new EventFactoryEvdev(
         NULL, device_manager_.get(),
         KeyboardLayoutEngineManager::GetKeyboardLayoutEngine()));
@@ -394,13 +397,13 @@ class OzonePlatformEgltest : public OzonePlatform {
 
  private:
   LibeglplatformShimLoader eglplatform_shim_;
-  scoped_ptr<DeviceManager> device_manager_;
-  scoped_ptr<SurfaceFactoryEgltest> surface_factory_ozone_;
-  scoped_ptr<EventFactoryEvdev> event_factory_ozone_;
-  scoped_ptr<CursorFactoryOzone> cursor_factory_ozone_;
-  scoped_ptr<GpuPlatformSupport> gpu_platform_support_;
-  scoped_ptr<GpuPlatformSupportHost> gpu_platform_support_host_;
-  scoped_ptr<OverlayManagerOzone> overlay_manager_;
+  std::unique_ptr<DeviceManager> device_manager_;
+  std::unique_ptr<SurfaceFactoryEgltest> surface_factory_ozone_;
+  std::unique_ptr<EventFactoryEvdev> event_factory_ozone_;
+  std::unique_ptr<CursorFactoryOzone> cursor_factory_ozone_;
+  std::unique_ptr<GpuPlatformSupport> gpu_platform_support_;
+  std::unique_ptr<GpuPlatformSupportHost> gpu_platform_support_host_;
+  std::unique_ptr<OverlayManagerOzone> overlay_manager_;
 
   bool shim_initialized_;
 

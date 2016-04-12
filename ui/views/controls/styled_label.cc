@@ -32,12 +32,12 @@ int CalculateLineHeight(const gfx::FontList& font_list) {
   return label.GetPreferredSize().height();
 }
 
-scoped_ptr<Label> CreateLabelRange(
+std::unique_ptr<Label> CreateLabelRange(
     const base::string16& text,
     const gfx::FontList& font_list,
     const StyledLabel::RangeStyleInfo& style_info,
     views::LinkListener* link_listener) {
-  scoped_ptr<Label> result;
+  std::unique_ptr<Label> result;
 
   if (style_info.is_link) {
     Link* link = new Link(text);
@@ -307,7 +307,7 @@ gfx::Size StyledLabel::CalculateAndDoLayout(int width, bool dry_run) {
 
     base::string16 chunk = substrings[0];
 
-    scoped_ptr<Label> label;
+    std::unique_ptr<Label> label;
     if (position >= range.start()) {
       const RangeStyleInfo& style_info = current_range->style_info;
 

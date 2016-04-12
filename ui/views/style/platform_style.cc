@@ -4,6 +4,7 @@
 
 #include "ui/views/style/platform_style.h"
 
+#include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -45,32 +46,32 @@ gfx::ImageSkia PlatformStyle::CreateComboboxArrow(bool is_enabled,
 }
 
 // static
-scoped_ptr<FocusableBorder> PlatformStyle::CreateComboboxBorder() {
-  return make_scoped_ptr(new FocusableBorder());
+std::unique_ptr<FocusableBorder> PlatformStyle::CreateComboboxBorder() {
+  return base::WrapUnique(new FocusableBorder());
 }
 
 // static
-scoped_ptr<Background> PlatformStyle::CreateComboboxBackground() {
+std::unique_ptr<Background> PlatformStyle::CreateComboboxBackground() {
   return nullptr;
 }
 
 // static
-scoped_ptr<LabelButtonBorder> PlatformStyle::CreateLabelButtonBorder(
+std::unique_ptr<LabelButtonBorder> PlatformStyle::CreateLabelButtonBorder(
     Button::ButtonStyle style) {
   if (!ui::MaterialDesignController::IsModeMaterial() ||
       style != Button::STYLE_TEXTBUTTON) {
-    return make_scoped_ptr(new LabelButtonAssetBorder(style));
+    return base::WrapUnique(new LabelButtonAssetBorder(style));
   }
 
-  scoped_ptr<LabelButtonBorder> border(new views::LabelButtonBorder());
+  std::unique_ptr<LabelButtonBorder> border(new views::LabelButtonBorder());
   border->set_insets(views::LabelButtonAssetBorder::GetDefaultInsetsForStyle(
       Button::STYLE_TEXTBUTTON));
   return border;
 }
 
 // static
-scoped_ptr<ScrollBar> PlatformStyle::CreateScrollBar(bool is_horizontal) {
-  return make_scoped_ptr(new NativeScrollBar(is_horizontal));
+std::unique_ptr<ScrollBar> PlatformStyle::CreateScrollBar(bool is_horizontal) {
+  return base::WrapUnique(new NativeScrollBar(is_horizontal));
 }
 
 // static
@@ -103,7 +104,7 @@ void PlatformStyle::ApplyLabelButtonTextStyle(
 
 #if !defined(DESKTOP_LINUX)
 // static
-scoped_ptr<Border> PlatformStyle::CreateThemedLabelButtonBorder(
+std::unique_ptr<Border> PlatformStyle::CreateThemedLabelButtonBorder(
     LabelButton* button) {
   return button->CreateDefaultBorder();
 }

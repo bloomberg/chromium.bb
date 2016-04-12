@@ -5,8 +5,9 @@
 #ifndef UI_VIEWS_COREWM_TOOLTIP_AURA_H_
 #define UI_VIEWS_COREWM_TOOLTIP_AURA_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/views/corewm/tooltip.h"
 #include "ui/views/widget/widget_observer.h"
 
@@ -51,7 +52,7 @@ class VIEWS_EXPORT TooltipAura : public Tooltip, public WidgetObserver {
   void OnWidgetDestroying(Widget* widget) override;
 
   // The view showing the tooltip.
-  scoped_ptr<TooltipView> tooltip_view_;
+  std::unique_ptr<TooltipView> tooltip_view_;
 
   // The widget containing the tooltip. May be NULL.
   Widget* widget_;

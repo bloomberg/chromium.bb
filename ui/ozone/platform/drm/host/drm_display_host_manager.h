@@ -8,12 +8,12 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <queue>
 
 #include "base/file_descriptor_posix.h"
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/display/types/native_display_delegate.h"
@@ -87,7 +87,7 @@ class DrmDisplayHostManager : public DeviceEventObserver, GpuThreadObserver {
   // are responsible for dequing the event and scheduling the next event.
   void OnAddGraphicsDevice(const base::FilePath& path,
                            const base::FilePath& sysfs_path,
-                           scoped_ptr<DrmDeviceHandle> handle);
+                           std::unique_ptr<DrmDeviceHandle> handle);
   void OnUpdateGraphicsDevice();
   void OnRemoveGraphicsDevice(const base::FilePath& path);
 
@@ -110,7 +110,7 @@ class DrmDisplayHostManager : public DeviceEventObserver, GpuThreadObserver {
   // when there is no connection to the GPU to update the displays.
   bool has_dummy_display_ = false;
 
-  std::vector<scoped_ptr<DrmDisplayHost>> displays_;
+  std::vector<std::unique_ptr<DrmDisplayHost>> displays_;
 
   GetDisplaysCallback get_displays_callback_;
 
@@ -134,7 +134,7 @@ class DrmDisplayHostManager : public DeviceEventObserver, GpuThreadObserver {
 
   // This is used to cache the primary DRM device until the channel is
   // established.
-  scoped_ptr<DrmDeviceHandle> primary_drm_device_handle_;
+  std::unique_ptr<DrmDeviceHandle> primary_drm_device_handle_;
 
   base::WeakPtrFactory<DrmDisplayHostManager> weak_ptr_factory_;
 

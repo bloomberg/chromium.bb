@@ -5,11 +5,11 @@
 #ifndef UI_VIEWS_WIDGET_DESKTOP_AURA_DESKTOP_NATIVE_CURSOR_MANAGER_H_
 #define UI_VIEWS_WIDGET_DESKTOP_AURA_DESKTOP_NATIVE_CURSOR_MANAGER_H_
 
+#include <memory>
 #include <set>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/views/views_export.h"
 #include "ui/wm/core/native_cursor_manager.h"
 
@@ -35,7 +35,7 @@ class VIEWS_EXPORT DesktopNativeCursorManager
     : public wm::NativeCursorManager {
  public:
   DesktopNativeCursorManager(
-      scoped_ptr<DesktopCursorLoaderUpdater> cursor_loader_updater);
+      std::unique_ptr<DesktopCursorLoaderUpdater> cursor_loader_updater);
   ~DesktopNativeCursorManager() override;
 
   // Builds a cursor and sets the internal platform representation. The return
@@ -66,8 +66,8 @@ class VIEWS_EXPORT DesktopNativeCursorManager
   typedef std::set<aura::WindowTreeHost*> Hosts;
   Hosts hosts_;
 
-  scoped_ptr<DesktopCursorLoaderUpdater> cursor_loader_updater_;
-  scoped_ptr<ui::CursorLoader> cursor_loader_;
+  std::unique_ptr<DesktopCursorLoaderUpdater> cursor_loader_updater_;
+  std::unique_ptr<ui::CursorLoader> cursor_loader_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopNativeCursorManager);
 };

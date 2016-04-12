@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/files/file_path.h"
+#include "base/memory/scoped_ptr.h"
 #include "components/user_manager/user_manager_export.h"
 #include "ui/gfx/image/image_skia.h"
 #include "url/gurl.h"

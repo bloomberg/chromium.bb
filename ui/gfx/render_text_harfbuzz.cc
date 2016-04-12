@@ -11,6 +11,7 @@
 #include "base/i18n/break_iterator.h"
 #include "base/i18n/char_iterator.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -760,8 +761,9 @@ RenderTextHarfBuzz::RenderTextHarfBuzz()
 
 RenderTextHarfBuzz::~RenderTextHarfBuzz() {}
 
-scoped_ptr<RenderText> RenderTextHarfBuzz::CreateInstanceOfSameType() const {
-  return make_scoped_ptr(new RenderTextHarfBuzz);
+std::unique_ptr<RenderText> RenderTextHarfBuzz::CreateInstanceOfSameType()
+    const {
+  return base::WrapUnique(new RenderTextHarfBuzz);
 }
 
 bool RenderTextHarfBuzz::MultilineSupported() const {
@@ -1089,7 +1091,7 @@ void RenderTextHarfBuzz::EnsureLayout() {
   if (lines().empty()) {
     // TODO(ckocagil): Remove ScopedTracker below once crbug.com/441028 is
     // fixed.
-    scoped_ptr<tracked_objects::ScopedTracker> tracking_profile(
+    std::unique_ptr<tracked_objects::ScopedTracker> tracking_profile(
         new tracked_objects::ScopedTracker(
             FROM_HERE_WITH_EXPLICIT_FUNCTION("441028 HarfBuzzLineBreaker")));
 
@@ -1135,7 +1137,7 @@ void RenderTextHarfBuzz::DrawVisualText(internal::SkiaTextRenderer* renderer) {
       renderer->SetFontRenderParams(run.render_params,
                                     subpixel_rendering_suppressed());
       Range glyphs_range = run.CharRangeToGlyphRange(segment.char_range);
-      scoped_ptr<SkPoint[]> positions(new SkPoint[glyphs_range.length()]);
+      std::unique_ptr<SkPoint[]> positions(new SkPoint[glyphs_range.length()]);
       SkScalar offset_x = preceding_segment_widths -
                           ((glyphs_range.GetMin() != 0)
                                ? run.positions[glyphs_range.GetMin()].x()

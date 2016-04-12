@@ -272,7 +272,7 @@ InputHandlerProxy::HandleInputEventWithLatencyInfo(
                          TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
                          "step", "HandleInputEventImpl");
 
-  scoped_ptr<cc::SwapPromiseMonitor> latency_info_swap_promise_monitor =
+  std::unique_ptr<cc::SwapPromiseMonitor> latency_info_swap_promise_monitor =
       input_handler_->CreateLatencyInfoSwapPromiseMonitor(latency_info);
   InputHandlerProxy::EventDisposition disposition = HandleInputEvent(event);
   return disposition;

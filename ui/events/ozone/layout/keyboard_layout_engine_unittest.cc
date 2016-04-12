@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event.h"
@@ -192,7 +193,8 @@ void TestLookup(const char* name, KeyboardLayoutEngine* engine) {
        VKEY_A, 1},
   };
 
-  KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(make_scoped_ptr(engine));
+  KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(
+      base::WrapUnique(engine));
 
   for (const auto& t : kTestCases) {
     DomKey dom_key;

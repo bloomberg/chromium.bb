@@ -476,7 +476,8 @@ TEST(ScrollViewTest, CornerViewVisibility) {
 // Tests the overlay scrollbars on Mac. Ensure that they show up properly and
 // do not overlap each other.
 TEST(ScrollViewTest, CocoaOverlayScrollBars) {
-  scoped_ptr<ui::test::ScopedPreferredScrollerStyle> scroller_style_override;
+  std::unique_ptr<ui::test::ScopedPreferredScrollerStyle>
+      scroller_style_override;
   scroller_style_override.reset(
       new ui::test::ScopedPreferredScrollerStyle(true));
   ScrollView scroll_view;

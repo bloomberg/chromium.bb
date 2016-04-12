@@ -5,7 +5,8 @@
 #ifndef UI_EVENTS_BLINK_BLINK_EVENT_UTIL_H_
 #define UI_EVENTS_BLINK_BLINK_EVENT_UTIL_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/events/gesture_detection/motion_event.h"
 
@@ -44,7 +45,7 @@ blink::WebGestureEvent CreateWebGestureEventFromGestureEventData(
 
 int EventFlagsToWebEventModifiers(int flags);
 
-scoped_ptr<blink::WebInputEvent> ScaleWebInputEvent(
+std::unique_ptr<blink::WebInputEvent> ScaleWebInputEvent(
     const blink::WebInputEvent& event,
     float scale);
 

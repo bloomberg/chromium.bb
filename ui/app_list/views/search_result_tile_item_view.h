@@ -54,7 +54,7 @@ class APP_LIST_EXPORT SearchResultTileItemView
 
   AppListViewDelegate* view_delegate_;
 
-  scoped_ptr<views::MenuRunner> context_menu_runner_;
+  std::unique_ptr<views::MenuRunner> context_menu_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchResultTileItemView);
 };

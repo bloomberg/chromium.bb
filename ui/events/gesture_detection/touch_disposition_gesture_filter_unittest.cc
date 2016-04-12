@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ui/events/gesture_detection/touch_disposition_gesture_filter.h"
+
 #include <stddef.h>
 #include <stdint.h>
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/events/gesture_detection/touch_disposition_gesture_filter.h"
 #include "ui/events/test/motion_event_test_utils.h"
 
 using ui::test::MockMotionEvent;
@@ -269,14 +271,14 @@ class TouchDispositionGestureFilterTest
   }
 
  private:
-  scoped_ptr<TouchDispositionGestureFilter> queue_;
+  std::unique_ptr<TouchDispositionGestureFilter> queue_;
   bool cancel_after_next_gesture_;
   MockMotionEvent touch_event_;
   GestureEventDataPacket pending_gesture_packet_;
   size_t sent_gesture_count_;
   GestureList sent_gestures_;
   gfx::Vector2dF raw_offset_;
-  scoped_ptr<GestureEventData> last_sent_gesture_;
+  std::unique_ptr<GestureEventData> last_sent_gesture_;
   gfx::Rect show_press_bounding_box_;
   uint32_t last_sent_touch_event_id_;
 };

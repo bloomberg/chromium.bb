@@ -27,11 +27,12 @@ std::string FormatLog(const char* fmt, va_list args) {
 
 }  // namespace
 
-EventReaderLibevdevCros::EventReaderLibevdevCros(int fd,
-                                                 const base::FilePath& path,
-                                                 int id,
-                                                 const EventDeviceInfo& devinfo,
-                                                 scoped_ptr<Delegate> delegate)
+EventReaderLibevdevCros::EventReaderLibevdevCros(
+    int fd,
+    const base::FilePath& path,
+    int id,
+    const EventDeviceInfo& devinfo,
+    std::unique_ptr<Delegate> delegate)
     : EventConverterEvdev(fd,
                           path,
                           id,

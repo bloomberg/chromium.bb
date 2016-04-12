@@ -6,11 +6,11 @@
 #define UI_BASE_IME_CHROMEOS_COMPONENT_EXTENSION_IME_MANAGER_H_
 
 #include <map>
+#include <memory>
 #include <set>
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "ui/base/ime/chromeos/input_method_descriptor.h"
 #include "ui/base/ime/ui_base_ime_export.h"
@@ -78,7 +78,8 @@ class UI_BASE_IME_EXPORT ComponentExtensionIMEManager {
   // Initializes component extension manager. This function create internal
   // mapping between input method id and engine components. This function must
   // be called before using any other function.
-  void Initialize(scoped_ptr<ComponentExtensionIMEManagerDelegate> delegate);
+  void Initialize(
+      std::unique_ptr<ComponentExtensionIMEManagerDelegate> delegate);
 
   // Loads |input_method_id| component extension IME. This function returns true
   // on success. This function is safe to call multiple times. Returns false if
@@ -114,7 +115,7 @@ class UI_BASE_IME_EXPORT ComponentExtensionIMEManager {
 
   bool IsInLoginLayoutWhitelist(const std::vector<std::string>& layouts);
 
-  scoped_ptr<ComponentExtensionIMEManagerDelegate> delegate_;
+  std::unique_ptr<ComponentExtensionIMEManagerDelegate> delegate_;
 
   // The map of extension_id to ComponentExtensionIME instance.
   // It's filled by Initialize() method and never changed during runtime.

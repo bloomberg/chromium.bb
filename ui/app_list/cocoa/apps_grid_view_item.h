@@ -7,7 +7,8 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "ui/app_list/app_list_export.h"
 #import "ui/base/cocoa/tracking_area.h"
 
@@ -21,7 +22,7 @@ class ItemModelObserverBridge;
 APP_LIST_EXPORT
 @interface AppsGridViewItem : NSCollectionViewItem {
  @private
-  scoped_ptr<app_list::ItemModelObserverBridge> observerBridge_;
+  std::unique_ptr<app_list::ItemModelObserverBridge> observerBridge_;
   base::scoped_nsobject<NSProgressIndicator> progressIndicator_;
 
   // Used to highlight the background on hover.

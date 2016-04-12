@@ -8,9 +8,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "third_party/harfbuzz-ng/src/hb.h"
 #include "third_party/icu/source/common/unicode/ubidi.h"
@@ -67,8 +68,8 @@ struct GFX_EXPORT TextRunHarfBuzz {
   UBiDiLevel level;
   UScriptCode script;
 
-  scoped_ptr<uint16_t[]> glyphs;
-  scoped_ptr<SkPoint[]> positions;
+  std::unique_ptr<uint16_t[]> glyphs;
+  std::unique_ptr<SkPoint[]> positions;
   std::vector<uint32_t> glyph_to_char;
   size_t glyph_count;
 
@@ -145,7 +146,7 @@ class GFX_EXPORT RenderTextHarfBuzz : public RenderText {
   ~RenderTextHarfBuzz() override;
 
   // RenderText:
-  scoped_ptr<RenderText> CreateInstanceOfSameType() const override;
+  std::unique_ptr<RenderText> CreateInstanceOfSameType() const override;
   bool MultilineSupported() const override;
   const base::string16& GetDisplayText() override;
   Size GetStringSize() override;
@@ -257,7 +258,7 @@ class GFX_EXPORT RenderTextHarfBuzz : public RenderText {
   // Text run list for |layout_text_| and |display_text_|.
   // |display_run_list_| is created only when the text is elided.
   internal::TextRunList layout_run_list_;
-  scoped_ptr<internal::TextRunList> display_run_list_;
+  std::unique_ptr<internal::TextRunList> display_run_list_;
 
   bool update_layout_run_list_ : 1;
   bool update_display_run_list_ : 1;
@@ -266,7 +267,7 @@ class GFX_EXPORT RenderTextHarfBuzz : public RenderText {
 
   // ICU grapheme iterator for the layout text. Use GetGraphemeIterator()
   // to access the iterator.
-  scoped_ptr<base::i18n::BreakIterator> grapheme_iterator_;
+  std::unique_ptr<base::i18n::BreakIterator> grapheme_iterator_;
 
   // The total size of the layouted text.
   SizeF total_size_;

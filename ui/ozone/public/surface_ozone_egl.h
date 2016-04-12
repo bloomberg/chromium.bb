@@ -5,8 +5,9 @@
 #ifndef UI_OZONE_PUBLIC_SURFACE_OZONE_EGL_H_
 #define UI_OZONE_PUBLIC_SURFACE_OZONE_EGL_H_
 
+#include <memory>
+
 #include "base/callback.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/gfx/overlay_transform.h"
 #include "ui/gfx/swap_result.h"
 #include "ui/ozone/ozone_base_export.h"
@@ -68,7 +69,7 @@ class OZONE_BASE_EXPORT SurfaceOzoneEGL {
   // opening a file descriptor providing vsync events) that must be done
   // outside of the sandbox, they must have been completed in
   // InitializeHardware. Returns an empty scoped_ptr on error.
-  virtual scoped_ptr<gfx::VSyncProvider> CreateVSyncProvider() = 0;
+  virtual std::unique_ptr<gfx::VSyncProvider> CreateVSyncProvider() = 0;
 
   // Returns true if the surface is created on a UDL device.
   virtual bool IsUniversalDisplayLinkDevice();

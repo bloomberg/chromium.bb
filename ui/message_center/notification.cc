@@ -169,14 +169,14 @@ bool Notification::UseOriginAsContextMessage() const {
 }
 
 // static
-scoped_ptr<Notification> Notification::CreateSystemNotification(
+std::unique_ptr<Notification> Notification::CreateSystemNotification(
     const std::string& notification_id,
     const base::string16& title,
     const base::string16& message,
     const gfx::Image& icon,
     const std::string& system_component_id,
     const base::Closure& click_callback) {
-  scoped_ptr<Notification> notification(new Notification(
+  std::unique_ptr<Notification> notification(new Notification(
       NOTIFICATION_TYPE_SIMPLE, notification_id, title, message, icon,
       base::string16() /* display_source */, GURL(),
       NotifierId(NotifierId::SYSTEM_COMPONENT, system_component_id),

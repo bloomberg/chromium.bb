@@ -7,7 +7,8 @@
 
 #include <stdint.h>
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "ui/gfx/gfx_export.h"
 
 typedef unsigned long XAtom;
@@ -31,7 +32,7 @@ struct XObjectDeleter {
 };
 
 template <class T, class D = XObjectDeleter<void, int, XFree>>
-using XScopedPtr = scoped_ptr<T, D>;
+using XScopedPtr = std::unique_ptr<T, D>;
 
 // TODO(oshima|evan): This assume there is one display and doesn't work
 // undef multiple displays/monitor environment. Remove this and change the

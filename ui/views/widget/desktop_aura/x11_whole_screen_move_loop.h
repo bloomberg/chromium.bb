@@ -67,7 +67,7 @@ class X11WholeScreenMoveLoop : public X11MoveLoop,
 
   // Are we running a nested message loop from RunMoveLoop()?
   bool in_move_loop_;
-  scoped_ptr<ui::ScopedEventDispatcher> nested_dispatcher_;
+  std::unique_ptr<ui::ScopedEventDispatcher> nested_dispatcher_;
 
   // Cursor in use prior to the move loop starting. Restored when the move loop
   // quits.
@@ -88,7 +88,7 @@ class X11WholeScreenMoveLoop : public X11MoveLoop,
   // pressing escape).
   bool canceled_;
 
-  scoped_ptr<ui::MouseEvent> last_motion_in_screen_;
+  std::unique_ptr<ui::MouseEvent> last_motion_in_screen_;
   base::WeakPtrFactory<X11WholeScreenMoveLoop> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(X11WholeScreenMoveLoop);

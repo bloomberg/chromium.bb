@@ -4,9 +4,10 @@
 
 #include "ui/base/models/tree_node_model.h"
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -303,11 +304,11 @@ TEST_F(TreeNodeModelTest, BasicOperations) {
   EXPECT_EQ(2, root.child_count());
   EXPECT_EQ(child1->parent(), child2->parent());
 
-  scoped_ptr<TestNode > c2(root.Remove(child2));
+  std::unique_ptr<TestNode> c2(root.Remove(child2));
   EXPECT_EQ(1, root.child_count());
   EXPECT_EQ(NULL, child2->parent());
 
-  scoped_ptr<TestNode > c1(root.Remove(child1));
+  std::unique_ptr<TestNode> c1(root.Remove(child1));
   EXPECT_EQ(0, root.child_count());
 }
 

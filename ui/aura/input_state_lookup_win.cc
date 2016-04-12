@@ -7,11 +7,13 @@
 #include <windows.h>
 #include <winuser.h>
 
+#include "base/memory/ptr_util.h"
+
 namespace aura {
 
 // static
-scoped_ptr<InputStateLookup> InputStateLookup::Create() {
-  return make_scoped_ptr(new InputStateLookupWin);
+std::unique_ptr<InputStateLookup> InputStateLookup::Create() {
+  return base::WrapUnique(new InputStateLookupWin);
 }
 
 InputStateLookupWin::InputStateLookupWin() {

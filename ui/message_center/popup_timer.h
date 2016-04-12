@@ -5,10 +5,10 @@
 #ifndef UI_MESSAGE_CENTER_POPUP_TIMER_H_
 #define UI_MESSAGE_CENTER_POPUP_TIMER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -64,7 +64,7 @@ class PopupTimer {
   base::WeakPtr<Delegate> timer_delegate_;
 
   // The actual timer.
-  scoped_ptr<base::OneShotTimer> timer_;
+  std::unique_ptr<base::OneShotTimer> timer_;
 
   DISALLOW_COPY_AND_ASSIGN(PopupTimer);
 };

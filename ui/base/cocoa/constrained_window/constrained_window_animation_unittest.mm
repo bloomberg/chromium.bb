@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/mac/scoped_nsobject.h"
-#include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_pump_mac.h"
 #import "ui/base/cocoa/constrained_window/constrained_window_animation.h"
+
+#include <memory>
+
+#include "base/mac/scoped_nsobject.h"
+#include "base/message_loop/message_pump_mac.h"
 #import "ui/gfx/test/ui_cocoa_test_helper.h"
 
 // This class runs an animation for exactly two frames then end it.
@@ -13,7 +15,7 @@
     : NSObject<NSAnimationDelegate> {
  @private
   CGFloat frameCount_;
-  scoped_ptr<base::MessagePumpNSRunLoop> message_pump_;
+  std::unique_ptr<base::MessagePumpNSRunLoop> message_pump_;
 }
 
 - (void)runAnimation:(NSAnimation*)animation;

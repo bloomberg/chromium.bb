@@ -5,9 +5,10 @@
 #ifndef UI_ANDROID_OVERSCROLL_GLOW_H_
 #define UI_ANDROID_OVERSCROLL_GLOW_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "ui/android/edge_effect_base.h"
 #include "ui/android/ui_android_export.h"
@@ -26,7 +27,7 @@ class UI_ANDROID_EXPORT OverscrollGlowClient {
   virtual ~OverscrollGlowClient() {}
 
   // Called lazily, after the initial overscrolling event.
-  virtual scoped_ptr<EdgeEffectBase> CreateEdgeEffect() = 0;
+  virtual std::unique_ptr<EdgeEffectBase> CreateEdgeEffect() = 0;
 };
 
 /* |OverscrollGlow| mirrors its Android counterpart, OverscrollGlow.java.
@@ -94,7 +95,7 @@ class UI_ANDROID_EXPORT OverscrollGlow {
   EdgeEffectBase* GetOppositeEdge(int edge_index);
 
   OverscrollGlowClient* const client_;
-  scoped_ptr<EdgeEffectBase> edge_effects_[EDGE_COUNT];
+  std::unique_ptr<EdgeEffectBase> edge_effects_[EDGE_COUNT];
 
   gfx::SizeF viewport_size_;
   float edge_offsets_[EDGE_COUNT];

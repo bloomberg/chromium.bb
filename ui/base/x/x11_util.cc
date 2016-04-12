@@ -8,23 +8,22 @@
 
 #include "ui/base/x/x11_util.h"
 
+#include <X11/Xcursor/Xcursor.h>
+#include <X11/extensions/XInput2.h>
+#include <X11/extensions/shape.h>
 #include <ctype.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
 
 #include <list>
 #include <map>
+#include <memory>
 #include <utility>
 #include <vector>
-
-#include <X11/extensions/shape.h>
-#include <X11/extensions/XInput2.h>
-#include <X11/Xcursor/Xcursor.h>
 
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
@@ -874,7 +873,7 @@ bool SetIntArrayProperty(XID window,
   XAtom type_atom = GetAtom(type.c_str());
 
   // XChangeProperty() expects values of type 32 to be longs.
-  scoped_ptr<long[]> data(new long[value.size()]);
+  std::unique_ptr<long[]> data(new long[value.size()]);
   for (size_t i = 0; i < value.size(); ++i)
     data[i] = value[i];
 
@@ -907,7 +906,7 @@ bool SetAtomArrayProperty(XID window,
   XAtom type_atom = GetAtom(type.c_str());
 
   // XChangeProperty() expects values of type 32 to be longs.
-  scoped_ptr<XAtom[]> data(new XAtom[value.size()]);
+  std::unique_ptr<XAtom[]> data(new XAtom[value.size()]);
   for (size_t i = 0; i < value.size(); ++i)
     data[i] = value[i];
 
@@ -1129,7 +1128,7 @@ bool CopyAreaToCanvas(XID drawable,
                       gfx::Rect source_bounds,
                       gfx::Point dest_offset,
                       gfx::Canvas* canvas) {
-  scoped_ptr<XImage, XImageDeleter> image(XGetImage(
+  std::unique_ptr<XImage, XImageDeleter> image(XGetImage(
       gfx::GetXDisplay(), drawable, source_bounds.x(), source_bounds.y(),
       source_bounds.width(), source_bounds.height(), AllPlanes, ZPixmap));
   if (!image) {

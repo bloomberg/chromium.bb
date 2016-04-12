@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/threading/thread.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/context_provider.h"
@@ -139,25 +140,25 @@ void InProcessContextFactory::CreateOutputSurface(
           &gpu_memory_buffer_manager_, &image_factory_, compositor->widget(),
           "UICompositor");
 
-  scoped_ptr<cc::OutputSurface> real_output_surface;
+  std::unique_ptr<cc::OutputSurface> real_output_surface;
 
   if (use_test_surface_) {
     bool flipped_output_surface = false;
-    real_output_surface = make_scoped_ptr(new cc::PixelTestOutputSurface(
+    real_output_surface = base::WrapUnique(new cc::PixelTestOutputSurface(
         context_provider, shared_worker_context_provider_,
         flipped_output_surface));
   } else {
-    real_output_surface = make_scoped_ptr(new DirectOutputSurface(
+    real_output_surface = base::WrapUnique(new DirectOutputSurface(
         context_provider, shared_worker_context_provider_));
   }
 
   if (surface_manager_) {
-    scoped_ptr<cc::OnscreenDisplayClient> display_client(
+    std::unique_ptr<cc::OnscreenDisplayClient> display_client(
         new cc::OnscreenDisplayClient(
             std::move(real_output_surface), surface_manager_,
             GetSharedBitmapManager(), GetGpuMemoryBufferManager(),
             compositor->GetRendererSettings(), compositor->task_runner()));
-    scoped_ptr<cc::SurfaceDisplayOutputSurface> surface_output_surface(
+    std::unique_ptr<cc::SurfaceDisplayOutputSurface> surface_output_surface(
         new cc::SurfaceDisplayOutputSurface(
             surface_manager_, compositor->surface_id_allocator(),
             context_provider, shared_worker_context_provider_));
@@ -173,10 +174,10 @@ void InProcessContextFactory::CreateOutputSurface(
   }
 }
 
-scoped_ptr<Reflector> InProcessContextFactory::CreateReflector(
+std::unique_ptr<Reflector> InProcessContextFactory::CreateReflector(
     Compositor* mirrored_compositor,
     Layer* mirroring_layer) {
-  return make_scoped_ptr(new FakeReflector);
+  return base::WrapUnique(new FakeReflector);
 }
 
 void InProcessContextFactory::RemoveReflector(Reflector* reflector) {
@@ -228,9 +229,9 @@ cc::TaskGraphRunner* InProcessContextFactory::GetTaskGraphRunner() {
   return &task_graph_runner_;
 }
 
-scoped_ptr<cc::SurfaceIdAllocator>
+std::unique_ptr<cc::SurfaceIdAllocator>
 InProcessContextFactory::CreateSurfaceIdAllocator() {
-  scoped_ptr<cc::SurfaceIdAllocator> allocator(
+  std::unique_ptr<cc::SurfaceIdAllocator> allocator(
       new cc::SurfaceIdAllocator(next_surface_id_namespace_++));
   if (surface_manager_)
     allocator->RegisterSurfaceIdNamespace(surface_manager_);

@@ -5,11 +5,11 @@
 #ifndef UI_MESSAGE_CENTER_VIEWS_NOTIFIER_SETTINGS_VIEW_H_
 #define UI_MESSAGE_CENTER_VIEWS_NOTIFIER_SETTINGS_VIEW_H_
 
+#include <memory>
 #include <set>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/message_center/message_center_export.h"
 #include "ui/message_center/notifier_settings.h"
 #include "ui/message_center/views/message_bubble_base.h"
@@ -82,10 +82,10 @@ class MESSAGE_CENTER_EXPORT NotifierSettingsView
     void GridChanged(bool has_learn_more, bool has_icon_view);
 
     NotifierSettingsProvider* provider_;  // Weak.
-    const scoped_ptr<Notifier> notifier_;
+    const std::unique_ptr<Notifier> notifier_;
     // |icon_view_| is owned by us because sometimes we don't leave it
     // in the view hierarchy.
-    scoped_ptr<views::ImageView> icon_view_;
+    std::unique_ptr<views::ImageView> icon_view_;
     views::Label* name_view_;
     views::Checkbox* checkbox_;
     views::ImageButton* learn_more_;
@@ -117,8 +117,8 @@ class MESSAGE_CENTER_EXPORT NotifierSettingsView
   views::ScrollView* scroller_;
   NotifierSettingsProvider* provider_;
   std::set<NotifierButton*> buttons_;
-  scoped_ptr<NotifierGroupMenuModel> notifier_group_menu_model_;
-  scoped_ptr<views::MenuRunner> notifier_group_menu_runner_;
+  std::unique_ptr<NotifierGroupMenuModel> notifier_group_menu_model_;
+  std::unique_ptr<views::MenuRunner> notifier_group_menu_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(NotifierSettingsView);
 };

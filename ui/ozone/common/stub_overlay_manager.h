@@ -16,7 +16,7 @@ class StubOverlayManager : public OverlayManagerOzone {
   ~StubOverlayManager() override;
 
   // OverlayManagerOzone:
-  scoped_ptr<OverlayCandidatesOzone> CreateOverlayCandidates(
+  std::unique_ptr<OverlayCandidatesOzone> CreateOverlayCandidates(
       gfx::AcceleratedWidget w) override;
 
  private:

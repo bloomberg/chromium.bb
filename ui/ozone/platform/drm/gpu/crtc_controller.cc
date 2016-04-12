@@ -21,7 +21,7 @@ CrtcController::CrtcController(const scoped_refptr<DrmDevice>& drm,
 
 CrtcController::~CrtcController() {
   if (!is_disabled_) {
-    const std::vector<scoped_ptr<HardwareDisplayPlane>>& all_planes =
+    const std::vector<std::unique_ptr<HardwareDisplayPlane>>& all_planes =
         drm_->plane_manager()->planes();
     for (const auto& plane : all_planes) {
       if (plane->owning_crtc() == crtc_) {

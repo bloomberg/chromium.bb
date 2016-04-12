@@ -4,8 +4,9 @@
 
 #include "ui/chromeos/ime/input_method_menu_manager.h"
 
+#include <memory>
+
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace ui {
@@ -40,7 +41,7 @@ class InputMethodMenuManagerStatefulTest : public testing::Test{
   void TearDown() override { menu_manager_->RemoveObserver(observer_.get()); }
 
   InputMethodMenuManager* menu_manager_;
-  scoped_ptr<MockObserver> observer_;
+  std::unique_ptr<MockObserver> observer_;
 };
 
 TEST_F(InputMethodMenuManagerStatefulTest, AddAndObserve) {

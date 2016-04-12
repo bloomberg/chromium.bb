@@ -29,7 +29,7 @@ class HardwareDisplayPlaneManagerAtomic : public HardwareDisplayPlaneManager {
                     const gfx::Rect& src_rect,
                     CrtcController* crtc) override;
 
-  scoped_ptr<HardwareDisplayPlane> CreatePlane(
+  std::unique_ptr<HardwareDisplayPlane> CreatePlane(
       uint32_t plane_id,
       uint32_t possible_crtcs) override;
 

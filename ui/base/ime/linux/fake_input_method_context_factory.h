@@ -17,7 +17,7 @@ class FakeInputMethodContextFactory : public LinuxInputMethodContextFactory {
   FakeInputMethodContextFactory();
 
   // LinuxInputMethodContextFactory:
-  scoped_ptr<LinuxInputMethodContext> CreateInputMethodContext(
+  std::unique_ptr<LinuxInputMethodContext> CreateInputMethodContext(
       LinuxInputMethodContextDelegate* delegate,
       bool is_simple) const override;
 

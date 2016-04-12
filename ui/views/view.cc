@@ -8,11 +8,12 @@
 
 #include <algorithm>
 #include <cmath>
+#include <memory>
 #include <utility>
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
@@ -479,8 +480,8 @@ void View::SetPaintToLayer(bool paint_to_layer) {
   }
 }
 
-scoped_ptr<ui::Layer> View::RecreateLayer() {
-  scoped_ptr<ui::Layer> old_layer = LayerOwner::RecreateLayer();
+std::unique_ptr<ui::Layer> View::RecreateLayer() {
+  std::unique_ptr<ui::Layer> old_layer = LayerOwner::RecreateLayer();
   Widget* widget = GetWidget();
   if (widget)
     widget->UpdateRootLayers();
@@ -858,7 +859,7 @@ void View::set_background(Background* b) {
   background_.reset(b);
 }
 
-void View::SetBorder(scoped_ptr<Border> b) {
+void View::SetBorder(std::unique_ptr<Border> b) {
   border_ = std::move(b);
 }
 
@@ -1066,9 +1067,9 @@ const ui::InputMethod* View::GetInputMethod() const {
                 : nullptr;
 }
 
-scoped_ptr<ViewTargeter>
-View::SetEventTargeter(scoped_ptr<ViewTargeter> targeter) {
-  scoped_ptr<ViewTargeter> old_targeter = std::move(targeter_);
+std::unique_ptr<ViewTargeter> View::SetEventTargeter(
+    std::unique_ptr<ViewTargeter> targeter) {
+  std::unique_ptr<ViewTargeter> old_targeter = std::move(targeter_);
   targeter_ = std::move(targeter);
   return old_targeter;
 }
@@ -1090,8 +1091,8 @@ ui::EventTarget* View::GetParentTarget() {
   return parent_;
 }
 
-scoped_ptr<ui::EventTargetIterator> View::GetChildIterator() const {
-  return make_scoped_ptr(new ui::EventTargetIteratorImpl<View>(children_));
+std::unique_ptr<ui::EventTargetIterator> View::GetChildIterator() const {
+  return base::WrapUnique(new ui::EventTargetIteratorImpl<View>(children_));
 }
 
 ui::EventTargeter* View::GetEventTargeter() {
@@ -1808,7 +1809,7 @@ void View::DoRemoveChildView(View* view,
   if (i == children_.end())
     return;
 
-  scoped_ptr<View> view_to_be_deleted;
+  std::unique_ptr<View> view_to_be_deleted;
   if (update_focus_cycle) {
     View* next_focusable = view->next_focusable_view_;
     View* prev_focusable = view->previous_focusable_view_;

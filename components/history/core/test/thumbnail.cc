@@ -4,6 +4,7 @@
 
 #include "components/history/core/test/thumbnail.h"
 
+#include "base/memory/scoped_ptr.h"
 #include "components/history/core/test/thumbnail-inl.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/jpeg_codec.h"

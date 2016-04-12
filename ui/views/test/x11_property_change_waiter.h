@@ -7,9 +7,10 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/events/platform/platform_event_types.h"
 #include "ui/gfx/x/x11_types.h"
@@ -55,9 +56,9 @@ class X11PropertyChangeWaiter : public ui::PlatformEventDispatcher {
   // The event mask to be restored upon X11PropertyChangeWaiter's destruction.
   long old_event_mask_;
 
-  scoped_ptr<ui::ScopedEventDispatcher> dispatcher_;
+  std::unique_ptr<ui::ScopedEventDispatcher> dispatcher_;
 
-  scoped_ptr<ui::X11AtomCache> atom_cache_;
+  std::unique_ptr<ui::X11AtomCache> atom_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(X11PropertyChangeWaiter);
 };

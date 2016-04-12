@@ -6,12 +6,12 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -173,9 +173,9 @@ class AppsGridViewTest : public views::ViewsTestBase {
     apps_grid_view_->OnKeyPressed(key_event);
   }
 
-  scoped_ptr<AppListTestModel> model_;
-  scoped_ptr<AppsGridView> apps_grid_view_;
-  scoped_ptr<AppsGridViewTestApi> test_api_;
+  std::unique_ptr<AppListTestModel> model_;
+  std::unique_ptr<AppsGridView> apps_grid_view_;
+  std::unique_ptr<AppsGridViewTestApi> test_api_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AppsGridViewTest);

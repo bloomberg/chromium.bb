@@ -6,10 +6,11 @@
 
 #include <dwmapi.h>
 
+#include <memory>
+
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/trace_event/trace_event.h"
 #include "base/win/windows_version.h"
 #include "ui/gfx/native_widget_types.h"
@@ -209,7 +210,7 @@ scoped_refptr<GLSurface> GLSurface::CreateViewGLSurface(
       DCHECK(window != gfx::kNullAcceleratedWidget);
       scoped_refptr<NativeViewGLSurfaceEGL> surface(
           new NativeViewGLSurfaceEGL(window));
-      scoped_ptr<VSyncProvider> sync_provider;
+      std::unique_ptr<VSyncProvider> sync_provider;
       sync_provider.reset(new VSyncProviderWin(window));
       if (!surface->Initialize(std::move(sync_provider)))
         return NULL;

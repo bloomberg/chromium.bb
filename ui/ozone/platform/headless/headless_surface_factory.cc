@@ -8,6 +8,7 @@
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/threading/worker_pool.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkSurface.h"
@@ -56,7 +57,7 @@ class FileSurface : public SurfaceOzoneCanvas {
           FROM_HERE, base::Bind(&WriteDataToFile, location_, bitmap), true);
     }
   }
-  scoped_ptr<gfx::VSyncProvider> CreateVSyncProvider() override {
+  std::unique_ptr<gfx::VSyncProvider> CreateVSyncProvider() override {
     return nullptr;
   }
 
@@ -106,10 +107,10 @@ HeadlessSurfaceFactory::HeadlessSurfaceFactory(
 
 HeadlessSurfaceFactory::~HeadlessSurfaceFactory() {}
 
-scoped_ptr<SurfaceOzoneCanvas> HeadlessSurfaceFactory::CreateCanvasForWidget(
-    gfx::AcceleratedWidget widget) {
+std::unique_ptr<SurfaceOzoneCanvas>
+HeadlessSurfaceFactory::CreateCanvasForWidget(gfx::AcceleratedWidget widget) {
   HeadlessWindow* window = window_manager_->GetWindow(widget);
-  return make_scoped_ptr<SurfaceOzoneCanvas>(new FileSurface(window->path()));
+  return base::WrapUnique<SurfaceOzoneCanvas>(new FileSurface(window->path()));
 }
 
 bool HeadlessSurfaceFactory::LoadEGLGLES2Bindings(

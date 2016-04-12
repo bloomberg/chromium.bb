@@ -83,7 +83,7 @@ class MouseWatcher::Observer : public ui::EventHandler {
 
  private:
   MouseWatcher* mouse_watcher_;
-  scoped_ptr<views::EventMonitor> event_monitor_;
+  std::unique_ptr<views::EventMonitor> event_monitor_;
 
   // A factory that is used to construct a delayed callback to the listener.
   base::WeakPtrFactory<Observer> notify_listener_factory_;

@@ -17,12 +17,12 @@
 #include <bitset>
 #include <functional>
 #include <map>
+#include <memory>
 #include <set>
 #include <vector>
 
 #include "base/event_types.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/events/devices/device_data_manager.h"
 #include "ui/events/devices/events_devices_export.h"
 #include "ui/events/event_constants.h"
@@ -258,7 +258,7 @@ class EVENTS_DEVICES_EXPORT DeviceDataManagerX11 : public DeviceDataManager {
 
   // Sets the keys which are still allowed on a disabled keyboard device.
   void SetDisabledKeyboardAllowedKeys(
-      scoped_ptr<std::set<KeyboardCode> > excepted_keys);
+      std::unique_ptr<std::set<KeyboardCode>> excepted_keys);
 
   // Disables and enables events from devices by device id.
   void DisableDevice(int deviceid);
@@ -350,7 +350,7 @@ class EVENTS_DEVICES_EXPORT DeviceDataManagerX11 : public DeviceDataManager {
   std::bitset<kMaxDeviceNum> blocked_devices_;
 
   // The set of keys allowed while the keyboard is blocked.
-  scoped_ptr<std::set<KeyboardCode> > blocked_keyboard_allowed_keys_;
+  std::unique_ptr<std::set<KeyboardCode>> blocked_keyboard_allowed_keys_;
 
   // Number of valuators on the specific device.
   int valuator_count_[kMaxDeviceNum];

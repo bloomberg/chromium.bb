@@ -5,8 +5,9 @@
 #ifndef UI_EVENTS_TEST_TEST_EVENT_PROCESSOR_H_
 #define UI_EVENTS_TEST_TEST_EVENT_PROCESSOR_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/events/event_processor.h"
 
 namespace ui {
@@ -29,7 +30,7 @@ class TestEventProcessor : public EventProcessor {
     should_processing_occur_ = occur;
   }
 
-  void SetRoot(scoped_ptr<EventTarget> root);
+  void SetRoot(std::unique_ptr<EventTarget> root);
   void Reset();
 
   // EventProcessor:
@@ -40,7 +41,7 @@ class TestEventProcessor : public EventProcessor {
   void OnEventProcessingFinished(Event* event) override;
 
  private:
-  scoped_ptr<EventTarget> root_;
+  std::unique_ptr<EventTarget> root_;
 
   // Used in our override of OnEventProcessingStarted(). If this value is
   // false, mark incoming events as handled.

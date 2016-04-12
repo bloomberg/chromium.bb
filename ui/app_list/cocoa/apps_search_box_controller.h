@@ -7,8 +7,9 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include <memory>
+
 #include "base/mac/scoped_nsobject.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/app_list/app_list_export.h"
 
 namespace app_list {
@@ -40,8 +41,8 @@ APP_LIST_EXPORT
   base::scoped_nsobject<NSImageView> searchImageView_;
   base::scoped_nsobject<HoverImageMenuButton> menuButton_;
   base::scoped_nsobject<AppListMenuController> menuController_;
-  scoped_ptr<app_list::SearchBoxModelObserverBridge> bridge_;
-  scoped_ptr<app_list::AppListMenu> appListMenu_;
+  std::unique_ptr<app_list::SearchBoxModelObserverBridge> bridge_;
+  std::unique_ptr<app_list::AppListMenu> appListMenu_;
 
   id<AppsSearchBoxDelegate> delegate_;  // Weak. Owns us.
 }

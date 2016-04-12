@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/files/scoped_file.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 
@@ -35,7 +36,7 @@ void CreateSurface(wl_client* client, wl_resource* resource, uint32_t id) {
     wl_client_post_no_memory(client);
     return;
   }
-  compositor->AddSurface(make_scoped_ptr(new MockSurface(surface_resource)));
+  compositor->AddSurface(base::WrapUnique(new MockSurface(surface_resource)));
 }
 
 const struct wl_compositor_interface compositor_impl = {
@@ -291,7 +292,7 @@ MockCompositor::MockCompositor()
 
 MockCompositor::~MockCompositor() {}
 
-void MockCompositor::AddSurface(scoped_ptr<MockSurface> surface) {
+void MockCompositor::AddSurface(std::unique_ptr<MockSurface> surface) {
   surfaces_.push_back(std::move(surface));
 }
 
@@ -373,8 +374,8 @@ void FakeServer::DoPause() {
   resume_event_.Wait();
 }
 
-scoped_ptr<base::MessagePump> FakeServer::CreateMessagePump() {
-  auto pump = make_scoped_ptr(new base::MessagePumpLibevent);
+std::unique_ptr<base::MessagePump> FakeServer::CreateMessagePump() {
+  auto pump = base::WrapUnique(new base::MessagePumpLibevent);
   pump->WatchFileDescriptor(wl_event_loop_get_fd(event_loop_), true,
                             base::MessagePumpLibevent::WATCH_READ, &controller_,
                             this);

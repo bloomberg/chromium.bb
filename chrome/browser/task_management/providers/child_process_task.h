@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/task_management/providers/task.h"
 
 class ProcessResourceUsage;

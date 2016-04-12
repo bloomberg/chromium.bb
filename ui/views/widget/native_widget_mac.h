@@ -146,7 +146,7 @@ class VIEWS_EXPORT NativeWidgetMac : public internal::NativeWidgetPrivate {
   friend class test::HitTestNativeWidgetMac;
 
   internal::NativeWidgetDelegate* delegate_;
-  scoped_ptr<BridgedNativeWidget> bridge_;
+  std::unique_ptr<BridgedNativeWidget> bridge_;
 
   Widget::InitParams::Ownership ownership_;
 

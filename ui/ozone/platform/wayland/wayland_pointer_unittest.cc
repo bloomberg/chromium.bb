@@ -79,7 +79,7 @@ TEST_F(WaylandPointerTest, Motion) {
   wl_pointer_send_motion(pointer->resource(), 1002, wl_fixed_from_double(10.75),
                          wl_fixed_from_double(20.375));
 
-  scoped_ptr<Event> event;
+  std::unique_ptr<Event> event;
   EXPECT_CALL(delegate, DispatchEvent(_)).WillOnce(CloneEvent(&event));
 
   Sync();
@@ -103,7 +103,7 @@ TEST_F(WaylandPointerTest, MotionDragged) {
 
   Sync();
 
-  scoped_ptr<Event> event;
+  std::unique_ptr<Event> event;
   EXPECT_CALL(delegate, DispatchEvent(_)).WillOnce(CloneEvent(&event));
   wl_pointer_send_motion(pointer->resource(), 1003, wl_fixed_from_int(400),
                          wl_fixed_from_int(500));
@@ -128,7 +128,7 @@ TEST_F(WaylandPointerTest, ButtonPress) {
 
   Sync();
 
-  scoped_ptr<Event> event;
+  std::unique_ptr<Event> event;
   EXPECT_CALL(delegate, DispatchEvent(_)).WillOnce(CloneEvent(&event));
   wl_pointer_send_button(pointer->resource(), 3, 1003, BTN_LEFT,
                          WL_POINTER_BUTTON_STATE_PRESSED);
@@ -156,7 +156,7 @@ TEST_F(WaylandPointerTest, ButtonRelease) {
 
   Sync();
 
-  scoped_ptr<Event> event;
+  std::unique_ptr<Event> event;
   EXPECT_CALL(delegate, DispatchEvent(_)).WillOnce(CloneEvent(&event));
   wl_pointer_send_button(pointer->resource(), 4, 1004, BTN_LEFT,
                          WL_POINTER_BUTTON_STATE_RELEASED);
@@ -182,7 +182,7 @@ TEST_F(WaylandPointerTest, AxisVertical) {
 
   Sync();
 
-  scoped_ptr<Event> event;
+  std::unique_ptr<Event> event;
   EXPECT_CALL(delegate, DispatchEvent(_)).WillOnce(CloneEvent(&event));
   // Wayland servers typically send a value of 10 per mouse wheel click.
   wl_pointer_send_axis(pointer->resource(), 1003,
@@ -209,7 +209,7 @@ TEST_F(WaylandPointerTest, AxisHorizontal) {
 
   Sync();
 
-  scoped_ptr<Event> event;
+  std::unique_ptr<Event> event;
   EXPECT_CALL(delegate, DispatchEvent(_)).WillOnce(CloneEvent(&event));
   // Wayland servers typically send a value of 10 per mouse wheel click.
   wl_pointer_send_axis(pointer->resource(), 1003,

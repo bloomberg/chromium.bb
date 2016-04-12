@@ -5,9 +5,10 @@
 #ifndef UI_KEYBOARD_KEYBOARD_CONTROLLER_H_
 #define UI_KEYBOARD_KEYBOARD_CONTROLLER_H_
 
+#include <memory>
+
 #include "base/event_types.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/ime/input_method_observer.h"
@@ -148,11 +149,11 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   void ShowAnimationFinished();
   void HideAnimationFinished();
 
-  scoped_ptr<KeyboardUI> ui_;
-  scoped_ptr<aura::Window> container_;
+  std::unique_ptr<KeyboardUI> ui_;
+  std::unique_ptr<aura::Window> container_;
   // CallbackAnimationObserver should destructed before container_ because it
   // uses container_'s animator.
-  scoped_ptr<CallbackAnimationObserver> animation_observer_;
+  std::unique_ptr<CallbackAnimationObserver> animation_observer_;
 
   ui::InputMethod* input_method_;
   bool keyboard_visible_;

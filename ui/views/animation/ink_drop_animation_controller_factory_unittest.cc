@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ui/views/animation/ink_drop_animation_controller_factory.h"
+
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/timer/timer.h"
@@ -12,7 +15,6 @@
 #include "ui/base/test/material_design_controller_test_api.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/views/animation/ink_drop_animation_controller.h"
-#include "ui/views/animation/ink_drop_animation_controller_factory.h"
 #include "ui/views/animation/ink_drop_animation_controller_impl.h"
 #include "ui/views/animation/ink_drop_host.h"
 #include "ui/views/animation/ink_drop_state.h"
@@ -33,16 +35,16 @@ class InkDropAnimationControllerFactoryTest
 
   // The InkDropAnimationController returned by the
   // InkDropAnimationControllerFactory test target.
-  scoped_ptr<InkDropAnimationController> ink_drop_animation_controller_;
+  std::unique_ptr<InkDropAnimationController> ink_drop_animation_controller_;
 
  private:
   // Extracts and returns the material design mode from the test parameters.
   ui::MaterialDesignController::Mode GetMaterialMode() const;
 
-  scoped_ptr<ui::ScopedAnimationDurationScaleMode> zero_duration_mode_;
+  std::unique_ptr<ui::ScopedAnimationDurationScaleMode> zero_duration_mode_;
 
   // Required by base::Timer's.
-  scoped_ptr<base::ThreadTaskRunnerHandle> thread_task_runner_handle_;
+  std::unique_ptr<base::ThreadTaskRunnerHandle> thread_task_runner_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(InkDropAnimationControllerFactoryTest);
 };

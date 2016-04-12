@@ -69,7 +69,7 @@ class MenuRunnerImpl : public MenuRunnerImplInterface,
   // invoked.  This is done to make sure the delegate isn't notified after
   // Release() is invoked. We do this as we assume the delegate is no longer
   // valid if MenuRunner has been deleted.
-  scoped_ptr<MenuDelegate> empty_delegate_;
+  std::unique_ptr<MenuDelegate> empty_delegate_;
 
   // Are we in run waiting for it to return?
   bool running_;

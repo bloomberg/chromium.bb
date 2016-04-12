@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/test/motion_event_test_utils.h"
@@ -101,8 +102,8 @@ class TouchSelectionControllerTest : public testing::Test,
     last_event_bounds_rect_ = controller_->GetRectBetweenBounds();
   }
 
-  scoped_ptr<TouchHandleDrawable> CreateDrawable() override {
-    return make_scoped_ptr(new MockTouchHandleDrawable(&dragging_enabled_));
+  std::unique_ptr<TouchHandleDrawable> CreateDrawable() override {
+    return base::WrapUnique(new MockTouchHandleDrawable(&dragging_enabled_));
   }
 
   void AllowShowingOnTapForEmptyEditable() {
@@ -238,7 +239,7 @@ class TouchSelectionControllerTest : public testing::Test,
   bool needs_animate_;
   bool animation_enabled_;
   bool dragging_enabled_;
-  scoped_ptr<TouchSelectionController> controller_;
+  std::unique_ptr<TouchSelectionController> controller_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchSelectionControllerTest);
 };

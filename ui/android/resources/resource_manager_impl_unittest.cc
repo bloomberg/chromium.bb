@@ -121,7 +121,7 @@ class ResourceManagerTest : public testing::Test {
   WindowAndroid* window_android_;
 
  protected:
-  scoped_ptr<MockLayerTreeHost> host_;
+  std::unique_ptr<MockLayerTreeHost> host_;
   TestResourceManagerImpl resource_manager_;
   cc::TestTaskGraphRunner task_graph_runner_;
   cc::FakeLayerTreeHostClient fake_client_;

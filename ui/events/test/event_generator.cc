@@ -7,12 +7,12 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/tick_clock.h"
@@ -195,7 +195,7 @@ void EventGenerator::MoveMouseToWithNative(const gfx::Point& point_in_host,
   // Create a fake event with the point in host, which will be passed
   // to the non native event, then update the native event with the native
   // (root) one.
-  scoped_ptr<ui::MouseEvent> native_event(new ui::MouseEvent(
+  std::unique_ptr<ui::MouseEvent> native_event(new ui::MouseEvent(
       ui::ET_MOUSE_MOVED, point_in_host, point_in_host, Now(), flags_, 0));
   ui::MouseEvent mouseev(native_event.get());
   native_event->set_location(point_for_native);
@@ -559,7 +559,7 @@ void EventGenerator::Dispatch(ui::Event* event) {
   DoDispatchEvent(event, async_);
 }
 
-void EventGenerator::SetTickClock(scoped_ptr<base::TickClock> tick_clock) {
+void EventGenerator::SetTickClock(std::unique_ptr<base::TickClock> tick_clock) {
   tick_clock_ = std::move(tick_clock);
 }
 
@@ -650,7 +650,7 @@ gfx::Point EventGenerator::CenterOfWindow(const EventTarget* window) const {
 
 void EventGenerator::DoDispatchEvent(ui::Event* event, bool async) {
   if (async) {
-    scoped_ptr<ui::Event> pending_event = ui::Event::Clone(*event);
+    std::unique_ptr<ui::Event> pending_event = ui::Event::Clone(*event);
     if (pending_events_.empty()) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,

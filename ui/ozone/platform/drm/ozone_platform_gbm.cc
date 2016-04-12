@@ -16,6 +16,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "ui/base/cursor/ozone/bitmap_cursor_factory_ozone.h"
 #include "ui/events/ozone/device/device_manager.h"
 #include "ui/events/ozone/evdev/event_factory_evdev.h"
@@ -107,10 +108,10 @@ class OzonePlatformGbm : public OzonePlatform {
   GpuPlatformSupportHost* GetGpuPlatformSupportHost() override {
     return gpu_platform_support_host_.get();
   }
-  scoped_ptr<SystemInputInjector> CreateSystemInputInjector() override {
+  std::unique_ptr<SystemInputInjector> CreateSystemInputInjector() override {
     return event_factory_ozone_->CreateSystemInputInjector();
   }
-  scoped_ptr<PlatformWindow> CreatePlatformWindow(
+  std::unique_ptr<PlatformWindow> CreatePlatformWindow(
       PlatformWindowDelegate* delegate,
       const gfx::Rect& bounds) override {
     GpuThreadAdapter* adapter = gpu_platform_support_host_.get();
@@ -119,14 +120,15 @@ class OzonePlatformGbm : public OzonePlatform {
       adapter = mus_thread_proxy_.get();
     }
 
-    scoped_ptr<DrmWindowHost> platform_window(new DrmWindowHost(
+    std::unique_ptr<DrmWindowHost> platform_window(new DrmWindowHost(
         delegate, bounds, adapter, event_factory_ozone_.get(), cursor_.get(),
         window_manager_.get(), display_manager_.get(), overlay_manager_.get()));
     platform_window->Initialize();
     return std::move(platform_window);
   }
-  scoped_ptr<NativeDisplayDelegate> CreateNativeDisplayDelegate() override {
-    return make_scoped_ptr(
+  std::unique_ptr<NativeDisplayDelegate> CreateNativeDisplayDelegate()
+      override {
+    return base::WrapUnique(
         new DrmNativeDisplayDelegate(display_manager_.get()));
   }
   void InitializeUI() override {
@@ -134,11 +136,11 @@ class OzonePlatformGbm : public OzonePlatform {
     window_manager_.reset(new DrmWindowHostManager());
     cursor_.reset(new DrmCursor(window_manager_.get()));
 #if defined(USE_XKBCOMMON)
-    KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(make_scoped_ptr(
+    KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(base::WrapUnique(
         new XkbKeyboardLayoutEngine(xkb_evdev_code_converter_)));
 #else
     KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(
-        make_scoped_ptr(new StubKeyboardLayoutEngine()));
+        base::WrapUnique(new StubKeyboardLayoutEngine()));
 #endif
     event_factory_ozone_.reset(new EventFactoryEvdev(
         cursor_.get(), device_manager_.get(),
@@ -195,23 +197,23 @@ class OzonePlatformGbm : public OzonePlatform {
 
  private:
   // Objects in the GPU process.
-  scoped_ptr<DrmThreadProxy> drm_thread_;
-  scoped_ptr<GlApiLoader> gl_api_loader_;
-  scoped_ptr<GbmSurfaceFactory> surface_factory_;
-  scoped_ptr<DrmGpuPlatformSupport> gpu_platform_support_;
+  std::unique_ptr<DrmThreadProxy> drm_thread_;
+  std::unique_ptr<GlApiLoader> gl_api_loader_;
+  std::unique_ptr<GbmSurfaceFactory> surface_factory_;
+  std::unique_ptr<DrmGpuPlatformSupport> gpu_platform_support_;
 
   // Objects in the Browser process.
-  scoped_ptr<DeviceManager> device_manager_;
-  scoped_ptr<BitmapCursorFactoryOzone> cursor_factory_ozone_;
-  scoped_ptr<DrmWindowHostManager> window_manager_;
-  scoped_ptr<DrmCursor> cursor_;
-  scoped_ptr<EventFactoryEvdev> event_factory_ozone_;
-  scoped_ptr<DrmGpuPlatformSupportHost> gpu_platform_support_host_;
-  scoped_ptr<DrmDisplayHostManager> display_manager_;
-  scoped_ptr<DrmOverlayManager> overlay_manager_;
+  std::unique_ptr<DeviceManager> device_manager_;
+  std::unique_ptr<BitmapCursorFactoryOzone> cursor_factory_ozone_;
+  std::unique_ptr<DrmWindowHostManager> window_manager_;
+  std::unique_ptr<DrmCursor> cursor_;
+  std::unique_ptr<EventFactoryEvdev> event_factory_ozone_;
+  std::unique_ptr<DrmGpuPlatformSupportHost> gpu_platform_support_host_;
+  std::unique_ptr<DrmDisplayHostManager> display_manager_;
+  std::unique_ptr<DrmOverlayManager> overlay_manager_;
 
   // Bridges the DRM, GPU and main threads in mus.
-  scoped_ptr<MusThreadProxy> mus_thread_proxy_;
+  std::unique_ptr<MusThreadProxy> mus_thread_proxy_;
 
 #if defined(USE_XKBCOMMON)
   XkbEvdevCodes xkb_evdev_code_converter_;

@@ -5,6 +5,7 @@
 #include "ui/views/controls/button/custom_button.h"
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/layout.h"
@@ -123,14 +124,14 @@ class TestInkDropDelegateThatTracksVisibilty : public InkDropDelegate {
 // A test Button class that owns a TestInkDropDelegate.
 class TestButtonWithInkDrop : public TestCustomButton {
  public:
-  TestButtonWithInkDrop(scoped_ptr<InkDropDelegate> ink_drop_delegate)
+  TestButtonWithInkDrop(std::unique_ptr<InkDropDelegate> ink_drop_delegate)
       : TestCustomButton(), ink_drop_delegate_(std::move(ink_drop_delegate)) {
     set_ink_drop_delegate(ink_drop_delegate_.get());
   }
   ~TestButtonWithInkDrop() override {}
 
  private:
-  scoped_ptr<views::InkDropDelegate> ink_drop_delegate_;
+  std::unique_ptr<views::InkDropDelegate> ink_drop_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(TestButtonWithInkDrop);
 };
@@ -163,7 +164,8 @@ class CustomButtonTest : public ViewsTestBase {
     ViewsTestBase::TearDown();
   }
 
-  void CreateButtonWithInkDrop(scoped_ptr<InkDropDelegate> ink_drop_delegate) {
+  void CreateButtonWithInkDrop(
+      std::unique_ptr<InkDropDelegate> ink_drop_delegate) {
     delete button_;
     button_ = new TestButtonWithInkDrop(std::move(ink_drop_delegate));
     widget_->SetContentsView(button_);
@@ -177,7 +179,7 @@ class CustomButtonTest : public ViewsTestBase {
   }
 
  private:
-  scoped_ptr<Widget> widget_;
+  std::unique_ptr<Widget> widget_;
   TestCustomButton* button_;
 
   DISALLOW_COPY_AND_ASSIGN(CustomButtonTest);
@@ -393,7 +395,7 @@ TEST_F(CustomButtonTest, ButtonClickTogglesInkDrop) {
   gfx::Point old_cursor = gfx::Screen::GetScreen()->GetCursorScreenPoint();
   bool ink_shown = false;
   bool ink_hidden = false;
-  CreateButtonWithInkDrop(make_scoped_ptr(
+  CreateButtonWithInkDrop(base::WrapUnique(
       new TestInkDropDelegateThatTracksVisibilty(&ink_shown, &ink_hidden)));
 
   ui::test::EventGenerator generator(GetContext(), widget()->GetNativeWindow());
@@ -412,7 +414,7 @@ TEST_F(CustomButtonTest, CaptureLossHidesInkDrop) {
   gfx::Point old_cursor = gfx::Screen::GetScreen()->GetCursorScreenPoint();
   bool ink_shown = false;
   bool ink_hidden = false;
-  CreateButtonWithInkDrop(make_scoped_ptr(
+  CreateButtonWithInkDrop(base::WrapUnique(
       new TestInkDropDelegateThatTracksVisibilty(&ink_shown, &ink_hidden)));
 
   ui::test::EventGenerator generator(GetContext(), widget()->GetNativeWindow());
@@ -435,7 +437,7 @@ TEST_F(CustomButtonTest, CaptureLossHidesInkDrop) {
 
 TEST_F(CustomButtonTest, InkDropAfterShowingContextMenu) {
   TestInkDropDelegate* ink_drop_delegate = new TestInkDropDelegate();
-  CreateButtonWithInkDrop(make_scoped_ptr(ink_drop_delegate));
+  CreateButtonWithInkDrop(base::WrapUnique(ink_drop_delegate));
   TestContextMenuController context_menu_controller;
   button()->set_context_menu_controller(&context_menu_controller);
 
@@ -450,7 +452,7 @@ TEST_F(CustomButtonTest, InkDropAfterShowingContextMenu) {
 
 TEST_F(CustomButtonTest, InkDropAfterTryingToShowContextMenu) {
   TestInkDropDelegate* ink_drop_delegate = new TestInkDropDelegate();
-  CreateButtonWithInkDrop(make_scoped_ptr(ink_drop_delegate));
+  CreateButtonWithInkDrop(base::WrapUnique(ink_drop_delegate));
   button()->set_context_menu_controller(nullptr);
 
   ink_drop_delegate->SetHovered(true);

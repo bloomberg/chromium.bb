@@ -15,8 +15,8 @@ namespace {
 int g_custom_event_types = ET_LAST;
 }  // namespace
 
-scoped_ptr<Event> EventFromNative(const base::NativeEvent& native_event) {
-  scoped_ptr<Event> event;
+std::unique_ptr<Event> EventFromNative(const base::NativeEvent& native_event) {
+  std::unique_ptr<Event> event;
   EventType type = EventTypeFromNative(native_event);
   switch(type) {
     case ET_KEY_PRESSED:

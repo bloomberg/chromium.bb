@@ -27,7 +27,7 @@ void ViewsContentClientMainParts::PreMainMessageLoopRun() {
   ui::InitializeInputMethodForTesting();
   browser_context_.reset(new content::ShellBrowserContext(false, NULL));
 
-  scoped_ptr<views::TestViewsDelegate> test_views_delegate(
+  std::unique_ptr<views::TestViewsDelegate> test_views_delegate(
       new views::DesktopTestViewsDelegate);
   test_views_delegate->set_context_factory(content::GetContextFactory());
   views_delegate_ = std::move(test_views_delegate);

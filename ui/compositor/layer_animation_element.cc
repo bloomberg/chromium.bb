@@ -109,7 +109,7 @@ class InterpolatedTransformTransition : public LayerAnimationElement {
   void OnAbort(LayerAnimationDelegate* delegate) override {}
 
  private:
-  scoped_ptr<InterpolatedTransform> interpolated_transform_;
+  std::unique_ptr<InterpolatedTransform> interpolated_transform_;
 
   DISALLOW_COPY_AND_ASSIGN(InterpolatedTransformTransition);
 };
@@ -370,7 +370,7 @@ class ThreadedLayerAnimationElement : public LayerAnimationElement {
       return;
     }
     set_effective_start_time(base::TimeTicks());
-    scoped_ptr<cc::Animation> animation = CreateCCAnimation();
+    std::unique_ptr<cc::Animation> animation = CreateCCAnimation();
     animation->set_needs_synchronized_start_time(true);
 
     LayerThreadedAnimationDelegate* threaded =
@@ -381,7 +381,7 @@ class ThreadedLayerAnimationElement : public LayerAnimationElement {
 
   virtual void OnEnd(LayerAnimationDelegate* delegate) = 0;
 
-  virtual scoped_ptr<cc::Animation> CreateCCAnimation() = 0;
+  virtual std::unique_ptr<cc::Animation> CreateCCAnimation() = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ThreadedLayerAnimationElement);
@@ -417,13 +417,11 @@ class ThreadedOpacityTransition : public ThreadedLayerAnimationElement {
     delegate->SetOpacityFromAnimation(target_);
   }
 
-  scoped_ptr<cc::Animation> CreateCCAnimation() override {
-    scoped_ptr<cc::AnimationCurve> animation_curve(
-        new FloatAnimationCurveAdapter(tween_type(),
-                                       start_,
-                                       target_,
+  std::unique_ptr<cc::Animation> CreateCCAnimation() override {
+    std::unique_ptr<cc::AnimationCurve> animation_curve(
+        new FloatAnimationCurveAdapter(tween_type(), start_, target_,
                                        duration()));
-    scoped_ptr<cc::Animation> animation(cc::Animation::Create(
+    std::unique_ptr<cc::Animation> animation(cc::Animation::Create(
         std::move(animation_curve), animation_id(), animation_group_id(),
         cc::TargetProperty::OPACITY));
     return animation;
@@ -470,13 +468,11 @@ class ThreadedTransformTransition : public ThreadedLayerAnimationElement {
     delegate->SetTransformFromAnimation(target_);
   }
 
-  scoped_ptr<cc::Animation> CreateCCAnimation() override {
-    scoped_ptr<cc::AnimationCurve> animation_curve(
-        new TransformAnimationCurveAdapter(tween_type(),
-                                           start_,
-                                           target_,
+  std::unique_ptr<cc::Animation> CreateCCAnimation() override {
+    std::unique_ptr<cc::AnimationCurve> animation_curve(
+        new TransformAnimationCurveAdapter(tween_type(), start_, target_,
                                            duration()));
-    scoped_ptr<cc::Animation> animation(cc::Animation::Create(
+    std::unique_ptr<cc::Animation> animation(cc::Animation::Create(
         std::move(animation_curve), animation_id(), animation_group_id(),
         cc::TargetProperty::TRANSFORM));
     return animation;
@@ -547,8 +543,8 @@ class InverseTransformTransition : public ThreadedLayerAnimationElement {
     delegate->SetTransformFromAnimation(computed_target_transform_);
   }
 
-  scoped_ptr<cc::Animation> CreateCCAnimation() override {
-    scoped_ptr<cc::Animation> animation(cc::Animation::Create(
+  std::unique_ptr<cc::Animation> CreateCCAnimation() override {
+    std::unique_ptr<cc::Animation> animation(cc::Animation::Create(
         animation_curve_->Clone(), animation_id(), animation_group_id(),
         cc::TargetProperty::TRANSFORM));
     return animation;
@@ -590,7 +586,7 @@ class InverseTransformTransition : public ThreadedLayerAnimationElement {
   const gfx::Transform base_transform_;
   gfx::Transform base_target_;
 
-  scoped_ptr<cc::AnimationCurve> animation_curve_;
+  std::unique_ptr<cc::AnimationCurve> animation_curve_;
 
   const ThreadedTransformTransition* const uninverted_transition_;
 

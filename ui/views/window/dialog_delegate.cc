@@ -193,7 +193,7 @@ NonClientFrameView* DialogDelegate::CreateDialogFrameView(Widget* widget) {
                                       0, kButtonHEdgeMarginNew),
                           gfx::Insets());
   const BubbleBorder::Shadow kShadow = BubbleBorder::SMALL_SHADOW;
-  scoped_ptr<BubbleBorder> border(
+  std::unique_ptr<BubbleBorder> border(
       new BubbleBorder(BubbleBorder::FLOAT, kShadow, gfx::kPlaceholderColor));
   border->set_use_theme_background_color(true);
   frame->SetBubbleBorder(std::move(border));

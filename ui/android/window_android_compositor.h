@@ -23,7 +23,7 @@ class UI_ANDROID_EXPORT WindowAndroidCompositor {
   virtual ~WindowAndroidCompositor() {}
 
   virtual void RequestCopyOfOutputOnRootLayer(
-      scoped_ptr<cc::CopyOutputRequest> request) = 0;
+      std::unique_ptr<cc::CopyOutputRequest> request) = 0;
   virtual void OnVSync(base::TimeTicks frame_time,
                        base::TimeDelta vsync_period) = 0;
   virtual void SetNeedsAnimate() = 0;

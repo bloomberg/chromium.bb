@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "testing/gtest/include/gtest/gtest.h"
-
-#include "base/memory/scoped_ptr.h"
 #include "ui/base/view_prop.h"
+
+#include <memory>
+
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
 const char kKey1[] = "key_1";
@@ -36,11 +37,11 @@ TEST(ViewPropTest, Basic) {
 
   {
     // Register a value for a view/key pair.
-    scoped_ptr<ViewProp> v1(new ViewProp(nv1, kKey1, data1));
+    std::unique_ptr<ViewProp> v1(new ViewProp(nv1, kKey1, data1));
     EXPECT_EQ(data1, ViewProp::GetValue(nv1, kKey1));
 
     // Register a value for the same view/key pair.
-    scoped_ptr<ViewProp> v2(new ViewProp(nv1, kKey1, data2));
+    std::unique_ptr<ViewProp> v2(new ViewProp(nv1, kKey1, data2));
     // The new value should take over.
     EXPECT_EQ(data2, ViewProp::GetValue(nv1, kKey1));
 
@@ -54,8 +55,8 @@ TEST(ViewPropTest, Basic) {
 
   {
     // Register a value for a view/key pair.
-    scoped_ptr<ViewProp> v1(new ViewProp(nv1, kKey1, data1));
-    scoped_ptr<ViewProp> v2(new ViewProp(nv2, kKey2, data2));
+    std::unique_ptr<ViewProp> v1(new ViewProp(nv1, kKey1, data1));
+    std::unique_ptr<ViewProp> v2(new ViewProp(nv2, kKey2, data2));
     EXPECT_EQ(data1, ViewProp::GetValue(nv1, kKey1));
     EXPECT_EQ(data2, ViewProp::GetValue(nv2, kKey2));
 

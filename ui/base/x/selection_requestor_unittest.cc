@@ -5,10 +5,10 @@
 #include "ui/base/x/selection_requestor.h"
 
 #include <stddef.h>
+#include <memory>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/x/selection_utils.h"
@@ -99,8 +99,8 @@ class SelectionRequestorTest : public testing::Test {
   // |requestor_|'s window.
   XID x_window_;
 
-  scoped_ptr<ui::PlatformEventSource> event_source_;
-  scoped_ptr<SelectionRequestor> requestor_;
+  std::unique_ptr<ui::PlatformEventSource> event_source_;
+  std::unique_ptr<SelectionRequestor> requestor_;
 
   base::MessageLoopForUI message_loop_;
   X11AtomCache atom_cache_;

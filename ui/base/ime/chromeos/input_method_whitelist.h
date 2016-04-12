@@ -5,12 +5,12 @@
 #ifndef UI_BASE_IME_CHROMEOS_INPUT_METHOD_WHITELIST_H_
 #define UI_BASE_IME_CHROMEOS_INPUT_METHOD_WHITELIST_H_
 
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/base/ime/ui_base_ime_export.h"
 
 namespace chromeos {
@@ -32,7 +32,7 @@ class UI_BASE_IME_EXPORT InputMethodWhitelist {
   // Returns all input methods that are supported, including ones not active.
   // This function never returns NULL. Note that input method extensions are not
   // included in the result.
-  scoped_ptr<InputMethodDescriptors> GetSupportedInputMethods() const;
+  std::unique_ptr<InputMethodDescriptors> GetSupportedInputMethods() const;
 
  private:
   std::set<std::string> supported_input_methods_;

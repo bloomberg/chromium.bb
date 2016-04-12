@@ -13,8 +13,8 @@ StubOverlayManager::StubOverlayManager() {
 StubOverlayManager::~StubOverlayManager() {
 }
 
-scoped_ptr<OverlayCandidatesOzone> StubOverlayManager::CreateOverlayCandidates(
-    gfx::AcceleratedWidget w) {
+std::unique_ptr<OverlayCandidatesOzone>
+StubOverlayManager::CreateOverlayCandidates(gfx::AcceleratedWidget w) {
   return nullptr;
 }
 

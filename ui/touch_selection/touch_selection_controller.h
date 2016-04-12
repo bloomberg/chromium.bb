@@ -33,7 +33,7 @@ class UI_TOUCH_SELECTION_EXPORT TouchSelectionControllerClient {
   virtual void SelectBetweenCoordinates(const gfx::PointF& base,
                                         const gfx::PointF& extent) = 0;
   virtual void OnSelectionEvent(SelectionEventType event) = 0;
-  virtual scoped_ptr<TouchHandleDrawable> CreateDrawable() = 0;
+  virtual std::unique_ptr<TouchHandleDrawable> CreateDrawable() = 0;
 };
 
 // Controller for manipulating text selection via touch input.
@@ -161,7 +161,7 @@ class UI_TOUCH_SELECTION_EXPORT TouchSelectionController
   bool IsWithinTapSlop(const gfx::Vector2dF& delta) const override;
   void OnHandleTapped(const TouchHandle& handle) override;
   void SetNeedsAnimate() override;
-  scoped_ptr<TouchHandleDrawable> CreateDrawable() override;
+  std::unique_ptr<TouchHandleDrawable> CreateDrawable() override;
   base::TimeDelta GetMaxTapDuration() const override;
   bool IsAdaptiveHandleOrientationEnabled() const override;
 
@@ -214,11 +214,11 @@ class UI_TOUCH_SELECTION_EXPORT TouchSelectionController
 
   ActiveStatus active_status_;
 
-  scoped_ptr<TouchHandle> insertion_handle_;
+  std::unique_ptr<TouchHandle> insertion_handle_;
   bool activate_insertion_automatically_;
 
-  scoped_ptr<TouchHandle> start_selection_handle_;
-  scoped_ptr<TouchHandle> end_selection_handle_;
+  std::unique_ptr<TouchHandle> start_selection_handle_;
+  std::unique_ptr<TouchHandle> end_selection_handle_;
   bool activate_selection_automatically_;
 
   bool selection_empty_;

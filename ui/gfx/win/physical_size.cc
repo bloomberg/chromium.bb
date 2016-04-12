@@ -8,10 +8,10 @@
 #include <setupapi.h>
 
 #include <iostream>
+#include <memory>
 
 #include "base/logging.h"
 #include "base/memory/free_deleter.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/scoped_generic.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/registry.h"
@@ -72,7 +72,7 @@ bool GetSizeFromRegistry(HDEVINFO device_info_list,
 bool GetInterfaceDetailAndDeviceInfo(
     HDEVINFO device_info_list,
     SP_DEVICE_INTERFACE_DATA* interface_data,
-    scoped_ptr<SP_DEVICE_INTERFACE_DETAIL_DATA, base::FreeDeleter>*
+    std::unique_ptr<SP_DEVICE_INTERFACE_DETAIL_DATA, base::FreeDeleter>*
         interface_detail,
     SP_DEVINFO_DATA* device_info) {
   DCHECK_EQ(sizeof(*device_info), device_info->cbSize);
@@ -119,7 +119,7 @@ std::vector<PhysicalDisplaySize> GetPhysicalSizeForDisplays() {
   while (SetupDiEnumDeviceInterfaces(device_info_list.get(), nullptr,
                                      &GUID_DEVICEINTERFACE_MONITOR,
                                      interface_index++, &interface_data)) {
-    scoped_ptr<SP_DEVICE_INTERFACE_DETAIL_DATA, base::FreeDeleter>
+    std::unique_ptr<SP_DEVICE_INTERFACE_DETAIL_DATA, base::FreeDeleter>
         interface_detail;
     SP_DEVINFO_DATA device_info = {};
     device_info.cbSize = sizeof(device_info);

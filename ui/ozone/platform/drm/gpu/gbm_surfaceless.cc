@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
 #include "third_party/khronos/EGL/egl.h"
 #include "ui/ozone/common/egl_util.h"
@@ -17,7 +18,7 @@
 
 namespace ui {
 
-GbmSurfaceless::GbmSurfaceless(scoped_ptr<DrmWindowProxy> window,
+GbmSurfaceless::GbmSurfaceless(std::unique_ptr<DrmWindowProxy> window,
                                GbmSurfaceFactory* surface_manager)
     : window_(std::move(window)), surface_manager_(surface_manager) {
   surface_manager_->RegisterSurface(window_->widget(), this);
@@ -52,8 +53,8 @@ void GbmSurfaceless::OnSwapBuffersAsync(
   planes_.clear();
 }
 
-scoped_ptr<gfx::VSyncProvider> GbmSurfaceless::CreateVSyncProvider() {
-  return make_scoped_ptr(new DrmVSyncProvider(window_.get()));
+std::unique_ptr<gfx::VSyncProvider> GbmSurfaceless::CreateVSyncProvider() {
+  return base::WrapUnique(new DrmVSyncProvider(window_.get()));
 }
 
 bool GbmSurfaceless::IsUniversalDisplayLinkDevice() {

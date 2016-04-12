@@ -5,7 +5,8 @@
 #ifndef UI_BASE_ACCELERATORS_PLATFORM_ACCELERATOR_H_
 #define UI_BASE_ACCELERATORS_PLATFORM_ACCELERATOR_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "ui/base/ui_base_export.h"
 
 namespace ui {
@@ -15,7 +16,7 @@ class UI_BASE_EXPORT PlatformAccelerator {
  public:
   virtual ~PlatformAccelerator() {}
 
-  virtual scoped_ptr<PlatformAccelerator> CreateCopy() const = 0;
+  virtual std::unique_ptr<PlatformAccelerator> CreateCopy() const = 0;
   virtual bool Equals(const PlatformAccelerator& rhs) const = 0;
 };
 

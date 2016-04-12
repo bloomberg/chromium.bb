@@ -7,12 +7,12 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
@@ -81,8 +81,9 @@ class COMPOSITOR_EXPORT ContextFactory {
 
   // Creates a reflector that copies the content of the |mirrored_compositor|
   // onto |mirroring_layer|.
-  virtual scoped_ptr<Reflector> CreateReflector(Compositor* mirrored_compositor,
-                                                Layer* mirroring_layer) = 0;
+  virtual std::unique_ptr<Reflector> CreateReflector(
+      Compositor* mirrored_compositor,
+      Layer* mirroring_layer) = 0;
   // Removes the reflector, which stops the mirroring.
   virtual void RemoveReflector(Reflector* reflector) = 0;
 
@@ -112,7 +113,8 @@ class COMPOSITOR_EXPORT ContextFactory {
   virtual cc::TaskGraphRunner* GetTaskGraphRunner() = 0;
 
   // Creates a Surface ID allocator with a new namespace.
-  virtual scoped_ptr<cc::SurfaceIdAllocator> CreateSurfaceIdAllocator() = 0;
+  virtual std::unique_ptr<cc::SurfaceIdAllocator>
+  CreateSurfaceIdAllocator() = 0;
 
   // Resize the display corresponding to this compositor to a particular size.
   virtual void ResizeDisplay(ui::Compositor* compositor,
@@ -167,7 +169,7 @@ class COMPOSITOR_EXPORT Compositor
 
   ui::ContextFactory* context_factory() { return context_factory_; }
 
-  void SetOutputSurface(scoped_ptr<cc::OutputSurface> surface);
+  void SetOutputSurface(std::unique_ptr<cc::OutputSurface> surface);
 
   // Schedules a redraw of the layer tree associated with this compositor.
   void ScheduleDraw();
@@ -308,9 +310,10 @@ class COMPOSITOR_EXPORT Compositor
   void DidCompletePageScaleAnimation() override {}
   void SendBeginFramesToChildren(const cc::BeginFrameArgs& args) override;
   void RecordFrameTimingEvents(
-      scoped_ptr<cc::FrameTimingTracker::CompositeTimingSet> composite_events,
-      scoped_ptr<cc::FrameTimingTracker::MainFrameTimingSet> main_frame_events)
-      override {}
+      std::unique_ptr<cc::FrameTimingTracker::CompositeTimingSet>
+          composite_events,
+      std::unique_ptr<cc::FrameTimingTracker::MainFrameTimingSet>
+          main_frame_events) override {}
 
   // cc::LayerTreeHostSingleThreadClient implementation.
   void DidPostSwapBuffers() override;
@@ -357,9 +360,9 @@ class COMPOSITOR_EXPORT Compositor
   gfx::AcceleratedWidget widget_;
   bool widget_valid_;
   bool output_surface_requested_;
-  scoped_ptr<cc::SurfaceIdAllocator> surface_id_allocator_;
+  std::unique_ptr<cc::SurfaceIdAllocator> surface_id_allocator_;
   scoped_refptr<cc::Layer> root_web_layer_;
-  scoped_ptr<cc::LayerTreeHost> host_;
+  std::unique_ptr<cc::LayerTreeHost> host_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   // The manager of vsync parameters for this compositor.

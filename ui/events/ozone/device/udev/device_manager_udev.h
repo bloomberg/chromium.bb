@@ -23,7 +23,7 @@ class DeviceManagerUdev
   ~DeviceManagerUdev() override;
 
  private:
-  scoped_ptr<DeviceEvent> ProcessMessage(udev_device* device);
+  std::unique_ptr<DeviceEvent> ProcessMessage(udev_device* device);
 
   // Creates a device-monitor to look for device add/remove/change events.
   void CreateMonitor();

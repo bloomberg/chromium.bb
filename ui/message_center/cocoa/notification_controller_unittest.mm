@@ -4,10 +4,11 @@
 
 #import "ui/message_center/cocoa/notification_controller.h"
 
+#include <memory>
+
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -130,7 +131,7 @@ class NotificationControllerTest : public ui::CocoaTest {
 };
 
 TEST_F(NotificationControllerTest, BasicLayout) {
-  scoped_ptr<message_center::Notification> notification(
+  std::unique_ptr<message_center::Notification> notification(
       new message_center::Notification(
           message_center::NOTIFICATION_TYPE_SIMPLE, "",
           ASCIIToUTF16("Added to circles"),
@@ -156,7 +157,7 @@ TEST_F(NotificationControllerTest, BasicLayout) {
 }
 
 TEST_F(NotificationControllerTest, NotificationSetttingsButtonLayout) {
-  scoped_ptr<message_center::Notification> notification(
+  std::unique_ptr<message_center::Notification> notification(
       new message_center::Notification(
           message_center::NOTIFICATION_TYPE_SIMPLE, "",
           ASCIIToUTF16("Added to circles"),
@@ -173,7 +174,7 @@ TEST_F(NotificationControllerTest, NotificationSetttingsButtonLayout) {
 }
 
 TEST_F(NotificationControllerTest, ContextMessageAsDomainNotificationLayout) {
-  scoped_ptr<message_center::Notification> notification(
+  std::unique_ptr<message_center::Notification> notification(
       new message_center::Notification(
           message_center::NOTIFICATION_TYPE_SIMPLE, "",
           ASCIIToUTF16("Added to circles"),
@@ -190,7 +191,7 @@ TEST_F(NotificationControllerTest, ContextMessageAsDomainNotificationLayout) {
 }
 
 TEST_F(NotificationControllerTest, OverflowText) {
-  scoped_ptr<message_center::Notification> notification(
+  std::unique_ptr<message_center::Notification> notification(
       new message_center::Notification(
           message_center::NOTIFICATION_TYPE_SIMPLE, "",
           ASCIIToUTF16("This is a much longer title that should wrap "
@@ -210,7 +211,7 @@ TEST_F(NotificationControllerTest, OverflowText) {
 }
 
 TEST_F(NotificationControllerTest, Close) {
-  scoped_ptr<message_center::Notification> notification(
+  std::unique_ptr<message_center::Notification> notification(
       new message_center::Notification(
           message_center::NOTIFICATION_TYPE_SIMPLE, "an_id", base::string16(),
           base::string16(), gfx::Image(), base::string16(), GURL(),
@@ -230,7 +231,7 @@ TEST_F(NotificationControllerTest, Close) {
 }
 
 TEST_F(NotificationControllerTest, Update) {
-  scoped_ptr<message_center::Notification> notification(
+  std::unique_ptr<message_center::Notification> notification(
       new message_center::Notification(
           message_center::NOTIFICATION_TYPE_SIMPLE, "",
           ASCIIToUTF16("A simple title"),
@@ -267,7 +268,7 @@ TEST_F(NotificationControllerTest, Buttons) {
   message_center::ButtonInfo button2(UTF8ToUTF16("button2"));
   optional.buttons.push_back(button2);
 
-  scoped_ptr<message_center::Notification> notification(
+  std::unique_ptr<message_center::Notification> notification(
       new message_center::Notification(
           message_center::NOTIFICATION_TYPE_BASE_FORMAT, "an_id",
           base::string16(), base::string16(), gfx::Image(), base::string16(),
@@ -286,7 +287,7 @@ TEST_F(NotificationControllerTest, Buttons) {
 }
 
 TEST_F(NotificationControllerTest, Image) {
-  scoped_ptr<message_center::Notification> notification(
+  std::unique_ptr<message_center::Notification> notification(
       new message_center::Notification(
           message_center::NOTIFICATION_TYPE_BASE_FORMAT, "an_id",
           base::string16(), base::string16(), gfx::Image(), base::string16(),
@@ -324,7 +325,7 @@ TEST_F(NotificationControllerTest, List) {
   optional.items.push_back(item3);
   optional.context_message = UTF8ToUTF16("Context Message");
 
-  scoped_ptr<message_center::Notification> notification(
+  std::unique_ptr<message_center::Notification> notification(
       new message_center::Notification(
           message_center::NOTIFICATION_TYPE_BASE_FORMAT, "an_id",
           UTF8ToUTF16("Notification Title"),
@@ -350,7 +351,7 @@ TEST_F(NotificationControllerTest, NoMessage) {
   message_center::RichNotificationData optional;
   optional.context_message = UTF8ToUTF16("Context Message");
 
-  scoped_ptr<message_center::Notification> notification(
+  std::unique_ptr<message_center::Notification> notification(
       new message_center::Notification(
           message_center::NOTIFICATION_TYPE_BASE_FORMAT, "an_id",
           UTF8ToUTF16("Notification Title"), UTF8ToUTF16(""), gfx::Image(),
@@ -371,7 +372,7 @@ TEST_F(NotificationControllerTest, MessageSize) {
   message_center::RichNotificationData data;
   std::string id("id");
   NotifierId notifier_id(NotifierId::APPLICATION, "notifier");
-  scoped_ptr<Notification> notification(new Notification(
+  std::unique_ptr<Notification> notification(new Notification(
       NOTIFICATION_TYPE_BASE_FORMAT, id, base::UTF8ToUTF16(""),
       ASCIIToUTF16("And\neven\nthe\nmessage is long.\nThis sure is wordy"),
       gfx::Image(), base::string16() /* display_source */, GURL(), notifier_id,

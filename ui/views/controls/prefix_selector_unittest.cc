@@ -54,7 +54,7 @@ class PrefixSelectorTest : public ViewsTestBase {
   }
 
  protected:
-  scoped_ptr<PrefixSelector> selector_;
+  std::unique_ptr<PrefixSelector> selector_;
   TestPrefixDelegate delegate_;
 
  private:

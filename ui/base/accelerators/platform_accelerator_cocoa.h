@@ -21,7 +21,7 @@ class UI_BASE_EXPORT PlatformAcceleratorCocoa : public PlatformAccelerator {
   ~PlatformAcceleratorCocoa() override;
 
   // PlatformAccelerator:
-  scoped_ptr<PlatformAccelerator> CreateCopy() const override;
+  std::unique_ptr<PlatformAccelerator> CreateCopy() const override;
   bool Equals(const PlatformAccelerator& rhs) const override;
 
   // The keyEquivalent of the NSMenuItem associated with the accelerator.

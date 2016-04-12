@@ -49,7 +49,7 @@ void History::AddLaunchEvent(const std::string& query,
   data_->Add(NormalizeString(query), result_id);
 }
 
-scoped_ptr<KnownResults> History::GetKnownResults(
+std::unique_ptr<KnownResults> History::GetKnownResults(
     const std::string& query) const {
   DCHECK(IsReady());
   return data_->GetKnownResults(NormalizeString(query));

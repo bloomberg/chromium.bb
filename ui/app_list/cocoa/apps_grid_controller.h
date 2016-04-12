@@ -8,8 +8,9 @@
 #import <Cocoa/Cocoa.h>
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/mac/scoped_nsobject.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/app_list/app_list_export.h"
 #import "ui/app_list/cocoa/app_list_pager_view.h"
 #import "ui/app_list/cocoa/scroll_view_with_no_scrollbars.h"
@@ -31,7 +32,7 @@ APP_LIST_EXPORT
                                                  NSCollectionViewDelegate> {
  @private
   app_list::AppListViewDelegate* delegate_;  // Weak. Owned by view controller.
-  scoped_ptr<app_list::AppsGridDelegateBridge> bridge_;
+  std::unique_ptr<app_list::AppsGridDelegateBridge> bridge_;
 
   base::scoped_nsobject<AppsCollectionViewDragManager> dragManager_;
   base::scoped_nsobject<NSMutableArray> pages_;

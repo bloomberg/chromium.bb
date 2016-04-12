@@ -9,10 +9,11 @@
 #include <algorithm>
 #include <cmath>
 #include <limits>
+#include <memory>
 
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/threading/non_thread_safe.h"
 #include "build/build_config.h"
 #include "ui/gfx/geometry/rect.h"
@@ -121,7 +122,7 @@ class ImageSkiaStorage : public base::RefCountedThreadSafe<ImageSkiaStorage>,
   // Vector of bitmaps and their associated scale.
   std::vector<gfx::ImageSkiaRep> image_reps_;
 
-  scoped_ptr<ImageSkiaSource> source_;
+  std::unique_ptr<ImageSkiaSource> source_;
 
   // Size of the image in DIP.
   gfx::Size size_;
@@ -334,10 +335,10 @@ ImageSkia ImageSkia::CreateFrom1xBitmap(const SkBitmap& bitmap) {
   return ImageSkia(ImageSkiaRep(bitmap, 0.0f));
 }
 
-scoped_ptr<ImageSkia> ImageSkia::DeepCopy() const {
+std::unique_ptr<ImageSkia> ImageSkia::DeepCopy() const {
   ImageSkia* copy = new ImageSkia;
   if (isNull())
-    return make_scoped_ptr(copy);
+    return base::WrapUnique(copy);
 
   CHECK(CanRead());
 
@@ -350,7 +351,7 @@ scoped_ptr<ImageSkia> ImageSkia::DeepCopy() const {
   // thread so that other thread can use this.
   if (!copy->isNull())
     copy->storage_->DetachFromThread();
-  return make_scoped_ptr(copy);
+  return base::WrapUnique(copy);
 }
 
 bool ImageSkia::BackedBySameObjectAs(const gfx::ImageSkia& other) const {

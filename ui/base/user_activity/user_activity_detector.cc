@@ -91,7 +91,7 @@ void UserActivityDetector::OnDisplayPowerChanging() {
 
 void UserActivityDetector::DidProcessEvent(
     const PlatformEvent& platform_event) {
-  scoped_ptr<ui::Event> event(ui::EventFromNative(platform_event));
+  std::unique_ptr<ui::Event> event(ui::EventFromNative(platform_event));
   ProcessReceivedEvent(event.get());
 }
 

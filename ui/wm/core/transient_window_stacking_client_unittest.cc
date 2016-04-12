@@ -4,8 +4,9 @@
 
 #include "ui/wm/core/transient_window_stacking_client.h"
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/compositor/test/test_layers.h"
@@ -34,16 +35,16 @@ class TransientWindowStackingClientTest : public aura::test::AuraTestBase {
   }
 
  private:
-  scoped_ptr<TransientWindowStackingClient> client_;
+  std::unique_ptr<TransientWindowStackingClient> client_;
   DISALLOW_COPY_AND_ASSIGN(TransientWindowStackingClientTest);
 };
 
 // Tests that transient children are stacked as a unit when using stack above.
 TEST_F(TransientWindowStackingClientTest, TransientChildrenGroupAbove) {
-  scoped_ptr<Window> parent(CreateTestWindowWithId(0, root_window()));
-  scoped_ptr<Window> w1(CreateTestWindowWithId(1, parent.get()));
+  std::unique_ptr<Window> parent(CreateTestWindowWithId(0, root_window()));
+  std::unique_ptr<Window> w1(CreateTestWindowWithId(1, parent.get()));
   Window* w11 = CreateTestWindowWithId(11, parent.get());
-  scoped_ptr<Window> w2(CreateTestWindowWithId(2, parent.get()));
+  std::unique_ptr<Window> w2(CreateTestWindowWithId(2, parent.get()));
   Window* w21 = CreateTestWindowWithId(21, parent.get());
   Window* w211 = CreateTestWindowWithId(211, parent.get());
   Window* w212 = CreateTestWindowWithId(212, parent.get());
@@ -110,10 +111,10 @@ TEST_F(TransientWindowStackingClientTest, TransientChildrenGroupAbove) {
 
 // Tests that transient children are stacked as a unit when using stack below.
 TEST_F(TransientWindowStackingClientTest, TransientChildrenGroupBelow) {
-  scoped_ptr<Window> parent(CreateTestWindowWithId(0, root_window()));
-  scoped_ptr<Window> w1(CreateTestWindowWithId(1, parent.get()));
+  std::unique_ptr<Window> parent(CreateTestWindowWithId(0, root_window()));
+  std::unique_ptr<Window> w1(CreateTestWindowWithId(1, parent.get()));
   Window* w11 = CreateTestWindowWithId(11, parent.get());
-  scoped_ptr<Window> w2(CreateTestWindowWithId(2, parent.get()));
+  std::unique_ptr<Window> w2(CreateTestWindowWithId(2, parent.get()));
   Window* w21 = CreateTestWindowWithId(21, parent.get());
   Window* w211 = CreateTestWindowWithId(211, parent.get());
   Window* w212 = CreateTestWindowWithId(212, parent.get());
@@ -180,9 +181,9 @@ TEST_F(TransientWindowStackingClientTest, TransientChildrenGroupBelow) {
 // See crbug.com/443433
 TEST_F(TransientWindowStackingClientTest,
        StackAboveWindowWithNULLLayerDelegate) {
-  scoped_ptr<Window> parent(CreateTestWindowWithId(0, root_window()));
-  scoped_ptr<Window> w1(CreateTestWindowWithId(1, parent.get()));
-  scoped_ptr<Window> w2(CreateTestWindowWithId(2, parent.get()));
+  std::unique_ptr<Window> parent(CreateTestWindowWithId(0, root_window()));
+  std::unique_ptr<Window> w1(CreateTestWindowWithId(1, parent.get()));
+  std::unique_ptr<Window> w2(CreateTestWindowWithId(2, parent.get()));
   w2->layer()->set_delegate(NULL);
   EXPECT_EQ(w2.get(), parent->children().back());
 

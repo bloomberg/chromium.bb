@@ -51,7 +51,7 @@ class ExampleMenuModel : public ui::SimpleMenuModel,
     COMMAND_GO_HOME,
   };
 
-  scoped_ptr<ui::SimpleMenuModel> submenu_;
+  std::unique_ptr<ui::SimpleMenuModel> submenu_;
   std::set<int> checked_fruits_;
   int current_encoding_command_id_;
 
@@ -71,8 +71,8 @@ class ExampleMenuButton : public MenuButton, public MenuButtonListener {
 
   ui::SimpleMenuModel* GetMenuModel();
 
-  scoped_ptr<ExampleMenuModel> menu_model_;
-  scoped_ptr<MenuRunner> menu_runner_;
+  std::unique_ptr<ExampleMenuModel> menu_model_;
+  std::unique_ptr<MenuRunner> menu_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(ExampleMenuButton);
 };

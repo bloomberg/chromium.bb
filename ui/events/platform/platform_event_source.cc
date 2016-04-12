@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/events/platform/platform_event_observer.h"
@@ -43,11 +44,11 @@ void PlatformEventSource::RemovePlatformEventDispatcher(
   OnDispatcherListChanged();
 }
 
-scoped_ptr<ScopedEventDispatcher> PlatformEventSource::OverrideDispatcher(
+std::unique_ptr<ScopedEventDispatcher> PlatformEventSource::OverrideDispatcher(
     PlatformEventDispatcher* dispatcher) {
   CHECK(dispatcher);
   overridden_dispatcher_restored_ = false;
-  return make_scoped_ptr(
+  return base::WrapUnique(
       new ScopedEventDispatcher(&overridden_dispatcher_, dispatcher));
 }
 

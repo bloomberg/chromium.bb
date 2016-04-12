@@ -72,7 +72,7 @@ base::TimeDelta MenuRunner::closing_event_time() const {
 }
 
 void MenuRunner::SetRunnerHandler(
-    scoped_ptr<MenuRunnerHandler> runner_handler) {
+    std::unique_ptr<MenuRunnerHandler> runner_handler) {
   runner_handler_ = std::move(runner_handler);
 }
 

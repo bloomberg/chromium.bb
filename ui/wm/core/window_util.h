@@ -5,10 +5,10 @@
 #ifndef UI_WM_CORE_WINDOW_UTIL_H_
 #define UI_WM_CORE_WINDOW_UTIL_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/wm/wm_export.h"
 
 namespace aura {
@@ -42,7 +42,7 @@ WM_EXPORT aura::Window* GetToplevelWindow(aura::Window* window);
 //
 // As a result of this |root| has freshly created layers, meaning the layers
 // have not yet been painted to.
-WM_EXPORT scoped_ptr<ui::LayerTreeOwner> RecreateLayers(
+WM_EXPORT std::unique_ptr<ui::LayerTreeOwner> RecreateLayers(
     ui::LayerOwner* root);
 
 // Convenience functions that get the TransientWindowManager for the window and

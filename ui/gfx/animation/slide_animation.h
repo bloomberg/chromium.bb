@@ -43,7 +43,7 @@ namespace gfx {
 //     }
 //   }
 //  private:
-//   scoped_ptr<SlideAnimation> animation_;
+//   std::unique_ptr<SlideAnimation> animation_;
 // }
 class GFX_EXPORT SlideAnimation : public LinearAnimation {
  public:

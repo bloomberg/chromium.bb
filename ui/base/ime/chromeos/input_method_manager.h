@@ -8,11 +8,11 @@
 #include <stddef.h>
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/base/ime/chromeos/input_method_descriptor.h"
 #include "ui/base/ime/ui_base_ime_export.h"
 
@@ -159,7 +159,7 @@ class UI_BASE_IME_EXPORT InputMethodManager {
 
     // Returns the list of input methods we can select (i.e. active) including
     // extension input methods.
-    virtual scoped_ptr<InputMethodDescriptors> GetActiveInputMethods()
+    virtual std::unique_ptr<InputMethodDescriptors> GetActiveInputMethods()
         const = 0;
 
     // Returns the list of input methods we can select (i.e. active) including
@@ -255,8 +255,8 @@ class UI_BASE_IME_EXPORT InputMethodManager {
   // Returns all input methods that are supported, including ones not active.
   // This function never returns NULL. Note that input method extensions are NOT
   // included in the result.
-  virtual scoped_ptr<InputMethodDescriptors>
-      GetSupportedInputMethods() const = 0;
+  virtual std::unique_ptr<InputMethodDescriptors> GetSupportedInputMethods()
+      const = 0;
 
   // Activates the input method property specified by the |key|.
   virtual void ActivateInputMethodMenuItem(const std::string& key) = 0;

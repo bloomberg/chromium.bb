@@ -75,7 +75,7 @@ class CursorState {
 
 bool CursorManager::last_cursor_visibility_state_ = true;
 
-CursorManager::CursorManager(scoped_ptr<NativeCursorManager> delegate)
+CursorManager::CursorManager(std::unique_ptr<NativeCursorManager> delegate)
     : delegate_(std::move(delegate)),
       cursor_lock_count_(0),
       current_state_(new internal::CursorState),

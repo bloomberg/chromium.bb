@@ -8,9 +8,10 @@
 #ifndef UI_BASE_L10N_FORMATTER_H_
 #define UI_BASE_L10N_FORMATTER_H_
 
+#include <memory>
+
 #include "base/lazy_instance.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "third_party/icu/source/common/unicode/unistr.h"
 #include "third_party/icu/source/i18n/unicode/msgfmt.h"
 #include "third_party/icu/source/i18n/unicode/plurrule.h"
@@ -66,14 +67,15 @@ class Formatter {
  private:
   // Create a hard-coded fallback message format for plural formatting.
   // This will never be called unless translators make a mistake.
-  scoped_ptr<icu::MessageFormat> CreateFallbackFormat(
+  std::unique_ptr<icu::MessageFormat> CreateFallbackFormat(
       const icu::PluralRules& rules,
       const Pluralities& pluralities) const;
 
-  scoped_ptr<icu::MessageFormat> InitFormat(const Pluralities& pluralities);
+  std::unique_ptr<icu::MessageFormat> InitFormat(
+      const Pluralities& pluralities);
 
-  scoped_ptr<icu::MessageFormat> simple_format_[UNIT_COUNT];
-  scoped_ptr<icu::MessageFormat> detailed_format_[TWO_UNITS_COUNT][2];
+  std::unique_ptr<icu::MessageFormat> simple_format_[UNIT_COUNT];
+  std::unique_ptr<icu::MessageFormat> detailed_format_[TWO_UNITS_COUNT][2];
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(Formatter);
 };
@@ -96,8 +98,8 @@ class UI_BASE_EXPORT FormatterContainer {
   void Initialize();
   void Shutdown();
 
-  scoped_ptr<Formatter>
-      formatter_[TimeFormat::FORMAT_COUNT][TimeFormat::LENGTH_COUNT];
+  std::unique_ptr<Formatter> formatter_[TimeFormat::FORMAT_COUNT]
+                                       [TimeFormat::LENGTH_COUNT];
 
   DISALLOW_COPY_AND_ASSIGN(FormatterContainer);
 };

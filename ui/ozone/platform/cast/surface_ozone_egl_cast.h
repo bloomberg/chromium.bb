@@ -23,7 +23,7 @@ class SurfaceOzoneEglCast : public SurfaceOzoneEGL {
   bool OnSwapBuffers() override;
   void OnSwapBuffersAsync(const SwapCompletionCallback& callback) override;
   bool ResizeNativeWindow(const gfx::Size& viewport_size) override;
-  scoped_ptr<gfx::VSyncProvider> CreateVSyncProvider() override;
+  std::unique_ptr<gfx::VSyncProvider> CreateVSyncProvider() override;
   void* /* EGLConfig */ GetEGLSurfaceConfig(
       const EglConfigCallbacks& egl) override;
 

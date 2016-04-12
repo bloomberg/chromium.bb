@@ -20,7 +20,7 @@ MenuRunnerTestAPI::~MenuRunnerTestAPI() {
 }
 
 void MenuRunnerTestAPI::SetMenuRunnerHandler(
-    scoped_ptr<MenuRunnerHandler> menu_runner_handler) {
+    std::unique_ptr<MenuRunnerHandler> menu_runner_handler) {
   menu_runner_->SetRunnerHandler(std::move(menu_runner_handler));
 }
 

@@ -5,7 +5,8 @@
 #ifndef UI_OZONE_PLATFORM_X11_X11_SURFACE_FACTORY_H_
 #define UI_OZONE_PLATFORM_X11_X11_SURFACE_FACTORY_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "ui/ozone/public/surface_factory_ozone.h"
 
 namespace ui {
@@ -18,7 +19,7 @@ class X11SurfaceFactory : public SurfaceFactoryOzone {
 
   // SurfaceFactoryOzone:
 
-  scoped_ptr<SurfaceOzoneEGL> CreateEGLSurfaceForWidget(
+  std::unique_ptr<SurfaceOzoneEGL> CreateEGLSurfaceForWidget(
       gfx::AcceleratedWidget widget) override;
   bool LoadEGLGLES2Bindings(
       AddGLLibraryCallback add_gl_library,

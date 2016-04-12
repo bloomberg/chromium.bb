@@ -57,7 +57,7 @@ DisplayLayoutBuilder& DisplayLayoutBuilder::SetSecondaryPlacement(
   return *this;
 }
 
-scoped_ptr<DisplayLayout> DisplayLayoutBuilder::Build() {
+std::unique_ptr<DisplayLayout> DisplayLayoutBuilder::Build() {
   std::sort(layout_->placement_list.begin(), layout_->placement_list.end(),
             [](const DisplayPlacement& a, const DisplayPlacement& b) {
               return a.display_id < b.display_id;

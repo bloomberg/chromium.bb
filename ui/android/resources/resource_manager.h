@@ -5,8 +5,9 @@
 #ifndef UI_ANDROID_RESOURCES_RESOURCE_MANAGER_H_
 #define UI_ANDROID_RESOURCES_RESOURCE_MANAGER_H_
 
+#include <memory>
+
 #include "base/android/jni_android.h"
-#include "base/memory/scoped_ptr.h"
 #include "cc/resources/scoped_ui_resource.h"
 #include "ui/android/resources/crushed_sprite_resource.h"
 #include "ui/android/ui_android_export.h"
@@ -43,7 +44,7 @@ class UI_ANDROID_EXPORT ResourceManager {
     gfx::Rect Border(const gfx::Size& bounds) const;
     gfx::Rect Border(const gfx::Size& bounds, const gfx::InsetsF& scale) const;
 
-    scoped_ptr<cc::ScopedUIResource> ui_resource;
+    std::unique_ptr<cc::ScopedUIResource> ui_resource;
     gfx::Size size;
     gfx::Rect padding;
     gfx::Rect aperture;

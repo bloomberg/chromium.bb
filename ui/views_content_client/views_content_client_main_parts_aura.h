@@ -5,8 +5,9 @@
 #ifndef UI_VIEWS_CONTENT_CLIENT_VIEWS_CONTENT_CLIENT_MAIN_PARTS_AURA_H_
 #define UI_VIEWS_CONTENT_CLIENT_VIEWS_CONTENT_CLIENT_MAIN_PARTS_AURA_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/views_content_client/views_content_client_main_parts.h"
 
 namespace wm {
@@ -27,7 +28,7 @@ class ViewsContentClientMainPartsAura : public ViewsContentClientMainParts {
   void PostMainMessageLoopRun() override;
 
  private:
-  scoped_ptr< ::wm::WMState> wm_state_;
+  std::unique_ptr<::wm::WMState> wm_state_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewsContentClientMainPartsAura);
 };

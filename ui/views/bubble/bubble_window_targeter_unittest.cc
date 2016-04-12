@@ -79,8 +79,8 @@ class BubbleWindowTargeterTest : public ViewsTestBase {
     bubble_widget_.reset(BubbleDelegateView::CreateBubble(bubble_delegate_));
   }
 
-  scoped_ptr<Widget> anchor_;
-  scoped_ptr<Widget> bubble_widget_;
+  std::unique_ptr<Widget> anchor_;
+  std::unique_ptr<Widget> bubble_widget_;
   BubbleDelegateView* bubble_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(BubbleWindowTargeterTest);
@@ -107,7 +107,7 @@ TEST_F(BubbleWindowTargeterTest, HitTest) {
     EXPECT_EQ(bubble_window, targeter->FindTargetForEvent(root, &move1));
   }
 
-  bubble_window->SetEventTargeter(scoped_ptr<ui::EventTargeter>(
+  bubble_window->SetEventTargeter(std::unique_ptr<ui::EventTargeter>(
       new BubbleWindowTargeter(bubble_delegate())));
   {
     bubble_delegate()->set_margins(gfx::Insets(20));

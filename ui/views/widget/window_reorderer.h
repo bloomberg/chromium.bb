@@ -5,9 +5,10 @@
 #ifndef UI_VIEWS_WIDGET_WINDOW_REORDERER_H_
 #define UI_VIEWS_WIDGET_WINDOW_REORDERER_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/aura/window_observer.h"
 
 namespace aura {
@@ -50,7 +51,7 @@ class WindowReorderer : public aura::WindowObserver {
   // Reorders windows as a result of the kHostViewKey being set on a child of
   // |parent_window_|.
   class AssociationObserver;
-  scoped_ptr<AssociationObserver> association_observer_;
+  std::unique_ptr<AssociationObserver> association_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowReorderer);
 };

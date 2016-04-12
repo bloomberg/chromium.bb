@@ -48,9 +48,9 @@ class NativeViewAccessibilityTest : public ViewsTestBase {
   }
 
  protected:
-  scoped_ptr<TestButton> button_;
+  std::unique_ptr<TestButton> button_;
   NativeViewAccessibility* button_accessibility_;
-  scoped_ptr<Label> label_;
+  std::unique_ptr<Label> label_;
   NativeViewAccessibility* label_accessibility_;
 };
 
@@ -90,13 +90,13 @@ class TestNativeViewAccessibility : public NativeViewAccessibility {
 };
 
 TEST_F(NativeViewAccessibilityTest, CrashOnWidgetDestroyed) {
-  scoped_ptr<Widget> parent_widget(new Widget);
+  std::unique_ptr<Widget> parent_widget(new Widget);
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.bounds = gfx::Rect(50, 50, 650, 650);
   parent_widget->Init(params);
 
-  scoped_ptr<Widget> child_widget(new Widget);
+  std::unique_ptr<Widget> child_widget(new Widget);
   child_widget->Init(params);
 
   // Make sure that deleting the parent widget can't cause a crash

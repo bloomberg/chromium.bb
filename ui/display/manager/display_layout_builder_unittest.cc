@@ -11,7 +11,7 @@ namespace display {
 TEST(DisplayLayoutBuilderTest, SecondaryPlacement) {
   DisplayLayoutBuilder builder(1);
   builder.SetSecondaryPlacement(2, DisplayPlacement::LEFT, 30);
-  scoped_ptr<DisplayLayout> layout(builder.Build());
+  std::unique_ptr<DisplayLayout> layout(builder.Build());
   ASSERT_EQ(1u, layout->placement_list.size());
 
   EXPECT_EQ(2, layout->placement_list[0].display_id);
@@ -25,7 +25,7 @@ TEST(DisplayLayoutBuilderTest, MultiplePlacement) {
   builder.AddDisplayPlacement(5, 1, DisplayPlacement::TOP, 30);
   builder.AddDisplayPlacement(3, 5, DisplayPlacement::LEFT, 20);
   builder.AddDisplayPlacement(4, 5, DisplayPlacement::RIGHT, 10);
-  scoped_ptr<DisplayLayout> layout(builder.Build());
+  std::unique_ptr<DisplayLayout> layout(builder.Build());
 
   ASSERT_EQ(3u, layout->placement_list.size());
 

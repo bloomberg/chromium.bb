@@ -24,7 +24,7 @@ const int kDeviceIdForInjection = -1;
 }  // namespace
 
 InputInjectorEvdev::InputInjectorEvdev(
-    scoped_ptr<DeviceEventDispatcherEvdev> dispatcher,
+    std::unique_ptr<DeviceEventDispatcherEvdev> dispatcher,
     CursorDelegateEvdev* cursor)
     : cursor_(cursor), dispatcher_(std::move(dispatcher)) {}
 

@@ -6,11 +6,11 @@
 #define UI_VIEWS_ANIMATION_BOUNDS_ANIMATOR_H_
 
 #include <map>
+#include <memory>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "ui/gfx/animation/animation_container_observer.h"
 #include "ui/gfx/animation/animation_delegate.h"
@@ -71,7 +71,7 @@ class VIEWS_EXPORT BoundsAnimator : public gfx::AnimationDelegate,
 
   // Sets the delegate for the animation for the specified view.
   void SetAnimationDelegate(View* view,
-                            scoped_ptr<gfx::AnimationDelegate> delegate);
+                            std::unique_ptr<gfx::AnimationDelegate> delegate);
 
   // Returns true if BoundsAnimator is animating the bounds of |view|.
   bool IsAnimating(View* view) const;

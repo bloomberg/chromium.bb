@@ -27,7 +27,7 @@ class MockMessageCenter : public message_center::FakeMessageCenter {
   }
 
   void AddNotification(
-      scoped_ptr<message_center::Notification> notification) override {
+      std::unique_ptr<message_center::Notification> notification) override {
     visible_notifications_.insert(notification.release());
   }
 
@@ -104,10 +104,10 @@ class ArcNotificationManagerTest : public testing::Test {
 
  private:
   base::MessageLoop loop_;
-  scoped_ptr<FakeArcBridgeService> service_;
-  scoped_ptr<FakeNotificationsInstance> arc_notifications_instance_;
-  scoped_ptr<ArcNotificationManager> arc_notification_manager_;
-  scoped_ptr<MockMessageCenter> message_center_;
+  std::unique_ptr<FakeArcBridgeService> service_;
+  std::unique_ptr<FakeNotificationsInstance> arc_notifications_instance_;
+  std::unique_ptr<ArcNotificationManager> arc_notification_manager_;
+  std::unique_ptr<MockMessageCenter> message_center_;
 
   void SetUp() override {
     NotificationsInstancePtr arc_notifications_instance;

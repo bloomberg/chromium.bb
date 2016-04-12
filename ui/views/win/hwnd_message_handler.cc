@@ -2144,7 +2144,7 @@ LRESULT HWNDMessageHandler::OnTouchEvent(UINT message,
                                          LPARAM l_param) {
   // Handle touch events only on Aura for now.
   int num_points = LOWORD(w_param);
-  scoped_ptr<TOUCHINPUT[]> input(new TOUCHINPUT[num_points]);
+  std::unique_ptr<TOUCHINPUT[]> input(new TOUCHINPUT[num_points]);
   if (ui::GetTouchInputInfoWrapper(reinterpret_cast<HTOUCHINPUT>(l_param),
                                    num_points, input.get(),
                                    sizeof(TOUCHINPUT))) {

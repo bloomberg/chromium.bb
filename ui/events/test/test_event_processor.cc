@@ -19,7 +19,7 @@ TestEventProcessor::TestEventProcessor()
 
 TestEventProcessor::~TestEventProcessor() {}
 
-void TestEventProcessor::SetRoot(scoped_ptr<EventTarget> root) {
+void TestEventProcessor::SetRoot(std::unique_ptr<EventTarget> root) {
   root_ = std::move(root);
 }
 

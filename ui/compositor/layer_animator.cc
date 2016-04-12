@@ -6,8 +6,9 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/animation/animation_events.h"
 #include "cc/animation/animation_host.h"
@@ -87,26 +88,26 @@ LayerAnimator* LayerAnimator::CreateImplicitAnimator() {
 // It is worth noting that SetFoo avoids invoking the usual animation machinery
 // if the transition duration is zero -- in this case we just set the property
 // on the layer animation delegate immediately.
-#define ANIMATED_PROPERTY(type, property, name, member_type, member)  \
-void LayerAnimator::Set##name(type value) {                           \
-  base::TimeDelta duration = GetTransitionDuration();                 \
-  if (duration == base::TimeDelta() && delegate() &&                  \
-      (preemption_strategy_ != ENQUEUE_NEW_ANIMATION)) {              \
-    StopAnimatingProperty(LayerAnimationElement::property);           \
-    delegate()->Set##name##FromAnimation(value);                      \
-    return;                                                           \
-  }                                                                   \
-  scoped_ptr<LayerAnimationElement> element(                          \
-      LayerAnimationElement::Create##name##Element(value, duration)); \
-  element->set_tween_type(tween_type_);                               \
-  StartAnimation(new LayerAnimationSequence(element.release()));      \
-}                                                                     \
-                                                                      \
-member_type LayerAnimator::GetTarget##name() const {                  \
-  LayerAnimationElement::TargetValue target(delegate());              \
-  GetTargetValue(&target);                                            \
-  return target.member;                                               \
-}
+#define ANIMATED_PROPERTY(type, property, name, member_type, member)    \
+  void LayerAnimator::Set##name(type value) {                           \
+    base::TimeDelta duration = GetTransitionDuration();                 \
+    if (duration == base::TimeDelta() && delegate() &&                  \
+        (preemption_strategy_ != ENQUEUE_NEW_ANIMATION)) {              \
+      StopAnimatingProperty(LayerAnimationElement::property);           \
+      delegate()->Set##name##FromAnimation(value);                      \
+      return;                                                           \
+    }                                                                   \
+    std::unique_ptr<LayerAnimationElement> element(                     \
+        LayerAnimationElement::Create##name##Element(value, duration)); \
+    element->set_tween_type(tween_type_);                               \
+    StartAnimation(new LayerAnimationSequence(element.release()));      \
+  }                                                                     \
+                                                                        \
+  member_type LayerAnimator::GetTarget##name() const {                  \
+    LayerAnimationElement::TargetValue target(delegate());              \
+    GetTargetValue(&target);                                            \
+    return target.member;                                               \
+  }
 
 ANIMATED_PROPERTY(
     const gfx::Transform&, TRANSFORM, Transform, gfx::Transform, transform);
@@ -212,7 +213,8 @@ void LayerAnimator::DetachLayerFromAnimationPlayer() {
     animation_player_->DetachLayer();
 }
 
-void LayerAnimator::AddThreadedAnimation(scoped_ptr<cc::Animation> animation) {
+void LayerAnimator::AddThreadedAnimation(
+    std::unique_ptr<cc::Animation> animation) {
   animation_player_->AddAnimation(std::move(animation));
 }
 
@@ -616,7 +618,7 @@ LayerAnimationSequence* LayerAnimator::RemoveAnimation(
 void LayerAnimator::FinishAnimation(
     LayerAnimationSequence* sequence, bool abort) {
   scoped_refptr<LayerAnimator> retain(this);
-  scoped_ptr<LayerAnimationSequence> removed(RemoveAnimation(sequence));
+  std::unique_ptr<LayerAnimationSequence> removed(RemoveAnimation(sequence));
   if (abort)
     sequence->Abort(delegate());
   else
@@ -640,7 +642,7 @@ void LayerAnimator::FinishAnyAnimationWithZeroDuration() {
     if (running_animations_copy[i].sequence()->IsFinished(
           running_animations_copy[i].sequence()->start_time())) {
       SAFE_INVOKE_VOID(ProgressAnimationToEnd, running_animations_copy[i]);
-      scoped_ptr<LayerAnimationSequence> removed(
+      std::unique_ptr<LayerAnimationSequence> removed(
           SAFE_INVOKE_PTR(RemoveAnimation, running_animations_copy[i]));
     }
   }
@@ -692,7 +694,7 @@ void LayerAnimator::RemoveAllAnimationsWithACommonProperty(
 
     if (running_animations_copy[i].sequence()->HasConflictingProperty(
             sequence->properties())) {
-      scoped_ptr<LayerAnimationSequence> removed(
+      std::unique_ptr<LayerAnimationSequence> removed(
           SAFE_INVOKE_PTR(RemoveAnimation, running_animations_copy[i]));
       if (abort)
         running_animations_copy[i].sequence()->Abort(delegate());
@@ -713,7 +715,7 @@ void LayerAnimator::RemoveAllAnimationsWithACommonProperty(
       continue;
 
     if (sequences[i]->HasConflictingProperty(sequence->properties())) {
-      scoped_ptr<LayerAnimationSequence> removed(
+      std::unique_ptr<LayerAnimationSequence> removed(
           RemoveAnimation(sequences[i].get()));
       if (abort)
         sequences[i]->Abort(delegate());
@@ -930,7 +932,7 @@ void LayerAnimator::ClearAnimationsInternal() {
     if (!SAFE_INVOKE_BOOL(HasAnimation, running_animations_copy[i]))
       continue;
 
-    scoped_ptr<LayerAnimationSequence> removed(
+    std::unique_ptr<LayerAnimationSequence> removed(
         RemoveAnimation(running_animations_copy[i].sequence()));
     if (removed.get())
       removed->Abort(delegate());

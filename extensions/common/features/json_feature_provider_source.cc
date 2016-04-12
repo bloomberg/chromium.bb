@@ -8,6 +8,7 @@
 
 #include "base/json/json_reader.h"
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace extensions {

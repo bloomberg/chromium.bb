@@ -31,7 +31,7 @@ namespace ui {
 namespace {
 
 typedef base::Callback<void(const std::string&,
-                            scoped_ptr<char, base::FreeDeleter>)>
+                            std::unique_ptr<char, base::FreeDeleter>)>
     LoadKeymapCallback;
 
 KeyboardCode AlphanumericKeyboardCode(xkb_keysym_t xkb_keysym,
@@ -621,14 +621,14 @@ void LoadKeymap(const std::string& layout_name,
                           .layout = layout_id.c_str(),
                           .variant = layout_variant.c_str(),
                           .options = ""};
-  scoped_ptr<xkb_context, XkbContextDeleter> context;
+  std::unique_ptr<xkb_context, XkbContextDeleter> context;
   context.reset(xkb_context_new(XKB_CONTEXT_NO_DEFAULT_INCLUDES));
   xkb_context_include_path_append(context.get(), "/usr/share/X11/xkb");
-  scoped_ptr<xkb_keymap, XkbKeymapDeleter> keymap;
+  std::unique_ptr<xkb_keymap, XkbKeymapDeleter> keymap;
   keymap.reset(xkb_keymap_new_from_names(context.get(), &names,
                                          XKB_KEYMAP_COMPILE_NO_FLAGS));
   if (keymap) {
-    scoped_ptr<char, base::FreeDeleter> keymap_str(
+    std::unique_ptr<char, base::FreeDeleter> keymap_str(
         xkb_keymap_get_as_string(keymap.get(), XKB_KEYMAP_FORMAT_TEXT_V1));
     reply_runner->PostTask(FROM_HERE, base::Bind(reply_callback, layout_name,
                                                  base::Passed(&keymap_str)));
@@ -706,7 +706,7 @@ bool XkbKeyboardLayoutEngine::SetCurrentLayoutByName(
 
 void XkbKeyboardLayoutEngine::OnKeymapLoaded(
     const std::string& layout_name,
-    scoped_ptr<char, base::FreeDeleter> keymap_str) {
+    std::unique_ptr<char, base::FreeDeleter> keymap_str) {
   if (keymap_str) {
     xkb_keymap* keymap = xkb_keymap_new_from_string(
         xkb_context_.get(), keymap_str.get(), XKB_KEYMAP_FORMAT_TEXT_V1,

@@ -63,15 +63,17 @@ const int kCloseIconTopPadding = 5;
 const int kCloseIconRightPadding = 5;
 
 // static
-scoped_ptr<views::Border> MakeEmptyBorder(int top,
-                                          int left,
-                                          int bottom,
-                                          int right) {
+std::unique_ptr<views::Border> MakeEmptyBorder(int top,
+                                               int left,
+                                               int bottom,
+                                               int right) {
   return views::Border::CreateEmptyBorder(top, left, bottom, right);
 }
 
 // static
-scoped_ptr<views::Border> MakeTextBorder(int padding, int top, int bottom) {
+std::unique_ptr<views::Border> MakeTextBorder(int padding,
+                                              int top,
+                                              int bottom) {
   // Split the padding between the top and the bottom, then add the extra space.
   return MakeEmptyBorder(padding / 2 + top,
                          message_center::kTextLeftPadding,
@@ -80,7 +82,7 @@ scoped_ptr<views::Border> MakeTextBorder(int padding, int top, int bottom) {
 }
 
 // static
-scoped_ptr<views::Border> MakeProgressBarBorder(int top, int bottom) {
+std::unique_ptr<views::Border> MakeProgressBarBorder(int top, int bottom) {
   return MakeEmptyBorder(top,
                          message_center::kTextLeftPadding,
                          bottom,
@@ -88,9 +90,9 @@ scoped_ptr<views::Border> MakeProgressBarBorder(int top, int bottom) {
 }
 
 // static
-scoped_ptr<views::Border> MakeSeparatorBorder(int top,
-                                              int left,
-                                              SkColor color) {
+std::unique_ptr<views::Border> MakeSeparatorBorder(int top,
+                                                   int left,
+                                                   SkColor color) {
   return views::Border::CreateSolidSidedBorder(top, left, 0, 0, color);
 }
 
@@ -290,7 +292,7 @@ NotificationView::NotificationView(MessageCenterController* controller,
   SetAccessibleName(notification);
 
   SetEventTargeter(
-      scoped_ptr<views::ViewTargeter>(new views::ViewTargeter(this)));
+      std::unique_ptr<views::ViewTargeter>(new views::ViewTargeter(this)));
 }
 
 NotificationView::~NotificationView() {

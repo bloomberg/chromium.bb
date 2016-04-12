@@ -6,12 +6,12 @@
 #define UI_APP_LIST_VIEWS_CONTENTS_VIEW_H_
 
 #include <map>
+#include <memory>
 #include <utility>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/app_list/app_list_export.h"
 #include "ui/app_list/app_list_model.h"
 #include "ui/app_list/pagination_model.h"

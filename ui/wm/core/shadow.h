@@ -5,8 +5,9 @@
 #ifndef UI_WM_CORE_SHADOW_H_
 #define UI_WM_CORE_SHADOW_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/wm/wm_export.h"
@@ -69,10 +70,10 @@ class WM_EXPORT Shadow : public ui::ImplicitAnimationObserver {
 
   // The parent layer of the shadow layer. It serves as a container accessible
   // from the outside to control the visibility of the shadow.
-  scoped_ptr<ui::Layer> layer_;
+  std::unique_ptr<ui::Layer> layer_;
 
   // The actual shadow layer corresponding to a cc::NinePatchLayer.
-  scoped_ptr<ui::Layer> shadow_layer_;
+  std::unique_ptr<ui::Layer> shadow_layer_;
 
   // Size of the current shadow image.
   gfx::Size image_size_;

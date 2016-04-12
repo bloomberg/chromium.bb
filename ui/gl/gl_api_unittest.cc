@@ -4,9 +4,10 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_gl_api_implementation.h"
@@ -137,8 +138,8 @@ class GLApiTest : public testing::Test {
   static const char** fake_extension_strings_;
 
   scoped_refptr<GLContext> fake_context_;
-  scoped_ptr<DriverGL> driver_;
-  scoped_ptr<RealGLApi> api_;
+  std::unique_ptr<DriverGL> driver_;
+  std::unique_ptr<RealGLApi> api_;
 };
 
 const char* GLApiTest::fake_extension_string_ = "";

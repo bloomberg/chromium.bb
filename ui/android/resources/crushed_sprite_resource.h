@@ -5,11 +5,11 @@
 #ifndef UI_ANDROID_RESOURCES_CRUSHED_SPRITE_RESOURCE_H_
 #define UI_ANDROID_RESOURCES_CRUSHED_SPRITE_RESOURCE_H_
 
+#include <memory>
 #include <utility>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/android/ui_android_export.h"
 #include "ui/gfx/geometry/rect.h"
@@ -73,7 +73,7 @@ class UI_ANDROID_EXPORT CrushedSpriteResource {
 
  private:
   SkBitmap bitmap_;
-  scoped_ptr<cc::ScopedUIResource> last_frame_resource_;
+  std::unique_ptr<cc::ScopedUIResource> last_frame_resource_;
   SrcDstRects src_dst_rects_;
   gfx::Size unscaled_sprite_size_;
   gfx::Size scaled_sprite_size_;

@@ -66,7 +66,7 @@ std::string DumpGesturePropertyValue(GesturesProp* property) {
 }
 
 // Compress dumped event logs in place.
-void CompressDumpedLog(scoped_ptr<std::vector<std::string>> log_paths) {
+void CompressDumpedLog(std::unique_ptr<std::vector<std::string>> log_paths) {
   for (size_t i = 0; i < log_paths->size(); ++i) {
     // Zip the file.
     base::CommandLine command = base::CommandLine(base::FilePath(kGzipCommand));
@@ -172,7 +172,7 @@ void DumpTouchEventLog(
     std::map<base::FilePath, EventConverterEvdev*>& converters,
     GesturePropertyProvider* provider,
     const base::FilePath& out_dir,
-    scoped_ptr<std::vector<base::FilePath>> log_paths,
+    std::unique_ptr<std::vector<base::FilePath>> log_paths,
     const GetTouchEventLogReply& reply) {
   // Get device ids.
   std::vector<int> ids;
@@ -182,7 +182,7 @@ void DumpTouchEventLog(
   std::string now = GetCurrentTimeForLogging();
 
   // Dump event logs for gesture devices.
-  scoped_ptr<std::vector<std::string>> log_paths_to_be_compressed(
+  std::unique_ptr<std::vector<std::string>> log_paths_to_be_compressed(
       new std::vector<std::string>);
   for (size_t i = 0; i < ids.size(); ++i) {
     // First, see if the device actually uses the gesture library by checking

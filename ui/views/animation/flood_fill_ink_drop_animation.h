@@ -5,10 +5,10 @@
 #ifndef UI_VIEWS_ANIMATION_FLOOD_FILL_INK_DROP_ANIMATION_H_
 #define UI_VIEWS_ANIMATION_FLOOD_FILL_INK_DROP_ANIMATION_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/compositor/layer.h"

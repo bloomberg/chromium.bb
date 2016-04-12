@@ -5,6 +5,7 @@
 #include "ui/ozone/platform/cast/overlay_manager_cast.h"
 
 #include "base/lazy_instance.h"
+#include "base/memory/ptr_util.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/ozone/public/overlay_candidates_ozone.h"
 
@@ -77,9 +78,9 @@ OverlayManagerCast::OverlayManagerCast() {
 OverlayManagerCast::~OverlayManagerCast() {
 }
 
-scoped_ptr<OverlayCandidatesOzone> OverlayManagerCast::CreateOverlayCandidates(
-    gfx::AcceleratedWidget w) {
-  return make_scoped_ptr(new OverlayCandidatesCast());
+std::unique_ptr<OverlayCandidatesOzone>
+OverlayManagerCast::CreateOverlayCandidates(gfx::AcceleratedWidget w) {
+  return base::WrapUnique(new OverlayCandidatesCast());
 }
 
 // static

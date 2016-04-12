@@ -4,7 +4,8 @@
 
 #include "ui/platform_window/win/win_window.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/strings/string16.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
@@ -126,7 +127,7 @@ LRESULT WinWindow::OnMouseRange(UINT message, WPARAM w_param, LPARAM l_param) {
   MSG msg = { hwnd(), message, w_param, l_param,
               static_cast<DWORD>(GetMessageTime()),
               { CR_GET_X_LPARAM(l_param), CR_GET_Y_LPARAM(l_param) } };
-  scoped_ptr<Event> event = EventFromNative(msg);
+  std::unique_ptr<Event> event = EventFromNative(msg);
   if (IsMouseEventFromTouch(message))
     event->set_flags(event->flags() | EF_FROM_TOUCH);
   if (!(event->flags() & ui::EF_IS_NON_CLIENT))

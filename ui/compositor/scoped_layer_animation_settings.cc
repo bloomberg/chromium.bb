@@ -43,8 +43,8 @@ class InvertingObserver : public ImplicitAnimationObserver {
         << "Must set base layer with ScopedLayerAnimationSettings::"
         << "SetInverslyAnimatedBaseLayer";
       gfx::Transform base_transform = base_layer_->transform();
-      scoped_ptr<LayerAnimationElement> inverse = GetInverseElement(sequence,
-          base_transform);
+      std::unique_ptr<LayerAnimationElement> inverse =
+          GetInverseElement(sequence, base_transform);
 
       for (std::vector<Layer*>::const_iterator i =
           inverse_layers_.begin(); i != inverse_layers_.end(); ++i) {
@@ -54,22 +54,22 @@ class InvertingObserver : public ImplicitAnimationObserver {
       }
     }
   private:
-    scoped_ptr<LayerAnimationElement> GetInverseElement(
-        LayerAnimationSequence* sequence,
-        gfx::Transform base) const {
-      const size_t expected_size = 1;
-      DCHECK_EQ(expected_size, sequence->size()) <<
-        "Inverse supported only for single element sequences.";
+   std::unique_ptr<LayerAnimationElement> GetInverseElement(
+       LayerAnimationSequence* sequence,
+       gfx::Transform base) const {
+     const size_t expected_size = 1;
+     DCHECK_EQ(expected_size, sequence->size())
+         << "Inverse supported only for single element sequences.";
 
-      LayerAnimationElement* element = sequence->FirstElement();
-      DCHECK_EQ(static_cast<LayerAnimationElement::AnimatableProperties>(
-                    LayerAnimationElement::TRANSFORM),
-                element->properties())
-          << "Only transform animations are currently invertible.";
+     LayerAnimationElement* element = sequence->FirstElement();
+     DCHECK_EQ(static_cast<LayerAnimationElement::AnimatableProperties>(
+                   LayerAnimationElement::TRANSFORM),
+               element->properties())
+         << "Only transform animations are currently invertible.";
 
-      scoped_ptr<LayerAnimationElement> to_return(
-          LayerAnimationElement::CreateInverseTransformElement(base, element));
-      return to_return;
+     std::unique_ptr<LayerAnimationElement> to_return(
+         LayerAnimationElement::CreateInverseTransformElement(base, element));
+     return to_return;
     }
 
     Layer* base_layer_;

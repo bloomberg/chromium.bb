@@ -186,9 +186,9 @@ class SnapshotAuraTest : public testing::Test {
     bool completed_;
   };
 
-  scoped_ptr<aura::test::AuraTestHelper> helper_;
-  scoped_ptr<aura::Window> test_window_;
-  scoped_ptr<TestPaintingWindowDelegate> delegate_;
+  std::unique_ptr<aura::test::AuraTestHelper> helper_;
+  std::unique_ptr<aura::Window> test_window_;
+  std::unique_ptr<TestPaintingWindowDelegate> delegate_;
   std::vector<unsigned char> png_representation_;
 
   DISALLOW_COPY_AND_ASSIGN(SnapshotAuraTest);

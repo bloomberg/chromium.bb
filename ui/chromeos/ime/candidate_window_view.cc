@@ -197,7 +197,7 @@ views::Widget* CandidateWindowView::InitWidget() {
       widget->GetNativeView(),
       wm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE);
 
-  GetBubbleFrameView()->SetBubbleBorder(scoped_ptr<views::BubbleBorder>(
+  GetBubbleFrameView()->SetBubbleBorder(std::unique_ptr<views::BubbleBorder>(
       new CandidateWindowBorder(parent_window())));
   return widget;
 }

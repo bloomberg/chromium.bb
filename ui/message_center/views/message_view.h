@@ -5,8 +5,9 @@
 #ifndef UI_MESSAGE_CENTER_VIEWS_MESSAGE_VIEW_H_
 #define UI_MESSAGE_CENTER_VIEWS_MESSAGE_VIEW_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -108,14 +109,14 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::SlideOutView,
   std::string notification_id_;
   NotifierId notifier_id_;
   views::View* background_view_;  // Owned by views hierarchy.
-  scoped_ptr<views::ImageView> small_image_view_;
+  std::unique_ptr<views::ImageView> small_image_view_;
   views::ScrollView* scroller_;
 
   base::string16 accessible_name_;
 
   base::string16 display_source_;
 
-  scoped_ptr<views::Painter> focus_painter_;
+  std::unique_ptr<views::Painter> focus_painter_;
 
   // Changes the background color being used by |background_view_| and schedules
   // a paint.

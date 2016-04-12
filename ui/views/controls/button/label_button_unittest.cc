@@ -476,7 +476,7 @@ class InkDropLabelButtonTest : public ViewsTestBase {
 
  protected:
   // Required to host the test target.
-  scoped_ptr<Widget> widget_;
+  std::unique_ptr<Widget> widget_;
 
   // The test target.
   InkDropLabelButton* button_ = nullptr;

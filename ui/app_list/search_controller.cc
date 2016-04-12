@@ -5,11 +5,11 @@
 #include "ui/app_list/search_controller.h"
 
 #include <algorithm>
+#include <memory>
 #include <utility>
 #include <vector>
 
 #include "base/bind.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/string_util.h"
@@ -125,7 +125,7 @@ size_t SearchController::AddOmniboxGroup(size_t max_results,
 }
 
 void SearchController::AddProvider(size_t group_id,
-                                   scoped_ptr<SearchProvider> provider) {
+                                   std::unique_ptr<SearchProvider> provider) {
   provider->set_result_changed_callback(base::Bind(
       &SearchController::OnResultsChanged,
       base::Unretained(this)));

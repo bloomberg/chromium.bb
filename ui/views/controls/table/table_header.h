@@ -80,7 +80,7 @@ class VIEWS_EXPORT TableHeader : public views::View {
   TableView* table_;
 
   // If non-null a resize is in progress.
-  scoped_ptr<ColumnResizeDetails> resize_details_;
+  std::unique_ptr<ColumnResizeDetails> resize_details_;
 
   DISALLOW_COPY_AND_ASSIGN(TableHeader);
 };

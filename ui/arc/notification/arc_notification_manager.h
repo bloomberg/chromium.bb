@@ -53,7 +53,7 @@ class ArcNotificationManager : public ArcService,
   message_center::MessageCenter* const message_center_;
 
   using ItemMap =
-      std::unordered_map<std::string, scoped_ptr<ArcNotificationItem>>;
+      std::unordered_map<std::string, std::unique_ptr<ArcNotificationItem>>;
   ItemMap items_;
 
   bool ready_ = false;

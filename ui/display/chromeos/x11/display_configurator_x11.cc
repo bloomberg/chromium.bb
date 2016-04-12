@@ -4,13 +4,14 @@
 
 #include "ui/display/chromeos/display_configurator.h"
 
+#include "base/memory/ptr_util.h"
 #include "ui/display/chromeos/x11/native_display_delegate_x11.h"
 
 namespace ui {
 
-scoped_ptr<NativeDisplayDelegate>
+std::unique_ptr<NativeDisplayDelegate>
 DisplayConfigurator::CreatePlatformNativeDisplayDelegate() {
-  return make_scoped_ptr(new NativeDisplayDelegateX11());
+  return base::WrapUnique(new NativeDisplayDelegateX11());
 }
 
 }  // namespace ui

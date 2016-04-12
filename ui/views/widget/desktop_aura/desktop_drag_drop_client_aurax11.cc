@@ -4,13 +4,14 @@
 
 #include "ui/views/widget/desktop_aura/desktop_drag_drop_client_aurax11.h"
 
+#include <X11/Xatom.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <X11/Xatom.h>
 
 #include "base/event_types.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -838,9 +839,9 @@ void DesktopDragDropClientAuraX11::OnMoveLoopEnded() {
   end_move_loop_timer_.Stop();
 }
 
-scoped_ptr<X11MoveLoop> DesktopDragDropClientAuraX11::CreateMoveLoop(
+std::unique_ptr<X11MoveLoop> DesktopDragDropClientAuraX11::CreateMoveLoop(
     X11MoveLoopDelegate* delegate) {
-  return make_scoped_ptr(new X11WholeScreenMoveLoop(this));
+  return base::WrapUnique(new X11WholeScreenMoveLoop(this));
 }
 
 XID DesktopDragDropClientAuraX11::FindWindowFor(
@@ -952,8 +953,8 @@ void DesktopDragDropClientAuraX11::EndMoveLoop() {
 
 void DesktopDragDropClientAuraX11::DragTranslate(
     const gfx::Point& root_window_location,
-    scoped_ptr<ui::OSExchangeData>* data,
-    scoped_ptr<ui::DropTargetEvent>* event,
+    std::unique_ptr<ui::OSExchangeData>* data,
+    std::unique_ptr<ui::DropTargetEvent>* event,
     aura::client::DragDropDelegate** delegate) {
   gfx::Point root_location = root_window_location;
   root_window_->GetHost()->ConvertPointFromNativeScreen(&root_location);
@@ -1065,8 +1066,8 @@ void DesktopDragDropClientAuraX11::CompleteXdndPosition(
     ::Window source_window,
     const gfx::Point& screen_point) {
   int drag_operation = ui::DragDropTypes::DRAG_NONE;
-  scoped_ptr<ui::OSExchangeData> data;
-  scoped_ptr<ui::DropTargetEvent> drop_target_event;
+  std::unique_ptr<ui::OSExchangeData> data;
+  std::unique_ptr<ui::DropTargetEvent> drop_target_event;
   DragDropDelegate* delegate = NULL;
   DragTranslate(screen_point, &data, &drop_target_event, &delegate);
   if (delegate)

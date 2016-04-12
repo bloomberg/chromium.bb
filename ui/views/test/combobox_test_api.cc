@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/controls/menu/menu_runner.h"
@@ -50,7 +51,7 @@ void ComboboxTestApi::InstallTestMenuRunner(int* menu_show_count) {
       new MenuRunner(menu_model(), MenuRunner::COMBOBOX));
   test::MenuRunnerTestAPI test_api(combobox_->menu_runner_.get());
   test_api.SetMenuRunnerHandler(
-      make_scoped_ptr(new TestMenuRunnerHandler(menu_show_count)));
+      base::WrapUnique(new TestMenuRunnerHandler(menu_show_count)));
 }
 
 gfx::Size ComboboxTestApi::content_size() {

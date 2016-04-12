@@ -98,7 +98,7 @@ class MessagePopupCollectionTest : public views::ViewsTestBase {
 
   std::string AddNotification() {
     std::string id = base::IntToString(id_++);
-    scoped_ptr<Notification> notification(new Notification(
+    std::unique_ptr<Notification> notification(new Notification(
         NOTIFICATION_TYPE_BASE_FORMAT, id, base::UTF8ToUTF16("test title"),
         base::UTF8ToUTF16("test message"), gfx::Image(),
         base::string16() /* display_source */, GURL(), NotifierId(),
@@ -127,8 +127,8 @@ class MessagePopupCollectionTest : public views::ViewsTestBase {
   }
 
  private:
-  scoped_ptr<MessagePopupCollection> collection_;
-  scoped_ptr<DesktopPopupAlignmentDelegate> alignment_delegate_;
+  std::unique_ptr<MessagePopupCollection> collection_;
+  std::unique_ptr<DesktopPopupAlignmentDelegate> alignment_delegate_;
   int id_;
 };
 
@@ -486,7 +486,7 @@ TEST_F(MessagePopupCollectionTest, ManyPopupNotifications) {
 TEST_F(MessagePopupCollectionTest, CloseNonClosableNotifications) {
   const char* kNotificationId = "NOTIFICATION1";
 
-  scoped_ptr<Notification> notification(new Notification(
+  std::unique_ptr<Notification> notification(new Notification(
       NOTIFICATION_TYPE_BASE_FORMAT, kNotificationId,
       base::UTF8ToUTF16("test title"), base::UTF8ToUTF16("test message"),
       gfx::Image(), base::string16() /* display_source */, GURL(),

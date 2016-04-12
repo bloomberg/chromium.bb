@@ -5,9 +5,10 @@
 #ifndef UI_ANDROID_EDGE_EFFECT_L_H_
 #define UI_ANDROID_EDGE_EFFECT_L_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/android/edge_effect_base.h"
 #include "ui/android/ui_android_export.h"
 #include "ui/gfx/geometry/rect_f.h"

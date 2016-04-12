@@ -5,7 +5,8 @@
 #ifndef UI_AURA_INPUT_STATE_LOOKUP_H_
 #define UI_AURA_INPUT_STATE_LOOKUP_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "ui/aura/aura_export.h"
 
 namespace aura {
@@ -16,7 +17,7 @@ class AURA_EXPORT InputStateLookup {
   virtual ~InputStateLookup() {}
 
   // Creates the platform specific InputStateLookup. May return NULL.
-  static scoped_ptr<InputStateLookup> Create();
+  static std::unique_ptr<InputStateLookup> Create();
 
   // Returns true if any mouse button is down.
   virtual bool IsMouseButtonDown() const = 0;

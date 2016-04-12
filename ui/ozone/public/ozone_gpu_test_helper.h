@@ -5,9 +5,10 @@
 #ifndef UI_OZONE_PUBLIC_OZONE_GPU_THREAD_HELPER_H_
 #define UI_OZONE_PUBLIC_OZONE_GPU_THREAD_HELPER_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/ozone/ozone_export.h"
 
 namespace base {
@@ -37,9 +38,9 @@ class OZONE_EXPORT OzoneGpuTestHelper {
       const scoped_refptr<base::SingleThreadTaskRunner>& gpu_task_runner);
 
  private:
-  scoped_ptr<FakeGpuProcess> fake_gpu_process_;
-  scoped_ptr<FakeGpuProcessHost> fake_gpu_process_host_;
-  scoped_ptr<base::Thread> io_helper_thread_;
+  std::unique_ptr<FakeGpuProcess> fake_gpu_process_;
+  std::unique_ptr<FakeGpuProcessHost> fake_gpu_process_host_;
+  std::unique_ptr<base::Thread> io_helper_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(OzoneGpuTestHelper);
 };

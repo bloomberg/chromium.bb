@@ -9,7 +9,7 @@
 
 namespace ui {
 
-scoped_ptr<NativeDisplayDelegate>
+std::unique_ptr<NativeDisplayDelegate>
 DisplayConfigurator::CreatePlatformNativeDisplayDelegate() {
   return ui::OzonePlatform::GetInstance()->CreateNativeDisplayDelegate();
 }

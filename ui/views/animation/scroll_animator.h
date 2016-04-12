@@ -5,8 +5,9 @@
 #ifndef UI_VIEWS_ANIMATION_SCROLL_ANIMATOR_H_
 #define UI_VIEWS_ANIMATION_SCROLL_ANIMATOR_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/views/views_export.h"
 
@@ -53,7 +54,7 @@ class VIEWS_EXPORT ScrollAnimator : public gfx::AnimationDelegate {
   float duration_;
   float acceleration_;
 
-  scoped_ptr<gfx::SlideAnimation> animation_;
+  std::unique_ptr<gfx::SlideAnimation> animation_;
 
   DISALLOW_COPY_AND_ASSIGN(ScrollAnimator);
 };

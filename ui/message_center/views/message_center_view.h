@@ -79,7 +79,7 @@ class MESSAGE_CENTER_EXPORT MessageCenterView : public views::View,
   void ClickOnNotification(const std::string& notification_id) override;
   void RemoveNotification(const std::string& notification_id,
                           bool by_user) override;
-  scoped_ptr<ui::MenuModel> CreateMenuModel(
+  std::unique_ptr<ui::MenuModel> CreateMenuModel(
       const NotifierId& notifier_id,
       const base::string16& display_source) override;
   bool HasClickedListener(const std::string& notification_id) override;
@@ -109,8 +109,8 @@ class MESSAGE_CENTER_EXPORT MessageCenterView : public views::View,
 
   // Child views.
   views::ScrollView* scroller_;
-  scoped_ptr<MessageListView> message_list_view_;
-  scoped_ptr<views::View> empty_list_view_;
+  std::unique_ptr<MessageListView> message_list_view_;
+  std::unique_ptr<views::View> empty_list_view_;
   NotifierSettingsView* settings_view_;
   MessageCenterButtonBar* button_bar_;
   bool top_down_;
@@ -120,7 +120,7 @@ class MESSAGE_CENTER_EXPORT MessageCenterView : public views::View,
 
   // Animation managing transition between message center and settings (and vice
   // versa).
-  scoped_ptr<gfx::MultiAnimation> settings_transition_animation_;
+  std::unique_ptr<gfx::MultiAnimation> settings_transition_animation_;
 
   // Helper data to keep track of the transition between settings and
   // message center views.
@@ -133,7 +133,7 @@ class MESSAGE_CENTER_EXPORT MessageCenterView : public views::View,
   // ignored.
   bool is_closing_;
 
-  scoped_ptr<MessageViewContextMenuController> context_menu_controller_;
+  std::unique_ptr<MessageViewContextMenuController> context_menu_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageCenterView);
 };

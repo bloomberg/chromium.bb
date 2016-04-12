@@ -7,7 +7,8 @@
 
 #include <stddef.h>
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "ui/message_center/notifier_settings.h"
 
 namespace message_center {
@@ -64,7 +65,7 @@ class FakeNotifierSettingsProvider : public NotifierSettingsProvider {
   std::vector<NotifierGroupItem> items_;
   int closed_called_count_;
   size_t active_item_index_;
-  scoped_ptr<NotifierId> notifier_id_with_settings_handler_;
+  std::unique_ptr<NotifierId> notifier_id_with_settings_handler_;
   size_t notifier_settings_requested_count_;
 };
 

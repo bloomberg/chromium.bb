@@ -31,10 +31,11 @@ TEST_F(ImageGridTest, Basic) {
   // Size of the images around the grid's border.
   const int kBorder = 2;
 
-  scoped_ptr<gfx::Image> image_1x1(CreateImage(gfx::Size(1, 1)));
-  scoped_ptr<gfx::Image> image_1xB(CreateImage(gfx::Size(1, kBorder)));
-  scoped_ptr<gfx::Image> image_Bx1(CreateImage(gfx::Size(kBorder, 1)));
-  scoped_ptr<gfx::Image> image_BxB(CreateImage(gfx::Size(kBorder, kBorder)));
+  std::unique_ptr<gfx::Image> image_1x1(CreateImage(gfx::Size(1, 1)));
+  std::unique_ptr<gfx::Image> image_1xB(CreateImage(gfx::Size(1, kBorder)));
+  std::unique_ptr<gfx::Image> image_Bx1(CreateImage(gfx::Size(kBorder, 1)));
+  std::unique_ptr<gfx::Image> image_BxB(
+      CreateImage(gfx::Size(kBorder, kBorder)));
 
   ImageGrid grid;
   grid.SetImages(image_BxB.get(), image_1xB.get(), image_BxB.get(),
@@ -123,10 +124,11 @@ TEST_F(ImageGridTest, SetContentBounds) {
   // Size of the images around the grid's border.
   const int kBorder = 2;
 
-  scoped_ptr<gfx::Image> image_1x1(CreateImage(gfx::Size(1, 1)));
-  scoped_ptr<gfx::Image> image_1xB(CreateImage(gfx::Size(1, kBorder)));
-  scoped_ptr<gfx::Image> image_Bx1(CreateImage(gfx::Size(kBorder, 1)));
-  scoped_ptr<gfx::Image> image_BxB(CreateImage(gfx::Size(kBorder, kBorder)));
+  std::unique_ptr<gfx::Image> image_1x1(CreateImage(gfx::Size(1, 1)));
+  std::unique_ptr<gfx::Image> image_1xB(CreateImage(gfx::Size(1, kBorder)));
+  std::unique_ptr<gfx::Image> image_Bx1(CreateImage(gfx::Size(kBorder, 1)));
+  std::unique_ptr<gfx::Image> image_BxB(
+      CreateImage(gfx::Size(kBorder, kBorder)));
 
   ImageGrid grid;
   grid.SetImages(image_BxB.get(), image_1xB.get(), image_BxB.get(),
@@ -151,7 +153,7 @@ TEST_F(ImageGridTest, SetContentBounds) {
 // Check that we don't crash if only a single image is supplied.
 TEST_F(ImageGridTest, SingleImage) {
   const int kBorder = 1;
-  scoped_ptr<gfx::Image> image(CreateImage(gfx::Size(kBorder, kBorder)));
+  std::unique_ptr<gfx::Image> image(CreateImage(gfx::Size(kBorder, kBorder)));
 
   ImageGrid grid;
   grid.SetImages(NULL, image.get(), NULL,
@@ -183,7 +185,7 @@ TEST_F(ImageGridTest, SingleImage) {
 // reset NULL images to new ones.
 TEST_F(ImageGridTest, ResetImages) {
   const int kBorder = 1;
-  scoped_ptr<gfx::Image> image(CreateImage(gfx::Size(kBorder, kBorder)));
+  std::unique_ptr<gfx::Image> image(CreateImage(gfx::Size(kBorder, kBorder)));
 
   ImageGrid grid;
   grid.SetImages(NULL, image.get(), NULL,
@@ -225,13 +227,13 @@ TEST_F(ImageGridTest, SmallerSides) {
   const int kCorner = 2;
   const int kEdge = 1;
 
-  scoped_ptr<gfx::Image> top_left_image(
+  std::unique_ptr<gfx::Image> top_left_image(
       CreateImage(gfx::Size(kCorner, kCorner)));
-  scoped_ptr<gfx::Image> top_image(CreateImage(gfx::Size(kEdge, kEdge)));
-  scoped_ptr<gfx::Image> top_right_image(
+  std::unique_ptr<gfx::Image> top_image(CreateImage(gfx::Size(kEdge, kEdge)));
+  std::unique_ptr<gfx::Image> top_right_image(
       CreateImage(gfx::Size(kCorner, kCorner)));
-  scoped_ptr<gfx::Image> left_image(CreateImage(gfx::Size(kEdge, kEdge)));
-  scoped_ptr<gfx::Image> right_image(CreateImage(gfx::Size(kEdge, kEdge)));
+  std::unique_ptr<gfx::Image> left_image(CreateImage(gfx::Size(kEdge, kEdge)));
+  std::unique_ptr<gfx::Image> right_image(CreateImage(gfx::Size(kEdge, kEdge)));
 
   ImageGrid grid;
   grid.SetImages(top_left_image.get(), top_image.get(), top_right_image.get(),
@@ -272,18 +274,20 @@ TEST_F(ImageGridTest, TooSmall) {
   const int kCenter = 3;
   const int kEdge = 3;
 
-  scoped_ptr<gfx::Image> top_left_image(
+  std::unique_ptr<gfx::Image> top_left_image(
       CreateImage(gfx::Size(kCorner, kCorner)));
-  scoped_ptr<gfx::Image> top_image(CreateImage(gfx::Size(kEdge, kEdge)));
-  scoped_ptr<gfx::Image> top_right_image(
+  std::unique_ptr<gfx::Image> top_image(CreateImage(gfx::Size(kEdge, kEdge)));
+  std::unique_ptr<gfx::Image> top_right_image(
       CreateImage(gfx::Size(kCorner, kCorner)));
-  scoped_ptr<gfx::Image> left_image(CreateImage(gfx::Size(kEdge, kEdge)));
-  scoped_ptr<gfx::Image> center_image(CreateImage(gfx::Size(kCenter, kCenter)));
-  scoped_ptr<gfx::Image> right_image(CreateImage(gfx::Size(kEdge, kEdge)));
-  scoped_ptr<gfx::Image> bottom_left_image(
+  std::unique_ptr<gfx::Image> left_image(CreateImage(gfx::Size(kEdge, kEdge)));
+  std::unique_ptr<gfx::Image> center_image(
+      CreateImage(gfx::Size(kCenter, kCenter)));
+  std::unique_ptr<gfx::Image> right_image(CreateImage(gfx::Size(kEdge, kEdge)));
+  std::unique_ptr<gfx::Image> bottom_left_image(
       CreateImage(gfx::Size(kCorner, kCorner)));
-  scoped_ptr<gfx::Image> bottom_image(CreateImage(gfx::Size(kEdge, kEdge)));
-  scoped_ptr<gfx::Image> bottom_right_image(
+  std::unique_ptr<gfx::Image> bottom_image(
+      CreateImage(gfx::Size(kEdge, kEdge)));
+  std::unique_ptr<gfx::Image> bottom_right_image(
       CreateImage(gfx::Size(kCorner, kCorner)));
 
   ImageGrid grid;

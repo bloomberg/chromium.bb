@@ -5,6 +5,7 @@
 #ifndef UI_OZONE_PLATFORM_OBJECT_INTERNAL_H_
 #define UI_OZONE_PLATFORM_OBJECT_INTERNAL_H_
 
+#include "base/memory/ptr_util.h"
 #include "ui/ozone/ozone_export.h"
 #include "ui/ozone/platform_constructor_list.h"
 #include "ui/ozone/platform_object.h"
@@ -13,7 +14,7 @@
 namespace ui {
 
 template <class T>
-scoped_ptr<T> PlatformObject<T>::Create() {
+std::unique_ptr<T> PlatformObject<T>::Create() {
   typedef typename PlatformConstructorList<T>::Constructor Constructor;
 
   // Determine selected platform (from --ozone-platform flag, or default).
@@ -23,7 +24,7 @@ scoped_ptr<T> PlatformObject<T>::Create() {
   Constructor constructor = PlatformConstructorList<T>::kConstructors[platform];
 
   // Call the constructor.
-  return make_scoped_ptr(constructor());
+  return base::WrapUnique(constructor());
 }
 
 }  // namespace ui

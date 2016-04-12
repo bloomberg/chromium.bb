@@ -5,8 +5,9 @@
 #ifndef UI_WM_PUBLIC_SCOPED_DRAG_DROP_DISABLER_H_
 #define UI_WM_PUBLIC_SCOPED_DRAG_DROP_DISABLER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/aura/window_observer.h"
 
 namespace aura {
@@ -29,7 +30,7 @@ class AURA_EXPORT ScopedDragDropDisabler : public WindowObserver {
 
   Window* window_;
   DragDropClient* old_client_;
-  scoped_ptr<DragDropClient> new_client_;
+  std::unique_ptr<DragDropClient> new_client_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedDragDropDisabler);
 };

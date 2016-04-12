@@ -168,7 +168,8 @@ Window* WindowTargeter::FindTargetInRootWindow(Window* root_window,
 Window* WindowTargeter::FindTargetForLocatedEventRecursively(
     Window* root_window,
     ui::LocatedEvent* event) {
-  scoped_ptr<ui::EventTargetIterator> iter = root_window->GetChildIterator();
+  std::unique_ptr<ui::EventTargetIterator> iter =
+      root_window->GetChildIterator();
   if (iter) {
     ui::EventTarget* target = root_window;
     for (ui::EventTarget* child = iter->GetNextTarget(); child;

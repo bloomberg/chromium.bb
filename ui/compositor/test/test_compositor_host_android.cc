@@ -4,9 +4,10 @@
 
 #include "ui/compositor/test/test_compositor_host.h"
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/thread_task_runner_handle.h"
 #include "ui/compositor/compositor.h"
 #include "ui/gfx/native_widget_types.h"
@@ -30,7 +31,7 @@ class TestCompositorHostAndroid : public TestCompositorHost {
   ui::Compositor* GetCompositor() override { return compositor_.get(); }
 
  private:
-  scoped_ptr<ui::Compositor> compositor_;
+  std::unique_ptr<ui::Compositor> compositor_;
 
   DISALLOW_COPY_AND_ASSIGN(TestCompositorHostAndroid);
 };

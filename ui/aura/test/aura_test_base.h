@@ -49,7 +49,7 @@ class AuraTestBase : public testing::Test {
   bool setup_called_;
   bool teardown_called_;
   base::MessageLoopForUI message_loop_;
-  scoped_ptr<AuraTestHelper> helper_;
+  std::unique_ptr<AuraTestHelper> helper_;
 
   DISALLOW_COPY_AND_ASSIGN(AuraTestBase);
 };

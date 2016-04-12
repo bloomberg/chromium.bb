@@ -5,13 +5,13 @@
 #ifndef UI_BASE_CLIPBOARD_CLIPBOARD_AURAX11_H_
 #define UI_BASE_CLIPBOARD_CLIPBOARD_AURAX11_H_
 
-#include "ui/base/clipboard/clipboard.h"
-
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "ui/base/clipboard/clipboard.h"
 
 namespace ui {
 
@@ -64,7 +64,7 @@ class ClipboardAuraX11 : public Clipboard {
   // TODO(dcheng): Is this still needed now that each platform clipboard has its
   // own class derived from Clipboard?
   class AuraX11Details;
-  scoped_ptr<AuraX11Details> aurax11_details_;
+  std::unique_ptr<AuraX11Details> aurax11_details_;
 
   DISALLOW_COPY_AND_ASSIGN(ClipboardAuraX11);
 };

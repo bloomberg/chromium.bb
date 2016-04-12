@@ -5,13 +5,14 @@
 #include "ui/compositor/layer.h"
 
 #include <algorithm>
+#include <memory>
 #include <utility>
 
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/layers/nine_patch_layer.h"
 #include "cc/layers/picture_layer.h"
@@ -354,7 +355,7 @@ void Layer::SetBackgroundZoom(float zoom, int inset) {
   SetLayerBackgroundFilters();
 }
 
-void Layer::SetAlphaShape(scoped_ptr<SkRegion> region) {
+void Layer::SetAlphaShape(std::unique_ptr<SkRegion> region) {
   alpha_shape_ = std::move(region);
 
   SetLayerFilters();
@@ -528,7 +529,7 @@ void Layer::SwitchCCLayerForTest() {
 
 void Layer::SetTextureMailbox(
     const cc::TextureMailbox& mailbox,
-    scoped_ptr<cc::SingleReleaseCallback> release_callback,
+    std::unique_ptr<cc::SingleReleaseCallback> release_callback,
     gfx::Size texture_size_in_dip) {
   DCHECK(type_ == LAYER_TEXTURED || type_ == LAYER_SOLID_COLOR);
   DCHECK(mailbox.IsValid());
@@ -723,7 +724,8 @@ void Layer::OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) {
   delegate_->OnDelegatedFrameDamage(damage_rect_in_dip);
 }
 
-void Layer::RequestCopyOfOutput(scoped_ptr<cc::CopyOutputRequest> request) {
+void Layer::RequestCopyOfOutput(
+    std::unique_ptr<cc::CopyOutputRequest> request) {
   cc_layer_->RequestCopyOfOutput(std::move(request));
 }
 
@@ -760,7 +762,7 @@ size_t Layer::GetApproximateUnsharedMemoryUsage() const {
 
 bool Layer::PrepareTextureMailbox(
     cc::TextureMailbox* mailbox,
-    scoped_ptr<cc::SingleReleaseCallback>* release_callback,
+    std::unique_ptr<cc::SingleReleaseCallback>* release_callback,
     bool use_shared_memory) {
   if (!mailbox_release_callback_)
     return false;
@@ -791,9 +793,9 @@ class LayerDebugInfo : public base::trace_event::ConvertableToTraceFormat {
   std::string name_;
 };
 
-scoped_ptr<base::trace_event::ConvertableToTraceFormat> Layer::TakeDebugInfo(
-    cc::Layer* layer) {
-  return make_scoped_ptr(new LayerDebugInfo(name_));
+std::unique_ptr<base::trace_event::ConvertableToTraceFormat>
+Layer::TakeDebugInfo(cc::Layer* layer) {
+  return base::WrapUnique(new LayerDebugInfo(name_));
 }
 
 void Layer::CollectAnimators(

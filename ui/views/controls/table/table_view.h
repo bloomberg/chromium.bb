@@ -5,10 +5,10 @@
 #ifndef UI_VIEWS_CONTROLS_TABLE_TABLE_VIEW_VIEWS_H_
 #define UI_VIEWS_CONTROLS_TABLE_TABLE_VIEW_VIEWS_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/base/models/list_selection_model.h"
 #include "ui/base/models/table_model.h"
 #include "ui/base/models/table_model_observer.h"
@@ -107,7 +107,7 @@ class VIEWS_EXPORT TableView
   View* CreateParentIfNecessary();
 
   void SetRowBackgroundPainter(
-      scoped_ptr<TableViewRowBackgroundPainter> painter);
+      std::unique_ptr<TableViewRowBackgroundPainter> painter);
 
   // Sets the TableGrouper. TableView does not own |grouper| (common use case is
   // to have TableModel implement TableGrouper).
@@ -351,7 +351,7 @@ class VIEWS_EXPORT TableView
   std::vector<int> view_to_model_;
   std::vector<int> model_to_view_;
 
-  scoped_ptr<TableViewRowBackgroundPainter> row_background_painter_;
+  std::unique_ptr<TableViewRowBackgroundPainter> row_background_painter_;
 
   TableGrouper* grouper_;
 

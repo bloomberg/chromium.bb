@@ -12,7 +12,7 @@ namespace aura {
 
 ScopedWindowTargeter::ScopedWindowTargeter(
     Window* window,
-    scoped_ptr<ui::EventTargeter> new_targeter)
+    std::unique_ptr<ui::EventTargeter> new_targeter)
     : window_(window),
       old_targeter_(window->SetEventTargeter(std::move(new_targeter))) {
   window_->AddObserver(this);

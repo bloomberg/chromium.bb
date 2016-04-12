@@ -100,7 +100,7 @@ bool HardwareDisplayPlaneManager::Initialize(DrmDevice* drm) {
 
     uint32_t formats_size = drm_plane->count_formats;
     plane_ids.insert(drm_plane->plane_id);
-    scoped_ptr<HardwareDisplayPlane> plane(
+    std::unique_ptr<HardwareDisplayPlane> plane(
         CreatePlane(drm_plane->plane_id, drm_plane->possible_crtcs));
 
     std::vector<uint32_t> supported_formats(formats_size);
@@ -123,7 +123,7 @@ bool HardwareDisplayPlaneManager::Initialize(DrmDevice* drm) {
   if (!has_universal_planes) {
     for (int i = 0; i < resources->count_crtcs; ++i) {
       if (plane_ids.find(resources->crtcs[i] - 1) == plane_ids.end()) {
-        scoped_ptr<HardwareDisplayPlane> dummy_plane(
+        std::unique_ptr<HardwareDisplayPlane> dummy_plane(
             CreatePlane(resources->crtcs[i] - 1, (1 << i)));
         if (dummy_plane->Initialize(drm, std::vector<uint32_t>(), true,
                                     false)) {
@@ -134,8 +134,8 @@ bool HardwareDisplayPlaneManager::Initialize(DrmDevice* drm) {
   }
 
   std::sort(planes_.begin(), planes_.end(),
-            [](const scoped_ptr<HardwareDisplayPlane>& l,
-               const scoped_ptr<HardwareDisplayPlane>& r) {
+            [](const std::unique_ptr<HardwareDisplayPlane>& l,
+               const std::unique_ptr<HardwareDisplayPlane>& r) {
               return l->plane_id() < r->plane_id();
             });
 
@@ -143,10 +143,10 @@ bool HardwareDisplayPlaneManager::Initialize(DrmDevice* drm) {
   return true;
 }
 
-scoped_ptr<HardwareDisplayPlane> HardwareDisplayPlaneManager::CreatePlane(
+std::unique_ptr<HardwareDisplayPlane> HardwareDisplayPlaneManager::CreatePlane(
     uint32_t plane_id,
     uint32_t possible_crtcs) {
-  return scoped_ptr<HardwareDisplayPlane>(
+  return std::unique_ptr<HardwareDisplayPlane>(
       new HardwareDisplayPlane(plane_id, possible_crtcs));
 }
 

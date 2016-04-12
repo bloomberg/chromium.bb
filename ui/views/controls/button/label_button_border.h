@@ -5,9 +5,10 @@
 #ifndef UI_VIEWS_CONTROLS_BUTTON_LABEL_BUTTON_BORDER_H_
 #define UI_VIEWS_CONTROLS_BUTTON_LABEL_BUTTON_BORDER_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/button.h"
@@ -61,7 +62,7 @@ class VIEWS_EXPORT LabelButtonAssetBorder : public LabelButtonBorder {
 
  private:
   // The painters used for each unfocused or focused button state.
-  scoped_ptr<Painter> painters_[2][Button::STATE_COUNT];
+  std::unique_ptr<Painter> painters_[2][Button::STATE_COUNT];
 
   DISALLOW_COPY_AND_ASSIGN(LabelButtonAssetBorder);
 };

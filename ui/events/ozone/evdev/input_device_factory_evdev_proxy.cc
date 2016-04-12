@@ -15,7 +15,7 @@ namespace {
 void ForwardGetTouchDeviceStatusReply(
     scoped_refptr<base::SingleThreadTaskRunner> reply_runner,
     const GetTouchDeviceStatusReply& reply,
-    scoped_ptr<std::string> status) {
+    std::unique_ptr<std::string> status) {
   // Thread hop back to UI for reply.
   reply_runner->PostTask(FROM_HERE, base::Bind(reply, base::Passed(&status)));
 }
@@ -23,7 +23,7 @@ void ForwardGetTouchDeviceStatusReply(
 void ForwardGetTouchEventLogReply(
     scoped_refptr<base::SingleThreadTaskRunner> reply_runner,
     const GetTouchEventLogReply& reply,
-    scoped_ptr<std::vector<base::FilePath>> log_paths) {
+    std::unique_ptr<std::vector<base::FilePath>> log_paths) {
   // Thread hop back to UI for reply.
   reply_runner->PostTask(FROM_HERE,
                          base::Bind(reply, base::Passed(&log_paths)));

@@ -4,12 +4,14 @@
 
 #include "ui/ozone/platform/cast/surface_factory_cast.h"
 
-#include <dlfcn.h>
 #include <EGL/egl.h>
+#include <dlfcn.h>
+
 #include <utility>
 
 #include "base/callback_helpers.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "chromecast/public/cast_egl_platform.h"
 #include "chromecast/public/graphics_types.h"
 #include "third_party/skia/include/core/SkSurface.h"
@@ -57,7 +59,7 @@ class DummySurface : public SurfaceOzoneCanvas {
 
   void PresentCanvas(const gfx::Rect& damage) override {}
 
-  scoped_ptr<gfx::VSyncProvider> CreateVSyncProvider() override {
+  std::unique_ptr<gfx::VSyncProvider> CreateVSyncProvider() override {
     return nullptr;
   }
 
@@ -71,7 +73,8 @@ class DummySurface : public SurfaceOzoneCanvas {
 
 SurfaceFactoryCast::SurfaceFactoryCast() : SurfaceFactoryCast(nullptr) {}
 
-SurfaceFactoryCast::SurfaceFactoryCast(scoped_ptr<CastEglPlatform> egl_platform)
+SurfaceFactoryCast::SurfaceFactoryCast(
+    std::unique_ptr<CastEglPlatform> egl_platform)
     : state_(kUninitialized),
       display_type_(0),
       have_display_type_(false),
@@ -155,12 +158,12 @@ void SurfaceFactoryCast::OnOverlayScheduled(const gfx::Rect& display_bounds) {
   overlay_bounds_ = display_bounds;
 }
 
-scoped_ptr<SurfaceOzoneCanvas> SurfaceFactoryCast::CreateCanvasForWidget(
+std::unique_ptr<SurfaceOzoneCanvas> SurfaceFactoryCast::CreateCanvasForWidget(
     gfx::AcceleratedWidget widget) {
   // Software canvas support only in headless mode
   if (egl_platform_)
     return nullptr;
-  return make_scoped_ptr<SurfaceOzoneCanvas>(new DummySurface());
+  return base::WrapUnique<SurfaceOzoneCanvas>(new DummySurface());
 }
 
 intptr_t SurfaceFactoryCast::GetNativeDisplay() {
@@ -225,11 +228,11 @@ void SurfaceFactoryCast::DestroyDisplayTypeAndWindow() {
   }
 }
 
-scoped_ptr<SurfaceOzoneEGL> SurfaceFactoryCast::CreateEGLSurfaceForWidget(
+std::unique_ptr<SurfaceOzoneEGL> SurfaceFactoryCast::CreateEGLSurfaceForWidget(
     gfx::AcceleratedWidget widget) {
   new_display_size_ = gfx::Size(widget >> 16, widget & 0xFFFF);
   new_display_size_.SetToMax(GetMinDisplaySize());
-  return make_scoped_ptr<SurfaceOzoneEGL>(new SurfaceOzoneEglCast(this));
+  return base::WrapUnique<SurfaceOzoneEGL>(new SurfaceOzoneEglCast(this));
 }
 
 void SurfaceFactoryCast::ChildDestroyed() {

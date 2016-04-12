@@ -5,9 +5,10 @@
 #ifndef UI_VIEWS_CONTROLS_MENU_MENU_HOST_H_
 #define UI_VIEWS_CONTROLS_MENU_MENU_HOST_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/widget/widget.h"
 
@@ -83,7 +84,7 @@ class MenuHost : public Widget {
 
 #if !defined(OS_MACOSX)
   // Handles raw touch events at the moment.
-  scoped_ptr<internal::PreMenuEventDispatchHandler> pre_dispatch_handler_;
+  std::unique_ptr<internal::PreMenuEventDispatchHandler> pre_dispatch_handler_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(MenuHost);

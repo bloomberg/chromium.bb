@@ -8,7 +8,7 @@
 namespace {
 
 TEST(EGLInitializationDisplaysTest, DisableD3D11) {
-  scoped_ptr<base::CommandLine> command_line(
+  std::unique_ptr<base::CommandLine> command_line(
       new base::CommandLine(base::CommandLine::NO_PROGRAM));
 
   std::vector<gfx::DisplayType> displays;
@@ -39,7 +39,7 @@ TEST(EGLInitializationDisplaysTest, DisableD3D11) {
 }
 
 TEST(EGLInitializationDisplaysTest, SwiftShader) {
-  scoped_ptr<base::CommandLine> command_line(
+  std::unique_ptr<base::CommandLine> command_line(
       new base::CommandLine(base::CommandLine::NO_PROGRAM));
 
   std::vector<gfx::DisplayType> displays;
@@ -64,7 +64,7 @@ TEST(EGLInitializationDisplaysTest, SwiftShader) {
 }
 
 TEST(EGLInitializationDisplaysTest, DefaultRenderers) {
-  scoped_ptr<base::CommandLine> command_line(
+  std::unique_ptr<base::CommandLine> command_line(
       new base::CommandLine(base::CommandLine::NO_PROGRAM));
 
   // Default without --use-angle flag
@@ -85,7 +85,7 @@ TEST(EGLInitializationDisplaysTest, DefaultRenderers) {
 }
 
 TEST(EGLInitializationDisplaysTest, NonDefaultRenderers) {
-  scoped_ptr<base::CommandLine> command_line(
+  std::unique_ptr<base::CommandLine> command_line(
       new base::CommandLine(base::CommandLine::NO_PROGRAM));
 
   std::vector<gfx::DisplayType> displays;
@@ -110,7 +110,7 @@ TEST(EGLInitializationDisplaysTest, NonDefaultRenderers) {
 }
 
 TEST(EGLInitializationDisplaysTest, NoExtensions) {
-  scoped_ptr<base::CommandLine> command_line(
+  std::unique_ptr<base::CommandLine> command_line(
       new base::CommandLine(base::CommandLine::NO_PROGRAM));
 
   // With no angle platform extensions, only DEFAULT should be available

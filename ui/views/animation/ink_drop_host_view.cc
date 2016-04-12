@@ -34,18 +34,19 @@ void InkDropHostView::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
   SetPaintToLayer(false);
 }
 
-scoped_ptr<InkDropAnimation> InkDropHostView::CreateInkDropAnimation() const {
+std::unique_ptr<InkDropAnimation> InkDropHostView::CreateInkDropAnimation()
+    const {
   gfx::Size large_drop(ink_drop_size_.width() * 4 / 3,
                        ink_drop_size_.height() * 4 / 3);
 
-  scoped_ptr<InkDropAnimation> animation(new SquareInkDropAnimation(
+  std::unique_ptr<InkDropAnimation> animation(new SquareInkDropAnimation(
       large_drop, kInkDropLargeCornerRadius, ink_drop_size_,
       kInkDropSmallCornerRadius, GetInkDropCenter(), GetInkDropBaseColor()));
   return animation;
 }
 
-scoped_ptr<InkDropHover> InkDropHostView::CreateInkDropHover() const {
-  scoped_ptr<InkDropHover> hover(
+std::unique_ptr<InkDropHover> InkDropHostView::CreateInkDropHover() const {
+  std::unique_ptr<InkDropHover> hover(
       new InkDropHover(ink_drop_size_, kInkDropSmallCornerRadius,
                        GetInkDropCenter(), GetInkDropBaseColor()));
   return hover;

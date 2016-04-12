@@ -9,6 +9,7 @@
 #include <sys/mman.h>
 #include <xf86drm.h>
 
+#include "base/memory/ptr_util.h"
 #include "base/process/memory.h"
 #include "base/trace_event/trace_event.h"
 
@@ -54,12 +55,13 @@ void PrimeSyncEnd(int dmabuf_fd) {
 }  // namespace
 
 // static
-scoped_ptr<ClientNativePixmap> ClientNativePixmapDmaBuf::ImportFromDmabuf(
+std::unique_ptr<ClientNativePixmap> ClientNativePixmapDmaBuf::ImportFromDmabuf(
     int dmabuf_fd,
     const gfx::Size& size,
     int stride) {
   DCHECK_GE(dmabuf_fd, 0);
-  return make_scoped_ptr(new ClientNativePixmapDmaBuf(dmabuf_fd, size, stride));
+  return base::WrapUnique(
+      new ClientNativePixmapDmaBuf(dmabuf_fd, size, stride));
 }
 
 ClientNativePixmapDmaBuf::ClientNativePixmapDmaBuf(int dmabuf_fd,

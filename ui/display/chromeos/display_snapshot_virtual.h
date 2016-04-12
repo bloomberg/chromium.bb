@@ -5,13 +5,13 @@
 #ifndef UI_DISPLAY_CHROMEOS_DISPLAY_SNAPSHOT_VIRTUAL_H_
 #define UI_DISPLAY_CHROMEOS_DISPLAY_SNAPSHOT_VIRTUAL_H_
 
-#include "ui/display/types/display_snapshot.h"
-
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/display/types/display_mode.h"
+#include "ui/display/types/display_snapshot.h"
 
 namespace ui {
 
@@ -28,7 +28,7 @@ class DisplaySnapshotVirtual : public DisplaySnapshot {
   std::string ToString() const override;
 
  private:
-  scoped_ptr<DisplayMode> mode_;
+  std::unique_ptr<DisplayMode> mode_;
   DISALLOW_COPY_AND_ASSIGN(DisplaySnapshotVirtual);
 };
 

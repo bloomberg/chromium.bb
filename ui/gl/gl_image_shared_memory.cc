@@ -61,7 +61,7 @@ bool GLImageSharedMemory::Initialize(
   if (!checked_size.IsValid())
     return false;
 
-  scoped_ptr<base::SharedMemory> duped_shared_memory(
+  std::unique_ptr<base::SharedMemory> duped_shared_memory(
       new base::SharedMemory(duped_shared_memory_handle, true));
   if (!duped_shared_memory->MapAt(static_cast<off_t>(map_offset),
                                   checked_size.ValueOrDie())) {

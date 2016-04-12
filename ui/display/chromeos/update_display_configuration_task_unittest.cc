@@ -5,10 +5,12 @@
 #include "ui/display/chromeos/update_display_configuration_task.h"
 
 #include <stddef.h>
+
 #include <utility>
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -55,7 +57,7 @@ class TestDisplayLayoutManager : public DisplayLayoutManager {
   }
 
   void set_software_mirroring_controller(
-      scoped_ptr<DisplayConfigurator::SoftwareMirroringController>
+      std::unique_ptr<DisplayConfigurator::SoftwareMirroringController>
           software_mirroring_controller) {
     software_mirroring_controller_ = std::move(software_mirroring_controller);
   }
@@ -136,7 +138,7 @@ class TestDisplayLayoutManager : public DisplayLayoutManager {
 
   chromeos::DisplayPowerState power_state_;
 
-  scoped_ptr<DisplayConfigurator::SoftwareMirroringController>
+  std::unique_ptr<DisplayConfigurator::SoftwareMirroringController>
       software_mirroring_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(TestDisplayLayoutManager);
@@ -404,7 +406,7 @@ TEST_F(UpdateDisplayConfigurationTaskTest, SingleChangePowerConfiguration) {
 TEST_F(UpdateDisplayConfigurationTaskTest, NoopSoftwareMirrorConfiguration) {
   layout_manager_.set_should_mirror(false);
   layout_manager_.set_software_mirroring_controller(
-      make_scoped_ptr(new TestSoftwareMirroringController()));
+      base::WrapUnique(new TestSoftwareMirroringController()));
   UpdateDisplays(2);
 
   {
@@ -438,7 +440,7 @@ TEST_F(UpdateDisplayConfigurationTaskTest,
        ForceConfigurationWhileGoingToSoftwareMirror) {
   layout_manager_.set_should_mirror(false);
   layout_manager_.set_software_mirroring_controller(
-      make_scoped_ptr(new TestSoftwareMirroringController()));
+      base::WrapUnique(new TestSoftwareMirroringController()));
   UpdateDisplays(2);
 
   {

@@ -124,7 +124,7 @@ ComponentExtensionIMEManager::~ComponentExtensionIMEManager() {
 }
 
 void ComponentExtensionIMEManager::Initialize(
-    scoped_ptr<ComponentExtensionIMEManagerDelegate> delegate) {
+    std::unique_ptr<ComponentExtensionIMEManagerDelegate> delegate) {
   delegate_ = std::move(delegate);
   std::vector<ComponentExtensionIME> ext_list = delegate_->ListIME();
   for (size_t i = 0; i < ext_list.size(); ++i) {

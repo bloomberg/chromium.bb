@@ -97,7 +97,7 @@ class NetworkStateNotifierTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  scoped_ptr<NetworkConnectTestDelegate> network_connect_delegate_;
+  std::unique_ptr<NetworkConnectTestDelegate> network_connect_delegate_;
   base::MessageLoop message_loop_;
 
  private:

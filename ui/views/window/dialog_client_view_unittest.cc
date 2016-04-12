@@ -110,11 +110,11 @@ class DialogClientViewTest : public ViewsTestBase,
 
  private:
   // The DialogClientView that's being tested.
-  scoped_ptr<TestDialogClientView> client_view_;
+  std::unique_ptr<TestDialogClientView> client_view_;
   // The bitmask of buttons to show in the dialog.
   int dialog_buttons_;
   View* extra_view_;  // weak
-  scoped_ptr<int> extra_view_padding_;  // Null by default.
+  std::unique_ptr<int> extra_view_padding_;  // Null by default.
 
   DISALLOW_COPY_AND_ASSIGN(DialogClientViewTest);
 };

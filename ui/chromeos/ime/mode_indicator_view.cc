@@ -93,7 +93,7 @@ views::NonClientFrameView* ModeIndicatorView::CreateNonClientFrameView(
   views::BubbleFrameView* frame = new ModeIndicatorFrameView(margins());
   // arrow adjustment in BubbleDelegateView is unnecessary because arrow
   // of this bubble is always center.
-  frame->SetBubbleBorder(scoped_ptr<views::BubbleBorder>(
+  frame->SetBubbleBorder(std::unique_ptr<views::BubbleBorder>(
       new views::BubbleBorder(arrow(), shadow(), color())));
   return frame;
 }

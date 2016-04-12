@@ -5,8 +5,9 @@
 #ifndef UI_APP_LIST_VIEWS_APP_LIST_MENU_VIEWS_H_
 #define UI_APP_LIST_VIEWS_APP_LIST_MENU_VIEWS_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/app_list/app_list_menu.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
@@ -33,9 +34,9 @@ class AppListMenuViews : public AppListMenu {
 
  private:
   // The context menu itself and its contents.
-  scoped_ptr<views::MenuModelAdapter> menu_delegate_;
+  std::unique_ptr<views::MenuModelAdapter> menu_delegate_;
   views::MenuItemView* menu_;  // Owned by menu_runner_.
-  scoped_ptr<views::MenuRunner> menu_runner_;
+  std::unique_ptr<views::MenuRunner> menu_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListMenuViews);
 };

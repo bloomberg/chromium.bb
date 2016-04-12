@@ -5,8 +5,9 @@
 #ifndef UI_MESSAGE_CENTER_VIEWS_MESSAGE_BUBBLE_BASE_H_
 #define UI_MESSAGE_CENTER_VIEWS_MESSAGE_BUBBLE_BASE_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_export.h"
 #include "ui/views/bubble/tray_bubble_view.h"

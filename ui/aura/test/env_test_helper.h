@@ -19,7 +19,8 @@ class EnvTestHelper {
   explicit EnvTestHelper(Env* env) : env_(env) {}
   ~EnvTestHelper() {}
 
-  void SetInputStateLookup(scoped_ptr<InputStateLookup> input_state_lookup) {
+  void SetInputStateLookup(
+      std::unique_ptr<InputStateLookup> input_state_lookup) {
     env_->input_state_lookup_ = std::move(input_state_lookup);
   }
 

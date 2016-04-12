@@ -379,7 +379,7 @@ void CustomButton::VisibilityChanged(View* starting_from, bool visible) {
   SetState(visible && ShouldEnterHoveredState() ? STATE_HOVERED : STATE_NORMAL);
 }
 
-scoped_ptr<InkDropHover> CustomButton::CreateInkDropHover() const {
+std::unique_ptr<InkDropHover> CustomButton::CreateInkDropHover() const {
   return ShouldShowInkDropHover() ? Button::CreateInkDropHover() : nullptr;
 }
 

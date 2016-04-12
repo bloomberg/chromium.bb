@@ -7,6 +7,7 @@
 #include <gbm.h>
 
 #include "base/files/file_path.h"
+#include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "third_party/khronos/EGL/egl.h"
 #include "ui/ozone/common/egl_util.h"
@@ -61,24 +62,24 @@ bool GbmSurfaceFactory::LoadEGLGLES2Bindings(
   return LoadDefaultEGLGLES2Bindings(add_gl_library, set_gl_get_proc_address);
 }
 
-scoped_ptr<SurfaceOzoneCanvas> GbmSurfaceFactory::CreateCanvasForWidget(
+std::unique_ptr<SurfaceOzoneCanvas> GbmSurfaceFactory::CreateCanvasForWidget(
     gfx::AcceleratedWidget widget) {
   DCHECK(thread_checker_.CalledOnValidThread());
   LOG(ERROR) << "Software rendering mode is not supported with GBM platform";
   return nullptr;
 }
 
-scoped_ptr<SurfaceOzoneEGL> GbmSurfaceFactory::CreateEGLSurfaceForWidget(
+std::unique_ptr<SurfaceOzoneEGL> GbmSurfaceFactory::CreateEGLSurfaceForWidget(
     gfx::AcceleratedWidget widget) {
   NOTREACHED();
   return nullptr;
 }
 
-scoped_ptr<SurfaceOzoneEGL>
+std::unique_ptr<SurfaceOzoneEGL>
 GbmSurfaceFactory::CreateSurfacelessEGLSurfaceForWidget(
     gfx::AcceleratedWidget widget) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return make_scoped_ptr(
+  return base::WrapUnique(
       new GbmSurfaceless(drm_thread_->CreateDrmWindowProxy(widget), this));
 }
 

@@ -5,8 +5,9 @@
 #ifndef UI_VIEWS_ANIMATION_INK_DROP_ANIMATION_CONTROLLER_FACTORY_H_
 #define UI_VIEWS_ANIMATION_INK_DROP_ANIMATION_CONTROLLER_FACTORY_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/views/views_export.h"
 
 namespace views {
@@ -21,7 +22,7 @@ class VIEWS_EXPORT InkDropAnimationControllerFactory {
   // Creates a new InkDropAnimationController that will add/remove an
   // InkDropAnimation's ui::Layer to/from the |ink_drop_host| when the animation
   // is active/inactive.
-  static scoped_ptr<InkDropAnimationController>
+  static std::unique_ptr<InkDropAnimationController>
   CreateInkDropAnimationController(InkDropHost* ink_drop_host);
 
  private:

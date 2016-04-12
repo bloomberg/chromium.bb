@@ -106,8 +106,8 @@ void MenuMessageLoop::RepostEventToWindow(const ui::LocatedEvent* event,
   gfx::Point root_loc(screen_loc);
   spc->ConvertPointFromScreen(root, &root_loc);
 
-  scoped_ptr<ui::Event> clone = ui::Event::Clone(*event);
-  scoped_ptr<ui::LocatedEvent> located_event(
+  std::unique_ptr<ui::Event> clone = ui::Event::Clone(*event);
+  std::unique_ptr<ui::LocatedEvent> located_event(
       static_cast<ui::LocatedEvent*>(clone.release()));
   located_event->set_location(root_loc);
   located_event->set_root_location(root_loc);
@@ -132,7 +132,7 @@ void MenuMessageLoopAura::Run(MenuController* controller,
   base::AutoReset<base::Closure> reset_quit_closure(&message_loop_quit_,
                                                     base::Closure());
 
-  scoped_ptr<ActivationChangeObserverImpl> observer;
+  std::unique_ptr<ActivationChangeObserverImpl> observer;
   if (root) {
     if (!nested_menu)
       observer.reset(new ActivationChangeObserverImpl(controller, root));

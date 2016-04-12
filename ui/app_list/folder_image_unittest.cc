@@ -74,7 +74,7 @@ class FolderImageTest : public testing::Test {
 
  protected:
   void AddAppWithColoredIcon(const std::string& id, SkColor icon_color) {
-    scoped_ptr<AppListItem> item(new AppListItem(id));
+    std::unique_ptr<AppListItem> item(new AppListItem(id));
     item->SetIcon(CreateSquareBitmapWithColor(kListIconSize, icon_color));
     app_list_model_.AddItem(std::move(item));
   }

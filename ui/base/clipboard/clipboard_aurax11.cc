@@ -4,19 +4,19 @@
 
 #include "ui/base/clipboard/clipboard_aurax11.h"
 
-#include <stdint.h>
-#include <X11/extensions/Xfixes.h>
 #include <X11/Xatom.h>
+#include <X11/extensions/Xfixes.h>
+#include <stdint.h>
 
 #include <limits>
 #include <list>
+#include <memory>
 #include <set>
 
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"

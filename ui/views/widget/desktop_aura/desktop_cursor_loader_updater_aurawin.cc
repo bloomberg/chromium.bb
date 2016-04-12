@@ -7,7 +7,8 @@
 namespace views {
 
 // static
-scoped_ptr<DesktopCursorLoaderUpdater> DesktopCursorLoaderUpdater::Create() {
+std::unique_ptr<DesktopCursorLoaderUpdater>
+DesktopCursorLoaderUpdater::Create() {
   return nullptr;
 }
 

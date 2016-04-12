@@ -7,6 +7,7 @@
 #include <map>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/default_capture_client.h"
 #include "ui/aura/client/focus_change_observer.h"
@@ -469,9 +470,9 @@ class FocusControllerTestBase : public aura::test::AuraTestBase {
   virtual void StackWindowAtTopOnActivation() {}
 
  private:
-  scoped_ptr<FocusController> focus_controller_;
+  std::unique_ptr<FocusController> focus_controller_;
   TestFocusRules* test_focus_rules_;
-  scoped_ptr<wm::WMState> wm_state_;
+  std::unique_ptr<wm::WMState> wm_state_;
 
   DISALLOW_COPY_AND_ASSIGN(FocusControllerTestBase);
 };
@@ -692,7 +693,7 @@ class FocusControllerDirectTestBase : public FocusControllerTestBase {
     aura::client::ActivationClient* client =
         aura::client::GetActivationClient(root_window());
 
-    scoped_ptr<FocusShiftingActivationObserver> observer(
+    std::unique_ptr<FocusShiftingActivationObserver> observer(
         new FocusShiftingActivationObserver(target));
     observer->set_shift_focus_to(target->GetChildById(11));
     client->AddObserver(observer.get());
@@ -733,7 +734,7 @@ class FocusControllerDirectTestBase : public FocusControllerTestBase {
     aura::client::ActivationClient* client =
         aura::client::GetActivationClient(root_window());
 
-    scoped_ptr<FocusShiftingActivationObserver> observer(
+    std::unique_ptr<FocusShiftingActivationObserver> observer(
         new FocusShiftingActivationObserver(target));
     observer->set_shift_focus_to(target->GetChildById(21));
     client->AddObserver(observer.get());
@@ -751,7 +752,7 @@ class FocusControllerDirectTestBase : public FocusControllerTestBase {
   }
 
   void FocusChangeDuringDrag() override {
-    scoped_ptr<aura::client::DefaultCaptureClient> capture_client(
+    std::unique_ptr<aura::client::DefaultCaptureClient> capture_client(
         new aura::client::DefaultCaptureClient(root_window()));
     // Activating an inactive window during drag should activate the window.
     // This emulates the behavior of tab dragging which is merged into the
@@ -783,7 +784,7 @@ class FocusControllerDirectTestBase : public FocusControllerTestBase {
 
   // Verifies focus change is honored while capture held.
   void ChangeFocusWhenNothingFocusedAndCaptured() override {
-    scoped_ptr<aura::client::DefaultCaptureClient> capture_client(
+    std::unique_ptr<aura::client::DefaultCaptureClient> capture_client(
         new aura::client::DefaultCaptureClient(root_window()));
     aura::Window* w1 = root_window()->GetChildById(1);
     aura::client::GetCaptureClient(root_window())->SetCapture(w1);
@@ -842,8 +843,8 @@ class FocusControllerDirectTestBase : public FocusControllerTestBase {
   // to the top of the window stack.
   void StackWindowAtTopOnActivation() override {
     // Create a window, show it and then activate it.
-    scoped_ptr<aura::Window> window1 =
-        make_scoped_ptr(new aura::Window(nullptr));
+    std::unique_ptr<aura::Window> window1 =
+        base::WrapUnique(new aura::Window(nullptr));
     window1->SetType(ui::wm::WINDOW_TYPE_NORMAL);
     window1->Init(ui::LAYER_TEXTURED);
     root_window()->AddChild(window1.get());
@@ -854,8 +855,8 @@ class FocusControllerDirectTestBase : public FocusControllerTestBase {
 
     // Create another window, show it but don't activate it. The window is not
     // the active window but is placed on top of window stack.
-    scoped_ptr<aura::Window> window2 =
-        make_scoped_ptr(new aura::Window(nullptr));
+    std::unique_ptr<aura::Window> window2 =
+        base::WrapUnique(new aura::Window(nullptr));
     window2->SetType(ui::wm::WINDOW_TYPE_NORMAL);
     window2->Init(ui::LAYER_TEXTURED);
     root_window()->AddChild(window2.get());
@@ -1207,7 +1208,7 @@ class FocusControllerRemovalTest : public FocusControllerImplicitTestBase {
   }
 
  private:
-  scoped_ptr<aura::Window> window_owner_;
+  std::unique_ptr<aura::Window> window_owner_;
 
   DISALLOW_COPY_AND_ASSIGN(FocusControllerRemovalTest);
 };

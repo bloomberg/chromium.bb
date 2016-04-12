@@ -39,11 +39,11 @@ class InkDropAnimationControllerImplTest : public testing::Test {
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
 
   // Required by base::Timer's.
-  scoped_ptr<base::ThreadTaskRunnerHandle> thread_task_runner_handle_;
+  std::unique_ptr<base::ThreadTaskRunnerHandle> thread_task_runner_handle_;
 
  private:
   // Ensures all animations complete immediately.
-  scoped_ptr<ui::ScopedAnimationDurationScaleMode> zero_duration_mode_;
+  std::unique_ptr<ui::ScopedAnimationDurationScaleMode> zero_duration_mode_;
 
   DISALLOW_COPY_AND_ASSIGN(InkDropAnimationControllerImplTest);
 };

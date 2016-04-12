@@ -7,14 +7,15 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include <memory>
+
 #import "base/mac/scoped_nsobject.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 
 // Waits for fullscreen transitions to complete.
 @interface NSWindowFullscreenNotificationWaiter : NSObject {
  @private
-  scoped_ptr<base::RunLoop> runLoop_;
+  std::unique_ptr<base::RunLoop> runLoop_;
   base::scoped_nsobject<NSWindow> window_;
   int enterCount_;
   int exitCount_;

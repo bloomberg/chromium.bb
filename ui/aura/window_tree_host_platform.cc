@@ -57,7 +57,7 @@ WindowTreeHostPlatform::WindowTreeHostPlatform()
 }
 
 void WindowTreeHostPlatform::SetPlatformWindow(
-    scoped_ptr<ui::PlatformWindow> window) {
+    std::unique_ptr<ui::PlatformWindow> window) {
   window_ = std::move(window);
 }
 

@@ -4,8 +4,9 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/ozone/platform/drm/gpu/crtc_controller.h"
 #include "ui/ozone/platform/drm/gpu/fake_plane_info.h"
@@ -33,7 +34,7 @@ class HardwareDisplayPlaneManagerTest : public testing::Test {
   void SetUp() override;
 
  protected:
-  scoped_ptr<ui::MockHardwareDisplayPlaneManager> plane_manager_;
+  std::unique_ptr<ui::MockHardwareDisplayPlaneManager> plane_manager_;
   ui::HardwareDisplayPlaneList state_;
   std::vector<uint32_t> default_crtcs_;
   scoped_refptr<ui::ScanoutBuffer> fake_buffer_;

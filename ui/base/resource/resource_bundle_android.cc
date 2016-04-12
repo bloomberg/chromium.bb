@@ -106,7 +106,7 @@ std::string ResourceBundle::LoadLocaleResources(
     g_locale_pack_region = base::MemoryMappedFile::Region::kWholeFile;
   }
 
-  scoped_ptr<DataPack> data_pack(new DataPack(SCALE_FACTOR_100P));
+  std::unique_ptr<DataPack> data_pack(new DataPack(SCALE_FACTOR_100P));
   if (!data_pack->LoadFromFileRegion(base::File(g_locale_pack_fd),
                                      g_locale_pack_region)) {
     UMA_HISTOGRAM_ENUMERATION("ResourceBundle.LoadLocaleResourcesError",

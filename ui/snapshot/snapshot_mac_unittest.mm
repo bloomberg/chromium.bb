@@ -6,9 +6,10 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include <memory>
+
 #include "base/mac/scoped_nsobject.h"
 #include "base/mac/sdk_forward_declarations.h"
-#include "base/memory/scoped_ptr.h"
 #include "testing/platform_test.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -28,7 +29,7 @@ TEST_F(GrabWindowSnapshotTest, TestGrabWindowSnapshot) {
   [window setBackgroundColor:[NSColor whiteColor]];
   [window makeKeyAndOrderFront:NSApp];
 
-  scoped_ptr<std::vector<unsigned char> > png_representation(
+  std::unique_ptr<std::vector<unsigned char>> png_representation(
       new std::vector<unsigned char>);
   gfx::Rect bounds = gfx::Rect(0, 0, frame.size.width, frame.size.height);
   EXPECT_TRUE(ui::GrabWindowSnapshot(window, png_representation.get(),

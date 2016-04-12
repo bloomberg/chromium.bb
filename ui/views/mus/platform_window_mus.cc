@@ -223,7 +223,7 @@ void PlatformWindowMus::OnRequestClose(mus::Window* window) {
 void PlatformWindowMus::OnWindowInputEvent(
     mus::Window* view,
     const ui::Event& event,
-    scoped_ptr<base::Callback<void(bool)>>* ack_callback) {
+    std::unique_ptr<base::Callback<void(bool)>>* ack_callback) {
   // It's possible dispatching the event will spin a nested message loop. Ack
   // the callback now, otherwise we appear unresponsive for the life of the
   // nested message loop.

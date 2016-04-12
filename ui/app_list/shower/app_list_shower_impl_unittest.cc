@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ui/app_list/shower/app_list_shower_impl.h"
+
 #include <memory>
 
 #include "base/memory/ptr_util.h"
 #include "ui/app_list/shower/app_list_shower_delegate_factory.h"
-#include "ui/app_list/shower/app_list_shower_impl.h"
 #include "ui/app_list/shower/test/app_list_shower_impl_test_api.h"
 #include "ui/app_list/test/app_list_test_view_delegate.h"
 #include "ui/app_list/views/app_list_view.h"

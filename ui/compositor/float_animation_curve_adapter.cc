@@ -4,6 +4,7 @@
 
 #include "ui/compositor/float_animation_curve_adapter.h"
 
+#include "base/memory/ptr_util.h"
 #include "cc/base/time_util.h"
 
 namespace ui {
@@ -23,8 +24,8 @@ base::TimeDelta FloatAnimationCurveAdapter::Duration() const {
   return duration_;
 }
 
-scoped_ptr<cc::AnimationCurve> FloatAnimationCurveAdapter::Clone() const {
-  return make_scoped_ptr(new FloatAnimationCurveAdapter(
+std::unique_ptr<cc::AnimationCurve> FloatAnimationCurveAdapter::Clone() const {
+  return base::WrapUnique(new FloatAnimationCurveAdapter(
       tween_type_, initial_value_, target_value_, duration_));
 }
 

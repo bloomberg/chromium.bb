@@ -60,7 +60,7 @@ class APP_LIST_EXPORT SpeechView : public views::View,
   views::View* indicator_;
   views::ImageButton* mic_button_;
   views::Label* speech_result_;
-  scoped_ptr<views::BoundsAnimator> indicator_animator_;
+  std::unique_ptr<views::BoundsAnimator> indicator_animator_;
 
   DISALLOW_COPY_AND_ASSIGN(SpeechView);
 };

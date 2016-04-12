@@ -30,10 +30,9 @@ void EmptyFlipCallback(gfx::SwapResult) {}
 }  // namespace
 
 HardwareDisplayController::HardwareDisplayController(
-    scoped_ptr<CrtcController> controller,
+    std::unique_ptr<CrtcController> controller,
     const gfx::Point& origin)
-    : origin_(origin),
-      is_disabled_(controller->is_disabled()) {
+    : origin_(origin), is_disabled_(controller->is_disabled()) {
   AddCrtc(std::move(controller));
 }
 
@@ -176,13 +175,15 @@ bool HardwareDisplayController::MoveCursor(const gfx::Point& location) {
   return status;
 }
 
-void HardwareDisplayController::AddCrtc(scoped_ptr<CrtcController> controller) {
+void HardwareDisplayController::AddCrtc(
+    std::unique_ptr<CrtcController> controller) {
   scoped_refptr<DrmDevice> drm = controller->drm();
-  owned_hardware_planes_.add(drm.get(), scoped_ptr<HardwareDisplayPlaneList>(
-                                            new HardwareDisplayPlaneList()));
+  owned_hardware_planes_.add(drm.get(),
+                             std::unique_ptr<HardwareDisplayPlaneList>(
+                                 new HardwareDisplayPlaneList()));
 
   // Check if this controller owns any planes and ensure we keep track of them.
-  const std::vector<scoped_ptr<HardwareDisplayPlane>>& all_planes =
+  const std::vector<std::unique_ptr<HardwareDisplayPlane>>& all_planes =
       drm->plane_manager()->planes();
   HardwareDisplayPlaneList* crtc_plane_list =
       owned_hardware_planes_.get(drm.get());
@@ -195,13 +196,13 @@ void HardwareDisplayController::AddCrtc(scoped_ptr<CrtcController> controller) {
   crtc_controllers_.push_back(std::move(controller));
 }
 
-scoped_ptr<CrtcController> HardwareDisplayController::RemoveCrtc(
+std::unique_ptr<CrtcController> HardwareDisplayController::RemoveCrtc(
     const scoped_refptr<DrmDevice>& drm,
     uint32_t crtc) {
   for (auto it = crtc_controllers_.begin(); it != crtc_controllers_.end();
        ++it) {
     if ((*it)->drm() == drm && (*it)->crtc() == crtc) {
-      scoped_ptr<CrtcController> controller(std::move(*it));
+      std::unique_ptr<CrtcController> controller(std::move(*it));
       crtc_controllers_.erase(it);
 
       // Remove entry from |owned_hardware_planes_| iff no other crtcs share it.

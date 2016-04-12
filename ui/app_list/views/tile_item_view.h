@@ -72,7 +72,7 @@ class APP_LIST_EXPORT TileItemView : public views::CustomButton,
 
   SkColor parent_background_color_;
   HoverStyle hover_style_;
-  scoped_ptr<ImageShadowAnimator> image_shadow_animator_;
+  std::unique_ptr<ImageShadowAnimator> image_shadow_animator_;
 
   views::ImageView* icon_;  // Owned by views hierarchy.
   views::Label* title_;     // Owned by views hierarchy.

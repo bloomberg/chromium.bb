@@ -91,7 +91,7 @@ class APP_LIST_EXPORT SearchResultListView : public gfx::AnimationDelegate,
 
   views::View* results_container_;
   views::View* auto_launch_indicator_;
-  scoped_ptr<gfx::LinearAnimation> auto_launch_animation_;
+  std::unique_ptr<gfx::LinearAnimation> auto_launch_animation_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchResultListView);
 };

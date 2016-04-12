@@ -129,7 +129,7 @@ class AppsGridControllerTest : public AppsGridControllerTestHelper {
 
  private:
   base::scoped_nsobject<AppsGridController> owned_apps_grid_controller_;
-  scoped_ptr<AppListTestViewDelegate> owned_delegate_;
+  std::unique_ptr<AppListTestViewDelegate> owned_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(AppsGridControllerTest);
 };

@@ -6,19 +6,20 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include <memory>
+
 #import "base/mac/foundation_util.h"
 #import "base/mac/mac_util.h"
 #import "base/mac/sdk_forward_declarations.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #import "testing/gtest_mac.h"
 #import "ui/base/cocoa/window_size_constants.h"
 #include "ui/base/ime/input_method.h"
-#import "ui/gfx/test/ui_cocoa_test_helper.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
+#import "ui/gfx/test/ui_cocoa_test_helper.h"
 #import "ui/views/cocoa/bridged_content_view.h"
 #import "ui/views/cocoa/native_widget_mac_nswindow.h"
 #import "ui/views/cocoa/views_nswindow_delegate.h"
@@ -125,9 +126,7 @@ class MockNativeWidgetMac : public NativeWidgetMac {
   MockNativeWidgetMac(Widget* delegate) : NativeWidgetMac(delegate) {}
 
   // Expose a reference, so that it can be reset() independently.
-  scoped_ptr<BridgedNativeWidget>& bridge() {
-    return bridge_;
-  }
+  std::unique_ptr<BridgedNativeWidget>& bridge() { return bridge_; }
 
   // internal::NativeWidgetPrivate:
   void InitNativeWidget(const Widget::InitParams& params) override {
@@ -157,7 +156,7 @@ class BridgedNativeWidgetTestBase : public ui::CocoaTest {
         native_widget_mac_(new MockNativeWidgetMac(widget_.get())) {
   }
 
-  scoped_ptr<BridgedNativeWidget>& bridge() {
+  std::unique_ptr<BridgedNativeWidget>& bridge() {
     return native_widget_mac_->bridge();
   }
 
@@ -184,7 +183,7 @@ class BridgedNativeWidgetTestBase : public ui::CocoaTest {
   }
 
  protected:
-  scoped_ptr<Widget> widget_;
+  std::unique_ptr<Widget> widget_;
   MockNativeWidgetMac* native_widget_mac_;  // Weak. Owned by |widget_|.
 
   // Make the InitParams available to tests to cover initialization codepaths.
@@ -213,7 +212,7 @@ class BridgedNativeWidgetTest : public BridgedNativeWidgetTestBase {
   void TearDown() override;
 
  protected:
-  scoped_ptr<views::View> view_;
+  std::unique_ptr<views::View> view_;
   BridgedContentView* ns_view_;  // Weak. Owned by bridge().
   base::MessageLoopForUI message_loop_;
 

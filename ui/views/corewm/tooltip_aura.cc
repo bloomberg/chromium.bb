@@ -118,7 +118,7 @@ class TooltipAura::TooltipView : public views::View {
     render_text_->SetDisplayRect(gfx::Rect(0, 0, max_text_width, 100000));
   }
 
-  scoped_ptr<gfx::RenderText> render_text_;
+  std::unique_ptr<gfx::RenderText> render_text_;
   int max_width_;
 
   DISALLOW_COPY_AND_ASSIGN(TooltipView);

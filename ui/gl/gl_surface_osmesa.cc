@@ -36,7 +36,7 @@ void GLSurfaceOSMesa::Destroy() {
 bool GLSurfaceOSMesa::Resize(const gfx::Size& new_size,
                              float scale_factor,
                              bool has_alpha) {
-  scoped_ptr<ui::ScopedMakeCurrent> scoped_make_current;
+  std::unique_ptr<ui::ScopedMakeCurrent> scoped_make_current;
   GLContext* current_context = GLContext::GetCurrent();
   bool was_current =
       current_context && current_context->IsCurrent(this);
@@ -47,7 +47,7 @@ bool GLSurfaceOSMesa::Resize(const gfx::Size& new_size,
   }
 
   // Preserve the old buffer.
-  scoped_ptr<int32_t[]> old_buffer(buffer_.release());
+  std::unique_ptr<int32_t[]> old_buffer(buffer_.release());
 
   base::CheckedNumeric<int> checked_size = sizeof(buffer_[0]);
   checked_size *= new_size.width();

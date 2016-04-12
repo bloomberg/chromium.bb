@@ -8,12 +8,12 @@
 #include <stdint.h>
 #include <xkbcommon/xkbcommon.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/containers/hash_tables.h"
 #include "base/memory/free_deleter.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/task_runner.h"
@@ -103,12 +103,12 @@ class EVENTS_OZONE_LAYOUT_EXPORT XkbKeyboardLayoutEngine
 
   // Callback when keymap file is loaded complete.
   void OnKeymapLoaded(const std::string& layout_name,
-                      scoped_ptr<char, base::FreeDeleter> keymap_str);
+                      std::unique_ptr<char, base::FreeDeleter> keymap_str);
 
   // libxkbcommon uses explicit reference counting for its structures,
   // so we need to trigger its cleanup.
-  scoped_ptr<xkb_context, XkbContextDeleter> xkb_context_;
-  scoped_ptr<xkb_state, XkbStateDeleter> xkb_state_;
+  std::unique_ptr<xkb_context, XkbContextDeleter> xkb_context_;
+  std::unique_ptr<xkb_state, XkbStateDeleter> xkb_state_;
 
   std::string current_layout_name_;
 

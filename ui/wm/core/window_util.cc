@@ -80,8 +80,8 @@ aura::Window* GetToplevelWindow(aura::Window* window) {
   return client ? client->GetToplevelWindow(window) : NULL;
 }
 
-scoped_ptr<ui::LayerTreeOwner> RecreateLayers(ui::LayerOwner* root) {
-  scoped_ptr<ui::LayerTreeOwner> old_layer(
+std::unique_ptr<ui::LayerTreeOwner> RecreateLayers(ui::LayerOwner* root) {
+  std::unique_ptr<ui::LayerTreeOwner> old_layer(
       new ui::LayerTreeOwner(root->RecreateLayer().release()));
   if (old_layer->root())
     CloneChildren(root->layer(), old_layer->root());

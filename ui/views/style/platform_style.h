@@ -5,8 +5,9 @@
 #ifndef UI_VIEWS_STYLE_PLATFORM_STYLE_H_
 #define UI_VIEWS_STYLE_PLATFORM_STYLE_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/views_export.h"
@@ -41,18 +42,18 @@ class VIEWS_EXPORT PlatformStyle {
                                             Combobox::Style style);
 
   // Creates the appropriate border for a focusable Combobox.
-  static scoped_ptr<FocusableBorder> CreateComboboxBorder();
+  static std::unique_ptr<FocusableBorder> CreateComboboxBorder();
 
   // Creates the appropriate background for a Combobox.
-  static scoped_ptr<Background> CreateComboboxBackground();
+  static std::unique_ptr<Background> CreateComboboxBackground();
 
   // Creates the default label button border for the given |style|. Used when a
   // custom default border is not provided for a particular LabelButton class.
-  static scoped_ptr<LabelButtonBorder> CreateLabelButtonBorder(
+  static std::unique_ptr<LabelButtonBorder> CreateLabelButtonBorder(
       Button::ButtonStyle style);
 
   // Creates the default scrollbar for the given orientation.
-  static scoped_ptr<ScrollBar> CreateScrollBar(bool is_horizontal);
+  static std::unique_ptr<ScrollBar> CreateScrollBar(bool is_horizontal);
 
   // Returns the current text color for the current button state.
   static SkColor TextColorForButton(const ButtonColorByState& color_by_state,
@@ -65,7 +66,8 @@ class VIEWS_EXPORT PlatformStyle {
                                         ButtonColorByState* color_by_state);
 
   // Applies the current system theme to the default border created by |button|.
-  static scoped_ptr<Border> CreateThemedLabelButtonBorder(LabelButton* button);
+  static std::unique_ptr<Border> CreateThemedLabelButtonBorder(
+      LabelButton* button);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(PlatformStyle);

@@ -137,7 +137,7 @@ class VIEWS_EXPORT Label : public View {
 
  protected:
   // Create a single RenderText instance to actually be painted.
-  virtual scoped_ptr<gfx::RenderText> CreateRenderText(
+  virtual std::unique_ptr<gfx::RenderText> CreateRenderText(
       const base::string16& text,
       gfx::HorizontalAlignment alignment,
       gfx::DirectionalityMode directionality,
@@ -184,10 +184,10 @@ class VIEWS_EXPORT Label : public View {
   bool ShouldShowDefaultTooltip() const;
 
   // An un-elided and single-line RenderText object used for preferred sizing.
-  scoped_ptr<gfx::RenderText> render_text_;
+  std::unique_ptr<gfx::RenderText> render_text_;
 
   // The RenderText instances used to display elided and multi-line text.
-  std::vector<scoped_ptr<gfx::RenderText>> lines_;
+  std::vector<std::unique_ptr<gfx::RenderText>> lines_;
 
   SkColor requested_enabled_color_;
   SkColor actual_enabled_color_;

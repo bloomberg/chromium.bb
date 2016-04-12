@@ -506,7 +506,7 @@ DisplayConfigurator::~DisplayConfigurator() {
 }
 
 void DisplayConfigurator::SetDelegateForTesting(
-    scoped_ptr<NativeDisplayDelegate> display_delegate) {
+    std::unique_ptr<NativeDisplayDelegate> display_delegate) {
   DCHECK(!native_display_delegate_);
 
   native_display_delegate_ = std::move(display_delegate);

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ui/gl/gl_context.h"
+
 #include <string>
 
 #include "base/bind.h"
@@ -9,10 +11,10 @@
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_local.h"
 #include "ui/gl/gl_bindings.h"
-#include "ui/gl/gl_context.h"
 #include "ui/gl/gl_gl_api_implementation.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface.h"
@@ -128,10 +130,8 @@ const GLVersionInfo* GLContext::GetVersionInfo() {
   if(!version_info_) {
     std::string version = GetGLVersion();
     std::string renderer = GetGLRenderer();
-    version_info_ =
-        make_scoped_ptr(new GLVersionInfo(
-            version.c_str(), renderer.c_str(),
-            GetExtensions().c_str()));
+    version_info_ = base::WrapUnique(new GLVersionInfo(
+        version.c_str(), renderer.c_str(), GetExtensions().c_str()));
   }
   return version_info_.get();
 }
@@ -181,7 +181,7 @@ GLStateRestorer* GLContext::GetGLStateRestorer() {
 }
 
 void GLContext::SetGLStateRestorer(GLStateRestorer* state_restorer) {
-  state_restorer_ = make_scoped_ptr(state_restorer);
+  state_restorer_ = base::WrapUnique(state_restorer);
 }
 
 void GLContext::SetSwapInterval(int interval) {

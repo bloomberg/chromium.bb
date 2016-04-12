@@ -4,6 +4,7 @@
 
 #include "ui/views/mus/surface_context_factory.h"
 
+#include "base/memory/ptr_util.h"
 #include "cc/output/output_surface.h"
 #include "cc/resources/shared_bitmap_manager.h"
 #include "cc/surfaces/surface_id_allocator.h"
@@ -41,11 +42,11 @@ void SurfaceContextFactory::CreateOutputSurface(
   compositor->SetOutputSurface(surface_binding_.CreateOutputSurface());
 }
 
-scoped_ptr<ui::Reflector> SurfaceContextFactory::CreateReflector(
+std::unique_ptr<ui::Reflector> SurfaceContextFactory::CreateReflector(
     ui::Compositor* mirroed_compositor,
     ui::Layer* mirroring_layer) {
   // NOTIMPLEMENTED();
-  return make_scoped_ptr(new FakeReflector);
+  return base::WrapUnique(new FakeReflector);
 }
 
 void SurfaceContextFactory::RemoveReflector(ui::Reflector* reflector) {
@@ -86,9 +87,9 @@ cc::TaskGraphRunner* SurfaceContextFactory::GetTaskGraphRunner() {
   return raster_thread_helper_.task_graph_runner();
 }
 
-scoped_ptr<cc::SurfaceIdAllocator>
+std::unique_ptr<cc::SurfaceIdAllocator>
 SurfaceContextFactory::CreateSurfaceIdAllocator() {
-  return make_scoped_ptr(
+  return base::WrapUnique(
       new cc::SurfaceIdAllocator(next_surface_id_namespace_++));
 }
 

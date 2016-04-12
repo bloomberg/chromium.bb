@@ -73,7 +73,7 @@ void ImageButton::SetImageAlignment(HorizontalAlignment h_align,
   SchedulePaint();
 }
 
-void ImageButton::SetFocusPainter(scoped_ptr<Painter> focus_painter) {
+void ImageButton::SetFocusPainter(std::unique_ptr<Painter> focus_painter) {
   focus_painter_ = std::move(focus_painter);
 }
 

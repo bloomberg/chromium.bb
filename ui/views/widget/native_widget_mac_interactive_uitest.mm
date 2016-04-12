@@ -38,7 +38,7 @@ class NativeWidgetMacInteractiveUITest
   }
 
  protected:
-  scoped_ptr<Observer> observer_;
+  std::unique_ptr<Observer> observer_;
   int activationCount_;
   int deactivationCount_;
 

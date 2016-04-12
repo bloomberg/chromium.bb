@@ -7,11 +7,11 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "ui/app_list/app_list_export.h"
 #include "ui/app_list/app_list_item_list.h"
@@ -74,12 +74,12 @@ class APP_LIST_EXPORT AppListModel : public AppListItemListObserver {
 
   // Adds |item| to the model. The model takes ownership of |item|. Returns a
   // pointer to the item that is safe to use (e.g. after passing ownership).
-  AppListItem* AddItem(scoped_ptr<AppListItem> item);
+  AppListItem* AddItem(std::unique_ptr<AppListItem> item);
 
   // Adds |item| to an existing folder or creates a new folder. If |folder_id|
   // is empty, adds the item to the top level model instead. The model takes
   // ownership of |item|. Returns a pointer to the item that is safe to use.
-  AppListItem* AddItemToFolder(scoped_ptr<AppListItem> item,
+  AppListItem* AddItemToFolder(std::unique_ptr<AppListItem> item,
                                const std::string& folder_id);
 
   // Merges two items. If the target item is a folder, the source item is added
@@ -194,31 +194,32 @@ class APP_LIST_EXPORT AppListModel : public AppListItemListObserver {
 
   // Adds |item_ptr| to |top_level_item_list_| and notifies observers.
   AppListItem* AddItemToItemListAndNotify(
-      scoped_ptr<AppListItem> item_ptr);
+      std::unique_ptr<AppListItem> item_ptr);
 
   // Adds |item_ptr| to |top_level_item_list_| and notifies observers that an
   // Update occured (e.g. item moved from a folder).
   AppListItem* AddItemToItemListAndNotifyUpdate(
-      scoped_ptr<AppListItem> item_ptr);
+      std::unique_ptr<AppListItem> item_ptr);
 
   // Adds |item_ptr| to |folder| and notifies observers.
-  AppListItem* AddItemToFolderItemAndNotify(AppListFolderItem* folder,
-                                            scoped_ptr<AppListItem> item_ptr);
+  AppListItem* AddItemToFolderItemAndNotify(
+      AppListFolderItem* folder,
+      std::unique_ptr<AppListItem> item_ptr);
 
   // Removes |item| from |top_level_item_list_| or calls RemoveItemFromFolder if
   // |item|->folder_id is set.
-  scoped_ptr<AppListItem> RemoveItem(AppListItem* item);
+  std::unique_ptr<AppListItem> RemoveItem(AppListItem* item);
 
   // Removes |item| from |folder|. If |folder| becomes empty, deletes |folder|
   // from |top_level_item_list_|. Does NOT trigger observers, calling function
   // must do so.
-  scoped_ptr<AppListItem> RemoveItemFromFolder(AppListFolderItem* folder,
-                                               AppListItem* item);
+  std::unique_ptr<AppListItem> RemoveItemFromFolder(AppListFolderItem* folder,
+                                                    AppListItem* item);
 
-  scoped_ptr<AppListItemList> top_level_item_list_;
+  std::unique_ptr<AppListItemList> top_level_item_list_;
 
-  scoped_ptr<SearchBoxModel> search_box_;
-  scoped_ptr<SearchResults> results_;
+  std::unique_ptr<SearchBoxModel> search_box_;
+  std::unique_ptr<SearchResults> results_;
 
   Status status_;
   State state_;

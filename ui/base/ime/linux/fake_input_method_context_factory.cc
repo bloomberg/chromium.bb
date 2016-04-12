@@ -4,17 +4,18 @@
 
 #include "ui/base/ime/linux/fake_input_method_context_factory.h"
 
+#include "base/memory/ptr_util.h"
 #include "ui/base/ime/linux/fake_input_method_context.h"
 
 namespace ui {
 
 FakeInputMethodContextFactory::FakeInputMethodContextFactory() {}
 
-scoped_ptr<LinuxInputMethodContext>
+std::unique_ptr<LinuxInputMethodContext>
 FakeInputMethodContextFactory::CreateInputMethodContext(
     LinuxInputMethodContextDelegate* /* delegate */,
     bool is_simple) const {
-  return make_scoped_ptr(new FakeInputMethodContext());
+  return base::WrapUnique(new FakeInputMethodContext());
 }
 
 }  // namespace ui

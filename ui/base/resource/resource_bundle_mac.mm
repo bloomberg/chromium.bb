@@ -73,9 +73,9 @@ void ResourceBundle::LoadMaterialDesignResources() {
   // initialized at the time it is called.
   // TODO(shrike) - remove this method and restore loading of Material Design
   // packs to LoadCommonResources() when the MaterialDesignController goes away.
-  std::vector<scoped_ptr<ResourceHandle>> tmp_packs;
+  std::vector<std::unique_ptr<ResourceHandle>> tmp_packs;
   for (auto it = data_packs_.begin(); it != data_packs_.end(); ++it) {
-    scoped_ptr<ResourceHandle> next_pack(*it);
+    std::unique_ptr<ResourceHandle> next_pack(*it);
     tmp_packs.push_back(std::move(next_pack));
   }
   data_packs_.weak_clear();

@@ -7,8 +7,9 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include <memory>
+
 #include "base/mac/scoped_nsobject.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/app_list/app_list_export.h"
 #include "ui/app_list/app_list_model.h"
 #import "ui/base/cocoa/tracking_area.h"
@@ -39,7 +40,7 @@ APP_LIST_EXPORT
   ui::ScopedCrTrackingArea trackingArea_;
   NSPoint lastMouseDownInView_;
   NSInteger hoveredRowIndex_;
-  scoped_ptr<app_list::AppsSearchResultsModelBridge> bridge_;
+  std::unique_ptr<app_list::AppsSearchResultsModelBridge> bridge_;
   NSObject<AppsSearchResultsDelegate>* delegate_;  // Weak. Owns us.
 }
 

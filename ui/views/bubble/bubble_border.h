@@ -5,10 +5,11 @@
 #ifndef UI_VIEWS_BUBBLE_BUBBLE_BORDER_H_
 #define UI_VIEWS_BUBBLE_BUBBLE_BORDER_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
@@ -34,7 +35,7 @@ struct BorderImages {
                int corner_radius);
   virtual ~BorderImages();
 
-  scoped_ptr<Painter> border_painter;
+  std::unique_ptr<Painter> border_painter;
   gfx::ImageSkia left_arrow;
   gfx::ImageSkia top_arrow;
   gfx::ImageSkia right_arrow;

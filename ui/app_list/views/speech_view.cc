@@ -114,7 +114,7 @@ bool MicButton::GetHitTestMask(gfx::Path* mask) const {
 SpeechView::SpeechView(AppListViewDelegate* delegate)
     : delegate_(delegate),
       logo_(NULL) {
-  SetBorder(scoped_ptr<views::Border>(
+  SetBorder(std::unique_ptr<views::Border>(
       new views::ShadowBorder(GetShadowForZHeight(1))));
 
   // To keep the painting order of the border and the background, this class
@@ -138,8 +138,8 @@ SpeechView::SpeechView(AppListViewDelegate* delegate)
   MicButton* mic_button = new MicButton(this);
   mic_button_ = mic_button;
   container->AddChildView(mic_button_);
-  mic_button_->SetEventTargeter(
-      scoped_ptr<views::ViewTargeter>(new views::ViewTargeter(mic_button)));
+  mic_button_->SetEventTargeter(std::unique_ptr<views::ViewTargeter>(
+      new views::ViewTargeter(mic_button)));
 
   // TODO(mukai): use BoundedLabel to cap 2 lines.
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();

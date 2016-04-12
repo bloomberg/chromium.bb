@@ -179,8 +179,8 @@ int DestroyPropertyBlob(int fd, uint32_t id) {
   return ret < 0 ? -errno : ret;
 }
 
-using ScopedDrmColorLutPtr = scoped_ptr<DrmColorLut, base::FreeDeleter>;
-using ScopedDrmColorCtmPtr = scoped_ptr<DrmColorCtm, base::FreeDeleter>;
+using ScopedDrmColorLutPtr = std::unique_ptr<DrmColorLut, base::FreeDeleter>;
+using ScopedDrmColorCtmPtr = std::unique_ptr<DrmColorCtm, base::FreeDeleter>;
 
 ScopedDrmColorLutPtr CreateLutBlob(
     const std::vector<GammaRampRGBEntry>& source) {

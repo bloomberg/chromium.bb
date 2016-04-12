@@ -44,7 +44,7 @@ class VIEWS_MUS_EXPORT WindowTreeHostMus : public aura::WindowTreeHostPlatform {
   void OnCloseRequest() override;
 
   NativeWidgetMus* native_widget_;
-  scoped_ptr<InputMethodMUS> input_method_;
+  std::unique_ptr<InputMethodMUS> input_method_;
   ui::PlatformWindowState show_state_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTreeHostMus);

@@ -53,7 +53,7 @@ class TestingNotifierSettingsProvider
  private:
   NotifierId settings_handler_id_;
   size_t request_count_;
-  scoped_ptr<NotifierId> last_notifier_id_settings_requested_;
+  std::unique_ptr<NotifierId> last_notifier_id_settings_requested_;
 };
 
 }  // namespace
@@ -72,8 +72,8 @@ class NotifierSettingsViewTest : public testing::Test {
   }
 
  private:
-  scoped_ptr<TestingNotifierSettingsProvider> settings_provider_;
-  scoped_ptr<NotifierSettingsView> notifier_settings_view_;
+  std::unique_ptr<TestingNotifierSettingsProvider> settings_provider_;
+  std::unique_ptr<NotifierSettingsView> notifier_settings_view_;
 
   DISALLOW_COPY_AND_ASSIGN(NotifierSettingsViewTest);
 };

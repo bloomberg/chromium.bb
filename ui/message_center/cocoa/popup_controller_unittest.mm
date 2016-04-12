@@ -4,8 +4,9 @@
 
 #import "ui/message_center/cocoa/popup_controller.h"
 
+#include <memory>
+
 #include "base/mac/scoped_nsobject.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #import "ui/gfx/test/ui_cocoa_test_helper.h"
@@ -19,7 +20,7 @@ class PopupControllerTest : public ui::CocoaTest {
 };
 
 TEST_F(PopupControllerTest, Creation) {
-  scoped_ptr<message_center::Notification> notification(
+  std::unique_ptr<message_center::Notification> notification(
       new message_center::Notification(
           message_center::NOTIFICATION_TYPE_SIMPLE, "",
           ASCIIToUTF16("Added to circles"),

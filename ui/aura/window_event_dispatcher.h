@@ -7,12 +7,12 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/scoped_observer.h"
@@ -261,10 +261,10 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
   // touch/mouse moves while the count is > 0.
   int move_hold_count_;
   // The location of |held_move_event_| is in |window_|'s coordinate.
-  scoped_ptr<ui::LocatedEvent> held_move_event_;
+  std::unique_ptr<ui::LocatedEvent> held_move_event_;
 
   // Allowing for reposting of events. Used when exiting context menus.
-  scoped_ptr<ui::LocatedEvent> held_repostable_event_;
+  std::unique_ptr<ui::LocatedEvent> held_repostable_event_;
 
   // Set when dispatching a held event.
   ui::LocatedEvent* dispatching_held_event_;

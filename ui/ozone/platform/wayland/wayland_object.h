@@ -7,7 +7,7 @@
 
 #include <wayland-client-core.h>
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
 
 struct wl_buffer;
 struct wl_compositor;
@@ -99,14 +99,14 @@ struct Deleter {
 };
 
 template <typename T>
-class Object : public scoped_ptr<T, Deleter> {
+class Object : public std::unique_ptr<T, Deleter> {
  public:
   Object() {}
-  explicit Object(T* obj) : scoped_ptr<T, Deleter>(obj) {}
+  explicit Object(T* obj) : std::unique_ptr<T, Deleter>(obj) {}
 
   uint32_t id() {
     return wl_proxy_get_id(
-        reinterpret_cast<wl_proxy*>(scoped_ptr<T, Deleter>::get()));
+        reinterpret_cast<wl_proxy*>(std::unique_ptr<T, Deleter>::get()));
   }
 };
 

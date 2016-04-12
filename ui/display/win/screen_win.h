@@ -7,10 +7,10 @@
 
 #include <windows.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/display/display_export.h"
 #include "ui/gfx/display_change_notifier.h"
 #include "ui/gfx/native_widget_types.h"
@@ -88,7 +88,7 @@ class DISPLAY_EXPORT ScreenWin : public gfx::Screen {
   // Helper implementing the DisplayObserver handling.
   gfx::DisplayChangeNotifier change_notifier_;
 
-  scoped_ptr<gfx::SingletonHwndObserver> singleton_hwnd_observer_;
+  std::unique_ptr<gfx::SingletonHwndObserver> singleton_hwnd_observer_;
 
   // Current list of ScreenWinDisplays.
   std::vector<ScreenWinDisplay> screen_win_displays_;

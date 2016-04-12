@@ -6,11 +6,11 @@
 #define UI_APP_LIST_SEARCH_HISTORY_H_
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "ui/app_list/app_list_export.h"
 #include "ui/app_list/search/history_data_observer.h"
@@ -45,7 +45,7 @@ class APP_LIST_EXPORT History : public KeyedService,
 
   // Gets all known search results that were launched using the given |query|
   // or using queries that |query| is a prefix of.
-  scoped_ptr<KnownResults> GetKnownResults(const std::string& query) const;
+  std::unique_ptr<KnownResults> GetKnownResults(const std::string& query) const;
 
  private:
   friend class app_list::test::SearchHistoryTest;
@@ -53,7 +53,7 @@ class APP_LIST_EXPORT History : public KeyedService,
   // HistoryDataObserver overrides:
   void OnHistoryDataLoadedFromStore() override;
 
-  scoped_ptr<HistoryData> data_;
+  std::unique_ptr<HistoryData> data_;
   scoped_refptr<HistoryDataStore> store_;
   bool data_loaded_;
 

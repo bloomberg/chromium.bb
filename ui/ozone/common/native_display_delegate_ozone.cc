@@ -5,6 +5,7 @@
 #include "ui/ozone/common/native_display_delegate_ozone.h"
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "ui/ozone/common/display_snapshot_proxy.h"
 #include "ui/ozone/common/display_util.h"
 
@@ -20,7 +21,7 @@ void NativeDisplayDelegateOzone::Initialize() {
   DisplaySnapshot_Params params;
   if (CreateSnapshotFromCommandLine(&params)) {
     DCHECK_NE(DISPLAY_CONNECTION_TYPE_NONE, params.type);
-    displays_.push_back(make_scoped_ptr(new DisplaySnapshotProxy(params)));
+    displays_.push_back(base::WrapUnique(new DisplaySnapshotProxy(params)));
   }
 }
 

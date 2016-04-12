@@ -221,7 +221,7 @@ void InfolistWindow::InitWidget() {
 
   // BubbleFrameView will be initialized through CreateBubble.
   GetBubbleFrameView()->SetBubbleBorder(
-      scoped_ptr<views::BubbleBorder>(new InfolistBorder()));
+      std::unique_ptr<views::BubbleBorder>(new InfolistBorder()));
   SizeToContents();
 }
 

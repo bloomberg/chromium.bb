@@ -122,7 +122,7 @@ class VIEWS_EXPORT Slider : public View, public gfx::AnimationDelegate {
   SliderListener* listener_;
   Orientation orientation_;
 
-  scoped_ptr<gfx::SlideAnimation> move_animation_;
+  std::unique_ptr<gfx::SlideAnimation> move_animation_;
 
   float value_;
   float keyboard_increment_;

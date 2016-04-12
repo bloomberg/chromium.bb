@@ -5,9 +5,9 @@
 #ifndef UI_GFX_LINUX_FONT_DELEGATE_H_
 #define UI_GFX_LINUX_FONT_DELEGATE_H_
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "ui/gfx/font_render_params.h"
 #include "ui/gfx/gfx_export.h"
 

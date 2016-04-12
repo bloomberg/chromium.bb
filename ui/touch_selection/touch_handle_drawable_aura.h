@@ -42,7 +42,7 @@ class UI_TOUCH_SELECTION_EXPORT TouchHandleDrawableAura
   float GetDrawableHorizontalPaddingRatio() const override;
 
   aura_extra::ImageWindowDelegate* window_delegate_;
-  scoped_ptr<aura::Window> window_;
+  std::unique_ptr<aura::Window> window_;
   bool enabled_;
   float alpha_;
   ui::TouchHandleOrientation orientation_;

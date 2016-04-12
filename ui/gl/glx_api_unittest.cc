@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "base/command_line.h"
-#include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_glx_api_implementation.h"
 #include "ui/gl/gl_implementation.h"
@@ -71,7 +72,7 @@ class GLXApiTest : public testing::Test {
  protected:
   static const char* fake_extension_string_;
 
-  scoped_ptr<RealGLXApi> api_;
+  std::unique_ptr<RealGLXApi> api_;
 };
 
 const char* GLXApiTest::fake_extension_string_ = "";

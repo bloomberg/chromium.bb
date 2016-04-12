@@ -5,9 +5,10 @@
 #ifndef UI_COMPOSITOR_PAINT_CONTEXT_H_
 #define UI_COMPOSITOR_PAINT_CONTEXT_H_
 
+#include <memory>
+
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/compositor/compositor_export.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -89,7 +90,7 @@ class COMPOSITOR_EXPORT PaintContext {
   gfx::Rect ToLayerSpaceRect(const gfx::Rect& rect) const;
 
   cc::DisplayItemList* list_;
-  scoped_ptr<SkPictureRecorder> owned_recorder_;
+  std::unique_ptr<SkPictureRecorder> owned_recorder_;
   // A pointer to the |owned_recorder_| in this PaintContext, or in another one
   // which this was copied from. We expect a copied-from PaintContext to outlive
   // copies made from it.

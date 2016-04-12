@@ -31,7 +31,7 @@ class WaylandSurfaceFactoryTest : public WaylandTest {
 
  protected:
   WaylandSurfaceFactory surface_factory;
-  scoped_ptr<SurfaceOzoneCanvas> canvas;
+  std::unique_ptr<SurfaceOzoneCanvas> canvas;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WaylandSurfaceFactoryTest);

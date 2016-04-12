@@ -80,7 +80,7 @@ class MessageCenterTrayTest : public testing::Test {
   }
 
   void AddNotification(const std::string& id, NotifierId notifier_id) {
-    scoped_ptr<Notification> notification(new Notification(
+    std::unique_ptr<Notification> notification(new Notification(
         message_center::NOTIFICATION_TYPE_SIMPLE, id,
         ASCIIToUTF16("Test Web Notification"),
         ASCIIToUTF16("Notification message body."), gfx::Image(),
@@ -88,8 +88,8 @@ class MessageCenterTrayTest : public testing::Test {
         message_center::RichNotificationData(), NULL /* delegate */));
     message_center_->AddNotification(std::move(notification));
   }
-  scoped_ptr<MockDelegate> delegate_;
-  scoped_ptr<MessageCenterTray> message_center_tray_;
+  std::unique_ptr<MockDelegate> delegate_;
+  std::unique_ptr<MessageCenterTray> message_center_tray_;
   MessageCenter* message_center_;
 
  private:
@@ -221,7 +221,7 @@ TEST_F(MessageCenterTrayTest, MessageCenterReopenPopupsForSystemPriority) {
   ASSERT_FALSE(message_center_tray_->popups_visible());
   ASSERT_FALSE(message_center_tray_->message_center_visible());
 
-  scoped_ptr<Notification> notification(new Notification(
+  std::unique_ptr<Notification> notification(new Notification(
       message_center::NOTIFICATION_TYPE_SIMPLE,
       "MessageCenterReopnPopupsForSystemPriority",
       ASCIIToUTF16("Test Web Notification"),
@@ -294,7 +294,7 @@ TEST_F(MessageCenterTrayTest, ContextMenuTestWithMessageCenter) {
   NotifierId notifier_id = DummyNotifierId();
 
   NotifierId notifier_id2(NotifierId::APPLICATION, "sample-app");
-  scoped_ptr<Notification> notification(new Notification(
+  std::unique_ptr<Notification> notification(new Notification(
       message_center::NOTIFICATION_TYPE_SIMPLE, id2,
       ASCIIToUTF16("Test Web Notification"),
       ASCIIToUTF16("Notification message body."), gfx::Image(),
@@ -304,9 +304,9 @@ TEST_F(MessageCenterTrayTest, ContextMenuTestWithMessageCenter) {
 
   AddNotification(id3);
 
-  scoped_ptr<ui::MenuModel> model(
-      message_center_tray_->CreateNotificationMenuModel(
-          notifier_id, display_source));
+  std::unique_ptr<ui::MenuModel> model(
+      message_center_tray_->CreateNotificationMenuModel(notifier_id,
+                                                        display_source));
   EXPECT_EQ(2, model->GetItemCount());
   const int second_command = model->GetCommandIdAt(1);
 
@@ -352,7 +352,7 @@ TEST_F(MessageCenterTrayTest, ContextMenuTestPopupsOnly) {
   AddNotification(id1, notifier_id);
 
   NotifierId notifier_id2(NotifierId::APPLICATION, "sample-app");
-  scoped_ptr<Notification> notification(new Notification(
+  std::unique_ptr<Notification> notification(new Notification(
       message_center::NOTIFICATION_TYPE_SIMPLE, id2,
       ASCIIToUTF16("Test Web Notification"),
       ASCIIToUTF16("Notification message body."), gfx::Image(),
@@ -363,7 +363,7 @@ TEST_F(MessageCenterTrayTest, ContextMenuTestPopupsOnly) {
   AddNotification(id3, notifier_id);
 
   // The dummy notifier is SYSTEM_COMPONENT so no context menu is visible.
-  scoped_ptr<ui::MenuModel> model(
+  std::unique_ptr<ui::MenuModel> model(
       message_center_tray_->CreateNotificationMenuModel(DummyNotifierId(),
                                                         display_source));
   EXPECT_EQ(nullptr, model.get());
@@ -401,7 +401,7 @@ TEST_F(MessageCenterTrayTest, DelegateDisabledContextMenu) {
   delegate_->enable_context_menu_ = false;
   // id2 doesn't have the display source, so it don't have the menu item for
   // disabling notifications.
-  scoped_ptr<ui::MenuModel> model(
+  std::unique_ptr<ui::MenuModel> model(
       message_center_tray_->CreateNotificationMenuModel(notifier_id,
                                                         display_source));
 

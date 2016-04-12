@@ -177,7 +177,7 @@ class TouchExplorationControllerTestApi {
   }
 
  private:
-  scoped_ptr<TouchExplorationController> touch_exploration_controller_;
+  std::unique_ptr<TouchExplorationController> touch_exploration_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchExplorationControllerTestApi);
 };
@@ -198,7 +198,8 @@ class TouchExplorationTest : public aura::test::AuraTestBase {
     root_window()->AddPreTargetHandler(&event_capturer_);
     generator_.reset(new test::EventGenerator(root_window()));
     // The generator takes ownership of the tick clock.
-    generator_->SetTickClock(scoped_ptr<base::TickClock>(simulated_clock_));
+    generator_->SetTickClock(
+        std::unique_ptr<base::TickClock>(simulated_clock_));
     cursor_client()->ShowCursor();
     cursor_client()->DisableMouseEvents();
   }
@@ -390,7 +391,7 @@ class TouchExplorationTest : public aura::test::AuraTestBase {
         simulated_clock_->NowTicks().ToInternalValue());
   }
 
-  scoped_ptr<test::EventGenerator> generator_;
+  std::unique_ptr<test::EventGenerator> generator_;
   ui::GestureDetector::Config gesture_detector_config_;
   // Owned by |generator_|.
   base::SimpleTestTickClock* simulated_clock_;
@@ -398,9 +399,9 @@ class TouchExplorationTest : public aura::test::AuraTestBase {
 
  private:
   EventCapturer event_capturer_;
-  scoped_ptr<TouchExplorationControllerTestApi>
+  std::unique_ptr<TouchExplorationControllerTestApi>
       touch_exploration_controller_;
-  scoped_ptr<aura::test::TestCursorClient> cursor_client_;
+  std::unique_ptr<aura::test::TestCursorClient> cursor_client_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchExplorationTest);
 };

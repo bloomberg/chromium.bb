@@ -134,7 +134,7 @@ class HidingWindowAnimationObserverBase : public aura::WindowObserver {
   aura::Window* window_;
 
   // The owner of detached layers.
-  scoped_ptr<ui::LayerTreeOwner> layer_owner_;
+  std::unique_ptr<ui::LayerTreeOwner> layer_owner_;
 
   DISALLOW_COPY_AND_ASSIGN(HidingWindowAnimationObserverBase);
 };
@@ -349,23 +349,22 @@ void AnimateHideWindow_Fade(aura::Window* window) {
 
 ui::LayerAnimationElement* CreateGrowShrinkElement(
     aura::Window* window, bool grow) {
-  scoped_ptr<ui::InterpolatedTransform> scale(new ui::InterpolatedScale(
-      gfx::Point3F(kWindowAnimation_Bounce_Scale,
-                   kWindowAnimation_Bounce_Scale,
-                   1),
-      gfx::Point3F(1, 1, 1)));
-  scoped_ptr<ui::InterpolatedTransform> scale_about_pivot(
+  std::unique_ptr<ui::InterpolatedTransform> scale(
+      new ui::InterpolatedScale(gfx::Point3F(kWindowAnimation_Bounce_Scale,
+                                             kWindowAnimation_Bounce_Scale, 1),
+                                gfx::Point3F(1, 1, 1)));
+  std::unique_ptr<ui::InterpolatedTransform> scale_about_pivot(
       new ui::InterpolatedTransformAboutPivot(
           gfx::Point(window->bounds().width() * 0.5,
                      window->bounds().height() * 0.5),
           scale.release()));
   scale_about_pivot->SetReversed(grow);
-  scoped_ptr<ui::LayerAnimationElement> transition(
+  std::unique_ptr<ui::LayerAnimationElement> transition(
       ui::LayerAnimationElement::CreateInterpolatedTransformElement(
           scale_about_pivot.release(),
           base::TimeDelta::FromMilliseconds(
               kWindowAnimation_Bounce_DurationMS *
-                  kWindowAnimation_Bounce_GrowShrinkDurationPercent / 100)));
+              kWindowAnimation_Bounce_GrowShrinkDurationPercent / 100)));
   transition->set_tween_type(grow ? gfx::Tween::EASE_OUT : gfx::Tween::EASE_IN);
   return transition.release();
 }
@@ -375,7 +374,7 @@ void AnimateBounce(aura::Window* window) {
       window->layer()->GetAnimator());
   scoped_settings.SetPreemptionStrategy(
       ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
-  scoped_ptr<ui::LayerAnimationSequence> sequence(
+  std::unique_ptr<ui::LayerAnimationSequence> sequence(
       new ui::LayerAnimationSequence);
   sequence->AddElement(CreateGrowShrinkElement(window, true));
   sequence->AddElement(ui::LayerAnimationElement::CreatePauseElement(
@@ -433,7 +432,7 @@ void AddLayerAnimationsForRotate(aura::Window* window, bool show) {
         duration * (100 - kWindowAnimation_Rotate_OpacityDurationPercent) / 100,
         ui::LayerAnimationElement::OPACITY);
   }
-  scoped_ptr<ui::LayerAnimationElement> opacity(
+  std::unique_ptr<ui::LayerAnimationElement> opacity(
       ui::LayerAnimationElement::CreateOpacityElement(
           show ? kWindowAnimation_ShowOpacity : kWindowAnimation_HideOpacity,
           duration * kWindowAnimation_Rotate_OpacityDurationPercent / 100));
@@ -447,30 +446,30 @@ void AddLayerAnimationsForRotate(aura::Window* window, bool show) {
   transform.Translate(xcenter, 0);
   transform.ApplyPerspectiveDepth(kWindowAnimation_Rotate_PerspectiveDepth);
   transform.Translate(-xcenter, 0);
-  scoped_ptr<ui::InterpolatedTransform> perspective(
+  std::unique_ptr<ui::InterpolatedTransform> perspective(
       new ui::InterpolatedConstantTransform(transform));
 
-  scoped_ptr<ui::InterpolatedTransform> scale(
+  std::unique_ptr<ui::InterpolatedTransform> scale(
       new ui::InterpolatedScale(1, kWindowAnimation_Rotate_ScaleFactor));
-  scoped_ptr<ui::InterpolatedTransform> scale_about_pivot(
+  std::unique_ptr<ui::InterpolatedTransform> scale_about_pivot(
       new ui::InterpolatedTransformAboutPivot(
           gfx::Point(xcenter, kWindowAnimation_Rotate_TranslateY),
           scale.release()));
 
-  scoped_ptr<ui::InterpolatedTransform> translation(
+  std::unique_ptr<ui::InterpolatedTransform> translation(
       new ui::InterpolatedTranslation(
           gfx::PointF(), gfx::PointF(0, kWindowAnimation_Rotate_TranslateY)));
 
-  scoped_ptr<ui::InterpolatedTransform> rotation(
-      new ui::InterpolatedAxisAngleRotation(
-          gfx::Vector3dF(1, 0, 0), 0, kWindowAnimation_Rotate_DegreesX));
+  std::unique_ptr<ui::InterpolatedTransform> rotation(
+      new ui::InterpolatedAxisAngleRotation(gfx::Vector3dF(1, 0, 0), 0,
+                                            kWindowAnimation_Rotate_DegreesX));
 
   scale_about_pivot->SetChild(perspective.release());
   translation->SetChild(scale_about_pivot.release());
   rotation->SetChild(translation.release());
   rotation->SetReversed(show);
 
-  scoped_ptr<ui::LayerAnimationElement> transition(
+  std::unique_ptr<ui::LayerAnimationElement> transition(
       ui::LayerAnimationElement::CreateInterpolatedTransformElement(
           rotation.release(), duration));
   ui::LayerAnimationSequence* last_sequence =

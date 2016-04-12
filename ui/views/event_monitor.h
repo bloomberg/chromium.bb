@@ -5,7 +5,8 @@
 #ifndef UI_VIEWS_EVENT_MONITOR_H_
 #define UI_VIEWS_EVENT_MONITOR_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/views_export.h"
@@ -25,14 +26,14 @@ class VIEWS_EXPORT EventMonitor {
   // Create an instance for monitoring application events.
   // Events will be forwarded to |event_handler| before they are dispatched to
   // the application.
-  static scoped_ptr<EventMonitor> CreateApplicationMonitor(
+  static std::unique_ptr<EventMonitor> CreateApplicationMonitor(
       ui::EventHandler* event_handler);
 
   // Create an instance for monitoring events on a specific window.
   // Events will be forwarded to |event_handler| before they are dispatched to
   // |target_window|.
   // The EventMonitor instance must be destroyed before |target_window|.
-  static scoped_ptr<EventMonitor> CreateWindowMonitor(
+  static std::unique_ptr<EventMonitor> CreateWindowMonitor(
       ui::EventHandler* event_handler,
       gfx::NativeWindow target_window);
 

@@ -31,9 +31,9 @@ void SchedulePulsingAnimation(ui::Layer* layer) {
   DCHECK(layer);
   DCHECK_EQ(arraysize(kAnimationOpacity), arraysize(kAnimationScale));
 
-  scoped_ptr<ui::LayerAnimationSequence> opacity_sequence(
+  std::unique_ptr<ui::LayerAnimationSequence> opacity_sequence(
       new ui::LayerAnimationSequence());
-  scoped_ptr<ui::LayerAnimationSequence> transform_sequence(
+  std::unique_ptr<ui::LayerAnimationSequence> transform_sequence(
       new ui::LayerAnimationSequence());
 
   // The animations loop infinitely.

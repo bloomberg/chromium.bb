@@ -167,10 +167,10 @@ class VIEWS_EXPORT Combobox : public PrefixDelegate, public ButtonListener {
   base::string16 accessible_name_;
 
   // A helper used to select entries by keyboard input.
-  scoped_ptr<PrefixSelector> selector_;
+  std::unique_ptr<PrefixSelector> selector_;
 
   // Adapts a ComboboxModel for use by a views MenuRunner.
-  scoped_ptr<ui::MenuModel> menu_model_adapter_;
+  std::unique_ptr<ui::MenuModel> menu_model_adapter_;
 
   // Like MenuButton, we use a time object in order to keep track of when the
   // combobox was closed. The time is used for simulating menu behavior; that
@@ -186,7 +186,7 @@ class VIEWS_EXPORT Combobox : public PrefixDelegate, public ButtonListener {
   // The painters or images that are used when |style_| is STYLE_BUTTONS. The
   // first index means the state of unfocused or focused.
   // The images are owned by ResourceBundle.
-  scoped_ptr<Painter> body_button_painters_[2][Button::STATE_COUNT];
+  std::unique_ptr<Painter> body_button_painters_[2][Button::STATE_COUNT];
   std::vector<const gfx::ImageSkia*>
       menu_button_images_[2][Button::STATE_COUNT];
 
@@ -201,7 +201,7 @@ class VIEWS_EXPORT Combobox : public PrefixDelegate, public ButtonListener {
 
   // Set while the dropdown is showing. Ensures the menu is closed if |this| is
   // destroyed.
-  scoped_ptr<views::MenuRunner> menu_runner_;
+  std::unique_ptr<views::MenuRunner> menu_runner_;
 
   // Used for making calbacks.
   base::WeakPtrFactory<Combobox> weak_ptr_factory_;

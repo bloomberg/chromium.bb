@@ -6,6 +6,7 @@
 
 #include "ash/shell.h"
 #include "ash/system/toast/toast_manager.h"
+#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "ui/arc/notification/arc_notification_item.h"
 
@@ -49,7 +50,7 @@ void ArcNotificationManager::OnNotificationsInstanceClosed() {
   DCHECK(ready_);
   while (!items_.empty()) {
     auto it = items_.begin();
-    scoped_ptr<ArcNotificationItem> item = std::move(it->second);
+    std::unique_ptr<ArcNotificationItem> item = std::move(it->second);
     items_.erase(it);
     item->OnClosedFromAndroid(false /* by_user */);
   }
@@ -65,7 +66,7 @@ void ArcNotificationManager::OnNotificationPosted(ArcNotificationDataPtr data) {
     ArcNotificationItem* item =
         new ArcNotificationItem(this, message_center_, key, main_profile_id_);
     // TODO(yoshiki): Use emplacement for performance when it's available.
-    auto result = items_.insert(std::make_pair(key, make_scoped_ptr(item)));
+    auto result = items_.insert(std::make_pair(key, base::WrapUnique(item)));
     DCHECK(result.second);
     it = result.first;
   }
@@ -80,7 +81,7 @@ void ArcNotificationManager::OnNotificationRemoved(const mojo::String& key) {
     return;
   }
 
-  scoped_ptr<ArcNotificationItem> item = std::move(it->second);
+  std::unique_ptr<ArcNotificationItem> item = std::move(it->second);
   items_.erase(it);
   item->OnClosedFromAndroid(true /* by_user */);
 }
@@ -96,7 +97,7 @@ void ArcNotificationManager::SendNotificationRemovedFromChrome(
 
   // The removed ArcNotificationItem needs to live in this scope, since the
   // given argument |key| may be a part of the removed item.
-  scoped_ptr<ArcNotificationItem> item = std::move(it->second);
+  std::unique_ptr<ArcNotificationItem> item = std::move(it->second);
   items_.erase(it);
 
   auto notifications_instance = arc_bridge_service()->notifications_instance();

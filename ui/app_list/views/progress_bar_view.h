@@ -5,8 +5,9 @@
 #ifndef UI_APP_LIST_VIEWS_PROGRESS_BAR_VIEW_H_
 #define UI_APP_LIST_VIEWS_PROGRESS_BAR_VIEW_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/views/controls/progress_bar.h"
 
 namespace views {
@@ -26,8 +27,8 @@ class ProgressBarView : public views::ProgressBar {
   void OnPaint(gfx::Canvas* canvas) override;
 
  private:
-  scoped_ptr<views::Painter> background_painter_;
-  scoped_ptr<views::Painter> bar_painter_;
+  std::unique_ptr<views::Painter> background_painter_;
+  std::unique_ptr<views::Painter> bar_painter_;
 
   DISALLOW_COPY_AND_ASSIGN(ProgressBarView);
 };

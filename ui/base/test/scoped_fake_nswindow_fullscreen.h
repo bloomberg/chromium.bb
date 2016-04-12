@@ -5,8 +5,9 @@
 #ifndef UI_BASE_TEST_SCOPED_FAKE_NSWINDOW_FULLSCREEN_H_
 #define UI_BASE_TEST_SCOPED_FAKE_NSWINDOW_FULLSCREEN_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace ui {
 namespace test {
@@ -24,7 +25,7 @@ class ScopedFakeNSWindowFullscreen {
   ~ScopedFakeNSWindowFullscreen();
 
  private:
-  scoped_ptr<Impl> impl_;
+  std::unique_ptr<Impl> impl_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedFakeNSWindowFullscreen);
 };

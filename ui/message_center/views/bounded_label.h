@@ -7,9 +7,9 @@
 
 #include <list>
 #include <map>
+#include <memory>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/message_center/message_center_export.h"
 #include "ui/views/view.h"
@@ -68,7 +68,7 @@ class MESSAGE_CENTER_EXPORT BoundedLabel : public views::View {
 
   base::string16 GetWrappedTextForTest(int width, int lines);
 
-  scoped_ptr<InnerBoundedLabel> label_;
+  std::unique_ptr<InnerBoundedLabel> label_;
   int line_limit_;
 
   DISALLOW_COPY_AND_ASSIGN(BoundedLabel);

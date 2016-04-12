@@ -5,6 +5,7 @@
 #include "ui/ozone/platform/caca/ozone_platform_caca.h"
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
 #include "ui/events/ozone/layout/no/no_keyboard_layout_engine.h"
 #include "ui/ozone/common/native_display_delegate_ozone.h"
@@ -47,20 +48,21 @@ class OzonePlatformCaca : public OzonePlatform {
   GpuPlatformSupportHost* GetGpuPlatformSupportHost() override {
     return gpu_platform_support_host_.get();
   }
-  scoped_ptr<SystemInputInjector> CreateSystemInputInjector() override {
+  std::unique_ptr<SystemInputInjector> CreateSystemInputInjector() override {
     return nullptr;  // no input injection support.
   }
-  scoped_ptr<PlatformWindow> CreatePlatformWindow(
+  std::unique_ptr<PlatformWindow> CreatePlatformWindow(
       PlatformWindowDelegate* delegate,
       const gfx::Rect& bounds) override {
-    scoped_ptr<CacaWindow> caca_window(new CacaWindow(
+    std::unique_ptr<CacaWindow> caca_window(new CacaWindow(
         delegate, window_manager_.get(), event_source_.get(), bounds));
     if (!caca_window->Initialize())
       return nullptr;
     return std::move(caca_window);
   }
-  scoped_ptr<NativeDisplayDelegate> CreateNativeDisplayDelegate() override {
-    return make_scoped_ptr(new NativeDisplayDelegateOzone());
+  std::unique_ptr<NativeDisplayDelegate> CreateNativeDisplayDelegate()
+      override {
+    return base::WrapUnique(new NativeDisplayDelegateOzone());
   }
 
   void InitializeUI() override {
@@ -71,7 +73,7 @@ class OzonePlatformCaca : public OzonePlatform {
     gpu_platform_support_host_.reset(CreateStubGpuPlatformSupportHost());
     input_controller_ = CreateStubInputController();
     KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(
-        make_scoped_ptr(new NoKeyboardLayoutEngine()));
+        base::WrapUnique(new NoKeyboardLayoutEngine()));
   }
 
   void InitializeGPU() override {
@@ -79,13 +81,13 @@ class OzonePlatformCaca : public OzonePlatform {
   }
 
  private:
-  scoped_ptr<CacaWindowManager> window_manager_;
-  scoped_ptr<CacaEventSource> event_source_;
-  scoped_ptr<CursorFactoryOzone> cursor_factory_ozone_;
-  scoped_ptr<GpuPlatformSupport> gpu_platform_support_;
-  scoped_ptr<GpuPlatformSupportHost> gpu_platform_support_host_;
-  scoped_ptr<InputController> input_controller_;
-  scoped_ptr<OverlayManagerOzone> overlay_manager_;
+  std::unique_ptr<CacaWindowManager> window_manager_;
+  std::unique_ptr<CacaEventSource> event_source_;
+  std::unique_ptr<CursorFactoryOzone> cursor_factory_ozone_;
+  std::unique_ptr<GpuPlatformSupport> gpu_platform_support_;
+  std::unique_ptr<GpuPlatformSupportHost> gpu_platform_support_host_;
+  std::unique_ptr<InputController> input_controller_;
+  std::unique_ptr<OverlayManagerOzone> overlay_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(OzonePlatformCaca);
 };

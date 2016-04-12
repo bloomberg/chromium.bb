@@ -10,9 +10,9 @@ namespace gfx {
 namespace win {
 
 // static
-scoped_ptr<DirectManipulationHelper>
+std::unique_ptr<DirectManipulationHelper>
 DirectManipulationHelper::CreateInstance() {
-  scoped_ptr<DirectManipulationHelper> instance;
+  std::unique_ptr<DirectManipulationHelper> instance;
 
   if (base::win::GetVersion() >= base::win::VERSION_WIN10)
     instance.reset(new DirectManipulationHelper);

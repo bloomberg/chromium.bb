@@ -4,10 +4,11 @@
 
 #include "ui/keyboard/keyboard_controller.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/focus_client.h"
@@ -115,7 +116,7 @@ class TestKeyboardUI : public KeyboardUI {
   void ResetInsets() override {}
 
  private:
-  scoped_ptr<aura::Window> window_;
+  std::unique_ptr<aura::Window> window_;
   aura::test::TestWindowDelegate delegate_;
   ui::InputMethod* input_method_;
 
@@ -250,15 +251,15 @@ class KeyboardControllerTest : public testing::Test,
   }
 
   base::MessageLoopForUI message_loop_;
-  scoped_ptr<aura::test::AuraTestHelper> aura_test_helper_;
-  scoped_ptr<TestFocusController> focus_controller_;
+  std::unique_ptr<aura::test::AuraTestHelper> aura_test_helper_;
+  std::unique_ptr<TestFocusController> focus_controller_;
 
  private:
   int number_of_calls_;
   gfx::Rect notified_bounds_;
   KeyboardUI* ui_;
-  scoped_ptr<KeyboardController> controller_;
-  scoped_ptr<ui::TextInputClient> test_text_input_client_;
+  std::unique_ptr<KeyboardController> controller_;
+  std::unique_ptr<ui::TextInputClient> test_text_input_client_;
   DISALLOW_COPY_AND_ASSIGN(KeyboardControllerTest);
 };
 
@@ -319,7 +320,7 @@ TEST_F(KeyboardControllerTest, ClickDoesNotFocusKeyboard) {
   keyboard::SetAccessibilityKeyboardEnabled(true);
   const gfx::Rect& root_bounds = root_window()->bounds();
   aura::test::EventCountDelegate delegate;
-  scoped_ptr<aura::Window> window(new aura::Window(&delegate));
+  std::unique_ptr<aura::Window> window(new aura::Window(&delegate));
   window->Init(ui::LAYER_NOT_DRAWN);
   window->SetBounds(root_bounds);
   root_window()->AddChild(window.get());
@@ -369,7 +370,7 @@ TEST_F(KeyboardControllerTest, VisibilityChangeWithTextInputTypeChange) {
   ui::DummyTextInputClient no_input_client_1(ui::TEXT_INPUT_TYPE_NONE);
 
   aura::Window* keyboard_container(controller()->GetContainerWindow());
-  scoped_ptr<KeyboardContainerObserver> keyboard_container_observer(
+  std::unique_ptr<KeyboardContainerObserver> keyboard_container_observer(
       new KeyboardContainerObserver(keyboard_container));
   root_window()->AddChild(keyboard_container);
 
@@ -433,7 +434,7 @@ TEST_F(KeyboardControllerTest, FloatingKeyboardDontOverscrollOrResize) {
 
   aura::Window* container(controller()->GetContainerWindow());
   root_window()->AddChild(container);
-  scoped_ptr<KeyboardContainerObserver> keyboard_container_observer(
+  std::unique_ptr<KeyboardContainerObserver> keyboard_container_observer(
       new KeyboardContainerObserver(container));
   gfx::Rect screen_bounds = root_window()->bounds();
   keyboard::SetTouchKeyboardEnabled(true);
@@ -492,7 +493,7 @@ TEST_F(KeyboardControllerTest, AlwaysVisibleWhenLocked) {
   ui::DummyTextInputClient no_input_client_1(ui::TEXT_INPUT_TYPE_NONE);
 
   aura::Window* keyboard_container(controller()->GetContainerWindow());
-  scoped_ptr<KeyboardContainerObserver> keyboard_container_observer(
+  std::unique_ptr<KeyboardContainerObserver> keyboard_container_observer(
       new KeyboardContainerObserver(keyboard_container));
   root_window()->AddChild(keyboard_container);
 

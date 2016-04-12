@@ -176,7 +176,7 @@ void ResourceBundle::InitSharedInstanceWithPakFileRegion(
     base::File pak_file,
     const base::MemoryMappedFile::Region& region) {
   InitSharedInstance(NULL);
-  scoped_ptr<DataPack> data_pack(new DataPack(SCALE_FACTOR_100P));
+  std::unique_ptr<DataPack> data_pack(new DataPack(SCALE_FACTOR_100P));
   if (!data_pack->LoadFromFileRegion(std::move(pak_file), region)) {
     NOTREACHED() << "failed to load pak file";
     return;
@@ -252,8 +252,7 @@ void ResourceBundle::AddDataPackFromFileRegion(
     base::File file,
     const base::MemoryMappedFile::Region& region,
     ScaleFactor scale_factor) {
-  scoped_ptr<DataPack> data_pack(
-      new DataPack(scale_factor));
+  std::unique_ptr<DataPack> data_pack(new DataPack(scale_factor));
   if (data_pack->LoadFromFileRegion(std::move(file), region)) {
     AddDataPack(data_pack.release());
   } else {
@@ -308,8 +307,7 @@ std::string ResourceBundle::LoadLocaleResources(
     return std::string();
   }
 
-  scoped_ptr<DataPack> data_pack(
-      new DataPack(SCALE_FACTOR_100P));
+  std::unique_ptr<DataPack> data_pack(new DataPack(SCALE_FACTOR_100P));
   if (!data_pack->LoadFromPath(locale_file_path)) {
     UMA_HISTOGRAM_ENUMERATION("ResourceBundle.LoadLocaleResourcesError",
                               logging::GetLastSystemErrorCode(), 16000);
@@ -328,7 +326,7 @@ void ResourceBundle::LoadTestResources(const base::FilePath& path,
   DCHECK(!ui::GetSupportedScaleFactors().empty());
   const ScaleFactor scale_factor(ui::GetSupportedScaleFactors()[0]);
   // Use the given resource pak for both common and localized resources.
-  scoped_ptr<DataPack> data_pack(new DataPack(scale_factor));
+  std::unique_ptr<DataPack> data_pack(new DataPack(scale_factor));
   if (!path.empty() && data_pack->LoadFromPath(path))
     AddDataPack(data_pack.release());
 
@@ -734,7 +732,7 @@ void ResourceBundle::AddDataPackFromPathInternal(
   if (pack_path.empty() || !pack_path.IsAbsolute())
     return;
 
-  scoped_ptr<DataPack> data_pack(new DataPack(scale_factor));
+  std::unique_ptr<DataPack> data_pack(new DataPack(scale_factor));
   data_pack->set_has_only_material_design_assets(has_only_material_assets);
   if (data_pack->LoadFromPath(pack_path)) {
     AddDataPack(data_pack.release());
@@ -787,7 +785,7 @@ bool ResourceBundle::LoadBitmap(const ResourceHandle& data_handle,
 #if !defined(OS_IOS)
   // iOS does not compile or use the JPEG codec.  On other platforms,
   // 99% of our assets are PNGs, however fallback to JPEG.
-  scoped_ptr<SkBitmap> jpeg_bitmap(
+  std::unique_ptr<SkBitmap> jpeg_bitmap(
       gfx::JPEGCodec::Decode(memory->front(), memory->size()));
   if (jpeg_bitmap.get()) {
     bitmap->swap(*jpeg_bitmap.get());

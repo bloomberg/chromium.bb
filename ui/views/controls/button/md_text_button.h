@@ -5,7 +5,8 @@
 #ifndef UI_VIEWS_CONTROLS_BUTTON_MD_TEXT_BUTTON_H_
 #define UI_VIEWS_CONTROLS_BUTTON_MD_TEXT_BUTTON_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "ui/views/animation/button_ink_drop_delegate.h"
 #include "ui/views/controls/button/label_button.h"
 

@@ -7,9 +7,10 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/nine_image_painter_factory.h"
 #include "ui/views/views_export.h"
@@ -77,11 +78,12 @@ class VIEWS_EXPORT Painter {
   static Painter* CreateImageGridPainter(const int image_ids[]);
 
   // Factory methods for creating painters intended for rendering focus.
-  static scoped_ptr<Painter> CreateDashedFocusPainter();
-  static scoped_ptr<Painter> CreateDashedFocusPainterWithInsets(
+  static std::unique_ptr<Painter> CreateDashedFocusPainter();
+  static std::unique_ptr<Painter> CreateDashedFocusPainterWithInsets(
       const gfx::Insets& insets);
-  static scoped_ptr<Painter> CreateSolidFocusPainter(SkColor color,
-                                                     const gfx::Insets& insets);
+  static std::unique_ptr<Painter> CreateSolidFocusPainter(
+      SkColor color,
+      const gfx::Insets& insets);
 
   // Returns the minimum size this painter can paint without obvious graphical
   // problems (e.g. overlapping images).

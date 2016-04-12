@@ -4,17 +4,17 @@
 
 #include "ui/base/ime/chromeos/ime_keyboard.h"
 
+#include <X11/Xlib.h>
+
 #include <algorithm>
+#include <memory>
 #include <set>
 #include <string>
 
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/x/x11_types.h"
-
-#include <X11/Xlib.h>
 
 namespace chromeos {
 namespace input_method {
@@ -47,7 +47,7 @@ class ImeKeyboardTest : public testing::Test,
     caps_changed_ = false;
   }
 
-  scoped_ptr<ImeKeyboard> xkey_;
+  std::unique_ptr<ImeKeyboard> xkey_;
   base::MessageLoopForUI message_loop_;
   bool caps_changed_;
 };

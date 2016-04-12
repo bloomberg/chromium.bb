@@ -94,8 +94,8 @@ class SearchResultPageViewTest : public views::ViewsTestBase,
   SearchResultTileItemListView* tile_list_view_;
 
   AppListTestViewDelegate view_delegate_;
-  scoped_ptr<SearchResultPageView> view_;
-  scoped_ptr<views::Textfield> textfield_;
+  std::unique_ptr<SearchResultPageView> view_;
+  std::unique_ptr<views::Textfield> textfield_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchResultPageViewTest);
 };

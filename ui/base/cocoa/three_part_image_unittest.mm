@@ -4,7 +4,8 @@
 
 #include "ui/base/cocoa/three_part_image.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "testing/gtest_mac.h"
 #include "ui/base/resource/resource_bundle.h"
 #import "ui/gfx/test/ui_cocoa_test_helper.h"

@@ -9,11 +9,11 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 
 #include "base/logging.h"
 #include "base/mac/sdk_forward_declarations.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/timer/timer.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/display_change_notifier.h"
@@ -249,7 +249,7 @@ class ScreenMac : public gfx::Screen {
 
   // The timer to delay configuring outputs. See also the comments in
   // HandleDisplayReconfiguration().
-  scoped_ptr<base::OneShotTimer> configure_timer_;
+  std::unique_ptr<base::OneShotTimer> configure_timer_;
 
   gfx::DisplayChangeNotifier change_notifier_;
 

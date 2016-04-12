@@ -7,12 +7,12 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "base/containers/small_map.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/events/events_base_export.h"
@@ -211,8 +211,9 @@ class EVENTS_BASE_EXPORT LatencyInfo {
                                          const char* trace_name_str);
 
   // Converts latencyinfo into format that can be dumped into trace buffer.
-  scoped_ptr<base::trace_event::ConvertableToTraceFormat> AsTraceableData();
-  scoped_ptr<base::trace_event::ConvertableToTraceFormat>
+  std::unique_ptr<base::trace_event::ConvertableToTraceFormat>
+  AsTraceableData();
+  std::unique_ptr<base::trace_event::ConvertableToTraceFormat>
   CoordinatesAsTraceableData();
 
   // Shown as part of the name of the trace event for this LatencyInfo.

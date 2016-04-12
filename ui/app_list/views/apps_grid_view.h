@@ -479,7 +479,7 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
 
   PaginationModel pagination_model_;
   // Must appear after |pagination_model_|.
-  scoped_ptr<PaginationController> pagination_controller_;
+  std::unique_ptr<PaginationController> pagination_controller_;
   PageSwitcher* page_switcher_view_;  // Owned by views hierarchy.
 
   int cols_;

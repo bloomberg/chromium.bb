@@ -5,10 +5,10 @@
 #include "ui/wm/core/shadow_controller.h"
 
 #include <algorithm>
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/window_tree_client.h"
 #include "ui/aura/test/aura_test_base.h"
@@ -54,15 +54,15 @@ class ShadowControllerTest : public aura::test::AuraTestBase {
   }
 
  private:
-  scoped_ptr<ShadowController> shadow_controller_;
-  scoped_ptr<wm::WMState> wm_state_;
+  std::unique_ptr<ShadowController> shadow_controller_;
+  std::unique_ptr<wm::WMState> wm_state_;
 
   DISALLOW_COPY_AND_ASSIGN(ShadowControllerTest);
 };
 
 // Tests that various methods in Window update the Shadow object as expected.
 TEST_F(ShadowControllerTest, Shadow) {
-  scoped_ptr<aura::Window> window(new aura::Window(NULL));
+  std::unique_ptr<aura::Window> window(new aura::Window(NULL));
   window->SetType(ui::wm::WINDOW_TYPE_NORMAL);
   window->Init(ui::LAYER_TEXTURED);
   ParentWindow(window.get());
@@ -98,7 +98,7 @@ TEST_F(ShadowControllerTest, Shadow) {
 
 // Tests that the window's shadow's bounds are updated correctly.
 TEST_F(ShadowControllerTest, ShadowBounds) {
-  scoped_ptr<aura::Window> window(new aura::Window(NULL));
+  std::unique_ptr<aura::Window> window(new aura::Window(NULL));
   window->SetType(ui::wm::WINDOW_TYPE_NORMAL);
   window->Init(ui::LAYER_TEXTURED);
   ParentWindow(window.get());
@@ -127,7 +127,7 @@ TEST_F(ShadowControllerTest, ShadowBounds) {
 TEST_F(ShadowControllerTest, ShadowStyle) {
   ShadowController::TestApi api(shadow_controller());
 
-  scoped_ptr<aura::Window> window1(new aura::Window(NULL));
+  std::unique_ptr<aura::Window> window1(new aura::Window(NULL));
   window1->SetType(ui::wm::WINDOW_TYPE_NORMAL);
   window1->Init(ui::LAYER_TEXTURED);
   ParentWindow(window1.get());
@@ -141,7 +141,7 @@ TEST_F(ShadowControllerTest, ShadowStyle) {
   EXPECT_EQ(Shadow::STYLE_ACTIVE, shadow1->style());
 
   // Create another window and activate it.
-  scoped_ptr<aura::Window> window2(new aura::Window(NULL));
+  std::unique_ptr<aura::Window> window2(new aura::Window(NULL));
   window2->SetType(ui::wm::WINDOW_TYPE_NORMAL);
   window2->Init(ui::LAYER_TEXTURED);
   ParentWindow(window2.get());
@@ -160,7 +160,7 @@ TEST_F(ShadowControllerTest, ShadowStyle) {
 TEST_F(ShadowControllerTest, ShowState) {
   ShadowController::TestApi api(shadow_controller());
 
-  scoped_ptr<aura::Window> window(new aura::Window(NULL));
+  std::unique_ptr<aura::Window> window(new aura::Window(NULL));
   window->SetType(ui::wm::WINDOW_TYPE_NORMAL);
   window->Init(ui::LAYER_TEXTURED);
   ParentWindow(window.get());
@@ -184,7 +184,7 @@ TEST_F(ShadowControllerTest, ShowState) {
 TEST_F(ShadowControllerTest, SmallShadowsForTooltipsAndMenus) {
   ShadowController::TestApi api(shadow_controller());
 
-  scoped_ptr<aura::Window> tooltip_window(new aura::Window(NULL));
+  std::unique_ptr<aura::Window> tooltip_window(new aura::Window(NULL));
   tooltip_window->SetType(ui::wm::WINDOW_TYPE_TOOLTIP);
   tooltip_window->Init(ui::LAYER_TEXTURED);
   ParentWindow(tooltip_window.get());
@@ -195,7 +195,7 @@ TEST_F(ShadowControllerTest, SmallShadowsForTooltipsAndMenus) {
   ASSERT_TRUE(tooltip_shadow != NULL);
   EXPECT_EQ(Shadow::STYLE_SMALL, tooltip_shadow->style());
 
-  scoped_ptr<aura::Window> menu_window(new aura::Window(NULL));
+  std::unique_ptr<aura::Window> menu_window(new aura::Window(NULL));
   menu_window->SetType(ui::wm::WINDOW_TYPE_MENU);
   menu_window->Init(ui::LAYER_TEXTURED);
   ParentWindow(menu_window.get());
@@ -212,7 +212,7 @@ TEST_F(ShadowControllerTest, SmallShadowsForTooltipsAndMenus) {
 TEST_F(ShadowControllerTest, TransientParentKeepsActiveShadow) {
   ShadowController::TestApi api(shadow_controller());
 
-  scoped_ptr<aura::Window> window1(new aura::Window(NULL));
+  std::unique_ptr<aura::Window> window1(new aura::Window(NULL));
   window1->SetType(ui::wm::WINDOW_TYPE_NORMAL);
   window1->Init(ui::LAYER_TEXTURED);
   ParentWindow(window1.get());
@@ -228,7 +228,7 @@ TEST_F(ShadowControllerTest, TransientParentKeepsActiveShadow) {
   // Create a window that is transient to window1, and that has the 'hide on
   // deactivate' property set. Upon activation, window1 should still have an
   // active shadow.
-  scoped_ptr<aura::Window> window2(new aura::Window(NULL));
+  std::unique_ptr<aura::Window> window2(new aura::Window(NULL));
   window2->SetType(ui::wm::WINDOW_TYPE_NORMAL);
   window2->Init(ui::LAYER_TEXTURED);
   ParentWindow(window2.get());

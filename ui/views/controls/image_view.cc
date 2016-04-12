@@ -84,7 +84,7 @@ void ImageView::ResetImageSize() {
   image_size_set_ = false;
 }
 
-void ImageView::SetFocusPainter(scoped_ptr<Painter> focus_painter) {
+void ImageView::SetFocusPainter(std::unique_ptr<Painter> focus_painter) {
   focus_painter_ = std::move(focus_painter);
 }
 

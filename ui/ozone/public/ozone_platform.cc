@@ -66,7 +66,7 @@ void OzonePlatform::CreateInstance() {
                  "OzonePlatform::Initialize",
                  "platform",
                  GetOzonePlatformName());
-    scoped_ptr<OzonePlatform> platform =
+    std::unique_ptr<OzonePlatform> platform =
         PlatformObject<OzonePlatform>::Create();
 
     // TODO(spang): Currently need to leak this object.

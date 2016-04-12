@@ -6,10 +6,11 @@
 
 #include <X11/Xlib.h>
 
+#include <memory>
 #include <utility>
 
 #include "base/command_line.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "ui/events/platform/x11/x11_event_source_libevent.h"
 #include "ui/ozone/common/native_display_delegate_ozone.h"
 #include "ui/ozone/common/stub_overlay_manager.h"
@@ -60,7 +61,7 @@ class OzonePlatformX11 : public OzonePlatform {
     return cursor_factory_ozone_.get();
   }
 
-  scoped_ptr<SystemInputInjector> CreateSystemInputInjector() override {
+  std::unique_ptr<SystemInputInjector> CreateSystemInputInjector() override {
     return nullptr;
   }
 
@@ -76,18 +77,20 @@ class OzonePlatformX11 : public OzonePlatform {
     return gpu_platform_support_host_.get();
   }
 
-  scoped_ptr<PlatformWindow> CreatePlatformWindow(
+  std::unique_ptr<PlatformWindow> CreatePlatformWindow(
       PlatformWindowDelegate* delegate,
       const gfx::Rect& bounds) override {
-    scoped_ptr<X11WindowOzone> window = make_scoped_ptr(new X11WindowOzone(
-        event_source_.get(), window_manager_.get(), delegate));
+    std::unique_ptr<X11WindowOzone> window =
+        base::WrapUnique(new X11WindowOzone(event_source_.get(),
+                                            window_manager_.get(), delegate));
     window->SetBounds(bounds);
     window->Create();
     return std::move(window);
   }
 
-  scoped_ptr<NativeDisplayDelegate> CreateNativeDisplayDelegate() override {
-    return make_scoped_ptr(new NativeDisplayDelegateOzone());
+  std::unique_ptr<NativeDisplayDelegate> CreateNativeDisplayDelegate()
+      override {
+    return base::WrapUnique(new NativeDisplayDelegateOzone());
   }
 
   void InitializeUI() override {
@@ -106,16 +109,16 @@ class OzonePlatformX11 : public OzonePlatform {
 
  private:
   // Objects in the Browser process.
-  scoped_ptr<X11WindowManagerOzone> window_manager_;
-  scoped_ptr<X11EventSourceLibevent> event_source_;
-  scoped_ptr<OverlayManagerOzone> overlay_manager_;
-  scoped_ptr<InputController> input_controller_;
-  scoped_ptr<X11CursorFactoryOzone> cursor_factory_ozone_;
-  scoped_ptr<GpuPlatformSupportHost> gpu_platform_support_host_;
+  std::unique_ptr<X11WindowManagerOzone> window_manager_;
+  std::unique_ptr<X11EventSourceLibevent> event_source_;
+  std::unique_ptr<OverlayManagerOzone> overlay_manager_;
+  std::unique_ptr<InputController> input_controller_;
+  std::unique_ptr<X11CursorFactoryOzone> cursor_factory_ozone_;
+  std::unique_ptr<GpuPlatformSupportHost> gpu_platform_support_host_;
 
   // Objects in the GPU process.
-  scoped_ptr<X11SurfaceFactory> surface_factory_ozone_;
-  scoped_ptr<GpuPlatformSupport> gpu_platform_support_;
+  std::unique_ptr<X11SurfaceFactory> surface_factory_ozone_;
+  std::unique_ptr<GpuPlatformSupport> gpu_platform_support_;
 
   DISALLOW_COPY_AND_ASSIGN(OzonePlatformX11);
 };

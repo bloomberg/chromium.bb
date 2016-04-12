@@ -5,7 +5,8 @@
 #ifndef UI_BASE_NINE_IMAGE_PAINTER_FACTORY_H_
 #define UI_BASE_NINE_IMAGE_PAINTER_FACTORY_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "ui/base/ui_base_export.h"
 
 // A macro to define arrays of IDR constants used with CreateImageGridPainter.
@@ -43,7 +44,7 @@ namespace ui {
 
 // Creates a NineImagePainter from an array of image ids. It's expected the
 // array came from the IMAGE_GRID macro.
-UI_BASE_EXPORT scoped_ptr<gfx::NineImagePainter> CreateNineImagePainter(
+UI_BASE_EXPORT std::unique_ptr<gfx::NineImagePainter> CreateNineImagePainter(
     const int image_ids[]);
 
 }  // namespace ui

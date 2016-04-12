@@ -6,10 +6,10 @@
 
 #include <limits.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "third_party/icu/source/common/unicode/unistr.h"
 #include "third_party/icu/source/i18n/unicode/msgfmt.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -143,9 +143,9 @@ static const Pluralities IDS_DURATION_HOUR_2ND = {
 
 namespace {
 
-scoped_ptr<icu::PluralRules> BuildPluralRules() {
+std::unique_ptr<icu::PluralRules> BuildPluralRules() {
   UErrorCode err = U_ZERO_ERROR;
-  scoped_ptr<icu::PluralRules> rules(
+  std::unique_ptr<icu::PluralRules> rules(
       icu::PluralRules::forLocale(icu::Locale::getDefault(), err));
   if (U_FAILURE(err)) {
     err = U_ZERO_ERROR;
@@ -231,7 +231,7 @@ void Formatter::Format(TwoUnits units,
   return;
 }
 
-scoped_ptr<icu::MessageFormat> Formatter::CreateFallbackFormat(
+std::unique_ptr<icu::MessageFormat> Formatter::CreateFallbackFormat(
     const icu::PluralRules& rules,
     const Pluralities& pluralities) const {
   icu::UnicodeString pattern("{NUMBER, plural, ");
@@ -241,25 +241,25 @@ scoped_ptr<icu::MessageFormat> Formatter::CreateFallbackFormat(
   pattern.append(UChar(0x7du));  // "}" = U+007D
 
   UErrorCode error = U_ZERO_ERROR;
-  scoped_ptr<icu::MessageFormat> format(
+  std::unique_ptr<icu::MessageFormat> format(
       new icu::MessageFormat(pattern, error));
   DCHECK(U_SUCCESS(error));
   return format;
 }
 
-scoped_ptr<icu::MessageFormat> Formatter::InitFormat(
+std::unique_ptr<icu::MessageFormat> Formatter::InitFormat(
     const Pluralities& pluralities) {
   if (!formatter_force_fallback) {
     base::string16 pattern = l10n_util::GetStringUTF16(pluralities.id);
     UErrorCode error = U_ZERO_ERROR;
-    scoped_ptr<icu::MessageFormat> format(new icu::MessageFormat(
+    std::unique_ptr<icu::MessageFormat> format(new icu::MessageFormat(
         icu::UnicodeString(FALSE, pattern.data(), pattern.length()), error));
     DCHECK(U_SUCCESS(error));
     if (format.get())
       return format;
   }
 
-  scoped_ptr<icu::PluralRules> rules(BuildPluralRules());
+  std::unique_ptr<icu::PluralRules> rules(BuildPluralRules());
   return CreateFallbackFormat(*rules, pluralities);
 }
 

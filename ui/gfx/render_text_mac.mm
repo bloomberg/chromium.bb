@@ -16,6 +16,7 @@
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "third_party/skia/include/ports/SkTypeface_mac.h"
@@ -79,8 +80,8 @@ RenderTextMac::RenderTextMac() : common_baseline_(0), runs_valid_(false) {}
 
 RenderTextMac::~RenderTextMac() {}
 
-scoped_ptr<RenderText> RenderTextMac::CreateInstanceOfSameType() const {
-  return make_scoped_ptr(new RenderTextMac);
+std::unique_ptr<RenderText> RenderTextMac::CreateInstanceOfSameType() const {
+  return base::WrapUnique(new RenderTextMac);
 }
 
 bool RenderTextMac::MultilineSupported() const {

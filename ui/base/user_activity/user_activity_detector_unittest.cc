@@ -4,9 +4,10 @@
 
 #include "ui/base/user_activity/user_activity_detector.h"
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/user_activity/user_activity_observer.h"
@@ -75,9 +76,9 @@ class UserActivityDetectorTest : public testing::Test {
     detector_->ProcessReceivedEvent(event);
   }
 
-  scoped_ptr<TestPlatformEventSource> platform_event_source_;
-  scoped_ptr<UserActivityDetector> detector_;
-  scoped_ptr<TestUserActivityObserver> observer_;
+  std::unique_ptr<TestPlatformEventSource> platform_event_source_;
+  std::unique_ptr<UserActivityDetector> detector_;
+  std::unique_ptr<TestUserActivityObserver> observer_;
 
   base::TimeTicks now_;
 

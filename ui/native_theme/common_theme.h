@@ -5,7 +5,8 @@
 #ifndef UI_NATIVE_THEME_COMMON_THEME_H_
 #define UI_NATIVE_THEME_COMMON_THEME_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "ui/native_theme/native_theme.h"
 
 class SkCanvas;
@@ -32,8 +33,8 @@ void NATIVE_THEME_EXPORT CommonThemePaintMenuItemBackground(
     const NativeTheme::MenuItemExtraParams& menu_item);
 
 // Creates a gfx::Canvas wrapping an SkCanvas.
-scoped_ptr<gfx::Canvas> NATIVE_THEME_EXPORT CommonThemeCreateCanvas(
-    SkCanvas* sk_canvas);
+std::unique_ptr<gfx::Canvas> NATIVE_THEME_EXPORT
+CommonThemeCreateCanvas(SkCanvas* sk_canvas);
 
 }  // namespace ui
 

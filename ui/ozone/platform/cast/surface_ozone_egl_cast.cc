@@ -34,7 +34,7 @@ bool SurfaceOzoneEglCast::ResizeNativeWindow(const gfx::Size& viewport_size) {
   return parent_->ResizeDisplay(viewport_size);
 }
 
-scoped_ptr<gfx::VSyncProvider> SurfaceOzoneEglCast::CreateVSyncProvider() {
+std::unique_ptr<gfx::VSyncProvider> SurfaceOzoneEglCast::CreateVSyncProvider() {
   return nullptr;
 }
 

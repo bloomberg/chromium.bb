@@ -72,7 +72,7 @@ class BubbleDelegateTest : public ViewsTestBase {
 }  // namespace
 
 TEST_F(BubbleDelegateTest, CreateDelegate) {
-  scoped_ptr<Widget> anchor_widget(CreateTestWidget());
+  std::unique_ptr<Widget> anchor_widget(CreateTestWidget());
   BubbleDelegateView* bubble_delegate = new BubbleDelegateView(
       anchor_widget->GetContentsView(), BubbleBorder::NONE);
   bubble_delegate->set_color(SK_ColorGREEN);
@@ -92,7 +92,7 @@ TEST_F(BubbleDelegateTest, CreateDelegate) {
 }
 
 TEST_F(BubbleDelegateTest, CloseAnchorWidget) {
-  scoped_ptr<Widget> anchor_widget(CreateTestWidget());
+  std::unique_ptr<Widget> anchor_widget(CreateTestWidget());
   BubbleDelegateView* bubble_delegate = new BubbleDelegateView(
       anchor_widget->GetContentsView(), BubbleBorder::NONE);
   // Preventing close on deactivate should not prevent closing with the anchor.
@@ -110,7 +110,7 @@ TEST_F(BubbleDelegateTest, CloseAnchorWidget) {
 
   // TODO(msw): Remove activation hack to prevent bookkeeping errors in:
   //            aura::test::TestActivationClient::OnWindowDestroyed().
-  scoped_ptr<Widget> smoke_and_mirrors_widget(CreateTestWidget());
+  std::unique_ptr<Widget> smoke_and_mirrors_widget(CreateTestWidget());
   EXPECT_FALSE(bubble_observer.widget_closed());
 
   // Ensure that closing the anchor widget also closes the bubble itself.
@@ -123,8 +123,8 @@ TEST_F(BubbleDelegateTest, CloseAnchorWidget) {
 // bubble will call upon the anchor view to get its location).
 TEST_F(BubbleDelegateTest, CloseAnchorViewTest) {
   // Create an anchor widget and add a view to be used as an anchor view.
-  scoped_ptr<Widget> anchor_widget(CreateTestWidget());
-  scoped_ptr<View> anchor_view(new View());
+  std::unique_ptr<Widget> anchor_widget(CreateTestWidget());
+  std::unique_ptr<View> anchor_view(new View());
   anchor_widget->GetContentsView()->AddChildView(anchor_view.get());
   TestBubbleDelegateView* bubble_delegate = new TestBubbleDelegateView(
       anchor_view.get());
@@ -156,7 +156,7 @@ TEST_F(BubbleDelegateTest, CloseAnchorViewTest) {
 // Testing that a move of the anchor view will lead to new bubble locations.
 TEST_F(BubbleDelegateTest, TestAnchorRectMovesWithViewTest) {
   // Create an anchor widget and add a view to be used as anchor view.
-  scoped_ptr<Widget> anchor_widget(CreateTestWidget());
+  std::unique_ptr<Widget> anchor_widget(CreateTestWidget());
   TestBubbleDelegateView* bubble_delegate = new TestBubbleDelegateView(
       anchor_widget->GetContentsView());
   BubbleDelegateView::CreateBubble(bubble_delegate);
@@ -170,13 +170,13 @@ TEST_F(BubbleDelegateTest, TestAnchorRectMovesWithViewTest) {
 }
 
 TEST_F(BubbleDelegateTest, ResetAnchorWidget) {
-  scoped_ptr<Widget> anchor_widget(CreateTestWidget());
+  std::unique_ptr<Widget> anchor_widget(CreateTestWidget());
   BubbleDelegateView* bubble_delegate = new BubbleDelegateView(
       anchor_widget->GetContentsView(), BubbleBorder::NONE);
 
   // Make sure the bubble widget is parented to a widget other than the anchor
   // widget so that closing the anchor widget does not close the bubble widget.
-  scoped_ptr<Widget> parent_widget(CreateTestWidget());
+  std::unique_ptr<Widget> parent_widget(CreateTestWidget());
   bubble_delegate->set_parent_window(parent_widget->GetNativeView());
   // Preventing close on deactivate should not prevent closing with the parent.
   bubble_delegate->set_close_on_deactivate(false);
@@ -201,7 +201,7 @@ TEST_F(BubbleDelegateTest, ResetAnchorWidget) {
 
   // TODO(msw): Remove activation hack to prevent bookkeeping errors in:
   //            aura::test::TestActivationClient::OnWindowDestroyed().
-  scoped_ptr<Widget> smoke_and_mirrors_widget(CreateTestWidget());
+  std::unique_ptr<Widget> smoke_and_mirrors_widget(CreateTestWidget());
   EXPECT_FALSE(bubble_observer.widget_closed());
 
   // Ensure that closing the parent widget also closes the bubble itself.
@@ -210,7 +210,7 @@ TEST_F(BubbleDelegateTest, ResetAnchorWidget) {
 }
 
 TEST_F(BubbleDelegateTest, InitiallyFocusedView) {
-  scoped_ptr<Widget> anchor_widget(CreateTestWidget());
+  std::unique_ptr<Widget> anchor_widget(CreateTestWidget());
   BubbleDelegateView* bubble_delegate = new BubbleDelegateView(
       anchor_widget->GetContentsView(), BubbleBorder::NONE);
   Widget* bubble_widget = BubbleDelegateView::CreateBubble(bubble_delegate);
@@ -220,7 +220,7 @@ TEST_F(BubbleDelegateTest, InitiallyFocusedView) {
 }
 
 TEST_F(BubbleDelegateTest, NonClientHitTest) {
-  scoped_ptr<Widget> anchor_widget(CreateTestWidget());
+  std::unique_ptr<Widget> anchor_widget(CreateTestWidget());
   TestBubbleDelegateView* bubble_delegate =
       new TestBubbleDelegateView(anchor_widget->GetContentsView());
   BubbleDelegateView::CreateBubble(bubble_delegate);
@@ -244,7 +244,7 @@ TEST_F(BubbleDelegateTest, NonClientHitTest) {
 }
 
 TEST_F(BubbleDelegateTest, VisibleWhenAnchorWidgetBoundsChanged) {
-  scoped_ptr<Widget> anchor_widget(CreateTestWidget());
+  std::unique_ptr<Widget> anchor_widget(CreateTestWidget());
   BubbleDelegateView* bubble_delegate = new BubbleDelegateView(
       anchor_widget->GetContentsView(), BubbleBorder::NONE);
   Widget* bubble_widget = BubbleDelegateView::CreateBubble(bubble_delegate);
@@ -261,7 +261,7 @@ TEST_F(BubbleDelegateTest, VisibleWhenAnchorWidgetBoundsChanged) {
 // Test that setting WidgetDelegate::set_can_activate() to false makes the
 // widget created via BubbleDelegateView::CreateBubble() not activatable.
 TEST_F(BubbleDelegateTest, NotActivatable) {
-  scoped_ptr<Widget> anchor_widget(CreateTestWidget());
+  std::unique_ptr<Widget> anchor_widget(CreateTestWidget());
   BubbleDelegateView* bubble_delegate = new BubbleDelegateView(
       anchor_widget->GetContentsView(), BubbleBorder::NONE);
   bubble_delegate->set_can_activate(false);
@@ -272,7 +272,7 @@ TEST_F(BubbleDelegateTest, NotActivatable) {
 
 TEST_F(BubbleDelegateTest, CloseReasons) {
   {
-    scoped_ptr<Widget> anchor_widget(CreateTestWidget());
+    std::unique_ptr<Widget> anchor_widget(CreateTestWidget());
     BubbleDelegateView* bubble_delegate = new BubbleDelegateView(
         anchor_widget->GetContentsView(), BubbleBorder::NONE);
     bubble_delegate->set_close_on_deactivate(true);
@@ -286,7 +286,7 @@ TEST_F(BubbleDelegateTest, CloseReasons) {
   }
 
   {
-    scoped_ptr<Widget> anchor_widget(CreateTestWidget());
+    std::unique_ptr<Widget> anchor_widget(CreateTestWidget());
     BubbleDelegateView* bubble_delegate = new BubbleDelegateView(
         anchor_widget->GetContentsView(), BubbleBorder::NONE);
     bubble_delegate->set_close_on_esc(true);
@@ -302,7 +302,7 @@ TEST_F(BubbleDelegateTest, CloseReasons) {
   }
 
   {
-    scoped_ptr<Widget> anchor_widget(CreateTestWidget());
+    std::unique_ptr<Widget> anchor_widget(CreateTestWidget());
     TestBubbleDelegateView* bubble_delegate =
         new TestBubbleDelegateView(anchor_widget->GetContentsView());
     Widget* bubble_widget = BubbleDelegateView::CreateBubble(bubble_delegate);

@@ -231,7 +231,7 @@ class NativeHostHolder {
 
  private:
   base::scoped_nsobject<NSView> view_;
-  scoped_ptr<NativeViewHost> host_;
+  std::unique_ptr<NativeViewHost> host_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeHostHolder);
 };
@@ -1041,7 +1041,7 @@ TEST_F(NativeWidgetMacTest, NoParentDelegateDuringTeardown) {
 
   // Test the WIDGET_OWNS_NATIVE_WIDGET flow.
   {
-    scoped_ptr<Widget> parent(new Widget);
+    std::unique_ptr<Widget> parent(new Widget);
     Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
     params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     params.bounds = gfx::Rect(100, 100, 300, 200);
@@ -1381,7 +1381,7 @@ class NativeWidgetMacViewsOrderTest : public WidgetTest {
 
     const int kNativeViewCount = 3;
     for (int i = 0; i < kNativeViewCount; ++i) {
-      scoped_ptr<NativeHostHolder> holder(new NativeHostHolder());
+      std::unique_ptr<NativeHostHolder> holder(new NativeHostHolder());
       native_host_parent_->AddChildView(holder->host());
       holder->AttachNativeView();
       hosts_.push_back(std::move(holder));
@@ -1402,7 +1402,7 @@ class NativeWidgetMacViewsOrderTest : public WidgetTest {
   Widget* widget_ = nullptr;
   View* native_host_parent_ = nullptr;
   NSView* compositor_view_ = nil;
-  std::vector<scoped_ptr<NativeHostHolder>> hosts_;
+  std::vector<std::unique_ptr<NativeHostHolder>> hosts_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NativeWidgetMacViewsOrderTest);

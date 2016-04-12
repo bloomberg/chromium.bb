@@ -8,11 +8,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/timer/timer.h"
@@ -206,7 +206,7 @@ class VIEWS_EXPORT Textfield : public View,
   // Performs the action associated with the specified command id.
   void ExecuteCommand(int command_id);
 
-  void SetFocusPainter(scoped_ptr<Painter> focus_painter);
+  void SetFocusPainter(std::unique_ptr<Painter> focus_painter);
 
   // Returns whether there is a drag operation originating from the textfield.
   bool HasTextBeingDragged();
@@ -392,7 +392,7 @@ class VIEWS_EXPORT Textfield : public View,
   void PasteSelectionClipboard(const ui::MouseEvent& event);
 
   // The text model.
-  scoped_ptr<TextfieldModel> model_;
+  std::unique_ptr<TextfieldModel> model_;
 
   // This is the current listener for events from this Textfield.
   TextfieldController* controller_;
@@ -410,7 +410,7 @@ class VIEWS_EXPORT Textfield : public View,
   // This will be reported as the "desired size". Defaults to 0.
   int default_width_in_chars_;
 
-  scoped_ptr<Painter> focus_painter_;
+  std::unique_ptr<Painter> focus_painter_;
 
   // Flags indicating whether various system colors should be used, and if not,
   // what overriding color values should be used instead.
@@ -470,7 +470,8 @@ class VIEWS_EXPORT Textfield : public View,
   gfx::Point last_click_location_;
   gfx::Range double_click_word_;
 
-  scoped_ptr<ui::TouchEditingControllerDeprecated> touch_selection_controller_;
+  std::unique_ptr<ui::TouchEditingControllerDeprecated>
+      touch_selection_controller_;
 
   // Used to track touch drag starting location and offset to enable touch
   // scrolling.
@@ -482,8 +483,8 @@ class VIEWS_EXPORT Textfield : public View,
   bool touch_handles_hidden_due_to_scroll_;
 
   // Context menu related members.
-  scoped_ptr<ui::SimpleMenuModel> context_menu_contents_;
-  scoped_ptr<views::MenuRunner> context_menu_runner_;
+  std::unique_ptr<ui::SimpleMenuModel> context_menu_contents_;
+  std::unique_ptr<views::MenuRunner> context_menu_runner_;
 
   // Used to bind callback functions to this object.
   base::WeakPtrFactory<Textfield> weak_ptr_factory_;

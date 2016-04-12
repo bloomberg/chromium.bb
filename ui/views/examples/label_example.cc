@@ -5,6 +5,7 @@
 #include "ui/views/examples/label_example.h"
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/views/background.h"
@@ -210,7 +211,7 @@ Combobox* LabelExample::AddCombobox(GridLayout* layout,
   layout->StartRow(0, 0);
   layout->AddView(new Label(base::ASCIIToUTF16(name)));
   ExampleComboboxModel* model = new ExampleComboboxModel(strings, count);
-  example_combobox_models_.push_back(make_scoped_ptr(model));
+  example_combobox_models_.push_back(base::WrapUnique(model));
   Combobox* combobox = new Combobox(model);
   combobox->SetSelectedIndex(0);
   combobox->set_listener(this);

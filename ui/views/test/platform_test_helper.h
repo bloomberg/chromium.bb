@@ -5,8 +5,9 @@
 #ifndef UI_VIEWS_TEST_PLATFORM_TEST_HELPER_H_
 #define UI_VIEWS_TEST_PLATFORM_TEST_HELPER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace views {
 
@@ -15,7 +16,7 @@ class PlatformTestHelper {
   PlatformTestHelper() {}
   virtual ~PlatformTestHelper() {}
 
-  static scoped_ptr<PlatformTestHelper> Create();
+  static std::unique_ptr<PlatformTestHelper> Create();
 
   virtual bool IsMus() const = 0;
 

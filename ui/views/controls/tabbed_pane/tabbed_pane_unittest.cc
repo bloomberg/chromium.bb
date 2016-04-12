@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ui/views/controls/tabbed_pane/tabbed_pane.h"
+
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/views/controls/tabbed_pane/tabbed_pane.h"
 #include "ui/views/test/views_test_base.h"
 
 using base::ASCIIToUTF16;
@@ -35,7 +37,7 @@ typedef ViewsTestBase TabbedPaneTest;
 
 // Tests TabbedPane::GetPreferredSize() and TabbedPane::Layout().
 TEST_F(TabbedPaneTest, SizeAndLayout) {
-  scoped_ptr<TabbedPane> tabbed_pane(new TabbedPane());
+  std::unique_ptr<TabbedPane> tabbed_pane(new TabbedPane());
   View* child1 = new FixedSizeView(gfx::Size(20, 10));
   tabbed_pane->AddTab(ASCIIToUTF16("tab1"), child1);
   View* child2 = new FixedSizeView(gfx::Size(5, 5));
@@ -67,7 +69,7 @@ TEST_F(TabbedPaneTest, SizeAndLayout) {
 }
 
 TEST_F(TabbedPaneTest, AddAndSelect) {
-  scoped_ptr<TabbedPane> tabbed_pane(new TabbedPane());
+  std::unique_ptr<TabbedPane> tabbed_pane(new TabbedPane());
   // Add several tabs; only the first should be a selected automatically.
   for (int i = 0; i < 3; ++i) {
     View* tab = new View();

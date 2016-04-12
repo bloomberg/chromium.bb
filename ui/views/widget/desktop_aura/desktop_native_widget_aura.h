@@ -235,13 +235,13 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
 
   void RootWindowDestroyed();
 
-  scoped_ptr<aura::WindowTreeHost> host_;
+  std::unique_ptr<aura::WindowTreeHost> host_;
   DesktopWindowTreeHost* desktop_window_tree_host_;
 
   // See class documentation for Widget in widget.h for a note about ownership.
   Widget::InitParams::Ownership ownership_;
 
-  scoped_ptr<DesktopCaptureClient> capture_client_;
+  std::unique_ptr<DesktopCaptureClient> capture_client_;
 
   // Child of the root, contains |content_window_|.
   aura::Window* content_window_container_;
@@ -253,26 +253,25 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
 
   internal::NativeWidgetDelegate* native_widget_delegate_;
 
-  scoped_ptr<wm::FocusController> focus_client_;
-  scoped_ptr<aura::client::ScreenPositionClient> position_client_;
-  scoped_ptr<aura::client::DragDropClient> drag_drop_client_;
-  scoped_ptr<aura::client::WindowTreeClient> window_tree_client_;
-  scoped_ptr<DesktopEventClient> event_client_;
-  scoped_ptr<FocusManagerEventHandler> focus_manager_event_handler_;
+  std::unique_ptr<wm::FocusController> focus_client_;
+  std::unique_ptr<aura::client::ScreenPositionClient> position_client_;
+  std::unique_ptr<aura::client::DragDropClient> drag_drop_client_;
+  std::unique_ptr<aura::client::WindowTreeClient> window_tree_client_;
+  std::unique_ptr<DesktopEventClient> event_client_;
+  std::unique_ptr<FocusManagerEventHandler> focus_manager_event_handler_;
 
   // Toplevel event filter which dispatches to other event filters.
-  scoped_ptr<wm::CompoundEventFilter> root_window_event_filter_;
+  std::unique_ptr<wm::CompoundEventFilter> root_window_event_filter_;
 
-  scoped_ptr<DropHelper> drop_helper_;
+  std::unique_ptr<DropHelper> drop_helper_;
   int last_drop_operation_;
 
-  scoped_ptr<corewm::TooltipController> tooltip_controller_;
-  scoped_ptr<TooltipManagerAura> tooltip_manager_;
+  std::unique_ptr<corewm::TooltipController> tooltip_controller_;
+  std::unique_ptr<TooltipManagerAura> tooltip_manager_;
 
-  scoped_ptr<wm::VisibilityController> visibility_controller_;
+  std::unique_ptr<wm::VisibilityController> visibility_controller_;
 
-  scoped_ptr<wm::WindowModalityController>
-      window_modality_controller_;
+  std::unique_ptr<wm::WindowModalityController> window_modality_controller_;
 
   bool restore_focus_on_activate_;
 
@@ -287,11 +286,11 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   static wm::CursorManager* cursor_manager_;
   static views::DesktopNativeCursorManager* native_cursor_manager_;
 
-  scoped_ptr<wm::ShadowController> shadow_controller_;
+  std::unique_ptr<wm::ShadowController> shadow_controller_;
 
   // Reorders child windows of |window_| associated with a view based on the
   // order of the associated views in the widget's view hierarchy.
-  scoped_ptr<WindowReorderer> window_reorderer_;
+  std::unique_ptr<WindowReorderer> window_reorderer_;
 
   // See class documentation for Widget in widget.h for a note about type.
   Widget::InitParams::Type widget_type_;

@@ -7,8 +7,9 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread.h"
 #include "ui/gfx/native_widget_types.h"
@@ -118,10 +119,10 @@ class DrmThread : public base::Thread {
   void Init() override;
 
  private:
-  scoped_ptr<DrmDeviceManager> device_manager_;
-  scoped_ptr<ScanoutBufferGenerator> buffer_generator_;
-  scoped_ptr<ScreenManager> screen_manager_;
-  scoped_ptr<DrmGpuDisplayManager> display_manager_;
+  std::unique_ptr<DrmDeviceManager> device_manager_;
+  std::unique_ptr<ScanoutBufferGenerator> buffer_generator_;
+  std::unique_ptr<ScreenManager> screen_manager_;
+  std::unique_ptr<DrmGpuDisplayManager> display_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(DrmThread);
 };

@@ -32,7 +32,7 @@ TEST_F(VisibilityControllerTest, AnimateTransparencyToZeroAndHideHides) {
   SetChildWindowVisibilityChangesAnimated(root_window());
 
   aura::test::TestWindowDelegate d;
-  scoped_ptr<aura::Window> window(aura::test::CreateTestWindowWithDelegate(
+  std::unique_ptr<aura::Window> window(aura::test::CreateTestWindowWithDelegate(
       &d, -2, gfx::Rect(0, 0, 50, 50), root_window()));
   ui::ScopedLayerAnimationSettings settings(window->layer()->GetAnimator());
   settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(5));
@@ -65,7 +65,7 @@ TEST_F(VisibilityControllerTest, SetWindowVisibilityChagnesAnimated) {
   aura::client::SetVisibilityClient(root_window(), &controller);
 
   aura::test::TestWindowDelegate d;
-  scoped_ptr<aura::Window> window(aura::test::CreateTestWindowWithDelegate(
+  std::unique_ptr<aura::Window> window(aura::test::CreateTestWindowWithDelegate(
       &d, -2, gfx::Rect(0, 0, 50, 50), root_window()));
   // Test using Show animation because Hide animation detaches the window's
   // layer.

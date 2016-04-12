@@ -5,9 +5,10 @@
 #ifndef UI_EVENTS_BLINK_INPUT_HANDLER_PROXY_H_
 #define UI_EVENTS_BLINK_INPUT_HANDLER_PROXY_H_
 
+#include <memory>
+
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "cc/input/input_handler.h"
 #include "third_party/WebKit/public/platform/WebGestureCurve.h"
 #include "third_party/WebKit/public/platform/WebGestureCurveTarget.h"
@@ -151,7 +152,7 @@ class InputHandlerProxy
       const blink::WebGestureEvent& gesture_event,
       const cc::InputHandlerScrollResult& scroll_result);
 
-  scoped_ptr<blink::WebGestureCurve> fling_curve_;
+  std::unique_ptr<blink::WebGestureCurve> fling_curve_;
   // Parameters for the active fling animation, stored in case we need to
   // transfer it out later.
   blink::WebActiveWheelFlingParameters fling_parameters_;
@@ -198,7 +199,8 @@ class InputHandlerProxy
   gfx::Vector2dF current_fling_velocity_;
 
   // Used to animate rubber-band over-scroll effect on Mac.
-  scoped_ptr<InputScrollElasticityController> scroll_elasticity_controller_;
+  std::unique_ptr<InputScrollElasticityController>
+      scroll_elasticity_controller_;
 
   bool smooth_scroll_enabled_;
   bool uma_latency_reporting_enabled_;

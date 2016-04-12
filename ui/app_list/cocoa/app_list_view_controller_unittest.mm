@@ -42,7 +42,7 @@ class AppListViewControllerTest : public AppsGridControllerTestHelper {
   AppListTestModel* model() { return delegate_->GetTestModel(); }
 
  protected:
-  scoped_ptr<AppListTestViewDelegate> delegate_;
+  std::unique_ptr<AppListTestViewDelegate> delegate_;
   base::scoped_nsobject<AppListViewController> app_list_view_controller_;
 
  private:

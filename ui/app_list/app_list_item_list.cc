@@ -4,6 +4,7 @@
 
 #include "ui/app_list/app_list_item_list.h"
 
+#include "base/memory/ptr_util.h"
 #include "ui/app_list/app_list_item.h"
 
 namespace app_list {
@@ -171,7 +172,7 @@ syncer::StringOrdinal AppListItemList::CreatePositionBefore(
       app_list_items_[index]->position());
 }
 
-AppListItem* AppListItemList::AddItem(scoped_ptr<AppListItem> item_ptr) {
+AppListItem* AppListItemList::AddItem(std::unique_ptr<AppListItem> item_ptr) {
   AppListItem* item = item_ptr.get();
   CHECK(std::find(app_list_items_.begin(), app_list_items_.end(), item)
         == app_list_items_.end());
@@ -193,29 +194,30 @@ AppListItem* AppListItemList::AddItem(scoped_ptr<AppListItem> item_ptr) {
 }
 
 void AppListItemList::DeleteItem(const std::string& id) {
-  scoped_ptr<AppListItem> item = RemoveItem(id);
+  std::unique_ptr<AppListItem> item = RemoveItem(id);
   // |item| will be deleted on destruction.
 }
 
-scoped_ptr<AppListItem> AppListItemList::RemoveItem(const std::string& id) {
+std::unique_ptr<AppListItem> AppListItemList::RemoveItem(
+    const std::string& id) {
   size_t index;
   if (!FindItemIndex(id, &index))
     LOG(FATAL) << "RemoveItem: Not found: " << id;
   return RemoveItemAt(index);
 }
 
-scoped_ptr<AppListItem> AppListItemList::RemoveItemAt(size_t index) {
+std::unique_ptr<AppListItem> AppListItemList::RemoveItemAt(size_t index) {
   CHECK_LT(index, item_count());
   AppListItem* item = app_list_items_[index];
   app_list_items_.weak_erase(app_list_items_.begin() + index);
   FOR_EACH_OBSERVER(AppListItemListObserver,
                     observers_,
                     OnListItemRemoved(index, item));
-  return make_scoped_ptr<AppListItem>(item);
+  return base::WrapUnique<AppListItem>(item);
 }
 
 void AppListItemList::DeleteItemAt(size_t index) {
-  scoped_ptr<AppListItem> item = RemoveItemAt(index);
+  std::unique_ptr<AppListItem> item = RemoveItemAt(index);
   // |item| will be deleted on destruction.
 }
 

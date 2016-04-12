@@ -171,7 +171,7 @@ DispatchDetails WindowEventDispatcher::DispatchMouseExitAtPoint(
 void WindowEventDispatcher::ProcessedTouchEvent(uint32_t unique_event_id,
                                                 Window* window,
                                                 ui::EventResult result) {
-  scoped_ptr<ui::GestureRecognizer::Gestures> gestures(
+  std::unique_ptr<ui::GestureRecognizer::Gestures> gestures(
       ui::GestureRecognizer::Get()->AckTouchEvent(unique_event_id, result,
                                                   window));
   DispatchDetails details = ProcessGestures(window, gestures.get());
@@ -505,7 +505,7 @@ ui::EventDispatchDetails WindowEventDispatcher::PostDispatchEvent(
       const ui::TouchEvent& touchevent = *event.AsTouchEvent();
 
       if (!touchevent.synchronous_handling_disabled()) {
-        scoped_ptr<ui::GestureRecognizer::Gestures> gestures;
+        std::unique_ptr<ui::GestureRecognizer::Gestures> gestures;
 
         Window* window = static_cast<Window*>(target);
         gestures.reset(ui::GestureRecognizer::Get()->AckTouchEvent(
@@ -668,7 +668,8 @@ ui::EventDispatchDetails WindowEventDispatcher::DispatchHeldEvents() {
   if (held_repostable_event_) {
     if (held_repostable_event_->type() == ui::ET_MOUSE_PRESSED ||
         held_repostable_event_->type() == ui::ET_TOUCH_PRESSED) {
-      scoped_ptr<ui::LocatedEvent> event = std::move(held_repostable_event_);
+      std::unique_ptr<ui::LocatedEvent> event =
+          std::move(held_repostable_event_);
       dispatching_held_event_ = event.get();
       dispatch_details = OnEventFromSource(event.get());
     } else {

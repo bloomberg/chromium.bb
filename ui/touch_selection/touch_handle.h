@@ -5,9 +5,10 @@
 #ifndef UI_TOUCH_SELECTION_TOUCH_HANDLE_H_
 #define UI_TOUCH_SELECTION_TOUCH_HANDLE_H_
 
+#include <memory>
+
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "ui/events/gesture_detection/motion_event.h"
 #include "ui/gfx/geometry/point_f.h"
@@ -60,7 +61,7 @@ class UI_TOUCH_SELECTION_EXPORT TouchHandleClient
   ~TouchHandleClient() override {}
   virtual void OnHandleTapped(const TouchHandle& handle) = 0;
   virtual void SetNeedsAnimate() = 0;
-  virtual scoped_ptr<TouchHandleDrawable> CreateDrawable() = 0;
+  virtual std::unique_ptr<TouchHandleDrawable> CreateDrawable() = 0;
   virtual base::TimeDelta GetMaxTapDuration() const = 0;
   virtual bool IsAdaptiveHandleOrientationEnabled() const = 0;
 };
@@ -131,7 +132,7 @@ class UI_TOUCH_SELECTION_EXPORT TouchHandle : public TouchSelectionDraggable {
   void SetAlpha(float alpha);
   void SetUpdateLayoutRequired();
 
-  scoped_ptr<TouchHandleDrawable> drawable_;
+  std::unique_ptr<TouchHandleDrawable> drawable_;
 
   TouchHandleClient* const client_;
 

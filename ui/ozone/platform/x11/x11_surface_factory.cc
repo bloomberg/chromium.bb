@@ -7,6 +7,7 @@
 #include <X11/Xlib.h>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "third_party/khronos/EGL/egl.h"
 #include "ui/gfx/vsync_provider.h"
 #include "ui/gfx/x/x11_types.h"
@@ -34,7 +35,7 @@ class X11SurfaceEGL : public SurfaceOzoneEGL {
     return true;
   }
 
-  scoped_ptr<gfx::VSyncProvider> CreateVSyncProvider() override {
+  std::unique_ptr<gfx::VSyncProvider> CreateVSyncProvider() override {
     return nullptr;
   }
 
@@ -115,9 +116,9 @@ X11SurfaceFactory::X11SurfaceFactory() {}
 
 X11SurfaceFactory::~X11SurfaceFactory() {}
 
-scoped_ptr<SurfaceOzoneEGL> X11SurfaceFactory::CreateEGLSurfaceForWidget(
+std::unique_ptr<SurfaceOzoneEGL> X11SurfaceFactory::CreateEGLSurfaceForWidget(
     gfx::AcceleratedWidget widget) {
-  return make_scoped_ptr(new X11SurfaceEGL(widget));
+  return base::WrapUnique(new X11SurfaceEGL(widget));
 }
 
 bool X11SurfaceFactory::LoadEGLGLES2Bindings(

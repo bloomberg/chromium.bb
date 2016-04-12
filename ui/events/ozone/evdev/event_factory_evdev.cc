@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/worker_pool.h"
@@ -149,14 +150,15 @@ void EventFactoryEvdev::Init() {
   initialized_ = true;
 }
 
-scoped_ptr<SystemInputInjector> EventFactoryEvdev::CreateSystemInputInjector() {
+std::unique_ptr<SystemInputInjector>
+EventFactoryEvdev::CreateSystemInputInjector() {
   // Use forwarding dispatcher for the injector rather than dispatching
   // directly. We cannot assume it is safe to (re-)enter ui::Event dispatch
   // synchronously from the injection point.
-  scoped_ptr<DeviceEventDispatcherEvdev> proxy_dispatcher(
+  std::unique_ptr<DeviceEventDispatcherEvdev> proxy_dispatcher(
       new ProxyDeviceEventDispatcher(base::ThreadTaskRunnerHandle::Get(),
                                      weak_ptr_factory_.GetWeakPtr()));
-  return make_scoped_ptr(
+  return base::WrapUnique(
       new InputInjectorEvdev(std::move(proxy_dispatcher), cursor_));
 }
 
@@ -404,7 +406,7 @@ int EventFactoryEvdev::NextDeviceId() {
 
 void EventFactoryEvdev::StartThread() {
   // Set up device factory.
-  scoped_ptr<DeviceEventDispatcherEvdev> proxy_dispatcher(
+  std::unique_ptr<DeviceEventDispatcherEvdev> proxy_dispatcher(
       new ProxyDeviceEventDispatcher(base::ThreadTaskRunnerHandle::Get(),
                                      weak_ptr_factory_.GetWeakPtr()));
   thread_.Start(std::move(proxy_dispatcher), cursor_,
@@ -413,7 +415,7 @@ void EventFactoryEvdev::StartThread() {
 }
 
 void EventFactoryEvdev::OnThreadStarted(
-    scoped_ptr<InputDeviceFactoryEvdevProxy> input_device_factory) {
+    std::unique_ptr<InputDeviceFactoryEvdevProxy> input_device_factory) {
   TRACE_EVENT0("evdev", "EventFactoryEvdev::OnThreadStarted");
   input_device_factory_proxy_ = std::move(input_device_factory);
 

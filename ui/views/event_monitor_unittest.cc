@@ -32,7 +32,7 @@ class EventMonitorTest : public WidgetTest {
 
  protected:
   Widget* widget_;
-  scoped_ptr<ui::test::EventGenerator> generator_;
+  std::unique_ptr<ui::test::EventGenerator> generator_;
   ui::test::TestEventHandler handler_;
 
  private:
@@ -40,7 +40,7 @@ class EventMonitorTest : public WidgetTest {
 };
 
 TEST_F(EventMonitorTest, ShouldReceiveAppEventsWhileInstalled) {
-  scoped_ptr<EventMonitor> monitor(
+  std::unique_ptr<EventMonitor> monitor(
       EventMonitor::CreateApplicationMonitor(&handler_));
 
   generator_->ClickLeftButton();
@@ -52,7 +52,7 @@ TEST_F(EventMonitorTest, ShouldReceiveAppEventsWhileInstalled) {
 }
 
 TEST_F(EventMonitorTest, ShouldReceiveWindowEventsWhileInstalled) {
-  scoped_ptr<EventMonitor> monitor(
+  std::unique_ptr<EventMonitor> monitor(
       EventMonitor::CreateWindowMonitor(&handler_, widget_->GetNativeWindow()));
 
   generator_->ClickLeftButton();
@@ -65,7 +65,7 @@ TEST_F(EventMonitorTest, ShouldReceiveWindowEventsWhileInstalled) {
 
 TEST_F(EventMonitorTest, ShouldNotReceiveEventsFromOtherWindow) {
   Widget* widget2 = CreateTopLevelNativeWidget();
-  scoped_ptr<EventMonitor> monitor(
+  std::unique_ptr<EventMonitor> monitor(
       EventMonitor::CreateWindowMonitor(&handler_, widget2->GetNativeWindow()));
 
   generator_->ClickLeftButton();

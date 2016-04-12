@@ -11,7 +11,7 @@
 namespace views {
 
 // static
-scoped_ptr<Border> PlatformStyle::CreateThemedLabelButtonBorder(
+std::unique_ptr<Border> PlatformStyle::CreateThemedLabelButtonBorder(
     LabelButton* button) {
   views::LinuxUI* linux_ui = views::LinuxUI::instance();
   if (linux_ui)

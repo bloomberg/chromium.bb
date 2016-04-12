@@ -166,7 +166,7 @@ class RowMoveAnimationDelegate : public gfx::AnimationDelegate {
   // The view that needs to be wrapped. Owned by views hierarchy.
   views::View* view_;
 
-  scoped_ptr<ui::Layer> layer_;
+  std::unique_ptr<ui::Layer> layer_;
   const gfx::Rect layer_start_;
   const gfx::Rect layer_target_;
 
@@ -191,7 +191,7 @@ class ItemRemoveAnimationDelegate : public gfx::AnimationDelegate {
   }
 
  private:
-  scoped_ptr<views::View> view_;
+  std::unique_ptr<views::View> view_;
 
   DISALLOW_COPY_AND_ASSIGN(ItemRemoveAnimationDelegate);
 };
@@ -1297,9 +1297,8 @@ void AppsGridView::AnimateToIdealBounds() {
     } else if (visible || bounds_animator_.IsAnimating(view)) {
       bounds_animator_.AnimateViewTo(view, target);
       bounds_animator_.SetAnimationDelegate(
-          view,
-          scoped_ptr<gfx::AnimationDelegate>(
-              new ItemMoveAnimationDelegate(view)));
+          view, std::unique_ptr<gfx::AnimationDelegate>(
+                    new ItemMoveAnimationDelegate(view)));
     } else {
       view->SetBoundsRect(target);
     }
@@ -1321,7 +1320,7 @@ void AppsGridView::AnimationBetweenRows(AppListItemView* view,
   const int dir = current_page < target_page ||
       (current_page == target_page && current.y() < target.y()) ? 1 : -1;
 
-  scoped_ptr<ui::Layer> layer;
+  std::unique_ptr<ui::Layer> layer;
   if (animate_current) {
     layer = view->RecreateLayer();
     layer->SuppressPaint();
@@ -1342,7 +1341,7 @@ void AppsGridView::AnimationBetweenRows(AppListItemView* view,
 
   bounds_animator_.SetAnimationDelegate(
       view,
-      scoped_ptr<gfx::AnimationDelegate>(
+      std::unique_ptr<gfx::AnimationDelegate>(
           new RowMoveAnimationDelegate(view, layer.release(), current_out)));
 }
 
@@ -1814,9 +1813,8 @@ void AppsGridView::MoveItemToFolder(AppListItemView* item_view,
   view_model_.Remove(drag_view_index);
   bounds_animator_.AnimateViewTo(drag_view_, drag_view_->bounds());
   bounds_animator_.SetAnimationDelegate(
-      drag_view_,
-      scoped_ptr<gfx::AnimationDelegate>(
-          new ItemRemoveAnimationDelegate(drag_view_)));
+      drag_view_, std::unique_ptr<gfx::AnimationDelegate>(
+                      new ItemRemoveAnimationDelegate(drag_view_)));
   UpdatePaging();
 }
 
@@ -1929,9 +1927,8 @@ bool AppsGridView::ReparentItemToAnotherFolder(AppListItemView* item_view,
   view_model_.Remove(drag_view_index);
   bounds_animator_.AnimateViewTo(drag_view_, drag_view_->bounds());
   bounds_animator_.SetAnimationDelegate(
-      drag_view_,
-      scoped_ptr<gfx::AnimationDelegate>(
-          new ItemRemoveAnimationDelegate(drag_view_)));
+      drag_view_, std::unique_ptr<gfx::AnimationDelegate>(
+                      new ItemRemoveAnimationDelegate(drag_view_)));
   UpdatePaging();
 
   return true;

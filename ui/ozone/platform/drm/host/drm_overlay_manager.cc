@@ -9,6 +9,7 @@
 #include <algorithm>
 
 #include "base/command_line.h"
+#include "base/memory/ptr_util.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/ozone/platform/drm/host/drm_overlay_candidates_host.h"
 #include "ui/ozone/platform/drm/host/drm_window_host.h"
@@ -37,11 +38,11 @@ DrmOverlayManager::~DrmOverlayManager() {
   proxy_->UnRegisterHandlerForDrmOverlayManager();
 }
 
-scoped_ptr<OverlayCandidatesOzone> DrmOverlayManager::CreateOverlayCandidates(
-    gfx::AcceleratedWidget w) {
+std::unique_ptr<OverlayCandidatesOzone>
+DrmOverlayManager::CreateOverlayCandidates(gfx::AcceleratedWidget w) {
   if (!is_supported_)
     return nullptr;
-  return make_scoped_ptr(new DrmOverlayCandidatesHost(this, w));
+  return base::WrapUnique(new DrmOverlayCandidatesHost(this, w));
 }
 
 void DrmOverlayManager::CheckOverlaySupport(

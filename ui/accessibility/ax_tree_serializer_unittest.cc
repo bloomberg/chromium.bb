@@ -2,17 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ui/accessibility/ax_tree_serializer.h"
+
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_serializable_tree.h"
 #include "ui/accessibility/ax_tree.h"
-#include "ui/accessibility/ax_tree_serializer.h"
 
 namespace ui {
 
@@ -35,13 +37,13 @@ class AXTreeSerializerTest : public testing::Test {
 
   AXTreeUpdate treedata0_;
   AXTreeUpdate treedata1_;
-  scoped_ptr<AXSerializableTree> tree0_;
-  scoped_ptr<AXSerializableTree> tree1_;
-  scoped_ptr<AXTreeSource<const AXNode*, AXNodeData, AXTreeData> >
+  std::unique_ptr<AXSerializableTree> tree0_;
+  std::unique_ptr<AXSerializableTree> tree1_;
+  std::unique_ptr<AXTreeSource<const AXNode*, AXNodeData, AXTreeData>>
       tree0_source_;
-  scoped_ptr<AXTreeSource<const AXNode*, AXNodeData, AXTreeData> >
+  std::unique_ptr<AXTreeSource<const AXNode*, AXNodeData, AXTreeData>>
       tree1_source_;
-  scoped_ptr<BasicAXTreeSerializer> serializer_;
+  std::unique_ptr<BasicAXTreeSerializer> serializer_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AXTreeSerializerTest);

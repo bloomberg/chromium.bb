@@ -106,7 +106,7 @@ class DISPLAY_EXPORT UpdateDisplayConfigurationTask {
 
   gfx::Size framebuffer_size_;
 
-  scoped_ptr<ConfigureDisplaysTask> configure_task_;
+  std::unique_ptr<ConfigureDisplaysTask> configure_task_;
 
   base::WeakPtrFactory<UpdateDisplayConfigurationTask> weak_ptr_factory_;
 

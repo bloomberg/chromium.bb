@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "ui/base/cursor/ozone/bitmap_cursor_factory_ozone.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
 #include "ui/events/ozone/layout/stub/stub_keyboard_layout_engine.h"
@@ -66,17 +67,18 @@ class OzonePlatformHeadless : public OzonePlatform {
   GpuPlatformSupportHost* GetGpuPlatformSupportHost() override {
     return gpu_platform_support_host_.get();
   }
-  scoped_ptr<SystemInputInjector> CreateSystemInputInjector() override {
+  std::unique_ptr<SystemInputInjector> CreateSystemInputInjector() override {
     return nullptr;  // no input injection support.
   }
-  scoped_ptr<PlatformWindow> CreatePlatformWindow(
+  std::unique_ptr<PlatformWindow> CreatePlatformWindow(
       PlatformWindowDelegate* delegate,
       const gfx::Rect& bounds) override {
-    return make_scoped_ptr<PlatformWindow>(
+    return base::WrapUnique<PlatformWindow>(
         new HeadlessWindow(delegate, window_manager_.get(), bounds));
   }
-  scoped_ptr<NativeDisplayDelegate> CreateNativeDisplayDelegate() override {
-    return make_scoped_ptr(new NativeDisplayDelegateOzone());
+  std::unique_ptr<NativeDisplayDelegate> CreateNativeDisplayDelegate()
+      override {
+    return base::WrapUnique(new NativeDisplayDelegateOzone());
   }
 
   void InitializeUI() override {
@@ -87,7 +89,7 @@ class OzonePlatformHeadless : public OzonePlatform {
     if (!PlatformEventSource::GetInstance())
       platform_event_source_.reset(new HeadlessPlatformEventSource);
     KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(
-        make_scoped_ptr(new StubKeyboardLayoutEngine()));
+        base::WrapUnique(new StubKeyboardLayoutEngine()));
 
     overlay_manager_.reset(new StubOverlayManager());
     input_controller_ = CreateStubInputController();
@@ -102,14 +104,14 @@ class OzonePlatformHeadless : public OzonePlatform {
   }
 
  private:
-  scoped_ptr<HeadlessWindowManager> window_manager_;
-  scoped_ptr<HeadlessSurfaceFactory> surface_factory_;
-  scoped_ptr<PlatformEventSource> platform_event_source_;
-  scoped_ptr<CursorFactoryOzone> cursor_factory_ozone_;
-  scoped_ptr<InputController> input_controller_;
-  scoped_ptr<GpuPlatformSupport> gpu_platform_support_;
-  scoped_ptr<GpuPlatformSupportHost> gpu_platform_support_host_;
-  scoped_ptr<OverlayManagerOzone> overlay_manager_;
+  std::unique_ptr<HeadlessWindowManager> window_manager_;
+  std::unique_ptr<HeadlessSurfaceFactory> surface_factory_;
+  std::unique_ptr<PlatformEventSource> platform_event_source_;
+  std::unique_ptr<CursorFactoryOzone> cursor_factory_ozone_;
+  std::unique_ptr<InputController> input_controller_;
+  std::unique_ptr<GpuPlatformSupport> gpu_platform_support_;
+  std::unique_ptr<GpuPlatformSupportHost> gpu_platform_support_host_;
+  std::unique_ptr<OverlayManagerOzone> overlay_manager_;
   base::FilePath file_path_;
 
   DISALLOW_COPY_AND_ASSIGN(OzonePlatformHeadless);

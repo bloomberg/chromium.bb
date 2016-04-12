@@ -4,7 +4,8 @@
 
 #include "ui/events/gestures/blink/web_gesture_curve_impl.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebFloatSize.h"
 #include "third_party/WebKit/public/platform/WebGestureCurve.h"
@@ -43,7 +44,8 @@ TEST(WebGestureCurveImplTest, Basic) {
   gfx::Vector2dF offset;
   base::TimeTicks time;
   auto curve = WebGestureCurveImpl::CreateFromUICurveForTesting(
-      scoped_ptr<ui::GestureCurve>(new ui::FlingCurve(velocity, time)), offset);
+      std::unique_ptr<ui::GestureCurve>(new ui::FlingCurve(velocity, time)),
+      offset);
 
   // coded into the create call above.
   MockGestureCurveTarget target;

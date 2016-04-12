@@ -2,12 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ui/app_list/search/mixer.h"
+
 #include <stddef.h>
 
 #include <set>
 #include <string>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/scoped_vector.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string16.h"
@@ -17,7 +20,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/app_list/app_list_model.h"
 #include "ui/app_list/search/history_types.h"
-#include "ui/app_list/search/mixer.h"
 #include "ui/app_list/search_provider.h"
 #include "ui/app_list/search_result.h"
 
@@ -46,8 +48,8 @@ class TestSearchResult : public SearchResult {
   // SearchResult overrides:
   void Open(int event_flags) override {}
   void InvokeAction(int action_index, int event_flags) override {}
-  scoped_ptr<SearchResult> Duplicate() const override {
-    return make_scoped_ptr(new TestSearchResult(id(), relevance()));
+  std::unique_ptr<SearchResult> Duplicate() const override {
+    return base::WrapUnique(new TestSearchResult(id(), relevance()));
   }
 
   // For reference equality testing. (Addresses cannot be used to test reference
@@ -90,7 +92,7 @@ class TestSearchProvider : public SearchProvider {
       result->set_display_type(display_type_);
       if (voice_result_indices.find(i) != voice_result_indices.end())
         result->set_voice_result(true);
-      Add(scoped_ptr<SearchResult>(result));
+      Add(std::unique_ptr<SearchResult>(result));
     }
   }
   void Stop() override {}
@@ -191,8 +193,8 @@ class MixerTest : public testing::Test,
   }
 
  private:
-  scoped_ptr<Mixer> mixer_;
-  scoped_ptr<AppListModel::SearchResults> results_;
+  std::unique_ptr<Mixer> mixer_;
+  std::unique_ptr<AppListModel::SearchResults> results_;
   KnownResults known_results_;
 
   bool is_voice_query_;
@@ -446,12 +448,12 @@ TEST_P(MixerTest, BadRelevanceRange) {
 }
 
 TEST_P(MixerTest, Publish) {
-  scoped_ptr<SearchResult> result1(new TestSearchResult("app1", 0));
-  scoped_ptr<SearchResult> result2(new TestSearchResult("app2", 0));
-  scoped_ptr<SearchResult> result3(new TestSearchResult("app3", 0));
-  scoped_ptr<SearchResult> result3_copy = result3->Duplicate();
-  scoped_ptr<SearchResult> result4(new TestSearchResult("app4", 0));
-  scoped_ptr<SearchResult> result5(new TestSearchResult("app5", 0));
+  std::unique_ptr<SearchResult> result1(new TestSearchResult("app1", 0));
+  std::unique_ptr<SearchResult> result2(new TestSearchResult("app2", 0));
+  std::unique_ptr<SearchResult> result3(new TestSearchResult("app3", 0));
+  std::unique_ptr<SearchResult> result3_copy = result3->Duplicate();
+  std::unique_ptr<SearchResult> result4(new TestSearchResult("app4", 0));
+  std::unique_ptr<SearchResult> result5(new TestSearchResult("app5", 0));
 
   AppListModel::SearchResults ui_results;
 

@@ -6,12 +6,12 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/app_list/app_list_constants.h"
@@ -88,9 +88,9 @@ class FolderHeaderViewTest : public views::ViewsTestBase {
     return folder_header_view_->IsFolderNameEnabledForTest();
   }
 
-  scoped_ptr<AppListTestModel> model_;
-  scoped_ptr<FolderHeaderView> folder_header_view_;
-  scoped_ptr<TestFolderHeaderViewDelegate> delegate_;
+  std::unique_ptr<AppListTestModel> model_;
+  std::unique_ptr<FolderHeaderView> folder_header_view_;
+  std::unique_ptr<TestFolderHeaderViewDelegate> delegate_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FolderHeaderViewTest);

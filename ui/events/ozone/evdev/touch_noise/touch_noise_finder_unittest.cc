@@ -7,10 +7,10 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <memory>
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/ozone/evdev/touch_evdev_types.h"
@@ -78,7 +78,7 @@ class TouchNoiseFinderTest : public testing::Test {
     touch_noise_finder_.reset(new TouchNoiseFinder);
   }
 
-  scoped_ptr<TouchNoiseFinder> touch_noise_finder_;
+  std::unique_ptr<TouchNoiseFinder> touch_noise_finder_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchNoiseFinderTest);
 };

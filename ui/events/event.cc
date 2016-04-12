@@ -6,6 +6,8 @@
 
 #include <utility>
 
+#include "base/memory/ptr_util.h"
+
 #if defined(USE_X11)
 #include <X11/extensions/XInput2.h>
 #include <X11/keysym.h>
@@ -163,42 +165,42 @@ namespace ui {
 // Event
 
 // static
-scoped_ptr<Event> Event::Clone(const Event& event) {
+std::unique_ptr<Event> Event::Clone(const Event& event) {
   if (event.IsKeyEvent()) {
-    return make_scoped_ptr(new KeyEvent(static_cast<const KeyEvent&>(event)));
+    return base::WrapUnique(new KeyEvent(static_cast<const KeyEvent&>(event)));
   }
 
   if (event.IsMouseEvent()) {
     if (event.IsMouseWheelEvent()) {
-      return make_scoped_ptr(
+      return base::WrapUnique(
           new MouseWheelEvent(static_cast<const MouseWheelEvent&>(event)));
     }
 
-    return make_scoped_ptr(
+    return base::WrapUnique(
         new MouseEvent(static_cast<const MouseEvent&>(event)));
   }
 
   if (event.IsTouchEvent()) {
-    return make_scoped_ptr(
+    return base::WrapUnique(
         new TouchEvent(static_cast<const TouchEvent&>(event)));
   }
 
   if (event.IsGestureEvent()) {
-    return make_scoped_ptr(
+    return base::WrapUnique(
         new GestureEvent(static_cast<const GestureEvent&>(event)));
   }
 
   if (event.IsPointerEvent()) {
-    return make_scoped_ptr(
+    return base::WrapUnique(
         new PointerEvent(static_cast<const PointerEvent&>(event)));
   }
 
   if (event.IsScrollEvent()) {
-    return make_scoped_ptr(
+    return base::WrapUnique(
         new ScrollEvent(static_cast<const ScrollEvent&>(event)));
   }
 
-  return make_scoped_ptr(new Event(event));
+  return base::WrapUnique(new Event(event));
 }
 
 Event::~Event() {
@@ -986,7 +988,8 @@ KeyEvent& KeyEvent::operator=(const KeyEvent& rhs) {
 
 KeyEvent::~KeyEvent() {}
 
-void KeyEvent::SetExtendedKeyEventData(scoped_ptr<ExtendedKeyEventData> data) {
+void KeyEvent::SetExtendedKeyEventData(
+    std::unique_ptr<ExtendedKeyEventData> data) {
   extended_key_event_data_ = std::move(data);
 }
 

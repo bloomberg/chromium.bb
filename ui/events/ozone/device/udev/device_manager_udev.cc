@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/events/ozone/device/device_event.h"
@@ -120,7 +121,7 @@ void DeviceManagerUdev::ScanDevices(DeviceEventObserver* observer) {
     if (!device)
       continue;
 
-    scoped_ptr<DeviceEvent> event = ProcessMessage(device.get());
+    std::unique_ptr<DeviceEvent> event = ProcessMessage(device.get());
     if (event)
       observer->OnDeviceEvent(*event.get());
   }
@@ -144,7 +145,7 @@ void DeviceManagerUdev::OnFileCanReadWithoutBlocking(int fd) {
   if (!device)
     return;
 
-  scoped_ptr<DeviceEvent> event = ProcessMessage(device.get());
+  std::unique_ptr<DeviceEvent> event = ProcessMessage(device.get());
   if (event)
     FOR_EACH_OBSERVER(
         DeviceEventObserver, observers_, OnDeviceEvent(*event.get()));
@@ -154,7 +155,8 @@ void DeviceManagerUdev::OnFileCanWriteWithoutBlocking(int fd) {
   NOTREACHED();
 }
 
-scoped_ptr<DeviceEvent> DeviceManagerUdev::ProcessMessage(udev_device* device) {
+std::unique_ptr<DeviceEvent> DeviceManagerUdev::ProcessMessage(
+    udev_device* device) {
   const char* path = device::udev_device_get_devnode(device);
   const char* action = device::udev_device_get_action(device);
   const char* subsystem =
@@ -184,7 +186,7 @@ scoped_ptr<DeviceEvent> DeviceManagerUdev::ProcessMessage(udev_device* device) {
   else
     return nullptr;
 
-  return make_scoped_ptr(
+  return base::WrapUnique(
       new DeviceEvent(device_type, action_type, base::FilePath(path)));
 }
 

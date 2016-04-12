@@ -5,7 +5,8 @@
 #ifndef UI_EVENTS_EVENT_REWRITER_H_
 #define UI_EVENTS_EVENT_REWRITER_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "ui/events/events_export.h"
 
 namespace ui {
@@ -50,7 +51,7 @@ class EVENTS_EXPORT EventRewriter {
   // dispatch from |NextDispatchEvent()|.
   virtual EventRewriteStatus RewriteEvent(
       const Event& event,
-      scoped_ptr<Event>* rewritten_event) = 0;
+      std::unique_ptr<Event>* rewritten_event) = 0;
 
   // Supplies an additional event to be dispatched. It is only valid to
   // call this after the immediately previous call to |RewriteEvent()|
@@ -60,7 +61,7 @@ class EVENTS_EXPORT EventRewriter {
   // have returned EVENT_REWRITE_DISPATCH_ANOTHER.
   virtual EventRewriteStatus NextDispatchEvent(
       const Event& last_event,
-      scoped_ptr<Event>* new_event) = 0;
+      std::unique_ptr<Event>* new_event) = 0;
 };
 
 }  // namespace ui

@@ -5,11 +5,11 @@
 #ifndef UI_EVENTS_EVENT_TARGET_H_
 #define UI_EVENTS_EVENT_TARGET_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/events/event_handler.h"
 #include "ui/events/events_export.h"
 
@@ -47,7 +47,7 @@ class EVENTS_EXPORT EventTarget {
 
   // Returns an iterator an EventTargeter can use to iterate over the list of
   // child EventTargets.
-  virtual scoped_ptr<EventTargetIterator> GetChildIterator() const = 0;
+  virtual std::unique_ptr<EventTargetIterator> GetChildIterator() const = 0;
 
   // Returns the EventTargeter that should be used to find the target for an
   // event in the subtree rooted at this EventTarget.

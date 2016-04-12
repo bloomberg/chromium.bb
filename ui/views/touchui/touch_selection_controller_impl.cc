@@ -241,7 +241,7 @@ class TouchSelectionControllerImpl::EditingHandleView
     widget_->SetContentsView(this);
 
     aura::Window* window = widget_->GetNativeWindow();
-    window->SetEventTargeter(scoped_ptr<ui::EventTargeter>(
+    window->SetEventTargeter(std::unique_ptr<ui::EventTargeter>(
         new TouchHandleWindowTargeter(window, this)));
 
     // We are owned by the TouchSelectionControllerImpl.
@@ -376,7 +376,7 @@ class TouchSelectionControllerImpl::EditingHandleView
   }
 
  private:
-  scoped_ptr<Widget> widget_;
+  std::unique_ptr<Widget> widget_;
   TouchSelectionControllerImpl* controller_;
 
   // In local coordinates

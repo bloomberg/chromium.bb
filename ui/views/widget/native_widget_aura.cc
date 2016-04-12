@@ -5,6 +5,7 @@
 #include "ui/views/widget/native_widget_aura.h"
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "third_party/skia/include/core/SkRegion.h"
@@ -436,7 +437,7 @@ void NativeWidgetAura::StackBelow(gfx::NativeView native_view) {
 
 void NativeWidgetAura::SetShape(SkRegion* region) {
   if (window_)
-    window_->layer()->SetAlphaShape(make_scoped_ptr(region));
+    window_->layer()->SetAlphaShape(base::WrapUnique(region));
   else
     delete region;
 }

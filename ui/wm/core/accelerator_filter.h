@@ -5,8 +5,9 @@
 #ifndef UI_WM_CORE_ACCELERATOR_FILTER_H_
 #define UI_WM_CORE_ACCELERATOR_FILTER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/events/event_handler.h"
 #include "ui/wm/wm_export.h"
 
@@ -24,7 +25,7 @@ class WM_EXPORT AcceleratorFilter : public ui::EventHandler {
  public:
   // AcceleratorFilter doesn't own |accelerator_history|, it's owned by
   // AcceleratorController.
-  AcceleratorFilter(scoped_ptr<AcceleratorDelegate> delegate,
+  AcceleratorFilter(std::unique_ptr<AcceleratorDelegate> delegate,
                     ui::AcceleratorHistory* accelerator_history);
   ~AcceleratorFilter() override;
 
@@ -32,7 +33,7 @@ class WM_EXPORT AcceleratorFilter : public ui::EventHandler {
   void OnKeyEvent(ui::KeyEvent* event) override;
 
  private:
-  scoped_ptr<AcceleratorDelegate> delegate_;
+  std::unique_ptr<AcceleratorDelegate> delegate_;
   ui::AcceleratorHistory* accelerator_history_;
 
   DISALLOW_COPY_AND_ASSIGN(AcceleratorFilter);

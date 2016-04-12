@@ -250,7 +250,7 @@ void WindowTreeHost::CreateCompositor() {
     window()->set_host(this);
     window()->SetName("RootWindow");
     window()->SetEventTargeter(
-        scoped_ptr<ui::EventTargeter>(new WindowTargeter()));
+        std::unique_ptr<ui::EventTargeter>(new WindowTargeter()));
     dispatcher_.reset(new WindowEventDispatcher(this));
   }
 }

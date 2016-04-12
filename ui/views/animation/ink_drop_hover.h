@@ -5,8 +5,9 @@
 #ifndef UI_VIEWS_ANIMATION_INK_DROP_HOVER_H_
 #define UI_VIEWS_ANIMATION_INK_DROP_HOVER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/point.h"
@@ -62,10 +63,10 @@ class VIEWS_EXPORT InkDropHover {
   bool last_animation_initiated_was_fade_in_;
 
   // The LayerDelegate that paints the hover |layer_|.
-  scoped_ptr<RoundedRectangleLayerDelegate> layer_delegate_;
+  std::unique_ptr<RoundedRectangleLayerDelegate> layer_delegate_;
 
   // The visual hover layer that is painted by |layer_delegate_|.
-  scoped_ptr<ui::Layer> layer_;
+  std::unique_ptr<ui::Layer> layer_;
 
   DISALLOW_COPY_AND_ASSIGN(InkDropHover);
 };

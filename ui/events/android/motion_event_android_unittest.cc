@@ -110,7 +110,7 @@ TEST(MotionEventAndroidTest, Clone) {
                            p0,
                            p1);
 
-  scoped_ptr<MotionEvent> clone = event.Clone();
+  std::unique_ptr<MotionEvent> clone = event.Clone();
   EXPECT_EQ(ui::test::ToString(event), ui::test::ToString(*clone));
 }
 
@@ -135,7 +135,7 @@ TEST(MotionEventAndroidTest, Cancel) {
                            p0,
                            p1);
 
-  scoped_ptr<MotionEvent> cancel_event = event.Cancel();
+  std::unique_ptr<MotionEvent> cancel_event = event.Cancel();
   EXPECT_EQ(MotionEvent::ACTION_CANCEL, cancel_event->GetAction());
   EXPECT_EQ(
       base::TimeTicks() + base::TimeDelta::FromMilliseconds(event_time_ms),

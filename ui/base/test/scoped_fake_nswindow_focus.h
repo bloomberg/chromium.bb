@@ -5,8 +5,9 @@
 #ifndef UI_BASE_TEST_SCOPED_FAKE_NSWINDOW_FOCUS_H_
 #define UI_BASE_TEST_SCOPED_FAKE_NSWINDOW_FOCUS_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace base {
 namespace mac {
@@ -26,10 +27,10 @@ class ScopedFakeNSWindowFocus {
   ~ScopedFakeNSWindowFocus();
 
  private:
-  scoped_ptr<base::mac::ScopedObjCClassSwizzler> is_main_swizzler_;
-  scoped_ptr<base::mac::ScopedObjCClassSwizzler> make_main_swizzler_;
-  scoped_ptr<base::mac::ScopedObjCClassSwizzler> is_key_swizzler_;
-  scoped_ptr<base::mac::ScopedObjCClassSwizzler> make_key_swizzler_;
+  std::unique_ptr<base::mac::ScopedObjCClassSwizzler> is_main_swizzler_;
+  std::unique_ptr<base::mac::ScopedObjCClassSwizzler> make_main_swizzler_;
+  std::unique_ptr<base::mac::ScopedObjCClassSwizzler> is_key_swizzler_;
+  std::unique_ptr<base::mac::ScopedObjCClassSwizzler> make_key_swizzler_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedFakeNSWindowFocus);
 };

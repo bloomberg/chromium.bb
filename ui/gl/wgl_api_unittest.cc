@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "base/command_line.h"
-#include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface_wgl.h"
@@ -80,7 +81,7 @@ class WGLApiTest : public testing::Test {
   static const char* fake_ext_extension_string_;
   static const char* fake_arb_extension_string_;
 
-  scoped_ptr<RealWGLApi> api_;
+  std::unique_ptr<RealWGLApi> api_;
 };
 
 const char* WGLApiTest::fake_ext_extension_string_ = "";

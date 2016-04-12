@@ -5,7 +5,8 @@
 #ifndef UI_PLATFORM_WINDOW_PLATFORM_WINDOW_H_
 #define UI_PLATFORM_WINDOW_PLATFORM_WINDOW_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/strings/string16.h"
 #include "ui/base/cursor/cursor.h"
 

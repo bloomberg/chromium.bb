@@ -21,7 +21,7 @@ class WindowTreeHostTestApi {
     return host_->last_cursor_request_position_in_host_;
   }
 
-  void set_dispatcher(scoped_ptr<WindowEventDispatcher> dispatcher) {
+  void set_dispatcher(std::unique_ptr<WindowEventDispatcher> dispatcher) {
     host_->dispatcher_ = std::move(dispatcher);
   }
 
@@ -37,7 +37,7 @@ const gfx::Point& QueryLatestMousePositionRequestInHost(WindowTreeHost* host) {
 }
 
 void SetHostDispatcher(WindowTreeHost* host,
-                       scoped_ptr<WindowEventDispatcher> dispatcher) {
+                       std::unique_ptr<WindowEventDispatcher> dispatcher) {
   WindowTreeHostTestApi host_test_api(host);
   host_test_api.set_dispatcher(std::move(dispatcher));
 }

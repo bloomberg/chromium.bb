@@ -5,6 +5,7 @@
 #include "ui/ozone/platform/cast/client_native_pixmap_factory_cast.h"
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/ozone/public/client_native_pixmap.h"
 #include "ui/ozone/public/client_native_pixmap_factory.h"
@@ -35,11 +36,11 @@ class ClientNativePixmapFactoryCast : public ClientNativePixmapFactory {
            usage == gfx::BufferUsage::SCANOUT;
   }
 
-  scoped_ptr<ClientNativePixmap> ImportFromHandle(
+  std::unique_ptr<ClientNativePixmap> ImportFromHandle(
       const gfx::NativePixmapHandle& handle,
       const gfx::Size& size,
       gfx::BufferUsage usage) override {
-    return make_scoped_ptr(new ClientNativePixmapCast());
+    return base::WrapUnique(new ClientNativePixmapCast());
   }
 };
 

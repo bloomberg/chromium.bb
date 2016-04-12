@@ -5,19 +5,18 @@
 #ifndef UI_VIEWS_CONTROLS_MENU_MENU_CONTROLLER_H_
 #define UI_VIEWS_CONTROLS_MENU_MENU_CONTROLLER_H_
 
-#include "build/build_config.h"
-
 #include <stddef.h>
 
 #include <list>
+#include <memory>
 #include <set>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/timer/timer.h"
+#include "build/build_config.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
@@ -654,10 +653,10 @@ class VIEWS_EXPORT MenuController : public WidgetObserver {
 
   // Task for scrolling the menu. If non-null indicates a scroll is currently
   // underway.
-  scoped_ptr<MenuScrollTask> scroll_task_;
+  std::unique_ptr<MenuScrollTask> scroll_task_;
 
   // The lock to keep the menu button pressed while a menu is visible.
-  scoped_ptr<MenuButton::PressedLock> pressed_lock_;
+  std::unique_ptr<MenuButton::PressedLock> pressed_lock_;
 
   // ViewStorage id used to store the view mouse drag events are forwarded to.
   // See UpdateActiveMouseView() for details.
@@ -702,10 +701,10 @@ class VIEWS_EXPORT MenuController : public WidgetObserver {
   // A mask of the EventFlags for the mouse buttons currently pressed.
   int current_mouse_pressed_state_;
 
-  scoped_ptr<MenuMessageLoop> message_loop_;
+  std::unique_ptr<MenuMessageLoop> message_loop_;
 
 #if defined(USE_AURA)
-  scoped_ptr<MenuKeyEventHandler> key_event_handler_;
+  std::unique_ptr<MenuKeyEventHandler> key_event_handler_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(MenuController);

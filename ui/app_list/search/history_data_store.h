@@ -5,13 +5,13 @@
 #ifndef UI_APP_LIST_SEARCH_HISTORY_DATA_STORE_H_
 #define UI_APP_LIST_SEARCH_HISTORY_DATA_STORE_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/app_list/app_list_export.h"
 #include "ui/app_list/search/dictionary_data_store.h"
 #include "ui/app_list/search/history_data.h"
@@ -31,7 +31,7 @@ class HistoryDataStoreTest;
 class APP_LIST_EXPORT HistoryDataStore
     : public base::RefCountedThreadSafe<HistoryDataStore> {
  public:
-  typedef base::Callback<void(scoped_ptr<HistoryData::Associations>)>
+  typedef base::Callback<void(std::unique_ptr<HistoryData::Associations>)>
       OnLoadedCallback;
 
   // A data store with no storage backend.
@@ -71,12 +71,12 @@ class APP_LIST_EXPORT HistoryDataStore
   base::DictionaryValue* GetEntryDict(const std::string& query);
 
   void OnDictionaryLoadedCallback(OnLoadedCallback callback,
-                                  scoped_ptr<base::DictionaryValue> dict);
+                                  std::unique_ptr<base::DictionaryValue> dict);
 
   // |cached_dict_| and |data_store_| is mutually exclusive. |data_store_| is
   // used if it's backed by a file storage, otherwise |cache_dict_| keeps
   // on-memory data.
-  scoped_ptr<base::DictionaryValue> cached_dict_;
+  std::unique_ptr<base::DictionaryValue> cached_dict_;
   scoped_refptr<DictionaryDataStore> data_store_;
 
   DISALLOW_COPY_AND_ASSIGN(HistoryDataStore);

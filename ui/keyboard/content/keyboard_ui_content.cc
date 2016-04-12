@@ -166,7 +166,7 @@ void KeyboardUIContent::UpdateInsetsForWindow(aura::Window* window) {
   if (!ShouldWindowOverscroll(window))
     return;
 
-  scoped_ptr<content::RenderWidgetHostIterator> widgets(
+  std::unique_ptr<content::RenderWidgetHostIterator> widgets(
       content::RenderWidgetHost::GetRenderWidgetHosts());
   while (content::RenderWidgetHost* widget = widgets->GetNextHost()) {
     content::RenderWidgetHostView* view = widget->GetView();
@@ -230,7 +230,7 @@ void KeyboardUIContent::InitInsets(const gfx::Rect& new_bounds) {
   // display.
   // TODO(kevers): Add EnvObserver to properly initialize insets if a
   // window is created while the keyboard is visible.
-  scoped_ptr<content::RenderWidgetHostIterator> widgets(
+  std::unique_ptr<content::RenderWidgetHostIterator> widgets(
       content::RenderWidgetHost::GetRenderWidgetHosts());
   while (content::RenderWidgetHost* widget = widgets->GetNextHost()) {
     content::RenderWidgetHostView* view = widget->GetView();
@@ -255,7 +255,7 @@ void KeyboardUIContent::InitInsets(const gfx::Rect& new_bounds) {
 
 void KeyboardUIContent::ResetInsets() {
   const gfx::Insets insets;
-  scoped_ptr<content::RenderWidgetHostIterator> widgets(
+  std::unique_ptr<content::RenderWidgetHostIterator> widgets(
       content::RenderWidgetHost::GetRenderWidgetHosts());
   while (content::RenderWidgetHost* widget = widgets->GetNextHost()) {
     content::RenderWidgetHostView* view = widget->GetView();

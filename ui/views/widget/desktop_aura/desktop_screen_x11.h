@@ -7,8 +7,9 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/timer/timer.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/gfx/display_change_notifier.h"
@@ -89,7 +90,7 @@ class VIEWS_EXPORT DesktopScreenX11 : public gfx::Screen,
 
   // The timer to delay configuring outputs. See also the comments in
   // Dispatch().
-  scoped_ptr<base::OneShotTimer> configure_timer_;
+  std::unique_ptr<base::OneShotTimer> configure_timer_;
 
   gfx::DisplayChangeNotifier change_notifier_;
 

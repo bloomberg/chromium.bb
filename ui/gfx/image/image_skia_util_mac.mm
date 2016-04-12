@@ -4,15 +4,15 @@
 
 #include "ui/gfx/image/image_skia_util_mac.h"
 
-#include <cmath>
-#include <limits>
-
 #import <AppKit/AppKit.h>
 #include <stddef.h>
 
+#include <cmath>
+#include <limits>
+#include <memory>
+
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsobject.h"
-#include "base/memory/scoped_ptr.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/image/image_skia.h"

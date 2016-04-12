@@ -186,7 +186,7 @@ class DrmDevice : public base::RefCountedThreadSafe<DrmDevice> {
 
   virtual ~DrmDevice();
 
-  scoped_ptr<HardwareDisplayPlaneManager> plane_manager_;
+  std::unique_ptr<HardwareDisplayPlaneManager> plane_manager_;
 
  private:
   class IOWatcher;
@@ -198,10 +198,10 @@ class DrmDevice : public base::RefCountedThreadSafe<DrmDevice> {
   // DRM device.
   base::File file_;
 
-  scoped_ptr<PageFlipManager> page_flip_manager_;
+  std::unique_ptr<PageFlipManager> page_flip_manager_;
 
   // Watcher for |fd_| listening for page flip events.
-  scoped_ptr<IOWatcher> watcher_;
+  std::unique_ptr<IOWatcher> watcher_;
 
   bool is_primary_device_;
 

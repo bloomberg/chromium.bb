@@ -5,10 +5,9 @@
 #ifndef UI_BASE_IME_CHROMEOS_IME_KEYBOARD_X11_H_
 #define UI_BASE_IME_CHROMEOS_IME_KEYBOARD_X11_H_
 
-#include "ui/base/ime/chromeos/ime_keyboard.h"
-
 #include <cstdlib>
 #include <cstring>
+#include <memory>
 #include <queue>
 #include <set>
 #include <utility>
@@ -16,7 +15,6 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/process/kill.h"
 #include "base/process/launch.h"
@@ -25,6 +23,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
 #include "base/threading/thread_checker.h"
+#include "ui/base/ime/chromeos/ime_keyboard.h"
 #include "ui/base/ime/ui_base_ime_export.h"
 
 namespace chromeos {

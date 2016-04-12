@@ -112,11 +112,11 @@ const char* WebView::GetClassName() const {
   return kViewClassName;
 }
 
-scoped_ptr<content::WebContents> WebView::SwapWebContents(
-    scoped_ptr<content::WebContents> new_web_contents) {
+std::unique_ptr<content::WebContents> WebView::SwapWebContents(
+    std::unique_ptr<content::WebContents> new_web_contents) {
   if (wc_owner_)
     wc_owner_->SetDelegate(NULL);
-  scoped_ptr<content::WebContents> old_web_contents(std::move(wc_owner_));
+  std::unique_ptr<content::WebContents> old_web_contents(std::move(wc_owner_));
   wc_owner_ = std::move(new_web_contents);
   if (wc_owner_)
     wc_owner_->SetDelegate(this);

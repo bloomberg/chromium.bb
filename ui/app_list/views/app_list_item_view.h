@@ -5,11 +5,11 @@
 #ifndef UI_APP_LIST_VIEWS_APP_LIST_ITEM_VIEW_H_
 #define UI_APP_LIST_VIEWS_APP_LIST_ITEM_VIEW_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/timer/timer.h"
 #include "ui/app_list/app_list_export.h"
@@ -157,7 +157,7 @@ class APP_LIST_EXPORT AppListItemView : public views::CustomButton,
   CachedLabel* title_;             // Strongly typed child view.
   ProgressBarView* progress_bar_;  // Strongly typed child view.
 
-  scoped_ptr<views::MenuRunner> context_menu_runner_;
+  std::unique_ptr<views::MenuRunner> context_menu_runner_;
 
   UIState ui_state_;
 

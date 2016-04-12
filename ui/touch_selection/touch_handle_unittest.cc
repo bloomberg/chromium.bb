@@ -4,6 +4,7 @@
 
 #include "ui/touch_selection/touch_handle.h"
 
+#include "base/memory/ptr_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/test/motion_event_test_utils.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -107,8 +108,8 @@ class TouchHandleTest : public testing::Test, public TouchHandleClient {
 
   void SetNeedsAnimate() override { needs_animate_ = true; }
 
-  scoped_ptr<TouchHandleDrawable> CreateDrawable() override {
-    return make_scoped_ptr(new MockTouchHandleDrawable(&drawable_data_));
+  std::unique_ptr<TouchHandleDrawable> CreateDrawable() override {
+    return base::WrapUnique(new MockTouchHandleDrawable(&drawable_data_));
   }
 
   base::TimeDelta GetMaxTapDuration() const override {

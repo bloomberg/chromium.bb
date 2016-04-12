@@ -118,7 +118,7 @@ class VIEWS_EXPORT LinuxUI : public ui::LinuxInputMethodContextFactory,
   virtual bool IsStatusIconSupported() const = 0;
 
   // Create a native status icon.
-  virtual scoped_ptr<StatusIconLinux> CreateLinuxStatusIcon(
+  virtual std::unique_ptr<StatusIconLinux> CreateLinuxStatusIcon(
       const gfx::ImageSkia& image,
       const base::string16& tool_tip) const = 0;
 
@@ -129,9 +129,9 @@ class VIEWS_EXPORT LinuxUI : public ui::LinuxInputMethodContextFactory,
       const std::string& content_type, int size) const = 0;
 
   // Builds a Border which paints the native button style.
-  virtual scoped_ptr<Border> CreateNativeBorder(
+  virtual std::unique_ptr<Border> CreateNativeBorder(
       views::LabelButton* owning_button,
-      scoped_ptr<views::LabelButtonBorder> border) = 0;
+      std::unique_ptr<views::LabelButtonBorder> border) = 0;
 
   // Notifies the observer about changes about how window buttons should be
   // laid out. If the order is anything other than the default min,max,close on

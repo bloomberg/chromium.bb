@@ -4,9 +4,10 @@
 
 #include "ui/chromeos/network/network_connect.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -85,7 +86,7 @@ class NetworkConnectImpl : public NetworkConnect {
   void HandleUnconfiguredNetwork(const std::string& service_path);
   void OnConnectFailed(const std::string& service_path,
                        const std::string& error_name,
-                       scoped_ptr<base::DictionaryValue> error_data);
+                       std::unique_ptr<base::DictionaryValue> error_data);
   bool MaybeShowConfigureUIImpl(const std::string& service_path,
                                 const std::string& connect_error);
   bool GetNetworkProfilePath(bool shared, std::string* profile_path);
@@ -94,10 +95,10 @@ class NetworkConnectImpl : public NetworkConnect {
                             bool check_error_state);
   void OnActivateFailed(const std::string& service_path,
                         const std::string& error_name,
-                        scoped_ptr<base::DictionaryValue> error_data);
+                        std::unique_ptr<base::DictionaryValue> error_data);
   void OnActivateSucceeded(const std::string& service_path);
   void OnConfigureFailed(const std::string& error_name,
-                         scoped_ptr<base::DictionaryValue> error_data);
+                         std::unique_ptr<base::DictionaryValue> error_data);
   void OnConfigureSucceeded(bool connect_on_configure,
                             const std::string& service_path,
                             const std::string& guid);
@@ -107,7 +108,7 @@ class NetworkConnectImpl : public NetworkConnect {
   void SetPropertiesFailed(const std::string& desc,
                            const std::string& service_path,
                            const std::string& config_error_name,
-                           scoped_ptr<base::DictionaryValue> error_data);
+                           std::unique_ptr<base::DictionaryValue> error_data);
   void SetPropertiesToClear(base::DictionaryValue* properties_to_set,
                             std::vector<std::string>* properties_to_clear);
   void ClearPropertiesAndConnect(
@@ -115,10 +116,10 @@ class NetworkConnectImpl : public NetworkConnect {
       const std::vector<std::string>& properties_to_clear);
   void ConfigureSetProfileSucceeded(
       const std::string& service_path,
-      scoped_ptr<base::DictionaryValue> properties_to_set);
+      std::unique_ptr<base::DictionaryValue> properties_to_set);
 
   Delegate* delegate_;
-  scoped_ptr<NetworkStateNotifier> network_state_notifier_;
+  std::unique_ptr<NetworkStateNotifier> network_state_notifier_;
   base::WeakPtrFactory<NetworkConnectImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkConnectImpl);
@@ -207,7 +208,7 @@ bool NetworkConnectImpl::GetNetworkProfilePath(bool shared,
 void NetworkConnectImpl::OnConnectFailed(
     const std::string& service_path,
     const std::string& error_name,
-    scoped_ptr<base::DictionaryValue> error_data) {
+    std::unique_ptr<base::DictionaryValue> error_data) {
   MaybeShowConfigureUIImpl(service_path, error_name);
 }
 
@@ -266,7 +267,7 @@ void NetworkConnectImpl::CallConnectToNetwork(const std::string& service_path,
 void NetworkConnectImpl::OnActivateFailed(
     const std::string& service_path,
     const std::string& error_name,
-    scoped_ptr<base::DictionaryValue> error_data) {
+    std::unique_ptr<base::DictionaryValue> error_data) {
   NET_LOG_ERROR("Unable to activate network", service_path);
   network_state_notifier_->ShowNetworkConnectError(kErrorActivateFailed,
                                                    service_path);
@@ -278,7 +279,7 @@ void NetworkConnectImpl::OnActivateSucceeded(const std::string& service_path) {
 
 void NetworkConnectImpl::OnConfigureFailed(
     const std::string& error_name,
-    scoped_ptr<base::DictionaryValue> error_data) {
+    std::unique_ptr<base::DictionaryValue> error_data) {
   NET_LOG_ERROR("Unable to configure network", "");
   network_state_notifier_->ShowNetworkConnectError(
       NetworkConnectionHandler::kErrorConfigureFailed, "");
@@ -321,7 +322,7 @@ void NetworkConnectImpl::SetPropertiesFailed(
     const std::string& desc,
     const std::string& service_path,
     const std::string& config_error_name,
-    scoped_ptr<base::DictionaryValue> error_data) {
+    std::unique_ptr<base::DictionaryValue> error_data) {
   NET_LOG_ERROR(desc + ": Failed: " + config_error_name, service_path);
   network_state_notifier_->ShowNetworkConnectError(
       NetworkConnectionHandler::kErrorConfigureFailed, service_path);
@@ -360,7 +361,7 @@ void NetworkConnectImpl::ClearPropertiesAndConnect(
 
 void NetworkConnectImpl::ConfigureSetProfileSucceeded(
     const std::string& service_path,
-    scoped_ptr<base::DictionaryValue> properties_to_set) {
+    std::unique_ptr<base::DictionaryValue> properties_to_set) {
   std::vector<std::string> properties_to_clear;
   SetPropertiesToClear(properties_to_set.get(), &properties_to_clear);
   NetworkHandler::Get()->network_configuration_handler()->SetShillProperties(
@@ -505,7 +506,8 @@ void NetworkConnectImpl::ConfigureNetworkAndConnect(
     bool shared) {
   NET_LOG_USER("ConfigureNetworkAndConnect", service_path);
 
-  scoped_ptr<base::DictionaryValue> properties_to_set(properties.DeepCopy());
+  std::unique_ptr<base::DictionaryValue> properties_to_set(
+      properties.DeepCopy());
 
   std::string profile_path;
   if (!GetNetworkProfilePath(shared, &profile_path)) {

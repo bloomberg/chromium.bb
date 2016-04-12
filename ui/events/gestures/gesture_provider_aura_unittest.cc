@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/scoped_ptr.h"
+#include "ui/events/gestures/gesture_provider_aura.h"
+
+#include <memory>
+
 #include "base/message_loop/message_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event_utils.h"
-#include "ui/events/gestures/gesture_provider_aura.h"
 
 namespace ui {
 
@@ -30,8 +32,8 @@ class GestureProviderAuraTest : public testing::Test,
   GestureProviderAura* provider() { return provider_.get(); }
 
  private:
-  scoped_ptr<GestureConsumer> consumer_;
-  scoped_ptr<GestureProviderAura> provider_;
+  std::unique_ptr<GestureConsumer> consumer_;
+  std::unique_ptr<GestureProviderAura> provider_;
   base::MessageLoopForUI message_loop_;
 };
 

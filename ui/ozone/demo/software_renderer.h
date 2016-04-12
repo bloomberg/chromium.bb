@@ -5,8 +5,9 @@
 #ifndef UI_OZONE_DEMO_SOFTWARE_RENDERER_H_
 #define UI_OZONE_DEMO_SOFTWARE_RENDERER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 #include "ui/ozone/demo/renderer_base.h"
@@ -33,9 +34,9 @@ class SoftwareRenderer : public RendererBase {
   void UpdateVSyncParameters(const base::TimeTicks timebase,
                              const base::TimeDelta interval);
 
-  scoped_ptr<SurfaceOzoneCanvas> software_surface_;
+  std::unique_ptr<SurfaceOzoneCanvas> software_surface_;
 
-  scoped_ptr<gfx::VSyncProvider> vsync_provider_;
+  std::unique_ptr<gfx::VSyncProvider> vsync_provider_;
 
   // Timer for animation.
   base::RepeatingTimer timer_;

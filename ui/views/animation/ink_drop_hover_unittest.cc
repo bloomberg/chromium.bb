@@ -4,8 +4,10 @@
 
 #include "ui/views/animation/ink_drop_hover.h"
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/gfx/geometry/size.h"
@@ -19,11 +21,11 @@ class InkDropHoverTest : public testing::Test {
   ~InkDropHoverTest() override;
 
  protected:
-  scoped_ptr<InkDropHover> CreateInkDropHover() const;
+  std::unique_ptr<InkDropHover> CreateInkDropHover() const;
 
  private:
   // Enables zero duration animations during the tests.
-  scoped_ptr<ui::ScopedAnimationDurationScaleMode> zero_duration_mode_;
+  std::unique_ptr<ui::ScopedAnimationDurationScaleMode> zero_duration_mode_;
 
   DISALLOW_COPY_AND_ASSIGN(InkDropHoverTest);
 };
@@ -35,18 +37,18 @@ InkDropHoverTest::InkDropHoverTest() {
 
 InkDropHoverTest::~InkDropHoverTest() {}
 
-scoped_ptr<InkDropHover> InkDropHoverTest::CreateInkDropHover() const {
-  return make_scoped_ptr(
+std::unique_ptr<InkDropHover> InkDropHoverTest::CreateInkDropHover() const {
+  return base::WrapUnique(
       new InkDropHover(gfx::Size(10, 10), 3, gfx::Point(), SK_ColorBLACK));
 }
 
 TEST_F(InkDropHoverTest, InitialStateAfterConstruction) {
-  scoped_ptr<InkDropHover> ink_drop_hover = CreateInkDropHover();
+  std::unique_ptr<InkDropHover> ink_drop_hover = CreateInkDropHover();
   EXPECT_FALSE(ink_drop_hover->IsFadingInOrVisible());
 }
 
 TEST_F(InkDropHoverTest, IsHoveredStateTransitions) {
-  scoped_ptr<InkDropHover> ink_drop_hover = CreateInkDropHover();
+  std::unique_ptr<InkDropHover> ink_drop_hover = CreateInkDropHover();
 
   ink_drop_hover->FadeIn(base::TimeDelta::FromMilliseconds(0));
   EXPECT_TRUE(ink_drop_hover->IsFadingInOrVisible());

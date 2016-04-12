@@ -4,6 +4,7 @@
 
 #include "ui/base/ime/input_method_factory.h"
 
+#include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "ui/base/ime/mock_input_method.h"
 
@@ -34,7 +35,7 @@ bool g_create_input_method_called = false;
 
 namespace ui {
 
-scoped_ptr<InputMethod> CreateInputMethod(
+std::unique_ptr<InputMethod> CreateInputMethod(
     internal::InputMethodDelegate* delegate,
     gfx::AcceleratedWidget widget) {
   if (!g_create_input_method_called)
@@ -43,25 +44,25 @@ scoped_ptr<InputMethod> CreateInputMethod(
   if (g_input_method_for_testing) {
     ui::InputMethod* ret = g_input_method_for_testing;
     g_input_method_for_testing = nullptr;
-    return make_scoped_ptr(ret);
+    return base::WrapUnique(ret);
   }
 
   if (g_input_method_set_for_testing)
-    return make_scoped_ptr(new MockInputMethod(delegate));
+    return base::WrapUnique(new MockInputMethod(delegate));
 
 #if defined(OS_CHROMEOS)
-  return make_scoped_ptr(new InputMethodChromeOS(delegate));
+  return base::WrapUnique(new InputMethodChromeOS(delegate));
 #elif defined(OS_WIN)
-  return make_scoped_ptr(new InputMethodWin(delegate, widget));
+  return base::WrapUnique(new InputMethodWin(delegate, widget));
 #elif defined(OS_MACOSX)
-  return make_scoped_ptr(new InputMethodMac(delegate));
+  return base::WrapUnique(new InputMethodMac(delegate));
 #elif defined(USE_AURA) && defined(OS_LINUX) && defined(USE_X11) && \
       !defined(OS_CHROMEOS)
-  return make_scoped_ptr(new InputMethodAuraLinux(delegate));
+  return base::WrapUnique(new InputMethodAuraLinux(delegate));
 #elif defined(OS_ANDROID)
-  return make_scoped_ptr(new InputMethodAndroid(delegate));
+  return base::WrapUnique(new InputMethodAndroid(delegate));
 #else
-  return make_scoped_ptr(new InputMethodMinimal(delegate));
+  return base::WrapUnique(new InputMethodMinimal(delegate));
 #endif
 }
 

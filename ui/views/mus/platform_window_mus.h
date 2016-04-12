@@ -86,7 +86,7 @@ class VIEWS_MUS_EXPORT PlatformWindowMus
   void OnWindowInputEvent(
       mus::Window* view,
       const ui::Event& event,
-      scoped_ptr<base::Callback<void(bool)>>* ack_callback) override;
+      std::unique_ptr<base::Callback<void(bool)>>* ack_callback) override;
 
   ui::PlatformWindowDelegate* delegate_;
   mus::Window* mus_window_;
@@ -96,10 +96,10 @@ class VIEWS_MUS_EXPORT PlatformWindowMus
   // True if OnWindowDestroyed() has been received.
   bool mus_window_destroyed_;
 
-  scoped_ptr<bitmap_uploader::BitmapUploader> bitmap_uploader_;
-  scoped_ptr<ui::ViewProp> prop_;
+  std::unique_ptr<bitmap_uploader::BitmapUploader> bitmap_uploader_;
+  std::unique_ptr<ui::ViewProp> prop_;
 #ifndef NDEBUG
-  scoped_ptr<base::WeakPtrFactory<PlatformWindowMus>> weak_factory_;
+  std::unique_ptr<base::WeakPtrFactory<PlatformWindowMus>> weak_factory_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(PlatformWindowMus);

@@ -15,7 +15,7 @@ namespace examples {
 void ShowExamplesWindowWithContent(Operation operation,
                                    content::BrowserContext* browser_context,
                                    gfx::NativeWindow window_context) {
-  scoped_ptr<ScopedVector<ExampleBase> > extra_examples(
+  std::unique_ptr<ScopedVector<ExampleBase>> extra_examples(
       new ScopedVector<ExampleBase>);
   extra_examples->push_back(new WebViewExample(browser_context));
   ShowExamplesWindow(operation, window_context, std::move(extra_examples));

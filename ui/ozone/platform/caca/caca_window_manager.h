@@ -7,9 +7,10 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/id_map.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
 
@@ -36,7 +37,7 @@ class CacaWindowManager : public SurfaceFactoryOzone {
   bool LoadEGLGLES2Bindings(
       AddGLLibraryCallback add_gl_library,
       SetGLGetProcAddressProcCallback set_gl_get_proc_address) override;
-  scoped_ptr<SurfaceOzoneCanvas> CreateCanvasForWidget(
+  std::unique_ptr<SurfaceOzoneCanvas> CreateCanvasForWidget(
       gfx::AcceleratedWidget widget) override;
 
  private:

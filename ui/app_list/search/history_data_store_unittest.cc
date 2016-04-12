@@ -80,7 +80,7 @@ class HistoryDataStoreTest : public testing::Test {
   }
 
  private:
-  void OnRead(scoped_ptr<HistoryData::Associations> associations) {
+  void OnRead(std::unique_ptr<HistoryData::Associations> associations) {
     associations_.clear();
     if (associations)
       associations->swap(associations_);
@@ -92,7 +92,7 @@ class HistoryDataStoreTest : public testing::Test {
   base::MessageLoopForUI message_loop_;
   base::ScopedTempDir temp_dir_;
   base::FilePath data_file_;
-  scoped_ptr<base::RunLoop> run_loop_;
+  std::unique_ptr<base::RunLoop> run_loop_;
   base::SequencedWorkerPoolOwner worker_pool_owner_;
 
   scoped_refptr<HistoryDataStore> store_;

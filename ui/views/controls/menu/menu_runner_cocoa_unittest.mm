@@ -138,7 +138,7 @@ class MenuRunnerCocoaTest : public ViewsTestBase {
   }
 
  protected:
-  scoped_ptr<TestModel> menu_;
+  std::unique_ptr<TestModel> menu_;
   internal::MenuRunnerImplCocoa* runner_ = nullptr;
   views::Widget* parent_ = nullptr;
   NSRect last_anchor_frame_ = NSZeroRect;

@@ -4,7 +4,9 @@
 
 #import "ui/base/accelerators/platform_accelerator_cocoa.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
+#include "base/memory/ptr_util.h"
 
 namespace ui {
 
@@ -20,11 +22,12 @@ PlatformAcceleratorCocoa::PlatformAcceleratorCocoa(NSString* key_code,
 PlatformAcceleratorCocoa::~PlatformAcceleratorCocoa() {
 }
 
-scoped_ptr<PlatformAccelerator> PlatformAcceleratorCocoa::CreateCopy() const {
-  scoped_ptr<PlatformAcceleratorCocoa> copy(new PlatformAcceleratorCocoa);
+std::unique_ptr<PlatformAccelerator> PlatformAcceleratorCocoa::CreateCopy()
+    const {
+  std::unique_ptr<PlatformAcceleratorCocoa> copy(new PlatformAcceleratorCocoa);
   copy->characters_.reset([characters_ copy]);
   copy->modifier_mask_ = modifier_mask_;
-  return make_scoped_ptr(copy.release());
+  return base::WrapUnique(copy.release());
 }
 
 bool PlatformAcceleratorCocoa::Equals(const PlatformAccelerator& rhs) const {

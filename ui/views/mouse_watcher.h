@@ -5,8 +5,9 @@
 #ifndef UI_VIEWS_MOUSE_WATCHER_H_
 #define UI_VIEWS_MOUSE_WATCHER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/views/views_export.h"
@@ -78,13 +79,13 @@ class VIEWS_EXPORT MouseWatcher {
   void NotifyListener();
 
   // Host we're listening for events over.
-  scoped_ptr<MouseWatcherHost> host_;
+  std::unique_ptr<MouseWatcherHost> host_;
 
   // Our listener.
   MouseWatcherListener* listener_;
 
   // Does the actual work of listening for mouse events.
-  scoped_ptr<Observer> observer_;
+  std::unique_ptr<Observer> observer_;
 
   // See description above setter.
   base::TimeDelta notify_on_exit_time_;

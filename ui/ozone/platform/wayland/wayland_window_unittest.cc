@@ -88,7 +88,7 @@ ACTION_P(CloneEvent, ptr) {
 }
 
 TEST_F(WaylandWindowTest, DispatchEvent) {
-  scoped_ptr<Event> event;
+  std::unique_ptr<Event> event;
   EXPECT_CALL(delegate, DispatchEvent(_)).WillOnce(CloneEvent(&event));
   window.DispatchEvent(&test_mouse_event);
   ASSERT_TRUE(event);

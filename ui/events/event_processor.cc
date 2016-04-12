@@ -19,7 +19,7 @@ EventDispatchDetails EventProcessor::OnEventFromSource(Event* event) {
   // dispatched, then dispatch a copy of the event instead.
   bool dispatch_original_event = event->phase() == EP_PREDISPATCH;
   Event* event_to_dispatch = event;
-  scoped_ptr<Event> event_copy;
+  std::unique_ptr<Event> event_copy;
   if (!dispatch_original_event) {
     event_copy = Event::Clone(*event);
     event_to_dispatch = event_copy.get();

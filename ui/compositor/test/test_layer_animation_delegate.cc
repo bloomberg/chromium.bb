@@ -120,7 +120,7 @@ void TestLayerAnimationDelegate::CreateCcLayer() {
 }
 
 void TestLayerThreadedAnimationDelegate::AddThreadedAnimation(
-    scoped_ptr<cc::Animation> animation) {}
+    std::unique_ptr<cc::Animation> animation) {}
 
 void TestLayerThreadedAnimationDelegate::RemoveThreadedAnimation(
     int animation_id) {}

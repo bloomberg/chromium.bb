@@ -5,6 +5,7 @@
 #include "ui/views/style/mac/dialog_button_border_mac.h"
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/compositor/canvas_painter.h"
@@ -26,11 +27,11 @@ class TestLabelButton : public LabelButton {
   void set_provide_custom_border(bool value) { provide_custom_border_ = value; }
 
   // LabelButton:
-  scoped_ptr<LabelButtonBorder> CreateDefaultBorder() const override {
+  std::unique_ptr<LabelButtonBorder> CreateDefaultBorder() const override {
     if (!provide_custom_border_)
       return LabelButton::CreateDefaultBorder();
 
-    return make_scoped_ptr(new LabelButtonAssetBorder(style()));
+    return base::WrapUnique(new LabelButtonAssetBorder(style()));
   }
 
  private:

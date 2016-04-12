@@ -49,7 +49,7 @@ class ArcNotificationItem {
 
   // Stores on-going notification data during the image decoding.
   // This field will be removed after removing async task of image decoding.
-  scoped_ptr<message_center::Notification> notification_;
+  std::unique_ptr<message_center::Notification> notification_;
 
   // The flag to indicate that the removing is initiated by the manager and we
   // don't need to notify a remove event to the manager.

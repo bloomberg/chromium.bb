@@ -320,7 +320,7 @@ void Mixer::Publish(const SortedResults& new_results,
       // results.
       ui_results_map.erase(ui_result->id());
     } else {
-      scoped_ptr<SearchResult> result_copy = new_result.Duplicate();
+      std::unique_ptr<SearchResult> result_copy = new_result.Duplicate();
       result_copy->set_relevance(sort_data.score);
       // Copy the result from |new_results| otherwise.
       ui_results->Add(result_copy.release());

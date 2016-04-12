@@ -30,8 +30,8 @@ class TestEventTarget : public EventTarget,
   TestEventTarget();
   ~TestEventTarget() override;
 
-  void AddChild(scoped_ptr<TestEventTarget> child);
-  scoped_ptr<TestEventTarget> RemoveChild(TestEventTarget* child);
+  void AddChild(std::unique_ptr<TestEventTarget> child);
+  std::unique_ptr<TestEventTarget> RemoveChild(TestEventTarget* child);
 
   TestEventTarget* parent() { return parent_; }
 
@@ -42,7 +42,7 @@ class TestEventTarget : public EventTarget,
   TestEventTarget* child_at(int index) { return children_[index]; }
   size_t child_count() const { return children_.size(); }
 
-  void SetEventTargeter(scoped_ptr<EventTargeter> targeter);
+  void SetEventTargeter(std::unique_ptr<EventTargeter> targeter);
 
   bool DidReceiveEvent(ui::EventType type) const;
   void ResetReceivedEvents();
@@ -63,7 +63,7 @@ class TestEventTarget : public EventTarget,
   // EventTarget:
   bool CanAcceptEvent(const ui::Event& event) override;
   EventTarget* GetParentTarget() override;
-  scoped_ptr<EventTargetIterator> GetChildIterator() const override;
+  std::unique_ptr<EventTargetIterator> GetChildIterator() const override;
 
   // EventHandler:
   void OnEvent(Event* event) override;
@@ -73,7 +73,7 @@ class TestEventTarget : public EventTarget,
 
   TestEventTarget* parent_;
   ScopedVector<TestEventTarget> children_;
-  scoped_ptr<EventTargeter> targeter_;
+  std::unique_ptr<EventTargeter> targeter_;
   bool mark_events_as_handled_;
 
   std::set<ui::EventType> received_;

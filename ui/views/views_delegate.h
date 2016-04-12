@@ -197,10 +197,10 @@ class VIEWS_EXPORT ViewsDelegate {
   ViewsDelegate();
 
  private:
-  scoped_ptr<ViewsTouchEditingControllerFactory> views_tsc_factory_;
+  std::unique_ptr<ViewsTouchEditingControllerFactory> views_tsc_factory_;
 
 #if defined(USE_AURA)
-  scoped_ptr<TouchSelectionMenuRunnerViews> touch_selection_menu_runner_;
+  std::unique_ptr<TouchSelectionMenuRunnerViews> touch_selection_menu_runner_;
 #endif
 
   NativeWidgetFactory native_widget_factory_;

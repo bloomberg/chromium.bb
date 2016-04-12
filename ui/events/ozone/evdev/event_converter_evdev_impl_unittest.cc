@@ -2,12 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ui/events/ozone/evdev/event_converter_evdev_impl.h"
+
 #include <linux/input.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -16,7 +19,6 @@
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/events/ozone/device/device_manager.h"
 #include "ui/events/ozone/evdev/cursor_delegate_evdev.h"
-#include "ui/events/ozone/evdev/event_converter_evdev_impl.h"
 #include "ui/events/ozone/evdev/event_converter_test_util.h"
 #include "ui/events/ozone/evdev/event_factory_evdev.h"
 #include "ui/events/ozone/evdev/keyboard_evdev.h"
@@ -141,19 +143,19 @@ class EventConverterEvdevImplTest : public testing::Test {
 
  private:
   void DispatchEventForTest(ui::Event* event) {
-    scoped_ptr<ui::Event> cloned_event = ui::Event::Clone(*event);
+    std::unique_ptr<ui::Event> cloned_event = ui::Event::Clone(*event);
     dispatched_events_.push_back(std::move(cloned_event));
   }
 
   base::MessageLoopForUI ui_loop_;
 
-  scoped_ptr<ui::MockCursorEvdev> cursor_;
-  scoped_ptr<ui::DeviceManager> device_manager_;
-  scoped_ptr<ui::EventFactoryEvdev> event_factory_;
-  scoped_ptr<ui::DeviceEventDispatcherEvdev> dispatcher_;
-  scoped_ptr<ui::MockEventConverterEvdevImpl> device_;
+  std::unique_ptr<ui::MockCursorEvdev> cursor_;
+  std::unique_ptr<ui::DeviceManager> device_manager_;
+  std::unique_ptr<ui::EventFactoryEvdev> event_factory_;
+  std::unique_ptr<ui::DeviceEventDispatcherEvdev> dispatcher_;
+  std::unique_ptr<ui::MockEventConverterEvdevImpl> device_;
 
-  std::vector<scoped_ptr<ui::Event>> dispatched_events_;
+  std::vector<std::unique_ptr<ui::Event>> dispatched_events_;
 
   int events_out_;
   int events_in_;

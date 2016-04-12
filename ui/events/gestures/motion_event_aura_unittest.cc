@@ -96,7 +96,7 @@ TEST(MotionEventAuraTest, PointerCountAndIds) {
 
   // Test cloning of pointer count and id information.
   // TODO(mustaq): Make a separate clone test, crbug.com/450655
-  scoped_ptr<MotionEvent> clone = event.Clone();
+  std::unique_ptr<MotionEvent> clone = event.Clone();
   EXPECT_EQ(2U, clone->GetPointerCount());
   EXPECT_EQ(ids[0], clone->GetPointerId(0));
   EXPECT_EQ(ids[2], clone->GetPointerId(1));
@@ -194,7 +194,7 @@ TEST(MotionEventAuraTest, PointerLocations) {
   EXPECT_FLOAT_EQ(raw_y, event.GetRawY(1));
 
   // Test cloning of pointer location information.
-  scoped_ptr<MotionEvent> clone = event.Clone();
+  std::unique_ptr<MotionEvent> clone = event.Clone();
   EXPECT_EQ(event.GetUniqueEventId(), clone->GetUniqueEventId());
   EXPECT_EQ(test::ToString(event), test::ToString(*clone));
   EXPECT_EQ(2U, clone->GetPointerCount());
@@ -275,7 +275,7 @@ TEST(MotionEventAuraTest, TapParams) {
 
   // Test cloning of tap params
   // TODO(mustaq): Make a separate clone test, crbug.com/450655
-  scoped_ptr<MotionEvent> clone = event.Clone();
+  std::unique_ptr<MotionEvent> clone = event.Clone();
   EXPECT_EQ(event.GetUniqueEventId(), clone->GetUniqueEventId());
   EXPECT_EQ(test::ToString(event), test::ToString(*clone));
   EXPECT_EQ(2U, clone->GetPointerCount());
@@ -358,7 +358,7 @@ TEST(MotionEventAuraTest, Timestamps) {
   EXPECT_EQ(MsToTicks(times_in_ms[2]), event.GetEventTime());
 
   // Test cloning of timestamp information.
-  scoped_ptr<MotionEvent> clone = event.Clone();
+  std::unique_ptr<MotionEvent> clone = event.Clone();
   EXPECT_EQ(MsToTicks(times_in_ms[2]), clone->GetEventTime());
 }
 
@@ -379,7 +379,7 @@ TEST(MotionEventAuraTest, CachedAction) {
   EXPECT_EQ(2U, event.GetPointerCount());
 
   // Test cloning of CachedAction information.
-  scoped_ptr<MotionEvent> clone = event.Clone();
+  std::unique_ptr<MotionEvent> clone = event.Clone();
   EXPECT_EQ(MotionEvent::ACTION_POINTER_DOWN, clone->GetAction());
   EXPECT_EQ(1, clone->GetActionIndex());
 
@@ -419,7 +419,7 @@ TEST(MotionEventAuraTest, Cancel) {
   EXPECT_EQ(1, event.GetActionIndex());
   EXPECT_EQ(2U, event.GetPointerCount());
 
-  scoped_ptr<MotionEvent> cancel = event.Cancel();
+  std::unique_ptr<MotionEvent> cancel = event.Cancel();
   EXPECT_EQ(MotionEvent::ACTION_CANCEL, cancel->GetAction());
   EXPECT_EQ(2U, cancel->GetPointerCount());
 }

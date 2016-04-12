@@ -8,13 +8,13 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <queue>
 #include <string>
 #include <vector>
 
 #include "base/event_types.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -194,7 +194,7 @@ class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
   // Replaces |native_display_delegate_| with the delegate passed in and sets
   // |configure_display_| to true. Should be called before Init().
   void SetDelegateForTesting(
-      scoped_ptr<NativeDisplayDelegate> display_delegate);
+      std::unique_ptr<NativeDisplayDelegate> display_delegate);
 
   // Sets the initial value of |power_state_|.  Must be called before Start().
   void SetInitialDisplayPower(chromeos::DisplayPowerState power_state);
@@ -300,7 +300,7 @@ class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
       ProtectionRequests;
 
   // Performs platform specific delegate initialization.
-  scoped_ptr<NativeDisplayDelegate> CreatePlatformNativeDisplayDelegate();
+  std::unique_ptr<NativeDisplayDelegate> CreatePlatformNativeDisplayDelegate();
 
   // Configures displays. Invoked by |configure_timer_|.
   void ConfigureDisplays();
@@ -370,7 +370,7 @@ class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
 
   StateController* state_controller_;
   SoftwareMirroringController* mirroring_controller_;
-  scoped_ptr<NativeDisplayDelegate> native_display_delegate_;
+  std::unique_ptr<NativeDisplayDelegate> native_display_delegate_;
 
   // Used to enable modes which rely on panel fitting.
   bool is_panel_fitting_enabled_;
@@ -454,9 +454,9 @@ class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
   // Last used virtual display id.
   uint8_t last_virtual_display_id_ = 0;
 
-  scoped_ptr<DisplayLayoutManager> layout_manager_;
+  std::unique_ptr<DisplayLayoutManager> layout_manager_;
 
-  scoped_ptr<UpdateDisplayConfigurationTask> configuration_task_;
+  std::unique_ptr<UpdateDisplayConfigurationTask> configuration_task_;
 
   // This must be the last variable.
   base::WeakPtrFactory<DisplayConfigurator> weak_ptr_factory_;

@@ -15,7 +15,7 @@ SearchProvider::SearchProvider() {
 SearchProvider::~SearchProvider() {
 }
 
-void SearchProvider::Add(scoped_ptr<SearchResult> result) {
+void SearchProvider::Add(std::unique_ptr<SearchResult> result) {
   results_.push_back(std::move(result));
   FireResultChanged();
 }

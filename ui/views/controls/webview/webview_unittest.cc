@@ -6,8 +6,10 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/test_browser_context.h"
@@ -138,7 +140,7 @@ class WebViewUnitTest : public views::test::WidgetTest {
   ~WebViewUnitTest() override {}
 
   void SetUp() override {
-    set_views_delegate(make_scoped_ptr(new WebViewTestViewsDelegate));
+    set_views_delegate(base::WrapUnique(new WebViewTestViewsDelegate));
     browser_context_.reset(new content::TestBrowserContext);
     WidgetTest::SetUp();
     // Set the test content browser client to avoid pulling in needless
@@ -174,8 +176,8 @@ class WebViewUnitTest : public views::test::WidgetTest {
   WebView* web_view() const { return web_view_; }
   NativeViewHost* holder() const { return web_view_->holder_; }
 
-  scoped_ptr<content::WebContents> CreateWebContents() const {
-    return make_scoped_ptr(content::WebContents::Create(
+  std::unique_ptr<content::WebContents> CreateWebContents() const {
+    return base::WrapUnique(content::WebContents::Create(
         content::WebContents::CreateParams(browser_context_.get())));
   }
 
@@ -183,7 +185,7 @@ class WebViewUnitTest : public views::test::WidgetTest {
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_blocking_thread_;
   content::TestBrowserThread io_thread_;
-  scoped_ptr<content::TestBrowserContext> browser_context_;
+  std::unique_ptr<content::TestBrowserContext> browser_context_;
   content::TestContentBrowserClient test_browser_client_;
 
   Widget* top_level_widget_;
@@ -197,7 +199,8 @@ class WebViewUnitTest : public views::test::WidgetTest {
 TEST_F(WebViewUnitTest, TestWebViewAttachDetachWebContents) {
   // Case 1: Create a new WebContents and set it in the webview via
   // SetWebContents. This should make the WebContents visible.
-  const scoped_ptr<content::WebContents> web_contents1(CreateWebContents());
+  const std::unique_ptr<content::WebContents> web_contents1(
+      CreateWebContents());
   WebViewTestWebContentsObserver observer1(web_contents1.get());
   EXPECT_FALSE(observer1.was_shown());
 
@@ -213,7 +216,8 @@ TEST_F(WebViewUnitTest, TestWebViewAttachDetachWebContents) {
   // Case 2: Create another WebContents and replace the current WebContents
   // via SetWebContents(). This should hide the current WebContents and show
   // the new one.
-  const scoped_ptr<content::WebContents> web_contents2(CreateWebContents());
+  const std::unique_ptr<content::WebContents> web_contents2(
+      CreateWebContents());
   WebViewTestWebContentsObserver observer2(web_contents2.get());
   EXPECT_FALSE(observer2.was_shown());
 
@@ -288,7 +292,7 @@ TEST_F(WebViewUnitTest, EmbeddedFullscreenDuringScreenCapture_Layout) {
   web_view()->SetEmbedFullscreenWidgetMode(true);
   ASSERT_EQ(1, web_view()->child_count());
 
-  const scoped_ptr<content::WebContents> web_contents(CreateWebContents());
+  const std::unique_ptr<content::WebContents> web_contents(CreateWebContents());
   WebViewTestWebContentsDelegate delegate;
   web_contents->SetDelegate(&delegate);
   web_view()->SetWebContents(web_contents.get());
@@ -341,10 +345,12 @@ TEST_F(WebViewUnitTest, EmbeddedFullscreenDuringScreenCapture_Switching) {
   const gfx::NativeView unset_native_view = holder()->native_view();
 
   // Create two WebContentses to switch between.
-  const scoped_ptr<content::WebContents> web_contents1(CreateWebContents());
+  const std::unique_ptr<content::WebContents> web_contents1(
+      CreateWebContents());
   WebViewTestWebContentsDelegate delegate1;
   web_contents1->SetDelegate(&delegate1);
-  const scoped_ptr<content::WebContents> web_contents2(CreateWebContents());
+  const std::unique_ptr<content::WebContents> web_contents2(
+      CreateWebContents());
   WebViewTestWebContentsDelegate delegate2;
   web_contents2->SetDelegate(&delegate2);
 
@@ -401,7 +407,7 @@ TEST_F(WebViewUnitTest, EmbeddedFullscreenDuringScreenCapture_ClickToFocus) {
   web_view()->SetEmbedFullscreenWidgetMode(true);
   ASSERT_EQ(1, web_view()->child_count());
 
-  const scoped_ptr<content::WebContents> web_contents(CreateWebContents());
+  const std::unique_ptr<content::WebContents> web_contents(CreateWebContents());
   WebViewTestWebContentsDelegate delegate;
   web_contents->SetDelegate(&delegate);
   web_view()->SetWebContents(web_contents.get());

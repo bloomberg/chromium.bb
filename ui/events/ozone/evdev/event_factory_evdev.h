@@ -59,7 +59,7 @@ class EVENTS_OZONE_EVDEV_EXPORT EventFactoryEvdev : public DeviceEventObserver,
   void WarpCursorTo(gfx::AcceleratedWidget widget,
                     const gfx::PointF& location);
 
-  scoped_ptr<SystemInputInjector> CreateSystemInputInjector();
+  std::unique_ptr<SystemInputInjector> CreateSystemInputInjector();
 
   InputControllerEvdev* input_controller() { return &input_controller_; }
 
@@ -99,7 +99,7 @@ class EVENTS_OZONE_EVDEV_EXPORT EventFactoryEvdev : public DeviceEventObserver,
   // Device thread initialization.
   void StartThread();
   void OnThreadStarted(
-      scoped_ptr<InputDeviceFactoryEvdevProxy> input_device_factory);
+      std::unique_ptr<InputDeviceFactoryEvdevProxy> input_device_factory);
 
   // Used to uniquely identify input devices.
   int last_device_id_ = 0;
@@ -109,7 +109,7 @@ class EVENTS_OZONE_EVDEV_EXPORT EventFactoryEvdev : public DeviceEventObserver,
 
   // Proxy for input device factory (manages device I/O objects).
   // The real object lives on a different thread.
-  scoped_ptr<InputDeviceFactoryEvdevProxy> input_device_factory_proxy_;
+  std::unique_ptr<InputDeviceFactoryEvdevProxy> input_device_factory_proxy_;
 
   // Modifier key state (shift, ctrl, etc).
   EventModifiersEvdev modifiers_;

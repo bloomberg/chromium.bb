@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -66,7 +67,7 @@ void DrmWindow::Initialize(ScanoutBufferGenerator* buffer_generator) {
 
   device_manager_->UpdateDrmDevice(widget_, nullptr);
   overlay_validator_ =
-      make_scoped_ptr(new DrmOverlayValidator(this, buffer_generator));
+      base::WrapUnique(new DrmOverlayValidator(this, buffer_generator));
 }
 
 void DrmWindow::Shutdown() {

@@ -8,11 +8,11 @@
 #include <stddef.h>
 
 #include <list>
+#include <memory>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "ui/base/ime/composition_text.h"
 #include "ui/gfx/render_text.h"
@@ -268,7 +268,7 @@ class VIEWS_EXPORT TextfieldModel {
   Delegate* delegate_;
 
   // The stylized text, cursor, selection, and the visual layout model.
-  scoped_ptr<gfx::RenderText> render_text_;
+  std::unique_ptr<gfx::RenderText> render_text_;
 
   // The composition range.
   gfx::Range composition_range_;

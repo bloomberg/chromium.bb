@@ -184,7 +184,7 @@ class TestScreenWinManager : public TestScreenWinInitializer {
 
  private:
   HWND hwndLast_ = nullptr;
-  scoped_ptr<ScreenWin> screen_win_;
+  std::unique_ptr<ScreenWin> screen_win_;
   std::vector<MONITORINFOEX> monitor_infos_;
   std::vector<DisplayInfo> display_infos_;
   std::unordered_map<HWND, gfx::Rect> hwnd_map_;
@@ -218,7 +218,7 @@ class ScreenWinTest : public testing::Test {
   }
 
  private:
-  scoped_ptr<TestScreenWinManager> screen_win_initializer_;
+  std::unique_ptr<TestScreenWinManager> screen_win_initializer_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenWinTest);
 };

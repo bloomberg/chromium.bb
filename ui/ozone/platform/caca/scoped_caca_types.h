@@ -5,7 +5,6 @@
 #ifndef UI_OZONE_PLATFORM_CACA_SCOPED_CACA_TYPES_H_
 #define UI_OZONE_PLATFORM_CACA_SCOPED_CACA_TYPES_H_
 
-#include "base/memory/scoped_ptr.h"
 
 typedef struct caca_canvas caca_canvas_t;
 typedef struct caca_dither caca_dither_t;
@@ -25,9 +24,9 @@ struct CacaDitherDeleter {
   void operator()(caca_dither_t* dither) const;
 };
 
-typedef scoped_ptr<caca_canvas_t, CacaCanvasDeleter> ScopedCacaCanvas;
-typedef scoped_ptr<caca_display_t, CacaDisplayDeleter> ScopedCacaDisplay;
-typedef scoped_ptr<caca_dither_t, CacaDitherDeleter> ScopedCacaDither;
+typedef std::unique_ptr<caca_canvas_t, CacaCanvasDeleter> ScopedCacaCanvas;
+typedef std::unique_ptr<caca_display_t, CacaDisplayDeleter> ScopedCacaDisplay;
+typedef std::unique_ptr<caca_dither_t, CacaDitherDeleter> ScopedCacaDither;
 
 }  // namespace ui
 

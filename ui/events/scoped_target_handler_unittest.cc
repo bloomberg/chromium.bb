@@ -4,10 +4,11 @@
 
 #include "ui/events/scoped_target_handler.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event_handler.h"
 #include "ui/events/event_target.h"
@@ -35,8 +36,8 @@ class TestEventTarget : public EventTarget {
   TestEventTarget() {}
   ~TestEventTarget() override {}
 
-  void SetHandler(scoped_ptr<EventHandler> target_handler,
-                  scoped_ptr<EventHandler> delegate) {
+  void SetHandler(std::unique_ptr<EventHandler> target_handler,
+                  std::unique_ptr<EventHandler> delegate) {
     target_handler_ = std::move(target_handler);
     delegate_ = std::move(delegate);
   }
@@ -45,14 +46,14 @@ class TestEventTarget : public EventTarget {
   void DispatchEvent(Event* event) { target_handler()->OnEvent(event); }
   bool CanAcceptEvent(const Event& event) override { return true; }
   EventTarget* GetParentTarget() override { return nullptr; }
-  scoped_ptr<EventTargetIterator> GetChildIterator() const override {
-    return make_scoped_ptr(new TestEventTargetIterator);
+  std::unique_ptr<EventTargetIterator> GetChildIterator() const override {
+    return base::WrapUnique(new TestEventTargetIterator);
   }
   EventTargeter* GetEventTargeter() override { return nullptr; }
 
  private:
-  scoped_ptr<EventHandler> target_handler_;
-  scoped_ptr<EventHandler> delegate_;
+  std::unique_ptr<EventHandler> target_handler_;
+  std::unique_ptr<EventHandler> delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(TestEventTarget);
 };
@@ -129,7 +130,7 @@ class EventCountingEventHandler : public EventHandler {
   void OnEvent(Event* event) override { (*count_)++; }
 
  private:
-  scoped_ptr<ScopedTargetHandler> scoped_target_handler_;
+  std::unique_ptr<ScopedTargetHandler> scoped_target_handler_;
   int* count_;
 
   DISALLOW_COPY_AND_ASSIGN(EventCountingEventHandler);
@@ -141,9 +142,9 @@ class EventCountingEventHandler : public EventHandler {
 TEST(ScopedTargetHandlerTest, HandlerInvoked) {
   int count = 0;
   TestEventTarget* target = new TestEventTarget;
-  scoped_ptr<NestedEventHandler> target_handler(
+  std::unique_ptr<NestedEventHandler> target_handler(
       new NestedEventHandler(target, 1));
-  scoped_ptr<EventCountingEventHandler> delegate(
+  std::unique_ptr<EventCountingEventHandler> delegate(
       new EventCountingEventHandler(target, &count));
   target->SetHandler(std::move(target_handler), std::move(delegate));
   MouseEvent event(ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
@@ -159,9 +160,9 @@ TEST(ScopedTargetHandlerTest, HandlerInvoked) {
 TEST(ScopedTargetHandlerTest, HandlerInvokedNested) {
   int count = 0;
   TestEventTarget* target = new TestEventTarget;
-  scoped_ptr<NestedEventHandler> target_handler(
+  std::unique_ptr<NestedEventHandler> target_handler(
       new NestedEventHandler(target, 2));
-  scoped_ptr<EventCountingEventHandler> delegate(
+  std::unique_ptr<EventCountingEventHandler> delegate(
       new EventCountingEventHandler(target, &count));
   target->SetHandler(std::move(target_handler), std::move(delegate));
   MouseEvent event(ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
@@ -177,9 +178,9 @@ TEST(ScopedTargetHandlerTest, HandlerInvokedNested) {
 TEST(ScopedTargetHandlerTest, SafeToDestroy) {
   int count = 0;
   TestEventTarget* target = new TestEventTarget;
-  scoped_ptr<TargetDestroyingEventHandler> target_handler(
+  std::unique_ptr<TargetDestroyingEventHandler> target_handler(
       new TargetDestroyingEventHandler(target, 1));
-  scoped_ptr<EventCountingEventHandler> delegate(
+  std::unique_ptr<EventCountingEventHandler> delegate(
       new EventCountingEventHandler(target, &count));
   target->SetHandler(std::move(target_handler), std::move(delegate));
   MouseEvent event(ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
@@ -194,9 +195,9 @@ TEST(ScopedTargetHandlerTest, SafeToDestroy) {
 TEST(ScopedTargetHandlerTest, SafeToDestroyNested) {
   int count = 0;
   TestEventTarget* target = new TestEventTarget;
-  scoped_ptr<TargetDestroyingEventHandler> target_handler(
+  std::unique_ptr<TargetDestroyingEventHandler> target_handler(
       new TargetDestroyingEventHandler(target, 2));
-  scoped_ptr<EventCountingEventHandler> delegate(
+  std::unique_ptr<EventCountingEventHandler> delegate(
       new EventCountingEventHandler(target, &count));
   target->SetHandler(std::move(target_handler), std::move(delegate));
   MouseEvent event(ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),

@@ -354,7 +354,7 @@ void TrayBubbleView::InitializeAndShowBubble() {
 
   GetWidget()->Show();
   GetWidget()->GetNativeWindow()->SetEventTargeter(
-      scoped_ptr<ui::EventTargeter>(new BubbleWindowTargeter(this)));
+      std::unique_ptr<ui::EventTargeter>(new BubbleWindowTargeter(this)));
   UpdateBubble();
 
   if (params_.close_via_capture) {

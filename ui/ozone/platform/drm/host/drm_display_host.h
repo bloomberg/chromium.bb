@@ -5,8 +5,9 @@
 #ifndef UI_OZONE_PLATFORM_DRM_HOST_DRM_DISPLAY_HOST_H_
 #define UI_OZONE_PLATFORM_DRM_HOST_DRM_DISPLAY_HOST_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/display/types/native_display_delegate.h"
 #include "ui/ozone/platform/drm/host/gpu_thread_observer.h"
@@ -52,7 +53,7 @@ class DrmDisplayHost : public GpuThreadObserver {
 
   GpuThreadAdapter* sender_;  // Not owned.
 
-  scoped_ptr<DisplaySnapshot> snapshot_;
+  std::unique_ptr<DisplaySnapshot> snapshot_;
 
   // Used during startup to signify that any display configuration should be
   // synchronous and succeed.

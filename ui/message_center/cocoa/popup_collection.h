@@ -34,7 +34,7 @@ MESSAGE_CENTER_EXPORT
   message_center::MessageCenter* messageCenter_;
 
   // MessageCenterObserver implementation.
-  scoped_ptr<message_center::MessageCenterObserver> observer_;
+  std::unique_ptr<message_center::MessageCenterObserver> observer_;
 
   // Array of all on-screen popup notifications.
   base::scoped_nsobject<NSMutableArray> popups_;

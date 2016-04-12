@@ -4,7 +4,8 @@
 
 #include "ui/wm/core/window_util.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
@@ -18,21 +19,20 @@ typedef aura::test::AuraTestBase WindowUtilTest;
 // Test if the recreate layers does not recreate layers that have
 // already been acquired.
 TEST_F(WindowUtilTest, RecreateLayers) {
-  scoped_ptr<aura::Window> window1(
+  std::unique_ptr<aura::Window> window1(
       aura::test::CreateTestWindowWithId(0, NULL));
-  scoped_ptr<aura::Window> window11(
+  std::unique_ptr<aura::Window> window11(
       aura::test::CreateTestWindowWithId(1, window1.get()));
-  scoped_ptr<aura::Window> window12(
+  std::unique_ptr<aura::Window> window12(
       aura::test::CreateTestWindowWithId(2, window1.get()));
 
   ASSERT_EQ(2u, window1->layer()->children().size());
 
-  scoped_ptr<ui::Layer> acquired(window11->AcquireLayer());
+  std::unique_ptr<ui::Layer> acquired(window11->AcquireLayer());
   EXPECT_TRUE(acquired.get());
   EXPECT_EQ(acquired.get(), window11->layer());
 
-  scoped_ptr<ui::LayerTreeOwner> tree =
-      wm::RecreateLayers(window1.get());
+  std::unique_ptr<ui::LayerTreeOwner> tree = wm::RecreateLayers(window1.get());
 
   // The detached layer should not have the layer that has
   // already been detached.

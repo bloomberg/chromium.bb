@@ -6,6 +6,7 @@
 #define UI_EVENTS_OZONE_EVDEV_INPUT_DEVICE_FACTORY_EVDEV_H_
 
 #include <map>
+#include <memory>
 #include <set>
 #include <vector>
 
@@ -14,7 +15,6 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/task_runner.h"
 #include "ui/events/ozone/evdev/event_converter_evdev.h"
 #include "ui/events/ozone/evdev/event_device_info.h"
@@ -35,15 +35,17 @@ class InputDeviceFactoryEvdevProxy;
 class GesturePropertyProvider;
 #endif
 
-typedef base::Callback<void(scoped_ptr<std::string>)> GetTouchDeviceStatusReply;
-typedef base::Callback<void(scoped_ptr<std::vector<base::FilePath>>)>
+typedef base::Callback<void(std::unique_ptr<std::string>)>
+    GetTouchDeviceStatusReply;
+typedef base::Callback<void(std::unique_ptr<std::vector<base::FilePath>>)>
     GetTouchEventLogReply;
 
 // Manager for event device objects. All device I/O starts here.
 class EVENTS_OZONE_EVDEV_EXPORT InputDeviceFactoryEvdev {
  public:
-  InputDeviceFactoryEvdev(scoped_ptr<DeviceEventDispatcherEvdev> dispatcher,
-                          CursorDelegateEvdev* cursor);
+  InputDeviceFactoryEvdev(
+      std::unique_ptr<DeviceEventDispatcherEvdev> dispatcher,
+      CursorDelegateEvdev* cursor);
   ~InputDeviceFactoryEvdev();
 
   // Open & start reading a newly plugged-in input device.
@@ -68,7 +70,7 @@ class EVENTS_OZONE_EVDEV_EXPORT InputDeviceFactoryEvdev {
 
  private:
   // Open device at path & starting processing events (on UI thread).
-  void AttachInputDevice(scoped_ptr<EventConverterEvdev> converter);
+  void AttachInputDevice(std::unique_ptr<EventConverterEvdev> converter);
 
   // Close device at path (on UI thread).
   void DetachInputDevice(const base::FilePath& file_path);
@@ -106,11 +108,11 @@ class EVENTS_OZONE_EVDEV_EXPORT InputDeviceFactoryEvdev {
 
 #if defined(USE_EVDEV_GESTURES)
   // Gesture library property provider (used by touchpads/mice).
-  scoped_ptr<GesturePropertyProvider> gesture_property_provider_;
+  std::unique_ptr<GesturePropertyProvider> gesture_property_provider_;
 #endif
 
   // Dispatcher for events.
-  scoped_ptr<DeviceEventDispatcherEvdev> dispatcher_;
+  std::unique_ptr<DeviceEventDispatcherEvdev> dispatcher_;
 
   // Number of pending device additions & device classes.
   int pending_device_changes_ = 0;

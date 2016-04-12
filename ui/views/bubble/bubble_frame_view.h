@@ -70,7 +70,7 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
 
   // Use bubble_border() and SetBubbleBorder(), not border() and SetBorder().
   BubbleBorder* bubble_border() const { return bubble_border_; }
-  void SetBubbleBorder(scoped_ptr<BubbleBorder> border);
+  void SetBubbleBorder(std::unique_ptr<BubbleBorder> border);
 
   gfx::Insets content_margins() const { return content_margins_; }
 

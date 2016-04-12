@@ -5,6 +5,7 @@
 #include "ui/ozone/platform/drm/gpu/drm_thread_proxy.h"
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "ui/ozone/platform/drm/gpu/drm_thread_message_proxy.h"
 #include "ui/ozone/platform/drm/gpu/drm_window_proxy.h"
 #include "ui/ozone/platform/drm/gpu/gbm_buffer.h"
@@ -21,9 +22,9 @@ void DrmThreadProxy::BindThreadIntoMessagingProxy(
   messaging_proxy->SetDrmThread(&drm_thread_);
 }
 
-scoped_ptr<DrmWindowProxy> DrmThreadProxy::CreateDrmWindowProxy(
+std::unique_ptr<DrmWindowProxy> DrmThreadProxy::CreateDrmWindowProxy(
     gfx::AcceleratedWidget widget) {
-  return make_scoped_ptr(new DrmWindowProxy(widget, &drm_thread_));
+  return base::WrapUnique(new DrmWindowProxy(widget, &drm_thread_));
 }
 
 scoped_refptr<GbmBuffer> DrmThreadProxy::CreateBuffer(

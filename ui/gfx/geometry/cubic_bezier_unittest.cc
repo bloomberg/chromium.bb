@@ -4,7 +4,8 @@
 
 #include "ui/gfx/geometry/cubic_bezier.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace gfx {
@@ -80,7 +81,7 @@ TEST(CubicBezierTest, Range) {
   double min, max;
 
   // Derivative is a constant.
-  scoped_ptr<CubicBezier> function(
+  std::unique_ptr<CubicBezier> function(
       new CubicBezier(0.25, (1.0 / 3.0), 0.75, (2.0 / 3.0)));
   function->Range(&min, &max);
   EXPECT_EQ(0, min);

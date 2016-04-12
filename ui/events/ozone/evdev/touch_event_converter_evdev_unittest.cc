@@ -2,18 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ui/events/ozone/evdev/touch_event_converter_evdev.h"
+
 #include <errno.h>
 #include <linux/input.h>
 #include <stddef.h>
 #include <unistd.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/run_loop.h"
 #include "base/time/time.h"
@@ -23,7 +25,6 @@
 #include "ui/events/ozone/evdev/device_event_dispatcher_evdev.h"
 #include "ui/events/ozone/evdev/event_device_test_util.h"
 #include "ui/events/ozone/evdev/touch_evdev_types.h"
-#include "ui/events/ozone/evdev/touch_event_converter_evdev.h"
 #include "ui/events/ozone/evdev/touch_noise/touch_noise_filter.h"
 #include "ui/events/ozone/evdev/touch_noise/touch_noise_finder.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
@@ -206,8 +207,8 @@ class TouchEventConverterEvdevTest : public testing::Test {
 
  private:
   base::MessageLoop* loop_;
-  scoped_ptr<ui::MockTouchEventConverterEvdev> device_;
-  scoped_ptr<ui::MockDeviceEventDispatcherEvdev> dispatcher_;
+  std::unique_ptr<ui::MockTouchEventConverterEvdev> device_;
+  std::unique_ptr<ui::MockDeviceEventDispatcherEvdev> dispatcher_;
 
   int events_out_;
   int events_in_;
@@ -828,7 +829,7 @@ class TouchEventConverterEvdevTouchNoiseTest
 
   // Makes the TouchNoiseFinder use |filter| and only |filter| to filter out
   // touch noise.
-  void SetTouchNoiseFilter(scoped_ptr<TouchNoiseFilter> filter) {
+  void SetTouchNoiseFilter(std::unique_ptr<TouchNoiseFilter> filter) {
     TouchNoiseFinder* finder = device()->touch_noise_finder();
     finder->filters_.clear();
     finder->filters_.push_back(filter.release());
@@ -870,14 +871,14 @@ TEST_F(TouchEventConverterEvdevTouchNoiseTest, TouchNoiseFiltering) {
   };
 
   MockTouchEventConverterEvdev* dev = device();
-  SetTouchNoiseFilter(scoped_ptr<TouchNoiseFilter>(
+  SetTouchNoiseFilter(std::unique_ptr<TouchNoiseFilter>(
       new EventTypeTouchNoiseFilter(ET_TOUCH_PRESSED)));
   dev->ConfigureReadMock(mock_kernel_queue, arraysize(mock_kernel_queue), 0);
   dev->ReadNow();
   ASSERT_EQ(0u, size());
 
   ClearDispatchedEvents();
-  SetTouchNoiseFilter(scoped_ptr<TouchNoiseFilter>(
+  SetTouchNoiseFilter(std::unique_ptr<TouchNoiseFilter>(
       new EventTypeTouchNoiseFilter(ET_TOUCH_MOVED)));
   dev->ConfigureReadMock(mock_kernel_queue, arraysize(mock_kernel_queue), 0);
   dev->ReadNow();
@@ -889,7 +890,7 @@ TEST_F(TouchEventConverterEvdevTouchNoiseTest, TouchNoiseFiltering) {
   EXPECT_EQ(ET_TOUCH_CANCELLED, dispatched_event(1).type);
 
   ClearDispatchedEvents();
-  SetTouchNoiseFilter(scoped_ptr<TouchNoiseFilter>(
+  SetTouchNoiseFilter(std::unique_ptr<TouchNoiseFilter>(
       new EventTypeTouchNoiseFilter(ET_TOUCH_RELEASED)));
   dev->ConfigureReadMock(mock_kernel_queue, arraysize(mock_kernel_queue), 0);
   dev->ReadNow();
@@ -928,7 +929,7 @@ TEST_F(TouchEventConverterEvdevTouchNoiseTest,
   };
 
   MockTouchEventConverterEvdev* dev = device();
-  SetTouchNoiseFilter(scoped_ptr<TouchNoiseFilter>(
+  SetTouchNoiseFilter(std::unique_ptr<TouchNoiseFilter>(
       new EventTypeTouchNoiseFilter(ET_TOUCH_PRESSED)));
   dev->ConfigureReadMock(mock_kernel_queue, arraysize(mock_kernel_queue), 0);
   dev->ReadNow();

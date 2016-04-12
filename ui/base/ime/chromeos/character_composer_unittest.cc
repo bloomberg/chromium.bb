@@ -6,8 +6,9 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event.h"
@@ -44,7 +45,7 @@ class CharacterComposerTest : public testing::Test {
 
   // Expects key is filtered and no character is composed.
   void ExpectDeadKeyFiltered(base::char16 combining_character) {
-    scoped_ptr<KeyEvent> event(DeadKeyPress(combining_character));
+    std::unique_ptr<KeyEvent> event(DeadKeyPress(combining_character));
     EXPECT_TRUE(character_composer_.FilterKeyPress(*event));
     EXPECT_TRUE(character_composer_.composed_character().empty());
   }
@@ -52,7 +53,7 @@ class CharacterComposerTest : public testing::Test {
   // Expects key is filtered and the given character is composed.
   void ExpectDeadKeyComposed(base::char16 combining_character,
                              const base::string16& expected_character) {
-    scoped_ptr<KeyEvent> event(DeadKeyPress(combining_character));
+    std::unique_ptr<KeyEvent> event(DeadKeyPress(combining_character));
     EXPECT_TRUE(character_composer_.FilterKeyPress(*event));
     EXPECT_EQ(expected_character, character_composer_.composed_character());
   }
@@ -73,7 +74,8 @@ class CharacterComposerTest : public testing::Test {
                                    DomCode code,
                                    int flags,
                                    base::char16 character) {
-    scoped_ptr<KeyEvent> event(UnicodeKeyPress(vkey, code, flags, character));
+    std::unique_ptr<KeyEvent> event(
+        UnicodeKeyPress(vkey, code, flags, character));
     EXPECT_FALSE(character_composer_.FilterKeyPress(*event));
     EXPECT_TRUE(character_composer_.composed_character().empty());
   }
@@ -83,7 +85,8 @@ class CharacterComposerTest : public testing::Test {
                                 DomCode code,
                                 int flags,
                                 base::char16 character) {
-    scoped_ptr<KeyEvent> event(UnicodeKeyPress(vkey, code, flags, character));
+    std::unique_ptr<KeyEvent> event(
+        UnicodeKeyPress(vkey, code, flags, character));
     EXPECT_TRUE(character_composer_.FilterKeyPress(*event));
     EXPECT_TRUE(character_composer_.composed_character().empty());
   }
@@ -94,7 +97,8 @@ class CharacterComposerTest : public testing::Test {
                                 int flags,
                                 base::char16 character,
                                 const base::string16& expected_character) {
-    scoped_ptr<KeyEvent> event(UnicodeKeyPress(vkey, code, flags, character));
+    std::unique_ptr<KeyEvent> event(
+        UnicodeKeyPress(vkey, code, flags, character));
     EXPECT_TRUE(character_composer_.FilterKeyPress(*event));
     EXPECT_EQ(expected_character, character_composer_.composed_character());
   }

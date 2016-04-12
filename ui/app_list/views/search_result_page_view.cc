@@ -8,6 +8,7 @@
 
 #include <algorithm>
 
+#include "base/memory/ptr_util.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/app_list_view_delegate.h"
@@ -36,7 +37,7 @@ const int kSearchResultZHeight = 1;
 class SearchCardView : public views::View {
  public:
   explicit SearchCardView(views::View* content_view) {
-    SetBorder(make_scoped_ptr(
+    SetBorder(base::WrapUnique(
         new views::ShadowBorder(GetShadowForZHeight(kSearchResultZHeight))));
     SetLayoutManager(new views::FillLayout());
     content_view->set_background(
@@ -52,7 +53,7 @@ class SearchCardView : public views::View {
 SearchResultPageView::SearchResultPageView() : selected_index_(0) {
   if (switches::IsExperimentalAppListEnabled()) {
     gfx::ShadowValue shadow = GetShadowForZHeight(kSearchResultZHeight);
-    scoped_ptr<views::Border> border(new views::ShadowBorder(shadow));
+    std::unique_ptr<views::Border> border(new views::ShadowBorder(shadow));
 
     gfx::Insets insets = gfx::Insets(kTopPadding, kExperimentalSearchBoxPadding,
                                      0, kExperimentalSearchBoxPadding);

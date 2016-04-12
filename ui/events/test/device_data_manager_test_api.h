@@ -5,8 +5,9 @@
 #ifndef UI_EVENTS_TEST_DEVICE_DATA_MANAGER_TEST_API_H_
 #define UI_EVENTS_TEST_DEVICE_DATA_MANAGER_TEST_API_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/events/devices/events_devices_export.h"
 
 namespace ui {

@@ -51,11 +51,11 @@ int MotionEvent::GetSourceDeviceId(size_t pointer_index) const {
   return 0;
 }
 
-scoped_ptr<MotionEvent> MotionEvent::Clone() const {
+std::unique_ptr<MotionEvent> MotionEvent::Clone() const {
   return MotionEventGeneric::CloneEvent(*this);
 }
 
-scoped_ptr<MotionEvent> MotionEvent::Cancel() const {
+std::unique_ptr<MotionEvent> MotionEvent::Cancel() const {
   return MotionEventGeneric::CancelEvent(*this);
 }
 

@@ -247,7 +247,7 @@ class MESSAGE_CENTER_EXPORT Notification {
 
   // Helper method to create a simple system notification. |click_callback|
   // will be invoked when the notification is clicked.
-  static scoped_ptr<Notification> CreateSystemNotification(
+  static std::unique_ptr<Notification> CreateSystemNotification(
       const std::string& notification_id,
       const base::string16& title,
       const base::string16& message,

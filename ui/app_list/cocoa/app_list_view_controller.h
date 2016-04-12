@@ -7,8 +7,9 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include <memory>
+
 #include "base/mac/scoped_nsobject.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/app_list/app_list_export.h"
 #import "ui/app_list/cocoa/apps_pagination_model_observer.h"
 #import "ui/app_list/cocoa/apps_search_box_controller.h"
@@ -53,7 +54,7 @@ APP_LIST_EXPORT
 
   app_list::AppListViewDelegate* delegate_;  // Weak. Owned by AppListService.
 
-  scoped_ptr<app_list::AppListModelObserverBridge>
+  std::unique_ptr<app_list::AppListModelObserverBridge>
       app_list_model_observer_bridge_;
   BOOL showingSearchResults_;
 }

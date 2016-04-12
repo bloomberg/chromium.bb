@@ -41,7 +41,7 @@ void PopupTimersController::StartTimer(const std::string& id,
     return;
   }
 
-  scoped_ptr<PopupTimer> timer(new PopupTimer(id, timeout, AsWeakPtr()));
+  std::unique_ptr<PopupTimer> timer(new PopupTimer(id, timeout, AsWeakPtr()));
 
   timer->Start();
   popup_timers_.insert(std::make_pair(id, std::move(timer)));

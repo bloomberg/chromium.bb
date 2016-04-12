@@ -61,12 +61,12 @@ NotificationList::PopupNotifications
   return NotificationList::PopupNotifications();
 }
 
-void FakeMessageCenter::AddNotification(scoped_ptr<Notification> notification) {
-}
+void FakeMessageCenter::AddNotification(
+    std::unique_ptr<Notification> notification) {}
 
 void FakeMessageCenter::UpdateNotification(
     const std::string& old_id,
-    scoped_ptr<Notification> new_notification) {}
+    std::unique_ptr<Notification> new_notification) {}
 
 void FakeMessageCenter::RemoveNotification(const std::string& id,
                                            bool by_user) {

@@ -6,12 +6,13 @@
 
 #include <X11/Xlib.h>
 
+#include <memory>
+
 // Get rid of X11 macros which conflict with gtest.
 #undef Bool
 #undef None
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
@@ -81,8 +82,8 @@ class MouseMoveCounterHandler : public ui::EventHandler {
 };
 
 // Creates a widget with the given bounds.
-scoped_ptr<Widget> CreateWidget(const gfx::Rect& bounds) {
-  scoped_ptr<Widget> widget(new Widget);
+std::unique_ptr<Widget> CreateWidget(const gfx::Rect& bounds) {
+  std::unique_ptr<Widget> widget(new Widget);
   Widget::InitParams params(Widget::InitParams::TYPE_WINDOW);
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.remove_standard_frame = true;
@@ -156,7 +157,7 @@ class DesktopWindowTreeHostX11Test : public ViewsTestBase {
 // Chrome even if it not possible to deactivate the window wrt to the x server.
 // This behavior is required by several interactive_ui_tests.
 TEST_F(DesktopWindowTreeHostX11Test, Deactivate) {
-  scoped_ptr<Widget> widget(CreateWidget(gfx::Rect(100, 100, 100, 100)));
+  std::unique_ptr<Widget> widget(CreateWidget(gfx::Rect(100, 100, 100, 100)));
 
   ActivationWaiter waiter(
       widget->GetNativeWindow()->GetHost()->GetAcceleratedWidget());
@@ -181,13 +182,13 @@ TEST_F(DesktopWindowTreeHostX11Test, Deactivate) {
 // Chrome synchronously switches the window that mouse events are forwarded to
 // when capture is changed.
 TEST_F(DesktopWindowTreeHostX11Test, CaptureEventForwarding) {
-  scoped_ptr<Widget> widget1(CreateWidget(gfx::Rect(100, 100, 100, 100)));
+  std::unique_ptr<Widget> widget1(CreateWidget(gfx::Rect(100, 100, 100, 100)));
   aura::Window* window1 = widget1->GetNativeWindow();
   DesktopWindowTreeHostX11* host1 =
       static_cast<DesktopWindowTreeHostX11*>(window1->GetHost());
   widget1->Show();
 
-  scoped_ptr<Widget> widget2(CreateWidget(gfx::Rect(200, 100, 100, 100)));
+  std::unique_ptr<Widget> widget2(CreateWidget(gfx::Rect(200, 100, 100, 100)));
   aura::Window* window2 = widget2->GetNativeWindow();
   DesktopWindowTreeHostX11* host2 =
       static_cast<DesktopWindowTreeHostX11*>(window2->GetHost());
@@ -255,8 +256,8 @@ TEST_F(DesktopWindowTreeHostX11Test, CaptureEventForwarding) {
 }
 
 TEST_F(DesktopWindowTreeHostX11Test, InputMethodFocus) {
-  scoped_ptr<Widget> widget(CreateWidget(gfx::Rect(100, 100, 100, 100)));
-  scoped_ptr<Textfield> textfield(new Textfield);
+  std::unique_ptr<Widget> widget(CreateWidget(gfx::Rect(100, 100, 100, 100)));
+  std::unique_ptr<Textfield> textfield(new Textfield);
   textfield->SetBounds(0, 0, 200, 20);
   widget->GetRootView()->AddChildView(textfield.get());
   widget->ShowInactive();

@@ -5,8 +5,9 @@
 #ifndef UI_VIEWS_TEST_TEST_VIEWS_DELEGATE_H_
 #define UI_VIEWS_TEST_TEST_VIEWS_DELEGATE_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "ui/views/views_delegate.h"
 
@@ -51,7 +52,7 @@ class TestViewsDelegate : public ViewsDelegate {
   bool use_transparent_windows_;
 
 #if defined(USE_AURA)
-  scoped_ptr<wm::WMState> wm_state_;
+  std::unique_ptr<wm::WMState> wm_state_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(TestViewsDelegate);

@@ -7,6 +7,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "ui/events/event.h"
 #include "ui/events/event_handler.h"
 #include "ui/events/event_utils.h"
@@ -15,16 +16,16 @@
 namespace views {
 
 // static
-scoped_ptr<EventMonitor> EventMonitor::CreateApplicationMonitor(
+std::unique_ptr<EventMonitor> EventMonitor::CreateApplicationMonitor(
     ui::EventHandler* event_handler) {
-  return make_scoped_ptr(new EventMonitorMac(event_handler, nullptr));
+  return base::WrapUnique(new EventMonitorMac(event_handler, nullptr));
 }
 
 // static
-scoped_ptr<EventMonitor> EventMonitor::CreateWindowMonitor(
+std::unique_ptr<EventMonitor> EventMonitor::CreateWindowMonitor(
     ui::EventHandler* event_handler,
     gfx::NativeWindow target_window) {
-  return make_scoped_ptr(new EventMonitorMac(event_handler, target_window));
+  return base::WrapUnique(new EventMonitorMac(event_handler, target_window));
 }
 
 // static
@@ -38,7 +39,7 @@ EventMonitorMac::EventMonitorMac(ui::EventHandler* event_handler,
   monitor_ = [NSEvent addLocalMonitorForEventsMatchingMask:NSAnyEventMask
       handler:^NSEvent*(NSEvent* event) {
           if (!target_window || [event window] == target_window) {
-            scoped_ptr<ui::Event> ui_event = ui::EventFromNative(event);
+            std::unique_ptr<ui::Event> ui_event = ui::EventFromNative(event);
             if (ui_event)
               event_handler->OnEvent(ui_event.get());
           }

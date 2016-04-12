@@ -56,13 +56,13 @@ class DrmGpuDisplayManager {
   // Notify ScreenManager of all the displays that were present before the
   // update but are gone after the update.
   void NotifyScreenManager(
-      const std::vector<scoped_ptr<DrmDisplay>>& new_displays,
-      const std::vector<scoped_ptr<DrmDisplay>>& old_displays) const;
+      const std::vector<std::unique_ptr<DrmDisplay>>& new_displays,
+      const std::vector<std::unique_ptr<DrmDisplay>>& old_displays) const;
 
   ScreenManager* screen_manager_;  // Not owned.
   DrmDeviceManager* drm_device_manager_;  // Not owned.
 
-  std::vector<scoped_ptr<DrmDisplay>> displays_;
+  std::vector<std::unique_ptr<DrmDisplay>> displays_;
 
   DISALLOW_COPY_AND_ASSIGN(DrmGpuDisplayManager);
 };

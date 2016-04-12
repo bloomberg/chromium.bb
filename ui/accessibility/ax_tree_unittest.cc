@@ -2,15 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ui/accessibility/ax_tree.h"
+
 #include <stddef.h>
 #include <stdint.h>
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/strings/string_number_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_serializable_tree.h"
-#include "ui/accessibility/ax_tree.h"
 #include "ui/accessibility/ax_tree_serializer.h"
 
 namespace ui {
@@ -127,8 +129,8 @@ TEST(AXTreeTest, SerializeSimpleAXTree) {
   initial_state.tree_data.title = "Title";
   AXSerializableTree src_tree(initial_state);
 
-  scoped_ptr<AXTreeSource<const AXNode*, AXNodeData, AXTreeData> > tree_source(
-      src_tree.CreateTreeSource());
+  std::unique_ptr<AXTreeSource<const AXNode*, AXNodeData, AXTreeData>>
+      tree_source(src_tree.CreateTreeSource());
   AXTreeSerializer<const AXNode*, AXNodeData, AXTreeData> serializer(
       tree_source.get());
   AXTreeUpdate update;

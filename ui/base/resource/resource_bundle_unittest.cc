@@ -395,7 +395,7 @@ class ResourceBundleImageTest : public ResourceBundleTest {
   }
 
  private:
-  scoped_ptr<DataPack> locale_pack_;
+  std::unique_ptr<DataPack> locale_pack_;
   base::ScopedTempDir dir_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceBundleImageTest);

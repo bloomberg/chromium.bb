@@ -5,6 +5,7 @@
 #ifndef UI_APP_LIST_SEARCH_DICTIONARY_DATA_STORE_H_
 #define UI_APP_LIST_SEARCH_DICTIONARY_DATA_STORE_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -13,7 +14,6 @@
 #include "base/files/important_file_writer.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/app_list/app_list_export.h"
 
 namespace base {
@@ -29,7 +29,7 @@ class APP_LIST_EXPORT DictionaryDataStore
     : public base::RefCountedThreadSafe<DictionaryDataStore>,
       public base::ImportantFileWriter::DataSerializer {
  public:
-  typedef base::Callback<void(scoped_ptr<base::DictionaryValue>)>
+  typedef base::Callback<void(std::unique_ptr<base::DictionaryValue>)>
       OnLoadedCallback;
   typedef base::Closure OnFlushedCallback;
 
@@ -57,17 +57,17 @@ class APP_LIST_EXPORT DictionaryDataStore
   ~DictionaryDataStore() override;
 
   // Reads data from backing file.
-  scoped_ptr<base::DictionaryValue> LoadOnBlockingPool();
+  std::unique_ptr<base::DictionaryValue> LoadOnBlockingPool();
 
   // ImportantFileWriter::DataSerializer overrides:
   bool SerializeData(std::string* data) override;
 
   base::FilePath data_file_;
   scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
-  scoped_ptr<base::ImportantFileWriter> writer_;
+  std::unique_ptr<base::ImportantFileWriter> writer_;
 
   // Cached JSON dictionary to serve read and incremental change calls.
-  scoped_ptr<base::DictionaryValue> cached_dict_;
+  std::unique_ptr<base::DictionaryValue> cached_dict_;
 
   base::SequencedWorkerPool* worker_pool_;
 

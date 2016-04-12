@@ -9,10 +9,10 @@
 
 #include <deque>
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
@@ -68,7 +68,7 @@ class APP_LIST_EXPORT HistoryData : public base::SupportsWeakPtr<HistoryData> {
 
   // Gets all known search results that were launched using the given |query|
   // or the queries that |query| is a prefix of.
-  scoped_ptr<KnownResults> GetKnownResults(const std::string& query) const;
+  std::unique_ptr<KnownResults> GetKnownResults(const std::string& query) const;
 
   void AddObserver(HistoryDataObserver* observer);
   void RemoveObserver(HistoryDataObserver* observer);
@@ -77,7 +77,7 @@ class APP_LIST_EXPORT HistoryData : public base::SupportsWeakPtr<HistoryData> {
 
  private:
   // Invoked from |store| with loaded data.
-  void OnStoreLoaded(scoped_ptr<Associations> loaded_data);
+  void OnStoreLoaded(std::unique_ptr<Associations> loaded_data);
 
   // Trims the data to keep the most recent |max_primary_| queries.
   void TrimEntries();

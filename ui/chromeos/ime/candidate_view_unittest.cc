@@ -109,7 +109,7 @@ class CandidateViewTest : public views::ViewsTestBase,
 
   views::Widget* widget_;
   views::View* container_;
-  scoped_ptr<ui::test::EventGenerator> event_generator_;
+  std::unique_ptr<ui::test::EventGenerator> event_generator_;
   views::View* last_pressed_;
 
   DISALLOW_COPY_AND_ASSIGN(CandidateViewTest);

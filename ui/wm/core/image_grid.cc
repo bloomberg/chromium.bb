@@ -291,8 +291,8 @@ base::Closure ImageGrid::ImagePainter::PrepareForLayerBoundsChange() {
 }
 
 void ImageGrid::SetImage(const gfx::Image* image,
-                         scoped_ptr<ui::Layer>* layer_ptr,
-                         scoped_ptr<ImagePainter>* painter_ptr,
+                         std::unique_ptr<ui::Layer>* layer_ptr,
+                         std::unique_ptr<ImagePainter>* painter_ptr,
                          ImageType type) {
   // Minimum width (for HORIZONTAL) or height (for VERTICAL) of the
   // |image| so that layers are scaled property if the device scale

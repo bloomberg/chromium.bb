@@ -34,7 +34,7 @@ class MenuRunnerImplAdapter : public MenuRunnerImplInterface {
  private:
   ~MenuRunnerImplAdapter() override;
 
-  scoped_ptr<MenuModelAdapter> menu_model_adapter_;
+  std::unique_ptr<MenuModelAdapter> menu_model_adapter_;
   MenuRunnerImpl* impl_;
 
   DISALLOW_COPY_AND_ASSIGN(MenuRunnerImplAdapter);

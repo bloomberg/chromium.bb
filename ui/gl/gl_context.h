@@ -5,13 +5,13 @@
 #ifndef UI_GL_GL_CONTEXT_H_
 #define UI_GL_GL_CONTEXT_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/cancelable_callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/synchronization/cancellation_flag.h"
 #include "ui/gl/gl_share_group.h"
 #include "ui/gl/gl_state_restorer.h"
@@ -175,10 +175,10 @@ class GL_EXPORT GLContext : public base::RefCounted<GLContext> {
   friend class gpu::GLContextVirtual;
 
   scoped_refptr<GLShareGroup> share_group_;
-  scoped_ptr<VirtualGLApi> virtual_gl_api_;
+  std::unique_ptr<VirtualGLApi> virtual_gl_api_;
   bool state_dirtied_externally_;
-  scoped_ptr<GLStateRestorer> state_restorer_;
-  scoped_ptr<GLVersionInfo> version_info_;
+  std::unique_ptr<GLStateRestorer> state_restorer_;
+  std::unique_ptr<GLVersionInfo> version_info_;
 
   int swap_interval_;
   bool force_swap_interval_zero_;
@@ -199,7 +199,7 @@ class GL_EXPORT GLContextReal : public GLContext {
   void SetCurrent(GLSurface* surface) override;
 
  private:
-  scoped_ptr<gfx::GPUTiming> gpu_timing_;
+  std::unique_ptr<gfx::GPUTiming> gpu_timing_;
   DISALLOW_COPY_AND_ASSIGN(GLContextReal);
 };
 

@@ -23,7 +23,7 @@ namespace {
 // Internal base::Thread subclass for events thread.
 class EvdevThread : public base::Thread {
  public:
-  EvdevThread(scoped_ptr<DeviceEventDispatcherEvdev> dispatcher,
+  EvdevThread(std::unique_ptr<DeviceEventDispatcherEvdev> dispatcher,
               CursorDelegateEvdev* cursor,
               const EventThreadStartCallback& callback)
       : base::Thread("evdev"),
@@ -38,7 +38,7 @@ class EvdevThread : public base::Thread {
     input_device_factory_ =
         new InputDeviceFactoryEvdev(std::move(dispatcher_), cursor_);
 
-    scoped_ptr<InputDeviceFactoryEvdevProxy> proxy(
+    std::unique_ptr<InputDeviceFactoryEvdevProxy> proxy(
         new InputDeviceFactoryEvdevProxy(base::ThreadTaskRunnerHandle::Get(),
                                          input_device_factory_->GetWeakPtr()));
 
@@ -53,7 +53,7 @@ class EvdevThread : public base::Thread {
 
  private:
   // Initialization bits passed from main thread.
-  scoped_ptr<DeviceEventDispatcherEvdev> dispatcher_;
+  std::unique_ptr<DeviceEventDispatcherEvdev> dispatcher_;
   CursorDelegateEvdev* cursor_;
   EventThreadStartCallback init_callback_;
   scoped_refptr<base::SingleThreadTaskRunner> init_runner_;
@@ -70,9 +70,10 @@ EventThreadEvdev::EventThreadEvdev() {
 EventThreadEvdev::~EventThreadEvdev() {
 }
 
-void EventThreadEvdev::Start(scoped_ptr<DeviceEventDispatcherEvdev> dispatcher,
-                             CursorDelegateEvdev* cursor,
-                             const EventThreadStartCallback& callback) {
+void EventThreadEvdev::Start(
+    std::unique_ptr<DeviceEventDispatcherEvdev> dispatcher,
+    CursorDelegateEvdev* cursor,
+    const EventThreadStartCallback& callback) {
   TRACE_EVENT0("evdev", "EventThreadEvdev::Start");
   thread_.reset(new EvdevThread(std::move(dispatcher), cursor, callback));
   if (!thread_->StartWithOptions(

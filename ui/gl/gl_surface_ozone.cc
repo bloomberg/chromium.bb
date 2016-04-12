@@ -72,7 +72,7 @@ void WaitForFence(EGLDisplay display, EGLSyncKHR fence) {
 // A thin wrapper around GLSurfaceEGL that owns the EGLNativeWindow.
 class GL_EXPORT GLSurfaceOzoneEGL : public NativeViewGLSurfaceEGL {
  public:
-  GLSurfaceOzoneEGL(scoped_ptr<ui::SurfaceOzoneEGL> ozone_surface,
+  GLSurfaceOzoneEGL(std::unique_ptr<ui::SurfaceOzoneEGL> ozone_surface,
                     AcceleratedWidget widget);
 
   // GLSurface:
@@ -96,14 +96,14 @@ class GL_EXPORT GLSurfaceOzoneEGL : public NativeViewGLSurfaceEGL {
   bool ReinitializeNativeSurface();
 
   // The native surface. Deleting this is allowed to free the EGLNativeWindow.
-  scoped_ptr<ui::SurfaceOzoneEGL> ozone_surface_;
+  std::unique_ptr<ui::SurfaceOzoneEGL> ozone_surface_;
   AcceleratedWidget widget_;
 
   DISALLOW_COPY_AND_ASSIGN(GLSurfaceOzoneEGL);
 };
 
 GLSurfaceOzoneEGL::GLSurfaceOzoneEGL(
-    scoped_ptr<ui::SurfaceOzoneEGL> ozone_surface,
+    std::unique_ptr<ui::SurfaceOzoneEGL> ozone_surface,
     AcceleratedWidget widget)
     : NativeViewGLSurfaceEGL(ozone_surface->GetNativeWindow()),
       ozone_surface_(std::move(ozone_surface)),
@@ -159,7 +159,7 @@ GLSurfaceOzoneEGL::~GLSurfaceOzoneEGL() {
 }
 
 bool GLSurfaceOzoneEGL::ReinitializeNativeSurface() {
-  scoped_ptr<ui::ScopedMakeCurrent> scoped_make_current;
+  std::unique_ptr<ui::ScopedMakeCurrent> scoped_make_current;
   GLContext* current_context = GLContext::GetCurrent();
   bool was_current = current_context && current_context->IsCurrent(this);
   if (was_current) {
@@ -186,7 +186,7 @@ bool GLSurfaceOzoneEGL::ReinitializeNativeSurface() {
 
 class GL_EXPORT GLSurfaceOzoneSurfaceless : public SurfacelessEGL {
  public:
-  GLSurfaceOzoneSurfaceless(scoped_ptr<ui::SurfaceOzoneEGL> ozone_surface,
+  GLSurfaceOzoneSurfaceless(std::unique_ptr<ui::SurfaceOzoneEGL> ozone_surface,
                             AcceleratedWidget widget);
 
   // GLSurface:
@@ -235,9 +235,9 @@ class GL_EXPORT GLSurfaceOzoneSurfaceless : public SurfacelessEGL {
                      gfx::SwapResult result);
 
   // The native surface. Deleting this is allowed to free the EGLNativeWindow.
-  scoped_ptr<ui::SurfaceOzoneEGL> ozone_surface_;
+  std::unique_ptr<ui::SurfaceOzoneEGL> ozone_surface_;
   AcceleratedWidget widget_;
-  scoped_ptr<VSyncProvider> vsync_provider_;
+  std::unique_ptr<VSyncProvider> vsync_provider_;
   ScopedVector<PendingFrame> unsubmitted_frames_;
   bool has_implicit_external_sync_;
   bool last_swap_buffers_result_;
@@ -260,7 +260,7 @@ bool GLSurfaceOzoneSurfaceless::PendingFrame::ScheduleOverlayPlanes(
 }
 
 GLSurfaceOzoneSurfaceless::GLSurfaceOzoneSurfaceless(
-    scoped_ptr<ui::SurfaceOzoneEGL> ozone_surface,
+    std::unique_ptr<ui::SurfaceOzoneEGL> ozone_surface,
     AcceleratedWidget widget)
     : SurfacelessEGL(gfx::Size()),
       ozone_surface_(std::move(ozone_surface)),
@@ -421,7 +421,7 @@ void GLSurfaceOzoneSurfaceless::SubmitFrame() {
   DCHECK(!unsubmitted_frames_.empty());
 
   if (unsubmitted_frames_.front()->ready && !swap_buffers_pending_) {
-    scoped_ptr<PendingFrame> frame(unsubmitted_frames_.front());
+    std::unique_ptr<PendingFrame> frame(unsubmitted_frames_.front());
     unsubmitted_frames_.weak_erase(unsubmitted_frames_.begin());
     swap_buffers_pending_ = true;
 
@@ -472,7 +472,7 @@ class GL_EXPORT GLSurfaceOzoneSurfacelessSurfaceImpl
     : public GLSurfaceOzoneSurfaceless {
  public:
   GLSurfaceOzoneSurfacelessSurfaceImpl(
-      scoped_ptr<ui::SurfaceOzoneEGL> ozone_surface,
+      std::unique_ptr<ui::SurfaceOzoneEGL> ozone_surface,
       AcceleratedWidget widget);
 
   // GLSurface:
@@ -502,7 +502,7 @@ class GL_EXPORT GLSurfaceOzoneSurfacelessSurfaceImpl
 };
 
 GLSurfaceOzoneSurfacelessSurfaceImpl::GLSurfaceOzoneSurfacelessSurfaceImpl(
-    scoped_ptr<ui::SurfaceOzoneEGL> ozone_surface,
+    std::unique_ptr<ui::SurfaceOzoneEGL> ozone_surface,
     AcceleratedWidget widget)
     : GLSurfaceOzoneSurfaceless(std::move(ozone_surface), widget),
       context_(nullptr),
@@ -653,7 +653,7 @@ bool GLSurfaceOzoneSurfacelessSurfaceImpl::CreatePixmaps() {
 
 scoped_refptr<GLSurface> CreateViewGLSurfaceOzone(
     gfx::AcceleratedWidget window) {
-  scoped_ptr<ui::SurfaceOzoneEGL> surface_ozone =
+  std::unique_ptr<ui::SurfaceOzoneEGL> surface_ozone =
       ui::OzonePlatform::GetInstance()
           ->GetSurfaceFactoryOzone()
           ->CreateEGLSurfaceForWidget(window);
@@ -668,7 +668,7 @@ scoped_refptr<GLSurface> CreateViewGLSurfaceOzone(
 
 scoped_refptr<GLSurface> CreateViewGLSurfaceOzoneSurfacelessSurfaceImpl(
     gfx::AcceleratedWidget window) {
-  scoped_ptr<ui::SurfaceOzoneEGL> surface_ozone =
+  std::unique_ptr<ui::SurfaceOzoneEGL> surface_ozone =
       ui::OzonePlatform::GetInstance()
           ->GetSurfaceFactoryOzone()
           ->CreateSurfacelessEGLSurfaceForWidget(window);
@@ -707,7 +707,7 @@ scoped_refptr<GLSurface> GLSurface::CreateSurfacelessViewGLSurface(
   if (GetGLImplementation() == kGLImplementationEGLGLES2 &&
       window != kNullAcceleratedWidget &&
       GLSurfaceEGL::IsEGLSurfacelessContextSupported()) {
-    scoped_ptr<ui::SurfaceOzoneEGL> surface_ozone =
+    std::unique_ptr<ui::SurfaceOzoneEGL> surface_ozone =
         ui::OzonePlatform::GetInstance()
             ->GetSurfaceFactoryOzone()
             ->CreateSurfacelessEGLSurfaceForWidget(window);

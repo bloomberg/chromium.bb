@@ -4,7 +4,8 @@
 
 #include "ui/display/chromeos/x11/display_util_x11.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace ui {

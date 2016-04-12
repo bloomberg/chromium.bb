@@ -9,9 +9,11 @@
 #include <X11/Xutil.h>
 #include <X11/extensions/XInput2.h>
 #include <X11/extensions/shape.h>
+
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
@@ -250,7 +252,7 @@ void DesktopWindowTreeHostX11::RemoveObserver(
 }
 
 void DesktopWindowTreeHostX11::SwapNonClientEventHandler(
-    scoped_ptr<ui::EventHandler> handler) {
+    std::unique_ptr<ui::EventHandler> handler) {
   wm::CompoundEventFilter* compound_event_filter =
       desktop_native_widget_aura_->root_window_event_filter();
   if (x11_non_client_event_filter_)
@@ -307,7 +309,7 @@ void DesktopWindowTreeHostX11::OnNativeWidgetCreated(
 
   // TODO(erg): Unify this code once the other consumer goes away.
   SwapNonClientEventHandler(
-      scoped_ptr<ui::EventHandler>(new X11WindowEventFilter(this)));
+      std::unique_ptr<ui::EventHandler>(new X11WindowEventFilter(this)));
   SetUseNativeFrame(params.type == Widget::InitParams::TYPE_WINDOW &&
                     !params.remove_standard_frame);
 
@@ -319,17 +321,17 @@ void DesktopWindowTreeHostX11::OnNativeWidgetCreated(
   native_widget_delegate_->OnNativeWidgetCreated(true);
 }
 
-scoped_ptr<corewm::Tooltip> DesktopWindowTreeHostX11::CreateTooltip() {
-  return make_scoped_ptr(new corewm::TooltipAura);
+std::unique_ptr<corewm::Tooltip> DesktopWindowTreeHostX11::CreateTooltip() {
+  return base::WrapUnique(new corewm::TooltipAura);
 }
 
-scoped_ptr<aura::client::DragDropClient>
+std::unique_ptr<aura::client::DragDropClient>
 DesktopWindowTreeHostX11::CreateDragDropClient(
     DesktopNativeCursorManager* cursor_manager) {
   drag_drop_client_ = new DesktopDragDropClientAuraX11(
       window(), cursor_manager, xdisplay_, xwindow_);
   drag_drop_client_->Init();
-  return make_scoped_ptr(drag_drop_client_);
+  return base::WrapUnique(drag_drop_client_);
 }
 
 void DesktopWindowTreeHostX11::Close() {

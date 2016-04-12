@@ -24,7 +24,7 @@ Checkbox::Checkbox(const base::string16& label)
     : LabelButton(NULL, label),
       checked_(false) {
   SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  scoped_ptr<LabelButtonBorder> button_border(new LabelButtonBorder());
+  std::unique_ptr<LabelButtonBorder> button_border(new LabelButtonBorder());
   // Inset the trailing side by a couple pixels for the focus border.
   button_border->set_insets(gfx::Insets(0, 0, 0, 2));
   SetBorder(std::move(button_border));

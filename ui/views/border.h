@@ -5,8 +5,9 @@
 #ifndef UI_VIEWS_BORDER_H_
 #define UI_VIEWS_BORDER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/views/views_export.h"
@@ -43,39 +44,40 @@ class VIEWS_EXPORT Border {
   virtual ~Border();
 
   // Convenience for creating a scoped_ptr with no Border.
-  static scoped_ptr<Border> NullBorder();
+  static std::unique_ptr<Border> NullBorder();
 
   // Creates a border that is a simple line of the specified thickness and
   // color.
-  static scoped_ptr<Border> CreateSolidBorder(int thickness, SkColor color);
+  static std::unique_ptr<Border> CreateSolidBorder(int thickness,
+                                                   SkColor color);
 
   // Creates a border that is a rounded rectangle of the specified thickness and
   // color.
-  static scoped_ptr<Border> CreateRoundedRectBorder(int thickness,
-                                                    int corner_radius,
-                                                    SkColor color);
+  static std::unique_ptr<Border> CreateRoundedRectBorder(int thickness,
+                                                         int corner_radius,
+                                                         SkColor color);
 
   // Creates a border for reserving space. The returned border does not
   // paint anything.
-  static scoped_ptr<Border> CreateEmptyBorder(const gfx::Insets& insets);
-  static scoped_ptr<Border> CreateEmptyBorder(int top,
-                                              int left,
-                                              int bottom,
-                                              int right);
+  static std::unique_ptr<Border> CreateEmptyBorder(const gfx::Insets& insets);
+  static std::unique_ptr<Border> CreateEmptyBorder(int top,
+                                                   int left,
+                                                   int bottom,
+                                                   int right);
 
   // Creates a border of the specified color, and specified thickness on each
   // side.
-  static scoped_ptr<Border> CreateSolidSidedBorder(int top,
-                                                   int left,
-                                                   int bottom,
-                                                   int right,
-                                                   SkColor color);
+  static std::unique_ptr<Border> CreateSolidSidedBorder(int top,
+                                                        int left,
+                                                        int bottom,
+                                                        int right,
+                                                        SkColor color);
 
   // Creates a Border from the specified Painter. The border owns the painter,
   // thus the painter is deleted when the Border is deleted.
   // |insets| define size of an area allocated for a Border.
-  static scoped_ptr<Border> CreateBorderPainter(Painter* painter,
-                                                const gfx::Insets& insets);
+  static std::unique_ptr<Border> CreateBorderPainter(Painter* painter,
+                                                     const gfx::Insets& insets);
 
   // Renders the border for the specified view.
   virtual void Paint(const View& view, gfx::Canvas* canvas) = 0;

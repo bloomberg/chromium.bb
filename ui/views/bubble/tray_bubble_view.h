@@ -5,8 +5,9 @@
 #ifndef UI_VIEWS_BUBBLE_TRAY_BUBBLE_VIEW_H_
 #define UI_VIEWS_BUBBLE_TRAY_BUBBLE_VIEW_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/mouse_watcher.h"
 #include "ui/views/views_export.h"
@@ -195,8 +196,8 @@ class VIEWS_EXPORT TrayBubbleView : public views::BubbleDelegateView,
   // |bubble_border_| and |owned_bubble_border_| point to the same thing, but
   // the latter ensures we don't leak it before passing off ownership.
   internal::TrayBubbleBorder* bubble_border_;
-  scoped_ptr<views::BubbleBorder> owned_bubble_border_;
-  scoped_ptr<internal::TrayBubbleContentMask> bubble_content_mask_;
+  std::unique_ptr<views::BubbleBorder> owned_bubble_border_;
+  std::unique_ptr<internal::TrayBubbleContentMask> bubble_content_mask_;
   bool is_gesture_dragging_;
 
   // True once the mouse cursor was actively moved by the user over the bubble.
@@ -204,7 +205,7 @@ class VIEWS_EXPORT TrayBubbleView : public views::BubbleDelegateView,
   bool mouse_actively_entered_;
 
   // Used to find any mouse movements.
-  scoped_ptr<MouseWatcher> mouse_watcher_;
+  std::unique_ptr<MouseWatcher> mouse_watcher_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayBubbleView);
 };

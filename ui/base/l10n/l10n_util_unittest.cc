@@ -103,7 +103,7 @@ void SetDefaultLocaleForTest(const std::string& tag, base::Environment* env) {
 }
 
 TEST_F(L10nUtilTest, GetAppLocale) {
-  scoped_ptr<base::Environment> env;
+  std::unique_ptr<base::Environment> env;
   // Use a temporary locale dir so we don't have to actually build the locale
   // pak files for this test.
   base::ScopedPathOverride locale_dir_override(ui::DIR_LOCALES);

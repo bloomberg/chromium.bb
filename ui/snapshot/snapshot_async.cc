@@ -63,7 +63,7 @@ void SnapshotAsync::ScaleCopyOutputResult(
     const GrabWindowSnapshotAsyncCallback& callback,
     const gfx::Size& target_size,
     scoped_refptr<base::TaskRunner> background_task_runner,
-    scoped_ptr<cc::CopyOutputResult> result) {
+    std::unique_ptr<cc::CopyOutputResult> result) {
   if (result->IsEmpty()) {
     callback.Run(gfx::Image());
     return;
@@ -83,7 +83,7 @@ void SnapshotAsync::ScaleCopyOutputResult(
 void SnapshotAsync::EncodeCopyOutputResult(
     const GrabWindowSnapshotAsyncPNGCallback& callback,
     scoped_refptr<base::TaskRunner> background_task_runner,
-    scoped_ptr<cc::CopyOutputResult> result) {
+    std::unique_ptr<cc::CopyOutputResult> result) {
   if (result->IsEmpty()) {
     callback.Run(scoped_refptr<base::RefCountedBytes>());
     return;

@@ -5,10 +5,11 @@
 #ifndef UI_VIEWS_CONTROLS_MENU_MENU_MESSAGE_LOOP_AURA_H_
 #define UI_VIEWS_CONTROLS_MENU_MENU_MESSAGE_LOOP_AURA_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/views/controls/menu/menu_message_loop.h"
 
 namespace ui {

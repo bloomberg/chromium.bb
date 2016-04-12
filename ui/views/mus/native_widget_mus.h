@@ -8,10 +8,10 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "ui/aura/window_delegate.h"
@@ -216,16 +216,16 @@ class VIEWS_MUS_EXPORT NativeWidgetMus : public internal::NativeWidgetPrivate,
 
   // Functions with the same name require the mus::WindowObserver to be in
   // a separate class.
-  scoped_ptr<MusWindowObserver> mus_window_observer_;
+  std::unique_ptr<MusWindowObserver> mus_window_observer_;
 
   // Aura configuration.
-  scoped_ptr<SurfaceContextFactory> context_factory_;
-  scoped_ptr<WindowTreeHostMus> window_tree_host_;
+  std::unique_ptr<SurfaceContextFactory> context_factory_;
+  std::unique_ptr<WindowTreeHostMus> window_tree_host_;
   aura::Window* content_;
-  scoped_ptr<wm::FocusController> focus_client_;
-  scoped_ptr<aura::client::DefaultCaptureClient> capture_client_;
-  scoped_ptr<aura::client::WindowTreeClient> window_tree_client_;
-  scoped_ptr<aura::client::ScreenPositionClient> screen_position_client_;
+  std::unique_ptr<wm::FocusController> focus_client_;
+  std::unique_ptr<aura::client::DefaultCaptureClient> capture_client_;
+  std::unique_ptr<aura::client::WindowTreeClient> window_tree_client_;
+  std::unique_ptr<aura::client::ScreenPositionClient> screen_position_client_;
   base::WeakPtrFactory<NativeWidgetMus> close_widget_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeWidgetMus);

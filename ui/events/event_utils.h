@@ -7,8 +7,9 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/event_types.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "ui/events/event.h"
@@ -43,7 +44,7 @@ EVENTS_EXPORT void UpdateDeviceList();
 
 // Returns a ui::Event wrapping a native event. Ownership of the returned value
 // is transferred to the caller.
-EVENTS_EXPORT scoped_ptr<Event> EventFromNative(
+EVENTS_EXPORT std::unique_ptr<Event> EventFromNative(
     const base::NativeEvent& native_event);
 
 // Get the EventType from a native event.

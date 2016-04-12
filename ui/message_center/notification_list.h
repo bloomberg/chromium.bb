@@ -65,10 +65,11 @@ class MESSAGE_CENTER_EXPORT NotificationList {
   void SetMessageCenterVisible(bool visible,
                                std::set<std::string>* updated_ids);
 
-  void AddNotification(scoped_ptr<Notification> notification);
+  void AddNotification(std::unique_ptr<Notification> notification);
 
-  void UpdateNotificationMessage(const std::string& old_id,
-                                 scoped_ptr<Notification> new_notification);
+  void UpdateNotificationMessage(
+      const std::string& old_id,
+      std::unique_ptr<Notification> new_notification);
 
   void RemoveNotification(const std::string& id);
 
@@ -148,7 +149,7 @@ class MESSAGE_CENTER_EXPORT NotificationList {
 
   void EraseNotification(Notifications::iterator iter);
 
-  void PushNotification(scoped_ptr<Notification> notification);
+  void PushNotification(std::unique_ptr<Notification> notification);
 
   Notifications notifications_;
   bool message_center_visible_;

@@ -6,9 +6,10 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace ui {
@@ -123,9 +124,9 @@ TEST_F(ListModelTest, RemoveAll) {
   ListModel<FooItem> model;
   model.AddObserver(this);
 
-  scoped_ptr<FooItem> foo0(new FooItem(0));
-  scoped_ptr<FooItem> foo1(new FooItem(1));
-  scoped_ptr<FooItem> foo2(new FooItem(2));
+  std::unique_ptr<FooItem> foo0(new FooItem(0));
+  std::unique_ptr<FooItem> foo1(new FooItem(1));
+  std::unique_ptr<FooItem> foo2(new FooItem(2));
 
   model.Add(foo0.get());
   model.Add(foo1.get());

@@ -9,11 +9,11 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <memory>
 
 #include "base/format_macros.h"
 #include "base/i18n/break_iterator.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -242,7 +242,7 @@ using RenderTextTest = testing::Test;
 
 TEST_F(RenderTextTest, DefaultStyles) {
   // Check the default styles applied to new instances and adjusted text.
-  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+  std::unique_ptr<RenderText> render_text(RenderText::CreateInstance());
   EXPECT_TRUE(render_text->text().empty());
   const wchar_t* const cases[] = { kWeak, kLtr, L"Hello", kRtl, L"", L"" };
   for (size_t i = 0; i < arraysize(cases); ++i) {
@@ -257,7 +257,7 @@ TEST_F(RenderTextTest, DefaultStyles) {
 
 TEST_F(RenderTextTest, SetStyles) {
   // Ensure custom default styles persist across setting and clearing text.
-  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+  std::unique_ptr<RenderText> render_text(RenderText::CreateInstance());
   const SkColor color = SK_ColorRED;
   render_text->SetColor(color);
   render_text->SetBaselineStyle(SUPERSCRIPT);
@@ -280,7 +280,7 @@ TEST_F(RenderTextTest, SetStyles) {
 }
 
 TEST_F(RenderTextTest, ApplyStyles) {
-  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+  std::unique_ptr<RenderText> render_text(RenderText::CreateInstance());
   render_text->SetText(ASCIIToUTF16("012345678"));
 
   // Apply a ranged color and style and check the resulting breaks.
@@ -377,7 +377,7 @@ TEST_F(RenderTextTest, ApplyStyles) {
 }
 
 TEST_F(RenderTextTest, AppendTextKeepsStyles) {
-  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+  std::unique_ptr<RenderText> render_text(RenderText::CreateInstance());
   // Setup basic functionality.
   render_text->SetText(ASCIIToUTF16("abc"));
   render_text->ApplyColor(SK_ColorRED, Range(0, 1));
@@ -442,7 +442,7 @@ void TestVisualCursorMotionInObscuredField(RenderText* render_text,
 TEST_F(RenderTextTest, ObscuredText) {
   const base::string16 seuss = ASCIIToUTF16("hop on pop");
   const base::string16 no_seuss = ASCIIToUTF16("**********");
-  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+  std::unique_ptr<RenderText> render_text(RenderText::CreateInstance());
 
   // GetLayoutText() returns asterisks when the obscured bit is set.
   render_text->SetText(seuss);
@@ -506,7 +506,7 @@ TEST_F(RenderTextTest, ObscuredText) {
 TEST_F(RenderTextTest, RevealObscuredText) {
   const base::string16 seuss = ASCIIToUTF16("hop on pop");
   const base::string16 no_seuss = ASCIIToUTF16("**********");
-  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+  std::unique_ptr<RenderText> render_text(RenderText::CreateInstance());
 
   render_text->SetText(seuss);
   render_text->SetObscured(true);
@@ -628,11 +628,12 @@ TEST_F(RenderTextTest, ElidedText) {
     { L"012\xF0\x9D\x84\x9E",         L"012\xF0\x2026"            , true  },
   };
 
-  scoped_ptr<RenderText> expected_render_text(RenderText::CreateInstance());
+  std::unique_ptr<RenderText> expected_render_text(
+      RenderText::CreateInstance());
   expected_render_text->SetFontList(FontList("serif, Sans serif, 12px"));
   expected_render_text->SetDisplayRect(Rect(0, 0, 9999, 100));
 
-  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+  std::unique_ptr<RenderText> render_text(RenderText::CreateInstance());
   render_text->SetFontList(FontList("serif, Sans serif, 12px"));
   render_text->SetElideBehavior(ELIDE_TAIL);
 
@@ -659,12 +660,13 @@ TEST_F(RenderTextTest, ElidedText) {
 }
 
 TEST_F(RenderTextTest, ElidedObscuredText) {
-  scoped_ptr<RenderText> expected_render_text(RenderText::CreateInstance());
+  std::unique_ptr<RenderText> expected_render_text(
+      RenderText::CreateInstance());
   expected_render_text->SetFontList(FontList("serif, Sans serif, 12px"));
   expected_render_text->SetDisplayRect(Rect(0, 0, 9999, 100));
   expected_render_text->SetText(WideToUTF16(L"**\x2026"));
 
-  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+  std::unique_ptr<RenderText> render_text(RenderText::CreateInstance());
   render_text->SetFontList(FontList("serif, Sans serif, 12px"));
   render_text->SetElideBehavior(ELIDE_TAIL);
   render_text->SetDisplayRect(
@@ -677,7 +679,7 @@ TEST_F(RenderTextTest, ElidedObscuredText) {
 #endif  // !defined(OS_MACOSX)
 
 TEST_F(RenderTextTest, ElidedEmail) {
-  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+  std::unique_ptr<RenderText> render_text(RenderText::CreateInstance());
   render_text->SetText(ASCIIToUTF16("test@example.com"));
   const gfx::Size size = render_text->GetStringSize();
 
@@ -725,7 +727,7 @@ TEST_F(RenderTextTest, TruncatedText) {
     { L"012\xF0\x9D\x84\x9E",           L"012\xF0\x2026"             },
   };
 
-  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+  std::unique_ptr<RenderText> render_text(RenderText::CreateInstance());
   render_text->set_truncate_length(5);
   for (size_t i = 0; i < arraysize(cases); i++) {
     render_text->SetText(WideToUTF16(cases[i].text));
@@ -736,7 +738,7 @@ TEST_F(RenderTextTest, TruncatedText) {
 }
 
 TEST_F(RenderTextTest, TruncatedObscuredText) {
-  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+  std::unique_ptr<RenderText> render_text(RenderText::CreateInstance());
   render_text->set_truncate_length(3);
   render_text->SetObscured(true);
   render_text->SetText(WideToUTF16(L"abcdef"));
@@ -747,7 +749,7 @@ TEST_F(RenderTextTest, TruncatedObscuredText) {
 // TODO(asvitkine): RenderTextMac cursor movements. http://crbug.com/131618
 #if !defined(OS_MACOSX)
 TEST_F(RenderTextTest, TruncatedCursorMovementLTR) {
-  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+  std::unique_ptr<RenderText> render_text(RenderText::CreateInstance());
   render_text->set_truncate_length(2);
   render_text->SetText(WideToUTF16(L"abcd"));
 
@@ -775,7 +777,7 @@ TEST_F(RenderTextTest, TruncatedCursorMovementLTR) {
 }
 
 TEST_F(RenderTextTest, TruncatedCursorMovementRTL) {
-  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+  std::unique_ptr<RenderText> render_text(RenderText::CreateInstance());
   render_text->set_truncate_length(2);
   render_text->SetText(WideToUTF16(L"\x5d0\x5d1\x5d2\x5d3"));
 
@@ -821,7 +823,7 @@ TEST_F(RenderTextTest, GetDisplayTextDirection) {
     { kRtlLtrRtl, base::i18n::RIGHT_TO_LEFT },
   };
 
-  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+  std::unique_ptr<RenderText> render_text(RenderText::CreateInstance());
   const bool was_rtl = base::i18n::IsRTL();
 
   for (size_t i = 0; i < 2; ++i) {
@@ -859,7 +861,7 @@ TEST_F(RenderTextTest, GetDisplayTextDirection) {
 // TODO(asvitkine): RenderTextMac cursor movements. http://crbug.com/131618
 #if !defined(OS_MACOSX)
 TEST_F(RenderTextTest, MoveCursorLeftRightInLtr) {
-  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+  std::unique_ptr<RenderText> render_text(RenderText::CreateInstance());
 
   // Pure LTR.
   render_text->SetText(ASCIIToUTF16("abc"));
@@ -883,7 +885,7 @@ TEST_F(RenderTextTest, MoveCursorLeftRightInLtr) {
 }
 
 TEST_F(RenderTextTest, MoveCursorLeftRightInLtrRtl) {
-  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+  std::unique_ptr<RenderText> render_text(RenderText::CreateInstance());
   // LTR-RTL
   render_text->SetText(WideToUTF16(L"abc\x05d0\x05d1\x05d2"));
   // The last one is the expected END position.
@@ -911,7 +913,7 @@ TEST_F(RenderTextTest, MoveCursorLeftRightInLtrRtl) {
 }
 
 TEST_F(RenderTextTest, MoveCursorLeftRightInLtrRtlLtr) {
-  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+  std::unique_ptr<RenderText> render_text(RenderText::CreateInstance());
   // LTR-RTL-LTR.
   render_text->SetText(WideToUTF16(L"a" L"\x05d1" L"b"));
   std::vector<SelectionModel> expected;
@@ -932,7 +934,7 @@ TEST_F(RenderTextTest, MoveCursorLeftRightInLtrRtlLtr) {
 }
 
 TEST_F(RenderTextTest, MoveCursorLeftRightInRtl) {
-  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+  std::unique_ptr<RenderText> render_text(RenderText::CreateInstance());
   // Pure RTL.
   render_text->SetText(WideToUTF16(L"\x05d0\x05d1\x05d2"));
   render_text->MoveCursor(LINE_BREAK, CURSOR_RIGHT, false);
@@ -956,7 +958,7 @@ TEST_F(RenderTextTest, MoveCursorLeftRightInRtl) {
 }
 
 TEST_F(RenderTextTest, MoveCursorLeftRightInRtlLtr) {
-  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+  std::unique_ptr<RenderText> render_text(RenderText::CreateInstance());
   // RTL-LTR
   render_text->SetText(WideToUTF16(L"\x05d0\x05d1\x05d2" L"abc"));
   render_text->MoveCursor(LINE_BREAK, CURSOR_RIGHT, false);
@@ -984,7 +986,7 @@ TEST_F(RenderTextTest, MoveCursorLeftRightInRtlLtr) {
 }
 
 TEST_F(RenderTextTest, MoveCursorLeftRightInRtlLtrRtl) {
-  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+  std::unique_ptr<RenderText> render_text(RenderText::CreateInstance());
   // RTL-LTR-RTL.
   render_text->SetText(WideToUTF16(L"\x05d0" L"a" L"\x05d1"));
   render_text->MoveCursor(LINE_BREAK, CURSOR_RIGHT, false);
@@ -1006,7 +1008,7 @@ TEST_F(RenderTextTest, MoveCursorLeftRightInRtlLtrRtl) {
 }
 
 TEST_F(RenderTextTest, MoveCursorLeftRight_ComplexScript) {
-  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+  std::unique_ptr<RenderText> render_text(RenderText::CreateInstance());
 
   render_text->SetText(WideToUTF16(L"\x0915\x093f\x0915\x094d\x0915"));
   EXPECT_EQ(0U, render_text->cursor_position());
@@ -1030,7 +1032,7 @@ TEST_F(RenderTextTest, MoveCursorLeftRight_ComplexScript) {
 }
 
 TEST_F(RenderTextTest, MoveCursorLeftRight_MeiryoUILigatures) {
-  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+  std::unique_ptr<RenderText> render_text(RenderText::CreateInstance());
   // Meiryo UI uses single-glyph ligatures for 'ff' and 'ffi', but each letter
   // (code point) has unique bounds, so mid-glyph cursoring should be possible.
   render_text->SetFontList(FontList("Meiryo UI, 12px"));
@@ -1103,7 +1105,7 @@ TEST_F(RenderTextTest, GraphemePositions) {
     return;
 #endif
 
-  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+  std::unique_ptr<RenderText> render_text(RenderText::CreateInstance());
   for (size_t i = 0; i < arraysize(cases); i++) {
     SCOPED_TRACE(base::StringPrintf("Testing cases[%" PRIuS "]", i));
     render_text->SetText(cases[i].text);
@@ -1132,7 +1134,7 @@ TEST_F(RenderTextTest, MidGraphemeSelectionBounds) {
   const base::string16 kThai = WideToUTF16(L"\x0e08\x0e33");
   const base::string16 cases[] = { kHindi, kThai };
 
-  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+  std::unique_ptr<RenderText> render_text(RenderText::CreateInstance());
   for (size_t i = 0; i < arraysize(cases); i++) {
     SCOPED_TRACE(base::StringPrintf("Testing cases[%" PRIuS "]", i));
     render_text->SetText(cases[i]);
@@ -1152,7 +1154,7 @@ TEST_F(RenderTextTest, MidGraphemeSelectionBounds) {
 
 TEST_F(RenderTextTest, FindCursorPosition) {
   const wchar_t* kTestStrings[] = { kLtrRtl, kLtrRtlLtr, kRtlLtr, kRtlLtrRtl };
-  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+  std::unique_ptr<RenderText> render_text(RenderText::CreateInstance());
   render_text->SetDisplayRect(Rect(0, 0, 100, 20));
   for (size_t i = 0; i < arraysize(kTestStrings); ++i) {
     SCOPED_TRACE(base::StringPrintf("Testing case[%" PRIuS "]", i));
@@ -1199,7 +1201,7 @@ TEST_F(RenderTextTest, EdgeSelectionModels) {
     return;
 #endif
 
-  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+  std::unique_ptr<RenderText> render_text(RenderText::CreateInstance());
   for (size_t i = 0; i < arraysize(cases); i++) {
     render_text->SetText(cases[i].text);
     bool ltr = (cases[i].expected_text_direction == base::i18n::LEFT_TO_RIGHT);
@@ -1220,7 +1222,7 @@ TEST_F(RenderTextTest, SelectAll) {
 
   // Ensure that SelectAll respects the |reversed| argument regardless of
   // application locale and text content directionality.
-  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+  std::unique_ptr<RenderText> render_text(RenderText::CreateInstance());
   const SelectionModel expected_reversed(Range(3, 0), CURSOR_FORWARD);
   const SelectionModel expected_forwards(Range(0, 3), CURSOR_BACKWARD);
   const bool was_rtl = base::i18n::IsRTL();
@@ -1247,7 +1249,7 @@ TEST_F(RenderTextTest, SelectAll) {
 // TODO(asvitkine): RenderTextMac cursor movements. http://crbug.com/131618
 #if !defined(OS_MACOSX)
 TEST_F(RenderTextTest, MoveCursorLeftRightWithSelection) {
-  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+  std::unique_ptr<RenderText> render_text(RenderText::CreateInstance());
   render_text->SetText(WideToUTF16(L"abc\x05d0\x05d1\x05d2"));
   // Left arrow on select ranging (6, 4).
   render_text->MoveCursor(LINE_BREAK, CURSOR_RIGHT, false);
@@ -1288,7 +1290,7 @@ TEST_F(RenderTextTest, MoveCursorLeftRightWithSelection) {
 #endif  // !defined(OS_MACOSX)
 
 TEST_F(RenderTextTest, CenteredDisplayOffset) {
-  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+  std::unique_ptr<RenderText> render_text(RenderText::CreateInstance());
   render_text->SetText(ASCIIToUTF16("abcdefghij"));
   render_text->SetHorizontalAlignment(ALIGN_CENTER);
 
@@ -1393,7 +1395,7 @@ void MoveLeftRightByWordVerifier(RenderText* render_text,
 // TODO(msw): Make these work on Windows.
 #if !defined(OS_WIN)
 TEST_F(RenderTextTest, MoveLeftRightByWordInBidiText) {
-  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+  std::unique_ptr<RenderText> render_text(RenderText::CreateInstance());
 
   // For testing simplicity, each word is a 3-character word.
   std::vector<const wchar_t*> test;
@@ -1428,7 +1430,7 @@ TEST_F(RenderTextTest, MoveLeftRightByWordInBidiText) {
 }
 
 TEST_F(RenderTextTest, MoveLeftRightByWordInBidiText_TestEndOfText) {
-  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+  std::unique_ptr<RenderText> render_text(RenderText::CreateInstance());
 
   render_text->SetText(WideToUTF16(L"ab\x05E1"));
   // Moving the cursor by word from "abC|" to the left should return "|abC".
@@ -1461,7 +1463,7 @@ TEST_F(RenderTextTest, MoveLeftRightByWordInBidiText_TestEndOfText) {
 }
 
 TEST_F(RenderTextTest, MoveLeftRightByWordInTextWithMultiSpaces) {
-  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+  std::unique_ptr<RenderText> render_text(RenderText::CreateInstance());
   render_text->SetText(WideToUTF16(L"abc     def"));
   render_text->MoveCursorTo(SelectionModel(5, CURSOR_FORWARD));
   render_text->MoveCursor(WORD_BREAK, CURSOR_RIGHT, false);
@@ -1474,7 +1476,7 @@ TEST_F(RenderTextTest, MoveLeftRightByWordInTextWithMultiSpaces) {
 #endif  // !defined(OS_WIN)
 
 TEST_F(RenderTextTest, MoveLeftRightByWordInChineseText) {
-  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+  std::unique_ptr<RenderText> render_text(RenderText::CreateInstance());
   render_text->SetText(WideToUTF16(L"\x6211\x4EEC\x53BB\x516C\x56ED\x73A9"));
   render_text->MoveCursor(LINE_BREAK, CURSOR_LEFT, false);
   EXPECT_EQ(0U, render_text->cursor_position());
@@ -1492,7 +1494,7 @@ TEST_F(RenderTextTest, MoveLeftRightByWordInChineseText) {
 #endif  // !defined(OS_MACOSX)
 
 TEST_F(RenderTextTest, StringSizeSanity) {
-  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+  std::unique_ptr<RenderText> render_text(RenderText::CreateInstance());
   render_text->SetText(UTF8ToUTF16("Hello World"));
   const Size string_size = render_text->GetStringSize();
   EXPECT_GT(string_size.width(), 0);
@@ -1500,7 +1502,7 @@ TEST_F(RenderTextTest, StringSizeSanity) {
 }
 
 TEST_F(RenderTextTest, StringSizeLongStrings) {
-  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+  std::unique_ptr<RenderText> render_text(RenderText::CreateInstance());
   Size previous_string_size;
   for (size_t length = 10; length < 1000000; length *= 10) {
     render_text->SetText(base::string16(length, 'a'));
@@ -1517,7 +1519,7 @@ TEST_F(RenderTextTest, StringSizeLongStrings) {
 TEST_F(RenderTextTest, StringSizeEmptyString) {
   // Ascent and descent of Arial and Symbol are different on most platforms.
   const FontList font_list("Arial,Symbol, 16px");
-  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+  std::unique_ptr<RenderText> render_text(RenderText::CreateInstance());
   render_text->SetFontList(font_list);
   render_text->SetDisplayRect(Rect(0, 0, 0, font_list.GetHeight()));
 
@@ -1563,7 +1565,7 @@ TEST_F(RenderTextTest, StringSizeRespectsFontListMetrics) {
   ASSERT_LT(smaller_font.GetBaseline(), larger_font.GetBaseline());
 
   // Check |smaller_font_text| is rendered with the smaller font.
-  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+  std::unique_ptr<RenderText> render_text(RenderText::CreateInstance());
   render_text->SetText(UTF8ToUTF16(smaller_font_text));
   render_text->SetFontList(FontList(smaller_font));
   render_text->SetDisplayRect(Rect(0, 0, 0,
@@ -1588,7 +1590,7 @@ TEST_F(RenderTextTest, StringSizeRespectsFontListMetrics) {
 }
 
 TEST_F(RenderTextTest, MinLineHeight) {
-  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+  std::unique_ptr<RenderText> render_text(RenderText::CreateInstance());
 
   render_text->SetText(ASCIIToUTF16("Hello!"));
   SizeF default_size = render_text->GetStringSizeF();
@@ -1605,7 +1607,7 @@ TEST_F(RenderTextTest, MinLineHeight) {
 }
 
 TEST_F(RenderTextTest, SetFontList) {
-  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+  std::unique_ptr<RenderText> render_text(RenderText::CreateInstance());
   render_text->SetFontList(FontList("Arial,Symbol, 13px"));
   const std::vector<Font>& fonts = render_text->font_list().GetFonts();
   ASSERT_EQ(2U, fonts.size());
@@ -1615,7 +1617,7 @@ TEST_F(RenderTextTest, SetFontList) {
 }
 
 TEST_F(RenderTextTest, StringSizeBoldWidth) {
-  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+  std::unique_ptr<RenderText> render_text(RenderText::CreateInstance());
   render_text->SetText(UTF8ToUTF16("Hello World"));
 
   const int plain_width = render_text->GetStringSize().width();
@@ -1646,7 +1648,7 @@ TEST_F(RenderTextTest, StringSizeHeight) {
   EXPECT_GT(larger_font_list.GetHeight(), default_font_list.GetHeight());
 
   for (size_t i = 0; i < arraysize(cases); i++) {
-    scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+    std::unique_ptr<RenderText> render_text(RenderText::CreateInstance());
     render_text->SetFontList(default_font_list);
     render_text->SetText(cases[i]);
 
@@ -1661,14 +1663,14 @@ TEST_F(RenderTextTest, StringSizeHeight) {
 }
 
 TEST_F(RenderTextTest, GetBaselineSanity) {
-  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+  std::unique_ptr<RenderText> render_text(RenderText::CreateInstance());
   render_text->SetText(UTF8ToUTF16("Hello World"));
   const int baseline = render_text->GetBaseline();
   EXPECT_GT(baseline, 0);
 }
 
 TEST_F(RenderTextTest, CursorBoundsInReplacementMode) {
-  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+  std::unique_ptr<RenderText> render_text(RenderText::CreateInstance());
   render_text->SetText(ASCIIToUTF16("abcdefg"));
   render_text->SetDisplayRect(Rect(100, 17));
   SelectionModel sel_b(1, CURSOR_FORWARD);
@@ -1686,7 +1688,7 @@ TEST_F(RenderTextTest, GetTextOffset) {
   // LTR mode, and the next test will check the RTL default.
   const bool was_rtl = base::i18n::IsRTL();
   SetRTL(false);
-  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+  std::unique_ptr<RenderText> render_text(RenderText::CreateInstance());
   render_text->SetText(ASCIIToUTF16("abcdefg"));
   render_text->SetFontList(FontList("Arial, 13px"));
 
@@ -1736,7 +1738,7 @@ TEST_F(RenderTextTest, GetTextOffsetHorizontalDefaultInRTL) {
   // GetLineOffset(0) attributes are checked by the test above.
   const bool was_rtl = base::i18n::IsRTL();
   SetRTL(true);
-  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+  std::unique_ptr<RenderText> render_text(RenderText::CreateInstance());
   render_text->SetText(ASCIIToUTF16("abcdefg"));
   render_text->SetFontList(FontList("Arial, 13px"));
   const int kEnlargement = 2;
@@ -1750,7 +1752,7 @@ TEST_F(RenderTextTest, GetTextOffsetHorizontalDefaultInRTL) {
 }
 
 TEST_F(RenderTextTest, SetDisplayOffset) {
-  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+  std::unique_ptr<RenderText> render_text(RenderText::CreateInstance());
   render_text->SetText(ASCIIToUTF16("abcdefg"));
   render_text->SetFontList(FontList("Arial, 13px"));
 
@@ -1862,7 +1864,7 @@ TEST_F(RenderTextTest, SameFontForParentheses) {
     { WideToUTF16(L"Hello World(\x05e0\x05b8)Hello World") },
   };
 
-  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+  std::unique_ptr<RenderText> render_text(RenderText::CreateInstance());
   for (size_t i = 0; i < arraysize(cases); ++i) {
     base::string16 text = cases[i].text;
     const size_t start_paren_char_index = text.find('(');
@@ -1901,13 +1903,13 @@ TEST_F(RenderTextTest, SameFontForParentheses) {
 // Make sure the caret width is always >=1 so that the correct
 // caret is drawn at high DPI. crbug.com/164100.
 TEST_F(RenderTextTest, CaretWidth) {
-  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+  std::unique_ptr<RenderText> render_text(RenderText::CreateInstance());
   render_text->SetText(ASCIIToUTF16("abcdefg"));
   EXPECT_GE(render_text->GetUpdatedCursorBounds().width(), 1);
 }
 
 TEST_F(RenderTextTest, SelectWord) {
-  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+  std::unique_ptr<RenderText> render_text(RenderText::CreateInstance());
   render_text->SetText(ASCIIToUTF16(" foo  a.bc.d bar"));
 
   struct {
@@ -1947,7 +1949,7 @@ TEST_F(RenderTextTest, LastWordSelected) {
   const std::string kTestURL1 = "http://www.google.com";
   const std::string kTestURL2 = "http://www.google.com/something/";
 
-  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+  std::unique_ptr<RenderText> render_text(RenderText::CreateInstance());
 
   render_text->SetText(ASCIIToUTF16(kTestURL1));
   render_text->SetCursorPosition(kTestURL1.length());
@@ -1967,7 +1969,7 @@ TEST_F(RenderTextTest, LastWordSelected) {
 TEST_F(RenderTextTest, SelectMultipleWords) {
   const std::string kTestURL = "http://www.google.com";
 
-  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+  std::unique_ptr<RenderText> render_text(RenderText::CreateInstance());
 
   render_text->SetText(ASCIIToUTF16(kTestURL));
   render_text->SelectRange(Range(16, 20));
@@ -1988,7 +1990,7 @@ TEST_F(RenderTextTest, DisplayRectShowsCursorLTR) {
   ASSERT_FALSE(base::i18n::IsRTL());
   ASSERT_FALSE(base::i18n::ICUIsRTL());
 
-  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+  std::unique_ptr<RenderText> render_text(RenderText::CreateInstance());
   render_text->SetText(WideToUTF16(L"abcdefghijklmnopqrstuvwxzyabcdefg"));
   render_text->MoveCursorTo(SelectionModel(render_text->text().length(),
                                            CURSOR_FORWARD));
@@ -2045,7 +2047,7 @@ TEST_F(RenderTextTest, DisplayRectShowsCursorRTL) {
   const bool was_rtl = base::i18n::IsRTL();
   SetRTL(true);
 
-  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+  std::unique_ptr<RenderText> render_text(RenderText::CreateInstance());
   render_text->SetText(WideToUTF16(L"abcdefghijklmnopqrstuvwxzyabcdefg"));
   render_text->MoveCursorTo(SelectionModel(0, CURSOR_FORWARD));
   int width = render_text->GetStringSize().width();
@@ -2103,7 +2105,7 @@ TEST_F(RenderTextTest, DisplayRectShowsCursorRTL) {
 // Changing colors between or inside ligated glyphs should not break shaping.
 TEST_F(RenderTextTest, SelectionKeepsLigatures) {
   const wchar_t* kTestStrings[] = { L"\x644\x623", L"\x633\x627" };
-  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+  std::unique_ptr<RenderText> render_text(RenderText::CreateInstance());
   render_text->set_selection_color(SK_ColorRED);
   Canvas canvas;
 
@@ -2741,7 +2743,7 @@ TEST_F(RenderTextTest, HarfBuzz_SubglyphGraphemePartition) {
   run.width = 20;
 
   const base::string16 kString = ASCIIToUTF16("abcd");
-  scoped_ptr<base::i18n::BreakIterator> iter(new base::i18n::BreakIterator(
+  std::unique_ptr<base::i18n::BreakIterator> iter(new base::i18n::BreakIterator(
       kString, base::i18n::BreakIterator::BREAK_CHARACTER));
   ASSERT_TRUE(iter->Init());
 
@@ -2858,7 +2860,7 @@ TEST_F(RenderTextTest, GlyphBounds) {
   const wchar_t* kTestStrings[] = {
       L"asdf 1234 qwer", L"\x0647\x0654", L"\x0645\x0631\x062D\x0628\x0627"
   };
-  scoped_ptr<RenderText> render_text(new RenderTextHarfBuzz);
+  std::unique_ptr<RenderText> render_text(new RenderTextHarfBuzz);
 
   for (size_t i = 0; i < arraysize(kTestStrings); ++i) {
     render_text->SetText(WideToUTF16(kTestStrings[i]));
@@ -2886,7 +2888,7 @@ TEST_F(RenderTextTest, HarfBuzz_NonExistentFont) {
 TEST_F(RenderTextTest, HarfBuzz_EmptyRun) {
   internal::TextRunHarfBuzz run;
   const base::string16 kString = ASCIIToUTF16("abcdefgh");
-  scoped_ptr<base::i18n::BreakIterator> iter(new base::i18n::BreakIterator(
+  std::unique_ptr<base::i18n::BreakIterator> iter(new base::i18n::BreakIterator(
       kString, base::i18n::BreakIterator::BREAK_CHARACTER));
   ASSERT_TRUE(iter->Init());
 
@@ -2920,7 +2922,7 @@ TEST_F(RenderTextTest, HarfBuzz_WordWidthWithDiacritics) {
 
 // Ensure a string fits in a display rect with a width equal to the string's.
 TEST_F(RenderTextTest, StringFitsOwnWidth) {
-  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+  std::unique_ptr<RenderText> render_text(RenderText::CreateInstance());
   const base::string16 kString = ASCIIToUTF16("www.example.com");
 
   render_text->SetText(kString);
@@ -3020,7 +3022,7 @@ TEST_F(RenderTextTest, TextDoesntClip) {
   sk_sp<SkSurface> surface =
       SkSurface::MakeRasterN32Premul(kCanvasSize.width(), kCanvasSize.height());
   Canvas canvas(skia::SharePtr(surface->getCanvas()), 1.0f);
-  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+  std::unique_ptr<RenderText> render_text(RenderText::CreateInstance());
   render_text->SetHorizontalAlignment(ALIGN_LEFT);
   render_text->SetColor(SK_ColorBLACK);
 
@@ -3111,7 +3113,7 @@ TEST_F(RenderTextTest, TextDoesClip) {
   sk_sp<SkSurface> surface =
       SkSurface::MakeRasterN32Premul(kCanvasSize.width(), kCanvasSize.height());
   Canvas canvas(skia::SharePtr(surface->getCanvas()), 1.0f);
-  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+  std::unique_ptr<RenderText> render_text(RenderText::CreateInstance());
   render_text->SetHorizontalAlignment(ALIGN_LEFT);
   render_text->SetColor(SK_ColorBLACK);
 

@@ -6,10 +6,10 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <utility>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/app_list/app_list_folder_item.h"
@@ -84,8 +84,8 @@ class AppListItemListTest : public testing::Test {
     return item_list_.FindItemIndex(id, index);
   }
 
-  scoped_ptr<AppListItem> CreateItem(const std::string& name) {
-    scoped_ptr<AppListItem> item(new AppListItem(name));
+  std::unique_ptr<AppListItem> CreateItem(const std::string& name) {
+    std::unique_ptr<AppListItem> item(new AppListItem(name));
     size_t nitems = item_list_.item_count();
     syncer::StringOrdinal position;
     if (nitems == 0)
@@ -97,15 +97,15 @@ class AppListItemListTest : public testing::Test {
   }
 
   AppListItem* CreateAndAddItem(const std::string& name) {
-    scoped_ptr<AppListItem> item(CreateItem(name));
+    std::unique_ptr<AppListItem> item(CreateItem(name));
     return item_list_.AddItem(std::move(item));
   }
 
-  scoped_ptr<AppListItem> RemoveItem(const std::string& id) {
+  std::unique_ptr<AppListItem> RemoveItem(const std::string& id) {
     return item_list_.RemoveItem(id);
   }
 
-  scoped_ptr<AppListItem> RemoveItemAt(size_t index) {
+  std::unique_ptr<AppListItem> RemoveItemAt(size_t index) {
     return item_list_.RemoveItemAt(index);
   }
 
@@ -167,7 +167,7 @@ TEST_F(AppListItemListTest, FindItemIndex) {
   EXPECT_TRUE(FindItemIndex(item_2->id(), &index));
   EXPECT_EQ(index, 2u);
 
-  scoped_ptr<AppListItem> item_3(CreateItem(GetItemId(3)));
+  std::unique_ptr<AppListItem> item_3(CreateItem(GetItemId(3)));
   EXPECT_FALSE(FindItemIndex(item_3->id(), &index));
 }
 
@@ -182,7 +182,7 @@ TEST_F(AppListItemListTest, RemoveItemAt) {
   EXPECT_EQ(index, 1u);
   EXPECT_TRUE(VerifyItemListOrdinals());
 
-  scoped_ptr<AppListItem> item_removed = RemoveItemAt(1);
+  std::unique_ptr<AppListItem> item_removed = RemoveItemAt(1);
   EXPECT_EQ(item_removed.get(), item_1);
   EXPECT_FALSE(FindItem(item_1->id()));
   EXPECT_EQ(item_list_.item_count(), 2u);
@@ -207,7 +207,7 @@ TEST_F(AppListItemListTest, RemoveItem) {
   EXPECT_TRUE(FindItemIndex(item_1->id(), &index));
   EXPECT_EQ(index, 1u);
 
-  scoped_ptr<AppListItem> item_removed = RemoveItem(item_1->id());
+  std::unique_ptr<AppListItem> item_removed = RemoveItem(item_1->id());
   EXPECT_EQ(item_removed.get(), item_1);
   EXPECT_FALSE(FindItem(item_1->id()));
   EXPECT_EQ(item_list_.item_count(), 2u);

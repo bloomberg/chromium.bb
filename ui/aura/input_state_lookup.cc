@@ -7,7 +7,7 @@
 namespace aura {
 
 // static
-scoped_ptr<InputStateLookup> InputStateLookup::Create() {
+std::unique_ptr<InputStateLookup> InputStateLookup::Create() {
   return nullptr;
 }
 

@@ -251,10 +251,10 @@ class ComboboxTest : public ViewsTestBase {
 
   // |combobox_| will be allocated InitCombobox() and then owned by |widget_|.
   TestCombobox* combobox_;
-  scoped_ptr<ComboboxTestApi> test_api_;
+  std::unique_ptr<ComboboxTestApi> test_api_;
 
   // Combobox does not take ownership of the model, hence it needs to be scoped.
-  scoped_ptr<TestComboboxModel> model_;
+  std::unique_ptr<TestComboboxModel> model_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ComboboxTest);
@@ -476,7 +476,7 @@ TEST_F(ComboboxTest, ListenerHandlesDelete) {
 
   // |combobox| will be deleted on change.
   TestCombobox* combobox = new TestCombobox(&model);
-  scoped_ptr<EvilListener> evil_listener(new EvilListener());
+  std::unique_ptr<EvilListener> evil_listener(new EvilListener());
   combobox->set_listener(evil_listener.get());
   ASSERT_NO_FATAL_FAILURE(ComboboxTestApi(combobox).PerformActionAt(2));
   EXPECT_TRUE(evil_listener->deleted());

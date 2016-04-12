@@ -12,7 +12,7 @@ TestSearchResult::TestSearchResult() {
 TestSearchResult::~TestSearchResult() {
 }
 
-scoped_ptr<SearchResult> TestSearchResult::Duplicate() const {
+std::unique_ptr<SearchResult> TestSearchResult::Duplicate() const {
   NOTREACHED();
   return nullptr;
 }

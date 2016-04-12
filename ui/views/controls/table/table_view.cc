@@ -178,7 +178,7 @@ View* TableView::CreateParentIfNecessary() {
 }
 
 void TableView::SetRowBackgroundPainter(
-    scoped_ptr<TableViewRowBackgroundPainter> painter) {
+    std::unique_ptr<TableViewRowBackgroundPainter> painter) {
   row_background_painter_ = std::move(painter);
 }
 

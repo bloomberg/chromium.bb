@@ -7,8 +7,9 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/mus/public/cpp/window_tree_delegate.h"
 #include "ui/views/mus/mus_export.h"
 #include "ui/views/mus/screen_mus_delegate.h"
@@ -66,8 +67,8 @@ class VIEWS_MUS_EXPORT WindowManagerConnection
   void OnWindowManagerFrameValuesChanged() override;
 
   mojo::Connector* connector_;
-  scoped_ptr<ScreenMus> screen_;
-  scoped_ptr<mus::WindowTreeConnection> window_tree_connection_;
+  std::unique_ptr<ScreenMus> screen_;
+  std::unique_ptr<mus::WindowTreeConnection> window_tree_connection_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowManagerConnection);
 };

@@ -124,7 +124,7 @@ class SearchResultListViewTest : public views::ViewsTestBase,
   void OnResultInstalled(SearchResult* result) override {}
 
   AppListTestViewDelegate view_delegate_;
-  scoped_ptr<SearchResultListView> view_;
+  std::unique_ptr<SearchResultListView> view_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchResultListViewTest);
 };

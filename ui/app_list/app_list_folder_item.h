@@ -83,7 +83,7 @@ class APP_LIST_EXPORT AppListFolderItem : public AppListItem,
   const FolderType folder_type_;
 
   // List of items in the folder.
-  scoped_ptr<AppListItemList> item_list_;
+  std::unique_ptr<AppListItemList> item_list_;
 
   FolderImage folder_image_;
 

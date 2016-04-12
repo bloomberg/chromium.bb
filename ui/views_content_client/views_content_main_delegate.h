@@ -5,8 +5,9 @@
 #ifndef UI_VIEWS_CONTENT_CLIENT_VIEWS_CONTENT_MAIN_DELEGATE_H_
 #define UI_VIEWS_CONTENT_CLIENT_VIEWS_CONTENT_MAIN_DELEGATE_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/public/app/content_main_delegate.h"
 #include "content/shell/common/shell_content_client.h"
 
@@ -26,7 +27,7 @@ class ViewsContentMainDelegate : public content::ContentMainDelegate {
   content::ContentBrowserClient* CreateContentBrowserClient() override;
 
  private:
-  scoped_ptr<ViewsContentBrowserClient> browser_client_;
+  std::unique_ptr<ViewsContentBrowserClient> browser_client_;
   content::ShellContentClient content_client_;
   ViewsContentClient* views_content_client_;
 

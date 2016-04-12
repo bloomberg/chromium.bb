@@ -1381,7 +1381,7 @@ base::string16 RenderText::Elide(const base::string16& text,
   TRACE_EVENT0("ui", "RenderText::Elide");
 
   // Create a RenderText copy with attributes that affect the rendering width.
-  scoped_ptr<RenderText> render_text = CreateInstanceOfSameType();
+  std::unique_ptr<RenderText> render_text = CreateInstanceOfSameType();
   render_text->SetFontList(font_list_);
   render_text->SetDirectionalityMode(directionality_mode_);
   render_text->SetCursorEnabled(cursor_enabled_);

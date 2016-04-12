@@ -7,10 +7,10 @@
 #include <stddef.h>
 
 #include <limits>
+#include <memory>
 
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
 #include "ui/events/event.h"
@@ -163,7 +163,7 @@ bool GestureRecognizerImpl::CancelActiveTouches(GestureConsumer* consumer) {
   if (pointer_state.GetPointerCount() == 0)
     return false;
   // pointer_state is modified every time after DispatchCancelTouchEvent.
-  scoped_ptr<MotionEvent> pointer_state_clone = pointer_state.Clone();
+  std::unique_ptr<MotionEvent> pointer_state_clone = pointer_state.Clone();
   for (size_t i = 0; i < pointer_state_clone->GetPointerCount(); ++i) {
     TouchEvent touch_event(ui::ET_TOUCH_CANCELLED, gfx::Point(),
                            ui::EF_IS_SYNTHESIZED,

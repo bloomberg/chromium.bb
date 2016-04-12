@@ -8,13 +8,14 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/command_line.h"
 #include "base/containers/mru_cache.h"
 #include "base/hash.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
@@ -92,7 +93,7 @@ bool QueryFontconfig(const FontRenderParamsQuery& query,
   struct FcPatternDeleter {
     void operator()(FcPattern* ptr) const { FcPatternDestroy(ptr); }
   };
-  typedef scoped_ptr<FcPattern, FcPatternDeleter> ScopedFcPattern;
+  typedef std::unique_ptr<FcPattern, FcPatternDeleter> ScopedFcPattern;
 
   ScopedFcPattern query_pattern(FcPatternCreate());
   CHECK(query_pattern);

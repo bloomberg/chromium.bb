@@ -5,9 +5,10 @@
 #ifndef UI_WM_TEST_WM_TEST_HELPER_H_
 #define UI_WM_TEST_WM_TEST_HELPER_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/aura/client/window_tree_client.h"
 #include "ui/aura/window_tree_host.h"
 
@@ -50,11 +51,11 @@ class WMTestHelper : public aura::client::WindowTreeClient {
                                  const gfx::Rect& bounds) override;
 
  private:
-  scoped_ptr<aura::WindowTreeHost> host_;
+  std::unique_ptr<aura::WindowTreeHost> host_;
 
-  scoped_ptr<wm::CompoundEventFilter> root_window_event_filter_;
-  scoped_ptr<aura::client::DefaultCaptureClient> capture_client_;
-  scoped_ptr<aura::client::FocusClient> focus_client_;
+  std::unique_ptr<wm::CompoundEventFilter> root_window_event_filter_;
+  std::unique_ptr<aura::client::DefaultCaptureClient> capture_client_;
+  std::unique_ptr<aura::client::FocusClient> focus_client_;
 
   DISALLOW_COPY_AND_ASSIGN(WMTestHelper);
 };

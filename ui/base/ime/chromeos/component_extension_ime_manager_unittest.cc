@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ui/base/ime/chromeos/component_extension_ime_manager.h"
+
 #include <stddef.h>
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/ime/chromeos/component_extension_ime_manager.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
 #include "ui/base/ime/chromeos/mock_component_extension_ime_manager_delegate.h"
 
@@ -114,7 +116,7 @@ class ComponentExtensionIMEManagerTest : public testing::Test {
     mock_delegate_ = new MockComponentExtIMEManagerDelegate();
     mock_delegate_->set_ime_list(ime_list_);
     component_ext_mgr_.reset(new ComponentExtensionIMEManager());
-    component_ext_mgr_->Initialize(make_scoped_ptr(mock_delegate_));
+    component_ext_mgr_->Initialize(base::WrapUnique(mock_delegate_));
   }
 
   virtual void TearDown() {
@@ -122,7 +124,7 @@ class ComponentExtensionIMEManagerTest : public testing::Test {
 
  protected:
   MockComponentExtIMEManagerDelegate* mock_delegate_;
-  scoped_ptr<ComponentExtensionIMEManager> component_ext_mgr_;
+  std::unique_ptr<ComponentExtensionIMEManager> component_ext_mgr_;
   std::vector<ComponentExtensionIME> ime_list_;
 
  private:

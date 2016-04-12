@@ -5,9 +5,10 @@
 #ifndef UI_WM_CORE_CURSOR_MANAGER_H_
 #define UI_WM_CORE_CURSOR_MANAGER_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/base/cursor/cursor.h"
@@ -39,7 +40,7 @@ class NativeCursorManager;
 class WM_EXPORT CursorManager : public aura::client::CursorClient,
                                 public NativeCursorManagerDelegate {
  public:
-  explicit CursorManager(scoped_ptr<NativeCursorManager> delegate);
+  explicit CursorManager(std::unique_ptr<NativeCursorManager> delegate);
   ~CursorManager() override;
 
   // Overridden from aura::client::CursorClient:
@@ -68,17 +69,17 @@ class WM_EXPORT CursorManager : public aura::client::CursorClient,
   void CommitCursorSet(ui::CursorSetType cursor_set) override;
   void CommitMouseEventsEnabled(bool enabled) override;
 
-  scoped_ptr<NativeCursorManager> delegate_;
+  std::unique_ptr<NativeCursorManager> delegate_;
 
   // Number of times LockCursor() has been invoked without a corresponding
   // UnlockCursor().
   int cursor_lock_count_;
 
   // The current state of the cursor.
-  scoped_ptr<internal::CursorState> current_state_;
+  std::unique_ptr<internal::CursorState> current_state_;
 
   // The cursor state to restore when the cursor is unlocked.
-  scoped_ptr<internal::CursorState> state_on_unlock_;
+  std::unique_ptr<internal::CursorState> state_on_unlock_;
 
   base::ObserverList<aura::client::CursorClientObserver> observers_;
 

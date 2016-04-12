@@ -4,7 +4,8 @@
 
 #include "ui/gfx/path_win.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/win/scoped_gdi_object.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/gfx/path.h"

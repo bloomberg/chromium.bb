@@ -7,8 +7,9 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/events/events_export.h"
 #include "ui/gfx/x/x11_types.h"
 
@@ -83,7 +84,7 @@ class EVENTS_EXPORT X11EventSource {
   // available events.
   bool continue_stream_ = true;
 
-  scoped_ptr<X11HotplugEventHandler> hotplug_event_handler_;
+  std::unique_ptr<X11HotplugEventHandler> hotplug_event_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(X11EventSource);
 };

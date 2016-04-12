@@ -77,7 +77,7 @@ class VIEWS_EXPORT ImageView : public View {
 
   void set_interactive(bool interactive) { interactive_ = interactive; }
 
-  void SetFocusPainter(scoped_ptr<Painter> focus_painter);
+  void SetFocusPainter(std::unique_ptr<Painter> focus_painter);
 
   // Overriden from View:
   gfx::Size GetPreferredSize() const override;
@@ -133,7 +133,7 @@ class VIEWS_EXPORT ImageView : public View {
   // safe to cache.
   void* last_painted_bitmap_pixels_;
 
-  scoped_ptr<views::Painter> focus_painter_;
+  std::unique_ptr<views::Painter> focus_painter_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageView);
 };

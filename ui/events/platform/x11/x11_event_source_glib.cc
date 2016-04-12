@@ -4,8 +4,10 @@
 
 #include "ui/events/platform/x11/x11_event_source_glib.h"
 
-#include <glib.h>
 #include <X11/Xlib.h>
+#include <glib.h>
+
+#include "base/memory/ptr_util.h"
 
 namespace ui {
 
@@ -93,8 +95,8 @@ void X11EventSourceGlib::InitXSource(int fd) {
 }
 
 // static
-scoped_ptr<PlatformEventSource> PlatformEventSource::CreateDefault() {
-  return make_scoped_ptr(new X11EventSourceGlib(gfx::GetXDisplay()));
+std::unique_ptr<PlatformEventSource> PlatformEventSource::CreateDefault() {
+  return base::WrapUnique(new X11EventSourceGlib(gfx::GetXDisplay()));
 }
 
 }  // namespace ui

@@ -108,7 +108,7 @@ class UI_BASE_IME_EXPORT MockIMEEngineHandler
   std::string last_set_surrounding_text_;
   uint32_t last_set_surrounding_cursor_pos_;
   uint32_t last_set_surrounding_anchor_pos_;
-  scoped_ptr<ui::KeyEvent> last_processed_key_event_;
+  std::unique_ptr<ui::KeyEvent> last_processed_key_event_;
   KeyEventDoneCallback last_passed_callback_;
   std::string active_component_id_;
 };

@@ -4,9 +4,9 @@
 
 #include "ui/gl/test/gl_test_helper.h"
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace gl {
@@ -53,7 +53,7 @@ bool GLTestHelper::CheckPixels(int x,
                                int height,
                                const uint8_t expected_color[4]) {
   int size = width * height * 4;
-  scoped_ptr<uint8_t[]> pixels(new uint8_t[size]);
+  std::unique_ptr<uint8_t[]> pixels(new uint8_t[size]);
   const uint8_t kCheckClearValue = 123u;
   memset(pixels.get(), kCheckClearValue, size);
   glReadPixels(x, y, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels.get());

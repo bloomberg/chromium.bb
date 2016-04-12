@@ -371,7 +371,7 @@ void NativeWidgetMac::CloseNow() {
   // Notify observers while |bridged_| is still valid.
   delegate_->OnNativeWidgetDestroying();
   // Reset |bridge_| to NULL before destroying it.
-  scoped_ptr<BridgedNativeWidget> bridge(std::move(bridge_));
+  std::unique_ptr<BridgedNativeWidget> bridge(std::move(bridge_));
 }
 
 void NativeWidgetMac::Show() {

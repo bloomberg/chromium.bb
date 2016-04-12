@@ -7,8 +7,9 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/events/events_export.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/events/platform/x11/x11_event_source.h"
@@ -43,7 +44,7 @@ class EVENTS_EXPORT X11EventSourceGlib : public X11EventSourceDelegate,
   GSource* x_source_ = nullptr;
 
   // The poll attached to |x_source_|.
-  scoped_ptr<GPollFD> x_poll_;
+  std::unique_ptr<GPollFD> x_poll_;
 
   DISALLOW_COPY_AND_ASSIGN(X11EventSourceGlib);
 };

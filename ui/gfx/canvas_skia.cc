@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/gfx/canvas.h"
-
 #include <limits.h>
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/numerics/safe_conversions.h"
 #include "build/build_config.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkPixmap.h"
+#include "ui/gfx/canvas.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
@@ -150,7 +150,7 @@ void Canvas::SizeStringFloat(const base::string16& text,
     ElideRectangleText(text, font_list, *width, INT_MAX, wrap_behavior,
                        &strings);
     Rect rect(base::saturated_cast<int>(*width), INT_MAX);
-    scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+    std::unique_ptr<RenderText> render_text(RenderText::CreateInstance());
     UpdateRenderText(rect, base::string16(), font_list, flags, 0,
                      render_text.get());
 
@@ -168,7 +168,7 @@ void Canvas::SizeStringFloat(const base::string16& text,
     *width = w;
     *height = h;
   } else {
-    scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+    std::unique_ptr<RenderText> render_text(RenderText::CreateInstance());
     Rect rect(base::saturated_cast<int>(*width),
               base::saturated_cast<int>(*height));
     base::string16 adjusted_text = text;
@@ -199,7 +199,7 @@ void Canvas::DrawStringRectWithShadows(const base::string16& text,
 
   Rect rect(text_bounds);
 
-  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+  std::unique_ptr<RenderText> render_text(RenderText::CreateInstance());
   render_text->set_shadows(shadows);
 
   if (flags & MULTI_LINE) {
@@ -341,7 +341,7 @@ void Canvas::DrawFadedString(const base::string16& text,
     flags |= TEXT_ALIGN_TO_HEAD;
   flags |= NO_ELLIPSIS;
 
-  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+  std::unique_ptr<RenderText> render_text(RenderText::CreateInstance());
   Rect rect = display_rect;
   UpdateRenderText(rect, text, font_list, flags, color, render_text.get());
   render_text->SetElideBehavior(FADE_TAIL);

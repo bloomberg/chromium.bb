@@ -7,11 +7,12 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <utility>
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
 #include "ui/base/models/list_model_observer.h"
@@ -41,12 +42,12 @@ class ListModel {
 
   // Removes the item at |index| from |items_| without deleting it.
   // Returns a scoped pointer containing the removed item.
-  scoped_ptr<ItemType> RemoveAt(size_t index) {
+  std::unique_ptr<ItemType> RemoveAt(size_t index) {
     DCHECK_LT(index, item_count());
     ItemType* item = items_[index];
     items_.weak_erase(items_.begin() + index);
     NotifyItemsRemoved(index, 1);
-    return make_scoped_ptr<ItemType>(item);
+    return base::WrapUnique<ItemType>(item);
   }
 
   // Removes all items from the model. This does NOT delete the items.
@@ -58,7 +59,7 @@ class ListModel {
 
   // Removes the item at |index| from |items_| and deletes it.
   void DeleteAt(size_t index) {
-    scoped_ptr<ItemType> item = RemoveAt(index);
+    std::unique_ptr<ItemType> item = RemoveAt(index);
     // |item| will be deleted on destruction.
   }
 

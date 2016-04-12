@@ -4,10 +4,11 @@
 
 #include "ui/compositor/callback_layer_animation_observer.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
+#include "base/memory/ptr_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/test/layer_animation_observer_test_api.h"
@@ -219,15 +220,15 @@ class CallbackLayerAnimationObserverTest : public testing::Test {
   // managed by this.
   LayerAnimationSequence* CreateLayerAnimationSequence();
 
-  scoped_ptr<TestCallbacks> callbacks_;
+  std::unique_ptr<TestCallbacks> callbacks_;
 
-  scoped_ptr<CallbackLayerAnimationObserver> observer_;
+  std::unique_ptr<CallbackLayerAnimationObserver> observer_;
 
-  scoped_ptr<LayerAnimationObserverTestApi> observer_test_api_;
+  std::unique_ptr<LayerAnimationObserverTestApi> observer_test_api_;
 
   // List of managaged sequences created by CreateLayerAnimationSequence() that
   // need to be destroyed.
-  ScopedVector<LayerAnimationSequence> sequences_;
+  std::vector<std::unique_ptr<LayerAnimationSequence>> sequences_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CallbackLayerAnimationObserverTest);
@@ -252,9 +253,8 @@ CallbackLayerAnimationObserverTest::~CallbackLayerAnimationObserverTest() {
 
 LayerAnimationSequence*
 CallbackLayerAnimationObserverTest::CreateLayerAnimationSequence() {
-  LayerAnimationSequence* sequence = new LayerAnimationSequence();
-  sequences_.push_back(sequence);
-  return sequence;
+  sequences_.emplace_back(new LayerAnimationSequence);
+  return sequences_.back().get();
 }
 
 TEST(CallbackLayerAnimationObserverDestructionTest, VerifyFalseAutoDelete) {

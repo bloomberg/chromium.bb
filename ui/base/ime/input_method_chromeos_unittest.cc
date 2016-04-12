@@ -4,9 +4,11 @@
 
 #include "ui/base/ime/input_method_chromeos.h"
 
+#include <X11/Xlib.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <X11/Xlib.h>
+
+#include <memory>
 #undef Bool
 #undef FocusIn
 #undef FocusOut
@@ -16,7 +18,6 @@
 
 #include "base/i18n/char_iterator.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ime/chromeos/mock_ime_candidate_window_handler.h"
@@ -309,7 +310,7 @@ class InputMethodChromeOSTest : public internal::InputMethodDelegate,
     caret_bounds_ = gfx::Rect();
   }
 
-  scoped_ptr<TestableInputMethodChromeOS> ime_;
+  std::unique_ptr<TestableInputMethodChromeOS> ime_;
 
   // Copy of the dispatched key event.
   ui::KeyEvent dispatched_key_event_;
@@ -332,8 +333,8 @@ class InputMethodChromeOSTest : public internal::InputMethodDelegate,
   gfx::Range selection_range_;
   base::string16 surrounding_text_;
 
-  scoped_ptr<chromeos::MockIMEEngineHandler> mock_ime_engine_handler_;
-  scoped_ptr<chromeos::MockIMECandidateWindowHandler>
+  std::unique_ptr<chromeos::MockIMEEngineHandler> mock_ime_engine_handler_;
+  std::unique_ptr<chromeos::MockIMECandidateWindowHandler>
       mock_ime_candidate_window_handler_;
 
   bool stop_propagation_post_ime_;

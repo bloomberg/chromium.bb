@@ -4,7 +4,8 @@
 
 #include "ui/views/animation/bounds_animator.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "ui/gfx/animation/animation_container.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/views/animation/bounds_animator_observer.h"
@@ -89,14 +90,14 @@ void BoundsAnimator::SetAnimationForView(View* view,
                                          SlideAnimation* animation) {
   DCHECK(animation);
 
-  scoped_ptr<SlideAnimation> animation_wrapper(animation);
+  std::unique_ptr<SlideAnimation> animation_wrapper(animation);
 
   if (!IsAnimating(view))
     return;
 
   // We delay deleting the animation until the end so that we don't prematurely
   // send out notification that we're done.
-  scoped_ptr<Animation> old_animation(ResetAnimationForView(view));
+  std::unique_ptr<Animation> old_animation(ResetAnimationForView(view));
 
   data_[view].animation = animation_wrapper.release();
   animation_to_view_[animation] = view;
@@ -112,7 +113,7 @@ const SlideAnimation* BoundsAnimator::GetAnimationForView(View* view) {
 
 void BoundsAnimator::SetAnimationDelegate(
     View* view,
-    scoped_ptr<AnimationDelegate> delegate) {
+    std::unique_ptr<AnimationDelegate> delegate) {
   DCHECK(IsAnimating(view));
 
   data_[view].delegate = delegate.release();

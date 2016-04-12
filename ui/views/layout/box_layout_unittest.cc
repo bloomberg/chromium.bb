@@ -18,7 +18,7 @@ class BoxLayoutTest : public testing::Test {
  public:
   void SetUp() override { host_.reset(new View); }
 
-  scoped_ptr<View> host_;
+  std::unique_ptr<View> host_;
 };
 
 }  // namespace

@@ -502,7 +502,7 @@ void AppListView::InitChildWidgets() {
 #if defined(USE_AURA)
   // Mouse events on the search box shadow should not be captured.
   aura::Window* window = search_box_widget_->GetNativeWindow();
-  window->SetEventTargeter(scoped_ptr<ui::EventTargeter>(
+  window->SetEventTargeter(std::unique_ptr<ui::EventTargeter>(
       new SearchBoxWindowTargeter(search_box_view_)));
 #endif
 
@@ -553,7 +553,7 @@ void AppListView::InitAsBubbleInternal(gfx::NativeView parent,
   GetBubbleFrameView()->set_background(new AppListBackground(
       GetBubbleFrameView()->bubble_border()->GetBorderCornerRadius()));
   set_background(NULL);
-  window->SetEventTargeter(scoped_ptr<ui::EventTargeter>(
+  window->SetEventTargeter(std::unique_ptr<ui::EventTargeter>(
       new views::BubbleWindowTargeter(this)));
 #else
   set_background(new AppListBackground(

@@ -35,7 +35,7 @@ class VIEWS_MUS_EXPORT SurfaceContextFactory : public ui::ContextFactory {
  private:
   // ContextFactory:
   void CreateOutputSurface(base::WeakPtr<ui::Compositor> compositor) override;
-  scoped_ptr<ui::Reflector> CreateReflector(
+  std::unique_ptr<ui::Reflector> CreateReflector(
       ui::Compositor* mirrored_compositor,
       ui::Layer* mirroring_layer) override;
   void RemoveReflector(ui::Reflector* reflector) override;
@@ -47,7 +47,7 @@ class VIEWS_MUS_EXPORT SurfaceContextFactory : public ui::ContextFactory {
   cc::SharedBitmapManager* GetSharedBitmapManager() override;
   gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() override;
   cc::TaskGraphRunner* GetTaskGraphRunner() override;
-  scoped_ptr<cc::SurfaceIdAllocator> CreateSurfaceIdAllocator() override;
+  std::unique_ptr<cc::SurfaceIdAllocator> CreateSurfaceIdAllocator() override;
   void ResizeDisplay(ui::Compositor* compositor,
                      const gfx::Size& size) override;
 

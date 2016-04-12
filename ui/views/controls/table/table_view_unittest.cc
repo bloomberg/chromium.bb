@@ -238,15 +238,15 @@ class TableViewTest : public testing::Test {
   }
 
  protected:
-  scoped_ptr<TestTableModel2> model_;
+  std::unique_ptr<TestTableModel2> model_;
 
   // Owned by |parent_|.
   TableView* table_;
 
-  scoped_ptr<TableViewTestHelper> helper_;
+  std::unique_ptr<TableViewTestHelper> helper_;
 
  private:
-  scoped_ptr<View> parent_;
+  std::unique_ptr<View> parent_;
 
   DISALLOW_COPY_AND_ASSIGN(TableViewTest);
 };

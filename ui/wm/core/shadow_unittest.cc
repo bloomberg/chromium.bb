@@ -4,8 +4,9 @@
 
 #include "ui/wm/core/shadow.h"
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/aura/test/aura_test_base.h"
@@ -113,7 +114,7 @@ class ShadowTest: public aura::test::AuraTestBase {
     aura::test::AuraTestBase::TearDown();
   }
  private:
-  scoped_ptr<MockResourceBundleDelegate> delegate_;
+  std::unique_ptr<MockResourceBundleDelegate> delegate_;
   DISALLOW_COPY_AND_ASSIGN(ShadowTest);
 };
 

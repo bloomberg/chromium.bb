@@ -5,7 +5,8 @@
 #ifndef UI_BASE_IME_LINUX_LINUX_INPUT_METHOD_CONTEXT_FACTORY_H_
 #define UI_BASE_IME_LINUX_LINUX_INPUT_METHOD_CONTEXT_FACTORY_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "ui/base/ime/ui_base_ime_export.h"
 
 namespace ui {
@@ -29,7 +30,7 @@ class UI_BASE_IME_EXPORT LinuxInputMethodContextFactory {
   virtual ~LinuxInputMethodContextFactory() {}
 
   // Returns a native input method context.
-  virtual scoped_ptr<LinuxInputMethodContext> CreateInputMethodContext(
+  virtual std::unique_ptr<LinuxInputMethodContext> CreateInputMethodContext(
       LinuxInputMethodContextDelegate* delegate,
       bool is_simple) const = 0;
 };

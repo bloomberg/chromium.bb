@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <memory>
 #include <set>
 #include <vector>
 
@@ -8903,7 +8904,7 @@ TEST_F(LayerTreeHostCommonTest, LayerSkippingInSubtreeOfSingularTransform) {
   child->SetDrawsContent(true);
   grand_child->SetDrawsContent(true);
 
-  scoped_ptr<KeyframedTransformAnimationCurve> curve(
+  std::unique_ptr<KeyframedTransformAnimationCurve> curve(
       KeyframedTransformAnimationCurve::Create());
   TransformOperations start;
   start.AppendTranslate(1.f, 2.f, 3.f);
@@ -8915,7 +8916,7 @@ TEST_F(LayerTreeHostCommonTest, LayerSkippingInSubtreeOfSingularTransform) {
       TransformKeyframe::Create(base::TimeDelta(), start, nullptr));
   curve->AddKeyframe(TransformKeyframe::Create(
       base::TimeDelta::FromSecondsD(1.0), operation, nullptr));
-  scoped_ptr<Animation> transform_animation(
+  std::unique_ptr<Animation> transform_animation(
       Animation::Create(std::move(curve), 3, 3, TargetProperty::TRANSFORM));
   scoped_refptr<AnimationPlayer> player(AnimationPlayer::Create(1));
   host_impl()->active_tree()->animation_host()->RegisterPlayerForLayer(

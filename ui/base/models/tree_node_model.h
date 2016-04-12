@@ -8,11 +8,11 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <memory>
 #include <vector>
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
@@ -298,7 +298,7 @@ class TreeNodeModel : public TreeModel {
   base::ObserverList<TreeModelObserver> observer_list_;
 
   // The root.
-  scoped_ptr<NodeType> root_;
+  std::unique_ptr<NodeType> root_;
 
   DISALLOW_COPY_AND_ASSIGN(TreeNodeModel);
 };

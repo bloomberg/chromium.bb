@@ -5,8 +5,9 @@
 #ifndef UI_BASE_IDLE_IDLE_QUERY_X11_H_
 #define UI_BASE_IDLE_IDLE_QUERY_X11_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace ui {
 
@@ -20,7 +21,7 @@ class IdleQueryX11 {
   int IdleTime();
 
  private:
-  scoped_ptr<IdleData> idle_data_;
+  std::unique_ptr<IdleData> idle_data_;
 
   DISALLOW_COPY_AND_ASSIGN(IdleQueryX11);
 };

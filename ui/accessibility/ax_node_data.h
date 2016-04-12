@@ -124,7 +124,7 @@ struct AX_EXPORT AXNodeData {
   // takes up a fair amount of space. The assignment operator and copy
   // constructor both make a duplicate of the owned pointer, so it acts more
   // like a member than a pointer.
-  scoped_ptr<gfx::Transform> transform;
+  std::unique_ptr<gfx::Transform> transform;
 };
 
 }  // namespace ui

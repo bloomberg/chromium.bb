@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "ui/ozone/platform/wayland/wayland_object.h"
 #include "ui/ozone/platform/wayland/wayland_window.h"
@@ -192,7 +193,7 @@ void WaylandDisplay::Capabilities(void* data,
         LOG(ERROR) << "Failed to get wl_pointer from seat";
         return;
       }
-      display->pointer_ = make_scoped_ptr(new WaylandPointer(
+      display->pointer_ = base::WrapUnique(new WaylandPointer(
           pointer, base::Bind(&WaylandDisplay::DispatchUiEvent,
                               base::Unretained(display))));
     }

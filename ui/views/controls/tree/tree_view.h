@@ -5,11 +5,11 @@
 #ifndef UI_VIEWS_CONTROLS_TREE_TREE_VIEW_VIEWS_H_
 #define UI_VIEWS_CONTROLS_TREE_TREE_VIEW_VIEWS_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/base/models/tree_node_model.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/image/image_skia.h"
@@ -386,7 +386,7 @@ class VIEWS_EXPORT TreeView : public ui::TreeModelObserver,
   // control, icon and offsets.
   int text_offset_;
 
-  scoped_ptr<PrefixSelector> selector_;
+  std::unique_ptr<PrefixSelector> selector_;
 
   DISALLOW_COPY_AND_ASSIGN(TreeView);
 };

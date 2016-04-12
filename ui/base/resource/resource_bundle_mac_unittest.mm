@@ -145,7 +145,7 @@ protected:
   ResourceBundle* resource_bundle_;
 
  private:
-  scoped_ptr<DataPack> locale_pack_;
+  std::unique_ptr<DataPack> locale_pack_;
   base::ScopedTempDir dir_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceBundleMacImageTest);

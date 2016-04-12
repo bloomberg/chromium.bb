@@ -7,9 +7,9 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <memory>
 
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace {
 
@@ -80,9 +80,9 @@ void SubtractRectanglesFromRegion(HRGN hrgn,
 
 HRGN ConvertPathToHRGN(const gfx::Path& path) {
   int point_count = path.getPoints(NULL, 0);
-  scoped_ptr<SkPoint[]> points(new SkPoint[point_count]);
+  std::unique_ptr<SkPoint[]> points(new SkPoint[point_count]);
   path.getPoints(points.get(), point_count);
-  scoped_ptr<POINT[]> windows_points(new POINT[point_count]);
+  std::unique_ptr<POINT[]> windows_points(new POINT[point_count]);
   for (int i = 0; i < point_count; ++i) {
     windows_points[i].x = SkScalarRoundToInt(points[i].fX);
     windows_points[i].y = SkScalarRoundToInt(points[i].fY);

@@ -177,8 +177,8 @@ class VIEWS_EXPORT BaseScrollBar : public ScrollBar,
   // was invoked.
   int context_menu_mouse_position_;
 
-  scoped_ptr<MenuRunner> menu_runner_;
-  scoped_ptr<ScrollAnimator> scroll_animator_;
+  std::unique_ptr<MenuRunner> menu_runner_;
+  std::unique_ptr<ScrollAnimator> scroll_animator_;
 
   // Difference between current position and cumulative deltas obtained from
   // scroll update events.

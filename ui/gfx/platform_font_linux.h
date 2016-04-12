@@ -5,11 +5,11 @@
 #ifndef UI_GFX_PLATFORM_FONT_LINUX_H_
 #define UI_GFX_PLATFORM_FONT_LINUX_H_
 
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkRefCnt.h"

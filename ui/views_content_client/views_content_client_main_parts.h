@@ -5,8 +5,9 @@
 #ifndef UI_VIEWS_CONTENT_CLIENT_VIEWS_CONTENT_CLIENT_MAIN_PARTS_H_
 #define UI_VIEWS_CONTENT_CLIENT_VIEWS_CONTENT_CLIENT_MAIN_PARTS_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/public/browser/browser_main_parts.h"
 
 namespace content {
@@ -50,9 +51,9 @@ class ViewsContentClientMainParts : public content::BrowserMainParts {
       ViewsContentClient* views_content_client);
 
  private:
-  scoped_ptr<content::ShellBrowserContext> browser_context_;
+  std::unique_ptr<content::ShellBrowserContext> browser_context_;
 
-  scoped_ptr<views::ViewsDelegate> views_delegate_;
+  std::unique_ptr<views::ViewsDelegate> views_delegate_;
 
   ViewsContentClient* views_content_client_;
 

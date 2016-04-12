@@ -5,8 +5,9 @@
 #ifndef UI_VIEWS_ANIMATION_INK_DROP_ANIMATION_CONTROLLER_H_
 #define UI_VIEWS_ANIMATION_INK_DROP_ANIMATION_CONTROLLER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "ui/compositor/layer_tree_owner.h"
 #include "ui/events/event_handler.h"

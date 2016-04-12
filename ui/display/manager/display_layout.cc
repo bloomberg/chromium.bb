@@ -231,8 +231,8 @@ bool DisplayLayout::Validate(const DisplayIdList& list,
   return has_primary_as_parent;
 }
 
-scoped_ptr<DisplayLayout> DisplayLayout::Copy() const {
-  scoped_ptr<DisplayLayout> copy(new DisplayLayout);
+std::unique_ptr<DisplayLayout> DisplayLayout::Copy() const {
+  std::unique_ptr<DisplayLayout> copy(new DisplayLayout);
   for (const auto& placement : placement_list)
     copy->placement_list.push_back(placement);
   copy->mirrored = mirrored;

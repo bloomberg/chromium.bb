@@ -65,7 +65,7 @@ class TestEventRewriteSource : public EventSource {
       : processor_(processor) {}
   EventProcessor* GetEventProcessor() override { return processor_; }
   void Send(EventType type) {
-    scoped_ptr<Event> event(new TestEvent(type));
+    std::unique_ptr<Event> event(new TestEvent(type));
     (void)SendEventToProcessor(event.get());
   }
 
@@ -84,14 +84,16 @@ class TestConstantEventRewriter : public EventRewriter {
     CHECK_NE(EVENT_REWRITE_DISPATCH_ANOTHER, status);
   }
 
-  EventRewriteStatus RewriteEvent(const Event& event,
-                                  scoped_ptr<Event>* rewritten_event) override {
+  EventRewriteStatus RewriteEvent(
+      const Event& event,
+      std::unique_ptr<Event>* rewritten_event) override {
     if (status_ == EVENT_REWRITE_REWRITTEN)
       rewritten_event->reset(new TestEvent(type_));
     return status_;
   }
-  EventRewriteStatus NextDispatchEvent(const Event& last_event,
-                                       scoped_ptr<Event>* new_event) override {
+  EventRewriteStatus NextDispatchEvent(
+      const Event& last_event,
+      std::unique_ptr<Event>* new_event) override {
     NOTREACHED();
     return status_;
   }
@@ -112,8 +114,9 @@ class TestStateMachineEventRewriter : public EventRewriter {
     rules_.insert(std::pair<RewriteCase, RewriteResult>(
         RewriteCase(from_state, from_type), r));
   }
-  EventRewriteStatus RewriteEvent(const Event& event,
-                                  scoped_ptr<Event>* rewritten_event) override {
+  EventRewriteStatus RewriteEvent(
+      const Event& event,
+      std::unique_ptr<Event>* rewritten_event) override {
     RewriteRules::iterator find =
         rules_.find(RewriteCase(state_, event.type()));
     if (find == rules_.end())
@@ -128,8 +131,9 @@ class TestStateMachineEventRewriter : public EventRewriter {
     state_ = find->second.state;
     return find->second.status;
   }
-  EventRewriteStatus NextDispatchEvent(const Event& last_event,
-                                       scoped_ptr<Event>* new_event) override {
+  EventRewriteStatus NextDispatchEvent(
+      const Event& last_event,
+      std::unique_ptr<Event>* new_event) override {
     EXPECT_TRUE(last_rewritten_event_);
     const TestEvent* arg_last = static_cast<const TestEvent*>(&last_event);
     EXPECT_EQ(last_rewritten_event_->unique_id(), arg_last->unique_id());

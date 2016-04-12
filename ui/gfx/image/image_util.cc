@@ -7,8 +7,8 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <memory>
 
-#include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/jpeg_codec.h"
@@ -37,7 +37,7 @@ namespace gfx {
 #if !defined(OS_IOS)
 Image ImageFrom1xJPEGEncodedData(const unsigned char* input,
                                  size_t input_size) {
-  scoped_ptr<SkBitmap> bitmap(gfx::JPEGCodec::Decode(input, input_size));
+  std::unique_ptr<SkBitmap> bitmap(gfx::JPEGCodec::Decode(input, input_size));
   if (bitmap.get())
     return Image::CreateFrom1xBitmap(*bitmap);
 

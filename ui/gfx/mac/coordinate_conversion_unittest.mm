@@ -6,9 +6,10 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include <memory>
+
 #import "base/mac/scoped_objc_class_swizzler.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #import "testing/gtest_mac.h"
 #import "testing/platform_test.h"
 #include "ui/gfx/geometry/rect.h"
@@ -40,7 +41,7 @@ class MacCoordinateConversionTest : public PlatformTest {
   void TearDown() override;
 
  private:
-  scoped_ptr<base::mac::ScopedObjCClassSwizzler> swizzle_frame_;
+  std::unique_ptr<base::mac::ScopedObjCClassSwizzler> swizzle_frame_;
 
   DISALLOW_COPY_AND_ASSIGN(MacCoordinateConversionTest);
 };

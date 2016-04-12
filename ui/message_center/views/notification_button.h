@@ -42,7 +42,7 @@ class NotificationButton : public views::CustomButton {
  private:
   views::ImageView* icon_;
   views::Label* title_;
-  scoped_ptr<views::Painter> focus_painter_;
+  std::unique_ptr<views::Painter> focus_painter_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationButton);
 };

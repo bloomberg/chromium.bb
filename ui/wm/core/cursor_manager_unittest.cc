@@ -5,6 +5,7 @@
 #include "ui/wm/core/cursor_manager.h"
 
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "ui/aura/client/cursor_client_observer.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/wm/core/native_cursor_manager.h"
@@ -45,9 +46,7 @@ class CursorManagerTest : public aura::test::AuraTestBase {
  protected:
   CursorManagerTest()
       : delegate_(new TestingCursorManager),
-        cursor_manager_(scoped_ptr<wm::NativeCursorManager>(
-            delegate_)) {
-  }
+        cursor_manager_(std::unique_ptr<wm::NativeCursorManager>(delegate_)) {}
 
   TestingCursorManager* delegate_;
   wm::CursorManager cursor_manager_;

@@ -458,7 +458,7 @@ void DesktopNativeWidgetAura::InitNativeWidget(
   }
   if (!cursor_manager_) {
     cursor_manager_ = new wm::CursorManager(
-        scoped_ptr<wm::NativeCursorManager>(native_cursor_manager_));
+        std::unique_ptr<wm::NativeCursorManager>(native_cursor_manager_));
   }
   native_cursor_manager_->AddHost(host());
   aura::client::SetCursorClient(host_->window(), cursor_manager_);

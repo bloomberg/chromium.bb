@@ -255,7 +255,7 @@ class VIEWS_EXPORT NonClientView : public View, public ViewTargeterDelegate {
   // The NonClientFrameView that renders the non-client portions of the window.
   // This object is not owned by the view hierarchy because it can be replaced
   // dynamically as the system settings change.
-  scoped_ptr<NonClientFrameView> frame_view_;
+  std::unique_ptr<NonClientFrameView> frame_view_;
 
   // The overlay view, when non-NULL and visible, takes up the entire widget and
   // is placed on top of the ClientView and NonClientFrameView.

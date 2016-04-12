@@ -9,12 +9,12 @@
 #include <windows.h>
 #endif
 
+#include <memory>
 #include <string>
 
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "ui/gfx/geometry/size.h"
@@ -112,7 +112,7 @@ class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL {
 
   // Create a NativeViewGLSurfaceEGL with an externally provided VSyncProvider.
   // Takes ownership of the VSyncProvider.
-  virtual bool Initialize(scoped_ptr<VSyncProvider> sync_provider);
+  virtual bool Initialize(std::unique_ptr<VSyncProvider> sync_provider);
 
   // Takes care of the platform dependant bits, of any, for creating the window.
   virtual bool InitializeNativeWindow();
@@ -135,7 +135,7 @@ class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL {
   bool supports_post_sub_buffer_;
   bool flips_vertically_;
 
-  scoped_ptr<VSyncProvider> vsync_provider_;
+  std::unique_ptr<VSyncProvider> vsync_provider_;
 
   int swap_interval_;
 

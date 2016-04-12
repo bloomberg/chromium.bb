@@ -4,9 +4,11 @@
 
 #include "ui/views/painter.h"
 
+#include <memory>
+
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
@@ -149,9 +151,9 @@ class GradientPainter : public Painter {
   // If |horizontal_| is true then the gradient is painted horizontally.
   bool horizontal_;
   // The gradient colors.
-  scoped_ptr<SkColor[]> colors_;
+  std::unique_ptr<SkColor[]> colors_;
   // The relative positions of the corresponding gradient colors.
-  scoped_ptr<SkScalar[]> pos_;
+  std::unique_ptr<SkScalar[]> pos_;
   // The number of elements in |colors_| and |pos_|.
   size_t count_;
 
@@ -216,7 +218,7 @@ class ImagePainter : public Painter {
   void Paint(gfx::Canvas* canvas, const gfx::Size& size) override;
 
  private:
-  scoped_ptr<gfx::NineImagePainter> nine_painter_;
+  std::unique_ptr<gfx::NineImagePainter> nine_painter_;
 
   DISALLOW_COPY_AND_ASSIGN(ImagePainter);
 };
@@ -313,21 +315,21 @@ Painter* Painter::CreateImageGridPainter(const int image_ids[]) {
 }
 
 // static
-scoped_ptr<Painter> Painter::CreateDashedFocusPainter() {
-  return make_scoped_ptr(new DashedFocusPainter(gfx::Insets()));
+std::unique_ptr<Painter> Painter::CreateDashedFocusPainter() {
+  return base::WrapUnique(new DashedFocusPainter(gfx::Insets()));
 }
 
 // static
-scoped_ptr<Painter> Painter::CreateDashedFocusPainterWithInsets(
+std::unique_ptr<Painter> Painter::CreateDashedFocusPainterWithInsets(
     const gfx::Insets& insets) {
-  return make_scoped_ptr(new DashedFocusPainter(insets));
+  return base::WrapUnique(new DashedFocusPainter(insets));
 }
 
 // static
-scoped_ptr<Painter> Painter::CreateSolidFocusPainter(
+std::unique_ptr<Painter> Painter::CreateSolidFocusPainter(
     SkColor color,
     const gfx::Insets& insets) {
-  return make_scoped_ptr(new SolidFocusPainter(color, insets));
+  return base::WrapUnique(new SolidFocusPainter(color, insets));
 }
 
 // HorizontalPainter ----------------------------------------------------------

@@ -5,11 +5,11 @@
 #ifndef UI_MOJO_INIT_UI_INIT_H_
 #define UI_MOJO_INIT_UI_INIT_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 
 namespace gfx {
@@ -32,9 +32,9 @@ class UIInit {
   ~UIInit();
 
  private:
-  scoped_ptr<gfx::Screen> screen_;
+  std::unique_ptr<gfx::Screen> screen_;
 #if defined(OS_ANDROID)
-  scoped_ptr<GestureConfigurationMojo> gesture_configuration_;
+  std::unique_ptr<GestureConfigurationMojo> gesture_configuration_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(UIInit);

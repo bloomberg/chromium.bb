@@ -43,7 +43,7 @@ GLFence* GLFence::Create() {
   DCHECK(GLContext::GetCurrent())
       << "Trying to create fence with no context";
 
-  scoped_ptr<GLFence> fence;
+  std::unique_ptr<GLFence> fence;
   // Prefer ARB_sync which supports server-side wait.
   if (g_driver_gl.ext.b_GL_ARB_sync ||
       GetGLVersionInfo()->is_es3 ||

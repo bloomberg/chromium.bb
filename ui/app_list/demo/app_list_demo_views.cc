@@ -4,10 +4,11 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
 #include "content/public/browser/web_contents.h"
@@ -50,7 +51,7 @@ class DemoAppListViewDelegate : public app_list::test::AppListTestViewDelegate {
  private:
   app_list::AppListView* view_;  // Weak. Owns this.
   content::BrowserContext* browser_context_;
-  scoped_ptr<content::WebContents> web_contents_;
+  std::unique_ptr<content::WebContents> web_contents_;
 
   DISALLOW_COPY_AND_ASSIGN(DemoAppListViewDelegate);
 };

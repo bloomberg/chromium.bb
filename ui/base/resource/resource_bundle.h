@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/containers/hash_tables.h"
@@ -15,7 +16,6 @@
 #include "base/files/memory_mapped_file.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
@@ -410,13 +410,13 @@ class UI_BASE_EXPORT ResourceBundle {
   Delegate* delegate_;
 
   // Protects |images_| and font-related members.
-  scoped_ptr<base::Lock> images_and_fonts_lock_;
+  std::unique_ptr<base::Lock> images_and_fonts_lock_;
 
   // Protects |locale_resources_data_|.
-  scoped_ptr<base::Lock> locale_resources_data_lock_;
+  std::unique_ptr<base::Lock> locale_resources_data_lock_;
 
   // Handles for data sources.
-  scoped_ptr<ResourceHandle> locale_resources_data_;
+  std::unique_ptr<ResourceHandle> locale_resources_data_;
   ScopedVector<ResourceHandle> data_packs_;
 
   // The maximum scale factor currently loaded.

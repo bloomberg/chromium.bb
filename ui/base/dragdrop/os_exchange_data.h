@@ -5,10 +5,11 @@
 #ifndef UI_BASE_DRAGDROP_OS_EXCHANGE_DATA_H_
 #define UI_BASE_DRAGDROP_OS_EXCHANGE_DATA_H_
 
-#include "build/build_config.h"
-
+#include <memory>
 #include <set>
 #include <string>
+
+#include "build/build_config.h"
 
 #if defined(OS_WIN)
 #include <objidl.h>
@@ -16,7 +17,6 @@
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/dragdrop/download_file_interface.h"
 #include "ui/base/ui_base_export.h"
@@ -229,7 +229,7 @@ class UI_BASE_EXPORT OSExchangeData {
 
  private:
   // Provides the actual data.
-  scoped_ptr<Provider> provider_;
+  std::unique_ptr<Provider> provider_;
 
   DISALLOW_COPY_AND_ASSIGN(OSExchangeData);
 };

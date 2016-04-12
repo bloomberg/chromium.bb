@@ -45,7 +45,7 @@ class HardwareDisplayControllerTest : public testing::Test {
   void PageFlipCallback(gfx::SwapResult);
 
  protected:
-  scoped_ptr<ui::HardwareDisplayController> controller_;
+  std::unique_ptr<ui::HardwareDisplayController> controller_;
   scoped_refptr<ui::MockDrmDevice> drm_;
 
   int page_flips_;
@@ -64,7 +64,7 @@ void HardwareDisplayControllerTest::SetUp() {
   crtcs.push_back(kSecondaryCrtc);
   drm_ = new ui::MockDrmDevice(false, crtcs, kPlanesPerCrtc);
   controller_.reset(new ui::HardwareDisplayController(
-      scoped_ptr<ui::CrtcController>(
+      std::unique_ptr<ui::CrtcController>(
           new ui::CrtcController(drm_.get(), kPrimaryCrtc, kPrimaryConnector)),
       gfx::Point()));
 }
@@ -252,7 +252,7 @@ TEST_F(HardwareDisplayControllerTest, RejectUnderlays) {
 }
 
 TEST_F(HardwareDisplayControllerTest, PageflipMirroredControllers) {
-  controller_->AddCrtc(scoped_ptr<ui::CrtcController>(
+  controller_->AddCrtc(std::unique_ptr<ui::CrtcController>(
       new ui::CrtcController(drm_.get(), kSecondaryCrtc, kSecondaryConnector)));
 
   ui::OverlayPlane plane1(scoped_refptr<ui::ScanoutBuffer>(
@@ -297,7 +297,7 @@ TEST_F(HardwareDisplayControllerTest, PlaneStateAfterRemoveCrtc) {
   EXPECT_EQ(kPrimaryCrtc, owned_plane->owning_crtc());
 
   // Removing the crtc should not free the plane or change ownership.
-  scoped_ptr<ui::CrtcController> crtc =
+  std::unique_ptr<ui::CrtcController> crtc =
       controller_->RemoveCrtc(drm_, kPrimaryCrtc);
   EXPECT_TRUE(owned_plane->in_use());
   EXPECT_EQ(kPrimaryCrtc, owned_plane->owning_crtc());
@@ -332,7 +332,7 @@ TEST_F(HardwareDisplayControllerTest, PlaneStateAfterDestroyingCrtc) {
       owned_plane = plane.get();
   ASSERT_TRUE(owned_plane != nullptr);
   EXPECT_EQ(kPrimaryCrtc, owned_plane->owning_crtc());
-  scoped_ptr<ui::CrtcController> crtc =
+  std::unique_ptr<ui::CrtcController> crtc =
       controller_->RemoveCrtc(drm_, kPrimaryCrtc);
   // Destroying crtc should free the plane.
   crtc.reset();
@@ -342,7 +342,7 @@ TEST_F(HardwareDisplayControllerTest, PlaneStateAfterDestroyingCrtc) {
 }
 
 TEST_F(HardwareDisplayControllerTest, PlaneStateAfterAddCrtc) {
-  controller_->AddCrtc(scoped_ptr<ui::CrtcController>(
+  controller_->AddCrtc(std::unique_ptr<ui::CrtcController>(
       new ui::CrtcController(drm_.get(), kSecondaryCrtc, kSecondaryConnector)));
 
   ui::OverlayPlane plane1(scoped_refptr<ui::ScanoutBuffer>(
@@ -365,7 +365,7 @@ TEST_F(HardwareDisplayControllerTest, PlaneStateAfterAddCrtc) {
 
   ASSERT_TRUE(primary_crtc_plane != nullptr);
 
-  scoped_ptr<ui::HardwareDisplayController> hdc_controller;
+  std::unique_ptr<ui::HardwareDisplayController> hdc_controller;
   hdc_controller.reset(new ui::HardwareDisplayController(
       controller_->RemoveCrtc(drm_, kPrimaryCrtc), controller_->origin()));
   controller_->SchedulePageFlip(
@@ -452,7 +452,7 @@ TEST_F(HardwareDisplayControllerTest, AddCrtcMidPageFlip) {
       planes, base::Bind(&HardwareDisplayControllerTest::PageFlipCallback,
                          base::Unretained(this)));
 
-  controller_->AddCrtc(scoped_ptr<ui::CrtcController>(
+  controller_->AddCrtc(std::unique_ptr<ui::CrtcController>(
       new ui::CrtcController(drm_.get(), kSecondaryCrtc, kSecondaryConnector)));
 
   drm_->RunCallbacks();

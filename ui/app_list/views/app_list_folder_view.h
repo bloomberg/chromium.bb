@@ -111,7 +111,7 @@ class AppListFolderView : public views::View,
   FolderHeaderView* folder_header_view_;  // Owned by views hierarchy.
   AppsGridView* items_grid_view_;  // Owned by the views hierarchy.
 
-  scoped_ptr<views::ViewModel> view_model_;
+  std::unique_ptr<views::ViewModel> view_model_;
 
   AppListModel* model_;  // Not owned.
   AppListFolderItem* folder_item_;  // Not owned.

@@ -178,7 +178,7 @@ class MotionEventBufferTest : public testing::Test,
 
     gfx::Vector2dF velocity(33.f, -11.f);
     gfx::PointF position(17.f, 42.f);
-    scoped_ptr<MotionEvent> last_flushed_event;
+    std::unique_ptr<MotionEvent> last_flushed_event;
     size_t events = 0;
     float last_dx = 0, last_dy = 0;
     base::TimeDelta last_dt;

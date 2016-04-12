@@ -10,6 +10,7 @@
 
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "ui/gfx/animation/throb_animation.h"
 #include "ui/gfx/canvas.h"
@@ -233,7 +234,7 @@ void LabelButton::SetImageLabelSpacing(int spacing) {
   InvalidateLayout();
 }
 
-void LabelButton::SetFocusPainter(scoped_ptr<Painter> focus_painter) {
+void LabelButton::SetFocusPainter(std::unique_ptr<Painter> focus_painter) {
   focus_painter_ = std::move(focus_painter);
 }
 
@@ -366,11 +367,11 @@ void LabelButton::EnableCanvasFlippingForRTLUI(bool flip) {
   image_->EnableCanvasFlippingForRTLUI(flip);
 }
 
-scoped_ptr<LabelButtonBorder> LabelButton::CreateDefaultBorder() const {
+std::unique_ptr<LabelButtonBorder> LabelButton::CreateDefaultBorder() const {
   return PlatformStyle::CreateLabelButtonBorder(style());
 }
 
-void LabelButton::SetBorder(scoped_ptr<Border> border) {
+void LabelButton::SetBorder(std::unique_ptr<Border> border) {
   border_is_themed_border_ = false;
   View::SetBorder(std::move(border));
   ResetCachedPreferredSize();
@@ -418,19 +419,19 @@ void LabelButton::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
   ink_drop_container_->SetVisible(false);
 }
 
-scoped_ptr<views::InkDropAnimation> LabelButton::CreateInkDropAnimation()
+std::unique_ptr<views::InkDropAnimation> LabelButton::CreateInkDropAnimation()
     const {
   return GetText().empty()
              ? CustomButton::CreateInkDropAnimation()
-             : make_scoped_ptr(new views::FloodFillInkDropAnimation(
+             : base::WrapUnique(new views::FloodFillInkDropAnimation(
                    size(), GetInkDropCenter(), GetInkDropBaseColor()));
 }
 
-scoped_ptr<views::InkDropHover> LabelButton::CreateInkDropHover() const {
+std::unique_ptr<views::InkDropHover> LabelButton::CreateInkDropHover() const {
   if (!ShouldShowInkDropHover())
     return nullptr;
   return GetText().empty() ? CustomButton::CreateInkDropHover()
-                           : make_scoped_ptr(new views::InkDropHover(
+                           : base::WrapUnique(new views::InkDropHover(
                                  size(), kInkDropSmallCornerRadius,
                                  GetInkDropCenter(), GetInkDropBaseColor()));
 }

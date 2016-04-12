@@ -5,6 +5,7 @@
 #ifndef UI_SHELL_DIALOGS_SELECT_FILE_DIALOG_H_
 #define UI_SHELL_DIALOGS_SELECT_FILE_DIALOG_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -12,7 +13,6 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/shell_dialogs/base_shell_dialog.h"
@@ -208,7 +208,7 @@ class SHELL_DIALOGS_EXPORT SelectFileDialog
   // Returns true if the dialog has multiple file type choices.
   virtual bool HasMultipleFileTypeChoicesImpl() = 0;
 
-  scoped_ptr<SelectFilePolicy> select_file_policy_;
+  std::unique_ptr<SelectFilePolicy> select_file_policy_;
 
   DISALLOW_COPY_AND_ASSIGN(SelectFileDialog);
 };

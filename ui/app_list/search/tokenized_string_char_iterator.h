@@ -8,8 +8,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/app_list/app_list_export.h"
 #include "ui/app_list/search/tokenized_string.h"
 
@@ -70,7 +71,7 @@ class APP_LIST_EXPORT TokenizedStringCharIterator {
   const TokenizedString::Mappings& mappings_;
 
   size_t current_token_;
-  scoped_ptr<base::i18n::UTF16CharIterator> current_token_iter_;
+  std::unique_ptr<base::i18n::UTF16CharIterator> current_token_iter_;
 
   DISALLOW_COPY_AND_ASSIGN(TokenizedStringCharIterator);
 };

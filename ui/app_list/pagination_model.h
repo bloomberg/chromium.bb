@@ -5,9 +5,10 @@
 #ifndef UI_APP_LIST_PAGINATION_MODEL_H_
 #define UI_APP_LIST_PAGINATION_MODEL_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "ui/app_list/app_list_export.h"
@@ -135,7 +136,7 @@ class APP_LIST_EXPORT PaginationModel : public gfx::AnimationDelegate {
   // last target page is remembered here.
   int pending_selected_page_;
 
-  scoped_ptr<gfx::SlideAnimation> transition_animation_;
+  std::unique_ptr<gfx::SlideAnimation> transition_animation_;
   int transition_duration_ms_;  // Transition duration in millisecond.
   int overscroll_transition_duration_ms_;
 

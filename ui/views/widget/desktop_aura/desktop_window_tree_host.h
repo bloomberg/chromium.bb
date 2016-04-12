@@ -5,7 +5,8 @@
 #ifndef UI_VIEWS_WIDGET_DESKTOP_AURA_DESKTOP_WINDOW_TREE_HOST_H_
 #define UI_VIEWS_WIDGET_DESKTOP_AURA_DESKTOP_WINDOW_TREE_HOST_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/views/views_export.h"
@@ -62,12 +63,12 @@ class VIEWS_EXPORT DesktopWindowTreeHost {
   // Creates and returns the Tooltip implementation to use. Return value is
   // owned by DesktopNativeWidgetAura and lives as long as
   // DesktopWindowTreeHost.
-  virtual scoped_ptr<corewm::Tooltip> CreateTooltip() = 0;
+  virtual std::unique_ptr<corewm::Tooltip> CreateTooltip() = 0;
 
   // Creates and returns the DragDropClient implementation to use. Return value
   // is owned by DesktopNativeWidgetAura and lives as long as
   // DesktopWindowTreeHost.
-  virtual scoped_ptr<aura::client::DragDropClient> CreateDragDropClient(
+  virtual std::unique_ptr<aura::client::DragDropClient> CreateDragDropClient(
       DesktopNativeCursorManager* cursor_manager) = 0;
 
   virtual void Close() = 0;

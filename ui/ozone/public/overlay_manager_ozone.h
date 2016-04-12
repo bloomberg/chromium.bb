@@ -5,7 +5,8 @@
 #ifndef UI_OZONE_PUBLIC_OVERLAY_MANAGER_OZONE_H_
 #define UI_OZONE_PUBLIC_OVERLAY_MANAGER_OZONE_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "ui/gfx/native_widget_types.h"
 
 namespace ui {
@@ -19,7 +20,7 @@ class OverlayManagerOzone {
   virtual ~OverlayManagerOzone() {}
 
   // Get the hal struct to check for overlay support.
-  virtual scoped_ptr<OverlayCandidatesOzone> CreateOverlayCandidates(
+  virtual std::unique_ptr<OverlayCandidatesOzone> CreateOverlayCandidates(
       gfx::AcceleratedWidget w) = 0;
 };
 

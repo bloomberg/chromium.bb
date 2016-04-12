@@ -9,9 +9,9 @@
 #include <X11/extensions/XInput2.h>
 
 #include <map>
+#include <memory>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/events/devices/events_devices_export.h"
 #include "ui/gfx/x/x11_types.h"
 
@@ -26,7 +26,7 @@ struct DeviceList {
   DeviceList() : count(0) {}
   T& operator[](int x) { return devices[x]; }
   const T& operator[](int x) const { return devices[x]; }
-  scoped_ptr<T[], gfx::XObjectDeleter<T, void, D>> devices;
+  std::unique_ptr<T[], gfx::XObjectDeleter<T, void, D>> devices;
   int count;
 };
 

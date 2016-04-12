@@ -87,13 +87,14 @@ void NotificationList::SetMessageCenterVisible(
   }
 }
 
-void NotificationList::AddNotification(scoped_ptr<Notification> notification) {
+void NotificationList::AddNotification(
+    std::unique_ptr<Notification> notification) {
   PushNotification(std::move(notification));
 }
 
 void NotificationList::UpdateNotificationMessage(
     const std::string& old_id,
-    scoped_ptr<Notification> new_notification) {
+    std::unique_ptr<Notification> new_notification) {
   Notifications::iterator iter = GetNotification(old_id);
   if (iter == notifications_.end())
     return;
@@ -329,7 +330,8 @@ void NotificationList::EraseNotification(Notifications::iterator iter) {
   notifications_.erase(iter);
 }
 
-void NotificationList::PushNotification(scoped_ptr<Notification> notification) {
+void NotificationList::PushNotification(
+    std::unique_ptr<Notification> notification) {
   // Ensure that notification.id is unique by erasing any existing
   // notification with the same id (shouldn't normally happen).
   Notifications::iterator iter = GetNotification(notification->id());

@@ -103,9 +103,9 @@ class CaptureControllerTest : public aura::test::AuraTestBase {
     return second_capture_controller_->capture_client()->GetCaptureWindow();
   }
 
-  scoped_ptr<ScopedCaptureClient> capture_controller_;
-  scoped_ptr<aura::WindowTreeHost> second_host_;
-  scoped_ptr<ScopedCaptureClient> second_capture_controller_;
+  std::unique_ptr<ScopedCaptureClient> capture_controller_;
+  std::unique_ptr<aura::WindowTreeHost> second_host_;
+  std::unique_ptr<ScopedCaptureClient> second_capture_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(CaptureControllerTest);
 };
@@ -114,7 +114,7 @@ class CaptureControllerTest : public aura::test::AuraTestBase {
 // mouse_pressed_handler()) are cleared when another root window takes capture.
 TEST_F(CaptureControllerTest, ResetMouseEventHandlerOnCapture) {
   // Create a window inside the WindowEventDispatcher.
-  scoped_ptr<aura::Window> w1(CreateNormalWindow(1, root_window(), NULL));
+  std::unique_ptr<aura::Window> w1(CreateNormalWindow(1, root_window(), NULL));
 
   // Make a synthesized mouse down event. Ensure that the WindowEventDispatcher
   // will dispatch further mouse events to |w1|.
@@ -125,7 +125,7 @@ TEST_F(CaptureControllerTest, ResetMouseEventHandlerOnCapture) {
   EXPECT_EQ(w1.get(), host()->dispatcher()->mouse_pressed_handler());
 
   // Build a window in the second WindowEventDispatcher.
-  scoped_ptr<aura::Window> w2(
+  std::unique_ptr<aura::Window> w2(
       CreateNormalWindow(2, second_host_->window(), NULL));
 
   // The act of having the second window take capture should clear out mouse
@@ -139,7 +139,7 @@ TEST_F(CaptureControllerTest, ResetMouseEventHandlerOnCapture) {
 // check on Windows.
 TEST_F(CaptureControllerTest, ResetOtherWindowCaptureOnCapture) {
   // Create a window inside the WindowEventDispatcher.
-  scoped_ptr<aura::Window> w1(CreateNormalWindow(1, root_window(), NULL));
+  std::unique_ptr<aura::Window> w1(CreateNormalWindow(1, root_window(), NULL));
   w1->SetCapture();
   // Both capture clients should return the same capture window.
   EXPECT_EQ(w1.get(), GetCaptureWindow());
@@ -147,7 +147,7 @@ TEST_F(CaptureControllerTest, ResetOtherWindowCaptureOnCapture) {
 
   // Build a window in the second WindowEventDispatcher and give it capture.
   // Both capture clients should return the same capture window.
-  scoped_ptr<aura::Window> w2(
+  std::unique_ptr<aura::Window> w2(
       CreateNormalWindow(2, second_host_->window(), NULL));
   w2->SetCapture();
   EXPECT_EQ(w2.get(), GetCaptureWindow());
@@ -158,7 +158,7 @@ TEST_F(CaptureControllerTest, ResetOtherWindowCaptureOnCapture) {
 // releasing capture.
 TEST_F(CaptureControllerTest, TouchTargetResetOnCaptureChange) {
   // Create a window inside the WindowEventDispatcher.
-  scoped_ptr<aura::Window> w1(CreateNormalWindow(1, root_window(), NULL));
+  std::unique_ptr<aura::Window> w1(CreateNormalWindow(1, root_window(), NULL));
   ui::test::EventGenerator event_generator1(root_window());
   event_generator1.PressTouch();
   w1->SetCapture();
@@ -168,7 +168,7 @@ TEST_F(CaptureControllerTest, TouchTargetResetOnCaptureChange) {
 
   // Build a window in the second WindowEventDispatcher and give it capture.
   // Both capture clients should return the same capture window.
-  scoped_ptr<aura::Window> w2(
+  std::unique_ptr<aura::Window> w2(
       CreateNormalWindow(2, second_host_->window(), NULL));
   w2->SetCapture();
   EXPECT_EQ(w2.get(), GetCaptureWindow());
@@ -185,14 +185,14 @@ TEST_F(CaptureControllerTest, TouchTargetResetOnCaptureChange) {
 // Test that native capture is released properly when the window with capture
 // is reparented to a different root window while it has capture.
 TEST_F(CaptureControllerTest, ReparentedWhileCaptured) {
-  scoped_ptr<TestCaptureDelegate> delegate(new TestCaptureDelegate);
+  std::unique_ptr<TestCaptureDelegate> delegate(new TestCaptureDelegate);
   ScopedCaptureClient::TestApi(capture_controller_.get())
       .SetDelegate(delegate.get());
-  scoped_ptr<TestCaptureDelegate> delegate2(new TestCaptureDelegate);
+  std::unique_ptr<TestCaptureDelegate> delegate2(new TestCaptureDelegate);
   ScopedCaptureClient::TestApi(second_capture_controller_.get())
       .SetDelegate(delegate2.get());
 
-  scoped_ptr<aura::Window> w(CreateNormalWindow(1, root_window(), NULL));
+  std::unique_ptr<aura::Window> w(CreateNormalWindow(1, root_window(), NULL));
   w->SetCapture();
   EXPECT_EQ(w.get(), GetCaptureWindow());
   EXPECT_EQ(w.get(), GetSecondCaptureWindow());
@@ -218,7 +218,7 @@ class GestureEventDeleteWindowOnScrollEnd
  public:
   GestureEventDeleteWindowOnScrollEnd() {}
 
-  void SetWindow(scoped_ptr<aura::Window> window) {
+  void SetWindow(std::unique_ptr<aura::Window> window) {
     window_ = std::move(window);
   }
   aura::Window* window() { return window_.get(); }
@@ -232,7 +232,7 @@ class GestureEventDeleteWindowOnScrollEnd
   }
 
  private:
-  scoped_ptr<aura::Window> window_;
+  std::unique_ptr<aura::Window> window_;
   DISALLOW_COPY_AND_ASSIGN(GestureEventDeleteWindowOnScrollEnd);
 };
 
@@ -240,16 +240,16 @@ class GestureEventDeleteWindowOnScrollEnd
 // it and when that window releases its capture prior to being deleted.
 // This scenario should end safely without capture being set.
 TEST_F(CaptureControllerTest, GestureResetWithCapture) {
-  scoped_ptr<GestureEventDeleteWindowOnScrollEnd> delegate(
+  std::unique_ptr<GestureEventDeleteWindowOnScrollEnd> delegate(
       new GestureEventDeleteWindowOnScrollEnd());
   const int kWindowWidth = 123;
   const int kWindowHeight = 45;
   gfx::Rect bounds(100, 200, kWindowWidth, kWindowHeight);
-  scoped_ptr<aura::Window> window1(
+  std::unique_ptr<aura::Window> window1(
       CreateNormalWindowWithBounds(-1235, root_window(), bounds, nullptr));
 
   bounds.Offset(0, 100);
-  scoped_ptr<aura::Window> window2(CreateNormalWindowWithBounds(
+  std::unique_ptr<aura::Window> window2(CreateNormalWindowWithBounds(
       -1234, root_window(), bounds, delegate.get()));
   delegate->SetWindow(std::move(window1));
 

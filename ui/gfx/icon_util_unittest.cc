@@ -6,11 +6,11 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -161,7 +161,7 @@ TEST_F(IconUtilTest, TestIconToBitmapInvalidParameters) {
             static_cast<SkBitmap*>(NULL));
 
   // The following code should succeed.
-  scoped_ptr<SkBitmap> bitmap;
+  std::unique_ptr<SkBitmap> bitmap;
   bitmap.reset(IconUtil::CreateSkBitmapFromHICON(icon.get(), icon_size));
   EXPECT_NE(bitmap.get(), static_cast<SkBitmap*>(NULL));
 }
@@ -170,7 +170,7 @@ TEST_F(IconUtilTest, TestIconToBitmapInvalidParameters) {
 // gracefully when called with invalid input parameters.
 TEST_F(IconUtilTest, TestBitmapToIconInvalidParameters) {
   ScopedHICON icon;
-  scoped_ptr<SkBitmap> bitmap;
+  std::unique_ptr<SkBitmap> bitmap;
 
   // Wrong bitmap format.
   bitmap.reset(new SkBitmap);
@@ -198,7 +198,7 @@ TEST_F(IconUtilTest, TestBitmapToIconInvalidParameters) {
 // The following test case makes sure IconUtil::CreateIconFileFromImageFamily
 // fails gracefully when called with invalid input parameters.
 TEST_F(IconUtilTest, TestCreateIconFileInvalidParameters) {
-  scoped_ptr<SkBitmap> bitmap;
+  std::unique_ptr<SkBitmap> bitmap;
   gfx::ImageFamily image_family;
   base::FilePath valid_icon_filename = temp_directory_.path().AppendASCII(
       kTempIconFilename);
@@ -271,7 +271,7 @@ TEST_F(IconUtilTest, TestCreateIconFileEmptyImageFamily) {
 // This test case makes sure that when we load an icon from disk and convert
 // the HICON into a bitmap, the bitmap has the expected format and dimensions.
 TEST_F(IconUtilTest, TestCreateSkBitmapFromHICON) {
-  scoped_ptr<SkBitmap> bitmap;
+  std::unique_ptr<SkBitmap> bitmap;
   base::FilePath small_icon_filename = test_data_directory_.AppendASCII(
       kSmallIconName);
   gfx::Size small_icon_size(kSmallIconWidth, kSmallIconHeight);
@@ -405,7 +405,7 @@ TEST_F(IconUtilTest, TestCreateIconFileFromImageFamily) {
 
 TEST_F(IconUtilTest, TestCreateImageFamilyFromIconResource) {
   HMODULE module = GetModuleHandle(NULL);
-  scoped_ptr<gfx::ImageFamily> family(
+  std::unique_ptr<gfx::ImageFamily> family(
       IconUtil::CreateImageFamilyFromIconResource(module, IDR_MAINFRAME));
   ASSERT_TRUE(family.get());
   EXPECT_FALSE(family->empty());

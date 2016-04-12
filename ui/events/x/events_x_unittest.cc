@@ -2,14 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <stddef.h>
-#include <stdint.h>
 #include <X11/XKBlib.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/extensions/XInput2.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include <cstring>
+#include <memory>
 #include <set>
 #include <utility>
 
@@ -18,7 +19,6 @@
 #undef None
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/devices/x11/device_data_manager_x11.h"
@@ -327,7 +327,7 @@ TEST_F(EventsXTest, TouchEventNotRemovingFromNativeMapping) {
   ui::ScopedXI2Event xpress0;
   xpress0.InitTouchEvent(
       0, XI_TouchBegin, kTrackingId, gfx::Point(10, 10), valuators);
-  scoped_ptr<ui::TouchEvent> upress0(new ui::TouchEvent(xpress0));
+  std::unique_ptr<ui::TouchEvent> upress0(new ui::TouchEvent(xpress0));
   EXPECT_EQ(0, GetTouchIdForTrackingId(kTrackingId));
 
   ui::ScopedXI2Event xpress1;
@@ -389,7 +389,8 @@ TEST_F(EventsXTest, DisableKeyboard) {
   int master_device_id = 3;
   device_data_manager->DisableDevice(blocked_device_id);
 
-  scoped_ptr<std::set<KeyboardCode> > excepted_keys(new std::set<KeyboardCode>);
+  std::unique_ptr<std::set<KeyboardCode>> excepted_keys(
+      new std::set<KeyboardCode>);
   excepted_keys->insert(VKEY_B);
   device_data_manager->SetDisabledKeyboardAllowedKeys(std::move(excepted_keys));
 

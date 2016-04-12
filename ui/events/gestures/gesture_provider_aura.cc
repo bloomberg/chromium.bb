@@ -51,7 +51,7 @@ void GestureProviderAura::OnTouchEventAck(uint32_t unique_event_id,
 
 void GestureProviderAura::OnGestureEvent(
     const GestureEventData& gesture) {
-  scoped_ptr<ui::GestureEvent> event(
+  std::unique_ptr<ui::GestureEvent> event(
       new ui::GestureEvent(gesture.x, gesture.y, gesture.flags,
                            gesture.time - base::TimeTicks(), gesture.details));
 

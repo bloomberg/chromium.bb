@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include "base/memory/ptr_util.h"
 #include "ui/events/ozone/device/device_manager.h"
 #include "ui/events/ozone/evdev/device_event_dispatcher_evdev.h"
 #include "ui/events/ozone/evdev/event_factory_evdev.h"
@@ -107,21 +108,21 @@ class TestEventFactoryEvdev : public EventFactoryEvdev {
 
 }  // namespace
 
-scoped_ptr<DeviceEventDispatcherEvdev> CreateDeviceEventDispatcherEvdevForTest(
-    EventFactoryEvdev* event_factory) {
-  return make_scoped_ptr(new TestDeviceEventDispatcherEvdev(event_factory));
+std::unique_ptr<DeviceEventDispatcherEvdev>
+CreateDeviceEventDispatcherEvdevForTest(EventFactoryEvdev* event_factory) {
+  return base::WrapUnique(new TestDeviceEventDispatcherEvdev(event_factory));
 }
 
-scoped_ptr<DeviceManager> CreateDeviceManagerForTest() {
-  return make_scoped_ptr(new TestDeviceManager());
+std::unique_ptr<DeviceManager> CreateDeviceManagerForTest() {
+  return base::WrapUnique(new TestDeviceManager());
 }
 
-scoped_ptr<EventFactoryEvdev> CreateEventFactoryEvdevForTest(
+std::unique_ptr<EventFactoryEvdev> CreateEventFactoryEvdevForTest(
     CursorDelegateEvdev* cursor,
     DeviceManager* device_manager,
     KeyboardLayoutEngine* keyboard_layout_engine,
     const EventDispatchCallback& callback) {
-  return make_scoped_ptr(new TestEventFactoryEvdev(
+  return base::WrapUnique(new TestEventFactoryEvdev(
       cursor, device_manager, keyboard_layout_engine, callback));
 }
 

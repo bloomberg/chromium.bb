@@ -4,6 +4,7 @@
 
 #include "ui/views/style/platform_style.h"
 
+#include "base/memory/ptr_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icons.h"
@@ -37,27 +38,27 @@ gfx::ImageSkia PlatformStyle::CreateComboboxArrow(bool is_enabled,
 }
 
 // static
-scoped_ptr<FocusableBorder> PlatformStyle::CreateComboboxBorder() {
-  return make_scoped_ptr(new FocusableRoundedBorder);
+std::unique_ptr<FocusableBorder> PlatformStyle::CreateComboboxBorder() {
+  return base::WrapUnique(new FocusableRoundedBorder);
 }
 
 // static
-scoped_ptr<Background> PlatformStyle::CreateComboboxBackground() {
-  return make_scoped_ptr(new ComboboxBackgroundMac);
+std::unique_ptr<Background> PlatformStyle::CreateComboboxBackground() {
+  return base::WrapUnique(new ComboboxBackgroundMac);
 }
 
 // static
-scoped_ptr<LabelButtonBorder> PlatformStyle::CreateLabelButtonBorder(
+std::unique_ptr<LabelButtonBorder> PlatformStyle::CreateLabelButtonBorder(
     Button::ButtonStyle style) {
   if (style == Button::STYLE_BUTTON)
-    return make_scoped_ptr(new DialogButtonBorderMac());
+    return base::WrapUnique(new DialogButtonBorderMac());
 
-  return make_scoped_ptr(new LabelButtonAssetBorder(style));
+  return base::WrapUnique(new LabelButtonAssetBorder(style));
 }
 
 // static
-scoped_ptr<ScrollBar> PlatformStyle::CreateScrollBar(bool is_horizontal) {
-  return make_scoped_ptr(new CocoaScrollBar(is_horizontal));
+std::unique_ptr<ScrollBar> PlatformStyle::CreateScrollBar(bool is_horizontal) {
+  return base::WrapUnique(new CocoaScrollBar(is_horizontal));
 }
 
 // static

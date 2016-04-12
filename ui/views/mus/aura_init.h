@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "skia/ext/refptr.h"
 #include "ui/views/mus/mus_export.h"
@@ -46,7 +45,7 @@ class VIEWS_MUS_EXPORT AuraInit {
   const std::string resource_file_;
 
   std::unique_ptr<aura::Env> env_;
-  scoped_ptr<ViewsDelegate> views_delegate_;
+  std::unique_ptr<ViewsDelegate> views_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(AuraInit);
 };

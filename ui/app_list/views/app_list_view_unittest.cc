@@ -11,6 +11,7 @@
 
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -158,9 +159,9 @@ class AppListViewTestContext {
   PaginationModel* GetPaginationModel();
 
   const TestType test_type_;
-  scoped_ptr<base::RunLoop> run_loop_;
+  std::unique_ptr<base::RunLoop> run_loop_;
   app_list::AppListView* view_;  // Owned by native widget.
-  scoped_ptr<app_list::test::AppListTestViewDelegate> delegate_;
+  std::unique_ptr<app_list::test::AppListTestViewDelegate> delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListViewTestContext);
 };
@@ -555,7 +556,7 @@ void AppListViewTestContext::RunProfileChangeTest() {
 
   // Change the profile. The original model needs to be kept alive for
   // observers to unregister themselves.
-  scoped_ptr<AppListTestModel> original_test_model(
+  std::unique_ptr<AppListTestModel> original_test_model(
       delegate_->ReleaseTestModel());
   delegate_->set_next_profile_app_count(1);
 
@@ -702,7 +703,7 @@ class AppListViewTestAura : public views::ViewsTestBase,
   }
 
  protected:
-  scoped_ptr<AppListViewTestContext> test_context_;
+  std::unique_ptr<AppListViewTestContext> test_context_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AppListViewTestAura);
@@ -716,7 +717,8 @@ class AppListViewTestDesktop : public views::ViewsTestBase,
 
   // testing::Test overrides:
   void SetUp() override {
-    set_views_delegate(make_scoped_ptr(new AppListViewTestViewsDelegate(this)));
+    set_views_delegate(
+        base::WrapUnique(new AppListViewTestViewsDelegate(this)));
     views::ViewsTestBase::SetUp();
     test_context_.reset(new AppListViewTestContext(GetParam(), NULL));
   }
@@ -727,7 +729,7 @@ class AppListViewTestDesktop : public views::ViewsTestBase,
   }
 
  protected:
-  scoped_ptr<AppListViewTestContext> test_context_;
+  std::unique_ptr<AppListViewTestContext> test_context_;
 
  private:
   class AppListViewTestViewsDelegate : public views::TestViewsDelegate {

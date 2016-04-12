@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include "base/memory/ptr_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/nine_image_painter.h"
 
@@ -26,9 +27,9 @@ std::vector<gfx::ImageSkia> ImageIdsToImages(const int image_ids[]) {
 
 }  // namespace
 
-scoped_ptr<gfx::NineImagePainter> CreateNineImagePainter(
+std::unique_ptr<gfx::NineImagePainter> CreateNineImagePainter(
     const int image_ids[]) {
-  return make_scoped_ptr(
+  return base::WrapUnique(
       new gfx::NineImagePainter(ImageIdsToImages(image_ids)));
 }
 

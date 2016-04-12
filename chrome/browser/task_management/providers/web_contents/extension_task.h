@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_TASK_MANAGEMENT_PROVIDERS_WEB_CONTENTS_EXTENSION_TASK_H_
 
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/task_management/providers/web_contents/renderer_task.h"
 #include "extensions/browser/extension_icon_image.h"
 #include "extensions/common/view_type.h"

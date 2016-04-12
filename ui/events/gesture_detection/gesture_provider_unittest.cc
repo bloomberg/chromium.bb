@@ -2,16 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ui/events/gesture_detection/gesture_provider.h"
+
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/gesture_detection/gesture_event_data.h"
-#include "ui/events/gesture_detection/gesture_provider.h"
 #include "ui/events/gesture_detection/motion_event.h"
 #include "ui/events/test/motion_event_test_utils.h"
 #include "ui/gfx/geometry/point_f.h"
@@ -415,8 +417,8 @@ class GestureProviderTest : public testing::Test, public GestureProviderClient {
   }
 
   std::vector<GestureEventData> gestures_;
-  scoped_ptr<GestureProvider> gesture_provider_;
-  scoped_ptr<GestureEventData> active_scroll_begin_event_;
+  std::unique_ptr<GestureProvider> gesture_provider_;
+  std::unique_ptr<GestureEventData> active_scroll_begin_event_;
   base::MessageLoopForUI message_loop_;
 };
 

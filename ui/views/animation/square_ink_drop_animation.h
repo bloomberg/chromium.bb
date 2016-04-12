@@ -5,10 +5,10 @@
 #ifndef UI_VIEWS_ANIMATION_SQUARE_INK_DROP_ANIMATION_H_
 #define UI_VIEWS_ANIMATION_SQUARE_INK_DROP_ANIMATION_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/compositor/layer.h"
@@ -163,10 +163,10 @@ class VIEWS_EXPORT SquareInkDropAnimation : public InkDropAnimation {
   int small_corner_radius_;
 
   // ui::LayerDelegate to paint circles for all the circle layers.
-  scoped_ptr<CircleLayerDelegate> circle_layer_delegate_;
+  std::unique_ptr<CircleLayerDelegate> circle_layer_delegate_;
 
   // ui::LayerDelegate to paint rectangles for all the rectangle layers.
-  scoped_ptr<RectangleLayerDelegate> rect_layer_delegate_;
+  std::unique_ptr<RectangleLayerDelegate> rect_layer_delegate_;
 
   // The root layer that parents the animating layers. The root layer is used to
   // manipulate opacity and location, and its children are used to manipulate
@@ -174,7 +174,7 @@ class VIEWS_EXPORT SquareInkDropAnimation : public InkDropAnimation {
   ui::Layer root_layer_;
 
   // ui::Layers for all of the painted shape layers that compose the ink drop.
-  scoped_ptr<ui::Layer> painted_layers_[PAINTED_SHAPE_COUNT];
+  std::unique_ptr<ui::Layer> painted_layers_[PAINTED_SHAPE_COUNT];
 
   DISALLOW_COPY_AND_ASSIGN(SquareInkDropAnimation);
 };

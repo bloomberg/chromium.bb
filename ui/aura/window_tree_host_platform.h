@@ -5,9 +5,10 @@
 #ifndef UI_AURA_WINDOW_TREE_HOST_PLATFORM_H_
 #define UI_AURA_WINDOW_TREE_HOST_PLATFORM_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/aura/aura_export.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/gfx/native_widget_types.h"
@@ -41,7 +42,7 @@ class AURA_EXPORT WindowTreeHostPlatform
 
  protected:
   WindowTreeHostPlatform();
-  void SetPlatformWindow(scoped_ptr<ui::PlatformWindow> window);
+  void SetPlatformWindow(std::unique_ptr<ui::PlatformWindow> window);
   ui::PlatformWindow* platform_window() { return window_.get(); }
 
   // ui::PlatformWindowDelegate:
@@ -59,7 +60,7 @@ class AURA_EXPORT WindowTreeHostPlatform
 
  private:
   gfx::AcceleratedWidget widget_;
-  scoped_ptr<ui::PlatformWindow> window_;
+  std::unique_ptr<ui::PlatformWindow> window_;
   gfx::NativeCursor current_cursor_;
   gfx::Rect bounds_;
 

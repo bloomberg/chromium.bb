@@ -30,8 +30,8 @@ class ViewsContentClientMainPartsChromeOS
 
  private:
   // Enable a minimal set of views::corewm to be initialized.
-  scoped_ptr<gfx::Screen> test_screen_;
-  scoped_ptr< ::wm::WMTestHelper> wm_test_helper_;
+  std::unique_ptr<gfx::Screen> test_screen_;
+  std::unique_ptr<::wm::WMTestHelper> wm_test_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewsContentClientMainPartsChromeOS);
 };

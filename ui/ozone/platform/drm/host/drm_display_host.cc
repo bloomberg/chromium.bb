@@ -5,6 +5,7 @@
 #include "ui/ozone/platform/drm/host/drm_display_host.h"
 
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "ui/ozone/common/display_snapshot_proxy.h"
 #include "ui/ozone/common/display_util.h"
@@ -28,7 +29,7 @@ DrmDisplayHost::~DrmDisplayHost() {
 
 void DrmDisplayHost::UpdateDisplaySnapshot(
     const DisplaySnapshot_Params& params) {
-  snapshot_ = make_scoped_ptr(new DisplaySnapshotProxy(params));
+  snapshot_ = base::WrapUnique(new DisplaySnapshotProxy(params));
 }
 
 void DrmDisplayHost::Configure(const DisplayMode* mode,

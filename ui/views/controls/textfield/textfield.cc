@@ -292,7 +292,7 @@ Textfield::Textfield()
   set_context_menu_controller(this);
   set_drag_controller(this);
   GetRenderText()->SetFontList(GetDefaultFontList());
-  SetBorder(scoped_ptr<Border>(new FocusableBorder()));
+  SetBorder(std::unique_ptr<Border>(new FocusableBorder()));
   SetFocusable(true);
 
   if (ViewsDelegate::GetInstance()) {
@@ -572,7 +572,7 @@ void Textfield::ExecuteCommand(int command_id) {
   ExecuteCommand(command_id, ui::EF_NONE);
 }
 
-void Textfield::SetFocusPainter(scoped_ptr<Painter> focus_painter) {
+void Textfield::SetFocusPainter(std::unique_ptr<Painter> focus_painter) {
   focus_painter_ = std::move(focus_painter);
 }
 
@@ -1102,7 +1102,7 @@ void Textfield::WriteDragDataForView(View* sender,
       gfx::Screen::GetScreen()->GetDisplayNearestWindow(native_view);
   size.SetToMin(gfx::Size(display.size().width(), height()));
   label.SetBoundsRect(gfx::Rect(size));
-  scoped_ptr<gfx::Canvas> canvas(
+  std::unique_ptr<gfx::Canvas> canvas(
       GetCanvasForDragImage(GetWidget(), label.size()));
   label.SetEnabledColor(GetTextColor());
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)

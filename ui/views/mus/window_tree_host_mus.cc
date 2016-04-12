@@ -4,6 +4,7 @@
 
 #include "ui/views/mus/window_tree_host_mus.h"
 
+#include "base/memory/ptr_util.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/events/event.h"
@@ -22,7 +23,7 @@ WindowTreeHostMus::WindowTreeHostMus(mojo::Connector* connector,
     : native_widget_(native_widget),
       show_state_(ui::PLATFORM_WINDOW_STATE_UNKNOWN) {
   SetPlatformWindow(
-      make_scoped_ptr(new PlatformWindowMus(this, connector, window)));
+      base::WrapUnique(new PlatformWindowMus(this, connector, window)));
   // The location of events is already transformed, and there is no way to
   // correctly determine the reverse transform. So, don't attempt to transform
   // event locations, else the root location is wrong.

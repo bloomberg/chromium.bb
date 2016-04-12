@@ -27,7 +27,7 @@ class GbmSurfaceFactory;
 // presentation.
 class GbmSurfaceless : public SurfaceOzoneEGL {
  public:
-  GbmSurfaceless(scoped_ptr<DrmWindowProxy> window,
+  GbmSurfaceless(std::unique_ptr<DrmWindowProxy> window,
                  GbmSurfaceFactory* surface_manager);
   ~GbmSurfaceless() override;
 
@@ -38,13 +38,13 @@ class GbmSurfaceless : public SurfaceOzoneEGL {
   bool ResizeNativeWindow(const gfx::Size& viewport_size) override;
   bool OnSwapBuffers() override;
   void OnSwapBuffersAsync(const SwapCompletionCallback& callback) override;
-  scoped_ptr<gfx::VSyncProvider> CreateVSyncProvider() override;
+  std::unique_ptr<gfx::VSyncProvider> CreateVSyncProvider() override;
   bool IsUniversalDisplayLinkDevice() override;
   void* /* EGLConfig */ GetEGLSurfaceConfig(
       const EglConfigCallbacks& egl) override;
 
  protected:
-  scoped_ptr<DrmWindowProxy> window_;
+  std::unique_ptr<DrmWindowProxy> window_;
 
   GbmSurfaceFactory* surface_manager_;
 

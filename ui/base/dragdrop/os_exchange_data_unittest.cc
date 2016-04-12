@@ -23,7 +23,7 @@ class OSExchangeDataTest : public PlatformTest {
 
  private:
   base::MessageLoopForUI message_loop_;
-  scoped_ptr<PlatformEventSource> event_source_;
+  std::unique_ptr<PlatformEventSource> event_source_;
 };
 
 TEST_F(OSExchangeDataTest, StringDataGetAndSet) {

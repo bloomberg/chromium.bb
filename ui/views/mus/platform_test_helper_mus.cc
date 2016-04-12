@@ -2,9 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/views/test/platform_test_helper.h"
-
 #include "base/command_line.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "mojo/shell/background/background_shell.h"
 #include "mojo/shell/background/tests/test_catalog_store.h"
@@ -13,6 +12,7 @@
 #include "mojo/shell/public/cpp/shell_connection.h"
 #include "ui/aura/env.h"
 #include "ui/views/mus/window_manager_connection.h"
+#include "ui/views/test/platform_test_helper.h"
 #include "ui/views/views_delegate.h"
 
 using mojo::shell::BackgroundShell;
@@ -31,18 +31,18 @@ class DefaultShellClient : public mojo::ShellClient {
   DISALLOW_COPY_AND_ASSIGN(DefaultShellClient);
 };
 
-scoped_ptr<mojo::shell::TestCatalogStore> BuildTestCatalogStore() {
-  scoped_ptr<base::ListValue> apps(new base::ListValue);
+std::unique_ptr<mojo::shell::TestCatalogStore> BuildTestCatalogStore() {
+  std::unique_ptr<base::ListValue> apps(new base::ListValue);
   apps->Append(
       mojo::shell::BuildPermissiveSerializedAppInfo(kTestName, "test"));
-  return make_scoped_ptr(new mojo::shell::TestCatalogStore(std::move(apps)));
+  return base::WrapUnique(new mojo::shell::TestCatalogStore(std::move(apps)));
 }
 
 class PlatformTestHelperMus : public PlatformTestHelper {
  public:
   PlatformTestHelperMus() {
     background_shell_.reset(new BackgroundShell);
-    scoped_ptr<BackgroundShell::InitParams> init_params(
+    std::unique_ptr<BackgroundShell::InitParams> init_params(
         new BackgroundShell::InitParams);
     init_params->catalog_store = BuildTestCatalogStore();
     background_shell_->Init(std::move(init_params));
@@ -92,9 +92,9 @@ class PlatformTestHelperMus : public PlatformTestHelper {
     return result;
   }
 
-  scoped_ptr<BackgroundShell> background_shell_;
-  scoped_ptr<mojo::ShellConnection> shell_connection_;
-  scoped_ptr<DefaultShellClient> shell_client_;
+  std::unique_ptr<BackgroundShell> background_shell_;
+  std::unique_ptr<mojo::ShellConnection> shell_connection_;
+  std::unique_ptr<DefaultShellClient> shell_client_;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformTestHelperMus);
 };
@@ -102,8 +102,8 @@ class PlatformTestHelperMus : public PlatformTestHelper {
 }  // namespace
 
 // static
-scoped_ptr<PlatformTestHelper> PlatformTestHelper::Create() {
-  return make_scoped_ptr(new PlatformTestHelperMus);
+std::unique_ptr<PlatformTestHelper> PlatformTestHelper::Create() {
+  return base::WrapUnique(new PlatformTestHelperMus);
 }
 
 }  // namespace views

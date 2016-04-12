@@ -6,14 +6,14 @@
 #define UI_VIEWS_WIN_HWND_MESSAGE_HANDLER_H_
 
 #include <windows.h>
-#include <stddef.h>
 
+#include <stddef.h>
+#include <memory>
 #include <set>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/win/scoped_gdi_object.h"
@@ -519,7 +519,7 @@ class VIEWS_EXPORT HWNDMessageHandler :
 
   HWNDMessageHandlerDelegate* delegate_;
 
-  scoped_ptr<FullscreenHandler> fullscreen_handler_;
+  std::unique_ptr<FullscreenHandler> fullscreen_handler_;
 
   // Set to true in Close() and false is CloseNow().
   bool waiting_for_close_now_;
@@ -595,7 +595,7 @@ class VIEWS_EXPORT HWNDMessageHandler :
 
   // Stores a pointer to the WindowEventTarget interface implemented by this
   // class. Allows callers to retrieve the interface pointer.
-  scoped_ptr<ui::ViewProp> prop_window_target_;
+  std::unique_ptr<ui::ViewProp> prop_window_target_;
 
   // Number of active touch down contexts. This is incremented on touch down
   // events and decremented later using a delayed task.
@@ -627,12 +627,14 @@ class VIEWS_EXPORT HWNDMessageHandler :
   bool sent_window_size_changing_;
 
   // Manages observation of Windows Session Change messages.
-  scoped_ptr<WindowsSessionChangeObserver> windows_session_change_observer_;
+  std::unique_ptr<WindowsSessionChangeObserver>
+      windows_session_change_observer_;
 
   // This class provides functionality to register the legacy window as a
   // Direct Manipulation consumer. This allows us to support smooth scroll
   // in Chrome on Windows 10.
-  scoped_ptr<gfx::win::DirectManipulationHelper> direct_manipulation_helper_;
+  std::unique_ptr<gfx::win::DirectManipulationHelper>
+      direct_manipulation_helper_;
 
   // The location where the user clicked on the caption. We cache this when we
   // receive the WM_NCLBUTTONDOWN message. We use this in the subsequent

@@ -6,8 +6,9 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
@@ -129,7 +130,7 @@ class DesktopScreenX11Test : public views::ViewsTestBase,
     changed_display_.push_back(display);
   }
 
-  scoped_ptr<DesktopScreenX11> screen_;
+  std::unique_ptr<DesktopScreenX11> screen_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopScreenX11Test);
 };

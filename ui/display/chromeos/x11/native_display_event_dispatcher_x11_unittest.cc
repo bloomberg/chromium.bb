@@ -124,8 +124,8 @@ class NativeDisplayEventDispatcherX11Test : public testing::Test {
                                  bool connected);
 
   int xrandr_event_base_;
-  scoped_ptr<TestHelperDelegate> helper_delegate_;
-  scoped_ptr<NativeDisplayEventDispatcherX11> dispatcher_;
+  std::unique_ptr<TestHelperDelegate> helper_delegate_;
+  std::unique_ptr<NativeDisplayEventDispatcherX11> dispatcher_;
   base::SimpleTestTickClock* test_tick_clock_;  // Owned by |dispatcher_|.
 
  private:
@@ -140,7 +140,7 @@ NativeDisplayEventDispatcherX11Test::NativeDisplayEventDispatcherX11Test()
       test_tick_clock_(new base::SimpleTestTickClock) {
   test_tick_clock_->Advance(base::TimeDelta::FromMilliseconds(1));
   dispatcher_->SetTickClockForTest(
-      scoped_ptr<base::TickClock>(test_tick_clock_));
+      std::unique_ptr<base::TickClock>(test_tick_clock_));
 }
 
 NativeDisplayEventDispatcherX11Test::~NativeDisplayEventDispatcherX11Test() {}

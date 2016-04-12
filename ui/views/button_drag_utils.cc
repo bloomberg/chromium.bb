@@ -81,7 +81,7 @@ void SetDragImage(const GURL& url,
     press_point = gfx::Vector2d(prefsize.width() / 2, prefsize.height() / 2);
 
   // Render the image.
-  scoped_ptr<gfx::Canvas> canvas(
+  std::unique_ptr<gfx::Canvas> canvas(
       views::GetCanvasForDragImage(widget, prefsize));
   button.Paint(ui::CanvasPainter(canvas.get(), 1.f).context());
   drag_utils::SetDragImageOnDataObject(*canvas, press_point, data);

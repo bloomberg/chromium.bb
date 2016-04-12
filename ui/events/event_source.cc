@@ -30,7 +30,7 @@ void EventSource::RemoveEventRewriter(EventRewriter* rewriter) {
 }
 
 EventDispatchDetails EventSource::SendEventToProcessor(Event* event) {
-  scoped_ptr<Event> rewritten_event;
+  std::unique_ptr<Event> rewritten_event;
   EventRewriteStatus status = EVENT_REWRITE_CONTINUE;
   EventRewriterList::const_iterator it = rewriter_list_.begin(),
                                     end = rewriter_list_.end();
@@ -53,7 +53,7 @@ EventDispatchDetails EventSource::SendEventToProcessor(Event* event) {
     return details;
 
   while (status == EVENT_REWRITE_DISPATCH_ANOTHER) {
-    scoped_ptr<Event> new_event;
+    std::unique_ptr<Event> new_event;
     status = (*it)->NextDispatchEvent(*rewritten_event, &new_event);
     if (status == EVENT_REWRITE_DISCARD)
       return EventDispatchDetails();

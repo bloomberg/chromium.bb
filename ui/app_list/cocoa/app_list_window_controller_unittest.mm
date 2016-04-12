@@ -29,7 +29,7 @@ class AppListWindowControllerTest : public ui::CocoaTest {
   }
 
  private:
-  scoped_ptr<app_list::test::AppListTestViewDelegate> delegate_;
+  std::unique_ptr<app_list::test::AppListTestViewDelegate> delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListWindowControllerTest);
 };

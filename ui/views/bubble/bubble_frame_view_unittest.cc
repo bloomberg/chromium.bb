@@ -2,14 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ui/views/bubble/bubble_frame_view.h"
+
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/bubble/bubble_border.h"
-#include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/test/test_views.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
@@ -70,7 +72,7 @@ class TestBubbleFrameView : public BubbleFrameView {
       : BubbleFrameView(gfx::Insets(), gfx::Insets(kMargin)),
         test_base_(test_base),
         available_bounds_(gfx::Rect(0, 0, 1000, 1000)) {
-    SetBubbleBorder(scoped_ptr<BubbleBorder>(
+    SetBubbleBorder(std::unique_ptr<BubbleBorder>(
         new BubbleBorder(kArrow, BubbleBorder::NO_SHADOW, kColor)));
   }
   ~TestBubbleFrameView() override {}
@@ -102,8 +104,8 @@ class TestBubbleFrameView : public BubbleFrameView {
   gfx::Rect available_bounds_;
 
   // Widget returned by GetWidget(). Only created if GetWidget() is called.
-  mutable scoped_ptr<TestBubbleFrameViewWidgetDelegate> widget_delegate_;
-  mutable scoped_ptr<Widget> widget_;
+  mutable std::unique_ptr<TestBubbleFrameViewWidgetDelegate> widget_delegate_;
+  mutable std::unique_ptr<Widget> widget_;
 
   DISALLOW_COPY_AND_ASSIGN(TestBubbleFrameView);
 };

@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/supports_user_data.h"
 #include "ui/aura/aura_export.h"
@@ -88,7 +87,7 @@ class AURA_EXPORT Env : public ui::EventTarget, public base::SupportsUserData {
   // Overridden from ui::EventTarget:
   bool CanAcceptEvent(const ui::Event& event) override;
   ui::EventTarget* GetParentTarget() override;
-  scoped_ptr<ui::EventTargetIterator> GetChildIterator() const override;
+  std::unique_ptr<ui::EventTargetIterator> GetChildIterator() const override;
   ui::EventTargeter* GetEventTargeter() override;
 
   base::ObserverList<EnvObserver> observers_;
@@ -98,8 +97,8 @@ class AURA_EXPORT Env : public ui::EventTarget, public base::SupportsUserData {
   gfx::Point last_mouse_location_;
   bool is_touch_down_;
 
-  scoped_ptr<InputStateLookup> input_state_lookup_;
-  scoped_ptr<ui::PlatformEventSource> event_source_;
+  std::unique_ptr<InputStateLookup> input_state_lookup_;
+  std::unique_ptr<ui::PlatformEventSource> event_source_;
 
   ui::ContextFactory* context_factory_;
 

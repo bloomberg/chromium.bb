@@ -5,9 +5,10 @@
 #ifndef UI_VIEWS_WINDOW_CUSTOM_FRAME_VIEW_H_
 #define UI_VIEWS_WINDOW_CUSTOM_FRAME_VIEW_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/window/frame_buttons.h"
@@ -144,7 +145,7 @@ class VIEWS_EXPORT CustomFrameView : public NonClientFrameView,
   ImageButton* close_button_;
 
   // Background painter for the window frame.
-  scoped_ptr<FrameBackground> frame_background_;
+  std::unique_ptr<FrameBackground> frame_background_;
 
   // The horizontal boundaries for the title bar to layout within. Restricted
   // by the space used by the leading and trailing buttons.

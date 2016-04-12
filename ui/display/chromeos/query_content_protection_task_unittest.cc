@@ -21,9 +21,10 @@ namespace test {
 
 namespace {
 
-scoped_ptr<DisplaySnapshot> CreateDisplaySnapshot(int64_t id,
-                                                  DisplayConnectionType type) {
-  scoped_ptr<TestDisplaySnapshot> display(new TestDisplaySnapshot());
+std::unique_ptr<DisplaySnapshot> CreateDisplaySnapshot(
+    int64_t id,
+    DisplayConnectionType type) {
+  std::unique_ptr<TestDisplaySnapshot> display(new TestDisplaySnapshot());
   display->set_display_id(id);
   display->set_type(type);
 

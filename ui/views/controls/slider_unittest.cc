@@ -4,11 +4,11 @@
 
 #include "ui/views/controls/slider.h"
 
+#include <memory>
 #include <string>
 
 #include "base/i18n/rtl.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -169,7 +169,7 @@ class SliderTest : public views::ViewsTestBase {
   // The widget container for the slider being tested.
   views::Widget* widget_;
   // An event generator.
-  scoped_ptr<ui::test::EventGenerator> event_generator_;
+  std::unique_ptr<ui::test::EventGenerator> event_generator_;
 
   DISALLOW_COPY_AND_ASSIGN(SliderTest);
 };

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
@@ -52,8 +54,8 @@ typedef aura::test::AuraTestBase WindowReordererTest;
 // Test that views with layers and views with associated windows are reordered
 // according to the view hierarchy.
 TEST_F(WindowReordererTest, Basic) {
-  scoped_ptr<Widget> parent(CreateControlWidget(root_window(),
-                                                gfx::Rect(0, 0, 100, 100)));
+  std::unique_ptr<Widget> parent(
+      CreateControlWidget(root_window(), gfx::Rect(0, 0, 100, 100)));
   parent->Show();
   aura::Window* parent_window = parent->GetNativeWindow();
 
@@ -68,12 +70,12 @@ TEST_F(WindowReordererTest, Basic) {
   v->layer()->set_name("v");
   contents_view->AddChildView(v);
 
-  scoped_ptr<Widget> w1(CreateControlWidget(parent_window,
-                                            gfx::Rect(0, 1, 100, 101)));
+  std::unique_ptr<Widget> w1(
+      CreateControlWidget(parent_window, gfx::Rect(0, 1, 100, 101)));
   SetWindowAndLayerName(w1->GetNativeView(), "w1");
   w1->Show();
-  scoped_ptr<Widget> w2(CreateControlWidget(parent_window,
-                                            gfx::Rect(0, 2, 100, 102)));
+  std::unique_ptr<Widget> w2(
+      CreateControlWidget(parent_window, gfx::Rect(0, 2, 100, 102)));
   SetWindowAndLayerName(w2->GetNativeView(), "w2");
   w2->Show();
 
@@ -130,8 +132,8 @@ TEST_F(WindowReordererTest, Basic) {
 // - associating the "host" view and window
 // all correctly reorder the child windows and layers.
 TEST_F(WindowReordererTest, Association) {
-  scoped_ptr<Widget> parent(CreateControlWidget(root_window(),
-                                                gfx::Rect(0, 0, 100, 100)));
+  std::unique_ptr<Widget> parent(
+      CreateControlWidget(root_window(), gfx::Rect(0, 0, 100, 100)));
   parent->Show();
   aura::Window* parent_window = parent->GetNativeWindow();
 
@@ -191,8 +193,8 @@ TEST_F(WindowReordererTest, Association) {
 // view and the parent layer of the associated window are different. Test that
 // the layers and windows are properly reordered in this case.
 TEST_F(WindowReordererTest, HostViewParentHasLayer) {
-  scoped_ptr<Widget> parent(CreateControlWidget(root_window(),
-                                                gfx::Rect(0, 0, 100, 100)));
+  std::unique_ptr<Widget> parent(
+      CreateControlWidget(root_window(), gfx::Rect(0, 0, 100, 100)));
   parent->Show();
   aura::Window* parent_window = parent->GetNativeWindow();
 
@@ -217,8 +219,8 @@ TEST_F(WindowReordererTest, HostViewParentHasLayer) {
   v11->layer()->set_name("v11");
   v1->AddChildView(v11);
 
-  scoped_ptr<Widget> w(CreateControlWidget(parent_window,
-                                           gfx::Rect(0, 1, 100, 101)));
+  std::unique_ptr<Widget> w(
+      CreateControlWidget(parent_window, gfx::Rect(0, 1, 100, 101)));
   SetWindowAndLayerName(w->GetNativeView(), "w");
   w->Show();
 

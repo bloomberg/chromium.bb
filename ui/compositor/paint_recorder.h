@@ -5,8 +5,9 @@
 #ifndef UI_COMPOSITOR_PAINT_RECORDER_H_
 #define UI_COMPOSITOR_PAINT_RECORDER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "skia/ext/refptr.h"
 #include "ui/compositor/compositor_export.h"
 #include "ui/gfx/canvas.h"

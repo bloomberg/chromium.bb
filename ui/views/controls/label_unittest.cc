@@ -591,7 +591,8 @@ TEST_F(LabelTest, ResetRenderTextData) {
 
 #if !defined(OS_MACOSX)
 TEST_F(LabelTest, MultilineSupportedRenderText) {
-  scoped_ptr<gfx::RenderText> render_text(gfx::RenderText::CreateInstance());
+  std::unique_ptr<gfx::RenderText> render_text(
+      gfx::RenderText::CreateInstance());
   ASSERT_TRUE(render_text->MultilineSupported());
 
   Label label;

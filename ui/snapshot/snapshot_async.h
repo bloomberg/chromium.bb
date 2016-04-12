@@ -5,8 +5,9 @@
 #ifndef UI_SNAPSHOT_SNAPSHOT_ASYNC_H_
 #define UI_SNAPSHOT_SNAPSHOT_ASYNC_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "cc/output/copy_output_result.h"
 #include "ui/snapshot/snapshot.h"
 
@@ -28,12 +29,12 @@ class SnapshotAsync {
       const GrabWindowSnapshotAsyncCallback& callback,
       const gfx::Size& target_size,
       scoped_refptr<base::TaskRunner> background_task_runner,
-      scoped_ptr<cc::CopyOutputResult> result);
+      std::unique_ptr<cc::CopyOutputResult> result);
 
   static void EncodeCopyOutputResult(
       const GrabWindowSnapshotAsyncPNGCallback& callback,
       scoped_refptr<base::TaskRunner> background_task_runner,
-      scoped_ptr<cc::CopyOutputResult> result);
+      std::unique_ptr<cc::CopyOutputResult> result);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(SnapshotAsync);

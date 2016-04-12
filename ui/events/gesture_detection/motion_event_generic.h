@@ -94,7 +94,7 @@ class GESTURE_DETECTION_EXPORT MotionEventGeneric : public MotionEvent {
 
   // Add an event to the history. |this| and |event| must have the same pointer
   // count and must both have an action of ACTION_MOVE.
-  void PushHistoricalEvent(scoped_ptr<MotionEvent> event);
+  void PushHistoricalEvent(std::unique_ptr<MotionEvent> event);
 
   void set_action(Action action) { action_ = action; }
   void set_event_time(base::TimeTicks event_time) { event_time_ = event_time; }
@@ -105,8 +105,10 @@ class GESTURE_DETECTION_EXPORT MotionEventGeneric : public MotionEvent {
   void set_button_state(int button_state) { button_state_ = button_state; }
   void set_flags(int flags) { flags_ = flags; }
 
-  static scoped_ptr<MotionEventGeneric> CloneEvent(const MotionEvent& event);
-  static scoped_ptr<MotionEventGeneric> CancelEvent(const MotionEvent& event);
+  static std::unique_ptr<MotionEventGeneric> CloneEvent(
+      const MotionEvent& event);
+  static std::unique_ptr<MotionEventGeneric> CancelEvent(
+      const MotionEvent& event);
 
  protected:
   MotionEventGeneric();

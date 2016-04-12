@@ -60,7 +60,7 @@ class COMPOSITOR_EXPORT ScopedLayerAnimationSettings {
   gfx::Tween::Type old_tween_type_;
   LayerAnimator::PreemptionStrategy old_preemption_strategy_;
   std::set<ImplicitAnimationObserver*> observers_;
-  scoped_ptr<InvertingObserver> inverse_observer_;
+  std::unique_ptr<InvertingObserver> inverse_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedLayerAnimationSettings);
 };

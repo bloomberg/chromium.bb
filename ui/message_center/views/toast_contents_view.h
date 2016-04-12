@@ -83,7 +83,7 @@ class ToastContentsView : public views::WidgetDelegateView,
   void ClickOnNotification(const std::string& notification_id) override;
   void RemoveNotification(const std::string& notification_id,
                           bool by_user) override;
-  scoped_ptr<ui::MenuModel> CreateMenuModel(
+  std::unique_ptr<ui::MenuModel> CreateMenuModel(
       const NotifierId& notifier_id,
       const base::string16& display_source) override;
   bool HasClickedListener(const std::string& notification_id) override;
@@ -122,8 +122,8 @@ class ToastContentsView : public views::WidgetDelegateView,
   // Id if the corresponding Notification.
   std::string id_;
 
-  scoped_ptr<gfx::SlideAnimation> bounds_animation_;
-  scoped_ptr<gfx::SlideAnimation> fade_animation_;
+  std::unique_ptr<gfx::SlideAnimation> bounds_animation_;
+  std::unique_ptr<gfx::SlideAnimation> fade_animation_;
 
   gfx::Rect animated_bounds_start_;
   gfx::Rect animated_bounds_end_;

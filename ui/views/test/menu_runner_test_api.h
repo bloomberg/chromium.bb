@@ -5,8 +5,9 @@
 #ifndef UI_VIEWS_TEST_MENU_RUNNER_TEST_API_H_
 #define UI_VIEWS_TEST_MENU_RUNNER_TEST_API_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace views {
 
@@ -22,7 +23,8 @@ class MenuRunnerTestAPI {
   ~MenuRunnerTestAPI();
 
   // Sets the menu runner handler.
-  void SetMenuRunnerHandler(scoped_ptr<MenuRunnerHandler> menu_runner_handler);
+  void SetMenuRunnerHandler(
+      std::unique_ptr<MenuRunnerHandler> menu_runner_handler);
 
  private:
   MenuRunner* menu_runner_;

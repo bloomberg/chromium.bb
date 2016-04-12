@@ -5,8 +5,9 @@
 #ifndef UI_KEYBOARD_CONTENT_KEYBOARD_UI_CONTENT_H_
 #define UI_KEYBOARD_CONTENT_KEYBOARD_UI_CONTENT_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/public/common/media_stream_request.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/ime/text_input_type.h"
@@ -118,10 +119,10 @@ class KEYBOARD_EXPORT KeyboardUIContent : public KeyboardUI,
 
   const GURL default_url_;
 
-  scoped_ptr<content::WebContents> keyboard_contents_;
-  scoped_ptr<wm::Shadow> shadow_;
+  std::unique_ptr<content::WebContents> keyboard_contents_;
+  std::unique_ptr<wm::Shadow> shadow_;
 
-  scoped_ptr<WindowBoundsChangeObserver> window_bounds_observer_;
+  std::unique_ptr<WindowBoundsChangeObserver> window_bounds_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(KeyboardUIContent);
 };

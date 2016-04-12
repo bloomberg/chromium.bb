@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/threading/thread_local.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/output_surface.h"
@@ -44,7 +45,7 @@ class SurfaceBinding::PerConnectionState
   static PerConnectionState* Get(mojo::Connector* connector,
                                  mus::WindowTreeConnection* connection);
 
-  scoped_ptr<cc::OutputSurface> CreateOutputSurface(
+  std::unique_ptr<cc::OutputSurface> CreateOutputSurface(
       mus::Window* window,
       mus::mojom::SurfaceType type);
 
@@ -93,7 +94,7 @@ SurfaceBinding::PerConnectionState* SurfaceBinding::PerConnectionState::Get(
   return (*window_map)[connection];
 }
 
-scoped_ptr<cc::OutputSurface>
+std::unique_ptr<cc::OutputSurface>
 SurfaceBinding::PerConnectionState::CreateOutputSurface(
     mus::Window* window,
     mus::mojom::SurfaceType surface_type) {
@@ -104,7 +105,7 @@ SurfaceBinding::PerConnectionState::CreateOutputSurface(
 
   scoped_refptr<cc::ContextProvider> context_provider(
       new mus::ContextProvider(cb.PassInterface().PassHandle()));
-  return make_scoped_ptr(new mus::OutputSurface(
+  return base::WrapUnique(new mus::OutputSurface(
       context_provider, window->RequestSurface(surface_type)));
 }
 
@@ -139,7 +140,7 @@ SurfaceBinding::SurfaceBinding(mojo::Connector* connector,
 
 SurfaceBinding::~SurfaceBinding() {}
 
-scoped_ptr<cc::OutputSurface> SurfaceBinding::CreateOutputSurface() {
+std::unique_ptr<cc::OutputSurface> SurfaceBinding::CreateOutputSurface() {
   return state_->CreateOutputSurface(window_, surface_type_);
 }
 

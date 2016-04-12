@@ -9,10 +9,10 @@
 
 #include <algorithm>
 #include <limits>
+#include <memory>
 #include <vector>
 
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkUnPreMultiply.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -397,7 +397,7 @@ SkColor CalculateKMeanColorOfBitmap(const SkBitmap& bitmap,
   // above uses non-pre-multiplied alpha. Transform the bitmap before we
   // analyze it because the function reads each pixel multiple times.
   int pixel_count = bitmap.width() * bitmap.height();
-  scoped_ptr<uint32_t[]> image(new uint32_t[pixel_count]);
+  std::unique_ptr<uint32_t[]> image(new uint32_t[pixel_count]);
   UnPreMultiply(bitmap, image.get(), pixel_count);
 
   return CalculateKMeanColorOfBuffer(reinterpret_cast<uint8_t*>(image.get()),

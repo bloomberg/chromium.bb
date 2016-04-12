@@ -26,7 +26,7 @@ void MessageViewContextMenuController::ShowContextMenuForView(
     ui::MenuSourceType source_type) {
   // Assumes that the target view has to be MessageView.
   MessageView* message_view = static_cast<MessageView*>(source);
-  scoped_ptr<ui::MenuModel> menu_model(controller_->CreateMenuModel(
+  std::unique_ptr<ui::MenuModel> menu_model(controller_->CreateMenuModel(
       message_view->notifier_id(), message_view->display_source()));
 
   if (!menu_model || menu_model->GetItemCount() == 0)

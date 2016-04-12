@@ -5,7 +5,8 @@
 #ifndef UI_EVENTS_GESTURE_DETECTION_GESTURE_PROVIDER_H_
 #define UI_EVENTS_GESTURE_DETECTION_GESTURE_PROVIDER_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "ui/events/gesture_detection/gesture_detection_export.h"
 #include "ui/events/gesture_detection/gesture_detector.h"
 #include "ui/events/gesture_detection/gesture_event_data.h"
@@ -100,9 +101,9 @@ class GESTURE_DETECTION_EXPORT GestureProvider {
   void UpdateDoubleTapDetectionSupport();
 
   class GestureListenerImpl;
-  scoped_ptr<GestureListenerImpl> gesture_listener_;
+  std::unique_ptr<GestureListenerImpl> gesture_listener_;
 
-  scoped_ptr<MotionEvent> current_down_event_;
+  std::unique_ptr<MotionEvent> current_down_event_;
 
   // Logs information on touch and gesture events.
   GestureTouchUMAHistogram uma_histogram_;

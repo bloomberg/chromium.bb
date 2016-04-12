@@ -2,14 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ui/gfx/font_render_params.h"
+
+#include <memory>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/win/registry.h"
-#include "ui/gfx/font_render_params.h"
 #include "ui/gfx/win/direct_write.h"
 #include "ui/gfx/win/singleton_hwnd_observer.h"
 
@@ -94,8 +96,8 @@ class CachedFontRenderParams {
     }
   }
 
-  scoped_ptr<FontRenderParams> params_;
-  scoped_ptr<SingletonHwndObserver> singleton_hwnd_observer_;
+  std::unique_ptr<FontRenderParams> params_;
+  std::unique_ptr<SingletonHwndObserver> singleton_hwnd_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(CachedFontRenderParams);
 };

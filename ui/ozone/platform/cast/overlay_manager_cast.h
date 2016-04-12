@@ -5,9 +5,10 @@
 #ifndef UI_OZONE_PLATFORM_CAST_OVERLAY_MANAGER_CAST_H_
 #define UI_OZONE_PLATFORM_CAST_OVERLAY_MANAGER_CAST_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chromecast/public/graphics_types.h"
 #include "chromecast/public/video_plane.h"
 #include "ui/ozone/ozone_export.h"
@@ -21,7 +22,7 @@ class OZONE_EXPORT OverlayManagerCast : public OverlayManagerOzone {
   ~OverlayManagerCast() override;
 
   // OverlayManagerOzone:
-  scoped_ptr<OverlayCandidatesOzone> CreateOverlayCandidates(
+  std::unique_ptr<OverlayCandidatesOzone> CreateOverlayCandidates(
       gfx::AcceleratedWidget w) override;
 
   // Callback that's made whenever an overlay quad is processed

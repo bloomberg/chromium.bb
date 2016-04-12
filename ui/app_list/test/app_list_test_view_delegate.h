@@ -8,13 +8,13 @@
 #include <stddef.h>
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "ui/app_list/app_list_view_delegate.h"
 #include "ui/app_list/speech_ui_model.h"
@@ -104,7 +104,7 @@ class AppListTestViewDelegate : public AppListViewDelegate {
   int next_profile_app_count_;
   std::map<size_t, int> open_search_result_counts_;
   Users users_;
-  scoped_ptr<AppListTestModel> model_;
+  std::unique_ptr<AppListTestModel> model_;
   base::ObserverList<AppListViewDelegateObserver> observers_;
   SpeechUIModel speech_ui_;
   base::TimeDelta auto_launch_timeout_;

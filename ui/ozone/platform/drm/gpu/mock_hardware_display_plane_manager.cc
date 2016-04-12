@@ -22,7 +22,7 @@ MockHardwareDisplayPlaneManager::MockHardwareDisplayPlaneManager(
   crtcs_ = crtcs;
   for (size_t crtc_idx = 0; crtc_idx < crtcs_.size(); crtc_idx++) {
     for (size_t i = 0; i < planes_per_crtc; i++) {
-      scoped_ptr<HardwareDisplayPlane> plane(
+      std::unique_ptr<HardwareDisplayPlane> plane(
           new HardwareDisplayPlane(kPlaneBaseId + i, 1 << crtc_idx));
       plane->Initialize(drm, std::vector<uint32_t>(1, DRM_FORMAT_XRGB8888),
                         false, true);
@@ -32,8 +32,8 @@ MockHardwareDisplayPlaneManager::MockHardwareDisplayPlaneManager(
 
   // The real HDPM uses sorted planes, so sort them for consistency.
   std::sort(planes_.begin(), planes_.end(),
-            [](const scoped_ptr<HardwareDisplayPlane>& l,
-               const scoped_ptr<HardwareDisplayPlane>& r) {
+            [](const std::unique_ptr<HardwareDisplayPlane>& l,
+               const std::unique_ptr<HardwareDisplayPlane>& r) {
               return l->plane_id() < r->plane_id();
             });
 }
@@ -52,15 +52,15 @@ void MockHardwareDisplayPlaneManager::InitForTest(
   crtcs_ = crtcs;
   planes_.clear();
   for (size_t i = 0; i < count; i++) {
-    scoped_ptr<HardwareDisplayPlane> plane(
+    std::unique_ptr<HardwareDisplayPlane> plane(
         new HardwareDisplayPlane(planes[i].id, planes[i].allowed_crtc_mask));
     plane->Initialize(drm_, planes[i].allowed_formats, false, true);
     planes_.push_back(std::move(plane));
   }
   // The real HDPM uses sorted planes, so sort them for consistency.
   std::sort(planes_.begin(), planes_.end(),
-            [](const scoped_ptr<HardwareDisplayPlane>& l,
-               const scoped_ptr<HardwareDisplayPlane>& r) {
+            [](const std::unique_ptr<HardwareDisplayPlane>& l,
+               const std::unique_ptr<HardwareDisplayPlane>& r) {
               return l->plane_id() < r->plane_id();
             });
 }
@@ -70,7 +70,7 @@ void MockHardwareDisplayPlaneManager::SetPlaneProperties(
   planes_.clear();
   uint32_t count = planes.size();
   for (size_t i = 0; i < count; i++) {
-    scoped_ptr<HardwareDisplayPlane> plane(
+    std::unique_ptr<HardwareDisplayPlane> plane(
         new HardwareDisplayPlane(planes[i].id, planes[i].allowed_crtc_mask));
     plane->Initialize(drm_, planes[i].allowed_formats, false, true);
     planes_.push_back(std::move(plane));
@@ -78,8 +78,8 @@ void MockHardwareDisplayPlaneManager::SetPlaneProperties(
 
   // The real HDPM uses sorted planes, so sort them for consistency.
   std::sort(planes_.begin(), planes_.end(),
-            [](const scoped_ptr<HardwareDisplayPlane>& l,
-               const scoped_ptr<HardwareDisplayPlane>& r) {
+            [](const std::unique_ptr<HardwareDisplayPlane>& l,
+               const std::unique_ptr<HardwareDisplayPlane>& r) {
               return l->plane_id() < r->plane_id();
             });
 

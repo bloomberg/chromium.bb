@@ -5,11 +5,11 @@
 #ifndef UI_CHROMEOS_IME_INFOLIST_WINDOW_H_
 #define UI_CHROMEOS_IME_INFOLIST_WINDOW_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/timer/timer.h"
 #include "ui/base/ime/infolist_entry.h"

@@ -8,12 +8,12 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
 #include "ui/aura/aura_export.h"
@@ -162,8 +162,8 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
 
   // Sets a new event-targeter for the window, and returns the previous
   // event-targeter.
-  scoped_ptr<ui::EventTargeter> SetEventTargeter(
-      scoped_ptr<ui::EventTargeter> targeter);
+  std::unique_ptr<ui::EventTargeter> SetEventTargeter(
+      std::unique_ptr<ui::EventTargeter> targeter);
 
   // Changes the bounds of the window. If present, the window's parent's
   // LayoutManager may adjust the bounds.
@@ -451,7 +451,7 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // Overridden from ui::EventTarget:
   bool CanAcceptEvent(const ui::Event& event) override;
   EventTarget* GetParentTarget() override;
-  scoped_ptr<ui::EventTargetIterator> GetChildIterator() const override;
+  std::unique_ptr<ui::EventTargetIterator> GetChildIterator() const override;
   ui::EventTargeter* GetEventTargeter() override;
   void ConvertEventToTarget(ui::EventTarget* target,
                             ui::LocatedEvent* event) override;
@@ -494,8 +494,8 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // Whether layer is initialized as non-opaque.
   bool transparent_;
 
-  scoped_ptr<LayoutManager> layout_manager_;
-  scoped_ptr<ui::EventTargeter> targeter_;
+  std::unique_ptr<LayoutManager> layout_manager_;
+  std::unique_ptr<ui::EventTargeter> targeter_;
 
   void* user_data_;
 

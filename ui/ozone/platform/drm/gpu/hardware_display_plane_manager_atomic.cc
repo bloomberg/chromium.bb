@@ -105,10 +105,10 @@ bool HardwareDisplayPlaneManagerAtomic::SetPlaneData(
   return true;
 }
 
-scoped_ptr<HardwareDisplayPlane> HardwareDisplayPlaneManagerAtomic::CreatePlane(
-    uint32_t plane_id,
-    uint32_t possible_crtcs) {
-  return scoped_ptr<HardwareDisplayPlane>(
+std::unique_ptr<HardwareDisplayPlane>
+HardwareDisplayPlaneManagerAtomic::CreatePlane(uint32_t plane_id,
+                                               uint32_t possible_crtcs) {
+  return std::unique_ptr<HardwareDisplayPlane>(
       new HardwareDisplayPlaneAtomic(plane_id, possible_crtcs));
 }
 

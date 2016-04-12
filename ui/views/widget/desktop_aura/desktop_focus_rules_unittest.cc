@@ -17,8 +17,8 @@ namespace views {
 
 namespace {
 
-scoped_ptr<Widget> CreateDesktopWidget() {
-  scoped_ptr<Widget> widget(new Widget);
+std::unique_ptr<Widget> CreateDesktopWidget() {
+  std::unique_ptr<Widget> widget(new Widget);
   Widget::InitParams params = Widget::InitParams(
       Widget::InitParams::TYPE_WINDOW);
   params.bounds = gfx::Rect(0, 0, 200, 200);
@@ -37,8 +37,8 @@ TEST_F(DesktopFocusRulesTest, DontFocusWindowsInOtherHierarchies) {
   // Two widgets (each with a DesktopNativeWidgetAura). |w2| has a child Window
   // |w2_child| that is not focusable. |w2_child|'s has a transient parent in
   // |w1|.
-  scoped_ptr<views::Widget> w1(CreateDesktopWidget());
-  scoped_ptr<views::Widget> w2(CreateDesktopWidget());
+  std::unique_ptr<views::Widget> w1(CreateDesktopWidget());
+  std::unique_ptr<views::Widget> w2(CreateDesktopWidget());
   aura::test::TestWindowDelegate w2_child_delegate;
   w2_child_delegate.set_can_focus(false);
   aura::Window* w2_child = new aura::Window(&w2_child_delegate);

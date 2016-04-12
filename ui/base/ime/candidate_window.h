@@ -7,11 +7,11 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/base/ime/infolist_entry.h"
 #include "ui/base/ime/ui_base_ime_export.h"
 
@@ -124,7 +124,7 @@ class UI_BASE_IME_EXPORT CandidateWindow {
   }
 
  private:
-  scoped_ptr<CandidateWindowProperty> property_;
+  std::unique_ptr<CandidateWindowProperty> property_;
   std::vector<Entry> candidates_;
 
   DISALLOW_COPY_AND_ASSIGN(CandidateWindow);

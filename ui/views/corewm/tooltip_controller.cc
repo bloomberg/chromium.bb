@@ -124,7 +124,7 @@ aura::Window* GetTooltipTarget(const ui::MouseEvent& event,
 ////////////////////////////////////////////////////////////////////////////////
 // TooltipController public:
 
-TooltipController::TooltipController(scoped_ptr<Tooltip> tooltip)
+TooltipController::TooltipController(std::unique_ptr<Tooltip> tooltip)
     : tooltip_window_(NULL),
       tooltip_id_(NULL),
       tooltip_window_at_mouse_press_(NULL),

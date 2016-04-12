@@ -5,8 +5,9 @@
 #ifndef UI_VIEWS_COCOA_COCOA_MOUSE_CAPTURE_H_
 #define UI_VIEWS_COCOA_COCOA_MOUSE_CAPTURE_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/views/views_export.h"
 
 namespace views {
@@ -36,7 +37,7 @@ class VIEWS_EXPORT CocoaMouseCapture {
 
   // The active event tap for this capture. Owned by this, but can be cleared
   // out early if another instance of CocoaMouseCapture is created.
-  scoped_ptr<ActiveEventTap> active_handle_;
+  std::unique_ptr<ActiveEventTap> active_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(CocoaMouseCapture);
 };

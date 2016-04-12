@@ -50,7 +50,7 @@ class TestCaptureDelegate : public CocoaMouseCaptureDelegate {
   void OnMouseCaptureLost() override { ++capture_lost_count_; }
 
  private:
-  scoped_ptr<CocoaMouseCapture> mouse_capture_;
+  std::unique_ptr<CocoaMouseCapture> mouse_capture_;
   int event_count_;
   int capture_lost_count_;
 

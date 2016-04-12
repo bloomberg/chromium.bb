@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ui/ozone/platform/drm/gpu/drm_window.h"
+
 #include <stdint.h>
 
+#include <memory>
 #include <utility>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -16,7 +18,6 @@
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "ui/ozone/platform/drm/gpu/drm_device_generator.h"
 #include "ui/ozone/platform/drm/gpu/drm_device_manager.h"
-#include "ui/ozone/platform/drm/gpu/drm_window.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_controller.h"
 #include "ui/ozone/platform/drm/gpu/mock_drm_device.h"
 #include "ui/ozone/platform/drm/gpu/mock_dumb_buffer_generator.h"
@@ -71,11 +72,11 @@ class DrmWindowTest : public testing::Test {
   }
 
  protected:
-  scoped_ptr<base::MessageLoop> message_loop_;
+  std::unique_ptr<base::MessageLoop> message_loop_;
   scoped_refptr<ui::MockDrmDevice> drm_;
-  scoped_ptr<ui::MockDumbBufferGenerator> buffer_generator_;
-  scoped_ptr<ui::ScreenManager> screen_manager_;
-  scoped_ptr<ui::DrmDeviceManager> drm_device_manager_;
+  std::unique_ptr<ui::MockDumbBufferGenerator> buffer_generator_;
+  std::unique_ptr<ui::ScreenManager> screen_manager_;
+  std::unique_ptr<ui::DrmDeviceManager> drm_device_manager_;
 
   int on_swap_buffers_count_;
   gfx::SwapResult last_swap_buffers_result_;
@@ -98,7 +99,7 @@ void DrmWindowTest::SetUp() {
 
   drm_device_manager_.reset(new ui::DrmDeviceManager(nullptr));
 
-  scoped_ptr<ui::DrmWindow> window(new ui::DrmWindow(
+  std::unique_ptr<ui::DrmWindow> window(new ui::DrmWindow(
       kDefaultWidgetHandle, drm_device_manager_.get(), screen_manager_.get()));
   window->Initialize(buffer_generator_.get());
   window->SetBounds(
@@ -107,7 +108,7 @@ void DrmWindowTest::SetUp() {
 }
 
 void DrmWindowTest::TearDown() {
-  scoped_ptr<ui::DrmWindow> window =
+  std::unique_ptr<ui::DrmWindow> window =
       screen_manager_->RemoveWindow(kDefaultWidgetHandle);
   window->Shutdown();
   message_loop_.reset();

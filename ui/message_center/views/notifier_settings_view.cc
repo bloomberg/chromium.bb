@@ -119,7 +119,7 @@ const int kComputedTitleElementSpacing =
     settings::kDescriptionToSwitcherSpace - 6;
 
 // A function to create a focus border.
-scoped_ptr<views::Painter> CreateFocusPainter() {
+std::unique_ptr<views::Painter> CreateFocusPainter() {
   return views::Painter::CreateSolidFocusPainter(kFocusBorderColor,
                                                  gfx::Insets(1, 2, 3, 2));
 }
@@ -144,7 +144,7 @@ class EntryView : public views::View {
   void OnBlur() override;
 
  private:
-  scoped_ptr<views::Painter> focus_painter_;
+  std::unique_ptr<views::Painter> focus_painter_;
 
   DISALLOW_COPY_AND_ASSIGN(EntryView);
 };
@@ -579,7 +579,7 @@ void NotifierSettingsView::UpdateContentsView(
         active_group.name : active_group.login_info;
     notifier_group_selector_ =
         new views::MenuButton(notifier_group_text, this, true);
-    notifier_group_selector_->SetBorder(scoped_ptr<views::Border>(
+    notifier_group_selector_->SetBorder(std::unique_ptr<views::Border>(
         new views::LabelButtonAssetBorder(views::Button::STYLE_BUTTON)));
     notifier_group_selector_->SetFocusPainter(nullptr);
     notifier_group_selector_->set_animate_on_state_change(false);
@@ -596,7 +596,7 @@ void NotifierSettingsView::UpdateContentsView(
 
     // This code emulates separators using borders.  We will create an invisible
     // border on the last notifier, as the spec leaves a space for it.
-    scoped_ptr<views::Border> entry_border;
+    std::unique_ptr<views::Border> entry_border;
     if (i == notifier_count - 1) {
       entry_border = views::Border::CreateEmptyBorder(
           0, 0, settings::kEntrySeparatorHeight, 0);

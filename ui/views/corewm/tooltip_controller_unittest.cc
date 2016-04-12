@@ -89,9 +89,9 @@ class TooltipControllerTest : public aura::test::AuraTestBase {
     aura::test::AuraTestBase::SetUp();
     new wm::DefaultActivationClient(root_window());
 #if defined(OS_CHROMEOS)
-    controller_.reset(new TooltipController(
-          scoped_ptr<views::corewm::Tooltip>(
-              new views::corewm::TooltipAura)));
+    controller_.reset(
+        new TooltipController(std::unique_ptr<views::corewm::Tooltip>(
+            new views::corewm::TooltipAura)));
     root_window()->AddPreTargetHandler(controller_.get());
     SetTooltipClient(root_window(), controller_.get());
 #endif
@@ -135,15 +135,15 @@ class TooltipControllerTest : public aura::test::AuraTestBase {
     return view2;
   }
 
-  scoped_ptr<views::Widget> widget_;
+  std::unique_ptr<views::Widget> widget_;
   TooltipTestView* view_;
-  scoped_ptr<TooltipControllerTestHelper> helper_;
-  scoped_ptr<ui::test::EventGenerator> generator_;
+  std::unique_ptr<TooltipControllerTestHelper> helper_;
+  std::unique_ptr<ui::test::EventGenerator> generator_;
 
  private:
-  scoped_ptr<TooltipController> controller_;
+  std::unique_ptr<TooltipController> controller_;
 
-  scoped_ptr<views::TestViewsDelegate> views_delegate_;
+  std::unique_ptr<views::TestViewsDelegate> views_delegate_;
 
 #if defined(OS_WIN)
   ui::ScopedOleInitializer ole_initializer_;
@@ -441,7 +441,7 @@ class TooltipControllerCaptureTest : public TooltipControllerTest {
 
  private:
   wm::DefaultScreenPositionClient screen_position_client_;
-  scoped_ptr<gfx::Screen> desktop_screen_;
+  std::unique_ptr<gfx::Screen> desktop_screen_;
 
   DISALLOW_COPY_AND_ASSIGN(TooltipControllerCaptureTest);
 };
@@ -482,7 +482,7 @@ TEST_F(TooltipControllerCaptureTest, MAYBE_Capture) {
   widget_->SetBounds(gfx::Rect(0, 0, 200, 200));
   view_->set_tooltip_text(tooltip_text);
 
-  scoped_ptr<views::Widget> widget2(CreateWidget(root_window()));
+  std::unique_ptr<views::Widget> widget2(CreateWidget(root_window()));
   widget2->SetContentsView(new View);
   TooltipTestView* view2 = new TooltipTestView;
   widget2->GetContentsView()->AddChildView(view2);
@@ -566,8 +566,8 @@ class TooltipControllerTest2 : public aura::test::AuraTestBase {
     wm_state_.reset(new wm::WMState);
     aura::test::AuraTestBase::SetUp();
     new wm::DefaultActivationClient(root_window());
-    controller_.reset(new TooltipController(
-                          scoped_ptr<corewm::Tooltip>(test_tooltip_)));
+    controller_.reset(
+        new TooltipController(std::unique_ptr<corewm::Tooltip>(test_tooltip_)));
     root_window()->AddPreTargetHandler(controller_.get());
     SetTooltipClient(root_window(), controller_.get());
     helper_.reset(new TooltipControllerTestHelper(controller_.get()));
@@ -587,19 +587,19 @@ class TooltipControllerTest2 : public aura::test::AuraTestBase {
  protected:
   // Owned by |controller_|.
   TestTooltip* test_tooltip_;
-  scoped_ptr<TooltipControllerTestHelper> helper_;
-  scoped_ptr<ui::test::EventGenerator> generator_;
+  std::unique_ptr<TooltipControllerTestHelper> helper_;
+  std::unique_ptr<ui::test::EventGenerator> generator_;
 
  private:
-  scoped_ptr<TooltipController> controller_;
-  scoped_ptr<wm::WMState> wm_state_;
+  std::unique_ptr<TooltipController> controller_;
+  std::unique_ptr<wm::WMState> wm_state_;
 
   DISALLOW_COPY_AND_ASSIGN(TooltipControllerTest2);
 };
 
 TEST_F(TooltipControllerTest2, VerifyLeadingTrailingWhitespaceStripped) {
   aura::test::TestWindowDelegate test_delegate;
-  scoped_ptr<aura::Window> window(
+  std::unique_ptr<aura::Window> window(
       CreateNormalWindow(100, root_window(), &test_delegate));
   window->SetBounds(gfx::Rect(0, 0, 300, 300));
   base::string16 tooltip_text(ASCIIToUTF16(" \nx  "));
@@ -612,7 +612,7 @@ TEST_F(TooltipControllerTest2, VerifyLeadingTrailingWhitespaceStripped) {
 // Verifies that tooltip is hidden and tooltip window closed upon cancel mode.
 TEST_F(TooltipControllerTest2, CloseOnCancelMode) {
   aura::test::TestWindowDelegate test_delegate;
-  scoped_ptr<aura::Window> window(
+  std::unique_ptr<aura::Window> window(
       CreateNormalWindow(100, root_window(), &test_delegate));
   window->SetBounds(gfx::Rect(0, 0, 300, 300));
   base::string16 tooltip_text(ASCIIToUTF16("Tooltip Text"));
@@ -650,7 +650,7 @@ class TooltipControllerTest3 : public aura::test::AuraTestBase {
 
     generator_.reset(new ui::test::EventGenerator(GetRootWindow()));
     controller_.reset(new TooltipController(
-        scoped_ptr<views::corewm::Tooltip>(test_tooltip_)));
+        std::unique_ptr<views::corewm::Tooltip>(test_tooltip_)));
     GetRootWindow()->RemovePreTargetHandler(
         static_cast<TooltipController*>(aura::client::GetTooltipClient(
             widget_->GetNativeWindow()->GetRootWindow())));
@@ -676,14 +676,14 @@ class TooltipControllerTest3 : public aura::test::AuraTestBase {
  protected:
   // Owned by |controller_|.
   TestTooltip* test_tooltip_;
-  scoped_ptr<TooltipControllerTestHelper> helper_;
-  scoped_ptr<ui::test::EventGenerator> generator_;
-  scoped_ptr<views::Widget> widget_;
+  std::unique_ptr<TooltipControllerTestHelper> helper_;
+  std::unique_ptr<ui::test::EventGenerator> generator_;
+  std::unique_ptr<views::Widget> widget_;
   TooltipTestView* view_;
 
  private:
-  scoped_ptr<TooltipController> controller_;
-  scoped_ptr<wm::WMState> wm_state_;
+  std::unique_ptr<TooltipController> controller_;
+  std::unique_ptr<wm::WMState> wm_state_;
 
 #if defined(OS_WIN)
   ui::ScopedOleInitializer ole_initializer_;

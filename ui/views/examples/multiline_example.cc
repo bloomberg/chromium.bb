@@ -113,7 +113,7 @@ class MultilineExample::RenderTextView : public View {
     render_text_->SetDisplayRect(bounds);
   }
 
-  scoped_ptr<gfx::RenderText> render_text_;
+  std::unique_ptr<gfx::RenderText> render_text_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderTextView);
 };

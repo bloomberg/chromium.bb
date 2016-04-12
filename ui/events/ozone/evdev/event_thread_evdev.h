@@ -5,9 +5,10 @@
 #ifndef UI_EVENTS_OZONE_EVDEV_EVENT_THREAD_EVDEV_H_
 #define UI_EVENTS_OZONE_EVDEV_EVENT_THREAD_EVDEV_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace base {
 class Thread;
@@ -19,7 +20,7 @@ class CursorDelegateEvdev;
 class DeviceEventDispatcherEvdev;
 class InputDeviceFactoryEvdevProxy;
 
-typedef base::Callback<void(scoped_ptr<InputDeviceFactoryEvdevProxy>)>
+typedef base::Callback<void(std::unique_ptr<InputDeviceFactoryEvdevProxy>)>
     EventThreadStartCallback;
 
 // Wrapper for events thread.
@@ -31,12 +32,12 @@ class EventThreadEvdev {
   // Start a new events thread. All device events will get sent to the
   // passed dispatcher. The thread will call directly into cursor, so it
   // must be synchronized accordingly.
-  void Start(scoped_ptr<DeviceEventDispatcherEvdev> dispatcher,
+  void Start(std::unique_ptr<DeviceEventDispatcherEvdev> dispatcher,
              CursorDelegateEvdev* cursor,
              const EventThreadStartCallback& callback);
 
  private:
-  scoped_ptr<base::Thread> thread_;
+  std::unique_ptr<base::Thread> thread_;
 
   DISALLOW_COPY_AND_ASSIGN(EventThreadEvdev);
 };

@@ -11,9 +11,9 @@
 #ifndef UI_BASE_ACCELERATORS_ACCELERATOR_H_
 #define UI_BASE_ACCELERATORS_ACCELERATOR_H_
 
+#include <memory>
 #include <utility>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "ui/base/accelerators/platform_accelerator.h"
 #include "ui/base/ui_base_export.h"
@@ -67,7 +67,7 @@ class UI_BASE_EXPORT Accelerator {
   // Returns a string with the localized shortcut if any.
   base::string16 GetShortcutText() const;
 
-  void set_platform_accelerator(scoped_ptr<PlatformAccelerator> p) {
+  void set_platform_accelerator(std::unique_ptr<PlatformAccelerator> p) {
     platform_accelerator_ = std::move(p);
   }
 
@@ -92,7 +92,7 @@ class UI_BASE_EXPORT Accelerator {
   bool is_repeat_;
 
   // Stores platform specific data. May be NULL.
-  scoped_ptr<PlatformAccelerator> platform_accelerator_;
+  std::unique_ptr<PlatformAccelerator> platform_accelerator_;
 };
 
 // An interface that classes that want to register for keyboard accelerators

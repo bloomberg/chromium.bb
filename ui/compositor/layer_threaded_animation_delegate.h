@@ -5,7 +5,8 @@
 #ifndef UI_COMPOSITOR_LAYER_THREADED_ANIMATION_DELEGATE_H_
 #define UI_COMPOSITOR_LAYER_THREADED_ANIMATION_DELEGATE_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "cc/animation/animation.h"
 #include "ui/compositor/compositor_export.h"
 
@@ -14,7 +15,8 @@ namespace ui {
 // Attach CC animations using this interface.
 class COMPOSITOR_EXPORT LayerThreadedAnimationDelegate {
  public:
-  virtual void AddThreadedAnimation(scoped_ptr<cc::Animation> animation) = 0;
+  virtual void AddThreadedAnimation(
+      std::unique_ptr<cc::Animation> animation) = 0;
   virtual void RemoveThreadedAnimation(int animation_id) = 0;
 
  protected:

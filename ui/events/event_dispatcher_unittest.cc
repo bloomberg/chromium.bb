@@ -46,7 +46,7 @@ class TestTarget : public EventTarget,
 
   EventTarget* GetParentTarget() override { return parent_; }
 
-  scoped_ptr<EventTargetIterator> GetChildIterator() const override {
+  std::unique_ptr<EventTargetIterator> GetChildIterator() const override {
     return nullptr;
   }
 

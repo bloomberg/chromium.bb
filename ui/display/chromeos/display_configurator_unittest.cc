@@ -142,7 +142,7 @@ class DisplayConfiguratorTest : public testing::Test {
 
     native_display_delegate_ = new TestNativeDisplayDelegate(log_.get());
     configurator_.SetDelegateForTesting(
-        scoped_ptr<NativeDisplayDelegate>(native_display_delegate_));
+        std::unique_ptr<NativeDisplayDelegate>(native_display_delegate_));
 
     configurator_.set_state_controller(&state_controller_);
     configurator_.set_mirroring_controller(&mirroring_controller_);
@@ -245,7 +245,7 @@ class DisplayConfiguratorTest : public testing::Test {
   TestMirroringController mirroring_controller_;
   DisplayConfigurator configurator_;
   TestObserver observer_;
-  scoped_ptr<ActionLogger> log_;
+  std::unique_ptr<ActionLogger> log_;
   TestNativeDisplayDelegate* native_display_delegate_;  // not owned
   DisplayConfigurator::TestApi test_api_;
 

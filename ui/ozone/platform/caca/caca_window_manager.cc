@@ -31,7 +31,7 @@ class CacaSurface : public ui::SurfaceOzoneCanvas {
   skia::RefPtr<SkSurface> GetSurface() override;
   void ResizeCanvas(const gfx::Size& viewport_size) override;
   void PresentCanvas(const gfx::Rect& damage) override;
-  scoped_ptr<gfx::VSyncProvider> CreateVSyncProvider() override;
+  std::unique_ptr<gfx::VSyncProvider> CreateVSyncProvider() override;
 
  private:
   CacaWindow* window_;  // Not owned.
@@ -102,7 +102,7 @@ void CacaSurface::PresentCanvas(const gfx::Rect& damage) {
   caca_refresh_display(window_->display());
 }
 
-scoped_ptr<gfx::VSyncProvider> CacaSurface::CreateVSyncProvider() {
+std::unique_ptr<gfx::VSyncProvider> CacaSurface::CreateVSyncProvider() {
   return nullptr;
 }
 
@@ -131,13 +131,13 @@ bool CacaWindowManager::LoadEGLGLES2Bindings(
   return false;
 }
 
-scoped_ptr<ui::SurfaceOzoneCanvas> CacaWindowManager::CreateCanvasForWidget(
-    gfx::AcceleratedWidget widget) {
+std::unique_ptr<ui::SurfaceOzoneCanvas>
+CacaWindowManager::CreateCanvasForWidget(gfx::AcceleratedWidget widget) {
   DCHECK(thread_checker_.CalledOnValidThread());
   CacaWindow* window = windows_.Lookup(widget);
   DCHECK(window);
 
-  scoped_ptr<CacaSurface> canvas(new CacaSurface(window));
+  std::unique_ptr<CacaSurface> canvas(new CacaSurface(window));
   bool initialized = canvas->Initialize();
   DCHECK(initialized);
   return std::move(canvas);

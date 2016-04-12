@@ -91,7 +91,8 @@ class AppsSearchResultsControllerTest : public ui::CocoaTest {
   void AddTestResultAtIndex(size_t index,
                             const std::string& title,
                             const std::string& details) {
-    scoped_ptr<SearchResult> result(new SearchResultWithMenu(title, details));
+    std::unique_ptr<SearchResult> result(
+        new SearchResultWithMenu(title, details));
     AppListModel::SearchResults* results = [delegate_ appListModel]->results();
     results->AddAt(index, result.release());
   }

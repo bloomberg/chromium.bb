@@ -8,7 +8,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/time/time.h"
 #include "ui/events/gesture_detection/gesture_detection_export.h"
 
@@ -117,8 +118,8 @@ class GESTURE_DETECTION_EXPORT MotionEvent {
   // They guarantee only that the returned type will reflect the same
   // data exposed by the MotionEvent interface; no guarantees are made that the
   // underlying implementation is identical to the source implementation.
-  scoped_ptr<MotionEvent> Clone() const;
-  scoped_ptr<MotionEvent> Cancel() const;
+  std::unique_ptr<MotionEvent> Clone() const;
+  std::unique_ptr<MotionEvent> Cancel() const;
 };
 
 }  // namespace ui

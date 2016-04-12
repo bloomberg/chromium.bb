@@ -70,7 +70,7 @@ class BridgedNativeWidgetUITest : public test::WidgetTest {
   }
 
  protected:
-  scoped_ptr<Widget> widget_;
+  std::unique_ptr<Widget> widget_;
 };
 
 // Tests for correct fullscreen tracking, regardless of whether it is initiated

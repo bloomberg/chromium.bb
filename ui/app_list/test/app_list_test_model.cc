@@ -6,9 +6,10 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <utility>
 
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/app_list/app_list_constants.h"
@@ -61,12 +62,12 @@ AppListTestModel::AppListTestModel()
 }
 
 AppListItem* AppListTestModel::AddItem(AppListItem* item) {
-  return AppListModel::AddItem(make_scoped_ptr(item));
+  return AppListModel::AddItem(base::WrapUnique(item));
 }
 
 AppListItem* AppListTestModel::AddItemToFolder(AppListItem* item,
                                                const std::string& folder_id) {
-  return AppListModel::AddItemToFolder(make_scoped_ptr(item), folder_id);
+  return AppListModel::AddItemToFolder(base::WrapUnique(item), folder_id);
 }
 
 void AppListTestModel::MoveItemToFolder(AppListItem* item,
@@ -148,7 +149,7 @@ AppListTestModel::AppListTestItem* AppListTestModel::CreateItem(
 
 AppListTestModel::AppListTestItem* AppListTestModel::CreateAndAddItem(
     const std::string& id) {
-  scoped_ptr<AppListTestItem> test_item(CreateItem(id));
+  std::unique_ptr<AppListTestItem> test_item(CreateItem(id));
   AppListItem* item = AppListModel::AddItem(std::move(test_item));
   return static_cast<AppListTestItem*>(item);
 }

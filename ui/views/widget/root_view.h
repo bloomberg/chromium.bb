@@ -217,8 +217,8 @@ class VIEWS_EXPORT RootView : public View,
   //                   its place.
   bool gesture_handler_set_before_processing_;
 
-  scoped_ptr<internal::PreEventDispatchHandler> pre_dispatch_handler_;
-  scoped_ptr<internal::PostEventDispatchHandler> post_dispatch_handler_;
+  std::unique_ptr<internal::PreEventDispatchHandler> pre_dispatch_handler_;
+  std::unique_ptr<internal::PostEventDispatchHandler> post_dispatch_handler_;
 
   // Focus ---------------------------------------------------------------------
 

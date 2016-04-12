@@ -5,8 +5,10 @@
 #include "ui/ozone/platform/drm/gpu/screen_manager.h"
 
 #include <xf86drmMode.h>
+
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
@@ -100,8 +102,8 @@ void ScreenManager::AddDisplayController(const scoped_refptr<DrmDevice>& drm,
     return;
   }
 
-  controllers_.push_back(make_scoped_ptr(new HardwareDisplayController(
-      scoped_ptr<CrtcController>(new CrtcController(drm, crtc, connector)),
+  controllers_.push_back(base::WrapUnique(new HardwareDisplayController(
+      std::unique_ptr<CrtcController>(new CrtcController(drm, crtc, connector)),
       gfx::Point())));
 }
 
@@ -168,7 +170,7 @@ bool ScreenManager::ActualConfigureDisplayController(
   // mirror mode, subsequent calls configuring the other controllers will
   // restore mirror mode.
   if (controller->IsMirrored()) {
-    controllers_.push_back(make_scoped_ptr(new HardwareDisplayController(
+    controllers_.push_back(base::WrapUnique(new HardwareDisplayController(
         controller->RemoveCrtc(drm, crtc), controller->origin())));
     it = controllers_.end() - 1;
     controller = it->get();
@@ -190,7 +192,7 @@ bool ScreenManager::DisableDisplayController(
   if (it != controllers_.end()) {
     HardwareDisplayController* controller = it->get();
     if (controller->IsMirrored()) {
-      controllers_.push_back(make_scoped_ptr(new HardwareDisplayController(
+      controllers_.push_back(base::WrapUnique(new HardwareDisplayController(
           controller->RemoveCrtc(drm, crtc), controller->origin())));
       controller = controllers_.back().get();
     }
@@ -215,16 +217,16 @@ HardwareDisplayController* ScreenManager::GetDisplayController(
 }
 
 void ScreenManager::AddWindow(gfx::AcceleratedWidget widget,
-                              scoped_ptr<DrmWindow> window) {
+                              std::unique_ptr<DrmWindow> window) {
   std::pair<WidgetToWindowMap::iterator, bool> result =
       window_map_.add(widget, std::move(window));
   DCHECK(result.second) << "Window already added.";
   UpdateControllerToWindowMapping();
 }
 
-scoped_ptr<DrmWindow> ScreenManager::RemoveWindow(
+std::unique_ptr<DrmWindow> ScreenManager::RemoveWindow(
     gfx::AcceleratedWidget widget) {
-  scoped_ptr<DrmWindow> window = window_map_.take_and_erase(widget);
+  std::unique_ptr<DrmWindow> window = window_map_.take_and_erase(widget);
   DCHECK(window) << "Attempting to remove non-existing window for " << widget;
   UpdateControllerToWindowMapping();
   return window;

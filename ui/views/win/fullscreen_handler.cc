@@ -4,8 +4,9 @@
 
 #include "ui/views/win/fullscreen_handler.h"
 
+#include <memory>
+
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/win/win_util.h"
 #include "ui/base/win/shell.h"
 #include "ui/gfx/geometry/rect.h"
@@ -36,7 +37,7 @@ gfx::Rect FullscreenHandler::GetRestoreBounds() const {
 // FullscreenHandler, private:
 
 void FullscreenHandler::SetFullscreenImpl(bool fullscreen) {
-  scoped_ptr<ScopedFullscreenVisibility> visibility;
+  std::unique_ptr<ScopedFullscreenVisibility> visibility;
 
   // With Aero enabled disabling the visibility causes the window to disappear
   // for several frames, which looks worse than doing other updates

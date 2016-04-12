@@ -4,8 +4,9 @@
 
 #include "ui/events/blink/input_handler_proxy.h"
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/test/histogram_tester.h"
 #include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/trees/swap_promise_monitor.h"
@@ -117,9 +118,9 @@ class MockInputHandler : public cc::InputHandler {
   MOCK_METHOD1(ScrollEnd, void(cc::ScrollState*));
   MOCK_METHOD0(FlingScrollBegin, cc::InputHandler::ScrollStatus());
 
-  scoped_ptr<cc::SwapPromiseMonitor> CreateLatencyInfoSwapPromiseMonitor(
+  std::unique_ptr<cc::SwapPromiseMonitor> CreateLatencyInfoSwapPromiseMonitor(
       ui::LatencyInfo* latency) override {
-    return scoped_ptr<cc::SwapPromiseMonitor>();
+    return std::unique_ptr<cc::SwapPromiseMonitor>();
   }
 
   cc::ScrollElasticityHelper* CreateScrollElasticityHelper() override {
@@ -397,7 +398,7 @@ class InputHandlerProxyTest
   testing::StrictMock<MockInputHandler> mock_input_handler_;
   testing::StrictMock<MockSynchronousInputHandler>
       mock_synchronous_input_handler_;
-  scoped_ptr<TestInputHandlerProxy> input_handler_;
+  std::unique_ptr<TestInputHandlerProxy> input_handler_;
   testing::StrictMock<MockInputHandlerProxyClient> mock_client_;
   WebGestureEvent gesture_;
   InputHandlerProxy::EventDisposition expected_disposition_;

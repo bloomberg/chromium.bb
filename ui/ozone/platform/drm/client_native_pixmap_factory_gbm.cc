@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "ui/gfx/native_pixmap_handle_ozone.h"
 #include "ui/ozone/platform/drm/common/client_native_pixmap_dmabuf.h"
 #include "ui/ozone/public/client_native_pixmap_factory.h"
@@ -57,7 +58,7 @@ class ClientNativePixmapFactoryGbm : public ClientNativePixmapFactory {
     NOTREACHED();
     return false;
   }
-  scoped_ptr<ClientNativePixmap> ImportFromHandle(
+  std::unique_ptr<ClientNativePixmap> ImportFromHandle(
       const gfx::NativePixmapHandle& handle,
       const gfx::Size& size,
       gfx::BufferUsage usage) override {
@@ -75,7 +76,7 @@ class ClientNativePixmapFactoryGbm : public ClientNativePixmapFactory {
 #endif
       case gfx::BufferUsage::GPU_READ:
       case gfx::BufferUsage::SCANOUT:
-        return make_scoped_ptr<ClientNativePixmapGbm>(
+        return base::WrapUnique<ClientNativePixmapGbm>(
             new ClientNativePixmapGbm);
     }
     NOTREACHED();

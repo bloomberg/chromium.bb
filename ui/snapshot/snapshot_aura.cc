@@ -36,7 +36,7 @@ static void MakeAsyncCopyRequest(
     gfx::NativeWindow window,
     const gfx::Rect& source_rect,
     const cc::CopyOutputRequest::CopyOutputRequestCallback& callback) {
-  scoped_ptr<cc::CopyOutputRequest> request =
+  std::unique_ptr<cc::CopyOutputRequest> request =
       cc::CopyOutputRequest::CreateBitmapRequest(callback);
   request->set_area(source_rect);
   window->layer()->RequestCopyOfOutput(std::move(request));

@@ -505,7 +505,7 @@ void MessageCenterView::RemoveNotification(const std::string& notification_id,
   message_center_->RemoveNotification(notification_id, by_user);
 }
 
-scoped_ptr<ui::MenuModel> MessageCenterView::CreateMenuModel(
+std::unique_ptr<ui::MenuModel> MessageCenterView::CreateMenuModel(
     const NotifierId& notifier_id,
     const base::string16& display_source) {
   return tray_->CreateNotificationMenuModel(notifier_id, display_source);

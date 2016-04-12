@@ -62,8 +62,8 @@ DWORD DesktopDropTargetWin::OnDragEnter(IDataObject* data_object,
                                         DWORD key_state,
                                         POINT position,
                                         DWORD effect) {
-  scoped_ptr<OSExchangeData> data;
-  scoped_ptr<ui::DropTargetEvent> event;
+  std::unique_ptr<OSExchangeData> data;
+  std::unique_ptr<ui::DropTargetEvent> event;
   DragDropDelegate* delegate;
   // Translate will call OnDragEntered.
   Translate(data_object, key_state, position, effect, &data, &event, &delegate);
@@ -76,8 +76,8 @@ DWORD DesktopDropTargetWin::OnDragOver(IDataObject* data_object,
                                        POINT position,
                                        DWORD effect) {
   int drag_operation = ui::DragDropTypes::DRAG_NONE;
-  scoped_ptr<OSExchangeData> data;
-  scoped_ptr<ui::DropTargetEvent> event;
+  std::unique_ptr<OSExchangeData> data;
+  std::unique_ptr<ui::DropTargetEvent> event;
   DragDropDelegate* delegate;
   Translate(data_object, key_state, position, effect, &data, &event, &delegate);
   if (delegate)
@@ -94,8 +94,8 @@ DWORD DesktopDropTargetWin::OnDrop(IDataObject* data_object,
                                    POINT position,
                                    DWORD effect) {
   int drag_operation = ui::DragDropTypes::DRAG_NONE;
-  scoped_ptr<OSExchangeData> data;
-  scoped_ptr<ui::DropTargetEvent> event;
+  std::unique_ptr<OSExchangeData> data;
+  std::unique_ptr<ui::DropTargetEvent> event;
   DragDropDelegate* delegate;
   Translate(data_object, key_state, position, effect, &data, &event, &delegate);
   if (delegate) {
@@ -123,8 +123,8 @@ void DesktopDropTargetWin::Translate(
     DWORD key_state,
     POINT position,
     DWORD effect,
-    scoped_ptr<OSExchangeData>* data,
-    scoped_ptr<ui::DropTargetEvent>* event,
+    std::unique_ptr<OSExchangeData>* data,
+    std::unique_ptr<ui::DropTargetEvent>* event,
     DragDropDelegate** delegate) {
   gfx::Point location(position.x, position.y);
   gfx::Point root_location = location;

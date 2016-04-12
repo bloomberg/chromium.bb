@@ -5,10 +5,11 @@
 #ifndef UI_VIEWS_CONTROLS_BUTTON_LABEL_BUTTON_H_
 #define UI_VIEWS_CONTROLS_BUTTON_LABEL_BUTTON_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/controls/button/custom_button.h"
@@ -87,15 +88,15 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
   // Call SetMinSize(gfx::Size()) to clear the size if needed.
   void SetImageLabelSpacing(int spacing);
 
-  void SetFocusPainter(scoped_ptr<Painter> focus_painter);
+  void SetFocusPainter(std::unique_ptr<Painter> focus_painter);
   Painter* focus_painter() { return focus_painter_.get(); }
 
   // Creates the default border for this button. This can be overridden by
   // subclasses.
-  virtual scoped_ptr<LabelButtonBorder> CreateDefaultBorder() const;
+  virtual std::unique_ptr<LabelButtonBorder> CreateDefaultBorder() const;
 
   // View:
-  void SetBorder(scoped_ptr<Border> border) override;
+  void SetBorder(std::unique_ptr<Border> border) override;
   gfx::Size GetPreferredSize() const override;
   int GetHeightForWidth(int w) const override;
   void Layout() override;
@@ -103,8 +104,8 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
   void EnableCanvasFlippingForRTLUI(bool flip) override;
   void AddInkDropLayer(ui::Layer* ink_drop_layer) override;
   void RemoveInkDropLayer(ui::Layer* ink_drop_layer) override;
-  scoped_ptr<InkDropAnimation> CreateInkDropAnimation() const override;
-  scoped_ptr<InkDropHover> CreateInkDropHover() const override;
+  std::unique_ptr<InkDropAnimation> CreateInkDropAnimation() const override;
+  std::unique_ptr<InkDropHover> CreateInkDropHover() const override;
   gfx::Point GetInkDropCenter() const override;
 
  protected:
@@ -220,7 +221,7 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
   // UI direction).
   gfx::HorizontalAlignment horizontal_alignment_;
 
-  scoped_ptr<Painter> focus_painter_;
+  std::unique_ptr<Painter> focus_painter_;
 
   DISALLOW_COPY_AND_ASSIGN(LabelButton);
 };

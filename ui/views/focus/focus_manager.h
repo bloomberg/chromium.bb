@@ -7,9 +7,9 @@
 
 #include <list>
 #include <map>
+#include <memory>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/accelerators/accelerator_manager.h"
@@ -346,13 +346,13 @@ class VIEWS_EXPORT FocusManager {
 
   // The object which handles an accelerator when |accelerator_manager_| doesn't
   // handle it.
-  scoped_ptr<FocusManagerDelegate> delegate_;
+  std::unique_ptr<FocusManagerDelegate> delegate_;
 
   // The view that currently is focused.
   View* focused_view_;
 
   // The AcceleratorManager this FocusManager is associated with.
-  scoped_ptr<ui::AcceleratorManager> accelerator_manager_;
+  std::unique_ptr<ui::AcceleratorManager> accelerator_manager_;
 
   // Keeps track of whether shortcut handling is currently suspended.
   bool shortcut_handling_suspended_;

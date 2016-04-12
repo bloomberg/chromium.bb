@@ -31,7 +31,7 @@ class DISPLAY_EXPORT NativeDisplayEventDispatcherX11
   bool CanDispatchEvent(const PlatformEvent& event) override;
   uint32_t DispatchEvent(const PlatformEvent& event) override;
 
-  void SetTickClockForTest(scoped_ptr<base::TickClock> tick_clock);
+  void SetTickClockForTest(std::unique_ptr<base::TickClock> tick_clock);
 
   // How long the cached output is valid after startup.
   static const int kUseCacheAfterStartupMs;
@@ -45,7 +45,7 @@ class DISPLAY_EXPORT NativeDisplayEventDispatcherX11
 
   base::TimeTicks startup_time_;
 
-  scoped_ptr<base::TickClock> tick_clock_;
+  std::unique_ptr<base::TickClock> tick_clock_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeDisplayEventDispatcherX11);
 };

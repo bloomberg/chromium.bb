@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/events/event_utils.h"
-
 #import <Cocoa/Cocoa.h>
 #include <stdint.h>
+
+#include <memory>
 
 #include "base/mac/scoped_cftyperef.h"
 #import "base/mac/scoped_objc_class_swizzler.h"
 #include "base/mac/sdk_forward_declarations.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event_constants.h"
+#include "ui/events/event_utils.h"
 #import "ui/events/test/cocoa_test_event_utils.h"
 #include "ui/gfx/geometry/point.h"
 #import "ui/gfx/test/ui_cocoa_test_helper.h"
@@ -121,7 +121,7 @@ class EventsMacTest : public CocoaTest {
   }
 
  private:
-  scoped_ptr<base::mac::ScopedObjCClassSwizzler> swizzler_;
+  std::unique_ptr<base::mac::ScopedObjCClassSwizzler> swizzler_;
 
   DISALLOW_COPY_AND_ASSIGN(EventsMacTest);
 };

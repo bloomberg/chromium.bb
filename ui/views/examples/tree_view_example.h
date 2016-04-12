@@ -78,7 +78,7 @@ class VIEWS_EXAMPLES_EXPORT TreeViewExample
 
   ui::TreeNodeModel<NodeType> model_;
 
-  scoped_ptr<MenuRunner> context_menu_runner_;
+  std::unique_ptr<MenuRunner> context_menu_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(TreeViewExample);
 };

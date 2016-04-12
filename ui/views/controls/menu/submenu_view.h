@@ -205,7 +205,7 @@ class VIEWS_EXPORT SubmenuView : public PrefixDelegate,
   bool resize_open_menu_;
 
   // The submenu's scroll animator
-  scoped_ptr<ScrollAnimator> scroll_animator_;
+  std::unique_ptr<ScrollAnimator> scroll_animator_;
 
   // Difference between current position and cumulative deltas passed to
   // OnScroll.

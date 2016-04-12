@@ -332,7 +332,7 @@ void MenuScrollViewContainer::CreateBubbleBorder() {
   bubble_border_ = new BubbleBorder(arrow_,
                                     BubbleBorder::SMALL_SHADOW,
                                     SK_ColorWHITE);
-  SetBorder(scoped_ptr<Border>(bubble_border_));
+  SetBorder(std::unique_ptr<Border>(bubble_border_));
   set_background(new BubbleBackground(bubble_border_));
 }
 

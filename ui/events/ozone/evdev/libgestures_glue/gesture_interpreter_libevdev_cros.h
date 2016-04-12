@@ -9,10 +9,10 @@
 #include <libevdev/libevdev.h>
 
 #include <bitset>
+#include <memory>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/events/ozone/evdev/cursor_delegate_evdev.h"
 #include "ui/events/ozone/evdev/event_device_util.h"
 #include "ui/events/ozone/evdev/event_dispatch_callback.h"
@@ -118,7 +118,7 @@ class EVENTS_OZONE_EVDEV_EXPORT GestureInterpreterLibevdevCros
   Evdev* evdev_ = nullptr;
 
   // Gesture lib device properties.
-  scoped_ptr<GestureDeviceProperties> device_properties_;
+  std::unique_ptr<GestureDeviceProperties> device_properties_;
 
   DISALLOW_COPY_AND_ASSIGN(GestureInterpreterLibevdevCros);
 };

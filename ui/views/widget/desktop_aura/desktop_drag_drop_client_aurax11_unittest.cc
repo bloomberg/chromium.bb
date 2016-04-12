@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <map>
+#include <memory>
 #include <vector>
 
 // Include views_test_base.h first because the definition of None in X.h
@@ -10,7 +11,7 @@
 #include "ui/views/test/views_test_base.h"
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/aura/window.h"
@@ -119,7 +120,7 @@ class SimpleTestDragDropClient : public DesktopDragDropClientAuraX11 {
 
  private:
   // DesktopDragDropClientAuraX11:
-  scoped_ptr<X11MoveLoop> CreateMoveLoop(
+  std::unique_ptr<X11MoveLoop> CreateMoveLoop(
       X11MoveLoopDelegate* delegate) override;
   XID FindWindowFor(const gfx::Point& screen_point) override;
 
@@ -281,10 +282,10 @@ bool SimpleTestDragDropClient::IsMoveLoopRunning() {
   return loop_->IsRunning();
 }
 
-scoped_ptr<X11MoveLoop> SimpleTestDragDropClient::CreateMoveLoop(
+std::unique_ptr<X11MoveLoop> SimpleTestDragDropClient::CreateMoveLoop(
     X11MoveLoopDelegate* delegate) {
   loop_ = new TestMoveLoop(delegate);
-  return make_scoped_ptr(loop_);
+  return base::WrapUnique(loop_);
 }
 
 XID SimpleTestDragDropClient::FindWindowFor(const gfx::Point& screen_point) {
@@ -427,11 +428,11 @@ class DesktopDragDropClientAuraX11Test : public ViewsTestBase {
   }
 
  private:
-  scoped_ptr<TestDragDropClient> client_;
-  scoped_ptr<DesktopNativeCursorManager> cursor_manager_;
+  std::unique_ptr<TestDragDropClient> client_;
+  std::unique_ptr<DesktopNativeCursorManager> cursor_manager_;
 
   // The widget used to initiate drags.
-  scoped_ptr<Widget> widget_;
+  std::unique_ptr<Widget> widget_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopDragDropClientAuraX11Test);
 };
@@ -869,11 +870,11 @@ class DesktopDragDropClientAuraX11ChromeSourceTargetTest
   }
 
  private:
-  scoped_ptr<SimpleTestDragDropClient> client_;
-  scoped_ptr<DesktopNativeCursorManager> cursor_manager_;
+  std::unique_ptr<SimpleTestDragDropClient> client_;
+  std::unique_ptr<DesktopNativeCursorManager> cursor_manager_;
 
   // The widget used to initiate drags.
-  scoped_ptr<Widget> widget_;
+  std::unique_ptr<Widget> widget_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopDragDropClientAuraX11ChromeSourceTargetTest);
 };
@@ -884,7 +885,7 @@ void ChromeSourceTargetStep2(SimpleTestDragDropClient* client,
                              int modifier_flags) {
   EXPECT_TRUE(client->IsMoveLoopRunning());
 
-  scoped_ptr<Widget> target_widget(new Widget);
+  std::unique_ptr<Widget> target_widget(new Widget);
   Widget::InitParams target_params(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   target_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   target_params.native_widget =

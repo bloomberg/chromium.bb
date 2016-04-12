@@ -5,6 +5,7 @@
 #include "ui/native_theme/common_theme.h"
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -435,13 +436,13 @@ void CommonThemePaintMenuItemBackground(
 }
 
 // static
-scoped_ptr<gfx::Canvas> CommonThemeCreateCanvas(SkCanvas* sk_canvas) {
+std::unique_ptr<gfx::Canvas> CommonThemeCreateCanvas(SkCanvas* sk_canvas) {
   // TODO(pkotwicz): Do something better and don't infer device
   // scale factor from canvas scale.
   SkMatrix m = sk_canvas->getTotalMatrix();
   float device_scale = static_cast<float>(SkScalarAbs(m.getScaleX()));
-  return make_scoped_ptr(new gfx::Canvas(skia::SharePtr(sk_canvas),
-                                         device_scale));
+  return base::WrapUnique(
+      new gfx::Canvas(skia::SharePtr(sk_canvas), device_scale));
 }
 
 }  // namespace ui

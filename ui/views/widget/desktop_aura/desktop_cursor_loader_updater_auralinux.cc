@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/cursor/cursor_loader.h"
 #include "ui/base/cursor/cursors_aura.h"
@@ -68,8 +69,9 @@ void DesktopCursorLoaderUpdaterAuraLinux::OnDisplayUpdated(
 }
 
 // static
-scoped_ptr<DesktopCursorLoaderUpdater> DesktopCursorLoaderUpdater::Create() {
-  return make_scoped_ptr(new DesktopCursorLoaderUpdaterAuraLinux);
+std::unique_ptr<DesktopCursorLoaderUpdater>
+DesktopCursorLoaderUpdater::Create() {
+  return base::WrapUnique(new DesktopCursorLoaderUpdaterAuraLinux);
 }
 
 }  // namespace views

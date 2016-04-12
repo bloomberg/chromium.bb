@@ -4,9 +4,10 @@
 
 #include "ui/views/widget/native_widget_aura.h"
 
+#include <memory>
+
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/aura_constants.h"
@@ -78,7 +79,7 @@ class NativeWidgetAuraTest : public aura::test::AuraTestBase {
   }
 
  private:
-  scoped_ptr<wm::FocusController> focus_controller_;
+  std::unique_ptr<wm::FocusController> focus_controller_;
   TestFocusRules* test_focus_rules_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeWidgetAuraTest);
@@ -87,10 +88,10 @@ class NativeWidgetAuraTest : public aura::test::AuraTestBase {
 TEST_F(NativeWidgetAuraTest, CenterWindowLargeParent) {
   // Make a parent window larger than the host represented by
   // WindowEventDispatcher.
-  scoped_ptr<aura::Window> parent(new aura::Window(NULL));
+  std::unique_ptr<aura::Window> parent(new aura::Window(NULL));
   parent->Init(ui::LAYER_NOT_DRAWN);
   parent->SetBounds(gfx::Rect(0, 0, 1024, 800));
-  scoped_ptr<Widget> widget(new Widget());
+  std::unique_ptr<Widget> widget(new Widget());
   NativeWidgetAura* window = Init(parent.get(), widget.get());
 
   window->CenterWindow(gfx::Size(100, 100));
@@ -104,10 +105,10 @@ TEST_F(NativeWidgetAuraTest, CenterWindowLargeParent) {
 TEST_F(NativeWidgetAuraTest, CenterWindowSmallParent) {
   // Make a parent window smaller than the host represented by
   // WindowEventDispatcher.
-  scoped_ptr<aura::Window> parent(new aura::Window(NULL));
+  std::unique_ptr<aura::Window> parent(new aura::Window(NULL));
   parent->Init(ui::LAYER_NOT_DRAWN);
   parent->SetBounds(gfx::Rect(0, 0, 480, 320));
-  scoped_ptr<Widget> widget(new Widget());
+  std::unique_ptr<Widget> widget(new Widget());
   NativeWidgetAura* window = Init(parent.get(), widget.get());
 
   window->CenterWindow(gfx::Size(100, 100));
@@ -122,10 +123,10 @@ TEST_F(NativeWidgetAuraTest, CenterWindowSmallParent) {
 TEST_F(NativeWidgetAuraTest, CenterWindowSmallParentNotAtOrigin) {
   // Make a parent window smaller than the host represented by
   // WindowEventDispatcher and offset it slightly from the origin.
-  scoped_ptr<aura::Window> parent(new aura::Window(NULL));
+  std::unique_ptr<aura::Window> parent(new aura::Window(NULL));
   parent->Init(ui::LAYER_NOT_DRAWN);
   parent->SetBounds(gfx::Rect(20, 40, 480, 320));
-  scoped_ptr<Widget> widget(new Widget());
+  std::unique_ptr<Widget> widget(new Widget());
   NativeWidgetAura* window = Init(parent.get(), widget.get());
   window->CenterWindow(gfx::Size(500, 600));
 
@@ -141,7 +142,7 @@ TEST_F(NativeWidgetAuraTest, CreateMinimized) {
   params.context = root_window();
   params.show_state = ui::SHOW_STATE_MINIMIZED;
   params.bounds.SetRect(0, 0, 1024, 800);
-  scoped_ptr<Widget> widget(new Widget());
+  std::unique_ptr<Widget> widget(new Widget());
   widget->Init(params);
   widget->Show();
 
@@ -219,7 +220,7 @@ class TestWidget : public views::Widget {
 TEST_F(NativeWidgetAuraTest, ShowMaximizedDoesntBounceAround) {
   root_window()->SetBounds(gfx::Rect(0, 0, 640, 480));
   root_window()->SetLayoutManager(new MaximizeLayoutManager);
-  scoped_ptr<TestWidget> widget(new TestWidget());
+  std::unique_ptr<TestWidget> widget(new TestWidget());
   Widget::InitParams params(Widget::InitParams::TYPE_WINDOW);
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.parent = NULL;
@@ -276,7 +277,7 @@ TEST_F(NativeWidgetAuraTest, TestPropertiesWhenAddedToLayout) {
   root_window()->SetBounds(gfx::Rect(0, 0, 640, 480));
   PropertyTestLayoutManager* layout_manager = new PropertyTestLayoutManager();
   root_window()->SetLayoutManager(layout_manager);
-  scoped_ptr<TestWidget> widget(new TestWidget());
+  std::unique_ptr<TestWidget> widget(new TestWidget());
   Widget::InitParams params(Widget::InitParams::TYPE_WINDOW);
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.delegate = new PropertyTestWidgetDelegate(widget.get());
@@ -293,7 +294,7 @@ TEST_F(NativeWidgetAuraTest, GetClientAreaScreenBounds) {
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.context = root_window();
   params.bounds.SetRect(10, 20, 300, 400);
-  scoped_ptr<Widget> widget(new Widget());
+  std::unique_ptr<Widget> widget(new Widget());
   widget->Init(params);
 
   // For Aura, client area bounds match window bounds.
@@ -349,7 +350,7 @@ TEST_F(NativeWidgetAuraTest, DontCaptureOnGesture) {
   child->set_consume_gesture_event(false);
   view->SetLayoutManager(new FillLayout);
   view->AddChildView(child);
-  scoped_ptr<TestWidget> widget(new TestWidget());
+  std::unique_ptr<TestWidget> widget(new TestWidget());
   Widget::InitParams params(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.context = root_window();
@@ -390,7 +391,7 @@ TEST_F(NativeWidgetAuraTest, DontCaptureOnGesture) {
 TEST_F(NativeWidgetAuraTest, PreferViewLayersToChildWindows) {
   // Create two widgets: |parent| and |child|. |child| is a child of |parent|.
   views::View* parent_root = new views::View;
-  scoped_ptr<Widget> parent(new Widget());
+  std::unique_ptr<Widget> parent(new Widget());
   Widget::InitParams parent_params(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   parent_params.ownership =
       views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
@@ -400,7 +401,7 @@ TEST_F(NativeWidgetAuraTest, PreferViewLayersToChildWindows) {
   parent->SetBounds(gfx::Rect(0, 0, 400, 400));
   parent->Show();
 
-  scoped_ptr<Widget> child(new Widget());
+  std::unique_ptr<Widget> child(new Widget());
   Widget::InitParams child_params(Widget::InitParams::TYPE_CONTROL);
   child_params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   child_params.parent = parent->GetNativeWindow();
@@ -452,7 +453,7 @@ TEST_F(NativeWidgetAuraTest, PreferViewLayersToChildWindows) {
 // Verifies that widget->FlashFrame() sets aura::client::kDrawAttentionKey,
 // and activating the window clears it.
 TEST_F(NativeWidgetAuraTest, FlashFrame) {
-  scoped_ptr<Widget> widget(new Widget());
+  std::unique_ptr<Widget> widget(new Widget());
   Widget::InitParams params(Widget::InitParams::TYPE_WINDOW);
   params.context = root_window();
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
@@ -470,10 +471,10 @@ TEST_F(NativeWidgetAuraTest, FlashFrame) {
 }
 
 TEST_F(NativeWidgetAuraTest, NoCrashOnThemeAfterClose) {
-  scoped_ptr<aura::Window> parent(new aura::Window(NULL));
+  std::unique_ptr<aura::Window> parent(new aura::Window(NULL));
   parent->Init(ui::LAYER_NOT_DRAWN);
   parent->SetBounds(gfx::Rect(0, 0, 480, 320));
-  scoped_ptr<Widget> widget(new Widget());
+  std::unique_ptr<Widget> widget(new Widget());
   Init(parent.get(), widget.get());
   widget->Show();
   widget->Close();

@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
 
@@ -64,12 +63,12 @@ class AuraTestHelper {
   bool setup_called_;
   bool teardown_called_;
   std::unique_ptr<aura::Env> env_;
-  scoped_ptr<WindowTreeHost> host_;
-  scoped_ptr<TestWindowTreeClient> stacking_client_;
-  scoped_ptr<client::DefaultCaptureClient> capture_client_;
-  scoped_ptr<client::FocusClient> focus_client_;
-  scoped_ptr<TestScreen> test_screen_;
-  scoped_ptr<ui::ScopedAnimationDurationScaleMode> zero_duration_mode_;
+  std::unique_ptr<WindowTreeHost> host_;
+  std::unique_ptr<TestWindowTreeClient> stacking_client_;
+  std::unique_ptr<client::DefaultCaptureClient> capture_client_;
+  std::unique_ptr<client::FocusClient> focus_client_;
+  std::unique_ptr<TestScreen> test_screen_;
+  std::unique_ptr<ui::ScopedAnimationDurationScaleMode> zero_duration_mode_;
 
   DISALLOW_COPY_AND_ASSIGN(AuraTestHelper);
 };

@@ -159,7 +159,7 @@ bool X11WholeScreenMoveLoop::RunMoveLoop(aura::Window* source,
 
   GrabEscKey();
 
-  scoped_ptr<ui::ScopedEventDispatcher> old_dispatcher =
+  std::unique_ptr<ui::ScopedEventDispatcher> old_dispatcher =
       std::move(nested_dispatcher_);
   nested_dispatcher_ =
          ui::PlatformEventSource::GetInstance()->OverrideDispatcher(this);

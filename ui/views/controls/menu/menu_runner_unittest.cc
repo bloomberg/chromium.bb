@@ -6,8 +6,9 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/events/test/event_generator.h"
@@ -95,9 +96,9 @@ class MenuRunnerTest : public ViewsTestBase {
   // Owned by MenuRunner.
   MenuItemView* menu_item_view_;
 
-  scoped_ptr<TestMenuDelegate> menu_delegate_;
-  scoped_ptr<MenuRunner> menu_runner_;
-  scoped_ptr<Widget> owner_;
+  std::unique_ptr<TestMenuDelegate> menu_delegate_;
+  std::unique_ptr<MenuRunner> menu_runner_;
+  std::unique_ptr<Widget> owner_;
 
   DISALLOW_COPY_AND_ASSIGN(MenuRunnerTest);
 };
@@ -220,9 +221,9 @@ TEST_F(MenuRunnerTest, NestingDuringDrag) {
   EXPECT_EQ(MenuRunner::NORMAL_EXIT, result);
   EXPECT_TRUE(runner->IsRunning());
 
-  scoped_ptr<TestMenuDelegate> nested_delegate(new TestMenuDelegate);
+  std::unique_ptr<TestMenuDelegate> nested_delegate(new TestMenuDelegate);
   MenuItemView* nested_menu = new MenuItemView(nested_delegate.get());
-  scoped_ptr<MenuRunner> nested_runner(
+  std::unique_ptr<MenuRunner> nested_runner(
       new MenuRunner(nested_menu, MenuRunner::IS_NESTED | MenuRunner::ASYNC));
   result = nested_runner->RunMenuAt(owner(), nullptr, gfx::Rect(),
                                     MENU_ANCHOR_TOPLEFT, ui::MENU_SOURCE_NONE);

@@ -10,7 +10,8 @@
 
 #include <stdint.h>
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/strings/stringize_macros.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
@@ -257,7 +258,7 @@ TYPED_TEST_P(GLImageCopyTest, CopyTexImage) {
   // Create a solid color blue texture of the same size as |image|.
   unsigned target = this->delegate_.GetTextureTarget();
   GLuint texture = GLTestHelper::CreateTexture(target);
-  scoped_ptr<uint8_t[]> pixels(new uint8_t[BufferSizeForBufferFormat(
+  std::unique_ptr<uint8_t[]> pixels(new uint8_t[BufferSizeForBufferFormat(
       image_size, gfx::BufferFormat::RGBA_8888)]);
   GLImageTestSupport::SetBufferDataToColor(
       image_size.width(), image_size.height(),

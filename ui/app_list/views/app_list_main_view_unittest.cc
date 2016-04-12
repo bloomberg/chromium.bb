@@ -4,8 +4,9 @@
 
 #include "ui/app_list/views/app_list_main_view.h"
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -60,7 +61,7 @@ class GridViewVisibleWaiter {
   }
 
   AppsGridView* grid_view_;
-  scoped_ptr<base::RunLoop> run_loop_;
+  std::unique_ptr<base::RunLoop> run_loop_;
   base::RepeatingTimer check_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(GridViewVisibleWaiter);
@@ -243,7 +244,7 @@ class AppListMainViewTest : public views::ViewsTestBase {
  protected:
   views::Widget* main_widget_;  // Owned by native window.
   AppListMainView* main_view_;  // Owned by |main_widget_|.
-  scoped_ptr<AppListTestViewDelegate> delegate_;
+  std::unique_ptr<AppListTestViewDelegate> delegate_;
   views::Widget* search_box_widget_;  // Owned by |main_widget_|.
   SearchBoxView* search_box_view_;    // Owned by |search_box_widget_|.
 
@@ -260,7 +261,7 @@ TEST_F(AppListMainViewTest, ModelChanged) {
 
   // The model is owned by a profile keyed service, which is never destroyed
   // until after profile switching.
-  scoped_ptr<AppListModel> old_model(delegate_->ReleaseTestModel());
+  std::unique_ptr<AppListModel> old_model(delegate_->ReleaseTestModel());
 
   const int kReplacementItems = 5;
   delegate_->ReplaceTestModel(kReplacementItems);

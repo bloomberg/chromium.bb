@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include "base/memory/ptr_util.h"
 #include "ui/display/types/gamma_ramp_rgb_entry.h"
 #include "ui/ozone/common/display_util.h"
 #include "ui/ozone/platform/drm/common/drm_util.h"
@@ -30,7 +31,7 @@ class DisplayComparator {
                     uint32_t connector)
       : drm_(drm), crtc_(crtc), connector_(connector) {}
 
-  bool operator()(const scoped_ptr<DrmDisplay>& other) const {
+  bool operator()(const std::unique_ptr<DrmDisplay>& other) const {
     return drm_ == other->drm() && connector_ == other->connector() &&
            crtc_ == other->crtc();
   }
@@ -68,7 +69,7 @@ DrmGpuDisplayManager::~DrmGpuDisplayManager() {
 }
 
 std::vector<DisplaySnapshot_Params> DrmGpuDisplayManager::GetDisplays() {
-  std::vector<scoped_ptr<DrmDisplay>> old_displays;
+  std::vector<std::unique_ptr<DrmDisplay>> old_displays;
   old_displays.swap(displays_);
   std::vector<DisplaySnapshot_Params> params_list;
 
@@ -87,7 +88,7 @@ std::vector<DisplaySnapshot_Params> DrmGpuDisplayManager::GetDisplays() {
         old_displays.erase(it);
       } else {
         displays_.push_back(
-            make_scoped_ptr(new DrmDisplay(screen_manager_, drm)));
+            base::WrapUnique(new DrmDisplay(screen_manager_, drm)));
       }
       params_list.push_back(
           displays_.back()->Update(display_info, device_index));
@@ -219,8 +220,8 @@ DrmDisplay* DrmGpuDisplayManager::FindDisplay(int64_t display_id) {
 }
 
 void DrmGpuDisplayManager::NotifyScreenManager(
-    const std::vector<scoped_ptr<DrmDisplay>>& new_displays,
-    const std::vector<scoped_ptr<DrmDisplay>>& old_displays) const {
+    const std::vector<std::unique_ptr<DrmDisplay>>& new_displays,
+    const std::vector<std::unique_ptr<DrmDisplay>>& old_displays) const {
   for (const auto& old_display : old_displays) {
     auto it = std::find_if(new_displays.begin(), new_displays.end(),
                            DisplayComparator(old_display.get()));

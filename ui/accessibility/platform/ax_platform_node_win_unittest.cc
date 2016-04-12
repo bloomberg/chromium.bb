@@ -2,18 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ui/accessibility/platform/ax_platform_node.h"
+
 #include <atlbase.h>
 #include <atlcom.h>
 #include <oleacc.h>
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/win/scoped_bstr.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/scoped_variant.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/iaccessible2/ia2_api_all.h"
 #include "ui/accessibility/ax_node_data.h"
-#include "ui/accessibility/platform/ax_platform_node.h"
 #include "ui/accessibility/platform/test_ax_node_wrapper.h"
 #include "ui/base/win/atl_module.h"
 
@@ -98,7 +100,7 @@ class AXPlatformNodeWinTest : public testing::Test {
     return result;
   }
 
-  scoped_ptr<AXTree> tree_;
+  std::unique_ptr<AXTree> tree_;
 };
 
 TEST_F(AXPlatformNodeWinTest, TestIAccessibleDetachedObject) {

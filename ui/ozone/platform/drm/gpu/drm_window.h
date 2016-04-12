@@ -118,7 +118,7 @@ class DrmWindow {
   // The controller associated with the current window. This may be nullptr if
   // the window isn't over an active display.
   HardwareDisplayController* controller_ = nullptr;
-  scoped_ptr<DrmOverlayValidator> overlay_validator_;
+  std::unique_ptr<DrmOverlayValidator> overlay_validator_;
 
   base::RepeatingTimer cursor_timer_;
 

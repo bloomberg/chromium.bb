@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ui/gl/gl_context_glx.h"
+
 extern "C" {
 #include <X11/Xlib.h>
 }
-
-#include "ui/gl/gl_context_glx.h"
+#include <memory>
 
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/gl/GL/glextchromium.h"

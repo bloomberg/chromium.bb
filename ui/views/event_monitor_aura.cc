@@ -5,6 +5,7 @@
 #include "ui/views/event_monitor_aura.h"
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/events/event_target.h"
@@ -12,17 +13,17 @@
 namespace views {
 
 // static
-scoped_ptr<EventMonitor> EventMonitor::CreateApplicationMonitor(
+std::unique_ptr<EventMonitor> EventMonitor::CreateApplicationMonitor(
     ui::EventHandler* event_handler) {
-  return make_scoped_ptr(
+  return base::WrapUnique(
       new EventMonitorAura(event_handler, aura::Env::GetInstance()));
 }
 
 // static
-scoped_ptr<EventMonitor> EventMonitor::CreateWindowMonitor(
+std::unique_ptr<EventMonitor> EventMonitor::CreateWindowMonitor(
     ui::EventHandler* event_handler,
     gfx::NativeWindow target_window) {
-  return make_scoped_ptr(new EventMonitorAura(event_handler, target_window));
+  return base::WrapUnique(new EventMonitorAura(event_handler, target_window));
 }
 
 // static

@@ -93,7 +93,7 @@ class NativeScrollBarTest : public ViewsTestBase {
   // scroll to the middle.
   int track_size_;
 
-  scoped_ptr<TestScrollBarController> controller_;
+  std::unique_ptr<TestScrollBarController> controller_;
 };
 
 // TODO(dnicoara) Can't run the test on Windows since the scrollbar |Part|

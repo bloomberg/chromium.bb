@@ -11,13 +11,13 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <ostream>
 #include <string>
 #include <vector>
 
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "ui/events/ozone/evdev/event_device_info.h"
 #include "ui/events/ozone/evdev/events_ozone_evdev_export.h"
@@ -117,7 +117,8 @@ class EVENTS_OZONE_EVDEV_EXPORT GesturePropertyProvider {
   // properties whose values will be applied upon the device attachment.
   typedef base::ScopedPtrHashMap<
       DeviceId,
-      scoped_ptr<internal::GestureDevicePropertyData>> ScopedDeviceDataMap;
+      std::unique_ptr<internal::GestureDevicePropertyData>>
+      ScopedDeviceDataMap;
 
   // Register a device. Setup data-structures and the device's default
   // properties.
@@ -131,7 +132,7 @@ class EVENTS_OZONE_EVDEV_EXPORT GesturePropertyProvider {
   // pointers. It is caller's responsibility to manage them.
   void AddProperty(const DeviceId device_id,
                    const std::string& name,
-                   scoped_ptr<GesturesProp> property);
+                   std::unique_ptr<GesturesProp> property);
   void DeleteProperty(const DeviceId device_id, const std::string& name);
 
   // Check if a property exists for a device. Return if it is found.
@@ -151,13 +152,13 @@ class EVENTS_OZONE_EVDEV_EXPORT GesturePropertyProvider {
   void ParseXorgConfFile(const std::string& content);
 
   // Create a match criteria.
-  scoped_ptr<internal::MatchCriteria> CreateMatchCriteria(
+  std::unique_ptr<internal::MatchCriteria> CreateMatchCriteria(
       const std::string& match_type,
       const std::string& arg);
 
   // Create a property that comes from the conf files.
-  scoped_ptr<GesturesProp> CreateDefaultProperty(const std::string& name,
-                                                 const std::string& value);
+  std::unique_ptr<GesturesProp> CreateDefaultProperty(const std::string& name,
+                                                      const std::string& value);
 
   // Setup default property values for a newly found device.
   void SetupDefaultProperties(const DeviceId device_id, const DevicePtr device);
@@ -171,7 +172,7 @@ class EVENTS_OZONE_EVDEV_EXPORT GesturePropertyProvider {
 
   // A vector of parsed sections in configuration files. Owns MatchCriterias,
   // GesturesProps and ConfigurationSections in it.
-  std::vector<scoped_ptr<internal::ConfigurationSection>> configurations_;
+  std::vector<std::unique_ptr<internal::ConfigurationSection>> configurations_;
 
   DISALLOW_COPY_AND_ASSIGN(GesturePropertyProvider);
 };
@@ -250,7 +251,7 @@ class GesturesPropFunctionsWrapper {
   // Do things that should happen AFTER we create the property.
   static void PostCreateProperty(void* device_data,
                                  const char* name,
-                                 scoped_ptr<GesturesProp> property);
+                                 std::unique_ptr<GesturesProp> property);
 
   // Some other utility functions used in InitializeDeviceProperties.
   static GesturesProp* CreateIntSingle(void* device_data,

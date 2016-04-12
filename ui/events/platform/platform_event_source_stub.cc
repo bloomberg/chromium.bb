@@ -6,7 +6,7 @@
 
 namespace ui {
 
-scoped_ptr<PlatformEventSource> PlatformEventSource::CreateDefault() {
+std::unique_ptr<PlatformEventSource> PlatformEventSource::CreateDefault() {
   return nullptr;
 }
 

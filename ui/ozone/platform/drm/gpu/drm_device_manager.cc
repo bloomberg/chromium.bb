@@ -30,7 +30,7 @@ class FindByDevicePath {
 }  // namespace
 
 DrmDeviceManager::DrmDeviceManager(
-    scoped_ptr<DrmDeviceGenerator> drm_device_generator)
+    std::unique_ptr<DrmDeviceGenerator> drm_device_generator)
     : drm_device_generator_(std::move(drm_device_generator)) {}
 
 DrmDeviceManager::~DrmDeviceManager() {

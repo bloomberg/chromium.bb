@@ -5,9 +5,10 @@
 #ifndef UI_VIEWS_TEST_VIEWS_TEST_HELPER_AURA_H_
 #define UI_VIEWS_TEST_VIEWS_TEST_HELPER_AURA_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/views/test/views_test_helper.h"
 
 namespace aura {
@@ -42,9 +43,9 @@ class ViewsTestHelperAura : public ViewsTestHelper {
 
  private:
   ui::ContextFactory* context_factory_;
-  scoped_ptr<aura::test::AuraTestHelper> aura_test_helper_;
-  scoped_ptr<wm::WMState> wm_state_;
-  scoped_ptr<aura::client::ScreenPositionClient> screen_position_client_;
+  std::unique_ptr<aura::test::AuraTestHelper> aura_test_helper_;
+  std::unique_ptr<wm::WMState> wm_state_;
+  std::unique_ptr<aura::client::ScreenPositionClient> screen_position_client_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewsTestHelperAura);
 };

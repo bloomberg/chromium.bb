@@ -8,14 +8,15 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <xf86drmMode.h>
+
 #include <deque>
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "ui/gfx/swap_result.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_plane_manager.h"
@@ -89,7 +90,7 @@ class HardwareDisplayController {
   typedef base::Callback<void(gfx::SwapResult)> PageFlipCallback;
 
  public:
-  HardwareDisplayController(scoped_ptr<CrtcController> controller,
+  HardwareDisplayController(std::unique_ptr<CrtcController> controller,
                             const gfx::Point& origin);
   ~HardwareDisplayController();
 
@@ -134,9 +135,10 @@ class HardwareDisplayController {
   // Moves the hardware cursor to |location|.
   bool MoveCursor(const gfx::Point& location);
 
-  void AddCrtc(scoped_ptr<CrtcController> controller);
-  scoped_ptr<CrtcController> RemoveCrtc(const scoped_refptr<DrmDevice>& drm,
-                                        uint32_t crtc);
+  void AddCrtc(std::unique_ptr<CrtcController> controller);
+  std::unique_ptr<CrtcController> RemoveCrtc(
+      const scoped_refptr<DrmDevice>& drm,
+      uint32_t crtc);
   bool HasCrtc(const scoped_refptr<DrmDevice>& drm, uint32_t crtc) const;
   bool IsMirrored() const;
   bool IsDisabled() const;
@@ -147,7 +149,7 @@ class HardwareDisplayController {
 
   uint64_t GetTimeOfLastFlip() const;
 
-  const std::vector<scoped_ptr<CrtcController>>& crtc_controllers() const {
+  const std::vector<std::unique_ptr<CrtcController>>& crtc_controllers() const {
     return crtc_controllers_;
   }
 
@@ -158,12 +160,12 @@ class HardwareDisplayController {
                               bool test_only,
                               const PageFlipCallback& callback);
 
-  base::ScopedPtrHashMap<DrmDevice*, scoped_ptr<HardwareDisplayPlaneList>>
+  base::ScopedPtrHashMap<DrmDevice*, std::unique_ptr<HardwareDisplayPlaneList>>
       owned_hardware_planes_;
 
   // Stores the CRTC configuration. This is used to identify monitors and
   // configure them.
-  std::vector<scoped_ptr<CrtcController>> crtc_controllers_;
+  std::vector<std::unique_ptr<CrtcController>> crtc_controllers_;
 
   // Location of the controller on the screen.
   gfx::Point origin_;

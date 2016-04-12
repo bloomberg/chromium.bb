@@ -91,7 +91,7 @@ TEST(MotionEventGenericTest, Clone) {
                            PointerProperties(8.3f, 4.7f, 2.f));
   event.set_button_state(MotionEvent::BUTTON_PRIMARY);
 
-  scoped_ptr<MotionEvent> clone = event.Clone();
+  std::unique_ptr<MotionEvent> clone = event.Clone();
   ASSERT_TRUE(clone);
   EXPECT_EQ(event.GetUniqueEventId(), clone->GetUniqueEventId());
   EXPECT_EQ(test::ToString(event), test::ToString(*clone));
@@ -106,13 +106,13 @@ TEST(MotionEventGenericTest, CloneWithHistory) {
   MotionEventGeneric event(MotionEvent::ACTION_MOVE, event_time, pointer);
 
   PointerProperties historical_pointer(3.4f, -4.3f, 11.5);
-  scoped_ptr<MotionEvent> historical_event(new MotionEventGeneric(
+  std::unique_ptr<MotionEvent> historical_event(new MotionEventGeneric(
       MotionEvent::ACTION_MOVE, historical_event_time, historical_pointer));
 
   event.PushHistoricalEvent(std::move(historical_event));
   EXPECT_EQ(1U, event.GetHistorySize());
 
-  scoped_ptr<MotionEvent> clone = event.Clone();
+  std::unique_ptr<MotionEvent> clone = event.Clone();
   ASSERT_TRUE(clone);
   EXPECT_EQ(event.GetUniqueEventId(), clone->GetUniqueEventId());
   EXPECT_EQ(test::ToString(event), test::ToString(*clone));
@@ -124,7 +124,7 @@ TEST(MotionEventGenericTest, Cancel) {
                            PointerProperties(8.7f, 4.3f, 1.f));
   event.set_button_state(MotionEvent::BUTTON_SECONDARY);
 
-  scoped_ptr<MotionEvent> cancel = event.Cancel();
+  std::unique_ptr<MotionEvent> cancel = event.Cancel();
   event.set_action(MotionEvent::ACTION_CANCEL);
   ASSERT_TRUE(cancel);
   EXPECT_NE(event.GetUniqueEventId(), cancel->GetUniqueEventId());
@@ -253,13 +253,13 @@ TEST(MotionEventGenericTest, ToString) {
 
   pointer0.x += 50;
   pointer1.x -= 50;
-  scoped_ptr<MotionEventGeneric> historical_event0(new MotionEventGeneric(
+  std::unique_ptr<MotionEventGeneric> historical_event0(new MotionEventGeneric(
       MotionEvent::ACTION_MOVE, historical_event_time0, pointer0));
   historical_event0->PushPointer(pointer1);
 
   pointer0.x += 100;
   pointer1.x -= 100;
-  scoped_ptr<MotionEventGeneric> historical_event1(new MotionEventGeneric(
+  std::unique_ptr<MotionEventGeneric> historical_event1(new MotionEventGeneric(
       MotionEvent::ACTION_MOVE, historical_event_time1, pointer0));
   historical_event1->PushPointer(pointer1);
 

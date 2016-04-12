@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "ui/base/ime/input_method_initializer.h"
 #include "ui/compositor/test/context_factories_for_test.h"
@@ -16,11 +17,10 @@
 namespace views {
 
 ScopedViewsTestHelper::ScopedViewsTestHelper()
-    : ScopedViewsTestHelper(make_scoped_ptr(new TestViewsDelegate)) {
-}
+    : ScopedViewsTestHelper(base::WrapUnique(new TestViewsDelegate)) {}
 
 ScopedViewsTestHelper::ScopedViewsTestHelper(
-    scoped_ptr<TestViewsDelegate> views_delegate)
+    std::unique_ptr<TestViewsDelegate> views_delegate)
     : views_delegate_(std::move(views_delegate)),
       platform_test_helper_(PlatformTestHelper::Create()) {
   // The ContextFactory must exist before any Compositors are created.

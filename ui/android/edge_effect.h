@@ -5,8 +5,9 @@
 #ifndef UI_ANDROID_EDGE_EFFECT_H_
 #define UI_ANDROID_EDGE_EFFECT_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/android/edge_effect_base.h"
 #include "ui/android/ui_android_export.h"
 
@@ -51,8 +52,8 @@ class UI_ANDROID_EXPORT EdgeEffect : public EdgeEffectBase {
 
  private:
   class EffectLayer;
-  scoped_ptr<EffectLayer> edge_;
-  scoped_ptr<EffectLayer> glow_;
+  std::unique_ptr<EffectLayer> edge_;
+  std::unique_ptr<EffectLayer> glow_;
 
   float base_edge_height_;
   float base_glow_height_;

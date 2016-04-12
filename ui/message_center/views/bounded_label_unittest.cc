@@ -83,7 +83,7 @@ class BoundedLabelTest : public testing::Test {
   int digit_pixels_;
   int space_pixels_;
   int ellipsis_pixels_;
-  scoped_ptr<BoundedLabel> label_;
+  std::unique_ptr<BoundedLabel> label_;
   int lines_;
 };
 

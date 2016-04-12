@@ -9,6 +9,7 @@
 
 #include <algorithm>
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
@@ -17,7 +18,6 @@
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "ui/accessibility/ax_enums.h"
 #include "ui/base/accelerators/accelerator.h"
@@ -314,7 +314,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   void SetPaintToLayer(bool paint_to_layer);
 
   // Overridden from ui::LayerOwner:
-  scoped_ptr<ui::Layer> RecreateLayer() override;
+  std::unique_ptr<ui::Layer> RecreateLayer() override;
 
   // RTL positioning -----------------------------------------------------------
 
@@ -504,7 +504,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   Background* background() { return background_.get(); }
 
   // The border object is owned by this object and may be NULL.
-  virtual void SetBorder(scoped_ptr<Border> b);
+  virtual void SetBorder(std::unique_ptr<Border> b);
   const Border* border() const { return border_.get(); }
   Border* border() { return border_.get(); }
 
@@ -700,7 +700,8 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // Sets a new ViewTargeter for the view, and returns the previous
   // ViewTargeter.
-  scoped_ptr<ViewTargeter> SetEventTargeter(scoped_ptr<ViewTargeter> targeter);
+  std::unique_ptr<ViewTargeter> SetEventTargeter(
+      std::unique_ptr<ViewTargeter> targeter);
 
   // Returns the ViewTargeter installed on |this| if one exists,
   // otherwise returns the ViewTargeter installed on our root view.
@@ -712,7 +713,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Overridden from ui::EventTarget:
   bool CanAcceptEvent(const ui::Event& event) override;
   ui::EventTarget* GetParentTarget() override;
-  scoped_ptr<ui::EventTargetIterator> GetChildIterator() const override;
+  std::unique_ptr<ui::EventTargetIterator> GetChildIterator() const override;
   ui::EventTargeter* GetEventTargeter() override;
   void ConvertEventToTarget(ui::EventTarget* target,
                             ui::LocatedEvent* event) override;
@@ -1482,7 +1483,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   bool registered_for_visible_bounds_notification_;
 
   // List of descendants wanting notification when their visible bounds change.
-  scoped_ptr<Views> descendants_to_notify_;
+  std::unique_ptr<Views> descendants_to_notify_;
 
   // Transformations -----------------------------------------------------------
 
@@ -1497,7 +1498,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // The View's LayoutManager defines the sizing heuristics applied to child
   // Views. The default is absolute positioning according to bounds_.
-  scoped_ptr<LayoutManager> layout_manager_;
+  std::unique_ptr<LayoutManager> layout_manager_;
 
   // Whether this View's layer should be snapped to the pixel boundary.
   bool snap_layer_to_pixel_boundary_;
@@ -1505,10 +1506,10 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Painting ------------------------------------------------------------------
 
   // Background
-  scoped_ptr<Background> background_;
+  std::unique_ptr<Background> background_;
 
   // Border.
-  scoped_ptr<Border> border_;
+  std::unique_ptr<Border> border_;
 
   // Cached output of painting to be reused in future frames until invalidated.
   ui::PaintCache paint_cache_;
@@ -1532,7 +1533,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // The list of accelerators. List elements in the range
   // [0, registered_accelerator_count_) are already registered to FocusManager,
   // and the rest are not yet.
-  scoped_ptr<std::vector<ui::Accelerator> > accelerators_;
+  std::unique_ptr<std::vector<ui::Accelerator>> accelerators_;
   size_t registered_accelerator_count_;
 
   // Focus ---------------------------------------------------------------------
@@ -1561,7 +1562,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // Input  --------------------------------------------------------------------
 
-  scoped_ptr<ViewTargeter> targeter_;
+  std::unique_ptr<ViewTargeter> targeter_;
 
   // Accessibility -------------------------------------------------------------
 

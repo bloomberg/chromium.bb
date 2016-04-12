@@ -4,8 +4,9 @@
 
 #include "ui/gfx/animation/slide_animation.h"
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/animation/test_animation_delegate.h"
@@ -90,7 +91,7 @@ TEST_F(SlideAnimationTest, Basics) {
 // (Such a scenario would cause problems for BoundsAnimator).
 TEST_F(SlideAnimationTest, DontNotifyOnDelete) {
   TestAnimationDelegate delegate;
-  scoped_ptr<SlideAnimation> animation(new SlideAnimation(&delegate));
+  std::unique_ptr<SlideAnimation> animation(new SlideAnimation(&delegate));
 
   // Start the animation.
   animation->Show();

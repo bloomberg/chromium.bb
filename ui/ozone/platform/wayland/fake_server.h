@@ -65,7 +65,7 @@ class MockSurface : public ServerObject {
                void(int32_t x, int32_t y, int32_t width, int32_t height));
   MOCK_METHOD0(Commit, void());
 
-  scoped_ptr<MockXdgSurface> xdg_surface;
+  std::unique_ptr<MockXdgSurface> xdg_surface;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockSurface);
@@ -104,7 +104,7 @@ class Global {
   static void OnResourceDestroyed(wl_resource* resource);
 
  private:
-  scoped_ptr<wl_global, GlobalDeleter> global_;
+  std::unique_ptr<wl_global, GlobalDeleter> global_;
 
   const wl_interface* interface_;
   const void* implementation_;
@@ -119,10 +119,10 @@ class MockCompositor : public Global {
   MockCompositor();
   ~MockCompositor() override;
 
-  void AddSurface(scoped_ptr<MockSurface> surface);
+  void AddSurface(std::unique_ptr<MockSurface> surface);
 
  private:
-  std::vector<scoped_ptr<MockSurface>> surfaces_;
+  std::vector<std::unique_ptr<MockSurface>> surfaces_;
 
   DISALLOW_COPY_AND_ASSIGN(MockCompositor);
 };
@@ -132,7 +132,7 @@ class MockSeat : public Global {
   MockSeat();
   ~MockSeat() override;
 
-  scoped_ptr<MockPointer> pointer;
+  std::unique_ptr<MockPointer> pointer;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockSeat);
@@ -184,13 +184,13 @@ class FakeServer : public base::Thread, base::MessagePumpLibevent::Watcher {
  private:
   void DoPause();
 
-  scoped_ptr<base::MessagePump> CreateMessagePump();
+  std::unique_ptr<base::MessagePump> CreateMessagePump();
 
   // base::MessagePumpLibevent::Watcher
   void OnFileCanReadWithoutBlocking(int fd) override;
   void OnFileCanWriteWithoutBlocking(int fd) override;
 
-  scoped_ptr<wl_display, DisplayDeleter> display_;
+  std::unique_ptr<wl_display, DisplayDeleter> display_;
   wl_client* client_ = nullptr;
   wl_event_loop* event_loop_ = nullptr;
 

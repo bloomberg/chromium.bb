@@ -232,15 +232,15 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
 
   base::ObserverList<WindowTreeHostObserver> observers_;
 
-  scoped_ptr<WindowEventDispatcher> dispatcher_;
+  std::unique_ptr<WindowEventDispatcher> dispatcher_;
 
-  scoped_ptr<ui::Compositor> compositor_;
+  std::unique_ptr<ui::Compositor> compositor_;
 
   // Last cursor set.  Used for testing.
   gfx::NativeCursor last_cursor_;
   gfx::Point last_cursor_request_position_in_host_;
 
-  scoped_ptr<ui::ViewProp> prop_;
+  std::unique_ptr<ui::ViewProp> prop_;
 
   // The InputMethod instance used to process key events.
   // If owned it, it is created in GetInputMethod() method;

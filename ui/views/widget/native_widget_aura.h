@@ -213,13 +213,13 @@ class VIEWS_EXPORT NativeWidgetAura
   // The saved window state for exiting full screen state.
   ui::WindowShowState saved_window_state_;
 
-  scoped_ptr<TooltipManagerAura> tooltip_manager_;
+  std::unique_ptr<TooltipManagerAura> tooltip_manager_;
 
   // Reorders child windows of |window_| associated with a view based on the
   // order of the associated views in the widget's view hierarchy.
-  scoped_ptr<WindowReorderer> window_reorderer_;
+  std::unique_ptr<WindowReorderer> window_reorderer_;
 
-  scoped_ptr<DropHelper> drop_helper_;
+  std::unique_ptr<DropHelper> drop_helper_;
   int last_drop_operation_;
 
   // The following factory is used for calls to close the NativeWidgetAura

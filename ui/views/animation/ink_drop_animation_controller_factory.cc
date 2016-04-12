@@ -59,15 +59,15 @@ InkDropAnimationControllerFactory::InkDropAnimationControllerFactory() {}
 
 InkDropAnimationControllerFactory::~InkDropAnimationControllerFactory() {}
 
-scoped_ptr<InkDropAnimationController>
+std::unique_ptr<InkDropAnimationController>
 InkDropAnimationControllerFactory::CreateInkDropAnimationController(
     InkDropHost* ink_drop_host) {
   if (ui::MaterialDesignController::IsModeMaterial()) {
-    return scoped_ptr<InkDropAnimationController>(
+    return std::unique_ptr<InkDropAnimationController>(
         new InkDropAnimationControllerImpl(ink_drop_host));
   }
 
-  return scoped_ptr<InkDropAnimationController>(
+  return std::unique_ptr<InkDropAnimationController>(
       new InkDropAnimationControllerStub());
 }
 

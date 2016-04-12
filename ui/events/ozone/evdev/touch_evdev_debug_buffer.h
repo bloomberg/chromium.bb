@@ -8,10 +8,10 @@
 #include <linux/input.h>
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "ui/events/ozone/evdev/events_ozone_evdev_export.h"
 
 namespace ui {
@@ -34,7 +34,7 @@ class EVENTS_OZONE_EVDEV_EXPORT TouchEventLogEvdev {
     int slot;
   };
   const int kDebugBufferSize = 65536;
-  scoped_ptr<TouchEvent[]> logged_events_;
+  std::unique_ptr<TouchEvent[]> logged_events_;
   int debug_buffer_tail_ = 0;
 
   std::string device_name_;

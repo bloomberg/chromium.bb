@@ -26,7 +26,7 @@ class DrmOverlayManager : public OverlayManagerOzone {
   ~DrmOverlayManager() override;
 
   // OverlayManagerOzone:
-  scoped_ptr<OverlayCandidatesOzone> CreateOverlayCandidates(
+  std::unique_ptr<OverlayCandidatesOzone> CreateOverlayCandidates(
       gfx::AcceleratedWidget w) override;
 
   void ResetCache();

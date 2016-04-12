@@ -5,6 +5,7 @@
 #include "ui/views/widget/root_view.h"
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "ui/events/event_utils.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/test/views_test_base.h"
@@ -59,7 +60,7 @@ TEST_F(RootViewTest, DeleteViewDuringKeyEventDispatch) {
   internal::RootView* root_view =
       static_cast<internal::RootView*>(widget.GetRootView());
   ViewTargeter* view_targeter = new ViewTargeter(root_view);
-  root_view->SetEventTargeter(make_scoped_ptr(view_targeter));
+  root_view->SetEventTargeter(base::WrapUnique(view_targeter));
 
   ui::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_ESCAPE, ui::EF_NONE);
   ui::EventDispatchDetails details = root_view->OnEventFromSource(&key_event);

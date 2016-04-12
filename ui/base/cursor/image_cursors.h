@@ -5,8 +5,9 @@
 #ifndef UI_BASE_CURSOR_IMAGE_CURSORS_H_
 #define UI_BASE_CURSOR_IMAGE_CURSORS_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/ui_base_export.h"
@@ -42,7 +43,7 @@ class UI_BASE_EXPORT ImageCursors {
   // Reloads the all loaded cursors in the cursor loader.
   void ReloadCursors();
 
-  scoped_ptr<CursorLoader> cursor_loader_;
+  std::unique_ptr<CursorLoader> cursor_loader_;
   CursorSetType cursor_set_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageCursors);

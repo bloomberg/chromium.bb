@@ -10,6 +10,7 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/geometry/size.h"
@@ -136,7 +137,7 @@ ImageSkia* ImageSkiaFromPNG(
     const std::vector<ImagePNGRep>& image_png_reps) {
   if (image_png_reps.empty())
     return GetErrorImageSkia();
-  scoped_ptr<PNGImageSource> image_source(new PNGImageSource);
+  std::unique_ptr<PNGImageSource> image_source(new PNGImageSource);
 
   for (size_t i = 0; i < image_png_reps.size(); ++i) {
     if (!image_source->AddPNGData(image_png_reps[i]))
@@ -251,7 +252,7 @@ class ImageRepPNG : public ImageRep {
   std::vector<ImagePNGRep> image_png_reps_;
 
   // Cached to avoid having to parse the raw data multiple times.
-  mutable scoped_ptr<gfx::Size> size_cache_;
+  mutable std::unique_ptr<gfx::Size> size_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageRepPNG);
 };
@@ -275,7 +276,7 @@ class ImageRepSkia : public ImageRep {
   ImageSkia* image() { return image_.get(); }
 
  private:
-  scoped_ptr<ImageSkia> image_;
+  std::unique_ptr<ImageSkia> image_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageRepSkia);
 };
@@ -407,14 +408,14 @@ Image::Image(const std::vector<ImagePNGRep>& image_reps) {
     return;
 
   storage_ = new internal::ImageStorage(Image::kImageRepPNG);
-  AddRepresentation(make_scoped_ptr(new internal::ImageRepPNG(filtered)));
+  AddRepresentation(base::WrapUnique(new internal::ImageRepPNG(filtered)));
 }
 
 Image::Image(const ImageSkia& image) {
   if (!image.isNull()) {
     storage_ = new internal::ImageStorage(Image::kImageRepSkia);
     AddRepresentation(
-        make_scoped_ptr(new internal::ImageRepSkia(new ImageSkia(image))));
+        base::WrapUnique(new internal::ImageRepSkia(new ImageSkia(image))));
   }
 }
 
@@ -422,13 +423,14 @@ Image::Image(const ImageSkia& image) {
 Image::Image(UIImage* image)
     : storage_(new internal::ImageStorage(Image::kImageRepCocoaTouch)) {
   if (image)
-    AddRepresentation(make_scoped_ptr(new internal::ImageRepCocoaTouch(image)));
+    AddRepresentation(
+        base::WrapUnique(new internal::ImageRepCocoaTouch(image)));
 }
 #elif defined(OS_MACOSX)
 Image::Image(NSImage* image) {
   if (image) {
     storage_ = new internal::ImageStorage(Image::kImageRepCocoa);
-    AddRepresentation(make_scoped_ptr(new internal::ImageRepCocoa(image)));
+    AddRepresentation(base::WrapUnique(new internal::ImageRepCocoa(image)));
   }
 }
 #endif
@@ -479,7 +481,7 @@ const SkBitmap* Image::ToSkBitmap() const {
 const ImageSkia* Image::ToImageSkia() const {
   internal::ImageRep* rep = GetRepresentation(kImageRepSkia, false);
   if (!rep) {
-    scoped_ptr<internal::ImageRep> scoped_rep;
+    std::unique_ptr<internal::ImageRep> scoped_rep;
     switch (DefaultRepresentationType()) {
       case kImageRepPNG: {
         internal::ImageRepPNG* png_rep =
@@ -519,7 +521,7 @@ const ImageSkia* Image::ToImageSkia() const {
 UIImage* Image::ToUIImage() const {
   internal::ImageRep* rep = GetRepresentation(kImageRepCocoaTouch, false);
   if (!rep) {
-    scoped_ptr<internal::ImageRep> scoped_rep;
+    std::unique_ptr<internal::ImageRep> scoped_rep;
     switch (DefaultRepresentationType()) {
       case kImageRepPNG: {
         internal::ImageRepPNG* png_rep =
@@ -548,7 +550,7 @@ UIImage* Image::ToUIImage() const {
 NSImage* Image::ToNSImage() const {
   internal::ImageRep* rep = GetRepresentation(kImageRepCocoa, false);
   if (!rep) {
-    scoped_ptr<internal::ImageRep> scoped_rep;
+    std::unique_ptr<internal::ImageRep> scoped_rep;
     CGColorSpaceRef default_representation_color_space =
         storage_->default_representation_color_space();
 
@@ -626,7 +628,7 @@ scoped_refptr<base::RefCountedMemory> Image::As1xPNGBytes() const {
   if (!png_bytes.get() || !png_bytes->size()) {
     // Add an ImageRepPNG with no data such that the conversion is not
     // attempted each time we want the PNG bytes.
-    AddRepresentation(make_scoped_ptr(new internal::ImageRepPNG()));
+    AddRepresentation(base::WrapUnique(new internal::ImageRepPNG()));
     return new base::RefCountedBytes();
   }
 
@@ -638,7 +640,8 @@ scoped_refptr<base::RefCountedMemory> Image::As1xPNGBytes() const {
   //   ImageRepCocoa).
   std::vector<ImagePNGRep> image_png_reps;
   image_png_reps.push_back(ImagePNGRep(png_bytes, 1.0f));
-  AddRepresentation(make_scoped_ptr(new internal::ImageRepPNG(image_png_reps)));
+  AddRepresentation(
+      base::WrapUnique(new internal::ImageRepPNG(image_png_reps)));
   return png_bytes;
 }
 
@@ -747,7 +750,7 @@ internal::ImageRep* Image::GetRepresentation(
 }
 
 internal::ImageRep* Image::AddRepresentation(
-    scoped_ptr<internal::ImageRep> rep) const {
+    std::unique_ptr<internal::ImageRep> rep) const {
   CHECK(storage_.get());
   RepresentationType type = rep->type();
   auto result =

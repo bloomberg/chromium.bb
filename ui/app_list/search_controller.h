@@ -7,8 +7,9 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/timer/timer.h"
 #include "ui/app_list/app_list_export.h"
@@ -48,7 +49,7 @@ class APP_LIST_EXPORT SearchController {
   size_t AddOmniboxGroup(size_t max_results, double boost, double multiplier);
 
   // Takes ownership of |provider| and associates it with given mixer group.
-  void AddProvider(size_t group_id, scoped_ptr<SearchProvider> provider);
+  void AddProvider(size_t group_id, std::unique_ptr<SearchProvider> provider);
 
  private:
   typedef ScopedVector<SearchProvider> Providers;
@@ -60,7 +61,7 @@ class APP_LIST_EXPORT SearchController {
 
   bool dispatching_query_;
   Providers providers_;
-  scoped_ptr<Mixer> mixer_;
+  std::unique_ptr<Mixer> mixer_;
   History* history_;  // KeyedService, not owned.
 
   bool is_voice_query_;

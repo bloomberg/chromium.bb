@@ -73,7 +73,7 @@ class WaylandDisplay : public PlatformEventSource,
   wl::Object<wl_shm> shm_;
   wl::Object<xdg_shell> shell_;
 
-  scoped_ptr<WaylandPointer> pointer_;
+  std::unique_ptr<WaylandPointer> pointer_;
 
   bool scheduled_flush_ = false;
   bool watching_ = false;

@@ -65,11 +65,12 @@ class ScreenManager {
 
   // Adds a window for |widget|. Note: |widget| should not be associated with a
   // window when calling this function.
-  void AddWindow(gfx::AcceleratedWidget widget, scoped_ptr<DrmWindow> window);
+  void AddWindow(gfx::AcceleratedWidget widget,
+                 std::unique_ptr<DrmWindow> window);
 
   // Removes the window for |widget|. Note: |widget| must have a window
   // associated with it when calling this function.
-  scoped_ptr<DrmWindow> RemoveWindow(gfx::AcceleratedWidget widget);
+  std::unique_ptr<DrmWindow> RemoveWindow(gfx::AcceleratedWidget widget);
 
   // Returns the window associated with |widget|. Note: This function should be
   // called only if a valid window has been associated with |widget|.
@@ -80,9 +81,10 @@ class ScreenManager {
   void UpdateControllerToWindowMapping();
 
  private:
-  typedef std::vector<scoped_ptr<HardwareDisplayController>>
+  typedef std::vector<std::unique_ptr<HardwareDisplayController>>
       HardwareDisplayControllers;
-  typedef base::ScopedPtrHashMap<gfx::AcceleratedWidget, scoped_ptr<DrmWindow>>
+  typedef base::ScopedPtrHashMap<gfx::AcceleratedWidget,
+                                 std::unique_ptr<DrmWindow>>
       WidgetToWindowMap;
 
   // Returns an iterator into |controllers_| for the controller identified by

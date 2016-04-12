@@ -329,7 +329,7 @@ class TextfieldDestroyerController : public views::TextfieldController {
   }
 
  private:
-  scoped_ptr<views::Textfield> target_;
+  std::unique_ptr<views::Textfield> target_;
 };
 
 base::string16 GetClipboardText(ui::ClipboardType type) {
@@ -638,7 +638,7 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
   Widget* widget_;
 
   TestTextfield* textfield_;
-  scoped_ptr<TextfieldTestApi> test_api_;
+  std::unique_ptr<TextfieldTestApi> test_api_;
   TextfieldModel* model_;
 
   // The string from Controller::ContentsChanged callback.
@@ -655,7 +655,7 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
 
  private:
   ui::ClipboardType copied_to_clipboard_;
-  scoped_ptr<ui::test::EventGenerator> event_generator_;
+  std::unique_ptr<ui::test::EventGenerator> event_generator_;
   DISALLOW_COPY_AND_ASSIGN(TextfieldTest);
 };
 

@@ -7,11 +7,11 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
 #include "ui/display/display_export.h"
 
@@ -100,7 +100,7 @@ class DISPLAY_EXPORT DisplayLayout final {
   // The id of the display used as a primary display.
   int64_t primary_id;
 
-  scoped_ptr<DisplayLayout> Copy() const;
+  std::unique_ptr<DisplayLayout> Copy() const;
 
   // Test if the |layout| has the same placement list. Other fields such
   // as mirrored, primary_id are ignored.

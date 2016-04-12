@@ -8,8 +8,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory_handle.h"
 #include "ui/gfx/generic_shared_memory_id.h"
 #include "ui/gl/gl_image_memory.h"
@@ -40,7 +41,7 @@ class GL_EXPORT GLImageSharedMemory : public GLImageMemory {
   ~GLImageSharedMemory() override;
 
  private:
-  scoped_ptr<base::SharedMemory> shared_memory_;
+  std::unique_ptr<base::SharedMemory> shared_memory_;
   gfx::GenericSharedMemoryId shared_memory_id_;
 
   DISALLOW_COPY_AND_ASSIGN(GLImageSharedMemory);

@@ -9,9 +9,9 @@
 #include <stdint.h>
 
 #include <limits>
+#include <memory>
 
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/sys_info.h"
 #include "skia/ext/platform_canvas.h"
 
@@ -42,7 +42,7 @@ TransportDIB* TransportDIB::Create(size_t size, uint32_t sequence_num) {
 
 // static
 TransportDIB* TransportDIB::Map(Handle handle) {
-  scoped_ptr<TransportDIB> dib(CreateWithHandle(handle));
+  std::unique_ptr<TransportDIB> dib(CreateWithHandle(handle));
   if (!dib->Map())
     return NULL;
   return dib.release();

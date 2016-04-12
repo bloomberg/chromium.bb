@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "ui/events/base_event_utils.h"
 
 namespace ui {
@@ -228,17 +229,17 @@ float MotionEventGeneric::GetHistoricalY(size_t pointer_index,
 }
 
 // static
-scoped_ptr<MotionEventGeneric> MotionEventGeneric::CloneEvent(
+std::unique_ptr<MotionEventGeneric> MotionEventGeneric::CloneEvent(
     const MotionEvent& event) {
   bool with_history = true;
-  return make_scoped_ptr(new MotionEventGeneric(event, with_history));
+  return base::WrapUnique(new MotionEventGeneric(event, with_history));
 }
 
 // static
-scoped_ptr<MotionEventGeneric> MotionEventGeneric::CancelEvent(
+std::unique_ptr<MotionEventGeneric> MotionEventGeneric::CancelEvent(
     const MotionEvent& event) {
   bool with_history = false;
-  scoped_ptr<MotionEventGeneric> cancel_event(
+  std::unique_ptr<MotionEventGeneric> cancel_event(
       new MotionEventGeneric(event, with_history));
   cancel_event->set_action(ACTION_CANCEL);
   cancel_event->set_unique_event_id(ui::GetNextTouchEventId());
@@ -256,7 +257,8 @@ void MotionEventGeneric::RemovePointerAt(size_t index) {
   pointers_->erase(pointers_->begin() + index);
 }
 
-void MotionEventGeneric::PushHistoricalEvent(scoped_ptr<MotionEvent> event) {
+void MotionEventGeneric::PushHistoricalEvent(
+    std::unique_ptr<MotionEvent> event) {
   DCHECK(event);
   DCHECK_EQ(event->GetAction(), ACTION_MOVE);
   DCHECK_EQ(event->GetPointerCount(), GetPointerCount());
@@ -293,7 +295,8 @@ MotionEventGeneric::MotionEventGeneric(const MotionEvent& event,
 
   const size_t history_size = event.GetHistorySize();
   for (size_t h = 0; h < history_size; ++h) {
-    scoped_ptr<MotionEventGeneric> historical_event(new MotionEventGeneric());
+    std::unique_ptr<MotionEventGeneric> historical_event(
+        new MotionEventGeneric());
     historical_event->set_action(ACTION_MOVE);
     historical_event->set_event_time(event.GetHistoricalEventTime(h));
     for (size_t i = 0; i < pointer_count; ++i) {

@@ -5,12 +5,12 @@
 #ifndef UI_VIEWS_WIDGET_WIDGET_H_
 #define UI_VIEWS_WIDGET_WIDGET_H_
 
+#include <memory>
 #include <set>
 #include <stack>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/scoped_observer.h"
 #include "build/build_config.h"
@@ -97,8 +97,8 @@ class RootView;
 //      The Widget instance owns its NativeWidget. This state implies someone
 //      else wants to control the lifetime of this object. When they destroy
 //      the Widget it is responsible for destroying the NativeWidget (from its
-//      destructor). This is often used to place a Widget in a scoped_ptr<> or
-//      on the stack in a test.
+//      destructor). This is often used to place a Widget in a std::unique_ptr<>
+//      or on the stack in a test.
 class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
                             public ui::EventSource,
                             public FocusTraversable,
@@ -861,7 +861,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // The root of the View hierarchy attached to this window.
   // WARNING: see warning in tooltip_manager_ for ordering dependencies with
   // this and tooltip_manager_.
-  scoped_ptr<internal::RootView> root_view_;
+  std::unique_ptr<internal::RootView> root_view_;
 
   // The View that provides the non-client area of the window (title bar,
   // window controls, sizing borders etc). To use an implementation other than
@@ -873,10 +873,10 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // children.  NULL for non top-level widgets.
   // WARNING: RootView's destructor calls into the FocusManager. As such, this
   // must be destroyed AFTER root_view_. This is enforced in DestroyRootView().
-  scoped_ptr<FocusManager> focus_manager_;
+  std::unique_ptr<FocusManager> focus_manager_;
 
   // A theme provider to use when no other theme provider is specified.
-  scoped_ptr<ui::DefaultThemeProvider> default_theme_provider_;
+  std::unique_ptr<ui::DefaultThemeProvider> default_theme_provider_;
 
   // Valid for the lifetime of RunShellDrag(), indicates the view the drag
   // started from.

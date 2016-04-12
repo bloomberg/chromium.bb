@@ -123,7 +123,7 @@ ui::EventTarget* Env::GetParentTarget() {
   return NULL;
 }
 
-scoped_ptr<ui::EventTargetIterator> Env::GetChildIterator() const {
+std::unique_ptr<ui::EventTargetIterator> Env::GetChildIterator() const {
   return nullptr;
 }
 

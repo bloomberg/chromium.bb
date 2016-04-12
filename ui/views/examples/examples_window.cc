@@ -47,7 +47,7 @@
 namespace views {
 namespace examples {
 
-typedef scoped_ptr<ScopedVector<ExampleBase> > ScopedExamples;
+typedef std::unique_ptr<ScopedVector<ExampleBase>> ScopedExamples;
 
 namespace {
 

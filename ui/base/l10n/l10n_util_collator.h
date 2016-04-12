@@ -9,11 +9,11 @@
 
 #include <algorithm>
 #include <functional>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/i18n/string_compare.h"
-#include "base/memory/scoped_ptr.h"
 #include "third_party/icu/source/i18n/unicode/coll.h"
 #include "ui/base/ui_base_export.h"
 
@@ -65,7 +65,8 @@ void SortStringsUsingMethod(const std::string& locale,
                             Method method) {
   UErrorCode error = U_ZERO_ERROR;
   icu::Locale loc(locale.c_str());
-  scoped_ptr<icu::Collator> collator(icu::Collator::createInstance(loc, error));
+  std::unique_ptr<icu::Collator> collator(
+      icu::Collator::createInstance(loc, error));
   if (U_FAILURE(error)) {
     sort(elements->begin(), elements->end(),
          StringMethodComparator<T, Method>(method));
@@ -128,7 +129,8 @@ void SortVectorWithStringKey(const std::string& locale,
   DCHECK_LE(end_index, elements->size());
   UErrorCode error = U_ZERO_ERROR;
   icu::Locale loc(locale.c_str());
-  scoped_ptr<icu::Collator> collator(icu::Collator::createInstance(loc, error));
+  std::unique_ptr<icu::Collator> collator(
+      icu::Collator::createInstance(loc, error));
   if (U_FAILURE(error))
     collator.reset();
   StringComparator<Element> c(collator.get());

@@ -95,7 +95,7 @@ class GL_EXPORT NativeViewGLSurfaceGLX : public GLSurfaceGLX,
   GLXFBConfig config_;
   gfx::Size size_;
 
-  scoped_ptr<VSyncProvider> vsync_provider_;
+  std::unique_ptr<VSyncProvider> vsync_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeViewGLSurfaceGLX);
 };

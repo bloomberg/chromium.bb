@@ -57,7 +57,8 @@ gfx::RectF GetEffectiveVisibleBoundsInRootWindow(Window* window) {
 
 TEST_F(WindowTargeterTest, Basic) {
   test::TestWindowDelegate delegate;
-  scoped_ptr<Window> window(CreateNormalWindow(1, root_window(), &delegate));
+  std::unique_ptr<Window> window(
+      CreateNormalWindow(1, root_window(), &delegate));
   Window* one = CreateNormalWindow(2, window.get(), &delegate);
   Window* two = CreateNormalWindow(3, window.get(), &delegate);
 
@@ -85,7 +86,8 @@ TEST_F(WindowTargeterTest, Basic) {
 
 TEST_F(WindowTargeterTest, ScopedWindowTargeter) {
   test::TestWindowDelegate delegate;
-  scoped_ptr<Window> window(CreateNormalWindow(1, root_window(), &delegate));
+  std::unique_ptr<Window> window(
+      CreateNormalWindow(1, root_window(), &delegate));
   Window* child = CreateNormalWindow(2, window.get(), &delegate);
 
   window->SetBounds(gfx::Rect(30, 30, 100, 100));
@@ -103,9 +105,10 @@ TEST_F(WindowTargeterTest, ScopedWindowTargeter) {
   }
 
   // Install a targeter on |window| so that the events never reach the child.
-  scoped_ptr<ScopedWindowTargeter> scoped_targeter(
-      new ScopedWindowTargeter(window.get(), scoped_ptr<ui::EventTargeter>(
-          new StaticWindowTargeter(window.get()))));
+  std::unique_ptr<ScopedWindowTargeter> scoped_targeter(
+      new ScopedWindowTargeter(window.get(),
+                               std::unique_ptr<ui::EventTargeter>(
+                                   new StaticWindowTargeter(window.get()))));
   {
     ui::MouseEvent mouse(ui::ET_MOUSE_MOVED, event_location, event_location,
                          ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
@@ -123,10 +126,12 @@ TEST_F(WindowTargeterTest, ScopedWindowTargeter) {
 // replaces the targeter gets destroyed before it does.
 TEST_F(WindowTargeterTest, ScopedWindowTargeterWindowDestroyed) {
   test::TestWindowDelegate delegate;
-  scoped_ptr<Window> window(CreateNormalWindow(1, root_window(), &delegate));
-  scoped_ptr<ScopedWindowTargeter> scoped_targeter(
-      new ScopedWindowTargeter(window.get(), scoped_ptr<ui::EventTargeter>(
-          new StaticWindowTargeter(window.get()))));
+  std::unique_ptr<Window> window(
+      CreateNormalWindow(1, root_window(), &delegate));
+  std::unique_ptr<ScopedWindowTargeter> scoped_targeter(
+      new ScopedWindowTargeter(window.get(),
+                               std::unique_ptr<ui::EventTargeter>(
+                                   new StaticWindowTargeter(window.get()))));
 
   window.reset();
   scoped_targeter.reset();
@@ -138,7 +143,8 @@ TEST_F(WindowTargeterTest, TargetTransformedWindow) {
   root_window()->Show();
 
   test::TestWindowDelegate delegate;
-  scoped_ptr<Window> window(CreateNormalWindow(2, root_window(), &delegate));
+  std::unique_ptr<Window> window(
+      CreateNormalWindow(2, root_window(), &delegate));
 
   const gfx::Rect window_bounds(100, 20, 400, 80);
   window->SetBounds(window_bounds);
@@ -197,9 +203,11 @@ class IdCheckingEventTargeter : public WindowTargeter {
 
 TEST_F(WindowTargeterTest, Bounds) {
   test::TestWindowDelegate delegate;
-  scoped_ptr<Window> parent(CreateNormalWindow(1, root_window(), &delegate));
-  scoped_ptr<Window> child(CreateNormalWindow(1, parent.get(), &delegate));
-  scoped_ptr<Window> grandchild(CreateNormalWindow(1, child.get(), &delegate));
+  std::unique_ptr<Window> parent(
+      CreateNormalWindow(1, root_window(), &delegate));
+  std::unique_ptr<Window> child(CreateNormalWindow(1, parent.get(), &delegate));
+  std::unique_ptr<Window> grandchild(
+      CreateNormalWindow(1, child.get(), &delegate));
 
   parent->SetBounds(gfx::Rect(0, 0, 30, 30));
   child->SetBounds(gfx::Rect(5, 5, 20, 20));
@@ -229,8 +237,9 @@ TEST_F(WindowTargeterTest, Bounds) {
   // by |parent|.
   ui::MouseEvent mouse2(ui::ET_MOUSE_MOVED, gfx::Point(8, 8), gfx::Point(8, 8),
                         ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
-  scoped_ptr<ui::EventTargeter> original_targeter = child_r->SetEventTargeter(
-      scoped_ptr<ui::EventTargeter>(new IdCheckingEventTargeter(2)));
+  std::unique_ptr<ui::EventTargeter> original_targeter =
+      child_r->SetEventTargeter(
+          std::unique_ptr<ui::EventTargeter>(new IdCheckingEventTargeter(2)));
   EXPECT_EQ(parent_r, targeter->FindTargetForEvent(root_target, &mouse2));
 
   // Now install a targeter on the |child| that looks at the window id as well
@@ -239,7 +248,7 @@ TEST_F(WindowTargeterTest, Bounds) {
   ui::MouseEvent mouse3(ui::ET_MOUSE_MOVED, gfx::Point(8, 8), gfx::Point(8, 8),
                         ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
   child_r->SetEventTargeter(
-      scoped_ptr<ui::EventTargeter>(new IdCheckingEventTargeter(1)));
+      std::unique_ptr<ui::EventTargeter>(new IdCheckingEventTargeter(1)));
   EXPECT_EQ(child_r, targeter->FindTargetForEvent(root_target, &mouse3));
 
   // restore original WindowTargeter for |child|.
@@ -274,7 +283,8 @@ class IgnoreWindowTargeter : public WindowTargeter {
 // whether the target itself can process an event.
 TEST_F(WindowTargeterTest, TargeterChecksOwningEventTarget) {
   test::TestWindowDelegate delegate;
-  scoped_ptr<Window> child(CreateNormalWindow(1, root_window(), &delegate));
+  std::unique_ptr<Window> child(
+      CreateNormalWindow(1, root_window(), &delegate));
 
   ui::EventTarget* root_target = root_window();
   ui::EventTargeter* targeter = root_target->GetEventTargeter();
@@ -287,7 +297,7 @@ TEST_F(WindowTargeterTest, TargeterChecksOwningEventTarget) {
   // Install an event targeter on |child| which always prevents the target from
   // receiving event.
   child->SetEventTargeter(
-      scoped_ptr<ui::EventTargeter>(new IgnoreWindowTargeter()));
+      std::unique_ptr<ui::EventTargeter>(new IgnoreWindowTargeter()));
 
   ui::MouseEvent mouse2(ui::ET_MOUSE_MOVED, gfx::Point(10, 10),
                         gfx::Point(10, 10), ui::EventTimeForNow(), ui::EF_NONE,

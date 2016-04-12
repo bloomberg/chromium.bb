@@ -55,7 +55,7 @@ class WindowAnimationsTest : public aura::test::AuraTestBase {
 };
 
 TEST_F(WindowAnimationsTest, LayerTargetVisibility) {
-  scoped_ptr<aura::Window> window(
+  std::unique_ptr<aura::Window> window(
       aura::test::CreateTestWindowWithId(0, NULL));
 
   // Layer target visibility changes according to Show/Hide.
@@ -74,7 +74,8 @@ TEST_F(WindowAnimationsTest, LayerTargetVisibility_AnimateShow) {
   // transform shouldn't matter in case of ANIMATE_SHOW, but we reset them
   // to keep consistency.
 
-  scoped_ptr<aura::Window> window(aura::test::CreateTestWindowWithId(0, NULL));
+  std::unique_ptr<aura::Window> window(
+      aura::test::CreateTestWindowWithId(0, NULL));
   SetWindowVisibilityAnimationTransition(window.get(), ANIMATE_SHOW);
 
   // Layer target visibility and opacity change according to Show/Hide.
@@ -101,7 +102,8 @@ TEST_F(WindowAnimationsTest, LayerTargetVisibility_AnimateHide) {
   // visibility, so we need to reset not only visibility but also opacity
   // and transform to show the window.
 
-  scoped_ptr<aura::Window> window(aura::test::CreateTestWindowWithId(0, NULL));
+  std::unique_ptr<aura::Window> window(
+      aura::test::CreateTestWindowWithId(0, NULL));
   SetWindowVisibilityAnimationTransition(window.get(), ANIMATE_HIDE);
 
   // Layer target visibility and opacity change according to Show/Hide.
@@ -124,12 +126,13 @@ TEST_F(WindowAnimationsTest, LayerTargetVisibility_AnimateHide) {
 }
 
 TEST_F(WindowAnimationsTest, HideAnimationDetachLayers) {
-  scoped_ptr<aura::Window> parent(aura::test::CreateTestWindowWithId(0, NULL));
+  std::unique_ptr<aura::Window> parent(
+      aura::test::CreateTestWindowWithId(0, NULL));
 
-  scoped_ptr<aura::Window> other(
+  std::unique_ptr<aura::Window> other(
       aura::test::CreateTestWindowWithId(1, parent.get()));
 
-  scoped_ptr<aura::Window> animating_window(
+  std::unique_ptr<aura::Window> animating_window(
       aura::test::CreateTestWindowWithId(2, parent.get()));
   SetWindowVisibilityAnimationTransition(animating_window.get(), ANIMATE_HIDE);
 
@@ -191,18 +194,19 @@ TEST_F(WindowAnimationsTest, HideAnimationDetachLayers) {
 TEST_F(WindowAnimationsTest, HideAnimationDetachLayersWithTransientChildren) {
   TransientWindowStackingClient transient_stacking_client;
 
-  scoped_ptr<aura::Window> parent(aura::test::CreateTestWindowWithId(0, NULL));
+  std::unique_ptr<aura::Window> parent(
+      aura::test::CreateTestWindowWithId(0, NULL));
 
-  scoped_ptr<aura::Window> other(
+  std::unique_ptr<aura::Window> other(
       aura::test::CreateTestWindowWithId(1, parent.get()));
 
-  scoped_ptr<aura::Window> animating_window(
+  std::unique_ptr<aura::Window> animating_window(
       aura::test::CreateTestWindowWithId(2, parent.get()));
   SetWindowVisibilityAnimationTransition(animating_window.get(), ANIMATE_HIDE);
 
-  scoped_ptr<aura::Window> transient1(
+  std::unique_ptr<aura::Window> transient1(
       aura::test::CreateTestWindowWithId(3, parent.get()));
-  scoped_ptr<aura::Window> transient2(
+  std::unique_ptr<aura::Window> transient2(
       aura::test::CreateTestWindowWithId(4, parent.get()));
 
   TransientWindowManager::Get(animating_window.get());
@@ -272,7 +276,8 @@ class NotifyHideCompletedAnimationHost : public aura::client::AnimationHost {
 
 TEST_F(WindowAnimationsTest, NotifyHideCompleted) {
   NotifyHideCompletedAnimationHost animation_host;
-  scoped_ptr<aura::Window> window(aura::test::CreateTestWindowWithId(0, NULL));
+  std::unique_ptr<aura::Window> window(
+      aura::test::CreateTestWindowWithId(0, NULL));
   aura::client::SetAnimationHost(window.get(), &animation_host);
   wm::SetWindowVisibilityAnimationType(
       window.get(), WINDOW_VISIBILITY_ANIMATION_TYPE_FADE);
@@ -290,7 +295,8 @@ TEST_F(WindowAnimationsTest, RotateHideNoLeak) {
   ui::ScopedAnimationDurationScaleMode scale_mode(
       ui::ScopedAnimationDurationScaleMode::FAST_DURATION);
 
-  scoped_ptr<aura::Window> window(aura::test::CreateTestWindowWithId(0, NULL));
+  std::unique_ptr<aura::Window> window(
+      aura::test::CreateTestWindowWithId(0, NULL));
   ui::Layer* animating_layer = window->layer();
   wm::SetWindowVisibilityAnimationType(window.get(),
                                        WINDOW_VISIBILITY_ANIMATION_TYPE_ROTATE);
@@ -307,7 +313,8 @@ TEST_F(WindowAnimationsTest, RotateHideNoCrash) {
   ui::ScopedAnimationDurationScaleMode scale_mode(
       ui::ScopedAnimationDurationScaleMode::FAST_DURATION);
 
-  scoped_ptr<aura::Window> window(aura::test::CreateTestWindowWithId(0, NULL));
+  std::unique_ptr<aura::Window> window(
+      aura::test::CreateTestWindowWithId(0, NULL));
   ui::Layer* animating_layer = window->layer();
   wm::SetWindowVisibilityAnimationType(window.get(),
                                        WINDOW_VISIBILITY_ANIMATION_TYPE_ROTATE);

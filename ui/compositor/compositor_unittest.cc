@@ -56,7 +56,7 @@ class CompositorTest : public testing::Test {
 
  private:
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  scoped_ptr<ui::Compositor> compositor_;
+  std::unique_ptr<ui::Compositor> compositor_;
 
   DISALLOW_COPY_AND_ASSIGN(CompositorTest);
 };
@@ -203,7 +203,7 @@ TEST_F(CompositorTest, ReleaseWidgetWithOutputSurfaceNeverCreated) {
 }
 
 TEST_F(CompositorTest, CreateAndReleaseOutputSurface) {
-  scoped_ptr<Layer> root_layer(new Layer(ui::LAYER_SOLID_COLOR));
+  std::unique_ptr<Layer> root_layer(new Layer(ui::LAYER_SOLID_COLOR));
   root_layer->SetBounds(gfx::Rect(10, 10));
   compositor()->SetRootLayer(root_layer.get());
   compositor()->SetScaleAndSize(1.0f, gfx::Size(10, 10));

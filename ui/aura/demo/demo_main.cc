@@ -8,7 +8,7 @@
 #include "base/command_line.h"
 #include "base/i18n/icu_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/power_monitor/power_monitor_device_source.h"
@@ -118,7 +118,7 @@ class DemoWindowTreeClient : public aura::client::WindowTreeClient {
  private:
   aura::Window* window_;
 
-  scoped_ptr<aura::client::DefaultCaptureClient> capture_client_;
+  std::unique_ptr<aura::client::DefaultCaptureClient> capture_client_;
 
   DISALLOW_COPY_AND_ASSIGN(DemoWindowTreeClient);
 };
@@ -138,24 +138,24 @@ int DemoMain() {
 
   // The ContextFactory must exist before any Compositors are created.
   bool context_factory_for_test = false;
-  scoped_ptr<ui::InProcessContextFactory> context_factory(
+  std::unique_ptr<ui::InProcessContextFactory> context_factory(
       new ui::InProcessContextFactory(context_factory_for_test, nullptr));
   context_factory->set_use_test_surface(false);
 
   // Create the message-loop here before creating the root window.
   base::MessageLoopForUI message_loop;
 
-  base::PowerMonitor power_monitor(make_scoped_ptr(
-      new base::PowerMonitorDeviceSource));
+  base::PowerMonitor power_monitor(
+      base::WrapUnique(new base::PowerMonitorDeviceSource));
 
   std::unique_ptr<aura::Env> env = aura::Env::CreateInstance();
   env->set_context_factory(context_factory.get());
-  scoped_ptr<aura::TestScreen> test_screen(
+  std::unique_ptr<aura::TestScreen> test_screen(
       aura::TestScreen::Create(gfx::Size()));
   gfx::Screen::SetScreenInstance(test_screen.get());
-  scoped_ptr<aura::WindowTreeHost> host(
+  std::unique_ptr<aura::WindowTreeHost> host(
       test_screen->CreateHostForPrimaryDisplay());
-  scoped_ptr<DemoWindowTreeClient> window_tree_client(
+  std::unique_ptr<DemoWindowTreeClient> window_tree_client(
       new DemoWindowTreeClient(host->window()));
   aura::test::TestFocusClient focus_client;
   aura::client::SetFocusClient(host->window(), &focus_client);

@@ -241,7 +241,7 @@ class EventGeneratorDelegateMac : public ui::EventTarget,
   // Overridden from ui::EventTarget:
   bool CanAcceptEvent(const ui::Event& event) override { return true; }
   ui::EventTarget* GetParentTarget() override { return nullptr; }
-  scoped_ptr<ui::EventTargetIterator> GetChildIterator() const override;
+  std::unique_ptr<ui::EventTargetIterator> GetChildIterator() const override;
   ui::EventTargeter* GetEventTargeter() override { return this; }
 
   // Overridden from ui::EventHandler:
@@ -302,9 +302,9 @@ class EventGeneratorDelegateMac : public ui::EventTarget,
 
   ui::test::EventGenerator* owner_;
   base::scoped_nsobject<NSWindow> window_;
-  scoped_ptr<base::mac::ScopedObjCClassSwizzler> swizzle_pressed_;
-  scoped_ptr<base::mac::ScopedObjCClassSwizzler> swizzle_location_;
-  scoped_ptr<base::mac::ScopedObjCClassSwizzler> swizzle_current_event_;
+  std::unique_ptr<base::mac::ScopedObjCClassSwizzler> swizzle_pressed_;
+  std::unique_ptr<base::mac::ScopedObjCClassSwizzler> swizzle_location_;
+  std::unique_ptr<base::mac::ScopedObjCClassSwizzler> swizzle_current_event_;
   base::scoped_nsobject<NSMenu> fake_menu_;
 
   DISALLOW_COPY_AND_ASSIGN(EventGeneratorDelegateMac);
@@ -342,7 +342,7 @@ EventGeneratorDelegateMac::~EventGeneratorDelegateMac() {
   ui::test::EventGenerator::default_delegate = nullptr;
 }
 
-scoped_ptr<ui::EventTargetIterator>
+std::unique_ptr<ui::EventTargetIterator>
 EventGeneratorDelegateMac::GetChildIterator() const {
   // Return nullptr to dispatch all events to the result of GetRootTarget().
   return nullptr;

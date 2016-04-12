@@ -5,8 +5,9 @@
 #ifndef UI_AURA_TEST_AURA_TEST_UTILS_H_
 #define UI_AURA_TEST_AURA_TEST_UTILS_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace gfx {
 class Point;
@@ -20,7 +21,7 @@ namespace test {
 
 const gfx::Point& QueryLatestMousePositionRequestInHost(WindowTreeHost* host);
 void SetHostDispatcher(WindowTreeHost* host,
-                       scoped_ptr<WindowEventDispatcher> dispatcher);
+                       std::unique_ptr<WindowEventDispatcher> dispatcher);
 
 }  // namespace test
 }  // namespace aura

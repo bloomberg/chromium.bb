@@ -5,6 +5,7 @@
 #include "ui/message_center/message_center_tray.h"
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/observer_list.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -199,7 +200,7 @@ void MessageCenterTray::ShowNotifierSettingsBubble() {
   NotifyMessageCenterTrayChanged();
 }
 
-scoped_ptr<ui::MenuModel> MessageCenterTray::CreateNotificationMenuModel(
+std::unique_ptr<ui::MenuModel> MessageCenterTray::CreateNotificationMenuModel(
     const NotifierId& notifier_id,
     const base::string16& display_source) {
 #if !defined(OS_CHROMEOS)
@@ -209,7 +210,7 @@ scoped_ptr<ui::MenuModel> MessageCenterTray::CreateNotificationMenuModel(
   }
 #endif
 
-  return make_scoped_ptr(
+  return base::WrapUnique(
       new NotificationMenuModel(this, notifier_id, display_source));
 }
 

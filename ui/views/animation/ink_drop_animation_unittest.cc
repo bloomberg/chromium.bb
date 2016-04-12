@@ -5,12 +5,14 @@
 #ifndef UI_VIEWS_ANIMATION_INK_DROP_ANIMATION_UNITTEST_H_
 #define UI_VIEWS_ANIMATION_INK_DROP_ANIMATION_UNITTEST_H_
 
+#include "ui/views/animation/ink_drop_animation.h"
+
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/animation/flood_fill_ink_drop_animation.h"
-#include "ui/views/animation/ink_drop_animation.h"
 #include "ui/views/animation/ink_drop_animation_observer.h"
 #include "ui/views/animation/ink_drop_state.h"
 #include "ui/views/animation/square_ink_drop_animation.h"
@@ -46,9 +48,9 @@ class InkDropAnimationTest
  protected:
   TestInkDropAnimationObserver observer_;
 
-  scoped_ptr<InkDropAnimation> ink_drop_animation_;
+  std::unique_ptr<InkDropAnimation> ink_drop_animation_;
 
-  scoped_ptr<InkDropAnimationTestApi> test_api_;
+  std::unique_ptr<InkDropAnimationTestApi> test_api_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InkDropAnimationTest);

@@ -3335,7 +3335,7 @@ void LayerTreeHostImpl::PinchGestureEnd() {
 
 std::unique_ptr<BeginFrameCallbackList>
 LayerTreeHostImpl::ProcessLayerTreeMutations() {
-  auto callbacks = make_scoped_ptr(new BeginFrameCallbackList());
+  std::unique_ptr<BeginFrameCallbackList> callbacks(new BeginFrameCallbackList);
   if (mutator_) {
     const base::Closure& callback = mutator_->TakeMutations();
     if (!callback.is_null())

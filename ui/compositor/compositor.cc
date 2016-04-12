@@ -232,7 +232,7 @@ Compositor::~Compositor() {
 }
 
 void Compositor::SetOutputSurface(
-    scoped_ptr<cc::OutputSurface> output_surface) {
+    std::unique_ptr<cc::OutputSurface> output_surface) {
   output_surface_requested_ = false;
   host_->SetOutputSurface(std::move(output_surface));
 }
@@ -286,7 +286,7 @@ void Compositor::DisableSwapUntilResize() {
 }
 
 void Compositor::SetLatencyInfo(const ui::LatencyInfo& latency_info) {
-  scoped_ptr<cc::SwapPromise> swap_promise(
+  std::unique_ptr<cc::SwapPromise> swap_promise(
       new cc::LatencyInfoSwapPromise(latency_info));
   host_->QueueSwapPromise(std::move(swap_promise));
 }

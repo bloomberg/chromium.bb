@@ -10,13 +10,13 @@ namespace test {
 
 namespace {
 
-// This class can be used as a deleter for scoped_ptr<Widget>
+// This class can be used as a deleter for std::unique_ptr<Widget>
 // to call function Widget::CloseNow automatically.
 struct WidgetCloser {
   inline void operator()(Widget* widget) const { widget->CloseNow(); }
 };
 
-using WidgetAutoclosePtr = scoped_ptr<Widget, WidgetCloser>;
+using WidgetAutoclosePtr = std::unique_ptr<Widget, WidgetCloser>;
 }
 
 class AXAuraObjCacheTest : public WidgetTest {

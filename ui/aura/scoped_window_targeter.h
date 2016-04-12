@@ -5,8 +5,9 @@
 #ifndef UI_AURA_SCOPED_WINDOW_TARGETER_H_
 #define UI_AURA_SCOPED_WINDOW_TARGETER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/aura/window_observer.h"
 
 namespace ui {
@@ -23,7 +24,7 @@ class Window;
 class AURA_EXPORT ScopedWindowTargeter : public WindowObserver {
  public:
   ScopedWindowTargeter(Window* window,
-                       scoped_ptr<ui::EventTargeter> new_targeter);
+                       std::unique_ptr<ui::EventTargeter> new_targeter);
 
   ~ScopedWindowTargeter() override;
 
@@ -36,7 +37,7 @@ class AURA_EXPORT ScopedWindowTargeter : public WindowObserver {
   void OnWindowDestroyed(Window* window) override;
 
   Window* window_;
-  scoped_ptr<ui::EventTargeter> old_targeter_;
+  std::unique_ptr<ui::EventTargeter> old_targeter_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedWindowTargeter);
 };

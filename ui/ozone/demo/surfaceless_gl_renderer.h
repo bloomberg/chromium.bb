@@ -5,8 +5,9 @@
 #ifndef UI_OZONE_DEMO_SURFACELESS_GL_RENDERER_H_
 #define UI_OZONE_DEMO_SURFACELESS_GL_RENDERER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/ozone/demo/gl_renderer.h"
 
 namespace gl {
@@ -49,7 +50,7 @@ class SurfacelessGlRenderer : public GlRenderer {
     unsigned int gl_tex_ = 0;
   };
 
-  scoped_ptr<BufferWrapper> buffers_[2];
+  std::unique_ptr<BufferWrapper> buffers_[2];
   int back_buffer_ = 0;
 
   base::WeakPtrFactory<SurfacelessGlRenderer> weak_ptr_factory_;

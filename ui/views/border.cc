@@ -4,9 +4,11 @@
 
 #include "ui/views/border.h"
 
+#include <memory>
+
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -145,7 +147,7 @@ class BorderPainter : public Border {
   gfx::Size GetMinimumSize() const override;
 
  private:
-  scoped_ptr<Painter> painter_;
+  std::unique_ptr<Painter> painter_;
   const gfx::Insets insets_;
 
   DISALLOW_COPY_AND_ASSIGN(BorderPainter);
@@ -178,50 +180,51 @@ Border::~Border() {
 }
 
 // static
-scoped_ptr<Border> Border::NullBorder() {
+std::unique_ptr<Border> Border::NullBorder() {
   return nullptr;
 }
 
 // static
-scoped_ptr<Border> Border::CreateSolidBorder(int thickness, SkColor color) {
-  return make_scoped_ptr(new SolidSidedBorder(gfx::Insets(thickness), color));
+std::unique_ptr<Border> Border::CreateSolidBorder(int thickness,
+                                                  SkColor color) {
+  return base::WrapUnique(new SolidSidedBorder(gfx::Insets(thickness), color));
 }
 
 // static
-scoped_ptr<Border> Border::CreateEmptyBorder(const gfx::Insets& insets) {
-  return make_scoped_ptr(new EmptyBorder(insets));
+std::unique_ptr<Border> Border::CreateEmptyBorder(const gfx::Insets& insets) {
+  return base::WrapUnique(new EmptyBorder(insets));
 }
 
 // static
-scoped_ptr<Border> Border::CreateRoundedRectBorder(int thickness,
-                                                   int corner_radius,
-                                                   SkColor color) {
-  return make_scoped_ptr(
+std::unique_ptr<Border> Border::CreateRoundedRectBorder(int thickness,
+                                                        int corner_radius,
+                                                        SkColor color) {
+  return base::WrapUnique(
       new RoundedRectBorder(thickness, corner_radius, color));
 }
 
 // static
-scoped_ptr<Border> Border::CreateEmptyBorder(int top,
-                                             int left,
-                                             int bottom,
-                                             int right) {
+std::unique_ptr<Border> Border::CreateEmptyBorder(int top,
+                                                  int left,
+                                                  int bottom,
+                                                  int right) {
   return CreateEmptyBorder(gfx::Insets(top, left, bottom, right));
 }
 
 // static
-scoped_ptr<Border> Border::CreateSolidSidedBorder(int top,
-                                                  int left,
-                                                  int bottom,
-                                                  int right,
-                                                  SkColor color) {
-  return make_scoped_ptr(new SolidSidedBorder(
-      gfx::Insets(top, left, bottom, right), color));
+std::unique_ptr<Border> Border::CreateSolidSidedBorder(int top,
+                                                       int left,
+                                                       int bottom,
+                                                       int right,
+                                                       SkColor color) {
+  return base::WrapUnique(
+      new SolidSidedBorder(gfx::Insets(top, left, bottom, right), color));
 }
 
 // static
-scoped_ptr<Border> Border::CreateBorderPainter(Painter* painter,
-                                               const gfx::Insets& insets) {
-  return make_scoped_ptr(new BorderPainter(painter, insets));
+std::unique_ptr<Border> Border::CreateBorderPainter(Painter* painter,
+                                                    const gfx::Insets& insets) {
+  return base::WrapUnique(new BorderPainter(painter, insets));
 }
 
 }  // namespace views

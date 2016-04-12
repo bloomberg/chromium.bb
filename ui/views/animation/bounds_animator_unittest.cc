@@ -114,7 +114,8 @@ TEST_F(BoundsAnimatorTest, AnimateViewTo) {
   gfx::Rect target_bounds(10, 10, 20, 20);
   animator()->AnimateViewTo(child(), target_bounds);
   animator()->SetAnimationDelegate(
-      child(), scoped_ptr<gfx::AnimationDelegate>(new TestAnimationDelegate()));
+      child(),
+      std::unique_ptr<gfx::AnimationDelegate>(new TestAnimationDelegate()));
 
   // The animator should be animating now.
   EXPECT_TRUE(animator()->IsAnimating());
@@ -136,7 +137,7 @@ TEST_F(BoundsAnimatorTest, AnimateViewTo) {
 TEST_F(BoundsAnimatorTest, DeleteDelegateOnCancel) {
   animator()->AnimateViewTo(child(), gfx::Rect(0, 0, 10, 10));
   animator()->SetAnimationDelegate(
-      child(), scoped_ptr<gfx::AnimationDelegate>(new OwnedDelegate()));
+      child(), std::unique_ptr<gfx::AnimationDelegate>(new OwnedDelegate()));
 
   animator()->Cancel();
 
@@ -153,7 +154,7 @@ TEST_F(BoundsAnimatorTest, DeleteDelegateOnCancel) {
 TEST_F(BoundsAnimatorTest, DeleteDelegateOnNewAnimate) {
   animator()->AnimateViewTo(child(), gfx::Rect(0, 0, 10, 10));
   animator()->SetAnimationDelegate(
-      child(), scoped_ptr<gfx::AnimationDelegate>(new OwnedDelegate()));
+      child(), std::unique_ptr<gfx::AnimationDelegate>(new OwnedDelegate()));
 
   animator()->AnimateViewTo(child(), gfx::Rect(0, 0, 10, 10));
 
@@ -164,11 +165,11 @@ TEST_F(BoundsAnimatorTest, DeleteDelegateOnNewAnimate) {
 
 // Makes sure StopAnimating works.
 TEST_F(BoundsAnimatorTest, StopAnimating) {
-  scoped_ptr<OwnedDelegate> delegate(new OwnedDelegate());
+  std::unique_ptr<OwnedDelegate> delegate(new OwnedDelegate());
 
   animator()->AnimateViewTo(child(), gfx::Rect(0, 0, 10, 10));
   animator()->SetAnimationDelegate(
-      child(), scoped_ptr<gfx::AnimationDelegate>(new OwnedDelegate()));
+      child(), std::unique_ptr<gfx::AnimationDelegate>(new OwnedDelegate()));
 
   animator()->StopAnimatingView(child());
 

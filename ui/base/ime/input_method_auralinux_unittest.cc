@@ -143,10 +143,10 @@ class LinuxInputMethodContextFactoryForTesting
  public:
   LinuxInputMethodContextFactoryForTesting(){};
 
-  scoped_ptr<LinuxInputMethodContext> CreateInputMethodContext(
+  std::unique_ptr<LinuxInputMethodContext> CreateInputMethodContext(
       LinuxInputMethodContextDelegate* delegate,
       bool is_simple) const override {
-    return scoped_ptr<ui::LinuxInputMethodContext>(
+    return std::unique_ptr<ui::LinuxInputMethodContext>(
         new LinuxInputMethodContextForTesting(delegate, is_simple));
   };
 
@@ -292,7 +292,7 @@ TEST_F(InputMethodAuraLinuxTest, BasicSyncModeTest) {
   context_->SetEatKey(true);
   context_->AddCommitAction("a");
 
-  scoped_ptr<TextInputClientForTesting> client(
+  std::unique_ptr<TextInputClientForTesting> client(
       new TextInputClientForTesting(TEXT_INPUT_TYPE_TEXT));
   input_method_auralinux_->SetFocusedTextInputClient(client.get());
   input_method_auralinux_->OnTextInputTypeChanged(client.get());
@@ -326,7 +326,7 @@ TEST_F(InputMethodAuraLinuxTest, BasicAsyncModeTest) {
   context_->SetSyncMode(false);
   context_->SetEatKey(true);
 
-  scoped_ptr<TextInputClientForTesting> client(
+  std::unique_ptr<TextInputClientForTesting> client(
       new TextInputClientForTesting(TEXT_INPUT_TYPE_TEXT));
   input_method_auralinux_->SetFocusedTextInputClient(client.get());
   input_method_auralinux_->OnTextInputTypeChanged(client.get());
@@ -359,7 +359,7 @@ TEST_F(InputMethodAuraLinuxTest, IBusUSTest) {
   context_->SetSyncMode(false);
   context_->SetEatKey(true);
 
-  scoped_ptr<TextInputClientForTesting> client(
+  std::unique_ptr<TextInputClientForTesting> client(
       new TextInputClientForTesting(TEXT_INPUT_TYPE_TEXT));
   input_method_auralinux_->SetFocusedTextInputClient(client.get());
   input_method_auralinux_->OnTextInputTypeChanged(client.get());
@@ -394,7 +394,7 @@ TEST_F(InputMethodAuraLinuxTest, IBusPinyinTest) {
   context_->SetSyncMode(false);
   context_->SetEatKey(true);
 
-  scoped_ptr<TextInputClientForTesting> client(
+  std::unique_ptr<TextInputClientForTesting> client(
       new TextInputClientForTesting(TEXT_INPUT_TYPE_TEXT));
   input_method_auralinux_->SetFocusedTextInputClient(client.get());
   input_method_auralinux_->OnTextInputTypeChanged(client.get());
@@ -432,7 +432,7 @@ TEST_F(InputMethodAuraLinuxTest, DeadKeyTest) {
   context_simple_->SetSyncMode(true);
   context_simple_->SetEatKey(true);
 
-  scoped_ptr<TextInputClientForTesting> client(
+  std::unique_ptr<TextInputClientForTesting> client(
       new TextInputClientForTesting(TEXT_INPUT_TYPE_NONE));
   input_method_auralinux_->SetFocusedTextInputClient(client.get());
   input_method_auralinux_->OnTextInputTypeChanged(client.get());
@@ -463,7 +463,7 @@ TEST_F(InputMethodAuraLinuxTest, MultiCommitsTest) {
   context_->AddCommitAction("b");
   context_->AddCommitAction("c");
 
-  scoped_ptr<TextInputClientForTesting> client(
+  std::unique_ptr<TextInputClientForTesting> client(
       new TextInputClientForTesting(TEXT_INPUT_TYPE_TEXT));
   input_method_auralinux_->SetFocusedTextInputClient(client.get());
   input_method_auralinux_->OnTextInputTypeChanged(client.get());
@@ -486,7 +486,7 @@ TEST_F(InputMethodAuraLinuxTest, MixedCompositionAndCommitTest) {
   context_->AddCommitAction("c");
   context_->AddCompositionUpdateAction("d");
 
-  scoped_ptr<TextInputClientForTesting> client(
+  std::unique_ptr<TextInputClientForTesting> client(
       new TextInputClientForTesting(TEXT_INPUT_TYPE_TEXT));
   input_method_auralinux_->SetFocusedTextInputClient(client.get());
   input_method_auralinux_->OnTextInputTypeChanged(client.get());
@@ -518,7 +518,7 @@ TEST_F(InputMethodAuraLinuxTest, CompositionEndWithoutCommitTest) {
   context_->AddCompositionStartAction();
   context_->AddCompositionUpdateAction("a");
 
-  scoped_ptr<TextInputClientForTesting> client(
+  std::unique_ptr<TextInputClientForTesting> client(
       new TextInputClientForTesting(TEXT_INPUT_TYPE_TEXT));
   input_method_auralinux_->SetFocusedTextInputClient(client.get());
   input_method_auralinux_->OnTextInputTypeChanged(client.get());
@@ -548,7 +548,7 @@ TEST_F(InputMethodAuraLinuxTest, CompositionEndWithEmptyCommitTest) {
   context_->AddCompositionStartAction();
   context_->AddCompositionUpdateAction("a");
 
-  scoped_ptr<TextInputClientForTesting> client(
+  std::unique_ptr<TextInputClientForTesting> client(
       new TextInputClientForTesting(TEXT_INPUT_TYPE_TEXT));
   input_method_auralinux_->SetFocusedTextInputClient(client.get());
   input_method_auralinux_->OnTextInputTypeChanged(client.get());
@@ -579,7 +579,7 @@ TEST_F(InputMethodAuraLinuxTest, CompositionEndWithCommitTest) {
   context_->AddCompositionStartAction();
   context_->AddCompositionUpdateAction("a");
 
-  scoped_ptr<TextInputClientForTesting> client(
+  std::unique_ptr<TextInputClientForTesting> client(
       new TextInputClientForTesting(TEXT_INPUT_TYPE_TEXT));
   input_method_auralinux_->SetFocusedTextInputClient(client.get());
   input_method_auralinux_->OnTextInputTypeChanged(client.get());
@@ -614,7 +614,7 @@ TEST_F(InputMethodAuraLinuxTest, CompositionUpdateWithCommitTest) {
   context_->AddCompositionUpdateAction("a");
   context_->AddCommitAction("b");
 
-  scoped_ptr<TextInputClientForTesting> client(
+  std::unique_ptr<TextInputClientForTesting> client(
       new TextInputClientForTesting(TEXT_INPUT_TYPE_TEXT));
   input_method_auralinux_->SetFocusedTextInputClient(client.get());
   input_method_auralinux_->OnTextInputTypeChanged(client.get());
@@ -648,7 +648,7 @@ TEST_F(InputMethodAuraLinuxTest, MixedAsyncAndSyncTest) {
   context_->SetSyncMode(false);
   context_->SetEatKey(true);
 
-  scoped_ptr<TextInputClientForTesting> client(
+  std::unique_ptr<TextInputClientForTesting> client(
       new TextInputClientForTesting(TEXT_INPUT_TYPE_TEXT));
   input_method_auralinux_->SetFocusedTextInputClient(client.get());
   input_method_auralinux_->OnTextInputTypeChanged(client.get());
@@ -685,7 +685,7 @@ TEST_F(InputMethodAuraLinuxTest, MixedSyncAndAsyncTest) {
   context_->AddCompositionStartAction();
   context_->AddCompositionUpdateAction("a");
 
-  scoped_ptr<TextInputClientForTesting> client(
+  std::unique_ptr<TextInputClientForTesting> client(
       new TextInputClientForTesting(TEXT_INPUT_TYPE_TEXT));
   input_method_auralinux_->SetFocusedTextInputClient(client.get());
   input_method_auralinux_->OnTextInputTypeChanged(client.get());
@@ -726,7 +726,7 @@ TEST_F(InputMethodAuraLinuxTest, ReleaseKeyTest) {
   context_->SetEatKey(true);
   context_->AddCompositionUpdateAction("a");
 
-  scoped_ptr<TextInputClientForTesting> client(
+  std::unique_ptr<TextInputClientForTesting> client(
       new TextInputClientForTesting(TEXT_INPUT_TYPE_TEXT));
   input_method_auralinux_->SetFocusedTextInputClient(client.get());
   input_method_auralinux_->OnTextInputTypeChanged(client.get());

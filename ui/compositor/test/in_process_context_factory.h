@@ -43,8 +43,8 @@ class InProcessContextFactory : public ContextFactory {
   // ContextFactory implementation
   void CreateOutputSurface(base::WeakPtr<Compositor> compositor) override;
 
-  scoped_ptr<Reflector> CreateReflector(Compositor* mirrored_compositor,
-                                        Layer* mirroring_layer) override;
+  std::unique_ptr<Reflector> CreateReflector(Compositor* mirrored_compositor,
+                                             Layer* mirroring_layer) override;
   void RemoveReflector(Reflector* reflector) override;
 
   scoped_refptr<cc::ContextProvider> SharedMainThreadContextProvider() override;
@@ -55,7 +55,7 @@ class InProcessContextFactory : public ContextFactory {
   cc::SharedBitmapManager* GetSharedBitmapManager() override;
   gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() override;
   cc::TaskGraphRunner* GetTaskGraphRunner() override;
-  scoped_ptr<cc::SurfaceIdAllocator> CreateSurfaceIdAllocator() override;
+  std::unique_ptr<cc::SurfaceIdAllocator> CreateSurfaceIdAllocator() override;
   void ResizeDisplay(ui::Compositor* compositor,
                      const gfx::Size& size) override;
 

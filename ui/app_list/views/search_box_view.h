@@ -125,7 +125,7 @@ class APP_LIST_EXPORT SearchBoxView : public views::View,
   AppListViewDelegate* view_delegate_;  // Not owned.
   AppListModel* model_;  // Owned by the profile-keyed service.
 
-  scoped_ptr<AppListMenuViews> menu_;
+  std::unique_ptr<AppListMenuViews> menu_;
 
   views::View* content_container_;     // Owned by views hierarchy.
   views::ImageView* icon_view_;  // Owned by views hierarchy.

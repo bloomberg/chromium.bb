@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "ui/ozone/platform/drm/gpu/drm_buffer.h"
 #include "ui/ozone/platform/drm/gpu/drm_device_generator.h"
@@ -90,7 +91,7 @@ void DrmThread::Init() {
 #endif
 
   device_manager_.reset(new DrmDeviceManager(
-      make_scoped_ptr(new GbmDeviceGenerator(use_atomic))));
+      base::WrapUnique(new GbmDeviceGenerator(use_atomic))));
   buffer_generator_.reset(new GbmBufferGenerator());
   screen_manager_.reset(new ScreenManager(buffer_generator_.get()));
 
@@ -149,14 +150,14 @@ void DrmThread::GetVSyncParameters(
 }
 
 void DrmThread::CreateWindow(gfx::AcceleratedWidget widget) {
-  scoped_ptr<DrmWindow> window(
+  std::unique_ptr<DrmWindow> window(
       new DrmWindow(widget, device_manager_.get(), screen_manager_.get()));
   window->Initialize(buffer_generator_.get());
   screen_manager_->AddWindow(widget, std::move(window));
 }
 
 void DrmThread::DestroyWindow(gfx::AcceleratedWidget widget) {
-  scoped_ptr<DrmWindow> window = screen_manager_->RemoveWindow(widget);
+  std::unique_ptr<DrmWindow> window = screen_manager_->RemoveWindow(widget);
   window->Shutdown();
 }
 
