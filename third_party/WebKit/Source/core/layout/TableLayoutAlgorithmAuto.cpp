@@ -182,29 +182,28 @@ static bool shouldScaleColumns(LayoutTable* table)
 {
     // A special case.  If this table is not fixed width and contained inside
     // a cell, then don't bloat the maxwidth by examining percentage growth.
-    bool scale = true;
-    while (table) {
+    while (true) {
         Length tw = table->style()->width();
-        if ((tw.isAuto() || tw.hasPercent()) && !table->isOutOfFlowPositioned()) {
-            LayoutBlock* cb = table->containingBlock();
-            while (cb && !cb->isLayoutView() && !cb->isTableCell()
-                && cb->style()->width().isAuto() && !cb->isOutOfFlowPositioned())
-                cb = cb->containingBlock();
+        if ((!tw.isAuto() && !tw.hasPercent()) || table->isOutOfFlowPositioned())
+            return true;
+        LayoutBlock* cb = table->containingBlock();
 
-            table = 0;
-            if (cb && cb->isTableCell()
-                && (cb->style()->width().isAuto() || cb->style()->width().hasPercent())) {
-                LayoutTableCell* cell = toLayoutTableCell(cb);
-                if (cell->colSpan() > 1 || cell->table()->isLogicalWidthAuto())
-                    scale = false;
-                else
-                    table = cell->table();
-            }
-        } else {
-            table = 0;
-        }
+        while (!cb->isLayoutView() && !cb->isTableCell()
+            && cb->style()->width().isAuto() && !cb->isOutOfFlowPositioned())
+            cb = cb->containingBlock();
+
+        // TODO(dgrogan): Should the second clause check for isFixed() instead?
+        if (!cb->isTableCell()
+            || (!cb->style()->width().isAuto() && !cb->style()->width().hasPercent()))
+            return true;
+
+        LayoutTableCell* cell = toLayoutTableCell(cb);
+        table = cell->table();
+        if (cell->colSpan() > 1 || table->isLogicalWidthAuto())
+            return false;
     }
-    return scale;
+    NOTREACHED();
+    return true;
 }
 
 void TableLayoutAlgorithmAuto::computeIntrinsicLogicalWidths(LayoutUnit& minWidth, LayoutUnit& maxWidth)
