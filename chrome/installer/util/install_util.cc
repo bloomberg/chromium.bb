@@ -271,13 +271,10 @@ void InstallUtil::GetCriticalUpdateVersion(BrowserDistribution* dist,
 }
 
 bool InstallUtil::IsOSSupported() {
-  // We do not support Win2K or older, or XP without service pack 2.
+  // We do not support anything prior to Windows 7.
   VLOG(1) << base::SysInfo::OperatingSystemName() << ' '
           << base::SysInfo::OperatingSystemVersion();
-  base::win::Version version = base::win::GetVersion();
-  return (version > base::win::VERSION_XP) ||
-      ((version == base::win::VERSION_XP) &&
-       (base::win::OSInfo::GetInstance()->service_pack().major >= 2));
+  return base::win::GetVersion() >= base::win::VERSION_WIN7;
 }
 
 void InstallUtil::AddInstallerResultItems(
