@@ -374,6 +374,7 @@ static void setup_ref_mv_list(const AV1_COMMON *cm, const MACROBLOCKD *xd,
             if (idx == *refmv_count &&
                 *refmv_count < MAX_REF_MV_STACK_SIZE) {
               ref_mv_stack[idx].this_mv.as_int = this_refmv.as_int;
+              ref_mv_stack[idx].pred_mv = prev_frame_mvs->pred_mv[ref];
               ref_mv_stack[idx].weight = 2;
               ++(*refmv_count);
             }
