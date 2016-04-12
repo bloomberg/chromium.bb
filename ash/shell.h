@@ -46,6 +46,10 @@ namespace base {
 class SequencedWorkerPool;
 }
 
+namespace chromeos {
+class AudioA11yController;
+}
+
 namespace gfx {
 class ImageSkia;
 class Point;
@@ -542,6 +546,10 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   VirtualKeyboardController* virtual_keyboard_controller() {
     return virtual_keyboard_controller_.get();
   }
+
+  chromeos::AudioA11yController* audio_a11y_controller() {
+    return audio_a11y_controller_.get();
+  }
 #endif  // defined(OS_CHROMEOS)
 
   ShelfModel* shelf_model() {
@@ -730,6 +738,7 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   std::unique_ptr<LastWindowClosedLogoutReminder>
       last_window_closed_logout_reminder_;
   std::unique_ptr<VirtualKeyboardController> virtual_keyboard_controller_;
+  std::unique_ptr<chromeos::AudioA11yController> audio_a11y_controller_;
   // Controls video output device state.
   std::unique_ptr<ui::DisplayConfigurator> display_configurator_;
   std::unique_ptr<DisplayColorManager> display_color_manager_;

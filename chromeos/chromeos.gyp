@@ -17,6 +17,8 @@
       'attestation/attestation_constants.h',
       'attestation/attestation_flow.cc',
       'attestation/attestation_flow.h',
+      'audio/audio_a11y_controller.cc',
+      'audio/audio_a11y_controller.h',
       'audio/audio_device.cc',
       'audio/audio_device.h',
       'audio/audio_devices_pref_handler.h',

@@ -101,6 +101,7 @@ class CoreOobeHandler : public BaseScreenHandler,
   void HandleEnableVirtualKeyboard(bool enabled);
   void HandleEnableScreenMagnifier(bool enabled);
   void HandleEnableSpokenFeedback(bool /* enabled */);
+  void HandleEnableMonoAudio(bool enabled);
   void HandleInitialized();
   void HandleSkipUpdateEnrollAfterEula();
   void HandleUpdateCurrentScreen(const std::string& screen);

@@ -54,6 +54,7 @@
 #include "chrome/common/extensions/manifest_handlers/content_scripts_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/browser_resources.h"
+#include "chromeos/audio/audio_a11y_controller.h"
 #include "chromeos/audio/chromeos_sounds.h"
 #include "chromeos/login/login_state.h"
 #include "components/prefs/pref_member.h"
@@ -401,6 +402,8 @@ AccessibilityManager::AccessibilityManager()
       autoclick_delay_pref_handler_(prefs::kAccessibilityAutoclickDelayMs),
       virtual_keyboard_pref_handler_(
           prefs::kAccessibilityVirtualKeyboardEnabled),
+      mono_audio_pref_handler_(
+          prefs::kAccessibilityMonoAudioEnabled),
       caret_highlight_pref_handler_(prefs::kAccessibilityCaretHighlightEnabled),
       cursor_highlight_pref_handler_(
           prefs::kAccessibilityCursorHighlightEnabled),
@@ -414,6 +417,7 @@ AccessibilityManager::AccessibilityManager()
       autoclick_enabled_(false),
       autoclick_delay_ms_(ash::AutoclickController::kDefaultAutoclickDelayMs),
       virtual_keyboard_enabled_(false),
+      mono_audio_enabled_(false),
       caret_highlight_enabled_(false),
       cursor_highlight_enabled_(false),
       focus_highlight_enabled_(false),
@@ -492,7 +496,8 @@ bool AccessibilityManager::ShouldShowAccessibilityMenu() {
         pref_service->GetBoolean(prefs::kAccessibilityAutoclickEnabled) ||
         pref_service->GetBoolean(prefs::kShouldAlwaysShowAccessibilityMenu) ||
         pref_service->GetBoolean(prefs::kAccessibilityScreenMagnifierEnabled) ||
-        pref_service->GetBoolean(prefs::kAccessibilityVirtualKeyboardEnabled))
+        pref_service->GetBoolean(prefs::kAccessibilityVirtualKeyboardEnabled) ||
+        pref_service->GetBoolean(prefs::kAccessibilityMonoAudioEnabled))
       return true;
   }
   return false;
@@ -879,6 +884,40 @@ void AccessibilityManager::UpdateVirtualKeyboardFromPref() {
   NotifyAccessibilityStatusChanged(details);
 }
 
+void AccessibilityManager::EnableMonoAudio(bool enabled) {
+  if (!profile_)
+    return;
+
+  PrefService* pref_service = profile_->GetPrefs();
+  pref_service->SetBoolean(prefs::kAccessibilityMonoAudioEnabled,
+                           enabled);
+  pref_service->CommitPendingWrite();
+}
+
+bool AccessibilityManager::IsMonoAudioEnabled() {
+  return mono_audio_enabled_;
+}
+
+void AccessibilityManager::UpdateMonoAudioFromPref() {
+  if (!profile_)
+    return;
+
+  const bool enabled = profile_->GetPrefs()->GetBoolean(
+      prefs::kAccessibilityMonoAudioEnabled);
+
+  if (mono_audio_enabled_ == enabled)
+    return;
+  mono_audio_enabled_ = enabled;
+
+  AccessibilityStatusEventDetails details(
+      ACCESSIBILITY_TOGGLE_MONO_AUDIO,
+      enabled,
+      ui::A11Y_NOTIFICATION_NONE);
+  NotifyAccessibilityStatusChanged(details);
+
+  ash::Shell::GetInstance()->audio_a11y_controller()->SetOutputMono(enabled);
+}
+
 void AccessibilityManager::SetCaretHighlightEnabled(bool enabled) {
   if (!profile_)
     return;
@@ -1132,6 +1171,10 @@ void AccessibilityManager::SetProfile(Profile* profile) {
         base::Bind(&AccessibilityManager::UpdateVirtualKeyboardFromPref,
                    base::Unretained(this)));
     pref_change_registrar_->Add(
+        prefs::kAccessibilityMonoAudioEnabled,
+        base::Bind(&AccessibilityManager::UpdateMonoAudioFromPref,
+                   base::Unretained(this)));
+    pref_change_registrar_->Add(
         prefs::kAccessibilityCaretHighlightEnabled,
         base::Bind(&AccessibilityManager::UpdateCaretHighlightFromPref,
                    base::Unretained(this)));
@@ -1171,6 +1214,7 @@ void AccessibilityManager::SetProfile(Profile* profile) {
   autoclick_pref_handler_.HandleProfileChanged(profile_, profile);
   autoclick_delay_pref_handler_.HandleProfileChanged(profile_, profile);
   virtual_keyboard_pref_handler_.HandleProfileChanged(profile_, profile);
+  mono_audio_pref_handler_.HandleProfileChanged(profile_, profile);
   caret_highlight_pref_handler_.HandleProfileChanged(profile_, profile);
   cursor_highlight_pref_handler_.HandleProfileChanged(profile_, profile);
   focus_highlight_pref_handler_.HandleProfileChanged(profile_, profile);
@@ -1191,6 +1235,7 @@ void AccessibilityManager::SetProfile(Profile* profile) {
   UpdateAutoclickFromPref();
   UpdateAutoclickDelayFromPref();
   UpdateVirtualKeyboardFromPref();
+  UpdateMonoAudioFromPref();
   UpdateCaretHighlightFromPref();
   UpdateCursorHighlightFromPref();
   UpdateFocusHighlightFromPref();

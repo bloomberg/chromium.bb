@@ -9503,6 +9503,20 @@ should be able to be added at any place in this file.
   <description>Settings: Accessibility: Learn More</description>
 </action>
 
+<action name="Options_AccessibilityMonoAudio_Disable">
+  <owner>warx@chromium.org</owner>
+  <description>
+    Settings: Disable play the same audio through all speakers (mono audio)
+  </description>
+</action>
+
+<action name="Options_AccessibilityMonoAudio_Enable">
+  <owner>warx@chromium.org</owner>
+  <description>
+    Settings: Enable play the same audio through all speakers (mono audio)
+  </description>
+</action>
+
 <action name="Options_AccessibilityOnScreenKeyboard_Disable">
   <owner>stevenjb@chromium.org</owner>
   <description>Settings: Accessibility: Disable on-screen keyboard</description>

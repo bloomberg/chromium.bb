@@ -149,6 +149,14 @@ bool IsVirtualKeyboardEnabled() {
   return AccessibilityManager::Get()->IsVirtualKeyboardEnabled();
 }
 
+void SetMonoAudioEnabled(bool enabled) {
+  return AccessibilityManager::Get()->EnableMonoAudio(enabled);
+}
+
+bool IsMonoAudioEnabled() {
+  return AccessibilityManager::Get()->IsMonoAudioEnabled();
+}
+
 Profile* GetProfile() {
   Profile* profile = ProfileManager::GetActiveUserProfile();
   DCHECK(profile);
@@ -183,6 +191,10 @@ void SetVirtualKeyboardEnabledPref(bool enabled) {
   GetPrefs()->SetBoolean(prefs::kAccessibilityVirtualKeyboardEnabled, enabled);
 }
 
+void SetMonoAudioEnabledPref(bool enabled) {
+  GetPrefs()->SetBoolean(prefs::kAccessibilityMonoAudioEnabled, enabled);
+}
+
 bool GetLargeCursorEnabledFromPref() {
   return GetPrefs()->GetBoolean(prefs::kAccessibilityLargeCursorEnabled);
 }
@@ -201,6 +213,10 @@ bool GetAutoclickEnabledFromPref() {
 
 int GetAutoclickDelayFromPref() {
   return GetPrefs()->GetInteger(prefs::kAccessibilityAutoclickDelayMs);
+}
+
+bool GetMonoAudioEnabledFromPref() {
+  return GetPrefs()->GetBoolean(prefs::kAccessibilityMonoAudioEnabled);
 }
 
 bool IsBrailleImeActive() {
@@ -275,6 +291,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest, Login) {
   EXPECT_FALSE(IsHighContrastEnabled());
   EXPECT_FALSE(IsAutoclickEnabled());
   EXPECT_FALSE(IsVirtualKeyboardEnabled());
+  EXPECT_FALSE(IsMonoAudioEnabled());
   EXPECT_EQ(default_autoclick_delay(), GetAutoclickDelay());
 
   // Logs in.
@@ -287,6 +304,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest, Login) {
   EXPECT_FALSE(IsHighContrastEnabled());
   EXPECT_FALSE(IsAutoclickEnabled());
   EXPECT_FALSE(IsVirtualKeyboardEnabled());
+  EXPECT_FALSE(IsMonoAudioEnabled());
   EXPECT_EQ(default_autoclick_delay(), GetAutoclickDelay());
 
   user_manager::UserManager::Get()->SessionStarted();
@@ -297,6 +315,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest, Login) {
   EXPECT_FALSE(IsHighContrastEnabled());
   EXPECT_FALSE(IsAutoclickEnabled());
   EXPECT_FALSE(IsVirtualKeyboardEnabled());
+  EXPECT_FALSE(IsMonoAudioEnabled());
   EXPECT_EQ(default_autoclick_delay(), GetAutoclickDelay());
 
   // Enables large cursor.
@@ -327,6 +346,11 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest, Login) {
   SetVirtualKeyboardEnabled(true);
   // Confirm that the on-screen keyboard option is enabled.
   EXPECT_TRUE(IsVirtualKeyboardEnabled());
+
+  // Enable mono audio output
+  SetMonoAudioEnabled(true);
+  // Confirm that mono audio output option is enabled.
+  EXPECT_TRUE(IsMonoAudioEnabled());
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest, BrailleOnLoginScreen) {
@@ -351,6 +375,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest, TypePref) {
   EXPECT_FALSE(IsAutoclickEnabled());
   EXPECT_EQ(default_autoclick_delay(), GetAutoclickDelay());
   EXPECT_FALSE(IsVirtualKeyboardEnabled());
+  EXPECT_FALSE(IsMonoAudioEnabled());
 
   // Sets the pref as true to enable the large cursor.
   SetLargeCursorEnabledPref(true);
@@ -382,6 +407,11 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest, TypePref) {
   // Confirm that the on-screen keyboard option is enabled.
   EXPECT_TRUE(IsVirtualKeyboardEnabled());
 
+  // Sets mono audio output pref.
+  SetMonoAudioEnabledPref(true);
+  // Confirm that mono audio output is enabled.
+  EXPECT_TRUE(IsMonoAudioEnabled());
+
   SetLargeCursorEnabledPref(false);
   EXPECT_FALSE(IsLargeCursorEnabled());
 
@@ -396,6 +426,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest, TypePref) {
 
   SetVirtualKeyboardEnabledPref(false);
   EXPECT_FALSE(IsVirtualKeyboardEnabled());
+
+  SetMonoAudioEnabledPref(false);
+  EXPECT_FALSE(IsMonoAudioEnabled());
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest, ResumeSavedPref) {
@@ -428,6 +461,10 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest, ResumeSavedPref) {
   SetVirtualKeyboardEnabledPref(true);
   EXPECT_FALSE(IsVirtualKeyboardEnabled());
 
+  // Sets the pref to enable mono audio output before login.
+  SetMonoAudioEnabledPref(true);
+  EXPECT_FALSE(IsMonoAudioEnabled());
+
   // Logs in.
   user_manager::UserManager::Get()->SessionStarted();
 
@@ -438,6 +475,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest, ResumeSavedPref) {
   EXPECT_TRUE(IsAutoclickEnabled());
   EXPECT_EQ(kTestAutoclickDelayMs, GetAutoclickDelay());
   EXPECT_TRUE(IsVirtualKeyboardEnabled());
+  EXPECT_TRUE(IsMonoAudioEnabled());
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest,
@@ -498,6 +536,22 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest,
   EXPECT_EQ(observer.observed_type(),
             ACCESSIBILITY_TOGGLE_VIRTUAL_KEYBOARD);
   EXPECT_FALSE(IsVirtualKeyboardEnabled());
+
+  observer.reset();
+  SetMonoAudioEnabled(true);
+  EXPECT_TRUE(observer.observed());
+  EXPECT_TRUE(observer.observed_enabled());
+  EXPECT_EQ(observer.observed_type(),
+            ACCESSIBILITY_TOGGLE_MONO_AUDIO);
+  EXPECT_TRUE(IsMonoAudioEnabled());
+
+  observer.reset();
+  SetMonoAudioEnabled(false);
+  EXPECT_TRUE(observer.observed());
+  EXPECT_FALSE(observer.observed_enabled());
+  EXPECT_EQ(observer.observed_type(),
+            ACCESSIBILITY_TOGGLE_MONO_AUDIO);
+  EXPECT_FALSE(IsMonoAudioEnabled());
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest,
@@ -558,6 +612,22 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest,
   EXPECT_EQ(observer.observed_type(),
             ACCESSIBILITY_TOGGLE_VIRTUAL_KEYBOARD);
   EXPECT_FALSE(IsVirtualKeyboardEnabled());
+
+  observer.reset();
+  SetMonoAudioEnabledPref(true);
+  EXPECT_TRUE(observer.observed());
+  EXPECT_TRUE(observer.observed_enabled());
+  EXPECT_EQ(observer.observed_type(),
+            ACCESSIBILITY_TOGGLE_MONO_AUDIO);
+  EXPECT_TRUE(IsMonoAudioEnabled());
+
+  observer.reset();
+  SetMonoAudioEnabledPref(false);
+  EXPECT_TRUE(observer.observed());
+  EXPECT_FALSE(observer.observed_enabled());
+  EXPECT_EQ(observer.observed_type(),
+            ACCESSIBILITY_TOGGLE_MONO_AUDIO);
+  EXPECT_FALSE(IsMonoAudioEnabled());
 }
 
 class AccessibilityManagerUserTypeTest
@@ -595,6 +665,9 @@ IN_PROC_BROWSER_TEST_P(AccessibilityManagerUserTypeTest,
   // Set autoclick delay.
   SetAutoclickDelay(kTestAutoclickDelayMs);
   EXPECT_EQ(kTestAutoclickDelayMs, GetAutoclickDelay());
+  // Enables mono audio output.
+  SetMonoAudioEnabled(true);
+  EXPECT_TRUE(IsMonoAudioEnabled());
 
   // Logs in.
   const AccountId account_id = AccountId::FromUserEmail(GetParam());
@@ -607,6 +680,7 @@ IN_PROC_BROWSER_TEST_P(AccessibilityManagerUserTypeTest,
   EXPECT_TRUE(IsHighContrastEnabled());
   EXPECT_TRUE(IsAutoclickEnabled());
   EXPECT_EQ(kTestAutoclickDelayMs, GetAutoclickDelay());
+  EXPECT_TRUE(IsMonoAudioEnabled());
 
   user_manager::UserManager::Get()->SessionStarted();
 
@@ -616,6 +690,7 @@ IN_PROC_BROWSER_TEST_P(AccessibilityManagerUserTypeTest,
   EXPECT_TRUE(IsHighContrastEnabled());
   EXPECT_TRUE(IsAutoclickEnabled());
   EXPECT_EQ(kTestAutoclickDelayMs, GetAutoclickDelay());
+  EXPECT_TRUE(IsMonoAudioEnabled());
 
   // Confirms that the prefs have been copied to the user's profile.
   EXPECT_TRUE(GetLargeCursorEnabledFromPref());
@@ -623,6 +698,7 @@ IN_PROC_BROWSER_TEST_P(AccessibilityManagerUserTypeTest,
   EXPECT_TRUE(GetHighContrastEnabledFromPref());
   EXPECT_TRUE(GetAutoclickEnabledFromPref());
   EXPECT_EQ(kTestAutoclickDelayMs, GetAutoclickDelayFromPref());
+  EXPECT_TRUE(GetMonoAudioEnabledFromPref());
 }
 
 IN_PROC_BROWSER_TEST_P(AccessibilityManagerUserTypeTest, BrailleWhenLoggedIn) {
@@ -685,6 +761,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest, AccessibilityMenuVisibility) {
   EXPECT_FALSE(IsAutoclickEnabled());
   EXPECT_FALSE(ShouldShowAccessibilityMenu());
   EXPECT_FALSE(IsVirtualKeyboardEnabled());
+  EXPECT_FALSE(IsMonoAudioEnabled());
 
   // Check large cursor.
   SetLargeCursorEnabled(true);
@@ -714,6 +791,12 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest, AccessibilityMenuVisibility) {
   SetVirtualKeyboardEnabled(true);
   EXPECT_TRUE(ShouldShowAccessibilityMenu());
   SetVirtualKeyboardEnabled(false);
+  EXPECT_FALSE(ShouldShowAccessibilityMenu());
+
+  // Check mono audio output.
+  SetMonoAudioEnabled(true);
+  EXPECT_TRUE(ShouldShowAccessibilityMenu());
+  SetMonoAudioEnabled(false);
   EXPECT_FALSE(ShouldShowAccessibilityMenu());
 }
 

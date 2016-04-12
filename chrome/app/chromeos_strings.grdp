@@ -1530,6 +1530,9 @@ Press any key to continue exploring.
   <message name="IDS_OOBE_VIRTUAL_KEYBOARD_OPTION" desc="Virtual keyboard option shown on the OOBE screens accessibility menu.">
     On-screen keyboard
   </message>
+  <message name="IDS_OOBE_MONO_AUDIO_OPTION" desc="Mono audio option shown on the OOBE screens accessibility menu.">
+    Play the same audio through all speakers (mono audio)
+  </message>
   <message name="IDS_OOBE_CLOSE_ACCESSIBILITY_MENU" desc="Text to be spoken when focus is set to the close button of accessibility options menu.">
     Close accessibility menu
   </message>
@@ -2319,6 +2322,9 @@ Press any key to continue exploring.
   </message>
   <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_VIRTUAL_KEYBOARD_DESCRIPTION" desc="In the settings tab, the text next to the checkbox for virtual keyboard.">
     Enable on-screen keyboard
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_MONO_AUDIO_DESCRIPTION" desc="In the settings tab, the text next to the checkbox for mono audio output.">
+    Play the same audio through all speakers (mono audio)
   </message>
   <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_SHOULD_ALWAYS_SHOW_MENU" desc="In the settings tab, the text next to the checkbox to show the accessibility tray menu regardless of the state of a11y features.">
     Show accessibility options in the system menu

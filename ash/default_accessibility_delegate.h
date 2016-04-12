@@ -30,6 +30,8 @@ class ASH_EXPORT DefaultAccessibilityDelegate : public AccessibilityDelegate {
   bool IsAutoclickEnabled() const override;
   void SetVirtualKeyboardEnabled(bool enabled) override;
   bool IsVirtualKeyboardEnabled() const override;
+  void SetMonoAudioEnabled(bool enabled) override;
+  bool IsMonoAudioEnabled() const override;
   void SetCaretHighlightEnabled(bool enabled) override;
   bool IsCaretHighlightEnabled() const override;
   void SetCursorHighlightEnabled(bool enabled) override;
@@ -60,6 +62,7 @@ class ASH_EXPORT DefaultAccessibilityDelegate : public AccessibilityDelegate {
   bool large_cursor_enabled_ = false;
   bool autoclick_enabled_ = false;
   bool virtual_keyboard_enabled_ = false;
+  bool mono_audio_enabled_ = false;
   bool caret_highlight_enabled_ = false;
   bool cursor_highlight_enabled_ = false;
   bool focus_highligh_enabled_ = false;

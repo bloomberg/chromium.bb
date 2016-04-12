@@ -43,6 +43,7 @@ enum AccessibilityNotificationType {
   ACCESSIBILITY_TOGGLE_SCREEN_MAGNIFIER,
   ACCESSIBILITY_TOGGLE_SPOKEN_FEEDBACK,
   ACCESSIBILITY_TOGGLE_VIRTUAL_KEYBOARD,
+  ACCESSIBILITY_TOGGLE_MONO_AUDIO,
   ACCESSIBILITY_BRAILLE_DISPLAY_CONNECTION_STATE_CHANGED
 };
 
@@ -167,6 +168,11 @@ class AccessibilityManager
   // Returns true if the virtual keyboard is enabled, otherwise false.
   bool IsVirtualKeyboardEnabled();
 
+  // Enables or disables mono audio output.
+  void EnableMonoAudio(bool enabled);
+  // Returns true if mono audio output is enabled, otherwise false.
+  bool IsMonoAudioEnabled();
+
   // Invoked to enable or disable caret highlighting.
   void SetCaretHighlightEnabled(bool enabled);
 
@@ -280,6 +286,7 @@ class AccessibilityManager
   void UpdateAutoclickFromPref();
   void UpdateAutoclickDelayFromPref();
   void UpdateVirtualKeyboardFromPref();
+  void UpdateMonoAudioFromPref();
   void UpdateCaretHighlightFromPref();
   void UpdateCursorHighlightFromPref();
   void UpdateFocusHighlightFromPref();
@@ -341,6 +348,7 @@ class AccessibilityManager
   PrefHandler autoclick_pref_handler_;
   PrefHandler autoclick_delay_pref_handler_;
   PrefHandler virtual_keyboard_pref_handler_;
+  PrefHandler mono_audio_pref_handler_;
   PrefHandler caret_highlight_pref_handler_;
   PrefHandler cursor_highlight_pref_handler_;
   PrefHandler focus_highlight_pref_handler_;
@@ -354,6 +362,7 @@ class AccessibilityManager
   bool autoclick_enabled_;
   int autoclick_delay_ms_;
   bool virtual_keyboard_enabled_;
+  bool mono_audio_enabled_;
   bool caret_highlight_enabled_;
   bool cursor_highlight_enabled_;
   bool focus_highlight_enabled_;

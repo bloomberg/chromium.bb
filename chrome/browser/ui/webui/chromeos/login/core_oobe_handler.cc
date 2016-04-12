@@ -78,6 +78,7 @@ void CoreOobeHandler::DeclareLocalizedValues(
   builder->Add("highContrastOption", IDS_OOBE_HIGH_CONTRAST_MODE_OPTION);
   builder->Add("screenMagnifierOption", IDS_OOBE_SCREEN_MAGNIFIER_OPTION);
   builder->Add("virtualKeyboardOption", IDS_OOBE_VIRTUAL_KEYBOARD_OPTION);
+  builder->Add("monoAudioOption", IDS_OOBE_MONO_AUDIO_OPTION);
   builder->Add("closeAccessibilityMenu", IDS_OOBE_CLOSE_ACCESSIBILITY_MENU);
 
   // Strings for the device requisition prompt.
@@ -129,6 +130,8 @@ void CoreOobeHandler::RegisterMessages() {
               &CoreOobeHandler::HandleEnableLargeCursor);
   AddCallback("enableVirtualKeyboard",
               &CoreOobeHandler::HandleEnableVirtualKeyboard);
+  AddCallback("enableMonoAudio",
+              &CoreOobeHandler::HandleEnableMonoAudio);
   AddCallback("enableScreenMagnifier",
               &CoreOobeHandler::HandleEnableScreenMagnifier);
   AddCallback("enableSpokenFeedback",
@@ -264,6 +267,10 @@ void CoreOobeHandler::HandleEnableLargeCursor(bool enabled) {
 
 void CoreOobeHandler::HandleEnableVirtualKeyboard(bool enabled) {
   AccessibilityManager::Get()->EnableVirtualKeyboard(enabled);
+}
+
+void CoreOobeHandler::HandleEnableMonoAudio(bool enabled) {
+  AccessibilityManager::Get()->EnableMonoAudio(enabled);
 }
 
 void CoreOobeHandler::HandleEnableScreenMagnifier(bool enabled) {

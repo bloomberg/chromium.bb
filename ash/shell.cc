@@ -140,6 +140,7 @@
 #include "ash/virtual_keyboard_controller.h"
 #include "base/bind_helpers.h"
 #include "base/sys_info.h"
+#include "chromeos/audio/audio_a11y_controller.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "ui/chromeos/user_activity_power_manager_notifier.h"
 #include "ui/display/chromeos/display_configurator.h"
@@ -797,6 +798,10 @@ Shell::~Shell() {
   touch_transformer_controller_.reset();
 #endif  // defined(OS_CHROMEOS)
 
+#if defined(OS_CHROMEOS)
+  audio_a11y_controller_.reset();
+#endif  // defined(OS_CHROMEOS)
+
   // This also deletes all RootWindows. Note that we invoke Shutdown() on
   // WindowTreeHostManager before resetting |window_tree_host_manager_|, since
   // destruction
@@ -1071,6 +1076,10 @@ void Shell::Init(const ShellInitParams& init_params) {
   // Needs to be created after InitDisplays() since it may cause the virtual
   // keyboard to be deployed.
   virtual_keyboard_controller_.reset(new VirtualKeyboardController);
+#endif  // defined(OS_CHROMEOS)
+
+#if defined(OS_CHROMEOS)
+  audio_a11y_controller_.reset(new chromeos::AudioA11yController);
 #endif  // defined(OS_CHROMEOS)
 
   // It needs to be created after RootWindowController has been created

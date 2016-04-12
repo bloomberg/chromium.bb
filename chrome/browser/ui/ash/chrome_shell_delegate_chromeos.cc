@@ -147,6 +147,17 @@ class AccessibilityDelegateImpl : public ash::AccessibilityDelegate {
     return chromeos::AccessibilityManager::Get()->IsVirtualKeyboardEnabled();
   }
 
+  void SetMonoAudioEnabled(bool enabled) override {
+    DCHECK(chromeos::AccessibilityManager::Get());
+    return chromeos::AccessibilityManager::Get()->
+        EnableMonoAudio(enabled);
+  }
+
+  bool IsMonoAudioEnabled() const override {
+    DCHECK(chromeos::AccessibilityManager::Get());
+    return chromeos::AccessibilityManager::Get()->IsMonoAudioEnabled();
+  }
+
   void SetCaretHighlightEnabled(bool enabled) override {
     DCHECK(chromeos::AccessibilityManager::Get());
     chromeos::AccessibilityManager::Get()->SetCaretHighlightEnabled(enabled);
