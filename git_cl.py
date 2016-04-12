@@ -1313,6 +1313,87 @@ class Changelist(object):
     return self._codereview_impl.CMDPatchWithParsedIssue(
         parsed_issue_arg, reject, nocommit, directory)
 
+  def CMDUpload(self, options, git_diff_args, orig_args):
+    """Uploads a change to codereview."""
+    if git_diff_args:
+      # TODO(ukai): is it ok for gerrit case?
+      base_branch = git_diff_args[0]
+    else:
+      if self.GetBranch() is None:
+        DieWithError('Can\'t upload from detached HEAD state. Get on a branch!')
+
+      # Default to diffing against common ancestor of upstream branch
+      base_branch = self.GetCommonAncestorWithUpstream()
+      git_diff_args = [base_branch, 'HEAD']
+
+    # Make sure authenticated to codereview before running potentially expensive
+    # hooks.  It is a fast, best efforts check. Codereview still can reject the
+    # authentication during the actual upload.
+    self._codereview_impl.EnsureAuthenticated()
+
+    # Apply watchlists on upload.
+    change = self.GetChange(base_branch, None)
+    watchlist = watchlists.Watchlists(change.RepositoryRoot())
+    files = [f.LocalPath() for f in change.AffectedFiles()]
+    if not options.bypass_watchlists:
+      self.SetWatchers(watchlist.GetWatchersForPaths(files))
+
+    if not options.bypass_hooks:
+      if options.reviewers or options.tbr_owners:
+        # Set the reviewer list now so that presubmit checks can access it.
+        change_description = ChangeDescription(change.FullDescriptionText())
+        change_description.update_reviewers(options.reviewers,
+                                            options.tbr_owners,
+                                            change)
+        change.SetDescriptionText(change_description.description)
+      hook_results = self.RunHook(committing=False,
+                                may_prompt=not options.force,
+                                verbose=options.verbose,
+                                change=change)
+      if not hook_results.should_continue():
+        return 1
+      if not options.reviewers and hook_results.reviewers:
+        options.reviewers = hook_results.reviewers.split(',')
+
+    if self.GetIssue():
+      latest_patchset = self.GetMostRecentPatchset()
+      local_patchset = self.GetPatchset()
+      if (latest_patchset and local_patchset and
+          local_patchset != latest_patchset):
+        print ('The last upload made from this repository was patchset #%d but '
+               'the most recent patchset on the server is #%d.'
+               % (local_patchset, latest_patchset))
+        print ('Uploading will still work, but if you\'ve uploaded to this '
+               'issue from another machine or branch the patch you\'re '
+               'uploading now might not include those changes.')
+        ask_for_data('About to upload; enter to confirm.')
+
+    print_stats(options.similarity, options.find_copies, git_diff_args)
+    ret = self.CMDUploadChange(options, git_diff_args, change)
+    if not ret:
+      git_set_branch_value('last-upload-hash',
+                           RunGit(['rev-parse', 'HEAD']).strip())
+      # Run post upload hooks, if specified.
+      if settings.GetRunPostUploadHook():
+        presubmit_support.DoPostUploadExecuter(
+            change,
+            self,
+            settings.GetRoot(),
+            options.verbose,
+            sys.stdout)
+
+      # Upload all dependencies if specified.
+      if options.dependencies:
+        print
+        print '--dependencies has been specified.'
+        print 'All dependent local branches will be re-uploaded.'
+        print
+        # Remove the dependencies flag from args so that we do not end up in a
+        # loop.
+        orig_args.remove('--dependencies')
+        ret = upload_branch_deps(self, orig_args)
+    return ret
+
   # Forward methods to codereview specific implementation.
 
   def CloseIssue(self):
@@ -1426,6 +1507,10 @@ class _ChangelistCodereviewBase(object):
     failed."""
     raise NotImplementedError()
 
+  def EnsureAuthenticated(self):
+    """Best effort check that user is authenticated with codereview server."""
+    raise NotImplementedError()
+
   def CMDUploadChange(self, options, args, change):
     """Uploads a change to codereview."""
     raise NotImplementedError()
@@ -1454,6 +1539,14 @@ class _RietveldChangelistImpl(_ChangelistCodereviewBase):
       if not self._rietveld_server:
         self._rietveld_server = settings.GetDefaultServerUrl()
     return self._rietveld_server
+
+  def EnsureAuthenticated(self):
+    """Best effort check that user is authenticated with Rietveld server."""
+    if self._auth_config.use_oauth2:
+      authenticator = auth.get_authenticator_for_host(
+          self.GetCodereviewServer(), self._auth_config)
+      if not authenticator.has_cached_credentials():
+        raise auth.LoginRequiredError(self.GetCodereviewServer())
 
   def FetchDescription(self):
     issue = self.GetIssue()
@@ -1797,7 +1890,7 @@ class _RietveldChangelistImpl(_ChangelistCodereviewBase):
             upload_args.extend(
                 ['--depends_on_patchset', '%s:%s' % (
                      branch_cl_issue, branch_cl_patchset)])
-            print (
+            print(
                 '\n'
                 'The current branch (%s) is tracking a local branch (%s) with '
                 'an associated CL.\n'
@@ -1877,6 +1970,10 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
   @classmethod
   def IssueSettingPrefix(cls):
     return 'gerritissue'
+
+  def EnsureAuthenticated(self):
+    """Best effort check that user is authenticated with Gerrit server."""
+    #TODO(tandrii): implement per bug http://crbug.com/583153.
 
   def PatchsetSetting(self):
     """Return the git setting that stores this change's most recent patchset."""
@@ -2079,6 +2176,10 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
 
   def CMDUploadChange(self, options, args, change):
     """Upload the current branch to Gerrit."""
+    if options.squash and options.no_squash:
+      DieWithError('Can only use one of --squash or --no-squash')
+    options.squash = ((settings.GetSquashGerritUploads() or options.squash) and
+                      not options.no_squash)
     # We assume the remote called "origin" is the one we want.
     # It is probably not worthwhile to support different workflows.
     gerrit_remote = 'origin'
@@ -3290,94 +3391,7 @@ def CMDupload(parser, args):
   settings.GetIsGerrit()
 
   cl = Changelist(auth_config=auth_config)
-  if args:
-    # TODO(ukai): is it ok for gerrit case?
-    base_branch = args[0]
-  else:
-    if cl.GetBranch() is None:
-      DieWithError('Can\'t upload from detached HEAD state. Get on a branch!')
-
-    # Default to diffing against common ancestor of upstream branch
-    base_branch = cl.GetCommonAncestorWithUpstream()
-    args = [base_branch, 'HEAD']
-
-  # Make sure authenticated to Rietveld before running expensive hooks. It is
-  # a fast, best efforts check. Rietveld still can reject the authentication
-  # during the actual upload.
-  if not cl.IsGerrit() and auth_config.use_oauth2:
-    authenticator = auth.get_authenticator_for_host(
-        cl.GetCodereviewServer(), auth_config)
-    if not authenticator.has_cached_credentials():
-      raise auth.LoginRequiredError(cl.GetCodereviewServer())
-
-  # Apply watchlists on upload.
-  change = cl.GetChange(base_branch, None)
-  watchlist = watchlists.Watchlists(change.RepositoryRoot())
-  files = [f.LocalPath() for f in change.AffectedFiles()]
-  if not options.bypass_watchlists:
-    cl.SetWatchers(watchlist.GetWatchersForPaths(files))
-
-  if not options.bypass_hooks:
-    if options.reviewers or options.tbr_owners:
-      # Set the reviewer list now so that presubmit checks can access it.
-      change_description = ChangeDescription(change.FullDescriptionText())
-      change_description.update_reviewers(options.reviewers,
-                                          options.tbr_owners,
-                                          change)
-      change.SetDescriptionText(change_description.description)
-    hook_results = cl.RunHook(committing=False,
-                              may_prompt=not options.force,
-                              verbose=options.verbose,
-                              change=change)
-    if not hook_results.should_continue():
-      return 1
-    if not options.reviewers and hook_results.reviewers:
-      options.reviewers = hook_results.reviewers.split(',')
-
-  if cl.GetIssue():
-    latest_patchset = cl.GetMostRecentPatchset()
-    local_patchset = cl.GetPatchset()
-    if latest_patchset and local_patchset and local_patchset != latest_patchset:
-      print ('The last upload made from this repository was patchset #%d but '
-            'the most recent patchset on the server is #%d.'
-            % (local_patchset, latest_patchset))
-      print ('Uploading will still work, but if you\'ve uploaded to this issue '
-            'from another machine or branch the patch you\'re uploading now '
-            'might not include those changes.')
-      ask_for_data('About to upload; enter to confirm.')
-
-  print_stats(options.similarity, options.find_copies, args)
-  if cl.IsGerrit():
-    if options.squash and options.no_squash:
-      DieWithError('Can only use one of --squash or --no-squash')
-
-    options.squash = ((settings.GetSquashGerritUploads() or options.squash) and
-                      not options.no_squash)
-
-  ret = cl.CMDUploadChange(options, args, change)
-  if not ret:
-    git_set_branch_value('last-upload-hash',
-                         RunGit(['rev-parse', 'HEAD']).strip())
-    # Run post upload hooks, if specified.
-    if settings.GetRunPostUploadHook():
-      presubmit_support.DoPostUploadExecuter(
-          change,
-          cl,
-          settings.GetRoot(),
-          options.verbose,
-          sys.stdout)
-
-    # Upload all dependencies if specified.
-    if options.dependencies:
-      print
-      print '--dependencies has been specified.'
-      print 'All dependent local branches will be re-uploaded.'
-      print
-      # Remove the dependencies flag from args so that we do not end up in a
-      # loop.
-      orig_args.remove('--dependencies')
-      upload_branch_deps(cl, orig_args)
-  return ret
+  return cl.CMDUpload(options, args, orig_args)
 
 
 def IsSubmoduleMergeCommit(ref):
