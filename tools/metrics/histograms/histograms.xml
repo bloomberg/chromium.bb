@@ -28055,6 +28055,24 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.QuicSession.StreamCloseErrorCodeClient.HandshakeConfirmed"
+    enum="QuicErrorCodes">
+  <owner>rch@chromium.org</owner>
+  <summary>
+    The QUIC error code which resulted in the stream (and connection) being
+    closed by the client after the handshake was confirmed.
+  </summary>
+</histogram>
+
+<histogram name="Net.QuicSession.StreamCloseErrorCodeServer.HandshakeConfirmed"
+    enum="QuicErrorCodes">
+  <owner>rch@chromium.org</owner>
+  <summary>
+    The QUIC error code which resulted in the stream (and connection) being
+    closed by the client after the handshake was confirmed.
+  </summary>
+</histogram>
+
 <histogram name="Net.QuicSession.StreamFlowControlBlocked"
     enum="BooleanBlocked">
   <owner>rtenneti@chromium.org</owner>

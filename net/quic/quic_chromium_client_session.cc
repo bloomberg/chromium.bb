@@ -817,6 +817,12 @@ void QuicChromiumClientSession::OnConnectionClosed(
       UMA_HISTOGRAM_SPARSE_SLOWLY(
           "Net.QuicSession.ConnectionCloseErrorCodeServer.HandshakeConfirmed",
           error);
+      base::HistogramBase* histogram = base::SparseHistogram::FactoryGet(
+          "Net.QuicSession.StreamCloseErrorCodeServer.HandshakeConfirmed",
+          base::HistogramBase::kUmaTargetedHistogramFlag);
+      size_t num_streams = GetNumActiveStreams();
+      if (num_streams > 0)
+        histogram->AddCount(error, num_streams);
     }
     UMA_HISTOGRAM_SPARSE_SLOWLY(
         "Net.QuicSession.ConnectionCloseErrorCodeServer", error);
@@ -825,6 +831,12 @@ void QuicChromiumClientSession::OnConnectionClosed(
       UMA_HISTOGRAM_SPARSE_SLOWLY(
           "Net.QuicSession.ConnectionCloseErrorCodeClient.HandshakeConfirmed",
           error);
+      base::HistogramBase* histogram = base::SparseHistogram::FactoryGet(
+          "Net.QuicSession.StreamCloseErrorCodeClient.HandshakeConfirmed",
+          base::HistogramBase::kUmaTargetedHistogramFlag);
+      size_t num_streams = GetNumActiveStreams();
+      if (num_streams > 0)
+        histogram->AddCount(error, num_streams);
     }
     UMA_HISTOGRAM_SPARSE_SLOWLY(
         "Net.QuicSession.ConnectionCloseErrorCodeClient", error);
