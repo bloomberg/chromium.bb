@@ -405,12 +405,15 @@ bool AndroidVideoDecodeAccelerator::Initialize(const Config& config,
         new OnFrameAvailableHandler(this, surface_texture);
   }
 
+  // Start the thread for async configuration, even if we don't need it now.
+  // ResetCodecState might rebuild the codec later, for example.
+  g_avda_timer.Pointer()->StartThread(this);
+
   // If we are encrypted, then we aren't able to create the codec yet.
   if (is_encrypted_)
     return true;
 
   if (deferred_initialization_pending_) {
-    g_avda_timer.Pointer()->StartThread(this);
     ConfigureMediaCodecAsynchronously();
     return true;
   }
