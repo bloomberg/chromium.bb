@@ -267,15 +267,19 @@ TEST_F(ShellSurfaceTest, ConfigureCallback) {
                  base::Unretained(&has_state_type),
                  base::Unretained(&is_resizing), base::Unretained(&is_active)));
   shell_surface->Maximize();
+  shell_surface->AcknowledgeConfigure(0);
   EXPECT_EQ(CurrentContext()->bounds().width(), suggested_size.width());
   EXPECT_EQ(ash::wm::WINDOW_STATE_TYPE_MAXIMIZED, has_state_type);
   shell_surface->Restore();
+  shell_surface->AcknowledgeConfigure(0);
 
   shell_surface->SetFullscreen(true);
+  shell_surface->AcknowledgeConfigure(0);
   EXPECT_EQ(CurrentContext()->bounds().size().ToString(),
             suggested_size.ToString());
   EXPECT_EQ(ash::wm::WINDOW_STATE_TYPE_FULLSCREEN, has_state_type);
   shell_surface->SetFullscreen(false);
+  shell_surface->AcknowledgeConfigure(0);
 
   gfx::Size buffer_size(64, 64);
   scoped_ptr<Buffer> buffer(
@@ -283,12 +287,15 @@ TEST_F(ShellSurfaceTest, ConfigureCallback) {
   surface->Attach(buffer.get());
   surface->Commit();
   shell_surface->GetWidget()->Activate();
+  shell_surface->AcknowledgeConfigure(0);
   EXPECT_TRUE(is_active);
   shell_surface->GetWidget()->Deactivate();
+  shell_surface->AcknowledgeConfigure(0);
   EXPECT_FALSE(is_active);
 
   EXPECT_FALSE(is_resizing);
   shell_surface->Resize(HTBOTTOMRIGHT);
+  shell_surface->AcknowledgeConfigure(0);
   EXPECT_TRUE(is_resizing);
 }
 
