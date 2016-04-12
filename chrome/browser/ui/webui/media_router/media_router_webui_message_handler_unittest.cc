@@ -295,6 +295,7 @@ TEST_F(MediaRouterWebUIMessageHandlerTest, UpdateSinksWithDefaultDomain) {
   EXPECT_EQ(show_domain, actual_show_domain);
 
   // Sink domain should be updated from 'default' to user domain.
+  std::string value;
   EXPECT_TRUE(sink_value->GetString("domain", &value));
   EXPECT_EQ(kUserDomainForTesting, value);
 }
