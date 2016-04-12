@@ -5,11 +5,12 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [214, 21, 100, 100]
-      ],
-      "paintInvalidationClients": [
-        "LayoutBlockFlow DIV class='target'"
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow DIV class='target'",
+          "rect": [214, 21, 100, 100],
+          "reason": "style change"
+        }
       ]
     }
   ]

@@ -5,16 +5,27 @@
       "bounds": [200, 300],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [0, 200, 200, 100],
-        [0, 50, 100, 25],
-        [0, 0, 200, 150],
-        [0, 0, 200, 100]
-      ],
-      "paintInvalidationClients": [
-        "LayoutView #document",
-        "LayoutBlockFlow HTML",
-        "LayoutBlockFlow DIV"
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [0, 50, 100, 25],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutBlockFlow HTML",
+          "rect": [0, 0, 200, 100],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutBlockFlow HTML",
+          "rect": [0, 0, 200, 150],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [0, 200, 200, 100],
+          "reason": "incremental"
+        }
       ]
     }
   ]
@@ -26,18 +37,32 @@
       "bounds": [300, 300],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [200, 0, 100, 300],
-        [100, 0, 50, 75],
-        [0, 0, 300, 300],
-        [0, 0, 300, 150],
-        [0, 0, 200, 150]
-      ],
-      "paintInvalidationClients": [
-        "LayoutView #document",
-        "LayoutView #document",
-        "LayoutBlockFlow HTML",
-        "LayoutBlockFlow DIV"
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [100, 0, 50, 75],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutBlockFlow HTML",
+          "rect": [0, 0, 200, 150],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutBlockFlow HTML",
+          "rect": [0, 0, 300, 150],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [0, 0, 300, 300],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [200, 0, 100, 300],
+          "reason": "incremental"
+        }
       ]
     }
   ]
@@ -49,16 +74,27 @@
       "bounds": [300, 250],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [0, 250, 300, 50],
-        [0, 62, 150, 13],
-        [0, 0, 300, 150],
-        [0, 0, 300, 125]
-      ],
-      "paintInvalidationClients": [
-        "LayoutView #document",
-        "LayoutBlockFlow HTML",
-        "LayoutBlockFlow DIV"
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [0, 62, 150, 13],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutBlockFlow HTML",
+          "rect": [0, 0, 300, 150],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutBlockFlow HTML",
+          "rect": [0, 0, 300, 125],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [0, 250, 300, 50],
+          "reason": "incremental"
+        }
       ]
     }
   ]
@@ -70,18 +106,32 @@
       "bounds": [250, 250],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [250, 0, 50, 250],
-        [125, 0, 25, 63],
-        [0, 0, 300, 125],
-        [0, 0, 250, 250],
-        [0, 0, 250, 125]
-      ],
-      "paintInvalidationClients": [
-        "LayoutView #document",
-        "LayoutView #document",
-        "LayoutBlockFlow HTML",
-        "LayoutBlockFlow DIV"
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [125, 0, 25, 63],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutBlockFlow HTML",
+          "rect": [0, 0, 300, 125],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutBlockFlow HTML",
+          "rect": [0, 0, 250, 125],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [0, 0, 250, 250],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [250, 0, 50, 250],
+          "reason": "incremental"
+        }
       ]
     }
   ]

@@ -5,22 +5,47 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [0, 0, 200, 200],
-        [0, 0, 200, 200],
-        [0, 0, 200, 200],
-        [0, 0, 200, 200],
-        [0, 0, 200, 200]
-      ],
-      "paintInvalidationClients": [
-        "LayoutSVGResourcePattern pattern id='pat'",
-        "LayoutSVGRect rect",
-        "LayoutSVGRect rect id='shape'",
-        "LayoutSVGRect rect",
-        "LayoutSVGResourcePattern pattern id='pat'",
-        "LayoutSVGResourcePattern pattern id='pat'",
-        "LayoutSVGRect rect",
-        "LayoutSVGRect rect id='shape'"
+      "paintInvalidations": [
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [0, 0, 200, 200],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [0, 0, 200, 200],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [0, 0, 200, 200],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGRect rect id='shape'",
+          "rect": [0, 0, 200, 200],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutSVGRect rect id='shape'",
+          "rect": [0, 0, 200, 200],
+          "reason": "SVG resource change"
+        },
+        {
+          "object": "LayoutSVGResourcePattern pattern id='pat'",
+          "rect": [0, 0, 0, 0],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGResourcePattern pattern id='pat'",
+          "rect": [0, 0, 0, 0],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGResourcePattern pattern id='pat'",
+          "rect": [0, 0, 0, 0],
+          "reason": "layoutObject insertion"
+        }
       ]
     }
   ]

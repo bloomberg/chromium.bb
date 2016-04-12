@@ -5,33 +5,82 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [53, 53, 10, 10],
-        [53, 53, 10, 10],
-        [53, 53, 10, 10],
-        [53, 53, 10, 10],
-        [33, 33, 50, 50],
-        [33, 33, 50, 50],
-        [33, 33, 50, 50],
-        [33, 33, 50, 50],
-        [8, 112, 784, 100],
-        [8, 8, 784, 203],
-        [8, 8, 25, 25],
-        [8, 8, 5, 5]
-      ],
-      "paintInvalidationClients": [
-        "LayoutSVGEllipse svg:circle id='circle'",
-        "LayoutSVGViewportContainer svg id='symbol'",
-        "InlineBox",
-        "RootInlineBox",
-        "LayoutBlockFlow body",
-        "LayoutBlockFlow body",
-        "RootInlineBox",
-        "LayoutSVGRoot svg:svg id='svg'",
-        "LayoutSVGEllipse svg:circle id='circle'",
-        "LayoutSVGContainer svg:use id='use'",
-        "LayoutSVGViewportContainer svg id='symbol'",
-        "LayoutSVGEllipse svg:circle id='circle'"
+      "paintInvalidations": [
+        {
+          "object": "InlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutBlockFlow body",
+          "rect": [8, 112, 784, 100],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutBlockFlow body",
+          "rect": [8, 8, 784, 203],
+          "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutSVGContainer svg:use id='use'",
+          "rect": [53, 53, 10, 10],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGContainer svg:use id='use'",
+          "rect": [33, 33, 50, 50],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGEllipse svg:circle id='circle'",
+          "rect": [53, 53, 10, 10],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGEllipse svg:circle id='circle'",
+          "rect": [8, 8, 5, 5],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGEllipse svg:circle id='circle'",
+          "rect": [8, 8, 25, 25],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGEllipse svg:circle id='circle'",
+          "rect": [33, 33, 50, 50],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGRoot svg:svg id='svg'",
+          "rect": [53, 53, 10, 10],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGRoot svg:svg id='svg'",
+          "rect": [33, 33, 50, 50],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGViewportContainer svg id='symbol'",
+          "rect": [53, 53, 10, 10],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGViewportContainer svg id='symbol'",
+          "rect": [33, 33, 50, 50],
+          "reason": "location change"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        }
       ]
     }
   ]

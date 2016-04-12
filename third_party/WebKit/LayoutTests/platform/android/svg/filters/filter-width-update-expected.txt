@@ -1,0 +1,19 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [0, 0, 140, 140],
+        [0, 0, 40, 140]
+      ],
+      "paintInvalidationClients": [
+        "LayoutSVGResourceFilter filter id='blur'",
+        "LayoutSVGRect rect"
+      ]
+    }
+  ]
+}
+

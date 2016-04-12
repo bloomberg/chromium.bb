@@ -5,17 +5,37 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [0, 0, 110, 110],
-        [0, 0, 110, 110]
-      ],
-      "paintInvalidationClients": [
-        "LayoutSVGResourceFilterPrimitive feImage id='feimage-green'",
-        "LayoutSVGResourceFilter filter id='filter'",
-        "LayoutSVGRect rect",
-        "LayoutSVGResourceFilter filter id='filter'",
-        "LayoutSVGResourceFilterPrimitive feImage id='feimage-green'",
-        "LayoutSVGRect rect"
+      "paintInvalidations": [
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [0, 0, 110, 110],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [0, 0, 110, 110],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutSVGResourceFilter filter id='filter'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGResourceFilter filter id='filter'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGResourceFilterPrimitive feImage id='feimage-green'",
+          "rect": [0, 0, 0, 0],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGResourceFilterPrimitive feImage id='feimage-green'",
+          "rect": [0, 0, 0, 0],
+          "reason": "layoutObject insertion"
+        }
       ]
     }
   ]

@@ -1,0 +1,26 @@
+{
+  "bounds": [1026, 1036],
+  "children": [
+    {
+      "bounds": [1026, 1036],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [384, 1011, 47, 21],
+        [24, 1011, 737, 21]
+      ],
+      "paintInvalidationClients": [
+        "InlineTextBox 'pservers-pattern-01-b \u2190'",
+        "InlineTextBox '\n'",
+        "InlineTextBox 'index'",
+        "InlineTextBox '\n'",
+        "InlineTextBox '\u2192 script-handle-01-b'",
+        "RootInlineBox",
+        "LayoutBlockFlow P",
+        "LayoutInline A",
+        "InlineFlowBox"
+      ]
+    }
+  ]
+}
+

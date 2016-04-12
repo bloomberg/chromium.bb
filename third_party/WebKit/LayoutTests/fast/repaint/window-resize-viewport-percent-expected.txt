@@ -5,15 +5,27 @@
       "bounds": [200, 300],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [20, 0, 10, 30],
-        [0, 200, 200, 100],
-        [0, 20, 30, 10]
-      ],
-      "paintInvalidationClients": [
-        "LayoutView #document",
-        "LayoutBlockFlow HTML",
-        "LayoutBlockFlow DIV"
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [20, 0, 10, 30],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [0, 20, 30, 10],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutBlockFlow HTML",
+          "rect": [0, 0, 0, 0],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [0, 200, 200, 100],
+          "reason": "incremental"
+        }
       ]
     }
   ]
@@ -25,14 +37,22 @@
       "bounds": [300, 300],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [200, 0, 100, 300],
-        [0, 0, 300, 300]
-      ],
-      "paintInvalidationClients": [
-        "LayoutView #document",
-        "LayoutView #document",
-        "LayoutBlockFlow HTML"
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow HTML",
+          "rect": [0, 0, 0, 0],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [0, 0, 300, 300],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [200, 0, 100, 300],
+          "reason": "incremental"
+        }
       ]
     }
   ]
@@ -44,15 +64,27 @@
       "bounds": [300, 250],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [25, 0, 5, 30],
-        [0, 250, 300, 50],
-        [0, 25, 30, 5]
-      ],
-      "paintInvalidationClients": [
-        "LayoutView #document",
-        "LayoutBlockFlow HTML",
-        "LayoutBlockFlow DIV"
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [25, 0, 5, 30],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [0, 25, 30, 5],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutBlockFlow HTML",
+          "rect": [0, 0, 0, 0],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [0, 250, 300, 50],
+          "reason": "incremental"
+        }
       ]
     }
   ]
@@ -64,14 +96,22 @@
       "bounds": [250, 250],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [250, 0, 50, 250],
-        [0, 0, 250, 250]
-      ],
-      "paintInvalidationClients": [
-        "LayoutView #document",
-        "LayoutView #document",
-        "LayoutBlockFlow HTML"
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow HTML",
+          "rect": [0, 0, 0, 0],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [0, 0, 250, 250],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [250, 0, 50, 250],
+          "reason": "incremental"
+        }
       ]
     }
   ]

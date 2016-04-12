@@ -5,23 +5,57 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [3, 281, 63, 18],
-        [3, 91, 63, 18],
-        [2, 52, 102, 476],
-        [2, 52, 102, 96],
-        [0, 150, 106, 380],
-        [0, 148, 106, 380]
-      ],
-      "paintInvalidationClients": [
-        "RootInlineBox",
-        "InlineTextBox 'MIDDLE'",
-        "LayoutTable (positioned) TABLE id='table'",
-        "LayoutTableRow TR",
-        "LayoutTableCell TD",
-        "RootInlineBox",
-        "LayoutText #text",
-        "InlineTextBox 'MIDDLE'"
+      "paintInvalidations": [
+        {
+          "object": "InlineTextBox 'MIDDLE'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'MIDDLE'",
+          "rect": [0, 0, 0, 0],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutTable (positioned) TABLE id='table'",
+          "rect": [0, 150, 106, 380],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "rect": [2, 52, 102, 96],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "rect": [2, 52, 102, 476],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutTableRow TR",
+          "rect": [0, 148, 106, 380],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [3, 91, 63, 18],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [3, 281, 63, 18],
+          "reason": "bounds change"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        }
       ]
     }
   ]

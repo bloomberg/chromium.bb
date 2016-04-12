@@ -5,13 +5,17 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [265, 219, 162, 105],
-        [265, 219, 162, 105]
-      ],
-      "paintInvalidationClients": [
-        "LayoutSVGRoot svg",
-        "LayoutSVGPath polygon id='polygon'"
+      "paintInvalidations": [
+        {
+          "object": "LayoutSVGPath polygon id='polygon'",
+          "rect": [265, 219, 162, 105],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGRoot svg",
+          "rect": [265, 219, 162, 105],
+          "reason": "bounds change"
+        }
       ]
     }
   ]

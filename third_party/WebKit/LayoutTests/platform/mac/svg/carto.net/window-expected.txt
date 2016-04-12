@@ -5,471 +5,1362 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [783, 95, 10, 10],
-        [783, 95, 10, 10],
-        [783, 95, 10, 10],
-        [783, 95, 10, 10],
-        [783, 95, 10, 9],
-        [783, 95, 10, 9],
-        [783, 94, 10, 11],
-        [783, 94, 10, 11],
-        [783, 94, 10, 11],
-        [783, 94, 10, 11],
-        [769, 94, 11, 11],
-        [769, 94, 11, 11],
-        [769, 94, 11, 11],
-        [769, 94, 11, 11],
-        [769, 94, 11, 11],
-        [769, 94, 11, 11],
-        [757, 95, 9, 10],
-        [757, 95, 9, 10],
-        [757, 95, 9, 10],
-        [757, 95, 9, 10],
-        [757, 95, 9, 9],
-        [757, 95, 9, 9],
-        [757, 94, 36, 11],
-        [757, 94, 36, 11],
-        [756, 103, 10, 2],
-        [756, 103, 10, 2],
-        [632, 102, 160, 97],
-        [632, 102, 160, 97],
-        [632, 102, 160, 97],
-        [632, 102, 160, 97],
-        [632, 102, 160, 97],
-        [632, 102, 160, 97],
-        [632, 102, 160, 97],
-        [632, 102, 160, 97],
-        [632, 102, 160, 97],
-        [632, 102, 160, 97],
-        [632, 102, 160, 97],
-        [632, 102, 160, 97],
-        [632, 102, 160, 97],
-        [632, 102, 160, 97],
-        [632, 102, 160, 97],
-        [627, 239, 34, 10],
-        [627, 239, 34, 10],
-        [624, 238, 174, 12],
-        [624, 92, 174, 158],
-        [624, 92, 174, 158],
-        [624, 92, 174, 158],
-        [624, 92, 174, 158],
-        [617, 153, 11, 81],
-        [617, 153, 11, 81],
-        [616, 124, 10, 2],
-        [616, 116, 10, 9],
-        [616, 116, 10, 9],
-        [616, 116, 10, 9],
-        [616, 100, 10, 10],
-        [616, 100, 10, 10],
-        [616, 99, 10, 11],
-        [616, 84, 10, 10],
-        [616, 84, 10, 10],
-        [616, 84, 10, 10],
-        [616, 84, 10, 10],
-        [616, 84, 10, 10],
-        [613, 81, 185, 169],
-        [613, 81, 185, 159],
-        [613, 81, 185, 159],
-        [613, 81, 185, 16],
-        [613, 81, 16, 159],
-        [572, 146, 10, 9],
-        [572, 145, 10, 11],
-        [572, 145, 10, 11],
-        [572, 145, 10, 10],
-        [572, 145, 10, 10],
-        [558, 145, 11, 11],
-        [558, 145, 11, 11],
-        [558, 145, 11, 11],
-        [546, 146, 9, 10],
-        [546, 146, 9, 10],
-        [546, 146, 9, 9],
-        [545, 154, 10, 2],
-        [455, 380, 10, 10],
-        [455, 380, 10, 10],
-        [455, 380, 10, 10],
-        [455, 380, 10, 10],
-        [455, 380, 10, 10],
-        [441, 380, 11, 10],
-        [441, 380, 11, 10],
-        [441, 379, 11, 11],
-        [428, 388, 10, 2],
-        [428, 380, 10, 10],
-        [428, 380, 10, 10],
-        [428, 380, 10, 10],
-        [377, 185, 9, 9],
-        [377, 184, 10, 11],
-        [377, 184, 10, 11],
-        [376, 346, 11, 10],
-        [376, 346, 11, 10],
-        [376, 346, 11, 10],
-        [376, 184, 11, 11],
-        [376, 184, 11, 11],
-        [364, 346, 9, 10],
-        [364, 346, 9, 10],
-        [364, 346, 9, 10],
-        [363, 354, 10, 2],
-        [363, 184, 11, 11],
-        [363, 184, 11, 11],
-        [363, 184, 11, 11],
-        [350, 193, 10, 2],
-        [350, 185, 10, 10],
-        [350, 185, 10, 10],
-        [350, 185, 10, 9],
-        [320, 399, 135, 63],
-        [320, 399, 135, 63],
-        [320, 399, 135, 63],
-        [320, 399, 135, 63],
-        [320, 399, 135, 63],
-        [320, 399, 135, 63],
-        [320, 399, 135, 63],
-        [320, 399, 135, 63],
-        [320, 399, 135, 63],
-        [320, 399, 135, 63],
-        [320, 399, 135, 63],
-        [314, 509, 91, 10],
-        [314, 509, 91, 10],
-        [314, 379, 71, 13],
-        [314, 379, 71, 13],
-        [312, 508, 158, 12],
-        [312, 377, 158, 143],
-        [312, 377, 158, 143],
-        [312, 377, 158, 143],
-        [312, 377, 158, 15],
-        [312, 377, 158, 15],
-        [257, 365, 120, 38],
-        [257, 365, 120, 38],
-        [257, 365, 120, 38],
-        [257, 365, 120, 38],
-        [257, 365, 120, 38],
-        [257, 365, 120, 38],
-        [257, 365, 120, 38],
-        [252, 345, 74, 13],
-        [252, 345, 74, 13],
-        [249, 344, 143, 64],
-        [249, 344, 143, 64],
-        [249, 344, 143, 64],
-        [249, 344, 143, 15],
-        [249, 344, 143, 15],
-        [236, 198, 10, 10],
-        [236, 198, 10, 10],
-        [236, 198, 10, 10],
-        [236, 198, 10, 10],
-        [236, 198, 10, 10],
-        [223, 198, 10, 10],
-        [223, 198, 10, 10],
-        [222, 197, 11, 11],
-        [210, 206, 9, 2],
-        [210, 198, 9, 10],
-        [210, 198, 9, 10],
-        [210, 198, 9, 10],
-        [80, 407, 127, 10],
-        [80, 407, 127, 10],
-        [80, 327, 139, 10],
-        [80, 327, 139, 10],
-        [80, 197, 67, 13],
-        [80, 197, 67, 13],
-        [80, 183, 132, 13],
-        [80, 183, 132, 13],
-        [77, 406, 315, 12],
-        [77, 326, 174, 12],
-        [77, 195, 174, 143],
-        [77, 195, 174, 143],
-        [77, 195, 174, 143],
-        [77, 195, 174, 15],
-        [77, 195, 174, 15],
-        [77, 182, 315, 236],
-        [77, 182, 315, 236],
-        [77, 182, 315, 236],
-        [77, 182, 315, 15],
-        [77, 182, 315, 15],
-        [43, 481, 113, 36],
-        [43, 481, 113, 36],
-        [43, 481, 113, 36],
-        [43, 481, 113, 36],
-        [43, 481, 113, 36],
-        [43, 481, 113, 36],
-        [43, 481, 113, 36],
-        [41, 525, 102, 10],
-        [41, 525, 102, 10],
-        [41, 144, 59, 13],
-        [41, 144, 59, 13],
-        [39, 476, 119, 48],
-        [39, 476, 119, 48],
-        [39, 476, 119, 48],
-        [38, 523, 549, 12],
-        [38, 143, 549, 392],
-        [38, 143, 549, 392],
-        [38, 143, 549, 392],
-        [38, 143, 549, 15],
-        [38, 143, 549, 15],
-        [38, 92, 760, 443],
-        [38, 92, 760, 443],
-        [38, 81, 760, 454],
-        [0, 30, 5, 2],
-        [0, 22, 5, 9],
-        [0, 22, 5, 9],
-        [0, 21, 5, 11],
-        [0, 21, 5, 11],
-        [0, 21, 5, 11]
-      ],
-      "paintInvalidationClients": [
-        "LayoutSVGHiddenContainer symbol id='closeButton'",
-        "LayoutSVGRect rect",
-        "LayoutSVGPath line",
-        "LayoutSVGPath line",
-        "LayoutSVGHiddenContainer symbol id='maximizeButton'",
-        "LayoutSVGRect rect",
-        "LayoutSVGHiddenContainer symbol id='minimizeButton'",
-        "LayoutSVGRect rect",
-        "LayoutSVGPath line",
-        "LayoutSVGContainer g id='Windows'",
-        "LayoutSVGContainer g id='navWindow'",
-        "LayoutSVGContainer g id='windowMainGroupnavWindow'",
-        "LayoutSVGRect rect",
-        "LayoutSVGContainer g",
-        "LayoutSVGText text id='textNavWindow'",
-        "RootInlineBox",
-        "LayoutSVGInlineText #text",
-        "InlineTextBox 'This window should'",
-        "LayoutSVGTSpan tspan",
-        "InlineFlowBox",
-        "LayoutSVGInlineText #text",
-        "InlineTextBox 'contain navigation tools'",
-        "LayoutSVGTSpan tspan",
-        "InlineFlowBox",
-        "LayoutSVGInlineText #text",
-        "InlineTextBox 'Click on button'",
-        "LayoutSVGTSpan tspan",
-        "InlineFlowBox",
-        "LayoutSVGInlineText #text",
-        "InlineTextBox ''Resize Navigation Window' for a'",
-        "LayoutSVGTSpan tspan",
-        "InlineFlowBox",
-        "LayoutSVGInlineText #text",
-        "InlineTextBox 'random resize of this Window'",
-        "LayoutSVGTSpan tspan",
-        "InlineFlowBox",
-        "LayoutSVGInlineText #text",
-        "InlineTextBox 'Note that this window also'",
-        "LayoutSVGTSpan tspan",
-        "InlineFlowBox",
-        "LayoutSVGInlineText #text",
-        "InlineTextBox 'features a window decoration'",
-        "LayoutSVGRect rect",
-        "LayoutSVGText text",
-        "RootInlineBox",
-        "LayoutSVGInlineText #text",
-        "InlineTextBox 'Statusbar'",
-        "LayoutSVGContainer g id='windowTitlebarGroupnavWindow'",
-        "LayoutSVGContainer use id='closeButtonnavWindow'",
-        "LayoutSVGViewportContainer svg id='closeButton'",
-        "LayoutSVGRect rect",
-        "LayoutSVGPath line",
-        "LayoutSVGPath line",
-        "LayoutSVGContainer use id='maximizeButtonnavWindow'",
-        "LayoutSVGViewportContainer svg id='maximizeButton'",
-        "LayoutSVGRect rect",
-        "LayoutSVGContainer use id='minimizeButtonnavWindow'",
-        "LayoutSVGViewportContainer svg id='minimizeButton'",
-        "LayoutSVGRect rect",
-        "LayoutSVGPath line",
-        "LayoutSVGContainer g id='bigWindow'",
-        "LayoutSVGContainer g id='windowMainGroupbigWindow'",
-        "LayoutSVGRect rect",
-        "LayoutSVGContainer g",
-        "LayoutSVGRect rect",
-        "LayoutSVGText text",
-        "RootInlineBox",
-        "LayoutSVGInlineText #text",
-        "InlineTextBox 'This is a big movable window'",
-        "LayoutSVGContainer g id='nestedWindow'",
-        "LayoutSVGContainer g id='windowMainGroupnestedWindow'",
-        "LayoutSVGRect rect",
-        "LayoutSVGContainer g",
-        "LayoutSVGRect rect",
-        "LayoutSVGText text",
-        "RootInlineBox",
-        "LayoutSVGInlineText #text",
-        "InlineTextBox 'This window contains other windows'",
-        "LayoutSVGContainer g id='colourPickerWindow'",
-        "LayoutSVGContainer g id='windowMainGroupcolourPickerWindow'",
-        "LayoutSVGRect rect",
-        "LayoutSVGContainer g",
-        "LayoutSVGRect rect",
-        "LayoutSVGText text",
-        "RootInlineBox",
-        "LayoutSVGInlineText #text",
-        "InlineTextBox 'Changing a colour changes background'",
-        "LayoutSVGContainer g id='windowTitlebarGroupcolourPickerWindow'",
-        "LayoutSVGRect rect id='titleBarcolourPickerWindow'",
-        "LayoutSVGText text",
-        "RootInlineBox",
-        "LayoutSVGInlineText #text",
-        "InlineTextBox 'Colour Picker'",
-        "LayoutSVGContainer use id='closeButtoncolourPickerWindow'",
-        "LayoutSVGViewportContainer svg id='closeButton'",
-        "LayoutSVGRect rect",
-        "LayoutSVGPath line",
-        "LayoutSVGPath line",
-        "LayoutSVGContainer use id='maximizeButtoncolourPickerWindow'",
-        "LayoutSVGViewportContainer svg id='maximizeButton'",
-        "LayoutSVGRect rect",
-        "LayoutSVGContainer use id='minimizeButtoncolourPickerWindow'",
-        "LayoutSVGViewportContainer svg id='minimizeButton'",
-        "LayoutSVGRect rect",
-        "LayoutSVGPath line",
-        "LayoutSVGContainer g id='statusWindow'",
-        "LayoutSVGContainer g id='windowMainGroupstatusWindow'",
-        "LayoutSVGRect rect",
-        "LayoutSVGContainer g",
-        "LayoutSVGText text id='textStatusWindow'",
-        "RootInlineBox",
-        "LayoutSVGInlineText #text",
-        "InlineTextBox 'This is a none-moveable'",
-        "LayoutSVGTSpan tspan",
-        "InlineFlowBox",
-        "LayoutSVGInlineText #text",
-        "InlineTextBox 'none-closeable status'",
-        "LayoutSVGTSpan tspan",
-        "InlineFlowBox",
-        "LayoutSVGInlineText #text",
-        "InlineTextBox 'window'",
-        "LayoutSVGContainer g id='windowTitlebarGroupstatusWindow'",
-        "LayoutSVGRect rect id='titleBarstatusWindow'",
-        "LayoutSVGText text",
-        "RootInlineBox",
-        "LayoutSVGInlineText #text",
-        "InlineTextBox 'Status Window'",
-        "LayoutSVGContainer use id='maximizeButtonstatusWindow'",
-        "LayoutSVGViewportContainer svg id='maximizeButton'",
-        "LayoutSVGRect rect",
-        "LayoutSVGContainer use id='minimizeButtonstatusWindow'",
-        "LayoutSVGViewportContainer svg id='minimizeButton'",
-        "LayoutSVGRect rect",
-        "LayoutSVGPath line",
-        "LayoutSVGContainer g id='windowTitlebarGroupnestedWindow'",
-        "LayoutSVGRect rect id='titleBarnestedWindow'",
-        "LayoutSVGText text",
-        "RootInlineBox",
-        "LayoutSVGInlineText #text",
-        "InlineTextBox 'Nested middlesize Window'",
-        "LayoutSVGContainer use id='closeButtonnestedWindow'",
-        "LayoutSVGViewportContainer svg id='closeButton'",
-        "LayoutSVGRect rect",
-        "LayoutSVGPath line",
-        "LayoutSVGPath line",
-        "LayoutSVGContainer use id='maximizeButtonnestedWindow'",
-        "LayoutSVGViewportContainer svg id='maximizeButton'",
-        "LayoutSVGRect rect",
-        "LayoutSVGContainer use id='minimizeButtonnestedWindow'",
-        "LayoutSVGViewportContainer svg id='minimizeButton'",
-        "LayoutSVGRect rect",
-        "LayoutSVGPath line",
-        "LayoutSVGContainer g id='smallWindow'",
-        "LayoutSVGContainer g id='windowMainGroupsmallWindow'",
-        "LayoutSVGRect rect",
-        "LayoutSVGContainer g",
-        "LayoutSVGText text id='textSmallWindow'",
-        "RootInlineBox",
-        "LayoutSVGInlineText #text",
-        "InlineTextBox 'This window has a callback'",
-        "LayoutSVGTSpan tspan",
-        "InlineFlowBox",
-        "LayoutSVGInlineText #text",
-        "InlineTextBox 'function indicating mouse'",
-        "LayoutSVGTSpan tspan",
-        "InlineFlowBox",
-        "LayoutSVGInlineText #text",
-        "InlineTextBox 'movements in the statusbar'",
-        "LayoutSVGTSpan tspan",
-        "InlineFlowBox",
-        "LayoutSVGInlineText #text",
-        "InlineTextBox 'and alerting window'",
-        "LayoutSVGTSpan tspan",
-        "InlineFlowBox",
-        "LayoutSVGInlineText #text",
-        "InlineTextBox 'events'",
-        "LayoutSVGRect rect",
-        "LayoutSVGText text",
-        "RootInlineBox",
-        "LayoutSVGInlineText #text",
-        "InlineTextBox 'Callback function is active'",
-        "LayoutSVGContainer g id='windowTitlebarGroupsmallWindow'",
-        "LayoutSVGRect rect id='titleBarsmallWindow'",
-        "LayoutSVGText text",
-        "RootInlineBox",
-        "LayoutSVGInlineText #text",
-        "InlineTextBox 'Small Window'",
-        "LayoutSVGContainer use id='closeButtonsmallWindow'",
-        "LayoutSVGViewportContainer svg id='closeButton'",
-        "LayoutSVGRect rect",
-        "LayoutSVGPath line",
-        "LayoutSVGPath line",
-        "LayoutSVGContainer use id='maximizeButtonsmallWindow'",
-        "LayoutSVGViewportContainer svg id='maximizeButton'",
-        "LayoutSVGRect rect",
-        "LayoutSVGContainer use id='minimizeButtonsmallWindow'",
-        "LayoutSVGViewportContainer svg id='minimizeButton'",
-        "LayoutSVGRect rect",
-        "LayoutSVGPath line",
-        "LayoutSVGContainer g id='minimalWindow'",
-        "LayoutSVGContainer g id='windowMainGroupminimalWindow'",
-        "LayoutSVGRect rect",
-        "LayoutSVGContainer g",
-        "LayoutSVGText text id='textMinimalWindow'",
-        "RootInlineBox",
-        "LayoutSVGInlineText #text",
-        "InlineTextBox 'This is a minimal window'",
-        "LayoutSVGTSpan tspan",
-        "InlineFlowBox",
-        "LayoutSVGInlineText #text",
-        "InlineTextBox 'without title and status bar.'",
-        "LayoutSVGTSpan tspan",
-        "InlineFlowBox",
-        "LayoutSVGInlineText #text",
-        "InlineTextBox 'it is also not moveable'",
-        "LayoutSVGContainer g id='windowTitlebarGroupminimalWindow'",
-        "LayoutSVGContainer g id='windowTitlebarGroupbigWindow'",
-        "LayoutSVGRect rect id='titleBarbigWindow'",
-        "LayoutSVGText text",
-        "RootInlineBox",
-        "LayoutSVGInlineText #text",
-        "InlineTextBox 'Big Window'",
-        "LayoutSVGContainer use id='closeButtonbigWindow'",
-        "LayoutSVGViewportContainer svg id='closeButton'",
-        "LayoutSVGRect rect",
-        "LayoutSVGPath line",
-        "LayoutSVGPath line",
-        "LayoutSVGContainer use id='maximizeButtonbigWindow'",
-        "LayoutSVGViewportContainer svg id='maximizeButton'",
-        "LayoutSVGRect rect",
-        "LayoutSVGContainer use id='minimizeButtonbigWindow'",
-        "LayoutSVGViewportContainer svg id='minimizeButton'",
-        "LayoutSVGRect rect",
-        "LayoutSVGPath line",
-        "LayoutSVGContainer g id='Windows'",
-        "LayoutSVGContainer g id='navWindow'",
-        "LayoutSVGContainer g id='windowTitlebarGroupnavWindow'",
-        "LayoutSVGContainer g id='decoGroupnavWindow'",
-        "LayoutSVGRect rect",
-        "LayoutSVGRect rect id='decoGroupMinimizednavWindow'",
-        "LayoutSVGText text",
-        "RootInlineBox",
-        "LayoutSVGInlineText #text",
-        "InlineTextBox 'Navigation Window'",
-        "LayoutSVGContainer use id='closeButtonnavWindow'",
-        "LayoutSVGViewportContainer svg id='closeButton'",
-        "LayoutSVGRect rect",
-        "LayoutSVGPath line",
-        "LayoutSVGPath line",
-        "LayoutSVGContainer use id='maximizeButtonnavWindow'",
-        "LayoutSVGViewportContainer svg id='maximizeButton'",
-        "LayoutSVGRect rect",
-        "LayoutSVGContainer use id='minimizeButtonnavWindow'",
-        "LayoutSVGViewportContainer svg id='minimizeButton'",
-        "LayoutSVGRect rect",
-        "LayoutSVGPath line"
+      "paintInvalidations": [
+        {
+          "object": "InlineFlowBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "InlineFlowBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "InlineFlowBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "InlineFlowBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "InlineFlowBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "InlineFlowBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "InlineFlowBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "InlineFlowBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "InlineFlowBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "InlineFlowBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "InlineFlowBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "InlineFlowBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "InlineFlowBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "InlineFlowBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox ''Resize Navigation Window' for a'",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'Big Window'",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'Callback function is active'",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'Changing a colour changes background'",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'Click on button'",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'Colour Picker'",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'Navigation Window'",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'Nested middlesize Window'",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'Note that this window also'",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'Small Window'",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'Status Window'",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'Statusbar'",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'This is a big movable window'",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'This is a minimal window'",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'This is a none-moveable'",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'This window contains other windows'",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'This window has a callback'",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'This window should'",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'and alerting window'",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'contain navigation tools'",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'events'",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'features a window decoration'",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'function indicating mouse'",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'it is also not moveable'",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'movements in the statusbar'",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'none-closeable status'",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'random resize of this Window'",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'window'",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'without title and status bar.'",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [632, 102, 160, 97],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [257, 365, 120, 38],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [320, 399, 135, 63],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [43, 481, 113, 36],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer g id='Windows'",
+          "rect": [38, 92, 760, 443],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer g id='Windows'",
+          "rect": [38, 92, 760, 443],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGContainer g id='Windows'",
+          "rect": [38, 81, 760, 454],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGContainer g id='bigWindow'",
+          "rect": [38, 143, 549, 392],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer g id='colourPickerWindow'",
+          "rect": [77, 195, 174, 143],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer g id='decoGroupnavWindow'",
+          "rect": [613, 81, 185, 159],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer g id='minimalWindow'",
+          "rect": [39, 476, 119, 48],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer g id='navWindow'",
+          "rect": [624, 92, 174, 158],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer g id='navWindow'",
+          "rect": [624, 92, 174, 158],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGContainer g id='navWindow'",
+          "rect": [613, 81, 185, 169],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGContainer g id='nestedWindow'",
+          "rect": [77, 182, 315, 236],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer g id='smallWindow'",
+          "rect": [312, 377, 158, 143],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer g id='statusWindow'",
+          "rect": [249, 344, 143, 64],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer g id='windowMainGroupbigWindow'",
+          "rect": [38, 143, 549, 392],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer g id='windowMainGroupcolourPickerWindow'",
+          "rect": [77, 195, 174, 143],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer g id='windowMainGroupminimalWindow'",
+          "rect": [39, 476, 119, 48],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer g id='windowMainGroupnavWindow'",
+          "rect": [624, 92, 174, 158],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer g id='windowMainGroupnestedWindow'",
+          "rect": [77, 182, 315, 236],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer g id='windowMainGroupsmallWindow'",
+          "rect": [312, 377, 158, 143],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer g id='windowMainGroupstatusWindow'",
+          "rect": [249, 344, 143, 64],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer g id='windowTitlebarGroupbigWindow'",
+          "rect": [38, 143, 549, 15],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer g id='windowTitlebarGroupcolourPickerWindow'",
+          "rect": [77, 195, 174, 15],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer g id='windowTitlebarGroupminimalWindow'",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer g id='windowTitlebarGroupnavWindow'",
+          "rect": [757, 94, 36, 11],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer g id='windowTitlebarGroupnavWindow'",
+          "rect": [757, 94, 36, 11],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGContainer g id='windowTitlebarGroupnavWindow'",
+          "rect": [613, 81, 185, 159],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGContainer g id='windowTitlebarGroupnestedWindow'",
+          "rect": [77, 182, 315, 15],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer g id='windowTitlebarGroupsmallWindow'",
+          "rect": [312, 377, 158, 15],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer g id='windowTitlebarGroupstatusWindow'",
+          "rect": [249, 344, 143, 15],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer use id='closeButtonbigWindow'",
+          "rect": [572, 145, 10, 10],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer use id='closeButtoncolourPickerWindow'",
+          "rect": [236, 198, 10, 10],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer use id='closeButtonnavWindow'",
+          "rect": [783, 95, 10, 10],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer use id='closeButtonnavWindow'",
+          "rect": [783, 95, 10, 10],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer use id='closeButtonnavWindow'",
+          "rect": [616, 84, 10, 10],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer use id='closeButtonnestedWindow'",
+          "rect": [377, 184, 10, 11],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer use id='closeButtonsmallWindow'",
+          "rect": [455, 380, 10, 10],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer use id='maximizeButtonbigWindow'",
+          "rect": [558, 145, 11, 11],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer use id='maximizeButtoncolourPickerWindow'",
+          "rect": [223, 198, 10, 10],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer use id='maximizeButtonnavWindow'",
+          "rect": [769, 94, 11, 11],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer use id='maximizeButtonnavWindow'",
+          "rect": [769, 94, 11, 11],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer use id='maximizeButtonnavWindow'",
+          "rect": [616, 100, 10, 10],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer use id='maximizeButtonnestedWindow'",
+          "rect": [363, 184, 11, 11],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer use id='maximizeButtonsmallWindow'",
+          "rect": [441, 380, 11, 10],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer use id='maximizeButtonstatusWindow'",
+          "rect": [376, 346, 11, 10],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer use id='minimizeButtonbigWindow'",
+          "rect": [546, 146, 9, 10],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer use id='minimizeButtoncolourPickerWindow'",
+          "rect": [210, 198, 9, 10],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer use id='minimizeButtonnavWindow'",
+          "rect": [757, 95, 9, 10],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer use id='minimizeButtonnavWindow'",
+          "rect": [757, 95, 9, 10],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer use id='minimizeButtonnavWindow'",
+          "rect": [616, 116, 10, 9],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer use id='minimizeButtonnestedWindow'",
+          "rect": [350, 185, 10, 10],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer use id='minimizeButtonsmallWindow'",
+          "rect": [428, 380, 10, 10],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer use id='minimizeButtonstatusWindow'",
+          "rect": [364, 346, 9, 10],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGHiddenContainer symbol id='closeButton'",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGHiddenContainer symbol id='maximizeButton'",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGHiddenContainer symbol id='minimizeButton'",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [632, 102, 160, 97],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [632, 102, 160, 97],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [632, 102, 160, 97],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [632, 102, 160, 97],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [632, 102, 160, 97],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [632, 102, 160, 97],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [632, 102, 160, 97],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [627, 239, 34, 10],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [41, 525, 102, 10],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [80, 407, 127, 10],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [80, 327, 139, 10],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [80, 197, 67, 13],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [257, 365, 120, 38],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [257, 365, 120, 38],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [257, 365, 120, 38],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [252, 345, 74, 13],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [80, 183, 132, 13],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [320, 399, 135, 63],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [320, 399, 135, 63],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [320, 399, 135, 63],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [320, 399, 135, 63],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [320, 399, 135, 63],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [314, 509, 91, 10],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [314, 379, 71, 13],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [43, 481, 113, 36],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [43, 481, 113, 36],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [43, 481, 113, 36],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [41, 144, 59, 13],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [617, 153, 11, 81],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGPath line",
+          "rect": [0, 21, 5, 11],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGPath line",
+          "rect": [0, 21, 5, 11],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGPath line",
+          "rect": [0, 30, 5, 2],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGPath line",
+          "rect": [783, 94, 10, 11],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGPath line",
+          "rect": [783, 94, 10, 11],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGPath line",
+          "rect": [756, 103, 10, 2],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGPath line",
+          "rect": [236, 198, 10, 10],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGPath line",
+          "rect": [236, 198, 10, 10],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGPath line",
+          "rect": [210, 206, 9, 2],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGPath line",
+          "rect": [363, 354, 10, 2],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGPath line",
+          "rect": [376, 184, 11, 11],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGPath line",
+          "rect": [376, 184, 11, 11],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGPath line",
+          "rect": [350, 193, 10, 2],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGPath line",
+          "rect": [455, 380, 10, 10],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGPath line",
+          "rect": [455, 380, 10, 10],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGPath line",
+          "rect": [428, 388, 10, 2],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGPath line",
+          "rect": [572, 145, 10, 11],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGPath line",
+          "rect": [572, 145, 10, 11],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGPath line",
+          "rect": [545, 154, 10, 2],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGPath line",
+          "rect": [783, 94, 10, 11],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGPath line",
+          "rect": [616, 84, 10, 10],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGPath line",
+          "rect": [783, 94, 10, 11],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGPath line",
+          "rect": [616, 84, 10, 10],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGPath line",
+          "rect": [756, 103, 10, 2],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGPath line",
+          "rect": [616, 124, 10, 2],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [0, 22, 5, 9],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [0, 21, 5, 11],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [0, 22, 5, 9],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [624, 92, 174, 158],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [624, 238, 174, 12],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [783, 95, 10, 9],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [769, 94, 11, 11],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [757, 95, 9, 9],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [38, 143, 549, 392],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [38, 523, 549, 12],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [77, 182, 315, 236],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [77, 406, 315, 12],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [77, 195, 174, 143],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [77, 326, 174, 12],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [236, 198, 10, 10],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [222, 197, 11, 11],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [210, 198, 9, 10],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [249, 344, 143, 64],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [376, 346, 11, 10],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [364, 346, 9, 10],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [377, 185, 9, 9],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [363, 184, 11, 11],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [350, 185, 10, 9],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [312, 377, 158, 143],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [312, 508, 158, 12],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [455, 380, 10, 10],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [441, 379, 11, 11],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [428, 380, 10, 10],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [39, 476, 119, 48],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [572, 146, 10, 9],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [558, 145, 11, 11],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [546, 146, 9, 9],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [613, 81, 16, 159],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [783, 95, 10, 9],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [616, 84, 10, 10],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [769, 94, 11, 11],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [616, 99, 10, 11],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [757, 95, 9, 9],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [616, 116, 10, 9],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGRect rect id='decoGroupMinimizednavWindow'",
+          "rect": [613, 81, 185, 16],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGRect rect id='titleBarbigWindow'",
+          "rect": [38, 143, 549, 15],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGRect rect id='titleBarcolourPickerWindow'",
+          "rect": [77, 195, 174, 15],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGRect rect id='titleBarnestedWindow'",
+          "rect": [77, 182, 315, 15],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGRect rect id='titleBarsmallWindow'",
+          "rect": [312, 377, 158, 15],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGRect rect id='titleBarstatusWindow'",
+          "rect": [249, 344, 143, 15],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [632, 102, 160, 97],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [632, 102, 160, 97],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [632, 102, 160, 97],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [632, 102, 160, 97],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [632, 102, 160, 97],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [632, 102, 160, 97],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [257, 365, 120, 38],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [257, 365, 120, 38],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [320, 399, 135, 63],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [320, 399, 135, 63],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [320, 399, 135, 63],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [320, 399, 135, 63],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [43, 481, 113, 36],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [43, 481, 113, 36],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [627, 239, 34, 10],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [41, 525, 102, 10],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [80, 407, 127, 10],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [80, 327, 139, 10],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [80, 197, 67, 13],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [252, 345, 74, 13],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [80, 183, 132, 13],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [314, 509, 91, 10],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [314, 379, 71, 13],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [41, 144, 59, 13],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [617, 153, 11, 81],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGText text id='textMinimalWindow'",
+          "rect": [43, 481, 113, 36],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGText text id='textNavWindow'",
+          "rect": [632, 102, 160, 97],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGText text id='textSmallWindow'",
+          "rect": [320, 399, 135, 63],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGText text id='textStatusWindow'",
+          "rect": [257, 365, 120, 38],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGViewportContainer svg id='closeButton'",
+          "rect": [783, 95, 10, 10],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGViewportContainer svg id='closeButton'",
+          "rect": [236, 198, 10, 10],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGViewportContainer svg id='closeButton'",
+          "rect": [377, 184, 10, 11],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGViewportContainer svg id='closeButton'",
+          "rect": [455, 380, 10, 10],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGViewportContainer svg id='closeButton'",
+          "rect": [572, 145, 10, 10],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGViewportContainer svg id='closeButton'",
+          "rect": [783, 95, 10, 10],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGViewportContainer svg id='closeButton'",
+          "rect": [616, 84, 10, 10],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGViewportContainer svg id='maximizeButton'",
+          "rect": [769, 94, 11, 11],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGViewportContainer svg id='maximizeButton'",
+          "rect": [223, 198, 10, 10],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGViewportContainer svg id='maximizeButton'",
+          "rect": [376, 346, 11, 10],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGViewportContainer svg id='maximizeButton'",
+          "rect": [363, 184, 11, 11],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGViewportContainer svg id='maximizeButton'",
+          "rect": [441, 380, 11, 10],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGViewportContainer svg id='maximizeButton'",
+          "rect": [558, 145, 11, 11],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGViewportContainer svg id='maximizeButton'",
+          "rect": [769, 94, 11, 11],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGViewportContainer svg id='maximizeButton'",
+          "rect": [616, 100, 10, 10],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGViewportContainer svg id='minimizeButton'",
+          "rect": [757, 95, 9, 10],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGViewportContainer svg id='minimizeButton'",
+          "rect": [210, 198, 9, 10],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGViewportContainer svg id='minimizeButton'",
+          "rect": [364, 346, 9, 10],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGViewportContainer svg id='minimizeButton'",
+          "rect": [350, 185, 10, 10],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGViewportContainer svg id='minimizeButton'",
+          "rect": [428, 380, 10, 10],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGViewportContainer svg id='minimizeButton'",
+          "rect": [546, 146, 9, 10],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGViewportContainer svg id='minimizeButton'",
+          "rect": [757, 95, 9, 10],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGViewportContainer svg id='minimizeButton'",
+          "rect": [616, 116, 10, 9],
+          "reason": "location change"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        }
       ]
     }
   ]

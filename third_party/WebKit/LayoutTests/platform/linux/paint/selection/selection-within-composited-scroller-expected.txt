@@ -5,9 +5,17 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "paintInvalidationClients": [
-        "LayoutBlockFlow HTML",
-        "LayoutBlockFlow BODY"
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow BODY",
+          "rect": [0, 0, 0, 0],
+          "reason": "selection"
+        },
+        {
+          "object": "LayoutBlockFlow HTML",
+          "rect": [0, 0, 0, 0],
+          "reason": "selection"
+        }
       ],
       "children": [
         {
@@ -17,14 +25,27 @@
           "shouldFlattenTransform": false,
           "drawsContent": true,
           "backgroundColor": "#D3D3D3",
-          "repaintRects": [
-            [0, 160, 21, 19]
-          ],
-          "paintInvalidationClients": [
-            "LayoutBlockFlow DIV id='scroller'",
-            "LayoutBlockFlow DIV id='target'",
-            "LayoutText #text",
-            "InlineTextBox 'test'"
+          "paintInvalidations": [
+            {
+              "object": "InlineTextBox 'test'",
+              "rect": [0, 0, 0, 0],
+              "reason": "selection"
+            },
+            {
+              "object": "LayoutBlockFlow DIV id='scroller'",
+              "rect": [0, 0, 0, 0],
+              "reason": "selection"
+            },
+            {
+              "object": "LayoutBlockFlow DIV id='target'",
+              "rect": [0, 0, 0, 0],
+              "reason": "selection"
+            },
+            {
+              "object": "LayoutText #text",
+              "rect": [0, 160, 21, 19],
+              "reason": "selection"
+            }
           ],
           "children": [
             {
@@ -34,14 +55,27 @@
                 {
                   "bounds": [200, 1620],
                   "drawsContent": true,
-                  "repaintRects": [
-                    [0, 610, 21, 19]
-                  ],
-                  "paintInvalidationClients": [
-                    "LayoutBlockFlow DIV id='scroller'",
-                    "LayoutBlockFlow DIV id='target'",
-                    "LayoutText #text",
-                    "InlineTextBox 'test'"
+                  "paintInvalidations": [
+                    {
+                      "object": "InlineTextBox 'test'",
+                      "rect": [0, 0, 0, 0],
+                      "reason": "selection"
+                    },
+                    {
+                      "object": "LayoutBlockFlow DIV id='scroller'",
+                      "rect": [0, 0, 0, 0],
+                      "reason": "selection"
+                    },
+                    {
+                      "object": "LayoutBlockFlow DIV id='target'",
+                      "rect": [0, 0, 0, 0],
+                      "reason": "selection"
+                    },
+                    {
+                      "object": "LayoutText #text",
+                      "rect": [0, 610, 21, 19],
+                      "reason": "selection"
+                    }
                   ]
                 }
               ]

@@ -5,13 +5,22 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [0, 0, 140, 140],
-        [0, 0, 40, 140]
-      ],
-      "paintInvalidationClients": [
-        "LayoutSVGResourceFilter filter id='blur'",
-        "LayoutSVGRect rect"
+      "paintInvalidations": [
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [0, 0, 40, 140],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [0, 0, 140, 140],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGResourceFilter filter id='blur'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        }
       ]
     }
   ]

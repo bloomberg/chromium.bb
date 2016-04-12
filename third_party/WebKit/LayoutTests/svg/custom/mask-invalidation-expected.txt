@@ -5,22 +5,47 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [100, 100, 460, 316],
-        [100, 100, 403, 249],
-        [100, 100, 403, 249],
-        [100, 100, 403, 249],
-        [50, 50, 460, 316],
-        [50, 50, 453, 299],
-        [50, 50, 453, 299],
-        [50, 50, 453, 299]
-      ],
-      "paintInvalidationClients": [
-        "LayoutSVGRect rect",
-        "LayoutSVGRoot svg",
-        "LayoutSVGRect rect id='maskRect'",
-        "LayoutSVGContainer g id='root'",
-        "LayoutSVGRect rect"
+      "paintInvalidations": [
+        {
+          "object": "LayoutSVGContainer g id='root'",
+          "rect": [50, 50, 453, 299],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGContainer g id='root'",
+          "rect": [100, 100, 403, 249],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [50, 50, 453, 299],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [100, 100, 403, 249],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGRect rect id='maskRect'",
+          "rect": [50, 50, 460, 316],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGRect rect id='maskRect'",
+          "rect": [100, 100, 460, 316],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGRoot svg",
+          "rect": [50, 50, 453, 299],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGRoot svg",
+          "rect": [100, 100, 403, 249],
+          "reason": "bounds change"
+        }
       ]
     }
   ]

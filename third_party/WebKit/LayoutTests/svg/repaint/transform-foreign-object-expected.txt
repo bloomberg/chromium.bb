@@ -5,18 +5,37 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [108, 8, 100, 100],
-        [108, 8, 100, 100],
-        [108, 8, 100, 100],
-        [8, 8, 100, 100],
-        [8, 8, 100, 100],
-        [8, 8, 100, 100]
-      ],
-      "paintInvalidationClients": [
-        "LayoutSVGRoot svg",
-        "LayoutSVGForeignObject foreignObject",
-        "LayoutBlockFlow DIV"
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [8, 8, 100, 100],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [108, 8, 100, 100],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGForeignObject foreignObject",
+          "rect": [8, 8, 100, 100],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGForeignObject foreignObject",
+          "rect": [108, 8, 100, 100],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGRoot svg",
+          "rect": [8, 8, 100, 100],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGRoot svg",
+          "rect": [108, 8, 100, 100],
+          "reason": "bounds change"
+        }
       ]
     }
   ]

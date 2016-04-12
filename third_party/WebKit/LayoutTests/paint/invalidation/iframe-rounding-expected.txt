@@ -5,11 +5,12 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [19, 18, 101, 100]
-      ],
-      "paintInvalidationClients": [
-        "LayoutBlockFlow (relative positioned) DIV id='target'"
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow (relative positioned) DIV id='target'",
+          "rect": [19, 18, 101, 100],
+          "reason": "style change"
+        }
       ]
     }
   ]

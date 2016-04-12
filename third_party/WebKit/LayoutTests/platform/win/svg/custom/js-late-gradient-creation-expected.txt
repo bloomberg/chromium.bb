@@ -5,17 +5,42 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [33, 23, 700, 189]
-      ],
-      "paintInvalidationClients": [
-        "RootInlineBox",
-        "InlineTextBox 'Gradient on fill'",
-        "LayoutSVGText text",
-        "RootInlineBox",
-        "LayoutSVGResourceLinearGradient linearGradient id='dynGrad'",
-        "LayoutSVGGradientStop stop",
-        "LayoutSVGGradientStop stop"
+      "paintInvalidations": [
+        {
+          "object": "InlineTextBox 'Gradient on fill'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGGradientStop stop",
+          "rect": [0, 0, 0, 0],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGGradientStop stop",
+          "rect": [0, 0, 0, 0],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGResourceLinearGradient linearGradient id='dynGrad'",
+          "rect": [0, 0, 0, 0],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [33, 23, 700, 189],
+          "reason": "style change"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        }
       ]
     }
   ]

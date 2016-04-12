@@ -1,0 +1,79 @@
+{
+  "bounds": [200, 300],
+  "children": [
+    {
+      "bounds": [200, 300],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [0, 200, 200, 100],
+        [0, 150, 20, 20],
+        [0, 100, 20, 20]
+      ],
+      "paintInvalidationClients": [
+        "LayoutView #document",
+        "LayoutBlockFlow HTML",
+        "LayoutBlockFlow (positioned) DIV"
+      ]
+    }
+  ]
+}
+{
+  "bounds": [300, 300],
+  "children": [
+    {
+      "bounds": [300, 300],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [200, 0, 100, 300],
+        [0, 0, 300, 300]
+      ],
+      "paintInvalidationClients": [
+        "LayoutView #document",
+        "LayoutView #document",
+        "LayoutBlockFlow HTML"
+      ]
+    }
+  ]
+}
+{
+  "bounds": [300, 250],
+  "children": [
+    {
+      "bounds": [300, 250],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [0, 250, 300, 50],
+        [0, 150, 20, 20],
+        [0, 125, 20, 20]
+      ],
+      "paintInvalidationClients": [
+        "LayoutView #document",
+        "LayoutBlockFlow HTML",
+        "LayoutBlockFlow (positioned) DIV"
+      ]
+    }
+  ]
+}
+{
+  "bounds": [250, 250],
+  "children": [
+    {
+      "bounds": [250, 250],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [250, 0, 50, 250],
+        [0, 0, 250, 250]
+      ],
+      "paintInvalidationClients": [
+        "LayoutView #document",
+        "LayoutView #document",
+        "LayoutBlockFlow HTML"
+      ]
+    }
+  ]
+}
+

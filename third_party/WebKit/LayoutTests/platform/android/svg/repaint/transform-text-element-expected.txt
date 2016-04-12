@@ -1,0 +1,28 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [8, 58, 400, 100],
+        [8, 58, 400, 100],
+        [8, 58, 400, 100],
+        [8, 8, 400, 100],
+        [8, 8, 400, 100],
+        [8, 8, 400, 100]
+      ],
+      "paintInvalidationClients": [
+        "RootInlineBox",
+        "InlineTextBox 'Test'",
+        "LayoutSVGRoot svg",
+        "LayoutSVGText text",
+        "RootInlineBox",
+        "LayoutSVGInlineText #text",
+        "InlineTextBox 'Test'"
+      ]
+    }
+  ]
+}
+

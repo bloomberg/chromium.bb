@@ -5,18 +5,37 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [45, 0, 60, 110],
-        [0, 0, 100, 100],
-        [0, 0, 55, 110],
-        [0, 0, 1, 100]
-      ],
-      "paintInvalidationClients": [
-        "LayoutSVGRect rect id='rect'",
-        "LayoutSVGResourceFilterPrimitive feImage id='feimage1'",
-        "LayoutSVGResourceFilterPrimitive feImage id='feimage2'",
-        "LayoutSVGRect rect",
-        "LayoutSVGRect rect"
+      "paintInvalidations": [
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [0, 0, 55, 110],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [45, 0, 60, 110],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGRect rect id='rect'",
+          "rect": [0, 0, 1, 100],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGRect rect id='rect'",
+          "rect": [0, 0, 100, 100],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGResourceFilterPrimitive feImage id='feimage1'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGResourceFilterPrimitive feImage id='feimage2'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        }
       ]
     }
   ]

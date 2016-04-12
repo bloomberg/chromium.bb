@@ -5,28 +5,67 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [10, 33, 41, 22],
-        [10, 33, 41, 22],
-        [10, 33, 41, 17],
-        [10, 33, 41, 17],
-        [10, 3, 46, 22],
-        [10, 3, 46, 22],
-        [10, 3, 46, 22],
-        [10, 3, 46, 22]
-      ],
-      "paintInvalidationClients": [
-        "InlineTextBox ''",
-        "LayoutSVGInlineText #text",
-        "RootInlineBox",
-        "LayoutSVGRoot svg",
-        "LayoutSVGText text id='text1'",
-        "RootInlineBox",
-        "LayoutSVGInlineText #text",
-        "InlineTextBox 'PASS'",
-        "LayoutSVGText text id='text2'",
-        "LayoutSVGRect rect",
-        "LayoutSVGRect rect"
+      "paintInvalidations": [
+        {
+          "object": "InlineTextBox ''",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'PASS'",
+          "rect": [0, 0, 0, 0],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [10, 33, 41, 22],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [10, 3, 46, 22],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [10, 3, 46, 22],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [10, 33, 41, 17],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGRoot svg",
+          "rect": [10, 33, 41, 17],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGRoot svg",
+          "rect": [10, 3, 46, 22],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGText text id='text1'",
+          "rect": [10, 3, 46, 22],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutSVGText text id='text2'",
+          "rect": [10, 33, 41, 22],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        }
       ]
     }
   ]

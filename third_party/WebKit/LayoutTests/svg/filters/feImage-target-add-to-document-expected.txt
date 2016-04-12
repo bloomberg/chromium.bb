@@ -5,13 +5,22 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [0, 0, 110, 110]
-      ],
-      "paintInvalidationClients": [
-        "LayoutSVGResourceFilter filter id='filter'",
-        "LayoutSVGResourceFilterPrimitive feImage",
-        "LayoutSVGRect rect"
+      "paintInvalidations": [
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [0, 0, 110, 110],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutSVGResourceFilter filter id='filter'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGResourceFilterPrimitive feImage",
+          "rect": [0, 0, 0, 0],
+          "reason": "layoutObject insertion"
+        }
       ]
     }
   ]

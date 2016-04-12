@@ -5,15 +5,32 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [8, 8, 100, 100]
-      ],
-      "paintInvalidationClients": [
-        "LayoutSVGResourcePattern pattern id='pat'",
-        "LayoutSVGText text",
-        "RootInlineBox",
-        "LayoutSVGInlineText #text",
-        "InlineTextBox 'X'"
+      "paintInvalidations": [
+        {
+          "object": "InlineTextBox 'X'",
+          "rect": [0, 0, 0, 0],
+          "reason": "none"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [0, 0, 0, 0],
+          "reason": "none"
+        },
+        {
+          "object": "LayoutSVGResourcePattern pattern id='pat'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [8, 8, 100, 100],
+          "reason": "SVG resource change"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        }
       ]
     }
   ]

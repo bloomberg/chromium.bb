@@ -5,36 +5,102 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [0, 247, 759, 130],
-        [0, 247, 759, 130],
-        [0, 130, 596, 130],
-        [0, 130, 596, 130],
-        [0, 15, 759, 362],
-        [0, 15, 759, 362],
-        [0, 15, 449, 127],
-        [0, 15, 449, 127]
-      ],
-      "paintInvalidationClients": [
-        "LayoutSVGResourceLinearGradient linearGradient id='fillLinearGradient'",
-        "LayoutSVGGradientStop stop",
-        "LayoutSVGGradientStop stop",
-        "LayoutSVGResourceLinearGradient linearGradient id='strokeLinearGradient'",
-        "LayoutSVGGradientStop stop",
-        "LayoutSVGRoot svg id='svg-root'",
-        "LayoutSVGContainer g id='content'",
-        "LayoutSVGText text",
-        "RootInlineBox",
-        "LayoutSVGInlineText #text",
-        "InlineTextBox 'Gradient on fill'",
-        "LayoutSVGText text",
-        "RootInlineBox",
-        "LayoutSVGInlineText #text",
-        "InlineTextBox 'Gradient on stroke'",
-        "LayoutSVGText text",
-        "RootInlineBox",
-        "LayoutSVGInlineText #text",
-        "InlineTextBox 'Gradient on fill/stroke'"
+      "paintInvalidations": [
+        {
+          "object": "InlineTextBox 'Gradient on fill'",
+          "rect": [0, 0, 0, 0],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "InlineTextBox 'Gradient on fill/stroke'",
+          "rect": [0, 0, 0, 0],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "InlineTextBox 'Gradient on stroke'",
+          "rect": [0, 0, 0, 0],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGContainer g id='content'",
+          "rect": [0, 15, 759, 362],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGGradientStop stop",
+          "rect": [0, 0, 0, 0],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGGradientStop stop",
+          "rect": [0, 0, 0, 0],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGGradientStop stop",
+          "rect": [0, 0, 0, 0],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [0, 15, 449, 127],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [0, 130, 596, 130],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [0, 247, 759, 130],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGResourceLinearGradient linearGradient id='fillLinearGradient'",
+          "rect": [0, 0, 0, 0],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGResourceLinearGradient linearGradient id='strokeLinearGradient'",
+          "rect": [0, 0, 0, 0],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGRoot svg id='svg-root'",
+          "rect": [0, 15, 759, 362],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [0, 15, 449, 127],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [0, 130, 596, 130],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [0, 247, 759, 130],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        }
       ]
     }
   ]

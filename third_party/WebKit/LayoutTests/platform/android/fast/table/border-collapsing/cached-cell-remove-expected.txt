@@ -1,0 +1,33 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [122, 9, 54, 52],
+        [67, 8, 3, 54],
+        [64, 8, 58, 54],
+        [63, 10, 4, 50],
+        [63, 8, 58, 54],
+        [10, 10, 165, 50],
+        [10, 10, 110, 50],
+        [8, 8, 168, 54],
+        [8, 8, 113, 54]
+      ],
+      "paintInvalidationClients": [
+        "LayoutTableCell TD id='bar'",
+        "LayoutTableCell TD",
+        "LayoutTableCell TD",
+        "LayoutTable TABLE",
+        "LayoutTableCell TD",
+        "LayoutTableCell TD",
+        "LayoutTableSection TBODY",
+        "LayoutTableCell TD",
+        "LayoutTableCell TD"
+      ]
+    }
+  ]
+}
+

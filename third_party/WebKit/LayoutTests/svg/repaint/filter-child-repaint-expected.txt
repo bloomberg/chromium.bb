@@ -5,13 +5,17 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [32, 32, 64, 64],
-        [0, 0, 106, 106]
-      ],
-      "paintInvalidationClients": [
-        "LayoutSVGContainer g",
-        "LayoutSVGRect rect id='poke'"
+      "paintInvalidations": [
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [0, 0, 106, 106],
+          "reason": "SVG resource change"
+        },
+        {
+          "object": "LayoutSVGRect rect id='poke'",
+          "rect": [32, 32, 64, 64],
+          "reason": "style change"
+        }
       ]
     }
   ]

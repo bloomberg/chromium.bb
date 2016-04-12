@@ -6,11 +6,10 @@
       "contentsOpaque": true,
       "drawsContent": true,
       "repaintRects": [
-        [58, 58, 50, 50],
-        [53, 53, 60, 60]
+        [9, 153, 200, 100]
       ],
       "paintInvalidationClients": [
-        "LayoutSVGRect rect id='rect'"
+        "LayoutBlockFlow (positioned) DIV id='revealer'"
       ]
     }
   ]

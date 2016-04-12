@@ -5,32 +5,97 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [103, 8, 5, 23],
-        [58, 61, 50, 10],
-        [58, 45, 50, 26],
-        [58, 45, 50, 16],
-        [23, 61, 85, 10],
-        [23, 8, 85, 23],
-        [23, 8, 80, 23]
-      ],
-      "paintInvalidationClients": [
-        "RootInlineBox",
-        "InlineTextBox 'A'",
-        "InlineTextBox ' B C'",
-        "RootInlineBox",
-        "InlineTextBox 'X'",
-        "InlineTextBox ' Y Z'",
-        "LayoutSVGRoot svg",
-        "LayoutSVGText text id='target'",
-        "RootInlineBox",
-        "LayoutSVGInlineText #text",
-        "InlineTextBox 'A'",
-        "InlineTextBox ' B C'",
-        "LayoutSVGText text id='source'",
-        "RootInlineBox",
-        "LayoutSVGInlineText #text",
-        "InlineTextBox 'X Y Z'"
+      "paintInvalidations": [
+        {
+          "object": "InlineTextBox ' B C'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox ' B C'",
+          "rect": [0, 0, 0, 0],
+          "reason": "incremental"
+        },
+        {
+          "object": "InlineTextBox ' Y Z'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'A'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'A'",
+          "rect": [0, 0, 0, 0],
+          "reason": "incremental"
+        },
+        {
+          "object": "InlineTextBox 'X Y Z'",
+          "rect": [0, 0, 0, 0],
+          "reason": "incremental"
+        },
+        {
+          "object": "InlineTextBox 'X'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [103, 8, 5, 23],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [58, 61, 50, 10],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutSVGRoot svg",
+          "rect": [23, 61, 85, 10],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutSVGText text id='source'",
+          "rect": [58, 45, 50, 26],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGText text id='source'",
+          "rect": [58, 45, 50, 16],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGText text id='target'",
+          "rect": [23, 8, 80, 23],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGText text id='target'",
+          "rect": [23, 8, 85, 23],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        }
       ]
     }
   ]

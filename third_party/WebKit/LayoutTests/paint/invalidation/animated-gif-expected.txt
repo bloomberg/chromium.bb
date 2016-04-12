@@ -5,11 +5,12 @@
       "bounds": [2008, 2016],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [8, 8, 50, 50]
-      ],
-      "paintInvalidationClients": [
-        "LayoutImage IMG id='targetImage'"
+      "paintInvalidations": [
+        {
+          "object": "LayoutImage IMG id='targetImage'",
+          "rect": [8, 8, 50, 50],
+          "reason": "full"
+        }
       ]
     }
   ]

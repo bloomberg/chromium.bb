@@ -1,0 +1,22 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [0, 0, 800, 202],
+        [0, 0, 402, 202],
+        [0, 0, 400, 200]
+      ],
+      "paintInvalidationClients": [
+        "InlineBox",
+        "RootInlineBox",
+        "LayoutBlockFlow BODY",
+        "LayoutEmbeddedObject OBJECT"
+      ]
+    }
+  ]
+}
+

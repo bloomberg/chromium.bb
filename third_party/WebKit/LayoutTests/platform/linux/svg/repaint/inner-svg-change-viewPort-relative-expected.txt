@@ -5,36 +5,102 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [180, 120, 20, 20],
-        [180, 120, 20, 20],
-        [180, 60, 20, 20],
-        [100, 85, 100, 19],
-        [100, 85, 100, 19],
-        [100, 0, 100, 200],
-        [80, 120, 20, 20],
-        [80, 120, 20, 20],
-        [80, 60, 20, 20],
-        [0, 85, 100, 19],
-        [0, 85, 100, 19],
-        [0, 0, 200, 200],
-        [0, 0, 200, 200],
-        [0, 0, 100, 200],
-        [0, 0, 100, 200]
-      ],
-      "paintInvalidationClients": [
-        "RootInlineBox",
-        "InlineTextBox 'right-aligned text'",
-        "LayoutSVGRoot svg",
-        "LayoutSVGViewportContainer svg id='inner'",
-        "LayoutSVGRect rect",
-        "LayoutSVGRect rect",
-        "LayoutSVGText text",
-        "RootInlineBox",
-        "LayoutSVGInlineText #text",
-        "InlineTextBox 'right-aligned text'",
-        "LayoutSVGContainer use",
-        "LayoutSVGPath polygon id='triangle'"
+      "paintInvalidations": [
+        {
+          "object": "InlineTextBox 'right-aligned text'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'right-aligned text'",
+          "rect": [0, 0, 0, 0],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGContainer use",
+          "rect": [80, 120, 20, 20],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer use",
+          "rect": [180, 120, 20, 20],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [0, 85, 100, 19],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [100, 85, 100, 19],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGPath polygon id='triangle'",
+          "rect": [80, 120, 20, 20],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGPath polygon id='triangle'",
+          "rect": [180, 120, 20, 20],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [0, 0, 100, 200],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [0, 0, 200, 200],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [80, 60, 20, 20],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [180, 60, 20, 20],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGRoot svg",
+          "rect": [100, 0, 100, 200],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [0, 85, 100, 19],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [100, 85, 100, 19],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGViewportContainer svg id='inner'",
+          "rect": [0, 0, 100, 200],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGViewportContainer svg id='inner'",
+          "rect": [0, 0, 200, 200],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        }
       ]
     }
   ]

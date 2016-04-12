@@ -5,9 +5,17 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "paintInvalidationClients": [
-        "LayoutBlockFlow DIV id='target'",
-        "LayoutBlockFlow DIV id='child'"
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow DIV id='child'",
+          "rect": [0, 0, 0, 0],
+          "reason": "layer"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='target'",
+          "rect": [0, 0, 0, 0],
+          "reason": "layer"
+        }
       ],
       "children": [
         {
@@ -20,28 +28,39 @@
               "position": [8, 8],
               "bounds": [784, 52],
               "drawsContent": true,
-              "repaintRects": [
-                [1, 1, 100, 100],
-                [1, 1, 100, 100],
-                [0, 52, 784, 49]
-              ],
-              "paintInvalidationClients": [
-                "LayoutBlockFlow DIV id='target'",
-                "LayoutBlockFlow DIV id='child'",
-                "LayoutBlockFlow (relative positioned) DIV"
+              "paintInvalidations": [
+                {
+                  "object": "LayoutBlockFlow (relative positioned) DIV",
+                  "rect": [0, 52, 784, 49],
+                  "reason": "incremental"
+                },
+                {
+                  "object": "LayoutBlockFlow DIV id='child'",
+                  "rect": [1, 1, 100, 100],
+                  "reason": "layer"
+                },
+                {
+                  "object": "LayoutBlockFlow DIV id='target'",
+                  "rect": [1, 1, 100, 100],
+                  "reason": "layer"
+                }
               ]
             },
             {
               "position": [9, 9],
               "bounds": [100, 100],
               "drawsContent": true,
-              "repaintRects": [
-                [0, 0, 100, 100],
-                [0, 0, 100, 100]
-              ],
-              "paintInvalidationClients": [
-                "LayoutBlockFlow DIV id='target'",
-                "LayoutBlockFlow DIV id='child'"
+              "paintInvalidations": [
+                {
+                  "object": "LayoutBlockFlow DIV id='child'",
+                  "rect": [0, 0, 100, 100],
+                  "reason": "location change"
+                },
+                {
+                  "object": "LayoutBlockFlow DIV id='target'",
+                  "rect": [0, 0, 100, 100],
+                  "reason": "location change"
+                }
               ]
             }
           ]

@@ -5,90 +5,247 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [218, 94, 28, 28],
-        [218, 94, 28, 28],
-        [218, 94, 28, 28],
-        [218, 94, 28, 28],
-        [218, 94, 28, 28],
-        [218, 94, 28, 28],
-        [218, 94, 28, 28],
-        [218, 94, 28, 28],
-        [218, 94, 28, 28],
-        [218, 94, 28, 28],
-        [218, 94, 28, 28],
-        [218, 94, 28, 28],
-        [210, 58, 44, 64],
-        [210, 58, 44, 64],
-        [210, 58, 44, 64],
-        [210, 58, 44, 38],
-        [210, 58, 44, 38],
-        [210, 58, 44, 38],
-        [210, 58, 44, 38],
-        [210, 58, 44, 38],
-        [210, 58, 44, 38],
-        [210, 58, 44, 38],
-        [210, 58, 44, 38],
-        [210, 58, 44, 38],
-        [210, 58, 44, 38],
-        [210, 58, 44, 38],
-        [210, 58, 44, 38],
-        [210, 58, 44, 38],
-        [210, 58, 44, 38],
-        [210, 58, 44, 38],
-        [210, 58, 44, 38],
-        [210, 58, 44, 38],
-        [210, 58, 44, 38]
-      ],
-      "paintInvalidationClients": [
-        "InlineTextBox ''",
-        "LayoutSVGInlineText #text",
-        "RootInlineBox",
-        "LayoutSVGText text id='use_text'",
-        "LayoutSVGContainer use",
-        "LayoutSVGEllipse circle id='use_circle'",
-        "LayoutSVGContainer use",
-        "LayoutSVGHiddenContainer g id='use'",
-        "LayoutSVGContainer g id='use'",
-        "LayoutSVGContainer use",
-        "LayoutSVGText text id='use_text'",
-        "RootInlineBox",
-        "LayoutSVGInlineText #text",
-        "InlineTextBox 'use'",
-        "LayoutSVGContainer use",
-        "LayoutSVGEllipse circle id='use_circle'",
-        "InlineTextBox ''",
-        "LayoutSVGInlineText #text",
-        "RootInlineBox",
-        "LayoutSVGText text id='use_text'",
-        "LayoutSVGContainer use",
-        "LayoutSVGEllipse circle id='use_circle'",
-        "LayoutSVGContainer use",
-        "LayoutSVGContainer g id='use'",
-        "LayoutSVGHiddenContainer g id='use'",
-        "LayoutSVGContainer use",
-        "LayoutSVGText text id='use_text'",
-        "RootInlineBox",
-        "LayoutSVGInlineText #text",
-        "InlineTextBox 'use'",
-        "LayoutSVGContainer use",
-        "LayoutSVGEllipse circle id='use_circle'",
-        "InlineTextBox ''",
-        "LayoutSVGInlineText #text",
-        "RootInlineBox",
-        "LayoutSVGText text id='use_text'",
-        "LayoutSVGContainer use",
-        "LayoutSVGEllipse circle id='use_circle'",
-        "LayoutSVGContainer use",
-        "LayoutSVGHiddenContainer g id='use'",
-        "LayoutSVGContainer g id='use'",
-        "LayoutSVGContainer use",
-        "LayoutSVGText text id='use_text'",
-        "RootInlineBox",
-        "LayoutSVGInlineText #text",
-        "InlineTextBox 'use'",
-        "LayoutSVGContainer use",
-        "LayoutSVGEllipse circle id='use_circle'"
+      "paintInvalidations": [
+        {
+          "object": "InlineTextBox ''",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox ''",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox ''",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'use'",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'use'",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'use'",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer g id='use'",
+          "rect": [210, 58, 44, 64],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer g id='use'",
+          "rect": [210, 58, 44, 64],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGContainer g id='use'",
+          "rect": [210, 58, 44, 64],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer use",
+          "rect": [210, 58, 44, 38],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGContainer use",
+          "rect": [218, 94, 28, 28],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGContainer use",
+          "rect": [210, 58, 44, 38],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer use",
+          "rect": [218, 94, 28, 28],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer use",
+          "rect": [210, 58, 44, 38],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGContainer use",
+          "rect": [218, 94, 28, 28],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGContainer use",
+          "rect": [210, 58, 44, 38],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer use",
+          "rect": [218, 94, 28, 28],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer use",
+          "rect": [210, 58, 44, 38],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGContainer use",
+          "rect": [218, 94, 28, 28],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGContainer use",
+          "rect": [210, 58, 44, 38],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer use",
+          "rect": [218, 94, 28, 28],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGEllipse circle id='use_circle'",
+          "rect": [218, 94, 28, 28],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGEllipse circle id='use_circle'",
+          "rect": [218, 94, 28, 28],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGEllipse circle id='use_circle'",
+          "rect": [218, 94, 28, 28],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGEllipse circle id='use_circle'",
+          "rect": [218, 94, 28, 28],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGEllipse circle id='use_circle'",
+          "rect": [218, 94, 28, 28],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGEllipse circle id='use_circle'",
+          "rect": [218, 94, 28, 28],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGHiddenContainer g id='use'",
+          "rect": [0, 0, 0, 0],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGHiddenContainer g id='use'",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGHiddenContainer g id='use'",
+          "rect": [0, 0, 0, 0],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [210, 58, 44, 38],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [210, 58, 44, 38],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [210, 58, 44, 38],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [210, 58, 44, 38],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [210, 58, 44, 38],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [210, 58, 44, 38],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGText text id='use_text'",
+          "rect": [210, 58, 44, 38],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGText text id='use_text'",
+          "rect": [210, 58, 44, 38],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGText text id='use_text'",
+          "rect": [210, 58, 44, 38],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGText text id='use_text'",
+          "rect": [210, 58, 44, 38],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGText text id='use_text'",
+          "rect": [210, 58, 44, 38],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGText text id='use_text'",
+          "rect": [210, 58, 44, 38],
+          "reason": "location change"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        }
       ]
     }
   ]

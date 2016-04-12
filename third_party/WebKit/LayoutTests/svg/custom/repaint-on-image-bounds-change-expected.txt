@@ -5,11 +5,12 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [0, 0, 100, 100]
-      ],
-      "paintInvalidationClients": [
-        "LayoutSVGImage image id='target'"
+      "paintInvalidations": [
+        {
+          "object": "LayoutSVGImage image id='target'",
+          "rect": [0, 0, 100, 100],
+          "reason": "full"
+        }
       ]
     }
   ]

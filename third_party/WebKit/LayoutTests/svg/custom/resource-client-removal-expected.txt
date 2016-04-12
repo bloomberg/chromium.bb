@@ -5,94 +5,232 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [0, 0, 100, 100],
-        [0, 0, 100, 100],
-        [0, 0, 100, 100],
-        [0, 0, 100, 100],
-        [0, 0, 100, 100],
-        [0, 0, 100, 100],
-        [0, 0, 100, 100],
-        [0, 0, 100, 100],
-        [0, 0, 100, 100],
-        [0, 0, 100, 100],
-        [0, 0, 100, 100],
-        [0, 0, 100, 100],
-        [0, 0, 100, 100],
-        [0, 0, 100, 100],
-        [0, 0, 100, 100],
-        [0, 0, 100, 100],
-        [0, 0, 100, 100],
-        [0, 0, 100, 100],
-        [0, 0, 100, 100],
-        [0, 0, 100, 100],
-        [0, 0, 100, 100],
-        [0, 0, 100, 100],
-        [0, 0, 100, 100],
-        [0, 0, 100, 100],
-        [0, 0, 100, 100],
-        [0, 0, 100, 100],
-        [0, 0, 100, 100],
-        [0, 0, 100, 100],
-        [0, 0, 100, 100],
-        [0, 0, 100, 100],
-        [0, 0, 100, 100],
-        [0, 0, 100, 100],
-        [0, 0, 100, 100],
-        [0, 0, 100, 100],
-        [0, 0, 100, 100],
-        [0, 0, 100, 100],
-        [0, 0, 100, 100],
-        [0, 0, 100, 100],
-        [0, 0, 100, 100],
-        [0, 0, 100, 100]
-      ],
-      "paintInvalidationClients": [
-        "LayoutSVGPath path id='hp'",
-        "LayoutSVGContainer g",
-        "LayoutSVGContainer g id='inneruse'",
-        "LayoutSVGGradientStop stop id='offset'",
-        "LayoutSVGContainer g id='inneruse'",
-        "LayoutSVGPath path id='hp'",
-        "LayoutSVGContainer g id='inneruse'",
-        "LayoutSVGContainer g",
-        "LayoutSVGPath path id='hp'",
-        "LayoutSVGPath path id='hp'",
-        "LayoutSVGContainer g",
-        "LayoutSVGContainer g id='inneruse'",
-        "LayoutSVGGradientStop stop id='offset'",
-        "LayoutSVGContainer g id='inneruse'",
-        "LayoutSVGPath path id='hp'",
-        "LayoutSVGContainer g id='inneruse'",
-        "LayoutSVGContainer g",
-        "LayoutSVGPath path id='hp'",
-        "LayoutSVGPath path id='hp'",
-        "LayoutSVGContainer g",
-        "LayoutSVGContainer g id='inneruse'",
-        "LayoutSVGGradientStop stop id='offset'",
-        "LayoutSVGContainer g id='inneruse'",
-        "LayoutSVGPath path id='hp'",
-        "LayoutSVGContainer g id='inneruse'",
-        "LayoutSVGContainer g",
-        "LayoutSVGPath path id='hp'",
-        "LayoutSVGPath path id='hp'",
-        "LayoutSVGContainer g",
-        "LayoutSVGContainer g id='inneruse'",
-        "LayoutSVGGradientStop stop id='offset'",
-        "LayoutSVGContainer g id='inneruse'",
-        "LayoutSVGPath path id='hp'",
-        "LayoutSVGContainer g id='inneruse'",
-        "LayoutSVGContainer g",
-        "LayoutSVGPath path id='hp'",
-        "LayoutSVGPath path id='hp'",
-        "LayoutSVGContainer g",
-        "LayoutSVGContainer g id='inneruse'",
-        "LayoutSVGGradientStop stop id='offset'",
-        "LayoutSVGContainer g id='inneruse'",
-        "LayoutSVGPath path id='hp'",
-        "LayoutSVGContainer g id='inneruse'",
-        "LayoutSVGContainer g",
-        "LayoutSVGPath path id='hp'"
+      "paintInvalidations": [
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [0, 0, 100, 100],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [0, 0, 100, 100],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [0, 0, 100, 100],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [0, 0, 100, 100],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [0, 0, 100, 100],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [0, 0, 100, 100],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [0, 0, 100, 100],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [0, 0, 100, 100],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [0, 0, 100, 100],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [0, 0, 100, 100],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGContainer g id='inneruse'",
+          "rect": [0, 0, 100, 100],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGContainer g id='inneruse'",
+          "rect": [0, 0, 100, 100],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGContainer g id='inneruse'",
+          "rect": [0, 0, 100, 100],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGContainer g id='inneruse'",
+          "rect": [0, 0, 100, 100],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGContainer g id='inneruse'",
+          "rect": [0, 0, 100, 100],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGContainer g id='inneruse'",
+          "rect": [0, 0, 100, 100],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGContainer g id='inneruse'",
+          "rect": [0, 0, 100, 100],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGContainer g id='inneruse'",
+          "rect": [0, 0, 100, 100],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGContainer g id='inneruse'",
+          "rect": [0, 0, 100, 100],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGContainer g id='inneruse'",
+          "rect": [0, 0, 100, 100],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGContainer g id='inneruse'",
+          "rect": [0, 0, 100, 100],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGContainer g id='inneruse'",
+          "rect": [0, 0, 100, 100],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGContainer g id='inneruse'",
+          "rect": [0, 0, 100, 100],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGContainer g id='inneruse'",
+          "rect": [0, 0, 100, 100],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGContainer g id='inneruse'",
+          "rect": [0, 0, 100, 100],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGGradientStop stop id='offset'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGGradientStop stop id='offset'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGGradientStop stop id='offset'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGGradientStop stop id='offset'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGGradientStop stop id='offset'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGPath path id='hp'",
+          "rect": [0, 0, 100, 100],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGPath path id='hp'",
+          "rect": [0, 0, 100, 100],
+          "reason": "SVG resource change"
+        },
+        {
+          "object": "LayoutSVGPath path id='hp'",
+          "rect": [0, 0, 100, 100],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGPath path id='hp'",
+          "rect": [0, 0, 100, 100],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGPath path id='hp'",
+          "rect": [0, 0, 100, 100],
+          "reason": "SVG resource change"
+        },
+        {
+          "object": "LayoutSVGPath path id='hp'",
+          "rect": [0, 0, 100, 100],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGPath path id='hp'",
+          "rect": [0, 0, 100, 100],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGPath path id='hp'",
+          "rect": [0, 0, 100, 100],
+          "reason": "SVG resource change"
+        },
+        {
+          "object": "LayoutSVGPath path id='hp'",
+          "rect": [0, 0, 100, 100],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGPath path id='hp'",
+          "rect": [0, 0, 100, 100],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGPath path id='hp'",
+          "rect": [0, 0, 100, 100],
+          "reason": "SVG resource change"
+        },
+        {
+          "object": "LayoutSVGPath path id='hp'",
+          "rect": [0, 0, 100, 100],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGPath path id='hp'",
+          "rect": [0, 0, 100, 100],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGPath path id='hp'",
+          "rect": [0, 0, 100, 100],
+          "reason": "SVG resource change"
+        },
+        {
+          "object": "LayoutSVGPath path id='hp'",
+          "rect": [0, 0, 100, 100],
+          "reason": "layoutObject insertion"
+        }
       ]
     }
   ]

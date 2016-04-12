@@ -5,25 +5,67 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [13, 17, 38, 20],
-        [13, 17, 38, 20],
-        [13, 17, 38, 20],
-        [13, 17, 38, 20],
-        [9, 13, 46, 28],
-        [9, 13, 46, 28],
-        [9, 13, 46, 28],
-        [9, 13, 46, 28]
-      ],
-      "paintInvalidationClients": [
-        "RootInlineBox",
-        "InlineTextBox 'Hello'",
-        "LayoutSVGRoot svg",
-        "LayoutSVGContainer g",
-        "LayoutSVGText text id='t'",
-        "RootInlineBox",
-        "LayoutSVGInlineText #text",
-        "InlineTextBox 'Hello'"
+      "paintInvalidations": [
+        {
+          "object": "InlineTextBox 'Hello'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'Hello'",
+          "rect": [0, 0, 0, 0],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [13, 17, 38, 20],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [9, 13, 46, 28],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [13, 17, 38, 20],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [9, 13, 46, 28],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutSVGRoot svg",
+          "rect": [13, 17, 38, 20],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGRoot svg",
+          "rect": [9, 13, 46, 28],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGText text id='t'",
+          "rect": [13, 17, 38, 20],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutSVGText text id='t'",
+          "rect": [9, 13, 46, 28],
+          "reason": "style change"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        }
       ]
     }
   ]

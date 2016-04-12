@@ -15,11 +15,12 @@
       "bounds": [2008, 2008],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [0, 0, 300, 300]
-      ],
-      "paintInvalidationClients": [
-        "LayoutView #document"
+      "paintInvalidations": [
+        {
+          "object": "LayoutView #document",
+          "rect": [0, 0, 300, 300],
+          "reason": "full"
+        }
       ]
     }
   ]
@@ -41,11 +42,12 @@
       "bounds": [2008, 2008],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [0, 0, 250, 250]
-      ],
-      "paintInvalidationClients": [
-        "LayoutView #document"
+      "paintInvalidations": [
+        {
+          "object": "LayoutView #document",
+          "rect": [0, 0, 250, 250],
+          "reason": "full"
+        }
       ]
     }
   ]

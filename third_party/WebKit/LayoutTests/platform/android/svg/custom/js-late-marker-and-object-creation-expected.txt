@@ -1,0 +1,26 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [203, 211, 111, 111],
+        [203, 211, 111, 111],
+        [203, 211, 111, 111],
+        [203, 211, 111, 111],
+        [0, 0, 4, 4]
+      ],
+      "paintInvalidationClients": [
+        "LayoutSVGRoot svg id='svg-root'",
+        "LayoutSVGContainer g id='content'",
+        "LayoutSVGPath path",
+        "LayoutSVGResourceMarker marker id='markerMiddle'",
+        "LayoutSVGEllipse circle",
+        "LayoutSVGPath path"
+      ]
+    }
+  ]
+}
+

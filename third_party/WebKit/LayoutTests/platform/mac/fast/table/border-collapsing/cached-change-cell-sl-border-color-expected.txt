@@ -5,17 +5,37 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [90, 30, 12, 18],
-        [8, 8, 60, 54]
-      ],
-      "paintInvalidationClients": [
-        "InlineTextBox 'A'",
-        "LayoutText #text",
-        "RootInlineBox",
-        "LayoutTableCell TD id='foo'",
-        "LayoutTableCell TD",
-        "LayoutTableCell TD id='foo'"
+      "paintInvalidations": [
+        {
+          "object": "InlineTextBox 'A'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutTableCell TD id='foo'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutTableCell TD id='foo'",
+          "rect": [8, 8, 60, 54],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [90, 30, 12, 18],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        }
       ]
     }
   ]

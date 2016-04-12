@@ -1,0 +1,33 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [10, 190, 150, 50],
+        [10, 130, 150, 50],
+        [10, 70, 150, 50],
+        [10, 10, 150, 230],
+        [10, 10, 150, 230],
+        [10, 10, 150, 50],
+        [6, 186, 158, 58],
+        [6, 126, 158, 58],
+        [6, 66, 158, 58],
+        [6, 6, 158, 238],
+        [6, 6, 158, 238],
+        [6, 6, 158, 58]
+      ],
+      "paintInvalidationClients": [
+        "LayoutSVGRoot svg",
+        "LayoutSVGContainer g",
+        "LayoutSVGRect rect",
+        "LayoutSVGRect rect",
+        "LayoutSVGRect rect",
+        "LayoutSVGRect rect"
+      ]
+    }
+  ]
+}
+

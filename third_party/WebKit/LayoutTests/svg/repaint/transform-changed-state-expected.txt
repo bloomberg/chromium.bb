@@ -5,18 +5,37 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [108, 108, 100, 100],
-        [108, 108, 100, 100],
-        [108, 108, 100, 100],
-        [108, 8, 100, 100],
-        [108, 8, 100, 100],
-        [108, 8, 100, 100]
-      ],
-      "paintInvalidationClients": [
-        "LayoutSVGRoot svg",
-        "LayoutSVGContainer g",
-        "LayoutSVGRect rect"
+      "paintInvalidations": [
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [108, 8, 100, 100],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [108, 108, 100, 100],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [108, 8, 100, 100],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [108, 108, 100, 100],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGRoot svg",
+          "rect": [108, 8, 100, 100],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGRoot svg",
+          "rect": [108, 108, 100, 100],
+          "reason": "bounds change"
+        }
       ]
     }
   ]

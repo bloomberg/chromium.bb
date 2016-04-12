@@ -5,30 +5,82 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [209, 273, 200, 200],
-        [59, 273, 50, 50],
-        [9, 223, 100, 100],
-        [9, 223, 100, 100],
-        [9, 223, 100, 100],
-        [9, 223, 50, 50],
-        [9, 73, 400, 400],
-        [9, 73, 400, 400],
-        [9, 73, 400, 400],
-        [9, 73, 200, 200],
-        [8, 72, 402, 405],
-        [8, 72, 102, 405]
-      ],
-      "paintInvalidationClients": [
-        "RootInlineBox",
-        "InlineBox",
-        "LayoutBlockFlow div id='contentBox'",
-        "RootInlineBox",
-        "LayoutSVGRoot svg",
-        "LayoutSVGContainer use",
-        "LayoutSVGViewportContainer svg id='targetSymbol'",
-        "LayoutSVGRect rect",
-        "LayoutSVGRect rect"
+      "paintInvalidations": [
+        {
+          "object": "InlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutBlockFlow div id='contentBox'",
+          "rect": [8, 72, 102, 405],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutBlockFlow div id='contentBox'",
+          "rect": [8, 72, 402, 405],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutSVGContainer use",
+          "rect": [9, 223, 100, 100],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGContainer use",
+          "rect": [9, 73, 400, 400],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [59, 273, 50, 50],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [209, 273, 200, 200],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [9, 223, 50, 50],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [9, 73, 200, 200],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGRoot svg",
+          "rect": [9, 223, 100, 100],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGRoot svg",
+          "rect": [9, 73, 400, 400],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGViewportContainer svg id='targetSymbol'",
+          "rect": [9, 223, 100, 100],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGViewportContainer svg id='targetSymbol'",
+          "rect": [9, 73, 400, 400],
+          "reason": "location change"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        }
       ]
     }
   ]

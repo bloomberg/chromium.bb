@@ -1,0 +1,22 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [68, 8, 55, 54],
+        [67, 8, 56, 54],
+        [63, 8, 60, 54]
+      ],
+      "paintInvalidationClients": [
+        "LayoutTableCell TD",
+        "LayoutTableCell TD",
+        "LayoutTable TABLE",
+        "LayoutTableCell TD"
+      ]
+    }
+  ]
+}
+

@@ -6,11 +6,12 @@ CONSOLE WARNING: SVG's SMIL animations (<animate>, <set>, etc.) are deprecated a
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [0, 0, 100, 100]
-      ],
-      "paintInvalidationClients": [
-        "LayoutSVGRect rect id='newId'"
+      "paintInvalidations": [
+        {
+          "object": "LayoutSVGRect rect id='newId'",
+          "rect": [0, 0, 100, 100],
+          "reason": "style change"
+        }
       ]
     }
   ]

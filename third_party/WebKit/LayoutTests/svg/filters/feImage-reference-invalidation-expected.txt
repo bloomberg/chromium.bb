@@ -5,12 +5,17 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [0, 0, 110, 110]
-      ],
-      "paintInvalidationClients": [
-        "LayoutSVGResourceFilterPrimitive feImage id='feimage'",
-        "LayoutSVGRect rect"
+      "paintInvalidations": [
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [0, 0, 110, 110],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGResourceFilterPrimitive feImage id='feimage'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        }
       ]
     }
   ]

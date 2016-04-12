@@ -1,0 +1,19 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [0, 0, 100, 100]
+      ],
+      "paintInvalidationClients": [
+        "LayoutSVGResourceLinearGradient linearGradient id='test'",
+        "LayoutSVGGradientStop stop",
+        "LayoutSVGRect rect"
+      ]
+    }
+  ]
+}
+

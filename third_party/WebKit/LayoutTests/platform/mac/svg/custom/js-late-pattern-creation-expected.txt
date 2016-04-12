@@ -5,19 +5,42 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [33, 22, 618, 196],
-        [16, 25, 18, 25],
-        [8, 12, 17, 26]
-      ],
-      "paintInvalidationClients": [
-        "RootInlineBox",
-        "InlineTextBox 'Pattern on fill'",
-        "LayoutSVGText text",
-        "RootInlineBox",
-        "LayoutSVGResourcePattern pattern id='dynPattern'",
-        "LayoutSVGRect rect",
-        "LayoutSVGRect rect"
+      "paintInvalidations": [
+        {
+          "object": "InlineTextBox 'Pattern on fill'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [8, 12, 17, 26],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [16, 25, 18, 25],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGResourcePattern pattern id='dynPattern'",
+          "rect": [0, 0, 0, 0],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [33, 22, 618, 196],
+          "reason": "style change"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        }
       ]
     }
   ]

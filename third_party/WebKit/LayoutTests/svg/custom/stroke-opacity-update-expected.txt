@@ -5,11 +5,12 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [0, 0, 203, 203]
-      ],
-      "paintInvalidationClients": [
-        "LayoutSVGEllipse circle"
+      "paintInvalidations": [
+        {
+          "object": "LayoutSVGEllipse circle",
+          "rect": [0, 0, 203, 203],
+          "reason": "style change"
+        }
       ]
     }
   ]

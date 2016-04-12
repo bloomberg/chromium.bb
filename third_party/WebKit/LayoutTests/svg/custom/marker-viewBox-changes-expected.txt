@@ -5,22 +5,52 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [122, 127, 66, 66],
-        [122, 127, 66, 66],
-        [122, 127, 66, 66],
-        [90, 95, 98, 98],
-        [90, 95, 98, 98],
-        [90, 95, 98, 98],
-        [2, 0, 8, 10],
-        [0, 2, 10, 8]
-      ],
-      "paintInvalidationClients": [
-        "LayoutSVGRoot svg",
-        "LayoutSVGResourceMarker marker id='markerStart'",
-        "LayoutSVGRect rect",
-        "LayoutSVGContainer g",
-        "LayoutSVGPath path id='go'"
+      "paintInvalidations": [
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [90, 95, 98, 98],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [122, 127, 66, 66],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGPath path id='go'",
+          "rect": [90, 95, 98, 98],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGPath path id='go'",
+          "rect": [122, 127, 66, 66],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [2, 0, 8, 10],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [0, 2, 10, 8],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutSVGResourceMarker marker id='markerStart'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGRoot svg",
+          "rect": [90, 95, 98, 98],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGRoot svg",
+          "rect": [122, 127, 66, 66],
+          "reason": "bounds change"
+        }
       ]
     }
   ]

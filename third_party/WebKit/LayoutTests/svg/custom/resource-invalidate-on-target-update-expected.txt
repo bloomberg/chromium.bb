@@ -5,22 +5,47 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [120, 10, 110, 350],
-        [120, 10, 110, 350],
-        [10, 130, 200, 100],
-        [10, 130, 100, 100],
-        [10, 10, 200, 100],
-        [10, 10, 100, 100],
-        [0, 240, 230, 120],
-        [0, 240, 120, 120]
-      ],
-      "paintInvalidationClients": [
-        "LayoutSVGRoot svg",
-        "LayoutSVGContainer g id='box'",
-        "LayoutSVGRect rect id='rect1'",
-        "LayoutSVGRect rect id='rect2'",
-        "LayoutSVGRect rect id='rect3'"
+      "paintInvalidations": [
+        {
+          "object": "LayoutSVGContainer g id='box'",
+          "rect": [120, 10, 110, 350],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutSVGRect rect id='rect1'",
+          "rect": [10, 10, 200, 100],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGRect rect id='rect1'",
+          "rect": [10, 10, 100, 100],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGRect rect id='rect2'",
+          "rect": [10, 130, 200, 100],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGRect rect id='rect2'",
+          "rect": [10, 130, 100, 100],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGRect rect id='rect3'",
+          "rect": [0, 240, 230, 120],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGRect rect id='rect3'",
+          "rect": [0, 240, 120, 120],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGRoot svg",
+          "rect": [120, 10, 110, 350],
+          "reason": "incremental"
+        }
       ]
     }
   ]

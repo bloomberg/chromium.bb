@@ -5,21 +5,52 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [8, 8, 784, 104],
-        [8, 8, 100, 100],
-        [0, 0, 800, 120],
-        [-2, -2, 802, 122],
-        [-2, -2, 794, 120],
-        [-2, -2, 120, 120]
-      ],
-      "paintInvalidationClients": [
-        "InlineBox",
-        "RootInlineBox",
-        "LayoutBlockFlow HTML",
-        "LayoutBlockFlow BODY",
-        "RootInlineBox",
-        "LayoutSVGRoot svg"
+      "paintInvalidations": [
+        {
+          "object": "InlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutBlockFlow BODY",
+          "rect": [-2, -2, 794, 120],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutBlockFlow BODY",
+          "rect": [8, 8, 784, 104],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutBlockFlow HTML",
+          "rect": [-2, -2, 802, 122],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutBlockFlow HTML",
+          "rect": [0, 0, 800, 120],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGRoot svg",
+          "rect": [-2, -2, 120, 120],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutSVGRoot svg",
+          "rect": [8, 8, 100, 100],
+          "reason": "style change"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        }
       ]
     }
   ]

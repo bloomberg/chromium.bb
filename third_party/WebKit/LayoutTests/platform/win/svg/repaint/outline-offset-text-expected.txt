@@ -5,22 +5,57 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [118, 40, 130, 84],
-        [103, 25, 160, 114],
-        [103, 25, 160, 114],
-        [78, 40, 130, 84],
-        [63, 25, 160, 114],
-        [63, 25, 160, 114]
-      ],
-      "paintInvalidationClients": [
-        "RootInlineBox",
-        "InlineTextBox 'Foo'",
-        "LayoutSVGRoot svg",
-        "LayoutSVGText text",
-        "RootInlineBox",
-        "LayoutSVGInlineText #text",
-        "InlineTextBox 'Foo'"
+      "paintInvalidations": [
+        {
+          "object": "InlineTextBox 'Foo'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'Foo'",
+          "rect": [0, 0, 0, 0],
+          "reason": "outline"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [103, 25, 160, 114],
+          "reason": "outline"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [63, 25, 160, 114],
+          "reason": "outline"
+        },
+        {
+          "object": "LayoutSVGRoot svg",
+          "rect": [118, 40, 130, 84],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGRoot svg",
+          "rect": [78, 40, 130, 84],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [103, 25, 160, 114],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [63, 25, 160, 114],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        }
       ]
     }
   ]

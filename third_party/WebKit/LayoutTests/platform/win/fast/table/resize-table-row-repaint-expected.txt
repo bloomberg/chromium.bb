@@ -5,21 +5,52 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [3, 193, 63, 17],
-        [3, 143, 63, 17],
-        [2, 102, 102, 200],
-        [2, 102, 102, 100],
-        [0, 202, 106, 100]
-      ],
-      "paintInvalidationClients": [
-        "RootInlineBox",
-        "InlineTextBox 'MIDDLE'",
-        "LayoutTableRow TR id='row'",
-        "LayoutTableCell TD",
-        "RootInlineBox",
-        "LayoutText #text",
-        "InlineTextBox 'MIDDLE'"
+      "paintInvalidations": [
+        {
+          "object": "InlineTextBox 'MIDDLE'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'MIDDLE'",
+          "rect": [0, 0, 0, 0],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "rect": [2, 102, 102, 100],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "rect": [2, 102, 102, 200],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutTableRow TR id='row'",
+          "rect": [0, 202, 106, 100],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [3, 143, 63, 17],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [3, 193, 63, 17],
+          "reason": "bounds change"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        }
       ]
     }
   ]

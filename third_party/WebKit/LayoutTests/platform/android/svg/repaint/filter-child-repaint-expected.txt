@@ -1,0 +1,19 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [32, 32, 64, 64],
+        [0, 0, 106, 106]
+      ],
+      "paintInvalidationClients": [
+        "LayoutSVGContainer g",
+        "LayoutSVGRect rect id='poke'"
+      ]
+    }
+  ]
+}
+

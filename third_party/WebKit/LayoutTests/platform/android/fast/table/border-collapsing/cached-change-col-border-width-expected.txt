@@ -1,0 +1,50 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [117, 8, 1, 104],
+        [116, 8, 2, 104],
+        [63, 59, 54, 51],
+        [62, 59, 56, 53],
+        [62, 8, 56, 53],
+        [62, 8, 55, 52],
+        [10, 60, 107, 50],
+        [10, 10, 107, 100],
+        [10, 10, 107, 50],
+        [9, 59, 107, 50],
+        [9, 9, 107, 100],
+        [9, 9, 107, 50],
+        [8, 110, 110, 2],
+        [8, 108, 110, 4],
+        [8, 59, 58, 53],
+        [8, 58, 56, 52],
+        [8, 8, 110, 104],
+        [8, 8, 109, 102],
+        [8, 8, 58, 53],
+        [8, 8, 56, 52]
+      ],
+      "paintInvalidationClients": [
+        "LayoutTableCell TD",
+        "LayoutTableCell TD",
+        "LayoutTableCell TD",
+        "LayoutTableCell TD",
+        "LayoutTable TABLE",
+        "LayoutTableCell TD",
+        "LayoutTableCell TD",
+        "LayoutTableCol COL id='col'",
+        "LayoutTableSection TBODY",
+        "LayoutTableRow TR",
+        "LayoutTableCell TD",
+        "LayoutTableCell TD",
+        "LayoutTableRow TR",
+        "LayoutTableCell TD",
+        "LayoutTableCell TD"
+      ]
+    }
+  ]
+}
+

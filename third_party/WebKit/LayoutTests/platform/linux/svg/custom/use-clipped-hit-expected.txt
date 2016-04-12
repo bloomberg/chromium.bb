@@ -5,22 +5,52 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [90, 115, 60, 19],
-        [90, 115, 60, 19],
-        [90, 115, 43, 19],
-        [90, 115, 43, 19],
-        [89, 114, 3, 21]
-      ],
-      "paintInvalidationClients": [
-        "LayoutSVGText text id='status'",
-        "InlineTextBox ''",
-        "LayoutSVGInlineText #text",
-        "RootInlineBox",
-        "LayoutSVGText text id='status'",
-        "RootInlineBox",
-        "LayoutSVGInlineText #text",
-        "InlineTextBox 'Passed'"
+      "paintInvalidations": [
+        {
+          "object": "InlineTextBox ''",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'Passed'",
+          "rect": [0, 0, 0, 0],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [90, 115, 60, 19],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [90, 115, 43, 19],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGText text id='status'",
+          "rect": [89, 114, 3, 21],
+          "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutSVGText text id='status'",
+          "rect": [90, 115, 60, 19],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGText text id='status'",
+          "rect": [90, 115, 43, 19],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        }
       ]
     }
   ]

@@ -11,15 +11,32 @@
           "bounds": [600, 400],
           "drawsContent": true,
           "backfaceVisibility": "hidden",
-          "repaintRects": [
-            [520, 0, 80, 340]
-          ],
-          "paintInvalidationClients": [
-            "LayoutText #text",
-            "InlineTextBox 'Lorem ipsum dolor'",
-            "InlineTextBox 'sit amet,'",
-            "InlineTextBox 'consectetur'",
-            "InlineTextBox 'adipiscing elit.'"
+          "paintInvalidations": [
+            {
+              "object": "InlineTextBox 'Lorem ipsum dolor'",
+              "rect": [0, 0, 0, 0],
+              "reason": "style change"
+            },
+            {
+              "object": "InlineTextBox 'adipiscing elit.'",
+              "rect": [0, 0, 0, 0],
+              "reason": "style change"
+            },
+            {
+              "object": "InlineTextBox 'consectetur'",
+              "rect": [0, 0, 0, 0],
+              "reason": "style change"
+            },
+            {
+              "object": "InlineTextBox 'sit amet,'",
+              "rect": [0, 0, 0, 0],
+              "reason": "style change"
+            },
+            {
+              "object": "LayoutText #text",
+              "rect": [520, 0, 80, 340],
+              "reason": "style change"
+            }
           ]
         }
       ]

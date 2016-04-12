@@ -5,21 +5,52 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [200, 146, 100, 100],
-        [200, 100, 100, 100],
-        [0, 204, 800, 42],
-        [0, 0, 800, 246]
-      ],
-      "paintInvalidationClients": [
-        "InlineBox",
-        "InlineBox",
-        "InlineBox",
-        "RootInlineBox",
-        "LayoutBlockFlow BODY",
-        "LayoutBlockFlow BODY",
-        "RootInlineBox",
-        "LayoutBlockFlow DIV id='target'"
+      "paintInvalidations": [
+        {
+          "object": "InlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutBlockFlow BODY",
+          "rect": [0, 204, 800, 42],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutBlockFlow BODY",
+          "rect": [0, 0, 800, 246],
+          "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='target'",
+          "rect": [200, 100, 100, 100],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='target'",
+          "rect": [200, 146, 100, 100],
+          "reason": "location change"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        }
       ]
     }
   ]

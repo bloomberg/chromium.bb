@@ -5,14 +5,22 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [8, 8, 100, 103],
-        [8, 8, 100, 100]
-      ],
-      "paintInvalidationClients": [
-        "LayoutBlockFlow DIV",
-        "RootInlineBox",
-        "LayoutSVGRoot svg"
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [8, 8, 100, 103],
+          "reason": "background obscuration change"
+        },
+        {
+          "object": "LayoutSVGRoot svg",
+          "rect": [8, 8, 100, 100],
+          "reason": "style change"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        }
       ]
     }
   ]

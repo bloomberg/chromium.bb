@@ -1,0 +1,17 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [0, 10, 22, 22]
+      ],
+      "paintInvalidationClients": [
+        "LayoutImage IMG id='targetImage'"
+      ]
+    }
+  ]
+}
+

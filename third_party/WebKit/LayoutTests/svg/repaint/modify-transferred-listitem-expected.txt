@@ -5,13 +5,22 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [18, 18, 30, 20],
-        [18, 18, 20, 20]
-      ],
-      "paintInvalidationClients": [
-        "LayoutSVGPath polygon id='target'",
-        "LayoutSVGPath polygon id='source'"
+      "paintInvalidations": [
+        {
+          "object": "LayoutSVGPath polygon id='source'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGPath polygon id='target'",
+          "rect": [18, 18, 20, 20],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGPath polygon id='target'",
+          "rect": [18, 18, 30, 20],
+          "reason": "full"
+        }
       ]
     }
   ]

@@ -1,0 +1,56 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [8, 8],
+          "bounds": [320, 240]
+        },
+        {
+          "shouldFlattenTransform": false,
+          "children": [
+            {
+              "position": [8, 8],
+              "bounds": [320, 240],
+              "drawsContent": true
+            },
+            {
+              "position": [8, 8],
+              "bounds": [320, 235],
+              "drawsContent": true,
+              "repaintRects": [
+                [228, 208, 51, 24],
+                [193, 205, 36, 30],
+                [159, 212, 26, 16],
+                [159, 205, 26, 23],
+                [118, 208, 33, 24],
+                [47, 208, 111, 24],
+                [47, 208, 111, 24],
+                [47, 208, 32, 24],
+                [14, 205, 30, 30]
+              ],
+              "paintInvalidationClients": [
+                "InlineTextBox ''",
+                "RootInlineBox",
+                "LayoutButton INPUT",
+                "LayoutSlider INPUT",
+                "LayoutFlexibleBox DIV",
+                "LayoutBlockFlow DIV id='thumb'",
+                "LayoutBlockFlow (anonymous)",
+                "LayoutText #text",
+                "InlineTextBox '0:00'",
+                "LayoutButton INPUT",
+                "LayoutSlider INPUT"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+

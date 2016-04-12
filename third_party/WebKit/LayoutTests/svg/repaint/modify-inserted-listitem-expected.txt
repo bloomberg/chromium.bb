@@ -5,15 +5,27 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [28, 38, 10, 10],
-        [28, 38, 10, 10],
-        [18, 18, 20, 30],
-        [18, 18, 10, 10]
-      ],
-      "paintInvalidationClients": [
-        "LayoutSVGRoot svg",
-        "LayoutSVGRect rect id='move'"
+      "paintInvalidations": [
+        {
+          "object": "LayoutSVGRect rect id='move'",
+          "rect": [18, 18, 10, 10],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGRect rect id='move'",
+          "rect": [28, 38, 10, 10],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGRoot svg",
+          "rect": [18, 18, 20, 30],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGRoot svg",
+          "rect": [28, 38, 10, 10],
+          "reason": "bounds change"
+        }
       ]
     }
   ]

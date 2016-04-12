@@ -5,13 +5,17 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [122, 127, 66, 66],
-        [0, 0, 2, 2]
-      ],
-      "paintInvalidationClients": [
-        "LayoutSVGRect rect id='rect'",
-        "LayoutSVGPath path"
+      "paintInvalidations": [
+        {
+          "object": "LayoutSVGPath path",
+          "rect": [122, 127, 66, 66],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutSVGRect rect id='rect'",
+          "rect": [0, 0, 2, 2],
+          "reason": "style change"
+        }
       ]
     }
   ]

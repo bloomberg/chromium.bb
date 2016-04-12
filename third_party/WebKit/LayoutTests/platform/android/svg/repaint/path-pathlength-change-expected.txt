@@ -1,0 +1,17 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [98, 98, 120, 120]
+      ],
+      "paintInvalidationClients": [
+        "LayoutSVGPath path"
+      ]
+    }
+  ]
+}
+

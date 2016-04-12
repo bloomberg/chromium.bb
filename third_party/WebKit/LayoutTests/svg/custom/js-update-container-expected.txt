@@ -5,18 +5,37 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [40, 0, 36, 76],
-        [0, 40, 76, 36],
-        [0, 0, 76, 76],
-        [0, 0, 76, 76],
-        [0, 0, 40, 40],
-        [0, 0, 40, 40]
-      ],
-      "paintInvalidationClients": [
-        "LayoutSVGRoot svg",
-        "LayoutSVGContainer g id='group'",
-        "LayoutSVGRect rect"
+      "paintInvalidations": [
+        {
+          "object": "LayoutSVGContainer g id='group'",
+          "rect": [0, 0, 76, 76],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGContainer g id='group'",
+          "rect": [0, 0, 40, 40],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [0, 0, 76, 76],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [0, 0, 40, 40],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutSVGRoot svg",
+          "rect": [40, 0, 36, 76],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutSVGRoot svg",
+          "rect": [0, 40, 76, 36],
+          "reason": "incremental"
+        }
       ]
     }
   ]

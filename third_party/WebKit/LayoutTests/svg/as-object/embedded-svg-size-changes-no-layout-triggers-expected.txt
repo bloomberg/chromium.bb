@@ -5,16 +5,32 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [0, 0, 800, 202],
-        [0, 0, 402, 202],
-        [0, 0, 400, 200]
-      ],
-      "paintInvalidationClients": [
-        "InlineBox",
-        "RootInlineBox",
-        "LayoutBlockFlow BODY",
-        "LayoutEmbeddedObject OBJECT"
+      "paintInvalidations": [
+        {
+          "object": "InlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutBlockFlow BODY",
+          "rect": [0, 0, 800, 202],
+          "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutEmbeddedObject OBJECT",
+          "rect": [0, 0, 400, 200],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutEmbeddedObject OBJECT",
+          "rect": [0, 0, 402, 202],
+          "reason": "style change"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        }
       ]
     }
   ]

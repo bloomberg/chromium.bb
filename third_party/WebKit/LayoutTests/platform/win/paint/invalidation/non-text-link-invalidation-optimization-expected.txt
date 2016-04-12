@@ -5,27 +5,67 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [360, 8, 54, 18],
-        [326, 8, 25, 17],
-        [167, 8, 150, 17],
-        [139, 8, 29, 18],
-        [76, 8, 64, 18],
-        [8, 8, 59, 17]
-      ],
-      "paintInvalidationClients": [
-        "LayoutText #text",
-        "InlineTextBox 'This test '",
-        "LayoutText #text",
-        "InlineTextBox ' passes if '",
-        "LayoutText #text",
-        "InlineTextBox 'only'",
-        "LayoutText #text",
-        "InlineTextBox ' text is invalidated and '",
-        "LayoutText #text",
-        "InlineTextBox ' no '",
-        "LayoutText #text",
-        "InlineTextBox ' images.'"
+      "paintInvalidations": [
+        {
+          "object": "InlineTextBox ' images.'",
+          "rect": [0, 0, 0, 0],
+          "reason": "style change"
+        },
+        {
+          "object": "InlineTextBox ' no '",
+          "rect": [0, 0, 0, 0],
+          "reason": "style change"
+        },
+        {
+          "object": "InlineTextBox ' passes if '",
+          "rect": [0, 0, 0, 0],
+          "reason": "style change"
+        },
+        {
+          "object": "InlineTextBox ' text is invalidated and '",
+          "rect": [0, 0, 0, 0],
+          "reason": "style change"
+        },
+        {
+          "object": "InlineTextBox 'This test '",
+          "rect": [0, 0, 0, 0],
+          "reason": "style change"
+        },
+        {
+          "object": "InlineTextBox 'only'",
+          "rect": [0, 0, 0, 0],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [8, 8, 59, 17],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [76, 8, 64, 18],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [139, 8, 29, 18],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [167, 8, 150, 17],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [326, 8, 25, 17],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [360, 8, 54, 18],
+          "reason": "style change"
+        }
       ]
     }
   ]

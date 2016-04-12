@@ -5,19 +5,42 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [109, 69, 300, 400],
-        [109, 69, 300, 400],
-        [8, 68, 402, 404],
-        [8, 68, 102, 404]
-      ],
-      "paintInvalidationClients": [
-        "RootInlineBox",
-        "InlineBox",
-        "LayoutBlockFlow div id='contentBox'",
-        "RootInlineBox",
-        "LayoutSVGRoot svg",
-        "LayoutSVGImage image"
+      "paintInvalidations": [
+        {
+          "object": "InlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutBlockFlow div id='contentBox'",
+          "rect": [8, 68, 102, 404],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutBlockFlow div id='contentBox'",
+          "rect": [8, 68, 402, 404],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutSVGImage image",
+          "rect": [109, 69, 300, 400],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutSVGRoot svg",
+          "rect": [109, 69, 300, 400],
+          "reason": "incremental"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        }
       ]
     }
   ]

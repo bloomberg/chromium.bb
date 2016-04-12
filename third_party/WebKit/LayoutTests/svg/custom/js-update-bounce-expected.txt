@@ -5,15 +5,27 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [102, 102, 66, 66],
-        [102, 102, 66, 66],
-        [2, 2, 66, 66],
-        [2, 2, 66, 66]
-      ],
-      "paintInvalidationClients": [
-        "LayoutSVGRoot svg",
-        "LayoutSVGEllipse circle id='bounce'"
+      "paintInvalidations": [
+        {
+          "object": "LayoutSVGEllipse circle id='bounce'",
+          "rect": [2, 2, 66, 66],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGEllipse circle id='bounce'",
+          "rect": [102, 102, 66, 66],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGRoot svg",
+          "rect": [2, 2, 66, 66],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGRoot svg",
+          "rect": [102, 102, 66, 66],
+          "reason": "bounds change"
+        }
       ]
     }
   ]

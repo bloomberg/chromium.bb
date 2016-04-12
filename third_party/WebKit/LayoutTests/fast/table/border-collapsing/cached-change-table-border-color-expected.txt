@@ -5,12 +5,17 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [8, 8, 60, 54]
-      ],
-      "paintInvalidationClients": [
-        "LayoutTableCell TD",
-        "LayoutTable TABLE id='tbl'"
+      "paintInvalidations": [
+        {
+          "object": "LayoutTable TABLE id='tbl'",
+          "rect": [8, 8, 60, 54],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        }
       ]
     }
   ]

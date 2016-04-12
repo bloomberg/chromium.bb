@@ -5,17 +5,32 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [10, 100, 430, 80],
-        [10, 10, 430, 80],
-        [10, 10, 10, 10],
-        [0, 10, 10, 10]
-      ],
-      "paintInvalidationClients": [
-        "LayoutSVGResourcePattern pattern id='Pattern'",
-        "LayoutSVGRect rect id='rect'",
-        "LayoutSVGRect rect",
-        "LayoutSVGRect rect"
+      "paintInvalidations": [
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [10, 10, 430, 80],
+          "reason": "SVG resource change"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [10, 100, 430, 80],
+          "reason": "SVG resource change"
+        },
+        {
+          "object": "LayoutSVGRect rect id='rect'",
+          "rect": [10, 10, 10, 10],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGRect rect id='rect'",
+          "rect": [0, 10, 10, 10],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGResourcePattern pattern id='Pattern'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        }
       ]
     }
   ]

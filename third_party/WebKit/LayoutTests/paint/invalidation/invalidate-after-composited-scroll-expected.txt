@@ -11,11 +11,12 @@
           "bounds": [200, 200],
           "shouldFlattenTransform": false,
           "drawsContent": true,
-          "repaintRects": [
-            [0, 50, 100, 100]
-          ],
-          "paintInvalidationClients": [
-            "LayoutBlockFlow DIV id='target'"
+          "paintInvalidations": [
+            {
+              "object": "LayoutBlockFlow DIV id='target'",
+              "rect": [0, 50, 100, 100],
+              "reason": "style change"
+            }
           ],
           "children": [
             {
@@ -25,11 +26,12 @@
                 {
                   "bounds": [185, 4900],
                   "drawsContent": true,
-                  "repaintRects": [
-                    [0, 2400, 100, 100]
-                  ],
-                  "paintInvalidationClients": [
-                    "LayoutBlockFlow DIV id='target'"
+                  "paintInvalidations": [
+                    {
+                      "object": "LayoutBlockFlow DIV id='target'",
+                      "rect": [0, 2400, 100, 100],
+                      "reason": "style change"
+                    }
                   ]
                 }
               ]
@@ -40,8 +42,12 @@
                 {
                   "position": [185, 0],
                   "bounds": [15, 200],
-                  "repaintRects": [
-                    [0, 0, 15, 200]
+                  "paintInvalidations": [
+                    {
+                      "object": "Vertical Scrollbar Layer",
+                      "rect": [0, 0, 15, 200],
+                      "reason": "full"
+                    }
                   ]
                 }
               ]

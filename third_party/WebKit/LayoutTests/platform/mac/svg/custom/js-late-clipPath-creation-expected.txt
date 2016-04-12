@@ -5,25 +5,62 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [334, 39, 466, 174],
-        [334, 39, 466, 174],
-        [334, 39, 466, 174],
-        [16, 39, 784, 174],
-        [16, 39, 318, 174],
-        [0, 0, 334, 500]
-      ],
-      "paintInvalidationClients": [
-        "RootInlineBox",
-        "InlineTextBox 'Clipped. INVISIBLE.'",
-        "LayoutSVGRoot svg id='svg-root'",
-        "LayoutSVGContainer g id='content'",
-        "LayoutSVGText text",
-        "RootInlineBox",
-        "LayoutSVGInlineText #text",
-        "InlineTextBox 'Clipped. INVISIBLE.'",
-        "LayoutSVGResourceClipper clipPath id='dynClip'",
-        "LayoutSVGPath path"
+      "paintInvalidations": [
+        {
+          "object": "InlineTextBox 'Clipped. INVISIBLE.'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'Clipped. INVISIBLE.'",
+          "rect": [0, 0, 0, 0],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutSVGContainer g id='content'",
+          "rect": [334, 39, 466, 174],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [334, 39, 466, 174],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutSVGPath path",
+          "rect": [0, 0, 334, 500],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGResourceClipper clipPath id='dynClip'",
+          "rect": [0, 0, 0, 0],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGRoot svg id='svg-root'",
+          "rect": [334, 39, 466, 174],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [16, 39, 784, 174],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [16, 39, 318, 174],
+          "reason": "style change"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        }
       ]
     }
   ]

@@ -5,16 +5,32 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [68, 8, 55, 54],
-        [67, 8, 56, 54],
-        [63, 8, 60, 54]
-      ],
-      "paintInvalidationClients": [
-        "LayoutTableCell TD",
-        "LayoutTableCell TD",
-        "LayoutTable TABLE",
-        "LayoutTableCell TD"
+      "paintInvalidations": [
+        {
+          "object": "LayoutTable TABLE",
+          "rect": [68, 8, 55, 54],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutTable TABLE",
+          "rect": [67, 8, 56, 54],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "rect": [63, 8, 60, 54],
+          "reason": "location change"
+        }
       ]
     }
   ]

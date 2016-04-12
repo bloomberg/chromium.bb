@@ -5,20 +5,42 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [150, 100, 100, 50],
-        [100, 150, 50, 100],
-        [100, 0, 200, 300],
-        [100, 0, 200, 300],
-        [50, 150, 100, 100],
-        [0, 100, 300, 200],
-        [0, 0, 300, 100]
-      ],
-      "paintInvalidationClients": [
-        "LayoutSVGContainer g",
-        "LayoutSVGRect rect id='masker'",
-        "LayoutSVGContainer g",
-        "LayoutSVGRect rect id='clipper'"
+      "paintInvalidations": [
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [150, 100, 100, 50],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [100, 150, 50, 100],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [50, 150, 100, 100],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGRect rect id='clipper'",
+          "rect": [100, 0, 200, 300],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGRect rect id='clipper'",
+          "rect": [0, 100, 300, 200],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGRect rect id='masker'",
+          "rect": [0, 0, 300, 100],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGRect rect id='masker'",
+          "rect": [100, 0, 200, 300],
+          "reason": "full"
+        }
       ]
     }
   ]
