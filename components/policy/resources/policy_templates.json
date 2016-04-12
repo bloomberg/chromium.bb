@@ -1554,7 +1554,7 @@
       'caption': '''Proxy server''',
       'desc': '''Allows you to specify the proxy server used by <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and ARC-apps and prevents users from changing proxy settings.
 
-      If you choose to never use a proxy server and always connect directly, all other options are ignored. ARC-apps will use the current network's default proxy server if any.
+      If you choose to never use a proxy server and always connect directly, all other options are ignored.
 
       If you choose to auto detect the proxy server, all other options are ignored.
 
@@ -1621,9 +1621,9 @@
           'tags': [],
           'desc': '''Allows you to specify the proxy server used by <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and ARC-apps and prevents users from changing proxy settings.
 
-          If you choose to never use a proxy server and always connect directly, all other options are ignored. ARC-apps will use the current network's default proxy server if any.
+          If you choose to never use a proxy server and always connect directly, all other options are ignored.
 
-          If you choose to use system proxy settings, all other options are ignored. ARC-apps will use the current network's default proxy server if any.
+          If you choose to use system proxy settings, all other options are ignored.
 
           If you choose to auto detect the proxy server, all other options are ignored.
 
