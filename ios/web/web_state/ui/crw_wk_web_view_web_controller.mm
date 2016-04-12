@@ -48,7 +48,6 @@
 #import "ios/web/web_state/web_state_impl.h"
 #import "ios/web/web_state/web_view_internal_creation_util.h"
 #import "ios/web/web_state/wk_web_view_security_util.h"
-#import "ios/web/webui/crw_web_ui_manager.h"
 #import "net/base/mac/url_conversions.h"
 #include "net/cert/x509_certificate.h"
 #include "net/ssl/ssl_info.h"
@@ -134,9 +133,6 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 
   // Object for loading POST requests with body.
   base::scoped_nsobject<CRWJSPOSTRequestLoader> _POSTRequestLoader;
-
-  // CRWWebUIManager object for loading WebUI pages.
-  base::scoped_nsobject<CRWWebUIManager> _webUIManager;
 
   // Controller used for certs verification to help with blocking requests with
   // bad SSL cert, presenting SSL interstitials and determining SSL status for
@@ -649,39 +645,6 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
   }
 }
 
-- (web::WKBackForwardListItemHolder*)currentBackForwardListItemHolder {
-  web::NavigationItem* item = [self currentSessionEntry].navigationItemImpl;
-  DCHECK(item);
-  web::WKBackForwardListItemHolder* holder =
-      web::WKBackForwardListItemHolder::FromNavigationItem(item);
-  DCHECK(holder);
-  return holder;
-}
-
-- (void)updateCurrentBackForwardListItemHolder {
-  // WebUI pages (which are loaded via loadHTMLString:baseURL:) have no entry
-  // in the back/forward list, so the current item will still be the previous
-  // page, and should not be associated.
-  if (_webUIManager)
-    return;
-
-  web::WKBackForwardListItemHolder* holder =
-      [self currentBackForwardListItemHolder];
-
-  WKNavigationType navigationType =
-      self.pendingNavigationInfo ? [self.pendingNavigationInfo navigationType]
-                                 : WKNavigationTypeOther;
-  holder->set_back_forward_list_item([_wkWebView backForwardList].currentItem);
-  holder->set_navigation_type(navigationType);
-
-  // Only update the MIME type in the holder if there was MIME type information
-  // as part of this pending load. It will be nil when doing a fast
-  // back/forward navigation, for instance, because the callback that would
-  // populate it is not called in that flow.
-  if ([self.pendingNavigationInfo MIMEType])
-    holder->set_mime_type([self.pendingNavigationInfo MIMEType]);
-}
-
 - (BOOL)isBackForwardListItemValid:(WKBackForwardListItem*)item {
   // The current back-forward list item MUST be in the WKWebView's back-forward
   // list to be valid.
@@ -1049,20 +1012,6 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
                          willDecelerate:(BOOL)decelerate {
   [self evaluateJavaScript:@"__gCrWeb.setWebViewScrollViewIsDragging(false)"
        stringResultHandler:nil];
-}
-
-#pragma mark -
-#pragma mark WebUI
-
-- (void)createWebUIForURL:(const GURL&)URL {
-  [super createWebUIForURL:URL];
-  _webUIManager.reset(
-      [[CRWWebUIManager alloc] initWithWebState:self.webStateImpl]);
-}
-
-- (void)clearWebUI {
-  [super clearWebUI];
-  _webUIManager.reset();
 }
 
 #pragma mark -

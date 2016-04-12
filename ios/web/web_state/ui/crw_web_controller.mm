@@ -83,6 +83,7 @@
 #import "ios/web/web_state/web_controller_observer_bridge.h"
 #include "ios/web/web_state/web_state_facade_delegate.h"
 #import "ios/web/web_state/web_state_impl.h"
+#import "ios/web/webui/crw_web_ui_manager.h"
 #import "net/base/mac/url_conversions.h"
 #include "net/base/net_errors.h"
 #import "ui/base/ios/cru_context_menu_holder.h"
@@ -305,6 +306,9 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
   // |didFailProvisionalNavigation|.
   base::scoped_nsobject<CRWWebControllerPendingNavigationInfo>
       _pendingNavigationInfo;
+
+  // CRWWebUIManager object for loading WebUI pages.
+  base::scoped_nsobject<CRWWebUIManager> _webUIManager;
 }
 
 // The container view.  The container view should be accessed through this
@@ -1444,6 +1448,40 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   }
 
   return request;
+}
+
+- (web::WKBackForwardListItemHolder*)currentBackForwardListItemHolder {
+  web::NavigationItem* item = [self currentSessionEntry].navigationItemImpl;
+  DCHECK(item);
+  web::WKBackForwardListItemHolder* holder =
+      web::WKBackForwardListItemHolder::FromNavigationItem(item);
+  DCHECK(holder);
+  return holder;
+}
+
+- (void)updateCurrentBackForwardListItemHolder {
+  // WebUI pages (which are loaded via loadHTMLString:baseURL:) have no entry
+  // in the back/forward list, so the current item will still be the previous
+  // page, and should not be associated.
+  if (_webUIManager)
+    return;
+
+  web::WKBackForwardListItemHolder* holder =
+      [self currentBackForwardListItemHolder];
+
+  WKNavigationType navigationType =
+      self.pendingNavigationInfo ? [self.pendingNavigationInfo navigationType]
+                                 : WKNavigationTypeOther;
+  holder->set_back_forward_list_item(
+      [self.webView backForwardList].currentItem);
+  holder->set_navigation_type(navigationType);
+
+  // Only update the MIME type in the holder if there was MIME type information
+  // as part of this pending load. It will be nil when doing a fast
+  // back/forward navigation, for instance, because the callback that would
+  // populate it is not called in that flow.
+  if ([self.pendingNavigationInfo MIMEType])
+    holder->set_mime_type([self.pendingNavigationInfo MIMEType]);
 }
 
 - (void)loadNativeViewWithSuccess:(BOOL)loadSuccess {
@@ -3074,10 +3112,13 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
 - (void)createWebUIForURL:(const GURL&)URL {
   _webStateImpl->CreateWebUI(URL);
+  _webUIManager.reset(
+      [[CRWWebUIManager alloc] initWithWebState:self.webStateImpl]);
 }
 
 - (void)clearWebUI {
   _webStateImpl->ClearWebUI();
+  _webUIManager.reset();
 }
 
 #pragma mark -
