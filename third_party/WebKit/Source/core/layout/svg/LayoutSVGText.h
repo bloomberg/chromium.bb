@@ -23,13 +23,13 @@
 #define LayoutSVGText_h
 
 #include "core/layout/svg/LayoutSVGBlock.h"
-#include "core/layout/svg/SVGTextLayoutAttributesBuilder.h"
 #include "platform/transforms/AffineTransform.h"
 
 namespace blink {
 
 class LayoutSVGInlineText;
 class SVGTextElement;
+class SVGTextLayoutAttributes;
 
 class LayoutSVGText final : public LayoutSVGBlock {
 public:
@@ -85,7 +85,6 @@ private:
     bool m_needsPositioningValuesUpdate : 1;
     bool m_needsTransformUpdate : 1;
     bool m_needsTextMetricsUpdate : 1;
-    SVGTextLayoutAttributesBuilder m_layoutAttributesBuilder;
     Vector<SVGTextLayoutAttributes*> m_layoutAttributes;
 };
 

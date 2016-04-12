@@ -52,15 +52,28 @@ void updateLayoutAttributes(LayoutSVGInlineText& text, unsigned& valueListPositi
 
 } // namespace
 
-SVGTextLayoutAttributesBuilder::SVGTextLayoutAttributesBuilder()
-    : m_characterCount(0)
+SVGTextLayoutAttributesBuilder::SVGTextLayoutAttributesBuilder(LayoutSVGText& textRoot)
+    : m_textRoot(textRoot)
+    , m_characterCount(0)
 {
 }
 
-void SVGTextLayoutAttributesBuilder::buildLayoutAttributes(LayoutSVGText& textRoot) const
+void SVGTextLayoutAttributesBuilder::buildLayoutAttributes()
 {
+    m_characterDataMap.clear();
+
+    if (m_textPositions.isEmpty()) {
+        m_characterCount = 0;
+        collectTextPositioningElements(m_textRoot);
+    }
+
+    if (!m_characterCount)
+        return;
+
+    buildCharacterDataMap(m_textRoot);
+
     unsigned valueListPosition = 0;
-    LayoutObject* child = textRoot.firstChild();
+    LayoutObject* child = m_textRoot.firstChild();
     while (child) {
         if (child->isSVGInlineText()) {
             updateLayoutAttributes(toLayoutSVGInlineText(*child), valueListPosition, m_characterDataMap);
@@ -71,24 +84,8 @@ void SVGTextLayoutAttributesBuilder::buildLayoutAttributes(LayoutSVGText& textRo
                 continue;
             }
         }
-        child = child->nextInPreOrderAfterChildren(&textRoot);
+        child = child->nextInPreOrderAfterChildren(&m_textRoot);
     }
-}
-
-void SVGTextLayoutAttributesBuilder::buildLayoutAttributesForTextRoot(LayoutSVGText& textRoot)
-{
-    m_characterDataMap.clear();
-
-    if (m_textPositions.isEmpty()) {
-        m_characterCount = 0;
-        collectTextPositioningElements(textRoot);
-    }
-
-    if (!m_characterCount)
-        return;
-
-    buildCharacterDataMap(textRoot);
-    buildLayoutAttributes(textRoot);
 }
 
 static inline unsigned countCharactersInTextNode(const LayoutSVGInlineText& text)

@@ -24,12 +24,10 @@
 #include "platform/heap/Handle.h"
 #include "wtf/Allocator.h"
 #include "wtf/Vector.h"
-#include "wtf/text/Unicode.h"
 
 namespace blink {
 
 class LayoutBoxModelObject;
-class LayoutSVGInlineText;
 class LayoutSVGText;
 class SVGTextPositioningElement;
 
@@ -40,18 +38,13 @@ class SVGTextPositioningElement;
 // The first layout phase only extracts the relevant information needed in LayoutBlockFlowLine
 // to create the InlineBox tree based on text chunk boundaries & BiDi information.
 // The second layout phase is carried out by SVGTextLayoutEngine.
-
 class SVGTextLayoutAttributesBuilder {
-    DISALLOW_NEW();
+    STACK_ALLOCATED();
     WTF_MAKE_NONCOPYABLE(SVGTextLayoutAttributesBuilder);
 public:
-    SVGTextLayoutAttributesBuilder();
+    explicit SVGTextLayoutAttributesBuilder(LayoutSVGText&);
 
-    void buildLayoutAttributesForTextRoot(LayoutSVGText&);
-
-    // Invoked whenever the underlying DOM tree changes, so that m_textPositions is rebuild.
-    void clearTextPositioningElements() { m_textPositions.clear(); }
-    unsigned numberOfTextPositioningElements() const { return m_textPositions.size(); }
+    void buildLayoutAttributes();
 
     struct TextPosition {
         DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
@@ -76,9 +69,9 @@ private:
     void collectTextPositioningElements(LayoutBoxModelObject&);
     void fillCharacterDataMap(const TextPosition&);
 
-private:
+    LayoutSVGText& m_textRoot;
     unsigned m_characterCount;
-    PersistentHeapVector<TextPosition> m_textPositions;
+    HeapVector<TextPosition> m_textPositions;
     SVGCharacterDataMap m_characterDataMap;
 };
 

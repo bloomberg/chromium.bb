@@ -39,6 +39,7 @@
 #include "core/layout/svg/LayoutSVGRoot.h"
 #include "core/layout/svg/SVGLayoutSupport.h"
 #include "core/layout/svg/SVGResourcesCache.h"
+#include "core/layout/svg/SVGTextLayoutAttributesBuilder.h"
 #include "core/layout/svg/line/SVGRootInlineBox.h"
 #include "core/paint/SVGTextPainter.h"
 #include "core/style/ShadowList.h"
@@ -82,7 +83,6 @@ LayoutSVGText::~LayoutSVGText()
 void LayoutSVGText::willBeDestroyed()
 {
     m_layoutAttributes.clear();
-    m_layoutAttributesBuilder.clearTextPositioningElements();
 
     LayoutSVGBlock::willBeDestroyed();
 }
@@ -113,7 +113,6 @@ static inline void collectLayoutAttributes(LayoutObject* text, Vector<SVGTextLay
 void LayoutSVGText::invalidatePositioningValues(LayoutInvalidationReasonForTracing reason)
 {
     m_layoutAttributes.clear();
-    m_layoutAttributesBuilder.clearTextPositioningElements();
     setNeedsPositioningValuesUpdate();
     setNeedsLayoutAndFullPaintInvalidation(reason);
 }
@@ -122,7 +121,6 @@ void LayoutSVGText::subtreeChildWasAdded()
 {
     if (beingDestroyed() || !everHadLayout()) {
         ASSERT(m_layoutAttributes.isEmpty());
-        ASSERT(!m_layoutAttributesBuilder.numberOfTextPositioningElements());
         return;
     }
     if (documentBeingDestroyed())
@@ -138,7 +136,6 @@ void LayoutSVGText::subtreeChildWillBeRemoved()
 {
     if (beingDestroyed() || !everHadLayout()) {
         ASSERT(m_layoutAttributes.isEmpty());
-        ASSERT(!m_layoutAttributesBuilder.numberOfTextPositioningElements());
         return;
     }
 
@@ -153,7 +150,6 @@ void LayoutSVGText::subtreeTextDidChange()
     ASSERT(!beingDestroyed());
     if (!everHadLayout()) {
         ASSERT(m_layoutAttributes.isEmpty());
-        ASSERT(!m_layoutAttributesBuilder.numberOfTextPositioningElements());
         return;
     }
 
@@ -203,7 +199,8 @@ void LayoutSVGText::layout()
         ASSERT(m_layoutAttributes.isEmpty());
         collectLayoutAttributes(this, m_layoutAttributes);
         updateFontAndMetrics(*this);
-        m_layoutAttributesBuilder.buildLayoutAttributesForTextRoot(*this);
+
+        SVGTextLayoutAttributesBuilder(*this).buildLayoutAttributes();
 
         m_needsReordering = true;
         m_needsTextMetricsUpdate = false;
@@ -219,7 +216,9 @@ void LayoutSVGText::layout()
 
         m_layoutAttributes.clear();
         collectLayoutAttributes(this, m_layoutAttributes);
-        m_layoutAttributesBuilder.buildLayoutAttributesForTextRoot(*this);
+
+        SVGTextLayoutAttributesBuilder(*this).buildLayoutAttributes();
+
         m_needsReordering = true;
         m_needsPositioningValuesUpdate = false;
         updateCachedBoundariesInParents = true;
