@@ -43,7 +43,7 @@ std::string ChildWindowIDsAsString(TestWindow* parent) {
   for (Window* child : parent->children()) {
     if (!result.empty())
       result += " ";
-    result += base::IntToString(child->id());
+    result += base::IntToString(child->server_id());
   }
   return result;
 }
@@ -94,19 +94,43 @@ TEST_F(WindowTest, Contains) {
   EXPECT_TRUE(w1.Contains(&w111));
 }
 
-TEST_F(WindowTest, GetChildById) {
+TEST_F(WindowTest, GetChildByServerId) {
   TestWindow w1;
-  WindowPrivate(&w1).set_id(1);
+  WindowPrivate(&w1).set_server_id(1);
   TestWindow w11;
-  WindowPrivate(&w11).set_id(11);
+  WindowPrivate(&w11).set_server_id(11);
   w1.AddChild(&w11);
   TestWindow w111;
-  WindowPrivate(&w111).set_id(111);
+  WindowPrivate(&w111).set_server_id(111);
   w11.AddChild(&w111);
 
   // Find direct & indirect descendents.
-  EXPECT_EQ(&w11, w1.GetChildById(w11.id()));
-  EXPECT_EQ(&w111, w1.GetChildById(w111.id()));
+  EXPECT_EQ(&w11, w1.GetChildByServerId(w11.server_id()));
+  EXPECT_EQ(&w111, w1.GetChildByServerId(w111.server_id()));
+}
+
+TEST_F(WindowTest, GetChildByLocalId) {
+  TestWindow w1;
+  w1.set_local_id(0);
+  EXPECT_EQ(&w1, w1.GetChildByLocalId(0));
+
+  TestWindow w11;
+  w11.set_local_id(11);
+  w1.AddChild(&w11);
+
+  TestWindow w12;
+  w12.set_local_id(w1.local_id());
+  w1.AddChild(&w12);
+
+  TestWindow w111;
+  w111.set_local_id(111);
+  w11.AddChild(&w111);
+
+  // Find direct & indirect descendents.
+  EXPECT_EQ(&w11, w1.GetChildByLocalId(w11.local_id()));
+  EXPECT_EQ(&w111, w1.GetChildByLocalId(w111.local_id()));
+  // Verifies parent returned by child with same id.
+  EXPECT_EQ(&w1, w1.GetChildByLocalId(w1.local_id()));
 }
 
 TEST_F(WindowTest, DrawnAndVisible) {
@@ -618,7 +642,7 @@ class BoundsChangeObserver : public WindowObserver {
                               const gfx::Rect& new_bounds) override {
     changes_.push_back(base::StringPrintf(
         "window=%s old_bounds=%s new_bounds=%s phase=changing",
-        WindowIdToString(window->id()).c_str(),
+        WindowIdToString(window->server_id()).c_str(),
         RectToString(old_bounds).c_str(), RectToString(new_bounds).c_str()));
   }
   void OnWindowBoundsChanged(Window* window,
@@ -626,7 +650,7 @@ class BoundsChangeObserver : public WindowObserver {
                              const gfx::Rect& new_bounds) override {
     changes_.push_back(base::StringPrintf(
         "window=%s old_bounds=%s new_bounds=%s phase=changed",
-        WindowIdToString(window->id()).c_str(),
+        WindowIdToString(window->server_id()).c_str(),
         RectToString(old_bounds).c_str(), RectToString(new_bounds).c_str()));
   }
 
@@ -675,13 +699,13 @@ class VisibilityChangeObserver : public WindowObserver {
   void OnWindowVisibilityChanging(Window* window) override {
     changes_.push_back(
         base::StringPrintf("window=%s phase=changing wisibility=%s",
-                           WindowIdToString(window->id()).c_str(),
+                           WindowIdToString(window->server_id()).c_str(),
                            window->visible() ? "true" : "false"));
   }
   void OnWindowVisibilityChanged(Window* window) override {
     changes_.push_back(
         base::StringPrintf("window=%s phase=changed wisibility=%s",
-                           WindowIdToString(window->id()).c_str(),
+                           WindowIdToString(window->server_id()).c_str(),
                            window->visible() ? "true" : "false"));
   }
 
@@ -719,10 +743,10 @@ TEST_F(WindowObserverTest, SetVisible) {
 TEST_F(WindowObserverTest, SetVisibleParent) {
   TestWindow parent;
   parent.SetVisible(true);
-  WindowPrivate(&parent).set_id(1);
+  WindowPrivate(&parent).set_server_id(1);
   TestWindow child;
   child.SetVisible(true);
-  WindowPrivate(&child).set_id(2);
+  WindowPrivate(&child).set_server_id(2);
   parent.AddChild(&child);
   EXPECT_TRUE(parent.visible());
   EXPECT_TRUE(child.visible());
@@ -741,10 +765,10 @@ TEST_F(WindowObserverTest, SetVisibleParent) {
 TEST_F(WindowObserverTest, SetVisibleChild) {
   TestWindow parent;
   parent.SetVisible(true);
-  WindowPrivate(&parent).set_id(1);
+  WindowPrivate(&parent).set_server_id(1);
   TestWindow child;
   child.SetVisible(true);
-  WindowPrivate(&child).set_id(2);
+  WindowPrivate(&child).set_server_id(2);
   parent.AddChild(&child);
   EXPECT_TRUE(parent.visible());
   EXPECT_TRUE(child.visible());
@@ -780,9 +804,10 @@ class OpacityChangeObserver : public WindowObserver {
   void OnWindowOpacityChanged(Window* window,
                               float old_opacity,
                               float new_opacity) override {
-    changes_.push_back(base::StringPrintf(
-        "window=%s old_opacity=%.2f new_opacity=%.2f",
-        WindowIdToString(window->id()).c_str(), old_opacity, new_opacity));
+    changes_.push_back(
+        base::StringPrintf("window=%s old_opacity=%.2f new_opacity=%.2f",
+                           WindowIdToString(window->server_id()).c_str(),
+                           old_opacity, new_opacity));
   }
 
   Window* window_;
@@ -844,7 +869,7 @@ class SharedPropertyChangeObserver : public WindowObserver {
       const std::vector<uint8_t>* new_data) override {
     changes_.push_back(base::StringPrintf(
         "window=%s shared property changed key=%s old_value=%s new_value=%s",
-        WindowIdToString(window->id()).c_str(), name.c_str(),
+        WindowIdToString(window->server_id()).c_str(), name.c_str(),
         VectorToString(old_data).c_str(), VectorToString(new_data).c_str()));
   }
 

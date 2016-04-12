@@ -57,7 +57,6 @@ class RootWindowController : public mus::WindowObserver,
   void IncrementWindowCount() { ++window_count_; }
 
   mus::Window* GetWindowForContainer(mojom::Container container);
-  mus::Window* GetWindowById(mus::Id id);
   bool WindowIsContainer(const mus::Window* window) const;
 
   WindowManager* window_manager() { return window_manager_.get(); }

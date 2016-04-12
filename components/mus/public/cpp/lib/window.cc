@@ -209,7 +209,8 @@ void Window::SetClientArea(
     return;
 
   if (connection_)
-    tree_client()->SetClientArea(id_, client_area, additional_client_areas);
+    tree_client()->SetClientArea(server_id_, client_area,
+                                 additional_client_areas);
   LocalSetClientArea(client_area, additional_client_areas);
 }
 
@@ -233,7 +234,7 @@ void Window::SetPredefinedCursor(mus::mojom::Cursor cursor_id) {
     return;
 
   if (connection_)
-    tree_client()->SetPredefinedCursor(id_, cursor_id);
+    tree_client()->SetPredefinedCursor(server_id_, cursor_id);
   LocalSetPredefinedCursor(cursor_id);
 }
 
@@ -253,7 +254,7 @@ scoped_ptr<WindowSurface> Window::RequestSurface(mojom::SurfaceType type) {
 void Window::AttachSurface(mojom::SurfaceType type,
                            scoped_ptr<WindowSurfaceBinding> surface_binding) {
   tree_client()->AttachSurface(
-      id_, type, std::move(surface_binding->surface_request_),
+      server_id_, type, std::move(surface_binding->surface_request_),
       mojo::MakeProxy(std::move(surface_binding->surface_client_)));
 }
 
@@ -290,7 +291,7 @@ void Window::AddChild(Window* child) {
     return;
   LocalAddChild(child);
   if (connection_)
-    tree_client()->AddChild(this, child->id());
+    tree_client()->AddChild(this, child->server_id());
 }
 
 void Window::RemoveChild(Window* child) {
@@ -300,14 +301,14 @@ void Window::RemoveChild(Window* child) {
     CHECK_EQ(child->connection(), connection_);
   LocalRemoveChild(child);
   if (connection_)
-    tree_client()->RemoveChild(this, child->id());
+    tree_client()->RemoveChild(this, child->server_id());
 }
 
 void Window::Reorder(Window* relative, mojom::OrderDirection direction) {
   if (!LocalReorder(relative, direction))
     return;
   if (connection_)
-    tree_client()->Reorder(this, relative->id(), direction);
+    tree_client()->Reorder(this, relative->server_id(), direction);
 }
 
 void Window::MoveToFront() {
@@ -341,7 +342,7 @@ void Window::AddTransientWindow(Window* transient_window) {
     CHECK_EQ(transient_window->connection(), connection_);
   LocalAddTransientWindow(transient_window);
   if (connection_)
-    tree_client()->AddTransientWindow(this, transient_window->id());
+    tree_client()->AddTransientWindow(this, transient_window->server_id());
 }
 
 void Window::RemoveTransientWindow(Window* transient_window) {
@@ -361,14 +362,27 @@ void Window::SetModal() {
     tree_client()->SetModal(this);
 }
 
-Window* Window::GetChildById(Id id) {
-  if (id == id_)
+Window* Window::GetChildByLocalId(int id) {
+  if (id == local_id_)
+    return this;
+  // TODO(beng): this could be improved depending on how we decide to own
+  // windows.
+  for (Window* child : children_) {
+    Window* matching_child = child->GetChildByLocalId(id);
+    if (matching_child)
+      return matching_child;
+  }
+  return nullptr;
+}
+
+Window* Window::GetChildByServerId(Id id) {
+  if (id == server_id_)
     return this;
   // TODO(beng): this could be improved depending on how we decide to own
   // windows.
   Children::const_iterator it = children_.begin();
   for (; it != children_.end(); ++it) {
-    Window* window = (*it)->GetChildById(id);
+    Window* window = (*it)->GetChildByServerId(id);
     if (window)
       return window;
   }
@@ -377,14 +391,14 @@ Window* Window::GetChildById(Id id) {
 
 void Window::SetTextInputState(mojo::TextInputStatePtr state) {
   if (connection_)
-    tree_client()->SetWindowTextInputState(id_, std::move(state));
+    tree_client()->SetWindowTextInputState(server_id_, std::move(state));
 }
 
 void Window::SetImeVisibility(bool visible, mojo::TextInputStatePtr state) {
   // SetImeVisibility() shouldn't be used if the window is not editable.
   DCHECK(state.is_null() || state->type != mojo::TextInputType::NONE);
   if (connection_)
-    tree_client()->SetImeVisibility(id_, visible, std::move(state));
+    tree_client()->SetImeVisibility(server_id_, visible, std::move(state));
 }
 
 bool Window::HasCapture() const {
@@ -412,7 +426,7 @@ bool Window::HasFocus() const {
 
 void Window::SetCanFocus(bool can_focus) {
   if (connection_)
-    tree_client()->SetCanFocus(id_, can_focus);
+    tree_client()->SetCanFocus(server_id_, can_focus);
 }
 
 void Window::Embed(mus::mojom::WindowTreeClientPtr client) {
@@ -422,7 +436,7 @@ void Window::Embed(mus::mojom::WindowTreeClientPtr client) {
 void Window::Embed(mus::mojom::WindowTreeClientPtr client,
                    const EmbedCallback& callback) {
   if (PrepareForEmbed())
-    tree_client()->Embed(id_, std::move(client), callback);
+    tree_client()->Embed(server_id_, std::move(client), callback);
   else
     callback.Run(false);
 }
@@ -502,7 +516,7 @@ Window::~Window() {
 
 Window::Window(WindowTreeConnection* connection, Id id)
     : connection_(connection),
-      id_(id),
+      server_id_(id),
       parent_(nullptr),
       stacking_target_(nullptr),
       transient_parent_(nullptr),

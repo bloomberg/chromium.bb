@@ -48,7 +48,7 @@ mus::Window* GetTopLevelWindow(mus::Window* window, mus::Window* container) {
 // Get a UserWindow struct from a mus::Window.
 mojom::UserWindowPtr GetUserWindow(mus::Window* window) {
   mojom::UserWindowPtr user_window(mojom::UserWindow::New());
-  user_window->window_id = window->id();
+  user_window->window_id = window->server_id();
   user_window->window_title = GetWindowTitle(window);
   user_window->window_app_icon = GetWindowAppIcon(window);
   mus::Window* focused = window->connection()->GetFocusedWindow();
@@ -79,11 +79,11 @@ class WindowPropertyObserver : public mus::WindowObserver {
       return;
     if (name == mus::mojom::WindowManager::kWindowTitle_Property) {
       controller_->user_window_observer()->OnUserWindowTitleChanged(
-          window->id(), GetWindowTitle(window));
+          window->server_id(), GetWindowTitle(window));
     } else if (name == mus::mojom::WindowManager::kWindowAppIcon_Property) {
       controller_->user_window_observer()->OnUserWindowAppIconChanged(
-          window->id(), new_data ? mojo::Array<uint8_t>::From(*new_data)
-                                 : mojo::Array<uint8_t>());
+          window->server_id(), new_data ? mojo::Array<uint8_t>::From(*new_data)
+                                        : mojo::Array<uint8_t>());
     }
   }
 
@@ -135,7 +135,7 @@ void UserWindowControllerImpl::OnTreeChanging(const TreeChangeParams& params) {
   } else if (params.old_parent == GetUserWindowContainer()) {
     params.target->RemoveObserver(window_property_observer_.get());
     if (user_window_observer_)
-      user_window_observer_->OnUserWindowRemoved(params.target->id());
+      user_window_observer_->OnUserWindowRemoved(params.target->server_id());
   }
 }
 
@@ -152,9 +152,11 @@ void UserWindowControllerImpl::OnWindowTreeFocusChanged(
     return;
 
   if (lost_focus)
-    user_window_observer_->OnUserWindowFocusChanged(lost_focus->id(), false);
+    user_window_observer_->OnUserWindowFocusChanged(lost_focus->server_id(),
+                                                    false);
   if (gained_focus)
-    user_window_observer_->OnUserWindowFocusChanged(gained_focus->id(), true);
+    user_window_observer_->OnUserWindowFocusChanged(gained_focus->server_id(),
+                                                    true);
 }
 
 void UserWindowControllerImpl::AddUserWindowObserver(
@@ -171,7 +173,7 @@ void UserWindowControllerImpl::AddUserWindowObserver(
 }
 
 void UserWindowControllerImpl::FocusUserWindow(uint32_t window_id) {
-  mus::Window* window = GetUserWindowContainer()->GetChildById(window_id);
+  mus::Window* window = GetUserWindowContainer()->GetChildByServerId(window_id);
   if (window)
     window->SetFocus();
 }

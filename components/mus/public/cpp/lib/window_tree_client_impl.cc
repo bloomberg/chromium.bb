@@ -42,7 +42,7 @@ Window* AddWindowToConnection(WindowTreeClientImpl* client,
   Window* window = WindowPrivate::LocalCreate();
   WindowPrivate private_window(window);
   private_window.set_connection(client);
-  private_window.set_id(window_data->window_id);
+  private_window.set_server_id(window_data->window_id);
   private_window.set_visible(window_data->visible);
   private_window.LocalSetViewportMetrics(mojom::ViewportMetrics(),
                                          *window_data->viewport_metrics);
@@ -66,10 +66,10 @@ Window* BuildWindowTree(WindowTreeClientImpl* client,
   if (initial_parent)
     parents.push_back(initial_parent);
   for (size_t i = 0; i < windows.size(); ++i) {
-    if (last_window && windows[i]->parent_id == last_window->id()) {
+    if (last_window && windows[i]->parent_id == last_window->server_id()) {
       parents.push_back(last_window);
     } else if (!parents.empty()) {
-      while (parents.back()->id() != windows[i]->parent_id)
+      while (parents.back()->server_id() != windows[i]->parent_id)
         parents.pop_back();
     }
     Window* window = AddWindowToConnection(
@@ -185,14 +185,14 @@ void WindowTreeClientImpl::DestroyWindow(Window* window) {
   DCHECK(tree_);
   const uint32_t change_id = ScheduleInFlightChange(base::WrapUnique(
       new CrashInFlightChange(window, ChangeType::DELETE_WINDOW)));
-  tree_->DeleteWindow(change_id, window->id());
+  tree_->DeleteWindow(change_id, window->server_id());
 }
 
 void WindowTreeClientImpl::AddChild(Window* parent, Id child_id) {
   DCHECK(tree_);
   const uint32_t change_id = ScheduleInFlightChange(
       base::WrapUnique(new CrashInFlightChange(parent, ChangeType::ADD_CHILD)));
-  tree_->AddWindow(change_id, parent->id(), child_id);
+  tree_->AddWindow(change_id, parent->server_id(), child_id);
 }
 
 void WindowTreeClientImpl::RemoveChild(Window* parent, Id child_id) {
@@ -207,7 +207,8 @@ void WindowTreeClientImpl::AddTransientWindow(Window* window,
   DCHECK(tree_);
   const uint32_t change_id = ScheduleInFlightChange(base::WrapUnique(
       new CrashInFlightChange(window, ChangeType::ADD_TRANSIENT_WINDOW)));
-  tree_->AddTransientWindow(change_id, window->id(), transient_window_id);
+  tree_->AddTransientWindow(change_id, window->server_id(),
+                            transient_window_id);
 }
 
 void WindowTreeClientImpl::RemoveTransientWindowFromParent(Window* window) {
@@ -215,14 +216,14 @@ void WindowTreeClientImpl::RemoveTransientWindowFromParent(Window* window) {
   const uint32_t change_id =
       ScheduleInFlightChange(base::WrapUnique(new CrashInFlightChange(
           window, ChangeType::REMOVE_TRANSIENT_WINDOW_FROM_PARENT)));
-  tree_->RemoveTransientWindowFromParent(change_id, window->id());
+  tree_->RemoveTransientWindowFromParent(change_id, window->server_id());
 }
 
 void WindowTreeClientImpl::SetModal(Window* window) {
   DCHECK(tree_);
   const uint32_t change_id = ScheduleInFlightChange(
       base::WrapUnique(new InFlightSetModalChange(window)));
-  tree_->SetModal(change_id, window->id());
+  tree_->SetModal(change_id, window->server_id());
 }
 
 void WindowTreeClientImpl::Reorder(Window* window,
@@ -231,13 +232,15 @@ void WindowTreeClientImpl::Reorder(Window* window,
   DCHECK(tree_);
   const uint32_t change_id = ScheduleInFlightChange(
       base::WrapUnique(new CrashInFlightChange(window, ChangeType::REORDER)));
-  tree_->ReorderWindow(change_id, window->id(), relative_window_id, direction);
+  tree_->ReorderWindow(change_id, window->server_id(), relative_window_id,
+                       direction);
 }
 
 bool WindowTreeClientImpl::OwnsWindow(Window* window) const {
   // Windows created via CreateTopLevelWindow() are not owned by us, but have
   // our connection id.
-  return HiWord(window->id()) == connection_id_ && roots_.count(window) == 0;
+  return HiWord(window->server_id()) == connection_id_ &&
+         roots_.count(window) == 0;
 }
 
 void WindowTreeClientImpl::SetBounds(Window* window,
@@ -246,7 +249,8 @@ void WindowTreeClientImpl::SetBounds(Window* window,
   DCHECK(tree_);
   const uint32_t change_id = ScheduleInFlightChange(
       base::WrapUnique(new InFlightBoundsChange(window, old_bounds)));
-  tree_->SetWindowBounds(change_id, window->id(), mojo::Rect::From(bounds));
+  tree_->SetWindowBounds(change_id, window->server_id(),
+                         mojo::Rect::From(bounds));
 }
 
 void WindowTreeClientImpl::SetCapture(Window* window) {
@@ -257,7 +261,7 @@ void WindowTreeClientImpl::SetCapture(Window* window) {
     return;
   const uint32_t change_id = ScheduleInFlightChange(
       base::WrapUnique(new InFlightCaptureChange(this, capture_window_)));
-  tree_->SetCapture(change_id, window->id());
+  tree_->SetCapture(change_id, window->server_id());
   LocalSetCapture(window);
 }
 
@@ -269,7 +273,7 @@ void WindowTreeClientImpl::ReleaseCapture(Window* window) {
     return;
   const uint32_t change_id = ScheduleInFlightChange(
       base::WrapUnique(new InFlightCaptureChange(this, window)));
-  tree_->ReleaseCapture(change_id, window->id());
+  tree_->ReleaseCapture(change_id, window->server_id());
   LocalSetCapture(nullptr);
 }
 
@@ -289,7 +293,7 @@ void WindowTreeClientImpl::SetFocus(Window* window) {
   DCHECK(tree_);
   const uint32_t change_id = ScheduleInFlightChange(
       base::WrapUnique(new InFlightFocusChange(this, focused_window_)));
-  tree_->SetFocus(change_id, window ? window->id() : 0);
+  tree_->SetFocus(change_id, window ? window->server_id() : 0);
   LocalSetFocus(window);
 }
 
@@ -316,14 +320,14 @@ void WindowTreeClientImpl::SetVisible(Window* window, bool visible) {
   DCHECK(tree_);
   const uint32_t change_id = ScheduleInFlightChange(
       base::WrapUnique(new InFlightVisibleChange(window, !visible)));
-  tree_->SetWindowVisibility(change_id, window->id(), visible);
+  tree_->SetWindowVisibility(change_id, window->server_id(), visible);
 }
 
 void WindowTreeClientImpl::SetOpacity(Window* window, float opacity) {
   DCHECK(tree_);
   const uint32_t change_id = ScheduleInFlightChange(
       base::WrapUnique(new InFlightOpacityChange(window, window->opacity())));
-  tree_->SetWindowOpacity(change_id, window->id(), opacity);
+  tree_->SetWindowOpacity(change_id, window->server_id(), opacity);
 }
 
 void WindowTreeClientImpl::SetProperty(Window* window,
@@ -337,7 +341,7 @@ void WindowTreeClientImpl::SetProperty(Window* window,
 
   const uint32_t change_id = ScheduleInFlightChange(
       base::WrapUnique(new InFlightPropertyChange(window, name, old_value)));
-  tree_->SetWindowProperty(change_id, window->id(), mojo::String(name),
+  tree_->SetWindowProperty(change_id, window->server_id(), mojo::String(name),
                            std::move(data));
 }
 
@@ -365,7 +369,7 @@ void WindowTreeClientImpl::Embed(
 
 void WindowTreeClientImpl::RequestClose(Window* window) {
   if (window_manager_internal_client_)
-    window_manager_internal_client_->WmRequestClose(window->id());
+    window_manager_internal_client_->WmRequestClose(window->server_id());
 }
 
 void WindowTreeClientImpl::AttachSurface(
@@ -407,12 +411,12 @@ void WindowTreeClientImpl::LocalSetFocus(Window* focused) {
 }
 
 void WindowTreeClientImpl::AddWindow(Window* window) {
-  DCHECK(windows_.find(window->id()) == windows_.end());
-  windows_[window->id()] = window;
+  DCHECK(windows_.find(window->server_id()) == windows_.end());
+  windows_[window->server_id()] = window;
 }
 
 void WindowTreeClientImpl::OnWindowDestroyed(Window* window) {
-  windows_.erase(window->id());
+  windows_.erase(window->server_id());
 
   // Remove any InFlightChanges associated with the window.
   std::set<uint32_t> in_flight_change_ids_to_remove;
@@ -443,7 +447,8 @@ InFlightChange* WindowTreeClientImpl::GetOldestInFlightChangeMatching(
 
 uint32_t WindowTreeClientImpl::ScheduleInFlightChange(
     scoped_ptr<InFlightChange> change) {
-  DCHECK(!change->window() || windows_.count(change->window()->id()) > 0);
+  DCHECK(!change->window() ||
+         windows_.count(change->window()->server_id()) > 0);
   const uint32_t change_id = next_change_id_++;
   in_flight_map_[change_id] = std::move(change);
   return change_id;
@@ -479,10 +484,11 @@ Window* WindowTreeClientImpl::NewWindowImpl(
         mojo::Map<mojo::String, mojo::Array<uint8_t>>::From(*properties);
   }
   if (type == NewWindowType::CHILD) {
-    tree_->NewWindow(change_id, window->id(), std::move(transport_properties));
+    tree_->NewWindow(change_id, window->server_id(),
+                     std::move(transport_properties));
   } else {
     roots_.insert(window);
-    tree_->NewTopLevelWindow(change_id, window->id(),
+    tree_->NewTopLevelWindow(change_id, window->server_id(),
                              std::move(transport_properties));
   }
   return window;
@@ -981,8 +987,8 @@ void WindowTreeClientImpl::WmCreateTopLevelWindow(
       transport_properties.To<std::map<std::string, std::vector<uint8_t>>>();
   Window* window =
       window_manager_delegate_->OnWmCreateTopLevelWindow(&properties);
-  window_manager_internal_client_->OnWmCreatedTopLevelWindow(change_id,
-                                                             window->id());
+  window_manager_internal_client_->OnWmCreatedTopLevelWindow(
+      change_id, window->server_id());
 }
 
 void WindowTreeClientImpl::OnAccelerator(uint32_t id, mojom::EventPtr event) {
@@ -1009,11 +1015,11 @@ void WindowTreeClientImpl::RemoveAccelerator(uint32_t id) {
 }
 
 void WindowTreeClientImpl::AddActivationParent(Window* window) {
-  window_manager_internal_client_->AddActivationParent(window->id());
+  window_manager_internal_client_->AddActivationParent(window->server_id());
 }
 
 void WindowTreeClientImpl::RemoveActivationParent(Window* window) {
-  window_manager_internal_client_->RemoveActivationParent(window->id());
+  window_manager_internal_client_->RemoveActivationParent(window->server_id());
 }
 
 void WindowTreeClientImpl::ActivateNextWindow() {
@@ -1025,7 +1031,8 @@ void WindowTreeClientImpl::SetUnderlaySurfaceOffsetAndExtendedHitArea(
     const gfx::Vector2d& offset,
     const gfx::Insets& hit_area) {
   window_manager_internal_client_->SetUnderlaySurfaceOffsetAndExtendedHitArea(
-      window->id(), offset.x(), offset.y(), mojo::Insets::From(hit_area));
+      window->server_id(), offset.x(), offset.y(),
+      mojo::Insets::From(hit_area));
 }
 
 }  // namespace mus

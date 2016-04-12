@@ -33,6 +33,10 @@ void AssertTrue(bool success) {
   DCHECK(success);
 }
 
+int ContainerToLocalId(mojom::Container container) {
+  return static_cast<int>(container);
+}
+
 }  // namespace
 
 // static
@@ -65,13 +69,7 @@ mojo::Connector* RootWindowController::GetConnector() {
 
 mus::Window* RootWindowController::GetWindowForContainer(
     mojom::Container container) {
-  const mus::Id window_id = root_->connection()->GetConnectionId() << 16 |
-                            static_cast<uint16_t>(container);
-  return root_->GetChildById(window_id);
-}
-
-mus::Window* RootWindowController::GetWindowById(mus::Id id) {
-  return root_->GetChildById(id);
+  return root_->GetChildByLocalId(ContainerToLocalId(container));
 }
 
 bool RootWindowController::WindowIsContainer(const mus::Window* window) const {
@@ -110,6 +108,7 @@ void RootWindowController::AddAccelerators() {
 
 void RootWindowController::OnEmbed(mus::Window* root) {
   root_ = root;
+  root_->set_local_id(ContainerToLocalId(mojom::Container::ROOT));
   root_->AddObserver(this);
   layout_manager_[root_].reset(new FillLayout(root_));
 
@@ -164,18 +163,13 @@ void RootWindowController::CreateContainer(
     mash::wm::mojom::Container container,
     mash::wm::mojom::Container parent_container) {
   mus::Window* window = root_->connection()->NewWindow();
-  DCHECK_EQ(mus::LoWord(window->id()), static_cast<uint16_t>(container))
-      << "Containers must be created before other windows!";
-  // Install a FillLayout by default for containers.
+  window->set_local_id(ContainerToLocalId(container));
   layout_manager_[window].reset(new FillLayout(window));
   // User private windows are hidden by default until the window manager learns
   // the lock state, so their contents are never accidentally revealed.
   window->SetVisible(container != mojom::Container::USER_PRIVATE);
-  mus::Id parent_id = (mus::HiWord(window->id()) << 16) |
-                      static_cast<uint16_t>(parent_container);
-  mus::Window* parent = parent_container == mojom::Container::ROOT
-                            ? root_
-                            : root_->GetChildById(parent_id);
+  mus::Window* parent =
+      root_->GetChildByLocalId(ContainerToLocalId(parent_container));
   parent->AddChild(window);
 }
 
