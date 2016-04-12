@@ -6,6 +6,9 @@
 # gn gen out/foo
 #
 # Use gn args to add your own build preference args.
+#
+# This list must be kept in sync with the blimp list in
+# //tools/mb/mb_config.pyl.
 
 use_aura = true
 use_ozone = true
