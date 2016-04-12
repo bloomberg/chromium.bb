@@ -393,7 +393,10 @@ struct ivi_layout_interface {
 		(*get_properties_of_layer)(struct ivi_layout_layer *ivilayer);
 
 	/**
-	 * \brief Get all ivi_ayers under the given ivi_surface
+	 * \brief Get all ivi-layers under the given ivi-surface
+	 *
+	 * This means all the ivi-layers the ivi-surface was added to. It has
+	 * no relation to geometric overlaps.
 	 *
 	 * \return IVI_SUCCEEDED if the method call was successful
 	 * \return IVI_FAILED if the method call was failed
