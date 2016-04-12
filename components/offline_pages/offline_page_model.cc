@@ -325,15 +325,29 @@ bool OfflinePageModel::HasOfflinePages() const {
   return false;
 }
 
-const std::vector<OfflinePageItem> OfflinePageModel::GetAllPages() const {
+void OfflinePageModel::GetAllPages(const GetAllPagesCallback& callback) {
+  if (!is_loaded_) {
+    delayed_tasks_.push_back(
+        base::Bind(&OfflinePageModel::GetAllPagesAfterLoadDone,
+                   weak_ptr_factory_.GetWeakPtr(), callback));
+    return;
+  }
+
+  GetAllPagesAfterLoadDone(callback);
+}
+
+void OfflinePageModel::GetAllPagesAfterLoadDone(
+    const GetAllPagesCallback& callback) {
   DCHECK(is_loaded_);
+
   std::vector<OfflinePageItem> offline_pages;
   for (const auto& id_page_pair : offline_pages_) {
     if (id_page_pair.second.IsMarkedForDeletion())
       continue;
     offline_pages.push_back(id_page_pair.second);
   }
-  return offline_pages;
+
+  callback.Run(offline_pages);
 }
 
 const std::vector<OfflinePageItem> OfflinePageModel::GetPagesToCleanUp() const {
@@ -352,6 +366,7 @@ const std::vector<OfflinePageItem> OfflinePageModel::GetPagesToCleanUp() const {
 const std::vector<int64_t> OfflinePageModel::GetOfflineIdsForClientId(
     const ClientId& client_id,
     bool include_deleted) const {
+  DCHECK(is_loaded_);
   std::vector<int64_t> results;
 
   // We want only all pages, including those marked for deletion.

@@ -41,7 +41,10 @@ class OfflinePageBridge : public OfflinePageModel::Observer,
 
   void GetAllPages(JNIEnv* env,
                    const base::android::JavaParamRef<jobject>& obj,
-                   const base::android::JavaParamRef<jobject>& j_result_obj);
+                   const base::android::JavaParamRef<jobject>& j_result_obj,
+                   const base::android::JavaParamRef<jobject>& j_callback_obj);
+  bool HasPages(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
+
   void GetPagesToCleanUp(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,

@@ -90,7 +90,10 @@ public class OfflinePageBridge {
      *
      * The returned List will be empty (but non-null) if no items are found.
      */
-    public interface MultipleOfflinePageItemCallback { void onResult(List<OfflinePageItem> items); }
+    public interface MultipleOfflinePageItemCallback {
+        @CalledByNative("MultipleOfflinePageItemCallback")
+        void onResult(List<OfflinePageItem> items);
+    }
 
     /**
      * Callback used when determining whether we have any offline pages.
@@ -234,34 +237,19 @@ public class OfflinePageBridge {
      *
      * @param callback The callback to run when the operation completes.
      */
-    @VisibleForTesting
+
     public void getAllPages(final MultipleOfflinePageItemCallback callback) {
-        runWhenLoaded(new Runnable() {
-            @Override
-            public void run() {
-                callback.onResult(getAllPagesInternal());
-            }
-        });
+        List<OfflinePageItem> result = new ArrayList<OfflinePageItem>();
+        nativeGetAllPages(mNativeOfflinePageBridge, result, callback);
     }
 
     /** Returns whether we have any offline pages at all. */
     public boolean hasPages() {
         // TODO(dewittj): Make this something faster than a full scan.
-        return !getAllPagesInternal().isEmpty();
-    }
-
-    /**
-     * @return All available offline pages. Requires that the model is already loaded.
-     */
-    private List<OfflinePageItem> getAllPagesInternal() {
-        assert mIsNativeOfflinePageModelLoaded;
-        List<OfflinePageItem> result = new ArrayList<OfflinePageItem>();
-        nativeGetAllPages(mNativeOfflinePageBridge, result);
-        return result;
+        return nativeHasPages(mNativeOfflinePageBridge);
     }
 
     /** @return A list of all offline ids that match a particular (namespace, client_id) pair. */
-    @VisibleForTesting
     Set<Long> getOfflineIdsForClientId(ClientId clientId) {
         assert mIsNativeOfflinePageModelLoaded;
         long[] offlineIds = nativeGetOfflineIdsForClientId(
@@ -642,8 +630,9 @@ public class OfflinePageBridge {
     private static native OfflinePageBridge nativeGetOfflinePageBridgeForProfile(Profile profile);
 
     @VisibleForTesting
-    native void nativeGetAllPages(long nativeOfflinePageBridge, List<OfflinePageItem> offlinePages);
-
+    native void nativeGetAllPages(long nativeOfflinePageBridge, List<OfflinePageItem> offlinePages,
+            final MultipleOfflinePageItemCallback callback);
+    native boolean nativeHasPages(long nativeOfflinePageBridge);
     @VisibleForTesting
     native long[] nativeGetOfflineIdsForClientId(
             long nativeOfflinePageBridge, String clientNamespace, String clientId);

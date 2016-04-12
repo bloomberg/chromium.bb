@@ -122,8 +122,11 @@ class OfflinePageModel : public KeyedService, public base::SupportsUserData {
     virtual ~Observer() {}
   };
 
+  typedef std::vector<OfflinePageItem> GetAllPagesResult;
+
   typedef base::Callback<void(SavePageResult, int64_t)> SavePageCallback;
   typedef base::Callback<void(DeletePageResult)> DeletePageCallback;
+  typedef base::Callback<void(const GetAllPagesResult&)> GetAllPagesCallback;
 
   // Generates a new offline id
   static int64_t GenerateOfflineId();
@@ -185,7 +188,7 @@ class OfflinePageModel : public KeyedService, public base::SupportsUserData {
   bool HasOfflinePages() const;
 
   // Gets all available offline pages. Requires that the model is loaded.
-  const std::vector<OfflinePageItem> GetAllPages() const;
+  void GetAllPages(const GetAllPagesCallback& callback);
 
   // Gets pages that should be removed to clean up storage. Requires that the
   // model is loaded.
@@ -243,6 +246,8 @@ class OfflinePageModel : public KeyedService, public base::SupportsUserData {
 
   // Callback for ensuring archive directory is created.
   void OnEnsureArchivesDirCreatedDone();
+
+  void GetAllPagesAfterLoadDone(const GetAllPagesCallback& callback);
 
   // Callback for loading pages from the offline page metadata store.
   void OnLoadDone(OfflinePageMetadataStore::LoadStatus load_status,
