@@ -592,6 +592,27 @@
         },
       ],
     }],
+    ['ozone_platform_wayland==1', {
+      'targets': [
+        {
+          'target_name': 'wayland-egl',
+          'type': 'none',
+          'direct_dependent_settings': {
+            'cflags': [
+              '<!@(<(pkg-config) --cflags wayland-egl)',
+            ],
+          },
+          'link_settings': {
+            'ldflags': [
+              '<!@(<(pkg-config) --libs-only-L --libs-only-other wayland-egl)',
+            ],
+            'libraries': [
+              '<!@(<(pkg-config) --libs-only-l wayland-egl)',
+            ],
+          },
+        },
+      ],
+    }],
     ['use_udev==1', {
       'targets': [
         {

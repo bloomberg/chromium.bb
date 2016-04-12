@@ -11,11 +11,16 @@
 #include "base/memory/shared_memory.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "ui/gfx/vsync_provider.h"
+#include "ui/ozone/common/egl_util.h"
 #include "ui/ozone/platform/wayland/wayland_display.h"
 #include "ui/ozone/platform/wayland/wayland_object.h"
 #include "ui/ozone/platform/wayland/wayland_window.h"
 #include "ui/ozone/public/surface_ozone_canvas.h"
 #include "ui/ozone/public/surface_ozone_egl.h"
+
+#if defined(USE_WAYLAND_EGL)
+#include "ui/ozone/platform/wayland/wayland_egl_surface.h"
+#endif
 
 namespace ui {
 
@@ -124,21 +129,24 @@ WaylandSurfaceFactory::WaylandSurfaceFactory(WaylandDisplay* display)
 WaylandSurfaceFactory::~WaylandSurfaceFactory() {}
 
 intptr_t WaylandSurfaceFactory::GetNativeDisplay() {
-  NOTIMPLEMENTED();
-  return 0;
+  return reinterpret_cast<intptr_t>(display_->display());
 }
 
 bool WaylandSurfaceFactory::LoadEGLGLES2Bindings(
     AddGLLibraryCallback add_gl_library,
     SetGLGetProcAddressProcCallback set_gl_get_proc_address) {
-  // This Ozone implementation does not support multi-process rendering so
-  // disable EGL unconditionally for now.
+#if defined(USE_WAYLAND_EGL)
+  if (!display_)
+    return false;
+  setenv("EGL_PLATFORM", "wayland", 0);
+  return LoadDefaultEGLGLES2Bindings(add_gl_library, set_gl_get_proc_address);
+#else
   return false;
+#endif
 }
 
 scoped_ptr<SurfaceOzoneCanvas> WaylandSurfaceFactory::CreateCanvasForWidget(
     gfx::AcceleratedWidget widget) {
-  DCHECK(display_);
   WaylandWindow* window = display_->GetWindow(widget);
   DCHECK(window);
   return make_scoped_ptr(new WaylandCanvasSurface(display_, window));
@@ -146,8 +154,17 @@ scoped_ptr<SurfaceOzoneCanvas> WaylandSurfaceFactory::CreateCanvasForWidget(
 
 scoped_ptr<SurfaceOzoneEGL> WaylandSurfaceFactory::CreateEGLSurfaceForWidget(
     gfx::AcceleratedWidget widget) {
-  NOTREACHED();
+#if defined(USE_WAYLAND_EGL)
+  WaylandWindow* window = display_->GetWindow(widget);
+  DCHECK(window);
+  auto surface = make_scoped_ptr(
+      new WaylandEGLSurface(window, window->GetBounds().size()));
+  if (!surface->Initialize())
+    return nullptr;
+  return std::move(surface);
+#else
   return nullptr;
+#endif
 }
 
 scoped_refptr<NativePixmap> WaylandSurfaceFactory::CreateNativePixmap(

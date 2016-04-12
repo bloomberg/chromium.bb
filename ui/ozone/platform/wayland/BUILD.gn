@@ -4,6 +4,18 @@
 
 visibility = [ "//ui/ozone/*" ]
 
+import("//build/config/linux/pkg_config.gni")
+
+declare_args() {
+  use_wayland_egl = true
+}
+
+if (use_wayland_egl) {
+  pkg_config("wayland-egl") {
+    packages = [ "wayland-egl" ]
+  }
+}
+
 source_set("wayland") {
   sources = [
     "client_native_pixmap_factory_wayland.cc",
@@ -37,6 +49,15 @@ source_set("wayland") {
   ]
 
   defines = [ "OZONE_IMPLEMENTATION" ]
+
+  if (use_wayland_egl) {
+    sources += [
+      "wayland_egl_surface.cc",
+      "wayland_egl_surface.h",
+    ]
+    configs += [ ":wayland-egl" ]
+    defines += [ "USE_WAYLAND_EGL" ]
+  }
 }
 
 source_set("wayland_unittests") {

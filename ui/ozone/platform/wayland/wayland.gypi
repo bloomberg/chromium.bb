@@ -13,6 +13,7 @@
     'internal_ozone_platforms': [
       'wayland'
     ],
+    'use_wayland_egl%': 0,
   },
   'targets': [
     {
@@ -46,6 +47,20 @@
         'wayland_surface_factory.h',
         'wayland_window.cc',
         'wayland_window.h',
+      ],
+      'conditions': [
+        ['use_wayland_egl==1', {
+          'defines': [
+            'USE_WAYLAND_EGL',
+          ],
+          'dependencies': [
+            '../../build/linux/system.gyp:wayland-egl',
+          ],
+          'sources': [
+            'wayland_egl_surface.cc',
+            'wayland_egl_surface.h',
+          ],
+        }],
       ],
     },
     {
