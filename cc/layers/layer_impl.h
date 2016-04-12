@@ -112,7 +112,6 @@ class CC_EXPORT LayerImpl {
   void SetScrollParent(LayerImpl* parent);
 
   LayerImpl* scroll_parent() { return scroll_parent_; }
-  const LayerImpl* scroll_parent() const { return scroll_parent_; }
 
   void SetScrollChildren(std::set<LayerImpl*>* children);
 
@@ -168,9 +167,6 @@ class CC_EXPORT LayerImpl {
   void SetClipParent(LayerImpl* ancestor);
 
   LayerImpl* clip_parent() {
-    return clip_parent_;
-  }
-  const LayerImpl* clip_parent() const {
     return clip_parent_;
   }
 
@@ -442,9 +438,6 @@ class CC_EXPORT LayerImpl {
       uint32_t main_thread_scrolling_reasons);
   uint32_t main_thread_scrolling_reasons() const {
     return main_thread_scrolling_reasons_;
-  }
-  bool should_scroll_on_main_thread() const {
-    return !!main_thread_scrolling_reasons_;
   }
 
   void SetNonFastScrollableRegion(const Region& region) {

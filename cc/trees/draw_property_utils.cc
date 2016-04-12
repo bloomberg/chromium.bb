@@ -267,34 +267,6 @@ static bool IsLayerBackFaceVisible(LayerType* layer,
              : node->data.to_target.IsBackFaceVisible();
 }
 
-template <typename LayerType>
-static bool IsSurfaceBackFaceVisible(LayerType* layer,
-                                     const TransformTree& tree) {
-  if (HasSingularTransform(layer->transform_tree_index(), tree))
-    return false;
-  const TransformNode* node = tree.Node(layer->transform_tree_index());
-  // If the render_surface is not part of a new or existing rendering context,
-  // then the layers that contribute to this surface will decide back-face
-  // visibility for themselves.
-  if (!node->data.sorting_context_id)
-    return false;
-
-  const TransformNode* parent_node = tree.parent(node);
-  if (parent_node &&
-      parent_node->data.sorting_context_id == node->data.sorting_context_id) {
-    // Draw transform as a contributing render surface.
-    // TODO(enne): we shouldn't walk the tree during a tree walk.
-    gfx::Transform surface_draw_transform;
-    tree.ComputeTransform(node->id, node->data.target_id,
-                          &surface_draw_transform);
-    return surface_draw_transform.IsBackFaceVisible();
-  }
-
-  // We use layer's transform to determine back face visibility when its the
-  // root of a new rendering context.
-  return layer->transform().IsBackFaceVisible();
-}
-
 static inline bool TransformToScreenIsKnown(Layer* layer,
                                             int transform_tree_index,
                                             const TransformTree& tree) {
