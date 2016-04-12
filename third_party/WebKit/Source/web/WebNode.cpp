@@ -215,37 +215,6 @@ WebElement WebNode::querySelector(const WebString& selector, WebExceptionCode& e
     return element;
 }
 
-WebElement WebNode::querySelector(const WebString& selector) const
-{
-    WebExceptionCode ec = 0;
-    WebElement element = querySelector(selector, ec);
-    DCHECK(!ec);
-    return element;
-}
-
-void WebNode::querySelectorAll(const WebString& selector, WebVector<WebElement>& results, WebExceptionCode& ec) const
-{
-    if (!m_private->isContainerNode())
-        return;
-    TrackExceptionState exceptionState;
-    StaticElementList* elements = toContainerNode(m_private.get())->querySelectorAll(selector, exceptionState);
-    ec = exceptionState.code();
-    if (exceptionState.hadException())
-        return;
-    Vector<WebElement> temp;
-    temp.reserveCapacity(elements->length());
-    for (unsigned i = 0; i < elements->length(); ++i)
-        temp.append(WebElement(elements->item(i)));
-    results.assign(temp);
-}
-
-void WebNode::querySelectorAll(const WebString& selector, WebVector<WebElement>& results) const
-{
-    WebExceptionCode ec = 0;
-    querySelectorAll(selector, results, ec);
-    DCHECK(!ec);
-}
-
 bool WebNode::focused() const
 {
     return m_private->focused();
