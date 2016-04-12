@@ -30,6 +30,7 @@
 #include "net/base/network_interfaces.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "ui/base/test/material_design_controller_test_api.h"
 #include "ui/compositor/compositor_switches.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_switches.h"
@@ -179,6 +180,10 @@ BrowserTestBase::~BrowserTestBase() {
 
 void BrowserTestBase::SetUp() {
   set_up_called_ = true;
+  // ContentTestSuiteBase might have already initialized
+  // MaterialDesignController in browser_tests suite.
+  // Uninitialize here to let the browser process do it.
+  ui::test::MaterialDesignControllerTestAPI::UninitializeMode();
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 

@@ -8,6 +8,8 @@
 
 #include "base/run_loop.h"
 #include "ui/base/clipboard/clipboard.h"
+#include "ui/base/material_design/material_design_controller.h"
+#include "ui/base/test/material_design_controller_test_api.h"
 
 namespace views {
 
@@ -25,6 +27,10 @@ ViewsTestBase::~ViewsTestBase() {
 
 void ViewsTestBase::SetUp() {
   testing::Test::SetUp();
+  // ContentTestSuiteBase might have already initialized
+  // MaterialDesignController in unit_tests suite.
+  ui::test::MaterialDesignControllerTestAPI::UninitializeMode();
+  ui::MaterialDesignController::Initialize();
   setup_called_ = true;
   if (!views_delegate_for_setup_)
     views_delegate_for_setup_.reset(new TestViewsDelegate());
