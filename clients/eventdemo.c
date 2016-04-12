@@ -373,7 +373,7 @@ eventdemo_create(struct display *d)
 {
 	struct eventdemo *e;
 
-	e = malloc(sizeof (struct eventdemo));
+	e = zalloc(sizeof (struct eventdemo));
 	if (e == NULL)
 		return NULL;
 
