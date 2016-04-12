@@ -12,11 +12,12 @@
           "drawsContent": true,
           "backfaceVisibility": "hidden",
           "backgroundColor": "#FF0000",
-          "repaintRects": [
-            [0, 100, 100, 100]
-          ],
-          "paintInvalidationClients": [
-            "LayoutBlockFlow (positioned) DIV id='fixed'"
+          "paintInvalidations": [
+            {
+              "object": "LayoutBlockFlow (positioned) DIV id='fixed'",
+              "rect": [0, 100, 100, 100],
+              "reason": "incremental"
+            }
           ]
         }
       ]

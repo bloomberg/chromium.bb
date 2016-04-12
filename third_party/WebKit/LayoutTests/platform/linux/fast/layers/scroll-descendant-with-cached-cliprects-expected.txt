@@ -5,25 +5,67 @@
       "bounds": [785, 1895],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [677, 252, 100, 100],
-        [677, 252, 100, 100],
-        [677, 252, 100, 100],
-        [677, 252, 100, 100],
-        [677, 52, 100, 100],
-        [677, 52, 100, 100],
-        [677, 52, 100, 100],
-        [677, 52, 100, 100]
-      ],
-      "paintInvalidationClients": [
-        "LayoutBlockFlow (positioned) DIV id='scrollpanel'",
-        "LayoutBlockFlow (relative positioned) DIV class='container'",
-        "LayoutBlockFlow (relative positioned) DIV id='ul'",
-        "LayoutBlockFlow DIV",
-        "LayoutBlockFlow (positioned) DIV id='scrollpanel'",
-        "LayoutBlockFlow (relative positioned) DIV class='container'",
-        "LayoutBlockFlow (relative positioned) DIV id='ul'",
-        "LayoutBlockFlow DIV"
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='scrollpanel'",
+          "rect": [0, 0, 0, 0],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='scrollpanel'",
+          "rect": [677, 52, 100, 100],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='scrollpanel'",
+          "rect": [677, 252, 100, 100],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow (relative positioned) DIV class='container'",
+          "rect": [0, 0, 0, 0],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutBlockFlow (relative positioned) DIV class='container'",
+          "rect": [677, 52, 100, 100],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow (relative positioned) DIV class='container'",
+          "rect": [677, 252, 100, 100],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow (relative positioned) DIV id='ul'",
+          "rect": [0, 0, 0, 0],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutBlockFlow (relative positioned) DIV id='ul'",
+          "rect": [677, 52, 100, 100],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow (relative positioned) DIV id='ul'",
+          "rect": [677, 252, 100, 100],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [0, 0, 0, 0],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [677, 52, 100, 100],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [677, 252, 100, 100],
+          "reason": "location change"
+        }
       ]
     }
   ]

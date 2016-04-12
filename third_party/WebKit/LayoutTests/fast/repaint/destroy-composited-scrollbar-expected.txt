@@ -12,13 +12,22 @@
           "contentsOpaque": true,
           "drawsContent": true,
           "backgroundColor": "#0000FF",
-          "repaintRects": [
-            [185, 0, 15, 200],
-            [0, 0, 200, 200]
-          ],
-          "paintInvalidationClients": [
-            "##ALL##",
-            "LayoutBlockFlow (positioned) DIV"
+          "paintInvalidations": [
+            {
+              "object": "LayoutBlockFlow (positioned) DIV",
+              "rect": [0, 0, 200, 200],
+              "reason": "full"
+            },
+            {
+              "object": "LayoutBlockFlow (positioned) DIV",
+              "rect": [0, 0, 0, 0],
+              "reason": "scroll"
+            },
+            {
+              "object": "LayoutBlockFlow (positioned) DIV",
+              "rect": [185, 0, 15, 200],
+              "reason": "scroll"
+            }
           ]
         }
       ]

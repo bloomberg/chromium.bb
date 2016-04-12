@@ -11,12 +11,17 @@
           "bounds": [500, 500],
           "shouldFlattenTransform": false,
           "drawsContent": true,
-          "repaintRects": [
-            [-2001, -2000, 5001, 5000]
-          ],
-          "paintInvalidationClients": [
-            "LayoutBlockFlow DIV id='content'",
-            "RootInlineBox"
+          "paintInvalidations": [
+            {
+              "object": "LayoutBlockFlow DIV id='content'",
+              "rect": [-2001, -2000, 5001, 5000],
+              "reason": "style change"
+            },
+            {
+              "object": "RootInlineBox",
+              "rect": [0, 0, 0, 0],
+              "reason": "full"
+            }
           ],
           "children": [
             {
@@ -26,12 +31,17 @@
                 {
                   "bounds": [5000, 5000],
                   "drawsContent": true,
-                  "repaintRects": [
-                    [-1, 0, 5001, 5000]
-                  ],
-                  "paintInvalidationClients": [
-                    "LayoutBlockFlow DIV id='content'",
-                    "RootInlineBox"
+                  "paintInvalidations": [
+                    {
+                      "object": "LayoutBlockFlow DIV id='content'",
+                      "rect": [-1, 0, 5001, 5000],
+                      "reason": "style change"
+                    },
+                    {
+                      "object": "RootInlineBox",
+                      "rect": [0, 0, 0, 0],
+                      "reason": "full"
+                    }
                   ]
                 }
               ]
@@ -42,15 +52,23 @@
                 {
                   "position": [0, 485],
                   "bounds": [485, 15],
-                  "repaintRects": [
-                    [0, 0, 485, 15]
+                  "paintInvalidations": [
+                    {
+                      "object": "Horizontal Scrollbar Layer",
+                      "rect": [0, 0, 485, 15],
+                      "reason": "full"
+                    }
                   ]
                 },
                 {
                   "position": [485, 0],
                   "bounds": [15, 485],
-                  "repaintRects": [
-                    [0, 0, 15, 485]
+                  "paintInvalidations": [
+                    {
+                      "object": "Vertical Scrollbar Layer",
+                      "rect": [0, 0, 15, 485],
+                      "reason": "full"
+                    }
                   ]
                 },
                 {

@@ -5,13 +5,17 @@
       "bounds": [808, 2016],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [8, 8, 800, 2000],
-        [0, 0, 808, 2016]
-      ],
-      "paintInvalidationClients": [
-        "LayoutView #document",
-        "LayoutBlockFlow BODY"
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow BODY",
+          "rect": [8, 8, 800, 2000],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [0, 0, 808, 2016],
+          "reason": "style change"
+        }
       ]
     }
   ]

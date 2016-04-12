@@ -5,20 +5,47 @@
       "bounds": [808, 585],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [114, 74, 2, 102],
-        [14, 74, 2, 3],
-        [12, 74, 100, 102],
-        [11, 75, 100, 100],
-        [10, 77, 102, 99]
-      ],
-      "paintInvalidationClients": [
-        "LayoutTableCell TD",
-        "LayoutBlockFlow (floating) DIV id='target'",
-        "LayoutTableCell TD",
-        "LayoutBlockFlow DIV",
-        "LayoutBlockFlow DIV",
-        "LayoutBlockFlow DIV"
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow (floating) DIV id='target'",
+          "rect": [11, 75, 100, 100],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "rect": [12, 74, 100, 102],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "rect": [10, 77, 102, 99],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "rect": [14, 74, 2, 3],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "rect": [114, 74, 2, 102],
+          "reason": "location change"
+        }
       ]
     }
   ]

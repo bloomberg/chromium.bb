@@ -1,0 +1,17 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [12, 61, 30, 30]
+      ],
+      "paintInvalidationClients": [
+        "LayoutBlockFlow INPUT id='checkbox'"
+      ]
+    }
+  ]
+}
+

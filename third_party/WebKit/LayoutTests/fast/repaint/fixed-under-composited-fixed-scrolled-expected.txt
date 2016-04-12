@@ -13,11 +13,12 @@
           "drawsContent": true,
           "backfaceVisibility": "hidden",
           "backgroundColor": "#008000",
-          "repaintRects": [
-            [100, 100, 200, 200]
-          ],
-          "paintInvalidationClients": [
-            "LayoutBlockFlow (positioned) DIV id='fixed'"
+          "paintInvalidations": [
+            {
+              "object": "LayoutBlockFlow (positioned) DIV id='fixed'",
+              "rect": [100, 100, 200, 200],
+              "reason": "layoutObject removal"
+            }
           ]
         }
       ]

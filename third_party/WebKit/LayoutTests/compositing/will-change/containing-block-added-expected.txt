@@ -5,11 +5,12 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [50, 50, 75, 75]
-      ],
-      "paintInvalidationClients": [
-        "LayoutBlockFlow (positioned) DIV class='fixed'"
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow (positioned) DIV class='fixed'",
+          "rect": [50, 50, 75, 75],
+          "reason": "layer"
+        }
       ],
       "children": [
         {
@@ -18,11 +19,12 @@
           "bounds": [125, 125],
           "drawsContent": true,
           "backgroundColor": "#0000FF",
-          "repaintRects": [
-            [50, 50, 75, 75]
-          ],
-          "paintInvalidationClients": [
-            "LayoutBlockFlow (positioned) DIV class='fixed'"
+          "paintInvalidations": [
+            {
+              "object": "LayoutBlockFlow (positioned) DIV class='fixed'",
+              "rect": [50, 50, 75, 75],
+              "reason": "bounds change"
+            }
           ]
         }
       ]

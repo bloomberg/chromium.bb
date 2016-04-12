@@ -6,15 +6,77 @@ Hi!
       "bounds": [785, 4021],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [425, 980, 360, 90],
-        [425, 980, 360, 90],
-        [425, 980, 19, 19],
-        [425, 980, 19, 19],
-        [425, 480, 360, 90],
-        [425, 480, 360, 90],
-        [425, 480, 19, 19],
-        [425, 480, 19, 19]
+      "paintInvalidations": [
+        {
+          "object": "InlineTextBox 'Hi!'",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'Hi!'",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='abs'",
+          "rect": [425, 480, 360, 90],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='abs'",
+          "rect": [425, 980, 360, 90],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='abs'",
+          "rect": [425, 980, 360, 90],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='abs'",
+          "rect": [425, 480, 360, 90],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='fixed'",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='fixed'",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [425, 480, 19, 19],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [425, 980, 19, 19],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [425, 980, 19, 19],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [425, 480, 19, 19],
+          "reason": "location change"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        }
       ]
     }
   ]

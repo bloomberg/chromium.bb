@@ -5,15 +5,32 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [11, 125, 100, 100],
-        [11, 125, 50, 100]
-      ],
-      "paintInvalidationClients": [
-        "RootInlineBox",
-        "InlineTextBox '\u00A0'",
-        "LayoutBlockFlow DIV id='im'",
-        "RootInlineBox"
+      "paintInvalidations": [
+        {
+          "object": "InlineTextBox '\u00A0'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='im'",
+          "rect": [11, 125, 50, 100],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='im'",
+          "rect": [11, 125, 100, 100],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        }
       ]
     }
   ]

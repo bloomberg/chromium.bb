@@ -47,12 +47,32 @@ CASE 2, scrolling y to 80, new layers will be squashed, so things repaint:
       "bounds": [785, 1400],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [0, 500, 200, 100],
-        [0, 200, 200, 100],
-        [0, 100, 200, 100],
-        [0, 100, 200, 100],
-        [0, 0, 200, 100]
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow (relative positioned) DIV id='paragraph-b' class='overlapping lime'",
+          "rect": [0, 100, 200, 100],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow (relative positioned) DIV id='paragraph-c' class='overlapping cyan'",
+          "rect": [0, 0, 200, 100],
+          "reason": "layer"
+        },
+        {
+          "object": "LayoutBlockFlow (relative positioned) DIV id='paragraph-d' class='overlapping lime'",
+          "rect": [0, 100, 200, 100],
+          "reason": "layer"
+        },
+        {
+          "object": "LayoutBlockFlow (relative positioned) DIV id='paragraph-e' class='overlapping cyan'",
+          "rect": [0, 200, 200, 100],
+          "reason": "layer"
+        },
+        {
+          "object": "LayoutBlockFlow (relative positioned) DIV id='paragraph-f' class='overlapping lime'",
+          "rect": [0, 500, 200, 100],
+          "reason": "layer"
+        }
       ],
       "children": [
         {
@@ -71,18 +91,34 @@ CASE 2, scrolling y to 80, new layers will be squashed, so things repaint:
               "contentsOpaque": true,
               "drawsContent": true,
               "backgroundColor": "#00FFFF",
-              "repaintRects": [
-                [0, 0, 200, 100]
+              "paintInvalidations": [
+                {
+                  "object": "LayoutBlockFlow (relative positioned) DIV id='paragraph-c' class='overlapping cyan'",
+                  "rect": [0, 0, 200, 100],
+                  "reason": "compositing update"
+                }
               ]
             },
             {
               "position": [0, 300],
               "bounds": [200, 300],
               "drawsContent": true,
-              "repaintRects": [
-                [0, 200, 200, 100],
-                [0, 100, 200, 100],
-                [0, 0, 200, 100]
+              "paintInvalidations": [
+                {
+                  "object": "LayoutBlockFlow (relative positioned) DIV id='paragraph-d' class='overlapping lime'",
+                  "rect": [0, 0, 200, 100],
+                  "reason": "location change"
+                },
+                {
+                  "object": "LayoutBlockFlow (relative positioned) DIV id='paragraph-e' class='overlapping cyan'",
+                  "rect": [0, 100, 200, 100],
+                  "reason": "location change"
+                },
+                {
+                  "object": "LayoutBlockFlow (relative positioned) DIV id='paragraph-f' class='overlapping lime'",
+                  "rect": [0, 200, 200, 100],
+                  "reason": "location change"
+                }
               ]
             }
           ]
@@ -136,12 +172,32 @@ CASE 4, scrolling y to 170 new layers will be squashed, so things repaint:
       "bounds": [785, 1400],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [0, 600, 200, 100],
-        [0, 200, 200, 100],
-        [0, 200, 200, 100],
-        [0, 100, 200, 100],
-        [0, 0, 200, 100]
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow (relative positioned) DIV id='paragraph-c' class='overlapping cyan'",
+          "rect": [0, 200, 200, 100],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow (relative positioned) DIV id='paragraph-d' class='overlapping lime'",
+          "rect": [0, 0, 200, 100],
+          "reason": "layer"
+        },
+        {
+          "object": "LayoutBlockFlow (relative positioned) DIV id='paragraph-e' class='overlapping cyan'",
+          "rect": [0, 100, 200, 100],
+          "reason": "layer"
+        },
+        {
+          "object": "LayoutBlockFlow (relative positioned) DIV id='paragraph-f' class='overlapping lime'",
+          "rect": [0, 200, 200, 100],
+          "reason": "layer"
+        },
+        {
+          "object": "LayoutBlockFlow (relative positioned) DIV id='paragraph-g' class='overlapping cyan'",
+          "rect": [0, 600, 200, 100],
+          "reason": "layer"
+        }
       ],
       "children": [
         {
@@ -160,18 +216,34 @@ CASE 4, scrolling y to 170 new layers will be squashed, so things repaint:
               "contentsOpaque": true,
               "drawsContent": true,
               "backgroundColor": "#00FF00",
-              "repaintRects": [
-                [0, 0, 200, 100]
+              "paintInvalidations": [
+                {
+                  "object": "LayoutBlockFlow (relative positioned) DIV id='paragraph-d' class='overlapping lime'",
+                  "rect": [0, 0, 200, 100],
+                  "reason": "compositing update"
+                }
               ]
             },
             {
               "position": [0, 400],
               "bounds": [200, 300],
               "drawsContent": true,
-              "repaintRects": [
-                [0, 200, 200, 100],
-                [0, 100, 200, 100],
-                [0, 0, 200, 100]
+              "paintInvalidations": [
+                {
+                  "object": "LayoutBlockFlow (relative positioned) DIV id='paragraph-e' class='overlapping cyan'",
+                  "rect": [0, 0, 200, 100],
+                  "reason": "location change"
+                },
+                {
+                  "object": "LayoutBlockFlow (relative positioned) DIV id='paragraph-f' class='overlapping lime'",
+                  "rect": [0, 100, 200, 100],
+                  "reason": "location change"
+                },
+                {
+                  "object": "LayoutBlockFlow (relative positioned) DIV id='paragraph-g' class='overlapping cyan'",
+                  "rect": [0, 200, 200, 100],
+                  "reason": "location change"
+                }
               ]
             }
           ]

@@ -17,10 +17,22 @@
               "position": [55, 55],
               "bounds": [500, 500],
               "drawsContent": true,
-              "repaintRects": [
-                [55, 55, 500, 500],
-                [0, 0, 500, 500],
-                [0, 0, 50, 50]
+              "paintInvalidations": [
+                {
+                  "object": "LayoutBlockFlow (positioned) DIV",
+                  "rect": [55, 55, 500, 500],
+                  "reason": "layer"
+                },
+                {
+                  "object": "LayoutBlockFlow (positioned) DIV",
+                  "rect": [0, 0, 500, 500],
+                  "reason": "location change"
+                },
+                {
+                  "object": "LayoutBlockFlow (positioned) DIV id='to-be-removed'",
+                  "rect": [0, 0, 50, 50],
+                  "reason": "layoutObject removal"
+                }
               ]
             }
           ]

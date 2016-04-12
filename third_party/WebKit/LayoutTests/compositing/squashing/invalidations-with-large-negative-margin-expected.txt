@@ -5,9 +5,17 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [408, 8, 50, 50],
-        [8, 8, 50, 50]
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='chip'",
+          "rect": [8, 8, 50, 50],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='chip'",
+          "rect": [408, 8, 50, 50],
+          "reason": "location change"
+        }
       ]
     }
   ]

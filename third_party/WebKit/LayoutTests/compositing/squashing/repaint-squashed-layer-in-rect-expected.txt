@@ -20,8 +20,12 @@
               "position": [8, 0],
               "bounds": [592, 600],
               "drawsContent": true,
-              "repaintRects": [
-                [392, 400, 200, 200]
+              "paintInvalidations": [
+                {
+                  "object": "LayoutBlockFlow DIV id='imgElement'",
+                  "rect": [392, 400, 200, 200],
+                  "reason": "style change"
+                }
               ]
             }
           ]

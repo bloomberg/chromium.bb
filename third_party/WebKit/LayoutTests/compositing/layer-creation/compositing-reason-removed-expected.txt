@@ -5,8 +5,12 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [8, 8, 30, 30]
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow (relative positioned) DIV id='square'",
+          "rect": [8, 8, 30, 30],
+          "reason": "location change"
+        }
       ]
     }
   ]

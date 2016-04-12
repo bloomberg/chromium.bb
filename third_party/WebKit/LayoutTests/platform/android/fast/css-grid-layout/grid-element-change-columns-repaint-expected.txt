@@ -1,0 +1,19 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [58, 48, 50, 50],
+        [8, 48, 250, 50]
+      ],
+      "paintInvalidationClients": [
+        "LayoutGrid DIV class='grid min-content'",
+        "LayoutBlockFlow DIV class='sizedToGridArea'"
+      ]
+    }
+  ]
+}
+

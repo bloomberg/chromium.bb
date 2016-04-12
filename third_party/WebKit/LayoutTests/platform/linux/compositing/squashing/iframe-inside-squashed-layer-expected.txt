@@ -20,28 +20,77 @@
               "position": [8, 0],
               "bounds": [300, 654],
               "drawsContent": true,
-              "repaintRects": [
-                [285, 500, 15, 150],
-                [8, 508, 284, 20],
-                [8, 508, 269, 142],
-                [0, 500, 300, 150],
-                [0, 500, 300, 36],
-                [0, 500, 285, 150],
-                [0, 500, 285, 150],
-                [0, 500, 285, 150]
-              ],
-              "paintInvalidationClients": [
-                "RootInlineBox",
-                "InlineTextBox 'test1'",
-                "RootInlineBox",
-                "InlineTextBox 'test1'",
-                "LayoutView #document",
-                "LayoutView #document",
-                "LayoutBlockFlow HTML",
-                "LayoutBlockFlow BODY",
-                "RootInlineBox",
-                "LayoutView #document",
-                "VerticalScrollbar"
+              "paintInvalidations": [
+                {
+                  "object": "InlineTextBox 'test1'",
+                  "rect": [0, 0, 0, 0],
+                  "reason": "full"
+                },
+                {
+                  "object": "InlineTextBox 'test1'",
+                  "rect": [0, 0, 0, 0],
+                  "reason": "full"
+                },
+                {
+                  "object": "LayoutBlockFlow BODY",
+                  "rect": [8, 508, 284, 20],
+                  "reason": "forced by layout"
+                },
+                {
+                  "object": "LayoutBlockFlow BODY",
+                  "rect": [8, 508, 269, 142],
+                  "reason": "forced by layout"
+                },
+                {
+                  "object": "LayoutBlockFlow HTML",
+                  "rect": [0, 500, 300, 36],
+                  "reason": "forced by layout"
+                },
+                {
+                  "object": "LayoutBlockFlow HTML",
+                  "rect": [0, 500, 285, 150],
+                  "reason": "forced by layout"
+                },
+                {
+                  "object": "LayoutView #document",
+                  "rect": [0, 500, 285, 150],
+                  "reason": "full"
+                },
+                {
+                  "object": "LayoutView #document",
+                  "rect": [0, 500, 300, 150],
+                  "reason": "style change"
+                },
+                {
+                  "object": "LayoutView #document",
+                  "rect": [0, 500, 285, 150],
+                  "reason": "style change"
+                },
+                {
+                  "object": "LayoutView #document",
+                  "rect": [285, 500, 15, 150],
+                  "reason": "scroll"
+                },
+                {
+                  "object": "RootInlineBox",
+                  "rect": [0, 0, 0, 0],
+                  "reason": "full"
+                },
+                {
+                  "object": "RootInlineBox",
+                  "rect": [0, 0, 0, 0],
+                  "reason": "full"
+                },
+                {
+                  "object": "RootInlineBox",
+                  "rect": [0, 0, 0, 0],
+                  "reason": "full"
+                },
+                {
+                  "object": "VerticalScrollbar",
+                  "rect": [0, 0, 0, 0],
+                  "reason": "scroll"
+                }
               ]
             }
           ]

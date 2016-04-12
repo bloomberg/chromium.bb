@@ -16,12 +16,17 @@
               "transformOrigin": [112, 112],
               "bounds": [212, 257],
               "drawsContent": true,
-              "repaintRects": [
-                [-1, -1, 258, 258],
-                [-1, -1, 158, 258]
-              ],
-              "paintInvalidationClients": [
-                "LayoutBlockFlow DIV id='resize' class='drop-shadow'"
+              "paintInvalidations": [
+                {
+                  "object": "LayoutBlockFlow DIV id='resize' class='drop-shadow'",
+                  "rect": [-1, -1, 258, 258],
+                  "reason": "border box change"
+                },
+                {
+                  "object": "LayoutBlockFlow DIV id='resize' class='drop-shadow'",
+                  "rect": [-1, -1, 158, 258],
+                  "reason": "border box change"
+                }
               ]
             }
           ]

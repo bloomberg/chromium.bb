@@ -5,19 +5,37 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [29, 369, 180, 20],
-        [29, 209, 180, 20],
-        [19, 329, 200, 60],
-        [19, 329, 200, 40],
-        [19, 169, 200, 60],
-        [19, 169, 200, 40]
-      ],
-      "paintInvalidationClients": [
-        "LayoutBlockFlow DIV",
-        "LayoutBlockFlow DIV id='a'",
-        "LayoutBlockFlow DIV",
-        "LayoutBlockFlow DIV id='b'"
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [19, 169, 200, 60],
+          "reason": "border box change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [19, 169, 200, 40],
+          "reason": "border box change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [19, 329, 200, 40],
+          "reason": "border box change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [19, 329, 200, 60],
+          "reason": "border box change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='a'",
+          "rect": [29, 209, 180, 20],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='b'",
+          "rect": [29, 369, 180, 20],
+          "reason": "incremental"
+        }
       ]
     }
   ]

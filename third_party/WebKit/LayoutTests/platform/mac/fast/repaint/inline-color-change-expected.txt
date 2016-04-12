@@ -5,15 +5,27 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [8, 68, 37, 18],
-        [8, 68, 37, 18]
-      ],
-      "paintInvalidationClients": [
-        "LayoutInline SPAN id='target'",
-        "InlineFlowBox",
-        "LayoutText #text",
-        "InlineTextBox 'PASS'"
+      "paintInvalidations": [
+        {
+          "object": "InlineFlowBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "style change"
+        },
+        {
+          "object": "InlineTextBox 'PASS'",
+          "rect": [0, 0, 0, 0],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutInline SPAN id='target'",
+          "rect": [8, 68, 37, 18],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [8, 68, 37, 18],
+          "reason": "style change"
+        }
       ]
     }
   ]

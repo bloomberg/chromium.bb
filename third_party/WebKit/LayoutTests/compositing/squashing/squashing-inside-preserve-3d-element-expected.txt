@@ -22,8 +22,12 @@
               "bounds": [100, 100],
               "3dRenderingContext": 1,
               "drawsContent": true,
-              "repaintRects": [
-                [0, 0, 100, 100]
+              "paintInvalidations": [
+                {
+                  "object": "LayoutBlockFlow (positioned) DIV id='target'",
+                  "rect": [0, 0, 100, 100],
+                  "reason": "style change"
+                }
               ]
             }
           ]

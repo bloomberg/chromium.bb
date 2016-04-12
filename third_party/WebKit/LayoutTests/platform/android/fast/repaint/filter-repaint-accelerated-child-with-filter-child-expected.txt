@@ -1,0 +1,33 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [8, 8],
+          "bounds": [200, 200],
+          "drawsContent": true,
+          "children": [
+            {
+              "position": [-12, -12],
+              "transformOrigin": [112, 112],
+              "bounds": [212, 257],
+              "drawsContent": true,
+              "repaintRects": [
+                [-1, -1, 258, 258],
+                [-1, -1, 158, 258]
+              ],
+              "paintInvalidationClients": [
+                "LayoutBlockFlow DIV id='resize' class='drop-shadow'"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+

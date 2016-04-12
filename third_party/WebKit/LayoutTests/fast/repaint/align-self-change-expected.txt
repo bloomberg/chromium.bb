@@ -5,15 +5,27 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [100, 204, 100, 148],
-        [100, 203, 100, 149],
-        [0, 154, 100, 198],
-        [0, 153, 100, 199]
-      ],
-      "paintInvalidationClients": [
-        "LayoutBlockFlow DIV class='item'",
-        "LayoutBlockFlow DIV class='item'"
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow DIV class='item'",
+          "rect": [0, 154, 100, 198],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutBlockFlow DIV class='item'",
+          "rect": [0, 153, 100, 199],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutBlockFlow DIV class='item'",
+          "rect": [100, 204, 100, 148],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutBlockFlow DIV class='item'",
+          "rect": [100, 203, 100, 149],
+          "reason": "incremental"
+        }
       ]
     }
   ]

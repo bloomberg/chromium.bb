@@ -1,0 +1,18 @@
+{
+  "bounds": [800, 2016],
+  "children": [
+    {
+      "bounds": [800, 2016],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [125, 325, 50, 50],
+        [100, 300, 100, 100]
+      ],
+      "paintInvalidationClients": [
+        "LayoutBlockFlow (positioned) DIV id='t' class='green translated'"
+      ]
+    }
+  ]
+}
+

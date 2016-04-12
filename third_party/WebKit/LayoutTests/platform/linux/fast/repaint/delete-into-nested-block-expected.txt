@@ -5,50 +5,157 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [8, 167, 784, 21],
-        [8, 167, 30, 20],
-        [8, 147, 784, 41],
-        [8, 147, 784, 21],
-        [8, 147, 23, 20],
-        [8, 127, 784, 21],
-        [8, 127, 30, 20],
-        [8, 127, 22, 20],
-        [7, 126, 786, 103],
-        [7, 126, 3, 22]
-      ],
-      "paintInvalidationClients": [
-        "InlineTextBox 'one'",
-        "LayoutText #text",
-        "RootInlineBox",
-        "InlineTextBox 'two'",
-        "LayoutText #text",
-        "RootInlineBox",
-        "LayoutBlockFlow DIV",
-        "InlineTextBox 'three'",
-        "LayoutText #text",
-        "RootInlineBox",
-        "InlineTextBox '\n'",
-        "LayoutBR BR",
-        "RootInlineBox",
-        "LayoutBlockFlow DIV",
-        "LayoutBlockFlow DIV id='two'",
-        "InlineTextBox '\n'",
-        "RootInlineBox",
-        "InlineTextBox '\n'",
-        "LayoutBR BR",
-        "InlineTextBox 'three'",
-        "RootInlineBox",
-        "InlineTextBox 'three'",
-        "LayoutText #text",
-        "LayoutInline SPAN",
-        "RootInlineBox",
-        "LayoutBlockFlow DIV",
-        "LayoutBlockFlow DIV id='one'",
-        "RootInlineBox",
-        "LayoutText #text",
-        "InlineTextBox 'three'",
-        "LayoutBlockFlow DIV id='one'"
+      "paintInvalidations": [
+        {
+          "object": "InlineTextBox '\n'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox '\n'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox '\n'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'one'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'three'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'three'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'three'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'three'",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'two'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutBR BR",
+          "rect": [0, 0, 0, 0],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutBR BR",
+          "rect": [0, 0, 0, 0],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [8, 147, 784, 21],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [8, 167, 784, 21],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [7, 126, 786, 103],
+          "reason": "outline"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='one'",
+          "rect": [8, 127, 784, 21],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='one'",
+          "rect": [7, 126, 3, 22],
+          "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='two'",
+          "rect": [8, 147, 784, 41],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutInline SPAN",
+          "rect": [0, 0, 0, 0],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [8, 127, 22, 20],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [8, 147, 23, 20],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [8, 167, 30, 20],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [8, 127, 30, 20],
+          "reason": "location change"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        }
       ]
     }
   ]

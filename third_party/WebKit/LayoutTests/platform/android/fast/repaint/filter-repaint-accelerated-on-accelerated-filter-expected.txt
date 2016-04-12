@@ -1,0 +1,33 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [8, 8],
+          "bounds": [200, 200],
+          "drawsContent": true,
+          "children": [
+            {
+              "bounds": [100, 200],
+              "contentsOpaque": true,
+              "drawsContent": true,
+              "backgroundColor": "#008000",
+              "repaintRects": [
+                [-13, -13, 258, 258],
+                [-13, -13, 158, 258]
+              ],
+              "paintInvalidationClients": [
+                "LayoutBlockFlow DIV id='resize' class='drop-shadow accelerated'"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+

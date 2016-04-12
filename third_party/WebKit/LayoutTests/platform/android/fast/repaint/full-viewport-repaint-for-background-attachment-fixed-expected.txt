@@ -1,0 +1,17 @@
+{
+  "bounds": [785, 5000],
+  "children": [
+    {
+      "bounds": [785, 5000],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [0, 0, 785, 5000]
+      ],
+      "paintInvalidationClients": [
+        "LayoutView #document"
+      ]
+    }
+  ]
+}
+

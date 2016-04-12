@@ -5,8 +5,12 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [8, 108, 210, 210]
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow DIV id='container'",
+          "rect": [8, 108, 210, 210],
+          "reason": "style change"
+        }
       ]
     }
   ]

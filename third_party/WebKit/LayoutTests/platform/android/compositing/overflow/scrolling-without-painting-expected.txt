@@ -1,0 +1,53 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [8, 8],
+          "bounds": [202, 202],
+          "shouldFlattenTransform": false,
+          "drawsContent": true,
+          "children": [
+            {
+              "position": [1, 1],
+              "bounds": [185, 185],
+              "shouldFlattenTransform": false,
+              "children": [
+                {
+                  "bounds": [185, 1025],
+                  "drawsContent": true
+                }
+              ]
+            },
+            {
+              "bounds": [202, 202],
+              "children": [
+                {
+                  "position": [1, 186],
+                  "bounds": [185, 15]
+                },
+                {
+                  "position": [186, 1],
+                  "bounds": [15, 185],
+                  "repaintRects": [
+                    [0, 0, 15, 185]
+                  ]
+                },
+                {
+                  "position": [186, 186],
+                  "bounds": [15, 15],
+                  "drawsContent": true
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+

@@ -1,0 +1,32 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [8, 8, 329, 329]
+      ],
+      "paintInvalidationClients": [
+        "LayoutBlockFlow DIV id='box' class='green box blurry'"
+      ],
+      "children": [
+        {
+          "position": [8, 8],
+          "bounds": [200, 200],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#008000",
+          "repaintRects": [
+            [-29, -29, 258, 258]
+          ],
+          "paintInvalidationClients": [
+            "LayoutBlockFlow DIV id='box' class='green box blurry'"
+          ]
+        }
+      ]
+    }
+  ]
+}
+

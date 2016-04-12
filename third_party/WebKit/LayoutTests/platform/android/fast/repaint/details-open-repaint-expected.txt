@@ -1,0 +1,30 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [10, 75, 150, 16],
+        [8, 72, 784, 22],
+        [8, 72, 154, 22],
+        [8, 56, 11, 11]
+      ],
+      "paintInvalidationClients": [
+        "LayoutDetailsMarker DIV id='details-marker'",
+        "LayoutBlockFlow DIV id='details-content'",
+        "RootInlineBox",
+        "LayoutTextControl INPUT",
+        "LayoutBlockFlow DIV id='inner-editor'",
+        "LayoutBlockFlow DIV id='inner-editor'",
+        "HorizontalScrollbar",
+        "LayoutBlockFlow DIV id='inner-editor'",
+        "VerticalScrollbar",
+        "LayoutText #text",
+        "LayoutText #text"
+      ]
+    }
+  ]
+}
+

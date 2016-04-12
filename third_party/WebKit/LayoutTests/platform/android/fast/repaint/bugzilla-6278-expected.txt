@@ -1,0 +1,56 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [304, 138, 2, 215],
+        [254, 138, 52, 235],
+        [252, 138, 50, 215],
+        [250, 138, 49, 159],
+        [10, 353, 242, 20],
+        [10, 323, 242, 50],
+        [10, 303, 292, 50],
+        [10, 297, 240, 20],
+        [10, 138, 292, 160],
+        [10, 138, 242, 180]
+      ],
+      "paintInvalidationClients": [
+        "RootInlineBox",
+        "RootInlineBox",
+        "RootInlineBox",
+        "RootInlineBox",
+        "RootInlineBox",
+        "RootInlineBox",
+        "RootInlineBox",
+        "RootInlineBox",
+        "InlineTextBox 'Curabitur pretium, quam quis semper'",
+        "InlineTextBox 'malesuada, est libero feugiat libero, vel fringilla'",
+        "InlineTextBox 'orci nibh sed neque. Quisque eu nulla non nisi'",
+        "InlineTextBox 'molestie accumsan. Etiam tellus urna, laoreet ac,'",
+        "InlineTextBox 'laoreet non, suscipit sed, sapien. Phasellus'",
+        "InlineTextBox 'vehicula, sem at posuere vehicula, augue nibh'",
+        "InlineTextBox 'molestie nisl, nec ullamcorper lacus ante'",
+        "InlineTextBox 'vulputate pede.'",
+        "LayoutTableCell TD id='col1'",
+        "LayoutBlockFlow DIV",
+        "RootInlineBox",
+        "LayoutText #text",
+        "InlineTextBox 'Curabitur pretium, quam quis semper'",
+        "InlineTextBox 'malesuada, est libero feugiat libero, vel'",
+        "InlineTextBox 'fringilla orci nibh sed neque. Quisque eu'",
+        "InlineTextBox 'nulla non nisi molestie accumsan. Etiam'",
+        "InlineTextBox 'tellus urna, laoreet ac, laoreet non,'",
+        "InlineTextBox 'suscipit sed, sapien. Phasellus vehicula,'",
+        "InlineTextBox 'sem at posuere vehicula, augue nibh'",
+        "InlineTextBox 'molestie nisl, nec ullamcorper lacus ante'",
+        "InlineTextBox 'vulputate pede.'",
+        "LayoutBlockFlow DIV",
+        "LayoutTableCell TD id='target'"
+      ]
+    }
+  ]
+}
+

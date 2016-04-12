@@ -5,14 +5,22 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [300, 50, 20, 300],
-        [150, 50, 20, 300],
-        [96, 46, 308, 308]
-      ],
-      "paintInvalidationClients": [
-        "LayoutBlockFlow (positioned) DIV",
-        "LayoutBlockFlow (positioned) DIV id='child'"
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow (positioned) DIV",
+          "rect": [96, 46, 308, 308],
+          "reason": "outline"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='child'",
+          "rect": [150, 50, 20, 300],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='child'",
+          "rect": [300, 50, 20, 300],
+          "reason": "location change"
+        }
       ]
     }
   ]

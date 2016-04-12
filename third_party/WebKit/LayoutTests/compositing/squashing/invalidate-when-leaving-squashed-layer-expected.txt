@@ -20,8 +20,12 @@
               "position": [50, 50],
               "bounds": [200, 200],
               "drawsContent": true,
-              "repaintRects": [
-                [0, 0, 200, 200]
+              "paintInvalidations": [
+                {
+                  "object": "LayoutBlockFlow (positioned) DIV id='target'",
+                  "rect": [0, 0, 200, 200],
+                  "reason": "layer"
+                }
               ]
             }
           ]
@@ -32,8 +36,12 @@
           "contentsOpaque": true,
           "drawsContent": true,
           "backgroundColor": "#ADD8E6",
-          "repaintRects": [
-            [0, 0, 200, 200]
+          "paintInvalidations": [
+            {
+              "object": "LayoutBlockFlow (positioned) DIV id='target'",
+              "rect": [0, 0, 200, 200],
+              "reason": "style change"
+            }
           ]
         }
       ]

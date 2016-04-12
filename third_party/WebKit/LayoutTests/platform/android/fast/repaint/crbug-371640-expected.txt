@@ -1,0 +1,45 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [348, 88, 260, 100],
+        [348, 88, 260, 100],
+        [348, 88, 260, 100],
+        [348, 88, 260, 100],
+        [348, 88, 260, 100],
+        [348, 88, 100, 100],
+        [348, 88, 100, 100],
+        [348, 88, 100, 100],
+        [348, 88, 4, 19],
+        [348, 88, 4, 19],
+        [88, 88, 520, 100],
+        [88, 88, 260, 100],
+        [88, 88, 260, 100],
+        [88, 88, 100, 100],
+        [88, 88, 100, 100],
+        [88, 88, 4, 19]
+      ],
+      "paintInvalidationClients": [
+        "InlineTextBox '\u00A0'",
+        "LayoutText #text",
+        "RootInlineBox",
+        "LayoutBlockFlow DIV id='to_remove' class='item'",
+        "LayoutBlockFlow (relative positioned) (floating) DIV id='to_remove_inner' class='inner'",
+        "LayoutBlockFlow (floating) DIV id='node' class='outer'",
+        "LayoutBlockFlow (floating) DIV id='container'",
+        "LayoutBlockFlow (floating) DIV id='keep_outer' class='outer'",
+        "LayoutBlockFlow (relative positioned) (floating) DIV id='keep_inner' class='inner'",
+        "LayoutBlockFlow (positioned) DIV class='abs_pos'",
+        "LayoutBlockFlow DIV id='keep' class='item'",
+        "RootInlineBox",
+        "LayoutText #text",
+        "InlineTextBox '\u00A0'"
+      ]
+    }
+  ]
+}
+

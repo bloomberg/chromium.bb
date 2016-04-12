@@ -5,20 +5,47 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [8, 146, 784, 18],
-        [8, 146, 70, 18],
-        [8, 130, 784, 50],
-        [8, 130, 784, 18],
-        [8, 130, 784, 18],
-        [8, 130, 70, 18]
-      ],
-      "paintInvalidationClients": [
-        "LayoutBlockFlow DIV id='allcontent'",
-        "LayoutBlockFlow (relative positioned) P",
-        "RootInlineBox",
-        "LayoutText #text",
-        "InlineTextBox 'SUCCESS'"
+      "paintInvalidations": [
+        {
+          "object": "InlineTextBox 'SUCCESS'",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow (relative positioned) P",
+          "rect": [8, 146, 784, 18],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow (relative positioned) P",
+          "rect": [8, 130, 784, 18],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='allcontent'",
+          "rect": [8, 130, 784, 50],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='allcontent'",
+          "rect": [8, 130, 784, 18],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [8, 146, 70, 18],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [8, 130, 70, 18],
+          "reason": "location change"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        }
       ]
     }
   ]

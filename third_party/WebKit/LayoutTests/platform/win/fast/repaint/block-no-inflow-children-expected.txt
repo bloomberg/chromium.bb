@@ -5,19 +5,47 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [0, 0, 64, 18],
-        [0, 0, 64, 17],
-        [0, 0, 48, 18],
-        [0, 0, 48, 17]
-      ],
-      "paintInvalidationClients": [
-        "RootInlineBox",
-        "InlineTextBox ''",
-        "LayoutBlockFlow DIV id='target'",
-        "RootInlineBox",
-        "LayoutText #text",
-        "InlineTextBox 'La la la la'"
+      "paintInvalidations": [
+        {
+          "object": "InlineTextBox ''",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'La la la la'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='target'",
+          "rect": [0, 0, 48, 18],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='target'",
+          "rect": [0, 0, 64, 18],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [0, 0, 48, 17],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [0, 0, 64, 17],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        }
       ]
     }
   ]

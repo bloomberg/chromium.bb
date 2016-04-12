@@ -5,22 +5,52 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [308, 8, 300, 100],
-        [308, 8, 300, 100],
-        [308, 8, 300, 100],
-        [308, 8, 100, 100],
-        [8, 8, 600, 100],
-        [8, 8, 300, 100],
-        [8, 8, 300, 100],
-        [8, 8, 100, 100]
-      ],
-      "paintInvalidationClients": [
-        "LayoutBlockFlow (floating) DIV id='node'",
-        "LayoutBlockFlow (floating) DIV",
-        "LayoutBlockFlow (floating) DIV",
-        "LayoutBlockFlow DIV",
-        "LayoutBlockFlow DIV"
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow (floating) DIV",
+          "rect": [8, 8, 600, 100],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow (floating) DIV",
+          "rect": [308, 8, 300, 100],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow (floating) DIV",
+          "rect": [8, 8, 300, 100],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow (floating) DIV",
+          "rect": [308, 8, 300, 100],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow (floating) DIV id='node'",
+          "rect": [0, 0, 0, 0],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [8, 8, 300, 100],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [308, 8, 300, 100],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [8, 8, 100, 100],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [308, 8, 100, 100],
+          "reason": "location change"
+        }
       ]
     }
   ]

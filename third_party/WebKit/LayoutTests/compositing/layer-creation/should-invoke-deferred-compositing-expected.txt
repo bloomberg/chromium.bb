@@ -12,11 +12,12 @@
             {
               "bounds": [200, 200],
               "drawsContent": true,
-              "repaintRects": [
-                [0, 0, 200, 200]
-              ],
-              "paintInvalidationClients": [
-                "LayoutHTMLCanvas (positioned) CANVAS"
+              "paintInvalidations": [
+                {
+                  "object": "LayoutHTMLCanvas (positioned) CANVAS",
+                  "rect": [0, 0, 200, 200],
+                  "reason": "layoutObject insertion"
+                }
               ]
             }
           ]

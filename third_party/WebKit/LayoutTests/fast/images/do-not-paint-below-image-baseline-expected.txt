@@ -5,11 +5,12 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [50, 50, 259, 194]
-      ],
-      "paintInvalidationClients": [
-        "LayoutImage IMG"
+      "paintInvalidations": [
+        {
+          "object": "LayoutImage IMG",
+          "rect": [50, 50, 259, 194],
+          "reason": "style change"
+        }
       ]
     }
   ]

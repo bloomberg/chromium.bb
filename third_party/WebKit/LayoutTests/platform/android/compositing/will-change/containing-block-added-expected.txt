@@ -1,0 +1,32 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [50, 50, 75, 75]
+      ],
+      "paintInvalidationClients": [
+        "LayoutBlockFlow (positioned) DIV class='fixed'"
+      ],
+      "children": [
+        {
+          "position": [200, 100],
+          "transformOrigin": [50, 50],
+          "bounds": [125, 125],
+          "drawsContent": true,
+          "backgroundColor": "#0000FF",
+          "repaintRects": [
+            [50, 50, 75, 75]
+          ],
+          "paintInvalidationClients": [
+            "LayoutBlockFlow (positioned) DIV class='fixed'"
+          ]
+        }
+      ]
+    }
+  ]
+}
+

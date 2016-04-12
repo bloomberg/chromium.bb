@@ -18,8 +18,32 @@ lorem ipsumlorem ipsumlorem ipsum
               "position": [15, 35],
               "bounds": [100, 210],
               "drawsContent": true,
-              "repaintRects": [
-                [0, 80, 42, 35]
+              "paintInvalidations": [
+                {
+                  "object": "InlineTextBox 'ipsum'",
+                  "rect": [0, 0, 0, 0],
+                  "reason": "selection"
+                },
+                {
+                  "object": "InlineTextBox 'lorem'",
+                  "rect": [0, 0, 0, 0],
+                  "reason": "selection"
+                },
+                {
+                  "object": "LayoutBlockFlow (positioned) DIV id='item1' class='item'",
+                  "rect": [0, 0, 0, 0],
+                  "reason": "selection"
+                },
+                {
+                  "object": "LayoutBlockFlow DIV class='inline-block'",
+                  "rect": [0, 0, 0, 0],
+                  "reason": "selection"
+                },
+                {
+                  "object": "LayoutText #text",
+                  "rect": [0, 80, 42, 35],
+                  "reason": "selection"
+                }
               ]
             }
           ]
@@ -47,9 +71,57 @@ lorem ipsumlorem ipsumlorem ipsum
               "position": [15, 35],
               "bounds": [100, 210],
               "drawsContent": true,
-              "repaintRects": [
-                [0, 160, 42, 35],
-                [0, 80, 44, 35]
+              "paintInvalidations": [
+                {
+                  "object": "InlineTextBox 'ipsum'",
+                  "rect": [0, 0, 0, 0],
+                  "reason": "selection"
+                },
+                {
+                  "object": "InlineTextBox 'ipsum'",
+                  "rect": [0, 0, 0, 0],
+                  "reason": "selection"
+                },
+                {
+                  "object": "InlineTextBox 'lorem'",
+                  "rect": [0, 0, 0, 0],
+                  "reason": "selection"
+                },
+                {
+                  "object": "InlineTextBox 'lorem'",
+                  "rect": [0, 0, 0, 0],
+                  "reason": "selection"
+                },
+                {
+                  "object": "LayoutBlockFlow (positioned) DIV id='item1' class='item'",
+                  "rect": [0, 0, 0, 0],
+                  "reason": "selection"
+                },
+                {
+                  "object": "LayoutBlockFlow (positioned) DIV id='item2' class='item'",
+                  "rect": [0, 0, 0, 0],
+                  "reason": "selection"
+                },
+                {
+                  "object": "LayoutBlockFlow DIV class='inline-block'",
+                  "rect": [0, 0, 0, 0],
+                  "reason": "selection"
+                },
+                {
+                  "object": "LayoutBlockFlow DIV class='inline-block'",
+                  "rect": [0, 0, 0, 0],
+                  "reason": "selection"
+                },
+                {
+                  "object": "LayoutText #text",
+                  "rect": [0, 80, 44, 35],
+                  "reason": "selection"
+                },
+                {
+                  "object": "LayoutText #text",
+                  "rect": [0, 160, 42, 35],
+                  "reason": "selection"
+                }
               ]
             }
           ]

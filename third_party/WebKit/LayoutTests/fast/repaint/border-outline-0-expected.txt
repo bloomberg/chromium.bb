@@ -5,12 +5,17 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [10, 10, 200, 200],
-        [10, 10, 100, 100]
-      ],
-      "paintInvalidationClients": [
-        "LayoutBlockFlow (positioned) DIV id='border-image'"
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='border-image'",
+          "rect": [10, 10, 200, 200],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='border-image'",
+          "rect": [10, 10, 100, 100],
+          "reason": "style change"
+        }
       ]
     }
   ]

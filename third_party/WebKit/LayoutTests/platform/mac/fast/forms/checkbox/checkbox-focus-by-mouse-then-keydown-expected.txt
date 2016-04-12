@@ -5,11 +5,12 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [5, 7, 23, 22]
-      ],
-      "paintInvalidationClients": [
-        "LayoutBlockFlow INPUT"
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow INPUT",
+          "rect": [5, 7, 23, 22],
+          "reason": "full"
+        }
       ]
     }
   ]

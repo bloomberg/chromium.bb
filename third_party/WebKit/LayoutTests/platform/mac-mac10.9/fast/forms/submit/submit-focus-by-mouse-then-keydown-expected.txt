@@ -5,17 +5,32 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [16, 11, 38, 13],
-        [16, 11, 38, 13],
-        [3, 4, 64, 29]
-      ],
-      "paintInvalidationClients": [
-        "LayoutButton INPUT",
-        "LayoutBlockFlow (anonymous)",
-        "RootInlineBox",
-        "LayoutText #text",
-        "InlineTextBox 'Submit'"
+      "paintInvalidations": [
+        {
+          "object": "InlineTextBox 'Submit'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutBlockFlow (anonymous)",
+          "rect": [16, 11, 38, 13],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutButton INPUT",
+          "rect": [3, 4, 64, 29],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [16, 11, 38, 13],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        }
       ]
     }
   ]

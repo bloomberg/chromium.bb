@@ -5,39 +5,107 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [348, 84, 260, 100],
-        [348, 84, 260, 100],
-        [348, 84, 260, 100],
-        [348, 84, 260, 100],
-        [348, 84, 260, 100],
-        [348, 84, 100, 100],
-        [348, 84, 100, 100],
-        [348, 84, 100, 100],
-        [348, 84, 4, 18],
-        [348, 84, 4, 18],
-        [88, 84, 520, 100],
-        [88, 84, 260, 100],
-        [88, 84, 260, 100],
-        [88, 84, 100, 100],
-        [88, 84, 100, 100],
-        [88, 84, 4, 18]
-      ],
-      "paintInvalidationClients": [
-        "InlineTextBox '\u00A0'",
-        "LayoutText #text",
-        "RootInlineBox",
-        "LayoutBlockFlow DIV id='to_remove' class='item'",
-        "LayoutBlockFlow (relative positioned) (floating) DIV id='to_remove_inner' class='inner'",
-        "LayoutBlockFlow (floating) DIV id='node' class='outer'",
-        "LayoutBlockFlow (floating) DIV id='container'",
-        "LayoutBlockFlow (floating) DIV id='keep_outer' class='outer'",
-        "LayoutBlockFlow (relative positioned) (floating) DIV id='keep_inner' class='inner'",
-        "LayoutBlockFlow (positioned) DIV class='abs_pos'",
-        "LayoutBlockFlow DIV id='keep' class='item'",
-        "RootInlineBox",
-        "LayoutText #text",
-        "InlineTextBox '\u00A0'"
+      "paintInvalidations": [
+        {
+          "object": "InlineTextBox '\u00A0'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox '\u00A0'",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow (floating) DIV id='container'",
+          "rect": [88, 84, 520, 100],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow (floating) DIV id='container'",
+          "rect": [348, 84, 260, 100],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow (floating) DIV id='keep_outer' class='outer'",
+          "rect": [88, 84, 260, 100],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow (floating) DIV id='keep_outer' class='outer'",
+          "rect": [348, 84, 260, 100],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow (floating) DIV id='node' class='outer'",
+          "rect": [348, 84, 260, 100],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV class='abs_pos'",
+          "rect": [88, 84, 100, 100],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV class='abs_pos'",
+          "rect": [348, 84, 100, 100],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow (relative positioned) (floating) DIV id='keep_inner' class='inner'",
+          "rect": [88, 84, 260, 100],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow (relative positioned) (floating) DIV id='keep_inner' class='inner'",
+          "rect": [348, 84, 260, 100],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow (relative positioned) (floating) DIV id='to_remove_inner' class='inner'",
+          "rect": [348, 84, 260, 100],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='keep' class='item'",
+          "rect": [88, 84, 100, 100],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='keep' class='item'",
+          "rect": [348, 84, 100, 100],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='to_remove' class='item'",
+          "rect": [348, 84, 100, 100],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [348, 84, 4, 18],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [88, 84, 4, 18],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [348, 84, 4, 18],
+          "reason": "location change"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        }
       ]
     }
   ]

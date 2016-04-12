@@ -20,9 +20,17 @@
               "position": [50, 50],
               "bounds": [50, 50],
               "drawsContent": true,
-              "repaintRects": [
-                [0, 0, 50, 50],
-                [0, 0, 40, 40]
+              "paintInvalidations": [
+                {
+                  "object": "LayoutBlockFlow (positioned) SPAN class='child embiggen'",
+                  "rect": [0, 0, 40, 40],
+                  "reason": "style change"
+                },
+                {
+                  "object": "LayoutBlockFlow (positioned) SPAN class='child embiggen'",
+                  "rect": [0, 0, 50, 50],
+                  "reason": "style change"
+                }
               ]
             }
           ]

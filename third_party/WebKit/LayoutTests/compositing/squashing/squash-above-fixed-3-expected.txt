@@ -108,8 +108,12 @@ CASE 3, scrolling y further so that "inner" no longer overlaps the fixed-pos lay
           "bounds": [200, 4000],
           "drawsContent": true,
           "backgroundColor": "#008000",
-          "repaintRects": [
-            [100, 0, 100, 100]
+          "paintInvalidations": [
+            {
+              "object": "LayoutBlockFlow (positioned) DIV id='innerScrolling'",
+              "rect": [100, 0, 100, 100],
+              "reason": "location change"
+            }
           ],
           "children": [
             {

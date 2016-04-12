@@ -5,50 +5,187 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [304, 138, 2, 215],
-        [254, 138, 52, 235],
-        [252, 138, 50, 215],
-        [250, 138, 49, 159],
-        [10, 353, 242, 20],
-        [10, 323, 242, 50],
-        [10, 303, 292, 50],
-        [10, 297, 240, 20],
-        [10, 138, 292, 160],
-        [10, 138, 242, 180]
-      ],
-      "paintInvalidationClients": [
-        "RootInlineBox",
-        "RootInlineBox",
-        "RootInlineBox",
-        "RootInlineBox",
-        "RootInlineBox",
-        "RootInlineBox",
-        "RootInlineBox",
-        "RootInlineBox",
-        "InlineTextBox 'Curabitur pretium, quam quis semper'",
-        "InlineTextBox 'malesuada, est libero feugiat libero, vel fringilla'",
-        "InlineTextBox 'orci nibh sed neque. Quisque eu nulla non nisi'",
-        "InlineTextBox 'molestie accumsan. Etiam tellus urna, laoreet ac,'",
-        "InlineTextBox 'laoreet non, suscipit sed, sapien. Phasellus'",
-        "InlineTextBox 'vehicula, sem at posuere vehicula, augue nibh'",
-        "InlineTextBox 'molestie nisl, nec ullamcorper lacus ante'",
-        "InlineTextBox 'vulputate pede.'",
-        "LayoutTableCell TD id='col1'",
-        "LayoutBlockFlow DIV",
-        "RootInlineBox",
-        "LayoutText #text",
-        "InlineTextBox 'Curabitur pretium, quam quis semper'",
-        "InlineTextBox 'malesuada, est libero feugiat libero, vel'",
-        "InlineTextBox 'fringilla orci nibh sed neque. Quisque eu'",
-        "InlineTextBox 'nulla non nisi molestie accumsan. Etiam'",
-        "InlineTextBox 'tellus urna, laoreet ac, laoreet non,'",
-        "InlineTextBox 'suscipit sed, sapien. Phasellus vehicula,'",
-        "InlineTextBox 'sem at posuere vehicula, augue nibh'",
-        "InlineTextBox 'molestie nisl, nec ullamcorper lacus ante'",
-        "InlineTextBox 'vulputate pede.'",
-        "LayoutBlockFlow DIV",
-        "LayoutTableCell TD id='target'"
+      "paintInvalidations": [
+        {
+          "object": "InlineTextBox 'Curabitur pretium, quam quis semper'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'Curabitur pretium, quam quis semper'",
+          "rect": [0, 0, 0, 0],
+          "reason": "incremental"
+        },
+        {
+          "object": "InlineTextBox 'fringilla orci nibh sed neque. Quisque eu'",
+          "rect": [0, 0, 0, 0],
+          "reason": "incremental"
+        },
+        {
+          "object": "InlineTextBox 'laoreet non, suscipit sed, sapien. Phasellus'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'malesuada, est libero feugiat libero, vel fringilla'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'malesuada, est libero feugiat libero, vel'",
+          "rect": [0, 0, 0, 0],
+          "reason": "incremental"
+        },
+        {
+          "object": "InlineTextBox 'molestie accumsan. Etiam tellus urna, laoreet ac,'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'molestie nisl, nec ullamcorper lacus ante'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'molestie nisl, nec ullamcorper lacus ante'",
+          "rect": [0, 0, 0, 0],
+          "reason": "incremental"
+        },
+        {
+          "object": "InlineTextBox 'nulla non nisi molestie accumsan. Etiam'",
+          "rect": [0, 0, 0, 0],
+          "reason": "incremental"
+        },
+        {
+          "object": "InlineTextBox 'orci nibh sed neque. Quisque eu nulla non nisi'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'sem at posuere vehicula, augue nibh'",
+          "rect": [0, 0, 0, 0],
+          "reason": "incremental"
+        },
+        {
+          "object": "InlineTextBox 'suscipit sed, sapien. Phasellus vehicula,'",
+          "rect": [0, 0, 0, 0],
+          "reason": "incremental"
+        },
+        {
+          "object": "InlineTextBox 'tellus urna, laoreet ac, laoreet non,'",
+          "rect": [0, 0, 0, 0],
+          "reason": "incremental"
+        },
+        {
+          "object": "InlineTextBox 'vehicula, sem at posuere vehicula, augue nibh'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'vulputate pede.'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'vulputate pede.'",
+          "rect": [0, 0, 0, 0],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [10, 138, 292, 160],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [10, 138, 242, 180],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [10, 303, 292, 50],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [10, 323, 242, 50],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutTableCell TD id='col1'",
+          "rect": [252, 138, 50, 215],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutTableCell TD id='col1'",
+          "rect": [10, 353, 242, 20],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutTableCell TD id='target'",
+          "rect": [304, 138, 2, 215],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutTableCell TD id='target'",
+          "rect": [254, 138, 52, 235],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [250, 138, 49, 159],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [10, 297, 240, 20],
+          "reason": "incremental"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        }
       ]
     }
   ]

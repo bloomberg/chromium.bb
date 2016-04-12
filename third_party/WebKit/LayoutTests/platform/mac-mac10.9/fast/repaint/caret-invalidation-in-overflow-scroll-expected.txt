@@ -5,13 +5,17 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [406, 10, 4, 15],
-        [403, 10, 4, 15]
-      ],
-      "paintInvalidationClients": [
-        "LayoutBlockFlow DIV id='inner-editor'",
-        "LayoutBlockFlow DIV id='inner-editor'"
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow DIV id='inner-editor'",
+          "rect": [406, 10, 4, 15],
+          "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='inner-editor'",
+          "rect": [403, 10, 4, 15],
+          "reason": "invalidate paint rectangle"
+        }
       ]
     }
   ]

@@ -5,11 +5,12 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [8, 508, 600, 50]
-      ],
-      "paintInvalidationClients": [
-        "LayoutBlockFlow (positioned) DIV id='container'"
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='container'",
+          "rect": [8, 508, 600, 50],
+          "reason": "incremental"
+        }
       ],
       "children": [
         {
@@ -17,11 +18,12 @@
           "bounds": [60, 44],
           "drawsContent": true,
           "backfaceVisibility": "hidden",
-          "repaintRects": [
-            [0, 40, 60, 4]
-          ],
-          "paintInvalidationClients": [
-            "LayoutBlockFlow (positioned) DIV class='test image'"
+          "paintInvalidations": [
+            {
+              "object": "LayoutBlockFlow (positioned) DIV class='test image'",
+              "rect": [0, 40, 60, 4],
+              "reason": "incremental"
+            }
           ]
         },
         {
@@ -29,12 +31,17 @@
           "bounds": [60, 44],
           "drawsContent": true,
           "backfaceVisibility": "hidden",
-          "repaintRects": [
-            [0, 0, 60, 44],
-            [0, 0, 60, 40]
-          ],
-          "paintInvalidationClients": [
-            "LayoutBlockFlow (positioned) DIV class='test image size-cover'"
+          "paintInvalidations": [
+            {
+              "object": "LayoutBlockFlow (positioned) DIV class='test image size-cover'",
+              "rect": [0, 0, 60, 40],
+              "reason": "border box change"
+            },
+            {
+              "object": "LayoutBlockFlow (positioned) DIV class='test image size-cover'",
+              "rect": [0, 0, 60, 44],
+              "reason": "border box change"
+            }
           ]
         },
         {
@@ -42,12 +49,17 @@
           "bounds": [60, 44],
           "drawsContent": true,
           "backfaceVisibility": "hidden",
-          "repaintRects": [
-            [0, 0, 60, 44],
-            [0, 0, 60, 40]
-          ],
-          "paintInvalidationClients": [
-            "LayoutBlockFlow (positioned) DIV class='test image size-contain'"
+          "paintInvalidations": [
+            {
+              "object": "LayoutBlockFlow (positioned) DIV class='test image size-contain'",
+              "rect": [0, 0, 60, 40],
+              "reason": "border box change"
+            },
+            {
+              "object": "LayoutBlockFlow (positioned) DIV class='test image size-contain'",
+              "rect": [0, 0, 60, 44],
+              "reason": "border box change"
+            }
           ]
         },
         {
@@ -55,11 +67,12 @@
           "bounds": [60, 44],
           "drawsContent": true,
           "backfaceVisibility": "hidden",
-          "repaintRects": [
-            [0, 40, 60, 4]
-          ],
-          "paintInvalidationClients": [
-            "LayoutBlockFlow (positioned) DIV class='test image fixed-height'"
+          "paintInvalidations": [
+            {
+              "object": "LayoutBlockFlow (positioned) DIV class='test image fixed-height'",
+              "rect": [0, 40, 60, 4],
+              "reason": "incremental"
+            }
           ]
         },
         {
@@ -67,12 +80,17 @@
           "bounds": [60, 44],
           "drawsContent": true,
           "backfaceVisibility": "hidden",
-          "repaintRects": [
-            [0, 0, 60, 44],
-            [0, 0, 60, 40]
-          ],
-          "paintInvalidationClients": [
-            "LayoutBlockFlow (positioned) DIV class='test image percent-height'"
+          "paintInvalidations": [
+            {
+              "object": "LayoutBlockFlow (positioned) DIV class='test image percent-height'",
+              "rect": [0, 0, 60, 40],
+              "reason": "border box change"
+            },
+            {
+              "object": "LayoutBlockFlow (positioned) DIV class='test image percent-height'",
+              "rect": [0, 0, 60, 44],
+              "reason": "border box change"
+            }
           ]
         },
         {
@@ -80,11 +98,12 @@
           "bounds": [60, 44],
           "drawsContent": true,
           "backfaceVisibility": "hidden",
-          "repaintRects": [
-            [0, 40, 60, 4]
-          ],
-          "paintInvalidationClients": [
-            "LayoutBlockFlow (positioned) DIV class='test image top'"
+          "paintInvalidations": [
+            {
+              "object": "LayoutBlockFlow (positioned) DIV class='test image top'",
+              "rect": [0, 40, 60, 4],
+              "reason": "incremental"
+            }
           ]
         },
         {
@@ -92,12 +111,17 @@
           "bounds": [60, 44],
           "drawsContent": true,
           "backfaceVisibility": "hidden",
-          "repaintRects": [
-            [0, 0, 60, 44],
-            [0, 0, 60, 40]
-          ],
-          "paintInvalidationClients": [
-            "LayoutBlockFlow (positioned) DIV class='test image bottom'"
+          "paintInvalidations": [
+            {
+              "object": "LayoutBlockFlow (positioned) DIV class='test image bottom'",
+              "rect": [0, 0, 60, 40],
+              "reason": "border box change"
+            },
+            {
+              "object": "LayoutBlockFlow (positioned) DIV class='test image bottom'",
+              "rect": [0, 0, 60, 44],
+              "reason": "border box change"
+            }
           ]
         },
         {
@@ -105,12 +129,17 @@
           "bounds": [60, 44],
           "drawsContent": true,
           "backfaceVisibility": "hidden",
-          "repaintRects": [
-            [0, 0, 60, 44],
-            [0, 0, 60, 40]
-          ],
-          "paintInvalidationClients": [
-            "LayoutBlockFlow (positioned) DIV class='test image center'"
+          "paintInvalidations": [
+            {
+              "object": "LayoutBlockFlow (positioned) DIV class='test image center'",
+              "rect": [0, 0, 60, 40],
+              "reason": "border box change"
+            },
+            {
+              "object": "LayoutBlockFlow (positioned) DIV class='test image center'",
+              "rect": [0, 0, 60, 44],
+              "reason": "border box change"
+            }
           ]
         },
         {
@@ -118,11 +147,12 @@
           "bounds": [60, 44],
           "drawsContent": true,
           "backfaceVisibility": "hidden",
-          "repaintRects": [
-            [0, 40, 60, 4]
-          ],
-          "paintInvalidationClients": [
-            "LayoutBlockFlow (positioned) DIV class='test image no-repeat'"
+          "paintInvalidations": [
+            {
+              "object": "LayoutBlockFlow (positioned) DIV class='test image no-repeat'",
+              "rect": [0, 40, 60, 4],
+              "reason": "incremental"
+            }
           ]
         },
         {
@@ -130,12 +160,17 @@
           "bounds": [60, 44],
           "drawsContent": true,
           "backfaceVisibility": "hidden",
-          "repaintRects": [
-            [0, 0, 60, 44],
-            [0, 0, 60, 40]
-          ],
-          "paintInvalidationClients": [
-            "LayoutBlockFlow (positioned) DIV class='test image repeat-space'"
+          "paintInvalidations": [
+            {
+              "object": "LayoutBlockFlow (positioned) DIV class='test image repeat-space'",
+              "rect": [0, 0, 60, 40],
+              "reason": "border box change"
+            },
+            {
+              "object": "LayoutBlockFlow (positioned) DIV class='test image repeat-space'",
+              "rect": [0, 0, 60, 44],
+              "reason": "border box change"
+            }
           ]
         },
         {
@@ -143,12 +178,17 @@
           "bounds": [60, 44],
           "drawsContent": true,
           "backfaceVisibility": "hidden",
-          "repaintRects": [
-            [0, 0, 60, 44],
-            [0, 0, 60, 40]
-          ],
-          "paintInvalidationClients": [
-            "LayoutBlockFlow (positioned) DIV class='test image repeat-round'"
+          "paintInvalidations": [
+            {
+              "object": "LayoutBlockFlow (positioned) DIV class='test image repeat-round'",
+              "rect": [0, 0, 60, 40],
+              "reason": "border box change"
+            },
+            {
+              "object": "LayoutBlockFlow (positioned) DIV class='test image repeat-round'",
+              "rect": [0, 0, 60, 44],
+              "reason": "border box change"
+            }
           ]
         },
         {
@@ -156,12 +196,17 @@
           "bounds": [60, 44],
           "drawsContent": true,
           "backfaceVisibility": "hidden",
-          "repaintRects": [
-            [0, 0, 60, 44],
-            [0, 0, 60, 40]
-          ],
-          "paintInvalidationClients": [
-            "LayoutBlockFlow (positioned) DIV class='test generated'"
+          "paintInvalidations": [
+            {
+              "object": "LayoutBlockFlow (positioned) DIV class='test generated'",
+              "rect": [0, 0, 60, 40],
+              "reason": "border box change"
+            },
+            {
+              "object": "LayoutBlockFlow (positioned) DIV class='test generated'",
+              "rect": [0, 0, 60, 44],
+              "reason": "border box change"
+            }
           ]
         },
         {
@@ -169,12 +214,17 @@
           "bounds": [60, 44],
           "drawsContent": true,
           "backfaceVisibility": "hidden",
-          "repaintRects": [
-            [0, 0, 60, 44],
-            [0, 0, 60, 40]
-          ],
-          "paintInvalidationClients": [
-            "LayoutBlockFlow (positioned) DIV class='test generated cover'"
+          "paintInvalidations": [
+            {
+              "object": "LayoutBlockFlow (positioned) DIV class='test generated cover'",
+              "rect": [0, 0, 60, 40],
+              "reason": "border box change"
+            },
+            {
+              "object": "LayoutBlockFlow (positioned) DIV class='test generated cover'",
+              "rect": [0, 0, 60, 44],
+              "reason": "border box change"
+            }
           ]
         },
         {
@@ -182,12 +232,17 @@
           "bounds": [60, 44],
           "drawsContent": true,
           "backfaceVisibility": "hidden",
-          "repaintRects": [
-            [0, 0, 60, 44],
-            [0, 0, 60, 40]
-          ],
-          "paintInvalidationClients": [
-            "LayoutBlockFlow (positioned) DIV class='test generated contain'"
+          "paintInvalidations": [
+            {
+              "object": "LayoutBlockFlow (positioned) DIV class='test generated contain'",
+              "rect": [0, 0, 60, 40],
+              "reason": "border box change"
+            },
+            {
+              "object": "LayoutBlockFlow (positioned) DIV class='test generated contain'",
+              "rect": [0, 0, 60, 44],
+              "reason": "border box change"
+            }
           ]
         },
         {
@@ -195,11 +250,12 @@
           "bounds": [60, 44],
           "drawsContent": true,
           "backfaceVisibility": "hidden",
-          "repaintRects": [
-            [0, 40, 60, 4]
-          ],
-          "paintInvalidationClients": [
-            "LayoutBlockFlow (positioned) DIV class='test generated fixed-height'"
+          "paintInvalidations": [
+            {
+              "object": "LayoutBlockFlow (positioned) DIV class='test generated fixed-height'",
+              "rect": [0, 40, 60, 4],
+              "reason": "incremental"
+            }
           ]
         },
         {
@@ -207,12 +263,17 @@
           "bounds": [60, 44],
           "drawsContent": true,
           "backfaceVisibility": "hidden",
-          "repaintRects": [
-            [0, 0, 60, 44],
-            [0, 0, 60, 40]
-          ],
-          "paintInvalidationClients": [
-            "LayoutBlockFlow (positioned) DIV class='test generated percent-height'"
+          "paintInvalidations": [
+            {
+              "object": "LayoutBlockFlow (positioned) DIV class='test generated percent-height'",
+              "rect": [0, 0, 60, 40],
+              "reason": "border box change"
+            },
+            {
+              "object": "LayoutBlockFlow (positioned) DIV class='test generated percent-height'",
+              "rect": [0, 0, 60, 44],
+              "reason": "border box change"
+            }
           ]
         },
         {
@@ -220,12 +281,17 @@
           "bounds": [60, 44],
           "drawsContent": true,
           "backfaceVisibility": "hidden",
-          "repaintRects": [
-            [0, 0, 60, 44],
-            [0, 0, 60, 40]
-          ],
-          "paintInvalidationClients": [
-            "LayoutBlockFlow (positioned) DIV class='test generated top'"
+          "paintInvalidations": [
+            {
+              "object": "LayoutBlockFlow (positioned) DIV class='test generated top'",
+              "rect": [0, 0, 60, 40],
+              "reason": "border box change"
+            },
+            {
+              "object": "LayoutBlockFlow (positioned) DIV class='test generated top'",
+              "rect": [0, 0, 60, 44],
+              "reason": "border box change"
+            }
           ]
         },
         {
@@ -233,12 +299,17 @@
           "bounds": [60, 44],
           "drawsContent": true,
           "backfaceVisibility": "hidden",
-          "repaintRects": [
-            [0, 0, 60, 44],
-            [0, 0, 60, 40]
-          ],
-          "paintInvalidationClients": [
-            "LayoutBlockFlow (positioned) DIV class='test generated bottom'"
+          "paintInvalidations": [
+            {
+              "object": "LayoutBlockFlow (positioned) DIV class='test generated bottom'",
+              "rect": [0, 0, 60, 40],
+              "reason": "border box change"
+            },
+            {
+              "object": "LayoutBlockFlow (positioned) DIV class='test generated bottom'",
+              "rect": [0, 0, 60, 44],
+              "reason": "border box change"
+            }
           ]
         },
         {
@@ -246,12 +317,17 @@
           "bounds": [60, 44],
           "drawsContent": true,
           "backfaceVisibility": "hidden",
-          "repaintRects": [
-            [0, 0, 60, 44],
-            [0, 0, 60, 40]
-          ],
-          "paintInvalidationClients": [
-            "LayoutBlockFlow (positioned) DIV class='test generated center'"
+          "paintInvalidations": [
+            {
+              "object": "LayoutBlockFlow (positioned) DIV class='test generated center'",
+              "rect": [0, 0, 60, 40],
+              "reason": "border box change"
+            },
+            {
+              "object": "LayoutBlockFlow (positioned) DIV class='test generated center'",
+              "rect": [0, 0, 60, 44],
+              "reason": "border box change"
+            }
           ]
         },
         {
@@ -259,12 +335,17 @@
           "bounds": [60, 44],
           "drawsContent": true,
           "backfaceVisibility": "hidden",
-          "repaintRects": [
-            [0, 0, 60, 44],
-            [0, 0, 60, 40]
-          ],
-          "paintInvalidationClients": [
-            "LayoutBlockFlow (positioned) DIV class='test generated no-repeat'"
+          "paintInvalidations": [
+            {
+              "object": "LayoutBlockFlow (positioned) DIV class='test generated no-repeat'",
+              "rect": [0, 0, 60, 40],
+              "reason": "border box change"
+            },
+            {
+              "object": "LayoutBlockFlow (positioned) DIV class='test generated no-repeat'",
+              "rect": [0, 0, 60, 44],
+              "reason": "border box change"
+            }
           ]
         },
         {
@@ -272,12 +353,17 @@
           "bounds": [60, 44],
           "drawsContent": true,
           "backfaceVisibility": "hidden",
-          "repaintRects": [
-            [0, 0, 60, 44],
-            [0, 0, 60, 40]
-          ],
-          "paintInvalidationClients": [
-            "LayoutBlockFlow (positioned) DIV class='test generated repeat-space'"
+          "paintInvalidations": [
+            {
+              "object": "LayoutBlockFlow (positioned) DIV class='test generated repeat-space'",
+              "rect": [0, 0, 60, 40],
+              "reason": "border box change"
+            },
+            {
+              "object": "LayoutBlockFlow (positioned) DIV class='test generated repeat-space'",
+              "rect": [0, 0, 60, 44],
+              "reason": "border box change"
+            }
           ]
         },
         {
@@ -285,12 +371,17 @@
           "bounds": [60, 44],
           "drawsContent": true,
           "backfaceVisibility": "hidden",
-          "repaintRects": [
-            [0, 0, 60, 44],
-            [0, 0, 60, 40]
-          ],
-          "paintInvalidationClients": [
-            "LayoutBlockFlow (positioned) DIV class='test generated repeat-round'"
+          "paintInvalidations": [
+            {
+              "object": "LayoutBlockFlow (positioned) DIV class='test generated repeat-round'",
+              "rect": [0, 0, 60, 40],
+              "reason": "border box change"
+            },
+            {
+              "object": "LayoutBlockFlow (positioned) DIV class='test generated repeat-round'",
+              "rect": [0, 0, 60, 44],
+              "reason": "border box change"
+            }
           ]
         }
       ]

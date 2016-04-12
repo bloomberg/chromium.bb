@@ -12,11 +12,12 @@
           "contentsOpaque": true,
           "drawsContent": true,
           "backgroundColor": "#008000",
-          "repaintRects": [
-            [0, 0, 400, 400]
-          ],
-          "paintInvalidationClients": [
-            "LayoutBlockFlow DIV id='parent'"
+          "paintInvalidations": [
+            {
+              "object": "LayoutBlockFlow DIV id='parent'",
+              "rect": [0, 0, 400, 400],
+              "reason": "style change"
+            }
           ],
           "children": [
             {
@@ -25,11 +26,12 @@
               "contentsOpaque": true,
               "drawsContent": true,
               "backgroundColor": "#0000FF",
-              "repaintRects": [
-                [0, 0, 75, 75]
-              ],
-              "paintInvalidationClients": [
-                "LayoutBlockFlow (relative positioned) DIV id='child'"
+              "paintInvalidations": [
+                {
+                  "object": "LayoutBlockFlow (relative positioned) DIV id='child'",
+                  "rect": [0, 0, 75, 75],
+                  "reason": "style change"
+                }
               ]
             }
           ]

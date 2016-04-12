@@ -20,8 +20,12 @@
             {
               "bounds": [100, 1000],
               "drawsContent": true,
-              "repaintRects": [
-                [0, 0, 100, 1000]
+              "paintInvalidations": [
+                {
+                  "object": "LayoutBlockFlow (positioned) DIV id='foo'",
+                  "rect": [0, 0, 100, 1000],
+                  "reason": "style change"
+                }
               ]
             }
           ]

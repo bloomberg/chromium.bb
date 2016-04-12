@@ -5,14 +5,22 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [8, 108, 100, 100],
-        [8, 8, 100, 200],
-        [8, 8, 100, 100]
-      ],
-      "paintInvalidationClients": [
-        "LayoutBlockFlow DIV id='target' class='square'",
-        "LayoutBlockFlow DIV class='square'"
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow DIV class='square'",
+          "rect": [8, 108, 100, 100],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='target' class='square'",
+          "rect": [8, 8, 100, 200],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='target' class='square'",
+          "rect": [8, 8, 100, 100],
+          "reason": "style change"
+        }
       ]
     }
   ]

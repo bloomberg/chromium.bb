@@ -5,34 +5,102 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [43, 178, 1, 17],
-        [43, 148, 1, 17],
-        [8, 178, 36, 17],
-        [8, 166, 784, 30],
-        [8, 148, 36, 17],
-        [8, 145, 4, 17],
-        [8, 145, 4, 17],
-        [8, 130, 784, 65],
-        [8, 130, 4, 17]
-      ],
-      "paintInvalidationClients": [
-        "InlineTextBox ''",
-        "InlineTextBox '\n'",
-        "RootInlineBox",
-        "LayoutBlockFlow P",
-        "LayoutBlockFlow P",
-        "RootInlineBox",
-        "LayoutInline SPAN id='d'",
-        "InlineFlowBox",
-        "LayoutText #text",
-        "InlineTextBox '\u00A0'",
-        "LayoutBR BR",
-        "InlineTextBox '\n'",
-        "LayoutText #text",
-        "InlineTextBox 'Hello'",
-        "LayoutBR BR",
-        "InlineTextBox '\n'"
+      "paintInvalidations": [
+        {
+          "object": "InlineFlowBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "style change"
+        },
+        {
+          "object": "InlineTextBox '\n'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox '\n'",
+          "rect": [0, 0, 0, 0],
+          "reason": "bounds change"
+        },
+        {
+          "object": "InlineTextBox '\n'",
+          "rect": [0, 0, 0, 0],
+          "reason": "bounds change"
+        },
+        {
+          "object": "InlineTextBox ''",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'Hello'",
+          "rect": [0, 0, 0, 0],
+          "reason": "bounds change"
+        },
+        {
+          "object": "InlineTextBox '\u00A0'",
+          "rect": [0, 0, 0, 0],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutBR BR",
+          "rect": [0, 0, 0, 0],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutBR BR",
+          "rect": [43, 148, 1, 17],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutBR BR",
+          "rect": [43, 178, 1, 17],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutBlockFlow P",
+          "rect": [8, 166, 784, 30],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutBlockFlow P",
+          "rect": [8, 130, 784, 65],
+          "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutInline SPAN id='d'",
+          "rect": [8, 145, 4, 17],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [8, 130, 4, 17],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [8, 145, 4, 17],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [8, 148, 36, 17],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [8, 178, 36, 17],
+          "reason": "bounds change"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        }
       ]
     }
   ]

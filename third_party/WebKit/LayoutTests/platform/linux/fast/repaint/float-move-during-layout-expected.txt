@@ -5,15 +5,27 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [8, 210, 100, 100],
-        [8, 110, 784, 100],
-        [8, 110, 100, 100]
-      ],
-      "paintInvalidationClients": [
-        "LayoutBlockFlow DIV id='t'",
-        "LayoutBlockFlow DIV id='s'",
-        "LayoutBlockFlow (floating) DIV"
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow (floating) DIV",
+          "rect": [8, 110, 100, 100],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow (floating) DIV",
+          "rect": [8, 210, 100, 100],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='s'",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='t'",
+          "rect": [8, 110, 784, 100],
+          "reason": "became visible"
+        }
       ]
     }
   ]

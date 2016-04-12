@@ -5,21 +5,47 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [8, 78, 784, 18],
-        [7, 77, 3, 19],
-        [7, 59, 3, 19],
-        [7, 41, 786, 56],
-        [7, 41, 786, 38]
-      ],
-      "paintInvalidationClients": [
-        "LayoutBlockFlow DIV",
-        "LayoutBlockFlow DIV id='div'",
-        "RootInlineBox",
-        "LayoutBR BR",
-        "InlineTextBox '\n'",
-        "LayoutBlockFlow DIV id='div'",
-        "LayoutBlockFlow DIV id='div'"
+      "paintInvalidations": [
+        {
+          "object": "InlineTextBox '\n'",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBR BR",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [7, 41, 786, 38],
+          "reason": "outline"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [7, 41, 786, 56],
+          "reason": "outline"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='div'",
+          "rect": [8, 78, 784, 18],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='div'",
+          "rect": [7, 59, 3, 19],
+          "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='div'",
+          "rect": [7, 77, 3, 19],
+          "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        }
       ]
     }
   ]

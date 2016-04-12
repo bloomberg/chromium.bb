@@ -5,13 +5,17 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [18, 18, 764, 20],
-        [18, 18, 764, 20]
-      ],
-      "paintInvalidationClients": [
-        "LayoutBlockFlow DIV id='target' class='item'",
-        "LayoutBlockFlow DIV id='target' class='item'"
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow DIV id='target' class='item'",
+          "rect": [18, 18, 764, 20],
+          "reason": "layer"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='target' class='item'",
+          "rect": [18, 18, 764, 20],
+          "reason": "style change"
+        }
       ]
     }
   ]

@@ -5,28 +5,67 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [508, 204, 100, 100],
-        [508, 204, 100, 100],
-        [508, 84, 100, 300],
-        [508, 84, 100, 300],
-        [508, 84, 100, 300],
-        [508, 84, 100, 220],
-        [508, 84, 100, 100],
-        [408, 204, 100, 100],
-        [408, 204, 100, 100],
-        [408, 84, 200, 300],
-        [408, 84, 100, 300],
-        [408, 84, 100, 220]
-      ],
-      "paintInvalidationClients": [
-        "LayoutBlockFlow (positioned) DIV id='remove_child'",
-        "LayoutBlockFlow (floating) DIV id='remove' class='outer'",
-        "LayoutBlockFlow (floating) DIV id='container'",
-        "LayoutBlockFlow (floating) DIV id='keep_outer' class='outer'",
-        "LayoutBlockFlow (relative positioned) DIV id='keep_inner'",
-        "LayoutBlockFlow (positioned) DIV id='abs_pos'",
-        "LayoutBlockFlow DIV id='keep_child'"
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow (floating) DIV id='container'",
+          "rect": [408, 84, 200, 300],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow (floating) DIV id='container'",
+          "rect": [508, 84, 100, 300],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow (floating) DIV id='keep_outer' class='outer'",
+          "rect": [408, 84, 100, 300],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow (floating) DIV id='keep_outer' class='outer'",
+          "rect": [508, 84, 100, 300],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow (floating) DIV id='remove' class='outer'",
+          "rect": [508, 84, 100, 300],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='abs_pos'",
+          "rect": [408, 204, 100, 100],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='abs_pos'",
+          "rect": [508, 204, 100, 100],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='remove_child'",
+          "rect": [508, 84, 100, 100],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutBlockFlow (relative positioned) DIV id='keep_inner'",
+          "rect": [408, 84, 100, 220],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow (relative positioned) DIV id='keep_inner'",
+          "rect": [508, 84, 100, 220],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='keep_child'",
+          "rect": [408, 204, 100, 100],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='keep_child'",
+          "rect": [508, 204, 100, 100],
+          "reason": "location change"
+        }
       ]
     }
   ]

@@ -26,8 +26,12 @@
           "contentsOpaque": true,
           "drawsContent": true,
           "backgroundColor": "#FF0000",
-          "repaintRects": [
-            [0, 0, 100, 100]
+          "paintInvalidations": [
+            {
+              "object": "LayoutBlockFlow (positioned) DIV id='foo'",
+              "rect": [0, 0, 100, 100],
+              "reason": "style change"
+            }
           ]
         }
       ]
@@ -62,8 +66,12 @@
           "contentsOpaque": true,
           "drawsContent": true,
           "backgroundColor": "#0000FF",
-          "repaintRects": [
-            [0, 0, 100, 100]
+          "paintInvalidations": [
+            {
+              "object": "LayoutBlockFlow (positioned) DIV id='foo'",
+              "rect": [0, 0, 100, 100],
+              "reason": "style change"
+            }
           ]
         }
       ]

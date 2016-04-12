@@ -1,0 +1,61 @@
+lorem ipsumlorem ipsumlorem ipsum
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "shouldFlattenTransform": false,
+          "children": [
+            {
+              "position": [8, 8],
+              "bounds": [300, 500]
+            },
+            {
+              "position": [15, 35],
+              "bounds": [100, 210],
+              "drawsContent": true,
+              "repaintRects": [
+                [0, 80, 38, 39]
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "shouldFlattenTransform": false,
+          "children": [
+            {
+              "position": [8, 8],
+              "bounds": [300, 500]
+            },
+            {
+              "position": [15, 35],
+              "bounds": [100, 210],
+              "drawsContent": true,
+              "repaintRects": [
+                [0, 160, 38, 39],
+                [0, 80, 39, 39]
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+

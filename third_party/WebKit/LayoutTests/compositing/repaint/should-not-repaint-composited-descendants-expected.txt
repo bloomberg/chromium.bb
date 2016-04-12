@@ -12,15 +12,22 @@
           "drawsContent": true,
           "backfaceVisibility": "hidden",
           "backgroundColor": "#008000",
-          "repaintRects": [
-            [0, 0, 70, 70],
-            [-30, -30, 50, 100],
-            [-30, -30, 50, 50]
-          ],
-          "paintInvalidationClients": [
-            "##ALL##",
-            "LayoutBlockFlow (positioned) DIV id='composited-box'",
-            "LayoutBlockFlow DIV class='child'"
+          "paintInvalidations": [
+            {
+              "object": "LayoutBlockFlow (positioned) DIV id='composited-box'",
+              "rect": [0, 0, 70, 70],
+              "reason": "full"
+            },
+            {
+              "object": "LayoutBlockFlow (positioned) DIV id='composited-box'",
+              "rect": [-30, -30, 50, 100],
+              "reason": "style change"
+            },
+            {
+              "object": "LayoutBlockFlow DIV class='child'",
+              "rect": [-30, -30, 50, 50],
+              "reason": "style change"
+            }
           ],
           "children": [
             {

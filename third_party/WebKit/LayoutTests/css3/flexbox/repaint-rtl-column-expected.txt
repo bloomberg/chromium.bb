@@ -5,17 +5,57 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [13, 218, 190, 350],
-        [13, 125, 190, 350],
-        [13, 125, 190, 350],
-        [13, 121, 190, 350],
-        [8, 213, 200, 355],
-        [8, 120, 200, 355],
-        [8, 120, 200, 355],
-        [8, 120, 200, 93],
-        [8, 116, 200, 355],
-        [8, 116, 200, 4]
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [13, 218, 190, 350],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [13, 124, 190, 351],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [13, 124, 190, 351],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [13, 121, 190, 351],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='content'",
+          "rect": [8, 213, 200, 355],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='content'",
+          "rect": [8, 119, 200, 356],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='content'",
+          "rect": [8, 119, 200, 356],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='content'",
+          "rect": [8, 116, 200, 356],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='left'",
+          "rect": [8, 119, 200, 94],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='left'",
+          "rect": [8, 116, 200, 4],
+          "reason": "incremental"
+        }
       ]
     }
   ]

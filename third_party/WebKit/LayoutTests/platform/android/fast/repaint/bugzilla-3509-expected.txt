@@ -1,0 +1,21 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [11, 131, 100, 100],
+        [11, 131, 50, 100]
+      ],
+      "paintInvalidationClients": [
+        "RootInlineBox",
+        "InlineTextBox '\u00A0'",
+        "LayoutBlockFlow DIV id='im'",
+        "RootInlineBox"
+      ]
+    }
+  ]
+}
+

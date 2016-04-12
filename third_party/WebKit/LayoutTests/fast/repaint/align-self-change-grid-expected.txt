@@ -5,18 +5,37 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [100, 52, 100, 300],
-        [100, 52, 100, 50],
-        [0, 302, 100, 50],
-        [0, 302, 100, 50],
-        [0, 52, 100, 300],
-        [0, 52, 100, 50]
-      ],
-      "paintInvalidationClients": [
-        "LayoutBlockFlow DIV class='item1'",
-        "LayoutBlockFlow DIV",
-        "LayoutBlockFlow DIV class='item2'"
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [0, 302, 100, 50],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [0, 52, 100, 50],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV class='item1'",
+          "rect": [0, 302, 100, 50],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV class='item1'",
+          "rect": [0, 52, 100, 300],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV class='item2'",
+          "rect": [100, 52, 100, 50],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV class='item2'",
+          "rect": [100, 52, 100, 300],
+          "reason": "style change"
+        }
       ]
     }
   ]

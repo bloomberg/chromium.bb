@@ -6,13 +6,17 @@
       "contentsOpaque": true,
       "drawsContent": true,
       "backgroundColor": "#FFFFFF",
-      "repaintRects": [
-        [8, 240, 784, 288],
-        [0, 0, 800, 600]
-      ],
-      "paintInvalidationClients": [
-        "LayoutView #document",
-        "LayoutBlockFlow BODY"
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow BODY",
+          "rect": [8, 240, 784, 288],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [0, 0, 800, 600],
+          "reason": "style change"
+        }
       ]
     }
   ]

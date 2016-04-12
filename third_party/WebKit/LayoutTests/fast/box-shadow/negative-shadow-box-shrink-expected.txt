@@ -5,14 +5,22 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [100, 200, 600, 100],
-        [100, 60, 640, 240],
-        [100, 60, 640, 140]
-      ],
-      "paintInvalidationClients": [
-        "LayoutBlockFlow DIV id='inner2'",
-        "LayoutBlockFlow DIV id='outer'"
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow DIV id='inner2'",
+          "rect": [100, 200, 600, 100],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='outer'",
+          "rect": [100, 60, 640, 240],
+          "reason": "border box change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='outer'",
+          "rect": [100, 60, 640, 140],
+          "reason": "border box change"
+        }
       ]
     }
   ]

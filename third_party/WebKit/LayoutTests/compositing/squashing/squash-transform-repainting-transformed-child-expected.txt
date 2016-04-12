@@ -72,8 +72,12 @@ CASE 2, hovering over the outer div
                 [0, 0, 1, 0],
                 [0, 0, 0, 1]
               ],
-              "repaintRects": [
-                [0, 0, 100, 100]
+              "paintInvalidations": [
+                {
+                  "object": "LayoutBlockFlow (positioned) DIV class='box middle'",
+                  "rect": [0, 0, 100, 100],
+                  "reason": "style change"
+                }
               ]
             },
             {
@@ -118,9 +122,17 @@ CASE 3, hovering over the inner div
                 [0, 0, 1, 0],
                 [0, 0, 0, 1]
               ],
-              "repaintRects": [
-                [12, 17, 66, 66],
-                [0, 0, 100, 100]
+              "paintInvalidations": [
+                {
+                  "object": "LayoutBlockFlow (positioned) DIV class='box middle'",
+                  "rect": [0, 0, 100, 100],
+                  "reason": "style change"
+                },
+                {
+                  "object": "LayoutBlockFlow (positioned) DIV class='smallbox'",
+                  "rect": [12, 17, 66, 66],
+                  "reason": "style change"
+                }
               ]
             },
             {

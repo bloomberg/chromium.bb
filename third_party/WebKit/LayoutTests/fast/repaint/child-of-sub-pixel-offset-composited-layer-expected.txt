@@ -12,11 +12,12 @@
           "bounds": [14, 14],
           "drawsContent": true,
           "backgroundColor": "#FF0000",
-          "repaintRects": [
-            [-1, 0, 15, 14]
-          ],
-          "paintInvalidationClients": [
-            "LayoutBlockFlow (positioned) DIV id='target' class='green'"
+          "paintInvalidations": [
+            {
+              "object": "LayoutBlockFlow (positioned) DIV id='target' class='green'",
+              "rect": [-1, 0, 15, 14],
+              "reason": "style change"
+            }
           ]
         }
       ]
