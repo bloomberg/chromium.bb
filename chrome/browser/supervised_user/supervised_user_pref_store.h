@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_SUPERVISED_USER_SUPERVISED_USER_PREF_STORE_H_
 #define CHROME_BROWSER_SUPERVISED_USER_SUPERVISED_USER_PREF_STORE_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback_list.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/supervised_user/supervised_users.h"
@@ -50,11 +50,12 @@ class SupervisedUserPrefStore : public PrefStore,
 
   void OnNewSettingsAvailable(const base::DictionaryValue* settings);
 
-  scoped_ptr<base::CallbackList<void(
-      const base::DictionaryValue*)>::Subscription> user_settings_subscription_;
+  std::unique_ptr<
+      base::CallbackList<void(const base::DictionaryValue*)>::Subscription>
+      user_settings_subscription_;
   content::NotificationRegistrar unsubscriber_registrar_;
 
-  scoped_ptr<PrefValueMap> prefs_;
+  std::unique_ptr<PrefValueMap> prefs_;
 
   base::ObserverList<PrefStore::Observer, true> observers_;
 };

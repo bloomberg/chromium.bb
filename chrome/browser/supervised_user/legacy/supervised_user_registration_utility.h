@@ -58,7 +58,8 @@ class SupervisedUserRegistrationUtility {
   virtual ~SupervisedUserRegistrationUtility() {}
 
   // Creates SupervisedUserRegistrationUtility for a given |profile|.
-  static scoped_ptr<SupervisedUserRegistrationUtility> Create(Profile* profile);
+  static std::unique_ptr<SupervisedUserRegistrationUtility> Create(
+      Profile* profile);
 
   static std::string GenerateNewSupervisedUserId();
 
@@ -84,7 +85,7 @@ class SupervisedUserRegistrationUtility {
   // Creates implementation with explicit dependencies, can be used for testing.
   static SupervisedUserRegistrationUtility* CreateImpl(
       PrefService* prefs,
-      scoped_ptr<SupervisedUserRefreshTokenFetcher> token_fetcher,
+      std::unique_ptr<SupervisedUserRefreshTokenFetcher> token_fetcher,
       SupervisedUserSyncService* service,
       SupervisedUserSharedSettingsService* shared_settings_service);
 

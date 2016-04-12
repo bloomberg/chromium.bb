@@ -155,7 +155,7 @@ void SupervisedUserSharedSettingsService::SetValue(
   SetValueInternal(su_id, key, value, true);
 }
 
-scoped_ptr<
+std::unique_ptr<
     SupervisedUserSharedSettingsService::ChangeCallbackList::Subscription>
 SupervisedUserSharedSettingsService::Subscribe(
     const SupervisedUserSharedSettingsService::ChangeCallback& cb) {
@@ -192,8 +192,8 @@ syncer::SyncMergeResult
 SupervisedUserSharedSettingsService::MergeDataAndStartSyncing(
     syncer::ModelType type,
     const syncer::SyncDataList& initial_sync_data,
-    scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
-    scoped_ptr<syncer::SyncErrorFactory> error_handler) {
+    std::unique_ptr<syncer::SyncChangeProcessor> sync_processor,
+    std::unique_ptr<syncer::SyncErrorFactory> error_handler) {
   DCHECK_EQ(SUPERVISED_USER_SHARED_SETTINGS, type);
   sync_processor_ = std::move(sync_processor);
   error_handler_ = std::move(error_handler);
@@ -224,7 +224,7 @@ SupervisedUserSharedSettingsService::MergeDataAndStartSyncing(
     const ::sync_pb::ManagedUserSharedSettingSpecifics&
         supervised_user_shared_setting =
             sync_data.GetSpecifics().managed_user_shared_setting();
-    scoped_ptr<Value> value =
+    std::unique_ptr<Value> value =
         base::JSONReader::Read(supervised_user_shared_setting.value());
     const std::string& su_id = supervised_user_shared_setting.mu_id();
     ScopedSupervisedUserSharedSettingsUpdate update(prefs_, su_id);
@@ -344,7 +344,7 @@ syncer::SyncError SupervisedUserSharedSettingsService::ProcessSyncChanges(
           dict = new DictionaryValue;
           update_dict->SetWithoutPathExpansion(key, dict);
         }
-        scoped_ptr<Value> value =
+        std::unique_ptr<Value> value =
             base::JSONReader::Read(supervised_user_shared_setting.value());
         dict->SetWithoutPathExpansion(kValue, value.release());
         dict->SetBooleanWithoutPathExpansion(

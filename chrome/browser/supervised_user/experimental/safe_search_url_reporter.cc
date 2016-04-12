@@ -6,6 +6,7 @@
 
 #include "base/callback.h"
 #include "base/json/json_writer.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
@@ -39,11 +40,11 @@ struct SafeSearchURLReporter::Report {
 
   GURL url;
   SuccessCallback callback;
-  scoped_ptr<OAuth2TokenService::Request> access_token_request;
+  std::unique_ptr<OAuth2TokenService::Request> access_token_request;
   std::string access_token;
   bool access_token_expired;
   int url_fetcher_id;
-  scoped_ptr<URLFetcher> url_fetcher;
+  std::unique_ptr<URLFetcher> url_fetcher;
 };
 
 SafeSearchURLReporter::Report::Report(const GURL& url,
@@ -69,12 +70,12 @@ SafeSearchURLReporter::SafeSearchURLReporter(
 SafeSearchURLReporter::~SafeSearchURLReporter() {}
 
 // static
-scoped_ptr<SafeSearchURLReporter> SafeSearchURLReporter::CreateWithProfile(
+std::unique_ptr<SafeSearchURLReporter> SafeSearchURLReporter::CreateWithProfile(
     Profile* profile) {
   ProfileOAuth2TokenService* token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
   SigninManagerBase* signin = SigninManagerFactory::GetForProfile(profile);
-  return make_scoped_ptr(new SafeSearchURLReporter(
+  return base::WrapUnique(new SafeSearchURLReporter(
       token_service, signin->GetAuthenticatedAccountId(),
       profile->GetRequestContext()));
 }
@@ -82,7 +83,7 @@ scoped_ptr<SafeSearchURLReporter> SafeSearchURLReporter::CreateWithProfile(
 void SafeSearchURLReporter::ReportUrl(const GURL& url,
                                       const SuccessCallback& callback) {
   reports_.push_back(
-      make_scoped_ptr(new Report(url, callback, url_fetcher_id_)));
+      base::WrapUnique(new Report(url, callback, url_fetcher_id_)));
   StartFetching(reports_.back().get());
 }
 

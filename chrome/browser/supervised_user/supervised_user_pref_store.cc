@@ -112,7 +112,7 @@ SupervisedUserPrefStore::~SupervisedUserPrefStore() {
 
 void SupervisedUserPrefStore::OnNewSettingsAvailable(
     const base::DictionaryValue* settings) {
-  scoped_ptr<PrefValueMap> old_prefs = std::move(prefs_);
+  std::unique_ptr<PrefValueMap> old_prefs = std::move(prefs_);
   prefs_.reset(new PrefValueMap);
   if (settings) {
     // Set hardcoded prefs and defaults.

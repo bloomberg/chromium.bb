@@ -7,6 +7,7 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -149,13 +150,13 @@ bool ChildAccountService::SetActive(bool active) {
     // In contrast to legacy SUs, child account SUs must sign in.
     settings_service->SetLocalSetting(
         supervised_users::kSigninAllowed,
-        make_scoped_ptr(new base::FundamentalValue(true)));
+        base::WrapUnique(new base::FundamentalValue(true)));
 
     // SafeSearch is controlled at the account level, so don't override it
     // client-side.
     settings_service->SetLocalSetting(
         supervised_users::kForceSafeSearch,
-        make_scoped_ptr(new base::FundamentalValue(false)));
+        base::WrapUnique(new base::FundamentalValue(false)));
 #if !defined(OS_CHROMEOS)
     // This is also used by user policies (UserPolicySigninService), but since
     // child accounts can not also be Dasher accounts, there shouldn't be any
@@ -179,7 +180,7 @@ bool ChildAccountService::SetActive(bool active) {
     SupervisedUserSettingsService* settings_service =
         SupervisedUserSettingsServiceFactory::GetForProfile(profile_);
     settings_service->SetLocalSetting(supervised_users::kSigninAllowed,
-                                      scoped_ptr<base::Value>());
+                                      std::unique_ptr<base::Value>());
 #if !defined(OS_CHROMEOS)
     SigninManagerFactory::GetForProfile(profile_)->ProhibitSignout(false);
 #endif

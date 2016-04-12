@@ -5,11 +5,13 @@
 #include "chrome/browser/supervised_user/supervised_user_settings_service.h"
 
 #include <stddef.h>
+
 #include <utility>
 
 #include "base/callback.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/supervised_user/supervised_user_url_filter.h"
@@ -68,8 +70,8 @@ void SupervisedUserSettingsService::Init(
     bool load_synchronously) {
   base::FilePath path =
       profile_path.Append(chrome::kSupervisedUserSettingsFilename);
-  PersistentPrefStore* store = new JsonPrefStore(
-      path, sequenced_task_runner, scoped_ptr<PrefFilter>());
+  PersistentPrefStore* store = new JsonPrefStore(path, sequenced_task_runner,
+                                                 std::unique_ptr<PrefFilter>());
   Init(store);
   if (load_synchronously) {
     store_->ReadPrefs();
@@ -89,11 +91,11 @@ void SupervisedUserSettingsService::Init(
   store_->AddObserver(this);
 }
 
-scoped_ptr<SupervisedUserSettingsService::SettingsCallbackList::Subscription>
-    SupervisedUserSettingsService::Subscribe(
-    const SettingsCallback& callback) {
+std::unique_ptr<
+    SupervisedUserSettingsService::SettingsCallbackList::Subscription>
+SupervisedUserSettingsService::Subscribe(const SettingsCallback& callback) {
   if (IsReady()) {
-    scoped_ptr<base::DictionaryValue> settings = GetSettings();
+    std::unique_ptr<base::DictionaryValue> settings = GetSettings();
     callback.Run(settings.get());
   }
 
@@ -129,8 +131,9 @@ std::string SupervisedUserSettingsService::MakeSplitSettingKey(
   return prefix + kSplitSettingKeySeparator + key;
 }
 
-void SupervisedUserSettingsService::UploadItem(const std::string& key,
-                                               scoped_ptr<base::Value> value) {
+void SupervisedUserSettingsService::UploadItem(
+    const std::string& key,
+    std::unique_ptr<base::Value> value) {
   DCHECK(!SettingShouldApplyToPrefs(key));
 
   std::string key_suffix = key;
@@ -159,7 +162,7 @@ void SupervisedUserSettingsService::UploadItem(const std::string& key,
 
 void SupervisedUserSettingsService::SetLocalSetting(
     const std::string& key,
-    scoped_ptr<base::Value> value) {
+    std::unique_ptr<base::Value> value) {
   if (value)
     local_settings_->SetWithoutPathExpansion(key, value.release());
   else
@@ -187,8 +190,8 @@ void SupervisedUserSettingsService::Shutdown() {
 SyncMergeResult SupervisedUserSettingsService::MergeDataAndStartSyncing(
     ModelType type,
     const SyncDataList& initial_sync_data,
-    scoped_ptr<SyncChangeProcessor> sync_processor,
-    scoped_ptr<SyncErrorFactory> error_handler) {
+    std::unique_ptr<SyncChangeProcessor> sync_processor,
+    std::unique_ptr<SyncErrorFactory> error_handler) {
   DCHECK_EQ(SUPERVISED_USER_SETTINGS, type);
   sync_processor_ = std::move(sync_processor);
   error_handler_ = std::move(error_handler);
@@ -227,7 +230,7 @@ SyncMergeResult SupervisedUserSettingsService::MergeDataAndStartSyncing(
     DCHECK_EQ(SUPERVISED_USER_SETTINGS, sync_data.GetDataType());
     const ::sync_pb::ManagedUserSettingSpecifics& supervised_user_setting =
         sync_data.GetSpecifics().managed_user_setting();
-    scoped_ptr<base::Value> value =
+    std::unique_ptr<base::Value> value =
         JSONReader::Read(supervised_user_setting.value());
     std::string name_suffix = supervised_user_setting.name();
     std::string name_key = name_suffix;
@@ -343,7 +346,7 @@ SyncError SupervisedUserSettingsService::ProcessSyncChanges(
     switch (change_type) {
       case SyncChange::ACTION_ADD:
       case SyncChange::ACTION_UPDATE: {
-        scoped_ptr<base::Value> value =
+        std::unique_ptr<base::Value> value =
             JSONReader::Read(supervised_user_setting.value());
         if (dict->HasKey(key)) {
           DLOG_IF(WARNING, change_type == SyncChange::ACTION_ADD)
@@ -404,7 +407,7 @@ base::DictionaryValue* SupervisedUserSettingsService::GetOrCreateDictionary(
     DCHECK(success);
   } else {
     dict = new base::DictionaryValue;
-    store_->SetValue(key, make_scoped_ptr(dict),
+    store_->SetValue(key, base::WrapUnique(dict),
                      WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
   }
 
@@ -442,12 +445,13 @@ base::DictionaryValue* SupervisedUserSettingsService::GetDictionaryAndSplitKey(
   return dict;
 }
 
-scoped_ptr<base::DictionaryValue> SupervisedUserSettingsService::GetSettings() {
+std::unique_ptr<base::DictionaryValue>
+SupervisedUserSettingsService::GetSettings() {
   DCHECK(IsReady());
   if (!active_ || initialization_failed_)
-    return scoped_ptr<base::DictionaryValue>();
+    return std::unique_ptr<base::DictionaryValue>();
 
-  scoped_ptr<base::DictionaryValue> settings(local_settings_->DeepCopy());
+  std::unique_ptr<base::DictionaryValue> settings(local_settings_->DeepCopy());
 
   base::DictionaryValue* atomic_settings = GetAtomicSettings();
   for (base::DictionaryValue::Iterator it(*atomic_settings); !it.IsAtEnd();
@@ -474,6 +478,6 @@ void SupervisedUserSettingsService::InformSubscribers() {
   if (!IsReady())
     return;
 
-  scoped_ptr<base::DictionaryValue> settings = GetSettings();
+  std::unique_ptr<base::DictionaryValue> settings = GetSettings();
   callback_list_.Notify(settings.get());
 }

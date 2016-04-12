@@ -5,12 +5,12 @@
 #ifndef CHROME_BROWSER_SUPERVISED_USER_LEGACY_SUPERVISED_USER_SYNC_SERVICE_H_
 #define CHROME_BROWSER_SUPERVISED_USER_LEGACY_SUPERVISED_USER_SYNC_SERVICE_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/supervised_user/legacy/supervised_user_sync_service_observer.h"
 #include "chrome/browser/supervised_user/supervised_users.h"
@@ -116,8 +116,8 @@ class SupervisedUserSyncService : public KeyedService,
   syncer::SyncMergeResult MergeDataAndStartSyncing(
       syncer::ModelType type,
       const syncer::SyncDataList& initial_sync_data,
-      scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
-      scoped_ptr<syncer::SyncErrorFactory> error_handler) override;
+      std::unique_ptr<syncer::SyncChangeProcessor> sync_processor,
+      std::unique_ptr<syncer::SyncErrorFactory> error_handler) override;
   void StopSyncing(syncer::ModelType type) override;
   syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const override;
   syncer::SyncError ProcessSyncChanges(
@@ -135,7 +135,7 @@ class SupervisedUserSyncService : public KeyedService,
   void GoogleSignedOut(const std::string& account_id,
                        const std::string& username) override;
 
-  scoped_ptr<base::DictionaryValue> CreateDictionary(
+  std::unique_ptr<base::DictionaryValue> CreateDictionary(
       const std::string& name,
       const std::string& master_key,
       const std::string& signature_key,
@@ -159,8 +159,8 @@ class SupervisedUserSyncService : public KeyedService,
   Profile* profile_;
   PrefService* prefs_;
 
-  scoped_ptr<syncer::SyncChangeProcessor> sync_processor_;
-  scoped_ptr<syncer::SyncErrorFactory> error_handler_;
+  std::unique_ptr<syncer::SyncChangeProcessor> sync_processor_;
+  std::unique_ptr<syncer::SyncErrorFactory> error_handler_;
 
   base::ObserverList<SupervisedUserSyncServiceObserver> observers_;
 

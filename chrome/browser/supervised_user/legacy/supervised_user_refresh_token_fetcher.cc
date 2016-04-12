@@ -108,11 +108,11 @@ class SupervisedUserRefreshTokenFetcherImpl
   std::string supervised_user_id_;
   TokenCallback callback_;
 
-  scoped_ptr<OAuth2TokenService::Request> access_token_request_;
+  std::unique_ptr<OAuth2TokenService::Request> access_token_request_;
   std::string access_token_;
   bool access_token_expired_;
-  scoped_ptr<URLFetcher> url_fetcher_;
-  scoped_ptr<GaiaOAuthClient> gaia_oauth_client_;
+  std::unique_ptr<URLFetcher> url_fetcher_;
+  std::unique_ptr<GaiaOAuthClient> gaia_oauth_client_;
 };
 
 SupervisedUserRefreshTokenFetcherImpl::SupervisedUserRefreshTokenFetcherImpl(
@@ -222,7 +222,7 @@ void SupervisedUserRefreshTokenFetcherImpl::OnURLFetchComplete(
 
   std::string response_body;
   source->GetResponseAsString(&response_body);
-  scoped_ptr<base::Value> value = base::JSONReader::Read(response_body);
+  std::unique_ptr<base::Value> value = base::JSONReader::Read(response_body);
   base::DictionaryValue* dict = NULL;
   if (!value.get() || !value->GetAsDictionary(&dict)) {
     DispatchNetworkError(net::ERR_INVALID_RESPONSE);
@@ -289,17 +289,15 @@ void SupervisedUserRefreshTokenFetcherImpl::DispatchGoogleServiceAuthError(
 }  // namespace
 
 // static
-scoped_ptr<SupervisedUserRefreshTokenFetcher>
+std::unique_ptr<SupervisedUserRefreshTokenFetcher>
 SupervisedUserRefreshTokenFetcher::Create(
     OAuth2TokenService* oauth2_token_service,
     const std::string& account_id,
     const std::string& device_id,
     URLRequestContextGetter* context) {
-  scoped_ptr<SupervisedUserRefreshTokenFetcher> fetcher(
-      new SupervisedUserRefreshTokenFetcherImpl(oauth2_token_service,
-                                                account_id,
-                                                device_id,
-                                                context));
+  std::unique_ptr<SupervisedUserRefreshTokenFetcher> fetcher(
+      new SupervisedUserRefreshTokenFetcherImpl(
+          oauth2_token_service, account_id, device_id, context));
   return fetcher;
 }
 

@@ -27,12 +27,13 @@ const char kWhitelistKey[] = "whitelist";
 
 namespace {
 
-scoped_ptr<base::Value> ReadFileOnBlockingThread(const base::FilePath& path) {
+std::unique_ptr<base::Value> ReadFileOnBlockingThread(
+    const base::FilePath& path) {
   SCOPED_UMA_HISTOGRAM_TIMER("ManagedUsers.Whitelist.ReadDuration");
   JSONFileValueDeserializer deserializer(path);
   int error_code;
   std::string error_msg;
-  scoped_ptr<base::Value> value =
+  std::unique_ptr<base::Value> value =
       deserializer.Deserialize(&error_code, &error_msg);
   if (!value) {
     LOG(ERROR) << "Couldn't load site list " << path.value() << ": "
@@ -148,7 +149,7 @@ void SupervisedUserSiteList::OnJsonLoaded(
     const base::FilePath& path,
     base::TimeTicks start_time,
     const SupervisedUserSiteList::LoadedCallback& callback,
-    scoped_ptr<base::Value> value) {
+    std::unique_ptr<base::Value> value) {
   if (!value)
     return;
 

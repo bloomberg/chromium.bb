@@ -81,10 +81,10 @@ void SupervisedUserNavigationObserver::OnRequestBlockedInternal(
   if (history_service)
     history_service->AddPage(add_page_args);
 
-  scoped_ptr<NavigationEntry> entry(NavigationEntry::Create());
+  std::unique_ptr<NavigationEntry> entry(NavigationEntry::Create());
   entry->SetVirtualURL(url);
   entry->SetTimestamp(timestamp);
-  scoped_ptr<sessions::SerializedNavigationEntry> serialized_entry(
+  std::unique_ptr<sessions::SerializedNavigationEntry> serialized_entry(
       new sessions::SerializedNavigationEntry());
   *serialized_entry =
       sessions::ContentSerializedNavigationBuilder::FromNavigationEntry(

@@ -90,8 +90,8 @@ class SupervisedUserSyncServiceTest : public ::testing::Test {
   ~SupervisedUserSyncServiceTest() override;
 
  protected:
-  scoped_ptr<SyncChangeProcessor> CreateChangeProcessor();
-  scoped_ptr<SyncErrorFactory> CreateErrorFactory();
+  std::unique_ptr<SyncChangeProcessor> CreateChangeProcessor();
+  std::unique_ptr<SyncErrorFactory> CreateErrorFactory();
   SyncData CreateRemoteData(const std::string& id,
                             const std::string& name,
                             const std::string& avatar);
@@ -120,16 +120,16 @@ SupervisedUserSyncServiceTest::SupervisedUserSyncServiceTest()
 
 SupervisedUserSyncServiceTest::~SupervisedUserSyncServiceTest() {}
 
-scoped_ptr<SyncChangeProcessor>
+std::unique_ptr<SyncChangeProcessor>
 SupervisedUserSyncServiceTest::CreateChangeProcessor() {
   EXPECT_FALSE(change_processor_);
   change_processor_ = new MockChangeProcessor();
-  return scoped_ptr<SyncChangeProcessor>(change_processor_);
+  return std::unique_ptr<SyncChangeProcessor>(change_processor_);
 }
 
-scoped_ptr<SyncErrorFactory>
+std::unique_ptr<SyncErrorFactory>
 SupervisedUserSyncServiceTest::CreateErrorFactory() {
-  return scoped_ptr<SyncErrorFactory>(new syncer::SyncErrorFactoryMock());
+  return std::unique_ptr<SyncErrorFactory>(new syncer::SyncErrorFactoryMock());
 }
 
 SyncData SupervisedUserSyncServiceTest::CreateRemoteData(

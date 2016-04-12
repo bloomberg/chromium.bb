@@ -45,12 +45,12 @@ std::string BuildRequestData(const std::string& api_key, const GURL& url) {
 }
 
 // Creates a URLFetcher to call the SafeSearch API for |url|.
-scoped_ptr<net::URLFetcher> CreateFetcher(URLFetcherDelegate* delegate,
-                                          URLRequestContextGetter* context,
-                                          const std::string& api_key,
-                                          const GURL& url) {
-  scoped_ptr<net::URLFetcher> fetcher = URLFetcher::Create(
-      0, GURL(kApiUrl), URLFetcher::POST, delegate);
+std::unique_ptr<net::URLFetcher> CreateFetcher(URLFetcherDelegate* delegate,
+                                               URLRequestContextGetter* context,
+                                               const std::string& api_key,
+                                               const GURL& url) {
+  std::unique_ptr<net::URLFetcher> fetcher =
+      URLFetcher::Create(0, GURL(kApiUrl), URLFetcher::POST, delegate);
   fetcher->SetUploadData(kDataContentType, BuildRequestData(api_key, url));
   fetcher->SetRequestContext(context);
   fetcher->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
@@ -61,7 +61,7 @@ scoped_ptr<net::URLFetcher> CreateFetcher(URLFetcherDelegate* delegate,
 // Parses a SafeSearch API |response| and stores the result in |is_porn|.
 // On errors, returns false and doesn't set |is_porn|.
 bool ParseResponse(const std::string& response, bool* is_porn) {
-  scoped_ptr<base::Value> value = base::JSONReader::Read(response);
+  std::unique_ptr<base::Value> value = base::JSONReader::Read(response);
   const base::DictionaryValue* dict = nullptr;
   if (!value || !value->GetAsDictionary(&dict)) {
     DLOG(WARNING) << "ParseResponse failed to parse global dictionary";
@@ -89,19 +89,20 @@ bool ParseResponse(const std::string& response, bool* is_porn) {
 
 struct SupervisedUserAsyncURLChecker::Check {
   Check(const GURL& url,
-        scoped_ptr<net::URLFetcher> fetcher,
+        std::unique_ptr<net::URLFetcher> fetcher,
         const CheckCallback& callback);
   ~Check();
 
   GURL url;
-  scoped_ptr<net::URLFetcher> fetcher;
+  std::unique_ptr<net::URLFetcher> fetcher;
   std::vector<CheckCallback> callbacks;
   base::TimeTicks start_time;
 };
 
-SupervisedUserAsyncURLChecker::Check::Check(const GURL& url,
-                                            scoped_ptr<net::URLFetcher> fetcher,
-                                            const CheckCallback& callback)
+SupervisedUserAsyncURLChecker::Check::Check(
+    const GURL& url,
+    std::unique_ptr<net::URLFetcher> fetcher,
+    const CheckCallback& callback)
     : url(url),
       fetcher(std::move(fetcher)),
       callbacks(1, callback),
@@ -176,7 +177,8 @@ bool SupervisedUserAsyncURLChecker::CheckURL(const GURL& url,
 
   DVLOG(1) << "Checking URL " << url;
   std::string api_key = google_apis::GetAPIKey();
-  scoped_ptr<URLFetcher> fetcher(CreateFetcher(this, context_, api_key, url));
+  std::unique_ptr<URLFetcher> fetcher(
+      CreateFetcher(this, context_, api_key, url));
   fetcher->Start();
   checks_in_progress_.push_back(new Check(url, std::move(fetcher), callback));
   return false;

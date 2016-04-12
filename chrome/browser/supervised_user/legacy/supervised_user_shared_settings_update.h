@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_SUPERVISED_USER_LEGACY_SUPERVISED_USER_SHARED_SETTINGS_UPDATE_H_
 #define CHROME_BROWSER_SUPERVISED_USER_LEGACY_SUPERVISED_USER_SHARED_SETTINGS_UPDATE_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/callback_list.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace base {
 class Value;
@@ -31,7 +31,7 @@ class SupervisedUserSharedSettingsUpdate {
       SupervisedUserSharedSettingsService* service,
       const std::string& su_id,
       const std::string& key,
-      scoped_ptr<base::Value> value,
+      std::unique_ptr<base::Value> value,
       const base::Callback<void(bool)>& success_callback);
   ~SupervisedUserSharedSettingsUpdate();
 
@@ -45,9 +45,9 @@ class SupervisedUserSharedSettingsUpdate {
   SupervisedUserSharedSettingsService* service_;
   std::string su_id_;
   std::string key_;
-  scoped_ptr<base::Value> value_;
+  std::unique_ptr<base::Value> value_;
   base::Callback<void(bool)> callback_;
-  scoped_ptr<CallbackList::Subscription> subscription_;
+  std::unique_ptr<CallbackList::Subscription> subscription_;
 };
 
 #endif  // CHROME_BROWSER_SUPERVISED_USER_LEGACY_SUPERVISED_USER_SHARED_SETTINGS_UPDATE_H_

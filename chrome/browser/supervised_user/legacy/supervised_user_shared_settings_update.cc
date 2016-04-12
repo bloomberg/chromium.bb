@@ -14,7 +14,7 @@ SupervisedUserSharedSettingsUpdate::SupervisedUserSharedSettingsUpdate(
     SupervisedUserSharedSettingsService* service,
     const std::string& su_id,
     const std::string& key,
-    scoped_ptr<base::Value> value,
+    std::unique_ptr<base::Value> value,
     const base::Callback<void(bool)>& success_callback)
     : service_(service),
       su_id_(su_id),

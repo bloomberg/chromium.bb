@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_SUPERVISED_USER_LEGACY_SUPERVISED_USER_SHARED_SETTINGS_SERVICE_H_
 #define CHROME_BROWSER_SUPERVISED_USER_LEGACY_SUPERVISED_USER_SHARED_SETTINGS_SERVICE_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/callback_list.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/supervised_user/supervised_users.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "sync/api/syncable_service.h"
@@ -71,7 +71,7 @@ class SupervisedUserSharedSettingsService : public KeyedService,
   // whenever any setting for any supervised user is changed via Sync (but not
   // for local changes). Subscribers should filter the settings and users they
   // are interested in with the |su_id| and |key| parameters to the callback.
-  scoped_ptr<ChangeCallbackList::Subscription> Subscribe(
+  std::unique_ptr<ChangeCallbackList::Subscription> Subscribe(
       const ChangeCallback& cb);
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
@@ -95,8 +95,8 @@ class SupervisedUserSharedSettingsService : public KeyedService,
   syncer::SyncMergeResult MergeDataAndStartSyncing(
       syncer::ModelType type,
       const syncer::SyncDataList& initial_sync_data,
-      scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
-      scoped_ptr<syncer::SyncErrorFactory> error_handler) override;
+      std::unique_ptr<syncer::SyncChangeProcessor> sync_processor,
+      std::unique_ptr<syncer::SyncErrorFactory> error_handler) override;
   void StopSyncing(syncer::ModelType type) override;
   syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const override;
   syncer::SyncError ProcessSyncChanges(
@@ -104,8 +104,8 @@ class SupervisedUserSharedSettingsService : public KeyedService,
       const syncer::SyncChangeList& change_list) override;
 
  private:
-  scoped_ptr<syncer::SyncChangeProcessor> sync_processor_;
-  scoped_ptr<syncer::SyncErrorFactory> error_handler_;
+  std::unique_ptr<syncer::SyncChangeProcessor> sync_processor_;
+  std::unique_ptr<syncer::SyncErrorFactory> error_handler_;
 
   ChangeCallbackList callbacks_;
 

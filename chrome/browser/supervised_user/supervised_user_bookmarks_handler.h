@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_SUPERVISED_USER_SUPERVISED_USER_BOOKMARKS_HANDLER_H_
 #define CHROME_BROWSER_SUPERVISED_USER_SUPERVISED_USER_BOOKMARKS_HANDLER_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace base {
 class DictionaryValue;
@@ -20,7 +20,7 @@ class ListValue;
 // base::Values, for use in bookmarks::prefs::kSupervisedBookmarks.
 class SupervisedUserBookmarksHandler {
  public:
-  static scoped_ptr<base::ListValue> BuildBookmarksTree(
+  static std::unique_ptr<base::ListValue> BuildBookmarksTree(
       const base::DictionaryValue& settings);
 
   // Public for testing only.
@@ -49,10 +49,11 @@ class SupervisedUserBookmarksHandler {
   void ParseSettings(const base::DictionaryValue& settings);
   void ParseFolders(const base::DictionaryValue& folders);
   void ParseLinks(const base::DictionaryValue& links);
-  scoped_ptr<base::ListValue> BuildTree();
+  std::unique_ptr<base::ListValue> BuildTree();
   void AddFoldersToTree();
   void AddLinksToTree();
-  bool AddNodeToTree(int parent_id, scoped_ptr<base::DictionaryValue> node);
+  bool AddNodeToTree(int parent_id,
+                     std::unique_ptr<base::DictionaryValue> node);
 
   const std::vector<Folder>& folders_for_testing() const { return folders_; }
   const std::vector<Link>& links_for_testing() const { return links_; }
@@ -60,7 +61,7 @@ class SupervisedUserBookmarksHandler {
   std::vector<Folder> folders_;
   std::vector<Link> links_;
 
-  scoped_ptr<base::ListValue> root_;
+  std::unique_ptr<base::ListValue> root_;
 
   DISALLOW_COPY_AND_ASSIGN(SupervisedUserBookmarksHandler);
 };

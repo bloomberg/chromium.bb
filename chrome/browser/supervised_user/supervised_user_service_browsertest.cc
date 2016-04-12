@@ -130,7 +130,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserServiceTestSupervised, ProfileName) {
   std::string name = "Supervised User Test Name";
   settings->SetLocalSetting(
       supervised_users::kUserName,
-      scoped_ptr<base::Value>(new base::StringValue(name)));
+      std::unique_ptr<base::Value>(new base::StringValue(name)));
   EXPECT_FALSE(prefs->IsUserModifiablePreference(prefs::kProfileName));
   EXPECT_EQ(name, prefs->GetString(prefs::kProfileName));
 
@@ -144,13 +144,13 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserServiceTestSupervised, ProfileName) {
   std::string new_name = "New Supervised User Test Name";
   settings->SetLocalSetting(
       supervised_users::kUserName,
-      scoped_ptr<base::Value>(new base::StringValue(new_name)));
+      std::unique_ptr<base::Value>(new base::StringValue(new_name)));
   EXPECT_EQ(new_name, prefs->GetString(prefs::kProfileName));
   EXPECT_EQ(new_name, base::UTF16ToUTF8(entry->GetName()));
 
   // Remove the setting.
   settings->SetLocalSetting(supervised_users::kUserName,
-                            scoped_ptr<base::Value>());
+                            std::unique_ptr<base::Value>());
   EXPECT_EQ(original_name, prefs->GetString(prefs::kProfileName));
   EXPECT_EQ(original_name, base::UTF16ToUTF8(entry->GetName()));
 }

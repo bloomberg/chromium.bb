@@ -14,6 +14,7 @@
 #include "base/files/file_path.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -87,10 +88,10 @@ class FilterBuilder {
 
   // Finalizes construction of the SupervisedUserURLFilter::Contents and returns
   // them. This method should be called before this object is destroyed.
-  scoped_ptr<SupervisedUserURLFilter::Contents> Build();
+  std::unique_ptr<SupervisedUserURLFilter::Contents> Build();
 
  private:
-  scoped_ptr<SupervisedUserURLFilter::Contents> contents_;
+  std::unique_ptr<SupervisedUserURLFilter::Contents> contents_;
   URLMatcherConditionSet::Vector all_conditions_;
   URLMatcherConditionSet::ID matcher_id_;
   std::map<URLMatcherConditionSet::ID, scoped_refptr<SupervisedUserSiteList>>
@@ -143,14 +144,14 @@ void FilterBuilder::AddSiteList(
     contents_->hostname_hashes.insert(std::make_pair(hash, site_list));
 }
 
-scoped_ptr<SupervisedUserURLFilter::Contents> FilterBuilder::Build() {
+std::unique_ptr<SupervisedUserURLFilter::Contents> FilterBuilder::Build() {
   contents_->url_matcher.AddConditionSets(all_conditions_);
   contents_->site_lists_by_matcher_id.insert(site_lists_by_matcher_id_.begin(),
                                              site_lists_by_matcher_id_.end());
   return std::move(contents_);
 }
 
-scoped_ptr<SupervisedUserURLFilter::Contents>
+std::unique_ptr<SupervisedUserURLFilter::Contents>
 CreateWhitelistFromPatternsForTesting(
     const std::vector<std::string>& patterns) {
   FilterBuilder builder;
@@ -160,7 +161,7 @@ CreateWhitelistFromPatternsForTesting(
   return builder.Build();
 }
 
-scoped_ptr<SupervisedUserURLFilter::Contents>
+std::unique_ptr<SupervisedUserURLFilter::Contents>
 CreateWhitelistsFromSiteListsForTesting(
     const std::vector<scoped_refptr<SupervisedUserSiteList>>& site_lists) {
   FilterBuilder builder;
@@ -169,7 +170,7 @@ CreateWhitelistsFromSiteListsForTesting(
   return builder.Build();
 }
 
-scoped_ptr<SupervisedUserURLFilter::Contents>
+std::unique_ptr<SupervisedUserURLFilter::Contents>
 LoadWhitelistsOnBlockingPoolThread(
     const std::vector<scoped_refptr<SupervisedUserSiteList>>& site_lists) {
   FilterBuilder builder;
@@ -464,7 +465,7 @@ bool SupervisedUserURLFilter::HasAsyncURLChecker() const {
 
 void SupervisedUserURLFilter::Clear() {
   default_behavior_ = ALLOW;
-  SetContents(make_scoped_ptr(new Contents()));
+  SetContents(base::WrapUnique(new Contents()));
   url_map_.clear();
   host_map_.clear();
   blacklist_ = nullptr;
@@ -484,7 +485,7 @@ void SupervisedUserURLFilter::SetBlockingTaskRunnerForTesting(
   blocking_task_runner_ = task_runner;
 }
 
-void SupervisedUserURLFilter::SetContents(scoped_ptr<Contents> contents) {
+void SupervisedUserURLFilter::SetContents(std::unique_ptr<Contents> contents) {
   DCHECK(CalledOnValidThread());
   contents_ = std::move(contents);
   FOR_EACH_OBSERVER(Observer, observers_, OnSiteListUpdated());

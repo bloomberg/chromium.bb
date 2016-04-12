@@ -7,12 +7,12 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sha1.h"
 
@@ -49,7 +49,7 @@ class SupervisedUserBlacklist {
 
  private:
   void OnReadFromFileCompleted(const base::Closure& done_callback,
-                               scoped_ptr<std::vector<Hash> > host_hashes);
+                               std::unique_ptr<std::vector<Hash>> host_hashes);
 
   std::vector<Hash> host_hashes_;
 

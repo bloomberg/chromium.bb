@@ -399,12 +399,12 @@ void SupervisedUserService::RemoveObserver(
 }
 
 void SupervisedUserService::AddPermissionRequestCreator(
-    scoped_ptr<PermissionRequestCreator> creator) {
+    std::unique_ptr<PermissionRequestCreator> creator) {
   permissions_creators_.push_back(creator.release());
 }
 
 void SupervisedUserService::SetSafeSearchURLReporter(
-    scoped_ptr<SafeSearchURLReporter> reporter) {
+    std::unique_ptr<SafeSearchURLReporter> reporter) {
   url_reporter_ = std::move(reporter);
 }
 
@@ -457,7 +457,7 @@ bool SupervisedUserService::URLFilterContext::HasBlacklist() const {
 }
 
 void SupervisedUserService::URLFilterContext::SetManualHosts(
-    scoped_ptr<std::map<std::string, bool> > host_map) {
+    std::unique_ptr<std::map<std::string, bool>> host_map) {
   ui_url_filter_->SetManualHosts(host_map.get());
   BrowserThread::PostTask(
       BrowserThread::IO,
@@ -467,7 +467,7 @@ void SupervisedUserService::URLFilterContext::SetManualHosts(
 }
 
 void SupervisedUserService::URLFilterContext::SetManualURLs(
-    scoped_ptr<std::map<GURL, bool> > url_map) {
+    std::unique_ptr<std::map<GURL, bool>> url_map) {
   ui_url_filter_->SetManualURLs(url_map.get());
   BrowserThread::PostTask(
       BrowserThread::IO,
@@ -881,7 +881,7 @@ void SupervisedUserService::UpdateBlacklist() {
 void SupervisedUserService::UpdateManualHosts() {
   const base::DictionaryValue* dict =
       profile_->GetPrefs()->GetDictionary(prefs::kSupervisedUserManualHosts);
-  scoped_ptr<std::map<std::string, bool> > host_map(
+  std::unique_ptr<std::map<std::string, bool>> host_map(
       new std::map<std::string, bool>());
   for (base::DictionaryValue::Iterator it(*dict); !it.IsAtEnd(); it.Advance()) {
     bool allow = false;
@@ -898,7 +898,7 @@ void SupervisedUserService::UpdateManualHosts() {
 void SupervisedUserService::UpdateManualURLs() {
   const base::DictionaryValue* dict =
       profile_->GetPrefs()->GetDictionary(prefs::kSupervisedUserManualURLs);
-  scoped_ptr<std::map<GURL, bool> > url_map(new std::map<GURL, bool>());
+  std::unique_ptr<std::map<GURL, bool>> url_map(new std::map<GURL, bool>());
   for (base::DictionaryValue::Iterator it(*dict); !it.IsAtEnd(); it.Advance()) {
     bool allow = false;
     bool result = it.value().GetAsBoolean(&allow);

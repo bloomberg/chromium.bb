@@ -5,12 +5,12 @@
 #ifndef CHROME_BROWSER_SUPERVISED_USER_CHILD_ACCOUNTS_CHILD_ACCOUNT_SERVICE_H_
 #define CHROME_BROWSER_SUPERVISED_USER_CHILD_ACCOUNTS_CHILD_ACCOUNT_SERVICE_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -92,7 +92,7 @@ class ChildAccountService : public KeyedService,
 
   bool active_;
 
-  scoped_ptr<FamilyInfoFetcher> family_fetcher_;
+  std::unique_ptr<FamilyInfoFetcher> family_fetcher_;
   // If fetching the family info fails, retry with exponential backoff.
   base::OneShotTimer family_fetch_timer_;
   net::BackoffEntry family_fetch_backoff_;

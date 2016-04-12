@@ -6,13 +6,13 @@
 #define CHROME_BROWSER_SUPERVISED_USER_SUPERVISED_USER_URL_FILTER_H_
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/values.h"
@@ -176,7 +176,7 @@ class SupervisedUserURLFilter
   friend class base::RefCountedThreadSafe<SupervisedUserURLFilter>;
   ~SupervisedUserURLFilter();
 
-  void SetContents(scoped_ptr<Contents> url_matcher);
+  void SetContents(std::unique_ptr<Contents> url_matcher);
 
   FilteringBehavior GetFilteringBehaviorForURL(
       const GURL& url,
@@ -192,7 +192,7 @@ class SupervisedUserURLFilter
   mutable base::ObserverList<Observer> observers_;
 
   FilteringBehavior default_behavior_;
-  scoped_ptr<Contents> contents_;
+  std::unique_ptr<Contents> contents_;
 
   // Maps from a URL to whether it is manually allowed (true) or blocked
   // (false).
@@ -205,7 +205,7 @@ class SupervisedUserURLFilter
   // Not owned.
   const SupervisedUserBlacklist* blacklist_;
 
-  scoped_ptr<SupervisedUserAsyncURLChecker> async_url_checker_;
+  std::unique_ptr<SupervisedUserAsyncURLChecker> async_url_checker_;
 
   scoped_refptr<base::TaskRunner> blocking_task_runner_;
 

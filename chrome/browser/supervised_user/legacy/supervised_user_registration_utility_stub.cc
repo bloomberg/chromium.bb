@@ -4,8 +4,9 @@
 
 #include "chrome/browser/supervised_user/legacy/supervised_user_registration_utility_stub.h"
 
+#include <memory>
+
 #include "base/bind.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"

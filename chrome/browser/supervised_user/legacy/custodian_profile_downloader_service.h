@@ -47,7 +47,7 @@ class CustodianProfileDownloaderService : public KeyedService,
   // get instances of this service.
   explicit CustodianProfileDownloaderService(Profile* custodian_profile);
 
-  scoped_ptr<ProfileDownloader> profile_downloader_;
+  std::unique_ptr<ProfileDownloader> profile_downloader_;
   DownloadProfileCallback download_callback_;
 
   // Owns us via the KeyedService mechanism.

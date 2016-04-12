@@ -89,11 +89,11 @@ class SupervisedUserSharedSettingsServiceTest : public ::testing::Test {
 
   SyncMergeResult StartSyncing(const syncer::SyncDataList& initial_sync_data) {
     sync_processor_.reset(new syncer::FakeSyncChangeProcessor);
-    scoped_ptr<syncer::SyncErrorFactory> error_handler(
+    std::unique_ptr<syncer::SyncErrorFactory> error_handler(
         new MockSyncErrorFactory(SUPERVISED_USER_SHARED_SETTINGS));
     SyncMergeResult result = settings_service_.MergeDataAndStartSyncing(
         SUPERVISED_USER_SHARED_SETTINGS, initial_sync_data,
-        scoped_ptr<SyncChangeProcessor>(
+        std::unique_ptr<SyncChangeProcessor>(
             new SyncChangeProcessorWrapperForTest(sync_processor_.get())),
         std::move(error_handler));
     EXPECT_FALSE(result.error().IsSet());
@@ -139,9 +139,9 @@ class SupervisedUserSharedSettingsServiceTest : public ::testing::Test {
   SupervisedUserSharedSettingsService settings_service_;
   SyncDataList changed_settings_;
 
-  scoped_ptr<CallbackList::Subscription> subscription_;
+  std::unique_ptr<CallbackList::Subscription> subscription_;
 
-  scoped_ptr<syncer::FakeSyncChangeProcessor> sync_processor_;
+  std::unique_ptr<syncer::FakeSyncChangeProcessor> sync_processor_;
 };
 
 TEST_F(SupervisedUserSharedSettingsServiceTest, Empty) {

@@ -2,19 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/supervised_user/supervised_user_bookmarks_handler.h"
+
 #include <stddef.h>
 
 #include <iostream>
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
-#include "chrome/browser/supervised_user/supervised_user_bookmarks_handler.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using Folder = SupervisedUserBookmarksHandler::Folder;
@@ -154,20 +156,20 @@ const char BOOKMARKS_TREE_INVALID_PARENTS_JSON[] =
     "]";
 
 // Builds the base::Values tree from a json string above.
-scoped_ptr<base::ListValue> CreateTree(const char* json) {
-  scoped_ptr<base::Value> value = base::JSONReader::Read(json);
+std::unique_ptr<base::ListValue> CreateTree(const char* json) {
+  std::unique_ptr<base::Value> value = base::JSONReader::Read(json);
   EXPECT_NE(value.get(), nullptr);
   base::ListValue* list;
   EXPECT_TRUE(value->GetAsList(&list));
   ignore_result(value.release());
-  return make_scoped_ptr(list);
+  return base::WrapUnique(list);
 }
 
-scoped_ptr<base::ListValue> CreateBookmarksTree() {
+std::unique_ptr<base::ListValue> CreateBookmarksTree() {
   return CreateTree(BOOKMARKS_TREE_JSON);
 }
 
-scoped_ptr<base::ListValue> CreateBookmarksTreeWithInvalidParents() {
+std::unique_ptr<base::ListValue> CreateBookmarksTreeWithInvalidParents() {
   return CreateTree(BOOKMARKS_TREE_INVALID_PARENTS_JSON);
 }
 
@@ -262,8 +264,10 @@ class SupervisedUserBookmarksHandlerTest : public ::testing::Test {
 };
 
 TEST_F(SupervisedUserBookmarksHandlerTest, ParseSettings) {
-  scoped_ptr<base::DictionaryValue> link_dictionary(CreateLinkDictionary());
-  scoped_ptr<base::DictionaryValue> folder_dictionary(CreateFolderDictionary());
+  std::unique_ptr<base::DictionaryValue> link_dictionary(
+      CreateLinkDictionary());
+  std::unique_ptr<base::DictionaryValue> folder_dictionary(
+      CreateFolderDictionary());
 
   ParseLinks(*link_dictionary.get());
   ParseFolders(*folder_dictionary.get());
@@ -281,15 +285,15 @@ TEST_F(SupervisedUserBookmarksHandlerTest, ParseSettings) {
 
 TEST_F(SupervisedUserBookmarksHandlerTest, BuildBookmarksTree) {
   // Make some fake settings.
-  scoped_ptr<base::DictionaryValue> settings(
+  std::unique_ptr<base::DictionaryValue> settings(
       CreateSettings(CreateLinkDictionary(), CreateFolderDictionary()));
   // Parse the settings into a bookmarks tree.
-  scoped_ptr<base::ListValue> bookmarks(
+  std::unique_ptr<base::ListValue> bookmarks(
       SupervisedUserBookmarksHandler::BuildBookmarksTree(*settings.get()));
 
   // Check that the parsed tree matches the expected tree constructed directly
   // from the hardcoded json above.
-  scoped_ptr<base::ListValue> expected_bookmarks(CreateBookmarksTree());
+  std::unique_ptr<base::ListValue> expected_bookmarks(CreateBookmarksTree());
   EXPECT_TRUE(bookmarks->Equals(expected_bookmarks.get()));
 }
 
@@ -297,27 +301,26 @@ TEST_F(SupervisedUserBookmarksHandlerTest,
        BuildBookmarksTreeWithInvalidParents) {
   // Make some fake settings, including some entries with invalid parent
   // references.
-  scoped_ptr<base::DictionaryValue> settings(
+  std::unique_ptr<base::DictionaryValue> settings(
       CreateSettings(CreateLinkDictionaryWithInvalidParents(),
                      CreateFolderDictionaryWithInvalidParents()));
   // Parse the settings into a bookmarks tree.
-  scoped_ptr<base::ListValue> bookmarks(
+  std::unique_ptr<base::ListValue> bookmarks(
       SupervisedUserBookmarksHandler::BuildBookmarksTree(*settings.get()));
 
   // Check that the parsed tree matches the expected tree constructed directly
   // from the hardcoded json above (which does not contain the entries with
   // invalid parents!).
-  scoped_ptr<base::ListValue> expected_bookmarks(
+  std::unique_ptr<base::ListValue> expected_bookmarks(
       CreateBookmarksTreeWithInvalidParents());
   EXPECT_TRUE(bookmarks->Equals(expected_bookmarks.get()));
 }
 
 TEST_F(SupervisedUserBookmarksHandlerTest, Circle) {
   // Make some fake settings which include a circular reference in the folders.
-  scoped_ptr<base::DictionaryValue> settings(
-      CreateSettings(CreateLinkDictionary(),
-                     CreateFolderDictionaryWithCircle()));
-  scoped_ptr<base::ListValue> bookmarks(
+  std::unique_ptr<base::DictionaryValue> settings(CreateSettings(
+      CreateLinkDictionary(), CreateFolderDictionaryWithCircle()));
+  std::unique_ptr<base::ListValue> bookmarks(
       SupervisedUserBookmarksHandler::BuildBookmarksTree(*settings.get()));
   // Don't care what exactly the result looks like, just that we don't run into
   // an endless loop.

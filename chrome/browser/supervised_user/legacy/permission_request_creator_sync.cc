@@ -72,7 +72,7 @@ void PermissionRequestCreatorSync::CreateRequest(
   std::string key =
       SupervisedUserSettingsService::MakeSplitSettingKey(prefix, data);
 
-  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
   // TODO(sergiu): Use sane time here when it's ready.
   dict->SetDouble(kSupervisedUserAccessRequestTime,
                   base::Time::Now().ToJsTime());

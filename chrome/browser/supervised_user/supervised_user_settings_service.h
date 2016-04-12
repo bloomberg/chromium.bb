@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_SUPERVISED_USER_SUPERVISED_USER_SETTINGS_SERVICE_H_
 #define CHROME_BROWSER_SUPERVISED_USER_SUPERVISED_USER_SETTINGS_SERVICE_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -12,7 +13,6 @@
 #include "base/callback_list.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/supervised_user/supervised_users.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -80,7 +80,7 @@ class SupervisedUserSettingsService : public KeyedService,
 
   // Adds a callback to be called when supervised user settings are initially
   // available, or when they change.
-  scoped_ptr<SettingsCallbackList::Subscription> Subscribe(
+  std::unique_ptr<SettingsCallbackList::Subscription> Subscribe(
       const SettingsCallback& callback) WARN_UNUSED_RESULT;
 
   // Gets the associated profile
@@ -110,10 +110,11 @@ class SupervisedUserSettingsService : public KeyedService,
   // the file), but they are only uploaded (whereas supervised user settings are
   // only downloaded), and never passed to the preference system.
   // An example of an uploaded item is an access request to a blocked URL.
-  void UploadItem(const std::string& key, scoped_ptr<base::Value> value);
+  void UploadItem(const std::string& key, std::unique_ptr<base::Value> value);
 
   // Sets the setting with the given |key| to a copy of the given |value|.
-  void SetLocalSetting(const std::string& key, scoped_ptr<base::Value> value);
+  void SetLocalSetting(const std::string& key,
+                       std::unique_ptr<base::Value> value);
 
   // Public for testing.
   static syncer::SyncData CreateSyncDataForSetting(const std::string& name,
@@ -126,8 +127,8 @@ class SupervisedUserSettingsService : public KeyedService,
   syncer::SyncMergeResult MergeDataAndStartSyncing(
       syncer::ModelType type,
       const syncer::SyncDataList& initial_sync_data,
-      scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
-      scoped_ptr<syncer::SyncErrorFactory> error_handler) override;
+      std::unique_ptr<syncer::SyncChangeProcessor> sync_processor,
+      std::unique_ptr<syncer::SyncErrorFactory> error_handler) override;
   void StopSyncing(syncer::ModelType type) override;
   syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const override;
   syncer::SyncError ProcessSyncChanges(
@@ -152,7 +153,7 @@ class SupervisedUserSettingsService : public KeyedService,
 
   // Returns a dictionary with all supervised user settings if the service is
   // active, or NULL otherwise.
-  scoped_ptr<base::DictionaryValue> GetSettings();
+  std::unique_ptr<base::DictionaryValue> GetSettings();
 
   // Sends the settings to all subscribers. This method should be called by the
   // subclass whenever the settings change.
@@ -169,12 +170,12 @@ class SupervisedUserSettingsService : public KeyedService,
   bool initialization_failed_;
 
   // A set of local settings that are fixed and not configured remotely.
-  scoped_ptr<base::DictionaryValue> local_settings_;
+  std::unique_ptr<base::DictionaryValue> local_settings_;
 
   SettingsCallbackList callback_list_;
 
-  scoped_ptr<syncer::SyncChangeProcessor> sync_processor_;
-  scoped_ptr<syncer::SyncErrorFactory> error_handler_;
+  std::unique_ptr<syncer::SyncChangeProcessor> sync_processor_;
+  std::unique_ptr<syncer::SyncErrorFactory> error_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(SupervisedUserSettingsService);
 };

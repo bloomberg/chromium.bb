@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include <array>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -17,7 +18,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/sha1.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
@@ -108,7 +108,7 @@ class SupervisedUserSiteList
       const base::FilePath& path,
       base::TimeTicks start_time,
       const SupervisedUserSiteList::LoadedCallback& callback,
-      scoped_ptr<base::Value> value);
+      std::unique_ptr<base::Value> value);
 
   std::string id_;
   base::string16 title_;

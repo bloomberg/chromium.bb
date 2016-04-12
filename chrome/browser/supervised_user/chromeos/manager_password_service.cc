@@ -86,7 +86,7 @@ void ManagerPasswordService::OnSharedSettingsChange(
       !auth->HasIncompleteKey(user->email())) {
     return;
   }
-  scoped_ptr<base::DictionaryValue> wrapper(dict->DeepCopy());
+  std::unique_ptr<base::DictionaryValue> wrapper(dict->DeepCopy());
   user_service_->GetSupervisedUsersAsync(
       base::Bind(&ManagerPasswordService::GetSupervisedUsersCallback,
                  weak_ptr_factory_.GetWeakPtr(),
@@ -98,7 +98,7 @@ void ManagerPasswordService::OnSharedSettingsChange(
 void ManagerPasswordService::GetSupervisedUsersCallback(
     const std::string& sync_su_id,
     const std::string& user_id,
-    scoped_ptr<base::DictionaryValue> password_data,
+    std::unique_ptr<base::DictionaryValue> password_data,
     const base::DictionaryValue* supervised_users) {
   const base::DictionaryValue* supervised_user = NULL;
   if (!supervised_users->GetDictionary(sync_su_id, &supervised_user))
@@ -191,7 +191,7 @@ void ManagerPasswordService::OnAuthenticationFailure(
 void ManagerPasswordService::OnAddKeySuccess(
     const UserContext& master_key_context,
     const std::string& user_id,
-    scoped_ptr<base::DictionaryValue> password_data) {
+    std::unique_ptr<base::DictionaryValue> password_data) {
   VLOG(0) << "Password changed for " << user_id;
   UMA_HISTOGRAM_ENUMERATION(
       "ManagedUsers.ChromeOS.PasswordChange",

@@ -144,8 +144,8 @@ syncer::SyncMergeResult
 SupervisedUserWhitelistService::MergeDataAndStartSyncing(
     syncer::ModelType type,
     const syncer::SyncDataList& initial_sync_data,
-    scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
-    scoped_ptr<syncer::SyncErrorFactory> error_handler) {
+    std::unique_ptr<syncer::SyncChangeProcessor> sync_processor,
+    std::unique_ptr<syncer::SyncErrorFactory> error_handler) {
   DCHECK_EQ(syncer::SUPERVISED_USER_WHITELISTS, type);
 
   syncer::SyncChangeList change_list;
@@ -280,7 +280,7 @@ void SupervisedUserWhitelistService::AddNewWhitelist(
   base::RecordAction(base::UserMetricsAction("ManagedUsers_Whitelist_Added"));
 
   RegisterWhitelist(whitelist.id(), whitelist.name(), FROM_SYNC);
-  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
   SetWhitelistProperties(dict.get(), whitelist);
   pref_dict->SetWithoutPathExpansion(whitelist.id(), dict.release());
 }

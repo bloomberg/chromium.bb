@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/bind.h"
-#include "base/memory/scoped_ptr.h"
-#include "base/strings/stringprintf.h"
 #include "chrome/browser/supervised_user/legacy/supervised_user_refresh_token_fetcher.h"
+
+#include <memory>
+
+#include "base/bind.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -116,7 +118,7 @@ class SupervisedUserRefreshTokenFetcherTest : public testing::Test {
   TestingProfile profile_;
   FakeProfileOAuth2TokenService oauth2_token_service_;
   net::TestURLFetcherFactory url_fetcher_factory_;
-  scoped_ptr<SupervisedUserRefreshTokenFetcher> token_fetcher_;
+  std::unique_ptr<SupervisedUserRefreshTokenFetcher> token_fetcher_;
   std::string device_id_;
 
   GoogleServiceAuthError error_;

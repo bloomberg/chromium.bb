@@ -64,15 +64,15 @@ class SupervisedUserSettingsServiceTest : public ::testing::Test {
   SupervisedUserSettingsServiceTest() : settings_service_(nullptr) {}
   ~SupervisedUserSettingsServiceTest() override {}
 
-  scoped_ptr<syncer::SyncChangeProcessor> CreateSyncProcessor() {
+  std::unique_ptr<syncer::SyncChangeProcessor> CreateSyncProcessor() {
     sync_processor_.reset(new syncer::FakeSyncChangeProcessor);
-    return scoped_ptr<syncer::SyncChangeProcessor>(
+    return std::unique_ptr<syncer::SyncChangeProcessor>(
         new syncer::SyncChangeProcessorWrapperForTest(sync_processor_.get()));
   }
 
   syncer::SyncMergeResult StartSyncing(
       const syncer::SyncDataList& initial_sync_data) {
-    scoped_ptr<syncer::SyncErrorFactory> error_handler(
+    std::unique_ptr<syncer::SyncErrorFactory> error_handler(
         new MockSyncErrorFactory(syncer::SUPERVISED_USER_SETTINGS));
     syncer::SyncMergeResult result = settings_service_.MergeDataAndStartSyncing(
         syncer::SUPERVISED_USER_SETTINGS, initial_sync_data,
@@ -85,14 +85,14 @@ class SupervisedUserSettingsServiceTest : public ::testing::Test {
     split_items_.SetStringWithoutPathExpansion(key, value);
     settings_service_.UploadItem(
         SupervisedUserSettingsService::MakeSplitSettingKey(kSplitItemName, key),
-        scoped_ptr<base::Value>(new base::StringValue(value)));
+        std::unique_ptr<base::Value>(new base::StringValue(value)));
   }
 
   void UploadAtomicItem(const std::string& value) {
     atomic_setting_value_.reset(new base::StringValue(value));
     settings_service_.UploadItem(
         kAtomicItemName,
-        scoped_ptr<base::Value>(new base::StringValue(value)));
+        std::unique_ptr<base::Value>(new base::StringValue(value)));
   }
 
   void VerifySyncDataItem(syncer::SyncData sync_data) {
@@ -110,7 +110,7 @@ class SupervisedUserSettingsServiceTest : public ::testing::Test {
       EXPECT_TRUE(split_items_.GetWithoutPathExpansion(key, &expected_value));
     }
 
-    scoped_ptr<base::Value> value =
+    std::unique_ptr<base::Value> value =
         base::JSONReader::Read(supervised_user_setting.value());
     EXPECT_TRUE(expected_value->Equals(value.get()));
   }
@@ -139,13 +139,14 @@ class SupervisedUserSettingsServiceTest : public ::testing::Test {
 
   content::TestBrowserThreadBundle thread_bundle_;
   base::DictionaryValue split_items_;
-  scoped_ptr<base::Value> atomic_setting_value_;
+  std::unique_ptr<base::Value> atomic_setting_value_;
   SupervisedUserSettingsService settings_service_;
-  scoped_ptr<base::DictionaryValue> settings_;
-  scoped_ptr<base::CallbackList<void(
-      const base::DictionaryValue*)>::Subscription> user_settings_subscription_;
+  std::unique_ptr<base::DictionaryValue> settings_;
+  std::unique_ptr<
+      base::CallbackList<void(const base::DictionaryValue*)>::Subscription>
+      user_settings_subscription_;
 
-  scoped_ptr<syncer::FakeSyncChangeProcessor> sync_processor_;
+  std::unique_ptr<syncer::FakeSyncChangeProcessor> sync_processor_;
 };
 
 TEST_F(SupervisedUserSettingsServiceTest, ProcessAtomicSetting) {
@@ -280,7 +281,7 @@ TEST_F(SupervisedUserSettingsServiceTest, SetLocalSetting) {
   settings_.reset();
   settings_service_.SetLocalSetting(
       kSettingsName,
-      scoped_ptr<base::Value>(new base::StringValue(kSettingsValue)));
+      std::unique_ptr<base::Value>(new base::StringValue(kSettingsValue)));
   ASSERT_TRUE(settings_);
   ASSERT_TRUE(settings_->GetWithoutPathExpansion(kSettingsName, &value));
   std::string string_value;

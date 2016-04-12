@@ -98,7 +98,8 @@ SupervisedUserBookmarksHandler::SupervisedUserBookmarksHandler() {
 SupervisedUserBookmarksHandler::~SupervisedUserBookmarksHandler() {
 }
 
-scoped_ptr<base::ListValue> SupervisedUserBookmarksHandler::BuildBookmarksTree(
+std::unique_ptr<base::ListValue>
+SupervisedUserBookmarksHandler::BuildBookmarksTree(
     const base::DictionaryValue& settings) {
   SupervisedUserBookmarksHandler handler;
   handler.ParseSettings(settings);
@@ -149,7 +150,7 @@ void SupervisedUserBookmarksHandler::ParseLinks(
   }
 }
 
-scoped_ptr<base::ListValue> SupervisedUserBookmarksHandler::BuildTree() {
+std::unique_ptr<base::ListValue> SupervisedUserBookmarksHandler::BuildTree() {
   root_.reset(new base::ListValue);
   AddFoldersToTree();
   AddLinksToTree();
@@ -168,7 +169,7 @@ void SupervisedUserBookmarksHandler::AddFoldersToTree() {
   while (!folders.empty() && folders.size() != folders_failed.size()) {
     folders_failed.clear();
     for (const auto& folder : folders) {
-      scoped_ptr<base::DictionaryValue> node(new base::DictionaryValue);
+      std::unique_ptr<base::DictionaryValue> node(new base::DictionaryValue);
       node->SetIntegerWithoutPathExpansion(kId, folder.id);
       node->SetStringWithoutPathExpansion(kName, folder.name);
       node->SetWithoutPathExpansion(kChildren, new base::ListValue);
@@ -189,7 +190,7 @@ void SupervisedUserBookmarksHandler::AddFoldersToTree() {
 
 void SupervisedUserBookmarksHandler::AddLinksToTree() {
   for (const auto& link : links_) {
-    scoped_ptr<base::DictionaryValue> node(new base::DictionaryValue);
+    std::unique_ptr<base::DictionaryValue> node(new base::DictionaryValue);
     GURL url = url_formatter::FixupURL(link.url, std::string());
     if (!url.is_valid()) {
       LOG(WARNING) << "Got invalid URL: " << link.url;
@@ -207,7 +208,7 @@ void SupervisedUserBookmarksHandler::AddLinksToTree() {
 
 bool SupervisedUserBookmarksHandler::AddNodeToTree(
     int parent_id,
-    scoped_ptr<base::DictionaryValue> node) {
+    std::unique_ptr<base::DictionaryValue> node) {
   base::ListValue* parent = FindFolder(root_.get(), parent_id);
   if (!parent)
     return false;

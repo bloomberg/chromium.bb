@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_SUPERVISED_USER_CHROMEOS_SUPERVISED_USER_PASSWORD_SERVICE_H_
 #define CHROME_BROWSER_SUPERVISED_USER_CHROMEOS_SUPERVISED_USER_PASSWORD_SERVICE_H_
 
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/supervised_user/legacy/supervised_user_shared_settings_service.h"
 #include "chrome/browser/supervised_user/supervised_users.h"
@@ -34,8 +34,8 @@ class SupervisedUserPasswordService : public KeyedService {
   std::string user_id_;
   SupervisedUserSharedSettingsService* settings_service_;
 
-  scoped_ptr<SupervisedUserSharedSettingsService::ChangeCallbackList::
-                 Subscription>
+  std::unique_ptr<
+      SupervisedUserSharedSettingsService::ChangeCallbackList::Subscription>
       settings_service_subscription_;
 
   base::WeakPtrFactory<SupervisedUserPasswordService> weak_ptr_factory_;

@@ -5,11 +5,12 @@
 #ifndef CHROME_BROWSER_SUPERVISED_USER_EXPERIMENTAL_SAFE_SEARCH_URL_REPORTER_H_
 #define CHROME_BROWSER_SUPERVISED_USER_EXPERIMENTAL_SAFE_SEARCH_URL_REPORTER_H_
 
-#include "base/memory/scoped_ptr.h"
-#include "google_apis/gaia/oauth2_token_service.h"
-#include "net/url_request/url_fetcher_delegate.h"
+#include <memory>
+
 #include "base/callback_forward.h"
 #include "base/macros.h"
+#include "google_apis/gaia/oauth2_token_service.h"
+#include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
 
 class GURL;
@@ -30,7 +31,8 @@ class SafeSearchURLReporter : public OAuth2TokenService::Consumer,
                         net::URLRequestContextGetter* context);
   ~SafeSearchURLReporter() override;
 
-  static scoped_ptr<SafeSearchURLReporter> CreateWithProfile(Profile* profile);
+  static std::unique_ptr<SafeSearchURLReporter> CreateWithProfile(
+      Profile* profile);
 
   void ReportUrl(const GURL& url, const SuccessCallback& callback);
 
@@ -38,7 +40,7 @@ class SafeSearchURLReporter : public OAuth2TokenService::Consumer,
 
  private:
   struct Report;
-  using ReportIterator = std::vector<scoped_ptr<Report>>::iterator;
+  using ReportIterator = std::vector<std::unique_ptr<Report>>::iterator;
 
   // OAuth2TokenService::Consumer implementation:
   void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
@@ -61,7 +63,7 @@ class SafeSearchURLReporter : public OAuth2TokenService::Consumer,
   net::URLRequestContextGetter* context_;
   int url_fetcher_id_;
 
-  std::vector<scoped_ptr<Report>> reports_;
+  std::vector<std::unique_ptr<Report>> reports_;
 
   DISALLOW_COPY_AND_ASSIGN(SafeSearchURLReporter);
 };

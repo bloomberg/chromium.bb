@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/bind.h"
-#include "base/memory/scoped_ptr.h"
-#include "chrome/browser/supervised_user/legacy/supervised_user_shared_settings_service.h"
 #include "chrome/browser/supervised_user/legacy/supervised_user_shared_settings_update.h"
+
+#include <memory>
+
+#include "base/bind.h"
+#include "chrome/browser/supervised_user/legacy/supervised_user_shared_settings_service.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "sync/api/sync_change.h"
@@ -24,15 +26,13 @@ class SupervisedUserSharedSettingsUpdateTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
   SupervisedUserSharedSettingsService service_;
-  scoped_ptr<bool> result_;
+  std::unique_ptr<bool> result_;
 };
 
 TEST_F(SupervisedUserSharedSettingsUpdateTest, Success) {
   SupervisedUserSharedSettingsUpdate update(
-      &service_,
-      "abcdef",
-      "name",
-      scoped_ptr<base::Value>(new base::StringValue("Hans Moleman")),
+      &service_, "abcdef", "name",
+      std::unique_ptr<base::Value>(new base::StringValue("Hans Moleman")),
       base::Bind(&SupervisedUserSharedSettingsUpdateTest::OnSettingUpdated,
                  base::Unretained(this)));
   syncer::SyncChangeList changes;
@@ -49,10 +49,8 @@ TEST_F(SupervisedUserSharedSettingsUpdateTest, Success) {
 
 TEST_F(SupervisedUserSharedSettingsUpdateTest, Failure) {
   SupervisedUserSharedSettingsUpdate update(
-      &service_,
-      "abcdef",
-      "name",
-      scoped_ptr<base::Value>(new base::StringValue("Hans Moleman")),
+      &service_, "abcdef", "name",
+      std::unique_ptr<base::Value>(new base::StringValue("Hans Moleman")),
       base::Bind(&SupervisedUserSharedSettingsUpdateTest::OnSettingUpdated,
                  base::Unretained(this)));
 
@@ -75,10 +73,8 @@ TEST_F(SupervisedUserSharedSettingsUpdateTest, Failure) {
 TEST_F(SupervisedUserSharedSettingsUpdateTest, Cancel) {
   {
     SupervisedUserSharedSettingsUpdate update(
-        &service_,
-        "abcdef",
-        "name",
-        scoped_ptr<base::Value>(new base::StringValue("Hans Moleman")),
+        &service_, "abcdef", "name",
+        std::unique_ptr<base::Value>(new base::StringValue("Hans Moleman")),
         base::Bind(&SupervisedUserSharedSettingsUpdateTest::OnSettingUpdated,
                    base::Unretained(this)));
     ASSERT_FALSE(result_);

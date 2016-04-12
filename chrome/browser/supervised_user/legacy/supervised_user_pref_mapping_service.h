@@ -5,10 +5,11 @@
 #ifndef CHROME_BROWSER_SUPERVISED_USER_LEGACY_SUPERVISED_USER_PREF_MAPPING_SERVICE_H_
 #define CHROME_BROWSER_SUPERVISED_USER_LEGACY_SUPERVISED_USER_PREF_MAPPING_SERVICE_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/callback_list.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/supervised_user/supervised_users.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -49,7 +50,7 @@ class SupervisedUserPrefMappingService : public KeyedService {
 
   PrefService* prefs_;
   SupervisedUserSharedSettingsService* shared_settings_;
-  scoped_ptr<CallbackList::Subscription> subscription_;
+  std::unique_ptr<CallbackList::Subscription> subscription_;
   std::string supervised_user_id_;
   PrefChangeRegistrar pref_change_registrar_;
   base::WeakPtrFactory<SupervisedUserPrefMappingService> weak_ptr_factory_;

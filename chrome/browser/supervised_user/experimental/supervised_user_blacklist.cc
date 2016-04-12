@@ -17,11 +17,11 @@ using content::BrowserThread;
 
 namespace {
 
-scoped_ptr<std::vector<SupervisedUserBlacklist::Hash> >
+std::unique_ptr<std::vector<SupervisedUserBlacklist::Hash>>
 ReadFromBinaryFileOnFileThread(const base::FilePath& path) {
   DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
 
-  scoped_ptr<std::vector<SupervisedUserBlacklist::Hash> > host_hashes(
+  std::unique_ptr<std::vector<SupervisedUserBlacklist::Hash>> host_hashes(
       new std::vector<SupervisedUserBlacklist::Hash>);
 
   base::MemoryMappedFile file;
@@ -86,7 +86,7 @@ void SupervisedUserBlacklist::ReadFromFile(const base::FilePath& path,
 
 void SupervisedUserBlacklist::OnReadFromFileCompleted(
     const base::Closure& done_callback,
-    scoped_ptr<std::vector<Hash> > host_hashes) {
+    std::unique_ptr<std::vector<Hash>> host_hashes) {
   host_hashes_.swap(*host_hashes);
   LOG_IF(WARNING, host_hashes_.empty()) << "Got empty blacklist";
 
