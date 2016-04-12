@@ -15,10 +15,6 @@ OpenedFrameTracker::OpenedFrameTracker()
 
 OpenedFrameTracker::~OpenedFrameTracker()
 {
-#if !ENABLE(OILPAN)
-    // Oilpan takes care of clearing weak m_opener fields during GC.
-    transferTo(nullptr);
-#endif
 }
 
 bool OpenedFrameTracker::isEmpty() const
@@ -47,11 +43,9 @@ void OpenedFrameTracker::transferTo(WebFrame* opener)
 template <typename VisitorDispatcher>
 ALWAYS_INLINE void OpenedFrameTracker::traceFramesImpl(VisitorDispatcher visitor)
 {
-#if ENABLE(OILPAN)
     HashSet<WebFrame*>::iterator end = m_openedFrames.end();
     for (HashSet<WebFrame*>::iterator it = m_openedFrames.begin(); it != end; ++it)
         WebFrame::traceFrame(visitor, *it);
-#endif
 }
 
 void OpenedFrameTracker::traceFrames(Visitor* visitor) { traceFramesImpl(visitor); }

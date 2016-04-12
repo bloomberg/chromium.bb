@@ -577,11 +577,7 @@ void WebLocalFrameImpl::close()
         m_devToolsAgent.clear();
     }
 
-#if ENABLE(OILPAN)
     m_selfKeepAlive.clear();
-#else
-    deref(); // Balances ref() acquired in WebFrame::create
-#endif
 }
 
 WebString WebLocalFrameImpl::uniqueName() const
@@ -1384,11 +1380,7 @@ WebLocalFrameImpl* WebLocalFrameImpl::create(WebTreeScopeType scope, WebFrameCli
 {
     WebLocalFrameImpl* frame = new WebLocalFrameImpl(scope, client);
     frame->setOpener(opener);
-#if ENABLE(OILPAN)
     return frame;
-#else
-    return adoptRef(frame).leakRef();
-#endif
 }
 
 WebLocalFrameImpl* WebLocalFrameImpl::createProvisional(WebFrameClient* client, WebRemoteFrame* oldWebFrame, WebSandboxFlags flags, const WebFrameOwnerProperties& frameOwnerProperties)
@@ -1437,9 +1429,7 @@ WebLocalFrameImpl::WebLocalFrameImpl(WebTreeScopeType scope, WebFrameClient* cli
     , m_userMediaClientImpl(this)
     , m_geolocationClientProxy(GeolocationClientProxy::create(client ? client->geolocationClient() : 0))
     , m_webDevToolsFrontend(0)
-#if ENABLE(OILPAN)
     , m_selfKeepAlive(this)
-#endif
 {
     setIndexedDBClientCreateFunction(IndexedDBClientImpl::create);
     frameCount++;
@@ -1455,13 +1445,8 @@ WebLocalFrameImpl::~WebLocalFrameImpl()
     // The widget for the frame, if any, must have already been closed.
     DCHECK(!m_frameWidget);
     frameCount--;
-
-#if !ENABLE(OILPAN)
-    cancelPendingScopingEffort();
-#endif
 }
 
-#if ENABLE(OILPAN)
 DEFINE_TRACE(WebLocalFrameImpl)
 {
     visitor->trace(m_frameLoaderClientImpl);
@@ -1474,7 +1459,6 @@ DEFINE_TRACE(WebLocalFrameImpl)
     WebFrame::traceFrames(visitor, this);
     WebFrameImplBase::trace(visitor);
 }
-#endif
 
 void WebLocalFrameImpl::setCoreFrame(LocalFrame* frame)
 {

@@ -334,9 +334,7 @@ public:
     void setDevToolsFrontend(WebDevToolsFrontendImpl* frontend) { m_webDevToolsFrontend = frontend; }
     WebDevToolsFrontendImpl* devToolsFrontend() { return m_webDevToolsFrontend; }
 
-#if ENABLE(OILPAN)
     DECLARE_TRACE();
-#endif
 
 private:
     friend class FrameLoaderClientImpl;
@@ -393,12 +391,10 @@ private:
 
     WebDevToolsFrontendImpl* m_webDevToolsFrontend;
 
-#if ENABLE(OILPAN)
     // Oilpan: WebLocalFrameImpl must remain alive until close() is called.
     // Accomplish that by keeping a self-referential Persistent<>. It is
     // cleared upon close().
     SelfKeepAlive<WebLocalFrameImpl> m_selfKeepAlive;
-#endif
 };
 
 DEFINE_TYPE_CASTS(WebLocalFrameImpl, WebFrame, frame, frame->isWebLocalFrame(), frame.isWebLocalFrame());

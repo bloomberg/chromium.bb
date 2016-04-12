@@ -135,9 +135,6 @@ PopupMenuCSSFontSelector::PopupMenuCSSFontSelector(Document* document, CSSFontSe
 
 PopupMenuCSSFontSelector::~PopupMenuCSSFontSelector()
 {
-#if !ENABLE(OILPAN)
-    m_ownerFontSelector->unregisterForInvalidationCallbacks(this);
-#endif
 }
 
 PassRefPtr<FontData> PopupMenuCSSFontSelector::getFontData(const FontDescription& description, const AtomicString& name)

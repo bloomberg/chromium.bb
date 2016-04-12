@@ -164,9 +164,7 @@ public:
 
     bool isIgnoredForHitTest() const override;
 
-#if ENABLE(OILPAN)
     DECLARE_TRACE();
-#endif
 
 private:
     WebRemoteFrameImpl(WebTreeScopeType, WebRemoteFrameClient*);
@@ -182,12 +180,10 @@ private:
     Member<RemoteFrame> m_frame;
     WebRemoteFrameClient* m_client;
 
-#if ENABLE(OILPAN)
     // Oilpan: WebRemoteFrameImpl must remain alive until close() is called.
     // Accomplish that by keeping a self-referential Persistent<>. It is
     // cleared upon close().
     SelfKeepAlive<WebRemoteFrameImpl> m_selfKeepAlive;
-#endif
 };
 
 DEFINE_TYPE_CASTS(WebRemoteFrameImpl, WebFrame, frame, frame->isWebRemoteFrame(), frame.isWebRemoteFrame());

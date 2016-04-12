@@ -33,18 +33,13 @@ WebRemoteFrameImpl* WebRemoteFrameImpl::create(WebTreeScopeType scope, WebRemote
 {
     WebRemoteFrameImpl* frame = new WebRemoteFrameImpl(scope, client);
     frame->setOpener(opener);
-#if ENABLE(OILPAN)
     return frame;
-#else
-    return adoptRef(frame).leakRef();
-#endif
 }
 
 WebRemoteFrameImpl::~WebRemoteFrameImpl()
 {
 }
 
-#if ENABLE(OILPAN)
 DEFINE_TRACE(WebRemoteFrameImpl)
 {
     visitor->trace(m_frameClient);
@@ -53,7 +48,6 @@ DEFINE_TRACE(WebRemoteFrameImpl)
     WebFrame::traceFrames(visitor, this);
     WebFrameImplBase::trace(visitor);
 }
-#endif
 
 bool WebRemoteFrameImpl::isWebLocalFrame() const
 {
@@ -78,11 +72,7 @@ WebRemoteFrame* WebRemoteFrameImpl::toWebRemoteFrame()
 
 void WebRemoteFrameImpl::close()
 {
-#if ENABLE(OILPAN)
     m_selfKeepAlive.clear();
-#else
-    deref();
-#endif
 }
 
 WebString WebRemoteFrameImpl::uniqueName() const
@@ -707,9 +697,7 @@ WebRemoteFrameImpl::WebRemoteFrameImpl(WebTreeScopeType scope, WebRemoteFrameCli
     : WebRemoteFrame(scope)
     , m_frameClient(RemoteFrameClientImpl::create(this))
     , m_client(client)
-#if ENABLE(OILPAN)
     , m_selfKeepAlive(this)
-#endif
 {
 }
 

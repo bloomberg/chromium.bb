@@ -307,7 +307,6 @@ WebFrame::~WebFrame()
     m_openedFrameTracker.reset(0);
 }
 
-#if ENABLE(OILPAN)
 ALWAYS_INLINE bool WebFrame::isFrameAlive(const WebFrame* frame)
 {
     if (!frame)
@@ -358,6 +357,5 @@ DEFINE_VISITOR_METHOD(Visitor*)
 DEFINE_VISITOR_METHOD(InlinedGlobalMarkingVisitor)
 
 #undef DEFINE_VISITOR_METHOD
-#endif
 
 } // namespace blink
