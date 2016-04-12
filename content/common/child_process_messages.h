@@ -118,10 +118,6 @@ IPC_MESSAGE_CONTROL1(ChildProcessMsg_GetChildNonPersistentHistogramData,
 IPC_MESSAGE_CONTROL1(ChildProcessMsg_SetProcessBackgrounded,
                      bool /* background */)
 
-// Sends a pipe used by the child process to broker passing of Mojo handles.
-IPC_MESSAGE_CONTROL1(ChildProcessMsg_SetMojoParentPipeHandle,
-                     IPC::PlatformFileForTransit /* handle */)
-
 ////////////////////////////////////////////////////////////////////////////////
 // Messages sent from the child process to the browser.
 
