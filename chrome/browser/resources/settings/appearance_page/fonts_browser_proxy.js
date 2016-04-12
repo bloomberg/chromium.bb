@@ -6,6 +6,7 @@
  * @typedef {{
  *   fontList: Array<{0: string, 1: (string|undefined), 2: (string|undefined)}>,
  *   encodingList: Array<{0: string, 1: string}>,
+ *   extensionUrl: string
  * }}
  */
 var FontsData;
@@ -16,9 +17,14 @@ cr.define('settings', function() {
 
   FontsBrowserProxy.prototype = {
     /**
-     * @return {!Promise<!FontsData>} Fonts and encodings.
+     * @return {!Promise<!FontsData>} Fonts, encodings and the advanced font
+     *     settings extension URL.
      */
     fetchFontsData: assertNotReached,
+
+    observeAdvancedFontExtensionAvailable: assertNotReached,
+
+    openAdvancedFontSettings: assertNotReached,
   };
 
   /**
@@ -34,6 +40,16 @@ cr.define('settings', function() {
     fetchFontsData: function() {
       return cr.sendWithPromise('fetchFontsData');
     },
+
+    /** @override */
+    observeAdvancedFontExtensionAvailable: function() {
+      chrome.send('observeAdvancedFontExtensionAvailable');
+    },
+
+    /** @override */
+    openAdvancedFontSettings: function() {
+      chrome.send('openAdvancedFontSettings');
+    }
   };
 
   return {

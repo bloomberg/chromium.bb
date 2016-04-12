@@ -35,9 +35,18 @@
   Polymer({
     is: 'settings-appearance-fonts-page',
 
-    behaviors: [I18nBehavior],
+    behaviors: [I18nBehavior, WebUIListenerBehavior],
 
     properties: {
+      /** @private */
+      advancedExtensionInstalled_: Boolean,
+
+      /** @private */
+      advancedExtensionSublabel_: String,
+
+      /** @private */
+      advancedExtensionUrl_: String,
+
       /** @private {!settings.FontsBrowserProxy} */
       browserProxy_: Object,
 
@@ -152,6 +161,10 @@
 
     /** @override */
     ready: function() {
+      this.addWebUIListener('advanced-font-settings-installed',
+          this.setAdvancedExtensionInstalled_.bind(this));
+      this.browserProxy_.observeAdvancedFontExtensionAvailable();
+
       this.browserProxy_.fetchFontsData().then(
           this.setFontsData_.bind(this));
     },
@@ -174,8 +187,28 @@
           this.minimumFontSizeRange_[this.immediateMinimumSizeIndex_]);
     },
 
+    /** @private */
+    openAdvancedExtension_: function() {
+      if (this.advancedExtensionInstalled_)
+        this.browserProxy_.openAdvancedFontSettings();
+      else
+        window.open(this.advancedExtensionUrl_);
+    },
+
     /**
-     * @param {!FontsData} response A list of fonts and encodings.
+     * @param {boolean} isInstalled Whether the advanced font settings
+     *     extension is installed.
+     * @private
+     */
+    setAdvancedExtensionInstalled_: function(isInstalled) {
+      this.advancedExtensionInstalled_ = isInstalled;
+      this.advancedExtensionSublabel_ = this.i18n(isInstalled ?
+          'openAdvancedFontSettings' : 'requiresWebStoreExtension');
+    },
+
+    /**
+     * @param {!FontsData} response A list of fonts, encodings and the advanced
+     *     font settings extension URL.
      * @private
      */
     setFontsData_: function(response) {
@@ -199,6 +232,7 @@
         });
       }
       this.$.encoding.menuOptions = encodingMenuOptions;
+      this.advancedExtensionUrl_ = response.extensionUrl;
     },
 
     /**

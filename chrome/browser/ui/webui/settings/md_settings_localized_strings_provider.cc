@@ -881,6 +881,7 @@ void AddWebContentStrings(content::WebUIDataSource* html_source) {
       {"loremIpsum", IDS_SETTINGS_LOREM_IPSUM},
       {"loading", IDS_SETTINGS_LOADING},
       {"advancedFontSettings", IDS_SETTINGS_ADVANCED_FONT_SETTINGS},
+      {"openAdvancedFontSettings", IDS_SETTINGS_OPEN_ADVANCED_FONT_SETTINGS},
       {"requiresWebStoreExtension", IDS_SETTINGS_REQUIRES_WEB_STORE_EXTENSION},
       {"quickBrownFox", IDS_SETTINGS_QUICK_BROWN_FOX},
   };
