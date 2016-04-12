@@ -107,6 +107,11 @@ public:
     LayoutUnit logicalTopInFlowThread() const;
     LayoutUnit logicalBottomInFlowThread() const;
     LayoutUnit logicalHeightInFlowThread() const { return logicalBottomInFlowThread() - logicalTopInFlowThread(); }
+
+    // Return the amount of flow thread contents that the specified fragmentainer group can hold
+    // without overflowing.
+    LayoutUnit fragmentainerGroupCapacity(const MultiColumnFragmentainerGroup &group) const { return group.logicalHeight() * usedColumnCount(); }
+
     LayoutRect flowThreadPortionRect() const;
     LayoutRect flowThreadPortionOverflowRect() const;
     LayoutRect overflowRectForFlowThreadPortion(const LayoutRect& flowThreadPortionRect, bool isFirstPortion, bool isLastPortion) const;

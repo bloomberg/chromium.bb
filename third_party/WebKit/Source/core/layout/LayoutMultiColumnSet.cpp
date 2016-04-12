@@ -80,7 +80,7 @@ LayoutUnit LayoutMultiColumnSet::pageLogicalHeightForOffset(LayoutUnit offsetInF
         ASSERT(m_fragmentainerGroups.size() == 1);
         return LayoutUnit();
     }
-    if (offsetInFlowThread >= lastRow.logicalTopInFlowThread() + lastRow.logicalHeight() * usedColumnCount()) {
+    if (offsetInFlowThread >= lastRow.logicalTopInFlowThread() + fragmentainerGroupCapacity(lastRow)) {
         // The offset is outside the bounds of the fragmentainer groups that we have established at
         // this point. If we're nested inside another fragmentation context, we need to calculate
         // the height on our own.
@@ -148,7 +148,7 @@ LayoutUnit LayoutMultiColumnSet::nextLogicalTopForUnbreakableContent(LayoutUnit 
     // TODO(mstensho): if we're doubly nested (e.g. multicol in multicol in multicol), we need to
     // look beyond the first row here.
     const MultiColumnFragmentainerGroup& firstRow = firstFragmentainerGroup();
-    LayoutUnit firstRowLogicalBottomInFlowThread = firstRow.logicalTopInFlowThread() + firstRow.logicalHeight() * usedColumnCount();
+    LayoutUnit firstRowLogicalBottomInFlowThread = firstRow.logicalTopInFlowThread() + fragmentainerGroupCapacity(firstRow);
     if (flowThreadOffset >= firstRowLogicalBottomInFlowThread)
         return flowThreadOffset; // We're not in the first row. Give up.
     LayoutUnit newLogicalHeight = enclosingFragmentationContext->fragmentainerLogicalHeightAt(firstRow.blockOffsetInEnclosingFragmentationContext() + firstRow.logicalHeight());
@@ -181,7 +181,7 @@ LayoutMultiColumnSet* LayoutMultiColumnSet::previousSiblingMultiColumnSet() cons
 bool LayoutMultiColumnSet::hasFragmentainerGroupForColumnAt(LayoutUnit offsetInFlowThread, PageBoundaryRule pageBoundaryRule) const
 {
     const MultiColumnFragmentainerGroup& lastRow = lastFragmentainerGroup();
-    LayoutUnit maxLogicalBottomInFlowThread = lastRow.logicalTopInFlowThread() + lastRow.logicalHeight() * usedColumnCount();
+    LayoutUnit maxLogicalBottomInFlowThread = lastRow.logicalTopInFlowThread() + fragmentainerGroupCapacity(lastRow);
     if (pageBoundaryRule == AssociateWithFormerPage)
         return offsetInFlowThread <= maxLogicalBottomInFlowThread;
     return offsetInFlowThread < maxLogicalBottomInFlowThread;
@@ -194,7 +194,7 @@ MultiColumnFragmentainerGroup& LayoutMultiColumnSet::appendNewFragmentainerGroup
         MultiColumnFragmentainerGroup& previousGroup = m_fragmentainerGroups.last();
 
         // This is the flow thread block offset where |previousGroup| ends and |newGroup| takes over.
-        LayoutUnit blockOffsetInFlowThread = previousGroup.logicalTopInFlowThread() + previousGroup.logicalHeight() * usedColumnCount();
+        LayoutUnit blockOffsetInFlowThread = previousGroup.logicalTopInFlowThread() + fragmentainerGroupCapacity(previousGroup);
         previousGroup.setLogicalBottomInFlowThread(blockOffsetInFlowThread);
         newGroup.setLogicalTopInFlowThread(blockOffsetInFlowThread);
         newGroup.setLogicalTop(previousGroup.logicalTop() + previousGroup.logicalHeight());
