@@ -178,7 +178,7 @@ template("test") {
       ]
     }
 
-    app(_test_target) {
+    ios_app_bundle(_test_target) {
       # TODO(GYP): Make this configurable and only provide a default
       # that can be overridden.
       info_plist = "//testing/gtest_ios/unittest-Info.plist"

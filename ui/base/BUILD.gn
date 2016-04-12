@@ -951,7 +951,7 @@ test("ui_base_unittests") {
 }
 
 if (is_mac) {
-  mac_framework("ui_unittests Framework") {
+  mac_framework_bundle("ui_unittests Framework") {
     testonly = true
     deps = [
       "//ui/resources:ui_test_pak_bundle_data",

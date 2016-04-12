@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/ios/ios_sdk.gni")
+import("//build/config/mac/rules.gni")
 
 # TODO(crbug.com/297668): refactor this template to extract common behaviour
 # between OS X and iOS bundle generation, then create a generic "app" template
@@ -31,7 +32,7 @@ import("//build/config/ios/ios_sdk.gni")
 #       by performing variable substitutions.
 #
 # For more information, see "gn help executable".
-template("app") {
+template("ios_app_bundle") {
   assert(defined(invoker.info_plist),
          "info_plist must be specified for target $target_name")
 
@@ -228,5 +229,27 @@ template("bundle_data_xib") {
     outputs = [
       "{{bundle_resources_dir}}/$_nib_filename/{{source_file_part}}",
     ]
+  }
+}
+
+# Template to package a shared library into an iOS framework bundle.
+#
+# Arguments
+#
+#     output_name:
+#         (optional) string, name of the generated framework without the
+#         .framework suffix. If omitted, defaults to target_name.
+#
+#     framework_version:
+#         (optional) string, version of the framework. Typically this is a
+#         single letter, like "A". If omitted, the Versions/ subdirectory
+#         structure will not be created, and build output will go directly
+#         into the framework subdirectory.
+#
+# See "gn help shared_library" for more information on arguments supported
+# by shared library target.
+template("ios_framework_bundle") {
+  framework_bundle(target_name) {
+    forward_variables_from(invoker, "*")
   }
 }

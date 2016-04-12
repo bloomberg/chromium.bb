@@ -4,12 +4,9 @@
 
 import("//build/toolchain/toolchain.gni")
 
-# Template to package a shared library into a Mac framework bundle.
+# This is used as the base template for both iOS and Mac frameworks..
 #
 # Arguments
-#
-#     info_plist:
-#         string, path to the Info.plist file that will be used for the bundle.
 #
 #     output_name:
 #         (optional) string, name of the generated framework without the
@@ -20,23 +17,28 @@ import("//build/toolchain/toolchain.gni")
 #         single letter, like "A". If omitted, the Versions/ subdirectory
 #         structure will not be created, and build output will go directly
 #         into the framework subdirectory.
-template("mac_framework") {
-  assert(defined(invoker.deps),
-         "Dependencies must be specified for $target_name")
-  assert(defined(invoker.info_plist),
-         "The Info.plist file must be specified for $target_name")
-
+#
+# See "gn help shared_library" for more information on arguments supported
+# by shared library target.
+template("framework_bundle") {
   _target_name = target_name
   _output_name = target_name
   if (defined(invoker.output_name)) {
     _output_name = invoker.output_name
   }
+
+  # If the framework is unversionned, the final _target_name will be the
+  # create_bundle(_framework_target), otherwise an action with the name
+  # _target_name will depends on the the create_bundle() in order to prepare
+  # the versioned directory structure.
+  _framework_target = _target_name
   _framework_name = _output_name + ".framework"
-  _framework_version = ""
-  if (defined(invoker.framework_version)) {
+  _framework_root_dir = "$root_out_dir/$_framework_name"
+  if (defined(invoker.framework_version) && invoker.framework_version != "") {
     _framework_version = invoker.framework_version
+    _framework_root_dir += "/Versions/$_framework_version"
+    _framework_target = _target_name + "_create_bundle"
   }
-  _framework_target = _output_name + "_framework"
 
   _shared_library_target = target_name + "_shared_library"
   _shared_library_bundle_data = _shared_library_target + "_bundle_data"
@@ -68,51 +70,32 @@ template("mac_framework") {
     ]
   }
 
-  _info_plist_target = target_name + "_info_plist"
-
-  # TODO(rsesek): Process Info.plist variables.
-
-  _info_plist_bundle_data = _info_plist_target + "_bundle_data"
-
-  bundle_data(_info_plist_bundle_data) {
-    visibility = [ ":$_framework_target" ]
-    forward_variables_from(invoker, [ "testonly" ])
-    sources = [
-      invoker.info_plist,
-    ]
-    outputs = [
-      "{{bundle_root_dir}}/Info.plist",
-    ]
-  }
-
   create_bundle(_framework_target) {
-    visibility = [ ":$_target_name" ]
     forward_variables_from(invoker,
                            [
                              "data_deps",
                              "deps",
                              "public_deps",
                              "testonly",
-                             "visibility",
                            ])
+
+    if (defined(_framework_version)) {
+      visibility = [ ":$_target_name" ]
+    } else {
+      forward_variables_from(invoker, [ "visibility" ])
+    }
 
     if (!defined(deps)) {
       deps = []
     }
-    deps += [
-      ":$_info_plist_bundle_data",
-      ":$_shared_library_bundle_data",
-    ]
+    deps += [ ":$_shared_library_bundle_data" ]
 
-    bundle_root_dir = "$root_out_dir/$_framework_name"
-    if (_framework_version != "") {
-      bundle_root_dir += "/Versions/$_framework_version"
-    }
+    bundle_root_dir = _framework_root_dir
     bundle_resources_dir = "$bundle_root_dir/Resources"
     bundle_executable_dir = "$bundle_root_dir"
   }
 
-  if (_framework_version != "") {
+  if (defined(_framework_version)) {
     action(_target_name) {
       forward_variables_from(invoker,
                              [
@@ -132,16 +115,56 @@ template("mac_framework") {
         ":$_framework_target",
       ]
     }
-  } else {
-    group(_target_name) {
-      forward_variables_from(invoker,
-                             [
-                               "visibility",
-                               "testonly",
-                             ])
-      deps = [
-        ":$_framework_target",
-      ]
+  }
+}
+
+# Template to package a shared library into a Mac framework bundle.
+#
+# Arguments
+#
+#     info_plist:
+#         string, path to the Info.plist file that will be used for the bundle.
+#
+#     output_name:
+#         (optional) string, name of the generated framework without the
+#         .framework suffix. If omitted, defaults to target_name.
+#
+#     framework_version:
+#         (optional) string, version of the framework. Typically this is a
+#         single letter, like "A". If omitted, the Versions/ subdirectory
+#         structure will not be created, and build output will go directly
+#         into the framework subdirectory.
+#
+# See "gn help shared_library" for more information on arguments supported
+# by shared library target.
+template("mac_framework_bundle") {
+  assert(defined(invoker.deps),
+         "Dependencies must be specified for $target_name")
+  assert(defined(invoker.info_plist),
+         "The Info.plist file must be specified for $target_name")
+
+  _info_plist_target = target_name + "_info_plist"
+
+  # TODO(rsesek): Process Info.plist variables.
+
+  _info_plist_bundle_data = _info_plist_target + "_bundle_data"
+
+  bundle_data(_info_plist_bundle_data) {
+    forward_variables_from(invoker, [ "testonly" ])
+    sources = [
+      invoker.info_plist,
+    ]
+    outputs = [
+      "{{bundle_root_dir}}/Info.plist",
+    ]
+  }
+
+  framework_bundle(target_name) {
+    forward_variables_from(invoker, "*", [ "info_plist" ])
+
+    if (!defined(deps)) {
+      deps = []
     }
+    deps += [ ":$_info_plist_bundle_data" ]
   }
 }
