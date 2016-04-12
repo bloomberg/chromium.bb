@@ -409,7 +409,6 @@ void PPBNaClPrivate::LaunchSelLdr(
     PP_Bool uses_nonsfi_mode,
     PP_NaClAppProcessType pp_process_type,
     scoped_ptr<IPC::SyncChannel>* translator_channel,
-    base::ProcessId* process_id,
     PP_CompletionCallback callback) {
   CHECK(ppapi::PpapiGlobals::Get()->GetMainThreadMessageLoop()->
             BelongsToCurrentThread());
@@ -536,7 +535,6 @@ void PPBNaClPrivate::LaunchSelLdr(
           content::RenderThread::Get()->GetIOMessageLoopProxy(),
           true,
           content::RenderThread::Get()->GetShutdownEvent());
-      *process_id = launch_result.plugin_pid;
     } else {
       // Save the channel handle for when StartPpapiProxy() is called.
       NaClPluginInstance* nacl_plugin_instance =

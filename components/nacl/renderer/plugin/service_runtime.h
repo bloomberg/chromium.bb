@@ -61,10 +61,6 @@ class ServiceRuntime {
     return scoped_ptr<IPC::SyncChannel>(translator_channel_.release());
   }
 
-  // Returns the PID of the subprocess.  This PID is needed for copying
-  // handles to the subprocess on Windows.
-  base::ProcessId get_process_id() { return process_id_; }
-
  private:
   Plugin* plugin_;
   PP_Instance pp_instance_;
@@ -72,7 +68,6 @@ class ServiceRuntime {
   bool uses_nonsfi_mode_;
 
   scoped_ptr<IPC::SyncChannel> translator_channel_;
-  base::ProcessId process_id_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceRuntime);
 };

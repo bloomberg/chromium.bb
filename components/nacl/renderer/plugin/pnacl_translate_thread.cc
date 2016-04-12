@@ -70,10 +70,7 @@ PnaclTranslateThread::PnaclTranslateThread()
       num_threads_(0),
       nexe_file_(NULL),
       coordinator_error_info_(NULL),
-      coordinator_(NULL),
-      compiler_channel_peer_pid_(base::kNullProcessId),
-      ld_channel_peer_pid_(base::kNullProcessId) {
-}
+      coordinator_(NULL) {}
 
 void PnaclTranslateThread::SetupState(
     const pp::CompletionCallback& finish_callback,
@@ -113,10 +110,6 @@ void PnaclTranslateThread::RunCompile(
   // cannot be used directly by the child thread, so create a
   // SyncMessageFilter which can be used by the child thread.
   compiler_channel_filter_ = compiler_channel_->CreateSyncMessageFilter();
-  // Make a copy of the process ID, again to avoid any thread-safety issues
-  // involved in accessing compiler_subprocess_ on the child thread.
-  compiler_channel_peer_pid_ =
-      compiler_subprocess_->service_runtime()->get_process_id();
 
   compile_finished_callback_ = compile_finished_callback;
   translate_thread_.reset(new CompileThread(this));
@@ -135,9 +128,6 @@ void PnaclTranslateThread::RunLink() {
   // used directly by the child thread, so create a SyncMessageFilter which
   // can be used by the child thread.
   ld_channel_filter_ = ld_channel_->CreateSyncMessageFilter();
-  // Make a copy of the process ID, again to avoid any thread-safety issues
-  // involved in accessing ld_subprocess_ on the child thread.
-  ld_channel_peer_pid_ = ld_subprocess_->service_runtime()->get_process_id();
 
   // Tear down the previous thread.
   translate_thread_->Join();
@@ -163,22 +153,11 @@ void PnaclTranslateThread::EndStream() {
 }
 
 ppapi::proxy::SerializedHandle PnaclTranslateThread::GetHandleForSubprocess(
-    base::File* file, int32_t open_flags, base::ProcessId peer_pid) {
-  IPC::PlatformFileForTransit file_for_transit;
-
+    base::File* file,
+    int32_t open_flags) {
   DCHECK(file->IsValid());
-#if defined(OS_WIN)
-  HANDLE raw_handle = INVALID_HANDLE_VALUE;
-  if (!content::BrokerDuplicateHandle(
-          file->GetPlatformFile(), peer_pid, &raw_handle,
-          0,  // desired_access is 0 since we're using DUPLICATE_SAME_ACCESS.
-          DUPLICATE_SAME_ACCESS)) {
-    return ppapi::proxy::SerializedHandle();
-  }
-  file_for_transit = IPC::PlatformFileForTransit(raw_handle, peer_pid);
-#else
-  file_for_transit = base::FileDescriptor(dup(file->GetPlatformFile()), true);
-#endif
+  IPC::PlatformFileForTransit file_for_transit =
+      IPC::GetPlatformFileForTransit(file->GetPlatformFile(), false);
 
   // Using 0 disables any use of quota enforcement for this file handle.
   PP_Resource file_io = 0;
@@ -204,8 +183,7 @@ void PnaclTranslateThread::DoCompile() {
   std::vector<ppapi::proxy::SerializedHandle> compiler_output_files;
   for (base::File& obj_file : *obj_files_) {
     compiler_output_files.push_back(
-        GetHandleForSubprocess(&obj_file, PP_FILEOPENFLAG_WRITE,
-                               compiler_channel_peer_pid_));
+        GetHandleForSubprocess(&obj_file, PP_FILEOPENFLAG_WRITE));
   }
 
   pp::Core* core = pp::Module::Get()->core();
@@ -333,13 +311,11 @@ void PnaclTranslateThread::DoLink() {
   }
 
   ppapi::proxy::SerializedHandle nexe_file =
-      GetHandleForSubprocess(nexe_file_, PP_FILEOPENFLAG_WRITE,
-                             ld_channel_peer_pid_);
+      GetHandleForSubprocess(nexe_file_, PP_FILEOPENFLAG_WRITE);
   std::vector<ppapi::proxy::SerializedHandle> ld_input_files;
   for (base::File& obj_file : *obj_files_) {
     ld_input_files.push_back(
-        GetHandleForSubprocess(&obj_file, PP_FILEOPENFLAG_READ,
-                               ld_channel_peer_pid_));
+        GetHandleForSubprocess(&obj_file, PP_FILEOPENFLAG_READ));
   }
 
   base::TimeTicks link_start_time = base::TimeTicks::Now();

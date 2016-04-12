@@ -79,8 +79,8 @@ class PnaclTranslateThread {
   bool started() const { return coordinator_ != NULL; }
 
  private:
-  ppapi::proxy::SerializedHandle GetHandleForSubprocess(
-      base::File* file, int32_t open_flags, base::ProcessId peer_pid);
+  ppapi::proxy::SerializedHandle GetHandleForSubprocess(base::File* file,
+                                                        int32_t open_flags);
 
   // Runs the streaming compilation. Called from the helper thread.
   void DoCompile();
@@ -168,10 +168,6 @@ class PnaclTranslateThread {
   // These IPC::SyncMessageFilters can be used by the child thread.
   scoped_refptr<IPC::SyncMessageFilter> compiler_channel_filter_;
   scoped_refptr<IPC::SyncMessageFilter> ld_channel_filter_;
-  // PIDs of the subprocesses, needed for copying handles to the subprocess
-  // on Windows.  These are used by the child thread.
-  base::ProcessId compiler_channel_peer_pid_;
-  base::ProcessId ld_channel_peer_pid_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PnaclTranslateThread);
