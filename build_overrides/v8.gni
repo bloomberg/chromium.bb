@@ -14,6 +14,9 @@ enable_correct_v8_arch = false
 # iOS - http://crbug.com/545676
 v8_use_external_startup_data = !is_ios
 
+# Turns on compiler optimizations in V8 in Debug build.
+v8_optimized_debug = true
+
 # V8 extras
 # Adding V8 extras files requires API owners review
 # Be sure to synchronize with build/common.gypi
