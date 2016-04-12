@@ -78,6 +78,7 @@ class Display : private gpu::GpuControl {
   bool MakeCurrent(EGLSurface draw, EGLSurface read, EGLContext ctx);
 
   // GpuControl implementation.
+  void SetGpuControlClient(gpu::GpuControlClient*) override;
   gpu::Capabilities GetCapabilities() override;
   int32_t CreateImage(ClientBuffer buffer,
                       size_t width,

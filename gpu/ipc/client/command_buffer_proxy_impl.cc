@@ -13,6 +13,7 @@
 #include "base/stl_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
+#include "gpu/command_buffer/client/gpu_control_client.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "gpu/command_buffer/common/cmd_buffer_common.h"
 #include "gpu/command_buffer/common/command_buffer_id.h"
@@ -41,6 +42,7 @@ CommandBufferProxyImpl::CommandBufferProxyImpl(GpuChannelHost* channel,
                                                int32_t route_id,
                                                int32_t stream_id)
     : lock_(nullptr),
+      gpu_control_client_(nullptr),
       channel_(channel),
       command_buffer_id_(CommandBufferProxyID(channel->channel_id(), route_id)),
       route_id_(route_id),
@@ -109,29 +111,27 @@ void CommandBufferProxyImpl::OnChannelError() {
 void CommandBufferProxyImpl::OnDestroyed(gpu::error::ContextLostReason reason,
                                          gpu::error::Error error) {
   CheckLock();
-  // Prevent any further messages from being sent.
-  if (channel_) {
-    channel_->DestroyCommandBuffer(this);
-    channel_ = nullptr;
-  }
 
   // When the client sees that the context is lost, they should delete this
   // CommandBufferProxyImpl and create a new one.
   last_state_.error = error;
   last_state_.context_lost_reason = reason;
 
-  if (!context_lost_callback_.is_null()) {
-    context_lost_callback_.Run();
-    // Avoid calling the error callback more than once.
-    context_lost_callback_.Reset();
+  // Prevent any further messages from being sent, and ensure we only call
+  // the client for lost context a single time.
+  if (channel_) {
+    channel_->DestroyCommandBuffer(this);
+    channel_ = nullptr;
+    if (gpu_control_client_)
+      gpu_control_client_->OnGpuControlLostContext();
   }
 }
 
 void CommandBufferProxyImpl::OnConsoleMessage(
     const GPUCommandBufferConsoleMessage& message) {
-  if (!console_message_callback_.is_null()) {
-    console_message_callback_.Run(message.message, message.id);
-  }
+  if (gpu_control_client_)
+    gpu_control_client_->OnGpuControlErrorMessage(message.message.c_str(),
+                                                  message.id);
 }
 
 void CommandBufferProxyImpl::AddDeletionObserver(DeletionObserver* observer) {
@@ -159,12 +159,6 @@ void CommandBufferProxyImpl::OnSignalAck(uint32_t id) {
   base::Closure callback = it->second;
   signal_tasks_.erase(it);
   callback.Run();
-}
-
-void CommandBufferProxyImpl::SetContextLostCallback(
-    const base::Closure& callback) {
-  CheckLock();
-  context_lost_callback_ = callback;
 }
 
 bool CommandBufferProxyImpl::Initialize() {
@@ -392,6 +386,11 @@ void CommandBufferProxyImpl::DestroyTransferBuffer(int32_t id) {
     return;
 
   Send(new GpuCommandBufferMsg_DestroyTransferBuffer(route_id_, id));
+}
+
+void CommandBufferProxyImpl::SetGpuControlClient(GpuControlClient* client) {
+  CheckLock();
+  gpu_control_client_ = client;
 }
 
 gpu::Capabilities CommandBufferProxyImpl::GetCapabilities() {
@@ -660,12 +659,6 @@ void CommandBufferProxyImpl::OnUpdateState(
   // updates in flight across which reordering occurs.
   if (state.generation - last_state_.generation < 0x80000000U)
     last_state_ = state;
-}
-
-void CommandBufferProxyImpl::SetOnConsoleMessageCallback(
-    const GpuConsoleMessageCallback& callback) {
-  CheckLock();
-  console_message_callback_ = callback;
 }
 
 void CommandBufferProxyImpl::TryUpdateState() {

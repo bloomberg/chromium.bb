@@ -28,7 +28,7 @@ GLES2Context::GLES2Context(const std::vector<int32_t>& attribs,
                            mojo::ScopedMessagePipeHandle command_buffer_handle,
                            MojoGLES2ContextLost lost_callback,
                            void* closure)
-    : command_buffer_(this, attribs, std::move(command_buffer_handle)),
+    : command_buffer_(attribs, std::move(command_buffer_handle)),
       lost_callback_(lost_callback),
       closure_(closure) {}
 
@@ -57,12 +57,18 @@ bool GLES2Context::Initialize() {
                                           lose_context_when_out_of_memory,
                                           support_client_side_arrays,
                                           &command_buffer_));
-  return implementation_->Initialize(kDefaultStartTransferBufferSize,
-                                     kDefaultMinTransferBufferSize,
-                                     kDefaultMaxTransferBufferSize,
-                                     gpu::gles2::GLES2Implementation::kNoLimit);
+  if (!implementation_->Initialize(kDefaultStartTransferBufferSize,
+                                   kDefaultMinTransferBufferSize,
+                                   kDefaultMaxTransferBufferSize,
+                                   gpu::gles2::GLES2Implementation::kNoLimit))
+    return false;
+  implementation_->SetLostContextCallback(
+      base::Bind(&GLES2Context::OnLostContext, base::Unretained(this)));
+  return true;
 }
 
-void GLES2Context::ContextLost() { lost_callback_(closure_); }
+void GLES2Context::OnLostContext() {
+  lost_callback_(closure_);
+}
 
 }  // namespace gles2

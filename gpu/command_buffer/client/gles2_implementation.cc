@@ -161,7 +161,6 @@ GLES2Implementation::GLES2Implementation(
                     base::SysInfo::AmountOfPhysicalMemory() / 20)
               : 0),
 #endif
-      error_message_callback_(NULL),
       current_trace_stack_(0),
       gpu_control_(gpu_control),
       capabilities_(gpu_control->GetCapabilities()),
@@ -200,6 +199,8 @@ bool GLES2Implementation::Initialize(
   DCHECK_GE(starting_transfer_buffer_size, min_transfer_buffer_size);
   DCHECK_LE(starting_transfer_buffer_size, max_transfer_buffer_size);
   DCHECK_GE(min_transfer_buffer_size, kStartingOffset);
+
+  gpu_control_->SetGpuControlClient(this);
 
   if (!transfer_buffer_->Initialize(
       starting_transfer_buffer_size,
@@ -299,6 +300,10 @@ GLES2Implementation::~GLES2Implementation() {
 
   // Make sure the commands make it the service.
   WaitForCmd();
+
+  // The gpu_control_ outlives this class, so clear the client on it before we
+  // self-destruct.
+  gpu_control_->SetGpuControlClient(nullptr);
 }
 
 GLES2CmdHelper* GLES2Implementation::helper() const {
@@ -319,6 +324,22 @@ IdAllocator* GLES2Implementation::GetIdAllocator(int namespace_id) const {
     return query_id_allocator_.get();
   NOTREACHED();
   return NULL;
+}
+
+void GLES2Implementation::OnGpuControlLostContext() {
+#if DCHECK_IS_ON()
+  // This should never occur more than once.
+  DCHECK(!lost_context_);
+  lost_context_ = true;
+#endif
+  if (!lost_context_callback_.is_null())
+    lost_context_callback_.Run();
+}
+
+void GLES2Implementation::OnGpuControlErrorMessage(const char* message,
+                                                   int32_t id) {
+  if (!error_message_callback_.is_null())
+    error_message_callback_.Run(message, id);
 }
 
 void* GLES2Implementation::GetResultBuffer() {
@@ -549,10 +570,10 @@ void GLES2Implementation::SetGLError(
   if (msg) {
     last_error_ = msg;
   }
-  if (error_message_callback_) {
+  if (!error_message_callback_.is_null()) {
     std::string temp(GLES2Util::GetStringError(error)  + " : " +
                      function_name + ": " + (msg ? msg : ""));
-    error_message_callback_->OnErrorMessage(temp.c_str(), 0);
+    error_message_callback_.Run(temp.c_str(), 0);
   }
   error_bits_ |= GLES2Util::GLErrorToErrorBit(error);
 
@@ -5816,6 +5837,16 @@ GLboolean GLES2Implementation::UnmapBufferCHROMIUM(GLuint target) {
 
 uint64_t GLES2Implementation::ShareGroupTracingGUID() const {
   return share_group_->TracingGUID();
+}
+
+void GLES2Implementation::SetErrorMessageCallback(
+    const base::Callback<void(const char*, int32_t)>& callback) {
+  error_message_callback_ = callback;
+}
+
+void GLES2Implementation::SetLostContextCallback(
+    const base::Closure& callback) {
+  lost_context_callback_ = callback;
 }
 
 GLuint64 GLES2Implementation::InsertFenceSyncCHROMIUM() {

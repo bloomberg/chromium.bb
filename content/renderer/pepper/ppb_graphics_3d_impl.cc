@@ -45,7 +45,9 @@ PPB_Graphics3D_Impl::PPB_Graphics3D_Impl(PP_Instance instance)
       has_alpha_(false),
       weak_ptr_factory_(this) {}
 
-PPB_Graphics3D_Impl::~PPB_Graphics3D_Impl() {}
+PPB_Graphics3D_Impl::~PPB_Graphics3D_Impl() {
+  command_buffer_->SetGpuControlClient(nullptr);
+}
 
 // static
 PP_Resource PPB_Graphics3D_Impl::CreateRaw(
@@ -244,27 +246,28 @@ bool PPB_Graphics3D_Impl::InitRaw(PPB_Graphics3D_API* share_context,
       gpu_preference);
   if (!command_buffer_)
     return false;
+
+  command_buffer_->SetGpuControlClient(this);
+
   if (!command_buffer_->Initialize())
     return false;
+
   if (shared_state_handle)
     *shared_state_handle = command_buffer_->GetSharedStateHandle();
   if (capabilities)
     *capabilities = command_buffer_->GetCapabilities();
   if (command_buffer_id)
     *command_buffer_id = command_buffer_->GetCommandBufferID();
+
   mailbox_ = gpu::Mailbox::Generate();
   if (!command_buffer_->ProduceFrontBuffer(mailbox_))
     return false;
 
-  command_buffer_->SetContextLostCallback(base::Bind(
-      &PPB_Graphics3D_Impl::OnContextLost, weak_ptr_factory_.GetWeakPtr()));
-
-  command_buffer_->SetOnConsoleMessageCallback(base::Bind(
-      &PPB_Graphics3D_Impl::OnConsoleMessage, weak_ptr_factory_.GetWeakPtr()));
   return true;
 }
 
-void PPB_Graphics3D_Impl::OnConsoleMessage(const std::string& message, int id) {
+void PPB_Graphics3D_Impl::OnGpuControlErrorMessage(const char* message,
+                                                   int32_t id) {
   if (!bound_to_instance_)
     return;
   WebPluginContainer* container =
@@ -279,17 +282,14 @@ void PPB_Graphics3D_Impl::OnConsoleMessage(const std::string& message, int id) {
   frame->addMessageToConsole(console_message);
 }
 
-void PPB_Graphics3D_Impl::OnSwapBuffers() {
-  if (HasPendingSwap()) {
-    // If we're off-screen, no need to trigger and wait for compositing.
-    // Just send the swap-buffers ACK to the plugin immediately.
-    commit_pending_ = false;
-    SwapBuffersACK(PP_OK);
-  }
-}
+void PPB_Graphics3D_Impl::OnGpuControlLostContext() {
+#if DCHECK_IS_ON()
+  // This should never occur more than once.
+  DCHECK(!lost_context_);
+  lost_context_ = true;
+#endif
 
-void PPB_Graphics3D_Impl::OnContextLost() {
-  // Don't need to check for NULL from GetPluginInstance since when we're
+  // Don't need to check for null from GetPluginInstance since when we're
   // bound, we know our instance is valid.
   if (bound_to_instance_) {
     HostGlobals::Get()->GetInstance(pp_instance())->BindGraphics(pp_instance(),
@@ -301,6 +301,15 @@ void PPB_Graphics3D_Impl::OnContextLost() {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&PPB_Graphics3D_Impl::SendContextLost,
                             weak_ptr_factory_.GetWeakPtr()));
+}
+
+void PPB_Graphics3D_Impl::OnSwapBuffers() {
+  if (HasPendingSwap()) {
+    // If we're off-screen, no need to trigger and wait for compositing.
+    // Just send the swap-buffers ACK to the plugin immediately.
+    commit_pending_ = false;
+    SwapBuffersACK(PP_OK);
+  }
 }
 
 void PPB_Graphics3D_Impl::SendContextLost() {

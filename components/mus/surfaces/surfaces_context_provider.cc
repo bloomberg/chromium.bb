@@ -92,7 +92,7 @@ base::Lock* SurfacesContextProvider::GetLock() {
 
 void SurfacesContextProvider::SetLostContextCallback(
     const LostContextCallback& lost_context_callback) {
-  lost_context_callback_ = lost_context_callback;
+  implementation_->SetLostContextCallback(lost_context_callback);
 }
 
 SurfacesContextProvider::~SurfacesContextProvider() {
@@ -108,10 +108,6 @@ void SurfacesContextProvider::UpdateVSyncParameters(int64_t timebase,
                                                     int64_t interval) {
   if (delegate_)
     delegate_->OnVSyncParametersUpdated(timebase, interval);
-}
-
-void SurfacesContextProvider::DidLoseContext() {
-  lost_context_callback_.Run();
 }
 
 void SurfacesContextProvider::GpuCompletedSwapBuffers(gfx::SwapResult result) {

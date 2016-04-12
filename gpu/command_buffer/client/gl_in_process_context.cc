@@ -67,7 +67,6 @@ class GLInProcessContextImpl
                   ImageFactory* image_factory);
 
   // GLInProcessContext implementation:
-  void SetContextLostCallback(const base::Closure& callback) override;
   gles2::GLES2Implementation* GetImplementation() override;
   size_t GetMappedMemoryLimit() override;
   void SetLock(base::Lock* lock) override;
@@ -80,7 +79,6 @@ class GLInProcessContextImpl
 
  private:
   void Destroy();
-  void OnContextLost();
   void OnSignalSyncPoint(const base::Closure& callback);
 
   scoped_ptr<gles2::GLES2CmdHelper> gles2_helper_;
@@ -89,7 +87,6 @@ class GLInProcessContextImpl
   scoped_ptr<InProcessCommandBuffer> command_buffer_;
 
   const GLInProcessContextSharedMemoryLimits mem_limits_;
-  base::Closure context_lost_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(GLInProcessContextImpl);
 };
@@ -114,16 +111,6 @@ void GLInProcessContextImpl::SetLock(base::Lock* lock) {
   NOTREACHED();
 }
 
-void GLInProcessContextImpl::SetContextLostCallback(
-    const base::Closure& callback) {
-  context_lost_callback_ = callback;
-}
-
-void GLInProcessContextImpl::OnContextLost() {
-  if (!context_lost_callback_.is_null())
-    context_lost_callback_.Run();
-}
-
 bool GLInProcessContextImpl::Initialize(
     scoped_refptr<gfx::GLSurface> surface,
     bool is_offscreen,
@@ -140,8 +127,6 @@ bool GLInProcessContextImpl::Initialize(
   std::vector<int32_t> attrib_vector;
   attribs.Serialize(&attrib_vector);
 
-  base::Closure wrapped_callback =
-      base::Bind(&GLInProcessContextImpl::OnContextLost, AsWeakPtr());
   command_buffer_.reset(new InProcessCommandBuffer(service));
 
   scoped_refptr<gles2::ShareGroup> share_group;
@@ -161,7 +146,6 @@ bool GLInProcessContextImpl::Initialize(
                                    size,
                                    attrib_vector,
                                    gpu_preference,
-                                   wrapped_callback,
                                    share_command_buffer,
                                    gpu_memory_buffer_manager,
                                    image_factory)) {

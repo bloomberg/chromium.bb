@@ -64,6 +64,11 @@ WebGraphicsContext3DInProcessCommandBufferImpl::
 
 WebGraphicsContext3DInProcessCommandBufferImpl::
     ~WebGraphicsContext3DInProcessCommandBufferImpl() {
+  if (real_gl_) {
+    real_gl_->SetErrorMessageCallback(
+        base::Callback<void(const char*, int32_t)>());
+    real_gl_->SetLostContextCallback(base::Closure());
+  }
 }
 
 size_t WebGraphicsContext3DInProcessCommandBufferImpl::GetMappedMemoryLimit() {

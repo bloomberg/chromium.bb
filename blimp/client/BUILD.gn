@@ -37,6 +37,7 @@ source_set("blimp_client") {
     "//blimp/common/proto",
     "//blimp/net:blimp_net",
     "//cc",
+    "//gpu/command_buffer/client:gles2_implementation",
     "//gpu/skia_bindings",
     "//net",
     "//third_party/libwebp",

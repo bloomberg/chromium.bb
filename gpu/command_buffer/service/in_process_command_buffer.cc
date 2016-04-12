@@ -22,6 +22,7 @@
 #include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
+#include "gpu/command_buffer/client/gpu_control_client.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "gpu/command_buffer/common/sync_token.h"
@@ -212,6 +213,10 @@ InProcessCommandBuffer::InProcessCommandBuffer(
           CommandBufferId::FromUnsafeValue(g_next_command_buffer_id.GetNext())),
       delayed_work_pending_(false),
       image_factory_(nullptr),
+      gpu_control_client_(nullptr),
+#if DCHECK_IS_ON()
+      context_lost_(false),
+#endif
       last_put_offset_(-1),
       gpu_memory_buffer_manager_(nullptr),
       next_fence_sync_release_(1),
@@ -219,6 +224,7 @@ InProcessCommandBuffer::InProcessCommandBuffer(
       flush_event_(false, false),
       service_(GetInitialService(service)),
       fence_sync_wait_event_(false, false),
+      client_thread_weak_ptr_factory_(this),
       gpu_thread_weak_ptr_factory_(this) {
   DCHECK(service_.get());
   next_image_id_.GetNext();
@@ -245,7 +251,7 @@ bool InProcessCommandBuffer::MakeCurrent() {
   return true;
 }
 
-void InProcessCommandBuffer::PumpCommands() {
+void InProcessCommandBuffer::PumpCommandsOnGpuThread() {
   CheckSequencedThread();
   command_buffer_lock_.AssertAcquired();
 
@@ -255,13 +261,6 @@ void InProcessCommandBuffer::PumpCommands() {
   executor_->PutChanged();
 }
 
-bool InProcessCommandBuffer::GetBufferChanged(int32_t transfer_buffer_id) {
-  CheckSequencedThread();
-  command_buffer_lock_.AssertAcquired();
-  command_buffer_->SetGetBuffer(transfer_buffer_id);
-  return true;
-}
-
 bool InProcessCommandBuffer::Initialize(
     scoped_refptr<gfx::GLSurface> surface,
     bool is_offscreen,
@@ -269,18 +268,19 @@ bool InProcessCommandBuffer::Initialize(
     const gfx::Size& size,
     const std::vector<int32_t>& attribs,
     gfx::GpuPreference gpu_preference,
-    const base::Closure& context_lost_callback,
     InProcessCommandBuffer* share_group,
     GpuMemoryBufferManager* gpu_memory_buffer_manager,
     ImageFactory* image_factory) {
   DCHECK(!share_group || service_.get() == share_group->service_.get());
-  context_lost_callback_ = WrapCallback(context_lost_callback);
 
-  if (surface.get()) {
+  if (surface) {
     // GPU thread must be the same as client thread due to GLSurface not being
     // thread safe.
     sequence_checker_.reset(new base::SequenceChecker);
     surface_ = surface;
+  } else {
+    origin_task_runner_ = base::ThreadTaskRunnerHandle::Get();
+    client_thread_weak_ptr_ = client_thread_weak_ptr_factory_.GetWeakPtr();
   }
 
   gpu::Capabilities capabilities;
@@ -328,9 +328,9 @@ bool InProcessCommandBuffer::InitializeOnGpuThread(
   scoped_ptr<CommandBufferService> command_buffer(
       new CommandBufferService(transfer_buffer_manager_.get()));
   command_buffer->SetPutOffsetChangeCallback(base::Bind(
-      &InProcessCommandBuffer::PumpCommands, gpu_thread_weak_ptr_));
+      &InProcessCommandBuffer::PumpCommandsOnGpuThread, gpu_thread_weak_ptr_));
   command_buffer->SetParseErrorCallback(base::Bind(
-      &InProcessCommandBuffer::OnContextLost, gpu_thread_weak_ptr_));
+      &InProcessCommandBuffer::OnContextLostOnGpuThread, gpu_thread_weak_ptr_));
 
   if (!command_buffer->Initialize()) {
     LOG(ERROR) << "Could not initialize command buffer.";
@@ -455,7 +455,8 @@ bool InProcessCommandBuffer::InitializeOnGpuThread(
 
 void InProcessCommandBuffer::Destroy() {
   CheckSequencedThread();
-
+  client_thread_weak_ptr_factory_.InvalidateWeakPtrs();
+  gpu_control_client_ = nullptr;
   base::WaitableEvent completion(true, false);
   bool result = false;
   base::Callback<bool(void)> destroy_task = base::Bind(
@@ -475,14 +476,14 @@ bool InProcessCommandBuffer::DestroyOnGpuThread() {
     decoder_->Destroy(have_context);
     decoder_.reset();
   }
-  context_ = NULL;
-  surface_ = NULL;
-  sync_point_client_ = NULL;
+  context_ = nullptr;
+  surface_ = nullptr;
+  sync_point_client_ = nullptr;
   if (sync_point_order_data_) {
     sync_point_order_data_->Destroy();
     sync_point_order_data_ = nullptr;
   }
-  gl_share_group_ = NULL;
+  gl_share_group_ = nullptr;
 #if defined(OS_ANDROID)
   stream_texture_manager_.reset();
 #endif
@@ -495,12 +496,25 @@ void InProcessCommandBuffer::CheckSequencedThread() {
          sequence_checker_->CalledOnValidSequencedThread());
 }
 
+void InProcessCommandBuffer::OnContextLostOnGpuThread() {
+  if (!origin_task_runner_)
+    return OnContextLost();  // Just kidding, we're on the client thread.
+  origin_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&InProcessCommandBuffer::OnContextLost,
+                            client_thread_weak_ptr_));
+}
+
 void InProcessCommandBuffer::OnContextLost() {
   CheckSequencedThread();
-  if (!context_lost_callback_.is_null()) {
-    context_lost_callback_.Run();
-    context_lost_callback_.Reset();
-  }
+
+#if DCHECK_IS_ON()
+  // This method shouldn't be called more than once.
+  DCHECK(!context_lost_);
+  context_lost_ = true;
+#endif
+
+  if (gpu_control_client_)
+    gpu_control_client_->OnGpuControlLostContext();
 }
 
 CommandBuffer::State InProcessCommandBuffer::GetStateFast() {
@@ -554,7 +568,7 @@ void InProcessCommandBuffer::FlushOnGpuThread(int32_t put_offset,
   }
 }
 
-void InProcessCommandBuffer::PerformDelayedWork() {
+void InProcessCommandBuffer::PerformDelayedWorkOnGpuThread() {
   CheckSequencedThread();
   delayed_work_pending_ = false;
   base::AutoLock lock(command_buffer_lock_);
@@ -572,8 +586,9 @@ void InProcessCommandBuffer::ScheduleDelayedWorkOnGpuThread() {
   if (delayed_work_pending_)
     return;
   delayed_work_pending_ = true;
-  service_->ScheduleDelayedWork(base::Bind(
-      &InProcessCommandBuffer::PerformDelayedWork, gpu_thread_weak_ptr_));
+  service_->ScheduleDelayedWork(
+      base::Bind(&InProcessCommandBuffer::PerformDelayedWorkOnGpuThread,
+                 gpu_thread_weak_ptr_));
 }
 
 void InProcessCommandBuffer::Flush(int32_t put_offset) {
@@ -668,6 +683,10 @@ void InProcessCommandBuffer::DestroyTransferBuffer(int32_t id) {
 void InProcessCommandBuffer::DestroyTransferBufferOnGpuThread(int32_t id) {
   base::AutoLock lock(command_buffer_lock_);
   command_buffer_->DestroyTransferBuffer(id);
+}
+
+void InProcessCommandBuffer::SetGpuControlClient(GpuControlClient* client) {
+  gpu_control_client_ = client;
 }
 
 gpu::Capabilities InProcessCommandBuffer::GetCapabilities() {

@@ -56,7 +56,7 @@ AwRenderThreadContextProvider::AwRenderThreadContextProvider(
       gfx::PreferDiscreteGpu, gpu::GLInProcessContextSharedMemoryLimits(),
       nullptr, nullptr));
 
-  context_->SetContextLostCallback(base::Bind(
+  context_->GetImplementation()->SetLostContextCallback(base::Bind(
       &AwRenderThreadContextProvider::OnLostContext, base::Unretained(this)));
 
   capabilities_.gpu = context_->GetImplementation()->capabilities();
@@ -145,7 +145,7 @@ void AwRenderThreadContextProvider::OnLostContext() {
   DCHECK(main_thread_checker_.CalledOnValidThread());
 
   if (!lost_context_callback_.is_null())
-    base::ResetAndReturn(&lost_context_callback_).Run();
+    lost_context_callback_.Run();
   if (gr_context_)
     gr_context_->abandonContext();
 }

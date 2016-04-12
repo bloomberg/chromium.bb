@@ -45,7 +45,7 @@ BlimpContextProvider::BlimpContextProvider(
       widget, gfx::Size(1, 1), nullptr /* share_context */, attribs_for_gles2,
       gfx::PreferDiscreteGpu, gpu::GLInProcessContextSharedMemoryLimits(),
       gpu_memory_buffer_manager, nullptr /* memory_limits */));
-  context_->SetContextLostCallback(
+  context_->GetImplementation()->SetLostContextCallback(
       base::Bind(&BlimpContextProvider::OnLostContext, base::Unretained(this)));
 }
 
@@ -128,7 +128,7 @@ void BlimpContextProvider::SetLostContextCallback(
 void BlimpContextProvider::OnLostContext() {
   DCHECK(context_thread_checker_.CalledOnValidThread());
   if (!lost_context_callback_.is_null())
-    base::ResetAndReturn(&lost_context_callback_).Run();
+    lost_context_callback_.Run();
   if (gr_context_)
     gr_context_->abandonContext();
 }

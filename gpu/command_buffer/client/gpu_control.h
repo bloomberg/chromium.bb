@@ -29,6 +29,7 @@ class GpuMemoryBuffer;
 }
 
 namespace gpu {
+class GpuControlClient;
 struct SyncToken;
 
 // Common interface for GpuControl implementations.
@@ -36,6 +37,8 @@ class GPU_EXPORT GpuControl {
  public:
   GpuControl() {}
   virtual ~GpuControl() {}
+
+  virtual void SetGpuControlClient(GpuControlClient* gpu_control_client) = 0;
 
   virtual Capabilities GetCapabilities() = 0;
 

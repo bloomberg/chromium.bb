@@ -96,6 +96,7 @@ class MockClientGpuControl : public GpuControl {
   MockClientGpuControl();
   virtual ~MockClientGpuControl();
 
+  MOCK_METHOD1(SetGpuControlClient, void(GpuControlClient*));
   MOCK_METHOD0(GetCapabilities, Capabilities());
   MOCK_METHOD4(CreateImage,
                int32_t(ClientBuffer buffer,

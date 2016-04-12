@@ -120,7 +120,9 @@ WebGraphicsContext3DCommandBufferImpl::WebGraphicsContext3DCommandBufferImpl(
 WebGraphicsContext3DCommandBufferImpl::
     ~WebGraphicsContext3DCommandBufferImpl() {
   if (real_gl_) {
-    real_gl_->SetErrorMessageCallback(NULL);
+    real_gl_->SetErrorMessageCallback(
+        base::Callback<void(const char*, int32_t)>());
+    real_gl_->SetLostContextCallback(base::Closure());
   }
 
   Destroy();
@@ -147,15 +149,15 @@ bool WebGraphicsContext3DCommandBufferImpl::MaybeInitializeGL() {
     return false;
   }
 
-  command_buffer_->SetContextLostCallback(
-      base::Bind(&WebGraphicsContext3DCommandBufferImpl::OnContextLost,
-                 weak_ptr_factory_.GetWeakPtr()));
-
-  command_buffer_->SetOnConsoleMessageCallback(
+  real_gl_->SetErrorMessageCallback(
       base::Bind(&WebGraphicsContext3DCommandBufferImpl::OnErrorMessage,
-                 weak_ptr_factory_.GetWeakPtr()));
+                 // The callback is unset in the destructor.
+                 base::Unretained(this)));
+  real_gl_->SetLostContextCallback(
+      base::Bind(&WebGraphicsContext3DCommandBufferImpl::OnContextLost,
+                 // The callback is unset in the destructor.
+                 base::Unretained(this)));
 
-  real_gl_->SetErrorMessageCallback(getErrorMessageCallback());
   real_gl_->TraceBeginCHROMIUM("WebGraphicsContext3D",
                                "CommandBufferContext");
 
@@ -360,6 +362,14 @@ void WebGraphicsContext3DCommandBufferImpl::OnContextLost() {
 
   gpu::CommandBuffer::State state = command_buffer_->GetLastState();
   UmaRecordContextLost(context_type_, state.error, state.context_lost_reason);
+}
+
+void WebGraphicsContext3DCommandBufferImpl::OnErrorMessage(const char* message,
+                                                           int id) {
+  if (error_message_callback_) {
+    blink::WebString str = blink::WebString::fromUTF8(message);
+    error_message_callback_->onErrorMessage(str, id);
+  }
 }
 
 }  // namespace content

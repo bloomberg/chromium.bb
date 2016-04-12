@@ -14,7 +14,6 @@ namespace mus {
 class CommandBufferLocalClient {
  public:
   virtual void UpdateVSyncParameters(int64_t timebase, int64_t interval) = 0;
-  virtual void DidLoseContext() = 0;
   virtual void GpuCompletedSwapBuffers(gfx::SwapResult result) = 0;
 
  protected:

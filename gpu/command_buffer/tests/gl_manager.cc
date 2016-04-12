@@ -511,6 +511,10 @@ bool GLManager::GetBufferChanged(int32_t transfer_buffer_id) {
   return executor_->SetGetBuffer(transfer_buffer_id);
 }
 
+void GLManager::SetGpuControlClient(GpuControlClient*) {
+  // The client is not currently called, so don't store it.
+}
+
 Capabilities GLManager::GetCapabilities() {
   return decoder_->GetCapabilities();
 }

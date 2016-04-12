@@ -322,6 +322,10 @@ bool Display::MakeCurrent(EGLSurface draw, EGLSurface read, EGLContext ctx) {
   return true;
 }
 
+void Display::SetGpuControlClient(gpu::GpuControlClient*) {
+  // The client is not currently called, so don't store it.
+}
+
 gpu::Capabilities Display::GetCapabilities() {
   return decoder_->GetCapabilities();
 }

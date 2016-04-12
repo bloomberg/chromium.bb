@@ -122,6 +122,7 @@ class GLManager : private GpuControl {
   const gpu::gles2::FeatureInfo::Workarounds& workarounds() const;
 
   // GpuControl implementation.
+  void SetGpuControlClient(GpuControlClient*) override;
   Capabilities GetCapabilities() override;
   int32_t CreateImage(ClientBuffer buffer,
                       size_t width,

@@ -27,19 +27,12 @@ class RunLoop;
 namespace gles2 {
 class CommandBufferClientImpl;
 
-class CommandBufferDelegate {
- public:
-  virtual ~CommandBufferDelegate();
-  virtual void ContextLost();
-};
-
 class CommandBufferClientImpl
     : public mus::mojom::CommandBufferClient,
       public gpu::CommandBuffer,
       public gpu::GpuControl {
  public:
   explicit CommandBufferClientImpl(
-      CommandBufferDelegate* delegate,
       const std::vector<int32_t>& attribs,
       mojo::ScopedMessagePipeHandle command_buffer_handle);
   ~CommandBufferClientImpl() override;
@@ -58,6 +51,7 @@ class CommandBufferClientImpl
   void DestroyTransferBuffer(int32_t id) override;
 
   // gpu::GpuControl implementation:
+  void SetGpuControlClient(gpu::GpuControlClient*) override;
   gpu::Capabilities GetCapabilities() override;
   int32_t CreateImage(ClientBuffer buffer,
                       size_t width,
@@ -96,7 +90,8 @@ class CommandBufferClientImpl
 
   gpu::CommandBufferSharedState* shared_state() const { return shared_state_; }
 
-  CommandBufferDelegate* delegate_;
+  gpu::GpuControlClient* gpu_control_client_;
+  bool destroyed_;
   std::vector<int32_t> attribs_;
   mojo::Binding<mus::mojom::CommandBufferClient> client_binding_;
   mus::mojom::CommandBufferPtr command_buffer_;

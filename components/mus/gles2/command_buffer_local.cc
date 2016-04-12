@@ -16,6 +16,7 @@
 #include "components/mus/gles2/gpu_state.h"
 #include "components/mus/gles2/mojo_buffer_backing.h"
 #include "components/mus/gles2/mojo_gpu_memory_buffer.h"
+#include "gpu/command_buffer/client/gpu_control_client.h"
 #include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
@@ -76,10 +77,12 @@ CommandBufferLocal::CommandBufferLocal(CommandBufferLocalClient* client,
       gpu_state_(gpu_state),
       client_(client),
       client_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      gpu_control_client_(nullptr),
       next_transfer_buffer_id_(0),
       next_image_id_(0),
       next_fence_sync_release_(1),
       flushed_fence_sync_release_(0),
+      lost_context_(false),
       sync_point_client_waiter_(
           gpu_state->sync_point_manager()->CreateSyncPointClientWaiter()),
       weak_factory_(this) {
@@ -214,6 +217,10 @@ void CommandBufferLocal::DestroyTransferBuffer(int32_t id) {
       driver_.get(),
       base::Bind(&CommandBufferLocal::DestroyTransferBufferOnGpuThread,
                  base::Unretained(this), id));
+}
+
+void CommandBufferLocal::SetGpuControlClient(gpu::GpuControlClient* client) {
+  gpu_control_client_ = client;
 }
 
 gpu::Capabilities CommandBufferLocal::GetCapabilities() {
@@ -566,8 +573,10 @@ bool CommandBufferLocal::SignalQueryOnGpuThread(uint32_t query_id,
 }
 
 void CommandBufferLocal::DidLoseContextOnClientThread(uint32_t reason) {
-  if (client_)
-    client_->DidLoseContext();
+  DCHECK(gpu_control_client_);
+  if (!lost_context_)
+    gpu_control_client_->OnGpuControlLostContext();
+  lost_context_ = true;
 }
 
 void CommandBufferLocal::UpdateVSyncParametersOnClientThread(int64_t timebase,

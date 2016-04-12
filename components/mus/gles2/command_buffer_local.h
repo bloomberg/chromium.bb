@@ -35,6 +35,7 @@ class GLSurface;
 }
 
 namespace gpu {
+class GpuControlClient;
 class SyncPointClient;
 }
 
@@ -74,6 +75,7 @@ class CommandBufferLocal : public gpu::CommandBuffer,
   void DestroyTransferBuffer(int32_t id) override;
 
   // gpu::GpuControl implementation:
+  void SetGpuControlClient(gpu::GpuControlClient*) override;
   gpu::Capabilities GetCapabilities() override;
   int32_t CreateImage(ClientBuffer buffer,
                       size_t width,
@@ -150,6 +152,7 @@ class CommandBufferLocal : public gpu::CommandBuffer,
   scoped_refptr<base::SingleThreadTaskRunner> client_thread_task_runner_;
 
   // Members accessed on the client thread:
+  gpu::GpuControlClient* gpu_control_client_;
   gpu::CommandBuffer::State last_state_;
   mojo::ScopedSharedBufferHandle shared_state_handle_;
   gpu::CommandBufferSharedState* shared_state_;
@@ -159,6 +162,7 @@ class CommandBufferLocal : public gpu::CommandBuffer,
   int32_t next_image_id_;
   uint64_t next_fence_sync_release_;
   uint64_t flushed_fence_sync_release_;
+  bool lost_context_;
 
   // This sync point client is only for out of order Wait on client thread.
   scoped_ptr<gpu::SyncPointClient> sync_point_client_waiter_;

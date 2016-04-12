@@ -491,13 +491,14 @@ class GLES2ImplementationTest : public testing::Test {
                                           lose_context_when_out_of_memory,
                                           support_client_side_arrays,
                                           gpu_control_.get()));
-
-        if (!gl_->Initialize(kTransferBufferSize,
-                             kTransferBufferSize,
-                             kTransferBufferSize,
-                             GLES2Implementation::kNoLimit))
-          return false;
       }
+
+      // The client should be set to something non-null.
+      EXPECT_CALL(*gpu_control_, SetGpuControlClient(gl_.get())).Times(1);
+
+      if (!gl_->Initialize(kTransferBufferSize, kTransferBufferSize,
+                           kTransferBufferSize, GLES2Implementation::kNoLimit))
+        return false;
 
       helper_->CommandBufferHelper::Finish();
       ::testing::Mock::VerifyAndClearExpectations(gl_.get());
@@ -518,6 +519,8 @@ class GLES2ImplementationTest : public testing::Test {
       // For command buffer.
       EXPECT_CALL(*command_buffer(), DestroyTransferBuffer(_))
           .Times(AtLeast(1));
+      // The client should be unset.
+      EXPECT_CALL(*gpu_control_, SetGpuControlClient(nullptr)).Times(1);
       gl_.reset();
     }
 

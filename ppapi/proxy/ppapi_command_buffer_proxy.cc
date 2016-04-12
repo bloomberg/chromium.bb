@@ -241,6 +241,11 @@ void PpapiCommandBufferProxy::SignalQuery(uint32_t query,
   NOTREACHED();
 }
 
+void PpapiCommandBufferProxy::SetGpuControlClient(gpu::GpuControlClient*) {
+  // TODO(piman): The lost context callback skips past here and goes directly
+  // to the plugin instance. Make it more uniform and use the GpuControlClient.
+}
+
 gpu::Capabilities PpapiCommandBufferProxy::GetCapabilities() {
   return capabilities_;
 }

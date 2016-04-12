@@ -52,21 +52,13 @@ class GPU_BLINK_EXPORT WebGraphicsContext3DImpl
 
   WebGraphicsContext3DImpl();
 
-  ::gpu::gles2::GLES2ImplementationErrorMessageCallback*
-      getErrorMessageCallback();
-  virtual void OnErrorMessage(const std::string& message, int id);
-
   void SetGLInterface(::gpu::gles2::GLES2Interface* gl) { gl_ = gl; }
 
   bool initialized_;
   bool initialize_failed_;
 
-  WebGraphicsContext3D::WebGraphicsContextLostCallback* context_lost_callback_;
-
-  WebGraphicsContext3D::WebGraphicsErrorMessageCallback*
-      error_message_callback_;
-  scoped_ptr<WebGraphicsContext3DErrorMessageCallback>
-      client_error_message_callback_;
+  WebGraphicsContextLostCallback* context_lost_callback_;
+  WebGraphicsErrorMessageCallback* error_message_callback_;
 
   ::gpu::gles2::GLES2Interface* gl_;
   bool lose_context_when_out_of_memory_;

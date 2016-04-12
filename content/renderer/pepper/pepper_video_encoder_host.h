@@ -14,6 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
 #include "content/common/content_export.h"
+#include "gpu/command_buffer/client/gpu_control_client.h"
 #include "media/video/video_encode_accelerator.h"
 #include "ppapi/c/pp_codecs.h"
 #include "ppapi/c/ppb_video_frame.h"
@@ -39,7 +40,8 @@ class VideoEncoderShim;
 class CONTENT_EXPORT PepperVideoEncoderHost
     : public ppapi::host::ResourceHost,
       public media::VideoEncodeAccelerator::Client,
-      public ppapi::MediaStreamBufferManager::Delegate {
+      public ppapi::MediaStreamBufferManager::Delegate,
+      public gpu::GpuControlClient {
  public:
   PepperVideoEncoderHost(RendererPpapiHost* host,
                          PP_Instance instance,
@@ -76,6 +78,10 @@ class CONTENT_EXPORT PepperVideoEncoderHost
   int32_t OnResourceMessageReceived(
       const IPC::Message& msg,
       ppapi::host::HostMessageContext* context) override;
+
+  // GpuControlClient implementation.
+  void OnGpuControlLostContext() final;
+  void OnGpuControlErrorMessage(const char* msg, int id) final {}
 
   int32_t OnHostMsgGetSupportedProfiles(
       ppapi::host::HostMessageContext* context);
@@ -161,6 +167,10 @@ class CONTENT_EXPORT PepperVideoEncoderHost
 
   // Format of the frames to give to the encoder.
   media::VideoPixelFormat media_input_format_;
+
+#if DCHECK_IS_ON()
+  bool lost_context_ = false;
+#endif
 
   base::WeakPtrFactory<PepperVideoEncoderHost> weak_ptr_factory_;
 

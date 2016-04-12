@@ -233,6 +233,15 @@ int32_t PepperVideoEncoderHost::OnResourceMessageReceived(
   return PP_ERROR_FAILED;
 }
 
+void PepperVideoEncoderHost::OnGpuControlLostContext() {
+#if DCHECK_IS_ON()
+  // This should never occur more than once.
+  DCHECK(!lost_context_);
+  lost_context_ = true;
+#endif
+  NotifyPepperError(PP_ERROR_RESOURCE_FAILED);
+}
+
 int32_t PepperVideoEncoderHost::OnHostMsgGetSupportedProfiles(
     ppapi::host::HostMessageContext* context) {
   std::vector<PP_VideoProfileDescription> pp_profiles;
@@ -520,9 +529,8 @@ bool PepperVideoEncoderHost::EnsureGpuChannel() {
     return false;
   }
 
-  command_buffer_->SetContextLostCallback(media::BindToCurrentLoop(
-      base::Bind(&PepperVideoEncoderHost::NotifyPepperError,
-                 weak_ptr_factory_.GetWeakPtr(), PP_ERROR_RESOURCE_FAILED)));
+  command_buffer_->SetGpuControlClient(this);
+
   if (!command_buffer_->Initialize()) {
     Close();
     return false;
