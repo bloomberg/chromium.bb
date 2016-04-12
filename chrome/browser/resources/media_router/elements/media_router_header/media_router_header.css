@@ -20,6 +20,10 @@
   -webkit-padding-end: 4px;
 }
 
+.cast-mode-list {
+  background-color: var(--paper-teal-500);
+}
+
 #close-button {
   -webkit-margin-start: auto;
   height: 31px;
@@ -32,53 +36,53 @@
   -webkit-padding-start: 24px;
 }
 
+.filter {
+  background-color: var(--paper-deep-purple-500);
+}
+
+#header {
+  -webkit-padding-start: 8px;
+  align-items: center;
+  color: white;
+}
+
 #header-and-arrow-container {
   display: flex;
-  height: 36px;
   overflow: hidden;
   white-space: nowrap;
 }
 
 #header-text {
   -webkit-padding-end: 4px;
-  color: white;
   font-size: 1.175em;
   margin: 8px 0 0 0;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
+.issue {
+  background-color: var(--google-red-500);
+}
+
 paper-icon-button {
   display: inline-block;
 }
 
-paper-toolbar {
-  -webkit-padding-start: 8px;
+#main-container {
+  display: flex;
+  padding-top: 10px;
 }
 
-paper-toolbar::shadow .toolbar-tools {
-  padding: 0;
-}
-
-paper-toolbar.cast-mode-list {
-  background-color: var(--paper-teal-500);
-}
-
-paper-toolbar.filter {
-  background-color: var(--paper-deep-purple-500);
-}
-
-paper-toolbar.issue {
-  background-color: var(--google-red-500);
-}
-
-paper-toolbar.route-details,
-paper-toolbar.sink-list {
+.route-details,
+.sink-list {
   background-color: var(--paper-blue-500);
 }
 
 #user-email-container {
   -webkit-padding-start: 12px;
+  bottom: 0;
   font-size: 0.917em;
+  left: 0;
   padding-bottom: 12px;
+  position: absolute;
 }

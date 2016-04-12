@@ -115,6 +115,10 @@ Polymer({
     },
   },
 
+  ready: function() {
+    this.$$('#header').style.height = this.headerWithoutEmailHeight_ + 'px';
+  },
+
   attached: function() {
     // isRTL() only works after i18n_template.js runs to set <html dir>.
     // Set the back button icon based on text direction.
@@ -204,15 +208,14 @@ Polymer({
    * @private
    */
   maybeChangeHeaderHeight_: function(newValue, oldValue) {
-    if (!!oldValue == !!newValue) {
+    if (oldValue == newValue)
       return;
-    }
 
     // Ensures conditional templates are stamped.
     this.async(function() {
       var currentHeight = this.offsetHeight;
 
-      this.$$('#header-toolbar').style.height =
+      this.$$('#header').style.height =
           this.showEmail && !this.isEmptyOrWhitespace_(this.userEmail) ?
               this.headerWithEmailHeight_ + 'px' :
                   this.headerWithoutEmailHeight_ + 'px';

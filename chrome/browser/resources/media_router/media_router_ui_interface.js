@@ -140,8 +140,8 @@ cr.define('media_router.ui', function() {
   function setSinkListAndIdentity(data) {
     container.allSinks = data['sinks'];
     container.showDomain = data['showDomain'];
-    header.showEmail = data['showEmail'];
     header.userEmail = data['userEmail'];
+    header.showEmail = data['showEmail'];
   }
 
   /**
