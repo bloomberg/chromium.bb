@@ -23,6 +23,10 @@ class TracedValue;
 class Value;
 }
 
+namespace gfx {
+class Rect;
+}
+
 namespace cc {
 
 class CC_EXPORT FilterOperation {
@@ -225,6 +229,10 @@ class CC_EXPORT FilterOperation {
                                double progress);
 
   void AsValueInto(base::trace_event::TracedValue* value) const;
+
+  // Maps "forward" to determine which pixels in a destination rect are affected
+  // by pixels in the source rect.
+  gfx::Rect MapRect(const gfx::Rect& rect) const;
 
  private:
   FilterOperation(FilterType type, float amount);

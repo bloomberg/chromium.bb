@@ -20,6 +20,10 @@ class TracedValue;
 class Value;
 }
 
+namespace gfx {
+class Rect;
+}
+
 namespace cc {
 
 // An ordered list of filter operations.
@@ -45,6 +49,10 @@ class CC_EXPORT FilterOperations {
   void Clear();
 
   bool IsEmpty() const;
+
+  // Maps "forward" to determine which pixels in a destination rect are affected
+  // by pixels in the source rect.
+  gfx::Rect MapRect(const gfx::Rect& rect) const;
 
   void GetOutsets(int* top, int* right, int* bottom, int* left) const;
   bool HasFilterThatMovesPixels() const;

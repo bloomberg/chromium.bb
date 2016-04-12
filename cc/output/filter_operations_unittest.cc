@@ -9,7 +9,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/effects/SkBlurImageFilter.h"
 #include "third_party/skia/include/effects/SkDropShadowImageFilter.h"
+#include "third_party/skia/include/effects/SkOffsetImageFilter.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace cc {
 namespace {
@@ -24,6 +26,13 @@ TEST(FilterOperationsTest, GetOutsetsBlur) {
   EXPECT_EQ(57, right);
   EXPECT_EQ(57, bottom);
   EXPECT_EQ(57, left);
+}
+
+TEST(FilterOperationsTest, MapRectBlur) {
+  FilterOperations ops;
+  ops.Append(FilterOperation::CreateBlurFilter(20));
+  EXPECT_EQ(gfx::Rect(-57, -57, 124, 124),
+            ops.MapRect(gfx::Rect(0, 0, 10, 10)));
 }
 
 TEST(FilterOperationsTest, GetOutsetsDropShadowReferenceFilter) {
@@ -46,6 +55,25 @@ TEST(FilterOperationsTest, GetOutsetsDropShadowReferenceFilter) {
   EXPECT_EQ(15, left);
 }
 
+TEST(FilterOperationsTest, MapRectDropShadowReferenceFilter) {
+  skia::RefPtr<SkImageFilter> filter =
+      skia::AdoptRef(SkDropShadowImageFilter::Create(
+          SkIntToScalar(3), SkIntToScalar(8), SkIntToScalar(4),
+          SkIntToScalar(9), SK_ColorBLACK,
+          SkDropShadowImageFilter::kDrawShadowAndForeground_ShadowMode));
+  FilterOperations ops;
+  ops.Append(FilterOperation::CreateReferenceFilter(filter));
+  EXPECT_EQ(gfx::Rect(-9, -19, 34, 64), ops.MapRect(gfx::Rect(0, 0, 10, 10)));
+}
+
+TEST(FilterOperationsTest, MapRectOffsetReferenceFilter) {
+  skia::RefPtr<SkImageFilter> filter =
+      skia::AdoptRef(SkOffsetImageFilter::Make(30, 40, nullptr));
+  FilterOperations ops;
+  ops.Append(FilterOperation::CreateReferenceFilter(std::move(filter)));
+  EXPECT_EQ(gfx::Rect(30, 40, 10, 10), ops.MapRect(gfx::Rect(0, 0, 10, 10)));
+}
+
 TEST(FilterOperationsTest, GetOutsetsNullReferenceFilter) {
   FilterOperations ops;
   ops.Append(FilterOperation::CreateReferenceFilter(nullptr));
@@ -59,6 +87,12 @@ TEST(FilterOperationsTest, GetOutsetsNullReferenceFilter) {
   EXPECT_EQ(0, left);
 }
 
+TEST(FilterOperationsTest, MapRectNullReferenceFilter) {
+  FilterOperations ops;
+  ops.Append(FilterOperation::CreateReferenceFilter(nullptr));
+  EXPECT_EQ(gfx::Rect(0, 0, 10, 10), ops.MapRect(gfx::Rect(0, 0, 10, 10)));
+}
+
 TEST(FilterOperationsTest, GetOutsetsDropShadow) {
   FilterOperations ops;
   ops.Append(FilterOperation::CreateDropShadowFilter(gfx::Point(3, 8), 20, 0));
@@ -69,6 +103,13 @@ TEST(FilterOperationsTest, GetOutsetsDropShadow) {
   EXPECT_EQ(60, right);
   EXPECT_EQ(65, bottom);
   EXPECT_EQ(54, left);
+}
+
+TEST(FilterOperationsTest, MapRectDropShadow) {
+  FilterOperations ops;
+  ops.Append(FilterOperation::CreateDropShadowFilter(gfx::Point(3, 8), 20, 0));
+  EXPECT_EQ(gfx::Rect(-54, -49, 124, 124),
+            ops.MapRect(gfx::Rect(0, 0, 10, 10)));
 }
 
 #define SAVE_RESTORE_AMOUNT(filter_name, filter_type, a)                  \
