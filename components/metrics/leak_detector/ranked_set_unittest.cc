@@ -320,42 +320,5 @@ TEST_F(RankedSetTest, MoveOperation) {
   }
 }
 
-TEST_F(RankedSetTest, Find) {
-  RankedSet set(10);
-  EXPECT_EQ(0U, set.size());
-
-  set.AddSize(0x1234, 15);
-  set.AddSize(0x2345, 20);
-  set.AddSize(0x3456, 10);
-  set.AddSize(0x4567, 30);
-  set.AddSize(0x5678, 25);
-  EXPECT_EQ(5U, set.size());
-
-  auto iter = set.FindSize(0x1234);
-  EXPECT_TRUE(iter != set.end());
-  EXPECT_EQ(0x1234U, iter->value.size());
-  EXPECT_EQ(15, iter->count);
-
-  iter = set.FindSize(0x2345);
-  EXPECT_TRUE(iter != set.end());
-  EXPECT_EQ(0x2345U, iter->value.size());
-  EXPECT_EQ(20, iter->count);
-
-  iter = set.FindSize(0x3456);
-  EXPECT_TRUE(iter != set.end());
-  EXPECT_EQ(0x3456U, iter->value.size());
-  EXPECT_EQ(10, iter->count);
-
-  iter = set.FindSize(0x4567);
-  EXPECT_TRUE(iter != set.end());
-  EXPECT_EQ(0x4567U, iter->value.size());
-  EXPECT_EQ(30, iter->count);
-
-  iter = set.FindSize(0x5678);
-  EXPECT_TRUE(iter != set.end());
-  EXPECT_EQ(0x5678U, iter->value.size());
-  EXPECT_EQ(25, iter->count);
-}
-
 }  // namespace leak_detector
 }  // namespace metrics

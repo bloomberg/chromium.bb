@@ -72,20 +72,7 @@ class RankedSet {
     Add(ValueType(call_stack), count);
   }
 
-  // Helper functions to directly search for an element with |value| equal to a
-  // particular size or call stack. The time complexity is O(n) rather than the
-  // O(log n) typical of std::set. These should be called sparingly in
-  // performance-critical code.
-  const_iterator FindSize(size_t size) const { return Find(ValueType(size)); }
-  const_iterator FindCallStack(const CallStack* call_stack) const {
-    return Find(ValueType(call_stack));
-  }
-
  private:
-  // Returns an iterator to the element in |entries_| with value=|value|, or to
-  // entries_.end() if it was not found.
-  const_iterator Find(const ValueType& value) const;
-
   // Max and min counts. Returns 0 if the list is empty.
   int max_count() const {
     return entries_.empty() ? 0 : entries_.begin()->count;

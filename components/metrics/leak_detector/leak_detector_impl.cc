@@ -7,8 +7,7 @@
 #include <inttypes.h>
 #include <stddef.h>
 
-#include <algorithm>  // For std::move
-#include <iterator>  // For std::advance
+#include <algorithm>
 #include <new>
 
 #include "base/hash.h"
@@ -38,14 +37,8 @@ const int kNumSizeEntries = 2048;
 // |LeakDetectorImpl::size_breakdown_history_|.
 const int kNumSizeEntriesInHistory = 32;
 
-// Record only the top |kNumTopCallStacksInHistory| call sites, ordered by
-// number of allocations at each site, in
-// |AllocSizeEntry::call_site_breakdown_history|.
-const int kNumTopCallStacksInHistory = 32;
-
-// |LeakDetectorImpl::size_breakdown_history_| and
-// |AllocSizeEntry::call_site_breakdown_history| can have up to this many
-// entries. Any older entries must be discarded to make way for new ones.
+// |LeakDetectorImpl::size_breakdown_history_| can have up to this many entries.
+// Any older entries must be discarded to make way for new ones.
 const int kMaxNumHistoryEntries = 32;
 
 using ValueType = LeakDetectorValueType;
@@ -64,11 +57,6 @@ size_t IndexToSize(size_t index) {
 }
 
 }  // namespace
-
-LeakDetectorImpl::LeakReport::AllocationBreakdown::AllocationBreakdown()
-    : count_for_call_stack(0) {}
-
-LeakDetectorImpl::LeakReport::AllocationBreakdown::~AllocationBreakdown() {}
 
 LeakDetectorImpl::LeakReport::LeakReport() : alloc_size_bytes_(0) {}
 
@@ -179,7 +167,17 @@ void LeakDetectorImpl::TestForLeaks(InternalVector<LeakReport>* reports) {
   }
   size_leak_analyzer_.AddSample(std::move(size_ranked_set));
 
-  RecordCurrentAllocationDataInHistory();
+  // Record a snapshot of the current size table.
+  InternalVector<uint32_t> current_size_table_record;
+  current_size_table_record.reserve(kNumSizeEntriesInHistory);
+  for (const AllocSizeEntry& entry : size_entries_) {
+    if (current_size_table_record.size() == kNumSizeEntriesInHistory)
+      break;
+    current_size_table_record.push_back(entry.GetNetAllocs());
+  }
+  size_breakdown_history_.emplace_back(std::move(current_size_table_record));
+  if (size_breakdown_history_.size() > kMaxNumHistoryEntries)
+    size_breakdown_history_.pop_front();
 
   // Get suspected leaks by size.
   for (const ValueType& size_value : size_leak_analyzer_.suspected_leaks()) {
@@ -220,14 +218,13 @@ void LeakDetectorImpl::TestForLeaks(InternalVector<LeakReport>* reports) {
       for (size_t j = 0; j < call_stack->depth; ++j) {
         report->call_stack_[j] = GetOffset(call_stack->stack[j]);
       }
-
-      StoreHistoricalDataInReport(size, call_stack, report);
+      // Copy over the historical size data.
+      report->size_breakdown_history_.reserve(size_breakdown_history_.size());
+      report->size_breakdown_history_.assign(size_breakdown_history_.begin(),
+                                             size_breakdown_history_.end());
     }
   }
 }
-
-LeakDetectorImpl::AllocSizeEntry::AllocSizeEntry() {}
-LeakDetectorImpl::AllocSizeEntry::~AllocSizeEntry() {}
 
 size_t LeakDetectorImpl::AddressHash::operator()(uintptr_t addr) const {
   return base::Hash(reinterpret_cast<const char*>(&addr), sizeof(addr));
@@ -238,72 +235,6 @@ uintptr_t LeakDetectorImpl::GetOffset(const void* ptr) const {
   if (ptr_value >= mapping_addr_ && ptr_value < mapping_addr_ + mapping_size_)
     return ptr_value - mapping_addr_;
   return ptr_value;
-}
-
-void LeakDetectorImpl::RecordCurrentAllocationDataInHistory() {
-  // Record a snapshot of the current size table.
-  InternalVector<uint32_t> current_size_table_record;
-  current_size_table_record.reserve(kNumSizeEntriesInHistory);
-  for (const AllocSizeEntry& entry : size_entries_) {
-    if (current_size_table_record.size() == kNumSizeEntriesInHistory)
-      break;
-    current_size_table_record.push_back(entry.GetNetAllocs());
-  }
-  size_breakdown_history_.emplace_back(std::move(current_size_table_record));
-  if (size_breakdown_history_.size() > kMaxNumHistoryEntries)
-    size_breakdown_history_.pop_front();
-
-  // For each allocation size that has started profiling by call site, record a
-  // snapshot of the top call sites by number of allocations.
-  for (AllocSizeEntry& entry : size_entries_) {
-    if (!entry.stack_table)
-      continue;
-    RankedSet top_call_stacks(kNumTopCallStacksInHistory);
-    entry.stack_table->GetTopCallStacks(&top_call_stacks);
-    entry.call_site_breakdown_history.push_back(std::move(top_call_stacks));
-    if (entry.call_site_breakdown_history.size() > kMaxNumHistoryEntries)
-      entry.call_site_breakdown_history.pop_front();
-  }
-}
-
-void LeakDetectorImpl::StoreHistoricalDataInReport(size_t size,
-                                                   const CallStack* call_site,
-                                                   LeakReport* report) {
-  using AllocationBreakdown = LeakReport::AllocationBreakdown;
-  // Copy historical allocation data into the report.
-  InternalVector<AllocationBreakdown>* dest = &report->alloc_breakdown_history_;
-  dest->reserve(size_breakdown_history_.size());
-
-  // Store each frame of the breakdown by size.
-  for (const InternalVector<uint32_t>& breakdown : size_breakdown_history_) {
-    dest->push_back(AllocationBreakdown());
-    dest->back().counts_by_size = breakdown;
-  }
-
-  // Store the count of all allocations with size=|size| and made from call site
-  // |call_site|.
-  const InternalList<RankedSet>& src =
-      size_entries_[SizeToIndex(size)].call_site_breakdown_history;
-
-  auto src_iter = src.begin();
-  auto dest_iter = dest->begin();
-  // The call site history and the destination container may be of different
-  // sizes. Adjust their iterators so they are the same distance from the last
-  // element of each container, i.e. they will point to the frames corresponding
-  // to the same time.
-  if (src.size() > dest->size())
-    std::advance(src_iter, src.size() - dest->size());
-  else if (dest->size() > src.size())
-    std::advance(dest_iter, dest->size() - src.size());
-
-  while (src_iter != src.end() && dest_iter != dest->end()) {
-    const RankedSet& ranked_call_sites = *src_iter;
-    auto find_call_site_iter = ranked_call_sites.FindCallStack(call_site);
-    if (find_call_site_iter != ranked_call_sites.end())
-      dest_iter->count_for_call_stack = find_call_site_iter->count;
-    ++src_iter;
-    ++dest_iter;
-  }
 }
 
 }  // namespace leak_detector

@@ -48,20 +48,5 @@ void RankedSet::Add(const ValueType& value, int count) {
     entries_.erase(--entries_.end());
 }
 
-RankedSet::const_iterator RankedSet::Find(const ValueType& value) const {
-  // The entries are stored sorted by |count|, but this function looks for an
-  // entry with a particular |value| field. Thus, std::set::find() will not
-  // work. Nor would std::find(), which matches by both |count| and |value| --
-  // the count is unknown to the caller of this function.
-  //
-  // The most straightforward way is to iterate through the set until a matching
-  // value is found.
-  for (const_iterator iter = begin(); iter != end(); ++iter) {
-    if (iter->value == value)
-      return iter;
-  }
-  return end();
-}
-
 }  // namespace leak_detector
 }  // namespace metrics

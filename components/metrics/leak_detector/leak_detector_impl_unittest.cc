@@ -21,6 +21,10 @@
 namespace metrics {
 namespace leak_detector {
 
+using InternalLeakReport = LeakDetectorImpl::LeakReport;
+template <typename T>
+using InternalVector = LeakDetectorImpl::InternalVector<T>;
+
 namespace {
 
 // Makes working with complex numbers easier.
@@ -135,11 +139,6 @@ class LeakDetectorImplTest : public ::testing::Test {
   }
 
  protected:
-  using InternalLeakReport = LeakDetectorImpl::LeakReport;
-  template <typename T>
-  using InternalVector = LeakDetectorImpl::InternalVector<T>;
-  using AllocationBreakdown = LeakDetectorImpl::LeakReport::AllocationBreakdown;
-
   // Alloc and free functions that allocate and free heap memory and
   // automatically pass alloc/free info to |detector_|. They emulate the
   // alloc/free hook functions that would call into LeakDetectorImpl in
@@ -533,52 +532,28 @@ TEST_F(LeakDetectorImplTest, SimpleLeakyFunctionWithLeak) {
   // There should have been one leak analysis per outer loop iteration, for a
   // total of 20 history records (|kNumOuterIterations|) per report.
 
-  const auto& report1_history = report1.alloc_breakdown_history();
-  EXPECT_EQ(20U, report1_history.size());
+  const auto& report1_size_history = report1.size_breakdown_history();
+  EXPECT_EQ(20U, report1_size_history.size());
 
-  for (size_t i = 0; i < report1_history.size(); ++i) {
-    const AllocationBreakdown& entry = report1_history[i];
-
-    const InternalVector<uint32_t>& counts_by_size = entry.counts_by_size;
-    ASSERT_GT(counts_by_size.size(), SizeToIndex(48));
+  size_t index = 0;
+  for (const InternalVector<uint32_t>& entry : report1_size_history) {
+    ASSERT_GT(entry.size(), SizeToIndex(48));
 
     // Check the two leaky sizes, 32 and 48.
-    uint32_t expected_leaky_count = (i + 1) * 32 + 2;
-    EXPECT_EQ(expected_leaky_count, counts_by_size[SizeToIndex(32)]);
-    EXPECT_EQ(expected_leaky_count, counts_by_size[SizeToIndex(48)]);
+    EXPECT_EQ((index + 1) * 32 + 2, entry[SizeToIndex(32)]);
+    EXPECT_EQ((index + 1) * 32 + 2, entry[SizeToIndex(48)]);
 
     // Not related to the leaks, but there should be a dangling 16-byte
     // allocation during each leak analysis, because it hasn't yet been freed.
-    EXPECT_EQ(1U, counts_by_size[SizeToIndex(16)]);
+    EXPECT_EQ(1U, entry[SizeToIndex(16)]);
+    ++index;
   }
 
-  // Check call site count over time.
-  ASSERT_LT(kSizeSuspicionThreshold, report1_history.size());
-  // Initially, there has been no call site tracking.
-  for (size_t i = 0; i < kSizeSuspicionThreshold; ++i)
-    EXPECT_EQ(0U, report1_history[i].count_for_call_stack);
-
-  // Once |kSizeSuspicionThreshold| has been reached and call site tracking has
-  // begun, the number of allocations for the suspected call site should
-  // increase by 32 each frame. See comments above.
-  uint32_t expected_call_stack_count = 0;
-  for (size_t i = kSizeSuspicionThreshold; i < report1_history.size(); ++i) {
-    EXPECT_EQ(expected_call_stack_count,
-              report1_history[i].count_for_call_stack);
-    expected_call_stack_count += 32;
-  }
-
-  // |report2| should have the same size history and call stack history as
-  // |report1|.
-  const auto& report2_history = report2.alloc_breakdown_history();
-  auto compare_history_func =
-      [](AllocationBreakdown a, AllocationBreakdown b) -> bool {
-        return std::equal(a.counts_by_size.begin(), a.counts_by_size.end(),
-                          b.counts_by_size.begin()) &&
-               a.count_for_call_stack == b.count_for_call_stack;
-      };
-  EXPECT_TRUE(std::equal(report1_history.begin(), report1_history.end(),
-                         report2_history.begin(), compare_history_func));
+  // |report2| should have the same size history as |report1|.
+  const auto& report2_size_history = report2.size_breakdown_history();
+  EXPECT_TRUE(std::equal(report1_size_history.begin(),
+                         report1_size_history.end(),
+                         report2_size_history.begin()));
 }
 
 TEST_F(LeakDetectorImplTest, JuliaSetNoLeak) {
@@ -623,37 +598,31 @@ TEST_F(LeakDetectorImplTest, JuliaSetWithLeak) {
   }
 
   // Check |report1|'s historical data.
-  const auto& report1_history = report1.alloc_breakdown_history();
+  const auto& report1_size_history = report1.size_breakdown_history();
   // Computing the exact number of leak analyses is not trivial, but we know it
   // must be at least |kSizeSuspicionThreshold + kCallStackSuspicionThreshold|
   // in order to have generated a report.
-  EXPECT_GT(report1_history.size(),
+  EXPECT_GT(report1_size_history.size(),
             kSizeSuspicionThreshold + kCallStackSuspicionThreshold);
 
   // Make sure that the final allocation counts for the leaky sizes are larger
   // than that of the non-leaky size by at least an order of magnitude.
-  const AllocationBreakdown& final_entry = *report1_history.rbegin();
-  const InternalVector<uint32_t>& counts_by_size = final_entry.counts_by_size;
+  const InternalVector<uint32_t>& final_entry = *report1_size_history.rbegin();
   uint32_t size_0_index = SizeToIndex(sizeof(Complex) + 24);
   uint32_t size_1_index = SizeToIndex(sizeof(Complex) + 40);
   uint32_t size_2_index = SizeToIndex(sizeof(Complex) + 52);
-  ASSERT_LT(size_0_index, counts_by_size.size());
-  ASSERT_LT(size_1_index, counts_by_size.size());
-  ASSERT_LT(size_2_index, counts_by_size.size());
+  ASSERT_LT(size_0_index, final_entry.size());
+  ASSERT_LT(size_1_index, final_entry.size());
+  ASSERT_LT(size_2_index, final_entry.size());
 
-  EXPECT_GT(counts_by_size[size_1_index], counts_by_size[size_0_index] * 10);
-  EXPECT_GT(counts_by_size[size_2_index], counts_by_size[size_0_index] * 10);
+  EXPECT_GT(final_entry[size_1_index], final_entry[size_0_index] * 10);
+  EXPECT_GT(final_entry[size_2_index], final_entry[size_0_index] * 10);
 
-  // |report2| should have the same size history as |report1|, but not the same
-  // call stack history.
-  const auto& report2_history = report2.alloc_breakdown_history();
-  auto compare_size_history_func =
-      [](AllocationBreakdown a, AllocationBreakdown b) -> bool {
-        return std::equal(a.counts_by_size.begin(), a.counts_by_size.end(),
-                          b.counts_by_size.begin());
-      };
-  EXPECT_TRUE(std::equal(report1_history.begin(), report1_history.end(),
-                         report2_history.begin(), compare_size_history_func));
+  // |report2| should have the same size history as |report1|.
+  const auto& report2_size_history = report2.size_breakdown_history();
+  EXPECT_TRUE(std::equal(report1_size_history.begin(),
+                         report1_size_history.end(),
+                         report2_size_history.begin()));
 }
 
 }  // namespace leak_detector
