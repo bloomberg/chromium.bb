@@ -451,7 +451,7 @@ TEST_F(DirectoryUpdateHandlerProcessUpdateTest, IsInitialSyncEnded) {
   progress.set_token("token");
   progress.mutable_gc_directive()->set_version_watermark(kDefaultVersion + 10);
 
-  scoped_ptr<sync_pb::SyncEntity> e = CreateUpdate(
+  std::unique_ptr<sync_pb::SyncEntity> e = CreateUpdate(
       SyncableIdToProto(Id::CreateFromServerId("e1")), "", AUTOFILL);
 
   SyncEntityList updates;

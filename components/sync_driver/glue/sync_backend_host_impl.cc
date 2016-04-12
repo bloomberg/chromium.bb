@@ -240,7 +240,7 @@ void SyncBackendHostImpl::StopSyncingForShutdown() {
   frontend_ = NULL;
 
   // Stop non-blocking sync types from sending any more requests to the syncer.
-  sync_context_.reset();
+  model_type_connector_.reset();
 
   DCHECK(registrar_->sync_thread()->IsRunning());
 
@@ -442,12 +442,12 @@ void SyncBackendHostImpl::ActivateNonBlockingDataType(
     syncer::ModelType type,
     scoped_ptr<syncer_v2::ActivationContext> activation_context) {
   registrar_->RegisterNonBlockingType(type);
-  sync_context_->ConnectType(type, std::move(activation_context));
+  model_type_connector_->ConnectType(type, std::move(activation_context));
 }
 
 void SyncBackendHostImpl::DeactivateNonBlockingDataType(
     syncer::ModelType type) {
-  sync_context_->DisconnectType(type);
+  model_type_connector_->DisconnectType(type);
 }
 
 syncer::UserShare* SyncBackendHostImpl::GetUserShare() const {
@@ -600,11 +600,11 @@ void SyncBackendHostImpl::HandleInitializationSuccessOnFrontendLoop(
     const syncer::WeakHandle<syncer::JsBackend> js_backend,
     const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>
         debug_info_listener,
-    scoped_ptr<syncer_v2::SyncContext> sync_context,
+    scoped_ptr<syncer_v2::ModelTypeConnector> model_type_connector,
     const std::string& cache_guid) {
   DCHECK_EQ(base::MessageLoop::current(), frontend_loop_);
 
-  sync_context_ = std::move(sync_context);
+  model_type_connector_ = std::move(model_type_connector);
 
   if (!frontend_)
     return;

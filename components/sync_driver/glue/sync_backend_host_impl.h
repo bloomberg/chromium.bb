@@ -186,13 +186,13 @@ class SyncBackendHostImpl
   // Reports backend initialization success.  Includes some objects from sync
   // manager initialization to be passed back to the UI thread.
   //
-  // |sync_context| is our SyncContext, which is owned because in
-  // production it is a proxy object to the real SyncContext.
+  // |model_type_connector| is our ModelTypeConnector, which is owned because in
+  // production it is a proxy object to the real ModelTypeConnector.
   virtual void HandleInitializationSuccessOnFrontendLoop(
       const syncer::WeakHandle<syncer::JsBackend> js_backend,
       const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>
           debug_info_listener,
-      scoped_ptr<syncer_v2::SyncContext> sync_context,
+      scoped_ptr<syncer_v2::ModelTypeConnector> model_type_connector,
       const std::string& cache_guid);
 
   // Forwards a ProtocolEvent to the frontend.  Will not be called unless a
@@ -336,7 +336,7 @@ class SyncBackendHostImpl
 
   // A handle referencing the main interface for non-blocking sync types. This
   // object is owned because in production code it is a proxy object.
-  scoped_ptr<syncer_v2::SyncContext> sync_context_;
+  scoped_ptr<syncer_v2::ModelTypeConnector> model_type_connector_;
 
   bool initialized_;
 

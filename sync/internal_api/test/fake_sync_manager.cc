@@ -10,13 +10,14 @@
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "sync/internal_api/public/http_post_provider_factory.h"
 #include "sync/internal_api/public/internal_components_factory.h"
-#include "sync/internal_api/public/test/fake_sync_context.h"
+#include "sync/internal_api/public/test/fake_model_type_connector.h"
 #include "sync/internal_api/public/util/weak_handle.h"
 #include "sync/syncable/directory.h"
 #include "sync/test/fake_sync_encryption_handler.h"
@@ -201,8 +202,9 @@ UserShare* FakeSyncManager::GetUserShare() {
   return test_user_share_.user_share();
 }
 
-scoped_ptr<syncer_v2::SyncContext> FakeSyncManager::GetSyncContextProxy() {
-  return make_scoped_ptr(new syncer_v2::FakeSyncContext());
+std::unique_ptr<syncer_v2::ModelTypeConnector>
+FakeSyncManager::GetModelTypeConnectorProxy() {
+  return base::WrapUnique(new syncer_v2::FakeModelTypeConnector());
 }
 
 const std::string FakeSyncManager::cache_guid() {

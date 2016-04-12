@@ -98,7 +98,8 @@ class FakeSyncManager : public SyncManager {
   void SaveChanges() override;
   void ShutdownOnSyncThread(ShutdownReason reason) override;
   UserShare* GetUserShare() override;
-  scoped_ptr<syncer_v2::SyncContext> GetSyncContextProxy() override;
+  std::unique_ptr<syncer_v2::ModelTypeConnector> GetModelTypeConnectorProxy()
+      override;
   const std::string cache_guid() override;
   bool ReceivedExperiment(Experiments* experiments) override;
   bool HasUnsyncedItems() override;

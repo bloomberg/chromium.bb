@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sync/internal_api/public/sync_context.h"
+#include "sync/internal_api/public/model_type_connector.h"
 
 namespace syncer_v2 {
 
-SyncContext::SyncContext() {}
+ModelTypeConnector::ModelTypeConnector() {}
 
-SyncContext::~SyncContext() {}
+ModelTypeConnector::~ModelTypeConnector() {}
 
 }  // namespace syncer_v2

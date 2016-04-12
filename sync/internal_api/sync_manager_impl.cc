@@ -14,6 +14,7 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/json/json_writer.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram.h"
 #include "base/observer_list.h"
@@ -23,6 +24,7 @@
 #include "sync/engine/sync_scheduler.h"
 #include "sync/engine/syncer_types.h"
 #include "sync/internal_api/change_reorder_buffer.h"
+#include "sync/internal_api/model_type_connector_proxy.h"
 #include "sync/internal_api/public/base/cancelation_signal.h"
 #include "sync/internal_api/public/base/invalidation_interface.h"
 #include "sync/internal_api/public/base/model_type.h"
@@ -37,7 +39,6 @@
 #include "sync/internal_api/public/util/experiments.h"
 #include "sync/internal_api/public/write_node.h"
 #include "sync/internal_api/public/write_transaction.h"
-#include "sync/internal_api/sync_context_proxy.h"
 #include "sync/internal_api/syncapi_internal.h"
 #include "sync/internal_api/syncapi_server_connection_manager.h"
 #include "sync/protocol/proto_value_conversions.h"
@@ -928,9 +929,10 @@ UserShare* SyncManagerImpl::GetUserShare() {
   return &share_;
 }
 
-scoped_ptr<syncer_v2::SyncContext> SyncManagerImpl::GetSyncContextProxy() {
+std::unique_ptr<syncer_v2::ModelTypeConnector>
+SyncManagerImpl::GetModelTypeConnectorProxy() {
   DCHECK(initialized_);
-  return make_scoped_ptr(new syncer_v2::SyncContextProxy(
+  return base::WrapUnique(new syncer_v2::ModelTypeConnectorProxy(
       base::ThreadTaskRunnerHandle::Get(), model_type_registry_->AsWeakPtr()));
 }
 

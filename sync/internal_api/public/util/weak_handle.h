@@ -48,6 +48,7 @@
 #define SYNC_INTERNAL_API_PUBLIC_UTIL_WEAK_HANDLE_H_
 
 #include <cstddef>
+#include <memory>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -58,7 +59,6 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "sync/base/sync_export.h"
@@ -88,13 +88,13 @@ struct ParamTraits<T&> {
 };
 
 template <typename T>
-// scoped_ptr<T> is the type the target function will accept; PassedWrapper is
+// unique_ptr<T> is the type the target function will accept; PassedWrapper is
 // the type that gets passed into Call and through to base::Bind. It would be
 // better to support movable types in a generic way but this was the simplest
-// fix for supporting scoped_ptr. Using base::internal is unfortunate but since
+// fix for supporting unique_ptr. Using base::internal is unfortunate but since
 // this class is basically a wrapper around base::Bind it makes sense.
-struct ParamTraits<scoped_ptr<T>> {
-  typedef base::internal::PassedWrapper<scoped_ptr<T>> ForwardType;
+struct ParamTraits<std::unique_ptr<T>> {
+  typedef base::internal::PassedWrapper<std::unique_ptr<T>> ForwardType;
 };
 
 // Base class for WeakHandleCore<T> to avoid template bloat.  Handles

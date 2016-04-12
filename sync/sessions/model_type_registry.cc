@@ -260,7 +260,7 @@ void ModelTypeRegistry::RequestEmitDebugInfo() {
   }
 }
 
-base::WeakPtr<syncer_v2::SyncContext> ModelTypeRegistry::AsWeakPtr() {
+base::WeakPtr<syncer_v2::ModelTypeConnector> ModelTypeRegistry::AsWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
 

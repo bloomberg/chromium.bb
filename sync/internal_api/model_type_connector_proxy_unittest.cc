@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sync/internal_api/sync_context_proxy.h"
+#include "sync/internal_api/model_type_connector_proxy.h"
 
 #include <utility>
 #include <vector>
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
@@ -15,8 +16,8 @@
 #include "sync/api/fake_model_type_service.h"
 #include "sync/internal_api/public/activation_context.h"
 #include "sync/internal_api/public/base/model_type.h"
+#include "sync/internal_api/public/model_type_connector.h"
 #include "sync/internal_api/public/shared_model_type_processor.h"
-#include "sync/internal_api/public/sync_context.h"
 #include "sync/sessions/model_type_registry.h"
 #include "sync/test/engine/mock_nudge_handler.h"
 #include "sync/test/engine/test_directory_setter_upper.h"
@@ -24,9 +25,10 @@
 
 namespace syncer_v2 {
 
-class SyncContextProxyTest : public ::testing::Test, FakeModelTypeService {
+class ModelTypeConnectorProxyTest : public ::testing::Test,
+                                    FakeModelTypeService {
  public:
-  SyncContextProxyTest()
+  ModelTypeConnectorProxyTest()
       : sync_task_runner_(base::ThreadTaskRunnerHandle::Get()),
         type_task_runner_(base::ThreadTaskRunnerHandle::Get()) {}
 
@@ -34,12 +36,12 @@ class SyncContextProxyTest : public ::testing::Test, FakeModelTypeService {
     dir_maker_.SetUp();
     registry_.reset(new syncer::ModelTypeRegistry(
         workers_, dir_maker_.directory(), &nudge_handler_));
-    context_proxy_.reset(
-        new SyncContextProxy(sync_task_runner_, registry_->AsWeakPtr()));
+    connector_proxy_.reset(
+        new ModelTypeConnectorProxy(sync_task_runner_, registry_->AsWeakPtr()));
   }
 
   void TearDown() override {
-    context_proxy_.reset();
+    connector_proxy_.reset();
     registry_.reset();
     dir_maker_.TearDown();
   }
@@ -49,19 +51,20 @@ class SyncContextProxyTest : public ::testing::Test, FakeModelTypeService {
   void DisableSync() { registry_.reset(); }
 
   void OnSyncStarting(SharedModelTypeProcessor* processor) {
-    processor->OnSyncStarting(base::Bind(
-        &SyncContextProxyTest::OnReadyToConnect, base::Unretained(this)));
+    processor->OnSyncStarting(
+        base::Bind(&ModelTypeConnectorProxyTest::OnReadyToConnect,
+                   base::Unretained(this)));
   }
 
   void OnReadyToConnect(syncer::SyncError error,
-                        scoped_ptr<ActivationContext> context) {
-    context_proxy_->ConnectType(syncer::THEMES, std::move(context));
+                        std::unique_ptr<ActivationContext> context) {
+    connector_proxy_->ConnectType(syncer::THEMES, std::move(context));
   }
 
-  scoped_ptr<SharedModelTypeProcessor> CreateModelTypeProcessor() {
-    scoped_ptr<SharedModelTypeProcessor> processor =
-        make_scoped_ptr(new SharedModelTypeProcessor(syncer::THEMES, this));
-    processor->OnMetadataLoaded(make_scoped_ptr(new MetadataBatch()));
+  std::unique_ptr<SharedModelTypeProcessor> CreateModelTypeProcessor() {
+    std::unique_ptr<SharedModelTypeProcessor> processor =
+        base::WrapUnique(new SharedModelTypeProcessor(syncer::THEMES, this));
+    processor->OnMetadataLoaded(base::WrapUnique(new MetadataBatch()));
     return processor;
   }
 
@@ -73,14 +76,15 @@ class SyncContextProxyTest : public ::testing::Test, FakeModelTypeService {
   std::vector<scoped_refptr<syncer::ModelSafeWorker>> workers_;
   syncer::TestDirectorySetterUpper dir_maker_;
   syncer::MockNudgeHandler nudge_handler_;
-  scoped_ptr<syncer::ModelTypeRegistry> registry_;
+  std::unique_ptr<syncer::ModelTypeRegistry> registry_;
 
-  scoped_ptr<SyncContextProxy> context_proxy_;
+  std::unique_ptr<ModelTypeConnectorProxy> connector_proxy_;
 };
 
-// Try to connect a type to a SyncContext that has already shut down.
-TEST_F(SyncContextProxyTest, FailToConnect1) {
-  scoped_ptr<SharedModelTypeProcessor> processor = CreateModelTypeProcessor();
+// Try to connect a type to a ModelTypeConnector that has already shut down.
+TEST_F(ModelTypeConnectorProxyTest, FailToConnect1) {
+  std::unique_ptr<SharedModelTypeProcessor> processor =
+      CreateModelTypeProcessor();
   DisableSync();
   OnSyncStarting(processor.get());
 
@@ -89,9 +93,10 @@ TEST_F(SyncContextProxyTest, FailToConnect1) {
   EXPECT_FALSE(processor->IsConnected());
 }
 
-// Try to connect a type to a SyncContext as it shuts down.
-TEST_F(SyncContextProxyTest, FailToConnect2) {
-  scoped_ptr<SharedModelTypeProcessor> processor = CreateModelTypeProcessor();
+// Try to connect a type to a ModelTypeConnector as it shuts down.
+TEST_F(ModelTypeConnectorProxyTest, FailToConnect2) {
+  std::unique_ptr<SharedModelTypeProcessor> processor =
+      CreateModelTypeProcessor();
   OnSyncStarting(processor.get());
   DisableSync();
 
@@ -101,8 +106,9 @@ TEST_F(SyncContextProxyTest, FailToConnect2) {
 }
 
 // Tests the case where the type's sync proxy shuts down first.
-TEST_F(SyncContextProxyTest, TypeDisconnectsFirst) {
-  scoped_ptr<SharedModelTypeProcessor> processor = CreateModelTypeProcessor();
+TEST_F(ModelTypeConnectorProxyTest, TypeDisconnectsFirst) {
+  std::unique_ptr<SharedModelTypeProcessor> processor =
+      CreateModelTypeProcessor();
   OnSyncStarting(processor.get());
 
   base::RunLoop run_loop_;
@@ -113,8 +119,9 @@ TEST_F(SyncContextProxyTest, TypeDisconnectsFirst) {
 }
 
 // Tests the case where the sync thread shuts down first.
-TEST_F(SyncContextProxyTest, SyncDisconnectsFirst) {
-  scoped_ptr<SharedModelTypeProcessor> processor = CreateModelTypeProcessor();
+TEST_F(ModelTypeConnectorProxyTest, SyncDisconnectsFirst) {
+  std::unique_ptr<SharedModelTypeProcessor> processor =
+      CreateModelTypeProcessor();
   OnSyncStarting(processor.get());
 
   base::RunLoop run_loop_;

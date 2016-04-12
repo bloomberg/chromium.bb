@@ -17,9 +17,9 @@
 #include "sync/engine/nudge_handler.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/engine/model_safe_worker.h"
+#include "sync/internal_api/public/model_type_connector.h"
 #include "sync/internal_api/public/non_blocking_sync_common.h"
 #include "sync/internal_api/public/sessions/type_debug_info_observer.h"
-#include "sync/internal_api/public/sync_context.h"
 #include "sync/internal_api/public/sync_encryption_handler.h"
 
 namespace syncer_v2 {
@@ -46,7 +46,7 @@ typedef std::map<ModelType, DirectoryTypeDebugInfoEmitter*>
     DirectoryTypeDebugInfoEmitterMap;
 
 // Keeps track of the sets of active update handlers and commit contributors.
-class SYNC_EXPORT ModelTypeRegistry : public syncer_v2::SyncContext,
+class SYNC_EXPORT ModelTypeRegistry : public syncer_v2::ModelTypeConnector,
                                       public SyncEncryptionHandler::Observer {
  public:
   // Constructs a ModelTypeRegistry that supports directory types.
@@ -108,7 +108,7 @@ class SYNC_EXPORT ModelTypeRegistry : public syncer_v2::SyncContext,
       const syncer::TypeDebugInfoObserver* observer) const;
   void RequestEmitDebugInfo();
 
-  base::WeakPtr<SyncContext> AsWeakPtr();
+  base::WeakPtr<ModelTypeConnector> AsWeakPtr();
 
  private:
   void OnEncryptionStateChanged();
