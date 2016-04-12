@@ -24,8 +24,6 @@
 #include "ui/aura/test/env_test_helper.h"
 #include "ui/aura/test/event_generator_delegate_aura.h"
 #include "ui/base/ime/input_method_initializer.h"
-#include "ui/base/material_design/material_design_controller.h"
-#include "ui/base/test/material_design_controller_test_api.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/compositor/test/context_factories_for_test.h"
 #include "ui/message_center/message_center.h"
@@ -115,10 +113,6 @@ void AshTestHelper::SetUp(bool start_session) {
   }
   ShellContentState::SetInstance(content_state);
 
-  // ContentTestSuiteBase might have already initialized
-  // MaterialDesignController in unit_tests suite.
-  ui::test::MaterialDesignControllerTestAPI::UninitializeMode();
-  ui::MaterialDesignController::Initialize();
   ShellInitParams init_params;
   init_params.delegate = test_shell_delegate_;
   init_params.context_factory = context_factory;

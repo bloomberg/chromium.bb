@@ -50,7 +50,6 @@
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
 #include "extensions/common/constants.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_switches.h"
 
@@ -784,7 +783,6 @@ void ChromeMainDelegate::PreSandboxStartup() {
     base::i18n::SetICUDefaultLocale(locale);
     const std::string loaded_locale = locale;
 #else
-    ui::MaterialDesignController::Initialize();
     const std::string loaded_locale =
         ui::ResourceBundle::InitSharedInstanceWithLocale(
             locale, NULL, ui::ResourceBundle::LOAD_COMMON_RESOURCES);

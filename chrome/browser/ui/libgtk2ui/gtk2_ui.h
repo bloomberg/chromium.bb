@@ -73,9 +73,6 @@ class Gtk2UI : public views::LinuxUI {
 
   // ui::LinuxUI:
   void Initialize() override;
-  // TODO(varkha): This should not be necessary once Material Design is on
-  // unconditionally.
-  void MaterialDesignControllerReady() override;
   gfx::Image GetThemeImageNamed(int id) const override;
   bool GetTint(int id, color_utils::HSL* tint) const override;
   bool GetColor(int id, SkColor* color) const override;
@@ -132,11 +129,6 @@ class Gtk2UI : public views::LinuxUI {
   // Extracts colors and tints from the GTK theme, both for the
   // ThemeService interface and the colors we send to webkit.
   void LoadGtkValues();
-
-  // Updates colors if necessary after possible modification of command line.
-  // TODO(varkha): This should not be necessary once Material Design is on
-  // unconditionally.
-  void UpdateMaterialDesignColors();
 
   // Reads in explicit theme frame colors from the ChromeGtkFrame style class
   // or generates them per our fallback algorithm.

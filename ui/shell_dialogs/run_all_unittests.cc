@@ -13,7 +13,6 @@
 #include "base/mac/bundle_locations.h"
 #include "base/path_service.h"
 #include "base/test/mock_chrome_application_mac.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #endif
 
@@ -50,7 +49,6 @@ void ShellDialogsTestSuite::Initialize() {
   base::mac::SetOverrideFrameworkBundlePath(path);
 
   // Setup resource bundle.
-  ui::MaterialDesignController::Initialize();
   ui::ResourceBundle::InitSharedInstanceWithLocale(
       "en-US", nullptr, ui::ResourceBundle::LOAD_COMMON_RESOURCES);
 #endif

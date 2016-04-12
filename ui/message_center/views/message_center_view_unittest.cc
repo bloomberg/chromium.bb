@@ -22,7 +22,6 @@
 #include "ui/message_center/views/message_list_view.h"
 #include "ui/message_center/views/notification_view.h"
 #include "ui/views/controls/slide_out_view.h"
-#include "ui/views/test/views_test_base.h"
 
 namespace message_center {
 
@@ -113,7 +112,7 @@ class FakeMessageCenterImpl : public FakeMessageCenter {
 
 /* Test fixture ***************************************************************/
 
-class MessageCenterViewTest : public views::ViewsTestBase,
+class MessageCenterViewTest : public testing::Test,
                               public MockNotificationView::Test,
                               public MessageCenterController {
  public:
@@ -159,6 +158,8 @@ class MessageCenterViewTest : public views::ViewsTestBase,
  private:
   views::View* MakeParent(views::View* child1, views::View* child2);
 
+  base::MessageLoopForUI message_loop_;
+
   NotificationList::Notifications notifications_;
   scoped_ptr<MessageCenterView> message_center_view_;
   scoped_ptr<FakeMessageCenterImpl> message_center_;
@@ -174,7 +175,6 @@ MessageCenterViewTest::~MessageCenterViewTest() {
 }
 
 void MessageCenterViewTest::SetUp() {
-  views::ViewsTestBase::SetUp();
   message_center_.reset(new FakeMessageCenterImpl());
 
   // Create a dummy notification.
@@ -213,7 +213,6 @@ void MessageCenterViewTest::SetUp() {
 void MessageCenterViewTest::TearDown() {
   message_center_view_.reset();
   STLDeleteElements(&notifications_);
-  views::ViewsTestBase::TearDown();
 }
 
 MessageCenterView* MessageCenterViewTest::GetMessageCenterView() {

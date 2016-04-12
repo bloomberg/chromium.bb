@@ -157,7 +157,6 @@
 #include "net/url_request/url_request.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/strings/grit/app_locale_settings.h"
 
@@ -975,14 +974,12 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
                                         flags_ui::kAddSentinels);
   }
 #endif  // !defined(OS_CHROMEOS)
-  // The MaterialDesignController needs to look at command line flags, which
-  // are not available until this point. Now that they are, proceed with
-  // initializing the MaterialDesignController.
-  ui::MaterialDesignController::Initialize();
 
 #if defined(OS_MACOSX)
-  // Material Design resource packs can be loaded now that command line flags
-  // are set. See https://crbug.com/585290 .
+  // The MaterialDesignController needs to look at command line flags, which
+  // are not available until this point. Now that they are, proceed with
+  // (conditionally) loading the Material Design resource packs. See
+  // https://crbug.com/585290 .
   ui::ResourceBundle::GetSharedInstance().LoadMaterialDesignResources();
 #endif
 
