@@ -225,9 +225,6 @@ public:
 
     void addPartToUpdate(LayoutEmbeddedObject&);
 
-    void setIsPainting(bool val) const { m_isPainting = val; }
-    bool isPainting() const;
-
     Color documentBackgroundColor() const;
 
     // Run all needed lifecycle stages. After calling this method, all frames will be in the lifecycle state PaintInvalidationClean.
@@ -813,9 +810,6 @@ private:
     bool m_safeToPropagateScrollToParent;
 
     bool m_isTrackingPaintInvalidations; // Used for testing.
-
-    // TODO(wangxianzhu): Use document cycle state for spv2 and synchronzied painting.
-    mutable bool m_isPainting;
 
     unsigned m_visuallyNonEmptyCharacterCount;
     unsigned m_visuallyNonEmptyPixelCount;

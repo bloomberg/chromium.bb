@@ -1782,11 +1782,10 @@ void Document::updateLayoutTree()
     if (inStyleRecalc())
         return;
 
-    // Entering here from inside layout or paint would be catastrophic since recalcStyle can
+    // Entering here from inside layout, paint etc. would be catastrophic since recalcStyle can
     // tear down the layout tree or (unfortunately) run script. Kill the whole layoutObject if
-    // someone managed to get into here from inside layout or paint.
-    RELEASE_ASSERT(!view()->isInPerformLayout());
-    RELEASE_ASSERT(!view()->isPainting());
+    // someone managed to get into here in states not allowing tree mutations.
+    RELEASE_ASSERT(lifecycle().stateAllowsTreeMutations());
 
     TRACE_EVENT_BEGIN1("blink,devtools.timeline", "UpdateLayoutTree", "beginData", InspectorRecalculateStylesEvent::data(frame()));
     TRACE_EVENT_SCOPED_SAMPLING_STATE("blink", "UpdateLayoutTree");

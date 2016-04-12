@@ -218,7 +218,6 @@ void FrameView::reset()
     m_lastViewportSize = IntSize();
     m_lastZoomFactor = 1.0f;
     m_isTrackingPaintInvalidations = s_initialTrackAllPaintInvalidations;
-    m_isPainting = false;
     m_visuallyNonEmptyCharacterCount = 0;
     m_visuallyNonEmptyPixelCount = 0;
     m_isVisuallyNonEmpty = false;
@@ -933,8 +932,6 @@ void FrameView::layout()
 
     m_hasPendingLayout = false;
     DocumentLifecycle::Scope lifecycleScope(lifecycle(), DocumentLifecycle::LayoutClean);
-
-    RELEASE_ASSERT(!isPainting());
 
     TRACE_EVENT_BEGIN1("devtools.timeline", "Layout", "beginData", InspectorLayoutEvent::beginData(this));
 
@@ -2349,11 +2346,6 @@ FrameView* FrameView::parentFrameView() const
         return toLocalFrame(parentFrame)->view();
 
     return nullptr;
-}
-
-bool FrameView::isPainting() const
-{
-    return m_isPainting;
 }
 
 void FrameView::updateWidgetGeometriesIfNeeded()

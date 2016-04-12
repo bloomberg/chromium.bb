@@ -138,9 +138,6 @@ void FramePainter::paintContents(GraphicsContext& context, const GlobalPaintFlag
     if (document->printing())
         localPaintFlags |= GlobalPaintFlattenCompositingLayers | GlobalPaintPrinting;
 
-    ASSERT(!frameView().isPainting());
-    frameView().setIsPainting(true);
-
     PaintLayer* rootLayer = layoutView->layer();
 
 #if ENABLE(ASSERT)
@@ -158,8 +155,6 @@ void FramePainter::paintContents(GraphicsContext& context, const GlobalPaintFlag
 
     if (rootLayer->containsDirtyOverlayScrollbars())
         layerPainter.paintOverlayScrollbars(context, LayoutRect(rect), localPaintFlags);
-
-    frameView().setIsPainting(false);
 
     // Regions may have changed as a result of the visibility/z-index of element changing.
     if (document->annotatedRegionsDirty())
