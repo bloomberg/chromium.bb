@@ -140,7 +140,8 @@
             </paper-item>
           </template>
         </paper-menu>
-        <div id="sink-search" class$="[[computeSinkSearchClass_(currentView_)]]">
+        <div id="sink-search"
+            class$="[[computeSinkSearchClass_(currentView_, sinksToShow_)]]">
           <div class="sink-content">
             <div>
               <paper-icon-button id="sink-search-icon" icon="media-router:search"

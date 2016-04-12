@@ -287,7 +287,8 @@ Polymer({
 
     /**
      * Sinks to display that match |searchInputText_|.
-     * @private {!Array<!media_router.Sink>}
+     * @private {!Array<!{sinkItem: !media_router.Sink,
+     *                    substrings: Array<!Array<number>>}>}
      */
     searchResultsToShow_: {
       type: Array,
@@ -695,8 +696,9 @@ Polymer({
   },
 
   /**
-   * @param {!Array<!media_router.Sink>} searchResultsToShow The sinks currently
-   *     matching the search text.
+   * @param {!Array<!{sinkItem: !media_router.Sink,
+   *                  substrings: Array<!Array<number>>}>} searchResultsToShow
+   *     The sinks currently matching the search text.
    * @param {boolean} isUserSearching Whether the user is searching for sinks.
    * @return {boolean} Whether or not the 'no matches' message is hidden.
    * @private
@@ -769,7 +771,9 @@ Polymer({
   /**
    * Computes whether the search results list should be hidden.
    * @param {boolean} isUserSearching Whether the user is searching for sinks.
-   * @param {!Array<!media_router.Sink>} searchResultsToShow The sinks currently
+   * @param {!Array<!{sinkItem: !media_router.Sink,
+   *                  substrings: Array<!Array<number>>}>} searchResultsToShow
+   *     The sinks currently matching the search text.
    * @return {boolean} Whether the search results list should be hidden.
    * @private
    */
@@ -924,12 +928,15 @@ Polymer({
    * first or last item in the list, as indicated by |currentView|.
    * @param {?media_router.MediaRouterView} currentView The current view of the
    *     dialog.
+   * @param {!Array<!media_router.Sink>} sinksToShow The sinks available to
+   *     display for the current cast mode.
    * @return {string} The CSS that correctly sets the padding of #sink-search
    *     for the current view.
    * @private
    */
-  computeSinkSearchClass_: function(currentView) {
-    return (currentView == media_router.MediaRouterView.FILTER) ? '' : 'bottom';
+  computeSinkSearchClass_: function(currentView, sinksToShow) {
+    return (currentView == media_router.MediaRouterView.FILTER &&
+            sinksToShow.length > 0) ? '' : 'bottom';
   },
 
   /**
