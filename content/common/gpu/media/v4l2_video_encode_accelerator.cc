@@ -19,6 +19,7 @@
 #include "base/trace_event/trace_event.h"
 #include "content/common/gpu/media/shared_memory_region.h"
 #include "content/common/gpu/media/v4l2_video_encode_accelerator.h"
+#include "media/base/bind_to_current_loop.h"
 #include "media/base/bitstream_buffer.h"
 
 #define NOTIFY_ERROR(x)                        \
@@ -69,6 +70,13 @@ V4L2VideoEncodeAccelerator::OutputRecord::OutputRecord()
 
 V4L2VideoEncodeAccelerator::OutputRecord::~OutputRecord() {
 }
+
+V4L2VideoEncodeAccelerator::ImageProcessorInputRecord::
+    ImageProcessorInputRecord()
+    : force_keyframe(false) {}
+
+V4L2VideoEncodeAccelerator::ImageProcessorInputRecord::
+    ~ImageProcessorInputRecord() {}
 
 V4L2VideoEncodeAccelerator::V4L2VideoEncodeAccelerator(
     const scoped_refptr<V4L2Device>& device)
@@ -146,16 +154,26 @@ bool V4L2VideoEncodeAccelerator::Initialize(
     // Convert from input_format to device_input_format_, keeping the size
     // at visible_size_ and requiring the output buffers to be of at least
     // input_allocated_size_.
+    image_processor_output_allocated_size_ = input_allocated_size_;
     if (!image_processor_->Initialize(
-            input_format,
-            device_input_format_,
-            visible_size_,
-            visible_size_,
-            input_allocated_size_,
             base::Bind(&V4L2VideoEncodeAccelerator::ImageProcessorError,
-                       weak_this_))) {
+                       weak_this_),
+            input_format, device_input_format_, kImageProcBufferCount,
+            visible_size_, visible_size_,
+            &image_processor_output_allocated_size_)) {
       LOG(ERROR) << "Failed initializing image processor";
       return false;
+    }
+
+    for (int i = 0; i < kImageProcBufferCount; i++) {
+      std::vector<base::ScopedFD> fds =
+          image_processor_->GetDmabufsForOutputBuffer(i);
+      if (fds.size() == 0) {
+        LOG(ERROR) << __func__ << ": failed to get fds of image processor.";
+        return false;
+      }
+      image_processor_output_buffer_map_.push_back(std::move(fds));
+      free_image_processor_output_buffers_.push_back(i);
     }
   }
 
@@ -196,11 +214,19 @@ void V4L2VideoEncodeAccelerator::Encode(
   DCHECK(child_task_runner_->BelongsToCurrentThread());
 
   if (image_processor_) {
-    image_processor_->Process(
-        frame,
-        base::Bind(&V4L2VideoEncodeAccelerator::FrameProcessed,
-                   weak_this_,
-                   force_keyframe));
+    if (free_image_processor_output_buffers_.size() > 0) {
+      int output_buffer_index = free_image_processor_output_buffers_.back();
+      free_image_processor_output_buffers_.pop_back();
+      image_processor_->Process(
+          frame, output_buffer_index,
+          base::Bind(&V4L2VideoEncodeAccelerator::FrameProcessed, weak_this_,
+                     force_keyframe, frame->timestamp()));
+    } else {
+      ImageProcessorInputRecord record;
+      record.frame = frame;
+      record.force_keyframe = force_keyframe;
+      image_processor_input_queue_.push(record);
+    }
   } else {
     encoder_thread_.message_loop()->PostTask(
         FROM_HERE,
@@ -323,18 +349,49 @@ V4L2VideoEncodeAccelerator::GetSupportedProfiles() {
   return profiles;
 }
 
-void V4L2VideoEncodeAccelerator::FrameProcessed(
-    bool force_keyframe,
-    const scoped_refptr<media::VideoFrame>& frame) {
+void V4L2VideoEncodeAccelerator::FrameProcessed(bool force_keyframe,
+                                                base::TimeDelta timestamp,
+                                                int output_buffer_index) {
   DCHECK(child_task_runner_->BelongsToCurrentThread());
-  DVLOG(3) << "FrameProcessed(): force_keyframe=" << force_keyframe;
+  DVLOG(3) << "FrameProcessed(): force_keyframe=" << force_keyframe
+           << ", output_buffer_index=" << output_buffer_index;
+  DCHECK_GE(output_buffer_index, 0);
+  DCHECK_LT(output_buffer_index, image_processor_output_buffer_map_.size());
+
+  std::vector<base::ScopedFD>& scoped_fds =
+      image_processor_output_buffer_map_[output_buffer_index];
+  std::vector<int> fds;
+  for (auto& fd : scoped_fds) {
+    fds.push_back(fd.get());
+  }
+  scoped_refptr<media::VideoFrame> output_frame =
+      media::VideoFrame::WrapExternalDmabufs(
+          device_input_format_, image_processor_output_allocated_size_,
+          gfx::Rect(visible_size_), visible_size_, fds, timestamp);
+  if (!output_frame) {
+    NOTIFY_ERROR(kPlatformFailureError);
+    return;
+  }
+  output_frame->AddDestructionObserver(media::BindToCurrentLoop(
+      base::Bind(&V4L2VideoEncodeAccelerator::ReuseImageProcessorOutputBuffer,
+                 weak_this_, output_buffer_index)));
 
   encoder_thread_.message_loop()->PostTask(
       FROM_HERE,
       base::Bind(&V4L2VideoEncodeAccelerator::EncodeTask,
-                 base::Unretained(this),
-                 frame,
-                 force_keyframe));
+                 base::Unretained(this), output_frame, force_keyframe));
+}
+
+void V4L2VideoEncodeAccelerator::ReuseImageProcessorOutputBuffer(
+    int output_buffer_index) {
+  DCHECK(child_task_runner_->BelongsToCurrentThread());
+  DVLOG(3) << __func__ << ": output_buffer_index=" << output_buffer_index;
+  free_image_processor_output_buffers_.push_back(output_buffer_index);
+  if (!image_processor_input_queue_.empty()) {
+    ImageProcessorInputRecord record = image_processor_input_queue_.front();
+    image_processor_input_queue_.pop();
+    Encode(record.frame, record.force_keyframe);
+  }
 }
 
 void V4L2VideoEncodeAccelerator::EncodeTask(
@@ -349,7 +406,7 @@ void V4L2VideoEncodeAccelerator::EncodeTask(
     return;
   }
 
-  encoder_input_queue_.push_back(frame);
+  encoder_input_queue_.push(frame);
   Enqueue();
 
   if (force_keyframe) {
@@ -657,7 +714,7 @@ bool V4L2VideoEncodeAccelerator::EnqueueInputRecord() {
   IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_QBUF, &qbuf);
   input_record.at_device = true;
   input_record.frame = frame;
-  encoder_input_queue_.pop_front();
+  encoder_input_queue_.pop();
   free_input_buffers_.pop_back();
   input_buffer_queued_count_++;
   return true;
@@ -738,7 +795,8 @@ bool V4L2VideoEncodeAccelerator::StopDevicePoll() {
   output_streamon_ = false;
 
   // Reset all our accounting info.
-  encoder_input_queue_.clear();
+  while (!encoder_input_queue_.empty())
+    encoder_input_queue_.pop();
   free_input_buffers_.clear();
   for (size_t i = 0; i < input_buffer_map_.size(); ++i) {
     InputRecord& input_record = input_buffer_map_[i];

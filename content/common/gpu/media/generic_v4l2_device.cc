@@ -176,6 +176,31 @@ bool GenericV4L2Device::Initialize() {
   return true;
 }
 
+std::vector<base::ScopedFD> GenericV4L2Device::GetDmabufsForV4L2Buffer(
+    int index,
+    size_t num_planes,
+    enum v4l2_buf_type type) {
+  DCHECK(V4L2_TYPE_IS_MULTIPLANAR(type));
+
+  std::vector<base::ScopedFD> dmabuf_fds;
+  for (size_t i = 0; i < num_planes; ++i) {
+    struct v4l2_exportbuffer expbuf;
+    memset(&expbuf, 0, sizeof(expbuf));
+    expbuf.type = type;
+    expbuf.index = index;
+    expbuf.plane = i;
+    expbuf.flags = O_CLOEXEC;
+    if (Ioctl(VIDIOC_EXPBUF, &expbuf) != 0) {
+      dmabuf_fds.clear();
+      break;
+    }
+
+    dmabuf_fds.push_back(base::ScopedFD(expbuf.fd));
+  }
+
+  return dmabuf_fds;
+}
+
 bool GenericV4L2Device::CanCreateEGLImageFrom(uint32_t v4l2_pixfmt) {
   static uint32_t kEGLImageDrmFmtsSupported[] = {
     DRM_FORMAT_ARGB8888,

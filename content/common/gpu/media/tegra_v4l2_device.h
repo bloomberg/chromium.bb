@@ -35,6 +35,10 @@ class TegraV4L2Device : public V4L2Device {
              unsigned int offset) override;
   void Munmap(void* addr, unsigned int len) override;
   bool Initialize() override;
+  std::vector<base::ScopedFD> GetDmabufsForV4L2Buffer(
+      int index,
+      size_t num_planes,
+      enum v4l2_buf_type type) override;
   bool CanCreateEGLImageFrom(uint32_t v4l2_pixfmt) override;
   EGLImageKHR CreateEGLImage(EGLDisplay egl_display,
                              EGLContext egl_context,

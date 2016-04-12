@@ -12,6 +12,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <linux/videodev2.h>
+
+#include "base/files/scoped_file.h"
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 #include "media/base/video_decoder_config.h"
@@ -49,7 +52,7 @@ class CONTENT_EXPORT V4L2Device
   };
 
   // Creates and initializes an appropriate V4L2Device of |type| for the
-  // current platform and returns a std::unique_ptr<V4L2Device> on success, or
+  // current platform and returns a scoped_refptr<V4L2Device> on success, or
   // NULL.
   static scoped_refptr<V4L2Device> Create(Type type);
 
@@ -86,6 +89,15 @@ class CONTENT_EXPORT V4L2Device
   // Initializes the V4L2Device to operate as a device of |type|.
   // Returns true on success.
   virtual bool Initialize() = 0;
+
+  // Return a vector of dmabuf file descriptors, exported for V4L2 buffer with
+  // |index|, assuming the buffer contains |num_planes| V4L2 planes and is of
+  // |type|. Return an empty vector on failure.
+  // The caller is responsible for closing the file descriptors after use.
+  virtual std::vector<base::ScopedFD> GetDmabufsForV4L2Buffer(
+      int index,
+      size_t num_planes,
+      enum v4l2_buf_type type) = 0;
 
   // Return true if the given V4L2 pixfmt can be used in CreateEGLImage()
   // for the current platform.

@@ -32,28 +32,39 @@ class CONTENT_EXPORT V4L2ImageProcessor {
 
   // Initializes the processor to convert from |input_format| to |output_format|
   // and/or scale from |input_visible_size| to |output_visible_size|.
-  // Request the output buffers to be of at least |output_allocated_size|.
-  // Provided |error_cb| will be called if an error occurs.
-  // Return true if the requested configuration is supported.
-  bool Initialize(media::VideoPixelFormat input_format,
+  // Request the output buffers to be of at least |output_allocated_size|. The
+  // adjusted size will be stored back to |output_allocated_size|. The number of
+  // input buffers and output buffers will be |num_buffers|. Provided |error_cb|
+  // will be called if an error occurs. Return true if the requested
+  // configuration is supported.
+  bool Initialize(const base::Closure& error_cb,
+                  media::VideoPixelFormat input_format,
                   media::VideoPixelFormat output_format,
+                  int num_buffers,
                   gfx::Size input_visible_size,
                   gfx::Size output_visible_size,
-                  gfx::Size output_allocated_size,
-                  const base::Closure& error_cb);
+                  gfx::Size* output_allocated_size);
+
+  // Return a vector of dmabuf file descriptors, exported for V4L2 output buffer
+  // with |index|. The size of vector will be the number of planes of the
+  // buffer. Return an empty vector on failure.
+  std::vector<base::ScopedFD> GetDmabufsForOutputBuffer(
+      int output_buffer_index);
 
   // Returns allocated size required by the processor to be fed with.
   gfx::Size input_allocated_size() { return input_allocated_size_; }
 
-  // Callback to be used to return a processed image to the client. The client
-  // should drop references to |frame| once it's done with it.
-  typedef base::Callback<void(const scoped_refptr<media::VideoFrame>& frame)>
-      FrameReadyCB;
+  // Callback to be used to return the index of a processed image to the
+  // client. After the client is done with the frame, call Process with the
+  // index to return the output buffer to the image processor.
+  typedef base::Callback<void(int output_buffer_index)> FrameReadyCB;
 
-  // Called by client to process |frame|. The resulting processed frame will
-  // be returned via |cb|. The processor will drop all its references to |frame|
-  // after it finishes accessing it.
+  // Called by client to process |frame|. The resulting processed frame will be
+  // stored in |output_buffer_index| output buffer and notified via |cb|. The
+  // processor will drop all its references to |frame| after it finishes
+  // accessing it.
   void Process(const scoped_refptr<media::VideoFrame>& frame,
+               int output_buffer_index,
                const FrameReadyCB& cb);
 
   // Stop all processing and clean up.
@@ -73,35 +84,25 @@ class CONTENT_EXPORT V4L2ImageProcessor {
     OutputRecord();
     ~OutputRecord();
     bool at_device;
-    bool at_client;
-    std::vector<int> fds;
   };
 
   // Job record. Jobs are processed in a FIFO order. This is separate from
   // InputRecord, because an InputRecord may be returned before we dequeue
-  // the corresponding output buffer. It can't always be associated with
-  // an OutputRecord immediately either, because at the time of submission we
-  // may not have one available (and don't need one to submit input to the
-  // device).
+  // the corresponding output buffer. The processed frame will be stored in
+  // |output_buffer_index| output buffer.
   struct JobRecord {
     JobRecord();
     ~JobRecord();
     scoped_refptr<media::VideoFrame> frame;
+    int output_buffer_index;
     FrameReadyCB ready_cb;
   };
 
-  enum {
-    // Arbitrarily tuned.
-    kInputBufferCount = 2,
-    kOutputBufferCount = 2,
-  };
-
-  void ReuseOutputBuffer(int index);
-
-  void Enqueue();
+  void EnqueueInput();
+  void EnqueueOutput(int index);
   void Dequeue();
   bool EnqueueInputRecord();
-  bool EnqueueOutputRecord();
+  bool EnqueueOutputRecord(int index);
   bool CreateInputBuffers();
   bool CreateOutputBuffers();
   void DestroyInputBuffers();
@@ -166,10 +167,10 @@ class CONTENT_EXPORT V4L2ImageProcessor {
   bool output_streamon_;
   // Number of output buffers enqueued to the device.
   int output_buffer_queued_count_;
-  // Output buffers ready to use; LIFO since we don't care about ordering.
-  std::vector<int> free_output_buffers_;
   // Mapping of int index to an output buffer record.
   std::vector<OutputRecord> output_buffer_map_;
+  // The number of input or output buffers.
+  int num_buffers_;
 
   // Error callback to the client.
   base::Closure error_cb_;

@@ -11,10 +11,12 @@
 #include <list>
 #include <vector>
 
+#include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread.h"
+#include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "content/common/gpu/media/v4l2_device.h"
 #include "content/common/gpu/media/v4l2_image_processor.h"
@@ -81,11 +83,19 @@ class CONTENT_EXPORT V4L2VideoEncodeAccelerator
     size_t length;
   };
 
+  struct ImageProcessorInputRecord {
+    ImageProcessorInputRecord();
+    ~ImageProcessorInputRecord();
+    scoped_refptr<media::VideoFrame> frame;
+    bool force_keyframe;
+  };
+
   enum {
     kInitialFramerate = 30,
     // These are rather subjectively tuned.
     kInputBufferCount = 2,
     kOutputBufferCount = 2,
+    kImageProcBufferCount = 2,
     kOutputBufferSize = (2 * 1024 * 1024),
   };
 
@@ -103,7 +113,8 @@ class CONTENT_EXPORT V4L2VideoEncodeAccelerator
 
   // Callback run by the image processor when a frame is ready for us to encode.
   void FrameProcessed(bool force_keyframe,
-                      const scoped_refptr<media::VideoFrame>& frame);
+                      base::TimeDelta timestamp,
+                      int output_buffer_index);
 
   // Error callback for handling image processor errors.
   void ImageProcessorError();
@@ -191,6 +202,9 @@ class CONTENT_EXPORT V4L2VideoEncodeAccelerator
   // Set controls in |ctrls| and return true if successful.
   bool SetExtCtrls(std::vector<struct v4l2_ext_control> ctrls);
 
+  // Recycle output buffer of image processor with |output_buffer_index|.
+  void ReuseImageProcessorOutputBuffer(int output_buffer_index);
+
   // Our original calling task runner for the child thread.
   const scoped_refptr<base::SingleThreadTaskRunner> child_task_runner_;
 
@@ -220,7 +234,7 @@ class CONTENT_EXPORT V4L2VideoEncodeAccelerator
   size_t stream_header_size_;
 
   // Video frames ready to be encoded.
-  std::list<scoped_refptr<media::VideoFrame> > encoder_input_queue_;
+  std::queue<scoped_refptr<media::VideoFrame>> encoder_input_queue_;
 
   // Encoder device.
   scoped_refptr<V4L2Device> device_;
@@ -250,6 +264,15 @@ class CONTENT_EXPORT V4L2VideoEncodeAccelerator
 
   // Image processor, if one is in use.
   std::unique_ptr<V4L2ImageProcessor> image_processor_;
+  // Indexes of free image processor output buffers. Only accessed on child
+  // thread.
+  std::vector<int> free_image_processor_output_buffers_;
+  // Output allocated size of image processor.
+  gfx::Size image_processor_output_allocated_size_;
+  // Video frames ready to be processed. Only accessed on child thread.
+  std::queue<ImageProcessorInputRecord> image_processor_input_queue_;
+  // Mapping of int index to fds of image processor output buffer.
+  std::vector<std::vector<base::ScopedFD>> image_processor_output_buffer_map_;
 
   // This thread services tasks posted from the VEA API entry points by the
   // child thread and device service callbacks posted from the device thread.
