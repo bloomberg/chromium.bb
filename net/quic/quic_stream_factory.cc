@@ -669,6 +669,7 @@ QuicStreamFactory::QuicStreamFactory(
   DCHECK(http_server_properties_);
   crypto_config_.set_user_agent_id(user_agent_id);
   crypto_config_.AddCanonicalSuffix(".c.youtube.com");
+  crypto_config_.AddCanonicalSuffix(".ggpht.com");
   crypto_config_.AddCanonicalSuffix(".googlevideo.com");
   crypto_config_.AddCanonicalSuffix(".googleusercontent.com");
   // TODO(rtenneti): http://crbug.com/487355. Temporary fix for b/20760730 until

@@ -35,6 +35,7 @@ HttpServerPropertiesImpl::HttpServerPropertiesImpl()
       quic_server_info_map_(QuicServerInfoMap::NO_AUTO_EVICT),
       max_server_configs_stored_in_properties_(kMaxQuicServersToPersist),
       weak_ptr_factory_(this) {
+  canonical_suffixes_.push_back(".ggpht.com");
   canonical_suffixes_.push_back(".c.youtube.com");
   canonical_suffixes_.push_back(".googlevideo.com");
   canonical_suffixes_.push_back(".googleusercontent.com");
