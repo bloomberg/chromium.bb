@@ -86,7 +86,6 @@ bool CommandBufferDriver::Initialize(
     return false;
 
   const bool offscreen = widget_ == gfx::kNullAcceleratedWidget;
-  static scoped_refptr<gfx::GLSurface> underlying_surface;
   if (offscreen) {
     surface_ = gfx::GLSurface::CreateOffscreenGLSurface(gfx::Size(0, 0));
   } else {
