@@ -44,13 +44,11 @@ Polymer({
 
     /**
      * The currently selected item. This property is bound to the iron-selector
-     * and never directly assigned.
-     * @private {settings.ChangePictureImageElement}
+     * and never directly assigned. This may be undefined momentarily as
+     * the selection changes due to iron-selector implementation details.
+     * @private {?settings.ChangePictureImageElement}
      */
-    selectedItem_: {
-      type: settings.ChangePictureImageElement,
-      notify: !!settings_test.changePictureNotifyForTest,
-    },
+    selectedItem_: Object,
 
     /**
      * The url of the 'old' image, which is the existing image sourced from
@@ -87,10 +85,7 @@ Polymer({
      * This may be null if the user started with the 'old' image.
      * @private {?settings.ChangePictureImageElement}
      */
-    fallbackImage_: {
-      type: settings.ChangePictureImageElement,
-      value: null,
-    },
+    fallbackImage_: Object,
 
     /**
      * Type of the last selected icon. This is used to jump back to the camera
@@ -322,8 +317,7 @@ Polymer({
     assert(this.defaultImages_.length > 0);
     this.browserProxy_.selectDefaultImage(this.defaultImages_[0].url);
 
-    announceAccessibleMessage(
-        loadTimeData.getString('photoDiscardAccessibleText'));
+    announceAccessibleMessage(this.i18n('photoDiscardAccessibleText'));
   },
 
   /**

@@ -67,7 +67,35 @@ TEST_F('CrSettingsBrowserTest', 'MAYBE_CrSettingsTest', function() {
   mocha.run();
 });
 
-GEN('#if !defined(OS_CHROMEOS)');
+GEN('#if defined(OS_CHROMEOS)');
+/**
+ * Test fixture for
+ * chrome/browser/resources/settings/people_page/change_picture.html.
+ * This is ChromeOS only.
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+*/
+function CrSettingsPeoplePageChangePictureTest() {}
+
+CrSettingsPeoplePageChangePictureTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://md-settings/people_page/change_picture.html',
+
+  /** @override */
+  extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
+    ROOT_PATH + 'ui/webui/resources/js/promise_resolver.js',
+    'test_browser_proxy.js',
+    'people_page_change_picture_test.js',
+  ]),
+};
+
+TEST_F('CrSettingsPeoplePageChangePictureTest', 'ChangePicture', function() {
+  settings_people_page_change_picture.registerTests();
+  mocha.run();
+});
+GEN('#else');  // !defined(OS_CHROMEOS)
 /**
  * Test fixture for
  * chrome/browser/resources/settings/people_page/manage_profile.html.

@@ -33,6 +33,7 @@ Polymer({
     cameraActive: {
       type: Boolean,
       observer: 'cameraActiveChanged_',
+      value: false,
     },
 
     /**
