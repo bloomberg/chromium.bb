@@ -9,6 +9,10 @@
 #include "ui/ozone/public/input_controller.h"
 #include "ui/ozone/public/ozone_platform.h"
 
+#if defined(MOJO_SHELL_CLIENT)
+#include "content/public/common/mojo_shell_connection.h"
+#endif
+
 namespace chromeos {
 namespace system {
 
@@ -16,6 +20,15 @@ namespace {
 
 InputDeviceSettings* g_instance = nullptr;
 InputDeviceSettings* g_test_instance = nullptr;
+
+std::unique_ptr<ui::InputController> CreateStubInputControllerIfNecessary() {
+#if defined(MOJO_SHELL_CLIENT)
+  content::MojoShellConnection* conn = content::MojoShellConnection::Get();
+  if (conn && conn->UsingExternalShell())
+    return ui::CreateStubInputController();
+#endif
+  return nullptr;
+}
 
 // InputDeviceSettings for Linux without X11 (a.k.a. Ozone).
 class InputDeviceSettingsImplOzone : public InputDeviceSettings {
@@ -43,6 +56,10 @@ class InputDeviceSettingsImplOzone : public InputDeviceSettings {
   void SetInternalTouchpadEnabled(bool enabled) override;
   void SetTouchscreensEnabled(bool enabled) override;
 
+  // TODO(sad): A stub input controller is used when running inside mus.
+  // http://crbug.com/601981
+  std::unique_ptr<ui::InputController> stub_controller_;
+
   // Cached InputController pointer. It should be fixed throughout the browser
   // session.
   ui::InputController* input_controller_;
@@ -55,10 +72,13 @@ class InputDeviceSettingsImplOzone : public InputDeviceSettings {
 };
 
 InputDeviceSettingsImplOzone::InputDeviceSettingsImplOzone()
-    : input_controller_(
-          ui::OzonePlatform::GetInstance()->GetInputController()) {
+    : stub_controller_(CreateStubInputControllerIfNecessary()),
+      input_controller_(
+          stub_controller_
+              ? stub_controller_.get()
+              : ui::OzonePlatform::GetInstance()->GetInputController()) {
   // Make sure the input controller does exist.
-  DCHECK(ui::OzonePlatform::GetInstance()->GetInputController());
+  DCHECK(input_controller_);
 }
 
 void InputDeviceSettingsImplOzone::TouchpadExists(
