@@ -217,9 +217,9 @@
     },
 
     'chromium.gpu': {
-      'Android Debug (Nexus 5)': 'android_gyp_debug_static_bot',
-      'Android Debug (Nexus 6)': 'android_gyp_debug_static_bot',
-      'Android Debug (Nexus 9)': 'android_gyp_debug_static_bot_arm64',
+      'Android Debug (Nexus 5)': 'android_gn_debug_static_bot',
+      'Android Debug (Nexus 6)': 'android_gn_debug_static_bot',
+      'Android Debug (Nexus 9)': 'android_gn_debug_static_bot_arm64',
       'GPU Mac Builder': 'swarming_gpu_tests_gyp_release_bot',
       'GPU Mac Builder (dbg)': 'swarming_gpu_tests_gyp_debug_bot',
       'GPU Linux Builder (dbg)': 'swarming_gpu_tests_gn_debug_bot',
@@ -971,12 +971,12 @@
       'android', 'gn', 'release_trybot',
     ],
 
-    'android_gyp_debug_static_bot': [
-      'android', 'gyp', 'debug_static_bot',
+    'android_gn_debug_static_bot': [
+      'android', 'gn', 'debug_static_bot',
     ],
 
-    'android_gyp_debug_static_bot_arm64': [
-      'android', 'gyp', 'debug_static_bot', 'arm64',
+    'android_gn_debug_static_bot_arm64': [
+      'android', 'gn', 'debug_static_bot', 'arm64',
     ],
 
     'android_without_codecs_gyp_release_bot_minimal_symbols': [
