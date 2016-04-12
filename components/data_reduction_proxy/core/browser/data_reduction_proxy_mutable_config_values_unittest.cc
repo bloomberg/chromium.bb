@@ -7,7 +7,6 @@
 #include <vector>
 
 #include "base/command_line.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "net/proxy/proxy_server.h"
@@ -34,8 +33,8 @@ class DataReductionProxyMutableConfigValuesTest : public testing::Test {
   }
 
  private:
-  scoped_ptr<DataReductionProxyParams> params_;
-  scoped_ptr<DataReductionProxyMutableConfigValues> mutable_config_values_;
+  std::unique_ptr<DataReductionProxyParams> params_;
+  std::unique_ptr<DataReductionProxyMutableConfigValues> mutable_config_values_;
 };
 
 TEST_F(DataReductionProxyMutableConfigValuesTest, UpdateValuesAndInvalidate) {

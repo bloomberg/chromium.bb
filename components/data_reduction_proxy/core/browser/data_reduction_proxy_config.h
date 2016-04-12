@@ -7,13 +7,13 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "net/base/net_errors.h"
@@ -92,7 +92,7 @@ class DataReductionProxyConfig
   // |configurator| is the target for a configuration update.
   DataReductionProxyConfig(
       net::NetLog* net_log,
-      scoped_ptr<DataReductionProxyConfigValues> config_values,
+      std::unique_ptr<DataReductionProxyConfigValues> config_values,
       DataReductionProxyConfigurator* configurator,
       DataReductionProxyEventCreator* event_creator);
   ~DataReductionProxyConfig() override;
@@ -290,7 +290,7 @@ class DataReductionProxyConfig
   void RecordAutoLoFiAccuracyRate(
       const net::NetworkQualityEstimator* network_quality_estimator) const;
 
-  scoped_ptr<SecureProxyChecker> secure_proxy_checker_;
+  std::unique_ptr<SecureProxyChecker> secure_proxy_checker_;
 
   // Indicates if the secure Data Reduction Proxy can be used or not.
   bool secure_proxy_allowed_;
@@ -299,7 +299,7 @@ class DataReductionProxyConfig
   bool enabled_by_user_;
 
   // Contains the configuration data being used.
-  scoped_ptr<DataReductionProxyConfigValues> config_values_;
+  std::unique_ptr<DataReductionProxyConfigValues> config_values_;
 
   // The caller must ensure that the |net_log_|, if set, outlives this instance.
   // It is used to create new instances of |bound_net_log_| on secure proxy

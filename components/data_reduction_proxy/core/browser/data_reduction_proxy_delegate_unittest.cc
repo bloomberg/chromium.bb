@@ -7,13 +7,14 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/numerics/safe_conversions.h"
@@ -76,7 +77,7 @@ net::ProxyServer GetProxyWithScheme(net::ProxyServer::Scheme scheme) {
 // Tests that the trusted SPDY proxy is verified correctly.
 TEST(DataReductionProxyDelegate, IsTrustedSpdyProxy) {
   base::MessageLoopForIO message_loop_;
-  scoped_ptr<DataReductionProxyTestContext> test_context =
+  std::unique_ptr<DataReductionProxyTestContext> test_context =
       DataReductionProxyTestContext::Builder()
           .WithConfigClient()
           .WithTestConfigurator()
@@ -138,14 +139,15 @@ TEST(DataReductionProxyDelegate, IsTrustedSpdyProxy) {
       proxies_for_http.push_back(second_proxy);
     }
 
-    scoped_ptr<DataReductionProxyMutableConfigValues> config_values =
+    std::unique_ptr<DataReductionProxyMutableConfigValues> config_values =
         DataReductionProxyMutableConfigValues::CreateFromParams(
             test_context->test_params());
     config_values->UpdateValues(proxies_for_http);
 
-    scoped_ptr<DataReductionProxyConfig> config(new DataReductionProxyConfig(
-        test_context->net_log(), std::move(config_values),
-        test_context->configurator(), test_context->event_creator()));
+    std::unique_ptr<DataReductionProxyConfig> config(
+        new DataReductionProxyConfig(
+            test_context->net_log(), std::move(config_values),
+            test_context->configurator(), test_context->event_creator()));
 
     DataReductionProxyDelegate delegate(
         test_context->io_data()->request_options(), config.get(),
@@ -212,7 +214,7 @@ class DataReductionProxyDelegateTest : public testing::Test {
     context_.set_client_socket_factory(&mock_socket_factory_);
     test_context_->AttachToURLRequestContext(&context_storage_);
 
-    scoped_ptr<TestLoFiUIService> lofi_ui_service(new TestLoFiUIService());
+    std::unique_ptr<TestLoFiUIService> lofi_ui_service(new TestLoFiUIService());
     lofi_ui_service_ = lofi_ui_service.get();
     test_context_->io_data()->set_lofi_ui_service(std::move(lofi_ui_service));
 
@@ -228,7 +230,7 @@ class DataReductionProxyDelegateTest : public testing::Test {
   // the last line should have a second "\r\n".
   // An empty |response_headers| is allowed. It works by making this look like
   // an HTTP/0.9 response, since HTTP/0.9 responses don't have headers.
-  scoped_ptr<net::URLRequest> FetchURLRequest(
+  std::unique_ptr<net::URLRequest> FetchURLRequest(
       const GURL& url,
       net::HttpRequestHeaders* request_headers,
       const std::string& response_headers,
@@ -242,7 +244,7 @@ class DataReductionProxyDelegateTest : public testing::Test {
     mock_socket_factory_.AddSocketDataProvider(&socket);
 
     net::TestDelegate delegate;
-    scoped_ptr<net::URLRequest> request =
+    std::unique_ptr<net::URLRequest> request =
         context_.CreateRequest(url, net::IDLE, &delegate);
     if (request_headers)
       request->SetExtraRequestHeaders(*request_headers);
@@ -280,8 +282,8 @@ class DataReductionProxyDelegateTest : public testing::Test {
         reinterpret_cast<const DataReductionProxyNetworkDelegate*>(
             context_.network_delegate());
 
-    scoped_ptr<base::DictionaryValue> session_network_stats_info =
-        base::DictionaryValue::From(make_scoped_ptr(
+    std::unique_ptr<base::DictionaryValue> session_network_stats_info =
+        base::DictionaryValue::From(base::WrapUnique(
             drp_network_delegate->SessionNetworkStatsInfoToValue()));
     EXPECT_TRUE(session_network_stats_info);
 
@@ -298,8 +300,8 @@ class DataReductionProxyDelegateTest : public testing::Test {
   net::URLRequestContextStorage context_storage_;
 
   TestLoFiUIService* lofi_ui_service_;
-  scoped_ptr<net::ProxyDelegate> proxy_delegate_;
-  scoped_ptr<DataReductionProxyTestContext> test_context_;
+  std::unique_ptr<net::ProxyDelegate> proxy_delegate_;
+  std::unique_ptr<DataReductionProxyTestContext> test_context_;
 };
 
 TEST_F(DataReductionProxyDelegateTest, OnResolveProxyHandler) {
@@ -527,7 +529,7 @@ TEST_F(DataReductionProxyDelegateTest, OnCompletedSizeFor200) {
       "Chrome-Proxy: q=low\r\n"
       "Content-Length: 1000\r\n\r\n";
 
-  scoped_ptr<net::URLRequest> request = FetchURLRequest(
+  std::unique_ptr<net::URLRequest> request = FetchURLRequest(
       GURL("http://example.com/path/"), nullptr, kDrpResponseHeaders, 1000);
 
   EXPECT_EQ(request->GetTotalReceivedBytes(),
@@ -549,7 +551,7 @@ TEST_F(DataReductionProxyDelegateTest, OnCompletedSizeFor304) {
       "Via: 1.1 Chrome-Compression-Proxy\r\n"
       "X-Original-Content-Length: 10000\r\n\r\n";
 
-  scoped_ptr<net::URLRequest> request = FetchURLRequest(
+  std::unique_ptr<net::URLRequest> request = FetchURLRequest(
       GURL("http://example.com/path/"), nullptr, kDrpResponseHeaders, 0);
 
   EXPECT_EQ(request->GetTotalReceivedBytes(),
@@ -574,7 +576,7 @@ TEST_F(DataReductionProxyDelegateTest, OnCompletedSizeForWriteError) {
   mock_socket_factory()->AddSocketDataProvider(&socket);
 
   net::TestDelegate delegate;
-  scoped_ptr<net::URLRequest> request = context()->CreateRequest(
+  std::unique_ptr<net::URLRequest> request = context()->CreateRequest(
       GURL("http://example.com/path/"), net::IDLE, &delegate);
   request->Start();
   base::RunLoop().RunUntilIdle();
@@ -598,7 +600,7 @@ TEST_F(DataReductionProxyDelegateTest, OnCompletedSizeForReadError) {
   mock_socket_factory()->AddSocketDataProvider(&socket);
 
   net::TestDelegate delegate;
-  scoped_ptr<net::URLRequest> request = context()->CreateRequest(
+  std::unique_ptr<net::URLRequest> request = context()->CreateRequest(
       GURL("http://example.com/path/"), net::IDLE, &delegate);
   request->Start();
   base::RunLoop().RunUntilIdle();

@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_storage_delegate.h"
 
@@ -27,27 +26,27 @@ void TestDataReductionProxyEventStorageDelegate::SetStorageDelegate(
 }
 
 void TestDataReductionProxyEventStorageDelegate::AddEvent(
-    scoped_ptr<base::Value> event) {
+    std::unique_ptr<base::Value> event) {
   if (delegate_)
     delegate_->AddEvent(std::move(event));
 }
 
 void TestDataReductionProxyEventStorageDelegate::AddEnabledEvent(
-    scoped_ptr<base::Value> event,
+    std::unique_ptr<base::Value> event,
     bool enabled) {
   if (delegate_)
     delegate_->AddEnabledEvent(std::move(event), enabled);
 }
 
 void TestDataReductionProxyEventStorageDelegate::AddAndSetLastBypassEvent(
-    scoped_ptr<base::Value> event,
+    std::unique_ptr<base::Value> event,
     int64_t expiration_ticks) {
   if (delegate_)
     delegate_->AddAndSetLastBypassEvent(std::move(event), expiration_ticks);
 }
 
 void TestDataReductionProxyEventStorageDelegate::
-    AddEventAndSecureProxyCheckState(scoped_ptr<base::Value> event,
+    AddEventAndSecureProxyCheckState(std::unique_ptr<base::Value> event,
                                      SecureProxyCheckState state) {
   if (delegate_)
     delegate_->AddEventAndSecureProxyCheckState(std::move(event), state);

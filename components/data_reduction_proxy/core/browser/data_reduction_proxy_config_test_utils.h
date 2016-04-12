@@ -5,7 +5,8 @@
 #ifndef COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_CONFIG_TEST_UTILS_H_
 #define COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_CONFIG_TEST_UTILS_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
 #include "net/base/network_interfaces.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -40,7 +41,7 @@ class TestDataReductionProxyConfig : public DataReductionProxyConfig {
   // This permits any DataReductionProxyConfigValues to be used (such as
   // DataReductionProxyParams or DataReductionProxyMutableConfigValues).
   TestDataReductionProxyConfig(
-      scoped_ptr<DataReductionProxyConfigValues> config_values,
+      std::unique_ptr<DataReductionProxyConfigValues> config_values,
       net::NetLog* net_log,
       DataReductionProxyConfigurator* configurator,
       DataReductionProxyEventCreator* event_creator);
@@ -81,7 +82,7 @@ class TestDataReductionProxyConfig : public DataReductionProxyConfig {
   }
 
  private:
-  scoped_ptr<net::NetworkInterfaceList> network_interfaces_;
+  std::unique_ptr<net::NetworkInterfaceList> network_interfaces_;
 
   // True if network quality is slow enough to turn Auto Lo-Fi ON.
   bool network_quality_prohibitively_slow_;
@@ -93,7 +94,7 @@ class MockDataReductionProxyConfig : public TestDataReductionProxyConfig {
  public:
   // Creates a |MockDataReductionProxyConfig|.
   MockDataReductionProxyConfig(
-      scoped_ptr<DataReductionProxyConfigValues> config_values,
+      std::unique_ptr<DataReductionProxyConfigValues> config_values,
       net::NetLog* net_log,
       DataReductionProxyConfigurator* configurator,
       DataReductionProxyEventCreator* event_creator);

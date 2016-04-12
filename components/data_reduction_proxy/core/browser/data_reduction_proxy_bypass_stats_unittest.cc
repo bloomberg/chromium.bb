@@ -7,13 +7,14 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/test/histogram_tester.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.h"
@@ -70,7 +71,7 @@ class DataReductionProxyBypassStatsTest : public testing::Test {
     // The |test_job_factory_| takes ownership of the interceptor.
     test_job_interceptor_ = new net::TestJobInterceptor();
     EXPECT_TRUE(test_job_factory_.SetProtocolHandler(
-        url::kHttpScheme, make_scoped_ptr(test_job_interceptor_)));
+        url::kHttpScheme, base::WrapUnique(test_job_interceptor_)));
 
     context_.set_job_factory(&test_job_factory_);
 
@@ -79,15 +80,15 @@ class DataReductionProxyBypassStatsTest : public testing::Test {
     mock_url_request_ = context_.CreateRequest(GURL(), net::IDLE, &delegate_);
   }
 
-  scoped_ptr<net::URLRequest> CreateURLRequestWithResponseHeaders(
+  std::unique_ptr<net::URLRequest> CreateURLRequestWithResponseHeaders(
       const GURL& url,
       const std::string& response_headers) {
-    scoped_ptr<net::URLRequest> fake_request = context_.CreateRequest(
-        url, net::IDLE, &delegate_);
+    std::unique_ptr<net::URLRequest> fake_request =
+        context_.CreateRequest(url, net::IDLE, &delegate_);
 
     // Create a test job that will fill in the given response headers for the
     // |fake_request|.
-    scoped_ptr<net::URLRequestTestJob> test_job(new net::URLRequestTestJob(
+    std::unique_ptr<net::URLRequestTestJob> test_job(new net::URLRequestTestJob(
         fake_request.get(), context_.network_delegate(), response_headers,
         std::string(), true));
 
@@ -105,11 +106,9 @@ class DataReductionProxyBypassStatsTest : public testing::Test {
   }
 
  protected:
-  scoped_ptr<DataReductionProxyBypassStats> BuildBypassStats() {
-    return make_scoped_ptr(
-        new DataReductionProxyBypassStats(
-            test_context_->config(),
-            test_context_->unreachable_callback()));
+  std::unique_ptr<DataReductionProxyBypassStats> BuildBypassStats() {
+    return base::WrapUnique(new DataReductionProxyBypassStats(
+        test_context_->config(), test_context_->unreachable_callback()));
   }
 
   net::URLRequest* url_request() {
@@ -128,11 +127,11 @@ class DataReductionProxyBypassStatsTest : public testing::Test {
   base::MessageLoopForIO message_loop_;
   net::TestURLRequestContext context_;
   net::TestDelegate delegate_;
-  scoped_ptr<net::URLRequest> mock_url_request_;
+  std::unique_ptr<net::URLRequest> mock_url_request_;
   // |test_job_interceptor_| is owned by |test_job_factory_|.
   net::TestJobInterceptor* test_job_interceptor_;
   net::URLRequestJobFactoryImpl test_job_factory_;
-  scoped_ptr<DataReductionProxyTestContext> test_context_;
+  std::unique_ptr<DataReductionProxyTestContext> test_context_;
 };
 
 TEST_F(DataReductionProxyBypassStatsTest, IsDataReductionProxyUnreachable) {
@@ -175,7 +174,8 @@ TEST_F(DataReductionProxyBypassStatsTest, IsDataReductionProxyUnreachable) {
     EXPECT_CALL(*config(), WasDataReductionProxyUsed(url_request(), testing::_))
         .WillRepeatedly(testing::Return(test_case.was_proxy_used));
 
-    scoped_ptr<DataReductionProxyBypassStats> bypass_stats = BuildBypassStats();
+    std::unique_ptr<DataReductionProxyBypassStats> bypass_stats =
+        BuildBypassStats();
 
     bypass_stats->OnProxyFallback(fallback_proxy_server,
                                   net::ERR_PROXY_CONNECTION_FAILED);
@@ -189,7 +189,8 @@ TEST_F(DataReductionProxyBypassStatsTest, IsDataReductionProxyUnreachable) {
 TEST_F(DataReductionProxyBypassStatsTest, ProxyUnreachableThenReachable) {
   net::ProxyServer fallback_proxy_server =
       net::ProxyServer::FromURI("foo.com", net::ProxyServer::SCHEME_HTTP);
-  scoped_ptr<DataReductionProxyBypassStats> bypass_stats = BuildBypassStats();
+  std::unique_ptr<DataReductionProxyBypassStats> bypass_stats =
+      BuildBypassStats();
   EXPECT_CALL(*config(), IsDataReductionProxy(testing::_, testing::_))
       .WillOnce(testing::Return(true));
   EXPECT_CALL(*config(), WasDataReductionProxyUsed(url_request(), testing::_))
@@ -210,7 +211,8 @@ TEST_F(DataReductionProxyBypassStatsTest, ProxyUnreachableThenReachable) {
 TEST_F(DataReductionProxyBypassStatsTest, ProxyReachableThenUnreachable) {
   net::ProxyServer fallback_proxy_server =
       net::ProxyServer::FromURI("foo.com", net::ProxyServer::SCHEME_HTTP);
-  scoped_ptr<DataReductionProxyBypassStats> bypass_stats = BuildBypassStats();
+  std::unique_ptr<DataReductionProxyBypassStats> bypass_stats =
+      BuildBypassStats();
   EXPECT_CALL(*config(), WasDataReductionProxyUsed(url_request(), testing::_))
       .WillOnce(testing::Return(true));
   EXPECT_CALL(*config(), IsDataReductionProxy(testing::_, testing::_))
@@ -412,9 +414,10 @@ TEST_F(DataReductionProxyBypassStatsTest, RecordMissingViaHeaderBytes) {
 
   for (size_t i = 0; i < arraysize(test_cases); ++i) {
     base::HistogramTester histogram_tester;
-    scoped_ptr<DataReductionProxyBypassStats> bypass_stats = BuildBypassStats();
+    std::unique_ptr<DataReductionProxyBypassStats> bypass_stats =
+        BuildBypassStats();
 
-    scoped_ptr<net::URLRequest> fake_request(
+    std::unique_ptr<net::URLRequest> fake_request(
         CreateURLRequestWithResponseHeaders(GURL("http://www.google.com/"),
                                             test_cases[i].headers));
     fake_request->set_received_response_content_length(kResponseContentLength);
@@ -497,7 +500,7 @@ class DataReductionProxyBypassStatsEndToEndTest : public testing::Test {
     // |retry_data_reads| and |retry_socket_data_provider| are out here so that
     // they stay in scope for when the request is executed.
     std::vector<MockRead> retry_data_reads;
-    scoped_ptr<net::StaticSocketDataProvider> retry_socket_data_provider;
+    std::unique_ptr<net::StaticSocketDataProvider> retry_socket_data_provider;
     if (retry_response_headers) {
       retry_data_reads.push_back(MockRead(retry_response_headers));
       retry_data_reads.push_back(MockRead(retry_response_body));
@@ -509,7 +512,7 @@ class DataReductionProxyBypassStatsEndToEndTest : public testing::Test {
           retry_socket_data_provider.get());
     }
 
-    scoped_ptr<net::URLRequest> request(
+    std::unique_ptr<net::URLRequest> request(
         context_.CreateRequest(url, net::IDLE, &delegate_));
     request->set_method("GET");
     request->SetLoadFlags(net::LOAD_NORMAL);
@@ -605,8 +608,8 @@ class DataReductionProxyBypassStatsEndToEndTest : public testing::Test {
   net::MockClientSocketFactory mock_socket_factory_;
   net::TestURLRequestContext context_;
   net::URLRequestContextStorage context_storage_;
-  scoped_ptr<net::ProxyDelegate> proxy_delegate_;
-  scoped_ptr<DataReductionProxyTestContext> drp_test_context_;
+  std::unique_ptr<net::ProxyDelegate> proxy_delegate_;
+  std::unique_ptr<DataReductionProxyTestContext> drp_test_context_;
 };
 
 TEST_F(DataReductionProxyBypassStatsEndToEndTest, BypassedBytesNoRetry) {
@@ -647,7 +650,7 @@ TEST_F(DataReductionProxyBypassStatsEndToEndTest, BypassedBytesNoRetry) {
 
 TEST_F(DataReductionProxyBypassStatsEndToEndTest,
        BypassedBytesProxyOverridden) {
-  scoped_ptr<net::ProxyService> proxy_service(
+  std::unique_ptr<net::ProxyService> proxy_service(
       net::ProxyService::CreateFixed("http://test.com:80"));
   set_proxy_service(proxy_service.get());
   InitializeContext();
@@ -834,7 +837,8 @@ TEST_F(DataReductionProxyBypassStatsEndToEndTest,
 TEST_F(DataReductionProxyBypassStatsEndToEndTest, BypassedBytesNetErrorOther) {
   // Make the data reduction proxy host fail to resolve.
   net::ProxyServer origin = config()->test_params()->proxies_for_http().front();
-  scoped_ptr<net::MockHostResolver> host_resolver(new net::MockHostResolver());
+  std::unique_ptr<net::MockHostResolver> host_resolver(
+      new net::MockHostResolver());
   host_resolver->rules()->AddSimulatedFailure(origin.host_port_pair().host());
   set_host_resolver(host_resolver.get());
   InitializeContext();

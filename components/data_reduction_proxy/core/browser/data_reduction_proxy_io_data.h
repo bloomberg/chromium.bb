@@ -6,12 +6,13 @@
 #define COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_IO_DATA_H_
 
 #include <stdint.h>
+
+#include <memory>
 #include <string>
 #include <utility>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_delegate.h"
@@ -71,17 +72,17 @@ class DataReductionProxyIOData : public DataReductionProxyEventStorageDelegate {
 
   // Creates an interceptor suitable for following the Data Reduction Proxy
   // bypass protocol.
-  scoped_ptr<net::URLRequestInterceptor> CreateInterceptor();
+  std::unique_ptr<net::URLRequestInterceptor> CreateInterceptor();
 
   // Creates a NetworkDelegate suitable for carrying out the Data Reduction
   // Proxy protocol, including authenticating, establishing a handler to
   // override the current proxy configuration, and
   // gathering statistics for UMA.
-  scoped_ptr<DataReductionProxyNetworkDelegate> CreateNetworkDelegate(
-      scoped_ptr<net::NetworkDelegate> wrapped_network_delegate,
+  std::unique_ptr<DataReductionProxyNetworkDelegate> CreateNetworkDelegate(
+      std::unique_ptr<net::NetworkDelegate> wrapped_network_delegate,
       bool track_proxy_bypass_statistics);
 
-  scoped_ptr<DataReductionProxyDelegate> CreateProxyDelegate() const;
+  std::unique_ptr<DataReductionProxyDelegate> CreateProxyDelegate() const;
 
   // Sets user defined preferences for how the Data Reduction Proxy
   // configuration should be set. |at_startup| is true only
@@ -110,11 +111,12 @@ class DataReductionProxyIOData : public DataReductionProxyEventStorageDelegate {
 
   // Overrides of DataReductionProxyEventStorageDelegate. Bridges to the UI
   // thread objects.
-  void AddEvent(scoped_ptr<base::Value> event) override;
-  void AddEnabledEvent(scoped_ptr<base::Value> event, bool enabled) override;
-  void AddEventAndSecureProxyCheckState(scoped_ptr<base::Value> event,
+  void AddEvent(std::unique_ptr<base::Value> event) override;
+  void AddEnabledEvent(std::unique_ptr<base::Value> event,
+                       bool enabled) override;
+  void AddEventAndSecureProxyCheckState(std::unique_ptr<base::Value> event,
                                         SecureProxyCheckState state) override;
-  void AddAndSetLastBypassEvent(scoped_ptr<base::Value> event,
+  void AddAndSetLastBypassEvent(std::unique_ptr<base::Value> event,
                                 int64_t expiration_ticks) override;
 
   // Returns true if the Data Reduction Proxy is enabled and false otherwise.
@@ -160,14 +162,15 @@ class DataReductionProxyIOData : public DataReductionProxyEventStorageDelegate {
 
   LoFiDecider* lofi_decider() const { return lofi_decider_.get(); }
 
-  void set_lofi_decider(scoped_ptr<LoFiDecider> lofi_decider) const {
+  void set_lofi_decider(std::unique_ptr<LoFiDecider> lofi_decider) const {
     lofi_decider_ = std::move(lofi_decider);
   }
 
   LoFiUIService* lofi_ui_service() const { return lofi_ui_service_.get(); }
 
   // Takes ownership of |lofi_ui_service|.
-  void set_lofi_ui_service(scoped_ptr<LoFiUIService> lofi_ui_service) const {
+  void set_lofi_ui_service(
+      std::unique_ptr<LoFiUIService> lofi_ui_service) const {
     lofi_ui_service_ = std::move(lofi_ui_service);
   }
 
@@ -202,35 +205,35 @@ class DataReductionProxyIOData : public DataReductionProxyEventStorageDelegate {
   Client client_;
 
   // Parameters including DNS names and allowable configurations.
-  scoped_ptr<DataReductionProxyConfig> config_;
+  std::unique_ptr<DataReductionProxyConfig> config_;
 
   // Handles getting if a request is in Lo-Fi mode.
-  mutable scoped_ptr<LoFiDecider> lofi_decider_;
+  mutable std::unique_ptr<LoFiDecider> lofi_decider_;
 
   // Handles showing Lo-Fi UI when a Lo-Fi response is received.
-  mutable scoped_ptr<LoFiUIService> lofi_ui_service_;
+  mutable std::unique_ptr<LoFiUIService> lofi_ui_service_;
 
   // Creates Data Reduction Proxy-related events for logging.
-  scoped_ptr<DataReductionProxyEventCreator> event_creator_;
+  std::unique_ptr<DataReductionProxyEventCreator> event_creator_;
 
   // Setter of the Data Reduction Proxy-specific proxy configuration.
-  scoped_ptr<DataReductionProxyConfigurator> configurator_;
+  std::unique_ptr<DataReductionProxyConfigurator> configurator_;
 
   // A proxy delegate. Used, for example, to add authentication to HTTP CONNECT
   // request.
-  scoped_ptr<DataReductionProxyDelegate> proxy_delegate_;
+  std::unique_ptr<DataReductionProxyDelegate> proxy_delegate_;
 
   // Data Reduction Proxy objects with a UI based lifetime.
   base::WeakPtr<DataReductionProxyService> service_;
 
   // Tracker of various metrics to be reported in UMA.
-  scoped_ptr<DataReductionProxyBypassStats> bypass_stats_;
+  std::unique_ptr<DataReductionProxyBypassStats> bypass_stats_;
 
   // Constructs credentials suitable for authenticating the client.
-  scoped_ptr<DataReductionProxyRequestOptions> request_options_;
+  std::unique_ptr<DataReductionProxyRequestOptions> request_options_;
 
   // Requests new Data Reduction Proxy configurations from a remote service.
-  scoped_ptr<DataReductionProxyConfigServiceClient> config_client_;
+  std::unique_ptr<DataReductionProxyConfigServiceClient> config_client_;
 
   // A net log.
   net::NetLog* net_log_;

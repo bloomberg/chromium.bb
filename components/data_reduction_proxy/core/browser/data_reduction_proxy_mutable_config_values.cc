@@ -10,10 +10,10 @@
 
 namespace data_reduction_proxy {
 
-scoped_ptr<DataReductionProxyMutableConfigValues>
+std::unique_ptr<DataReductionProxyMutableConfigValues>
 DataReductionProxyMutableConfigValues::CreateFromParams(
     const DataReductionProxyParams* params) {
-  scoped_ptr<DataReductionProxyMutableConfigValues> config_values(
+  std::unique_ptr<DataReductionProxyMutableConfigValues> config_values(
       new DataReductionProxyMutableConfigValues());
   config_values->promo_allowed_ = params->promo_allowed();
   config_values->holdback_ = params->holdback();

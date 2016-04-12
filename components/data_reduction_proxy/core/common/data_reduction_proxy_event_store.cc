@@ -73,7 +73,7 @@ namespace data_reduction_proxy {
 // static
 void DataReductionProxyEventStore::AddConstants(
     base::DictionaryValue* constants_dict) {
-  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   for (size_t i = 0;
        i < arraysize(kDataReductionProxyBypassEventTypeTable); ++i) {
     dict->SetInteger(kDataReductionProxyBypassEventTypeTable[i].name,
@@ -104,7 +104,7 @@ DataReductionProxyEventStore::~DataReductionProxyEventStore() {
 
 base::Value* DataReductionProxyEventStore::GetSummaryValue() const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  scoped_ptr<base::DictionaryValue> data_reduction_proxy_values(
+  std::unique_ptr<base::DictionaryValue> data_reduction_proxy_values(
       new base::DictionaryValue());
   data_reduction_proxy_values->SetBoolean("enabled", enabled_);
 
@@ -150,7 +150,8 @@ base::Value* DataReductionProxyEventStore::GetSummaryValue() const {
   return data_reduction_proxy_values.release();
 }
 
-void DataReductionProxyEventStore::AddEvent(scoped_ptr<base::Value> event) {
+void DataReductionProxyEventStore::AddEvent(
+    std::unique_ptr<base::Value> event) {
   if (stored_events_.size() == kMaxEventsToStore) {
     base::Value* head = stored_events_.front();
     stored_events_.pop_front();
@@ -161,7 +162,7 @@ void DataReductionProxyEventStore::AddEvent(scoped_ptr<base::Value> event) {
 }
 
 void DataReductionProxyEventStore::AddEnabledEvent(
-    scoped_ptr<base::Value> event,
+    std::unique_ptr<base::Value> event,
     bool enabled) {
   DCHECK(thread_checker_.CalledOnValidThread());
   enabled_ = enabled;
@@ -173,7 +174,7 @@ void DataReductionProxyEventStore::AddEnabledEvent(
 }
 
 void DataReductionProxyEventStore::AddEventAndSecureProxyCheckState(
-    scoped_ptr<base::Value> event,
+    std::unique_ptr<base::Value> event,
     SecureProxyCheckState state) {
   DCHECK(thread_checker_.CalledOnValidThread());
   secure_proxy_check_state_ = state;
@@ -181,7 +182,7 @@ void DataReductionProxyEventStore::AddEventAndSecureProxyCheckState(
 }
 
 void DataReductionProxyEventStore::AddAndSetLastBypassEvent(
-    scoped_ptr<base::Value> event,
+    std::unique_ptr<base::Value> event,
     int64_t expiration_ticks) {
   DCHECK(thread_checker_.CalledOnValidThread());
   last_bypass_event_.reset(event->DeepCopy());
@@ -243,7 +244,8 @@ std::string DataReductionProxyEventStore::SanitizedLastBypassEvent() const {
     return std::string();
 
   // Explicitly add parameters to prevent automatic adding of new parameters.
-  scoped_ptr<base::DictionaryValue> last_bypass(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> last_bypass(
+      new base::DictionaryValue());
 
   std::string str_value;
   int int_value;

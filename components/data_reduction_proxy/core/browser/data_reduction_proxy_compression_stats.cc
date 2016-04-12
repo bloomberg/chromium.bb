@@ -11,7 +11,7 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/trace_event/trace_event.h"
@@ -475,8 +475,9 @@ void DataReductionProxyCompressionStats::InitInt64Pref(const char* pref) {
 }
 
 void DataReductionProxyCompressionStats::InitListPref(const char* pref) {
-  scoped_ptr<base::ListValue> pref_value = scoped_ptr<base::ListValue>(
-      pref_service_->GetList(pref)->DeepCopy());
+  std::unique_ptr<base::ListValue> pref_value =
+      std::unique_ptr<base::ListValue>(
+          pref_service_->GetList(pref)->DeepCopy());
   list_pref_map_.add(pref, std::move(pref_value));
 }
 
@@ -637,7 +638,7 @@ void DataReductionProxyCompressionStats::OnConnectionTypeChanged(
 }
 
 void DataReductionProxyCompressionStats::OnCurrentDataUsageLoaded(
-    scoped_ptr<DataUsageBucket> data_usage) {
+    std::unique_ptr<DataUsageBucket> data_usage) {
   DCHECK(current_data_usage_load_status_ == LOADING);
 
   // Exit early if the pref was turned off before loading from storage
@@ -658,7 +659,7 @@ void DataReductionProxyCompressionStats::OnCurrentDataUsageLoaded(
   for (const auto& connection_usage : data_usage->connection_usage()) {
     for (const auto& site_usage : connection_usage.site_usage()) {
       data_usage_map_.set(site_usage.hostname(),
-                          make_scoped_ptr(new PerSiteDataUsage(site_usage)));
+                          base::WrapUnique(new PerSiteDataUsage(site_usage)));
     }
   }
 
@@ -1138,7 +1139,7 @@ void DataReductionProxyCompressionStats::RecordDataUsage(
   std::string normalized_host = NormalizeHostname(data_usage_host);
 
   auto j = data_usage_map_.add(normalized_host,
-                               make_scoped_ptr(new PerSiteDataUsage()));
+                               base::WrapUnique(new PerSiteDataUsage()));
   PerSiteDataUsage* per_site_usage = j.first->second;
   per_site_usage->set_hostname(normalized_host);
   per_site_usage->set_original_size(per_site_usage->original_size() +
@@ -1153,7 +1154,7 @@ void DataReductionProxyCompressionStats::PersistDataUsage() {
   DCHECK(current_data_usage_load_status_ == LOADED);
 
   if (data_usage_map_is_dirty_) {
-    scoped_ptr<DataUsageBucket> data_usage_bucket(new DataUsageBucket());
+    std::unique_ptr<DataUsageBucket> data_usage_bucket(new DataUsageBucket());
     data_usage_bucket->set_last_updated_timestamp(
         data_usage_map_last_updated_.ToInternalValue());
     PerConnectionDataUsage* connection_usage =
@@ -1195,7 +1196,7 @@ void DataReductionProxyCompressionStats::GetHistoricalDataUsageImpl(
     // This use case is unlikely to occur in practice since current data usage
     // should have sufficient time to load before user tries to view data usage.
     get_data_usage_callback.Run(
-        make_scoped_ptr(new std::vector<DataUsageBucket>()));
+        base::WrapUnique(new std::vector<DataUsageBucket>()));
     return;
   }
 
@@ -1206,7 +1207,7 @@ void DataReductionProxyCompressionStats::GetHistoricalDataUsageImpl(
     data_usage_map_last_updated_ = base::Time();
 
     // Force the last bucket to be for the current interval.
-    scoped_ptr<DataUsageBucket> data_usage_bucket(new DataUsageBucket());
+    std::unique_ptr<DataUsageBucket> data_usage_bucket(new DataUsageBucket());
     data_usage_bucket->set_last_updated_timestamp(now.ToInternalValue());
     service_->StoreCurrentDataUsageBucket(std::move(data_usage_bucket));
   }

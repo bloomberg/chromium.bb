@@ -2,17 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/data_reduction_proxy/core/browser/data_usage_store.h"
+
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_store.h"
-#include "components/data_reduction_proxy/core/browser/data_usage_store.h"
 #include "components/data_reduction_proxy/proto/data_store.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -91,8 +92,8 @@ class DataUsageStoreTest : public testing::Test {
   }
 
  private:
-  scoped_ptr<TestDataStore> store_;
-  scoped_ptr<DataUsageStore> data_usage_store_;
+  std::unique_ptr<TestDataStore> store_;
+  std::unique_ptr<DataUsageStore> data_usage_store_;
 };
 
 TEST_F(DataUsageStoreTest, LoadEmpty) {

@@ -14,7 +14,7 @@
 
 namespace data_reduction_proxy {
 
-DBDataOwner::DBDataOwner(scoped_ptr<DataStore> store)
+DBDataOwner::DBDataOwner(std::unique_ptr<DataStore> store)
     : store_(std::move(store)),
       data_usage_(new DataUsageStore(store_.get())),
       weak_factory_(this) {
@@ -45,7 +45,7 @@ void DBDataOwner::LoadCurrentDataUsageBucket(DataUsageBucket* bucket) {
 }
 
 void DBDataOwner::StoreCurrentDataUsageBucket(
-    scoped_ptr<DataUsageBucket> current) {
+    std::unique_ptr<DataUsageBucket> current) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
 
   data_usage_->StoreCurrentDataUsageBucket(*current.get());

@@ -5,12 +5,12 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/command_line.h"
 #include "base/md5.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
@@ -175,8 +175,8 @@ class DataReductionProxyRequestOptionsTest : public testing::Test {
   }
 
   base::MessageLoopForIO message_loop_;
-  scoped_ptr<TestDataReductionProxyRequestOptions> request_options_;
-  scoped_ptr<DataReductionProxyTestContext> test_context_;
+  std::unique_ptr<TestDataReductionProxyRequestOptions> request_options_;
+  std::unique_ptr<DataReductionProxyTestContext> test_context_;
 };
 
 TEST_F(DataReductionProxyRequestOptionsTest, AuthHashForSalt) {

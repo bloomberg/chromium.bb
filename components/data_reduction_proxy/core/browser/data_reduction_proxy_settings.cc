@@ -81,7 +81,7 @@ void DataReductionProxySettings::InitDataReductionProxySettings(
     const std::string& data_reduction_proxy_enabled_pref_name,
     PrefService* prefs,
     DataReductionProxyIOData* io_data,
-    scoped_ptr<DataReductionProxyService> data_reduction_proxy_service) {
+    std::unique_ptr<DataReductionProxyService> data_reduction_proxy_service) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!data_reduction_proxy_enabled_pref_name.empty());
   DCHECK(prefs);

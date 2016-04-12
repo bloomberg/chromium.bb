@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
 
 namespace base {
 class Value;
@@ -26,18 +26,19 @@ class DataReductionProxyEventStorageDelegate {
   };
 
   // Stores a DATA_REDUCTION_PROXY event with no parameters.
-  virtual void AddEvent(scoped_ptr<base::Value> event) = 0;
+  virtual void AddEvent(std::unique_ptr<base::Value> event) = 0;
 
   // Stores a DATA_REDUCTION_PROXY_ENABLED event.
-  virtual void AddEnabledEvent(scoped_ptr<base::Value> event, bool enabled) = 0;
+  virtual void AddEnabledEvent(std::unique_ptr<base::Value> event,
+                               bool enabled) = 0;
 
   // Stores a DATA_REDUCTION_PROXY_BYPASS_REQUESTED event.
-  virtual void AddAndSetLastBypassEvent(scoped_ptr<base::Value> event,
+  virtual void AddAndSetLastBypassEvent(std::unique_ptr<base::Value> event,
                                         int64_t expiration_ticks) = 0;
 
   // Stores a DATA_REDUCTION_PROXY_CANARY_REQUEST event.
   virtual void AddEventAndSecureProxyCheckState(
-      scoped_ptr<base::Value> event,
+      std::unique_ptr<base::Value> event,
       SecureProxyCheckState state) = 0;
 };
 

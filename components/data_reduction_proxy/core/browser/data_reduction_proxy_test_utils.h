@@ -8,11 +8,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/clock.h"
 #include "base/time/tick_clock.h"
@@ -96,7 +96,7 @@ class TestDataReductionProxyConfigServiceClient
     : public DataReductionProxyConfigServiceClient {
  public:
   TestDataReductionProxyConfigServiceClient(
-      scoped_ptr<DataReductionProxyParams> params,
+      std::unique_ptr<DataReductionProxyParams> params,
       DataReductionProxyRequestOptions* request_options,
       DataReductionProxyMutableConfigValues* config_values,
       DataReductionProxyConfig* config,
@@ -186,11 +186,11 @@ class TestDataReductionProxyIOData : public DataReductionProxyIOData {
  public:
   TestDataReductionProxyIOData(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-      scoped_ptr<DataReductionProxyConfig> config,
-      scoped_ptr<DataReductionProxyEventCreator> event_creator,
-      scoped_ptr<DataReductionProxyRequestOptions> request_options,
-      scoped_ptr<DataReductionProxyConfigurator> configurator,
-      scoped_ptr<DataReductionProxyConfigServiceClient> config_client,
+      std::unique_ptr<DataReductionProxyConfig> config,
+      std::unique_ptr<DataReductionProxyEventCreator> event_creator,
+      std::unique_ptr<DataReductionProxyRequestOptions> request_options,
+      std::unique_ptr<DataReductionProxyConfigurator> configurator,
+      std::unique_ptr<DataReductionProxyConfigServiceClient> config_client,
       net::NetLog* net_log,
       bool enabled);
   ~TestDataReductionProxyIOData() override;
@@ -301,7 +301,7 @@ class DataReductionProxyTestContext {
     Builder& SkipSettingsInitialization();
 
     // Creates a |DataReductionProxyTestContext|. Owned by the caller.
-    scoped_ptr<DataReductionProxyTestContext> Build();
+    std::unique_ptr<DataReductionProxyTestContext> Build();
 
    private:
     int params_flags_;
@@ -346,7 +346,7 @@ class DataReductionProxyTestContext {
   // |MockDataReductionProxyService| if built with
   // WithMockDataReductionProxyService. Can only be called if built with
   // SkipSettingsInitialization.
-  scoped_ptr<DataReductionProxyService> CreateDataReductionProxyService(
+  std::unique_ptr<DataReductionProxyService> CreateDataReductionProxyService(
       DataReductionProxySettings* settings);
 
   // This creates a |DataReductionProxyNetworkDelegate| and
@@ -468,36 +468,37 @@ class DataReductionProxyTestContext {
 
   DataReductionProxyTestContext(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-      scoped_ptr<TestingPrefServiceSimple> simple_pref_service,
-      scoped_ptr<net::TestNetLog> net_log,
+      std::unique_ptr<TestingPrefServiceSimple> simple_pref_service,
+      std::unique_ptr<net::TestNetLog> net_log,
       scoped_refptr<net::URLRequestContextGetter> request_context_getter,
       net::MockClientSocketFactory* mock_socket_factory,
-      scoped_ptr<TestDataReductionProxyIOData> io_data,
-      scoped_ptr<DataReductionProxySettings> settings,
-      scoped_ptr<TestDataReductionProxyEventStorageDelegate> storage_delegate,
-      scoped_ptr<TestConfigStorer> config_storer,
+      std::unique_ptr<TestDataReductionProxyIOData> io_data,
+      std::unique_ptr<DataReductionProxySettings> settings,
+      std::unique_ptr<TestDataReductionProxyEventStorageDelegate>
+          storage_delegate,
+      std::unique_ptr<TestConfigStorer> config_storer,
       TestDataReductionProxyParams* params,
       unsigned int test_context_flags);
 
   void InitSettingsWithoutCheck();
 
-  scoped_ptr<DataReductionProxyService> CreateDataReductionProxyServiceInternal(
-      DataReductionProxySettings* settings);
+  std::unique_ptr<DataReductionProxyService>
+  CreateDataReductionProxyServiceInternal(DataReductionProxySettings* settings);
 
   unsigned int test_context_flags_;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  scoped_ptr<TestingPrefServiceSimple> simple_pref_service_;
-  scoped_ptr<net::TestNetLog> net_log_;
+  std::unique_ptr<TestingPrefServiceSimple> simple_pref_service_;
+  std::unique_ptr<net::TestNetLog> net_log_;
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
   // Non-owned pointer. Will be NULL if |this| was built without specifying a
   // |net::MockClientSocketFactory|.
   net::MockClientSocketFactory* mock_socket_factory_;
 
-  scoped_ptr<TestDataReductionProxyIOData> io_data_;
-  scoped_ptr<DataReductionProxySettings> settings_;
-  scoped_ptr<TestDataReductionProxyEventStorageDelegate> storage_delegate_;
-  scoped_ptr<TestConfigStorer> config_storer_;
+  std::unique_ptr<TestDataReductionProxyIOData> io_data_;
+  std::unique_ptr<DataReductionProxySettings> settings_;
+  std::unique_ptr<TestDataReductionProxyEventStorageDelegate> storage_delegate_;
+  std::unique_ptr<TestConfigStorer> config_storer_;
 
   TestDataReductionProxyParams* params_;
 

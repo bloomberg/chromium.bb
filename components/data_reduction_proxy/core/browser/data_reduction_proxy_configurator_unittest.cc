@@ -4,10 +4,10 @@
 
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
 
+#include <memory>
 #include <string>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
 #include "net/proxy/proxy_server.h"
@@ -60,8 +60,8 @@ class DataReductionProxyConfiguratorTest : public testing::Test {
   }
 
   base::MessageLoop message_loop_;
-  scoped_ptr<DataReductionProxyTestContext> test_context_;
-  scoped_ptr<DataReductionProxyConfigurator> config_;
+  std::unique_ptr<DataReductionProxyTestContext> test_context_;
+  std::unique_ptr<DataReductionProxyConfigurator> config_;
 };
 
 TEST_F(DataReductionProxyConfiguratorTest, TestUnrestricted) {

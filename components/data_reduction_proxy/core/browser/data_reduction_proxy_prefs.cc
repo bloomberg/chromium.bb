@@ -4,6 +4,8 @@
 
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_prefs.h"
 
+#include <memory>
+
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -17,7 +19,8 @@ void TransferPrefList(const char* pref_path,
                       PrefService* dest) {
   DCHECK(src->FindPreference(pref_path)->GetType() == base::Value::TYPE_LIST);
   ListPrefUpdate update_dest(dest, pref_path);
-  scoped_ptr<base::ListValue> src_list(src->GetList(pref_path)->DeepCopy());
+  std::unique_ptr<base::ListValue> src_list(
+      src->GetList(pref_path)->DeepCopy());
   update_dest->Swap(src_list.get());
   ListPrefUpdate update_src(src, pref_path);
   src->ClearPref(pref_path);

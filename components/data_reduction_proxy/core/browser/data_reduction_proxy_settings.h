@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -14,7 +15,6 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_metrics.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service_observer.h"
@@ -85,7 +85,7 @@ class DataReductionProxySettings : public DataReductionProxyServiceObserver {
       const std::string& data_reduction_proxy_enabled_pref_name,
       PrefService* prefs,
       DataReductionProxyIOData* io_data,
-      scoped_ptr<DataReductionProxyService> data_reduction_proxy_service);
+      std::unique_ptr<DataReductionProxyService> data_reduction_proxy_service);
 
   base::WeakPtr<DataReductionProxyCompressionStats> compression_stats();
 
@@ -312,7 +312,7 @@ class DataReductionProxySettings : public DataReductionProxyServiceObserver {
 
   BooleanPrefMember spdy_proxy_auth_enabled_;
 
-  scoped_ptr<DataReductionProxyService> data_reduction_proxy_service_;
+  std::unique_ptr<DataReductionProxyService> data_reduction_proxy_service_;
 
   // The name of the preference that controls enabling and disabling the Data
   // Reduction Proxy.

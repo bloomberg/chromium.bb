@@ -114,7 +114,7 @@ int64_t EstimateOriginalReceivedBytes(
 namespace data_reduction_proxy {
 
 DataReductionProxyNetworkDelegate::DataReductionProxyNetworkDelegate(
-    scoped_ptr<net::NetworkDelegate> network_delegate,
+    std::unique_ptr<net::NetworkDelegate> network_delegate,
     DataReductionProxyConfig* config,
     DataReductionProxyRequestOptions* request_options,
     const DataReductionProxyConfigurator* configurator)

@@ -5,13 +5,14 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_store.h"
 
 #include <stddef.h>
+
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/json/json_writer.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -79,9 +80,9 @@ class DataReductionProxyEventStoreTest : public testing::Test {
   }
 
  private:
-  scoped_ptr<net::TestNetLog> net_log_;
-  scoped_ptr<DataReductionProxyEventStore> event_store_;
-  scoped_ptr<DataReductionProxyEventCreator> event_creator_;
+  std::unique_ptr<net::TestNetLog> net_log_;
+  std::unique_ptr<DataReductionProxyEventStore> event_store_;
+  std::unique_ptr<DataReductionProxyEventCreator> event_creator_;
   net::BoundNetLog bound_net_log_;
 };
 
@@ -243,9 +244,11 @@ TEST_F(DataReductionProxyEventStoreTest, TestFeedbackLastBypassEventFullURL) {
   std::vector<net::ProxyServer> https_proxies;
   configurator.Enable(false, http_proxies, https_proxies);
 
-  scoped_ptr<base::DictionaryValue> bypass_event(new base::DictionaryValue());
-  scoped_ptr<base::DictionaryValue> bypass_params(new base::DictionaryValue());
-  scoped_ptr<base::DictionaryValue> sanitized_event(
+  std::unique_ptr<base::DictionaryValue> bypass_event(
+      new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> bypass_params(
+      new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> sanitized_event(
       new base::DictionaryValue());
 
   // Set bypass event time to be 4 minutes ago.
@@ -275,9 +278,11 @@ TEST_F(DataReductionProxyEventStoreTest, TestFeedbackLastBypassEventHostOnly) {
   std::vector<net::ProxyServer> https_proxies;
   configurator.Enable(false, http_proxies, https_proxies);
 
-  scoped_ptr<base::DictionaryValue> bypass_event(new base::DictionaryValue());
-  scoped_ptr<base::DictionaryValue> bypass_params(new base::DictionaryValue());
-  scoped_ptr<base::DictionaryValue> sanitized_event(
+  std::unique_ptr<base::DictionaryValue> bypass_event(
+      new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> bypass_params(
+      new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> sanitized_event(
       new base::DictionaryValue());
 
   // Set bypass event time to be 6 minutes ago.

@@ -5,8 +5,10 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.h"
 
 #include <stddef.h>
+
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_mutable_config_values.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
 #include "net/url_request/test_url_fetcher_factory.h"
@@ -28,14 +30,15 @@ TestDataReductionProxyConfig::TestDataReductionProxyConfig(
     DataReductionProxyConfigurator* configurator,
     DataReductionProxyEventCreator* event_creator)
     : TestDataReductionProxyConfig(
-          make_scoped_ptr(new TestDataReductionProxyParams(params_flags,
-                                                           params_definitions)),
+          base::WrapUnique(
+              new TestDataReductionProxyParams(params_flags,
+                                               params_definitions)),
           net_log,
           configurator,
           event_creator) {}
 
 TestDataReductionProxyConfig::TestDataReductionProxyConfig(
-    scoped_ptr<DataReductionProxyConfigValues> config_values,
+    std::unique_ptr<DataReductionProxyConfigValues> config_values,
     net::NetLog* net_log,
     DataReductionProxyConfigurator* configurator,
     DataReductionProxyEventCreator* event_creator)
@@ -67,7 +70,7 @@ void TestDataReductionProxyConfig::EnableQuic(bool enable) {
 }
 
 void TestDataReductionProxyConfig::ResetParamFlagsForTest(int flags) {
-  config_values_ = make_scoped_ptr(new TestDataReductionProxyParams(
+  config_values_ = base::WrapUnique(new TestDataReductionProxyParams(
       flags, TestDataReductionProxyParams::HAS_EVERYTHING &
                  ~TestDataReductionProxyParams::HAS_SSL_ORIGIN));
 }
@@ -97,7 +100,7 @@ void TestDataReductionProxyConfig::SetNetworkProhibitivelySlow(
 }
 
 MockDataReductionProxyConfig::MockDataReductionProxyConfig(
-    scoped_ptr<DataReductionProxyConfigValues> config_values,
+    std::unique_ptr<DataReductionProxyConfigValues> config_values,
     net::NetLog* net_log,
     DataReductionProxyConfigurator* configurator,
     DataReductionProxyEventCreator* event_creator)

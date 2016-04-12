@@ -6,10 +6,11 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "content/public/browser/browser_thread.h"
@@ -49,7 +50,8 @@ class ContentLoFiUIServiceTest : public content::RenderViewHostTestHarness {
         base::Bind(&ContentLoFiUIServiceTest::OnLoFiResponseReceivedCallback,
                    base::Unretained(this))));
 
-    scoped_ptr<net::URLRequest> request = CreateRequest(context, &delegate);
+    std::unique_ptr<net::URLRequest> request =
+        CreateRequest(context, &delegate);
 
     content_lofi_ui_service_->OnLoFiReponseReceived(*request, is_preview);
 
@@ -58,13 +60,13 @@ class ContentLoFiUIServiceTest : public content::RenderViewHostTestHarness {
         base::Bind(&base::RunLoop::Quit, base::Unretained(ui_run_loop)));
   }
 
-  scoped_ptr<net::URLRequest> CreateRequest(
+  std::unique_ptr<net::URLRequest> CreateRequest(
       const net::TestURLRequestContext& context,
       net::TestDelegate* delegate) {
     EXPECT_TRUE(
         content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
 
-    scoped_ptr<net::URLRequest> request = context.CreateRequest(
+    std::unique_ptr<net::URLRequest> request = context.CreateRequest(
         GURL("http://www.google.com/"), net::IDLE, delegate);
 
     content::ResourceRequestInfo::AllocateForTesting(
@@ -96,7 +98,7 @@ class ContentLoFiUIServiceTest : public content::RenderViewHostTestHarness {
   }
 
  private:
-  scoped_ptr<ContentLoFiUIService> content_lofi_ui_service_;
+  std::unique_ptr<ContentLoFiUIService> content_lofi_ui_service_;
   bool callback_called_;
   bool is_preview_;
 };

@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
@@ -33,8 +34,8 @@ class DataReductionProxyHeadersTest : public testing::Test {
   }
 
  private:
-  scoped_ptr<DataReductionProxyEventCreator> event_creator_;
-  scoped_ptr<TestDataReductionProxyEventStorageDelegate> storage_delegate_;
+  std::unique_ptr<DataReductionProxyEventCreator> event_creator_;
+  std::unique_ptr<TestDataReductionProxyEventStorageDelegate> storage_delegate_;
 };
 
 TEST_F(DataReductionProxyHeadersTest, GetDataReductionProxyActionValue) {

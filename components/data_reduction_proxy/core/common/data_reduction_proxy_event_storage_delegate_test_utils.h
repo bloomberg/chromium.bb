@@ -5,11 +5,11 @@
 #ifndef COMPONENTS_DATA_REDUCTION_PROXY_CORE_COMMON_DATA_REDUCTION_PROXY_EVENT_STORE_TEST_UTILS_H_
 #define COMPONENTS_DATA_REDUCTION_PROXY_CORE_COMMON_DATA_REDUCTION_PROXY_EVENT_STORE_TEST_UTILS_H_
 
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_storage_delegate.h"
-
 #include <stdint.h>
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_storage_delegate.h"
 
 namespace base {
 class Value;
@@ -28,11 +28,12 @@ class TestDataReductionProxyEventStorageDelegate
   void SetStorageDelegate(DataReductionProxyEventStorageDelegate* delegate);
 
   // Overrides of DataReductionProxyEventStorageDelegate:
-  void AddEvent(scoped_ptr<base::Value> event) override;
-  void AddEnabledEvent(scoped_ptr<base::Value> event, bool enabled) override;
-  void AddAndSetLastBypassEvent(scoped_ptr<base::Value> event,
+  void AddEvent(std::unique_ptr<base::Value> event) override;
+  void AddEnabledEvent(std::unique_ptr<base::Value> event,
+                       bool enabled) override;
+  void AddAndSetLastBypassEvent(std::unique_ptr<base::Value> event,
                                 int64_t expiration_ticks) override;
-  void AddEventAndSecureProxyCheckState(scoped_ptr<base::Value> event,
+  void AddEventAndSecureProxyCheckState(std::unique_ptr<base::Value> event,
                                         SecureProxyCheckState state) override;
 
  private:

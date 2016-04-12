@@ -6,11 +6,11 @@
 #define COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_STORE_IMPL_H_
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/sequence_checker.h"
 #include "components/data_reduction_proxy/core/browser/data_store.h"
 
@@ -44,7 +44,7 @@ class DataStoreImpl : public DataStore {
   void RecreateDB();
 
   // The underlying LevelDB used by this implementation.
-  scoped_ptr<leveldb::DB> db_;
+  std::unique_ptr<leveldb::DB> db_;
 
   // Path to the profile using this store.
   const base::FilePath profile_path_;

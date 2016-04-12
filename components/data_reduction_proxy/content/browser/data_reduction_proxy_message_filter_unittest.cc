@@ -4,9 +4,10 @@
 
 #include "components/data_reduction_proxy/content/browser/data_reduction_proxy_message_filter.h"
 
+#include <memory>
+
 #include "base/command_line.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
@@ -42,7 +43,7 @@ class DataReductionProxyMessageFilterTest : public testing::Test {
 
  private:
   base::MessageLoopForIO message_loop_;
-  scoped_ptr<DataReductionProxyTestContext> test_context_;
+  std::unique_ptr<DataReductionProxyTestContext> test_context_;
   scoped_refptr<DataReductionProxyMessageFilter> message_filter_;
 };
 

@@ -5,6 +5,7 @@
 #include "components/data_reduction_proxy/content/browser/content_lofi_decider.h"
 
 #include <stddef.h>
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -75,7 +76,8 @@ class ContentLoFiDeciderTest : public testing::Test {
 
     data_reduction_proxy_network_delegate_.reset(
         new DataReductionProxyNetworkDelegate(
-            scoped_ptr<net::NetworkDelegate>(new net::NetworkDelegateImpl()),
+            std::unique_ptr<net::NetworkDelegate>(
+                new net::NetworkDelegateImpl()),
             test_context_->config(),
             test_context_->io_data()->request_options(),
             test_context_->configurator()));
@@ -85,15 +87,15 @@ class ContentLoFiDeciderTest : public testing::Test {
 
     context_.set_network_delegate(data_reduction_proxy_network_delegate_.get());
 
-    scoped_ptr<data_reduction_proxy::ContentLoFiDecider>
+    std::unique_ptr<data_reduction_proxy::ContentLoFiDecider>
         data_reduction_proxy_lofi_decider(
             new data_reduction_proxy::ContentLoFiDecider());
     test_context_->io_data()->set_lofi_decider(
         std::move(data_reduction_proxy_lofi_decider));
   }
 
-  scoped_ptr<net::URLRequest> CreateRequest(bool is_using_lofi) {
-    scoped_ptr<net::URLRequest> request = context_.CreateRequest(
+  std::unique_ptr<net::URLRequest> CreateRequest(bool is_using_lofi) {
+    std::unique_ptr<net::URLRequest> request = context_.CreateRequest(
         GURL("http://www.google.com/"), net::IDLE, &delegate_);
 
     content::ResourceRequestInfo::AllocateForTesting(
@@ -162,8 +164,8 @@ class ContentLoFiDeciderTest : public testing::Test {
   net::MockClientSocketFactory mock_socket_factory_;
   net::TestURLRequestContext context_;
   net::TestDelegate delegate_;
-  scoped_ptr<DataReductionProxyTestContext> test_context_;
-  scoped_ptr<DataReductionProxyNetworkDelegate>
+  std::unique_ptr<DataReductionProxyTestContext> test_context_;
+  std::unique_ptr<DataReductionProxyNetworkDelegate>
       data_reduction_proxy_network_delegate_;
 };
 
@@ -177,7 +179,8 @@ TEST_F(ContentLoFiDeciderTest, LoFiFlags) {
   };
 
   for (size_t i = 0; i < arraysize(tests); ++i) {
-    scoped_ptr<net::URLRequest> request = CreateRequest(tests[i].is_using_lofi);
+    std::unique_ptr<net::URLRequest> request =
+        CreateRequest(tests[i].is_using_lofi);
     base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
     command_line->InitFromArgv(command_line->argv());
     if (tests[i].is_using_previews) {
@@ -255,7 +258,8 @@ TEST_F(ContentLoFiDeciderTest, LoFiEnabledFieldTrial) {
   };
 
   for (size_t i = 0; i < arraysize(tests); ++i) {
-    scoped_ptr<net::URLRequest> request = CreateRequest(tests[i].is_using_lofi);
+    std::unique_ptr<net::URLRequest> request =
+        CreateRequest(tests[i].is_using_lofi);
     net::HttpRequestHeaders headers;
     NotifyBeforeSendProxyHeaders(&headers, request.get(), true);
     VerifyLoFiHeader(tests[i].is_using_lofi, headers);
@@ -276,7 +280,8 @@ TEST_F(ContentLoFiDeciderTest, LoFiControlFieldTrial) {
   };
 
   for (size_t i = 0; i < arraysize(tests); ++i) {
-    scoped_ptr<net::URLRequest> request = CreateRequest(tests[i].is_using_lofi);
+    std::unique_ptr<net::URLRequest> request =
+        CreateRequest(tests[i].is_using_lofi);
     net::HttpRequestHeaders headers;
     NotifyBeforeSendProxyHeaders(&headers, request.get(), true);
     VerifyLoFiHeader(false, headers);
@@ -298,7 +303,8 @@ TEST_F(ContentLoFiDeciderTest, LoFiPreviewFieldTrial) {
   };
 
   for (size_t i = 0; i < arraysize(tests); ++i) {
-    scoped_ptr<net::URLRequest> request = CreateRequest(tests[i].is_using_lofi);
+    std::unique_ptr<net::URLRequest> request =
+        CreateRequest(tests[i].is_using_lofi);
     if (tests[i].is_main_frame)
       request->SetLoadFlags(request->load_flags() | net::LOAD_MAIN_FRAME);
     net::HttpRequestHeaders headers;
@@ -348,7 +354,7 @@ TEST_F(ContentLoFiDeciderTest, AutoLoFi) {
     test_context_->config()->SetNetworkProhibitivelySlow(
         tests[i].network_prohibitively_slow);
 
-    scoped_ptr<net::URLRequest> request =
+    std::unique_ptr<net::URLRequest> request =
         CreateRequest(tests[i].network_prohibitively_slow);
     net::HttpRequestHeaders headers;
     NotifyBeforeSendProxyHeaders(&headers, request.get(), true);
@@ -398,7 +404,7 @@ TEST_F(ContentLoFiDeciderTest, SlowConnectionsFlag) {
     test_context_->config()->SetNetworkProhibitivelySlow(
         tests[i].network_prohibitively_slow);
 
-    scoped_ptr<net::URLRequest> request =
+    std::unique_ptr<net::URLRequest> request =
         CreateRequest(tests[i].network_prohibitively_slow);
     net::HttpRequestHeaders headers;
     NotifyBeforeSendProxyHeaders(&headers, request.get(), true);
@@ -419,7 +425,8 @@ TEST_F(ContentLoFiDeciderTest, ProxyIsNotDataReductionProxy) {
   };
 
   for (size_t i = 0; i < arraysize(tests); ++i) {
-    scoped_ptr<net::URLRequest> request = CreateRequest(tests[i].is_using_lofi);
+    std::unique_ptr<net::URLRequest> request =
+        CreateRequest(tests[i].is_using_lofi);
     net::HttpRequestHeaders headers;
     NotifyBeforeSendProxyHeaders(&headers, request.get(), false);
     std::string header_value;

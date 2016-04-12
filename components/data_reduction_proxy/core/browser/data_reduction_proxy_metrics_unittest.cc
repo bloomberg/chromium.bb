@@ -4,11 +4,11 @@
 
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_metrics.h"
 
+#include <memory>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
@@ -29,7 +29,7 @@ namespace data_reduction_proxy {
 TEST(ChromeNetworkDailyDataSavingMetricsTest,
      GetDataReductionProxyRequestType) {
   base::MessageLoopForIO message_loop;
-  scoped_ptr<DataReductionProxyTestContext> test_context =
+  std::unique_ptr<DataReductionProxyTestContext> test_context =
       DataReductionProxyTestContext::Builder()
           .WithParamsFlags(DataReductionProxyParams::kAllowed)
           .WithParamsDefinitions(TestDataReductionProxyParams::HAS_ORIGIN)
@@ -152,7 +152,7 @@ TEST(ChromeNetworkDailyDataSavingMetricsTest,
     net::MockClientSocketFactory mock_socket_factory;
     context.set_client_socket_factory(&mock_socket_factory);
     // Set the |proxy_service| to use |test_case.proxy_server| for requests.
-    scoped_ptr<net::ProxyService> proxy_service(
+    std::unique_ptr<net::ProxyService> proxy_service(
         net::ProxyService::CreateFixedFromPacResult(
             test_case.proxy_server.ToPacString()));
     context.set_proxy_service(proxy_service.get());
@@ -173,7 +173,7 @@ TEST(ChromeNetworkDailyDataSavingMetricsTest,
     mock_socket_factory.AddSocketDataProvider(&socket_data_provider);
 
     net::TestDelegate delegate;
-    scoped_ptr<net::URLRequest> request =
+    std::unique_ptr<net::URLRequest> request =
         context.CreateRequest(test_case.url, net::IDLE, &delegate);
     request->SetLoadFlags(test_case.load_flags);
     request->Start();

@@ -9,11 +9,11 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
@@ -43,7 +43,7 @@ class DataReductionProxyService;
 class DataReductionProxyCompressionStats
     : public net::NetworkChangeNotifier::ConnectionTypeObserver {
  public:
-  typedef base::ScopedPtrHashMap<std::string, scoped_ptr<PerSiteDataUsage>>
+  typedef base::ScopedPtrHashMap<std::string, std::unique_ptr<PerSiteDataUsage>>
       SiteUsageMap;
 
   // Collects and store data usage and compression statistics. Basic data usage
@@ -117,7 +117,7 @@ class DataReductionProxyCompressionStats
   // Callback from loading detailed data usage. Initializes in memory data
   // structures used to collect data usage. |data_usage| contains the data usage
   // for the last stored interval.
-  void OnCurrentDataUsageLoaded(scoped_ptr<DataUsageBucket> data_usage);
+  void OnCurrentDataUsageLoaded(std::unique_ptr<DataUsageBucket> data_usage);
 
  private:
   // Enum to track the state of loading data usage from storage.
@@ -126,7 +126,7 @@ class DataReductionProxyCompressionStats
   friend class DataReductionProxyCompressionStatsTest;
 
   typedef std::map<const char*, int64_t> DataReductionProxyPrefMap;
-  typedef base::ScopedPtrHashMap<const char*, scoped_ptr<base::ListValue>>
+  typedef base::ScopedPtrHashMap<const char*, std::unique_ptr<base::ListValue>>
       DataReductionProxyListPrefMap;
 
   class DailyContentLengthUpdate;

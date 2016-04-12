@@ -142,7 +142,7 @@ const net::BackoffEntry::Policy& GetBackoffPolicy() {
 }
 
 DataReductionProxyConfigServiceClient::DataReductionProxyConfigServiceClient(
-    scoped_ptr<DataReductionProxyParams> params,
+    std::unique_ptr<DataReductionProxyParams> params,
     const net::BackoffEntry::Policy& backoff_policy,
     DataReductionProxyRequestOptions* request_options,
     DataReductionProxyMutableConfigValues* config_values,
@@ -368,7 +368,7 @@ void DataReductionProxyConfigServiceClient::RetrieveRemoteConfig() {
   if (!session_key.empty())
     request.set_session_key(request_options_->GetSecureSession());
   request.SerializeToString(&serialized_request);
-  scoped_ptr<net::URLFetcher> fetcher =
+  std::unique_ptr<net::URLFetcher> fetcher =
       GetURLFetcherForConfig(config_service_url_, serialized_request);
   if (!fetcher.get()) {
     HandleResponse(std::string(),
@@ -390,12 +390,12 @@ void DataReductionProxyConfigServiceClient::InvalidateConfig() {
   config_->ReloadConfig();
 }
 
-scoped_ptr<net::URLFetcher>
+std::unique_ptr<net::URLFetcher>
 DataReductionProxyConfigServiceClient::GetURLFetcherForConfig(
     const GURL& secure_proxy_check_url,
     const std::string& request_body) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  scoped_ptr<net::URLFetcher> fetcher(net::URLFetcher::Create(
+  std::unique_ptr<net::URLFetcher> fetcher(net::URLFetcher::Create(
       secure_proxy_check_url, net::URLFetcher::POST, this));
   fetcher->SetLoadFlags(net::LOAD_BYPASS_PROXY);
   fetcher->SetUploadData("application/x-protobuf", request_body);

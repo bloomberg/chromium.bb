@@ -6,12 +6,14 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
 #include <map>
 #include <utility>
 #include <vector>
 
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/safe_sprintf.h"
 #include "base/strings/string_number_conversions.h"
@@ -124,10 +126,10 @@ class DataReductionProxyConfigTest : public testing::Test {
     test_context_->RunUntilIdle();
   }
 
-  scoped_ptr<DataReductionProxyConfig> BuildConfig(
-      scoped_ptr<DataReductionProxyParams> params) {
+  std::unique_ptr<DataReductionProxyConfig> BuildConfig(
+      std::unique_ptr<DataReductionProxyParams> params) {
     params->EnableQuic(false);
-    return make_scoped_ptr(new DataReductionProxyConfig(
+    return base::WrapUnique(new DataReductionProxyConfig(
         test_context_->net_log(), std::move(params),
         test_context_->configurator(), test_context_->event_creator()));
   }
@@ -152,8 +154,8 @@ class DataReductionProxyConfigTest : public testing::Test {
 
  private:
   base::MessageLoopForIO message_loop_;
-  scoped_ptr<DataReductionProxyTestContext> test_context_;
-  scoped_ptr<TestDataReductionProxyParams> expected_params_;
+  std::unique_ptr<DataReductionProxyTestContext> test_context_;
+  std::unique_ptr<TestDataReductionProxyParams> expected_params_;
 };
 
 TEST_F(DataReductionProxyConfigTest, TestUpdateConfigurator) {
@@ -468,9 +470,9 @@ TEST_F(DataReductionProxyConfigTest, AreProxiesBypassed) {
     if (tests[i].fallback_allowed)
       flags |= DataReductionProxyParams::kFallbackAllowed;
     unsigned int has_definitions = TestDataReductionProxyParams::HAS_EVERYTHING;
-    scoped_ptr<TestDataReductionProxyParams> params(
+    std::unique_ptr<TestDataReductionProxyParams> params(
         new TestDataReductionProxyParams(flags, has_definitions));
-    scoped_ptr<DataReductionProxyConfig> config =
+    std::unique_ptr<DataReductionProxyConfig> config =
         BuildConfig(std::move(params));
 
     net::ProxyRetryInfoMap retry_map;
@@ -514,9 +516,10 @@ TEST_F(DataReductionProxyConfigTest, AreProxiesBypassedRetryDelay) {
   flags |= DataReductionProxyParams::kAllowed;
   flags |= DataReductionProxyParams::kFallbackAllowed;
   unsigned int has_definitions = TestDataReductionProxyParams::HAS_EVERYTHING;
-  scoped_ptr<TestDataReductionProxyParams> params(
+  std::unique_ptr<TestDataReductionProxyParams> params(
       new TestDataReductionProxyParams(flags, has_definitions));
-  scoped_ptr<DataReductionProxyConfig> config = BuildConfig(std::move(params));
+  std::unique_ptr<DataReductionProxyConfig> config =
+      BuildConfig(std::move(params));
 
   net::ProxyRetryInfoMap retry_map;
   net::ProxyRetryInfo retry_info;
@@ -624,11 +627,12 @@ TEST_F(DataReductionProxyConfigTest, IsDataReductionProxyWithParams) {
     if (tests[i].fallback_allowed)
       flags |= DataReductionProxyParams::kFallbackAllowed;
     unsigned int has_definitions = TestDataReductionProxyParams::HAS_EVERYTHING;
-    scoped_ptr<TestDataReductionProxyParams> params(
+    std::unique_ptr<TestDataReductionProxyParams> params(
         new TestDataReductionProxyParams(flags, has_definitions));
     DataReductionProxyTypeInfo proxy_type_info;
-    scoped_ptr<DataReductionProxyConfig> config(new DataReductionProxyConfig(
-        net_log(), std::move(params), configurator(), event_creator()));
+    std::unique_ptr<DataReductionProxyConfig> config(
+        new DataReductionProxyConfig(net_log(), std::move(params),
+                                     configurator(), event_creator()));
     EXPECT_EQ(
         tests[i].expected_result,
         config->IsDataReductionProxy(tests[i].host_port_pair, &proxy_type_info))
@@ -721,10 +725,10 @@ TEST_F(DataReductionProxyConfigTest, IsDataReductionProxyWithMutableConfig) {
       },
   };
 
-  scoped_ptr<DataReductionProxyMutableConfigValues> config_values =
+  std::unique_ptr<DataReductionProxyMutableConfigValues> config_values =
       DataReductionProxyMutableConfigValues::CreateFromParams(params());
   config_values->UpdateValues(proxies_for_http);
-  scoped_ptr<DataReductionProxyConfig> config(new DataReductionProxyConfig(
+  std::unique_ptr<DataReductionProxyConfig> config(new DataReductionProxyConfig(
       net_log(), std::move(config_values), configurator(), event_creator()));
   for (size_t i = 0; i < arraysize(tests); ++i) {
     DataReductionProxyTypeInfo proxy_type_info;
@@ -852,7 +856,7 @@ TEST_F(DataReductionProxyConfigTest, LoFiOn) {
     base::HistogramTester histogram_tester;
     net::TestURLRequestContext context_;
     net::TestDelegate delegate_;
-    scoped_ptr<net::URLRequest> request =
+    std::unique_ptr<net::URLRequest> request =
         context_.CreateRequest(GURL(), net::IDLE, &delegate_);
     bool should_enable_lofi = config()->ShouldEnableLoFiMode(*request.get());
     if (tests[i].expect_bucket_count != 0) {
@@ -871,8 +875,9 @@ class TestNetworkQualityEstimator : public net::NetworkQualityEstimator {
  public:
   explicit TestNetworkQualityEstimator(
       const std::map<std::string, std::string>& variation_params)
-      : NetworkQualityEstimator(scoped_ptr<net::ExternalEstimateProvider>(),
-                                variation_params),
+      : NetworkQualityEstimator(
+            std::unique_ptr<net::ExternalEstimateProvider>(),
+            variation_params),
         rtt_estimate_(base::TimeDelta()),
         downstream_throughput_kbps_estimate_(INT32_MAX),
         rtt_since_(base::TimeDelta()) {}

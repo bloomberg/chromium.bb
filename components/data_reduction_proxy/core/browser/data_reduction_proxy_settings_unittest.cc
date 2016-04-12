@@ -185,7 +185,7 @@ TEST(DataReductionProxySettingsStandaloneTest, TestEndToEndSecureProxyCheck) {
   for (const TestCase& test_case : kTestCases) {
     net::TestURLRequestContext context(true);
 
-    scoped_ptr<DataReductionProxyTestContext> drp_test_context =
+    std::unique_ptr<DataReductionProxyTestContext> drp_test_context =
         DataReductionProxyTestContext::Builder()
             .WithURLRequestContext(&context)
             .WithTestConfigurator()
@@ -221,7 +221,7 @@ TEST(DataReductionProxySettingsStandaloneTest, TestEndToEndSecureProxyCheck) {
 
 TEST(DataReductionProxySettingsStandaloneTest, TestOnProxyEnabledPrefChange) {
   base::MessageLoopForIO message_loop;
-  scoped_ptr<DataReductionProxyTestContext> drp_test_context =
+  std::unique_ptr<DataReductionProxyTestContext> drp_test_context =
       DataReductionProxyTestContext::Builder()
           .WithMockConfig()
           .WithTestConfigurator()
@@ -539,7 +539,7 @@ TEST_F(DataReductionProxySettingsTest, TestLoFiSessionStateHistograms) {
   settings_->SetDataReductionProxyEnabled(false);
   settings_->data_reduction_proxy_service_->InitializeLoFiPrefs();
   test_context_->RunUntilIdle();
-  scoped_ptr<base::HistogramSamples> samples(
+  std::unique_ptr<base::HistogramSamples> samples(
       histogram_tester.GetHistogramSamplesSinceCreation(kUMALoFiSessionState));
   EXPECT_EQ(0, samples->TotalCount());
 

@@ -216,7 +216,7 @@ class SecureProxyChecker : public net::URLFetcherDelegate {
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
 
   // The URLFetcher being used for the secure proxy check.
-  scoped_ptr<net::URLFetcher> fetcher_;
+  std::unique_ptr<net::URLFetcher> fetcher_;
   FetcherResponseCallback fetcher_callback_;
 
   // Used to determine the latency in performing the Data Reduction Proxy secure
@@ -228,7 +228,7 @@ class SecureProxyChecker : public net::URLFetcherDelegate {
 
 DataReductionProxyConfig::DataReductionProxyConfig(
     net::NetLog* net_log,
-    scoped_ptr<DataReductionProxyConfigValues> config_values,
+    std::unique_ptr<DataReductionProxyConfigValues> config_values,
     DataReductionProxyConfigurator* configurator,
     DataReductionProxyEventCreator* event_creator)
     : secure_proxy_allowed_(params::ShouldUseSecureProxyByDefault()),
