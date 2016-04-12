@@ -48,7 +48,7 @@ class Page;
 class CORE_EXPORT ContextMenuController final : public GarbageCollectedFinalized<ContextMenuController> {
     WTF_MAKE_NONCOPYABLE(ContextMenuController);
 public:
-    static RawPtr<ContextMenuController> create(Page*, ContextMenuClient*);
+    static ContextMenuController* create(Page*, ContextMenuClient*);
     ~ContextMenuController();
     DECLARE_TRACE();
 
@@ -58,8 +58,8 @@ public:
     void documentDetached(Document*);
 
     void handleContextMenuEvent(Event*);
-    void showContextMenu(Event*, RawPtr<ContextMenuProvider>);
-    void showContextMenuAtPoint(LocalFrame*, float x, float y, RawPtr<ContextMenuProvider>);
+    void showContextMenu(Event*, ContextMenuProvider*);
+    void showContextMenuAtPoint(LocalFrame*, float x, float y, ContextMenuProvider*);
 
     void contextMenuItemSelected(const ContextMenuItem*);
 

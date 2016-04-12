@@ -139,7 +139,7 @@ FilterEffect* SVGFESpecularLightingElement::build(SVGFilterBuilder* filterBuilde
     const SVGFELightElement* lightNode = SVGFELightElement::findLightElement(*this);
     RefPtr<LightSource> lightSource = lightNode ? lightNode->lightSource(filter) : nullptr;
 
-    RawPtr<FilterEffect> effect = FESpecularLighting::create(filter,
+    FilterEffect* effect = FESpecularLighting::create(filter,
         color,
         m_surfaceScale->currentValue()->value(),
         m_specularConstant->currentValue()->value(),

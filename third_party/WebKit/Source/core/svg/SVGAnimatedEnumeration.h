@@ -64,7 +64,7 @@ public:
     }
 
 protected:
-    SVGAnimatedEnumeration(SVGElement* contextElement, const QualifiedName& attributeName, RawPtr<SVGEnumeration<Enum>> initialValue)
+    SVGAnimatedEnumeration(SVGElement* contextElement, const QualifiedName& attributeName, SVGEnumeration<Enum>* initialValue)
         : SVGAnimatedEnumerationBase(contextElement, attributeName, initialValue)
     {
     }

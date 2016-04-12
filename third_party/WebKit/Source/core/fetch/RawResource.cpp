@@ -135,7 +135,6 @@ void RawResource::willFollowRedirect(ResourceRequest& newRequest, const Resource
 
 void RawResource::willNotFollowRedirect()
 {
-    RawPtr<RawResource> protect(this);
     ResourceClientWalker<RawResourceClient> w(m_clients);
     while (RawResourceClient* c = w.next())
         c->redirectBlocked();

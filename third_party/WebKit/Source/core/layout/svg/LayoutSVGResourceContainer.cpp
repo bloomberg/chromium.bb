@@ -227,7 +227,7 @@ void LayoutSVGResourceContainer::registerResource()
         return;
     }
 
-    RawPtr<SVGDocumentExtensions::SVGPendingElements> clients(extensions.removePendingResource(m_id));
+    SVGDocumentExtensions::SVGPendingElements* clients(extensions.removePendingResource(m_id));
 
     // Cache us with the new id.
     extensions.addResource(m_id, this);

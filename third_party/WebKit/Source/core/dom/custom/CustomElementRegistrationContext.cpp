@@ -57,7 +57,7 @@ void CustomElementRegistrationContext::registerElement(Document* document, Custo
         return;
 
     // Upgrade elements that were waiting for this definition.
-    RawPtr<CustomElementUpgradeCandidateMap::ElementSet> upgradeCandidates = m_candidates->takeUpgradeCandidatesFor(definition->descriptor());
+    CustomElementUpgradeCandidateMap::ElementSet* upgradeCandidates = m_candidates->takeUpgradeCandidatesFor(definition->descriptor());
 
     if (!upgradeCandidates)
         return;

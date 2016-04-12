@@ -54,7 +54,7 @@ ContextMenuController::~ContextMenuController()
 {
 }
 
-RawPtr<ContextMenuController> ContextMenuController::create(Page* page, ContextMenuClient* client)
+ContextMenuController* ContextMenuController::create(Page* page, ContextMenuClient* client)
 {
     return new ContextMenuController(page, client);
 }
@@ -94,11 +94,11 @@ void ContextMenuController::populateCustomContextMenu(const Event& event)
         return;
 
     HTMLElement& element = toHTMLElement(*node);
-    RawPtr<HTMLMenuElement> menuElement = element.assignedContextMenu();
+    HTMLMenuElement* menuElement = element.assignedContextMenu();
     if (!menuElement || !equalIgnoringCase(menuElement->fastGetAttribute(typeAttr), "context"))
         return;
-    RawPtr<RelatedEvent> relatedEvent = RelatedEvent::create(EventTypeNames::show, true, true, node);
-    if (menuElement->dispatchEvent(relatedEvent.release()) != DispatchEventResult::NotCanceled)
+    RelatedEvent* relatedEvent = RelatedEvent::create(EventTypeNames::show, true, true, node);
+    if (menuElement->dispatchEvent(relatedEvent) != DispatchEventResult::NotCanceled)
         return;
     if (menuElement != element.assignedContextMenu())
         return;
@@ -115,7 +115,7 @@ void ContextMenuController::handleContextMenuEvent(Event* event)
     showContextMenu(event);
 }
 
-void ContextMenuController::showContextMenu(Event* event, RawPtr<ContextMenuProvider> menuProvider)
+void ContextMenuController::showContextMenu(Event* event, ContextMenuProvider* menuProvider)
 {
     m_menuProvider = menuProvider;
 
@@ -129,7 +129,7 @@ void ContextMenuController::showContextMenu(Event* event, RawPtr<ContextMenuProv
     showContextMenu(event);
 }
 
-void ContextMenuController::showContextMenuAtPoint(LocalFrame* frame, float x, float y, RawPtr<ContextMenuProvider> menuProvider)
+void ContextMenuController::showContextMenuAtPoint(LocalFrame* frame, float x, float y, ContextMenuProvider* menuProvider)
 {
     m_menuProvider = menuProvider;
 

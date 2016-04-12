@@ -191,7 +191,7 @@ TEST_F(ContentSecurityPolicyTest, ReportURIInMeta)
     policy.appendTo(characters);
     const UChar* begin = characters.data();
     const UChar* end = begin + characters.size();
-    RawPtr<CSPDirectiveList> directiveList(CSPDirectiveList::create(csp, begin, end, ContentSecurityPolicyHeaderTypeEnforce, ContentSecurityPolicyHeaderSourceMeta));
+    CSPDirectiveList* directiveList(CSPDirectiveList::create(csp, begin, end, ContentSecurityPolicyHeaderTypeEnforce, ContentSecurityPolicyHeaderSourceMeta));
     EXPECT_TRUE(directiveList->reportEndpoints().isEmpty());
     directiveList = CSPDirectiveList::create(csp, begin, end, ContentSecurityPolicyHeaderTypeEnforce, ContentSecurityPolicyHeaderSourceHTTP);
     EXPECT_FALSE(directiveList->reportEndpoints().isEmpty());
