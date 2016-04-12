@@ -861,7 +861,7 @@
     ],
 
     'android_cast_gn_debug_static_bot': [
-      'android', 'cast', 'gn', 'debug_static_bot',
+      'android', 'cast', 'gn', 'clang', 'debug_static_bot',
     ],
 
     'android_clang_no_chrome_plugins_asan_gn_debug_bot_minimal_symbols': [
