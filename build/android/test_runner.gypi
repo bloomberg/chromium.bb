@@ -100,7 +100,4 @@
       ],
     },
   ],
-  'dependencies': [
-    '<(DEPTH)/build/android/setup.gyp:devil_chromium_config',
-  ]
 }
