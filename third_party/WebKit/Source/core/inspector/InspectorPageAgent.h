@@ -81,7 +81,7 @@ public:
         OtherResource
     };
 
-    static RawPtr<InspectorPageAgent> create(InspectedFrames*, Client*, InspectorResourceContentLoader*, InspectorDebuggerAgent*);
+    static InspectorPageAgent* create(InspectedFrames*, Client*, InspectorResourceContentLoader*, InspectorDebuggerAgent*);
 
     static HeapVector<Member<Document>> importsForFrame(LocalFrame*);
     static bool cachedResourceContent(Resource*, String* result, bool* base64Encoded);

@@ -88,7 +88,7 @@ private:
 class DOMEditor::InsertBeforeAction final : public InspectorHistory::Action {
     WTF_MAKE_NONCOPYABLE(InsertBeforeAction);
 public:
-    InsertBeforeAction(ContainerNode* parentNode, RawPtr<Node> node, Node* anchorNode)
+    InsertBeforeAction(ContainerNode* parentNode, Node* node, Node* anchorNode)
         : InspectorHistory::Action("InsertBefore")
         , m_parentNode(parentNode)
         , m_node(node)
@@ -332,7 +332,7 @@ private:
 class DOMEditor::ReplaceChildNodeAction final : public InspectorHistory::Action {
     WTF_MAKE_NONCOPYABLE(ReplaceChildNodeAction);
 public:
-    ReplaceChildNodeAction(ContainerNode* parentNode, RawPtr<Node> newNode, Node* oldNode)
+    ReplaceChildNodeAction(ContainerNode* parentNode, Node* newNode, Node* oldNode)
         : InspectorHistory::Action("ReplaceChildNode")
         , m_parentNode(parentNode)
         , m_newNode(newNode)
@@ -413,7 +413,7 @@ private:
 
 DOMEditor::DOMEditor(InspectorHistory* history) : m_history(history) { }
 
-bool DOMEditor::insertBefore(ContainerNode* parentNode, RawPtr<Node> node, Node* anchorNode, ExceptionState& exceptionState)
+bool DOMEditor::insertBefore(ContainerNode* parentNode, Node* node, Node* anchorNode, ExceptionState& exceptionState)
 {
     return m_history->perform(new InsertBeforeAction(parentNode, node, anchorNode), exceptionState);
 }
@@ -435,7 +435,7 @@ bool DOMEditor::removeAttribute(Element* element, const String& name, ExceptionS
 
 bool DOMEditor::setOuterHTML(Node* node, const String& html, Node** newNode, ExceptionState& exceptionState)
 {
-    RawPtr<SetOuterHTMLAction> action = new SetOuterHTMLAction(node, html);
+    SetOuterHTMLAction* action = new SetOuterHTMLAction(node, html);
     bool result = m_history->perform(action, exceptionState);
     if (result)
         *newNode = action->newNode();
@@ -447,7 +447,7 @@ bool DOMEditor::replaceWholeText(Text* textNode, const String& text, ExceptionSt
     return m_history->perform(new ReplaceWholeTextAction(textNode, text), exceptionState);
 }
 
-bool DOMEditor::replaceChild(ContainerNode* parentNode, RawPtr<Node> newNode, Node* oldNode, ExceptionState& exceptionState)
+bool DOMEditor::replaceChild(ContainerNode* parentNode, Node* newNode, Node* oldNode, ExceptionState& exceptionState)
 {
     return m_history->perform(new ReplaceChildNodeAction(parentNode, newNode, oldNode), exceptionState);
 }
@@ -463,7 +463,7 @@ static void populateErrorString(ExceptionState& exceptionState, ErrorString* err
         *errorString = DOMException::getErrorName(exceptionState.code());
 }
 
-bool DOMEditor::insertBefore(ContainerNode* parentNode, RawPtr<Node> node, Node* anchorNode, ErrorString* errorString)
+bool DOMEditor::insertBefore(ContainerNode* parentNode, Node* node, Node* anchorNode, ErrorString* errorString)
 {
     TrackExceptionState exceptionState;
     bool result = insertBefore(parentNode, node, anchorNode, exceptionState);

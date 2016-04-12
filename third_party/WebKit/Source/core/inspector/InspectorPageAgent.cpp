@@ -255,7 +255,7 @@ bool InspectorPageAgent::dataContent(const char* data, unsigned size, const Stri
     return decodeBuffer(data, size, textEncodingName, result);
 }
 
-RawPtr<InspectorPageAgent> InspectorPageAgent::create(InspectedFrames* inspectedFrames, Client* client, InspectorResourceContentLoader* resourceContentLoader, InspectorDebuggerAgent* debuggerAgent)
+InspectorPageAgent* InspectorPageAgent::create(InspectedFrames* inspectedFrames, Client* client, InspectorResourceContentLoader* resourceContentLoader, InspectorDebuggerAgent* debuggerAgent)
 {
     return new InspectorPageAgent(inspectedFrames, client, resourceContentLoader, debuggerAgent);
 }

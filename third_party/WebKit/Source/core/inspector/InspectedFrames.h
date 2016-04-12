@@ -33,7 +33,7 @@ public:
         Member<LocalFrame> m_current;
     };
 
-    static RawPtr<InspectedFrames> create(LocalFrame* root)
+    static InspectedFrames* create(LocalFrame* root)
     {
         return new InspectedFrames(root);
     }

@@ -53,7 +53,7 @@ public:
         virtual void profilingStopped() { }
     };
 
-    static RawPtr<InspectorProfilerAgent> create(V8ProfilerAgent*, Client*);
+    static InspectorProfilerAgent* create(V8ProfilerAgent*, Client*);
     ~InspectorProfilerAgent() override;
     DECLARE_VIRTUAL_TRACE();
 

@@ -40,7 +40,7 @@ class WorkerGlobalScope;
 class WorkerDebuggerAgent final : public InspectorDebuggerAgent {
     WTF_MAKE_NONCOPYABLE(WorkerDebuggerAgent);
 public:
-    static RawPtr<WorkerDebuggerAgent> create(V8DebuggerAgent*, WorkerGlobalScope*);
+    static WorkerDebuggerAgent* create(V8DebuggerAgent*, WorkerGlobalScope*);
     ~WorkerDebuggerAgent() override;
     DECLARE_VIRTUAL_TRACE();
 

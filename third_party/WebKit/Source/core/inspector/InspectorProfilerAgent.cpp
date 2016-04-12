@@ -41,7 +41,7 @@ namespace ProfilerAgentState {
 static const char profilerEnabled[] = "profilerEnabled";
 }
 
-RawPtr<InspectorProfilerAgent> InspectorProfilerAgent::create(V8ProfilerAgent* agent, Client* client)
+InspectorProfilerAgent* InspectorProfilerAgent::create(V8ProfilerAgent* agent, Client* client)
 {
     return new InspectorProfilerAgent(agent, client);
 }

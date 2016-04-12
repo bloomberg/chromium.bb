@@ -110,7 +110,7 @@ bool WebDevToolsFrontendImpl::isUnderTest()
     return m_client ? m_client->isUnderTest() : false;
 }
 
-void WebDevToolsFrontendImpl::showContextMenu(LocalFrame* targetFrame, float x, float y, RawPtr<ContextMenuProvider> menuProvider)
+void WebDevToolsFrontendImpl::showContextMenu(LocalFrame* targetFrame, float x, float y, ContextMenuProvider* menuProvider)
 {
     WebLocalFrameImpl::fromFrame(targetFrame)->viewImpl()->showContextMenuAtPoint(x, y, menuProvider);
 }

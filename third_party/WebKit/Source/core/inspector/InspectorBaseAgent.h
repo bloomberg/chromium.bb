@@ -84,7 +84,7 @@ class CORE_EXPORT InspectorAgentRegistry final {
     WTF_MAKE_NONCOPYABLE(InspectorAgentRegistry);
 public:
     explicit InspectorAgentRegistry(InstrumentingAgents*);
-    void append(RawPtr<InspectorAgent>);
+    void append(InspectorAgent*);
 
     void setFrontend(protocol::Frontend*);
     void clearFrontend();

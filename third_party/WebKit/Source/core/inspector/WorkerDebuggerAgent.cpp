@@ -34,7 +34,7 @@
 
 namespace blink {
 
-RawPtr<WorkerDebuggerAgent> WorkerDebuggerAgent::create(V8DebuggerAgent* agent, WorkerGlobalScope* inspectedWorkerGlobalScope)
+WorkerDebuggerAgent* WorkerDebuggerAgent::create(V8DebuggerAgent* agent, WorkerGlobalScope* inspectedWorkerGlobalScope)
 {
     return new WorkerDebuggerAgent(agent, inspectedWorkerGlobalScope);
 }

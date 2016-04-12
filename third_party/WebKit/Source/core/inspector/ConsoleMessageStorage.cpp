@@ -18,15 +18,14 @@ ConsoleMessageStorage::ConsoleMessageStorage()
 {
 }
 
-void ConsoleMessageStorage::reportMessage(ExecutionContext* context, RawPtr<ConsoleMessage> prpMessage)
+void ConsoleMessageStorage::reportMessage(ExecutionContext* context, ConsoleMessage* message)
 {
-    RawPtr<ConsoleMessage> message = prpMessage;
     message->collectCallStack();
 
     if (message->type() == ClearMessageType)
         clear(context);
 
-    InspectorInstrumentation::addMessageToConsole(context, message.get());
+    InspectorInstrumentation::addMessageToConsole(context, message);
 
     ASSERT(m_messages.size() <= maxConsoleMessageCount);
     if (m_messages.size() == maxConsoleMessageCount) {

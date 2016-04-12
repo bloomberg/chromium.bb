@@ -94,7 +94,7 @@ public:
         virtual void setInspectedNode(Node*) { }
     };
 
-    static RawPtr<InspectorDOMAgent> create(v8::Isolate* isolate, InspectedFrames* inspectedFrames, V8RuntimeAgent* runtimeAgent, Client* client)
+    static InspectorDOMAgent* create(v8::Isolate* isolate, InspectedFrames* inspectedFrames, V8RuntimeAgent* runtimeAgent, Client* client)
     {
         return new InspectorDOMAgent(isolate, inspectedFrames, runtimeAgent, client);
     }

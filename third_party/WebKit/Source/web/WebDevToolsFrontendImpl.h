@@ -55,7 +55,7 @@ public:
 
     bool isUnderTest() override;
 
-    void showContextMenu(LocalFrame*, float x, float y, RawPtr<ContextMenuProvider>) override;
+    void showContextMenu(LocalFrame*, float x, float y, ContextMenuProvider*) override;
 
     void setInjectedScriptForOrigin(const String& origin, const String& source) override;
 

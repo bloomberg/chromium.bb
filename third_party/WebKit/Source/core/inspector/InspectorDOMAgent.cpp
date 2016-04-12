@@ -607,14 +607,14 @@ void InspectorDOMAgent::querySelector(ErrorString* errorString, int nodeId, cons
         return;
 
     TrackExceptionState exceptionState;
-    RawPtr<Element> element = toContainerNode(node)->querySelector(AtomicString(selectors), exceptionState);
+    Element* element = toContainerNode(node)->querySelector(AtomicString(selectors), exceptionState);
     if (exceptionState.hadException()) {
         *errorString = "DOM Error while querying";
         return;
     }
 
     if (element)
-        *elementId = pushNodePathToFrontend(element.get());
+        *elementId = pushNodePathToFrontend(element);
 }
 
 void InspectorDOMAgent::querySelectorAll(ErrorString* errorString, int nodeId, const String& selectors, OwnPtr<protocol::Array<int>>* result)
@@ -624,7 +624,7 @@ void InspectorDOMAgent::querySelectorAll(ErrorString* errorString, int nodeId, c
         return;
 
     TrackExceptionState exceptionState;
-    RawPtr<StaticElementList> elements = toContainerNode(node)->querySelectorAll(AtomicString(selectors), exceptionState);
+    StaticElementList* elements = toContainerNode(node)->querySelectorAll(AtomicString(selectors), exceptionState);
     if (exceptionState.hadException()) {
         *errorString = "DOM Error while querying";
         return;
@@ -685,9 +685,9 @@ int InspectorDOMAgent::pushNodePathToFrontend(Node* nodeToPush)
         node = parent;
 
     // Node being pushed is detached -> push subtree root.
-    RawPtr<NodeToIdMap> newMap = new NodeToIdMap;
-    NodeToIdMap* danglingMap = newMap.get();
-    m_danglingNodeToIdMaps.append(newMap.release());
+    NodeToIdMap* newMap = new NodeToIdMap;
+    NodeToIdMap* danglingMap = newMap;
+    m_danglingNodeToIdMaps.append(newMap);
     OwnPtr<protocol::Array<protocol::DOM::Node>> children = protocol::Array<protocol::DOM::Node>::create();
     children->addItem(buildObjectForNode(node, 0, danglingMap));
     frontend()->setChildNodes(0, children.release());
@@ -716,7 +716,7 @@ void InspectorDOMAgent::setAttributesAsText(ErrorString* errorString, int elemen
         return;
 
     String markup = "<span " + text + "></span>";
-    RawPtr<DocumentFragment> fragment = element->document().createDocumentFragment();
+    DocumentFragment* fragment = element->document().createDocumentFragment();
 
     bool shouldIgnoreCase = element->document().isHTMLDocument() && element->isHTMLElement();
     // Not all elements can represent the context (i.e. IFRAME), hence using document.body.
@@ -787,7 +787,7 @@ void InspectorDOMAgent::setNodeName(ErrorString* errorString, int nodeId, const 
         return;
 
     TrackExceptionState exceptionState;
-    RawPtr<Element> newElem = oldNode->document().createElement(AtomicString(tagName), exceptionState);
+    Element* newElem = oldNode->document().createElement(AtomicString(tagName), exceptionState);
     if (exceptionState.hadException())
         return;
 
@@ -796,18 +796,18 @@ void InspectorDOMAgent::setNodeName(ErrorString* errorString, int nodeId, const 
 
     // Copy over the original node's children.
     for (Node* child = oldNode->firstChild(); child; child = oldNode->firstChild()) {
-        if (!m_domEditor->insertBefore(newElem.get(), child, 0, errorString))
+        if (!m_domEditor->insertBefore(newElem, child, 0, errorString))
             return;
     }
 
     // Replace the old node with the new node
     ContainerNode* parent = oldNode->parentNode();
-    if (!m_domEditor->insertBefore(parent, newElem.get(), oldNode->nextSibling(), errorString))
+    if (!m_domEditor->insertBefore(parent, newElem, oldNode->nextSibling(), errorString))
         return;
     if (!m_domEditor->removeChild(parent, oldNode, errorString))
         return;
 
-    *newId = pushNodePathToFrontend(newElem.get());
+    *newId = pushNodePathToFrontend(newElem);
     if (m_childrenRequested.contains(nodeId))
         pushChildNodesToFrontend(*newId);
 }
@@ -1009,7 +1009,7 @@ void InspectorDOMAgent::performSearch(ErrorString*, const String& whitespaceTrim
         // Selector evaluation
         for (Document* document : docs) {
             TrackExceptionState exceptionState;
-            RawPtr<StaticElementList> elementList = document->querySelectorAll(AtomicString(whitespaceTrimmedQuery), exceptionState);
+            StaticElementList* elementList = document->querySelectorAll(AtomicString(whitespaceTrimmedQuery), exceptionState);
             if (exceptionState.hadException() || !elementList)
                 continue;
 
@@ -1248,7 +1248,7 @@ void InspectorDOMAgent::copyTo(ErrorString* errorString, int nodeId, int targetE
     }
 
     // The clone is deep by default.
-    RawPtr<Node> clonedNode = node->cloneNode(true);
+    Node* clonedNode = node->cloneNode(true);
     if (!clonedNode) {
         *errorString = "Failed to clone node";
         return;
@@ -1256,7 +1256,7 @@ void InspectorDOMAgent::copyTo(ErrorString* errorString, int nodeId, int targetE
     if (!m_domEditor->insertBefore(targetElement, clonedNode, anchorNode, errorString))
         return;
 
-    *newNodeId = pushNodePathToFrontend(clonedNode.get());
+    *newNodeId = pushNodePathToFrontend(clonedNode);
 }
 
 void InspectorDOMAgent::moveTo(ErrorString* errorString, int nodeId, int targetElementId, const Maybe<int>& anchorNodeId, int* newNodeId)

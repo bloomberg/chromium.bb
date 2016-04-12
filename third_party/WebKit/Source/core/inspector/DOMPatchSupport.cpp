@@ -72,7 +72,7 @@ DOMPatchSupport::DOMPatchSupport(DOMEditor* domEditor, Document& document)
 
 void DOMPatchSupport::patchDocument(const String& markup)
 {
-    RawPtr<Document> newDocument = nullptr;
+    Document* newDocument = nullptr;
     if (document().isHTMLDocument())
         newDocument = HTMLDocument::create();
     else if (document().isSVGDocument())
@@ -85,20 +85,20 @@ void DOMPatchSupport::patchDocument(const String& markup)
     ASSERT(newDocument);
     newDocument->setContextFeatures(document().contextFeatures());
     if (!document().isHTMLDocument()) {
-        RawPtr<DocumentParser> parser = XMLDocumentParser::create(*newDocument, nullptr);
+        DocumentParser* parser = XMLDocumentParser::create(*newDocument, nullptr);
         parser->append(markup);
         parser->finish();
         parser->detach();
 
         // Avoid breakage on non-well-formed documents.
-        if (!static_cast<XMLDocumentParser*>(parser.get())->wellFormed())
+        if (!static_cast<XMLDocumentParser*>(parser)->wellFormed())
             return;
     }
     newDocument->setContent(markup);
-    RawPtr<Digest> oldInfo = createDigest(document().documentElement(), nullptr);
-    RawPtr<Digest> newInfo = createDigest(newDocument->documentElement(), &m_unusedNodesMap);
+    Digest* oldInfo = createDigest(document().documentElement(), nullptr);
+    Digest* newInfo = createDigest(newDocument->documentElement(), &m_unusedNodesMap);
 
-    if (!innerPatchNode(oldInfo.get(), newInfo.get(), IGNORE_EXCEPTION)) {
+    if (!innerPatchNode(oldInfo, newInfo, IGNORE_EXCEPTION)) {
         // Fall back to rewrite.
         document().write(markup);
         document().close();
@@ -114,7 +114,7 @@ Node* DOMPatchSupport::patchNode(Node* node, const String& markup, ExceptionStat
     }
 
     Node* previousSibling = node->previousSibling();
-    RawPtr<DocumentFragment> fragment = DocumentFragment::create(document());
+    DocumentFragment* fragment = DocumentFragment::create(document());
     Node* targetNode = node->parentElementOrShadowRoot() ? node->parentElementOrShadowRoot() : document().documentElement();
 
     // Use the document BODY as the context element when editing immediate shadow root children,
@@ -152,7 +152,7 @@ Node* DOMPatchSupport::patchNode(Node* node, const String& markup, ExceptionStat
 
     if (!innerPatchChildren(parentNode, oldList, newList, exceptionState)) {
         // Fall back to total replace.
-        if (!m_domEditor->replaceChild(parentNode, fragment.release(), node, exceptionState))
+        if (!m_domEditor->replaceChild(parentNode, fragment, node, exceptionState))
             return nullptr;
     }
     return previousSibling ? previousSibling->nextSibling() : parentNode->firstChild();
@@ -377,14 +377,14 @@ bool DOMPatchSupport::innerPatchChildren(ContainerNode* parentNode, const HeapVe
     for (size_t i = 0; i < oldMap.size(); ++i) {
         if (!oldMap[i].first)
             continue;
-        RawPtr<Node> node = oldMap[i].first->m_node;
+        Node* node = oldMap[i].first->m_node;
         Node* anchorNode = NodeTraversal::childAt(*parentNode, oldMap[i].second);
         if (node == anchorNode)
             continue;
         if (isHTMLBodyElement(*node) || isHTMLHeadElement(*node))
             continue; // Never move head or body, move the rest of the nodes around them.
 
-        if (!m_domEditor->insertBefore(parentNode, node.release(), anchorNode, exceptionState))
+        if (!m_domEditor->insertBefore(parentNode, node, anchorNode, exceptionState))
             return false;
     }
     return true;
@@ -395,7 +395,7 @@ static void addStringToDigestor(WebCryptoDigestor* digestor, const String& strin
     digestor->consume(reinterpret_cast<const unsigned char*>(string.utf8().data()), string.length());
 }
 
-RawPtr<DOMPatchSupport::Digest> DOMPatchSupport::createDigest(Node* node, UnusedNodesMap* unusedNodesMap)
+DOMPatchSupport::Digest* DOMPatchSupport::createDigest(Node* node, UnusedNodesMap* unusedNodesMap)
 {
     Digest* digest = new Digest(node);
 
@@ -411,10 +411,10 @@ RawPtr<DOMPatchSupport::Digest> DOMPatchSupport::createDigest(Node* node, Unused
         Element& element = toElement(*node);
         Node* child = element.firstChild();
         while (child) {
-            RawPtr<Digest> childInfo = createDigest(child, unusedNodesMap);
+            Digest* childInfo = createDigest(child, unusedNodesMap);
             addStringToDigestor(digestor.get(), childInfo->m_sha1);
             child = child->nextSibling();
-            digest->m_children.append(childInfo.release());
+            digest->m_children.append(childInfo);
         }
 
         AttributeCollection attributes = element.attributesWithoutUpdate();
@@ -447,8 +447,8 @@ bool DOMPatchSupport::insertBeforeAndMarkAsUsed(ContainerNode* parentNode, Diges
 
 bool DOMPatchSupport::removeChildAndMoveToNew(Digest* oldDigest, ExceptionState& exceptionState)
 {
-    RawPtr<Node> oldNode = oldDigest->m_node;
-    if (!m_domEditor->removeChild(oldNode->parentNode(), oldNode.get(), exceptionState))
+    Node* oldNode = oldDigest->m_node;
+    if (!m_domEditor->removeChild(oldNode->parentNode(), oldNode, exceptionState))
         return false;
 
     // Diff works within levels. In order not to lose the node identity when user
@@ -462,7 +462,7 @@ bool DOMPatchSupport::removeChildAndMoveToNew(Digest* oldDigest, ExceptionState&
         Node* newNode = newDigest->m_node;
         if (!m_domEditor->replaceChild(newNode->parentNode(), oldNode, newNode, exceptionState))
             return false;
-        newDigest->m_node = oldNode.get();
+        newDigest->m_node = oldNode;
         markNodeAsUsed(newDigest);
         return true;
     }

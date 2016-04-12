@@ -80,13 +80,13 @@ String InspectorHistory::Action::mergeId()
     return "";
 }
 
-void InspectorHistory::Action::merge(RawPtr<Action>)
+void InspectorHistory::Action::merge(Action*)
 {
 }
 
 InspectorHistory::InspectorHistory() : m_afterLastActionIndex(0) { }
 
-bool InspectorHistory::perform(RawPtr<Action> action, ExceptionState& exceptionState)
+bool InspectorHistory::perform(Action* action, ExceptionState& exceptionState)
 {
     if (!action->perform(exceptionState))
         return false;
@@ -94,7 +94,7 @@ bool InspectorHistory::perform(RawPtr<Action> action, ExceptionState& exceptionS
     return true;
 }
 
-void InspectorHistory::appendPerformedAction(RawPtr<Action> action)
+void InspectorHistory::appendPerformedAction(Action* action)
 {
     if (!action->mergeId().isEmpty() && m_afterLastActionIndex > 0 && action->mergeId() == m_history[m_afterLastActionIndex - 1]->mergeId()) {
         m_history[m_afterLastActionIndex - 1]->merge(action);

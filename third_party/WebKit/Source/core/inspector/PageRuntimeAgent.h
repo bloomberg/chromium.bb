@@ -42,7 +42,7 @@ class InspectedFrames;
 
 class CORE_EXPORT PageRuntimeAgent final : public InspectorRuntimeAgent {
 public:
-    static RawPtr<PageRuntimeAgent> create(InspectorRuntimeAgent::Client* client, V8RuntimeAgent* agent, InspectedFrames* inspectedFrames)
+    static PageRuntimeAgent* create(InspectorRuntimeAgent::Client* client, V8RuntimeAgent* agent, InspectedFrames* inspectedFrames)
     {
         return new PageRuntimeAgent(client, agent, inspectedFrames);
     }

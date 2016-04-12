@@ -49,7 +49,7 @@ class V8HeapProfilerAgent;
 class CORE_EXPORT InspectorHeapProfilerAgent final : public InspectorBaseAgent<InspectorHeapProfilerAgent, protocol::Frontend::HeapProfiler>, public protocol::Backend::HeapProfiler {
     WTF_MAKE_NONCOPYABLE(InspectorHeapProfilerAgent);
 public:
-    static RawPtr<InspectorHeapProfilerAgent> create(v8::Isolate*, V8HeapProfilerAgent*);
+    static InspectorHeapProfilerAgent* create(v8::Isolate*, V8HeapProfilerAgent*);
     ~InspectorHeapProfilerAgent() override;
 
     // InspectorBaseAgent overrides.

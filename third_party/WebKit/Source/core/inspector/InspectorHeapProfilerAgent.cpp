@@ -72,7 +72,7 @@ void InspectorHeapProfilerAgent::HeapStatsUpdateTask::startTimer()
     m_timer.startRepeating(0.05, BLINK_FROM_HERE);
 }
 
-RawPtr<InspectorHeapProfilerAgent> InspectorHeapProfilerAgent::create(v8::Isolate* isolate, V8HeapProfilerAgent* agent)
+InspectorHeapProfilerAgent* InspectorHeapProfilerAgent::create(v8::Isolate* isolate, V8HeapProfilerAgent* agent)
 {
     return new InspectorHeapProfilerAgent(isolate, agent);
 }

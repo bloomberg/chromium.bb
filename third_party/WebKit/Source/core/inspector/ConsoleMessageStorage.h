@@ -19,12 +19,12 @@ class WorkerGlobalScopeProxy;
 class ConsoleMessageStorage final : public GarbageCollected<ConsoleMessageStorage> {
     WTF_MAKE_NONCOPYABLE(ConsoleMessageStorage);
 public:
-    static RawPtr<ConsoleMessageStorage> create()
+    static ConsoleMessageStorage* create()
     {
         return new ConsoleMessageStorage();
     }
 
-    void reportMessage(ExecutionContext*, RawPtr<ConsoleMessage>);
+    void reportMessage(ExecutionContext*, ConsoleMessage*);
     void clear(ExecutionContext*);
 
     CORE_EXPORT Vector<unsigned> argumentCounts() const;

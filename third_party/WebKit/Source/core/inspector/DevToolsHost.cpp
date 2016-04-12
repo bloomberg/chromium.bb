@@ -60,7 +60,7 @@ namespace blink {
 
 class FrontendMenuProvider final : public ContextMenuProvider {
 public:
-    static RawPtr<FrontendMenuProvider> create(DevToolsHost* devtoolsHost, const Vector<ContextMenuItem>& items)
+    static FrontendMenuProvider* create(DevToolsHost* devtoolsHost, const Vector<ContextMenuItem>& items)
     {
         return new FrontendMenuProvider(devtoolsHost, items);
     }
@@ -218,8 +218,8 @@ void DevToolsHost::sendMessageToEmbedder(const String& message)
 void DevToolsHost::showContextMenu(LocalFrame* targetFrame, float x, float y, const Vector<ContextMenuItem>& items)
 {
     ASSERT(m_frontendFrame);
-    RawPtr<FrontendMenuProvider> menuProvider = FrontendMenuProvider::create(this, items);
-    m_menuProvider = menuProvider.get();
+    FrontendMenuProvider* menuProvider = FrontendMenuProvider::create(this, items);
+    m_menuProvider = menuProvider;
     float zoom = targetFrame->pageZoomFactor();
     if (m_client)
         m_client->showContextMenu(targetFrame, x * zoom, y * zoom, menuProvider);

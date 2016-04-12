@@ -190,17 +190,17 @@ void LayoutEditor::rebuild()
     editableSelectorUpdated(false);
 }
 
-RawPtr<CSSPrimitiveValue> LayoutEditor::getPropertyCSSValue(CSSPropertyID property) const
+CSSPrimitiveValue* LayoutEditor::getPropertyCSSValue(CSSPropertyID property) const
 {
-    RawPtr<CSSStyleDeclaration> style = m_cssAgent->findEffectiveDeclaration(property, m_matchedStyles);
+    CSSStyleDeclaration* style = m_cssAgent->findEffectiveDeclaration(property, m_matchedStyles);
     if (!style)
         return nullptr;
 
-    RawPtr<CSSValue> cssValue = style->getPropertyCSSValueInternal(property);
+    CSSValue* cssValue = style->getPropertyCSSValueInternal(property);
     if (!cssValue || !cssValue->isPrimitiveValue())
         return nullptr;
 
-    return toCSSPrimitiveValue(cssValue.get());
+    return toCSSPrimitiveValue(cssValue);
 }
 
 bool LayoutEditor::growInside(String propertyName, CSSPrimitiveValue* value)
@@ -257,7 +257,7 @@ bool LayoutEditor::growInside(String propertyName, CSSPrimitiveValue* value)
 
 PassOwnPtr<protocol::DictionaryValue> LayoutEditor::createValueDescription(const String& propertyName)
 {
-    RawPtr<CSSPrimitiveValue> cssValue = getPropertyCSSValue(cssPropertyID(propertyName));
+    CSSPrimitiveValue* cssValue = getPropertyCSSValue(cssPropertyID(propertyName));
     if (cssValue && !(cssValue->isLength() || cssValue->isPercentage()))
         return nullptr;
 
@@ -268,7 +268,7 @@ PassOwnPtr<protocol::DictionaryValue> LayoutEditor::createValueDescription(const
     object->setBoolean("mutable", isMutableUnitType(unitType));
 
     if (!m_growsInside.contains(propertyName))
-        m_growsInside.set(propertyName, growInside(propertyName, cssValue.get()));
+        m_growsInside.set(propertyName, growInside(propertyName, cssValue));
 
     object->setBoolean("growInside", m_growsInside.get(propertyName));
     return object.release();
@@ -287,7 +287,7 @@ void LayoutEditor::overlayStartedPropertyChange(const String& anchorName)
     if (!m_changingProperty)
         return;
 
-    RawPtr<CSSPrimitiveValue> cssValue = getPropertyCSSValue(m_changingProperty);
+    CSSPrimitiveValue* cssValue = getPropertyCSSValue(m_changingProperty);
     m_valueUnitType = cssValue ? cssValue->typeWithCalcResolved() : CSSPrimitiveValue::UnitType::Pixels;
     if (!isMutableUnitType(m_valueUnitType))
         return;
@@ -386,7 +386,7 @@ PassOwnPtr<protocol::DictionaryValue> LayoutEditor::currentSelectorInfo(CSSStyle
     object->setArray("medias", mediaListValue.release());
 
     TrackExceptionState exceptionState;
-    RawPtr<StaticElementList> elements = ownerDocument->querySelectorAll(AtomicString(currentSelectorText), exceptionState);
+    StaticElementList* elements = ownerDocument->querySelectorAll(AtomicString(currentSelectorText), exceptionState);
 
     if (!elements || exceptionState.hadException())
         return object.release();

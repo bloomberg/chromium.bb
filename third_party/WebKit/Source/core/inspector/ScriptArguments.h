@@ -43,8 +43,8 @@ class ScriptValue;
 
 class ScriptArguments final : public GarbageCollectedFinalized<ScriptArguments> {
 public:
-    static RawPtr<ScriptArguments> create(ScriptState*, Vector<ScriptValue>& arguments);
-    static RawPtr<ScriptArguments> create(ScriptState*, const v8::FunctionCallbackInfo<v8::Value>& arguments, unsigned skipArgumentCount);
+    static ScriptArguments* create(ScriptState*, Vector<ScriptValue>& arguments);
+    static ScriptArguments* create(ScriptState*, const v8::FunctionCallbackInfo<v8::Value>& arguments, unsigned skipArgumentCount);
 
     ~ScriptArguments();
 

@@ -53,7 +53,7 @@ class PaintLayerCompositor;
 class CORE_EXPORT InspectorLayerTreeAgent final : public InspectorBaseAgent<InspectorLayerTreeAgent, protocol::Frontend::LayerTree>, public protocol::Backend::LayerTree {
     WTF_MAKE_NONCOPYABLE(InspectorLayerTreeAgent);
 public:
-    static RawPtr<InspectorLayerTreeAgent> create(InspectedFrames* inspectedFrames)
+    static InspectorLayerTreeAgent* create(InspectedFrames* inspectedFrames)
     {
         return new InspectorLayerTreeAgent(inspectedFrames);
     }

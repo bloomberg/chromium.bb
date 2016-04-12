@@ -71,7 +71,7 @@ class DictionaryValue;
 
 class CORE_EXPORT InspectorResourceAgent final : public InspectorBaseAgent<InspectorResourceAgent, protocol::Frontend::Network>, public protocol::Backend::Network {
 public:
-    static RawPtr<InspectorResourceAgent> create(InspectedFrames* inspectedFrames)
+    static InspectorResourceAgent* create(InspectedFrames* inspectedFrames)
     {
         return new InspectorResourceAgent(inspectedFrames);
     }

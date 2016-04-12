@@ -55,7 +55,7 @@ typedef Vector<unsigned> LineEndings;
 
 class InspectorStyle final : public GarbageCollectedFinalized<InspectorStyle> {
 public:
-    static RawPtr<InspectorStyle> create(RawPtr<CSSStyleDeclaration>, RawPtr<CSSRuleSourceData>, InspectorStyleSheetBase* parentStyleSheet);
+    static InspectorStyle* create(CSSStyleDeclaration*, CSSRuleSourceData*, InspectorStyleSheetBase* parentStyleSheet);
 
     CSSStyleDeclaration* cssStyle() { return m_style.get(); }
     PassOwnPtr<protocol::CSS::CSSStyle> buildObjectForStyle();
@@ -66,7 +66,7 @@ public:
     DECLARE_TRACE();
 
 private:
-    InspectorStyle(RawPtr<CSSStyleDeclaration>, RawPtr<CSSRuleSourceData>, InspectorStyleSheetBase* parentStyleSheet);
+    InspectorStyle(CSSStyleDeclaration*, CSSRuleSourceData*, InspectorStyleSheetBase* parentStyleSheet);
 
     void populateAllProperties(HeapVector<CSSPropertySourceData>& result);
     PassOwnPtr<protocol::CSS::CSSStyle> styleWithProperties();
@@ -108,7 +108,7 @@ protected:
     void onStyleSheetTextChanged();
     const LineEndings* lineEndings();
 
-    virtual RawPtr<InspectorStyle> inspectorStyle(RawPtr<CSSStyleDeclaration>) = 0;
+    virtual InspectorStyle* inspectorStyle(CSSStyleDeclaration*) = 0;
 
 private:
     friend class InspectorStyle;
@@ -120,7 +120,7 @@ private:
 
 class InspectorStyleSheet : public InspectorStyleSheetBase {
 public:
-    static RawPtr<InspectorStyleSheet> create(InspectorResourceAgent*, RawPtr<CSSStyleSheet> pageStyleSheet, const String& origin, const String& documentURL, InspectorCSSAgent*);
+    static InspectorStyleSheet* create(InspectorResourceAgent*, CSSStyleSheet* pageStyleSheet, const String& origin, const String& documentURL, InspectorCSSAgent*);
 
     ~InspectorStyleSheet() override;
     DECLARE_VIRTUAL_TRACE();
@@ -128,11 +128,11 @@ public:
     String finalURL();
     bool setText(const String&, ExceptionState&) override;
     bool getText(String* result) override;
-    RawPtr<CSSStyleRule>  setRuleSelector(const SourceRange&, const String& selector, SourceRange* newRange, String* oldSelector, ExceptionState&);
-    RawPtr<CSSKeyframeRule>  setKeyframeKey(const SourceRange&, const String& text, SourceRange* newRange, String* oldText, ExceptionState&);
-    RawPtr<CSSRule>  setStyleText(const SourceRange&, const String& text, SourceRange* newRange, String* oldSelector, ExceptionState&);
-    RawPtr<CSSMediaRule>  setMediaRuleText(const SourceRange&, const String& selector, SourceRange* newRange, String* oldSelector, ExceptionState&);
-    RawPtr<CSSStyleRule>  addRule(const String& ruleText, const SourceRange& location, SourceRange* addedRange, ExceptionState&);
+    CSSStyleRule* setRuleSelector(const SourceRange&, const String& selector, SourceRange* newRange, String* oldSelector, ExceptionState&);
+    CSSKeyframeRule* setKeyframeKey(const SourceRange&, const String& text, SourceRange* newRange, String* oldText, ExceptionState&);
+    CSSRule* setStyleText(const SourceRange&, const String& text, SourceRange* newRange, String* oldSelector, ExceptionState&);
+    CSSMediaRule* setMediaRuleText(const SourceRange&, const String& selector, SourceRange* newRange, String* oldSelector, ExceptionState&);
+    CSSStyleRule* addRule(const String& ruleText, const SourceRange& location, SourceRange* addedRange, ExceptionState&);
     bool deleteRule(const SourceRange&, ExceptionState&);
 
     CSSStyleSheet* pageStyleSheet() { return m_pageStyleSheet.get(); }
@@ -147,18 +147,18 @@ public:
 
     bool isInlineStyle() override { return false; }
     const CSSRuleVector& flatRules();
-    RawPtr<CSSRuleSourceData> sourceDataForRule(RawPtr<CSSRule>);
+    CSSRuleSourceData* sourceDataForRule(CSSRule*);
     String sourceMapURL() override;
 
 protected:
-    RawPtr<InspectorStyle> inspectorStyle(RawPtr<CSSStyleDeclaration>) override;
+    InspectorStyle* inspectorStyle(CSSStyleDeclaration*) override;
 
 private:
-    InspectorStyleSheet(InspectorResourceAgent*, RawPtr<CSSStyleSheet> pageStyleSheet, const String& origin, const String& documentURL, InspectorCSSAgent*);
-    RawPtr<CSSRuleSourceData> ruleSourceDataAfterSourceRange(const SourceRange&);
-    RawPtr<CSSRuleSourceData> findRuleByHeaderRange(const SourceRange&);
-    RawPtr<CSSRuleSourceData> findRuleByBodyRange(const SourceRange&);
-    RawPtr<CSSRule> ruleForSourceData(RawPtr<CSSRuleSourceData>);
+    InspectorStyleSheet(InspectorResourceAgent*, CSSStyleSheet* pageStyleSheet, const String& origin, const String& documentURL, InspectorCSSAgent*);
+    CSSRuleSourceData* ruleSourceDataAfterSourceRange(const SourceRange&);
+    CSSRuleSourceData* findRuleByHeaderRange(const SourceRange&);
+    CSSRuleSourceData* findRuleByBodyRange(const SourceRange&);
+    CSSRule* ruleForSourceData(CSSRuleSourceData*);
     CSSStyleRule* insertCSSOMRuleInStyleSheet(CSSRule* insertBefore, const String& ruleText, ExceptionState&);
     CSSStyleRule* insertCSSOMRuleInMediaRule(CSSMediaRule*, CSSRule* insertBefore, const String& ruleText, ExceptionState&);
     CSSStyleRule* insertCSSOMRuleBySourceRange(const SourceRange&, const String& ruleText, ExceptionState&);
@@ -193,24 +193,24 @@ private:
 
 class InspectorStyleSheetForInlineStyle final : public InspectorStyleSheetBase {
 public:
-    static RawPtr<InspectorStyleSheetForInlineStyle> create(RawPtr<Element>, Listener*);
+    static InspectorStyleSheetForInlineStyle* create(Element*, Listener*);
 
     void didModifyElementAttribute();
     bool setText(const String&, ExceptionState&) override;
     bool getText(String* result) override;
     CSSStyleDeclaration* inlineStyle();
-    RawPtr<CSSRuleSourceData> ruleSourceData();
+    CSSRuleSourceData* ruleSourceData();
 
     DECLARE_VIRTUAL_TRACE();
 
 protected:
-    RawPtr<InspectorStyle> inspectorStyle(RawPtr<CSSStyleDeclaration>) override;
+    InspectorStyle* inspectorStyle(CSSStyleDeclaration*) override;
 
     // Also accessed by friend class InspectorStyle.
     bool isInlineStyle() override { return true; }
 
 private:
-    InspectorStyleSheetForInlineStyle(RawPtr<Element>, Listener*);
+    InspectorStyleSheetForInlineStyle(Element*, Listener*);
     const String& elementStyleText();
 
     Member<Element> m_element;

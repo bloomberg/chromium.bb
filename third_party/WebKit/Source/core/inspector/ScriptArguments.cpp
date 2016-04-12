@@ -169,12 +169,12 @@ private:
 
 } // namespace
 
-RawPtr<ScriptArguments> ScriptArguments::create(ScriptState* scriptState, Vector<ScriptValue>& arguments)
+ScriptArguments* ScriptArguments::create(ScriptState* scriptState, Vector<ScriptValue>& arguments)
 {
     return new ScriptArguments(scriptState, arguments);
 }
 
-RawPtr<ScriptArguments> ScriptArguments::create(ScriptState* scriptState, const v8::FunctionCallbackInfo<v8::Value>& v8arguments, unsigned skipArgumentCount)
+ScriptArguments* ScriptArguments::create(ScriptState* scriptState, const v8::FunctionCallbackInfo<v8::Value>& v8arguments, unsigned skipArgumentCount)
 {
     Vector<ScriptValue> arguments;
     for (int i = skipArgumentCount; i < v8arguments.Length(); ++i)

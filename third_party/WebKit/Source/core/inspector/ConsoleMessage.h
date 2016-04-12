@@ -24,7 +24,7 @@ class WorkerInspectorProxy;
 
 class CORE_EXPORT ConsoleMessage final: public GarbageCollectedFinalized<ConsoleMessage> {
 public:
-    static RawPtr<ConsoleMessage> create(MessageSource source, MessageLevel level, const String& message, const String& url = String(), unsigned lineNumber = 0, unsigned columnNumber = 0)
+    static ConsoleMessage* create(MessageSource source, MessageLevel level, const String& message, const String& url = String(), unsigned lineNumber = 0, unsigned columnNumber = 0)
     {
         return new ConsoleMessage(source, level, message, url, lineNumber, columnNumber);
     }
@@ -42,8 +42,8 @@ public:
     void setCallStack(PassRefPtr<ScriptCallStack>);
     ScriptState* getScriptState() const;
     void setScriptState(ScriptState*);
-    RawPtr<ScriptArguments> scriptArguments() const;
-    void setScriptArguments(RawPtr<ScriptArguments>);
+    ScriptArguments* scriptArguments() const;
+    void setScriptArguments(ScriptArguments*);
     unsigned long requestIdentifier() const;
     void setRequestIdentifier(unsigned long);
     double timestamp() const;

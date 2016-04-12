@@ -123,12 +123,12 @@ void ConsoleMessage::setScriptState(ScriptState* scriptState)
         m_scriptState.clear();
 }
 
-RawPtr<ScriptArguments> ConsoleMessage::scriptArguments() const
+ScriptArguments* ConsoleMessage::scriptArguments() const
 {
     return m_scriptArguments;
 }
 
-void ConsoleMessage::setScriptArguments(RawPtr<ScriptArguments> scriptArguments)
+void ConsoleMessage::setScriptArguments(ScriptArguments* scriptArguments)
 {
     m_scriptArguments = scriptArguments;
 }

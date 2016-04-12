@@ -51,7 +51,7 @@ public:
         virtual String toString();
 
         virtual String mergeId();
-        virtual void merge(RawPtr<Action>);
+        virtual void merge(Action*);
 
         virtual bool perform(ExceptionState&) = 0;
 
@@ -68,8 +68,8 @@ public:
     InspectorHistory();
     DECLARE_TRACE();
 
-    bool perform(RawPtr<Action>, ExceptionState&);
-    void appendPerformedAction(RawPtr<Action>);
+    bool perform(Action*, ExceptionState&);
+    void appendPerformedAction(Action*);
     void markUndoableState();
 
     bool undo(ExceptionState&);

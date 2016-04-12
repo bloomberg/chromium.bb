@@ -52,7 +52,7 @@
 
 namespace blink {
 
-RawPtr<WorkerInspectorController> WorkerInspectorController::create(WorkerGlobalScope* workerGlobalScope)
+WorkerInspectorController* WorkerInspectorController::create(WorkerGlobalScope* workerGlobalScope)
 {
     WorkerThreadDebugger* debugger = WorkerThreadDebugger::from(workerGlobalScope->thread()->isolate());
     if (!debugger)
@@ -67,22 +67,21 @@ WorkerInspectorController::WorkerInspectorController(WorkerGlobalScope* workerGl
     , m_agents(m_instrumentingAgents.get())
     , m_v8Session(session)
 {
-    RawPtr<WorkerRuntimeAgent> workerRuntimeAgent = WorkerRuntimeAgent::create(m_v8Session->runtimeAgent(), workerGlobalScope, this);
-    m_workerRuntimeAgent = workerRuntimeAgent.get();
-    m_agents.append(workerRuntimeAgent.release());
+    WorkerRuntimeAgent* workerRuntimeAgent = WorkerRuntimeAgent::create(m_v8Session->runtimeAgent(), workerGlobalScope, this);
+    m_workerRuntimeAgent = workerRuntimeAgent;
+    m_agents.append(workerRuntimeAgent);
 
-    RawPtr<WorkerDebuggerAgent> workerDebuggerAgent = WorkerDebuggerAgent::create(m_v8Session->debuggerAgent(), workerGlobalScope);
-    m_workerDebuggerAgent = workerDebuggerAgent.get();
-    m_agents.append(workerDebuggerAgent.release());
+    WorkerDebuggerAgent* workerDebuggerAgent = WorkerDebuggerAgent::create(m_v8Session->debuggerAgent(), workerGlobalScope);
+    m_workerDebuggerAgent = workerDebuggerAgent;
+    m_agents.append(workerDebuggerAgent);
 
     m_agents.append(InspectorProfilerAgent::create(m_v8Session->profilerAgent(), nullptr));
     m_agents.append(InspectorHeapProfilerAgent::create(workerGlobalScope->thread()->isolate(), m_v8Session->heapProfilerAgent()));
 
-    RawPtr<WorkerConsoleAgent> workerConsoleAgent = WorkerConsoleAgent::create(m_v8Session->runtimeAgent(), m_v8Session->debuggerAgent(), workerGlobalScope);
-    WorkerConsoleAgent* workerConsoleAgentPtr = workerConsoleAgent.get();
-    m_agents.append(workerConsoleAgent.release());
+    WorkerConsoleAgent* workerConsoleAgent = WorkerConsoleAgent::create(m_v8Session->runtimeAgent(), m_v8Session->debuggerAgent(), workerGlobalScope);
+    m_agents.append(workerConsoleAgent);
 
-    m_v8Session->runtimeAgent()->setClearConsoleCallback(bind<>(&InspectorConsoleAgent::clearAllMessages, workerConsoleAgentPtr));
+    m_v8Session->runtimeAgent()->setClearConsoleCallback(bind<>(&InspectorConsoleAgent::clearAllMessages, workerConsoleAgent));
 }
 
 WorkerInspectorController::~WorkerInspectorController()

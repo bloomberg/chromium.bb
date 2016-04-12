@@ -40,7 +40,7 @@ class WorkerGlobalScope;
 
 class WorkerRuntimeAgent final : public InspectorRuntimeAgent {
 public:
-    static RawPtr<WorkerRuntimeAgent> create(V8RuntimeAgent* agent, WorkerGlobalScope* context, InspectorRuntimeAgent::Client* client)
+    static WorkerRuntimeAgent* create(V8RuntimeAgent* agent, WorkerGlobalScope* context, InspectorRuntimeAgent::Client* client)
     {
         return new WorkerRuntimeAgent(agent, context, client);
     }

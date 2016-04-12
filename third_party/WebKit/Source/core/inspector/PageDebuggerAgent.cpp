@@ -46,7 +46,7 @@ using blink::protocol::Runtime::RemoteObject;
 
 namespace blink {
 
-RawPtr<PageDebuggerAgent> PageDebuggerAgent::create(V8DebuggerAgent* agent, InspectedFrames* inspectedFrames)
+PageDebuggerAgent* PageDebuggerAgent::create(V8DebuggerAgent* agent, InspectedFrames* inspectedFrames)
 {
     return new PageDebuggerAgent(agent, inspectedFrames);
 }

@@ -40,7 +40,7 @@ class InspectorFrontend;
 class CORE_EXPORT InspectorApplicationCacheAgent final : public InspectorBaseAgent<InspectorApplicationCacheAgent, protocol::Frontend::ApplicationCache>, public protocol::Backend::ApplicationCache {
     WTF_MAKE_NONCOPYABLE(InspectorApplicationCacheAgent);
 public:
-    static RawPtr<InspectorApplicationCacheAgent> create(InspectedFrames* inspectedFrames)
+    static InspectorApplicationCacheAgent* create(InspectedFrames* inspectedFrames)
     {
         return new InspectorApplicationCacheAgent(inspectedFrames);
     }

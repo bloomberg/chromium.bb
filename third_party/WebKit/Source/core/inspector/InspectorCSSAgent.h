@@ -99,7 +99,7 @@ public:
     static CSSStyleRule* asCSSStyleRule(CSSRule*);
     static CSSMediaRule* asCSSMediaRule(CSSRule*);
 
-    static RawPtr<InspectorCSSAgent> create(InspectorDOMAgent* domAgent, InspectedFrames* inspectedFrames, InspectorResourceAgent* resourceAgent, InspectorResourceContentLoader* resourceContentLoader)
+    static InspectorCSSAgent* create(InspectorDOMAgent* domAgent, InspectedFrames* inspectedFrames, InspectorResourceAgent* resourceAgent, InspectorResourceContentLoader* resourceContentLoader)
     {
         return new InspectorCSSAgent(domAgent, inspectedFrames, resourceAgent, resourceContentLoader);
     }
@@ -150,9 +150,9 @@ public:
     PassOwnPtr<protocol::CSS::CSSMedia> buildMediaObject(const MediaList*, MediaListSource, const String&, CSSStyleSheet*);
     PassOwnPtr<protocol::Array<protocol::CSS::CSSMedia>> buildMediaListChain(CSSRule*);
 
-    RawPtr<CSSStyleDeclaration> findEffectiveDeclaration(CSSPropertyID, const HeapVector<Member<CSSStyleDeclaration>>& styles);
-    void setLayoutEditorValue(ErrorString*, Element*, RawPtr<CSSStyleDeclaration>, CSSPropertyID, const String& value, bool forceImportant = false);
-    void layoutEditorItemSelected(Element*, RawPtr<CSSStyleDeclaration>);
+    CSSStyleDeclaration* findEffectiveDeclaration(CSSPropertyID, const HeapVector<Member<CSSStyleDeclaration>>& styles);
+    void setLayoutEditorValue(ErrorString*, Element*, CSSStyleDeclaration*, CSSPropertyID, const String& value, bool forceImportant = false);
+    void layoutEditorItemSelected(Element*, CSSStyleDeclaration*);
 
     HeapVector<Member<CSSStyleDeclaration>> matchingStyles(Element*);
     String styleSheetId(CSSStyleSheet*);

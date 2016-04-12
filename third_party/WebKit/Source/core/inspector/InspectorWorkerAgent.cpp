@@ -46,7 +46,7 @@ static const char workerInspectionEnabled[] = "workerInspectionEnabled";
 static const char waitForDebuggerOnStart[] = "waitForDebuggerOnStart";
 };
 
-RawPtr<InspectorWorkerAgent> InspectorWorkerAgent::create(InspectedFrames* inspectedFrames, PageConsoleAgent* consoleAgent)
+InspectorWorkerAgent* InspectorWorkerAgent::create(InspectedFrames* inspectedFrames, PageConsoleAgent* consoleAgent)
 {
     return new InspectorWorkerAgent(inspectedFrames, consoleAgent);
 }

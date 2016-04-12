@@ -75,7 +75,7 @@ private:
     bool innerPatchNode(Digest* oldNode, Digest* newNode, ExceptionState&);
     std::pair<ResultMap, ResultMap> diff(const HeapVector<Member<Digest>>& oldChildren, const HeapVector<Member<Digest>>& newChildren);
     bool innerPatchChildren(ContainerNode*, const HeapVector<Member<Digest>>& oldChildren, const HeapVector<Member<Digest>>& newChildren, ExceptionState&);
-    RawPtr<Digest> createDigest(Node*, UnusedNodesMap*);
+    Digest* createDigest(Node*, UnusedNodesMap*);
     bool insertBeforeAndMarkAsUsed(ContainerNode*, Digest*, Node* anchor, ExceptionState&);
     bool removeChildAndMoveToNew(Digest*, ExceptionState&);
     void markNodeAsUsed(Digest*);

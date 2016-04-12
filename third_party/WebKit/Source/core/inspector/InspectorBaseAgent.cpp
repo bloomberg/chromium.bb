@@ -66,7 +66,7 @@ InspectorAgentRegistry::InspectorAgentRegistry(InstrumentingAgents* instrumentin
 {
 }
 
-void InspectorAgentRegistry::append(RawPtr<InspectorAgent> agent)
+void InspectorAgentRegistry::append(InspectorAgent* agent)
 {
     ASSERT(!m_state->get(agent->name()));
     OwnPtr<protocol::DictionaryValue> agentState = protocol::DictionaryValue::create();

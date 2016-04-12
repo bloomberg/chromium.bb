@@ -26,7 +26,7 @@ class V8RuntimeAgent;
 class CORE_EXPORT InspectorAnimationAgent final : public InspectorBaseAgent<InspectorAnimationAgent, protocol::Frontend::Animation>, public protocol::Backend::Animation {
     WTF_MAKE_NONCOPYABLE(InspectorAnimationAgent);
 public:
-    static RawPtr<InspectorAnimationAgent> create(InspectedFrames* inspectedFrames, InspectorDOMAgent* domAgent, InspectorCSSAgent* cssAgent, V8RuntimeAgent* runtimeAgent)
+    static InspectorAnimationAgent* create(InspectedFrames* inspectedFrames, InspectorDOMAgent* domAgent, InspectorCSSAgent* cssAgent, V8RuntimeAgent* runtimeAgent)
     {
         return new InspectorAnimationAgent(inspectedFrames, domAgent, cssAgent, runtimeAgent);
     }

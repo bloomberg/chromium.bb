@@ -49,7 +49,7 @@ class CORE_EXPORT InspectorWorkerAgent final
     , public WorkerInspectorProxy::PageInspector {
     WTF_MAKE_NONCOPYABLE(InspectorWorkerAgent);
 public:
-    static RawPtr<InspectorWorkerAgent> create(InspectedFrames*, PageConsoleAgent*);
+    static InspectorWorkerAgent* create(InspectedFrames*, PageConsoleAgent*);
     ~InspectorWorkerAgent() override;
     DECLARE_VIRTUAL_TRACE();
 

@@ -30,7 +30,7 @@ public:
         virtual void disableTracing() { }
     };
 
-    static RawPtr<InspectorTracingAgent> create(Client* client, InspectorWorkerAgent* workerAgent, InspectedFrames* inspectedFrames)
+    static InspectorTracingAgent* create(Client* client, InspectorWorkerAgent* workerAgent, InspectedFrames* inspectedFrames)
     {
         return new InspectorTracingAgent(client, workerAgent, inspectedFrames);
     }

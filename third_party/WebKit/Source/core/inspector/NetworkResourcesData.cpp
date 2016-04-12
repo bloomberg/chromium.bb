@@ -36,7 +36,7 @@
 
 namespace blink {
 
-RawPtr<XHRReplayData> XHRReplayData::create(ExecutionContext* executionContext, const AtomicString& method, const KURL& url, bool async, PassRefPtr<EncodedFormData> formData, bool includeCredentials)
+XHRReplayData* XHRReplayData::create(ExecutionContext* executionContext, const AtomicString& method, const KURL& url, bool async, PassRefPtr<EncodedFormData> formData, bool includeCredentials)
 {
     return new XHRReplayData(executionContext, method, url, async, formData, includeCredentials);
 }

@@ -41,7 +41,7 @@ class WorkerGlobalScope;
 class WorkerConsoleAgent final : public InspectorConsoleAgent {
     WTF_MAKE_NONCOPYABLE(WorkerConsoleAgent);
 public:
-    static RawPtr<WorkerConsoleAgent> create(V8RuntimeAgent* runtimeAgent, V8DebuggerAgent* debuggerAgent, WorkerGlobalScope* workerGlobalScope)
+    static WorkerConsoleAgent* create(V8RuntimeAgent* runtimeAgent, V8DebuggerAgent* debuggerAgent, WorkerGlobalScope* workerGlobalScope)
     {
         return new WorkerConsoleAgent(runtimeAgent, debuggerAgent, workerGlobalScope);
     }

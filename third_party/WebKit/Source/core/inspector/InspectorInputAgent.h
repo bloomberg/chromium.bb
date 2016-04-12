@@ -45,7 +45,7 @@ class PlatformMouseEvent;
 class CORE_EXPORT InspectorInputAgent final : public InspectorBaseAgent<InspectorInputAgent, protocol::Frontend::Input>, public protocol::Backend::Input {
     WTF_MAKE_NONCOPYABLE(InspectorInputAgent);
 public:
-    static RawPtr<InspectorInputAgent> create(InspectedFrames* inspectedFrames)
+    static InspectorInputAgent* create(InspectedFrames* inspectedFrames)
     {
         return new InspectorInputAgent(inspectedFrames);
     }

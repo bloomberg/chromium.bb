@@ -20,7 +20,7 @@ class Resource;
 class CORE_EXPORT InspectorResourceContentLoader final : public GarbageCollectedFinalized<InspectorResourceContentLoader> {
     WTF_MAKE_NONCOPYABLE(InspectorResourceContentLoader);
 public:
-    static RawPtr<InspectorResourceContentLoader> create(LocalFrame* inspectedFrame)
+    static InspectorResourceContentLoader* create(LocalFrame* inspectedFrame)
     {
         return new InspectorResourceContentLoader(inspectedFrame);
     }

@@ -47,7 +47,7 @@ class WorkerGlobalScopeProxy;
 class CORE_EXPORT PageConsoleAgent final : public InspectorConsoleAgent {
     WTF_MAKE_NONCOPYABLE(PageConsoleAgent);
 public:
-    static RawPtr<PageConsoleAgent> create(V8RuntimeAgent* runtimeAgent, V8DebuggerAgent* debuggerAgent, InspectorDOMAgent* domAgent, InspectedFrames* inspectedFrames)
+    static PageConsoleAgent* create(V8RuntimeAgent* runtimeAgent, V8DebuggerAgent* debuggerAgent, InspectorDOMAgent* domAgent, InspectedFrames* inspectedFrames)
     {
         return new PageConsoleAgent(runtimeAgent, debuggerAgent, domAgent, inspectedFrames);
     }

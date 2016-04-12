@@ -39,7 +39,7 @@ namespace blink {
 class CORE_EXPORT InspectorOverlayHost final : public GarbageCollectedFinalized<InspectorOverlayHost>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RawPtr<InspectorOverlayHost> create()
+    static InspectorOverlayHost* create()
     {
         return new InspectorOverlayHost();
     }

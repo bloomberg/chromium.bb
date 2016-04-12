@@ -47,7 +47,7 @@ public:
 
     virtual bool isUnderTest() = 0;
 
-    virtual void showContextMenu(LocalFrame* targetFrame, float x, float y, RawPtr<ContextMenuProvider>) = 0;
+    virtual void showContextMenu(LocalFrame* targetFrame, float x, float y, ContextMenuProvider*) = 0;
 
     virtual void setInjectedScriptForOrigin(const String& origin, const String& source) = 0;
 };

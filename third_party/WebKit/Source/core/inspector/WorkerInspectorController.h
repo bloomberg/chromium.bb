@@ -59,7 +59,7 @@ class FrontendChannel;
 class WorkerInspectorController final : public GarbageCollectedFinalized<WorkerInspectorController>, public InspectorRuntimeAgent::Client, public protocol::FrontendChannel {
     WTF_MAKE_NONCOPYABLE(WorkerInspectorController);
 public:
-    static RawPtr<WorkerInspectorController> create(WorkerGlobalScope*);
+    static WorkerInspectorController* create(WorkerGlobalScope*);
     ~WorkerInspectorController();
     DECLARE_TRACE();
 

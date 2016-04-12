@@ -75,7 +75,7 @@ static const char xhrBreakpoints[] = "xhrBreakpoints";
 static const char enabled[] = "enabled";
 }
 
-RawPtr<InspectorDOMDebuggerAgent> InspectorDOMDebuggerAgent::create(v8::Isolate* isolate, InspectorDOMAgent* domAgent, V8RuntimeAgent* runtimeAgent, V8DebuggerAgent* debuggerAgent)
+InspectorDOMDebuggerAgent* InspectorDOMDebuggerAgent::create(v8::Isolate* isolate, InspectorDOMAgent* domAgent, V8RuntimeAgent* runtimeAgent, V8DebuggerAgent* debuggerAgent)
 {
     return new InspectorDOMDebuggerAgent(isolate, domAgent, runtimeAgent, debuggerAgent);
 }
@@ -99,10 +99,10 @@ void InspectorDOMDebuggerAgent::eventListenersInfoForTarget(v8::Isolate* isolate
         if (!listeners)
             continue;
         for (size_t k = 0; k < listeners->size(); ++k) {
-            RawPtr<EventListener> eventListener = listeners->at(k).listener;
+            EventListener* eventListener = listeners->at(k).listener;
             if (eventListener->type() != EventListener::JSEventListenerType)
                 continue;
-            V8AbstractEventListener* v8Listener = static_cast<V8AbstractEventListener*>(eventListener.get());
+            V8AbstractEventListener* v8Listener = static_cast<V8AbstractEventListener*>(eventListener);
             v8::Local<v8::Context> context = toV8Context(executionContext, v8Listener->world());
             // Hide listeners from other contexts.
             if (context != isolate->GetCurrentContext())

@@ -121,7 +121,7 @@ ${forward_list}
 class CORE_EXPORT InstrumentingAgents : public GarbageCollectedFinalized<InstrumentingAgents> {
     WTF_MAKE_NONCOPYABLE(InstrumentingAgents);
 public:
-    static RawPtr<InstrumentingAgents> create()
+    static InstrumentingAgents* create()
     {
         return new InstrumentingAgents();
     }

@@ -25,7 +25,7 @@ class ScriptController;
 
 class CORE_EXPORT LayoutEditor final : public GarbageCollectedFinalized<LayoutEditor> {
 public:
-    static RawPtr<LayoutEditor> create(Element* element, InspectorCSSAgent* cssAgent, InspectorDOMAgent* domAgent, ScriptController* scriptController)
+    static LayoutEditor* create(Element* element, InspectorCSSAgent* cssAgent, InspectorDOMAgent* domAgent, ScriptController* scriptController)
     {
         return new LayoutEditor(element, cssAgent, domAgent, scriptController);
     }
@@ -45,7 +45,7 @@ public:
 
 private:
     LayoutEditor(Element*, InspectorCSSAgent*, InspectorDOMAgent*, ScriptController*);
-    RawPtr<CSSPrimitiveValue> getPropertyCSSValue(CSSPropertyID) const;
+    CSSPrimitiveValue* getPropertyCSSValue(CSSPropertyID) const;
     PassOwnPtr<protocol::DictionaryValue> createValueDescription(const String&);
     void appendAnchorFor(protocol::ListValue*, const String&, const String&);
     bool setCSSPropertyValueInCurrentRule(const String&);
