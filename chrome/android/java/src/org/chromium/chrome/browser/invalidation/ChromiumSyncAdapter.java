@@ -35,19 +35,15 @@ import java.util.concurrent.TimeUnit;
  * A Sync adapter that receives invalidations from {@link InvalidationClientService} and dispatches
  * it to the native side with a caching layer in {@link DelayedInvalidationsController}.
  */
-public abstract class ChromiumSyncAdapter extends AbstractThreadedSyncAdapter {
+public class ChromiumSyncAdapter extends AbstractThreadedSyncAdapter {
     private static final String TAG = "invalidation";
 
     private final Application mApplication;
-    private final boolean mAsyncStartup;
 
     public ChromiumSyncAdapter(Context context, Application application) {
         super(context, false);
         mApplication = application;
-        mAsyncStartup = useAsyncStartup();
     }
-
-    protected abstract boolean useAsyncStartup();
 
     @Override
     public void onPerformSync(Account account, Bundle extras, String authority,
@@ -101,8 +97,8 @@ public abstract class ChromiumSyncAdapter extends AbstractThreadedSyncAdapter {
                     ChromeBrowserInitializer.getInstance(getContext()).handlePreNativeStartup(
                             parts);
                     try {
-                        ChromeBrowserInitializer.getInstance(getContext()).handlePostNativeStartup(
-                                mAsyncStartup, parts);
+                        ChromeBrowserInitializer.getInstance(getContext())
+                                .handlePostNativeStartup(false, parts);
                     } catch (ProcessInitException e) {
                         Log.e(TAG, "Unable to load native library.", e);
                         System.exit(-1);

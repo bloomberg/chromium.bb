@@ -50,11 +50,6 @@ public class ChromiumSyncAdapterTest extends ChromeActivityTestCaseBase<ChromeAc
         }
 
         @Override
-        protected boolean useAsyncStartup() {
-            return true;
-        }
-
-        @Override
         public void notifyInvalidation(
                 int objectSource, String objectId, long version, String payload) {
             mObjectSource = objectSource;
