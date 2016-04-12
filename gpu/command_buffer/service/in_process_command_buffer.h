@@ -96,7 +96,6 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
                   InProcessCommandBuffer* share_group,
                   GpuMemoryBufferManager* gpu_memory_buffer_manager,
                   ImageFactory* image_factory);
-  void Destroy();
 
   // CommandBuffer implementation:
   bool Initialize() override;
@@ -214,6 +213,7 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   };
 
   bool InitializeOnGpuThread(const InitializeOnGpuThreadParams& params);
+  void Destroy();
   bool DestroyOnGpuThread();
   void FlushOnGpuThread(int32_t put_offset, uint32_t order_num);
   void ScheduleDelayedWorkOnGpuThread();
