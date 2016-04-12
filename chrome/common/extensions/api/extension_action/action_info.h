@@ -5,6 +5,7 @@
 #ifndef CHROME_COMMON_EXTENSIONS_API_EXTENSION_ACTION_ACTION_INFO_H_
 #define CHROME_COMMON_EXTENSIONS_API_EXTENSION_ACTION_ACTION_INFO_H_
 
+#include <memory>
 #include <string>
 
 #include "base/strings/string16.h"
@@ -33,9 +34,9 @@ struct ActionInfo {
   };
 
   // Loads an ActionInfo from the given DictionaryValue.
-  static scoped_ptr<ActionInfo> Load(const Extension* extension,
-                                     const base::DictionaryValue* dict,
-                                     base::string16* error);
+  static std::unique_ptr<ActionInfo> Load(const Extension* extension,
+                                          const base::DictionaryValue* dict,
+                                          base::string16* error);
 
   // Returns the extension's browser action, if any.
   static const ActionInfo* GetBrowserActionInfo(const Extension* extension);

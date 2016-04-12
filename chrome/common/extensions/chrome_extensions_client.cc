@@ -4,6 +4,8 @@
 
 #include "chrome/common/extensions/chrome_extensions_client.h"
 
+#include <memory>
+
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/metrics/histogram_macros.h"
@@ -65,8 +67,8 @@ const char kThumbsWhiteListedExtension[] = "khopmbdjffemhegeeobelklnbglcdgfh";
 template <class FeatureClass>
 SimpleFeature* CreateFeature() {
   SimpleFeature* feature = new FeatureClass;
-  feature->AddFilter(
-      scoped_ptr<SimpleFeatureFilter>(new ChromeChannelFeatureFilter(feature)));
+  feature->AddFilter(std::unique_ptr<SimpleFeatureFilter>(
+      new ChromeChannelFeatureFilter(feature)));
   return feature;
 }
 
@@ -142,10 +144,10 @@ const std::string ChromeExtensionsClient::GetProductName() {
   return l10n_util::GetStringUTF8(IDS_PRODUCT_NAME);
 }
 
-scoped_ptr<FeatureProvider> ChromeExtensionsClient::CreateFeatureProvider(
+std::unique_ptr<FeatureProvider> ChromeExtensionsClient::CreateFeatureProvider(
     const std::string& name) const {
-  scoped_ptr<FeatureProvider> provider;
-  scoped_ptr<JSONFeatureProviderSource> source(
+  std::unique_ptr<FeatureProvider> provider;
+  std::unique_ptr<JSONFeatureProviderSource> source(
       CreateFeatureProviderSource(name));
   if (name == "api") {
     provider.reset(new BaseFeatureProvider(source->dictionary(),
@@ -165,10 +167,10 @@ scoped_ptr<FeatureProvider> ChromeExtensionsClient::CreateFeatureProvider(
   return provider;
 }
 
-scoped_ptr<JSONFeatureProviderSource>
+std::unique_ptr<JSONFeatureProviderSource>
 ChromeExtensionsClient::CreateFeatureProviderSource(
     const std::string& name) const {
-  scoped_ptr<JSONFeatureProviderSource> source(
+  std::unique_ptr<JSONFeatureProviderSource> source(
       new JSONFeatureProviderSource(name));
   if (name == "api") {
     source->LoadJSON(IDR_EXTENSION_API_FEATURES);

@@ -6,6 +6,8 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -35,17 +37,17 @@ class SettingsOverridePermissionTest : public ChromeManifestTest {
     ext_manifest.SetString(manifest_keys::kVersion, "0.1");
     ext_manifest.SetInteger(manifest_keys::kManifestVersion, 2);
 
-    scoped_ptr<base::DictionaryValue> settings_override(
+    std::unique_ptr<base::DictionaryValue> settings_override(
         new base::DictionaryValue);
     if (flags & kHomepage)
       settings_override->SetString("homepage", "http://www.google.com");
     if (flags & kStartupPages) {
-      scoped_ptr<base::ListValue> startup_pages(new base::ListValue);
+      std::unique_ptr<base::ListValue> startup_pages(new base::ListValue);
       startup_pages->AppendString("http://startup.com/startup.html");
       settings_override->Set("startup_pages", startup_pages.release());
     }
     if (flags & kSearchProvider) {
-      scoped_ptr<base::DictionaryValue> search_provider(
+      std::unique_ptr<base::DictionaryValue> search_provider(
           new base::DictionaryValue);
       search_provider->SetString("search_url", "http://google.com/search.html");
       search_provider->SetString("name", "test");

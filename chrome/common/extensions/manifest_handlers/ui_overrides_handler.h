@@ -5,6 +5,8 @@
 #ifndef CHROME_COMMON_EXTENSIONS_MANIFEST_HANDLERS_UI_OVERRIDES_HANDLER_H_
 #define CHROME_COMMON_EXTENSIONS_MANIFEST_HANDLERS_UI_OVERRIDES_HANDLER_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "chrome/common/extensions/api/manifest_types.h"
 #include "extensions/common/extension.h"
@@ -27,9 +29,10 @@ struct UIOverrides : public Extension::ManifestData {
   static bool RemovesBookmarkShortcut(const Extension* extension);
   static bool RemovesBookmarkOpenPagesShortcut(const Extension* extension);
 
-  scoped_ptr<api::manifest_types::ChromeUIOverrides::Bookmarks_ui> bookmarks_ui;
+  std::unique_ptr<api::manifest_types::ChromeUIOverrides::Bookmarks_ui>
+      bookmarks_ui;
 
-  scoped_ptr<ManifestPermission> manifest_permission;
+  std::unique_ptr<ManifestPermission> manifest_permission;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(UIOverrides);

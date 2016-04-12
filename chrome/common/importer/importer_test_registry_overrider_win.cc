@@ -6,11 +6,11 @@
 
 #include <windows.h>
 
+#include <memory>
 #include <string>
 
 #include "base/environment.h"
 #include "base/guid.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/registry.h"
 
@@ -26,7 +26,7 @@ const char kTestHKCUOverrideEnvironmentVariable[] =
 // SetTestRegistryOverride() into |key| if it exists and |key| is not NULL.
 // Returns true if the variable was successfully read.
 bool GetTestKeyFromEnvironment(base::string16* key) {
-  scoped_ptr<base::Environment> env(base::Environment::Create());
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
   std::string value;
   bool result = env->GetVar(kTestHKCUOverrideEnvironmentVariable, &value);
   if (result)
@@ -44,7 +44,7 @@ ImporterTestRegistryOverrider::ImporterTestRegistryOverrider()
                      base::UTF8ToUTF16(base::GenerateGUID())) {
   DCHECK(!GetTestKeyFromEnvironment(NULL));
 
-  scoped_ptr<base::Environment> env(base::Environment::Create());
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
   bool success = env->SetVar(kTestHKCUOverrideEnvironmentVariable,
                              base::UTF16ToUTF8(temporary_key_));
   DCHECK(success);
@@ -56,7 +56,7 @@ ImporterTestRegistryOverrider::~ImporterTestRegistryOverrider() {
   DCHECK(reg_key.Valid());
   reg_key.DeleteKey(L"");
 
-  scoped_ptr<base::Environment> env(base::Environment::Create());
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
   bool success = env->UnSetVar(kTestHKCUOverrideEnvironmentVariable);
   DCHECK(success);
 }

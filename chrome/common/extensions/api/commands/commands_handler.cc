@@ -4,6 +4,8 @@
 
 #include "chrome/common/extensions/api/commands/commands_handler.h"
 
+#include <memory>
+
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -58,7 +60,7 @@ CommandsHandler::~CommandsHandler() {
 
 bool CommandsHandler::Parse(Extension* extension, base::string16* error) {
   if (!extension->manifest()->HasKey(keys::kCommands)) {
-    scoped_ptr<CommandsInfo> commands_info(new CommandsInfo);
+    std::unique_ptr<CommandsInfo> commands_info(new CommandsInfo);
     MaybeSetBrowserActionDefault(extension, commands_info.get());
     extension->SetManifestData(keys::kCommands,
                                commands_info.release());
@@ -71,7 +73,7 @@ bool CommandsHandler::Parse(Extension* extension, base::string16* error) {
     return false;
   }
 
-  scoped_ptr<CommandsInfo> commands_info(new CommandsInfo);
+  std::unique_ptr<CommandsInfo> commands_info(new CommandsInfo);
 
   int command_index = 0;
   int keybindings_found = 0;
@@ -87,7 +89,7 @@ bool CommandsHandler::Parse(Extension* extension, base::string16* error) {
       return false;
     }
 
-    scoped_ptr<extensions::Command> binding(new Command());
+    std::unique_ptr<extensions::Command> binding(new Command());
     if (!binding->Parse(command, iter.key(), command_index, error))
       return false;  // |error| already set.
 

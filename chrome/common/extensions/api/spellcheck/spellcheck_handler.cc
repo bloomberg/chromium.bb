@@ -4,6 +4,8 @@
 
 #include "chrome/common/extensions/api/spellcheck/spellcheck_handler.h"
 
+#include <memory>
+
 #include "base/strings/utf_string_conversions.h"
 #include "extensions/common/manifest_constants.h"
 
@@ -31,7 +33,7 @@ bool SpellcheckHandler::Parse(Extension* extension, base::string16* error) {
     *error = base::ASCIIToUTF16(errors::kInvalidSpellcheck);
     return false;
   }
-  scoped_ptr<SpellcheckDictionaryInfo> spellcheck_info(
+  std::unique_ptr<SpellcheckDictionaryInfo> spellcheck_info(
       new SpellcheckDictionaryInfo);
   if (!spellcheck_value->HasKey(keys::kSpellcheckDictionaryLanguage) ||
       !spellcheck_value->GetString(keys::kSpellcheckDictionaryLanguage,

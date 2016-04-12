@@ -9,6 +9,8 @@
 #include <stdint.h>
 #include <sys/mman.h>
 
+#include <memory>
+
 #include "base/base64.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -16,7 +18,6 @@
 #include "base/files/memory_mapped_file.h"
 #include "base/files/scoped_file.h"
 #include "base/json/json_string_value_serializer.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/stl_util.h"
@@ -65,7 +66,7 @@ void SHA256Hash(const base::MemoryMappedFile& mapped_file,
                 void* result,
                 size_t len) {
   CHECK_EQ(crypto::kSHA256Length, len);
-  scoped_ptr<crypto::SecureHash> secure_hash(
+  std::unique_ptr<crypto::SecureHash> secure_hash(
       crypto::SecureHash::Create(crypto::SecureHash::SHA256));
   secure_hash->Update(mapped_file.data(), mapped_file.length());
   secure_hash->Finish(result, len);
@@ -117,7 +118,7 @@ bool TestExecutableMapping(const base::FilePath& path) {
     return false;
   const size_t map_size = sizeof(uint8_t);
   const MmapDeleter deleter(map_size);
-  scoped_ptr<uint8_t, MmapDeleter> buf_ptr(
+  std::unique_ptr<uint8_t, MmapDeleter> buf_ptr(
       reinterpret_cast<uint8_t*>(mmap(nullptr, map_size, PROT_READ | PROT_EXEC,
                                       MAP_PRIVATE, fd.get(), 0)),
       deleter);
@@ -159,7 +160,7 @@ bool VerifyAndReturnFlashLocation(base::FilePath* path,
   int error_code;
   std::string error_message;
   JSONStringValueDeserializer deserializer(json_string);
-  const scoped_ptr<base::Value> value =
+  const std::unique_ptr<base::Value> value =
       deserializer.Deserialize(&error_code, &error_message);
 
   if (!value) {

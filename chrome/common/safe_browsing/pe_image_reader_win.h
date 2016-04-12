@@ -5,12 +5,13 @@
 #ifndef CHROME_COMMON_SAFE_BROWSING_PE_IMAGE_READER_WIN_H_
 #define CHROME_COMMON_SAFE_BROWSING_PE_IMAGE_READER_WIN_H_
 
-#include <windows.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <windows.h>
+
+#include <memory>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace safe_browsing {
 
@@ -148,7 +149,7 @@ class PeImageReader {
   const uint8_t* image_data_;
   size_t image_size_;
   uint32_t validation_state_;
-  scoped_ptr<OptionalHeader> optional_header_;
+  std::unique_ptr<OptionalHeader> optional_header_;
   DISALLOW_COPY_AND_ASSIGN(PeImageReader);
 };
 

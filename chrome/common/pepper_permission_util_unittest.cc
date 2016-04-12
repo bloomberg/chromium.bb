@@ -4,6 +4,7 @@
 
 #include "chrome/common/pepper_permission_util.h"
 
+#include <memory>
 #include <set>
 #include <string>
 #include <utility>
@@ -26,7 +27,7 @@ namespace {
 scoped_refptr<Extension> CreateExtensionImportingModule(
     const std::string& import_id,
     const std::string& id) {
-  scoped_ptr<base::DictionaryValue> manifest =
+  std::unique_ptr<base::DictionaryValue> manifest =
       DictionaryBuilder()
           .Set("name", "Has Dependent Modules")
           .Set("version", "1.0")
@@ -51,7 +52,7 @@ TEST(PepperPermissionUtilTest, ExtensionWhitelisting) {
   ExtensionSet extensions;
   std::string whitelisted_id =
       crx_file::id_util::GenerateId("whitelisted_extension");
-  scoped_ptr<base::DictionaryValue> manifest =
+  std::unique_ptr<base::DictionaryValue> manifest =
       DictionaryBuilder()
           .Set("name", "Whitelisted Extension")
           .Set("version", "1.0")
@@ -88,7 +89,7 @@ TEST(PepperPermissionUtilTest, SharedModuleWhitelisting) {
   std::string whitelisted_id = crx_file::id_util::GenerateId("extension_id");
   std::string bad_id = crx_file::id_util::GenerateId("bad_id");
 
-  scoped_ptr<base::DictionaryValue> shared_module_manifest =
+  std::unique_ptr<base::DictionaryValue> shared_module_manifest =
       DictionaryBuilder()
           .Set("name", "Whitelisted Shared Module")
           .Set("version", "1.0")

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <utility>
 
 #include "chrome/common/extensions/api/extension_action/action_info.h"
@@ -111,7 +112,7 @@ TEST_F(BrowserActionManifestTest,
 
 TEST_F(BrowserActionManifestTest,
        BrowserActionManifestIcons_InvalidDefaultIcon) {
-  scoped_ptr<base::DictionaryValue> manifest_value =
+  std::unique_ptr<base::DictionaryValue> manifest_value =
       DictionaryBuilder()
           .Set("name", "Invalid default icon")
           .Set("version", "1.0.0")

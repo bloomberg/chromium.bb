@@ -29,6 +29,7 @@
 #include "chrome/common/logging_chrome.h"
 
 #include <fstream>  // NOLINT
+#include <memory>  // NOLINT
 #include <string>  // NOLINT
 
 #include "base/base_switches.h"
@@ -39,7 +40,6 @@
 #include "base/environment.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -192,7 +192,7 @@ void RemoveSymlinkAndLog(const base::FilePath& link_path,
 base::FilePath GetSessionLogDir(const base::CommandLine& command_line) {
   base::FilePath log_dir;
   std::string log_dir_str;
-  scoped_ptr<base::Environment> env(base::Environment::Create());
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
   if (env->GetVar(env_vars::kSessionLogDir, &log_dir_str) &&
       !log_dir_str.empty()) {
     log_dir = base::FilePath(log_dir_str);
@@ -331,7 +331,7 @@ void InitChromeLogging(const base::CommandLine& command_line,
   // headless mode to be configured either by the Environment
   // Variable or by the Command Line Switch.  This is for
   // automated test purposes.
-  scoped_ptr<base::Environment> env(base::Environment::Create());
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
   if (env->HasVar(env_vars::kHeadless) ||
       command_line.HasSwitch(switches::kNoErrorDialogs))
     SuppressDialogs();
@@ -380,7 +380,7 @@ void CleanupChromeLogging() {
 
 base::FilePath GetLogFileName() {
   std::string filename;
-  scoped_ptr<base::Environment> env(base::Environment::Create());
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
   if (env->GetVar(env_vars::kLogFileName, &filename) && !filename.empty())
     return base::FilePath::FromUTF8Unsafe(filename);
 

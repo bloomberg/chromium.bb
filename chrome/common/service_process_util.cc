@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <memory>
 
 #include "base/base_switches.h"
 #include "base/command_line.h"
@@ -119,7 +120,7 @@ std::string GetServiceProcessScopedVersionedName(
 // Reads the named shared memory to get the shared data. Returns false if no
 // matching shared memory was found.
 bool GetServiceProcessData(std::string* version, base::ProcessId* pid) {
-  scoped_ptr<base::SharedMemory> shared_mem_service_data;
+  std::unique_ptr<base::SharedMemory> shared_mem_service_data;
   shared_mem_service_data.reset(new base::SharedMemory());
   ServiceProcessSharedData* service_data = NULL;
   if (shared_mem_service_data.get() &&
@@ -157,11 +158,12 @@ std::string GetServiceProcessScopedName(const std::string& append_str) {
   return hex_hash + "." + append_str;
 }
 
-scoped_ptr<base::CommandLine> CreateServiceProcessCommandLine() {
+std::unique_ptr<base::CommandLine> CreateServiceProcessCommandLine() {
   base::FilePath exe_path;
   PathService::Get(content::CHILD_PROCESS_EXE, &exe_path);
   DCHECK(!exe_path.empty()) << "Unable to get service process binary name.";
-  scoped_ptr<base::CommandLine> command_line(new base::CommandLine(exe_path));
+  std::unique_ptr<base::CommandLine> command_line(
+      new base::CommandLine(exe_path));
   command_line->AppendSwitchASCII(switches::kProcessType,
                                   switches::kServiceProcess);
 
@@ -256,7 +258,7 @@ bool ServiceProcessState::CreateSharedData() {
     return false;
   }
 
-  scoped_ptr<base::SharedMemory> shared_mem_service_data(
+  std::unique_ptr<base::SharedMemory> shared_mem_service_data(
       new base::SharedMemory());
   if (!shared_mem_service_data.get())
     return false;

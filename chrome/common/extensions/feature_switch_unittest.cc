@@ -5,7 +5,6 @@
 #include "extensions/common/feature_switch.h"
 
 #include "base/command_line.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

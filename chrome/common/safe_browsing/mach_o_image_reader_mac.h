@@ -9,11 +9,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 
 namespace safe_browsing {
@@ -92,7 +92,7 @@ class MachOImageReader {
   bool GetCodeSignatureInfo(std::vector<uint8_t>* info);
 
  private:
-  scoped_ptr<ByteSlice> data_;
+  std::unique_ptr<ByteSlice> data_;
 
   bool is_fat_;
   ScopedVector<MachOImageReader> fat_images_;

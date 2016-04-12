@@ -5,6 +5,8 @@
 #ifndef CHROME_COMMON_EXTENSIONS_MANIFEST_HANDLERS_THEME_HANDLER_H_
 #define CHROME_COMMON_EXTENSIONS_MANIFEST_HANDLERS_THEME_HANDLER_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_handler.h"
@@ -28,16 +30,16 @@ struct ThemeInfo : public Extension::ManifestData {
       const Extension* extension);
 
   // A map of resource id's to relative file paths.
-  scoped_ptr<base::DictionaryValue> theme_images_;
+  std::unique_ptr<base::DictionaryValue> theme_images_;
 
   // A map of color names to colors.
-  scoped_ptr<base::DictionaryValue> theme_colors_;
+  std::unique_ptr<base::DictionaryValue> theme_colors_;
 
   // A map of color names to colors.
-  scoped_ptr<base::DictionaryValue> theme_tints_;
+  std::unique_ptr<base::DictionaryValue> theme_tints_;
 
   // A map of display properties.
-  scoped_ptr<base::DictionaryValue> theme_display_properties_;
+  std::unique_ptr<base::DictionaryValue> theme_display_properties_;
 };
 
 // Parses the "theme" manifest key.

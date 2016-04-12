@@ -14,6 +14,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/i18n/number_formatting.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
@@ -44,7 +46,7 @@ std::string ProcessRawAsn1Type(ASN1_TYPE* data) {
   if (len <= 0)
     return std::string();
 
-  scoped_ptr<unsigned char[]> buf(new unsigned char[len]);
+  std::unique_ptr<unsigned char[]> buf(new unsigned char[len]);
   unsigned char* bufp = buf.get();
 
   len = i2d_ASN1_TYPE(data, &bufp);
@@ -54,7 +56,7 @@ std::string ProcessRawAsn1Type(ASN1_TYPE* data) {
 
 std::string ProcessRawBignum(BIGNUM* n) {
   int len = BN_num_bytes(n);
-  scoped_ptr<unsigned char[]> buf(new unsigned char[len]);
+  std::unique_ptr<unsigned char[]> buf(new unsigned char[len]);
   len = BN_bn2bin(n, buf.get());
   return ProcessRawBytes(buf.get(), len);
 }

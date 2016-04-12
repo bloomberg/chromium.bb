@@ -6,6 +6,8 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/command_line.h"
 #include "base/debug/crash_logging.h"
 #include "base/files/file_util.h"
@@ -41,7 +43,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
-
 #include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
 
 #if defined(OS_LINUX)
@@ -370,7 +371,7 @@ bool GetSystemPepperFlash(content::PepperPluginInfo* plugin) {
   std::string manifest_data;
   if (!base::ReadFileToString(manifest_path, &manifest_data))
     return false;
-  scoped_ptr<base::Value> manifest_value(
+  std::unique_ptr<base::Value> manifest_value(
       base::JSONReader::Read(manifest_data, base::JSON_ALLOW_TRAILING_COMMAS));
   if (!manifest_value.get())
     return false;
@@ -496,18 +497,18 @@ void ChromeContentClient::AddPepperPlugins(
   ScopedVector<content::PepperPluginInfo> flash_versions;
 
 #if defined(OS_LINUX)
-  scoped_ptr<content::PepperPluginInfo> component_flash(
+  std::unique_ptr<content::PepperPluginInfo> component_flash(
       new content::PepperPluginInfo);
   if (GetComponentUpdatedPepperFlash(component_flash.get()))
     flash_versions.push_back(component_flash.release());
 #endif  // defined(OS_LINUX)
 
-  scoped_ptr<content::PepperPluginInfo> bundled_flash(
+  std::unique_ptr<content::PepperPluginInfo> bundled_flash(
       new content::PepperPluginInfo);
   if (GetBundledPepperFlash(bundled_flash.get()))
     flash_versions.push_back(bundled_flash.release());
 
-  scoped_ptr<content::PepperPluginInfo> system_flash(
+  std::unique_ptr<content::PepperPluginInfo> system_flash(
       new content::PepperPluginInfo);
   if (GetSystemPepperFlash(system_flash.get()))
     flash_versions.push_back(system_flash.release());

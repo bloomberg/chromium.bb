@@ -6,8 +6,9 @@
 
 #include <string.h>
 
+#include <memory>
+
 #include "base/command_line.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_split.h"
 #include "build/build_config.h"
 #include "content/public/common/content_switches.h"

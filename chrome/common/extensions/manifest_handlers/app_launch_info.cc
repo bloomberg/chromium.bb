@@ -4,10 +4,11 @@
 
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 
+#include <memory>
+
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/chrome_switches.h"
@@ -301,7 +302,7 @@ AppLaunchManifestHandler::~AppLaunchManifestHandler() {
 
 bool AppLaunchManifestHandler::Parse(Extension* extension,
                                      base::string16* error) {
-  scoped_ptr<AppLaunchInfo> info(new AppLaunchInfo);
+  std::unique_ptr<AppLaunchInfo> info(new AppLaunchInfo);
   if (!info->Parse(extension, error))
     return false;
   extension->SetManifestData(keys::kLaunch, info.release());

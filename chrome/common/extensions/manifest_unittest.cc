@@ -5,11 +5,11 @@
 #include "extensions/common/manifest.h"
 
 #include <algorithm>
+#include <memory>
 #include <set>
 #include <string>
 #include <utility>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "extensions/common/error_utils.h"
@@ -45,10 +45,10 @@ class ManifestUnitTest : public testing::Test {
   // Helper function that replaces the Manifest held by |manifest| with a copy
   // with its |key| changed to |value|. If |value| is NULL, then |key| will
   // instead be deleted.
-  void MutateManifest(scoped_ptr<Manifest>* manifest,
+  void MutateManifest(std::unique_ptr<Manifest>* manifest,
                       const std::string& key,
                       base::Value* value) {
-    scoped_ptr<base::DictionaryValue> manifest_value(
+    std::unique_ptr<base::DictionaryValue> manifest_value(
         manifest->get()->value()->DeepCopy());
     if (value)
       manifest_value->Set(key, value);
@@ -63,14 +63,15 @@ class ManifestUnitTest : public testing::Test {
 
 // Verifies that extensions can access the correct keys.
 TEST_F(ManifestUnitTest, Extension) {
-  scoped_ptr<base::DictionaryValue> manifest_value(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> manifest_value(
+      new base::DictionaryValue());
   manifest_value->SetString(keys::kName, "extension");
   manifest_value->SetString(keys::kVersion, "1");
   // Only supported in manifest_version=1.
   manifest_value->SetString(keys::kBackgroundPageLegacy, "bg.html");
   manifest_value->SetString("unknown_key", "foo");
 
-  scoped_ptr<Manifest> manifest(
+  std::unique_ptr<Manifest> manifest(
       new Manifest(Manifest::INTERNAL, std::move(manifest_value)));
   std::string error;
   std::vector<InstallWarning> warnings;
@@ -111,7 +112,7 @@ TEST_F(ManifestUnitTest, Extension) {
   }
 
   // Test DeepCopy and Equals.
-  scoped_ptr<Manifest> manifest2(manifest->DeepCopy());
+  std::unique_ptr<Manifest> manifest2(manifest->DeepCopy());
   EXPECT_TRUE(manifest->Equals(manifest2.get()));
   EXPECT_TRUE(manifest2->Equals(manifest.get()));
   MutateManifest(
@@ -121,11 +122,11 @@ TEST_F(ManifestUnitTest, Extension) {
 
 // Verifies that key restriction based on type works.
 TEST_F(ManifestUnitTest, ExtensionTypes) {
-  scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> value(new base::DictionaryValue());
   value->SetString(keys::kName, "extension");
   value->SetString(keys::kVersion, "1");
 
-  scoped_ptr<Manifest> manifest(
+  std::unique_ptr<Manifest> manifest(
       new Manifest(Manifest::INTERNAL, std::move(value)));
   std::string error;
   std::vector<InstallWarning> warnings;
@@ -173,15 +174,15 @@ TEST_F(ManifestUnitTest, ExtensionTypes) {
   AssertType(manifest.get(), Manifest::TYPE_HOSTED_APP);
   MutateManifest(
       &manifest, keys::kLaunchWebURL, NULL);
-};
+}
 
 // Verifies that the getters filter restricted keys.
 TEST_F(ManifestUnitTest, RestrictedKeys) {
-  scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> value(new base::DictionaryValue());
   value->SetString(keys::kName, "extension");
   value->SetString(keys::kVersion, "1");
 
-  scoped_ptr<Manifest> manifest(
+  std::unique_ptr<Manifest> manifest(
       new Manifest(Manifest::INTERNAL, std::move(value)));
   std::string error;
   std::vector<InstallWarning> warnings;
@@ -219,6 +220,6 @@ TEST_F(ManifestUnitTest, RestrictedKeys) {
   // Platform apps also can't have a "Commands" key.
   EXPECT_FALSE(manifest->HasKey(keys::kCommands));
   EXPECT_FALSE(manifest->Get(keys::kCommands, &output));
-};
+}
 
 }  // namespace extensions

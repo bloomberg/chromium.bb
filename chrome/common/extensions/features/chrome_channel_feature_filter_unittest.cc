@@ -4,11 +4,11 @@
 
 #include "chrome/common/extensions/features/chrome_channel_feature_filter.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/common/extensions/features/feature_channel.h"
 #include "components/version_info/version_info.h"
@@ -25,8 +25,8 @@ namespace {
 template <class FeatureClass>
 SimpleFeature* CreateFeature() {
   SimpleFeature* feature = new FeatureClass();
-  feature->AddFilter(
-      scoped_ptr<SimpleFeatureFilter>(new ChromeChannelFeatureFilter(feature)));
+  feature->AddFilter(std::unique_ptr<SimpleFeatureFilter>(
+      new ChromeChannelFeatureFilter(feature)));
   return feature;
 }
 
@@ -36,7 +36,7 @@ Feature::AvailabilityResult IsAvailableInChannel(
   ScopedCurrentChannel current_channel(channel_for_testing);
 
   SimpleFeature feature;
-  feature.AddFilter(scoped_ptr<SimpleFeatureFilter>(
+  feature.AddFilter(std::unique_ptr<SimpleFeatureFilter>(
       new ChromeChannelFeatureFilter(&feature)));
 
   base::DictionaryValue feature_value;
@@ -130,7 +130,7 @@ TEST_F(ChromeChannelFeatureFilterTest, SupportedChannel) {
 
 // Tests the validation of features with channel entries.
 TEST_F(ChromeChannelFeatureFilterTest, FeatureValidation) {
-  scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> value(new base::DictionaryValue());
 
   base::DictionaryValue* feature1 = new base::DictionaryValue();
   feature1->SetString("channel", "trunk");
@@ -146,7 +146,7 @@ TEST_F(ChromeChannelFeatureFilterTest, FeatureValidation) {
   feature2->Set("contexts", contexts);
   value->Set("feature2", feature2);
 
-  scoped_ptr<BaseFeatureProvider> provider(
+  std::unique_ptr<BaseFeatureProvider> provider(
       new BaseFeatureProvider(*value, CreateFeature<PermissionFeature>));
 
   // feature1 won't validate because it lacks an extension type.
@@ -176,7 +176,7 @@ TEST_F(ChromeChannelFeatureFilterTest, FeatureValidation) {
 
 // Tests simple feature availability across channels.
 TEST_F(ChromeChannelFeatureFilterTest, SimpleFeatureAvailability) {
-  scoped_ptr<base::DictionaryValue> rule(
+  std::unique_ptr<base::DictionaryValue> rule(
       DictionaryBuilder()
           .Set("feature1",
                ListBuilder()
@@ -195,7 +195,7 @@ TEST_F(ChromeChannelFeatureFilterTest, SimpleFeatureAvailability) {
                    .Build())
           .Build());
 
-  scoped_ptr<BaseFeatureProvider> provider(
+  std::unique_ptr<BaseFeatureProvider> provider(
       new BaseFeatureProvider(*rule, CreateFeature<SimpleFeature>));
 
   Feature* feature = provider->GetFeature("feature1");
@@ -236,12 +236,12 @@ TEST_F(ChromeChannelFeatureFilterTest, SimpleFeatureAvailability) {
 
 // Tests complex feature availability across channels.
 TEST_F(ChromeChannelFeatureFilterTest, ComplexFeatureAvailability) {
-  scoped_ptr<ComplexFeature::FeatureList> features(
+  std::unique_ptr<ComplexFeature::FeatureList> features(
       new ComplexFeature::FeatureList());
 
   // Rule: "extension", channel trunk.
-  scoped_ptr<SimpleFeature> simple_feature(CreateFeature<SimpleFeature>());
-  scoped_ptr<base::DictionaryValue> rule(
+  std::unique_ptr<SimpleFeature> simple_feature(CreateFeature<SimpleFeature>());
+  std::unique_ptr<base::DictionaryValue> rule(
       DictionaryBuilder()
           .Set("channel", "trunk")
           .Set("extension_types", ListBuilder().Append("extension").Build())
@@ -259,7 +259,8 @@ TEST_F(ChromeChannelFeatureFilterTest, ComplexFeatureAvailability) {
   simple_feature->Parse(rule.get());
   features->push_back(std::move(simple_feature));
 
-  scoped_ptr<ComplexFeature> feature(new ComplexFeature(std::move(features)));
+  std::unique_ptr<ComplexFeature> feature(
+      new ComplexFeature(std::move(features)));
 
   // Test match 1st rule.
   {

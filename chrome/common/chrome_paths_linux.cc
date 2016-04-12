@@ -2,16 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/chrome_paths_internal.h"
+#include "chrome/common/chrome_paths.h"
+
+#include <memory>
 
 #include "base/base_paths.h"
 #include "base/environment.h"
 #include "base/files/file_util.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/nix/xdg_util.h"
 #include "base/path_service.h"
 #include "build/build_config.h"
-#include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_paths_internal.h"
 
 namespace chrome {
 
@@ -61,7 +62,7 @@ bool GetUserMediaDirectory(const std::string& xdg_name,
 // ~/.config/google-chrome/ for official builds.
 // (This also helps us sidestep issues with other apps grabbing ~/.chromium .)
 bool GetDefaultUserDataDirectory(base::FilePath* result) {
-  scoped_ptr<base::Environment> env(base::Environment::Create());
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
   base::FilePath config_dir(GetXDGDirectory(env.get(),
                                             kXdgConfigHomeEnvVar,
                                             kDotConfigDir));
@@ -86,7 +87,7 @@ void GetUserCacheDirectory(const base::FilePath& profile_dir,
   // Default value in cases where any of the following fails.
   *result = profile_dir;
 
-  scoped_ptr<base::Environment> env(base::Environment::Create());
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
 
   base::FilePath cache_dir;
   if (!PathService::Get(base::DIR_CACHE, &cache_dir))

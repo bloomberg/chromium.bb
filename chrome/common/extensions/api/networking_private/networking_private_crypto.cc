@@ -10,8 +10,9 @@
 #include <openssl/x509.h>
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
 #include "crypto/openssl_util.h"
 #include "crypto/rsa_private_key.h"
@@ -94,7 +95,7 @@ bool VerifyCredentialsAtTime(
   // is simply to verify that the device belongs to the Cast ecosystem.
   cast_crypto::CastDeviceCertPolicy unused_policy;
 
-  scoped_ptr<cast_crypto::CertVerificationContext> verification_context;
+  std::unique_ptr<cast_crypto::CertVerificationContext> verification_context;
   if (!cast_crypto::VerifyDeviceCert(certs, time, &verification_context,
                                      &unused_policy)) {
     LOG(ERROR) << kErrorPrefix << "Failed verifying cast device cert";
@@ -158,7 +159,7 @@ bool DecryptByteString(const std::string& private_key_pem,
     LOG(ERROR) << "Failed to parse private key PEM.";
     return false;
   }
-  scoped_ptr<crypto::RSAPrivateKey> private_key(
+  std::unique_ptr<crypto::RSAPrivateKey> private_key(
       crypto::RSAPrivateKey::CreateFromPrivateKeyInfo(private_key_data));
   if (!private_key || !private_key->key()) {
     LOG(ERROR) << "Failed to parse private key DER.";

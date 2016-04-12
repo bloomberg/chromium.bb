@@ -5,10 +5,10 @@
 #ifndef CHROME_COMMON_EXTENSIONS_API_PLUGINS_PLUGINS_HANDLER_H_
 #define CHROME_COMMON_EXTENSIONS_API_PLUGINS_PLUGINS_HANDLER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_handler.h"
 

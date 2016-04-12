@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/service_process_util_posix.h"
-
 #import <Foundation/Foundation.h>
 #include <launch.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/bind.h"
@@ -27,6 +26,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/mac/launchd.h"
+#include "chrome/common/service_process_util_posix.h"
 #include "components/version_info/version_info.h"
 #include "ipc/unix_domain_socket_util.h"
 
@@ -306,7 +306,7 @@ bool ServiceProcessState::StateData::WatchExecutable() {
 
   base::FilePath executable_path =
       base::FilePath([exe_path fileSystemRepresentation]);
-  scoped_ptr<ExecFilePathWatcherCallback> callback(
+  std::unique_ptr<ExecFilePathWatcherCallback> callback(
       new ExecFilePathWatcherCallback);
   if (!callback->Init(executable_path)) {
     DLOG(ERROR) << "executable_watcher.Init " << executable_path.value();

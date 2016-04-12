@@ -12,12 +12,14 @@
 // Note that desipte the number of wraps (if one or more), the reference output
 // data is the same since the offset at each wrap is always the same.
 
+#include "chrome/common/partial_circular_buffer.h"
+
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
-#include "chrome/common/partial_circular_buffer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 const uint32_t kWrapPosition = 20;
@@ -59,9 +61,9 @@ class PartialCircularBufferTest : public testing::Test {
   }
 
  protected:
-  scoped_ptr<PartialCircularBuffer> pcb_write_;
-  scoped_ptr<PartialCircularBuffer> pcb_read_;
-  scoped_ptr<uint8_t[]> buffer_;
+  std::unique_ptr<PartialCircularBuffer> pcb_write_;
+  std::unique_ptr<PartialCircularBuffer> pcb_read_;
+  std::unique_ptr<uint8_t[]> buffer_;
   uint32_t buffer_header_size_;
 
   DISALLOW_COPY_AND_ASSIGN(PartialCircularBufferTest);

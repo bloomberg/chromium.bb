@@ -5,9 +5,9 @@
 #ifndef CHROME_COMMON_CLOUD_PRINT_CLOUD_PRINT_CDD_CONVERSION_H_
 #define CHROME_COMMON_CLOUD_PRINT_CLOUD_PRINT_CDD_CONVERSION_H_
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 
 namespace printing {
@@ -16,7 +16,7 @@ struct PrinterSemanticCapsAndDefaults;
 
 namespace cloud_print {
 
-scoped_ptr<base::DictionaryValue> PrinterSemanticCapsAndDefaultsToCdd(
+std::unique_ptr<base::DictionaryValue> PrinterSemanticCapsAndDefaultsToCdd(
     const printing::PrinterSemanticCapsAndDefaults& semantic_info);
 
 }  // namespace cloud_print

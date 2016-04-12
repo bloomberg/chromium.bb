@@ -4,6 +4,7 @@
 
 #include "chrome/common/extensions/chrome_extensions_client.h"
 
+#include <memory>
 #include <set>
 #include <string>
 
@@ -24,7 +25,7 @@ class ChromeExtensionsClientTest : public testing::Test {
   }
 
  private:
-  scoped_ptr<ChromeExtensionsClient> extensions_client_;
+  std::unique_ptr<ChromeExtensionsClient> extensions_client_;
 };
 
 // Test that a browser action extension returns a path to an icon.

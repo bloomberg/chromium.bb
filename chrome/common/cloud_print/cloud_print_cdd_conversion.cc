@@ -6,13 +6,15 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/strings/string_number_conversions.h"
 #include "components/cloud_devices/common/printer_description.h"
 #include "printing/backend/print_backend.h"
 
 namespace cloud_print {
 
-scoped_ptr<base::DictionaryValue> PrinterSemanticCapsAndDefaultsToCdd(
+std::unique_ptr<base::DictionaryValue> PrinterSemanticCapsAndDefaultsToCdd(
     const printing::PrinterSemanticCapsAndDefaults& semantic_info) {
   using namespace cloud_devices::printer;
   cloud_devices::CloudDeviceDescription description;
@@ -121,7 +123,7 @@ scoped_ptr<base::DictionaryValue> PrinterSemanticCapsAndDefaultsToCdd(
   orientation.AddOption(AUTO_ORIENTATION);
   orientation.SaveTo(&description);
 
-  return scoped_ptr<base::DictionaryValue>(description.root().DeepCopy());
+  return std::unique_ptr<base::DictionaryValue>(description.root().DeepCopy());
 }
 
 }  // namespace cloud_print

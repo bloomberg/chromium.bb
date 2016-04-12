@@ -5,10 +5,10 @@
 #ifndef CHROME_COMMON_EXTENSIONS_MANIFEST_HANDLERS_AUTOMATION_H_
 #define CHROME_COMMON_EXTENSIONS_MANIFEST_HANDLERS_AUTOMATION_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_handler.h"
 #include "extensions/common/url_pattern_set.h"
@@ -38,12 +38,12 @@ extern const char kErrorNoMatchesProvided[];
 struct AutomationInfo : public Extension::ManifestData {
  public:
   static const AutomationInfo* Get(const Extension* extension);
-  static scoped_ptr<AutomationInfo> FromValue(
+  static std::unique_ptr<AutomationInfo> FromValue(
       const base::Value& value,
       std::vector<InstallWarning>* install_warnings,
       base::string16* error);
 
-  static scoped_ptr<base::Value> ToValue(const AutomationInfo& info);
+  static std::unique_ptr<base::Value> ToValue(const AutomationInfo& info);
   ~AutomationInfo() override;
 
   // true if the extension has requested 'desktop' permission.
@@ -61,7 +61,7 @@ struct AutomationInfo : public Extension::ManifestData {
   AutomationInfo();
   AutomationInfo(bool desktop, URLPatternSet matches, bool interact);
 
-  static scoped_ptr<api::manifest_types::Automation> AsManifestType(
+  static std::unique_ptr<api::manifest_types::Automation> AsManifestType(
       const AutomationInfo& info);
 
   DISALLOW_COPY_AND_ASSIGN(AutomationInfo);

@@ -4,6 +4,8 @@
 
 #include "chrome/common/extensions/manifest_handlers/app_icon_color_info.h"
 
+#include <memory>
+
 #include "base/lazy_instance.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -53,7 +55,7 @@ AppIconColorHandler::~AppIconColorHandler() {
 }
 
 bool AppIconColorHandler::Parse(Extension* extension, base::string16* error) {
-  scoped_ptr<AppIconColorInfo> app_icon_color_info(new AppIconColorInfo);
+  std::unique_ptr<AppIconColorInfo> app_icon_color_info(new AppIconColorInfo);
 
   const base::Value* temp = NULL;
   if (extension->manifest()->Get(keys::kAppIconColor, &temp)) {

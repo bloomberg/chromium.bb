@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <set>
 
 #include "base/i18n/streaming_utf8_validator.h"
@@ -37,7 +38,7 @@ class HashingFileWriter : public zip::FileWriterDelegate {
   void ComputeDigest(uint8_t* digest, size_t digest_length);
 
  private:
-  scoped_ptr<crypto::SecureHash> sha256_;
+  std::unique_ptr<crypto::SecureHash> sha256_;
 
   DISALLOW_COPY_AND_ASSIGN(HashingFileWriter);
 };

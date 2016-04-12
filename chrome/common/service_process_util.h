@@ -5,10 +5,10 @@
 #ifndef CHROME_COMMON_SERVICE_PROCESS_UTIL_H_
 #define CHROME_COMMON_SERVICE_PROCESS_UTIL_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback_forward.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "base/process/process.h"
 #include "build/build_config.h"
@@ -69,7 +69,7 @@ bool ForceServiceProcessShutdown(const std::string& version,
                                  base::ProcessId process_id);
 
 // Creates command-line to run the service process.
-scoped_ptr<base::CommandLine> CreateServiceProcessCommandLine();
+std::unique_ptr<base::CommandLine> CreateServiceProcessCommandLine();
 
 // This is a class that is used by the service process to signal events and
 // share data with external clients. This class lives in this file because the
@@ -129,8 +129,8 @@ class ServiceProcessState {
   // platform dependent.
   struct StateData;
   StateData* state_;
-  scoped_ptr<base::SharedMemory> shared_mem_service_data_;
-  scoped_ptr<base::CommandLine> autorun_command_line_;
+  std::unique_ptr<base::SharedMemory> shared_mem_service_data_;
+  std::unique_ptr<base::CommandLine> autorun_command_line_;
 };
 
 #endif  // CHROME_COMMON_SERVICE_PROCESS_UTIL_H_

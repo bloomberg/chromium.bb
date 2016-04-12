@@ -4,8 +4,9 @@
 
 #include "chrome/common/extensions/api/url_handlers/url_handlers_parser.h"
 
+#include <memory>
+
 #include "base/command_line.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -133,7 +134,7 @@ bool ParseUrlHandler(const std::string& handler_id,
 }
 
 bool UrlHandlersParser::Parse(Extension* extension, base::string16* error) {
-  scoped_ptr<UrlHandlers> info(new UrlHandlers);
+  std::unique_ptr<UrlHandlers> info(new UrlHandlers);
   const base::DictionaryValue* all_handlers = NULL;
   if (!extension->manifest()->GetDictionary(
         mkeys::kUrlHandlers, &all_handlers)) {

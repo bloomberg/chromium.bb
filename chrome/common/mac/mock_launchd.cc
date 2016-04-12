@@ -10,6 +10,8 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 
+#include <memory>
+
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/mac/foundation_util.h"
@@ -109,7 +111,7 @@ MockLaunchd::~MockLaunchd() {
 
 CFDictionaryRef MockLaunchd::CopyJobDictionary(CFStringRef label) {
   if (!as_service_) {
-    scoped_ptr<MultiProcessLock> running_lock(
+    std::unique_ptr<MultiProcessLock> running_lock(
         TakeNamedLock(pipe_name_, false));
     if (running_lock.get())
       return NULL;

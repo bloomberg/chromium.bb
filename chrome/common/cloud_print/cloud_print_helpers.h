@@ -6,10 +6,10 @@
 #define CHROME_COMMON_CLOUD_PRINT_CLOUD_PRINT_HELPERS_H_
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 
 class GURL;
 
@@ -63,7 +63,7 @@ GURL GetUrlForGetAuthCode(const GURL& cloud_print_server_url,
 // returns null if there was an error in parsing the JSON. The succeeded
 // value returns the value of the "success" value in the response JSON.
 // Returns the response as a dictionary value.
-scoped_ptr<base::DictionaryValue> ParseResponseJSON(
+std::unique_ptr<base::DictionaryValue> ParseResponseJSON(
     const std::string& response_data,
     bool* succeeded);
 

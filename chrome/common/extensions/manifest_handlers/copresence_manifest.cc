@@ -4,6 +4,7 @@
 
 #include "chrome/common/extensions/manifest_handlers/copresence_manifest.h"
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -29,7 +30,8 @@ bool CopresenceManifestHandler::Parse(Extension* extension,
     return false;
   }
 
-  scoped_ptr<CopresenceManifestData> manifest_data(new CopresenceManifestData);
+  std::unique_ptr<CopresenceManifestData> manifest_data(
+      new CopresenceManifestData);
   if (!copresence_config->GetString(manifest_values::kApiKey,
                                     &manifest_data->api_key) ||
       manifest_data->api_key.empty()) {

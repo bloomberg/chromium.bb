@@ -4,6 +4,8 @@
 
 #include "chrome/common/extensions/manifest_handlers/extension_action_handler.h"
 
+#include <memory>
+
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -49,7 +51,7 @@ bool ExtensionActionHandler::Parse(Extension* extension,
       return false;
     }
 
-    scoped_ptr<ActionInfo> action_info =
+    std::unique_ptr<ActionInfo> action_info =
         ActionInfo::Load(extension, dict, error);
     if (!action_info)
       return false;  // Failed to parse extension action definition.
@@ -74,7 +76,7 @@ bool ExtensionActionHandler::Parse(Extension* extension,
 
     // Set an empty page action. We use a page action (instead of a browser
     // action) because the action should not be seen as enabled on every page.
-    scoped_ptr<ActionInfo> action_info(new ActionInfo());
+    std::unique_ptr<ActionInfo> action_info(new ActionInfo());
     action_info->synthesized = true;
     ActionInfo::SetPageActionInfo(extension, action_info.release());
   }

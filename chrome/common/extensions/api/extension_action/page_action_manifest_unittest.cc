@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
@@ -25,10 +28,10 @@ class PageActionManifestTest : public ChromeManifestTest {
     return path.AppendASCII("extensions").AppendASCII("page_action");
   }
 
-  scoped_ptr<ActionInfo> LoadAction(const std::string& manifest_filename);
+  std::unique_ptr<ActionInfo> LoadAction(const std::string& manifest_filename);
 };
 
-scoped_ptr<ActionInfo> PageActionManifestTest::LoadAction(
+std::unique_ptr<ActionInfo> PageActionManifestTest::LoadAction(
     const std::string& manifest_filename) {
   scoped_refptr<Extension> extension = LoadAndExpectSuccess(
       manifest_filename.c_str());
@@ -36,11 +39,11 @@ scoped_ptr<ActionInfo> PageActionManifestTest::LoadAction(
       ActionInfo::GetPageActionInfo(extension.get());
   EXPECT_TRUE(page_action_info);
   if (page_action_info) {
-    return make_scoped_ptr(new ActionInfo(*page_action_info));
+    return base::WrapUnique(new ActionInfo(*page_action_info));
   }
   ADD_FAILURE() << "Expected manifest in " << manifest_filename
                 << " to include a page_action section.";
-  return scoped_ptr<ActionInfo>();
+  return std::unique_ptr<ActionInfo>();
 }
 
 TEST_F(PageActionManifestTest, ManifestVersion2) {
@@ -61,7 +64,7 @@ TEST_F(PageActionManifestTest, ManifestVersion2) {
 }
 
 TEST_F(PageActionManifestTest, LoadPageActionHelper) {
-  scoped_ptr<ActionInfo> action;
+  std::unique_ptr<ActionInfo> action;
 
   // First try with an empty dictionary.
   action = LoadAction("page_action_empty.json");

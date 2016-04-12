@@ -6,7 +6,8 @@
 
 #include <stddef.h>
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -53,7 +54,7 @@ TtsEngineManifestHandler::~TtsEngineManifestHandler() {
 
 bool TtsEngineManifestHandler::Parse(Extension* extension,
                                      base::string16* error) {
-  scoped_ptr<TtsVoices> info(new TtsVoices);
+  std::unique_ptr<TtsVoices> info(new TtsVoices);
   const base::DictionaryValue* tts_dict = NULL;
   if (!extension->manifest()->GetDictionary(keys::kTtsEngine, &tts_dict)) {
     *error = base::ASCIIToUTF16(errors::kInvalidTts);

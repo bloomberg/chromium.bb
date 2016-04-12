@@ -6,7 +6,8 @@
 
 #include <stddef.h>
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -53,7 +54,7 @@ InputComponentsHandler::~InputComponentsHandler() {
 
 bool InputComponentsHandler::Parse(Extension* extension,
                                    base::string16* error) {
-  scoped_ptr<InputComponents> info(new InputComponents);
+  std::unique_ptr<InputComponents> info(new InputComponents);
   const base::ListValue* list_value = NULL;
   if (!extension->manifest()->GetList(keys::kInputComponents, &list_value)) {
     *error = base::ASCIIToUTF16(errors::kInvalidInputComponents);

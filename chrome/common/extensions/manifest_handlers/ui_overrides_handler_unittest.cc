@@ -4,6 +4,8 @@
 
 #include "chrome/common/extensions/manifest_handlers/ui_overrides_handler.h"
 
+#include <memory>
+
 #include "base/command_line.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/strings/utf_string_conversions.h"
@@ -53,7 +55,7 @@ TEST_F(UIOverrideTest, ParseManifest) {
   std::string manifest(kManifest);
   JSONStringValueDeserializer json(manifest);
   std::string error;
-  scoped_ptr<base::Value> root(json.Deserialize(NULL, &error));
+  std::unique_ptr<base::Value> root(json.Deserialize(NULL, &error));
   ASSERT_TRUE(root);
   ASSERT_TRUE(root->IsType(base::Value::TYPE_DICTIONARY));
   scoped_refptr<Extension> extension = Extension::Create(
@@ -81,7 +83,7 @@ TEST_F(UIOverrideTest, ParseBrokenManifest) {
   std::string manifest(kBrokenManifest);
   JSONStringValueDeserializer json(manifest);
   std::string error;
-  scoped_ptr<base::Value> root(json.Deserialize(NULL, &error));
+  std::unique_ptr<base::Value> root(json.Deserialize(NULL, &error));
   ASSERT_TRUE(root);
   ASSERT_TRUE(root->IsType(base::Value::TYPE_DICTIONARY));
   scoped_refptr<Extension> extension = Extension::Create(

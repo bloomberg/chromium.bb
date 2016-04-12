@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -140,7 +142,7 @@ FileBrowserHandler* LoadFileBrowserHandler(
     const std::string& extension_id,
     const base::DictionaryValue* file_browser_handler,
     base::string16* error) {
-  scoped_ptr<FileBrowserHandler> result(new FileBrowserHandler());
+  std::unique_ptr<FileBrowserHandler> result(new FileBrowserHandler());
   result->set_extension_id(extension_id);
 
   std::string handler_id;
@@ -258,10 +260,8 @@ bool LoadFileBrowserHandlers(
       *error = base::ASCIIToUTF16(errors::kInvalidFileBrowserHandler);
       return false;
     }
-    scoped_ptr<FileBrowserHandler> action(
-        LoadFileBrowserHandler(
-            extension_id,
-            reinterpret_cast<base::DictionaryValue*>(*iter), error));
+    std::unique_ptr<FileBrowserHandler> action(LoadFileBrowserHandler(
+        extension_id, reinterpret_cast<base::DictionaryValue*>(*iter), error));
     if (!action.get())
       return false;  // Failed to parse file browser action definition.
     result->push_back(linked_ptr<FileBrowserHandler>(action.release()));
@@ -293,7 +293,7 @@ bool FileBrowserHandlerParser::Parse(extensions::Extension* extension,
     return false;
   }
 
-  scoped_ptr<FileBrowserHandlerInfo> info(new FileBrowserHandlerInfo);
+  std::unique_ptr<FileBrowserHandlerInfo> info(new FileBrowserHandlerInfo);
   if (!LoadFileBrowserHandlers(extension->id(),
                                file_browser_handlers_list_value,
                                &info->file_browser_handlers, error)) {

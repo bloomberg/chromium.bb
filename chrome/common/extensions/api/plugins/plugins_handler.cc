@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/files/file_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -72,7 +74,7 @@ bool PluginsHandler::Parse(Extension* extension, base::string16* error) {
     return false;
   }
 
-  scoped_ptr<PluginManifestData> plugins_data(new PluginManifestData);
+  std::unique_ptr<PluginManifestData> plugins_data(new PluginManifestData);
 
   for (size_t i = 0; i < list_value->GetSize(); ++i) {
     const base::DictionaryValue* plugin_value = NULL;

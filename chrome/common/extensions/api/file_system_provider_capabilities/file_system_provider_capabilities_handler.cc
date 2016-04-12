@@ -4,7 +4,8 @@
 
 #include "chrome/common/extensions/api/file_system_provider_capabilities/file_system_provider_capabilities_handler.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/extensions/api/manifest_types.h"
@@ -99,7 +100,7 @@ bool FileSystemProviderCapabilitiesHandler::Parse(Extension* extension,
       NOTREACHED();
   }
 
-  scoped_ptr<FileSystemProviderCapabilities> capabilities(
+  std::unique_ptr<FileSystemProviderCapabilities> capabilities(
       new FileSystemProviderCapabilities(
           idl_capabilities.configurable.get()
               ? *idl_capabilities.configurable.get()

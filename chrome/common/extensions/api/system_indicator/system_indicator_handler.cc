@@ -4,7 +4,8 @@
 
 #include "chrome/common/extensions/api/system_indicator/system_indicator_handler.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
@@ -28,8 +29,8 @@ bool SystemIndicatorHandler::Parse(Extension* extension,
     return false;
   }
 
-  scoped_ptr<ActionInfo> action_info = ActionInfo::Load(
-      extension, system_indicator_value, error);
+  std::unique_ptr<ActionInfo> action_info =
+      ActionInfo::Load(extension, system_indicator_value, error);
 
   if (!action_info.get())
     return false;

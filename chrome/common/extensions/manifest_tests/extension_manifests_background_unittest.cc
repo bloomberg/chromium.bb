@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/manifest_tests/chrome_manifest_test.h"
+#include <memory>
 
 #include "base/command_line.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/common/extensions/features/feature_channel.h"
+#include "chrome/common/extensions/manifest_tests/chrome_manifest_test.h"
 #include "components/version_info/version_info.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/error_utils.h"
@@ -31,7 +31,7 @@ TEST_F(ExtensionManifestBackgroundTest, BackgroundPermission) {
 
 TEST_F(ExtensionManifestBackgroundTest, BackgroundScripts) {
   std::string error;
-  scoped_ptr<base::DictionaryValue> manifest =
+  std::unique_ptr<base::DictionaryValue> manifest =
       LoadManifest("background_scripts.json", &error);
   ASSERT_TRUE(manifest.get());
 
@@ -63,7 +63,7 @@ TEST_F(ExtensionManifestBackgroundTest, BackgroundPage) {
   EXPECT_TRUE(BackgroundInfo::AllowJSAccess(extension.get()));
 
   std::string error;
-  scoped_ptr<base::DictionaryValue> manifest(
+  std::unique_ptr<base::DictionaryValue> manifest(
       LoadManifest("background_page_legacy.json", &error));
   ASSERT_TRUE(manifest.get());
   extension = LoadAndExpectSuccess(ManifestData(manifest.get(), ""));
@@ -92,7 +92,7 @@ TEST_F(ExtensionManifestBackgroundTest, BackgroundPageWebRequest) {
   ScopedCurrentChannel current_channel(version_info::Channel::DEV);
 
   std::string error;
-  scoped_ptr<base::DictionaryValue> manifest(
+  std::unique_ptr<base::DictionaryValue> manifest(
       LoadManifest("background_page.json", &error));
   ASSERT_TRUE(manifest.get());
   manifest->SetBoolean(keys::kBackgroundPersistent, false);

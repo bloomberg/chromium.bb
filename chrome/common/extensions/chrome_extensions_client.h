@@ -5,6 +5,8 @@
 #ifndef CHROME_COMMON_EXTENSIONS_CHROME_EXTENSIONS_CLIENT_H_
 #define CHROME_COMMON_EXTENSIONS_CHROME_EXTENSIONS_CLIENT_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
@@ -27,9 +29,9 @@ class ChromeExtensionsClient : public ExtensionsClient {
   const PermissionMessageProvider& GetPermissionMessageProvider()
       const override;
   const std::string GetProductName() override;
-  scoped_ptr<FeatureProvider> CreateFeatureProvider(
+  std::unique_ptr<FeatureProvider> CreateFeatureProvider(
       const std::string& name) const override;
-  scoped_ptr<JSONFeatureProviderSource> CreateFeatureProviderSource(
+  std::unique_ptr<JSONFeatureProviderSource> CreateFeatureProviderSource(
       const std::string& name) const override;
   void FilterHostPermissions(const URLPatternSet& hosts,
                              URLPatternSet* new_hosts,

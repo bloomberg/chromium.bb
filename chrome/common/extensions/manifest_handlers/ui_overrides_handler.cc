@@ -4,7 +4,8 @@
 
 #include "chrome/common/extensions/manifest_handlers/ui_overrides_handler.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -49,8 +50,8 @@ class UIOverridesHandler::ManifestPermissionImpl : public ManifestPermission {
     return value && value->GetAsBoolean(&override_bookmarks_ui_permission_);
   }
 
-  scoped_ptr<base::Value> ToValue() const override {
-    return scoped_ptr<base::Value>(
+  std::unique_ptr<base::Value> ToValue() const override {
+    return std::unique_ptr<base::Value>(
         new base::FundamentalValue(override_bookmarks_ui_permission_));
   }
 
@@ -58,27 +59,33 @@ class UIOverridesHandler::ManifestPermissionImpl : public ManifestPermission {
     const ManifestPermissionImpl* other =
         static_cast<const ManifestPermissionImpl*>(rhs);
 
-    return scoped_ptr<ManifestPermissionImpl>(new ManifestPermissionImpl(
-        override_bookmarks_ui_permission_ &&
-        !other->override_bookmarks_ui_permission_)).release();
+    return std::unique_ptr<ManifestPermissionImpl>(
+               new ManifestPermissionImpl(
+                   override_bookmarks_ui_permission_ &&
+                   !other->override_bookmarks_ui_permission_))
+        .release();
   }
 
   ManifestPermission* Union(const ManifestPermission* rhs) const override {
     const ManifestPermissionImpl* other =
         static_cast<const ManifestPermissionImpl*>(rhs);
 
-    return scoped_ptr<ManifestPermissionImpl>(new ManifestPermissionImpl(
-        override_bookmarks_ui_permission_ ||
-        other->override_bookmarks_ui_permission_)).release();
+    return std::unique_ptr<ManifestPermissionImpl>(
+               new ManifestPermissionImpl(
+                   override_bookmarks_ui_permission_ ||
+                   other->override_bookmarks_ui_permission_))
+        .release();
   }
 
   ManifestPermission* Intersect(const ManifestPermission* rhs) const override {
     const ManifestPermissionImpl* other =
         static_cast<const ManifestPermissionImpl*>(rhs);
 
-    return scoped_ptr<ManifestPermissionImpl>(new ManifestPermissionImpl(
-        override_bookmarks_ui_permission_ &&
-        other->override_bookmarks_ui_permission_)).release();
+    return std::unique_ptr<ManifestPermissionImpl>(
+               new ManifestPermissionImpl(
+                   override_bookmarks_ui_permission_ &&
+                   other->override_bookmarks_ui_permission_))
+        .release();
   }
 
  private:
@@ -122,12 +129,12 @@ UIOverridesHandler::~UIOverridesHandler() {}
 bool UIOverridesHandler::Parse(Extension* extension, base::string16* error) {
   const base::Value* dict = NULL;
   CHECK(extension->manifest()->Get(manifest_keys::kUIOverride, &dict));
-  scoped_ptr<ChromeUIOverrides> overrides(
+  std::unique_ptr<ChromeUIOverrides> overrides(
       ChromeUIOverrides::FromValue(*dict, error));
   if (!overrides)
     return false;
 
-  scoped_ptr<UIOverrides> info(new UIOverrides);
+  std::unique_ptr<UIOverrides> info(new UIOverrides);
   info->bookmarks_ui.swap(overrides->bookmarks_ui);
   if (!info->bookmarks_ui) {
     *error = ErrorUtils::FormatErrorMessageUTF16(

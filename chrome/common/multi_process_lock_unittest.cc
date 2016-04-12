@@ -2,17 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/common/multi_process_lock.h"
+
+#include <memory>
+
 #include "base/environment.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/process/kill.h"
 #include "base/rand_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/multiprocess_test.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "chrome/common/multi_process_lock.h"
 #include "testing/multiprocess_func_list.h"
 
 class MultiProcessLockTest : public base::MultiProcessTest {
@@ -32,7 +34,7 @@ class MultiProcessLockTest : public base::MultiProcessTest {
 
    private:
     std::string name_;
-    scoped_ptr<base::Environment> environment_;
+    std::unique_ptr<base::Environment> environment_;
     DISALLOW_COPY_AND_ASSIGN(ScopedEnvironmentVariable);
   };
 
@@ -72,7 +74,7 @@ void MultiProcessLockTest::ExpectLockIsUnlocked(
 TEST_F(MultiProcessLockTest, BasicCreationTest) {
   // Test basic creation/destruction with no lock taken
   std::string name = GenerateLockName();
-  scoped_ptr<MultiProcessLock> scoped(MultiProcessLock::Create(name));
+  std::unique_ptr<MultiProcessLock> scoped(MultiProcessLock::Create(name));
   ExpectLockIsUnlocked(name);
   scoped.reset(NULL);
 }
@@ -99,13 +101,13 @@ TEST_F(MultiProcessLockTest, LongNameTest) {
       "This limitation comes from the MAX_PATH definition which is obviously "
       "defined to be a maximum of two hundred and sixty characters ");
 #endif
-  scoped_ptr<MultiProcessLock> test_lock(MultiProcessLock::Create(name));
+  std::unique_ptr<MultiProcessLock> test_lock(MultiProcessLock::Create(name));
   EXPECT_FALSE(test_lock->TryLock());
 }
 
 TEST_F(MultiProcessLockTest, SimpleLock) {
   std::string name = GenerateLockName();
-  scoped_ptr<MultiProcessLock> test_lock(MultiProcessLock::Create(name));
+  std::unique_ptr<MultiProcessLock> test_lock(MultiProcessLock::Create(name));
   EXPECT_TRUE(test_lock->TryLock());
   ExpectLockIsLocked(name);
   test_lock->Unlock();
@@ -114,7 +116,7 @@ TEST_F(MultiProcessLockTest, SimpleLock) {
 
 TEST_F(MultiProcessLockTest, RecursiveLock) {
   std::string name = GenerateLockName();
-  scoped_ptr<MultiProcessLock> test_lock(MultiProcessLock::Create(name));
+  std::unique_ptr<MultiProcessLock> test_lock(MultiProcessLock::Create(name));
   EXPECT_TRUE(test_lock->TryLock());
   ExpectLockIsLocked(name);
   LOG(INFO) << "Following error log "
@@ -134,7 +136,7 @@ TEST_F(MultiProcessLockTest, LockScope) {
   // Check to see that lock is released when it goes out of scope.
   std::string name = GenerateLockName();
   {
-    scoped_ptr<MultiProcessLock> test_lock(MultiProcessLock::Create(name));
+    std::unique_ptr<MultiProcessLock> test_lock(MultiProcessLock::Create(name));
     EXPECT_TRUE(test_lock->TryLock());
     ExpectLockIsLocked(name);
   }
@@ -143,7 +145,7 @@ TEST_F(MultiProcessLockTest, LockScope) {
 
 MULTIPROCESS_TEST_MAIN(MultiProcessLockTryFailMain) {
   std::string name;
-  scoped_ptr<base::Environment> environment(base::Environment::Create());
+  std::unique_ptr<base::Environment> environment(base::Environment::Create());
   EXPECT_TRUE(environment->GetVar(MultiProcessLockTest::kLockEnviromentVarName,
                                   &name));
 #if defined(OS_MACOSX)
@@ -154,8 +156,7 @@ MULTIPROCESS_TEST_MAIN(MultiProcessLockTryFailMain) {
             << "\"CFMessagePort: bootstrap_register(): failed 1100 (0x44c) "
             << "'Permission denied'\" is expected";
 #endif  // defined(OS_MACOSX)
-  scoped_ptr<MultiProcessLock> test_lock(
-      MultiProcessLock::Create(name));
+  std::unique_ptr<MultiProcessLock> test_lock(MultiProcessLock::Create(name));
 
   // Expect locking to fail because it is claimed by another process.
   bool locked_successfully = test_lock->TryLock();
@@ -165,11 +166,10 @@ MULTIPROCESS_TEST_MAIN(MultiProcessLockTryFailMain) {
 
 MULTIPROCESS_TEST_MAIN(MultiProcessLockTrySucceedMain) {
   std::string name;
-  scoped_ptr<base::Environment> environment(base::Environment::Create());
+  std::unique_ptr<base::Environment> environment(base::Environment::Create());
   EXPECT_TRUE(environment->GetVar(MultiProcessLockTest::kLockEnviromentVarName,
                                   &name));
-  scoped_ptr<MultiProcessLock> test_lock(
-      MultiProcessLock::Create(name));
+  std::unique_ptr<MultiProcessLock> test_lock(MultiProcessLock::Create(name));
 
   // Expect locking to succeed because it is not claimed yet.
   bool locked_successfully = test_lock->TryLock();

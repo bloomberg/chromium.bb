@@ -7,11 +7,11 @@
 
 #include <launch.h>
 
+#include <memory>
 #include <string>
 
 #include "base/files/file_path.h"
 #include "base/mac/scoped_cftyperef.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/common/mac/launchd.h"
 #include "chrome/common/multi_process_lock.h"
 
@@ -60,7 +60,7 @@ class MockLaunchd : public Launchd {
   base::FilePath file_;
   std::string pipe_name_;
   base::MessageLoop* message_loop_;
-  scoped_ptr<MultiProcessLock> running_lock_;
+  std::unique_ptr<MultiProcessLock> running_lock_;
   bool create_socket_;
   bool as_service_;
   bool restart_called_;

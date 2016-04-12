@@ -4,11 +4,11 @@
 
 #include "chrome/common/variations/variations_util.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/feature_list.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "chrome/common/variations/fieldtrial_testing_config.h"
 #include "components/variations/variations_associated_data.h"
@@ -104,7 +104,7 @@ TEST_F(VariationsUtilTest, AssociateFeaturesFromFieldTrialConfig) {
   };
 
   base::FeatureList::ClearInstanceForTesting();
-  scoped_ptr<base::FeatureList> feature_list(new base::FeatureList);
+  std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
   AssociateParamsFromFieldTrialConfig(kConfig, feature_list.get());
   base::FeatureList::SetInstance(std::move(feature_list));
 

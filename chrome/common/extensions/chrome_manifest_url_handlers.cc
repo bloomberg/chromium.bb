@@ -4,8 +4,9 @@
 
 #include "chrome/common/extensions/chrome_manifest_url_handlers.h"
 
+#include <memory>
+
 #include "base/lazy_instance.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -67,7 +68,7 @@ DevToolsPageHandler::~DevToolsPageHandler() {
 }
 
 bool DevToolsPageHandler::Parse(Extension* extension, base::string16* error) {
-  scoped_ptr<ManifestURL> manifest_url(new ManifestURL);
+  std::unique_ptr<ManifestURL> manifest_url(new ManifestURL);
   std::string devtools_str;
   if (!extension->manifest()->GetString(keys::kDevToolsPage, &devtools_str)) {
     *error = base::ASCIIToUTF16(errors::kInvalidDevToolsPage);
@@ -96,7 +97,7 @@ bool URLOverridesHandler::Parse(Extension* extension, base::string16* error) {
     *error = base::ASCIIToUTF16(errors::kInvalidChromeURLOverrides);
     return false;
   }
-  scoped_ptr<URLOverrides> url_overrides(new URLOverrides);
+  std::unique_ptr<URLOverrides> url_overrides(new URLOverrides);
   // Validate that the overrides are all strings
   for (base::DictionaryValue::Iterator iter(*overrides); !iter.IsAtEnd();
        iter.Advance()) {

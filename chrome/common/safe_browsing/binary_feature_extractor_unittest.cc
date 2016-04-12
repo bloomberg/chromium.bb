@@ -7,10 +7,11 @@
 #include <stdint.h>
 #include <string.h>
 
+#include <memory>
+
 #include "base/base_paths.h"
 #include "base/files/file.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "crypto/sha2.h"
@@ -82,7 +83,7 @@ TEST_F(BinaryFeatureExtractorTest, ExtractOneBlockDigest) {
       0x82, 0x20, 0xe3, 0x93, 0x4c, 0x65, 0xe0, 0xc1, 0xc0, 0x19};
 
   const int kDataLen = kBlockSize;
-  scoped_ptr<char[]> data(new char[kDataLen]);
+  std::unique_ptr<char[]> data(new char[kDataLen]);
   memset(data.get(), 71, kDataLen);
   WriteFileToHash(data.get(), kDataLen);
   ExpectFileDigestEq(kDigest);
@@ -96,7 +97,7 @@ TEST_F(BinaryFeatureExtractorTest, ExtractBigBlockDigest) {
       0x33, 0xa7, 0x70, 0xf3, 0x6b, 0x85, 0xbf, 0xce, 0x9d, 0x5c};
 
   const int kDataLen = kBlockSize + 1;
-  scoped_ptr<char[]> data(new char[kDataLen]);
+  std::unique_ptr<char[]> data(new char[kDataLen]);
   memset(data.get(), 71, kDataLen);
   WriteFileToHash(data.get(), kDataLen);
   ExpectFileDigestEq(kDigest);

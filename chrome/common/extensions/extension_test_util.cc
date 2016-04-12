@@ -4,6 +4,8 @@
 
 #include "chrome/common/extensions/extension_test_util.h"
 
+#include <memory>
+
 #include "base/files/file_path.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/path_service.h"
@@ -31,7 +33,7 @@ scoped_refptr<Extension> LoadManifestUnchecked(const std::string& dir,
              .AppendASCII(test_file);
 
   JSONFileValueDeserializer deserializer(path);
-  scoped_ptr<base::Value> result = deserializer.Deserialize(NULL, error);
+  std::unique_ptr<base::Value> result = deserializer.Deserialize(NULL, error);
   if (!result)
     return NULL;
   const base::DictionaryValue* dict;

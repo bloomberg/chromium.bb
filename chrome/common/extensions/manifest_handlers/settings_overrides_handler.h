@@ -5,6 +5,8 @@
 #ifndef CHROME_COMMON_EXTENSIONS_MANIFEST_HANDLERS_SETTINGS_OVERRIDES_HANDLER_H_
 #define CHROME_COMMON_EXTENSIONS_MANIFEST_HANDLERS_SETTINGS_OVERRIDES_HANDLER_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "chrome/common/extensions/api/manifest_types.h"
 #include "extensions/common/extension.h"
@@ -29,9 +31,9 @@ struct SettingsOverrides : public Extension::ManifestData {
 
   static const SettingsOverrides* Get(const Extension* extension);
 
-  scoped_ptr<api::manifest_types::ChromeSettingsOverrides::Search_provider>
+  std::unique_ptr<api::manifest_types::ChromeSettingsOverrides::Search_provider>
       search_engine;
-  scoped_ptr<GURL> homepage;
+  std::unique_ptr<GURL> homepage;
   std::vector<GURL> startup_pages;
 
  private:

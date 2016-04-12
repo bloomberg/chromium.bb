@@ -2,25 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/manifest_tests/chrome_manifest_test.h"
+#include <memory>
 
+#include "chrome/common/extensions/manifest_tests/chrome_manifest_test.h"
 #include "extensions/common/manifest_constants.h"
-#include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 using extensions::Extension;
 
 namespace errors = extensions::manifest_errors;
 
 TEST_F(ChromeManifestTest, ManifestVersionError) {
-  scoped_ptr<base::DictionaryValue> manifest1(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> manifest1(new base::DictionaryValue());
   manifest1->SetString("name", "Miles");
   manifest1->SetString("version", "0.55");
 
-  scoped_ptr<base::DictionaryValue> manifest2(manifest1->DeepCopy());
+  std::unique_ptr<base::DictionaryValue> manifest2(manifest1->DeepCopy());
   manifest2->SetInteger("manifest_version", 1);
 
-  scoped_ptr<base::DictionaryValue> manifest3(manifest1->DeepCopy());
+  std::unique_ptr<base::DictionaryValue> manifest3(manifest1->DeepCopy());
   manifest3->SetInteger("manifest_version", 2);
 
   struct {

@@ -4,7 +4,8 @@
 
 #include "chrome/common/extensions/api/omnibox/omnibox_handler.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -35,7 +36,7 @@ OmniboxHandler::~OmniboxHandler() {
 }
 
 bool OmniboxHandler::Parse(Extension* extension, base::string16* error) {
-  scoped_ptr<OmniboxInfo> info(new OmniboxInfo);
+  std::unique_ptr<OmniboxInfo> info(new OmniboxInfo);
   const base::DictionaryValue* dict = NULL;
   if (!extension->manifest()->GetDictionary(manifest_keys::kOmnibox,
                                             &dict) ||

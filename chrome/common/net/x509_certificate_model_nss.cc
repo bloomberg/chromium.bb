@@ -16,6 +16,8 @@
 #include <stdint.h>
 #include <string.h>
 
+#include <memory>
+
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
@@ -94,14 +96,15 @@ struct NSSCMSMessageDeleter {
     NSS_CMSMessage_Destroy(x);
   }
 };
-typedef scoped_ptr<NSSCMSMessage, NSSCMSMessageDeleter> ScopedNSSCMSMessage;
+typedef std::unique_ptr<NSSCMSMessage, NSSCMSMessageDeleter>
+    ScopedNSSCMSMessage;
 
 struct FreeNSSCMSSignedData {
   inline void operator()(NSSCMSSignedData* x) const {
     NSS_CMSSignedData_Destroy(x);
   }
 };
-typedef scoped_ptr<NSSCMSSignedData, FreeNSSCMSSignedData>
+typedef std::unique_ptr<NSSCMSSignedData, FreeNSSCMSSignedData>
     ScopedNSSCMSSignedData;
 
 }  // namespace

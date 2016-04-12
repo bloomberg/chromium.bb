@@ -5,10 +5,10 @@
 #ifndef CHROME_COMMON_EXTENSIONS_API_COMMANDS_COMMANDS_HANDLER_H_
 #define CHROME_COMMON_EXTENSIONS_API_COMMANDS_COMMANDS_HANDLER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/common/extensions/command.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
@@ -24,8 +24,8 @@ struct CommandsInfo : public Extension::ManifestData {
   // These commands are the commands which the extension wants to use, which are
   // not necessarily the ones it can use, as it might be inactive (see also
   // Get*Command[s] in CommandService).
-  scoped_ptr<Command> browser_action_command;
-  scoped_ptr<Command> page_action_command;
+  std::unique_ptr<Command> browser_action_command;
+  std::unique_ptr<Command> page_action_command;
   CommandMap named_commands;
 
   static const Command* GetBrowserActionCommand(const Extension* extension);

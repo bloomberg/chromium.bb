@@ -4,10 +4,10 @@
 
 #include "chrome/common/extensions/permissions/chrome_permission_message_provider.h"
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/values.h"
 #include "chrome/grit/generated_resources.h"
@@ -54,7 +54,7 @@ class ChromePermissionMessageProviderUnittest : public testing::Test {
   }
 
  private:
-  scoped_ptr<ChromePermissionMessageProvider> message_provider_;
+  std::unique_ptr<ChromePermissionMessageProvider> message_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromePermissionMessageProviderUnittest);
 };
@@ -104,9 +104,9 @@ TEST_F(ChromePermissionMessageProviderUnittest,
   permissions.insert(APIPermission::kTab);
   permissions.insert(APIPermission::kTopSites);
   // The USB device permission message has a non-empty details string.
-  scoped_ptr<UsbDevicePermission> usb(new UsbDevicePermission(
+  std::unique_ptr<UsbDevicePermission> usb(new UsbDevicePermission(
       PermissionsInfo::GetInstance()->GetByID(APIPermission::kUsbDevice)));
-  scoped_ptr<base::ListValue> devices_list(new base::ListValue());
+  std::unique_ptr<base::ListValue> devices_list(new base::ListValue());
   devices_list->Append(
       UsbDevicePermissionData(0x02ad, 0x138c, -1).ToValue().release());
   devices_list->Append(

@@ -6,6 +6,8 @@
 
 #include <string.h>
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/posix/eintr_wrapper.h"
@@ -22,7 +24,7 @@ int g_signal_socket = -1;
 // make multiple attempts to acquire the lock.
 // Caller is responsible for ownership of the MultiProcessLock.
 MultiProcessLock* TakeNamedLock(const std::string& name, bool waiting) {
-  scoped_ptr<MultiProcessLock> lock(MultiProcessLock::Create(name));
+  std::unique_ptr<MultiProcessLock> lock(MultiProcessLock::Create(name));
   if (lock == NULL) return NULL;
   bool got_lock = false;
   for (int i = 0; i < 10; ++i) {

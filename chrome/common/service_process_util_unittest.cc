@@ -4,6 +4,8 @@
 
 #include "chrome/common/service_process_util.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
@@ -16,7 +18,6 @@
 
 #if !defined(OS_MACOSX)
 #include "base/at_exit.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/multiprocess_test.h"
@@ -126,7 +127,7 @@ TEST_F(ServiceProcessStateTest, DISABLED_ReadyState) {
 TEST_F(ServiceProcessStateTest, AutoRun) {
   ServiceProcessState state;
   ASSERT_TRUE(state.AddToAutoRun());
-  scoped_ptr<base::CommandLine> autorun_command_line;
+  std::unique_ptr<base::CommandLine> autorun_command_line;
 #if defined(OS_WIN)
   std::string value_name = GetServiceProcessScopedName("_service_run");
   base::string16 value;
@@ -300,8 +301,8 @@ class ServiceProcessStateFileManipulationTest : public ::testing::Test {
   base::MessageLoopForUI loop_;
   base::Thread io_thread_;
   base::FilePath executable_path_, bundle_path_;
-  scoped_ptr<MockLaunchd> mock_launchd_;
-  scoped_ptr<Launchd::ScopedInstance> scoped_launchd_instance_;
+  std::unique_ptr<MockLaunchd> mock_launchd_;
+  std::unique_ptr<Launchd::ScopedInstance> scoped_launchd_instance_;
   ServiceProcessState service_process_state_;
 };
 

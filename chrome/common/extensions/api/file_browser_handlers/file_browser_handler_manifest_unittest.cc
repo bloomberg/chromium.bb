@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <utility>
 
 #include "base/macros.h"
@@ -47,7 +48,7 @@ TEST_F(FileBrowserHandlerManifestTest, GetHandlersRequiresPermission) {
                                                     .Build())
                            .Build())
                .Build());
-  scoped_ptr<base::DictionaryValue> bad_manifest_value(
+  std::unique_ptr<base::DictionaryValue> bad_manifest_value(
       bad_manifest_builder.Build());
 
   // Create a good manifest by extending the bad one with the missing
