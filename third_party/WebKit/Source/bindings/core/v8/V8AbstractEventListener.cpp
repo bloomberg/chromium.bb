@@ -102,14 +102,14 @@ void V8AbstractEventListener::handleEvent(ScriptState* scriptState, Event* event
 void V8AbstractEventListener::setListenerObject(v8::Local<v8::Object> listener)
 {
     ASSERT(m_listener.isEmpty());
-    // Balanced in secondWeakCallback xor clearListenerObject.
+    // Balanced in wrapperCleared xor clearListenerObject.
     if (m_workerGlobalScope) {
         m_workerGlobalScope->registerEventListener(this);
     } else {
         m_keepAlive = this;
     }
     m_listener.set(isolate(), listener);
-    m_listener.setWeak(this, &setWeakCallback);
+    m_listener.setWeak(this, &wrapperCleared);
 }
 
 void V8AbstractEventListener::invokeEventHandler(ScriptState* scriptState, Event* event, v8::Local<v8::Value> jsEvent)
@@ -199,19 +199,9 @@ void V8AbstractEventListener::clearListenerObject()
     }
 }
 
-void V8AbstractEventListener::setWeakCallback(const v8::WeakCallbackInfo<V8AbstractEventListener>& data)
+void V8AbstractEventListener::wrapperCleared(const v8::WeakCallbackInfo<V8AbstractEventListener>& data)
 {
-    data.GetParameter()->m_listener.clear();
-    data.SetSecondPassCallback(secondWeakCallback);
-}
-
-void V8AbstractEventListener::secondWeakCallback(const v8::WeakCallbackInfo<V8AbstractEventListener>& data)
-{
-    if (data.GetParameter()->m_workerGlobalScope) {
-        data.GetParameter()->m_workerGlobalScope->deregisterEventListener(data.GetParameter());
-    } else {
-        data.GetParameter()->m_keepAlive.clear();
-    }
+    data.GetParameter()->clearListenerObject();
 }
 
 DEFINE_TRACE(V8AbstractEventListener)
