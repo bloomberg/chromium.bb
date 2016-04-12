@@ -163,9 +163,6 @@ const char kEnableVp9SwitchName[] = "enable-vp9";
 
 const char kWindowIdSwitchName[] = "window-id";
 
-// Command line switch used to enable WebRTC-based protocol.
-const char kDisableAuthenticationSwitchName[] = "disable-authentication";
-
 // Maximum time to wait for clean shutdown to occur, before forcing termination
 // of the process.
 const int kShutdownTimeoutSeconds = 15;
@@ -183,57 +180,6 @@ const char kHostOfflineReasonPolicyChangeRequiresRestart[] =
 }  // namespace
 
 namespace remoting {
-
-#if !defined(NDEBUG)
-
-// Authenticator that accepts all connections. Use only for testing.
-class NoopAuthenticator : public protocol::Authenticator {
- public:
-  NoopAuthenticator() {}
-  ~NoopAuthenticator() override {}
-
-  // protocol::Authenticator interface.
-  State state() const override { return done_ ? ACCEPTED : WAITING_MESSAGE; }
-  bool started() const override { return done_; }
-  RejectionReason rejection_reason() const override {
-    NOTREACHED();
-    return INVALID_CREDENTIALS;
-  }
-  void ProcessMessage(const buzz::XmlElement* message,
-                      const base::Closure& resume_callback) override {
-    done_ = true;
-    resume_callback.Run();
-  }
-  std::unique_ptr<buzz::XmlElement> GetNextMessage() override {
-    NOTREACHED();
-    return nullptr;
-  }
-  const std::string& GetAuthKey() const override { return auth_key_; }
-  std::unique_ptr<protocol::ChannelAuthenticator> CreateChannelAuthenticator()
-      const override {
-    NOTREACHED();
-    return nullptr;
-  };
-
- private:
-  bool done_ = false;
-  std::string auth_key_ = "NOKEY";
-};
-
-// Factory for Authenticator instances.
-class NoopAuthenticatorFactory : public protocol::AuthenticatorFactory {
- public:
-  NoopAuthenticatorFactory() {}
-  ~NoopAuthenticatorFactory() override {}
-
-  std::unique_ptr<protocol::Authenticator> CreateAuthenticator(
-      const std::string& local_jid,
-      const std::string& remote_jid) override {
-    return base::WrapUnique(new NoopAuthenticator());
-  }
-};
-
-#endif  // !defined(NDEBUG)
 
 class HostProcess : public ConfigWatcher::Delegate,
                     public HostChangeNotificationListener::Listener,
@@ -740,18 +686,6 @@ void HostProcess::CreateAuthenticatorFactory() {
 
   if (state_ != HOST_STARTED)
     return;
-
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          kDisableAuthenticationSwitchName)) {
-#if defined(NDEBUG)
-    LOG(ERROR) << "Authentication can be disabled only in debug builds.";
-    ShutdownHost(kInitializationFailed);
-#else  // defined(NDEBUG)
-    host_->SetAuthenticatorFactory(
-        base::WrapUnique(new NoopAuthenticatorFactory()));
-#endif  // !defined(NDEBUG)
-    return;
-  }
 
   std::string local_certificate = key_pair_->GenerateCertificate();
   if (local_certificate.empty()) {
