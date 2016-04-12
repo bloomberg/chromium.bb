@@ -47,6 +47,7 @@ class Document;
 class LayoutListItem;
 class LayoutListMarker;
 class LayoutBlock;
+class SubtreeLayoutScope;
 
 // Single-pass text autosizer. Documentation at:
 // http://tinyurl.com/TextAutosizer
@@ -72,7 +73,9 @@ public:
     class LayoutScope {
         STACK_ALLOCATED();
     public:
-        explicit LayoutScope(LayoutBlock*);
+        // TODO(kojii): SubtreeLayoutScope should not be optional once all
+        // callers are fixed.
+        explicit LayoutScope(LayoutBlock*, SubtreeLayoutScope* = nullptr);
         ~LayoutScope();
     protected:
         Member<TextAutosizer> m_textAutosizer;
@@ -261,10 +264,10 @@ private:
 
     explicit TextAutosizer(const Document*);
 
-    void beginLayout(LayoutBlock*);
+    void beginLayout(LayoutBlock*, SubtreeLayoutScope*);
     void endLayout(LayoutBlock*);
     void inflateAutoTable(LayoutTable*);
-    float inflate(LayoutObject*, InflateBehavior = ThisBlockOnly, float multiplier = 0);
+    float inflate(LayoutObject*, SubtreeLayoutScope*, InflateBehavior = ThisBlockOnly, float multiplier = 0);
     bool shouldHandleLayout() const;
     IntSize windowSize() const;
     void setAllTextNeedsLayout();
@@ -289,7 +292,7 @@ private:
     // block's width otherwise.
     float widthFromBlock(const LayoutBlock*) const;
     float multiplierFromBlock(const LayoutBlock*);
-    void applyMultiplier(LayoutObject*, float, RelayoutBehavior = AlreadyInLayout);
+    void applyMultiplier(LayoutObject*, float, SubtreeLayoutScope*, RelayoutBehavior = AlreadyInLayout);
     bool isWiderOrNarrowerDescendant(Cluster*);
     Cluster* currentCluster() const;
     const LayoutBlock* deepestBlockContainingAllText(Cluster*);

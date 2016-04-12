@@ -408,7 +408,7 @@ inline bool LayoutBlockFlow::layoutBlockFlow(bool relayoutChildren, LayoutUnit &
     if (!firstChild() && !isAnonymousBlock())
         setChildrenInline(true);
 
-    TextAutosizer::LayoutScope textAutosizerLayoutScope(this);
+    TextAutosizer::LayoutScope textAutosizerLayoutScope(this, &layoutScope);
 
     // Reset the flag here instead of in layoutInlineChildren() in case that
     // all inline children are removed from this block.

@@ -358,7 +358,7 @@ void TextAutosizer::prepareClusterStack(const LayoutObject* layoutObject)
     }
 }
 
-void TextAutosizer::beginLayout(LayoutBlock* block)
+void TextAutosizer::beginLayout(LayoutBlock* block, SubtreeLayoutScope* layouter)
 {
     ASSERT(shouldHandleLayout());
 
@@ -375,7 +375,7 @@ void TextAutosizer::beginLayout(LayoutBlock* block)
     // Cells in auto-layout tables are handled separately by inflateAutoTable.
     bool isAutoTableCell = block->isTableCell() && !toLayoutTableCell(block)->table()->style()->isFixedTableLayout();
     if (!isAutoTableCell && !m_clusterStack.isEmpty())
-        inflate(block);
+        inflate(block, layouter);
 }
 
 void TextAutosizer::inflateAutoTable(LayoutTable* table)
@@ -398,8 +398,10 @@ void TextAutosizer::inflateAutoTable(LayoutTable* table)
                 if (!cell->needsLayout())
                     continue;
 
-                beginLayout(cell);
-                inflate(cell, DescendToInnerBlocks);
+                // TODO(kojii): Callers should pass SubtreeLayoutScope to give
+                // to beginLayout/inflate.
+                beginLayout(cell, nullptr);
+                inflate(cell, nullptr, DescendToInnerBlocks);
                 endLayout(cell);
             }
         }
@@ -425,7 +427,7 @@ void TextAutosizer::endLayout(LayoutBlock* block)
     }
 }
 
-float TextAutosizer::inflate(LayoutObject* parent, InflateBehavior behavior, float multiplier)
+float TextAutosizer::inflate(LayoutObject* parent, SubtreeLayoutScope* layouter, InflateBehavior behavior, float multiplier)
 {
     Cluster* cluster = currentCluster();
     bool hasTextChild = false;
@@ -443,31 +445,31 @@ float TextAutosizer::inflate(LayoutObject* parent, InflateBehavior behavior, flo
             // has entered layout.
             if (!multiplier)
                 multiplier = cluster->m_flags & SUPPRESSING ? 1.0f : clusterMultiplier(cluster);
-            applyMultiplier(child, multiplier);
+            applyMultiplier(child, multiplier, layouter);
 
             // FIXME: Investigate why MarkOnlyThis is sufficient.
             if (parent->isLayoutInline())
                 child->setPreferredLogicalWidthsDirty(MarkOnlyThis);
         } else if (child->isLayoutInline()) {
-            multiplier = inflate(child, behavior, multiplier);
+            multiplier = inflate(child, layouter, behavior, multiplier);
         } else if (child->isLayoutBlock() && behavior == DescendToInnerBlocks
             && !classifyBlock(child, INDEPENDENT | EXPLICIT_WIDTH | SUPPRESSING)) {
-            multiplier = inflate(child, behavior, multiplier);
+            multiplier = inflate(child, layouter, behavior, multiplier);
         }
         child = child->nextSibling();
     }
 
     if (hasTextChild) {
-        applyMultiplier(parent, multiplier); // Parent handles line spacing.
+        applyMultiplier(parent, multiplier, layouter); // Parent handles line spacing.
     } else if (!parent->isListItem()) {
         // For consistency, a block with no immediate text child should always have a
         // multiplier of 1.
-        applyMultiplier(parent, 1);
+        applyMultiplier(parent, 1, layouter);
     }
 
     if (parent->isListItem()) {
         float multiplier = clusterMultiplier(cluster);
-        applyMultiplier(parent, multiplier);
+        applyMultiplier(parent, multiplier, layouter);
 
         // The list item has to be treated special because we can have a tree such that you have
         // a list item for a form inside it. The list marker then ends up inside the form and when
@@ -475,7 +477,7 @@ float TextAutosizer::inflate(LayoutObject* parent, InflateBehavior behavior, flo
         // the wrong value.
         LayoutListItem* item = toLayoutListItem(parent);
         if (LayoutListMarker* marker = item->marker()) {
-            applyMultiplier(marker, multiplier);
+            applyMultiplier(marker, multiplier, layouter);
             marker->setPreferredLogicalWidthsDirty(MarkOnlyThis);
         }
     }
@@ -581,7 +583,7 @@ void TextAutosizer::resetMultipliers()
     while (layoutObject) {
         if (const ComputedStyle* style = layoutObject->style()) {
             if (style->textAutosizingMultiplier() != 1)
-                applyMultiplier(layoutObject, 1, LayoutNeeded);
+                applyMultiplier(layoutObject, 1, nullptr, LayoutNeeded);
         }
         layoutObject = layoutObject->nextInPreOrder();
     }
@@ -972,7 +974,7 @@ const LayoutObject* TextAutosizer::findTextLeaf(const LayoutObject* parent, size
     return nullptr;
 }
 
-void TextAutosizer::applyMultiplier(LayoutObject* layoutObject, float multiplier, RelayoutBehavior relayoutBehavior)
+void TextAutosizer::applyMultiplier(LayoutObject* layoutObject, float multiplier, SubtreeLayoutScope* layouter, RelayoutBehavior relayoutBehavior)
 {
     ASSERT(layoutObject);
     ComputedStyle& currentStyle = layoutObject->mutableStyleRef();
@@ -991,10 +993,14 @@ void TextAutosizer::applyMultiplier(LayoutObject* layoutObject, float multiplier
         m_stylesRetainedDuringLayout.append(&currentStyle);
 
         layoutObject->setStyleInternal(style.release());
-        layoutObject->setNeedsLayoutAndFullPaintInvalidation(LayoutInvalidationReason::TextAutosizing);
+        // TODO(kojii): layouter should not be nullptr once all callers are
+        // fixed to pass SubtreeLayoutScope.
+        DCHECK(!layouter || layoutObject->isDescendantOf(&layouter->root()));
+        layoutObject->setNeedsLayoutAndFullPaintInvalidation(LayoutInvalidationReason::TextAutosizing, MarkContainerChain, layouter);
         break;
 
     case LayoutNeeded:
+        DCHECK(!layouter);
         layoutObject->setStyle(style.release());
         break;
     }
@@ -1108,7 +1114,7 @@ TextAutosizer::BlockSet* TextAutosizer::FingerprintMapper::getTentativeClusterRo
     return m_blocksForFingerprint.get(fingerprint);
 }
 
-TextAutosizer::LayoutScope::LayoutScope(LayoutBlock* block)
+TextAutosizer::LayoutScope::LayoutScope(LayoutBlock* block, SubtreeLayoutScope* layouter)
     : m_textAutosizer(block->document().textAutosizer())
     , m_block(block)
 {
@@ -1116,7 +1122,7 @@ TextAutosizer::LayoutScope::LayoutScope(LayoutBlock* block)
         return;
 
     if (m_textAutosizer->shouldHandleLayout())
-        m_textAutosizer->beginLayout(m_block);
+        m_textAutosizer->beginLayout(m_block, layouter);
     else
         m_textAutosizer = nullptr;
 }
