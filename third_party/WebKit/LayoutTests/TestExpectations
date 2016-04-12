@@ -1200,6 +1200,8 @@ crbug.com/353746 virtual/android/fullscreen/video-specified-size.html [ Failure 
 
 crbug.com/527270 accessibility/name-calc-img.html [ Failure Pass Timeout ]
 
+crbug.com/602616 svg/filters/filter-refresh.svg [ Failure Pass ]
+
 crbug.com/602483 svg/transforms/animated-path-inside-transformed-html.xhtml [ NeedsManualRebaseline ]
 
 # This test has different results in Debug and Release.
