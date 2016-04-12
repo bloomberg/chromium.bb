@@ -260,8 +260,6 @@ public:
     void willReleaseScriptContext(v8::Local<v8::Context>, int worldId) override {}
     bool allowScriptExtension(const String& extensionName, int extensionGroup, int worldId) override { return false; }
 
-    v8::Local<v8::Value> createTestInterface(const AtomicString& name) override;
-
     WebCookieJar* cookieJar() const override { return 0; }
 
     void didRequestAutocomplete(HTMLFormElement*) override;

@@ -18,7 +18,6 @@ class WebFrameClient;
 class WebNode;
 class WebScriptExecutionCallback;
 class WebSuspendableTask;
-class WebTestInterfaceFactory;
 enum class WebAppBannerPromptReply;
 enum class WebCachePolicy;
 enum class WebSandboxFlags;
@@ -218,11 +217,6 @@ public:
 
     virtual void didCallAddSearchProvider() = 0;
     virtual void didCallIsSearchProviderInstalled() = 0;
-
-    // Testing ----------------------------------------------------------------
-
-    // Registers a test interface factory. Takes ownership of the factory.
-    virtual void registerTestInterface(const WebString& name, WebTestInterfaceFactory*) = 0;
 
     // Iframe sandbox ---------------------------------------------------------
 

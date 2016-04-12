@@ -246,43 +246,6 @@ void V8Window::openMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
     v8SetReturnValueFast(info, openedWindow.release(), impl);
 }
 
-// We lazy create interfaces like testRunner and internals on first access
-// inside layout tests since creating the bindings is expensive. Then we store
-// them in a hidden Map on the window so that later accesses will reuse the same
-// wrapper.
-static bool installTestInterfaceIfNeeded(LocalFrame& frame, v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    if (!LayoutTestSupport::isRunningLayoutTest())
-        return false;
-
-    v8::Isolate* isolate = info.GetIsolate();
-    v8::Local<v8::Context> context = isolate->GetCurrentContext();
-    AtomicString propName = toCoreAtomicString(name);
-
-    ScriptState* scriptState = ScriptState::from(context);
-    v8::Local<v8::Value> interfaces = V8HiddenValue::getHiddenValue(scriptState, info.Holder(), V8HiddenValue::testInterfaces(isolate));
-    if (interfaces.IsEmpty()) {
-        interfaces = v8::Map::New(isolate);
-        V8HiddenValue::setHiddenValue(scriptState, info.Holder(), V8HiddenValue::testInterfaces(isolate), interfaces);
-    }
-
-    v8::Local<v8::Map> interfacesMap = interfaces.As<v8::Map>();
-    v8::Local<v8::Value> result = v8CallOrCrash(interfacesMap->Get(context, name));
-    if (!result->IsUndefined()) {
-        v8SetReturnValue(info, result);
-        return true;
-    }
-
-    v8::Local<v8::Value> interface = frame.loader().client()->createTestInterface(propName);
-    if (!interface.IsEmpty()) {
-        v8CallOrCrash(interfacesMap->Set(context, name, interface));
-        v8SetReturnValue(info, interface);
-        return true;
-    }
-
-    return false;
-}
-
 static bool namedPropertyFromDebuggerScopeExtension(v8::Local<v8::Name> name, const AtomicString& nameString, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     if (!InspectorInstrumentation::hasFrontends())
@@ -343,9 +306,6 @@ void V8Window::namedPropertyGetterCustom(v8::Local<v8::Name> name, const v8::Pro
 
     // If the frame is remote, the caller will never be able to access further named results.
     if (!frame->isLocalFrame())
-        return;
-
-    if (installTestInterfaceIfNeeded(toLocalFrame(*frame), nameString, info))
         return;
 
     if (namedPropertyFromDebuggerScopeExtension(name, propName, info))

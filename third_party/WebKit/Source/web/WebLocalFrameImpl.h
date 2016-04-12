@@ -196,13 +196,7 @@ public:
     bool selectionStartHasSpellingMarkerFor(int from, int length) const override;
     WebString layerTreeAsText(bool showDebugInfo = false) const override;
 
-    void registerTestInterface(const WebString& name, WebTestInterfaceFactory*) override;
-
     WebFrameImplBase* toImplBase() override { return this; }
-
-    // Creates a test interface by name if available, returns an empty handle
-    // for unknown names.
-    v8::Local<v8::Value> createTestInterface(const AtomicString& name);
 
     // WebLocalFrame methods:
     void setAutofillClient(WebAutofillClient*) override;
@@ -398,8 +392,6 @@ private:
     Member<GeolocationClientProxy> m_geolocationClientProxy;
 
     WebDevToolsFrontendImpl* m_webDevToolsFrontend;
-
-    HashMap<AtomicString, OwnPtr<WebTestInterfaceFactory>> m_testInterfaces;
 
 #if ENABLE(OILPAN)
     // Oilpan: WebLocalFrameImpl must remain alive until close() is called.

@@ -467,7 +467,6 @@
       "web/WebSpellCheckClient.h",
       "web/WebStorageEventDispatcher.h",
       "web/WebSurroundingText.h",
-      "web/WebTestInterfaceFactory.h",
       "web/WebTestingSupport.h",
       "web/WebTextCheckingCompletion.h",
       "web/WebTextCheckingResult.h",

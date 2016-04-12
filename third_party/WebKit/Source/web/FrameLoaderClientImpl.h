@@ -167,8 +167,6 @@ public:
 
     void dispatchWillInsertBody() override;
 
-    v8::Local<v8::Value> createTestInterface(const AtomicString& name) override;
-
     PassOwnPtr<WebServiceWorkerProvider> createServiceWorkerProvider() override;
     bool isControlledByServiceWorker(DocumentLoader&) override;
     int64_t serviceWorkerID(DocumentLoader&) override;
