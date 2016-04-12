@@ -26,11 +26,18 @@
         'src/woff2_common.h',
         'src/woff2_dec.cc',
         'src/woff2_dec.h',
+        'src/woff2_out.cc',
+        'src/woff2_out.h',
       ],
       # TODO(ksakamoto): http://crbug.com/167187
       'msvs_disabled_warnings': [
         4267,
       ],
+      'variables': {
+        'clang_warning_flags': [
+          '-Wno-unused-function',
+        ],
+      },
     },
   ],
 }

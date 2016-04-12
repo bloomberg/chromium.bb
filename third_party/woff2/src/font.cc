@@ -49,11 +49,7 @@ std::vector<uint32_t> Font::OutputOrderedTags() const {
     output_order.push_back(table.tag);
   }
 
-  // Alphabetize and do not put loca immediately after glyf
-  // This violates woff2 spec but results in a font that passes OTS
-  std::sort(output_order.begin(), output_order.end());
-  // TODO(user): change to match spec once browsers are on newer OTS
-  /*
+  // Alphabetize then put loca immediately after glyf
   auto glyf_loc = std::find(output_order.begin(), output_order.end(),
       kGlyfTableTag);
   auto loca_loc = std::find(output_order.begin(), output_order.end(),
@@ -62,7 +58,7 @@ std::vector<uint32_t> Font::OutputOrderedTags() const {
     output_order.erase(loca_loc);
     output_order.insert(std::find(output_order.begin(), output_order.end(),
       kGlyfTableTag) + 1, kLocaTableTag);
-  }*/
+  }
 
   return output_order;
 }
@@ -79,6 +75,7 @@ bool ReadTrueTypeFont(Buffer* file, const uint8_t* data, size_t len,
   std::map<uint32_t, uint32_t> intervals;
   for (uint16_t i = 0; i < font->num_tables; ++i) {
     Font::Table table;
+    table.flag_byte = 0;
     table.reuse_of = NULL;
     if (!file->ReadU32(&table.tag) ||
         !file->ReadU32(&table.checksum) ||
