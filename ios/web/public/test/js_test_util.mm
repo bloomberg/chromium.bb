@@ -4,7 +4,6 @@
 
 #import "ios/web/public/test/js_test_util.h"
 
-#import <UIKit/UIKit.h>
 #import <WebKit/WebKit.h>
 
 #import "base/logging.h"
@@ -52,10 +51,6 @@ NSString* EvaluateJavaScriptAsString(CRWJSInjectionReceiver* receiver,
   base::scoped_nsobject<CRWJSInjectionManager> manager(
       [[CRWJSInjectionManager alloc] initWithReceiver:receiver]);
   return EvaluateJavaScriptAsString(manager, script);
-}
-
-NSString* EvaluateJavaScriptAsString(UIWebView* web_view, NSString* script) {
-  return [web_view stringByEvaluatingJavaScriptFromString:script];
 }
 
 id EvaluateJavaScript(WKWebView* web_view, NSString* script) {

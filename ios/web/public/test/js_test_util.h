@@ -5,7 +5,7 @@
 #ifndef IOS_WEB_PUBLIC_TEST_JS_TEST_UTIL_H_
 #define IOS_WEB_PUBLIC_TEST_JS_TEST_UTIL_H_
 
-#import <UIKit/UIKit.h>
+#import <Foundation/Foundation.h>
 #import <WebKit/WebKit.h>
 
 @class CRWJSInjectionManager;
@@ -20,9 +20,6 @@ NSString* EvaluateJavaScriptAsString(CRWJSInjectionManager* manager,
 // Evaluates JavaScript on the |receiver| and returns the result as a string.
 NSString* EvaluateJavaScriptAsString(CRWJSInjectionReceiver* receiver,
                                      NSString* script);
-
-// Evaluates JavaScript on |web_view| and returns the result as a string.
-NSString* EvaluateJavaScriptAsString(UIWebView* web_view, NSString* script);
 
 // Evaluates JavaScript on |web_view| and returns the result as an id.
 id EvaluateJavaScript(WKWebView* web_view, NSString* script);
