@@ -50,18 +50,8 @@ public:
         virtual ~WebGraphicsContextLostCallback() { }
     };
 
-    class WebGraphicsErrorMessageCallback {
-    public:
-        virtual void onErrorMessage(const WebString&, int) = 0;
-
-    protected:
-        virtual ~WebGraphicsErrorMessageCallback() { }
-    };
-
     // This destructor needs to be public so that using classes can destroy instances if initialization fails.
     virtual ~WebGraphicsContext3D() { }
-
-    virtual void setErrorMessageCallback(WebGraphicsErrorMessageCallback* callback) { }
 };
 
 } // namespace blink

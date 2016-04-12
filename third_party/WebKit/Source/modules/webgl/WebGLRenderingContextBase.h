@@ -466,6 +466,8 @@ protected:
     void destroyContext();
     void markContextChanged(ContentChangeType);
 
+    void onErrorMessage(const char*, int32_t id);
+
     void notifyCanvasContextChanged();
 
     // Query if depth_stencil buffer is supported.
@@ -514,7 +516,6 @@ protected:
 
     bool m_markedCanvasDirty;
     HeapHashSet<WeakMember<WebGLContextObject>> m_contextObjects;
-    Member<WebGLRenderingContextErrorMessageCallback> m_errorMessageCallbackAdapter;
 
     // List of bound VBO's. Used to maintain info about sizes for ARRAY_BUFFER and stored values for ELEMENT_ARRAY_BUFFER
     Member<WebGLBuffer> m_boundArrayBuffer;

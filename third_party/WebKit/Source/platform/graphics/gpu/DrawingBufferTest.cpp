@@ -40,7 +40,7 @@
 #include "public/platform/WebExternalTextureMailbox.h"
 #include "public/platform/WebGraphicsContext3D.h"
 #include "public/platform/WebGraphicsContext3DProvider.h"
-#include "public/platform/callback/WebClosure.h"
+#include "public/platform/functional/WebFunction.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/RefPtr.h"
@@ -274,6 +274,7 @@ public:
     // Not used by WebGL code.
     GrContext* grContext() override { return nullptr; }
     void setLostContextCallback(WebClosure) {}
+    void setErrorMessageCallback(WebFunction<void(const char*, int32_t id)>) {}
 
 private:
     OwnPtr<WebGraphicsContext3D> m_context;

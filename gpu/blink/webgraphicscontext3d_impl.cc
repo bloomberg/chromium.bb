@@ -30,16 +30,10 @@ WebGraphicsContext3DImpl::WebGraphicsContext3DImpl()
     : initialized_(false),
       initialize_failed_(false),
       context_lost_callback_(0),
-      error_message_callback_(0),
       gl_(NULL) {}
 
 WebGraphicsContext3DImpl::~WebGraphicsContext3DImpl() {
 
-}
-
-void WebGraphicsContext3DImpl::setErrorMessageCallback(
-    WebGraphicsContext3D::WebGraphicsErrorMessageCallback* cb) {
-  error_message_callback_ = cb;
 }
 
 void WebGraphicsContext3DImpl::setContextLostCallback(

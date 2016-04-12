@@ -192,7 +192,6 @@ class WebGraphicsContext3DCommandBufferImpl
   bool CreateContext();
 
   void OnContextLost();
-  void OnErrorMessage(const char* message, int32_t id);
 
   bool automatic_flushes_;
   gpu::gles2::ContextCreationAttribHelper attributes_;

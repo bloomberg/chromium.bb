@@ -52,6 +52,10 @@ class ContextSupport {
   // this context's resources belong to.
   virtual uint64_t ShareGroupTracingGUID() const = 0;
 
+  // Sets a callback to be run when an error occurs.
+  virtual void SetErrorMessageCallback(
+      const base::Callback<void(const char*, int32_t)>& callback) = 0;
+
  protected:
   ContextSupport() {}
   virtual ~ContextSupport() {}

@@ -34,6 +34,8 @@ class CONTENT_EXPORT WebGraphicsContext3DProviderImpl
   gpu::gles2::GLES2Interface* contextGL() override;
   GrContext* grContext() override;
   void setLostContextCallback(blink::WebClosure) override;
+  void setErrorMessageCallback(
+      blink::WebFunction<void(const char*, int32_t)>) override;
 
  private:
   scoped_refptr<cc_blink::ContextProviderWebContext> provider_;

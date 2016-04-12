@@ -119,11 +119,8 @@ WebGraphicsContext3DCommandBufferImpl::WebGraphicsContext3DCommandBufferImpl(
 
 WebGraphicsContext3DCommandBufferImpl::
     ~WebGraphicsContext3DCommandBufferImpl() {
-  if (real_gl_) {
-    real_gl_->SetErrorMessageCallback(
-        base::Callback<void(const char*, int32_t)>());
+  if (real_gl_)
     real_gl_->SetLostContextCallback(base::Closure());
-  }
 
   Destroy();
 }
@@ -149,10 +146,6 @@ bool WebGraphicsContext3DCommandBufferImpl::MaybeInitializeGL() {
     return false;
   }
 
-  real_gl_->SetErrorMessageCallback(
-      base::Bind(&WebGraphicsContext3DCommandBufferImpl::OnErrorMessage,
-                 // The callback is unset in the destructor.
-                 base::Unretained(this)));
   real_gl_->SetLostContextCallback(
       base::Bind(&WebGraphicsContext3DCommandBufferImpl::OnContextLost,
                  // The callback is unset in the destructor.
@@ -362,14 +355,6 @@ void WebGraphicsContext3DCommandBufferImpl::OnContextLost() {
 
   gpu::CommandBuffer::State state = command_buffer_->GetLastState();
   UmaRecordContextLost(context_type_, state.error, state.context_lost_reason);
-}
-
-void WebGraphicsContext3DCommandBufferImpl::OnErrorMessage(const char* message,
-                                                           int id) {
-  if (error_message_callback_) {
-    blink::WebString str = blink::WebString::fromUTF8(message);
-    error_message_callback_->onErrorMessage(str, id);
-  }
 }
 
 }  // namespace content

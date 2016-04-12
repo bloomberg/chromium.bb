@@ -208,9 +208,11 @@ class GLES2_IMPL_EXPORT GLES2Implementation
                             const gfx::Rect& display_bounds,
                             const gfx::RectF& uv_rect) override;
   uint64_t ShareGroupTracingGUID() const override;
-
   void SetErrorMessageCallback(
-      const base::Callback<void(const char*, int32_t)>& callback);
+      const base::Callback<void(const char*, int32_t)>& callback) override;
+
+  // TODO(danakj): Move to ContextSupport once ContextProvider doesn't need to
+  // intercept it.
   void SetLostContextCallback(const base::Closure& callback);
 
   void GetProgramInfoCHROMIUMHelper(GLuint program,

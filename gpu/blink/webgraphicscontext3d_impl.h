@@ -20,14 +20,11 @@ namespace gpu {
 
 namespace gles2 {
 class GLES2Interface;
-class GLES2ImplementationErrorMessageCallback;
 struct ContextCreationAttribHelper;
 }
 }
 
 namespace gpu_blink {
-
-class WebGraphicsContext3DErrorMessageCallback;
 
 class GPU_BLINK_EXPORT WebGraphicsContext3DImpl
     : public NON_EXPORTED_BASE(blink::WebGraphicsContext3D) {
@@ -40,16 +37,11 @@ class GPU_BLINK_EXPORT WebGraphicsContext3DImpl
   void setContextLostCallback(
       WebGraphicsContext3D::WebGraphicsContextLostCallback* callback);
 
-  void setErrorMessageCallback(
-      WebGraphicsContext3D::WebGraphicsErrorMessageCallback* callback) override;
-
   ::gpu::gles2::GLES2Interface* GetGLInterface() {
     return gl_;
   }
 
  protected:
-  friend class WebGraphicsContext3DErrorMessageCallback;
-
   WebGraphicsContext3DImpl();
 
   void SetGLInterface(::gpu::gles2::GLES2Interface* gl) { gl_ = gl; }
@@ -58,7 +50,6 @@ class GPU_BLINK_EXPORT WebGraphicsContext3DImpl
   bool initialize_failed_;
 
   WebGraphicsContextLostCallback* context_lost_callback_;
-  WebGraphicsErrorMessageCallback* error_message_callback_;
 
   ::gpu::gles2::GLES2Interface* gl_;
   bool lose_context_when_out_of_memory_;

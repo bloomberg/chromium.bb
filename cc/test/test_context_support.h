@@ -39,6 +39,8 @@ class TestContextSupport : public gpu::ContextSupport {
                             const gfx::Rect& display_bounds,
                             const gfx::RectF& uv_rect) override;
   uint64_t ShareGroupTracingGUID() const override;
+  void SetErrorMessageCallback(
+      const base::Callback<void(const char*, int32_t)>& callback) override;
 
   void CallAllSyncPointCallbacks();
 

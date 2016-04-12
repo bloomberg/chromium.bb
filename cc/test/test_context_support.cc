@@ -88,4 +88,7 @@ uint64_t TestContextSupport::ShareGroupTracingGUID() const {
   return 0;
 }
 
+void TestContextSupport::SetErrorMessageCallback(
+    const base::Callback<void(const char*, int32_t)>& callback) {}
+
 }  // namespace cc
