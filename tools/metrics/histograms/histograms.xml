@@ -5933,6 +5933,38 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="ContentSettings.NumberOfAllowCookiesExceptions">
+  <owner>battre@chromium.org</owner>
+  <summary>
+    The number of user defined cookies setting exceptions for allowing cookies
+    at browser start.
+  </summary>
+</histogram>
+
+<histogram name="ContentSettings.NumberOfBlockCookiesExceptions">
+  <owner>battre@chromium.org</owner>
+  <summary>
+    The number of user defined cookies setting exceptions for blocking cookies
+    at browser start.
+  </summary>
+</histogram>
+
+<histogram name="ContentSettings.NumberOfExceptions">
+  <owner>battre@chromium.org</owner>
+  <summary>
+    The number of user defined hostname patterns for content settings at browser
+    start.
+  </summary>
+</histogram>
+
+<histogram name="ContentSettings.NumberOfSessionOnlyCookiesExceptions">
+  <owner>battre@chromium.org</owner>
+  <summary>
+    The number of user defined cookies setting exceptions for 'clearing cookies
+    on browser exit' at browser start.
+  </summary>
+</histogram>
+
 <histogram name="ContentSettings.PermissionActions" enum="PermissionAction">
   <obsolete>
     Removed 11/2015 in favor of Permissions.Action.*
