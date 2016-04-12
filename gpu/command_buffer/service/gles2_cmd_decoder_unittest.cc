@@ -1339,6 +1339,7 @@ TEST_P(GLES2DecoderManualInitTest, MemoryTrackerBufferData) {
 TEST_P(GLES2DecoderManualInitTest, ImmutableCopyTexImage2D) {
   const GLenum kTarget = GL_TEXTURE_2D;
   const GLint kLevel = 0;
+  const GLint kLevels = 2;
   const GLenum kInternalFormat = GL_RGBA;
   const GLenum kSizedInternalFormat = GL_RGBA8;
   const GLsizei kWidth = 4;
@@ -1349,8 +1350,9 @@ TEST_P(GLES2DecoderManualInitTest, ImmutableCopyTexImage2D) {
   init.has_alpha = true;
   init.request_alpha = true;
   init.bind_generates_resource = true;
+  init.gl_version = "OpenGL ES 2.0";  // To avoid TexStorage emulation.
   InitDecoder(init);
-  DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
+  DoBindTexture(kTarget, client_texture_id_, kServiceTextureId);
 
   // CopyTexImage2D will call arbitrary amount of GetErrors.
   EXPECT_CALL(*gl_, GetError())
@@ -1364,7 +1366,7 @@ TEST_P(GLES2DecoderManualInitTest, ImmutableCopyTexImage2D) {
 
   EXPECT_CALL(*gl_,
               TexStorage2DEXT(
-                  kTarget, kLevel, kSizedInternalFormat, kWidth, kHeight))
+                  kTarget, kLevels, kSizedInternalFormat, kWidth, kHeight))
       .Times(1);
   CopyTexImage2D copy_cmd;
   copy_cmd.Init(kTarget, kLevel, kInternalFormat, 0, 0, kWidth, kHeight);
@@ -1372,7 +1374,7 @@ TEST_P(GLES2DecoderManualInitTest, ImmutableCopyTexImage2D) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 
   TexStorage2DEXT storage_cmd;
-  storage_cmd.Init(kTarget, kLevel, kSizedInternalFormat, kWidth, kHeight);
+  storage_cmd.Init(kTarget, kLevels, kSizedInternalFormat, kWidth, kHeight);
   EXPECT_EQ(error::kNoError, ExecuteCmd(storage_cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 

@@ -983,6 +983,12 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
 
   void DoCompressedCopyTextureCHROMIUM(GLuint source_id, GLuint dest_id);
 
+  // Helper for DoTexStorage2DEXT and DoTexStorage3D.
+  void TexStorageImpl(
+    GLenum target, GLint levels, GLenum internal_format,
+    GLsizei width, GLsizei height, GLsizei depth,
+    ContextState::Dimension dimension, const char* function_name);
+
   // Wrapper for TexStorage2DEXT.
   void DoTexStorage2DEXT(
       GLenum target,
@@ -14298,26 +14304,65 @@ void GLES2DecoderImpl::DoCompressedCopyTextureCHROMIUM(GLuint source_id,
       false, false);
 }
 
-void GLES2DecoderImpl::DoTexStorage2DEXT(
-    GLenum target,
-    GLint levels,
-    GLenum internal_format,
-    GLsizei width,
-    GLsizei height) {
-  TRACE_EVENT2("gpu", "GLES2DecoderImpl::DoTexStorage2DEXT",
-      "width", width, "height", height);
-  if (!texture_manager()->ValidForTarget(target, 0, width, height, 1) ||
-      TextureManager::ComputeMipMapCount(target, width, height, 1) < levels) {
+void GLES2DecoderImpl::TexStorageImpl(
+    GLenum target, GLint levels, GLenum internal_format,
+    GLsizei width, GLsizei height, GLsizei depth,
+    ContextState::Dimension dimension, const char* function_name) {
+  if (dimension == ContextState::k2D) {
+    if (!validators_->texture_bind_target.IsValid(target)) {
+      LOCAL_SET_GL_ERROR_INVALID_ENUM(function_name, target, "target");
+      return;
+    }
+  } else {
+    if (!validators_->texture_3_d_target.IsValid(target)) {
+      LOCAL_SET_GL_ERROR_INVALID_ENUM(function_name, target, "target");
+      return;
+    }
+  }
+  if (levels <= 0) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, function_name, "levels <= 0");
+    return;
+  }
+  if (!validators_->texture_internal_format_storage.IsValid(internal_format)) {
+    LOCAL_SET_GL_ERROR_INVALID_ENUM(
+        function_name, internal_format, "internal_format");
+    return;
+  }
+  bool is_compressed_format;
+  switch (internal_format) {
+    case GL_COMPRESSED_R11_EAC:
+    case GL_COMPRESSED_SIGNED_R11_EAC:
+    case GL_COMPRESSED_RG11_EAC:
+    case GL_COMPRESSED_SIGNED_RG11_EAC:
+    case GL_COMPRESSED_RGB8_ETC2:
+    case GL_COMPRESSED_SRGB8_ETC2:
+    case GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2:
+    case GL_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2:
+    case GL_COMPRESSED_RGBA8_ETC2_EAC:
+    case GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC:
+      is_compressed_format = true;
+      if (target == GL_TEXTURE_3D) {
+        LOCAL_SET_GL_ERROR(
+            GL_INVALID_OPERATION, function_name, "target invalid for format");
+        return;
+      }
+      break;
+    default:
+      is_compressed_format = false;
+      break;
+  }
+  if (!texture_manager()->ValidForTarget(target, 0, width, height, depth) ||
+      TextureManager::ComputeMipMapCount(
+          target, width, height, depth) < levels) {
     LOCAL_SET_GL_ERROR(
-        GL_INVALID_VALUE, "glTexStorage2DEXT", "dimensions out of range");
+        GL_INVALID_VALUE, function_name, "dimensions out of range");
     return;
   }
   TextureRef* texture_ref = texture_manager()->GetTextureInfoForTarget(
       &state_, target);
   if (!texture_ref) {
     LOCAL_SET_GL_ERROR(
-        GL_INVALID_OPERATION,
-        "glTexStorage2DEXT", "unknown texture for target");
+        GL_INVALID_OPERATION, function_name, "unknown texture for target");
     return;
   }
   Texture* texture = texture_ref->texture();
@@ -14326,8 +14371,7 @@ void GLES2DecoderImpl::DoTexStorage2DEXT(
   }
   if (texture->IsImmutable()) {
     LOCAL_SET_GL_ERROR(
-        GL_INVALID_OPERATION,
-        "glTexStorage2DEXT", "texture is immutable");
+        GL_INVALID_OPERATION, function_name, "texture is immutable");
     return;
   }
 
@@ -14335,57 +14379,100 @@ void GLES2DecoderImpl::DoTexStorage2DEXT(
       internal_format);
   GLenum type = TextureManager::ExtractTypeFromStorageFormat(internal_format);
 
+  std::vector<int32_t> level_size(levels);
   {
     GLsizei level_width = width;
     GLsizei level_height = height;
-    uint32_t estimated_size = 0;
+    GLsizei level_depth = depth;
+    base::CheckedNumeric<uint32_t> estimated_size(0);
+    PixelStoreParams params;
+    params.alignment = 1;
     for (int ii = 0; ii < levels; ++ii) {
-      uint32_t level_size = 0;
-      if (!GLES2Util::ComputeImageDataSizes(
-          level_width, level_height, 1, format, type, state_.unpack_alignment,
-          &estimated_size, NULL, NULL) ||
-          !SafeAddUint32(estimated_size, level_size, &estimated_size)) {
-        LOCAL_SET_GL_ERROR(
-            GL_OUT_OF_MEMORY, "glTexStorage2DEXT", "dimensions too large");
-        return;
+      uint32_t size;
+      if (is_compressed_format) {
+        if (!GetCompressedTexSizeInBytes(function_name,
+                                         level_width, level_height, level_depth,
+                                         internal_format, &level_size[ii])) {
+          // GetCompressedTexSizeInBytes() already generates a GL error.
+          return;
+        }
+        size = static_cast<uint32_t>(level_size[ii]);
+      } else {
+        if (!GLES2Util::ComputeImageDataSizesES3(level_width,
+                                                 level_height,
+                                                 level_depth,
+                                                 format, type,
+                                                 params,
+                                                 &size,
+                                                 nullptr, nullptr,
+                                                 nullptr, nullptr)) {
+          LOCAL_SET_GL_ERROR(
+              GL_OUT_OF_MEMORY, function_name, "dimensions too large");
+          return;
+        }
       }
+      estimated_size += size;
       level_width = std::max(1, level_width >> 1);
       level_height = std::max(1, level_height >> 1);
+      if (target == GL_TEXTURE_3D)
+        level_depth = std::max(1, level_depth >> 1);
     }
-    if (!EnsureGPUMemoryAvailable(estimated_size)) {
-      LOCAL_SET_GL_ERROR(
-          GL_OUT_OF_MEMORY, "glTexStorage2DEXT", "out of memory");
+    if (!estimated_size.IsValid() ||
+        !EnsureGPUMemoryAvailable(estimated_size.ValueOrDefault(0))) {
+      LOCAL_SET_GL_ERROR(GL_OUT_OF_MEMORY, function_name, "out of memory");
       return;
     }
   }
 
-  LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER("glTexStorage2DEXT");
-  glTexStorage2DEXT(target, levels, internal_format, width, height);
-  GLenum error = LOCAL_PEEK_GL_ERROR("glTexStorage2DEXT");
-  if (error == GL_NO_ERROR) {
+  // TODO(zmo): We might need to emulate TexStorage using TexImage or
+  // CompressedTexImage on Mac OSX where we expose ES3 APIs when the underlying
+  // driver is lower than 4.2 and ARB_texture_storage extension doesn't exist.
+  if (dimension == ContextState::k2D) {
+    glTexStorage2DEXT(target, levels, internal_format, width, height);
+  } else {
+    glTexStorage3D(target, levels, internal_format, width, height, depth);
+  }
+
+  {
     GLsizei level_width = width;
     GLsizei level_height = height;
-
-    GLenum cur_format = feature_info_->IsES3Enabled() ?
-                        internal_format : format;
+    GLsizei level_depth = depth;
+    GLenum adjusted_format =
+        feature_info_->IsES3Enabled() ? internal_format : format;
     for (int ii = 0; ii < levels; ++ii) {
       if (target == GL_TEXTURE_CUBE_MAP) {
         for (int jj = 0; jj < 6; ++jj) {
           GLenum face = GL_TEXTURE_CUBE_MAP_POSITIVE_X + jj;
-          texture_manager()->SetLevelInfo(texture_ref, face, ii, cur_format,
-                                          level_width, level_height, 1, 0,
-                                          format, type, gfx::Rect());
+          texture_manager()->SetLevelInfo(texture_ref, face, ii,
+                                          adjusted_format,
+                                          level_width, level_height, 1,
+                                          0, format, type, gfx::Rect());
         }
       } else {
-        texture_manager()->SetLevelInfo(texture_ref, target, ii, cur_format,
-                                        level_width, level_height, 1, 0,
-                                        format, type, gfx::Rect());
+        texture_manager()->SetLevelInfo(texture_ref, target, ii,
+                                        adjusted_format,
+                                        level_width, level_height, level_depth,
+                                        0, format, type, gfx::Rect());
       }
       level_width = std::max(1, level_width >> 1);
       level_height = std::max(1, level_height >> 1);
+      if (target == GL_TEXTURE_3D)
+        level_depth = std::max(1, level_depth >> 1);
     }
     texture->SetImmutable(true);
   }
+}
+
+void GLES2DecoderImpl::DoTexStorage2DEXT(
+    GLenum target,
+    GLint levels,
+    GLenum internal_format,
+    GLsizei width,
+    GLsizei height) {
+  TRACE_EVENT2("gpu", "GLES2DecoderImpl::DoTexStorage2D",
+      "width", width, "height", height);
+  TexStorageImpl(target, levels, internal_format, width, height, 1,
+                 ContextState::k2D, "glTexStorage2D");
 }
 
 void GLES2DecoderImpl::DoTexStorage3D(
@@ -14397,109 +14484,8 @@ void GLES2DecoderImpl::DoTexStorage3D(
     GLsizei depth) {
   TRACE_EVENT2("gpu", "GLES2DecoderImpl::DoTexStorage3D",
       "widthXheight", width * height, "depth", depth);
-  if (!validators_->texture_3_d_target.IsValid(target)) {
-    LOCAL_SET_GL_ERROR_INVALID_ENUM("glTexStorage3D", target, "target");
-    return;
-  }
-  if (levels <= 0) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glTexStorage3D", "levels <= 0");
-    return;
-  }
-  if (!validators_->texture_internal_format_storage.IsValid(internal_format)) {
-    LOCAL_SET_GL_ERROR_INVALID_ENUM("glTexStorage3D", internal_format,
-                                    "internal_format");
-    return;
-  }
-  if (width <= 0) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glTexStorage3D", "width <= 0");
-    return;
-  }
-  if (height <= 0) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glTexStorage3D", "height <= 0");
-    return;
-  }
-  if (depth <= 0) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glTexStorage3D", "depth <= 0");
-    return;
-  }
-  if (!texture_manager()->ValidForTarget(target, 0, width, height, depth) ||
-      TextureManager::ComputeMipMapCount(
-          target, width, height, depth) < levels) {
-    LOCAL_SET_GL_ERROR(
-        GL_INVALID_VALUE, "glTexStorage3D", "dimensions out of range");
-    return;
-  }
-  TextureRef* texture_ref = texture_manager()->GetTextureInfoForTarget(
-      &state_, target);
-  if (!texture_ref) {
-    LOCAL_SET_GL_ERROR(
-        GL_INVALID_OPERATION,
-        "glTexStorage3D", "unknown texture for target");
-    return;
-  }
-  Texture* texture = texture_ref->texture();
-  if (texture->IsAttachedToFramebuffer()) {
-    framebuffer_state_.clear_state_dirty = true;
-  }
-  if (texture->IsImmutable()) {
-    LOCAL_SET_GL_ERROR(
-        GL_INVALID_OPERATION, "glTexStorage3D", "texture is immutable");
-    return;
-  }
-
-  GLenum format = TextureManager::ExtractFormatFromStorageFormat(
-      internal_format);
-  GLenum type = TextureManager::ExtractTypeFromStorageFormat(internal_format);
-
-  {
-    GLsizei level_width = width;
-    GLsizei level_height = height;
-    GLsizei level_depth = depth;
-    uint32_t estimated_size = 0;
-    for (int ii = 0; ii < levels; ++ii) {
-      uint32_t level_size = 0;
-      if (!GLES2Util::ComputeImageDataSizes(
-          level_width, level_height, level_depth, format, type,
-          state_.unpack_alignment,
-          &estimated_size, NULL, NULL) ||
-          !SafeAddUint32(estimated_size, level_size, &estimated_size)) {
-        LOCAL_SET_GL_ERROR(
-            GL_OUT_OF_MEMORY, "glTexStorage3D", "dimensions too large");
-        return;
-      }
-      level_width = std::max(1, level_width >> 1);
-      level_height = std::max(1, level_height >> 1);
-      if (target == GL_TEXTURE_3D)
-        level_depth = std::max(1, level_depth >> 1);
-    }
-    if (!EnsureGPUMemoryAvailable(estimated_size)) {
-      LOCAL_SET_GL_ERROR(
-          GL_OUT_OF_MEMORY, "glTexStorage3D", "out of memory");
-      return;
-    }
-  }
-
-  LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER("glTexStorage3D");
-  glTexStorage3D(target, levels, internal_format, width, height, depth);
-  GLenum error = LOCAL_PEEK_GL_ERROR("glTexStorage3D");
-  if (error == GL_NO_ERROR) {
-    GLsizei level_width = width;
-    GLsizei level_height = height;
-    GLsizei level_depth = depth;
-
-    GLenum cur_format = feature_info_->IsES3Enabled() ?
-                        internal_format : format;
-    for (int ii = 0; ii < levels; ++ii) {
-      texture_manager()->SetLevelInfo(texture_ref, target, ii, cur_format,
-                                      level_width, level_height, level_depth, 0,
-                                      format, type, gfx::Rect());
-      level_width = std::max(1, level_width >> 1);
-      level_height = std::max(1, level_height >> 1);
-      if (target == GL_TEXTURE_3D)
-        level_depth = std::max(1, level_depth >> 1);
-    }
-    texture->SetImmutable(true);
-  }
+  TexStorageImpl(target, levels, internal_format, width, height, depth,
+                 ContextState::k3D, "glTexStorage3D");
 }
 
 error::Error GLES2DecoderImpl::HandleGenMailboxCHROMIUM(

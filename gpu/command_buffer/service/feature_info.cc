@@ -1034,7 +1034,7 @@ void FeatureInfo::InitializeFeatures() {
       (extensions.Contains("GL_EXT_texture_storage") ||
        extensions.Contains("GL_ARB_texture_storage") ||
        support_texture_storage_on_es3 ||
-       gl_version_info_->is_desktop_core_profile)) {
+       gl_version_info_->IsAtLeastGL(4, 2))) {
     feature_flags_.ext_texture_storage = true;
     AddExtensionString("GL_EXT_texture_storage");
     validators_.texture_parameter.AddValue(GL_TEXTURE_IMMUTABLE_FORMAT_EXT);

@@ -321,15 +321,11 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mavericks'], bug=483282)
     self.Fail('deqp/functional/gles3/rbostatequery.html',
         ['mac'], bug=569808)
-    self.Fail('deqp/functional/gles3/fbostatequery.html',
-        ['mac'], bug=483282)
     self.Fail('deqp/functional/gles3/negativeshaderapi.html',
         ['mac'], bug=483282)
     self.Fail('conformance2/buffers/buffer-overflow-test.html',
         ['mac'], bug=483282)
     self.Fail('conformance2/buffers/buffer-type-restrictions.html',
-        ['mac'], bug=483282)
-    self.Fail('conformance2/misc/uninitialized-test-2.html',
         ['mac'], bug=483282)
     self.Fail('conformance2/reading/read-pixels-from-fbo-test.html',
         ['mac'], bug=483282)
@@ -340,6 +336,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac'], bug=565438)
     self.Fail('conformance2/textures/misc/gl-get-tex-parameter.html',
         ['mac'], bug=483282)
+    self.Fail('conformance2/textures/misc/tex-new-formats.html',
+        ['mac'], bug=483282)
     self.Fail('conformance2/textures/misc/tex-storage-compressed-formats.html',
         ['mac'], bug=295792)
     self.Fail('conformance2/renderbuffers/invalidate-framebuffer.html',
@@ -348,8 +346,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac'], bug=483282)
     self.Fail('conformance2/renderbuffers/readbuffer.html',
         ['mac'], bug=570453)
-    self.Fail('conformance2/textures/misc/tex-storage-and-subimage-3d.html',
-        ['mac'], bug=483282)
     self.Fail('conformance2/state/gl-object-get-calls.html',
         ['mac'], bug=483282)
 
