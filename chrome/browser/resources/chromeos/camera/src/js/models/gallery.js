@@ -185,7 +185,7 @@ camera.models.Gallery.prototype.initialize_ = function(onSuccess, onFailure) {
       function() {
         // TODO(mtomasz): Add error handling.
         console.error('Unable to initialize the file system.');
-        callback();
+        onFailure();
       });
 };
 
