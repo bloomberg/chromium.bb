@@ -15,7 +15,6 @@
 #include <ostream>
 #include <string>
 
-#include "gtest/gtest-message.h"
 #include "gtest/gtest.h"
 
 #include "common/file_util.h"
