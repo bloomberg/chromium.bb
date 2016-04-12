@@ -172,6 +172,32 @@
             "group_name": "Enabled"
         }
     ],
+    "SafeBrowsingIncidentReportingService": [
+        {
+            "enable_features": [
+                "IncidentReportingDisableUpload"
+            ],
+            "group_name": "Enabled",
+            "params": {
+                "collect_reg_data": "true"
+            }
+        },
+        {
+            "group_name": "Default"
+        }
+    ],
+    "SafeBrowsingIncidentReportingServiceFeatures": [
+        {
+            "enable_features": [
+                "IncidentReportingModuleLoadAnalysis",
+                "IncidentReportingSuspiciousModuleReporting"
+            ],
+            "group_name": "WithSuspiciousModuleReporting"
+        },
+        {
+            "group_name": "Default"
+        }
+    ],
     "SafeBrowsingReportPhishingErrorLink": [
         {
             "group_name": "Enabled"
