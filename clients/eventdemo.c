@@ -35,6 +35,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 #include <cairo.h>
 
@@ -93,6 +94,8 @@ struct eventdemo {
 	struct display *display;
 
 	int x, y, w, h;
+
+	bool print_pointer_frame;
 };
 
 /**
@@ -223,10 +226,13 @@ static void
 button_handler(struct widget *widget, struct input *input, uint32_t time,
 	       uint32_t button, enum wl_pointer_button_state state, void *data)
 {
+	struct eventdemo *e = data;
 	int32_t x, y;
 
 	if (!log_button)
 		return;
+
+	e->print_pointer_frame = true;
 
 	input_get_position(input, &x, &y);
 	printf("button time: %d, button: %d, state: %s, x: %d, y: %d\n",
@@ -249,8 +255,12 @@ static void
 axis_handler(struct widget *widget, struct input *input, uint32_t time,
 	     uint32_t axis, wl_fixed_t value, void *data)
 {
+	struct eventdemo *e = data;
+
 	if (!log_axis)
 		return;
+
+	e->print_pointer_frame = true;
 
 	printf("axis time: %d, axis: %s, value: %f\n",
 	       time,
@@ -262,7 +272,13 @@ axis_handler(struct widget *widget, struct input *input, uint32_t time,
 static void
 pointer_frame_handler(struct widget *widget, struct input *input, void *data)
 {
+	struct eventdemo *e = data;
+
+	if (!e->print_pointer_frame)
+		return;
+
 	printf("pointer frame\n");
+	e->print_pointer_frame = false;
 }
 
 static void
@@ -270,6 +286,9 @@ axis_source_handler(struct widget *widget, struct input *input,
 		    uint32_t source, void *data)
 {
 	const char *axis_source;
+	struct eventdemo *e = data;
+
+	e->print_pointer_frame = true;
 
 	switch (source) {
 	case WL_POINTER_AXIS_SOURCE_WHEEL:
@@ -294,6 +313,9 @@ axis_stop_handler(struct widget *widget, struct input *input,
 		  uint32_t time, uint32_t axis,
 		  void *data)
 {
+	struct eventdemo *e = data;
+
+	e->print_pointer_frame = true;
 	printf("axis stop time: %d, axis: %s\n",
 	       time,
 	       axis == WL_POINTER_AXIS_VERTICAL_SCROLL ? "vertical" :
@@ -304,6 +326,9 @@ static void
 axis_discrete_handler(struct widget *widget, struct input *input,
 		      uint32_t axis, int32_t discrete, void *data)
 {
+	struct eventdemo *e = data;
+
+	e->print_pointer_frame = true;
 	printf("axis discrete axis: %d value: %d\n", axis, discrete);
 }
 
@@ -328,6 +353,7 @@ motion_handler(struct widget *widget, struct input *input, uint32_t time,
 
 	if (log_motion) {
 		printf("motion time: %d, x: %f, y: %f\n", time, x, y);
+		e->print_pointer_frame = true;
 	}
 
 	if (x > e->x && x < e->x + e->w)
