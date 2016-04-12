@@ -246,6 +246,7 @@ ScopedMessagePipeHandle Core::CreateMessagePipe(
 
 ScopedMessagePipeHandle Core::CreateParentMessagePipe(
     const std::string& token) {
+  RequestContext request_context;
   ports::PortRef port0, port1;
   GetNodeController()->node()->CreatePortPair(&port0, &port1);
   MojoHandle handle = AddDispatcher(
@@ -256,6 +257,7 @@ ScopedMessagePipeHandle Core::CreateParentMessagePipe(
 }
 
 ScopedMessagePipeHandle Core::CreateChildMessagePipe(const std::string& token) {
+  RequestContext request_context;
   ports::PortRef port0, port1;
   GetNodeController()->node()->CreatePortPair(&port0, &port1);
   MojoHandle handle = AddDispatcher(
