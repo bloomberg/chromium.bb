@@ -13,6 +13,7 @@
 #include "base/command_line.h"
 #include "base/i18n/case_conversion.h"
 #include "base/location.h"
+#include "base/metrics/field_trial.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -75,6 +76,29 @@ using blink::WebVector;
 namespace autofill {
 
 namespace {
+
+// Whether the "single click" autofill feature is enabled, through command-line
+// or field trial.
+bool IsSingleClickEnabled() {
+// On Android, default to showing the dropdown on field focus.
+// On desktop, require an extra click after field focus by default, unless the
+// experiment is active.
+#if defined(OS_ANDROID)
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableSingleClickAutofill);
+#endif
+  const std::string group_name =
+      base::FieldTrialList::FindFullName("AutofillSingleClick");
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableSingleClickAutofill))
+    return true;
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableSingleClickAutofill))
+    return false;
+
+  return base::StartsWith(group_name, "Enabled", base::CompareCase::SENSITIVE);
+}
 
 // Gets all the data list values (with corresponding label) for the given
 // element.
@@ -371,20 +395,7 @@ void AutofillAgent::FormControlElementClicked(
   options.autofill_on_empty_values = true;
   options.show_full_suggestion_list = element.isAutofilled();
 
-  // On Android, default to showing the dropdown on field focus.
-  // On desktop, require an extra click after field focus.
-  // See http://crbug.com/427660
-#if defined(OS_ANDROID)
-  bool single_click_autofill =
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableSingleClickAutofill);
-#else
-  bool single_click_autofill =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableSingleClickAutofill);
-#endif
-
-  if (!single_click_autofill) {
+  if (!IsSingleClickEnabled()) {
     // Show full suggestions when clicking on an already-focused form field. On
     // the initial click (not focused yet), only show password suggestions.
     options.show_full_suggestion_list =
