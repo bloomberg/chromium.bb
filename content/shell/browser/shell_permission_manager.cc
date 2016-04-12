@@ -12,6 +12,15 @@
 
 namespace content {
 
+namespace {
+
+bool IsWhitelistedPermissionType(PermissionType permission) {
+  return permission == PermissionType::GEOLOCATION ||
+         permission == PermissionType::MIDI;
+}
+
+}  // namespace
+
 ShellPermissionManager::ShellPermissionManager()
     : PermissionManager() {
 }
@@ -24,7 +33,7 @@ int ShellPermissionManager::RequestPermission(
     RenderFrameHost* render_frame_host,
     const GURL& requesting_origin,
     const base::Callback<void(blink::mojom::PermissionStatus)>& callback) {
-  callback.Run(permission == PermissionType::GEOLOCATION
+  callback.Run(IsWhitelistedPermissionType(permission)
                    ? blink::mojom::PermissionStatus::GRANTED
                    : blink::mojom::PermissionStatus::DENIED);
   return kNoPendingOperation;
@@ -38,7 +47,7 @@ int ShellPermissionManager::RequestPermissions(
         void(const std::vector<blink::mojom::PermissionStatus>&)>& callback) {
   std::vector<blink::mojom::PermissionStatus> result(permissions.size());
   for (const auto& permission : permissions) {
-    result.push_back(permission == PermissionType::GEOLOCATION
+    result.push_back(IsWhitelistedPermissionType(permission)
                          ? blink::mojom::PermissionStatus::GRANTED
                          : blink::mojom::PermissionStatus::DENIED);
   }
