@@ -24,6 +24,14 @@ cr.define('settings', function() {
      */
     addStartupPage: assertNotReached,
 
+    /**
+     * @param {number} modelIndex
+     * @param {string} url
+     * @return {!Promise<boolean>} Whether the URL was actually edited, or
+     *     ignored because it was invalid.
+     */
+    editStartupPage: assertNotReached,
+
     /** @param {number} index */
     removeStartupPage: assertNotReached,
   };
@@ -55,6 +63,11 @@ cr.define('settings', function() {
     /** @override */
     addStartupPage: function(url) {
       return cr.sendWithPromise('addStartupPage', url);
+    },
+
+    /** @override */
+    editStartupPage: function(modelIndex, url) {
+      return cr.sendWithPromise('editStartupPage', modelIndex, url);
     },
 
     /** @override */

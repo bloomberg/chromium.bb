@@ -30,6 +30,9 @@ void StartupPagesHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("addStartupPage",
       base::Bind(&StartupPagesHandler::HandleAddStartupPage,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("editStartupPage",
+      base::Bind(&StartupPagesHandler::HandleEditStartupPage,
+                 base::Unretained(this)));
   web_ui()->RegisterMessageCallback("onStartupPrefsPageLoad",
       base::Bind(&StartupPagesHandler::HandleOnStartupPrefsPageLoad,
                  base::Unretained(this)));
@@ -103,6 +106,34 @@ void StartupPagesHandler::HandleAddStartupPage(const base::ListValue* args) {
   startup_custom_pages_table_model_.Add(index, url);
   SaveStartupPagesPref();
   ResolveJavascriptCallback(*callback_id, base::FundamentalValue(true));
+}
+
+void StartupPagesHandler::HandleEditStartupPage(const base::ListValue* args) {
+  CHECK_EQ(args->GetSize(), 3U);
+  const base::Value* callback_id;
+  CHECK(args->Get(0, &callback_id));
+  int index;
+  CHECK(args->GetInteger(1, &index));
+
+  if (index < 0 || index > startup_custom_pages_table_model_.RowCount()) {
+    RejectJavascriptCallback(*callback_id, *base::Value::CreateNullValue());
+    NOTREACHED();
+    return;
+  }
+
+  std::string url_string;
+  CHECK(args->GetString(2, &url_string));
+
+  GURL fixed_url;
+  if (settings_utils::FixupAndValidateStartupPage(url_string, &fixed_url)) {
+    std::vector<GURL> urls = startup_custom_pages_table_model_.GetURLs();
+    urls[index] = fixed_url;
+    startup_custom_pages_table_model_.SetURLs(urls);
+    SaveStartupPagesPref();
+    ResolveJavascriptCallback(*callback_id, base::FundamentalValue(true));
+  } else {
+    ResolveJavascriptCallback(*callback_id, base::FundamentalValue(false));
+  }
 }
 
 void StartupPagesHandler::HandleOnStartupPrefsPageLoad(

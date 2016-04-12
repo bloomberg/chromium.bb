@@ -3,18 +3,19 @@
 // found in the LICENSE file.
 
 /**
+ * @fileoverview 'settings-startup-urls-page' is the settings page
+ * containing the urls that will be opened when chrome is started.
+ */
+
+/**
  * @typedef {{
- *   'title': string,
- *   'tooltip': string,
- *   'url': string
+ *   title: string,
+ *   tooltip: string,
+ *   url: string
  * }}
  */
 var StartupPageInfo;
 
-/**
- * @fileoverview 'settings-startup-urls-page' is the settings page
- * containing the urls that will be opened when chrome is started.
- */
 Polymer({
   is: 'settings-startup-urls-page',
 
