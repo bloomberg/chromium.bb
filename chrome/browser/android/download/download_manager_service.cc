@@ -154,9 +154,10 @@ void DownloadManagerService::PauseDownloadInternal(
   if (!manager)
     return;
   content::DownloadItem* item = manager->GetDownloadByGuid(download_guid);
-  if (item)
+  if (item) {
     item->Pause();
-  item->RemoveObserver(content::DownloadControllerAndroid::Get());
+    item->RemoveObserver(content::DownloadControllerAndroid::Get());
+  }
 }
 
 void DownloadManagerService::EnqueueDownloadAction(
