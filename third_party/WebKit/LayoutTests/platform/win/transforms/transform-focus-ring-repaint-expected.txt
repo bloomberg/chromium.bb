@@ -12,14 +12,22 @@
           "drawsContent": true,
           "backfaceVisibility": "hidden",
           "backgroundColor": "#FFFF00",
-          "repaintRects": [
-            [1, 1, 200, 200],
-            [0, 0, 402, 542],
-            [0, 0, 200, 200]
-          ],
-          "paintInvalidationClients": [
-            "##ALL##",
-            "LayoutBlockFlow (positioned) DIV id='target'"
+          "paintInvalidations": [
+            {
+              "object": "LayoutBlockFlow (positioned) DIV id='target'",
+              "rect": [0, 0, 200, 200],
+              "reason": "full"
+            },
+            {
+              "object": "LayoutBlockFlow (positioned) DIV id='target'",
+              "rect": [1, 1, 200, 200],
+              "reason": "style change"
+            },
+            {
+              "object": "LayoutBlockFlow (positioned) DIV id='target'",
+              "rect": [0, 0, 402, 542],
+              "reason": "style change"
+            }
           ]
         },
         {

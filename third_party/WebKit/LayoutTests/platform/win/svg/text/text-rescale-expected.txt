@@ -5,118 +5,412 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [310, 114, 92, 45],
-        [310, 114, 92, 45],
-        [310, 114, 92, 45],
-        [310, 64, 92, 45],
-        [310, 14, 92, 45],
-        [310, 14, 92, 45],
-        [310, 14, 92, 45],
-        [210, 114, 92, 45],
-        [210, 113, 100, 87],
-        [210, 113, 100, 47],
-        [210, 14, 92, 45],
-        [210, 13, 100, 100],
-        [210, 13, 100, 47],
-        [9, 3, 5, 2],
-        [9, 3, 5, 2],
-        [9, 3, 5, 2],
-        [6, 3, 4, 4],
-        [6, 3, 4, 2],
-        [6, 3, 4, 2],
-        [0, 114, 194, 45],
-        [0, 114, 194, 45],
-        [0, 114, 194, 45],
-        [0, 114, 194, 45],
-        [0, 114, 194, 45],
-        [0, 113, 402, 87],
-        [0, 64, 194, 45],
-        [0, 63, 402, 100],
-        [0, 14, 194, 45],
-        [0, 14, 194, 45],
-        [0, 14, 194, 45],
-        [0, 14, 194, 45],
-        [0, 14, 194, 45],
-        [0, 13, 402, 187],
-        [0, 13, 402, 100],
-        [0, 3, 14, 4],
-        [0, 3, 7, 2],
-        [0, 3, 7, 2],
-        [0, 3, 7, 2],
-        [0, 3, 7, 2],
-        [0, 3, 7, 2],
-        [0, 0, 402, 163],
-        [0, 0, 1, 1],
-        [0, 0, 1, 1],
-        [0, 0, 1, 1],
-        [0, 0, 1, 1]
-      ],
-      "paintInvalidationClients": [
-        "RootInlineBox",
-        "InlineTextBox 'PASS '",
-        "InlineFlowBox",
-        "InlineTextBox 'PASS'",
-        "RootInlineBox",
-        "InlineTextBox 'PASS'",
-        "RootInlineBox",
-        "InlineTextBox 'PASS '",
-        "InlineFlowBox",
-        "InlineTextBox 'PASS'",
-        "RootInlineBox",
-        "InlineTextBox 'PASS'",
-        "RootInlineBox",
-        "InlineTextBox 'PASS '",
-        "InlineFlowBox",
-        "InlineTextBox 'PASS'",
-        "RootInlineBox",
-        "InlineTextBox 'PASS'",
-        "LayoutSVGRoot (positioned) svg",
-        "LayoutSVGContainer g id='text1g'",
-        "LayoutSVGText text",
-        "RootInlineBox",
-        "LayoutSVGInlineText #text",
-        "InlineTextBox 'PASS '",
-        "LayoutSVGTSpan tspan",
-        "InlineFlowBox",
-        "LayoutSVGInlineText #text",
-        "InlineTextBox 'PASS'",
-        "LayoutSVGInlineText #text",
-        "LayoutSVGForeignObject foreignObject",
-        "LayoutBlockFlow P",
-        "RootInlineBox",
-        "LayoutText #text",
-        "InlineTextBox 'PASS'",
-        "LayoutSVGViewportContainer svg",
-        "LayoutSVGText text",
-        "RootInlineBox",
-        "LayoutSVGInlineText #text",
-        "InlineTextBox 'PASS'",
-        "LayoutSVGContainer g id='text2g'",
-        "LayoutSVGText text",
-        "RootInlineBox",
-        "LayoutSVGText text",
-        "RootInlineBox",
-        "LayoutSVGContainer g id='text3g'",
-        "LayoutSVGText text",
-        "RootInlineBox",
-        "LayoutSVGInlineText #text",
-        "InlineTextBox 'PASS '",
-        "LayoutSVGTSpan tspan",
-        "InlineFlowBox",
-        "LayoutSVGInlineText #text",
-        "InlineTextBox 'PASS'",
-        "LayoutSVGInlineText #text",
-        "LayoutSVGForeignObject foreignObject",
-        "LayoutBlockFlow P",
-        "RootInlineBox",
-        "LayoutText #text",
-        "InlineTextBox 'PASS'",
-        "LayoutSVGViewportContainer svg",
-        "LayoutSVGText text",
-        "RootInlineBox",
-        "LayoutSVGInlineText #text",
-        "InlineTextBox 'PASS'"
+      "paintInvalidations": [
+        {
+          "object": "InlineFlowBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineFlowBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineFlowBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineFlowBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "bounds change"
+        },
+        {
+          "object": "InlineFlowBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "bounds change"
+        },
+        {
+          "object": "InlineTextBox 'PASS '",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'PASS '",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'PASS '",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'PASS '",
+          "rect": [0, 0, 0, 0],
+          "reason": "bounds change"
+        },
+        {
+          "object": "InlineTextBox 'PASS '",
+          "rect": [0, 0, 0, 0],
+          "reason": "bounds change"
+        },
+        {
+          "object": "InlineTextBox 'PASS'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'PASS'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'PASS'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'PASS'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'PASS'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'PASS'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'PASS'",
+          "rect": [0, 0, 0, 0],
+          "reason": "bounds change"
+        },
+        {
+          "object": "InlineTextBox 'PASS'",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'PASS'",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'PASS'",
+          "rect": [0, 0, 0, 0],
+          "reason": "bounds change"
+        },
+        {
+          "object": "InlineTextBox 'PASS'",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'PASS'",
+          "rect": [0, 0, 0, 0],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow P",
+          "rect": [0, 0, 1, 1],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow P",
+          "rect": [210, 13, 100, 47],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow P",
+          "rect": [6, 3, 4, 2],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutBlockFlow P",
+          "rect": [210, 113, 100, 47],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGContainer g id='text1g'",
+          "rect": [0, 0, 1, 1],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGContainer g id='text1g'",
+          "rect": [0, 13, 402, 100],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGContainer g id='text2g'",
+          "rect": [0, 63, 402, 100],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGContainer g id='text3g'",
+          "rect": [0, 3, 14, 4],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGContainer g id='text3g'",
+          "rect": [0, 113, 402, 87],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGForeignObject foreignObject",
+          "rect": [0, 0, 1, 1],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGForeignObject foreignObject",
+          "rect": [210, 13, 100, 100],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGForeignObject foreignObject",
+          "rect": [6, 3, 4, 4],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGForeignObject foreignObject",
+          "rect": [210, 113, 100, 87],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [0, 14, 194, 45],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [0, 14, 194, 45],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [0, 14, 194, 45],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [310, 14, 92, 45],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [0, 3, 7, 2],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [0, 114, 194, 45],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [0, 3, 7, 2],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [0, 114, 194, 45],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [0, 3, 7, 2],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [0, 114, 194, 45],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [9, 3, 5, 2],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [310, 114, 92, 45],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGRoot (positioned) svg",
+          "rect": [0, 0, 402, 163],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGRoot (positioned) svg",
+          "rect": [0, 13, 402, 187],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [0, 14, 194, 45],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [0, 3, 7, 2],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [0, 114, 194, 45],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [0, 14, 194, 45],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [310, 14, 92, 45],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [0, 64, 194, 45],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [310, 64, 92, 45],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [0, 3, 7, 2],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [0, 114, 194, 45],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [9, 3, 5, 2],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [310, 114, 92, 45],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGViewportContainer svg",
+          "rect": [310, 14, 92, 45],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGViewportContainer svg",
+          "rect": [9, 3, 5, 2],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGViewportContainer svg",
+          "rect": [310, 114, 92, 45],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [0, 0, 1, 1],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [210, 14, 92, 45],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [6, 3, 4, 2],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [210, 114, 92, 45],
+          "reason": "location change"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        }
       ]
     }
   ]

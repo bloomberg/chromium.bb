@@ -1,0 +1,20 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [7, 5, 786, 590],
+        [7, 5, 786, 590]
+      ],
+      "paintInvalidationClients": [
+        "LayoutSVGRoot svg",
+        "LayoutSVGRect rect",
+        "LayoutSVGHiddenContainer defs"
+      ]
+    }
+  ]
+}
+

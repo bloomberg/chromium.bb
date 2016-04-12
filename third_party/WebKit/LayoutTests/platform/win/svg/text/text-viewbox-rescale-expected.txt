@@ -5,44 +5,132 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [59, 143, 95, 23],
-        [59, 143, 95, 23],
-        [59, 143, 95, 23],
-        [59, 143, 95, 23],
-        [59, 43, 95, 123],
-        [59, 43, 95, 23],
-        [59, 43, 95, 23],
-        [59, 43, 95, 23],
-        [59, 43, 95, 23],
-        [59, 43, 95, 23],
-        [59, 43, 95, 23]
-      ],
-      "paintInvalidationClients": [
-        "RootInlineBox",
-        "InlineTextBox 'PASS '",
-        "InlineFlowBox",
-        "InlineTextBox 'PASS'",
-        "RootInlineBox",
-        "InlineTextBox 'PASS '",
-        "InlineFlowBox",
-        "InlineTextBox 'PASS'",
-        "LayoutSVGRoot (positioned) svg",
-        "LayoutSVGViewportContainer svg id='inner1'",
-        "LayoutSVGText text",
-        "RootInlineBox",
-        "LayoutSVGInlineText #text",
-        "InlineTextBox 'PASS '",
-        "LayoutSVGTSpan tspan",
-        "InlineFlowBox",
-        "LayoutSVGInlineText #text",
-        "InlineTextBox 'PASS'",
-        "LayoutSVGInlineText #text",
-        "LayoutSVGViewportContainer svg id='inner2'",
-        "LayoutSVGText text",
-        "RootInlineBox",
-        "LayoutSVGTSpan tspan",
-        "InlineFlowBox"
+      "paintInvalidations": [
+        {
+          "object": "InlineFlowBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineFlowBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineFlowBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineFlowBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'PASS '",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'PASS '",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'PASS '",
+          "rect": [0, 0, 0, 0],
+          "reason": "bounds change"
+        },
+        {
+          "object": "InlineTextBox 'PASS'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'PASS'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'PASS'",
+          "rect": [0, 0, 0, 0],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [59, 43, 95, 23],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [59, 43, 95, 23],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [59, 43, 95, 23],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGRoot (positioned) svg",
+          "rect": [59, 143, 95, 23],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGRoot (positioned) svg",
+          "rect": [59, 43, 95, 123],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [59, 43, 95, 23],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [59, 143, 95, 23],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [59, 43, 95, 23],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [59, 143, 95, 23],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGViewportContainer svg id='inner1'",
+          "rect": [59, 43, 95, 23],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGViewportContainer svg id='inner2'",
+          "rect": [59, 143, 95, 23],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        }
       ]
     }
   ]

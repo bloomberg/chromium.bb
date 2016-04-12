@@ -5,31 +5,77 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [50, 50, 561, 82],
-        [50, 50, 561, 82],
-        [50, 50, 561, 82],
-        [50, 50, 561, 82],
-        [50, 50, 561, 82],
-        [50, 50, 561, 82],
-        [50, 50, 561, 82],
-        [50, 50, 561, 82]
-      ],
-      "paintInvalidationClients": [
-        "LayoutSVGRoot svg",
-        "LayoutSVGContainer g",
-        "LayoutSVGText text id='text'",
-        "RootInlineBox",
-        "LayoutSVGTSpan tspan id='tspan'",
-        "InlineFlowBox",
-        "LayoutSVGInlineText #text",
-        "InlineTextBox 'Two lines of text should be visible.'",
-        "LayoutSVGInlineText #text",
-        "InlineTextBox ' '",
-        "LayoutSVGTSpan tspan",
-        "InlineFlowBox",
-        "LayoutSVGInlineText #text",
-        "InlineTextBox 'Two lines of text should be visible.'"
+      "paintInvalidations": [
+        {
+          "object": "InlineFlowBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "InlineFlowBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "InlineTextBox ' '",
+          "rect": [0, 0, 0, 0],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "InlineTextBox 'Two lines of text should be visible.'",
+          "rect": [0, 0, 0, 0],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "InlineTextBox 'Two lines of text should be visible.'",
+          "rect": [0, 0, 0, 0],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [50, 50, 561, 82],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [50, 50, 561, 82],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [50, 50, 561, 82],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [50, 50, 561, 82],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGRoot svg",
+          "rect": [50, 50, 561, 82],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [50, 50, 561, 82],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan id='tspan'",
+          "rect": [50, 50, 561, 82],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutSVGText text id='text'",
+          "rect": [50, 50, 561, 82],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        }
       ]
     }
   ]

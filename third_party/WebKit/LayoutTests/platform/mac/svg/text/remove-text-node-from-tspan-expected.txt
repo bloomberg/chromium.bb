@@ -5,56 +5,187 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
-      "repaintRects": [
-        [10, 182, 306, 258],
-        [10, 182, 306, 258],
-        [10, 182, 306, 258],
-        [10, 182, 306, 258],
-        [10, 182, 306, 258],
-        [10, 182, 306, 258],
-        [10, 182, 306, 258],
-        [10, 182, 306, 258],
-        [10, 182, 306, 258],
-        [10, 182, 306, 258],
-        [10, 62, 306, 378],
-        [10, 62, 306, 378],
-        [10, 62, 306, 378],
-        [10, 62, 306, 378],
-        [10, 62, 306, 378],
-        [10, 62, 306, 378],
-        [10, 62, 306, 378],
-        [10, 62, 306, 378],
-        [10, 62, 306, 378],
-        [10, 62, 306, 378],
-        [10, 62, 306, 378]
-      ],
-      "paintInvalidationClients": [
-        "InlineTextBox 'FAIL'",
-        "LayoutSVGInlineText #text",
-        "RootInlineBox",
-        "InlineFlowBox",
-        "InlineTextBox ''",
-        "InlineFlowBox",
-        "InlineTextBox 'PASS'",
-        "InlineTextBox ''",
-        "InlineFlowBox",
-        "InlineTextBox 'PASS'",
-        "LayoutSVGRoot (positioned) svg",
-        "LayoutSVGText text",
-        "RootInlineBox",
-        "LayoutSVGTSpan tspan id='modify'",
-        "LayoutSVGInlineText #text",
-        "LayoutSVGTSpan tspan",
-        "InlineFlowBox",
-        "LayoutSVGInlineText #text",
-        "InlineTextBox 'PASS'",
-        "LayoutSVGInlineText #text",
-        "InlineTextBox ' '",
-        "LayoutSVGTSpan tspan",
-        "InlineFlowBox",
-        "LayoutSVGInlineText #text",
-        "InlineTextBox 'PASS'",
-        "LayoutSVGInlineText #text"
+      "paintInvalidations": [
+        {
+          "object": "InlineFlowBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineFlowBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineFlowBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineFlowBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "bounds change"
+        },
+        {
+          "object": "InlineFlowBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "bounds change"
+        },
+        {
+          "object": "InlineTextBox ' '",
+          "rect": [0, 0, 0, 0],
+          "reason": "bounds change"
+        },
+        {
+          "object": "InlineTextBox ''",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox ''",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'FAIL'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'PASS'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'PASS'",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'PASS'",
+          "rect": [0, 0, 0, 0],
+          "reason": "bounds change"
+        },
+        {
+          "object": "InlineTextBox 'PASS'",
+          "rect": [0, 0, 0, 0],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [10, 62, 306, 378],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [10, 62, 306, 378],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [10, 182, 306, 258],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [10, 62, 306, 378],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [10, 182, 306, 258],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [10, 62, 306, 378],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [10, 182, 306, 258],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [10, 62, 306, 378],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [10, 182, 306, 258],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [10, 62, 306, 378],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [10, 182, 306, 258],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGRoot (positioned) svg",
+          "rect": [10, 62, 306, 378],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGRoot (positioned) svg",
+          "rect": [10, 182, 306, 258],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [10, 62, 306, 378],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [10, 182, 306, 258],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [10, 62, 306, 378],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan",
+          "rect": [10, 182, 306, 258],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan id='modify'",
+          "rect": [10, 62, 306, 378],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGTSpan tspan id='modify'",
+          "rect": [10, 182, 306, 258],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [10, 62, 306, 378],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [10, 182, 306, 258],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "rect": [0, 0, 0, 0],
+          "reason": "full"
+        }
       ]
     }
   ]

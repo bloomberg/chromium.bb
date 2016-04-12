@@ -11,11 +11,12 @@
           "bounds": [210, 210],
           "shouldFlattenTransform": false,
           "drawsContent": true,
-          "repaintRects": [
-            [0, 0, 210, 210]
-          ],
-          "paintInvalidationClients": [
-            "LayoutBlockFlow DIV id='container'"
+          "paintInvalidations": [
+            {
+              "object": "LayoutBlockFlow DIV id='container'",
+              "rect": [0, 0, 210, 210],
+              "reason": "style change"
+            }
           ],
           "children": [
             {
@@ -26,11 +27,12 @@
                 {
                   "bounds": [400, 400],
                   "drawsContent": true,
-                  "repaintRects": [
-                    [-5, -5, 210, 210]
-                  ],
-                  "paintInvalidationClients": [
-                    "LayoutBlockFlow DIV id='container'"
+                  "paintInvalidations": [
+                    {
+                      "object": "LayoutBlockFlow DIV id='container'",
+                      "rect": [-5, -5, 210, 210],
+                      "reason": "style change"
+                    }
                   ]
                 }
               ]
