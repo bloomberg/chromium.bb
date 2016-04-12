@@ -37,8 +37,11 @@ class CONTENT_EXPORT NavigationEntryImpl
     TreeNode(FrameNavigationEntry* frame_entry);
     ~TreeNode();
 
-    // Returns whether this TreeNode corresponds to |frame_tree_node|.
-    bool MatchesFrame(FrameTreeNode* frame_tree_node) const;
+    // Returns whether this TreeNode corresponds to |frame_tree_node|, based on
+    // the FrameTreeNode ID or unique name.  If the unique name matches and
+    // FrameTreeNode ID does not, then this will update the entry's
+    // FrameTreeNode ID (which may be stale if the node was recreated).
+    bool MatchesFrame(FrameTreeNode* frame_tree_node);
 
     // Recursively makes a deep copy of TreeNode with copies of each of the
     // FrameNavigationEntries in the subtree.  Replaces the TreeNode
@@ -49,7 +52,7 @@ class CONTENT_EXPORT NavigationEntryImpl
     // NavigationEntries of the same tab.
     std::unique_ptr<TreeNode> CloneAndReplace(
         FrameTreeNode* frame_tree_node,
-        FrameNavigationEntry* frame_navigation_entry) const;
+        FrameNavigationEntry* frame_navigation_entry);
 
     // Ref counted pointer that keeps the FrameNavigationEntry alive as long as
     // it is needed by this node's NavigationEntry.
@@ -188,7 +191,6 @@ class CONTENT_EXPORT NavigationEntryImpl
   // Does nothing if there is no entry already and |url| is about:blank, since
   // that does not count as a real commit.
   void AddOrUpdateFrameEntry(FrameTreeNode* frame_tree_node,
-                             const std::string& frame_unique_name,
                              int64_t item_sequence_number,
                              int64_t document_sequence_number,
                              SiteInstanceImpl* site_instance,
@@ -197,17 +199,10 @@ class CONTENT_EXPORT NavigationEntryImpl
                              const PageState& page_state);
 
   // Returns the FrameNavigationEntry corresponding to |frame_tree_node|, if
-  // there is one in this NavigationEntry.
-  FrameNavigationEntry* GetFrameEntry(FrameTreeNode* frame_tree_node) const;
-
-  // Returns the FrameNavigationEntry corresponding to the frame with the given
-  // |unique_name|, if any. This is useful when the FrameTreeNode cannot be used
-  // to find the entry, such as for a newly created subframe in a history
-  // navigation. Callers should update the FrameTreeNode ID of the entry so that
-  // it can be found with |GetFrameEntry| above.
-  // TODO(creis): Generate or verify the unique_name in the browser process.
-  FrameNavigationEntry* GetFrameEntryByUniqueName(
-      const std::string& unique_name) const;
+  // there is one in this NavigationEntry. This compares against the
+  // FrameTreeNode ID first, and if that doesn't match, then the unique_name.
+  // It will update the FrameNavigationEntry's FrameTreeNode ID if it is stale.
+  FrameNavigationEntry* GetFrameEntry(FrameTreeNode* frame_tree_node);
 
   void set_unique_id(int unique_id) {
     unique_id_ = unique_id;
@@ -364,8 +359,7 @@ class CONTENT_EXPORT NavigationEntryImpl
 
  private:
   // Finds the TreeNode associated with |frame_tree_node|, if any.
-  NavigationEntryImpl::TreeNode* FindFrameEntry(
-      FrameTreeNode* frame_tree_node) const;
+  NavigationEntryImpl::TreeNode* FindFrameEntry(FrameTreeNode* frame_tree_node);
 
   // WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING
   // Session/Tab restore save portions of this class so that it can be recreated
