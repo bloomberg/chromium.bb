@@ -2373,16 +2373,23 @@ static inline FloatSize adjustOverscroll(FloatSize unusedDelta)
     return unusedDelta;
 }
 
-void EventHandler::handleOverscroll(const ScrollResult& scrollResult, const FloatPoint& position, const FloatSize& velocity)
+void EventHandler::handleOverscroll(const ScrollResult& scrollResult, const FloatPoint& positionInRootFrame, const FloatSize& velocityInRootFrame)
 {
     ASSERT(m_frame->isMainFrame());
+    VisualViewport& visualViewport = m_frame->page()->frameHost().visualViewport();
 
     FloatSize unusedDelta(scrollResult.unusedScrollDeltaX, scrollResult.unusedScrollDeltaY);
     unusedDelta = adjustOverscroll(unusedDelta);
+
+    FloatSize deltaInViewport = unusedDelta.scaledBy(visualViewport.scale());
+    FloatSize velocityInViewport = velocityInRootFrame.scaledBy(visualViewport.scale());
+    FloatPoint positionInViewport =
+        visualViewport.rootFrameToViewport(positionInRootFrame);
+
     resetOverscroll(scrollResult.didScrollX, scrollResult.didScrollY);
-    if (unusedDelta != FloatSize()) {
-        m_accumulatedRootOverscroll += unusedDelta;
-        m_frame->chromeClient().didOverscroll(unusedDelta, m_accumulatedRootOverscroll, position, velocity);
+    if (deltaInViewport != FloatSize()) {
+        m_accumulatedRootOverscroll += deltaInViewport;
+        m_frame->chromeClient().didOverscroll(deltaInViewport, m_accumulatedRootOverscroll, positionInViewport, velocityInViewport);
     }
 }
 
@@ -2463,8 +2470,8 @@ WebInputEventResult EventHandler::handleGestureScrollUpdate(const PlatformGestur
                 m_previousGestureScrolledNode = stopNode;
 
             if (m_frame->isMainFrame() && (!stopNode || stopNode->layoutObject() == m_frame->view()->layoutView())) {
-                FloatPoint position = FloatPoint(gestureEvent.position().x(), gestureEvent.position().y());
-                handleOverscroll(result, position, velocity);
+                FloatPoint positionInRootFrame = FloatPoint(gestureEvent.position().x(), gestureEvent.position().y());
+                handleOverscroll(result, positionInRootFrame, velocity);
             } else {
                 resetOverscroll(result.didScrollX, result.didScrollY);
             }

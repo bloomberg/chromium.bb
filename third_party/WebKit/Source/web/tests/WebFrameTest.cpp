@@ -8250,21 +8250,22 @@ TEST_P(WebFrameOverscrollTest, ScaledPageRootLayerOverscrolled)
     webViewHelper.resize(WebSize(200, 200));
     webViewImpl->setPageScaleFactor(3.0);
 
-    // Calculation of accumulatedRootOverscroll and unusedDelta on scaled page.
+    // Calculation of accumulatedRootOverscroll and unusedDelta on scaled page. The point is (99, 99) because we clamp
+    // in the division by 3 to 33 so when we go back to viewport coordinates it becomes (99, 99).
     ScrollBegin(&webViewHelper);
-    EXPECT_CALL(client, didOverscroll(WebFloatSize(0, -10), WebFloatSize(0, -10), WebFloatPoint(33, 33), WebFloatSize()));
+    EXPECT_CALL(client, didOverscroll(WebFloatSize(0, -30), WebFloatSize(0, -30), WebFloatPoint(99, 99), WebFloatSize()));
     ScrollUpdate(&webViewHelper, 0, 30);
     Mock::VerifyAndClearExpectations(&client);
 
-    EXPECT_CALL(client, didOverscroll(WebFloatSize(0, -10), WebFloatSize(0, -20), WebFloatPoint(33, 33), WebFloatSize()));
+    EXPECT_CALL(client, didOverscroll(WebFloatSize(0, -30), WebFloatSize(0, -60), WebFloatPoint(99, 99), WebFloatSize()));
     ScrollUpdate(&webViewHelper, 0, 30);
     Mock::VerifyAndClearExpectations(&client);
 
-    EXPECT_CALL(client, didOverscroll(WebFloatSize(-10, -10), WebFloatSize(-10, -30), WebFloatPoint(33, 33), WebFloatSize()));
+    EXPECT_CALL(client, didOverscroll(WebFloatSize(-30, -30), WebFloatSize(-30, -90), WebFloatPoint(99, 99), WebFloatSize()));
     ScrollUpdate(&webViewHelper, 30, 30);
     Mock::VerifyAndClearExpectations(&client);
 
-    EXPECT_CALL(client, didOverscroll(WebFloatSize(-10, 0), WebFloatSize(-20, -30), WebFloatPoint(33, 33), WebFloatSize()));
+    EXPECT_CALL(client, didOverscroll(WebFloatSize(-30, 0), WebFloatSize(-60, -90), WebFloatPoint(99, 99), WebFloatSize()));
     ScrollUpdate(&webViewHelper, 30, 0);
     Mock::VerifyAndClearExpectations(&client);
 

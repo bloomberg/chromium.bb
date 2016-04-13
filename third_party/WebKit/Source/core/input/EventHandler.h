@@ -307,7 +307,7 @@ private:
     bool logicalScroll(ScrollDirection, ScrollGranularity, Node* startNode = nullptr);
 
     void resetOverscroll(bool didScrollX, bool didScrollY);
-    void handleOverscroll(const ScrollResult&, const FloatPoint& position = FloatPoint(), const FloatSize& velocity = FloatSize());
+    void handleOverscroll(const ScrollResult&, const FloatPoint& positionInRootFrame = FloatPoint(), const FloatSize& velocity = FloatSize());
 
     void customizedScroll(const Node& startNode, ScrollState&);
 

@@ -66,7 +66,11 @@ public:
     Page* createWindow(
         LocalFrame*, const FrameLoadRequest&, const WindowFeatures&, NavigationPolicy, ShouldSetOpener) override;
     void show(NavigationPolicy) override;
-    void didOverscroll(const FloatSize&, const FloatSize&, const FloatPoint&, const FloatSize&) override;
+    void didOverscroll(
+        const FloatSize& overscrollDelta,
+        const FloatSize& accumulatedOverscroll,
+        const FloatPoint& positionInViewport,
+        const FloatSize& velocityInViewport) override;
     void setToolbarsVisible(bool) override;
     bool toolbarsVisible() override;
     void setStatusbarVisible(bool) override;

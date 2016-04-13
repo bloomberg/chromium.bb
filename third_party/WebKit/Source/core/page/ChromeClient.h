@@ -106,7 +106,15 @@ public:
 
     void setWindowFeatures(const WindowFeatures&);
 
-    virtual void didOverscroll(const FloatSize&, const FloatSize&, const FloatPoint&, const FloatSize&) = 0;
+    // All the parameters should be in viewport space. That is, if an event
+    // scrolls by 10 px, but due to a 2X page scale we apply a 5px scroll to the
+    // root frame, all of which is handled as overscroll, we should return 10px
+    // as the overscrollDelta.
+    virtual void didOverscroll(
+        const FloatSize& overscrollDelta,
+        const FloatSize& accumulatedOverscroll,
+        const FloatPoint& positionInViewport,
+        const FloatSize& velocityInViewport) = 0;
 
     virtual void setToolbarsVisible(bool) = 0;
     virtual bool toolbarsVisible() = 0;

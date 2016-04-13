@@ -257,8 +257,8 @@ class CONTENT_EXPORT RenderWidget
   void resetInputMethod() override;
   void didHandleGestureEvent(const blink::WebGestureEvent& event,
                              bool event_cancelled) override;
-  void didOverscroll(const blink::WebFloatSize& unusedDelta,
-                     const blink::WebFloatSize& accumulatedRootOverScroll,
+  void didOverscroll(const blink::WebFloatSize& overscrollDelta,
+                     const blink::WebFloatSize& accumulatedOverscroll,
                      const blink::WebFloatPoint& position,
                      const blink::WebFloatSize& velocity) override;
   void showImeIfNeeded() override;

@@ -485,15 +485,15 @@ void RenderWidgetInputHandler::HandleInputEvent(
 }
 
 void RenderWidgetInputHandler::DidOverscrollFromBlink(
-    const WebFloatSize& unusedDelta,
-    const WebFloatSize& accumulatedRootOverScroll,
+    const WebFloatSize& overscrollDelta,
+    const WebFloatSize& accumulatedOverscroll,
     const WebFloatPoint& position,
     const WebFloatSize& velocity) {
   std::unique_ptr<DidOverscrollParams> params(new DidOverscrollParams());
   params->accumulated_overscroll = gfx::Vector2dF(
-      accumulatedRootOverScroll.width, accumulatedRootOverScroll.height);
+      accumulatedOverscroll.width, accumulatedOverscroll.height);
   params->latest_overscroll_delta =
-      gfx::Vector2dF(unusedDelta.width, unusedDelta.height);
+      gfx::Vector2dF(overscrollDelta.width, overscrollDelta.height);
   // TODO(sataya.m): don't negate velocity once http://crbug.com/499743 is
   // fixed.
   params->current_fling_velocity =

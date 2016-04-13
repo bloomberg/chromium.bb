@@ -44,8 +44,8 @@ class CONTENT_EXPORT RenderWidgetInputHandler {
 
   // Handle overscroll from Blink.
   void DidOverscrollFromBlink(
-      const blink::WebFloatSize& unusedDelta,
-      const blink::WebFloatSize& accumulatedRootOverScroll,
+      const blink::WebFloatSize& overscrollDelta,
+      const blink::WebFloatSize& accumulatedOverscroll,
       const blink::WebFloatPoint& position,
       const blink::WebFloatSize& velocity);
 
