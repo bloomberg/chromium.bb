@@ -131,8 +131,8 @@ TEST_CONFIG = """\
     'gyp': {'type': 'gyp'},
     'gn': {'type': 'gn'},
     'goma': {
-      'gn_args': 'use_goma=true goma_dir="$(goma_dir)"',
-      'gyp_defines': 'goma=1 gomadir=$(goma_dir)',
+      'gn_args': 'use_goma=true',
+      'gyp_defines': 'goma=1',
     },
     'rel': {
       'gn_args': 'is_debug=false',

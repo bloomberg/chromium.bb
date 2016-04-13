@@ -74,8 +74,8 @@ class MetaBuildWrapper(object):
                         default=self.default_config,
                         help='path to config file '
                             '(default is //tools/mb/mb_config.pyl)')
-      subp.add_argument('-g', '--goma-dir', default=self.ExpandUser('~/goma'),
-                        help='path to goma directory (default is %(default)s).')
+      subp.add_argument('-g', '--goma-dir',
+                        help='path to goma directory')
       subp.add_argument('-n', '--dryrun', action='store_true',
                         help='Do a dry run (i.e., do nothing, just print '
                              'the commands that will run)')
@@ -851,7 +851,8 @@ class MetaBuildWrapper(object):
     gn_path = self.PathJoin(self.chromium_src_dir, 'buildtools', subdir, exe)
 
     cmd = [gn_path, subcommand, path]
-    gn_args = gn_args.replace("$(goma_dir)", self.args.goma_dir)
+    if self.args.goma_dir:
+      gn_args += ' goma_dir="%s"' % self.args.goma_dir
     if gn_args:
       cmd.append('--args=%s' % gn_args)
     if extra_args:
@@ -1004,9 +1005,11 @@ class MetaBuildWrapper(object):
     # GYP uses shlex.split() to split the gyp defines into separate arguments,
     # so we can support backslashes and and spaces in arguments by quoting
     # them, even on Windows, where this normally wouldn't work.
-    if '\\' in goma_dir or ' ' in goma_dir:
+    if goma_dir and ('\\' in goma_dir or ' ' in goma_dir):
       goma_dir = "'%s'" % goma_dir
-    gyp_defines = gyp_defines.replace("$(goma_dir)", goma_dir)
+
+    if goma_dir:
+      gyp_defines += ' gomadir=%s' % goma_dir
 
     cmd = [
         self.executable,
