@@ -17,10 +17,10 @@ source_set("lib") {
   deps = [
     "//base",
     "//mojo/public/cpp/bindings",
-    "//mojo/services/catalog/public/interfaces",
-    "//mojo/services/tracing/public/cpp",
+    "//services/catalog/public/interfaces",
     "//services/shell/public/cpp",
     "//services/shell/public/interfaces",
+    "//services/tracing/public/cpp",
     "//ui/views",
     "//ui/views/mus:for_mojo_application",
     "//url",

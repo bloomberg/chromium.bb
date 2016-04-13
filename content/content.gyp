@@ -462,7 +462,6 @@
             '../device/usb/usb.gyp:device_usb_java',
             '../device/vibration/vibration.gyp:device_vibration_java',
             '../media/media.gyp:media_java',
-            '../mojo/mojo_base.gyp:mojo_application_bindings',
             '../mojo/mojo_base.gyp:mojo_system_java',
             '../mojo/mojo_public.gyp:mojo_bindings_java',
             '../net/net.gyp:net',

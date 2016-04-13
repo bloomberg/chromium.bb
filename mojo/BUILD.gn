@@ -10,7 +10,6 @@ group("mojo") {
   deps = [
     ":tests",
     "//mojo/common",
-    "//mojo/services",
   ]
 
   if (!(is_linux && target_cpu == "x86")) {

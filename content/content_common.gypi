@@ -30,11 +30,11 @@
     '../media/gpu/ipc/media_ipc.gyp:media_gpu_ipc_client',
     '../media/gpu/ipc/media_ipc.gyp:media_gpu_ipc_common',
     '../media/midi/midi.gyp:midi',
-    '../mojo/mojo_base.gyp:mojo_application_bindings',
     '../mojo/mojo_edk.gyp:mojo_system_impl',
     '../mojo/mojo_public.gyp:mojo_cpp_bindings',
-    '../mojo/mojo_shell.gyp:mojo_runner_common_lib',
     '../net/net.gyp:net',
+    '../services/shell/shell.gyp:shell_public',
+    '../services/shell/shell.gyp:shell_runner_common_lib',
     '../skia/skia.gyp:skia',
     '../storage/storage_common.gyp:storage_common',
     '../third_party/WebKit/public/blink.gyp:blink',
@@ -86,8 +86,8 @@
   ],
   'export_dependent_settings': [
     '../base/base.gyp:base',
-    '../mojo/mojo_base.gyp:mojo_application_bindings',
     '../mojo/mojo_public.gyp:mojo_cpp_bindings',
+    '../services/shell/shell.gyp:shell_public',
     # The public content API headers directly include Blink API headers, so we
     # have to export the blink header settings so that relative paths in these
     # headers resolve correctly.

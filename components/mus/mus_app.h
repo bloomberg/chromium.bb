@@ -21,10 +21,10 @@
 #include "components/mus/ws/platform_display_init_params.h"
 #include "components/mus/ws/user_id.h"
 #include "components/mus/ws/window_server_delegate.h"
-#include "mojo/services/tracing/public/cpp/tracing_impl.h"
 #include "services/shell/public/cpp/application_runner.h"
 #include "services/shell/public/cpp/interface_factory.h"
 #include "services/shell/public/cpp/shell_client.h"
+#include "services/tracing/public/cpp/tracing_impl.h"
 
 namespace mojo {
 class Connector;

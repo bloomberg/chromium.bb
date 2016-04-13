@@ -10,9 +10,9 @@
 #include "components/filesystem/file_system_impl.h"
 #include "components/filesystem/lock_table.h"
 #include "components/filesystem/public/interfaces/file_system.mojom.h"
-#include "mojo/services/tracing/public/cpp/tracing_impl.h"
 #include "services/shell/public/cpp/interface_factory.h"
 #include "services/shell/public/cpp/shell_client.h"
+#include "services/tracing/public/cpp/tracing_impl.h"
 
 namespace mojo {
 class Connector;

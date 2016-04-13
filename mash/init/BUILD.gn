@@ -23,8 +23,8 @@ mojo_native_application("init") {
     "//mash/init/public/interfaces",
     "//mash/login/public/interfaces",
     "//mojo/public/cpp/bindings",
-    "//mojo/services/tracing/public/cpp",
     "//services/shell/public/cpp",
+    "//services/tracing/public/cpp",
   ]
 
   data_deps = [

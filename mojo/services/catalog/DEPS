@@ -1,6 +1,0 @@
-include_rules = [
-  "+base",
-  "+mojo/common",
-  "+services/shell/public",
-  "+mojo/util",
-]

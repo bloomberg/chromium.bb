@@ -32,7 +32,7 @@
         },
       ],
       'dependencies': [
-        '<(DEPTH)/mojo/mojo_shell.gyp:mojo_catalog_manifest',
+        '<(DEPTH)/services/shell/shell.gyp:catalog_manifest',
         'content_app_browser_manifest',
         'content_app_renderer_manifest',
       ],

@@ -8,9 +8,9 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "mojo/services/catalog/public/interfaces/catalog.mojom.h"
-#include "mojo/services/tracing/public/cpp/tracing_impl.h"
+#include "services/catalog/public/interfaces/catalog.mojom.h"
 #include "services/shell/public/cpp/shell_client.h"
+#include "services/tracing/public/cpp/tracing_impl.h"
 
 namespace views {
 class AuraInit;

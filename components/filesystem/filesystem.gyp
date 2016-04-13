@@ -31,11 +31,10 @@
       ],
       'dependencies': [
         'filesystem_bindings',
-        '../../mojo/mojo_base.gyp:mojo_application_base',
-        '../../mojo/mojo_base.gyp:mojo_application_bindings',
         '../../mojo/mojo_edk.gyp:mojo_system_impl',
         '../../mojo/mojo_public.gyp:mojo_cpp_bindings',
         '../../mojo/mojo_platform_handle.gyp:platform_handle',
+        '../../services/shell/shell.gyp:shell_public',
         '../../url/url.gyp:url_lib',
       ],
       'export_dependent_settings': [

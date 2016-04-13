@@ -14,7 +14,7 @@ source_set("test_support") {
 
   deps = [
     "//base",
-    "//mojo/services/catalog:lib",
+    "//services/catalog:lib",
     "//url",
   ]
 }

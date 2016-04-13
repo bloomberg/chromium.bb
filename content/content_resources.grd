@@ -27,7 +27,7 @@
       <include name="IDR_INDEXED_DB_INTERNALS_CSS" file="browser/resources/indexed_db/indexeddb_internals.css" flattenhtml="true" type="BINDATA" />
       <include name="IDR_MEDIA_INTERNALS_HTML" file="browser/resources/media/media_internals.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_MEDIA_INTERNALS_JS" file="browser/resources/media/media_internals.js" flattenhtml="true" type="BINDATA" />
-      <include name="IDR_MOJO_CATALOG_MANIFEST" file="../mojo/services/catalog/manifest.json" type="BINDATA" />
+      <include name="IDR_MOJO_CATALOG_MANIFEST" file="../services/catalog/manifest.json" type="BINDATA" />
       <include name="IDR_MOJO_CONTENT_BROWSER_MANIFEST" file="${root_out_dir}/content_browser_manifest.json" use_base_dir="false" type="BINDATA" />
       <include name="IDR_MOJO_CONTENT_RENDERER_MANIFEST" file="${root_out_dir}/content_renderer_manifest.json" use_base_dir="false" type="BINDATA" />
       <include name="IDR_NETWORK_ERROR_LISTING_HTML" file="browser/resources/net/network_errors_listing.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />

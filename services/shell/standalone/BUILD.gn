@@ -37,17 +37,17 @@ source_set("lib") {
     "//components/tracing:startup_tracing",
     "//mojo/edk/system",
     "//mojo/message_pump",
-    "//mojo/services/catalog:lib",
-    "//mojo/services/tracing/public/cpp",
-    "//mojo/services/tracing/public/interfaces",
+    "//services/catalog:lib",
     "//services/shell",
     "//services/shell/public/cpp",
     "//services/shell/runner/host:lib",
+    "//services/tracing/public/cpp",
+    "//services/tracing/public/interfaces",
     "//url",
   ]
 
   data_deps = [
-    "//mojo/services/tracing",
+    "//services/tracing",
   ]
 
   # This target includes some files behind #ifdef OS... guards. Since gn is not

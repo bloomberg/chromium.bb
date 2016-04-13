@@ -9,7 +9,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
-#include "mojo/services/catalog/store.h"
+#include "services/catalog/store.h"
 
 namespace mojo {
 namespace shell {

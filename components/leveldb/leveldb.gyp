@@ -30,8 +30,8 @@
       'dependencies': [
         'leveldb_public_lib',
         '../../components/filesystem/filesystem.gyp:filesystem_lib',
-        '../../mojo/mojo_base.gyp:mojo_application_base',
         '../../mojo/mojo_public.gyp:mojo_cpp_bindings',
+        '../../services/shell/shell.gyp:shell_public',
         '../../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
       ]
     },
@@ -47,9 +47,9 @@
       ],
       'dependencies': [
         'leveldb_bindings_mojom',
-        '../../mojo/mojo_base.gyp:mojo_application_base',
         '../../mojo/mojo_edk.gyp:mojo_system_impl',
         '../../mojo/mojo_public.gyp:mojo_cpp_bindings',
+        '../../services/shell/shell.gyp:shell_public',
         '../../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
       ]
     },

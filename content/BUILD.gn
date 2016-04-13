@@ -117,7 +117,7 @@ grit("resources") {
   deps = [
     "//content/public/app:browser_manifest",
     "//content/public/app:renderer_manifest",
-    "//mojo/services/catalog:manifest",
+    "//services/catalog:manifest",
   ]
 }
 

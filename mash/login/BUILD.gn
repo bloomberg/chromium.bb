@@ -22,8 +22,8 @@ mojo_native_application("login") {
     "//mash/login/public/interfaces",
     "//mash/wm/public/interfaces",
     "//mojo/public/cpp/bindings",
-    "//mojo/services/tracing/public/cpp",
     "//services/shell/public/cpp",
+    "//services/tracing/public/cpp",
     "//ui/views",
     "//ui/views/mus:for_mojo_application",
   ]

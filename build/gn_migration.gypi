@@ -71,7 +71,6 @@
         '../media/media.gyp:media_perftests',
         '../media/media.gyp:media_unittests',
         '../media/midi/midi.gyp:midi_unittests',
-        '../mojo/mojo_base.gyp:mojo_application_base',
         '../net/net.gyp:dump_cache',
         '../net/net.gyp:net_perftests',
         '../net/net.gyp:net_unittests',

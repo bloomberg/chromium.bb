@@ -18,7 +18,7 @@
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/embedder/process_delegate.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "mojo/services/catalog/store.h"
+#include "services/catalog/store.h"
 #include "services/shell/background/tests/test_catalog_store.h"
 #include "services/shell/native_runner_delegate.h"
 #include "services/shell/public/cpp/connector.h"

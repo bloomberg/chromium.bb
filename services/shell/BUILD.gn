@@ -38,8 +38,8 @@ source_set("shell") {
     "//base/third_party/dynamic_annotations",
     "//mojo/common",
     "//mojo/public/cpp/bindings",
-    "//mojo/services/catalog/public/interfaces",
     "//mojo/util:filename_util",
+    "//services/catalog/public/interfaces",
     "//services/shell/public/cpp:sources",
     "//services/shell/public/interfaces",
     "//url",
@@ -47,7 +47,7 @@ source_set("shell") {
 
   public_deps = [
     # ApplicationManager exposes and uses PackageManager types in its header.
-    "//mojo/services/catalog:lib",
+    "//services/catalog:lib",
   ]
 
   data_deps = [
@@ -55,7 +55,7 @@ source_set("shell") {
   ]
 
   # For services/shell/loader.h
-  allow_circular_includes_from = [ "//mojo/services/catalog:lib" ]
+  allow_circular_includes_from = [ "//services/catalog:lib" ]
 }
 
 mojo_application_manifest("manifest") {

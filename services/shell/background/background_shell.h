@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "mojo/services/catalog/store.h"
+#include "services/catalog/store.h"
 #include "services/shell/public/interfaces/shell_client.mojom.h"
 
 namespace catalog {
