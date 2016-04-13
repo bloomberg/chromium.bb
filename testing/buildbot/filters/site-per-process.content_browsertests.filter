@@ -1,4 +1,5 @@
 # crbug.com/417518: Get tests working with --site-per-process
+-SessionHistoryTest.FrameBackForward
 -NavigationControllerBrowserTest.ReloadOriginalRequest
 -*.RestoreSubframeFileAccessForHistoryNavigation
 -FrameTreeBrowserTest.NavigateGrandchildToBlob

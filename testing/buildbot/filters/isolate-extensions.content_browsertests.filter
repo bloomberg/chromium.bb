@@ -1,3 +1,4 @@
+-SessionHistoryTest.FrameBackForward
 -*.RestoreSubframeFileAccessForHistoryNavigation
 
 # https://crbug.com/590782 - test too eager to assert presence of OOPIFs?
