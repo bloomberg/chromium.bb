@@ -80,8 +80,10 @@ import java.lang.annotation.Annotation;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Callable;
 
 /**
@@ -254,6 +256,11 @@ public class AwContents implements SmartClipProvider,
     private final ScrollAccessibilityHelper mScrollAccessibilityHelper;
     private final boolean mSupportsFunctorDetachedCallback;
     private boolean mFunctorDetachedCallbackPending;
+
+    // TODO(boliu): This is temporary for M51. AwContents is in |sGcRoots| if and only if
+    // mFunctorDetachedCallbackPending is true, to ensure that the whole system do not
+    // get garbage collected before functor detached callback.
+    private static final Set<AwContents> sGcRoots = new HashSet<>();
 
     private boolean mIsPaused;
     private boolean mIsViewVisible;
@@ -2348,6 +2355,7 @@ public class AwContents implements SmartClipProvider,
     // FullScreenView.
     public void onFunctorDetached() {
         mFunctorDetachedCallbackPending = false;
+        sGcRoots.remove(this);
         if (isDestroyed(NO_WARN) && mAwGLFunctor != null) {
             mAwGLFunctor.destroy();
             mAwGLFunctor = null;
@@ -2951,6 +2959,9 @@ public class AwContents implements SmartClipProvider,
                 did_draw = mNativeGLDelegate.requestDrawGL(canvas, false, mContainerView);
                 mFunctorDetachedCallbackPending |=
                         (mSupportsFunctorDetachedCallback && did_draw && !isFullScreen());
+                if (mFunctorDetachedCallbackPending) {
+                    sGcRoots.add(AwContents.this);
+                }
             }
             if (did_draw) {
                 int scrollXDiff = mContainerView.getScrollX() - scrollX;
