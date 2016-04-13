@@ -4,6 +4,7 @@
 
 #include "components/mus/surfaces/top_level_display_client.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/copy_output_request.h"
@@ -15,6 +16,11 @@
 #include "components/mus/surfaces/direct_output_surface.h"
 #include "components/mus/surfaces/surfaces_context_provider.h"
 #include "components/mus/surfaces/surfaces_state.h"
+
+#if defined(USE_OZONE)
+#include "components/mus/surfaces/direct_output_surface_ozone.h"
+#include "gpu/command_buffer/client/gles2_interface.h"
+#endif
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -40,9 +46,23 @@ TopLevelDisplayClient::TopLevelDisplayClient(
   display_.reset(new cc::Display(this, surfaces_state_->manager(), nullptr,
                                  nullptr, cc::RendererSettings()));
 
-  scoped_ptr<cc::OutputSurface> output_surface =
-      make_scoped_ptr(new DirectOutputSurface(
-          new SurfacesContextProvider(this, widget, gpu_state)));
+  scoped_refptr<SurfacesContextProvider> surfaces_context_provider(
+      new SurfacesContextProvider(this, widget, gpu_state));
+  // TODO(rjkroege): If there is something better to do than CHECK, add it.
+  CHECK(surfaces_context_provider->BindToCurrentThread());
+
+  std::unique_ptr<cc::OutputSurface> output_surface;
+  if (surfaces_context_provider->ContextCapabilities().gpu.surfaceless) {
+#if defined(USE_OZONE)
+    output_surface = base::WrapUnique(new DirectOutputSurfaceOzone(
+        surfaces_context_provider, widget, GL_TEXTURE_2D, GL_RGB));
+#else
+    NOTREACHED();
+#endif
+  } else {
+    output_surface =
+        base::WrapUnique(new DirectOutputSurface(surfaces_context_provider));
+  }
 
   int max_frames_pending = output_surface->capabilities().max_frames_pending;
   DCHECK_GT(max_frames_pending, 0);
@@ -70,7 +90,7 @@ TopLevelDisplayClient::~TopLevelDisplayClient() {
 }
 
 void TopLevelDisplayClient::SubmitCompositorFrame(
-    scoped_ptr<cc::CompositorFrame> frame,
+    std::unique_ptr<cc::CompositorFrame> frame,
     const base::Closure& callback) {
   pending_frame_ = std::move(frame);
 
@@ -83,7 +103,7 @@ void TopLevelDisplayClient::SubmitCompositorFrame(
 }
 
 void TopLevelDisplayClient::RequestCopyOfOutput(
-    scoped_ptr<cc::CopyOutputRequest> output_request) {
+    std::unique_ptr<cc::CopyOutputRequest> output_request) {
   factory_.RequestCopyOfSurface(cc_id_, std::move(output_request));
 }
 

@@ -36,8 +36,12 @@ SurfacesContextProvider::SurfacesContextProvider(
   command_buffer_local_ = new CommandBufferLocal(this, widget_, state);
 }
 
+// This routine needs to be safe to call more than once.
 // This is called when we have an accelerated widget.
 bool SurfacesContextProvider::BindToCurrentThread() {
+  if (implementation_)
+    return true;
+
   // SurfacesContextProvider should always live on the same thread as the
   // Window Manager.
   DCHECK(CalledOnValidThread());
@@ -66,6 +70,7 @@ bool SurfacesContextProvider::BindToCurrentThread() {
 }
 
 gpu::gles2::GLES2Interface* SurfacesContextProvider::ContextGL() {
+  DCHECK(implementation_);
   return implementation_.get();
 }
 

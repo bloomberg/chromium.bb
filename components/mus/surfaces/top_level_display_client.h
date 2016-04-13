@@ -7,9 +7,10 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "cc/surfaces/display_client.h"
 #include "cc/surfaces/surface_factory.h"
 #include "cc/surfaces/surface_factory_client.h"
@@ -46,11 +47,12 @@ class TopLevelDisplayClient : public cc::DisplayClient,
                         const scoped_refptr<SurfacesState>& surfaces_state);
   ~TopLevelDisplayClient() override;
 
-  void SubmitCompositorFrame(scoped_ptr<cc::CompositorFrame> frame,
+  void SubmitCompositorFrame(std::unique_ptr<cc::CompositorFrame> frame,
                              const base::Closure& callback);
   const cc::SurfaceId& surface_id() const { return cc_id_; }
 
-  void RequestCopyOfOutput(scoped_ptr<cc::CopyOutputRequest> output_request);
+  void RequestCopyOfOutput(
+      std::unique_ptr<cc::CopyOutputRequest> output_request);
 
  private:
   // DisplayClient implementation.
@@ -73,11 +75,11 @@ class TopLevelDisplayClient : public cc::DisplayClient,
   cc::SurfaceId cc_id_;
 
   gfx::Size last_submitted_frame_size_;
-  scoped_ptr<cc::CompositorFrame> pending_frame_;
+  std::unique_ptr<cc::CompositorFrame> pending_frame_;
 
-  scoped_ptr<cc::SyntheticBeginFrameSource> synthetic_frame_source_;
-  scoped_ptr<cc::DisplayScheduler> scheduler_;
-  scoped_ptr<cc::Display> display_;
+  std::unique_ptr<cc::SyntheticBeginFrameSource> synthetic_frame_source_;
+  std::unique_ptr<cc::DisplayScheduler> scheduler_;
+  std::unique_ptr<cc::Display> display_;
 
   DISALLOW_COPY_AND_ASSIGN(TopLevelDisplayClient);
 };
