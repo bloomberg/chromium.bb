@@ -18,26 +18,25 @@ Get clang (happens automatically during `gclient runhooks` on Mac and Linux):
 
     tools/clang/scripts/update.py
 
-(Only needs to be run once per checkout, and clang will be automatically updated
-by `gclient runhooks`.)
+Only needs to be run once per checkout, and clang will be automatically updated
+by `gclient runhooks`.
 
-### Reverting to gcc on linux
-
-We don't have bots that test this, but building with gcc4.8+ should still work
-on Linux. If your system gcc is new enough, use this to build with gcc if you
-don't want to build with clang:
-
-    GYP_DEFINES=clang=0 build/gyp_chromium
-
-### Ninja
-
-Regenerate the build files (`clang=1` is on by default on Mac and Linux):
+Regenerate the ninja build files with Clang enabled. Again, on Linux and Mac,
+Clang is the default compiler.
 
 If you use gyp: `GYP_DEFINES=clang=1 build/gyp_chromium`
 
 If you use gn, run `gn args` and add `is_clang = true` to your args.gn file.
 
 Build: `ninja -C out/Debug chrome`
+
+## Reverting to gcc on linux
+
+We don't have bots that test this, but building with gcc4.8+ should still work
+on Linux. If your system gcc is new enough, use this to build with gcc if you
+don't want to build with clang:
+
+    GYP_DEFINES=clang=0 build/gyp_chromium
 
 ## Mailing List
 
@@ -79,8 +78,6 @@ See [clang_static_analyzer.md](clang_static_analyzer.md).
 
 ## Windows
 
-**Experimental!**
-
 clang can be used as compiler on Windows. Clang uses Visual Studio's linker and
 SDK, so you still need to have Visual Studio installed.
 
@@ -97,9 +94,11 @@ python build\gyp_chromium
 ninja -C out\Debug chrome
 ```
 
+The `update.py` script only needs to be run once per checkout. Clang will be
+kept up-to-date by `gclient runhooks`.
+
 Current brokenness:
 
-*   Goma doesn't work.
 *   Debug info is very limited.
 *   To get colored diagnostics, you need to be running
     [ansicon](https://github.com/adoxa/ansicon/releases).
@@ -131,3 +130,16 @@ If your clang revision is very different from the one currently used in chromium
 *   Check `tools/clang/scripts/update.py` to find chromium's clang revision
 *   You might have to tweak warning flags. Or you could set `werror=` in the
     line above to disable warnings as errors (but this only works on Linux).
+
+## Using LLD
+
+**Experimental!**
+
+LLD is a relatively new linker from LLVM. The current focus is on Windows and
+Linux support, where it can link Chrome approximately twice as fast as gold and
+MSVC's link.exe as of this writing. LLD does not yet support generating PDB
+files, which makes it hard to debug Chrome while using LLD.
+
+If you use gyp, you can enable it with `GYP_DEFINES=lld=1`. If you use gn, set
+`use_lld = true` in args.gn. Currently this configuration is only supported on
+Windows.
