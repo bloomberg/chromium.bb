@@ -352,12 +352,14 @@ _arm_internal_release_boards = frozenset([
     'elm',
     'gale',
     'gru',
+    'kevin',
     'nyan',
     'nyan_big',
     'nyan_blaze',
     'nyan_freon',
     'nyan_kitty',
     'oak',
+    'oak-cheets',
     'peach_pi',
     'peach_pit',
     'purin',
@@ -527,6 +529,7 @@ _brillo_boards = frozenset([
 _cheets_boards = frozenset([
     'cyan-cheets',
     'glados-cheets',
+    'oak-cheets',
     'samus-cheets',
     'smaug-cheets',
     'veyron_minnie-cheets',
@@ -567,6 +570,7 @@ _no_unittest_boards = frozenset((
 _no_vmtest_boards = _arm_boards | _brillo_boards | frozenset((
     'cyan-cheets',
     'glados-cheets',
+    'oak-cheets',
     'samus-cheets',
     'smaug-cheets',
 ))
@@ -612,6 +616,7 @@ _waterfall_config_map = {
         # Experimental Canaries (Group)
         'glados-release-group',
         'glados-b-release-group',
+        'gru-release-group',
         'oak-release-group',
         'storm-release-group',
         'strago-c-release-group',
@@ -620,7 +625,6 @@ _waterfall_config_map = {
         # Experimental Canaries
         'amd64-generic-goofy-release',
         'gale-release',
-        'gru-release',
         'lakitu_next-release',
         'nyan_freon-release',
         'smaug-release',
@@ -2464,6 +2468,11 @@ def GetConfig():
   )
 
   site_config.Add(
+      'oak-cheets-release', cheets_release,
+      _base_configs['oak-cheets'],
+  )
+
+  site_config.Add(
       'samus-cheets-release', cheets_release,
       _base_configs['samus-cheets'],
   )
@@ -2855,6 +2864,7 @@ def GetConfig():
   _AddGroupConfig(
       'oak', 'oak', (
           'elm',
+          'oak-cheets',
       ),
       important=False,
   )
@@ -2891,8 +2901,10 @@ def GetConfig():
   )
 
   # gru-based boards
-  _AdjustLeaderFollowerReleaseConfigs(
-      'gru',
+  _AddGroupConfig(
+      'gru', 'gru', (
+          'kevin',
+      ),
       important=False,
   )
 

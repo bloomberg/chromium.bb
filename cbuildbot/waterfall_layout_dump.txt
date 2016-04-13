@@ -52,7 +52,9 @@ glados-paladin
   chell-release
   glados-cheets-release
   glados-release
-gru-release
+[gru-release-group]
+  gru-release
+  kevin-release
 guado_moblab-paladin
 guado_moblab-release
 internal-minor-toolchain
@@ -105,6 +107,7 @@ nyan_freon-release
 oak-paladin
 [oak-release-group]
   elm-release
+  oak-cheets-release
   oak-release
 panther-paladin
 panther_embedded-minimal-release
