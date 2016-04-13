@@ -37,15 +37,15 @@
 
 namespace blink {
 
-float ShapeResult::RunInfo::xPositionForVisualOffset(unsigned offset) const
+float ShapeResult::RunInfo::xPositionForVisualOffset(unsigned offset, AdjustMidCluster adjustMidCluster) const
 {
     ASSERT(offset < m_numCharacters);
     if (rtl())
         offset = m_numCharacters - offset - 1;
-    return xPositionForOffset(offset);
+    return xPositionForOffset(offset, adjustMidCluster);
 }
 
-float ShapeResult::RunInfo::xPositionForOffset(unsigned offset) const
+float ShapeResult::RunInfo::xPositionForOffset(unsigned offset, AdjustMidCluster adjustMidCluster) const
 {
     ASSERT(offset <= m_numCharacters);
     const unsigned numGlyphs = m_glyphData.size();
@@ -55,6 +55,12 @@ float ShapeResult::RunInfo::xPositionForOffset(unsigned offset) const
         while (glyphIndex < numGlyphs && m_glyphData[glyphIndex].characterIndex > offset) {
             position += m_glyphData[glyphIndex].advance;
             ++glyphIndex;
+        }
+        // Adjust offset if it's not on the cluster boundary. In RTL, this means
+        // that the adjusted position is the left side of the character.
+        if (adjustMidCluster == AdjustToEnd && (glyphIndex < numGlyphs
+            ? m_glyphData[glyphIndex].characterIndex : m_numCharacters) < offset) {
+            return position;
         }
         // For RTL, we need to return the right side boundary of the character.
         // Add advance of glyphs which are part of the character.
@@ -67,6 +73,16 @@ float ShapeResult::RunInfo::xPositionForOffset(unsigned offset) const
         while (glyphIndex < numGlyphs && m_glyphData[glyphIndex].characterIndex < offset) {
             position += m_glyphData[glyphIndex].advance;
             ++glyphIndex;
+        }
+        // Adjust offset if it's not on the cluster boundary.
+        if (adjustMidCluster == AdjustToStart && glyphIndex && (glyphIndex < numGlyphs
+            ? m_glyphData[glyphIndex].characterIndex : m_numCharacters) > offset) {
+            offset = m_glyphData[--glyphIndex].characterIndex;
+            for (; m_glyphData[glyphIndex].characterIndex == offset; --glyphIndex) {
+                position -= m_glyphData[glyphIndex].advance;
+                if (!glyphIndex)
+                    break;
+            }
         }
     }
     return position;
