@@ -103,13 +103,6 @@
       'include_dirs': [
         '../..',
       ],
-      'direct_dependent_settings': {
-        'ldflags': [
-          # Some android targets still depend on --gc-sections to link.
-          # TODO: remove --gc-sections for Debug builds (crbug.com/159847).
-          '-Wl,--gc-sections',
-        ],
-      },
       'conditions': [
         # TODO(yfriedman): move this DEP to chrome_android_core to be shared
         # between internal/external.

@@ -987,12 +987,6 @@ if (is_android) {
     ]
   }
 
-  # Some android targets still depend on --gc-sections to link.
-  # TODO: remove --gc-sections for Debug builds (crbug.com/159847).
-  config("gc_sections") {
-    ldflags = [ "-Wl,--gc-sections" ]
-  }
-
   # GYP: //chrome/chrome_android.gypi:chrome_android_core
   source_set("chrome_android_core") {
     sources = [
@@ -1005,7 +999,6 @@ if (is_android) {
       "app/chrome_main_delegate.cc",
       "app/chrome_main_delegate.h",
     ]
-    public_configs = [ ":gc_sections" ]
 
     include_dirs = [ android_ndk_include_dir ]
 
