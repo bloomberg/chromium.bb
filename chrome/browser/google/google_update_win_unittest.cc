@@ -8,6 +8,7 @@
 #include <atlbase.h>
 #include <atlcom.h>
 
+#include <memory>
 #include <queue>
 
 #include "base/base_paths.h"
@@ -623,10 +624,10 @@ class GoogleUpdateWinTest : public ::testing::TestWithParam<bool> {
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle task_runner_handle_;
   bool system_level_install_;
-  scoped_ptr<base::ScopedPathOverride> file_exe_override_;
-  scoped_ptr<base::ScopedPathOverride> program_files_override_;
-  scoped_ptr<base::ScopedPathOverride> program_files_x86_override_;
-  scoped_ptr<base::ScopedPathOverride> local_app_data_override_;
+  std::unique_ptr<base::ScopedPathOverride> file_exe_override_;
+  std::unique_ptr<base::ScopedPathOverride> program_files_override_;
+  std::unique_ptr<base::ScopedPathOverride> program_files_x86_override_;
+  std::unique_ptr<base::ScopedPathOverride> local_app_data_override_;
   registry_util::RegistryOverrideManager registry_override_manager_;
 
   // A mock object, the OnUpdateCheckCallback method of which will be invoked
