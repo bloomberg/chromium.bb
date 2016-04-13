@@ -58,7 +58,7 @@ def get_results(keys, output_collector=None):
   """
   return list(
       swarming.yield_results(
-          'https://host:9001', keys, 10., None, True, output_collector))
+          'https://host:9001', keys, 10., None, True, output_collector, False))
 
 
 def collect(url, task_ids):
@@ -70,7 +70,8 @@ def collect(url, task_ids):
     decorate=True,
     print_status_updates=True,
     task_summary_json=None,
-    task_output_dir=None)
+    task_output_dir=None,
+    include_perf=False)
 
 
 def main(args):
@@ -1067,7 +1068,7 @@ class TestMain(NetTestCase):
       json.dump(data, f)
     def stub_collect(
         swarming_server, task_ids, timeout, decorate, print_status_updates,
-        task_summary_json, task_output_dir):
+        task_summary_json, task_output_dir, include_perf):
       self.assertEqual('https://host', swarming_server)
       self.assertEqual([u'12300'], task_ids)
       # It is automatically calculated from hard timeout + expiration + 10.
@@ -1076,6 +1077,7 @@ class TestMain(NetTestCase):
       self.assertEqual(True, print_status_updates)
       self.assertEqual('/a', task_summary_json)
       self.assertEqual('/b', task_output_dir)
+      self.assertEqual(False, include_perf)
       print('Fake output')
     self.mock(swarming, 'collect', stub_collect)
     main(

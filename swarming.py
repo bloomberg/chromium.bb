@@ -5,7 +5,7 @@
 
 """Client tool to trigger tasks or retrieve results from a Swarming server."""
 
-__version__ = '0.8.4'
+__version__ = '0.8.5'
 
 import collections
 import datetime
@@ -495,7 +495,8 @@ def parse_time(value):
 
 
 def retrieve_results(
-    base_url, shard_index, task_id, timeout, should_stop, output_collector):
+    base_url, shard_index, task_id, timeout, should_stop, output_collector,
+    include_perf):
   """Retrieves results for a single task ID.
 
   Returns:
@@ -504,6 +505,8 @@ def retrieve_results(
   """
   assert timeout is None or isinstance(timeout, float), timeout
   result_url = '%s/_ah/api/swarming/v1/task/%s/result' % (base_url, task_id)
+  if include_perf:
+    result_url += '?include_performance_stats=true'
   output_url = '%s/_ah/api/swarming/v1/task/%s/stdout' % (base_url, task_id)
   started = now()
   deadline = started + timeout if timeout else None
@@ -616,7 +619,7 @@ def convert_to_old_format(result):
 
 def yield_results(
     swarm_base_url, task_ids, timeout, max_threads, print_status_updates,
-    output_collector):
+    output_collector, include_perf):
   """Yields swarming task results from the swarming server as (index, result).
 
   Duplicate shards are ignored. Shards are yielded in order of completion.
@@ -647,7 +650,7 @@ def yield_results(
         task_fn = lambda *args: (shard_index, retrieve_results(*args))
         pool.add_task(
             0, results_channel.wrap_task(task_fn), swarm_base_url, shard_index,
-            task_id, timeout, should_stop, output_collector)
+            task_id, timeout, should_stop, output_collector, include_perf)
 
       # Enqueue 'retrieve_results' calls for each shard key to run in parallel.
       for shard_index, task_id in enumerate(task_ids):
@@ -728,7 +731,7 @@ def decorate_shard_output(swarming, shard_index, metadata):
 
 def collect(
     swarming, task_ids, timeout, decorate, print_status_updates,
-    task_summary_json, task_output_dir):
+    task_summary_json, task_output_dir, include_perf):
   """Retrieves results of a Swarming task.
 
   Returns:
@@ -743,7 +746,7 @@ def collect(
   try:
     for index, metadata in yield_results(
         swarming, task_ids, timeout, None, print_status_updates,
-        output_collector):
+        output_collector, include_perf):
       seen_shards.add(index)
 
       # Default to failure if there was no process that even started.
@@ -974,6 +977,9 @@ def add_collect_options(parser):
       help='Directory to put task results into. When the task finishes, this '
            'directory contains per-shard directory with output files produced '
            'by shards: <task-output-dir>/<zero-based-shard-index>/.')
+  parser.task_output_group.add_option(
+      '--perf', action='store_true', default=False,
+      help='Includes performance statistics')
   parser.add_option_group(parser.task_output_group)
 
 
@@ -1119,7 +1125,8 @@ def CMDcollect(parser, args):
         options.decorate,
         options.print_status_updates,
         options.task_summary_json,
-        options.task_output_dir)
+        options.task_output_dir,
+        options.perf)
   except Failure:
     on_error.report(None)
     return 1
@@ -1316,7 +1323,8 @@ def CMDrun(parser, args):
         options.decorate,
         options.print_status_updates,
         options.task_summary_json,
-        options.task_output_dir)
+        options.task_output_dir,
+        options.perf)
   except Failure:
     on_error.report(None)
     return 1
@@ -1418,7 +1426,8 @@ def CMDterminate(parser, args):
     return 1
   if options.wait:
     return collect(
-        options.swarming, [request['task_id']], 0., False, False, None, None)
+        options.swarming, [request['task_id']], 0., False, False, None, None,
+        False)
   return 0
 
 

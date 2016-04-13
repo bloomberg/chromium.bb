@@ -125,7 +125,7 @@ def trigger_task(
     out = [
       output
       for _index, output in swarming.yield_results(
-          swarming_url, test_keys, timeout, None, False, None)
+          swarming_url, test_keys, timeout, None, False, None, False)
     ]
     if not out:
       return 'no_result'
