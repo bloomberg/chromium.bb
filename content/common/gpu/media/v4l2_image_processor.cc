@@ -18,12 +18,6 @@
 #include "content/common/gpu/media/v4l2_image_processor.h"
 #include "media/base/bind_to_current_loop.h"
 
-#define NOTIFY_ERROR()                      \
-  do {                                      \
-    LOG(ERROR) << "calling NotifyError()";  \
-    NotifyError();                          \
-  } while (0)
-
 #define IOCTL_OR_ERROR_RETURN_VALUE(type, arg, value, type_str)        \
   do {                                                                 \
     if (device_->Ioctl(type, arg) != 0) {                              \
@@ -78,7 +72,9 @@ V4L2ImageProcessor::V4L2ImageProcessor(const scoped_refptr<V4L2Device>& device)
       output_streamon_(false),
       output_buffer_queued_count_(0),
       num_buffers_(0),
-      device_weak_factory_(this) {}
+      weak_this_factory_(this) {
+  weak_this_ = weak_this_factory_.GetWeakPtr();
+}
 
 V4L2ImageProcessor::~V4L2ImageProcessor() {
   DCHECK(child_task_runner_->BelongsToCurrentThread());
@@ -90,10 +86,17 @@ V4L2ImageProcessor::~V4L2ImageProcessor() {
 }
 
 void V4L2ImageProcessor::NotifyError() {
-  if (!child_task_runner_->BelongsToCurrentThread())
-    child_task_runner_->PostTask(FROM_HERE, error_cb_);
-  else
-    error_cb_.Run();
+  LOG(ERROR) << __func__;
+  DCHECK(!child_task_runner_->BelongsToCurrentThread());
+  child_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&V4L2ImageProcessor::NotifyErrorOnChildThread,
+                            weak_this_, error_cb_));
+}
+
+void V4L2ImageProcessor::NotifyErrorOnChildThread(
+    const base::Closure& error_cb) {
+  DCHECK(child_task_runner_->BelongsToCurrentThread());
+  error_cb_.Run();
 }
 
 bool V4L2ImageProcessor::Initialize(const base::Closure& error_cb,
@@ -154,7 +157,7 @@ bool V4L2ImageProcessor::Initialize(const base::Closure& error_cb,
     return false;
   }
 
-  // StartDevicePoll will NOTIFY_ERROR on failure, so IgnoreResult is fine here.
+  // StartDevicePoll will NotifyError on failure, so IgnoreResult is fine here.
   device_thread_.message_loop()->PostTask(
       FROM_HERE,
       base::Bind(base::IgnoreResult(&V4L2ImageProcessor::StartDevicePoll),
@@ -212,6 +215,8 @@ void V4L2ImageProcessor::Destroy() {
   DVLOG(3) << __func__;
   DCHECK(child_task_runner_->BelongsToCurrentThread());
 
+  weak_this_factory_.InvalidateWeakPtrs();
+
   // If the device thread is running, destroy using posted task.
   if (device_thread_.IsRunning()) {
     device_thread_.message_loop()->PostTask(
@@ -222,7 +227,6 @@ void V4L2ImageProcessor::Destroy() {
   } else {
     // Otherwise DestroyTask() is not needed.
     DCHECK(!device_poll_thread_.IsRunning());
-    DCHECK(!device_weak_factory_.HasWeakPtrs());
   }
 
   delete this;
@@ -230,8 +234,6 @@ void V4L2ImageProcessor::Destroy() {
 
 void V4L2ImageProcessor::DestroyTask() {
   DCHECK_EQ(device_thread_.message_loop(), base::MessageLoop::current());
-
-  device_weak_factory_.InvalidateWeakPtrs();
 
   // Stop streaming and the device_poll_thread_.
   StopDevicePoll();
@@ -401,7 +403,7 @@ void V4L2ImageProcessor::DevicePollTask(bool poll_device) {
 
   bool event_pending;
   if (!device_->Poll(poll_device, &event_pending)) {
-    NOTIFY_ERROR();
+    NotifyError();
     return;
   }
 
@@ -510,7 +512,7 @@ void V4L2ImageProcessor::Dequeue() {
         break;
       }
       PLOG(ERROR) << "ioctl() failed: VIDIOC_DQBUF";
-      NOTIFY_ERROR();
+      NotifyError();
       return;
     }
     InputRecord& input_record = input_buffer_map_[dqbuf.index];
@@ -537,7 +539,7 @@ void V4L2ImageProcessor::Dequeue() {
         break;
       }
       PLOG(ERROR) << "ioctl() failed: VIDIOC_DQBUF";
-      NOTIFY_ERROR();
+      NotifyError();
       return;
     }
     OutputRecord& output_record = output_buffer_map_[dqbuf.index];
@@ -552,8 +554,9 @@ void V4L2ImageProcessor::Dequeue() {
 
     DVLOG(3) << "Processing finished, returning frame, index=" << dqbuf.index;
 
-    child_task_runner_->PostTask(FROM_HERE,
-                                 base::Bind(job_record->ready_cb, dqbuf.index));
+    child_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&V4L2ImageProcessor::FrameReady, weak_this_,
+                              job_record->ready_cb, dqbuf.index));
   }
 }
 
@@ -625,7 +628,7 @@ bool V4L2ImageProcessor::StartDevicePoll() {
   // Start up the device poll thread and schedule its first DevicePollTask().
   if (!device_poll_thread_.Start()) {
     LOG(ERROR) << "StartDevicePoll(): Device thread failed to start";
-    NOTIFY_ERROR();
+    NotifyError();
     return false;
   }
   // Enqueue a poll task with no devices to poll on - will wait only for the
@@ -685,6 +688,12 @@ bool V4L2ImageProcessor::StopDevicePoll() {
   output_buffer_queued_count_ = 0;
 
   return true;
+}
+
+void V4L2ImageProcessor::FrameReady(const FrameReadyCB& cb,
+                                    int output_buffer_index) {
+  DCHECK(child_task_runner_->BelongsToCurrentThread());
+  cb.Run(output_buffer_index);
 }
 
 }  // namespace content

@@ -67,7 +67,9 @@ class CONTENT_EXPORT V4L2ImageProcessor {
                int output_buffer_index,
                const FrameReadyCB& cb);
 
-  // Stop all processing and clean up.
+  // Stop all processing and clean up. After this method returns no more
+  // callbacks will be invoked.  Deletes |this| unconditionally, so make sure
+  // to drop all pointers to it!
   void Destroy();
 
  private:
@@ -109,6 +111,7 @@ class CONTENT_EXPORT V4L2ImageProcessor {
   void DestroyOutputBuffers();
 
   void NotifyError();
+  void NotifyErrorOnChildThread(const base::Closure& error_cb);
   void DestroyTask();
 
   void ProcessTask(std::unique_ptr<JobRecord> job_record);
@@ -120,6 +123,9 @@ class CONTENT_EXPORT V4L2ImageProcessor {
 
   // Ran on device_poll_thread_ to wait for device events.
   void DevicePollTask(bool poll_device);
+
+  // A processed frame is ready.
+  void FrameReady(const FrameReadyCB& cb, int output_buffer_index);
 
   // Size and format-related members remain constant after initialization.
   // The visible/allocated sizes of the input frame.
@@ -175,8 +181,16 @@ class CONTENT_EXPORT V4L2ImageProcessor {
   // Error callback to the client.
   base::Closure error_cb_;
 
-  // Weak factory for producing weak pointers on the device_thread_
-  base::WeakPtrFactory<V4L2ImageProcessor> device_weak_factory_;
+  // WeakPtr<> pointing to |this| for use in posting tasks from the device
+  // worker threads back to the child thread.  Because the worker threads
+  // are members of this class, any task running on those threads is guaranteed
+  // that this object is still alive.  As a result, tasks posted from the child
+  // thread to the device thread should use base::Unretained(this),
+  // and tasks posted the other way should use |weak_this_|.
+  base::WeakPtr<V4L2ImageProcessor> weak_this_;
+
+  // Weak factory for producing weak pointers on the child thread.
+  base::WeakPtrFactory<V4L2ImageProcessor> weak_this_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(V4L2ImageProcessor);
 };
