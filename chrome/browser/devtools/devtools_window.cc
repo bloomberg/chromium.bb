@@ -221,7 +221,7 @@ class DevToolsEventForwarder {
 
 void DevToolsEventForwarder::SetWhitelistedShortcuts(
     const std::string& message) {
-  scoped_ptr<base::Value> parsed_message = base::JSONReader::Read(message);
+  std::unique_ptr<base::Value> parsed_message = base::JSONReader::Read(message);
   base::ListValue* shortcut_list;
   if (!parsed_message->GetAsList(&shortcut_list))
       return;
@@ -788,7 +788,7 @@ DevToolsWindow* DevToolsWindow::Create(
                           shared_worker_frontend,
                           remote_frontend,
                           can_dock, settings));
-  scoped_ptr<WebContents> main_web_contents(
+  std::unique_ptr<WebContents> main_web_contents(
       WebContents::Create(WebContents::CreateParams(profile)));
   main_web_contents->GetController().LoadURL(
       DecorateFrontendURL(url), content::Referrer(),

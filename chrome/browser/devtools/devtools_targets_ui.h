@@ -6,11 +6,11 @@
 #define CHROME_BROWSER_DEVTOOLS_DEVTOOLS_TARGETS_UI_H_
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/devtools/device/devtools_android_bridge.h"
 
 namespace base {
@@ -32,11 +32,12 @@ class DevToolsTargetsUIHandler {
 
   std::string source_id() const { return source_id_; }
 
-  static scoped_ptr<DevToolsTargetsUIHandler> CreateForLocal(
+  static std::unique_ptr<DevToolsTargetsUIHandler> CreateForLocal(
       const Callback& callback);
 
-  static scoped_ptr<DevToolsTargetsUIHandler> CreateForAdb(
-      const Callback& callback, Profile* profile);
+  static std::unique_ptr<DevToolsTargetsUIHandler> CreateForAdb(
+      const Callback& callback,
+      Profile* profile);
 
   DevToolsTargetImpl* GetTarget(const std::string& target_id);
 

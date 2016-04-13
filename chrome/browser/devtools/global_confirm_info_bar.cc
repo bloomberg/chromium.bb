@@ -131,7 +131,7 @@ void GlobalConfirmInfoBar::DelegateProxy::Detach() {
 
 // static
 base::WeakPtr<GlobalConfirmInfoBar> GlobalConfirmInfoBar::Show(
-    scoped_ptr<ConfirmInfoBarDelegate> delegate) {
+    std::unique_ptr<ConfirmInfoBarDelegate> delegate) {
   GlobalConfirmInfoBar* info_bar =
       new GlobalConfirmInfoBar(std::move(delegate));
   return info_bar->weak_factory_.GetWeakPtr();
@@ -142,12 +142,12 @@ void GlobalConfirmInfoBar::Close() {
 }
 
 GlobalConfirmInfoBar::GlobalConfirmInfoBar(
-    scoped_ptr<ConfirmInfoBarDelegate> delegate)
+    std::unique_ptr<ConfirmInfoBarDelegate> delegate)
     : delegate_(std::move(delegate)),
       browser_tab_strip_tracker_(this, nullptr, nullptr),
       weak_factory_(this) {
-   browser_tab_strip_tracker_.Init(
-       BrowserTabStripTracker::InitWith::BROWSERS_IN_ACTIVE_DESKTOP);
+  browser_tab_strip_tracker_.Init(
+      BrowserTabStripTracker::InitWith::BROWSERS_IN_ACTIVE_DESKTOP);
 }
 
 GlobalConfirmInfoBar::~GlobalConfirmInfoBar() {
@@ -170,7 +170,7 @@ void GlobalConfirmInfoBar::TabInsertedAt(content::WebContents* web_contents,
   if (proxies_.find(infobar_service) != proxies_.end())
       return;
 
-  scoped_ptr<GlobalConfirmInfoBar::DelegateProxy> proxy(
+  std::unique_ptr<GlobalConfirmInfoBar::DelegateProxy> proxy(
       new GlobalConfirmInfoBar::DelegateProxy(weak_factory_.GetWeakPtr()));
   GlobalConfirmInfoBar::DelegateProxy* proxy_ptr = proxy.get();
   infobars::InfoBar* added_bar = infobar_service->AddInfoBar(

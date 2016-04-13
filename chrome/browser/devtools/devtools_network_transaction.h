@@ -7,8 +7,9 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/devtools/devtools_network_interceptor.h"
 #include "net/base/completion_callback.h"
@@ -51,7 +52,7 @@ class DevToolsNetworkTransaction
 
   DevToolsNetworkTransaction(
       DevToolsNetworkController* controller,
-      scoped_ptr<net::HttpTransaction> network_transaction);
+      std::unique_ptr<net::HttpTransaction> network_transaction);
 
   ~DevToolsNetworkTransaction() override;
 
@@ -117,13 +118,13 @@ class DevToolsNetworkTransaction
   base::WeakPtr<DevToolsNetworkInterceptor> interceptor_;
 
   // Modified upload data stream. Should be destructed after |custom_request_|.
-  scoped_ptr<DevToolsNetworkUploadDataStream> custom_upload_data_stream_;
+  std::unique_ptr<DevToolsNetworkUploadDataStream> custom_upload_data_stream_;
 
   // Modified request. Should be destructed after |network_transaction_|.
-  scoped_ptr<net::HttpRequestInfo> custom_request_;
+  std::unique_ptr<net::HttpRequestInfo> custom_request_;
 
   // Real network transaction.
-  scoped_ptr<net::HttpTransaction> network_transaction_;
+  std::unique_ptr<net::HttpTransaction> network_transaction_;
 
   const net::HttpRequestInfo* request_;
 

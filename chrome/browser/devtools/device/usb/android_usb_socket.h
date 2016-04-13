@@ -28,7 +28,7 @@ class AndroidUsbSocket : public net::StreamSocket,
                    base::Closure delete_callback);
   ~AndroidUsbSocket() override;
 
-  void HandleIncoming(scoped_ptr<AdbMessage> message);
+  void HandleIncoming(std::unique_ptr<AdbMessage> message);
 
   void Terminated(bool closed_by_device);
 

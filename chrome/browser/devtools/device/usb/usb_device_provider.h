@@ -39,7 +39,7 @@ class UsbDeviceProvider : public AndroidDeviceManager::DeviceProvider {
 
   typedef std::map<std::string, scoped_refptr<AndroidUsbDevice> > UsbDeviceMap;
 
-  scoped_ptr<crypto::RSAPrivateKey>  rsa_key_;
+  std::unique_ptr<crypto::RSAPrivateKey> rsa_key_;
   UsbDeviceMap device_map_;
 };
 

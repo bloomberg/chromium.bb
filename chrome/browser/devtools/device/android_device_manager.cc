@@ -6,9 +6,11 @@
 
 #include <stddef.h>
 #include <string.h>
+
 #include <utility>
 
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -59,7 +61,7 @@ static void PostHttpUpgradeCallback(
     int result,
     const std::string& extensions,
     const std::string& body_head,
-    scoped_ptr<net::StreamSocket> socket) {
+    std::unique_ptr<net::StreamSocket> socket) {
   response_task_runner->PostTask(
       FROM_HERE, base::Bind(callback, result, extensions, body_head,
                             base::Passed(&socket)));
@@ -73,7 +75,7 @@ class HttpRequest {
   static void CommandRequest(const std::string& request,
                              const CommandCallback& callback,
                              int result,
-                             scoped_ptr<net::StreamSocket> socket) {
+                             std::unique_ptr<net::StreamSocket> socket) {
     if (result != net::OK) {
       callback.Run(result, std::string());
       return;
@@ -84,18 +86,17 @@ class HttpRequest {
   static void HttpUpgradeRequest(const std::string& request,
                                  const HttpUpgradeCallback& callback,
                                  int result,
-                                 scoped_ptr<net::StreamSocket> socket) {
+                                 std::unique_ptr<net::StreamSocket> socket) {
     if (result != net::OK) {
-      callback.Run(
-          result, std::string(), std::string(),
-          make_scoped_ptr<net::StreamSocket>(nullptr));
+      callback.Run(result, std::string(), std::string(),
+                   base::WrapUnique<net::StreamSocket>(nullptr));
       return;
     }
     new HttpRequest(std::move(socket), request, callback);
   }
 
  private:
-  HttpRequest(scoped_ptr<net::StreamSocket> socket,
+  HttpRequest(std::unique_ptr<net::StreamSocket> socket,
               const std::string& request,
               const CommandCallback& callback)
       : socket_(std::move(socket)),
@@ -105,7 +106,7 @@ class HttpRequest {
     SendRequest(request);
   }
 
-  HttpRequest(scoped_ptr<net::StreamSocket> socket,
+  HttpRequest(std::unique_ptr<net::StreamSocket> socket,
               const std::string& request,
               const HttpUpgradeCallback& callback)
       : socket_(std::move(socket)),
@@ -236,15 +237,14 @@ class HttpRequest {
     if (!command_callback_.is_null()) {
       command_callback_.Run(result, std::string());
     } else {
-      http_upgrade_callback_.Run(
-          result, std::string(), std::string(),
-          make_scoped_ptr<net::StreamSocket>(nullptr));
+      http_upgrade_callback_.Run(result, std::string(), std::string(),
+                                 base::WrapUnique<net::StreamSocket>(nullptr));
     }
     delete this;
     return false;
   }
 
-  scoped_ptr<net::StreamSocket> socket_;
+  std::unique_ptr<net::StreamSocket> socket_;
   scoped_refptr<net::DrainableIOBuffer> request_;
   std::string response_;
   CommandCallback command_callback_;
@@ -268,7 +268,7 @@ class DevicesRequest : public base::RefCountedThreadSafe<DevicesRequest> {
   typedef AndroidDeviceManager::DeviceProvider DeviceProvider;
   typedef AndroidDeviceManager::DeviceProviders DeviceProviders;
   typedef AndroidDeviceManager::DeviceDescriptors DeviceDescriptors;
-  typedef base::Callback<void(scoped_ptr<DeviceDescriptors>)>
+  typedef base::Callback<void(std::unique_ptr<DeviceDescriptors>)>
       DescriptorsCallback;
 
   static void Start(
@@ -315,7 +315,7 @@ class DevicesRequest : public base::RefCountedThreadSafe<DevicesRequest> {
 
   scoped_refptr<base::SingleThreadTaskRunner> response_task_runner_;
   DescriptorsCallback callback_;
-  scoped_ptr<DeviceDescriptors> descriptors_;
+  std::unique_ptr<DeviceDescriptors> descriptors_;
 };
 
 void ReleaseDeviceAndProvider(
@@ -503,8 +503,8 @@ AndroidDeviceManager::HandlerThread::~HandlerThread() {
 }
 
 // static
-scoped_ptr<AndroidDeviceManager> AndroidDeviceManager::Create() {
-  return make_scoped_ptr(new AndroidDeviceManager());
+std::unique_ptr<AndroidDeviceManager> AndroidDeviceManager::Create() {
+  return base::WrapUnique(new AndroidDeviceManager());
 }
 
 void AndroidDeviceManager::SetDeviceProviders(
@@ -536,7 +536,7 @@ AndroidDeviceManager::~AndroidDeviceManager() {
 
 void AndroidDeviceManager::UpdateDevices(
     const DevicesCallback& callback,
-    scoped_ptr<DeviceDescriptors> descriptors) {
+    std::unique_ptr<DeviceDescriptors> descriptors) {
   Devices response;
   DeviceWeakMap new_devices;
   for (DeviceDescriptors::const_iterator it = descriptors->begin();

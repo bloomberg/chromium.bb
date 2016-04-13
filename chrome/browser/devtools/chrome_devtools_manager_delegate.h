@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_DEVTOOLS_CHROME_DEVTOOLS_MANAGER_DELEGATE_H_
 #define CHROME_BROWSER_DEVTOOLS_CHROME_DEVTOOLS_MANAGER_DELEGATE_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/public/browser/devtools_manager_delegate.h"
 
 class DevToolsNetworkProtocolHandler;
@@ -27,7 +28,7 @@ class ChromeDevToolsManagerDelegate : public content::DevToolsManagerDelegate {
       base::DictionaryValue* command_dict) override;
 
  private:
-  scoped_ptr<DevToolsNetworkProtocolHandler> network_protocol_handler_;
+  std::unique_ptr<DevToolsNetworkProtocolHandler> network_protocol_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeDevToolsManagerDelegate);
 };

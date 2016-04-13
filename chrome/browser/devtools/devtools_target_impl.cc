@@ -199,7 +199,7 @@ void DevToolsTargetImpl::Reload() const {
 }
 
 // static
-scoped_ptr<DevToolsTargetImpl> DevToolsTargetImpl::CreateForTab(
+std::unique_ptr<DevToolsTargetImpl> DevToolsTargetImpl::CreateForTab(
     content::WebContents* web_contents) {
   // TODO(dgozman): these checks should not be necessary. See
   // http://crbug.com/489664.
@@ -207,7 +207,7 @@ scoped_ptr<DevToolsTargetImpl> DevToolsTargetImpl::CreateForTab(
     return nullptr;
   if (!DevToolsAgentHost::GetOrCreateFor(web_contents))
     return nullptr;
-  return scoped_ptr<DevToolsTargetImpl>(
+  return std::unique_ptr<DevToolsTargetImpl>(
       new WebContentsTarget(web_contents, true));
 }
 

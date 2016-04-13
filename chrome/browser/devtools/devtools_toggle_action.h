@@ -7,7 +7,8 @@
 
 #include <stddef.h>
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/strings/string16.h"
 
 struct DevToolsToggleAction {
@@ -58,7 +59,7 @@ struct DevToolsToggleAction {
   Type type_;
 
   // Additional parameters for the Reveal action; NULL if of any other type.
-  scoped_ptr<RevealParams> params_;
+  std::unique_ptr<RevealParams> params_;
 };
 
 #endif  // CHROME_BROWSER_DEVTOOLS_DEVTOOLS_TOGGLE_ACTION_H_

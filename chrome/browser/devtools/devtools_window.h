@@ -322,7 +322,7 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
   void UpdateBrowserToolbar();
   void UpdateBrowserWindow();
 
-  scoped_ptr<ObserverWithAccessor> inspected_contents_observer_;
+  std::unique_ptr<ObserverWithAccessor> inspected_contents_observer_;
 
   Profile* profile_;
   content::WebContents* main_web_contents_;
@@ -343,7 +343,7 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
   base::Closure ready_for_test_callback_;
 
   base::TimeTicks inspect_element_start_time_;
-  scoped_ptr<DevToolsEventForwarder> event_forwarder_;
+  std::unique_ptr<DevToolsEventForwarder> event_forwarder_;
 
   friend class DevToolsEventForwarder;
   DISALLOW_COPY_AND_ASSIGN(DevToolsWindow);

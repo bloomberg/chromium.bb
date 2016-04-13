@@ -9,12 +9,12 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <queue>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "device/usb/usb_device_handle.h"
@@ -106,7 +106,7 @@ class AndroidUsbDevice : public base::RefCountedThreadSafe<AndroidUsbDevice> {
   friend class base::RefCountedThreadSafe<AndroidUsbDevice>;
   virtual ~AndroidUsbDevice();
 
-  void Queue(scoped_ptr<AdbMessage> message);
+  void Queue(std::unique_ptr<AdbMessage> message);
   void ProcessOutgoing();
   void OutgoingMessageSent(device::UsbTransferStatus status,
                            scoped_refptr<net::IOBuffer> buffer,
@@ -117,17 +117,17 @@ class AndroidUsbDevice : public base::RefCountedThreadSafe<AndroidUsbDevice> {
                    scoped_refptr<net::IOBuffer> buffer,
                    size_t result);
 
-  void ReadBody(scoped_ptr<AdbMessage> message,
+  void ReadBody(std::unique_ptr<AdbMessage> message,
                 uint32_t data_length,
                 uint32_t data_check);
-  void ParseBody(scoped_ptr<AdbMessage> message,
+  void ParseBody(std::unique_ptr<AdbMessage> message,
                  uint32_t data_length,
                  uint32_t data_check,
                  device::UsbTransferStatus status,
                  scoped_refptr<net::IOBuffer> buffer,
                  size_t result);
 
-  void HandleIncoming(scoped_ptr<AdbMessage> message);
+  void HandleIncoming(std::unique_ptr<AdbMessage> message);
 
   void TransferError(device::UsbTransferStatus status);
 
@@ -138,7 +138,7 @@ class AndroidUsbDevice : public base::RefCountedThreadSafe<AndroidUsbDevice> {
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
-  scoped_ptr<crypto::RSAPrivateKey> rsa_key_;
+  std::unique_ptr<crypto::RSAPrivateKey> rsa_key_;
 
   // Device info
   scoped_refptr<device::UsbDeviceHandle> usb_handle_;

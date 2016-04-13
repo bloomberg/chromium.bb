@@ -811,7 +811,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest, DevToolsExtensionWithHttpIframe) {
   // Our extension must load an URL from the test server, whose port is only
   // known at runtime. So, to embed the URL, we must dynamically generate the
   // extension, rather than loading it from static content.
-  scoped_ptr<extensions::TestExtensionDir> dir(
+  std::unique_ptr<extensions::TestExtensionDir> dir(
       new extensions::TestExtensionDir());
 
   extensions::DictionaryBuilder manifest;
@@ -1031,7 +1031,7 @@ class DevToolsAutoOpenerTest : public DevToolsSanityTest {
     observer_.reset(new DevToolsWindowCreationObserver());
   }
  protected:
-  scoped_ptr<DevToolsWindowCreationObserver> observer_;
+  std::unique_ptr<DevToolsWindowCreationObserver> observer_;
 };
 
 IN_PROC_BROWSER_TEST_F(DevToolsAutoOpenerTest, TestAutoOpenForTabs) {

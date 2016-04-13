@@ -24,7 +24,7 @@ const char kBrowserName[] = "Target";
 
 static void RunSocketCallback(
     const AndroidDeviceManager::SocketCallback& callback,
-    scoped_ptr<net::StreamSocket> socket,
+    std::unique_ptr<net::StreamSocket> socket,
     int result) {
   callback.Run(result, std::move(socket));
 }
@@ -52,14 +52,14 @@ class ResolveHostAndOpenSocket final {
       delete this;
       return;
     }
-    scoped_ptr<net::StreamSocket> socket(
+    std::unique_ptr<net::StreamSocket> socket(
         new net::TCPClientSocket(address_list_, NULL, net::NetLog::Source()));
     socket->Connect(
         base::Bind(&RunSocketCallback, callback_, base::Passed(&socket)));
     delete this;
   }
 
-  scoped_ptr<net::HostResolver> host_resolver_;
+  std::unique_ptr<net::HostResolver> host_resolver_;
   net::AddressList address_list_;
   AdbClientSocket::SocketCallback callback_;
 };

@@ -9,9 +9,9 @@
 #include <string.h>
 
 #include <limits>
+#include <memory>
 
 #include "base/base64.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "components/syncable_prefs/pref_service_syncable.h"
@@ -194,7 +194,7 @@ crypto::RSAPrivateKey* AndroidRSAPrivateKey(Profile* profile) {
   std::string encoded_key =
       profile->GetPrefs()->GetString(prefs::kDevToolsAdbKey);
   std::string decoded_key;
-  scoped_ptr<crypto::RSAPrivateKey> key;
+  std::unique_ptr<crypto::RSAPrivateKey> key;
   if (!encoded_key.empty() && base::Base64Decode(encoded_key, &decoded_key)) {
     std::vector<uint8_t> key_info(decoded_key.begin(), decoded_key.end());
     key.reset(crypto::RSAPrivateKey::CreateFromPrivateKeyInfo(key_info));

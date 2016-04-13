@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_DEVTOOLS_DEVICE_DEVTOOLS_ANDROID_BRIDGE_H_
 #define CHROME_BROWSER_DEVTOOLS_DEVICE_DEVTOOLS_ANDROID_BRIDGE_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -12,7 +13,6 @@
 #include "base/cancelable_callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/devtools/device/android_device_manager.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
@@ -78,7 +78,7 @@ class DevToolsAndroidBridge : public KeyedService {
 
     BrowserId browser_id_;
     std::string frontend_url_;
-    scoped_ptr<base::DictionaryValue> dict_;
+    std::unique_ptr<base::DictionaryValue> dict_;
 
     DISALLOW_COPY_AND_ASSIGN(RemotePage);
   };
@@ -258,7 +258,7 @@ class DevToolsAndroidBridge : public KeyedService {
   void SendProtocolCommand(const BrowserId& browser_id,
                            const std::string& target_path,
                            const std::string& method,
-                           scoped_ptr<base::DictionaryValue> params,
+                           std::unique_ptr<base::DictionaryValue> params,
                            const base::Closure callback);
 
   scoped_refptr<AndroidDeviceManager::Device> FindDevice(
@@ -269,7 +269,7 @@ class DevToolsAndroidBridge : public KeyedService {
   }
 
   Profile* const profile_;
-  const scoped_ptr<AndroidDeviceManager> device_manager_;
+  const std::unique_ptr<AndroidDeviceManager> device_manager_;
 
   typedef std::map<std::string, scoped_refptr<AndroidDeviceManager::Device>>
       DeviceMap;
@@ -289,7 +289,7 @@ class DevToolsAndroidBridge : public KeyedService {
 
   typedef std::vector<PortForwardingListener*> PortForwardingListeners;
   PortForwardingListeners port_forwarding_listeners_;
-  scoped_ptr<PortForwardingController> port_forwarding_controller_;
+  std::unique_ptr<PortForwardingController> port_forwarding_controller_;
 
   PrefChangeRegistrar pref_change_registrar_;
 

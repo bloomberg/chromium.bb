@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_DEVTOOLS_DEVTOOLS_NETWORK_PROTOCOL_HANDLER_H_
 #define CHROME_BROWSER_DEVTOOLS_DEVTOOLS_NETWORK_PROTOCOL_HANDLER_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/devtools/devtools_protocol.h"
 
 namespace content {
@@ -29,19 +30,19 @@ class DevToolsNetworkProtocolHandler {
       base::DictionaryValue* command_dict);
 
  private:
-  scoped_ptr<base::DictionaryValue> CanEmulateNetworkConditions(
+  std::unique_ptr<base::DictionaryValue> CanEmulateNetworkConditions(
       content::DevToolsAgentHost* agent_host,
       int command_id,
       base::DictionaryValue* params);
 
-  scoped_ptr<base::DictionaryValue> EmulateNetworkConditions(
+  std::unique_ptr<base::DictionaryValue> EmulateNetworkConditions(
       content::DevToolsAgentHost* agent_host,
       int command_id,
       base::DictionaryValue* params);
 
   void UpdateNetworkState(
       content::DevToolsAgentHost* agent_host,
-      scoped_ptr<DevToolsNetworkConditions> conditions);
+      std::unique_ptr<DevToolsNetworkConditions> conditions);
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsNetworkProtocolHandler);
 };

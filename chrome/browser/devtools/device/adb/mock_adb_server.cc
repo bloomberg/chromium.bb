@@ -9,6 +9,7 @@
 
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -207,8 +208,8 @@ class SimpleHttpServer : base::NonThreadSafe {
     void WriteData();
     void OnDataWritten(int count);
 
-    scoped_ptr<net::StreamSocket> socket_;
-    scoped_ptr<Parser> parser_;
+    std::unique_ptr<net::StreamSocket> socket_;
+    std::unique_ptr<Parser> parser_;
     scoped_refptr<net::GrowableIOBuffer> input_buffer_;
     scoped_refptr<net::GrowableIOBuffer> output_buffer_;
     int bytes_to_write_;
@@ -222,8 +223,8 @@ class SimpleHttpServer : base::NonThreadSafe {
   void OnAccepted(int result);
 
   ParserFactory factory_;
-  scoped_ptr<net::TCPServerSocket> socket_;
-  scoped_ptr<net::StreamSocket> client_socket_;
+  std::unique_ptr<net::TCPServerSocket> socket_;
+  std::unique_ptr<net::StreamSocket> client_socket_;
   base::WeakPtrFactory<SimpleHttpServer> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SimpleHttpServer);
@@ -432,8 +433,8 @@ class AdbParser : public SimpleHttpServer::Parser,
     } else if (serial_ != kSerialOnline) {
       Send("FAIL", "device offline (x)");
     } else {
-      mock_connection_ = make_scoped_ptr(
-          new MockAndroidConnection(this, serial_, command));
+      mock_connection_ =
+          base::WrapUnique(new MockAndroidConnection(this, serial_, command));
     }
   }
 
@@ -473,7 +474,7 @@ class AdbParser : public SimpleHttpServer::Parser,
   FlushMode flush_mode_;
   SimpleHttpServer::SendCallback callback_;
   std::string serial_;
-  scoped_ptr<MockAndroidConnection> mock_connection_;
+  std::unique_ptr<MockAndroidConnection> mock_connection_;
 };
 
 static SimpleHttpServer* mock_adb_server_ = NULL;

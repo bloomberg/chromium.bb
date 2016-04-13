@@ -29,7 +29,7 @@ enum Error {
 std::string DevToolsProtocol::SerializeCommand(
     int command_id,
     const std::string& method,
-    scoped_ptr<base::DictionaryValue> params) {
+    std::unique_ptr<base::DictionaryValue> params) {
   base::DictionaryValue command;
   command.SetInteger(kIdParam, command_id);
   command.SetString(kMethodParam, method);
@@ -42,10 +42,10 @@ std::string DevToolsProtocol::SerializeCommand(
 }
 
 // static
-scoped_ptr<base::DictionaryValue>
+std::unique_ptr<base::DictionaryValue>
 DevToolsProtocol::CreateInvalidParamsResponse(int command_id,
                                               const std::string& param) {
-  scoped_ptr<base::DictionaryValue> response(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> response(new base::DictionaryValue());
   base::DictionaryValue* error_object = new base::DictionaryValue();
   response->Set(kErrorParam, error_object);
   error_object->SetInteger(kErrorCodeParam, kErrorInvalidParams);
@@ -56,11 +56,10 @@ DevToolsProtocol::CreateInvalidParamsResponse(int command_id,
 }
 
 // static
-scoped_ptr<base::DictionaryValue>
-DevToolsProtocol::CreateSuccessResponse(
+std::unique_ptr<base::DictionaryValue> DevToolsProtocol::CreateSuccessResponse(
     int command_id,
-    scoped_ptr<base::DictionaryValue> result) {
-  scoped_ptr<base::DictionaryValue> response(new base::DictionaryValue());
+    std::unique_ptr<base::DictionaryValue> result) {
+  std::unique_ptr<base::DictionaryValue> response(new base::DictionaryValue());
   response->SetInteger(kIdParam, command_id);
   response->Set(kResultParam,
                 result ? result.release() : new base::DictionaryValue());
@@ -92,18 +91,18 @@ bool DevToolsProtocol::ParseCommand(base::DictionaryValue* command,
 bool DevToolsProtocol::ParseNotification(
     const std::string& json,
     std::string* method,
-    scoped_ptr<base::DictionaryValue>* params) {
-  scoped_ptr<base::Value> value = base::JSONReader::Read(json);
+    std::unique_ptr<base::DictionaryValue>* params) {
+  std::unique_ptr<base::Value> value = base::JSONReader::Read(json);
   if (!value || !value->IsType(base::Value::TYPE_DICTIONARY))
     return false;
 
-  scoped_ptr<base::DictionaryValue> dict(
+  std::unique_ptr<base::DictionaryValue> dict(
       static_cast<base::DictionaryValue*>(value.release()));
 
   if (!dict->GetString(kMethodParam, method))
     return false;
 
-  scoped_ptr<base::Value> params_value;
+  std::unique_ptr<base::Value> params_value;
   dict->Remove(kParamsParam, &params_value);
   if (params_value && params_value->IsType(base::Value::TYPE_DICTIONARY))
     params->reset(static_cast<base::DictionaryValue*>(params_value.release()));
@@ -115,11 +114,11 @@ bool DevToolsProtocol::ParseNotification(
 bool DevToolsProtocol::ParseResponse(const std::string& json,
                                      int* command_id,
                                      int* error_code) {
-  scoped_ptr<base::Value> value = base::JSONReader::Read(json);
+  std::unique_ptr<base::Value> value = base::JSONReader::Read(json);
   if (!value || !value->IsType(base::Value::TYPE_DICTIONARY))
     return false;
 
-  scoped_ptr<base::DictionaryValue> dict(
+  std::unique_ptr<base::DictionaryValue> dict(
       static_cast<base::DictionaryValue*>(value.release()));
 
   if (!dict->GetInteger(kIdParam, command_id))

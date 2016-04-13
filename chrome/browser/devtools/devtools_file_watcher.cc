@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <map>
+#include <memory>
 #include <set>
 
 #include "base/bind.h"
@@ -13,7 +14,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_path_watcher.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -42,7 +42,7 @@ class DevToolsFileWatcher::SharedFileWatcher :
   void DispatchNotifications();
 
   std::vector<DevToolsFileWatcher*> listeners_;
-  std::map<base::FilePath, scoped_ptr<base::FilePathWatcher>> watchers_;
+  std::map<base::FilePath, std::unique_ptr<base::FilePathWatcher>> watchers_;
   using FilePathTimesMap = std::map<base::FilePath, base::Time>;
   FilePathTimesMap file_path_times_;
   std::set<base::FilePath> pending_paths_;

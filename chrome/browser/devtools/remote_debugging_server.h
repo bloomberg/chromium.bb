@@ -7,10 +7,10 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace devtools_http_handler {
 class DevToolsHttpHandler;
@@ -27,7 +27,8 @@ class RemoteDebuggingServer {
   virtual ~RemoteDebuggingServer();
 
  private:
-  scoped_ptr<devtools_http_handler::DevToolsHttpHandler> devtools_http_handler_;
+  std::unique_ptr<devtools_http_handler::DevToolsHttpHandler>
+      devtools_http_handler_;
   DISALLOW_COPY_AND_ASSIGN(RemoteDebuggingServer);
 };
 

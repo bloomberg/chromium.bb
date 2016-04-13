@@ -25,14 +25,14 @@ class AndroidDeviceManager : public base::NonThreadSafe {
   using CommandCallback =
       base::Callback<void(int, const std::string&)>;
   using SocketCallback =
-      base::Callback<void(int result, scoped_ptr<net::StreamSocket>)>;
+      base::Callback<void(int result, std::unique_ptr<net::StreamSocket>)>;
   // |body_head| should contain the body (WebSocket frame data) part that has
   // been read during processing the header (WebSocket handshake).
-  using HttpUpgradeCallback = base::Callback<void(
-      int result,
-      const std::string& extensions,
-      const std::string& body_head,
-      scoped_ptr<net::StreamSocket>)>;
+  using HttpUpgradeCallback =
+      base::Callback<void(int result,
+                          const std::string& extensions,
+                          const std::string& body_head,
+                          std::unique_ptr<net::StreamSocket>)>;
   using SerialsCallback =
       base::Callback<void(const std::vector<std::string>&)>;
 
@@ -94,7 +94,7 @@ class AndroidDeviceManager : public base::NonThreadSafe {
     void Connected(int result,
                    const std::string& extensions,
                    const std::string& body_head,
-                   scoped_ptr<net::StreamSocket> socket);
+                   std::unique_ptr<net::StreamSocket> socket);
     void OnFrameRead(const std::string& message);
     void OnSocketClosed();
     void Terminate();
@@ -193,7 +193,7 @@ class AndroidDeviceManager : public base::NonThreadSafe {
 
   virtual ~AndroidDeviceManager();
 
-  static scoped_ptr<AndroidDeviceManager> Create();
+  static std::unique_ptr<AndroidDeviceManager> Create();
 
   void SetDeviceProviders(const DeviceProviders& providers);
 
@@ -237,7 +237,7 @@ class AndroidDeviceManager : public base::NonThreadSafe {
   AndroidDeviceManager();
 
   void UpdateDevices(const DevicesCallback& callback,
-                     scoped_ptr<DeviceDescriptors> descriptors);
+                     std::unique_ptr<DeviceDescriptors> descriptors);
 
   typedef std::map<std::string, base::WeakPtr<Device> > DeviceWeakMap;
 

@@ -5,12 +5,13 @@
 #include "chrome/browser/devtools/devtools_network_controller.h"
 
 #include <stdint.h>
+
+#include <memory>
 #include <string>
 #include <utility>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "chrome/browser/devtools/devtools_network_conditions.h"
@@ -63,7 +64,7 @@ class DevToolsNetworkControllerHelper {
         "X-DevTools-Emulate-Network-Conditions-Client-Id: 42\r\n";
     AddMockTransaction(&mock_transaction_);
 
-    scoped_ptr<net::HttpTransaction> network_transaction;
+    std::unique_ptr<net::HttpTransaction> network_transaction;
     network_layer_.CreateTransaction(
         net::DEFAULT_PRIORITY, &network_transaction);
     transaction_.reset(new DevToolsNetworkTransaction(
@@ -71,13 +72,13 @@ class DevToolsNetworkControllerHelper {
   }
 
   void SetNetworkState(bool offline, double download, double upload) {
-    scoped_ptr<DevToolsNetworkConditions> conditions(
+    std::unique_ptr<DevToolsNetworkConditions> conditions(
         new DevToolsNetworkConditions(offline, 0, download, upload));
     controller_.SetNetworkState(kClientId, std::move(conditions));
   }
 
   void SetNetworkState(const std::string& id, bool offline) {
-    scoped_ptr<DevToolsNetworkConditions> conditions(
+    std::unique_ptr<DevToolsNetworkConditions> conditions(
         new DevToolsNetworkConditions(offline));
     controller_.SetNetworkState(id, std::move(conditions));
   }
@@ -146,10 +147,10 @@ class DevToolsNetworkControllerHelper {
   net::CompletionCallback completion_callback_;
   MockTransaction mock_transaction_;
   DevToolsNetworkController controller_;
-  scoped_ptr<DevToolsNetworkTransaction> transaction_;
+  std::unique_ptr<DevToolsNetworkTransaction> transaction_;
   scoped_refptr<net::IOBuffer> buffer_;
-  scoped_ptr<net::ChunkedUploadDataStream> upload_data_stream_;
-  scoped_ptr<MockHttpRequest> request_;
+  std::unique_ptr<net::ChunkedUploadDataStream> upload_data_stream_;
+  std::unique_ptr<MockHttpRequest> request_;
 };
 
 TEST(DevToolsNetworkControllerTest, SingleDisableEnable) {

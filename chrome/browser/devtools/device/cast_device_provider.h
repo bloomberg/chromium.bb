@@ -6,11 +6,11 @@
 #define CHROME_BROWSER_DEVTOOLS_DEVICE_CAST_DEVICE_PROVIDER_H_
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/devtools/device/android_device_manager.h"
 #include "chrome/browser/devtools/device/tcp_device_provider.h"
@@ -46,7 +46,8 @@ class CastDeviceProvider
   ~CastDeviceProvider() override;
 
   scoped_refptr<TCPDeviceProvider> tcp_provider_;
-  scoped_ptr<DeviceListerDelegate, content::BrowserThread::DeleteOnUIThread>
+  std::unique_ptr<DeviceListerDelegate,
+                  content::BrowserThread::DeleteOnUIThread>
       lister_delegate_;
 
   // Keyed on the hostname (IP address).

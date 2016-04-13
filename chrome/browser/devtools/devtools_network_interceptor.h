@@ -7,13 +7,13 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <set>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/timer/timer.h"
 
 class DevToolsNetworkConditions;
@@ -35,7 +35,7 @@ class DevToolsNetworkInterceptor {
   base::WeakPtr<DevToolsNetworkInterceptor> GetWeakPtr();
 
   // Applies network emulation configuration.
-  void UpdateConditions(scoped_ptr<DevToolsNetworkConditions> conditions);
+  void UpdateConditions(std::unique_ptr<DevToolsNetworkConditions> conditions);
 
   // Throttles with |is_upload == true| always succeed, even in offline mode.
   int StartThrottle(int result,
@@ -78,7 +78,7 @@ class DevToolsNetworkInterceptor {
 
   void RemoveRecord(ThrottleRecords* records, const ThrottleCallback& callback);
 
-  scoped_ptr<DevToolsNetworkConditions> conditions_;
+  std::unique_ptr<DevToolsNetworkConditions> conditions_;
 
   // Throttables suspended for a "latency" period.
   ThrottleRecords suspended_;

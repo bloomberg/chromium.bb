@@ -174,7 +174,7 @@ IN_PROC_BROWSER_TEST_F(PortForwardingDisconnectTest, DisconnectOnRelease) {
       forwarding_port, original_url.host() + ":" + original_url.port());
   prefs->Set(prefs::kDevToolsPortForwardingConfig, config);
 
-  scoped_ptr<Listener> wait_for_port_forwarding(new Listener(profile));
+  std::unique_ptr<Listener> wait_for_port_forwarding(new Listener(profile));
   content::RunMessageLoop();
 
   self_provider->set_release_callback_for_test(

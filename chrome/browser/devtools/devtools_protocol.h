@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_DEVTOOLS_DEVTOOLS_PROTOCOL_H_
 #define CHROME_BROWSER_DEVTOOLS_DEVTOOLS_PROTOCOL_H_
 
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 
 // Utility class for processing DevTools remote debugging messages.
@@ -22,21 +22,22 @@ class DevToolsProtocol {
 
   static bool ParseNotification(const std::string& json,
                                 std::string* method,
-                                scoped_ptr<base::DictionaryValue>* params);
+                                std::unique_ptr<base::DictionaryValue>* params);
 
   static bool ParseResponse(const std::string& json,
                             int* command_id,
                             int* error_code);
 
-  static std::string SerializeCommand(int command_id,
-                                      const std::string& method,
-                                      scoped_ptr<base::DictionaryValue> params);
-
-  static scoped_ptr<base::DictionaryValue> CreateSuccessResponse(
+  static std::string SerializeCommand(
       int command_id,
-      scoped_ptr<base::DictionaryValue> result);
+      const std::string& method,
+      std::unique_ptr<base::DictionaryValue> params);
 
-  static scoped_ptr<base::DictionaryValue> CreateInvalidParamsResponse(
+  static std::unique_ptr<base::DictionaryValue> CreateSuccessResponse(
+      int command_id,
+      std::unique_ptr<base::DictionaryValue> result);
+
+  static std::unique_ptr<base::DictionaryValue> CreateInvalidParamsResponse(
       int command_id,
       const std::string& param);
 

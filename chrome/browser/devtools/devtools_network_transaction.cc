@@ -25,7 +25,7 @@ const char
 
 DevToolsNetworkTransaction::DevToolsNetworkTransaction(
     DevToolsNetworkController* controller,
-    scoped_ptr<net::HttpTransaction> network_transaction)
+    std::unique_ptr<net::HttpTransaction> network_transaction)
     : throttled_byte_count_(0),
       controller_(controller),
       network_transaction_(std::move(network_transaction)),

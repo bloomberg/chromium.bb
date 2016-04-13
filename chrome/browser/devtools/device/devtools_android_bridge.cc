@@ -160,7 +160,7 @@ void DevToolsAndroidBridge::DiscoveryRequest::ReceivedVersion(
   if (result < 0)
     return;
   // Parse version, append to package name if available,
-  scoped_ptr<base::Value> value = base::JSONReader::Read(response);
+  std::unique_ptr<base::Value> value = base::JSONReader::Read(response);
   base::DictionaryValue* dict;
   if (value && value->GetAsDictionary(&dict)) {
     std::string browser_name;
@@ -187,7 +187,7 @@ void DevToolsAndroidBridge::DiscoveryRequest::ReceivedPages(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (result < 0)
     return;
-  scoped_ptr<base::Value> value = base::JSONReader::Read(response);
+  std::unique_ptr<base::Value> value = base::JSONReader::Read(response);
   base::ListValue* list_value;
   if (value && value->GetAsList(&list_value)) {
     for (const auto& page_value : *list_value) {
@@ -220,7 +220,7 @@ class ProtocolCommand
 
   const std::string command_;
   const base::Closure callback_;
-  scoped_ptr<AndroidDeviceManager::AndroidWebSocket> web_socket_;
+  std::unique_ptr<AndroidDeviceManager::AndroidWebSocket> web_socket_;
 
   DISALLOW_COPY_AND_ASSIGN(ProtocolCommand);
 };
@@ -315,7 +315,7 @@ class DevToolsAndroidBridge::AgentHostDelegate
   bool socket_opened_;
   std::vector<std::string> pending_messages_;
   scoped_refptr<AndroidDeviceManager::Device> device_;
-  scoped_ptr<AndroidDeviceManager::AndroidWebSocket> web_socket_;
+  std::unique_ptr<AndroidDeviceManager::AndroidWebSocket> web_socket_;
   content::DevToolsAgentHost* agent_host_;
   content::DevToolsExternalAgentProxy* proxy_;
   DISALLOW_COPY_AND_ASSIGN(AgentHostDelegate);
@@ -625,7 +625,7 @@ void DevToolsAndroidBridge::SendProtocolCommand(
     const BrowserId& browser_id,
     const std::string& target_path,
     const std::string& method,
-    scoped_ptr<base::DictionaryValue> params,
+    std::unique_ptr<base::DictionaryValue> params,
     const base::Closure callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (target_path.empty())

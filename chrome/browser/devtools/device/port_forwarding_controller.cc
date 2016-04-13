@@ -52,13 +52,13 @@ class SocketTunnel : public base::NonThreadSafe {
   static void StartTunnel(const std::string& host,
                           int port,
                           int result,
-                          scoped_ptr<net::StreamSocket> socket) {
+                          std::unique_ptr<net::StreamSocket> socket) {
     if (result == net::OK)
       new SocketTunnel(std::move(socket), host, port);
   }
 
  private:
-  SocketTunnel(scoped_ptr<net::StreamSocket> socket,
+  SocketTunnel(std::unique_ptr<net::StreamSocket> socket,
                const std::string& host,
                int port)
       : remote_socket_(std::move(socket)),
@@ -183,9 +183,9 @@ class SocketTunnel : public base::NonThreadSafe {
     delete this;
   }
 
-  scoped_ptr<net::StreamSocket> remote_socket_;
-  scoped_ptr<net::StreamSocket> host_socket_;
-  scoped_ptr<net::HostResolver> host_resolver_;
+  std::unique_ptr<net::StreamSocket> remote_socket_;
+  std::unique_ptr<net::StreamSocket> host_socket_;
+  std::unique_ptr<net::HostResolver> host_resolver_;
   net::AddressList address_list_;
   int pending_writes_;
   bool pending_destruction_;
@@ -235,7 +235,7 @@ class PortForwardingController::Connection
 
   PortForwardingController* controller_;
   scoped_refptr<DevToolsAndroidBridge::RemoteBrowser> browser_;
-  scoped_ptr<AndroidDeviceManager::AndroidWebSocket> web_socket_;
+  std::unique_ptr<AndroidDeviceManager::AndroidWebSocket> web_socket_;
   int command_id_;
   bool connected_;
   ForwardingMap forwarding_map_;
@@ -303,7 +303,7 @@ void PortForwardingController::Connection::SerializeChanges(
 void PortForwardingController::Connection::SendCommand(
     const std::string& method, int port) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  scoped_ptr<base::DictionaryValue> params(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> params(new base::DictionaryValue);
   if (method == tethering::bind::kName) {
     params->SetInteger(tethering::bind::kParamPort, port);
   } else {
@@ -394,7 +394,7 @@ void PortForwardingController::Connection::OnFrameRead(
     return;
 
   std::string method;
-  scoped_ptr<base::DictionaryValue> params;
+  std::unique_ptr<base::DictionaryValue> params;
   if (!DevToolsProtocol::ParseNotification(message, &method, &params))
     return;
 

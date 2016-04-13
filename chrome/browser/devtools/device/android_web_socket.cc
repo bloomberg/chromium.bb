@@ -33,7 +33,7 @@ class AndroidDeviceManager::AndroidWebSocket::WebSocketImpl {
       base::WeakPtr<AndroidWebSocket> weak_socket,
       const std::string& extensions,
       const std::string& body_head,
-      scoped_ptr<net::StreamSocket> socket)
+      std::unique_ptr<net::StreamSocket> socket)
       : response_task_runner_(response_task_runner),
         weak_socket_(weak_socket),
         socket_(std::move(socket)),
@@ -139,8 +139,8 @@ class AndroidDeviceManager::AndroidWebSocket::WebSocketImpl {
 
   scoped_refptr<base::SingleThreadTaskRunner> response_task_runner_;
   base::WeakPtr<AndroidWebSocket> weak_socket_;
-  scoped_ptr<net::StreamSocket> socket_;
-  scoped_ptr<net::WebSocketEncoder> encoder_;
+  std::unique_ptr<net::StreamSocket> socket_;
+  std::unique_ptr<net::WebSocketEncoder> encoder_;
   std::string response_buffer_;
   std::string request_buffer_;
   base::ThreadChecker thread_checker_;
@@ -184,7 +184,7 @@ void AndroidDeviceManager::AndroidWebSocket::Connected(
     int result,
     const std::string& extensions,
     const std::string& body_head,
-    scoped_ptr<net::StreamSocket> socket) {
+    std::unique_ptr<net::StreamSocket> socket) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (result != net::OK || !socket.get()) {
     OnSocketClosed();

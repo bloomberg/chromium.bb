@@ -13,8 +13,8 @@
 class AdbClientSocket {
  public:
   typedef base::Callback<void(int, const std::string&)> CommandCallback;
-  typedef base::Callback<void(int result,
-                              scoped_ptr<net::StreamSocket>)> SocketCallback;
+  typedef base::Callback<void(int result, std::unique_ptr<net::StreamSocket>)>
+      SocketCallback;
 
   static void AdbQuery(int port,
                        const std::string& query,
@@ -36,7 +36,7 @@ class AdbClientSocket {
                    bool is_void,
                    const CommandCallback& callback);
 
-  scoped_ptr<net::StreamSocket> socket_;
+  std::unique_ptr<net::StreamSocket> socket_;
 
  private:
   void ReadResponse(const CommandCallback& callback, bool is_void, int result);

@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_DEVTOOLS_DEVTOOLS_UI_BINDINGS_H_
 #define CHROME_BROWSER_DEVTOOLS_DEVTOOLS_UI_BINDINGS_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/devtools/device/devtools_android_bridge.h"
@@ -199,15 +199,15 @@ class DevToolsUIBindings : public DevToolsEmbedderMessageDispatcher::Delegate,
   void AddDevToolsExtensionsToClient();
 
   class FrontendWebContentsObserver;
-  scoped_ptr<FrontendWebContentsObserver> frontend_contents_observer_;
+  std::unique_ptr<FrontendWebContentsObserver> frontend_contents_observer_;
 
   Profile* profile_;
   DevToolsAndroidBridge* android_bridge_;
   content::WebContents* web_contents_;
-  scoped_ptr<Delegate> delegate_;
+  std::unique_ptr<Delegate> delegate_;
   scoped_refptr<content::DevToolsAgentHost> agent_host_;
-  scoped_ptr<content::DevToolsFrontendHost> frontend_host_;
-  scoped_ptr<DevToolsFileHelper> file_helper_;
+  std::unique_ptr<content::DevToolsFrontendHost> frontend_host_;
+  std::unique_ptr<DevToolsFileHelper> file_helper_;
   scoped_refptr<DevToolsFileSystemIndexer> file_system_indexer_;
   typedef std::map<
       int,
@@ -218,10 +218,11 @@ class DevToolsUIBindings : public DevToolsEmbedderMessageDispatcher::Delegate,
   bool devices_updates_enabled_;
   bool frontend_loaded_;
   bool reattaching_;
-  scoped_ptr<DevToolsTargetsUIHandler> remote_targets_handler_;
-  scoped_ptr<PortForwardingStatusSerializer> port_status_serializer_;
+  std::unique_ptr<DevToolsTargetsUIHandler> remote_targets_handler_;
+  std::unique_ptr<PortForwardingStatusSerializer> port_status_serializer_;
   PrefChangeRegistrar pref_change_registrar_;
-  scoped_ptr<DevToolsEmbedderMessageDispatcher> embedder_message_dispatcher_;
+  std::unique_ptr<DevToolsEmbedderMessageDispatcher>
+      embedder_message_dispatcher_;
   GURL url_;
   using PendingRequestsMap = std::map<const net::URLFetcher*, DispatchCallback>;
   PendingRequestsMap pending_requests_;

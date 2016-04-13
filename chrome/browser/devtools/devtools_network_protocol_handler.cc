@@ -40,17 +40,17 @@ base::DictionaryValue* DevToolsNetworkProtocolHandler::HandleCommand(
   return nullptr;
 }
 
-scoped_ptr<base::DictionaryValue>
+std::unique_ptr<base::DictionaryValue>
 DevToolsNetworkProtocolHandler::CanEmulateNetworkConditions(
     content::DevToolsAgentHost* agent_host,
     int command_id,
     base::DictionaryValue* params) {
-  scoped_ptr<base::DictionaryValue> result(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue());
   result->SetBoolean(chrome::devtools::kResult, true);
   return DevToolsProtocol::CreateSuccessResponse(command_id, std::move(result));
 }
 
-scoped_ptr<base::DictionaryValue>
+std::unique_ptr<base::DictionaryValue>
 DevToolsNetworkProtocolHandler::EmulateNetworkConditions(
     content::DevToolsAgentHost* agent_host,
     int command_id,
@@ -87,17 +87,17 @@ DevToolsNetworkProtocolHandler::EmulateNetworkConditions(
   if (upload_throughput < 0.0)
     upload_throughput = 0.0;
 
-  scoped_ptr<DevToolsNetworkConditions> conditions(
-      new DevToolsNetworkConditions(
-          offline, latency, download_throughput, upload_throughput));
+  std::unique_ptr<DevToolsNetworkConditions> conditions(
+      new DevToolsNetworkConditions(offline, latency, download_throughput,
+                                    upload_throughput));
 
   UpdateNetworkState(agent_host, std::move(conditions));
-  return scoped_ptr<base::DictionaryValue>();
+  return std::unique_ptr<base::DictionaryValue>();
 }
 
 void DevToolsNetworkProtocolHandler::UpdateNetworkState(
     content::DevToolsAgentHost* agent_host,
-    scoped_ptr<DevToolsNetworkConditions> conditions) {
+    std::unique_ptr<DevToolsNetworkConditions> conditions) {
   Profile* profile = Profile::FromBrowserContext(
       agent_host->GetBrowserContext());
   if (!profile)
@@ -109,7 +109,7 @@ void DevToolsNetworkProtocolHandler::UpdateNetworkState(
 void DevToolsNetworkProtocolHandler::DevToolsAgentStateChanged(
     content::DevToolsAgentHost* agent_host,
     bool attached) {
-  scoped_ptr<DevToolsNetworkConditions> conditions;
+  std::unique_ptr<DevToolsNetworkConditions> conditions;
   if (attached)
     conditions.reset(new DevToolsNetworkConditions());
   UpdateNetworkState(agent_host, std::move(conditions));

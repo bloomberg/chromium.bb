@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/devtools/device/usb/android_rsa.h"
 #include "chrome/browser/devtools/device/usb/android_usb_device.h"
@@ -23,7 +24,7 @@ const int kBufferSize = 16 * 1024;
 void OnOpenSocket(const UsbDeviceProvider::SocketCallback& callback,
                   net::StreamSocket* socket_raw,
                   int result) {
-  scoped_ptr<net::StreamSocket> socket(socket_raw);
+  std::unique_ptr<net::StreamSocket> socket(socket_raw);
   if (result != net::OK)
     socket.reset();
   callback.Run(result, std::move(socket));
@@ -115,7 +116,7 @@ void UsbDeviceProvider::OpenSocket(const std::string& serial,
   UsbDeviceMap::iterator it = device_map_.find(serial);
   if (it == device_map_.end()) {
     callback.Run(net::ERR_CONNECTION_FAILED,
-                 make_scoped_ptr<net::StreamSocket>(NULL));
+                 base::WrapUnique<net::StreamSocket>(NULL));
     return;
   }
   std::string socket_name =
@@ -123,12 +124,12 @@ void UsbDeviceProvider::OpenSocket(const std::string& serial,
   net::StreamSocket* socket = it->second->CreateSocket(socket_name);
   if (!socket) {
     callback.Run(net::ERR_CONNECTION_FAILED,
-                 make_scoped_ptr<net::StreamSocket>(NULL));
+                 base::WrapUnique<net::StreamSocket>(NULL));
     return;
   }
   int result = socket->Connect(base::Bind(&OnOpenSocket, callback, socket));
   if (result != net::ERR_IO_PENDING)
-    callback.Run(result, make_scoped_ptr<net::StreamSocket>(NULL));
+    callback.Run(result, base::WrapUnique<net::StreamSocket>(NULL));
 }
 
 void UsbDeviceProvider::ReleaseDevice(const std::string& serial) {

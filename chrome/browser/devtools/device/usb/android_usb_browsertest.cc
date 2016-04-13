@@ -4,11 +4,13 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
 #include <algorithm>
 #include <utility>
 
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
@@ -116,7 +118,7 @@ class MockLocalSocket : public MockAndroidConnection::Delegate {
   }
 
   Callback callback_;
-  scoped_ptr<MockAndroidConnection> connection_;
+  std::unique_ptr<MockAndroidConnection> connection_;
 };
 
 template <class T>
@@ -299,14 +301,12 @@ class MockUsbDeviceHandle : public UsbDeviceHandle {
                       std::string());
         local_sockets_.set(
             current_message_->arg0,
-            make_scoped_ptr(new MockLocalSocket(
+            base::WrapUnique(new MockLocalSocket(
                 base::Bind(&MockUsbDeviceHandle::WriteResponse,
-                           base::Unretained(this),
-                           last_local_socket_,
+                           base::Unretained(this), last_local_socket_,
                            current_message_->arg0),
-                kDeviceSerial,
-                current_message_->body.substr(
-                    0, current_message_->body.size() - 1))));
+                kDeviceSerial, current_message_->body.substr(
+                                   0, current_message_->body.size() - 1))));
         return;
       }
       default: {
@@ -384,10 +384,10 @@ class MockUsbDeviceHandle : public UsbDeviceHandle {
 
   scoped_refptr<MockUsbDevice<T> > device_;
   uint32_t remaining_body_length_;
-  scoped_ptr<AdbMessage> current_message_;
+  std::unique_ptr<AdbMessage> current_message_;
   std::vector<char> output_buffer_;
   std::queue<Query> queries_;
-  base::ScopedPtrHashMap<int, scoped_ptr<MockLocalSocket>> local_sockets_;
+  base::ScopedPtrHashMap<int, std::unique_ptr<MockLocalSocket>> local_sockets_;
   int last_local_socket_;
   bool broken_;
 };
@@ -508,14 +508,14 @@ class MockUsbServiceForCheckingTraits : public MockUsbService {
 
 class TestDeviceClient : public DeviceClient {
  public:
-  explicit TestDeviceClient(scoped_ptr<UsbService> service)
+  explicit TestDeviceClient(std::unique_ptr<UsbService> service)
       : DeviceClient(), usb_service_(std::move(service)) {}
   ~TestDeviceClient() override {}
 
  private:
   UsbService* GetUsbService() override { return usb_service_.get(); }
 
-  scoped_ptr<UsbService> usb_service_;
+  std::unique_ptr<UsbService> usb_service_;
 };
 
 class DevToolsAndroidBridgeWarmUp
@@ -563,12 +563,12 @@ class AndroidUsbDiscoveryTest : public InProcessBrowserTest {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, request);
   }
 
-  virtual scoped_ptr<MockUsbService> CreateMockService() {
-    return make_scoped_ptr(new MockUsbService());
+  virtual std::unique_ptr<MockUsbService> CreateMockService() {
+    return base::WrapUnique(new MockUsbService());
   }
 
   scoped_refptr<content::MessageLoopRunner> runner_;
-  scoped_ptr<TestDeviceClient> device_client_;
+  std::unique_ptr<TestDeviceClient> device_client_;
   DevToolsAndroidBridge* adb_bridge_;
   int scheduler_invoked_;
 };
@@ -586,22 +586,22 @@ class AndroidUsbCountTest : public AndroidUsbDiscoveryTest {
 
 class AndroidUsbTraitsTest : public AndroidUsbDiscoveryTest {
  protected:
-  scoped_ptr<MockUsbService> CreateMockService() override {
-    return make_scoped_ptr(new MockUsbServiceForCheckingTraits());
+  std::unique_ptr<MockUsbService> CreateMockService() override {
+    return base::WrapUnique(new MockUsbServiceForCheckingTraits());
   }
 };
 
 class AndroidBreakingUsbTest : public AndroidUsbDiscoveryTest {
  protected:
-  scoped_ptr<MockUsbService> CreateMockService() override {
-    return make_scoped_ptr(new MockBreakingUsbService());
+  std::unique_ptr<MockUsbService> CreateMockService() override {
+    return base::WrapUnique(new MockBreakingUsbService());
   }
 };
 
 class AndroidNoConfigUsbTest : public AndroidUsbDiscoveryTest {
  protected:
-  scoped_ptr<MockUsbService> CreateMockService() override {
-    return make_scoped_ptr(new MockNoConfigUsbService());
+  std::unique_ptr<MockUsbService> CreateMockService() override {
+    return base::WrapUnique(new MockNoConfigUsbService());
   }
 };
 
