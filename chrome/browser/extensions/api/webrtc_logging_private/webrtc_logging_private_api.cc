@@ -42,6 +42,10 @@ namespace StartAudioDebugRecordings =
     api::webrtc_logging_private::StartAudioDebugRecordings;
 namespace StopAudioDebugRecordings =
     api::webrtc_logging_private::StopAudioDebugRecordings;
+namespace StartWebRtcEventLogging =
+    api::webrtc_logging_private::StartWebRtcEventLogging;
+namespace StopWebRtcEventLogging =
+    api::webrtc_logging_private::StopWebRtcEventLogging;
 
 namespace {
 std::string HashIdWithOrigin(const std::string& security_origin,
@@ -96,7 +100,8 @@ WebrtcLoggingPrivateFunction::LoggingHandlerFromRequest(
   if (!host)
     return nullptr;
 
-  return base::UserDataAdapter<WebRtcLoggingHandlerHost>::Get(host, host);
+  return base::UserDataAdapter<WebRtcLoggingHandlerHost>::Get(
+      host, WebRtcLoggingHandlerHost::kWebRtcLoggingHandlerHostKey);
 }
 
 scoped_refptr<WebRtcLoggingHandlerHost>
@@ -130,19 +135,19 @@ void WebrtcLoggingPrivateFunctionWithUploadCallback::FireCallback(
   SendResponse(success);
 }
 
-void WebrtcLoggingPrivateFunctionWithAudioDebugRecordingsCallback::
-    FireErrorCallback(const std::string& error_message) {
+void WebrtcLoggingPrivateFunctionWithRecordingDoneCallback::FireErrorCallback(
+    const std::string& error_message) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   SetError(error_message);
   SendResponse(false);
 }
 
-void WebrtcLoggingPrivateFunctionWithAudioDebugRecordingsCallback::FireCallback(
+void WebrtcLoggingPrivateFunctionWithRecordingDoneCallback::FireCallback(
     const std::string& prefix_path,
     bool did_stop,
     bool did_manual_stop) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  api::webrtc_logging_private::AudioDebugRecordingsInfo result;
+  api::webrtc_logging_private::RecordingInfo result;
   result.prefix_path = prefix_path;
   result.did_stop = did_stop;
   result.did_manual_stop = did_manual_stop;
@@ -321,7 +326,8 @@ bool WebrtcLoggingPrivateStartRtpDumpFunction::RunAsync() {
     return false;
 
   scoped_refptr<WebRtcLoggingHandlerHost> webrtc_logging_handler_host(
-      base::UserDataAdapter<WebRtcLoggingHandlerHost>::Get(host, host));
+      base::UserDataAdapter<WebRtcLoggingHandlerHost>::Get(
+          host, WebRtcLoggingHandlerHost::kWebRtcLoggingHandlerHostKey));
 
   WebRtcLoggingHandlerHost::GenericDoneCallback callback = base::Bind(
       &WebrtcLoggingPrivateStartRtpDumpFunction::FireCallback, this);
@@ -364,7 +370,8 @@ bool WebrtcLoggingPrivateStopRtpDumpFunction::RunAsync() {
     return false;
 
   scoped_refptr<WebRtcLoggingHandlerHost> webrtc_logging_handler_host(
-      base::UserDataAdapter<WebRtcLoggingHandlerHost>::Get(host, host));
+      base::UserDataAdapter<WebRtcLoggingHandlerHost>::Get(
+          host, WebRtcLoggingHandlerHost::kWebRtcLoggingHandlerHostKey));
 
   WebRtcLoggingHandlerHost::GenericDoneCallback callback = base::Bind(
       &WebrtcLoggingPrivateStopRtpDumpFunction::FireCallback, this);
@@ -398,10 +405,11 @@ bool WebrtcLoggingPrivateStartAudioDebugRecordingsFunction::RunAsync() {
   if (!host)
     return false;
 
-  scoped_refptr<WebRtcLoggingHandlerHost> webrtc_logging_handler_host(
-      base::UserDataAdapter<WebRtcLoggingHandlerHost>::Get(host, host));
+  scoped_refptr<AudioDebugRecordingsHandler> audio_debug_recordings_handler(
+      base::UserDataAdapter<AudioDebugRecordingsHandler>::Get(
+          host, AudioDebugRecordingsHandler::kAudioDebugRecordingsHandlerKey));
 
-  webrtc_logging_handler_host->StartAudioDebugRecordings(
+  audio_debug_recordings_handler->StartAudioDebugRecordings(
       host, base::TimeDelta::FromSeconds(params->seconds),
       base::Bind(
           &WebrtcLoggingPrivateStartAudioDebugRecordingsFunction::FireCallback,
@@ -427,10 +435,11 @@ bool WebrtcLoggingPrivateStopAudioDebugRecordingsFunction::RunAsync() {
   if (!host)
     return false;
 
-  scoped_refptr<WebRtcLoggingHandlerHost> webrtc_logging_handler_host(
-      base::UserDataAdapter<WebRtcLoggingHandlerHost>::Get(host, host));
+  scoped_refptr<AudioDebugRecordingsHandler> audio_debug_recordings_handler(
+      base::UserDataAdapter<AudioDebugRecordingsHandler>::Get(
+          host, AudioDebugRecordingsHandler::kAudioDebugRecordingsHandlerKey));
 
-  webrtc_logging_handler_host->StopAudioDebugRecordings(
+  audio_debug_recordings_handler->StopAudioDebugRecordings(
       host,
       base::Bind(
           &WebrtcLoggingPrivateStopAudioDebugRecordingsFunction::FireCallback,
@@ -438,6 +447,71 @@ bool WebrtcLoggingPrivateStopAudioDebugRecordingsFunction::RunAsync() {
       base::Bind(&WebrtcLoggingPrivateStopAudioDebugRecordingsFunction::
                      FireErrorCallback,
                  this));
+  return true;
+}
+
+bool WebrtcLoggingPrivateStartWebRtcEventLoggingFunction::RunAsync() {
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableWebRtcEventLoggingFromExtension)) {
+    return false;
+  }
+
+  scoped_ptr<StartWebRtcEventLogging::Params> params(
+      StartWebRtcEventLogging::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  if (params->seconds < 0) {
+    FireErrorCallback("seconds must be greater than or equal to 0");
+    return true;
+  }
+
+  content::RenderProcessHost* host =
+      RphFromRequest(params->request, params->security_origin);
+  if (!host)
+    return false;
+
+  scoped_refptr<WebRtcEventLogHandler> webrtc_event_log_handler(
+      base::UserDataAdapter<WebRtcEventLogHandler>::Get(
+          host, WebRtcEventLogHandler::kWebRtcEventLogHandlerKey));
+
+  webrtc_event_log_handler->StartWebRtcEventLogging(
+      host, base::TimeDelta::FromSeconds(params->seconds),
+      base::Bind(
+        &WebrtcLoggingPrivateStartWebRtcEventLoggingFunction::FireCallback,
+        this),
+      base::Bind(
+        &WebrtcLoggingPrivateStartWebRtcEventLoggingFunction::FireErrorCallback,
+        this));
+  return true;
+}
+
+bool WebrtcLoggingPrivateStopWebRtcEventLoggingFunction::RunAsync() {
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableWebRtcEventLoggingFromExtension)) {
+    return false;
+  }
+
+  scoped_ptr<StopWebRtcEventLogging::Params> params(
+      StopWebRtcEventLogging::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  content::RenderProcessHost* host =
+      RphFromRequest(params->request, params->security_origin);
+  if (!host)
+    return false;
+
+  scoped_refptr<WebRtcEventLogHandler> webrtc_event_log_handler(
+      base::UserDataAdapter<WebRtcEventLogHandler>::Get(
+          host, WebRtcEventLogHandler::kWebRtcEventLogHandlerKey));
+
+  webrtc_event_log_handler->StopWebRtcEventLogging(
+      host,
+      base::Bind(
+        &WebrtcLoggingPrivateStopWebRtcEventLoggingFunction::FireCallback,
+        this),
+      base::Bind(
+        &WebrtcLoggingPrivateStopWebRtcEventLoggingFunction::FireErrorCallback,
+        this));
   return true;
 }
 

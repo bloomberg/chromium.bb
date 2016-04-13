@@ -68802,6 +68802,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1113" label="INPUTMETHODPRIVATE_SHOWINPUTVIEW"/>
   <int value="1114" label="WALLPAPERPRIVATE_RECORDWALLPAPERUMA"/>
   <int value="1115" label="AUTOTESTPRIVATE_GETVISIBLENOTIFICATIONS"/>
+  <int value="1116" label="WEBRTCLOGGINGPRIVATE_STARTRTCEVENTLOGGING"/>
+  <int value="1117" label="WEBRTCLOGGINGPRIVATE_STOPRTCEVENTLOGGING"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

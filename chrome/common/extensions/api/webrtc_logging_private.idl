@@ -28,23 +28,23 @@ namespace webrtcLoggingPrivate {
     long? guestProcessId;
   };
 
-  // This contains information about the result of audio debug recordings.
-  dictionary AudioDebugRecordingsInfo {
+  // This contains information about the result of audio debug recordings or
+  // WebRTC event logs.
+  dictionary RecordingInfo {
     // Absolute path prefix for the files with the audio debug recordings.
     DOMString prefixPath;
 
-    // Indicates if recording was stopped.
+    // Indicates if recording was stopped (either by a timed callback after the
+    // time limit has elapsed, or by a manual call).
     boolean didStop;
 
     // Indicates if recording was stopped manually through a
-    // stopAudioDebugRecordings() call.
+    // stopAudioDebugRecordings() or stopWebRtcEventLogging() call.
     boolean didManualStop;
   };
 
-
   callback GenericDoneCallback = void ();
-  callback AudioDebugRecordingsCallback =
-      void (AudioDebugRecordingsInfo info);
+  callback RecordingDoneCallback = void (RecordingInfo info);
   callback UploadDoneCallback = void (UploadResult result);
 
   interface Functions {
@@ -137,15 +137,35 @@ namespace webrtcLoggingPrivate {
     // that recording has not stopped.
     // If |seconds| is negative, startAudioDebugRecordings() fails.
     static void startAudioDebugRecordings(RequestInfo request,
-                             DOMString securityOrigin,
-                             long seconds,
-                             AudioDebugRecordingsCallback callback);
+                                          DOMString securityOrigin,
+                                          long seconds,
+                                          RecordingDoneCallback callback);
 
     // Stops audio debug recordings.  |callback| is invoked once recording
     // stops. If there is no recording in progress, stopAudioDebugRecordings()
     // fails.
     static void stopAudioDebugRecordings(RequestInfo request,
-                            DOMString securityOrigin,
-                            AudioDebugRecordingsCallback callback);
+                                         DOMString securityOrigin,
+                                         RecordingDoneCallback callback);
+
+    // Starts WebRTC event logging.
+    // startWebRtcEventLogging() logs the most recent events that happened
+    // before the call, and then keep logging for |seconds| seconds into the
+    // future. |callback| is invoked once the logging stops.
+    // If |seconds| is zero, the logging will continue until
+    // stopWebRtcEventLogging() is explicitly called. In this case,
+    // |callback| is invoked once recording starts and will report
+    // that recording has not stopped.
+    // If |seconds| is negative, startWebRtcEventLogging() fails.
+    static void startWebRtcEventLogging(RequestInfo request,
+                                        DOMString securityOrigin,
+                                        long seconds,
+                                        RecordingDoneCallback callback);
+
+    // Stops RTC event logging. |callback| is invoked once the logging stops.
+    // If there is no recording in progress, stopWebRtcEventLogging() fails.
+    static void stopWebRtcEventLogging(RequestInfo request,
+                                       DOMString securityOrigin,
+                                       RecordingDoneCallback callback);
   };
 };

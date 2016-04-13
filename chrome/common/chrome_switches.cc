@@ -499,6 +499,10 @@ const char kEnableQuic[]                    = "enable-quic";
 // This only has an effect if QUIC protocol is enabled.
 const char kEnableQuicPortSelection[]       = "enable-quic-port-selection";
 
+// If the WebRTC logging private API is active, enables WebRTC event logging.
+const char kEnableWebRtcEventLoggingFromExtension[] =
+    "enable-webrtc-event-logging-from-extension";
+
 // Enables support for HTTP alternative services.
 const char kEnableAlternativeServices[] = "enable-alternative-services";
 

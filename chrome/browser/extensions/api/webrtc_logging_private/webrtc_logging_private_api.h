@@ -9,6 +9,8 @@
 
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #if defined(ENABLE_WEBRTC)
+#include "chrome/browser/media/audio_debug_recordings_handler.h"
+#include "chrome/browser/media/webrtc_event_log_handler.h"
 #include "chrome/browser/media/webrtc_logging_handler_host.h"
 #endif
 #include "chrome/common/extensions/api/webrtc_logging_private.h"
@@ -71,10 +73,10 @@ class WebrtcLoggingPrivateFunctionWithUploadCallback
 #endif
 };
 
-class WebrtcLoggingPrivateFunctionWithAudioDebugRecordingsCallback
+class WebrtcLoggingPrivateFunctionWithRecordingDoneCallback
     : public WebrtcLoggingPrivateFunction {
  protected:
-  ~WebrtcLoggingPrivateFunctionWithAudioDebugRecordingsCallback() override {}
+  ~WebrtcLoggingPrivateFunctionWithRecordingDoneCallback() override {}
 
 #if defined(ENABLE_WEBRTC)
   // Must be called on UI thread.
@@ -226,7 +228,7 @@ class WebrtcLoggingPrivateStopRtpDumpFunction
 };
 
 class WebrtcLoggingPrivateStartAudioDebugRecordingsFunction
-    : public WebrtcLoggingPrivateFunctionWithAudioDebugRecordingsCallback {
+    : public WebrtcLoggingPrivateFunctionWithRecordingDoneCallback {
  public:
   DECLARE_EXTENSION_FUNCTION("webrtcLoggingPrivate.startAudioDebugRecordings",
                              WEBRTCLOGGINGPRIVATE_STARTAUDIODEBUGRECORDINGS)
@@ -240,7 +242,7 @@ class WebrtcLoggingPrivateStartAudioDebugRecordingsFunction
 };
 
 class WebrtcLoggingPrivateStopAudioDebugRecordingsFunction
-    : public WebrtcLoggingPrivateFunctionWithAudioDebugRecordingsCallback {
+    : public WebrtcLoggingPrivateFunctionWithRecordingDoneCallback {
  public:
   DECLARE_EXTENSION_FUNCTION("webrtcLoggingPrivate.stopAudioDebugRecordings",
                              WEBRTCLOGGINGPRIVATE_STOPAUDIODEBUGRECORDINGS)
@@ -248,6 +250,34 @@ class WebrtcLoggingPrivateStopAudioDebugRecordingsFunction
 
  private:
   ~WebrtcLoggingPrivateStopAudioDebugRecordingsFunction() override {}
+
+  // ExtensionFunction overrides.
+  bool RunAsync() override;
+};
+
+class WebrtcLoggingPrivateStartWebRtcEventLoggingFunction
+    : public WebrtcLoggingPrivateFunctionWithRecordingDoneCallback {
+ public:
+  DECLARE_EXTENSION_FUNCTION("webrtcLoggingPrivate.startWebRtcEventLogging",
+                             WEBRTCLOGGINGPRIVATE_STARTRTCEVENTLOGGING)
+  WebrtcLoggingPrivateStartWebRtcEventLoggingFunction() {}
+
+ private:
+  ~WebrtcLoggingPrivateStartWebRtcEventLoggingFunction() override {}
+
+  // ExtensionFunction overrides.
+  bool RunAsync() override;
+};
+
+class WebrtcLoggingPrivateStopWebRtcEventLoggingFunction
+    : public WebrtcLoggingPrivateFunctionWithRecordingDoneCallback {
+ public:
+  DECLARE_EXTENSION_FUNCTION("webrtcLoggingPrivate.stopWebRtcEventLogging",
+                             WEBRTCLOGGINGPRIVATE_STOPRTCEVENTLOGGING)
+  WebrtcLoggingPrivateStopWebRtcEventLoggingFunction() {}
+
+ private:
+  ~WebrtcLoggingPrivateStopWebRtcEventLoggingFunction() override {}
 
   // ExtensionFunction overrides.
   bool RunAsync() override;

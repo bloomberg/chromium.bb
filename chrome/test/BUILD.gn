@@ -1130,6 +1130,7 @@ if (!is_android) {
     } else {
       sources -= [
         "../browser/extensions/api/webrtc_audio_private/webrtc_audio_private_browsertest.cc",
+        "../browser/extensions/api/webrtc_logging_private/webrtc_event_log_apitest.cc",
         "../browser/extensions/api/webrtc_logging_private/webrtc_logging_private_apitest.cc",
         "../browser/media/chrome_webrtc_apprtc_browsertest.cc",
         "../browser/media/chrome_webrtc_audio_quality_browsertest.cc",

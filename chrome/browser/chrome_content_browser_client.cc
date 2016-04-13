@@ -291,6 +291,8 @@
 #endif
 
 #if defined(ENABLE_WEBRTC)
+#include "chrome/browser/media/audio_debug_recordings_handler.h"
+#include "chrome/browser/media/webrtc_event_log_handler.h"
 #include "chrome/browser/media/webrtc_logging_handler_host.h"
 #endif
 
@@ -949,8 +951,22 @@ void ChromeContentBrowserClient::RenderProcessWillLaunch(
       new WebRtcLoggingHandlerHost(id, profile,
                                    g_browser_process->webrtc_log_uploader());
   host->AddFilter(webrtc_logging_handler_host);
-  host->SetUserData(host, new base::UserDataAdapter<WebRtcLoggingHandlerHost>(
-      webrtc_logging_handler_host));
+  host->SetUserData(WebRtcLoggingHandlerHost::kWebRtcLoggingHandlerHostKey,
+                    new base::UserDataAdapter<WebRtcLoggingHandlerHost>(
+                        webrtc_logging_handler_host));
+
+  AudioDebugRecordingsHandler* audio_debug_recordings_handler =
+      new AudioDebugRecordingsHandler(profile);
+  host->SetUserData(
+      AudioDebugRecordingsHandler::kAudioDebugRecordingsHandlerKey,
+      new base::UserDataAdapter<AudioDebugRecordingsHandler>(
+          audio_debug_recordings_handler));
+
+  WebRtcEventLogHandler* webrtc_event_log_handler =
+      new WebRtcEventLogHandler(profile);
+  host->SetUserData(WebRtcEventLogHandler::kWebRtcEventLogHandlerKey,
+                    new base::UserDataAdapter<WebRtcEventLogHandler>(
+                        webrtc_event_log_handler));
 #endif
 #if !defined(DISABLE_NACL)
   host->AddFilter(new nacl::NaClHostMessageFilter(

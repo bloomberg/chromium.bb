@@ -213,6 +213,7 @@
       'browser/extensions/api/web_request/web_request_apitest.cc',
       'browser/extensions/api/webrtc_audio_private/webrtc_audio_private_browsertest.cc',
       'browser/extensions/api/webrtc_from_web_accessible_resource_browsertest.cc',
+      'browser/extensions/api/webrtc_logging_private/webrtc_event_log_apitest.cc',
       'browser/extensions/api/webrtc_logging_private/webrtc_logging_private_apitest.cc',
       'browser/extensions/api/webstore_private/webstore_private_apitest.cc',
       'browser/extensions/app_background_page_apitest.cc',
@@ -2477,6 +2478,7 @@
         ['enable_webrtc==0', {
           'sources!': [
             'browser/extensions/api/webrtc_audio_private/webrtc_audio_private_browsertest.cc',
+            'browser/extensions/api/webrtc_logging_private/webrtc_event_log_apitest.cc',
             'browser/extensions/api/webrtc_logging_private/webrtc_logging_private_apitest.cc',
             'browser/media/webrtc_apprtc_browsertest.cc',
             'browser/media/webrtc_audio_quality_browsertest.cc',

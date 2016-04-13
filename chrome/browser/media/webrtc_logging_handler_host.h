@@ -8,6 +8,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <map>
+#include <string>
+#include <vector>
+
 #include "base/macros.h"
 #include "base/memory/shared_memory.h"
 #include "build/build_config.h"
@@ -81,10 +85,9 @@ class WebRtcLoggingHandlerHost : public content::BrowserMessageFilter {
   typedef base::Callback<void(bool, const std::string&)> GenericDoneCallback;
   typedef base::Callback<void(bool, const std::string&, const std::string&)>
       UploadDoneCallback;
-  typedef base::Callback<void(const std::string&)>
-      AudioDebugRecordingsErrorCallback;
-  typedef base::Callback<void(const std::string&, bool, bool)>
-      AudioDebugRecordingsCallback;
+
+  // Key used to attach the handler to the RenderProcessHost.
+  static const char kWebRtcLoggingHandlerHostKey[];
 
   WebRtcLoggingHandlerHost(int render_process_id,
                            Profile* profile,
@@ -155,27 +158,6 @@ class WebRtcLoggingHandlerHost : public content::BrowserMessageFilter {
                    size_t header_length,
                    size_t packet_length,
                    bool incoming);
-
-  // Starts an audio debug recording. The recording lasts the given |delay|,
-  // unless |delay| is zero, in which case recording will continue until
-  // StopAudioDebugRecordings() is explicitly invoked.
-  // |callback| is invoked once recording stops. If |delay| is zero
-  // |callback| is invoked once recording starts.
-  // If a recording was already in progress, |error_callback| is invoked instead
-  // of |callback|.
-  void StartAudioDebugRecordings(
-      content::RenderProcessHost* host,
-      base::TimeDelta delay,
-      const AudioDebugRecordingsCallback& callback,
-      const AudioDebugRecordingsErrorCallback& error_callback);
-
-  // Stops an audio debug recording. |callback| is invoked once recording
-  // stops. If no recording was in progress, |error_callback| is invoked instead
-  // of |callback|.
-  void StopAudioDebugRecordings(
-      content::RenderProcessHost* host,
-      const AudioDebugRecordingsCallback& callback,
-      const AudioDebugRecordingsErrorCallback& error_callback);
 
  private:
   // States used for protecting from function calls made at non-allowed points
@@ -266,23 +248,6 @@ class WebRtcLoggingHandlerHost : public content::BrowserMessageFilter {
       bool success,
       const std::string& error_message);
 
-  // Helper for starting audio debug recordings.
-  void DoStartAudioDebugRecordings(
-      content::RenderProcessHost* host,
-      base::TimeDelta delay,
-      const AudioDebugRecordingsCallback& callback,
-      const AudioDebugRecordingsErrorCallback& error_callback,
-      const base::FilePath& log_directory);
-
-  // Helper for stopping audio debug recordings.
-  void DoStopAudioDebugRecordings(
-      content::RenderProcessHost* host,
-      bool is_manual_stop,
-      uint64_t audio_debug_recordings_id,
-      const AudioDebugRecordingsCallback& callback,
-      const AudioDebugRecordingsErrorCallback& error_callback,
-      const base::FilePath& log_directory);
-
   std::unique_ptr<WebRtcLogBuffer> log_buffer_;
 
   // The profile associated with our renderer process.
@@ -323,12 +288,6 @@ class WebRtcLoggingHandlerHost : public content::BrowserMessageFilter {
   // A pointer to the log uploader that's shared for all profiles.
   // Ownership lies with the browser process.
   WebRtcLogUploader* const log_uploader_;
-
-  // Must be accessed on the UI thread.
-  bool is_audio_debug_recordings_in_progress_;
-
-  // This counter allows saving each debug recording in separate files.
-  uint64_t current_audio_debug_recordings_id_;
 
   // The render process ID this object belongs to.
   int render_process_id_;

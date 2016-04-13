@@ -144,6 +144,7 @@ extern const char kEnableProfiling[];
 extern const char kEnablePushApiBackgroundMode[];
 extern const char kEnableQuic[];
 extern const char kEnableQuicPortSelection[];
+extern const char kEnableWebRtcEventLoggingFromExtension[];
 extern const char kEnableAlternativeServices[];
 extern const char kEnableSessionCrashedBubble[];
 extern const char kEnableSettingsWindow[];

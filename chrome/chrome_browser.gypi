@@ -3124,6 +3124,10 @@
     ],
     'chrome_browser_webrtc_sources': [
       # TODO(brettw) should webrtc_log_list.cc go here?
+      'browser/media/audio_debug_recordings_handler.cc',
+      'browser/media/audio_debug_recordings_handler.h',
+      'browser/media/webrtc_event_log_handler.cc',
+      'browser/media/webrtc_event_log_handler.h',
       'browser/media/webrtc_log_uploader.cc',
       'browser/media/webrtc_log_uploader.h',
       'browser/media/webrtc_log_util.cc',
