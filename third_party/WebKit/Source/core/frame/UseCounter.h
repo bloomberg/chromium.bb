@@ -1112,6 +1112,8 @@ public:
         FormValidationShowedMessage = 1294,
         WebAnimationsEasingAsFunctionLinear = 1295,
         WebAnimationsEasingAsFunctionOther = 1296,
+        // The above items are available in M51 branch
+
         V8Document_Images_AttributeGetter = 1297,
         V8Document_Embeds_AttributeGetter = 1298,
         V8Document_Plugins_AttributeGetter = 1299,
