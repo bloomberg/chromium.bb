@@ -125,7 +125,7 @@ def ProcessGooglePlayServices(repo, out_dir, config_path, is_extracted_repo):
       _ImportFromAars(config, tmp_paths, repo)
 
     _GenerateCombinedJar(tmp_paths)
-    _ProcessResources(config, tmp_paths)
+    _ProcessResources(config, tmp_paths, repo)
     _BuildOutput(config, tmp_paths, out_dir)
   finally:
     shutil.rmtree(tmp_root)
@@ -199,7 +199,7 @@ def _GenerateCombinedJar(tmp_paths):
   cmd_helper.Call(['jar', '-cf', out_file_name, '-C', working_dir, '.'])
 
 
-def _ProcessResources(config, tmp_paths):
+def _ProcessResources(config, tmp_paths, repo):
   LOCALIZED_VALUES_BASE_NAME = 'values-'
   locale_whitelist = set(config.locale_whitelist)
 
@@ -215,6 +215,17 @@ def _ProcessResources(config, tmp_paths):
       dir_locale = dir_name[len(LOCALIZED_VALUES_BASE_NAME):]
       if dir_locale not in locale_whitelist:
         shutil.rmtree(res_dir)
+
+  # Reimport files from the whitelist.
+  for res_path in config.resource_whitelist:
+    for whitelisted_file in glob.glob(os.path.join(repo, res_path)):
+      resolved_file = os.path.relpath(whitelisted_file, repo)
+      rebased_res = os.path.join(tmp_paths['imported_clients'], resolved_file)
+
+      if not os.path.exists(os.path.dirname(rebased_res)):
+        os.makedirs(os.path.dirname(rebased_res))
+
+      shutil.copy(os.path.join(repo, whitelisted_file), rebased_res)
 
 
 def _BuildOutput(config, tmp_paths, out_dir):
