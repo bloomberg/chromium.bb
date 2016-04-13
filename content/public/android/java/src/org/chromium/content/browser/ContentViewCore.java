@@ -3059,7 +3059,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
                         createVirtualStructure(viewRoot, root, 0, 0);
                     }
                 },
-                mRenderCoordinates.getContentOffsetYPix(),
+                mRenderCoordinates.getContentOffsetYPix() - mRenderCoordinates.getScrollYPix(),
                 mRenderCoordinates.getScrollXPix());
     }
 

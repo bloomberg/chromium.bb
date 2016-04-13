@@ -70,17 +70,17 @@ void JavaScriptResultCallback(const ScopedJavaGlobalRef<jobject>& callback,
 
 struct AccessibilitySnapshotParams {
   AccessibilitySnapshotParams(float scale,
-                              float horizontal_scroll,
-                              float vertical_offset)
+                              float vertical_offset,
+                              float horizontal_scroll)
       : scale_factor(scale),
-        x_scroll(horizontal_scroll),
         y_offset(vertical_offset),
+        x_scroll(horizontal_scroll),
         has_tree_data(false),
         should_select_leaf_nodes(false) {}
 
   float scale_factor;
-  float x_scroll;
   float y_offset;
+  float x_scroll;
   bool has_tree_data;
   // The current text selection within this tree, if any, expressed as the
   // node ID and character offset of the anchor (selection start) and focus
