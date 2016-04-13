@@ -11,23 +11,23 @@
   },
   'targets': [
     {
-      # GN version: //components/profile_serivce:lib
-      'target_name': 'profile_service_lib',
+      # GN version: //services/user:lib
+      'target_name': 'user_service_lib',
       'type': 'static_library',
       'include_dirs': [
         '../..',
       ],
       'sources': [
-        'profile_app.cc',
-        'profile_app.h',
-        'profile_service_impl.cc',
-        'profile_service_impl.h',
         'user_id_map.cc',
         'user_id_map.h',
+        'user_service.cc',
+        'user_service.h',
+        'user_shell_client.cc',
+        'user_shell_client.h',
       ],
       'dependencies': [
-        'profile_app_manifest',
-        'profile_service_bindings',
+        'user_app_manifest',
+        'user_service_bindings',
         '../../base/base.gyp:base',
         '../../components/filesystem/filesystem.gyp:filesystem_lib',
         '../../components/leveldb/leveldb.gyp:leveldb_lib',
@@ -39,23 +39,23 @@
         '../../url/url.gyp:url_lib',
       ],
       'export_dependent_settings': [
-        'profile_service_bindings',
+        'user_service_bindings',
       ],
     },
     {
-      # GN version: //components/profile_service/public/interfaces
-      'target_name': 'profile_service_bindings',
+      # GN version: //services/user/public/interfaces
+      'target_name': 'user_service_bindings',
       'type': 'static_library',
       'dependencies': [
-        'profile_service_bindings_mojom',
+        'user_service_bindings_mojom',
       ],
     },
     {
-      'target_name': 'profile_service_bindings_mojom',
+      'target_name': 'user_service_bindings_mojom',
       'type': 'none',
       'variables': {
         'mojom_files': [
-          'public/interfaces/profile.mojom',
+          'public/interfaces/user_service.mojom',
         ],
       },
       'dependencies': [
@@ -67,7 +67,7 @@
       ],
     },
     {
-      'target_name': 'profile_service_public_lib',
+      'target_name': 'user_service_public_lib',
       'type': 'static_library',
       'sources': [
         'public/cpp/constants.cc',
@@ -78,13 +78,13 @@
       ],
     },
     {
-      # GN version: //components/profile_service:manifest
-      'target_name': 'profile_app_manifest',
+      # GN version: //services/user:manifest
+      'target_name': 'user_app_manifest',
       'type': 'none',
       'variables': {
         'application_type': 'mojo',
-        'application_name': 'profile',
-        'source_manifest': '<(DEPTH)/components/profile_service/manifest.json',
+        'application_name': 'user',
+        'source_manifest': '<(DEPTH)/services/user/manifest.json',
       },
       'includes': [
         '../../mojo/public/mojo_application_manifest.gypi',

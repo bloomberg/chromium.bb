@@ -18,8 +18,6 @@
 #include "base/thread_task_runner_handle.h"
 #include "components/filesystem/public/interfaces/directory.mojom.h"
 #include "components/leveldb/public/interfaces/leveldb.mojom.h"
-#include "components/profile_service/public/cpp/constants.h"
-#include "components/profile_service/public/interfaces/profile.mojom.h"
 #include "content/browser/dom_storage/dom_storage_area.h"
 #include "content/browser/dom_storage/dom_storage_context_impl.h"
 #include "content/browser/dom_storage/dom_storage_task_runner.h"
@@ -31,6 +29,8 @@
 #include "mojo/common/common_type_converters.h"
 #include "services/shell/public/cpp/connection.h"
 #include "services/shell/public/cpp/connector.h"
+#include "services/user/public/cpp/constants.h"
+#include "services/user/public/interfaces/user_service.mojom.h"
 
 namespace content {
 namespace {
@@ -118,9 +118,9 @@ class DOMStorageContextWrapper::MojoState {
     CONNECTION_FINISHED
   } connection_state_;
 
-  std::unique_ptr<mojo::Connection> profile_app_connection_;
+  std::unique_ptr<mojo::Connection> user_service_connection_;
 
-  profile::ProfileServicePtr profile_service_;
+  user_service::mojom::UserServicePtr user_service_;
   filesystem::DirectoryPtr directory_;
 
   leveldb::LevelDBServicePtr leveldb_service_;
@@ -138,22 +138,22 @@ void DOMStorageContextWrapper::MojoState::OpenLocalStorage(
   // If we don't have a filesystem_connection_, we'll need to establish one.
   if (connection_state_ == NO_CONNECTION) {
     CHECK(connector_);
-    profile_app_connection_ =
-        connector_->Connect(profile::kProfileMojoApplicationName);
+    user_service_connection_ =
+        connector_->Connect(user_service::kUserServiceName);
     connection_state_ = CONNECTION_IN_PROGRESS;
 
     if (!subdirectory_.empty()) {
       // We were given a subdirectory to write to. Get it and use a disk backed
       // database.
-      profile_app_connection_->GetInterface(&profile_service_);
-      profile_service_->GetSubDirectory(
+      user_service_connection_->GetInterface(&user_service_);
+      user_service_->GetSubDirectory(
           mojo::String::From(subdirectory_.AsUTF8Unsafe()),
           GetProxy(&directory_),
           base::Bind(&MojoState::OnDirectoryOpened,
                      weak_ptr_factory_.GetWeakPtr()));
     } else {
       // We were not given a subdirectory. Use a memory backed database.
-      profile_app_connection_->GetInterface(&leveldb_service_);
+      user_service_connection_->GetInterface(&leveldb_service_);
       leveldb_service_->OpenInMemory(
           GetProxy(&database_),
           base::Bind(&MojoState::OnDatabaseOpened,
@@ -183,7 +183,7 @@ void DOMStorageContextWrapper::MojoState::OnDirectoryOpened(
 
   // Now that we have a directory, connect to the LevelDB service and get our
   // database.
-  profile_app_connection_->GetInterface(&leveldb_service_);
+  user_service_connection_->GetInterface(&leveldb_service_);
 
   leveldb_service_->Open(
       std::move(directory_), "leveldb", GetProxy(&database_),
@@ -199,11 +199,11 @@ void DOMStorageContextWrapper::MojoState::OnDatabaseOpened(
     leveldb_service_.reset();
   }
 
-  // We no longer need the profile service; we've either transferred
+  // We no longer need the user service; we've either transferred
   // |directory_| to the leveldb service, or we got a file error and no more is
   // possible.
   directory_.reset();
-  profile_service_.reset();
+  user_service_.reset();
 
   // |leveldb_| should be known to either be valid or invalid by now. Run our
   // delayed bindings.

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/profile_service/profile_service_impl.h"
+#include "services/user/user_service.h"
 
 #include "base/files/file.h"
 #include "base/files/file_path.h"
@@ -15,19 +15,18 @@
 #include "services/shell/public/cpp/connection.h"
 #include "services/shell/public/cpp/message_loop_ref.h"
 
-namespace profile {
+namespace user_service {
 
-ProfileServiceImpl::ProfileServiceImpl(
-    const base::FilePath& base_profile_dir,
-    const scoped_refptr<filesystem::LockTable>& lock_table)
-    : lock_table_(lock_table), path_(base_profile_dir) {
+UserService::UserService(const base::FilePath& base_user_dir,
+                         const scoped_refptr<filesystem::LockTable>& lock_table)
+    : lock_table_(lock_table), path_(base_user_dir) {
   base::CreateDirectory(path_);
 }
 
-ProfileServiceImpl::~ProfileServiceImpl() {}
+UserService::~UserService() {}
 
-void ProfileServiceImpl::GetDirectory(filesystem::DirectoryRequest request,
-                                      const GetDirectoryCallback& callback) {
+void UserService::GetDirectory(filesystem::DirectoryRequest request,
+                               const GetDirectoryCallback& callback) {
   new filesystem::DirectoryImpl(std::move(request),
                                 path_,
                                 scoped_ptr<base::ScopedTempDir>(),
@@ -35,11 +34,10 @@ void ProfileServiceImpl::GetDirectory(filesystem::DirectoryRequest request,
   callback.Run();
 }
 
-void ProfileServiceImpl::GetSubDirectory(
-    const mojo::String& sub_directory_path,
-    filesystem::DirectoryRequest request,
-    const GetSubDirectoryCallback& callback) {
-  // Ensure that we've made |subdirectory| recursively under our profile.
+void UserService::GetSubDirectory(const mojo::String& sub_directory_path,
+                                  filesystem::DirectoryRequest request,
+                                  const GetSubDirectoryCallback& callback) {
+  // Ensure that we've made |subdirectory| recursively under our user dir.
   base::FilePath subdir = path_.Append(
 #if defined(OS_WIN)
       base::UTF8ToWide(sub_directory_path.To<std::string>()));
@@ -57,4 +55,4 @@ void ProfileServiceImpl::GetSubDirectory(
   callback.Run(filesystem::FileError::OK);
 }
 
-}  // namespace profile
+}  // namespace user_service

@@ -18,9 +18,6 @@
 #include "base/macros.h"
 #include "base/rand_util.h"
 #include "build/build_config.h"
-#include "components/profile_service/profile_app.h"
-#include "components/profile_service/public/cpp/constants.h"
-#include "components/profile_service/user_id_map.h"
 #include "content/browser/download/download_manager_impl.h"
 #include "content/browser/fileapi/chrome_blob_storage_context.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
@@ -44,6 +41,9 @@
 #include "services/shell/public/cpp/connection.h"
 #include "services/shell/public/cpp/connector.h"
 #include "services/shell/public/interfaces/shell_client.mojom.h"
+#include "services/user/public/cpp/constants.h"
+#include "services/user/user_id_map.h"
+#include "services/user/user_shell_client.h"
 #include "storage/browser/database/database_tracker.h"
 #include "storage/browser/fileapi/external_mount_points.h"
 
@@ -374,7 +374,7 @@ void BrowserContext::Initialize(
   g_used_user_ids.Get().insert(new_id);
   g_context_to_user_id.Get().push_back(std::make_pair(browser_context, new_id));
 
-  profile::AssociateMojoUserIDWithProfileDir(new_id, path);
+  user_service::AssociateMojoUserIDWithUserDir(new_id, path);
   browser_context->SetUserData(kMojoWasInitialized,
                                new base::SupportsUserData::Data);
 
@@ -407,9 +407,9 @@ void BrowserContext::Initialize(
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kMojoLocalStorage)) {
       connection->AddEmbeddedApplication(
-          profile::kProfileMojoApplicationName,
+          user_service::kUserServiceName,
           base::Bind(
-              &profile::CreateProfileApp,
+              &user_service::CreateUserShellClient,
               BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
               BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB)),
           nullptr);

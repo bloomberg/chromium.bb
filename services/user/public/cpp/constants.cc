@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/profile_service/public/cpp/constants.h"
+#include "services/user/public/cpp/constants.h"
 
-namespace profile {
+namespace user_service {
 
-const char kProfileMojoApplicationName[] = "mojo:profile";
+const char kUserServiceName[] = "mojo:user";
 
-}  // namespace profile
+}  // namespace user_service

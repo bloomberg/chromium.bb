@@ -7,12 +7,12 @@ import("//mojo/public/mojo_application_manifest.gni")
 
 source_set("lib") {
   sources = [
-    "profile_app.cc",
-    "profile_app.h",
-    "profile_service_impl.cc",
-    "profile_service_impl.h",
     "user_id_map.cc",
     "user_id_map.h",
+    "user_service.cc",
+    "user_service.h",
+    "user_shell_client.cc",
+    "user_shell_client.h",
   ]
 
   deps = [
@@ -21,7 +21,6 @@ source_set("lib") {
     "//components/filesystem/public/interfaces",
     "//components/leveldb:lib",
     "//components/leveldb/public/interfaces",
-    "//components/profile_service/public/interfaces",
     "//mojo/common",
     "//mojo/common:common_base",
     "//mojo/message_pump",
@@ -29,6 +28,7 @@ source_set("lib") {
     "//services/shell/public/cpp",
     "//services/shell/public/interfaces",
     "//services/tracing/public/cpp",
+    "//services/user/public/interfaces",
     "//url",
   ]
 
@@ -38,6 +38,6 @@ source_set("lib") {
 }
 
 mojo_application_manifest("manifest") {
-  application_name = "profile"
+  application_name = "user"
   source = "manifest.json"
 }

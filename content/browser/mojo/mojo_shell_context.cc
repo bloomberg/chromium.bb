@@ -15,7 +15,6 @@
 #include "base/path_service.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
-#include "components/profile_service/public/cpp/constants.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/mojo/constants.h"
 #include "content/common/gpu_process_launch_causes.h"
@@ -42,6 +41,7 @@
 #include "services/shell/public/cpp/shell_client.h"
 #include "services/shell/public/interfaces/connector.mojom.h"
 #include "services/shell/runner/host/in_process_native_runner.h"
+#include "services/user/public/cpp/constants.h"
 
 namespace content {
 
@@ -241,7 +241,7 @@ MojoShellContext::MojoShellContext() {
                                           IDR_MOJO_CONTENT_RENDERER_MANIFEST);
   manifest_provider_->AddManifestResource("mojo:catalog",
                                           IDR_MOJO_CATALOG_MANIFEST);
-  manifest_provider_->AddManifestResource(profile::kProfileMojoApplicationName,
+  manifest_provider_->AddManifestResource(user_service::kUserServiceName,
                                           IDR_MOJO_PROFILE_MANIFEST);
 
   catalog_.reset(new catalog::Factory(file_task_runner.get(), nullptr,

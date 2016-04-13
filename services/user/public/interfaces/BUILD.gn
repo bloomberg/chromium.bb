@@ -6,7 +6,7 @@ import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("interfaces") {
   sources = [
-    "profile.mojom",
+    "user_service.mojom",
   ]
 
   deps = [

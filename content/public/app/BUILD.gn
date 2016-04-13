@@ -146,9 +146,9 @@ mojo_application_manifest("browser_manifest") {
   type = "exe"
   application_name = "content_browser"
   source = "mojo/content_browser_manifest.json"
-  packaged_applications = [ "profile" ]
+  packaged_applications = [ "user" ]
   deps = [
-    "//components/profile_service:manifest",
+    "//services/user:manifest",
   ]
 }
 
