@@ -28,7 +28,6 @@
 
 #include "core/CoreExport.h"
 #include "core/css/FontFaceCache.h"
-#include "core/css/FontLoader.h"
 #include "platform/fonts/FontSelector.h"
 #include "platform/fonts/GenericFontFamilySettings.h"
 #include "platform/heap/Handle.h"
@@ -66,7 +65,6 @@ public:
 
     Document* document() const { return m_document; }
     FontFaceCache* fontFaceCache() { return &m_fontFaceCache; }
-    FontLoader* fontLoader() { return m_fontLoader.get(); }
 
     const GenericFontFamilySettings& genericFontFamilySettings() const { return m_genericFontFamilySettings; }
     void updateGenericFontFamilySettings(Document&);
@@ -86,8 +84,6 @@ private:
     // FIXME: Move to Document or StyleEngine.
     FontFaceCache m_fontFaceCache;
     HeapHashSet<WeakMember<CSSFontSelectorClient>> m_clients;
-
-    Member<FontLoader> m_fontLoader;
     GenericFontFamilySettings m_genericFontFamilySettings;
 };
 

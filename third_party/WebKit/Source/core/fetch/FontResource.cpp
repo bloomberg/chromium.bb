@@ -74,6 +74,9 @@ FontResource* FontResource::fetch(FetchRequest& request, ResourceFetcher* fetche
 {
     ASSERT(request.resourceRequest().frameType() == WebURLRequest::FrameTypeNone);
     request.mutableResourceRequest().setRequestContext(WebURLRequest::RequestContextFont);
+    // Defer the load until the font is actually needed unless this is a preload.
+    if (!request.forPreload())
+        request.setDefer(FetchRequest::DeferredByClient);
     return toFontResource(fetcher->requestResource(request, FontResourceFactory()));
 }
 
@@ -90,25 +93,6 @@ FontResource::~FontResource()
 {
 }
 
-void FontResource::didScheduleLoad()
-{
-    if (getStatus() == NotStarted)
-        setStatus(LoadStartScheduled);
-}
-
-void FontResource::didUnscheduleLoad()
-{
-    if (getStatus() == LoadStartScheduled)
-        setStatus(NotStarted);
-}
-
-void FontResource::load(ResourceFetcher*)
-{
-    // Don't load the file yet. Wait for an access before triggering the load.
-    if (!m_revalidatingRequest.isNull())
-        setStatus(NotStarted);
-}
-
 void FontResource::didAddClient(ResourceClient* c)
 {
     ASSERT(FontResourceClient::isExpectedType(c));
@@ -121,17 +105,13 @@ void FontResource::didAddClient(ResourceClient* c)
         static_cast<FontResourceClient*>(c)->fontLoadLongLimitExceeded(this);
 }
 
-void FontResource::beginLoadIfNeeded(ResourceFetcher* dl)
+void FontResource::startLoadLimitTimersIfNeeded()
 {
-    if (stillNeedsLoad()) {
-        Resource::load(dl);
-        m_fontLoadShortLimitTimer.startOneShot(fontLoadWaitShortLimitSec, BLINK_FROM_HERE);
-        m_fontLoadLongLimitTimer.startOneShot(fontLoadWaitLongLimitSec, BLINK_FROM_HERE);
-
-        ResourceClientWalker<FontResourceClient> walker(m_clients);
-        while (FontResourceClient* client = walker.next())
-            client->didStartFontLoad(this);
-    }
+    ASSERT(!stillNeedsLoad());
+    if (isLoaded() || m_fontLoadLongLimitTimer.isActive())
+        return;
+    m_fontLoadShortLimitTimer.startOneShot(fontLoadWaitShortLimitSec, BLINK_FROM_HERE);
+    m_fontLoadLongLimitTimer.startOneShot(fontLoadWaitLongLimitSec, BLINK_FROM_HERE);
 }
 
 bool FontResource::ensureCustomFontData()

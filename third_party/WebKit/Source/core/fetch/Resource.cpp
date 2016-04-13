@@ -254,6 +254,7 @@ DEFINE_TRACE(Resource)
 void Resource::load(ResourceFetcher* fetcher)
 {
     RELEASE_ASSERT(!m_loader);
+    ASSERT(stillNeedsLoad());
     m_status = Pending;
 
     ResourceRequest& request(m_revalidatingRequest.isNull() ? m_resourceRequest : m_revalidatingRequest);
@@ -452,6 +453,12 @@ const ResourceRequest& Resource::lastResourceRequest() const
     if (!m_redirectChain.size())
         return m_resourceRequest;
     return m_redirectChain.last().m_request;
+}
+
+void Resource::setRevalidatingRequest(const ResourceRequest& request)
+{
+    m_revalidatingRequest = request;
+    m_status = NotStarted;
 }
 
 void Resource::willFollowRedirect(ResourceRequest& newRequest, const ResourceResponse& redirectResponse)

@@ -47,16 +47,10 @@ public:
     static FontResource* fetch(FetchRequest&, ResourceFetcher*);
     ~FontResource() override;
 
-    void load(ResourceFetcher*) override;
-
     void didAddClient(ResourceClient*) override;
 
     void allClientsAndObserversRemoved() override;
-    void beginLoadIfNeeded(ResourceFetcher* dl);
-
-    bool loadScheduled() const { return getStatus() == LoadStartScheduled; }
-    void didScheduleLoad();
-    void didUnscheduleLoad();
+    void startLoadLimitTimersIfNeeded();
 
     void setCORSFailed() override { m_corsFailed = true; }
     bool isCORSFailed() const { return m_corsFailed; }
@@ -105,7 +99,6 @@ public:
     static bool isExpectedType(ResourceClient* client) { return client->getResourceClientType() == FontType; }
     ResourceClientType getResourceClientType() const final { return FontType; }
     virtual void fontLoaded(FontResource*) {}
-    virtual void didStartFontLoad(FontResource*) {}
     virtual void fontLoadShortLimitExceeded(FontResource*) {}
     virtual void fontLoadLongLimitExceeded(FontResource*) {}
 };

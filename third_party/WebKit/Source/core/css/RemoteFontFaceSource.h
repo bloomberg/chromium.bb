@@ -11,7 +11,7 @@
 
 namespace blink {
 
-class FontLoader;
+class CSSFontSelector;
 
 enum FontDisplay {
     FontDisplayAuto,
@@ -27,7 +27,7 @@ class RemoteFontFaceSource final : public CSSFontFaceSource, public FontResource
 public:
     enum DisplayPeriod { BlockPeriod, SwapPeriod, FailurePeriod };
 
-    explicit RemoteFontFaceSource(FontResource*, FontLoader*, FontDisplay);
+    explicit RemoteFontFaceSource(FontResource*, CSSFontSelector*, FontDisplay);
     ~RemoteFontFaceSource() override;
     void dispose();
 
@@ -38,7 +38,6 @@ public:
 
     void beginLoadIfNeeded() override;
 
-    void didStartFontLoad(FontResource*) override;
     void fontLoaded(FontResource*) override;
     void fontLoadShortLimitExceeded(FontResource*) override;
     void fontLoadLongLimitExceeded(FontResource*) override;
@@ -79,7 +78,7 @@ private:
     void switchToFailurePeriod();
 
     Member<FontResource> m_font;
-    Member<FontLoader> m_fontLoader;
+    Member<CSSFontSelector> m_fontSelector;
     const FontDisplay m_display;
     DisplayPeriod m_period;
     FontLoadHistograms m_histograms;

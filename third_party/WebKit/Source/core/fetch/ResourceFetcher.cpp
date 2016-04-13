@@ -660,9 +660,7 @@ ResourceFetcher::RevalidationPolicy ResourceFetcher::determineRevalidationPolicy
     //    affected by m_imagesEnabled but not m_autoLoadImages, in order to
     //    allow for this differing behavior.
     // TODO(japhet): Can we get rid of one of these settings?
-    if (FetchRequest::DeferredByClient == fetchRequest.defer())
-        return Reload;
-    if (existingResource->isImage() && !context().allowImage(m_imagesEnabled, existingResource->url()))
+    if (existingResource->isImage() && (FetchRequest::DeferredByClient == fetchRequest.defer() || !context().allowImage(m_imagesEnabled, existingResource->url())))
         return Reload;
 
     // Never use cache entries for downloadToFile / useStreamOnResponse

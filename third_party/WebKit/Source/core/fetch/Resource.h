@@ -77,7 +77,6 @@ public:
 
     enum Status {
         NotStarted,
-        LoadStartScheduled, // scheduled but not yet started, only used by fonts.
         Pending, // load in progress
         Cached, // load completed successfully
         LoadError,
@@ -94,7 +93,7 @@ public:
     virtual void removedFromMemoryCache();
     DECLARE_VIRTUAL_TRACE();
 
-    virtual void load(ResourceFetcher*);
+    void load(ResourceFetcher*);
 
     virtual void setEncoding(const String&) { }
     virtual String encoding() const { return String(); }
@@ -118,7 +117,7 @@ public:
     const ResourceRequest& resourceRequest() const { return m_resourceRequest; }
     const ResourceRequest& lastResourceRequest() const;
 
-    void setRevalidatingRequest(const ResourceRequest& request) { m_revalidatingRequest = request; }
+    void setRevalidatingRequest(const ResourceRequest&);
 
     // This url can have a fragment, but it can match resources that differ by the fragment only.
     const KURL& url() const { return m_resourceRequest.url();}

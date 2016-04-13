@@ -1251,8 +1251,6 @@
             'css/FontFaceSet.h',
             'css/FontFaceSetLoadEvent.cpp',
             'css/FontFaceSetLoadEvent.h',
-            'css/FontLoader.cpp',
-            'css/FontLoader.h',
             'css/FontSize.cpp',
             'css/FontSize.h',
             'css/FontStyleMatcher.cpp',

@@ -395,7 +395,6 @@ void FontFace::loadInternal(ExecutionContext* context)
         return;
 
     m_cssFontFace->load();
-    toDocument(context)->styleEngine().fontSelector()->fontLoader()->loadPendingFonts();
 }
 
 FontTraits FontFace::traits() const
@@ -592,8 +591,8 @@ void FontFace::initCSSFontFace(Document* document, CSSValue* src)
             if (allowDownloading && item->isSupportedFormat() && document) {
                 FontResource* fetched = item->fetch(document);
                 if (fetched) {
-                    FontLoader* fontLoader = document->styleEngine().fontSelector()->fontLoader();
-                    source = new RemoteFontFaceSource(fetched, fontLoader, CSSValueToFontDisplay(m_display.get()));
+                    CSSFontSelector* fontSelector = document->styleEngine().fontSelector();
+                    source = new RemoteFontFaceSource(fetched, fontSelector, CSSValueToFontDisplay(m_display.get()));
                 }
             }
         } else {

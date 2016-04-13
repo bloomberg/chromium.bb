@@ -19,6 +19,10 @@ if (window.testRunner)
     testRunner.waitUntilDone();
 
 window.onload = function() {
+    setTimeout(runTest, 0);
+};
+
+function runTest() {
     document.getElementById('test').classList.add('test');
     setTimeout(function() {
         var newStyle = document.createElement('style');

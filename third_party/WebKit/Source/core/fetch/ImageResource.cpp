@@ -78,14 +78,6 @@ ImageResource::ImageResource(blink::Image* image, const ResourceLoaderOptions& o
     setStatus(Cached);
 }
 
-ImageResource::ImageResource(const ResourceRequest& resourceRequest, blink::Image* image, const ResourceLoaderOptions& options)
-    : Resource(resourceRequest, Image, options)
-    , m_image(image)
-{
-    WTF_LOG(Timers, "new ImageResource(ResourceRequest, Image) %p", this);
-    setStatus(Cached);
-}
-
 ImageResource::~ImageResource()
 {
     WTF_LOG(Timers, "~ImageResource %p", this);
@@ -510,6 +502,7 @@ void ImageResource::reloadIfLoFi(ResourceFetcher* fetcher)
     m_resourceRequest.setCachePolicy(WebCachePolicy::BypassingCache);
     m_resourceRequest.setLoFiState(WebURLRequest::LoFiOff);
     error(Resource::LoadError);
+    setStatus(NotStarted);
     load(fetcher);
 }
 

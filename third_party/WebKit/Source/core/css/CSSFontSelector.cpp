@@ -44,7 +44,6 @@ namespace blink {
 
 CSSFontSelector::CSSFontSelector(Document* document)
     : m_document(document)
-    , m_fontLoader(FontLoader::create(this, document))
     , m_genericFontFamilySettings(document->frame()->settings()->genericFontFamilySettings())
 {
     // FIXME: An old comment used to say there was no need to hold a reference to m_document
@@ -164,7 +163,6 @@ DEFINE_TRACE(CSSFontSelector)
     visitor->trace(m_document);
     visitor->trace(m_fontFaceCache);
     visitor->trace(m_clients);
-    visitor->trace(m_fontLoader);
     FontSelector::trace(visitor);
 }
 

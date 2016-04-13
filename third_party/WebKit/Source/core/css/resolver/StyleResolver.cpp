@@ -705,7 +705,6 @@ void StyleResolver::adjustComputedStyle(StyleResolverState& state, Element* elem
 void StyleResolver::loadPendingResources(StyleResolverState& state)
 {
     state.elementStyleResources().loadPendingResources(state.style());
-    document().styleEngine().fontSelector()->fontLoader()->loadPendingFonts();
 }
 
 PassRefPtr<ComputedStyle> StyleResolver::styleForElement(Element* element, const ComputedStyle* defaultParent, StyleSharingBehavior sharingBehavior,

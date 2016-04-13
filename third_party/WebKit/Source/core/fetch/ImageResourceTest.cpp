@@ -87,7 +87,7 @@ TEST(ImageResourceTest, MultipartImage)
     URLTestHelpers::registerMockedURLLoad(testURL, "cancelTest.html", "text/html");
 
     // Emulate starting a real load, but don't expect any "real" WebURLLoaderClient callbacks.
-    ImageResource* cachedImage = ImageResource::create(ResourceRequest(testURL), nullptr);
+    ImageResource* cachedImage = ImageResource::create(ResourceRequest(testURL));
     cachedImage->setIdentifier(createUniqueIdentifier());
     cachedImage->load(fetcher);
     Platform::current()->getURLLoaderMockFactory()->unregisterURL(testURL);
@@ -151,7 +151,7 @@ TEST(ImageResourceTest, CancelOnDetach)
     ResourceFetcher* fetcher = ResourceFetcher::create(nullptr);
 
     // Emulate starting a real load.
-    ImageResource* cachedImage = ImageResource::create(ResourceRequest(testURL), nullptr);
+    ImageResource* cachedImage = ImageResource::create(ResourceRequest(testURL));
     cachedImage->setIdentifier(createUniqueIdentifier());
 
     cachedImage->load(fetcher);
@@ -175,7 +175,7 @@ TEST(ImageResourceTest, CancelOnDetach)
 
 TEST(ImageResourceTest, DecodedDataRemainsWhileHasClients)
 {
-    ImageResource* cachedImage = ImageResource::create(ResourceRequest(), nullptr);
+    ImageResource* cachedImage = ImageResource::create(ResourceRequest());
     cachedImage->setStatus(Resource::Pending);
 
     MockImageResourceClient client(cachedImage);
@@ -208,7 +208,7 @@ TEST(ImageResourceTest, DecodedDataRemainsWhileHasClients)
 
 TEST(ImageResourceTest, UpdateBitmapImages)
 {
-    ImageResource* cachedImage = ImageResource::create(ResourceRequest(), nullptr);
+    ImageResource* cachedImage = ImageResource::create(ResourceRequest());
     cachedImage->setStatus(Resource::Pending);
 
     MockImageResourceClient client(cachedImage);
@@ -230,7 +230,7 @@ TEST(ImageResourceTest, ReloadIfLoFi)
 {
     KURL testURL(ParsedURLString, "http://www.test.com/cancelTest.html");
     URLTestHelpers::registerMockedURLLoad(testURL, "cancelTest.html", "text/html");
-    ImageResource* cachedImage = ImageResource::create(ResourceRequest(testURL), nullptr);
+    ImageResource* cachedImage = ImageResource::create(ResourceRequest(testURL));
     cachedImage->setStatus(Resource::Pending);
 
     MockImageResourceClient client(cachedImage);

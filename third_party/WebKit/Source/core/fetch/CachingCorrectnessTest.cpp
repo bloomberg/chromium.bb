@@ -84,7 +84,7 @@ protected:
             resource = Resource::create(ResourceRequest(response.url()), type);
             break;
         case Resource::Image:
-            resource = ImageResource::create(ResourceRequest(response.url()), nullptr);
+            resource = ImageResource::create(ResourceRequest(response.url()));
             break;
         default:
             EXPECT_TRUE(false) << "'Unreachable' code was reached";
