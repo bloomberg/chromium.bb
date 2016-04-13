@@ -255,7 +255,7 @@ config("default_sanitizer_flags") {
     ubsan_blacklist_path =
         rebase_path("//tools/ubsan/blacklist.txt", root_build_dir)
     cflags += [
-      "-fsanitize=signed-integer-overflow",
+      "-fsanitize=signed-integer-overflow,shift",
       "-fsanitize-blacklist=$ubsan_blacklist_path",
     ]
   }
