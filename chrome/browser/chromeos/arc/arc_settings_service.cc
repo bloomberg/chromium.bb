@@ -20,6 +20,8 @@
 #include "components/prefs/pref_service.h"
 #include "components/proxy_config/proxy_config_dictionary.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
+#include "device/bluetooth/bluetooth_adapter.h"
+#include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "net/proxy/proxy_config.h"
 
 using ::chromeos::CrosSettings;
@@ -60,7 +62,8 @@ namespace arc {
 // Listens to changes for select Chrome settings (prefs) that Android cares
 // about and sends the new values to Android to keep the state in sync.
 class ArcSettingsServiceImpl
-    : public chromeos::system::TimezoneSettings::Observer {
+    : public chromeos::system::TimezoneSettings::Observer,
+      public device::BluetoothAdapter::Observer {
  public:
   explicit ArcSettingsServiceImpl(ArcBridgeService* arc_bridge_service);
   ~ArcSettingsServiceImpl() override;
@@ -71,6 +74,10 @@ class ArcSettingsServiceImpl
 
   // TimezoneSettings::Observer
   void TimezoneChanged(const icu::TimeZone& timezone) override;
+
+  // BluetoothAdapter::Observer
+  void AdapterPoweredChanged(device::BluetoothAdapter* adapter,
+                             bool powered) override;
 
  private:
   // Registers to observe changes for Chrome settings we care about.
@@ -89,6 +96,9 @@ class ArcSettingsServiceImpl
   void SyncTimeZone() const;
   void SyncUse24HourClock() const;
 
+  void OnBluetoothAdapterInitialized(
+      scoped_refptr<device::BluetoothAdapter> adapter);
+
   // Registers to listen to a particular perf.
   void AddPrefToObserve(const std::string& pref_name);
 
@@ -106,18 +116,27 @@ class ArcSettingsServiceImpl
       reporting_consent_subscription_;
   ArcBridgeService* const arc_bridge_service_;
 
+  scoped_refptr<device::BluetoothAdapter> bluetooth_adapter_;
+
+  // WeakPtrFactory to use for callback for getting the bluetooth adapter.
+  base::WeakPtrFactory<ArcSettingsServiceImpl> weak_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(ArcSettingsServiceImpl);
 };
 
 ArcSettingsServiceImpl::ArcSettingsServiceImpl(
     ArcBridgeService* arc_bridge_service)
-    : arc_bridge_service_(arc_bridge_service) {
+    : arc_bridge_service_(arc_bridge_service), weak_factory_(this) {
   StartObservingSettingsChanges();
   SyncAllPrefs();
 }
 
 ArcSettingsServiceImpl::~ArcSettingsServiceImpl() {
   StopObservingSettingsChanges();
+
+  if (bluetooth_adapter_) {
+    bluetooth_adapter_->RemoveObserver(this);
+  }
 }
 
 void ArcSettingsServiceImpl::StartObservingSettingsChanges() {
@@ -137,6 +156,19 @@ void ArcSettingsServiceImpl::StartObservingSettingsChanges() {
                  base::Unretained(this)));
 
   TimezoneSettings::GetInstance()->AddObserver(this);
+
+  if (device::BluetoothAdapterFactory::IsBluetoothAdapterAvailable()) {
+    device::BluetoothAdapterFactory::GetAdapter(
+        base::Bind(&ArcSettingsServiceImpl::OnBluetoothAdapterInitialized,
+                   weak_factory_.GetWeakPtr()));
+  }
+}
+
+void ArcSettingsServiceImpl::OnBluetoothAdapterInitialized(
+    scoped_refptr<device::BluetoothAdapter> adapter) {
+  DCHECK(adapter);
+  bluetooth_adapter_ = adapter;
+  bluetooth_adapter_->AddObserver(this);
 }
 
 void ArcSettingsServiceImpl::SyncAllPrefs() const {
@@ -159,6 +191,15 @@ void ArcSettingsServiceImpl::StopObservingSettingsChanges() {
 void ArcSettingsServiceImpl::AddPrefToObserve(const std::string& pref_name) {
   registrar_.Add(pref_name, base::Bind(&ArcSettingsServiceImpl::OnPrefChanged,
                                        base::Unretained(this)));
+}
+
+void ArcSettingsServiceImpl::AdapterPoweredChanged(
+    device::BluetoothAdapter* adapter,
+    bool powered) {
+  base::DictionaryValue extras;
+  extras.SetBoolean("enable", powered);
+  SendSettingsBroadcast("org.chromium.arc.intent_helper.SET_BLUETOOTH_STATE",
+                        extras);
 }
 
 void ArcSettingsServiceImpl::OnPrefChanged(const std::string& pref_name) const {
