@@ -183,6 +183,8 @@ enum BrandFileType {
 - (void)setAppPath:(NSString*)appPath;
 
 // Sets the total number of profiles and the number of signed in profiles.
+// Passing zeroes sets the application as active, but does not update
+// profile metrics.
 - (void)updateProfileCountsWithNumProfiles:(uint32_t)profiles
                        numSignedInProfiles:(uint32_t)signedInProfiles;
 
