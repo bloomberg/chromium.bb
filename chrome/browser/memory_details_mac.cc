@@ -18,7 +18,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread.h"
-#include "chrome/browser/process_info_snapshot.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
@@ -29,26 +28,6 @@
 #include "ui/base/l10n/l10n_util.h"
 
 using content::BrowserThread;
-
-// TODO(viettrungluu): Many of the TODOs below are subsumed by a general need to
-// refactor the about:memory code (not just on Mac, but probably on other
-// platforms as well). I've filed crbug.com/25456.
-
-// Known browsers which we collect details for. |CHROME_BROWSER| *must* be the
-// first browser listed. The order here must match those in |process_template|
-// (in |MemoryDetails::MemoryDetails()| below).
-// TODO(viettrungluu): In the big refactoring (see above), get rid of this order
-// dependence.
-enum BrowserType {
-  // TODO(viettrungluu): possibly add more?
-  CHROME_BROWSER = 0,
-  SAFARI_BROWSER,
-  FIREFOX_BROWSER,
-  CAMINO_BROWSER,
-  OPERA_BROWSER,
-  OMNIWEB_BROWSER,
-  MAX_BROWSERS
-};
 
 namespace {
 
@@ -86,111 +65,32 @@ void CollectProcessDataForChromeProcess(
   processes->push_back(info);
 }
 
-// Collects memory information from non-Chrome browser processes, using the
-// ProcessInfoSnapshot helper (which runs an external command - PS or TOP).
-// Updates |process_data| with the collected information.
-void CollectProcessDataAboutNonChromeProcesses(
-    const std::vector<base::ProcessId>& all_pids,
-    const std::vector<base::ProcessId> pids_by_browser[MAX_BROWSERS],
-    std::vector<ProcessData>* process_data) {
-  DCHECK_EQ(MAX_BROWSERS, process_data->size());
-
-  // Capture information about the processes we're interested in.
-  ProcessInfoSnapshot process_info;
-  process_info.Sample(all_pids);
-
-  // Handle the other processes first.
-  for (size_t index = CHROME_BROWSER + 1; index < MAX_BROWSERS; ++index) {
-    for (const base::ProcessId& pid : pids_by_browser[index]) {
-      ProcessMemoryInformation info;
-      info.pid = pid;
-      info.process_type = content::PROCESS_TYPE_UNKNOWN;
-
-      // Try to get version information. To do this, we need first to get the
-      // executable's name (we can only believe |proc_info.command| if it looks
-      // like an absolute path). Then we need strip the executable's name back
-      // to the bundle's name. And only then can we try to get the version.
-      scoped_ptr<FileVersionInfo> version_info;
-      ProcessInfoSnapshot::ProcInfoEntry proc_info;
-      if (process_info.GetProcInfo(info.pid, &proc_info)) {
-        if (proc_info.command.length() > 1 && proc_info.command[0] == '/') {
-          base::FilePath bundle_name =
-              base::mac::GetAppBundlePath(base::FilePath(proc_info.command));
-          if (!bundle_name.empty()) {
-            version_info.reset(
-                FileVersionInfo::CreateFileVersionInfo(bundle_name));
-          }
-        }
-      }
-      if (version_info) {
-        info.product_name = version_info->product_name();
-        info.version = version_info->product_version();
-      } else {
-        info.product_name = (*process_data)[index].name;
-        info.version.clear();
-      }
-
-      // Memory info.
-      process_info.GetCommittedKBytesOfPID(info.pid, &info.committed);
-      process_info.GetWorkingSetKBytesOfPID(info.pid, &info.working_set);
-
-      // Add the process info to our list.
-      (*process_data)[index].processes.push_back(info);
-    }
-  }
-}
-
 }  // namespace
 
 MemoryDetails::MemoryDetails() {
   const base::FilePath browser_process_path =
       base::GetProcessExecutablePath(base::GetCurrentProcessHandle());
-  const std::string browser_process_name =
-      browser_process_path.BaseName().value();
-  const std::string google_browser_name =
-      l10n_util::GetStringUTF8(IDS_PRODUCT_NAME);
 
-  // (Human and process) names of browsers; should match the ordering for
-  // |BrowserType| enum.
-  // TODO(viettrungluu): The current setup means that we can't detect both
-  // Chrome and Chromium at the same time!
-  // TODO(viettrungluu): Get localized browser names for other browsers
-  // (crbug.com/25779).
-  struct {
-    const char* name;
-    const char* process_name;
-  } process_template[MAX_BROWSERS] = {
-    { google_browser_name.c_str(), browser_process_name.c_str(), },
-    { "Safari", "Safari", },
-    { "Firefox", "firefox-bin", },
-    { "Camino", "Camino", },
-    { "Opera", "Opera", },
-    { "OmniWeb", "OmniWeb", },
-  };
-
-  for (size_t index = 0; index < MAX_BROWSERS; ++index) {
-    ProcessData process;
-    process.name = base::UTF8ToUTF16(process_template[index].name);
-    process.process_name =
-        base::UTF8ToUTF16(process_template[index].process_name);
-    process_data_.push_back(process);
-  }
+  ProcessData process;
+  process.name = l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
+  process.process_name =
+      base::UTF8ToUTF16(browser_process_path.BaseName().value());
+  process_data_.push_back(process);
 }
 
 ProcessData* MemoryDetails::ChromeBrowser() {
-  return &process_data_[CHROME_BROWSER];
+  return &process_data_[0];
 }
 
 void MemoryDetails::CollectProcessData(
-    CollectionMode mode,
     const std::vector<ProcessMemoryInformation>& child_info) {
-  // This must be run on the blocking pool to avoid jank (|ProcessInfoSnapshot|
-  // runs /bin/ps, which isn't instantaneous).
+  // TODO(ellyjones): Does this still need to be run in the blocking pool?
+  // It used to need to be because it ran /bin/ps, but it might not need to any
+  // more.
   DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
 
   // Clear old data.
-  for (size_t index = 0; index < MAX_BROWSERS; index++)
-    process_data_[index].processes.clear();
+  process_data_[0].processes.clear();
 
   // First, we use |NamedProcessIterator| to get the PIDs of the processes we're
   // interested in; we save our results to avoid extra calls to
@@ -200,41 +100,29 @@ void MemoryDetails::CollectProcessData(
   // over browsers, then over PIDs.
 
   // Get PIDs of main browser processes.
-  std::vector<base::ProcessId> pids_by_browser[MAX_BROWSERS];
   std::vector<base::ProcessId> all_pids;
-  for (size_t index = CHROME_BROWSER; index < MAX_BROWSERS; index++) {
+  {
     base::NamedProcessIterator process_it(
-        base::UTF16ToUTF8(process_data_[index].process_name), NULL);
+        base::UTF16ToUTF8(process_data_[0].process_name), NULL);
 
     while (const base::ProcessEntry* entry = process_it.NextProcessEntry()) {
-      pids_by_browser[index].push_back(entry->pid());
       all_pids.push_back(entry->pid());
     }
   }
 
   // Get PIDs of the helper.
-  std::vector<base::ProcessId> helper_pids;
-  base::NamedProcessIterator helper_it(chrome::kHelperProcessExecutableName,
-                                       NULL);
-  while (const base::ProcessEntry* entry = helper_it.NextProcessEntry()) {
-    helper_pids.push_back(entry->pid());
-    all_pids.push_back(entry->pid());
+  {
+    base::NamedProcessIterator helper_it(chrome::kHelperProcessExecutableName,
+                                         NULL);
+    while (const base::ProcessEntry* entry = helper_it.NextProcessEntry()) {
+      all_pids.push_back(entry->pid());
+    }
   }
 
-  if (mode == FROM_ALL_BROWSERS) {
-    CollectProcessDataAboutNonChromeProcesses(all_pids, pids_by_browser,
-                                              &process_data_);
-  }
-
-  ProcessMemoryInformationList* chrome_processes =
-      &process_data_[CHROME_BROWSER].processes;
+  ProcessMemoryInformationList* chrome_processes = &process_data_[0].processes;
 
   // Collect data about Chrome/Chromium.
-  for (const base::ProcessId& pid : pids_by_browser[CHROME_BROWSER])
-    CollectProcessDataForChromeProcess(child_info, pid, chrome_processes);
-
-  // And collect data about the helpers.
-  for (const base::ProcessId& pid : helper_pids)
+  for (const base::ProcessId& pid : all_pids)
     CollectProcessDataForChromeProcess(child_info, pid, chrome_processes);
 
   // Finally return to the browser thread.

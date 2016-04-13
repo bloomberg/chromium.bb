@@ -46,7 +46,7 @@ void MemoryDetailsLogSource::Fetch(const SysLogsSourceCallback& callback) {
 
   scoped_refptr<SystemLogsMemoryHandler>
       handler(new SystemLogsMemoryHandler(callback));
-  handler->StartFetch(MemoryDetails::FROM_CHROME_ONLY);
+  handler->StartFetch();
 }
 
 }  // namespace system_logs

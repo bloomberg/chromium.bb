@@ -133,7 +133,7 @@ ProcessData& ProcessData::operator=(const ProcessData& rhs) {
 // one task run for that long on the UI or IO threads.  So, we run the
 // expensive parts of this operation over on the blocking pool.
 //
-void MemoryDetails::StartFetch(CollectionMode mode) {
+void MemoryDetails::StartFetch() {
   // This might get called from the UI or FILE threads, but should not be
   // getting called from the IO thread.
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -142,7 +142,7 @@ void MemoryDetails::StartFetch(CollectionMode mode) {
   // However, plugin process information is only available from the IO thread.
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&MemoryDetails::CollectChildInfoOnIOThread, this, mode));
+      base::Bind(&MemoryDetails::CollectChildInfoOnIOThread, this));
 }
 
 MemoryDetails::~MemoryDetails() {}
@@ -183,7 +183,7 @@ std::string MemoryDetails::ToLogString() {
   return log;
 }
 
-void MemoryDetails::CollectChildInfoOnIOThread(CollectionMode mode) {
+void MemoryDetails::CollectChildInfoOnIOThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   std::vector<ProcessMemoryInformation> child_info;
@@ -207,7 +207,7 @@ void MemoryDetails::CollectChildInfoOnIOThread(CollectionMode mode) {
   // Now go do expensive memory lookups on the blocking pool.
   BrowserThread::GetBlockingPool()->PostWorkerTaskWithShutdownBehavior(
       FROM_HERE,
-      base::Bind(&MemoryDetails::CollectProcessData, this, mode, child_info),
+      base::Bind(&MemoryDetails::CollectProcessData, this, child_info),
       base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
 }
 

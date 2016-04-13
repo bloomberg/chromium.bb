@@ -58,7 +58,7 @@ class TestMemoryDetails : public MetricsMemoryDetails {
 
   void StartFetchAndWait() {
     uma_.reset(new base::HistogramTester());
-    StartFetch(FROM_CHROME_ONLY);
+    StartFetch();
     content::RunMessageLoop();
   }
 

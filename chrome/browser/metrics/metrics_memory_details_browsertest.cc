@@ -19,7 +19,7 @@ class TestMemoryDetails : public MetricsMemoryDetails {
       : MetricsMemoryDetails(base::Bind(&base::DoNothing), nullptr) {}
 
   void StartFetchAndWait() {
-    StartFetch(FROM_CHROME_ONLY);
+    StartFetch();
     content::RunMessageLoop();
   }
 

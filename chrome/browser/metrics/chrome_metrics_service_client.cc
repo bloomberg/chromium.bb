@@ -559,7 +559,7 @@ void ChromeMetricsServiceClient::CollectFinalHistograms() {
 
   scoped_refptr<MetricsMemoryDetails> details(
       new MetricsMemoryDetails(callback, &memory_growth_tracker_));
-  details->StartFetch(MemoryDetails::FROM_CHROME_ONLY);
+  details->StartFetch();
 }
 
 void ChromeMetricsServiceClient::OnMemoryDetailCollectionDone() {

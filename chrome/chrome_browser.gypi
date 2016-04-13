@@ -502,8 +502,6 @@
       'browser/prerender/prerender_util.h',
       'browser/private_working_set_snapshot.h',
       'browser/private_working_set_snapshot_win.cc',
-      'browser/process_info_snapshot.h',
-      'browser/process_info_snapshot_mac.cc',
       'browser/process_resource_usage.cc',
       'browser/process_resource_usage.h',
       'browser/process_singleton.h',
