@@ -174,6 +174,32 @@ TEST_F('CrSettingsResetPageTest', 'ResetPage', function() {
 });
 
 /**
+ * Test fixture for chrome/browser/resources/settings/appearance_page/.
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+*/
+function CrSettingsAppearancePageTest() {}
+
+CrSettingsAppearancePageTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://md-settings/appearance_page/appearance_page.html',
+
+  /** @override */
+  extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
+    ROOT_PATH + 'ui/webui/resources/js/promise_resolver.js',
+    'test_browser_proxy.js',
+    'appearance_page_test.js',
+  ]),
+};
+
+TEST_F('CrSettingsAppearancePageTest', 'AppearancePage', function() {
+  settings_appearance.registerTests();
+  mocha.run();
+});
+
+/**
  * Test fixture for chrome/browser/resources/settings/search_page/.
  * @constructor
  * @extends {CrSettingsBrowserTest}
