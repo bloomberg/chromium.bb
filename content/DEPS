@@ -81,6 +81,7 @@ include_rules = [
   "+ui/events",
   "+ui/gfx",
   "+ui/gl",
+  "+ui/latency_info",
   "+ui/native_theme",
   "+ui/ozone/public",
   "+ui/resources/grit/ui_resources.h",

@@ -1,6 +1,5 @@
 include_rules = [
   "+base",
   "+ipc",
-  "+ui/events",
-  "+ui/base",
+  "+ui/latency_info",
 ]
