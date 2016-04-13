@@ -46615,6 +46615,34 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Search.ContextualSearchRecentScrollNotSeen" units="ms">
+  <owner>donnd@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    The duration since a recent scroll when the results were not seen. Recorded
+    when the UX is hidden. Implemented for Android.
+  </summary>
+</histogram>
+
+<histogram name="Search.ContextualSearchRecentScrollSeen" units="ms">
+  <owner>donnd@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    The duration since a recent scroll when the results were seen. Recorded when
+    the UX is hidden. Implemented for Android.
+  </summary>
+</histogram>
+
+<histogram name="Search.ContextualSearchRecentScrollSuppression"
+    enum="ContextualSearchTapSuppression">
+  <owner>donnd@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    Whether showing the Tap to Search UX in response to a Tap was suppressed by
+    a recent scroll. Implemented for Android.
+  </summary>
+</histogram>
+
 <histogram name="Search.ContextualSearchResolutionDuration" units="ms">
   <owner>donnd@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
@@ -64270,6 +64298,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
   <int value="0" label="Did force a translation"/>
   <int value="1" label="Would force a translation (if not disabled)"/>
+</enum>
+
+<enum name="ContextualSearchTapSuppression" type="int">
+  <int value="0" label="Tap suppressed"/>
+  <int value="1" label="Tap not suppressed"/>
 </enum>
 
 <enum name="CookieDeleteEquivalent" type="int">
