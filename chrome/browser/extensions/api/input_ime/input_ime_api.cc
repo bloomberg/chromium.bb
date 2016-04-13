@@ -402,21 +402,6 @@ InputImeAPI::~InputImeAPI() {
   registrar_.RemoveAll();
 }
 
-void InputImeAPI::OnListenerAdded(const EventListenerInfo& details) {
-  if (!details.browser_context)
-    return;
-  InputImeEventRouter* event_router =
-      GetInputImeEventRouter(Profile::FromBrowserContext(
-          Profile::FromBrowserContext(details.browser_context)));
-  InputMethodEngineBase* engine =
-      event_router ? event_router->GetActiveEngine(details.extension_id)
-                   : nullptr;
-
-  // Notifies the IME extension for IME ready with onActivate/onFocus events.
-  if (engine)
-    engine->Enable(engine->GetActiveComponentId());
-}
-
 static base::LazyInstance<BrowserContextKeyedAPIFactory<InputImeAPI> >
     g_factory = LAZY_INSTANCE_INITIALIZER;
 

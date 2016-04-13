@@ -630,4 +630,15 @@ void InputImeAPI::OnExtensionUnloaded(content::BrowserContext* browser_context,
   }
 }
 
+void InputImeAPI::OnListenerAdded(const EventListenerInfo& details) {
+  if (!details.browser_context)
+    return;
+  InputMethodEngine* engine =
+      GetActiveEngine(Profile::FromBrowserContext(details.browser_context),
+                      details.extension_id);
+  // Notifies the IME extension for IME ready with onActivate/onFocus events.
+  if (engine)
+    engine->Enable(engine->GetActiveComponentId());
+}
+
 }  // namespace extensions

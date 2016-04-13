@@ -142,6 +142,8 @@ void InputImeAPI::OnExtensionUnloaded(content::BrowserContext* browser_context,
     event_router->DeleteInputMethodEngine(extension->id());
 }
 
+void InputImeAPI::OnListenerAdded(const EventListenerInfo& details) {}
+
 InputImeEventRouter::InputImeEventRouter(Profile* profile)
     : InputImeEventRouterBase(profile), active_engine_(nullptr) {}
 
