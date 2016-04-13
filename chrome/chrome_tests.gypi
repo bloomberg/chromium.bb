@@ -500,7 +500,7 @@
       'browser/ui/settings_window_manager_browsertest.cc',
       'browser/ui/startup/startup_browser_creator_browsertest.cc',
       'browser/ui/startup/startup_browser_creator_triggered_reset_browsertest_win.cc',
-      'browser/ui/sync/one_click_signin_bubble_links_delegate_browsertest.cc',
+      'browser/ui/sync/one_click_signin_links_delegate_impl_browsertest.cc',
       'browser/ui/sync/profile_signin_confirmation_helper_browsertest.cc',
       'browser/ui/tab_modal_confirm_dialog_browsertest.cc',
       'browser/ui/tab_modal_confirm_dialog_browsertest.h',
@@ -627,8 +627,6 @@
       'browser/ui/cocoa/find_bar/find_bar_browsertest.mm',
       'browser/ui/cocoa/location_bar/zoom_decoration_browsertest.mm',
       'browser/ui/cocoa/omnibox/omnibox_view_mac_browsertest.mm',
-      'browser/ui/cocoa/one_click_signin_bubble_controller_browsertest.mm',
-      'browser/ui/cocoa/one_click_signin_dialog_controller_browsertest.mm',
       'browser/ui/cocoa/passwords/passwords_bubble_browsertest.mm',
       'browser/ui/cocoa/profiles/profile_signin_confirmation_view_controller_browsertest.mm',
       'browser/ui/cocoa/renderer_context_menu/render_view_context_menu_mac_browsertest.mm',
@@ -2301,7 +2299,7 @@
         }],
         ['enable_one_click_signin==0', {
           'sources!': [
-            'browser/ui/sync/one_click_signin_bubble_links_delegate_browsertest.cc',
+            'browser/ui/sync/one_click_signin_links_delegate_impl_browsertest.cc',
           ]
         }],
         ['enable_autofill_dialog==0', {

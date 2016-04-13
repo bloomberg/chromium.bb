@@ -174,9 +174,8 @@
 #endif
 
 #if BUILDFLAG(ENABLE_ONE_CLICK_SIGNIN)
-#include "chrome/browser/ui/sync/one_click_signin_bubble_delegate.h"
-#include "chrome/browser/ui/sync/one_click_signin_bubble_links_delegate.h"
-#include "chrome/browser/ui/views/sync/one_click_signin_bubble_view.h"
+#include "chrome/browser/ui/sync/one_click_signin_links_delegate_impl.h"
+#include "chrome/browser/ui/views/sync/one_click_signin_dialog_view.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -1296,24 +1295,13 @@ void BrowserView::ShowTranslateBubble(
 }
 
 #if BUILDFLAG(ENABLE_ONE_CLICK_SIGNIN)
-void BrowserView::ShowOneClickSigninBubble(
-    OneClickSigninBubbleType type,
+void BrowserView::ShowOneClickSigninConfirmation(
     const base::string16& email,
-    const base::string16& error_message,
     const StartSyncCallback& start_sync_callback) {
-  std::unique_ptr<OneClickSigninBubbleDelegate> delegate;
-  delegate.reset(new OneClickSigninBubbleLinksDelegate(browser()));
-
-  views::View* anchor_view = nullptr;
-  if (type == BrowserWindow::ONE_CLICK_SIGNIN_BUBBLE_TYPE_BUBBLE)
-    anchor_view = toolbar_->app_menu_button();
-  if (!anchor_view)
-    anchor_view = toolbar_->location_bar();
-  DCHECK(anchor_view);
-
-  OneClickSigninBubbleView::ShowBubble(type, email, error_message,
-                                       std::move(delegate), anchor_view,
-                                       start_sync_callback);
+  std::unique_ptr<OneClickSigninLinksDelegate> delegate(
+      new OneClickSigninLinksDelegateImpl(browser()));
+  OneClickSigninDialogView::ShowDialog(email, std::move(delegate),
+                                       GetNativeWindow(), start_sync_callback);
 }
 #endif
 

@@ -323,10 +323,8 @@ class BrowserView : public BrowserWindow,
                            translate::TranslateErrors::Type error_type,
                            bool is_user_gesture) override;
 #if BUILDFLAG(ENABLE_ONE_CLICK_SIGNIN)
-  void ShowOneClickSigninBubble(
-      OneClickSigninBubbleType type,
+  void ShowOneClickSigninConfirmation(
       const base::string16& email,
-      const base::string16& error_message,
       const StartSyncCallback& start_sync_callback) override;
 #endif
   // TODO(beng): Not an override, move somewhere else.

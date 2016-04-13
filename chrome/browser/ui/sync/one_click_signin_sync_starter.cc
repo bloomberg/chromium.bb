@@ -354,10 +354,8 @@ void OneClickSigninSyncStarter::ConfirmAndSignin() {
     content::RecordAction(
         base::UserMetricsAction("Signin_Show_UntrustedSigninPrompt"));
     // Display a confirmation dialog to the user.
-    browser_->window()->ShowOneClickSigninBubble(
-        BrowserWindow::ONE_CLICK_SIGNIN_BUBBLE_TYPE_SAML_MODAL_DIALOG,
+    browser_->window()->ShowOneClickSigninConfirmation(
         base::UTF8ToUTF16(signin->GetUsernameForAuthInProgress()),
-        base::string16(),  // No error message to display.
         base::Bind(&OneClickSigninSyncStarter::UntrustedSigninConfirmed,
                    weak_pointer_factory_.GetWeakPtr()));
     LoginUIServiceFactory::GetForProfile(profile_)->UntrustedLoginUIShown();

@@ -252,24 +252,16 @@ class BrowserWindow : public ui::BaseWindow {
       bool is_user_gesture) = 0;
 
 #if BUILDFLAG(ENABLE_ONE_CLICK_SIGNIN)
-  enum OneClickSigninBubbleType {
-    ONE_CLICK_SIGNIN_BUBBLE_TYPE_BUBBLE,
-    ONE_CLICK_SIGNIN_BUBBLE_TYPE_MODAL_DIALOG,
-    ONE_CLICK_SIGNIN_BUBBLE_TYPE_SAML_MODAL_DIALOG
-  };
-
-  // Callback type used with the ShowOneClickSigninBubble() method.  If the
+  // Callback type used with the ShowOneClickSigninConfirmation() method. If the
   // user chooses to accept the sign in, the callback is called to start the
   // sync process.
   typedef base::Callback<void(OneClickSigninSyncStarter::StartSyncMode)>
       StartSyncCallback;
 
-  // Shows the one-click sign in bubble.  |email| holds the full email address
-  // of the account that has signed in.
-  virtual void ShowOneClickSigninBubble(
-      OneClickSigninBubbleType type,
+  // Shows the one-click sign in confirmation UI. |email| holds the full email
+  // address of the account that has signed in.
+  virtual void ShowOneClickSigninConfirmation(
       const base::string16& email,
-      const base::string16& error_message,
       const StartSyncCallback& start_sync_callback) = 0;
 #endif
 

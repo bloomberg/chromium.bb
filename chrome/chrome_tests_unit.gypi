@@ -1279,7 +1279,6 @@
       'browser/ui/cocoa/omnibox/omnibox_popup_separator_view_unittest.mm',
       'browser/ui/cocoa/omnibox/omnibox_popup_view_mac_unittest.mm',
       'browser/ui/cocoa/omnibox/omnibox_view_mac_unittest.mm',
-      'browser/ui/cocoa/one_click_signin_bubble_controller_unittest.mm',
       'browser/ui/cocoa/panels/panel_cocoa_unittest.mm',
       'browser/ui/cocoa/passwords/account_chooser_view_controller_unittest.mm',
       'browser/ui/cocoa/passwords/autosignin_prompt_view_controller_unittest.mm',
@@ -1346,7 +1345,7 @@
     'chrome_unit_tests_views_non_chromeos_sources': [
       'browser/ui/views/app_list/linux/app_list_linux_unittest.cc',
       'browser/ui/views/frame/opaque_browser_frame_view_layout_unittest.cc',
-      'browser/ui/views/sync/one_click_signin_bubble_view_unittest.cc',
+      'browser/ui/views/sync/one_click_signin_dialog_view_unittest.cc',
     ],
     # Cross-platform (except Mac) views unit tests. Assumes app list is enabled.
     'chrome_unit_tests_views_non_mac_sources': [

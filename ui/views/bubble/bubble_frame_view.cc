@@ -220,7 +220,6 @@ void BubbleFrameView::UpdateWindowIcon() {
   title_icon_->SetImage(&image);
 }
 
-
 void BubbleFrameView::UpdateWindowTitle() {
   title_->SetText(GetWidget()->widget_delegate()->GetWindowTitle());
   title_->SetVisible(GetWidget()->widget_delegate()->ShouldShowWindowTitle());

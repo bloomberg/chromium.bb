@@ -2,18 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/sync/one_click_signin_bubble_links_delegate.h"
+#include "chrome/browser/ui/sync/one_click_signin_links_delegate_impl.h"
 
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 
-typedef InProcessBrowserTest OneClickSigninBubbleLinksDelegateBrowserTest;
+typedef InProcessBrowserTest OneClickSigninLinksDelegateBrowserTest;
 
-IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleLinksDelegateBrowserTest,
-                       AdvancedLink) {
-  std::unique_ptr<OneClickSigninBubbleDelegate> delegate_;
-  delegate_.reset(new OneClickSigninBubbleLinksDelegate(browser()));
+IN_PROC_BROWSER_TEST_F(OneClickSigninLinksDelegateBrowserTest, AdvancedLink) {
+  std::unique_ptr<OneClickSigninLinksDelegate> delegate_(
+      new OneClickSigninLinksDelegateImpl(browser()));
 
   int starting_tab_count = browser()->tab_strip_model()->count();
 
@@ -24,10 +23,9 @@ IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleLinksDelegateBrowserTest,
   EXPECT_EQ(starting_tab_count, tab_count);
 }
 
-IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleLinksDelegateBrowserTest,
-                       LearnMoreLink) {
-  std::unique_ptr<OneClickSigninBubbleDelegate> delegate_;
-  delegate_.reset(new OneClickSigninBubbleLinksDelegate(browser()));
+IN_PROC_BROWSER_TEST_F(OneClickSigninLinksDelegateBrowserTest, LearnMoreLink) {
+  std::unique_ptr<OneClickSigninLinksDelegate> delegate_(
+      new OneClickSigninLinksDelegateImpl(browser()));
 
   int starting_tab_count = browser()->tab_strip_model()->count();
 

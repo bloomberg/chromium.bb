@@ -73,7 +73,6 @@
 #include "ui/gfx/geometry/rect.h"
 
 #if BUILDFLAG(ENABLE_ONE_CLICK_SIGNIN)
-#import "chrome/browser/ui/cocoa/one_click_signin_bubble_controller.h"
 #import "chrome/browser/ui/cocoa/one_click_signin_dialog_controller.h"
 #endif
 
@@ -643,26 +642,13 @@ void BrowserWindowCocoa::ShowTranslateBubble(
 }
 
 #if BUILDFLAG(ENABLE_ONE_CLICK_SIGNIN)
-void BrowserWindowCocoa::ShowOneClickSigninBubble(
-    OneClickSigninBubbleType type,
+void BrowserWindowCocoa::ShowOneClickSigninConfirmation(
     const base::string16& email,
-    const base::string16& error_message,
     const StartSyncCallback& start_sync_callback) {
-  WebContents* web_contents =
-        browser_->tab_strip_model()->GetActiveWebContents();
-  if (type == ONE_CLICK_SIGNIN_BUBBLE_TYPE_BUBBLE) {
-    base::scoped_nsobject<OneClickSigninBubbleController> bubble_controller([
-            [OneClickSigninBubbleController alloc]
-        initWithBrowserWindowController:cocoa_controller()
-                            webContents:web_contents
-                           errorMessage:base::SysUTF16ToNSString(error_message)
-                               callback:start_sync_callback]);
-    [bubble_controller showWindow:nil];
-  } else {
-    // Deletes itself when the dialog closes.
-    new OneClickSigninDialogController(
-        web_contents, start_sync_callback, email);
-  }
+  // Deletes itself when the dialog closes.
+  new OneClickSigninDialogController(
+      browser_->tab_strip_model()->GetActiveWebContents(), start_sync_callback,
+      email);
 }
 #endif
 
