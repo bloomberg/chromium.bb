@@ -6375,8 +6375,17 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, TextInputStateChanged) {
   EXPECT_EQ("fourth", web_contents()->GetTextInputState()->value);
 }
 
+// Disable this test on Android (http://crbug.com/603209)
+#if defined(OS_ANDROID)
+#define MAYBE_TextInputStateChangesAfterRendererCrashes \
+  DISABLED_TextInputStateChangesAfterRendererCrashes
+#else
+#define MAYBE_TextInputStateChangesAfterRendererCrashes \
+  TextInputStateChangesAfterRendererCrashes
+#endif
+
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
-                       TextInputStateChangesAfterRendererCrashes) {
+                       MAYBE_TextInputStateChangesAfterRendererCrashes) {
   GURL main_url(
       embedded_test_server()->GetURL("a.com", "/page_with_iframe.html"));
   NavigateToURL(shell(), main_url);
