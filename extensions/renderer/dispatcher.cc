@@ -1575,23 +1575,15 @@ void Dispatcher::RequireGuestViewModules(ScriptContext* context) {
   Feature::Context context_type = context->context_type();
   ModuleSystem* module_system = context->module_system();
 
-  // Only set if |context| is capable of running guests in OOPIF. Used to
-  // require additional module overrides.
-  bool guest_view_required = false;
-
   // Require AppView.
   if (context->GetAvailability("appViewEmbedderInternal").is_available()) {
     module_system->Require("appView");
-
-    guest_view_required = true;
   }
 
   // Require ExtensionOptions.
   if (context->GetAvailability("extensionOptionsInternal").is_available()) {
     module_system->Require("extensionOptions");
     module_system->Require("extensionOptionsAttributes");
-
-    guest_view_required = true;
   }
 
   // Require ExtensionView.
@@ -1610,12 +1602,9 @@ void Dispatcher::RequireGuestViewModules(ScriptContext* context) {
             .is_available()) {
       module_system->Require("webViewExperimental");
     }
-
-    guest_view_required = true;
   }
 
-  if (guest_view_required &&
-      content::BrowserPluginGuestMode::UseCrossProcessFramesForGuests()) {
+  if (content::BrowserPluginGuestMode::UseCrossProcessFramesForGuests()) {
     module_system->Require("guestViewIframe");
     module_system->Require("guestViewIframeContainer");
   }

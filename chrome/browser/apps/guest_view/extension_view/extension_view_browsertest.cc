@@ -9,16 +9,19 @@
 #include "components/guest_view/browser/guest_view_manager_delegate.h"
 #include "components/guest_view/browser/guest_view_manager_factory.h"
 #include "components/guest_view/browser/test_guest_view_manager.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/test/extension_test_message_listener.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 using extensions::ExtensionsAPIClient;
 using guest_view::GuestViewManager;
 using guest_view::TestGuestViewManager;
 using guest_view::TestGuestViewManagerFactory;
 
-class ExtensionViewTest : public extensions::PlatformAppBrowserTest {
+class ExtensionViewTest : public extensions::PlatformAppBrowserTest,
+                          public testing::WithParamInterface<bool> {
  public:
   ExtensionViewTest() {
     GuestViewManager::set_factory_for_testing(&factory_);
@@ -71,13 +74,19 @@ class ExtensionViewTest : public extensions::PlatformAppBrowserTest {
  private:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     extensions::PlatformAppBrowserTest::SetUpCommandLine(command_line);
+
+    bool use_cross_process_frames_for_guests = GetParam();
+    if (use_cross_process_frames_for_guests)
+      command_line->AppendSwitch(switches::kUseCrossProcessFramesForGuests);
   }
 
   TestGuestViewManagerFactory factory_;
 };
 
+INSTANTIATE_TEST_CASE_P(ExtensionViewTests, ExtensionViewTest, testing::Bool());
+
 // Tests that <extensionview> can be created and added to the DOM.
-IN_PROC_BROWSER_TEST_F(ExtensionViewTest,
+IN_PROC_BROWSER_TEST_P(ExtensionViewTest,
                        TestExtensionViewCreationShouldSucceed) {
   TestHelper("testExtensionViewCreationShouldSucceed",
              "extension_view/creation", "", "");
@@ -85,7 +94,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionViewTest,
 
 // Tests that verify that <extensionview> does not change extension ID if
 // someone tries to change it in JavaScript.
-IN_PROC_BROWSER_TEST_F(ExtensionViewTest, ShimExtensionAttribute) {
+IN_PROC_BROWSER_TEST_P(ExtensionViewTest, ShimExtensionAttribute) {
   const extensions::Extension* skeleton_app =
       InstallPlatformApp("extension_view/skeleton");
   TestHelper("testExtensionAttribute", "extension_view/extension_attribute",
@@ -94,7 +103,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionViewTest, ShimExtensionAttribute) {
 
 // Tests that verify that <extensionview> does not change src if
 // someone tries to change it in JavaScript.
-IN_PROC_BROWSER_TEST_F(ExtensionViewTest, ShimSrcAttribute) {
+IN_PROC_BROWSER_TEST_P(ExtensionViewTest, ShimSrcAttribute) {
   const extensions::Extension* skeleton_app =
       InstallPlatformApp("extension_view/skeleton");
   TestHelper("testSrcAttribute", "extension_view/src_attribute",
@@ -103,7 +112,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionViewTest, ShimSrcAttribute) {
 
 // Tests that verify that <extensionview> can call the load function.
 // Flaky under MemorySanitizer: https://crbug.com/545656
-IN_PROC_BROWSER_TEST_F(ExtensionViewTest, DISABLED_LoadAPICall) {
+IN_PROC_BROWSER_TEST_P(ExtensionViewTest, DISABLED_LoadAPICall) {
   const extensions::Extension* skeleton_app =
       InstallPlatformApp("extension_view/skeleton");
   const extensions::Extension* skeleton_app_two =
@@ -117,7 +126,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionViewTest, DISABLED_LoadAPICall) {
 // Flaky elsewhere: https://crbug.com/538114
 // Tests that verify that <extensionview> can queue up multiple calls to the
 // load function.
-IN_PROC_BROWSER_TEST_F(ExtensionViewTest, DISABLED_QueuedLoadAPICall) {
+IN_PROC_BROWSER_TEST_P(ExtensionViewTest, DISABLED_QueuedLoadAPICall) {
   const extensions::Extension* skeleton_app =
       InstallPlatformApp("extension_view/skeleton");
   const extensions::Extension* skeleton_app_two =
