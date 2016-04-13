@@ -41,8 +41,9 @@
         <history-item item="[[item]]"
             starred="[[item.starred]]"
             selected="{{item.selected}}"
-            is-card-start="[[item.isFirstItem]]"
-            is-card-end="[[item.isLastItem]]"
+            is-card-start="[[isCardStart_(item, index, historyData.length)]]"
+            is-card-end="[[isCardEnd_(item, index, historyData.length)]]"
+            has-time-gap="[[needsTimeGap_(item, index, historyData.length)]]"
             search-term="[[searchTerm]]"
             number-of-items="[[historyData.length]]">
         </history-item>

@@ -44,6 +44,11 @@ Polymer({
       reflectToAttribute: true
     },
 
+    hasTimeGap: {
+      type: Boolean,
+      value: false,
+    },
+
     numberOfItems: {
       type: Number,
       value: 0

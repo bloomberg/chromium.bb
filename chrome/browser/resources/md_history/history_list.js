@@ -105,35 +105,16 @@ Polymer({
 
     var currentDate = results[0].dateRelativeDay;
 
-    // Resets the last history item for the currentDate if new history results
-    // for currentDate is loaded.
-    if (this.historyData && this.historyData.length > 0) {
-      var lastHistoryItem = this.historyData[this.historyData.length - 1];
-      if (lastHistoryItem && lastHistoryItem.dateRelativeDay == currentDate) {
-        this.set('historyData.' + (this.historyData.length - 1) +
-            '.isLastItem', false);
-      }
-    }
-
     for (var i = 0; i < results.length; i++) {
       // Sets the default values for these fields to prevent undefined types.
       results[i].selected = false;
-      results[i].isLastItem = false;
-      results[i].isFirstItem = false;
-      results[i].needsTimeGap = this.needsTimeGap_(results, i);
       results[i].readableTimestamp =
           searchTerm == '' ? results[i].dateTimeOfDay : results[i].dateShort;
 
       if (results[i].dateRelativeDay != currentDate) {
-        results[i - 1].isLastItem = true;
-        results[i].isFirstItem = true;
         currentDate = results[i].dateRelativeDay;
       }
     }
-    results[i - 1].isLastItem = true;
-
-    if (!this.historyData || this.historyData.length == 0)
-      results[0].isFirstItem = true;
 
     if (this.historyData) {
       // If we have previously received data, push the new items onto the
@@ -178,31 +159,6 @@ Polymer({
     for (var i = this.historyData.length - 1; i >= 0; i--) {
       if (!this.historyData[i].selected)
         continue;
-
-      // TODO: Change to using computed properties to recompute the first and
-      // last cards.
-
-      // Resets the first history item.
-      if (this.historyData[i].isFirstItem &&
-          (i + 1) < this.historyData.length &&
-          this.historyData[i].dateRelativeDay ==
-          this.historyData[i + 1].dateRelativeDay) {
-        this.set('historyData.' + (i + 1) + '.isFirstItem', true);
-      }
-
-      // Resets the last history item.
-      if (this.historyData[i].isLastItem && i > 0 &&
-          this.historyData[i].dateRelativeDay ==
-          this.historyData[i - 1].dateRelativeDay) {
-        this.set('historyData.' + (i - 1) + '.isLastItem', true);
-
-        if (this.historyData[i - 1].needsTimeGap)
-          this.set('historyData.' + (i - 1) + '.needsTimeGap', false);
-      }
-
-      // Makes sure that the time gap separators are preserved.
-      if (this.historyData[i].needsTimeGap && i > 0)
-        this.set('historyData.' + (i - 1) + '.needsTimeGap', true);
 
       // Removes the selected item from historyData.
       this.splice('historyData', i, 1);
@@ -261,19 +217,18 @@ Polymer({
   /**
    * Check whether the time difference between the given history item and the
    * next one is large enough for a spacer to be required.
-   * @param {Array<HistoryEntry>} results A list of history results.
-   * @param {number} index The index number of the first item being compared.
+   * @param {HistoryEntry} item
+   * @param {number} index The index of |item| in |historyData|.
+   * @param {number} length The length of |historyData|.
    * @return {boolean} Whether or not time gap separator is required.
    * @private
    */
-  needsTimeGap_: function(results, index) {
-    // TODO(tsergeant): Allow the final item from one batch of results to have a
-    // timegap once more results are added.
-    if (index == results.length - 1)
+  needsTimeGap_: function(item, index, length) {
+    if (index >= length - 1 || length == 0)
       return false;
 
-    var currentItem = results[index];
-    var nextItem = results[index + 1];
+    var currentItem = this.historyData[index];
+    var nextItem = this.historyData[index + 1];
 
     if (this.searchTerm)
       return currentItem.dateShort != nextItem.dateShort;
@@ -291,5 +246,37 @@ Polymer({
       return '';
     var messageId = searchTerm !== '' ? 'noSearchResults' : 'noResults';
     return loadTimeData.getString(messageId);
-  }
+  },
+
+  /**
+   * True if the given item is the beginning of a new card.
+   * @param {HistoryEntry} item
+   * @param {number} i Index of |item| within |historyData|.
+   * @param {number} length
+   * @return {boolean}
+   * @private
+   */
+  isCardStart_: function(item, i, length) {
+    if (length == 0 || i > length - 1)
+      return false;
+    return i == 0 ||
+        this.historyData[i].dateRelativeDay !=
+        this.historyData[i - 1].dateRelativeDay;
+  },
+
+  /**
+   * True if the given item is the end of a card.
+   * @param {HistoryEntry} item
+   * @param {number} i Index of |item| within |historyData|.
+   * @param {number} length
+   * @return {boolean}
+   * @private
+   */
+  isCardEnd_: function(item, i, length) {
+    if (length == 0 || i > length - 1)
+      return false;
+    return i == length - 1 ||
+        this.historyData[i].dateRelativeDay !=
+        this.historyData[i + 1].dateRelativeDay;
+  },
 });

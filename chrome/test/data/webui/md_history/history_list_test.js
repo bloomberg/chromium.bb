@@ -16,27 +16,17 @@ cr.define('md_history.history_list_test', function() {
 
         TEST_HISTORY_RESULTS = [
           createHistoryEntry('2016-03-15', 'https://www.google.com'),
-          createHistoryEntry('2016-03-14', 'https://en.wikipedia.org'),
-          createHistoryEntry('2016-03-13 10:00', 'https://www.example.com'),
-          createHistoryEntry('2016-03-13 9:00', 'https://www.google.com')
+          createHistoryEntry('2016-03-14 10:00', 'https://www.example.com'),
+          createHistoryEntry('2016-03-14 9:00', 'https://www.google.com'),
+          createHistoryEntry('2016-03-13', 'https://en.wikipedia.org')
         ];
 
         ADDITIONAL_RESULTS = [
-          createHistoryEntry('2016-03-12 10:00', 'https://en.wikipedia.org'),
-          createHistoryEntry('2016-03-12 9:50', 'https://www.youtube.com'),
+          createHistoryEntry('2016-03-13 10:00', 'https://en.wikipedia.org'),
+          createHistoryEntry('2016-03-13 9:50', 'https://www.youtube.com'),
           createHistoryEntry('2016-03-11', 'https://www.google.com'),
           createHistoryEntry('2016-03-10', 'https://www.example.com')
         ];
-      });
-
-      test('setting first and last items', function() {
-        element.addNewResults(TEST_HISTORY_RESULTS, '');
-        assertTrue(element.historyData[0].isFirstItem);
-        assertTrue(element.historyData[0].isLastItem);
-        assertTrue(element.historyData[2].isFirstItem);
-        assertFalse(element.historyData[2].isLastItem);
-        assertFalse(element.historyData[3].isFirstItem);
-        assertTrue(element.historyData[3].isLastItem);
       });
 
       test('cancelling selection of multiple items', function(done) {
@@ -71,19 +61,39 @@ cr.define('md_history.history_list_test', function() {
         });
       });
 
+      test('setting first and last items', function(done) {
+        element.addNewResults(TEST_HISTORY_RESULTS, '');
+
+        flush(function() {
+          var items =
+              Polymer.dom(element.root).querySelectorAll('history-item');
+          assertTrue(items[0].isCardStart);
+          assertTrue(items[0].isCardEnd);
+          assertFalse(items[1].isCardEnd);
+          assertFalse(items[2].isCardStart);
+          assertTrue(items[2].isCardEnd);
+          assertTrue(items[3].isCardStart);
+          assertTrue(items[3].isCardEnd);
+
+          done();
+        });
+      });
+
       test('updating history results', function(done) {
         element.addNewResults(TEST_HISTORY_RESULTS, '');
         element.addNewResults(ADDITIONAL_RESULTS, '');
 
         flush(function() {
-          assertTrue(element.historyData[2].isFirstItem);
-          assertTrue(element.historyData[5].isLastItem);
+          var items =
+              Polymer.dom(element.root).querySelectorAll('history-item');
+          assertTrue(items[3].isCardStart);
+          assertTrue(items[5].isCardEnd);
 
-          assertTrue(element.historyData[6].isFirstItem);
-          assertTrue(element.historyData[6].isLastItem);
+          assertTrue(items[6].isCardStart);
+          assertTrue(items[6].isCardEnd);
 
-          assertTrue(element.historyData[7].isFirstItem);
-          assertTrue(element.historyData[7].isLastItem);
+          assertTrue(items[7].isCardStart);
+          assertTrue(items[7].isCardEnd);
 
           done();
         });
@@ -142,10 +152,10 @@ cr.define('md_history.history_list_test', function() {
                          '2016-03-11');
 
             // Checks that the first and last items have been reset correctly.
-            assertTrue(element.historyData[2].isFirstItem);
-            assertTrue(element.historyData[3].isLastItem);
-            assertTrue(element.historyData[4].isFirstItem);
-            assertTrue(element.historyData[4].isLastItem)
+            assertTrue(items[2].isCardStart);
+            assertTrue(items[3].isCardEnd);
+            assertTrue(items[4].isCardStart);
+            assertTrue(items[4].isCardEnd)
 
             done();
           });
@@ -158,10 +168,10 @@ cr.define('md_history.history_list_test', function() {
             'Google');
 
         flush(function() {
-          assertTrue(element.historyData[0].isFirstItem);
-          var heading =
-              element.$$('history-item').$$('#date-accessed').textContent;
-          var title = element.$$('history-item').$.title;
+          var item = element.$$('history-item');
+          assertTrue(item.isCardStart);
+          var heading = item.$$('#date-accessed').textContent;
+          var title = item.$.title;
 
           // Check that the card title displays the search term somewhere.
           var index = heading.indexOf('Google');

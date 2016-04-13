@@ -27,22 +27,19 @@ cr.define('md_history.history_item_test', function() {
         ];
       });
 
-      setup(function() {
-        element.addNewResults(TEST_HISTORY_RESULTS, '');
-      });
-
       test('basic separator insertion', function(done) {
+        element.addNewResults(TEST_HISTORY_RESULTS, '');
         flush(function() {
           // Check that the correct number of time gaps are inserted.
           var items =
               Polymer.dom(element.root).querySelectorAll('history-item');
 
-          assertTrue(items[0].item.needsTimeGap);
-          assertTrue(items[1].item.needsTimeGap);
-          assertFalse(items[2].item.needsTimeGap);
-          assertTrue(items[3].item.needsTimeGap);
-          assertFalse(items[4].item.needsTimeGap);
-          assertFalse(items[5].item.needsTimeGap);
+          assertTrue(items[0].hasTimeGap);
+          assertTrue(items[1].hasTimeGap);
+          assertFalse(items[2].hasTimeGap);
+          assertTrue(items[3].hasTimeGap);
+          assertFalse(items[4].hasTimeGap);
+          assertFalse(items[5].hasTimeGap);
 
           done();
         });
@@ -54,15 +51,16 @@ cr.define('md_history.history_item_test', function() {
           var items =
               Polymer.dom(element.root).querySelectorAll('history-item');
 
-          assertTrue(items[0].item.needsTimeGap);
-          assertFalse(items[1].item.needsTimeGap);
-          assertFalse(items[2].item.needsTimeGap);
+          assertTrue(items[0].hasTimeGap);
+          assertFalse(items[1].hasTimeGap);
+          assertFalse(items[2].hasTimeGap);
 
           done();
         });
       });
 
       test('separator insertion after deletion', function(done) {
+        element.addNewResults(TEST_HISTORY_RESULTS, '');
         flush(function() {
           var items =
               Polymer.dom(element.root).querySelectorAll('history-item');
@@ -74,14 +72,14 @@ cr.define('md_history.history_item_test', function() {
           assertEquals(element.historyData.length, 5);
 
           // Checks that a new time gap separator has been inserted.
-          assertTrue(items[2].item.needsTimeGap);
+          assertTrue(items[2].hasTimeGap);
 
           element.set('historyData.3.selected', true);
           items[3].onCheckboxSelected_();
           element.removeDeletedHistory(1);
 
           // Checks time gap separator is removed.
-          assertFalse(items[2].item.needsTimeGap);
+          assertFalse(items[2].hasTimeGap);
           done();
         });
       });
