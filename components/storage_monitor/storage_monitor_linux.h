@@ -16,13 +16,13 @@
 #endif
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/files/file_path_watcher.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "components/storage_monitor/mtab_watcher_linux.h"
@@ -47,9 +47,9 @@ class StorageMonitorLinux : public StorageMonitor,
 
  protected:
   // Gets device information given a |device_path| and |mount_point|.
-  typedef base::Callback<scoped_ptr<StorageInfo>(
+  using GetDeviceInfoCallback = base::Callback<std::unique_ptr<StorageInfo>(
       const base::FilePath& device_path,
-      const base::FilePath& mount_point)> GetDeviceInfoCallback;
+      const base::FilePath& mount_point)>;
 
   void SetGetDeviceInfoCallbackForTest(
       const GetDeviceInfoCallback& get_device_info_callback);
@@ -69,7 +69,7 @@ class StorageMonitorLinux : public StorageMonitor,
     StorageInfo storage_info;
   };
 
-  // For use with scoped_ptr.
+  // For use with std::unique_ptr.
   struct MtabWatcherLinuxDeleter {
     void operator()(MtabWatcherLinux* mtab_watcher) {
       content::BrowserThread::DeleteSoon(content::BrowserThread::FILE,
@@ -110,7 +110,7 @@ class StorageMonitorLinux : public StorageMonitor,
 
   // Adds |mount_device| to the mappings and notify listeners, if any.
   void AddNewMount(const base::FilePath& mount_device,
-                   scoped_ptr<StorageInfo> storage_info);
+                   std::unique_ptr<StorageInfo> storage_info);
 
   // Mtab file that lists the mount points.
   const base::FilePath mtab_path_;
@@ -130,12 +130,12 @@ class StorageMonitorLinux : public StorageMonitor,
   // points.
   MountPriorityMap mount_priority_map_;
 
-  scoped_ptr<device::MediaTransferProtocolManager>
+  std::unique_ptr<device::MediaTransferProtocolManager>
       media_transfer_protocol_manager_;
-  scoped_ptr<MediaTransferProtocolDeviceObserverLinux>
+  std::unique_ptr<MediaTransferProtocolDeviceObserverLinux>
       media_transfer_protocol_device_observer_;
 
-  scoped_ptr<MtabWatcherLinux, MtabWatcherLinuxDeleter> mtab_watcher_;
+  std::unique_ptr<MtabWatcherLinux, MtabWatcherLinuxDeleter> mtab_watcher_;
 
   base::WeakPtrFactory<StorageMonitorLinux> weak_ptr_factory_;
 

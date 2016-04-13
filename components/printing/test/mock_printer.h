@@ -7,12 +7,12 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "printing/image.h"
 #include "third_party/WebKit/public/web/WebPrintScalingOption.h"
@@ -44,7 +44,7 @@ class MockPrinterPage : public base::RefCounted<MockPrinterPage> {
   virtual ~MockPrinterPage();
 
   uint32_t source_size_;
-  scoped_ptr<uint8_t[]> source_data_;
+  std::unique_ptr<uint8_t[]> source_data_;
   printing::Image image_;
 
   DISALLOW_COPY_AND_ASSIGN(MockPrinterPage);

@@ -120,12 +120,12 @@ uint64_t GetDeviceStorageSize(const base::FilePath& device_path,
 }
 
 // Gets the device information using udev library.
-scoped_ptr<StorageInfo> GetDeviceInfo(const base::FilePath& device_path,
-                                      const base::FilePath& mount_point) {
+std::unique_ptr<StorageInfo> GetDeviceInfo(const base::FilePath& device_path,
+                                           const base::FilePath& mount_point) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   DCHECK(!device_path.empty());
 
-  scoped_ptr<StorageInfo> storage_info;
+  std::unique_ptr<StorageInfo> storage_info;
 
   ScopedGetDeviceInfoResultRecorder results_recorder;
 
@@ -484,8 +484,9 @@ void StorageMonitorLinux::HandleDeviceMountedMultipleTimes(
       mount_info_map_.find(other_mount_point)->second;
 }
 
-void StorageMonitorLinux::AddNewMount(const base::FilePath& mount_device,
-                                      scoped_ptr<StorageInfo> storage_info) {
+void StorageMonitorLinux::AddNewMount(
+    const base::FilePath& mount_device,
+    std::unique_ptr<StorageInfo> storage_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (!storage_info)

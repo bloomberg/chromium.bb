@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
@@ -95,7 +96,7 @@ class PrintMockRenderThread : public content::MockRenderThread {
                              bool* canceled);
 
   // A mock printer device used for printing tests.
-  scoped_ptr<MockPrinter> printer_;
+  std::unique_ptr<MockPrinter> printer_;
 
   // True to simulate user clicking print. False to cancel.
   bool print_dialog_user_response_;

@@ -13,6 +13,7 @@
 
 #include <algorithm>
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "base/base_switches.h"
@@ -22,7 +23,6 @@
 #include "base/environment.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_split.h"
@@ -89,7 +89,7 @@ const wchar_t kGoogleUpdatePipeName[] = L"\\\\.\\pipe\\GoogleCrashServices\\";
 const wchar_t kChromePipeName[] = L"\\\\.\\pipe\\ChromeCrashServices";
 
 // This is the well known SID for the system principal.
-const wchar_t kSystemPrincipalSid[] =L"S-1-5-18";
+const wchar_t kSystemPrincipalSid[] = L"S-1-5-18";
 
 google_breakpad::ExceptionHandler* g_breakpad = NULL;
 google_breakpad::ExceptionHandler* g_dumphandler_no_crash = NULL;
@@ -466,7 +466,7 @@ static void InitTerminateProcessHooks() {
 #endif
 
 static void InitPipeNameEnvVar(bool is_per_user_install) {
-  scoped_ptr<base::Environment> env(base::Environment::Create());
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
   if (env->HasVar(kPipeNameVar)) {
     // The Breakpad pipe name is already configured: nothing to do.
     return;
@@ -584,7 +584,7 @@ void InitCrashReporter(const std::string& process_type_switch) {
   if (process_type == L"browser")
     GetCrashReporterClient()->InitBrowserCrashDumpsRegKey();
 
-  scoped_ptr<base::Environment> env(base::Environment::Create());
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
   std::string pipe_name_ascii;
   if (!env->GetVar(kPipeNameVar, &pipe_name_ascii)) {
     // Breakpad is not enabled.  Configuration is managed or the user
@@ -671,8 +671,8 @@ void ConsumeInvalidHandleExceptions() {
 // clears the environment variable, so that the restarted Chrome, which inherits
 // its environment from the current Chrome, will no longer contain the variable.
 extern "C" void __declspec(dllexport) __cdecl
-      ClearBreakpadPipeEnvironmentVariable() {
-  scoped_ptr<base::Environment> env(base::Environment::Create());
+ClearBreakpadPipeEnvironmentVariable() {
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
   env->UnSetVar(kPipeNameVar);
 }
 

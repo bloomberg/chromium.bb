@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_STORAGE_MONITOR_TEST_STORAGE_MONITOR_H_
 #define COMPONENTS_STORAGE_MONITOR_TEST_STORAGE_MONITOR_H_
 
+#include <memory>
 #include <string>
 
 #include "build/build_config.h"
@@ -73,7 +74,7 @@ class TestStorageMonitor : public StorageMonitor {
   std::vector<base::FilePath> removable_paths_;
 
 #if defined(OS_LINUX)
-  scoped_ptr<device::MediaTransferProtocolManager>
+  std::unique_ptr<device::MediaTransferProtocolManager>
       media_transfer_protocol_manager_;
 #endif
 };

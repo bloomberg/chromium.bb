@@ -20,7 +20,7 @@ namespace pdf {
 // static
 void PDFWebContentsHelper::CreateForWebContentsWithClient(
     content::WebContents* contents,
-    scoped_ptr<PDFWebContentsHelperClient> client) {
+    std::unique_ptr<PDFWebContentsHelperClient> client) {
   if (FromWebContents(contents))
     return;
   contents->SetUserData(UserDataKey(),
@@ -29,14 +29,14 @@ void PDFWebContentsHelper::CreateForWebContentsWithClient(
 
 PDFWebContentsHelper::PDFWebContentsHelper(
     content::WebContents* web_contents,
-    scoped_ptr<PDFWebContentsHelperClient> client)
+    std::unique_ptr<PDFWebContentsHelperClient> client)
     : content::WebContentsObserver(web_contents), client_(std::move(client)) {}
 
 PDFWebContentsHelper::~PDFWebContentsHelper() {
 }
 
 void PDFWebContentsHelper::ShowOpenInReaderPrompt(
-    scoped_ptr<OpenPDFInReaderPromptClient> prompt) {
+    std::unique_ptr<OpenPDFInReaderPromptClient> prompt) {
   open_in_reader_prompt_ = std::move(prompt);
   UpdateLocationBar();
 }

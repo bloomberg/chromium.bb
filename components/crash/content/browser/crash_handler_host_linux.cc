@@ -57,7 +57,7 @@ const size_t kCrashContextSize = sizeof(ExceptionHandler::CrashContext);
 
 // Handles the crash dump and frees the allocated BreakpadInfo struct.
 void CrashDumpTask(CrashHandlerHostLinux* handler,
-                   scoped_ptr<BreakpadInfo> info) {
+                   std::unique_ptr<BreakpadInfo> info) {
   if (handler->IsShuttingDown() && info->upload) {
     base::DeleteFile(base::FilePath(info->filename), false);
 #if defined(ADDRESS_SANITIZER)
@@ -150,12 +150,12 @@ void CrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
   struct msghdr msg = {0};
   struct iovec iov[kCrashIovSize];
 
-  scoped_ptr<char[]> crash_context(new char[kCrashContextSize]);
+  std::unique_ptr<char[]> crash_context(new char[kCrashContextSize]);
 #if defined(ADDRESS_SANITIZER)
-  scoped_ptr<char[]> asan_report(new char[kMaxAsanReportSize + 1]);
+  std::unique_ptr<char[]> asan_report(new char[kMaxAsanReportSize + 1]);
 #endif
 
-  scoped_ptr<CrashKeyStorage> crash_keys(new CrashKeyStorage);
+  std::unique_ptr<CrashKeyStorage> crash_keys(new CrashKeyStorage);
   google_breakpad::SerializedNonAllocatingMap* serialized_crash_keys;
   size_t crash_keys_size = crash_keys->Serialize(
       const_cast<const google_breakpad::SerializedNonAllocatingMap**>(
@@ -299,7 +299,7 @@ void CrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
       reinterpret_cast<ExceptionHandler::CrashContext*>(crash_context.get());
   bad_context->tid = crashing_tid;
 
-  scoped_ptr<BreakpadInfo> info(new BreakpadInfo);
+  std::unique_ptr<BreakpadInfo> info(new BreakpadInfo);
 
   info->fd = -1;
   info->process_type_length = process_type_.length();
@@ -309,7 +309,8 @@ void CrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
   process_type_str[info->process_type_length] = '\0';
   info->process_type = process_type_str;
 
-  // Memory released from scoped_ptrs below are also freed in CrashDumpTask().
+  // Memory released from std::unique_ptrs below are also freed in
+  // CrashDumpTask().
   info->crash_keys = crash_keys.release();
 #if defined(ADDRESS_SANITIZER)
   asan_report[kMaxAsanReportSize] = '\0';
@@ -338,8 +339,8 @@ void CrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
                  signal_fd.release()));
 }
 
-void CrashHandlerHostLinux::WriteDumpFile(scoped_ptr<BreakpadInfo> info,
-                                          scoped_ptr<char[]> crash_context,
+void CrashHandlerHostLinux::WriteDumpFile(std::unique_ptr<BreakpadInfo> info,
+                                          std::unique_ptr<char[]> crash_context,
                                           pid_t crashing_pid,
                                           int signal_fd) {
   DCHECK(BrowserThread::GetBlockingPool()->IsRunningSequenceOnCurrentThread(
@@ -404,8 +405,9 @@ void CrashHandlerHostLinux::WriteDumpFile(scoped_ptr<BreakpadInfo> info,
                  signal_fd));
 }
 
-void CrashHandlerHostLinux::QueueCrashDumpTask(scoped_ptr<BreakpadInfo> info,
-                                               int signal_fd) {
+void CrashHandlerHostLinux::QueueCrashDumpTask(
+    std::unique_ptr<BreakpadInfo> info,
+    int signal_fd) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // Send the done signal to the process: it can exit now.

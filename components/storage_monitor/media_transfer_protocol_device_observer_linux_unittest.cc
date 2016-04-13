@@ -6,10 +6,10 @@
 
 #include "components/storage_monitor/media_transfer_protocol_device_observer_linux.h"
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/storage_monitor/mock_removable_storage_observer.h"
@@ -128,8 +128,9 @@ class MediaTransferProtocolDeviceObserverLinuxTest : public testing::Test {
  private:
   content::TestBrowserThreadBundle thread_bundle_;
 
-  scoped_ptr<TestMediaTransferProtocolDeviceObserverLinux> mtp_device_observer_;
-  scoped_ptr<MockRemovableStorageObserver> mock_storage_observer_;
+  std::unique_ptr<TestMediaTransferProtocolDeviceObserverLinux>
+      mtp_device_observer_;
+  std::unique_ptr<MockRemovableStorageObserver> mock_storage_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaTransferProtocolDeviceObserverLinuxTest);
 };

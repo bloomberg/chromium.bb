@@ -42,8 +42,8 @@ CrashMicroDumpManager::~CrashMicroDumpManager() {
 base::ScopedFD CrashMicroDumpManager::CreateCrashInfoChannel(
     int child_process_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::PROCESS_LAUNCHER);
-  scoped_ptr<base::SyncSocket> local_pipe(new base::SyncSocket());
-  scoped_ptr<base::SyncSocket> child_pipe(new base::SyncSocket());
+  std::unique_ptr<base::SyncSocket> local_pipe(new base::SyncSocket());
+  std::unique_ptr<base::SyncSocket> child_pipe(new base::SyncSocket());
   if (!base::SyncSocket::CreatePair(local_pipe.get(), child_pipe.get()))
     return base::ScopedFD();
   {
@@ -59,7 +59,7 @@ void CrashMicroDumpManager::HandleChildTerminationOnFileThread(
     base::TerminationStatus termination_status) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
-  scoped_ptr<base::SyncSocket> pipe;
+  std::unique_ptr<base::SyncSocket> pipe;
   {
     base::AutoLock auto_lock(child_process_id_to_pipe_lock_);
     const auto& iter = child_process_id_to_pipe_.find(child_process_id);

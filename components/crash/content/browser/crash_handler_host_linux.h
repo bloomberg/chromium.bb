@@ -8,11 +8,11 @@
 #include <sys/types.h>
 
 #include <string>
+#include <utility>
 
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/sequenced_worker_pool.h"
 
@@ -63,13 +63,13 @@ class CrashHandlerHostLinux : public base::MessageLoopForIO::Watcher,
   void Init();
 
   // Do work in a sequenced worker pool for OnFileCanReadWithoutBlocking().
-  void WriteDumpFile(scoped_ptr<BreakpadInfo> info,
-                     scoped_ptr<char[]> crash_context,
+  void WriteDumpFile(std::unique_ptr<BreakpadInfo> info,
+                     std::unique_ptr<char[]> crash_context,
                      pid_t crashing_pid,
                      int signal_fd);
 
   // Continue OnFileCanReadWithoutBlocking()'s work on the IO thread.
-  void QueueCrashDumpTask(scoped_ptr<BreakpadInfo> info, int signal_fd);
+  void QueueCrashDumpTask(std::unique_ptr<BreakpadInfo> info, int signal_fd);
 
   std::string process_type_;
   base::FilePath dumps_path_;
@@ -79,7 +79,7 @@ class CrashHandlerHostLinux : public base::MessageLoopForIO::Watcher,
   int browser_socket_;
 
   base::MessageLoopForIO::FileDescriptorWatcher file_descriptor_watcher_;
-  scoped_ptr<base::Thread> uploader_thread_;
+  std::unique_ptr<base::Thread> uploader_thread_;
   bool shutting_down_;
 
   // Unique sequence token so that writing crash dump won't be blocked

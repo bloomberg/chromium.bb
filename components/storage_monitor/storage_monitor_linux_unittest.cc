@@ -11,13 +11,13 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#include <memory>
 #include <string>
 
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
@@ -72,8 +72,8 @@ const TestDeviceData kTestDeviceData[] = {
     StorageInfo::FIXED_MASS_STORAGE, 17282 },
 };
 
-scoped_ptr<StorageInfo> GetDeviceInfo(const base::FilePath& device_path,
-                                      const base::FilePath& mount_point) {
+std::unique_ptr<StorageInfo> GetDeviceInfo(const base::FilePath& device_path,
+                                           const base::FilePath& mount_point) {
   bool device_found = false;
   size_t i = 0;
   for (; i < arraysize(kTestDeviceData); i++) {
@@ -83,7 +83,7 @@ scoped_ptr<StorageInfo> GetDeviceInfo(const base::FilePath& device_path,
     }
   }
 
-  scoped_ptr<StorageInfo> storage_info;
+  std::unique_ptr<StorageInfo> storage_info;
   if (!device_found) {
     NOTREACHED();
     return storage_info;
@@ -304,14 +304,14 @@ class StorageMonitorLinuxTest : public testing::Test {
 
   content::TestBrowserThreadBundle thread_bundle_;
 
-  scoped_ptr<MockRemovableStorageObserver> mock_storage_observer_;
+  std::unique_ptr<MockRemovableStorageObserver> mock_storage_observer_;
 
   // Temporary directory for created test data.
   base::ScopedTempDir scoped_temp_dir_;
   // Path to the test mtab file.
   base::FilePath mtab_file_;
 
-  scoped_ptr<TestStorageMonitorLinux> monitor_;
+  std::unique_ptr<TestStorageMonitorLinux> monitor_;
 
   DISALLOW_COPY_AND_ASSIGN(StorageMonitorLinuxTest);
 };

@@ -6,9 +6,9 @@
 #define COMPONENTS_CRASH_CONTENT_BROWSER_CRASH_MICRO_DUMP_MANAGER_ANDROID_H_
 
 #include <map>
+#include <memory>
 
 #include "base/files/scoped_file.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
 #include "base/process/kill.h"
@@ -58,7 +58,7 @@ class CrashMicroDumpManager : public content::NotificationObserver {
   // This map should only be accessed with its lock aquired as it is accessed
   // from the PROCESS_LAUNCHER, FILE, and UI threads.
   base::Lock child_process_id_to_pipe_lock_;
-  std::map<int, scoped_ptr<base::SyncSocket>> child_process_id_to_pipe_;
+  std::map<int, std::unique_ptr<base::SyncSocket>> child_process_id_to_pipe_;
   base::WeakPtrFactory<CrashMicroDumpManager> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CrashMicroDumpManager);

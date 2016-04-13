@@ -10,6 +10,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -56,7 +57,7 @@ class TestVolumeMountWatcherWin : public VolumeMountWatcherWin {
 
  private:
   std::vector<base::FilePath> devices_checked_;
-  scoped_ptr<base::WaitableEvent> device_check_complete_event_;
+  std::unique_ptr<base::WaitableEvent> device_check_complete_event_;
   bool attached_devices_fake_;
 
   DISALLOW_COPY_AND_ASSIGN(TestVolumeMountWatcherWin);

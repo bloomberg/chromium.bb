@@ -6,12 +6,12 @@
 #define COMPONENTS_STORAGE_MONITOR_STORAGE_MONITOR_H_
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list_threadsafe.h"
 #include "base/strings/string16.h"
 #include "base/synchronization/lock.h"
@@ -83,7 +83,7 @@ class StorageMonitor {
   static StorageMonitor* GetInstance();
 
   static void SetStorageMonitorForTesting(
-      scoped_ptr<StorageMonitor> storage_monitor);
+      std::unique_ptr<StorageMonitor> storage_monitor);
 
   virtual ~StorageMonitor();
 
@@ -169,7 +169,7 @@ class StorageMonitor {
   void ProcessAttach(const StorageInfo& storage);
   void ProcessDetach(const std::string& id);
 
-  scoped_ptr<Receiver> receiver_;
+  std::unique_ptr<Receiver> receiver_;
 
   scoped_refptr<base::ObserverListThreadSafe<RemovableStorageObserver>>
       observer_list_;
@@ -187,7 +187,7 @@ class StorageMonitor {
   // Map of all known storage devices,including fixed and removable storages.
   StorageMap storage_map_;
 
-  scoped_ptr<TransientDeviceIds> transient_device_ids_;
+  std::unique_ptr<TransientDeviceIds> transient_device_ids_;
 };
 
 }  // namespace storage_monitor

@@ -66,7 +66,7 @@ StorageMonitor* StorageMonitor::GetInstance() {
 }
 
 void StorageMonitor::SetStorageMonitorForTesting(
-    scoped_ptr<StorageMonitor> storage_monitor) {
+    std::unique_ptr<StorageMonitor> storage_monitor) {
   delete g_storage_monitor;
   g_storage_monitor = storage_monitor.release();
 }

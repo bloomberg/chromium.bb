@@ -135,7 +135,7 @@ struct EjectDiskOptions {
 void PostEjectCallback(DADiskRef disk,
                        DADissenterRef dissenter,
                        void* context) {
-  scoped_ptr<EjectDiskOptions> options_deleter(
+  std::unique_ptr<EjectDiskOptions> options_deleter(
       static_cast<EjectDiskOptions*>(context));
   if (dissenter) {
     options_deleter->callback.Run(StorageMonitor::EJECT_IN_USE);
@@ -148,7 +148,7 @@ void PostEjectCallback(DADiskRef disk,
 void PostUnmountCallback(DADiskRef disk,
                          DADissenterRef dissenter,
                          void* context) {
-  scoped_ptr<EjectDiskOptions> options_deleter(
+  std::unique_ptr<EjectDiskOptions> options_deleter(
       static_cast<EjectDiskOptions*>(context));
   if (dissenter) {
     options_deleter->callback.Run(StorageMonitor::EJECT_IN_USE);

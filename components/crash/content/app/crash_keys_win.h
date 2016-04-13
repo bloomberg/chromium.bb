@@ -8,11 +8,11 @@
 #include <stddef.h>
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 
 namespace base {
@@ -70,7 +70,8 @@ class CrashKeysWin {
   void SetBreakpadDumpPath(crash_reporter::CrashReporterClient* crash_client);
 
   // Must not be resized after GetCustomInfo is invoked.
-  scoped_ptr<std::vector<google_breakpad::CustomInfoEntry>> custom_entries_;
+  std::unique_ptr<std::vector<google_breakpad::CustomInfoEntry>>
+      custom_entries_;
 
   typedef std::map<std::wstring, google_breakpad::CustomInfoEntry*>
       DynamicEntriesMap;

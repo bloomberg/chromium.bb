@@ -5,13 +5,14 @@
 #include "components/storage_monitor/storage_monitor_chromeos.h"
 
 #include <stdint.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/disks/mock_disk_mount_manager.h"
@@ -146,7 +147,7 @@ class StorageMonitorCrosTest : public testing::Test {
   base::ScopedTempDir scoped_temp_dir_;
 
   // Objects that talks with StorageMonitorCros.
-  scoped_ptr<MockRemovableStorageObserver> mock_storage_observer_;
+  std::unique_ptr<MockRemovableStorageObserver> mock_storage_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(StorageMonitorCrosTest);
 };
@@ -173,7 +174,7 @@ void StorageMonitorCrosTest::SetUp() {
   // Initialize the test subject.
   TestStorageMonitor::Destroy();
   monitor_ = new TestStorageMonitorCros();
-  scoped_ptr<StorageMonitor> pass_monitor(monitor_);
+  std::unique_ptr<StorageMonitor> pass_monitor(monitor_);
   StorageMonitor::SetStorageMonitorForTesting(std::move(pass_monitor));
 
   monitor_->Init();

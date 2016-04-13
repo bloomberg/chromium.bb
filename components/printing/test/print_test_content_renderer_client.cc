@@ -4,12 +4,14 @@
 
 #include "components/printing/test/print_test_content_renderer_client.h"
 
+#include "base/memory/ptr_util.h"
 #include "components/printing/renderer/print_web_view_helper.h"
 #include "third_party/WebKit/public/web/WebElement.h"
 
 namespace printing {
 
 namespace {
+
 class PrintWebViewHelperDelegate : public PrintWebViewHelper::Delegate {
  public:
   ~PrintWebViewHelperDelegate() override {}
@@ -29,7 +31,8 @@ class PrintWebViewHelperDelegate : public PrintWebViewHelper::Delegate {
   }
   bool OverridePrint(blink::WebLocalFrame* frame) override { return false; }
 };
-}
+
+}  // namespace
 
 PrintTestContentRendererClient::PrintTestContentRendererClient() {
 }
@@ -40,8 +43,7 @@ PrintTestContentRendererClient::~PrintTestContentRendererClient() {
 void PrintTestContentRendererClient::RenderViewCreated(
     content::RenderView* render_view) {
   new printing::PrintWebViewHelper(
-      render_view, scoped_ptr<printing::PrintWebViewHelper::Delegate>(
-                       new PrintWebViewHelperDelegate()));
+      render_view, base::WrapUnique(new PrintWebViewHelperDelegate()));
 }
 
 }  // namespace printing

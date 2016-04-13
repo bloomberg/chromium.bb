@@ -5,11 +5,11 @@
 #include "components/crash/content/app/run_as_crashpad_handler_win.h"
 
 #include <algorithm>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/command_line.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -29,7 +29,7 @@ int RunAsCrashpadHandler(const base::CommandLine& command_line) {
                             }),
              argv.end());
 
-  scoped_ptr<char* []> argv_as_utf8(new char*[argv.size() + 1]);
+  std::unique_ptr<char* []> argv_as_utf8(new char*[argv.size() + 1]);
   std::vector<std::string> storage;
   storage.reserve(argv.size());
   for (size_t i = 0; i < argv.size(); ++i) {

@@ -67,7 +67,7 @@ class StorageMonitorMacTest : public testing::Test {
  protected:
   content::TestBrowserThreadBundle thread_bundle_;
 
-  scoped_ptr<MockRemovableStorageObserver> mock_storage_observer_;
+  std::unique_ptr<MockRemovableStorageObserver> mock_storage_observer_;
 
   // Information about the disk.
   std::string unique_id_;
@@ -75,7 +75,7 @@ class StorageMonitorMacTest : public testing::Test {
   std::string device_id_;
   StorageInfo disk_info_;
 
-  scoped_ptr<StorageMonitorMac> monitor_;
+  std::unique_ptr<StorageMonitorMac> monitor_;
 };
 
 TEST_F(StorageMonitorMacTest, AddRemove) {

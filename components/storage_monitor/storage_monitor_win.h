@@ -5,9 +5,10 @@
 #ifndef COMPONENTS_STORAGE_MONITOR_STORAGE_MONITOR_WIN_H_
 #define COMPONENTS_STORAGE_MONITOR_STORAGE_MONITOR_WIN_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/storage_monitor/storage_monitor.h"
 
 namespace base {
@@ -77,11 +78,11 @@ class StorageMonitorWin : public StorageMonitor {
   ULONG shell_change_notify_id_;
 
   // The volume mount point watcher, used to manage the mounted devices.
-  scoped_ptr<VolumeMountWatcherWin> volume_mount_watcher_;
+  std::unique_ptr<VolumeMountWatcherWin> volume_mount_watcher_;
 
   // The portable device watcher, used to manage media transfer protocol
   // devices.
-  scoped_ptr<PortableDeviceWatcherWin> portable_device_watcher_;
+  std::unique_ptr<PortableDeviceWatcherWin> portable_device_watcher_;
 
   DISALLOW_COPY_AND_ASSIGN(StorageMonitorWin);
 };

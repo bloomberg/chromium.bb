@@ -6,8 +6,9 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "crypto/encryptor.h"
 #include "crypto/symmetric_key.h"
@@ -43,7 +44,7 @@ crypto::SymmetricKey* GetEncryptionKey() {
   std::string salt(kSalt);
 
   // Create an encryption key from our password and salt.
-  scoped_ptr<crypto::SymmetricKey> encryption_key(
+  std::unique_ptr<crypto::SymmetricKey> encryption_key(
       crypto::SymmetricKey::DeriveKeyFromPassword(crypto::SymmetricKey::AES,
                                                   password,
                                                   salt,
@@ -83,7 +84,7 @@ bool OSCrypt::EncryptString(const std::string& plaintext,
     return true;
   }
 
-  scoped_ptr<crypto::SymmetricKey> encryption_key(GetEncryptionKey());
+  std::unique_ptr<crypto::SymmetricKey> encryption_key(GetEncryptionKey());
   if (!encryption_key.get())
     return false;
 
@@ -125,7 +126,7 @@ bool OSCrypt::DecryptString(const std::string& ciphertext,
   // Strip off the versioning prefix before decrypting.
   std::string raw_ciphertext = ciphertext.substr(strlen(kObfuscationPrefix));
 
-  scoped_ptr<crypto::SymmetricKey> encryption_key(GetEncryptionKey());
+  std::unique_ptr<crypto::SymmetricKey> encryption_key(GetEncryptionKey());
   if (!encryption_key.get())
     return false;
 

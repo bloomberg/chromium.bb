@@ -6,13 +6,13 @@
 #include <dbt.h>
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/free_deleter.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
@@ -68,7 +68,7 @@ class StorageMonitorWinTest : public testing::Test {
                          base::string16* pnp_device_id,
                          base::string16* storage_object_id);
 
-  scoped_ptr<TestStorageMonitorWin> monitor_;
+  std::unique_ptr<TestStorageMonitorWin> monitor_;
 
   // Weak pointer; owned by the device notifications class.
   TestVolumeMountWatcherWin* volume_mount_watcher_;
@@ -213,7 +213,7 @@ void StorageMonitorWinTest::DoMTPDeviceTest(const base::string16& pnp_device_id,
 
   size_t device_id_size = pnp_device_id.size() * sizeof(base::char16);
   size_t size = sizeof(DEV_BROADCAST_DEVICEINTERFACE) + device_id_size;
-  scoped_ptr<DEV_BROADCAST_DEVICEINTERFACE, base::FreeDeleter>
+  std::unique_ptr<DEV_BROADCAST_DEVICEINTERFACE, base::FreeDeleter>
       dev_interface_broadcast(
           static_cast<DEV_BROADCAST_DEVICEINTERFACE*>(malloc(size)));
   DCHECK(dev_interface_broadcast.get());

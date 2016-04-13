@@ -4,9 +4,10 @@
 
 #include "components/crash/content/app/crashpad.h"
 
+#include <memory>
+
 #include "base/environment.h"
 #include "base/lazy_instance.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/path_service.h"
 #include "base/strings/string16.h"
@@ -58,7 +59,7 @@ base::FilePath PlatformCrashpadInitialization(bool initial_client,
 
   const char kPipeNameVar[] = "CHROME_CRASHPAD_PIPE_NAME";
   const char kServerUrlVar[] = "CHROME_CRASHPAD_SERVER_URL";
-  scoped_ptr<base::Environment> env(base::Environment::Create());
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
 
   if (initial_client) {
     CrashReporterClient* crash_reporter_client = GetCrashReporterClient();
