@@ -4,9 +4,12 @@
 
 #include "base/cancelable_callback.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -25,6 +28,10 @@ class TestRefCounted : public RefCountedThreadSafe<TestRefCounted> {
 void Increment(int* count) { (*count)++; }
 void IncrementBy(int* count, int n) { (*count) += n; }
 void RefCountedParam(const scoped_refptr<TestRefCounted>& ref_counted) {}
+
+void OnMoveOnlyReceived(int* value, std::unique_ptr<int> result) {
+  *value = *result;
+}
 
 // Cancel().
 //  - Callback can be run multiple times.
@@ -180,6 +187,18 @@ TEST(CancelableCallbackTest, PostTask) {
 
   // Callback never ran due to cancellation; count is the same.
   EXPECT_EQ(1, count);
+}
+
+// CancelableCallback can be used with move-only types.
+TEST(CancelableCallbackTest, MoveOnlyType) {
+  const int kExpectedResult = 42;
+
+  int result = 0;
+  CancelableCallback<void(std::unique_ptr<int>)> cb(
+      base::Bind(&OnMoveOnlyReceived, base::Unretained(&result)));
+  cb.callback().Run(base::WrapUnique(new int(kExpectedResult)));
+
+  EXPECT_EQ(kExpectedResult, result);
 }
 
 }  // namespace
