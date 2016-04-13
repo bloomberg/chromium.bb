@@ -35,4 +35,14 @@ bool PositionWithAffinityTemplate<Strategy>::operator==(const PositionWithAffini
 template class CORE_TEMPLATE_EXPORT PositionWithAffinityTemplate<EditingStrategy>;
 template class CORE_TEMPLATE_EXPORT PositionWithAffinityTemplate<EditingInFlatTreeStrategy>;
 
+std::ostream& operator<<(std::ostream& ostream, const PositionWithAffinity& positionWithAffinity)
+{
+    return ostream << positionWithAffinity.position() << '/' << positionWithAffinity.affinity();
+}
+
+std::ostream& operator<<(std::ostream& ostream, const PositionInFlatTreeWithAffinity& positionWithAffinity)
+{
+    return ostream << positionWithAffinity.position() << '/' << positionWithAffinity.affinity();
+}
+
 } // namespace blink

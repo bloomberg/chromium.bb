@@ -30,6 +30,7 @@
 #include "core/editing/PositionWithAffinity.h"
 #include "core/editing/TextAffinity.h"
 #include "platform/heap/Handle.h"
+#include <iosfwd>
 
 namespace blink {
 
@@ -120,6 +121,9 @@ CORE_EXPORT VisiblePosition createVisiblePosition(const Position&, TextAffinity 
 CORE_EXPORT VisiblePosition createVisiblePosition(const PositionWithAffinity&);
 CORE_EXPORT VisiblePositionInFlatTree createVisiblePosition(const PositionInFlatTree&, TextAffinity = VP_DEFAULT_AFFINITY);
 CORE_EXPORT VisiblePositionInFlatTree createVisiblePosition(const PositionInFlatTreeWithAffinity&);
+
+CORE_EXPORT std::ostream& operator<<(std::ostream&, const VisiblePosition&);
+CORE_EXPORT std::ostream& operator<<(std::ostream&, const VisiblePositionInFlatTree&);
 
 } // namespace blink
 

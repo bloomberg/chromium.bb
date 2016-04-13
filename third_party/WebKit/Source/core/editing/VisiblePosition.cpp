@@ -126,6 +126,16 @@ void VisiblePositionTemplate<Strategy>::showTreeForThis() const
 template class CORE_TEMPLATE_EXPORT VisiblePositionTemplate<EditingStrategy>;
 template class CORE_TEMPLATE_EXPORT VisiblePositionTemplate<EditingInFlatTreeStrategy>;
 
+std::ostream& operator<<(std::ostream& ostream, const VisiblePosition& position)
+{
+    return ostream << position.deepEquivalent() << '/' << position.affinity();
+}
+
+std::ostream& operator<<(std::ostream& ostream, const VisiblePositionInFlatTree& position)
+{
+    return ostream << position.deepEquivalent() << '/' << position.affinity();
+}
+
 } // namespace blink
 
 #ifndef NDEBUG

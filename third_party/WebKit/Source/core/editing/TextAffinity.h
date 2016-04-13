@@ -26,9 +26,14 @@
 #ifndef TextAffinity_h
 #define TextAffinity_h
 
+#include "core/CoreExport.h"
+#include <iosfwd>
+
 namespace blink {
 
 enum class TextAffinity { Upstream, Downstream };
+
+CORE_EXPORT std::ostream& operator<<(std::ostream&, TextAffinity);
 
 } // namespace blink
 

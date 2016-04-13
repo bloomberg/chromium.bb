@@ -8,6 +8,7 @@
 #include "core/CoreExport.h"
 #include "core/editing/Position.h"
 #include "core/editing/TextAffinity.h"
+#include <iosfwd>
 
 namespace blink {
 
@@ -62,6 +63,9 @@ inline PositionInFlatTreeWithAffinity fromPositionInDOMTree<EditingInFlatTreeStr
 {
     return PositionInFlatTreeWithAffinity(toPositionInFlatTree(positionWithAffinity.position()), positionWithAffinity.affinity());
 }
+
+CORE_EXPORT std::ostream& operator<<(std::ostream&, const PositionWithAffinity&);
+CORE_EXPORT std::ostream& operator<<(std::ostream&, const PositionInFlatTreeWithAffinity&);
 
 } // namespace blink
 

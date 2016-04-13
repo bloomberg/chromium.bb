@@ -1484,6 +1484,8 @@
             'editing/SelectionType.h',
             'editing/SurroundingText.cpp',
             'editing/SurroundingText.h',
+            'editing/TextAffinity.cpp',
+            'editing/TextAffinity.h',
             'editing/VisiblePosition.cpp',
             'editing/VisibleSelection.cpp',
             'editing/VisibleUnits.cpp',
