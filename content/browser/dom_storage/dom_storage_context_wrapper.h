@@ -19,6 +19,10 @@ namespace base {
 class FilePath;
 }
 
+namespace mojo {
+class Connector;
+}
+
 namespace storage {
 class SpecialStoragePolicy;
 }
@@ -36,7 +40,7 @@ class CONTENT_EXPORT DOMStorageContextWrapper :
  public:
   // If |data_path| is empty, nothing will be saved to disk.
   DOMStorageContextWrapper(
-      const std::string& mojo_user_id,
+      mojo::Connector* connector,
       const base::FilePath& data_path,
       const base::FilePath& local_partition_path,
       storage::SpecialStoragePolicy* special_storage_policy);

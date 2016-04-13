@@ -40,6 +40,14 @@ def MergeDicts(left, right):
 def MergeBaseManifest(parent, base):
   MergeDicts(parent["capabilities"], base["capabilities"])
 
+  if "applications" in base:
+    if "applications" not in parent:
+      parent["applications"] = []
+    parent["applications"].extend(base["applications"])
+
+  if "process-group" in base:
+    parent["process-group"] = base["process-group"]
+
 
 def main():
   parser = argparse.ArgumentParser(

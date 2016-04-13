@@ -249,7 +249,8 @@ TEST_F(ConnectTest, PackagedApp) {
 // Ask the target application to attempt to connect to a third application
 // provided by a package whose id is permitted by the primary target's
 // CapabilityFilter but whose package is not. The connection should be
-// blocked and the returned title should be "uninitialized".
+// allowed regardless of the target's CapabilityFilter with respect to the
+// package.
 TEST_F(ConnectTest, BlockedPackage) {
   scoped_ptr<Connection> connection = connector()->Connect(kTestAppName);
   test::mojom::StandaloneAppPtr standalone_app;
@@ -259,7 +260,7 @@ TEST_F(ConnectTest, BlockedPackage) {
   standalone_app->ConnectToAllowedAppInBlockedPackage(
       base::Bind(&ReceiveOneString, &title, &run_loop));
   run_loop.Run();
-  EXPECT_EQ("uninitialized", title);
+  EXPECT_EQ("A", title);
 }
 
 // BlockedInterface should not be exposed to this application because it is not

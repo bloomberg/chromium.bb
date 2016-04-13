@@ -26,6 +26,7 @@
         'user_id_map.h',
       ],
       'dependencies': [
+        'profile_app_manifest',
         'profile_service_bindings',
         '../../base/base.gyp:base',
         '../../components/filesystem/filesystem.gyp:filesystem_lib',
@@ -64,6 +65,31 @@
       'includes': [
         '../../mojo/mojom_bindings_generator_explicit.gypi',
       ],
-    }
+    },
+    {
+      'target_name': 'profile_service_public_lib',
+      'type': 'static_library',
+      'sources': [
+        'public/cpp/constants.cc',
+        'public/cpp/constants.h',
+      ],
+      'include_dirs': [
+        '../..',
+      ],
+    },
+    {
+      # GN version: //components/profile_service:manifest
+      'target_name': 'profile_app_manifest',
+      'type': 'none',
+      'variables': {
+        'application_type': 'mojo',
+        'application_name': 'profile',
+        'source_manifest': '<(DEPTH)/components/profile_service/manifest.json',
+      },
+      'includes': [
+        '../../mojo/public/mojo_application_manifest.gypi',
+      ],
+      'hard_dependency': 1,
+    },
   ],
 }

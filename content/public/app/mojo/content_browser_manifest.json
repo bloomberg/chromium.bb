@@ -1,12 +1,13 @@
 {
   "manifest_version": 1,
   "name": "exe:content_browser",
+  "process-group": "browser",
   "display_name": "Content Browser",
   "capabilities": {
     "required": {
       "*": { "interfaces": [ "*" ] },
       "mojo:shell": {
-        "classes": [ "client_process", "instance_name" ],
+        "classes": [ "client_process", "instance_name", "user_id" ],
         "interfaces": [ "*" ]
       }
     }

@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//mojo/public/mojo_application.gni")
+import("//mojo/public/mojo_application_manifest.gni")
 
 source_set("lib") {
   sources = [
@@ -30,4 +31,13 @@ source_set("lib") {
     "//services/tracing/public/cpp",
     "//url",
   ]
+
+  data_deps = [
+    ":manifest",
+  ]
+}
+
+mojo_application_manifest("manifest") {
+  application_name = "profile"
+  source = "manifest.json"
 }

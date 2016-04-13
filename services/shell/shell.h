@@ -127,15 +127,13 @@ class Shell : public ShellClient {
   // Called from the instance implementing mojom::Shell.
   void AddInstanceListener(mojom::InstanceListenerPtr listener);
 
-  void CreateShellClientWithFactory(const Identity& source,
-                                    const Identity& shell_client_factory,
+  void CreateShellClientWithFactory(const Identity& shell_client_factory,
                                     const std::string& name,
                                     mojom::ShellClientRequest request);
   // Returns a running ShellClientFactory for |shell_client_factory_identity|.
   // If there is not one running one is started for |source_identity|.
   mojom::ShellClientFactory* GetShellClientFactory(
-      const Identity& shell_client_factory_identity,
-      const Identity& source_identity);
+      const Identity& shell_client_factory_identity);
   void OnShellClientFactoryLost(const Identity& which);
 
   // Callback when remote Catalog resolves mojo:foo to mojo:bar.

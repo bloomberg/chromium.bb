@@ -4,6 +4,7 @@
 
 #include "content/browser/mojo/mojo_shell_context.h"
 
+#include <unordered_map>
 #include <utility>
 
 #include "base/bind.h"
@@ -14,11 +15,10 @@
 #include "base/path_service.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
-#include "components/profile_service/profile_app.h"
+#include "components/profile_service/public/cpp/constants.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/mojo/constants.h"
 #include "content/common/gpu_process_launch_causes.h"
-#include "content/common/mojo/current_thread_loader.h"
 #include "content/common/mojo/mojo_shell_connection_impl.h"
 #include "content/common/mojo/static_loader.h"
 #include "content/common/process_control.mojom.h"
@@ -69,21 +69,6 @@ void OnApplicationLoaded(const std::string& name, bool success) {
   if (!success)
     LOG(ERROR) << "Failed to launch Mojo application for " << name;
 }
-
-// The default loader to use for all applications. This does nothing but drop
-// the Application request.
-class DefaultLoader : public mojo::shell::Loader {
- public:
-   DefaultLoader() {}
-   ~DefaultLoader() override {}
-
- private:
-  // mojo::shell::Loader:
-  void Load(const std::string& name,
-            mojo::shell::mojom::ShellClientRequest request) override {}
-
-  DISALLOW_COPY_AND_ASSIGN(DefaultLoader);
-};
 
 // This launches a utility process and forwards the Load request the
 // mojom::ProcessControl service there. The utility process is sandboxed iff
@@ -157,11 +142,6 @@ class GpuProcessLoader : public mojo::shell::Loader {
   DISALLOW_COPY_AND_ASSIGN(GpuProcessLoader);
 };
 
-std::string GetStringResource(int id) {
-  return GetContentClient()->GetDataResource(
-      id, ui::ScaleFactor::SCALE_FACTOR_NONE).as_string();
-}
-
 }  // namespace
 
 // A ManifestProvider which resolves application names to builtin manifest
@@ -172,24 +152,25 @@ class MojoShellContext::BuiltinManifestProvider
   BuiltinManifestProvider() {}
   ~BuiltinManifestProvider() override {}
 
+  void AddManifestResource(const std::string& name, int resource_id) {
+    auto result = manifest_resources_.insert(
+        std::make_pair(name, resource_id));
+    DCHECK(result.second);
+  }
+
  private:
   // catalog::ManifestProvider:
   bool GetApplicationManifest(const base::StringPiece& name,
                               std::string* manifest_contents) override {
-    if (name == "mojo:catalog") {
-      *manifest_contents = GetStringResource(IDR_MOJO_CATALOG_MANIFEST);
-      return true;
-    } else if (name == kBrowserMojoApplicationName) {
-      *manifest_contents = GetStringResource(IDR_MOJO_CONTENT_BROWSER_MANIFEST);
-      return true;
-    } else if (name == kRendererMojoApplicationName) {
-      *manifest_contents =
-          GetStringResource(IDR_MOJO_CONTENT_RENDERER_MANIFEST);
-      return true;
-    }
-
-    return false;
+    auto it = manifest_resources_.find(name.as_string());
+    if (it == manifest_resources_.end())
+      return false;
+    *manifest_contents = GetContentClient()->GetDataResource(
+        it->second, ui::ScaleFactor::SCALE_FACTOR_NONE).as_string();
+    return true;
   }
+
+  std::unordered_map<std::string, int> manifest_resources_;
 
   DISALLOW_COPY_AND_ASSIGN(BuiltinManifestProvider);
 };
@@ -244,9 +225,7 @@ void MojoShellContext::SetApplicationsForTest(
   g_applications_for_test = apps;
 }
 
-MojoShellContext::MojoShellContext(
-    scoped_refptr<base::SingleThreadTaskRunner> file_thread,
-    scoped_refptr<base::SingleThreadTaskRunner> db_thread) {
+MojoShellContext::MojoShellContext() {
   proxy_.Get().reset(new Proxy(this));
 
   scoped_refptr<base::SingleThreadTaskRunner> file_task_runner =
@@ -254,13 +233,21 @@ MojoShellContext::MojoShellContext(
   std::unique_ptr<mojo::shell::NativeRunnerFactory> native_runner_factory(
       new mojo::shell::InProcessNativeRunnerFactory(
           BrowserThread::GetBlockingPool()));
+
   manifest_provider_.reset(new BuiltinManifestProvider);
+  manifest_provider_->AddManifestResource(kBrowserMojoApplicationName,
+                                          IDR_MOJO_CONTENT_BROWSER_MANIFEST);
+  manifest_provider_->AddManifestResource(kRendererMojoApplicationName,
+                                          IDR_MOJO_CONTENT_RENDERER_MANIFEST);
+  manifest_provider_->AddManifestResource("mojo:catalog",
+                                          IDR_MOJO_CATALOG_MANIFEST);
+  manifest_provider_->AddManifestResource(profile::kProfileMojoApplicationName,
+                                          IDR_MOJO_PROFILE_MANIFEST);
+
   catalog_.reset(new catalog::Factory(file_task_runner.get(), nullptr,
                                       manifest_provider_.get()));
   shell_.reset(new mojo::shell::Shell(std::move(native_runner_factory),
                                       catalog_->TakeShellClient()));
-  shell_->set_default_loader(
-      std::unique_ptr<mojo::shell::Loader>(new DefaultLoader));
 
   StaticApplicationMap apps;
   GetContentClient()->browser()->RegisterInProcessMojoApplications(&apps);
@@ -299,15 +286,6 @@ MojoShellContext::MojoShellContext(
   shell_->SetLoaderForName(base::WrapUnique(new GpuProcessLoader),
                            "mojo:media");
 #endif
-
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kMojoLocalStorage)) {
-    base::Callback<std::unique_ptr<mojo::ShellClient>()> profile_callback =
-        base::Bind(&profile::CreateProfileApp, file_thread, db_thread);
-    shell_->SetLoaderForName(
-        base::WrapUnique(new CurrentThreadLoader(profile_callback)),
-        "mojo:profile");
-  }
 
   if (!IsRunningInMojoShell()) {
     MojoShellConnection::Create(

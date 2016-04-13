@@ -642,22 +642,21 @@ void Shell::AddInstanceListener(mojom::InstanceListenerPtr listener) {
   instance_listeners_.AddPtr(std::move(listener));
 }
 
-void Shell::CreateShellClientWithFactory(const Identity& source,
-                                         const Identity& shell_client_factory,
+void Shell::CreateShellClientWithFactory(const Identity& shell_client_factory,
                                          const std::string& name,
                                          mojom::ShellClientRequest request) {
   mojom::ShellClientFactory* factory =
-      GetShellClientFactory(shell_client_factory, source);
+      GetShellClientFactory(shell_client_factory);
   factory->CreateShellClient(std::move(request), name);
 }
 
 mojom::ShellClientFactory* Shell::GetShellClientFactory(
-    const Identity& shell_client_factory_identity,
-    const Identity& source_identity) {
+    const Identity& shell_client_factory_identity) {
   auto it = shell_client_factories_.find(shell_client_factory_identity);
   if (it != shell_client_factories_.end())
     return it->second.get();
 
+  Identity source_identity(kShellName, mojom::kInheritUserID);
   mojom::ShellClientFactoryPtr factory;
   ConnectToInterface(this, source_identity, shell_client_factory_identity,
                      &factory);
@@ -745,7 +744,7 @@ void Shell::OnGotResolvedName(mojom::ShellResolverPtr resolver,
         instance->StartWithClient(std::move(client));
         Identity factory(result->resolved_name, target.user_id(),
                          instance_name);
-        CreateShellClientWithFactory(source, factory, target.name(),
+        CreateShellClientWithFactory(factory, target.name(),
                                      std::move(request));
       } else {
         instance->StartWithFilePath(

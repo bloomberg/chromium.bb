@@ -30,6 +30,10 @@ class FilePath;
 class Time;
 }
 
+namespace mojo {
+class Connector;
+}
+
 namespace storage {
 class ExternalMountPoints;
 }
@@ -151,6 +155,10 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   // persistent across runs. See
   // services/shell/public/interfaces/connector.mojom.
   static const std::string& GetMojoUserIdFor(BrowserContext* browser_context);
+
+  // Returns a Connector associated with this BrowserContext, which can be used
+  // to connect to Mojo application instances bound to a specific user.
+  static mojo::Connector* GetMojoConnectorFor(BrowserContext* browser_context);
 
   ~BrowserContext() override;
 

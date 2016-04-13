@@ -1,0 +1,11 @@
+{
+  "manifest_version": 1,
+  "name": "mojo:profile",
+  "process-group": "browser",
+  "display_name": "Profile",
+  "capabilities": {
+    "required": {
+      "mojo:tracing": { "interfaces": [ "*" ] }
+    }
+  }
+}

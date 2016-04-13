@@ -8,17 +8,25 @@
 #include <stdint.h>
 #include <algorithm>
 #include <limits>
+#include <memory>
 #include <utility>
+#include <vector>
 
+#include "base/command_line.h"
 #include "base/guid.h"
 #include "base/lazy_instance.h"
+#include "base/macros.h"
 #include "base/rand_util.h"
 #include "build/build_config.h"
+#include "components/profile_service/profile_app.h"
+#include "components/profile_service/public/cpp/constants.h"
 #include "components/profile_service/user_id_map.h"
 #include "content/browser/download/download_manager_impl.h"
 #include "content/browser/fileapi/chrome_blob_storage_context.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
+#include "content/browser/mojo/browser_shell_connection.h"
+#include "content/browser/mojo/constants.h"
 #include "content/browser/push_messaging/push_messaging_router.h"
 #include "content/browser/storage_partition_impl_map.h"
 #include "content/common/child_process_host_impl.h"
@@ -26,11 +34,16 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/site_instance.h"
+#include "content/public/common/content_switches.h"
+#include "content/public/common/mojo_shell_connection.h"
 #include "net/cookies/cookie_store.h"
 #include "net/ssl/channel_id_service.h"
 #include "net/ssl/channel_id_store.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/shell/public/cpp/connection.h"
+#include "services/shell/public/cpp/connector.h"
+#include "services/shell/public/interfaces/shell_client.mojom.h"
 #include "storage/browser/database/database_tracker.h"
 #include "storage/browser/fileapi/external_mount_points.h"
 
@@ -47,9 +60,9 @@ g_context_to_user_id = LAZY_INSTANCE_INITIALIZER;
 
 // Key names on BrowserContext.
 const char kDownloadManagerKeyName[] = "download_manager";
-const char kStoragePartitionMapKeyName[] = "content_storage_partition_map";
-
+const char kMojoShellConnection[] = "mojo-shell-connection";
 const char kMojoWasInitialized[] = "mojo-was-initialized";
+const char kStoragePartitionMapKeyName[] = "content_storage_partition_map";
 
 #if defined(OS_CHROMEOS)
 const char kMountPointsKey[] = "mount_points";
@@ -109,6 +122,25 @@ void SetDownloadManager(BrowserContext* context,
   DCHECK(download_manager);
   context->SetUserData(kDownloadManagerKeyName, download_manager);
 }
+
+class BrowserContextShellConnectionHolder
+    : public base::SupportsUserData::Data {
+ public:
+  BrowserContextShellConnectionHolder(
+      std::unique_ptr<mojo::Connection> connection,
+      mojo::shell::mojom::ShellClientRequest request)
+      : root_connection_(std::move(connection)),
+        shell_connection_(new BrowserShellConnection(std::move(request))) {}
+  ~BrowserContextShellConnectionHolder() override {}
+
+  BrowserShellConnection* shell_connection() { return shell_connection_.get(); }
+
+ private:
+  std::unique_ptr<mojo::Connection> root_connection_;
+  std::unique_ptr<BrowserShellConnection> shell_connection_;
+
+  DISALLOW_COPY_AND_ASSIGN(BrowserContextShellConnectionHolder);
+};
 
 }  // namespace
 
@@ -330,6 +362,7 @@ void BrowserContext::SetDownloadManagerForTesting(
   SetDownloadManager(browser_context, download_manager);
 }
 
+// static
 void BrowserContext::Initialize(
     BrowserContext* browser_context,
     const base::FilePath& path) {
@@ -344,8 +377,47 @@ void BrowserContext::Initialize(
   profile::AssociateMojoUserIDWithProfileDir(new_id, path);
   browser_context->SetUserData(kMojoWasInitialized,
                                new base::SupportsUserData::Data);
+
+  MojoShellConnection* shell = MojoShellConnection::Get();
+  if (shell) {
+    // NOTE: Many unit tests create a TestBrowserContext without initializing
+    // Mojo or the global Mojo shell connection.
+
+    mojo::shell::mojom::ShellClientPtr shell_client;
+    mojo::shell::mojom::ShellClientRequest shell_client_request =
+        mojo::GetProxy(&shell_client);
+
+    mojo::shell::mojom::PIDReceiverPtr pid_receiver;
+    mojo::Connector::ConnectParams params(
+        mojo::Identity(kBrowserMojoApplicationName, new_id));
+    params.set_client_process_connection(std::move(shell_client),
+                                         mojo::GetProxy(&pid_receiver));
+    pid_receiver->SetPID(base::GetCurrentProcId());
+
+    BrowserContextShellConnectionHolder* connection_holder =
+        new BrowserContextShellConnectionHolder(
+          shell->GetConnector()->Connect(&params),
+          std::move(shell_client_request));
+    browser_context->SetUserData(kMojoShellConnection, connection_holder);
+
+    BrowserShellConnection* connection = connection_holder->shell_connection();
+
+    // New embedded application factories should be added to |connection| here.
+
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kMojoLocalStorage)) {
+      connection->AddEmbeddedApplication(
+          profile::kProfileMojoApplicationName,
+          base::Bind(
+              &profile::CreateProfileApp,
+              BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
+              BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB)),
+          nullptr);
+    }
+  }
 }
 
+// static
 const std::string& BrowserContext::GetMojoUserIdFor(
     BrowserContext* browser_context) {
   CHECK(browser_context->GetUserData(kMojoWasInitialized))
@@ -359,6 +431,17 @@ const std::string& BrowserContext::GetMojoUserIdFor(
         return p.first == browser_context; });
   CHECK(it != g_context_to_user_id.Get().end());
   return it->second;
+}
+
+// static
+mojo::Connector* BrowserContext::GetMojoConnectorFor(
+    BrowserContext* browser_context) {
+  BrowserContextShellConnectionHolder* connection_holder =
+      static_cast<BrowserContextShellConnectionHolder*>(
+          browser_context->GetUserData(kMojoShellConnection));
+  if (!connection_holder)
+    return nullptr;
+  return connection_holder->shell_connection()->GetConnector();
 }
 
 BrowserContext::~BrowserContext() {

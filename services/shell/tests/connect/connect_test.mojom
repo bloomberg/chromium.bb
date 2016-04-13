@@ -20,7 +20,7 @@ interface ClassInterface {
 interface StandaloneApp {
   // Attempts to connect to an application whose name is explicitly allowed by
   // the standalone app's CapabilitySpec, but whose enclosing package is not.
-  // The connection should be blocked and title should be "uninitialized".
+  // The connection should succeed anyway.
   ConnectToAllowedAppInBlockedPackage() => (string title);
 
   // Connects to mojo:connect_test_class_app & requests ClassInterface from it.
