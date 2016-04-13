@@ -7,11 +7,12 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "storage/browser/blob/shareable_file_reference.h"
 #include "storage/browser/fileapi/async_file_util.h"
@@ -36,69 +37,76 @@ class DeviceMediaAsyncFileUtil : public storage::AsyncFileUtil {
   ~DeviceMediaAsyncFileUtil() override;
 
   // Returns an instance of DeviceMediaAsyncFileUtil.
-  static scoped_ptr<DeviceMediaAsyncFileUtil> Create(
+  static std::unique_ptr<DeviceMediaAsyncFileUtil> Create(
       const base::FilePath& profile_path,
       MediaFileValidationType validation_type);
 
   bool SupportsStreaming(const storage::FileSystemURL& url);
 
   // AsyncFileUtil overrides.
-  void CreateOrOpen(scoped_ptr<storage::FileSystemOperationContext> context,
-                    const storage::FileSystemURL& url,
-                    int file_flags,
-                    const CreateOrOpenCallback& callback) override;
-  void EnsureFileExists(scoped_ptr<storage::FileSystemOperationContext> context,
-                        const storage::FileSystemURL& url,
-                        const EnsureFileExistsCallback& callback) override;
-  void CreateDirectory(scoped_ptr<storage::FileSystemOperationContext> context,
-                       const storage::FileSystemURL& url,
-                       bool exclusive,
-                       bool recursive,
-                       const StatusCallback& callback) override;
-  void GetFileInfo(scoped_ptr<storage::FileSystemOperationContext> context,
+  void CreateOrOpen(
+      std::unique_ptr<storage::FileSystemOperationContext> context,
+      const storage::FileSystemURL& url,
+      int file_flags,
+      const CreateOrOpenCallback& callback) override;
+  void EnsureFileExists(
+      std::unique_ptr<storage::FileSystemOperationContext> context,
+      const storage::FileSystemURL& url,
+      const EnsureFileExistsCallback& callback) override;
+  void CreateDirectory(
+      std::unique_ptr<storage::FileSystemOperationContext> context,
+      const storage::FileSystemURL& url,
+      bool exclusive,
+      bool recursive,
+      const StatusCallback& callback) override;
+  void GetFileInfo(std::unique_ptr<storage::FileSystemOperationContext> context,
                    const storage::FileSystemURL& url,
                    int /* flags */,
                    const GetFileInfoCallback& callback) override;
-  void ReadDirectory(scoped_ptr<storage::FileSystemOperationContext> context,
-                     const storage::FileSystemURL& url,
-                     const ReadDirectoryCallback& callback) override;
-  void Touch(scoped_ptr<storage::FileSystemOperationContext> context,
+  void ReadDirectory(
+      std::unique_ptr<storage::FileSystemOperationContext> context,
+      const storage::FileSystemURL& url,
+      const ReadDirectoryCallback& callback) override;
+  void Touch(std::unique_ptr<storage::FileSystemOperationContext> context,
              const storage::FileSystemURL& url,
              const base::Time& last_access_time,
              const base::Time& last_modified_time,
              const StatusCallback& callback) override;
-  void Truncate(scoped_ptr<storage::FileSystemOperationContext> context,
+  void Truncate(std::unique_ptr<storage::FileSystemOperationContext> context,
                 const storage::FileSystemURL& url,
                 int64_t length,
                 const StatusCallback& callback) override;
-  void CopyFileLocal(scoped_ptr<storage::FileSystemOperationContext> context,
-                     const storage::FileSystemURL& src_url,
-                     const storage::FileSystemURL& dest_url,
-                     CopyOrMoveOption option,
-                     const CopyFileProgressCallback& progress_callback,
-                     const StatusCallback& callback) override;
-  void MoveFileLocal(scoped_ptr<storage::FileSystemOperationContext> context,
-                     const storage::FileSystemURL& src_url,
-                     const storage::FileSystemURL& dest_url,
-                     CopyOrMoveOption option,
-                     const StatusCallback& callback) override;
+  void CopyFileLocal(
+      std::unique_ptr<storage::FileSystemOperationContext> context,
+      const storage::FileSystemURL& src_url,
+      const storage::FileSystemURL& dest_url,
+      CopyOrMoveOption option,
+      const CopyFileProgressCallback& progress_callback,
+      const StatusCallback& callback) override;
+  void MoveFileLocal(
+      std::unique_ptr<storage::FileSystemOperationContext> context,
+      const storage::FileSystemURL& src_url,
+      const storage::FileSystemURL& dest_url,
+      CopyOrMoveOption option,
+      const StatusCallback& callback) override;
   void CopyInForeignFile(
-      scoped_ptr<storage::FileSystemOperationContext> context,
+      std::unique_ptr<storage::FileSystemOperationContext> context,
       const base::FilePath& src_file_path,
       const storage::FileSystemURL& dest_url,
       const StatusCallback& callback) override;
-  void DeleteFile(scoped_ptr<storage::FileSystemOperationContext> context,
+  void DeleteFile(std::unique_ptr<storage::FileSystemOperationContext> context,
                   const storage::FileSystemURL& url,
                   const StatusCallback& callback) override;
-  void DeleteDirectory(scoped_ptr<storage::FileSystemOperationContext> context,
-                       const storage::FileSystemURL& url,
-                       const StatusCallback& callback) override;
+  void DeleteDirectory(
+      std::unique_ptr<storage::FileSystemOperationContext> context,
+      const storage::FileSystemURL& url,
+      const StatusCallback& callback) override;
   void DeleteRecursively(
-      scoped_ptr<storage::FileSystemOperationContext> context,
+      std::unique_ptr<storage::FileSystemOperationContext> context,
       const storage::FileSystemURL& url,
       const StatusCallback& callback) override;
   void CreateSnapshotFile(
-      scoped_ptr<storage::FileSystemOperationContext> context,
+      std::unique_ptr<storage::FileSystemOperationContext> context,
       const storage::FileSystemURL& url,
       const CreateSnapshotFileCallback& callback) override;
 
@@ -107,7 +115,7 @@ class DeviceMediaAsyncFileUtil : public storage::AsyncFileUtil {
   // underlying storage. The returned FileStreamReader must return an error
   // when the state of the underlying storage changes. Any errors associated
   // with reading this file are returned by the FileStreamReader itself.
-  virtual scoped_ptr<storage::FileStreamReader> GetFileStreamReader(
+  virtual std::unique_ptr<storage::FileStreamReader> GetFileStreamReader(
       const storage::FileSystemURL& url,
       int64_t offset,
       const base::Time& expected_modification_time,

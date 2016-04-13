@@ -33,7 +33,7 @@ void StartFilePathWatchOnFileThread(
   DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
   // The watcher is created on the FILE thread because it is very difficult
   // to safely pass an already-created file watcher to a different thread.
-  scoped_ptr<base::FilePathWatcher> watcher(new base::FilePathWatcher);
+  std::unique_ptr<base::FilePathWatcher> watcher(new base::FilePathWatcher);
   bool success = watcher->Watch(
       path,
       false /* recursive */,

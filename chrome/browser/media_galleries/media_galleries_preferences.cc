@@ -610,8 +610,8 @@ bool MediaGalleriesPreferences::UpdateDeviceIDForSingletonType(
     return false;
 
   PrefService* prefs = profile_->GetPrefs();
-  scoped_ptr<ListPrefUpdate> update(new ListPrefUpdate(
-      prefs, prefs::kMediaGalleriesRememberedGalleries));
+  std::unique_ptr<ListPrefUpdate> update(
+      new ListPrefUpdate(prefs, prefs::kMediaGalleriesRememberedGalleries));
   base::ListValue* list = update->Get();
   for (base::ListValue::iterator iter = list->begin();
        iter != list->end(); ++iter) {
@@ -950,7 +950,7 @@ MediaGalleryPrefId MediaGalleriesPreferences::AddOrUpdateGalleryInternal(
       return *pref_id_it;
 
     PrefService* prefs = profile_->GetPrefs();
-    scoped_ptr<ListPrefUpdate> update(
+    std::unique_ptr<ListPrefUpdate> update(
         new ListPrefUpdate(prefs, prefs::kMediaGalleriesRememberedGalleries));
     base::ListValue* list = update->Get();
 
@@ -1044,8 +1044,8 @@ void MediaGalleriesPreferences::UpdateDefaultGalleriesPaths() {
       PathService::Get(chrome::DIR_USER_VIDEOS, &videos_path);
 
   PrefService* prefs = profile_->GetPrefs();
-  scoped_ptr<ListPrefUpdate> update(new ListPrefUpdate(
-      prefs, prefs::kMediaGalleriesRememberedGalleries));
+  std::unique_ptr<ListPrefUpdate> update(
+      new ListPrefUpdate(prefs, prefs::kMediaGalleriesRememberedGalleries));
   base::ListValue* list = update->Get();
 
   std::vector<MediaGalleryPrefId> pref_ids;
@@ -1143,8 +1143,8 @@ void MediaGalleriesPreferences::EraseOrBlacklistGalleryById(
     MediaGalleryPrefId id, bool erase) {
   DCHECK(IsInitialized());
   PrefService* prefs = profile_->GetPrefs();
-  scoped_ptr<ListPrefUpdate> update(new ListPrefUpdate(
-      prefs, prefs::kMediaGalleriesRememberedGalleries));
+  std::unique_ptr<ListPrefUpdate> update(
+      new ListPrefUpdate(prefs, prefs::kMediaGalleriesRememberedGalleries));
   base::ListValue* list = update->Get();
 
   if (!ContainsKey(known_galleries_, id))

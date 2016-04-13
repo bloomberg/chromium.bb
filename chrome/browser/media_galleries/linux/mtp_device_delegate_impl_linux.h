@@ -9,6 +9,7 @@
 
 #include <deque>
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 
@@ -17,7 +18,6 @@
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/media_galleries/fileapi/mtp_device_async_delegate.h"
 #include "chrome/browser/media_galleries/linux/mtp_device_task_helper.h"
@@ -307,7 +307,7 @@ class MTPDeviceDelegateImplLinux : public MTPDeviceAsyncDelegate {
   // Posts a task on the UI thread to copy the data contents of the device file
   // to the snapshot file.
   void OnDidGetFileInfoToCreateSnapshotFile(
-      scoped_ptr<SnapshotRequestInfo> snapshot_request_info,
+      std::unique_ptr<SnapshotRequestInfo> snapshot_request_info,
       const base::File::Info& file_info);
 
   // Called when GetFileInfo() for destination path succeeded for a
@@ -502,7 +502,7 @@ class MTPDeviceDelegateImplLinux : public MTPDeviceAsyncDelegate {
   // to the snapshot file in chunks. In order to retain the order of the
   // snapshot file requests, make sure there is only one active snapshot file
   // request at any time.
-  scoped_ptr<SnapshotRequestInfo> current_snapshot_request_info_;
+  std::unique_ptr<SnapshotRequestInfo> current_snapshot_request_info_;
 
   // A mapping for quick lookups into the |root_node_| tree structure. Since
   // |root_node_| contains pointers to this map, it must be declared after this
@@ -511,7 +511,7 @@ class MTPDeviceDelegateImplLinux : public MTPDeviceAsyncDelegate {
 
   // The root node of a tree-structure that caches the directory structure of
   // the MTP device.
-  scoped_ptr<MTPFileNode> root_node_;
+  std::unique_ptr<MTPFileNode> root_node_;
 
   // A list of child nodes encountered while a ReadDirectory operation, which
   // can return results over multiple callbacks, is in progress.

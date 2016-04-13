@@ -4,12 +4,13 @@
 
 #include "chrome/browser/media_galleries/fileapi/iapps_finder_impl.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #import "base/mac/foundation_util.h"
 #import "base/mac/scoped_nsobject.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/time/time.h"
 #include "components/policy/core/common/preferences_mac.h"
@@ -34,7 +35,7 @@ void FindMostRecentDatabase(
     const IAppsFinderCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
 
-  scoped_ptr<MacPreferences> real_preferences;
+  std::unique_ptr<MacPreferences> real_preferences;
   MacPreferences* prefs = g_test_mac_preferences;
   if (!prefs) {
     real_preferences.reset(new MacPreferences());

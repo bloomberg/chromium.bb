@@ -5,11 +5,13 @@
 #include "chrome/browser/media_galleries/fileapi/device_media_async_file_util.h"
 
 #include <stddef.h>
+
 #include <utility>
 
 #include "base/callback.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task_runner_util.h"
 #include "chrome/browser/media_galleries/fileapi/media_path_filter.h"
@@ -206,7 +208,7 @@ void OnCreateSnapshotFileError(
 // path. Forwards the CreateSnapshot request to the delegate to copy the
 // contents of url.path() to |snapshot_file_path|.
 void OnSnapshotFileCreatedRunTask(
-    scoped_ptr<FileSystemOperationContext> context,
+    std::unique_ptr<FileSystemOperationContext> context,
     const AsyncFileUtil::CreateSnapshotFileCallback& callback,
     const FileSystemURL& url,
     bool validate_media_files,
@@ -250,7 +252,7 @@ class DeviceMediaAsyncFileUtil::MediaPathFilterWrapper
 
   virtual ~MediaPathFilterWrapper();
 
-  scoped_ptr<MediaPathFilter> media_path_filter_;
+  std::unique_ptr<MediaPathFilter> media_path_filter_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaPathFilterWrapper);
 };
@@ -284,11 +286,11 @@ DeviceMediaAsyncFileUtil::~DeviceMediaAsyncFileUtil() {
 }
 
 // static
-scoped_ptr<DeviceMediaAsyncFileUtil> DeviceMediaAsyncFileUtil::Create(
+std::unique_ptr<DeviceMediaAsyncFileUtil> DeviceMediaAsyncFileUtil::Create(
     const base::FilePath& profile_path,
     MediaFileValidationType validation_type) {
   DCHECK(!profile_path.empty());
-  return make_scoped_ptr(
+  return base::WrapUnique(
       new DeviceMediaAsyncFileUtil(profile_path, validation_type));
 }
 
@@ -302,7 +304,7 @@ bool DeviceMediaAsyncFileUtil::SupportsStreaming(
 }
 
 void DeviceMediaAsyncFileUtil::CreateOrOpen(
-    scoped_ptr<FileSystemOperationContext> context,
+    std::unique_ptr<FileSystemOperationContext> context,
     const FileSystemURL& url,
     int file_flags,
     const CreateOrOpenCallback& callback) {
@@ -322,7 +324,7 @@ void DeviceMediaAsyncFileUtil::CreateOrOpen(
 }
 
 void DeviceMediaAsyncFileUtil::EnsureFileExists(
-    scoped_ptr<FileSystemOperationContext> context,
+    std::unique_ptr<FileSystemOperationContext> context,
     const FileSystemURL& url,
     const EnsureFileExistsCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
@@ -331,7 +333,7 @@ void DeviceMediaAsyncFileUtil::EnsureFileExists(
 }
 
 void DeviceMediaAsyncFileUtil::CreateDirectory(
-    scoped_ptr<FileSystemOperationContext> context,
+    std::unique_ptr<FileSystemOperationContext> context,
     const FileSystemURL& url,
     bool exclusive,
     bool recursive,
@@ -354,7 +356,7 @@ void DeviceMediaAsyncFileUtil::CreateDirectory(
 }
 
 void DeviceMediaAsyncFileUtil::GetFileInfo(
-    scoped_ptr<FileSystemOperationContext> context,
+    std::unique_ptr<FileSystemOperationContext> context,
     const FileSystemURL& url,
     int /* flags */,
     const GetFileInfoCallback& callback) {
@@ -373,7 +375,7 @@ void DeviceMediaAsyncFileUtil::GetFileInfo(
 }
 
 void DeviceMediaAsyncFileUtil::ReadDirectory(
-    scoped_ptr<FileSystemOperationContext> context,
+    std::unique_ptr<FileSystemOperationContext> context,
     const FileSystemURL& url,
     const ReadDirectoryCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
@@ -392,7 +394,7 @@ void DeviceMediaAsyncFileUtil::ReadDirectory(
 }
 
 void DeviceMediaAsyncFileUtil::Touch(
-    scoped_ptr<FileSystemOperationContext> context,
+    std::unique_ptr<FileSystemOperationContext> context,
     const FileSystemURL& url,
     const base::Time& last_access_time,
     const base::Time& last_modified_time,
@@ -403,7 +405,7 @@ void DeviceMediaAsyncFileUtil::Touch(
 }
 
 void DeviceMediaAsyncFileUtil::Truncate(
-    scoped_ptr<FileSystemOperationContext> context,
+    std::unique_ptr<FileSystemOperationContext> context,
     const FileSystemURL& url,
     int64_t length,
     const StatusCallback& callback) {
@@ -413,7 +415,7 @@ void DeviceMediaAsyncFileUtil::Truncate(
 }
 
 void DeviceMediaAsyncFileUtil::CopyFileLocal(
-    scoped_ptr<FileSystemOperationContext> context,
+    std::unique_ptr<FileSystemOperationContext> context,
     const FileSystemURL& src_url,
     const FileSystemURL& dest_url,
     CopyOrMoveOption option,
@@ -441,7 +443,7 @@ void DeviceMediaAsyncFileUtil::CopyFileLocal(
 }
 
 void DeviceMediaAsyncFileUtil::MoveFileLocal(
-    scoped_ptr<FileSystemOperationContext> context,
+    std::unique_ptr<FileSystemOperationContext> context,
     const FileSystemURL& src_url,
     const FileSystemURL& dest_url,
     CopyOrMoveOption option,
@@ -467,7 +469,7 @@ void DeviceMediaAsyncFileUtil::MoveFileLocal(
 }
 
 void DeviceMediaAsyncFileUtil::CopyInForeignFile(
-    scoped_ptr<FileSystemOperationContext> context,
+    std::unique_ptr<FileSystemOperationContext> context,
     const base::FilePath& src_file_path,
     const FileSystemURL& dest_url,
     const StatusCallback& callback) {
@@ -491,7 +493,7 @@ void DeviceMediaAsyncFileUtil::CopyInForeignFile(
 }
 
 void DeviceMediaAsyncFileUtil::DeleteFile(
-    scoped_ptr<FileSystemOperationContext> context,
+    std::unique_ptr<FileSystemOperationContext> context,
     const FileSystemURL& url,
     const StatusCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
@@ -513,7 +515,7 @@ void DeviceMediaAsyncFileUtil::DeleteFile(
 }
 
 void DeviceMediaAsyncFileUtil::DeleteDirectory(
-    scoped_ptr<FileSystemOperationContext> context,
+    std::unique_ptr<FileSystemOperationContext> context,
     const FileSystemURL& url,
     const StatusCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
@@ -535,7 +537,7 @@ void DeviceMediaAsyncFileUtil::DeleteDirectory(
 }
 
 void DeviceMediaAsyncFileUtil::DeleteRecursively(
-    scoped_ptr<FileSystemOperationContext> context,
+    std::unique_ptr<FileSystemOperationContext> context,
     const FileSystemURL& url,
     const StatusCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
@@ -543,7 +545,7 @@ void DeviceMediaAsyncFileUtil::DeleteRecursively(
 }
 
 void DeviceMediaAsyncFileUtil::CreateSnapshotFile(
-    scoped_ptr<FileSystemOperationContext> context,
+    std::unique_ptr<FileSystemOperationContext> context,
     const FileSystemURL& url,
     const CreateSnapshotFileCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
@@ -561,7 +563,7 @@ void DeviceMediaAsyncFileUtil::CreateSnapshotFile(
                  callback, url, validate_media_files()));
 }
 
-scoped_ptr<storage::FileStreamReader>
+std::unique_ptr<storage::FileStreamReader>
 DeviceMediaAsyncFileUtil::GetFileStreamReader(
     const FileSystemURL& url,
     int64_t offset,
@@ -569,15 +571,13 @@ DeviceMediaAsyncFileUtil::GetFileStreamReader(
     storage::FileSystemContext* context) {
   MTPDeviceAsyncDelegate* delegate = GetMTPDeviceDelegate(url);
   if (!delegate)
-    return scoped_ptr<storage::FileStreamReader>();
+    return std::unique_ptr<storage::FileStreamReader>();
 
   DCHECK(delegate->IsStreaming());
-  return scoped_ptr<storage::FileStreamReader>(new ReadaheadFileStreamReader(
-      new MTPFileStreamReader(context,
-                              url,
-                              offset,
-                              expected_modification_time,
-                              validate_media_files())));
+  return std::unique_ptr<storage::FileStreamReader>(
+      new ReadaheadFileStreamReader(new MTPFileStreamReader(
+          context, url, offset, expected_modification_time,
+          validate_media_files())));
 }
 
 void DeviceMediaAsyncFileUtil::AddWatcher(

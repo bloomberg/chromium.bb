@@ -4,8 +4,9 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "chrome/browser/extensions/extension_prefs_unittest.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -153,8 +154,8 @@ class MediaGalleriesPermissionsTest : public extensions::ExtensionPrefsTest {
   EnsureMediaDirectoriesExists ensure_media_directories_exists_;
   content::TestBrowserThread file_thread_;
 
-  scoped_ptr<TestingProfile> profile_;
-  scoped_ptr<MediaGalleriesPreferences> gallery_prefs_;
+  std::unique_ptr<TestingProfile> profile_;
+  std::unique_ptr<MediaGalleriesPreferences> gallery_prefs_;
 };
 
 TEST_F(MediaGalleriesPermissionsTest, MediaGalleries) {}

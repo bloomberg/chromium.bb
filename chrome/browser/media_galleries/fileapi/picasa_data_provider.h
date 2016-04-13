@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_PICASA_DATA_PROVIDER_H_
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -15,7 +16,6 @@
 #include "base/files/file_path_watcher.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "chrome/common/media_galleries/picasa_types.h"
@@ -44,11 +44,11 @@ class PicasaDataProvider {
 
   // These methods return scoped_ptrs because we want to return a copy that
   // will not change to the caller.
-  scoped_ptr<AlbumMap> GetAlbums();
-  scoped_ptr<AlbumMap> GetFolders();
+  std::unique_ptr<AlbumMap> GetAlbums();
+  std::unique_ptr<AlbumMap> GetFolders();
   // |error| must be non-NULL.
-  scoped_ptr<AlbumImages> FindAlbumImages(const std::string& key,
-                                          base::File::Error* error);
+  std::unique_ptr<AlbumImages> FindAlbumImages(const std::string& key,
+                                               base::File::Error* error);
 
  protected:
   // Notifies data provider that any currently cached data is stale.
@@ -67,7 +67,7 @@ class PicasaDataProvider {
 
   // Called when the FilePathWatcher for Picasa's temp directory has started.
   virtual void OnTempDirWatchStarted(
-      scoped_ptr<base::FilePathWatcher> temp_dir_watcher);
+      std::unique_ptr<base::FilePathWatcher> temp_dir_watcher);
 
   // Called when Picasa's temp directory has changed. Virtual for testing.
   virtual void OnTempDirChanged(const base::FilePath& temp_dir_path,
@@ -109,7 +109,7 @@ class PicasaDataProvider {
 
   // We watch the temp dir, as we can't detect database file modifications on
   // Mac, but we are able to detect creation and deletion of temporary files.
-  scoped_ptr<base::FilePathWatcher> temp_dir_watcher_;
+  std::unique_ptr<base::FilePathWatcher> temp_dir_watcher_;
 
   base::WeakPtrFactory<PicasaDataProvider> weak_factory_;
 

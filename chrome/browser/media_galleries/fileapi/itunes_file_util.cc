@@ -69,7 +69,7 @@ ITunesFileUtil::~ITunesFileUtil() {
 }
 
 void ITunesFileUtil::GetFileInfoOnTaskRunnerThread(
-    scoped_ptr<storage::FileSystemOperationContext> context,
+    std::unique_ptr<storage::FileSystemOperationContext> context,
     const storage::FileSystemURL& url,
     const GetFileInfoCallback& callback) {
   ITunesDataProvider* data_provider = GetDataProvider();
@@ -86,7 +86,7 @@ void ITunesFileUtil::GetFileInfoOnTaskRunnerThread(
 }
 
 void ITunesFileUtil::ReadDirectoryOnTaskRunnerThread(
-    scoped_ptr<storage::FileSystemOperationContext> context,
+    std::unique_ptr<storage::FileSystemOperationContext> context,
     const storage::FileSystemURL& url,
     const ReadDirectoryCallback& callback) {
   ITunesDataProvider* data_provider = GetDataProvider();
@@ -104,7 +104,7 @@ void ITunesFileUtil::ReadDirectoryOnTaskRunnerThread(
 }
 
 void ITunesFileUtil::CreateSnapshotFileOnTaskRunnerThread(
-    scoped_ptr<storage::FileSystemOperationContext> context,
+    std::unique_ptr<storage::FileSystemOperationContext> context,
     const storage::FileSystemURL& url,
     const CreateSnapshotFileCallback& callback) {
   ITunesDataProvider* data_provider = GetDataProvider();
@@ -351,7 +351,7 @@ base::File::Error ITunesFileUtil::GetLocalFilePath(
 }
 
 void ITunesFileUtil::GetFileInfoWithFreshDataProvider(
-    scoped_ptr<storage::FileSystemOperationContext> context,
+    std::unique_ptr<storage::FileSystemOperationContext> context,
     const storage::FileSystemURL& url,
     const GetFileInfoCallback& callback,
     bool valid_parse) {
@@ -370,7 +370,7 @@ void ITunesFileUtil::GetFileInfoWithFreshDataProvider(
 }
 
 void ITunesFileUtil::ReadDirectoryWithFreshDataProvider(
-    scoped_ptr<storage::FileSystemOperationContext> context,
+    std::unique_ptr<storage::FileSystemOperationContext> context,
     const storage::FileSystemURL& url,
     const ReadDirectoryCallback& callback,
     bool valid_parse) {
@@ -388,7 +388,7 @@ void ITunesFileUtil::ReadDirectoryWithFreshDataProvider(
 }
 
 void ITunesFileUtil::CreateSnapshotFileWithFreshDataProvider(
-    scoped_ptr<storage::FileSystemOperationContext> context,
+    std::unique_ptr<storage::FileSystemOperationContext> context,
     const storage::FileSystemURL& url,
     const CreateSnapshotFileCallback& callback,
     bool valid_parse) {

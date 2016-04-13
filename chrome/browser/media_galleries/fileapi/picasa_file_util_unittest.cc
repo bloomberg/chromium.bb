@@ -222,7 +222,7 @@ class TestMediaFileSystemBackend : public MediaFileSystemBackend {
   }
 
  private:
-  scoped_ptr<storage::AsyncFileUtil> test_file_util_;
+  std::unique_ptr<storage::AsyncFileUtil> test_file_util_;
 };
 
 class PicasaFileUtilTest : public testing::Test {
@@ -379,8 +379,8 @@ class PicasaFileUtilTest : public testing::Test {
   base::ScopedTempDir profile_dir_;
 
   scoped_refptr<storage::FileSystemContext> file_system_context_;
-  scoped_ptr<PicasaDataProvider> picasa_data_provider_;
-  scoped_ptr<MediaPathFilter> media_path_filter_;
+  std::unique_ptr<PicasaDataProvider> picasa_data_provider_;
+  std::unique_ptr<MediaPathFilter> media_path_filter_;
 
   DISALLOW_COPY_AND_ASSIGN(PicasaFileUtilTest);
 };

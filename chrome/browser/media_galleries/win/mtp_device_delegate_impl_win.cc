@@ -100,7 +100,7 @@ base::string16 GetFileObjectIdFromPathOnBlockingPoolThread(
 
 // Returns a pointer to a new instance of AbstractFileEnumerator for the given
 // |root| directory. Called on a blocking pool thread.
-scoped_ptr<MTPDeviceObjectEnumerator>
+std::unique_ptr<MTPDeviceObjectEnumerator>
 CreateFileEnumeratorOnBlockingPoolThread(
     const MTPDeviceDelegateImplWin::StorageDeviceInfo& device_info,
     const base::FilePath& root) {
@@ -111,20 +111,20 @@ CreateFileEnumeratorOnBlockingPoolThread(
       PortableDeviceMapService::GetInstance()->GetPortableDevice(
           device_info.registered_device_path);
   if (!device)
-    return scoped_ptr<MTPDeviceObjectEnumerator>();
+    return std::unique_ptr<MTPDeviceObjectEnumerator>();
 
   base::string16 object_id =
       GetFileObjectIdFromPathOnBlockingPoolThread(device_info, root);
   if (object_id.empty())
-    return scoped_ptr<MTPDeviceObjectEnumerator>();
+    return std::unique_ptr<MTPDeviceObjectEnumerator>();
 
   MTPDeviceObjectEntries entries;
   if (!media_transfer_protocol::GetDirectoryEntries(device, object_id,
                                                     &entries) ||
       entries.empty())
-    return scoped_ptr<MTPDeviceObjectEnumerator>();
+    return std::unique_ptr<MTPDeviceObjectEnumerator>();
 
-  return scoped_ptr<MTPDeviceObjectEnumerator>(
+  return std::unique_ptr<MTPDeviceObjectEnumerator>(
       new MTPDeviceObjectEnumerator(entries));
 }
 
@@ -195,7 +195,7 @@ base::File::Error ReadDirectoryOnBlockingPoolThread(
     return base::File::FILE_ERROR_NOT_A_DIRECTORY;
 
   base::FilePath current;
-  scoped_ptr<MTPDeviceObjectEnumerator> file_enum =
+  std::unique_ptr<MTPDeviceObjectEnumerator> file_enum =
       CreateFileEnumeratorOnBlockingPoolThread(device_info, root);
   if (!file_enum)
     return error;
@@ -442,11 +442,9 @@ void MTPDeviceDelegateImplWin::CreateSnapshotFile(
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(!device_file_path.empty());
   DCHECK(!snapshot_file_path.empty());
-  scoped_ptr<SnapshotFileDetails> file_details(
-      new SnapshotFileDetails(SnapshotRequestInfo(device_file_path,
-                                                  snapshot_file_path,
-                                                  success_callback,
-                                                  error_callback)));
+  std::unique_ptr<SnapshotFileDetails> file_details(new SnapshotFileDetails(
+      SnapshotRequestInfo(device_file_path, snapshot_file_path,
+                          success_callback, error_callback)));
   // Passing a raw SnapshotFileDetails* to the blocking pool is safe, because
   // it is owned by |file_details| in the reply callback.
   EnsureInitAndRunTask(
@@ -638,7 +636,7 @@ void MTPDeviceDelegateImplWin::OnDidReadDirectory(
 }
 
 void MTPDeviceDelegateImplWin::OnGetFileStream(
-    scoped_ptr<SnapshotFileDetails> file_details,
+    std::unique_ptr<SnapshotFileDetails> file_details,
     base::File::Error error) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(file_details);

@@ -2,18 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/media_galleries/gallery_watch_manager.h"
+
+#include <memory>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_path_override.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/test_extension_system.h"
-#include "chrome/browser/media_galleries/gallery_watch_manager.h"
 #include "chrome/browser/media_galleries/gallery_watch_manager_observer.h"
 #include "chrome/browser/media_galleries/media_galleries_preferences.h"
 #include "chrome/browser/media_galleries/media_galleries_preferences_factory.h"
@@ -169,7 +171,7 @@ class GalleryWatchManagerTest : public GalleryWatchManagerObserver,
     pending_loop_->Quit();
   }
 
-  scoped_ptr<GalleryWatchManager> manager_;
+  std::unique_ptr<GalleryWatchManager> manager_;
 
   // Needed for extension service & friends to work.
   content::TestBrowserThreadBundle thread_bundle_;
@@ -185,7 +187,7 @@ class GalleryWatchManagerTest : public GalleryWatchManagerObserver,
 #endif
 
   storage_monitor::TestStorageMonitor* monitor_;
-  scoped_ptr<TestingProfile> profile_;
+  std::unique_ptr<TestingProfile> profile_;
   MediaGalleriesPreferences* gallery_prefs_;
 
   bool expect_gallery_changed_;

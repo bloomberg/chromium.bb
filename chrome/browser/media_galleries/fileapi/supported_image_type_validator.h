@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_SUPPORTED_IMAGE_TYPE_VALIDATOR_H_
 #define CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_SUPPORTED_IMAGE_TYPE_VALIDATOR_H_
 
+#include <memory>
+
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/media_galleries/fileapi/av_scanning_file_validator.h"
 
@@ -30,7 +31,7 @@ class SupportedImageTypeValidator : public AVScanningFileValidator {
 
   explicit SupportedImageTypeValidator(const base::FilePath& file);
 
-  void OnFileOpen(scoped_ptr<std::string> data);
+  void OnFileOpen(std::unique_ptr<std::string> data);
 
   base::FilePath path_;
   storage::CopyOrMoveFileValidator::ResultCallback callback_;

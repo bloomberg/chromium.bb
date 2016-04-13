@@ -15,6 +15,7 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/string_number_conversions.h"
@@ -401,7 +402,7 @@ class MTPDeviceDelegateImplLinux::MTPFileNode {
 
  private:
   // Container for holding a node's children.
-  typedef base::ScopedPtrHashMap<std::string, scoped_ptr<MTPFileNode>>
+  typedef base::ScopedPtrHashMap<std::string, std::unique_ptr<MTPFileNode>>
       ChildNodes;
 
   const uint32_t file_id_;
@@ -450,9 +451,8 @@ void MTPDeviceDelegateImplLinux::MTPFileNode::EnsureChildExists(
   if (child && child->file_id() == id)
     return;
 
-  children_.set(
-      name,
-      make_scoped_ptr(new MTPFileNode(id, name, this, file_id_to_node_map_)));
+  children_.set(name, base::WrapUnique(new MTPFileNode(id, name, this,
+                                                       file_id_to_node_map_)));
 }
 
 void MTPDeviceDelegateImplLinux::MTPFileNode::ClearNonexistentChildren(
@@ -973,11 +973,8 @@ void MTPDeviceDelegateImplLinux::CreateSnapshotFileInternal(
 
   uint32_t file_id;
   if (CachedPathToId(device_file_path, &file_id)) {
-    scoped_ptr<SnapshotRequestInfo> request_info(
-        new SnapshotRequestInfo(file_id,
-                                local_path,
-                                success_callback,
-                                error_callback));
+    std::unique_ptr<SnapshotRequestInfo> request_info(new SnapshotRequestInfo(
+        file_id, local_path, success_callback, error_callback));
     GetFileInfoSuccessCallback success_callback_wrapper =
         base::Bind(
             &MTPDeviceDelegateImplLinux::OnDidGetFileInfoToCreateSnapshotFile,
@@ -1456,7 +1453,7 @@ void MTPDeviceDelegateImplLinux::OnDidGetFileInfoToReadDirectory(
 }
 
 void MTPDeviceDelegateImplLinux::OnDidGetFileInfoToCreateSnapshotFile(
-    scoped_ptr<SnapshotRequestInfo> snapshot_request_info,
+    std::unique_ptr<SnapshotRequestInfo> snapshot_request_info,
     const base::File::Info& file_info) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(!current_snapshot_request_info_.get());

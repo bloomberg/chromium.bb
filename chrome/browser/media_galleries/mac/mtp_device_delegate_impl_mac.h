@@ -9,13 +9,13 @@
 
 #include <list>
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "base/containers/hash_tables.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/media_galleries/fileapi/mtp_device_async_delegate.h"
 
@@ -153,7 +153,7 @@ class MTPDeviceDelegateImplMac : public MTPDeviceAsyncDelegate {
   base::FilePath root_path_;
 
   // Interface object for the camera underlying this MTP session.
-  scoped_ptr<DeviceListener> camera_interface_;
+  std::unique_ptr<DeviceListener> camera_interface_;
 
   // Stores a map from filename to file metadata received from the camera.
   base::hash_map<base::FilePath::StringType,

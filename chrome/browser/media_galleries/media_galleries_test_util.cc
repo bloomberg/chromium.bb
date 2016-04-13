@@ -40,7 +40,7 @@ scoped_refptr<extensions::Extension> AddMediaGalleriesApp(
     const std::string& name,
     const std::vector<std::string>& media_galleries_permissions,
     Profile* profile) {
-  scoped_ptr<base::DictionaryValue> manifest(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> manifest(new base::DictionaryValue);
   manifest->SetString(extensions::manifest_keys::kName, name);
   manifest->SetString(extensions::manifest_keys::kVersion, "0.1");
   manifest->SetInteger(extensions::manifest_keys::kManifestVersion, 2);

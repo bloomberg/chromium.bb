@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "chrome/browser/media_galleries/linux/snapshot_file_details.h"
 #include "components/storage_monitor/storage_monitor.h"
@@ -50,13 +51,12 @@ void MTPReadFileWorker::WriteDataIntoSnapshotFile(
     const SnapshotRequestInfo& request_info,
     const base::File::Info& snapshot_file_info) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  ReadDataChunkFromDeviceFile(
-      make_scoped_ptr(new SnapshotFileDetails(request_info,
-                                              snapshot_file_info)));
+  ReadDataChunkFromDeviceFile(base::WrapUnique(
+      new SnapshotFileDetails(request_info, snapshot_file_info)));
 }
 
 void MTPReadFileWorker::ReadDataChunkFromDeviceFile(
-    scoped_ptr<SnapshotFileDetails> snapshot_file_details) {
+    std::unique_ptr<SnapshotFileDetails> snapshot_file_details) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(snapshot_file_details.get());
 
@@ -77,7 +77,7 @@ void MTPReadFileWorker::ReadDataChunkFromDeviceFile(
 }
 
 void MTPReadFileWorker::OnDidReadDataChunkFromDeviceFile(
-    scoped_ptr<SnapshotFileDetails> snapshot_file_details,
+    std::unique_ptr<SnapshotFileDetails> snapshot_file_details,
     const std::string& data,
     bool error) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -104,7 +104,7 @@ void MTPReadFileWorker::OnDidReadDataChunkFromDeviceFile(
 }
 
 void MTPReadFileWorker::OnDidWriteDataChunkIntoSnapshotFile(
-    scoped_ptr<SnapshotFileDetails> snapshot_file_details,
+    std::unique_ptr<SnapshotFileDetails> snapshot_file_details,
     uint32_t bytes_written) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(snapshot_file_details.get());
@@ -120,7 +120,7 @@ void MTPReadFileWorker::OnDidWriteDataChunkIntoSnapshotFile(
 }
 
 void MTPReadFileWorker::OnDidWriteIntoSnapshotFile(
-    scoped_ptr<SnapshotFileDetails> snapshot_file_details) {
+    std::unique_ptr<SnapshotFileDetails> snapshot_file_details) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(snapshot_file_details.get());
 

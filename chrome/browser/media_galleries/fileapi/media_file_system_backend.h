@@ -7,13 +7,13 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "chrome/browser/media_galleries/media_galleries_preferences.h"
 #include "storage/browser/fileapi/file_system_backend.h"
@@ -78,13 +78,13 @@ class MediaFileSystemBackend : public storage::FileSystemBackend {
   bool SupportsStreaming(const storage::FileSystemURL& url) const override;
   bool HasInplaceCopyImplementation(
       storage::FileSystemType type) const override;
-  scoped_ptr<storage::FileStreamReader> CreateFileStreamReader(
+  std::unique_ptr<storage::FileStreamReader> CreateFileStreamReader(
       const storage::FileSystemURL& url,
       int64_t offset,
       int64_t max_bytes_to_read,
       const base::Time& expected_modification_time,
       storage::FileSystemContext* context) const override;
-  scoped_ptr<storage::FileStreamWriter> CreateFileStreamWriter(
+  std::unique_ptr<storage::FileStreamWriter> CreateFileStreamWriter(
       const storage::FileSystemURL& url,
       int64_t offset,
       storage::FileSystemContext* context) const override;
@@ -102,15 +102,15 @@ class MediaFileSystemBackend : public storage::FileSystemBackend {
 
   scoped_refptr<base::SequencedTaskRunner> media_task_runner_;
 
-  scoped_ptr<MediaPathFilter> media_path_filter_;
-  scoped_ptr<storage::CopyOrMoveFileValidatorFactory>
+  std::unique_ptr<MediaPathFilter> media_path_filter_;
+  std::unique_ptr<storage::CopyOrMoveFileValidatorFactory>
       media_copy_or_move_file_validator_factory_;
 
-  scoped_ptr<storage::AsyncFileUtil> native_media_file_util_;
-  scoped_ptr<DeviceMediaAsyncFileUtil> device_media_async_file_util_;
+  std::unique_ptr<storage::AsyncFileUtil> native_media_file_util_;
+  std::unique_ptr<DeviceMediaAsyncFileUtil> device_media_async_file_util_;
 #if defined(OS_WIN) || defined(OS_MACOSX)
-  scoped_ptr<storage::AsyncFileUtil> picasa_file_util_;
-  scoped_ptr<storage::AsyncFileUtil> itunes_file_util_;
+  std::unique_ptr<storage::AsyncFileUtil> picasa_file_util_;
+  std::unique_ptr<storage::AsyncFileUtil> itunes_file_util_;
 
   // Used for usage UMA tracking.
   bool picasa_file_util_used_;

@@ -66,7 +66,7 @@ const base::FilePath& IAppsDataProvider::library_path() const {
 }
 
 void IAppsDataProvider::OnLibraryWatchStarted(
-    scoped_ptr<base::FilePathWatcher> library_watcher) {
+    std::unique_ptr<base::FilePathWatcher> library_watcher) {
   DCHECK(MediaFileSystemBackend::CurrentlyOnMediaTaskRunnerThread());
   library_watcher_.reset(library_watcher.release());
 }

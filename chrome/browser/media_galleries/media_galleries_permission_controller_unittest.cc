@@ -160,8 +160,8 @@ class MediaGalleriesPermissionControllerTest : public ::testing::Test {
 #endif
 
   TestStorageMonitor monitor_;
-  scoped_ptr<TestingProfile> profile_;
-  scoped_ptr<MediaGalleriesPreferences> gallery_prefs_;
+  std::unique_ptr<TestingProfile> profile_;
+  std::unique_ptr<MediaGalleriesPreferences> gallery_prefs_;
 
   base::WeakPtrFactory<MediaGalleriesPermissionControllerTest>
       weak_factory_;

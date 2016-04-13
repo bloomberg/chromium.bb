@@ -5,13 +5,13 @@
 #ifndef CHROME_BROWSER_MEDIA_GALLERIES_MEDIA_GALLERIES_TEST_UTIL_H_
 #define CHROME_BROWSER_MEDIA_GALLERIES_MEDIA_GALLERIES_TEST_UTIL_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/test/scoped_path_override.h"
 #include "build/build_config.h"
 
@@ -71,17 +71,17 @@ class EnsureMediaDirectoriesExists {
 
   int times_overrides_changed_;
 
-  scoped_ptr<base::ScopedPathOverride> app_data_override_;
-  scoped_ptr<base::ScopedPathOverride> music_override_;
-  scoped_ptr<base::ScopedPathOverride> pictures_override_;
-  scoped_ptr<base::ScopedPathOverride> video_override_;
+  std::unique_ptr<base::ScopedPathOverride> app_data_override_;
+  std::unique_ptr<base::ScopedPathOverride> music_override_;
+  std::unique_ptr<base::ScopedPathOverride> pictures_override_;
+  std::unique_ptr<base::ScopedPathOverride> video_override_;
 #if defined(OS_WIN)
-  scoped_ptr<base::ScopedPathOverride> local_app_data_override_;
+  std::unique_ptr<base::ScopedPathOverride> local_app_data_override_;
 
   registry_util::RegistryOverrideManager registry_override_;
 #endif
 #if defined(OS_MACOSX)
-  scoped_ptr<MockPreferences> mac_preferences_;
+  std::unique_ptr<MockPreferences> mac_preferences_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(EnsureMediaDirectoriesExists);

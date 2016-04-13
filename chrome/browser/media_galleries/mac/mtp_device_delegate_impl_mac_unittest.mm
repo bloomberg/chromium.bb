@@ -287,9 +287,9 @@ class MTPDeviceDelegateImplMacTest : public testing::Test {
  protected:
   base::MessageLoopForUI message_loop_;
   // Note: threads must be made in this order: UI > FILE > IO
-  scoped_ptr<content::TestBrowserThread> ui_thread_;
-  scoped_ptr<content::TestBrowserThread> file_thread_;
-  scoped_ptr<content::TestBrowserThread> io_thread_;
+  std::unique_ptr<content::TestBrowserThread> ui_thread_;
+  std::unique_ptr<content::TestBrowserThread> file_thread_;
+  std::unique_ptr<content::TestBrowserThread> io_thread_;
   base::ScopedTempDir temp_dir_;
   storage_monitor::ImageCaptureDeviceManager manager_;
   MockMTPICCameraDevice* camera_;

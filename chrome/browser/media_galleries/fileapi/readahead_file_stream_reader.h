@@ -41,7 +41,7 @@ class ReadaheadFileStreamReader
   void OnFinishReadFromSource(net::IOBuffer* buffer, int result);
 
   // This is reset to NULL upon encountering a read error or EOF.
-  scoped_ptr<storage::FileStreamReader> source_;
+  std::unique_ptr<storage::FileStreamReader> source_;
 
   // This stores the error or EOF from the source FileStreamReader. Its
   // value is undefined if |source_| is non-NULL.

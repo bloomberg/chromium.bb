@@ -308,7 +308,7 @@ storage::FileSystemOperation* MediaFileSystemBackend::CreateFileSystemOperation(
     const FileSystemURL& url,
     FileSystemContext* context,
     base::File::Error* error_code) const {
-  scoped_ptr<storage::FileSystemOperationContext> operation_context(
+  std::unique_ptr<storage::FileSystemOperationContext> operation_context(
       new storage::FileSystemOperationContext(context,
                                               media_task_runner_.get()));
   return storage::FileSystemOperation::Create(url, context,
@@ -334,7 +334,7 @@ bool MediaFileSystemBackend::HasInplaceCopyImplementation(
   return true;
 }
 
-scoped_ptr<storage::FileStreamReader>
+std::unique_ptr<storage::FileStreamReader>
 MediaFileSystemBackend::CreateFileStreamReader(
     const FileSystemURL& url,
     int64_t offset,
@@ -343,31 +343,27 @@ MediaFileSystemBackend::CreateFileStreamReader(
     FileSystemContext* context) const {
   if (url.type() == storage::kFileSystemTypeDeviceMedia) {
     DCHECK(device_media_async_file_util_);
-    scoped_ptr<storage::FileStreamReader> reader =
+    std::unique_ptr<storage::FileStreamReader> reader =
         device_media_async_file_util_->GetFileStreamReader(
             url, offset, expected_modification_time, context);
     DCHECK(reader);
     return reader;
   }
 
-  return scoped_ptr<storage::FileStreamReader>(
+  return std::unique_ptr<storage::FileStreamReader>(
       storage::FileStreamReader::CreateForLocalFile(
-          context->default_file_task_runner(),
-          url.path(),
-          offset,
+          context->default_file_task_runner(), url.path(), offset,
           expected_modification_time));
 }
 
-scoped_ptr<storage::FileStreamWriter>
+std::unique_ptr<storage::FileStreamWriter>
 MediaFileSystemBackend::CreateFileStreamWriter(
     const FileSystemURL& url,
     int64_t offset,
     FileSystemContext* context) const {
-  return scoped_ptr<storage::FileStreamWriter>(
+  return std::unique_ptr<storage::FileStreamWriter>(
       storage::FileStreamWriter::CreateForLocalFile(
-          context->default_file_task_runner(),
-          url.path(),
-          offset,
+          context->default_file_task_runner(), url.path(), offset,
           storage::FileStreamWriter::OPEN_EXISTING_FILE));
 }
 

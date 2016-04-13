@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "chrome/browser/extensions/blob_reader.h"
@@ -78,15 +79,14 @@ void SafeMediaMetadataParser::OnParseMediaMetadataFinished(
 
   // We need to make a scoped copy of this vector since it will be destroyed
   // at the end of the IPC message handler.
-  scoped_ptr<std::vector<metadata::AttachedImage> > attached_images_copy =
-      make_scoped_ptr(new std::vector<metadata::AttachedImage>(
-          attached_images));
+  std::unique_ptr<std::vector<metadata::AttachedImage>> attached_images_copy =
+      base::WrapUnique(
+          new std::vector<metadata::AttachedImage>(attached_images));
 
   BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
+      BrowserThread::UI, FROM_HERE,
       base::Bind(callback_, parse_success,
-                 base::Passed(make_scoped_ptr(metadata_dictionary.DeepCopy())),
+                 base::Passed(base::WrapUnique(metadata_dictionary.DeepCopy())),
                  base::Passed(&attached_images_copy)));
   parser_state_ = FINISHED_PARSING_STATE;
 }
@@ -117,7 +117,7 @@ void SafeMediaMetadataParser::StartBlobReaderOnUIThread(int64_t request_id,
 
 void SafeMediaMetadataParser::OnBlobReaderDoneOnUIThread(
     int64_t request_id,
-    scoped_ptr<std::string> data,
+    std::unique_ptr<std::string> data,
     int64_t /* blob_total_size */) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserThread::PostTask(
@@ -128,7 +128,7 @@ void SafeMediaMetadataParser::OnBlobReaderDoneOnUIThread(
 
 void SafeMediaMetadataParser::FinishRequestBlobBytes(
     int64_t request_id,
-    scoped_ptr<std::string> data) {
+    std::unique_ptr<std::string> data) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!utility_process_host_.get())
     return;
@@ -141,11 +141,10 @@ void SafeMediaMetadataParser::OnProcessCrashed(int exit_code) {
   DCHECK(!callback_.is_null());
 
   BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
+      BrowserThread::UI, FROM_HERE,
       base::Bind(callback_, false,
-                 base::Passed(scoped_ptr<base::DictionaryValue>()),
-                 base::Passed(scoped_ptr<std::vector<AttachedImage> >())));
+                 base::Passed(std::unique_ptr<base::DictionaryValue>()),
+                 base::Passed(std::unique_ptr<std::vector<AttachedImage>>())));
   parser_state_ = FINISHED_PARSING_STATE;
 }
 

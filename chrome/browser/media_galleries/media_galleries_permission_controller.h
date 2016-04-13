@@ -8,12 +8,12 @@
 #include <stddef.h>
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/media_galleries/media_galleries_dialog_controller.h"
 #include "chrome/browser/media_galleries/media_galleries_preferences.h"
@@ -205,11 +205,11 @@ class MediaGalleriesPermissionController
   MediaGalleriesPreferences* preferences_;
 
   // The view that's showing.
-  scoped_ptr<MediaGalleriesDialog> dialog_;
+  std::unique_ptr<MediaGalleriesDialog> dialog_;
 
   scoped_refptr<ui::SelectFileDialog> select_folder_dialog_;
 
-  scoped_ptr<MediaGalleryContextMenu> context_menu_;
+  std::unique_ptr<MediaGalleryContextMenu> context_menu_;
 
   // Creates the dialog. Only changed for unit tests.
   CreateDialogCallback create_dialog_callback_;

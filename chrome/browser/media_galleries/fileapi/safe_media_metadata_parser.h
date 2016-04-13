@@ -7,13 +7,13 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/common/extensions/api/media_galleries.h"
 #include "chrome/common/media_galleries/metadata_types.h"
@@ -35,10 +35,10 @@ namespace metadata {
 class SafeMediaMetadataParser : public content::UtilityProcessHostClient {
  public:
   // |metadata_dictionary| is owned by the callback.
-  typedef base::Callback<
-      void(bool parse_success,
-           scoped_ptr<base::DictionaryValue> metadata_dictionary,
-           scoped_ptr<std::vector<AttachedImage> > attached_images)>
+  typedef base::Callback<void(
+      bool parse_success,
+      std::unique_ptr<base::DictionaryValue> metadata_dictionary,
+      std::unique_ptr<std::vector<AttachedImage>> attached_images)>
       DoneCallback;
 
   SafeMediaMetadataParser(Profile* profile,
@@ -78,9 +78,10 @@ class SafeMediaMetadataParser : public content::UtilityProcessHostClient {
                                  int64_t byte_start,
                                  int64_t length);
   void OnBlobReaderDoneOnUIThread(int64_t request_id,
-                                  scoped_ptr<std::string> data,
+                                  std::unique_ptr<std::string> data,
                                   int64_t /* blob_total_size */);
-  void FinishRequestBlobBytes(int64_t request_id, scoped_ptr<std::string> data);
+  void FinishRequestBlobBytes(int64_t request_id,
+                              std::unique_ptr<std::string> data);
 
   // UtilityProcessHostClient implementation.
   // Runs on the IO thread.

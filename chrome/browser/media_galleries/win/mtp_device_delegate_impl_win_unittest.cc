@@ -86,7 +86,7 @@ void MTPDeviceDelegateImplWinTest::SetUp() {
       new TestPortableDeviceWatcherWin;
   TestVolumeMountWatcherWin* mount_watcher = new TestVolumeMountWatcherWin;
   portable_device_watcher->set_use_dummy_mtp_storage_info(true);
-  scoped_ptr<TestStorageMonitorWin> monitor(
+  std::unique_ptr<TestStorageMonitorWin> monitor(
       new TestStorageMonitorWin(mount_watcher, portable_device_watcher));
   TestingBrowserProcess* browser_process = TestingBrowserProcess::GetGlobal();
   DCHECK(browser_process);

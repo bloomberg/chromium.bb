@@ -9,6 +9,7 @@
 #define CHROME_BROWSER_MEDIA_GALLERIES_MEDIA_FILE_SYSTEM_REGISTRY_H_
 
 #include <map>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -17,7 +18,6 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/media_galleries/media_galleries_preferences.h"
 #include "components/keyed_service/core/keyed_service_shutdown_notifier.h"
 #include "components/storage_monitor/removable_storage_observer.h"
@@ -116,7 +116,7 @@ class MediaFileSystemRegistry
   typedef std::map<Profile*, ExtensionHostMap> ExtensionGalleriesHostMap;
   // Map a profile to a shutdown notification subscription.
   typedef std::map<Profile*,
-                   scoped_ptr<KeyedServiceShutdownNotifier::Subscription>>
+                   std::unique_ptr<KeyedServiceShutdownNotifier::Subscription>>
       ProfileSubscriptionMap;
 
   void OnPermissionRemoved(MediaGalleriesPreferences* pref,
@@ -143,9 +143,9 @@ class MediaFileSystemRegistry
   // entries when the Profile is destroyed.
   ProfileSubscriptionMap profile_subscription_map_;
 
-  scoped_ptr<MediaFileSystemContext> file_system_context_;
+  std::unique_ptr<MediaFileSystemContext> file_system_context_;
 
-  scoped_ptr<GalleryWatchManager> gallery_watch_manager_;
+  std::unique_ptr<GalleryWatchManager> gallery_watch_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaFileSystemRegistry);
 };

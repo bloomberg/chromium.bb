@@ -8,12 +8,12 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/media_galleries/fileapi/mtp_device_async_delegate.h"
 #include "device/media_transfer_protocol/mtp_file_entry.pb.h"
@@ -239,7 +239,7 @@ class MTPDeviceTaskHelper {
   std::string device_handle_;
 
   // Used to handle WriteDataInfoSnapshotFile request.
-  scoped_ptr<MTPReadFileWorker> read_file_worker_;
+  std::unique_ptr<MTPReadFileWorker> read_file_worker_;
 
   // For callbacks that may run after destruction.
   base::WeakPtrFactory<MTPDeviceTaskHelper> weak_ptr_factory_;

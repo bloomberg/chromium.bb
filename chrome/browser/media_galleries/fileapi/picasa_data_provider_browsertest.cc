@@ -4,6 +4,7 @@
 
 #include "chrome/browser/media_galleries/fileapi/picasa_data_provider.h"
 
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -12,7 +13,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
@@ -29,7 +29,7 @@ namespace {
 void VerifyTestAlbumTable(PicasaDataProvider* data_provider,
                           base::FilePath test_folder_1_path,
                           base::FilePath test_folder_2_path) {
-  scoped_ptr<AlbumMap> folders = data_provider->GetFolders();
+  std::unique_ptr<AlbumMap> folders = data_provider->GetFolders();
   ASSERT_TRUE(folders.get());
   EXPECT_EQ(2u, folders->size());
 
@@ -49,7 +49,7 @@ void VerifyTestAlbumTable(PicasaDataProvider* data_provider,
   EXPECT_EQ(test_folder_2_path, folder_2->second.path);
   EXPECT_EQ("uid4", folder_2->second.uid);
 
-  scoped_ptr<AlbumMap> albums = data_provider->GetAlbums();
+  std::unique_ptr<AlbumMap> albums = data_provider->GetAlbums();
   ASSERT_TRUE(albums.get());
   EXPECT_EQ(2u, albums->size());
 
@@ -70,7 +70,7 @@ void VerifyTestAlbumsImagesIndex(PicasaDataProvider* data_provider,
                                  base::FilePath test_folder_1_path,
                                  base::FilePath test_folder_2_path) {
   base::File::Error error;
-  scoped_ptr<AlbumImages> album_1_images =
+  std::unique_ptr<AlbumImages> album_1_images =
       data_provider->FindAlbumImages("uid3", &error);
   ASSERT_TRUE(album_1_images);
   EXPECT_EQ(base::File::FILE_OK, error);
@@ -83,7 +83,7 @@ void VerifyTestAlbumsImagesIndex(PicasaDataProvider* data_provider,
   EXPECT_EQ(test_folder_2_path.AppendASCII("InFirstAlbumOnly.jpg"),
             (*album_1_images)["InFirstAlbumOnly.jpg"]);
 
-  scoped_ptr<AlbumImages> album_2_images =
+  std::unique_ptr<AlbumImages> album_2_images =
       data_provider->FindAlbumImages("uid5", &error);
   ASSERT_TRUE(album_2_images);
   EXPECT_EQ(base::File::FILE_OK, error);
@@ -157,7 +157,7 @@ class TestPicasaDataProvider : public PicasaDataProvider {
 
  private:
   void OnTempDirWatchStarted(
-      scoped_ptr<base::FilePathWatcher> temp_dir_watcher) override {
+      std::unique_ptr<base::FilePathWatcher> temp_dir_watcher) override {
     PicasaDataProvider::OnTempDirWatchStarted(std::move(temp_dir_watcher));
 
     file_watch_request_returned_ = true;
@@ -273,7 +273,7 @@ class PicasaDataProviderTest : public InProcessBrowserTest {
   base::ScopedTempDir test_folder_2_;
   base::ScopedTempDir picasa_root_dir_;
 
-  scoped_ptr<TestPicasaDataProvider> picasa_data_provider_;
+  std::unique_ptr<TestPicasaDataProvider> picasa_data_provider_;
 
   base::Closure quit_closure_;
 

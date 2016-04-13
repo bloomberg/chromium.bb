@@ -7,12 +7,12 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/files/file.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 
 namespace base {
@@ -51,12 +51,12 @@ class MTPReadFileWorker {
   // If there is no error, |snapshot_file_details.success_callback| is invoked
   // on the IO thread to notify the caller about the success.
   void OnDidWriteIntoSnapshotFile(
-      scoped_ptr<SnapshotFileDetails> snapshot_file_details);
+      std::unique_ptr<SnapshotFileDetails> snapshot_file_details);
 
   // Dispatches the request to MediaTransferProtocolManager to get the device
   // media file data chunk based on the parameters in |snapshot_file_details|.
   void ReadDataChunkFromDeviceFile(
-      scoped_ptr<SnapshotFileDetails> snapshot_file_details);
+      std::unique_ptr<SnapshotFileDetails> snapshot_file_details);
 
   // Called when ReadDataChunkFromDeviceFile() completes.
   //
@@ -65,7 +65,7 @@ class MTPReadFileWorker {
   //
   // If there is an error, |data| is empty and |error| is set to true.
   void OnDidReadDataChunkFromDeviceFile(
-      scoped_ptr<SnapshotFileDetails> snapshot_file_details,
+      std::unique_ptr<SnapshotFileDetails> snapshot_file_details,
       const std::string& data,
       bool error);
 
@@ -77,7 +77,7 @@ class MTPReadFileWorker {
   //
   // If the write operation fails, |bytes_written| is set to zero.
   void OnDidWriteDataChunkIntoSnapshotFile(
-      scoped_ptr<SnapshotFileDetails> snapshot_file_details,
+      std::unique_ptr<SnapshotFileDetails> snapshot_file_details,
       uint32_t bytes_written);
 
   // The device unique identifier to query the device.

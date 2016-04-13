@@ -9,6 +9,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/files/file_util.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/media_galleries/fileapi/file_path_watcher_util.h"
 #include "chrome/browser/media_galleries/fileapi/media_file_system_backend.h"
@@ -80,21 +81,21 @@ void PicasaDataProvider::RefreshData(DataType needed_data,
   DoRefreshIfNecessary();
 }
 
-scoped_ptr<AlbumMap> PicasaDataProvider::GetFolders() {
+std::unique_ptr<AlbumMap> PicasaDataProvider::GetFolders() {
   DCHECK(MediaFileSystemBackend::CurrentlyOnMediaTaskRunnerThread());
   DCHECK(state_ == LIST_OF_ALBUMS_AND_FOLDERS_FRESH_STATE ||
          state_ == ALBUMS_IMAGES_FRESH_STATE);
-  return make_scoped_ptr(new AlbumMap(folder_map_));
+  return base::WrapUnique(new AlbumMap(folder_map_));
 }
 
-scoped_ptr<AlbumMap> PicasaDataProvider::GetAlbums() {
+std::unique_ptr<AlbumMap> PicasaDataProvider::GetAlbums() {
   DCHECK(MediaFileSystemBackend::CurrentlyOnMediaTaskRunnerThread());
   DCHECK(state_ == LIST_OF_ALBUMS_AND_FOLDERS_FRESH_STATE ||
          state_ == ALBUMS_IMAGES_FRESH_STATE);
-  return make_scoped_ptr(new AlbumMap(album_map_));
+  return base::WrapUnique(new AlbumMap(album_map_));
 }
 
-scoped_ptr<AlbumImages> PicasaDataProvider::FindAlbumImages(
+std::unique_ptr<AlbumImages> PicasaDataProvider::FindAlbumImages(
     const std::string& key,
     base::File::Error* error) {
   DCHECK(MediaFileSystemBackend::CurrentlyOnMediaTaskRunnerThread());
@@ -105,11 +106,11 @@ scoped_ptr<AlbumImages> PicasaDataProvider::FindAlbumImages(
 
   if (it == albums_images_.end()) {
     *error = base::File::FILE_ERROR_NOT_FOUND;
-    return scoped_ptr<AlbumImages>();
+    return std::unique_ptr<AlbumImages>();
   }
 
   *error = base::File::FILE_OK;
-  return make_scoped_ptr(new AlbumImages(it->second));
+  return base::WrapUnique(new AlbumImages(it->second));
 }
 
 void PicasaDataProvider::InvalidateData() {
@@ -126,7 +127,7 @@ void PicasaDataProvider::InvalidateData() {
 }
 
 void PicasaDataProvider::OnTempDirWatchStarted(
-    scoped_ptr<base::FilePathWatcher> temp_dir_watcher) {
+    std::unique_ptr<base::FilePathWatcher> temp_dir_watcher) {
   DCHECK(MediaFileSystemBackend::CurrentlyOnMediaTaskRunnerThread());
   temp_dir_watcher_.reset(temp_dir_watcher.release());
 }

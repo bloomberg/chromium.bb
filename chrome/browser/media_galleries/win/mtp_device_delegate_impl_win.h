@@ -7,13 +7,13 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <queue>
 
 #include "base/callback.h"
 #include "base/files/file.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/win/scoped_comptr.h"
@@ -217,7 +217,7 @@ class MTPDeviceDelegateImplWin : public MTPDeviceAsyncDelegate {
   // of the snapshot file.
   //
   // If the get file stream request fails, |error| is set accordingly.
-  void OnGetFileStream(scoped_ptr<SnapshotFileDetails> file_details,
+  void OnGetFileStream(std::unique_ptr<SnapshotFileDetails> file_details,
                        base::File::Error error);
 
   // Called when WriteDataChunkIntoSnapshotFile() completes.
@@ -250,7 +250,7 @@ class MTPDeviceDelegateImplWin : public MTPDeviceAsyncDelegate {
   // and writes the snapshot file data in chunks. In order to retain the order
   // of the snapshot file requests, make sure there is only one active snapshot
   // file request at any time.
-  scoped_ptr<SnapshotFileDetails> current_snapshot_details_;
+  std::unique_ptr<SnapshotFileDetails> current_snapshot_details_;
 
   // A list of pending tasks that needs to be run when the device is
   // initialized or when the current task in progress is complete.

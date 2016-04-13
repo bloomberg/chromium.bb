@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_PICASA_FILE_UTIL_H_
 #define CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_PICASA_FILE_UTIL_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/media_galleries/fileapi/native_media_file_util.h"
 
@@ -34,11 +35,11 @@ class PicasaFileUtil : public NativeMediaFileUtil {
  protected:
   // NativeMediaFileUtil overrides.
   void GetFileInfoOnTaskRunnerThread(
-      scoped_ptr<storage::FileSystemOperationContext> context,
+      std::unique_ptr<storage::FileSystemOperationContext> context,
       const storage::FileSystemURL& url,
       const GetFileInfoCallback& callback) override;
   void ReadDirectoryOnTaskRunnerThread(
-      scoped_ptr<storage::FileSystemOperationContext> context,
+      std::unique_ptr<storage::FileSystemOperationContext> context,
       const storage::FileSystemURL& url,
       const ReadDirectoryCallback& callback) override;
   base::File::Error GetFileInfoSync(
@@ -62,12 +63,12 @@ class PicasaFileUtil : public NativeMediaFileUtil {
 
  private:
   void GetFileInfoWithFreshDataProvider(
-      scoped_ptr<storage::FileSystemOperationContext> context,
+      std::unique_ptr<storage::FileSystemOperationContext> context,
       const storage::FileSystemURL& url,
       const GetFileInfoCallback& callback,
       bool success);
   void ReadDirectoryWithFreshDataProvider(
-      scoped_ptr<storage::FileSystemOperationContext> context,
+      std::unique_ptr<storage::FileSystemOperationContext> context,
       const storage::FileSystemURL& url,
       const ReadDirectoryCallback& callback,
       bool success);

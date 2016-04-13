@@ -4,10 +4,11 @@
 
 #include "chrome/browser/media_galleries/fileapi/picasa_finder.h"
 
+#include <memory>
+
 #include "base/files/file_path.h"
 #import "base/mac/foundation_util.h"
 #import "base/mac/scoped_nsobject.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/policy/core/common/preferences_mac.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -32,7 +33,7 @@ void SetMacPreferencesForTesting(MacPreferences* preferences) {
 base::FilePath GetCustomPicasaAppDataPathFromMacPreferences() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
 
-  scoped_ptr<MacPreferences> real_preferences;
+  std::unique_ptr<MacPreferences> real_preferences;
   MacPreferences* prefs = g_test_mac_preferences;
   if (!prefs) {
     real_preferences.reset(new MacPreferences());
