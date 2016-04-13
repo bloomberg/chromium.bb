@@ -47,11 +47,6 @@ AutoplayExperimentHelper::AutoplayExperimentHelper(Client* client)
 
 AutoplayExperimentHelper::~AutoplayExperimentHelper()
 {
-#if !ENABLE(OILPAN)
-    // We can't do this during destruction in oilpan, since we rely on the
-    // client to still be alive.
-    dispose();
-#endif
 }
 
 void AutoplayExperimentHelper::dispose()

@@ -42,10 +42,6 @@
 #include "public/platform/WebMediaPlayerSource.h"
 #include "public/platform/WebMimeRegistry.h"
 
-#if !ENABLE(OILPAN)
-#include "wtf/WeakPtr.h"
-#endif
-
 namespace blink {
 
 class AudioSourceProviderClient;
@@ -272,16 +268,10 @@ public:
     WebRemotePlaybackClient* remotePlaybackClient() { return m_remotePlaybackClient; }
     void setRemotePlaybackClient(WebRemotePlaybackClient*);
 
-#if !ENABLE(OILPAN)
-    WeakPtr<HTMLMediaElement> createWeakPtr();
-#endif
-
 protected:
     HTMLMediaElement(const QualifiedName&, Document&);
     ~HTMLMediaElement() override;
-#if ENABLE(OILPAN)
     void dispose();
-#endif
 
     void parseAttribute(const QualifiedName&, const AtomicString&, const AtomicString&) override;
     void finishParsingChildren() final;
@@ -574,7 +564,6 @@ private:
     bool m_processingPreferenceChange : 1;
     bool m_remoteRoutesAvailable : 1;
     bool m_playingRemotely : 1;
-    bool m_isFinalizing : 1;
     // Whether this element is in overlay fullscreen mode.
     bool m_inOverlayFullscreenVideo : 1;
 
@@ -591,7 +580,7 @@ private:
     ExceptionCode m_playPromiseErrorCode;
 
     // This is a weak reference, since m_audioSourceNode holds a reference to us.
-    // FIXME: Oilpan: Consider making this a strongly traced pointer with oilpan where strong cycles are not a problem.
+    // TODO(Oilpan): Consider making this a strongly traced pointer with oilpan where strong cycles are not a problem.
     GC_PLUGIN_IGNORE("http://crbug.com/404577")
     WeakMember<AudioSourceProviderClient> m_audioSourceNode;
 
@@ -655,10 +644,6 @@ private:
     Member<AutoplayExperimentHelper> m_autoplayHelper;
 
     WebRemotePlaybackClient* m_remotePlaybackClient;
-
-#if !ENABLE(OILPAN)
-    WeakPtrFactory<HTMLMediaElement> m_weakPtrFactory;
-#endif
 
     static URLRegistry* s_mediaStreamRegistry;
 };
