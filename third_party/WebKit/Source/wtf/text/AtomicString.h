@@ -239,7 +239,8 @@ template<> struct DefaultHash<AtomicString> {
     typedef AtomicStringHash Hash;
 };
 
-// Pretty printer for gtest and base/logging.*.
+// Pretty printer for gtest and base/logging.*.  It prepends and appends
+// double-quotes, and escapes chracters other than ASCII printables.
 WTF_EXPORT std::ostream& operator<<(std::ostream&, const AtomicString&);
 
 } // namespace WTF
