@@ -448,6 +448,8 @@ void GetAecStats(webrtc::EchoCancellation* echo_cancellation,
     stats->echo_return_loss = echo_metrics.echo_return_loss.instant;
     stats->echo_return_loss_enhancement =
         echo_metrics.echo_return_loss_enhancement.instant;
+    stats->aec_divergent_filter_fraction =
+        echo_metrics.divergent_filter_fraction;
   }
 
   int median = 0, std = 0;
