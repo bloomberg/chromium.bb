@@ -87,6 +87,11 @@ CursorManager::CursorManager(std::unique_ptr<NativeCursorManager> delegate)
 CursorManager::~CursorManager() {
 }
 
+// static
+void CursorManager::ResetCursorVisibilityStateForTest() {
+  last_cursor_visibility_state_ = true;
+}
+
 void CursorManager::SetCursor(gfx::NativeCursor cursor) {
   state_on_unlock_->set_cursor(cursor);
   if (cursor_lock_count_ == 0 &&

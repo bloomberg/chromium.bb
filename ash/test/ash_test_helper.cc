@@ -28,6 +28,7 @@
 #include "ui/compositor/test/context_factories_for_test.h"
 #include "ui/message_center/message_center.h"
 #include "ui/wm/core/capture_controller.h"
+#include "ui/wm/core/cursor_manager.h"
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/audio/cras_audio_handler.h"
@@ -112,6 +113,10 @@ void AshTestHelper::SetUp(bool start_session) {
     content_state = test_shell_content_state_;
   }
   ShellContentState::SetInstance(content_state);
+
+  // Reset the global state for the cursor manager. This includes the
+  // last cursor visibility state, etc.
+  wm::CursorManager::ResetCursorVisibilityStateForTest();
 
   ShellInitParams init_params;
   init_params.delegate = test_shell_delegate_;

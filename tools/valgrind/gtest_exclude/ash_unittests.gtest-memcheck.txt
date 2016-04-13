@@ -12,8 +12,3 @@ MagnificationControllerTest.CenterTextCaretNotInsideViewport
 TrayIMETest.PerformActionOnDetailedView
 # https://crbug.com/598950
 ToastManagerTest.QueueMessage
-# https://crbug.com/602487
-CursorWindowControllerTest.DSF
-WindowManagerTest.MouseEventCursors
-WindowManagerTest.TestCursorClientObserver
-WindowManagerTest.UpdateCursorVisibilityAccelerator

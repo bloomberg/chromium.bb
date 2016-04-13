@@ -43,6 +43,9 @@ class WM_EXPORT CursorManager : public aura::client::CursorClient,
   explicit CursorManager(std::unique_ptr<NativeCursorManager> delegate);
   ~CursorManager() override;
 
+  // Resets the last visibility state, etc. Currently only called by tests.
+  static void ResetCursorVisibilityStateForTest();
+
   // Overridden from aura::client::CursorClient:
   void SetCursor(gfx::NativeCursor) override;
   gfx::NativeCursor GetCursor() const override;
