@@ -8,8 +8,8 @@
 #include "core/editing/state_machines/ForwardGraphemeBoundaryStateMachine.h"
 #include "core/editing/state_machines/TextSegmentationMachineState.h"
 #include "wtf/Assertions.h"
+#include "wtf/text/StringBuilder.h"
 #include <algorithm>
-#include <vector>
 
 namespace blink {
 
@@ -28,87 +28,87 @@ char MachineStateToChar(TextSegmentationMachineState state)
     return *it;
 }
 
-std::vector<UChar> codePointsToCodeUnits(const std::vector<UChar32>& codePoints)
+Vector<UChar> codePointsToCodeUnits(const Vector<UChar32>& codePoints)
 {
-    std::vector<UChar> out;
+    Vector<UChar> out;
     for (const auto& codePoint : codePoints) {
         if (U16_LENGTH(codePoint) == 2) {
-            out.push_back(U16_LEAD(codePoint));
-            out.push_back(U16_TRAIL(codePoint));
+            out.append(U16_LEAD(codePoint));
+            out.append(U16_TRAIL(codePoint));
         } else {
-            out.push_back(static_cast<UChar>(codePoint));
+            out.append(static_cast<UChar>(codePoint));
         }
     }
     return out;
 }
 
 template<typename StateMachine>
-std::string processSequence(StateMachine* machine,
-    const std::vector<UChar32>& preceding,
-    const std::vector<UChar32>& following)
+String processSequence(StateMachine* machine,
+    const Vector<UChar32>& preceding,
+    const Vector<UChar32>& following)
 {
     machine->reset();
-    std::string out;
+    StringBuilder out;
     TextSegmentationMachineState state = TextSegmentationMachineState::Invalid;
-    std::vector<UChar> precedingCodeUnits = codePointsToCodeUnits(preceding);
+    Vector<UChar> precedingCodeUnits = codePointsToCodeUnits(preceding);
     std::reverse(precedingCodeUnits.begin(), precedingCodeUnits.end());
     for (const auto& codeUnit : precedingCodeUnits) {
         state = machine->feedPrecedingCodeUnit(codeUnit);
-        out += MachineStateToChar(state);
+        out.append(MachineStateToChar(state));
         switch (state) {
         case TextSegmentationMachineState::Invalid:
         case TextSegmentationMachineState::Finished:
-            return out;
+            return out.toString();
         case TextSegmentationMachineState::NeedMoreCodeUnit:
             continue;
         case TextSegmentationMachineState::NeedFollowingCodeUnit:
             break;
         }
     }
-    if (preceding.empty()
+    if (preceding.isEmpty()
         || state == TextSegmentationMachineState::NeedMoreCodeUnit) {
         state = machine->tellEndOfPrecedingText();
-        out += MachineStateToChar(state);
+        out.append(MachineStateToChar(state));
     }
     if (state == TextSegmentationMachineState::Finished)
-        return out;
+        return out.toString();
 
-    std::vector<UChar> followingCodeUnits = codePointsToCodeUnits(following);
+    Vector<UChar> followingCodeUnits = codePointsToCodeUnits(following);
     for (const auto& codeUnit : followingCodeUnits) {
         state = machine->feedFollowingCodeUnit(codeUnit);
-        out += MachineStateToChar(state);
+        out.append(MachineStateToChar(state));
         switch (state) {
         case TextSegmentationMachineState::Invalid:
         case TextSegmentationMachineState::Finished:
-            return out;
+            return out.toString();
         case TextSegmentationMachineState::NeedMoreCodeUnit:
             continue;
         case TextSegmentationMachineState::NeedFollowingCodeUnit:
             break;
         }
     }
-    return out;
+    return out.toString();
 }
 } // namespace
 
-std::string processSequenceBackward(
+String GraphemeStateMachineTestBase::processSequenceBackward(
     BackwardGraphemeBoundaryStateMachine* machine,
-    const std::vector<UChar32>& preceding)
+    const Vector<UChar32>& preceding)
 {
-    const std::string& out =
-        processSequence(machine, preceding, std::vector<UChar32>());
+    const String& out =
+        processSequence(machine, preceding, Vector<UChar32>());
     if (machine->finalizeAndGetBoundaryOffset()
         != machine->finalizeAndGetBoundaryOffset())
         return "State machine changes final offset after finished.";
     return out;
 }
 
-std::string processSequenceForward(
+String GraphemeStateMachineTestBase::processSequenceForward(
     ForwardGraphemeBoundaryStateMachine* machine,
-    const std::vector<UChar32>& preceding,
-    const std::vector<UChar32>& following)
+    const Vector<UChar32>& preceding,
+    const Vector<UChar32>& following)
 {
-    const std::string& out = processSequence(machine, preceding, following);
+    const String& out = processSequence(machine, preceding, following);
     if (machine->finalizeAndGetBoundaryOffset()
         != machine->finalizeAndGetBoundaryOffset())
         return "State machine changes final offset after finished.";

@@ -2,33 +2,56 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/macros.h"
+#include "testing/gtest/include/gtest/gtest.h"
+#include "wtf/Vector.h"
 #include "wtf/text/Unicode.h"
-
-#include <string>
-#include <vector>
+#include "wtf/text/WTFString.h"
 
 namespace blink {
 
 class BackwardGraphemeBoundaryStateMachine;
 class ForwardGraphemeBoundaryStateMachine;
 
-// Processes the |machine| with preceding/following code points.
-// The result string represents the output sequence of the state machine.
-// Each character represents returned state of each action.
-// I : Invalid
-// R : NeedMoreCodeUnit (Repeat)
-// S : NeedFollowingCodeUnit (Switch)
-// F : Finished
-//
-// For example, if a state machine returns following sequence:
-//   NeedMoreCodeUnit, NeedFollowingCodeUnit, Finished
-// the returned string will be "RSF".
-std::string processSequenceBackward(
-    BackwardGraphemeBoundaryStateMachine*,
-    const std::vector<UChar32>& preceding);
+class GraphemeStateMachineTestBase : public ::testing::Test {
+protected:
+    GraphemeStateMachineTestBase() = default;
+    ~GraphemeStateMachineTestBase() override = default;
 
-std::string processSequenceForward(
-    ForwardGraphemeBoundaryStateMachine*,
-    const std::vector<UChar32>& preceding,
-    const std::vector<UChar32>& following);
+    Vector<UChar32> asCodePoints() { return Vector<UChar32>(); }
+
+    template <typename ... Args>
+    Vector<UChar32> asCodePoints(Args... args)
+    {
+        UChar32 codePoints[] = {args...};
+        Vector<UChar32> result(sizeof...(args));
+        for (size_t index = 0; index < sizeof...(args); ++index)
+            result[index] = codePoints[index];
+        return result;
+    }
+
+    // Processes the |machine| with preceding/following code points.
+    // The result string represents the output sequence of the state machine.
+    // Each character represents returned state of each action.
+    // I : Invalid
+    // R : NeedMoreCodeUnit (Repeat)
+    // S : NeedFollowingCodeUnit (Switch)
+    // F : Finished
+    //
+    // For example, if a state machine returns following sequence:
+    //   NeedMoreCodeUnit, NeedFollowingCodeUnit, Finished
+    // the returned string will be "RSF".
+    String processSequenceBackward(
+        BackwardGraphemeBoundaryStateMachine*,
+        const Vector<UChar32>& preceding);
+
+    String processSequenceForward(
+        ForwardGraphemeBoundaryStateMachine*,
+        const Vector<UChar32>& preceding,
+        const Vector<UChar32>& following);
+
+private:
+    DISALLOW_COPY_AND_ASSIGN(GraphemeStateMachineTestBase);
+};
+
 } // namespace blink
