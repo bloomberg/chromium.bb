@@ -131,6 +131,17 @@ Polymer({
 
   /**
    * @param {?media_router.MediaRouterView} view The current view.
+   * @return {string} The title text for the arrow drop button.
+   * @private
+   */
+  computeArrowDropTitle_: function(view) {
+    return view == media_router.MediaRouterView.CAST_MODE_LIST ?
+        this.i18n('viewDeviceListButtonTitle') :
+            this.i18n('viewCastModeListButtonTitle');
+  },
+
+  /**
+   * @param {?media_router.MediaRouterView} view The current view.
    * @return {boolean} Whether or not the back button should be shown.
    * @private
    */

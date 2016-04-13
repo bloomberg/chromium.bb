@@ -22,11 +22,14 @@
   <message name="IDS_MEDIA_ROUTER_CLOSE_BUTTON_TITLE" desc="Close button title, which is spoken when a screen reader is being used.">
     Close
   </message>
-  <message name="IDS_MEDIA_ROUTER_DROP_DOWN_BUTTON_TITLE" desc="Drop down button title, which is spoken when a screen reader is being used.">
-    Drop down
-  </message>
   <message name="IDS_MEDIA_ROUTER_SEARCH_BUTTON_TITLE" desc="Search button title, which is spoken when a screen reader is being used.">
     Search
+  </message>
+  <message name="IDS_MEDIA_ROUTER_VIEW_CAST_MODE_LIST_BUTTON_TITLE" desc="View cast modes list button title, which is spoken when a screen reader is being used.">
+    View cast mode list
+  </message>
+  <message name="IDS_MEDIA_ROUTER_VIEW_DEVICE_LIST_BUTTON_TITLE" desc="View device list button title, which is spoken when a screen reader is being used.">
+    View device list
   </message>
 
   <!-- Cast Modes -->
