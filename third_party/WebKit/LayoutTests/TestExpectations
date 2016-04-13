@@ -315,7 +315,6 @@ crbug.com/498539 [ Win7 ] inspector/sources/debugger-pause/debugger-eval-on-call
 crbug.com/498539 [ Win7 ] inspector/sources/debugger-ui/source-frame-count.html [ Pass Timeout ]
 crbug.com/498539 [ Win7 ] inspector/sources/debugger-ui/source-url-comment.html [ Pass Timeout ]
 crbug.com/498539 [ Trusty ] http/tests/inspector/sources/ui-source-code-highlight.php [ Crash Pass Timeout ]
-crbug.com/498539 [ Trusty ] inspector/sources/debugger-pause/pause-on-elements-panel.html [ Pass Timeout ]
 crbug.com/498539 [ Mac10.10 ] inspector/sources/debugger-ui/reveal-not-skipped.html [ Failure Pass ]
 crbug.com/498539 [ Mac10.10 ] inspector/sources/debugger/rethrow-error-from-bindings-crash.html [ Failure Pass ]
 crbug.com/498539 [ Win7 ] inspector/console/console-log-short-hand-method.html [ Failure Pass ]
