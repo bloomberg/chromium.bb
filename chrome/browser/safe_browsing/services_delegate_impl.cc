@@ -1,0 +1,153 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/safe_browsing/services_delegate_impl.h"
+
+#include <utility>
+
+#include "base/command_line.h"
+#include "base/memory/ptr_util.h"
+#include "chrome/browser/safe_browsing/safe_browsing_service.h"
+#include "chrome/common/chrome_switches.h"
+#include "content/public/browser/browser_thread.h"
+
+namespace safe_browsing {
+
+// static
+std::unique_ptr<ServicesDelegate> ServicesDelegate::Create(
+    SafeBrowsingService* safe_browsing_service) {
+  return base::WrapUnique(
+      new ServicesDelegateImpl(safe_browsing_service, nullptr));
+}
+
+// static
+std::unique_ptr<ServicesDelegate> ServicesDelegate::CreateForTest(
+    SafeBrowsingService* safe_browsing_service,
+    ServicesDelegate::ServicesCreator* services_creator) {
+  return base::WrapUnique(
+      new ServicesDelegateImpl(safe_browsing_service, services_creator));
+}
+
+ServicesDelegateImpl::ServicesDelegateImpl(
+    SafeBrowsingService* safe_browsing_service,
+    ServicesDelegate::ServicesCreator* services_creator)
+    : safe_browsing_service_(safe_browsing_service),
+      services_creator_(services_creator) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+}
+
+ServicesDelegateImpl::~ServicesDelegateImpl() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+}
+
+void ServicesDelegateImpl::InitializeCsdService(
+    net::URLRequestContextGetter* context_getter) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+#if defined(SAFE_BROWSING_CSD)
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableClientSidePhishingDetection)) {
+    csd_service_.reset(ClientSideDetectionService::Create(context_getter));
+  }
+#endif  // defined(SAFE_BROWSING_CSD)
+}
+
+void ServicesDelegateImpl::InitializeServices() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  download_service_.reset(
+      (services_creator_ &&
+       services_creator_->CanCreateDownloadProtectionService())
+          ? services_creator_->CreateDownloadProtectionService()
+          : CreateDownloadProtectionService());
+  incident_service_.reset(
+      (services_creator_ &&
+       services_creator_->CanCreateIncidentReportingService())
+          ? services_creator_->CreateIncidentReportingService()
+          : CreateIncidentReportingService());
+  resource_request_detector_.reset(
+      (services_creator_ &&
+       services_creator_->CanCreateResourceRequestDetector())
+          ? services_creator_->CreateResourceRequestDetector()
+          : CreateResourceRequestDetector());
+}
+
+void ServicesDelegateImpl::ShutdownServices() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  // The IO thread is going away, so make sure the ClientSideDetectionService
+  // dtor executes now since it may call the dtor of URLFetcher which relies
+  // on it.
+  csd_service_.reset();
+
+  resource_request_detector_.reset();
+  incident_service_.reset();
+
+  // Must shut down last.
+  download_service_.reset();
+}
+
+void ServicesDelegateImpl::RefreshState(bool enable) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (csd_service_)
+    csd_service_->SetEnabledAndRefreshState(enable);
+  if (download_service_)
+    download_service_->SetEnabled(enable);
+}
+
+void ServicesDelegateImpl::ProcessResourceRequest(
+    const ResourceRequestInfo* request) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (resource_request_detector_)
+    resource_request_detector_->ProcessResourceRequest(request);
+}
+
+std::unique_ptr<TrackedPreferenceValidationDelegate>
+ServicesDelegateImpl::CreatePreferenceValidationDelegate(Profile* profile) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  return incident_service_->CreatePreferenceValidationDelegate(profile);
+}
+
+void ServicesDelegateImpl::RegisterDelayedAnalysisCallback(
+    const DelayedAnalysisCallback& callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  incident_service_->RegisterDelayedAnalysisCallback(callback);
+}
+
+void ServicesDelegateImpl::RegisterExtendedReportingOnlyDelayedAnalysisCallback(
+    const DelayedAnalysisCallback& callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  incident_service_->RegisterExtendedReportingOnlyDelayedAnalysisCallback(
+      callback);
+}
+
+void ServicesDelegateImpl::AddDownloadManager(
+    content::DownloadManager* download_manager) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  incident_service_->AddDownloadManager(download_manager);
+}
+
+ClientSideDetectionService* ServicesDelegateImpl::GetCsdService() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  return csd_service_.get();
+}
+
+DownloadProtectionService* ServicesDelegateImpl::GetDownloadService() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  return download_service_.get();
+}
+
+DownloadProtectionService*
+ServicesDelegateImpl::CreateDownloadProtectionService() {
+  return new DownloadProtectionService(safe_browsing_service_);
+}
+
+IncidentReportingService*
+ServicesDelegateImpl::CreateIncidentReportingService() {
+  return new IncidentReportingService(safe_browsing_service_);
+}
+
+ResourceRequestDetector* ServicesDelegateImpl::CreateResourceRequestDetector() {
+  return new ResourceRequestDetector(safe_browsing_service_->database_manager(),
+                                     incident_service_->GetIncidentReceiver());
+}
+
+}  // namespace safe_browsing

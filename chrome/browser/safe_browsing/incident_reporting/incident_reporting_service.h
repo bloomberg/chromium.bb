@@ -76,10 +76,7 @@ class SafeBrowsingService;
 // remaining are uploaded in an incident report.
 class IncidentReportingService : public content::NotificationObserver {
  public:
-  IncidentReportingService(
-      SafeBrowsingService* safe_browsing_service,
-      const scoped_refptr<net::URLRequestContextGetter>&
-          request_context_getter);
+  explicit IncidentReportingService(SafeBrowsingService* safe_browsing_service);
 
   // All incident collection, data collection, and uploads in progress are
   // dropped at destruction.

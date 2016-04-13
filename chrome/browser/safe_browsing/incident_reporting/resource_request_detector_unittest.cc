@@ -132,7 +132,9 @@ class ResourceRequestDetectorTest : public testing::Test {
     EXPECT_CALL(*mock_incident_receiver_, DoAddIncidentForProfile(IsNull(), _))
         .Times(0);
 
-    fake_resource_request_detector_.OnResourceRequest(request.get());
+    ResourceRequestInfo info =
+        ResourceRequestDetector::GetRequestInfo(request.get());
+    fake_resource_request_detector_.ProcessResourceRequest(&info);
     base::RunLoop().RunUntilIdle();
   }
 
@@ -147,7 +149,9 @@ class ResourceRequestDetectorTest : public testing::Test {
     EXPECT_CALL(*mock_incident_receiver_, DoAddIncidentForProfile(IsNull(), _))
         .WillOnce(WithArg<1>(TakeIncident(&incident)));
 
-    fake_resource_request_detector_.OnResourceRequest(request.get());
+    ResourceRequestInfo info =
+        ResourceRequestDetector::GetRequestInfo(request.get());
+    fake_resource_request_detector_.ProcessResourceRequest(&info);
     base::RunLoop().RunUntilIdle();
 
     ASSERT_TRUE(incident);

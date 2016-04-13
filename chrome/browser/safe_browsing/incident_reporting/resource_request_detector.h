@@ -23,9 +23,18 @@ class SafeBrowsingService;
 
 class ClientIncidentReport_IncidentData_ResourceRequestIncident;
 
+struct ResourceRequestInfo {
+  GURL url;
+  content::ResourceType resource_type;
+  int render_process_id;
+  int render_frame_id;
+};
+
 // Observes network requests and reports suspicious activity.
 class ResourceRequestDetector {
  public:
+  static ResourceRequestInfo GetRequestInfo(const net::URLRequest* request);
+
   ResourceRequestDetector(
       scoped_refptr<SafeBrowsingDatabaseManager> sb_database_manager,
       std::unique_ptr<IncidentReceiver> incident_receiver);
@@ -33,7 +42,7 @@ class ResourceRequestDetector {
 
   // Analyzes the |request| and triggers an incident report on suspicious
   // script inclusion.
-  void OnResourceRequest(const net::URLRequest* request);
+  void ProcessResourceRequest(const ResourceRequestInfo* request);
 
  protected:
   // Testing hook.

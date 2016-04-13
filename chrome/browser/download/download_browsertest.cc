@@ -1079,7 +1079,7 @@ class FakeDownloadProtectionService
     : public safe_browsing::DownloadProtectionService {
  public:
   FakeDownloadProtectionService()
-      : safe_browsing::DownloadProtectionService(nullptr, nullptr) {}
+      : safe_browsing::DownloadProtectionService(nullptr) {}
 
   void CheckClientDownload(DownloadItem* download_item,
       const CheckDownloadCallback& callback) override {
@@ -1088,13 +1088,13 @@ class FakeDownloadProtectionService
   }
 };
 
-class FakeSafeBrowsingService : public safe_browsing::SafeBrowsingService {
+class FakeSafeBrowsingService
+    : public safe_browsing::SafeBrowsingService,
+      public safe_browsing::ServicesDelegate::ServicesCreator {
  public:
-  FakeSafeBrowsingService() {}
-
-  safe_browsing::DownloadProtectionService* CreateDownloadProtectionService(
-      net::URLRequestContextGetter* not_used_request_context_getter) override {
-    return new FakeDownloadProtectionService();
+  FakeSafeBrowsingService() {
+    services_delegate_ =
+        safe_browsing::ServicesDelegate::CreateForTest(this, this);
   }
 
   std::string GetDownloadReport() const { return report_; }
@@ -1102,11 +1102,33 @@ class FakeSafeBrowsingService : public safe_browsing::SafeBrowsingService {
  protected:
   ~FakeSafeBrowsingService() override {}
 
+  // ServicesDelegate::ServicesCreator:
+  bool CanCreateDownloadProtectionService() override { return true; }
+  bool CanCreateIncidentReportingService() override { return false; }
+  bool CanCreateResourceRequestDetector() override { return false; }
+  safe_browsing::DownloadProtectionService* CreateDownloadProtectionService()
+      override {
+    return new FakeDownloadProtectionService();
+  }
+  safe_browsing::IncidentReportingService* CreateIncidentReportingService()
+      override {
+    NOTREACHED();
+    return nullptr;
+  }
+  safe_browsing::ResourceRequestDetector* CreateResourceRequestDetector()
+      override {
+    NOTREACHED();
+    return nullptr;
+  }
+
+  // SafeBrowsingService:
   void SendSerializedDownloadReport(const std::string& report) override {
     report_ = report;
   }
 
   std::string report_;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeSafeBrowsingService);
 };
 
 // Factory that creates FakeSafeBrowsingService instances.

@@ -88,9 +88,12 @@ class MockSafeBrowsingDatabaseManager : public TestSafeBrowsingDatabaseManager {
   DISALLOW_COPY_AND_ASSIGN(MockSafeBrowsingDatabaseManager);
 };
 
-class FakeSafeBrowsingService : public SafeBrowsingService {
+class FakeSafeBrowsingService : public SafeBrowsingService,
+                                public ServicesDelegate::ServicesCreator {
  public:
-  FakeSafeBrowsingService() { }
+  FakeSafeBrowsingService() {
+    services_delegate_ = ServicesDelegate::CreateForTest(this, this);
+  }
 
   // Returned pointer has the same lifespan as the database_manager_ refcounted
   // object.
@@ -106,10 +109,6 @@ class FakeSafeBrowsingService : public SafeBrowsingService {
     return mock_database_manager_;
   }
 
-  IncidentReportingService* CreateIncidentReportingService() override {
-    return new IncidentReportingService(nullptr, nullptr);
-  }
-
   SafeBrowsingProtocolManagerDelegate* GetProtocolManagerDelegate() override {
     // Our SafeBrowsingDatabaseManager doesn't implement this delegate.
     return NULL;
@@ -118,6 +117,22 @@ class FakeSafeBrowsingService : public SafeBrowsingService {
   void RegisterAllDelayedAnalysis() override {}
 
  private:
+  // ServicesDelegate::ServicesCreator:
+  bool CanCreateDownloadProtectionService() override { return false; }
+  bool CanCreateIncidentReportingService() override { return true; }
+  bool CanCreateResourceRequestDetector() override { return false; }
+  DownloadProtectionService* CreateDownloadProtectionService() override {
+    NOTREACHED();
+    return nullptr;
+  }
+  IncidentReportingService* CreateIncidentReportingService() override {
+    return new IncidentReportingService(nullptr);
+  }
+  ResourceRequestDetector* CreateResourceRequestDetector() override {
+    NOTREACHED();
+    return nullptr;
+  }
+
   MockSafeBrowsingDatabaseManager* mock_database_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeSafeBrowsingService);

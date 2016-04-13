@@ -490,8 +490,7 @@ struct SafeBrowsingTestParameters {
 class TestDownloadProtectionService
     : public safe_browsing::DownloadProtectionService {
  public:
-  TestDownloadProtectionService()
-      : DownloadProtectionService(nullptr, nullptr) {}
+  TestDownloadProtectionService() : DownloadProtectionService(nullptr) {}
 
   void CheckClientDownload(DownloadItem* download_item,
                            const CheckDownloadCallback& callback) override {

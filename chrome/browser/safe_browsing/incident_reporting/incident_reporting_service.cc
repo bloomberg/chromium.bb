@@ -328,12 +328,13 @@ bool IncidentReportingService::IsEnabledForProfile(Profile* profile) {
 }
 
 IncidentReportingService::IncidentReportingService(
-    SafeBrowsingService* safe_browsing_service,
-    const scoped_refptr<net::URLRequestContextGetter>& request_context_getter)
+    SafeBrowsingService* safe_browsing_service)
     : database_manager_(safe_browsing_service
                             ? safe_browsing_service->database_manager()
-                            : NULL),
-      url_request_context_getter_(request_context_getter),
+                            : nullptr),
+      url_request_context_getter_(
+          safe_browsing_service ? safe_browsing_service->url_request_context()
+                                : nullptr),
       collect_environment_data_fn_(&CollectEnvironmentData),
       environment_collection_task_runner_(
           content::BrowserThread::GetBlockingPool()

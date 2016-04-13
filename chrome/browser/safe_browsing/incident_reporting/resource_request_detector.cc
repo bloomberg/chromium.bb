@@ -120,6 +120,19 @@ class ResourceRequestDetectorClient
 
 }  // namespace
 
+// static
+ResourceRequestInfo ResourceRequestDetector::GetRequestInfo(
+    const net::URLRequest* request) {
+  ResourceRequestInfo info;
+  info.url = request->url();
+  const content::ResourceRequestInfo* request_info =
+      content::ResourceRequestInfo::ForRequest(request);
+  info.resource_type = request_info->GetResourceType();
+  content::ResourceRequestInfo::GetRenderFrameForRequest(
+      request, &info.render_process_id, &info.render_frame_id);
+  return info;
+}
+
 ResourceRequestDetector::ResourceRequestDetector(
     scoped_refptr<SafeBrowsingDatabaseManager> database_manager,
     std::unique_ptr<IncidentReceiver> incident_receiver)
@@ -131,27 +144,20 @@ ResourceRequestDetector::ResourceRequestDetector(
 ResourceRequestDetector::~ResourceRequestDetector() {
 }
 
-void ResourceRequestDetector::OnResourceRequest(
-    const net::URLRequest* request) {
+void ResourceRequestDetector::ProcessResourceRequest(
+    const ResourceRequestInfo* request) {
   // Only look at actual net requests (e.g., not chrome-extensions://id/foo.js).
-  if (!request->url().SchemeIsHTTPOrHTTPS())
+  if (!request->url.SchemeIsHTTPOrHTTPS())
     return;
 
-  const content::ResourceRequestInfo* request_info =
-      content::ResourceRequestInfo::ForRequest(request);
-  content::ResourceType resource_type = request_info->GetResourceType();
-  if (resource_type == content::RESOURCE_TYPE_SUB_FRAME ||
-      resource_type == content::RESOURCE_TYPE_SCRIPT ||
-      resource_type == content::RESOURCE_TYPE_OBJECT) {
-    int render_process_id = 0;
-    int render_frame_id = 0;
-    content::ResourceRequestInfo::GetRenderFrameForRequest(
-        request, &render_process_id, &render_frame_id);
+  if (request->resource_type == content::RESOURCE_TYPE_SUB_FRAME ||
+      request->resource_type == content::RESOURCE_TYPE_SCRIPT ||
+      request->resource_type == content::RESOURCE_TYPE_OBJECT) {
     new ResourceRequestDetectorClient(
-        request->url(), database_manager_,
+        request->url, database_manager_,
         base::Bind(&ResourceRequestDetector::ReportIncidentOnUIThread,
-                  weak_ptr_factory_.GetWeakPtr(), render_process_id,
-                  render_frame_id));
+                   weak_ptr_factory_.GetWeakPtr(), request->render_process_id,
+                   request->render_frame_id));
   }
 }
 

@@ -619,15 +619,13 @@ class SafeBrowsingServiceTest : public InProcessBrowserTest {
 
   void CreateCSDService() {
 #if defined(SAFE_BROWSING_CSD)
-    ClientSideDetectionService* csd_service =
-        ClientSideDetectionService::Create(NULL);
     SafeBrowsingService* sb_service =
         g_browser_process->safe_browsing_service();
 
     // A CSD service should already exist.
-    EXPECT_TRUE(sb_service->csd_service_);
+    EXPECT_TRUE(sb_service->safe_browsing_detection_service());
 
-    sb_service->csd_service_.reset(csd_service);
+    sb_service->services_delegate_->InitializeCsdService(nullptr);
     sb_service->RefreshState();
 #endif
   }

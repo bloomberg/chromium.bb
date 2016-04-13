@@ -74,11 +74,8 @@ class DownloadProtectionService {
       ClientDownloadRequestSubscription;
 
   // Creates a download service.  The service is initially disabled.  You need
-  // to call SetEnabled() to start it.  |sb_service| owns this object; we
-  // keep a reference to |request_context_getter|.
-  DownloadProtectionService(
-      SafeBrowsingService* sb_service,
-      net::URLRequestContextGetter* request_context_getter);
+  // to call SetEnabled() to start it.  |sb_service| owns this object.
+  explicit DownloadProtectionService(SafeBrowsingService* sb_service);
 
   virtual ~DownloadProtectionService();
 

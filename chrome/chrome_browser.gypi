@@ -2522,8 +2522,7 @@
       'browser/safe_browsing/safe_browsing_blocking_page.h',
       'browser/safe_browsing/safe_browsing_service.cc',
       'browser/safe_browsing/safe_browsing_service.h',
-      'browser/safe_browsing/safe_browsing_util.cc',
-      'browser/safe_browsing/safe_browsing_util.h',
+      'browser/safe_browsing/services_delegate.h',
       'browser/safe_browsing/threat_details.cc',
       'browser/safe_browsing/threat_details.h',
       'browser/safe_browsing/threat_details_cache.cc',
@@ -2538,6 +2537,8 @@
     'chrome_browser_safe_browsing_mobile_sources': [
       'browser/renderer_host/safe_browsing_resource_throttle.cc',
       'browser/renderer_host/safe_browsing_resource_throttle.h',
+      'browser/safe_browsing/services_delegate_stub.cc',
+      'browser/safe_browsing/services_delegate_stub.h',
     ],
     # "Safe Browsing Full" files in addition to the "basic" ones to use for
     # full safe browsing. This has some in common with "mobile."
@@ -2639,10 +2640,14 @@
       'browser/safe_browsing/safe_browsing_store.h',
       'browser/safe_browsing/safe_browsing_store_file.cc',
       'browser/safe_browsing/safe_browsing_store_file.h',
+      'browser/safe_browsing/safe_browsing_util.cc',
+      'browser/safe_browsing/safe_browsing_util.h',
       'browser/safe_browsing/sandboxed_dmg_analyzer_mac.cc',
       'browser/safe_browsing/sandboxed_dmg_analyzer_mac.h',
       'browser/safe_browsing/sandboxed_zip_analyzer.cc',
       'browser/safe_browsing/sandboxed_zip_analyzer.h',
+      'browser/safe_browsing/services_delegate_impl.cc',
+      'browser/safe_browsing/services_delegate_impl.h',
       'browser/safe_browsing/signature_evaluator_mac.h',
       'browser/safe_browsing/signature_evaluator_mac.mm',
       'browser/safe_browsing/two_phase_uploader.cc',
