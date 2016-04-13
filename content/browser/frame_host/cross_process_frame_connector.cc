@@ -102,13 +102,9 @@ void CrossProcessFrameConnector::OnRequireSequence(
   surface->AddDestructionDependency(sequence);
 }
 
-void CrossProcessFrameConnector::OnInitializeChildFrame(gfx::Rect frame_rect,
-                                                        float scale_factor) {
+void CrossProcessFrameConnector::OnInitializeChildFrame(float scale_factor) {
   if (scale_factor != device_scale_factor_)
     SetDeviceScaleFactor(scale_factor);
-
-  if (!frame_rect.size().IsEmpty())
-    SetRect(frame_rect);
 }
 
 gfx::Rect CrossProcessFrameConnector::ChildFrameRect() {

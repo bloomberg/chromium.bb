@@ -20,6 +20,7 @@ public:
     ~RemoteFrameView() override;
 
     bool isRemoteFrameView() const override { return true; }
+    void setParent(Widget*) override;
 
     RemoteFrame& frame() const
     {

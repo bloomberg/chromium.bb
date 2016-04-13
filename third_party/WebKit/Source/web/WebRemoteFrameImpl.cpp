@@ -612,10 +612,7 @@ void WebRemoteFrameImpl::initializeFromFrame(WebLocalFrame* source) const
 {
     DCHECK(source);
     WebLocalFrameImpl* localFrameImpl = toWebLocalFrameImpl(source);
-
-    client()->initializeChildFrame(
-        localFrameImpl->frame()->view()->frameRect(),
-        localFrameImpl->frame()->page()->deviceScaleFactor());
+    client()->initializeChildFrame(localFrameImpl->frame()->page()->deviceScaleFactor());
 }
 
 void WebRemoteFrameImpl::setReplicatedOrigin(const WebSecurityOrigin& origin) const

@@ -751,6 +751,130 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CrossSiteIframe) {
       DepictFrameTree(root));
 }
 
+// Class to sniff incoming IPCs for FrameHostMsg_FrameRectChanged messages.
+class FrameRectChangedMessageFilter : public content::BrowserMessageFilter {
+ public:
+  FrameRectChangedMessageFilter()
+      : content::BrowserMessageFilter(FrameMsgStart),
+        message_loop_runner_(new content::MessageLoopRunner),
+        frame_rect_received_(false) {}
+
+  bool OnMessageReceived(const IPC::Message& message) override {
+    IPC_BEGIN_MESSAGE_MAP(FrameRectChangedMessageFilter, message)
+      IPC_MESSAGE_HANDLER(FrameHostMsg_FrameRectChanged, OnFrameRectChanged)
+    IPC_END_MESSAGE_MAP()
+    return false;
+  }
+
+  gfx::Rect last_rect() const { return last_rect_; }
+
+  void Wait() {
+    last_rect_ = gfx::Rect();
+    message_loop_runner_->Run();
+  }
+
+ private:
+  ~FrameRectChangedMessageFilter() override {}
+
+  void OnFrameRectChanged(const gfx::Rect& rect) {
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI, FROM_HERE,
+        base::Bind(&FrameRectChangedMessageFilter::OnFrameRectChangedOnUI, this,
+                   rect));
+  }
+
+  void OnFrameRectChangedOnUI(const gfx::Rect& rect) {
+    last_rect_ = rect;
+    if (!frame_rect_received_) {
+      frame_rect_received_ = true;
+      message_loop_runner_->Quit();
+    }
+  }
+
+  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
+  bool frame_rect_received_;
+  gfx::Rect last_rect_;
+
+  DISALLOW_COPY_AND_ASSIGN(FrameRectChangedMessageFilter);
+};
+
+// Test that the view bounds for an out-of-process iframe are set and updated
+// correctly, including accounting for local frame offsets in the parent and
+// scroll positions.
+#if defined(OS_ANDROID)
+// Browser process hit testing is not implemented on Android.
+// https://crbug.com/491334
+#define MAYBE_ViewBoundsInNestedFrameTest DISABLED_ViewBoundsInNestedFrameTest
+#else
+#define MAYBE_ViewBoundsInNestedFrameTest ViewBoundsInNestedFrameTest
+#endif
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       MAYBE_ViewBoundsInNestedFrameTest) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(a)"));
+  NavigateToURL(shell(), main_url);
+
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  RenderWidgetHostViewBase* rwhv_root = static_cast<RenderWidgetHostViewBase*>(
+      root->current_frame_host()->GetRenderWidgetHost()->GetView());
+  ASSERT_EQ(1U, root->child_count());
+
+  FrameTreeNode* parent_iframe_node = root->child_at(0);
+  GURL site_url(embedded_test_server()->GetURL(
+      "a.com", "/frame_tree/page_with_positioned_frame.html"));
+  NavigateFrameToURL(parent_iframe_node, site_url);
+
+  EXPECT_EQ(
+      " Site A ------------ proxies for B\n"
+      "   +--Site A ------- proxies for B\n"
+      "        +--Site B -- proxies for A\n"
+      "Where A = http://a.com/\n"
+      "      B = http://baz.com/",
+      DepictFrameTree(root));
+
+  FrameTreeNode* nested_iframe_node = parent_iframe_node->child_at(0);
+  RenderWidgetHostViewBase* rwhv_nested =
+      static_cast<RenderWidgetHostViewBase*>(
+          nested_iframe_node->current_frame_host()
+              ->GetRenderWidgetHost()
+              ->GetView());
+
+  SurfaceHitTestReadyNotifier notifier(
+      static_cast<RenderWidgetHostViewChildFrame*>(rwhv_nested));
+  notifier.WaitForSurfaceReady();
+
+  // Verify the view bounds of the nested iframe, which should account for the
+  // relative offset of its direct parent within the root frame.
+  gfx::Rect bounds = rwhv_nested->GetViewBounds();
+  EXPECT_EQ(bounds.x() - rwhv_root->GetViewBounds().x(), 397);
+  EXPECT_EQ(bounds.y() - rwhv_root->GetViewBounds().y(), 112);
+
+  scoped_refptr<FrameRectChangedMessageFilter> filter =
+      new FrameRectChangedMessageFilter();
+  root->current_frame_host()->GetProcess()->AddFilter(filter.get());
+
+  // Scroll the parent frame downward to verify that the child rect gets updated
+  // correctly.
+  blink::WebMouseWheelEvent scroll_event;
+  scroll_event.type = blink::WebInputEvent::MouseWheel;
+  scroll_event.x = 387;
+  scroll_event.y = 110;
+  scroll_event.deltaX = 0.0f;
+  scroll_event.deltaY = -30.0f;
+  rwhv_root->ProcessMouseWheelEvent(scroll_event);
+
+  filter->Wait();
+
+  // The precise amount of scroll for the first view position update is not
+  // deterministic, so this simply verifies that the OOPIF moved from its
+  // earlier position.
+  gfx::Rect update_rect = filter->last_rect();
+  EXPECT_LT(update_rect.y(), bounds.y() - rwhv_root->GetViewBounds().y());
+}
+
 // Test that mouse events are being routed to the correct RenderWidgetHostView
 // based on coordinates.
 #if defined(OS_ANDROID) || defined(THREAD_SANITIZER)

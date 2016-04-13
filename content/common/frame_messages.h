@@ -1237,8 +1237,7 @@ IPC_MESSAGE_ROUTED1(FrameHostMsg_ContextMenu, content::ContextMenuParams)
 
 // Initial drawing parameters for a child frame that has been swapped out to
 // another process.
-IPC_MESSAGE_ROUTED2(FrameHostMsg_InitializeChildFrame,
-                    gfx::Rect /* frame_rect */,
+IPC_MESSAGE_ROUTED1(FrameHostMsg_InitializeChildFrame,
                     float /* scale_factor */)
 
 // Response for FrameMsg_JavaScriptExecuteRequest, sent when a reply was

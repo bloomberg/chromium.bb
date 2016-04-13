@@ -123,7 +123,7 @@ class CONTENT_EXPORT CrossProcessFrameConnector {
   void OnForwardInputEvent(const blink::WebInputEvent* event);
   void OnFrameRectChanged(const gfx::Rect& frame_rect);
   void OnVisibilityChanged(bool visible);
-  void OnInitializeChildFrame(gfx::Rect frame_rect, float scale_factor);
+  void OnInitializeChildFrame(float scale_factor);
   void OnSatisfySequence(const cc::SurfaceSequence& sequence);
   void OnRequireSequence(const cc::SurfaceId& id,
                          const cc::SurfaceSequence& sequence);
