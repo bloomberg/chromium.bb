@@ -120,6 +120,16 @@ decltype specifier</a></td>
 </tr>
 
 <tr>
+<td>Declared Type As Value</td>
+<td><code>declval(<i>expression</i>)</code></td>
+<td>Converts a type to a reference of the type to allow use of members of
+the type without constructing it in templates.</td>
+<td><a href="http://en.cppreference.com/w/cpp/language/declval">
+decltype specifier</a></td>
+<td>Usage should be rare. <a href="https://groups.google.com/a/chromium.org/d/topic/cxx/ku6lYjk0-OU/discussion">Discussion thread</a></td>
+</tr>
+
+<tr>
 <td>Default Function Creation</td>
 <td><code><i>Function</i>(<i>arguments</i>) = default;</code></td>
 <td>Instructs the compiler to generate a default version
