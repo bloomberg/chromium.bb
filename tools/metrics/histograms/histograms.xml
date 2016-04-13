@@ -12438,7 +12438,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="ExtensionBlacklist.BlacklistInstalled"
     enum="ExtensionLocation">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>nparker@chromium.org</owner>
   <summary>
     The number of extensions that were blacklisted when already installed,
     grouped by Extension::Location. Logged when ExtensionService blackists and
@@ -12447,7 +12447,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ExtensionBlacklist.BlockCRX" enum="ExtensionLocation">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>nparker@chromium.org</owner>
   <summary>
     The number of extensions that have been blocked from installing grouped by
     Extension::Location. Logged when ExtensionService refuses to install a
@@ -12456,7 +12456,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ExtensionBlacklist.SilentInstall" enum="ExtensionLocation">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>nparker@chromium.org</owner>
   <summary>
     The number of extensions that have been silently installed in a blacklisted
     state, grouped by Extension::Location. Logged when ExtensionService installs
@@ -12468,7 +12468,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="ExtensionBlacklist.UnblacklistInstalled"
     enum="ExtensionLocation">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>nparker@chromium.org</owner>
   <summary>
     The number of extensions that were unblacklisted when installed, grouped by
     Extension::Location. Logged when ExtensionService unblacklists and loads a
