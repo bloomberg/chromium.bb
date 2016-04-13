@@ -11,5 +11,6 @@
 ]
 interface MediaDevices {
     [CallWith=ScriptState, MeasureAs=MediaDevicesEnumerateDevices] Promise<sequence<MediaDeviceInfo>> enumerateDevices();
+    [RuntimeEnabled=MediaConstraints] MediaTrackSupportedConstraints getSupportedConstraints();
     [RuntimeEnabled=GetUserMedia, CallWith=ScriptState, RaisesException] Promise<MediaStream> getUserMedia(MediaStreamConstraints options);
 };

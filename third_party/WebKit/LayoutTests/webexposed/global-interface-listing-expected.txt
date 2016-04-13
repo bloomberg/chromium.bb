@@ -3541,6 +3541,7 @@ interface MediaDevices
     attribute @@toStringTag
     method constructor
     method enumerateDevices
+    method getSupportedConstraints
     method getUserMedia
 interface MediaElementAudioSourceNode : AudioSourceNode
     attribute @@toStringTag

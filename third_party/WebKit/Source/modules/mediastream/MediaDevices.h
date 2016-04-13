@@ -11,6 +11,7 @@
 namespace blink {
 
 class MediaStreamConstraints;
+class MediaTrackSupportedConstraints;
 class ScriptState;
 
 class MediaDevices final : public GarbageCollected<MediaDevices>, public ScriptWrappable {
@@ -22,6 +23,7 @@ public:
     }
 
     ScriptPromise enumerateDevices(ScriptState*);
+    void getSupportedConstraints(MediaTrackSupportedConstraints& result) { }
     ScriptPromise getUserMedia(ScriptState*, const MediaStreamConstraints&, ExceptionState&);
     DEFINE_INLINE_TRACE() { }
 
