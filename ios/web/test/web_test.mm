@@ -68,7 +68,10 @@ static int s_html_load_count;
 
 void WebTestWithWebController::SetUp() {
   WebTest::SetUp();
-  webController_.reset(this->CreateWebController());
+  web_state_impl_.reset(new WebStateImpl(GetBrowserState()));
+  web_state_impl_->GetNavigationManagerImpl().InitializeSession(nil, nil, NO,
+                                                                0);
+  webController_.reset(web_state_impl_->GetWebController());
 
   [webController_ setWebUsageEnabled:YES];
   // Force generation of child views; necessary for some tests.
@@ -77,7 +80,7 @@ void WebTestWithWebController::SetUp() {
 }
 
 void WebTestWithWebController::TearDown() {
-  [webController_ close];
+  web_state_impl_.reset();
   WebTest::TearDown();
 }
 
@@ -174,13 +177,6 @@ NSString* WebTestWithWebController::RunJavaScript(NSString* script) {
     return evaluationResult;
   });
   return [[evaluationResult retain] autorelease];
-}
-
-CRWWebController* WebTestWithWebController::CreateWebController() {
-  std::unique_ptr<WebStateImpl> web_state_impl(
-      new WebStateImpl(GetBrowserState()));
-  return [[CRWWKWebViewWebController alloc]
-      initWithWebState:std::move(web_state_impl)];
 }
 
 void WebTestWithWebController::WillProcessTask(

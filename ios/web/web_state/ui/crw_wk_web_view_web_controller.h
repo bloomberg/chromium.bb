@@ -12,8 +12,9 @@
 // A concrete implementation of CRWWebController based on WKWebView.
 @interface CRWWKWebViewWebController : CRWWebController
 
-// Designated initializer.
-- (instancetype)initWithWebState:(std::unique_ptr<web::WebStateImpl>)webState;
+// Designated initializer. Initializes web controller with |webState|. The
+// calling code must retain the ownership of |webState|.
+- (instancetype)initWithWebState:(web::WebStateImpl*)webState;
 
 @end
 

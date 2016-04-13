@@ -8,6 +8,7 @@
 #import <UIKit/UIKit.h>
 
 #import "base/ios/block_types.h"
+#import "base/ios/weak_nsobject.h"
 #import "base/mac/scoped_nsobject.h"
 #include "base/message_loop/message_loop.h"
 #include "ios/web/public/test/scoped_testing_web_client.h"
@@ -49,8 +50,7 @@ class WebTest : public PlatformTest {
 #pragma mark -
 
 // An abstract test fixture that sets up a WebControllers that can be loaded
-// with test HTML and JavaScripts. Concrete subclasses override
-// |CreateWebController| specifying the test WebController object.
+// with test HTML and JavaScripts.
 class WebTestWithWebController : public WebTest,
                                  public base::MessageLoop::TaskObserver {
  public:
@@ -82,14 +82,12 @@ class WebTestWithWebController : public WebTest,
   // the additional functionality that any JavaScript exceptions are caught and
   // logged (not dropped silently).
   NSString* RunJavaScript(NSString* script);
-  // Creates a CRWWebController to be used in tests.
-  virtual CRWWebController* CreateWebController();
   // TaskObserver methods (used when waiting for background tasks).
   void WillProcessTask(const base::PendingTask& pending_task) override;
   void DidProcessTask(const base::PendingTask& pending_task) override;
 
   // The web controller for testing.
-  base::scoped_nsobject<CRWWebController> webController_;
+  base::WeakNSObject<CRWWebController> webController_;
   // true if a task has been processed.
   bool processed_a_task_;
 
@@ -102,6 +100,8 @@ class WebTestWithWebController : public WebTest,
   // Creates a unique HTML element to look for in
   // ResetPageIfNavigationStalled().
   NSString* CreateLoadCheck();
+  // The web state for testing.
+  std::unique_ptr<WebStateImpl> web_state_impl_;
 };
 
 }  // namespace web

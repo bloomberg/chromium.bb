@@ -126,8 +126,6 @@ source_set("web") {
     "public/web_capabilities.h",
     "public/web_client.h",
     "public/web_client.mm",
-    "public/web_controller_factory.h",
-    "public/web_controller_factory.mm",
     "public/web_kit_constants.h",
     "public/web_state/credential.h",
     "public/web_state/crw_web_controller_observer.h",

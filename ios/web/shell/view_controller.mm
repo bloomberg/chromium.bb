@@ -16,7 +16,6 @@
 #import "ios/net/crn_http_protocol_handler.h"
 #import "ios/net/empty_nsurlcache.h"
 #include "ios/web/public/referrer.h"
-#import "ios/web/public/web_controller_factory.h"
 #include "ios/web/public/web_state/web_state.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
 #include "ios/web/shell/shell_browser_state.h"
@@ -32,12 +31,11 @@ using web::NavigationManager;
 
 @interface ViewController ()<CRWWebStateObserver> {
   web::BrowserState* _browserState;
-  base::scoped_nsobject<CRWWebController> _webController;
+  std::unique_ptr<web::WebStateImpl> _webState;
   std::unique_ptr<web::WebStateObserverBridge> _webStateObserver;
 
   base::mac::ObjCPropertyReleaser _propertyReleaser_ViewController;
 }
-@property(nonatomic, assign, readonly) web::WebState* webState;
 @property(nonatomic, assign, readonly) NavigationManager* navigationManager;
 @property(nonatomic, readwrite, retain) UITextField* field;
 @end
@@ -110,16 +108,15 @@ using web::NavigationManager;
   // Set up the network stack before creating the WebState.
   [self setUpNetworkStack];
 
-  std::unique_ptr<web::WebStateImpl> webState(
-      new web::WebStateImpl(_browserState));
-  webState->GetNavigationManagerImpl().InitializeSession(nil, nil, NO, 0);
-  _webController.reset(web::CreateWebController(std::move(webState)));
-  [_webController setDelegate:self];
-  [_webController setWebUsageEnabled:YES];
+  _webState.reset(new web::WebStateImpl(_browserState));
+  _webState->GetNavigationManagerImpl().InitializeSession(nil, nil, NO, 0);
+  [_webState->GetWebController() setDelegate:self];
+  [_webState->GetWebController() setWebUsageEnabled:YES];
 
-  _webStateObserver.reset(new web::WebStateObserverBridge(self.webState, self));
+  _webStateObserver.reset(
+      new web::WebStateObserverBridge(_webState.get(), self));
 
-  UIView* view = self.webState->GetView();
+  UIView* view = _webState->GetView();
   [view setFrame:[_containerView bounds]];
   [_containerView addSubview:view];
 
@@ -128,12 +125,8 @@ using web::NavigationManager;
   self.navigationManager->LoadURLWithParams(params);
 }
 
-- (web::WebState*)webState {
-  return [_webController webState];
-}
-
 - (NavigationManager*)navigationManager {
-  return self.webState->GetNavigationManager();
+  return _webState->GetNavigationManager();
 }
 
 - (void)setUpNetworkStack {
@@ -186,7 +179,7 @@ using web::NavigationManager;
     return;
   }
 
-  const GURL& visibleURL = self.webState->GetVisibleURL();
+  const GURL& visibleURL = _webState->GetVisibleURL();
   [_field setText:base::SysUTF8ToNSString(visibleURL.spec())];
 }
 
@@ -257,7 +250,7 @@ using web::NavigationManager;
 }
 
 - (void)webStateDidLoadPage:(web::WebState*)webState {
-  DCHECK_EQ(self.webState, webState);
+  DCHECK_EQ(_webState.get(), webState);
   [self updateToolbar];
 }
 

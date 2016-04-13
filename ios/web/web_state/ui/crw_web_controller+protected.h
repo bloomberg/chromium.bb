@@ -137,8 +137,9 @@ static NSString* const kScriptImmediateName = @"crwebinvokeimmediate";
 
 - (CRWWebControllerPendingNavigationInfo*)pendingNavigationInfo;
 
-// Designated initializer.
-- (instancetype)initWithWebState:(std::unique_ptr<web::WebStateImpl>)webState;
+// Designated initializer. Initializes web controller with |webState|. The
+// calling code must retain the ownership of |webState|.
+- (instancetype)initWithWebState:(web::WebStateImpl*)webState;
 
 // Creates a web view if it's not yet created.
 - (void)ensureWebViewCreated;

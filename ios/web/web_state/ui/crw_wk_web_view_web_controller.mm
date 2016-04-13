@@ -186,11 +186,11 @@
 
 #pragma mark CRWWebController public methods
 
-- (instancetype)initWithWebState:(std::unique_ptr<web::WebStateImpl>)webState {
-  DCHECK(webState);
-  web::BrowserState* browserState = webState->GetBrowserState();
-  self = [super initWithWebState:std::move(webState)];
+- (instancetype)initWithWebState:(web::WebStateImpl*)webState {
+  self = [super initWithWebState:webState];
   if (self) {
+    DCHECK(webState);
+    web::BrowserState* browserState = webState->GetBrowserState();
     _certVerificationController.reset([[CRWCertVerificationController alloc]
         initWithBrowserState:browserState]);
     _certVerificationErrors.reset(

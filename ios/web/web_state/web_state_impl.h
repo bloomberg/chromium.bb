@@ -62,9 +62,8 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   WebStateImpl(BrowserState* browser_state);
   ~WebStateImpl() override;
 
-  // Sets the CRWWebController that backs this object. Typically
-  // |web_controller| will also take ownership of this object. This will also
-  // create the WebContentsIOS facade.
+  // Gets/Sets the CRWWebController that backs this object.
+  CRWWebController* GetWebController();
   void SetWebController(CRWWebController* web_controller);
 
   // Gets or sets the delegate used to communicate with the web contents facade.
@@ -288,8 +287,8 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   // The delegate used to pass state to the web contents facade.
   WebStateFacadeDelegate* facade_delegate_;
 
-  // The CRWWebController that backs and owns this object.
-  CRWWebController* web_controller_;
+  // The CRWWebController that backs this object.
+  base::scoped_nsobject<CRWWebController> web_controller_;
 
   NavigationManagerImpl navigation_manager_;
 

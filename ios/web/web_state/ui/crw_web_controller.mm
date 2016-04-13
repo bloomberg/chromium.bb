@@ -294,8 +294,9 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 
   std::unique_ptr<web::NewWindowInfo> _externalRequest;
 
-  // The WebStateImpl instance associated with this CRWWebController.
-  std::unique_ptr<WebStateImpl> _webStateImpl;
+  // WebStateImpl instance associated with this CRWWebController, web controller
+  // does not own this pointer.
+  WebStateImpl* _webStateImpl;
 
   // A set of URLs opened in external applications; stored so that errors
   // from the web view can be identified as resulting from these events.
@@ -633,12 +634,11 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   return [super allocWithZone:zone];
 }
 
-- (instancetype)initWithWebState:(std::unique_ptr<WebStateImpl>)webState {
+- (instancetype)initWithWebState:(WebStateImpl*)webState {
   self = [super init];
   if (self) {
-    _webStateImpl = std::move(webState);
+    _webStateImpl = webState;
     DCHECK(_webStateImpl);
-    _webStateImpl->SetWebController(self);
     _webStateImpl->InitializeRequestTracker(self);
     // Load phase when no WebView present is 'loaded' because this represents
     // the idle state.
@@ -685,11 +685,11 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 }
 
 - (WebState*)webState {
-  return _webStateImpl.get();
+  return _webStateImpl;
 }
 
 - (WebStateImpl*)webStateImpl {
-  return _webStateImpl.get();
+  return _webStateImpl;
 }
 
 - (void)clearTransientContentView {
@@ -940,9 +940,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // Remove the web view now. Otherwise, delegate callbacks occur.
   [self removeWebViewAllowingCachedReconstruction:NO];
 
-  // Tear down web ui (in case this is part of this tab) and web state now,
-  // since the timing of dealloc can't be guaranteed.
-  _webStateImpl.reset();
+  _webStateImpl = nullptr;
 }
 
 - (void)checkLinkPresenceUnderGesture:(UIGestureRecognizer*)gestureRecognizer

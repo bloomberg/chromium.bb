@@ -850,17 +850,17 @@ class CRWWebControllerWindowOpenTest : public web::WebTestWithWebController {
     ASSERT_TRUE([delegate_ blockPopups]);
     [webController_ setDelegate:delegate_];
 
-    // Configure child web controller.
-    child_.reset(CreateWebController());
-    [child_ setWebUsageEnabled:YES];
-    [delegate_ setChildWebController:child_];
+    // Configure child web state.
+    child_web_state_.reset(new web::WebStateImpl(GetBrowserState()));
+    [child_web_state_->GetWebController() setWebUsageEnabled:YES];
+    [delegate_ setChildWebController:child_web_state_->GetWebController()];
 
     // Configure child web controller's session controller mock.
     id sessionController =
         [OCMockObject niceMockForClass:[CRWSessionController class]];
     BOOL yes = YES;
     [[[sessionController stub] andReturnValue:OCMOCK_VALUE(yes)] isOpenedByDOM];
-    [child_ webStateImpl]->GetNavigationManagerImpl().SetSessionController(
+    child_web_state_->GetNavigationManagerImpl().SetSessionController(
         sessionController);
 
     LoadHtml(@"<html><body></body></html>");
@@ -868,7 +868,6 @@ class CRWWebControllerWindowOpenTest : public web::WebTestWithWebController {
   void TearDown() override {
     EXPECT_OCMOCK_VERIFY(delegate_);
     [webController_ setDelegate:nil];
-    [child_ close];
 
     web::WebTestWithWebController::TearDown();
   }
@@ -884,8 +883,8 @@ class CRWWebControllerWindowOpenTest : public web::WebTestWithWebController {
   }
   // A CRWWebDelegate mock used for testing.
   base::scoped_nsobject<id> delegate_;
-  // A child CRWWebController used for testing.
-  base::scoped_nsobject<CRWWebController> child_;
+  // A child WebState used for testing.
+  std::unique_ptr<web::WebStateImpl> child_web_state_;
 };
 
 // Tests that absence of web delegate is handled gracefully.

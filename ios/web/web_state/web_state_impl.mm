@@ -24,6 +24,7 @@
 #include "ios/web/web_state/global_web_state_event_tracker.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
 #import "ios/web/web_state/ui/crw_web_controller_container_view.h"
+#import "ios/web/web_state/ui/crw_wk_web_view_web_controller.h"
 #include "ios/web/web_state/web_state_facade_delegate.h"
 #import "ios/web/webui/web_ui_ios_controller_factory_registry.h"
 #import "ios/web/webui/web_ui_ios_impl.h"
@@ -40,9 +41,12 @@ WebStateImpl::WebStateImpl(BrowserState* browser_state)
       interstitial_(nullptr),
       weak_factory_(this) {
   GlobalWebStateEventTracker::GetInstance()->OnWebStateCreated(this);
+  web_controller_.reset(
+      [[CRWWKWebViewWebController alloc] initWithWebState:this]);
 }
 
 WebStateImpl::~WebStateImpl() {
+  [web_controller_ close];
   is_being_destroyed_ = true;
 
   // WebUI depends on web state so it must be destroyed first in case any WebUI
@@ -93,9 +97,13 @@ bool WebStateImpl::Configured() const {
   return web_controller_ != nil;
 }
 
+CRWWebController* WebStateImpl::GetWebController() {
+  return web_controller_;
+}
+
 void WebStateImpl::SetWebController(CRWWebController* web_controller) {
-  DCHECK(!web_controller_);
-  web_controller_ = web_controller;
+  [web_controller_ close];
+  web_controller_.reset([web_controller retain]);
 }
 
 WebStateFacadeDelegate* WebStateImpl::GetFacadeDelegate() const {
