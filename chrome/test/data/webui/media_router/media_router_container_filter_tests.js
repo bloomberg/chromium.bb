@@ -191,47 +191,57 @@ cr.define('media_router_container_filter', function() {
               MockInteractions.tap(
                   container.shadowRoot.getElementById('container-header')
                       .shadowRoot.getElementById('back-button'));
-              checkElementsVisibleWithId(['container-header',
-                                          'sink-search',
-                                          'sink-list',
-                                          'sink-list-view']);
-              // When the search button is clicked again, the matching sinks
-              // should be shown again. This doesn't prove that the matching
-              // worked when returning to the FILTER view though, just that it
-              // at least shows some sort of sink list as search results.
-              MockInteractions.tap(container.$['sink-search-icon']);
-              checkElementsVisibleWithId(['container-header',
-                                          'search-results',
-                                          'sink-search',
-                                          'sink-list-view']);
+              setTimeout(function() {
+                checkElementsVisibleWithId(['container-header',
+                                            'sink-search',
+                                            'sink-list',
+                                            'sink-list-view']);
+                // When the search button is clicked again, the matching sinks
+                // should be shown again. This doesn't prove that the matching
+                // worked when returning to the FILTER view though, just that it
+                // at least shows some sort of sink list as search results.
+                MockInteractions.tap(container.$['sink-search-icon']);
+                setTimeout(function() {
+                  checkElementsVisibleWithId(['container-header',
+                                              'search-results',
+                                              'sink-search',
+                                              'sink-list-view']);
 
-              container.$['sink-search-input'].value = searchTextNone;
-              // Clicking the back button should leave |searchTextNone| in the
-              // input but return to the SINK_LIST view.
-              MockInteractions.tap(
-                  container.shadowRoot.getElementById('container-header')
-                      .shadowRoot.getElementById('back-button'));
-              checkElementsVisibleWithId(['container-header',
-                                          'sink-search',
-                                          'sink-list',
-                                          'sink-list-view']);
-              // When the search button is clicked again, there should be no
-              // matches because |searchTextNone| should still be used to
-              // filter.
-              MockInteractions.tap(container.$['sink-search-icon']);
-              checkElementsVisibleWithId(['container-header',
-                                          'no-search-matches',
-                                          'sink-search',
-                                          'sink-list-view']);
-              // Pressing the Escape key in FILTER view should return
-              // |container| to SINK_LIST view and not exit the dialog.
-              MockInteractions.pressAndReleaseKeyOn(
-                  container, media_router.KEYCODE_ESC);
-              checkElementsVisibleWithId(['container-header',
-                                          'sink-search',
-                                          'sink-list',
-                                          'sink-list-view']);
-              done();
+                  container.$['sink-search-input'].value = searchTextNone;
+                  // Clicking the back button should leave |searchTextNone| in
+                  // the input but return to the SINK_LIST view.
+                  MockInteractions.tap(
+                      container.shadowRoot.getElementById('container-header')
+                          .shadowRoot.getElementById('back-button'));
+                  setTimeout(function() {
+                    checkElementsVisibleWithId(['container-header',
+                                                'sink-search',
+                                                'sink-list',
+                                                'sink-list-view']);
+                    // When the search button is clicked again, there should be
+                    // no matches because |searchTextNone| should still be used
+                    // to filter.
+                    MockInteractions.tap(container.$['sink-search-icon']);
+                    setTimeout(function() {
+                      checkElementsVisibleWithId(['container-header',
+                                                  'no-search-matches',
+                                                  'sink-search',
+                                                  'sink-list-view']);
+                      // Pressing the Escape key in FILTER view should return
+                      // |container| to SINK_LIST view and not exit the dialog.
+                      MockInteractions.pressAndReleaseKeyOn(
+                          container, media_router.KEYCODE_ESC);
+                      setTimeout(function() {
+                        checkElementsVisibleWithId(['container-header',
+                                                    'sink-search',
+                                                    'sink-list',
+                                                    'sink-list-view']);
+                        done();
+                      });
+                    });
+                  });
+                });
+              });
             });
           });
         });

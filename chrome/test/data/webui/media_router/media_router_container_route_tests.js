@@ -109,7 +109,8 @@ cr.define('media_router_container_route', function() {
 
         setTimeout(function() {
           var sinkList =
-              container.$['sink-list'].querySelectorAll('paper-item');
+              container.shadowRoot.getElementById('sink-list')
+                  .querySelectorAll('paper-item');
           container.addEventListener('create-route', function(data) {
             // Container is initially in auto mode since a cast mode has not
             // been selected.
@@ -137,7 +138,8 @@ cr.define('media_router_container_route', function() {
 
         setTimeout(function() {
           var sinkList =
-              container.$['sink-list'].querySelectorAll('paper-item');
+              container.shadowRoot.getElementById('sink-list')
+                  .querySelectorAll('paper-item');
 
           // Start from the SINK_LIST view.
           container.showSinkList_();
@@ -178,7 +180,8 @@ cr.define('media_router_container_route', function() {
 
         setTimeout(function() {
           var sinkSubtextList =
-              container.$['sink-list'].querySelectorAll('.sink-subtext');
+              container.shadowRoot.getElementById('sink-list')
+                  .querySelectorAll('.sink-subtext');
 
           // There will only be 3 sink subtext entries, because Sink 1 does not
           // have any subtext.
@@ -319,7 +322,8 @@ cr.define('media_router_container_route', function() {
           assertEquals(fakeCastModeList[1].description, container.headerText);
           setTimeout(function() {
             var sinkList =
-                container.$['sink-list'].querySelectorAll('paper-item');
+                container.shadowRoot.getElementById('sink-list')
+                    .querySelectorAll('paper-item');
             container.addEventListener('create-route', function(data) {
               assertEquals(fakeSinkList[2].id, data.detail.sinkId);
               // Cast mode 2 is used, since we selected it explicitly.

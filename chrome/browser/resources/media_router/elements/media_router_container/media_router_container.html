@@ -102,45 +102,47 @@
             [[i18n('deviceMissingText')]]
           </a>
         </div>
-        <paper-menu id="sink-list" role="presentation"
-            hidden$="[[computeSinkListHidden_(sinksToShow_, isUserSearching_)]]">
-          <template is="dom-repeat" id="sinkList" items="[[sinksToShow_]]">
-            <paper-item on-tap="onSinkClick_">
-              <div class="sink-content">
-                <div>
-                  <iron-icon icon="[[computeSinkIcon_(item)]]"
-                      hidden$="[[computeSinkIsLaunching_(currentLaunchingSinkId_, item.id)]]"
-                      class$="[[computeSinkIconClass_(item.id, sinkToRouteMap_)]]">
-                  </iron-icon>
-                  <template is="dom-if"
-                      if="[[computeSinkIsLaunching_(currentLaunchingSinkId_, item.id)]]">
-                    <paper-spinner class="sink-icon" active>
-                    </paper-spinner>
-                  </template>
-                </div>
-                <div>
-                  <div class="sink-text">
-                    <span dir="auto" class="sink-name" title="[[item.name]]">
-                      [[item.name]]
-                    </span>
+        <template is="dom-if"
+            if="[[!computeSinkListHidden_(sinksToShow_, isUserSearching_)]]">
+          <paper-menu id="sink-list" role="presentation">
+            <template is="dom-repeat" id="sinkList" items="[[sinksToShow_]]">
+              <paper-item on-tap="onSinkClick_">
+                <div class="sink-content">
+                  <div>
+                    <iron-icon icon="[[computeSinkIcon_(item)]]"
+                        hidden$="[[computeSinkIsLaunching_(currentLaunchingSinkId_, item.id)]]"
+                        class$="[[computeSinkIconClass_(item.id, sinkToRouteMap_)]]">
+                    </iron-icon>
                     <template is="dom-if"
-                        if="[[!computeSinkDomainHidden_(item)]]">
-                      <span class="sink-domain" title="[[item.domain]]">
-                        [[item.domain]]
-                      </span>
+                        if="[[computeSinkIsLaunching_(currentLaunchingSinkId_, item.id)]]">
+                      <paper-spinner class="sink-icon" active>
+                      </paper-spinner>
                     </template>
                   </div>
-                  <template is="dom-if"
-                      if="[[!computeSinkSubtextHidden_(item, sinkToRouteMap_)]]">
-                    <div class="sink-text sink-subtext">
-                      <span>[[computeSinkSubtext_(item, sinkToRouteMap_)]]</span>
+                  <div>
+                    <div class="sink-text">
+                      <span dir="auto" class="sink-name" title="[[item.name]]">
+                        [[item.name]]
+                      </span>
+                      <template is="dom-if"
+                          if="[[!computeSinkDomainHidden_(item)]]">
+                        <span class="sink-domain" title="[[item.domain]]">
+                          [[item.domain]]
+                        </span>
+                      </template>
                     </div>
-                  </template>
+                    <template is="dom-if"
+                        if="[[!computeSinkSubtextHidden_(item, sinkToRouteMap_)]]">
+                      <div class="sink-text sink-subtext">
+                        <span>[[computeSinkSubtext_(item, sinkToRouteMap_)]]</span>
+                      </div>
+                    </template>
+                  </div>
                 </div>
-              </div>
-            </paper-item>
-          </template>
-        </paper-menu>
+              </paper-item>
+            </template>
+          </paper-menu>
+        </template>
         <div id="sink-search"
             class$="[[computeSinkSearchClass_(currentView_, sinksToShow_)]]">
           <div class="sink-content">

@@ -1302,7 +1302,7 @@ Polymer({
   onSinkClick_: function(event) {
     var clickedSink = (this.isUserSearching_) ?
         this.$$('#searchResults').itemForElement(event.target).sinkItem :
-        this.$.sinkList.itemForElement(event.target);
+        this.$$('#sinkList').itemForElement(event.target);
     this.showOrCreateRoute_(clickedSink);
     this.fire('sink-click', {index: event['model'].index});
   },
@@ -1634,12 +1634,15 @@ Polymer({
       this.$['container-header'].style.marginTop = firstRunFlowHeight + 'px';
       this.$['content'].style.marginTop =
           firstRunFlowHeight + headerHeight + 'px';
-      this.$['sink-list'].style.maxHeight =
-          this.dialogHeight_ - headerHeight - firstRunFlowHeight -
-              issueHeight - searchHeight + 'px';
-      var searchResults = this.$$('#search-results');
-      if (searchResults) {
-        searchResults.style.maxHeight = this.$['sink-list'].style.maxHeight;
+
+      var sinkList = this.$$('#sink-list');
+      if (sinkList) {
+        sinkList.style.maxHeight =
+            this.dialogHeight_ - headerHeight - firstRunFlowHeight -
+                issueHeight - searchHeight + 'px';
+        var searchResults = this.$$('#search-results');
+        if (searchResults)
+          searchResults.style.maxHeight = sinkList.style.maxHeight;
       }
     });
   },
