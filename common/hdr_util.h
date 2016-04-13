@@ -43,8 +43,12 @@ bool ColourValuePresent(long long value);
 bool CopyColour(const mkvparser::Colour& parser_colour,
                 mkvmuxer::Colour* muxer_colour);
 
-// Returns VP9 level upon success or 0 upon failure.
-int ParseVpxCodecPrivate(const uint8_t* private_data, int32_t length);
+// Returns true if |profile| and |level| are set to valid values. Returns VP9
+// profile in |profile| or -1 if there was no profile set in CodecPrivate data.
+// Returns VP9 level in |level| or -1 if there was no level set in CodecPrivate
+// data.
+bool ParseVpxCodecPrivate(const uint8_t* private_data, int32_t length,
+                          int* profile, int* level);
 
 }  // namespace libwebm
 
