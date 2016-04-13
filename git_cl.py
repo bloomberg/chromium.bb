@@ -878,7 +878,10 @@ class Changelist(object):
   Supports two codereview backends: Rietveld or Gerrit, selected at object
   creation.
 
-  Not safe for concurrent multi-{thread,process} use.
+  Notes:
+    * Not safe for concurrent multi-{thread,process} use.
+    * Caches values from current branch. Therefore, re-use after branch change
+      with care.
   """
 
   def __init__(self, branchref=None, issue=None, codereview=None, **kwargs):
@@ -2362,7 +2365,8 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
 
       if not git_footers.get_footer_change_id(change_desc.description):
         DownloadGerritHook(False)
-        change_desc.set_description(AddChangeIdToCommitMessage(options, args))
+        change_desc.set_description(self._AddChangeIdToCommitMessage(options,
+                                                                     args))
       ref_to_push = 'HEAD'
       parent = '%s/%s' % (gerrit_remote, branch)
       change_id = git_footers.get_footer_change_id(change_desc.description)[0]
@@ -2432,6 +2436,19 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
               ref_to_push])
     return 0
 
+  def _AddChangeIdToCommitMessage(self, options, args):
+    """Re-commits using the current message, assumes the commit hook is in
+    place.
+    """
+    log_desc = options.message or CreateDescriptionFromLog(args)
+    git_command = ['commit', '--amend', '-m', log_desc]
+    RunGit(git_command)
+    new_log_desc = CreateDescriptionFromLog(args)
+    if git_footers.get_footer_change_id(new_log_desc):
+      print 'git-cl: Added Change-Id to commit message.'
+      return new_log_desc
+    else:
+      print >> sys.stderr, 'ERROR: Gerrit commit-msg hook not available.'
 
 
 _CODEREVIEW_IMPLEMENTATIONS = {
@@ -2730,8 +2747,8 @@ def CMDconfig(parser, args):
   """Edits configuration for this tree."""
 
   print('WARNING: git cl config works for Rietveld only.\n'
-        'For Gerrit, see http://crbug.com/579160.')
-  # TODO(tandrii): add Gerrit support as part of http://crbug.com/579160.
+        'For Gerrit, see http://crbug.com/603116.')
+  # TODO(tandrii): add Gerrit support as part of http://crbug.com/603116.
   parser.add_option('--activate-update', action='store_true',
                     help='activate auto-updating [rietveld] section in '
                          '.git/config')
@@ -3080,7 +3097,7 @@ def CMDissue(parser, args):
         issue = int(args[0])
       except ValueError:
         DieWithError('Pass a number to set the issue or none to list it.\n'
-            'Maybe you want to run git cl status?')
+                     'Maybe you want to run git cl status?')
       cl.SetIssue(issue)
     print 'Issue number: %s (%s)' % (cl.GetIssue(), cl.GetIssueURL())
   return 0
@@ -3258,21 +3275,6 @@ def CMDpresubmit(parser, args):
       verbose=options.verbose,
       change=cl.GetChange(base_branch, None))
   return 0
-
-
-def AddChangeIdToCommitMessage(options, args):
-  """Re-commits using the current message, assumes the commit hook is in
-  place.
-  """
-  log_desc = options.message or CreateDescriptionFromLog(args)
-  git_command = ['commit', '--amend', '-m', log_desc]
-  RunGit(git_command)
-  new_log_desc = CreateDescriptionFromLog(args)
-  if git_footers.get_footer_change_id(new_log_desc):
-    print 'git-cl: Added Change-Id to commit message.'
-    return new_log_desc
-  else:
-    print >> sys.stderr, 'ERROR: Gerrit commit-msg hook not available.'
 
 
 def GenerateGerritChangeId(message):
