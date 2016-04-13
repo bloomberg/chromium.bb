@@ -603,9 +603,11 @@ void GLSurfaceOzoneSurfacelessSurfaceImpl::Destroy() {
   }
 
   if (!was_current) {
-    previous_context->MakeCurrent(previous_surface.get());
-  } else {
-    context_->ReleaseCurrent(this);
+    if (previous_context) {
+      previous_context->MakeCurrent(previous_surface.get());
+    } else {
+      context_->ReleaseCurrent(this);
+    }
   }
 }
 
