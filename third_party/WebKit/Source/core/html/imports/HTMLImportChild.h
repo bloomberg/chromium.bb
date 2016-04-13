@@ -34,7 +34,6 @@
 #include "core/html/imports/HTMLImport.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
-#include "wtf/WeakPtr.h"
 
 namespace blink {
 
@@ -61,9 +60,6 @@ public:
     void ownerInserted();
     void didShareLoader();
     void didStartLoading();
-#if !ENABLE(OILPAN)
-    WeakPtr<HTMLImportChild> weakPtr() { return m_weakFactory.createWeakPtr(); }
-#endif
 
     // HTMLImport
     Document* document() const override;
@@ -78,9 +74,6 @@ public:
 #endif
 
     void setClient(HTMLImportChildClient*);
-#if !ENABLE(OILPAN)
-    void clearClient();
-#endif
 
     void didFinishLoading();
     void didFinishUpgradingCustomElements();
@@ -94,9 +87,6 @@ private:
 
     KURL m_url;
     WeakMember<CustomElementMicrotaskImportStep> m_customElementMicrotaskStep;
-#if !ENABLE(OILPAN)
-    WeakPtrFactory<HTMLImportChild> m_weakFactory;
-#endif
     Member<HTMLImportLoader> m_loader;
     Member<HTMLImportChildClient> m_client;
 };

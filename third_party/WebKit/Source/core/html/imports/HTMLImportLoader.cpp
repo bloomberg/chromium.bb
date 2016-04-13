@@ -52,9 +52,6 @@ HTMLImportLoader::HTMLImportLoader(HTMLImportsController* controller)
 
 HTMLImportLoader::~HTMLImportLoader()
 {
-#if !ENABLE(OILPAN)
-    dispose();
-#endif
 }
 
 void HTMLImportLoader::dispose()

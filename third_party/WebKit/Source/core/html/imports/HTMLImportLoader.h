@@ -48,12 +48,9 @@ class HTMLImportChild;
 class HTMLImportsController;
 
 
-//
 // Owning imported Document lifetime. It also implements ResourceClient through ResourceOwner
 // to feed fetched bytes to the DocumentWriter of the imported document.
 // HTMLImportLoader is owned by HTMLImportsController.
-//
-//
 class HTMLImportLoader final : public GarbageCollectedFinalized<HTMLImportLoader>, public ResourceOwner<RawResource>, public DocumentParserClient {
     USING_GARBAGE_COLLECTED_MIXIN(HTMLImportLoader);
 public:
@@ -118,9 +115,6 @@ private:
     void setState(State);
     void didFinishLoading();
     bool hasPendingResources() const;
-#if !ENABLE(OILPAN)
-    void clear();
-#endif
 
     Member<HTMLImportsController> m_controller;
     HeapVector<Member<HTMLImportChild>> m_imports;

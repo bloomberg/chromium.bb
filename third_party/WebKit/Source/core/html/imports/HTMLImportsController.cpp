@@ -70,10 +70,6 @@ HTMLImportsController::HTMLImportsController(Document& master)
 
 HTMLImportsController::~HTMLImportsController()
 {
-#if !ENABLE(OILPAN)
-    // Verify that dispose() has been called.
-    ASSERT(!m_root);
-#endif
 }
 
 void HTMLImportsController::dispose()

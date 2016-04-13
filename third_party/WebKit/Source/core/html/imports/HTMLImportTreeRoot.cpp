@@ -26,9 +26,6 @@ HTMLImportTreeRoot::HTMLImportTreeRoot(Document* document)
 
 HTMLImportTreeRoot::~HTMLImportTreeRoot()
 {
-#if !ENABLE(OILPAN)
-    dispose();
-#endif
 }
 
 void HTMLImportTreeRoot::dispose()
@@ -67,14 +64,9 @@ void HTMLImportTreeRoot::stateDidChange()
 
 void HTMLImportTreeRoot::scheduleRecalcState()
 {
-#if ENABLE(OILPAN)
     ASSERT(m_document);
     if (m_recalcTimer.isActive() || !m_document->isActive())
         return;
-#else
-    if (m_recalcTimer.isActive() || !m_document)
-        return;
-#endif
     m_recalcTimer.startOneShot(0, BLINK_FROM_HERE);
 }
 

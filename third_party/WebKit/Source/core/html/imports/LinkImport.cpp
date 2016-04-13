@@ -52,12 +52,6 @@ LinkImport::LinkImport(HTMLLinkElement* owner)
 
 LinkImport::~LinkImport()
 {
-#if !ENABLE(OILPAN)
-    if (m_child) {
-        m_child->clearClient();
-        m_child = nullptr;
-    }
-#endif
 }
 
 Document* LinkImport::importedDocument() const
