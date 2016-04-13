@@ -620,25 +620,38 @@ TEST(ContentSettingsPatternTest, Compare) {
   EXPECT_EQ(ContentSettingsPattern::SUCCESSOR,
             Pattern("https://mail.google.com:*").Compare(
                 Pattern("*://mail.google.com:80")));
+}
 
-  // Test the wildcard pattern.
+TEST(ContentSettingsPatternTest, CompareWithWildcard) {
   EXPECT_EQ(ContentSettingsPattern::IDENTITY,
             ContentSettingsPattern::Wildcard().Compare(
                 ContentSettingsPattern::Wildcard()));
+  EXPECT_EQ(ContentSettingsPattern::IDENTITY,
+            ContentSettingsPattern::Wildcard().Compare(Pattern("*")));
 
   EXPECT_EQ(ContentSettingsPattern::PREDECESSOR,
             Pattern("[*.]google.com").Compare(
                 ContentSettingsPattern::Wildcard()));
+  EXPECT_EQ(ContentSettingsPattern::PREDECESSOR,
+            Pattern("[*.]google.com").Compare(Pattern("*")));
+
   EXPECT_EQ(ContentSettingsPattern::SUCCESSOR,
             ContentSettingsPattern::Wildcard().Compare(
                  Pattern("[*.]google.com")));
+  EXPECT_EQ(ContentSettingsPattern::SUCCESSOR,
+            Pattern("*").Compare(Pattern("[*.]google.com")));
 
   EXPECT_EQ(ContentSettingsPattern::PREDECESSOR,
             Pattern("mail.google.com").Compare(
                 ContentSettingsPattern::Wildcard()));
+  EXPECT_EQ(ContentSettingsPattern::PREDECESSOR,
+            Pattern("mail.google.com").Compare(Pattern("*")));
+
   EXPECT_EQ(ContentSettingsPattern::SUCCESSOR,
             ContentSettingsPattern::Wildcard().Compare(
                  Pattern("mail.google.com")));
+  EXPECT_EQ(ContentSettingsPattern::SUCCESSOR,
+            Pattern("*").Compare(Pattern("mail.google.com")));
 }
 
 // Legacy tests to ensure backwards compatibility.
