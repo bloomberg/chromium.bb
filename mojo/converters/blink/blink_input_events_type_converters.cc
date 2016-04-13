@@ -64,6 +64,20 @@ int GetClickCount(int flags) {
   return 1;
 }
 
+blink::WebPointerProperties::PointerType EventPointerKindToWebPointerType(
+    mus::mojom::PointerKind pointer_kind) {
+  switch (pointer_kind) {
+    case mus::mojom::PointerKind::MOUSE:
+      return blink::WebPointerProperties::PointerType::Mouse;
+    case mus::mojom::PointerKind::TOUCH:
+      return blink::WebPointerProperties::PointerType::Touch;
+    case mus::mojom::PointerKind::PEN:
+      return blink::WebPointerProperties::PointerType::Pen;
+  }
+  NOTREACHED();
+  return blink::WebPointerProperties::PointerType::Unknown;
+}
+
 void SetWebMouseEventLocation(const mus::mojom::LocationData& location_data,
                               blink::WebMouseEvent* web_event) {
   web_event->x = static_cast<int>(location_data.x);
@@ -75,7 +89,8 @@ void SetWebMouseEventLocation(const mus::mojom::LocationData& location_data,
 scoped_ptr<blink::WebInputEvent> BuildWebMouseEventFrom(
     const mus::mojom::EventPtr& event) {
   scoped_ptr<blink::WebMouseEvent> web_event(new blink::WebMouseEvent);
-  // TODO(crbug.com/593375): Set pointerType from event->pointer_data->kind
+  web_event->pointerType =
+      EventPointerKindToWebPointerType(event->pointer_data->kind);
 
   if (event->pointer_data && event->pointer_data->location)
     SetWebMouseEventLocation(*(event->pointer_data->location), web_event.get());
