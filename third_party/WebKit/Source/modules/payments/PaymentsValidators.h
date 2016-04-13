@@ -27,7 +27,7 @@ public:
     // Returns true if |code| is a valid ISO 639 language code.
     static bool isValidLanguageCodeFormat(const String& code, String* optionalErrorMessage);
 
-    // Returns true if |code| is a valid ISO 1524 script code.
+    // Returns true if |code| is a valid ISO 15924 script code.
     static bool isValidScriptCodeFormat(const String& code, String* optionalErrorMessage);
 };
 

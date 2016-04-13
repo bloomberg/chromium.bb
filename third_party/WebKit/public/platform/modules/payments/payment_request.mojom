@@ -22,7 +22,7 @@ struct ShippingAddress {
   // letters.
   string language_code;
 
-  // Optional ISO 1524 script code. Four ASCII letters. The first letter is
+  // Optional ISO 15924 script code. Four ASCII letters. The first letter is
   // upper case; the rest are lower case.
   string script_code;
 

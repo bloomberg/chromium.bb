@@ -59,7 +59,7 @@ bool PaymentsValidators::isValidScriptCodeFormat(const String& code, String* opt
         return true;
 
     if (optionalErrorMessage)
-        *optionalErrorMessage = "'" + code + "' is not a valid ISO 1524 script code, should be an upper case letter [A-Z] followed by 3 lower case letters [a-z]";
+        *optionalErrorMessage = "'" + code + "' is not a valid ISO 15924 script code, should be an upper case letter [A-Z] followed by 3 lower case letters [a-z]";
 
     return false;
 }
