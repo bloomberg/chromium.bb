@@ -143,6 +143,18 @@
         "test": "components_browsertests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "build.id": "KTU84P",
+              "product.board": "hammerhead"
+            }
+          ]
+        },
+        "test": "chrome_public_test"
+      },
+      {
         "args": [
           "--isolate_file_path=src/components/components_unittests.isolate"
         ],
@@ -236,9 +248,6 @@
     "instrumentation_tests": [
       {
         "test": "android_webview_test_apk"
-      },
-      {
-        "test": "chrome_public_test_apk"
       },
       {
         "test": "chrome_sync_shell_test_apk"
