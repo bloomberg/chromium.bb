@@ -46,5 +46,6 @@ if (current_toolchain == default_toolchain) {
   # GYP: //tools/android/md5sum/md5sum.gyp:md5sum_bin_host
   binary_symlink("md5sum_bin_host") {
     binary_label = ":md5sum_bin($host_toolchain)"
+    output_name = "md5sum_bin_host"
   }
 }

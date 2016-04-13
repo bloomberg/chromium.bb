@@ -172,7 +172,7 @@ class ContentShellDriverDetails():
         return 'libcontent_shell_content_view.so'
 
     def additional_resources(self):
-        return ['content_resources.pak', 'content_shell.pak', 'shell_resources.pak']
+        return []
 
     def command_line_file(self):
         return '/data/local/tmp/content-shell-command-line'
@@ -940,7 +940,7 @@ class ChromiumAndroidDriver(driver.Driver):
         return [line.split('  ')[0] for line in md5sum_output]
 
     def _files_match(self, host_file, device_file):
-        assert self._port.host.filesystem.exists(host_file)
+        assert self._port.host.filesystem.exists(host_file), host_file
         device_hashes = self._extract_hashes_from_md5sum_output(
             self._port.host.executive.popen(self._android_commands.adb_command() + ['shell', MD5SUM_DEVICE_PATH, device_file],
                                             stdout=subprocess.PIPE).stdout)

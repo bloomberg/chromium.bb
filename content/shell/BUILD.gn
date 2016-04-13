@@ -419,9 +419,21 @@ repack("pak") {
   output = "$root_out_dir/content_shell.pak"
 }
 
-# TODO(GYP): Figure out what this should be on android
-# and make linking this work on the Mac.
-if (!is_android && !is_mac) {
+if (is_android) {
+  group("content_shell") {
+    testonly = true
+    deps = [
+      "//content/shell/android:content_shell_apk",
+    ]
+  }
+} else if (is_mac) {
+  group("content_shell") {
+    testonly = true
+    deps = [
+      ":content_shell_lib",
+    ]
+  }
+} else {
   # TODO(brettw) when GYP is no longer necessary, delete
   # content/shell/app/shell.exe.manifest. This file is not used in GN.
   executable("content_shell") {
@@ -464,25 +476,10 @@ if (!is_android && !is_mac) {
       ]
     }
 
-    if (is_android) {
-      # Some tests rely on this tool. It might be nicer if these tests relied on
-      # image diff rather than having content shell depend on it.
-      data_deps = [
-        "//tools/imagediff($host_toolchain)",
-      ]
-    }
-
     if (is_linux && !is_component_build) {
       # Set rpath to find our own libfreetype even in a non-component build.
       configs += [ "//build/config/gcc:rpath_for_built_shared_libraries" ]
     }
-  }
-} else {
-  group("content_shell") {
-    testonly = true
-    deps = [
-      ":content_shell_lib",
-    ]
   }
 }
 

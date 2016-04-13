@@ -293,7 +293,6 @@ group("both_gn_and_gyp") {
       "//tools/android/heap_profiler:heap_profiler_unittests",
       "//tools/android/kerberos/SpnegoAuthenticator:spnego_authenticator_apk",
       "//tools/cygprofile:cygprofile_unittests",
-      "//tools/imagediff($host_toolchain)",
       "//ui/android:ui_junit_tests",
     ]
     deps -= [
@@ -787,7 +786,9 @@ if (!is_ios) {
     testonly = true
 
     deps = [
+      "//content/shell:content_shell",
       "//third_party/WebKit/public:all_blink",
+      "//tools/imagediff",
     ]
 
     # NOTE: The following deps are needed to run the layout tests
@@ -796,18 +797,12 @@ if (!is_ios) {
     if (is_android) {
       deps += [
         "//breakpad:breakpad_unittests",
-        "//breakpad:dump_syms($host_toolchain)",
-        "//breakpad:microdump_stackwalk($host_toolchain)",
-        "//breakpad:minidump_dump($host_toolchain)",
-        "//breakpad:minidump_stackwalk($host_toolchain)",
-        "//breakpad:symupload($host_toolchain)",
-        "//content/shell/android:content_shell_apk",
-        "//tools/imagediff($host_toolchain)",
-      ]
-    } else {
-      deps += [
-        "//content/shell:content_shell",
-        "//tools/imagediff",
+        "//breakpad:dump_syms",
+        "//breakpad:microdump_stackwalk",
+        "//breakpad:minidump_dump",
+        "//breakpad:minidump_stackwalk",
+        "//breakpad:symupload",
+        "//tools/android/forwarder",
       ]
     }
 
