@@ -403,6 +403,7 @@ void GpuWatchdogThread::OnAddPowerObserver() {
 
 void GpuWatchdogThread::OnSuspend() {
   suspended_ = true;
+  suspend_time_ = base::Time::Now();
 
   // When suspending force an acknowledgement to cancel any pending termination
   // tasks.
@@ -411,6 +412,7 @@ void GpuWatchdogThread::OnSuspend() {
 
 void GpuWatchdogThread::OnResume() {
   suspended_ = false;
+  resume_time_ = base::Time::Now();
 
   // After resuming jump-start the watchdog again.
   armed_ = false;

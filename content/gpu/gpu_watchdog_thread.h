@@ -119,6 +119,10 @@ class GpuWatchdogThread : public base::Thread,
 
   bool suspended_;
 
+  // The time the last OnSuspend and OnResume was called.
+  base::Time suspend_time_;
+  base::Time resume_time_;
+
   // This is the time the last check was sent.
   base::Time check_time_;
   base::TimeTicks check_timeticks_;
