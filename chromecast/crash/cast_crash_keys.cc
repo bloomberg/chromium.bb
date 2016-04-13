@@ -44,6 +44,40 @@ size_t RegisterCastCrashKeys() {
     { "ppapi_path", kMediumSize },
     { "subresource_url", kLargeSize },
     { "total-discardable-memory-allocated", kSmallSize },
+
+    // Copied from common/crash_keys. Remove when
+    // http://crbug.com/598854 is resolved.
+
+    // Keys for http://crbug.com/575245
+    { "swapout_frame_id", kSmallSize },
+    { "swapout_proxy_id", kSmallSize },
+    { "swapout_view_id", kSmallSize },
+    { "commit_frame_id", kSmallSize },
+    { "commit_proxy_id", kSmallSize },
+    { "commit_view_id", kSmallSize },
+    { "commit_main_render_frame_id", kSmallSize },
+    { "newproxy_proxy_id", kSmallSize },
+    { "newproxy_view_id", kSmallSize },
+    { "newproxy_opener_id", kSmallSize },
+    { "newproxy_parent_id", kSmallSize },
+    { "rvinit_view_id", kSmallSize },
+    { "rvinit_proxy_id", kSmallSize },
+    { "rvinit_main_frame_id", kSmallSize },
+    { "initrf_frame_id", kSmallSize },
+    { "initrf_proxy_id", kSmallSize },
+    { "initrf_view_id", kSmallSize },
+    { "initrf_main_frame_id", kSmallSize },
+    { "initrf_view_is_live", kSmallSize },
+
+    // Keys for https://crbug.com/591478
+    { "initrf_parent_proxy_exists", kSmallSize },
+    { "initrf_render_view_is_live", kSmallSize },
+    { "initrf_parent_is_in_same_site_instance", kSmallSize},
+    { "initrf_parent_process_is_live", kSmallSize},
+    { "initrf_root_is_in_same_site_instance", kSmallSize},
+    { "initrf_root_is_in_same_site_instance_as_parent", kSmallSize},
+    { "initrf_root_process_is_live", kSmallSize},
+    { "initrf_root_proxy_is_live", kSmallSize},
   };
 
   return base::debug::InitCrashKeys(fixed_keys, arraysize(fixed_keys),
