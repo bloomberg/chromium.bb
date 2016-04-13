@@ -44,7 +44,9 @@
 
 namespace WTF {
 
-class PartitionAllocatorDummyVisitor;
+class PartitionAllocatorDummyVisitor {
+    DISALLOW_NEW();
+};
 
 class WTF_EXPORT PartitionAllocator {
 public:
@@ -124,46 +126,6 @@ public:
     }
 
     static bool isAllocationAllowed() { return true; }
-    template<typename T>
-    static bool isHeapObjectAlive(T* object)
-    {
-        ASSERT_NOT_REACHED();
-        return false;
-    }
-
-    static void markNoTracing(...)
-    {
-        ASSERT_NOT_REACHED();
-    }
-
-    static void registerDelayedMarkNoTracing(...)
-    {
-        ASSERT_NOT_REACHED();
-    }
-
-    static void registerWeakMembers(...)
-    {
-        ASSERT_NOT_REACHED();
-    }
-
-    static void registerWeakTable(...)
-    {
-        ASSERT_NOT_REACHED();
-    }
-
-#if ENABLE(ASSERT)
-    static bool weakTableRegistered(...)
-    {
-        ASSERT_NOT_REACHED();
-        return false;
-    }
-#endif
-
-    template<typename T, typename Traits>
-    static void trace(...)
-    {
-        ASSERT_NOT_REACHED();
-    }
 
     template<typename T>
     struct OtherType {
@@ -181,18 +143,6 @@ public:
 
 private:
     static void* allocateBacking(size_t, const char* typeName);
-};
-
-// The Windows compiler seems to be very eager to instantiate things it won't
-// need, so unless we have this class we get compile errors.
-class PartitionAllocatorDummyVisitor {
-    DISALLOW_NEW();
-public:
-    template<typename T> inline bool isHeapObjectAlive(T obj)
-    {
-        ASSERT_NOT_REACHED();
-        return false;
-    }
 };
 
 // Specializations for heap profiling, so type profiling of |char| is possible
