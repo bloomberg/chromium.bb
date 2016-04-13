@@ -152,7 +152,7 @@ TEST_PPAPI_IN_PROCESS(VarResource)
 TEST_PPAPI_OUT_OF_PROCESS(VarResource)
 
 // Flaky on Win, Linux and CrOS, http://crbug.com/602877
-#if defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)
 #define MAYBE_VideoDecoder DISABLED_VideoDecoder
 #else
 #define MAYBE_VideoDecoder VideoDecoder
