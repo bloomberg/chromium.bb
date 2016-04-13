@@ -2530,8 +2530,8 @@
       'browser/ui/views/website_settings/permissions_bubble_view.h',
     ],
     'chrome_browser_ui_views_extensions_non_mac_sources': [
-      'browser/ui/views/extensions/bookmark_app_bubble_view.cc',
-      'browser/ui/views/extensions/bookmark_app_bubble_view.h',
+      'browser/ui/views/extensions/bookmark_app_confirmation_view.cc',
+      'browser/ui/views/extensions/bookmark_app_confirmation_view.h',
       'browser/ui/views/extensions/browser_action_drag_data.cc',
       'browser/ui/views/extensions/browser_action_drag_data.h',
       'browser/ui/views/extensions/device_permissions_dialog_view.cc',

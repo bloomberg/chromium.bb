@@ -69,7 +69,7 @@
 #include "chrome/browser/ui/views/download/download_shelf_view.h"
 #include "chrome/browser/ui/views/edit_search_engine_dialog.h"
 #include "chrome/browser/ui/views/exclusive_access_bubble_views.h"
-#include "chrome/browser/ui/views/extensions/bookmark_app_bubble_view.h"
+#include "chrome/browser/ui/views/extensions/bookmark_app_confirmation_view.h"
 #include "chrome/browser/ui/views/extensions/extension_keybinding_registry_views.h"
 #include "chrome/browser/ui/views/find_bar_host.h"
 #include "chrome/browser/ui/views/frame/browser_view_layout.h"
@@ -1249,7 +1249,8 @@ void BrowserView::ShowBookmarkBubble(const GURL& url, bool already_bookmarked) {
 void BrowserView::ShowBookmarkAppBubble(
     const WebApplicationInfo& web_app_info,
     const ShowBookmarkAppBubbleCallback& callback) {
-  BookmarkAppBubbleView::ShowBubble(GetToolbarView(), web_app_info, callback);
+  BookmarkAppConfirmationView::CreateAndShow(GetNativeWindow(), web_app_info,
+                                             callback);
 }
 
 autofill::SaveCardBubbleView* BrowserView::ShowSaveCreditCardBubble(
