@@ -1313,6 +1313,7 @@ source_set("test_support_ui") {
 
   deps = [
     "//components/metrics:test_support",
+    "//components/password_manager/content/public/interfaces",
     "//components/password_manager/core/browser:test_support",
     "//skia",
     "//testing/gtest",

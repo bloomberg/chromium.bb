@@ -39,10 +39,6 @@
         '../skia/skia.gyp:skia_mojo',
         '../third_party/WebKit/public/blink.gyp:mojo_bindings',
         '../ui/mojo/geometry/mojo_bindings.gyp:mojo_geometry_bindings',
-        '../url/url.gyp:url_interfaces_mojom',
-      ],
-      'export_dependent_settings': [
-        '../url/url.gyp:url_interfaces_mojom',
       ],
       'includes': [ '../mojo/mojom_bindings_generator_explicit.gypi' ],
     },
@@ -53,7 +49,11 @@
         'enable_wexit_time_destructors': 1,
       },
       'dependencies': [
+        '../url/url.gyp:url_mojom',
         'content_common_mojo_bindings_mojom',
+      ],
+      'export_dependent_settings': [
+        '../url/url.gyp:url_mojom',
       ],
     },
   ]
