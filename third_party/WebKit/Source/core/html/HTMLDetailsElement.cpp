@@ -93,9 +93,6 @@ HTMLDetailsElement::HTMLDetailsElement(Document& document)
 
 HTMLDetailsElement::~HTMLDetailsElement()
 {
-#if !ENABLE(OILPAN)
-    detailsToggleEventSender().cancelEvent(this);
-#endif
 }
 
 void HTMLDetailsElement::dispatchPendingEvent(DetailsEventSender* eventSender)

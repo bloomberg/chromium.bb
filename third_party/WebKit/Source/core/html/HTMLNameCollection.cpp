@@ -35,10 +35,6 @@ HTMLNameCollection::HTMLNameCollection(ContainerNode& document, CollectionType t
 HTMLNameCollection::~HTMLNameCollection()
 {
     ASSERT(type() == WindowNamedItems || type() == DocumentNamedItems);
-#if !ENABLE(OILPAN)
-    ASSERT(ownerNode().isDocumentNode());
-    ownerNode().nodeLists()->removeCache(this, type(), m_name);
-#endif
 }
 
 } // namespace blink

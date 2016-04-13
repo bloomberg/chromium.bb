@@ -176,13 +176,6 @@ HTMLCollection* HTMLCollection::create(ContainerNode& base, CollectionType type)
 
 HTMLCollection::~HTMLCollection()
 {
-#if !ENABLE(OILPAN)
-    if (hasValidIdNameCache())
-        unregisterIdNameCacheFromDocument(document());
-    // Named HTMLCollection types remove cache by themselves.
-    if (isUnnamedHTMLCollectionType(type()))
-        ownerNode().nodeLists()->removeCache(this, type());
-#endif
 }
 
 void HTMLCollection::invalidateCache(Document* oldDocument) const

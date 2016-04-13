@@ -60,10 +60,6 @@ DEFINE_NODE_FACTORY(HTMLTrackElement)
 
 HTMLTrackElement::~HTMLTrackElement()
 {
-#if !ENABLE(OILPAN)
-    if (m_track)
-        m_track->clearTrackElement();
-#endif
 }
 
 Node::InsertionNotificationRequest HTMLTrackElement::insertedInto(ContainerNode* insertionPoint)

@@ -32,20 +32,6 @@ using namespace HTMLNames;
 
 ClassList::ClassList(Element* element) : DOMTokenList(nullptr), m_element(element) { }
 
-#if !ENABLE(OILPAN)
-void ClassList::ref()
-{
-    m_element->ref();
-    DOMTokenList::ref();
-}
-
-void ClassList::deref()
-{
-    m_element->deref();
-    DOMTokenList::deref();
-}
-#endif
-
 unsigned ClassList::length() const
 {
     return m_element->hasClass() ? classNames().size() : 0;

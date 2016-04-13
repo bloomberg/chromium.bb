@@ -308,16 +308,6 @@ void HTMLViewSourceDocument::maybeAddSpanForAnnotation(SourceAnnotation annotati
     }
 }
 
-#if !ENABLE(OILPAN)
-void HTMLViewSourceDocument::dispose()
-{
-    m_current.clear();
-    m_tbody.clear();
-    m_td.clear();
-    HTMLDocument::dispose();
-}
-#endif
-
 DEFINE_TRACE(HTMLViewSourceDocument)
 {
     visitor->trace(m_current);

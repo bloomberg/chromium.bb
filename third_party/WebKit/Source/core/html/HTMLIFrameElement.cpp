@@ -54,9 +54,6 @@ DEFINE_TRACE(HTMLIFrameElement)
 
 HTMLIFrameElement::~HTMLIFrameElement()
 {
-#if !ENABLE(OILPAN)
-    m_sandbox->setObserver(nullptr);
-#endif
 }
 
 DOMTokenList* HTMLIFrameElement::sandbox() const

@@ -80,10 +80,8 @@ void HTMLFrameOwnerElement::UpdateSuspendScope::performDeferredWidgetTreeOperati
                 currentParent->removeChild(child);
             if (newParent)
                 newParent->addChild(child);
-#if ENABLE(OILPAN)
             if (currentParent && !newParent)
                 child->dispose();
-#endif
         }
     }
 
@@ -122,9 +120,7 @@ void moveWidgetToParentSoon(Widget* child, FrameView* parent)
             parent->addChild(child);
         } else if (toFrameView(child->parent())) {
             toFrameView(child->parent())->removeChild(child);
-#if ENABLE(OILPAN)
             child->dispose();
-#endif
         }
         return;
     }

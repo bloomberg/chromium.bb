@@ -151,10 +151,6 @@ DEFINE_NODE_FACTORY(HTMLCanvasElement)
 HTMLCanvasElement::~HTMLCanvasElement()
 {
     v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(-m_externallyAllocatedMemory);
-#if !ENABLE(OILPAN)
-    // Ensure these go away before the ImageBuffer.
-    m_context.clear();
-#endif
 }
 
 void HTMLCanvasElement::parseAttribute(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& value)

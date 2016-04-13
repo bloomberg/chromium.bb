@@ -116,7 +116,6 @@ public:
         m_helper = AutoplayExperimentHelper::create(m_client.get());
     }
 
-#if ENABLE(OILPAN)
     void TearDown()
     {
         // Be sure that the mock is destructed before the test, so that any
@@ -127,7 +126,6 @@ public:
         m_client.clear();
         Heap::collectAllGarbage();
     }
-#endif
 
     Persistent<MockAutoplayClient> m_client;
     Persistent<AutoplayExperimentHelper> m_helper;
