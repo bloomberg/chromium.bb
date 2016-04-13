@@ -510,7 +510,7 @@
       'WebKit Mac10.11 (dbg)': 'none',
       'WebKit Mac10.11 (retina)': 'swarming_gyp_release_bot_x64',
       'WebKit Mac10.11': 'none',
-      'WebKit Mac10.9': 'none',
+      'WebKit Mac10.9': 'swarming_gyp_release_bot_x64',
       'WebKit Win Builder (dbg)': 'swarming_gyp_debug_bot_minimal_symbols_x86',
       'WebKit Win Builder': 'swarming_gyp_release_bot_minimal_symbols_x86',
       'WebKit Win x64 Builder (dbg)':
