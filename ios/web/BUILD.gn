@@ -339,8 +339,23 @@ source_set("test_support") {
   ]
 }
 
+bundle_data("ios_web_unittests_bundle_data") {
+  testonly = true
+  sources = [
+    "test/data/chrome.html",
+    "test/data/testbadpass.pkpass",
+    "test/data/testfavicon.png",
+    "test/data/testpass.pkpass",
+  ]
+  outputs = [
+    "{{bundle_resources_dir}}/{{source_root_relative_dir}}/" +
+        "{{source_file_part}}",
+  ]
+}
+
 test("ios_web_unittests") {
   deps = [
+    ":ios_web_unittests_bundle_data",
     ":test_support",
     ":web",
     "//base",
@@ -445,6 +460,7 @@ js_compile_checked("js_resources") {
 
   sources = [
     "web_state/js/resources/plugin_placeholder.js",
+    "web_state/js/resources/post_request.js",
     "web_state/js/resources/window_id.js",
     "webui/resources/web_ui.js",
   ]
