@@ -36,6 +36,7 @@
 #include "platform/fonts/FontFallbackIterator.h"
 #include "platform/fonts/GlyphBuffer.h"
 #include "platform/fonts/UTF16TextIterator.h"
+#include "platform/fonts/shaping/CaseMappingHarfBuzzBufferFiller.h"
 #include "platform/fonts/shaping/HarfBuzzFace.h"
 #include "platform/fonts/shaping/RunSegmenter.h"
 #include "platform/fonts/shaping/ShapeResultInlineHeaders.h"
@@ -240,37 +241,6 @@ static inline hb_direction_t TextDirectionToHBDirection(TextDirection dir, FontO
     return dir == RTL ? HB_DIRECTION_REVERSE(harfBuzzDirection) : harfBuzzDirection;
 }
 
-static const uint16_t* toUint16(const UChar* src)
-{
-    // FIXME: This relies on undefined behavior however it works on the
-    // current versions of all compilers we care about and avoids making
-    // a copy of the string.
-    static_assert(sizeof(UChar) == sizeof(uint16_t), "UChar should be the same size as uint16_t");
-    return reinterpret_cast<const uint16_t*>(src);
-}
-
-static inline void addToHarfBuzzBufferInternal(hb_buffer_t* buffer,
-    const FontDescription& fontDescription, const UChar* normalizedBuffer,
-    unsigned normalizedBufferLength, unsigned startIndex, unsigned numCharacters)
-{
-    // TODO: Revisit whether we can always fill the hb_buffer_t with the
-    // full run text, but only specify startIndex and numCharacters for the part
-    // to be shaped. Then simplify/change the complicated index computations in
-    // extractShapeResults().
-    if (fontDescription.variant() == FontVariantSmallCaps) {
-        String upperText = String(normalizedBuffer, normalizedBufferLength)
-            .upper();
-        // TextRun is 16 bit, therefore upperText is 16 bit, even after we call
-        // makeUpper().
-        ASSERT(!upperText.is8Bit());
-        hb_buffer_add_utf16(buffer, toUint16(upperText.characters16()),
-            normalizedBufferLength, startIndex, numCharacters);
-    } else {
-        hb_buffer_add_utf16(buffer, toUint16(normalizedBuffer),
-            normalizedBufferLength, startIndex, numCharacters);
-    }
-}
-
 inline bool HarfBuzzShaper::shapeRange(hb_buffer_t* harfBuzzBuffer,
     unsigned startIndex,
     unsigned numCharacters,
@@ -290,10 +260,6 @@ inline bool HarfBuzzShaper::shapeRange(hb_buffer_t* harfBuzzBuffer,
     hb_buffer_set_script(harfBuzzBuffer, ICUScriptToHBScript(currentRunScript));
     hb_buffer_set_direction(harfBuzzBuffer, TextDirectionToHBDirection(m_textRun.direction(),
         m_font->getFontDescription().orientation(), currentFont));
-
-    addToHarfBuzzBufferInternal(harfBuzzBuffer,
-        m_font->getFontDescription(), m_normalizedBuffer.get(), m_normalizedBufferLength,
-        startIndex, numCharacters);
 
     HarfBuzzScopedPtr<hb_font_t> harfBuzzFont(face->createFont(currentFontRangeSet), hb_font_destroy);
     hb_shape(harfBuzzFont.get(), harfBuzzBuffer, m_features.isEmpty() ? 0 : m_features.data(), m_features.size());
@@ -557,6 +523,17 @@ PassRefPtr<ShapeResult> HarfBuzzShaper::shapeResult()
             const SimpleFontData* directionAndSmallCapsAdjustedFont = fontDataAdjustedForOrientation(smallcapsAdjustedFont,
                 m_font->getFontDescription().orientation(),
                 segmentRange.renderOrientation);
+
+            CaseMapIntend caseMapIntend =
+                m_font->getFontDescription().variant() == FontVariantSmallCaps
+                ? CaseMapIntend::UpperCase : CaseMapIntend::KeepSameCase;
+            CaseMappingHarfBuzzBufferFiller(
+                caseMapIntend,
+                harfBuzzBuffer.get(),
+                m_normalizedBuffer.get(),
+                m_normalizedBufferLength,
+                currentQueueItem.m_startIndex,
+                currentQueueItem.m_numCharacters);
 
             if (!shapeRange(harfBuzzBuffer.get(),
                 currentQueueItem.m_startIndex,

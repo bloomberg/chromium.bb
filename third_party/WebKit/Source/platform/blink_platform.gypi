@@ -463,6 +463,8 @@
       'fonts/shaping/CachingWordShapeIterator.h',
       'fonts/shaping/CachingWordShaper.cpp',
       'fonts/shaping/CachingWordShaper.h',
+      'fonts/shaping/CaseMappingHarfBuzzBufferFiller.cpp',
+      'fonts/shaping/CaseMappingHarfBuzzBufferFiller.h',
       'fonts/shaping/HarfBuzzFace.cpp',
       'fonts/shaping/HarfBuzzFace.h',
       'fonts/shaping/HarfBuzzShaper.cpp',
