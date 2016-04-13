@@ -215,7 +215,7 @@ PassRefPtr<SkImageFilter> SkiaImageFilterBuilder::buildBoxReflectFilter(Reflecti
 
     SkMatrix flipMatrix = matrixForBoxReflectFilter(direction, offset);
     RefPtr<SkImageFilter> flipImageFilter = adoptRef(SkImageFilter::CreateMatrixFilter(
-        flipMatrix, kNone_SkFilterQuality, maskedInput.get()));
+        flipMatrix, kLow_SkFilterQuality, maskedInput.get()));
 
     return fromSkSp(SkXfermodeImageFilter::Make(nullptr, flipImageFilter.get(), input, nullptr));
 }
