@@ -50,11 +50,7 @@ private:
     // The map records the 'required' state of each (button) element.
     using Members = HeapHashMap<Member<HTMLInputElement>, bool>;
 
-#if ENABLE(OILPAN)
     using MemberKeyValue = WTF::KeyValuePair<Member<HTMLInputElement>, bool>;
-#else
-    using MemberKeyValue = WTF::KeyValuePair<HTMLInputElement*, bool>;
-#endif
 
     void updateRequiredButton(MemberKeyValue&, bool isRequired);
 

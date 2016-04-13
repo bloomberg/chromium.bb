@@ -299,16 +299,6 @@ BaseMultipleFieldsDateAndTimeInputType::BaseMultipleFieldsDateAndTimeInputType(H
 
 BaseMultipleFieldsDateAndTimeInputType::~BaseMultipleFieldsDateAndTimeInputType()
 {
-#if !ENABLE(OILPAN)
-    if (SpinButtonElement* element = spinButtonElement())
-        element->removeSpinButtonOwner();
-    if (ClearButtonElement* element = clearButtonElement())
-        element->removeClearButtonOwner();
-    if (DateTimeEditElement* element = dateTimeEditElement())
-        element->removeEditControlOwner();
-    if (PickerIndicatorElement* element = pickerIndicatorElement())
-        element->removePickerIndicatorOwner();
-#endif
 }
 
 String BaseMultipleFieldsDateAndTimeInputType::badInputText() const

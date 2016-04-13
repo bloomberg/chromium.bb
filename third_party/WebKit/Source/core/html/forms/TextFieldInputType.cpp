@@ -114,10 +114,6 @@ TextFieldInputType::TextFieldInputType(HTMLInputElement& element)
 
 TextFieldInputType::~TextFieldInputType()
 {
-#if !ENABLE(OILPAN)
-    if (SpinButtonElement* spinButton = spinButtonElement())
-        spinButton->removeSpinButtonOwner();
-#endif
 }
 
 SpinButtonElement* TextFieldInputType::spinButtonElement() const

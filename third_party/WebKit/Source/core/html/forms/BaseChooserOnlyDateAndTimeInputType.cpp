@@ -40,16 +40,11 @@ namespace blink {
 BaseChooserOnlyDateAndTimeInputType::BaseChooserOnlyDateAndTimeInputType(HTMLInputElement& element)
     : BaseDateAndTimeInputType(element)
 {
-#if ENABLE(OILPAN)
     ThreadState::current()->registerPreFinalizer(this);
-#endif
 }
 
 BaseChooserOnlyDateAndTimeInputType::~BaseChooserOnlyDateAndTimeInputType()
 {
-#if !ENABLE(OILPAN)
-    closeDateTimeChooser();
-#endif
     ASSERT(!m_dateTimeChooser);
 }
 
