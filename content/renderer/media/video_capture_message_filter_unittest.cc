@@ -107,6 +107,10 @@ TEST(VideoCaptureMessageFilterTest, Basic) {
               OnBufferCreated(
                   ::testing::Property(&base::SharedMemoryHandle::GetHandle, h),
                   100, 1));
+#elif defined(OS_MACOSX) && !defined(OS_IOS)
+  const base::SharedMemoryHandle handle =
+      base::SharedMemoryHandle(10, 100, base::GetCurrentProcId());
+  EXPECT_CALL(delegate, OnBufferCreated(handle, 100, 1));
 #else
   const base::SharedMemoryHandle handle = base::SharedMemoryHandle(10, true);
   EXPECT_CALL(delegate, OnBufferCreated(handle, 100, 1));

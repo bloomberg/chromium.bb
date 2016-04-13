@@ -690,90 +690,40 @@ void ParamTraits<base::FileDescriptor>::Log(const param_type& p,
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 void ParamTraits<base::SharedMemoryHandle>::Write(base::Pickle* m,
                                                   const param_type& p) {
-  m->WriteInt(p.GetType());
+  MachPortMac mach_port_mac(p.GetMemoryObject());
+  ParamTraits<MachPortMac>::Write(m, mach_port_mac);
+  size_t size = 0;
+  bool result = p.GetSize(&size);
+  DCHECK(result);
+  ParamTraits<uint32_t>::Write(m, static_cast<uint32_t>(size));
 
-  switch (p.GetType()) {
-    case base::SharedMemoryHandle::POSIX:
-      ParamTraits<base::FileDescriptor>::Write(m, p.GetFileDescriptor());
-      break;
-    case base::SharedMemoryHandle::MACH:
-      MachPortMac mach_port_mac(p.GetMemoryObject());
-      ParamTraits<MachPortMac>::Write(m, mach_port_mac);
-      size_t size = 0;
-      bool result = p.GetSize(&size);
-      DCHECK(result);
-      ParamTraits<uint32_t>::Write(m, static_cast<uint32_t>(size));
-
-      // If the caller intended to pass ownership to the IPC stack, release a
-      // reference.
-      if (p.OwnershipPassesToIPC())
-        p.Close();
-
-      break;
-  }
+  // If the caller intended to pass ownership to the IPC stack, release a
+  // reference.
+  if (p.OwnershipPassesToIPC())
+    p.Close();
 }
 
 bool ParamTraits<base::SharedMemoryHandle>::Read(const base::Pickle* m,
                                                  base::PickleIterator* iter,
                                                  param_type* r) {
-  base::SharedMemoryHandle::TypeWireFormat type;
-  if (!iter->ReadInt(&type))
+  MachPortMac mach_port_mac;
+  if (!ParamTraits<MachPortMac>::Read(m, iter, &mach_port_mac))
     return false;
 
-  base::SharedMemoryHandle::Type shm_type = base::SharedMemoryHandle::POSIX;
-  switch (type) {
-    case base::SharedMemoryHandle::POSIX:
-    case base::SharedMemoryHandle::MACH: {
-      shm_type = static_cast<base::SharedMemoryHandle::Type>(type);
-      break;
-    }
-    default: {
-      return false;
-    }
-  }
+  uint32_t size;
+  if (!ParamTraits<uint32_t>::Read(m, iter, &size))
+    return false;
 
-  switch (shm_type) {
-    case base::SharedMemoryHandle::POSIX: {
-      base::FileDescriptor file_descriptor;
-
-      bool success =
-          ParamTraits<base::FileDescriptor>::Read(m, iter, &file_descriptor);
-      if (!success)
-        return false;
-
-      *r = base::SharedMemoryHandle(file_descriptor.fd,
-                                    file_descriptor.auto_close);
-      return true;
-    }
-    case base::SharedMemoryHandle::MACH: {
-      MachPortMac mach_port_mac;
-      if (!ParamTraits<MachPortMac>::Read(m, iter, &mach_port_mac))
-        return false;
-
-      uint32_t size;
-      if (!ParamTraits<uint32_t>::Read(m, iter, &size))
-        return false;
-
-      *r = base::SharedMemoryHandle(mach_port_mac.get_mach_port(),
-                                    static_cast<size_t>(size),
-                                    base::GetCurrentProcId());
-      return true;
-    }
-  }
+  *r = base::SharedMemoryHandle(mach_port_mac.get_mach_port(),
+                                static_cast<size_t>(size),
+                                base::GetCurrentProcId());
+  return true;
 }
 
 void ParamTraits<base::SharedMemoryHandle>::Log(const param_type& p,
                                                 std::string* l) {
-  switch (p.GetType()) {
-    case base::SharedMemoryHandle::POSIX:
-      l->append("POSIX Fd: ");
-      ParamTraits<base::FileDescriptor>::Log(p.GetFileDescriptor(), l);
-      break;
-    case base::SharedMemoryHandle::MACH:
-      l->append("Mach port: ");
-      LogParam(p.GetMemoryObject(), l);
-      break;
-  }
+  l->append("Mach port: ");
+  LogParam(p.GetMemoryObject(), l);
 }
 
 #elif defined(OS_WIN)

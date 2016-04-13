@@ -194,9 +194,6 @@ TEST(PlatformSharedBufferTest, FromSharedMemoryHandle) {
   const size_t kBufferSize = 1234;
   base::SharedMemoryCreateOptions options;
   options.size = kBufferSize;
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-  options.type = base::SharedMemoryHandle::POSIX;
-#endif
   base::SharedMemory shared_memory;
   ASSERT_TRUE(shared_memory.Create(options));
   ASSERT_TRUE(shared_memory.Map(kBufferSize));

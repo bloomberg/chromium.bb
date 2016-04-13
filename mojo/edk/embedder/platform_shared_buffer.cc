@@ -27,14 +27,7 @@ ScopedPlatformHandle SharedMemoryToPlatformHandle(
 #elif defined(OS_WIN)
   return ScopedPlatformHandle(PlatformHandle(memory_handle.GetHandle()));
 #else
-  if (memory_handle.GetType() == base::SharedMemoryHandle::MACH) {
-    return ScopedPlatformHandle(PlatformHandle(
-        memory_handle.GetMemoryObject()));
-  } else {
-    DCHECK(memory_handle.GetType() == base::SharedMemoryHandle::POSIX);
-    return ScopedPlatformHandle(PlatformHandle(
-        memory_handle.GetFileDescriptor().fd));
-  }
+  return ScopedPlatformHandle(PlatformHandle(memory_handle.GetMemoryObject()));
 #endif
 }
 
@@ -227,9 +220,6 @@ bool PlatformSharedBuffer::Init() {
   options.size = num_bytes_;
   // By default, we can share as read-only.
   options.share_read_only = true;
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-  options.type = base::SharedMemoryHandle::MACH;
-#endif
 
   shared_memory_.reset(new base::SharedMemory);
   return shared_memory_->Create(options);
@@ -244,12 +234,8 @@ bool PlatformSharedBuffer::InitFromPlatformHandle(
                                   base::GetCurrentProcId());
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
   base::SharedMemoryHandle handle;
-  if (platform_handle.get().type == PlatformHandle::Type::MACH) {
-    handle = base::SharedMemoryHandle(
-        platform_handle.release().port, num_bytes_, base::GetCurrentProcId());
-  } else {
-    handle = base::SharedMemoryHandle(platform_handle.release().handle, false);
-  }
+  handle = base::SharedMemoryHandle(platform_handle.release().port, num_bytes_,
+                                    base::GetCurrentProcId());
 #else
   base::SharedMemoryHandle handle(platform_handle.release().handle, false);
 #endif
