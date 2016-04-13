@@ -96,6 +96,10 @@ class NotificationBridge;
   NSButton* hoveredButton_;
 }
 
+// Return the inset needed to center a toolbar button's icon within the 28x28
+// design area defined by Material Design.
++ (CGFloat)materialDesignButtonInset;
+
 // Initialize the toolbar and register for command updates. The profile is
 // needed for initializing the location bar. The browser is needed for
 // the toolbar model and back/forward menus. The resizeDelegate is used

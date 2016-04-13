@@ -6,7 +6,10 @@
 
 #include "base/logging.h"
 #import "chrome/browser/ui/cocoa/clickhold_button_cell.h"
+#import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
+#include "ui/base/material_design/material_design_controller.h"
 #import "ui/base/cocoa/nsview_additions.h"
+#include "ui/base/material_design/material_design_controller.h"
 
 @interface MenuButton (Private)
 - (void)showMenu:(BOOL)isDragging;
@@ -156,6 +159,13 @@
   NSRect frame = [self menuRect];
   frame.origin.x -= 2.0;
   frame.size.height -= 19.0 - NSHeight(frame);
+
+  // The button's icon has a different relationship to its bounds in
+  // Material Design, so have to adjust the menu location by that delta.
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    frame.origin.x -= [ToolbarController materialDesignButtonInset];
+    frame.origin.y += [ToolbarController materialDesignButtonInset];
+  }
 
   // Make our pop-up button cell and set things up. This is, as of 10.5, the
   // official Apple-recommended hack. Later, perhaps |-[NSMenu

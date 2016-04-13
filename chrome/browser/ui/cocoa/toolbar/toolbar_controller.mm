@@ -244,6 +244,10 @@ class NotificationBridge : public AppMenuBadgeController::Delegate {
   return kMaterialDesignElementPadding;
 }
 
++ (CGFloat)materialDesignButtonInset {
+  return kMaterialDesignButtonInset;
+}
+
 - (id)initWithCommands:(CommandUpdater*)commands
                profile:(Profile*)profile
                browser:(Browser*)browser
