@@ -46,7 +46,7 @@ class TabStackTraceTest(tab_test_case.TabTestCase):
                                      dir=os.path.dirname(executable_path),
                                      prefix=executable + '.breakpad',
                                      delete=True) as f:
-      # Do not write anything to file, it will just be an invalid empty file.
+      f.write('Garbage Data 012345')
       f.flush()
       with self.assertRaises(exceptions.DevtoolsTargetCrashException) as c:
         self._tab.Navigate('chrome://crash', timeout=5)
