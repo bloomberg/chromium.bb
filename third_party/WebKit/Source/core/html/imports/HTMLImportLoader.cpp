@@ -69,7 +69,7 @@ void HTMLImportLoader::dispose()
     clearResource();
 }
 
-void HTMLImportLoader::startLoading(const RawPtr<RawResource>& resource)
+void HTMLImportLoader::startLoading(RawResource* resource)
 {
     setResource(resource);
 }
@@ -88,7 +88,6 @@ void HTMLImportLoader::responseReceived(Resource* resource, const ResourceRespon
 
 void HTMLImportLoader::dataReceived(Resource*, const char* data, size_t length)
 {
-    RawPtr<DocumentWriter> protectingWriter(m_writer.get());
     m_writer->addData(data, length);
 }
 
@@ -143,7 +142,7 @@ void HTMLImportLoader::setState(State state)
     m_state = state;
 
     if (m_state == StateParsed || m_state == StateError || m_state == StateWritten) {
-        if (RawPtr<DocumentWriter> writer = m_writer.release())
+        if (DocumentWriter* writer = m_writer.release())
             writer->end();
     }
 
@@ -215,7 +214,7 @@ bool HTMLImportLoader::shouldBlockScriptExecution() const
     return firstImport()->state().shouldBlockScriptExecution();
 }
 
-RawPtr<CustomElementSyncMicrotaskQueue> HTMLImportLoader::microtaskQueue() const
+CustomElementSyncMicrotaskQueue* HTMLImportLoader::microtaskQueue() const
 {
     return m_microtaskQueue;
 }

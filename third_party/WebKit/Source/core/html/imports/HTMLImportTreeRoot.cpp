@@ -11,7 +11,7 @@
 
 namespace blink {
 
-RawPtr<HTMLImportTreeRoot> HTMLImportTreeRoot::create(Document* document)
+HTMLImportTreeRoot* HTMLImportTreeRoot::create(Document* document)
 {
     return new HTMLImportTreeRoot(document);
 }
@@ -78,7 +78,7 @@ void HTMLImportTreeRoot::scheduleRecalcState()
     m_recalcTimer.startOneShot(0, BLINK_FROM_HERE);
 }
 
-HTMLImportChild* HTMLImportTreeRoot::add(RawPtr<HTMLImportChild> child)
+HTMLImportChild* HTMLImportTreeRoot::add(HTMLImportChild* child)
 {
     m_imports.append(child);
     return m_imports.last().get();
@@ -98,7 +98,6 @@ HTMLImportChild* HTMLImportTreeRoot::find(const KURL& url) const
 void HTMLImportTreeRoot::recalcTimerFired(Timer<HTMLImportTreeRoot>*)
 {
     ASSERT(m_document);
-    RawPtr<Document> protectDocument(m_document.get());
     HTMLImport::recalcTreeState(this);
 }
 

@@ -39,7 +39,7 @@
 
 namespace blink {
 
-RawPtr<LinkImport> LinkImport::create(HTMLLinkElement* owner)
+LinkImport* LinkImport::create(HTMLLinkElement* owner)
 {
     return new LinkImport(owner);
 }

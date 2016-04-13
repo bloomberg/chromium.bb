@@ -16,7 +16,7 @@ class KURL;
 
 class HTMLImportTreeRoot : public HTMLImport {
 public:
-    static RawPtr<HTMLImportTreeRoot> create(Document*);
+    static HTMLImportTreeRoot* create(Document*);
 
     ~HTMLImportTreeRoot() override;
     void dispose();
@@ -29,7 +29,7 @@ public:
 
     void scheduleRecalcState();
 
-    HTMLImportChild* add(RawPtr<HTMLImportChild>);
+    HTMLImportChild* add(HTMLImportChild*);
     HTMLImportChild* find(const KURL&) const;
 
     DECLARE_VIRTUAL_TRACE();

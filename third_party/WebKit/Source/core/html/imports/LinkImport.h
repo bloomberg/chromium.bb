@@ -49,7 +49,7 @@ class LinkImport final : public LinkResource, public HTMLImportChildClient {
     USING_GARBAGE_COLLECTED_MIXIN(LinkImport);
 public:
 
-    static RawPtr<LinkImport> create(HTMLLinkElement* owner);
+    static LinkImport* create(HTMLLinkElement* owner);
 
     explicit LinkImport(HTMLLinkElement* owner);
     ~LinkImport() override;

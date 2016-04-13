@@ -48,9 +48,9 @@ const char* HTMLImportsController::supplementName()
 
 void HTMLImportsController::provideTo(Document& master)
 {
-    RawPtr<HTMLImportsController> controller = new HTMLImportsController(master);
-    master.setImportsController(controller.get());
-    Supplement<Document>::provideTo(master, supplementName(), controller.release());
+    HTMLImportsController* controller = new HTMLImportsController(master);
+    master.setImportsController(controller);
+    Supplement<Document>::provideTo(master, supplementName(), controller);
 }
 
 void HTMLImportsController::removeFrom(Document& master)
@@ -104,11 +104,11 @@ HTMLImportChild* HTMLImportsController::createChild(const KURL& url, HTMLImportL
     if (mode == HTMLImport::Async)
         UseCounter::count(root()->document(), UseCounter::HTMLImportsAsyncAttribute);
 
-    RawPtr<HTMLImportChild> child = new HTMLImportChild(url, loader, mode);
+    HTMLImportChild* child = new HTMLImportChild(url, loader, mode);
     child->setClient(client);
-    parent->appendImport(child.get());
-    loader->addImport(child.get());
-    return root()->add(child.release());
+    parent->appendImport(child);
+    loader->addImport(child);
+    return root()->add(child);
 }
 
 HTMLImportChild* HTMLImportsController::load(HTMLImport* parent, HTMLImportChildClient* client, FetchRequest request)
@@ -125,7 +125,7 @@ HTMLImportChild* HTMLImportsController::load(HTMLImport* parent, HTMLImportChild
     }
 
     request.setCrossOriginAccessControl(master()->getSecurityOrigin(), CrossOriginAttributeAnonymous);
-    RawPtr<RawResource> resource = RawResource::fetchImport(request, parent->document()->fetcher());
+    RawResource* resource = RawResource::fetchImport(request, parent->document()->fetcher());
     if (!resource)
         return nullptr;
 

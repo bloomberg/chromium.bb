@@ -65,7 +65,7 @@ public:
         StateError
     };
 
-    static RawPtr<HTMLImportLoader> create(HTMLImportsController* controller)
+    static HTMLImportLoader* create(HTMLImportsController* controller)
     {
         return new HTMLImportLoader(controller);
     }
@@ -85,14 +85,14 @@ public:
     bool hasError() const { return m_state == StateError; }
     bool shouldBlockScriptExecution() const;
 
-    void startLoading(const RawPtr<RawResource>&);
+    void startLoading(RawResource*);
 
     // Tells the loader that all of the import's stylesheets finished
     // loading.
     // Called by Document::didRemoveAllPendingStylesheet.
     void didRemoveAllPendingStylesheet();
 
-    RawPtr<CustomElementSyncMicrotaskQueue> microtaskQueue() const;
+    CustomElementSyncMicrotaskQueue* microtaskQueue() const;
 
     DECLARE_VIRTUAL_TRACE();
 
