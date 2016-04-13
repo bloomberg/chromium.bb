@@ -2126,7 +2126,8 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     options = options or []
     issue = issue or self.GetIssue()
     assert issue, 'issue required to query Gerrit'
-    return gerrit_util.GetChangeDetail(self._GetGerritHost(), options, issue)
+    return gerrit_util.GetChangeDetail(self._GetGerritHost(), str(issue),
+                                       options)
 
   def CMDLand(self, force, bypass_hooks, verbose):
     if git_common.is_dirty_git_tree('land'):
