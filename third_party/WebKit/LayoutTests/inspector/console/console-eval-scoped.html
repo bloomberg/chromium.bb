@@ -47,10 +47,10 @@ function test()
 
     function dumpAndClearConsoleMessages(next)
     {
-        InspectorTest.runAfterPendingDispatches(function() {
+        InspectorTest.deprecatedRunAfterPendingDispatches(function() {
             InspectorTest.dumpConsoleMessages();
             InspectorTest.consoleModel.requestClearMessages();
-            InspectorTest.runAfterPendingDispatches(next);
+            InspectorTest.deprecatedRunAfterPendingDispatches(next);
         });
     }
 

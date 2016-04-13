@@ -11,7 +11,7 @@ var test = function()
     watchExpressionsPane.expand();
     watchExpressionsPane.addExpression("#$%");
 
-    InspectorTest.runAfterPendingDispatches(step1);
+    InspectorTest.deprecatedRunAfterPendingDispatches(step1);
 
     function step1()
     {

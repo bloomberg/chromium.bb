@@ -92,7 +92,7 @@ function test()
         pane._removeBreakpoint("listener:loadend", xhrTargetNames);
         pane._removeBreakpoint("listener:progress", xhrTargetNames);
         pane._removeBreakpoint("listener:readystatechange", xhrTargetNames);
-        InspectorTest.runAfterPendingDispatches(InspectorTest.completeDebuggerTest.bind(InspectorTest));
+        InspectorTest.deprecatedRunAfterPendingDispatches(InspectorTest.completeDebuggerTest.bind(InspectorTest));
     }
 }
 

@@ -11,7 +11,7 @@ function initialize_extensionsSidebarTest()
     InspectorTest.expandSidebar = function(callback)
     {
         var sidebar = InspectorTest._extensionSidebar();
-        InspectorTest.runAfterPendingDispatches(function() {
+        InspectorTest.deprecatedRunAfterPendingDispatches(function() {
             sidebar.expand();
             callback();
         });

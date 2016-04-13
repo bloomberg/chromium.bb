@@ -148,7 +148,7 @@ InspectorTest.stopTimeline = function(callback)
     var panel = WebInspector.panels.timeline;
     function didStop()
     {
-        InspectorTest.runAfterPendingDispatches(callback);
+        InspectorTest.deprecatedRunAfterPendingDispatches(callback);
     }
     InspectorTest.addSniffer(panel, "loadingComplete", didStop);
     panel._toggleRecording();

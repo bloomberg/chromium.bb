@@ -17,7 +17,7 @@ function test()
         for (var i = 0; i < UPDATE_COUNT; ++i)
             stylesPane.setNode(stylesPane.node());
 
-        InspectorTest.runAfterPendingDispatches(completeCallback);
+        InspectorTest.deprecatedRunAfterPendingDispatches(completeCallback);
     }
 
     function completeCallback()

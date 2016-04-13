@@ -38,7 +38,7 @@ function test()
     {
         InspectorTest.addResult("Suspend all targets");
         WebInspector.targetManager.suspendAllTargets();
-        InspectorTest.runAfterPendingDispatches(resumeAll);
+        InspectorTest.deprecatedRunAfterPendingDispatches(resumeAll);
     }
 
     function resumeAll()

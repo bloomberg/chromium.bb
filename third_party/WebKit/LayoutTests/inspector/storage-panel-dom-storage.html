@@ -39,7 +39,7 @@ function test()
         InspectorTest.addResult("KeyValue pairs: " + rows.join(''));
     }
 
-    InspectorTest.runAfterPendingDispatches(function() {
+    InspectorTest.deprecatedRunAfterPendingDispatches(function() {
         var storages = InspectorTest.domStorageModel().storages();
         if (storages) {
             for (var i = 0; i < storages.length; i++) {
@@ -50,7 +50,7 @@ function test()
         } else
             InspectorTest.addResult("FAIL: no DOM storages found.");
 
-        InspectorTest.runAfterPendingDispatches(function() {
+        InspectorTest.deprecatedRunAfterPendingDispatches(function() {
             var storages = InspectorTest.domStorageModel().storages();
             for (var i = 0; i < storages.length; i++) {
                 var storage = storages[i];

@@ -248,7 +248,7 @@ InspectorTest.expandConsoleMessages = function(callback, deepFilter, sectionFilt
     for (var i = 0; i < messageViews.length; ++i)
         messageViews[i].contentElement();
 
-    InspectorTest.runAfterPendingDispatches(expandTreeElements);
+    InspectorTest.deprecatedRunAfterPendingDispatches(expandTreeElements);
 
     function expandTreeElements()
     {
@@ -274,7 +274,7 @@ InspectorTest.expandConsoleMessages = function(callback, deepFilter, sectionFilt
                 }
             }
         }
-        InspectorTest.runAfterPendingDispatches(callback);
+        InspectorTest.deprecatedRunAfterPendingDispatches(callback);
     }
 }
 
@@ -301,7 +301,7 @@ InspectorTest.expandGettersInConsoleMessages = function(callback)
         if (propertiesCount === 0) {
             for (var i = 0; i < properties.length; ++i)
                 properties[i].click();
-            InspectorTest.runAfterPendingDispatches(callback);
+            InspectorTest.deprecatedRunAfterPendingDispatches(callback);
         } else {
             InspectorTest.addSniffer(WebInspector.ObjectPropertyTreeElement.prototype, "_updateExpandable", propertyExpandableUpdated);
         }
@@ -314,7 +314,7 @@ InspectorTest.expandConsoleMessagesErrorParameters = function(callback)
     // Initiate round-trips to fetch necessary data for further rendering.
     for (var i = 0; i < messageViews.length; ++i)
         messageViews[i].contentElement();
-    InspectorTest.runAfterPendingDispatches(expandErrorParameters);
+    InspectorTest.deprecatedRunAfterPendingDispatches(expandErrorParameters);
     function expandErrorParameters()
     {
         for (var i = 0; i < messageViews.length; ++i) {
@@ -338,7 +338,7 @@ InspectorTest.waitForRemoteObjectsConsoleMessages = function(callback)
     var messages = WebInspector.ConsoleView.instance()._visibleViewMessages;
     for (var i = 0; i < messages.length; ++i)
         messages[i].toMessageElement();
-    InspectorTest.runAfterPendingDispatches(callback);
+    InspectorTest.deprecatedRunAfterPendingDispatches(callback);
 }
 
 InspectorTest.checkConsoleMessagesDontHaveParameters = function()

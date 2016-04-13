@@ -38,7 +38,7 @@ var test = function()
         InspectorTest.addResult("Evaluated script on the top frame: " + result);
         var pane = WebInspector.panels.sources.sidebarPanes.callstack;
         pane._callFrameSelected(pane.callFrames[1]);
-        InspectorTest.runAfterPendingDispatches(step4);
+        InspectorTest.deprecatedRunAfterPendingDispatches(step4);
     }
 
     function step4()

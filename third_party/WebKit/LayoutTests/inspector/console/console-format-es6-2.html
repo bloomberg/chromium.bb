@@ -64,11 +64,11 @@ function test()
         }
 
         InspectorTest.evaluateInPage("log(" + current + ")");
-        InspectorTest.runAfterPendingDispatches(evalInConsole);
+        InspectorTest.deprecatedRunAfterPendingDispatches(evalInConsole);
         function evalInConsole()
         {
             InspectorTest.evaluateInConsole("globals[" + current + "]");
-            InspectorTest.runAfterPendingDispatches(advance);
+            InspectorTest.deprecatedRunAfterPendingDispatches(advance);
         }
     }
 }

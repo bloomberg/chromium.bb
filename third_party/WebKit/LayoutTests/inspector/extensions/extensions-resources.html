@@ -135,7 +135,7 @@ function extension_testOnContentCommitted(nextTest)
         resource.setContent("div.test { width: 140px; height: 42px; }", false);
     });
     // The next step is going to produce a console message that will be logged, so synchronize the output now.
-    evaluateOnFrontend("InspectorTest.runAfterPendingDispatches(reply)", function() {
+    evaluateOnFrontend("InspectorTest.deprecatedRunAfterPendingDispatches(reply)", function() {
         extension_runWithResource(/abe\.png$/, function(resource) {
             resource.setContent("", true);
         });

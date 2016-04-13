@@ -17,7 +17,7 @@ function test()
         for (var i = 0; i < keydownCount; ++i)
             element.dispatchEvent(InspectorTest.createKeyEvent("Up"));
 
-        InspectorTest.runAfterPendingDispatches(completeCallback);
+        InspectorTest.deprecatedRunAfterPendingDispatches(completeCallback);
     }
 
     function completeCallback()

@@ -14,7 +14,7 @@ InspectorTest.collectAuditResults = function(callback)
                 liElements[j].treeElement.expand();
         }
     }
-    InspectorTest.runAfterPendingDispatches(function() {
+    InspectorTest.deprecatedRunAfterPendingDispatches(function() {
         InspectorTest.collectTextContent(WebInspector.panels.audits.visibleView.element, "");
         callback();
     });

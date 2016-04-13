@@ -30,7 +30,7 @@ function test()
             InspectorTest.addResult("Logged headers: " + headersArray.join(", "));
             InspectorTest.addResult("Content: \"" + content + "\"");
 
-            InspectorTest.runAfterPendingDispatches(next);
+            InspectorTest.deprecatedRunAfterPendingDispatches(next);
         }
     }
 

@@ -44,7 +44,7 @@ function test()
 
             function onConsoleMessagesReceived()
             {
-                InspectorTest.runAfterPendingDispatches(function() {
+                InspectorTest.deprecatedRunAfterPendingDispatches(function() {
                     var messages = [];
                     InspectorTest.disableConsoleViewport();
                     var viewMessages = WebInspector.ConsoleView.instance()._visibleViewMessages;

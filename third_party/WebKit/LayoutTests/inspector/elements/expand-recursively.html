@@ -16,7 +16,7 @@ function test()
 
         var topNode = treeOutline.rootElement().childAt(0).childAt(1).childAt(1);
         topNode.expandRecursively();
-        InspectorTest.runAfterPendingDispatches(secondStep);
+        InspectorTest.deprecatedRunAfterPendingDispatches(secondStep);
     };
         
     function secondStep()

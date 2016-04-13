@@ -17,7 +17,7 @@ function test()
             if (target.isDedicatedWorker()) {
                 var serviceWorkerManager = WebInspector.targetManager.mainTarget().serviceWorkerManager;
                 // Allow agents to do rountrips.
-                InspectorTest.runAfterPendingDispatches(function() {
+                InspectorTest.deprecatedRunAfterPendingDispatches(function() {
                     for (var worker of serviceWorkerManager.workers())
                         worker.stop();
                 });

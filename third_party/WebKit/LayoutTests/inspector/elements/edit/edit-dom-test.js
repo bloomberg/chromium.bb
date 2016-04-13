@@ -13,7 +13,7 @@ InspectorTest.doAddAttribute = function(testName, dataNodeId, attributeText, nex
         var editorElement = InspectorTest.editNodePart(node, "webkit-html-attribute");
         editorElement.dispatchEvent(InspectorTest.createKeyEvent("U+0009")); // Tab
 
-        InspectorTest.runAfterPendingDispatches(testContinuation);
+        InspectorTest.deprecatedRunAfterPendingDispatches(testContinuation);
 
         function testContinuation()
         {
@@ -44,7 +44,7 @@ InspectorTest.domActionTest = function(testName, dataNodeSelectionCallback, test
 
     function step0(node)
     {
-        InspectorTest.runAfterPendingDispatches(step1.bind(null, node));
+        InspectorTest.deprecatedRunAfterPendingDispatches(step1.bind(null, node));
     }
 
     function step1(node)
@@ -78,7 +78,7 @@ InspectorTest.editNodePartAndRun = function(node, className, newValue, step2, us
     if (useSniffer)
         InspectorTest.addSniffer(WebInspector.ElementsTreeOutline.prototype, "_updateModifiedNodes", step2);
     else
-        InspectorTest.runAfterPendingDispatches(step2);
+        InspectorTest.deprecatedRunAfterPendingDispatches(step2);
 }
 
 }

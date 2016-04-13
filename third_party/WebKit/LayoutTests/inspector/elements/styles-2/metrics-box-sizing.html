@@ -96,7 +96,7 @@ function test()
             contentWidthElement.dispatchEvent(createDoubleClickEvent());
             contentWidthElement.textContent = "60";
             contentWidthElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
-            InspectorTest.runAfterPendingDispatches(next);
+            InspectorTest.deprecatedRunAfterPendingDispatches(next);
         },
 
         function testModifiedBorderBoxMetrics(next)
@@ -128,7 +128,7 @@ function test()
             contentWidthElement.dispatchEvent(createDoubleClickEvent());
             contentWidthElement.textContent = "60";
             contentWidthElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
-            InspectorTest.runAfterPendingDispatches(next);
+            InspectorTest.deprecatedRunAfterPendingDispatches(next);
             next();
         },
 

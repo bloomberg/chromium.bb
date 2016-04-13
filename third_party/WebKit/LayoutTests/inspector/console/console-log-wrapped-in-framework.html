@@ -17,7 +17,7 @@ function test()
     WebInspector.settingForTest("skipStackFramesPattern").set(frameworkRegexString);
 
     InspectorTest.evaluateInPage("runLogs()");
-    InspectorTest.runAfterPendingDispatches(callback);
+    InspectorTest.deprecatedRunAfterPendingDispatches(callback);
     function callback()
     {
         InspectorTest.dumpConsoleMessages();

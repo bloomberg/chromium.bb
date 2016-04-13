@@ -42,7 +42,7 @@ function test()
         InspectorTest.addResult("Request: " + url);
         blockedSetting.set(patterns);
         nextStep = next;
-        InspectorTest.runAfterPendingDispatches(addScript);
+        InspectorTest.deprecatedRunAfterPendingDispatches(addScript);
 
         function addScript()
         {

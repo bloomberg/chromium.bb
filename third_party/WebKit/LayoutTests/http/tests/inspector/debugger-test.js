@@ -186,7 +186,7 @@ InspectorTest.waitUntilPausedAndDumpStackAndResume = function(callback, options)
     {
         InspectorTest.captureStackTrace(callFrames, asyncStackTrace, options);
         InspectorTest.addResult(InspectorTest.clearSpecificInfoFromStackFrames(caption));
-        InspectorTest.runAfterPendingDispatches(step2);
+        InspectorTest.deprecatedRunAfterPendingDispatches(step2);
     }
 
     function step2()
@@ -442,7 +442,7 @@ InspectorTest.expandScopeVariablesSidebarPane = function(callback)
     var sections = InspectorTest.scopeChainSections();
     for (var i = 0; i < sections.length - 1; ++i)
         sections[i].expand();
-    InspectorTest.runAfterPendingDispatches(callback);
+    InspectorTest.deprecatedRunAfterPendingDispatches(callback);
 };
 
 InspectorTest.expandProperties = function(properties, callback)
@@ -458,7 +458,7 @@ InspectorTest.expandProperties = function(properties, callback)
         var path = properties[index++];
         InspectorTest._expandProperty(parentTreeElement, path, 0, expandNextPath);
     }
-    InspectorTest.runAfterPendingDispatches(expandNextPath);
+    InspectorTest.deprecatedRunAfterPendingDispatches(expandNextPath);
 };
 
 InspectorTest._expandProperty = function(parentTreeElement, path, pathIndex, callback)
@@ -476,7 +476,7 @@ InspectorTest._expandProperty = function(parentTreeElement, path, pathIndex, cal
        return;
     }
     propertyTreeElement.expand();
-    InspectorTest.runAfterPendingDispatches(InspectorTest._expandProperty.bind(InspectorTest, propertyTreeElement, path, pathIndex, callback));
+    InspectorTest.deprecatedRunAfterPendingDispatches(InspectorTest._expandProperty.bind(InspectorTest, propertyTreeElement, path, pathIndex, callback));
 };
 
 InspectorTest._findChildPropertyTreeElement = function(parent, childName)

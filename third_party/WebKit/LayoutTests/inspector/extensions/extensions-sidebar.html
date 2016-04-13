@@ -9,7 +9,7 @@ function initialize_extensionsSidebarTest()
     InspectorTest.dumpSidebarContent = function(panelName, callback)
     {
         var sidebar = InspectorTest._extensionSidebar(panelName);
-        InspectorTest.runAfterPendingDispatches(function() {
+        InspectorTest.deprecatedRunAfterPendingDispatches(function() {
             InspectorTest.addResult(panelName + " sidebar content: " + InspectorTest.textContentWithoutStyles(sidebar.element));
             callback();
         });
@@ -18,7 +18,7 @@ function initialize_extensionsSidebarTest()
     InspectorTest.expandSidebar = function(panelName, callback)
     {
         var sidebar = InspectorTest._extensionSidebar(panelName);
-        InspectorTest.runAfterPendingDispatches(function() {
+        InspectorTest.deprecatedRunAfterPendingDispatches(function() {
             sidebar.expand();
             callback();
         });

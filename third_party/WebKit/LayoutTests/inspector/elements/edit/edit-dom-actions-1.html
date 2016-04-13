@@ -25,7 +25,7 @@ function test()
             {
                 var treeElement = InspectorTest.firstElementsTreeOutline().findTreeElement(node);
                 treeElement.remove();
-                InspectorTest.runAfterPendingDispatches(done);
+                InspectorTest.deprecatedRunAfterPendingDispatches(done);
             }
         },
 

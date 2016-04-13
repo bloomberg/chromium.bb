@@ -85,7 +85,7 @@ function test()
         var pane = WebInspector.panels.sources.sidebarPanes.eventListenerBreakpoints;
         InspectorTest.addResult("Set up Event breakpoints.");
         pane._setBreakpoint("listener:click");
-        InspectorTest.runAfterPendingDispatches(didSetUp);
+        InspectorTest.deprecatedRunAfterPendingDispatches(didSetUp);
     }
 
     function didSetUp()

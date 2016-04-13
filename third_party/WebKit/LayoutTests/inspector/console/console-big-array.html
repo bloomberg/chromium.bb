@@ -83,7 +83,7 @@ function test()
         populated = true;
     }
 
-    InspectorTest.runAfterPendingDispatches(expandRecursively);
+    InspectorTest.deprecatedRunAfterPendingDispatches(expandRecursively);
 
     function expandRecursively()
     {
@@ -97,9 +97,9 @@ function test()
             }
         }
         if (populated)
-            InspectorTest.runAfterPendingDispatches(completeTest);
+            InspectorTest.deprecatedRunAfterPendingDispatches(completeTest);
         else
-            InspectorTest.runAfterPendingDispatches(expandRecursively);
+            InspectorTest.deprecatedRunAfterPendingDispatches(expandRecursively);
     }
 
     function completeTest()

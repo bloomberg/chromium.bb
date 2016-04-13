@@ -24,7 +24,7 @@ function test()
             function step1()
             {
                 InspectorTest.consoleModel.requestClearMessages();
-                InspectorTest.runAfterPendingDispatches(step2);
+                InspectorTest.deprecatedRunAfterPendingDispatches(step2);
             }
 
             function step2()

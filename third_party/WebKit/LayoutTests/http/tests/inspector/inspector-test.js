@@ -400,7 +400,7 @@ InspectorTest.expandAndDumpEventListeners = function(eventListenersView, updateC
             for (var j = 0; j < listenerItems.length; ++j)
                 listenerItems[j].expand();
         }
-        InspectorTest.runAfterPendingDispatches(objectsExpanded);
+        InspectorTest.deprecatedRunAfterPendingDispatches(objectsExpanded);
     }
 
     function objectsExpanded()
@@ -512,12 +512,12 @@ InspectorTest.runWhenPageLoads = function(callback)
     InspectorTest._pageLoadedCallback = InspectorTest.safeWrap(chainedCallback);
 }
 
-InspectorTest.runAfterPendingDispatches = function(callback)
+InspectorTest.deprecatedRunAfterPendingDispatches = function(callback)
 {
     var barrier = new CallbackBarrier();
     var targets = WebInspector.targetManager.targets();
     for (var i = 0; i < targets.length; ++i)
-        targets[i]._connection.runAfterPendingDispatches(barrier.createCallback());
+        targets[i]._connection.deprecatedRunAfterPendingDispatches(barrier.createCallback());
     barrier.callWhenDone(InspectorTest.safeWrap(callback));
 }
 

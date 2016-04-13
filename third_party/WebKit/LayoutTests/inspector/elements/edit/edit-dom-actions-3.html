@@ -39,7 +39,7 @@ function test()
                 var treeOutline = InspectorTest.firstElementsTreeOutline();
                 var treeElement = treeOutline.findTreeElement(node);
                 treeOutline.toggleEditAsHTML(node);
-                InspectorTest.runAfterPendingDispatches(step2);
+                InspectorTest.deprecatedRunAfterPendingDispatches(step2);
 
                 function step2()
                 {
@@ -48,7 +48,7 @@ function test()
                     var event = InspectorTest.createKeyEvent("Enter");
                     event.isMetaOrCtrlForTest = true;
                     treeElement._htmlEditElement.dispatchEvent(event);
-                    InspectorTest.runAfterPendingDispatches(done);
+                    InspectorTest.deprecatedRunAfterPendingDispatches(done);
                 }
             }
         },
@@ -62,7 +62,7 @@ function test()
                 var treeOutline = InspectorTest.firstElementsTreeOutline();
                 var treeElement = treeOutline.findTreeElement(node);
                 treeOutline.toggleEditAsHTML(node);
-                InspectorTest.runAfterPendingDispatches(step2);
+                InspectorTest.deprecatedRunAfterPendingDispatches(step2);
 
                 function step2()
                 {
@@ -71,7 +71,7 @@ function test()
                     var event = InspectorTest.createKeyEvent("Enter");
                     event.isMetaOrCtrlForTest = true;
                     treeElement._htmlEditElement.dispatchEvent(event);
-                    InspectorTest.runAfterPendingDispatches(InspectorTest.expandElementsTree.bind(InspectorTest, done));
+                    InspectorTest.deprecatedRunAfterPendingDispatches(InspectorTest.expandElementsTree.bind(InspectorTest, done));
                 }
             }
         },

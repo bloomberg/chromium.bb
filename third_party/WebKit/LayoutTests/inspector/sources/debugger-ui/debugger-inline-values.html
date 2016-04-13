@@ -31,7 +31,7 @@ function test()
 
     function onSetExecutionLocation(uiLocation)
     {
-        InspectorTest.runAfterPendingDispatches(dumpAndContinue.bind(null, this.textEditor, uiLocation.lineNumber));
+        InspectorTest.deprecatedRunAfterPendingDispatches(dumpAndContinue.bind(null, this.textEditor, uiLocation.lineNumber));
     }
 
     function dumpAndContinue(textEditor, lineNumber)

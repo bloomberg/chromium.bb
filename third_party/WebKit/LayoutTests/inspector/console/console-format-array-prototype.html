@@ -46,7 +46,7 @@ function test()
             if (next === total) {
                 InspectorTest.evaluateInPage("tearDown()");
                 InspectorTest.expandConsoleMessages();
-                InspectorTest.runAfterPendingDispatches(finish);
+                InspectorTest.deprecatedRunAfterPendingDispatches(finish);
             } else {
                 loopOverGlobals(next, total);
             }
@@ -59,11 +59,11 @@ function test()
         }
 
         InspectorTest.evaluateInConsole("a" + current);
-        InspectorTest.runAfterPendingDispatches(invokeConsoleLog);
+        InspectorTest.deprecatedRunAfterPendingDispatches(invokeConsoleLog);
         function invokeConsoleLog()
         {
             InspectorTest.evaluateInPage("log(a" + current + ")");
-            InspectorTest.runAfterPendingDispatches(advance);
+            InspectorTest.deprecatedRunAfterPendingDispatches(advance);
         }
     }
 }

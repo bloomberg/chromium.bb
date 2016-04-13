@@ -34,7 +34,7 @@ function test()
             function callback()
             {
                 InspectorTest.firstElementsTreeOutline().runPendingUpdates();
-                InspectorTest.runAfterPendingDispatches(function() {
+                InspectorTest.deprecatedRunAfterPendingDispatches(function() {
                     InspectorTest.addResult("======== Appended =========");
                     InspectorTest.dumpElementsTree(containerNode);
                     next();

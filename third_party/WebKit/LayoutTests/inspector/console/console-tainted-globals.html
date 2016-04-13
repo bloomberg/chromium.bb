@@ -146,7 +146,7 @@ function test()
             {
                 var expr = expressions.shift();
                 if (!expr) {
-                    InspectorTest.runAfterPendingDispatches(next);
+                    InspectorTest.deprecatedRunAfterPendingDispatches(next);
                     return;
                 }
                 InspectorTest.evaluateInConsole(expr, iterate);
