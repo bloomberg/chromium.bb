@@ -10,6 +10,7 @@
 #include <functional>
 #include <map>
 #include <memory>
+#include <unordered_set>
 #include <utility>
 
 #include "base/macros.h"
@@ -687,9 +688,11 @@ bool InputMethodUtil::MigrateInputMethods(
   if (rewritten) {
     // Removes the duplicates.
     std::vector<std::string> new_ids;
+    std::unordered_set<std::string> ids_set;
     for (size_t i = 0; i < ids.size(); ++i) {
-      if (std::find(new_ids.begin(), new_ids.end(), ids[i]) == new_ids.end())
+      if (ids_set.find(ids[i]) == ids_set.end())
         new_ids.push_back(ids[i]);
+      ids_set.insert(ids[i]);
     }
     ids.swap(new_ids);
   }
