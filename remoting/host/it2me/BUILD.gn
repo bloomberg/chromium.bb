@@ -27,7 +27,7 @@ source_set("common") {
   ]
 }
 
-if (!is_chromeos && enable_remoting_host) {
+if (!is_chromeos && !is_android && enable_remoting_host) {
   if (is_win) {
     # GYP version:
     # //remoting/remoting_host_win.gypi:remoting_it2me_native_messaging_host

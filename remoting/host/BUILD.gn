@@ -194,6 +194,13 @@ if (is_mac) {  # TODO(GYP) Mac build of remoting host.
     if (enable_webrtc) {
       deps += [ "//third_party/webrtc/modules/desktop_capture" ]
     }
+
+    if (is_android) {
+      sources -= [
+        "single_window_desktop_environment.cc",
+        "single_window_desktop_environment.h",
+      ]
+    }
   }
 
   source_set("test_support") {
@@ -675,7 +682,7 @@ if (is_mac) {  # TODO(GYP) Mac build of remoting host.
     # TODO(GYP) More Windows remoting targets from remoting_host_win.gypi
   }
 
-  if (enable_remoting_host) {
+  if (enable_remoting_host && !is_android) {
     executable("remoting_start_host") {
       sources = [
         "setup/host_starter.cc",

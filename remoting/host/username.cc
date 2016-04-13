@@ -18,7 +18,7 @@
 namespace remoting {
 
 std::string GetUsername() {
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) && !defined(OS_ANDROID)
   long buf_size = sysconf(_SC_GETPW_R_SIZE_MAX);
   if (buf_size <= 0)
     return std::string();
@@ -28,10 +28,10 @@ std::string GetUsername() {
   struct passwd* passwd_result = nullptr;
   getpwuid_r(getuid(), &passwd, &(buf[0]), buf_size, &passwd_result);
   return passwd_result ? passwd_result->pw_name : std::string();
-#else  // !defined(OS_POSIX)
+#else
   NOTIMPLEMENTED();
   return std::string();
-#endif  // defined(OS_POSIX)
+#endif  // defined(OS_POSIX) && !defined(OS_ANDROID)
 }
 
 }  // namespace remoting

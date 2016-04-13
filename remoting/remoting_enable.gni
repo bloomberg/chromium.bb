@@ -23,3 +23,7 @@ if (is_win || (is_linux && !is_chromeos && use_x11)) {
 if (is_linux && is_chromeos) {
   enable_remoting_host = true
 }
+
+if (is_android) {
+  enable_remoting_host = true
+}

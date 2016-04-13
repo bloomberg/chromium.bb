@@ -8,12 +8,14 @@
 #include "base/android/jni_registrar.h"
 #include "base/bind.h"
 #include "base/macros.h"
+#include "net/android/net_jni_registrar.h"
 #include "remoting/host/android/remoting_host_jni_registrar.h"
 
 namespace {
 
 base::android::RegistrationMethod kRemotingRegisteredMethods[] = {
     {"base", base::android::RegisterJni},
+    {"net", net::android::RegisterJni},
     {"remoting_host", remoting::RegisterJni},
 };
 

@@ -372,6 +372,8 @@ std::unique_ptr<PolicyWatcher> PolicyWatcher::Create(
       file_task_runner,
       base::FilePath(FILE_PATH_LITERAL("/etc/opt/chrome/policies")),
       policy::POLICY_SCOPE_MACHINE));
+#elif defined(OS_ANDROID)
+  NOTIMPLEMENTED();
 #else
 #error OS that is not yet supported by PolicyWatcher code.
 #endif

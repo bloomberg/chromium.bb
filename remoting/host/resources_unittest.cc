@@ -31,8 +31,8 @@ TEST_F(ResourcesTest, DISABLED_ProductName) {
   std::string expected_product_name = "Chromoting";
 #endif  // !defined(GOOGLE_CHROME_BUILD)
 
-  // Chrome-style i18n is not used on Windows.
-#if defined(OS_WIN)
+  // Chrome-style i18n is not used on Windows or Android.
+#if defined(OS_WIN) || defined(OS_ANDROID)
   EXPECT_FALSE(resources_available_);
 #else
   EXPECT_TRUE(resources_available_);

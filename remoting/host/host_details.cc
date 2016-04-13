@@ -24,16 +24,20 @@ std::string GetHostOperatingSystemName() {
   return "ChromeOS";
 #elif defined(OS_LINUX)
   return "Linux";
+#elif defined(OS_ANDROID)
+  return "Android";
+#else
+#error "Unsupported host OS"
 #endif
 }
 
 // Get the host Operating System Version, removing the need to check for OS
 // definitions and keeps the format used consistant.
 std::string GetHostOperatingSystemVersion() {
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
-  return base::SysInfo::OperatingSystemVersion();
-#elif defined(OS_LINUX)
+#if defined(OS_LINUX)
   return base::GetLinuxDistro();
+#else
+  return base::SysInfo::OperatingSystemVersion();
 #endif
 }
 

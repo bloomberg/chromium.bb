@@ -100,9 +100,9 @@ bool Me2MeDesktopEnvironment::InitializeSecurity(
   // running in the LoginWindow context, and refactor this into a separate
   // function to be used here and in CurtainMode::ActivateCurtain().
   bool want_user_interface = getuid() != 0;
-#elif defined(OS_WIN)
+#else
   bool want_user_interface = true;
-#endif  // defined(OS_WIN)
+#endif
 
   // Create the disconnect window.
   if (want_user_interface) {
