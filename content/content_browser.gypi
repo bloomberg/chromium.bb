@@ -738,6 +738,8 @@
       'browser/fileapi/fileapi_message_filter.h',
       'browser/fileapi/upload_file_system_file_element_reader.cc',
       'browser/fileapi/upload_file_system_file_element_reader.h',
+      'browser/find_request_manager.cc',
+      'browser/find_request_manager.h',
       'browser/font_list_async.cc',
       'browser/frame_host/cross_process_frame_connector.cc',
       'browser/frame_host/cross_process_frame_connector.h',

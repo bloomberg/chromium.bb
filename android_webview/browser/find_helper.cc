@@ -39,7 +39,7 @@ void FindHelper::FindAllAsync(const base::string16& search_string) {
 
   async_find_started_ = true;
 
-  StartNewRequest(search_string);
+  StartNewSession(search_string);
 
   if (MaybeHandleEmptySearch(search_string))
     return;
@@ -65,6 +65,8 @@ void FindHelper::HandleFindReply(int request_id,
 void FindHelper::FindNext(bool forward) {
   if (!async_find_started_)
     return;
+
+  current_request_id_ = find_request_id_counter_++;
 
   if (MaybeHandleEmptySearch(last_search_string_))
     return;
@@ -95,7 +97,7 @@ bool FindHelper::MaybeHandleEmptySearch(const base::string16& search_string) {
   return true;
 }
 
-void FindHelper::StartNewRequest(const base::string16& search_string) {
+void FindHelper::StartNewSession(const base::string16& search_string) {
   current_request_id_ = find_request_id_counter_++;
   last_search_string_ = search_string;
   last_match_count_ = -1;

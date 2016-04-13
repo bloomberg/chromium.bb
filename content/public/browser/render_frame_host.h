@@ -191,15 +191,6 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // use by resource metrics.
   virtual int GetProxyCount() = 0;
 
-#if defined(OS_ANDROID)
-  // Selects and zooms to the find result nearest to the point (x,y)
-  // defined in find-in-page coordinates.
-  virtual void ActivateNearestFindResult(int request_id, float x, float y) = 0;
-
-  // Asks the renderer process to send the rects of the current find matches.
-  virtual void RequestFindMatchRects(int current_version) = 0;
-#endif
-
  private:
   // This interface should only be implemented inside content.
   friend class RenderFrameHostImpl;

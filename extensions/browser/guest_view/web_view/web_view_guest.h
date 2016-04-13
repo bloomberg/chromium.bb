@@ -24,7 +24,7 @@
 
 namespace blink {
 struct WebFindOptions;
-}  // nanespace blink
+}  // namespace blink
 
 namespace content {
 struct GlobalRequestID;

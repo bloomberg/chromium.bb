@@ -157,13 +157,13 @@ void WebViewFindHelper::FindReply(int request_id,
   DCHECK(current_find_session_);
 
   WebViewFindHelper::FindInfo* find_info = find_iterator->second.get();
-
   // Handle canceled find requests.
   if (!find_info->options()->findNext &&
       find_info_map_.begin()->first < request_id) {
     DCHECK_NE(current_find_session_->request_id(),
               find_info_map_.begin()->first);
-    DispatchFindUpdateEvent(true /* canceled */, true /* final_update */);
+    if (find_update_event_)
+      DispatchFindUpdateEvent(true /* canceled */, true /* final_update */);
     EndFindSession(find_info_map_.begin()->first, true /* canceled */);
   }
 

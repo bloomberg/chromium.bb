@@ -43,7 +43,7 @@ class FindHelper : public content::WebContentsObserver {
   void ClearMatches();
 
  private:
-  void StartNewRequest(const base::string16& search_string);
+  void StartNewSession(const base::string16& search_string);
   bool MaybeHandleEmptySearch(const base::string16& search_string);
   void NotifyResults(int active_ordinal, int match_count, bool finished);
 

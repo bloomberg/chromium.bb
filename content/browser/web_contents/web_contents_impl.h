@@ -56,6 +56,7 @@ class BrowserPluginEmbedder;
 class BrowserPluginGuest;
 class DateTimeChooserAndroid;
 class DownloadItem;
+class FindRequestManager;
 class GeolocationServiceContext;
 class InterstitialPageImpl;
 class JavaScriptDialogManager;
@@ -385,6 +386,8 @@ class CONTENT_EXPORT WebContentsImpl
 #if defined(OS_ANDROID)
   base::android::ScopedJavaLocalRef<jobject> GetJavaWebContents() override;
   virtual WebContentsAndroid* GetWebContentsAndroid();
+  void ActivateNearestFindResult(float x, float y) override;
+  void RequestFindMatchRects(int current_version) override;
 #elif defined(OS_MACOSX)
   void SetAllowOtherViews(bool allow) override;
   bool GetAllowOtherViews() override;
@@ -729,7 +732,22 @@ class CONTENT_EXPORT WebContentsImpl
   // Update the web contents visibility.
   void UpdateWebContentsVisibility(bool visible);
 
- private:
+  // Called by FindRequestManager when find replies come in from a renderer
+  // process.
+  void NotifyFindReply(int request_id,
+                       int number_of_matches,
+                       const gfx::Rect& selection_rect,
+                       int active_match_ordinal,
+                       bool final_update);
+
+#if defined(OS_ANDROID)
+  // Called by FindRequestManager when all of the find match rects are in.
+  void NotifyFindMatchRectsReply(int version,
+                                 const std::vector<gfx::RectF>& rects,
+                                 const gfx::RectF& active_rect);
+#endif
+
+private:
   friend class WebContentsObserver;
   friend class WebContents;  // To implement factory methods.
 
@@ -789,7 +807,7 @@ class CONTENT_EXPORT WebContentsImpl
     }
 
    private:
-    // The outer Webontents.
+    // The outer WebContents.
     WebContentsImpl* outer_web_contents_;
     // The ID of the FrameTreeNode in outer WebContents that is hosting us.
     int outer_contents_frame_tree_node_id_;
@@ -887,7 +905,7 @@ class CONTENT_EXPORT WebContentsImpl
   void OnFindMatchRectsReply(int version,
                              const std::vector<gfx::RectF>& rects,
                              const gfx::RectF& active_rect);
-
+  void OnGetNearestFindResultReply(int request_id, float distance);
   void OnOpenDateTimeDialog(
       const ViewHostMsg_DateTimeDialogValue_Params& value);
 #endif
@@ -1041,6 +1059,9 @@ class CONTENT_EXPORT WebContentsImpl
   void SetJavaScriptDialogManagerForTesting(
       JavaScriptDialogManager* dialog_manager);
 
+  // Returns the FindRequestManager, or creates one if it doesn't already exist.
+  FindRequestManager* GetOrCreateFindRequestManager();
+
   // Data for core operation ---------------------------------------------------
 
   // Delegate for notifying our owner about stuff. Not owned by us.
@@ -1091,6 +1112,9 @@ class CONTENT_EXPORT WebContentsImpl
 
   // SavePackage, lazily created.
   scoped_refptr<SavePackage> save_package_;
+
+  // Manages/coordinates find-in-page requests. Created lazily.
+  scoped_ptr<FindRequestManager> find_request_manager_;
 
   // Data for loading state ----------------------------------------------------
 
