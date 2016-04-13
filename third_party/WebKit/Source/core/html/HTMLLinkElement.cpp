@@ -162,14 +162,6 @@ HTMLLinkElement* HTMLLinkElement::create(Document& document, bool createdByParse
 
 HTMLLinkElement::~HTMLLinkElement()
 {
-#if !ENABLE(OILPAN)
-    m_sizes->setObserver(nullptr);
-    m_relList->setObserver(nullptr);
-    m_link.clear();
-    if (inShadowIncludingDocument())
-        document().styleEngine().removeStyleSheetCandidateNode(this);
-    linkLoadEventSender().cancelEvent(this);
-#endif
 }
 
 void HTMLLinkElement::parseAttribute(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& value)
@@ -494,10 +486,6 @@ LinkStyle::LinkStyle(HTMLLinkElement* owner)
 
 LinkStyle::~LinkStyle()
 {
-#if !ENABLE(OILPAN)
-    if (m_sheet)
-        m_sheet->clearOwnerNode();
-#endif
 }
 
 Document& LinkStyle::document()

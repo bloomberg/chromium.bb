@@ -64,11 +64,6 @@ public:
     static ContextType contextTypeFromId(const String& id);
     static ContextType resolveContextTypeAliases(ContextType);
 
-#if !ENABLE(OILPAN)
-    void ref() { m_canvas->ref(); }
-    void deref() { m_canvas->deref(); }
-#endif
-
     HTMLCanvasElement* canvas() const { return m_canvas; }
 
     virtual ContextType getContextType() const = 0;

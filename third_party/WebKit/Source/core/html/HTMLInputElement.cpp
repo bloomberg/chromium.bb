@@ -168,19 +168,6 @@ void HTMLInputElement::willAddFirstAuthorShadowRoot()
 
 HTMLInputElement::~HTMLInputElement()
 {
-#if !ENABLE(OILPAN)
-    // Need to remove form association while this is still an HTMLInputElement
-    // so that virtual functions are called correctly.
-    setForm(0);
-    // setForm(0) may register this to a TreeScope-level radio button group.
-    // We should unregister it to avoid accessing a deleted object.
-    if (type() == InputTypeNames::radio)
-        treeScope().radioButtonGroupScope().removeButton(this);
-
-    // TODO(dtapuska): Make this passive touch listener see crbug.com/584438
-    if (m_hasTouchEventHandler && document().frameHost())
-        document().frameHost()->eventHandlerRegistry().didRemoveEventHandler(*this, EventHandlerRegistry::TouchEventBlocking);
-#endif
 }
 
 const AtomicString& HTMLInputElement::name() const
@@ -1169,6 +1156,7 @@ void HTMLInputElement::setValueFromRenderer(const String& value)
     setAutofilled(false);
 }
 
+// TODO(Oilpan): It's nasty to return a void* pointer. Return ClickHandlingState* instead.
 void* HTMLInputElement::preDispatchEventHandler(Event* event)
 {
     if (event->type() == EventTypeNames::textInput && m_inputTypeView->shouldSubmitImplicitly(event)) {
@@ -1179,12 +1167,7 @@ void* HTMLInputElement::preDispatchEventHandler(Event* event)
         return nullptr;
     if (!event->isMouseEvent() || toMouseEvent(event)->button() != LeftButton)
         return nullptr;
-#if ENABLE(OILPAN)
     return m_inputTypeView->willDispatchClick();
-#else
-    // FIXME: Check whether there are any cases where this actually ends up leaking.
-    return m_inputTypeView->willDispatchClick().leakPtr();
-#endif
 }
 
 void HTMLInputElement::postDispatchEventHandler(Event* event, void* dataFromPreDispatch)

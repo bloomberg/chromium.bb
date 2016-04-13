@@ -39,9 +39,6 @@ LabelsNodeList::LabelsNodeList(ContainerNode& ownerNode)
 
 LabelsNodeList::~LabelsNodeList()
 {
-#if !ENABLE(OILPAN)
-    ownerNode().nodeLists()->removeCache(this, LabelsNodeListType);
-#endif
 }
 
 bool LabelsNodeList::elementMatches(const Element& element) const

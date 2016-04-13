@@ -58,9 +58,6 @@ private:
     explicit ImageDocument(const DocumentInit&);
 
     DocumentParser* createParser() override;
-#if !ENABLE(OILPAN)
-    void dispose() override;
-#endif
 
     void createDocumentStructure();
 

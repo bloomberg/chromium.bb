@@ -15,20 +15,6 @@ using namespace HTMLNames;
 
 RelList::RelList(Element* element) : DOMTokenList(nullptr), m_element(element) { }
 
-#if !ENABLE(OILPAN)
-void RelList::ref()
-{
-    m_element->ref();
-    DOMTokenList::ref();
-}
-
-void RelList::deref()
-{
-    m_element->deref();
-    DOMTokenList::deref();
-}
-#endif
-
 unsigned RelList::length() const
 {
     return !m_element->fastGetAttribute(relAttr).isEmpty() ? m_relValues.size() : 0;

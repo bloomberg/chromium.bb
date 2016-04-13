@@ -454,10 +454,6 @@ DateTimeEditElement::DateTimeEditElement(Document& document, EditControlOwner& e
 
 DateTimeEditElement::~DateTimeEditElement()
 {
-#if !ENABLE(OILPAN)
-    for (size_t fieldIndex = 0; fieldIndex < m_fields.size(); ++fieldIndex)
-        m_fields[fieldIndex]->removeEventHandler();
-#endif
 }
 
 DEFINE_TRACE(DateTimeEditElement)

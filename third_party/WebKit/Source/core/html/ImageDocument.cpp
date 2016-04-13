@@ -422,14 +422,6 @@ bool ImageDocument::shouldShrinkToFit() const
     return frame()->isMainFrame();
 }
 
-#if !ENABLE(OILPAN)
-void ImageDocument::dispose()
-{
-    m_imageElement = nullptr;
-    HTMLDocument::dispose();
-}
-#endif
-
 DEFINE_TRACE(ImageDocument)
 {
     visitor->trace(m_imageElement);

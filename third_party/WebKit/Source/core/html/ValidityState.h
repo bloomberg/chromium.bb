@@ -40,11 +40,6 @@ public:
     }
     DEFINE_INLINE_TRACE() { visitor->trace(m_control); }
 
-#if !ENABLE(OILPAN)
-    void ref() { m_control->ref(); }
-    void deref() { m_control->deref(); }
-#endif
-
     String validationMessage() const;
 
     void setCustomErrorMessage(const String&);
