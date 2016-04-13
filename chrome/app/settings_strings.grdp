@@ -578,20 +578,26 @@
   </message>
 
   <!-- Languages Page -->
-  <message name="IDS_SETTINGS_LANGUAGES_PAGE_TITLE" desc="Name of the settings page which displays language and input method preferences.">
+  <message name="IDS_SETTINGS_LANGUAGES_PAGE_TITLE" desc="Name of the settings page which displays language preferences.">
     Languages
   </message>
-  <message name="IDS_SETTINGS_LANGUAGES_LANGUAGES_LIST_TITLE" desc="Title for the list of languages that are enabled.">
-    Languages
+  <message name="IDS_SETTINGS_LANGUAGES_LANGUAGES_LIST_TITLE" desc="Title for the currently used language in the header for the collapsible list of languages.">
+    Language
   </message>
   <message name="IDS_SETTINGS_LANGUAGES_LANGUAGES_MANAGE" desc="Button under the list of enabled languages which opens a sub-page that lets the user enable or disable languages.">
     Manage languages
   </message>
-  <message name="IDS_SETTINGS_LANGUAGES_INPUT_METHODS_LIST_TITLE" desc="Title for the list of input methods (keyboard layouts and input method editors) that are enabled.">
-    Input methods
+  <message name="IDS_SETTINGS_LANGUAGES_OFFER_TO_TRANSLATE_IN_THIS_LANGUAGE" desc="The label for a checkbox which indicates whether or not pages in this language should be translated by default.">
+    Offer to translate pages in this language
   </message>
-  <message name="IDS_SETTINGS_LANGUAGES_INPUT_METHODS_MANAGE" desc="Button under the list of input methods which opens a sub-page that lets the user enable or disable devices (such as keyboards).">
-    Manage devices
+  <message name="IDS_SETTINGS_LANGUAGES_CANNOT_TRANSLATE_IN_THIS_LANGUAGE" desc="The string displayed in the details for a language when the language cannot be translated from.">
+    This language cannot be translated
+  </message>
+  <message name="IDS_SETTINGS_LANGUAGES_INPUT_METHODS_LIST_TITLE" desc="Title for the current input method in the header for the collapsible list of enabled input methods (keyboard layouts and input method editors).">
+    Input method
+  </message>
+  <message name="IDS_SETTINGS_LANGUAGES_INPUT_METHODS_MANAGE" desc="Button under the list of input methods which opens a sub-page that lets the user enable or disable keyboard layouts and input method editors.">
+    Manage inputs
   </message>
   <message name="IDS_SETTINGS_LANGUAGES_SPELL_CHECK_LIST_TITLE" desc="Title for the section containing the dropdown used to select the language to use for spell checking. The dropdown contains the enabled languages which support spell checking.">
     Spell check
@@ -600,7 +606,7 @@
     Custom spelling
   </message>
   <message name="IDS_SETTINGS_LANGUAGES_MANAGE_LANGUAGES_TITLE" desc="Name of the settings sub-page which allows enabling and disabling languages.">
-    Languages
+    Manage languages
   </message>
   <message name="IDS_SETTINGS_LANGUAGES_ALL_LANGUAGES" desc="Header for the list of all supported languages, which the user can use to enable languages, on the Manage Languages page.">
     All languages
@@ -609,7 +615,7 @@
     Enabled languages
   </message>
   <message name="IDS_SETTINGS_LANGUAGES_EDIT_DICTIONARY_TITLE" desc="Name of the settings sub-page which allows adding and remove custom words from the custom spell check dictionary.">
-    Custom spelling dictionary
+    Manage spell check
   </message>
   <message name="IDS_SETTINGS_LANGUAGES_ADD_DICTIONARY_WORD" desc="Label for the text input used to add a new word to the custom spell check dictionary.">
     Add a new word
