@@ -200,6 +200,12 @@
             "group_name": "WithSuspiciousModuleReporting"
         },
         {
+            "enable_features": [
+                "IncidentReportingModuleLoadAnalysis"
+            ],
+            "group_name": "WithModuleLoadAnalysis"
+        },
+        {
             "group_name": "Default"
         }
     ],
