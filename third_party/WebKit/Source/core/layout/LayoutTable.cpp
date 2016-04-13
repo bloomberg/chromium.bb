@@ -573,7 +573,7 @@ void LayoutTable::layout()
         invalidateCollapsedBorders();
 
         computeOverflow(clientLogicalBottom());
-        updateScrollInfoAfterLayout();
+        updateAfterLayout();
     }
 
     // FIXME: This value isn't the intrinsic content logical height, but we need

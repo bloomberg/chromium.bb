@@ -2,25 +2,58 @@
 <script>
 if (window.internals) {
     internals.settings.setCSSStickyPositionEnabled(true);
-}
+}           
 </script>
-<style type="text/css">
-div {
-    height: 100px;
-    width: 100px;
-}
-.sticky {
-    background-color: green;
-    position: sticky;
-}
-.red {
-    background-color: red;
-    margin-top: -100px;
-}
+
+<html>
+<head>
+<style>
+    body {
+        margin: 0;
+    }
+    .container {
+        width: 200px;
+        height: 400px;
+        outline: 2px solid black;
+    }
+    
+    .box {
+        width: 200px;
+        height: 200px;
+    }
+
+    .sticky {
+        position: sticky;
+    }
+    
+    .intermediate {
+        position: absolute;
+        z-index: 1;
+        background-color: green
+    }
+    
+    .child {
+        position: relative;
+        background-color: red;
+        z-index: 2;
+    }
+    
+    .indicator {
+        position: absolute;
+        top: 0;
+        left: 0;
+        background-color: blue;
+        z-index: 0;
+    }
 </style>
-<!--
-Tests that the sticky node will be popped out into a stacking context on top of the node which follows it. You should
-see no red boxes as the green sticky div should pop on top of the red div placed under it.
--->
-<div class="sticky"></div>
-<div class="red"></div>
+</head>
+<body>
+    <div class="indicator box"></div>
+    <div class="container">
+        <div class="intermediate box"></div>
+        <div class="sticky box">
+            <div class="child box"></div>
+        </div>
+    </div>
+</body>
+</html>

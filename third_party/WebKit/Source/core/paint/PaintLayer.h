@@ -271,6 +271,8 @@ public:
     // Allows updates of layer content without invalidating paint.
     void contentChanged(ContentChangeType);
 
+    void updateLayerPosition();
+
     void updateLayerPositionsAfterLayout();
     void updateLayerPositionsAfterOverflowScroll(const DoubleSize& scrollDelta);
 
@@ -542,6 +544,10 @@ public:
         const PaintLayer* opacityAncestor;
         const PaintLayer* transformAncestor;
         const PaintLayer* filterAncestor;
+
+        // The fist ancestor which can scroll. This is a subset of the
+        // ancestorOverflowLayer chain where the scrolling layer is visible and
+        // has a larger scroll content than its bounds.
         const PaintLayer* ancestorScrollingLayer;
         const PaintLayer* nearestFixedPositionLayer;
 
@@ -571,6 +577,7 @@ public:
         return m_needsDescendantDependentCompositingInputsUpdate;
     }
 
+    void updateAncestorOverflowLayer(const PaintLayer* ancestorOverflowLayer) { m_ancestorOverflowLayer = ancestorOverflowLayer; }
     void updateAncestorDependentCompositingInputs(const AncestorDependentCompositingInputs&, const RareAncestorDependentCompositingInputs&, bool hasAncestorWithClipPath);
     void updateDescendantDependentCompositingInputs(bool hasDescendantWithClipPath, bool hasNonIsolatedDescendantWithBlendMode);
     void didUpdateCompositingInputs();
@@ -580,6 +587,7 @@ public:
     const PaintLayer* transformAncestor() const { ASSERT(!m_needsAncestorDependentCompositingInputsUpdate); return m_rareAncestorDependentCompositingInputs ? m_rareAncestorDependentCompositingInputs->transformAncestor : nullptr; }
     const PaintLayer* filterAncestor() const { ASSERT(!m_needsAncestorDependentCompositingInputsUpdate); return m_rareAncestorDependentCompositingInputs ? m_rareAncestorDependentCompositingInputs->filterAncestor : nullptr; }
     const LayoutObject* clippingContainer() const { ASSERT(!m_needsAncestorDependentCompositingInputsUpdate); return m_ancestorDependentCompositingInputs.clippingContainer; }
+    const PaintLayer* ancestorOverflowLayer() const { return m_ancestorOverflowLayer; }
     const PaintLayer* ancestorScrollingLayer() const { ASSERT(!m_needsAncestorDependentCompositingInputsUpdate); return m_rareAncestorDependentCompositingInputs ? m_rareAncestorDependentCompositingInputs->ancestorScrollingLayer : nullptr; }
     const PaintLayer* nearestFixedPositionLayer() const { ASSERT(!m_needsAncestorDependentCompositingInputsUpdate); return m_rareAncestorDependentCompositingInputs ? m_rareAncestorDependentCompositingInputs->nearestFixedPositionLayer : nullptr; }
     const PaintLayer* scrollParent() const { ASSERT(!m_needsAncestorDependentCompositingInputsUpdate); return m_rareAncestorDependentCompositingInputs ? m_rareAncestorDependentCompositingInputs->scrollParent : nullptr; }
@@ -698,9 +706,6 @@ private:
 
     void dirtyAncestorChainHasSelfPaintingLayerDescendantStatus();
 
-    // Returns true if the position changed.
-    bool updateLayerPosition();
-
     void updateLayerPositionRecursive();
     void updateLayerPositionsAfterScrollRecursive(const DoubleSize& scrollDelta, bool paintInvalidationContainerWasScrolled);
 
@@ -756,6 +761,8 @@ private:
     void dirty3DTransformedDescendantStatus();
     // Both updates the status, and returns true if descendants of this have 3d.
     bool update3DTransformedDescendantStatus();
+
+    void removeAncestorOverflowLayer(const PaintLayer* removedLayer);
 
     void updateOrRemoveFilterClients();
 
@@ -860,6 +867,9 @@ private:
     // Cached normal flow values for absolute positioned elements with static left/top values.
     LayoutUnit m_staticInlinePosition;
     LayoutUnit m_staticBlockPosition;
+
+    // The first ancestor having a non visible overflow.
+    const PaintLayer* m_ancestorOverflowLayer;
 
     AncestorDependentCompositingInputs m_ancestorDependentCompositingInputs;
     OwnPtr<RareAncestorDependentCompositingInputs> m_rareAncestorDependentCompositingInputs;

@@ -63,6 +63,17 @@ class LayoutBox;
 class PaintLayer;
 class LayoutScrollbarPart;
 
+typedef WTF::HashMap<PaintLayer*, StickyPositionScrollingConstraints> StickyConstraintsMap;
+
+struct PaintLayerScrollableAreaRareData {
+    WTF_MAKE_NONCOPYABLE(PaintLayerScrollableAreaRareData);
+    USING_FAST_MALLOC(PaintLayerScrollableAreaRareData);
+public:
+    PaintLayerScrollableAreaRareData() {}
+
+    StickyConstraintsMap m_stickyConstraintsMap;
+};
+
 // PaintLayerScrollableArea represents the scrollable area of a LayoutBox.
 //
 // To be scrollable, an element requires ‘overflow’ != visible. Note that this
@@ -340,6 +351,10 @@ public:
     bool shouldRebuildVerticalScrollbarLayer() const { return m_rebuildVerticalScrollbarLayer; }
     void resetRebuildScrollbarLayerFlags();
 
+    StickyConstraintsMap& stickyConstraintsMap() { return ensureRareData().m_stickyConstraintsMap; }
+    void invalidateAllStickyConstraints();
+    void invalidateStickyConstraintsFor(PaintLayer*, bool needsCompositingUpdate = true);
+
     DECLARE_VIRTUAL_TRACE();
 
 private:
@@ -374,6 +389,18 @@ private:
     void updateScrollableAreaSet(bool hasOverflow);
 
     void updateCompositingLayersAfterScroll();
+
+    PaintLayerScrollableAreaRareData* rareData()
+    {
+        return m_rareData.get();
+    }
+
+    PaintLayerScrollableAreaRareData& ensureRareData()
+    {
+        if (!m_rareData)
+            m_rareData = adoptPtr(new PaintLayerScrollableAreaRareData());
+        return *m_rareData.get();
+    }
 
     // PaintInvalidationCapableScrollableArea
     LayoutBox& boxForScrollControlPaintInvalidation() const { return box(); }
@@ -420,6 +447,8 @@ private:
     LayoutScrollbarPart* m_resizer;
 
     ScrollAnchor m_scrollAnchor;
+
+    OwnPtr<PaintLayerScrollableAreaRareData> m_rareData;
 
 #if ENABLE(ASSERT)
     bool m_hasBeenDisposed;

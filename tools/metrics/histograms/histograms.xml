@@ -75609,6 +75609,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="12" label="Non-invertible transform"/>
   <int value="13" label="Page based scrolling"/>
   <int value="14" label="Animating scroll on main thread"/>
+  <int value="15" label="Has sticky position objects"/>
 </enum>
 
 <enum name="MakeChromeDefaultResult" type="int">

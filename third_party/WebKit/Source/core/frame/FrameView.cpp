@@ -136,6 +136,7 @@ FrameView::FrameView(LocalFrame* frame)
     , m_safeToPropagateScrollToParent(true)
     , m_isTrackingPaintInvalidations(false)
     , m_scrollCorner(nullptr)
+    , m_stickyPositionObjectCount(0)
     , m_inputEventsScaleFactorForEmulation(1)
     , m_layoutSizeFixedToFrameSize(true)
     , m_didScrollTimer(this, &FrameView::didScrollTimerFired)
@@ -1600,6 +1601,14 @@ void FrameView::updateLayersAndCompositingAfterScrollIfNeeded()
     // Nothing to do after scrolling if there are no fixed position elements.
     if (!hasViewportConstrainedObjects())
         return;
+
+    // Update sticky position objects which are stuck to the viewport.
+    for (const auto& viewportConstrainedObject : *m_viewportConstrainedObjects) {
+        LayoutObject* layoutObject = viewportConstrainedObject;
+        PaintLayer* layer = toLayoutBoxModelObject(layoutObject)->layer();
+        if (layoutObject->style()->position() == StickyPosition)
+            layer->updateLayerPosition();
+    }
 
     // If there fixed position elements, scrolling may cause compositing layers to change.
     // Update widget and layer positions after scrolling, but only if we're not inside of

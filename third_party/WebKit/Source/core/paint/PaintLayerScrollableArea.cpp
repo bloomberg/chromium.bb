@@ -1235,6 +1235,26 @@ void PaintLayerScrollableArea::updateResizerStyle()
     }
 }
 
+void PaintLayerScrollableArea::invalidateAllStickyConstraints()
+{
+    if (PaintLayerScrollableAreaRareData* d = rareData()) {
+        for (PaintLayer* stickyLayer : d->m_stickyConstraintsMap.keys()) {
+            if (stickyLayer->layoutObject()->style()->position() == StickyPosition)
+                stickyLayer->setNeedsCompositingInputsUpdate();
+        }
+        d->m_stickyConstraintsMap.clear();
+    }
+}
+
+void PaintLayerScrollableArea::invalidateStickyConstraintsFor(PaintLayer* layer, bool needsCompositingUpdate)
+{
+    if (PaintLayerScrollableAreaRareData* d = rareData()) {
+        d->m_stickyConstraintsMap.remove(layer);
+        if (needsCompositingUpdate && layer->layoutObject()->style()->position() == StickyPosition)
+            layer->setNeedsCompositingInputsUpdate();
+    }
+}
+
 IntSize PaintLayerScrollableArea::offsetFromResizeCorner(const IntPoint& absolutePoint) const
 {
     // Currently the resize corner is either the bottom right corner or the bottom left corner.

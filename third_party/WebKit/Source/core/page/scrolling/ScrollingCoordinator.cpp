@@ -937,7 +937,8 @@ bool ScrollingCoordinator::hasVisibleSlowRepaintViewportConstrainedObjects(Frame
 
     for (const LayoutObject* layoutObject : *viewportConstrainedObjects) {
         ASSERT(layoutObject->isBoxModelObject() && layoutObject->hasLayer());
-        ASSERT(layoutObject->style()->position() == FixedPosition);
+        ASSERT(layoutObject->style()->position() == FixedPosition
+            || layoutObject->style()->position() == StickyPosition);
         PaintLayer* layer = toLayoutBoxModelObject(layoutObject)->layer();
 
         // Whether the Layer scrolls with the viewport is a tree-depenent
@@ -986,6 +987,8 @@ MainThreadScrollingReasons ScrollingCoordinator::mainThreadScrollingReasons() co
 
         if (frameView->hasBackgroundAttachmentFixedObjects())
             reasons |= MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects;
+        if (frameView->hasStickyPositionObjects())
+            reasons |= MainThreadScrollingReason::kHasStickyPositionObjects;
         FrameView::ScrollingReasons scrollingReasons = frameView->getScrollingReasons();
         const bool mayBeScrolledByInput = (scrollingReasons == FrameView::Scrollable);
         const bool mayBeScrolledByScript = mayBeScrolledByInput || (scrollingReasons ==
@@ -1011,6 +1014,8 @@ String ScrollingCoordinator::mainThreadScrollingReasonsAsText(MainThreadScrollin
         stringBuilder.appendLiteral("Has background-attachment:fixed, ");
     if (reasons & MainThreadScrollingReason::kHasNonLayerViewportConstrainedObjects)
         stringBuilder.appendLiteral("Has non-layer viewport-constrained objects, ");
+    if (reasons & MainThreadScrollingReason::kHasStickyPositionObjects)
+        stringBuilder.appendLiteral("Has sticky position objects, ");
     if (reasons & MainThreadScrollingReason::kThreadedScrollingDisabled)
         stringBuilder.appendLiteral("Threaded scrolling is disabled, ");
     if (reasons & MainThreadScrollingReason::kAnimatingScrollOnMainThread)
