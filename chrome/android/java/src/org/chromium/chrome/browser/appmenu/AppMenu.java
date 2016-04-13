@@ -364,7 +364,7 @@ public class AppMenu implements OnItemClickListener, OnKeyListener {
         assert mPopup.getAnchorView() != null;
         View anchorView = mPopup.getAnchorView();
         int[] anchorViewLocation = new int[2];
-        anchorView.getLocationOnScreen(anchorViewLocation);
+        anchorView.getLocationInWindow(anchorViewLocation);
         anchorViewLocation[1] -= appDimensions.top;
         int anchorViewImpactHeight = mIsByPermanentButton ? anchorView.getHeight() : 0;
 
