@@ -30,7 +30,7 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/latency_info/latency_info.h"
+#include "ui/events/latency_info.h"
 
 using std::string;
 

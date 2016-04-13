@@ -26,8 +26,8 @@
 #include "content/renderer/render_widget.h"
 #include "third_party/WebKit/public/platform/WebFloatPoint.h"
 #include "third_party/WebKit/public/platform/WebFloatSize.h"
+#include "ui/events/latency_info.h"
 #include "ui/gfx/geometry/point_conversions.h"
-#include "ui/latency_info/latency_info.h"
 
 #if defined(OS_ANDROID)
 #include <android/keycodes.h>

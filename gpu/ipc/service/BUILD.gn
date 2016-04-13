@@ -46,10 +46,10 @@ source_set("ipc_service_sources") {
   public_deps = [
     "//base",
     "//ipc",
+    "//ui/events:events_base",
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/gl",
-    "//ui/latency_info/ipc",
     "//url",
   ]
   deps = [

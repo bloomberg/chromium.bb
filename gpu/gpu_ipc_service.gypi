@@ -6,10 +6,11 @@
   'dependencies': [
     '../base/base.gyp:base',
     '../ipc/ipc.gyp:ipc',
+    '../ui/events/events.gyp:events_base',
+    '../ui/events/events.gyp:events_ipc',
     '../ui/gfx/gfx.gyp:gfx',
     '../ui/gfx/gfx.gyp:gfx_geometry',
     '../ui/gl/gl.gyp:gl',
-    '../ui/latency_info/latency_info.gyp:latency_info_ipc',
     '../url/url.gyp:url_lib',
   ],
   'include_dirs': [

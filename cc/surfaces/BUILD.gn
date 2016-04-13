@@ -55,9 +55,9 @@ component("surfaces") {
     "//gpu/command_buffer/client:gles2_interface",
     "//gpu/command_buffer/common",
     "//skia",
+    "//ui/events:events_base",
     "//ui/gfx",
     "//ui/gfx/geometry",
-    "//ui/latency_info",
   ]
 
   if (is_android && !is_debug) {

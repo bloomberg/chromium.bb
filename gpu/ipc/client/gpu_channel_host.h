@@ -27,10 +27,10 @@
 #include "ipc/ipc_sync_channel.h"
 #include "ipc/message_filter.h"
 #include "ipc/message_router.h"
+#include "ui/events/latency_info.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gl/gpu_preference.h"
-#include "ui/latency_info/latency_info.h"
 
 class GURL;
 

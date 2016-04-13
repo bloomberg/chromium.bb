@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_LATENCY_INFO_LATENCY_INFO_H_
-#define UI_LATENCY_INFO_LATENCY_INFO_H_
+#ifndef UI_EVENTS_LATENCY_INFO_H_
+#define UI_EVENTS_LATENCY_INFO_H_
 
 #include <stdint.h>
 
@@ -15,7 +15,7 @@
 #include "base/containers/small_map.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
-#include "ui/latency_info/latency_info_export.h"
+#include "ui/events/events_base_export.h"
 
 #if !defined(OS_IOS)
 #include "ipc/ipc_param_traits.h"  // nogncheck
@@ -97,10 +97,10 @@ enum LatencyComponentType {
   // but the swap failed.
   INPUT_EVENT_LATENCY_TERMINATED_SWAP_FAILED_COMPONENT,
   LATENCY_COMPONENT_TYPE_LAST =
-      INPUT_EVENT_LATENCY_TERMINATED_SWAP_FAILED_COMPONENT,
+    INPUT_EVENT_LATENCY_TERMINATED_SWAP_FAILED_COMPONENT,
 };
 
-class LATENCY_INFO_EXPORT LatencyInfo {
+class EVENTS_BASE_EXPORT LatencyInfo {
  public:
   struct LatencyComponent {
     // Nondecreasing number that can be used to determine what events happened
@@ -113,7 +113,7 @@ class LATENCY_INFO_EXPORT LatencyInfo {
     uint32_t event_count;
   };
 
-  struct LATENCY_INFO_EXPORT InputCoordinate {
+  struct EVENTS_BASE_EXPORT InputCoordinate {
     InputCoordinate();
     InputCoordinate(float x, float y);
 
@@ -130,8 +130,7 @@ class LATENCY_INFO_EXPORT LatencyInfo {
   // component info.
   typedef base::SmallMap<
       std::map<std::pair<LatencyComponentType, int64_t>, LatencyComponent>,
-      kTypicalMaxComponentsPerLatencyInfo>
-      LatencyMap;
+      kTypicalMaxComponentsPerLatencyInfo> LatencyMap;
 
   LatencyInfo();
   LatencyInfo(const LatencyInfo& other);
@@ -241,4 +240,4 @@ class LATENCY_INFO_EXPORT LatencyInfo {
 
 }  // namespace ui
 
-#endif  // UI_LATENCY_INFO_LATENCY_INFO_H_
+#endif  // UI_EVENTS_LATENCY_INFO_H_

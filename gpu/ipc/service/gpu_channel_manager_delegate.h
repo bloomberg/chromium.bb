@@ -10,8 +10,8 @@
 
 #if defined(OS_MACOSX)
 #include "ui/base/cocoa/remote_layer_api.h"
+#include "ui/events/latency_info.h"
 #include "ui/gfx/mac/io_surface.h"
-#include "ui/latency_info/latency_info.h"
 #endif
 
 class GURL;

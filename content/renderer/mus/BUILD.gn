@@ -33,6 +33,5 @@ source_set("mus") {
     "//third_party/WebKit/public:blink",
     "//ui/events:events",
     "//ui/events:events_base",
-    "//ui/latency_info",
   ]
 }

@@ -18,9 +18,9 @@
 #include "third_party/WebKit/public/platform/WebPoint.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/events/blink/input_handler_proxy_client.h"
+#include "ui/events/latency_info.h"
 #include "ui/gfx/geometry/scroll_offset.h"
 #include "ui/gfx/geometry/size_f.h"
-#include "ui/latency_info/latency_info.h"
 
 using blink::WebActiveWheelFlingParameters;
 using blink::WebFloatPoint;

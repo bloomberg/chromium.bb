@@ -9,7 +9,7 @@
 #include <cmath>
 
 #include "base/logging.h"
-#include "ui/latency_info/latency_info.h"
+#include "ui/events/latency_info.h"
 
 namespace content {
 

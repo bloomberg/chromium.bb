@@ -66,6 +66,8 @@
         'keycodes/keyboard_code_conversion_x.cc',
         'keycodes/keyboard_code_conversion_x.h',
         'keycodes/keyboard_codes.h',
+        'latency_info.cc',
+        'latency_info.h',
         'x/keysym_to_unicode.cc',
         'x/keysym_to_unicode.h',
       ],
@@ -98,7 +100,6 @@
         '<(DEPTH)/skia/skia.gyp:skia',
         '../gfx/gfx.gyp:gfx',
         '../gfx/gfx.gyp:gfx_geometry',
-        '../latency_info/latency_info.gyp:latency_info',
         'dom_keycode_converter',
         'events_base',
         'gesture_detection',
@@ -297,6 +298,24 @@
             'gesture_detection/gesture_configuration_default.cc',
           ],
         }],
+      ],
+    },
+    {
+      # GN version: //ui/events/ipc:events_ipc
+      'target_name': 'events_ipc',
+      'type': '<(component)',
+      'dependencies': [
+        '<(DEPTH)/base/base.gyp:base',
+        '<(DEPTH)/ipc/ipc.gyp:ipc',
+        'events_base',
+      ],
+      'defines': [
+        'EVENTS_IPC_IMPLEMENTATION',
+      ],
+      'sources': [
+        'ipc/latency_info_param_traits.cc',
+        'ipc/latency_info_param_traits.h',
+        'ipc/latency_info_param_traits_macros.h',
       ],
     },
     {

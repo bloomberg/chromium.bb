@@ -7,8 +7,8 @@
 
 #include "ipc/ipc_message_macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/latency_info/ipc/latency_info_param_traits.h"
-#include "ui/latency_info/ipc/latency_info_param_traits_macros.h"
+#include "ui/events/ipc/latency_info_param_traits.h"
+#include "ui/events/ipc/latency_info_param_traits_macros.h"
 
 namespace ui {
 
@@ -20,13 +20,13 @@ TEST(LatencyInfoParamTraitsTest, Basic) {
   latency.AddLatencyNumber(INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, 1234, 100);
   latency.AddLatencyNumber(INPUT_EVENT_LATENCY_TERMINATED_FRAME_SWAP_COMPONENT,
                            1234, 0);
-  EXPECT_TRUE(
-      latency.AddInputCoordinate(LatencyInfo::InputCoordinate(100, 200)));
-  EXPECT_TRUE(
-      latency.AddInputCoordinate(LatencyInfo::InputCoordinate(101, 201)));
+  EXPECT_TRUE(latency.AddInputCoordinate(
+      LatencyInfo::InputCoordinate(100, 200)));
+  EXPECT_TRUE(latency.AddInputCoordinate(
+      LatencyInfo::InputCoordinate(101, 201)));
   // Up to 2 InputCoordinate is allowed.
-  EXPECT_FALSE(
-      latency.AddInputCoordinate(LatencyInfo::InputCoordinate(102, 202)));
+  EXPECT_FALSE(latency.AddInputCoordinate(
+      LatencyInfo::InputCoordinate(102, 202)));
 
   EXPECT_EQ(100, latency.trace_id());
   EXPECT_TRUE(latency.terminated());
@@ -48,11 +48,13 @@ TEST(LatencyInfoParamTraitsTest, Basic) {
               output.input_coordinates()[i].y);
   }
 
-  EXPECT_TRUE(output.FindLatency(INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 1234,
+  EXPECT_TRUE(output.FindLatency(INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT,
+                                 1234,
                                  nullptr));
 
   LatencyInfo::LatencyComponent rwh_comp;
-  EXPECT_TRUE(output.FindLatency(INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, 1234,
+  EXPECT_TRUE(output.FindLatency(INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
+                                 1234,
                                  &rwh_comp));
   EXPECT_EQ(100, rwh_comp.sequence_number);
   EXPECT_EQ(1u, rwh_comp.event_count);

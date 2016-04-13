@@ -45,7 +45,7 @@
     '../ui/accessibility/accessibility.gyp:ax_gen',
     '../ui/base/ime/ui_base_ime.gyp:ui_base_ime',
     '../ui/base/ui_base.gyp:ui_base',
-    '../ui/latency_info/latency_info.gyp:latency_info_ipc',
+    '../ui/events/events.gyp:events_ipc',
     '../ui/gfx/gfx.gyp:gfx',
     '../ui/gfx/gfx.gyp:gfx_geometry',
     '../ui/gfx/ipc/gfx_ipc.gyp:gfx_ipc',

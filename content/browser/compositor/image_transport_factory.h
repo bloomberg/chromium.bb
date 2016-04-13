@@ -12,8 +12,8 @@
 #include "build/build_config.h"
 #include "cc/surfaces/surface_id_allocator.h"
 #include "content/common/content_export.h"
+#include "ui/events/latency_info.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/latency_info/latency_info.h"
 
 namespace cc {
 class SurfaceManager;

@@ -20,9 +20,9 @@
 #include "ui/events/gestures/gesture_types.h"
 #include "ui/events/keycodes/dom/dom_key.h"
 #include "ui/events/keycodes/keyboard_codes.h"
+#include "ui/events/latency_info.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/point_conversions.h"
-#include "ui/latency_info/latency_info.h"
 
 namespace gfx {
 class Transform;

@@ -16,8 +16,8 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "third_party/skia/include/core/SkRegion.h"
+#include "ui/events/latency_info.h"
 #include "ui/gfx/skia_util.h"
-#include "ui/latency_info/latency_info.h"
 
 namespace content {
 

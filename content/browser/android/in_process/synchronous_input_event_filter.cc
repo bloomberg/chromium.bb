@@ -9,7 +9,7 @@
 #include "content/browser/android/in_process/synchronous_compositor_registry_in_proc.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/events/blink/synchronous_input_handler_proxy.h"
-#include "ui/latency_info/latency_info.h"
+#include "ui/events/latency_info.h"
 
 using blink::WebInputEvent;
 

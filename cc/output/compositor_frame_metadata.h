@@ -13,9 +13,9 @@
 #include "cc/output/viewport_selection_bound.h"
 #include "cc/surfaces/surface_id.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/events/latency_info.h"
 #include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/geometry/vector2d_f.h"
-#include "ui/latency_info/latency_info.h"
 
 namespace cc {
 

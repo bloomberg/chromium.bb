@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "content/browser/renderer_host/event_with_latency_info.h"
 #include "content/common/content_export.h"
-#include "ui/latency_info/latency_info.h"
+#include "ui/events/latency_info.h"
 
 namespace content {
 

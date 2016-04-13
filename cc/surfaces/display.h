@@ -18,7 +18,7 @@
 #include "cc/surfaces/surface_id.h"
 #include "cc/surfaces/surface_manager.h"
 #include "cc/surfaces/surfaces_export.h"
-#include "ui/latency_info/latency_info.h"
+#include "ui/events/latency_info.h"
 
 namespace gpu {
 class GpuMemoryBufferManager;
