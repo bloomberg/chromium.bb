@@ -1431,7 +1431,6 @@ WebLocalFrameImpl::WebLocalFrameImpl(WebTreeScopeType scope, WebFrameClient* cli
     , m_webDevToolsFrontend(0)
     , m_selfKeepAlive(this)
 {
-    setIndexedDBClientCreateFunction(IndexedDBClientImpl::create);
     frameCount++;
 }
 
@@ -1476,6 +1475,7 @@ void WebLocalFrameImpl::setCoreFrame(LocalFrame* frame)
     provideGeolocationTo(*m_frame, m_geolocationClientProxy.get());
     m_geolocationClientProxy->setController(GeolocationController::from(m_frame.get()));
     provideMIDITo(*m_frame, MIDIClientProxy::create(m_client ? m_client->webMIDIClient() : nullptr));
+    provideIndexedDBClientTo(*m_frame, IndexedDBClientImpl::create());
     provideLocalFileSystemTo(*m_frame, LocalFileSystemClient::create());
     provideNavigatorContentUtilsTo(*m_frame, NavigatorContentUtilsClientImpl::create(this));
 

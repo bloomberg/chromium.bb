@@ -61,6 +61,7 @@
 #include "public/web/WebWorkerContentSettingsClientProxy.h"
 #include "public/web/modules/serviceworker/WebServiceWorkerContextClient.h"
 #include "public/web/modules/serviceworker/WebServiceWorkerNetworkProvider.h"
+#include "web/IndexedDBClientImpl.h"
 #include "web/ServiceWorkerGlobalScopeClientImpl.h"
 #include "web/ServiceWorkerGlobalScopeProxy.h"
 #include "web/WebDataSourceImpl.h"
@@ -350,6 +351,7 @@ void WebEmbeddedWorkerImpl::startWorkerThread()
 
     WorkerClients* workerClients = WorkerClients::create();
     provideContentSettingsClientToWorker(workerClients, m_contentSettingsClient.release());
+    provideIndexedDBClientToWorker(workerClients, IndexedDBClientImpl::create());
     provideServiceWorkerGlobalScopeClientToWorker(workerClients, ServiceWorkerGlobalScopeClientImpl::create(*m_workerContextClient));
     provideServiceWorkerContainerClientToWorker(workerClients, adoptPtr(m_workerContextClient->createServiceWorkerProvider()));
 

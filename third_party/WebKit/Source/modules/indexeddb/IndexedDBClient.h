@@ -29,24 +29,34 @@
 #define IndexedDBClient_h
 
 #include "modules/ModulesExport.h"
+#include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
 class ExecutionContext;
+class LocalFrame;
+class WorkerClients;
 
-class IndexedDBClient : public GarbageCollected<IndexedDBClient> {
+class MODULES_EXPORT IndexedDBClient : public Supplement<LocalFrame>, public Supplement<WorkerClients>, public GarbageCollectedFinalized<IndexedDBClient> {
+    USING_GARBAGE_COLLECTED_MIXIN(IndexedDBClient);
+    WTF_MAKE_NONCOPYABLE(IndexedDBClient);
 public:
-    static IndexedDBClient* create();
+    IndexedDBClient();
+    virtual ~IndexedDBClient() {}
+
     DEFINE_INLINE_VIRTUAL_TRACE() { }
 
     virtual bool allowIndexedDB(ExecutionContext*, const String& name) = 0;
+
+    static IndexedDBClient* from(ExecutionContext*);
+    static const char* supplementName();
 };
 
-typedef IndexedDBClient* CreateIndexedDBClient();
+MODULES_EXPORT void provideIndexedDBClientTo(LocalFrame&, IndexedDBClient*);
 
-MODULES_EXPORT void setIndexedDBClientCreateFunction(CreateIndexedDBClient);
+MODULES_EXPORT void provideIndexedDBClientToWorker(WorkerClients*, IndexedDBClient*);
 
 } // namespace blink
 

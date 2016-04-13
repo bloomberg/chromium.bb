@@ -3,32 +3,42 @@
 // found in the LICENSE file.
 
 #include "modules/indexeddb/IndexedDBClient.h"
-#include "wtf/Atomics.h"
+
+#include "core/dom/Document.h"
+#include "core/dom/ExecutionContext.h"
+#include "core/frame/LocalFrame.h"
+#include "core/workers/WorkerClients.h"
+#include "core/workers/WorkerGlobalScope.h"
 
 namespace blink {
 
-static void* idbClientCreateFunction = nullptr;
-
-void setIndexedDBClientCreateFunction(CreateIndexedDBClient createFunction)
+IndexedDBClient::IndexedDBClient()
 {
-    // See web/IndexedDBClientImpl.h comment for some context. As the initialization
-    // of this IndexedDB client constructor now happens as context is set up for
-    // threads, it is possible that setIndexedDBClientCreateFunction() will be
-    // called more than once. Hence update atomicity is needed.
-#if ENABLE(ASSERT)
-    CreateIndexedDBClient* currentFunction = reinterpret_cast<CreateIndexedDBClient*>(acquireLoad(&idbClientCreateFunction));
-    ASSERT(!currentFunction || currentFunction == createFunction);
-#endif
-    releaseStore(&idbClientCreateFunction, reinterpret_cast<void*>(createFunction));
 }
 
-IndexedDBClient* IndexedDBClient::create()
+IndexedDBClient* IndexedDBClient::from(ExecutionContext* context)
 {
-    CreateIndexedDBClient* createFunction = reinterpret_cast<CreateIndexedDBClient*>(acquireLoad(&idbClientCreateFunction));
-    ASSERT(createFunction);
-    // There's no reason why we need to allocate a new proxy each time, but
-    // there's also no strong reason not to.
-    return createFunction();
+    if (context->isDocument())
+        return static_cast<IndexedDBClient*>(Supplement<LocalFrame>::from(toDocument(*context).frame(), supplementName()));
+
+    WorkerClients* clients = toWorkerGlobalScope(*context).clients();
+    ASSERT(clients);
+    return static_cast<IndexedDBClient*>(Supplement<WorkerClients>::from(clients, supplementName()));
+}
+
+const char* IndexedDBClient::supplementName()
+{
+    return "IndexedDBClient";
+}
+
+void provideIndexedDBClientTo(LocalFrame& frame, IndexedDBClient* client)
+{
+    frame.provideSupplement(IndexedDBClient::supplementName(), client);
+}
+
+void provideIndexedDBClientToWorker(WorkerClients* clients, IndexedDBClient* client)
+{
+    clients->provideSupplement(IndexedDBClient::supplementName(), client);
 }
 
 } // namespace blink

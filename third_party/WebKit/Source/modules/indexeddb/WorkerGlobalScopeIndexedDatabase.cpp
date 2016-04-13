@@ -29,7 +29,6 @@
 
 #include "core/dom/ExecutionContext.h"
 #include "modules/indexeddb/IDBFactory.h"
-#include "modules/indexeddb/IndexedDBClient.h"
 
 namespace blink {
 
@@ -64,7 +63,7 @@ IDBFactory* WorkerGlobalScopeIndexedDatabase::indexedDB(Supplementable<WorkerGlo
 IDBFactory* WorkerGlobalScopeIndexedDatabase::indexedDB()
 {
     if (!m_idbFactory)
-        m_idbFactory = IDBFactory::create(IndexedDBClient::create());
+        m_idbFactory = IDBFactory::create();
     return m_idbFactory.get();
 }
 

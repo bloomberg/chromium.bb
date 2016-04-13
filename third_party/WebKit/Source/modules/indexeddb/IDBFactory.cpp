@@ -50,14 +50,8 @@ namespace blink {
 
 static const char permissionDeniedErrorMessage[] = "The user denied permission to access the database.";
 
-IDBFactory::IDBFactory(IndexedDBClient* permissionClient)
-    : m_permissionClient(permissionClient)
+IDBFactory::IDBFactory()
 {
-}
-
-DEFINE_TRACE(IDBFactory)
-{
-    visitor->trace(m_permissionClient);
 }
 
 static bool isContextValid(ExecutionContext* context)
@@ -82,7 +76,7 @@ IDBRequest* IDBFactory::getDatabaseNames(ScriptState* scriptState, ExceptionStat
 
     IDBRequest* request = IDBRequest::create(scriptState, IDBAny::createNull(), nullptr);
 
-    if (!m_permissionClient->allowIndexedDB(scriptState->getExecutionContext(), "Database Listing")) {
+    if (!IndexedDBClient::from(scriptState->getExecutionContext())->allowIndexedDB(scriptState->getExecutionContext(), "Database Listing")) {
         request->onError(DOMException::create(UnknownError, permissionDeniedErrorMessage));
         return request;
     }
@@ -116,7 +110,7 @@ IDBOpenDBRequest* IDBFactory::openInternal(ScriptState* scriptState, const Strin
     int64_t transactionId = IDBDatabase::nextTransactionId();
     IDBOpenDBRequest* request = IDBOpenDBRequest::create(scriptState, databaseCallbacks, transactionId, version);
 
-    if (!m_permissionClient->allowIndexedDB(scriptState->getExecutionContext(), name)) {
+    if (!IndexedDBClient::from(scriptState->getExecutionContext())->allowIndexedDB(scriptState->getExecutionContext(), name)) {
         request->onError(DOMException::create(UnknownError, permissionDeniedErrorMessage));
         return request;
     }
@@ -144,7 +138,7 @@ IDBOpenDBRequest* IDBFactory::deleteDatabase(ScriptState* scriptState, const Str
 
     IDBOpenDBRequest* request = IDBOpenDBRequest::create(scriptState, nullptr, 0, IDBDatabaseMetadata::DefaultVersion);
 
-    if (!m_permissionClient->allowIndexedDB(scriptState->getExecutionContext(), name)) {
+    if (!IndexedDBClient::from(scriptState->getExecutionContext())->allowIndexedDB(scriptState->getExecutionContext(), name)) {
         request->onError(DOMException::create(UnknownError, permissionDeniedErrorMessage));
         return request;
     }

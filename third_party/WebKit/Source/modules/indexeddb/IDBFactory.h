@@ -30,7 +30,6 @@
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "modules/indexeddb/IDBOpenDBRequest.h"
-#include "modules/indexeddb/IndexedDBClient.h"
 #include "platform/heap/Handle.h"
 #include "wtf/text/WTFString.h"
 
@@ -42,11 +41,11 @@ class ScriptState;
 class IDBFactory final : public GarbageCollected<IDBFactory>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static IDBFactory* create(IndexedDBClient* client)
+    static IDBFactory* create()
     {
-        return new IDBFactory(client);
+        return new IDBFactory();
     }
-    DECLARE_TRACE();
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
 
     IDBRequest* getDatabaseNames(ScriptState*, ExceptionState&);
 
@@ -57,11 +56,9 @@ public:
     short cmp(ScriptState*, const ScriptValue& first, const ScriptValue& second, ExceptionState&);
 
 private:
-    explicit IDBFactory(IndexedDBClient*);
+    IDBFactory();
 
     IDBOpenDBRequest* openInternal(ScriptState*, const String& name, int64_t version, ExceptionState&);
-
-    Member<IndexedDBClient> m_permissionClient;
 };
 
 } // namespace blink
