@@ -1380,7 +1380,7 @@ IN_PROC_BROWSER_TEST_F(WebViewFocusInteractiveTest, FocusAndVisibility) {
 }
 
 // TODO(crbug.com/602954) Test is flaky.
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_MACOSX)
 #define MAYBE_TopLevelWebContentsTracksCorrectly \
   DISABLED_TopLevelWebContentsTracksCorrectly
 #else
