@@ -1272,8 +1272,6 @@ crbug.com/399951 http/tests/mime/javascript-mimetype-usecounters.html [ Pass Fai
 crbug.com/572710 [ Debug ] inspector/extensions/extensions-sidebar.html [ Timeout Pass ]
 crbug.com/602193 inspector/extensions/extensions-resources.html [ Pass Failure ]
 
-crbug.com/572714 [ Linux ] inspector/sources/debugger/debug-inlined-scripts.html [ Timeout Crash Pass ]
-
 crbug.com/579493 http/tests/security/xss-DENIED-xsl-document-securityOrigin.xml [ Timeout ]
 
 crbug.com/572723 [ Linux Mac10.9 ] inspector/sources/debugger/debugger-disable-enable.html [ Pass Failure Timeout ]
