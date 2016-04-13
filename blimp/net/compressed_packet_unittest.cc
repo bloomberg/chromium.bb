@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/memory/ptr_util.h"
+#include "base/rand_util.h"
 #include "base/sys_byteorder.h"
 #include "blimp/net/common.h"
 #include "blimp/net/compressed_packet_reader.h"
@@ -151,6 +152,15 @@ TEST_F(CompressedPacketTest, CompressionStateRetainedAcrossCalls) {
 TEST_F(CompressedPacketTest, LargeInput) {
   std::string big_str(kMaxPacketPayloadSizeBytes, 'A');  // 3MB of A's.
   EXPECT_TRUE(CheckRoundTrip(big_str));
+}
+
+TEST_F(CompressedPacketTest, LowCompressionRatio) {
+  // This size (2338) was found "in the wild" to repro an issue with output
+  // buffer overflows.
+  const int data_size = 2338;
+
+  EXPECT_TRUE(CheckRoundTrip(base::RandBytesAsString(data_size)));
+  EXPECT_TRUE(CheckRoundTrip(base::RandBytesAsString(data_size)));
 }
 
 TEST_F(CompressedPacketTest, DecompressIllegallyLargePayload) {

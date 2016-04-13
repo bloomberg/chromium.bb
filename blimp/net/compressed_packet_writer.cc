@@ -20,6 +20,10 @@ namespace {
 // compression. (See zconf.h for details on memLevel semantics.)
 const int kZlibMemoryLevel = 9;
 
+// Byte count of the zlib end-of-block marker (0x00, 0x00, 0xFF, 0xFF).
+// Used for buffer preallocation.
+const size_t kZlibBlockMarkerSize = 4;
+
 }  // namespace
 
 CompressedPacketWriter::CompressedPacketWriter(
@@ -88,8 +92,11 @@ int CompressedPacketWriter::Compress(
     const scoped_refptr<net::GrowableIOBuffer>& dest_buf) {
   DCHECK_EQ(0, dest_buf->offset());
 
+  // Preallocate a buffer that's large enough to fit the compressed contents of
+  // src_buf, plus some overhead for zlib.
   const int zlib_output_ubound =
-      deflateBound(&zlib_stream_, src_buf->BytesRemaining());
+      deflateBound(&zlib_stream_, src_buf->BytesRemaining()) +
+      kZlibBlockMarkerSize;
   if (dest_buf->capacity() < zlib_output_ubound) {
     dest_buf->SetCapacity(zlib_output_ubound);
   }
