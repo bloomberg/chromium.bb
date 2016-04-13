@@ -62,6 +62,31 @@ class ASH_EXPORT PowerStatus : public chromeos::PowerManagerClient::Observer {
     int description_id;
   };
 
+  // Information about the battery image corresponding to the status at a given
+  // point in time. This can be cached and later compared to avoid unnecessarily
+  // updating onscreen icons (GetBatteryImage() creates a new image on each
+  // call).
+  struct BatteryImageInfo {
+    BatteryImageInfo() : resource_id(-1), offset(-1), index(-1) {}
+
+    bool operator==(const BatteryImageInfo& o) const {
+      return resource_id == o.resource_id && offset == o.offset &&
+             index == o.index;
+    }
+    bool operator!=(const BatteryImageInfo& o) const { return !(*this == o); }
+
+    // Resource ID of the image containing the specific battery icon to use.
+    int resource_id;
+
+    // Horizontal offset in the battery icon array image. The USB / "unreliable
+    // charging" image has a single column of icons; the other image contains a
+    // "battery" column on the left and a "line power" column on the right.
+    int offset;
+
+    // Vertical offset corresponding to the current battery level.
+    int index;
+  };
+
   // Maximum battery time-to-full or time-to-empty that should be displayed
   // in the UI. If the current is close to zero, battery time estimates can
   // get very large; avoid displaying these large numbers.
@@ -163,7 +188,12 @@ class ASH_EXPORT PowerStatus : public chromeos::PowerManagerClient::Observer {
   // power source is selected.
   std::string GetCurrentPowerSourceID() const;
 
-  // Returns the image that should be shown for the battery's current state.
+  // Returns information about the image that would be returned by
+  // GetBatteryImage(). This can be cached and compared against future objects
+  // returned by this method to avoid creating new images unnecessarily.
+  BatteryImageInfo GetBatteryImageInfo(IconSet icon_set) const;
+
+  // Creates a new image that should be shown for the battery's current state.
   gfx::ImageSkia GetBatteryImage(IconSet icon_set) const;
 
   // Returns an string describing the current state for accessibility.

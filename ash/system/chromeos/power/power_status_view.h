@@ -50,6 +50,10 @@ class ASH_EXPORT PowerStatusView : public views::View,
   // Battery status indicator icon.
   views::ImageView* icon_;
 
+  // Information about the image last used to update |icon_|. Cached to avoid
+  // unnecessary updates (http://crbug.com/589348).
+  PowerStatus::BatteryImageInfo previous_battery_image_info_;
+
   DISALLOW_COPY_AND_ASSIGN(PowerStatusView);
 };
 

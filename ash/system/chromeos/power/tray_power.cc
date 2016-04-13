@@ -117,10 +117,19 @@ class PowerTrayView : public views::ImageView {
 
  private:
   void UpdateImage() {
-    SetImage(PowerStatus::Get()->GetBatteryImage(PowerStatus::ICON_LIGHT));
+    const PowerStatus::BatteryImageInfo info =
+        PowerStatus::Get()->GetBatteryImageInfo(PowerStatus::ICON_LIGHT);
+    if (info != previous_image_info_) {
+      SetImage(PowerStatus::Get()->GetBatteryImage(PowerStatus::ICON_LIGHT));
+      previous_image_info_ = info;
+    }
   }
 
   base::string16 accessible_name_;
+
+  // Information about the last-used image. Cached to avoid unnecessary updates
+  // (http://crbug.com/589348).
+  PowerStatus::BatteryImageInfo previous_image_info_;
 
   DISALLOW_COPY_AND_ASSIGN(PowerTrayView);
 };

@@ -259,40 +259,43 @@ std::string PowerStatus::GetCurrentPowerSourceID() const {
   return proto_.external_power_source_id();
 }
 
-gfx::ImageSkia PowerStatus::GetBatteryImage(IconSet icon_set) const {
-  gfx::Image all;
+PowerStatus::BatteryImageInfo PowerStatus::GetBatteryImageInfo(
+    IconSet icon_set) const {
+  BatteryImageInfo info;
+
   if (IsUsbChargerConnected()) {
-    all = ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-        icon_set == ICON_DARK ?
-        IDR_AURA_UBER_TRAY_POWER_SMALL_CHARGING_UNRELIABLE_DARK :
-        IDR_AURA_UBER_TRAY_POWER_SMALL_CHARGING_UNRELIABLE);
+    info.resource_id =
+        (icon_set == ICON_DARK)
+            ? IDR_AURA_UBER_TRAY_POWER_SMALL_CHARGING_UNRELIABLE_DARK
+            : IDR_AURA_UBER_TRAY_POWER_SMALL_CHARGING_UNRELIABLE;
   } else {
-    all = ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-        icon_set == ICON_DARK ?
-        IDR_AURA_UBER_TRAY_POWER_SMALL_DARK : IDR_AURA_UBER_TRAY_POWER_SMALL);
+    info.resource_id = (icon_set == ICON_DARK)
+                           ? IDR_AURA_UBER_TRAY_POWER_SMALL_DARK
+                           : IDR_AURA_UBER_TRAY_POWER_SMALL;
   }
 
-  // Get the horizontal offset in the battery icon array image. The USB /
-  // "unreliable charging" image has a single column of icons; the other
-  // image contains a "battery" column on the left and a "line power"
-  // column on the right.
-  int offset = IsUsbChargerConnected() ? 0 : (IsLinePowerConnected() ? 1 : 0);
+  info.offset = IsUsbChargerConnected() ? 0 : (IsLinePowerConnected() ? 1 : 0);
 
-  // Get the vertical offset corresponding to the current battery level.
-  int index = -1;
   if (GetBatteryPercent() >= 100.0) {
-    index = kNumPowerImages - 1;
+    info.index = kNumPowerImages - 1;
   } else if (!IsBatteryPresent()) {
-    index = kNumPowerImages;
+    info.index = kNumPowerImages;
   } else {
-    index = static_cast<int>(
-        GetBatteryPercent() / 100.0 * (kNumPowerImages - 1));
-    index = std::max(std::min(index, kNumPowerImages - 2), 0);
+    info.index =
+        static_cast<int>(GetBatteryPercent() / 100.0 * (kNumPowerImages - 1));
+    info.index = std::max(std::min(info.index, kNumPowerImages - 2), 0);
   }
 
-  gfx::Rect region(
-      offset * kBatteryImageWidth, index * kBatteryImageHeight,
-      kBatteryImageWidth, kBatteryImageHeight);
+  return info;
+}
+
+gfx::ImageSkia PowerStatus::GetBatteryImage(IconSet icon_set) const {
+  const BatteryImageInfo info = GetBatteryImageInfo(icon_set);
+  gfx::Image all;
+  all = ui::ResourceBundle::GetSharedInstance().GetImageNamed(info.resource_id);
+  gfx::Rect region(info.offset * kBatteryImageWidth,
+                   info.index * kBatteryImageHeight, kBatteryImageWidth,
+                   kBatteryImageHeight);
   return gfx::ImageSkiaOperations::ExtractSubset(*all.ToImageSkia(), region);
 }
 

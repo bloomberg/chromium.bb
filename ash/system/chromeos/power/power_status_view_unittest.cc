@@ -10,6 +10,8 @@
 #include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/time_format.h"
+#include "ui/gfx/image/image_skia.h"
+#include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 
 using power_manager::PowerSupplyProperties;
@@ -49,6 +51,8 @@ class PowerStatusViewTest : public test::AshTestBase {
   base::string16 RemainingTimeInView() const {
     return view_->time_status_label_->text();
   }
+
+  gfx::ImageSkia GetBatteryImage() const { return view_->icon_->GetImage(); }
 
  private:
   std::unique_ptr<PowerStatusView> view_;
@@ -113,6 +117,29 @@ TEST_F(PowerStatusViewTest, Basic) {
   UpdatePowerStatus(prop);
   EXPECT_TRUE(IsPercentageVisible());
   EXPECT_FALSE(IsTimeStatusVisible());
+}
+
+TEST_F(PowerStatusViewTest, AvoidNeedlessBatteryImageUpdates) {
+  PowerSupplyProperties prop;
+  prop.set_external_power(PowerSupplyProperties::AC);
+  prop.set_battery_state(PowerSupplyProperties::CHARGING);
+  prop.set_battery_percent(50.0);
+  UpdatePowerStatus(prop);
+
+  // Create a copy of the view's ImageSkia (backed by the same bitmap). We hang
+  // onto this to ensure that the original bitmap's memory doesn't get recycled
+  // for a new bitmap, ensuring that we can safely compare bitmap addresses
+  // later to check if the image that's being displayed has changed.
+  const gfx::ImageSkia original_image = GetBatteryImage();
+
+  // Send a no-op update. The old image should still be used.
+  UpdatePowerStatus(prop);
+  EXPECT_EQ(original_image.bitmap(), GetBatteryImage().bitmap());
+
+  // Make a big change to the percentage and check that a new image is used.
+  prop.set_battery_percent(100.0);
+  UpdatePowerStatus(prop);
+  EXPECT_NE(original_image.bitmap(), GetBatteryImage().bitmap());
 }
 
 }  // namespace ash

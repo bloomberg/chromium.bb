@@ -30,10 +30,10 @@ PowerStatusView::PowerStatusView(bool default_view_right_align)
     : default_view_right_align_(default_view_right_align),
       time_status_label_(new views::Label),
       percentage_label_(new views::Label),
-      icon_(NULL) {
-  PowerStatus::Get()->AddObserver(this);
+      icon_(nullptr) {
   percentage_label_->SetEnabledColor(kHeaderTextColorNormal);
   LayoutView();
+  PowerStatus::Get()->AddObserver(this);
   OnPowerStatusChanged();
 }
 
@@ -43,11 +43,13 @@ PowerStatusView::~PowerStatusView() {
 
 void PowerStatusView::OnPowerStatusChanged() {
   UpdateText();
-
-  if (icon_) {
+  const PowerStatus::BatteryImageInfo info =
+      PowerStatus::Get()->GetBatteryImageInfo(PowerStatus::ICON_DARK);
+  if (info != previous_battery_image_info_) {
     icon_->SetImage(
         PowerStatus::Get()->GetBatteryImage(PowerStatus::ICON_DARK));
     icon_->SetVisible(true);
+    previous_battery_image_info_ = info;
   }
 }
 

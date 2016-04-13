@@ -11,6 +11,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
+using power_manager::PowerSupplyProperties;
+
 namespace ash {
 namespace {
 
@@ -147,6 +149,48 @@ TEST_F(PowerStatusTest, SplitTimeIntoHoursAndMinutes) {
       base::TimeDelta::FromSecondsD(3600.1), &hours, &minutes);
   EXPECT_EQ(1, hours);
   EXPECT_EQ(0, minutes);
+}
+
+TEST_F(PowerStatusTest, GetBatteryImageInfo) {
+  PowerSupplyProperties prop;
+  prop.set_external_power(PowerSupplyProperties::AC);
+  prop.set_battery_state(PowerSupplyProperties::CHARGING);
+  prop.set_battery_percent(98.0);
+  power_status_->SetProtoForTesting(prop);
+  const PowerStatus::BatteryImageInfo info_charging_98 =
+      power_status_->GetBatteryImageInfo(PowerStatus::ICON_LIGHT);
+
+  // 99% should use the same icon as 98%.
+  prop.set_battery_percent(99.0);
+  power_status_->SetProtoForTesting(prop);
+  EXPECT_EQ(info_charging_98,
+            power_status_->GetBatteryImageInfo(PowerStatus::ICON_LIGHT));
+
+  // The dark icon set should use a different image.
+  prop.set_battery_percent(98.0);
+  EXPECT_NE(info_charging_98,
+            power_status_->GetBatteryImageInfo(PowerStatus::ICON_DARK));
+
+  // A different icon should be used when the battery is full, too.
+  prop.set_battery_state(PowerSupplyProperties::FULL);
+  prop.set_battery_percent(100.0);
+  power_status_->SetProtoForTesting(prop);
+  EXPECT_NE(info_charging_98,
+            power_status_->GetBatteryImageInfo(PowerStatus::ICON_LIGHT));
+
+  // A much-lower battery level should use a different icon.
+  prop.set_battery_state(PowerSupplyProperties::CHARGING);
+  prop.set_battery_percent(20.0);
+  power_status_->SetProtoForTesting(prop);
+  EXPECT_NE(info_charging_98,
+            power_status_->GetBatteryImageInfo(PowerStatus::ICON_LIGHT));
+
+  // Ditto for 98%, but on USB instead of AC.
+  prop.set_external_power(PowerSupplyProperties::USB);
+  prop.set_battery_percent(98.0);
+  power_status_->SetProtoForTesting(prop);
+  EXPECT_NE(info_charging_98,
+            power_status_->GetBatteryImageInfo(PowerStatus::ICON_LIGHT));
 }
 
 }  // namespace ash
