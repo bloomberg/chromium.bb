@@ -11,8 +11,11 @@
 
 #include <memory>
 
+#include "base/containers/mru_cache.h"
 #import "base/mac/objc_property_releaser.h"
 #include "base/mac/scoped_nsobject.h"
+#include "ios/web/net/cert_host_pair.h"
+#import "ios/web/net/crw_cert_verification_controller.h"
 #import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/referrer.h"
 #include "ios/web/public/web_state/page_display_state.h"
@@ -49,6 +52,27 @@ namespace {
 //   as the WKWebView will automatically retry the load.
 static NSString* const kWKWebViewErrorSourceKey = @"ErrorSource";
 typedef enum { NONE = 0, PROVISIONAL_LOAD, NAVIGATION } WKWebViewErrorSource;
+
+// Represents cert verification error, which happened inside
+// |webView:didReceiveAuthenticationChallenge:completionHandler:| and should
+// be checked inside |webView:didFailProvisionalNavigation:withError:|.
+struct CertVerificationError {
+  CertVerificationError(BOOL is_recoverable, net::CertStatus status)
+      : is_recoverable(is_recoverable), status(status) {}
+
+  BOOL is_recoverable;
+  net::CertStatus status;
+};
+
+// Type of Cache object for storing cert verification errors.
+typedef base::MRUCache<web::CertHostPair, CertVerificationError>
+    CertVerificationErrorsCacheType;
+
+// Maximum number of errors to store in cert verification errors cache.
+// Cache holds errors only for pending navigations, so the actual number of
+// stored errors is not expected to be high.
+static const CertVerificationErrorsCacheType::size_type kMaxCertErrorsCount =
+    100;
 }  // namespace
 
 // URL scheme for messages sent from javascript for asynchronous processing.
@@ -82,7 +106,8 @@ static NSString* const kScriptImmediateName = @"crwebinvokeimmediate";
 
 // Category for methods used or implemented by implementation subclasses of
 // CRWWebController.
-@interface CRWWebController (ProtectedMethods)<WKUIDelegate>
+@interface CRWWebController (
+    ProtectedMethods)<WKUIDelegate, WKNavigationDelegate>
 
 #pragma mark Methods implemented by subclasses
 // Everything in this section must be implemented by subclasses.
@@ -97,12 +122,20 @@ static NSString* const kScriptImmediateName = @"crwebinvokeimmediate";
 // The title of the page.
 @property(nonatomic, readonly) NSString* title;
 
-// A set of script managers whose scripts have been injected into the current
-// page.
-@property(nonatomic, readonly) NSMutableSet* injectedScriptManagers;
-
 // Downloader for PassKit files. Lazy initialized.
 @property(nonatomic, readonly) CRWPassKitDownloader* passKitDownloader;
+
+// The actual URL of the document object (i.e., the last committed URL).
+// TODO(crbug.com/549616): Remove this in favor of just updating the
+// navigation manager and treating that as authoritative. For now, this allows
+// sharing the flow that's currently in the superclass.
+@property(nonatomic, readonly) GURL documentURL;
+
+// YES if the user has interacted with the content area since the last URL
+// change.
+@property(nonatomic, readonly) BOOL interactionRegisteredSinceLastURLChange;
+
+- (CRWWebControllerPendingNavigationInfo*)pendingNavigationInfo;
 
 // Designated initializer.
 - (instancetype)initWithWebState:(std::unique_ptr<web::WebStateImpl>)webState;
@@ -113,6 +146,9 @@ static NSString* const kScriptImmediateName = @"crwebinvokeimmediate";
 // Destroys the web view by setting webView property to nil.
 - (void)resetWebView;
 
+// Sets _documentURL to newURL, and updates any relevant state information.
+- (void)setDocumentURL:(const GURL&)newURL;
+
 // Returns the current URL of the web view, and sets |trustLevel| accordingly
 // based on the confidence in the verification.
 - (GURL)webURLWithTrustLevel:(web::URLVerificationTrustLevel*)trustLevel;
@@ -120,7 +156,7 @@ static NSString* const kScriptImmediateName = @"crwebinvokeimmediate";
 // Returns the type of document object loaded in the web view.
 - (web::WebViewDocumentType)webViewDocumentType;
 
-//- (void)loadRequest:(NSMutableURLRequest*)request;
+- (void)loadRequest:(NSMutableURLRequest*)request;
 
 // Called before loading current URL in WebView.
 - (void)willLoadCurrentURLInWebView;
@@ -134,6 +170,9 @@ static NSString* const kScriptImmediateName = @"crwebinvokeimmediate";
 // Cancels any load in progress in the web view.
 - (void)abortWebLoad;
 
+// Called when web view process has been terminated.
+- (void)webViewWebProcessDidCrash;
+
 // Sets zoom scale value for webview scroll view from |zoomState|.
 - (void)applyWebViewScrollZoomScaleFromZoomState:
     (const web::PageZoomState&)zoomState;
@@ -146,6 +185,28 @@ static NSString* const kScriptImmediateName = @"crwebinvokeimmediate";
 
 // Convenience method to inform CWRWebDelegate about a blocked popup.
 - (void)didBlockPopupWithURL:(GURL)popupURL sourceURL:(GURL)sourceURL;
+
+// Called when a load ends in an SSL error and certificate chain.
+- (void)handleSSLCertError:(NSError*)error;
+
+// Updates SSL status for the current navigation item based on the information
+// provided by web view.
+- (void)updateSSLStatusForCurrentNavigationItem;
+
+// Used in webView:didReceiveAuthenticationChallenge:completionHandler: to reply
+// with NSURLSessionAuthChallengeDisposition and credentials.
+- (void)handleHTTPAuthForChallenge:(NSURLAuthenticationChallenge*)challenge
+                 completionHandler:
+                     (void (^)(NSURLSessionAuthChallengeDisposition,
+                               NSURLCredential*))completionHandler;
+
+// Used in webView:didReceiveAuthenticationChallenge:completionHandler: to
+// reply with NSURLSessionAuthChallengeDisposition and credentials.
+- (void)processAuthChallenge:(NSURLAuthenticationChallenge*)challenge
+         forCertAcceptPolicy:(web::CertAcceptPolicy)policy
+                  certStatus:(net::CertStatus)certStatus
+           completionHandler:(void (^)(NSURLSessionAuthChallengeDisposition,
+                                       NSURLCredential*))completionHandler;
 
 #pragma mark - Optional methods for subclasses
 // Subclasses may overwrite methods in this section.
@@ -231,6 +292,9 @@ static NSString* const kScriptImmediateName = @"crwebinvokeimmediate";
 // loaded.
 @property(nonatomic, readwrite) BOOL userInteractionRegistered;
 
+// YES if the web process backing _wkWebView is believed to currently be dead.
+@property(nonatomic, assign) BOOL webProcessIsDead;
+
 // Whether the web page is currently performing window.history.pushState or
 // window.history.replaceState
 @property(nonatomic, readonly) BOOL changingHistoryState;
@@ -243,6 +307,12 @@ static NSString* const kScriptImmediateName = @"crwebinvokeimmediate";
 
 // Returns NavigationManager's session controller.
 @property(nonatomic, readonly) CRWSessionController* sessionController;
+
+// Controller used for certs verification to help with blocking requests with
+// bad SSL cert, presenting SSL interstitials and determining SSL status for
+// Navigation Items.
+@property(nonatomic, readonly)
+    CRWCertVerificationController* certVerificationController;
 
 // Returns a new script which wraps |script| with windowID check so |script| is
 // not evaluated on windowID mismatch.
@@ -301,6 +371,10 @@ static NSString* const kScriptImmediateName = @"crwebinvokeimmediate";
 // if necssary. If they are already injected, this is a no-op.
 - (void)injectEarlyInjectionScripts;
 
+// Resets the set of script managers whose scripts have been injected into the
+// current page to an empty list.
+- (void)clearInjectedScriptManagers;
+
 // Inject windowID if not yet injected.
 - (void)injectWindowID;
 
@@ -333,6 +407,9 @@ static NSString* const kScriptImmediateName = @"crwebinvokeimmediate";
                        targetFrame:(const web::FrameInfo*)targetFrame
                        isLinkClick:(BOOL)isLinkClick;
 
+// Registers load request with empty referrer and link or client redirect
+// transition based on user interaction state.
+- (void)registerLoadRequest:(const GURL&)URL;
 // Prepares web controller and delegates for anticipated page change.
 // Allows several methods to invoke webWill/DidAddPendingURL on anticipated page
 // change, using the same cached request and calculated transition types.
@@ -412,6 +489,10 @@ static NSString* const kScriptImmediateName = @"crwebinvokeimmediate";
 
 // Returns the current entry from the underlying session controller.
 - (CRWSessionEntry*)currentSessionEntry;
+
+// Clears certVerification errors which happened inside
+// |webView:didReceiveAuthenticationChallenge:completionHandler:|.
+- (void)clearCertVerificationErrors;
 
 // Resets pending external request information.
 - (void)resetExternalRequest;

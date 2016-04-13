@@ -8,8 +8,6 @@
 
 #include <utility>
 
-#include "base/containers/mru_cache.h"
-#include "base/ios/ios_util.h"
 #include "base/ios/weak_nsobject.h"
 #include "base/json/json_reader.h"
 #import "base/mac/scoped_nsobject.h"
@@ -17,13 +15,10 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/values.h"
-#import "ios/net/http_response_headers_util.h"
 #import "ios/web/navigation/crw_session_controller.h"
 #import "ios/web/navigation/crw_session_entry.h"
 #include "ios/web/navigation/navigation_item_impl.h"
-#include "ios/web/net/cert_host_pair.h"
 #import "ios/web/public/navigation_manager.h"
-#import "ios/web/net/crw_cert_verification_controller.h"
 #import "ios/web/net/crw_ssl_status_updater.h"
 #include "ios/web/public/browser_state.h"
 #include "ios/web/public/cert_store.h"
@@ -53,43 +48,6 @@
 #include "net/ssl/ssl_info.h"
 #include "url/url_constants.h"
 
-using web::NavigationManager;
-
-namespace {
-
-// Represents cert verification error, which happened inside
-// |webView:didReceiveAuthenticationChallenge:completionHandler:| and should
-// be checked inside |webView:didFailProvisionalNavigation:withError:|.
-struct CertVerificationError {
-  CertVerificationError(BOOL is_recoverable, net::CertStatus status)
-      : is_recoverable(is_recoverable), status(status) {}
-
-  BOOL is_recoverable;
-  net::CertStatus status;
-};
-
-// Type of Cache object for storing cert verification errors.
-typedef base::MRUCache<web::CertHostPair, CertVerificationError>
-    CertVerificationErrorsCacheType;
-
-// Maximum number of errors to store in cert verification errors cache.
-// Cache holds errors only for pending navigations, so the actual number of
-// stored errors is not expected to be high.
-const CertVerificationErrorsCacheType::size_type kMaxCertErrorsCount = 100;
-
-NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
-  DCHECK(error);
-  base::scoped_nsobject<NSMutableDictionary> userInfo(
-      [error.userInfo mutableCopy]);
-  [userInfo setObject:@(source) forKey:kWKWebViewErrorSourceKey];
-  return [NSError errorWithDomain:error.domain
-                             code:error.code
-                         userInfo:userInfo];
-}
-}  // namespace
-
-#pragma mark -
-
 @implementation CRWWebControllerPendingNavigationInfo
 @synthesize referrer = _referrer;
 @synthesize MIMEType = _MIMEType;
@@ -109,8 +67,7 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 #pragma mark -
 
 @interface CRWWKWebViewWebController ()<CRWSSLStatusUpdaterDataSource,
-                                        CRWSSLStatusUpdaterDelegate,
-                                        WKNavigationDelegate> {
+                                        CRWSSLStatusUpdaterDelegate> {
   // The WKWebView managed by this instance.
   base::scoped_nsobject<WKWebView> _wkWebView;
 
@@ -119,16 +76,6 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
   // navigation manager and treating that as authoritative. For now, this allows
   // sharing the flow that's currently in the superclass.
   GURL _documentURL;
-
-  // A set of script managers whose scripts have been injected into the current
-  // page.
-  // TODO(stuartmorgan): Revisit this approach; it's intended only as a stopgap
-  // measure to make all the existing script managers work. Longer term, there
-  // should probably be a couple of points where managers can register to have
-  // things happen automatically based on page lifecycle, and if they don't want
-  // to use one of those fixed points, they should make their scripts internally
-  // idempotent.
-  base::scoped_nsobject<NSMutableSet> _injectedScriptManagers;
 
   // Object for loading POST requests with body.
   base::scoped_nsobject<CRWJSPOSTRequestLoader> _POSTRequestLoader;
@@ -152,17 +99,6 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
   // YES if the user has interacted with the content area since the last URL
   // change.
   BOOL _interactionRegisteredSinceLastURLChange;
-
-  // YES if the web process backing _wkWebView is believed to currently be dead.
-  BOOL _webProcessIsDead;
-
-  // The WKNavigation for the most recent load request.
-  base::scoped_nsobject<WKNavigation> _latestWKNavigation;
-
-  // The WKNavigation captured when |stopLoading| was called. Used for reporting
-  // WebController.EmptyNavigationManagerCausedByStopLoading UMA metric which
-  // helps with diagnosing a navigation related crash (crbug.com/565457).
-  base::WeakNSObject<WKNavigation> _stoppedWKNavigation;
 }
 
 // Dictionary where keys are the names of WKWebView properties and values are
@@ -194,18 +130,9 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 // Sets the value of the webView property, and performs its basic setup.
 - (void)setWebView:(WKWebView*)webView;
 
-// Returns whether the given navigation is triggered by a user link click.
-- (BOOL)isLinkNavigation:(WKNavigationType)navigationType;
-
-// Sets _documentURL to newURL, and updates any relevant state information.
-- (void)setDocumentURL:(const GURL&)newURL;
-
 // Returns YES if the given WKBackForwardListItem is valid to use for
 // navigation.
 - (BOOL)isBackForwardListItemValid:(WKBackForwardListItem*)item;
-
-// Called when web view process has been terminated.
-- (void)webViewWebProcessDidCrash;
 
 // Asynchronously returns the referrer policy for the current page.
 - (void)queryPageReferrerPolicy:(void(^)(NSString*))responseHandler;
@@ -216,38 +143,12 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
                    sourceURL:(GURL)sourceURL
               referrerPolicy:(const std::string&)referrerPolicyString;
 
-// Called when a load ends in an SSL error and certificate chain.
-- (void)handleSSLCertError:(NSError*)error;
-
-// Updates SSL status for the current navigation item based on the information
-// provided by web view.
-- (void)updateSSLStatusForCurrentNavigationItem;
-
-// Used in webView:didReceiveAuthenticationChallenge:completionHandler: to reply
-// with NSURLSessionAuthChallengeDisposition and credentials.
-- (void)handleHTTPAuthForChallenge:(NSURLAuthenticationChallenge*)challenge
-                 completionHandler:
-                     (void (^)(NSURLSessionAuthChallengeDisposition,
-                               NSURLCredential*))completionHandler;
-
 // Used in webView:didReceiveAuthenticationChallenge:completionHandler: to reply
 // with NSURLSessionAuthChallengeDisposition and credentials.
 + (void)processHTTPAuthForUser:(NSString*)user
                       password:(NSString*)password
              completionHandler:(void (^)(NSURLSessionAuthChallengeDisposition,
                                          NSURLCredential*))completionHandler;
-
-// Used in webView:didReceiveAuthenticationChallenge:completionHandler: to
-// reply with NSURLSessionAuthChallengeDisposition and credentials.
-- (void)processAuthChallenge:(NSURLAuthenticationChallenge*)challenge
-         forCertAcceptPolicy:(web::CertAcceptPolicy)policy
-                  certStatus:(net::CertStatus)certStatus
-           completionHandler:(void (^)(NSURLSessionAuthChallengeDisposition,
-                                       NSURLCredential*))completionHandler;
-
-// Registers load request with empty referrer and link or client redirect
-// transition based on user interaction state.
-- (void)registerLoadRequest:(const GURL&)url;
 
 // Returns YES if a KVO change to |newURL| could be a 'navigation' within the
 // document (hash change, pushState/replaceState, etc.). This should only be
@@ -309,11 +210,6 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
   [super close];
 }
 
-- (void)stopLoading {
-  _stoppedWKNavigation.reset(_latestWKNavigation);
-  [super stopLoading];
-}
-
 #pragma mark -
 #pragma mark Testing-Only Methods
 
@@ -328,16 +224,28 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
   return _wkWebView.get();
 }
 
-- (NSMutableSet*)injectedScriptManagers {
-  return _injectedScriptManagers;
-}
-
 - (UIScrollView*)webScrollView {
   return [_wkWebView scrollView];
 }
 
 - (NSString*)title {
   return [_wkWebView title];
+}
+
+- (GURL)documentURL {
+  return _documentURL;
+}
+
+- (BOOL)interactionRegisteredSinceLastURLChange {
+  return _interactionRegisteredSinceLastURLChange;
+}
+
+- (CRWCertVerificationController*)certVerificationController {
+  return _certVerificationController;
+}
+
+- (void)clearCertVerificationErrors {
+  _certVerificationErrors->Clear();
 }
 
 // Overridden to track interactions since URL change.
@@ -378,10 +286,6 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 
   std::string MIMEType = self.webState->GetContentsMimeType();
   return [self documentTypeFromMIMEType:base::SysUTF8ToNSString(MIMEType)];
-}
-
-- (void)loadRequest:(NSMutableURLRequest*)request {
-  _latestWKNavigation.reset([[_wkWebView loadRequest:request] retain]);
 }
 
 - (void)willLoadCurrentURLInWebView {
@@ -517,10 +421,6 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
   [super handleLoadError:error inMainFrame:inMainFrame];
 }
 
-- (BOOL)isViewAlive {
-  return !_webProcessIsDead && [super isViewAlive];
-}
-
 #pragma mark Private methods
 
 - (NSDictionary*)wkWebViewObservers {
@@ -619,19 +519,8 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
   for (NSString* keyPath in self.wkWebViewObservers) {
     [_wkWebView addObserver:self forKeyPath:keyPath options:0 context:nullptr];
   }
-  _injectedScriptManagers.reset([[NSMutableSet alloc] init]);
+  [self clearInjectedScriptManagers];
   [self setDocumentURL:[self defaultURL]];
-}
-
-- (BOOL)isLinkNavigation:(WKNavigationType)navigationType {
-  switch (navigationType) {
-    case WKNavigationTypeLinkActivated:
-      return YES;
-    case WKNavigationTypeOther:
-      return [self userClickedRecently];
-    default:
-      return NO;
-  }
 }
 
 - (void)setDocumentURL:(const GURL&)newURL {
@@ -651,7 +540,7 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 }
 
 - (void)webViewWebProcessDidCrash {
-  _webProcessIsDead = YES;
+  [self setWebProcessIsDead:YES];
 
   SEL cancelDialogsSelector = @selector(cancelDialogsForWebController:);
   if ([self.UIDelegate respondsToSelector:cancelDialogsSelector])
@@ -890,42 +779,6 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
   completionHandler(NSURLSessionAuthChallengeRejectProtectionSpace, nil);
 }
 
-- (void)registerLoadRequest:(const GURL&)url {
-  // Get the navigation type from the last main frame load request, and try to
-  // map that to a PageTransition.
-  WKNavigationType navigationType =
-      self.pendingNavigationInfo ? [self.pendingNavigationInfo navigationType]
-                                 : WKNavigationTypeOther;
-  ui::PageTransition transition = ui::PAGE_TRANSITION_CLIENT_REDIRECT;
-  switch (navigationType) {
-    case WKNavigationTypeLinkActivated:
-      transition = ui::PAGE_TRANSITION_LINK;
-      break;
-    case WKNavigationTypeFormSubmitted:
-    case WKNavigationTypeFormResubmitted:
-      transition = ui::PAGE_TRANSITION_FORM_SUBMIT;
-      break;
-    case WKNavigationTypeBackForward:
-      transition = ui::PAGE_TRANSITION_FORWARD_BACK;
-      break;
-    case WKNavigationTypeReload:
-      transition = ui::PAGE_TRANSITION_RELOAD;
-      break;
-    case WKNavigationTypeOther:
-      // The "Other" type covers a variety of very different cases, which may
-      // or may not be the result of user actions. For now, guess based on
-      // whether there's been an interaction since the last URL change.
-      // TODO(crbug.com/549301): See if this heuristic can be improved.
-      transition = _interactionRegisteredSinceLastURLChange
-                       ? ui::PAGE_TRANSITION_LINK
-                       : ui::PAGE_TRANSITION_CLIENT_REDIRECT;
-      break;
-  }
-  // The referrer is not known yet, and will be updated later.
-  const web::Referrer emptyReferrer;
-  [self registerLoadRequest:url referrer:emptyReferrer transition:transition];
-}
-
 - (BOOL)isKVOChangePotentialSameDocumentNavigationToURL:(const GURL&)newURL {
   DCHECK([_wkWebView isLoading]);
   // If the origin changes, it can't be same-document.
@@ -1058,7 +911,7 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 - (void)webViewTitleDidChange {
   // WKWebView's title becomes empty when the web process dies; ignore that
   // update.
-  if (_webProcessIsDead) {
+  if (self.webProcessIsDead) {
     DCHECK_EQ(self.title.length, 0U);
     return;
   }
@@ -1167,281 +1020,6 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
   if (navigationItem == currentNavigationItem) {
     [self didUpdateSSLStatusForCurrentNavigationItem];
   }
-}
-
-#pragma mark -
-#pragma mark WKNavigationDelegate Methods
-
-- (void)webView:(WKWebView *)webView
-    decidePolicyForNavigationAction:(WKNavigationAction *)navigationAction
-                    decisionHandler:
-        (void (^)(WKNavigationActionPolicy))decisionHandler {
-  _webProcessIsDead = NO;
-  if (self.isBeingDestroyed) {
-    decisionHandler(WKNavigationActionPolicyCancel);
-    return;
-  }
-
-  NSURLRequest* request = navigationAction.request;
-  GURL url = net::GURLWithNSURL(request.URL);
-
-  // The page will not be changed until this navigation is commited, so the
-  // retrieved state will be pending until |didCommitNavigation| callback.
-  [self updatePendingNavigationInfoFromNavigationAction:navigationAction];
-
-  web::FrameInfo targetFrame(navigationAction.targetFrame.mainFrame);
-  BOOL isLinkClick = [self isLinkNavigation:navigationAction.navigationType];
-  BOOL allowLoad = [self shouldAllowLoadWithRequest:request
-                                        targetFrame:&targetFrame
-                                        isLinkClick:isLinkClick];
-
-  if (allowLoad) {
-    allowLoad = self.webStateImpl->ShouldAllowRequest(request);
-    if (!allowLoad && navigationAction.targetFrame.mainFrame) {
-      [self.pendingNavigationInfo setCancelled:YES];
-    }
-  }
-
-  decisionHandler(allowLoad ? WKNavigationActionPolicyAllow
-                            : WKNavigationActionPolicyCancel);
-}
-
-- (void)webView:(WKWebView *)webView
-    decidePolicyForNavigationResponse:(WKNavigationResponse *)navigationResponse
-                      decisionHandler:
-                          (void (^)(WKNavigationResponsePolicy))handler {
-  if ([navigationResponse.response isKindOfClass:[NSHTTPURLResponse class]]) {
-    // Create HTTP headers from the response.
-    // TODO(crbug.com/546157): Due to the limited interface of
-    // NSHTTPURLResponse, some data in the HttpResponseHeaders generated here is
-    // inexact.  Once UIWebView is no longer supported, update WebState's
-    // implementation so that the Content-Language and the MIME type can be set
-    // without using this imperfect conversion.
-    scoped_refptr<net::HttpResponseHeaders> HTTPHeaders =
-        net::CreateHeadersFromNSHTTPURLResponse(
-            static_cast<NSHTTPURLResponse*>(navigationResponse.response));
-    self.webStateImpl->OnHttpResponseHeadersReceived(
-        HTTPHeaders.get(), net::GURLWithNSURL(navigationResponse.response.URL));
-  }
-
-  // The page will not be changed until this navigation is commited, so the
-  // retrieved state will be pending until |didCommitNavigation| callback.
-  [self updatePendingNavigationInfoFromNavigationResponse:navigationResponse];
-
-  BOOL allowNavigation = navigationResponse.canShowMIMEType;
-  if (allowNavigation) {
-    allowNavigation =
-        self.webStateImpl->ShouldAllowResponse(navigationResponse.response);
-    if (!allowNavigation && navigationResponse.isForMainFrame) {
-      [self.pendingNavigationInfo setCancelled:YES];
-    }
-  }
-  if ([self.passKitDownloader
-          isMIMETypePassKitType:[self.pendingNavigationInfo MIMEType]]) {
-    GURL URL = net::GURLWithNSURL(navigationResponse.response.URL);
-    [self.passKitDownloader downloadPassKitFileWithURL:URL];
-  }
-
-  handler(allowNavigation ? WKNavigationResponsePolicyAllow
-                          : WKNavigationResponsePolicyCancel);
-}
-
-// TODO(stuartmorgan): Move all the guesswork around these states out of the
-// superclass, and wire these up to the remaining methods.
-- (void)webView:(WKWebView *)webView
-    didStartProvisionalNavigation:(WKNavigation *)navigation {
-  GURL webViewURL = net::GURLWithNSURL(webView.URL);
-  if (webViewURL.is_empty() && base::ios::IsRunningOnIOS9OrLater()) {
-    // May happen on iOS9, however in didCommitNavigation: callback the URL
-    // will be "about:blank". TODO(eugenebut): File radar for this issue
-    // (crbug.com/523549).
-    webViewURL = GURL(url::kAboutBlankURL);
-  }
-
-  // Intercept renderer-initiated navigations. If this navigation has not yet
-  // been registered, do so. loadPhase check is necessary because
-  // lastRegisteredRequestURL may be the same as the webViewURL on a new tab
-  // created by window.open (default is about::blank).
-  if (self.lastRegisteredRequestURL != webViewURL ||
-      self.loadPhase != web::LOAD_REQUESTED) {
-    // Reset current WebUI if one exists.
-    [self clearWebUI];
-    // Restart app specific URL loads to properly capture state.
-    // TODO(crbug.com/546347): Extract necessary tasks for app specific URL
-    // navigation rather than restarting the load.
-    if (web::GetWebClient()->IsAppSpecificURL(webViewURL)) {
-      [self abortWebLoad];
-      NavigationManager::WebLoadParams params(webViewURL);
-      [self loadWithParams:params];
-      return;
-    } else {
-      [self registerLoadRequest:webViewURL];
-    }
-  }
-  // Ensure the URL is registered and loadPhase is as expected.
-  DCHECK(self.lastRegisteredRequestURL == webViewURL);
-  DCHECK(self.loadPhase == web::LOAD_REQUESTED);
-  _latestWKNavigation.reset([navigation retain]);
-}
-
-- (void)webView:(WKWebView *)webView
-    didReceiveServerRedirectForProvisionalNavigation:
-        (WKNavigation *)navigation {
-  [self registerLoadRequest:net::GURLWithNSURL(webView.URL)
-                   referrer:[self currentReferrer]
-                 transition:ui::PAGE_TRANSITION_SERVER_REDIRECT];
-}
-
-- (void)webView:(WKWebView *)webView
-    didFailProvisionalNavigation:(WKNavigation *)navigation
-                       withError:(NSError *)error {
-  // Ignore provisional navigation failure if a new navigation has been started,
-  // for example, if a page is reloaded after the start of the provisional
-  // load but before the load has been committed.
-  if (![_latestWKNavigation isEqual:navigation]) {
-    return;
-  }
-
-  // TODO(crbug.com/570699): Remove this workaround once |stopLoading| does not
-  // discard pending navigation items.
-  if ((!self.webStateImpl ||
-       !self.webStateImpl->GetNavigationManagerImpl().GetVisibleItem()) &&
-      [error.domain isEqual:base::SysUTF8ToNSString(web::kWebKitErrorDomain)] &&
-      error.code == web::kWebKitErrorFrameLoadInterruptedByPolicyChange) {
-    // App is going to crash in this state (crbug.com/565457). Crash will occur
-    // on dereferencing visible navigation item, which is null. This scenario is
-    // possible after pending load was stopped for a child window. Early return
-    // to prevent the crash and report UMA metric to check if crash happening
-    // because the load was stopped.
-    UMA_HISTOGRAM_BOOLEAN(
-        "WebController.EmptyNavigationManagerCausedByStopLoading",
-        [_stoppedWKNavigation isEqual:navigation]);
-    return;
-  }
-
-  // Handle load cancellation for directly cancelled navigations without
-  // handling their potential errors. Otherwise, handle the error.
-  if ([self.pendingNavigationInfo cancelled]) {
-    [self loadCancelled];
-  } else {
-    error = WKWebViewErrorWithSource(error, PROVISIONAL_LOAD);
-
-    if (web::IsWKWebViewSSLCertError(error))
-      [self handleSSLCertError:error];
-    else
-      [self handleLoadError:error inMainFrame:YES];
-  }
-
-  // This must be reset at the end, since code above may need information about
-  // the pending load.
-  [self resetPendingNavigationInfo];
-  _certVerificationErrors->Clear();
-}
-
-- (void)webView:(WKWebView *)webView
-    didCommitNavigation:(WKNavigation *)navigation {
-  DCHECK_EQ(_wkWebView, webView);
-  _certVerificationErrors->Clear();
-  // This point should closely approximate the document object change, so reset
-  // the list of injected scripts to those that are automatically injected.
-  _injectedScriptManagers.reset([[NSMutableSet alloc] init]);
-  [self injectWindowID];
-
-  // This is the point where the document's URL has actually changed, and
-  // pending navigation information should be applied to state information.
-  [self setDocumentURL:net::GURLWithNSURL([_wkWebView URL])];
-  DCHECK(_documentURL == self.lastRegisteredRequestURL);
-  self.webStateImpl->OnNavigationCommitted(_documentURL);
-  [self commitPendingNavigationInfo];
-  if ([self currentBackForwardListItemHolder]->navigation_type() ==
-      WKNavigationTypeBackForward) {
-    // A fast back/forward won't call decidePolicyForNavigationResponse, so
-    // the MIME type needs to be updated explicitly.
-    NSString* storedMIMEType =
-        [self currentBackForwardListItemHolder]->mime_type();
-    if (storedMIMEType) {
-      self.webStateImpl->SetContentsMimeType(
-          base::SysNSStringToUTF8(storedMIMEType));
-    }
-  }
-  [self webPageChanged];
-
-  [self updateSSLStatusForCurrentNavigationItem];
-
-  // Report cases where SSL cert is missing for a secure connection.
-  if (_documentURL.SchemeIsCryptographic()) {
-    scoped_refptr<net::X509Certificate> cert =
-        web::CreateCertFromChain([_wkWebView certificateChain]);
-    UMA_HISTOGRAM_BOOLEAN("WebController.WKWebViewHasCertForSecureConnection",
-                          cert);
-  }
-}
-
-- (void)webView:(WKWebView *)webView
-    didFinishNavigation:(WKNavigation *)navigation {
-  DCHECK(!self.isHalted);
-  // Trigger JavaScript driven post-document-load-completion tasks.
-  // TODO(crbug.com/546350): Investigate using
-  // WKUserScriptInjectionTimeAtDocumentEnd to inject this material at the
-  // appropriate time rather than invoking here.
-  web::EvaluateJavaScript(webView,
-                          @"__gCrWeb.didFinishNavigation()", nil);
-  [self didFinishNavigation];
-}
-
-- (void)webView:(WKWebView *)webView
-    didFailNavigation:(WKNavigation *)navigation
-            withError:(NSError *)error {
-  [self handleLoadError:WKWebViewErrorWithSource(error, NAVIGATION)
-            inMainFrame:YES];
-  _certVerificationErrors->Clear();
-}
-
-- (void)webView:(WKWebView*)webView
-    didReceiveAuthenticationChallenge:(NSURLAuthenticationChallenge*)challenge
-                    completionHandler:
-                        (void (^)(NSURLSessionAuthChallengeDisposition,
-                                  NSURLCredential*))completionHandler {
-  NSString* authMethod = challenge.protectionSpace.authenticationMethod;
-  if ([authMethod isEqual:NSURLAuthenticationMethodHTTPBasic] ||
-      [authMethod isEqual:NSURLAuthenticationMethodNTLM] ||
-      [authMethod isEqual:NSURLAuthenticationMethodHTTPDigest]) {
-    [self handleHTTPAuthForChallenge:challenge
-                   completionHandler:completionHandler];
-    return;
-  }
-
-  if (![authMethod isEqual:NSURLAuthenticationMethodServerTrust]) {
-    completionHandler(NSURLSessionAuthChallengeRejectProtectionSpace, nil);
-    return;
-  }
-
-  SecTrustRef trust = challenge.protectionSpace.serverTrust;
-  base::ScopedCFTypeRef<SecTrustRef> scopedTrust(trust,
-                                                 base::scoped_policy::RETAIN);
-  base::WeakNSObject<CRWWKWebViewWebController> weakSelf(self);
-  [_certVerificationController
-      decideLoadPolicyForTrust:scopedTrust
-                          host:challenge.protectionSpace.host
-             completionHandler:^(web::CertAcceptPolicy policy,
-                                 net::CertStatus status) {
-               base::scoped_nsobject<CRWWKWebViewWebController> strongSelf(
-                   [weakSelf retain]);
-               if (!strongSelf) {
-                 completionHandler(
-                     NSURLSessionAuthChallengeRejectProtectionSpace, nil);
-                 return;
-               }
-               [strongSelf processAuthChallenge:challenge
-                            forCertAcceptPolicy:policy
-                                     certStatus:status
-                              completionHandler:completionHandler];
-             }];
-}
-
-- (void)webViewWebContentProcessDidTerminate:(WKWebView*)webView {
-  _certVerificationErrors->Clear();
-  [self webViewWebProcessDidCrash];
 }
 
 @end
