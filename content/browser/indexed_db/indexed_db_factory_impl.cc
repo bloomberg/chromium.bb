@@ -174,7 +174,7 @@ void IndexedDBFactoryImpl::ReportOutstandingBlobs(const GURL& origin_url,
 
 void IndexedDBFactoryImpl::GetDatabaseNames(
     scoped_refptr<IndexedDBCallbacks> callbacks,
-    const GURL& origin_url,
+    const url::Origin& origin,
     const base::FilePath& data_directory,
     net::URLRequestContext* request_context) {
   IDB_TRACE("IndexedDBFactoryImpl::GetDatabaseNames");
@@ -182,6 +182,7 @@ void IndexedDBFactoryImpl::GetDatabaseNames(
   blink::WebIDBDataLoss data_loss;
   std::string data_loss_message;
   bool disk_full;
+  GURL origin_url(origin.Serialize());
   leveldb::Status s;
   // TODO(cmumford): Handle this error
   scoped_refptr<IndexedDBBackingStore> backing_store =
@@ -221,9 +222,10 @@ void IndexedDBFactoryImpl::DeleteDatabase(
     const base::string16& name,
     net::URLRequestContext* request_context,
     scoped_refptr<IndexedDBCallbacks> callbacks,
-    const GURL& origin_url,
+    const url::Origin& origin,
     const base::FilePath& data_directory) {
   IDB_TRACE("IndexedDBFactoryImpl::DeleteDatabase");
+  GURL origin_url(origin.Serialize());
   IndexedDBDatabase::Identifier unique_identifier(origin_url, name);
   IndexedDBDatabaseMap::iterator it = database_map_.find(unique_identifier);
   if (it != database_map_.end()) {
@@ -433,10 +435,11 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBFactoryImpl::OpenBackingStore(
 void IndexedDBFactoryImpl::Open(const base::string16& name,
                                 const IndexedDBPendingConnection& connection,
                                 net::URLRequestContext* request_context,
-                                const GURL& origin_url,
+                                const url::Origin& origin,
                                 const base::FilePath& data_directory) {
   IDB_TRACE("IndexedDBFactoryImpl::Open");
   scoped_refptr<IndexedDBDatabase> database;
+  GURL origin_url(origin.Serialize());
   IndexedDBDatabase::Identifier unique_identifier(origin_url, name);
   IndexedDBDatabaseMap::iterator it = database_map_.find(unique_identifier);
   blink::WebIDBDataLoss data_loss =

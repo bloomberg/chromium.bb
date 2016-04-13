@@ -61637,6 +61637,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="116" label="BDH_CONSTRUCTION_FAILED"/>
   <int value="117" label="BDH_INVALID_REFCOUNT_OPERATION"/>
   <int value="118" label="BDH_INVALID_URL_OPERATION"/>
+  <int value="119" label="IDBDH_INVALID_ORIGIN"/>
 </enum>
 
 <enum name="BadMessageReasonExtensions" type="int">

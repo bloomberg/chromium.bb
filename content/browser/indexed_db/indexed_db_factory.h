@@ -21,6 +21,7 @@
 #include "content/browser/indexed_db/indexed_db_database_callbacks.h"
 #include "content/common/content_export.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace net {
 class URLRequestContext;
@@ -42,19 +43,19 @@ class CONTENT_EXPORT IndexedDBFactory
                                bool forced_close) = 0;
 
   virtual void GetDatabaseNames(scoped_refptr<IndexedDBCallbacks> callbacks,
-                                const GURL& origin_url,
+                                const url::Origin& origin,
                                 const base::FilePath& data_directory,
                                 net::URLRequestContext* request_context) = 0;
   virtual void Open(const base::string16& name,
                     const IndexedDBPendingConnection& connection,
                     net::URLRequestContext* request_context,
-                    const GURL& origin_url,
+                    const url::Origin& origin,
                     const base::FilePath& data_directory) = 0;
 
   virtual void DeleteDatabase(const base::string16& name,
                               net::URLRequestContext* request_context,
                               scoped_refptr<IndexedDBCallbacks> callbacks,
-                              const GURL& origin_url,
+                              const url::Origin& origin,
                               const base::FilePath& data_directory) = 0;
 
   virtual void HandleBackingStoreFailure(const GURL& origin_url) = 0;

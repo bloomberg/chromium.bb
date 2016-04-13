@@ -24,6 +24,7 @@
 #include "storage/browser/quota/quota_manager.h"
 #include "storage/browser/quota/special_storage_policy.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -194,20 +195,16 @@ TEST_F(IndexedDBTest, ForceCloseOpenDatabasesOnDelete) {
                                                0 /* child_process_id */,
                                                0 /* host_transaction_id */,
                                                0 /* version */);
-    factory->Open(base::ASCIIToUTF16("opendb"),
-                  open_connection,
-                  NULL /* request_context */,
-                  kTestOrigin,
+    factory->Open(base::ASCIIToUTF16("opendb"), open_connection,
+                  NULL /* request_context */, url::Origin(kTestOrigin),
                   idb_context->data_path());
     IndexedDBPendingConnection closed_connection(closed_callbacks,
                                                  closed_db_callbacks,
                                                  0 /* child_process_id */,
                                                  0 /* host_transaction_id */,
                                                  0 /* version */);
-    factory->Open(base::ASCIIToUTF16("closeddb"),
-                  closed_connection,
-                  NULL /* request_context */,
-                  kTestOrigin,
+    factory->Open(base::ASCIIToUTF16("closeddb"), closed_connection,
+                  NULL /* request_context */, url::Origin(kTestOrigin),
                   idb_context->data_path());
 
     closed_callbacks->connection()->Close();
@@ -273,10 +270,8 @@ TEST_F(IndexedDBTest, ForceCloseOpenDatabasesOnCommitFailure) {
   IndexedDBPendingConnection connection(
       callbacks, db_callbacks, 0 /* child_process_id */, transaction_id,
       IndexedDBDatabaseMetadata::DEFAULT_VERSION);
-  factory->Open(base::ASCIIToUTF16("db"),
-                connection,
-                NULL /* request_context */,
-                kTestOrigin,
+  factory->Open(base::ASCIIToUTF16("db"), connection,
+                NULL /* request_context */, url::Origin(kTestOrigin),
                 temp_dir.path());
 
   EXPECT_TRUE(callbacks->connection());

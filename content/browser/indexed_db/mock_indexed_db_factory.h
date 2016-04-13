@@ -23,20 +23,20 @@ class MockIndexedDBFactory : public IndexedDBFactory {
                     bool forced_close));
   MOCK_METHOD4(GetDatabaseNames,
                void(scoped_refptr<IndexedDBCallbacks> callbacks,
-                    const GURL& origin_url,
+                    const url::Origin& origin_url,
                     const base::FilePath& data_directory,
                     net::URLRequestContext* request_context));
   MOCK_METHOD5(Open,
                void(const base::string16& name,
                     const IndexedDBPendingConnection& connection,
                     net::URLRequestContext* request_context,
-                    const GURL& origin_url,
+                    const url::Origin& origin,
                     const base::FilePath& data_directory));
   MOCK_METHOD5(DeleteDatabase,
                void(const base::string16& name,
                     net::URLRequestContext* request_context,
                     scoped_refptr<IndexedDBCallbacks> callbacks,
-                    const GURL& origin_url,
+                    const url::Origin& origin,
                     const base::FilePath& data_directory));
   MOCK_METHOD1(HandleBackingStoreFailure, void(const GURL& origin_url));
   MOCK_METHOD2(HandleBackingStoreCorruption,

@@ -27,8 +27,7 @@ void WebIDBFactoryImpl::getDatabaseNames(WebIDBCallbacks* callbacks,
                                          const WebSecurityOrigin& origin) {
   IndexedDBDispatcher* dispatcher =
       IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender_.get());
-  dispatcher->RequestIDBFactoryGetDatabaseNames(
-      callbacks, WebSecurityOriginToGURL(origin));
+  dispatcher->RequestIDBFactoryGetDatabaseNames(callbacks, origin);
 }
 
 void WebIDBFactoryImpl::open(const WebString& name,
@@ -41,8 +40,7 @@ void WebIDBFactoryImpl::open(const WebString& name,
       IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender_.get());
 
   dispatcher->RequestIDBFactoryOpen(name, version, transaction_id, callbacks,
-                                    database_callbacks,
-                                    WebSecurityOriginToGURL(origin));
+                                    database_callbacks, origin);
 }
 
 void WebIDBFactoryImpl::deleteDatabase(const WebString& name,
@@ -50,8 +48,7 @@ void WebIDBFactoryImpl::deleteDatabase(const WebString& name,
                                        const WebSecurityOrigin& origin) {
   IndexedDBDispatcher* dispatcher =
       IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender_.get());
-  dispatcher->RequestIDBFactoryDeleteDatabase(name, callbacks,
-                                              WebSecurityOriginToGURL(origin));
+  dispatcher->RequestIDBFactoryDeleteDatabase(name, callbacks, origin);
 }
 
 }  // namespace content

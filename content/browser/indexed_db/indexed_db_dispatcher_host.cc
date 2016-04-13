@@ -44,6 +44,14 @@ using blink::WebIDBKey;
 
 namespace content {
 
+namespace {
+
+bool IsValidOrigin(const url::Origin& origin) {
+  return !origin.unique();
+}
+
+}  // namespace
+
 IndexedDBDispatcherHost::IndexedDBDispatcherHost(
     int ipc_process_id,
     net::URLRequestContextGetter* request_context_getter,
@@ -311,8 +319,13 @@ IndexedDBCursor* IndexedDBDispatcherHost::GetCursorFromId(
 void IndexedDBDispatcherHost::OnIDBFactoryGetDatabaseNames(
     const IndexedDBHostMsg_FactoryGetDatabaseNames_Params& params) {
   DCHECK(indexed_db_context_->TaskRunner()->RunsTasksOnCurrentThread());
-  base::FilePath indexed_db_path = indexed_db_context_->data_path();
 
+  if (!IsValidOrigin(params.origin)) {
+    bad_message::ReceivedBadMessage(this, bad_message::IDBDH_INVALID_ORIGIN);
+    return;
+  }
+
+  base::FilePath indexed_db_path = indexed_db_context_->data_path();
   context()->GetIDBFactory()->GetDatabaseNames(
       new IndexedDBCallbacks(this, params.ipc_thread_id,
                              params.ipc_callbacks_id),
@@ -322,6 +335,12 @@ void IndexedDBDispatcherHost::OnIDBFactoryGetDatabaseNames(
 void IndexedDBDispatcherHost::OnIDBFactoryOpen(
     const IndexedDBHostMsg_FactoryOpen_Params& params) {
   DCHECK(indexed_db_context_->TaskRunner()->RunsTasksOnCurrentThread());
+
+  if (!IsValidOrigin(params.origin)) {
+    bad_message::ReceivedBadMessage(this, bad_message::IDBDH_INVALID_ORIGIN);
+    return;
+  }
+
   base::TimeTicks begin_time = base::TimeTicks::Now();
   base::FilePath indexed_db_path = indexed_db_context_->data_path();
 
@@ -331,7 +350,8 @@ void IndexedDBDispatcherHost::OnIDBFactoryOpen(
   // created) if this origin is already over quota.
   scoped_refptr<IndexedDBCallbacks> callbacks = new IndexedDBCallbacks(
       this, params.ipc_thread_id, params.ipc_callbacks_id,
-      params.ipc_database_callbacks_id, host_transaction_id, params.origin);
+      params.ipc_database_callbacks_id, host_transaction_id,
+      GURL(params.origin.Serialize()));
   callbacks->SetConnectionOpenStartTime(begin_time);
   scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks =
       new IndexedDBDatabaseCallbacks(
@@ -349,6 +369,12 @@ void IndexedDBDispatcherHost::OnIDBFactoryOpen(
 void IndexedDBDispatcherHost::OnIDBFactoryDeleteDatabase(
     const IndexedDBHostMsg_FactoryDeleteDatabase_Params& params) {
   DCHECK(indexed_db_context_->TaskRunner()->RunsTasksOnCurrentThread());
+
+  if (!IsValidOrigin(params.origin)) {
+    bad_message::ReceivedBadMessage(this, bad_message::IDBDH_INVALID_ORIGIN);
+    return;
+  }
+
   base::FilePath indexed_db_path = indexed_db_context_->data_path();
   DCHECK(request_context_);
   context()->GetIDBFactory()->DeleteDatabase(

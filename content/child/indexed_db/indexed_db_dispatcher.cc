@@ -222,7 +222,7 @@ void IndexedDBDispatcher::RequestIDBFactoryOpen(
     int64_t transaction_id,
     WebIDBCallbacks* callbacks_ptr,
     WebIDBDatabaseCallbacks* database_callbacks_ptr,
-    const GURL& origin) {
+    const url::Origin& origin) {
   std::unique_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
   std::unique_ptr<WebIDBDatabaseCallbacks> database_callbacks(
       database_callbacks_ptr);
@@ -241,7 +241,7 @@ void IndexedDBDispatcher::RequestIDBFactoryOpen(
 
 void IndexedDBDispatcher::RequestIDBFactoryGetDatabaseNames(
     WebIDBCallbacks* callbacks_ptr,
-    const GURL& origin) {
+    const url::Origin& origin) {
   std::unique_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
 
   IndexedDBHostMsg_FactoryGetDatabaseNames_Params params;
@@ -254,7 +254,7 @@ void IndexedDBDispatcher::RequestIDBFactoryGetDatabaseNames(
 void IndexedDBDispatcher::RequestIDBFactoryDeleteDatabase(
     const base::string16& name,
     WebIDBCallbacks* callbacks_ptr,
-    const GURL& origin) {
+    const url::Origin& origin) {
   std::unique_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
 
   IndexedDBHostMsg_FactoryDeleteDatabase_Params params;

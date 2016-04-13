@@ -28,19 +28,19 @@ class CONTENT_EXPORT IndexedDBFactoryImpl : public IndexedDBFactory {
                        bool forced_close) override;
 
   void GetDatabaseNames(scoped_refptr<IndexedDBCallbacks> callbacks,
-                        const GURL& origin_url,
+                        const url::Origin& origin,
                         const base::FilePath& data_directory,
                         net::URLRequestContext* request_context) override;
   void Open(const base::string16& name,
             const IndexedDBPendingConnection& connection,
             net::URLRequestContext* request_context,
-            const GURL& origin_url,
+            const url::Origin& origin,
             const base::FilePath& data_directory) override;
 
   void DeleteDatabase(const base::string16& name,
                       net::URLRequestContext* request_context,
                       scoped_refptr<IndexedDBCallbacks> callbacks,
-                      const GURL& origin_url,
+                      const url::Origin& origin,
                       const base::FilePath& data_directory) override;
 
   void HandleBackingStoreFailure(const GURL& origin_url) override;

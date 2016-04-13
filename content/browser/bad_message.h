@@ -140,6 +140,7 @@ enum BadMessageReason {
   BDH_CONSTRUCTION_FAILED = 116,
   BDH_INVALID_REFCOUNT_OPERATION = 117,
   BDH_INVALID_URL_OPERATION = 118,
+  IDBDH_INVALID_ORIGIN = 119,
 
   // Please add new elements here. The naming convention is abbreviated class
   // name (e.g. RenderFrameHost becomes RFH) plus a unique description of the
