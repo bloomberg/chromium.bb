@@ -5,9 +5,9 @@
 #ifndef CHROME_TEST_MEDIA_ROUTER_MEDIA_ROUTER_E2E_BROWSERTEST_H_
 #define CHROME_TEST_MEDIA_ROUTER_MEDIA_ROUTER_E2E_BROWSERTEST_H_
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/media/router/media_route.h"
 #include "chrome/browser/media/router/media_router.h"
 #include "chrome/test/media_router/media_router_integration_browsertest.h"
@@ -60,7 +60,7 @@ class MediaRouterE2EBrowserTest : public MediaRouterIntegrationBrowserTest {
 
  private:
   MediaRouter* media_router_;
-  scoped_ptr<TestMediaSinksObserver> observer_;
+  std::unique_ptr<TestMediaSinksObserver> observer_;
   MediaRoute::Id route_id_;
 };
 

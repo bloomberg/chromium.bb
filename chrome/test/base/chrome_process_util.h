@@ -7,10 +7,10 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/process/process_handle.h"
 #include "base/process/process_metrics.h"
 #include "build/build_config.h"
@@ -60,7 +60,7 @@ class ChromeTestProcessMetrics {
  private:
   explicit ChromeTestProcessMetrics(base::ProcessHandle process);
 
-  scoped_ptr<base::ProcessMetrics> process_metrics_;
+  std::unique_ptr<base::ProcessMetrics> process_metrics_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeTestProcessMetrics);
 };

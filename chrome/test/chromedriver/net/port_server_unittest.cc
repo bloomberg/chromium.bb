@@ -147,7 +147,7 @@ TEST_F(PortServerTest, Reserve) {
   RunServer(path, "12345\n", &request);
 
   uint16_t port = 0;
-  scoped_ptr<PortReservation> reservation;
+  std::unique_ptr<PortReservation> reservation;
   Status status = server.ReservePort(&port, &reservation);
   ASSERT_EQ(kOk, status.code()) << status.message();
   ASSERT_EQ(12345u, port);
@@ -161,7 +161,7 @@ TEST_F(PortServerTest, ReserveResetReserve) {
   RunServer(path, "12345\n", &request);
 
   uint16_t port = 0;
-  scoped_ptr<PortReservation> reservation;
+  std::unique_ptr<PortReservation> reservation;
   Status status = server.ReservePort(&port, &reservation);
   ASSERT_EQ(kOk, status.code()) << status.message();
   ASSERT_EQ(12345u, port);
@@ -180,7 +180,7 @@ TEST_F(PortServerTest, ReserveReserve) {
   RunServer(path, "12345\n", &request);
 
   uint16_t port = 0;
-  scoped_ptr<PortReservation> reservation;
+  std::unique_ptr<PortReservation> reservation;
   Status status = server.ReservePort(&port, &reservation);
   ASSERT_EQ(kOk, status.code()) << status.message();
   ASSERT_EQ(12345u, port);
@@ -195,7 +195,7 @@ TEST_F(PortServerTest, ReserveReserve) {
 TEST(PortManagerTest, ReservePort) {
   PortManager mgr(15000, 16000);
   uint16_t port = 0;
-  scoped_ptr<PortReservation> reservation;
+  std::unique_ptr<PortReservation> reservation;
   Status status = mgr.ReservePort(&port, &reservation);
   ASSERT_EQ(kOk, status.code()) << status.message();
 
@@ -208,7 +208,7 @@ TEST(PortManagerTest, ReservePortFromPool) {
   PortManager mgr(15000, 16000);
   uint16_t first_port = 0, port = 1;
   for (int i = 0; i < 10; i++) {
-    scoped_ptr<PortReservation> reservation;
+    std::unique_ptr<PortReservation> reservation;
     Status status = mgr.ReservePortFromPool(&port, &reservation);
     ASSERT_EQ(kOk, status.code()) << status.message();
     ASSERT_TRUE(reservation);

@@ -5,10 +5,10 @@
 #ifndef CHROME_TEST_CHROMEDRIVER_CHROME_DEVTOOLS_CLIENT_H_
 #define CHROME_TEST_CHROMEDRIVER_CHROME_DEVTOOLS_CLIENT_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback_forward.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace base {
 class DictionaryValue;
@@ -43,7 +43,7 @@ class DevToolsClient {
   virtual Status SendCommandAndGetResult(
       const std::string& method,
       const base::DictionaryValue& params,
-      scoped_ptr<base::DictionaryValue>* result) = 0;
+      std::unique_ptr<base::DictionaryValue>* result) = 0;
 
   // Adds a listener. This must only be done when the client is disconnected.
   virtual void AddListener(DevToolsEventListener* listener) = 0;

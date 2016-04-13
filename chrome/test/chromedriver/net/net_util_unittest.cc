@@ -52,7 +52,7 @@ class FetchUrlTest : public testing::Test,
   }
 
   void InitOnIO(base::WaitableEvent* event) {
-    scoped_ptr<net::ServerSocket> server_socket(
+    std::unique_ptr<net::ServerSocket> server_socket(
         new net::TCPServerSocket(NULL, net::NetLog::Source()));
     server_socket->ListenWithAddressAndPort("127.0.0.1", 0, 1);
     server_.reset(new net::HttpServer(std::move(server_socket), this));
@@ -102,7 +102,7 @@ class FetchUrlTest : public testing::Test,
 
   base::Thread io_thread_;
   ServerResponse response_;
-  scoped_ptr<net::HttpServer> server_;
+  std::unique_ptr<net::HttpServer> server_;
   scoped_refptr<URLRequestContextGetter> context_getter_;
   std::string server_url_;
 };

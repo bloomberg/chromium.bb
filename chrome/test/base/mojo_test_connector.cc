@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/synchronization/waitable_event.h"
@@ -44,7 +45,8 @@ base::DictionaryValue* EnsureDictionary(base::DictionaryValue* parent,
   if (parent->GetDictionary(key, &dictionary))
     return dictionary;
 
-  scoped_ptr<base::DictionaryValue> owned_dictionary(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> owned_dictionary(
+      new base::DictionaryValue);
   dictionary = owned_dictionary.get();
   parent->Set(key, std::move(owned_dictionary));
   return dictionary;
@@ -52,23 +54,23 @@ base::DictionaryValue* EnsureDictionary(base::DictionaryValue* parent,
 
 // This builds a permissive catalog with the addition of the 'instance_name'
 // permission.
-scoped_ptr<mojo::shell::TestCatalogStore> BuildTestCatalogStore() {
-  scoped_ptr<base::ListValue> apps(new base::ListValue);
-  scoped_ptr<base::DictionaryValue> test_app_config =
+std::unique_ptr<mojo::shell::TestCatalogStore> BuildTestCatalogStore() {
+  std::unique_ptr<base::ListValue> apps(new base::ListValue);
+  std::unique_ptr<base::DictionaryValue> test_app_config =
       mojo::shell::BuildPermissiveSerializedAppInfo(kTestRunnerName, "test");
   base::DictionaryValue* capabilities =
       EnsureDictionary(test_app_config.get(), catalog::Store::kCapabilitiesKey);
   base::DictionaryValue* required_capabilities =
       EnsureDictionary(capabilities, catalog::Store::kCapabilities_RequiredKey);
-  scoped_ptr<base::ListValue> required_shell_classes(new base::ListValue);
+  std::unique_ptr<base::ListValue> required_shell_classes(new base::ListValue);
   required_shell_classes->AppendString("instance_name");
   required_shell_classes->AppendString("client_process");
-  scoped_ptr<base::DictionaryValue> shell_caps(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> shell_caps(new base::DictionaryValue);
   shell_caps->Set(catalog::Store::kCapabilities_ClassesKey,
                   std::move(required_shell_classes));
   required_capabilities->Set("mojo:shell", std::move(shell_caps));
   apps->Append(std::move(test_app_config));
-  return make_scoped_ptr(new mojo::shell::TestCatalogStore(std::move(apps)));
+  return base::WrapUnique(new mojo::shell::TestCatalogStore(std::move(apps)));
 }
 
 // BackgroundTestState maintains all the state necessary to bind the test to
@@ -104,7 +106,7 @@ class BackgroundTestState {
     mojo::shell::mojom::ShellClientPtr client =
         mojo::shell::PassShellClientRequestOnCommandLine(command_line);
 
-    scoped_ptr<mojo::shell::ConnectParams> params(
+    std::unique_ptr<mojo::shell::ConnectParams> params(
         new mojo::shell::ConnectParams);
     params->set_source(mojo::shell::CreateShellIdentity());
     params->set_target(
@@ -132,7 +134,7 @@ class BackgroundTestState {
 
  private:
   // Used to back the NodeChannel between the parent and child node.
-  scoped_ptr<mojo::edk::PlatformChannelPair> mojo_ipc_channel_;
+  std::unique_ptr<mojo::edk::PlatformChannelPair> mojo_ipc_channel_;
 
   mojo::edk::HandlePassingInformation handle_passing_info_;
 
@@ -143,7 +145,7 @@ class BackgroundTestState {
 
 // Called used destroy BackgroundTestState on the background thread.
 void DestroyBackgroundStateOnBackgroundThread(
-    scoped_ptr<BackgroundTestState> state,
+    std::unique_ptr<BackgroundTestState> state,
     mojo::shell::Shell* shell) {}
 
 // State created per test. Manages creation of the corresponding
@@ -210,7 +212,7 @@ class MojoTestState : public content::TestState {
   }
 
   mojo::shell::BackgroundShell* background_shell_;
-  scoped_ptr<BackgroundTestState> background_state_;
+  std::unique_ptr<BackgroundTestState> background_state_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoTestState);
 };
@@ -242,7 +244,7 @@ MojoTestConnector::MojoTestConnector() {}
 
 mojo::shell::mojom::ShellClientRequest MojoTestConnector::Init() {
   native_runner_delegate_.reset(new NativeRunnerDelegateImpl);
-  scoped_ptr<mojo::shell::BackgroundShell::InitParams> init_params(
+  std::unique_ptr<mojo::shell::BackgroundShell::InitParams> init_params(
       new mojo::shell::BackgroundShell::InitParams);
   init_params->catalog_store = BuildTestCatalogStore();
   // When running in single_process mode chrome initializes the edk.
@@ -255,10 +257,11 @@ mojo::shell::mojom::ShellClientRequest MojoTestConnector::Init() {
 
 MojoTestConnector::~MojoTestConnector() {}
 
-scoped_ptr<content::TestState> MojoTestConnector::PrepareForTest(
+std::unique_ptr<content::TestState> MojoTestConnector::PrepareForTest(
     base::CommandLine* command_line,
     base::TestLauncher::LaunchOptions* test_launch_options) {
-  scoped_ptr<MojoTestState> test_state(new MojoTestState(&background_shell_));
+  std::unique_ptr<MojoTestState> test_state(
+      new MojoTestState(&background_shell_));
   test_state->Init(command_line, test_launch_options);
   return std::move(test_state);
 }

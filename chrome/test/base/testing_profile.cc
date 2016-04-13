@@ -11,6 +11,7 @@
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -162,7 +163,7 @@ class TestExtensionURLRequestContext : public net::URLRequestContext {
     set_cookie_store(cookie_store_.get());
   }
 
-  scoped_ptr<net::CookieStore> cookie_store_;
+  std::unique_ptr<net::CookieStore> cookie_store_;
 
   ~TestExtensionURLRequestContext() override { AssertNoURLRequests(); }
 };
@@ -184,35 +185,37 @@ class TestExtensionURLRequestContextGetter
   ~TestExtensionURLRequestContextGetter() override {}
 
  private:
-  scoped_ptr<net::URLRequestContext> context_;
+  std::unique_ptr<net::URLRequestContext> context_;
 };
 
-scoped_ptr<KeyedService> BuildHistoryService(content::BrowserContext* context) {
-  Profile* profile = Profile::FromBrowserContext(context);
-  return make_scoped_ptr(new history::HistoryService(
-      make_scoped_ptr(new ChromeHistoryClient(
-          BookmarkModelFactory::GetForProfile(profile))),
-      make_scoped_ptr(new history::ContentVisitDelegate(profile))));
-}
-
-scoped_ptr<KeyedService> BuildInMemoryURLIndex(
+std::unique_ptr<KeyedService> BuildHistoryService(
     content::BrowserContext* context) {
   Profile* profile = Profile::FromBrowserContext(context);
-  scoped_ptr<InMemoryURLIndex> in_memory_url_index(new InMemoryURLIndex(
-      BookmarkModelFactory::GetForProfile(profile),
-      HistoryServiceFactory::GetForProfile(profile,
-                                           ServiceAccessType::IMPLICIT_ACCESS),
-      TemplateURLServiceFactory::GetForProfile(profile),
-      content::BrowserThread::GetBlockingPool(), profile->GetPath(),
-      SchemeSet()));
+  return base::WrapUnique(new history::HistoryService(
+      base::WrapUnique(new ChromeHistoryClient(
+          BookmarkModelFactory::GetForProfile(profile))),
+      base::WrapUnique(new history::ContentVisitDelegate(profile))));
+}
+
+std::unique_ptr<KeyedService> BuildInMemoryURLIndex(
+    content::BrowserContext* context) {
+  Profile* profile = Profile::FromBrowserContext(context);
+  std::unique_ptr<InMemoryURLIndex> in_memory_url_index(
+      new InMemoryURLIndex(BookmarkModelFactory::GetForProfile(profile),
+                           HistoryServiceFactory::GetForProfile(
+                               profile, ServiceAccessType::IMPLICIT_ACCESS),
+                           TemplateURLServiceFactory::GetForProfile(profile),
+                           content::BrowserThread::GetBlockingPool(),
+                           profile->GetPath(), SchemeSet()));
   in_memory_url_index->Init();
   return std::move(in_memory_url_index);
 }
 
-scoped_ptr<KeyedService> BuildBookmarkModel(content::BrowserContext* context) {
+std::unique_ptr<KeyedService> BuildBookmarkModel(
+    content::BrowserContext* context) {
   Profile* profile = Profile::FromBrowserContext(context);
-  scoped_ptr<BookmarkModel> bookmark_model(
-      new BookmarkModel(make_scoped_ptr(new ChromeBookmarkClient(
+  std::unique_ptr<BookmarkModel> bookmark_model(
+      new BookmarkModel(base::WrapUnique(new ChromeBookmarkClient(
           profile, ManagedBookmarkServiceFactory::GetForProfile(profile)))));
   bookmark_model->Load(profile->GetPrefs(),
                        profile->GetPath(),
@@ -227,9 +230,10 @@ void TestProfileErrorCallback(WebDataServiceWrapper::ErrorType error_type,
   NOTREACHED();
 }
 
-scoped_ptr<KeyedService> BuildWebDataService(content::BrowserContext* context) {
+std::unique_ptr<KeyedService> BuildWebDataService(
+    content::BrowserContext* context) {
   const base::FilePath& context_path = context->GetPath();
-  return make_scoped_ptr(new WebDataServiceWrapper(
+  return base::WrapUnique(new WebDataServiceWrapper(
       context_path, g_browser_process->GetApplicationLocale(),
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
@@ -313,11 +317,11 @@ TestingProfile::TestingProfile(
 #if defined(ENABLE_EXTENSIONS)
     scoped_refptr<ExtensionSpecialStoragePolicy> extension_policy,
 #endif
-    scoped_ptr<syncable_prefs::PrefServiceSyncable> prefs,
+    std::unique_ptr<syncable_prefs::PrefServiceSyncable> prefs,
     TestingProfile* parent,
     bool guest_session,
     const std::string& supervised_user_id,
-    scoped_ptr<policy::PolicyService> policy_service,
+    std::unique_ptr<policy::PolicyService> policy_service,
     const TestingFactories& factories,
     const std::string& profile_name)
     : start_time_(Time::Now()),
@@ -338,7 +342,7 @@ TestingProfile::TestingProfile(
       profile_name_(profile_name),
       policy_service_(policy_service.release()) {
   if (parent)
-    parent->SetOffTheRecordProfile(scoped_ptr<Profile>(this));
+    parent->SetOffTheRecordProfile(std::unique_ptr<Profile>(this));
 
   // If no profile path was supplied, create one.
   if (profile_path_.empty()) {
@@ -440,7 +444,7 @@ void TestingProfile::Init() {
   // inject a new ExtensionPrefStore(extension_pref_value_map, false).
   bool extensions_disabled = base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableExtensions);
-  scoped_ptr<extensions::ExtensionPrefs> extension_prefs(
+  std::unique_ptr<extensions::ExtensionPrefs> extension_prefs(
       extensions::ExtensionPrefs::Create(
           this, GetPrefs(), extensions_path_,
           ExtensionPrefValueMapFactory::GetForBrowserContext(this),
@@ -626,9 +630,9 @@ base::FilePath TestingProfile::GetPath() const {
   return profile_path_;
 }
 
-scoped_ptr<content::ZoomLevelDelegate> TestingProfile::CreateZoomLevelDelegate(
-    const base::FilePath& partition_path) {
-  return make_scoped_ptr(new ChromeZoomLevelPrefs(
+std::unique_ptr<content::ZoomLevelDelegate>
+TestingProfile::CreateZoomLevelDelegate(const base::FilePath& partition_path) {
+  return base::WrapUnique(new ChromeZoomLevelPrefs(
       GetPrefs(), GetPath(), partition_path,
       ui_zoom::ZoomEventManager::GetForBrowserContext(this)->GetWeakPtr()));
 }
@@ -664,7 +668,7 @@ bool TestingProfile::IsOffTheRecord() const {
   return force_incognito_ || original_profile_;
 }
 
-void TestingProfile::SetOffTheRecordProfile(scoped_ptr<Profile> profile) {
+void TestingProfile::SetOffTheRecordProfile(std::unique_ptr<Profile> profile) {
   DCHECK(!IsOffTheRecord());
   DCHECK_EQ(this, profile->GetOriginalProfile());
   incognito_profile_ = std::move(profile);
@@ -878,8 +882,7 @@ void TestingProfile::BlockUntilHistoryProcessesPendingRequests() {
 
   base::CancelableTaskTracker tracker;
   history_service->ScheduleDBTask(
-      scoped_ptr<history::HistoryDBTask>(
-          new QuittingHistoryDBTask()),
+      std::unique_ptr<history::HistoryDBTask>(new QuittingHistoryDBTask()),
       &tracker);
   base::MessageLoop::current()->Run();
 }
@@ -985,7 +988,7 @@ void TestingProfile::Builder::SetExtensionSpecialStoragePolicy(
 #endif
 
 void TestingProfile::Builder::SetPrefService(
-    scoped_ptr<syncable_prefs::PrefServiceSyncable> prefs) {
+    std::unique_ptr<syncable_prefs::PrefServiceSyncable> prefs) {
   pref_service_ = std::move(prefs);
 }
 
@@ -999,7 +1002,7 @@ void TestingProfile::Builder::SetSupervisedUserId(
 }
 
 void TestingProfile::Builder::SetPolicyService(
-    scoped_ptr<policy::PolicyService> policy_service) {
+    std::unique_ptr<policy::PolicyService> policy_service) {
   policy_service_ = std::move(policy_service);
 }
 
@@ -1013,11 +1016,11 @@ void TestingProfile::Builder::AddTestingFactory(
   testing_factories_.push_back(std::make_pair(service_factory, callback));
 }
 
-scoped_ptr<TestingProfile> TestingProfile::Builder::Build() {
+std::unique_ptr<TestingProfile> TestingProfile::Builder::Build() {
   DCHECK(!build_called_);
   build_called_ = true;
 
-  return scoped_ptr<TestingProfile>(new TestingProfile(
+  return std::unique_ptr<TestingProfile>(new TestingProfile(
       path_, delegate_,
 #if defined(ENABLE_EXTENSIONS)
       extension_policy_,

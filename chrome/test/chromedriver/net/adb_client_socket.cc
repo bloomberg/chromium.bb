@@ -231,7 +231,7 @@ class HttpOverAdbSocket {
     return false;
   }
 
-  scoped_ptr<net::StreamSocket> socket_;
+  std::unique_ptr<net::StreamSocket> socket_;
   std::string request_;
   std::string response_;
   CommandCallback command_callback_;

@@ -62,7 +62,7 @@ Status NetworkConditionsOverrideManager::ApplyOverride(
   if (status.IsError())
     return status;
 
-  scoped_ptr<base::DictionaryValue> result;
+  std::unique_ptr<base::DictionaryValue> result;
   bool can = false;
   status = client_->SendCommandAndGetResult(
       "Network.canEmulateNetworkConditions", empty_params, &result);

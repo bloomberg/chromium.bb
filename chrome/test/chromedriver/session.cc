@@ -42,7 +42,7 @@ Session::Session(const std::string& id)
       page_load_timeout(kDefaultPageLoadTimeout),
       auto_reporting_enabled(false) {}
 
-Session::Session(const std::string& id, scoped_ptr<Chrome> chrome)
+Session::Session(const std::string& id, std::unique_ptr<Chrome> chrome)
     : id(id),
       quit(false),
       detach(false),
@@ -117,6 +117,6 @@ Session* GetThreadLocalSession() {
   return lazy_tls_session.Pointer()->Get();
 }
 
-void SetThreadLocalSession(scoped_ptr<Session> session) {
+void SetThreadLocalSession(std::unique_ptr<Session> session) {
   lazy_tls_session.Pointer()->Set(session.release());
 }

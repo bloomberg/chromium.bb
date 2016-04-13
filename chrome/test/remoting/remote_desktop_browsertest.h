@@ -363,7 +363,8 @@ class RemoteDesktopBrowserTest : public extensions::PlatformAppBrowserTest {
   // This test needs to make live DNS requests for access to
   // GAIA and sync server URLs under google.com. We use a scoped version
   // to override the default resolver while the test is active.
-  scoped_ptr<net::ScopedDefaultHostResolverProc> mock_host_resolver_override_;
+  std::unique_ptr<net::ScopedDefaultHostResolverProc>
+      mock_host_resolver_override_;
 
   // Stores all the WebContents instance in a stack so that we can easily
   // return to the previous instance.
@@ -382,7 +383,7 @@ class RemoteDesktopBrowserTest : public extensions::PlatformAppBrowserTest {
   content::WebContents* client_web_content_;
 
   // Helper class to assist in performing and verifying remote operations.
-  scoped_ptr<RemoteTestHelper> remote_test_helper_;
+  std::unique_ptr<RemoteTestHelper> remote_test_helper_;
 
   bool no_cleanup_;
   bool no_install_;

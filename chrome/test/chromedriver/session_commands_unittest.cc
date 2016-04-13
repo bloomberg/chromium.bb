@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/test/chromedriver/session_commands.h"
+
+#include <memory>
 #include <string>
 
 #include "base/bind.h"
@@ -9,7 +12,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/memory/linked_ptr.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/threading/thread.h"
@@ -18,13 +20,12 @@
 #include "chrome/test/chromedriver/chrome/stub_chrome.h"
 #include "chrome/test/chromedriver/commands.h"
 #include "chrome/test/chromedriver/session.h"
-#include "chrome/test/chromedriver/session_commands.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 TEST(SessionCommandTest, FileUpload) {
   Session session("id");
   base::DictionaryValue params;
-  scoped_ptr<base::Value> value;
+  std::unique_ptr<base::Value> value;
   // Zip file entry that contains a single file with contents 'COW\n', base64
   // encoded following RFC 1521.
   const char kBase64ZipEntry[] =
@@ -62,10 +63,10 @@ class DetachChrome : public StubChrome {
 
 TEST(SessionCommandsTest, Quit) {
   DetachChrome* chrome = new DetachChrome();
-  Session session("id", scoped_ptr<Chrome>(chrome));
+  Session session("id", std::unique_ptr<Chrome>(chrome));
 
   base::DictionaryValue params;
-  scoped_ptr<base::Value> value;
+  std::unique_ptr<base::Value> value;
 
   ASSERT_EQ(kOk, ExecuteQuit(false, &session, params, &value).code());
   ASSERT_TRUE(chrome->quit_called_);
@@ -77,11 +78,11 @@ TEST(SessionCommandsTest, Quit) {
 
 TEST(SessionCommandsTest, QuitWithDetach) {
   DetachChrome* chrome = new DetachChrome();
-  Session session("id", scoped_ptr<Chrome>(chrome));
+  Session session("id", std::unique_ptr<Chrome>(chrome));
   session.detach = true;
 
   base::DictionaryValue params;
-  scoped_ptr<base::Value> value;
+  std::unique_ptr<base::Value> value;
 
   ASSERT_EQ(kOk, ExecuteQuit(true, &session, params, &value).code());
   ASSERT_FALSE(chrome->quit_called_);
@@ -104,17 +105,17 @@ class FailsToQuitChrome : public StubChrome {
 }  // namespace
 
 TEST(SessionCommandsTest, QuitFails) {
-  Session session("id", scoped_ptr<Chrome>(new FailsToQuitChrome()));
+  Session session("id", std::unique_ptr<Chrome>(new FailsToQuitChrome()));
   base::DictionaryValue params;
-  scoped_ptr<base::Value> value;
+  std::unique_ptr<base::Value> value;
   ASSERT_EQ(kUnknownError, ExecuteQuit(false, &session, params, &value).code());
 }
 
 TEST(SessionCommandsTest, AutoReporting) {
   DetachChrome* chrome = new DetachChrome();
-  Session session("id", scoped_ptr<Chrome>(chrome));
+  Session session("id", std::unique_ptr<Chrome>(chrome));
   base::DictionaryValue params;
-  scoped_ptr<base::Value> value;
+  std::unique_ptr<base::Value> value;
   StatusCode status_code;
   bool enabled;
 

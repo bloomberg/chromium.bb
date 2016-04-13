@@ -197,7 +197,7 @@ class TestBrowserWindowOwner : public chrome::BrowserListObserver {
  private:
   // Overridden from BrowserListObserver:
   void OnBrowserRemoved(Browser* browser) override;
-  scoped_ptr<TestBrowserWindow> window_;
+  std::unique_ptr<TestBrowserWindow> window_;
 
   DISALLOW_COPY_AND_ASSIGN(TestBrowserWindowOwner);
 };
@@ -205,7 +205,7 @@ class TestBrowserWindowOwner : public chrome::BrowserListObserver {
 namespace chrome {
 
 // Helper that handle the lifetime of TestBrowserWindow instances.
-scoped_ptr<Browser> CreateBrowserWithTestWindowForParams(
+std::unique_ptr<Browser> CreateBrowserWithTestWindowForParams(
     Browser::CreateParams* params);
 
 }  // namespace chrome

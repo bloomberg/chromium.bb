@@ -5,10 +5,10 @@
 #ifndef CHROME_TEST_CHROMEDRIVER_LOGGING_H_
 #define CHROME_TEST_CHROMEDRIVER_LOGGING_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/chrome/log.h"
@@ -39,7 +39,7 @@ class WebDriverLog : public Log {
   // into the wire protocol response to the "/log" command.
   // The caller assumes ownership of the ListValue, and the WebDriverLog
   // creates and owns a new empty ListValue for further accumulation.
-  scoped_ptr<base::ListValue> GetAndClearEntries();
+  std::unique_ptr<base::ListValue> GetAndClearEntries();
 
   // Finds the first error message in the log and returns it. If none exist,
   // returns an empty string. Does not clear entries.
@@ -58,7 +58,7 @@ class WebDriverLog : public Log {
  private:
   const std::string type_;  // WebDriver log type.
   Level min_level_;  // Minimum level of entries to store.
-  scoped_ptr<base::ListValue> entries_;  // Accumulated entries.
+  std::unique_ptr<base::ListValue> entries_;  // Accumulated entries.
 
   DISALLOW_COPY_AND_ASSIGN(WebDriverLog);
 };

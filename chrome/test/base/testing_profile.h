@@ -5,6 +5,7 @@
 #ifndef CHROME_TEST_BASE_TESTING_PROFILE_H_
 #define CHROME_TEST_BASE_TESTING_PROFILE_H_
 
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -12,7 +13,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/domain_reliability/clear_mode.h"
@@ -99,7 +99,8 @@ class TestingProfile : public Profile {
     void SetPath(const base::FilePath& path);
 
     // Sets the PrefService to be used by this profile.
-    void SetPrefService(scoped_ptr<syncable_prefs::PrefServiceSyncable> prefs);
+    void SetPrefService(
+        std::unique_ptr<syncable_prefs::PrefServiceSyncable> prefs);
 
     // Makes the Profile being built a guest profile.
     void SetGuestSession();
@@ -109,13 +110,14 @@ class TestingProfile : public Profile {
     void SetSupervisedUserId(const std::string& supervised_user_id);
 
     // Sets the PolicyService to be used by this profile.
-    void SetPolicyService(scoped_ptr<policy::PolicyService> policy_service);
+    void SetPolicyService(
+        std::unique_ptr<policy::PolicyService> policy_service);
 
     // Sets the UserProfileName to be used by this profile.
     void SetProfileName(const std::string& profile_name);
 
     // Creates the TestingProfile using previously-set settings.
-    scoped_ptr<TestingProfile> Build();
+    std::unique_ptr<TestingProfile> Build();
 
     // Build an incognito profile, owned by |original_profile|. Note: unless you
     // need to customize the Builder, or access TestingProfile member functions,
@@ -127,7 +129,7 @@ class TestingProfile : public Profile {
     bool build_called_;
 
     // Various staging variables where values are held until Build() is invoked.
-    scoped_ptr<syncable_prefs::PrefServiceSyncable> pref_service_;
+    std::unique_ptr<syncable_prefs::PrefServiceSyncable> pref_service_;
 #if defined(ENABLE_EXTENSIONS)
     scoped_refptr<ExtensionSpecialStoragePolicy> extension_policy_;
 #endif
@@ -135,7 +137,7 @@ class TestingProfile : public Profile {
     Delegate* delegate_;
     bool guest_session_;
     std::string supervised_user_id_;
-    scoped_ptr<policy::PolicyService> policy_service_;
+    std::unique_ptr<policy::PolicyService> policy_service_;
     TestingFactories testing_factories_;
     std::string profile_name_;
 
@@ -162,11 +164,11 @@ class TestingProfile : public Profile {
 #if defined(ENABLE_EXTENSIONS)
                  scoped_refptr<ExtensionSpecialStoragePolicy> extension_policy,
 #endif
-                 scoped_ptr<syncable_prefs::PrefServiceSyncable> prefs,
+                 std::unique_ptr<syncable_prefs::PrefServiceSyncable> prefs,
                  TestingProfile* parent,
                  bool guest_session,
                  const std::string& supervised_user_id,
-                 scoped_ptr<policy::PolicyService> policy_service,
+                 std::unique_ptr<policy::PolicyService> policy_service,
                  const TestingFactories& factories,
                  const std::string& profile_name);
 
@@ -211,13 +213,13 @@ class TestingProfile : public Profile {
   // Called on the parent of an incognito |profile|. Usually called from the
   // constructor of an incognito TestingProfile, but can also be used by tests
   // to provide an OffTheRecordProfileImpl instance.
-  void SetOffTheRecordProfile(scoped_ptr<Profile> profile);
+  void SetOffTheRecordProfile(std::unique_ptr<Profile> profile);
 
   void SetSupervisedUserId(const std::string& id);
 
   // content::BrowserContext
   base::FilePath GetPath() const override;
-  scoped_ptr<content::ZoomLevelDelegate> CreateZoomLevelDelegate(
+  std::unique_ptr<content::ZoomLevelDelegate> CreateZoomLevelDelegate(
       const base::FilePath& partition_path) override;
   scoped_refptr<base::SequencedTaskRunner> GetIOTaskRunner() override;
   bool IsOffTheRecord() const override;
@@ -338,7 +340,7 @@ class TestingProfile : public Profile {
 
  protected:
   base::Time start_time_;
-  scoped_ptr<syncable_prefs::PrefServiceSyncable> prefs_;
+  std::unique_ptr<syncable_prefs::PrefServiceSyncable> prefs_;
   // ref only for right type, lifecycle is managed by prefs_
   syncable_prefs::TestingPrefServiceSyncable* testing_prefs_;
 
@@ -368,7 +370,7 @@ class TestingProfile : public Profile {
   scoped_refptr<net::URLRequestContextGetter> extensions_request_context_;
 
   bool force_incognito_;
-  scoped_ptr<Profile> incognito_profile_;
+  std::unique_ptr<Profile> incognito_profile_;
   TestingProfile* original_profile_;
 
   bool guest_session_;
@@ -388,7 +390,7 @@ class TestingProfile : public Profile {
 #endif
 
   // The proxy prefs tracker.
-  scoped_ptr<PrefProxyConfigTracker> pref_proxy_config_tracker_;
+  std::unique_ptr<PrefProxyConfigTracker> pref_proxy_config_tracker_;
 
   // The path to this profile. This will be valid in either of the two above
   // cases.
@@ -402,18 +404,18 @@ class TestingProfile : public Profile {
   BrowserContextDependencyManager* browser_context_dependency_manager_;
 
   // Owned, but must be deleted on the IO thread so not placing in a
-  // scoped_ptr<>.
+  // std::unique_ptr<>.
   content::MockResourceContext* resource_context_;
 
-  scoped_ptr<policy::SchemaRegistryService> schema_registry_service_;
-  scoped_ptr<policy::ProfilePolicyConnector> profile_policy_connector_;
+  std::unique_ptr<policy::SchemaRegistryService> schema_registry_service_;
+  std::unique_ptr<policy::ProfilePolicyConnector> profile_policy_connector_;
 
   // Weak pointer to a delegate for indicating that a profile was created.
   Delegate* delegate_;
 
   std::string profile_name_;
 
-  scoped_ptr<policy::PolicyService> policy_service_;
+  std::unique_ptr<policy::PolicyService> policy_service_;
 };
 
 #endif  // CHROME_TEST_BASE_TESTING_PROFILE_H_

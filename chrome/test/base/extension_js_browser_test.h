@@ -31,7 +31,7 @@ class ExtensionJSBrowserTest : public JavaScriptBrowserTest {
                           const std::string& test_name);
 
  private:
-  scoped_ptr<ExtensionLoadWaiterOneShot> load_waiter_;
+  std::unique_ptr<ExtensionLoadWaiterOneShot> load_waiter_;
   bool libs_loaded_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionJSBrowserTest);

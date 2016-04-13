@@ -42,7 +42,7 @@ class FakeDevToolsClient : public StubDevToolsClient {
   Status SendCommandAndGetResult(
       const std::string& method,
       const base::DictionaryValue& params,
-      scoped_ptr<base::DictionaryValue>* result) override {
+      std::unique_ptr<base::DictionaryValue>* result) override {
     sent_command_queue_.push_back(method);
     return Status(kOk);
   }

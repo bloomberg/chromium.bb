@@ -5,8 +5,8 @@
 #ifndef CHROME_TEST_CHROMEDRIVER_CHROME_NETWORK_CONDITIONS_H_
 #define CHROME_TEST_CHROMEDRIVER_CHROME_NETWORK_CONDITIONS_H_
 
+#include <memory>
 #include <string>
-#include "base/memory/scoped_ptr.h"
 
 class Status;
 

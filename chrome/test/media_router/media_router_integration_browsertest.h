@@ -129,7 +129,7 @@ class MediaRouterIntegrationBrowserTest : public MediaRouterBaseBrowserTest {
   base::FilePath GetResourceFile(
       base::FilePath::StringPieceType relative_path) const;
 
-  scoped_ptr<content::TestNavigationObserver> test_navigation_observer_;
+  std::unique_ptr<content::TestNavigationObserver> test_navigation_observer_;
 
   // Fields
   std::string receiver_;

@@ -5,8 +5,9 @@
 #ifndef CHROME_TEST_BASE_CHROME_TEST_LAUNCHER_H_
 #define CHROME_TEST_BASE_CHROME_TEST_LAUNCHER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/public/test/test_launcher.h"
 
 // Allows a test suite to override the TestSuite class used. By default it is an

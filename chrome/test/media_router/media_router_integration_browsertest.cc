@@ -126,7 +126,7 @@ void MediaRouterIntegrationBrowserTest::ExecuteJavaScriptAPI(
   // Read the test result, the test result set by javascript is a
   // JSON string with the following format:
   // {"passed": "<true/false>", "errorMessage": "<error_message>"}
-  scoped_ptr<base::Value> value =
+  std::unique_ptr<base::Value> value =
       base::JSONReader::Read(result, base::JSON_ALLOW_TRAILING_COMMAS);
 
   // Convert to dictionary.
@@ -229,7 +229,7 @@ void MediaRouterIntegrationBrowserTest::SetTestData(
   JSONFileValueDeserializer deserializer(full_path);
   int error_code = 0;
   std::string error_message;
-  scoped_ptr<base::Value> value =
+  std::unique_ptr<base::Value> value =
       deserializer.Deserialize(&error_code, &error_message);
   CHECK(value.get()) << "Deserialize failed: " << error_message;
   std::string test_data_str;

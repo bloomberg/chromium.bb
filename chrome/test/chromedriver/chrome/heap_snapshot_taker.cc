@@ -21,14 +21,14 @@ HeapSnapshotTaker::HeapSnapshotTaker(DevToolsClient* client)
 
 HeapSnapshotTaker::~HeapSnapshotTaker() {}
 
-Status HeapSnapshotTaker::TakeSnapshot(scoped_ptr<base::Value>* snapshot) {
+Status HeapSnapshotTaker::TakeSnapshot(std::unique_ptr<base::Value>* snapshot) {
   Status status1 = TakeSnapshotInternal();
   base::DictionaryValue params;
   Status status2 = client_->SendCommand("Debugger.disable", params);
 
   Status status3(kOk);
   if (status1.IsOk() && status2.IsOk()) {
-    scoped_ptr<base::Value> value = base::JSONReader::Read(snapshot_);
+    std::unique_ptr<base::Value> value = base::JSONReader::Read(snapshot_);
     if (!value) {
       status3 = Status(kUnknownError, "heap snapshot not in JSON format");
     } else {

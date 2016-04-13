@@ -46,7 +46,7 @@ class RecorderDevToolsClient : public StubDevToolsClient {
   Status SendCommandAndGetResult(
       const std::string& method,
       const base::DictionaryValue& params,
-      scoped_ptr<base::DictionaryValue>* result) override;
+      std::unique_ptr<base::DictionaryValue>* result) override;
 
   std::vector<Command> commands_;
 };

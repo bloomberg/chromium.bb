@@ -12,13 +12,13 @@
 #include "chrome/test/chromedriver/net/port_server.h"
 
 ChromeRemoteImpl::ChromeRemoteImpl(
-    scoped_ptr<DevToolsHttpClient> http_client,
-    scoped_ptr<DevToolsClient> websocket_client,
+    std::unique_ptr<DevToolsHttpClient> http_client,
+    std::unique_ptr<DevToolsClient> websocket_client,
     ScopedVector<DevToolsEventListener>& devtools_event_listeners)
     : ChromeImpl(std::move(http_client),
                  std::move(websocket_client),
                  devtools_event_listeners,
-                 scoped_ptr<PortReservation>()) {}
+                 std::unique_ptr<PortReservation>()) {}
 
 ChromeRemoteImpl::~ChromeRemoteImpl() {}
 

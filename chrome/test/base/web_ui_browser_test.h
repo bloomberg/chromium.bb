@@ -137,7 +137,7 @@ class WebUIBrowserTest : public JavaScriptBrowserTest {
   void SetupHandlers();
 
   // Handles test framework messages.
-  scoped_ptr<WebUITestHandler> test_handler_;
+  std::unique_ptr<WebUITestHandler> test_handler_;
 
   // Indicates that the libraries have been pre-loaded and to not load them
   // again.
@@ -152,7 +152,7 @@ class WebUIBrowserTest : public JavaScriptBrowserTest {
   // Otherwise the selected tab's web_ui is used.
   content::WebUI* override_selected_web_ui_;
 
-  scoped_ptr<TestChromeWebUIControllerFactory> test_factory_;
+  std::unique_ptr<TestChromeWebUIControllerFactory> test_factory_;
 };
 
 #endif  // CHROME_TEST_BASE_WEB_UI_BROWSER_TEST_H_

@@ -80,9 +80,9 @@ class ChromeUnitTestSuiteInitializer : public testing::EmptyTestEventListener {
 
  private:
   // Client implementations for the content module.
-  scoped_ptr<ChromeContentClient> content_client_;
-  scoped_ptr<ChromeContentBrowserClient> browser_content_client_;
-  scoped_ptr<ChromeContentUtilityClient> utility_content_client_;
+  std::unique_ptr<ChromeContentClient> content_client_;
+  std::unique_ptr<ChromeContentBrowserClient> browser_content_client_;
+  std::unique_ptr<ChromeContentUtilityClient> utility_content_client_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeUnitTestSuiteInitializer);
 };

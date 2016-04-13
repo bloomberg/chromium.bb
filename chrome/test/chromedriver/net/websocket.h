@@ -65,7 +65,7 @@ class WebSocket {
   GURL url_;
   WebSocketListener* listener_;
   State state_;
-  scoped_ptr<net::TCPClientSocket> socket_;
+  std::unique_ptr<net::TCPClientSocket> socket_;
 
   net::CompletionCallback connect_callback_;
   std::string sec_key_;

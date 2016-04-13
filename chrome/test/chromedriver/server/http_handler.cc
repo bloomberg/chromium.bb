@@ -5,6 +5,8 @@
 #include "chrome/test/chromedriver/server/http_handler.h"
 
 #include <stddef.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -13,7 +15,6 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"  // For CHECK macros.
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -51,7 +52,8 @@ void UnimplementedCommand(
     const base::DictionaryValue& params,
     const std::string& session_id,
     const CommandCallback& callback) {
-  callback.Run(Status(kUnknownCommand), scoped_ptr<base::Value>(), session_id);
+  callback.Run(Status(kUnknownCommand), std::unique_ptr<base::Value>(),
+               session_id);
 }
 
 }  // namespace
@@ -76,7 +78,7 @@ HttpHandler::HttpHandler(
     const scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     const std::string& url_base,
     int adb_port,
-    scoped_ptr<PortServer> port_server)
+    std::unique_ptr<PortServer> port_server)
     : quit_func_(quit_func),
       url_base_(url_base),
       received_shutdown_(false),
@@ -590,7 +592,7 @@ void HttpHandler::Handle(const net::HttpServerRequestInfo& request,
 
   std::string path = request.path;
   if (!base::StartsWith(path, url_base_, base::CompareCase::SENSITIVE)) {
-    scoped_ptr<net::HttpServerResponseInfo> response(
+    std::unique_ptr<net::HttpServerResponseInfo> response(
         new net::HttpServerResponseInfo(net::HTTP_BAD_REQUEST));
     response->SetBody("unhandled request", "text/plain");
     send_response_func.Run(std::move(response));
@@ -637,7 +639,7 @@ void HttpHandler::HandleCommand(
   CommandMap::const_iterator iter = command_map_->begin();
   while (true) {
     if (iter == command_map_->end()) {
-      scoped_ptr<net::HttpServerResponseInfo> response(
+      std::unique_ptr<net::HttpServerResponseInfo> response(
           new net::HttpServerResponseInfo(net::HTTP_NOT_FOUND));
       response->SetBody("unknown command: " + trimmed_path, "text/plain");
       send_response_func.Run(std::move(response));
@@ -652,9 +654,10 @@ void HttpHandler::HandleCommand(
 
   if (request.data.length()) {
     base::DictionaryValue* body_params;
-    scoped_ptr<base::Value> parsed_body = base::JSONReader::Read(request.data);
+    std::unique_ptr<base::Value> parsed_body =
+        base::JSONReader::Read(request.data);
     if (!parsed_body || !parsed_body->GetAsDictionary(&body_params)) {
-      scoped_ptr<net::HttpServerResponseInfo> response(
+      std::unique_ptr<net::HttpServerResponseInfo> response(
           new net::HttpServerResponseInfo(net::HTTP_BAD_REQUEST));
       response->SetBody("missing command parameters", "text/plain");
       send_response_func.Run(std::move(response));
@@ -675,23 +678,23 @@ void HttpHandler::PrepareResponse(
     const std::string& trimmed_path,
     const HttpResponseSenderFunc& send_response_func,
     const Status& status,
-    scoped_ptr<base::Value> value,
+    std::unique_ptr<base::Value> value,
     const std::string& session_id) {
   CHECK(thread_checker_.CalledOnValidThread());
-  scoped_ptr<net::HttpServerResponseInfo> response =
+  std::unique_ptr<net::HttpServerResponseInfo> response =
       PrepareResponseHelper(trimmed_path, status, std::move(value), session_id);
   send_response_func.Run(std::move(response));
   if (trimmed_path == kShutdownPath)
     quit_func_.Run();
 }
 
-scoped_ptr<net::HttpServerResponseInfo> HttpHandler::PrepareResponseHelper(
+std::unique_ptr<net::HttpServerResponseInfo> HttpHandler::PrepareResponseHelper(
     const std::string& trimmed_path,
     const Status& status,
-    scoped_ptr<base::Value> value,
+    std::unique_ptr<base::Value> value,
     const std::string& session_id) {
   if (status.code() == kUnknownCommand) {
-    scoped_ptr<net::HttpServerResponseInfo> response(
+    std::unique_ptr<net::HttpServerResponseInfo> response(
         new net::HttpServerResponseInfo(net::HTTP_NOT_IMPLEMENTED));
     response->SetBody("unimplemented command: " + trimmed_path, "text/plain");
     return response;
@@ -705,7 +708,7 @@ scoped_ptr<net::HttpServerResponseInfo> HttpHandler::PrepareResponseHelper(
         base::SysInfo::OperatingSystemName().c_str(),
         base::SysInfo::OperatingSystemVersion().c_str(),
         base::SysInfo::OperatingSystemArchitecture().c_str()));
-    scoped_ptr<base::DictionaryValue> error(new base::DictionaryValue());
+    std::unique_ptr<base::DictionaryValue> error(new base::DictionaryValue());
     error->SetString("message", full_status.message());
     value.reset(error.release());
   }
@@ -720,7 +723,7 @@ scoped_ptr<net::HttpServerResponseInfo> HttpHandler::PrepareResponseHelper(
   base::JSONWriter::WriteWithOptions(
       body_params, base::JSONWriter::OPTIONS_OMIT_DOUBLE_TYPE_PRESERVATION,
       &body);
-  scoped_ptr<net::HttpServerResponseInfo> response(
+  std::unique_ptr<net::HttpServerResponseInfo> response(
       new net::HttpServerResponseInfo(net::HTTP_OK));
   response->SetBody(body, "application/json; charset=utf-8");
   return response;

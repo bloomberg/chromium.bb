@@ -5,10 +5,10 @@
 #ifndef CHROME_TEST_CHROMEDRIVER_CHROME_CHROME_REMOTE_IMPL_H_
 #define CHROME_TEST_CHROMEDRIVER_CHROME_CHROME_REMOTE_IMPL_H_
 
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/test/chromedriver/chrome/chrome_impl.h"
 
 class DevToolsClient;
@@ -17,8 +17,8 @@ class DevToolsHttpClient;
 class ChromeRemoteImpl : public ChromeImpl {
  public:
   ChromeRemoteImpl(
-      scoped_ptr<DevToolsHttpClient> http_client,
-      scoped_ptr<DevToolsClient> websocket_client,
+      std::unique_ptr<DevToolsHttpClient> http_client,
+      std::unique_ptr<DevToolsClient> websocket_client,
       ScopedVector<DevToolsEventListener>& devtools_event_listeners);
   ~ChromeRemoteImpl() override;
 

@@ -306,7 +306,7 @@ class NaClBrowserTestPnaclDebug : public NaClBrowserTestPnacl {
 
   void RunWithTestDebugger(const base::FilePath::StringType& test_url) {
     base::Process test_script;
-    scoped_ptr<base::Environment> env(base::Environment::Create());
+    std::unique_ptr<base::Environment> env(base::Environment::Create());
     nacl::NaClBrowser::GetInstance()->SetGdbDebugStubPortListener(
         base::Bind(&NaClBrowserTestPnaclDebug::StartTestScript,
                    base::Unretained(this), &test_script));

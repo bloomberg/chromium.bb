@@ -6,13 +6,13 @@
 #define CHROME_TEST_CHROMEDRIVER_CHROME_DEVICE_MANAGER_H_
 
 #include <list>
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 
 class Adb;
@@ -58,12 +58,12 @@ class DeviceManager {
   ~DeviceManager();
 
   // Returns a device which will not be reassigned during its lifetime.
-  Status AcquireDevice(scoped_ptr<Device>* device);
+  Status AcquireDevice(std::unique_ptr<Device>* device);
 
   // Returns a device with the same guarantees as AcquireDevice, but fails
   // if the device with the given serial number is not avaliable.
   Status AcquireSpecificDevice(const std::string& device_serial,
-                               scoped_ptr<Device>* device);
+                               std::unique_ptr<Device>* device);
 
  private:
   void ReleaseDevice(const std::string& device_serial);

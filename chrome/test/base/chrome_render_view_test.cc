@@ -6,6 +6,7 @@
 
 #include "base/debug/leak_annotations.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/common/chrome_content_client.h"
@@ -141,9 +142,8 @@ ChromeRenderViewTest::CreateContentRendererClient() {
       new ChromeExtensionsDispatcherDelegate());
   ChromeExtensionsRendererClient* ext_client =
       ChromeExtensionsRendererClient::GetInstance();
-  ext_client->SetExtensionDispatcherForTest(
-      make_scoped_ptr(
-          new extensions::Dispatcher(extension_dispatcher_delegate_.get())));
+  ext_client->SetExtensionDispatcherForTest(base::WrapUnique(
+      new extensions::Dispatcher(extension_dispatcher_delegate_.get())));
 #endif
 #if defined(ENABLE_SPELLCHECK)
   client->SetSpellcheck(new SpellCheck());

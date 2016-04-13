@@ -31,7 +31,7 @@ const char kOldInspectorContextError[] =
     "Execution context with given id not found.";
 
 Status ParseInspectorError(const std::string& error_json) {
-  scoped_ptr<base::Value> error = base::JSONReader::Read(error_json);
+  std::unique_ptr<base::Value> error = base::JSONReader::Read(error_json);
   base::DictionaryValue* error_dict;
   if (!error || !error->GetAsDictionary(&error_dict))
     return Status(kUnknownError, "inspector error with no error message");
@@ -171,22 +171,22 @@ Status DevToolsClientImpl::ConnectIfNecessary() {
 Status DevToolsClientImpl::SendCommand(
     const std::string& method,
     const base::DictionaryValue& params) {
-  scoped_ptr<base::DictionaryValue> result;
+  std::unique_ptr<base::DictionaryValue> result;
   return SendCommandInternal(method, params, &result, true);
 }
 
 Status DevToolsClientImpl::SendAsyncCommand(
     const std::string& method,
     const base::DictionaryValue& params) {
-  scoped_ptr<base::DictionaryValue> result;
+  std::unique_ptr<base::DictionaryValue> result;
   return SendCommandInternal(method, params, &result, false);
 }
 
 Status DevToolsClientImpl::SendCommandAndGetResult(
     const std::string& method,
     const base::DictionaryValue& params,
-    scoped_ptr<base::DictionaryValue>* result) {
-  scoped_ptr<base::DictionaryValue> intermediate_result;
+    std::unique_ptr<base::DictionaryValue>* result) {
+  std::unique_ptr<base::DictionaryValue> intermediate_result;
   Status status = SendCommandInternal(
       method, params, &intermediate_result, true);
   if (status.IsError())
@@ -238,7 +238,7 @@ DevToolsClientImpl::ResponseInfo::~ResponseInfo() {}
 Status DevToolsClientImpl::SendCommandInternal(
     const std::string& method,
     const base::DictionaryValue& params,
-    scoped_ptr<base::DictionaryValue>* result,
+    std::unique_ptr<base::DictionaryValue>* result,
     bool wait_for_response) {
   if (!socket_->IsConnected())
     return Status(kDisconnected, "not connected to DevTools");
@@ -474,7 +474,7 @@ bool ParseInspectorMessage(
     InspectorMessageType* type,
     InspectorEvent* event,
     InspectorCommandResponse* command_response) {
-  scoped_ptr<base::Value> message_value = base::JSONReader::Read(message);
+  std::unique_ptr<base::Value> message_value = base::JSONReader::Read(message);
   base::DictionaryValue* message_dict;
   if (!message_value || !message_value->GetAsDictionary(&message_dict))
     return false;

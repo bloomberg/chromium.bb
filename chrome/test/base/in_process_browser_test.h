@@ -5,10 +5,11 @@
 #ifndef CHROME_TEST_BASE_IN_PROCESS_BROWSER_TEST_H_
 #define CHROME_TEST_BASE_IN_PROCESS_BROWSER_TEST_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test.h"
@@ -249,11 +250,11 @@ class InProcessBrowserTest : public content::BrowserTestBase {
 
 #if defined(OS_MACOSX)
   base::mac::ScopedNSAutoreleasePool* autorelease_pool_;
-  scoped_ptr<ScopedBundleSwizzlerMac> bundle_swizzler_;
+  std::unique_ptr<ScopedBundleSwizzlerMac> bundle_swizzler_;
 #endif  // OS_MACOSX
 
 #if defined(OS_WIN)
-  scoped_ptr<base::win::ScopedCOMInitializer> com_initializer_;
+  std::unique_ptr<base::win::ScopedCOMInitializer> com_initializer_;
 #endif
 };
 

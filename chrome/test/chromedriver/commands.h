@@ -5,11 +5,11 @@
 #ifndef CHROME_TEST_CHROMEDRIVER_COMMANDS_H_
 #define CHROME_TEST_CHROMEDRIVER_COMMANDS_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/test/chromedriver/command.h"
 #include "chrome/test/chromedriver/session_thread_map.h"
 
@@ -51,10 +51,10 @@ void ExecuteQuitAll(
     const std::string& session_id,
     const CommandCallback& callback);
 
-typedef base::Callback<Status(
-    Session* session,
-    const base::DictionaryValue&,
-    scoped_ptr<base::Value>*)> SessionCommand;
+typedef base::Callback<Status(Session* session,
+                              const base::DictionaryValue&,
+                              std::unique_ptr<base::Value>*)>
+    SessionCommand;
 
 // Executes a given session command, after acquiring access to the appropriate
 // session.

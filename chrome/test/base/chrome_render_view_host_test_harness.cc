@@ -25,7 +25,7 @@ using content::RenderViewHostTestHarness;
 
 namespace {
 
-scoped_ptr<KeyedService> BuildSigninManagerFake(
+std::unique_ptr<KeyedService> BuildSigninManagerFake(
     content::BrowserContext* context) {
   Profile* profile = static_cast<Profile*>(context);
   SigninClient* signin_client =
@@ -33,12 +33,12 @@ scoped_ptr<KeyedService> BuildSigninManagerFake(
   AccountTrackerService* account_tracker_service =
       AccountTrackerServiceFactory::GetForProfile(profile);
 #if defined (OS_CHROMEOS)
-  scoped_ptr<SigninManagerBase> signin(
+  std::unique_ptr<SigninManagerBase> signin(
       new SigninManagerBase(signin_client, account_tracker_service));
   signin->Initialize(NULL);
   return std::move(signin);
 #else
-  scoped_ptr<FakeSigninManager> manager(new FakeSigninManager(
+  std::unique_ptr<FakeSigninManager> manager(new FakeSigninManager(
       signin_client, ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
       account_tracker_service,
       GaiaCookieManagerServiceFactory::GetForProfile(profile)));

@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <ios>
+#include <memory>
 
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
@@ -17,7 +18,6 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/test/base/test_switches.h"
 #include "chrome/test/logging/win/file_logger.h"
@@ -124,7 +124,7 @@ class TestLogCollector {
 
    private:
     TestLogCollector* test_log_collector_;
-    scoped_ptr<testing::TestEventListener> default_result_printer_;
+    std::unique_ptr<testing::TestEventListener> default_result_printer_;
 
     DISALLOW_COPY_AND_ASSIGN(EventListener);
   };
@@ -138,7 +138,7 @@ class TestLogCollector {
 
   // The test logger.  Initialized/Unintitialized at collector SetUp and
   // TearDown.
-  scoped_ptr<FileLogger> file_logger_;
+  std::unique_ptr<FileLogger> file_logger_;
 
   // The current log file.  Valid only during a test.
   base::FilePath log_file_;

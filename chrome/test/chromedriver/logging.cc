@@ -147,8 +147,8 @@ WebDriverLog::~WebDriverLog() {
           << entries_->GetSize() << " entries on destruction";
 }
 
-scoped_ptr<base::ListValue> WebDriverLog::GetAndClearEntries() {
-  scoped_ptr<base::ListValue> ret(entries_.release());
+std::unique_ptr<base::ListValue> WebDriverLog::GetAndClearEntries() {
+  std::unique_ptr<base::ListValue> ret(entries_.release());
   entries_.reset(new base::ListValue());
   return ret;
 }
@@ -180,7 +180,8 @@ void WebDriverLog::AddEntryTimestamped(const base::Time& timestamp,
   if (level < min_level_)
     return;
 
-  scoped_ptr<base::DictionaryValue> log_entry_dict(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> log_entry_dict(
+      new base::DictionaryValue());
   log_entry_dict->SetDouble("timestamp",
                             static_cast<int64_t>(timestamp.ToJsTime()));
   log_entry_dict->SetString("level", LevelToName(level));

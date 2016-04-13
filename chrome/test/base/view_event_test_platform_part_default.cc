@@ -5,7 +5,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/test/base/view_event_test_platform_part.h"
 #include "ui/aura/env.h"
 #include "ui/gfx/screen.h"

@@ -63,7 +63,7 @@ class TestChromeWebUIControllerFactoryTest : public InProcessBrowserTest {
 
  protected:
   StrictMock<MockWebUIProvider> mock_provider_;
-  scoped_ptr<TestChromeWebUIControllerFactory> test_factory_;
+  std::unique_ptr<TestChromeWebUIControllerFactory> test_factory_;
 };
 
 }  // namespace

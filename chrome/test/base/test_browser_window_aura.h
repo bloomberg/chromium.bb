@@ -12,7 +12,7 @@
 // A browser window proxy with an associated Aura native window.
 class TestBrowserWindowAura : public TestBrowserWindow {
  public:
-  explicit TestBrowserWindowAura(scoped_ptr<aura::Window> native_window);
+  explicit TestBrowserWindowAura(std::unique_ptr<aura::Window> native_window);
   ~TestBrowserWindowAura() override;
 
   // TestBrowserWindow overrides:
@@ -21,11 +21,11 @@ class TestBrowserWindowAura : public TestBrowserWindow {
   void Hide() override;
   gfx::Rect GetBounds() const override;
 
-  scoped_ptr<Browser> CreateBrowser(Browser::CreateParams* params);
+  std::unique_ptr<Browser> CreateBrowser(Browser::CreateParams* params);
 
  private:
   Browser* browser_;  // not owned
-  scoped_ptr<aura::Window> native_window_;
+  std::unique_ptr<aura::Window> native_window_;
 
   DISALLOW_COPY_AND_ASSIGN(TestBrowserWindowAura);
 };
@@ -35,8 +35,8 @@ namespace chrome {
 // Helper that creates a browser with a native Aura |window|. If |window| is
 // nullptr, it will create an Aura window to associate with the browser. It also
 // handles the lifetime of TestBrowserWindowAura.
-scoped_ptr<Browser> CreateBrowserWithAuraTestWindowForParams(
-    scoped_ptr<aura::Window> window,
+std::unique_ptr<Browser> CreateBrowserWithAuraTestWindowForParams(
+    std::unique_ptr<aura::Window> window,
     Browser::CreateParams* params);
 
 }  // namespace chrome

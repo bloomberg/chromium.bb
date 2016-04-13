@@ -6,11 +6,11 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <utility>
 
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -37,13 +37,14 @@ void TruncateString(std::string* data) {
   }
 }
 
-scoped_ptr<base::Value> SmartDeepCopy(const base::Value* value) {
+std::unique_ptr<base::Value> SmartDeepCopy(const base::Value* value) {
   const size_t kMaxChildren = 20;
   const base::ListValue* list = NULL;
   const base::DictionaryValue* dict = NULL;
   std::string data;
   if (value->GetAsDictionary(&dict)) {
-    scoped_ptr<base::DictionaryValue> dict_copy(new base::DictionaryValue());
+    std::unique_ptr<base::DictionaryValue> dict_copy(
+        new base::DictionaryValue());
     for (base::DictionaryValue::Iterator it(*dict); !it.IsAtEnd();
          it.Advance()) {
       if (dict_copy->size() >= kMaxChildren - 1) {
@@ -57,7 +58,7 @@ scoped_ptr<base::Value> SmartDeepCopy(const base::Value* value) {
     }
     return std::move(dict_copy);
   } else if (value->GetAsList(&list)) {
-    scoped_ptr<base::ListValue> list_copy(new base::ListValue());
+    std::unique_ptr<base::ListValue> list_copy(new base::ListValue());
     for (size_t i = 0; i < list->GetSize(); ++i) {
       const base::Value* child = NULL;
       if (!list->Get(i, &child))
@@ -71,9 +72,9 @@ scoped_ptr<base::Value> SmartDeepCopy(const base::Value* value) {
     return std::move(list_copy);
   } else if (value->GetAsString(&data)) {
     TruncateString(&data);
-    return scoped_ptr<base::Value>(new base::StringValue(data));
+    return std::unique_ptr<base::Value>(new base::StringValue(data));
   }
-  return scoped_ptr<base::Value>(value->DeepCopy());
+  return std::unique_ptr<base::Value>(value->DeepCopy());
 }
 
 }  // namespace
@@ -102,12 +103,12 @@ std::string PrettyPrintValue(const base::Value& value) {
 }
 
 std::string FormatValueForDisplay(const base::Value& value) {
-  scoped_ptr<base::Value> copy(SmartDeepCopy(&value));
+  std::unique_ptr<base::Value> copy(SmartDeepCopy(&value));
   return PrettyPrintValue(*copy);
 }
 
 std::string FormatJsonForDisplay(const std::string& json) {
-  scoped_ptr<base::Value> value = base::JSONReader::Read(json);
+  std::unique_ptr<base::Value> value = base::JSONReader::Read(json);
   if (!value)
     value.reset(new base::StringValue(json));
   return FormatValueForDisplay(*value);

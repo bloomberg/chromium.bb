@@ -5,10 +5,10 @@
 #ifndef CHROME_TEST_CHROMEDRIVER_CHROME_AUTOMATION_EXTENSION_H_
 #define CHROME_TEST_CHROMEDRIVER_CHROME_AUTOMATION_EXTENSION_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace base {
 class DictionaryValue;
@@ -20,7 +20,7 @@ class WebView;
 // Automates Chrome through the extension APIs.
 class AutomationExtension {
  public:
-  explicit AutomationExtension(scoped_ptr<WebView> web_view);
+  explicit AutomationExtension(std::unique_ptr<WebView> web_view);
   ~AutomationExtension();
 
   // Captures the visible part of the current tab as a base64-encoded PNG.
@@ -49,7 +49,7 @@ class AutomationExtension {
   Status GetWindowInfo(int* x, int* y, int* width, int* height);
   Status UpdateWindow(const base::DictionaryValue& update_info);
 
-  scoped_ptr<WebView> web_view_;
+  std::unique_ptr<WebView> web_view_;
 
   DISALLOW_COPY_AND_ASSIGN(AutomationExtension);
 };

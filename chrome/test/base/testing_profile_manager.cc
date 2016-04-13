@@ -60,7 +60,7 @@ bool TestingProfileManager::SetUp() {
 
 TestingProfile* TestingProfileManager::CreateTestingProfile(
     const std::string& profile_name,
-    scoped_ptr<syncable_prefs::PrefServiceSyncable> prefs,
+    std::unique_ptr<syncable_prefs::PrefServiceSyncable> prefs,
     const base::string16& user_name,
     int avatar_id,
     const std::string& supervised_user_id,
@@ -114,10 +114,10 @@ TestingProfile* TestingProfileManager::CreateTestingProfile(
 TestingProfile* TestingProfileManager::CreateTestingProfile(
     const std::string& name) {
   DCHECK(called_set_up_);
-  return CreateTestingProfile(name,
-                              scoped_ptr<syncable_prefs::PrefServiceSyncable>(),
-                              base::UTF8ToUTF16(name), 0, std::string(),
-                              TestingProfile::TestingFactories());
+  return CreateTestingProfile(
+      name, std::unique_ptr<syncable_prefs::PrefServiceSyncable>(),
+      base::UTF8ToUTF16(name), 0, std::string(),
+      TestingProfile::TestingFactories());
 }
 
 TestingProfile* TestingProfileManager::CreateGuestProfile() {

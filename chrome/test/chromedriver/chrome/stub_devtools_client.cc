@@ -28,7 +28,7 @@ Status StubDevToolsClient::ConnectIfNecessary() {
 Status StubDevToolsClient::SendCommand(
     const std::string& method,
     const base::DictionaryValue& params) {
-  scoped_ptr<base::DictionaryValue> result;
+  std::unique_ptr<base::DictionaryValue> result;
   return SendCommandAndGetResult(method, params, &result);
 }
 
@@ -39,9 +39,9 @@ Status StubDevToolsClient::SendAsyncCommand(
 }
 
 Status StubDevToolsClient::SendCommandAndGetResult(
-      const std::string& method,
-      const base::DictionaryValue& params,
-      scoped_ptr<base::DictionaryValue>* result) {
+    const std::string& method,
+    const base::DictionaryValue& params,
+    std::unique_ptr<base::DictionaryValue>* result) {
   result->reset(new base::DictionaryValue());
   return Status(kOk);
 }

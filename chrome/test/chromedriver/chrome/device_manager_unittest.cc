@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/test/chromedriver/chrome/device_manager.h"
+
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/test/chromedriver/chrome/adb.h"
-#include "chrome/test/chromedriver/chrome/device_manager.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -77,9 +78,9 @@ class FakeAdb : public Adb {
 TEST(DeviceManager, AcquireDevice) {
   FakeAdb adb;
   DeviceManager device_manager(&adb);
-  scoped_ptr<Device> device1;
-  scoped_ptr<Device> device2;
-  scoped_ptr<Device> device3;
+  std::unique_ptr<Device> device1;
+  std::unique_ptr<Device> device2;
+  std::unique_ptr<Device> device3;
   ASSERT_TRUE(device_manager.AcquireDevice(&device1).IsOk());
   ASSERT_TRUE(device_manager.AcquireDevice(&device2).IsOk());
   ASSERT_FALSE(device_manager.AcquireDevice(&device3).IsOk());
@@ -91,9 +92,9 @@ TEST(DeviceManager, AcquireDevice) {
 TEST(DeviceManager, AcquireSpecificDevice) {
   FakeAdb adb;
   DeviceManager device_manager(&adb);
-  scoped_ptr<Device> device1;
-  scoped_ptr<Device> device2;
-  scoped_ptr<Device> device3;
+  std::unique_ptr<Device> device1;
+  std::unique_ptr<Device> device2;
+  std::unique_ptr<Device> device3;
   ASSERT_TRUE(device_manager.AcquireSpecificDevice("a", &device1).IsOk());
   ASSERT_FALSE(device_manager.AcquireSpecificDevice("a", &device2).IsOk());
   ASSERT_TRUE(device_manager.AcquireSpecificDevice("b", &device3).IsOk());
@@ -106,7 +107,7 @@ TEST(DeviceManager, AcquireSpecificDevice) {
 TEST(Device, StartStopApp) {
   FakeAdb adb;
   DeviceManager device_manager(&adb);
-  scoped_ptr<Device> device1;
+  std::unique_ptr<Device> device1;
   ASSERT_TRUE(device_manager.AcquireDevice(&device1).IsOk());
   ASSERT_TRUE(device1->TearDown().IsOk());
   ASSERT_TRUE(device1->SetUp("a.chrome.package", "", "", "", false, 0).IsOk());

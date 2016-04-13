@@ -2,16 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/test/chromedriver/server/http_handler.h"
+
+#include <memory>
 #include <string>
 
 #include "base/bind.h"
 #include "base/json/json_writer.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/chrome/log.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/command.h"
-#include "chrome/test/chromedriver/server/http_handler.h"
 #include "net/http/http_status_code.h"
 #include "net/server/http_server_request_info.h"
 #include "net/server/http_server_response_info.h"
@@ -25,12 +26,12 @@ void DummyCommand(
     const std::string& session_id,
     const CommandCallback& callback) {
   callback.Run(status,
-               scoped_ptr<base::Value>(new base::FundamentalValue(1)),
+               std::unique_ptr<base::Value>(new base::FundamentalValue(1)),
                "session_id");
 }
 
 void OnResponse(net::HttpServerResponseInfo* response_to_set,
-                scoped_ptr<net::HttpServerResponseInfo> response) {
+                std::unique_ptr<net::HttpServerResponseInfo> response) {
   *response_to_set = *response;
 }
 

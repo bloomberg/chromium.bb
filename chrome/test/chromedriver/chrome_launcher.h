@@ -5,11 +5,11 @@
 #ifndef CHROME_TEST_CHROMEDRIVER_CHROME_LAUNCHER_H_
 #define CHROME_TEST_CHROMEDRIVER_CHROME_LAUNCHER_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/files/file_path.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "chrome/test/chromedriver/capabilities.h"
 #include "chrome/test/chromedriver/net/sync_websocket_factory.h"
@@ -36,7 +36,7 @@ Status LaunchChrome(
     PortManager* port_manager,
     const Capabilities& capabilities,
     ScopedVector<DevToolsEventListener>* devtools_event_listeners,
-    scoped_ptr<Chrome>* chrome);
+    std::unique_ptr<Chrome>* chrome);
 
 namespace internal {
 Status ProcessExtensions(const std::vector<std::string>& extensions,

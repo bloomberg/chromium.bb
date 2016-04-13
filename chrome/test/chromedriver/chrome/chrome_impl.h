@@ -6,11 +6,11 @@
 #define CHROME_TEST_CHROMEDRIVER_CHROME_CHROME_IMPL_H_
 
 #include <list>
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/memory/linked_ptr.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "chrome/test/chromedriver/chrome/chrome.h"
 
@@ -43,17 +43,16 @@ class ChromeImpl : public Chrome {
   Status Quit() override;
 
  protected:
-  ChromeImpl(
-      scoped_ptr<DevToolsHttpClient> http_client,
-      scoped_ptr<DevToolsClient> websocket_client,
-      ScopedVector<DevToolsEventListener>& devtools_event_listeners,
-      scoped_ptr<PortReservation> port_reservation);
+  ChromeImpl(std::unique_ptr<DevToolsHttpClient> http_client,
+             std::unique_ptr<DevToolsClient> websocket_client,
+             ScopedVector<DevToolsEventListener>& devtools_event_listeners,
+             std::unique_ptr<PortReservation> port_reservation);
 
   virtual Status QuitImpl() = 0;
 
   bool quit_;
-  scoped_ptr<DevToolsHttpClient> devtools_http_client_;
-  scoped_ptr<DevToolsClient> devtools_websocket_client_;
+  std::unique_ptr<DevToolsHttpClient> devtools_http_client_;
+  std::unique_ptr<DevToolsClient> devtools_websocket_client_;
 
  private:
   typedef std::list<linked_ptr<WebViewImpl> > WebViewList;
@@ -61,7 +60,7 @@ class ChromeImpl : public Chrome {
   // Web views in this list are in the same order as they are opened.
   WebViewList web_views_;
   ScopedVector<DevToolsEventListener> devtools_event_listeners_;
-  scoped_ptr<PortReservation> port_reservation_;
+  std::unique_ptr<PortReservation> port_reservation_;
 };
 
 #endif  // CHROME_TEST_CHROMEDRIVER_CHROME_CHROME_IMPL_H_

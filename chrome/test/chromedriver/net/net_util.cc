@@ -4,10 +4,11 @@
 
 #include "chrome/test/chromedriver/net/net_util.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
@@ -54,7 +55,7 @@ class SyncUrlFetcher : public net::URLFetcherDelegate {
   URLRequestContextGetter* getter_;
   std::string* response_;
   base::WaitableEvent event_;
-  scoped_ptr<net::URLFetcher> fetcher_;
+  std::unique_ptr<net::URLFetcher> fetcher_;
   bool success_;
 };
 

@@ -70,7 +70,7 @@ Status ParseFilePath(base::FilePath* to_set,
   return Status(kOk);
 }
 
-Status ParseDict(scoped_ptr<base::DictionaryValue>* to_set,
+Status ParseDict(std::unique_ptr<base::DictionaryValue>* to_set,
                  const base::Value& option,
                  Capabilities* capabilities) {
   const base::DictionaryValue* dict = NULL;
@@ -100,7 +100,7 @@ Status ParseLogPath(const base::Value& option, Capabilities* capabilities) {
 
 Status ParseDeviceName(const std::string& device_name,
                        Capabilities* capabilities) {
-  scoped_ptr<MobileDevice> device;
+  std::unique_ptr<MobileDevice> device;
   Status status = FindMobileDevice(device_name, &device);
 
   if (status.IsError()) {
@@ -165,7 +165,7 @@ Status ParseMobileEmulation(const base::Value& option,
     DeviceMetrics* device_metrics =
         new DeviceMetrics(width, height, device_scale_factor, touch, mobile);
     capabilities->device_metrics =
-        scoped_ptr<DeviceMetrics>(device_metrics);
+        std::unique_ptr<DeviceMetrics>(device_metrics);
   }
 
   if (mobile_emulation->HasKey("userAgent")) {

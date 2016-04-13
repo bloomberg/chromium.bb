@@ -73,8 +73,8 @@ InitSessionParams::~InitSessionParams() {}
 
 namespace {
 
-scoped_ptr<base::DictionaryValue> CreateCapabilities(Chrome* chrome) {
-  scoped_ptr<base::DictionaryValue> caps(new base::DictionaryValue());
+std::unique_ptr<base::DictionaryValue> CreateCapabilities(Chrome* chrome) {
+  std::unique_ptr<base::DictionaryValue> caps(new base::DictionaryValue());
   caps->SetString("browserName", "chrome");
   caps->SetString("version", chrome->GetBrowserInfo()->browser_version);
   caps->SetString("chrome.chromedriverVersion", kChromeDriverVersion);
@@ -117,7 +117,7 @@ Status CheckSessionCreated(Session* session) {
     return Status(kSessionNotCreatedException, status);
 
   base::ListValue args;
-  scoped_ptr<base::Value> result(new base::FundamentalValue(0));
+  std::unique_ptr<base::Value> result(new base::FundamentalValue(0));
   status = web_view->CallFunction(session->GetCurrentFrameId(),
                                   "function(s) { return 1; }", args, &result);
   if (status.IsError())
@@ -132,11 +132,10 @@ Status CheckSessionCreated(Session* session) {
   return Status(kOk);
 }
 
-Status InitSessionHelper(
-    const InitSessionParams& bound_params,
-    Session* session,
-    const base::DictionaryValue& params,
-    scoped_ptr<base::Value>* value) {
+Status InitSessionHelper(const InitSessionParams& bound_params,
+                         Session* session,
+                         const base::DictionaryValue& params,
+                         std::unique_ptr<base::Value>* value) {
   session->driver_log.reset(
       new WebDriverLog(WebDriverLog::kDriverType, Log::kAll));
   const base::DictionaryValue* desired_caps;
@@ -197,11 +196,10 @@ Status InitSessionHelper(
 
 }  // namespace
 
-Status ExecuteInitSession(
-    const InitSessionParams& bound_params,
-    Session* session,
-    const base::DictionaryValue& params,
-    scoped_ptr<base::Value>* value) {
+Status ExecuteInitSession(const InitSessionParams& bound_params,
+                          Session* session,
+                          const base::DictionaryValue& params,
+                          std::unique_ptr<base::Value>* value) {
   Status status = InitSessionHelper(bound_params, session, params, value);
   if (status.IsError()) {
     session->quit = true;
@@ -211,11 +209,10 @@ Status ExecuteInitSession(
   return status;
 }
 
-Status ExecuteQuit(
-    bool allow_detach,
-    Session* session,
-    const base::DictionaryValue& params,
-    scoped_ptr<base::Value>* value) {
+Status ExecuteQuit(bool allow_detach,
+                   Session* session,
+                   const base::DictionaryValue& params,
+                   std::unique_ptr<base::Value>* value) {
   session->quit = true;
   if (allow_detach && session->detach)
     return Status(kOk);
@@ -223,18 +220,16 @@ Status ExecuteQuit(
     return session->chrome->Quit();
 }
 
-Status ExecuteGetSessionCapabilities(
-    Session* session,
-    const base::DictionaryValue& params,
-    scoped_ptr<base::Value>* value) {
+Status ExecuteGetSessionCapabilities(Session* session,
+                                     const base::DictionaryValue& params,
+                                     std::unique_ptr<base::Value>* value) {
   value->reset(session->capabilities->DeepCopy());
   return Status(kOk);
 }
 
-Status ExecuteGetCurrentWindowHandle(
-    Session* session,
-    const base::DictionaryValue& params,
-    scoped_ptr<base::Value>* value) {
+Status ExecuteGetCurrentWindowHandle(Session* session,
+                                     const base::DictionaryValue& params,
+                                     std::unique_ptr<base::Value>* value) {
   WebView* web_view = NULL;
   Status status = session->GetTargetWindow(&web_view);
   if (status.IsError())
@@ -245,10 +240,9 @@ Status ExecuteGetCurrentWindowHandle(
   return Status(kOk);
 }
 
-Status ExecuteLaunchApp(
-    Session* session,
-    const base::DictionaryValue& params,
-    scoped_ptr<base::Value>* value) {
+Status ExecuteLaunchApp(Session* session,
+                        const base::DictionaryValue& params,
+                        std::unique_ptr<base::Value>* value) {
   std::string id;
   if (!params.GetString("id", &id))
     return Status(kUnknownError, "'id' must be a string");
@@ -266,10 +260,9 @@ Status ExecuteLaunchApp(
   return extension->LaunchApp(id);
 }
 
-Status ExecuteClose(
-    Session* session,
-    const base::DictionaryValue& params,
-    scoped_ptr<base::Value>* value) {
+Status ExecuteClose(Session* session,
+                    const base::DictionaryValue& params,
+                    std::unique_ptr<base::Value>* value) {
   std::list<std::string> web_view_ids;
   Status status = session->chrome->GetWebViewIds(&web_view_ids);
   if (status.IsError())
@@ -297,15 +290,14 @@ Status ExecuteClose(
   return status;
 }
 
-Status ExecuteGetWindowHandles(
-    Session* session,
-    const base::DictionaryValue& params,
-    scoped_ptr<base::Value>* value) {
+Status ExecuteGetWindowHandles(Session* session,
+                               const base::DictionaryValue& params,
+                               std::unique_ptr<base::Value>* value) {
   std::list<std::string> web_view_ids;
   Status status = session->chrome->GetWebViewIds(&web_view_ids);
   if (status.IsError())
     return status;
-  scoped_ptr<base::ListValue> window_ids(new base::ListValue());
+  std::unique_ptr<base::ListValue> window_ids(new base::ListValue());
   for (std::list<std::string>::const_iterator it = web_view_ids.begin();
        it != web_view_ids.end(); ++it) {
     window_ids->AppendString(WebViewIdToWindowHandle(*it));
@@ -314,10 +306,9 @@ Status ExecuteGetWindowHandles(
   return Status(kOk);
 }
 
-Status ExecuteSwitchToWindow(
-    Session* session,
-    const base::DictionaryValue& params,
-    scoped_ptr<base::Value>* value) {
+Status ExecuteSwitchToWindow(Session* session,
+                             const base::DictionaryValue& params,
+                             std::unique_ptr<base::Value>* value) {
   std::string name;
   if (!params.GetString("name", &name))
     return Status(kUnknownError, "'name' must be a string");
@@ -344,7 +335,7 @@ Status ExecuteSwitchToWindow(
     base::ListValue args;
     for (std::list<std::string>::const_iterator it = web_view_ids.begin();
          it != web_view_ids.end(); ++it) {
-      scoped_ptr<base::Value> result;
+      std::unique_ptr<base::Value> result;
       WebView* web_view;
       status = session->chrome->GetWebViewById(*it, &web_view);
       if (status.IsError())
@@ -403,10 +394,9 @@ Status ExecuteSwitchToWindow(
   return Status(kOk);
 }
 
-Status ExecuteSetTimeout(
-    Session* session,
-    const base::DictionaryValue& params,
-    scoped_ptr<base::Value>* value) {
+Status ExecuteSetTimeout(Session* session,
+                         const base::DictionaryValue& params,
+                         std::unique_ptr<base::Value>* value) {
   double ms_double;
   if (!params.GetDouble("ms", &ms_double))
     return Status(kUnknownError, "'ms' must be a double");
@@ -432,10 +422,9 @@ Status ExecuteSetTimeout(
   return Status(kOk);
 }
 
-Status ExecuteSetScriptTimeout(
-    Session* session,
-    const base::DictionaryValue& params,
-    scoped_ptr<base::Value>* value) {
+Status ExecuteSetScriptTimeout(Session* session,
+                               const base::DictionaryValue& params,
+                               std::unique_ptr<base::Value>* value) {
   double ms;
   if (!params.GetDouble("ms", &ms) || ms < 0)
     return Status(kUnknownError, "'ms' must be a non-negative number");
@@ -444,10 +433,9 @@ Status ExecuteSetScriptTimeout(
   return Status(kOk);
 }
 
-Status ExecuteImplicitlyWait(
-    Session* session,
-    const base::DictionaryValue& params,
-    scoped_ptr<base::Value>* value) {
+Status ExecuteImplicitlyWait(Session* session,
+                             const base::DictionaryValue& params,
+                             std::unique_ptr<base::Value>* value) {
   double ms;
   if (!params.GetDouble("ms", &ms) || ms < 0)
     return Status(kUnknownError, "'ms' must be a non-negative number");
@@ -456,10 +444,9 @@ Status ExecuteImplicitlyWait(
   return Status(kOk);
 }
 
-Status ExecuteIsLoading(
-    Session* session,
-    const base::DictionaryValue& params,
-    scoped_ptr<base::Value>* value) {
+Status ExecuteIsLoading(Session* session,
+                        const base::DictionaryValue& params,
+                        std::unique_ptr<base::Value>* value) {
   WebView* web_view = NULL;
   Status status = session->GetTargetWindow(&web_view);
   if (status.IsError())
@@ -478,10 +465,9 @@ Status ExecuteIsLoading(
   return Status(kOk);
 }
 
-Status ExecuteGetLocation(
-    Session* session,
-    const base::DictionaryValue& params,
-    scoped_ptr<base::Value>* value) {
+Status ExecuteGetLocation(Session* session,
+                          const base::DictionaryValue& params,
+                          std::unique_ptr<base::Value>* value) {
   if (!session->overridden_geoposition) {
     return Status(kUnknownError,
                   "Location must be set before it can be retrieved");
@@ -497,10 +483,9 @@ Status ExecuteGetLocation(
   return Status(kOk);
 }
 
-Status ExecuteGetNetworkConditions(
-    Session* session,
-    const base::DictionaryValue& params,
-    scoped_ptr<base::Value>* value) {
+Status ExecuteGetNetworkConditions(Session* session,
+                                   const base::DictionaryValue& params,
+                                   std::unique_ptr<base::Value>* value) {
   if (!session->overridden_network_conditions) {
     return Status(kUnknownError,
                   "network conditions must be set before it can be retrieved");
@@ -520,10 +505,9 @@ Status ExecuteGetNetworkConditions(
   return Status(kOk);
 }
 
-Status ExecuteGetWindowPosition(
-    Session* session,
-    const base::DictionaryValue& params,
-    scoped_ptr<base::Value>* value) {
+Status ExecuteGetWindowPosition(Session* session,
+                                const base::DictionaryValue& params,
+                                std::unique_ptr<base::Value>* value) {
   ChromeDesktopImpl* desktop = NULL;
   Status status = session->chrome->GetAsDesktop(&desktop);
   if (status.IsError())
@@ -546,10 +530,9 @@ Status ExecuteGetWindowPosition(
   return Status(kOk);
 }
 
-Status ExecuteSetWindowPosition(
-    Session* session,
-    const base::DictionaryValue& params,
-    scoped_ptr<base::Value>* value) {
+Status ExecuteSetWindowPosition(Session* session,
+                                const base::DictionaryValue& params,
+                                std::unique_ptr<base::Value>* value) {
   double x = 0;
   double y = 0;
   if (!params.GetDouble("x", &x) || !params.GetDouble("y", &y))
@@ -568,10 +551,9 @@ Status ExecuteSetWindowPosition(
   return extension->SetWindowPosition(static_cast<int>(x), static_cast<int>(y));
 }
 
-Status ExecuteGetWindowSize(
-    Session* session,
-    const base::DictionaryValue& params,
-    scoped_ptr<base::Value>* value) {
+Status ExecuteGetWindowSize(Session* session,
+                            const base::DictionaryValue& params,
+                            std::unique_ptr<base::Value>* value) {
   ChromeDesktopImpl* desktop = NULL;
   Status status = session->chrome->GetAsDesktop(&desktop);
   if (status.IsError())
@@ -594,10 +576,9 @@ Status ExecuteGetWindowSize(
   return Status(kOk);
 }
 
-Status ExecuteSetWindowSize(
-    Session* session,
-    const base::DictionaryValue& params,
-    scoped_ptr<base::Value>* value) {
+Status ExecuteSetWindowSize(Session* session,
+                            const base::DictionaryValue& params,
+                            std::unique_ptr<base::Value>* value) {
   double width = 0;
   double height = 0;
   if (!params.GetDouble("width", &width) ||
@@ -618,10 +599,9 @@ Status ExecuteSetWindowSize(
       static_cast<int>(width), static_cast<int>(height));
 }
 
-Status ExecuteMaximizeWindow(
-    Session* session,
-    const base::DictionaryValue& params,
-    scoped_ptr<base::Value>* value) {
+Status ExecuteMaximizeWindow(Session* session,
+                             const base::DictionaryValue& params,
+                             std::unique_ptr<base::Value>* value) {
   ChromeDesktopImpl* desktop = NULL;
   Status status = session->chrome->GetAsDesktop(&desktop);
   if (status.IsError())
@@ -635,11 +615,10 @@ Status ExecuteMaximizeWindow(
   return extension->MaximizeWindow();
 }
 
-Status ExecuteGetAvailableLogTypes(
-    Session* session,
-    const base::DictionaryValue& params,
-    scoped_ptr<base::Value>* value) {
-  scoped_ptr<base::ListValue> types(new base::ListValue());
+Status ExecuteGetAvailableLogTypes(Session* session,
+                                   const base::DictionaryValue& params,
+                                   std::unique_ptr<base::Value>* value) {
+  std::unique_ptr<base::ListValue> types(new base::ListValue());
   std::vector<WebDriverLog*> logs = session->GetAllLogs();
   for (std::vector<WebDriverLog*>::const_iterator log = logs.begin();
        log != logs.end();
@@ -650,10 +629,9 @@ Status ExecuteGetAvailableLogTypes(
   return Status(kOk);
 }
 
-Status ExecuteGetLog(
-    Session* session,
-    const base::DictionaryValue& params,
-    scoped_ptr<base::Value>* value) {
+Status ExecuteGetLog(Session* session,
+                     const base::DictionaryValue& params,
+                     std::unique_ptr<base::Value>* value) {
   std::string log_type;
   if (!params.GetString("type", &log_type)) {
     return Status(kUnknownError, "missing or invalid 'type'");
@@ -670,11 +648,10 @@ Status ExecuteGetLog(
   return Status(kUnknownError, "log type '" + log_type + "' not found");
 }
 
-Status ExecuteUploadFile(
-    Session* session,
-    const base::DictionaryValue& params,
-    scoped_ptr<base::Value>* value) {
-    std::string base64_zip_data;
+Status ExecuteUploadFile(Session* session,
+                         const base::DictionaryValue& params,
+                         std::unique_ptr<base::Value>* value) {
+  std::string base64_zip_data;
   if (!params.GetString("file", &base64_zip_data))
     return Status(kUnknownError, "missing or invalid 'file'");
   std::string zip_data;
@@ -701,18 +678,16 @@ Status ExecuteUploadFile(
   return Status(kOk);
 }
 
-Status ExecuteIsAutoReporting(
-    Session* session,
-    const base::DictionaryValue& params,
-    scoped_ptr<base::Value>* value) {
+Status ExecuteIsAutoReporting(Session* session,
+                              const base::DictionaryValue& params,
+                              std::unique_ptr<base::Value>* value) {
   value->reset(new base::FundamentalValue(session->auto_reporting_enabled));
   return Status(kOk);
 }
 
-Status ExecuteSetAutoReporting(
-    Session* session,
-    const base::DictionaryValue& params,
-    scoped_ptr<base::Value>* value) {
+Status ExecuteSetAutoReporting(Session* session,
+                               const base::DictionaryValue& params,
+                               std::unique_ptr<base::Value>* value) {
   bool enabled;
   if (!params.GetBoolean("enabled", &enabled))
     return Status(kUnknownError, "missing parameter 'enabled'");

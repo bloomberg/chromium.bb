@@ -5,13 +5,14 @@
 #ifndef CHROME_TEST_CHROMEDRIVER_NET_SYNC_WEBSOCKET_FACTORY_H_
 #define CHROME_TEST_CHROMEDRIVER_NET_SYNC_WEBSOCKET_FACTORY_H_
 
+#include <memory>
+
 #include "base/callback.h"
-#include "base/memory/scoped_ptr.h"
 
 class SyncWebSocket;
 class URLRequestContextGetter;
 
-typedef base::Callback<scoped_ptr<SyncWebSocket>()> SyncWebSocketFactory;
+typedef base::Callback<std::unique_ptr<SyncWebSocket>()> SyncWebSocketFactory;
 
 SyncWebSocketFactory CreateSyncWebSocketFactory(
     URLRequestContextGetter* getter);

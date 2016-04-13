@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/test/chromedriver/chrome/javascript_dialog_manager.h"
+
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
-#include "chrome/test/chromedriver/chrome/javascript_dialog_manager.h"
 #include "chrome/test/chromedriver/chrome/recorder_devtools_client.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -85,7 +86,7 @@ class FakeDevToolsClient : public StubDevToolsClient {
   Status SendCommandAndGetResult(
       const std::string& method,
       const base::DictionaryValue& params,
-      scoped_ptr<base::DictionaryValue>* result) override {
+      std::unique_ptr<base::DictionaryValue>* result) override {
     while (closing_count_ > 0) {
       base::DictionaryValue empty;
       Status status =

@@ -6,10 +6,10 @@
 #define CHROME_TEST_CHROMEDRIVER_CHROME_STUB_DEVTOOLS_CLIENT_H_
 
 #include <list>
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/test/chromedriver/chrome/devtools_client.h"
 
 namespace base {
@@ -37,7 +37,7 @@ class StubDevToolsClient : public DevToolsClient {
   Status SendCommandAndGetResult(
       const std::string& method,
       const base::DictionaryValue& params,
-      scoped_ptr<base::DictionaryValue>* result) override;
+      std::unique_ptr<base::DictionaryValue>* result) override;
   void AddListener(DevToolsEventListener* listener) override;
   Status HandleEventsUntil(const ConditionalFunc& conditional_func,
                            const base::TimeDelta& timeout) override;

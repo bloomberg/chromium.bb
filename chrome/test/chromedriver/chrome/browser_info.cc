@@ -6,8 +6,9 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/json/json_reader.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -43,7 +44,7 @@ BrowserInfo::BrowserInfo(std::string android_package,
 }
 
 Status ParseBrowserInfo(const std::string& data, BrowserInfo* browser_info) {
-  scoped_ptr<base::Value> value = base::JSONReader::Read(data);
+  std::unique_ptr<base::Value> value = base::JSONReader::Read(data);
   if (!value.get())
     return Status(kUnknownError, "version info not in JSON");
 

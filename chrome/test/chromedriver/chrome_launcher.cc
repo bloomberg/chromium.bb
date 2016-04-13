@@ -183,12 +183,12 @@ Status WaitForDevToolsAndCheckVersion(
     URLRequestContextGetter* context_getter,
     const SyncWebSocketFactory& socket_factory,
     const Capabilities* capabilities,
-    scoped_ptr<DevToolsHttpClient>* user_client) {
-  scoped_ptr<DeviceMetrics> device_metrics;
+    std::unique_ptr<DevToolsHttpClient>* user_client) {
+  std::unique_ptr<DeviceMetrics> device_metrics;
   if (capabilities && capabilities->device_metrics)
     device_metrics.reset(new DeviceMetrics(*capabilities->device_metrics));
 
-  scoped_ptr<std::set<WebViewInfo::Type>> window_types;
+  std::unique_ptr<std::set<WebViewInfo::Type>> window_types;
   if (capabilities && !capabilities->window_types.empty()) {
     window_types.reset(
         new std::set<WebViewInfo::Type>(capabilities->window_types));
@@ -196,7 +196,7 @@ Status WaitForDevToolsAndCheckVersion(
     window_types.reset(new std::set<WebViewInfo::Type>());
   }
 
-  scoped_ptr<DevToolsHttpClient> client(new DevToolsHttpClient(
+  std::unique_ptr<DevToolsHttpClient> client(new DevToolsHttpClient(
       address, context_getter, socket_factory, std::move(device_metrics),
       std::move(window_types)));
   base::TimeTicks deadline =
@@ -235,8 +235,8 @@ Status CreateBrowserwideDevToolsClientAndConnect(
     const PerfLoggingPrefs& perf_logging_prefs,
     const SyncWebSocketFactory& socket_factory,
     const ScopedVector<DevToolsEventListener>& devtools_event_listeners,
-    scoped_ptr<DevToolsClient>* browser_client) {
-  scoped_ptr<DevToolsClient> client(new DevToolsClientImpl(
+    std::unique_ptr<DevToolsClient>* browser_client) {
+  std::unique_ptr<DevToolsClient> client(new DevToolsClientImpl(
       socket_factory, base::StringPrintf("ws://%s/devtools/browser/",
                                          address.ToString().c_str()),
       DevToolsClientImpl::kBrowserwideDevToolsClientId));
@@ -269,9 +269,9 @@ Status LaunchRemoteChromeSession(
     const SyncWebSocketFactory& socket_factory,
     const Capabilities& capabilities,
     ScopedVector<DevToolsEventListener>* devtools_event_listeners,
-    scoped_ptr<Chrome>* chrome) {
+    std::unique_ptr<Chrome>* chrome) {
   Status status(kOk);
-  scoped_ptr<DevToolsHttpClient> devtools_http_client;
+  std::unique_ptr<DevToolsHttpClient> devtools_http_client;
   status = WaitForDevToolsAndCheckVersion(
       capabilities.debugger_address, context_getter, socket_factory,
       NULL, &devtools_http_client);
@@ -281,7 +281,7 @@ Status LaunchRemoteChromeSession(
                   status);
   }
 
-  scoped_ptr<DevToolsClient> devtools_websocket_client;
+  std::unique_ptr<DevToolsClient> devtools_websocket_client;
   status = CreateBrowserwideDevToolsClientAndConnect(
       capabilities.debugger_address, capabilities.perf_logging_prefs,
       socket_factory, *devtools_event_listeners, &devtools_websocket_client);
@@ -299,11 +299,11 @@ Status LaunchRemoteChromeSession(
 Status LaunchDesktopChrome(
     URLRequestContextGetter* context_getter,
     uint16_t port,
-    scoped_ptr<PortReservation> port_reservation,
+    std::unique_ptr<PortReservation> port_reservation,
     const SyncWebSocketFactory& socket_factory,
     const Capabilities& capabilities,
     ScopedVector<DevToolsEventListener>* devtools_event_listeners,
-    scoped_ptr<Chrome>* chrome) {
+    std::unique_ptr<Chrome>* chrome) {
   base::CommandLine command(base::CommandLine::NO_PROGRAM);
   base::ScopedTempDir user_data_dir;
   base::ScopedTempDir extension_dir;
@@ -371,7 +371,7 @@ Status LaunchDesktopChrome(
   if (!process.IsValid())
     return Status(kUnknownError, "chrome failed to start");
 
-  scoped_ptr<DevToolsHttpClient> devtools_http_client;
+  std::unique_ptr<DevToolsHttpClient> devtools_http_client;
   status = WaitForDevToolsAndCheckVersion(
       NetAddress(port), context_getter, socket_factory, &capabilities,
       &devtools_http_client);
@@ -417,7 +417,7 @@ Status LaunchDesktopChrome(
     return status;
   }
 
-  scoped_ptr<DevToolsClient> devtools_websocket_client;
+  std::unique_ptr<DevToolsClient> devtools_websocket_client;
   status = CreateBrowserwideDevToolsClientAndConnect(
       NetAddress(port), capabilities.perf_logging_prefs, socket_factory,
       *devtools_event_listeners, &devtools_websocket_client);
@@ -426,13 +426,13 @@ Status LaunchDesktopChrome(
                  << status.message();
   }
 
-  scoped_ptr<ChromeDesktopImpl> chrome_desktop(new ChromeDesktopImpl(
+  std::unique_ptr<ChromeDesktopImpl> chrome_desktop(new ChromeDesktopImpl(
       std::move(devtools_http_client), std::move(devtools_websocket_client),
       *devtools_event_listeners, std::move(port_reservation),
       std::move(process), command, &user_data_dir, &extension_dir));
   for (size_t i = 0; i < extension_bg_pages.size(); ++i) {
     VLOG(0) << "Waiting for extension bg page load: " << extension_bg_pages[i];
-    scoped_ptr<WebView> web_view;
+    std::unique_ptr<WebView> web_view;
     Status status = chrome_desktop->WaitForPageToLoad(
         extension_bg_pages[i], base::TimeDelta::FromSeconds(10), &web_view);
     if (status.IsError()) {
@@ -449,14 +449,14 @@ Status LaunchDesktopChrome(
 Status LaunchAndroidChrome(
     URLRequestContextGetter* context_getter,
     uint16_t port,
-    scoped_ptr<PortReservation> port_reservation,
+    std::unique_ptr<PortReservation> port_reservation,
     const SyncWebSocketFactory& socket_factory,
     const Capabilities& capabilities,
     ScopedVector<DevToolsEventListener>* devtools_event_listeners,
     DeviceManager* device_manager,
-    scoped_ptr<Chrome>* chrome) {
+    std::unique_ptr<Chrome>* chrome) {
   Status status(kOk);
-  scoped_ptr<Device> device;
+  std::unique_ptr<Device> device;
   if (capabilities.android_device_serial.empty()) {
     status = device_manager->AcquireDevice(&device);
   } else {
@@ -484,7 +484,7 @@ Status LaunchAndroidChrome(
     return status;
   }
 
-  scoped_ptr<DevToolsHttpClient> devtools_http_client;
+  std::unique_ptr<DevToolsHttpClient> devtools_http_client;
   status = WaitForDevToolsAndCheckVersion(NetAddress(port),
                                           context_getter,
                                           socket_factory,
@@ -503,7 +503,7 @@ Status LaunchAndroidChrome(
         base::StringPrintf("please close %s and try again", package.c_str()));
   }
 
-  scoped_ptr<DevToolsClient> devtools_websocket_client;
+  std::unique_ptr<DevToolsClient> devtools_websocket_client;
   status = CreateBrowserwideDevToolsClientAndConnect(
       NetAddress(port), capabilities.perf_logging_prefs, socket_factory,
       *devtools_event_listeners, &devtools_websocket_client);
@@ -529,7 +529,7 @@ Status LaunchChrome(
     PortManager* port_manager,
     const Capabilities& capabilities,
     ScopedVector<DevToolsEventListener>* devtools_event_listeners,
-    scoped_ptr<Chrome>* chrome) {
+    std::unique_ptr<Chrome>* chrome) {
   if (capabilities.IsRemoteBrowser()) {
     return LaunchRemoteChromeSession(
         context_getter, socket_factory,
@@ -537,7 +537,7 @@ Status LaunchChrome(
   }
 
   uint16_t port = 0;
-  scoped_ptr<PortReservation> port_reservation;
+  std::unique_ptr<PortReservation> port_reservation;
   Status port_status(kOk);
 
   if (capabilities.IsAndroid()) {
@@ -639,7 +639,7 @@ Status ProcessExtension(const std::string& extension,
       return Status(kUnknownError, "invalid public key length");
   } else {
     // Not a CRX file. Generate RSA keypair to get a valid extension id.
-    scoped_ptr<crypto::RSAPrivateKey> key_pair(
+    std::unique_ptr<crypto::RSAPrivateKey> key_pair(
         crypto::RSAPrivateKey::Create(2048));
     if (!key_pair)
       return Status(kUnknownError, "cannot generate RSA key pair");
@@ -673,7 +673,7 @@ Status ProcessExtension(const std::string& extension,
   std::string manifest_data;
   if (!base::ReadFileToString(manifest_path, &manifest_data))
     return Status(kUnknownError, "cannot read manifest");
-  scoped_ptr<base::Value> manifest_value =
+  std::unique_ptr<base::Value> manifest_value =
       base::JSONReader::Read(manifest_data);
   base::DictionaryValue* manifest;
   if (!manifest_value || !manifest_value->GetAsDictionary(&manifest))
@@ -782,8 +782,9 @@ Status WritePrefsFile(
     const base::FilePath& path) {
   int code;
   std::string error_msg;
-  scoped_ptr<base::Value> template_value = base::JSONReader::ReadAndReturnError(
-      template_string, 0, &code, &error_msg);
+  std::unique_ptr<base::Value> template_value =
+      base::JSONReader::ReadAndReturnError(template_string, 0, &code,
+                                           &error_msg);
   base::DictionaryValue* prefs;
   if (!template_value || !template_value->GetAsDictionary(&prefs)) {
     return Status(kUnknownError,

@@ -260,7 +260,7 @@ class PrintContentBrowserClient : public ChromeContentBrowserClient {
   }
 
   WebUIBrowserTest* browser_test_;
-  scoped_ptr<WebUIJsInjectionReadyObserver> observer_;
+  std::unique_ptr<WebUIJsInjectionReadyObserver> observer_;
   std::string preload_test_fixture_;
   std::string preload_test_name_;
   content::WebContents* preview_dialog_;

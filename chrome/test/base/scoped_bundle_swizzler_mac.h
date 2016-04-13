@@ -5,8 +5,9 @@
 #ifndef CHROME_TEST_BASE_SCOPED_BUNDLE_SWIZZLER_MAC_H_
 #define CHROME_TEST_BASE_SCOPED_BUNDLE_SWIZZLER_MAC_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace base {
 namespace mac {
@@ -30,7 +31,7 @@ class ScopedBundleSwizzlerMac {
   ~ScopedBundleSwizzlerMac();
 
  private:
-  scoped_ptr<base::mac::ScopedObjCClassSwizzler> class_swizzler_;
+  std::unique_ptr<base::mac::ScopedObjCClassSwizzler> class_swizzler_;
   DISALLOW_COPY_AND_ASSIGN(ScopedBundleSwizzlerMac);
 };
 

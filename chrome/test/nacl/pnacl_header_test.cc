@@ -92,11 +92,11 @@ void PnaclHeaderTest::RunLoadTest(const std::string& url,
   content::ResourceDispatcherHost::Get()->SetDelegate(NULL);
 }
 
-scoped_ptr<HttpResponse> PnaclHeaderTest::WatchForPexeFetch(
+std::unique_ptr<HttpResponse> PnaclHeaderTest::WatchForPexeFetch(
     const HttpRequest& request) {
   // Avoid favicon.ico warning by giving it a dummy icon.
   if (request.relative_url.find("favicon.ico") != std::string::npos) {
-    scoped_ptr<BasicHttpResponse> http_response(new BasicHttpResponse());
+    std::unique_ptr<BasicHttpResponse> http_response(new BasicHttpResponse());
     http_response->set_code(net::HTTP_OK);
     http_response->set_content("");
     http_response->set_content_type("application/octet-stream");
@@ -106,7 +106,7 @@ scoped_ptr<HttpResponse> PnaclHeaderTest::WatchForPexeFetch(
   // Skip other non-pexe files and let ServeFilesFromDirectory handle it.
   GURL absolute_url = embedded_test_server()->GetURL(request.relative_url);
   if (absolute_url.path().find(".pexe") == std::string::npos)
-    return scoped_ptr<HttpResponse>();
+    return std::unique_ptr<HttpResponse>();
 
   // For pexe files, check for the special Accept header,
   // along with the expected ResourceType of the URL request.
@@ -128,7 +128,7 @@ scoped_ptr<HttpResponse> PnaclHeaderTest::WatchForPexeFetch(
 
   // After checking the header, just return a 404. We don't need to actually
   // compile and stopping with a 404 is faster.
-  scoped_ptr<BasicHttpResponse> http_response(new BasicHttpResponse());
+  std::unique_ptr<BasicHttpResponse> http_response(new BasicHttpResponse());
   http_response->set_code(net::HTTP_NOT_FOUND);
   http_response->set_content("PEXE ... not found");
   http_response->set_content_type("application/octet-stream");

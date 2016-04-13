@@ -11,9 +11,10 @@
 
 namespace {
 
-scoped_ptr<SyncWebSocket> CreateSyncWebSocket(
+std::unique_ptr<SyncWebSocket> CreateSyncWebSocket(
     scoped_refptr<URLRequestContextGetter> context_getter) {
-  return scoped_ptr<SyncWebSocket>(new SyncWebSocketImpl(context_getter.get()));
+  return std::unique_ptr<SyncWebSocket>(
+      new SyncWebSocketImpl(context_getter.get()));
 }
 
 }  // namespace

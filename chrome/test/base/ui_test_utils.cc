@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
@@ -14,7 +16,6 @@
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -335,7 +336,7 @@ void DownloadURL(Browser* browser, const GURL& download_url) {
 
   content::DownloadManager* download_manager =
       content::BrowserContext::GetDownloadManager(browser->profile());
-  scoped_ptr<content::DownloadTestObserver> observer(
+  std::unique_ptr<content::DownloadTestObserver> observer(
       new content::DownloadTestObserverTerminal(
           download_manager, 1,
           content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_ACCEPT));

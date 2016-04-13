@@ -6,11 +6,11 @@
 #define CHROME_TEST_CHROMEDRIVER_NET_SYNC_WEBSOCKET_IMPL_H_
 
 #include <list>
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
 #include "chrome/test/chromedriver/net/sync_websocket.h"
@@ -82,7 +82,7 @@ class SyncWebSocketImpl : public SyncWebSocket {
     scoped_refptr<net::URLRequestContextGetter> context_getter_;
 
     // Only accessed on IO thread.
-    scoped_ptr<WebSocket> socket_;
+    std::unique_ptr<WebSocket> socket_;
 
     base::Lock lock_;
 

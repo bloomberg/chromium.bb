@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/test/chromedriver/net/websocket.h"
+
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -11,14 +14,12 @@
 #include "base/compiler_specific.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "chrome/test/chromedriver/net/test_http_server.h"
-#include "chrome/test/chromedriver/net/websocket.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -87,10 +88,10 @@ class WebSocketTest : public testing::Test {
   void TearDown() override { server_.Stop(); }
 
  protected:
-  scoped_ptr<WebSocket> CreateWebSocket(const GURL& url,
-                                        WebSocketListener* listener) {
+  std::unique_ptr<WebSocket> CreateWebSocket(const GURL& url,
+                                             WebSocketListener* listener) {
     int error;
-    scoped_ptr<WebSocket> sock(new WebSocket(url, listener));
+    std::unique_ptr<WebSocket> sock(new WebSocket(url, listener));
     base::RunLoop run_loop;
     sock->Connect(base::Bind(&OnConnectFinished, &run_loop, &error));
     loop_.task_runner()->PostDelayedTask(FROM_HERE, run_loop.QuitClosure(),
@@ -98,16 +99,17 @@ class WebSocketTest : public testing::Test {
     run_loop.Run();
     if (error == net::OK)
       return sock;
-    return scoped_ptr<WebSocket>();
+    return std::unique_ptr<WebSocket>();
   }
 
-  scoped_ptr<WebSocket> CreateConnectedWebSocket(WebSocketListener* listener) {
+  std::unique_ptr<WebSocket> CreateConnectedWebSocket(
+      WebSocketListener* listener) {
     return CreateWebSocket(server_.web_socket_url(), listener);
   }
 
   void SendReceive(const std::vector<std::string>& messages) {
     Listener listener(messages);
-    scoped_ptr<WebSocket> sock(CreateConnectedWebSocket(&listener));
+    std::unique_ptr<WebSocket> sock(CreateConnectedWebSocket(&listener));
     ASSERT_TRUE(sock);
     for (size_t i = 0; i < messages.size(); ++i) {
       ASSERT_TRUE(sock->Send(messages[i]));
@@ -159,7 +161,7 @@ TEST_F(WebSocketTest, CloseOnReceive) {
   server_.SetMessageAction(TestHttpServer::kCloseOnMessage);
   base::RunLoop run_loop;
   CloseListener listener(&run_loop);
-  scoped_ptr<WebSocket> sock(CreateConnectedWebSocket(&listener));
+  std::unique_ptr<WebSocket> sock(CreateConnectedWebSocket(&listener));
   ASSERT_TRUE(sock);
   ASSERT_TRUE(sock->Send("hi"));
   loop_.task_runner()->PostDelayedTask(FROM_HERE, run_loop.QuitClosure(),
@@ -170,7 +172,7 @@ TEST_F(WebSocketTest, CloseOnReceive) {
 TEST_F(WebSocketTest, CloseOnSend) {
   base::RunLoop run_loop;
   CloseListener listener(&run_loop);
-  scoped_ptr<WebSocket> sock(CreateConnectedWebSocket(&listener));
+  std::unique_ptr<WebSocket> sock(CreateConnectedWebSocket(&listener));
   ASSERT_TRUE(sock);
   server_.Stop();
 

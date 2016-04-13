@@ -5,12 +5,12 @@
 #ifndef CHROME_TEST_CHROMEDRIVER_CHROME_CHROME_DESKTOP_IMPL_H_
 #define CHROME_TEST_CHROMEDRIVER_CHROME_CHROME_DESKTOP_IMPL_H_
 
+#include <memory>
 #include <string>
 
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/process/process.h"
 #include "chrome/test/chromedriver/chrome/chrome_impl.h"
 
@@ -27,10 +27,10 @@ class WebView;
 class ChromeDesktopImpl : public ChromeImpl {
  public:
   ChromeDesktopImpl(
-      scoped_ptr<DevToolsHttpClient> http_client,
-      scoped_ptr<DevToolsClient> websocket_client,
+      std::unique_ptr<DevToolsHttpClient> http_client,
+      std::unique_ptr<DevToolsClient> websocket_client,
       ScopedVector<DevToolsEventListener>& devtools_event_listeners,
-      scoped_ptr<PortReservation> port_reservation,
+      std::unique_ptr<PortReservation> port_reservation,
       base::Process process,
       const base::CommandLine& command,
       base::ScopedTempDir* user_data_dir,
@@ -41,7 +41,7 @@ class ChromeDesktopImpl : public ChromeImpl {
   // Returns an error if the timeout is exceeded.
   Status WaitForPageToLoad(const std::string& url,
                            const base::TimeDelta& timeout,
-                           scoped_ptr<WebView>* web_view);
+                           std::unique_ptr<WebView>* web_view);
 
   // Gets the installed automation extension.
   Status GetAutomationExtension(AutomationExtension** extension);
@@ -64,7 +64,7 @@ class ChromeDesktopImpl : public ChromeImpl {
   base::ScopedTempDir extension_dir_;
 
   // Lazily initialized, may be null.
-  scoped_ptr<AutomationExtension> automation_extension_;
+  std::unique_ptr<AutomationExtension> automation_extension_;
 };
 
 #endif  // CHROME_TEST_CHROMEDRIVER_CHROME_CHROME_DESKTOP_IMPL_H_

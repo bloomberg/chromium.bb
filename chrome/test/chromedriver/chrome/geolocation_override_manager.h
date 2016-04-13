@@ -5,11 +5,11 @@
 #ifndef CHROME_TEST_CHROMEDRIVER_CHROME_GEOLOCATION_OVERRIDE_MANAGER_H_
 #define CHROME_TEST_CHROMEDRIVER_CHROME_GEOLOCATION_OVERRIDE_MANAGER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/test/chromedriver/chrome/devtools_event_listener.h"
 
 namespace base {
@@ -39,7 +39,7 @@ class GeolocationOverrideManager : public DevToolsEventListener {
   Status ApplyOverrideIfNeeded();
 
   DevToolsClient* client_;
-  scoped_ptr<Geoposition> overridden_geoposition_;
+  std::unique_ptr<Geoposition> overridden_geoposition_;
 
   DISALLOW_COPY_AND_ASSIGN(GeolocationOverrideManager);
 };

@@ -6,11 +6,11 @@
 #define CHROME_TEST_CHROMEDRIVER_CHROME_WEB_VIEW_IMPL_H_
 
 #include <list>
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/test/chromedriver/chrome/web_view.h"
 
 namespace base {
@@ -38,10 +38,10 @@ class WebViewImpl : public WebView {
  public:
   WebViewImpl(const std::string& id,
               const BrowserInfo* browser_info,
-              scoped_ptr<DevToolsClient> client);
+              std::unique_ptr<DevToolsClient> client);
   WebViewImpl(const std::string& id,
               const BrowserInfo* browser_info,
-              scoped_ptr<DevToolsClient> client,
+              std::unique_ptr<DevToolsClient> client,
               const DeviceMetrics* device_metrics);
   ~WebViewImpl() override;
 
@@ -56,21 +56,21 @@ class WebViewImpl : public WebView {
   Status TraverseHistory(int delta) override;
   Status EvaluateScript(const std::string& frame,
                         const std::string& expression,
-                        scoped_ptr<base::Value>* result) override;
+                        std::unique_ptr<base::Value>* result) override;
   Status CallFunction(const std::string& frame,
                       const std::string& function,
                       const base::ListValue& args,
-                      scoped_ptr<base::Value>* result) override;
+                      std::unique_ptr<base::Value>* result) override;
   Status CallAsyncFunction(const std::string& frame,
                            const std::string& function,
                            const base::ListValue& args,
                            const base::TimeDelta& timeout,
-                           scoped_ptr<base::Value>* result) override;
+                           std::unique_ptr<base::Value>* result) override;
   Status CallUserAsyncFunction(const std::string& frame,
                                const std::string& function,
                                const base::ListValue& args,
                                const base::TimeDelta& timeout,
-                               scoped_ptr<base::Value>* result) override;
+                               std::unique_ptr<base::Value>* result) override;
   Status GetFrameByFunction(const std::string& frame,
                             const std::string& function,
                             const base::ListValue& args,
@@ -80,7 +80,7 @@ class WebViewImpl : public WebView {
   Status DispatchTouchEvent(const TouchEvent& event) override;
   Status DispatchTouchEvents(const std::list<TouchEvent>& events) override;
   Status DispatchKeyEvents(const std::list<KeyEvent>& events) override;
-  Status GetCookies(scoped_ptr<base::ListValue>* cookies) override;
+  Status GetCookies(std::unique_ptr<base::ListValue>* cookies) override;
   Status DeleteCookie(const std::string& name, const std::string& url) override;
   Status WaitForPendingNavigations(const std::string& frame_id,
                                    const base::TimeDelta& timeout,
@@ -95,9 +95,9 @@ class WebViewImpl : public WebView {
   Status SetFileInputFiles(const std::string& frame,
                            const base::DictionaryValue& element,
                            const std::vector<base::FilePath>& files) override;
-  Status TakeHeapSnapshot(scoped_ptr<base::Value>* snapshot) override;
+  Status TakeHeapSnapshot(std::unique_ptr<base::Value>* snapshot) override;
   Status StartProfile() override;
-  Status EndProfile(scoped_ptr<base::Value>* profile_data) override;
+  Status EndProfile(std::unique_ptr<base::Value>* profile_data) override;
   Status SynthesizeTapGesture(int x,
                               int y,
                               int tap_count,
@@ -115,7 +115,7 @@ class WebViewImpl : public WebView {
                                    const base::ListValue& args,
                                    bool is_user_supplied,
                                    const base::TimeDelta& timeout,
-                                   scoped_ptr<base::Value>* result);
+                                   std::unique_ptr<base::Value>* result);
   Status IsNotPendingNavigation(const std::string& frame_id,
                                 bool* is_not_pending);
 
@@ -124,17 +124,18 @@ class WebViewImpl : public WebView {
 
   std::string id_;
   const BrowserInfo* browser_info_;
-  scoped_ptr<DomTracker> dom_tracker_;
-  scoped_ptr<FrameTracker> frame_tracker_;
-  scoped_ptr<JavaScriptDialogManager> dialog_manager_;
-  scoped_ptr<NavigationTracker> navigation_tracker_;
-  scoped_ptr<MobileEmulationOverrideManager> mobile_emulation_override_manager_;
-  scoped_ptr<GeolocationOverrideManager> geolocation_override_manager_;
-  scoped_ptr<NetworkConditionsOverrideManager>
+  std::unique_ptr<DomTracker> dom_tracker_;
+  std::unique_ptr<FrameTracker> frame_tracker_;
+  std::unique_ptr<JavaScriptDialogManager> dialog_manager_;
+  std::unique_ptr<NavigationTracker> navigation_tracker_;
+  std::unique_ptr<MobileEmulationOverrideManager>
+      mobile_emulation_override_manager_;
+  std::unique_ptr<GeolocationOverrideManager> geolocation_override_manager_;
+  std::unique_ptr<NetworkConditionsOverrideManager>
       network_conditions_override_manager_;
-  scoped_ptr<HeapSnapshotTaker> heap_snapshot_taker_;
-  scoped_ptr<DebuggerTracker> debugger_;
-  scoped_ptr<DevToolsClient> client_;
+  std::unique_ptr<HeapSnapshotTaker> heap_snapshot_taker_;
+  std::unique_ptr<DebuggerTracker> debugger_;
+  std::unique_ptr<DevToolsClient> client_;
 };
 
 namespace internal {
@@ -147,7 +148,7 @@ Status EvaluateScript(DevToolsClient* client,
                       int context_id,
                       const std::string& expression,
                       EvaluateScriptReturnType return_type,
-                      scoped_ptr<base::DictionaryValue>* result);
+                      std::unique_ptr<base::DictionaryValue>* result);
 Status EvaluateScriptAndGetObject(DevToolsClient* client,
                                   int context_id,
                                   const std::string& expression,
@@ -156,9 +157,9 @@ Status EvaluateScriptAndGetObject(DevToolsClient* client,
 Status EvaluateScriptAndGetValue(DevToolsClient* client,
                                  int context_id,
                                  const std::string& expression,
-                                 scoped_ptr<base::Value>* result);
+                                 std::unique_ptr<base::Value>* result);
 Status ParseCallFunctionResult(const base::Value& temp_result,
-                               scoped_ptr<base::Value>* result);
+                               std::unique_ptr<base::Value>* result);
 Status GetNodeIdFromFunction(DevToolsClient* client,
                              int context_id,
                              const std::string& function,

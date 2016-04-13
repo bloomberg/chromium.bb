@@ -8,11 +8,11 @@
 #include <stdint.h>
 
 #include <list>
+#include <memory>
 #include <set>
 #include <string>
 
 #include "base/callback.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 
 class Status;
@@ -37,7 +37,8 @@ class PortServer {
   explicit PortServer(const std::string& path);
   ~PortServer();
 
-  Status ReservePort(uint16_t* port, scoped_ptr<PortReservation>* reservation);
+  Status ReservePort(uint16_t* port,
+                     std::unique_ptr<PortReservation>* reservation);
 
  private:
   Status RequestPort(uint16_t* port);
@@ -55,11 +56,12 @@ class PortManager {
   PortManager(uint16_t min_port, uint16_t max_port);
   ~PortManager();
 
-  Status ReservePort(uint16_t* port, scoped_ptr<PortReservation>* reservation);
+  Status ReservePort(uint16_t* port,
+                     std::unique_ptr<PortReservation>* reservation);
   // Since we cannot remove forwarded adb ports on older SDKs,
   // maintain a pool of forwarded ports for reuse.
   Status ReservePortFromPool(uint16_t* port,
-                             scoped_ptr<PortReservation>* reservation);
+                             std::unique_ptr<PortReservation>* reservation);
 
  private:
   uint16_t FindAvailablePort() const;

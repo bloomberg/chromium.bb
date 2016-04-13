@@ -79,12 +79,11 @@ base::Value* CreateValueFrom(const WebRect& rect) {
   return dict;
 }
 
-Status CallAtomsJs(
-    const std::string& frame,
-    WebView* web_view,
-    const char* const* atom_function,
-    const base::ListValue& args,
-    scoped_ptr<base::Value>* result) {
+Status CallAtomsJs(const std::string& frame,
+                   WebView* web_view,
+                   const char* const* atom_function,
+                   const base::ListValue& args,
+                   std::unique_ptr<base::Value>* result) {
   return web_view->CallFunction(
       frame, webdriver::atoms::asString(atom_function), args, result);
 }
@@ -97,7 +96,7 @@ Status VerifyElementClickable(
   base::ListValue args;
   args.Append(CreateElement(element_id));
   args.Append(CreateValueFrom(location));
-  scoped_ptr<base::Value> result;
+  std::unique_ptr<base::Value> result;
   Status status = CallAtomsJs(
       frame, web_view, webdriver::atoms::IS_ELEMENT_CLICKABLE,
       args, &result);
@@ -133,7 +132,7 @@ Status ScrollElementRegionIntoViewHelper(
   args.Append(CreateElement(element_id));
   args.AppendBoolean(center);
   args.Append(CreateValueFrom(region));
-  scoped_ptr<base::Value> result;
+  std::unique_ptr<base::Value> result;
   Status status = web_view->CallFunction(
       frame, webdriver::atoms::asString(webdriver::atoms::GET_LOCATION_IN_VIEW),
       args, &result);
@@ -164,7 +163,7 @@ Status GetElementEffectiveStyle(
   base::ListValue args;
   args.Append(CreateElement(element_id));
   args.AppendString(property);
-  scoped_ptr<base::Value> result;
+  std::unique_ptr<base::Value> result;
   Status status = web_view->CallFunction(
       frame, webdriver::atoms::asString(webdriver::atoms::GET_EFFECTIVE_STYLE),
       args, &result);
@@ -219,14 +218,13 @@ base::Value* CreateValueFrom(const WebPoint& point) {
   return dict;
 }
 
-Status FindElement(
-    int interval_ms,
-    bool only_one,
-    const std::string* root_element_id,
-    Session* session,
-    WebView* web_view,
-    const base::DictionaryValue& params,
-    scoped_ptr<base::Value>* value) {
+Status FindElement(int interval_ms,
+                   bool only_one,
+                   const std::string* root_element_id,
+                   Session* session,
+                   WebView* web_view,
+                   const base::DictionaryValue& params,
+                   std::unique_ptr<base::Value>* value) {
   std::string strategy;
   if (!params.GetString("using", &strategy))
     return Status(kUnknownError, "'using' must be a string");
@@ -239,7 +237,7 @@ Status FindElement(
     script = webdriver::atoms::asString(webdriver::atoms::FIND_ELEMENT);
   else
     script = webdriver::atoms::asString(webdriver::atoms::FIND_ELEMENTS);
-  scoped_ptr<base::DictionaryValue> locator(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> locator(new base::DictionaryValue());
   locator->SetString(strategy, target);
   base::ListValue arguments;
   arguments.Append(locator.release());
@@ -248,7 +246,7 @@ Status FindElement(
 
   base::TimeTicks start_time = base::TimeTicks::Now();
   while (true) {
-    scoped_ptr<base::Value> temp;
+    std::unique_ptr<base::Value> temp;
     Status status = web_view->CallFunction(
         session->GetCurrentFrameId(), script, arguments, &temp);
     if (status.IsError())
@@ -285,10 +283,9 @@ Status FindElement(
   return Status(kUnknownError);
 }
 
-Status GetActiveElement(
-    Session* session,
-    WebView* web_view,
-    scoped_ptr<base::Value>* value) {
+Status GetActiveElement(Session* session,
+                        WebView* web_view,
+                        std::unique_ptr<base::Value>* value) {
   base::ListValue args;
   return web_view->CallFunction(
       session->GetCurrentFrameId(),
@@ -302,21 +299,20 @@ Status IsElementFocused(
     WebView* web_view,
     const std::string& element_id,
     bool* is_focused) {
-  scoped_ptr<base::Value> result;
+  std::unique_ptr<base::Value> result;
   Status status = GetActiveElement(session, web_view, &result);
   if (status.IsError())
     return status;
-  scoped_ptr<base::Value> element_dict(CreateElement(element_id));
+  std::unique_ptr<base::Value> element_dict(CreateElement(element_id));
   *is_focused = result->Equals(element_dict.get());
   return Status(kOk);
 }
 
-Status GetElementAttribute(
-    Session* session,
-    WebView* web_view,
-    const std::string& element_id,
-    const std::string& attribute_name,
-    scoped_ptr<base::Value>* value) {
+Status GetElementAttribute(Session* session,
+                           WebView* web_view,
+                           const std::string& element_id,
+                           const std::string& attribute_name,
+                           std::unique_ptr<base::Value>* value) {
   base::ListValue args;
   args.Append(CreateElement(element_id));
   args.AppendString(attribute_name);
@@ -332,7 +328,7 @@ Status IsElementAttributeEqualToIgnoreCase(
     const std::string& attribute_name,
     const std::string& attribute_value,
     bool* is_equal) {
-  scoped_ptr<base::Value> result;
+  std::unique_ptr<base::Value> result;
   Status status = GetElementAttribute(
       session, web_view, element_id, attribute_name, &result);
   if (status.IsError())
@@ -377,7 +373,7 @@ Status GetElementClickableLocation(
         "}";
     base::ListValue args;
     args.Append(CreateElement(element_id));
-    scoped_ptr<base::Value> result;
+    std::unique_ptr<base::Value> result;
     status = web_view->CallFunction(
         session->GetCurrentFrameId(), kGetImageElementForArea, args, &result);
     if (status.IsError())
@@ -426,7 +422,7 @@ Status GetElementRegion(
     WebRect* rect) {
   base::ListValue args;
   args.Append(CreateElement(element_id));
-  scoped_ptr<base::Value> result;
+  std::unique_ptr<base::Value> result;
   Status status = web_view->CallFunction(
       session->GetCurrentFrameId(), kGetElementRegionScript, args, &result);
   if (status.IsError())
@@ -445,7 +441,7 @@ Status GetElementTagName(
     std::string* name) {
   base::ListValue args;
   args.Append(CreateElement(element_id));
-  scoped_ptr<base::Value> result;
+  std::unique_ptr<base::Value> result;
   Status status = web_view->CallFunction(
       session->GetCurrentFrameId(),
       "function(elem) { return elem.tagName.toLowerCase(); }",
@@ -464,7 +460,7 @@ Status GetElementSize(
     WebSize* size) {
   base::ListValue args;
   args.Append(CreateElement(element_id));
-  scoped_ptr<base::Value> result;
+  std::unique_ptr<base::Value> result;
   Status status = CallAtomsJs(
       session->GetCurrentFrameId(), web_view, webdriver::atoms::GET_SIZE,
       args, &result);
@@ -484,7 +480,7 @@ Status IsElementDisplayed(
   base::ListValue args;
   args.Append(CreateElement(element_id));
   args.AppendBoolean(ignore_opacity);
-  scoped_ptr<base::Value> result;
+  std::unique_ptr<base::Value> result;
   Status status = CallAtomsJs(
       session->GetCurrentFrameId(), web_view, webdriver::atoms::IS_DISPLAYED,
       args, &result);
@@ -502,7 +498,7 @@ Status IsElementEnabled(
     bool* is_enabled) {
   base::ListValue args;
   args.Append(CreateElement(element_id));
-  scoped_ptr<base::Value> result;
+  std::unique_ptr<base::Value> result;
   Status status = CallAtomsJs(
       session->GetCurrentFrameId(), web_view, webdriver::atoms::IS_ENABLED,
       args, &result);
@@ -520,7 +516,7 @@ Status IsOptionElementSelected(
     bool* is_selected) {
   base::ListValue args;
   args.Append(CreateElement(element_id));
-  scoped_ptr<base::Value> result;
+  std::unique_ptr<base::Value> result;
   Status status = CallAtomsJs(
       session->GetCurrentFrameId(), web_view, webdriver::atoms::IS_SELECTED,
       args, &result);
@@ -538,7 +534,7 @@ Status IsOptionElementTogglable(
     bool* is_togglable) {
   base::ListValue args;
   args.Append(CreateElement(element_id));
-  scoped_ptr<base::Value> result;
+  std::unique_ptr<base::Value> result;
   Status status = web_view->CallFunction(
       session->GetCurrentFrameId(), kIsOptionElementToggleableScript,
       args, &result);
@@ -558,7 +554,7 @@ Status SetOptionElementSelected(
   base::ListValue args;
   args.Append(CreateElement(element_id));
   args.AppendBoolean(selected);
-  scoped_ptr<base::Value> result;
+  std::unique_ptr<base::Value> result;
   return CallAtomsJs(
       session->GetCurrentFrameId(), web_view, webdriver::atoms::CLICK,
       args, &result);
@@ -623,7 +619,7 @@ Status ScrollElementRegionIntoView(
     args.AppendString(
         base::StringPrintf("//*[@cd_frame_id_ = '%s']",
                            rit->chromedriver_frame_id.c_str()));
-    scoped_ptr<base::Value> result;
+    std::unique_ptr<base::Value> result;
     status = web_view->CallFunction(
         rit->parent_frame_id, kFindSubFrameScript, args, &result);
     if (status.IsError())

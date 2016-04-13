@@ -46,14 +46,14 @@ Status StubWebView::TraverseHistory(int delta) {
 
 Status StubWebView::EvaluateScript(const std::string& frame,
                                    const std::string& function,
-                                   scoped_ptr<base::Value>* result) {
+                                   std::unique_ptr<base::Value>* result) {
   return Status(kOk);
 }
 
 Status StubWebView::CallFunction(const std::string& frame,
                                  const std::string& function,
                                  const base::ListValue& args,
-                                 scoped_ptr<base::Value>* result) {
+                                 std::unique_ptr<base::Value>* result) {
   return Status(kOk);
 }
 
@@ -61,15 +61,16 @@ Status StubWebView::CallAsyncFunction(const std::string& frame,
                                       const std::string& function,
                                       const base::ListValue& args,
                                       const base::TimeDelta& timeout,
-                                      scoped_ptr<base::Value>* result) {
+                                      std::unique_ptr<base::Value>* result) {
   return Status(kOk);
 }
 
-Status StubWebView::CallUserAsyncFunction(const std::string& frame,
-                                          const std::string& function,
-                                          const base::ListValue& args,
-                                          const base::TimeDelta& timeout,
-                                          scoped_ptr<base::Value>* result) {
+Status StubWebView::CallUserAsyncFunction(
+    const std::string& frame,
+    const std::string& function,
+    const base::ListValue& args,
+    const base::TimeDelta& timeout,
+    std::unique_ptr<base::Value>* result) {
   return Status(kOk);
 }
 
@@ -97,7 +98,7 @@ Status StubWebView::DispatchKeyEvents(const std::list<KeyEvent>& events) {
   return Status(kOk);
 }
 
-Status StubWebView::GetCookies(scoped_ptr<base::ListValue>* cookies) {
+Status StubWebView::GetCookies(std::unique_ptr<base::ListValue>* cookies) {
   return Status(kOk);
 }
 
@@ -141,7 +142,7 @@ Status StubWebView::SetFileInputFiles(
   return Status(kOk);
 }
 
-Status StubWebView::TakeHeapSnapshot(scoped_ptr<base::Value>* snapshot) {
+Status StubWebView::TakeHeapSnapshot(std::unique_ptr<base::Value>* snapshot) {
   return Status(kOk);
 }
 
@@ -149,7 +150,7 @@ Status StubWebView::StartProfile() {
   return Status(kOk);
 }
 
-Status StubWebView::EndProfile(scoped_ptr<base::Value>* profile_data) {
+Status StubWebView::EndProfile(std::unique_ptr<base::Value>* profile_data) {
   return Status(kOk);
 }
 

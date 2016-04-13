@@ -5,9 +5,10 @@
 #ifndef CHROME_TEST_BASE_TESTING_IO_THREAD_STATE_H_
 #define CHROME_TEST_BASE_TESTING_IO_THREAD_STATE_H_
 
+#include <memory>
+
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 class IOThread;
 
@@ -29,7 +30,7 @@ class TestingIOThreadState {
   void Initialize(const base::Closure& done);
   void Shutdown(const base::Closure& done);
 
-  scoped_ptr<IOThread> io_thread_state_;
+  std::unique_ptr<IOThread> io_thread_state_;
 
   DISALLOW_COPY_AND_ASSIGN(TestingIOThreadState);
 };

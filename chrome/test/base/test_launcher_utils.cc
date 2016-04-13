@@ -4,10 +4,11 @@
 
 #include "chrome/test/base/test_launcher_utils.h"
 
+#include <memory>
+
 #include "base/command_line.h"
 #include "base/environment.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
@@ -85,7 +86,7 @@ bool OverrideUserDataDir(const base::FilePath& user_data_dir) {
   //
   // Note: we use an environment variable here, because we have to pass the
   // value to the child process. This is the simplest way to do it.
-  scoped_ptr<base::Environment> env(base::Environment::Create());
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
   success = success && env->SetVar("XDG_CACHE_HOME", user_data_dir.value());
 #endif
 

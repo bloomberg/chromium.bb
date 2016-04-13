@@ -68,7 +68,7 @@ Status ChromeImpl::GetWebViewIds(std::list<std::string>* web_view_ids) {
         }
       }
       if (!found) {
-        scoped_ptr<DevToolsClient> client(
+        std::unique_ptr<DevToolsClient> client(
             devtools_http_client_->CreateClient(view.id));
         for (ScopedVector<DevToolsEventListener>::const_iterator listener =
                  devtools_event_listeners_.begin();
@@ -137,10 +137,10 @@ Status ChromeImpl::Quit() {
 }
 
 ChromeImpl::ChromeImpl(
-    scoped_ptr<DevToolsHttpClient> http_client,
-    scoped_ptr<DevToolsClient> websocket_client,
+    std::unique_ptr<DevToolsHttpClient> http_client,
+    std::unique_ptr<DevToolsClient> websocket_client,
     ScopedVector<DevToolsEventListener>& devtools_event_listeners,
-    scoped_ptr<PortReservation> port_reservation)
+    std::unique_ptr<PortReservation> port_reservation)
     : quit_(false),
       devtools_http_client_(std::move(http_client)),
       devtools_websocket_client_(std::move(websocket_client)),

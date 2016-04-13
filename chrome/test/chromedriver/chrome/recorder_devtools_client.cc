@@ -12,7 +12,7 @@ RecorderDevToolsClient::~RecorderDevToolsClient() {}
 Status RecorderDevToolsClient::SendCommandAndGetResult(
     const std::string& method,
     const base::DictionaryValue& params,
-    scoped_ptr<base::DictionaryValue>* result) {
+    std::unique_ptr<base::DictionaryValue>* result) {
   commands_.push_back(Command(method, params));
 
   // For any tests that directly call SendCommandAndGetResults, we'll just

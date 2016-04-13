@@ -7,12 +7,13 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
+
+#include <memory>
 #include <vector>
 
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/rand_util.h"
 #include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
@@ -231,7 +232,7 @@ void WebSocket::OnReadDuringHandshake(const char* data, int len) {
 }
 
 void WebSocket::OnReadDuringOpen(const char* data, int len) {
-  std::vector<scoped_ptr<net::WebSocketFrameChunk>> frame_chunks;
+  std::vector<std::unique_ptr<net::WebSocketFrameChunk>> frame_chunks;
   CHECK(parser_.Decode(data, len, &frame_chunks));
   for (size_t i = 0; i < frame_chunks.size(); ++i) {
     scoped_refptr<net::IOBufferWithSize> buffer = frame_chunks[i]->data;

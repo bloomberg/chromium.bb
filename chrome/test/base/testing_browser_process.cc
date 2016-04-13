@@ -182,7 +182,7 @@ BackgroundModeManager* TestingBrowserProcess::background_mode_manager() {
 }
 
 void TestingBrowserProcess::set_background_mode_manager_for_test(
-    scoped_ptr<BackgroundModeManager> manager) {
+    std::unique_ptr<BackgroundModeManager> manager) {
   NOTREACHED();
 }
 
@@ -349,8 +349,8 @@ TestingBrowserProcess::network_time_tracker() {
   if (!network_time_tracker_) {
     DCHECK(local_state_);
     network_time_tracker_.reset(new network_time::NetworkTimeTracker(
-        scoped_ptr<base::Clock>(new base::DefaultClock()),
-        scoped_ptr<base::TickClock>(new base::DefaultTickClock()),
+        std::unique_ptr<base::Clock>(new base::DefaultClock()),
+        std::unique_ptr<base::TickClock>(new base::DefaultTickClock()),
         local_state_));
   }
   return network_time_tracker_.get();
@@ -374,7 +374,7 @@ void TestingBrowserProcess::SetSystemRequestContext(
 }
 
 void TestingBrowserProcess::SetNotificationUIManager(
-    scoped_ptr<NotificationUIManager> notification_ui_manager) {
+    std::unique_ptr<NotificationUIManager> notification_ui_manager) {
   notification_ui_manager_.swap(notification_ui_manager);
 }
 

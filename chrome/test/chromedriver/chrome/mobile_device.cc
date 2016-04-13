@@ -17,9 +17,9 @@ MobileDevice::MobileDevice() {}
 MobileDevice::~MobileDevice() {}
 
 Status FindMobileDevice(std::string device_name,
-                        scoped_ptr<MobileDevice>* mobile_device) {
+                        std::unique_ptr<MobileDevice>* mobile_device) {
   base::JSONReader json_reader(base::JSON_ALLOW_TRAILING_COMMAS);
-  scoped_ptr<base::Value> devices_value =
+  std::unique_ptr<base::Value> devices_value =
       json_reader.ReadToValue(kMobileDevices);
   if (!devices_value.get())
     return Status(kUnknownError,
@@ -34,7 +34,7 @@ Status FindMobileDevice(std::string device_name,
   if (!mobile_devices->GetDictionary(device_name, &device))
     return Status(kUnknownError, "must be a valid device");
 
-  scoped_ptr<MobileDevice> tmp_mobile_device(new MobileDevice());
+  std::unique_ptr<MobileDevice> tmp_mobile_device(new MobileDevice());
   std::string device_metrics_string;
   if (!device->GetString("userAgent", &tmp_mobile_device->user_agent)) {
     return Status(kUnknownError,

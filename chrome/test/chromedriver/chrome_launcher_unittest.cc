@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/test/chromedriver/chrome_launcher.h"
+
+#include <memory>
+
 #include "base/base64.h"
 #include "base/base_paths.h"
 #include "base/command_line.h"
@@ -9,13 +13,11 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_reader.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/strings/string_split.h"
 #include "base/values.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/test/chromedriver/chrome/status.h"
-#include "chrome/test/chromedriver/chrome_launcher.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 TEST(ProcessExtensions, NoExtension) {
@@ -89,7 +91,7 @@ TEST(ProcessExtensions, SingleExtensionWithBgPage) {
   std::string manifest_txt;
   ASSERT_TRUE(base::ReadFileToString(
       temp_ext_path.AppendASCII("manifest.json"), &manifest_txt));
-  scoped_ptr<base::Value> manifest = base::JSONReader::Read(manifest_txt);
+  std::unique_ptr<base::Value> manifest = base::JSONReader::Read(manifest_txt);
   ASSERT_TRUE(manifest);
   base::DictionaryValue* manifest_dict = NULL;
   ASSERT_TRUE(manifest->GetAsDictionary(&manifest_dict));
@@ -181,7 +183,7 @@ TEST(PrepareUserDataDir, CustomPrefs) {
           chrome::kPreferencesFilename);
   std::string prefs_str;
   ASSERT_TRUE(base::ReadFileToString(prefs_file, &prefs_str));
-  scoped_ptr<base::Value> prefs_value = base::JSONReader::Read(prefs_str);
+  std::unique_ptr<base::Value> prefs_value = base::JSONReader::Read(prefs_str);
   const base::DictionaryValue* prefs_dict = NULL;
   ASSERT_TRUE(prefs_value->GetAsDictionary(&prefs_dict));
   AssertEQ(*prefs_dict, "myPrefsKey", "ok");
@@ -191,7 +193,7 @@ TEST(PrepareUserDataDir, CustomPrefs) {
       temp_dir.path().Append(chrome::kLocalStateFilename);
   std::string local_state_str;
   ASSERT_TRUE(base::ReadFileToString(local_state_file, &local_state_str));
-  scoped_ptr<base::Value> local_state_value =
+  std::unique_ptr<base::Value> local_state_value =
       base::JSONReader::Read(local_state_str);
   const base::DictionaryValue* local_state_dict = NULL;
   ASSERT_TRUE(local_state_value->GetAsDictionary(&local_state_dict));

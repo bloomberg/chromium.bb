@@ -2,17 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/test/chromedriver/chrome/devtools_client_impl.h"
+
 #include <list>
+#include <memory>
 #include <string>
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
-#include "chrome/test/chromedriver/chrome/devtools_client_impl.h"
 #include "chrome/test/chromedriver/chrome/devtools_event_listener.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/net/sync_websocket.h"
@@ -41,7 +43,7 @@ class MockSyncWebSocket : public SyncWebSocket {
 
   bool Send(const std::string& message) override {
     EXPECT_TRUE(connected_);
-    scoped_ptr<base::Value> value = base::JSONReader::Read(message);
+    std::unique_ptr<base::Value> value = base::JSONReader::Read(message);
     base::DictionaryValue* dict = NULL;
     EXPECT_TRUE(value->GetAsDictionary(&dict));
     if (!dict)
@@ -84,8 +86,8 @@ class MockSyncWebSocket : public SyncWebSocket {
 };
 
 template <typename T>
-scoped_ptr<SyncWebSocket> CreateMockSyncWebSocket() {
-  return scoped_ptr<SyncWebSocket>(new T());
+std::unique_ptr<SyncWebSocket> CreateMockSyncWebSocket() {
+  return std::unique_ptr<SyncWebSocket>(new T());
 }
 
 class DevToolsClientImplTest : public testing::Test {
@@ -116,7 +118,7 @@ TEST_F(DevToolsClientImplTest, SendCommandAndGetResult) {
   ASSERT_EQ(kOk, client.ConnectIfNecessary().code());
   base::DictionaryValue params;
   params.SetInteger("param", 1);
-  scoped_ptr<base::DictionaryValue> result;
+  std::unique_ptr<base::DictionaryValue> result;
   Status status = client.SendCommandAndGetResult("method", params, &result);
   ASSERT_EQ(kOk, status.code());
   std::string json;
@@ -484,7 +486,7 @@ TEST_F(DevToolsClientImplTest, SendCommandEventBeforeResponse) {
   client.AddListener(&listener);
   ASSERT_EQ(kOk, client.ConnectIfNecessary().code());
   base::DictionaryValue params;
-  scoped_ptr<base::DictionaryValue> result;
+  std::unique_ptr<base::DictionaryValue> result;
   ASSERT_TRUE(client.SendCommandAndGetResult("method", params, &result).IsOk());
   ASSERT_TRUE(result);
   int key;
@@ -644,7 +646,7 @@ TEST_F(DevToolsClientImplTest, NestedCommandsWithOutOfOrderResults) {
       base::Bind(&ReturnOutOfOrderResponses, &recurse_count, &client));
   base::DictionaryValue params;
   params.SetInteger("param", 1);
-  scoped_ptr<base::DictionaryValue> result;
+  std::unique_ptr<base::DictionaryValue> result;
   ASSERT_TRUE(client.SendCommandAndGetResult("method", params, &result).IsOk());
   ASSERT_TRUE(result);
   int key;
@@ -711,7 +713,7 @@ class OnConnectedSyncWebSocket : public SyncWebSocket {
 
   bool Send(const std::string& message) override {
     EXPECT_TRUE(connected_);
-    scoped_ptr<base::Value> value = base::JSONReader::Read(message);
+    std::unique_ptr<base::Value> value = base::JSONReader::Read(message);
     base::DictionaryValue* dict = NULL;
     EXPECT_TRUE(value->GetAsDictionary(&dict));
     if (!dict)
@@ -993,9 +995,9 @@ class MockDevToolsEventListener : public DevToolsEventListener {
   int id_;
 };
 
-scoped_ptr<SyncWebSocket> CreateMockSyncWebSocket6(
+std::unique_ptr<SyncWebSocket> CreateMockSyncWebSocket6(
     std::list<std::string>* messages) {
-  return make_scoped_ptr(new MockSyncWebSocket6(messages));
+  return base::WrapUnique(new MockSyncWebSocket6(messages));
 }
 
 }  // namespace

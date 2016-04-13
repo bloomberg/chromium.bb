@@ -5,9 +5,10 @@
 #ifndef CHROME_TEST_NACL_NACL_BROWSERTEST_UTIL_H_
 #define CHROME_TEST_NACL_NACL_BROWSERTEST_UTIL_H_
 
+#include <memory>
+
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/test/javascript_test_observer.h"
@@ -106,7 +107,7 @@ class NaClBrowserTestBase : public InProcessBrowserTest {
  private:
   bool StartTestServer();
 
-  scoped_ptr<net::EmbeddedTestServer> test_server_;
+  std::unique_ptr<net::EmbeddedTestServer> test_server_;
 };
 
 class NaClBrowserTestNewlib : public NaClBrowserTestBase {

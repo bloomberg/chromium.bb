@@ -744,7 +744,7 @@ void RemoteDesktopBrowserTest::RunJavaScriptTest(
 
   // Read in the JSON
   base::JSONReader reader;
-  scoped_ptr<base::Value> value =
+  std::unique_ptr<base::Value> value =
       reader.Read(result, base::JSON_ALLOW_TRAILING_COMMAS);
 
   // Convert to dictionary
@@ -885,7 +885,7 @@ void RemoteDesktopBrowserTest::SetUserNameAndPassword(
   ASSERT_TRUE(base::ReadFileToString(absolute_path, &accounts_info));
 
   // Get the root dictionary from the input json file contents.
-  scoped_ptr<base::Value> root =
+  std::unique_ptr<base::Value> root =
       base::JSONReader::Read(accounts_info, base::JSON_ALLOW_TRAILING_COMMAS);
 
   const base::DictionaryValue* root_dict = NULL;

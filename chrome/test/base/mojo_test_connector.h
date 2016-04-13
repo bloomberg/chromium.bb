@@ -5,8 +5,9 @@
 #ifndef CHROME_TEST_BASE_MOJO_TEST_CONNECTOR_H_
 #define CHROME_TEST_BASE_MOJO_TEST_CONNECTOR_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/process/process_handle.h"
 #include "base/test/launcher/test_launcher.h"
 #include "services/shell/background/background_shell.h"
@@ -40,14 +41,14 @@ class MojoTestConnector {
   // Initializes the background thread the Shell runs on.
   mojo::shell::mojom::ShellClientRequest Init();
 
-  scoped_ptr<content::TestState> PrepareForTest(
+  std::unique_ptr<content::TestState> PrepareForTest(
       base::CommandLine* command_line,
       base::TestLauncher::LaunchOptions* test_launch_options);
 
  private:
   class NativeRunnerDelegateImpl;
 
-  scoped_ptr<NativeRunnerDelegateImpl> native_runner_delegate_;
+  std::unique_ptr<NativeRunnerDelegateImpl> native_runner_delegate_;
   mojo::shell::BackgroundShell background_shell_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoTestConnector);

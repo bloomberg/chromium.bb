@@ -5,11 +5,11 @@
 #ifndef CHROME_TEST_CHROMEDRIVER_CHROME_HEAP_SNAPSHOT_TAKER_H_
 #define CHROME_TEST_CHROMEDRIVER_CHROME_HEAP_SNAPSHOT_TAKER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/test/chromedriver/chrome/devtools_event_listener.h"
 
 namespace base {
@@ -26,7 +26,7 @@ class HeapSnapshotTaker : public DevToolsEventListener {
   explicit HeapSnapshotTaker(DevToolsClient* client);
   ~HeapSnapshotTaker() override;
 
-  Status TakeSnapshot(scoped_ptr<base::Value>* snapshot);
+  Status TakeSnapshot(std::unique_ptr<base::Value>* snapshot);
 
   // Overridden from DevToolsEventListener:
   Status OnEvent(DevToolsClient* client,

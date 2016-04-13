@@ -7,6 +7,7 @@
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/debug/debugger.h"
+#include "base/memory/ptr_util.h"
 #include "base/process/launch.h"
 #include "base/sys_info.h"
 #include "chrome/test/base/chrome_test_launcher.h"
@@ -31,7 +32,7 @@ class MashTestSuite : public ChromeTestSuite {
  public:
   MashTestSuite(int argc, char** argv) : ChromeTestSuite(argc, argv) {}
 
-  void SetMojoTestConnector(scoped_ptr<MojoTestConnector> connector) {
+  void SetMojoTestConnector(std::unique_ptr<MojoTestConnector> connector) {
     mojo_test_connector_ = std::move(connector);
   }
   MojoTestConnector* mojo_test_connector() {
@@ -45,7 +46,7 @@ class MashTestSuite : public ChromeTestSuite {
     ChromeTestSuite::Shutdown();
   }
 
-  scoped_ptr<MojoTestConnector> mojo_test_connector_;
+  std::unique_ptr<MojoTestConnector> mojo_test_connector_;
 
   DISALLOW_COPY_AND_ASSIGN(MashTestSuite);
 };
@@ -62,7 +63,7 @@ class MashTestLauncherDelegate : public ChromeTestLauncherDelegate {
     DCHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
         content::kSingleProcessTestsFlag));
     DCHECK(test_suite_);
-    test_suite_->SetMojoTestConnector(make_scoped_ptr(new MojoTestConnector));
+    test_suite_->SetMojoTestConnector(base::WrapUnique(new MojoTestConnector));
     return test_suite_->mojo_test_connector();
   }
 
@@ -74,7 +75,7 @@ class MashTestLauncherDelegate : public ChromeTestLauncherDelegate {
     test_suite_.reset();
     return result;
   }
-  scoped_ptr<content::TestState> PreRunTest(
+  std::unique_ptr<content::TestState> PreRunTest(
       base::CommandLine* command_line,
       base::TestLauncher::LaunchOptions* test_launch_options) override {
     if (!mojo_test_connector_) {
@@ -95,10 +96,10 @@ class MashTestLauncherDelegate : public ChromeTestLauncherDelegate {
     mojo_test_connector_.reset();
   }
 
-  scoped_ptr<MashTestSuite> test_suite_;
-  scoped_ptr<MojoTestConnector> mojo_test_connector_;
-  scoped_ptr<mojo::ShellClient> shell_client_;
-  scoped_ptr<mojo::ShellConnection> shell_connection_;
+  std::unique_ptr<MashTestSuite> test_suite_;
+  std::unique_ptr<MojoTestConnector> mojo_test_connector_;
+  std::unique_ptr<mojo::ShellClient> shell_client_;
+  std::unique_ptr<mojo::ShellConnection> shell_connection_;
 
   DISALLOW_COPY_AND_ASSIGN(MashTestLauncherDelegate);
 };

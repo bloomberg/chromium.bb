@@ -22,8 +22,8 @@ void QUnitBrowserTestRunner::QUnitStart(content::WebContents* web_contents) {
       web_contents, "browserTestHarness.run();", &result));
 
   // Read in the JSON.
-  scoped_ptr<base::Value> value = base::JSONReader::Read(
-      result, base::JSON_ALLOW_TRAILING_COMMAS);
+  std::unique_ptr<base::Value> value =
+      base::JSONReader::Read(result, base::JSON_ALLOW_TRAILING_COMMAS);
 
   // Convert to dictionary.
   base::DictionaryValue* dict_value = NULL;

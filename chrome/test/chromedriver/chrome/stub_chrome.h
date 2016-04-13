@@ -6,9 +6,9 @@
 #define CHROME_TEST_CHROMEDRIVER_CHROME_STUB_CHROME_H_
 
 #include <list>
+#include <memory>
 
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/test/chromedriver/chrome/browser_info.h"
 #include "chrome/test/chromedriver/chrome/chrome.h"
 

@@ -5,10 +5,10 @@
 #ifndef CHROME_TEST_CHROMEDRIVER_CHROME_CHROME_ANDROID_IMPL_H_
 #define CHROME_TEST_CHROMEDRIVER_CHROME_CHROME_ANDROID_IMPL_H_
 
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/test/chromedriver/chrome/chrome_impl.h"
 
 class Device;
@@ -18,11 +18,11 @@ class DevToolsHttpClient;
 class ChromeAndroidImpl : public ChromeImpl {
  public:
   ChromeAndroidImpl(
-      scoped_ptr<DevToolsHttpClient> http_client,
-      scoped_ptr<DevToolsClient> websocket_client,
+      std::unique_ptr<DevToolsHttpClient> http_client,
+      std::unique_ptr<DevToolsClient> websocket_client,
       ScopedVector<DevToolsEventListener>& devtools_event_listeners,
-      scoped_ptr<PortReservation> port_reservation,
-      scoped_ptr<Device> device);
+      std::unique_ptr<PortReservation> port_reservation,
+      std::unique_ptr<Device> device);
   ~ChromeAndroidImpl() override;
 
   // Overridden from Chrome:
@@ -34,7 +34,7 @@ class ChromeAndroidImpl : public ChromeImpl {
   Status QuitImpl() override;
 
  private:
-  scoped_ptr<Device> device_;
+  std::unique_ptr<Device> device_;
 };
 
 #endif  // CHROME_TEST_CHROMEDRIVER_CHROME_CHROME_ANDROID_IMPL_H_

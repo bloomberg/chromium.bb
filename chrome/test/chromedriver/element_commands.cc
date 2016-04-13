@@ -68,7 +68,7 @@ Status SendKeysToElement(
   if (!is_focused) {
     base::ListValue args;
     args.Append(CreateElement(element_id));
-    scoped_ptr<base::Value> result;
+    std::unique_ptr<base::Value> result;
     status = web_view->CallFunction(
         session->GetCurrentFrameId(), kFocusScript, args, &result);
     if (status.IsError())
@@ -80,46 +80,42 @@ Status SendKeysToElement(
 
 }  // namespace
 
-Status ExecuteElementCommand(
-    const ElementCommand& command,
-    Session* session,
-    WebView* web_view,
-    const base::DictionaryValue& params,
-    scoped_ptr<base::Value>* value) {
+Status ExecuteElementCommand(const ElementCommand& command,
+                             Session* session,
+                             WebView* web_view,
+                             const base::DictionaryValue& params,
+                             std::unique_ptr<base::Value>* value) {
   std::string id;
   if (params.GetString("id", &id) || params.GetString("element", &id))
     return command.Run(session, web_view, id, params, value);
   return Status(kUnknownError, "element identifier must be a string");
 }
 
-Status ExecuteFindChildElement(
-    int interval_ms,
-    Session* session,
-    WebView* web_view,
-    const std::string& element_id,
-    const base::DictionaryValue& params,
-    scoped_ptr<base::Value>* value) {
+Status ExecuteFindChildElement(int interval_ms,
+                               Session* session,
+                               WebView* web_view,
+                               const std::string& element_id,
+                               const base::DictionaryValue& params,
+                               std::unique_ptr<base::Value>* value) {
   return FindElement(
       interval_ms, true, &element_id, session, web_view, params, value);
 }
 
-Status ExecuteFindChildElements(
-    int interval_ms,
-    Session* session,
-    WebView* web_view,
-    const std::string& element_id,
-    const base::DictionaryValue& params,
-    scoped_ptr<base::Value>* value) {
+Status ExecuteFindChildElements(int interval_ms,
+                                Session* session,
+                                WebView* web_view,
+                                const std::string& element_id,
+                                const base::DictionaryValue& params,
+                                std::unique_ptr<base::Value>* value) {
   return FindElement(
       interval_ms, false, &element_id, session, web_view, params, value);
 }
 
-Status ExecuteHoverOverElement(
-    Session* session,
-    WebView* web_view,
-    const std::string& element_id,
-    const base::DictionaryValue& params,
-    scoped_ptr<base::Value>* value) {
+Status ExecuteHoverOverElement(Session* session,
+                               WebView* web_view,
+                               const std::string& element_id,
+                               const base::DictionaryValue& params,
+                               std::unique_ptr<base::Value>* value) {
   WebPoint location;
   Status status = GetElementClickableLocation(
       session, web_view, element_id, &location);
@@ -137,12 +133,11 @@ Status ExecuteHoverOverElement(
   return status;
 }
 
-Status ExecuteClickElement(
-    Session* session,
-    WebView* web_view,
-    const std::string& element_id,
-    const base::DictionaryValue& params,
-    scoped_ptr<base::Value>* value) {
+Status ExecuteClickElement(Session* session,
+                           WebView* web_view,
+                           const std::string& element_id,
+                           const base::DictionaryValue& params,
+                           std::unique_ptr<base::Value>* value) {
   std::string tag_name;
   Status status = GetElementTagName(session, web_view, element_id, &tag_name);
   if (status.IsError())
@@ -182,12 +177,11 @@ Status ExecuteClickElement(
   }
 }
 
-Status ExecuteTouchSingleTap(
-    Session* session,
-    WebView* web_view,
-    const std::string& element_id,
-    const base::DictionaryValue& params,
-    scoped_ptr<base::Value>* value) {
+Status ExecuteTouchSingleTap(Session* session,
+                             WebView* web_view,
+                             const std::string& element_id,
+                             const base::DictionaryValue& params,
+                             std::unique_ptr<base::Value>* value) {
   WebPoint location;
   Status status = GetElementClickableLocation(
       session, web_view, element_id, &location);
@@ -205,12 +199,11 @@ Status ExecuteTouchSingleTap(
   return web_view->SynthesizeTapGesture(location.x, location.y, 1, false);
 }
 
-Status ExecuteTouchDoubleTap(
-    Session* session,
-    WebView* web_view,
-    const std::string& element_id,
-    const base::DictionaryValue& params,
-    scoped_ptr<base::Value>* value) {
+Status ExecuteTouchDoubleTap(Session* session,
+                             WebView* web_view,
+                             const std::string& element_id,
+                             const base::DictionaryValue& params,
+                             std::unique_ptr<base::Value>* value) {
   if (!session->chrome->HasTouchScreen()) {
     // TODO(samuong): remove this once we stop supporting M44.
     return Status(kUnknownCommand, "Double tap command requires Chrome 44+");
@@ -223,12 +216,11 @@ Status ExecuteTouchDoubleTap(
   return web_view->SynthesizeTapGesture(location.x, location.y, 2, false);
 }
 
-Status ExecuteTouchLongPress(
-    Session* session,
-    WebView* web_view,
-    const std::string& element_id,
-    const base::DictionaryValue& params,
-    scoped_ptr<base::Value>* value) {
+Status ExecuteTouchLongPress(Session* session,
+                             WebView* web_view,
+                             const std::string& element_id,
+                             const base::DictionaryValue& params,
+                             std::unique_ptr<base::Value>* value) {
   if (!session->chrome->HasTouchScreen()) {
     // TODO(samuong): remove this once we stop supporting M44.
     return Status(kUnknownCommand, "Long press command requires Chrome 44+");
@@ -241,12 +233,11 @@ Status ExecuteTouchLongPress(
   return web_view->SynthesizeTapGesture(location.x, location.y, 1, true);
 }
 
-Status ExecuteFlick(
-    Session* session,
-    WebView* web_view,
-    const std::string& element_id,
-    const base::DictionaryValue& params,
-    scoped_ptr<base::Value>* value) {
+Status ExecuteFlick(Session* session,
+                    WebView* web_view,
+                    const std::string& element_id,
+                    const base::DictionaryValue& params,
+                    std::unique_ptr<base::Value>* value) {
   WebPoint location;
   Status status = GetElementClickableLocation(
       session, web_view, element_id, &location);
@@ -290,27 +281,25 @@ Status ExecuteFlick(
       TouchEvent(kTouchEnd, location.x + xoffset, location.y + yoffset));
 }
 
-Status ExecuteClearElement(
-    Session* session,
-    WebView* web_view,
-    const std::string& element_id,
-    const base::DictionaryValue& params,
-    scoped_ptr<base::Value>* value) {
+Status ExecuteClearElement(Session* session,
+                           WebView* web_view,
+                           const std::string& element_id,
+                           const base::DictionaryValue& params,
+                           std::unique_ptr<base::Value>* value) {
   base::ListValue args;
   args.Append(CreateElement(element_id));
-  scoped_ptr<base::Value> result;
+  std::unique_ptr<base::Value> result;
   return web_view->CallFunction(
       session->GetCurrentFrameId(),
       webdriver::atoms::asString(webdriver::atoms::CLEAR),
       args, &result);
 }
 
-Status ExecuteSendKeysToElement(
-    Session* session,
-    WebView* web_view,
-    const std::string& element_id,
-    const base::DictionaryValue& params,
-    scoped_ptr<base::Value>* value) {
+Status ExecuteSendKeysToElement(Session* session,
+                                WebView* web_view,
+                                const std::string& element_id,
+                                const base::DictionaryValue& params,
+                                std::unique_ptr<base::Value>* value) {
   const base::ListValue* key_list;
   if (!params.GetList("value", &key_list))
     return Status(kUnknownError, "'value' must be a list");
@@ -350,7 +339,7 @@ Status ExecuteSendKeysToElement(
     if (!multiple && paths.size() > 1)
       return Status(kUnknownError, "the element can not hold multiple files");
 
-    scoped_ptr<base::DictionaryValue> element(CreateElement(element_id));
+    std::unique_ptr<base::DictionaryValue> element(CreateElement(element_id));
     return web_view->SetFileInputFiles(
         session->GetCurrentFrameId(), *element, paths);
   } else {
@@ -358,12 +347,11 @@ Status ExecuteSendKeysToElement(
   }
 }
 
-Status ExecuteSubmitElement(
-    Session* session,
-    WebView* web_view,
-    const std::string& element_id,
-    const base::DictionaryValue& params,
-    scoped_ptr<base::Value>* value) {
+Status ExecuteSubmitElement(Session* session,
+                            WebView* web_view,
+                            const std::string& element_id,
+                            const base::DictionaryValue& params,
+                            std::unique_ptr<base::Value>* value) {
   base::ListValue args;
   args.Append(CreateElement(element_id));
   return web_view->CallFunction(
@@ -373,12 +361,11 @@ Status ExecuteSubmitElement(
       value);
 }
 
-Status ExecuteGetElementText(
-    Session* session,
-    WebView* web_view,
-    const std::string& element_id,
-    const base::DictionaryValue& params,
-    scoped_ptr<base::Value>* value) {
+Status ExecuteGetElementText(Session* session,
+                             WebView* web_view,
+                             const std::string& element_id,
+                             const base::DictionaryValue& params,
+                             std::unique_ptr<base::Value>* value) {
   base::ListValue args;
   args.Append(CreateElement(element_id));
   return web_view->CallFunction(
@@ -388,12 +375,11 @@ Status ExecuteGetElementText(
       value);
 }
 
-Status ExecuteGetElementValue(
-    Session* session,
-    WebView* web_view,
-    const std::string& element_id,
-    const base::DictionaryValue& params,
-    scoped_ptr<base::Value>* value) {
+Status ExecuteGetElementValue(Session* session,
+                              WebView* web_view,
+                              const std::string& element_id,
+                              const base::DictionaryValue& params,
+                              std::unique_ptr<base::Value>* value) {
   base::ListValue args;
   args.Append(CreateElement(element_id));
   return web_view->CallFunction(
@@ -403,12 +389,11 @@ Status ExecuteGetElementValue(
       value);
 }
 
-Status ExecuteGetElementTagName(
-    Session* session,
-    WebView* web_view,
-    const std::string& element_id,
-    const base::DictionaryValue& params,
-    scoped_ptr<base::Value>* value) {
+Status ExecuteGetElementTagName(Session* session,
+                                WebView* web_view,
+                                const std::string& element_id,
+                                const base::DictionaryValue& params,
+                                std::unique_ptr<base::Value>* value) {
   base::ListValue args;
   args.Append(CreateElement(element_id));
   return web_view->CallFunction(
@@ -418,12 +403,11 @@ Status ExecuteGetElementTagName(
       value);
 }
 
-Status ExecuteIsElementSelected(
-    Session* session,
-    WebView* web_view,
-    const std::string& element_id,
-    const base::DictionaryValue& params,
-    scoped_ptr<base::Value>* value) {
+Status ExecuteIsElementSelected(Session* session,
+                                WebView* web_view,
+                                const std::string& element_id,
+                                const base::DictionaryValue& params,
+                                std::unique_ptr<base::Value>* value) {
   base::ListValue args;
   args.Append(CreateElement(element_id));
   return web_view->CallFunction(
@@ -433,12 +417,11 @@ Status ExecuteIsElementSelected(
       value);
 }
 
-Status ExecuteIsElementEnabled(
-    Session* session,
-    WebView* web_view,
-    const std::string& element_id,
-    const base::DictionaryValue& params,
-    scoped_ptr<base::Value>* value) {
+Status ExecuteIsElementEnabled(Session* session,
+                               WebView* web_view,
+                               const std::string& element_id,
+                               const base::DictionaryValue& params,
+                               std::unique_ptr<base::Value>* value) {
   base::ListValue args;
   args.Append(CreateElement(element_id));
   return web_view->CallFunction(
@@ -448,12 +431,11 @@ Status ExecuteIsElementEnabled(
       value);
 }
 
-Status ExecuteIsElementDisplayed(
-    Session* session,
-    WebView* web_view,
-    const std::string& element_id,
-    const base::DictionaryValue& params,
-    scoped_ptr<base::Value>* value) {
+Status ExecuteIsElementDisplayed(Session* session,
+                                 WebView* web_view,
+                                 const std::string& element_id,
+                                 const base::DictionaryValue& params,
+                                 std::unique_ptr<base::Value>* value) {
   base::ListValue args;
   args.Append(CreateElement(element_id));
   return web_view->CallFunction(
@@ -463,12 +445,11 @@ Status ExecuteIsElementDisplayed(
       value);
 }
 
-Status ExecuteGetElementLocation(
-    Session* session,
-    WebView* web_view,
-    const std::string& element_id,
-    const base::DictionaryValue& params,
-    scoped_ptr<base::Value>* value) {
+Status ExecuteGetElementLocation(Session* session,
+                                 WebView* web_view,
+                                 const std::string& element_id,
+                                 const base::DictionaryValue& params,
+                                 std::unique_ptr<base::Value>* value) {
   base::ListValue args;
   args.Append(CreateElement(element_id));
   return web_view->CallFunction(
@@ -483,7 +464,7 @@ Status ExecuteGetElementLocationOnceScrolledIntoView(
     WebView* web_view,
     const std::string& element_id,
     const base::DictionaryValue& params,
-    scoped_ptr<base::Value>* value) {
+    std::unique_ptr<base::Value>* value) {
   WebPoint offset(0, 0);
   WebPoint location;
   Status status = ScrollElementIntoView(
@@ -494,12 +475,11 @@ Status ExecuteGetElementLocationOnceScrolledIntoView(
   return Status(kOk);
 }
 
-Status ExecuteGetElementSize(
-    Session* session,
-    WebView* web_view,
-    const std::string& element_id,
-    const base::DictionaryValue& params,
-    scoped_ptr<base::Value>* value) {
+Status ExecuteGetElementSize(Session* session,
+                             WebView* web_view,
+                             const std::string& element_id,
+                             const base::DictionaryValue& params,
+                             std::unique_ptr<base::Value>* value) {
   base::ListValue args;
   args.Append(CreateElement(element_id));
   return web_view->CallFunction(
@@ -509,12 +489,11 @@ Status ExecuteGetElementSize(
       value);
 }
 
-Status ExecuteGetElementAttribute(
-    Session* session,
-    WebView* web_view,
-    const std::string& element_id,
-    const base::DictionaryValue& params,
-    scoped_ptr<base::Value>* value) {
+Status ExecuteGetElementAttribute(Session* session,
+                                  WebView* web_view,
+                                  const std::string& element_id,
+                                  const base::DictionaryValue& params,
+                                  std::unique_ptr<base::Value>* value) {
   std::string name;
   if (!params.GetString("name", &name))
     return Status(kUnknownError, "missing 'name'");
@@ -526,7 +505,7 @@ Status ExecuteGetElementValueOfCSSProperty(
     WebView* web_view,
     const std::string& element_id,
     const base::DictionaryValue& params,
-    scoped_ptr<base::Value>* value) {
+    std::unique_ptr<base::Value>* value) {
   std::string property_name;
   if (!params.GetString("propertyName", &property_name))
     return Status(kUnknownError, "missing 'propertyName'");
@@ -539,12 +518,11 @@ Status ExecuteGetElementValueOfCSSProperty(
   return Status(kOk);
 }
 
-Status ExecuteElementEquals(
-    Session* session,
-    WebView* web_view,
-    const std::string& element_id,
-    const base::DictionaryValue& params,
-    scoped_ptr<base::Value>* value) {
+Status ExecuteElementEquals(Session* session,
+                            WebView* web_view,
+                            const std::string& element_id,
+                            const base::DictionaryValue& params,
+                            std::unique_ptr<base::Value>* value) {
   std::string other_element_id;
   if (!params.GetString("other", &other_element_id))
     return Status(kUnknownError, "'other' must be a string");

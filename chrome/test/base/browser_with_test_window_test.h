@@ -163,17 +163,17 @@ class BrowserWithTestWindowTest : public testing::Test {
   // |DestroyProfile()| function - which can be overwritten by derived testing
   // frameworks.
   TestingProfile* profile_;
-  scoped_ptr<BrowserWindow> window_;  // Usually a TestBrowserWindow.
-  scoped_ptr<Browser> browser_;
+  std::unique_ptr<BrowserWindow> window_;  // Usually a TestBrowserWindow.
+  std::unique_ptr<Browser> browser_;
 
   // The existence of this object enables tests via
   // RenderViewHostTester.
   content::RenderViewHostTestEnabler rvh_test_enabler_;
 
 #if defined(OS_CHROMEOS)
-  scoped_ptr<ash::test::AshTestHelper> ash_test_helper_;
+  std::unique_ptr<ash::test::AshTestHelper> ash_test_helper_;
 #elif defined(TOOLKIT_VIEWS)
-  scoped_ptr<views::ScopedViewsTestHelper> views_test_helper_;
+  std::unique_ptr<views::ScopedViewsTestHelper> views_test_helper_;
 #endif
 
 #if defined(OS_WIN)

@@ -153,7 +153,7 @@ DeviceManager::DeviceManager(Adb* adb) : adb_(adb) {
 
 DeviceManager::~DeviceManager() {}
 
-Status DeviceManager::AcquireDevice(scoped_ptr<Device>* device) {
+Status DeviceManager::AcquireDevice(std::unique_ptr<Device>* device) {
   std::vector<std::string> devices;
   Status status = adb_->GetDevices(&devices);
   if (status.IsError())
@@ -176,8 +176,8 @@ Status DeviceManager::AcquireDevice(scoped_ptr<Device>* device) {
   return status;
 }
 
-Status DeviceManager::AcquireSpecificDevice(
-    const std::string& device_serial, scoped_ptr<Device>* device) {
+Status DeviceManager::AcquireSpecificDevice(const std::string& device_serial,
+                                            std::unique_ptr<Device>* device) {
   std::vector<std::string> devices;
   Status status = adb_->GetDevices(&devices);
   if (status.IsError())

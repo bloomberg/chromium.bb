@@ -2,15 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/test/chromedriver/chrome/web_view_impl.h"
+
 #include <list>
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/chrome/devtools_client.h"
 #include "chrome/test/chromedriver/chrome/status.h"
-#include "chrome/test/chromedriver/chrome/web_view_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -45,7 +46,7 @@ class FakeDevToolsClient : public DevToolsClient {
   Status SendCommandAndGetResult(
       const std::string& method,
       const base::DictionaryValue& params,
-      scoped_ptr<base::DictionaryValue>* result) override {
+      std::unique_ptr<base::DictionaryValue>* result) override {
     if (status_.IsError())
       return status_;
     result->reset(result_.DeepCopy());
@@ -65,7 +66,7 @@ class FakeDevToolsClient : public DevToolsClient {
 };
 
 void AssertEvalFails(const base::DictionaryValue& command_result) {
-  scoped_ptr<base::DictionaryValue> result;
+  std::unique_ptr<base::DictionaryValue> result;
   FakeDevToolsClient client;
   client.set_result(command_result);
   Status status = internal::EvaluateScript(
@@ -77,7 +78,7 @@ void AssertEvalFails(const base::DictionaryValue& command_result) {
 }  // namespace
 
 TEST(EvaluateScript, CommandError) {
-  scoped_ptr<base::DictionaryValue> result;
+  std::unique_ptr<base::DictionaryValue> result;
   FakeDevToolsClient client;
   client.set_status(Status(kUnknownError));
   Status status = internal::EvaluateScript(
@@ -105,7 +106,7 @@ TEST(EvaluateScript, Throws) {
 }
 
 TEST(EvaluateScript, Ok) {
-  scoped_ptr<base::DictionaryValue> result;
+  std::unique_ptr<base::DictionaryValue> result;
   base::DictionaryValue dict;
   dict.SetBoolean("wasThrown", false);
   dict.SetInteger("result.key", 100);
@@ -118,7 +119,7 @@ TEST(EvaluateScript, Ok) {
 }
 
 TEST(EvaluateScriptAndGetValue, MissingType) {
-  scoped_ptr<base::Value> result;
+  std::unique_ptr<base::Value> result;
   FakeDevToolsClient client;
   base::DictionaryValue dict;
   dict.SetBoolean("wasThrown", false);
@@ -129,7 +130,7 @@ TEST(EvaluateScriptAndGetValue, MissingType) {
 }
 
 TEST(EvaluateScriptAndGetValue, Undefined) {
-  scoped_ptr<base::Value> result;
+  std::unique_ptr<base::Value> result;
   FakeDevToolsClient client;
   base::DictionaryValue dict;
   dict.SetBoolean("wasThrown", false);
@@ -142,7 +143,7 @@ TEST(EvaluateScriptAndGetValue, Undefined) {
 }
 
 TEST(EvaluateScriptAndGetValue, Ok) {
-  scoped_ptr<base::Value> result;
+  std::unique_ptr<base::Value> result;
   FakeDevToolsClient client;
   base::DictionaryValue dict;
   dict.SetBoolean("wasThrown", false);
@@ -186,13 +187,13 @@ TEST(EvaluateScriptAndGetObject, Ok) {
 }
 
 TEST(ParseCallFunctionResult, NotDict) {
-  scoped_ptr<base::Value> result;
+  std::unique_ptr<base::Value> result;
   base::FundamentalValue value(1);
   ASSERT_NE(kOk, internal::ParseCallFunctionResult(value, &result).code());
 }
 
 TEST(ParseCallFunctionResult, Ok) {
-  scoped_ptr<base::Value> result;
+  std::unique_ptr<base::Value> result;
   base::DictionaryValue dict;
   dict.SetInteger("status", 0);
   dict.SetInteger("value", 1);
@@ -204,7 +205,7 @@ TEST(ParseCallFunctionResult, Ok) {
 }
 
 TEST(ParseCallFunctionResult, ScriptError) {
-  scoped_ptr<base::Value> result;
+  std::unique_ptr<base::Value> result;
   base::DictionaryValue dict;
   dict.SetInteger("status", 1);
   dict.SetInteger("value", 1);

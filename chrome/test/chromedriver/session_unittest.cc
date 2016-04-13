@@ -4,10 +4,10 @@
 
 #include "chrome/test/chromedriver/session.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 
-#include "base/memory/scoped_ptr.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/chrome/stub_chrome.h"
 #include "chrome/test/chromedriver/chrome/stub_web_view.h"
@@ -41,7 +41,7 @@ TEST(Session, GetTargetWindowNoChrome) {
 }
 
 TEST(Session, GetTargetWindowTargetWindowClosed) {
-  scoped_ptr<Chrome> chrome(new MockChrome());
+  std::unique_ptr<Chrome> chrome(new MockChrome());
   Session session("1", std::move(chrome));
   session.window = "2";
   WebView* web_view;
@@ -49,7 +49,7 @@ TEST(Session, GetTargetWindowTargetWindowClosed) {
 }
 
 TEST(Session, GetTargetWindowTargetWindowStillOpen) {
-  scoped_ptr<Chrome> chrome(new MockChrome());
+  std::unique_ptr<Chrome> chrome(new MockChrome());
   Session session("1", std::move(chrome));
   session.window = "1";
   WebView* web_view = NULL;
@@ -58,7 +58,7 @@ TEST(Session, GetTargetWindowTargetWindowStillOpen) {
 }
 
 TEST(Session, SwitchToParentFrame) {
-  scoped_ptr<Chrome> chrome(new MockChrome());
+  std::unique_ptr<Chrome> chrome(new MockChrome());
   Session session("1", std::move(chrome));
 
   // Initial frame should be top frame.
@@ -84,7 +84,7 @@ TEST(Session, SwitchToParentFrame) {
 }
 
 TEST(Session, SwitchToTopFrame) {
-  scoped_ptr<Chrome> chrome(new MockChrome());
+  std::unique_ptr<Chrome> chrome(new MockChrome());
   Session session("1", std::move(chrome));
 
   // Initial frame should be top frame.
