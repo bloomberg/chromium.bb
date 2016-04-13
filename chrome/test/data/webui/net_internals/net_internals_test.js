@@ -250,14 +250,14 @@ var NetInternalsTest = (function() {
   NetInternalsTest.getTab = function(tabId) {
     var tabSwitcher = MainView.getInstance().tabSwitcher();
     var view = tabSwitcher.getTabView(tabId);
-    var menuItem = tabSwitcher.getMenuItemNode_(tabId);
+    var tabLink = tabSwitcher.tabIdToLink_[tabId];
 
     assertNotEquals(view, undefined, tabId + ' does not exist.');
-    assertNotEquals(menuItem, undefined, tabId + ' does not exist.');
+    assertNotEquals(tabLink, undefined, tabId + ' does not exist.');
 
     return {
       view: view,
-      menuItem: menuItem,
+      tabLink: tabLink,
     };
   };
 
@@ -271,14 +271,14 @@ var NetInternalsTest = (function() {
   };
 
   /**
-   * Returns true if the specified tab's handle is visible, false otherwise.
-   * Asserts if the handle can't be found.
+   * Returns true if the specified tab's link is visible, false otherwise.
+   * Asserts if the link can't be found.
    * @param {string}: tabId Id of the tab to check.
-   * @return {bool} Whether or not the tab's handle is visible.
+   * @return {bool} Whether or not the tab's link is visible.
    */
-  NetInternalsTest.tabHandleIsVisible = function(tabId) {
-    var tabHandleNode = NetInternalsTest.getTab(tabId).menuItem;
-    return NetInternalsTest.nodeIsVisible(tabHandleNode);
+  NetInternalsTest.tabLinkIsVisible = function(tabId) {
+    var tabLink = NetInternalsTest.getTab(tabId).tabLink;
+    return NetInternalsTest.nodeIsVisible(tabLink);
   };
 
   /**
@@ -297,13 +297,12 @@ var NetInternalsTest = (function() {
    */
   NetInternalsTest.getTabId = function(hash) {
     /**
-     * Map of tab handle names to location hashes.  Since the text fixture
-     * must be runnable independent of net-internals, for generating the
-     * test's cc files, must be careful to only create this map while a test
-     * is running.
+     * Map of tab ids to location hashes.  Since the text fixture must be
+     * runnable independent of net-internals, for generating the test's cc
+     * files, must be careful to only create this map while a test is running.
      * @type {object.<string, string>}
      */
-    var hashToTabHandleIdMap = {
+    var hashToTabIdMap = {
       capture: CaptureView.TAB_ID,
       export: ExportView.TAB_ID,
       import: ImportView.TAB_ID,
@@ -324,9 +323,9 @@ var NetInternalsTest = (function() {
       chromeos: CrosView.TAB_ID
     };
 
-    assertEquals(typeof hashToTabHandleIdMap[hash], 'string',
+    assertEquals(typeof hashToTabIdMap[hash], 'string',
                  'Invalid tab anchor: ' + hash);
-    var tabId = hashToTabHandleIdMap[hash];
+    var tabId = hashToTabIdMap[hash];
     assertEquals('object', typeof NetInternalsTest.getTab(tabId),
                  'Invalid tab: ' + tabId);
     return tabId;
@@ -339,17 +338,23 @@ var NetInternalsTest = (function() {
   NetInternalsTest.switchToView = function(hash) {
     var tabId = NetInternalsTest.getTabId(hash);
 
-    // Make sure the tab handle is visible, as we only simulate normal usage.
-    expectTrue(NetInternalsTest.tabHandleIsVisible(tabId),
-               tabId + ' does not have a visible tab handle.');
-    var tabHandleNode = NetInternalsTest.getTab(tabId).menuItem;
+    // Make sure the tab link is visible, as we only simulate normal usage.
+    expectTrue(NetInternalsTest.tabLinkIsVisible(tabId),
+               tabId + ' does not have a visible tab link.');
+    var tabLinkNode = NetInternalsTest.getTab(tabId).tabLink;
 
-    // Simulate selecting the menuitem.
-    tabHandleNode.selected = true;
-    tabHandleNode.parentNode.onchange();
+    // Simulate a left click on the link.
+    var mouseEvent = document.createEvent('MouseEvents');
+    mouseEvent.initMouseEvent('click', true, true, window, 1, 0, 0, 0, 0, false,
+                              false, false, false, 0, null);
+    tabLinkNode.dispatchEvent(mouseEvent);
 
     // Make sure the hash changed.
     assertEquals('#' + hash, document.location.hash);
+
+    // Run the onhashchange function, so can test the resulting state.
+    // Otherwise, the method won't trigger synchronously.
+    window.onhashchange();
 
     // Make sure only the specified tab is visible.
     var tabSwitcher = MainView.getInstance().tabSwitcher();
@@ -362,17 +367,17 @@ var NetInternalsTest = (function() {
   };
 
   /**
-   * Checks the visibility of all tab handles against expected values.
+   * Checks the visibility of all tab links against expected values.
    * @param {object.<string, bool>}: tabVisibilityState Object with a an entry
    *     for each tab's hash, and a bool indicating if it should be visible or
    *     not.
    * @param {bool+}: tourTabs True if tabs expected to be visible should should
    *     each be navigated to as well.
    */
-  NetInternalsTest.checkTabHandleVisibility = function(tabVisibilityState,
-                                                       tourTabs) {
-    // The currently active tab should have a handle that is visible.
-    expectTrue(NetInternalsTest.tabHandleIsVisible(
+  NetInternalsTest.checkTabLinkVisibility = function(tabVisibilityState,
+                                                     tourTabs) {
+    // The currently active tab should have a link that is visible.
+    expectTrue(NetInternalsTest.tabLinkIsVisible(
                    NetInternalsTest.getActiveTabId()));
 
     // Check visibility state of all tabs.
@@ -382,7 +387,7 @@ var NetInternalsTest = (function() {
       assertEquals('object', typeof NetInternalsTest.getTab(tabId),
                    'Invalid tab: ' + tabId);
       expectEquals(tabVisibilityState[hash],
-                   NetInternalsTest.tabHandleIsVisible(tabId),
+                   NetInternalsTest.tabLinkIsVisible(tabId),
                    tabId + ' visibility state is unexpected.');
       if (tourTabs && tabVisibilityState[hash])
         NetInternalsTest.switchToView(hash);

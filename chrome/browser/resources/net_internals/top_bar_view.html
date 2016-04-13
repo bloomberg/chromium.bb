@@ -8,43 +8,6 @@ found in the LICENSE file.
 
 <style>
 
-/**
- * This SELECT dropdown is styled so the dropdown arrow is hidden. This is
- * necessary because it looks bad on Windows. Instead, an arrow is added
- * manually by overlaying U+25BC over the dropdown and making it un-clickable.
- **/
-#top-bar-view-tab-selecter {
-  -webkit-appearance: none;
-  background: white;
-  border-radius: 6px;
-  border: 1px solid #aaa;
-  font-size: 13px;
-  height: 25px;
-  outline: none;
-  padding: 0 18px 2px 0.5em;
-}
-
-.top-bar-view-arrow {
-  display: inline-block;
-  margin-right: 10px;
-  position:relative;
-}
-
-.top-bar-view-arrow::after {
-  color: black;
-  content: '\25bc';
-  font-size: 9px;
-  line-height: 23px;
-  pointer-events: none;
-  position: absolute;
-  right: 12px;
-  top: 1px;
-}
-
-#top-bar-view-tab-selecter:focus {
-  box-shadow: 0 0 3px 4px rgba(255, 238, 0, 0.50);
-}
-
 #top-bar-view {
   -webkit-align-items: center;
   border-bottom: 1px solid gray;
@@ -55,9 +18,6 @@ found in the LICENSE file.
 </style>
 
 <div id=top-bar-view>
-  <span class=top-bar-view-arrow>
-    <select aria-label="Tab selector" id=top-bar-view-tab-selecter></select>
-  </span>
   <div style="-webkit-flex-grow: 1">
     <include src="status_view.html">
   </div>

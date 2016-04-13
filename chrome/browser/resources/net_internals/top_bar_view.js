@@ -32,7 +32,6 @@ var TopBarView = (function() {
   }
 
   TopBarView.BOX_ID = 'top-bar-view';
-  TopBarView.TAB_DROPDOWN_MENU_ID = 'top-bar-view-tab-selecter';
 
   cr.addSingletonGetter(TopBarView);
 

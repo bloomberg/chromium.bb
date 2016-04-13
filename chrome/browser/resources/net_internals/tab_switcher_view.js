@@ -17,26 +17,30 @@ var TabSwitcherView = (function() {
   // We inherit from View.
   var superClass = View;
 
+  var TAB_LIST_ID = 'tab-list';
+
   /**
    * @constructor
    *
-   * @param {DOMSelectNode} dropdownMenu The menu for switching between tabs.
-   *                        The TabSwitcherView will attach an onchange event to
-   *                        the dropdown menu, and control the selected index.
    * @param {?Function} opt_onTabSwitched Optional callback to run when the
    *                    active tab changes. Called as
    *                    opt_onTabSwitched(oldTabId, newTabId).
    */
-  function TabSwitcherView(dropdownMenu, opt_onTabSwitched) {
+  function TabSwitcherView(opt_onTabSwitched) {
     assertFirstConstructorCall(TabSwitcherView);
 
     this.tabIdToView_ = {};
+    this.tabIdToLink_ = {};
+    // Ordered list of views.
+    this.viewList_ = [];
     this.activeTabId_ = null;
 
-    this.dropdownMenu_ = dropdownMenu;
-    this.dropdownMenu_.onchange = this.onMenuSelectionChanged_.bind(this);
-
     this.onTabSwitched_ = opt_onTabSwitched;
+
+    // The ideal width of the tab list.  If width is reduced below this, the
+    // tab list will be shrunk, but it will be returned to this width once it
+    // can be.
+    this.tabListWidth_ = $(TAB_LIST_ID).offsetWidth;
 
     superClass.call(this);
   }
@@ -52,10 +56,22 @@ var TabSwitcherView = (function() {
     setGeometry: function(left, top, width, height) {
       superClass.prototype.setGeometry.call(this, left, top, width, height);
 
-      // Position each of the tabs content areas.
+      var tabListNode = $(TAB_LIST_ID);
+
+      // Set position of the tab list.  Can't use DivView because DivView sets
+      // a fixed width at creation time, and need to set the width of the tab
+      // list only after its been populated.
+      var tabListWidth = this.tabListWidth_;
+      if (tabListWidth > width)
+        tabListWidth = width;
+      tabListNode.style.position = 'absolute';
+      setNodePosition(tabListNode, left, top, tabListWidth, height);
+
+      // Position each of the tab's content areas.
       for (var tabId in this.tabIdToView_) {
         var view = this.tabIdToView_[tabId];
-        view.setGeometry(left, top, width, height);
+        view.setGeometry(left + tabListWidth, top, width - tabListWidth,
+                         height);
       }
     },
 
@@ -69,46 +85,43 @@ var TabSwitcherView = (function() {
     // ---------------------------------------------
 
     /**
-     * Adds a new tab (initially hidden).
+     * Adds a new tab (initially hidden).  To ensure correct tab list sizing,
+     * may only be called before first layout.
      *
      * @param {string} tabId The ID to refer to the tab by.
      * @param {!View} view The tab's actual contents.
      * @param {string} name The name for the menu item that selects the tab.
      */
-    addTab: function(tabId, view, name) {
+    addTab: function(tabId, view, name, hash) {
       if (!tabId) {
         throw Error('Must specify a non-false tabId');
       }
 
       this.tabIdToView_[tabId] = view;
+      this.viewList_.push(view);
+
+      var node = addNodeWithText($(TAB_LIST_ID), 'a', name);
+      node.href = hash;
+      this.tabIdToLink_[tabId] = node;
+      addNode($(TAB_LIST_ID), 'br');
 
       // Tab content views start off hidden.
       view.show(false);
 
-      // Add it to the dropdown menu.
-      var menuItem = addNode(this.dropdownMenu_, 'option');
-      menuItem.value = tabId;
-      menuItem.textContent = name;
+      this.tabListWidth_ = $(TAB_LIST_ID).offsetWidth;
     },
 
-    showMenuItem: function(tabId, isVisible) {
+    showTabLink: function(tabId, isVisible) {
       var wasActive = this.activeTabId_ == tabId;
 
-      // Hide the menuitem from the list. Note it needs to be 'disabled' to
-      // prevent it being selectable from keyboard.
-      var menuitem = this.getMenuItemNode_(tabId);
-      setNodeDisplay(menuitem, isVisible);
-      menuitem.disabled = !isVisible;
+      setNodeDisplay(this.tabIdToLink_[tabId], isVisible);
 
       if (wasActive && !isVisible) {
-        // If the active tab is being hidden in the dropdown menu, then
-        // switch to the first tab which is still visible.
-        for (var i = 0; i < this.dropdownMenu_.options.length; ++i) {
-          var option = this.dropdownMenu_.options[i];
-          if (option.style.display != 'none') {
+        // If the link for active tab is being hidden, then switch to the first
+        // tab which is still visible.
+        for (var view in this.viewList_) {
+          if (view.isVisible())
             this.switchToTab(option.value);
-            break;
-          }
         }
       }
     },
@@ -145,31 +158,18 @@ var TabSwitcherView = (function() {
       var oldTabId = this.activeTabId_;
       this.activeTabId_ = tabId;
 
-      this.dropdownMenu_.value = tabId;
-
-      // Hide the previously visible tab contents.
-      if (oldTabId)
+      if (oldTabId) {
+        this.tabIdToLink_[oldTabId].classList.remove('selected');
+        // Hide the previously visible tab contents.
         this.getTabView(oldTabId).show(false);
+      }
+
+      this.tabIdToLink_[tabId].classList.add('selected');
 
       newView.show(this.isVisible());
 
       if (this.onTabSwitched_)
         this.onTabSwitched_(oldTabId, tabId);
-    },
-
-    getMenuItemNode_: function(tabId) {
-      for (var i = 0; i < this.dropdownMenu_.options.length; ++i) {
-        var option = this.dropdownMenu_.options[i];
-        if (option.value == tabId) {
-          return option;
-        }
-      }
-      return null;
-    },
-
-    onMenuSelectionChanged_: function(event) {
-      var tabId = this.dropdownMenu_.value;
-      this.switchToTab(tabId);
     },
   };
 

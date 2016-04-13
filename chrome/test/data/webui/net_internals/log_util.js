@@ -182,7 +182,7 @@ function checkViewsAfterLogLoaded() {
     bandwidth: true,
     chromeos: false
   };
-  NetInternalsTest.checkTabHandleVisibility(tabVisibilityState, false);
+  NetInternalsTest.checkTabLinkVisibility(tabVisibilityState, false);
 }
 
 /**
@@ -211,7 +211,7 @@ function checkViewsAfterNetLogFileLoaded() {
     bandwidth: false,
     chromeos: false
   };
-  NetInternalsTest.checkTabHandleVisibility(tabVisibilityState, false);
+  NetInternalsTest.checkTabLinkVisibility(tabVisibilityState, false);
 }
 
 function checkPrivacyStripping(expectedValue) {

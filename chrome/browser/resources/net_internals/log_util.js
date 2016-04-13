@@ -259,7 +259,7 @@ log_util = (function() {
         errorString += 'Caught error while calling onLoadLogFinish: ' +
                        error + '\n\n';
       }
-      tabSwitcher.showMenuItem(tabId, showView);
+      tabSwitcher.showTabLink(tabId, showView);
     }
 
     return errorString + 'Log loaded.';
