@@ -116,8 +116,8 @@ bool CopyColour(const mkvparser::Colour& parser_colour,
 //
 //   0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 //  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-//  |    ID Byte    |             Length            |               |
-//  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+               |
+//  |    ID Byte    |   Length      |                               |
+//  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+                               |
 //  |                                                               |
 //  :               Bytes 1..Length of Codec Feature                :
 //  |                                                               |
@@ -132,7 +132,7 @@ bool CopyColour(const mkvparser::Colour& parser_colour,
 //
 // The X bit is reserved.
 //
-// Currently only profile level is supported. ID byte must be set to 1, and
+// Currently only VP9 level is supported. ID byte must be set to 2, and
 // length must be 1. Supported values are:
 //
 //   10: Level 1
@@ -158,12 +158,13 @@ int ParseVpxCodecPrivate(const uint8_t* private_data, int32_t length) {
     return 0;
 
   const uint8_t id_byte = *private_data;
-  if (id_byte != 1)
+  const uint8_t kVp9LevelId = 2;
+  if (id_byte != kVp9LevelId)
     return 0;
 
-  const int kVpxProfileLength = 1;
+  const int kVpxFeatureLength = 1;
   const uint8_t length_byte = private_data[1];
-  if (length_byte != kVpxProfileLength)
+  if (length_byte != kVpxFeatureLength)
     return 0;
 
   const int level = static_cast<int>(private_data[2]);

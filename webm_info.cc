@@ -373,10 +373,10 @@ bool OutputTracks(const mkvparser::Segment& segment, const Options& options,
         const std::string codec_id = track->GetCodecId();
         const std::string v_vp9 = "V_VP9";
         if (codec_id == v_vp9) {
-          const int vp9_profile_level = libwebm::ParseVpxCodecPrivate(
+          const int vp9_level = libwebm::ParseVpxCodecPrivate(
               private_data, static_cast<int32_t>(private_size));
-          fprintf(o, "%sVP9 profile level: %d\n", indent->indent_str().c_str(),
-                  vp9_profile_level);
+          fprintf(o, "%sVP9 level: %d\n", indent->indent_str().c_str(),
+                  vp9_level);
         }
       }
     }

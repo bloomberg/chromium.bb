@@ -672,15 +672,15 @@ TEST_F(ParserTest, Vp9CodecProfileTest) {
   EXPECT_EQ(0, libwebm::ParseVpxCodecPrivate(&bad_codec_private[0], 0));
   EXPECT_EQ(0, libwebm::ParseVpxCodecPrivate(&bad_codec_private[0],
                                              kCodecPrivateLength));
-  const uint8_t good_codec_private[kCodecPrivateLength] = {1, 1, 11};
+  const uint8_t good_codec_private_level[kCodecPrivateLength] = {2, 1, 11};
 
   // Test parse of codec private chunks, but lie about length.
   EXPECT_EQ(0, libwebm::ParseVpxCodecPrivate(&bad_codec_private[0], 0));
-  EXPECT_EQ(0, libwebm::ParseVpxCodecPrivate(&good_codec_private[0], 0));
+  EXPECT_EQ(0, libwebm::ParseVpxCodecPrivate(&good_codec_private_level[0], 0));
 
   // Test a valid codec private; this should return 11.
-  // ID: 1, Length: 1, Profile: 11
-  EXPECT_EQ(11, libwebm::ParseVpxCodecPrivate(&good_codec_private[0],
+  // ID: 2, Length: 1, Profile: 11
+  EXPECT_EQ(11, libwebm::ParseVpxCodecPrivate(&good_codec_private_level[0],
                                               kCodecPrivateLength));
 }
 
