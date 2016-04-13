@@ -35,6 +35,7 @@
 #include "platform/inspector_protocol/TypeBuilder.h"
 #include "platform/v8_inspector/InjectedScriptNative.h"
 #include "platform/v8_inspector/InspectedContext.h"
+#include "platform/v8_inspector/V8DebuggerImpl.h"
 #include "wtf/PassOwnPtr.h"
 
 #include <v8.h>
@@ -58,6 +59,8 @@ public:
     static PassOwnPtr<InjectedScript> create(InspectedContext*, InjectedScriptHost*);
     ~InjectedScript();
 
+    InspectedContext* context() const { return m_context; }
+
     void getProperties(ErrorString*, v8::Local<v8::Object>, const String16& groupName, bool ownProperties, bool accessorPropertiesOnly, bool generatePreview, OwnPtr<protocol::Array<protocol::Runtime::PropertyDescriptor>>* result, Maybe<protocol::Runtime::ExceptionDetails>*);
     void releaseObject(const String16& objectId);
 
@@ -65,23 +68,13 @@ public:
     bool wrapObjectProperty(ErrorString*, v8::Local<v8::Object>, v8::Local<v8::Value> key, const String16& groupName, bool forceValueType = false, bool generatePreview = false) const;
     bool wrapPropertyInArray(ErrorString*, v8::Local<v8::Array>, v8::Local<v8::String> property, const String16& groupName, bool forceValueType = false, bool generatePreview = false) const;
     bool wrapObjectsInArray(ErrorString*, v8::Local<v8::Array>, const String16& groupName, bool forceValueType = false, bool generatePreview = false) const;
-
     PassOwnPtr<protocol::Runtime::RemoteObject> wrapTable(v8::Local<v8::Value> table, v8::Local<v8::Value> columns) const;
+
     bool findObject(ErrorString*, const RemoteObjectId&, v8::Local<v8::Value>*) const;
     String16 objectGroupName(const RemoteObjectId&) const;
     void releaseObjectGroup(const String16&);
-
     void setCustomObjectFormatterEnabled(bool);
-
-    InspectedContext* context() const { return m_context; }
-    v8::Isolate* isolate() const;
-    bool canAccessInspectedWindow() const;
-
-    bool setLastEvaluationResult(ErrorString*, v8::Local<v8::Value>);
     v8::MaybeLocal<v8::Value> resolveCallArgument(ErrorString*, protocol::Runtime::CallArgument*);
-
-    v8::MaybeLocal<v8::Object> commandLineAPI(ErrorString*) const;
-    v8::MaybeLocal<v8::Object> remoteObjectAPI(ErrorString*, const String16& groupName) const;
 
     PassOwnPtr<protocol::Runtime::ExceptionDetails> createExceptionDetails(v8::Local<v8::Message>);
     void wrapEvaluateResult(ErrorString*,
@@ -97,7 +90,9 @@ public:
     class Scope {
     public:
         bool initialize();
-        void installGlobalObjectExtension(v8::MaybeLocal<v8::Object> extension);
+        bool installCommandLineAPI();
+        bool installRemoteObjectAPI(const String16& objectGroupName);
+        void ignoreExceptionsAndMuteConsole();
         v8::Local<v8::Context> context() const { return m_context; }
         InjectedScript* injectedScript() const { return m_injectedScript; }
         const v8::TryCatch& tryCatch() const { return m_tryCatch; }
@@ -114,12 +109,16 @@ public:
 
     private:
         void cleanup();
+        V8DebuggerImpl::PauseOnExceptionsState setPauseOnExceptionsState(V8DebuggerImpl::PauseOnExceptionsState);
+        bool installGlobalObjectExtension(V8FunctionCall&);
 
         v8::HandleScope m_handleScope;
         v8::TryCatch m_tryCatch;
         v8::Local<v8::Context> m_context;
         v8::Local<v8::Symbol> m_extensionSymbol;
         v8::MaybeLocal<v8::Object> m_global;
+        bool m_ignoreExceptionsAndMuteConsole;
+        V8DebuggerImpl::PauseOnExceptionsState m_previousPauseOnExceptionsState;
     };
 
     class ContextScope: public Scope {
@@ -160,10 +159,10 @@ public:
 
 private:
     InjectedScript(InspectedContext*, v8::Local<v8::Object>, PassOwnPtr<InjectedScriptNative>);
-
+    bool canAccessInspectedWindow() const;
+    bool setLastEvaluationResult(ErrorString*, v8::Local<v8::Value>);
     v8::Local<v8::Value> v8Value() const;
     v8::MaybeLocal<v8::Value> wrapValue(ErrorString*, v8::Local<v8::Value>, const String16& groupName, bool forceValueType, bool generatePreview) const;
-    v8::MaybeLocal<v8::Object> callFunctionReturnObject(ErrorString*, V8FunctionCall&) const;
 
     InspectedContext* m_context;
     v8::Global<v8::Value> m_value;

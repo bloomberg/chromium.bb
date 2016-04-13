@@ -121,14 +121,9 @@ InjectedScript::~InjectedScript()
 {
 }
 
-v8::Isolate* InjectedScript::isolate() const
-{
-    return m_context->isolate();
-}
-
 void InjectedScript::getProperties(ErrorString* errorString, v8::Local<v8::Object> object, const String16& groupName, bool ownProperties, bool accessorPropertiesOnly, bool generatePreview, OwnPtr<Array<PropertyDescriptor>>* properties, Maybe<protocol::Runtime::ExceptionDetails>* exceptionDetails)
 {
-    v8::HandleScope handles(isolate());
+    v8::HandleScope handles(m_context->isolate());
     V8FunctionCall function(m_context->debugger(), m_context->context(), v8Value(), "getProperties");
     function.appendArgument(object);
     function.appendArgument(groupName);
@@ -136,7 +131,7 @@ void InjectedScript::getProperties(ErrorString* errorString, v8::Local<v8::Objec
     function.appendArgument(accessorPropertiesOnly);
     function.appendArgument(generatePreview);
 
-    v8::TryCatch tryCatch(isolate());
+    v8::TryCatch tryCatch(m_context->isolate());
     v8::Local<v8::Value> resultValue = function.callWithoutExceptionHandling();
     if (tryCatch.HasCaught()) {
         *exceptionDetails = createExceptionDetails(tryCatch.Message());
@@ -170,7 +165,7 @@ void InjectedScript::releaseObject(const String16& objectId)
 
 PassOwnPtr<protocol::Runtime::RemoteObject> InjectedScript::wrapObject(ErrorString* errorString, v8::Local<v8::Value> value, const String16& groupName, bool forceValueType, bool generatePreview) const
 {
-    v8::HandleScope handles(isolate());
+    v8::HandleScope handles(m_context->isolate());
     V8FunctionCall function(m_context->debugger(), m_context->context(), v8Value(), "wrapObject");
     v8::Local<v8::Value> wrappedObject;
     if (!wrapValue(errorString, value, groupName, forceValueType, generatePreview).ToLocal(&wrappedObject))
@@ -240,7 +235,7 @@ v8::MaybeLocal<v8::Value> InjectedScript::wrapValue(ErrorString* errorString, v8
 
 PassOwnPtr<protocol::Runtime::RemoteObject> InjectedScript::wrapTable(v8::Local<v8::Value> table, v8::Local<v8::Value> columns) const
 {
-    v8::HandleScope handles(isolate());
+    v8::HandleScope handles(m_context->isolate());
     V8FunctionCall function(m_context->debugger(), m_context->context(), v8Value(), "wrapTable");
     function.appendArgument(canAccessInspectedWindow());
     function.appendArgument(table);
@@ -271,7 +266,7 @@ String16 InjectedScript::objectGroupName(const RemoteObjectId& objectId) const
 
 void InjectedScript::releaseObjectGroup(const String16& objectGroup)
 {
-    v8::HandleScope handles(isolate());
+    v8::HandleScope handles(m_context->isolate());
     m_native->releaseObjectGroup(objectGroup);
     if (objectGroup == "console") {
         V8FunctionCall function(m_context->debugger(), m_context->context(), v8Value(), "clearLastEvaluationResult");
@@ -283,7 +278,7 @@ void InjectedScript::releaseObjectGroup(const String16& objectGroup)
 
 void InjectedScript::setCustomObjectFormatterEnabled(bool enabled)
 {
-    v8::HandleScope handles(isolate());
+    v8::HandleScope handles(m_context->isolate());
     V8FunctionCall function(m_context->debugger(), m_context->context(), v8Value(), "setCustomObjectFormatterEnabled");
     function.appendArgument(enabled);
     bool hadException = false;
@@ -293,7 +288,7 @@ void InjectedScript::setCustomObjectFormatterEnabled(bool enabled)
 
 bool InjectedScript::canAccessInspectedWindow() const
 {
-    v8::Local<v8::Context> callingContext = isolate()->GetCallingContext();
+    v8::Local<v8::Context> callingContext = m_context->isolate()->GetCallingContext();
     if (callingContext.IsEmpty())
         return true;
     return m_context->debugger()->client()->callingContextCanAccessContext(callingContext, m_context->context());
@@ -301,7 +296,7 @@ bool InjectedScript::canAccessInspectedWindow() const
 
 v8::Local<v8::Value> InjectedScript::v8Value() const
 {
-    return m_value.Get(isolate());
+    return m_value.Get(m_context->isolate());
 }
 
 bool InjectedScript::setLastEvaluationResult(ErrorString* errorString, v8::Local<v8::Value> value)
@@ -333,36 +328,13 @@ v8::MaybeLocal<v8::Value> InjectedScript::resolveCallArgument(ErrorString* error
         if (callArgument->getType(String16()) == "number")
             value = "Number(" + value + ")";
         v8::Local<v8::Value> object;
-        if (!m_context->debugger()->compileAndRunInternalScript(m_context->context(), toV8String(isolate(), value)).ToLocal(&object)) {
+        if (!m_context->debugger()->compileAndRunInternalScript(m_context->context(), toV8String(m_context->isolate(), value)).ToLocal(&object)) {
             *errorString = "Couldn't parse value object in call argument";
             return v8::MaybeLocal<v8::Value>();
         }
         return object;
     }
-    return v8::Undefined(isolate());
-}
-
-v8::MaybeLocal<v8::Object> InjectedScript::commandLineAPI(ErrorString* errorString) const
-{
-    V8FunctionCall function(m_context->debugger(), m_context->context(), v8Value(), "commandLineAPI");
-    return callFunctionReturnObject(errorString, function);
-}
-
-v8::MaybeLocal<v8::Object> InjectedScript::remoteObjectAPI(ErrorString* errorString, const String16& groupName) const
-{
-    V8FunctionCall function(m_context->debugger(), m_context->context(), v8Value(), "remoteObjectAPI");
-    function.appendArgument(groupName);
-    return callFunctionReturnObject(errorString, function);
-}
-
-v8::MaybeLocal<v8::Object> InjectedScript::callFunctionReturnObject(ErrorString* errorString, V8FunctionCall& function) const
-{
-    bool hadException = false;
-    v8::Local<v8::Value> result = function.call(hadException, false);
-    v8::Local<v8::Object> resultObject;
-    if (hasInternalError(errorString, hadException || result.IsEmpty() || !result->ToObject(m_context->context()).ToLocal(&resultObject)))
-        return v8::MaybeLocal<v8::Object>();
-    return resultObject;
+    return v8::Undefined(m_context->isolate());
 }
 
 PassOwnPtr<protocol::Runtime::ExceptionDetails> InjectedScript::createExceptionDetails(v8::Local<v8::Message> message)
@@ -418,6 +390,8 @@ InjectedScript::Scope::Scope(ErrorString* errorString, V8DebuggerImpl* debugger,
     , m_injectedScript(nullptr)
     , m_handleScope(debugger->isolate())
     , m_tryCatch(debugger->isolate())
+    , m_ignoreExceptionsAndMuteConsole(false)
+    , m_previousPauseOnExceptionsState(V8DebuggerImpl::DontPauseOnExceptions)
 {
 }
 
@@ -438,16 +412,58 @@ bool InjectedScript::Scope::initialize()
     return true;
 }
 
-void InjectedScript::Scope::installGlobalObjectExtension(v8::MaybeLocal<v8::Object> extension)
+bool InjectedScript::Scope::installCommandLineAPI()
 {
-    v8::Local<v8::Object> extensionObject;
-    if (m_context.IsEmpty() || !extension.ToLocal(&extensionObject))
-        return;
+    ASSERT(m_injectedScript && !m_context.IsEmpty());
+    V8FunctionCall function(m_debugger, m_context, m_injectedScript->v8Value(), "commandLineAPI");
+    return installGlobalObjectExtension(function);
+}
 
+bool InjectedScript::Scope::installRemoteObjectAPI(const String16& objectGroupName)
+{
+    ASSERT(m_injectedScript && !m_context.IsEmpty());
+    V8FunctionCall function(m_debugger, m_context, m_injectedScript->v8Value(), "remoteObjectAPI");
+    function.appendArgument(objectGroupName);
+    return installGlobalObjectExtension(function);
+}
+
+bool InjectedScript::Scope::installGlobalObjectExtension(V8FunctionCall& function)
+{
+    bool hadException = false;
+    v8::Local<v8::Value> extension = function.call(hadException, false);
+    if (hadException || extension.IsEmpty()) {
+        *m_errorString = "Internal error";
+        return false;
+    }
+
+    ASSERT(m_global.IsEmpty());
     m_extensionSymbol = V8Debugger::scopeExtensionSymbol(m_debugger->isolate());
     v8::Local<v8::Object> global = m_context->Global();
-    if (global->Set(m_context, m_extensionSymbol, extensionObject).FromMaybe(false))
-        m_global = global;
+    if (!global->Set(m_context, m_extensionSymbol, extension).FromMaybe(false)) {
+        *m_errorString = "Internal error";
+        return false;
+    }
+
+    m_global = global;
+    return true;
+}
+
+void InjectedScript::Scope::ignoreExceptionsAndMuteConsole()
+{
+    ASSERT(!m_ignoreExceptionsAndMuteConsole);
+    m_ignoreExceptionsAndMuteConsole = true;
+    m_debugger->client()->muteConsole();
+    m_previousPauseOnExceptionsState = setPauseOnExceptionsState(V8DebuggerImpl::DontPauseOnExceptions);
+}
+
+V8DebuggerImpl::PauseOnExceptionsState InjectedScript::Scope::setPauseOnExceptionsState(V8DebuggerImpl::PauseOnExceptionsState newState)
+{
+    if (!m_debugger->enabled())
+        return newState;
+    V8DebuggerImpl::PauseOnExceptionsState presentState = m_debugger->getPauseOnExceptionsState();
+    if (presentState != newState)
+        m_debugger->setPauseOnExceptionsState(newState);
+    return presentState;
 }
 
 void InjectedScript::Scope::cleanup()
@@ -466,6 +482,10 @@ void InjectedScript::Scope::cleanup()
 
 InjectedScript::Scope::~Scope()
 {
+    if (m_ignoreExceptionsAndMuteConsole) {
+        setPauseOnExceptionsState(m_previousPauseOnExceptionsState);
+        m_debugger->client()->unmuteConsole();
+    }
     cleanup();
 }
 

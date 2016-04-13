@@ -31,10 +31,8 @@
 #include "platform/v8_inspector/V8RuntimeAgentImpl.h"
 
 #include "platform/inspector_protocol/Values.h"
-#include "platform/v8_inspector/IgnoreExceptionsScope.h"
 #include "platform/v8_inspector/InjectedScript.h"
 #include "platform/v8_inspector/InspectedContext.h"
-#include "platform/v8_inspector/MuteConsoleScope.h"
 #include "platform/v8_inspector/RemoteObjectId.h"
 #include "platform/v8_inspector/V8DebuggerImpl.h"
 #include "platform/v8_inspector/V8InspectorSessionImpl.h"
@@ -99,15 +97,11 @@ void V8RuntimeAgentImpl::evaluate(
     if (!scope.initialize())
         return;
 
-    IgnoreExceptionsScope ignoreExceptionsScope(doNotPauseOnExceptionsAndMuteConsole.fromMaybe(false) ? m_debugger : nullptr);
-    MuteConsoleScope muteConsoleScope(doNotPauseOnExceptionsAndMuteConsole.fromMaybe(false) ? m_debugger : nullptr);
+    if (doNotPauseOnExceptionsAndMuteConsole.fromMaybe(false))
+        scope.ignoreExceptionsAndMuteConsole();
 
-    if (includeCommandLineAPI.fromMaybe(false)) {
-        v8::MaybeLocal<v8::Object> commandLineAPI = scope.injectedScript()->commandLineAPI(errorString);
-        if (commandLineAPI.IsEmpty())
-            return;
-        scope.installGlobalObjectExtension(commandLineAPI);
-    }
+    if (includeCommandLineAPI.fromMaybe(false) && !scope.installCommandLineAPI())
+        return;
 
     bool evalIsDisabled = !scope.context()->IsCodeGenerationFromStringsAllowed();
     // Temporarily enable allow evals for inspector.
@@ -160,8 +154,8 @@ void V8RuntimeAgentImpl::callFunctionOn(ErrorString* errorString,
         }
     }
 
-    IgnoreExceptionsScope ignoreExceptionsScope(doNotPauseOnExceptionsAndMuteConsole.fromMaybe(false) ? m_debugger : nullptr);
-    MuteConsoleScope muteConsoleScope(doNotPauseOnExceptionsAndMuteConsole.fromMaybe(false) ? m_debugger : nullptr);
+    if (doNotPauseOnExceptionsAndMuteConsole.fromMaybe(false))
+        scope.ignoreExceptionsAndMuteConsole();
 
     v8::MaybeLocal<v8::Value> maybeFunctionValue = m_debugger->compileAndRunInternalScript(scope.context(), toV8String(m_debugger->isolate(), "(" + expression + ")"));
     // Re-initialize after running client's code, as it could have destroyed context or session.
@@ -179,10 +173,8 @@ void V8RuntimeAgentImpl::callFunctionOn(ErrorString* errorString,
         return;
     }
 
-    v8::MaybeLocal<v8::Object> remoteObjectAPI = scope.injectedScript()->remoteObjectAPI(errorString, scope.objectGroupName());
-    if (remoteObjectAPI.IsEmpty())
+    if (!scope.installRemoteObjectAPI(scope.objectGroupName()))
         return;
-    scope.installGlobalObjectExtension(remoteObjectAPI);
 
     v8::MaybeLocal<v8::Value> maybeResultValue = m_debugger->callFunction(functionValue.As<v8::Function>(), scope.context(), scope.object(), argc, argv.get());
     // Re-initialize after running client's code, as it could have destroyed context or session.
@@ -208,9 +200,7 @@ void V8RuntimeAgentImpl::getProperties(
     if (!scope.initialize())
         return;
 
-    IgnoreExceptionsScope ignoreExceptionsScope(m_debugger);
-    MuteConsoleScope muteConsoleScope(m_debugger);
-
+    scope.ignoreExceptionsAndMuteConsole();
     if (!scope.object()->IsObject()) {
         *errorString = "Value with given id is not an object";
         return;
@@ -335,8 +325,8 @@ void V8RuntimeAgentImpl::runScript(ErrorString* errorString,
     if (!scope.initialize())
         return;
 
-    IgnoreExceptionsScope ignoreExceptionsScope(doNotPauseOnExceptionsAndMuteConsole.fromMaybe(false) ? m_debugger : nullptr);
-    MuteConsoleScope muteConsoleScope(doNotPauseOnExceptionsAndMuteConsole.fromMaybe(false) ? m_debugger : nullptr);
+    if (doNotPauseOnExceptionsAndMuteConsole.fromMaybe(false))
+        scope.ignoreExceptionsAndMuteConsole();
 
     OwnPtr<v8::Global<v8::Script>> scriptWrapper = m_compiledScripts.take(scriptId);
     v8::Local<v8::Script> script = scriptWrapper->Get(m_debugger->isolate());
@@ -345,12 +335,8 @@ void V8RuntimeAgentImpl::runScript(ErrorString* errorString,
         return;
     }
 
-    if (includeCommandLineAPI.fromMaybe(false)) {
-        v8::MaybeLocal<v8::Object> commandLineAPI = scope.injectedScript()->commandLineAPI(errorString);
-        if (commandLineAPI.IsEmpty())
-            return;
-        scope.installGlobalObjectExtension(commandLineAPI);
-    }
+    if (includeCommandLineAPI.fromMaybe(false) && !scope.installCommandLineAPI())
+        return;
 
     v8::MaybeLocal<v8::Value> maybeResultValue = m_debugger->runCompiledScript(scope.context(), script);
 

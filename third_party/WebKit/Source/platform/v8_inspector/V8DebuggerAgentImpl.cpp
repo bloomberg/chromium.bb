@@ -6,11 +6,9 @@
 
 #include "platform/inspector_protocol/String16.h"
 #include "platform/inspector_protocol/Values.h"
-#include "platform/v8_inspector/IgnoreExceptionsScope.h"
 #include "platform/v8_inspector/InjectedScript.h"
 #include "platform/v8_inspector/InspectedContext.h"
 #include "platform/v8_inspector/JavaScriptCallFrame.h"
-#include "platform/v8_inspector/MuteConsoleScope.h"
 #include "platform/v8_inspector/RemoteObjectId.h"
 #include "platform/v8_inspector/ScriptBreakpoint.h"
 #include "platform/v8_inspector/V8InspectorSessionImpl.h"
@@ -677,7 +675,7 @@ void V8DebuggerAgentImpl::getFunctionDetails(ErrorString* errorString, const Str
     v8::Local<v8::Array> scopes;
     if (m_debugger->functionScopes(function).ToLocal(&scopesValue) && scopesValue->IsArray()) {
         scopes = scopesValue.As<v8::Array>();
-        if (!scope.injectedScript()->wrapPropertyInArray(errorString, scopes, toV8StringInternalized(m_debugger->isolate(), "object"), scope.objectGroupName()))
+        if (!scope.injectedScript()->wrapPropertyInArray(errorString, scopes, toV8StringInternalized(m_isolate, "object"), scope.objectGroupName()))
             return;
     }
 
@@ -748,9 +746,9 @@ void V8DebuggerAgentImpl::getCollectionEntries(ErrorString* errorString, const S
     if (hasInternalError(errorString, !entriesValue->IsArray()))
         return;
     v8::Local<v8::Array> entriesArray = entriesValue.As<v8::Array>();
-    if (!scope.injectedScript()->wrapPropertyInArray(errorString, entriesArray, toV8StringInternalized(m_debugger->isolate(), "key"), scope.objectGroupName()))
+    if (!scope.injectedScript()->wrapPropertyInArray(errorString, entriesArray, toV8StringInternalized(m_isolate, "key"), scope.objectGroupName()))
         return;
-    if (!scope.injectedScript()->wrapPropertyInArray(errorString, entriesArray, toV8StringInternalized(m_debugger->isolate(), "value"), scope.objectGroupName()))
+    if (!scope.injectedScript()->wrapPropertyInArray(errorString, entriesArray, toV8StringInternalized(m_isolate, "value"), scope.objectGroupName()))
         return;
     protocol::ErrorSupport errors;
     OwnPtr<protocol::Array<CollectionEntry>> entries = protocol::Array<CollectionEntry>::parse(toProtocolValue(scope.context(), entriesArray).get(), &errors);
@@ -923,17 +921,12 @@ void V8DebuggerAgentImpl::evaluateOnCallFrame(ErrorString* errorString,
         return;
     }
 
-    if (includeCommandLineAPI.fromMaybe(false)) {
-        v8::MaybeLocal<v8::Object> commandLineAPI = scope.injectedScript()->commandLineAPI(errorString);
-        if (commandLineAPI.IsEmpty())
-            return;
-        scope.installGlobalObjectExtension(commandLineAPI);
-    }
+    if (includeCommandLineAPI.fromMaybe(false) && !scope.installCommandLineAPI())
+        return;
+    if (doNotPauseOnExceptionsAndMuteConsole.fromMaybe(false))
+        scope.ignoreExceptionsAndMuteConsole();
 
-    IgnoreExceptionsScope ignoreExceptionsScope(doNotPauseOnExceptionsAndMuteConsole.fromMaybe(false) ? m_debugger : nullptr);
-    MuteConsoleScope muteConsoleScope(doNotPauseOnExceptionsAndMuteConsole.fromMaybe(false) ? m_debugger : nullptr);
-
-    v8::MaybeLocal<v8::Value> maybeResultValue = m_pausedCallFrames[scope.frameOrdinal()].get()->evaluate(toV8String(m_debugger->isolate(), expression));
+    v8::MaybeLocal<v8::Value> maybeResultValue = m_pausedCallFrames[scope.frameOrdinal()].get()->evaluate(toV8String(m_isolate, expression));
 
     // Re-initialize after running client's code, as it could have destroyed context or session.
     if (!scope.initialize())
@@ -1156,12 +1149,11 @@ PassOwnPtr<Array<CallFrame>> V8DebuggerAgentImpl::currentCallFrames(ErrorString*
         return Array<CallFrame>::create();
     }
 
-    v8::Isolate* isolate = topFrameInjectedScript->isolate();
-    v8::HandleScope handles(isolate);
+    v8::HandleScope handles(m_isolate);
     v8::Local<v8::Context> context = topFrameInjectedScript->context()->context();
     v8::Context::Scope contextScope(context);
 
-    v8::Local<v8::Array> objects = v8::Array::New(isolate);
+    v8::Local<v8::Array> objects = v8::Array::New(m_isolate);
     for (size_t frameOrdinal = 0; frameOrdinal < m_pausedCallFrames.size(); ++frameOrdinal) {
         JavaScriptCallFrame* currentCallFrame = m_pausedCallFrames[frameOrdinal].get();
 
@@ -1175,21 +1167,21 @@ PassOwnPtr<Array<CallFrame>> V8DebuggerAgentImpl::currentCallFrames(ErrorString*
             injectedScript = topFrameInjectedScript;
 
         String16 callFrameId = RemoteCallFrameId::serialize(injectedScript->context()->contextId(), frameOrdinal);
-        if (hasInternalError(errorString, !details->Set(context, toV8StringInternalized(isolate, "callFrameId"), toV8String(isolate, callFrameId)).FromMaybe(false)))
+        if (hasInternalError(errorString, !details->Set(context, toV8StringInternalized(m_isolate, "callFrameId"), toV8String(m_isolate, callFrameId)).FromMaybe(false)))
             return Array<CallFrame>::create();
 
         v8::Local<v8::Value> scopeChain;
-        if (hasInternalError(errorString, !details->Get(context, toV8StringInternalized(isolate, "scopeChain")).ToLocal(&scopeChain) || !scopeChain->IsArray()))
+        if (hasInternalError(errorString, !details->Get(context, toV8StringInternalized(m_isolate, "scopeChain")).ToLocal(&scopeChain) || !scopeChain->IsArray()))
             return Array<CallFrame>::create();
         v8::Local<v8::Array> scopeChainArray = scopeChain.As<v8::Array>();
-        if (!injectedScript->wrapPropertyInArray(errorString, scopeChainArray, toV8StringInternalized(isolate, "object"), V8DebuggerAgentImpl::backtraceObjectGroup))
+        if (!injectedScript->wrapPropertyInArray(errorString, scopeChainArray, toV8StringInternalized(m_isolate, "object"), V8DebuggerAgentImpl::backtraceObjectGroup))
             return Array<CallFrame>::create();
 
-        if (!injectedScript->wrapObjectProperty(errorString, details, toV8StringInternalized(isolate, "this"), V8DebuggerAgentImpl::backtraceObjectGroup))
+        if (!injectedScript->wrapObjectProperty(errorString, details, toV8StringInternalized(m_isolate, "this"), V8DebuggerAgentImpl::backtraceObjectGroup))
             return Array<CallFrame>::create();
 
-        if (details->Has(context, toV8StringInternalized(isolate, "returnValue")).FromMaybe(false)) {
-            if (!injectedScript->wrapObjectProperty(errorString, details, toV8StringInternalized(isolate, "returnValue"), V8DebuggerAgentImpl::backtraceObjectGroup))
+        if (details->Has(context, toV8StringInternalized(m_isolate, "returnValue")).FromMaybe(false)) {
+            if (!injectedScript->wrapObjectProperty(errorString, details, toV8StringInternalized(m_isolate, "returnValue"), V8DebuggerAgentImpl::backtraceObjectGroup))
                 return Array<CallFrame>::create();
         }
 
