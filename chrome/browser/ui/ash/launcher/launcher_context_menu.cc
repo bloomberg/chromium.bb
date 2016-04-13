@@ -202,7 +202,7 @@ bool LauncherContextMenu::ExecuteCommonCommand(int command_id,
     case MENU_AUTO_HIDE:
     case MENU_ALIGNMENT_MENU:
     case MENU_CHANGE_WALLPAPER:
-      ExecuteCommand(command_id, event_flags);
+      LauncherContextMenu::ExecuteCommand(command_id, event_flags);
       return true;
     default:
       return false;
