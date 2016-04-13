@@ -1240,9 +1240,8 @@
       'graphics/ImageDecodingStoreTest.cpp',
       'graphics/ImageFrameGeneratorTest.cpp',
       'graphics/ImageLayerChromiumTest.cpp',
-      'graphics/test/MockGLES2Interface.h',
+      'graphics/test/FakeGLES2Interface.h',
       'graphics/test/MockImageDecoder.h',
-      'graphics/test/MockWebGraphicsContext3D.h',
     ],
     'platform_test_support_files': [
       'testing/CompositorTest.cpp',
