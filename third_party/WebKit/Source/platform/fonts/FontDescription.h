@@ -57,8 +57,6 @@ public:
 
     enum LigaturesState { NormalLigaturesState, DisabledLigaturesState, EnabledLigaturesState };
 
-    enum FontVariantCaps { CapsNormal, SmallCaps, AllSmallCaps, PetiteCaps, AllPetiteCaps, Unicase, TitlingCaps };
-
     FontDescription()
         : m_specifiedSize(0)
         , m_computedSize(0)
