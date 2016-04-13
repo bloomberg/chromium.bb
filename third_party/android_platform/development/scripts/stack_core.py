@@ -36,11 +36,14 @@ _BASE_APK = 'base.apk'
 _LIBCHROME_SO = 'libchrome.so'
 
 _PROCESS_INFO_LINE = re.compile('(pid: [0-9]+, tid: [0-9]+.*)')
+# Same as above, but used to extract the pid.
+_PROCESS_INFO_PID = re.compile('pid: ([0-9]+)')
 _SIGNAL_LINE = re.compile('(signal [0-9]+ \(.*\).*)')
 _REGISTER_LINE = re.compile('(([ ]*[0-9a-z]{2} [0-9a-f]{8}){4})')
 _THREAD_LINE = re.compile('(.*)(\-\-\- ){15}\-\-\-')
 _DALVIK_JNI_THREAD_LINE = re.compile("(\".*\" prio=[0-9]+ tid=[0-9]+ NATIVE.*)")
 _DALVIK_NATIVE_THREAD_LINE = re.compile("(\".*\" sysTid=[0-9]+ nice=[0-9]+.*)")
+_JAVA_STDERR_LINE = re.compile("([0-9]+)\s+[0-9]+\s+.\s+System.err:\s*(.+)")
 
 _WIDTH = '{8}'
 if symbol.ARCH == 'arm64' or symbol.ARCH == 'x86_64' or symbol.ARCH == 'x64':
@@ -114,7 +117,16 @@ def PrintValueLines(value_lines):
   return
 
 
-def PrintOutput(trace_lines, value_lines, more_info):
+def PrintJavaLines(java_lines):
+  """Print java stderr lines."""
+  print
+  print 'Java stderr from crashing pid (may identify underlying Java exception):'
+  for l in java_lines:
+    if l.startswith('at'):
+      print ' ',
+    print l
+
+def PrintOutput(trace_lines, value_lines, java_lines, more_info):
   if trace_lines:
     PrintTraceLines(trace_lines)
   if value_lines:
@@ -125,6 +137,8 @@ def PrintOutput(trace_lines, value_lines, more_info):
     # libraries), don't completely disable them.
     if more_info:
       PrintValueLines(value_lines)
+  if java_lines:
+    PrintJavaLines(java_lines)
 
 def PrintDivider():
   print
@@ -191,7 +205,8 @@ class PreProcessLog:
           or _DALVIK_JNI_THREAD_LINE.search(line)
           or _DALVIK_NATIVE_THREAD_LINE.search(line)
           or _LOG_FATAL_LINE.search(line)
-          or _DEBUG_TRACE_LINE.match(line)):
+          or _DEBUG_TRACE_LINE.match(line)
+          or _JAVA_STDERR_LINE.search(line)):
         useful_log.append(line)
         continue
 
@@ -225,6 +240,7 @@ def ResolveCrashSymbol(lines, more_info):
   trace_lines = []
   value_lines = []
   last_frame = -1
+  pid = -1
 
   # It is faster to get symbol information with a single call rather than with
   # separate calls for each line. Since symbol.SymbolInformation caches results,
@@ -232,6 +248,10 @@ def ResolveCrashSymbol(lines, more_info):
   # from the log and call symbol.SymbolInformation so that the results are
   # cached in the following lookups.
   code_addresses = {}
+
+  # Collects all java exception lines, keyed by pid for later output during
+  # native crash handling.
+  java_stderr_by_pid = {}
   for line in lines:
     lib, address = None, None
 
@@ -245,6 +265,11 @@ def ResolveCrashSymbol(lines, more_info):
 
     if lib:
       code_addresses.setdefault(lib, set()).add(address)
+
+    java_stderr_match = _JAVA_STDERR_LINE.search(line)
+    if java_stderr_match:
+      pid, msg = java_stderr_match.groups()
+      java_stderr_by_pid.setdefault(pid, []).append(msg)
 
   for lib in code_addresses:
     symbol.SymbolInformationForSet(
@@ -264,12 +289,18 @@ def ResolveCrashSymbol(lines, more_info):
         dalvik_jni_thread_header or dalvik_native_thread_header or
         log_fatal_header) :
       if trace_lines or value_lines:
-        PrintOutput(trace_lines, value_lines, more_info)
+        java_lines = []
+        if pid != -1 and pid in java_stderr_by_pid:
+          java_lines = java_stderr_by_pid[pid]
+        PrintOutput(trace_lines, value_lines, java_lines, more_info)
         PrintDivider()
         trace_lines = []
         value_lines = []
         last_frame = -1
+        pid = -1
       if process_header:
+        # Track the last reported pid to find java exceptions.
+        pid = _PROCESS_INFO_PID.search(process_header.group(1)).group(1)
         print process_header.group(1)
       if signal_header:
         print signal_header.group(1)
@@ -292,10 +323,14 @@ def ResolveCrashSymbol(lines, more_info):
       logging.debug('Found trace line: %s' % line.strip())
 
       if frame <= last_frame and (trace_lines or value_lines):
-        PrintOutput(trace_lines, value_lines, more_info)
+        java_lines = []
+        if pid != -1 and pid in java_stderr_by_pid:
+          java_lines = java_stderr_by_pid[pid]
+        PrintOutput(trace_lines, value_lines, java_lines, more_info)
         PrintDivider()
         trace_lines = []
         value_lines = []
+        pid = -1
       last_frame = frame
 
       if area == UNKNOWN or area == HEAP or area == STACK:
@@ -346,4 +381,7 @@ def ResolveCrashSymbol(lines, more_info):
                             object_symbol_with_offset,
                             source_location))
 
-  PrintOutput(trace_lines, value_lines, more_info)
+  java_lines = []
+  if pid != -1 and pid in java_exceptions:
+    java_lines = java_exceptions[pid]
+  PrintOutput(trace_lines, value_lines, java_lines, more_info)
