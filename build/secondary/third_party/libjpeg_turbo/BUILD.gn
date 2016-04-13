@@ -82,7 +82,7 @@ if (current_cpu == "x86" || current_cpu == "x64") {
       } else {
         defines += [ "WIN64" ]
       }
-    } else if (is_mac) {
+    } else if (is_mac || is_ios) {
       defines += [ "MACHO" ]
       include_dirs = [ "mac" ]
     } else if (is_linux || is_android) {
