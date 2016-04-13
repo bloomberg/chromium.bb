@@ -64,9 +64,6 @@ using namespace HTMLNames;
 
 HTMLFormElement::HTMLFormElement(Document& document)
     : HTMLElement(formTag, document)
-#if !ENABLE(OILPAN)
-    , m_weakPtrFactory(this)
-#endif
     , m_associatedElementsAreDirty(false)
     , m_imageElementsAreDirty(false)
     , m_hasElementsAssociatedByParser(false)
@@ -88,12 +85,6 @@ HTMLFormElement* HTMLFormElement::create(Document& document)
 
 HTMLFormElement::~HTMLFormElement()
 {
-#if !ENABLE(OILPAN)
-    // With Oilpan, either removedFrom is called or the document and
-    // form controller are dead as well and there is no need to remove
-    // this form element from it.
-    document().formController().willDeleteForm(this);
-#endif
 }
 
 DEFINE_TRACE(HTMLFormElement)
@@ -189,9 +180,7 @@ void HTMLFormElement::removedFrom(ContainerNode* insertionPoint)
             notifyFormRemovedFromTree(images, root);
         }
     }
-#if ENABLE(OILPAN)
     document().formController().willDeleteForm(this);
-#endif
     HTMLElement::removedFrom(insertionPoint);
 }
 
@@ -560,13 +549,6 @@ void HTMLFormElement::disassociate(HTMLImageElement& e)
     m_imageElements.clear();
     removeFromPastNamesMap(e);
 }
-
-#if !ENABLE(OILPAN)
-WeakPtr<HTMLFormElement> HTMLFormElement::createWeakPtr()
-{
-    return m_weakPtrFactory.createWeakPtr();
-}
-#endif
 
 void HTMLFormElement::didAssociateByParser()
 {

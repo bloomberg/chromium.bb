@@ -65,15 +65,6 @@ HTMLFormControlElement::HTMLFormControlElement(const QualifiedName& tagName, Doc
 
 HTMLFormControlElement::~HTMLFormControlElement()
 {
-#if !ENABLE(OILPAN)
-#if ENABLE(ASSERT)
-    // Recalculate m_willValidate and m_isValid for the vtbl change in order to
-    // avoid assertion failures in isValidElement() called in setForm(0).
-    setNeedsWillValidateCheck();
-    setNeedsValidityCheck();
-#endif
-    setForm(0);
-#endif
 }
 
 DEFINE_TRACE(HTMLFormControlElement)

@@ -153,11 +153,7 @@ void FormAssociatedElement::setForm(HTMLFormElement* newForm)
     if (m_form)
         m_form->disassociate(*this);
     if (newForm) {
-#if ENABLE(OILPAN)
         m_form = newForm;
-#else
-        m_form = newForm->createWeakPtr();
-#endif
         m_form->associate(*this);
     } else {
         m_form = nullptr;

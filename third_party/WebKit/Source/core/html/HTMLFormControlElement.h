@@ -120,11 +120,6 @@ public:
     void setFocus(bool flag) override;
     void copyNonAttributePropertiesFromElement(const Element&) override;
 
-#if !ENABLE(OILPAN)
-    using Node::ref;
-    using Node::deref;
-#endif
-
 protected:
     HTMLFormControlElement(const QualifiedName& tagName, Document&, HTMLFormElement*);
 
@@ -156,11 +151,6 @@ protected:
     virtual bool supportsAutofocus() const;
 
 private:
-#if !ENABLE(OILPAN)
-    void refFormAssociatedElement() final { ref(); }
-    void derefFormAssociatedElement() final { deref(); }
-#endif
-
     bool isFormControlElement() const final { return true; }
     bool alwaysCreateUserAgentShadowRoot() const override { return true; }
 

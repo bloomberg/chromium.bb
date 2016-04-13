@@ -30,7 +30,6 @@
 #include "core/html/forms/RadioButtonGroupScope.h"
 #include "core/loader/FormSubmission.h"
 #include "wtf/OwnPtr.h"
-#include "wtf/WeakPtr.h"
 
 namespace blink {
 
@@ -67,9 +66,6 @@ public:
     void disassociate(FormAssociatedElement&);
     void associate(HTMLImageElement&);
     void disassociate(HTMLImageElement&);
-#if !ENABLE(OILPAN)
-    WeakPtr<HTMLFormElement> createWeakPtr();
-#endif
     void didAssociateByParser();
 
     void prepareForSubmission(Event*);
@@ -168,9 +164,7 @@ private:
     FormAssociatedElement::List m_associatedElements;
     // Do not access m_imageElements directly. Use imageElements() instead.
     HeapVector<Member<HTMLImageElement>> m_imageElements;
-#if !ENABLE(OILPAN)
-    WeakPtrFactory<HTMLFormElement> m_weakPtrFactory;
-#endif
+
     bool m_associatedElementsAreDirty : 1;
     bool m_imageElementsAreDirty : 1;
     bool m_hasElementsAssociatedByParser : 1;
