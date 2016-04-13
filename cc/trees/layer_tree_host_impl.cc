@@ -2671,7 +2671,7 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBegin(
 
   if (layer_impl) {
     LayerImpl* scroll_layer_impl =
-        active_tree_->FindFirstScrollingLayerThatIsHitByPoint(
+        active_tree_->FindFirstScrollingLayerOrScrollbarLayerThatIsHitByPoint(
             device_viewport_point);
     if (scroll_layer_impl &&
         !HasScrollAncestor(layer_impl, scroll_layer_impl)) {

@@ -399,7 +399,7 @@ class CC_EXPORT LayerTreeImpl {
     return render_surface_layer_list_id_;
   }
 
-  LayerImpl* FindFirstScrollingLayerThatIsHitByPoint(
+  LayerImpl* FindFirstScrollingLayerOrScrollbarLayerThatIsHitByPoint(
       const gfx::PointF& screen_space_point);
 
   LayerImpl* FindLayerThatIsHitByPoint(const gfx::PointF& screen_space_point);
