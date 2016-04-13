@@ -10,6 +10,11 @@ import("//build/toolchain/toolchain.gni")
 # Should only be running on Windows.
 assert(is_win)
 
+declare_args() {
+  # Set to true to use lld, the LLVM linker.
+  use_lld = false
+}
+
 # Setup the Visual Studio state.
 #
 # Its arguments are the VS path and the compiler wrapper tool. It will write
@@ -56,6 +61,24 @@ template("msvc_toolchain") {
   env = invoker.environment
 
   cl = invoker.cl
+
+  if (use_lld) {
+    if (host_os == "win") {
+      lld_link = "lld-link.exe"
+    } else {
+      lld_link = "lld-link"
+    }
+    prefix = rebase_path("//third_party/llvm-build/Release+Asserts/bin",
+                         root_build_dir)
+
+    # lld-link includes a replacement for lib.exe that can produce thin
+    # archives and understands bitcode (for lto builds).
+    lib = "$prefix/$lld_link /lib /llvmlibthin"
+    link = "$prefix/$lld_link"
+  } else {
+    lib = "lib.exe"
+    link = "link.exe"
+  }
 
   toolchain(target_name) {
     # Make these apply to all tools below.
@@ -122,7 +145,7 @@ template("msvc_toolchain") {
 
     tool("alink") {
       rspfile = "{{output}}.rsp"
-      command = "$python_path gyp-win-tool link-wrapper $env False lib.exe /nologo /ignore:4221 /OUT:{{output}} @$rspfile"
+      command = "$python_path gyp-win-tool link-wrapper $env False $lib /nologo /ignore:4221 /OUT:{{output}} @$rspfile"
       description = "LIB {{output}}"
       outputs = [
         # Ignore {{output_extension}} and always use .lib, there's no reason to
@@ -141,7 +164,7 @@ template("msvc_toolchain") {
       libname = "${dllname}.lib"  # e.g. foo.dll.lib
       rspfile = "${dllname}.rsp"
 
-      link_command = "$python_path gyp-win-tool link-wrapper $env False link.exe /nologo /IMPLIB:$libname /DLL /OUT:$dllname /PDB:${dllname}.pdb @$rspfile"
+      link_command = "$python_path gyp-win-tool link-wrapper $env False $link /nologo /IMPLIB:$libname /DLL /OUT:$dllname /PDB:${dllname}.pdb @$rspfile"
 
       # TODO(brettw) support manifests
       #manifest_command = "$python_path gyp-win-tool manifest-wrapper $env mt.exe -nologo -manifest $manifests -out:${dllname}.manifest"
@@ -172,7 +195,7 @@ template("msvc_toolchain") {
       dllname = "{{root_out_dir}}/{{target_output_name}}{{output_extension}}"  # e.g. foo.dll
       rspfile = "${dllname}.rsp"
 
-      link_command = "$python_path gyp-win-tool link-wrapper $env False link.exe /nologo /DLL /OUT:$dllname /PDB:${dllname}.pdb @$rspfile"
+      link_command = "$python_path gyp-win-tool link-wrapper $env False $link /nologo /DLL /OUT:$dllname /PDB:${dllname}.pdb @$rspfile"
 
       command = link_command
 
@@ -190,7 +213,7 @@ template("msvc_toolchain") {
     tool("link") {
       rspfile = "{{output}}.rsp"
 
-      link_command = "$python_path gyp-win-tool link-wrapper $env False link.exe /nologo /OUT:{{output}} /PDB:{{output}}.pdb @$rspfile"
+      link_command = "$python_path gyp-win-tool link-wrapper $env False $link /nologo /OUT:{{output}} /PDB:{{output}}.pdb @$rspfile"
 
       # TODO(brettw) support manifests
       #manifest_command = "$python_path gyp-win-tool manifest-wrapper $env mt.exe -nologo -manifest $manifests -out:{{output}}.manifest"
