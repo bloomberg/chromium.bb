@@ -35,7 +35,7 @@ Polymer({
 
   /** @override */
   attached: function() {
-    this.PermissionStringValues = settings.PermissionStringValues;
+    this.PermissionValues = settings.PermissionValues;
     this.addWebUIListener('contentSettingSitePermissionChanged',
         this.sitePermissionChanged_.bind(this));
   },
@@ -88,19 +88,11 @@ Polymer({
 
   /**
    * Handles the category permission changing for this origin.
-   * @param {!{detail: !{item: !{innerText: string}}}} event
+   * @param {!{detail: !{item: !{dataset: !{permissionValue: string}}}}} event
    */
   onPermissionMenuIronActivate_: function(event) {
-    var action = event.detail.item.dataset.permissionValue;
-    var value = '';
-    if (action == settings.PermissionStringValues.ALLOW)
-      value = settings.PermissionValues.ALLOW;
-    else if (action == settings.PermissionStringValues.BLOCK)
-      value = settings.PermissionValues.BLOCK;
-    else
-      assertNotReached('Invalid menu item ' + action);
-
+    var value = event.detail.item.dataset.permissionValue;
     this.setCategoryPermissionForOrigin(
-        this.site.origin, '', value, this.category);
+        this.site.origin, '', this.category, value);
   },
 });

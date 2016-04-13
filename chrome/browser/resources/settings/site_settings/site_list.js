@@ -50,11 +50,11 @@ Polymer({
 
     /**
       * The type of category this widget is displaying data for. Normally
-      * either ALLOW or BLOCK, representing which sites are allowed or blocked
-      * respectively.
+      * either 'allow' or 'block', representing which sites are allowed or
+      * blocked respectively.
       */
     categorySubtype: {
-      type: Number,
+      type: String,
       value: settings.INVALID_CATEGORY_SUBTYPE,
     },
 
@@ -160,7 +160,7 @@ Polymer({
       this.browserProxy_.getExceptionList(this.category).then(
         function(exceptionList) {
           var allowExists = exceptionList.some(function(exception) {
-            return exception.setting == settings.PermissionStringValues.ALLOW;
+            return exception.setting == settings.PermissionValues.ALLOW;
           });
           if (allowExists)
             return;
@@ -250,13 +250,16 @@ Polymer({
   appendSiteList_: function(sites, exceptionList) {
     for (var i = 0; i < exceptionList.length; ++i) {
       if (this.category != settings.ALL_SITES) {
+        if (exceptionList[i].setting == settings.PermissionValues.DEFAULT)
+          continue;
+
         // Filter out 'Block' values if this list is handling 'Allow' items.
-        if (exceptionList[i].setting == settings.PermissionStringValues.BLOCK &&
+        if (exceptionList[i].setting == settings.PermissionValues.BLOCK &&
             this.categorySubtype != settings.PermissionValues.BLOCK) {
           continue;
         }
         // Filter out 'Allow' values if this list is handling 'Block' items.
-        if (exceptionList[i].setting == settings.PermissionStringValues.ALLOW &&
+        if (exceptionList[i].setting == settings.PermissionValues.ALLOW &&
             this.categorySubtype != settings.PermissionValues.ALLOW) {
           continue;
         }
@@ -316,12 +319,18 @@ Polymer({
     var lastEmbeddingOrigin = '';
     for (var i = 0; i < sites.length; ++i) {
       var origin = sites[i].origin;
-      var embeddingOrigin = sites[i].embeddingOrigin;
-
       var originForDisplay = origin.replace('[*.]', '');
+
+      var embeddingOrigin = sites[i].embeddingOrigin;
+      if (this.category == settings.ContentSettingsTypes.GEOLOCATION) {
+        if (embeddingOrigin == '')
+          embeddingOrigin = '*';
+      }
       var embeddingOriginForDisplay = '';
-      if (embeddingOrigin != '*' && origin != embeddingOrigin)
-        embeddingOriginForDisplay = embeddingOrigin;
+      if (embeddingOrigin != '' && origin != embeddingOrigin) {
+        embeddingOriginForDisplay =
+            loadTimeData.getStringF('embeddedOnHost', embeddingOrigin);
+      }
 
       // The All Sites category can contain duplicates (from other categories).
       if (originForDisplay == lastOrigin &&
@@ -389,7 +398,7 @@ Polymer({
           settings.PermissionValues.ALLOW :
           settings.PermissionValues.BLOCK;
       this.setCategoryPermissionForOrigin(
-          origin, embeddingOrigin, value, this.category);
+          origin, embeddingOrigin, this.category, value);
     }
   },
 

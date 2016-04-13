@@ -125,7 +125,7 @@ TEST_F(SiteSettingsHandlerTest, GetAndSetDefault) {
   // Set the default to 'Blocked'.
   base::ListValue setArgs;
   setArgs.Append(new base::FundamentalValue(type));
-  setArgs.Append(new base::FundamentalValue(CONTENT_SETTING_BLOCK));
+  setArgs.Append(new base::StringValue("block"));
   handler.HandleSetDefaultValueForContentType(&setArgs);
 
   EXPECT_EQ(2U, web_ui()->call_data().size());
@@ -148,7 +148,7 @@ TEST_F(SiteSettingsHandlerTest, Origins) {
   setArgs.Append(new base::StringValue(google));  // Primary pattern.
   setArgs.Append(new base::StringValue(google));  // Secondary pattern.
   setArgs.Append(new base::FundamentalValue(type));
-  setArgs.Append(new base::FundamentalValue(CONTENT_SETTING_BLOCK));
+  setArgs.Append(new base::StringValue("block"));
   handler.HandleSetCategoryPermissionForOrigin(&setArgs);
   EXPECT_EQ(1U, web_ui()->call_data().size());
 

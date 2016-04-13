@@ -154,14 +154,16 @@ void SiteSettingsHandler::HandleSetDefaultValueForContentType(
   CHECK_EQ(2U, args->GetSize());
   double content_type;
   CHECK(args->GetDouble(0, &content_type));
-  double default_setting;
-  CHECK(args->GetDouble(1, &default_setting));
+  std::string setting;
+  CHECK(args->GetString(1, &setting));
+  ContentSetting default_setting;
+  CHECK(content_settings::ContentSettingFromString(setting, &default_setting));
 
   HostContentSettingsMap* map =
       HostContentSettingsMapFactory::GetForProfile(profile_);
   map->SetDefaultContentSetting(
       static_cast<ContentSettingsType>(static_cast<int>(content_type)),
-      static_cast<ContentSetting>(static_cast<int>(default_setting)));
+      default_setting);
 }
 
 void SiteSettingsHandler::HandleGetDefaultValueForContentType(
@@ -237,12 +239,13 @@ void SiteSettingsHandler::HandleSetCategoryPermissionForOrigin(
   CHECK(args->GetString(1, &secondary_pattern));
   double type;
   CHECK(args->GetDouble(2, &type));
-  double value;
-  CHECK(args->GetDouble(3, &value));
+  std::string value;
+  CHECK(args->GetString(3, &value));
 
   ContentSettingsType content_type =
       static_cast<ContentSettingsType>(static_cast<int>(type));
-  ContentSetting setting = static_cast<ContentSetting>(static_cast<int>(value));
+  ContentSetting setting;
+  CHECK(content_settings::ContentSettingFromString(value, &setting));
 
   HostContentSettingsMap* map =
       HostContentSettingsMapFactory::GetForProfile(profile_);

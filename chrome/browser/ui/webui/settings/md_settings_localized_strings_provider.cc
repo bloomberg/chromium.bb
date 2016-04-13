@@ -750,6 +750,7 @@ void AddSearchEnginesStrings(content::WebUIDataSource* html_source) {
 
 void AddSiteSettingsStrings(content::WebUIDataSource* html_source) {
   LocalizedString localized_strings[] = {
+      {"embeddedOnHost", IDS_EXCEPTIONS_GEOLOCATION_EMBEDDED_ON_HOST},
       {"siteSettingsCategoryPageTitle", IDS_SETTINGS_SITE_SETTINGS_CATEGORY},
       {"siteSettingsCategoryAllSites", IDS_SETTINGS_SITE_SETTINGS_ALL_SITES},
       {"siteSettingsCategoryCamera", IDS_SETTINGS_SITE_SETTINGS_CAMERA},
