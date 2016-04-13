@@ -6,6 +6,8 @@
 #include "core/dom/Element.h"
 #include "core/frame/FrameView.h"
 #include "core/html/HTMLIFrameElement.h"
+#include "core/page/FocusController.h"
+#include "core/page/Page.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "public/web/WebHitTestResult.h"
@@ -348,6 +350,42 @@ TEST_F(FrameThrottlingTest, ChangeStyleInThrottledFrame)
     // Make sure the new style shows up instead of the old one.
     auto displayItems2 = compositeFrame();
     EXPECT_TRUE(displayItems2.contains(SimCanvas::Rect, "green"));
+}
+
+TEST_F(FrameThrottlingTest, ThrottledFrameWithFocus)
+{
+    webView().settings()->setJavaScriptEnabled(true);
+    webView().settings()->setAcceleratedCompositingEnabled(true);
+    RuntimeEnabledFeatures::setCompositedSelectionUpdateEnabled(true);
+
+    // Create a hidden frame which is throttled and has a text selection.
+    SimRequest mainResource("https://example.com/", "text/html");
+    SimRequest frameResource("https://example.com/iframe.html", "text/html");
+
+    loadURL("https://example.com/");
+    mainResource.complete("<iframe id=frame sandbox=allow-scripts src=iframe.html></iframe>");
+    frameResource.complete(
+        "some text to select\n"
+        "<script>\n"
+        "var range = document.createRange();\n"
+        "range.selectNode(document.body);\n"
+        "window.getSelection().addRange(range);\n"
+        "</script>\n");
+
+    // Move the frame offscreen to throttle it.
+    auto* frameElement = toHTMLIFrameElement(document().getElementById("frame"));
+    frameElement->setAttribute(styleAttr, "transform: translateY(480px)");
+    EXPECT_FALSE(frameElement->contentDocument()->view()->canThrottleRendering());
+    compositeFrame();
+    EXPECT_TRUE(frameElement->contentDocument()->view()->canThrottleRendering());
+
+    // Give the frame focus and do another composite. The selection in the
+    // compositor should be cleared because the frame is throttled.
+    EXPECT_FALSE(compositor().hasSelection());
+    document().page()->focusController().setFocusedFrame(frameElement->contentDocument()->frame());
+    document().body()->setAttribute(styleAttr, "background: green");
+    compositeFrame();
+    EXPECT_FALSE(compositor().hasSelection());
 }
 
 TEST(RemoteFrameThrottlingTest, ThrottledLocalRoot)

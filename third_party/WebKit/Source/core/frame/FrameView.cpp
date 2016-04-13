@@ -1622,6 +1622,9 @@ void FrameView::updateLayersAndCompositingAfterScrollIfNeeded()
 
 bool FrameView::computeCompositedSelection(LocalFrame& frame, CompositedSelection& selection)
 {
+    if (frame.view()->shouldThrottleRendering())
+        return false;
+
     const VisibleSelection& visibleSelection = frame.selection().selection();
     if (!visibleSelection.isCaretOrRange())
         return false;

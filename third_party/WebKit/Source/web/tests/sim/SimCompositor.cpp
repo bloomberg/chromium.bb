@@ -45,6 +45,7 @@ static void paintFrames(LocalFrame& root, SimDisplayItemList& displayList)
 SimCompositor::SimCompositor()
     : m_needsAnimate(false)
     , m_deferCommits(true)
+    , m_hasSelection(false)
     , m_webViewImpl(0)
     , m_lastFrameTimeMonotonic(0)
 {
@@ -73,6 +74,16 @@ void SimCompositor::setNeedsAnimate()
 void SimCompositor::setDeferCommits(bool deferCommits)
 {
     m_deferCommits = deferCommits;
+}
+
+void SimCompositor::registerSelection(const WebSelection&)
+{
+    m_hasSelection = true;
+}
+
+void SimCompositor::clearSelection()
+{
+    m_hasSelection = false;
 }
 
 SimDisplayItemList SimCompositor::beginFrame()

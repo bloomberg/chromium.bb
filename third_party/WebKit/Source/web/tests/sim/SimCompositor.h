@@ -35,12 +35,17 @@ public:
     bool needsAnimate() const { return m_needsAnimate; }
     bool deferCommits() const { return m_deferCommits; }
 
+    bool hasSelection() const { return m_hasSelection; }
+
 private:
     void setNeedsAnimate() override;
     void setDeferCommits(bool) override;
+    void registerSelection(const WebSelection&) override;
+    void clearSelection() override;
 
     bool m_needsAnimate;
     bool m_deferCommits;
+    bool m_hasSelection;
     WebViewImpl* m_webViewImpl;
     double m_lastFrameTimeMonotonic;
 };
