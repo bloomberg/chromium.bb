@@ -147,7 +147,7 @@ bool FontResource::ensureCustomFontData()
             recordPackageFormatHistogram(PackageFormatUnknown);
         }
     }
-    return m_fontData;
+    return m_fontData.get();
 }
 
 FontPlatformData FontResource::platformDataFromCustomData(float size, bool bold, bool italic, FontOrientation orientation)

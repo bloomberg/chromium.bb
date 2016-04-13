@@ -92,11 +92,11 @@ public:
     GraphicsLayer* mainGraphicsLayer() const { return m_graphicsLayer.get(); }
 
     // Layer to clip children
-    bool hasClippingLayer() const { return m_childContainmentLayer; }
+    bool hasClippingLayer() const { return m_childContainmentLayer.get(); }
     GraphicsLayer* clippingLayer() const { return m_childContainmentLayer.get(); }
 
     // Layer to get clipped by ancestor
-    bool hasAncestorClippingLayer() const { return m_ancestorClippingLayer; }
+    bool hasAncestorClippingLayer() const { return m_ancestorClippingLayer.get(); }
     GraphicsLayer* ancestorClippingLayer() const { return m_ancestorClippingLayer.get(); }
 
     GraphicsLayer* foregroundLayer() const { return m_foregroundLayer.get(); }
@@ -104,21 +104,21 @@ public:
     GraphicsLayer* backgroundLayer() const { return m_backgroundLayer.get(); }
     bool backgroundLayerPaintsFixedRootBackground() const { return m_backgroundLayerPaintsFixedRootBackground; }
 
-    bool hasScrollingLayer() const { return m_scrollingLayer; }
+    bool hasScrollingLayer() const { return m_scrollingLayer.get(); }
     GraphicsLayer* scrollingLayer() const { return m_scrollingLayer.get(); }
     GraphicsLayer* scrollingContentsLayer() const { return m_scrollingContentsLayer.get(); }
 
-    bool hasMaskLayer() const { return m_maskLayer; }
+    bool hasMaskLayer() const { return m_maskLayer.get(); }
     GraphicsLayer* maskLayer() const { return m_maskLayer.get(); }
 
-    bool hasChildClippingMaskLayer() const { return m_childClippingMaskLayer; }
+    bool hasChildClippingMaskLayer() const { return m_childClippingMaskLayer.get(); }
     GraphicsLayer* childClippingMaskLayer() const { return m_childClippingMaskLayer.get(); }
 
     GraphicsLayer* parentForSublayers() const;
     GraphicsLayer* childForSuperlayers() const;
     void setSublayers(const GraphicsLayerVector&);
 
-    bool hasChildTransformLayer() const { return m_childTransformLayer; }
+    bool hasChildTransformLayer() const { return m_childTransformLayer.get(); }
     GraphicsLayer* childTransformLayer() const { return m_childTransformLayer.get(); }
 
     GraphicsLayer* squashingContainmentLayer() const { return m_squashingContainmentLayer.get(); }

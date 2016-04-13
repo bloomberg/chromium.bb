@@ -48,7 +48,7 @@ public:
     bool canDecodeToYUV() override;
     bool decodeToYUV() override;
     void setImagePlanes(PassOwnPtr<ImagePlanes>) override;
-    bool hasImagePlanes() const { return m_imagePlanes; }
+    bool hasImagePlanes() const { return m_imagePlanes.get(); }
 
     bool outputScanlines();
     unsigned desiredScaleNumerator() const;

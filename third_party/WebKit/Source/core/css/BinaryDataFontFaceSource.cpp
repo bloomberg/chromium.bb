@@ -22,7 +22,7 @@ BinaryDataFontFaceSource::~BinaryDataFontFaceSource()
 
 bool BinaryDataFontFaceSource::isValid() const
 {
-    return m_customPlatformData;
+    return m_customPlatformData.get();
 }
 
 PassRefPtr<SimpleFontData> BinaryDataFontFaceSource::createFontData(const FontDescription& fontDescription)

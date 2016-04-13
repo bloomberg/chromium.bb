@@ -165,6 +165,16 @@ enum classes and regular enums.</td>
 </tr>
 
 <tr>
+<td>Explicit Conversion Operators</td>
+<td><code>explicit operator <i>type</i>() {
+<br />&nbsp;&nbsp;// code<br /> }</code></td>
+<td>Allows conversion operators that cannot be implicitly invoked</td>
+<td><a href="http://en.cppreference.com/w/cpp/language/explicit">
+explicit specifier</a></td>
+<td>Prefer to the "safe bool" idiom. <a href="https://groups.google.com/a/chromium.org/d/msg/chromium-dev/zGF1SrQ-1HQ/BAiC12vwPeEJ">Discussion thread</a></td>
+</tr>
+
+<tr>
 <td>Final Specifier</td>
 <td><code>final</code></td>
 <td> Indicates that a class or function is final and cannot be overridden</td>
@@ -548,16 +558,6 @@ constexpr specifier</a></td>
 <td>Doesn't work in MSVS2013. Reevalute once it does. <a
 href="https://google.github.io/styleguide/cppguide.html#Use_of_constexpr">Google
 Style Guide on <code>constexpr</code></a></td>
-</tr>
-
-<tr>
-<td>Explicit Conversion Operators</td>
-<td><code>explicit operator <i>type</i>() {
-<br />&nbsp;&nbsp;// code<br /> }</code></td>
-<td>Allows conversion operators that cannot be implicitly invoked</td>
-<td><a href="http://en.cppreference.com/w/cpp/language/explicit">
-explicit specifier</a></td>
-<td><a href="https://connect.microsoft.com/VisualStudio/feedback/details/811334/bug-in-vs-2013-support-for-explicit-conversion-operators">Doesn't work in MSVS2013</a>. Reevaluate once it does. <a href="https://groups.google.com/a/chromium.org/d/msg/chromium-dev/zGF1SrQ-1HQ/BAiC12vwPeEJ">Discussion thread</a></td>
 </tr>
 
 <tr>

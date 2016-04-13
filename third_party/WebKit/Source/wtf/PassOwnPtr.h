@@ -64,11 +64,7 @@ public:
     PtrType operator->() const { ASSERT(m_ptr); return m_ptr; }
 
     bool operator!() const { return !m_ptr; }
-
-    // This conversion operator allows implicit conversion to bool but not to
-    // other integer types.
-    typedef PtrType PassOwnPtr::*UnspecifiedBoolType;
-    operator UnspecifiedBoolType() const { return m_ptr ? &PassOwnPtr::m_ptr : 0; }
+    explicit operator bool() const { return m_ptr; }
 
     template <typename U> friend PassOwnPtr<U> adoptPtr(U*);
     template <typename U> friend PassOwnPtr<U[]> adoptArrayPtr(U*);

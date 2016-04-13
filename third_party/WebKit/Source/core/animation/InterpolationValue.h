@@ -34,7 +34,7 @@ struct InterpolationValue {
         nonInterpolableValue = other.nonInterpolableValue.release();
     }
 
-    operator bool() const { return interpolableValue; }
+    operator bool() const { return interpolableValue.get(); }
 
     InterpolationValue clone() const
     {

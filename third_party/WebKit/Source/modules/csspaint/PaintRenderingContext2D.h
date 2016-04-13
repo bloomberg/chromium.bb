@@ -37,7 +37,7 @@ public:
     int width() const final;
     int height() const final;
 
-    bool hasImageBuffer() const final { return m_imageBuffer; }
+    bool hasImageBuffer() const final { return m_imageBuffer.get(); }
     ImageBuffer* imageBuffer() const final { return m_imageBuffer.get(); }
 
     bool parseColorOrCurrentColor(Color&, const String& colorString) const final;

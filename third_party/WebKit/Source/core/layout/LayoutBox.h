@@ -849,7 +849,7 @@ public:
     LayoutRect logicalLayoutOverflowRectForPropagation(const ComputedStyle&) const;
     LayoutRect layoutOverflowRectForPropagation(const ComputedStyle&) const;
 
-    bool hasOverflowModel() const { return m_overflow; }
+    bool hasOverflowModel() const { return m_overflow.get(); }
     bool hasVisualOverflow() const { return m_overflow && !borderBoxRect().contains(m_overflow->visualOverflowRect()); }
 
     virtual bool needsPreferredWidthsRecalculation() const;

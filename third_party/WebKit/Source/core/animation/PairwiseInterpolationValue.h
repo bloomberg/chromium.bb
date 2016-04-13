@@ -29,7 +29,7 @@ struct PairwiseInterpolationValue {
         , nonInterpolableValue(other.nonInterpolableValue.release())
     { }
 
-    operator bool() const { return startInterpolableValue; }
+    operator bool() const { return startInterpolableValue.get(); }
 
     OwnPtr<InterpolableValue> startInterpolableValue;
     OwnPtr<InterpolableValue> endInterpolableValue;

@@ -101,7 +101,7 @@ void HRTFDatabaseLoader::loadAsynchronously()
 bool HRTFDatabaseLoader::isLoaded()
 {
     MutexLocker locker(m_lock);
-    return m_hrtfDatabase;
+    return m_hrtfDatabase.get();
 }
 
 // This cleanup task is needed just to make sure that the loader thread finishes

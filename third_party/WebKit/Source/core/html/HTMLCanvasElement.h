@@ -139,7 +139,7 @@ public:
     bool is3D() const;
     bool isAnimated2D() const;
 
-    bool hasImageBuffer() const { return m_imageBuffer; }
+    bool hasImageBuffer() const { return m_imageBuffer.get(); }
     void discardImageBuffer();
 
     bool shouldAccelerate(const IntSize&) const;

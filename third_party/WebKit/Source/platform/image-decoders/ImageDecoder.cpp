@@ -274,7 +274,7 @@ size_t ImagePlanes::rowBytes(int i) const
 bool ImageDecoder::hasColorProfile() const
 {
 #if USE(QCMSLIB)
-    return m_sourceToOutputDeviceColorTransform;
+    return m_sourceToOutputDeviceColorTransform.get();
 #else
     return false;
 #endif

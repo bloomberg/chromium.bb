@@ -254,7 +254,7 @@ bool RecordingImageBufferSurface::finalizeFrameInternal(FallbackReason* fallback
             m_previousFrame = fromSkSp(m_currentFrame->finishRecordingAsPicture());
             initializeCurrentFrame();
         }
-        return m_currentFrame;
+        return m_currentFrame.get();
     }
 
     if (!m_frameWasCleared) {
