@@ -173,19 +173,20 @@ void SandboxIPCHandler::HandleFontMatchRequest(
     int fd,
     base::PickleIterator iter,
     const std::vector<base::ScopedFD>& fds) {
-  uint32_t requested_style;
+  SkFontStyle requested_style;
   std::string family;
-  if (!iter.ReadString(&family) || !iter.ReadUInt32(&requested_style))
+  if (!iter.ReadString(&family) ||
+      !skia::ReadSkFontStyle(&iter, &requested_style))
     return;
 
   SkFontConfigInterface::FontIdentity result_identity;
   SkString result_family;
-  SkTypeface::Style result_style;
+  SkFontStyle result_style;
   SkFontConfigInterface* fc =
       SkFontConfigInterface::GetSingletonDirectInterface();
   const bool r =
       fc->matchFamilyName(family.c_str(),
-                          static_cast<SkTypeface::Style>(requested_style),
+                          requested_style,
                           &result_identity,
                           &result_family,
                           &result_style);
@@ -202,7 +203,7 @@ void SandboxIPCHandler::HandleFontMatchRequest(
     reply.WriteBool(true);
     skia::WriteSkString(&reply, result_family);
     skia::WriteSkFontIdentity(&reply, result_identity);
-    reply.WriteUInt32(result_style);
+    skia::WriteSkFontStyle(&reply, result_style);
   }
   SendRendererReply(fds, reply, -1);
 }

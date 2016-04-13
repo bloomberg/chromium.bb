@@ -31,10 +31,10 @@ FontServiceThread::FontServiceThread(FontServicePtr font_service)
 
 bool FontServiceThread::MatchFamilyName(
     const char family_name[],
-    SkTypeface::Style requested_style,
+    SkFontStyle requested_style,
     SkFontConfigInterface::FontIdentity* out_font_identity,
     SkString* out_family_name,
-    SkTypeface::Style* out_style) {
+    SkFontStyle* out_style) {
   DCHECK_NE(GetThreadId(), base::PlatformThread::CurrentId());
 
   bool out_valid = false;
@@ -85,15 +85,20 @@ FontServiceThread::~FontServiceThread() {
 void FontServiceThread::MatchFamilyNameImpl(
     base::WaitableEvent* done_event,
     const char family_name[],
-    SkTypeface::Style requested_style,
+    SkFontStyle requested_style,
     bool* out_valid,
     SkFontConfigInterface::FontIdentity* out_font_identity,
     SkString* out_family_name,
-    SkTypeface::Style* out_style) {
+    SkFontStyle* out_style) {
   DCHECK_EQ(GetThreadId(), base::PlatformThread::CurrentId());
 
+  TypefaceStylePtr style(TypefaceStyle::New());
+  style->weight = requested_style.weight();
+  style->width = requested_style.width();
+  style->slant = static_cast<TypefaceSlant>(requested_style.slant());
+
   font_service_->MatchFamilyName(
-      mojo::String(family_name), static_cast<TypefaceStyle>(requested_style),
+      mojo::String(family_name), std::move(style),
       base::Bind(&FontServiceThread::OnMatchFamilyNameComplete, this,
                  done_event, out_valid, out_font_identity, out_family_name,
                  out_style));
@@ -104,10 +109,10 @@ void FontServiceThread::OnMatchFamilyNameComplete(
     bool* out_valid,
     SkFontConfigInterface::FontIdentity* out_font_identity,
     SkString* out_family_name,
-    SkTypeface::Style* out_style,
+    SkFontStyle* out_style,
     FontIdentityPtr font_identity,
     mojo::String family_name,
-    TypefaceStyle style) {
+    TypefaceStylePtr style) {
   DCHECK_EQ(GetThreadId(), base::PlatformThread::CurrentId());
 
   *out_valid = font_identity;
@@ -119,7 +124,9 @@ void FontServiceThread::OnMatchFamilyNameComplete(
     // behaviour of the current Linux IPC version.
 
     *out_family_name = family_name.data();
-    *out_style = static_cast<SkTypeface::Style>(style);
+    *out_style = SkFontStyle(style->weight,
+                             style->width,
+                             static_cast<SkFontStyle::Slant>(style->slant));
   }
 
   done_event->Signal();

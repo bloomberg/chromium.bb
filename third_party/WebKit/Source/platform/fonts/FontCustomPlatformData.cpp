@@ -58,7 +58,7 @@ FontPlatformData FontCustomPlatformData::fontPlatformData(float size, bool bold,
         // FIXME: Skia currently renders synthetic bold and italics with
         // hinting and without linear metrics on the windows GDI backend
         // while the DirectWrite backend does the right thing. Using
-        // CreateFromName and specifying the bold/italics style allows
+        // legacyCreateTypeface and specifying the bold/italics style allows
         // for proper rendering of synthetic style. Once Skia has been
         // updated this workaround will no longer be needed.
         // http://crbug.com/332958
@@ -68,13 +68,12 @@ FontPlatformData FontCustomPlatformData::fontPlatformData(float size, bool bold,
             SkString name;
             m_typeface->getFamilyName(&name);
 
-            int style = SkTypeface::kNormal;
-            if (syntheticBold)
-                style |= SkTypeface::kBold;
-            if (syntheticItalic)
-                style |= SkTypeface::kItalic;
-
-            RefPtr<SkTypeface> typeface = adoptRef(FontCache::fontCache()->fontManager()->legacyCreateTypeface(name.c_str(), static_cast<SkTypeface::Style>(style)));
+            SkFontStyle realStyle = m_typeface->fontStyle();
+            SkFontStyle syntheticStyle = SkFontStyle(
+                realStyle.weight() + (syntheticBold ? 200 : 0),
+                realStyle.width(),
+                syntheticItalic ? SkFontStyle::kItalic_Slant : realStyle.slant());
+            RefPtr<SkTypeface> typeface = adoptRef(FontCache::fontCache()->fontManager()->legacyCreateTypeface(name.c_str(), syntheticStyle));
             syntheticBold = false;
             syntheticItalic = false;
             return FontPlatformData(typeface.release(), "", size, syntheticBold, syntheticItalic, orientation);

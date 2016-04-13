@@ -40,6 +40,24 @@ bool ReadSkFontIdentity(base::PickleIterator* iter,
   return true;
 }
 
+bool ReadSkFontStyle(base::PickleIterator* iter, SkFontStyle* style) {
+  uint16_t reply_weight;
+  uint16_t reply_width;
+  uint16_t reply_slant;
+
+  if (!iter->ReadUInt16(&reply_weight) ||
+      !iter->ReadUInt16(&reply_width) ||
+      !iter->ReadUInt16(&reply_slant))
+    return false;
+
+  if (style) {
+    *style = SkFontStyle(reply_weight,
+                         reply_width,
+                         static_cast<SkFontStyle::Slant>(reply_slant));
+  }
+  return true;
+}
+
 bool WriteSkString(base::Pickle* pickle, const SkString& str) {
   return pickle->WriteData(str.c_str(), str.size());
 }
@@ -49,6 +67,12 @@ bool WriteSkFontIdentity(base::Pickle* pickle,
   return pickle->WriteUInt32(identity.fID) &&
          pickle->WriteUInt32(identity.fTTCIndex) &&
          WriteSkString(pickle, identity.fString);
+}
+
+bool WriteSkFontStyle(base::Pickle* pickle, SkFontStyle style) {
+  return pickle->WriteUInt16(style.weight()) &&
+         pickle->WriteUInt16(style.width()) &&
+         pickle->WriteUInt16(style.slant());
 }
 
 SkPixelGeometry ComputeDefaultPixelGeometry() {

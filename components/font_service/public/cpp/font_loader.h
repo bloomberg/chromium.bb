@@ -43,10 +43,10 @@ class FontLoader : public SkFontConfigInterface,
 
   // SkFontConfigInterface:
   bool matchFamilyName(const char family_name[],
-                       SkTypeface::Style requested,
+                       SkFontStyle requested,
                        FontIdentity* out_font_identifier,
                        SkString* out_family_name,
-                       SkTypeface::Style* out_style) override;
+                       SkFontStyle* out_style) override;
   SkStreamAsset* openStream(const FontIdentity& identity) override;
 
  private:

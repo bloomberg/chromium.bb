@@ -27,10 +27,10 @@ void FontLoader::Shutdown() {
 }
 
 bool FontLoader::matchFamilyName(const char family_name[],
-                                 SkTypeface::Style requested,
+                                 SkFontStyle requested,
                                  FontIdentity* out_font_identifier,
                                  SkString* out_family_name,
-                                 SkTypeface::Style* out_style) {
+                                 SkFontStyle* out_style) {
   TRACE_EVENT1("font_service", "FontServiceThread::MatchFamilyName",
                "family_name", family_name);
   return thread_->MatchFamilyName(family_name, requested, out_font_identifier,

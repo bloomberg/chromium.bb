@@ -37,7 +37,7 @@ class FontServiceApp : public mojo::ShellClient,
 
   // FontService:
   void MatchFamilyName(const mojo::String& family_name,
-                       TypefaceStyle requested_style,
+                       TypefaceStylePtr requested_style,
                        const MatchFamilyNameCallback& callback) override;
   void OpenStream(uint32_t id_number,
                   const OpenStreamCallback& callback) override;

@@ -4,11 +4,15 @@
 
 module font_service;
 
-enum TypefaceStyle {
-  NORMAL = 0,
-  BOLD = 0x01,
-  ITALIC = 0x02,
-  BOLD_ITALIC = 0x03
+enum TypefaceSlant {
+  ROMAN = 0,
+  ITALIC = 1,
+};
+
+struct TypefaceStyle {
+  uint16 weight;
+  uint8 width;
+  TypefaceSlant slant;
 };
 
 // A reference to specific font on the font service.

@@ -64,10 +64,10 @@ FontConfigIPC::~FontConfigIPC() {
 }
 
 bool FontConfigIPC::matchFamilyName(const char familyName[],
-                                    SkTypeface::Style requestedStyle,
+                                    SkFontStyle requestedStyle,
                                     FontIdentity* outFontIdentity,
                                     SkString* outFamilyName,
-                                    SkTypeface::Style* outStyle) {
+                                    SkFontStyle* outStyle) {
   TRACE_EVENT0("sandbox_ipc", "FontConfigIPC::matchFamilyName");
   size_t familyNameLen = familyName ? strlen(familyName) : 0;
   if (familyNameLen > kMaxFontFamilyLength)
@@ -76,7 +76,7 @@ bool FontConfigIPC::matchFamilyName(const char familyName[],
   base::Pickle request;
   request.WriteInt(METHOD_MATCH);
   request.WriteData(familyName, familyNameLen);
-  request.WriteUInt32(requestedStyle);
+  skia::WriteSkFontStyle(&request, requestedStyle);
 
   uint8_t reply_buf[2048];
   const ssize_t r = base::UnixDomainSocket::SendRecvMsg(
@@ -94,10 +94,10 @@ bool FontConfigIPC::matchFamilyName(const char familyName[],
 
   SkString     reply_family;
   FontIdentity reply_identity;
-  uint32_t     reply_style;
+  SkFontStyle  reply_style;
   if (!skia::ReadSkString(&iter, &reply_family) ||
       !skia::ReadSkFontIdentity(&iter, &reply_identity) ||
-      !iter.ReadUInt32(&reply_style)) {
+      !skia::ReadSkFontStyle(&iter, &reply_style)) {
     return false;
   }
 
@@ -106,7 +106,7 @@ bool FontConfigIPC::matchFamilyName(const char familyName[],
   if (outFamilyName)
     *outFamilyName = reply_family;
   if (outStyle)
-    *outStyle = static_cast<SkTypeface::Style>(reply_style);
+    *outStyle = reply_style;
 
   return true;
 }

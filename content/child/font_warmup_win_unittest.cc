@@ -201,7 +201,7 @@ class TestSkFontMgr : public SkFontMgr {
   }
 
   SkTypeface* onLegacyCreateTypeface(const char familyName[],
-                                     unsigned styleBits) const override {
+                                     SkFontStyle style) const override {
     ADD_FAILURE();
     return nullptr;
   }

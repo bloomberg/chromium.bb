@@ -210,12 +210,6 @@ PassRefPtr<SkTypeface> FontCache::createTypeface(const FontDescription& fontDesc
         name = family.utf8();
     }
 
-    int style = SkTypeface::kNormal;
-    if (fontDescription.weight() >= FontWeight600)
-        style |= SkTypeface::kBold;
-    if (fontDescription.style())
-        style |= SkTypeface::kItalic;
-
 #if OS(WIN)
     if (s_sideloadedFonts) {
         HashMap<String, RefPtr<SkTypeface>>::iterator sideloadedFont =
@@ -227,7 +221,7 @@ PassRefPtr<SkTypeface> FontCache::createTypeface(const FontDescription& fontDesc
     if (m_fontManager) {
         return adoptRef(useDirectWrite()
             ? m_fontManager->matchFamilyStyle(name.data(), fontStyle(fontDescription))
-            : m_fontManager->legacyCreateTypeface(name.data(), style)
+            : m_fontManager->legacyCreateTypeface(name.data(), fontStyle(fontDescription))
             );
     }
 #endif
@@ -242,6 +236,11 @@ PassRefPtr<SkTypeface> FontCache::createTypeface(const FontDescription& fontDesc
 
     // FIXME: Use m_fontManager, SkFontStyle and matchFamilyStyle instead of
     // CreateFromName on all platforms.
+    int style = SkTypeface::kNormal;
+    if (fontDescription.weight() >= FontWeight600)
+        style |= SkTypeface::kBold;
+    if (fontDescription.style())
+        style |= SkTypeface::kItalic;
     return adoptRef(SkTypeface::CreateFromName(name.data(), static_cast<SkTypeface::Style>(style)));
 }
 

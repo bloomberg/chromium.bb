@@ -35,10 +35,10 @@ class FontServiceThread : public base::Thread,
   // These methods are proxies which run on your thread, post a blocking task
   // to the FontServiceThread, and wait on an event signaled from the callback.
   bool MatchFamilyName(const char family_name[],
-                       SkTypeface::Style requested_style,
+                       SkFontStyle requested_style,
                        SkFontConfigInterface::FontIdentity* out_font_identity,
                        SkString* out_family_name,
-                       SkTypeface::Style* out_style);
+                       SkFontStyle* out_style);
   scoped_refptr<MappedFontFile> OpenStream(
       const SkFontConfigInterface::FontIdentity& identity);
 
@@ -52,11 +52,11 @@ class FontServiceThread : public base::Thread,
   void MatchFamilyNameImpl(
       base::WaitableEvent* done_event,
       const char family_name[],
-      SkTypeface::Style requested_style,
+      SkFontStyle requested_style,
       bool* out_valid,
       SkFontConfigInterface::FontIdentity* out_font_identity,
       SkString* out_family_name,
-      SkTypeface::Style* out_style);
+      SkFontStyle* out_style);
 
   // Called on the FontServiceThread in response to receiving a message from
   // our MatchFamily mojo IPC. This writes the data returned by mojo, and then
@@ -66,10 +66,10 @@ class FontServiceThread : public base::Thread,
       bool* out_valid,
       SkFontConfigInterface::FontIdentity* out_font_identity,
       SkString* out_family_name,
-      SkTypeface::Style* out_style,
+      SkFontStyle* out_style,
       FontIdentityPtr font_identity,
       mojo::String family_name,
-      TypefaceStyle style);
+      TypefaceStylePtr style);
 
   // Implementation of OpenStream; same threading restrictions as MatchFamily.
   void OpenStreamImpl(base::WaitableEvent* done_event,

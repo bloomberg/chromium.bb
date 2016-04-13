@@ -52,7 +52,7 @@ static inline bool isFontPresent(const UChar* fontName, SkFontMgr* fontManager)
     if (FontCache::useDirectWrite())
         typeface = fontManager->matchFamilyStyle(family.utf8().data(), SkFontStyle());
     else
-        typeface = fontManager->legacyCreateTypeface(family.utf8().data(), SkTypeface::kNormal);
+        typeface = fontManager->legacyCreateTypeface(family.utf8().data(), SkFontStyle());
 
     if (!typeface)
         return false;

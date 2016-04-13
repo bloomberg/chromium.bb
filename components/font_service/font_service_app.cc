@@ -11,19 +11,12 @@
 #include "mojo/platform_handle/platform_handle_functions.h"
 #include "services/shell/public/cpp/connection.h"
 
-static_assert(static_cast<uint32_t>(SkTypeface::kNormal) ==
-                  static_cast<uint32_t>(font_service::TypefaceStyle::NORMAL),
+static_assert(static_cast<uint32_t>(SkFontStyle::kUpright_Slant) ==
+                  static_cast<uint32_t>(font_service::TypefaceSlant::ROMAN),
               "Skia and font service flags must match");
-static_assert(static_cast<uint32_t>(SkTypeface::kBold) ==
-                  static_cast<uint32_t>(font_service::TypefaceStyle::BOLD),
+static_assert(static_cast<uint32_t>(SkFontStyle::kItalic_Slant) ==
+                  static_cast<uint32_t>(font_service::TypefaceSlant::ITALIC),
               "Skia and font service flags must match");
-static_assert(static_cast<uint32_t>(SkTypeface::kItalic) ==
-                  static_cast<uint32_t>(font_service::TypefaceStyle::ITALIC),
-              "Skia and font service flags must match");
-static_assert(
-    static_cast<uint32_t>(SkTypeface::kBoldItalic) ==
-        static_cast<uint32_t>(font_service::TypefaceStyle::BOLD_ITALIC),
-    "Skia and font service flags must match");
 
 namespace {
 
@@ -75,19 +68,26 @@ void FontServiceApp::Create(mojo::Connection* connection,
 }
 
 void FontServiceApp::MatchFamilyName(const mojo::String& family_name,
-                                     TypefaceStyle requested_style,
+                                     TypefaceStylePtr requested_style,
                                      const MatchFamilyNameCallback& callback) {
   SkFontConfigInterface::FontIdentity result_identity;
   SkString result_family;
-  SkTypeface::Style result_style;
+  SkFontStyle result_style;
   SkFontConfigInterface* fc =
       SkFontConfigInterface::GetSingletonDirectInterface();
   const bool r = fc->matchFamilyName(
-      family_name.data(), static_cast<SkTypeface::Style>(requested_style),
+      family_name.data(),
+      SkFontStyle(requested_style->weight,
+                  requested_style->width,
+                  static_cast<SkFontStyle::Slant>(requested_style->slant)),
       &result_identity, &result_family, &result_style);
 
   if (!r) {
-    callback.Run(nullptr, "", TypefaceStyle::NORMAL);
+    TypefaceStylePtr style(TypefaceStyle::New());
+    style->weight = SkFontStyle().weight();
+    style->width = SkFontStyle().width();
+    style->slant = static_cast<TypefaceSlant>(SkFontStyle().slant());
+    callback.Run(nullptr, "", std::move(style));
     return;
   }
 
@@ -100,8 +100,12 @@ void FontServiceApp::MatchFamilyName(const mojo::String& family_name,
   identity->ttc_index = result_identity.fTTCIndex;
   identity->str_representation = result_identity.fString.c_str();
 
-  callback.Run(std::move(identity), result_family.c_str(),
-               static_cast<TypefaceStyle>(result_style));
+  TypefaceStylePtr style(TypefaceStyle::New());
+  style->weight = result_style.weight();
+  style->width = result_style.width();
+  style->slant = static_cast<TypefaceSlant>(result_style.slant());
+
+  callback.Run(std::move(identity), result_family.c_str(), std::move(style));
 }
 
 void FontServiceApp::OpenStream(uint32_t id_number,

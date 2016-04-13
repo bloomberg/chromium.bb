@@ -34,10 +34,10 @@ class FontConfigIPC : public SkFontConfigInterface {
   ~FontConfigIPC() override;
 
   bool matchFamilyName(const char familyName[],
-                       SkTypeface::Style requested,
+                       SkFontStyle requested,
                        FontIdentity* outFontIdentifier,
                        SkString* outFamilyName,
-                       SkTypeface::Style* outStyle) override;
+                       SkFontStyle* outStyle) override;
 
   // Returns a new SkTypeface instance or a ref'ed one from the cache. The
   // caller should adopt the pointer.
