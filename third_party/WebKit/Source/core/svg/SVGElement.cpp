@@ -680,8 +680,7 @@ AnimatedPropertyType SVGElement::animatedPropertyTypeForCSSAttribute(const Quali
 
 void SVGElement::addToPropertyMap(SVGAnimatedPropertyBase* property)
 {
-    QualifiedName attributeName = property->attributeName();
-    m_attributeToPropertyMap.set(attributeName, property);
+    m_attributeToPropertyMap.set(property->attributeName(), property);
 }
 
 SVGAnimatedPropertyBase* SVGElement::propertyFromAttribute(const QualifiedName& attributeName) const
