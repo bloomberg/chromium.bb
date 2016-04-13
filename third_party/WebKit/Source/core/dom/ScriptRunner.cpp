@@ -41,10 +41,6 @@ ScriptRunner::ScriptRunner(Document* document)
     , m_taskRunner(Platform::current()->currentThread()->scheduler()->loadingTaskRunner())
     , m_numberOfInOrderScriptsWithPendingNotification(0)
     , m_isSuspended(false)
-#if !ENABLE(OILPAN)
-    , m_isDisposed(false)
-    , m_weakPointerFactoryForTasks(this)
-#endif
 {
     DCHECK(document);
 #ifndef NDEBUG
@@ -54,32 +50,7 @@ ScriptRunner::ScriptRunner(Document* document)
 
 ScriptRunner::~ScriptRunner()
 {
-#if !ENABLE(OILPAN)
-    dispose();
-#endif
 }
-
-#if !ENABLE(OILPAN)
-void ScriptRunner::dispose()
-{
-    // Make sure that ScriptLoaders don't keep their PendingScripts alive.
-    for (ScriptLoader* scriptLoader : m_pendingInOrderScripts)
-        scriptLoader->detach();
-    for (ScriptLoader* scriptLoader : m_pendingAsyncScripts)
-        scriptLoader->detach();
-    for (ScriptLoader* scriptLoader : m_inOrderScriptsToExecuteSoon)
-        scriptLoader->detach();
-    for (ScriptLoader* scriptLoader : m_asyncScriptsToExecuteSoon)
-        scriptLoader->detach();
-
-    m_pendingInOrderScripts.clear();
-    m_pendingAsyncScripts.clear();
-    m_inOrderScriptsToExecuteSoon.clear();
-    m_asyncScriptsToExecuteSoon.clear();
-    m_isDisposed = true;
-    m_numberOfInOrderScriptsWithPendingNotification = 0;
-}
-#endif
 
 void ScriptRunner::queueScriptForExecution(ScriptLoader* scriptLoader, ExecutionType executionType)
 {
@@ -99,11 +70,7 @@ void ScriptRunner::queueScriptForExecution(ScriptLoader* scriptLoader, Execution
 
 void ScriptRunner::postTask(const WebTraceLocation& webTraceLocation)
 {
-#if !ENABLE(OILPAN)
-    m_taskRunner->postTask(webTraceLocation, bind(&ScriptRunner::executeTask, m_weakPointerFactoryForTasks.createWeakPtr()));
-#else
     m_taskRunner->postTask(webTraceLocation, bind(&ScriptRunner::executeTask, WeakPersistentThisPointer<ScriptRunner>(this)));
-#endif
 }
 
 void ScriptRunner::suspend()
@@ -190,21 +157,12 @@ void ScriptRunner::notifyScriptLoadError(ScriptLoader* scriptLoader, ExecutionTy
         // where the ScriptLoader is associated with the wrong ScriptRunner
         // (otherwise we'd cause a use-after-free in ~ScriptRunner when it tries
         // to detach).
-        bool foundLoader = m_pendingAsyncScripts.contains(scriptLoader);
-#if !ENABLE(OILPAN)
-        // If the ScriptRunner has been disposed of, no pending scripts remain.
-        foundLoader = foundLoader || m_isDisposed;
-#endif
-        SECURITY_CHECK(foundLoader);
+        SECURITY_CHECK(m_pendingAsyncScripts.contains(scriptLoader));
         m_pendingAsyncScripts.remove(scriptLoader);
         break;
     }
     case IN_ORDER_EXECUTION:
-        bool foundLoader = removePendingInOrderScript(scriptLoader);
-#if !ENABLE(OILPAN)
-        foundLoader = foundLoader || m_isDisposed;
-#endif
-        SECURITY_CHECK(foundLoader);
+        SECURITY_CHECK(removePendingInOrderScript(scriptLoader));
         scheduleReadyInOrderScripts();
         break;
     }

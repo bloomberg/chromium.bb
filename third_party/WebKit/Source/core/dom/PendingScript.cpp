@@ -47,9 +47,7 @@ PendingScript::PendingScript(Element* element, ScriptResource* resource)
     , m_client(nullptr)
 {
     setScriptResource(resource);
-#if ENABLE(OILPAN)
     ThreadState::current()->registerPreFinalizer(this);
-#endif
 }
 
 PendingScript::~PendingScript()

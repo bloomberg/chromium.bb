@@ -47,9 +47,6 @@ public:
         return new ScriptRunner(document);
     }
     ~ScriptRunner();
-#if !ENABLE(OILPAN)
-    void dispose();
-#endif
 
     enum ExecutionType { ASYNC_EXECUTION, IN_ORDER_EXECUTION };
     void queueScriptForExecution(ScriptLoader*, ExecutionType);
@@ -94,11 +91,6 @@ private:
     bool m_isSuspended;
 #ifndef NDEBUG
     bool m_hasEverBeenSuspended;
-#endif
-
-#if !ENABLE(OILPAN)
-    bool m_isDisposed;
-    WeakPtrFactory<ScriptRunner> m_weakPointerFactoryForTasks;
 #endif
 };
 
