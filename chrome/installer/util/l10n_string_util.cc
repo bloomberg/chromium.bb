@@ -11,9 +11,9 @@
 
 #include <algorithm>
 #include <limits>
+#include <memory>
 
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/installer/util/language_selector.h"
@@ -93,7 +93,7 @@ std::wstring GetLocalizedEulaResource() {
   // (see the definition of full_exe_path and resource).
   DCHECK(std::numeric_limits<uint32_t>::max() > (url_path.size() * 3));
   DWORD count = static_cast<DWORD>(url_path.size() * 3);
-  scoped_ptr<wchar_t[]> url_canon(new wchar_t[count]);
+  std::unique_ptr<wchar_t[]> url_canon(new wchar_t[count]);
   HRESULT hr = ::UrlCanonicalizeW(url_path.c_str(), url_canon.get(),
                                   &count, URL_ESCAPE_UNSAFE);
   if (SUCCEEDED(hr))

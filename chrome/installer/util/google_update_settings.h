@@ -7,10 +7,10 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "base/version.h"
@@ -98,7 +98,7 @@ class GoogleUpdateSettings {
   // if-and-only-if the client_id couldn't be retrieved (failure to retrieve
   // other fields only makes them keep their default value). A non-null return
   // will NEVER contain an empty client_id field.
-  static scoped_ptr<metrics::ClientInfo> LoadMetricsClientInfo();
+  static std::unique_ptr<metrics::ClientInfo> LoadMetricsClientInfo();
 
   // Stores a backup of the metrics client info in the registry. Storing a
   // |client_info| with an empty client id will effectively void the backup.

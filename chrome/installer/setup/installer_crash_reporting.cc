@@ -115,7 +115,7 @@ void ConfigureCrashReporting(const InstallerState& installer_state) {
                                                         "Chrome Installer");
 
   // Set up the metrics client id (a la child_process_logging::Init()).
-  scoped_ptr<metrics::ClientInfo> client_info =
+  std::unique_ptr<metrics::ClientInfo> client_info =
       GoogleUpdateSettings::LoadMetricsClientInfo();
   if (client_info)
     crash_keys::SetMetricsClientIdFromGUID(client_info->client_id);

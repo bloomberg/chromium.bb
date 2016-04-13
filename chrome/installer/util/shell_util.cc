@@ -14,6 +14,7 @@
 #include <shobjidl.h>
 
 #include <limits>
+#include <memory>
 #include <string>
 
 #include "base/bind.h"
@@ -25,7 +26,6 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/md5.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/path_service.h"
@@ -540,7 +540,7 @@ void GetAppDefaultRegistrationEntries(const base::string16& prog_id,
   base::string16 key_name(ShellUtil::kRegClasses);
   key_name.push_back(base::FilePath::kSeparators[0]);
   key_name.append(ext);
-  scoped_ptr<RegistryEntry> default_association(
+  std::unique_ptr<RegistryEntry> default_association(
       new RegistryEntry(key_name, prog_id));
   if (overwrite_existing ||
       !default_association->KeyExistsInRegistry(RegistryEntry::LOOK_IN_HKCU)) {
@@ -2334,7 +2334,7 @@ bool ShellUtil::DeleteFileAssociations(const base::string16& prog_id) {
 // static
 bool ShellUtil::AddRegistryEntries(HKEY root,
                                    const ScopedVector<RegistryEntry>& entries) {
-  scoped_ptr<WorkItemList> items(WorkItem::CreateWorkItemList());
+  std::unique_ptr<WorkItemList> items(WorkItem::CreateWorkItemList());
 
   for (ScopedVector<RegistryEntry>::const_iterator itr = entries.begin();
        itr != entries.end(); ++itr)

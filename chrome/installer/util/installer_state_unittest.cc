@@ -476,7 +476,8 @@ TEST_F(InstallerStateTest, GetCurrentVersionMigrateChrome) {
   installer_state.Initialize(cmd_line, prefs, machine_state);
 
   // Is the Chrome version picked up?
-  scoped_ptr<Version> version(installer_state.GetCurrentVersion(machine_state));
+  std::unique_ptr<Version> version(
+      installer_state.GetCurrentVersion(machine_state));
   EXPECT_TRUE(version.get() != NULL);
 }
 
@@ -729,7 +730,7 @@ class InstallerStateCriticalVersionTest : public ::testing::Test {
   static Version* high_version_;
 
   base::CommandLine cmd_line_;
-  scoped_ptr<MasterPreferences> prefs_;
+  std::unique_ptr<MasterPreferences> prefs_;
   InstallationState machine_state_;
   MockInstallerState installer_state_;
 };

@@ -5,12 +5,12 @@
 #ifndef CHROME_INSTALLER_UTIL_INSTALLATION_STATE_H_
 #define CHROME_INSTALLER_UTIL_INSTALLATION_STATE_H_
 
+#include <memory>
 #include <string>
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/installer/util/app_commands.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/channel_info.h"
@@ -105,8 +105,8 @@ class ProductState {
                                  AppCommands* commands);
 
   ChannelInfo channel_;
-  scoped_ptr<Version> version_;
-  scoped_ptr<Version> old_version_;
+  std::unique_ptr<Version> version_;
+  std::unique_ptr<Version> old_version_;
   std::wstring brand_;
   std::wstring rename_cmd_;
   std::wstring oem_install_;

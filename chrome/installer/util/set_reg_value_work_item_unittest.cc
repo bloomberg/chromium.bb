@@ -2,18 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/installer/util/set_reg_value_work_item.h"
+
 #include <windows.h>
 
+#include <memory>
 #include <string>
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/test/test_reg_util_win.h"
 #include "base/win/registry.h"
-#include "chrome/installer/util/set_reg_value_work_item.h"
 #include "chrome/installer/util/work_item.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -54,21 +55,15 @@ class SetRegValueWorkItemTest : public testing::Test {
 
 // Write a new value without overwrite flag. The value should be set.
 TEST_F(SetRegValueWorkItemTest, WriteNewNonOverwrite) {
-  scoped_ptr<SetRegValueWorkItem> work_item1(
-      WorkItem::CreateSetRegValueWorkItem(HKEY_CURRENT_USER,
-                                          kTestKey,
-                                          WorkItem::kWow64Default,
-                                          kNameStr,
-                                          kDataStr1,
-                                          false));
+  std::unique_ptr<SetRegValueWorkItem> work_item1(
+      WorkItem::CreateSetRegValueWorkItem(HKEY_CURRENT_USER, kTestKey,
+                                          WorkItem::kWow64Default, kNameStr,
+                                          kDataStr1, false));
 
-  scoped_ptr<SetRegValueWorkItem> work_item2(
-      WorkItem::CreateSetRegValueWorkItem(HKEY_CURRENT_USER,
-                                          kTestKey,
-                                          WorkItem::kWow64Default,
-                                          kNameDword,
-                                          kDword1,
-                                          false));
+  std::unique_ptr<SetRegValueWorkItem> work_item2(
+      WorkItem::CreateSetRegValueWorkItem(HKEY_CURRENT_USER, kTestKey,
+                                          WorkItem::kWow64Default, kNameDword,
+                                          kDword1, false));
 
   ASSERT_TRUE(work_item1->Do());
   ASSERT_TRUE(work_item2->Do());
@@ -90,21 +85,15 @@ TEST_F(SetRegValueWorkItemTest, WriteNewNonOverwrite) {
 
 // Write a new value with overwrite flag. The value should be set.
 TEST_F(SetRegValueWorkItemTest, WriteNewOverwrite) {
-  scoped_ptr<SetRegValueWorkItem> work_item1(
-      WorkItem::CreateSetRegValueWorkItem(HKEY_CURRENT_USER,
-                                          kTestKey,
-                                          WorkItem::kWow64Default,
-                                          kNameStr,
-                                          kDataStr1,
-                                          true));
+  std::unique_ptr<SetRegValueWorkItem> work_item1(
+      WorkItem::CreateSetRegValueWorkItem(HKEY_CURRENT_USER, kTestKey,
+                                          WorkItem::kWow64Default, kNameStr,
+                                          kDataStr1, true));
 
-  scoped_ptr<SetRegValueWorkItem> work_item2(
-      WorkItem::CreateSetRegValueWorkItem(HKEY_CURRENT_USER,
-                                          kTestKey,
-                                          WorkItem::kWow64Default,
-                                          kNameDword,
-                                          kDword1,
-                                          true));
+  std::unique_ptr<SetRegValueWorkItem> work_item2(
+      WorkItem::CreateSetRegValueWorkItem(HKEY_CURRENT_USER, kTestKey,
+                                          WorkItem::kWow64Default, kNameDword,
+                                          kDword1, true));
 
   ASSERT_TRUE(work_item1->Do());
   ASSERT_TRUE(work_item2->Do());
@@ -131,13 +120,10 @@ TEST_F(SetRegValueWorkItemTest, WriteExistingNonOverwrite) {
   // Write data to the value we are going to set.
   ASSERT_EQ(ERROR_SUCCESS, test_key_.WriteValue(kNameStr, kDataStr1));
 
-  scoped_ptr<SetRegValueWorkItem> work_item(
-      WorkItem::CreateSetRegValueWorkItem(HKEY_CURRENT_USER,
-                                          kTestKey,
-                                          WorkItem::kWow64Default,
-                                          kNameStr,
-                                          kDataStr2,
-                                          false));
+  std::unique_ptr<SetRegValueWorkItem> work_item(
+      WorkItem::CreateSetRegValueWorkItem(HKEY_CURRENT_USER, kTestKey,
+                                          WorkItem::kWow64Default, kNameStr,
+                                          kDataStr2, false));
   ASSERT_TRUE(work_item->Do());
 
   std::wstring read_out;
@@ -181,20 +167,14 @@ TEST_F(SetRegValueWorkItemTest, WriteExistingOverwrite) {
   ASSERT_EQ(ERROR_SUCCESS, RegSetValueEx(test_key_.Handle(), kNameEmpty, NULL,
                                          REG_SZ, NULL, 0));
 
-  scoped_ptr<SetRegValueWorkItem> work_item1(
-      WorkItem::CreateSetRegValueWorkItem(HKEY_CURRENT_USER,
-                                          kTestKey,
-                                          WorkItem::kWow64Default,
-                                          kNameStr,
-                                          kDataStr2,
-                                          true));
-  scoped_ptr<SetRegValueWorkItem> work_item2(
-      WorkItem::CreateSetRegValueWorkItem(HKEY_CURRENT_USER,
-                                          kTestKey,
-                                          WorkItem::kWow64Default,
-                                          kNameEmpty,
-                                          kDataStr2,
-                                          true));
+  std::unique_ptr<SetRegValueWorkItem> work_item1(
+      WorkItem::CreateSetRegValueWorkItem(HKEY_CURRENT_USER, kTestKey,
+                                          WorkItem::kWow64Default, kNameStr,
+                                          kDataStr2, true));
+  std::unique_ptr<SetRegValueWorkItem> work_item2(
+      WorkItem::CreateSetRegValueWorkItem(HKEY_CURRENT_USER, kTestKey,
+                                          WorkItem::kWow64Default, kNameEmpty,
+                                          kDataStr2, true));
 
   ASSERT_TRUE(work_item1->Do());
   ASSERT_TRUE(work_item2->Do());
@@ -222,13 +202,10 @@ TEST_F(SetRegValueWorkItemTest, WriteExistingOverwrite) {
   // Now test REG_DWORD value.
   // Write data to the value we are going to set.
   ASSERT_EQ(ERROR_SUCCESS, test_key_.WriteValue(kNameDword, kDword1));
-  scoped_ptr<SetRegValueWorkItem> work_item3(
-      WorkItem::CreateSetRegValueWorkItem(HKEY_CURRENT_USER,
-                                          kTestKey,
-                                          WorkItem::kWow64Default,
-                                          kNameDword,
-                                          kDword2,
-                                          true));
+  std::unique_ptr<SetRegValueWorkItem> work_item3(
+      WorkItem::CreateSetRegValueWorkItem(HKEY_CURRENT_USER, kTestKey,
+                                          WorkItem::kWow64Default, kNameDword,
+                                          kDword2, true));
   ASSERT_TRUE(work_item3->Do());
 
   DWORD read_dword;
@@ -247,13 +224,10 @@ TEST_F(SetRegValueWorkItemTest, WriteNonExistingKey) {
   non_existing.append(&base::FilePath::kSeparators[0], 1);
   non_existing.append(L"NonExistingKey");
 
-  scoped_ptr<SetRegValueWorkItem> work_item(
-      WorkItem::CreateSetRegValueWorkItem(HKEY_CURRENT_USER,
-                                          non_existing.c_str(),
-                                          WorkItem::kWow64Default,
-                                          kNameStr,
-                                          kDataStr1,
-                                          false));
+  std::unique_ptr<SetRegValueWorkItem> work_item(
+      WorkItem::CreateSetRegValueWorkItem(
+          HKEY_CURRENT_USER, non_existing.c_str(), WorkItem::kWow64Default,
+          kNameStr, kDataStr1, false));
   EXPECT_FALSE(work_item->Do());
 
   work_item.reset(WorkItem::CreateSetRegValueWorkItem(HKEY_CURRENT_USER,
@@ -286,12 +260,9 @@ TEST_F(SetRegValueWorkItemTest, ModifyExistingWithCallback) {
 
   int callback_invocation_count = 0;
 
-  scoped_ptr<SetRegValueWorkItem> work_item(
+  std::unique_ptr<SetRegValueWorkItem> work_item(
       WorkItem::CreateSetRegValueWorkItem(
-          HKEY_CURRENT_USER,
-          kTestKey,
-          WorkItem::kWow64Default,
-          kNameStr,
+          HKEY_CURRENT_USER, kTestKey, WorkItem::kWow64Default, kNameStr,
           base::Bind(&VerifyPreviousValueAndReplace, &callback_invocation_count,
                      kDataStr1, kDataStr2)));
 
@@ -321,12 +292,9 @@ TEST_F(SetRegValueWorkItemTest, ModifyExistingWithCallback) {
 TEST_F(SetRegValueWorkItemTest, ModifyNonExistingWithCallback) {
   int callback_invocation_count = 0;
 
-  scoped_ptr<SetRegValueWorkItem> work_item(
+  std::unique_ptr<SetRegValueWorkItem> work_item(
       WorkItem::CreateSetRegValueWorkItem(
-          HKEY_CURRENT_USER,
-          kTestKey,
-          WorkItem::kWow64Default,
-          kNameStr,
+          HKEY_CURRENT_USER, kTestKey, WorkItem::kWow64Default, kNameStr,
           base::Bind(&VerifyPreviousValueAndReplace, &callback_invocation_count,
                      L"", kDataStr1)));
 
@@ -355,12 +323,9 @@ TEST_F(SetRegValueWorkItemTest, ModifyExistingNonStringWithStringCallback) {
 
   int callback_invocation_count = 0;
 
-  scoped_ptr<SetRegValueWorkItem> work_item(
+  std::unique_ptr<SetRegValueWorkItem> work_item(
       WorkItem::CreateSetRegValueWorkItem(
-          HKEY_CURRENT_USER,
-          kTestKey,
-          WorkItem::kWow64Default,
-          kNameStr,
+          HKEY_CURRENT_USER, kTestKey, WorkItem::kWow64Default, kNameStr,
           base::Bind(&VerifyPreviousValueAndReplace, &callback_invocation_count,
                      L"", kDataStr1)));
 

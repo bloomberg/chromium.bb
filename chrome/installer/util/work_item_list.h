@@ -9,11 +9,11 @@
 #include <stdint.h>
 
 #include <list>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/installer/util/work_item.h"
 
 namespace base {

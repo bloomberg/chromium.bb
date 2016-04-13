@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/installer/setup/install.h"
+
 #include <objbase.h>
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 
 #include "base/base_paths.h"
@@ -12,7 +15,6 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
@@ -21,7 +23,6 @@
 #include "base/test/test_shortcut_win.h"
 #include "base/version.h"
 #include "base/win/shortcut.h"
-#include "chrome/installer/setup/install.h"
 #include "chrome/installer/setup/install_worker.h"
 #include "chrome/installer/setup/setup_constants.h"
 #include "chrome/installer/util/browser_distribution.h"
@@ -261,8 +262,8 @@ class InstallShortcutTest : public testing::Test {
 
   BrowserDistribution* dist_;
   base::FilePath chrome_exe_;
-  scoped_ptr<installer::Product> product_;
-  scoped_ptr<installer::MasterPreferences> prefs_;
+  std::unique_ptr<installer::Product> product_;
+  std::unique_ptr<installer::MasterPreferences> prefs_;
 
   base::ScopedTempDir temp_dir_;
   base::ScopedTempDir fake_user_desktop_;
@@ -270,11 +271,11 @@ class InstallShortcutTest : public testing::Test {
   base::ScopedTempDir fake_user_quick_launch_;
   base::ScopedTempDir fake_start_menu_;
   base::ScopedTempDir fake_common_start_menu_;
-  scoped_ptr<base::ScopedPathOverride> user_desktop_override_;
-  scoped_ptr<base::ScopedPathOverride> common_desktop_override_;
-  scoped_ptr<base::ScopedPathOverride> user_quick_launch_override_;
-  scoped_ptr<base::ScopedPathOverride> start_menu_override_;
-  scoped_ptr<base::ScopedPathOverride> common_start_menu_override_;
+  std::unique_ptr<base::ScopedPathOverride> user_desktop_override_;
+  std::unique_ptr<base::ScopedPathOverride> common_desktop_override_;
+  std::unique_ptr<base::ScopedPathOverride> user_quick_launch_override_;
+  std::unique_ptr<base::ScopedPathOverride> start_menu_override_;
+  std::unique_ptr<base::ScopedPathOverride> common_start_menu_override_;
 
   base::FilePath user_desktop_shortcut_;
   base::FilePath user_quick_launch_shortcut_;
@@ -345,7 +346,7 @@ TEST_F(InstallShortcutTest, CreateAllShortcutsSystemLevel) {
 }
 
 TEST_F(InstallShortcutTest, CreateAllShortcutsButDesktopShortcut) {
-  scoped_ptr<installer::MasterPreferences> prefs_no_desktop(
+  std::unique_ptr<installer::MasterPreferences> prefs_no_desktop(
       GetFakeMasterPrefs(true, false));
   installer::CreateOrUpdateShortcuts(
       chrome_exe_, *product_, *prefs_no_desktop, installer::CURRENT_USER,
@@ -358,7 +359,7 @@ TEST_F(InstallShortcutTest, CreateAllShortcutsButDesktopShortcut) {
 }
 
 TEST_F(InstallShortcutTest, CreateAllShortcutsButQuickLaunchShortcut) {
-  scoped_ptr<installer::MasterPreferences> prefs_no_ql(
+  std::unique_ptr<installer::MasterPreferences> prefs_no_ql(
       GetFakeMasterPrefs(false, true));
   installer::CreateOrUpdateShortcuts(
       chrome_exe_, *product_, *prefs_no_ql, installer::CURRENT_USER,

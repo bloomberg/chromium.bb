@@ -284,7 +284,7 @@ bool RegistryKeyBackup::Initialize(HKEY root,
          wow64_access == KEY_WOW64_64KEY);
 
   RegKey key;
-  scoped_ptr<KeyData> key_data;
+  std::unique_ptr<KeyData> key_data;
 
   // Does the key exist?
   LONG result = key.Open(root, key_path, kKeyReadNoNotify | wow64_access);

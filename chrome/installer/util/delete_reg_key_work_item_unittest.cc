@@ -2,15 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/installer/util/delete_reg_key_work_item.h"
+
 #include <windows.h>
 #include <atlsecurity.h>  // NOLINT
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/win/registry.h"
-#include "chrome/installer/util/delete_reg_key_work_item.h"
 #include "chrome/installer/util/registry_test_data.h"
 #include "chrome/installer/util/work_item.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -40,8 +42,9 @@ TEST_F(DeleteRegKeyWorkItemTest, TestNoKey) {
   RegKey key;
   for (size_t i = 0; i < arraysize(key_paths); ++i) {
     const std::wstring& key_path = key_paths[i];
-    scoped_ptr<DeleteRegKeyWorkItem> item(WorkItem::CreateDeleteRegKeyWorkItem(
-        test_data_.root_key(), key_path, WorkItem::kWow64Default));
+    std::unique_ptr<DeleteRegKeyWorkItem> item(
+        WorkItem::CreateDeleteRegKeyWorkItem(test_data_.root_key(), key_path,
+                                             WorkItem::kWow64Default));
     EXPECT_TRUE(item->Do());
     EXPECT_NE(ERROR_SUCCESS, key.Open(test_data_.root_key(), key_path.c_str(),
                                       KEY_READ));
@@ -56,8 +59,9 @@ TEST_F(DeleteRegKeyWorkItemTest, TestNoKey) {
 TEST_F(DeleteRegKeyWorkItemTest, TestEmptyKey) {
   RegKey key;
   const std::wstring& key_path = test_data_.empty_key_path();
-  scoped_ptr<DeleteRegKeyWorkItem> item(WorkItem::CreateDeleteRegKeyWorkItem(
-      test_data_.root_key(), key_path, WorkItem::kWow64Default));
+  std::unique_ptr<DeleteRegKeyWorkItem> item(
+      WorkItem::CreateDeleteRegKeyWorkItem(test_data_.root_key(), key_path,
+                                           WorkItem::kWow64Default));
   EXPECT_TRUE(item->Do());
   EXPECT_NE(ERROR_SUCCESS, key.Open(test_data_.root_key(), key_path.c_str(),
                                     KEY_READ));
@@ -72,8 +76,9 @@ TEST_F(DeleteRegKeyWorkItemTest, TestEmptyKey) {
 TEST_F(DeleteRegKeyWorkItemTest, TestNonEmptyKey) {
   RegKey key;
   const std::wstring& key_path = test_data_.non_empty_key_path();
-  scoped_ptr<DeleteRegKeyWorkItem> item(WorkItem::CreateDeleteRegKeyWorkItem(
-      test_data_.root_key(), key_path, WorkItem::kWow64Default));
+  std::unique_ptr<DeleteRegKeyWorkItem> item(
+      WorkItem::CreateDeleteRegKeyWorkItem(test_data_.root_key(), key_path,
+                                           WorkItem::kWow64Default));
   EXPECT_TRUE(item->Do());
   EXPECT_NE(ERROR_SUCCESS, key.Open(test_data_.root_key(), key_path.c_str(),
                                     KEY_READ));
@@ -115,8 +120,9 @@ TEST_F(DeleteRegKeyWorkItemTest, DISABLED_TestUndeletableKey) {
   subkey2.Close();
   subkey.Close();
   key.Close();
-  scoped_ptr<DeleteRegKeyWorkItem> item(WorkItem::CreateDeleteRegKeyWorkItem(
-      test_data_.root_key(), key_name, WorkItem::kWow64Default));
+  std::unique_ptr<DeleteRegKeyWorkItem> item(
+      WorkItem::CreateDeleteRegKeyWorkItem(test_data_.root_key(), key_name,
+                                           WorkItem::kWow64Default));
   EXPECT_FALSE(item->Do());
   EXPECT_EQ(ERROR_SUCCESS, key.Open(test_data_.root_key(), key_name.c_str(),
                                     KEY_QUERY_VALUE));

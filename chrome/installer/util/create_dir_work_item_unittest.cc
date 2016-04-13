@@ -2,14 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/installer/util/create_dir_work_item.h"
+
 #include <windows.h>
+
+#include <memory>
 
 #include "base/base_paths.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
-#include "chrome/installer/util/create_dir_work_item.h"
 #include "chrome/installer/util/work_item.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -35,7 +37,7 @@ TEST_F(CreateDirWorkItemTest, CreatePath) {
   dir_to_create = dir_to_create.AppendASCII("c");
   dir_to_create = dir_to_create.AppendASCII("d");
 
-  scoped_ptr<CreateDirWorkItem> work_item(
+  std::unique_ptr<CreateDirWorkItem> work_item(
       WorkItem::CreateCreateDirWorkItem(dir_to_create));
 
   EXPECT_TRUE(work_item->Do());
@@ -55,7 +57,7 @@ TEST_F(CreateDirWorkItemTest, CreateExistingPath) {
   base::CreateDirectory(dir_to_create);
   ASSERT_TRUE(base::PathExists(dir_to_create));
 
-  scoped_ptr<CreateDirWorkItem> work_item(
+  std::unique_ptr<CreateDirWorkItem> work_item(
       WorkItem::CreateCreateDirWorkItem(dir_to_create));
 
   EXPECT_TRUE(work_item->Do());
@@ -79,7 +81,7 @@ TEST_F(CreateDirWorkItemTest, CreateSharedPath) {
   base::FilePath dir_to_create_3(dir_to_create_2);
   dir_to_create_3 = dir_to_create_3.AppendASCII("ccc");
 
-  scoped_ptr<CreateDirWorkItem> work_item(
+  std::unique_ptr<CreateDirWorkItem> work_item(
       WorkItem::CreateCreateDirWorkItem(dir_to_create_3));
 
   EXPECT_TRUE(work_item->Do());
@@ -112,7 +114,7 @@ TEST_F(CreateDirWorkItemTest, RollbackWithMissingDir) {
   base::FilePath dir_to_create_3(dir_to_create_2);
   dir_to_create_3 = dir_to_create_3.AppendASCII("cccc");
 
-  scoped_ptr<CreateDirWorkItem> work_item(
+  std::unique_ptr<CreateDirWorkItem> work_item(
       WorkItem::CreateCreateDirWorkItem(dir_to_create_3));
 
   EXPECT_TRUE(work_item->Do());

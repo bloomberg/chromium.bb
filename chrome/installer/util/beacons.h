@@ -7,8 +7,9 @@
 
 #include <windows.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
@@ -40,19 +41,19 @@ namespace installer_util {
 class Beacon;
 
 // Returns a Beacon representing the last time the machine's OS was ugpraded.
-scoped_ptr<Beacon> MakeLastOsUpgradeBeacon(
+std::unique_ptr<Beacon> MakeLastOsUpgradeBeacon(
     bool system_install,
     const AppRegistrationData& registration_data);
 
 // Returns a Beacon representing the last time Chrome was the user's default
 // browser.
-scoped_ptr<Beacon> MakeLastWasDefaultBeacon(
+std::unique_ptr<Beacon> MakeLastWasDefaultBeacon(
     bool system_install,
     const AppRegistrationData& registration_data);
 
 // Returns a Beacon representing the first time Chrome was not the user's
 // default browser.
-scoped_ptr<Beacon> MakeFirstNotDefaultBeacon(
+std::unique_ptr<Beacon> MakeFirstNotDefaultBeacon(
     bool system_install,
     const AppRegistrationData& registration_data);
 

@@ -58,7 +58,7 @@ base::DictionaryValue* ParseDistributionPreferences(
     const std::string& json_data) {
   JSONStringValueDeserializer json(json_data);
   std::string error;
-  scoped_ptr<base::Value> root(json.Deserialize(NULL, &error));
+  std::unique_ptr<base::Value> root(json.Deserialize(NULL, &error));
   if (!root.get()) {
     LOG(WARNING) << "Failed to parse master prefs file: " << error;
     return NULL;
@@ -169,7 +169,7 @@ void MasterPreferences::InitializeFromCommandLine(
 
   // Handle the special case of --system-level being implied by the presence of
   // the kGoogleUpdateIsMachineEnvVar environment variable.
-  scoped_ptr<base::Environment> env(base::Environment::Create());
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
   if (env != NULL) {
     std::string is_machine_var;
     env->GetVar(env_vars::kGoogleUpdateIsMachineEnvVar, &is_machine_var);
@@ -302,7 +302,7 @@ std::string MasterPreferences::GetVariationsSeedSignature() const {
 std::string MasterPreferences::ExtractPrefString(
     const std::string& name) const {
   std::string result;
-  scoped_ptr<base::Value> pref_value;
+  std::unique_ptr<base::Value> pref_value;
   if (master_dictionary_->Remove(name, &pref_value)) {
     if (!pref_value->GetAsString(&result))
       NOTREACHED();

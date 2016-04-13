@@ -6,11 +6,12 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class LzmaFileAllocatorTest : public testing::Test {
@@ -62,8 +63,8 @@ TEST_F(LzmaFileAllocatorTest, SizeIsZeroTest) {
 }
 
 TEST_F(LzmaFileAllocatorTest, DeleteAfterCloseTest) {
-  scoped_ptr<LzmaFileAllocator> allocator =
-      make_scoped_ptr(new LzmaFileAllocator(temp_dir_.path()));
+  std::unique_ptr<LzmaFileAllocator> allocator =
+      base::WrapUnique(new LzmaFileAllocator(temp_dir_.path()));
   base::FilePath file_path = allocator->mapped_file_path_;
   ASSERT_TRUE(base::PathExists(file_path));
   allocator.reset();

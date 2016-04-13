@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/installer/util/create_reg_key_work_item.h"
+
 #include <windows.h>
 
+#include <memory>
+
 #include "base/files/file_path.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/win/registry.h"
-#include "chrome/installer/util/create_reg_key_work_item.h"
 #include "chrome/installer/util/work_item.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -53,7 +55,7 @@ TEST_F(CreateRegKeyWorkItemTest, CreateKey) {
   key_to_create = key_to_create.AppendASCII("c");
   key_to_create = key_to_create.AppendASCII("d");
 
-  scoped_ptr<CreateRegKeyWorkItem> work_item(
+  std::unique_ptr<CreateRegKeyWorkItem> work_item(
       WorkItem::CreateCreateRegKeyWorkItem(
           HKEY_CURRENT_USER, key_to_create.value(), WorkItem::kWow64Default));
 
@@ -79,7 +81,7 @@ TEST_F(CreateRegKeyWorkItemTest, CreateExistingKey) {
   ASSERT_EQ(ERROR_SUCCESS,
       key.Create(HKEY_CURRENT_USER, key_to_create.value().c_str(), KEY_READ));
 
-  scoped_ptr<CreateRegKeyWorkItem> work_item(
+  std::unique_ptr<CreateRegKeyWorkItem> work_item(
       WorkItem::CreateCreateRegKeyWorkItem(
           HKEY_CURRENT_USER, key_to_create.value(), WorkItem::kWow64Default));
 
@@ -107,7 +109,7 @@ TEST_F(CreateRegKeyWorkItemTest, CreateSharedKey) {
   base::FilePath key_to_create_3(key_to_create_2);
   key_to_create_3 = key_to_create_3.AppendASCII("ccc");
 
-  scoped_ptr<CreateRegKeyWorkItem> work_item(
+  std::unique_ptr<CreateRegKeyWorkItem> work_item(
       WorkItem::CreateCreateRegKeyWorkItem(
           HKEY_CURRENT_USER, key_to_create_3.value(), WorkItem::kWow64Default));
 
@@ -146,7 +148,7 @@ TEST_F(CreateRegKeyWorkItemTest, RollbackWithMissingKey) {
   base::FilePath key_to_create_3(key_to_create_2);
   key_to_create_3 = key_to_create_3.AppendASCII("cccc");
 
-  scoped_ptr<CreateRegKeyWorkItem> work_item(
+  std::unique_ptr<CreateRegKeyWorkItem> work_item(
       WorkItem::CreateCreateRegKeyWorkItem(
           HKEY_CURRENT_USER, key_to_create_3.value(), WorkItem::kWow64Default));
 
@@ -176,7 +178,7 @@ TEST_F(CreateRegKeyWorkItemTest, RollbackWithSetValue) {
   base::FilePath key_to_create(test_root);
   key_to_create = key_to_create.AppendASCII("aaaaa");
 
-  scoped_ptr<CreateRegKeyWorkItem> work_item(
+  std::unique_ptr<CreateRegKeyWorkItem> work_item(
       WorkItem::CreateCreateRegKeyWorkItem(
           HKEY_CURRENT_USER, key_to_create.value(), WorkItem::kWow64Default));
 

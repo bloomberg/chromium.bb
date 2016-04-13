@@ -311,14 +311,15 @@ bool GoogleUpdateSettings::SetCollectStatsConsentAtLevel(bool system_install,
   return (result == ERROR_SUCCESS);
 }
 
-scoped_ptr<metrics::ClientInfo> GoogleUpdateSettings::LoadMetricsClientInfo() {
+std::unique_ptr<metrics::ClientInfo>
+GoogleUpdateSettings::LoadMetricsClientInfo() {
   base::string16 client_id_16;
   if (!ReadGoogleUpdateStrKey(google_update::kRegMetricsId, &client_id_16) ||
       client_id_16.empty()) {
-    return scoped_ptr<metrics::ClientInfo>();
+    return std::unique_ptr<metrics::ClientInfo>();
   }
 
-  scoped_ptr<metrics::ClientInfo> client_info(new metrics::ClientInfo);
+  std::unique_ptr<metrics::ClientInfo> client_info(new metrics::ClientInfo);
   client_info->client_id = base::UTF16ToUTF8(client_id_16);
 
   base::string16 installation_date_str;

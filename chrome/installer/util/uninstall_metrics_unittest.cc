@@ -4,10 +4,10 @@
 
 #include "chrome/installer/util/uninstall_metrics.h"
 
+#include <memory>
 #include <string>
 
 #include "base/json/json_string_value_serializer.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -46,7 +46,7 @@ TEST(UninstallMetricsTest, TestExtractUninstallMetrics) {
   JSONStringValueDeserializer json_deserializer(pref_string);
   std::string error_message;
 
-  scoped_ptr<base::Value> root =
+  std::unique_ptr<base::Value> root =
       json_deserializer.Deserialize(NULL, &error_message);
   ASSERT_TRUE(root.get());
   base::string16 uninstall_metrics_string;

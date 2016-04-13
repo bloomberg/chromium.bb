@@ -2,17 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/installer/util/delete_tree_work_item.h"
+
 #include <windows.h>
 
 #include <fstream>
+#include <memory>
 
 #include "base/base_paths.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
-#include "chrome/installer/util/delete_tree_work_item.h"
 #include "chrome/installer/util/work_item.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -73,7 +74,7 @@ TEST_F(DeleteTreeWorkItemTest, DeleteTreeNoKeyPath) {
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
   std::vector<base::FilePath> key_files;
-  scoped_ptr<DeleteTreeWorkItem> work_item(
+  std::unique_ptr<DeleteTreeWorkItem> work_item(
       WorkItem::CreateDeleteTreeWorkItem(dir_name_delete, temp_dir.path(),
                                          key_files));
   EXPECT_TRUE(work_item->Do());
@@ -125,7 +126,7 @@ TEST_F(DeleteTreeWorkItemTest, DeleteTree) {
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
   std::vector<base::FilePath> key_files(1, file_name_delete_1);
-  scoped_ptr<DeleteTreeWorkItem> work_item(
+  std::unique_ptr<DeleteTreeWorkItem> work_item(
       WorkItem::CreateDeleteTreeWorkItem(dir_name_delete, temp_dir.path(),
                                          key_files));
   EXPECT_TRUE(work_item->Do());
@@ -199,7 +200,7 @@ TEST_F(DeleteTreeWorkItemTest, DeleteTreeInUse) {
     ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
     std::vector<base::FilePath> key_paths(1, key_path);
-    scoped_ptr<DeleteTreeWorkItem> work_item(
+    std::unique_ptr<DeleteTreeWorkItem> work_item(
         WorkItem::CreateDeleteTreeWorkItem(dir_name_delete, temp_dir.path(),
                                            key_paths));
 
@@ -213,9 +214,9 @@ TEST_F(DeleteTreeWorkItemTest, DeleteTreeInUse) {
 
     // No key paths, the deletion should succeed.
     std::vector<base::FilePath> key_paths;
-    scoped_ptr<DeleteTreeWorkItem> work_item(
+    std::unique_ptr<DeleteTreeWorkItem> work_item(
         WorkItem::CreateDeleteTreeWorkItem(dir_name_delete, temp_dir.path(),
-        key_paths));
+                                           key_paths));
 
     EXPECT_TRUE(work_item->Do());
     work_item->Rollback();

@@ -7,10 +7,10 @@
 #ifndef CHROME_INSTALLER_UTIL_CHROMIUM_BINARIES_DISTRIBUTION_H_
 #define CHROME_INSTALLER_UTIL_CHROMIUM_BINARIES_DISTRIBUTION_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/installer/util/browser_distribution.h"
 
 class ChromiumBinariesDistribution : public BrowserDistribution {
@@ -55,7 +55,7 @@ class ChromiumBinariesDistribution : public BrowserDistribution {
   ChromiumBinariesDistribution();
 
   explicit ChromiumBinariesDistribution(
-      scoped_ptr<AppRegistrationData> app_reg_data);
+      std::unique_ptr<AppRegistrationData> app_reg_data);
 
   BrowserDistribution* browser_distribution_;
 

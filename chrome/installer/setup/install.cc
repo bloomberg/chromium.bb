@@ -8,13 +8,13 @@
 #include <shlobj.h>
 #include <time.h>
 
+#include <memory>
 #include <string>
 
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -134,7 +134,7 @@ void AddChromeToMediaPlayerList() {
   reg_path.push_back(base::FilePath::kSeparators[0]);
   reg_path.append(installer::kChromeExe);
   VLOG(1) << "Adding Chrome to Media player list at " << reg_path;
-  scoped_ptr<WorkItem> work_item(WorkItem::CreateCreateRegKeyWorkItem(
+  std::unique_ptr<WorkItem> work_item(WorkItem::CreateCreateRegKeyWorkItem(
       HKEY_LOCAL_MACHINE, reg_path, WorkItem::kWow64Default));
 
   // if the operation fails we log the error but still continue
@@ -184,7 +184,7 @@ installer::InstallStatus InstallNewVersion(
     const base::FilePath& src_path,
     const base::FilePath& temp_path,
     const Version& new_version,
-    scoped_ptr<Version>* current_version) {
+    std::unique_ptr<Version>* current_version) {
   DCHECK(current_version);
 
   installer_state.UpdateStage(installer::BUILDING);
@@ -192,7 +192,7 @@ installer::InstallStatus InstallNewVersion(
   current_version->reset(installer_state.GetCurrentVersion(original_state));
   installer::SetCurrentVersionCrashKey(current_version->get());
 
-  scoped_ptr<WorkItemList> install_list(WorkItem::CreateWorkItemList());
+  std::unique_ptr<WorkItemList> install_list(WorkItem::CreateWorkItemList());
 
   AddInstallWorkItems(original_state,
                       installer_state,
@@ -581,7 +581,7 @@ InstallStatus InstallOrUpdateProduct(
   installer_state.UpdateStage(installer::CREATING_VISUAL_MANIFEST);
   CreateVisualElementsManifest(src_path, new_version);
 
-  scoped_ptr<Version> existing_version;
+  std::unique_ptr<Version> existing_version;
   InstallStatus result = InstallNewVersion(original_state, installer_state,
       setup_path, archive_path, src_path, install_temp_path, new_version,
       &existing_version);
@@ -705,7 +705,7 @@ void HandleOsUpgradeForBrowser(const installer::InstallerState& installer_state,
   // TODO(gab): This should really perform all registry only update steps (i.e.,
   // something between InstallOrUpdateProduct and AddActiveSetupWorkItems, but
   // this takes care of what is most required for now).
-  scoped_ptr<WorkItemList> work_item_list(WorkItem::CreateWorkItemList());
+  std::unique_ptr<WorkItemList> work_item_list(WorkItem::CreateWorkItemList());
   AddActiveSetupWorkItems(installer_state, installed_version, chrome,
                           work_item_list.get());
   if (!work_item_list->Do()) {

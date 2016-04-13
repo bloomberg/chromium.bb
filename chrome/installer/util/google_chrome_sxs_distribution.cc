@@ -25,9 +25,8 @@ const wchar_t kCommandExecuteImplUuid[] =
 }  // namespace
 
 GoogleChromeSxSDistribution::GoogleChromeSxSDistribution()
-    : GoogleChromeDistribution(scoped_ptr<AppRegistrationData>(
-          new UpdatingAppRegistrationData(kChromeSxSGuid))) {
-}
+    : GoogleChromeDistribution(std::unique_ptr<AppRegistrationData>(
+          new UpdatingAppRegistrationData(kChromeSxSGuid))) {}
 
 base::string16 GoogleChromeSxSDistribution::GetBaseAppName() {
   return L"Google Chrome Canary";

@@ -80,7 +80,7 @@ class GoogleChromeDistribution : public BrowserDistribution {
   GoogleChromeDistribution();
 
   explicit GoogleChromeDistribution(
-      scoped_ptr<AppRegistrationData> app_reg_data);
+      std::unique_ptr<AppRegistrationData> app_reg_data);
 
  private:
   friend class BrowserDistribution;

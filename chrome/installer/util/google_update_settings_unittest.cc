@@ -8,9 +8,10 @@
 #include <shlwapi.h>  // For SHDeleteKey.
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/base_paths.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_path_override.h"
@@ -499,7 +500,7 @@ TEST_F(GoogleUpdateSettingsTest, UpdateGoogleUpdateApKey) {
 }
 
 TEST_F(GoogleUpdateSettingsTest, UpdateInstallStatusTest) {
-  scoped_ptr<WorkItemList> work_item_list(WorkItem::CreateWorkItemList());
+  std::unique_ptr<WorkItemList> work_item_list(WorkItem::CreateWorkItemList());
   // Test incremental install failure
   ASSERT_TRUE(CreateApKey(work_item_list.get(), L""))
       << "Failed to create ap key.";

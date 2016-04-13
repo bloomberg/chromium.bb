@@ -4,11 +4,12 @@
 
 #include "chrome/installer/util/module_util_win.h"
 
+#include <memory>
+
 #include "base/base_paths.h"
 #include "base/file_version_info.h"
 #include "base/files/file.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
@@ -21,7 +22,7 @@ namespace {
 
 // Returns the version in the current executable's version resource.
 base::string16 GetCurrentExecutableVersion() {
-  scoped_ptr<FileVersionInfo> file_version_info(
+  std::unique_ptr<FileVersionInfo> file_version_info(
       FileVersionInfo::CreateFileVersionInfoForModule(CURRENT_MODULE()));
   DCHECK(file_version_info.get());
   base::string16 version_string(file_version_info->file_version());

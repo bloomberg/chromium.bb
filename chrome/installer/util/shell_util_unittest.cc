@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/base_paths.h"
@@ -17,7 +18,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/md5.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/synchronization/cancellation_flag.h"
@@ -190,7 +190,7 @@ class ShellUtilShortcutTest : public testing::Test {
   }
 
   BrowserDistribution* dist_;
-  scoped_ptr<installer::Product> product_;
+  std::unique_ptr<installer::Product> product_;
 
   // A ShellUtil::ShortcutProperties object with common properties set already.
   ShellUtil::ShortcutProperties test_properties_;
@@ -202,11 +202,11 @@ class ShellUtilShortcutTest : public testing::Test {
   base::ScopedTempDir fake_default_user_quick_launch_;
   base::ScopedTempDir fake_start_menu_;
   base::ScopedTempDir fake_common_start_menu_;
-  scoped_ptr<base::ScopedPathOverride> user_desktop_override_;
-  scoped_ptr<base::ScopedPathOverride> common_desktop_override_;
-  scoped_ptr<base::ScopedPathOverride> user_quick_launch_override_;
-  scoped_ptr<base::ScopedPathOverride> start_menu_override_;
-  scoped_ptr<base::ScopedPathOverride> common_start_menu_override_;
+  std::unique_ptr<base::ScopedPathOverride> user_desktop_override_;
+  std::unique_ptr<base::ScopedPathOverride> common_desktop_override_;
+  std::unique_ptr<base::ScopedPathOverride> user_quick_launch_override_;
+  std::unique_ptr<base::ScopedPathOverride> start_menu_override_;
+  std::unique_ptr<base::ScopedPathOverride> common_start_menu_override_;
 
   base::FilePath chrome_exe_;
   base::FilePath manganese_exe_;

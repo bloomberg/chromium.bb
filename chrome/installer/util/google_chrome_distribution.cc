@@ -97,12 +97,11 @@ void NavigateToUrlWithIExplore(const base::string16& url) {
 
 GoogleChromeDistribution::GoogleChromeDistribution()
     : BrowserDistribution(CHROME_BROWSER,
-                          scoped_ptr<AppRegistrationData>(
-                              new UpdatingAppRegistrationData(kChromeGuid))) {
-}
+                          std::unique_ptr<AppRegistrationData>(
+                              new UpdatingAppRegistrationData(kChromeGuid))) {}
 
 GoogleChromeDistribution::GoogleChromeDistribution(
-    scoped_ptr<AppRegistrationData> app_reg_data)
+    std::unique_ptr<AppRegistrationData> app_reg_data)
     : BrowserDistribution(CHROME_BROWSER, std::move(app_reg_data)) {}
 
 void GoogleChromeDistribution::DoPostUninstallOperations(
@@ -253,7 +252,7 @@ base::string16 GoogleChromeDistribution::GetDistributionData(HKEY root_key) {
   base::FilePath crash_dir;
   if (chrome::GetDefaultCrashDumpLocation(&crash_dir)) {
     crashpad::UUID client_id;
-    scoped_ptr<crashpad::CrashReportDatabase> database(
+    std::unique_ptr<crashpad::CrashReportDatabase> database(
         crashpad::CrashReportDatabase::InitializeWithoutCreating(crash_dir));
     if (database && database->GetSettings()->GetClientID(&client_id))
       result.append(L"&crash_client_id=").append(client_id.ToString16());

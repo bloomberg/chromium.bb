@@ -7,11 +7,11 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/installer/util/work_item.h"
 
 // A WorkItem subclass that recursively deletes a file system hierarchy at the
@@ -58,12 +58,12 @@ class DeleteTreeWorkItem : public WorkItem {
 
   // Contains the paths to the key files. If specified, deletion will be
   // performed only if none of the key files are in use.
-  scoped_ptr<base::FilePath[]> key_paths_;
+  std::unique_ptr<base::FilePath[]> key_paths_;
 
   // Contains the temp directories for the backed-up key files. The directories
   // are created and populated in Do() as-needed. We don't use a standard
   // container for this since base::ScopedTempDir isn't CopyConstructible.
-  scoped_ptr<base::ScopedTempDir[]> key_backup_paths_;
+  std::unique_ptr<base::ScopedTempDir[]> key_backup_paths_;
 
   // The temporary directory into which the original root_path_ has been moved.
   base::ScopedTempDir backup_path_;

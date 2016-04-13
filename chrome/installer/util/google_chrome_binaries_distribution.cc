@@ -19,9 +19,8 @@ const wchar_t kChromeBinariesName[] = L"Google Chrome binaries";
 }  // namespace
 
 GoogleChromeBinariesDistribution::GoogleChromeBinariesDistribution()
-    : ChromiumBinariesDistribution(scoped_ptr<AppRegistrationData>(
-          new UpdatingAppRegistrationData(kChromeBinariesGuid))) {
-}
+    : ChromiumBinariesDistribution(std::unique_ptr<AppRegistrationData>(
+          new UpdatingAppRegistrationData(kChromeBinariesGuid))) {}
 
 base::string16 GoogleChromeBinariesDistribution::GetDisplayName() {
   return kChromeBinariesName;

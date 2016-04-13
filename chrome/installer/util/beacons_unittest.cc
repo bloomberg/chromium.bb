@@ -223,9 +223,9 @@ class DefaultBrowserBeaconTest
 
 // Tests that the default browser beacons work as expected.
 TEST_P(DefaultBrowserBeaconTest, All) {
-  scoped_ptr<Beacon> last_was_default(MakeLastWasDefaultBeacon(
+  std::unique_ptr<Beacon> last_was_default(MakeLastWasDefaultBeacon(
       system_install_, distribution_->GetAppRegistrationData()));
-  scoped_ptr<Beacon> first_not_default(MakeFirstNotDefaultBeacon(
+  std::unique_ptr<Beacon> first_not_default(MakeFirstNotDefaultBeacon(
       system_install_, distribution_->GetAppRegistrationData()));
 
   ASSERT_TRUE(last_was_default->Get().is_null());

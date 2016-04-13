@@ -13,6 +13,7 @@
 #include <stdint.h>
 #include <time.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/bind.h"
@@ -21,7 +22,6 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -190,7 +190,7 @@ bool AddFirewallRulesCallback(bool system_level,
   if (work_item.IsRollback() && !remove_on_rollback)
     return true;
 
-  scoped_ptr<FirewallManager> manager =
+  std::unique_ptr<FirewallManager> manager =
       FirewallManager::Create(dist, chrome_path);
   if (!manager) {
     LOG(ERROR) << "Failed creating a FirewallManager. Continuing with install.";
@@ -905,7 +905,7 @@ bool AppendPostInstallTasks(const InstallerState& installer_state,
   // the 'cpv' value with the critical update version (if present), and the
   // 'cmd' value with the rename command to run.
   {
-    scoped_ptr<WorkItemList> in_use_update_work_items(
+    std::unique_ptr<WorkItemList> in_use_update_work_items(
         WorkItem::CreateConditionalWorkItemList(
             new ConditionRunIfFileExists(new_chrome_exe)));
     in_use_update_work_items->set_log_message("InUseUpdateWorkItemList");
@@ -979,7 +979,7 @@ bool AppendPostInstallTasks(const InstallerState& installer_state,
 
   // Append work items that will be executed if this was NOT an in-use update.
   {
-    scoped_ptr<WorkItemList> regular_update_work_items(
+    std::unique_ptr<WorkItemList> regular_update_work_items(
         WorkItem::CreateConditionalWorkItemList(
             new Not(new ConditionRunIfFileExists(new_chrome_exe))));
     regular_update_work_items->set_log_message("RegularUpdateWorkItemList");

@@ -7,8 +7,9 @@
 
 #include <windows.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 // A container for a registry key, its values, and its subkeys.  We don't use
 // more obvious methods for various reasons:
@@ -41,7 +42,7 @@ class RegistryKeyBackup {
   class KeyData;
 
   // The values and subkeys of the backed-up key.
-  scoped_ptr<KeyData> key_data_;
+  std::unique_ptr<KeyData> key_data_;
 
   DISALLOW_COPY_AND_ASSIGN(RegistryKeyBackup);
 };

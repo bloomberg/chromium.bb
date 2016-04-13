@@ -7,13 +7,13 @@
 #include <windows.h>
 #include <shlobj.h>
 
+#include <memory>
 #include <string>
 
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/process/kill.h"
 #include "base/process/launch.h"
 #include "base/process/process_handle.h"
@@ -59,7 +59,7 @@ bool CurrentProcessHasPrivilege(const wchar_t* privilege_name) {
   EXPECT_FALSE(::GetTokenInformation(token.Get(), TokenPrivileges, NULL, 0,
                                      &size));
 
-  scoped_ptr<BYTE[]> privileges_bytes(new BYTE[size]);
+  std::unique_ptr<BYTE[]> privileges_bytes(new BYTE[size]);
   TOKEN_PRIVILEGES* privileges =
       reinterpret_cast<TOKEN_PRIVILEGES*>(privileges_bytes.get());
 
@@ -73,7 +73,7 @@ bool CurrentProcessHasPrivilege(const wchar_t* privilege_name) {
   // anything longer will obviously not be equal to |privilege_name|.
   const DWORD desired_size = static_cast<DWORD>(wcslen(privilege_name));
   const DWORD buffer_size = desired_size + 1;
-  scoped_ptr<wchar_t[]> name_buffer(new wchar_t[buffer_size]);
+  std::unique_ptr<wchar_t[]> name_buffer(new wchar_t[buffer_size]);
   for (int i = privileges->PrivilegeCount - 1; i >= 0 ; --i) {
     LUID_AND_ATTRIBUTES& luid_and_att = privileges->Privileges[i];
     DWORD size = buffer_size;
@@ -96,7 +96,7 @@ TEST(SetupUtilTest, GetMaxVersionFromArchiveDirTest) {
   base::FilePath chrome_dir = test_dir.path().AppendASCII("1.0.0.0");
   base::CreateDirectory(chrome_dir);
   ASSERT_TRUE(base::PathExists(chrome_dir));
-  scoped_ptr<Version> version(
+  std::unique_ptr<Version> version(
       installer::GetMaxVersionFromArchiveDir(test_dir.path()));
   ASSERT_EQ(version->GetString(), "1.0.0.0");
 
@@ -203,7 +203,7 @@ class ScopedPriorityClass {
  public:
   // Applies |priority_class|, returning an instance if a change was made.
   // Otherwise, returns an empty scoped_ptr.
-  static scoped_ptr<ScopedPriorityClass> Create(DWORD priority_class);
+  static std::unique_ptr<ScopedPriorityClass> Create(DWORD priority_class);
   ~ScopedPriorityClass();
 
  private:
@@ -212,7 +212,7 @@ class ScopedPriorityClass {
   DISALLOW_COPY_AND_ASSIGN(ScopedPriorityClass);
 };
 
-scoped_ptr<ScopedPriorityClass> ScopedPriorityClass::Create(
+std::unique_ptr<ScopedPriorityClass> ScopedPriorityClass::Create(
     DWORD priority_class) {
   HANDLE this_process = ::GetCurrentProcess();
   DWORD original_priority_class = ::GetPriorityClass(this_process);
@@ -221,11 +221,11 @@ scoped_ptr<ScopedPriorityClass> ScopedPriorityClass::Create(
     BOOL result = ::SetPriorityClass(this_process, priority_class);
     EXPECT_NE(FALSE, result);
     if (result) {
-      return scoped_ptr<ScopedPriorityClass>(
+      return std::unique_ptr<ScopedPriorityClass>(
           new ScopedPriorityClass(original_priority_class));
     }
   }
-  return scoped_ptr<ScopedPriorityClass>();
+  return std::unique_ptr<ScopedPriorityClass>();
 }
 
 ScopedPriorityClass::ScopedPriorityClass(DWORD original_priority_class)
@@ -264,7 +264,7 @@ TEST(SetupUtilTest, AdjustFromNormalPriority) {
 // Launching a subprocess below normal priority class drops it to bg mode for
 // sufficiently recent operating systems.
 TEST(SetupUtilTest, AdjustFromBelowNormalPriority) {
-  scoped_ptr<ScopedPriorityClass> below_normal =
+  std::unique_ptr<ScopedPriorityClass> below_normal =
       ScopedPriorityClass::Create(BELOW_NORMAL_PRIORITY_CLASS);
   ASSERT_TRUE(below_normal);
   if (base::win::GetVersion() > base::win::VERSION_SERVER_2003)
@@ -376,8 +376,8 @@ class FindArchiveToPatchTest : public testing::Test {
   base::ScopedTempDir test_dir_;
   Version product_version_;
   Version max_version_;
-  scoped_ptr<FakeInstallationState> original_state_;
-  scoped_ptr<installer::InstallerState> installer_state_;
+  std::unique_ptr<FakeInstallationState> original_state_;
+  std::unique_ptr<installer::InstallerState> installer_state_;
 
  private:
   registry_util::RegistryOverrideManager registry_override_manager_;

@@ -2,18 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/installer/util/work_item_list.h"
+
 #include <windows.h>
+
+#include <memory>
 
 #include "base/base_paths.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/test/test_reg_util_win.h"
 #include "base/win/registry.h"
 #include "chrome/installer/util/conditional_work_item_list.h"
 #include "chrome/installer/util/work_item.h"
-#include "chrome/installer/util/work_item_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::win::RegKey;
@@ -41,8 +43,8 @@ class WorkItemListTest : public testing::Test {
 
 // Execute a WorkItem list successfully and then rollback.
 TEST_F(WorkItemListTest, ExecutionSuccess) {
-  scoped_ptr<WorkItemList> work_item_list(WorkItem::CreateWorkItemList());
-  scoped_ptr<WorkItem> work_item;
+  std::unique_ptr<WorkItemList> work_item_list(WorkItem::CreateWorkItemList());
+  std::unique_ptr<WorkItem> work_item;
 
   base::FilePath top_dir_to_create(temp_dir_.path());
   top_dir_to_create = top_dir_to_create.AppendASCII("a");
@@ -98,8 +100,8 @@ TEST_F(WorkItemListTest, ExecutionSuccess) {
 
 // Execute a WorkItem list. Fail in the middle. Rollback what has been done.
 TEST_F(WorkItemListTest, ExecutionFailAndRollback) {
-  scoped_ptr<WorkItemList> work_item_list(WorkItem::CreateWorkItemList());
-  scoped_ptr<WorkItem> work_item;
+  std::unique_ptr<WorkItemList> work_item_list(WorkItem::CreateWorkItemList());
+  std::unique_ptr<WorkItem> work_item;
 
   base::FilePath top_dir_to_create(temp_dir_.path());
   top_dir_to_create = top_dir_to_create.AppendASCII("a");
@@ -161,8 +163,8 @@ TEST_F(WorkItemListTest, ExecutionFailAndRollback) {
 }
 
 TEST_F(WorkItemListTest, ConditionalExecutionSuccess) {
-  scoped_ptr<WorkItemList> work_item_list(WorkItem::CreateWorkItemList());
-  scoped_ptr<WorkItem> work_item;
+  std::unique_ptr<WorkItemList> work_item_list(WorkItem::CreateWorkItemList());
+  std::unique_ptr<WorkItem> work_item;
 
   base::FilePath top_dir_to_create(temp_dir_.path());
   top_dir_to_create = top_dir_to_create.AppendASCII("a");
@@ -174,7 +176,7 @@ TEST_F(WorkItemListTest, ConditionalExecutionSuccess) {
       WorkItem::CreateCreateDirWorkItem(dir_to_create)));
   work_item_list->AddWorkItem(work_item.release());
 
-  scoped_ptr<WorkItemList> conditional_work_item_list(
+  std::unique_ptr<WorkItemList> conditional_work_item_list(
       WorkItem::CreateConditionalWorkItemList(
           new ConditionRunIfFileExists(dir_to_create)));
 
@@ -222,8 +224,8 @@ TEST_F(WorkItemListTest, ConditionalExecutionSuccess) {
 }
 
 TEST_F(WorkItemListTest, ConditionalExecutionConditionFailure) {
-  scoped_ptr<WorkItemList> work_item_list(WorkItem::CreateWorkItemList());
-  scoped_ptr<WorkItem> work_item;
+  std::unique_ptr<WorkItemList> work_item_list(WorkItem::CreateWorkItemList());
+  std::unique_ptr<WorkItem> work_item;
 
   base::FilePath top_dir_to_create(temp_dir_.path());
   top_dir_to_create = top_dir_to_create.AppendASCII("a");
@@ -235,7 +237,7 @@ TEST_F(WorkItemListTest, ConditionalExecutionConditionFailure) {
       WorkItem::CreateCreateDirWorkItem(dir_to_create)));
   work_item_list->AddWorkItem(work_item.release());
 
-  scoped_ptr<WorkItemList> conditional_work_item_list(
+  std::unique_ptr<WorkItemList> conditional_work_item_list(
       WorkItem::CreateConditionalWorkItemList(
           new ConditionRunIfFileExists(dir_to_create.AppendASCII("c"))));
 

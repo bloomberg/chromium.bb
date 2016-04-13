@@ -138,8 +138,8 @@ void ProcessGoogleUpdateItems(const InstallationState& original_state,
 
   // Apply the new channel value to all other products and to the multi package.
   if (modified) {
-    scoped_ptr<WorkItemList>
-        update_list(WorkItem::CreateNoRollbackWorkItemList());
+    std::unique_ptr<WorkItemList> update_list(
+        WorkItem::CreateNoRollbackWorkItemList());
     std::vector<BrowserDistribution::Type> dist_types;
     for (size_t i = 0; i < BrowserDistribution::NUM_TYPES; ++i) {
       BrowserDistribution::Type other_dist_type =
@@ -158,7 +158,7 @@ void ProcessGoogleUpdateItems(const InstallationState& original_state,
 // Processes uninstall WorkItems from install_worker in no-rollback-list.
 void ProcessChromeWorkItems(const InstallerState& installer_state,
                             const Product& product) {
-  scoped_ptr<WorkItemList> work_item_list(
+  std::unique_ptr<WorkItemList> work_item_list(
       WorkItem::CreateNoRollbackWorkItemList());
   AddOsUpgradeWorkItems(installer_state, base::FilePath(), Version(), product,
                         work_item_list.get());
@@ -173,7 +173,8 @@ void ProcessChromeWorkItems(const InstallerState& installer_state,
 }
 
 void ProcessIELowRightsPolicyWorkItems(const InstallerState& installer_state) {
-  scoped_ptr<WorkItemList> work_items(WorkItem::CreateNoRollbackWorkItemList());
+  std::unique_ptr<WorkItemList> work_items(
+      WorkItem::CreateNoRollbackWorkItemList());
   AddDeleteOldIELowRightsPolicyWorkItems(installer_state, work_items.get());
   work_items->Do();
   RefreshElevationPolicy();
@@ -1072,7 +1073,7 @@ const wchar_t kChromeExtProgId[] = L"ChromiumExt";
 
 void UninstallFirewallRules(BrowserDistribution* dist,
                             const base::FilePath& chrome_exe) {
-  scoped_ptr<FirewallManager> manager =
+  std::unique_ptr<FirewallManager> manager =
       FirewallManager::Create(dist, chrome_exe);
   if (manager)
     manager->RemoveFirewallRules();
@@ -1294,7 +1295,7 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
       base::FilePath dll_folder = installer_state.target_path().AppendASCII(
           product_state->version().GetString());
 
-      scoped_ptr<WorkItemList> unreg_work_item_list(
+      std::unique_ptr<WorkItemList> unreg_work_item_list(
           WorkItem::CreateWorkItemList());
 
       AddRegisterComDllWorkItems(dll_folder,

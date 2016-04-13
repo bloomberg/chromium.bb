@@ -7,11 +7,11 @@
 #ifndef CHROME_INSTALLER_UTIL_BROWSER_DISTRIBUTION_H_
 #define CHROME_INSTALLER_UTIL_BROWSER_DISTRIBUTION_H_
 
+#include <memory>
 #include <string>
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/version.h"
 #include "build/build_config.h"
@@ -162,7 +162,8 @@ class BrowserDistribution {
   virtual bool HasUserExperiments();
 
  protected:
-  BrowserDistribution(Type type, scoped_ptr<AppRegistrationData> app_reg_data);
+  BrowserDistribution(Type type,
+                      std::unique_ptr<AppRegistrationData> app_reg_data);
 
   template<class DistributionClass>
   static BrowserDistribution* GetOrCreateBrowserDistribution(
@@ -170,7 +171,7 @@ class BrowserDistribution {
 
   const Type type_;
 
-  scoped_ptr<AppRegistrationData> app_reg_data_;
+  std::unique_ptr<AppRegistrationData> app_reg_data_;
 
  private:
   BrowserDistribution();

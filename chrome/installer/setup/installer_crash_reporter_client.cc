@@ -43,7 +43,7 @@ void InstallerCrashReporterClient::GetProductNameAndVersion(
   // MUST match server-side configuration.
   *product_name = base::ASCIIToUTF16(PRODUCT_SHORTNAME_STRING);
 
-  scoped_ptr<FileVersionInfo> version_info(
+  std::unique_ptr<FileVersionInfo> version_info(
       FileVersionInfo::CreateFileVersionInfo(exe_path));
   if (version_info) {
     *version = version_info->product_version();
@@ -119,7 +119,7 @@ size_t InstallerCrashReporterClient::RegisterCrashKeys() {
 }
 
 bool InstallerCrashReporterClient::IsRunningUnattended() {
-  scoped_ptr<base::Environment> env(base::Environment::Create());
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
   return env->HasVar(env_vars::kHeadless);
 }
 

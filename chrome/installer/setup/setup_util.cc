@@ -103,14 +103,14 @@ Version* GetMaxVersionFromArchiveDir(const base::FilePath& chrome_path) {
   // TODO(tommi): The version directory really should match the version of
   // setup.exe.  To begin with, we should at least DCHECK that that's true.
 
-  scoped_ptr<Version> max_version(new Version("0.0.0.0"));
+  std::unique_ptr<Version> max_version(new Version("0.0.0.0"));
   bool version_found = false;
 
   while (!version_enum.Next().empty()) {
     base::FileEnumerator::FileInfo find_data = version_enum.GetInfo();
     VLOG(1) << "directory found: " << find_data.GetName().value();
 
-    scoped_ptr<Version> found_version(
+    std::unique_ptr<Version> found_version(
         new Version(base::UTF16ToASCII(find_data.GetName().value())));
     if (found_version->IsValid() &&
         found_version->CompareTo(*max_version.get()) > 0) {
@@ -144,7 +144,7 @@ base::FilePath FindArchiveToPatch(const InstallationState& original_state,
     if (base::PathExists(patch_source))
       return patch_source;
   }
-  scoped_ptr<Version> version(
+  std::unique_ptr<Version> version(
       installer::GetMaxVersionFromArchiveDir(installer_state.target_path()));
   if (version) {
     patch_source = installer_state.GetInstallerDirectory(*version)

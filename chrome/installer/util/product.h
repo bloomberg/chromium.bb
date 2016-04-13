@@ -7,12 +7,12 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/shell_util.h"
 #include "chrome/installer/util/util_constants.h"
@@ -132,7 +132,7 @@ class Product {
   };
 
   BrowserDistribution* distribution_;
-  scoped_ptr<ProductOperations> operations_;
+  std::unique_ptr<ProductOperations> operations_;
   std::set<std::wstring> options_;
 
  private:

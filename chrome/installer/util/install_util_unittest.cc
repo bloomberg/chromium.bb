@@ -49,7 +49,8 @@ class InstallUtilTest : public testing::Test {
   }
 
  private:
-  scoped_ptr<registry_util::RegistryOverrideManager> registry_override_manager_;
+  std::unique_ptr<registry_util::RegistryOverrideManager>
+      registry_override_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(InstallUtilTest);
 };

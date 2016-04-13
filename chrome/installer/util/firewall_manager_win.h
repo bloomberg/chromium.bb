@@ -5,8 +5,9 @@
 #ifndef CHROME_INSTALLER_UTIL_FIREWALL_MANAGER_WIN_H_
 #define CHROME_INSTALLER_UTIL_FIREWALL_MANAGER_WIN_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 class BrowserDistribution;
 
@@ -23,8 +24,9 @@ class FirewallManager {
 
   // Creates instance of |FirewallManager|. Implementation chooses best version
   // available for current version of Windows.
-  static scoped_ptr<FirewallManager> Create(BrowserDistribution* dist,
-                                            const base::FilePath& chrome_path);
+  static std::unique_ptr<FirewallManager> Create(
+      BrowserDistribution* dist,
+      const base::FilePath& chrome_path);
 
   // Returns true if application can one ports for incoming connections without
   // triggering firewall alert. It still does not guarantee that traffic
