@@ -125,8 +125,7 @@ PassOwnPtr<CrossThreadClosure> WorkerThread::createWorkerThreadTask(PassOwnPtr<E
     if (isInstrumented)
         isInstrumented = !task->taskNameForInstrumentation().isEmpty();
     if (isInstrumented) {
-        // TODO(hiroshige): This doesn't work when called on the main thread.
-        // https://crbug.com/588497
+        ASSERT(isCurrentThread());
         InspectorInstrumentation::asyncTaskScheduled(workerGlobalScope(), "Worker task", task.get());
     }
     return threadSafeBind(&WorkerThread::performTask, AllowCrossThreadAccess(this), task, isInstrumented);
