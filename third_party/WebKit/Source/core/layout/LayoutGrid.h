@@ -214,6 +214,8 @@ private:
     bool m_gridIsDirty;
     Vector<LayoutUnit> m_rowPositions;
     Vector<LayoutUnit> m_columnPositions;
+    LayoutUnit m_offsetBetweenColumns;
+    LayoutUnit m_offsetBetweenRows;
     HashMap<const LayoutBox*, GridArea> m_gridItemArea;
     OrderIterator m_orderIterator;
     Vector<LayoutBox*> m_gridItemsOverflowingGridArea;
