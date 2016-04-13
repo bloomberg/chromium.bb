@@ -50,6 +50,7 @@ class IOSSSLBlockingPage : public IOSSecurityInterstitialPage {
   void CommandReceived(const std::string& command) override;
   void OnProceed() override;
   void OnDontProceed() override;
+  void OverrideItem(web::NavigationItem* item) override;
 
   // SecurityInterstitialPage implementation:
   bool ShouldCreateNewNavigation() const override;

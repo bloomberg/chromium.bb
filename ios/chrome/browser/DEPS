@@ -102,5 +102,6 @@ include_rules = [
   # Strings and resources.
   "+components/grit",
   "+components/strings/grit",
+  "+grit/components_strings.h",
   "+ios/chrome/grit",
 ]

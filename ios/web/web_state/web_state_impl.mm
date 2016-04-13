@@ -298,6 +298,10 @@ WebInterstitial* WebStateImpl::GetWebInterstitial() const {
   return interstitial_;
 }
 
+int WebStateImpl::GetCertGroupId() const {
+  return request_tracker_->identifier();
+}
+
 net::HttpResponseHeaders* WebStateImpl::GetHttpResponseHeaders() const {
   return http_response_headers_.get();
 }

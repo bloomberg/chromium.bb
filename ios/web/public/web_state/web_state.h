@@ -151,6 +151,9 @@ class WebState : public base::SupportsUserData {
   // Returns the currently visible WebInterstitial if one is shown.
   virtual WebInterstitial* GetWebInterstitial() const = 0;
 
+  // Returns the unique ID to use with web::CertStore.
+  virtual int GetCertGroupId() const = 0;
+
   // Callback used to handle script commands.
   // The callback must return true if the command was handled, and false
   // otherwise.
