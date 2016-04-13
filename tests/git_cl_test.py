@@ -801,16 +801,16 @@ class TestGitCl(TestCase):
             expected_upstream_ref + '..' + ref_to_push],), ''),
         ((['git', 'config', 'rietveld.cc'],), '')
         ]
-    receive_pack = '--receive-pack=git receive-pack '
-    receive_pack += '--cc=joe@example.com'  # from watch list
+    # Add cc from watch list.
+    if ref_suffix == '':
+      ref_suffix = '%cc=joe@example.com'
+    else:
+      ref_suffix += ',cc=joe@example.com'
     if reviewers:
-      receive_pack += ' '
-      receive_pack += ' '.join(
-          '--reviewer=' + email for email in sorted(reviewers))
-    receive_pack += ''
+      ref_suffix += ',' + ','.join('r=%s' % email
+                                   for email in sorted(reviewers))
     calls += [
-        ((['git',
-           'push', receive_pack, 'origin',
+        ((['git', 'push', 'origin',
            ref_to_push + ':refs/for/refs/heads/master' + ref_suffix],),
          ('remote:\n'
          'remote: Processing changes: (\)\n'

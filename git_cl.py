@@ -2392,35 +2392,27 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
         print('WARNING: underscores in title will be converted to spaces.')
       refspec_opts.append('m=' + options.title.replace(' ', '_'))
 
-    receive_options = []
     cc = self.GetCCList().split(',')
     if options.cc:
       cc.extend(options.cc)
     cc = filter(None, cc)
     if cc:
-      receive_options += ['--cc=' + email for email in cc]
-    if change_desc.get_reviewers():
-      receive_options.extend(
-          '--reviewer=' + email for email in change_desc.get_reviewers())
+      refspec_opts.extend('cc=' + email.strip() for email in cc)
 
-    git_command = ['git', 'push']
-    if receive_options:
-      # TODO(tandrii): clean this up in follow up. This doesn't work, as it gets
-      # totally ignored by Gerrit.
-      git_command.append('--receive-pack=git receive-pack %s' %
-                         ' '.join(receive_options))
+    if change_desc.get_reviewers():
+      refspec_opts.extend('r=' + email.strip()
+                          for email in change_desc.get_reviewers())
+
 
     refspec_suffix = ''
     if refspec_opts:
       refspec_suffix = '%' + ','.join(refspec_opts)
       assert ' ' not in refspec_suffix, (
           'spaces not allowed in refspec: "%s"' % refspec_suffix)
-
     refspec = '%s:refs/for/%s%s' % (ref_to_push, branch, refspec_suffix)
-    git_command += [gerrit_remote, refspec]
 
     push_stdout = gclient_utils.CheckCallAndFilter(
-        git_command,
+        ['git', 'push', gerrit_remote, refspec],
         print_stdout=True,
         # Flush after every line: useful for seeing progress when running as
         # recipe.
