@@ -116,6 +116,14 @@ TEST_F(ArcPolicyBridgeTest, VideoCaptureAllowedTest) {
       PolicyStringCallback("{\"cameraDisabled\":true}"));
 }
 
+TEST_F(ArcPolicyBridgeTest, AudioCaptureAllowedTest) {
+  policy_map().Set("AudioCaptureAllowed", policy::POLICY_LEVEL_MANDATORY,
+                   policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
+                   new base::FundamentalValue(false), nullptr);
+  policy_bridge()->GetPolicies(
+      PolicyStringCallback("{\"unmuteMicrophoneDisabled\":true}"));
+}
+
 TEST_F(ArcPolicyBridgeTest, URLBlacklistTest) {
   base::ListValue blacklist;
   blacklist.Append(new base::StringValue("www.blacklist1.com"));
@@ -147,7 +155,6 @@ TEST_F(ArcPolicyBridgeTest, URLWhitelistTest) {
 }
 
 TEST_F(ArcPolicyBridgeTest, MultiplePoliciesTest) {
-  // Keep them in alphabetical order.
   policy_map().Set(
       "ArcPolicy", policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
       policy::POLICY_SOURCE_CLOUD,

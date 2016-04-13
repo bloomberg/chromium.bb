@@ -89,6 +89,8 @@ std::string GetFilteredJSONPolicies(const policy::PolicyMap& policy_map) {
   // Keep them sorted by the ARC policy names.
   AddPolicy("cameraDisabled", policy::key::kVideoCaptureAllowed, policy_map,
             true, &filtered_policies);
+  AddPolicy("unmuteMicrophoneDisabled", policy::key::kAudioCaptureAllowed,
+            policy_map, true, &filtered_policies);
 
   // Add global app restrictions.
   AddGlobalAppRestriction("com.android.browser:URLBlacklist",
