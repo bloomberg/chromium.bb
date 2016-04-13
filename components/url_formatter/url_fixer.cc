@@ -411,11 +411,11 @@ std::string SegmentURLInternal(std::string* text, url::Parsed* parts) {
   int trimmed_length = static_cast<int>(trimmed.length());
   if (url::DoesBeginWindowsDriveSpec(trimmed.data(), 0, trimmed_length) ||
       url::DoesBeginUNCPath(trimmed.data(), 0, trimmed_length, true))
-    return "file";
+    return url::kFileScheme;
 #elif defined(OS_POSIX)
   if (base::FilePath::IsSeparator(trimmed.data()[0]) ||
       trimmed.data()[0] == '~')
-    return "file";
+    return url::kFileScheme;
 #endif
 
   // Otherwise, we need to look at things carefully.
