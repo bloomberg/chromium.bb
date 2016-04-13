@@ -52,13 +52,6 @@ const float kHideDuration = 0.7;
 
 - (void)hideSoon;
 
-// Returns the Accelerator for the Toggle Fullscreen menu item.
-+ (std::unique_ptr<ui::PlatformAcceleratorCocoa>)acceleratorForToggleFullscreen;
-
-// Returns a string representation fit for display of
-// +acceleratorForToggleFullscreen.
-+ (NSString*)keyCommandString;
-
 + (NSString*)keyCombinationForAccelerator:
         (const ui::PlatformAcceleratorCocoa&)item;
 @end
@@ -287,38 +280,6 @@ const float kHideDuration = 0.7;
       extensions::ExtensionRegistry::Get(profile_);
   return SysUTF16ToNSString(exclusive_access_bubble::GetLabelTextForType(
       bubbleType_, url_, registry));
-}
-
-// This looks at the Main Menu and determines what the user has set as the
-// key combination for quit. It then gets the modifiers and builds an object
-// to hold the data.
-+ (std::unique_ptr<ui::PlatformAcceleratorCocoa>)
-    acceleratorForToggleFullscreen {
-  NSMenu* mainMenu = [NSApp mainMenu];
-  // Get the application menu (i.e. Chromium).
-  for (NSMenuItem* menu in [mainMenu itemArray]) {
-    for (NSMenuItem* item in [[menu submenu] itemArray]) {
-      // Find the toggle presentation mode item.
-      if ([item tag] == IDC_PRESENTATION_MODE) {
-        return std::unique_ptr<ui::PlatformAcceleratorCocoa>(
-            new ui::PlatformAcceleratorCocoa([item keyEquivalent],
-                                             [item keyEquivalentModifierMask]));
-      }
-    }
-  }
-  // Default to Cmd+Shift+F.
-  return std::unique_ptr<ui::PlatformAcceleratorCocoa>(
-      new ui::PlatformAcceleratorCocoa(@"f",
-                                       NSCommandKeyMask | NSShiftKeyMask));
-}
-
-// This looks at the Main Menu and determines what the user has set as the
-// key combination for quit. It then gets the modifiers and builds a string
-// to display them.
-+ (NSString*)keyCommandString {
-  std::unique_ptr<ui::PlatformAcceleratorCocoa> accelerator(
-      [[self class] acceleratorForToggleFullscreen]);
-  return [[self class] keyCombinationForAccelerator:*accelerator];
 }
 
 + (NSString*)keyCombinationForAccelerator:

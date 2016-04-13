@@ -11863,12 +11863,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
         <message name="IDS_EXIT_FULLSCREEN_MAC" desc="The Mac menu item to leave fullscreen mode in the view menu and also in the app menu.">
           Exit Full Screen
         </message>
-        <message name="IDS_ENTER_PRESENTATION_MAC" desc="The Mac menu item to go into presentation mode in the view menu.">
-          Enter Presentation Mode
-        </message>
-        <message name="IDS_EXIT_PRESENTATION_MAC" desc="The Mac menu item to leave presentation mode in the view menu.">
-          Exit Presentation Mode
-        </message>
         <message name="IDS_TOGGLE_FULLSCREEN_TOOLBAR_MAC" desc="The Mac menu checkbox item to show/hide the toolbar in full screen.">
           Always Show Toolbar in Full Screen
         </message>

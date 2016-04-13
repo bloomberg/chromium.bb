@@ -341,11 +341,6 @@ CA
                                 </connections>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="457"/>
-                            <menuItem title="^IDS_ENTER_PRESENTATION_MAC" tag="34039" keyEquivalent="F" id="541">
-                                <connections>
-                                    <action selector="commandDispatch:" target="-1" id="630"/>
-                                </connections>
-                            </menuItem>
                             <menuItem title="^IDS_ENTER_FULLSCREEN_MAC" tag="34030" keyEquivalent="f" id="692">
                                 <modifierMask key="keyEquivalentModifierMask" control="YES" command="YES"/>
                                 <connections>

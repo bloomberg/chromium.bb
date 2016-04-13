@@ -420,9 +420,6 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
 #endif
 
 #if defined(OS_MACOSX)
-    case IDC_PRESENTATION_MODE:
-      chrome::ToggleFullscreenMode(browser_);
-      break;
     case IDC_TOGGLE_FULLSCREEN_TOOLBAR:
       chrome::ToggleFullscreenToolbar(browser_);
       break;
@@ -1168,8 +1165,6 @@ void BrowserCommandController::UpdateCommandsForFullscreenMode() {
 #endif
 
   command_updater_.UpdateCommandEnabled(IDC_FULLSCREEN, fullscreen_enabled);
-  command_updater_.UpdateCommandEnabled(IDC_PRESENTATION_MODE,
-                                        fullscreen_enabled);
   command_updater_.UpdateCommandEnabled(IDC_TOGGLE_FULLSCREEN_TOOLBAR,
                                         fullscreen_enabled);
 

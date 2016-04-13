@@ -91,7 +91,6 @@ const struct AcceleratorMapping {
   {IDC_STOP, NSCommandKeyMask, ui::VKEY_OEM_PERIOD},
   {IDC_RELOAD, NSCommandKeyMask, ui::VKEY_R},
   {IDC_RELOAD_BYPASSING_CACHE, NSCommandKeyMask | NSShiftKeyMask, ui::VKEY_R},
-  {IDC_PRESENTATION_MODE, NSCommandKeyMask | NSShiftKeyMask, ui::VKEY_F},
   {IDC_ZOOM_NORMAL, NSCommandKeyMask, ui::VKEY_0},
   {IDC_HOME, NSCommandKeyMask | NSShiftKeyMask, ui::VKEY_H},
   {IDC_BACK, NSCommandKeyMask, ui::VKEY_OEM_4},

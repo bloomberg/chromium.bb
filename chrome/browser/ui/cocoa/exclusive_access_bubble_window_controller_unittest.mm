@@ -28,7 +28,6 @@ using content::WebContents;
 
 @interface ExclusiveAccessBubbleWindowController (JustForTesting)
 // Already defined.
-+ (NSString*)keyCommandString;
 + (NSString*)keyCombinationForAccelerator:
         (const ui::PlatformAcceleratorCocoa&)item;
 - (void)initializeLabelAndButton;

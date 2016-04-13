@@ -99,18 +99,6 @@ NSString* GetTitleForFullscreenMenuItem(Browser* browser) {
   return GetTitleForViewsFullscreenMenuItem(browser);
 }
 
-// Get the text for the "Enter/Exit Presentation Mode" menu item.
-// TODO(jackhou): Remove the dependency on BrowserWindowController(Private).
-NSString* GetTitleForPresentationModeMenuItem(Browser* browser) {
-  NSWindow* ns_window = browser->window()->GetNativeWindow();
-  if (BrowserWindowController* controller = [ns_window windowController]) {
-    return l10n_util::GetNSString([controller inPresentationMode]
-                                      ? IDS_EXIT_PRESENTATION_MAC
-                                      : IDS_ENTER_PRESENTATION_MAC);
-  }
-  return GetTitleForFullscreenMenuItem(browser);
-}
-
 // Identify the actual Browser to which the command should be dispatched. It
 // might belong to a background window, yet another dispatcher gets it because
 // it is the foreground window's dispatcher and thus in the responder chain.
@@ -163,23 +151,8 @@ Browser* FindBrowserForSender(id sender, NSWindow* window) {
         enable &= !![[menuItem keyEquivalent] length];
       break;
     case IDC_FULLSCREEN: {
-      if (NSMenuItem* menuItem = base::mac::ObjCCast<NSMenuItem>(item)) {
-        if (chrome::mac::SupportsSystemFullscreen())
-          [menuItem setTitle:GetTitleForFullscreenMenuItem(browser)];
-        else
-          [menuItem setHidden:YES];
-      }
-      break;
-    }
-    case IDC_PRESENTATION_MODE: {
-      if (NSMenuItem* menuItem = base::mac::ObjCCast<NSMenuItem>(item)) {
-        if (chrome::mac::SupportsSystemFullscreen()) {
-          [menuItem setHidden:YES];
-          enable = NO;
-        } else {
-          [menuItem setTitle:GetTitleForPresentationModeMenuItem(browser)];
-        }
-      }
+      if (NSMenuItem* menuItem = base::mac::ObjCCast<NSMenuItem>(item))
+        [menuItem setTitle:GetTitleForFullscreenMenuItem(browser)];
       break;
     }
     case IDC_SHOW_SIGNIN: {
@@ -211,14 +184,6 @@ Browser* FindBrowserForSender(id sender, NSWindow* window) {
           chrome::ShouldRemoveBookmarkOpenPagesUI(browser->profile());
       NSMenuItem* menuItem = base::mac::ObjCCast<NSMenuItem>(item);
       [menuItem setHidden:shouldHide];
-      break;
-    }
-    case IDC_TOGGLE_FULLSCREEN_TOOLBAR: {
-      if (!chrome::mac::SupportsSystemFullscreen()) {
-        NSMenuItem* menuItem = base::mac::ObjCCast<NSMenuItem>(item);
-        [menuItem setHidden:YES];
-        enable = NO;
-      }
       break;
     }
     case IDC_SHOW_AS_TAB: {
