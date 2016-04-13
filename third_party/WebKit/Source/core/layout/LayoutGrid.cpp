@@ -347,6 +347,8 @@ void LayoutGrid::layoutBlock(bool relayoutChildren)
     if (!relayoutChildren && simplifiedLayout())
         return;
 
+    SubtreeLayoutScope layoutScope(*this);
+
     {
         // LayoutState needs this deliberate scope to pop before updating scroll information (which
         // may trigger relayout).
@@ -357,7 +359,7 @@ void LayoutGrid::layoutBlock(bool relayoutChildren)
         updateLogicalWidth();
         bool logicalHeightWasIndefinite = computeContentLogicalHeight(MainOrPreferredSize, style()->logicalHeight(), LayoutUnit(-1)) == LayoutUnit(-1);
 
-        TextAutosizer::LayoutScope textAutosizerLayoutScope(this);
+        TextAutosizer::LayoutScope textAutosizerLayoutScope(this, &layoutScope);
 
         placeItemsOnGrid();
 
