@@ -742,6 +742,9 @@ INSTANTIATE_TEST_CASE_P(WebViewTests, WebViewSizeTest, testing::Bool());
 class WebViewVisibilityTest : public WebViewTest {};
 INSTANTIATE_TEST_CASE_P(WebViewTests, WebViewVisibilityTest, testing::Bool());
 
+class WebViewSpeechAPITest : public WebViewTest {};
+INSTANTIATE_TEST_CASE_P(WebViewTests, WebViewSpeechAPITest, testing::Bool());
+
 // The following test suits are created to group tests based on specific
 // features of <webview>.
 // These features current would not work with
@@ -752,10 +755,6 @@ INSTANTIATE_TEST_CASE_P(WebViewTests,
                         WebViewAccessibilityTest,
                         testing::Values(false));
 
-class WebViewSpeechAPITest : public WebViewTest {};
-INSTANTIATE_TEST_CASE_P(WebViewTests,
-                        WebViewSpeechAPITest,
-                        testing::Values(false));
 
 class WebViewDPITest : public WebViewTest {
  protected:
