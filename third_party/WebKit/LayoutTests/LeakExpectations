@@ -122,12 +122,6 @@ crbug.com/506754 http/tests/serviceworker/chromium/resolve-after-window-close.ht
 crbug.com/506754 http/tests/serviceworker/chromium/window-close-during-registration.html [ Leak ]
 
 # -----------------------------------------------------------------
-# Untriaged but known leaks of ActiveDOMObject (inspector).
-# -----------------------------------------------------------------
-crbug.com/506756 inspector/console/console-log-side-effects.html [ Leak ]
-crbug.com/506756 inspector/console/only-one-deprecation-warning.html [ Leak ]
-
-# -----------------------------------------------------------------
 # Untriaged but known leaks of ActiveDOMObject (Web Audio).
 # -----------------------------------------------------------------
 crbug.com/506757 webaudio/mediastreamaudiodestinationnode.html [ Leak ]
