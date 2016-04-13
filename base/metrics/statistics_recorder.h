@@ -195,6 +195,10 @@ class BASE_EXPORT StatisticsRecorder {
   FRIEND_TEST_ALL_PREFIXES(HistogramDeltaSerializationTest,
                            DeserializeHistogramAndAddSamples);
 
+  // Imports histograms from global persistent memory. The global lock must
+  // not be held during this call.
+  static void ImportGlobalPersistentHistograms();
+
   // The constructor just initializes static members. Usually client code should
   // use Initialize to do this. But in test code, you can friend this class and
   // call the constructor to get a clean StatisticsRecorder.
