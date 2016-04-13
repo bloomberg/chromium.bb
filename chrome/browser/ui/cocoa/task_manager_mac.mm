@@ -14,6 +14,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #import "chrome/browser/ui/cocoa/window_size_autosaver.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
@@ -594,10 +595,20 @@ namespace chrome {
 
 // Declared in browser_dialogs.h.
 void ShowTaskManager(Browser* browser) {
+  if (chrome::ToolkitViewsDialogsEnabled()) {
+    chrome::ShowTaskManagerViews(browser);
+    return;
+  }
+
   TaskManagerMac::Show();
 }
 
 void HideTaskManager() {
+  if (chrome::ToolkitViewsDialogsEnabled()) {
+    chrome::HideTaskManagerViews();
+    return;
+  }
+
   TaskManagerMac::Hide();
 }
 

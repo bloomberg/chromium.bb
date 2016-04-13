@@ -103,6 +103,10 @@ void ShowBookmarkBubbleViewsAtPoint(const gfx::Point& anchor_point,
                                     const GURL& url,
                                     bool newly_bookmarked);
 
+// Bridging methods that show/hide the toolkit-views based Task Manager on Mac.
+void ShowTaskManagerViews(Browser* browser);
+void HideTaskManagerViews();
+
 #endif  // OS_MACOSX
 
 #if defined(TOOLKIT_VIEWS)
