@@ -1,0 +1,109 @@
+This is a testharness.js-based test.
+FAIL a KeyframeEffectReadOnly can be constructed with no frames KeyframeEffectReadOnly is not defined
+FAIL easing values are parsed correctly when passed to the KeyframeEffectReadOnly constructor in PropertyIndexedKeyframes KeyframeEffectReadOnly is not defined
+FAIL easing values are parsed correctly when passed to the KeyframeEffectReadOnly constructor in Keyframe KeyframeEffectReadOnly is not defined
+FAIL easing values are parsed correctly when passed to the KeyframeEffectReadOnly constructor in KeyframeTimingOptions KeyframeEffectReadOnly is not defined
+FAIL composite values are parsed correctly when passed to the KeyframeEffectReadOnly constructor in PropertyIndexedKeyframes KeyframeEffectReadOnly is not defined
+FAIL composite values are parsed correctly when passed to the KeyframeEffectReadOnly constructor in Keyframe KeyframeEffectReadOnly is not defined
+FAIL composite values are parsed correctly when passed to the KeyframeEffectReadOnly constructor in KeyframeTimingOptions KeyframeEffectReadOnly is not defined
+FAIL a KeyframeEffectReadOnly can be constructed with a one property two value PropertyIndexedKeyframes specification KeyframeEffectReadOnly is not defined
+FAIL a KeyframeEffectReadOnly constructed with a one property two value PropertyIndexedKeyframes specification roundtrips KeyframeEffectReadOnly is not defined
+FAIL a KeyframeEffectReadOnly can be constructed with a one shorthand property two value PropertyIndexedKeyframes specification KeyframeEffectReadOnly is not defined
+FAIL a KeyframeEffectReadOnly constructed with a one shorthand property two value PropertyIndexedKeyframes specification roundtrips KeyframeEffectReadOnly is not defined
+FAIL a KeyframeEffectReadOnly can be constructed with a two property (one shorthand and one of its longhand components) two value PropertyIndexedKeyframes specification KeyframeEffectReadOnly is not defined
+FAIL a KeyframeEffectReadOnly constructed with a two property (one shorthand and one of its longhand components) two value PropertyIndexedKeyframes specification roundtrips KeyframeEffectReadOnly is not defined
+FAIL a KeyframeEffectReadOnly can be constructed with a two property two value PropertyIndexedKeyframes specification KeyframeEffectReadOnly is not defined
+FAIL a KeyframeEffectReadOnly constructed with a two property two value PropertyIndexedKeyframes specification roundtrips KeyframeEffectReadOnly is not defined
+FAIL a KeyframeEffectReadOnly can be constructed with a two property PropertyIndexedKeyframes specification with different numbers of values KeyframeEffectReadOnly is not defined
+FAIL a KeyframeEffectReadOnly constructed with a two property PropertyIndexedKeyframes specification with different numbers of values roundtrips KeyframeEffectReadOnly is not defined
+FAIL a KeyframeEffectReadOnly can be constructed with a PropertyIndexedKeyframes specification with an invalid value KeyframeEffectReadOnly is not defined
+FAIL a KeyframeEffectReadOnly constructed with a PropertyIndexedKeyframes specification with an invalid value roundtrips KeyframeEffectReadOnly is not defined
+FAIL a KeyframeEffectReadOnly can be constructed with a one property two value PropertyIndexedKeyframes specification that needs to stringify its values KeyframeEffectReadOnly is not defined
+FAIL a KeyframeEffectReadOnly constructed with a one property two value PropertyIndexedKeyframes specification that needs to stringify its values roundtrips KeyframeEffectReadOnly is not defined
+FAIL a KeyframeEffectReadOnly can be constructed with a one property one value PropertyIndexedKeyframes specification KeyframeEffectReadOnly is not defined
+FAIL a KeyframeEffectReadOnly constructed with a one property one value PropertyIndexedKeyframes specification roundtrips KeyframeEffectReadOnly is not defined
+FAIL a KeyframeEffectReadOnly can be constructed with a one property one non-array value PropertyIndexedKeyframes specification KeyframeEffectReadOnly is not defined
+FAIL a KeyframeEffectReadOnly constructed with a one property one non-array value PropertyIndexedKeyframes specification roundtrips KeyframeEffectReadOnly is not defined
+FAIL a KeyframeEffectReadOnly can be constructed with a one property two value PropertyIndexedKeyframes specification where the first value is invalid KeyframeEffectReadOnly is not defined
+FAIL a KeyframeEffectReadOnly constructed with a one property two value PropertyIndexedKeyframes specification where the first value is invalid roundtrips KeyframeEffectReadOnly is not defined
+FAIL a KeyframeEffectReadOnly can be constructed with a one property two value PropertyIndexedKeyframes specification where the second value is invalid KeyframeEffectReadOnly is not defined
+FAIL a KeyframeEffectReadOnly constructed with a one property two value PropertyIndexedKeyframes specification where the second value is invalid roundtrips KeyframeEffectReadOnly is not defined
+FAIL a KeyframeEffectReadOnly can be constructed with a two property PropertyIndexedKeyframes specification where one property is missing from the first Keyframe KeyframeEffectReadOnly is not defined
+FAIL a KeyframeEffectReadOnly constructed with a two property PropertyIndexedKeyframes specification where one property is missing from the first Keyframe roundtrips KeyframeEffectReadOnly is not defined
+FAIL a KeyframeEffectReadOnly can be constructed with a two property PropertyIndexedKeyframes specification where one property is missing from the last Keyframe KeyframeEffectReadOnly is not defined
+FAIL a KeyframeEffectReadOnly constructed with a two property PropertyIndexedKeyframes specification where one property is missing from the last Keyframe roundtrips KeyframeEffectReadOnly is not defined
+FAIL a KeyframeEffectReadOnly can be constructed with a PropertyIndexedKeyframes specification with repeated values at offset 0 with different easings KeyframeEffectReadOnly is not defined
+FAIL a KeyframeEffectReadOnly constructed with a PropertyIndexedKeyframes specification with repeated values at offset 0 with different easings roundtrips KeyframeEffectReadOnly is not defined
+FAIL the KeyframeEffectReadOnly constructor reads Keyframe properties in the expected order KeyframeEffectReadOnly is not defined
+FAIL a KeyframeEffectReadOnly can be constructed with a one property two Keyframe sequence KeyframeEffectReadOnly is not defined
+FAIL a KeyframeEffectReadOnly constructed with a one property two Keyframe sequence roundtrips KeyframeEffectReadOnly is not defined
+FAIL a KeyframeEffectReadOnly can be constructed with a two property two Keyframe sequence KeyframeEffectReadOnly is not defined
+FAIL a KeyframeEffectReadOnly constructed with a two property two Keyframe sequence roundtrips KeyframeEffectReadOnly is not defined
+FAIL a KeyframeEffectReadOnly can be constructed with a one shorthand property two Keyframe sequence KeyframeEffectReadOnly is not defined
+FAIL a KeyframeEffectReadOnly constructed with a one shorthand property two Keyframe sequence roundtrips KeyframeEffectReadOnly is not defined
+FAIL a KeyframeEffectReadOnly can be constructed with a two property (a shorthand and one of its component longhands) two Keyframe sequence KeyframeEffectReadOnly is not defined
+FAIL a KeyframeEffectReadOnly constructed with a two property (a shorthand and one of its component longhands) two Keyframe sequence roundtrips KeyframeEffectReadOnly is not defined
+FAIL a KeyframeEffectReadOnly can be constructed with a Keyframe sequence with duplicate values for a given interior offset KeyframeEffectReadOnly is not defined
+FAIL a KeyframeEffectReadOnly constructed with a Keyframe sequence with duplicate values for a given interior offset roundtrips KeyframeEffectReadOnly is not defined
+FAIL a KeyframeEffectReadOnly can be constructed with a Keyframe sequence with duplicate values for offsets 0 and 1 KeyframeEffectReadOnly is not defined
+FAIL a KeyframeEffectReadOnly constructed with a Keyframe sequence with duplicate values for offsets 0 and 1 roundtrips KeyframeEffectReadOnly is not defined
+FAIL a KeyframeEffectReadOnly can be constructed with a two property four Keyframe sequence KeyframeEffectReadOnly is not defined
+FAIL a KeyframeEffectReadOnly constructed with a two property four Keyframe sequence roundtrips KeyframeEffectReadOnly is not defined
+FAIL a KeyframeEffectReadOnly can be constructed with a one property Keyframe sequence with some omitted offsets KeyframeEffectReadOnly is not defined
+FAIL a KeyframeEffectReadOnly constructed with a one property Keyframe sequence with some omitted offsets roundtrips KeyframeEffectReadOnly is not defined
+FAIL a KeyframeEffectReadOnly can be constructed with a two property Keyframe sequence with some omitted offsets KeyframeEffectReadOnly is not defined
+FAIL a KeyframeEffectReadOnly constructed with a two property Keyframe sequence with some omitted offsets roundtrips KeyframeEffectReadOnly is not defined
+FAIL a KeyframeEffectReadOnly can be constructed with a one property Keyframe sequence with all omitted offsets KeyframeEffectReadOnly is not defined
+FAIL a KeyframeEffectReadOnly constructed with a one property Keyframe sequence with all omitted offsets roundtrips KeyframeEffectReadOnly is not defined
+FAIL a KeyframeEffectReadOnly can be constructed with a Keyframe sequence with different easing values, but the same easing value for a given offset KeyframeEffectReadOnly is not defined
+FAIL a KeyframeEffectReadOnly constructed with a Keyframe sequence with different easing values, but the same easing value for a given offset roundtrips KeyframeEffectReadOnly is not defined
+FAIL a KeyframeEffectReadOnly can be constructed with a Keyframe sequence with different composite values, but the same composite value for a given offset KeyframeEffectReadOnly is not defined
+FAIL a KeyframeEffectReadOnly constructed with a Keyframe sequence with different composite values, but the same composite value for a given offset roundtrips KeyframeEffectReadOnly is not defined
+FAIL a KeyframeEffectReadOnly can be constructed with a one property two Keyframe sequence that needs to stringify its values KeyframeEffectReadOnly is not defined
+FAIL a KeyframeEffectReadOnly constructed with a one property two Keyframe sequence that needs to stringify its values roundtrips KeyframeEffectReadOnly is not defined
+FAIL a KeyframeEffectReadOnly can be constructed with a Keyframe sequence where shorthand precedes longhand KeyframeEffectReadOnly is not defined
+FAIL a KeyframeEffectReadOnly constructed with a Keyframe sequence where shorthand precedes longhand roundtrips KeyframeEffectReadOnly is not defined
+FAIL a KeyframeEffectReadOnly can be constructed with a Keyframe sequence where longhand precedes shorthand KeyframeEffectReadOnly is not defined
+FAIL a KeyframeEffectReadOnly constructed with a Keyframe sequence where longhand precedes shorthand roundtrips KeyframeEffectReadOnly is not defined
+FAIL a KeyframeEffectReadOnly can be constructed with a Keyframe sequence where lesser shorthand precedes greater shorthand KeyframeEffectReadOnly is not defined
+FAIL a KeyframeEffectReadOnly constructed with a Keyframe sequence where lesser shorthand precedes greater shorthand roundtrips KeyframeEffectReadOnly is not defined
+FAIL a KeyframeEffectReadOnly can be constructed with a Keyframe sequence where greater shorthand precedes lesser shorthand KeyframeEffectReadOnly is not defined
+FAIL a KeyframeEffectReadOnly constructed with a Keyframe sequence where greater shorthand precedes lesser shorthand roundtrips KeyframeEffectReadOnly is not defined
+FAIL a KeyframeEffectReadOnly constructed without any KeyframeEffectOptions object KeyframeEffectReadOnly is not defined
+FAIL a KeyframeEffectReadOnly constructed by an empty KeyframeEffectOptions object KeyframeEffectReadOnly is not defined
+FAIL a KeyframeEffectReadOnly constructed by a normal KeyframeEffectOptions object KeyframeEffectReadOnly is not defined
+FAIL a KeyframeEffectReadOnly constructed by a double value KeyframeEffectReadOnly is not defined
+FAIL a KeyframeEffectReadOnly constructed by +Infinity KeyframeEffectReadOnly is not defined
+FAIL a KeyframeEffectReadOnly constructed by an Infinity duration KeyframeEffectReadOnly is not defined
+FAIL a KeyframeEffectReadOnly constructed by an auto duration KeyframeEffectReadOnly is not defined
+FAIL a KeyframeEffectReadOnly constructed by an Infinity iterations KeyframeEffectReadOnly is not defined
+FAIL a KeyframeEffectReadOnly constructed by a negative Infinity iterations KeyframeEffectReadOnly is not defined
+FAIL a KeyframeEffectReadOnly constructed by a NaN iterations KeyframeEffectReadOnly is not defined
+FAIL a KeyframeEffectReadOnly constructed by a negative iterations KeyframeEffectReadOnly is not defined
+FAIL a KeyframeEffectReadOnly constructed by an auto fill KeyframeEffectReadOnly is not defined
+FAIL a KeyframeEffectReadOnly constructed by a forwards fill KeyframeEffectReadOnly is not defined
+FAIL Invalid KeyframeEffectReadOnly option by -Infinity assert_throws: function "function () {
+      new KeyframeEffectReadOnly(target,
+  ..." threw object "ReferenceError: KeyframeEffectReadOnly is not defined" ("ReferenceError") expected object "[object Object]" ("TypeError")
+FAIL Invalid KeyframeEffectReadOnly option by NaN assert_throws: function "function () {
+      new KeyframeEffectReadOnly(target,
+  ..." threw object "ReferenceError: KeyframeEffectReadOnly is not defined" ("ReferenceError") expected object "[object Object]" ("TypeError")
+FAIL Invalid KeyframeEffectReadOnly option by a negative value assert_throws: function "function () {
+      new KeyframeEffectReadOnly(target,
+  ..." threw object "ReferenceError: KeyframeEffectReadOnly is not defined" ("ReferenceError") expected object "[object Object]" ("TypeError")
+FAIL Invalid KeyframeEffectReadOnly option by a negative Infinity duration assert_throws: function "function () {
+      new KeyframeEffectReadOnly(target,
+  ..." threw object "ReferenceError: KeyframeEffectReadOnly is not defined" ("ReferenceError") expected object "[object Object]" ("TypeError")
+FAIL Invalid KeyframeEffectReadOnly option by a NaN duration assert_throws: function "function () {
+      new KeyframeEffectReadOnly(target,
+  ..." threw object "ReferenceError: KeyframeEffectReadOnly is not defined" ("ReferenceError") expected object "[object Object]" ("TypeError")
+FAIL Invalid KeyframeEffectReadOnly option by a negative duration assert_throws: function "function () {
+      new KeyframeEffectReadOnly(target,
+  ..." threw object "ReferenceError: KeyframeEffectReadOnly is not defined" ("ReferenceError") expected object "[object Object]" ("TypeError")
+FAIL Invalid KeyframeEffectReadOnly option by a string duration assert_throws: function "function () {
+      new KeyframeEffectReadOnly(target,
+  ..." threw object "ReferenceError: KeyframeEffectReadOnly is not defined" ("ReferenceError") expected object "[object Object]" ("TypeError")
+PASS KeyframeEffect constructor creates an AnimationEffectTiming timing object 
+PASS KeyframeEffect constructor propagates exceptions generated by accessing the options object 
+Harness: the test ran to completion.
+
