@@ -267,8 +267,6 @@ crbug.com/567837 [ Mac Android ] virtual/scalefactor200withzoom/fast/hidpi/stati
 crbug.com/593567 [ Debug ] virtual/scalefactor150/fast/hidpi/static/data-suggestion-picker-appearance.html [ Skip ]
 crbug.com/593567 [ Debug ] virtual/scalefactor150/fast/hidpi/static/popup-menu-appearance.html [ Skip ]
 
-crbug.com/602771 editing/execCommand/create-list-with-hr.html [ NeedsRebaseline ]
-
 # Mac does not support fractional scale factor.
 crbug.com/567837 [ Mac ] virtual/scalefactor150/fast/hidpi/static [ Skip ]
 
