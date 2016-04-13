@@ -389,6 +389,7 @@ _arm_external_boards = frozenset([
     'arm-generic',
     'arm-generic_freon',
     'arm64-generic',
+    'arm64-llvmpipe',
 ])
 
 _x86_internal_release_boards = frozenset([

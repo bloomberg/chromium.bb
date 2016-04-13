@@ -1968,6 +1968,72 @@
         ],
         "vm_tests": []
     },
+    "arm64-llvmpipe-chromium-pfq": {
+        "_template": "chromium-pfq",
+        "boards": [
+            "arm64-llvmpipe"
+        ],
+        "description": "Preflight Chromium Uprev & Build (internal)",
+        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
+        "important": false,
+        "internal": true,
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "prebuilts": "public",
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "arm64-llvmpipe-compile-only-pre-cq": {
+        "_template": "compile-only-pre-cq",
+        "boards": [
+            "arm64-llvmpipe"
+        ]
+    },
+    "arm64-llvmpipe-full": {
+        "_template": "full",
+        "boards": [
+            "arm64-llvmpipe"
+        ],
+        "prebuilts": "public",
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "arm64-llvmpipe-no-vmtest-pre-cq": {
+        "_template": "no-vmtest-pre-cq",
+        "boards": [
+            "arm64-llvmpipe"
+        ]
+    },
+    "arm64-llvmpipe-paladin": {
+        "_template": "paladin",
+        "boards": [
+            "arm64-llvmpipe"
+        ],
+        "important": false,
+        "vm_tests": [],
+        "vm_tests_override": null
+    },
+    "arm64-llvmpipe-pre-cq": {
+        "_template": "pre-cq",
+        "boards": [
+            "arm64-llvmpipe"
+        ],
+        "vm_tests": []
+    },
+    "arm64-llvmpipe-tot-chromium-pfq-informational": {
+        "_template": "chromium-pfq-informational",
+        "boards": [
+            "arm64-llvmpipe"
+        ],
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
+    },
     "auron-b-full-group": {
         "_template": "full",
         "boards": [
