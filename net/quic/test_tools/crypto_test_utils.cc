@@ -57,7 +57,7 @@ class CryptoFramerVisitor : public CryptoFramerVisitorInterface {
 // HexChar parses |c| as a hex character. If valid, it sets |*value| to the
 // value of the hex character and returns true. Otherwise it returns false.
 bool HexChar(char c, uint8_t* value) {
-  if (base::IsAsciiDigit(c)) {
+  if (c >= '0' && c <= '9') {
     *value = c - '0';
     return true;
   }
