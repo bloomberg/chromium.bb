@@ -43,14 +43,6 @@ TextTrackList::TextTrackList(HTMLMediaElement* owner)
 
 TextTrackList::~TextTrackList()
 {
-#if !ENABLE(OILPAN)
-    ASSERT(!m_owner);
-
-    // TextTrackList and m_asyncEventQueue always become unreachable
-    // together. So TextTrackList and m_asyncEventQueue are destructed in the
-    // same GC. We don't need to close it explicitly in Oilpan.
-    m_asyncEventQueue->close();
-#endif
 }
 
 unsigned TextTrackList::length() const
@@ -261,13 +253,6 @@ ExecutionContext* TextTrackList::getExecutionContext() const
 {
     return m_owner ? m_owner->getExecutionContext() : 0;
 }
-
-#if !ENABLE(OILPAN)
-void TextTrackList::clearOwner()
-{
-    m_owner = nullptr;
-}
-#endif
 
 void TextTrackList::scheduleTrackEvent(const AtomicString& eventName, TextTrack* track)
 {

@@ -66,9 +66,6 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(change);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(removetrack);
 
-#if !ENABLE(OILPAN)
-    void clearOwner();
-#endif
     HTMLMediaElement* owner() const;
 
     void scheduleChangeEvent();

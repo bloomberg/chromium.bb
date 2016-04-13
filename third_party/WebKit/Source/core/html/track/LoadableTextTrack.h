@@ -50,9 +50,6 @@ public:
 
     size_t trackElementIndex();
     HTMLTrackElement* trackElement() { return m_trackElement; }
-#if !ENABLE(OILPAN)
-    void clearTrackElement();
-#endif
 
     bool isDefault() const override;
 

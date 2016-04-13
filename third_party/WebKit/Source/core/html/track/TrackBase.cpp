@@ -52,9 +52,6 @@ TrackBase::TrackBase(WebMediaPlayer::TrackType type, const AtomicString& label, 
 
 TrackBase::~TrackBase()
 {
-#if !ENABLE(OILPAN)
-    ASSERT(!m_mediaElement);
-#endif
 }
 
 Node* TrackBase::owner() const

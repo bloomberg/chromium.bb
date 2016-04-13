@@ -39,17 +39,7 @@ LoadableTextTrack::LoadableTextTrack(HTMLTrackElement* track)
 
 LoadableTextTrack::~LoadableTextTrack()
 {
-#if !ENABLE(OILPAN)
-    ASSERT(!m_trackElement);
-#endif
 }
-
-#if !ENABLE(OILPAN)
-void LoadableTextTrack::clearTrackElement()
-{
-    m_trackElement = nullptr;
-}
-#endif
 
 bool LoadableTextTrack::isDefault() const
 {
@@ -60,11 +50,6 @@ bool LoadableTextTrack::isDefault() const
 void LoadableTextTrack::setMode(const AtomicString& mode)
 {
     TextTrack::setMode(mode);
-#if !ENABLE(OILPAN)
-    if (!m_trackElement)
-        return;
-#endif
-
     if (m_trackElement->getReadyState() == HTMLTrackElement::NONE)
         m_trackElement->scheduleLoad();
 }

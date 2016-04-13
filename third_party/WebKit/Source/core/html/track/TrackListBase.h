@@ -23,10 +23,6 @@ public:
 
     ~TrackListBase() override
     {
-#if !ENABLE(OILPAN)
-        ASSERT(m_tracks.isEmpty());
-        ASSERT(!m_mediaElement);
-#endif
     }
 
     unsigned length() const { return m_tracks.size(); }
@@ -58,14 +54,6 @@ public:
             return m_mediaElement->getExecutionContext();
         return nullptr;
     }
-
-#if !ENABLE(OILPAN)
-    void shutdown()
-    {
-        removeAll();
-        m_mediaElement = nullptr;
-    }
-#endif
 
     void add(T* track)
     {
