@@ -53,6 +53,8 @@ mus::mojom::WindowType GetWindowType(
 
 base::string16 GetWindowTitle(const mus::Window* window);
 
+mojo::Array<uint8_t> GetWindowAppIcon(const mus::Window* window);
+
 }  // namespace wm
 }  // namespace mash
 

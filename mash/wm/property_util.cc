@@ -139,5 +139,15 @@ base::string16 GetWindowTitle(const mus::Window* window) {
       mus::mojom::WindowManager::kWindowTitle_Property);
 }
 
+mojo::Array<uint8_t> GetWindowAppIcon(const mus::Window* window) {
+  if (window->HasSharedProperty(
+          mus::mojom::WindowManager::kWindowAppIcon_Property)) {
+    return mojo::Array<uint8_t>::From(
+        window->GetSharedProperty<std::vector<uint8_t>>(
+            mus::mojom::WindowManager::kWindowAppIcon_Property));
+  }
+  return mojo::Array<uint8_t>();
+}
+
 }  // namespace wm
 }  // namespace mash

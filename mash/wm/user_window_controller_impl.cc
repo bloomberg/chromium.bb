@@ -8,6 +8,7 @@
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_property.h"
 #include "components/mus/public/cpp/window_tree_connection.h"
+#include "mash/wm/property_util.h"
 #include "mash/wm/public/interfaces/container.mojom.h"
 #include "mash/wm/root_window_controller.h"
 #include "mojo/common/common_type_converters.h"
@@ -23,27 +24,6 @@ MUS_DEFINE_LOCAL_WINDOW_PROPERTY_KEY(uint32_t, kUserWindowIdKey, 0u);
 
 namespace {
 
-// Get the title property from a mus::Window.
-mojo::String GetWindowTitle(mus::Window* window) {
-  if (window->HasSharedProperty(
-          mus::mojom::WindowManager::kWindowTitle_Property)) {
-    return mojo::String::From(window->GetSharedProperty<base::string16>(
-               mus::mojom::WindowManager::kWindowTitle_Property));
-  }
-  return mojo::String(std::string());
-}
-
-// Get the serialized app icon bitmap from a mus::Window.
-mojo::Array<uint8_t> GetWindowAppIcon(mus::Window* window) {
-  if (window->HasSharedProperty(
-          mus::mojom::WindowManager::kWindowAppIcon_Property)) {
-    return mojo::Array<uint8_t>::From(
-        window->GetSharedProperty<std::vector<uint8_t>>(
-            mus::mojom::WindowManager::kWindowAppIcon_Property));
-  }
-  return mojo::Array<uint8_t>();
-}
-
 // Returns |window|, or an ancestor thereof, parented to |container|, or null.
 mus::Window* GetTopLevelWindow(mus::Window* window, mus::Window* container) {
   while (window && window->parent() != container)
@@ -56,7 +36,7 @@ mojom::UserWindowPtr GetUserWindow(mus::Window* window) {
   mojom::UserWindowPtr user_window(mojom::UserWindow::New());
   DCHECK_NE(0u, window->GetLocalProperty(kUserWindowIdKey));
   user_window->window_id = window->GetLocalProperty(kUserWindowIdKey);
-  user_window->window_title = GetWindowTitle(window);
+  user_window->window_title = mojo::String::From(GetWindowTitle(window));
   user_window->window_app_icon = GetWindowAppIcon(window);
   mus::Window* focused = window->connection()->GetFocusedWindow();
   focused = GetTopLevelWindow(focused, window->parent());
@@ -86,7 +66,8 @@ class WindowPropertyObserver : public mus::WindowObserver {
       return;
     if (name == mus::mojom::WindowManager::kWindowTitle_Property) {
       controller_->user_window_observer()->OnUserWindowTitleChanged(
-          window->GetLocalProperty(kUserWindowIdKey), GetWindowTitle(window));
+          window->GetLocalProperty(kUserWindowIdKey),
+          mojo::String::From(GetWindowTitle(window)));
     } else if (name == mus::mojom::WindowManager::kWindowAppIcon_Property) {
       controller_->user_window_observer()->OnUserWindowAppIconChanged(
           window->GetLocalProperty(kUserWindowIdKey),
