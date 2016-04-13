@@ -205,7 +205,8 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       volume_multiplier_(1.0),
       renderer_factory_(std::move(renderer_factory)),
       surface_manager_(params.surface_manager()),
-      suppress_destruction_errors_(false) {
+      suppress_destruction_errors_(false),
+      can_suspend_state_(CanSuspendState::UNKNOWN) {
   DCHECK(!adjust_allocated_memory_cb_.is_null());
   DCHECK(renderer_factory_);
   DCHECK(client_);
@@ -1067,13 +1068,6 @@ void WebMediaPlayerImpl::OnShown() {
 void WebMediaPlayerImpl::OnSuspendRequested(bool must_suspend) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
-#if defined(OS_MACOSX)
-  // TODO(sandersd): Idle suspend is disabled on OSX since hardware decoded
-  // frames are owned by the video decoder in the GPU process. A mechanism for
-  // detaching ownership from the decoder is needed. http://crbug.com/595716.
-  return;
-#endif
-
   if (must_suspend) {
     must_suspend_ = true;
   } else {
@@ -1458,6 +1452,26 @@ void WebMediaPlayerImpl::SetSuspendState(bool is_suspended) {
   // Do not change the state after an error has occurred.
   // TODO(sandersd): Update PipelineController to remove the need for this.
   if (IsNetworkStateError(network_state_))
+    return;
+
+#if defined(OS_MACOSX) || defined(OS_WIN)
+  // TODO(sandersd): Idle suspend is disabled on OSX and Windows for hardware
+  // decoding / opaque video frames since these frames are owned by the decoder
+  // in the GPU process. http://crbug.com/595716 and http://crbug.com/602708
+  if (can_suspend_state_ == CanSuspendState::UNKNOWN) {
+    scoped_refptr<VideoFrame> frame = GetCurrentFrameFromCompositor();
+    if (frame) {
+      can_suspend_state_ =
+          frame->metadata()->IsTrue(VideoFrameMetadata::DECODER_OWNS_FRAME)
+              ? CanSuspendState::NO
+              : CanSuspendState::YES;
+    }
+  }
+#else
+  can_suspend_state_ = CanSuspendState::YES;
+#endif
+
+  if (can_suspend_state_ == CanSuspendState::NO)
     return;
 
   if (is_suspended) {

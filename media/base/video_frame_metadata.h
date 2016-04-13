@@ -41,6 +41,12 @@ class MEDIA_EXPORT VideoFrameMetadata {
     // contexts.
     COPY_REQUIRED,
 
+    // Indicates that the frame is owned by the decoder and that destroying the
+    // decoder will make the frame unrenderable. TODO(sandersd): Remove once OSX
+    // and Windows hardware decoders support frames which outlive the decoder.
+    // http://crbug.com/595716 and http://crbug.com/602708.
+    DECODER_OWNS_FRAME,
+
     // Indicates if the current frame is the End of its current Stream. Use
     // Get/SetBoolean() for this Key.
     END_OF_STREAM,

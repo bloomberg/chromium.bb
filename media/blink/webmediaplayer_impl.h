@@ -490,6 +490,13 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // unimportant.
   bool suppress_destruction_errors_;
 
+  // State indicating if it's okay to suspend or not. Updated on the first time
+  // OnSuspendRequested() is called. If the state is UNKNOWN, the current frame
+  // from the compositor will be queried to see if suspend is supported; the
+  // state will be set to YES or NO respectively if a frame is available.
+  enum class CanSuspendState { UNKNOWN, YES, NO };
+  CanSuspendState can_suspend_state_;
+
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerImpl);
 };
 

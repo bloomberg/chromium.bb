@@ -558,6 +558,9 @@ void GpuVideoDecoder::PictureReady(const media::Picture& picture) {
   }
   if (picture.allow_overlay())
     frame->metadata()->SetBoolean(VideoFrameMetadata::ALLOW_OVERLAY, true);
+#if defined(OS_MACOSX) || defined(OS_WIN)
+  frame->metadata()->SetBoolean(VideoFrameMetadata::DECODER_OWNS_FRAME, true);
+#endif
   CHECK_GT(available_pictures_, 0);
   --available_pictures_;
 
