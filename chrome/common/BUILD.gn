@@ -383,7 +383,7 @@ source_set("test_support") {
 }
 
 # GN version: chrome/chrome.gyp:app_mode_app_support
-static_library("app_mode_app_support") {
+source_set("app_mode_app_support") {
   sources = [
     "mac/app_mode_chrome_locator.h",
     "mac/app_mode_chrome_locator.mm",
