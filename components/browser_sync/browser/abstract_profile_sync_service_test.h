@@ -13,6 +13,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/test/test_message_loop.h"
 #include "components/browser_sync/browser/profile_sync_test_util.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/change_record.h"
@@ -74,7 +75,7 @@ class AbstractProfileSyncServiceTest : public testing::Test {
   // Use |data_type_thread_| for code disallowed on the UI thread.
   base::Thread data_type_thread_;
 
-  base::MessageLoop message_loop_;
+  base::TestMessageLoop message_loop_;
   browser_sync::ProfileSyncServiceBundle profile_sync_service_bundle_;
   scoped_ptr<TestProfileSyncService> sync_service_;
 

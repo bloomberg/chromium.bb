@@ -126,18 +126,3 @@
    fun:_ZN2ui16AXTreeSerializerIPN5views16AXAuraObjWrapperENS_10AXNodeDataENS_10AXTreeDataEE16SerializeChangesES3_PNS_16AXTreeUpdateBaseIS4_S5_EE
    fun:_ZN35AXTreeSourceAuraTest_Serialize_Test8TestBodyEv
 }
-{
-   bug_588849a
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN4base4BindIMN6syncer15ModelSafeWorkerEFvNS_8CallbackIFvNS1_14ModelSafeGroupEELNS_8internal8CopyModeE1EEEEJPS2_RS8_EEENS3_INS6_22MakeUnboundRunTypeImplIT_JDpT0_EE4TypeELS7_1EEESE_DpOSF_
-   fun:_ZN6syncer15ModelSafeWorker28UnregisterForLoopDestructionEN4base8CallbackIFvNS_14ModelSafeGroupEELNS1_8internal8CopyModeE1EEE
-   fun:_ZN12browser_sync20SyncBackendRegistrar8ShutdownEv
-}
-{
-   bug_588849b
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN30ProfileSyncServiceAutofillTest24CreateDataTypeControllerEN6syncer9ModelTypeE
-   fun:_ZN30ProfileSyncServiceAutofillTest16StartSyncServiceERKN4base8CallbackIF*syncer9ModelTypeE
-}
