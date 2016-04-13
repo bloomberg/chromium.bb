@@ -9,9 +9,6 @@ if (is_android) {
 # TODO(sky): nuke this. Temporary while sorting out http://crbug.com/465456.
 enable_correct_v8_arch = false
 
-# TODO: Set v8_use_external_startup_data to true on Windows and iOS to match
-# GYP.
-# iOS - http://crbug.com/545676
 v8_use_external_startup_data = !is_ios
 
 # Turns on compiler optimizations in V8 in Debug build.
