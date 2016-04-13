@@ -353,6 +353,7 @@ public class ContextualSearchSelectionController {
         if (mSelectionType != SelectionType.LONG_PRESS) {
             mWasTapGestureDetected = true;
             TapSuppressionHeuristics tapHeuristics = new TapSuppressionHeuristics(this, x, y);
+            // TODO(donnd): Move to be called when the panel closes to work with states that change.
             tapHeuristics.logConditionState();
             // Tell the manager what it needs in order to log metrics on whether the tap would have
             // been suppressed if each of the heuristics were satisfied.

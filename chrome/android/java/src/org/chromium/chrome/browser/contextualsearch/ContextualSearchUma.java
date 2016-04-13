@@ -206,6 +206,15 @@ public class ContextualSearchUma {
     private static final int NOT_TAP_SUPPRESSED = 1;
     private static final int TAP_SUPPRESSED_BOUNDARY = 2;
 
+    // Constants used to log UMA "enum" histograms for Quick Answers.
+    private static final int QUICK_ANSWER_ACTIVATED_WAS_AN_ANSWER_SEEN = 0;
+    private static final int QUICK_ANSWER_ACTIVATED_WAS_AN_ANSWER_NOT_SEEN = 1;
+    private static final int QUICK_ANSWER_ACTIVATED_NOT_AN_ANSWER_SEEN = 2;
+    private static final int QUICK_ANSWER_ACTIVATED_NOT_AN_ANSWER_NOT_SEEN = 3;
+    private static final int QUICK_ANSWER_NOT_ACTIVATED_SEEN = 4;
+    private static final int QUICK_ANSWER_NOT_ACTIVATED_NOT_SEEN = 5;
+    private static final int QUICK_ANSWER_SEEN_BOUNDARY = 6;
+
     /**
      * Key used in maps from {state, reason} to state entry (exit) logging code.
      */
@@ -856,6 +865,7 @@ public class ContextualSearchUma {
     /**
      * Logs the duration since a recent scroll.
      * @param durationSinceRecentScrollMs The amount of time since the most recent scroll.
+     * @param wasSearchContentViewSeen If the panel was opened.
      */
     public static void logRecentScrollDuration(
             int durationSinceRecentScrollMs, boolean wasSearchContentViewSeen) {
@@ -873,6 +883,22 @@ public class ContextualSearchUma {
     public static void logRecentScrollSuppression(boolean wasSuppressed) {
         RecordHistogram.recordEnumeratedHistogram("Search.ContextualSearchRecentScrollSuppression",
                 wasSuppressed ? TAP_SUPPRESSED : NOT_TAP_SUPPRESSED, TAP_SUPPRESSED_BOUNDARY);
+    }
+
+    /**
+     * Logs whether a Quick Answer caption was activated, and whether it was an answer (as opposed
+     * to just being informative), and whether the panel was opened anyway.
+     * Logged only for Tap events.
+     * @param didActivate If the Quick Answer caption was shown.
+     * @param didAnswer If the caption was considered an answer (reducing the need to open the
+     *        panel).
+     * @param wasSearchContentViewSeen If the panel was opened.
+     */
+    static void logQuickAnswerSeen(
+            boolean wasSearchContentViewSeen, boolean didActivate, boolean didAnswer) {
+        RecordHistogram.recordEnumeratedHistogram("Search.ContextualSearchQuickAnswerSeen",
+                getQuickAnswerSeenValue(didActivate, didAnswer, wasSearchContentViewSeen),
+                QUICK_ANSWER_SEEN_BOUNDARY);
     }
 
     /**
@@ -1033,6 +1059,38 @@ public class ContextualSearchUma {
             return PREFERENCE_DISABLED;
         }
         return PREFERENCE_ENABLED;
+    }
+
+    /**
+     * Gets the encode value for quick answers seen.
+     * @param didActivate Whether the quick answer was shown.
+     * @param didAnswer Whether the caption was a full answer, not just a hint.
+     * @param wasSeen Whether the search panel was opened.
+     * @return The encoded value.
+     */
+    private static int getQuickAnswerSeenValue(
+            boolean didActivate, boolean didAnswer, boolean wasSeen) {
+        if (wasSeen) {
+            if (didActivate) {
+                if (didAnswer) {
+                    return QUICK_ANSWER_ACTIVATED_WAS_AN_ANSWER_SEEN;
+                } else {
+                    return QUICK_ANSWER_ACTIVATED_NOT_AN_ANSWER_SEEN;
+                }
+            } else {
+                return QUICK_ANSWER_NOT_ACTIVATED_SEEN;
+            }
+        } else {
+            if (didActivate) {
+                if (didAnswer) {
+                    return QUICK_ANSWER_ACTIVATED_WAS_AN_ANSWER_NOT_SEEN;
+                } else {
+                    return QUICK_ANSWER_ACTIVATED_NOT_AN_ANSWER_NOT_SEEN;
+                }
+            } else {
+                return QUICK_ANSWER_NOT_ACTIVATED_NOT_SEEN;
+            }
+        }
     }
 
     /**

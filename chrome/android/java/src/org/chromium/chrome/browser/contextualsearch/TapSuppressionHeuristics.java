@@ -4,15 +4,10 @@
 
 package org.chromium.chrome.browser.contextualsearch;
 
-import java.util.HashSet;
-import java.util.Set;
-
 /**
  * A set of {@link ContextualSearchHeuristic}s that support experimentation and logging.
  */
-public class TapSuppressionHeuristics {
-    private final Set<ContextualSearchHeuristic> mTapHeuristics;
-
+public class TapSuppressionHeuristics extends ContextualSearchHeuristics {
     /**
      * Gets all the heuristics needed for Tap suppression.
      * @param selectionController The {@link ContextualSearchSelectionController}
@@ -21,13 +16,13 @@ public class TapSuppressionHeuristics {
      */
     TapSuppressionHeuristics(
             ContextualSearchSelectionController selectionController, int x, int y) {
-        mTapHeuristics = new HashSet<ContextualSearchHeuristic>();
+        super();
         RecentScrollTapSuppression scrollTapExperiment =
                 new RecentScrollTapSuppression(selectionController);
-        mTapHeuristics.add(scrollTapExperiment);
+        mHeuristics.add(scrollTapExperiment);
         TapFarFromPreviousSuppression farFromPreviousHeuristic =
                 new TapFarFromPreviousSuppression(selectionController, x, y);
-        mTapHeuristics.add(farFromPreviousHeuristic);
+        mHeuristics.add(farFromPreviousHeuristic);
     }
 
     /**
@@ -36,8 +31,9 @@ public class TapSuppressionHeuristics {
      * @param wasSearchContentViewSeen Whether the panel contents were seen.
      * @param wasActivatedByTap Whether the panel was activated by a Tap or not.
      */
+    @Override
     public void logResultsSeen(boolean wasSearchContentViewSeen, boolean wasActivatedByTap) {
-        for (ContextualSearchHeuristic heuristic : mTapHeuristics) {
+        for (ContextualSearchHeuristic heuristic : mHeuristics) {
             heuristic.logResultsSeen(wasSearchContentViewSeen, wasActivatedByTap);
         }
     }
@@ -48,7 +44,7 @@ public class TapSuppressionHeuristics {
     void logConditionState() {
         // TODO(donnd): consider doing this logging automatically in the constructor rather than
         // leaving this an optional separate method.
-        for (ContextualSearchHeuristic heuristic : mTapHeuristics) {
+        for (ContextualSearchHeuristic heuristic : mHeuristics) {
             heuristic.logConditionState();
         }
     }
@@ -57,7 +53,7 @@ public class TapSuppressionHeuristics {
      * @return Whether the Tap should be suppressed (due to a heuristic condition being satisfied).
      */
     boolean shouldSuppressTap() {
-        for (ContextualSearchHeuristic heuristic : mTapHeuristics) {
+        for (ContextualSearchHeuristic heuristic : mHeuristics) {
             if (heuristic.isConditionSatisfied()) return true;
         }
         return false;

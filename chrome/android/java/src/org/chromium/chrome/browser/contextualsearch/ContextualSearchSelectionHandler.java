@@ -65,5 +65,5 @@ interface ContextualSearchSelectionHandler {
      * for the given heuristics.
      * @param tapHeuristics The set of heuristics that would suppress the Tap.
      */
-    public void handleMetricsForWouldSuppressTap(TapSuppressionHeuristics tapHeuristics);
+    public void handleMetricsForWouldSuppressTap(ContextualSearchHeuristics tapHeuristics);
 }
