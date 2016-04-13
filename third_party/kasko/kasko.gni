@@ -1,0 +1,19 @@
+# Copyright 2016 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/sanitizers/sanitizers.gni")
+
+declare_args() {
+  # Enable the reporting of browser hangs with Kasko.
+  # TODO(pmonette): ensure hang reporting is disabled for syzyasan builds.
+  enable_kasko_hang_reports = false
+
+  # Enable the reporting of failed browser rendez-vous with Kasko.
+  # TODO(pmonette): ensure hang reporting is disabled for syzyasan builds.
+  enable_kasko_failed_rdv_reports = false
+}
+
+# Enable the Kasko crash reporter. Enabled by default on syzyasan build.
+enable_kasko =
+    is_syzyasan || enable_kasko_hang_reports || enable_kasko_failed_rdv_reports

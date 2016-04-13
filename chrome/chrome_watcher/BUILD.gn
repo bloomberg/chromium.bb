@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//chrome/version.gni")
+import("//third_party/kasko/kasko.gni")
 
 source_set("client") {
   sources = [
@@ -12,6 +13,26 @@ source_set("client") {
   deps = [
     "//base",
   ]
+}
+
+if (enable_kasko) {
+  source_set("kasko_util") {
+    sources = [
+      "kasko_util.cc",
+      "kasko_util.h",
+    ]
+    deps = [
+      "//base",
+      "//components/crash/content/app",
+      "//third_party/kasko",
+    ]
+  }
+} else {
+  group("kasko_util") {
+    public_deps = [
+      "//third_party/kasko:kasko_features",
+    ]
+  }
 }
 
 process_version("chrome_watcher_resources") {
@@ -32,13 +53,12 @@ shared_library("chrome_watcher") {
   deps = [
     ":chrome_watcher_resources",
     ":client",
+    ":kasko_util",
     "//base",
     "//base:base_static",
     "//build/config/sanitizers:deps",
     "//chrome/installer/util:with_no_strings",
     "//components/browser_watcher",
-    "//components/crash/content/app",
-    "//third_party/kasko",
   ]
   ldflags = [ "/DEF:" + rebase_path("chrome_watcher.def", root_build_dir) ]
   configs -= [ "//build/config/win:console" ]

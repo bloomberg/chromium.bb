@@ -9,6 +9,39 @@
     '../../build/util/version.gypi',
     '../../build/win_precompile.gypi',
   ],
+  'conditions': [
+    ['kasko==1', {
+      'targets': [
+        {
+          'target_name': 'kasko_util',
+          'type': 'static_library',
+          'sources': [
+            'kasko_util.cc',
+            'kasko_util.h',
+          ],
+          'dependencies': [
+            'chrome_watcher_client',
+            '../base/base.gyp:base',
+            '../third_party/kasko/kasko.gyp:kasko',
+            '../components/components.gyp:crash_component'
+          ],
+          'export_dependent_settings': [
+            '../third_party/kasko/kasko.gyp:kasko',
+          ],
+        },
+      ],
+    }, {  # 'kasko==0'
+      'targets': [
+        {
+          'target_name': 'kasko_util',
+          'type': 'none',
+          'dependencies': [
+            '../third_party/kasko/kasko.gyp:kasko_features',
+          ],
+        },
+      ],
+    }],
+  ],  # 'conditions'
   'targets': [
     {
       'target_name': 'chrome_watcher_resources',
@@ -61,11 +94,10 @@
       'dependencies': [
         'chrome_watcher_client',
         'chrome_watcher_resources',
+        'kasko_util',
         'installer_util',
         '../base/base.gyp:base',
         '../components/components.gyp:browser_watcher',
-        '../third_party/kasko/kasko.gyp:kasko',
-        '../components/components.gyp:crash_component'
       ],
       'msvs_settings': {
         'VCLinkerTool': {

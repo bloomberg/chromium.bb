@@ -223,13 +223,7 @@ void ChromeDllLoader::OnBeforeLaunch(const std::string& process_type,
     RecordDidRun(dll_path);
 
     // Launch the watcher process if stats collection consent has been granted.
-#if defined(GOOGLE_CHROME_BUILD)
-    const bool stats_collection_consent =
-        GoogleUpdateSettings::GetCollectStatsConsent();
-#else
-    const bool stats_collection_consent = false;
-#endif
-    if (stats_collection_consent) {
+    if (crash_reporter::GetUploadsEnabled()) {
       base::FilePath exe_path;
       if (PathService::Get(base::FILE_EXE, &exe_path)) {
         chrome_watcher_client_.reset(new ChromeWatcherClient(

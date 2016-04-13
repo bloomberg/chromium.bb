@@ -8,6 +8,7 @@ import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//chrome/common/features.gni")
 import("//media/media_options.gni")
+import("//third_party/kasko/kasko.gni")
 import("//third_party/protobuf/proto_library.gni")
 
 # //build/config/android/rules.gni imports //tools/grit/grit_rule.gni, which
@@ -646,6 +647,13 @@ source_set("browser") {
       "//components/version_info:generate_version_info",
     ]
   }
+  if (is_win && enable_kasko_failed_rdv_reports) {
+    sources += [
+      "//chrome/app/chrome_crash_reporter_client.cc",
+      "//chrome/app/chrome_crash_reporter_client.h",
+    ]
+    deps += [ "//components/crash/content/app:lib" ]
+  }
   if (use_nss_certs) {
     sources +=
         rebase_path(gypi_values.chrome_browser_nss_sources, ".", "//chrome")
@@ -829,6 +837,7 @@ source_set("browser") {
     deps += [
       ":chrome_process_finder",
       "//chrome/chrome_watcher:client",
+      "//chrome/chrome_watcher:kasko_util",
       "//chrome/common:version_header",
       "//chrome/installer/util:strings",
       "//chrome_elf",

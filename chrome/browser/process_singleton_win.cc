@@ -4,6 +4,7 @@
 
 #include "chrome/browser/process_singleton.h"
 
+#include <windows.h>
 #include <shellapi.h>
 #include <stddef.h>
 
@@ -12,6 +13,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/path_service.h"
 #include "base/process/process.h"
 #include "base/process/process_info.h"
 #include "base/strings/string_number_conversions.h"
@@ -26,16 +28,26 @@
 #include "chrome/browser/chrome_process_finder_win.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/ui/simple_message_box.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/chromium_strings.h"
+#include "chrome/installer/util/google_update_settings.h"
+#include "chrome/installer/util/util_constants.h"
 #include "chrome/installer/util/wmi.h"
+#include "components/version_info/version_info.h"
 #include "content/public/common/result_codes.h"
 #include "net/base/escape.h"
+#include "third_party/kasko/kasko_features.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/win/hwnd_util.h"
+
+#if BUILDFLAG(ENABLE_KASKO_FAILED_RDV_REPORTS)
+#include "chrome/app/chrome_crash_reporter_client.h"
+#include "chrome/chrome_watcher/kasko_util.h"
+#endif  // BUILDFLAG(ENABLE_KASKO_FAILED_RDV_REPORTS)
 
 namespace {
 
@@ -179,6 +191,69 @@ bool DisplayShouldKillMessageBox() {
          chrome::MESSAGE_BOX_RESULT_NO;
 }
 
+#if BUILDFLAG(ENABLE_KASKO_FAILED_RDV_REPORTS)
+// Capture a failed rendez-vous hang report of the other process. Kasko needs
+// the exception context to live either in the dumper or the dumpee. This
+// means we cannot rely on kasko reporters from either browser watcher, and
+// instead spin up a new reporter.
+void SendFailedRdvReport(const base::Process& process, DWORD thread_id) {
+  // Check whether reports can be uploaded. This involves checking group policy,
+  // stats collection consent and whether running on a bot. The correct approach
+  // would be to rely on crash_reporter::GetUploadsEnabled(). However, on
+  // Windows, the crash client is only expected to be linked into chrome.exe
+  // (not the dlls). That means CrashPad globals are not set and we cannot call
+  // crash_reporter::GetUploadsEnabled(). As a temporary measure until Kasko is
+  // no longer used, we duplicate CrashPad's logic here.
+  ChromeCrashReporterClient crash_reporter_client;
+
+  bool enable_uploads = false;
+  if (!crash_reporter_client.ReportingIsEnforcedByPolicy(&enable_uploads)) {
+    // Breakpad provided a --disable-breakpad switch to disable crash dumping
+    // (not just uploading) here. Crashpad doesn't need it: dumping is enabled
+    // unconditionally and uploading is gated on consent, which tests/bots
+    // shouldn't have. As a precaution, uploading is also disabled on bots
+    // even if consent is present.
+    enable_uploads = crash_reporter_client.GetCollectStatsConsent() &&
+                     !crash_reporter_client.IsRunningUnattended();
+  }
+
+  if (!enable_uploads)
+    return;
+
+  // TODO(manzagop): add a metric for the number of captured hang reports, for
+  //   comparison with uploaded count?
+
+  // Only report on canary (or unspecified).
+  const version_info::Channel channel = chrome::GetChannel();
+  if (channel != version_info::Channel::UNKNOWN &&
+      channel != version_info::Channel::CANARY) {
+    return;
+  }
+  // TODO(manzagop): add a metric for the number of times this does not match.
+  if (!EnsureTargetProcessValidForCapture(process))
+    return;
+
+  // Initialize a reporter, capture a report and shutdown the reporter.
+  base::FilePath watcher_data_directory;
+  if (PathService::Get(chrome::DIR_WATCHER_DATA, &watcher_data_directory)) {
+    base::string16 endpoint =
+        L"chrome_kasko_rdv_" +
+        base::UintToString16(base::Process::Current().Pid());
+
+    bool launched_kasko = InitializeKaskoReporter(
+        endpoint, watcher_data_directory.value().c_str());
+    if (launched_kasko) {
+      DumpHungProcess(thread_id, installer::kChromeChannelCanary, L"failed-rdv",
+                      process);
+      // We immediately request Kasko shutdown. This may block until the
+      // completion of ongoing background tasks (e.g., upload). If the report is
+      // not uploaded by this reporter, any other Kasko reporter may upload it.
+      ShutdownKaskoReporter();
+    }
+  }
+}
+#endif  // BUILDFLAG(ENABLE_KASKO_FAILED_RDV_REPORTS)
+
 }  // namespace
 
 // Microsoft's Softricity virtualization breaks the sandbox processes.
@@ -249,15 +324,27 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcess() {
       break;
   }
 
+  // The window is hung.
   DWORD process_id = 0;
   DWORD thread_id = ::GetWindowThreadProcessId(remote_window_, &process_id);
   if (!thread_id || !process_id) {
     remote_window_ = NULL;
     return PROCESS_NONE;
   }
+
+  // Get a handle to the process that created the window.
   base::Process process = base::Process::Open(process_id);
 
-  // The window is hung. Scan for every window to find a visible one.
+  // Optionally send a failed rendez-vous report.
+  // Note: we nominate the thread that created the window as the root of the
+  // search for a hung thread.
+#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(ENABLE_KASKO_FAILED_RDV_REPORTS)
+  SendFailedRdvReport(process, thread_id);
+#endif  // BUILDFLAG(ENABLE_KASKO_FAILED_RDV_REPORTS)
+#endif  // GOOGLE_CHROME_BUILD
+
+  // Scan for every window to find a visible one.
   bool visible_window = false;
   ::EnumThreadWindows(thread_id,
                       &BrowserWindowEnumeration,
