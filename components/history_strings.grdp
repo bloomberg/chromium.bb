@@ -34,32 +34,17 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
   <message name="IDS_HISTORY_ENTRY_SUMMARY" desc="Summary of all the fields in a history entry (time, whether the entry is bookmarked, title, and domain).">
     <ph name="TIME"><ex>3:14</ex>$1</ph> <ph name="BOOKMARKED"><ex>bookmarked</ex>$2</ph> <ph name="TITLE"><ex>PI: The Magical Number</ex>$3</ph> <ph name="DOMAIN"><ex>pi.com</ex>$4</ph>
   </message>
-  <message name="IDS_HISTORY_FILTER_ALLOW_ITEMS" desc="Title of the button that allows the user to allow the selected history items">
-    Allow items
-  </message>
-  <message name="IDS_HISTORY_FILTER_ALLOWED" desc="Text that shows that an entry is allowed.">
-    Allowed
-  </message>
-  <message name="IDS_HISTORY_FILTER_BLOCK_ITEMS" desc="Title of the button that allows the user to block the selected history items">
-    Block items
-  </message>
   <message name="IDS_HISTORY_FILTER_BLOCKED" desc="Text that shows that an entry is blocked.">
     Blocked
   </message>
   <message name="IDS_HISTORY_FOUND_SEARCH_RESULTS" desc="Message shown when zero or multiple search results are found.">
     Found <ph name="NUMBER_OF_RESULTS">$1</ph> <ph name="SEARCH_RESULTS"><ex>search results</ex>$2</ph> for '<ph name="SEARCH_STRING">$3</ph>'.
   </message>
-  <message name="IDS_HISTORY_GROUP_BY_DOMAIN_LABEL" desc="Label for the checkbox that toggles the mode to group history visits by domain.">
-    Group domains
-  </message>
   <message name="IDS_HISTORY_HAS_SYNCED_RESULTS" desc="The notification at the top of the history page indicating that it is showing visits synced from other devices.">
     Showing history from your signed-in devices. <ph name="BEGIN_LINK">&lt;a href="https://support.google.com/chrome/?p=sync_history&amp;hl=[GRITLANGCODE]"&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>.
   </message>
   <message name="IDS_HISTORY_OTHER_FORMS_OF_HISTORY" desc="The notification at the top of the history page indicating that deleting Chrome browsing history will not delete other forms of history stored at Google My Activity.">
     Your Google Account may have other forms of browsing history at <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>history.google.com<ph name="END_LINK">&lt;/a&gt;</ph>.
-  </message>
-  <message name="IDS_HISTORY_IN_CONTENT_PACK" desc="Text that shows that an entry is in a content pack.">
-    In content pack
   </message>
   <message name="IDS_HISTORY_INTERVAL" desc="A history interval shown in the title. The dates are already localized strings.">
     <ph name="START_DATE">$1<ex>Wednesday, Aug. 1, 2012</ex></ph> to <ph name="END_DATE">$2<ex>Thursday, Aug. 30, 2012</ex></ph>

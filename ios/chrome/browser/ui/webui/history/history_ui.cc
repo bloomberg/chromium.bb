@@ -16,7 +16,6 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_switches.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
-#include "ios/chrome/browser/history/web_history_service_factory.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
 #include "ios/chrome/browser/ui/webui/history/browsing_history_handler.h"
 #include "ios/chrome/browser/ui/webui/history/metrics_handler.h"
@@ -88,8 +87,6 @@ web::WebUIIOSDataSource* CreateHistoryUIHTMLSource(
                              IDS_HISTORY_ACTION_MENU_DESCRIPTION);
   source->AddLocalizedString("removeFromHistory", IDS_HISTORY_REMOVE_PAGE);
   source->AddLocalizedString("moreFromSite", IDS_HISTORY_MORE_FROM_SITE);
-  source->AddLocalizedString("groupByDomainLabel",
-                             IDS_HISTORY_GROUP_BY_DOMAIN_LABEL);
   source->AddLocalizedString("rangeLabel", IDS_HISTORY_RANGE_LABEL);
   source->AddLocalizedString("rangeAllTime", IDS_HISTORY_RANGE_ALL_TIME);
   source->AddLocalizedString("rangeWeek", IDS_HISTORY_RANGE_WEEK);
@@ -98,11 +95,7 @@ web::WebUIIOSDataSource* CreateHistoryUIHTMLSource(
   source->AddLocalizedString("rangeNext", IDS_HISTORY_RANGE_NEXT);
   source->AddLocalizedString("rangePrevious", IDS_HISTORY_RANGE_PREVIOUS);
   source->AddLocalizedString("numberVisits", IDS_HISTORY_NUMBER_VISITS);
-  source->AddLocalizedString("filterAllowed", IDS_HISTORY_FILTER_ALLOWED);
   source->AddLocalizedString("filterBlocked", IDS_HISTORY_FILTER_BLOCKED);
-  source->AddLocalizedString("inContentPack", IDS_HISTORY_IN_CONTENT_PACK);
-  source->AddLocalizedString("allowItems", IDS_HISTORY_FILTER_ALLOW_ITEMS);
-  source->AddLocalizedString("blockItems", IDS_HISTORY_FILTER_BLOCK_ITEMS);
   source->AddLocalizedString("blockedVisitText",
                              IDS_HISTORY_BLOCKED_VISIT_TEXT);
   source->AddLocalizedString("hasSyncedResults",
@@ -115,9 +108,6 @@ web::WebUIIOSDataSource* CreateHistoryUIHTMLSource(
   source->AddLocalizedString("cancel", IDS_CANCEL);
   source->AddLocalizedString("deleteConfirm",
                              IDS_HISTORY_DELETE_PRIOR_VISITS_CONFIRM_BUTTON);
-  source->AddBoolean(
-      "isFullHistorySyncEnabled",
-      ios::WebHistoryServiceFactory::GetForBrowserState(browser_state) != NULL);
   bool group_by_domain = base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kHistoryEnableGroupByDomain);
   source->AddBoolean("groupByDomain", group_by_domain);

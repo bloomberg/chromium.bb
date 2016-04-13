@@ -9,7 +9,6 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "chrome/browser/history/web_history_service_factory.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -111,8 +110,6 @@ content::WebUIDataSource* CreateHistoryUIHTMLSource(Profile* profile) {
                              IDS_HISTORY_ACTION_MENU_DESCRIPTION);
   source->AddLocalizedString("removeFromHistory", IDS_HISTORY_REMOVE_PAGE);
   source->AddLocalizedString("moreFromSite", IDS_HISTORY_MORE_FROM_SITE);
-  source->AddLocalizedString("groupByDomainLabel",
-                             IDS_HISTORY_GROUP_BY_DOMAIN_LABEL);
   source->AddLocalizedString("rangeLabel", IDS_HISTORY_RANGE_LABEL);
   source->AddLocalizedString("rangeAllTime", IDS_HISTORY_RANGE_ALL_TIME);
   source->AddLocalizedString("rangeWeek", IDS_HISTORY_RANGE_WEEK);
@@ -121,11 +118,7 @@ content::WebUIDataSource* CreateHistoryUIHTMLSource(Profile* profile) {
   source->AddLocalizedString("rangeNext", IDS_HISTORY_RANGE_NEXT);
   source->AddLocalizedString("rangePrevious", IDS_HISTORY_RANGE_PREVIOUS);
   source->AddLocalizedString("numberVisits", IDS_HISTORY_NUMBER_VISITS);
-  source->AddLocalizedString("filterAllowed", IDS_HISTORY_FILTER_ALLOWED);
   source->AddLocalizedString("filterBlocked", IDS_HISTORY_FILTER_BLOCKED);
-  source->AddLocalizedString("inContentPack", IDS_HISTORY_IN_CONTENT_PACK);
-  source->AddLocalizedString("allowItems", IDS_HISTORY_FILTER_ALLOW_ITEMS);
-  source->AddLocalizedString("blockItems", IDS_HISTORY_FILTER_BLOCK_ITEMS);
   source->AddLocalizedString("blockedVisitText",
                              IDS_HISTORY_BLOCKED_VISIT_TEXT);
   source->AddLocalizedString("hasSyncedResults",
@@ -140,8 +133,6 @@ content::WebUIDataSource* CreateHistoryUIHTMLSource(Profile* profile) {
                              IDS_HISTORY_DELETE_PRIOR_VISITS_CONFIRM_BUTTON);
   source->AddLocalizedString("bookmarked", IDS_HISTORY_ENTRY_BOOKMARKED);
   source->AddLocalizedString("entrySummary", IDS_HISTORY_ENTRY_SUMMARY);
-  source->AddBoolean("isFullHistorySyncEnabled",
-                     WebHistoryServiceFactory::GetForProfile(profile) != NULL);
   bool group_by_domain = base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kHistoryEnableGroupByDomain);
   // Supervised users get the "group by domain" version, but not on mobile,
