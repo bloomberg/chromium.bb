@@ -807,12 +807,9 @@ std::vector<Suggestion> PersonalDataManager::GetCreditCardSuggestions(
   base::Time comparison_time = base::Time::Now();
   cards_to_suggest.sort(
       [comparison_time](const CreditCard* a, const CreditCard* b) {
-        bool a_has_valid_expiration = IsValidCreditCardExpirationDate(
-            a->expiration_year(), a->expiration_month(), comparison_time);
-        if (a_has_valid_expiration !=
-            IsValidCreditCardExpirationDate(
-                b->expiration_year(), b->expiration_month(), comparison_time))
-          return a_has_valid_expiration;
+        bool a_is_expired = a->IsExpired(comparison_time);
+        if (a_is_expired != b->IsExpired(comparison_time))
+          return !a_is_expired;
 
         return a->CompareFrecency(b, comparison_time);
       });

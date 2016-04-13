@@ -192,6 +192,9 @@ class CreditCard : public AutofillDataModel {
                            const std::string& app_locale,
                            int* num);
 
+  // Returns whether the credit card is expired based on |current_time|.
+  bool IsExpired(const base::Time& current_time) const;
+
  private:
   // FormGroup:
   void GetSupportedTypes(ServerFieldTypeSet* supported_types) const override;

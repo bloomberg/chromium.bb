@@ -79,6 +79,33 @@ void CreateTestFormField(const char* label,
   field->is_focusable = true;
 }
 
+void CreateTestSelectField(const char* label,
+                           const char* name,
+                           const char* value,
+                           const std::vector<const char*>& values,
+                           const std::vector<const char*>& contents,
+                           size_t select_size,
+                           FormFieldData* field) {
+  // Fill the base attributes.
+  CreateTestFormField(label, name, value, "select-one", field);
+
+  std::vector<base::string16> values16(select_size);
+  for (size_t i = 0; i < select_size; ++i)
+    values16[i] = base::UTF8ToUTF16(values[i]);
+
+  std::vector<base::string16> contents16(select_size);
+  for (size_t i = 0; i < select_size; ++i)
+    contents16[i] = base::UTF8ToUTF16(contents[i]);
+
+  field->option_values = values16;
+  field->option_contents = contents16;
+}
+
+void CreateTestSelectField(const std::vector<const char*>& values,
+                           FormFieldData* field) {
+  CreateTestSelectField("", "", "", values, values, values.size(), field);
+}
+
 void CreateTestAddressFormData(FormData* form) {
   std::vector<ServerFieldTypeSet> types;
   CreateTestAddressFormData(form, &types);

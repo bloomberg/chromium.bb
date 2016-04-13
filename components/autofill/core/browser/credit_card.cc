@@ -771,6 +771,11 @@ bool CreditCard::ConvertMonth(const base::string16& month,
   return false;
 }
 
+bool CreditCard::IsExpired(const base::Time& current_time) const {
+  return !IsValidCreditCardExpirationDate(expiration_year_, expiration_month_,
+                                          current_time);
+}
+
 // So we can compare CreditCards with EXPECT_EQ().
 std::ostream& operator<<(std::ostream& os, const CreditCard& credit_card) {
   return os << base::UTF16ToUTF8(credit_card.Label()) << " "

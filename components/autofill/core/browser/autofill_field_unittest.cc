@@ -10,6 +10,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/country_names.h"
 #include "components/autofill/core/browser/field_types.h"
@@ -50,35 +51,6 @@ const std::vector<const char*> NotNumericMonthsContentsWithPlaceholder()
   return result;
 }
 
-// Returns a FormFieldData object corresponding to a <select> field populated
-// with the given |values| and |contents|.
-FormFieldData GenerateSelectFieldWithOptions(
-    const std::vector<const char*>& values,
-    const std::vector<const char*>& contents,
-    size_t select_size) {
-  std::vector<base::string16> values16(select_size);
-  for (size_t i = 0; i < select_size; ++i)
-    values16[i] = UTF8ToUTF16(values[i]);
-
-  std::vector<base::string16> contents16(select_size);
-  for (size_t i = 0; i < select_size; ++i)
-    contents16[i] = UTF8ToUTF16(contents[i]);
-
-  FormFieldData form_field;
-  form_field.form_control_type = "select-one";
-  form_field.option_values = values16;
-  form_field.option_contents = contents16;
-  return form_field;
-}
-
-// Returns a FormFieldData object corresponding to a <select> field populated
-// with the given |values|.
-FormFieldData GenerateSelectFieldWithOptions(
-    const std::vector<const char*>& values,
-    size_t select_size) {
-  return GenerateSelectFieldWithOptions(values, values, select_size);
-}
-
 // Returns the index of |value| in |values|.
 void GetIndexOfValue(const std::vector<base::string16>& values,
                      const base::string16& value,
@@ -98,9 +70,9 @@ void TestFillingExpirationMonth(const std::vector<const char*>& values,
                                 const std::vector<const char*>& contents,
                                 size_t select_size) {
   // Create the select field.
-  AutofillField field(
-      GenerateSelectFieldWithOptions(values, contents, select_size),
-      base::string16());
+  AutofillField field;
+  test::CreateTestSelectField("", "", "", values, contents, select_size,
+                              &field);
   field.set_heuristic_type(CREDIT_CARD_EXP_MONTH);
 
   size_t content_index = 0;
@@ -362,8 +334,9 @@ TEST_F(AutofillFieldTest, FillSelectControlByValue) {
   std::vector<const char*> kOptions = {
       "Eenie", "Meenie", "Miney", "Mo",
   };
-  AutofillField field(GenerateSelectFieldWithOptions(kOptions, kOptions.size()),
-                      base::string16());
+
+  AutofillField field;
+  test::CreateTestSelectField(kOptions, &field);
 
   // Set semantically empty contents for each option, so that only the values
   // can be used for matching.
@@ -379,8 +352,8 @@ TEST_F(AutofillFieldTest, FillSelectControlByContents) {
   std::vector<const char*> kOptions = {
       "Eenie", "Meenie", "Miney", "Mo",
   };
-  AutofillField field(GenerateSelectFieldWithOptions(kOptions, kOptions.size()),
-                      base::string16());
+  AutofillField field;
+  test::CreateTestSelectField(kOptions, &field);
 
   // Set semantically empty values for each option, so that only the contents
   // can be used for matching.
@@ -394,9 +367,8 @@ TEST_F(AutofillFieldTest, FillSelectControlByContents) {
 
 TEST_F(AutofillFieldTest, FillSelectControlWithFullCountryNames) {
   std::vector<const char*> kCountries = {"Albania", "Canada"};
-  AutofillField field(
-      GenerateSelectFieldWithOptions(kCountries, kCountries.size()),
-      base::string16());
+  AutofillField field;
+  test::CreateTestSelectField(kCountries, &field);
   field.set_heuristic_type(ADDRESS_HOME_COUNTRY);
 
   AutofillField::FillFormField(
@@ -406,9 +378,8 @@ TEST_F(AutofillFieldTest, FillSelectControlWithFullCountryNames) {
 
 TEST_F(AutofillFieldTest, FillSelectControlWithAbbreviatedCountryNames) {
   std::vector<const char*> kCountries = {"AL", "CA"};
-  AutofillField field(
-      GenerateSelectFieldWithOptions(kCountries, kCountries.size()),
-      base::string16());
+  AutofillField field;
+  test::CreateTestSelectField(kCountries, &field);
   field.set_heuristic_type(ADDRESS_HOME_COUNTRY);
 
   AutofillField::FillFormField(
@@ -418,8 +389,8 @@ TEST_F(AutofillFieldTest, FillSelectControlWithAbbreviatedCountryNames) {
 
 TEST_F(AutofillFieldTest, FillSelectControlWithFullStateNames) {
   std::vector<const char*> kStates = {"Alabama", "California"};
-  AutofillField field(GenerateSelectFieldWithOptions(kStates, kStates.size()),
-                      base::string16());
+  AutofillField field;
+  test::CreateTestSelectField(kStates, &field);
   field.set_heuristic_type(ADDRESS_HOME_STATE);
 
   AutofillField::FillFormField(
@@ -429,8 +400,8 @@ TEST_F(AutofillFieldTest, FillSelectControlWithFullStateNames) {
 
 TEST_F(AutofillFieldTest, FillSelectControlWithAbbreviateStateNames) {
   std::vector<const char*> kStates = {"AL", "CA"};
-  AutofillField field(GenerateSelectFieldWithOptions(kStates, kStates.size()),
-                      base::string16());
+  AutofillField field;
+  test::CreateTestSelectField(kStates, &field);
   field.set_heuristic_type(ADDRESS_HOME_STATE);
 
   AutofillField::FillFormField(
@@ -443,8 +414,8 @@ TEST_F(AutofillFieldTest, FillSelectControlWithInexactFullStateNames) {
     std::vector<const char*> kStates = {
         "SC - South Carolina", "CA - California", "NC - North Carolina",
     };
-    AutofillField field(GenerateSelectFieldWithOptions(kStates, kStates.size()),
-                        base::string16());
+    AutofillField field;
+    test::CreateTestSelectField(kStates, &field);
     field.set_heuristic_type(ADDRESS_HOME_STATE);
 
     AutofillField::FillFormField(
@@ -457,8 +428,8 @@ TEST_F(AutofillFieldTest, FillSelectControlWithInexactFullStateNames) {
     std::vector<const char*> kStates = {
         "WV - West Virginia", "VA - Virginia", "NV - North Virginia",
     };
-    AutofillField field(GenerateSelectFieldWithOptions(kStates, kStates.size()),
-                        base::string16());
+    AutofillField field;
+    test::CreateTestSelectField(kStates, &field);
     field.set_heuristic_type(ADDRESS_HOME_STATE);
 
     AutofillField::FillFormField(
@@ -473,8 +444,8 @@ TEST_F(AutofillFieldTest, FillSelectControlWithInexactFullStateNames) {
     std::vector<const char*> kStates = {
         "WV - West Virginia", "TX - Texas",
     };
-    AutofillField field(GenerateSelectFieldWithOptions(kStates, kStates.size()),
-                        base::string16());
+    AutofillField field;
+    test::CreateTestSelectField(kStates, &field);
     field.set_heuristic_type(ADDRESS_HOME_STATE);
 
     AutofillField::FillFormField(
@@ -489,8 +460,8 @@ TEST_F(AutofillFieldTest, FillSelectControlWithInexactFullStateNames) {
     std::vector<const char*> kStates = {
         "California.", "North Carolina.",
     };
-    AutofillField field(GenerateSelectFieldWithOptions(kStates, kStates.size()),
-                        base::string16());
+    AutofillField field;
+    test::CreateTestSelectField(kStates, &field);
     field.set_heuristic_type(ADDRESS_HOME_STATE);
 
     AutofillField::FillFormField(
@@ -504,8 +475,8 @@ TEST_F(AutofillFieldTest, FillSelectControlWithInexactAbbreviations) {
     std::vector<const char*> kStates = {
         "NC - North Carolina", "CA - California",
     };
-    AutofillField field(GenerateSelectFieldWithOptions(kStates, kStates.size()),
-                        base::string16());
+    AutofillField field;
+    test::CreateTestSelectField(kStates, &field);
     field.set_heuristic_type(ADDRESS_HOME_STATE);
 
     AutofillField::FillFormField(
@@ -517,9 +488,8 @@ TEST_F(AutofillFieldTest, FillSelectControlWithInexactAbbreviations) {
     std::vector<const char*> kNotStates = {
         "NCNCA", "SCNCA",
     };
-    AutofillField field(
-        GenerateSelectFieldWithOptions(kNotStates, kNotStates.size()),
-        base::string16());
+    AutofillField field;
+    test::CreateTestSelectField(kNotStates, &field);
     field.set_heuristic_type(ADDRESS_HOME_STATE);
 
     AutofillField::FillFormField(
@@ -584,9 +554,8 @@ TEST_F(AutofillFieldTest, FillSelectControlWithAbbreviatedMonthName) {
       "Jan", "Feb", "Mar", "Apr", "May", "Jun",
       "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
   };
-  AutofillField field(GenerateSelectFieldWithOptions(kMonthsAbbreviated,
-                                                     kMonthsAbbreviated.size()),
-                      base::string16());
+  AutofillField field;
+  test::CreateTestSelectField(kMonthsAbbreviated, &field);
   field.set_heuristic_type(CREDIT_CARD_EXP_MONTH);
 
   AutofillField::FillFormField(
@@ -599,9 +568,8 @@ TEST_F(AutofillFieldTest, FillSelectControlWithFullMonthName) {
       "January", "February", "March",     "April",   "May",      "June",
       "July",    "August",   "September", "October", "November", "December",
   };
-  AutofillField field(
-      GenerateSelectFieldWithOptions(kMonthsFull, kMonthsFull.size()),
-      base::string16());
+  AutofillField field;
+  test::CreateTestSelectField(kMonthsFull, &field);
   field.set_heuristic_type(CREDIT_CARD_EXP_MONTH);
 
   AutofillField::FillFormField(
@@ -612,9 +580,8 @@ TEST_F(AutofillFieldTest, FillSelectControlWithFullMonthName) {
 TEST_F(AutofillFieldTest, FillSelectControlWithFrenchMonthName) {
   std::vector<const char*> kMonthsFrench = {"JANV", "FÉVR.", "MARS",
                                             "décembre"};
-  AutofillField field(
-      GenerateSelectFieldWithOptions(kMonthsFrench, kMonthsFrench.size()),
-      base::string16());
+  AutofillField field;
+  test::CreateTestSelectField(kMonthsFrench, &field);
   field.set_heuristic_type(CREDIT_CARD_EXP_MONTH);
 
   AutofillField::FillFormField(
@@ -634,9 +601,8 @@ TEST_F(AutofillFieldTest, FillSelectControlWithNumericMonthSansLeadingZero) {
   std::vector<const char*> kMonthsNumeric = {
       "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12",
   };
-  AutofillField field(
-      GenerateSelectFieldWithOptions(kMonthsNumeric, kMonthsNumeric.size()),
-      base::string16());
+  AutofillField field;
+  test::CreateTestSelectField(kMonthsNumeric, &field);
   field.set_heuristic_type(CREDIT_CARD_EXP_MONTH);
 
   AutofillField::FillFormField(
@@ -647,8 +613,8 @@ TEST_F(AutofillFieldTest, FillSelectControlWithNumericMonthSansLeadingZero) {
 TEST_F(AutofillFieldTest, FillSelectControlWithTwoDigitCreditCardYear) {
   std::vector<const char*> kYears = {"12", "13", "14", "15",
                                      "16", "17", "18", "19"};
-  AutofillField field(GenerateSelectFieldWithOptions(kYears, kYears.size()),
-                      base::string16());
+  AutofillField field;
+  test::CreateTestSelectField(kYears, &field);
   field.set_heuristic_type(CREDIT_CARD_EXP_2_DIGIT_YEAR);
 
   AutofillField::FillFormField(
@@ -659,9 +625,8 @@ TEST_F(AutofillFieldTest, FillSelectControlWithTwoDigitCreditCardYear) {
 TEST_F(AutofillFieldTest, FillSelectControlWithCreditCardType) {
   std::vector<const char*> kCreditCardTypes = {"Visa", "Master Card", "AmEx",
                                                "discover"};
-  AutofillField field(
-      GenerateSelectFieldWithOptions(kCreditCardTypes, kCreditCardTypes.size()),
-      base::string16());
+  AutofillField field;
+  test::CreateTestSelectField(kCreditCardTypes, &field);
   field.set_heuristic_type(CREDIT_CARD_TYPE);
 
   // Normal case:
@@ -845,8 +810,8 @@ TEST_F(AutofillFieldTest, FillCreditCardNumberWithUnequalSizeSplits) {
 
 TEST_F(AutofillFieldTest, FindShortestSubstringMatchInSelect) {
   std::vector<const char*> kCountries = {"États-Unis", "Canada"};
-  FormFieldData field(
-      GenerateSelectFieldWithOptions(kCountries, kCountries.size()));
+  AutofillField field;
+  test::CreateTestSelectField(kCountries, &field);
 
   // Case 1: Exact match
   int ret = AutofillField::FindShortestSubstringMatchInSelect(

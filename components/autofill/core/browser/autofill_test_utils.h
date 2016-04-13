@@ -38,6 +38,18 @@ void CreateTestFormField(const char* label,
                          const char* type,
                          FormFieldData* field);
 
+// Provides a quick way to populate a select field.
+void CreateTestSelectField(const char* label,
+                           const char* name,
+                           const char* value,
+                           const std::vector<const char*>& values,
+                           const std::vector<const char*>& contents,
+                           size_t select_size,
+                           FormFieldData* field);
+
+void CreateTestSelectField(const std::vector<const char*>& values,
+                           FormFieldData* field);
+
 // Populates |form| with data corresponding to a simple address form.
 // Note that this actually appends fields to the form data, which can be useful
 // for building up more complex test forms. Another version of the function is
