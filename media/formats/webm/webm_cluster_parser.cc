@@ -4,6 +4,7 @@
 
 #include "media/formats/webm/webm_cluster_parser.h"
 
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -485,7 +486,7 @@ bool WebMClusterParser::OnBlock(bool is_simple_block,
     // Every encrypted Block has a signal byte and IV prepended to it. Current
     // encrypted WebM request for comments specification is here
     // http://wiki.webmproject.org/encryption/webm-encryption-rfc
-    scoped_ptr<DecryptConfig> decrypt_config;
+    std::unique_ptr<DecryptConfig> decrypt_config;
     int data_offset = 0;
     if (!encryption_key_id.empty() &&
         !WebMCreateDecryptConfig(

@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <list>
+#include <memory>
 #include <utility>
 
 #include "base/callback.h"
@@ -68,7 +69,7 @@ class MEDIA_EXPORT EsParser {
   TimingDesc GetTimingDescriptor(int64_t es_byte_count);
 
   // Bytes of the ES stream that have not been emitted yet.
-  scoped_ptr<media::OffsetByteQueue> es_queue_;
+  std::unique_ptr<media::OffsetByteQueue> es_queue_;
 
  private:
   // Anchor some timing information into the ES queue.

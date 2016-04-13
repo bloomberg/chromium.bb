@@ -8,9 +8,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "media/base/media_export.h"
 #include "media/formats/mp4/bitstream_converter.h"
 
@@ -69,7 +69,7 @@ class MEDIA_EXPORT AVC {
 class AVCBitstreamConverter : public BitstreamConverter {
  public:
   explicit AVCBitstreamConverter(
-      scoped_ptr<AVCDecoderConfigurationRecord> avc_config);
+      std::unique_ptr<AVCDecoderConfigurationRecord> avc_config);
 
   // BitstreamConverter interface
   bool ConvertFrame(std::vector<uint8_t>* frame_buf,
@@ -78,7 +78,7 @@ class AVCBitstreamConverter : public BitstreamConverter {
 
  private:
   ~AVCBitstreamConverter() override;
-  scoped_ptr<AVCDecoderConfigurationRecord> avc_config_;
+  std::unique_ptr<AVCDecoderConfigurationRecord> avc_config_;
 };
 
 }  // namespace mp4

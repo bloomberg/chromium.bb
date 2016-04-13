@@ -8,8 +8,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/stream_parser.h"
 #include "media/base/stream_parser_buffer.h"
@@ -21,7 +22,7 @@ namespace media {
 // Test helper for verifying StreamParser behavior.
 class StreamParserTestBase {
  public:
-  explicit StreamParserTestBase(scoped_ptr<StreamParser> stream_parser);
+  explicit StreamParserTestBase(std::unique_ptr<StreamParser> stream_parser);
   virtual ~StreamParserTestBase();
 
  protected:
@@ -57,7 +58,7 @@ class StreamParserTestBase {
                           size_t length,
                           size_t piece_size);
   void OnInitDone(const StreamParser::InitParameters& params);
-  bool OnNewConfig(scoped_ptr<MediaTracks> tracks,
+  bool OnNewConfig(std::unique_ptr<MediaTracks> tracks,
                    const StreamParser::TextTrackConfigMap& text_config);
   bool OnNewBuffers(const StreamParser::BufferQueue& audio_buffers,
                     const StreamParser::BufferQueue& video_buffers,
@@ -66,7 +67,7 @@ class StreamParserTestBase {
   void OnNewSegment();
   void OnEndOfSegment();
 
-  scoped_ptr<StreamParser> parser_;
+  std::unique_ptr<StreamParser> parser_;
   std::stringstream results_stream_;
   AudioDecoderConfig last_audio_config_;
 

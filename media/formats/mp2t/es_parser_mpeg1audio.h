@@ -8,12 +8,12 @@
 #include <stdint.h>
 
 #include <list>
+#include <memory>
 #include <utility>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/media_export.h"
@@ -77,7 +77,7 @@ class MEDIA_EXPORT EsParserMpeg1Audio : public EsParser {
   EmitBufferCB emit_buffer_cb_;
 
   // Interpolated PTS for frames that don't have one.
-  scoped_ptr<AudioTimestampHelper> audio_timestamp_helper_;
+  std::unique_ptr<AudioTimestampHelper> audio_timestamp_helper_;
 
   // Last audio config.
   AudioDecoderConfig last_audio_decoder_config_;

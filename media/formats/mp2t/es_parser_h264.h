@@ -7,12 +7,12 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <utility>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "media/base/media_export.h"
 #include "media/base/video_decoder_config.h"
@@ -78,7 +78,7 @@ class MEDIA_EXPORT EsParserH264 : public EsParser {
   // H264 parser state.
   // - |current_access_unit_pos_| is pointing to an annexB syncword
   // representing the first NALU of an H264 access unit.
-  scoped_ptr<H264Parser> h264_parser_;
+  std::unique_ptr<H264Parser> h264_parser_;
   int64_t current_access_unit_pos_;
   int64_t next_access_unit_pos_;
 

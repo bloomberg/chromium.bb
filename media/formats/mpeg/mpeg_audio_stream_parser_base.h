@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <set>
 #include <vector>
 
@@ -144,7 +145,7 @@ class MEDIA_EXPORT MPEGAudioStreamParserBase : public StreamParser {
   ByteQueue queue_;
 
   AudioDecoderConfig config_;
-  scoped_ptr<AudioTimestampHelper> timestamp_helper_;
+  std::unique_ptr<AudioTimestampHelper> timestamp_helper_;
   bool in_media_segment_;
   const uint32_t start_code_mask_;
   const AudioCodec audio_codec_;

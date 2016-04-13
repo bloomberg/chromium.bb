@@ -2,10 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "media/formats/mp4/mp4_stream_parser.h"
+
 #include <stddef.h>
 #include <stdint.h>
 
 #include <algorithm>
+#include <memory>
 #include <string>
 
 #include "base/bind.h"
@@ -25,7 +28,6 @@
 #include "media/base/video_decoder_config.h"
 #include "media/formats/mp4/es_descriptor.h"
 #include "media/formats/mp4/fourccs.h"
-#include "media/formats/mp4/mp4_stream_parser.h"
 #include "media/media_features.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -68,9 +70,9 @@ class MP4StreamParserTest : public testing::Test {
 
  protected:
   scoped_refptr<StrictMock<MockMediaLog>> media_log_;
-  scoped_ptr<MP4StreamParser> parser_;
+  std::unique_ptr<MP4StreamParser> parser_;
   bool configs_received_;
-  scoped_ptr<MediaTracks> media_tracks_;
+  std::unique_ptr<MediaTracks> media_tracks_;
   AudioDecoderConfig audio_decoder_config_;
   VideoDecoderConfig video_decoder_config_;
   DecodeTimestamp lower_bound_;
@@ -111,7 +113,7 @@ class MP4StreamParserTest : public testing::Test {
               params.detected_text_track_count);
   }
 
-  bool NewConfigF(scoped_ptr<MediaTracks> tracks,
+  bool NewConfigF(std::unique_ptr<MediaTracks> tracks,
                   const StreamParser::TextTrackConfigMap& tc) {
     configs_received_ = true;
     CHECK(tracks.get());

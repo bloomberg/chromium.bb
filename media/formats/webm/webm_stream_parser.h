@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -82,7 +84,7 @@ class MEDIA_EXPORT WebMStreamParser : public StreamParser {
 
   bool unknown_segment_size_;
 
-  scoped_ptr<WebMClusterParser> cluster_parser_;
+  std::unique_ptr<WebMClusterParser> cluster_parser_;
   ByteQueue byte_queue_;
 
   DISALLOW_COPY_AND_ASSIGN(WebMStreamParser);

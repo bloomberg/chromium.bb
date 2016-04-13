@@ -8,13 +8,13 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/media_log.h"
@@ -88,7 +88,7 @@ class MEDIA_EXPORT WebMTracksParser : public WebMParserClient {
   // object from WebMTracksParser to the caller (which is typically
   // WebMStreamParser object). So this method must be called only once, after
   // track parsing has been completed.
-  scoped_ptr<MediaTracks> media_tracks() {
+  std::unique_ptr<MediaTracks> media_tracks() {
     CHECK(media_tracks_.get());
     return std::move(media_tracks_);
   }
@@ -115,7 +115,7 @@ class MEDIA_EXPORT WebMTracksParser : public WebMParserClient {
   int64_t seek_preroll_;
   int64_t codec_delay_;
   int64_t default_duration_;
-  scoped_ptr<WebMContentEncodingsClient> track_content_encodings_client_;
+  std::unique_ptr<WebMContentEncodingsClient> track_content_encodings_client_;
 
   int64_t audio_track_num_;
   int64_t audio_default_duration_;
@@ -137,7 +137,7 @@ class MEDIA_EXPORT WebMTracksParser : public WebMParserClient {
   int detected_audio_track_count_;
   int detected_video_track_count_;
   int detected_text_track_count_;
-  scoped_ptr<MediaTracks> media_tracks_;
+  std::unique_ptr<MediaTracks> media_tracks_;
 
   DISALLOW_COPY_AND_ASSIGN(WebMTracksParser);
 };

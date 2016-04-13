@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "media/formats/common/offset_byte_queue.h"
+
 #include <stdint.h>
 #include <string.h>
 
-#include "base/memory/scoped_ptr.h"
-#include "media/formats/common/offset_byte_queue.h"
+#include <memory>
+
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
@@ -28,7 +30,7 @@ class OffsetByteQueueTest : public testing::Test {
   }
 
  protected:
-  scoped_ptr<OffsetByteQueue> queue_;
+  std::unique_ptr<OffsetByteQueue> queue_;
 };
 
 TEST_F(OffsetByteQueueTest, SetUp) {

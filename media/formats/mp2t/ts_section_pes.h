@@ -7,9 +7,10 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "media/base/byte_queue.h"
 #include "media/formats/mp2t/ts_section.h"
 
@@ -21,7 +22,7 @@ class TimestampUnroller;
 
 class TsSectionPes : public TsSection {
  public:
-  TsSectionPes(scoped_ptr<EsParser> es_parser,
+  TsSectionPes(std::unique_ptr<EsParser> es_parser,
                TimestampUnroller* timestamp_unroller);
   ~TsSectionPes() override;
 
@@ -48,7 +49,7 @@ class TsSectionPes : public TsSection {
   ByteQueue pes_byte_queue_;
 
   // ES parser.
-  scoped_ptr<EsParser> es_parser_;
+  std::unique_ptr<EsParser> es_parser_;
 
   // Do not start parsing before getting a unit start indicator.
   bool wait_for_pusi_;

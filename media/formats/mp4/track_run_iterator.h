@@ -8,10 +8,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "media/base/media_export.h"
 #include "media/base/media_log.h"
@@ -87,7 +87,7 @@ class MEDIA_EXPORT TrackRunIterator {
 
   // Only call when is_encrypted() is true and AuxInfoNeedsToBeCached() is
   // false. Result is owned by caller.
-  scoped_ptr<DecryptConfig> GetDecryptConfig();
+  std::unique_ptr<DecryptConfig> GetDecryptConfig();
 
  private:
   void ResetRun();

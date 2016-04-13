@@ -8,9 +8,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "media/base/media_export.h"
 #include "media/formats/mp4/bitstream_converter.h"
 #include "media/formats/mp4/box_definitions.h"
@@ -93,7 +93,7 @@ class MEDIA_EXPORT HEVC {
 class HEVCBitstreamConverter : public BitstreamConverter {
  public:
   explicit HEVCBitstreamConverter(
-      scoped_ptr<HEVCDecoderConfigurationRecord> hevc_config);
+      std::unique_ptr<HEVCDecoderConfigurationRecord> hevc_config);
 
   // BitstreamConverter interface
   bool ConvertFrame(std::vector<uint8_t>* frame_buf,
@@ -102,7 +102,7 @@ class HEVCBitstreamConverter : public BitstreamConverter {
 
  private:
   ~HEVCBitstreamConverter() override;
-  scoped_ptr<HEVCDecoderConfigurationRecord> hevc_config_;
+  std::unique_ptr<HEVCDecoderConfigurationRecord> hevc_config_;
 };
 
 }  // namespace mp4

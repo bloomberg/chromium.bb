@@ -2,10 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "media/formats/mp2t/mp2t_stream_parser.h"
+
 #include <stddef.h>
 #include <stdint.h>
 
 #include <algorithm>
+#include <memory>
 #include <string>
 
 #include "base/bind.h"
@@ -21,7 +24,6 @@
 #include "media/base/test_data_util.h"
 #include "media/base/text_track_config.h"
 #include "media/base/video_decoder_config.h"
-#include "media/formats/mp2t/mp2t_stream_parser.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
@@ -67,7 +69,7 @@ class Mp2tStreamParserTest : public testing::Test {
   }
 
  protected:
-  scoped_ptr<Mp2tStreamParser> parser_;
+  std::unique_ptr<Mp2tStreamParser> parser_;
   int segment_count_;
   int config_count_;
   int audio_frame_count_;
@@ -113,7 +115,7 @@ class Mp2tStreamParserTest : public testing::Test {
              << ", autoTimestampOffset=" << params.auto_update_timestamp_offset;
   }
 
-  bool OnNewConfig(scoped_ptr<MediaTracks> tracks,
+  bool OnNewConfig(std::unique_ptr<MediaTracks> tracks,
                    const StreamParser::TextTrackConfigMap& tc) {
     const AudioDecoderConfig& ac = tracks->getFirstAudioConfig();
     const VideoDecoderConfig& vc = tracks->getFirstVideoConfig();

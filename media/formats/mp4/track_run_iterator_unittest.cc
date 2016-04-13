@@ -2,17 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "media/formats/mp4/track_run_iterator.h"
+
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_split.h"
 #include "media/base/mock_media_log.h"
 #include "media/formats/mp4/box_definitions.h"
 #include "media/formats/mp4/rcheck.h"
-#include "media/formats/mp4/track_run_iterator.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -113,7 +115,7 @@ class TrackRunIteratorTest : public testing::Test {
  protected:
   Movie moov_;
   scoped_refptr<StrictMock<MockMediaLog>> media_log_;
-  scoped_ptr<TrackRunIterator> iter_;
+  std::unique_ptr<TrackRunIterator> iter_;
 
   void CreateMovie() {
     moov_.header.timescale = 1000;
@@ -576,7 +578,7 @@ TEST_F(TrackRunIteratorTest,
   EXPECT_EQ(iter_->aux_info_size(), 0);
   EXPECT_EQ(iter_->sample_offset(), 200);
   EXPECT_EQ(iter_->GetMaxClearOffset(), moof.tracks[1].runs[0].data_offset);
-  scoped_ptr<DecryptConfig> config = iter_->GetDecryptConfig();
+  std::unique_ptr<DecryptConfig> config = iter_->GetDecryptConfig();
   EXPECT_EQ(
       std::string(reinterpret_cast<const char*>(kKeyId), arraysize(kKeyId)),
       config->key_id());
@@ -620,7 +622,7 @@ TEST_F(TrackRunIteratorTest,
   EXPECT_EQ(iter_->aux_info_size(), 0);
   EXPECT_EQ(iter_->sample_offset(), 200);
   EXPECT_EQ(iter_->GetMaxClearOffset(), moof.tracks[1].runs[0].data_offset);
-  scoped_ptr<DecryptConfig> config = iter_->GetDecryptConfig();
+  std::unique_ptr<DecryptConfig> config = iter_->GetDecryptConfig();
   EXPECT_EQ(std::string(reinterpret_cast<const char*>(kIv1), arraysize(kIv1)),
             config->iv());
   EXPECT_EQ(config->subsamples().size(), 1u);
@@ -661,7 +663,7 @@ TEST_F(TrackRunIteratorTest, DecryptConfigTestWithAuxInfo) {
   EXPECT_FALSE(iter_->AuxInfoNeedsToBeCached());
   EXPECT_EQ(iter_->sample_offset(), 200);
   EXPECT_EQ(iter_->GetMaxClearOffset(), moof.tracks[0].runs[0].data_offset);
-  scoped_ptr<DecryptConfig> config = iter_->GetDecryptConfig();
+  std::unique_ptr<DecryptConfig> config = iter_->GetDecryptConfig();
   EXPECT_EQ(
       std::string(reinterpret_cast<const char*>(kKeyId), arraysize(kKeyId)),
       config->key_id());
@@ -775,7 +777,7 @@ TEST_F(TrackRunIteratorTest, SharedAuxInfoTest) {
   EXPECT_EQ(iter_->track_id(), 1u);
   EXPECT_EQ(iter_->aux_info_offset(), 50);
   EXPECT_TRUE(iter_->CacheAuxInfo(kAuxInfo, arraysize(kAuxInfo)));
-  scoped_ptr<DecryptConfig> config = iter_->GetDecryptConfig();
+  std::unique_ptr<DecryptConfig> config = iter_->GetDecryptConfig();
   ASSERT_EQ(arraysize(kIv1), config->iv().size());
   EXPECT_TRUE(!memcmp(kIv1, config->iv().data(), config->iv().size()));
   iter_->AdvanceSample();

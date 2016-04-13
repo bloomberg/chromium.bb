@@ -6,10 +6,11 @@
 
 #include <stddef.h>
 #include <string.h>
+
 #include <algorithm>
+#include <memory>
 #include <set>
 
-#include "base/memory/scoped_ptr.h"
 #include "media/formats/mp4/box_definitions.h"
 
 namespace media {
@@ -116,7 +117,8 @@ BoxReader* BoxReader::ReadTopLevelBox(const uint8_t* buf,
                                       const int buf_size,
                                       const scoped_refptr<MediaLog>& media_log,
                                       bool* err) {
-  scoped_ptr<BoxReader> reader(new BoxReader(buf, buf_size, media_log, false));
+  std::unique_ptr<BoxReader> reader(
+      new BoxReader(buf, buf_size, media_log, false));
   if (!reader->ReadHeader(err))
     return NULL;
 

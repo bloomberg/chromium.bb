@@ -7,13 +7,13 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <set>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "media/base/media_export.h"
 #include "media/base/stream_parser.h"
 #include "media/formats/common/offset_byte_queue.h"
@@ -116,8 +116,8 @@ class MEDIA_EXPORT MP4StreamParser : public StreamParser {
   // enough bytes to parse all samples and aux_info in the current moof.
   int64_t highest_end_offset_;
 
-  scoped_ptr<mp4::Movie> moov_;
-  scoped_ptr<mp4::TrackRunIterator> runs_;
+  std::unique_ptr<mp4::Movie> moov_;
+  std::unique_ptr<mp4::TrackRunIterator> runs_;
 
   bool has_audio_;
   bool has_video_;

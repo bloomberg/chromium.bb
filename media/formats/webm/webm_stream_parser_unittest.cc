@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "media/formats/webm/webm_stream_parser.h"
+
+#include <memory>
+
 #include "base/bind.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/media_tracks.h"
@@ -9,7 +13,6 @@
 #include "media/base/stream_parser.h"
 #include "media/base/test_data_util.h"
 #include "media/base/text_track_config.h"
-#include "media/formats/webm/webm_stream_parser.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::SaveArg;
@@ -68,7 +71,7 @@ class WebMStreamParserTest : public testing::Test {
 
   MOCK_METHOD1(InitCB, void(const StreamParser::InitParameters& params));
 
-  bool NewConfigCB(scoped_ptr<MediaTracks> tracks,
+  bool NewConfigCB(std::unique_ptr<MediaTracks> tracks,
                    const StreamParser::TextTrackConfigMap& text_track_map) {
     DCHECK(tracks.get());
     media_tracks_ = std::move(tracks);
@@ -86,8 +89,8 @@ class WebMStreamParserTest : public testing::Test {
   MOCK_METHOD0(EndMediaSegmentCB, void());
 
   scoped_refptr<testing::StrictMock<MockMediaLog>> media_log_;
-  scoped_ptr<WebMStreamParser> parser_;
-  scoped_ptr<MediaTracks> media_tracks_;
+  std::unique_ptr<WebMStreamParser> parser_;
+  std::unique_ptr<MediaTracks> media_tracks_;
 };
 
 TEST_F(WebMStreamParserTest, VerifyMediaTrackMetadata) {

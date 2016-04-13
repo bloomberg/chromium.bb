@@ -4,6 +4,7 @@
 
 #include "media/formats/mp4/box_definitions.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/logging.h"
@@ -637,7 +638,7 @@ bool VideoSampleEntry::Parse(BoxReader* reader) {
   if (IsFormatValidH264(format, sinf)) {
     DVLOG(2) << __FUNCTION__
              << " reading AVCDecoderConfigurationRecord (avcC)";
-    scoped_ptr<AVCDecoderConfigurationRecord> avcConfig(
+    std::unique_ptr<AVCDecoderConfigurationRecord> avcConfig(
         new AVCDecoderConfigurationRecord());
     RCHECK(reader->ReadChild(avcConfig.get()));
     frame_bitstream_converter =
@@ -648,7 +649,7 @@ bool VideoSampleEntry::Parse(BoxReader* reader) {
   } else if (IsFormatValidHEVC(format, sinf)) {
     DVLOG(2) << __FUNCTION__
              << " parsing HEVCDecoderConfigurationRecord (hvcC)";
-    scoped_ptr<HEVCDecoderConfigurationRecord> hevcConfig(
+    std::unique_ptr<HEVCDecoderConfigurationRecord> hevcConfig(
         new HEVCDecoderConfigurationRecord());
     RCHECK(reader->ReadChild(hevcConfig.get()));
     frame_bitstream_converter =

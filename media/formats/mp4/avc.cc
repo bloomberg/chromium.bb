@@ -5,6 +5,7 @@
 #include "media/formats/mp4/avc.h"
 
 #include <algorithm>
+#include <memory>
 #include <utility>
 
 #include "base/logging.h"
@@ -106,7 +107,7 @@ bool AVC::InsertParamSetsAnnexB(const AVCDecoderConfigurationRecord& avc_config,
                                 std::vector<SubsampleEntry>* subsamples) {
   DCHECK(AVC::IsValidAnnexB(*buffer, *subsamples));
 
-  scoped_ptr<H264Parser> parser(new H264Parser());
+  std::unique_ptr<H264Parser> parser(new H264Parser());
   const uint8_t* start = &(*buffer)[0];
   parser->SetEncryptedStream(start, buffer->size(), *subsamples);
 
@@ -311,9 +312,9 @@ bool AVC::IsValidAnnexB(const uint8_t* buffer,
 }
 
 AVCBitstreamConverter::AVCBitstreamConverter(
-    scoped_ptr<AVCDecoderConfigurationRecord> avc_config)
+    std::unique_ptr<AVCDecoderConfigurationRecord> avc_config)
     : avc_config_(std::move(avc_config)) {
-    DCHECK(avc_config_);
+  DCHECK(avc_config_);
 }
 
 AVCBitstreamConverter::~AVCBitstreamConverter() {

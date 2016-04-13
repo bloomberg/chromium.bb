@@ -7,8 +7,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
@@ -41,7 +42,7 @@ class SampleToGroupIteratorTest : public testing::Test {
  protected:
   std::vector<uint32_t> sample_to_group_table_;
   SampleToGroup sample_to_group_;
-  scoped_ptr<SampleToGroupIterator> sample_to_group_iterator_;
+  std::unique_ptr<SampleToGroupIterator> sample_to_group_iterator_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SampleToGroupIteratorTest);

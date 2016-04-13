@@ -4,6 +4,7 @@
 
 #include "media/formats/common/stream_parser_test_base.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -32,7 +33,7 @@ static std::string BufferQueueToString(
 }
 
 StreamParserTestBase::StreamParserTestBase(
-    scoped_ptr<StreamParser> stream_parser)
+    std::unique_ptr<StreamParser> stream_parser)
     : parser_(std::move(stream_parser)) {
   parser_->Init(
       base::Bind(&StreamParserTestBase::OnInitDone, base::Unretained(this)),
@@ -85,7 +86,7 @@ void StreamParserTestBase::OnInitDone(
 }
 
 bool StreamParserTestBase::OnNewConfig(
-    scoped_ptr<MediaTracks> tracks,
+    std::unique_ptr<MediaTracks> tracks,
     const StreamParser::TextTrackConfigMap& text_config) {
   DVLOG(1) << __FUNCTION__ << " media tracks count=" << tracks->tracks().size();
   EXPECT_EQ(tracks->tracks().size(), 1u);

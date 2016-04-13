@@ -4,6 +4,7 @@
 
 #include "media/formats/webm/webm_stream_parser.h"
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
@@ -225,7 +226,7 @@ int WebMStreamParser::ParseInfoAndTracks(const uint8_t* data, int size) {
   if (video_config.is_encrypted())
     OnEncryptedMediaInitData(tracks_parser.video_encryption_key_id());
 
-  scoped_ptr<MediaTracks> media_tracks = tracks_parser.media_tracks();
+  std::unique_ptr<MediaTracks> media_tracks = tracks_parser.media_tracks();
   CHECK(media_tracks.get());
   if (!config_cb_.Run(std::move(media_tracks), tracks_parser.text_tracks())) {
     DVLOG(1) << "New config data isn't allowed.";

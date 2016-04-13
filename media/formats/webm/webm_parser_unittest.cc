@@ -2,13 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "media/formats/webm/webm_parser.h"
+
 #include <stddef.h>
 #include <stdint.h>
+
+#include <memory>
 
 #include "base/macros.h"
 #include "media/formats/webm/cluster_builder.h"
 #include "media/formats/webm/webm_constants.h"
-#include "media/formats/webm/webm_parser.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -40,7 +43,7 @@ class WebMParserTest : public testing::Test {
   StrictMock<MockWebMParserClient> client_;
 };
 
-static scoped_ptr<Cluster> CreateCluster(int block_count) {
+static std::unique_ptr<Cluster> CreateCluster(int block_count) {
   ClusterBuilder cb;
   cb.SetClusterTimecode(0);
 
@@ -221,7 +224,7 @@ TEST_F(WebMParserTest, VoidAndCRC32InList) {
 
 
 TEST_F(WebMParserTest, ParseListElementWithSingleCall) {
-  scoped_ptr<Cluster> cluster(CreateCluster(kBlockCount));
+  std::unique_ptr<Cluster> cluster(CreateCluster(kBlockCount));
   CreateClusterExpectations(kBlockCount, true, &client_);
 
   WebMListParser parser(kWebMIdCluster, &client_);
@@ -230,7 +233,7 @@ TEST_F(WebMParserTest, ParseListElementWithSingleCall) {
 }
 
 TEST_F(WebMParserTest, ParseListElementWithMultipleCalls) {
-  scoped_ptr<Cluster> cluster(CreateCluster(kBlockCount));
+  std::unique_ptr<Cluster> cluster(CreateCluster(kBlockCount));
   CreateClusterExpectations(kBlockCount, true, &client_);
 
   const uint8_t* data = cluster->data();
@@ -264,7 +267,7 @@ TEST_F(WebMParserTest, ParseListElementWithMultipleCalls) {
 
 TEST_F(WebMParserTest, Reset) {
   InSequence s;
-  scoped_ptr<Cluster> cluster(CreateCluster(kBlockCount));
+  std::unique_ptr<Cluster> cluster(CreateCluster(kBlockCount));
 
   // First expect all but the last block.
   CreateClusterExpectations(kBlockCount - 1, false, &client_);

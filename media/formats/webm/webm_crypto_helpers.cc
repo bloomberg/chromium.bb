@@ -4,6 +4,8 @@
 
 #include "media/formats/webm/webm_crypto_helpers.h"
 
+#include <memory>
+
 #include "base/logging.h"
 #include "base/sys_byteorder.h"
 #include "media/base/decrypt_config.h"
@@ -28,7 +30,7 @@ bool WebMCreateDecryptConfig(const uint8_t* data,
                              int data_size,
                              const uint8_t* key_id,
                              int key_id_size,
-                             scoped_ptr<DecryptConfig>* decrypt_config,
+                             std::unique_ptr<DecryptConfig>* decrypt_config,
                              int* data_offset) {
   if (data_size < kWebMSignalByteSize) {
     DVLOG(1) << "Got a block from an encrypted stream with no data.";

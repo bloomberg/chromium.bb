@@ -2,8 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/formats/common/stream_parser_test_base.h"
 #include "media/formats/mpeg/adts_stream_parser.h"
+
+#include <memory>
+
+#include "base/memory/ptr_util.h"
+#include "media/formats/common/stream_parser_test_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
@@ -11,7 +15,7 @@ namespace media {
 class ADTSStreamParserTest : public StreamParserTestBase, public testing::Test {
  public:
   ADTSStreamParserTest()
-      : StreamParserTestBase(make_scoped_ptr(new ADTSStreamParser())) {}
+      : StreamParserTestBase(base::WrapUnique(new ADTSStreamParser())) {}
 };
 
 // Test parsing with small prime sized chunks to smoke out "power of

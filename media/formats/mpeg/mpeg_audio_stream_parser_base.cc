@@ -4,6 +4,8 @@
 
 #include "media/formats/mpeg/mpeg_audio_stream_parser_base.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/message_loop/message_loop.h"
@@ -217,7 +219,7 @@ int MPEGAudioStreamParserBase::ParseFrame(const uint8_t* data,
     timestamp_helper_.reset(new AudioTimestampHelper(sample_rate));
     timestamp_helper_->SetBaseTimestamp(base_timestamp);
 
-    scoped_ptr<MediaTracks> media_tracks(new MediaTracks());
+    std::unique_ptr<MediaTracks> media_tracks(new MediaTracks());
     if (config_.IsValidConfig()) {
       media_tracks->AddAudioTrack(config_, "audio", "", "", "");
     }

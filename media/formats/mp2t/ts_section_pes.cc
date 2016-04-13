@@ -4,6 +4,8 @@
 
 #include "media/formats/mp2t/ts_section_pes.h"
 
+#include <memory>
+
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "media/base/bit_reader.h"
@@ -35,11 +37,11 @@ static int64_t ConvertTimestampSectionToTimestamp(int64_t timestamp_section) {
 namespace media {
 namespace mp2t {
 
-TsSectionPes::TsSectionPes(scoped_ptr<EsParser> es_parser,
+TsSectionPes::TsSectionPes(std::unique_ptr<EsParser> es_parser,
                            TimestampUnroller* timestamp_unroller)
-  : es_parser_(es_parser.release()),
-    wait_for_pusi_(true),
-    timestamp_unroller_(timestamp_unroller) {
+    : es_parser_(es_parser.release()),
+      wait_for_pusi_(true),
+      timestamp_unroller_(timestamp_unroller) {
   DCHECK(es_parser_);
   DCHECK(timestamp_unroller_);
 }
