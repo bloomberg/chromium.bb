@@ -5,10 +5,15 @@
 #include "qcms.h"
 #include "qcms_test_util.h"
 
+#include <assert.h>
 #include <math.h> // sqrt
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
+
+#ifndef DISPLAY_DEVICE_PROFILE
+#define DISPLAY_DEVICE_PROFILE 0x6d6e7472 // 'mntr'
+#endif
 
 // D50 adapted color primaries of the internal sRGB color profile.
 static s15Fixed16Number sRGB_reference[3][3] = {
@@ -21,6 +26,14 @@ static s15Fixed16Number sRGB_reference[3][3] = {
 static struct XYZNumber D65 = {
     0xf351, 0x10000, 0x116cc // ( 0.950455, 1.000000, 1.089050 )
 };
+
+static void check_profile_description(qcms_profile *profile)
+{
+    printf("Test profile description:\n");
+
+    const char* description = qcms_profile_get_description(profile);
+    printf("description=[%s]\n\n", description);
+}
 
 static void check_profile_pcs_white_point(const qcms_profile *profile)
 {
@@ -49,7 +62,7 @@ static void check_profile_pcs_white_point(const qcms_profile *profile)
     float yerr = y - 0.358538597;
     float Yerr = Y - 1.000000000;
 
-    printf("D50 white point error = %.6f\n", (float)
+    printf("D50 white point error = %.6f\n\n", (float)
            sqrt((xerr * xerr) + (yerr * yerr) + (Yerr * Yerr)));
 }
 
@@ -103,8 +116,14 @@ static int qcms_test_internal_srgb(size_t width,
         const char *out_path,
         const int force_software)
 {
-    qcms_profile *profile = qcms_profile_sRGB();
     s15Fixed16Number primary_error;
+
+    qcms_profile *profile = qcms_profile_sRGB();
+
+    assert(profile->class == DISPLAY_DEVICE_PROFILE);
+    assert(profile->rendering_intent == QCMS_INTENT_PERCEPTUAL);
+    assert(profile->color_space == RGB_SIGNATURE);
+    assert(profile->pcs == XYZ_SIGNATURE);
 
     if (qcms_profile_is_bogus(profile)) {
         fprintf(stderr, "Failure: the internal sRGB profile failed the bogus profile check\n");
@@ -121,6 +140,9 @@ static int qcms_test_internal_srgb(size_t width,
 
     // Verify PCS white point correctness.
     check_profile_pcs_white_point(profile);
+
+    // Output profile description.
+    check_profile_description(profile);
 
     qcms_profile_release(profile);
     return primary_error;

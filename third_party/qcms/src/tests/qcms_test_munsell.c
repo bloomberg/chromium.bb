@@ -93,6 +93,13 @@ static int color_error(struct color_checker_chart cx, struct color_checker_chart
     return round(sqrt((dr * dr) + (dg * dg) + (db * db)));
 }
 
+static qcms_profile* open_profile_from_path(const char *path)
+{
+    if (strcmp(path, "internal-srgb") != 0)
+        return qcms_profile_from_path(path);
+    return qcms_profile_sRGB();
+}
+
 static int qcms_test_munsell(size_t width,
         size_t height,
         int iterations,
@@ -124,7 +131,7 @@ static int qcms_test_munsell(size_t width,
         return EXIT_FAILURE;
     }
 
-    in_profile = qcms_profile_from_path(in_path);
+    in_profile = open_profile_from_path(in_path);
     if (!in_profile || invalid_rgb_color_profile(in_profile)) {
         fprintf(stderr, "Invalid input profile\n");
         return EXIT_FAILURE;
@@ -137,7 +144,7 @@ static int qcms_test_munsell(size_t width,
 
     printf("Input profile %s\n", in_profile->description);
 
-    out_profile = qcms_profile_from_path(out_path);
+    out_profile = open_profile_from_path(out_path);
     if (!out_profile || invalid_rgb_color_profile(out_profile)) {
         fprintf(stderr, "Invalid output profile\n");
         return EXIT_FAILURE;
@@ -157,6 +164,10 @@ static int qcms_test_munsell(size_t width,
         return EXIT_FAILURE;
     } else if (force_software) {
         transform->transform_fn = qcms_transform_data_rgba_out_lut_precache;
+    }
+
+    if (qcms_profile_match(in_profile, out_profile)) {
+        printf("Note: input / output profiles match\n");
     }
 
     rmse = 0.0f;
