@@ -44,8 +44,8 @@ TEST(BMPImageDecoderTest, parseAndDecode)
     ImageFrame* frame = decoder->frameBufferAtIndex(0);
     ASSERT_TRUE(frame);
     EXPECT_EQ(ImageFrame::FrameComplete, frame->getStatus());
-    EXPECT_EQ(256, frame->getSkBitmap().width());
-    EXPECT_EQ(256, frame->getSkBitmap().height());
+    EXPECT_EQ(256, frame->bitmap().width());
+    EXPECT_EQ(256, frame->bitmap().height());
     EXPECT_FALSE(decoder->failed());
 }
 

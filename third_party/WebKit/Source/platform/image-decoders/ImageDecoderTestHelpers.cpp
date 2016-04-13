@@ -52,7 +52,7 @@ void createDecodingBaseline(DecoderCreator createDecoder, SharedBuffer* data, Ve
     size_t frameCount = decoder->frameCount();
     for (size_t i = 0; i < frameCount; ++i) {
         ImageFrame* frame = decoder->frameBufferAtIndex(i);
-        baselineHashes->append(hashBitmap(frame->getSkBitmap()));
+        baselineHashes->append(hashBitmap(frame->bitmap()));
     }
 }
 
@@ -99,7 +99,7 @@ void testByteByByteDecode(DecoderCreator createDecoder, const char* file, size_t
     ASSERT_EQ(expectedFrameCount, baselineHashes.size());
     for (size_t i = 0; i < decoder->frameCount(); i++) {
         ImageFrame* frame = decoder->frameBufferAtIndex(i);
-        EXPECT_EQ(baselineHashes[i], hashBitmap(frame->getSkBitmap()));
+        EXPECT_EQ(baselineHashes[i], hashBitmap(frame->bitmap()));
     }
 }
 

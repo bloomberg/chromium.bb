@@ -374,7 +374,7 @@ bool ImageFrameGenerator::decode(size_t index, ImageDecoder** decoder, SkBitmap*
     // the latter case.
     const bool isDecodeComplete = frame->getStatus() == ImageFrame::FrameComplete || allDataReceived;
 
-    SkBitmap fullSizeBitmap = frame->getSkBitmap();
+    SkBitmap fullSizeBitmap = frame->bitmap();
     if (!fullSizeBitmap.isNull()) {
         ASSERT(fullSizeBitmap.width() == m_fullSize.width() && fullSizeBitmap.height() == m_fullSize.height());
         setHasAlpha(index, !fullSizeBitmap.isOpaque());

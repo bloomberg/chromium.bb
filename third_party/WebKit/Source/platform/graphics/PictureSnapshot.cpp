@@ -64,7 +64,7 @@ static bool decodeBitmap(const void* data, size_t length, SkBitmap* result)
     ImageFrame* frame = imageDecoder->frameBufferAtIndex(0);
     if (!frame)
         return true;
-    *result = frame->getSkBitmap();
+    *result = frame->bitmap();
     return true;
 }
 

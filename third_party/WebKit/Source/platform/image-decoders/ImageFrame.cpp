@@ -107,11 +107,6 @@ bool ImageFrame::setSize(int newWidth, int newHeight)
     return true;
 }
 
-const SkBitmap& ImageFrame::bitmap() const
-{
-    return m_bitmap;
-}
-
 bool ImageFrame::hasAlpha() const
 {
     return m_hasAlpha;

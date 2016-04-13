@@ -69,7 +69,7 @@ void testRandomFrameDecode(const char* dir, const char* gifFile)
         for (size_t j = i; j < frameCount; j += skippingStep) {
             SCOPED_TRACE(testing::Message() << "Random i:" << i << " j:" << j);
             ImageFrame* frame = decoder->frameBufferAtIndex(j);
-            EXPECT_EQ(baselineHashes[j], hashBitmap(frame->getSkBitmap()));
+            EXPECT_EQ(baselineHashes[j], hashBitmap(frame->bitmap()));
         }
     }
 
@@ -79,7 +79,7 @@ void testRandomFrameDecode(const char* dir, const char* gifFile)
     for (size_t i = frameCount; i; --i) {
         SCOPED_TRACE(testing::Message() << "Reverse i:" << i);
         ImageFrame* frame = decoder->frameBufferAtIndex(i - 1);
-        EXPECT_EQ(baselineHashes[i - 1], hashBitmap(frame->getSkBitmap()));
+        EXPECT_EQ(baselineHashes[i - 1], hashBitmap(frame->bitmap()));
     }
 }
 
@@ -102,7 +102,7 @@ void testRandomDecodeAfterClearFrameBufferCache(const char* dir, const char* gif
             for (size_t j = 0; j < frameCount; j += skippingStep) {
                 SCOPED_TRACE(testing::Message() << "Random i:" << i << " j:" << j);
                 ImageFrame* frame = decoder->frameBufferAtIndex(j);
-                EXPECT_EQ(baselineHashes[j], hashBitmap(frame->getSkBitmap()));
+                EXPECT_EQ(baselineHashes[j], hashBitmap(frame->bitmap()));
             }
         }
     }
@@ -120,16 +120,16 @@ TEST(GIFImageDecoderTest, decodeTwoFrames)
     EXPECT_EQ(cAnimationLoopOnce, decoder->repetitionCount());
 
     ImageFrame* frame = decoder->frameBufferAtIndex(0);
-    uint32_t generationID0 = frame->getSkBitmap().getGenerationID();
+    uint32_t generationID0 = frame->bitmap().getGenerationID();
     EXPECT_EQ(ImageFrame::FrameComplete, frame->getStatus());
-    EXPECT_EQ(16, frame->getSkBitmap().width());
-    EXPECT_EQ(16, frame->getSkBitmap().height());
+    EXPECT_EQ(16, frame->bitmap().width());
+    EXPECT_EQ(16, frame->bitmap().height());
 
     frame = decoder->frameBufferAtIndex(1);
-    uint32_t generationID1 = frame->getSkBitmap().getGenerationID();
+    uint32_t generationID1 = frame->bitmap().getGenerationID();
     EXPECT_EQ(ImageFrame::FrameComplete, frame->getStatus());
-    EXPECT_EQ(16, frame->getSkBitmap().width());
-    EXPECT_EQ(16, frame->getSkBitmap().height());
+    EXPECT_EQ(16, frame->bitmap().width());
+    EXPECT_EQ(16, frame->bitmap().height());
     EXPECT_TRUE(generationID0 != generationID1);
 
     EXPECT_EQ(2u, decoder->frameCount());
@@ -150,13 +150,13 @@ TEST(GIFImageDecoderTest, parseAndDecode)
 
     ImageFrame* frame = decoder->frameBufferAtIndex(0);
     EXPECT_EQ(ImageFrame::FrameComplete, frame->getStatus());
-    EXPECT_EQ(16, frame->getSkBitmap().width());
-    EXPECT_EQ(16, frame->getSkBitmap().height());
+    EXPECT_EQ(16, frame->bitmap().width());
+    EXPECT_EQ(16, frame->bitmap().height());
 
     frame = decoder->frameBufferAtIndex(1);
     EXPECT_EQ(ImageFrame::FrameComplete, frame->getStatus());
-    EXPECT_EQ(16, frame->getSkBitmap().width());
-    EXPECT_EQ(16, frame->getSkBitmap().height());
+    EXPECT_EQ(16, frame->bitmap().width());
+    EXPECT_EQ(16, frame->bitmap().height());
     EXPECT_EQ(cAnimationLoopInfinite, decoder->repetitionCount());
 }
 
@@ -250,7 +250,7 @@ TEST(GIFImageDecoderTest, progressiveDecode)
             truncatedHashes.append(0);
             continue;
         }
-        truncatedHashes.append(hashBitmap(frame->getSkBitmap()));
+        truncatedHashes.append(hashBitmap(frame->bitmap()));
     }
 
     // Compute hashes when the file is progressively decoded.
@@ -264,7 +264,7 @@ TEST(GIFImageDecoderTest, progressiveDecode)
             progressiveHashes.append(0);
             continue;
         }
-        progressiveHashes.append(hashBitmap(frame->getSkBitmap()));
+        progressiveHashes.append(hashBitmap(frame->bitmap()));
     }
     EXPECT_EQ(cAnimationNone, decoder->repetitionCount());
 
@@ -354,7 +354,7 @@ TEST(GIFImageDecoderTest, badTerminator)
     ImageFrame* testFrame = testDecoder->frameBufferAtIndex(0);
     ASSERT(testFrame);
 
-    EXPECT_EQ(hashBitmap(referenceFrame->getSkBitmap()), hashBitmap(testFrame->getSkBitmap()));
+    EXPECT_EQ(hashBitmap(referenceFrame->bitmap()), hashBitmap(testFrame->bitmap()));
 }
 
 TEST(GIFImageDecoderTest, updateRequiredPreviousFrameAfterFirstDecode)
@@ -423,13 +423,13 @@ TEST(GIFImageDecoderTest, resumePartialDecodeAfterClearFrameBufferCache)
     decoder->setData(fullData.get(), true);
     EXPECT_EQ(frameCount, decoder->frameCount());
     ImageFrame* lastFrame = decoder->frameBufferAtIndex(frameCount - 1);
-    EXPECT_EQ(baselineHashes[frameCount - 1], hashBitmap(lastFrame->getSkBitmap()));
+    EXPECT_EQ(baselineHashes[frameCount - 1], hashBitmap(lastFrame->bitmap()));
     decoder->clearCacheExceptFrame(kNotFound);
 
     // Resume decoding of the first frame.
     ImageFrame* firstFrame = decoder->frameBufferAtIndex(0);
     EXPECT_EQ(ImageFrame::FrameComplete, firstFrame->getStatus());
-    EXPECT_EQ(baselineHashes[0], hashBitmap(firstFrame->getSkBitmap()));
+    EXPECT_EQ(baselineHashes[0], hashBitmap(firstFrame->bitmap()));
 }
 
 // The first LZW codes in the image are invalid values that try to create a loop
