@@ -1,0 +1,6 @@
+CONSOLE ERROR: line 3: Uncaught Error
+Tests that console message from worker contains stack trace.
+Worker created
+Worker created
+Message with stack trace received.
+

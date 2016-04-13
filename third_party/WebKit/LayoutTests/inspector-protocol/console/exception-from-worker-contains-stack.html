@@ -1,0 +1,78 @@
+<html>
+<head>
+<script type="text/javascript" src="../../http/tests/inspector-protocol/inspector-protocol-test.js"></script>
+<script>
+
+var worker1;
+var worker2;
+
+function startWorkers()
+{
+    worker1 = new Worker("resources/worker-with-throw.js");
+    worker1.onerror = function(e) {
+        e.preventDefault();
+        worker1.terminate();
+    }
+    worker2 = new Worker("resources/worker-with-throw.js");
+}
+
+function test()
+{
+    InspectorTest.sendCommandOrDie("Console.enable", {});
+    InspectorTest.sendCommandOrDie("Worker.enable", {}, didEnableWorkerDebugging);
+
+    function didEnableWorkerDebugging(event)
+    {
+        InspectorTest.sendCommandOrDie("Runtime.evaluate", { expression: "startWorkers()" });
+    }
+
+    var workerRequestId = 1;
+    function sendCommandToWorker(method, params, workerId)
+    {
+        InspectorTest.sendCommand("Worker.sendMessageToWorker",
+            {
+                "workerId": workerId,
+                "message": JSON.stringify({ "method": method,
+                                            "params": params,
+                                            "id": workerRequestId++ })
+            });
+    }
+
+    var waitForWorkers = 2;
+    InspectorTest.eventHandler["Worker.workerCreated"] = function(messageObject)
+    {
+        var workerId = messageObject["params"]["workerId"];
+        InspectorTest.log("Worker created");
+        sendCommandToWorker("Console.enable", {}, workerId);
+        if (!--waitForWorkers)
+            InspectorTest.sendCommandOrDie("Runtime.evaluate", { expression: "worker1.postMessage(239);worker2.postMessage(42);" });
+    }
+
+    var workerTerminated = false;
+    var messageReceived = false;
+    InspectorTest.eventHandler["Worker.dispatchMessageFromWorker"] = function(messageObject)
+    {
+        var message = JSON.parse(messageObject["params"]["message"]);
+        if (message["method"] === "Console.messageAdded") {
+            var callFrames = message.params.message.stack.callFrames;
+            if (callFrames.length < 2 || callFrames[1].functionName !== "boo1")
+                return;
+            InspectorTest.log(message.params.message.stack.callFrames.length > 0 ? "Message with stack trace received." : "[FAIL] Message contains empty stack trace");
+            messageReceived = true;
+            if (messageReceived && workerTerminated)
+                InspectorTest.completeTest();
+        }
+    }
+
+    InspectorTest.eventHandler["Worker.workerTerminated"] = function(messageObject)
+    {
+        InspectorTest.eventHandler["Worker.workerTerminated"] = undefined;
+        workerTerminated = true;
+        if (messageReceived && workerTerminated)
+            InspectorTest.completeTest();
+    }
+}
+</script>
+</head>
+<body onload="runTest()">Tests that console message from worker contains stack trace.</body>
+</html>
