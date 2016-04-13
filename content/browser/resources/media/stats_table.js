@@ -85,7 +85,7 @@ var StatsTable = (function(ssrcInfoManager) {
         container.appendChild(details);
 
         var summary = document.createElement('summary');
-        summary.textContent = report.id;
+        summary.textContent = report.id + ' (' + report.type + ')';
         details.appendChild(summary);
 
         table = document.createElement('table');
