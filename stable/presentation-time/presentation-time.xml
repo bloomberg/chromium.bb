@@ -99,18 +99,10 @@
         presentation interface. The presentation clock does not change
         during the lifetime of the client connection.
 
-        The clock identifier is platform dependent. Clients must be
-        able to query the current clock value directly, not by asking
-        the compositor.
-
-        On Linux/glibc, the identifier value is one of the clockid_t
-        values accepted by clock_gettime(). clock_gettime() is defined
-        by POSIX.1-2001.
-
-        Compositors should prefer a clock which does not jump and is
-        not slewed e.g. by NTP. The absolute value of the clock is
-        irrelevant. Precision of one millisecond or better is
-        recommended.
+        The clock identifier is platform dependent. On Linux/glibc,
+        the identifier value is one of the clockid_t values accepted
+        by clock_gettime(). clock_gettime() is defined by
+        POSIX.1-2001.
 
         Timestamps in this clock domain are expressed as tv_sec_hi,
         tv_sec_lo, tv_nsec triples, each component being an unsigned
@@ -122,6 +114,12 @@
         Note that clock_id applies only to the presentation clock,
         and implies nothing about e.g. the timestamps used in the
         Wayland core protocol input events.
+
+        Compositors should prefer a clock which does not jump and is
+        not slewed e.g. by NTP. The absolute value of the clock is
+        irrelevant. Precision of one millisecond or better is
+        recommended. Clients must be able to query the current clock
+        value directly, not by asking the compositor.
       </description>
 
       <arg name="clk_id" type="uint" summary="platform clock identifier"/>
