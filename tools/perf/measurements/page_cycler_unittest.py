@@ -8,6 +8,7 @@ import unittest
 from telemetry.internal.browser import browser_options
 from telemetry.internal.results import page_test_results
 from telemetry.internal import story_runner
+from telemetry import page as page_module
 from telemetry.testing import simple_mock
 
 from measurements import page_cycler
@@ -37,12 +38,15 @@ class MockMemoryMetric(object):
     pass
 
 
-class FakePage(object):
+class FakePage(page_module.Page):
   """Used to mock loading a page."""
 
   def __init__(self, url):
-    self.url = url
-    self.is_file = url.startswith('file://')
+    super(FakePage, self).__init__(url=url)
+
+  @property
+  def is_file(self):
+    return self._url.startswith('file://')
 
 
 class FakeTab(object):
