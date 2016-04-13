@@ -5201,7 +5201,6 @@
           # These should end with %, but there seems to be a bug with % in
           # variables that are intended to be set to different values in
           # different targets, like these.
-          'mac_pie': 1,        # Most executables can be position-independent.
           # Strip debugging symbols from the target.
           'mac_strip': '<(mac_strip_release)',
           'conditions': [
@@ -5294,55 +5293,14 @@
             ],
           }],
           ['_type=="executable"', {
-            'postbuilds': [
-              {
-                # Arranges for data (heap) pages to be protected against
-                # code execution when running on Mac OS X 10.7 ("Lion"), and
-                # ensures that the position-independent executable (PIE) bit
-                # is set for ASLR when running on Mac OS X 10.5 ("Leopard").
-                'variables': {
-                  # Define change_mach_o_flags in a variable ending in _path
-                  # so that GYP understands it's a path and performs proper
-                  # relativization during dict merging.
-                  'change_mach_o_flags_path':
-                      'mac/change_mach_o_flags_from_xcode.sh',
-                  'change_mach_o_flags_options%': [
-                  ],
-                  'target_conditions': [
-                    ['mac_pie==0 or release_valgrind_build==1', {
-                      # Don't enable PIE if it's unwanted. It's unwanted if
-                      # the target specifies mac_pie=0 or if building for
-                      # Valgrind, because Valgrind doesn't understand slide.
-                      # See the similar mac_pie/release_valgrind_build check
-                      # below.
-                      'change_mach_o_flags_options': [
-                        '--no-pie',
-                      ],
-                    }],
-                  ],
-                },
-                'postbuild_name': 'Change Mach-O Flags',
-                'action': [
-                  '<(change_mach_o_flags_path)',
-                  '>@(change_mach_o_flags_options)',
-                ],
-              },
-            ],
-            'target_conditions': [
-              ['mac_pie==1 and release_valgrind_build==0', {
-                # Turn on position-independence (ASLR) for executables. When
-                # PIE is on for the Chrome executables, the framework will
-                # also be subject to ASLR.
-                # Don't do this when building for Valgrind, because Valgrind
-                # doesn't understand slide. TODO: Make Valgrind on Mac OS X
-                # understand slide, and get rid of the Valgrind check.
-                'xcode_settings': {
-                  'OTHER_LDFLAGS': [
-                    '-Wl,-pie',  # Position-independent executable (MH_PIE)
-                  ],
-                },
-              }],
-            ],
+            # Turn on position-independence (ASLR) for executables. When
+            # PIE is on for the Chrome executables, the framework will
+            # also be subject to ASLR.
+            'xcode_settings': {
+              'OTHER_LDFLAGS': [
+                '-Wl,-pie',  # Position-independent executable (MH_PIE)
+              ],
+            },
           }],
           ['(_type=="executable" or _type=="shared_library" or \
              _type=="loadable_module") and mac_strip!=0', {
