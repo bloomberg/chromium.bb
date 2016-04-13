@@ -15,13 +15,14 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram_flattener.h"
 #include "base/metrics/histogram_snapshot_manager.h"
+#include "base/synchronization/lock.h"
 #include "components/metrics/proto/chrome_user_metrics_extension.pb.h"
 
 namespace cronet {
 
 // A HistogramManager instance is created by the app. It is the central
 // controller for the acquisition of log data, and recording deltas for
-// transmission to an external server.
+// transmission to an external server. Public APIs are all thread-safe.
 class HistogramManager : public base::HistogramFlattener {
  public:
   HistogramManager();
@@ -51,6 +52,10 @@ class HistogramManager : public base::HistogramFlattener {
 
   // Stores the protocol buffer representation for this log.
   metrics::ChromeUserMetricsExtension uma_proto_;
+
+  // Should be acquired whenever GetDeltas() is executing to maintain
+  // thread-safety.
+  base::Lock get_deltas_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(HistogramManager);
 };

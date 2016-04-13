@@ -53,18 +53,21 @@ void HistogramManager::InconsistencyDetectedInLoggedCount(int amount) {
 }
 
 bool HistogramManager::GetDeltas(std::vector<uint8_t>* data) {
-  // Clear the protobuf between calls.
-  uma_proto_.Clear();
-  // "false" to StatisticsRecorder::begin() indicates to *not* include
-  // histograms held in persistent storage on the assumption that they will be
-  // visible to the recipient through other means.
-  histogram_snapshot_manager_.PrepareDeltas(
-      base::StatisticsRecorder::begin(false), base::StatisticsRecorder::end(),
-      base::Histogram::kNoFlags, base::Histogram::kUmaTargetedHistogramFlag);
-  int32_t data_size = uma_proto_.ByteSize();
-  data->resize(data_size);
-  if (uma_proto_.SerializeToArray(&(*data)[0], data_size))
-    return true;
+  if (get_deltas_lock_.Try()) {
+    base::AutoLock lock(get_deltas_lock_, base::AutoLock::AlreadyAcquired());
+    // Clear the protobuf between calls.
+    uma_proto_.Clear();
+    // "false" to StatisticsRecorder::begin() indicates to *not* include
+    // histograms held in persistent storage on the assumption that they will be
+    // visible to the recipient through other means.
+    histogram_snapshot_manager_.PrepareDeltas(
+        base::StatisticsRecorder::begin(false), base::StatisticsRecorder::end(),
+        base::Histogram::kNoFlags, base::Histogram::kUmaTargetedHistogramFlag);
+    int32_t data_size = uma_proto_.ByteSize();
+    data->resize(data_size);
+    if (uma_proto_.SerializeToArray(&(*data)[0], data_size))
+      return true;
+  }
   data->clear();
   return false;
 }
