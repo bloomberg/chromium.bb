@@ -5849,12 +5849,12 @@ void RenderFrameImpl::UpdateNavigationState(DocumentState* document_state,
     }
     document_state->set_navigation_state(CreateNavigationStateFromPending());
 
-    const CommonNavigationParams& common_params =
-        pending_navigation_params_->common_params;
     // The |set_was_load_data_with_base_url_request| state should not change for
     // an in-page navigation, so skip updating it from the in-page navigation
     // params in this case.
     if (!was_within_same_page) {
+      const CommonNavigationParams& common_params =
+          pending_navigation_params_->common_params;
       bool load_data = !common_params.base_url_for_data_url.is_empty() &&
                        !common_params.history_url_for_data_url.is_empty() &&
                        common_params.url.SchemeIs(url::kDataScheme);
