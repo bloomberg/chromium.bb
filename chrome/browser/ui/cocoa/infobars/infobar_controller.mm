@@ -20,6 +20,7 @@
 #include "grit/theme_resources.h"
 #import "ui/base/cocoa/controls/hyperlink_text_view.h"
 #include "ui/base/l10n/l10n_util_mac.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/gfx/image/image.h"
 #include "ui/resources/grit/ui_resources.h"
 
@@ -71,6 +72,18 @@
   [self initializeLabel];
 
   [self addAdditionalControls];
+
+  // With Material Design infobars are drawn a little taller, so have to move
+  // its controls to keep them centered.
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    CGFloat heightDelta = InfoBarContainerDelegate::kDefaultBarTargetHeightMd -
+        InfoBarContainerDelegate::kDefaultBarTargetHeight;
+    for (NSView* nextSubview in [infoBarView_ subviews]) {
+      NSRect frame = [nextSubview frame];
+      frame.origin.y += heightDelta / 2;
+      [nextSubview setFrame:frame];
+    }
+  }
 
   [infoBarView_ setInfobarType:[self delegate]->GetInfoBarType()];
   [infoBarView_ setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];

@@ -14,6 +14,7 @@
 #include "components/infobars/core/infobar.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "ui/base/cocoa/nsview_additions.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/theme_provider.h"
 
 @implementation InfoBarGradientView
@@ -59,8 +60,11 @@
 
 - (void)drawRect:(NSRect)rect {
   NSRect bounds = [self bounds];
-  bounds.size.height = InfoBarContainerDelegate::kDefaultBarTargetHeight;
-
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    bounds.size.height = InfoBarContainerDelegate::kDefaultBarTargetHeightMd;
+  } else {
+    bounds.size.height = InfoBarContainerDelegate::kDefaultBarTargetHeight;
+  }
   CGFloat tipXOffset = arrowX_ - arrowHalfWidth_;
 
   // Around the bounds of the infobar, continue drawing the path into which the
