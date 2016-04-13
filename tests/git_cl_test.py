@@ -1300,6 +1300,36 @@ class TestGitCl(TestCase):
     })
     self.assertIsNone(cl.EnsureAuthenticated(force=False))
 
+  def test_cmd_set_commit_rietveld(self):
+    self.mock(git_cl._RietveldChangelistImpl, 'SetFlag',
+              lambda _, f, v: self._mocked_call(['SetFlag', f, v]))
+    self.calls = [
+        ((['git', 'symbolic-ref', 'HEAD'],), 'feature'),
+        ((['git', 'config', 'branch.feature.rietveldissue'],), '123'),
+        ((['git', 'config', 'rietveld.autoupdate'],), ''),
+        ((['git', 'config', 'rietveld.server'],), ''),
+        ((['git', 'config', 'rietveld.server'],), ''),
+        ((['git', 'config', 'branch.feature.rietveldserver'],),
+         'https://codereview.chromium.org'),
+        ((['SetFlag', 'commit', '1'], ), ''),
+    ]
+    self.assertEqual(0, git_cl.main(['set-commit']))
+
+  def test_cmd_set_commit_gerrit(self):
+    self.mock(git_cl.gerrit_util, 'SetReview',
+              lambda h, i, labels: self._mocked_call(
+                  ['SetReview', h, i, labels]))
+    self.calls = [
+        ((['git', 'symbolic-ref', 'HEAD'],), 'feature'),
+        ((['git', 'config', 'branch.feature.rietveldissue'],), ''),
+        ((['git', 'config', 'branch.feature.gerritissue'],), '123'),
+        ((['git', 'config', 'branch.feature.gerritserver'],),
+         'https://chromium-review.googlesource.com'),
+        ((['SetReview', 'chromium-review.googlesource.com', 123,
+           {'Commit-Queue': 1}],), ''),
+    ]
+    self.assertEqual(0, git_cl.main(['set-commit', '-d']))
+
 
 if __name__ == '__main__':
   git_cl.logging.basicConfig(

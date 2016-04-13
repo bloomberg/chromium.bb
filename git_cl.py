@@ -835,6 +835,15 @@ def GetCurrentBranch():
   return None
 
 
+class _CQState(object):
+  """Enum for states of CL with respect to Commit Queue."""
+  NONE = 'none'
+  DRY_RUN = 'dry_run'
+  COMMIT = 'commit'
+
+  ALL_STATES = [NONE, DRY_RUN, COMMIT]
+
+
 class _ParsedIssueNumberArgument(object):
   def __init__(self, issue=None, patchset=None, hostname=None):
     self.issue = issue
@@ -1397,6 +1406,15 @@ class Changelist(object):
         ret = upload_branch_deps(self, orig_args)
     return ret
 
+  def SetCQState(self, new_state):
+    """Update the CQ state for latest patchset.
+
+    Issue must have been already uploaded and known.
+    """
+    assert new_state in _CQState.ALL_STATES
+    assert self.GetIssue()
+    return self._codereview_impl.SetCQState(new_state)
+
   # Forward methods to codereview specific implementation.
 
   def CloseIssue(self):
@@ -1520,6 +1538,13 @@ class _ChangelistCodereviewBase(object):
 
   def CMDUploadChange(self, options, args, change):
     """Uploads a change to codereview."""
+    raise NotImplementedError()
+
+  def SetCQState(self, new_state):
+    """Update the CQ state for latest patchset.
+
+    Issue must have been already uploaded and known.
+    """
     raise NotImplementedError()
 
 
@@ -1698,6 +1723,19 @@ class _RietveldChangelistImpl(_ChangelistCodereviewBase):
 
   def GetRieveldObjForPresubmit(self):
     return self.RpcServer()
+
+  def SetCQState(self, new_state):
+    props = self.GetIssueProperties()
+    if props.get('private'):
+      DieWithError('Cannot set-commit on private issue')
+
+    if new_state == _CQState.COMMIT:
+      self.SetFlag('commit', '1')
+    elif new_state == _CQState.NONE:
+      self.SetFlag('commit', '0')
+    else:
+      raise NotImplementedError()
+
 
   def CMDPatchWithParsedIssue(self, parsed_issue_arg, reject, nocommit,
                               directory):
@@ -1936,7 +1974,7 @@ class _RietveldChangelistImpl(_ChangelistCodereviewBase):
     self.SetPatchset(patchset)
 
     if options.use_commit_queue:
-      self.SetFlag('commit', '1')
+      self.SetCQState(_CQState.COMMIT)
     return 0
 
 
@@ -2449,6 +2487,18 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
       return new_log_desc
     else:
       print >> sys.stderr, 'ERROR: Gerrit commit-msg hook not available.'
+
+  def SetCQState(self, new_state):
+    """Sets the Commit-Queue label assuming canonical CQ config for Gerrit."""
+    # TODO(tandrii): maybe allow configurability in codereview.settings or by
+    # self-discovery of label config for this CL using REST API.
+    vote_map = {
+        _CQState.NONE:    0,
+        _CQState.DRY_RUN: 1,
+        _CQState.COMMIT : 2,
+    }
+    gerrit_util.SetReview(self._GetGerritHost(), self.GetIssue(),
+                          labels={'Commit-Queue': vote_map[new_state]})
 
 
 _CODEREVIEW_IMPLEMENTATIONS = {
@@ -4066,7 +4116,7 @@ def CMDtree(parser, args):
 
 
 def CMDtry(parser, args):
-  """Triggers a try job through BuildBucket."""
+  """Triggers try jobs through BuildBucket."""
   group = optparse.OptionGroup(parser, "Try job options")
   group.add_option(
       "-b", "--bot", action="append",
@@ -4124,6 +4174,14 @@ def CMDtry(parser, args):
   cl = Changelist(auth_config=auth_config)
   if not cl.GetIssue():
     parser.error('Need to upload first')
+
+  if cl.IsGerrit():
+    parser.error(
+        'Not yet supported for Gerrit (http://crbug.com/599931).\n'
+        'If your project has Commit Queue, dry run is a workaround:\n'
+        '  git cl set-commit --dry-run')
+  # Code below assumes Rietveld issue.
+  # TODO(tandrii): actually implement for Gerrit http://crbug.com/599931.
 
   props = cl.GetIssueProperties()
   if props.get('closed'):
@@ -4346,16 +4404,28 @@ def CMDweb(parser, args):
 
 def CMDset_commit(parser, args):
   """Sets the commit bit to trigger the Commit Queue."""
+  parser.add_option('-d', '--dry-run', action='store_true',
+                    help='trigger in dry run mode')
+  parser.add_option('-c', '--clear', action='store_true',
+                    help='stop CQ run, if any')
   auth.add_auth_options(parser)
   options, args = parser.parse_args(args)
   auth_config = auth.extract_auth_config_from_options(options)
   if args:
     parser.error('Unrecognized args: %s' % ' '.join(args))
+  if options.dry_run and options.clear:
+    parser.error('Make up your mind: both --dry-run and --clear not allowed')
+
   cl = Changelist(auth_config=auth_config)
-  props = cl.GetIssueProperties()
-  if props.get('private'):
-    parser.error('Cannot set commit on private issue')
-  cl.SetFlag('commit', '1')
+  if options.clear:
+    state = _CQState.CLEAR
+  elif options.dry_run:
+    state = _CQState.DRY_RUN
+  else:
+    state = _CQState.COMMIT
+  if not cl.GetIssue():
+    parser.error('Must upload the issue first')
+  cl.SetCQState(state)
   return 0
 
 
