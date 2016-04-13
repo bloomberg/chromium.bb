@@ -52,8 +52,8 @@ class ResolveHostAndOpenSocket final {
       delete this;
       return;
     }
-    std::unique_ptr<net::StreamSocket> socket(
-        new net::TCPClientSocket(address_list_, NULL, net::NetLog::Source()));
+    std::unique_ptr<net::StreamSocket> socket(new net::TCPClientSocket(
+        address_list_, NULL, NULL, net::NetLog::Source()));
     socket->Connect(
         base::Bind(&RunSocketCallback, callback_, base::Passed(&socket)));
     delete this;

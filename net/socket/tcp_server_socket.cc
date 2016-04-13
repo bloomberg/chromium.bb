@@ -15,9 +15,7 @@
 namespace net {
 
 TCPServerSocket::TCPServerSocket(NetLog* net_log, const NetLog::Source& source)
-    : socket_(net_log, source),
-      pending_accept_(false) {
-}
+    : socket_(nullptr, net_log, source), pending_accept_(false) {}
 
 TCPServerSocket::~TCPServerSocket() {
 }

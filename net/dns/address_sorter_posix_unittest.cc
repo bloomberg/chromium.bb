@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
+#include "net/base/socket_performance_watcher.h"
 #include "net/base/test_completion_callback.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/socket/ssl_client_socket.h"
@@ -108,6 +109,7 @@ class TestSocketFactory : public ClientSocketFactory {
   }
   scoped_ptr<StreamSocket> CreateTransportClientSocket(
       const AddressList&,
+      scoped_ptr<SocketPerformanceWatcher>,
       NetLog*,
       const NetLog::Source&) override {
     NOTIMPLEMENTED();

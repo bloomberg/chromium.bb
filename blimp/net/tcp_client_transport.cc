@@ -37,7 +37,7 @@ void TCPClientTransport::Connect(const net::CompletionCallback& callback) {
 
   connect_callback_ = callback;
   socket_ = socket_factory_->CreateTransportClientSocket(
-      net::AddressList(ip_endpoint_), net_log_, net::NetLog::Source());
+      net::AddressList(ip_endpoint_), nullptr, net_log_, net::NetLog::Source());
   net::CompletionCallback completion_callback = base::Bind(
       &TCPClientTransport::OnTCPConnectComplete, base::Unretained(this));
 

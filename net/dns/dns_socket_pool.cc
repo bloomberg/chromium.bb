@@ -62,9 +62,8 @@ scoped_ptr<StreamSocket> DnsSocketPool::CreateTCPSocket(
     const NetLog::Source& source) {
   DCHECK_LT(server_index, nameservers_->size());
 
-  return scoped_ptr<StreamSocket>(
-      socket_factory_->CreateTransportClientSocket(
-          AddressList((*nameservers_)[server_index]), net_log_, source));
+  return scoped_ptr<StreamSocket>(socket_factory_->CreateTransportClientSocket(
+      AddressList((*nameservers_)[server_index]), NULL, net_log_, source));
 }
 
 scoped_ptr<DatagramClientSocket> DnsSocketPool::CreateConnectedSocket(

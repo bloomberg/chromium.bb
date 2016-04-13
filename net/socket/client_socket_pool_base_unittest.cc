@@ -29,6 +29,7 @@
 #include "net/base/load_timing_info_test_util.h"
 #include "net/base/net_errors.h"
 #include "net/base/request_priority.h"
+#include "net/base/socket_performance_watcher.h"
 #include "net/base/test_completion_callback.h"
 #include "net/http/http_response_headers.h"
 #include "net/log/net_log.h"
@@ -214,6 +215,7 @@ class MockClientSocketFactory : public ClientSocketFactory {
 
   scoped_ptr<StreamSocket> CreateTransportClientSocket(
       const AddressList& addresses,
+      scoped_ptr<SocketPerformanceWatcher> /* socket_performance_watcher */,
       NetLog* /* net_log */,
       const NetLog::Source& /*source*/) override {
     allocation_count_++;
@@ -309,7 +311,7 @@ class TestConnectJob : public ConnectJob {
 
   int ConnectInternal() override {
     AddressList ignored;
-    client_socket_factory_->CreateTransportClientSocket(ignored, NULL,
+    client_socket_factory_->CreateTransportClientSocket(ignored, NULL, NULL,
                                                         NetLog::Source());
     SetSocket(
         scoped_ptr<StreamSocket>(new MockClientSocket(net_log().net_log())));

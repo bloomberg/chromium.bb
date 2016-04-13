@@ -99,7 +99,7 @@ void TCPSocket::Connect(const net::AddressList& address,
   int result = net::ERR_CONNECTION_FAILED;
   if (!is_connected_) {
     socket_.reset(
-        new net::TCPClientSocket(address, NULL, net::NetLog::Source()));
+        new net::TCPClientSocket(address, NULL, NULL, net::NetLog::Source()));
     result = socket_->Connect(
         base::Bind(&TCPSocket::OnConnectComplete, base::Unretained(this)));
   }

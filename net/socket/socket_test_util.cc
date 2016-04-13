@@ -728,6 +728,7 @@ MockClientSocketFactory::CreateDatagramClientSocket(
 
 scoped_ptr<StreamSocket> MockClientSocketFactory::CreateTransportClientSocket(
     const AddressList& addresses,
+    scoped_ptr<SocketPerformanceWatcher> socket_performance_watcher,
     NetLog* net_log,
     const NetLog::Source& source) {
   SocketDataProvider* data_provider = mock_data_.GetNext();
@@ -1612,12 +1613,12 @@ MockTransportClientSocketPool::MockTransportClientSocketPool(
                                 max_sockets_per_group,
                                 NULL,
                                 NULL,
+                                NULL,
                                 NULL),
       client_socket_factory_(socket_factory),
       last_request_priority_(DEFAULT_PRIORITY),
       release_count_(0),
-      cancel_count_(0) {
-}
+      cancel_count_(0) {}
 
 MockTransportClientSocketPool::~MockTransportClientSocketPool() {}
 
@@ -1632,7 +1633,7 @@ int MockTransportClientSocketPool::RequestSocket(
   last_request_priority_ = priority;
   scoped_ptr<StreamSocket> socket =
       client_socket_factory_->CreateTransportClientSocket(
-          AddressList(), net_log.net_log(), NetLog::Source());
+          AddressList(), NULL, net_log.net_log(), NetLog::Source());
   MockConnectJob* job = new MockConnectJob(std::move(socket), handle, callback);
   job_list_.push_back(make_scoped_ptr(job));
   handle->set_pool_id(1);
@@ -1665,9 +1666,9 @@ MockSOCKSClientSocketPool::MockSOCKSClientSocketPool(
                             max_sockets_per_group,
                             NULL,
                             transport_pool,
+                            NULL,
                             NULL),
-      transport_pool_(transport_pool) {
-}
+      transport_pool_(transport_pool) {}
 
 MockSOCKSClientSocketPool::~MockSOCKSClientSocketPool() {}
 

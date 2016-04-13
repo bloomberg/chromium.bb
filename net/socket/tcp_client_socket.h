@@ -20,15 +20,19 @@
 
 namespace net {
 
+class SocketPerformanceWatcher;
+
 // A client socket that uses TCP as the transport layer.
 class NET_EXPORT TCPClientSocket : public StreamSocket {
  public:
   // The IP address(es) and port number to connect to.  The TCP socket will try
   // each IP address in the list until it succeeds in establishing a
   // connection.
-  TCPClientSocket(const AddressList& addresses,
-                  net::NetLog* net_log,
-                  const net::NetLog::Source& source);
+  TCPClientSocket(
+      const AddressList& addresses,
+      scoped_ptr<SocketPerformanceWatcher> socket_performance_watcher,
+      net::NetLog* net_log,
+      const net::NetLog::Source& source);
 
   // Adopts the given, connected socket and then acts as if Connect() had been
   // called. This function is used by TCPServerSocket and for testing.
@@ -103,6 +107,13 @@ class NET_EXPORT TCPClientSocket : public StreamSocket {
   // Emits histograms for TCP metrics, at the time the socket is
   // disconnected.
   void EmitTCPMetricsHistogramsOnDisconnect();
+
+  // Socket performance statistics (such as RTT) are reported to the
+  // |socket_performance_watcher_|. May be nullptr.
+  // |socket_performance_watcher_| is owned by |socket_|. If non-null,
+  // |socket_performance_watcher_| is guaranteed to be destroyed when |socket_|
+  // is destroyed.
+  SocketPerformanceWatcher* socket_performance_watcher_;
 
   scoped_ptr<TCPSocket> socket_;
 

@@ -85,7 +85,7 @@ class MockSSLClientSocket : public net::SSLClientSocket {
 class MockTCPSocket : public net::TCPClientSocket {
  public:
   explicit MockTCPSocket(const net::AddressList& address_list)
-      : net::TCPClientSocket(address_list, NULL, net::NetLog::Source()) {}
+      : net::TCPClientSocket(address_list, NULL, NULL, net::NetLog::Source()) {}
 
   MOCK_METHOD3(Read,
                int(net::IOBuffer* buf,

@@ -242,9 +242,12 @@ void TCPSocketWin::Core::WriteDelegate::OnObjectSignaled(
 
 //-----------------------------------------------------------------------------
 
-TCPSocketWin::TCPSocketWin(net::NetLog* net_log,
-                           const net::NetLog::Source& source)
+TCPSocketWin::TCPSocketWin(
+    scoped_ptr<SocketPerformanceWatcher> socket_performance_watcher,
+    net::NetLog* net_log,
+    const net::NetLog::Source& source)
     : socket_(INVALID_SOCKET),
+      socket_performance_watcher_(std::move(socket_performance_watcher)),
       accept_event_(WSA_INVALID_EVENT),
       accept_socket_(NULL),
       accept_address_(NULL),
@@ -699,8 +702,8 @@ int TCPSocketWin::AcceptInternal(scoped_ptr<TCPSocketWin>* socket,
     net_log_.EndEventWithNetErrorCode(NetLog::TYPE_TCP_ACCEPT, net_error);
     return net_error;
   }
-  scoped_ptr<TCPSocketWin> tcp_socket(new TCPSocketWin(
-      net_log_.net_log(), net_log_.source()));
+  scoped_ptr<TCPSocketWin> tcp_socket(
+      new TCPSocketWin(NULL, net_log_.net_log(), net_log_.source()));
   int adopt_result = tcp_socket->AdoptConnectedSocket(new_socket, ip_end_point);
   if (adopt_result != OK) {
     net_log_.EndEventWithNetErrorCode(NetLog::TYPE_TCP_ACCEPT, adopt_result);

@@ -117,7 +117,7 @@ void TransportClientSocketTest::SetUp() {
   CHECK_EQ(ERR_IO_PENDING, rv);
   rv = callback.WaitForResult();
   CHECK_EQ(rv, OK);
-  sock_ = socket_factory_->CreateTransportClientSocket(addr, &net_log_,
+  sock_ = socket_factory_->CreateTransportClientSocket(addr, NULL, &net_log_,
                                                        NetLog::Source());
 }
 

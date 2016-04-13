@@ -81,7 +81,7 @@ void WebSocket::Connect(const net::CompletionCallback& callback) {
   }
 
   net::NetLog::Source source;
-  socket_.reset(new net::TCPClientSocket(addresses, NULL, source));
+  socket_.reset(new net::TCPClientSocket(addresses, NULL, NULL, source));
 
   state_ = CONNECTING;
   connect_callback_ = callback;

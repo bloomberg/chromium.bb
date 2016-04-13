@@ -48,7 +48,10 @@ class MockTCPClientSocket : public net::TCPClientSocket {
 };
 
 MockTCPClientSocket::MockTCPClientSocket()
-    : TCPClientSocket(net::AddressList(), nullptr, net::NetLog::Source()) {}
+    : TCPClientSocket(net::AddressList(),
+                      nullptr,
+                      nullptr,
+                      net::NetLog::Source()) {}
 MockTCPClientSocket::~MockTCPClientSocket() {}
 
 }  // namespace extensions

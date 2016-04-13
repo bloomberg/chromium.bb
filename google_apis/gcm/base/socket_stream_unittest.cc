@@ -176,7 +176,7 @@ void GCMSocketStreamTest::WaitForData(int msg_size) {
 
 void GCMSocketStreamTest::OpenConnection() {
   socket_ = socket_factory_.CreateTransportClientSocket(
-      address_list_, NULL, net::NetLog::Source());
+      address_list_, NULL, NULL, net::NetLog::Source());
   socket_->Connect(
       base::Bind(&GCMSocketStreamTest::ConnectCallback,
                  base::Unretained(this)));

@@ -60,10 +60,11 @@ class DefaultClientSocketFactory : public ClientSocketFactory,
 
   scoped_ptr<StreamSocket> CreateTransportClientSocket(
       const AddressList& addresses,
+      scoped_ptr<SocketPerformanceWatcher> socket_performance_watcher,
       NetLog* net_log,
       const NetLog::Source& source) override {
-    return scoped_ptr<StreamSocket>(
-        new TCPClientSocket(addresses, net_log, source));
+    return scoped_ptr<StreamSocket>(new TCPClientSocket(
+        addresses, std::move(socket_performance_watcher), net_log, source));
   }
 
   scoped_ptr<SSLClientSocket> CreateSSLClientSocket(

@@ -8,12 +8,19 @@
 
 #include "net/socket/tcp_client_socket.h"
 
+#include <stddef.h>
+
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
+#include "net/base/socket_performance_watcher.h"
 #include "net/base/test_completion_callback.h"
 #include "net/socket/tcp_server_socket.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+namespace base {
+class TimeDelta;
+}
 
 namespace net {
 
@@ -29,7 +36,8 @@ TEST(TCPClientSocketTest, BindLoopbackToLoopback) {
   IPEndPoint server_address;
   ASSERT_EQ(OK, server.GetLocalAddress(&server_address));
 
-  TCPClientSocket socket(AddressList(server_address), NULL, NetLog::Source());
+  TCPClientSocket socket(AddressList(server_address), NULL, NULL,
+                         NetLog::Source());
 
   EXPECT_EQ(OK, socket.Bind(IPEndPoint(lo_address, 0)));
 
@@ -61,7 +69,7 @@ TEST(TCPClientSocketTest, BindLoopbackToLoopback) {
 TEST(TCPClientSocketTest, BindLoopbackToExternal) {
   IPAddress external_ip(72, 14, 213, 105);
   TCPClientSocket socket(AddressList::CreateFromIPAddress(external_ip, 80),
-                         NULL, NetLog::Source());
+                         NULL, NULL, NetLog::Source());
 
   EXPECT_EQ(OK, socket.Bind(IPEndPoint(IPAddress::IPv4Localhost(), 0)));
 
@@ -89,7 +97,8 @@ TEST(TCPClientSocketTest, BindLoopbackToIPv6) {
 
   IPEndPoint server_address;
   ASSERT_EQ(OK, server.GetLocalAddress(&server_address));
-  TCPClientSocket socket(AddressList(server_address), NULL, NetLog::Source());
+  TCPClientSocket socket(AddressList(server_address), NULL, NULL,
+                         NetLog::Source());
 
   EXPECT_EQ(OK, socket.Bind(IPEndPoint(IPAddress::IPv4Localhost(), 0)));
 
@@ -99,6 +108,58 @@ TEST(TCPClientSocketTest, BindLoopbackToIPv6) {
     result = connect_callback.WaitForResult();
 
   EXPECT_NE(OK, result);
+}
+
+class TestSocketPerformanceWatcher : public SocketPerformanceWatcher {
+ public:
+  TestSocketPerformanceWatcher() : connection_changed_count_(0u) {}
+  ~TestSocketPerformanceWatcher() override {}
+
+  bool ShouldNotifyUpdatedRTT() const override { return true; }
+
+  void OnUpdatedRTTAvailable(const base::TimeDelta& rtt) override {}
+
+  void OnConnectionChanged() override { connection_changed_count_++; }
+
+  size_t connection_changed_count() const { return connection_changed_count_; }
+
+ private:
+  size_t connection_changed_count_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestSocketPerformanceWatcher);
+};
+
+// TestSocketPerformanceWatcher requires kernel support for tcp_info struct, and
+// so it is enabled only on certain platforms.
+#if defined(TCP_INFO) || defined(OS_LINUX)
+#define MAYBE_TestSocketPerformanceWatcher TestSocketPerformanceWatcher
+#else
+#define MAYBE_TestSocketPerformanceWatcher TestSocketPerformanceWatcher
+#endif
+// Tests if the socket performance watcher is notified if the same socket is
+// used for a different connection.
+TEST(TCPClientSocketTest, MAYBE_TestSocketPerformanceWatcher) {
+  const size_t kNumIPs = 2;
+  IPAddressList ip_list;
+  for (size_t i = 0; i < kNumIPs; ++i)
+    ip_list.push_back(IPAddress(72, 14, 213, i));
+
+  scoped_ptr<TestSocketPerformanceWatcher> watcher(
+      new TestSocketPerformanceWatcher());
+  TestSocketPerformanceWatcher* watcher_ptr = watcher.get();
+
+  TCPClientSocket socket(
+      AddressList::CreateFromIPAddressList(ip_list, "example.com"),
+      std::move(watcher), NULL, NetLog::Source());
+
+  EXPECT_EQ(OK, socket.Bind(IPEndPoint(IPAddress::IPv4Localhost(), 0)));
+
+  TestCompletionCallback connect_callback;
+
+  ASSERT_NE(OK, connect_callback.GetResult(
+                    socket.Connect(connect_callback.callback())));
+
+  EXPECT_EQ(kNumIPs - 1, watcher_ptr->connection_changed_count());
 }
 
 }  // namespace

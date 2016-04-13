@@ -67,8 +67,8 @@ TEST_F(TCPServerSocketTest, Accept) {
   ASSERT_NO_FATAL_FAILURE(SetUpIPv4());
 
   TestCompletionCallback connect_callback;
-  TCPClientSocket connecting_socket(local_address_list(),
-                                    NULL, NetLog::Source());
+  TCPClientSocket connecting_socket(local_address_list(), NULL, NULL,
+                                    NetLog::Source());
   connecting_socket.Connect(connect_callback.callback());
 
   TestCompletionCallback accept_callback;
@@ -98,8 +98,8 @@ TEST_F(TCPServerSocketTest, AcceptAsync) {
             socket_.Accept(&accepted_socket, accept_callback.callback()));
 
   TestCompletionCallback connect_callback;
-  TCPClientSocket connecting_socket(local_address_list(),
-                                    NULL, NetLog::Source());
+  TCPClientSocket connecting_socket(local_address_list(), NULL, NULL,
+                                    NetLog::Source());
   connecting_socket.Connect(connect_callback.callback());
 
   EXPECT_EQ(OK, connect_callback.WaitForResult());
@@ -123,13 +123,13 @@ TEST_F(TCPServerSocketTest, Accept2Connections) {
             socket_.Accept(&accepted_socket, accept_callback.callback()));
 
   TestCompletionCallback connect_callback;
-  TCPClientSocket connecting_socket(local_address_list(),
-                                    NULL, NetLog::Source());
+  TCPClientSocket connecting_socket(local_address_list(), NULL, NULL,
+                                    NetLog::Source());
   connecting_socket.Connect(connect_callback.callback());
 
   TestCompletionCallback connect_callback2;
-  TCPClientSocket connecting_socket2(local_address_list(),
-                                     NULL, NetLog::Source());
+  TCPClientSocket connecting_socket2(local_address_list(), NULL, NULL,
+                                     NetLog::Source());
   connecting_socket2.Connect(connect_callback2.callback());
 
   EXPECT_EQ(OK, accept_callback.WaitForResult());
@@ -160,8 +160,8 @@ TEST_F(TCPServerSocketTest, AcceptIPv6) {
     return;
 
   TestCompletionCallback connect_callback;
-  TCPClientSocket connecting_socket(local_address_list(),
-                                    NULL, NetLog::Source());
+  TCPClientSocket connecting_socket(local_address_list(), NULL, NULL,
+                                    NetLog::Source());
   connecting_socket.Connect(connect_callback.callback());
 
   TestCompletionCallback accept_callback;
@@ -184,8 +184,8 @@ TEST_F(TCPServerSocketTest, AcceptIO) {
   ASSERT_NO_FATAL_FAILURE(SetUpIPv4());
 
   TestCompletionCallback connect_callback;
-  TCPClientSocket connecting_socket(local_address_list(),
-                                    NULL, NetLog::Source());
+  TCPClientSocket connecting_socket(local_address_list(), NULL, NULL,
+                                    NetLog::Source());
   connecting_socket.Connect(connect_callback.callback());
 
   TestCompletionCallback accept_callback;

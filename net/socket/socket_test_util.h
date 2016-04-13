@@ -25,6 +25,7 @@
 #include "net/base/address_list.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
+#include "net/base/socket_performance_watcher.h"
 #include "net/base/test_completion_callback.h"
 #include "net/http/http_auth_controller.h"
 #include "net/http/http_proxy_client_socket_pool.h"
@@ -521,6 +522,7 @@ class MockClientSocketFactory : public ClientSocketFactory {
       const NetLog::Source& source) override;
   scoped_ptr<StreamSocket> CreateTransportClientSocket(
       const AddressList& addresses,
+      scoped_ptr<SocketPerformanceWatcher> socket_performance_watcher,
       NetLog* net_log,
       const NetLog::Source& source) override;
   scoped_ptr<SSLClientSocket> CreateSSLClientSocket(

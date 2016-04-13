@@ -210,7 +210,7 @@ net::StreamSocket* GCMConnectionHandlerImplTest::BuildSocket(
   socket_factory_.AddSocketDataProvider(data_provider_.get());
 
   socket_ = socket_factory_.CreateTransportClientSocket(
-      address_list_, NULL, net::NetLog::Source());
+      address_list_, NULL, NULL, net::NetLog::Source());
   socket_->Connect(net::CompletionCallback());
 
   run_loop_.reset(new base::RunLoop());

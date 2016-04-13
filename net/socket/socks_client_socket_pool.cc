@@ -188,6 +188,7 @@ SOCKSClientSocketPool::SOCKSClientSocketPool(
     int max_sockets_per_group,
     HostResolver* host_resolver,
     TransportClientSocketPool* transport_pool,
+    SocketPerformanceWatcherFactory*,
     NetLog* net_log)
     : transport_pool_(transport_pool),
       base_(

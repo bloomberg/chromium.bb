@@ -48,7 +48,8 @@ ClientSocketPoolManager* CreateSocketPoolManager(
       params.net_log,
       params.client_socket_factory ? params.client_socket_factory
                                    : ClientSocketFactory::GetDefaultFactory(),
-      params.host_resolver, params.cert_verifier, params.channel_id_service,
+      params.socket_performance_watcher_factory, params.host_resolver,
+      params.cert_verifier, params.channel_id_service,
       params.transport_security_state, params.cert_transparency_verifier,
       params.ct_policy_enforcer, ssl_session_cache_shard,
       params.ssl_config_service, pool_type);

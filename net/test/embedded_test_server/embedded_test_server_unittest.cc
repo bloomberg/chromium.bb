@@ -298,7 +298,7 @@ TEST_P(EmbeddedTestServerTest, ConnectionListenerAccept) {
 
   scoped_ptr<StreamSocket> socket =
       ClientSocketFactory::GetDefaultFactory()->CreateTransportClientSocket(
-          address_list, &net_log, NetLog::Source());
+          address_list, NULL, &net_log, NetLog::Source());
   TestCompletionCallback callback;
   ASSERT_EQ(OK, callback.GetResult(socket->Connect(callback.callback())));
 

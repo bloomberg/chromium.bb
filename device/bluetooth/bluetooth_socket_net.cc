@@ -117,7 +117,7 @@ void BluetoothSocketNet::ResetData() {
 }
 
 void BluetoothSocketNet::ResetTCPSocket() {
-  tcp_socket_.reset(new net::TCPSocket(NULL, net::NetLog::Source()));
+  tcp_socket_.reset(new net::TCPSocket(NULL, NULL, net::NetLog::Source()));
 }
 
 void BluetoothSocketNet::SetTCPSocket(

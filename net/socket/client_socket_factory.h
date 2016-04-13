@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "net/base/net_export.h"
 #include "net/base/rand_callback.h"
+#include "net/base/socket_performance_watcher.h"
 #include "net/log/net_log.h"
 #include "net/udp/datagram_socket.h"
 
@@ -40,6 +41,7 @@ class NET_EXPORT ClientSocketFactory {
 
   virtual scoped_ptr<StreamSocket> CreateTransportClientSocket(
       const AddressList& addresses,
+      scoped_ptr<SocketPerformanceWatcher> socket_performance_watcher,
       NetLog* net_log,
       const NetLog::Source& source) = 0;
 

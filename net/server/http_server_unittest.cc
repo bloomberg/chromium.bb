@@ -78,7 +78,7 @@ class TestHttpClient {
   int ConnectAndWait(const IPEndPoint& address) {
     AddressList addresses(address);
     NetLog::Source source;
-    socket_.reset(new TCPClientSocket(addresses, NULL, source));
+    socket_.reset(new TCPClientSocket(addresses, NULL, NULL, source));
 
     base::RunLoop run_loop;
     connect_result_ = socket_->Connect(base::Bind(&TestHttpClient::OnConnect,

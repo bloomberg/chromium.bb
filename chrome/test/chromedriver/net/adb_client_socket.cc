@@ -366,7 +366,7 @@ AdbClientSocket::~AdbClientSocket() {
 void AdbClientSocket::Connect(const net::CompletionCallback& callback) {
   net::AddressList address_list = net::AddressList::CreateFromIPAddress(
       net::IPAddress::IPv4Localhost(), port_);
-  socket_.reset(new net::TCPClientSocket(address_list, NULL,
+  socket_.reset(new net::TCPClientSocket(address_list, NULL, NULL,
                                          net::NetLog::Source()));
   int result = socket_->Connect(callback);
   if (result != net::ERR_IO_PENDING)

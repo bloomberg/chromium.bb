@@ -4,6 +4,7 @@
 
 #include "net/base/network_quality_estimator.h"
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include <limits>
@@ -1120,6 +1121,61 @@ TEST(NetworkQualityEstimatorTest, TestObservers) {
   EXPECT_EQ(tcp_rtt.InMilliseconds(), rtt_observer.observations().at(2).rtt_ms);
   EXPECT_EQ(quic_rtt.InMilliseconds(),
             rtt_observer.observations().at(3).rtt_ms);
+}
+
+// TestTCPSocketRTT requires kernel support for tcp_info struct, and so it is
+// enabled only on certain platforms.
+#if defined(TCP_INFO) || defined(OS_LINUX)
+#define MAYBE_TestTCPSocketRTT TestTCPSocketRTT
+#else
+#define MAYBE_TestTCPSocketRTT DISABLED_TestTCPSocketRTT
+#endif
+// Tests that the TCP socket notifies the Network Quality Estimator of TCP RTTs,
+// which in turn notifies registered RTT observers.
+TEST(NetworkQualityEstimatorTest, MAYBE_TestTCPSocketRTT) {
+  TestRTTObserver rtt_observer;
+  std::map<std::string, std::string> variation_params;
+  TestNetworkQualityEstimator estimator(variation_params);
+  estimator.AddRTTObserver(&rtt_observer);
+
+  TestDelegate test_delegate;
+  TestURLRequestContext context(true);
+  context.set_network_quality_estimator(&estimator);
+
+  scoped_ptr<HttpNetworkSession::Params> params(new HttpNetworkSession::Params);
+  // |estimator| should be notified of TCP RTT observations.
+  params->socket_performance_watcher_factory =
+      estimator.GetSocketPerformanceWatcherFactory();
+  context.set_http_network_session_params(std::move(params));
+  context.Init();
+
+  EXPECT_EQ(0U, rtt_observer.observations().size());
+
+  // Send two requests. Verify that the completion of each request generates at
+  // least one TCP RTT observation.
+  for (size_t i = 0; i < 2; ++i) {
+    size_t before_count_tcp_rtt_observations = 0;
+    for (const auto& observation : rtt_observer.observations()) {
+      if (observation.source == NetworkQualityEstimator::TCP)
+        ++before_count_tcp_rtt_observations;
+    }
+
+    scoped_ptr<URLRequest> request(context.CreateRequest(
+        estimator.GetEchoURL(), DEFAULT_PRIORITY, &test_delegate));
+    request->Start();
+    base::RunLoop().Run();
+
+    size_t after_count_tcp_rtt_observations = 0;
+    for (const auto& observation : rtt_observer.observations()) {
+      if (observation.source == NetworkQualityEstimator::TCP)
+        ++after_count_tcp_rtt_observations;
+    }
+    // At least one notification should be received per socket performance
+    // watcher.
+    EXPECT_LE(1U, after_count_tcp_rtt_observations -
+                      before_count_tcp_rtt_observations)
+        << i;
+  }
 }
 
 }  // namespace net

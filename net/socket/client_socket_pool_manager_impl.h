@@ -27,6 +27,7 @@ class CTVerifier;
 class HttpProxyClientSocketPool;
 class HostResolver;
 class NetLog;
+class SocketPerformanceWatcherFactory;
 class SOCKSClientSocketPool;
 class SSLClientSocketPool;
 class SSLConfigService;
@@ -54,17 +55,19 @@ class ClientSocketPoolManagerImpl : public base::NonThreadSafe,
                                     public ClientSocketPoolManager,
                                     public CertDatabase::Observer {
  public:
-  ClientSocketPoolManagerImpl(NetLog* net_log,
-                              ClientSocketFactory* socket_factory,
-                              HostResolver* host_resolver,
-                              CertVerifier* cert_verifier,
-                              ChannelIDService* channel_id_service,
-                              TransportSecurityState* transport_security_state,
-                              CTVerifier* cert_transparency_verifier,
-                              CTPolicyEnforcer* ct_policy_enforcer,
-                              const std::string& ssl_session_cache_shard,
-                              SSLConfigService* ssl_config_service,
-                              HttpNetworkSession::SocketPoolType pool_type);
+  ClientSocketPoolManagerImpl(
+      NetLog* net_log,
+      ClientSocketFactory* socket_factory,
+      SocketPerformanceWatcherFactory* socket_performance_watcher_factory,
+      HostResolver* host_resolver,
+      CertVerifier* cert_verifier,
+      ChannelIDService* channel_id_service,
+      TransportSecurityState* transport_security_state,
+      CTVerifier* cert_transparency_verifier,
+      CTPolicyEnforcer* ct_policy_enforcer,
+      const std::string& ssl_session_cache_shard,
+      SSLConfigService* ssl_config_service,
+      HttpNetworkSession::SocketPoolType pool_type);
   ~ClientSocketPoolManagerImpl() override;
 
   void FlushSocketPoolsWithError(int error) override;
@@ -102,6 +105,7 @@ class ClientSocketPoolManagerImpl : public base::NonThreadSafe,
 
   NetLog* const net_log_;
   ClientSocketFactory* const socket_factory_;
+  SocketPerformanceWatcherFactory* socket_performance_watcher_factory_;
   HostResolver* const host_resolver_;
   CertVerifier* const cert_verifier_;
   ChannelIDService* const channel_id_service_;

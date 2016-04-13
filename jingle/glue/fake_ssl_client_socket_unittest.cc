@@ -101,7 +101,7 @@ class FakeSSLClientSocketTest : public testing::Test {
 
   scoped_ptr<net::StreamSocket> MakeClientSocket() {
     return mock_client_socket_factory_.CreateTransportClientSocket(
-        net::AddressList(), NULL, net::NetLog::Source());
+        net::AddressList(), NULL, NULL, net::NetLog::Source());
   }
 
   void SetData(const net::MockConnect& mock_connect,

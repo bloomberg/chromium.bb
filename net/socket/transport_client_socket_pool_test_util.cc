@@ -372,6 +372,7 @@ MockTransportClientSocketFactory::CreateDatagramClientSocket(
 scoped_ptr<StreamSocket>
 MockTransportClientSocketFactory::CreateTransportClientSocket(
     const AddressList& addresses,
+    scoped_ptr<SocketPerformanceWatcher> /* socket_performance_watcher */,
     NetLog* /* net_log */,
     const NetLog::Source& /* source */) {
   allocation_count_++;

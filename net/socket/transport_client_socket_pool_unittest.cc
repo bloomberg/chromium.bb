@@ -39,20 +39,19 @@ class TransportClientSocketPoolTest : public testing::Test {
   TransportClientSocketPoolTest()
       : connect_backup_jobs_enabled_(
             ClientSocketPoolBaseHelper::set_connect_backup_jobs_enabled(true)),
-        params_(
-            new TransportSocketParams(
-                HostPortPair("www.google.com", 80),
-                false,
-                OnHostResolutionCallback(),
-                TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DEFAULT)),
+        params_(new TransportSocketParams(
+            HostPortPair("www.google.com", 80),
+            false,
+            OnHostResolutionCallback(),
+            TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DEFAULT)),
         host_resolver_(new MockHostResolver),
         client_socket_factory_(&net_log_),
         pool_(kMaxSockets,
               kMaxSocketsPerGroup,
               host_resolver_.get(),
               &client_socket_factory_,
-              NULL) {
-  }
+              NULL,
+              NULL) {}
 
   ~TransportClientSocketPoolTest() override {
     internal::ClientSocketPoolBaseHelper::set_connect_backup_jobs_enabled(
@@ -855,11 +854,9 @@ TEST_F(TransportClientSocketPoolTest, BackupSocketFailAfterDelay) {
 TEST_F(TransportClientSocketPoolTest, IPv6FallbackSocketIPv4FinishesFirst) {
   // Create a pool without backup jobs.
   ClientSocketPoolBaseHelper::set_connect_backup_jobs_enabled(false);
-  TransportClientSocketPool pool(kMaxSockets,
-                                 kMaxSocketsPerGroup,
-                                 host_resolver_.get(),
-                                 &client_socket_factory_,
-                                 NULL);
+  TransportClientSocketPool pool(kMaxSockets, kMaxSocketsPerGroup,
+                                 host_resolver_.get(), &client_socket_factory_,
+                                 NULL, NULL);
 
   MockTransportClientSocketFactory::ClientSocketType case_types[] = {
       // This is the IPv6 socket. It stalls, but presents one failed connection
@@ -906,11 +903,9 @@ TEST_F(TransportClientSocketPoolTest, IPv6FallbackSocketIPv4FinishesFirst) {
 TEST_F(TransportClientSocketPoolTest, IPv6FallbackSocketIPv6FinishesFirst) {
   // Create a pool without backup jobs.
   ClientSocketPoolBaseHelper::set_connect_backup_jobs_enabled(false);
-  TransportClientSocketPool pool(kMaxSockets,
-                                 kMaxSocketsPerGroup,
-                                 host_resolver_.get(),
-                                 &client_socket_factory_,
-                                 NULL);
+  TransportClientSocketPool pool(kMaxSockets, kMaxSocketsPerGroup,
+                                 host_resolver_.get(), &client_socket_factory_,
+                                 NULL, NULL);
 
   MockTransportClientSocketFactory::ClientSocketType case_types[] = {
       // This is the IPv6 socket.
@@ -957,11 +952,9 @@ TEST_F(TransportClientSocketPoolTest, IPv6FallbackSocketIPv6FinishesFirst) {
 TEST_F(TransportClientSocketPoolTest, IPv6NoIPv4AddressesToFallbackTo) {
   // Create a pool without backup jobs.
   ClientSocketPoolBaseHelper::set_connect_backup_jobs_enabled(false);
-  TransportClientSocketPool pool(kMaxSockets,
-                                 kMaxSocketsPerGroup,
-                                 host_resolver_.get(),
-                                 &client_socket_factory_,
-                                 NULL);
+  TransportClientSocketPool pool(kMaxSockets, kMaxSocketsPerGroup,
+                                 host_resolver_.get(), &client_socket_factory_,
+                                 NULL, NULL);
 
   client_socket_factory_.set_default_client_socket_type(
       MockTransportClientSocketFactory::MOCK_DELAYED_CLIENT_SOCKET);
@@ -992,11 +985,9 @@ TEST_F(TransportClientSocketPoolTest, IPv6NoIPv4AddressesToFallbackTo) {
 TEST_F(TransportClientSocketPoolTest, IPv4HasNoFallback) {
   // Create a pool without backup jobs.
   ClientSocketPoolBaseHelper::set_connect_backup_jobs_enabled(false);
-  TransportClientSocketPool pool(kMaxSockets,
-                                 kMaxSocketsPerGroup,
-                                 host_resolver_.get(),
-                                 &client_socket_factory_,
-                                 NULL);
+  TransportClientSocketPool pool(kMaxSockets, kMaxSocketsPerGroup,
+                                 host_resolver_.get(), &client_socket_factory_,
+                                 NULL, NULL);
 
   client_socket_factory_.set_default_client_socket_type(
       MockTransportClientSocketFactory::MOCK_DELAYED_CLIENT_SOCKET);
@@ -1031,11 +1022,8 @@ TEST_F(TransportClientSocketPoolTest, TCPFastOpenOnIPv4WithNoFallback) {
   factory.AddSocketDataProvider(&socket_data);
   // Create a pool without backup jobs.
   ClientSocketPoolBaseHelper::set_connect_backup_jobs_enabled(false);
-  TransportClientSocketPool pool(kMaxSockets,
-                                 kMaxSocketsPerGroup,
-                                 host_resolver_.get(),
-                                 &factory,
-                                 NULL);
+  TransportClientSocketPool pool(kMaxSockets, kMaxSocketsPerGroup,
+                                 host_resolver_.get(), &factory, NULL, NULL);
   // Resolve an AddressList with only IPv4 addresses.
   host_resolver_->rules()->AddIPLiteralRule("*", "1.1.1.1", std::string());
 
@@ -1057,11 +1045,8 @@ TEST_F(TransportClientSocketPoolTest, TCPFastOpenOnIPv6WithNoFallback) {
   factory.AddSocketDataProvider(&socket_data);
   // Create a pool without backup jobs.
   ClientSocketPoolBaseHelper::set_connect_backup_jobs_enabled(false);
-  TransportClientSocketPool pool(kMaxSockets,
-                                 kMaxSocketsPerGroup,
-                                 host_resolver_.get(),
-                                 &factory,
-                                 NULL);
+  TransportClientSocketPool pool(kMaxSockets, kMaxSocketsPerGroup,
+                                 host_resolver_.get(), &factory, NULL, NULL);
   client_socket_factory_.set_default_client_socket_type(
       MockTransportClientSocketFactory::MOCK_DELAYED_CLIENT_SOCKET);
   // Resolve an AddressList with only IPv6 addresses.
@@ -1091,11 +1076,8 @@ TEST_F(TransportClientSocketPoolTest,
   factory.AddSocketDataProvider(&socket_data_2);
   // Create a pool without backup jobs.
   ClientSocketPoolBaseHelper::set_connect_backup_jobs_enabled(false);
-  TransportClientSocketPool pool(kMaxSockets,
-                                 kMaxSocketsPerGroup,
-                                 host_resolver_.get(),
-                                 &factory,
-                                 NULL);
+  TransportClientSocketPool pool(kMaxSockets, kMaxSocketsPerGroup,
+                                 host_resolver_.get(), &factory, NULL, NULL);
 
   // Resolve an AddressList with a IPv6 address first and then a IPv4 address.
   host_resolver_->rules()
@@ -1126,11 +1108,8 @@ TEST_F(TransportClientSocketPoolTest,
   factory.AddSocketDataProvider(&socket_data);
   // Create a pool without backup jobs.
   ClientSocketPoolBaseHelper::set_connect_backup_jobs_enabled(false);
-  TransportClientSocketPool pool(kMaxSockets,
-                                 kMaxSocketsPerGroup,
-                                 host_resolver_.get(),
-                                 &factory,
-                                 NULL);
+  TransportClientSocketPool pool(kMaxSockets, kMaxSocketsPerGroup,
+                                 host_resolver_.get(), &factory, NULL, NULL);
 
   // Resolve an AddressList with a IPv6 address first and then a IPv4 address.
   host_resolver_->rules()

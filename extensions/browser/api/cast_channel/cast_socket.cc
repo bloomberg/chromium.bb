@@ -174,7 +174,7 @@ bool CastSocketImpl::audio_only() const {
 scoped_ptr<net::TCPClientSocket> CastSocketImpl::CreateTcpSocket() {
   net::AddressList addresses(ip_endpoint_);
   return scoped_ptr<net::TCPClientSocket>(
-      new net::TCPClientSocket(addresses, net_log_, net_log_source_));
+      new net::TCPClientSocket(addresses, nullptr, net_log_, net_log_source_));
   // Options cannot be set on the TCPClientSocket yet, because the
   // underlying platform socket will not be created until Bind()
   // or Connect() is called.

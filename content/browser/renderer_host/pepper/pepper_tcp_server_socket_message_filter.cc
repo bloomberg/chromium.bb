@@ -184,7 +184,7 @@ void PepperTCPServerSocketMessageFilter::DoListen(
 
   state_ = STATE_LISTEN_IN_PROGRESS;
 
-  socket_.reset(new net::TCPSocket(NULL, net::NetLog::Source()));
+  socket_.reset(new net::TCPSocket(NULL, NULL, net::NetLog::Source()));
   int net_result = net::OK;
   do {
     net::IPEndPoint ip_end_point(net::IPAddress(address), port);

@@ -17,6 +17,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "net/base/address_list.h"
+#include "net/base/socket_performance_watcher.h"
 #include "net/log/net_log.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/socket/client_socket_handle.h"
@@ -80,6 +81,7 @@ class MockTransportClientSocketFactory : public ClientSocketFactory {
 
   scoped_ptr<StreamSocket> CreateTransportClientSocket(
       const AddressList& addresses,
+      scoped_ptr<SocketPerformanceWatcher> /* socket_performance_watcher */,
       NetLog* /* net_log */,
       const NetLog::Source& /* source */) override;
 

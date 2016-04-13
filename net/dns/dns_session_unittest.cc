@@ -12,6 +12,7 @@
 #include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "net/base/ip_address.h"
+#include "net/base/socket_performance_watcher.h"
 #include "net/dns/dns_protocol.h"
 #include "net/dns/dns_socket_pool.h"
 #include "net/log/net_log.h"
@@ -36,6 +37,7 @@ class TestClientSocketFactory : public ClientSocketFactory {
 
   scoped_ptr<StreamSocket> CreateTransportClientSocket(
       const AddressList& addresses,
+      scoped_ptr<SocketPerformanceWatcher>,
       NetLog*,
       const NetLog::Source&) override {
     NOTIMPLEMENTED();

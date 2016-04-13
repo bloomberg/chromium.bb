@@ -241,6 +241,7 @@ WebSocketTransportClientSocketPool::WebSocketTransportClientSocketPool(
                                 max_sockets_per_group,
                                 host_resolver,
                                 client_socket_factory,
+                                NULL,
                                 net_log),
       connect_job_delegate_(this),
       pool_net_log_(net_log),

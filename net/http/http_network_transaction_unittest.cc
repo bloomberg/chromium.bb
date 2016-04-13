@@ -631,8 +631,7 @@ template <typename ParentPool>
 CaptureGroupNameSocketPool<ParentPool>::CaptureGroupNameSocketPool(
     HostResolver* host_resolver,
     CertVerifier* /* cert_verifier */)
-    : ParentPool(0, 0, host_resolver, NULL, NULL) {
-}
+    : ParentPool(0, 0, host_resolver, NULL, NULL, NULL) {}
 
 template <>
 CaptureGroupNameHttpProxySocketPool::CaptureGroupNameSocketPool(
@@ -11674,9 +11673,8 @@ TEST_P(HttpNetworkTransactionTest, MultiRoundAuth) {
   TransportClientSocketPool* transport_pool = new TransportClientSocketPool(
       50,  // Max sockets for pool
       1,   // Max sockets per group
-      session_deps_.host_resolver.get(),
-      session_deps_.socket_factory.get(),
-      session_deps_.net_log);
+      session_deps_.host_resolver.get(), session_deps_.socket_factory.get(),
+      NULL, session_deps_.net_log);
   scoped_ptr<MockClientSocketPoolManager> mock_pool_manager(
       new MockClientSocketPoolManager);
   mock_pool_manager->SetTransportSocketPool(transport_pool);

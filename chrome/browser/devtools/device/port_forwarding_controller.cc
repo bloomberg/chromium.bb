@@ -83,7 +83,7 @@ class SocketTunnel : public base::NonThreadSafe {
       return;
     }
 
-    host_socket_.reset(new net::TCPClientSocket(address_list_, nullptr,
+    host_socket_.reset(new net::TCPClientSocket(address_list_, nullptr, nullptr,
                                                 net::NetLog::Source()));
     result = host_socket_->Connect(base::Bind(&SocketTunnel::OnConnected,
                                               base::Unretained(this)));

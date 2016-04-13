@@ -194,7 +194,7 @@ void BluetoothSocketWin::DoConnect(
   }
 
   std::unique_ptr<net::TCPSocket> scoped_socket(
-      new net::TCPSocket(NULL, net::NetLog::Source()));
+      new net::TCPSocket(NULL, NULL, net::NetLog::Source()));
   net::EnsureWinsockInit();
   SOCKET socket_fd = socket(AF_BTH, SOCK_STREAM, BTHPROTO_RFCOMM);
   SOCKADDR_BTH sa;
@@ -261,7 +261,7 @@ void BluetoothSocketWin::DoListen(
   // TCPSocket methods that involve address could not be called. So bind()
   // is called on |socket_fd| directly.
   std::unique_ptr<net::TCPSocket> scoped_socket(
-      new net::TCPSocket(NULL, net::NetLog::Source()));
+      new net::TCPSocket(NULL, NULL, net::NetLog::Source()));
   scoped_socket->AdoptListenSocket(socket_fd);
 
   SOCKADDR_BTH sa;

@@ -127,7 +127,7 @@ class MockXmppClientSocketFactory : public ResolvingClientSocketFactory {
   scoped_ptr<net::StreamSocket> CreateTransportClientSocket(
       const net::HostPortPair& host_and_port) override {
     return mock_client_socket_factory_->CreateTransportClientSocket(
-        address_list_, NULL, net::NetLog::Source());
+        address_list_, NULL, NULL, net::NetLog::Source());
   }
 
   scoped_ptr<net::SSLClientSocket> CreateSSLClientSocket(

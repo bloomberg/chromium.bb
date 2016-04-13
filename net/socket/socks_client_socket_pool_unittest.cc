@@ -96,6 +96,7 @@ class SOCKSClientSocketPoolTest : public testing::Test {
               kMaxSocketsPerGroup,
               &host_resolver_,
               &transport_socket_pool_,
+              NULL,
               NULL) {}
 
   ~SOCKSClientSocketPoolTest() override {}

@@ -20,6 +20,7 @@
 namespace net {
 
 class ConnectJobFactory;
+class SocketPerformanceWatcherFactory;
 class TransportClientSocketPool;
 class TransportSocketParams;
 
@@ -107,12 +108,12 @@ class NET_EXPORT_PRIVATE SOCKSClientSocketPool
  public:
   typedef SOCKSSocketParams SocketParams;
 
-  SOCKSClientSocketPool(
-      int max_sockets,
-      int max_sockets_per_group,
-      HostResolver* host_resolver,
-      TransportClientSocketPool* transport_pool,
-      NetLog* net_log);
+  SOCKSClientSocketPool(int max_sockets,
+                        int max_sockets_per_group,
+                        HostResolver* host_resolver,
+                        TransportClientSocketPool* transport_pool,
+                        SocketPerformanceWatcherFactory*,
+                        NetLog* net_log);
 
   ~SOCKSClientSocketPool() override;
 
