@@ -1,8 +1,12 @@
-<img src="http://127.0.0.1:8080/security/resources/compass.jpg"
-     srcset="http://127.0.0.1:8080/security/resources/compass.jpg 2x">
 <script>
 window.onload = function() {
-    if (window.opener)
-        window.opener.postMessage('done', '*');
+    var img = document.createElement('img');
+    img.src = 'http://127.0.0.1:8080/security/resources/compass.jpg';
+    img.srcset = 'http://127.0.0.1:8080/security/resources/compass.jpg 2x';
+    img.addEventListener('load', function () {
+        if (window.opener)
+            window.opener.postMessage('done', '*');
+    });
+    document.body.appendChild(img);
 };
 </script>
