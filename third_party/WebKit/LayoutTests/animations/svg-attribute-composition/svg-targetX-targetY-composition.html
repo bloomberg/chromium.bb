@@ -14,7 +14,7 @@ assertAttributeInterpolation({
   underlying: '128',
   from: '-32',
   fromComposite: 'add',
-  to: '1029'
+  to: '1029',
   toComposite: 'add',
 }, [
   {at: -0.4, is: -328},
@@ -30,7 +30,7 @@ assertAttributeInterpolation({
   underlying: '-37',
   from: '18',
   fromComposite: 'replace',
-  to: '1'
+  to: '1',
   toComposite: 'add',
 }, [
   {at: -0.4, is: 40},
@@ -44,7 +44,8 @@ assertAttributeInterpolation({
 assertAttributeInterpolation({
   property: 'targetX',
   underlying: '2',
-  to: '-99'
+  from: neutralKeyframe,
+  to: '-99',
   toComposite: 'replace',
 }, [
   {at: -0.4, is: 42},
@@ -61,7 +62,7 @@ assertAttributeInterpolation({
   underlying: '128',
   from: '-32',
   fromComposite: 'add',
-  to: '1029'
+  to: '1029',
   toComposite: 'add',
 }, [
   {at: -0.4, is: -328},
@@ -77,7 +78,7 @@ assertAttributeInterpolation({
   underlying: '-37',
   from: '18',
   fromComposite: 'replace',
-  to: '1'
+  to: '1',
   toComposite: 'add',
 }, [
   {at: -0.4, is: 40},
@@ -91,7 +92,8 @@ assertAttributeInterpolation({
 assertAttributeInterpolation({
   property: 'targetY',
   underlying: '2',
-  to: '-99'
+  from: neutralKeyframe,
+  to: '-99',
   toComposite: 'replace',
 }, [
   {at: -0.4, is: 42},
