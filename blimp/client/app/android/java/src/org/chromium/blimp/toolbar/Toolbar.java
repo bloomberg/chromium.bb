@@ -24,15 +24,20 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.blimp.R;
 import org.chromium.blimp.session.BlimpClientSession;
+import org.chromium.blimp.session.EngineInfo;
+import org.chromium.blimp.settings.AboutBlimpPreferences;
+import org.chromium.blimp.settings.Preferences;
 
 /**
  * A {@link View} that visually represents the Blimp toolbar, which lets users issue navigation
  * commands and displays relevant navigation UI.
  */
 @JNINamespace("blimp::client")
-public class Toolbar extends LinearLayout implements UrlBar.UrlBarObserver,
-        View.OnClickListener {
+public class Toolbar extends LinearLayout implements UrlBar.UrlBarObserver, View.OnClickListener,
+                                                     BlimpClientSession.ConnectionObserver {
+    private static final String TAG = "Toolbar";
     private static final int ID_OPEN_IN_CHROME = 0;
+    private static final int ID_VERSION_INFO = 1;
 
     private long mNativeToolbarPtr;
 
@@ -42,6 +47,8 @@ public class Toolbar extends LinearLayout implements UrlBar.UrlBarObserver,
     private ImageButton mMenuButton;
     private ListPopupWindow mPopupMenu;
     private ProgressBar mProgressBar;
+
+    private EngineInfo mEngineInfo;
 
     /**
      * A URL to load when this object is initialized.  This handles the case where there is a URL
@@ -186,7 +193,8 @@ public class Toolbar extends LinearLayout implements UrlBar.UrlBarObserver,
     private void initializeMenu(View anchorView) {
         mPopupMenu = new ListPopupWindow(mContext);
         mPopupMenu.setAdapter(new ArrayAdapter<String>(mContext, R.layout.toolbar_popup_item,
-                new String[] {mContext.getString(R.string.open_in_chrome)}));
+                new String[] {mContext.getString(R.string.open_in_chrome),
+                        mContext.getString(R.string.version_info)}));
         mPopupMenu.setAnchorView(anchorView);
         mPopupMenu.setWidth(getResources().getDimensionPixelSize(R.dimen.toolbar_popup_item_width));
         mPopupMenu.setVerticalOffset(-anchorView.getHeight());
@@ -196,6 +204,8 @@ public class Toolbar extends LinearLayout implements UrlBar.UrlBarObserver,
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 if (position == ID_OPEN_IN_CHROME) {
                     openInChrome();
+                } else if (position == ID_VERSION_INFO) {
+                    showVersionInfo();
                 }
                 mPopupMenu.dismiss();
             }
@@ -213,6 +223,36 @@ public class Toolbar extends LinearLayout implements UrlBar.UrlBarObserver,
             intent.setPackage(null);
             mContext.startActivity(intent);
         }
+    }
+
+    private void showVersionInfo() {
+        Intent intent = new Intent();
+        intent.setClass(mContext, Preferences.class);
+        intent.putExtra(AboutBlimpPreferences.EXTRA_ASSIGNER_URL, mEngineInfo.assignerUrl);
+        intent.putExtra(AboutBlimpPreferences.EXTRA_ENGINE_IP, mEngineInfo.ipAddress);
+        intent.putExtra(AboutBlimpPreferences.EXTRA_ENGINE_VERSION, mEngineInfo.engineVersion);
+        mContext.startActivity(intent);
+    }
+
+    // BlimpClientSession.ConnectionObserver interface.
+    @Override
+    public void onAssignmentReceived(
+            int result, int suggestedMessageResourceId, EngineInfo engineInfo) {
+        mEngineInfo = engineInfo;
+    }
+
+    @Override
+    public void onConnected() {
+        if (mEngineInfo == null) return;
+
+        mEngineInfo.setConnected(true);
+    }
+
+    @Override
+    public void onDisconnected(String reason) {
+        if (mEngineInfo == null) return;
+
+        mEngineInfo.setConnected(false);
     }
 
     // Methods that are called by native via JNI.

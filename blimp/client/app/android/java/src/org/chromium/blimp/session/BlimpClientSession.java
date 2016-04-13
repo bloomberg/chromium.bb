@@ -9,6 +9,9 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.blimp.R;
 import org.chromium.blimp.assignment.Result;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * The Java representation of a native BlimpClientSession.  This is primarily used to provide access
  * to the native session methods and to facilitate passing a BlimpClientSession object between Java
@@ -17,9 +20,9 @@ import org.chromium.blimp.assignment.Result;
 @JNINamespace("blimp::client")
 public class BlimpClientSession {
     /**
-     * A callback for when the session needs to notify the UI about the state of the Blimp session.
+     * An observer for when the session needs to notify the UI about the state of the Blimp session.
      */
-    public interface Callback {
+    public interface ConnectionObserver {
         /**
          * Called when an engine assignment has been successful or failed.
          * @param result                     The result code of the assignment.  See
@@ -27,8 +30,10 @@ public class BlimpClientSession {
          *                                   {@link Result}.
          * @param suggestedMessageResourceId A suggested resource id for a string to display to the
          *                                   user if necessary.
+         * @param engineInfo                 IP address and version of blimp engine.
          */
-        void onAssignmentReceived(int result, int suggestedMessageResourceId);
+        void onAssignmentReceived(
+                int result, int suggestedMessageResourceId, EngineInfo engineInfo);
 
         /**
          * Called when a connection to the engine was made successfully.
@@ -47,12 +52,30 @@ public class BlimpClientSession {
     private static final String DEFAULT_ASSIGNER_URL =
             "https://blimp-pa.googleapis.com/v1/assignment";
 
-    private final Callback mCallback;
+    private final String mAssignerUrl;
+    private final List<ConnectionObserver> mObservers;
     private long mNativeBlimpClientSessionAndroidPtr;
 
-    public BlimpClientSession(Callback callback) {
-        mCallback = callback;
-        mNativeBlimpClientSessionAndroidPtr = nativeInit(DEFAULT_ASSIGNER_URL);
+    public BlimpClientSession() {
+        mAssignerUrl = DEFAULT_ASSIGNER_URL;
+        mObservers = new ArrayList<ConnectionObserver>();
+        mNativeBlimpClientSessionAndroidPtr = nativeInit(mAssignerUrl);
+    }
+
+    /**
+     * Add an observer to be notified about the connection status.
+     * @param observer The observer to add.
+     */
+    public void addObserver(ConnectionObserver observer) {
+        mObservers.add(observer);
+    }
+
+    /**
+     * Remove an observer from the observer list.
+     * @param observer The observer to remove.
+     */
+    public void removeObserver(ConnectionObserver observer) {
+        mObservers.remove(observer);
     }
 
     /**
@@ -69,14 +92,15 @@ public class BlimpClientSession {
     public void destroy() {
         if (mNativeBlimpClientSessionAndroidPtr == 0) return;
 
+        mObservers.clear();
         nativeDestroy(mNativeBlimpClientSessionAndroidPtr);
         mNativeBlimpClientSessionAndroidPtr = 0;
     }
 
     // Methods that are called by native via JNI.
     @CalledByNative
-    private void onAssignmentReceived(int result) {
-        if (mCallback == null) return;
+    private void onAssignmentReceived(int result, String engineIP, String engineVersion) {
+        if (mObservers.isEmpty()) return;
 
         int resultMessageResourceId = R.string.assignment_failure_unknown;
         switch (result) {
@@ -115,18 +139,24 @@ public class BlimpClientSession {
                 resultMessageResourceId = R.string.assignment_failure_unknown;
                 break;
         }
-        mCallback.onAssignmentReceived(result, resultMessageResourceId);
+        for (ConnectionObserver observer : mObservers) {
+            observer.onAssignmentReceived(result, resultMessageResourceId,
+                    new EngineInfo(engineIP, engineVersion, mAssignerUrl));
+        }
     }
 
     @CalledByNative
     void onConnected() {
-        assert mCallback != null;
-        mCallback.onConnected();
+        for (ConnectionObserver observer : mObservers) {
+            observer.onConnected();
+        }
     }
 
     @CalledByNative
     void onDisconnected(String reason) {
-        mCallback.onDisconnected(reason);
+        for (ConnectionObserver observer : mObservers) {
+            observer.onDisconnected(reason);
+        }
     }
 
     @CalledByNative

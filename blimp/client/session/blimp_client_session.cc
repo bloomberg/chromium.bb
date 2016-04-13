@@ -190,7 +190,7 @@ void BlimpClientSession::Connect(const std::string& client_auth_token) {
 
 void BlimpClientSession::ConnectWithAssignment(AssignmentSource::Result result,
                                                const Assignment& assignment) {
-  OnAssignmentConnectionAttempted(result);
+  OnAssignmentConnectionAttempted(result, assignment);
 
   if (result != AssignmentSource::Result::RESULT_OK) {
     VLOG(1) << "Assignment request failed: " << result;
@@ -204,7 +204,8 @@ void BlimpClientSession::ConnectWithAssignment(AssignmentSource::Result result,
 }
 
 void BlimpClientSession::OnAssignmentConnectionAttempted(
-    AssignmentSource::Result result) {}
+    AssignmentSource::Result result,
+    const Assignment& assignment) {}
 
 void BlimpClientSession::RegisterFeatures() {
   thread_pipe_manager_ = base::WrapUnique(new ThreadPipeManager(

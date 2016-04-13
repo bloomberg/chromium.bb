@@ -13,6 +13,7 @@
 #include "blimp/client/feature/settings_feature.h"
 #include "blimp/client/feature/tab_control_feature.h"
 #include "blimp/client/session/assignment_source.h"
+#include "blimp/common/protocol_version.h"
 #include "jni/BlimpClientSession_jni.h"
 #include "net/base/net_errors.h"
 
@@ -98,13 +99,18 @@ void BlimpClientSessionAndroid::Destroy(JNIEnv* env,
 }
 
 void BlimpClientSessionAndroid::OnAssignmentConnectionAttempted(
-    AssignmentSource::Result result) {
+    AssignmentSource::Result result,
+    const Assignment& assignment) {
   // Notify the front end of the assignment result.
+  std::string engine_ip = IPAddressToStringWithPort(
+      assignment.engine_endpoint.address(), assignment.engine_endpoint.port());
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_BlimpClientSession_onAssignmentReceived(env, java_obj_.obj(),
-                                               static_cast<jint>(result));
+  Java_BlimpClientSession_onAssignmentReceived(
+      env, java_obj_.obj(), static_cast<jint>(result),
+      base::android::ConvertUTF8ToJavaString(env, engine_ip).obj(),
+      base::android::ConvertUTF8ToJavaString(env, blimp::kEngineVersion).obj());
 
-  BlimpClientSession::OnAssignmentConnectionAttempted(result);
+  BlimpClientSession::OnAssignmentConnectionAttempted(result, assignment);
 }
 
 }  // namespace client

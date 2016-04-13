@@ -145,6 +145,30 @@
       <message name="IDS_OPEN_IN_CHROME" desc="Opens the URL in Chrome.">
         Open in Chrome
       </message>
+      <message name="IDS_VERSION_INFO" desc="Show version info.">
+        Version Info
+      </message>
+      <message name="IDS_SUBTITLE_FOR_VERSION_NUMBER" desc="Version number.">
+        Blimp %1$s
+      </message>
+      <message name="IDS_APPLICATION_VERSION_TITLE" desc="Application version title.">
+        Application version
+      </message>
+      <message name="IDS_OS_VERSION_TITLE" desc="OS version title.">
+        Operating system
+      </message>
+      <message name="IDS_ABOUT_BLIMP_PREFERENCES" desc="About blimp preferences.">
+        About Blimp
+      </message>
+      <message name="IDS_BLIMP_ENGINE_IP" desc="Blimp Engine IP.">
+        Engine IP
+      </message>
+      <message name="IDS_BLIMP_ENGINE_VERSION" desc="Blimp Engine Version.">
+        Engine Version
+      </message>
+      <message name="IDS_BLIMP_ASSIGNER_URL" desc="Blimp Assigner URL.">
+        Assigner URL
+      </message>
     </messages>
   </release>
 </grit>

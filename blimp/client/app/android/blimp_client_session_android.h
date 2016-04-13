@@ -37,8 +37,8 @@ class BlimpClientSessionAndroid : public BlimpClientSession {
   ~BlimpClientSessionAndroid() override;
 
   // BlimpClientSession implementation.
-  void OnAssignmentConnectionAttempted(
-      AssignmentSource::Result result) override;
+  void OnAssignmentConnectionAttempted(AssignmentSource::Result result,
+                                       const Assignment& assignment) override;
 
   // NetworkEventObserver implementation.
   void OnConnected() override;

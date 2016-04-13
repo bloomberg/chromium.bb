@@ -16,6 +16,7 @@ import org.chromium.blimp.auth.TokenSource;
 import org.chromium.blimp.auth.TokenSourceImpl;
 import org.chromium.blimp.input.WebInputBox;
 import org.chromium.blimp.session.BlimpClientSession;
+import org.chromium.blimp.session.EngineInfo;
 import org.chromium.blimp.session.TabControlFeature;
 import org.chromium.blimp.toolbar.Toolbar;
 import org.chromium.ui.widget.Toast;
@@ -24,8 +25,9 @@ import org.chromium.ui.widget.Toast;
  * The {@link Activity} for rendering the main Blimp client.  This loads the Blimp rendering stack
  * and displays it.
  */
-public class BlimpRendererActivity extends Activity
-        implements BlimpLibraryLoader.Callback, TokenSource.Callback, BlimpClientSession.Callback {
+public class BlimpRendererActivity
+        extends Activity implements BlimpLibraryLoader.Callback, TokenSource.Callback,
+                                    BlimpClientSession.ConnectionObserver {
     private static final int ACCOUNT_CHOOSER_INTENT_REQUEST_CODE = 100;
     private static final String TAG = "BlimpRendererActivity";
 
@@ -76,6 +78,9 @@ public class BlimpRendererActivity extends Activity
         }
 
         if (mToolbar != null) {
+            if (mBlimpClientSession != null) {
+                mBlimpClientSession.removeObserver(mToolbar);
+            }
             mToolbar.destroy();
             mToolbar = null;
         }
@@ -92,6 +97,7 @@ public class BlimpRendererActivity extends Activity
 
         // Destroy the BlimpClientSession last, as all other features may rely on it.
         if (mBlimpClientSession != null) {
+            mBlimpClientSession.removeObserver(this);
             mBlimpClientSession.destroy();
             mBlimpClientSession = null;
         }
@@ -133,13 +139,15 @@ public class BlimpRendererActivity extends Activity
 
         setContentView(R.layout.blimp_main);
 
-        mBlimpClientSession = new BlimpClientSession(this);
+        mBlimpClientSession = new BlimpClientSession();
+        mBlimpClientSession.addObserver(this);
 
         mBlimpView = (BlimpView) findViewById(R.id.renderer);
         mBlimpView.initializeRenderer(mBlimpClientSession);
 
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
         mToolbar.initialize(mBlimpClientSession);
+        mBlimpClientSession.addObserver(mToolbar);
 
         mWebInputBox = (WebInputBox) findViewById(R.id.editText);
         mWebInputBox.initialize(mBlimpClientSession);
@@ -204,9 +212,10 @@ public class BlimpRendererActivity extends Activity
         startActivityForResult(suggestedIntent, ACCOUNT_CHOOSER_INTENT_REQUEST_CODE);
     }
 
-    // BlimpClientSession.Callback implementation.
+    // BlimpClientSession.ConnectionObserver interface.
     @Override
-    public void onAssignmentReceived(int result, int suggestedMessageResourceId) {
+    public void onAssignmentReceived(
+            int result, int suggestedMessageResourceId, EngineInfo engineInfo) {
         Toast.makeText(this, suggestedMessageResourceId, Toast.LENGTH_LONG).show();
     }
 
