@@ -2984,12 +2984,11 @@
    bug_576259_a
    Memcheck:Uninitialized
    fun:_ZN7GrGLGpu11bindTextureEiRK15GrTextureParamsbP11GrGLTexture
+   ...
    fun:_ZN7GrGLGpu12flushGLStateERK10GrPipelineRK20GrPrimitiveProcessor
    fun:_ZN7GrGLGpu6onDrawERK10GrPipelineRK20GrPrimitiveProcessorPK6GrMeshi
    fun:_ZN5GrGpu4drawERK10GrPipelineRK20GrPrimitiveProcessorPK6GrMeshi
    fun:_ZN13GrVertexBatch6onDrawEP17GrBatchFlushState
-   ...
-   fun:_ZN2cc17SingleThreadProxy36ScheduledActionDrawAndSwapIfPossibleEv
 }
 {
    bug_576259_b
@@ -3154,4 +3153,14 @@
    fun:_ZN3gin14TryConvertToV8IN4mojo6Handle*
    fun:_ZN3gin10Dictionary3SetIN4mojo6Handle*
    fun:_ZN4mojo3edk2js12_GLOBAL__N_114CreateDataPipe*
+}
+{
+   bug_602964
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4base4BindIMNS_12_GLOBAL__N_121PostTaskAndReplyRelayEFvvEJNS_8internal17UnretainedWrapper*
+   fun:_ZN4base8internal20PostTaskAndReplyImpl16PostTaskAndReplyERKN15tracked_objects8LocationERKNS*
+   fun:_ZN4base10TaskRunner16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIFvvELNS*
+   fun:_ZN4base26PostTaskAndReplyWithResultIN3net20WifiPHYLayerProtocolES2_EEbPNS*
+   fun:_ZN7metrics22NetworkMetricsProvider25ProbeWifiPHYLayerProtocolEv
 }
