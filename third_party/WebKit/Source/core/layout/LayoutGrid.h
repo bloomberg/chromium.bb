@@ -98,6 +98,8 @@ public:
         return direction == ForColumns ? m_autoRepeatColumns : m_autoRepeatRows;
     }
 
+    LayoutUnit translateRTLCoordinate(LayoutUnit) const;
+
 private:
     bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectLayoutGrid || LayoutBlock::isOfType(type); }
     void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const override;

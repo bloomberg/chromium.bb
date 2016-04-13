@@ -1628,9 +1628,7 @@ void LayoutGrid::offsetAndBreadthForPositionedChild(const LayoutBox& child, Grid
         if (endIsAuto) {
             offset = LayoutUnit();
         } else {
-            alignmentOffset = m_columnPositions[0] - borderAndPaddingStart();
-            LayoutUnit offsetFromLastLine = m_columnPositions[m_columnPositions.size() - 1] - m_columnPositions[endLine];
-            offset = paddingLeft() + alignmentOffset + offsetFromLastLine;
+            offset = translateRTLCoordinate(m_columnPositions[endLine]) - borderLeft();
 
             if (endLine > firstExplicitLine && endLine < lastExplicitLine) {
                 offset += guttersSize(direction, 2);
@@ -2125,16 +2123,22 @@ ContentAlignmentData LayoutGrid::computeContentPositionAndDistributionOffset(Gri
     return {LayoutUnit(), LayoutUnit()};
 }
 
+LayoutUnit LayoutGrid::translateRTLCoordinate(LayoutUnit coordinate) const
+{
+    ASSERT(!styleRef().isLeftToRightDirection());
+
+    LayoutUnit alignmentOffset = m_columnPositions[0] - borderAndPaddingStart();
+    LayoutUnit rightGridEdgePosition = m_columnPositions[m_columnPositions.size() - 1];
+    return borderAndPaddingLogicalLeft() + rightGridEdgePosition + alignmentOffset - coordinate;
+}
+
 LayoutPoint LayoutGrid::findChildLogicalPosition(const LayoutBox& child, GridSizingData& sizingData) const
 {
     LayoutUnit rowAxisOffset = rowAxisOffsetForChild(child, sizingData);
     // We stored m_columnPosition's data ignoring the direction, hence we might need now
     // to translate positions from RTL to LTR, as it's more convenient for painting.
-    if (!style()->isLeftToRightDirection()) {
-        LayoutUnit alignmentOffset =  m_columnPositions[0] - borderAndPaddingStart();
-        LayoutUnit rightGridEdgePosition = m_columnPositions[m_columnPositions.size() - 1] + alignmentOffset + borderAndPaddingLogicalLeft();
-        rowAxisOffset = rightGridEdgePosition - (rowAxisOffset + child.logicalWidth());
-    }
+    if (!style()->isLeftToRightDirection())
+        rowAxisOffset = translateRTLCoordinate(rowAxisOffset) - child.logicalWidth();
 
     return LayoutPoint(rowAxisOffset, columnAxisOffsetForChild(child, sizingData));
 }

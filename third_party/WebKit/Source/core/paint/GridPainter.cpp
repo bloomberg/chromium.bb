@@ -46,8 +46,23 @@ void GridPainter::paintChildren(const PaintInfo& paintInfo, const LayoutPoint& p
     LayoutRect localPaintInvalidationRect = LayoutRect(paintInfo.cullRect().m_rect);
     localPaintInvalidationRect.moveBy(-paintOffset);
 
-    GridSpan dirtiedColumns = dirtiedGridAreas(m_layoutGrid.columnPositions(), localPaintInvalidationRect.x(), localPaintInvalidationRect.maxX());
+    Vector<LayoutUnit> columnPositions = m_layoutGrid.columnPositions();
+    if (!m_layoutGrid.styleRef().isLeftToRightDirection()) {
+        // Translate columnPositions in RTL as we need the physical coordinates of the columns in order to call dirtiedGridAreas().
+        for (size_t i = 0; i < columnPositions.size(); i++)
+            columnPositions[i] = m_layoutGrid.translateRTLCoordinate(columnPositions[i]);
+        // We change the order of tracks in columnPositions, as in RTL the leftmost track will be the last one.
+        std::sort(columnPositions.begin(), columnPositions.end());
+    }
+
+    GridSpan dirtiedColumns = dirtiedGridAreas(columnPositions, localPaintInvalidationRect.x(), localPaintInvalidationRect.maxX());
     GridSpan dirtiedRows = dirtiedGridAreas(m_layoutGrid.rowPositions(), localPaintInvalidationRect.y(), localPaintInvalidationRect.maxY());
+
+    if (!m_layoutGrid.styleRef().isLeftToRightDirection()) {
+        // As we changed the order of tracks previously, we need to swap the dirtied columns in RTL.
+        size_t lastLine = columnPositions.size() - 1;
+        dirtiedColumns = GridSpan::translatedDefiniteGridSpan(lastLine - dirtiedColumns.endLine(), lastLine - dirtiedColumns.startLine());
+    }
 
     Vector<std::pair<LayoutBox*, size_t>> gridItemsToBePainted;
 
