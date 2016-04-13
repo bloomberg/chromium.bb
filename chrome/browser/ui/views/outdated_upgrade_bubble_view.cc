@@ -20,10 +20,8 @@
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/views/controls/button/label_button.h"
-#include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
-#include "ui/views/layout/grid_layout.h"
+#include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
 #include "url/gurl.h"
@@ -34,14 +32,9 @@
 
 namespace {
 
-// Fixed width of the column holding the description label of the bubble.
+// Fixed width of the description label of the bubble.
 // TODO(mad): Make sure there is enough room for all languages.
 const int kWidthOfDescriptionText = 330;
-
-// We subtract 2 to account for the natural button padding, and
-// to bring the separation visually in line with the row separation
-// height.
-const int kButtonPadding = views::kRelatedButtonHSpacing - 2;
 
 // The URL to be used to re-install Chrome when auto-update failed for too long.
 const char kDownloadChromeUrl[] = "https://www.google.com/chrome/?&brand=CHWL"
@@ -53,22 +46,26 @@ const int kMaxIgnored = 50;
 // The number of buckets we want the NumLaterPerReinstall histogram to use.
 const int kNumIgnoredBuckets = 5;
 
+// The currently showing bubble.
+OutdatedUpgradeBubbleView* g_upgrade_bubble = nullptr;
+
+// The number of times the user ignored the bubble before finally choosing to
+// reinstall.
+int g_num_ignored_bubbles = 0;
+
 }  // namespace
 
 // OutdatedUpgradeBubbleView ---------------------------------------------------
-
-OutdatedUpgradeBubbleView* OutdatedUpgradeBubbleView::upgrade_bubble_ = NULL;
-int OutdatedUpgradeBubbleView::num_ignored_bubbles_ = 0;
 
 // static
 void OutdatedUpgradeBubbleView::ShowBubble(views::View* anchor_view,
                                            content::PageNavigator* navigator,
                                            bool auto_update_enabled) {
-  if (IsShowing())
+  if (g_upgrade_bubble)
     return;
-  upgrade_bubble_ = new OutdatedUpgradeBubbleView(
-      anchor_view, navigator, auto_update_enabled);
-  views::BubbleDelegateView::CreateBubble(upgrade_bubble_)->Show();
+  g_upgrade_bubble = new OutdatedUpgradeBubbleView(anchor_view, navigator,
+                                                   auto_update_enabled);
+  views::BubbleDialogDelegateView::CreateBubble(g_upgrade_bubble)->Show();
   content::RecordAction(auto_update_enabled ?
       base::UserMetricsAction("OutdatedUpgradeBubble.Show") :
       base::UserMetricsAction("OutdatedUpgradeBubble.ShowNoAU"));
@@ -85,166 +82,113 @@ bool OutdatedUpgradeBubbleView::IsAvailable() {
 }
 
 OutdatedUpgradeBubbleView::~OutdatedUpgradeBubbleView() {
-  if (!accepted_ && num_ignored_bubbles_ < kMaxIgnored)
-    ++num_ignored_bubbles_;
-
-  // Ensure |elevation_icon_setter_| is destroyed before |accept_button_|.
-  elevation_icon_setter_.reset();
-}
-
-views::View* OutdatedUpgradeBubbleView::GetInitiallyFocusedView() {
-  return accept_button_;
+  // Increment the ignored bubble count (if this bubble wasn't ignored, this
+  // increment is offset by a decrement in Accept()).
+  if (g_num_ignored_bubbles < kMaxIgnored)
+    ++g_num_ignored_bubbles;
 }
 
 void OutdatedUpgradeBubbleView::WindowClosing() {
-  // Reset |upgrade_bubble_| here, not in destructor, because destruction is
+  // Reset |g_upgrade_bubble| here, not in destructor, because destruction is
   // asynchronous and ShowBubble may be called before full destruction and
   // would attempt to show a bubble that is closing.
-  DCHECK_EQ(upgrade_bubble_, this);
-  upgrade_bubble_ = NULL;
+  DCHECK_EQ(g_upgrade_bubble, this);
+  g_upgrade_bubble = nullptr;
+}
+
+base::string16 OutdatedUpgradeBubbleView::GetWindowTitle() const {
+  return l10n_util::GetStringUTF16(IDS_UPGRADE_BUBBLE_TITLE);
+}
+
+gfx::ImageSkia OutdatedUpgradeBubbleView::GetWindowIcon() {
+  return *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+      IDR_UPDATE_MENU_SEVERITY_HIGH);
+}
+
+bool OutdatedUpgradeBubbleView::ShouldShowWindowIcon() const {
+  return true;
+}
+
+bool OutdatedUpgradeBubbleView::Cancel() {
+  content::RecordAction(base::UserMetricsAction("OutdatedUpgradeBubble.Later"));
+  return true;
+}
+
+bool OutdatedUpgradeBubbleView::Accept() {
+  // Offset the +1 in the dtor.
+  --g_num_ignored_bubbles;
+
+  if (auto_update_enabled_) {
+    DCHECK(UpgradeDetector::GetInstance()->is_outdated_install());
+    UMA_HISTOGRAM_CUSTOM_COUNTS("OutdatedUpgradeBubble.NumLaterPerReinstall",
+                                g_num_ignored_bubbles, 0, kMaxIgnored,
+                                kNumIgnoredBuckets);
+    content::RecordAction(
+        base::UserMetricsAction("OutdatedUpgradeBubble.Reinstall"));
+    navigator_->OpenURL(content::OpenURLParams(
+        GURL(kDownloadChromeUrl), content::Referrer(), NEW_FOREGROUND_TAB,
+        ui::PAGE_TRANSITION_LINK, false));
+#if defined(OS_WIN)
+  } else {
+    DCHECK(UpgradeDetector::GetInstance()->is_outdated_install_no_au());
+    UMA_HISTOGRAM_CUSTOM_COUNTS("OutdatedUpgradeBubble.NumLaterPerEnableAU",
+                                g_num_ignored_bubbles, 0, kMaxIgnored,
+                                kNumIgnoredBuckets);
+    content::RecordAction(
+        base::UserMetricsAction("OutdatedUpgradeBubble.EnableAU"));
+    // Record that the autoupdate flavour of the dialog has been shown.
+    if (g_browser_process->local_state()) {
+      g_browser_process->local_state()->SetBoolean(
+          prefs::kAttemptedToEnableAutoupdate, true);
+    }
+
+    // Re-enable updates by shelling out to setup.exe in the blocking pool.
+    content::BrowserThread::PostBlockingPoolTask(
+        FROM_HERE,
+        base::Bind(&google_update::ElevateIfNeededToReenableUpdates));
+#endif  // defined(OS_WIN)
+  }
+
+  return true;
+}
+
+void OutdatedUpgradeBubbleView::UpdateButton(views::LabelButton* button,
+                                             ui::DialogButton type) {
+  BubbleDialogDelegateView::UpdateButton(button, type);
+  if (type == ui::DIALOG_BUTTON_OK) {
+    elevation_icon_setter_.reset(new ElevationIconSetter(
+        button, base::Bind(&OutdatedUpgradeBubbleView::SizeToContents,
+                           base::Unretained(this))));
+  }
+}
+
+base::string16 OutdatedUpgradeBubbleView::GetDialogButtonLabel(
+    ui::DialogButton button) const {
+  return l10n_util::GetStringUTF16(
+      button == ui::DIALOG_BUTTON_CANCEL
+          ? IDS_LATER
+          : auto_update_enabled_ ? IDS_REINSTALL_APP : IDS_REENABLE_UPDATES);
 }
 
 void OutdatedUpgradeBubbleView::Init() {
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  accept_button_ = new views::LabelButton(
-      this, l10n_util::GetStringUTF16(
-          auto_update_enabled_ ? IDS_REINSTALL_APP : IDS_REENABLE_UPDATES));
-  accept_button_->SetStyle(views::Button::STYLE_BUTTON);
-  accept_button_->SetIsDefault(true);
-  accept_button_->SetFontList(rb.GetFontList(ui::ResourceBundle::BoldFont));
-  elevation_icon_setter_.reset(new ElevationIconSetter(
-      accept_button_,
-      base::Bind(&OutdatedUpgradeBubbleView::SizeToContents,
-                 base::Unretained(this))));
-
-  later_button_ = new views::LabelButton(
-      this, l10n_util::GetStringUTF16(IDS_LATER));
-  later_button_->SetStyle(views::Button::STYLE_BUTTON);
-
-  views::Label* title_label = new views::Label(
-      l10n_util::GetStringUTF16(IDS_UPGRADE_BUBBLE_TITLE));
-  title_label->SetFontList(rb.GetFontList(ui::ResourceBundle::MediumFont));
-  title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-
+  SetLayoutManager(new views::FillLayout());
   views::Label* text_label = new views::Label(l10n_util::GetStringUTF16(
       auto_update_enabled_ ? IDS_UPGRADE_BUBBLE_TEXT
                            : IDS_UPGRADE_BUBBLE_REENABLE_TEXT));
   text_label->SetMultiLine(true);
   text_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-
-  views::ImageView* image_view = new views::ImageView();
-  image_view->SetImage(rb.GetImageSkiaNamed(IDR_UPDATE_MENU_SEVERITY_HIGH));
-
-  views::GridLayout* layout = new views::GridLayout(this);
-  SetLayoutManager(layout);
-
-  const int kIconTitleColumnSetId = 0;
-  views::ColumnSet* cs = layout->AddColumnSet(kIconTitleColumnSetId);
-
-  // Top (icon-title) row.
-  cs->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER, 0,
-                views::GridLayout::USE_PREF, 0, 0);
-  cs->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
-  cs->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER, 0,
-                views::GridLayout::USE_PREF, 0, 0);
-  cs->AddPaddingColumn(1, views::kUnrelatedControlHorizontalSpacing);
-
-  // Middle (text) row.
-  const int kTextColumnSetId = 1;
-  cs = layout->AddColumnSet(kTextColumnSetId);
-  cs->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,
-                views::GridLayout::FIXED, kWidthOfDescriptionText, 0);
-
-  // Bottom (buttons) row.
-  const int kButtonsColumnSetId = 2;
-  cs = layout->AddColumnSet(kButtonsColumnSetId);
-  cs->AddPaddingColumn(1, views::kRelatedControlHorizontalSpacing);
-  cs->AddColumn(views::GridLayout::LEADING, views::GridLayout::TRAILING, 0,
-                views::GridLayout::USE_PREF, 0, 0);
-  cs->AddPaddingColumn(0, kButtonPadding);
-  cs->AddColumn(views::GridLayout::LEADING, views::GridLayout::TRAILING, 0,
-                views::GridLayout::USE_PREF, 0, 0);
-
-  layout->StartRow(0, kIconTitleColumnSetId);
-  layout->AddView(image_view);
-  layout->AddView(title_label);
-
-  layout->AddPaddingRow(0, views::kRelatedControlSmallVerticalSpacing);
-  layout->StartRow(0, kTextColumnSetId);
-  layout->AddView(text_label);
-
-  layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
-
-  layout->StartRow(0, kButtonsColumnSetId);
-  layout->AddView(accept_button_);
-  layout->AddView(later_button_);
-
-  AddAccelerator(ui::Accelerator(ui::VKEY_RETURN, ui::EF_NONE));
+  text_label->SizeToFit(kWidthOfDescriptionText);
+  AddChildView(text_label);
 }
 
 OutdatedUpgradeBubbleView::OutdatedUpgradeBubbleView(
     views::View* anchor_view,
     content::PageNavigator* navigator,
     bool auto_update_enabled)
-    : BubbleDelegateView(anchor_view, views::BubbleBorder::TOP_RIGHT),
+    : BubbleDialogDelegateView(anchor_view, views::BubbleBorder::TOP_RIGHT),
       auto_update_enabled_(auto_update_enabled),
-      accepted_(false),
-      accept_button_(NULL),
-      later_button_(NULL),
       navigator_(navigator) {
   // Compensate for built-in vertical padding in the anchor view's image.
   set_anchor_view_insets(gfx::Insets(
       GetLayoutConstant(LOCATION_BAR_BUBBLE_ANCHOR_VERTICAL_INSET), 0));
-}
-
-void OutdatedUpgradeBubbleView::ButtonPressed(
-    views::Button* sender, const ui::Event& event) {
-  if (event.IsMouseEvent() &&
-      !(static_cast<const ui::MouseEvent*>(&event))->IsOnlyLeftMouseButton()) {
-    return;
-  }
-  HandleButtonPressed(sender);
-}
-
-void OutdatedUpgradeBubbleView::HandleButtonPressed(views::Button* sender) {
-  if (sender == accept_button_) {
-    accepted_ = true;
-    if (auto_update_enabled_) {
-      DCHECK(UpgradeDetector::GetInstance()->is_outdated_install());
-      UMA_HISTOGRAM_CUSTOM_COUNTS(
-          "OutdatedUpgradeBubble.NumLaterPerReinstall", num_ignored_bubbles_,
-          0, kMaxIgnored, kNumIgnoredBuckets);
-      content::RecordAction(
-          base::UserMetricsAction("OutdatedUpgradeBubble.Reinstall"));
-      navigator_->OpenURL(content::OpenURLParams(GURL(kDownloadChromeUrl),
-                                                 content::Referrer(),
-                                                 NEW_FOREGROUND_TAB,
-                                                 ui::PAGE_TRANSITION_LINK,
-                                                 false));
-#if defined(OS_WIN)
-    } else {
-      DCHECK(UpgradeDetector::GetInstance()->is_outdated_install_no_au());
-      UMA_HISTOGRAM_CUSTOM_COUNTS(
-          "OutdatedUpgradeBubble.NumLaterPerEnableAU", num_ignored_bubbles_,
-          0, kMaxIgnored, kNumIgnoredBuckets);
-      content::RecordAction(
-          base::UserMetricsAction("OutdatedUpgradeBubble.EnableAU"));
-      // Record that the autoupdate flavour of the dialog has been shown.
-      if (g_browser_process->local_state()) {
-        g_browser_process->local_state()->SetBoolean(
-            prefs::kAttemptedToEnableAutoupdate, true);
-      }
-
-      // Re-enable updates by shelling out to setup.exe in the blocking pool.
-      content::BrowserThread::PostBlockingPoolTask(
-          FROM_HERE,
-          base::Bind(&google_update::ElevateIfNeededToReenableUpdates));
-#endif  // defined(OS_WIN)
-    }
-  } else {
-    DCHECK_EQ(later_button_, sender);
-    content::RecordAction(
-        base::UserMetricsAction("OutdatedUpgradeBubble.Later"));
-  }
-  GetWidget()->Close();
 }
