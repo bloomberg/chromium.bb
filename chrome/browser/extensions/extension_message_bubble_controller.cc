@@ -107,6 +107,8 @@ ExtensionMessageBubbleController::ExtensionMessageBubbleController(
 }
 
 ExtensionMessageBubbleController::~ExtensionMessageBubbleController() {
+  if (did_highlight_)
+    ToolbarActionsModel::Get(profile())->StopHighlighting();
 }
 
 Profile* ExtensionMessageBubbleController::profile() {
@@ -272,9 +274,6 @@ void ExtensionMessageBubbleController::OnClose() {
     if (delegate_->ClearProfileSetAfterAction())
       GetProfileSet()->clear();
   }
-
-  if (did_highlight_)
-    ToolbarActionsModel::Get(profile())->StopHighlighting();
 }
 
 std::set<Profile*>* ExtensionMessageBubbleController::GetProfileSet() {

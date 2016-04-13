@@ -30,7 +30,6 @@ class BlockedActionBubbleDelegate : public ToolbarActionsBarBubbleDelegate {
   std::string GetAnchorActionId() override;
   void OnBubbleShown() override;
   void OnBubbleClosed(CloseAction action) override;
-  bool IsExtensionMessageBubble() override;
 
   base::Callback<void(CloseAction)> callback_;
   std::string extension_id_;

@@ -64,10 +64,6 @@ class ToolbarActionsBarBubbleDelegate {
 
   // Called when the bubble is closed with the type of action the user took.
   virtual void OnBubbleClosed(CloseAction action) = 0;
-
-  // Returns true if this is for an ExtensionMessageBubbleController.
-  // TODO(devlin): We shouldn't need this.
-  virtual bool IsExtensionMessageBubble() = 0;
 };
 
 #endif  // CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_ACTIONS_BAR_BUBBLE_DELEGATE_H_

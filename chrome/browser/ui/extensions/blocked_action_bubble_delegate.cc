@@ -62,7 +62,3 @@ void BlockedActionBubbleDelegate::OnBubbleShown() {}
 void BlockedActionBubbleDelegate::OnBubbleClosed(CloseAction action) {
   base::ResetAndReturn(&callback_).Run(action);
 }
-
-bool BlockedActionBubbleDelegate::IsExtensionMessageBubble() {
-  return false;
-}

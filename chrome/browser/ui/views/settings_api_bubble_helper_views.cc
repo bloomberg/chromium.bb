@@ -13,10 +13,10 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/extensions/extension_message_bubble_bridge.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/views/extensions/extension_message_bubble_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/app_menu_button.h"
 #include "chrome/browser/ui/views/toolbar/home_button.h"
+#include "chrome/browser/ui/views/toolbar/toolbar_actions_bar_bubble_views.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/common/extensions/manifest_handlers/settings_overrides_handler.h"
 #include "chrome/common/url_constants.h"
@@ -37,10 +37,14 @@ void ShowSettingsApiBubble(SettingsApiOverrideType type,
   if (!settings_api_bubble->ShouldShow())
     return;
 
-  ExtensionMessageBubbleView* bubble = new ExtensionMessageBubbleView(
-      anchor_view, arrow,
-      std::unique_ptr<ToolbarActionsBarBubbleDelegate>(
-          new ExtensionMessageBubbleBridge(std::move(settings_api_bubble))));
+  // TODO(devlin): This should go through the ToolbarActionsBar.
+  ToolbarActionsBarBubbleViews* bubble =
+      new ToolbarActionsBarBubbleViews(
+          anchor_view,
+          scoped_ptr<ToolbarActionsBarBubbleDelegate>(
+              new ExtensionMessageBubbleBridge(
+                  std::move(settings_api_bubble))));
+  bubble->set_arrow(arrow);
   views::BubbleDelegateView::CreateBubble(bubble);
   bubble->Show();
 }
@@ -110,13 +114,14 @@ void MaybeShowExtensionControlledNewTabPage(
   if (!ntp_overridden_bubble->ShouldShow())
     return;
 
-  ExtensionMessageBubbleView* bubble = new ExtensionMessageBubbleView(
+  ToolbarActionsBarBubbleViews* bubble =
+      new ToolbarActionsBarBubbleViews(
       BrowserView::GetBrowserViewForBrowser(browser)
           ->toolbar()
           ->app_menu_button(),
-      views::BubbleBorder::TOP_RIGHT,
       std::unique_ptr<ToolbarActionsBarBubbleDelegate>(
           new ExtensionMessageBubbleBridge(std::move(ntp_overridden_bubble))));
+  bubble->set_arrow(views::BubbleBorder::TOP_RIGHT);
   views::BubbleDelegateView::CreateBubble(bubble);
   bubble->Show();
 }

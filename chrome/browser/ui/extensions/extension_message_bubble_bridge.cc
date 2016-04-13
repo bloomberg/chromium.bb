@@ -72,7 +72,3 @@ void ExtensionMessageBubbleBridge::OnBubbleClosed(CloseAction action) {
       break;
   }
 }
-
-bool ExtensionMessageBubbleBridge::IsExtensionMessageBubble() {
-  return true;
-}

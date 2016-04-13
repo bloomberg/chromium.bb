@@ -251,6 +251,8 @@ class ToolbarActionsBar : public ToolbarActionsModel::Observer {
   // so that the bar resizes instantly, instead of having to poll it while it
   // animates to open/closed status.
   static bool disable_animations_for_testing_;
+  static void set_extension_bubble_appearance_wait_time_for_testing(
+      int time_in_seconds);
 
  private:
   using ToolbarActions = ScopedVector<ToolbarActionViewController>;

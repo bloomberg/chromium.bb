@@ -19,7 +19,6 @@
 #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/extensions/browser_action_drag_data.h"
-#include "chrome/browser/ui/views/extensions/extension_message_bubble_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/app_menu_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_actions_bar_bubble_views.h"
@@ -327,23 +326,12 @@ void BrowserActionsContainer::ShowToolbarActionBubble(
     anchor_view = this;
   }
 
-  // TODO(devlin): Clean up this type-specific mess.
-  if (controller->IsExtensionMessageBubble()) {
-    extensions::ExtensionMessageBubbleView* bubble =
-        new extensions::ExtensionMessageBubbleView(
-            anchor_view, views::BubbleBorder::TOP_RIGHT, std::move(controller));
-    views::BubbleDelegateView::CreateBubble(bubble);
-    active_bubble_ = bubble;
-    active_bubble_->GetWidget()->AddObserver(this);
-    bubble->Show();
-  } else {
-    ToolbarActionsBarBubbleViews* bubble =
-        new ToolbarActionsBarBubbleViews(anchor_view, std::move(controller));
-    views::BubbleDelegateView::CreateBubble(bubble);
-    active_bubble_ = bubble;
-    active_bubble_->GetWidget()->AddObserver(this);
-    bubble->Show();
-  }
+  ToolbarActionsBarBubbleViews* bubble =
+      new ToolbarActionsBarBubbleViews(anchor_view, std::move(controller));
+  views::BubbleDelegateView::CreateBubble(bubble);
+  active_bubble_ = bubble;
+  active_bubble_->GetWidget()->AddObserver(this);
+  bubble->Show();
 }
 
 void BrowserActionsContainer::OnWidgetClosing(views::Widget* widget) {

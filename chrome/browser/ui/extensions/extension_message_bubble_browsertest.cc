@@ -9,6 +9,7 @@
 #include "chrome/browser/extensions/extension_action_test_util.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/ui/extensions/extension_message_bubble_factory.h"
+#include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 #include "extensions/common/feature_switch.h"
 #include "extensions/test/extension_test_message_listener.h"
 
@@ -29,6 +30,7 @@ void ExtensionMessageBubbleBrowserTest::SetUpCommandLine(
           true));
   ExtensionMessageBubbleFactory::set_override_for_tests(
       ExtensionMessageBubbleFactory::OVERRIDE_ENABLED);
+  ToolbarActionsBar::set_extension_bubble_appearance_wait_time_for_testing(0);
 }
 
 void ExtensionMessageBubbleBrowserTest::TearDownOnMainThread() {

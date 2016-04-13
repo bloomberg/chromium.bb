@@ -4,11 +4,12 @@
 
 #include "base/macros.h"
 #include "chrome/browser/ui/extensions/extension_message_bubble_browsertest.h"
-#include "chrome/browser/ui/views/extensions/extension_message_bubble_view.h"
+#include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/app_menu_button.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
+#include "ui/views/bubble/bubble_delegate.h"
 
 namespace {
 
@@ -52,10 +53,7 @@ void CheckBubbleAndReferenceView(views::BubbleDelegateView* bubble,
 class ExtensionMessageBubbleViewBrowserTest
     : public ExtensionMessageBubbleBrowserTest {
  protected:
-  ExtensionMessageBubbleViewBrowserTest() {
-    extensions::ExtensionMessageBubbleView::
-        set_bubble_appearance_wait_time_for_testing(0);
-  }
+  ExtensionMessageBubbleViewBrowserTest() {}
   ~ExtensionMessageBubbleViewBrowserTest() override {}
 
  private:

@@ -11,6 +11,7 @@
 #include "base/profiler/scoped_tracker.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "chrome/browser/extensions/extension_message_bubble_controller.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -102,6 +103,9 @@ void SortContainer(std::vector<Type1>* to_sort,
     }
   }
 }
+
+// How long to wait until showing an extension message bubble.
+int g_extension_bubble_appearance_wait_time_in_seconds = 5;
 
 }  // namespace
 
@@ -611,8 +615,29 @@ void ToolbarActionsBar::MaybeShowExtensionBubble(
     return;
 
   controller->HighlightExtensionsIfNecessary();  // Safe to call multiple times.
-  ShowToolbarActionBubble(scoped_ptr<ToolbarActionsBarBubbleDelegate>(
-      new ExtensionMessageBubbleBridge(std::move(controller))));
+
+  // Not showing the bubble right away (during startup) has a few benefits:
+  // We don't have to worry about focus being lost due to the Omnibox (or to
+  // other things that want focus at startup). This allows Esc to work to close
+  // the bubble and also solves the keyboard accessibility problem that comes
+  // with focus being lost (we don't have a good generic mechanism of injecting
+  // bubbles into the focus cycle). Another benefit of delaying the show is
+  // that fade-in works (the fade-in isn't apparent if the the bubble appears at
+  // startup).
+  std::unique_ptr<ToolbarActionsBarBubbleDelegate> delegate(
+      new ExtensionMessageBubbleBridge(std::move(controller)));
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::Bind(&ToolbarActionsBar::ShowToolbarActionBubble,
+                            weak_ptr_factory_.GetWeakPtr(),
+                            base::Passed(std::move(delegate))),
+      base::TimeDelta::FromSeconds(
+          g_extension_bubble_appearance_wait_time_in_seconds));
+}
+
+// static
+void ToolbarActionsBar::set_extension_bubble_appearance_wait_time_for_testing(
+    int time_in_seconds) {
+  g_extension_bubble_appearance_wait_time_in_seconds = time_in_seconds;
 }
 
 void ToolbarActionsBar::OnToolbarActionAdded(

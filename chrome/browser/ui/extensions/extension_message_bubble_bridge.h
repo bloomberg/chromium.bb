@@ -35,7 +35,6 @@ class ExtensionMessageBubbleBridge : public ToolbarActionsBarBubbleDelegate {
   std::string GetAnchorActionId() override;
   void OnBubbleShown() override;
   void OnBubbleClosed(CloseAction action) override;
-  bool IsExtensionMessageBubble() override;
 
   std::unique_ptr<extensions::ExtensionMessageBubbleController> controller_;
 

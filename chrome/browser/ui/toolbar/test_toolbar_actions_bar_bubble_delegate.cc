@@ -38,7 +38,6 @@ class TestToolbarActionsBarBubbleDelegate::DelegateImpl
     CHECK(!parent_->close_action_);
     parent_->close_action_.reset(new CloseAction(action));
   }
-  bool IsExtensionMessageBubble() override { return false; }
 
   TestToolbarActionsBarBubbleDelegate* parent_;
 
