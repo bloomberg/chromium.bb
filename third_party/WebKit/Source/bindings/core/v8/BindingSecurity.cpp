@@ -50,7 +50,11 @@ static bool canAccessFrame(v8::Isolate* isolate, const LocalDOMWindow* accessing
 {
     ASSERT_WITH_SECURITY_IMPLICATION(!(targetWindow && targetWindow->frame()) || targetWindow == targetWindow->frame()->domWindow());
 
-    if (isOriginAccessibleFromDOMWindow(targetFrameOrigin, accessingWindow))
+    // It's important to check that targetWindow is a LocalDOMWindow: it's
+    // possible for a remote frame and local frame to have the same security
+    // origin, depending on the model being used to allocate Frames between
+    // processes. See https://crbug.com/601629.
+    if (targetWindow && targetWindow->isLocalDOMWindow() && isOriginAccessibleFromDOMWindow(targetFrameOrigin, accessingWindow))
         return true;
 
     if (targetWindow)
@@ -62,7 +66,11 @@ static bool canAccessFrame(v8::Isolate* isolate, const LocalDOMWindow* accessing
 {
     ASSERT_WITH_SECURITY_IMPLICATION(!(targetWindow && targetWindow->frame()) || targetWindow == targetWindow->frame()->domWindow());
 
-    if (isOriginAccessibleFromDOMWindow(targetFrameOrigin, accessingWindow))
+    // It's important to check that targetWindow is a LocalDOMWindow: it's
+    // possible for a remote frame and local frame to have the same security
+    // origin, depending on the model being used to allocate Frames between
+    // processes. See https://crbug.com/601629.
+    if (targetWindow->isLocalDOMWindow() && isOriginAccessibleFromDOMWindow(targetFrameOrigin, accessingWindow))
         return true;
 
     if (reportingOption == ReportSecurityError && targetWindow)

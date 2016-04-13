@@ -52,6 +52,7 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/request_handler_util.h"
+#include "testing/gmock/include/gmock/gmock-matchers.h"
 
 using base::ASCIIToUTF16;
 
@@ -2615,6 +2616,76 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
 
   click_link_and_verify_popup("clickNoOpenerTargetBlankLink()");
   click_link_and_verify_popup("clickNoRefTargetBlankLink()");
+}
+
+// When two frames are same-origin but cross-process, they should behave as if
+// they are not same-origin and should not crash.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
+                       SameOriginFramesInDifferentProcesses) {
+  StartEmbeddedServer();
+
+  // Load a page with links that open in a new window.
+  NavigateToURL(shell(), embedded_test_server()->GetURL(
+                             "a.com", "/click-noreferrer-links.html"));
+
+  // Get the original SiteInstance for later comparison.
+  scoped_refptr<SiteInstance> orig_site_instance(
+      shell()->web_contents()->GetSiteInstance());
+  EXPECT_NE(nullptr, orig_site_instance.get());
+
+  // Test clicking a target=foo link.
+  ShellAddedObserver new_shell_observer;
+  bool success = false;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      shell()->web_contents(),
+      "window.domAutomationController.send(clickSameSiteTargetedLink());"
+      "saveWindowReference();",
+      &success));
+  EXPECT_TRUE(success);
+  Shell* new_shell = new_shell_observer.GetShell();
+
+  // Wait for the navigation in the new tab to finish, if it hasn't.
+  WaitForLoadStop(new_shell->web_contents());
+  EXPECT_EQ("/navigate_opener.html",
+            new_shell->web_contents()->GetLastCommittedURL().path());
+
+  // Do a cross-site navigation that winds up same-site. The same-site
+  // navigation to a.com will commit in a different process than the original
+  // a.com window.
+  NavigateToURL(new_shell, embedded_test_server()->GetURL(
+                               "b.com", "/cross-site/a.com/title1.html"));
+  if (AreAllSitesIsolatedForTesting()) {
+    // In --site-per-process mode, both windows will actually be in the same
+    // process.
+    EXPECT_EQ(shell()->web_contents()->GetSiteInstance(),
+              new_shell->web_contents()->GetSiteInstance());
+  } else {
+    EXPECT_NE(shell()->web_contents()->GetSiteInstance(),
+              new_shell->web_contents()->GetSiteInstance());
+  }
+
+  std::string result;
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      shell()->web_contents(),
+      "window.domAutomationController.send((function() {\n"
+      "  try {\n"
+      "    return getLastOpenedWindowLocation();\n"
+      "  } catch (e) {\n"
+      "    return e.toString();\n"
+      "  }\n"
+      "})())",
+      &result));
+  if (AreAllSitesIsolatedForTesting()) {
+    EXPECT_THAT(result,
+                ::testing::MatchesRegex("http://a.com:\\d+/title1.html"));
+  } else {
+    // Accessing a property with normal security checks should throw a
+    // SecurityError if the same-origin windows are in different processes.
+    EXPECT_THAT(result,
+                ::testing::MatchesRegex("SecurityError: Blocked a frame with "
+                                        "origin \"http://a.com:\\d+\" from "
+                                        "accessing a cross-origin frame."));
+  }
 }
 
 }  // namespace content
