@@ -40,6 +40,7 @@ include_rules = [
   "+ui/aura",
   "+ui/chromeos",
   "+ui/display",
+  "+ui/ozone/public",
   "+ui/wm",
 
   "+third_party/cros_system_api",

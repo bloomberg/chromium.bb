@@ -275,7 +275,9 @@ void RenderingHelper::Setup() {
   display_configurator_.reset(new ui::DisplayConfigurator());
   display_configurator_->SetDelegateForTesting(0);
   display_configurator_->AddObserver(&display_setup_observer);
-  display_configurator_->Init(true);
+  display_configurator_->Init(
+      ui::OzonePlatform::GetInstance()->CreateNativeDisplayDelegate(),
+      true);
   display_configurator_->ForceInitialConfigure(0);
   // Make sure all the display configuration is applied.
   wait_display_setup.Run();

@@ -212,11 +212,17 @@ class DisplayConfiguratorTest : public testing::Test {
     }
   }
 
+  void Init(bool panel_fitting_enabled) {
+    configurator_.Init(std::unique_ptr<NativeDisplayDelegate>(),
+                       panel_fitting_enabled);
+  }
+
   // Initializes |configurator_| with a single internal display.
   void InitWithSingleOutput() {
     UpdateOutputs(1, false);
     EXPECT_EQ(kNoActions, log_->GetActionsAndClear());
-    configurator_.Init(false);
+    configurator_.Init(std::unique_ptr<NativeDisplayDelegate>(), false);
+
     EXPECT_EQ(kNoActions, log_->GetActionsAndClear());
     configurator_.ForceInitialConfigure(0);
     EXPECT_EQ(JoinActions(kInitXRandR, kGrab,
@@ -946,7 +952,7 @@ TEST_F(DisplayConfiguratorTest, SuspendAndResume) {
 TEST_F(DisplayConfiguratorTest, Headless) {
   UpdateOutputs(0, false);
   EXPECT_EQ(kNoActions, log_->GetActionsAndClear());
-  configurator_.Init(false);
+  Init(false);
   EXPECT_EQ(kNoActions, log_->GetActionsAndClear());
   configurator_.ForceInitialConfigure(0);
   EXPECT_EQ(JoinActions(kInitXRandR, kGrab, kForceDPMS, kUngrab, NULL),
@@ -997,7 +1003,7 @@ TEST_F(DisplayConfiguratorTest, Headless) {
 TEST_F(DisplayConfiguratorTest, StartWithTwoOutputs) {
   UpdateOutputs(2, false);
   EXPECT_EQ(kNoActions, log_->GetActionsAndClear());
-  configurator_.Init(false);
+  Init(false);
   EXPECT_EQ(kNoActions, log_->GetActionsAndClear());
 
   state_controller_.set_state(MULTIPLE_DISPLAY_STATE_DUAL_MIRROR);
@@ -1016,7 +1022,7 @@ TEST_F(DisplayConfiguratorTest, StartWithTwoOutputs) {
 TEST_F(DisplayConfiguratorTest, InvalidMultipleDisplayStates) {
   UpdateOutputs(0, false);
   EXPECT_EQ(kNoActions, log_->GetActionsAndClear());
-  configurator_.Init(false);
+  Init(false);
   configurator_.ForceInitialConfigure(0);
   observer_.Reset();
   configurator_.SetDisplayMode(MULTIPLE_DISPLAY_STATE_HEADLESS);
@@ -1056,7 +1062,7 @@ TEST_F(DisplayConfiguratorTest, InvalidMultipleDisplayStates) {
 
 TEST_F(DisplayConfiguratorTest, GetMultipleDisplayStateForMirroredDisplays) {
   UpdateOutputs(2, false);
-  configurator_.Init(false);
+  Init(false);
   state_controller_.set_state(MULTIPLE_DISPLAY_STATE_DUAL_MIRROR);
   configurator_.ForceInitialConfigure(0);
   EXPECT_EQ(MULTIPLE_DISPLAY_STATE_DUAL_MIRROR, configurator_.display_state());
@@ -1093,7 +1099,7 @@ TEST_F(DisplayConfiguratorTest, PanelFitting) {
   // mirrored mode.
   UpdateOutputs(2, false);
   state_controller_.set_state(MULTIPLE_DISPLAY_STATE_DUAL_MIRROR);
-  configurator_.Init(true /* is_panel_fitting_enabled */);
+  Init(true /* is_panel_fitting_enabled */);
   configurator_.ForceInitialConfigure(0);
   EXPECT_EQ(MULTIPLE_DISPLAY_STATE_DUAL_MIRROR, configurator_.display_state());
   EXPECT_EQ(
@@ -1122,7 +1128,7 @@ TEST_F(DisplayConfiguratorTest, PanelFitting) {
 }
 
 TEST_F(DisplayConfiguratorTest, ContentProtection) {
-  configurator_.Init(false);
+  Init(false);
   configurator_.ForceInitialConfigure(0);
   EXPECT_NE(kNoActions, log_->GetActionsAndClear());
 
@@ -1297,7 +1303,7 @@ TEST_F(DisplayConfiguratorTest, ContentProtectionTwoClients) {
       configurator_.RegisterContentProtectionClient();
   EXPECT_NE(client1, client2);
 
-  configurator_.Init(false);
+  Init(false);
   configurator_.ForceInitialConfigure(0);
   UpdateOutputs(2, true);
   EXPECT_NE(kNoActions, log_->GetActionsAndClear());
@@ -1361,7 +1367,7 @@ TEST_F(DisplayConfiguratorTest, ContentProtectionTwoClientsEnable) {
       configurator_.RegisterContentProtectionClient();
   EXPECT_NE(client1, client2);
 
-  configurator_.Init(false);
+  Init(false);
   configurator_.ForceInitialConfigure(0);
   UpdateOutputs(2, true);
   log_->GetActionsAndClear();
@@ -1484,7 +1490,7 @@ TEST_F(DisplayConfiguratorTest, HandleConfigureCrtcFailure) {
 TEST_F(DisplayConfiguratorTest, SaveDisplayPowerStateOnConfigFailure) {
   // Start out with two displays in extended mode.
   state_controller_.set_state(MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED);
-  configurator_.Init(false);
+  Init(false);
   configurator_.ForceInitialConfigure(0);
   log_->GetActionsAndClear();
   observer_.Reset();
@@ -1532,7 +1538,7 @@ TEST_F(DisplayConfiguratorTest, SaveDisplayPowerStateOnConfigFailure) {
 TEST_F(DisplayConfiguratorTest, DontRestoreStalePowerStateAfterResume) {
   // Start out with two displays in mirrored mode.
   state_controller_.set_state(MULTIPLE_DISPLAY_STATE_DUAL_MIRROR);
-  configurator_.Init(false);
+  Init(false);
   configurator_.ForceInitialConfigure(0);
   log_->GetActionsAndClear();
   observer_.Reset();

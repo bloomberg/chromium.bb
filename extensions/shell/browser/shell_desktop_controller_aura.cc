@@ -42,7 +42,17 @@
 #include "ui/chromeos/user_activity_power_manager_notifier.h"
 #include "ui/display/types/display_mode.h"
 #include "ui/display/types/display_snapshot.h"
+
+#if defined(USE_X11)
+#include "ui/display/chromeos/x11/native_display_delegate_x11.h"
 #endif
+
+#if defined(USE_OZONE)
+#include "ui/display/types/native_display_delegate.h"
+#include "ui/ozone/public/ozone_platform.h"
+#endif
+
+#endif  // defined(OS_CHROMEOS)
 
 namespace extensions {
 namespace {
@@ -168,7 +178,13 @@ ShellDesktopControllerAura::ShellDesktopControllerAura()
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
       this);
   display_configurator_.reset(new ui::DisplayConfigurator);
-  display_configurator_->Init(false);
+#if defined(USE_OZONE)
+  display_configurator_->Init(
+      ui::OzonePlatform::GetInstance()->CreateNativeDisplayDelegate(), false);
+#elif defined(USE_X11)
+  display_configurator_->Init(
+      base::WrapUnique(new ui::NativeDisplayDelegateX11()), false);
+#endif
   display_configurator_->ForceInitialConfigure(0);
   display_configurator_->AddObserver(this);
 #endif

@@ -201,7 +201,8 @@ class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
 
   // Initialization, must be called right after constructor.
   // |is_panel_fitting_enabled| indicates hardware panel fitting support.
-  void Init(bool is_panel_fitting_enabled);
+  void Init(std::unique_ptr<NativeDisplayDelegate> delegate,
+            bool is_panel_fitting_enabled);
 
   // Does initial configuration of displays during startup.
   // If |background_color_argb| is non zero and there are multiple displays,
@@ -298,9 +299,6 @@ class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
   // Mapping a client to its protection request.
   typedef std::map<ContentProtectionClientId, ContentProtections>
       ProtectionRequests;
-
-  // Performs platform specific delegate initialization.
-  std::unique_ptr<NativeDisplayDelegate> CreatePlatformNativeDisplayDelegate();
 
   // Configures displays. Invoked by |configure_timer_|.
   void ConfigureDisplays();

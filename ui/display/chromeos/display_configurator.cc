@@ -520,7 +520,9 @@ void DisplayConfigurator::SetInitialDisplayPower(
   NotifyPowerStateObservers();
 }
 
-void DisplayConfigurator::Init(bool is_panel_fitting_enabled) {
+void DisplayConfigurator::Init(
+    std::unique_ptr<NativeDisplayDelegate> display_delegate,
+    bool is_panel_fitting_enabled) {
   is_panel_fitting_enabled_ = is_panel_fitting_enabled;
   if (!configure_display_ || display_externally_controlled_)
     return;
@@ -528,7 +530,7 @@ void DisplayConfigurator::Init(bool is_panel_fitting_enabled) {
   // If the delegate is already initialized don't update it (For example, tests
   // set their own delegates).
   if (!native_display_delegate_) {
-    native_display_delegate_ = CreatePlatformNativeDisplayDelegate();
+    native_display_delegate_ = std::move(display_delegate);
     native_display_delegate_->AddObserver(this);
   }
 }
@@ -608,6 +610,7 @@ void DisplayConfigurator::ForceInitialConfigure(
   if (!configure_display_ || display_externally_controlled_)
     return;
 
+  DCHECK(native_display_delegate_);
   native_display_delegate_->Initialize();
 
   // ForceInitialConfigure should be the first configuration so there shouldn't

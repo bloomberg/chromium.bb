@@ -144,6 +144,15 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "ui/chromeos/user_activity_power_manager_notifier.h"
 #include "ui/display/chromeos/display_configurator.h"
+
+#if defined(USE_X11)
+#include "ui/display/chromeos/x11/native_display_delegate_x11.h"
+#endif
+
+#if defined(USE_OZONE)
+#include "ui/display/types/native_display_delegate.h"
+#include "ui/ozone/public/ozone_platform.h"
+#endif
 #endif  // defined(OS_CHROMEOS)
 
 namespace ash {
@@ -865,7 +874,16 @@ void Shell::Init(const ShellInitParams& init_params) {
   // --ash-host-window-bounds flag.
   if (in_mus_)
     display_configurator_->set_configure_display(false);
-  display_configurator_->Init(!gpu_support_->IsPanelFittingDisabled());
+
+#if defined(USE_OZONE)
+  display_configurator_->Init(
+      ui::OzonePlatform::GetInstance()->CreateNativeDisplayDelegate(),
+      !gpu_support_->IsPanelFittingDisabled());
+#elif defined(USE_X11)
+  display_configurator_->Init(
+      base::WrapUnique(new ui::NativeDisplayDelegateX11()),
+      !gpu_support_->IsPanelFittingDisabled());
+#endif
 
   // The DBusThreadManager must outlive this Shell. See the DCHECK in ~Shell.
   chromeos::DBusThreadManager* dbus_thread_manager =

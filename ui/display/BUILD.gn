@@ -18,12 +18,10 @@ component("display") {
     "chromeos/display_snapshot_virtual.h",
     "chromeos/display_util.cc",
     "chromeos/display_util.h",
-    "chromeos/ozone/display_configurator_ozone.cc",
     "chromeos/query_content_protection_task.cc",
     "chromeos/query_content_protection_task.h",
     "chromeos/update_display_configuration_task.cc",
     "chromeos/update_display_configuration_task.h",
-    "chromeos/x11/display_configurator_x11.cc",
     "chromeos/x11/display_mode_x11.cc",
     "chromeos/x11/display_mode_x11.h",
     "chromeos/x11/display_snapshot_x11.cc",
@@ -60,7 +58,6 @@ component("display") {
   ]
 
   if (is_chromeos && use_x11) {
-    sources -= [ "chromeos/ozone/display_configurator_ozone.cc" ]
     configs += [
       "//build/config/linux:x11",
       "//build/config/linux:xext",
@@ -76,9 +73,7 @@ component("display") {
   }
 
   if (is_chromeos && use_ozone) {
-    deps += [ "//ui/ozone" ]
     sources -= [
-      "chromeos/x11/display_configurator_x11.cc",
       "chromeos/x11/display_mode_x11.cc",
       "chromeos/x11/display_mode_x11.h",
       "chromeos/x11/display_snapshot_x11.cc",

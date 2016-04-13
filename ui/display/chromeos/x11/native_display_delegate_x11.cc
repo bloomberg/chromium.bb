@@ -109,7 +109,8 @@ NativeDisplayDelegateX11::NativeDisplayDelegateX11()
       background_color_argb_(0) {}
 
 NativeDisplayDelegateX11::~NativeDisplayDelegateX11() {
-  if (ui::PlatformEventSource::GetInstance()) {
+  if (ui::PlatformEventSource::GetInstance() &&
+      platform_event_dispatcher_.get()) {
     ui::PlatformEventSource::GetInstance()->RemovePlatformEventDispatcher(
         platform_event_dispatcher_.get());
   }
