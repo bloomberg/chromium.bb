@@ -153,7 +153,7 @@ class CONTENT_EXPORT BrowserAccessibility {
 
   // This is to handle the cases such as ARIA textbox, where the value should
   // be calculated from the object's inner text.
-  base::string16 GetValue() const;
+  virtual base::string16 GetValue() const;
 
   // Searches in the given text and from the given offset until the start of
   // the next or previous word is found and returns its position.

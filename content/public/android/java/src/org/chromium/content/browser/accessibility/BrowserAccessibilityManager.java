@@ -854,14 +854,20 @@ public class BrowserAccessibilityManager {
 
     @SuppressLint("NewApi")
     @CalledByNative
-    private void setAccessibilityNodeInfoContentDescription(
-            AccessibilityNodeInfo node, String contentDescription, boolean annotateAsLink) {
+    private void setAccessibilityNodeInfoText(
+            AccessibilityNodeInfo node, String text, boolean annotateAsLink,
+            boolean isEditableText) {
+        CharSequence charSequence = text;
         if (annotateAsLink) {
-            SpannableString spannable = new SpannableString(contentDescription);
+            SpannableString spannable = new SpannableString(text);
             spannable.setSpan(new URLSpan(""), 0, spannable.length(), 0);
-            node.setContentDescription(spannable);
+            charSequence = spannable;
+        }
+        if (isEditableText) {
+            node.setText(charSequence);
+            node.setEditable(true);
         } else {
-            node.setContentDescription(contentDescription);
+            node.setContentDescription(charSequence);
         }
     }
 

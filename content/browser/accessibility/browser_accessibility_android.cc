@@ -17,6 +17,8 @@
 
 namespace {
 
+const base::char16 kSecurePasswordBullet = 0x2022;
+
 // These are enums from android.text.InputType in Java:
 enum {
   ANDROID_TEXT_INPUTTYPE_TYPE_NULL = 0,
@@ -64,6 +66,22 @@ bool BrowserAccessibilityAndroid::IsNative() const {
 
 void BrowserAccessibilityAndroid::OnLocationChanged() {
   manager()->NotifyAccessibilityEvent(ui::AX_EVENT_LOCATION_CHANGED, this);
+}
+
+base::string16 BrowserAccessibilityAndroid::GetValue() const {
+  base::string16 value = BrowserAccessibility::GetValue();
+
+  // Optionally replace entered password text with bullet characters
+  // based on a user preference.
+  if (IsPassword()) {
+    bool should_expose = static_cast<BrowserAccessibilityManagerAndroid*>(
+        manager())->ShouldExposePasswordText();
+    if (!should_expose) {
+      value = base::string16(value.size(), kSecurePasswordBullet);
+    }
+  }
+
+  return value;
 }
 
 bool BrowserAccessibilityAndroid::PlatformIsLeaf() const {
