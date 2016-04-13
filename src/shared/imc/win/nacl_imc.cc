@@ -25,12 +25,6 @@
 #include "native_client/src/shared/imc/nacl_imc_c.h"
 
 
-static NaClBrokerDuplicateHandleFunc g_broker_duplicate_handle_func;
-
-void NaClSetBrokerDuplicateHandleFunc(NaClBrokerDuplicateHandleFunc func) {
-  g_broker_duplicate_handle_func = func;
-}
-
 /* Duplicate a Windows HANDLE within the current process. */
 NaClHandle NaClDuplicateNaClHandle(NaClHandle handle) {
   NaClHandle dup_handle;
@@ -259,25 +253,15 @@ int NaClSendDatagram(NaClHandle handle, const NaClMessageHeader* message,
         header.command != kEchoResponse) {
       return -1;
     }
-    if (g_broker_duplicate_handle_func == NULL) {
-      target = OpenProcess(PROCESS_DUP_HANDLE, FALSE, header.pid);
-      if (target == NULL) {
-        return -1;
-      }
+    target = OpenProcess(PROCESS_DUP_HANDLE, FALSE, header.pid);
+    if (target == NULL) {
+      return -1;
     }
     for (i = 0; i < message->handle_count; ++i) {
       HANDLE temp_remote_handle;
-      bool success;
-      if (g_broker_duplicate_handle_func != NULL) {
-        success = g_broker_duplicate_handle_func(message->handles[i],
-                                                 header.pid,
-                                                 &temp_remote_handle,
-                                                 0, DUPLICATE_SAME_ACCESS) != 0;
-      } else {
-        success = DuplicateHandle(GetCurrentProcess(), message->handles[i],
-                                  target, &temp_remote_handle,
-                                  0, FALSE, DUPLICATE_SAME_ACCESS) != 0;
-      }
+      bool success = DuplicateHandle(GetCurrentProcess(), message->handles[i],
+                                     target, &temp_remote_handle,
+                                     0, FALSE, DUPLICATE_SAME_ACCESS) != 0;
       if (!success) {
         /*
          * Send the kCancel message to revoke the handles duplicated
@@ -289,16 +273,12 @@ int NaClSendDatagram(NaClHandle handle, const NaClMessageHeader* message,
           WriteAll(handle, &header, sizeof header);
           WriteAll(handle, remote_handles, sizeof(uint64_t) * i);
         }
-        if (g_broker_duplicate_handle_func == NULL) {
-          CloseHandle(target);
-        }
+        CloseHandle(target);
         return -1;
       }
       remote_handles[i] = (uint64_t) temp_remote_handle;
     }
-    if (g_broker_duplicate_handle_func == NULL) {
-      CloseHandle(target);
-    }
+    CloseHandle(target);
   }
   header.command = kMessage;
   header.handle_count = message->handle_count;

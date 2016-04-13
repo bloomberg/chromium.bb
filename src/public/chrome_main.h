@@ -155,12 +155,6 @@ struct NaClChromeMainArgs {
 
 #if NACL_WINDOWS
   /*
-   * Callback to use instead of DuplicateHandle() for copying a
-   * Windows handle to another process.  Optional; may be NULL.
-   */
-  NaClBrokerDuplicateHandleFunc broker_duplicate_handle_func;
-
-  /*
    * Callback to use for requesting that a debug exception handler be
    * attached to this process for handling hardware exceptions via the
    * Windows debug API.  The data in info/info_size must be passed to
