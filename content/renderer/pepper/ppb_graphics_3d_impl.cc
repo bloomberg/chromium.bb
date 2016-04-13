@@ -46,7 +46,10 @@ PPB_Graphics3D_Impl::PPB_Graphics3D_Impl(PP_Instance instance)
       weak_ptr_factory_(this) {}
 
 PPB_Graphics3D_Impl::~PPB_Graphics3D_Impl() {
-  command_buffer_->SetGpuControlClient(nullptr);
+  // Unset the client before the command_buffer_ is destroyed, similar to how
+  // WeakPtrFactory invalidates before it.
+  if (command_buffer_)
+    command_buffer_->SetGpuControlClient(nullptr);
 }
 
 // static
