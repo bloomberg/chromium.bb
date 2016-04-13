@@ -495,12 +495,21 @@ Status LaunchAndroidChrome(
     return status;
   }
 
-  std::string package = devtools_http_client->browser_info()->android_package;
-  if (package != capabilities.android_package) {
-    device->TearDown();
-    return Status(
-        kSessionNotCreatedException,
-        base::StringPrintf("please close '%s' and try again", package.c_str()));
+  const BrowserInfo* browser_info = devtools_http_client->browser_info();
+  if (browser_info->android_package != capabilities.android_package) {
+    // DevTools from Chrome 30 and earlier did not provide an Android-Package
+    // key, so skip the package check for WebView on KitKat and older.
+    // TODO(samuong): Make this unconditional once we stop supporting Android
+    // KitKat WebView apps.
+    if (!(browser_info->browser_name == "webview" &&
+          browser_info->major_version <= 30 &&
+          browser_info->android_package.empty())) {
+      device->TearDown();
+      return Status(
+          kSessionNotCreatedException,
+          base::StringPrintf("please close '%s' and try again",
+                             browser_info->android_package.c_str()));
+    }
   }
 
   std::unique_ptr<DevToolsClient> devtools_websocket_client;
