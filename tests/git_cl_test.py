@@ -1353,6 +1353,9 @@ class TestGitCl(TestCase):
         ((['SetReview', 'chromium-review.googlesource.com', 123,
            {'Commit-Queue': 1}],), ''),
     ]
+    # TODO(tandrii): consider testing just set-commit and set-commit --clear,
+    # but without copy-pasting tons of expectations, as modifying them later is
+    # super tedious.
     self.assertEqual(0, git_cl.main(['set-commit', '-d']))
 
 
