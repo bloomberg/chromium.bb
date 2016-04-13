@@ -74,6 +74,34 @@ class AuthenticatorMock(object):
     return True
 
 
+def CookiesAuthenticatorMockFactory(hosts_with_creds=None, same_cookie=False):
+  """Use to mock Gerrit/Git credentials from ~/.netrc or ~/.gitcookies.
+
+  Usage:
+    >>> self.mock(git_cl.gerrit_util, "CookiesAuthenticator",
+                  CookiesAuthenticatorMockFactory({'host1': 'cookie1'}))
+
+  OR
+    >>> self.mock(git_cl.gerrit_util, "CookiesAuthenticator",
+                  CookiesAuthenticatorMockFactory(cookie='cookie'))
+  """
+  class CookiesAuthenticatorMock(git_cl.gerrit_util.CookiesAuthenticator):
+    def __init__(self):  # pylint: disable=W0231
+      # Intentionally not calling super() because it reads actual cookie files.
+      pass
+    @classmethod
+    def get_gitcookies_path(cls):
+      return '~/.gitcookies'
+    @classmethod
+    def get_netrc_path(cls):
+      return '~/.netrc'
+    def get_auth_header(self, host):
+      if same_cookie:
+        return same_cookie
+      return (hosts_with_creds or {}).get(host)
+  return CookiesAuthenticatorMock
+
+
 class TestGitClBasic(unittest.TestCase):
   def _test_ParseIssueUrl(self, func, url, issue, patchset, hostname, fail):
     parsed = urlparse.urlparse(url)
@@ -191,6 +219,8 @@ class TestGitCl(TestCase):
     self.mock(git_cl.upload, 'RealMain', self.fail)
     self.mock(git_cl.watchlists, 'Watchlists', WatchlistsMock)
     self.mock(git_cl.auth, 'get_authenticator_for_host', AuthenticatorMock)
+    self.mock(git_cl.gerrit_util.GceAuthenticator, 'is_gce',
+              classmethod(lambda _: False))
     # It's important to reset settings to not have inter-tests interference.
     git_cl.settings = None
 
@@ -346,11 +376,10 @@ class TestGitCl(TestCase):
     ]
 
   @staticmethod
-  def _git_sanity_checks(diff_base, working_branch):
+  def _git_sanity_checks(diff_base, working_branch, get_remote_branch=True):
     fake_ancestor = 'fake_ancestor'
     fake_cl = 'fake_cl_for_patch'
     return [
-      # Calls to verify branch point is ancestor
       ((['git',
          'rev-parse', '--verify', diff_base],), fake_ancestor),
       ((['git',
@@ -360,15 +389,17 @@ class TestGitCl(TestCase):
       # Mock a config miss (error code 1)
       ((['git',
          'config', 'gitcl.remotebranch'],), (('', None), 1)),
+    ] + ([
       # Call to GetRemoteBranch()
       ((['git',
          'config', 'branch.%s.merge' % working_branch],),
        'refs/heads/master'),
       ((['git',
          'config', 'branch.%s.remote' % working_branch],), 'origin'),
+    ] if get_remote_branch else []) + [
       ((['git', 'rev-list', '^' + fake_ancestor,
          'refs/remotes/origin/master'],), ''),
-       ]
+    ]
 
   @classmethod
   def _dcommit_calls_1(cls):
@@ -645,6 +676,23 @@ class TestGitCl(TestCase):
 
 
   @classmethod
+  def _gerrit_ensure_auth_calls(cls, issue=None):
+    calls = []
+    if issue:
+      calls.extend([
+          ((['git', 'config', 'branch.master.gerritserver'],), ''),
+      ])
+    calls.extend([
+        ((['git', 'config', 'branch.master.merge'],), 'refs/heads/master'),
+        ((['git', 'config', 'branch.master.remote'],), 'origin'),
+        ((['git', 'config', 'remote.origin.url'],),
+         'https://chromium.googlesource.com/my/repo'),
+        ((['git', 'config', 'remote.origin.url'],),
+         'https://chromium.googlesource.com/my/repo'),
+    ])
+    return calls
+
+  @classmethod
   def _gerrit_base_calls(cls, issue=None):
     return [
         ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
@@ -658,13 +706,18 @@ class TestGitCl(TestCase):
         ((['git', 'config', 'branch.master.rietveldissue'],), ''),
         ((['git', 'config', 'branch.master.gerritissue'],),
           '' if issue is None else str(issue)),
-        ((['git', 'config', 'branch.master.merge'],), 'master'),
+        ((['git', 'config', 'branch.master.merge'],), 'refs/heads/master'),
         ((['git', 'config', 'branch.master.remote'],), 'origin'),
-        ((['get_or_create_merge_base', 'master', 'master'],),
+        ((['get_or_create_merge_base', 'master',
+           'refs/remotes/origin/master'],),
          'fake_ancestor_sha'),
-      ] + cls._git_sanity_checks('fake_ancestor_sha', 'master') + [
+        # Calls to verify branch point is ancestor
+      ] + (cls._gerrit_ensure_auth_calls(issue=issue) +
+           cls._git_sanity_checks('fake_ancestor_sha', 'master',
+                                  get_remote_branch=False)) + [
         ((['git', 'rev-parse', '--show-cdup'],), ''),
         ((['git', 'rev-parse', 'HEAD'],), '12345'),
+
         ((['git',
            'diff', '--name-status', '--no-renames', '-r',
            'fake_ancestor_sha...', '.'],),
@@ -730,7 +783,8 @@ class TestGitCl(TestCase):
            'refs/heads/master'),
           ((['git', 'config', 'branch.master.remote'],),
            'origin'),
-          ((['get_or_create_merge_base', 'master', 'master'],),
+          ((['get_or_create_merge_base', 'master',
+             'refs/remotes/origin/master'],),
            'origin/master'),
           ((['git', 'rev-parse', 'HEAD:'],),
            '0123456789abcdef'),
@@ -774,14 +828,11 @@ class TestGitCl(TestCase):
     if squash:
       calls += [
           ((['git', 'config', 'branch.master.gerritissue', '123456'],), ''),
-          ((['git', 'config', 'branch.master.gerritserver'],), ''),
-          ((['git', 'config', 'remote.origin.url'],),
-            'https://chromium.googlesource.com/my/repo.git'),
           ((['git', 'config', 'branch.master.gerritserver',
           'https://chromium-review.googlesource.com'],), ''),
           ((['git', 'config', 'branch.master.gerritsquashhash',
              'abcdef0123456789'],), ''),
-          ]
+      ]
     calls += cls._git_post_upload_calls()
     return calls
 
@@ -795,6 +846,8 @@ class TestGitCl(TestCase):
       post_amend_description=None,
       issue=None):
     """Generic gerrit upload test framework."""
+    self.mock(git_cl.gerrit_util, "CookiesAuthenticator",
+              CookiesAuthenticatorMockFactory(same_cookie='same_cred'))
     self.calls = self._gerrit_base_calls(issue=issue)
     self.calls += self._gerrit_upload_calls(
         description, reviewers, squash,
@@ -1192,6 +1245,50 @@ class TestGitCl(TestCase):
 
     ]
     self.assertEqual(1, git_cl.main(['checkout', '99999']))
+
+  def _test_gerrit_ensure_authenticated_common(self, auth):
+    self.mock(git_cl.gerrit_util, 'CookiesAuthenticator',
+              CookiesAuthenticatorMockFactory(hosts_with_creds=auth))
+    self.mock(git_cl, 'DieWithError',
+              lambda msg: self._mocked_call(['DieWithError', msg]))
+    self.mock(git_cl, 'ask_for_data',
+              lambda msg: self._mocked_call(['ask_for_data', msg]))
+    self.calls = [
+        ((['git', 'symbolic-ref', 'HEAD'],), 'master')
+    ] + self._gerrit_ensure_auth_calls()
+    cl = git_cl.Changelist(codereview='gerrit')
+    cl.lookedup_issue = True
+    return cl
+
+  def test_gerrit_ensure_authenticated_missing(self):
+    cl = self._test_gerrit_ensure_authenticated_common(auth={
+      'chromium.googlesource.com': 'git is ok, but gerrit one is missing',
+    })
+    self.calls.append(
+        ((['DieWithError',
+           'Credentials for the following hosts are required:\n'
+           '  chromium-review.googlesource.com\n'
+           'These are read from ~/.gitcookies (or legacy ~/.netrc)\n'
+           'You can (re)generate your credentails by visiting '
+           'https://chromium-review.googlesource.com/new-password'],), ''),)
+    self.assertIsNone(cl.EnsureAuthenticated(force=False))
+
+  def test_gerrit_ensure_authenticated_conflict(self):
+    cl = self._test_gerrit_ensure_authenticated_common(auth={
+      'chromium.googlesource.com': 'one',
+      'chromium-review.googlesource.com': 'other',
+    })
+    self.calls.append(
+        ((['ask_for_data', 'If you know what you are doing, '
+				   								 'press Enter to continue, Ctrl+C to abort.'],), ''))
+    self.assertIsNone(cl.EnsureAuthenticated(force=False))
+
+  def test_gerrit_ensure_authenticated_ok(self):
+    cl = self._test_gerrit_ensure_authenticated_common(auth={
+      'chromium.googlesource.com': 'same',
+      'chromium-review.googlesource.com': 'same',
+    })
+    self.assertIsNone(cl.EnsureAuthenticated(force=False))
 
 
 if __name__ == '__main__':

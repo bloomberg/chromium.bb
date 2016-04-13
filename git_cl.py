@@ -1329,7 +1329,7 @@ class Changelist(object):
     # Make sure authenticated to codereview before running potentially expensive
     # hooks.  It is a fast, best efforts check. Codereview still can reject the
     # authentication during the actual upload.
-    self._codereview_impl.EnsureAuthenticated()
+    self._codereview_impl.EnsureAuthenticated(force=options.force)
 
     # Apply watchlists on upload.
     change = self.GetChange(base_branch, None)
@@ -1507,8 +1507,12 @@ class _ChangelistCodereviewBase(object):
     failed."""
     raise NotImplementedError()
 
-  def EnsureAuthenticated(self):
-    """Best effort check that user is authenticated with codereview server."""
+  def EnsureAuthenticated(self, force):
+    """Best effort check that user is authenticated with codereview server.
+
+    Arguments:
+      force: whether to skip confirmation questions.
+    """
     raise NotImplementedError()
 
   def CMDUploadChange(self, options, args, change):
@@ -1540,7 +1544,7 @@ class _RietveldChangelistImpl(_ChangelistCodereviewBase):
         self._rietveld_server = settings.GetDefaultServerUrl()
     return self._rietveld_server
 
-  def EnsureAuthenticated(self):
+  def EnsureAuthenticated(self, force):
     """Best effort check that user is authenticated with Rietveld server."""
     if self._auth_config.use_oauth2:
       authenticator = auth.get_authenticator_for_host(
@@ -1785,7 +1789,6 @@ class _RietveldChangelistImpl(_ChangelistCodereviewBase):
     """Upload the patch to Rietveld."""
     upload_args = ['--assume_yes']  # Don't ask about untracked files.
     upload_args.extend(['--server', self.GetCodereviewServer()])
-    # TODO(tandrii): refactor this ugliness into _RietveldChangelistImpl.
     upload_args.extend(auth.auth_config_to_command_options(self._auth_config))
     if options.emulate_svn_auto_props:
       upload_args.append('--emulate_svn_auto_props')
@@ -1939,13 +1942,18 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     # auth_config is Rietveld thing, kept here to preserve interface only.
     super(_GerritChangelistImpl, self).__init__(changelist)
     self._change_id = None
+    # Lazily cached values.
     self._gerrit_server = None  # e.g. https://chromium-review.googlesource.com
-    self._gerrit_host = None   # e.g. chromium-review.googlesource.com
+    self._gerrit_host = None    # e.g. chromium-review.googlesource.com
 
   def _GetGerritHost(self):
     # Lazy load of configs.
     self.GetCodereviewServer()
     return self._gerrit_host
+
+  def _GetGitHost(self):
+    """Returns git host to be used when uploading change to Gerrit."""
+    return urlparse.urlparse(self.GetRemoteUrl()).netloc
 
   def GetCodereviewServer(self):
     if not self._gerrit_server:
@@ -1961,7 +1969,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
       if not self._gerrit_server:
         # We assume repo to be hosted on Gerrit, and hence Gerrit server
         # has "-review" suffix for lowest level subdomain.
-        parts = urlparse.urlparse(self.GetRemoteUrl()).netloc.split('.')
+        parts = self._GetGitHost().split('.')
         parts[0] = parts[0] + '-review'
         self._gerrit_host = '.'.join(parts)
         self._gerrit_server = 'https://%s' % self._gerrit_host
@@ -1971,9 +1979,47 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
   def IssueSettingSuffix(cls):
     return 'gerritissue'
 
-  def EnsureAuthenticated(self):
+  def EnsureAuthenticated(self, force):
     """Best effort check that user is authenticated with Gerrit server."""
-    #TODO(tandrii): implement per bug http://crbug.com/583153.
+    # Lazy-loader to identify Gerrit and Git hosts.
+    if gerrit_util.GceAuthenticator.is_gce():
+      return
+    self.GetCodereviewServer()
+    git_host = self._GetGitHost()
+    assert self._gerrit_server and self._gerrit_host
+    cookie_auth = gerrit_util.CookiesAuthenticator()
+
+    gerrit_auth = cookie_auth.get_auth_header(self._gerrit_host)
+    git_auth = cookie_auth.get_auth_header(git_host)
+    if gerrit_auth and git_auth:
+      if gerrit_auth == git_auth:
+        return
+      print((
+          'WARNING: you have different credentials for Gerrit and git hosts.\n'
+          '         Check your %s or %s file for credentials of hosts:\n'
+          '           %s\n'
+          '           %s\n'
+          '         %s') %
+          (cookie_auth.get_gitcookies_path(), cookie_auth.get_netrc_path(),
+           git_host, self._gerrit_host,
+           cookie_auth.get_new_password_message(git_host)))
+      if not force:
+        ask_for_data('If you know what you are doing, press Enter to continue, '
+                     'Ctrl+C to abort.')
+      return
+    else:
+      missing = (
+          [] if gerrit_auth else [self._gerrit_host] +
+          [] if git_auth else [git_host])
+      DieWithError('Credentials for the following hosts are required:\n'
+                   '  %s\n'
+                   'These are read from %s (or legacy %s)\n'
+                   '%s' % (
+                     '\n  '.join(missing),
+                     cookie_auth.get_gitcookies_path(),
+                     cookie_auth.get_netrc_path(),
+                     cookie_auth.get_new_password_message(git_host)))
+
 
   def PatchsetSetting(self):
     """Return the git setting that stores this change's most recent patchset."""

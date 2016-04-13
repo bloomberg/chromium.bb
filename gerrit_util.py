@@ -83,28 +83,47 @@ class Authenticator(object):
     """
     if GceAuthenticator.is_gce():
       return GceAuthenticator()
-    return NetrcAuthenticator()
+    return CookiesAuthenticator()
 
 
-class NetrcAuthenticator(Authenticator):
-  """Authenticator implementation that uses ".netrc" for token.
+class CookiesAuthenticator(Authenticator):
+  """Authenticator implementation that uses ".netrc" or ".gitcookies" for token.
+
+  Expected case for developer workstations.
   """
 
   def __init__(self):
     self.netrc = self._get_netrc()
     self.gitcookies = self._get_gitcookies()
 
-  @staticmethod
-  def _get_netrc():
+  @classmethod
+  def get_new_password_message(cls, host):
+    assert not host.startswith('http')
+    # Assume *.googlesource.com pattern.
+    parts = host.split('.')
+    if not parts[0].endswith('-review'):
+      parts[0] += '-review'
+    url = 'https://%s/new-password' % ('.'.join(parts))
+    return 'You can (re)generate your credentails by visiting %s' % url
+
+  @classmethod
+  def get_netrc_path(cls):
     path = '_netrc' if sys.platform.startswith('win') else '.netrc'
-    path = os.path.expanduser(os.path.join('~', path))
+    return os.path.expanduser(os.path.join('~', path))
+
+  @classmethod
+  def _get_netrc(cls):
+    path = cls.get_netrc_path()
+    if not os.path.exists(path):
+      return netrc.netrc(os.devnull)
+
     try:
       return netrc.netrc(path)
     except IOError:
       print >> sys.stderr, 'WARNING: Could not read netrc file %s' % path
       return netrc.netrc(os.devnull)
-    except netrc.NetrcParseError as e:
-      st = os.stat(e.path)
+    except netrc.NetrcParseError:
+      st = os.stat(path)
       if st.st_mode & (stat.S_IRWXG | stat.S_IRWXO):
         print >> sys.stderr, (
             'WARNING: netrc file %s cannot be used because its file '
@@ -116,10 +135,17 @@ class NetrcAuthenticator(Authenticator):
         raise
       return netrc.netrc(os.devnull)
 
-  @staticmethod
-  def _get_gitcookies():
+  @classmethod
+  def get_gitcookies_path(cls):
+    return os.path.join(os.environ['HOME'], '.gitcookies')
+
+  @classmethod
+  def _get_gitcookies(cls):
     gitcookies = {}
-    path = os.path.join(os.environ['HOME'], '.gitcookies')
+    path = cls.get_gitcookies_path()
+    if not os.path.exists(path):
+      return gitcookies
+
     try:
       f = open(path, 'rb')
     except IOError:
@@ -152,6 +178,10 @@ class NetrcAuthenticator(Authenticator):
     if auth:
       return 'Basic %s' % (base64.b64encode('%s:%s' % (auth[0], auth[2])))
     return None
+
+# Backwards compatibility just in case somebody imports this outside of
+# depot_tools.
+NetrcAuthenticator = CookiesAuthenticator
 
 
 class GceAuthenticator(Authenticator):
