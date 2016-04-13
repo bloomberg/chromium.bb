@@ -15,6 +15,7 @@
         '../../../cc/cc.gyp:cc',
         '../../../third_party/WebKit/public/blink_headers.gyp:blink_headers',
         '../../gfx/gfx.gyp:gfx_geometry',
+        '../../latency_info/latency_info.gyp:latency_info',
         '../events.gyp:events',
         '../events.gyp:gesture_detection',
       ],
