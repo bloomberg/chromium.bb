@@ -11,11 +11,14 @@ from telemetry.util import wpr_modes
 from measurements import v8_detached_context_age_in_gc
 
 
-class FakePage(object):
+class FakePage(page_module.Page):
 
   def __init__(self, url):
-    self.url = url
-    self.is_file = url.startswith('file://')
+    super(FakePage, self).__init__(url=url)
+
+  @property
+  def is_file(self):
+    return self._url.startswith('file://')
 
 
 class FakeTab(object):
