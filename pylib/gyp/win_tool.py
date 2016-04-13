@@ -117,6 +117,7 @@ class WinTool(object):
     if use_separate_mspdbsrv == 'True':
       self._UseSeparateMspdbsrv(env, args)
     if sys.platform == 'win32':
+      args = list(args)  # *args is a tuple by default, which is read-only.
       args[0] = args[0].replace('/', '\\')
     link = subprocess.Popen(args, shell=True, env=env,
                             stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
