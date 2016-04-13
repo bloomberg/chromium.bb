@@ -151,7 +151,13 @@ TEST_PPAPI_OUT_OF_PROCESS(MAYBE_VarDeprecated)
 TEST_PPAPI_IN_PROCESS(VarResource)
 TEST_PPAPI_OUT_OF_PROCESS(VarResource)
 
-TEST_PPAPI_OUT_OF_PROCESS(VideoDecoder)
+// Flaky on Win, Linux and CrOS, http://crbug.com/602877
+#if defined(OS_MACOSX)
+#define MAYBE_VideoDecoder DISABLED_VideoDecoder
+#else
+#define MAYBE_VideoDecoder VideoDecoder
+#endif
+TEST_PPAPI_OUT_OF_PROCESS(MAYBE_VideoDecoder)
 
 TEST_PPAPI_IN_PROCESS(VideoDecoderDev)
 TEST_PPAPI_OUT_OF_PROCESS(VideoDecoderDev)
