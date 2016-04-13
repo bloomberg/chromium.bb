@@ -132,6 +132,17 @@ static String extractMessageForConsole(v8::Isolate* isolate, v8::Local<v8::Value
     return emptyString();
 }
 
+static ErrorEvent* createErrorEventFromMesssage(ScriptState* scriptState, v8::Local<v8::Message> message, String resourceName)
+{
+    String errorMessage = toCoreStringWithNullCheck(message->Get());
+    int lineNumber = 0;
+    int columnNumber = 0;
+    if (v8Call(message->GetLineNumber(scriptState->context()), lineNumber)
+        && v8Call(message->GetStartColumn(scriptState->context()), columnNumber))
+        ++columnNumber;
+    return ErrorEvent::create(errorMessage, resourceName, lineNumber, columnNumber, &scriptState->world());
+}
+
 static void messageHandlerInMainThread(v8::Local<v8::Message> message, v8::Local<v8::Value> data)
 {
     ASSERT(isMainThread());
@@ -144,7 +155,7 @@ static void messageHandlerInMainThread(v8::Local<v8::Message> message, v8::Local
 
     int scriptId = 0;
     RefPtr<ScriptCallStack> callStack = extractCallStack(isolate, message, &scriptId);
-    String resourceName = extractResourceName(message, enteredWindow->document());
+
     AccessControlStatus accessControlStatus = NotSharableCrossOrigin;
     if (message->IsOpaque())
         accessControlStatus = OpaqueResource;
@@ -152,13 +163,9 @@ static void messageHandlerInMainThread(v8::Local<v8::Message> message, v8::Local
         accessControlStatus = SharableCrossOrigin;
 
     ScriptState* scriptState = ScriptState::current(isolate);
-    String errorMessage = toCoreStringWithNullCheck(message->Get());
-    int lineNumber = 0;
-    int columnNumber = 0;
-    if (v8Call(message->GetLineNumber(scriptState->context()), lineNumber)
-        && v8Call(message->GetStartColumn(scriptState->context()), columnNumber))
-        ++columnNumber;
-    ErrorEvent* event = ErrorEvent::create(errorMessage, resourceName, lineNumber, columnNumber, &scriptState->world());
+
+    String resourceName = extractResourceName(message, enteredWindow->document());
+    ErrorEvent* event = createErrorEventFromMesssage(scriptState, message, resourceName);
 
     String messageForConsole = extractMessageForConsole(isolate, data);
     if (!messageForConsole.isEmpty())
@@ -421,17 +428,12 @@ static void messageHandlerInWorker(v8::Local<v8::Message> message, v8::Local<v8:
     ScriptState* scriptState = ScriptState::current(isolate);
     // During the frame teardown, there may not be a valid context.
     if (ExecutionContext* context = scriptState->getExecutionContext()) {
-        String errorMessage = toCoreStringWithNullCheck(message->Get());
-        TOSTRING_VOID(V8StringResource<>, sourceURL, message->GetScriptOrigin().ResourceName());
+        TOSTRING_VOID(V8StringResource<>, resourceName, message->GetScriptOrigin().ResourceName());
+        ErrorEvent* event = createErrorEventFromMesssage(scriptState, message, resourceName);
+
         int scriptId = 0;
         RefPtr<ScriptCallStack> callStack = extractCallStack(isolate, message, &scriptId);
 
-        int lineNumber = 0;
-        int columnNumber = 0;
-        if (v8Call(message->GetLineNumber(scriptState->context()), lineNumber)
-            && v8Call(message->GetStartColumn(scriptState->context()), columnNumber))
-            ++columnNumber;
-        ErrorEvent* event = ErrorEvent::create(errorMessage, sourceURL, lineNumber, columnNumber, &DOMWrapperWorld::current(isolate));
         AccessControlStatus corsStatus = message->IsSharedCrossOrigin() ? SharableCrossOrigin : NotSharableCrossOrigin;
 
         // If execution termination has been triggered as part of constructing
