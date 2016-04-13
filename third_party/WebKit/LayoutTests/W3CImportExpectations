@@ -289,8 +289,7 @@ imported/web-platform-tests/url [ Skip ]
 ## Owners: jsbell@chromium.org
 # imported/web-platform-tests/user-timing [ Pass ]
 imported/web-platform-tests/vibration [ Skip ]
-## Owners: suzyh@chromium.org
-# imported/web-platform-tests/web-animations [ Pass ]
+imported/web-platform-tests/web-animations [ Skip ]
 imported/web-platform-tests/webaudio [ Skip ]
 imported/web-platform-tests/webdriver [ Skip ]
 imported/web-platform-tests/webgl [ Skip ]
@@ -320,7 +319,6 @@ imported/web-platform-tests/pointerevents/OWNERS [ Skip ]
 imported/web-platform-tests/webstorage/OWNERS [ Skip ]
 imported/web-platform-tests/mediacapture-streams/OWNERS [ Skip ]
 imported/web-platform-tests/touch-events/OWNERS [ Skip ]
-imported/web-platform-tests/web-animations/OWNERS [ Skip ]
 
 # Exceptions for individual files that fail due to bugs in the
 # upstream tests that we shouldn't bother importing until they are
