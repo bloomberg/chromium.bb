@@ -31,7 +31,8 @@ class WebrtcConnectionToClient : public ConnectionToClient,
  public:
   WebrtcConnectionToClient(
       std::unique_ptr<Session> session,
-      scoped_refptr<protocol::TransportContext> transport_context);
+      scoped_refptr<protocol::TransportContext> transport_context,
+      scoped_refptr<base::SingleThreadTaskRunner> video_encode_task_runner);
   ~WebrtcConnectionToClient() override;
 
   // ConnectionToClient interface.
@@ -69,13 +70,14 @@ class WebrtcConnectionToClient : public ConnectionToClient,
   // Event handler for handling events sent from this object.
   ConnectionToClient::EventHandler* event_handler_ = nullptr;
 
-  WebrtcTransport transport_;
+  std::unique_ptr<WebrtcTransport> transport_;
 
   std::unique_ptr<Session> session_;
 
+  scoped_refptr<base::SingleThreadTaskRunner> video_encode_task_runner_;
+
   std::unique_ptr<HostControlDispatcher> control_dispatcher_;
   std::unique_ptr<HostEventDispatcher> event_dispatcher_;
-
   base::WeakPtrFactory<WebrtcConnectionToClient> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WebrtcConnectionToClient);

@@ -5,10 +5,11 @@
 #include "remoting/protocol/webrtc_video_stream.h"
 
 #include "base/logging.h"
-#include "remoting/protocol/webrtc_video_capturer_adapter.h"
+#include "remoting/protocol/webrtc_dummy_video_capturer.h"
 #include "third_party/webrtc/api/mediastreaminterface.h"
 #include "third_party/webrtc/api/peerconnectioninterface.h"
 #include "third_party/webrtc/api/test/fakeconstraints.h"
+#include "third_party/webrtc/media/base/videocapturer.h"
 
 namespace remoting {
 namespace protocol {
@@ -26,33 +27,41 @@ WebrtcVideoStream::~WebrtcVideoStream() {
     }
     connection_->RemoveStream(stream_.get());
   }
-
-  // MediaStream may still outlive WebrtcVideoStream because it's
-  // ref-counted. Reset SizeCallback to make sure it won't be called again.
-  if (capturer_adapter_)
-    capturer_adapter_->SetSizeCallback(SizeCallback());
 }
 
 bool WebrtcVideoStream::Start(
     std::unique_ptr<webrtc::DesktopCapturer> desktop_capturer,
-    scoped_refptr<webrtc::PeerConnectionInterface> connection,
-    scoped_refptr<webrtc::PeerConnectionFactoryInterface>
-        peer_connection_factory) {
-  std::unique_ptr<WebrtcVideoCapturerAdapter> capturer_adapter(
-      new WebrtcVideoCapturerAdapter(std::move(desktop_capturer)));
-  capturer_adapter_ = capturer_adapter->GetWeakPtr();
+    WebrtcTransport* webrtc_transport,
+    scoped_refptr<base::SingleThreadTaskRunner> video_encode_task_runner,
+    std::unique_ptr<VideoEncoder> video_encoder) {
+  DCHECK(webrtc_transport);
+  DCHECK(desktop_capturer);
+  DCHECK(video_encode_task_runner);
+  DCHECK(video_encoder);
 
-  connection_ = connection;
+  scoped_refptr<webrtc::PeerConnectionFactoryInterface> peer_connection_factory(
+      webrtc_transport->peer_connection_factory());
+  connection_ = webrtc_transport->peer_connection();
+  DCHECK(peer_connection_factory);
+  DCHECK(connection_);
+
+  std::unique_ptr<WebRtcFrameScheduler> frame_scheduler(
+      new WebRtcFrameScheduler(video_encode_task_runner,
+                               std::move(desktop_capturer), webrtc_transport,
+                               std::move(video_encoder)));
+  webrtc_frame_scheduler_ = frame_scheduler.get();
 
   // Set video stream constraints.
   webrtc::FakeConstraints video_constraints;
   video_constraints.AddMandatory(
       webrtc::MediaConstraintsInterface::kMinFrameRate, 5);
 
+  rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> src =
+      peer_connection_factory->CreateVideoSource(
+          new WebRtcDummyVideoCapturer(std::move(frame_scheduler)),
+          &video_constraints);
   rtc::scoped_refptr<webrtc::VideoTrackInterface> video_track =
-      peer_connection_factory->CreateVideoTrack(
-          kVideoLabel, peer_connection_factory->CreateVideoSource(
-                           capturer_adapter.release(), &video_constraints));
+      peer_connection_factory->CreateVideoTrack(kVideoLabel, src);
 
   stream_ = peer_connection_factory->CreateLocalMediaStream(kStreamLabel);
 
@@ -62,13 +71,12 @@ bool WebrtcVideoStream::Start(
     connection_ = nullptr;
     return false;
   }
-
   return true;
 }
 
 void WebrtcVideoStream::Pause(bool pause) {
-  if (capturer_adapter_)
-    capturer_adapter_->PauseCapturer(pause);
+  if (webrtc_frame_scheduler_)
+    webrtc_frame_scheduler_->Pause(pause);
 }
 
 void WebrtcVideoStream::OnInputEventReceived(int64_t event_timestamp) {
@@ -84,8 +92,8 @@ void WebrtcVideoStream::SetLosslessColor(bool want_lossless) {
 }
 
 void WebrtcVideoStream::SetSizeCallback(const SizeCallback& size_callback) {
-  if (capturer_adapter_)
-    capturer_adapter_->SetSizeCallback(size_callback);
+  if (webrtc_frame_scheduler_)
+    webrtc_frame_scheduler_->SetSizeCallback(size_callback);
 }
 
 }  // namespace protocol

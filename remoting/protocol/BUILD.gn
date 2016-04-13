@@ -44,7 +44,6 @@ source_set("protocol") {
       sources -= [
         "webrtc_connection_to_client.cc",
         "webrtc_transport.cc",
-        "webrtc_video_capturer_adapter.cc",
         "webrtc_video_stream.cc",
       ]
     }

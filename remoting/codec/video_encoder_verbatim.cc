@@ -26,7 +26,8 @@ VideoEncoderVerbatim::VideoEncoderVerbatim() {}
 VideoEncoderVerbatim::~VideoEncoderVerbatim() {}
 
 std::unique_ptr<VideoPacket> VideoEncoderVerbatim::Encode(
-    const webrtc::DesktopFrame& frame) {
+    const webrtc::DesktopFrame& frame,
+    uint32_t flags) {
   DCHECK(frame.data());
 
   // If nothing has changed in the frame then return NULL to indicate that

@@ -19,8 +19,8 @@ class VideoEncoderVerbatim : public VideoEncoder {
   ~VideoEncoderVerbatim() override;
 
   // VideoEncoder interface.
-  std::unique_ptr<VideoPacket> Encode(
-      const webrtc::DesktopFrame& frame) override;
+  std::unique_ptr<VideoPacket> Encode(const webrtc::DesktopFrame& frame,
+                                      uint32_t flags) override;
 
  private:
   VideoEncoderHelper helper_;

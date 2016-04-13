@@ -62,7 +62,8 @@ class MockVideoEncoder : public VideoEncoder {
   MOCK_METHOD1(SetLosslessColor, void(bool));
   MOCK_METHOD1(EncodePtr, VideoPacket*(const webrtc::DesktopFrame&));
 
-  std::unique_ptr<VideoPacket> Encode(const webrtc::DesktopFrame& frame) {
+  std::unique_ptr<VideoPacket> Encode(const webrtc::DesktopFrame& frame,
+                                      uint32_t flags) {
     return base::WrapUnique(EncodePtr(frame));
   }
 };
@@ -82,8 +83,8 @@ class ThreadCheckVideoEncoder : public VideoEncoderVerbatim {
     EXPECT_TRUE(task_runner_->BelongsToCurrentThread());
   }
 
-  std::unique_ptr<VideoPacket> Encode(
-      const webrtc::DesktopFrame& frame) override {
+  std::unique_ptr<VideoPacket> Encode(const webrtc::DesktopFrame& frame,
+                                      uint32_t flags) override {
     return base::WrapUnique(new VideoPacket());
   }
 

@@ -5,6 +5,8 @@
 #ifndef REMOTING_CODEC_VIDEO_ENCODER_H_
 #define REMOTING_CODEC_VIDEO_ENCODER_H_
 
+#include <stdint.h>
+
 #include <memory>
 
 namespace webrtc {
@@ -19,6 +21,7 @@ class VideoPacket;
 // interface is asynchronous to enable maximum throughput.
 class VideoEncoder {
  public:
+  enum Flags { REQUEST_KEY_FRAME = 1 << 0 };
   virtual ~VideoEncoder() {}
 
   // Request that the encoder provide lossless encoding, or color, if possible.
@@ -29,8 +32,8 @@ class VideoEncoder {
   // then the encoder may return a packet (e.g. to top-off previously-encoded
   // portions of the frame to higher quality) or return nullptr to indicate that
   // there is no work to do.
-  virtual std::unique_ptr<VideoPacket> Encode(
-      const webrtc::DesktopFrame& frame) = 0;
+  virtual std::unique_ptr<VideoPacket> Encode(const webrtc::DesktopFrame& frame,
+                                              uint32_t flags) = 0;
 };
 
 }  // namespace remoting

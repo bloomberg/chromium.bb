@@ -187,7 +187,7 @@ void CreateImage(bool use_i444,
     image->fmt = VPX_IMG_FMT_I444;
     image->x_chroma_shift = 0;
     image->y_chroma_shift = 0;
-  } else { // I420
+  } else {  // I420
     image->fmt = VPX_IMG_FMT_YV12;
     image->x_chroma_shift = 1;
     image->y_chroma_shift = 1;
@@ -229,7 +229,7 @@ void CreateImage(bool use_i444,
   *out_image_buffer = std::move(image_buffer);
 }
 
-} // namespace
+}  // namespace
 
 // static
 std::unique_ptr<VideoEncoderVpx> VideoEncoderVpx::CreateForVP8() {
@@ -261,7 +261,7 @@ void VideoEncoderVpx::SetLosslessColor(bool want_lossless) {
     lossless_color_ = want_lossless;
     // TODO(wez): Switch to ConfigureCodec() path once libvpx supports it.
     // See https://code.google.com/p/webm/issues/detail?id=913.
-    //if (codec_)
+    // if (codec_)
     //  Configure(webrtc::DesktopSize(codec_->config.enc->g_w,
     //                                codec_->config.enc->g_h));
     codec_.reset();
@@ -269,7 +269,8 @@ void VideoEncoderVpx::SetLosslessColor(bool want_lossless) {
 }
 
 std::unique_ptr<VideoPacket> VideoEncoderVpx::Encode(
-    const webrtc::DesktopFrame& frame) {
+    const webrtc::DesktopFrame& frame,
+    uint32_t flags) {
   DCHECK_LE(32, frame.size().width());
   DCHECK_LE(32, frame.size().height());
 
@@ -299,6 +300,9 @@ std::unique_ptr<VideoPacket> VideoEncoderVpx::Encode(
   if (vpx_codec_control(codec_.get(), VP8E_SET_ACTIVEMAP, &act_map)) {
     LOG(ERROR) << "Unable to apply active map";
   }
+
+  if (flags & REQUEST_KEY_FRAME)
+    vpx_codec_control(codec_.get(), VP8E_SET_FRAME_FLAGS, VPX_EFLAG_FORCE_KF);
 
   // Do the actual encoding.
   int timestamp = (clock_->NowTicks() - timestamp_base_).InMilliseconds();
@@ -340,6 +344,7 @@ std::unique_ptr<VideoPacket> VideoEncoderVpx::Encode(
       case VPX_CODEC_CX_FRAME_PKT:
         got_data = true;
         packet->set_data(vpx_packet->data.frame.buf, vpx_packet->data.frame.sz);
+        packet->set_key_frame(vpx_packet->data.frame.flags & VPX_FRAME_IS_KEY);
         break;
       default:
         break;

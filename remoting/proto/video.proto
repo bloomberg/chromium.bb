@@ -80,6 +80,9 @@ message VideoPacket {
 
   // Time for which the frame is blocked until it's sent to the client.
   optional int64 send_pending_time_ms = 17;
+
+  // Indicates whether the encoded frame is a key frame.
+  optional bool key_frame = 18;
 }
 
 // VideoAck acknowledges that the frame in the VideoPacket with the same

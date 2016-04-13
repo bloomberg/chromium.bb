@@ -172,7 +172,7 @@ VideoFramePump::EncodeFrame(VideoEncoder* encoder,
   std::unique_ptr<VideoPacket> packet;
   // If |frame| is non-NULL then let the encoder process it.
   if (frame)
-    packet = encoder->Encode(*frame);
+    packet = encoder->Encode(*frame, 0);
 
   // If |frame| is NULL, or the encoder returned nothing, return an empty
   // packet.

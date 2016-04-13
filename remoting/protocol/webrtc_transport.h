@@ -6,6 +6,7 @@
 #define REMOTING_PROTOCOL_WEBRTC_TRANSPORT_H_
 
 #include <memory>
+#include <string>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -16,6 +17,7 @@
 #include "crypto/hmac.h"
 #include "remoting/protocol/transport.h"
 #include "remoting/protocol/webrtc_data_stream_adapter.h"
+#include "remoting/protocol/webrtc_video_encoder.h"
 #include "remoting/signaling/signal_strategy.h"
 #include "third_party/webrtc/api/peerconnectioninterface.h"
 
@@ -66,6 +68,9 @@ class WebrtcTransport : public Transport,
   webrtc::PeerConnectionFactoryInterface* peer_connection_factory() {
     return peer_connection_factory_;
   }
+  remoting::WebRtcVideoEncoderFactory* video_encoder_factory() {
+    return video_encoder_factory_;
+  }
 
   // Factories for outgoing and incoming data channels. Must be used only after
   // the transport is connected.
@@ -80,6 +85,7 @@ class WebrtcTransport : public Transport,
   void Start(Authenticator* authenticator,
              SendTransportInfoCallback send_transport_info_callback) override;
   bool ProcessTransportInfo(buzz::XmlElement* transport_info) override;
+  void Close(ErrorCode error);
 
  private:
   void OnLocalSessionDescriptionCreated(
@@ -109,8 +115,6 @@ class WebrtcTransport : public Transport,
   void SendTransportInfo();
   void AddPendingCandidatesIfPossible();
 
-  void Close(ErrorCode error);
-
   base::ThreadChecker thread_checker_;
 
   rtc::Thread* worker_thread_;
@@ -125,6 +129,8 @@ class WebrtcTransport : public Transport,
   rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface>
       peer_connection_factory_;
   rtc::scoped_refptr<webrtc::PeerConnectionInterface> peer_connection_;
+
+  remoting::WebRtcVideoEncoderFactory* video_encoder_factory_;
 
   bool negotiation_pending_ = false;
 

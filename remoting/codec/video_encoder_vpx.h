@@ -37,8 +37,8 @@ class VideoEncoderVpx : public VideoEncoder {
   // VideoEncoder interface.
   void SetLosslessEncode(bool want_lossless) override;
   void SetLosslessColor(bool want_lossless) override;
-  std::unique_ptr<VideoPacket> Encode(
-      const webrtc::DesktopFrame& frame) override;
+  std::unique_ptr<VideoPacket> Encode(const webrtc::DesktopFrame& frame,
+                                      uint32_t flags) override;
 
  private:
   explicit VideoEncoderVpx(bool use_vp9);
@@ -96,4 +96,4 @@ class VideoEncoderVpx : public VideoEncoder {
 
 }  // namespace remoting
 
-#endif  // REMOTING_CODEC_VIDEO_ENCODER_VP8_H_
+#endif  // REMOTING_CODEC_VIDEO_ENCODER_VPX_H_

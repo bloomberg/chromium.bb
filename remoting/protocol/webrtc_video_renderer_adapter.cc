@@ -46,6 +46,10 @@ WebrtcVideoRendererAdapter::WebrtcVideoRendererAdapter(
 
 WebrtcVideoRendererAdapter::~WebrtcVideoRendererAdapter() {
   DCHECK(task_runner_->BelongsToCurrentThread());
+
+  webrtc::VideoTrackVector video_tracks = media_stream_->GetVideoTracks();
+  DCHECK(!video_tracks.empty());
+  video_tracks[0]->RemoveSink(this);
 }
 
 void WebrtcVideoRendererAdapter::OnFrame(const cricket::VideoFrame& frame) {
@@ -75,5 +79,5 @@ void WebrtcVideoRendererAdapter::DrawFrame(
   frame_consumer_->DrawFrame(std::move(frame), base::Closure());
 }
 
-}  // namespace remoting
 }  // namespace protocol
+}  // namespace remoting

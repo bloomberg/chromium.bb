@@ -12,7 +12,9 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "remoting/codec/video_encoder.h"
 #include "remoting/protocol/video_stream.h"
+#include "remoting/protocol/webrtc_frame_scheduler.h"
 
 namespace webrtc {
 class DesktopSize;
@@ -33,10 +35,11 @@ class WebrtcVideoStream : public VideoStream {
   WebrtcVideoStream();
   ~WebrtcVideoStream() override;
 
-  bool Start(std::unique_ptr<webrtc::DesktopCapturer> desktop_capturer,
-             scoped_refptr<webrtc::PeerConnectionInterface> connection,
-             scoped_refptr<webrtc::PeerConnectionFactoryInterface>
-                 peer_connection_factory);
+  bool Start(
+      std::unique_ptr<webrtc::DesktopCapturer> desktop_capturer,
+      WebrtcTransport* webrtc_transport,
+      scoped_refptr<base::SingleThreadTaskRunner> video_encode_task_runner,
+      std::unique_ptr<VideoEncoder> video_encoder);
 
   // VideoStream interface.
   void Pause(bool pause) override;
@@ -49,8 +52,8 @@ class WebrtcVideoStream : public VideoStream {
   scoped_refptr<webrtc::PeerConnectionInterface> connection_;
   scoped_refptr<webrtc::MediaStreamInterface> stream_;
 
-  // Owned by the |stream_|.
-  base::WeakPtr<WebrtcVideoCapturerAdapter> capturer_adapter_;
+  // Owned by the dummy video capturer.
+  WebRtcFrameScheduler* webrtc_frame_scheduler_;
 
   DISALLOW_COPY_AND_ASSIGN(WebrtcVideoStream);
 };
