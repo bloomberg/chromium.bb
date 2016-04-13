@@ -1379,8 +1379,16 @@ IN_PROC_BROWSER_TEST_F(WebViewFocusInteractiveTest, FocusAndVisibility) {
   EXPECT_TRUE(webview_button_not_focused_listener.WaitUntilSatisfied());
 }
 
+// TODO(crbug.com/602954) Test is flaky.
+#if defined(OS_WIN)
+#define MAYBE_TopLevelWebContentsTracksCorrectly \
+  DISABLED_TopLevelWebContentsTracksCorrectly
+#else
+#define MAYBE_TopLevelWebContentsTracksCorrectly \
+  TopLevelWebContentsTracksCorrectly
+#endif
 IN_PROC_BROWSER_TEST_P(WebViewTextInputStateInteractiveTest,
-                       TopLevelWebContentsTracksCorrectly) {
+                       MAYBE_TopLevelWebContentsTracksCorrectly) {
   SetupTest("web_view/text_input_state",
             "/extensions/platform_apps/web_view/text_input_state/guest.html");
 
