@@ -273,13 +273,16 @@ void SetReferrerForRequest(net::URLRequest* request, const Referrer& referrer) {
           net::URLRequest::ORIGIN_ONLY_ON_TRANSITION_CROSS_ORIGIN;
       break;
     case blink::WebReferrerPolicyDefault:
-    default:
       net_referrer_policy =
           command_line->HasSwitch(switches::kReducedReferrerGranularity)
               ? net::URLRequest::
                     REDUCE_REFERRER_GRANULARITY_ON_TRANSITION_CROSS_ORIGIN
               : net::URLRequest::
                     CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE;
+      break;
+    case blink::WebReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin:
+      net_referrer_policy = net::URLRequest::
+          REDUCE_REFERRER_GRANULARITY_ON_TRANSITION_CROSS_ORIGIN;
       break;
   }
   request->set_referrer_policy(net_referrer_policy);

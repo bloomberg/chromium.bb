@@ -83,52 +83,64 @@ bool SecurityPolicy::shouldHideReferrer(const KURL& url, const String& referrer)
 
 Referrer SecurityPolicy::generateReferrer(ReferrerPolicy referrerPolicy, const KURL& url, const String& referrer)
 {
-    if (referrer.isEmpty())
-        return Referrer(String(), referrerPolicy);
+    ReferrerPolicy referrerPolicyNoDefault = referrerPolicy;
+    if (referrerPolicyNoDefault == ReferrerPolicyDefault) {
+        if (RuntimeEnabledFeatures::reducedReferrerGranularityEnabled()) {
+            referrerPolicyNoDefault = ReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin;
+        } else {
+            referrerPolicyNoDefault = ReferrerPolicyNoReferrerWhenDowngrade;
+        }
+    }
+    if (referrer == Referrer::noReferrer())
+        return Referrer(Referrer::noReferrer(), referrerPolicyNoDefault);
+    ASSERT(!referrer.isEmpty());
 
     String scheme = KURL(KURL(), referrer).protocol();
     if (!SchemeRegistry::shouldTreatURLSchemeAsAllowedForReferrer(scheme))
-        return Referrer(String(), referrerPolicy);
+        return Referrer(Referrer::noReferrer(), referrerPolicyNoDefault);
 
     if (SecurityOrigin::shouldUseInnerURL(url))
-        return Referrer(String(), referrerPolicy);
+        return Referrer(Referrer::noReferrer(), referrerPolicyNoDefault);
 
-    switch (referrerPolicy) {
+    switch (referrerPolicyNoDefault) {
     case ReferrerPolicyNever:
-        return Referrer(String(), referrerPolicy);
+        return Referrer(Referrer::noReferrer(), referrerPolicyNoDefault);
     case ReferrerPolicyAlways:
-        return Referrer(referrer, referrerPolicy);
+        return Referrer(referrer, referrerPolicyNoDefault);
     case ReferrerPolicyOrigin: {
         String origin = SecurityOrigin::createFromString(referrer)->toString();
         // A security origin is not a canonical URL as it lacks a path. Add /
         // to turn it into a canonical URL we can use as referrer.
-        return Referrer(origin + "/", referrerPolicy);
+        return Referrer(origin + "/", referrerPolicyNoDefault);
     }
     case ReferrerPolicyOriginWhenCrossOrigin: {
         RefPtr<SecurityOrigin> referrerOrigin = SecurityOrigin::createFromString(referrer);
         RefPtr<SecurityOrigin> urlOrigin = SecurityOrigin::create(url);
         if (!urlOrigin->isSameSchemeHostPort(referrerOrigin.get())) {
             String origin = referrerOrigin->toString();
-            return Referrer(origin + "/", referrerPolicy);
+            return Referrer(origin + "/", referrerPolicyNoDefault);
         }
         break;
     }
-    case ReferrerPolicyDefault: {
+    case ReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin: {
         // If the flag is enabled, and we're dealing with a cross-origin request, strip it.
         // Otherwise fallthrough to NoReferrerWhenDowngrade behavior.
         RefPtr<SecurityOrigin> referrerOrigin = SecurityOrigin::createFromString(referrer);
         RefPtr<SecurityOrigin> urlOrigin = SecurityOrigin::create(url);
-        if (RuntimeEnabledFeatures::reducedReferrerGranularityEnabled() && !urlOrigin->isSameSchemeHostPort(referrerOrigin.get())) {
+        if (!urlOrigin->isSameSchemeHostPort(referrerOrigin.get())) {
             String origin = referrerOrigin->toString();
-            return Referrer(shouldHideReferrer(url, referrer) ? String() : origin + "/", referrerPolicy);
+            return Referrer(shouldHideReferrer(url, referrer) ? Referrer::noReferrer() : origin + "/", referrerPolicyNoDefault);
         }
         break;
     }
     case ReferrerPolicyNoReferrerWhenDowngrade:
         break;
+    case ReferrerPolicyDefault:
+        ASSERT_NOT_REACHED();
+        break;
     }
 
-    return Referrer(shouldHideReferrer(url, referrer) ? String() : referrer, referrerPolicy);
+    return Referrer(shouldHideReferrer(url, referrer) ? Referrer::noReferrer() : referrer, referrerPolicyNoDefault);
 }
 
 void SecurityPolicy::addOriginTrustworthyWhiteList(PassRefPtr<SecurityOrigin> origin)

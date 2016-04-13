@@ -156,7 +156,7 @@ TEST(SecurityPolicyTest, GenerateReferrer)
                 << "'" << test.referrer << "' to '" << test.destination
                 << "' should have been empty: was '" << result.referrer.utf8().data() << "'.";
         }
-        EXPECT_EQ(test.policy, result.referrerPolicy);
+        EXPECT_EQ(test.policy == ReferrerPolicyDefault ? ReferrerPolicyNoReferrerWhenDowngrade : test.policy, result.referrerPolicy);
     }
 }
 

@@ -94,10 +94,11 @@ class ReferrerPolicyTest : public InProcessBrowserTest {
         return "always";
       case blink::WebReferrerPolicyNever:
         return "never";
-      default:
-        NOTREACHED();
-        return "";
+      case blink::WebReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin:
+        return "reduce-referrer-granularity";
     }
+    NOTREACHED();
+    return "";
   }
 
   enum StartOnProtocol { START_ON_HTTP, START_ON_HTTPS, };
@@ -137,6 +138,7 @@ class ReferrerPolicyTest : public InProcessBrowserTest {
   //  button:            If not WebMouseEvent::ButtonNone, click on the
   //                     link with the specified mouse button.
   //  expected_referrer: The kind of referrer to expect.
+  //  expected_referrer_policy: The expected referrer policy of the activity.
   //
   // Returns:
   //  The URL of the first page navigated to.
@@ -146,7 +148,8 @@ class ReferrerPolicyTest : public InProcessBrowserTest {
                        RedirectType redirect,
                        WindowOpenDisposition disposition,
                        blink::WebMouseEvent::Button button,
-                       ExpectedReferrer expected_referrer) {
+                       ExpectedReferrer expected_referrer,
+                       blink::WebReferrerPolicy expected_referrer_policy) {
     std::string relative_url =
         std::string("referrer_policy/referrer-policy-start.html?") + "policy=" +
         ReferrerPolicyToString(referrer_policy) + "&redirect=" +
@@ -199,10 +202,31 @@ class ReferrerPolicyTest : public InProcessBrowserTest {
       EXPECT_EQ(expected_title, title_watcher2.WaitAndGetTitle());
     }
 
-    EXPECT_EQ(referrer_policy,
+    EXPECT_EQ(expected_referrer_policy,
               tab->GetController().GetActiveEntry()->GetReferrer().policy);
 
     return start_url;
+  }
+
+  // Shorthand for cases where |referrer_policy| is the expected policy.
+  GURL RunReferrerTest(const blink::WebReferrerPolicy referrer_policy,
+                       StartOnProtocol start_protocol,
+                       LinkType link_type,
+                       RedirectType redirect,
+                       WindowOpenDisposition disposition,
+                       blink::WebMouseEvent::Button button,
+                       ExpectedReferrer expected_referrer) {
+    return RunReferrerTest(referrer_policy, start_protocol, link_type, redirect,
+                           disposition, button, expected_referrer,
+                           referrer_policy);
+  }
+};
+
+class ReferrerPolicyWithReduceReferrerGranularityFlagTest
+    : public ReferrerPolicyTest {
+ public:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitch(switches::kReducedReferrerGranularity);
   }
 };
 
@@ -597,13 +621,17 @@ IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest,
 IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, HttpLeftClickRedirectDefaultNoFlag) {
   RunReferrerTest(blink::WebReferrerPolicyDefault, START_ON_HTTP, REGULAR_LINK,
                   SERVER_REDIRECT_FROM_HTTP_TO_HTTPS, CURRENT_TAB,
-                  blink::WebMouseEvent::ButtonLeft, EXPECT_FULL_REFERRER);
+                  blink::WebMouseEvent::ButtonLeft, EXPECT_FULL_REFERRER,
+                  blink::WebReferrerPolicyNoReferrerWhenDowngrade);
 }
 
-IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, HttpLeftClickRedirectDefaultFlag) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kReducedReferrerGranularity);
+IN_PROC_BROWSER_TEST_F(ReferrerPolicyWithReduceReferrerGranularityFlagTest,
+                       HttpLeftClickRedirectDefaultFlag) {
+  blink::WebReferrerPolicy expected_referrer_policy =
+      blink::WebReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin;
+
   RunReferrerTest(blink::WebReferrerPolicyDefault, START_ON_HTTP, REGULAR_LINK,
                   SERVER_REDIRECT_FROM_HTTP_TO_HTTPS, CURRENT_TAB,
-                  blink::WebMouseEvent::ButtonLeft, EXPECT_ORIGIN_AS_REFERRER);
+                  blink::WebMouseEvent::ButtonLeft, EXPECT_ORIGIN_AS_REFERRER,
+                  expected_referrer_policy);
 }

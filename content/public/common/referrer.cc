@@ -12,6 +12,16 @@ namespace content {
 Referrer Referrer::SanitizeForRequest(const GURL& request,
                                       const Referrer& referrer) {
   Referrer sanitized_referrer(referrer.url.GetAsReferrer(), referrer.policy);
+  if (sanitized_referrer.policy == blink::WebReferrerPolicyDefault) {
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kReducedReferrerGranularity)) {
+      sanitized_referrer.policy =
+          blink::WebReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin;
+    } else {
+      sanitized_referrer.policy =
+          blink::WebReferrerPolicyNoReferrerWhenDowngrade;
+    }
+  }
 
   if (!request.SchemeIsHTTPOrHTTPS() ||
       !sanitized_referrer.url.SchemeIsValidForReferrer()) {
@@ -30,13 +40,7 @@ Referrer Referrer::SanitizeForRequest(const GURL& request,
 
   switch (sanitized_referrer.policy) {
     case blink::WebReferrerPolicyDefault:
-      if (is_downgrade) {
-        sanitized_referrer.url = GURL();
-      } else if (request.GetOrigin() != sanitized_referrer.url.GetOrigin() &&
-                 base::CommandLine::ForCurrentProcess()->HasSwitch(
-                     switches::kReducedReferrerGranularity)) {
-        sanitized_referrer.url = sanitized_referrer.url.GetOrigin();
-      }
+      NOTREACHED();
       break;
     case blink::WebReferrerPolicyNoReferrerWhenDowngrade:
       if (is_downgrade)
@@ -53,6 +57,13 @@ Referrer Referrer::SanitizeForRequest(const GURL& request,
     case blink::WebReferrerPolicyOriginWhenCrossOrigin:
       if (request.GetOrigin() != sanitized_referrer.url.GetOrigin())
         sanitized_referrer.url = sanitized_referrer.url.GetOrigin();
+      break;
+    case blink::WebReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin:
+      if (is_downgrade) {
+        sanitized_referrer.url = GURL();
+      } else if (request.GetOrigin() != sanitized_referrer.url.GetOrigin()) {
+        sanitized_referrer.url = sanitized_referrer.url.GetOrigin();
+      }
       break;
   }
   return sanitized_referrer;
