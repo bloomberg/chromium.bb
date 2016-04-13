@@ -28,7 +28,6 @@
 #include "base/trace_event/trace_event.h"
 #include "mojo/public/cpp/bindings/lib/bindings_serialization.h"
 #include "mojo/public/cpp/bindings/lib/bounds_checker.h"
-#include "mojo/public/cpp/bindings/lib/macros.h"
 #include "mojo/public/cpp/bindings/lib/map_data_internal.h"
 #include "mojo/public/cpp/bindings/lib/message_builder.h"
 #include "mojo/public/cpp/bindings/lib/validate_params.h"
@@ -99,9 +98,9 @@ const uint32_t {{method_name}} = {{method.ordinal}};
 {%- for struct in structs %}
 {%-   for constant in struct.constants %}
 {%-     if constant.kind|is_integral_kind %}
-MOJO_STATIC_CONST_MEMBER_DEFINITION const {{constant.kind|cpp_pod_type}} {{struct.name}}::{{constant.name}};
+const {{constant.kind|cpp_pod_type}} {{struct.name}}::{{constant.name}};
 {%-     else %}
-MOJO_STATIC_CONST_MEMBER_DEFINITION const {{constant.kind|cpp_pod_type}} {{struct.name}}::{{constant.name}} = {{constant|constant_value}};
+const {{constant.kind|cpp_pod_type}} {{struct.name}}::{{constant.name}} = {{constant|constant_value}};
 {%-     endif %}
 {%-   endfor %}
 {%- endfor %}

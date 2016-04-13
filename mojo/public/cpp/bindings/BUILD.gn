@@ -44,7 +44,6 @@ source_set("bindings") {
     "lib/interface_endpoint_controller.h",
     "lib/interface_id.h",
     "lib/interface_ptr_state.h",
-    "lib/macros.h",
     "lib/map_data_internal.h",
     "lib/map_internal.h",
     "lib/map_serialization.h",

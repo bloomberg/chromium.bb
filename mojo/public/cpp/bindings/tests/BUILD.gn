@@ -23,7 +23,6 @@ source_set("tests") {
     "equals_unittest.cc",
     "handle_passing_unittest.cc",
     "interface_ptr_unittest.cc",
-    "macros_unittest.cc",
     "map_unittest.cc",
     "message_queue.cc",
     "message_queue.h",
