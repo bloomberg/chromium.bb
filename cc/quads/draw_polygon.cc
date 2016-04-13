@@ -45,6 +45,8 @@ DrawPolygon::DrawPolygon(const DrawQuad* original,
     points_.push_back(in_points[i]);
   }
   normal_ = normal;
+  DCHECK_LE((ConstructNormal(), (normal_ - normal).Length()),
+            normalized_threshold);
 }
 
 // This takes the original DrawQuad that this polygon should be based on,
@@ -72,6 +74,7 @@ DrawPolygon::DrawPolygon(const DrawQuad* original_ref,
   for (int i = 0; i < num_vertices_in_clipped_quad; i++) {
     points_.push_back(points[i]);
   }
+  transform.TransformVector(&normal_);
   ConstructNormal();
 }
 
@@ -98,18 +101,22 @@ std::unique_ptr<DrawPolygon> DrawPolygon::CreateCopy() {
 // Averaging a few near diagonal cross products is pretty good in that case.
 //
 void DrawPolygon::ConstructNormal() {
-  normal_.set_x(0.0f);
-  normal_.set_y(0.0f);
-  normal_.set_z(0.0f);
+  gfx::Vector3dF new_normal(0.0f, 0.0f, 0.0f);
   int delta = points_.size() / 2;
   for (size_t i = 1; i + delta < points_.size(); i++) {
-    normal_ +=
+    new_normal +=
         CrossProduct(points_[i] - points_[0], points_[i + delta] - points_[0]);
   }
-  float normal_magnitude = normal_.Length();
-  if (normal_magnitude != 0 && normal_magnitude != 1) {
-    normal_.Scale(1.0f / normal_magnitude);
+  float normal_magnitude = new_normal.Length();
+  // Here we constrain the new normal to point in the same sense as the old one.
+  // This allows us to handle winding-reversing transforms better.
+  if (gfx::DotProduct(normal_, new_normal) < 0.0) {
+    normal_magnitude *= -1.0;
   }
+  if (normal_magnitude != 0 && normal_magnitude != 1) {
+    new_normal.Scale(1.0f / normal_magnitude);
+  }
+  normal_ = new_normal;
 }
 
 #if defined(OS_WIN)
@@ -243,6 +250,7 @@ void DrawPolygon::ApplyTransform(const gfx::Transform& transform) {
 // be transformed along with the vertices.
 void DrawPolygon::TransformToScreenSpace(const gfx::Transform& transform) {
   ApplyTransform(transform);
+  transform.TransformVector(&normal_);
   ConstructNormal();
 }
 

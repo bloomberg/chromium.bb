@@ -407,6 +407,11 @@ void Transform::TransformPoint(Point3F* point) const {
   TransformPointInternal(matrix_, point);
 }
 
+void Transform::TransformVector(Vector3dF* vector) const {
+  DCHECK(vector);
+  TransformVectorInternal(matrix_, vector);
+}
+
 bool Transform::TransformPointReverse(Point* point) const {
   DCHECK(point);
 
@@ -518,6 +523,22 @@ void Transform::TransformPointInternal(const SkMatrix44& xform,
   } else {
     point->SetPoint(p[0], p[1], p[2]);
   }
+}
+
+void Transform::TransformVectorInternal(const SkMatrix44& xform,
+                                        Vector3dF* vector) const {
+  if (xform.isIdentity())
+    return;
+
+  SkMScalar p[4] = {SkFloatToMScalar(vector->x()),
+                    SkFloatToMScalar(vector->y()),
+                    SkFloatToMScalar(vector->z()), 0};
+
+  xform.mapMScalars(p);
+
+  vector->set_x(p[0]);
+  vector->set_y(p[1]);
+  vector->set_z(p[2]);
 }
 
 void Transform::TransformPointInternal(const SkMatrix44& xform,

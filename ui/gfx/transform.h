@@ -198,6 +198,9 @@ class GFX_EXPORT Transform {
   // Applies the transformation to the point.
   void TransformPoint(Point* point) const;
 
+  // Applies the transformation to the vector.
+  void TransformVector(Vector3dF* vector) const;
+
   // Applies the reverse transformation on the point. Returns true if the
   // transformation can be inverted.
   bool TransformPointReverse(Point3F* point) const;
@@ -265,6 +268,9 @@ class GFX_EXPORT Transform {
 
   void TransformPointInternal(const SkMatrix44& xform,
                               Point3F* point) const;
+
+  void TransformVectorInternal(const SkMatrix44& xform,
+                               Vector3dF* vector) const;
 
   SkMatrix44 matrix_;
 

@@ -30,8 +30,12 @@ namespace {
 #define CREATE_NEW_DRAW_POLYGON(name, points_vector, normal, polygon_id) \
   DrawPolygon name(NULL, points_vector, normal, polygon_id)
 
-#define CREATE_TEST_DRAW_POLYGON(name, points_vector, polygon_id)             \
-  DrawPolygon name(NULL, points_vector, gfx::Vector3dF(1, 2, 3), polygon_id); \
+#define CREATE_TEST_DRAW_FORWARD_POLYGON(name, points_vector, id)        \
+  DrawPolygon name(NULL, points_vector, gfx::Vector3dF(0, 0, 1.0f), id); \
+  name.RecomputeNormalForTesting()
+
+#define CREATE_TEST_DRAW_REVERSE_POLYGON(name, points_vector, id)         \
+  DrawPolygon name(NULL, points_vector, gfx::Vector3dF(0, 0, -1.0f), id); \
   name.RecomputeNormalForTesting()
 
 #define EXPECT_FLOAT_WITHIN_EPSILON_OF(a, b) \
@@ -70,7 +74,7 @@ TEST(DrawPolygonConstructionTest, TestNormal) {
   vertices.push_back(gfx::Point3F(10.0f, 0.0f, 0.0f));
   vertices.push_back(gfx::Point3F(10.0f, 10.0f, 0.0f));
 
-  CREATE_TEST_DRAW_POLYGON(polygon, vertices, 1);
+  CREATE_TEST_DRAW_FORWARD_POLYGON(polygon, vertices, 1);
   EXPECT_NORMAL(polygon, 0.0f, 0.0f, 1.0f);
 }
 
@@ -83,7 +87,7 @@ TEST(DrawPolygonConstructionTest, ClippedNormal) {
   vertices.push_back(gfx::Point3F(10.0f, 0.0f, 0.0f));
   vertices.push_back(gfx::Point3F(10.0f, 10.0f, 0.0f));
 
-  CREATE_TEST_DRAW_POLYGON(polygon, vertices, 1);
+  CREATE_TEST_DRAW_FORWARD_POLYGON(polygon, vertices, 1);
   EXPECT_NORMAL(polygon, 0.0f, 0.0f, 1.0f);
 }
 
@@ -93,7 +97,7 @@ TEST(DrawPolygonConstructionTest, SlimTriangleNormal) {
   vertices.push_back(gfx::Point3F(5000.0f, 0.0f, 0.0f));
   vertices.push_back(gfx::Point3F(10000.0f, 1.0f, 0.0f));
 
-  CREATE_TEST_DRAW_POLYGON(polygon, vertices, 2);
+  CREATE_TEST_DRAW_FORWARD_POLYGON(polygon, vertices, 2);
   EXPECT_NORMAL(polygon, 0.0f, 0.0f, 1.0f);
 }
 
@@ -106,10 +110,10 @@ TEST(DrawPolygonConstructionTest, ManyVertexNormal) {
     vertices_d.push_back(gfx::Point3F(cos(i * M_PI / 50) + 99.0f,
                                       sin(i * M_PI / 50) + 99.0f, 100.0f));
   }
-  CREATE_TEST_DRAW_POLYGON(polygon_c, vertices_c, 3);
+  CREATE_TEST_DRAW_FORWARD_POLYGON(polygon_c, vertices_c, 3);
   EXPECT_NORMAL(polygon_c, 0.0f, 0.0f, 1.0f);
 
-  CREATE_TEST_DRAW_POLYGON(polygon_d, vertices_d, 4);
+  CREATE_TEST_DRAW_FORWARD_POLYGON(polygon_d, vertices_d, 4);
   EXPECT_NORMAL(polygon_c, 0.0f, 0.0f, 1.0f);
 }
 
@@ -159,8 +163,7 @@ TEST(DrawPolygonConstructionTest, NormalRotate90) {
   EXPECT_NORMAL(polygon_b, 0.0f, 0.0f, 1.0f);
 }
 
-// Bug https://bugs.chromium.org/p/chromium/issues/detail?id=595820
-TEST(DrawPolygonConstructionTest, DISABLED_InvertXNormal) {
+TEST(DrawPolygonConstructionTest, InvertXNormal) {
   gfx::RectF src(-0.1f, -10.0f, 0.2f, 20.0f);
 
   gfx::Transform transform(-1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
@@ -169,7 +172,7 @@ TEST(DrawPolygonConstructionTest, DISABLED_InvertXNormal) {
   EXPECT_NORMAL(polygon_d, 0.0f, 0.0f, 1.0f);
 }
 
-TEST(DrawPolygonConstructionTest, DISABLED_InvertYNormal) {
+TEST(DrawPolygonConstructionTest, InvertYNormal) {
   gfx::RectF src(-0.1f, -10.0f, 0.2f, 20.0f);
 
   gfx::Transform transform(1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
@@ -178,7 +181,7 @@ TEST(DrawPolygonConstructionTest, DISABLED_InvertYNormal) {
   EXPECT_NORMAL(polygon_d, 0.0f, 0.0f, 1.0f);
 }
 
-TEST(DrawPolygonConstructionTest, DISABLED_InvertZNormal) {
+TEST(DrawPolygonConstructionTest, InvertZNormal) {
   gfx::RectF src(-0.1f, -10.0f, 0.2f, 20.0f);
 
   gfx::Transform transform(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1);
@@ -370,13 +373,8 @@ TEST(DrawPolygonTransformTest, TransformNormal) {
   vertices_a.push_back(gfx::Point3F(1.0f, 0.0f, 1.0f));
   vertices_a.push_back(gfx::Point3F(-1.0f, 0.0f, -1.0f));
   vertices_a.push_back(gfx::Point3F(0.0f, 1.0f, 0.0f));
-  CREATE_NEW_DRAW_POLYGON(
-      polygon_a, vertices_a, gfx::Vector3dF(0.707107f, 0.0f, -0.707107f), 0);
-  // Check we believe your little white lie.
-  EXPECT_NORMAL(polygon_a, 0.707107f, 0.0f, -0.707107f);
-
-  polygon_a.RecomputeNormalForTesting();
-  // Check that we recompute it more accurately.
+  CREATE_NEW_DRAW_POLYGON(polygon_a, vertices_a,
+                          gfx::Vector3dF(sqrt(2) / 2, 0.0f, -sqrt(2) / 2), 0);
   EXPECT_NORMAL(polygon_a, sqrt(2) / 2, 0.0f, -sqrt(2) / 2);
 
   gfx::Transform transform;
