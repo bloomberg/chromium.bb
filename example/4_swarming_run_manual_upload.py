@@ -73,6 +73,7 @@ def main():
       '--swarming', options.swarming,
       '--isolate-server', options.isolate_server,
       '--dimension', 'os', options.swarming_os,
+      '--dimension', 'pool', 'default',
       '--task-name', options.task_name,
       isolated_sha1,
     ]
