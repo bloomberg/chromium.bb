@@ -116,11 +116,10 @@ class WinTool(object):
     env = self._GetEnv(arch)
     if use_separate_mspdbsrv == 'True':
       self._UseSeparateMspdbsrv(env, args)
-    link = subprocess.Popen([args[0].replace('/', '\\')] + list(args[1:]),
-                            shell=True,
-                            env=env,
-                            stdout=subprocess.PIPE,
-                            stderr=subprocess.STDOUT)
+    if sys.platform == 'win32':
+      args[0] = args[0].replace('/', '\\')
+    link = subprocess.Popen(args, shell=True, env=env,
+                            stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     out, _ = link.communicate()
     for line in out.splitlines():
       if (not line.startswith('   Creating library ') and
