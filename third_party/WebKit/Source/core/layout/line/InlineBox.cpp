@@ -27,7 +27,7 @@
 #include "core/paint/BlockPainter.h"
 #include "core/paint/PaintInfo.h"
 #include "platform/fonts/FontMetrics.h"
-#include "wtf/Partitions.h"
+#include "wtf/allocator/Partitions.h"
 
 #ifndef NDEBUG
 #include <stdio.h>

@@ -30,10 +30,10 @@
 #include "wtf/Assertions.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/OwnPtr.h"
-#include "wtf/Partitions.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
+#include "wtf/allocator/Partitions.h"
 #include <stdint.h>
 
 namespace blink {

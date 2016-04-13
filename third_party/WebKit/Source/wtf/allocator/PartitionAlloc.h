@@ -89,9 +89,9 @@
 #include "wtf/BitwiseOperations.h"
 #include "wtf/ByteSwap.h"
 #include "wtf/CPU.h"
-#include "wtf/PageAllocator.h"
 #include "wtf/SpinLock.h"
 #include "wtf/TypeTraits.h"
+#include "wtf/allocator/PageAllocator.h"
 
 #include <limits.h>
 

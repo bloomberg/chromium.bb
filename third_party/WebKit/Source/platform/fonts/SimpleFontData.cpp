@@ -38,7 +38,7 @@
 #include "platform/fonts/VDMXParser.h"
 #include "platform/geometry/FloatRect.h"
 #include "wtf/MathExtras.h"
-#include "wtf/Partitions.h"
+#include "wtf/allocator/Partitions.h"
 #include "wtf/text/CharacterNames.h"
 #include "wtf/text/Unicode.h"
 #include <unicode/unorm.h>

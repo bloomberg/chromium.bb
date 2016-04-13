@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "platform/heap/CallbackStack.h"
-#include "wtf/PageAllocator.h"
+#include "wtf/allocator/PageAllocator.h"
 
 namespace blink {
 

@@ -26,9 +26,9 @@
 #include "wtf/BitVector.h"
 
 #include "wtf/LeakAnnotations.h"
-#include "wtf/PartitionAlloc.h"
-#include "wtf/Partitions.h"
 #include "wtf/PrintStream.h"
+#include "wtf/allocator/PartitionAlloc.h"
+#include "wtf/allocator/Partitions.h"
 #include <algorithm>
 #include <string.h>
 

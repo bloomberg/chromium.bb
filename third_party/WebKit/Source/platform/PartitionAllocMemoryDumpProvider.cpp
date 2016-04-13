@@ -11,7 +11,7 @@
 #include "base/trace_event/trace_event_memory_overhead.h"
 #include "public/platform/WebMemoryAllocatorDump.h"
 #include "public/platform/WebProcessMemoryDump.h"
-#include "wtf/Partitions.h"
+#include "wtf/allocator/Partitions.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {

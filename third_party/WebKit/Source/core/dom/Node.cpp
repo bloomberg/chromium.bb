@@ -92,9 +92,9 @@
 #include "platform/TraceEvent.h"
 #include "platform/TracedValue.h"
 #include "wtf/HashSet.h"
-#include "wtf/Partitions.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
+#include "wtf/allocator/Partitions.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/StringBuilder.h"
 

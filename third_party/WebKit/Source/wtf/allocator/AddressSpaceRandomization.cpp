@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "wtf/AddressSpaceRandomization.h"
+#include "wtf/allocator/AddressSpaceRandomization.h"
 
-#include "wtf/PageAllocator.h"
 #include "wtf/SpinLock.h"
+#include "wtf/allocator/PageAllocator.h"
 
 #if OS(WIN)
 #include <windows.h>

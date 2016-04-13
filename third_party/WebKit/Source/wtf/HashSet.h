@@ -22,7 +22,7 @@
 #define WTF_HashSet_h
 
 #include "wtf/HashTable.h"
-#include "wtf/PartitionAllocator.h"
+#include "wtf/allocator/PartitionAllocator.h"
 
 namespace WTF {
 

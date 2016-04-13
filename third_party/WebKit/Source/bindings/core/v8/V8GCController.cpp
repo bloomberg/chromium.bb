@@ -52,8 +52,8 @@
 #include "platform/TraceEvent.h"
 #include "public/platform/BlameContext.h"
 #include "public/platform/Platform.h"
-#include "wtf/Partitions.h"
 #include "wtf/Vector.h"
+#include "wtf/allocator/Partitions.h"
 #include <algorithm>
 
 namespace blink {

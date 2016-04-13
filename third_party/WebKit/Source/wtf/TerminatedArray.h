@@ -6,7 +6,7 @@
 
 #include "wtf/Allocator.h"
 #include "wtf/OwnPtr.h"
-#include "wtf/Partitions.h"
+#include "wtf/allocator/Partitions.h"
 
 namespace WTF {
 

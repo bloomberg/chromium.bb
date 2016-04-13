@@ -89,7 +89,7 @@
 #include "platform/geometry/TransformState.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/PaintController.h"
-#include "wtf/Partitions.h"
+#include "wtf/allocator/Partitions.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/WTFString.h"
 #include <algorithm>

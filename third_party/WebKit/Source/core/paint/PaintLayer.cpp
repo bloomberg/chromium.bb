@@ -86,8 +86,8 @@
 #include "platform/transforms/TransformationMatrix.h"
 #include "platform/transforms/TranslateTransformOperation.h"
 #include "public/platform/Platform.h"
-#include "wtf/Partitions.h"
 #include "wtf/StdLibExtras.h"
+#include "wtf/allocator/Partitions.h"
 #include "wtf/text/CString.h"
 
 namespace blink {

@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "wtf/PartitionAlloc.h"
+#include "wtf/allocator/PartitionAlloc.h"
 
 #include <string.h>
 

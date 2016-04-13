@@ -41,8 +41,8 @@
 #include "public/platform/Platform.h"
 #include "wtf/CryptographicallyRandomNumber.h"
 #include "wtf/CurrentTime.h"
-#include "wtf/Partitions.h"
 #include "wtf/WTF.h"
+#include "wtf/allocator/Partitions.h"
 #include <base/bind.h>
 #include <base/bind_helpers.h>
 #include <base/command_line.h>

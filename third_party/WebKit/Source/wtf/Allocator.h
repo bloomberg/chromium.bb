@@ -6,8 +6,8 @@
 #define WTF_Allocator_h
 
 #include "wtf/Assertions.h"
-#include "wtf/Partitions.h"
 #include "wtf/StdLibExtras.h"
+#include "wtf/allocator/Partitions.h"
 
 namespace WTF {
 

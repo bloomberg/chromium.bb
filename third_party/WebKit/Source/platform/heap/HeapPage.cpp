@@ -47,9 +47,9 @@
 #include "wtf/ContainerAnnotations.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/LeakAnnotations.h"
-#include "wtf/PageAllocator.h"
-#include "wtf/Partitions.h"
 #include "wtf/PassOwnPtr.h"
+#include "wtf/allocator/PageAllocator.h"
+#include "wtf/allocator/Partitions.h"
 
 #ifdef ANNOTATE_CONTIGUOUS_CONTAINER
 // FIXME: have ContainerAnnotations.h define an ENABLE_-style name instead.

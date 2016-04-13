@@ -32,8 +32,8 @@
 
 #include "wtf/Assertions.h"
 #include "wtf/Functional.h"
-#include "wtf/Partitions.h"
 #include "wtf/Threading.h"
+#include "wtf/allocator/Partitions.h"
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/StringStatics.h"
 #include "wtf/typed_arrays/ArrayBufferContents.h"

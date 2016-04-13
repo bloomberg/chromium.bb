@@ -41,7 +41,7 @@
 #include "wtf/Assertions.h"
 #include "wtf/ContainerAnnotations.h"
 #include "wtf/Forward.h"
-#include "wtf/PageAllocator.h"
+#include "wtf/allocator/PageAllocator.h"
 #include <stdint.h>
 
 namespace blink {

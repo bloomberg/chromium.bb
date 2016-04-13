@@ -30,8 +30,8 @@
 
 #include "wtf/CryptographicallyRandomNumber.h"
 #include "wtf/CurrentTime.h"
-#include "wtf/Partitions.h"
 #include "wtf/WTF.h"
+#include "wtf/allocator/Partitions.h"
 #include <base/test/test_suite.h>
 #include <string.h>
 

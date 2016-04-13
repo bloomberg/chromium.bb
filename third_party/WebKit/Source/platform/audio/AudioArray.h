@@ -30,8 +30,8 @@
 #define AudioArray_h
 
 #include "wtf/Allocator.h"
-#include "wtf/Partitions.h"
 #include "wtf/Vector.h"
+#include "wtf/allocator/Partitions.h"
 #include "wtf/build_config.h"
 #include <string.h>
 

@@ -59,7 +59,7 @@
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityPolicy.h"
-#include "wtf/Partitions.h"
+#include "wtf/allocator/Partitions.h"
 
 namespace blink {
 

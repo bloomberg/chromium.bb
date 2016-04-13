@@ -27,8 +27,8 @@
 #include "wtf/typed_arrays/ArrayBufferContents.h"
 
 #include "wtf/Assertions.h"
-#include "wtf/PartitionAlloc.h"
-#include "wtf/Partitions.h"
+#include "wtf/allocator/PartitionAlloc.h"
+#include "wtf/allocator/Partitions.h"
 #include <string.h>
 
 namespace WTF {

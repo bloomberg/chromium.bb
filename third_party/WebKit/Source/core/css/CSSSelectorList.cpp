@@ -27,7 +27,7 @@
 #include "core/css/CSSSelectorList.h"
 
 #include "core/css/parser/CSSParserSelector.h"
-#include "wtf/Partitions.h"
+#include "wtf/allocator/Partitions.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace {

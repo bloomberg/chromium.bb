@@ -31,9 +31,9 @@
 #ifndef Partitions_h
 #define Partitions_h
 
-#include "wtf/PartitionAlloc.h"
 #include "wtf/WTF.h"
 #include "wtf/WTFExport.h"
+#include "wtf/allocator/PartitionAlloc.h"
 #include <string.h>
 
 namespace WTF {

@@ -25,7 +25,7 @@
 #include "wtf/Assertions.h"
 #include "wtf/ConditionalDestructor.h"
 #include "wtf/HashTraits.h"
-#include "wtf/PartitionAllocator.h"
+#include "wtf/allocator/PartitionAllocator.h"
 
 #define DUMP_HASHTABLE_STATS 0
 #define DUMP_HASHTABLE_STATS_PER_TABLE 0

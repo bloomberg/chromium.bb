@@ -49,7 +49,7 @@
 #include "wtf/CurrentTime.h"
 #include "wtf/DataLog.h"
 #include "wtf/LeakAnnotations.h"
-#include "wtf/Partitions.h"
+#include "wtf/allocator/Partitions.h"
 
 namespace blink {
 

@@ -43,7 +43,7 @@
 #include "platform/network/ResourceResponse.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/Assertions.h"
-#include "wtf/Partitions.h"
+#include "wtf/allocator/Partitions.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/StringBuffer.h"
 #include "wtf/text/UTF8.h"

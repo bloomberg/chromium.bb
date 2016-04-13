@@ -8,7 +8,7 @@
 #include "platform/heap/HeapPage.h"
 #include "wtf/Allocator.h"
 #include "wtf/Assertions.h"
-#include "wtf/PageAllocator.h"
+#include "wtf/allocator/PageAllocator.h"
 
 #if OS(POSIX)
 #include <sys/mman.h>

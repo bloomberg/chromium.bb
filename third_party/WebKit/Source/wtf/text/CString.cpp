@@ -26,8 +26,8 @@
 
 #include "wtf/text/CString.h"
 
-#include "wtf/PartitionAlloc.h"
-#include "wtf/Partitions.h"
+#include "wtf/allocator/PartitionAlloc.h"
+#include "wtf/allocator/Partitions.h"
 #include <string.h>
 
 using namespace std;

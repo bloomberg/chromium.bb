@@ -7,7 +7,7 @@
 #include "platform/heap/Heap.h"
 #include "wtf/Assertions.h"
 #include "wtf/Atomics.h"
-#include "wtf/PageAllocator.h"
+#include "wtf/allocator/PageAllocator.h"
 
 namespace blink {
 

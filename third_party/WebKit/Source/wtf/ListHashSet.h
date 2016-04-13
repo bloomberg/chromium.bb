@@ -24,8 +24,8 @@
 
 #include "wtf/HashSet.h"
 #include "wtf/OwnPtr.h"
-#include "wtf/PartitionAllocator.h"
 #include "wtf/PassOwnPtr.h"
+#include "wtf/allocator/PartitionAllocator.h"
 
 namespace WTF {
 

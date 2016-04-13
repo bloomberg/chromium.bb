@@ -34,10 +34,10 @@
 #include "platform/fonts/CustomFontData.h"
 #include "platform/fonts/Glyph.h"
 #include "wtf/Allocator.h"
-#include "wtf/Partitions.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
+#include "wtf/allocator/Partitions.h"
 #include "wtf/text/Unicode.h"
 #include <string.h>
 

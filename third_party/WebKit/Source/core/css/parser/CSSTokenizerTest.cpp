@@ -7,7 +7,7 @@
 #include "core/css/parser/CSSParserTokenRange.h"
 #include "core/css/parser/MediaQueryBlockWatcher.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/Partitions.h"
+#include "wtf/allocator/Partitions.h"
 
 namespace blink {
 

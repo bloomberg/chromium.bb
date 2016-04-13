@@ -47,8 +47,8 @@
 #include "public/platform/WebTraceLocation.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/DataLog.h"
-#include "wtf/Partitions.h"
 #include "wtf/ThreadingPrimitives.h"
+#include "wtf/allocator/Partitions.h"
 
 #if OS(WIN)
 #include <stddef.h>

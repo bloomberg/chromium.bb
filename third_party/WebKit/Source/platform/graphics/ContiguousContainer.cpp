@@ -6,9 +6,9 @@
 
 #include "wtf/Allocator.h"
 #include "wtf/ContainerAnnotations.h"
-#include "wtf/PartitionAlloc.h"
-#include "wtf/Partitions.h"
 #include "wtf/PassOwnPtr.h"
+#include "wtf/allocator/PartitionAlloc.h"
+#include "wtf/allocator/Partitions.h"
 #include <algorithm>
 
 namespace blink {

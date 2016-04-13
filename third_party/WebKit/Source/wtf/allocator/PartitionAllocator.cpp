@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "wtf/PartitionAllocator.h"
+#include "wtf/allocator/PartitionAllocator.h"
 
-#include "wtf/PartitionAlloc.h"
-#include "wtf/Partitions.h"
+#include "wtf/allocator/PartitionAlloc.h"
+#include "wtf/allocator/Partitions.h"
 
 namespace WTF {
 

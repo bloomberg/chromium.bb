@@ -22,10 +22,10 @@
 
 #if OS(MACOSX)
 
-#include "wtf/Partitions.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RetainPtr.h"
 #include "wtf/Threading.h"
+#include "wtf/allocator/Partitions.h"
 #include <CoreFoundation/CoreFoundation.h>
 
 namespace WTF {

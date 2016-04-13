@@ -44,8 +44,8 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebThread.h"
 #include "wtf/Assertions.h"
-#include "wtf/Partitions.h"
 #include "wtf/WTF.h"
+#include "wtf/allocator/Partitions.h"
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/TextEncoding.h"
 #include <v8.h>

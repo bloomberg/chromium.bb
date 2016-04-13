@@ -26,9 +26,9 @@
 #include "wtf/ContainerAnnotations.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/NotFound.h"
-#include "wtf/PartitionAllocator.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/VectorTraits.h"
+#include "wtf/allocator/PartitionAllocator.h"
 #include <algorithm>
 #include <iterator>
 #include <string.h>

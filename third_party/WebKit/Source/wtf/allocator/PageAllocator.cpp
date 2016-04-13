@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "wtf/PageAllocator.h"
+#include "wtf/allocator/PageAllocator.h"
 
-#include "wtf/AddressSpaceRandomization.h"
 #include "wtf/Assertions.h"
+#include "wtf/allocator/AddressSpaceRandomization.h"
 
 #include <limits.h>
 

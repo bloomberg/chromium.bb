@@ -37,8 +37,8 @@
 
 #include "wtf/Allocator.h"
 #include "wtf/Assertions.h"
-#include "wtf/PartitionAlloc.h"
-#include "wtf/Partitions.h"
+#include "wtf/allocator/PartitionAlloc.h"
+#include "wtf/allocator/Partitions.h"
 
 #include <string.h>
 
@@ -197,8 +197,8 @@ public:
 
 // Specializations for heap profiling, so type profiling of |char| is possible
 // even in official builds (because |char| makes up a large portion of the heap.)
-template <> WTF_EXPORT char* PartitionAllocator::allocateVectorBacking<char>(size_t size);
-template <> WTF_EXPORT char* PartitionAllocator::allocateExpandedVectorBacking<char>(size_t size);
+template <> WTF_EXPORT char* PartitionAllocator::allocateVectorBacking<char>(size_t);
+template <> WTF_EXPORT char* PartitionAllocator::allocateExpandedVectorBacking<char>(size_t);
 
 } // namespace WTF
 
