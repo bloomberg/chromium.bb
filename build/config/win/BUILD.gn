@@ -35,6 +35,10 @@ config("compiler") {
     "/Gy",  # Enable function-level linking.
     "/FS",  # Preserve previous PDB behavior.
     "/bigobj",  # Some of our files are bigger than the regular limits.
+
+    # Tell the compiler to crash on failures. This is undocumented
+    # and unsupported but very handy.
+    "/d2FastFail",
   ]
   if (!is_clang) {
     # TODO(thakis): Enable this with clang too, https://crbug.com/598767
