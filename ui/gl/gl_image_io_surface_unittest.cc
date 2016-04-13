@@ -61,13 +61,18 @@ using GLImageTestTypes = testing::Types<
 
 INSTANTIATE_TYPED_TEST_CASE_P(GLImageIOSurface, GLImageTest, GLImageTestTypes);
 
-using GLImageIOSurfaceTestTypes =
+using GLImageRGBTestTypes =
     testing::Types<GLImageIOSurfaceTestDelegate<gfx::BufferFormat::RGBA_8888>,
                    GLImageIOSurfaceTestDelegate<gfx::BufferFormat::BGRA_8888>>;
 
 INSTANTIATE_TYPED_TEST_CASE_P(GLImageIOSurface,
                               GLImageZeroInitializeTest,
-                              GLImageIOSurfaceTestTypes);
+                              GLImageRGBTestTypes);
+
+INSTANTIATE_TYPED_TEST_CASE_P(
+    GLImageIOSurface,
+    GLImageBindTest,
+    GLImageIOSurfaceTestDelegate<gfx::BufferFormat::BGRA_8888>);
 
 INSTANTIATE_TYPED_TEST_CASE_P(
     GLImageIOSurface,

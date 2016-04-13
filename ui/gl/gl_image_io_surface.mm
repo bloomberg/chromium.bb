@@ -443,7 +443,8 @@ bool GLImageIOSurface::BindTexImage(unsigned target) {
                              size_.width(), size_.height(), DataFormat(format_),
                              DataType(format_), io_surface_.get(), 0);
   if (cgl_error != kCGLNoError) {
-    LOG(ERROR) << "Error in CGLTexImageIOSurface2D";
+    LOG(ERROR) << "Error in CGLTexImageIOSurface2D: "
+               << CGLErrorString(cgl_error);
     return false;
   }
 
