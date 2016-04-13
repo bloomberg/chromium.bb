@@ -2507,6 +2507,29 @@ _CODEREVIEW_IMPLEMENTATIONS = {
 }
 
 
+def _add_codereview_select_options(parser):
+  """Appends --gerrit and --rietveld options to force specific codereview."""
+  parser.codereview_group = optparse.OptionGroup(
+      parser, 'EXPERIMENTAL! Codereview override options')
+  parser.add_option_group(parser.codereview_group)
+  parser.codereview_group.add_option(
+      '--gerrit', action='store_true',
+      help='Force the use of Gerrit for codereview')
+  parser.codereview_group.add_option(
+      '--rietveld', action='store_true',
+      help='Force the use of Rietveld for codereview')
+
+
+def _process_codereview_select_options(parser, options):
+  if options.gerrit and options.rietveld:
+    parser.error('Options --gerrit and --rietveld are mutually exclusive')
+  options.forced_codereview = None
+  if options.gerrit:
+    options.forced_codereview = 'gerrit'
+  elif options.rietveld:
+    options.forced_codereview = 'rietveld'
+
+
 class ChangeDescription(object):
   """Contains a parsed form of the change description."""
   R_LINE = r'^[ \t]*(TBR|R)[ \t]*=[ \t]*(.*?)[ \t]*$'
@@ -3122,7 +3145,9 @@ def CMDissue(parser, args):
                     help='Lookup the branch(es) for the specified issues. If '
                          'no issues are specified, all branches with mapped '
                          'issues will be listed.')
+  _add_codereview_select_options(parser)
   options, args = parser.parse_args(args)
+  _process_codereview_select_options(parser, options)
 
   if options.reverse:
     branches = RunGit(['for-each-ref', 'refs/heads',
@@ -3141,7 +3166,7 @@ def CMDissue(parser, args):
       print 'Branch for issue number %s: %s' % (
           issue, ', '.join(issue_branch_map.get(int(issue)) or ('None',)))
   else:
-    cl = Changelist()
+    cl = Changelist(codereview=options.forced_codereview)
     if len(args) > 0:
       try:
         issue = int(args[0])
@@ -3485,7 +3510,9 @@ def CMDupload(parser, args):
   orig_args = args
   add_git_similarity(parser)
   auth.add_auth_options(parser)
+  _add_codereview_select_options(parser)
   (options, args) = parser.parse_args(args)
+  _process_codereview_select_options(parser, options)
   auth_config = auth.extract_auth_config_from_options(options)
 
   if git_common.is_dirty_git_tree('upload'):
@@ -3497,7 +3524,7 @@ def CMDupload(parser, args):
   # For sanity of test expectations, do this otherwise lazy-loading *now*.
   settings.GetIsGerrit()
 
-  cl = Changelist(auth_config=auth_config)
+  cl = Changelist(auth_config=auth_config, codereview=options.forced_codereview)
   return cl.CMDUpload(options, args, orig_args)
 
 
@@ -3981,10 +4008,12 @@ def CMDpatch(parser, args):
   parser.add_option_group(group)
 
   auth.add_auth_options(parser)
+  _add_codereview_select_options(parser)
   (options, args) = parser.parse_args(args)
+  _process_codereview_select_options(parser, options)
   auth_config = auth.extract_auth_config_from_options(options)
 
-  cl = Changelist(auth_config=auth_config)
+  cl = Changelist(auth_config=auth_config, codereview=options.forced_codereview)
 
   issue_arg = None
   if options.reapply :

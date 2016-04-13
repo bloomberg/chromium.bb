@@ -1093,7 +1093,7 @@ class TestGitCl(TestCase):
     self.mock(git_common, 'is_dirty_git_tree', lambda x: True)
     self.assertNotEqual(git_cl.main(['diff']), 0)
 
-  def _patch_common(self, is_gerrit=False):
+  def _patch_common(self, is_gerrit=False, force_codereview=False):
     self.mock(git_cl._RietveldChangelistImpl, 'GetMostRecentPatchset',
               lambda x: '60001')
     self.mock(git_cl._RietveldChangelistImpl, 'GetPatchSetDiff',
@@ -1122,16 +1122,22 @@ class TestGitCl(TestCase):
               lambda *args: 'Description')
     self.mock(git_cl, 'IsGitVersionAtLeast', lambda *args: True)
 
-    self.calls = [
-      ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
-      ((['git', 'config', 'branch.master.rietveldissue'],), ''),
-      ((['git', 'config', 'branch.master.gerritissue'],), ''),
-      ((['git', 'config', 'rietveld.autoupdate'],), ''),
-    ]
-    if is_gerrit:
-      self.calls += [
-        ((['git', 'config', 'gerrit.host'],), 'true'),
+    if not force_codereview:
+      # These calls detect codereview to use.
+      self.calls = [
+        ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
+        ((['git', 'config', 'branch.master.rietveldissue'],), ''),
+        ((['git', 'config', 'branch.master.gerritissue'],), ''),
+        ((['git', 'config', 'rietveld.autoupdate'],), ''),
       ]
+    else:
+      self.calls = []
+
+    if is_gerrit:
+      if not force_codereview:
+        self.calls += [
+          ((['git', 'config', 'gerrit.host'],), 'true'),
+        ]
     else:
       self.calls += [
         ((['git', 'config', 'gerrit.host'],), ''),
@@ -1181,6 +1187,25 @@ class TestGitCl(TestCase):
       ((['git', 'config', 'branch.master.gerritpatchset', '7'],), ''),
     ]
     self.assertEqual(git_cl.main(['patch', '123456']), 0)
+
+  def test_patch_force_codereview(self):
+    self._patch_common(is_gerrit=True, force_codereview=True)
+    self.calls += [
+      ((['git', 'fetch', 'https://chromium.googlesource.com/my/repo',
+         'refs/changes/56/123456/7'],), ''),
+      ((['git', 'cherry-pick', 'FETCH_HEAD'],), ''),
+      ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
+      ((['git', 'config', 'branch.master.gerritissue', '123456'],), ''),
+      ((['git', 'config', 'branch.master.gerritserver'],), ''),
+      ((['git', 'config', 'branch.master.merge'],), 'master'),
+      ((['git', 'config', 'branch.master.remote'],), 'origin'),
+      ((['git', 'config', 'remote.origin.url'],),
+       'https://chromium.googlesource.com/my/repo'),
+      ((['git', 'config', 'branch.master.gerritserver',
+        'https://chromium-review.googlesource.com'],), ''),
+      ((['git', 'config', 'branch.master.gerritpatchset', '7'],), ''),
+    ]
+    self.assertEqual(git_cl.main(['patch', '--gerrit', '123456']), 0)
 
   def test_gerrit_patch_url_successful(self):
     self._patch_common(is_gerrit=True)
