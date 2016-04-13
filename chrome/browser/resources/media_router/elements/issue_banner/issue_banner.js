@@ -52,6 +52,10 @@ Polymer({
     },
   },
 
+  behaviors: [
+    I18nBehavior,
+  ],
+
   /**
    * @param {?media_router.Issue} issue
    * @return {boolean} Whether or not to hide the blocking issue UI.
@@ -127,14 +131,14 @@ Polymer({
     var defaultText = '';
     var secondaryText = '';
     if (this.issue) {
-      defaultText = loadTimeData.getString(
-          this.actionTypeToButtonTextResource_[
-          this.issue.defaultActionType]);
+      defaultText =
+          this.i18n(this.actionTypeToButtonTextResource_[
+              this.issue.defaultActionType]);
 
       if (this.issue.secondaryActionType) {
-        secondaryText = loadTimeData.getString(
-            this.actionTypeToButtonTextResource_[
-            this.issue.secondaryActionType]);
+        secondaryText =
+            this.i18n(this.actionTypeToButtonTextResource_[
+                this.issue.secondaryActionType]);
       }
     }
 

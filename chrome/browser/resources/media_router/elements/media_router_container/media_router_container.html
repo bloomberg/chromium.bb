@@ -1,4 +1,5 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-item/paper-item.html">
@@ -17,12 +18,12 @@
     <template is="dom-if"
         if="[[computeShowFirstRunFlow_(showFirstRunFlow, currentView_)]]">
       <div id="first-run-flow">
-        <div id="first-run-title">[[i18n_.firstRunFlowTitle]]</div>
+        <div id="first-run-title">[[i18n('firstRunFlowTitle')]]</div>
         <div id="first-run-text">
-          <span>[[i18n_.firstRunFlowText]]</span>
+          <span>[[i18n('firstRunFlowText')]]</span>
           <a href="[[firstRunFlowLearnMoreUrl]]" target="_blank">
             <span class="first-run-learn-more">
-              [[i18n_.learnMoreText]]
+              [[i18n('learnMoreText')]]
             </span>
           </a>
         </div>
@@ -33,10 +34,10 @@
             </paper-checkbox>
           </div>
           <div>
-            <span>[[i18n_.firstRunFlowCloudPrefText]]</span>
+            <span>[[getFirstRunFlowCloudPrefText_()]]</span>
             <a href="[[firstRunFlowCloudPrefLearnMoreUrl]]" target="_blank">
               <span class="first-run-learn-more">
-                [[i18n_.learnMoreText]]
+                [[i18n('learnMoreText')]]
               </span>
             </a>
           </div>
@@ -44,7 +45,7 @@
         <div id="first-run-button-container">
           <paper-button id="first-run-button" class="button"
               on-tap="acknowledgeFirstRunFlow_">
-            <span>[[i18n_.firstRunFlowButtonText]]</span>
+            <span>[[i18n('firstRunFlowButtonText')]]</span>
           </paper-button>
         </div>
       </div>
@@ -70,7 +71,7 @@
           </template>
           <div id="share-screen-text"
               hidden$="[[computeShareScreenSubheadingHidden_(castModeList)]]">
-            <span>[[i18n_.shareYourScreenSubheadingText]]</span>
+            <span>[[i18n('shareYourScreenSubheadingText')]]</span>
           </div>
           <template is="dom-repeat" id="nonDefaultCastModeList"
               items="[[computeNonDefaultCastModeList_(castModeList)]]">
@@ -98,7 +99,7 @@
           </paper-spinner>
           <a href="[[deviceMissingUrl]]" target="_blank"
               hidden$="[[!computeSpinnerHidden_(justOpened_)]]">
-            [[i18n_.deviceMissingText]]
+            [[i18n('deviceMissingText')]]
           </a>
         </div>
         <paper-menu id="sink-list" role="presentation"
@@ -145,11 +146,11 @@
           <div class="sink-content">
             <div>
               <paper-icon-button id="sink-search-icon" icon="media-router:search"
-                  on-tap="searchButtonClick_" title="[[searchButtonTitle_]]">
+                  on-tap="searchButtonClick_" title="[[i18n('searchButtonTitle')]]">
               </paper-icon-button>
             </div>
-            <div id="search-input-container">
-              <paper-input id="sink-search-input" label="[[searchInputLabel_]]"
+            <div id="search-input-container"> 
+              <paper-input id="sink-search-input" label="[[i18n('searchInputLabel')]]"
                   no-label-float value="{{searchInputText_}}">
               </paper-input>
             </div>
@@ -158,7 +159,7 @@
         <template is="dom-if" if="[[isUserSearching_]]">
           <div id="no-search-matches"
               hidden$="[[computeNoMatchesHidden_(searchResultsToShow_, isUserSearching_)]]">
-            <span>[[i18n_.searchNoMatchesText]]</span>
+            <span>[[i18n('searchNoMatchesText')]]</span>
           </div>
           <paper-menu id="search-results" selected="0" role="presentation"
               hidden$="[[computeSearchResultsHidden_(isUserSearching_, searchResultsToShow_)]]">

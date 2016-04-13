@@ -121,37 +121,6 @@ Polymer({
     },
 
     /**
-     * The localized strings used by |this|.
-     * @private {!Object}
-     */
-    i18n_: {
-      readOnly: true,
-      type: Object,
-      value: function() {
-        var strings = {};
-        [
-          'deviceMissingText',
-          'firstRunFlowButtonText',
-          'firstRunFlowCloudPrefText',
-          'firstRunFlowText',
-          'firstRunFlowTitle',
-          'issueHeaderText',
-          'learnMoreText',
-          'searchButtonTitle',
-          'searchInputLabel',
-          'searchNoMatchesText',
-          'selectCastModeHeaderText',
-          'shareYourScreenSubheadingText',
-        ]
-        .forEach(function(s) {
-          strings[s] = loadTimeData.valueExists(s) ?
-              loadTimeData.getString(s) : '';
-        });
-        return strings;
-      },
-    },
-
-    /**
      * Whether the search input is currently focused. This is used to prevent
      * window focus/blur events from interfering with input-focus-dependent
      * operations.
@@ -387,6 +356,10 @@ Polymer({
       value: false,
     },
   },
+
+  behaviors: [
+    I18nBehavior,
+  ],
 
   listeners: {
     'focus': 'onFocus_',
@@ -641,9 +614,9 @@ Polymer({
   computeHeaderText_: function(view, headerText) {
     switch (view) {
       case media_router.MediaRouterView.CAST_MODE_LIST:
-        return this.i18n_['selectCastModeHeaderText'];
+        return this.i18n('selectCastModeHeaderText');
       case media_router.MediaRouterView.ISSUE:
-        return this.i18n_['issueHeaderText'];
+        return this.i18n('issueHeaderText');
       case media_router.MediaRouterView.ROUTE_DETAILS:
         return this.currentRoute_ ?
             this.sinkMap_[this.currentRoute_.sinkId].name : '';
@@ -1039,6 +1012,17 @@ Polymer({
     return this.castModeList.find(function(element, index, array) {
       return element.type == castModeType;
     });
+  },
+
+  /**
+   * Retrieves the first run flow cloud preferences text, if it exists. On
+   * non-officially branded builds, the string is not defined.
+   *
+   * @return {string} Cloud preferences text.
+   */
+  getFirstRunFlowCloudPrefText_: function() {
+    return loadTimeData.valueExists('firstRunFlowCloudPrefText') ?
+        this.i18n('firstRunFlowCloudPrefText') : '';
   },
 
   /**

@@ -1,4 +1,5 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <dom-module id="route-details">
   <link rel="import" type="css" href="../../media_router_common.css">
@@ -15,12 +16,12 @@
           id="start-casting-to-route-button"
           hidden$="[[!route.canJoin]]"
           on-tap="startCastingToRoute_">
-        <span>[[i18n_.startCastingButtonText]]</span>
+        <span>[[i18n('startCastingButtonText')]]</span>
       </paper-button>
       <paper-button flat class="route-button button"
           id="close-route-button"
           on-tap="closeRoute_">
-        <span>[[i18n_.stopCastingButtonText]]</span>
+        <span>[[i18n('stopCastingButtonText')]]</span>
       </paper-button>
     <div>
   </template>

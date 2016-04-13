@@ -56,27 +56,6 @@ Polymer({
     },
 
     /**
-     * The localized strings used by |this|.
-     * @private {!Object}
-     */
-    i18n_: {
-      readOnly: true,
-      type: Object,
-      value: function() {
-        var strings = {};
-        [
-          'backButtonTitle',
-          'closeButtonTitle',
-          'dropDownButtonTitle',
-        ]
-        .forEach(function(s) {
-          strings[s] = loadTimeData.getString(s);
-        });
-        return strings;
-      },
-    },
-
-    /**
      * Whether to show the user email in the header.
      * @type {boolean}
      */
@@ -114,6 +93,10 @@ Polymer({
       observer: 'updateHeaderCursorStyle_',
     },
   },
+
+  behaviors: [
+    I18nBehavior,
+  ],
 
   ready: function() {
     this.$$('#header').style.height = this.headerWithoutEmailHeight_ + 'px';

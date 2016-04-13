@@ -156,7 +156,7 @@ cr.define('media_router_container_cast_mode_list', function() {
       // Tests the header text. Choosing a cast mode updates the header text.
       test('header text with no default cast modes', function(done) {
         assertEquals(loadTimeData.getString('selectCastModeHeaderText'),
-            container.i18n_.selectCastModeHeaderText);
+            container.i18n('selectCastModeHeaderText'));
 
         // The container is currently in auto cast mode, since we have not
         // picked a cast mode explicitly, and the sinks is not compatible

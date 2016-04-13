@@ -18,27 +18,6 @@ Polymer({
     },
 
     /**
-     * The localized strings used by |this|.
-     * @private {!Object}
-     */
-    i18n_: {
-      readOnly: true,
-      type: Object,
-      value: function() {
-        var strings = {};
-        [
-          'startCastingButtonText',
-          'stopCastingButtonText',
-          'dropDownButtonTitle',
-        ]
-        .forEach(function(s) {
-          strings[s] = loadTimeData.getString(s);
-        });
-        return strings;
-      },
-    },
-
-    /**
      * The route to show.
      * @type {?media_router.Route}
      */
@@ -59,6 +38,10 @@ Polymer({
       value: true,
     },
   },
+
+  behaviors: [
+    I18nBehavior,
+  ],
 
   /**
    * Fires a close-route-click event. This is called when the button to close
