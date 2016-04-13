@@ -112,4 +112,4 @@ class TestCase(auto_stub.TestCase):
           if result is not None:
             return result
           return None
-    self.fail('Unknown request %s' % url)
+    self.fail('Unknown request %s %s' % (url, kwargs))
