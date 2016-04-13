@@ -255,6 +255,11 @@
   return NULL;
 }
 
+- (void)detachedWindowEnterFullscreenIfNeeded:(TabWindowController*)source {
+  // Subclasses should implement this.
+  NOTIMPLEMENTED();
+}
+
 - (void)insertPlaceholderForTab:(TabView*)tab frame:(NSRect)frame {
   [self showNewTabButton:NO];
 }
@@ -305,6 +310,12 @@
   // subclass must implement
   NOTIMPLEMENTED();
   return NO;
+}
+
+- (CGFloat)menubarOffset {
+  // Subclasses should implement this.
+  NOTIMPLEMENTED();
+  return 0;
 }
 
 - (NSString*)activeTabTitle {

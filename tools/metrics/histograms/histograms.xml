@@ -74959,6 +74959,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-1172204005" label="enable-offline-auto-reload-visible-only"/>
   <int value="-1160026273" label="enable-web-notification-custom-layouts"/>
   <int value="-1159563774" label="enable-accessibility-script-injection"/>
+  <int value="-1151766565" label="enable-fullscreen-tab-detaching"/>
   <int value="-1137442543" label="enable-slimming-paint"/>
   <int value="-1136627751" label="ignore-autocomplete-off-autofill"/>
   <int value="-1136509631" label="ssl-interstitial-v1"/>

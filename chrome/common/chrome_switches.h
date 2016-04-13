@@ -336,6 +336,7 @@ extern const char kDisableSavePasswordBubble[];
 extern const char kDisableTranslateNewUX[];
 extern const char kEnableAppInfoDialogMac[];
 extern const char kEnableAppWindowCycling[];
+extern const char kEnableFullscreenTabDetaching[];
 extern const char kEnableHostedAppsInWindows[];
 extern const char kEnableMacViewsNativeAppWindows[];
 extern const char kEnableMacViewsDialogs[];

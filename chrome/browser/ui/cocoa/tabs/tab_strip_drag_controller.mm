@@ -365,8 +365,8 @@ static BOOL PointIsInsideView(NSPoint screenPoint, NSView* view) {
     // to take into consideration the difference in height.
     NSRect targetFrame = [[targetController_ window] frame];
     NSRect sourceFrame = [dragWindow_ frame];
-    origin.y = NSMinY(targetFrame) +
-                (NSHeight(targetFrame) - NSHeight(sourceFrame));
+    origin.y = NSMinY(targetFrame) + [targetController_ menubarOffset] +
+               (NSHeight(targetFrame) - NSHeight(sourceFrame));
   }
   [dragWindow_ setFrameOrigin:
       NSMakePoint(origin.x + horizDragOffset_, origin.y)];
@@ -446,7 +446,11 @@ static BOOL PointIsInsideView(NSPoint screenPoint, NSView* view) {
     [draggedController_ removeOverlay];
   } else {
     // Only move the window around on screen. Make sure it's set back to
-    // normal state (fully opaque, has shadow, has key, etc).
+    // normal state (fully opaque, has shadow, has key, in fullscreen if
+    // appropriate, etc).
+    [draggedController_
+        detachedWindowEnterFullscreenIfNeeded:sourceController_];
+
     [draggedController_ removeOverlay];
     // Don't want to re-show the window if it was closed during the drag.
     if ([dragWindow_ isVisible]) {

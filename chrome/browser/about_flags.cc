@@ -1816,6 +1816,12 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_GOOGLE_BRANDED_CONTEXT_MENU_DESCRIPTION, kOsDesktop,
      SINGLE_VALUE_TYPE(switches::kEnableGoogleBrandedContextMenu)},
 #endif
+#if defined(OS_MACOSX)
+    {"enable-fullscreen-in-tab-detaching",
+     IDS_FLAGS_TAB_DETACHING_IN_FULLSCREEN_NAME,
+     IDS_FLAGS_TAB_DETACHING_IN_FULLSCREEN_DESCRIPTION, kOsMac,
+     SINGLE_VALUE_TYPE(switches::kEnableFullscreenTabDetaching)},
+#endif
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in
     // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.

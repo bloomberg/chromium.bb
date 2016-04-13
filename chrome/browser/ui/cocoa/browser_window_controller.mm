@@ -363,23 +363,7 @@ void SetUpBrowserWindowCommandHandler(NSWindow* window) {
     // Allow bar visibility to be changed.
     [self enableBarVisibilityUpdates];
 
-    // Set the window to participate in Lion Fullscreen mode.  Setting this flag
-    // has no effect on Snow Leopard or earlier.  Panels can share a fullscreen
-    // space with a tabbed window, but they can not be primary fullscreen
-    // windows.
-    // This ensures the fullscreen button is appropriately positioned. It must
-    // be done before calling layoutSubviews because the new avatar button's
-    // position depends on the fullscreen button's position, as well as
-    // TabStripController's rightIndentForControls.
-    // The fullscreen button's position may depend on the old avatar button's
-    // width, but that does not require calling layoutSubviews first.
-    NSUInteger collectionBehavior = [window collectionBehavior];
-    collectionBehavior |=
-       browser_->type() == Browser::TYPE_TABBED ||
-           browser_->type() == Browser::TYPE_POPUP ?
-               NSWindowCollectionBehaviorFullScreenPrimary :
-               NSWindowCollectionBehaviorFullScreenAuxiliary;
-    [window setCollectionBehavior:collectionBehavior];
+    [self updateFullscreenCollectionBehavior];
 
     [self layoutSubviews];
 
@@ -1205,7 +1189,8 @@ void SetUpBrowserWindowCommandHandler(NSWindow* window) {
   NSWindow* sourceWindow = [draggedTab window];
   NSRect windowRect = [sourceWindow frame];
   NSScreen* screen = [sourceWindow screen];
-  windowRect.origin.y = NSHeight([screen frame]) - NSMaxY(windowRect);
+  windowRect.origin.y =
+      NSHeight([screen frame]) - NSMaxY(windowRect) + [self menubarOffset];
   gfx::Rect browserRect(windowRect.origin.x, windowRect.origin.y,
                         NSWidth(windowRect), NSHeight(windowRect));
 
@@ -1245,6 +1230,19 @@ void SetUpBrowserWindowCommandHandler(NSWindow* window) {
           [newBrowser->window()->GetNativeWindow() delegate]);
   DCHECK(controller && [controller isKindOfClass:[TabWindowController class]]);
 
+  // Ensure that the window will appear on top of the source window in
+  // fullscreen mode.
+  if ([self isInAppKitFullscreen]) {
+    NSWindow* window = [controller window];
+    NSUInteger collectionBehavior = [window collectionBehavior];
+    collectionBehavior &= ~NSWindowCollectionBehaviorFullScreenPrimary;
+    collectionBehavior |= NSWindowCollectionBehaviorFullScreenAuxiliary;
+    [window setCollectionBehavior:collectionBehavior];
+    [window setLevel:NSFloatingWindowLevel];
+
+    controller->savedRegularWindowFrame_ = savedRegularWindowFrame_;
+  }
+
   // And make sure we use the correct frame in the new view.
   TabStripController* tabStripController = [controller tabStripController];
   NSView* tabStrip = [self tabStripView];
@@ -1267,6 +1265,25 @@ void SetUpBrowserWindowCommandHandler(NSWindow* window) {
   }
 
   return controller;
+}
+
+- (void)detachedWindowEnterFullscreenIfNeeded:(TabWindowController*)source {
+  // Ensure that this is only called when the tab is detached into its own
+  // window (in which the overlay window will be present).
+  DCHECK([self overlayWindow]);
+
+  if (([[source window] styleMask] & NSFullScreenWindowMask)
+      == NSFullScreenWindowMask) {
+    [self updateFullscreenCollectionBehavior];
+
+    // Since the detached window in fullscreen will have the size of the
+    // screen, it will set |savedRegularWindowFrame_| to the screen size after
+    // it enters fullscreen. Make sure that we have the correct value for the
+    // |savedRegularWindowFrame_|.
+    NSRect regularWindowFrame = savedRegularWindowFrame_;
+    [[self window] toggleFullScreen:nil];
+    savedRegularWindowFrame_ = regularWindowFrame;
+  }
 }
 
 - (void)insertPlaceholderForTab:(TabView*)tab
@@ -1292,11 +1309,13 @@ void SetUpBrowserWindowCommandHandler(NSWindow* window) {
 }
 
 - (BOOL)tabTearingAllowed {
-  return ![self isInAnyFullscreenMode];
+  return ![self isInAnyFullscreenMode] ||
+         base::CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kEnableFullscreenTabDetaching);
 }
 
 - (BOOL)windowMovementAllowed {
-  return ![self isInAnyFullscreenMode];
+  return ![self isInAnyFullscreenMode] || [self overlayWindow];
 }
 
 - (BOOL)isTabFullyVisible:(TabView*)tab {
@@ -1906,6 +1925,10 @@ willAnimateFromState:(BookmarkBar::State)oldState
          (([[self window] styleMask] & NSFullScreenWindowMask) ==
               NSFullScreenWindowMask ||
           enteringAppKitFullscreen_);
+}
+
+- (CGFloat)menubarOffset {
+  return [presentationModeController_ menubarOffset];
 }
 
 - (void)enterExtensionFullscreen {

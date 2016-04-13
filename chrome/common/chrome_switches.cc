@@ -1159,6 +1159,9 @@ const char kEnableAppInfoDialogMac[] = "enable-app-info-dialog-mac";
 // Enables custom Cmd+` window cycling for platform apps and hosted apps.
 const char kEnableAppWindowCycling[] = "enable-app-window-cycling";
 
+// Enables tab detaching in fullscreen mode on Mac.
+const char kEnableFullscreenTabDetaching[] = "enable-fullscreen-tab-detaching";
+
 // Allows hosted apps to be opened in windows on Mac.
 const char kEnableHostedAppsInWindows[] = "enable-hosted-apps-in-windows";
 

@@ -6281,6 +6281,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_FLAGS_HOSTED_APPS_IN_WINDOWS_DESCRIPTION" desc="Description for the flag to allow hosted apps opening in windows">
           Allows hosted apps to be opened in windows instead of being limited to tabs.
         </message>
+        <message name="IDS_FLAGS_TAB_DETACHING_IN_FULLSCREEN_NAME" desc="Name of the flag to allow tabs detaching in fullscreen on Mac.">
+          Allow tab detaching in fullscreen
+        </message>
+        <message name="IDS_FLAGS_TAB_DETACHING_IN_FULLSCREEN_DESCRIPTION" desc="Description for the flag to allow tabs detaching in fullscreen on Mac">
+          Allow tabs to detach from the tabstrip when in fullscreen mode on Mac.
+        </message>
       </if>
       <message name="IDS_FLAGS_HOSTED_APP_SHIM_CREATION_NAME" desc="Name of the flag to enable creation of app shims for hosted apps on Mac.">
         Creation of app shims for hosted apps on Mac
