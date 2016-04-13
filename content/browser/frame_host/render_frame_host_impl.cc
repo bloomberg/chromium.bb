@@ -2651,23 +2651,25 @@ AXTreeIDRegistry::AXTreeID RenderFrameHostImpl::RoutingIDToAXTreeID(
   RenderFrameProxyHost* rfph = RenderFrameProxyHost::FromID(
       GetProcess()->GetID(), routing_id);
   if (rfph) {
-    FrameTree* frame_tree = frame_tree_node()->frame_tree();
+    FrameTree* frame_tree = rfph->frame_tree_node()->frame_tree();
     FrameTreeNode* frame_tree_node = frame_tree->FindByRoutingID(
         GetProcess()->GetID(), routing_id);
     rfh = frame_tree_node->render_manager()->current_frame_host();
   } else {
     rfh = RenderFrameHostImpl::FromID(GetProcess()->GetID(), routing_id);
+
+    // As a sanity check, make sure we're within the same frame tree and
+    // crash the renderer if not.
+    if (rfh &&
+        rfh->frame_tree_node()->frame_tree() !=
+            frame_tree_node()->frame_tree()) {
+      AccessibilityFatalError();
+      return AXTreeIDRegistry::kNoAXTreeID;
+    }
   }
 
   if (!rfh)
     return AXTreeIDRegistry::kNoAXTreeID;
-
-  // As a sanity check, make sure we're within the same frame tree and
-  // crash the renderer if not.
-  if (rfh->frame_tree_node()->frame_tree() != frame_tree_node()->frame_tree()) {
-    AccessibilityFatalError();
-    return AXTreeIDRegistry::kNoAXTreeID;
-  }
 
   return rfh->GetAXTreeID();
 }

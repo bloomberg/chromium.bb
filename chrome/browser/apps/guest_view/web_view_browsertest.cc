@@ -1981,10 +1981,6 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, ScreenCoordinates) {
 
 #if defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_P(WebViewTest, ChromeVoxInjection) {
-  // TODO(lfg): https://crbug.com/583071
-  if (content::BrowserPluginGuestMode::UseCrossProcessFramesForGuests())
-    return;
-
   EXPECT_FALSE(
       chromeos::AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
 
