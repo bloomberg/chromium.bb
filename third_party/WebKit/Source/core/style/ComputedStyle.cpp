@@ -844,59 +844,9 @@ void ComputedStyle::addCallbackSelector(const String& selector)
         rareNonInheritedData.access()->m_callbackSelectors.append(selector);
 }
 
-void ComputedStyle::clearContent()
+void ComputedStyle::setContent(ContentData* contentData)
 {
-    if (rareNonInheritedData->m_content)
-        rareNonInheritedData.access()->m_content = nullptr;
-}
-
-void ComputedStyle::appendContent(ContentData* contentData)
-{
-    Persistent<ContentData>& content = rareNonInheritedData.access()->m_content;
-    if (!content) {
-        content = contentData;
-        return;
-    }
-    ContentData* lastContent = content.get();
-    while (lastContent->next())
-        lastContent = lastContent->next();
-    lastContent->setNext(contentData);
-}
-
-void ComputedStyle::setContent(StyleImage* image)
-{
-    appendContent(ContentData::create(image));
-}
-
-void ComputedStyle::setContent(const String& string)
-{
-    Persistent<ContentData>& content = rareNonInheritedData.access()->m_content;
-    if (!content) {
-        content = ContentData::create(string);
-        return;
-    }
-
-    ContentData* lastContent = content.get();
-    while (lastContent->next())
-        lastContent = lastContent->next();
-
-    // We attempt to merge with the last ContentData if possible.
-    if (lastContent->isText()) {
-        TextContentData* textContent = toTextContentData(lastContent);
-        textContent->setText(textContent->text() + string);
-    } else {
-        lastContent->setNext(ContentData::create(string));
-    }
-}
-
-void ComputedStyle::setContent(PassOwnPtr<CounterContent> counter)
-{
-    appendContent(ContentData::create(counter));
-}
-
-void ComputedStyle::setContent(QuoteType quote)
-{
-    appendContent(ContentData::create(quote));
+    SET_VAR(rareNonInheritedData, m_content, contentData);
 }
 
 bool ComputedStyle::hasWillChangeCompositingHint() const
