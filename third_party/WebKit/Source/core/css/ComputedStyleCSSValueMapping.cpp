@@ -162,23 +162,19 @@ static CSSValue* valueForFillSourceType(EMaskSourceType type)
 
 static CSSValue* valueForPositionOffset(const ComputedStyle& style, CSSPropertyID propertyID, const LayoutObject* layoutObject)
 {
-    Length offset, opposite;
+    Length offset;
     switch (propertyID) {
     case CSSPropertyLeft:
         offset = style.left();
-        opposite = style.right();
         break;
     case CSSPropertyRight:
         offset = style.right();
-        opposite = style.left();
         break;
     case CSSPropertyTop:
         offset = style.top();
-        opposite = style.bottom();
         break;
     case CSSPropertyBottom:
         offset = style.bottom();
-        opposite = style.top();
         break;
     default:
         return nullptr;
@@ -190,62 +186,12 @@ static CSSValue* valueForPositionOffset(const ComputedStyle& style, CSSPropertyI
             toLayoutBox(layoutObject)->containingBlockLogicalHeightForGetComputedStyle();
         return zoomAdjustedPixelValue(valueForLength(offset, containingBlockSize), style);
     }
-
-    if (offset.isAuto() && layoutObject) {
-        // If the property applies to a positioned element and the resolved value of the display
-        // property is not none, the resolved value is the used value.
-        if (layoutObject->isInFlowPositioned()) {
-            // If e.g. left is auto and right is not auto, then left's computed value is negative right.
-            // So we get the opposite length unit and see if it is auto.
-            if (opposite.isAuto())
-                return cssValuePool().createValue(0, CSSPrimitiveValue::UnitType::Pixels);
-
-            if (opposite.hasPercent()) {
-                LayoutUnit containingBlockSize =
-                    (propertyID == CSSPropertyLeft || propertyID == CSSPropertyRight) ?
-                    toLayoutBox(layoutObject)->containingBlockLogicalWidthForContent() :
-                    toLayoutBox(layoutObject)->containingBlockLogicalHeightForGetComputedStyle();
-                return zoomAdjustedPixelValue(-floatValueForLength(opposite, containingBlockSize), style);
-            }
-            return zoomAdjustedPixelValue(-opposite.pixels(), style);
-        }
-
-        if (layoutObject->isOutOfFlowPositioned()) {
-            // For fixed and absolute positioned elements, the top, left, bottom, and right
-            // are defined relative to the corresponding sides of the containing block.
-            LayoutBlock* container = layoutObject->containingBlock();
-            const LayoutBox* layoutBox = toLayoutBox(layoutObject);
-
-            // clientOffset is the distance from this object's border edge to the container's
-            // padding edge. Thus it includes margins which we subtract below.
-            const LayoutSize clientOffset =
-                layoutBox->locationOffset() - LayoutSize(container->clientLeft(), container->clientTop());
-            LayoutUnit position;
-
-            switch (propertyID) {
-            case CSSPropertyLeft:
-                position = clientOffset.width() - layoutBox->marginLeft();
-                break;
-            case CSSPropertyTop:
-                position = clientOffset.height() - layoutBox->marginTop();
-                break;
-            case CSSPropertyRight:
-                position = container->clientWidth() - layoutBox->marginRight() -
-                    (layoutBox->offsetWidth() + clientOffset.width());
-                break;
-            case CSSPropertyBottom:
-                position = container->clientHeight() - layoutBox->marginBottom() -
-                    (layoutBox->offsetHeight() + clientOffset.height());
-                break;
-            default:
-                ASSERT_NOT_REACHED();
-            }
-            return zoomAdjustedPixelValue(position, style);
-        }
-    }
-
-    if (offset.isAuto())
+    if (offset.isAuto()) {
+        // FIXME: It's not enough to simply return "auto" values for one offset if the other side is defined.
+        // In other words if left is auto and right is not auto, then left's computed value is negative right().
+        // So we should get the opposite length unit and see if it is auto.
         return cssValuePool().createIdentifierValue(CSSValueAuto);
+    }
 
     return zoomAdjustedPixelValueForLength(offset, style);
 }

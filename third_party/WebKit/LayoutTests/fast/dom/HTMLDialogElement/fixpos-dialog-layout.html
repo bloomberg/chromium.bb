@@ -40,14 +40,11 @@ reset();
 }());
 
 (function() {
-    debug('<br>The dialog is a positioned element, so the top and bottom should not have style auto.');
+    debug('<br>The computed top and bottom of a centered dialog should still have position auto.');
 
-    dialog.style.height = '20px';
     dialog.showModal();
-    shouldBeEqualToString('window.getComputedStyle(dialog).top', '290px');
-    shouldBeEqualToString('window.getComputedStyle(dialog).bottom', '290px');
-
-    dialog.style.height = 'auto';
+    shouldBeEqualToString('window.getComputedStyle(dialog).top', 'auto');
+    shouldBeEqualToString('window.getComputedStyle(dialog).bottom', 'auto');
     reset();
 }());
 

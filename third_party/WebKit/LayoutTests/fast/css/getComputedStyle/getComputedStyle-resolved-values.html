@@ -8,10 +8,6 @@
             border: 1px solid black;
         }
 
-        #abs_container {
-            position: relative;
-        }
-
         .testbox {
             color: white;
             font: 24px 'Lucida Grande';
@@ -72,35 +68,6 @@
             padding-bottom: 1em;
             padding-left: auto;
         }
-
-        #rel_positioned {
-            position: relative;
-            line-height: 30px;
-            width: 150px;
-            height: 100px;
-            left: 10px;
-            top: 15px;
-            margin-top: 15px;
-            margin-right: 30px;
-            margin-bottom: 20px;
-            margin-left: 10px;
-            padding: 20px;
-        }
-
-        #abs_positioned {
-            position: absolute;
-            line-height: 30px;
-            width: 150px;
-            height: 100px;
-            right: 10px;
-            bottom: 15px;
-            margin-top: 15px;
-            margin-right: 30px;
-            margin-bottom: 20px;
-            margin-left: 10px;
-            padding: 20px;
-        }
-
     </style>
     
     <script>
@@ -108,10 +75,6 @@
             'line-height',
             'width',
             'height',
-            'top',
-            'right',
-            'bottom',
-            'left',
             'margin-top',
             'margin-right',
             'margin-bottom',
@@ -161,8 +124,6 @@
             test('ems');
             test('auto');
             test('mixed');
-            test('rel_positioned');
-            test('abs_positioned');
         }
     </script>
 </head>
@@ -188,12 +149,6 @@
     </div>
     <div class="outer">
         <div class="testbox" id="mixed">Mixed</div>
-    </div>
-    <div class="outer">
-        <div class="testbox" id="rel_positioned">Relative Positioned</div>
-    </div>
-    <div class="outer" id="abs_container">
-        <div class="testbox" id="abs_positioned">Absolute Positioned</div>
     </div>
 </body>
 </html>

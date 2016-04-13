@@ -43,7 +43,7 @@
 
     // A forced style-recalc aborts the previous animation.
     box.style.animationName = "none";
-    assert_equals(getComputedStyle(box).left, '0px', 'left');
+    assert_equals(getComputedStyle(box).left, 'auto', 'left');
 
     // Change keyframes.
     var keyframes = findKeyframesRule("anim");
@@ -53,8 +53,8 @@
     keyframes.appendRule("100% { top: 150px; }");
     box.style.webkitAnimationName = "anim";
 
-    // The left property should reset and top should be animating.
-    assert_equals(getComputedStyle(box).left, '0px', 'left');
+    // The left property should reset to auto and top should be animating.
+    assert_equals(getComputedStyle(box).left, 'auto', 'left');
     assert_equals(getComputedStyle(box).top, '100px', 'top');
   }, "Check that changes to keyframe rules take effect");
 </script>
