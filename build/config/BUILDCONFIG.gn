@@ -556,6 +556,16 @@ if (is_component_build) {
     }
   }
 }
+if (is_ios) {
+  set_defaults("ios_framework_bundle") {
+    configs = _shared_library_configs
+  }
+}
+if (is_mac) {
+  set_defaults("mac_framework_bundle") {
+    configs = _shared_library_configs
+  }
+}
 
 # Source set defaults (also for components in non-component mode).
 set_defaults("source_set") {

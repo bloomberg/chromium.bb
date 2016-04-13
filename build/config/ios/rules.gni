@@ -76,8 +76,8 @@ template("ios_app_bundle") {
           "-s=PRODUCT_NAME=$_output_name",
           "-s=XCODE_BUILD=$xcode_build",
           "-s=XCODE_VERSION=$xcode_version",
-          "-o=" + rebase_path(outputs[0], root_build_dir),
-        ] + rebase_path(sources, root_build_dir)
+          "-o=" + rebase_path(outputs[0], root_out_dir),
+        ] + rebase_path(sources, root_out_dir)
     args = [ "@{{response_file_name}}" ]
   }
 
@@ -110,7 +110,7 @@ template("ios_app_bundle") {
                              "visibility",
                            ])
 
-    output_name = rebase_path("$target_gen_dir/$_output_name", root_build_dir)
+    output_name = rebase_path("$target_gen_dir/$_output_name", root_out_dir)
     if (!defined(libs)) {
       libs = []
     }
@@ -210,7 +210,7 @@ template("bundle_data_xib") {
       "--output",
       rebase_path("$target_gen_dir/$_nib_filename"),
       "--input",
-      rebase_path(invoker.source, root_build_dir),
+      rebase_path(invoker.source, root_out_dir),
     ]
   }
 
@@ -246,10 +246,110 @@ template("bundle_data_xib") {
 #         structure will not be created, and build output will go directly
 #         into the framework subdirectory.
 #
+#     public_headers:
+#         (optional) list of paths to header file that needs to be copied
+#         into the framework bundle Headers subdirectory. If omitted or
+#         empty then the Headers subdirectory is not created.
+#
+#     sources
+#         (optional) list of files. Needs to be defined and non-empty if
+#         public_headers is defined and non-empty.
+#
 # See "gn help shared_library" for more information on arguments supported
 # by shared library target.
 template("ios_framework_bundle") {
+  if (defined(invoker.public_headers) && invoker.public_headers != []) {
+    assert(defined(invoker.sources) && invoker.sources != [],
+           "sources must be set for $target_name when public_headers is set")
+
+    _target_name = target_name
+    _output_name = target_name
+    if (defined(invoker.output_name)) {
+      _output_name = invoker.output_name
+    }
+
+    _public_headers = invoker.public_headers
+    _framework_name = _output_name + ".framework"
+    _framework_root = "$root_out_dir/$_framework_name"
+
+    _header_map_filename = "$target_gen_dir/$_output_name.headers.hmap"
+    _framework_headers_target = _target_name + "_framework_headers"
+
+    _compile_headers_map_target = _target_name + "_compile_headers_map"
+    action(_compile_headers_map_target) {
+      visibility = [ ":$_framework_headers_target" ]
+      script = "$root_out_dir/gyp-mac-tool"
+      outputs = [
+        _header_map_filename,
+      ]
+
+      # The header map generation only wants the list of headers, not all of
+      # sources, so filter any non-header source files from "sources". It is
+      # less error prone that having the developer duplicate the list of all
+      # headers in addition to "sources".
+      set_sources_assignment_filter([
+                                      "*.c",
+                                      "*.cc",
+                                      "*.cpp",
+                                      "*.m",
+                                      "*.mm",
+                                    ])
+      sources = invoker.sources
+      set_sources_assignment_filter([])
+
+      args = [
+               "compile-ios-framework-header-map",
+               rebase_path(_header_map_filename),
+               rebase_path(_framework_root, root_out_dir),
+             ] + rebase_path(sources, root_out_dir)
+    }
+
+    _create_module_map_target = _target_name + "_module_map"
+    action(_create_module_map_target) {
+      visibility = [ ":$_framework_headers_target" ]
+      script = "$root_out_dir/gyp-mac-tool"
+      outputs = [
+        "$_framework_root/Modules/module.modulemap",
+      ]
+      args = [
+        "package-ios-framework",
+        rebase_path("$_framework_root", root_out_dir),
+      ]
+    }
+
+    _copy_public_headers_target = _target_name + "_copy_public_headers"
+    copy(_copy_public_headers_target) {
+      visibility = [ ":$_framework_headers_target" ]
+      sources = _public_headers
+      outputs = [
+        "$_framework_root/Headers/{{source_file_part}}",
+      ]
+    }
+
+    _headers_map_config = _target_name + "_headers_map"
+    config(_headers_map_config) {
+      visibility = [ ":$_target_name" ]
+      include_dirs = [ _header_map_filename ]
+    }
+
+    group(_framework_headers_target) {
+      deps = [
+        ":$_compile_headers_map_target",
+        ":$_copy_public_headers_target",
+        ":$_create_module_map_target",
+      ]
+    }
+  }
+
   framework_bundle(target_name) {
-    forward_variables_from(invoker, "*")
+    forward_variables_from(invoker, "*", [ "public_headers" ])
+
+    if (defined(_public_headers)) {
+      configs += [ ":$_headers_map_config" ]
+      if (!defined(deps)) {
+        deps = []
+      }
+      deps += [ ":$_framework_headers_target" ]
+    }
   }
 }
