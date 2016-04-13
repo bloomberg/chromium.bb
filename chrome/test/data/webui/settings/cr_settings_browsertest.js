@@ -85,7 +85,6 @@ CrSettingsPeoplePageChangePictureTest.prototype = {
 
   /** @override */
   extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
-    ROOT_PATH + 'ui/webui/resources/js/promise_resolver.js',
     'test_browser_proxy.js',
     'people_page_change_picture_test.js',
   ]),
@@ -113,7 +112,6 @@ CrSettingsPeoplePageManageProfileTest.prototype = {
 
   /** @override */
   extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
-    ROOT_PATH + 'ui/webui/resources/js/promise_resolver.js',
     'test_browser_proxy.js',
     'people_page_manage_profile_test.js',
   ]),
@@ -165,7 +163,6 @@ CrSettingsResetPageTest.prototype = {
 
   /** @override */
   extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
-    ROOT_PATH + 'ui/webui/resources/js/promise_resolver.js',
     'test_browser_proxy.js',
     'reset_page_test.js',
   ]),
@@ -191,7 +188,6 @@ CrSettingsSearchPageTest.prototype = {
 
   /** @override */
   extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
-    ROOT_PATH + 'ui/webui/resources/js/promise_resolver.js',
     'test_browser_proxy.js',
     'test_search_engines_browser_proxy.js',
     'search_page_test.js',
@@ -219,7 +215,6 @@ CrSettingsSearchEnginesTest.prototype = {
 
   /** @override */
   extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
-    ROOT_PATH + 'ui/webui/resources/js/promise_resolver.js',
     'test_browser_proxy.js',
     'test_search_engines_browser_proxy.js',
     'search_engines_page_test.js',
@@ -248,7 +243,6 @@ CrSettingsCertificateManagerTest.prototype = {
 
   /** @override */
   extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
-    ROOT_PATH + 'ui/webui/resources/js/promise_resolver.js',
     'test_browser_proxy.js',
     'certificate_manager_page_test.js',
   ]),
@@ -275,7 +269,6 @@ CrSettingsPrivacyPageTest.prototype = {
 
   /** @override */
   extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
-    ROOT_PATH + 'ui/webui/resources/js/promise_resolver.js',
     'test_browser_proxy.js',
     'privacy_page_test.js',
   ]),
@@ -362,7 +355,6 @@ CrSettingsSystemPageTest.prototype = {
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
-    ROOT_PATH + 'ui/webui/resources/js/promise_resolver.js',
     'test_browser_proxy.js',
     'system_page_tests.js',
   ]),
@@ -385,7 +377,6 @@ CrSettingsStartupUrlsPageTest.prototype = {
   browsePreload: 'chrome://md-settings/on_startup_page/startup_urls_page.html',
 
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
-    ROOT_PATH + 'ui/webui/resources/js/promise_resolver.js',
     'test_browser_proxy.js',
     'startup_urls_page_test.js',
   ]),
