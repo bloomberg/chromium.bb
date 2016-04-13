@@ -135,6 +135,7 @@ struct I18nContentToMessage {
     IDS_KEYBOARD_OVERLAY_CLEAR_BROWSING_DATA_DIALOG },
   { "keyboardOverlayCloseTab", IDS_KEYBOARD_OVERLAY_CLOSE_TAB },
   { "keyboardOverlayCloseWindow", IDS_KEYBOARD_OVERLAY_CLOSE_WINDOW },
+  { "keyboardOverlayContextMenu", IDS_KEYBOARD_OVERLAY_CONTEXT_MENU },
   { "keyboardOverlayCopy", IDS_KEYBOARD_OVERLAY_COPY },
   { "keyboardOverlayCut", IDS_KEYBOARD_OVERLAY_CUT },
   { "keyboardOverlayCycleThroughInputMethods",

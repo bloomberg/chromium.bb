@@ -4532,6 +4532,9 @@ Battery full
   <message name="IDS_KEYBOARD_OVERLAY_CLOSE_WINDOW" desc="The text in the keyboard overlay to explain the shortcut.">
     Close window
   </message>
+  <message name="IDS_KEYBOARD_OVERLAY_CONTEXT_MENU" desc="The text in the keyboard overlay to explain the shortcut.">
+    Context menu
+  </message>
   <message name="IDS_KEYBOARD_OVERLAY_COPY" desc="The text in the keyboard overlay to explain the shortcut.">
     Copy
   </message>
