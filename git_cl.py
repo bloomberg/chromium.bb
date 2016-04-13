@@ -2235,11 +2235,6 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     branch = GetTargetRef(remote, remote_branch, options.target_branch,
                           pending_prefix='')
 
-    if options.title:
-      # TODO(tandrii): it's now supported by Gerrit, implement!
-      print "\nPatch titles (-t) are not supported in Gerrit. Aborting..."
-      return 1
-
     if options.squash:
       if not self.GetIssue():
         # TODO(tandrii): deperecate this after 2016Q2.  Backwards compatibility
@@ -2387,6 +2382,16 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
       change_desc.update_reviewers(options.reviewers, options.tbr_owners,
                                    change)
 
+    # Extra options that can be specified at push time. Doc:
+    # https://gerrit-review.googlesource.com/Documentation/user-upload.html
+    refspec_opts = []
+    if options.title:
+      # Per doc, spaces must be converted to underscores, and Gerrit will do the
+      # reverse on its side.
+      if '_' in options.title:
+        print('WARNING: underscores in title will be converted to spaces.')
+      refspec_opts.append('m=' + options.title.replace(' ', '_'))
+
     receive_options = []
     cc = self.GetCCList().split(',')
     if options.cc:
@@ -2398,13 +2403,24 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
       receive_options.extend(
           '--reviewer=' + email for email in change_desc.get_reviewers())
 
-    git_command = ['push']
+    git_command = ['git', 'push']
     if receive_options:
+      # TODO(tandrii): clean this up in follow up. This doesn't work, as it gets
+      # totally ignored by Gerrit.
       git_command.append('--receive-pack=git receive-pack %s' %
                          ' '.join(receive_options))
-    git_command += [gerrit_remote, ref_to_push + ':refs/for/' + branch]
+
+    refspec_suffix = ''
+    if refspec_opts:
+      refspec_suffix = '%' + ','.join(refspec_opts)
+      assert ' ' not in refspec_suffix, (
+          'spaces not allowed in refspec: "%s"' % refspec_suffix)
+
+    refspec = '%s:refs/for/%s%s' % (ref_to_push, branch, refspec_suffix)
+    git_command += [gerrit_remote, refspec]
+
     push_stdout = gclient_utils.CheckCallAndFilter(
-        ['git'] + git_command,
+        git_command,
         print_stdout=True,
         # Flush after every line: useful for seeing progress when running as
         # recipe.

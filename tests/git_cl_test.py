@@ -738,6 +738,7 @@ class TestGitCl(TestCase):
   @classmethod
   def _gerrit_upload_calls(cls, description, reviewers, squash,
                            expected_upstream_ref='origin/refs/heads/master',
+                           ref_suffix='',
                            post_amend_description=None, issue=None):
     if post_amend_description is None:
       post_amend_description = description
@@ -810,7 +811,7 @@ class TestGitCl(TestCase):
     calls += [
         ((['git',
            'push', receive_pack, 'origin',
-           ref_to_push + ':refs/for/refs/heads/master'],),
+           ref_to_push + ':refs/for/refs/heads/master' + ref_suffix],),
          ('remote:\n'
          'remote: Processing changes: (\)\n'
          'remote: Processing changes: (|)\n'
@@ -840,18 +841,21 @@ class TestGitCl(TestCase):
       self,
       upload_args,
       description,
-      reviewers,
+      reviewers=None,
       squash=False,
       expected_upstream_ref='origin/refs/heads/master',
+      ref_suffix='',
       post_amend_description=None,
       issue=None):
     """Generic gerrit upload test framework."""
+    reviewers = reviewers or []
     self.mock(git_cl.gerrit_util, "CookiesAuthenticator",
               CookiesAuthenticatorMockFactory(same_cookie='same_cred'))
     self.calls = self._gerrit_base_calls(issue=issue)
     self.calls += self._gerrit_upload_calls(
         description, reviewers, squash,
         expected_upstream_ref=expected_upstream_ref,
+        ref_suffix=ref_suffix,
         post_amend_description=post_amend_description,
         issue=issue)
     # Uncomment when debugging.
@@ -871,6 +875,12 @@ class TestGitCl(TestCase):
         [],
         'desc\n\nBUG=\n\nChange-Id: I123456789\n',
         [])
+
+  def test_gerrit_patch_title(self):
+    self._run_gerrit_upload_test(
+        ['-t', 'Don\'t put under_scores as they become spaces'],
+        'desc\n\nBUG=\n\nChange-Id: I123456789',
+        ref_suffix='%m=Don\'t_put_under_scores_as_they_become_spaces')
 
   def test_gerrit_reviewers_cmd_line(self):
     self._run_gerrit_upload_test(
