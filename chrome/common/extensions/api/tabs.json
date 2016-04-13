@@ -249,7 +249,8 @@
           },
           {
             "type": "any",
-            "name": "message"
+            "name": "message",
+            "description": "The message to send. This message should be a JSON-ifiable object."
           },
           {
             "type": "object",

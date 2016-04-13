@@ -75,11 +75,21 @@ chrome.runtime.onMessage.addListener(
   });
 </pre>
 
+In the above example, <code>sendResponse</code> was called synchronously.
+If you want to asynchronously use <code>sendResponse</code>, add
+<code>return true;</code> to the <code>onMessage</code> event handler.
+
 <p class="note">
 <b>Note:</b> If multiple pages are listening for onMessage events, only the
 first to call sendResponse() for a particular event will succeed in sending the
 response. All other responses to that event will be ignored.
-</p>
+
+<p class="note">
+<b>Note:</b> The <code>sendResponse</code> callback is only valid if used
+synchronously, or if the event handler returns <code>true</code> to indicate
+that it will respond asynchronously. The <code>sendMessage</code> function's
+callback will be invoked automatically if no handlers return true or if the
+<code>sendResponse</code> callback is garbage-collected.
 
 
 <h2 id="connect">Long-lived connections</h2>
@@ -154,15 +164,46 @@ chrome.runtime.onConnect.addListener(function(port) {
 });
 </pre>
 
+<h3 id="port-lifetime">Port lifetime</h3>
+<p>
+Ports are designed as a two-way communication method between different parts of
+the extension, where a (top-level) frame is viewed as the smallest part.
+<br>
+Upon calling $(ref:tabs.connect), $(ref:runtime.connect) or
+$(ref:runtime.connectNative), a $(ref:runtime.Port Port) is created.
+This port can immediately be used for sending messages to the other end via
+$(ref:runtime.Port.postMessage postMessage).
+
+<p>
+If there are multiple frames in a tab, calling $(ref:tabs.connect) results in
+multiple invocations of the $(ref:runtime.onConnect) event
+(once for each frame in the tab).
+Similarly, if $(ref:runtime.connect) is used, then the onConnect event
+may be fired multiple times (once for every frame in the extension process).
+
 <p>
 You may want to find out when a connection is closed, for example if you are
 maintaining separate state for each open port. For this you can listen to the
 $(ref:runtime.Port.onDisconnect)
-event. This event is fired either when the other side of the channel manually
-calls
-$(ref:runtime.Port.disconnect), or when the page
-containing the port is unloaded (for example if the tab is navigated).
-onDisconnect is guaranteed to be fired only once for any given port.
+event. This event is fired when there are no valid ports at the other side of
+the channel. This happens in the following situations:
+<ul>
+  <li>
+    There are no listeners for $(ref:runtime.onConnect) at the other end.
+  <li>
+    The tab containing the port is unloaded (e.g. if the tab is navigated).
+  <li>
+    The frame from where <code>connect</code> was called has unloaded.
+  <li>
+    All frames that received the port (via $(ref:runtime.onConnect)) have
+    unloaded.
+  <li>
+    $(ref:runtime.Port.disconnect) is called by <em>the other end</em>.
+    Note that if a <code>connect</code> call results in multiple ports at the
+    receiver's end, and <code>disconnect()</code> is called on any of these
+    ports, then the <code>onDisconnect</code> event is only fired at the port
+    of the sender, and not at the other ports.
+</ul>
 
 
 <h2 id="external">Cross-extension messaging</h2>
