@@ -13,13 +13,13 @@ namespace printing {
 
 namespace {
 
-// When a ClipBox has top < bottom, or right < left, the values should be
+// When a PdfRectangle has top < bottom, or right < left, the values should be
 // swapped.
-void SwapClipBoxValuesIfNeeded(ClipBox* clip_box) {
-  if (clip_box->top < clip_box->bottom)
-    std::swap(clip_box->top, clip_box->bottom);
-  if (clip_box->right < clip_box->left)
-    std::swap(clip_box->right, clip_box->left);
+void SwapPdfRectangleValuesIfNeeded(PdfRectangle* rect) {
+  if (rect->top < rect->bottom)
+    std::swap(rect->top, rect->bottom);
+  if (rect->right < rect->left)
+    std::swap(rect->right, rect->left);
 }
 
 }  // namespace
@@ -40,7 +40,7 @@ double CalculateScaleFactor(const gfx::Rect& content_rect,
   return std::min(ratio_x, ratio_y);
 }
 
-void SetDefaultClipBox(bool rotated, ClipBox* clip_box) {
+void SetDefaultClipBox(bool rotated, PdfRectangle* clip_box) {
   const int kDpi = 72;
   const float kPaperWidth = 8.5 * kDpi;
   const float kPaperHeight = 11 * kDpi;
@@ -53,12 +53,12 @@ void SetDefaultClipBox(bool rotated, ClipBox* clip_box) {
 void CalculateMediaBoxAndCropBox(bool rotated,
                                  bool has_media_box,
                                  bool has_crop_box,
-                                 printing::ClipBox* media_box,
-                                 printing::ClipBox* crop_box) {
+                                 PdfRectangle* media_box,
+                                 PdfRectangle* crop_box) {
   if (has_media_box)
-    SwapClipBoxValuesIfNeeded(media_box);
+    SwapPdfRectangleValuesIfNeeded(media_box);
   if (has_crop_box)
-    SwapClipBoxValuesIfNeeded(crop_box);
+    SwapPdfRectangleValuesIfNeeded(crop_box);
 
   if (!has_media_box && !has_crop_box) {
     SetDefaultClipBox(rotated, crop_box);
@@ -70,28 +70,28 @@ void CalculateMediaBoxAndCropBox(bool rotated,
   }
 }
 
-ClipBox CalculateClipBoxBoundary(const ClipBox& media_box,
-                                 const ClipBox& crop_box) {
-  ClipBox clip_box;
+PdfRectangle CalculateClipBoxBoundary(const PdfRectangle& media_box,
+                                      const PdfRectangle& crop_box) {
+  PdfRectangle clip_box;
 
   // Clip |media_box| to the size of |crop_box|, but ignore |crop_box| if it is
   // bigger than |media_box|.
   clip_box.left = std::max(crop_box.left, media_box.left);
+  clip_box.bottom = std::max(crop_box.bottom, media_box.bottom);
   clip_box.right = std::min(crop_box.right, media_box.right);
   clip_box.top = std::min(crop_box.top, media_box.top);
-  clip_box.bottom = std::max(crop_box.bottom, media_box.bottom);
   return clip_box;
 }
 
-void ScaleClipBox(double scale_factor, ClipBox* box) {
-  box->left *= scale_factor;
-  box->right *= scale_factor;
-  box->bottom *= scale_factor;
-  box->top *= scale_factor;
+void ScalePdfRectangle(double scale_factor, PdfRectangle* rect) {
+  rect->left *= scale_factor;
+  rect->bottom *= scale_factor;
+  rect->right *= scale_factor;
+  rect->top *= scale_factor;
 }
 
 void CalculateScaledClipBoxOffset(const gfx::Rect& content_rect,
-                                  const ClipBox& source_clip_box,
+                                  const PdfRectangle& source_clip_box,
                                   double* offset_x,
                                   double* offset_y) {
   const float clip_box_width = source_clip_box.right - source_clip_box.left;
@@ -108,7 +108,7 @@ void CalculateNonScaledClipBoxOffset(const gfx::Rect& content_rect,
                                      int rotation,
                                      int page_width,
                                      int page_height,
-                                     const ClipBox& source_clip_box,
+                                     const PdfRectangle& source_clip_box,
                                      double* offset_x,
                                      double* offset_y) {
   // Align the intended clip region to left-top corner of real clip region.

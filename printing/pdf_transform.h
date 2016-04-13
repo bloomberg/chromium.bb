@@ -15,11 +15,11 @@ namespace printing {
 
 // A rect struct for use with FPDF bounding box functions.
 // With PDFs, origin is bottom-left.
-struct PRINTING_EXPORT ClipBox {
+struct PRINTING_EXPORT PdfRectangle {
   float left;
+  float bottom;
   float right;
   float top;
-  float bottom;
 };
 
 // Calculate the scale factor between |content_rect| and a page of size
@@ -38,7 +38,7 @@ PRINTING_EXPORT double CalculateScaleFactor(const gfx::Rect& content_rect,
 // Make the default size to be letter size (8.5" X 11"). We are just following
 // the PDFium way of handling these corner cases. PDFium always consider
 // US-Letter as the default page size.
-PRINTING_EXPORT void SetDefaultClipBox(bool rotated, ClipBox* clip_box);
+PRINTING_EXPORT void SetDefaultClipBox(bool rotated, PdfRectangle* clip_box);
 
 // Set the media box and/or crop box as needed. If both boxes are there, then
 // nothing needs to be done. If one box is missing, then fill it with the value
@@ -47,8 +47,8 @@ PRINTING_EXPORT void SetDefaultClipBox(bool rotated, ClipBox* clip_box);
 PRINTING_EXPORT void CalculateMediaBoxAndCropBox(bool rotated,
                                                  bool has_media_box,
                                                  bool has_crop_box,
-                                                 printing::ClipBox* media_box,
-                                                 printing::ClipBox* crop_box);
+                                                 PdfRectangle* media_box,
+                                                 PdfRectangle* crop_box);
 
 // Compute source clip box boundaries based on the crop box / media box of
 // source page and scale factor.
@@ -56,11 +56,12 @@ PRINTING_EXPORT void CalculateMediaBoxAndCropBox(bool rotated,
 //
 // |media_box| The PDF's media box.
 // |crop_box| The PDF's crop box.
-PRINTING_EXPORT ClipBox CalculateClipBoxBoundary(const ClipBox& media_box,
-                                                 const ClipBox& crop_box);
+PRINTING_EXPORT PdfRectangle CalculateClipBoxBoundary(
+    const PdfRectangle& media_box,
+    const PdfRectangle& crop_box);
 
 // Scale |box| by |scale_factor|.
-PRINTING_EXPORT void ScaleClipBox(double scale_factor, ClipBox* box);
+PRINTING_EXPORT void ScalePdfRectangle(double scale_factor, PdfRectangle* rect);
 
 // Calculate the clip box translation offset for a page that does need to be
 // scaled. All parameters are in points.
@@ -73,7 +74,7 @@ PRINTING_EXPORT void ScaleClipBox(double scale_factor, ClipBox* box);
 // source clip box, relative to origin at left-bottom.
 PRINTING_EXPORT void CalculateScaledClipBoxOffset(
     const gfx::Rect& content_rect,
-    const ClipBox& source_clip_box,
+    const PdfRectangle& source_clip_box,
     double* offset_x,
     double* offset_y);
 
@@ -95,7 +96,7 @@ PRINTING_EXPORT void CalculateNonScaledClipBoxOffset(
     int rotation,
     int page_width,
     int page_height,
-    const ClipBox& source_clip_box,
+    const PdfRectangle& source_clip_box,
     double* offset_x,
     double* offset_y);
 
