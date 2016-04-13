@@ -75,12 +75,7 @@ void ConfirmInfoBar::ViewHierarchyChanged(
       if (ui::MaterialDesignController::IsModeMaterial()) {
         views::MdTextButton* button = CreateMdTextButton(
             this, delegate->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_OK));
-        // If this is the only button, weak call to action. Otherwise, strong
-        // call to action.
-        button->SetCallToAction(
-            delegate->GetButtons() == ConfirmInfoBarDelegate::BUTTON_OK
-                ? views::MdTextButton::WEAK_CALL_TO_ACTION
-                : views::MdTextButton::STRONG_CALL_TO_ACTION);
+        button->SetCallToAction(views::MdTextButton::STRONG_CALL_TO_ACTION);
         ok_button_ = button;
       } else {
         ok_button_ = CreateTextButton(
@@ -100,12 +95,9 @@ void ConfirmInfoBar::ViewHierarchyChanged(
         views::MdTextButton* button = CreateMdTextButton(
             this,
             delegate->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_CANCEL));
-        // If this is the only button, weak call to action. Otherwise, no call
-        // to action.
-        button->SetCallToAction(
-            delegate->GetButtons() == ConfirmInfoBarDelegate::BUTTON_CANCEL
-                ? views::MdTextButton::WEAK_CALL_TO_ACTION
-                : views::MdTextButton::NO_CALL_TO_ACTION);
+        // Apply CTA only if the cancel button is the only button.
+        if (delegate->GetButtons() == ConfirmInfoBarDelegate::BUTTON_CANCEL)
+          button->SetCallToAction(views::MdTextButton::STRONG_CALL_TO_ACTION);
         cancel_button_ = button;
       } else {
         cancel_button_ = CreateTextButton(
