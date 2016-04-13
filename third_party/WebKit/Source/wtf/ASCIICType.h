@@ -111,12 +111,7 @@ WTF_EXPORT extern const LChar ASCIICaseFoldTable[256];
 
 template<typename CharType> inline CharType toASCIILower(CharType c)
 {
-#if defined(_MSC_FULL_VER) && _MSC_FULL_VER == 170060610
-    // Make a workaround for VS2012 update 3 optimizer bug, remove once VS2012 fix it.
-    return (c >= 'A' && c <= 'Z') ? c + 0x20 : c;
-#else
     return c | ((c >= 'A' && c <= 'Z') << 5);
-#endif
 }
 
 inline LChar toASCIILower(LChar c)
