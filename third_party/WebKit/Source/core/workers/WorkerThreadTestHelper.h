@@ -7,6 +7,7 @@
 #include "bindings/core/v8/V8GCController.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/inspector/ConsoleMessage.h"
+#include "core/workers/WorkerBackingThread.h"
 #include "core/workers/WorkerClients.h"
 #include "core/workers/WorkerLoaderProxy.h"
 #include "core/workers/WorkerReportingProxy.h"
@@ -69,25 +70,14 @@ public:
         WorkerLoaderProxyProvider* mockWorkerLoaderProxyProvider,
         WorkerReportingProxy& mockWorkerReportingProxy)
         : WorkerThread(WorkerLoaderProxy::create(mockWorkerLoaderProxyProvider), mockWorkerReportingProxy)
-        , m_thread(WebThreadSupportingGC::create("Test thread"))
+        , m_workerBackingThread(WorkerBackingThread::createForTest("Test thread"))
         , m_scriptLoadedEvent(adoptPtr(new WaitableEvent()))
     {
-        ASSERT(m_thread);
     }
 
     ~WorkerThreadForTest() override { }
 
-    // WorkerThread implementation:
-    WebThreadSupportingGC& backingThread() override
-    {
-        ASSERT(m_thread);
-        return *m_thread;
-    }
-    void willDestroyIsolate() override
-    {
-        V8GCController::collectAllGarbageForTesting(v8::Isolate::GetCurrent());
-        WorkerThread::willDestroyIsolate();
-    }
+    WorkerBackingThread& workerBackingThread() override { return *m_workerBackingThread; }
 
     WorkerGlobalScope* createWorkerGlobalScope(PassOwnPtr<WorkerThreadStartupData>) override;
 
@@ -125,12 +115,12 @@ public:
     void waitForInit()
     {
         OwnPtr<WaitableEvent> completionEvent = adoptPtr(new WaitableEvent());
-        backingThread().postTask(BLINK_FROM_HERE, threadSafeBind(&WaitableEvent::signal, AllowCrossThreadAccess(completionEvent.get())));
+        workerBackingThread().backingThread().postTask(BLINK_FROM_HERE, threadSafeBind(&WaitableEvent::signal, AllowCrossThreadAccess(completionEvent.get())));
         completionEvent->wait();
     }
 
 private:
-    OwnPtr<WebThreadSupportingGC> m_thread;
+    OwnPtr<WorkerBackingThread> m_workerBackingThread;
     OwnPtr<WaitableEvent> m_scriptLoadedEvent;
 };
 

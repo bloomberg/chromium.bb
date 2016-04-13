@@ -2239,6 +2239,8 @@
             'workers/SharedWorkerThread.h',
             'workers/Worker.cpp',
             'workers/Worker.h',
+            'workers/WorkerBackingThread.cpp',
+            'workers/WorkerBackingThread.h',
             'workers/WorkerClients.h',
             'workers/WorkerConsole.cpp',
             'workers/WorkerConsole.h',

@@ -43,15 +43,16 @@ public:
     static PassOwnPtr<SharedWorkerThread> create(const String& name, PassRefPtr<WorkerLoaderProxy>, WorkerReportingProxy&);
     ~SharedWorkerThread() override;
 
+    WorkerBackingThread& workerBackingThread() override { return *m_workerBackingThread; }
+
 protected:
     WorkerGlobalScope* createWorkerGlobalScope(PassOwnPtr<WorkerThreadStartupData>) override;
-    WebThreadSupportingGC& backingThread() override;
 
 private:
     SharedWorkerThread(const String& name, PassRefPtr<WorkerLoaderProxy>, WorkerReportingProxy&);
 
+    OwnPtr<WorkerBackingThread> m_workerBackingThread;
     String m_name;
-    OwnPtr<WebThreadSupportingGC> m_thread;
 };
 
 } // namespace blink

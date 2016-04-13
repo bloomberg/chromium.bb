@@ -44,6 +44,7 @@ namespace blink {
 
 class InspectorTaskRunner;
 class WaitableEvent;
+class WorkerBackingThread;
 class WorkerGlobalScope;
 class WorkerInspectorController;
 class WorkerMicrotaskRunner;
@@ -64,16 +65,9 @@ public:
     void start(PassOwnPtr<WorkerThreadStartupData>);
     void terminate();
 
-    // Returns the thread this worker runs on. Some implementations can create
-    // a new thread on the first call (e.g. shared, dedicated workers), whereas
-    // some implementations can use an existing thread that is already being
-    // used by other workers (e.g.  compositor workers).
-    virtual WebThreadSupportingGC& backingThread() = 0;
-
-    virtual void didStartWorkerThread();
-    virtual void willStopWorkerThread();
-
-    v8::Isolate* isolate() const { return m_isolate; }
+    virtual WorkerBackingThread& workerBackingThread() = 0;
+    virtual bool shouldAttachThreadDebugger() const { return true; }
+    v8::Isolate* isolate();
 
     // Can be used to wait for this worker thread to shut down.
     // (This is signaled on the main thread, so it's assumed to be waited on
@@ -122,17 +116,6 @@ protected:
 
     virtual void postInitialize() { }
 
-    // Both of these methods are called in the worker thread.
-    virtual void initializeBackingThread();
-    virtual void shutdownBackingThread();
-
-    virtual v8::Isolate* initializeIsolate();
-    virtual void willDestroyIsolate();
-    virtual void destroyIsolate();
-
-    // Can be called either on main or worker thread.
-    virtual void terminateV8Execution();
-
 private:
     friend class WorkerMicrotaskRunner;
 
@@ -162,12 +145,12 @@ private:
     WorkerReportingProxy& m_workerReportingProxy;
     WebScheduler* m_webScheduler; // Not owned.
 
-    // This lock protects |m_workerGlobalScope|, |m_terminated|, |m_shutdown|, |m_isolate|, |m_runningDebuggerTask|, |m_shouldTerminateV8Execution| and |m_microtaskRunner|.
+    // This lock protects |m_workerGlobalScope|, |m_terminated|, |m_shutdown|,
+    // |m_runningDebuggerTask|, |m_shouldTerminateV8Execution| and
+    // |m_microtaskRunner|.
     Mutex m_threadStateMutex;
 
     Persistent<WorkerGlobalScope> m_workerGlobalScope;
-
-    v8::Isolate* m_isolate;
 
     // Used to signal thread shutdown.
     OwnPtr<WaitableEvent> m_shutdownEvent;

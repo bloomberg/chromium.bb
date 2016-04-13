@@ -41,20 +41,21 @@ class WorkerThreadStartupData;
 class DedicatedWorkerThread final : public WorkerThread {
 public:
     static PassOwnPtr<DedicatedWorkerThread> create(PassRefPtr<WorkerLoaderProxy>, WorkerObjectProxy&, double timeOrigin);
-    WorkerObjectProxy& workerObjectProxy() const { return m_workerObjectProxy; }
     ~DedicatedWorkerThread() override;
+
+    WorkerBackingThread& workerBackingThread() override { return *m_workerBackingThread; }
+    WorkerObjectProxy& workerObjectProxy() const { return m_workerObjectProxy; }
 
 protected:
     WorkerGlobalScope* createWorkerGlobalScope(PassOwnPtr<WorkerThreadStartupData>) override;
     void postInitialize() override;
-    WebThreadSupportingGC& backingThread() override;
 
 private:
     DedicatedWorkerThread(PassRefPtr<WorkerLoaderProxy>, WorkerObjectProxy&, double timeOrigin);
 
+    OwnPtr<WorkerBackingThread> m_workerBackingThread;
     WorkerObjectProxy& m_workerObjectProxy;
     double m_timeOrigin;
-    OwnPtr<WebThreadSupportingGC> m_thread;
 };
 
 } // namespace blink

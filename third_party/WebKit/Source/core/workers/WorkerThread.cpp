@@ -35,6 +35,7 @@
 #include "core/inspector/InspectorTaskRunner.h"
 #include "core/inspector/WorkerThreadDebugger.h"
 #include "core/workers/DedicatedWorkerGlobalScope.h"
+#include "core/workers/WorkerBackingThread.h"
 #include "core/workers/WorkerClients.h"
 #include "core/workers/WorkerReportingProxy.h"
 #include "core/workers/WorkerThreadStartupData.h"
@@ -43,7 +44,6 @@
 #include "platform/heap/SafePoint.h"
 #include "platform/heap/ThreadState.h"
 #include "platform/weborigin/KURL.h"
-#include "public/platform/Platform.h"
 #include "public/platform/WebScheduler.h"
 #include "public/platform/WebThread.h"
 #include "wtf/Functional.h"
@@ -142,7 +142,6 @@ WorkerThread::WorkerThread(PassRefPtr<WorkerLoaderProxy> workerLoaderProxy, Work
     , m_workerLoaderProxy(workerLoaderProxy)
     , m_workerReportingProxy(workerReportingProxy)
     , m_webScheduler(nullptr)
-    , m_isolate(nullptr)
     , m_shutdownEvent(adoptPtr(new WaitableEvent(
         WaitableEvent::ResetPolicy::Manual,
         WaitableEvent::InitialState::NonSignaled)))
@@ -169,14 +168,14 @@ void WorkerThread::start(PassOwnPtr<WorkerThreadStartupData> startupData)
         return;
 
     m_started = true;
-    backingThread().postTask(BLINK_FROM_HERE, threadSafeBind(&WorkerThread::initialize, AllowCrossThreadAccess(this), startupData));
+    workerBackingThread().backingThread().postTask(BLINK_FROM_HERE, threadSafeBind(&WorkerThread::initialize, AllowCrossThreadAccess(this), startupData));
 }
 
 PlatformThreadId WorkerThread::platformThreadId()
 {
     if (!m_started)
         return 0;
-    return backingThread().platformThread().threadId();
+    return workerBackingThread().backingThread().platformThread().threadId();
 }
 
 void WorkerThread::initialize(PassOwnPtr<WorkerThreadStartupData> startupData)
@@ -186,7 +185,7 @@ void WorkerThread::initialize(PassOwnPtr<WorkerThreadStartupData> startupData)
     WorkerThreadStartMode startMode = startupData->m_startMode;
     OwnPtr<Vector<char>> cachedMetaData = startupData->m_cachedMetaData.release();
     V8CacheOptions v8CacheOptions = startupData->m_v8CacheOptions;
-    m_webScheduler = backingThread().platformThread().scheduler();
+    m_webScheduler = workerBackingThread().backingThread().platformThread().scheduler();
 
     {
         MutexLocker lock(m_threadStateMutex);
@@ -201,17 +200,17 @@ void WorkerThread::initialize(PassOwnPtr<WorkerThreadStartupData> startupData)
             return;
         }
 
-        m_microtaskRunner = adoptPtr(new WorkerMicrotaskRunner(this));
-        initializeBackingThread();
-        backingThread().addTaskObserver(m_microtaskRunner.get());
+        workerBackingThread().attach();
 
-        m_isolate = initializeIsolate();
+        if (shouldAttachThreadDebugger())
+            V8PerIsolateData::from(isolate())->setThreadDebugger(adoptPtr(new WorkerThreadDebugger(this, isolate())));
+        m_microtaskRunner = adoptPtr(new WorkerMicrotaskRunner(this));
+        workerBackingThread().backingThread().addTaskObserver(m_microtaskRunner.get());
+
         // Optimize for memory usage instead of latency for the worker isolate.
-        m_isolate->IsolateInBackgroundNotification();
+        isolate()->IsolateInBackgroundNotification();
         m_workerGlobalScope = createWorkerGlobalScope(startupData);
         m_workerGlobalScope->scriptLoaded(sourceCode.length(), cachedMetaData.get() ? cachedMetaData->size() : 0);
-
-        didStartWorkerThread();
 
         // Notify proxy that a new WorkerGlobalScope has been created and started.
         m_workerReportingProxy.workerGlobalScopeStarted(m_workerGlobalScope.get());
@@ -251,11 +250,7 @@ void WorkerThread::shutdown()
 
     workerGlobalScope()->dispose();
 
-    // This should be called after the WorkerGlobalScope's disposed (which may
-    // trigger some last-minutes cleanups) and before the thread actually stops.
-    willStopWorkerThread();
-
-    backingThread().removeTaskObserver(m_microtaskRunner.get());
+    workerBackingThread().backingThread().removeTaskObserver(m_microtaskRunner.get());
     postTask(BLINK_FROM_HERE, createSameThreadTask(&WorkerThread::performShutdownTask, this));
 }
 
@@ -267,10 +262,8 @@ void WorkerThread::performShutdownTask()
     m_workerGlobalScope->notifyContextDestroyed();
     m_workerGlobalScope = nullptr;
 
-    willDestroyIsolate();
-    shutdownBackingThread();
-    destroyIsolate();
-    m_isolate = nullptr;
+    workerBackingThread().detach();
+    // We must not touch workerBackingThread() from now on.
 
     m_microtaskRunner = nullptr;
 
@@ -335,29 +328,34 @@ void WorkerThread::terminateInternal()
     // Ensure that tasks are being handled by thread event loop. If script execution weren't forbidden, a while(1) loop in JS could keep the thread alive forever.
     m_workerGlobalScope->scriptController()->willScheduleExecutionTermination();
 
-    // Terminating during debugger task may lead to crash due to heavy use of v8 api in debugger.
-    // Any debugger task is guaranteed to finish, so we can postpone termination after task has finished.
-    // Note: m_runningDebuggerTask and m_shouldTerminateV8Execution access must be guarded by the lock.
-    if (m_runningDebuggerTask)
-        m_shouldTerminateV8Execution = true;
-    else
-        terminateV8Execution();
+    if (workerBackingThread().workerScriptCount() == 1) {
+        // This condition is not entirely correct because other scripts
+        // can be being initialized or terminated simuletaneously. Though this
+        // function itself is protected by a mutex, it is possible that
+        // |workerScriptCount()| here is not consistent with that in
+        // |initialize| and |shutdown|.
+        // TODO(yhirano): TerminateExecution should be called more carefully.
+        // https://crbug.com/413518
+        if (m_runningDebuggerTask) {
+            // Terminating during debugger task may lead to crash due to heavy
+            // use of v8 api in debugger. Any debugger task is guaranteed to
+            // finish, so we can postpone termination after task has finished.
+            // Note: m_runningDebuggerTask and m_shouldTerminateV8Execution
+            // access must be guarded by the lock.
+            m_shouldTerminateV8Execution = true;
+        } else {
+            isolate()->TerminateExecution();
+        }
+    }
 
     InspectorInstrumentation::allAsyncTasksCanceled(m_workerGlobalScope.get());
     m_inspectorTaskRunner->kill();
-    backingThread().postTask(BLINK_FROM_HERE, threadSafeBind(&WorkerThread::shutdown, AllowCrossThreadAccess(this)));
+    workerBackingThread().backingThread().postTask(BLINK_FROM_HERE, threadSafeBind(&WorkerThread::shutdown, AllowCrossThreadAccess(this)));
 }
 
-void WorkerThread::didStartWorkerThread()
+v8::Isolate* WorkerThread::isolate()
 {
-    ASSERT(isCurrentThread());
-    Platform::current()->didStartWorkerThread();
-}
-
-void WorkerThread::willStopWorkerThread()
-{
-    ASSERT(isCurrentThread());
-    Platform::current()->willStopWorkerThread();
+    return workerBackingThread().isolate();
 }
 
 void WorkerThread::terminateAndWaitForAllWorkers()
@@ -374,58 +372,12 @@ void WorkerThread::terminateAndWaitForAllWorkers()
 
 bool WorkerThread::isCurrentThread()
 {
-    return m_started && backingThread().isCurrentThread();
+    return m_started && workerBackingThread().backingThread().isCurrentThread();
 }
 
 void WorkerThread::postTask(const WebTraceLocation& location, PassOwnPtr<ExecutionContextTask> task)
 {
-    backingThread().postTask(location, createWorkerThreadTask(task, true));
-}
-
-void WorkerThread::initializeBackingThread()
-{
-    ASSERT(isCurrentThread());
-    backingThread().initialize();
-}
-
-void WorkerThread::shutdownBackingThread()
-{
-    ASSERT(isCurrentThread());
-    backingThread().shutdown();
-}
-
-v8::Isolate* WorkerThread::initializeIsolate()
-{
-    ASSERT(isCurrentThread());
-    ASSERT(!m_isolate);
-    v8::Isolate* isolate = V8PerIsolateData::initialize();
-    V8Initializer::initializeWorker(isolate);
-
-    OwnPtr<V8IsolateInterruptor> interruptor = adoptPtr(new V8IsolateInterruptor(isolate));
-    ThreadState::current()->addInterruptor(interruptor.release());
-    ThreadState::current()->registerTraceDOMWrappers(isolate, V8GCController::traceDOMWrappers);
-    if (RuntimeEnabledFeatures::v8IdleTasksEnabled())
-        V8PerIsolateData::enableIdleTasks(isolate, adoptPtr(new V8IdleTaskRunner(m_webScheduler)));
-    V8PerIsolateData::from(isolate)->setThreadDebugger(adoptPtr(new WorkerThreadDebugger(this, isolate)));
-    return isolate;
-}
-
-void WorkerThread::willDestroyIsolate()
-{
-    ASSERT(isCurrentThread());
-    ASSERT(m_isolate);
-    V8PerIsolateData::willBeDestroyed(m_isolate);
-}
-
-void WorkerThread::destroyIsolate()
-{
-    ASSERT(isCurrentThread());
-    V8PerIsolateData::destroy(m_isolate);
-}
-
-void WorkerThread::terminateV8Execution()
-{
-    m_isolate->TerminateExecution();
+    workerBackingThread().backingThread().postTask(location, createWorkerThreadTask(task, true));
 }
 
 void WorkerThread::runDebuggerTaskDontWait()
@@ -445,10 +397,10 @@ void WorkerThread::appendDebuggerTask(PassOwnPtr<CrossThreadClosure> task)
     m_inspectorTaskRunner->appendTask(threadSafeBind(&WorkerThread::runDebuggerTask, AllowCrossThreadAccess(this), task));
     {
         MutexLocker lock(m_threadStateMutex);
-        if (m_isolate)
-            m_inspectorTaskRunner->interruptAndRunAllTasksDontWait(m_isolate);
+        if (isolate())
+            m_inspectorTaskRunner->interruptAndRunAllTasksDontWait(isolate());
     }
-    backingThread().postTask(BLINK_FROM_HERE, threadSafeBind(&WorkerThread::runDebuggerTaskDontWait, AllowCrossThreadAccess(this)));
+    workerBackingThread().backingThread().postTask(BLINK_FROM_HERE, threadSafeBind(&WorkerThread::runDebuggerTaskDontWait, AllowCrossThreadAccess(this)));
 }
 
 void WorkerThread::runDebuggerTask(PassOwnPtr<CrossThreadClosure> task)
@@ -467,7 +419,7 @@ void WorkerThread::runDebuggerTask(PassOwnPtr<CrossThreadClosure> task)
         m_runningDebuggerTask = false;
         if (m_shouldTerminateV8Execution) {
             m_shouldTerminateV8Execution = false;
-            terminateV8Execution();
+            isolate()->TerminateExecution();
         }
     }
 }
