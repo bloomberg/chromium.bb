@@ -105,6 +105,13 @@
                  file="on_startup_page/startup_url_dialog.html"
                  type="chrome_html"
                  allowexternalscript="true" />
+      <structure name="IDR_SETTINGS_STARTUP_URL_ENTRY_JS"
+                 file="on_startup_page/startup_url_entry.js"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_STARTUP_URL_ENTRY_HTML"
+                 file="on_startup_page/startup_url_entry.html"
+                 type="chrome_html"
+                 allowexternalscript="true" />
       <structure name="IDR_SETTINGS_CR_SETTINGS_MAIN_CSS"
                  file="settings_main/settings_main.css"
                  type="chrome_html" />

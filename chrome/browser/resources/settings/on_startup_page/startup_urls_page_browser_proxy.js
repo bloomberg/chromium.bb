@@ -2,6 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+/**
+ * @typedef {{
+ *   modelIndex: number,
+ *   title: string,
+ *   tooltip: string,
+ *   url: string
+ * }}
+ */
+var StartupPageInfo;
+
 cr.define('settings', function() {
   /** @interface */
   function StartupUrlsPageBrowserProxy() {}

@@ -7,15 +7,6 @@
  * containing the urls that will be opened when chrome is started.
  */
 
-/**
- * @typedef {{
- *   title: string,
- *   tooltip: string,
- *   url: string
- * }}
- */
-var StartupPageInfo;
-
 Polymer({
   is: 'settings-startup-urls-page',
 
@@ -44,15 +35,6 @@ Polymer({
   },
 
   /**
-   * @param {string} url Location of an image to get a set of icons fors.
-   * @return {string} A set of icon URLs.
-   * @private
-   */
-  getIconSet_: function(url) {
-    return getFaviconImageSet(url);
-  },
-
-  /**
    * Opens the dialog and registers a listener for removing the dialog from the
    * DOM once is closed. The listener is destroyed when the dialog is removed
    * (because of 'restamp').
@@ -71,13 +53,5 @@ Polymer({
   /** @private */
   onUseCurrentPagesTap_: function() {
     this.browserProxy_.useCurrentPages();
-  },
-
-  /**
-   * @param {!{model: !{index: number}}} e
-   * @private
-   */
-  onRemoveUrlTap_: function(e) {
-    this.browserProxy_.removeStartupPage(e.model.index);
   },
 });

@@ -1,33 +1,18 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
-<link rel="import" href="chrome://resources/html/util.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="chrome://md-settings/settings_shared_css.html">
 <link rel="import" href="chrome://md-settings/on_startup_page/startup_url_dialog.html">
+<link rel="import" href="chrome://md-settings/on_startup_page/startup_url_entry.html">
 <link rel="import" href="chrome://md-settings/on_startup_page/startup_urls_page_browser_proxy.html">
 
 <dom-module id="settings-startup-urls-page">
   <link rel="import" type="css" href="on_startup_shared.css">
   <template>
-    <style include="settings-shared">
-      .favicon-image {
-        background-size: contain;
-        background-repeat: no-repeat;
-        height: 16px;
-        width: 16px;
-      }
-    </style>
+    <style include="settings-shared"></style>
     <div class="list-frame vertical-list">
       <template is="dom-repeat" items="[[startupPages_]]">
-        <div class="list-item">
-          <div class="favicon-image"
-              style="background-image: [[getIconSet_(item.url)]]">
-          </div>
-          <div class="middle">
-            <div class="text-elide">[[item.title]]</div>
-            <div class="text-elide secondary">[[item.url]]</div>
-          </div>
-          <iron-icon on-tap="onRemoveUrlTap_" icon="clear"></iron-icon>
-        </div>
+        <settings-startup-url-entry model="[[item]]">
+        </settings-startup-url-entry>
       </template>
       <div class="list-item list-button" id="addPage" on-tap="onAddPageTap_">
         $i18n{onStartupAddNewPage}

@@ -567,6 +567,7 @@ void AddOnStartupStrings(content::WebUIDataSource* html_source) {
       {"onStartupUseCurrent", IDS_SETTINGS_ON_STARTUP_USE_CURRENT},
       {"onStartupAddNewPage", IDS_SETTINGS_ON_STARTUP_ADD_NEW_PAGE},
       {"onStartupSiteUrl", IDS_SETTINGS_ON_STARTUP_SITE_URL},
+      {"onStartupRemove", IDS_SETTINGS_ON_STARTUP_REMOVE},
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));

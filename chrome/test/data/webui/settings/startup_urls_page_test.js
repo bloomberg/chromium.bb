@@ -12,6 +12,7 @@ cr.define('settings_startup_urls_page', function() {
     settings.TestBrowserProxy.call(this, [
       'addStartupPage',
       'loadStartupPages',
+      'removeStartupPage',
       'useCurrentPages',
       'validateStartupPage',
     ]);
@@ -37,6 +38,11 @@ cr.define('settings_startup_urls_page', function() {
     /** @override */
     loadStartupPages: function() {
       this.methodCalled('loadStartupPages');
+    },
+
+    /** @override */
+    removeStartupPage: function(modelIndex) {
+      this.methodCalled('removeStartupPage', modelIndex);
     },
 
     /** @override */
@@ -166,6 +172,49 @@ cr.define('settings_startup_urls_page', function() {
       MockInteractions.tap(addPageButton);
       Polymer.dom.flush();
       assertTrue(!!page.$$('settings-startup-url-dialog'));
+    });
+  });
+
+  /** @return {!StartupPageInfo} */
+  function createSampleUrlEntry() {
+    return {
+      modelIndex: 2,
+      title: 'Test page',
+      tooltip: 'test tooltip',
+      url: 'chrome://foo',
+    };
+  }
+
+  suite('StartupUrlEntry', function() {
+    /** @type {?SettingsStartupUrlEntryElement} */
+    var element = null;
+
+    var browserProxy = null;
+
+    setup(function() {
+      browserProxy = new TestStartupUrlsPageBrowserProxy();
+      settings.StartupUrlsPageBrowserProxyImpl.instance_ = browserProxy;
+      PolymerTest.clearBody();
+      element = document.createElement('settings-startup-url-entry');
+      element.model = createSampleUrlEntry();
+      document.body.appendChild(element);
+
+      // Bring up the popup menu for the following tests to use.
+      assertFalse(!!element.$$('iron-dropdown'));
+      MockInteractions.tap(element.$.dots);
+      Polymer.dom.flush();
+      assertTrue(!!element.$$('iron-dropdown'));
+    });
+
+    teardown(function() { element.remove(); });
+
+    test('MenuOptions_Remove', function() {
+      var removeButton = element.shadowRoot.querySelector('#remove')
+      MockInteractions.tap(removeButton);
+      return browserProxy.whenCalled('removeStartupPage').then(
+          function(modelIndex) {
+            assertEquals(element.model.modelIndex, modelIndex);
+          });
     });
   });
 });
