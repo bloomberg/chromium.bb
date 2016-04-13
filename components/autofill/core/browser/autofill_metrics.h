@@ -693,6 +693,8 @@ class AutofillMetrics {
 
     void OnDidInteractWithAutofillableForm();
 
+    void OnDidPollSuggestions();
+
     void OnDidShowSuggestions();
 
     void OnDidSelectMaskedServerCardSuggestion();

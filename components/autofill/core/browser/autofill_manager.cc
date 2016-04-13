@@ -720,10 +720,11 @@ void AutofillManager::DidShowSuggestions(bool is_new_popup,
           AutofillMetrics::SUGGESTIONS_SHOWN_ONCE);
     }
 
-    if (autofill_field->Type().group() == CREDIT_CARD)
+    if (autofill_field->Type().group() == CREDIT_CARD) {
       credit_card_form_event_logger_->OnDidShowSuggestions();
-    else
+    } else {
       address_form_event_logger_->OnDidShowSuggestions();
+    }
   }
 }
 
@@ -1660,6 +1661,8 @@ std::vector<Suggestion> AutofillManager::GetProfileSuggestions(
     const FormStructure& form,
     const FormFieldData& field,
     const AutofillField& autofill_field) const {
+  address_form_event_logger_->OnDidPollSuggestions();
+
   std::vector<ServerFieldType> field_types(form.field_count());
   for (size_t i = 0; i < form.field_count(); ++i) {
     field_types.push_back(form.field(i)->Type().GetStorableType());
@@ -1686,6 +1689,8 @@ std::vector<Suggestion> AutofillManager::GetProfileSuggestions(
 std::vector<Suggestion> AutofillManager::GetCreditCardSuggestions(
     const FormFieldData& field,
     const AutofillType& type) const {
+  credit_card_form_event_logger_->OnDidPollSuggestions();
+
   // The field value is sanitized before attempting to match it to the user's
   // data.
   std::vector<Suggestion> suggestions =

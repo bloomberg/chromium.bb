@@ -14,6 +14,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
+#include "base/test/user_action_tester.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/autofill_external_delegate.h"
 #include "components/autofill/core/browser/autofill_manager.h"
@@ -1478,6 +1479,161 @@ TEST_F(AutofillMetricsTest, AddressSuggestionsCount) {
     base::HistogramTester histogram_tester;
     autofill_manager_->OnQueryFormFieldAutofill(0, form, field, gfx::RectF());
     histogram_tester.ExpectTotalCount("Autofill.AddressSuggestionsCount", 0);
+  }
+}
+
+// Test that the credit card checkout flow user actions are correctly logged.
+TEST_F(AutofillMetricsTest, CreditCardCheckoutFlowUserActions) {
+  personal_data_->RecreateCreditCards(
+      true /* include_local_credit_card */,
+      false /* include_masked_server_credit_card */,
+      false /* include_full_server_credit_card */);
+
+  // Set up our form data.
+  FormData form;
+  form.name = ASCIIToUTF16("TestForm");
+  form.origin = GURL("http://example.com/form.html");
+  form.action = GURL("http://example.com/submit.html");
+
+  FormFieldData field;
+  std::vector<ServerFieldType> field_types;
+  test::CreateTestFormField("Name on card", "cc-name", "", "text", &field);
+  form.fields.push_back(field);
+  field_types.push_back(CREDIT_CARD_NAME_FULL);
+  test::CreateTestFormField("Credit card", "card", "", "text", &field);
+  form.fields.push_back(field);
+  field_types.push_back(CREDIT_CARD_NUMBER);
+  test::CreateTestFormField("Month", "card_month", "", "text", &field);
+  form.fields.push_back(field);
+  field_types.push_back(CREDIT_CARD_EXP_MONTH);
+
+  // Simulate having seen this form on page load.
+  // |form_structure| will be owned by |autofill_manager_|.
+  autofill_manager_->AddSeenForm(form, field_types, field_types);
+
+  // Simulate an Autofill query on a credit card field.
+  {
+    base::UserActionTester user_action_tester;
+    autofill_manager_->OnQueryFormFieldAutofill(0, form, field, gfx::RectF());
+    EXPECT_EQ(1, user_action_tester.GetActionCount(
+                     "Autofill_PolledCreditCardSuggestions"));
+  }
+
+  // Simulate showing a credit card suggestion.
+  {
+    base::UserActionTester user_action_tester;
+    autofill_manager_->DidShowSuggestions(true /* is_new_popup */, form, field);
+    EXPECT_EQ(1, user_action_tester.GetActionCount(
+                     "Autofill_ShowedCreditCardSuggestions"));
+  }
+
+  // Simulate selecting a credit card suggestions.
+  {
+    base::UserActionTester user_action_tester;
+    std::string guid("10000000-0000-0000-0000-000000000001");  // local card
+    external_delegate_->DidAcceptSuggestion(
+        ASCIIToUTF16("Test"),
+        autofill_manager_->MakeFrontendID(guid, std::string()), 0);
+    EXPECT_EQ(1,
+              user_action_tester.GetActionCount("Autofill_SelectedSuggestion"));
+  }
+
+  // Simulate filling a credit card suggestion.
+  {
+    base::UserActionTester user_action_tester;
+    std::string guid("10000000-0000-0000-0000-000000000001");  // local card
+    autofill_manager_->FillOrPreviewForm(
+        AutofillDriver::FORM_DATA_ACTION_FILL, 0, form, form.fields.front(),
+        autofill_manager_->MakeFrontendID(guid, std::string()));
+    EXPECT_EQ(1, user_action_tester.GetActionCount(
+                     "Autofill_FilledCreditCardSuggestion"));
+  }
+
+  // Simulate submitting the credit card form.
+  {
+    base::UserActionTester user_action_tester;
+    autofill_manager_->OnQueryFormFieldAutofill(0, form, field, gfx::RectF());
+    autofill_manager_->SubmitForm(form, TimeTicks::Now());
+    EXPECT_EQ(1,
+              user_action_tester.GetActionCount("Autofill_OnWillSubmitForm"));
+    EXPECT_EQ(1, user_action_tester.GetActionCount("Autofill_FormSubmitted"));
+  }
+}
+
+// Test that the profile checkout flow user actions are correctly logged.
+TEST_F(AutofillMetricsTest, ProfileCheckoutFlowUserActions) {
+  // Create profiles.
+  personal_data_->RecreateProfiles(true /* include_local_profile */,
+                                   false /* include_server_profile */);
+
+  // Set up our form data.
+  FormData form;
+  form.name = ASCIIToUTF16("TestForm");
+  form.origin = GURL("http://example.com/form.html");
+  form.action = GURL("http://example.com/submit.html");
+
+  FormFieldData field;
+  std::vector<ServerFieldType> field_types;
+  test::CreateTestFormField("State", "state", "", "text", &field);
+  form.fields.push_back(field);
+  field_types.push_back(ADDRESS_HOME_STATE);
+  test::CreateTestFormField("City", "city", "", "text", &field);
+  form.fields.push_back(field);
+  field_types.push_back(ADDRESS_HOME_CITY);
+  test::CreateTestFormField("Street", "street", "", "text", &field);
+  form.fields.push_back(field);
+  field_types.push_back(ADDRESS_HOME_STREET_ADDRESS);
+
+  // Simulate having seen this form on page load.
+  // |form_structure| will be owned by |autofill_manager_|.
+  autofill_manager_->AddSeenForm(form, field_types, field_types);
+
+  // Simulate an Autofill query on a profile field.
+  {
+    base::UserActionTester user_action_tester;
+    autofill_manager_->OnQueryFormFieldAutofill(0, form, field, gfx::RectF());
+    EXPECT_EQ(1, user_action_tester.GetActionCount(
+                     "Autofill_PolledProfileSuggestions"));
+  }
+
+  // Simulate showing a profile suggestion.
+  {
+    base::UserActionTester user_action_tester;
+    autofill_manager_->DidShowSuggestions(true /* is_new_popup */, form, field);
+    EXPECT_EQ(1, user_action_tester.GetActionCount(
+                     "Autofill_ShowedProfileSuggestions"));
+  }
+
+  // Simulate selecting a profile suggestions.
+  {
+    base::UserActionTester user_action_tester;
+    std::string guid("00000000-0000-0000-0000-000000000001");  // local profile.
+    external_delegate_->DidAcceptSuggestion(
+        ASCIIToUTF16("Test"),
+        autofill_manager_->MakeFrontendID(guid, std::string()), 0);
+    EXPECT_EQ(1,
+              user_action_tester.GetActionCount("Autofill_SelectedSuggestion"));
+  }
+
+  // Simulate filling a profile suggestion.
+  {
+    base::UserActionTester user_action_tester;
+    std::string guid("00000000-0000-0000-0000-000000000001");  // local profile.
+    autofill_manager_->FillOrPreviewForm(
+        AutofillDriver::FORM_DATA_ACTION_FILL, 0, form, form.fields.front(),
+        autofill_manager_->MakeFrontendID(std::string(), guid));
+    EXPECT_EQ(1, user_action_tester.GetActionCount(
+                     "Autofill_FilledProfileSuggestion"));
+  }
+
+  // Simulate submitting the profile form.
+  {
+    base::UserActionTester user_action_tester;
+    autofill_manager_->OnQueryFormFieldAutofill(0, form, field, gfx::RectF());
+    autofill_manager_->SubmitForm(form, TimeTicks::Now());
+    EXPECT_EQ(1,
+              user_action_tester.GetActionCount("Autofill_OnWillSubmitForm"));
+    EXPECT_EQ(1, user_action_tester.GetActionCount("Autofill_FormSubmitted"));
   }
 }
 

@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
+#include "base/metrics/user_metrics.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/form_structure.h"
@@ -650,6 +651,8 @@ void AutofillMetrics::LogAutofillSuggestionAcceptedIndex(int index) {
   // A maximum of 50 is enforced to minimize the number of buckets generated.
   UMA_HISTOGRAM_SPARSE_SLOWLY("Autofill.SuggestionAcceptedIndex",
                               std::min(index, 50));
+
+  base::RecordAction(base::UserMetricsAction("Autofill_SelectedSuggestion"));
 }
 
 // static
@@ -725,11 +728,29 @@ void AutofillMetrics::FormEventLogger::OnDidInteractWithAutofillableForm() {
   }
 }
 
+void AutofillMetrics::FormEventLogger::OnDidPollSuggestions() {
+  if (is_for_credit_card_) {
+    base::RecordAction(
+        base::UserMetricsAction("Autofill_PolledCreditCardSuggestions"));
+  } else {
+    base::RecordAction(
+        base::UserMetricsAction("Autofill_PolledProfileSuggestions"));
+  }
+}
+
 void AutofillMetrics::FormEventLogger::OnDidShowSuggestions() {
   Log(AutofillMetrics::FORM_EVENT_SUGGESTIONS_SHOWN);
   if (!has_logged_suggestions_shown_) {
     has_logged_suggestions_shown_ = true;
     Log(AutofillMetrics::FORM_EVENT_SUGGESTIONS_SHOWN_ONCE);
+  }
+
+  if (is_for_credit_card_) {
+    base::RecordAction(
+        base::UserMetricsAction("Autofill_ShowedCreditCardSuggestions"));
+  } else {
+    base::RecordAction(
+        base::UserMetricsAction("Autofill_ShowedProfileSuggestions"));
   }
 }
 
@@ -769,6 +790,9 @@ void AutofillMetrics::FormEventLogger::OnDidFillSuggestion(
       Log(AutofillMetrics::FORM_EVENT_LOCAL_SUGGESTION_FILLED_ONCE);
     }
   }
+
+  base::RecordAction(
+      base::UserMetricsAction("Autofill_FilledCreditCardSuggestion"));
 }
 
 void AutofillMetrics::FormEventLogger::OnDidFillSuggestion(
@@ -787,6 +811,9 @@ void AutofillMetrics::FormEventLogger::OnDidFillSuggestion(
         ? AutofillMetrics::FORM_EVENT_SERVER_SUGGESTION_FILLED_ONCE
         : AutofillMetrics::FORM_EVENT_LOCAL_SUGGESTION_FILLED_ONCE);
   }
+
+  base::RecordAction(
+      base::UserMetricsAction("Autofill_FilledProfileSuggestion"));
 }
 
 void AutofillMetrics::FormEventLogger::OnWillSubmitForm() {
@@ -809,6 +836,8 @@ void AutofillMetrics::FormEventLogger::OnWillSubmitForm() {
   } else {
     Log(AutofillMetrics::FORM_EVENT_LOCAL_SUGGESTION_WILL_SUBMIT_ONCE);
   }
+
+  base::RecordAction(base::UserMetricsAction("Autofill_OnWillSubmitForm"));
 }
 
 void AutofillMetrics::FormEventLogger::OnFormSubmitted() {
@@ -831,6 +860,8 @@ void AutofillMetrics::FormEventLogger::OnFormSubmitted() {
   } else {
     Log(AutofillMetrics::FORM_EVENT_LOCAL_SUGGESTION_SUBMITTED_ONCE);
   }
+
+  base::RecordAction(base::UserMetricsAction("Autofill_FormSubmitted"));
 }
 
 void AutofillMetrics::FormEventLogger::Log(FormEvent event) const {

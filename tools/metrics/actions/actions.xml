@@ -902,6 +902,59 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="Autofill_FilledCreditCardSuggestion">
+  <owner>sebsg@chromium.org</owner>
+  <description>A credit card suggestion was filled in a form.</description>
+</action>
+
+<action name="Autofill_FilledProfileSuggestion">
+  <owner>sebsg@chromium.org</owner>
+  <description>A profile suggestion was filled in a form.</description>
+</action>
+
+<action name="Autofill_FormSubmitted">
+  <owner>sebsg@chromium.org</owner>
+  <description>An autofillable form was submitted by the user.</description>
+</action>
+
+<action name="Autofill_OnWillSubmitForm">
+  <owner>sebsg@chromium.org</owner>
+  <description>An autofillable form will be submitted by the user.</description>
+</action>
+
+<action name="Autofill_PolledCreditCardSuggestions">
+  <owner>sebsg@chromium.org</owner>
+  <description>
+    The user focused on an autofillable credit card field.
+  </description>
+</action>
+
+<action name="Autofill_PolledProfileSuggestions">
+  <owner>sebsg@chromium.org</owner>
+  <description>The user focused on an autofillable profile field.</description>
+</action>
+
+<action name="Autofill_SelectedSuggestion">
+  <owner>sebsg@chromium.org</owner>
+  <description>
+    The user selected one of the proposed Autofill suggestions.
+  </description>
+</action>
+
+<action name="Autofill_ShowedCreditCardSuggestions">
+  <owner>sebsg@chromium.org</owner>
+  <description>
+    The autofill credit card suggestions popup was shown to the user.
+  </description>
+</action>
+
+<action name="Autofill_ShowedProfileSuggestions">
+  <owner>sebsg@chromium.org</owner>
+  <description>
+    The autofill profile suggestions popup was shown to the user.
+  </description>
+</action>
+
 <action name="AutomaticReset_WebUIBanner_BannerShown">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
