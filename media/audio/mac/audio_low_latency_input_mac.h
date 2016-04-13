@@ -285,9 +285,6 @@ class MEDIA_EXPORT AUAudioInputStream
   // Only touched on the creating thread.
   bool device_listener_is_active_;
 
-  // Set to true when audio unit is running, or performing IO. False otherwise.
-  bool started_;
-
   // Stores the timestamp of the previous audio buffer provided by the OS.
   // We use this in combination with |last_number_of_frames_| to detect when
   // the OS has decided to skip providing frames (i.e. a glitch).

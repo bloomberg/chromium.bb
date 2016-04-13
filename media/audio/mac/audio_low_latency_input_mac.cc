@@ -256,7 +256,6 @@ AUAudioInputStream::AUAudioInputStream(AudioManagerMac* manager,
       buffer_size_was_changed_(false),
       audio_unit_render_has_worked_(false),
       device_listener_is_active_(false),
-      started_(false),
       last_sample_time_(0.0),
       last_number_of_frames_(0),
       total_lost_frames_(0),
@@ -551,29 +550,32 @@ void AUAudioInputStream::Start(AudioInputCallback* callback) {
   audio_unit_render_has_worked_ = false;
   StartAgc();
   OSStatus result = AudioOutputUnitStart(audio_unit_);
-  started_ = true;
-  if (started_) {
-    DCHECK(IsRunning()) << "Audio unit is started but not yet running";
-    // For UMA stat purposes, start a one-shot timer which detects when input
-    // callbacks starts indicating if input audio recording works as intended.
-    // CheckInputStartupSuccess() will check if |input_callback_is_active_| is
-    // true when the timer expires.
-    input_callback_timer_.reset(new base::OneShotTimer());
-    input_callback_timer_->Start(
-        FROM_HERE,
-        base::TimeDelta::FromSeconds(kInputCallbackStartTimeoutInSeconds), this,
-        &AUAudioInputStream::CheckInputStartupSuccess);
+  OSSTATUS_DLOG_IF(ERROR, result != noErr, result)
+      << "Failed to start acquiring data";
+  if (result != noErr) {
+    Stop();
+    return;
   }
+  DCHECK(IsRunning()) << "Audio unit started OK but is not yet running";
 
-  number_of_restart_indications_ = 0;
-  number_of_restart_attempts_ = 0;
+  // For UMA stat purposes, start a one-shot timer which detects when input
+  // callbacks starts indicating if input audio recording starts as intended.
+  // CheckInputStartupSuccess() will check if |input_callback_is_active_| is
+  // true when the timer expires.
+  input_callback_timer_.reset(new base::OneShotTimer());
+  input_callback_timer_->Start(
+      FROM_HERE,
+      base::TimeDelta::FromSeconds(kInputCallbackStartTimeoutInSeconds), this,
+      &AUAudioInputStream::CheckInputStartupSuccess);
+  DCHECK(input_callback_timer_->IsRunning());
+
+  // Also create and start a timer that provides periodic callbacks used to
+  // monitor if the input stream is alive or not.
   check_alive_timer_.reset(new base::RepeatingTimer());
   check_alive_timer_->Start(
       FROM_HERE, base::TimeDelta::FromSeconds(kCheckInputIsAliveTimeInSeconds),
       this, &AUAudioInputStream::CheckIfInputStreamIsAlive);
-
-  OSSTATUS_DLOG_IF(ERROR, !started_, result)
-      << "Failed to start acquiring data";
+  DCHECK(check_alive_timer_->IsRunning());
 }
 
 void AUAudioInputStream::Stop() {
@@ -584,7 +586,10 @@ void AUAudioInputStream::Stop() {
     check_alive_timer_->Stop();
     check_alive_timer_.reset();
   }
-  input_callback_timer_.reset();
+  if (input_callback_timer_ != nullptr) {
+    input_callback_timer_->Stop();
+    input_callback_timer_.reset();
+  }
 
   if (audio_unit_ != nullptr) {
     // Stop the I/O audio unit.
@@ -605,7 +610,6 @@ void AUAudioInputStream::Stop() {
 
   SetInputCallbackIsActive(false);
   ReportAndResetStats();
-  started_ = false;
   sink_ = nullptr;
   fifo_.Clear();
   io_buffer_frame_size_ = 0;
@@ -1233,6 +1237,13 @@ void AUAudioInputStream::CheckIfInputStreamIsAlive() {
   if (!GetAutomaticGainControl())
     return;
 
+  // Clear this counter here when audio is active instead of in Start(),
+  // otherwise it would be cleared at each restart attempt and that would break
+  // the current design where only a certain number of restart attempts is
+  // allowed.
+  if (GetInputCallbackIsActive())
+    number_of_restart_attempts_ = 0;
+
   // Measure time since last callback. |last_callback_time_| is set the first
   // time in Start() and then updated in each data callback, hence if
   // |time_since_last_callback| is large (>1) and growing for each check, the
@@ -1267,10 +1278,11 @@ void AUAudioInputStream::CheckIfInputStreamIsAlive() {
       GetInputCallbackIsActive() ? kNumberOfIndicationsToTriggerRestart : 0;
   if (number_of_restart_indications_ > restart_threshold &&
       number_of_restart_attempts_ < kMaxNumberOfRestartAttempts) {
-    RestartAudio();
+    SetInputCallbackIsActive(false);
     ++total_number_of_restart_attempts_;
     ++number_of_restart_attempts_;
     number_of_restart_indications_ = 0;
+    RestartAudio();
   }
 }
 
