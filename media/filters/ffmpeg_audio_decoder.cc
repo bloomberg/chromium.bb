@@ -300,8 +300,10 @@ bool FFmpegAudioDecoder::FFmpegDecode(
       ChannelLayout channel_layout = ChannelLayoutToChromeChannelLayout(
           codec_context_->channel_layout, codec_context_->channels);
 
+      bool is_sample_rate_change =
+          av_frame_->sample_rate != config_.samples_per_second();
       bool is_config_stale =
-          av_frame_->sample_rate != config_.samples_per_second() ||
+          is_sample_rate_change ||
           channels != ChannelLayoutToChannelCount(config_.channel_layout()) ||
           av_frame_->format != av_sample_format_;
 
@@ -330,7 +332,7 @@ bool FFmpegAudioDecoder::FFmpegDecode(
                              config_.extra_data(), config_.encryption_scheme(),
                              config_.seek_preroll(), config_.codec_delay());
           config_changed = true;
-          if (av_frame_->sample_rate != config_.samples_per_second())
+          if (is_sample_rate_change)
             ResetTimestampState();
         } else {
           MEDIA_LOG(ERROR, media_log_)
