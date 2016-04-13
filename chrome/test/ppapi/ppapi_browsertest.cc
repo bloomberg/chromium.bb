@@ -1164,7 +1164,13 @@ TEST_PPAPI_NACL(NetworkProxy)
 
 TEST_PPAPI_NACL(TrueTypeFont)
 
-TEST_PPAPI_NACL(VideoDecoder)
+// TODO(crbug.com/602875), TODO(crbug.com/602876) Flaky on Win and CrOS.
+#if defined(OS_CHROMEOS) || defined(OS_WIN)
+#define MAYBE_VideoDecoder DISABLED_VideoDecoder
+#else
+#define MAYBE_VideoDecoder VideoDecoder
+#endif
+TEST_PPAPI_NACL(MAYBE_VideoDecoder)
 
 TEST_PPAPI_NACL(VideoEncoder)
 
