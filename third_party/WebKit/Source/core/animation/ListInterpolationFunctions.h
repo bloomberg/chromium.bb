@@ -36,6 +36,10 @@ class NonInterpolableList : public NonInterpolableValue {
 public:
     ~NonInterpolableList() final { }
 
+    static PassRefPtr<NonInterpolableList> create()
+    {
+        return adoptRef(new NonInterpolableList());
+    }
     static PassRefPtr<NonInterpolableList> create(Vector<RefPtr<NonInterpolableValue>>& list)
     {
         return adoptRef(new NonInterpolableList(list));
@@ -49,6 +53,8 @@ public:
     DECLARE_NON_INTERPOLABLE_VALUE_TYPE();
 
 private:
+    NonInterpolableList()
+    { }
     NonInterpolableList(Vector<RefPtr<NonInterpolableValue>>& list)
     {
         m_list.swap(list);

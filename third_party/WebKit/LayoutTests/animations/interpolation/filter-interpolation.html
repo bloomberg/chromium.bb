@@ -118,11 +118,24 @@ assertNoInterpolation({
 // Partially matching lists:
 assertInterpolation({
   property: '-webkit-filter',
+  from: 'none',
+  to: 'opacity(0.5) hue-rotate(180deg)',
+}, [
+  {at: -0.5, is: 'opacity(1) hue-rotate(-90deg)'},
+  {at: 0, is: 'none'},
+  {at: 0.25, is: 'opacity(0.875) hue-rotate(45deg)'},
+  {at: 0.5, is: 'opacity(0.75) hue-rotate(90deg)'},
+  {at: 1, is: 'opacity(0.5) hue-rotate(180deg)'},
+  {at: 1.5, is: 'opacity(0.25) hue-rotate(270deg)'},
+]);
+
+assertInterpolation({
+  property: '-webkit-filter',
   from: 'blur(6px)',
   to: 'blur(10px) hue-rotate(180deg)'
 }, [
   {at: -0.5, is: 'blur(4px) hue-rotate(-90deg)'},
-  {at: 0, is: 'blur(6px) hue-rotate(0deg)'},
+  {at: 0, is: 'blur(6px)'},
   {at: 0.25, is: 'blur(7px) hue-rotate(45deg)'},
   {at: 0.5, is: 'blur(8px) hue-rotate(90deg)'},
   {at: 1, is: 'blur(10px) hue-rotate(180deg)'},
@@ -135,7 +148,7 @@ assertInterpolation({
   to: 'hue-rotate(180deg)'
 }, [
   {at: -0.5, is: 'hue-rotate(-90deg)'},
-  {at: 0, is: 'hue-rotate(0deg)'},
+  {at: 0, is: 'none'},
   {at: 0.25, is: 'hue-rotate(45deg)'},
   {at: 0.5, is: 'hue-rotate(90deg)'},
   {at: 1, is: 'hue-rotate(180deg)'},
@@ -151,7 +164,7 @@ assertInterpolation({
   {at: 0, is: 'hue-rotate(180deg)'},
   {at: 0.25, is: 'hue-rotate(135deg)'},
   {at: 0.5, is: 'hue-rotate(90deg)'},
-  {at: 1, is: 'hue-rotate(0deg)'},
+  {at: 1, is: 'none'},
   {at: 1.5, is: 'hue-rotate(-90deg)'},
 ]);
 
@@ -162,7 +175,7 @@ assertInterpolation({
   to: 'blur(10px)'
 }, [
   {at: -1, is: 'blur(0px)'}, // Negative values are not allowed.
-  {at: 0, is: 'blur(0px)'},
+  {at: 0, is: 'none'},
   {at: 0.5, is: 'blur(5px)'},
   {at: 1, is: 'blur(10px)'},
   {at: 1.5, is: 'blur(15px)'}
@@ -176,7 +189,7 @@ assertInterpolation({
   {at: -1, is: 'brightness(0)'}, // Negative values are not allowed.
   {at: 0, is: 'brightness(0)'},
   {at: 0.5, is: 'brightness(0.5)'},
-  {at: 1, is: 'brightness(1)'},
+  {at: 1, is: 'none'},
   {at: 1.5, is: 'brightness(1.5)'}
 ]);
 
@@ -188,7 +201,7 @@ assertInterpolation({
   {at: -1, is: 'contrast(0)'}, // Negative values are not allowed.
   {at: 0, is: 'contrast(0)'},
   {at: 0.5, is: 'contrast(0.5)'},
-  {at: 1, is: 'contrast(1)'},
+  {at: 1, is: 'none'},
   {at: 1.5, is: 'contrast(1.5)'}
 ]);
 
@@ -199,7 +212,7 @@ assertInterpolation({
 }, [
   {at: -1, is: 'drop-shadow(-20px -10px transparent)'},
   {at: 0, is: 'none'},
-  {at: 0.5, is: 'drop-shadow(10px 5px rgba(0, 127, 0, 0.5))'},
+  {at: 0.5, is: 'drop-shadow(10px 5px rgba(0, 128, 0, 0.5))'},
   {at: 1, is: 'drop-shadow(20px 10px green)'},
   {at: 1.5, is: 'drop-shadow(30px 15px #00C000)'}
 ]);
@@ -222,7 +235,7 @@ assertInterpolation({
   to: 'grayscale(1)'
 }, [
   {at: -1, is: 'grayscale(0)'}, // Negative values are not allowed.
-  {at: 0, is: 'grayscale(0)'},
+  {at: 0, is: 'none'},
   {at: 0.5, is: 'grayscale(0.5)'},
   {at: 1, is: 'grayscale(1)'},
   {at: 1.5, is: 'grayscale(1)'} // Should clamp values to 1.
@@ -234,7 +247,7 @@ assertInterpolation({
   to: 'hue-rotate(360deg)'
 }, [
   {at: -1, is: 'hue-rotate(-360deg)'},
-  {at: 0, is: 'hue-rotate(0deg)'},
+  {at: 0, is: 'none'},
   {at: 0.5, is: 'hue-rotate(180deg)'},
   {at: 1, is: 'hue-rotate(360deg)'},
   {at: 1.5, is: 'hue-rotate(540deg)'}
@@ -246,7 +259,7 @@ assertInterpolation({
   to: 'invert(1)'
 }, [
   {at: -1, is: 'invert(0)'}, // Negative values are not allowed.
-  {at: 0, is: 'invert(0)'},
+  {at: 0, is: 'none'},
   {at: 0.5, is: 'invert(0.5)'},
   {at: 1, is: 'invert(1)'},
   {at: 1.5, is: 'invert(1)'} // Should clamp values to 1.
@@ -260,7 +273,7 @@ assertInterpolation({
   {at: -1, is: 'opacity(0)'}, // Negative values are not allowed.
   {at: 0, is: 'opacity(0)'},
   {at: 0.5, is: 'opacity(0.5)'},
-  {at: 1, is: 'opacity(1)'},
+  {at: 1, is: 'none'},
   {at: 1.5, is: 'opacity(1)'} // Should clamp values to 1.
 ]);
 
@@ -272,7 +285,7 @@ assertInterpolation({
   {at: -1, is: 'saturate(0)'}, // Negative values are not allowed.
   {at: 0, is: 'saturate(0)'},
   {at: 0.5, is: 'saturate(0.5)'},
-  {at: 1, is: 'saturate(1)'},
+  {at: 1, is: 'none'},
   {at: 1.5, is: 'saturate(1.5)'}
 ]);
 
@@ -282,7 +295,7 @@ assertInterpolation({
   to: 'sepia(1)'
 }, [
   {at: -1, is: 'sepia(0)'}, // Negative values are not allowed.
-  {at: 0, is: 'sepia(0)'},
+  {at: 0, is: 'none'},
   {at: 0.5, is: 'sepia(0.5)'},
   {at: 1, is: 'sepia(1)'},
   {at: 1.5, is: 'sepia(1)'} // Should clamp values to 1.

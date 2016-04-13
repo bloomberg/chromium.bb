@@ -120,6 +120,11 @@ InterpolationValue ShadowInterpolationFunctions::maybeConvertCSSValue(const CSSV
     return InterpolationValue(interpolableList.release(), ShadowNonInterpolableValue::create(style));
 }
 
+PassOwnPtr<InterpolableValue> ShadowInterpolationFunctions::createNeutralInterpolableValue()
+{
+    return convertShadowData(ShadowData(FloatPoint(0, 0), 0, 0, Normal, StyleColor(Color::transparent)), 1).interpolableValue.release();
+}
+
 void ShadowInterpolationFunctions::composite(OwnPtr<InterpolableValue>& underlyingInterpolableValue, RefPtr<NonInterpolableValue>& underlyingNonInterpolableValue, double underlyingFraction, const InterpolableValue& interpolableValue, const NonInterpolableValue* nonInterpolableValue)
 {
     ASSERT(nonInterpolableValuesAreCompatible(underlyingNonInterpolableValue.get(), nonInterpolableValue));

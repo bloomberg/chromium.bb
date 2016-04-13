@@ -39,7 +39,7 @@
 
 namespace blink {
 
-static FilterOperation::OperationType filterOperationForType(CSSValueID type)
+FilterOperation::OperationType FilterOperationResolver::filterOperationForType(CSSValueID type)
 {
     switch (type) {
     case CSSValueUrl:

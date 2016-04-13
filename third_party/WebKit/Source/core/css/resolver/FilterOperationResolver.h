@@ -22,6 +22,7 @@
 #ifndef FilterOperationResolver_h
 #define FilterOperationResolver_h
 
+#include "core/CSSValueKeywords.h"
 #include "platform/graphics/filters/FilterOperations.h"
 #include "platform/heap/Handle.h"
 
@@ -33,6 +34,7 @@ class StyleResolverState;
 class FilterOperationResolver {
     STATIC_ONLY(FilterOperationResolver);
 public:
+    static FilterOperation::OperationType filterOperationForType(CSSValueID);
     static FilterOperations createFilterOperations(StyleResolverState&, const CSSValue&);
 };
 
