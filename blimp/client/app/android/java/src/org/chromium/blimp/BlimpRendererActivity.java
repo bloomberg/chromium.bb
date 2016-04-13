@@ -175,6 +175,10 @@ public class BlimpRendererActivity extends Activity
      * @param url URL to load. If null, browser loads a default page.
      */
     private void handleUrl(String url) {
+        // TODO(shaktisahu): On a slow device, this might happen. Load the correct URL once the
+        // toolbar loading is complete (crbug/601226)
+        if (mToolbar == null) return;
+
         if (url == null) {
             mToolbar.loadUrl("http://www.google.com/");
         } else {
