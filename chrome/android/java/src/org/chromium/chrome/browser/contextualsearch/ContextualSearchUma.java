@@ -201,6 +201,11 @@ public class ContextualSearchUma {
     private static final int ICON_SPRITE_NOT_ANIMATED_RESULTS_NOT_SEEN_FROM_LONG_PRESS = 7;
     private static final int ICON_SPRITE_BOUNDARY = 8;
 
+    // Constants used to log UMA "enum" histograms for any kind of Tap suppression.
+    private static final int TAP_SUPPRESSED = 0;
+    private static final int NOT_TAP_SUPPRESSED = 1;
+    private static final int TAP_SUPPRESSED_BOUNDARY = 2;
+
     /**
      * Key used in maps from {state, reason} to state entry (exit) logging code.
      */
@@ -846,6 +851,28 @@ public class ContextualSearchUma {
     public static void logSerpLoadedOnClose(boolean fullyLoaded) {
         RecordHistogram.recordEnumeratedHistogram("Search.ContextualSearchSerpLoadedOnClose",
                 fullyLoaded ? FULLY_LOADED : PARTIALLY_LOADED, LOADED_BOUNDARY);
+    }
+
+    /**
+     * Logs the duration since a recent scroll.
+     * @param durationSinceRecentScrollMs The amount of time since the most recent scroll.
+     */
+    public static void logRecentScrollDuration(
+            int durationSinceRecentScrollMs, boolean wasSearchContentViewSeen) {
+        String histogram = wasSearchContentViewSeen ? "Search.ContextualSearchRecentScrollSeen"
+                                                    : "Search.ContextualSearchRecentScrollNotSeen";
+        if (durationSinceRecentScrollMs < 1000) {
+            RecordHistogram.recordCount1000Histogram(histogram, durationSinceRecentScrollMs);
+        }
+    }
+
+    /**
+     * Log whether the UX was suppressed by a recent scroll.
+     * @param wasSuppressed Whether showing the UX was suppressed by a recent scroll.
+     */
+    public static void logRecentScrollSuppression(boolean wasSuppressed) {
+        RecordHistogram.recordEnumeratedHistogram("Search.ContextualSearchRecentScrollSuppression",
+                wasSuppressed ? TAP_SUPPRESSED : NOT_TAP_SUPPRESSED, TAP_SUPPRESSED_BOUNDARY);
     }
 
     /**

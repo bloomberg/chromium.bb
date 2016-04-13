@@ -1174,6 +1174,18 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
     }
 
     @Override
+    public void handleSuppressedTap() {
+        if (mIsAccessibilityModeEnabled) return;
+
+        hideContextualSearch(StateChangeReason.BASE_PAGE_TAP);
+    }
+
+    @Override
+    public void handleMetricsForWouldSuppressTap(TapSuppressionHeuristics tapHeuristics) {
+        mSearchPanel.getPanelMetrics().setResultsSeenExperiments(tapHeuristics);
+    }
+
+    @Override
     public void handleValidTap() {
         if (mIsAccessibilityModeEnabled) return;
 

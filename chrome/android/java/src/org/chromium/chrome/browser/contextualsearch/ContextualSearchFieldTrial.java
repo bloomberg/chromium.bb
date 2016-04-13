@@ -64,6 +64,13 @@ public class ContextualSearchFieldTrial {
     // Quick Answers.
     private static final String ENABLE_QUICK_ANSWERS = "enable_quick_answers";
 
+    // Recent-scroll experiments.
+    // Enables collection of recent scroll seen/unseen histograms.
+    // TODO(donnd): remove all supporting code once short-lived data collection is done.
+    private static final String ENABLE_RECENT_SCROLL_COLLECTION = "enable_recent_scroll_collection";
+    // Set non-zero to establish an recent scroll suppression threshold for taps.
+    private static final String RECENT_SCROLL_DURATION_MS = "recent_scroll_duration_ms";
+
     // Cached values to avoid repeated and redundant JNI operations.
     private static Boolean sEnabled;
     private static Boolean sDisableSearchTermResolution;
@@ -79,6 +86,8 @@ public class ContextualSearchFieldTrial {
     private static Boolean sIsEnglishTargetTranslationEnabled;
     private static Boolean sIsServerControlledOneboxEnabled;
     private static Boolean sIsQuickAnswersEnabled;
+    private static Boolean sIsRecentScrollCollectionEnabled;
+    private static Integer sRecentScrollDurationMs;
 
     /**
      * Don't instantiate.
@@ -292,6 +301,28 @@ public class ContextualSearchFieldTrial {
             sIsQuickAnswersEnabled = getBooleanParam(ENABLE_QUICK_ANSWERS);
         }
         return sIsQuickAnswersEnabled.booleanValue();
+    }
+
+    /**
+     * @return Whether collecting metrics for tap triggering after a scroll is enabled.
+     */
+    static boolean isRecentScrollCollectionEnabled() {
+        if (sIsRecentScrollCollectionEnabled == null) {
+            sIsRecentScrollCollectionEnabled = getBooleanParam(ENABLE_RECENT_SCROLL_COLLECTION);
+        }
+        return sIsRecentScrollCollectionEnabled.booleanValue();
+    }
+
+    /**
+     * Gets the duration to use for suppressing Taps after a recent scroll, or {@code 0} if no
+     * suppression is configured.
+     * @return The period of time after a scroll when tap triggering is suppressed.
+     */
+    static int getRecentScrollSuppressionDurationMs() {
+        if (sRecentScrollDurationMs == null) {
+            sRecentScrollDurationMs = getIntParamValueOrDefault(RECENT_SCROLL_DURATION_MS, 0);
+        }
+        return sRecentScrollDurationMs.intValue();
     }
 
     // --------------------------------------------------------------------------------------------

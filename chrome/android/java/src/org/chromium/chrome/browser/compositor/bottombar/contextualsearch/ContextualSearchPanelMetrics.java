@@ -8,6 +8,7 @@ import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.PanelState;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchBlacklist.BlacklistReason;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchUma;
+import org.chromium.chrome.browser.contextualsearch.TapSuppressionHeuristics;
 
 /**
  * This class is responsible for all the logging related to Contextual Search.
@@ -44,6 +45,8 @@ public class ContextualSearchPanelMetrics {
     // Time when the panel was opened beyond peeked. Reset when the panel is closed.
     // Used to log how long the panel was open.
     private long mPanelOpenedBeyondPeekTimeNs;
+    // The current set of heuristics that should be logged with results seen when the panel closes.
+    private TapSuppressionHeuristics mResultsSeenExperiments;
 
     /**
      * Log information when the panel's state has changed.
@@ -96,6 +99,12 @@ public class ContextualSearchPanelMetrics {
 
             ContextualSearchUma.logIconSpriteAnimated(mWasIconSpriteAnimated,
                     mWasSearchContentViewSeen, mWasActivatedByTap);
+
+            if (mResultsSeenExperiments != null) {
+                mResultsSeenExperiments.logResultsSeen(
+                        mWasSearchContentViewSeen, mWasActivatedByTap);
+                mResultsSeenExperiments = null;
+            }
         }
 
         if (isExitingPanelOpenedBeyondPeeked) {
@@ -261,6 +270,14 @@ public class ContextualSearchPanelMetrics {
         long durationMs =
                 (System.nanoTime() - mSearchRequestStartTimeNs) / MILLISECONDS_TO_NANOSECONDS;
         ContextualSearchUma.logPrefetchedSearchNavigatedDuration(durationMs, didResolve);
+    }
+
+    /**
+     * Sets the experiments to log with results seen.
+     * @param resultsSeenExperiments The experiments to log when the panel results are known.
+     */
+    public void setResultsSeenExperiments(TapSuppressionHeuristics resultsSeenExperiments) {
+        mResultsSeenExperiments = resultsSeenExperiments;
     }
 
     /**

@@ -54,4 +54,16 @@ interface ContextualSearchSelectionHandler {
      *               is BlacklistReason.NONE, it means the selection was not blacklisted.
      */
     public void handleSelectionSuppression(BlacklistReason reason);
+
+    /**
+     * Handle suppression of a Tap gesture.
+     */
+    public void handleSuppressedTap();
+
+    /**
+     * Handle updating metrics to reflect that a Tap gesture <i>would</i> be suppressed
+     * for the given heuristics.
+     * @param tapHeuristics The set of heuristics that would suppress the Tap.
+     */
+    public void handleMetricsForWouldSuppressTap(TapSuppressionHeuristics tapHeuristics);
 }
