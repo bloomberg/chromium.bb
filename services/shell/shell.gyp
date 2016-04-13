@@ -111,7 +111,7 @@
     'dependencies': [
       'shell_lib',
       'shell_public',
-      'shell_test_interfaces',
+      'shell_test_public',
       '<(DEPTH)/base/base.gyp:base',
       '<(DEPTH)/mojo/mojo_base.gyp:mojo_common_lib',
       '<(DEPTH)/mojo/mojo_base.gyp:mojo_url_type_converters',
@@ -121,8 +121,14 @@
       '<(DEPTH)/url/url.gyp:url_lib',
     ]
   }, {
-    'target_name': 'shell_test_interfaces',
+    'target_name': 'shell_test_public',
     'type': 'static_library',
+    'dependencies': [
+      'shell_test_interfaces',
+    ],
+  }, {
+    'target_name': 'shell_test_interfaces',
+    'type': 'none',
     'variables': {
       'mojom_files': [
         'tests/test.mojom',
