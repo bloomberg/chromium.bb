@@ -68,7 +68,6 @@ crbug.com/405125 media/media-controls-clone-crash.html [ Leak Pass ]
 crbug.com/414163 [ Debug ] inspector/sources/debugger/promise-tracker.html [ Crash ]
 
 crbug.com/417752 storage/websql/sql-error-codes.html [ Pass Leak ]
-crbug.com/427628 inspector/sources/debugger-ui/debugger-save-to-temp-var.html [ Leak ]
 crbug.com/480769 http/tests/inspector/service-workers/user-agent-override.html [ Crash ]
 crbug.com/459576 webaudio/dom-exceptions.html [ Crash ]
 
