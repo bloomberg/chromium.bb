@@ -74,7 +74,7 @@ enum GaiaScreenMode {
   GAIA_SCREEN_MODE_SAML_INTERSTITIAL = 2,
 };
 
-GaiaScreenMode GetGaiaScreenMode(bool use_offline) {
+GaiaScreenMode GetGaiaScreenMode(const std::string& email, bool use_offline) {
   if (use_offline)
     return GAIA_SCREEN_MODE_OFFLINE;
 
@@ -83,7 +83,17 @@ GaiaScreenMode GetGaiaScreenMode(bool use_offline) {
                                   &authentication_behavior);
   if (authentication_behavior ==
       em::LoginAuthenticationBehaviorProto::SAML_INTERSTITIAL) {
-    return GAIA_SCREEN_MODE_SAML_INTERSTITIAL;
+    if (email.empty())
+      return GAIA_SCREEN_MODE_SAML_INTERSTITIAL;
+
+    // If there's a populated email, we must check first that this user is using
+    // SAML in order to decide whether to show the interstitial page.
+    const user_manager::User* user =
+        user_manager::UserManager::Get()->FindUser(
+            user_manager::known_user::GetAccountId(email, std::string()));
+
+    if (user && user->using_saml())
+      return GAIA_SCREEN_MODE_SAML_INTERSTITIAL;
   }
 
   return GAIA_SCREEN_MODE_DEFAULT;
@@ -229,7 +239,8 @@ void GaiaScreenHandler::LoadGaiaWithVersion(
 
   UpdateAuthParams(&params, IsRestrictiveProxy());
 
-  GaiaScreenMode screen_mode = GetGaiaScreenMode(context.use_offline);
+  GaiaScreenMode screen_mode = GetGaiaScreenMode(context.email,
+                                                 context.use_offline);
   params.SetInteger("screenMode", screen_mode);
   if (screen_mode != GAIA_SCREEN_MODE_OFFLINE) {
     const std::string app_locale = g_browser_process->GetApplicationLocale();
