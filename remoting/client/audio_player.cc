@@ -9,6 +9,11 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 
+// The number of channels in the audio stream (only supporting stereo audio
+// for now).
+const int kChannels = 2;
+const int kSampleSizeBytes = 2;
+
 // If queue grows bigger than 150ms we start dropping packets.
 const int kMaxQueueLatencyMs = 150;
 
@@ -30,8 +35,8 @@ void AudioPlayer::ProcessAudioPacket(std::unique_ptr<AudioPacket> packet) {
   CHECK_EQ(1, packet->data_size());
   DCHECK_EQ(AudioPacket::ENCODING_RAW, packet->encoding());
   DCHECK_NE(AudioPacket::SAMPLING_RATE_INVALID, packet->sampling_rate());
-  DCHECK_EQ(kSampleSizeBytes, static_cast<int>(packet->bytes_per_sample()));
-  DCHECK_EQ(packet->channels(), static_cast<int>(kChannels));
+  DCHECK_EQ(kSampleSizeBytes, packet->bytes_per_sample());
+  DCHECK_EQ(static_cast<int>(kChannels), packet->channels());
   DCHECK_EQ(packet->data(0).size() % (kChannels * kSampleSizeBytes), 0u);
 
   // No-op if the Pepper player won't start.
