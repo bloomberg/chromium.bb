@@ -132,20 +132,6 @@ public class OfflinePageUtils {
     }
 
     /**
-     * Whenever we reload an offline page, if we are online, load the online version of the page
-     * instead, on the theory that the user prefers the online version of the page.
-     */
-    public static void preferOnlineVersion(Tab tab, String newUrl) {
-        // If we are reloading an offline page, but are online, get the online version.
-        if (newUrl.equals(tab.getUrl()) && isConnected()) {
-            Log.i(TAG, "Refreshing to the online version of an offline page, since we are online");
-            LoadUrlParams params =
-                    new LoadUrlParams(tab.getOfflinePageOriginalUrl(), PageTransition.RELOAD);
-            tab.loadUrl(params);
-        }
-    }
-
-    /**
      * Strips scheme from the original URL of the offline page. This is meant to be used by UI.
      * @param onlineUrl an online URL to from which the scheme is removed
      * @return onlineUrl without the scheme

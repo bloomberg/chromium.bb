@@ -146,11 +146,6 @@ public class OfflinePageTabObserver
     }
 
     @Override
-    public void onPageLoadStarted(Tab tab, String newUrl) {
-        OfflinePageUtils.preferOnlineVersion(tab, newUrl);
-    }
-
-    @Override
     public void onDestroyed(Tab tab) {
         Log.d(TAG, "onDestroyed");
         stopObservingTab(tab);
