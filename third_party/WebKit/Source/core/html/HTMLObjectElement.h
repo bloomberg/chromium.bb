@@ -61,11 +61,6 @@ public:
     bool reportValidity() { return true; }
     void setCustomValidity(const String&) override { }
 
-#if !ENABLE(OILPAN)
-    using Node::ref;
-    using Node::deref;
-#endif
-
     bool canContainRangeEndPoint() const override { return useFallbackContent(); }
 
     bool isExposed() const;
@@ -103,11 +98,6 @@ private:
     bool hasValidClassId();
 
     void reloadPluginOnAttributeChange(const QualifiedName&);
-
-#if !ENABLE(OILPAN)
-    void refFormAssociatedElement() override { ref(); }
-    void derefFormAssociatedElement() override { deref(); }
-#endif
 
     bool shouldRegisterAsNamedItem() const override { return true; }
     bool shouldRegisterAsExtraNamedItem() const override { return true; }

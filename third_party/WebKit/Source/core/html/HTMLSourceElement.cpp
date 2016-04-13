@@ -76,10 +76,6 @@ DEFINE_NODE_FACTORY(HTMLSourceElement)
 
 HTMLSourceElement::~HTMLSourceElement()
 {
-#if !ENABLE(OILPAN)
-    sourceErrorEventSender().cancelEvent(this);
-    m_listener->clearElement();
-#endif
 }
 
 void HTMLSourceElement::createMediaQueryList(const AtomicString& media)

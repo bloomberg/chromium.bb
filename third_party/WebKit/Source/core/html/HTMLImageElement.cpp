@@ -72,9 +72,6 @@ public:
             m_element->notifyViewportChanged();
     }
 
-#if !ENABLE(OILPAN)
-    void clearElement() { m_element = nullptr; }
-#endif
     DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_element);
@@ -99,11 +96,7 @@ HTMLImageElement::HTMLImageElement(Document& document, HTMLFormElement* form, bo
 {
     setHasCustomStyleCallbacks();
     if (form && form->inShadowIncludingDocument()) {
-#if ENABLE(OILPAN)
         m_form = form;
-#else
-        m_form = form->createWeakPtr();
-#endif
         m_formWasSetByParser = true;
         m_form->associate(*this);
         m_form->didAssociateByParser();
@@ -122,14 +115,6 @@ HTMLImageElement* HTMLImageElement::create(Document& document, HTMLFormElement* 
 
 HTMLImageElement::~HTMLImageElement()
 {
-#if !ENABLE(OILPAN)
-    if (m_listener) {
-        document().mediaQueryMatcher().removeViewportListener(m_listener.get());
-        m_listener->clearElement();
-    }
-    if (m_form)
-        m_form->disassociate(*this);
-#endif
 }
 
 DEFINE_TRACE(HTMLImageElement)
@@ -230,18 +215,10 @@ void HTMLImageElement::resetFormOwner()
         m_form->disassociate(*this);
     }
     if (nearestForm) {
-#if ENABLE(OILPAN)
         m_form = nearestForm;
-#else
-        m_form = nearestForm->createWeakPtr();
-#endif
         m_form->associate(*this);
     } else {
-#if ENABLE(OILPAN)
         m_form = nullptr;
-#else
-        m_form = WeakPtr<HTMLFormElement>();
-#endif
     }
 }
 

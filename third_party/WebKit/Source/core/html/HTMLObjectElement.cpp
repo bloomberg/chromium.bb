@@ -56,9 +56,6 @@ inline HTMLObjectElement::HTMLObjectElement(Document& document, HTMLFormElement*
 
 inline HTMLObjectElement::~HTMLObjectElement()
 {
-#if !ENABLE(OILPAN)
-    setForm(0);
-#endif
 }
 
 HTMLObjectElement* HTMLObjectElement::create(Document& document, HTMLFormElement* form, bool createdByParser)

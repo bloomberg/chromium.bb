@@ -45,12 +45,6 @@ public:
     HTMLFormElement* formOwner() const override;
     HTMLFormElement* formForBinding() const;
 
-
-#if !ENABLE(OILPAN)
-    using Node::ref;
-    using Node::deref;
-#endif
-
 private:
     explicit HTMLLabelElement(Document&, HTMLFormElement*);
     bool isInInteractiveContent(Node*) const;
@@ -74,10 +68,6 @@ private:
     bool isFormControlElement() const override { return false; }
     bool isEnumeratable() const override { return false; }
     bool isLabelElement() const override { return true; }
-#if !ENABLE(OILPAN)
-    void refFormAssociatedElement() override { ref(); }
-    void derefFormAssociatedElement() override { deref(); }
-#endif
 
     void parseAttribute(const QualifiedName&, const AtomicString&, const AtomicString&) override;
 

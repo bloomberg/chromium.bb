@@ -51,11 +51,6 @@ inline HTMLStyleElement::HTMLStyleElement(Document& document, bool createdByPars
 
 HTMLStyleElement::~HTMLStyleElement()
 {
-#if !ENABLE(OILPAN)
-    StyleElement::clearDocumentData(document(), this);
-
-    styleLoadEventSender().cancelEvent(this);
-#endif
 }
 
 HTMLStyleElement* HTMLStyleElement::create(Document& document, bool createdByParser)

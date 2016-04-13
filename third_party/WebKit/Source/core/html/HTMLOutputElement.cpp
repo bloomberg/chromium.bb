@@ -45,9 +45,6 @@ inline HTMLOutputElement::HTMLOutputElement(Document& document, HTMLFormElement*
 
 HTMLOutputElement::~HTMLOutputElement()
 {
-#if !ENABLE(OILPAN)
-    m_tokens->setObserver(nullptr);
-#endif
 }
 
 HTMLOutputElement* HTMLOutputElement::create(Document& document, HTMLFormElement* form)
