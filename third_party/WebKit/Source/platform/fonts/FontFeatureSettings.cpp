@@ -33,13 +33,18 @@ FontFeature::FontFeature(const AtomicString& tag, int value)
 {
 }
 
-bool FontFeature::operator==(const FontFeature& other)
+bool FontFeature::operator==(const FontFeature& other) const
 {
     return m_tag == other.m_tag && m_value == other.m_value;
 }
 
 FontFeatureSettings::FontFeatureSettings()
 {
+}
+
+bool FontFeatureSettings::operator==(const FontFeatureSettings& other) const
+{
+    return m_list == other.m_list;
 }
 
 } // namespace blink

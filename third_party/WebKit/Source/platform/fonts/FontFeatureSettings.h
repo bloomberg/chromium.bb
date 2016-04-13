@@ -40,7 +40,7 @@ class PLATFORM_EXPORT FontFeature {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     FontFeature(const AtomicString& tag, int value);
-    bool operator==(const FontFeature&);
+    bool operator==(const FontFeature&) const;
 
     const AtomicString& tag() const { return m_tag; }
     int value() const { return m_value; }
@@ -61,6 +61,7 @@ public:
     size_t size() const { return m_list.size(); }
     const FontFeature& operator[](int index) const { return m_list[index]; }
     const FontFeature& at(size_t index) const { return m_list.at(index); }
+    bool operator==(const FontFeatureSettings&) const;
 
 private:
     FontFeatureSettings();

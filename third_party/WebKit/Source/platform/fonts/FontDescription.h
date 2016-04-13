@@ -308,7 +308,7 @@ inline bool FontDescription::operator==(const FontDescription& other) const
         && m_wordSpacing == other.m_wordSpacing
         && m_fieldsAsUnsigned[0] == other.m_fieldsAsUnsigned[0]
         && m_fieldsAsUnsigned[1] == other.m_fieldsAsUnsigned[1]
-        && m_featureSettings == other.m_featureSettings;
+        && (m_featureSettings == other.m_featureSettings || (m_featureSettings && other.m_featureSettings && *m_featureSettings == *other.m_featureSettings));
 }
 
 } // namespace blink
