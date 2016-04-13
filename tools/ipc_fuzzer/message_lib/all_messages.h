@@ -19,7 +19,6 @@
 #include "components/content_settings/content/common/content_settings_message_generator.h"
 #include "components/nacl/common/nacl_host_messages.h"
 #include "components/network_hints/common/network_hints_message_generator.h"
-#include "components/password_manager/content/common/credential_manager_message_generator.h"
 #include "components/pdf/common/pdf_message_generator.h"
 #include "components/tracing/tracing_messages.h"
 #include "components/translate/content/common/translate_messages.h"
