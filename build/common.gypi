@@ -265,11 +265,6 @@
             'enable_topchrome_md%': 1,
           }],
 
-          # On iOS, use NSS rather than OpenSSL. See http://crbug.com/338886.
-          ['OS=="ios"', {
-            'use_openssl%': 0,
-          }],
-
           # Enable App Launcher everywhere but mobile.
           ['OS!="ios" and OS!="android"', {
             'enable_app_list%': 1,

@@ -12,9 +12,7 @@
 # to set up feature flags.
 
 declare_args() {
-  # Use OpenSSL instead of NSS. This is used for all platforms but iOS. (See
-  # http://crbug.com/338886).
-  use_openssl = !is_ios
+  use_openssl = true
 }
 
 # True when we're using OpenSSL for representing certificates. When targeting
