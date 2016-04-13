@@ -943,7 +943,6 @@
    fun:_Znw*
    fun:_ZN3sql10Connection18GetUniqueStatementEPKc
    fun:_ZN3sql10Connection18GetCachedStatementERKNS_11StatementIDEPKc
-   fun:_ZN3sql9MetaTable19PrepareGetStatementEPNS_9StatementEPKc
    ...
    fun:_ZN7storage13QuotaDatabase28IsOriginDatabaseBootstrappedEv
 }
@@ -1209,15 +1208,6 @@
    obj:*
    obj:*
    obj:*
-}
-{
-   bug_100982
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN5blink12RenderRegion22setRenderBoxRegionInfoEPKNS_9RenderBoxEiib
-   fun:_ZNK7blink9RenderBox19renderBoxRegionInfoEPNS_12RenderRegionEiNS0_24RenderBoxRegionInfoFlagsE
-   ...
-   fun:_ZN5blink11RenderBlock5paintERNS_9PaintInfoERKNS_8IntPointE
 }
 {
    bug_101750
@@ -3163,4 +3153,16 @@
    fun:_ZN4base10TaskRunner16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIFvvELNS*
    fun:_ZN4base26PostTaskAndReplyWithResultIN3net20WifiPHYLayerProtocolES2_EEbPNS*
    fun:_ZN7metrics22NetworkMetricsProvider25ProbeWifiPHYLayerProtocolEv
+}
+{
+   bug_603275
+   Memcheck:Unaddressable
+   fun:_ZNKSs4sizeEv
+   fun:_ZSteqIcEN9__gnu_cxx11__enable_ifIXsr9__is_charIT_EE7__valueEbE6__typeERKSbIS2_St11char_traitsIS2_ESaIS2_EESA_
+   fun:_ZNKSt8equal_toISsEclERKSsS2_
+   fun:_ZNKSt8__detail15_Hash_code_baseISsSt4pairIKSsSt10unique_ptrIN6syncer24AttachmentDownloaderImpl13DownloadState*
+   fun:_ZNSt10_HashtableISsSt4pairIKSsSt10unique_ptrIN6syncer24AttachmentDownloaderImpl13DownloadStateESt14default*
+   fun:_ZN6syncer24AttachmentDownloaderImpl17OnGetTokenFailureEPKN18OAuth2TokenService7RequestERK22GoogleServiceAuthError
+   fun:_ZThn8_N6syncer24AttachmentDownloaderImpl17OnGetTokenFailureEPKN18OAuth2TokenService7RequestERK22GoogleServiceAuthError
+   fun:_ZN12_GLOBAL__N_111RequestCore28InformOwnerOnGetTokenFailureE22GoogleServiceAuthError
 }
