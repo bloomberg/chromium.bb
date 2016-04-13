@@ -10,6 +10,7 @@
 #include "base/time/time.h"
 #include "components/mus/public/interfaces/input_event_constants.mojom.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
 
 namespace mojo {
@@ -197,6 +198,84 @@ scoped_ptr<blink::WebInputEvent> BuildWebMouseWheelEventFrom(
   return std::move(web_event);
 }
 
+void SetWebTouchEventLocation(const mus::mojom::PointerData& pointer_data,
+                              mus::mojom::EventType action,
+                              blink::WebTouchPoint* touch) {
+  if (pointer_data.location) {
+    touch->position.x = pointer_data.location->x;
+    touch->position.y = pointer_data.location->y;
+    touch->screenPosition.x = pointer_data.location->screen_x;
+    touch->screenPosition.y = pointer_data.location->screen_y;
+  }
+  if (pointer_data.brush_data) {
+    touch->radiusX = pointer_data.brush_data->width;
+    touch->radiusY = pointer_data.brush_data->height;
+  }
+  touch->pointerType = blink::WebPointerProperties::PointerType::Touch;
+  switch (action) {
+    case mus::mojom::EventType::POINTER_DOWN:
+      touch->state = blink::WebTouchPoint::StatePressed;
+      break;
+    case mus::mojom::EventType::POINTER_UP:
+      touch->state = blink::WebTouchPoint::StateReleased;
+      break;
+    case mus::mojom::EventType::POINTER_MOVE:
+      touch->state = blink::WebTouchPoint::StateMoved;
+      break;
+    case mus::mojom::EventType::POINTER_CANCEL:
+      touch->state = blink::WebTouchPoint::StateCancelled;
+      break;
+    case mus::mojom::EventType::UNKNOWN:
+    case mus::mojom::EventType::KEY_PRESSED:
+    case mus::mojom::EventType::KEY_RELEASED:
+    case mus::mojom::EventType::MOUSE_EXIT:
+    case mus::mojom::EventType::WHEEL:
+      NOTIMPLEMENTED() << "Received non touch event action: " << action;
+      break;
+  }
+}
+
+scoped_ptr<blink::WebInputEvent> BuildWebTouchEvent(
+    const mus::mojom::EventPtr& event) {
+  scoped_ptr<blink::WebTouchEvent> web_event(new blink::WebTouchEvent);
+
+  // TODO(jonross): we will need to buffer input events, as blink expects all
+  // active touch points to be in each WebInputEvent (crbug.com/578160)
+  if (event->pointer_data) {
+    SetWebTouchEventLocation(
+        *event->pointer_data, event->action,
+        &web_event->touches[event->pointer_data->pointer_id]);
+  }
+
+  web_event->modifiers = EventFlagsToWebEventModifiers(event->flags);
+  web_event->timeStampSeconds = EventTimeToWebEventTime(event);
+  web_event->uniqueTouchEventId = ui::GetNextTouchEventId();
+
+  switch (event->action) {
+    case mus::mojom::EventType::POINTER_DOWN:
+      web_event->type = blink::WebInputEvent::TouchStart;
+      break;
+    case mus::mojom::EventType::POINTER_UP:
+      web_event->type = blink::WebInputEvent::TouchEnd;
+      break;
+    case mus::mojom::EventType::POINTER_MOVE:
+      web_event->type = blink::WebInputEvent::TouchMove;
+      break;
+    case mus::mojom::EventType::POINTER_CANCEL:
+      web_event->type = blink::WebInputEvent::TouchCancel;
+      break;
+    case mus::mojom::EventType::UNKNOWN:
+    case mus::mojom::EventType::KEY_PRESSED:
+    case mus::mojom::EventType::KEY_RELEASED:
+    case mus::mojom::EventType::MOUSE_EXIT:
+    case mus::mojom::EventType::WHEEL:
+      NOTIMPLEMENTED() << "Received non touch event action: " << event->action;
+      break;
+  }
+
+  return std::move(web_event);
+}
+
 }  // namespace
 
 // static
@@ -209,9 +288,15 @@ TypeConverter<scoped_ptr<blink::WebInputEvent>, mus::mojom::EventPtr>::Convert(
     case mus::mojom::EventType::POINTER_CANCEL:
     case mus::mojom::EventType::POINTER_MOVE:
     case mus::mojom::EventType::MOUSE_EXIT:
-      if (event->pointer_data &&
-          event->pointer_data->kind == mus::mojom::PointerKind::MOUSE) {
-        return BuildWebMouseEventFrom(event);
+      if (event->pointer_data) {
+        switch (event->pointer_data->kind) {
+          case mus::mojom::PointerKind::MOUSE:
+            return BuildWebMouseEventFrom(event);
+          case mus::mojom::PointerKind::PEN:
+            return nullptr;
+          case mus::mojom::PointerKind::TOUCH:
+            return BuildWebTouchEvent(event);
+        }
       }
       return nullptr;
     case mus::mojom::EventType::WHEEL:

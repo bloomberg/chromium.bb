@@ -848,7 +848,7 @@ PointerEvent::PointerEvent(EventType type,
                            base::TimeDelta time_stamp)
     : LocatedEvent(type,
                    gfx::PointF(location),
-                   gfx::PointF(location),
+                   gfx::PointF(root_location),
                    time_stamp,
                    flags),
       pointer_id_(pointer_id),

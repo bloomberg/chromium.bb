@@ -453,4 +453,33 @@ TEST_F(CompositorMusConnectionTest, RendererWillNotSendAck) {
   EXPECT_FALSE(test_callback->called());
 }
 
+// Tests that when a touch event id provided, that CompositorMusConnection
+// consumes the ack.
+TEST_F(CompositorMusConnectionTest, TouchEventConsumed) {
+  TestRenderWidgetInputHandler* input_handler = render_widget_input_handler();
+  input_handler->set_delegate(connection());
+  input_handler->set_state(InputEventAckState::INPUT_EVENT_ACK_STATE_CONSUMED);
+
+  mus::TestWindow test_window;
+  ui::PointerEvent event(ui::ET_POINTER_DOWN,
+                         ui::EventPointerType::POINTER_TYPE_TOUCH, gfx::Point(),
+                         gfx::Point(), ui::EF_NONE, 0, ui::EventTimeForNow());
+
+  scoped_refptr<TestCallback> test_callback(new TestCallback);
+  scoped_ptr<base::Callback<void(bool)>> ack_callback(
+      new base::Callback<void(bool)>(
+          base::Bind(&::TestCallback::BoolCallback, test_callback)));
+
+  OnWindowInputEvent(&test_window, event, &ack_callback);
+  // OnWindowInputEvent is expected to clear the callback if it plans on
+  // handling the ack.
+  EXPECT_FALSE(ack_callback.get());
+
+  VerifyAndRunQueues(true, true);
+
+  // The ack callback should have been called
+  EXPECT_TRUE(test_callback->called());
+  EXPECT_TRUE(test_callback->result());
+}
+
 }  // namespace content
