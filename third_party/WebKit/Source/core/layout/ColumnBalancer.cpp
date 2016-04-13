@@ -325,6 +325,15 @@ void MinimumSpaceShortageFinder::examineLine(const RootInlineBox& line)
     ASSERT(isFirstAfterBreak(lineTopInFlowThread) || !line.paginationStrut() || !isLogicalTopWithinBounds(lineTopInFlowThread - line.paginationStrut()));
     if (isFirstAfterBreak(lineTopInFlowThread))
         recordSpaceShortage(lineHeight - line.paginationStrut());
+
+    // Even if the line box itself fits fine inside a column, some content may overflow the line
+    // box bottom (due to restrictive line-height, for instance). We should check if some portion
+    // of said overflow ends up in the next column. That counts as space shortage.
+    LayoutUnit lineBottomWithOverflow = lineTopInFlowThread + line.lineBottom() - lineTop;
+    if (group().columnLogicalTopForOffset(lineTopInFlowThread) != group().columnLogicalTopForOffset(lineBottomWithOverflow)) {
+        LayoutUnit shortage = lineBottomWithOverflow - group().columnLogicalTopForOffset(lineBottomWithOverflow);
+        recordSpaceShortage(shortage);
+    }
 }
 
 } // namespace blink
