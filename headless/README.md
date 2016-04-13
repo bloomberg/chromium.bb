@@ -5,6 +5,9 @@ environment. Expected use cases include loading web pages, extracting metadata
 (e.g., the DOM) and generating bitmaps from page contents -- using all the
 modern web platform features provided by Chromium and Blink.
 
+See the [architecture design doc](https://docs.google.com/document/d/11zIkKkLBocofGgoTeeyibB2TZ_k7nR78v7kNelCatUE)
+for more information.
+
 ## Headless shell
 
 The headless shell is a sample application which demonstrates the use of the
