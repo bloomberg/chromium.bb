@@ -315,7 +315,6 @@ source_set("common") {
       "pepper_renderer_instance_data.h",
       "plugin_list.cc",
       "plugin_list.h",
-      "sandbox_util.cc",
     ]
   }
 

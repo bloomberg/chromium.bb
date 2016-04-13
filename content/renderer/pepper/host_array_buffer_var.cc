@@ -13,7 +13,6 @@
 #include "base/memory/shared_memory.h"
 #include "base/process/process_handle.h"
 #include "content/common/pepper_file_util.h"
-#include "content/common/sandbox_util.h"
 #include "content/renderer/pepper/host_globals.h"
 #include "content/renderer/pepper/plugin_module.h"
 #include "content/renderer/pepper/renderer_ppapi_host_impl.h"

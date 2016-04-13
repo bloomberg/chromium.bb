@@ -15,13 +15,13 @@
 #include "content/browser/renderer_host/pepper/pepper_file_system_browser_host.h"
 #include "content/browser/renderer_host/pepper/pepper_security_helper.h"
 #include "content/common/fileapi/file_system_messages.h"
-#include "content/common/sandbox_util.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_client.h"
+#include "ipc/ipc_platform_file.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_file_io.h"
 #include "ppapi/host/dispatch_host_message.h"
@@ -480,14 +480,8 @@ void PepperFileIOHost::SendOpenErrorReply(
 bool PepperFileIOHost::AddFileToReplyContext(
     int32_t open_flags,
     ppapi::host::ReplyMessageContext* reply_context) const {
-  base::ProcessId plugin_process_id =
-      base::GetProcId(browser_ppapi_host_->GetPluginProcess().Handle());
-  if (plugin_process_id == base::kNullProcessId)
-    plugin_process_id = resolved_render_process_id_;
-
   IPC::PlatformFileForTransit transit_file =
-      BrokerGetFileHandleForProcess(file_.GetPlatformFile(), plugin_process_id,
-                                    false);
+      IPC::GetPlatformFileForTransit(file_.GetPlatformFile(), false);
   if (transit_file == IPC::InvalidPlatformFileForTransit())
     return false;
 

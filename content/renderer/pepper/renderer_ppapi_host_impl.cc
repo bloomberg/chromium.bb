@@ -11,7 +11,6 @@
 #include "base/process/process_handle.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
-#include "content/common/sandbox_util.h"
 #include "content/renderer/pepper/fullscreen_container.h"
 #include "content/renderer/pepper/host_globals.h"
 #include "content/renderer/pepper/pepper_browser_connection.h"
@@ -23,6 +22,7 @@
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/render_widget_fullscreen_pepper.h"
 #include "ipc/ipc_message.h"
+#include "ipc/ipc_platform_file.h"
 #include "ppapi/host/ppapi_host.h"
 #include "ppapi/proxy/host_dispatcher.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
@@ -225,8 +225,7 @@ IPC::PlatformFileForTransit RendererPpapiHostImpl::ShareHandleWithRemote(
     // Duplicate the file handle for in process mode so this function
     // has the same semantics for both in process mode and out of
     // process mode (i.e., the remote side must cloes the handle).
-    return BrokerGetFileHandleForProcess(
-        handle, base::GetCurrentProcId(), should_close_source);
+    return IPC::GetPlatformFileForTransit(handle, should_close_source);
   }
   return dispatcher_->ShareHandleWithRemote(handle, should_close_source);
 }

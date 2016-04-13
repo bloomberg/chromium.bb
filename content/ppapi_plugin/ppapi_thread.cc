@@ -28,7 +28,6 @@
 #include "content/child/child_discardable_shared_memory_manager.h"
 #include "content/child/child_process.h"
 #include "content/common/child_process_messages.h"
-#include "content/common/sandbox_util.h"
 #include "content/ppapi_plugin/broker_process_dispatcher.h"
 #include "content/ppapi_plugin/plugin_process_dispatcher.h"
 #include "content/ppapi_plugin/ppapi_blink_platform_impl.h"
@@ -192,15 +191,7 @@ IPC::PlatformFileForTransit PpapiThread::ShareHandleWithRemote(
     base::PlatformFile handle,
     base::ProcessId peer_pid,
     bool should_close_source) {
-#if defined(OS_WIN)
-  if (peer_handle_.IsValid()) {
-    DCHECK(is_broker_);
-    return IPC::GetPlatformFileForTransit(handle, should_close_source);
-  }
-#endif
-
-  DCHECK(peer_pid != base::kNullProcessId);
-  return BrokerGetFileHandleForProcess(handle, peer_pid, should_close_source);
+  return IPC::GetPlatformFileForTransit(handle, should_close_source);
 }
 
 base::SharedMemoryHandle PpapiThread::ShareSharedMemoryHandleWithRemote(

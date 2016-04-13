@@ -6,11 +6,7 @@
 
 #include "build/build_config.h"
 #include "content/child/child_process.h"
-#include "content/common/sandbox_util.h"
-
-#if defined(OS_WIN) || defined(OS_MACOSX)
-#include "content/public/common/sandbox_init.h"
-#endif  // defined(OS_WIN) || defined(OS_MACOSX)
+#include "ipc/ipc_platform_file.h"
 
 namespace content {
 
@@ -33,7 +29,7 @@ PepperProxyChannelDelegateImpl::ShareHandleWithRemote(
     base::PlatformFile handle,
     base::ProcessId remote_pid,
     bool should_close_source) {
-  return BrokerGetFileHandleForProcess(handle, remote_pid, should_close_source);
+  return IPC::GetPlatformFileForTransit(handle, should_close_source);
 }
 
 base::SharedMemoryHandle
