@@ -46,8 +46,6 @@ class GPU_EXPORT GLContextVirtual : public gfx::GLContext {
   void SetSafeToForceGpuSwitch() override;
   bool WasAllocatedUsingRobustnessExtension() override;
   void SetUnbindFboOnMakeCurrent() override;
-  base::Closure GetStateWasDirtiedExternallyCallback() override;
-  void RestoreStateIfDirtiedExternally() override;
 
  protected:
   ~GLContextVirtual() override;

@@ -44,17 +44,11 @@ void GLContext::ScopedReleaseCurrent::Cancel() {
   canceled_ = true;
 }
 
-GLContext::GLContext(GLShareGroup* share_group) :
-    share_group_(share_group),
-    state_dirtied_externally_(false),
-    swap_interval_(1),
-    force_swap_interval_zero_(false),
-    state_dirtied_callback_(
-        base::Bind(&GLContext::SetStateWasDirtiedExternally,
-        // Note that if this is not unretained, it will create a cycle (and
-        // will never be freed.
-        base::Unretained(this),
-        true)) {
+GLContext::GLContext(GLShareGroup* share_group)
+    : share_group_(share_group),
+      state_dirtied_externally_(false),
+      swap_interval_(1),
+      force_swap_interval_zero_(false) {
   if (!share_group_.get())
     share_group_ = new GLShareGroup;
 
@@ -96,24 +90,6 @@ std::string GLContext::GetGLRenderer() {
   const char *renderer =
       reinterpret_cast<const char*>(glGetString(GL_RENDERER));
   return std::string(renderer ? renderer : "");
-}
-
-base::Closure GLContext::GetStateWasDirtiedExternallyCallback() {
-  return state_dirtied_callback_.callback();
-}
-
-void GLContext::RestoreStateIfDirtiedExternally() {
-  NOTREACHED();
-}
-
-bool GLContext::GetStateWasDirtiedExternally() const {
-  DCHECK(virtual_gl_api_);
-  return state_dirtied_externally_;
-}
-
-void GLContext::SetStateWasDirtiedExternally(bool dirtied_externally) {
-  DCHECK(virtual_gl_api_);
-  state_dirtied_externally_ = dirtied_externally;
 }
 
 bool GLContext::HasExtension(const char* name) {

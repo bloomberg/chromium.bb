@@ -127,14 +127,6 @@ class GL_EXPORT GLContext : public base::RefCounted<GLContext> {
   // Returns the GL renderer string. The context must be current.
   virtual std::string GetGLRenderer();
 
-  // Return a callback that, when called, indicates that the state the
-  // underlying context has been changed by code outside of the command buffer,
-  // and will need to be restored.
-  virtual base::Closure GetStateWasDirtiedExternallyCallback();
-
-  // Restore the context's state if it was dirtied by an external caller.
-  virtual void RestoreStateIfDirtiedExternally();
-
  protected:
   virtual ~GLContext();
 
@@ -164,9 +156,6 @@ class GL_EXPORT GLContext : public base::RefCounted<GLContext> {
 
   virtual void OnSetSwapInterval(int interval) = 0;
 
-  bool GetStateWasDirtiedExternally() const;
-  void SetStateWasDirtiedExternally(bool dirtied_externally);
-
  private:
   friend class base::RefCounted<GLContext>;
 
@@ -182,8 +171,6 @@ class GL_EXPORT GLContext : public base::RefCounted<GLContext> {
 
   int swap_interval_;
   bool force_swap_interval_zero_;
-
-  base::CancelableCallback<void()> state_dirtied_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(GLContext);
 };

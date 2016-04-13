@@ -544,15 +544,11 @@ bool VirtualGLApi::MakeCurrent(GLContext* virtual_context, GLSurface* surface) {
     }
   }
 
-  bool state_dirtied_externally = real_context_->GetStateWasDirtiedExternally();
-  real_context_->SetStateWasDirtiedExternally(false);
-
   DCHECK_EQ(real_context_, GLContext::GetRealCurrent());
   DCHECK(real_context_->IsCurrent(NULL));
   DCHECK(virtual_context->IsCurrent(surface));
 
-  if (state_dirtied_externally || switched_contexts ||
-      virtual_context != current_context_) {
+  if (switched_contexts || virtual_context != current_context_) {
 #if DCHECK_IS_ON()
     GLenum error = glGetErrorFn();
     // Accepting a context loss error here enables using debug mode to work on
@@ -578,9 +574,7 @@ bool VirtualGLApi::MakeCurrent(GLContext* virtual_context, GLSurface* surface) {
       }
 
       virtual_state->RestoreState(
-          (current_state && !state_dirtied_externally && !switched_contexts)
-              ? current_state
-              : NULL);
+          (current_state && !switched_contexts) ? current_state : NULL);
     }
     SetGLApi(temp);
     current_context_ = virtual_context;
