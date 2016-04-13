@@ -500,7 +500,7 @@ Status LaunchAndroidChrome(
     device->TearDown();
     return Status(
         kSessionNotCreatedException,
-        base::StringPrintf("please close %s and try again", package.c_str()));
+        base::StringPrintf("please close '%s' and try again", package.c_str()));
   }
 
   std::unique_ptr<DevToolsClient> devtools_websocket_client;

@@ -62,13 +62,14 @@ def _ArchiveServerLogs():
   """Uploads chromedriver server logs to google storage."""
   util.MarkBuildStepStart('archive chromedriver server logs')
   for server_log in glob.glob(os.path.join(tempfile.gettempdir(),
-                                           'chromedriver_*')):
-    base_name = os.path.basename(server_log)
-    util.AddLink(base_name, '%s/%s' % (SERVER_LOGS_LINK, base_name))
-    slave_utils.GSUtilCopy(
-        server_log,
-        '%s/%s' % (GS_SERVER_LOGS_URL, base_name),
-        mimetype='text/plain')
+                                           'chromedriver_log_*')):
+    if os.path.isfile(server_log):
+      base_name = os.path.basename(server_log)
+      util.AddLink(base_name, '%s/%s' % (SERVER_LOGS_LINK, base_name))
+      slave_utils.GSUtilCopy(
+          server_log,
+          '%s/%s' % (GS_SERVER_LOGS_URL, base_name),
+          mimetype='text/plain')
 
 
 def _DownloadPrebuilts():

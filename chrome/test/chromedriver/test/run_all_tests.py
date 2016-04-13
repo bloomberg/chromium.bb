@@ -31,7 +31,7 @@ def _GenerateTestCommand(script,
                          chrome_version=None,
                          android_package=None,
                          verbose=False):
-  _, log_path = tempfile.mkstemp(prefix='chromedriver_')
+  _, log_path = tempfile.mkstemp(prefix='chromedriver_log_')
   print 'chromedriver server log: %s' % log_path
   cmd = [
       sys.executable,
