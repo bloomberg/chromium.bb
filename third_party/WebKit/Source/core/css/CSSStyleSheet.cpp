@@ -60,11 +60,6 @@ public:
 private:
     StyleSheetCSSRuleList(CSSStyleSheet* sheet) : m_styleSheet(sheet) { }
 
-#if !ENABLE(OILPAN)
-    void ref() override { m_styleSheet->ref(); }
-    void deref() override { m_styleSheet->deref(); }
-#endif
-
     unsigned length() const override { return m_styleSheet->length(); }
     CSSRule* item(unsigned index) const override { return m_styleSheet->item(index); }
 
@@ -77,10 +72,8 @@ private:
 static bool isAcceptableCSSStyleSheetParent(Node* parentNode)
 {
     // Only these nodes can be parents of StyleSheets, and they need to call
-    // clearOwnerNode() when moved out of document.
-    // Destruction of the style sheet counts as being "moved out of the
-    // document", but only in the non-oilpan version of blink. I.e. don't call
-    // clearOwnerNode() in the owner's destructor in oilpan.
+    // clearOwnerNode() when moved out of document. Note that destructor of
+    // the nodes don't call clearOwnerNode() with Oilpan.
     return !parentNode
         || parentNode->isDocumentNode()
         || isHTMLLinkElement(*parentNode)
@@ -140,24 +133,6 @@ CSSStyleSheet::CSSStyleSheet(StyleSheetContents* contents, Node* ownerNode, bool
 
 CSSStyleSheet::~CSSStyleSheet()
 {
-    // With oilpan the parent style sheet pointer is strong and the sheet and
-    // its RuleCSSOMWrappers die together and we don't need to clear them here.
-    // Also with oilpan the StyleSheetContents client pointers are weak and
-    // therefore do not need to be cleared here.
-#if !ENABLE(OILPAN)
-    // For style rules outside the document, .parentStyleSheet can become null even if the style rule
-    // is still observable from JavaScript. This matches the behavior of .parentNode for nodes, but
-    // it's not ideal because it makes the CSSOM's behavior depend on the timing of garbage collection.
-    for (unsigned i = 0; i < m_childRuleCSSOMWrappers.size(); ++i) {
-        if (m_childRuleCSSOMWrappers[i])
-            m_childRuleCSSOMWrappers[i]->setParentStyleSheet(0);
-    }
-
-    if (m_mediaCSSOMWrapper)
-        m_mediaCSSOMWrapper->clearParentStyleSheet();
-
-    m_contents->unregisterClient(this);
-#endif
 }
 
 void CSSStyleSheet::willMutateRules()

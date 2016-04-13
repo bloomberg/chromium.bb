@@ -45,16 +45,7 @@ class CORE_EXPORT StylePropertySet : public GarbageCollectedFinalized<StylePrope
     friend class PropertyReference;
 public:
 
-#if ENABLE(OILPAN)
-    // When oilpan is enabled override the finalize method to dispatch to the subclasses'
-    // destructor. This can be removed once the MutableStylePropertySet's OwnPtr is moved
-    // to the heap.
     void finalizeGarbageCollectedObject();
-#else
-    // Override RefCounted's deref() to ensure operator delete is called on
-    // the appropriate subclass type.
-    void deref();
-#endif
 
     class PropertyReference {
         STACK_ALLOCATED();
@@ -290,19 +281,6 @@ inline bool StylePropertySet::isEmpty() const
 {
     return !propertyCount();
 }
-
-#if !ENABLE(OILPAN)
-inline void StylePropertySet::deref()
-{
-    if (!derefBase())
-        return;
-
-    if (m_isMutable)
-        delete toMutableStylePropertySet(this);
-    else
-        delete toImmutableStylePropertySet(this);
-}
-#endif // !ENABLE(OILPAN)
 
 template<typename T>
 inline int StylePropertySet::findPropertyIndex(T property) const

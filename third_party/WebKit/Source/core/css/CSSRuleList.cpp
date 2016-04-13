@@ -25,29 +25,9 @@
 
 namespace blink {
 
-CSSRuleList::~CSSRuleList()
-{
-}
-
 StaticCSSRuleList::StaticCSSRuleList()
-#if !ENABLE(OILPAN)
-    : m_refCount(1)
-#endif
 {
 }
-
-StaticCSSRuleList::~StaticCSSRuleList()
-{
-}
-
-#if !ENABLE(OILPAN)
-void StaticCSSRuleList::deref()
-{
-    ASSERT(m_refCount);
-    if (!--m_refCount)
-        delete this;
-}
-#endif
 
 DEFINE_TRACE(StaticCSSRuleList)
 {

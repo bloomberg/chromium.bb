@@ -59,23 +59,12 @@ CSSFontSelector::CSSFontSelector(Document* document)
 
 CSSFontSelector::~CSSFontSelector()
 {
-#if !ENABLE(OILPAN)
-    clearDocument();
-    FontCache::fontCache()->removeClient(this);
-#endif
 }
 
 void CSSFontSelector::registerForInvalidationCallbacks(CSSFontSelectorClient* client)
 {
     m_clients.add(client);
 }
-
-#if !ENABLE(OILPAN)
-void CSSFontSelector::unregisterForInvalidationCallbacks(CSSFontSelectorClient* client)
-{
-    m_clients.remove(client);
-}
-#endif
 
 void CSSFontSelector::dispatchInvalidationCallbacks()
 {
@@ -161,15 +150,6 @@ bool CSSFontSelector::isPlatformFontAvailable(const FontDescription& fontDescrip
         family = passedFamily;
     return FontCache::fontCache()->isPlatformFontAvailable(fontDescription, family);
 }
-
-#if !ENABLE(OILPAN)
-void CSSFontSelector::clearDocument()
-{
-    m_fontLoader->clearDocumentAndFontSelector();
-    m_document = nullptr;
-    m_fontFaceCache.clearAll();
-}
-#endif
 
 void CSSFontSelector::updateGenericFontFamilySettings(Document& document)
 {

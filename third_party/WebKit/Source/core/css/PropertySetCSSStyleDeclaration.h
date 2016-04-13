@@ -77,11 +77,6 @@ class PropertySetCSSStyleDeclaration : public AbstractPropertySetCSSStyleDeclara
 public:
     PropertySetCSSStyleDeclaration(MutableStylePropertySet& propertySet) : m_propertySet(&propertySet) { }
 
-#if !ENABLE(OILPAN)
-    void ref() override;
-    void deref() override;
-#endif
-
     DECLARE_VIRTUAL_TRACE();
 
 protected:
@@ -96,13 +91,6 @@ public:
     {
         return new StyleRuleCSSStyleDeclaration(propertySet, parentRule);
     }
-
-#if !ENABLE(OILPAN)
-    void clearParentRule() { m_parentRule = nullptr; }
-
-    void ref() override;
-    void deref() override;
-#endif
 
     void reattach(MutableStylePropertySet&);
 
@@ -119,9 +107,6 @@ protected:
     void willMutate() override;
     void didMutate(MutationType) override;
 
-#if !ENABLE(OILPAN)
-    unsigned m_refCount;
-#endif
     Member<CSSRule> m_parentRule;
 };
 
@@ -136,10 +121,6 @@ public:
 
 private:
     MutableStylePropertySet& propertySet() const override;
-#if !ENABLE(OILPAN)
-    void ref() override;
-    void deref() override;
-#endif
     CSSStyleSheet* parentStyleSheet() const override;
     Element* parentElement() const override { return m_parentElement; }
 

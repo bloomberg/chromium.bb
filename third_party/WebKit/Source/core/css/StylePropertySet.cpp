@@ -81,22 +81,11 @@ ImmutableStylePropertySet::ImmutableStylePropertySet(const CSSProperty* properti
     for (unsigned i = 0; i < m_arraySize; ++i) {
         metadataArray[i] = properties[i].metadata();
         valueArray[i] = properties[i].value();
-#if !ENABLE(OILPAN)
-        valueArray[i]->ref();
-#endif
     }
 }
 
 ImmutableStylePropertySet::~ImmutableStylePropertySet()
 {
-#if !ENABLE(OILPAN)
-    Member<CSSValue>* valueArray = const_cast<Member<CSSValue>*>(this->valueArray());
-    for (unsigned i = 0; i < m_arraySize; ++i) {
-        // Checking for nullptr here is a workaround to prevent crashing.  http://crbug.com/449032
-        if (valueArray[i])
-            valueArray[i]->deref();
-    }
-#endif
 }
 
 // Convert property into an uint16_t for comparison with metadata's m_propertyID to avoid
@@ -202,7 +191,6 @@ DEFINE_TRACE(StylePropertySet)
         toImmutableStylePropertySet(this)->traceAfterDispatch(visitor);
 }
 
-#if ENABLE(OILPAN)
 void StylePropertySet::finalizeGarbageCollectedObject()
 {
     if (m_isMutable)
@@ -210,7 +198,6 @@ void StylePropertySet::finalizeGarbageCollectedObject()
     else
         toImmutableStylePropertySet(this)->~ImmutableStylePropertySet();
 }
-#endif
 
 bool MutableStylePropertySet::removeShorthandProperty(CSSPropertyID propertyID)
 {

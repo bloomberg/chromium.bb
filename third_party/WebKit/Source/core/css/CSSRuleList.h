@@ -33,16 +33,10 @@ namespace blink {
 class CSSRule;
 class CSSStyleSheet;
 
-class CSSRuleList : public GarbageCollectedFinalized<CSSRuleList>, public ScriptWrappable {
+class CSSRuleList : public GarbageCollected<CSSRuleList>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
     WTF_MAKE_NONCOPYABLE(CSSRuleList);
 public:
-    virtual ~CSSRuleList();
-
-#if !ENABLE(OILPAN)
-    virtual void ref() = 0;
-    virtual void deref() = 0;
-#endif
 
     virtual unsigned length() const = 0;
     virtual CSSRule* item(unsigned index) const = 0;
@@ -62,11 +56,6 @@ public:
         return new StaticCSSRuleList();
     }
 
-#if !ENABLE(OILPAN)
-    void ref() override { ++m_refCount; }
-    void deref() override;
-#endif
-
     HeapVector<Member<CSSRule>>& rules() { return m_rules; }
 
     CSSStyleSheet* styleSheet() const override { return 0; }
@@ -75,15 +64,11 @@ public:
 
 private:
     StaticCSSRuleList();
-    ~StaticCSSRuleList() override;
 
     unsigned length() const override { return m_rules.size(); }
     CSSRule* item(unsigned index) const override { return index < m_rules.size() ? m_rules[index].get() : nullptr; }
 
     HeapVector<Member<CSSRule>> m_rules;
-#if !ENABLE(OILPAN)
-    unsigned m_refCount;
-#endif
 };
 
 template <class Rule>
@@ -93,11 +78,6 @@ public:
     {
         return new LiveCSSRuleList(rule);
     }
-
-#if !ENABLE(OILPAN)
-    void ref() override { m_rule->ref(); }
-    void deref() override { m_rule->deref(); }
-#endif
 
     DEFINE_INLINE_VIRTUAL_TRACE()
     {

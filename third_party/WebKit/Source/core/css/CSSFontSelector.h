@@ -57,19 +57,12 @@ public:
     void willUseRange(const FontDescription&, const AtomicString& familyName, const FontDataForRangeSet&) override;
     bool isPlatformFontAvailable(const FontDescription&, const AtomicString& family);
 
-#if !ENABLE(OILPAN)
-    void clearDocument();
-#endif
-
     void fontFaceInvalidated();
 
     // FontCacheClient implementation
     void fontCacheInvalidated() override;
 
     void registerForInvalidationCallbacks(CSSFontSelectorClient*);
-#if !ENABLE(OILPAN)
-    void unregisterForInvalidationCallbacks(CSSFontSelectorClient*);
-#endif
 
     Document* document() const { return m_document; }
     FontFaceCache* fontFaceCache() { return &m_fontFaceCache; }
@@ -86,7 +79,7 @@ protected:
     void dispatchInvalidationCallbacks();
 
 private:
-    // FIXME: Oilpan: Ideally this should just be a traced Member but that will
+    // TODO(Oilpan): Ideally this should just be a traced Member but that will
     // currently leak because ComputedStyle and its data are not on the heap.
     // See crbug.com/383860 for details.
     WeakMember<Document> m_document;

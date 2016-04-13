@@ -47,16 +47,6 @@ CSSStyleRule::CSSStyleRule(StyleRule* styleRule, CSSStyleSheet* parent)
 
 CSSStyleRule::~CSSStyleRule()
 {
-#if !ENABLE(OILPAN)
-    if (m_propertiesCSSOMWrapper)
-        m_propertiesCSSOMWrapper->clearParentRule();
-#endif
-    if (hasCachedSelectorText()) {
-#if !ENABLE(OILPAN)
-        selectorTextCache().remove(this);
-#endif
-        setHasCachedSelectorText(false);
-    }
 }
 
 CSSStyleDeclaration* CSSStyleRule::style() const
