@@ -78,6 +78,11 @@ class ChromeViewsDelegate : public views::ViewsDelegate {
   views::Widget::InitParams::WindowOpacity GetOpacityForInitParams(
       const views::Widget::InitParams& params);
 
+  // |ChromeViewsDelegate| exposes a |RefCounted|-like interface, but //chrome
+  // uses |ScopedKeepAlive|s to manage lifetime. We manage an internal counter
+  // to do that translation.
+  unsigned int ref_count_ = 0u;
+
   std::unique_ptr<ScopedKeepAlive> keep_alive_;
 
 #if defined(OS_WIN)

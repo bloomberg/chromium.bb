@@ -185,6 +185,7 @@ ChromeViewsDelegate::ChromeViewsDelegate() {
 }
 
 ChromeViewsDelegate::~ChromeViewsDelegate() {
+  DCHECK_EQ(0u, ref_count_);
 }
 
 void ChromeViewsDelegate::SaveWindowPlacement(const views::Widget* window,
@@ -310,12 +311,20 @@ views::NonClientFrameView* ChromeViewsDelegate::CreateDefaultNonClientFrameView(
 #endif
 
 void ChromeViewsDelegate::AddRef() {
-  keep_alive_.reset(new ScopedKeepAlive(KeepAliveOrigin::CHROME_VIEWS_DELEGATE,
-                                        KeepAliveRestartOption::DISABLED));
+  if (ref_count_ == 0u) {
+    keep_alive_.reset(
+        new ScopedKeepAlive(KeepAliveOrigin::CHROME_VIEWS_DELEGATE,
+                            KeepAliveRestartOption::DISABLED));
+  }
+
+  ++ref_count_;
 }
 
 void ChromeViewsDelegate::ReleaseRef() {
-  keep_alive_.reset();
+  DCHECK_NE(0u, ref_count_);
+
+  if (--ref_count_ == 0u)
+    keep_alive_.reset();
 }
 
 void ChromeViewsDelegate::OnBeforeWidgetInit(
