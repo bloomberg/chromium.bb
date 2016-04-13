@@ -53,7 +53,7 @@
   http/tests/history/cross-origin-redirect-on-back.html [ Crash ]
   http/tests/history/post-replace-state-reload.html [ Crash Failure ]
   http/tests/navigation/location-reload-after-post.php [ Crash Failure ]
-  virtual/pointerevent/fast/events/before-unload-return-bad-value.html [ Crash Failure]
+  virtual/pointerevent/fast/events/before-unload-return-bad-value.html [ Crash Failure ]
   virtual/pointerevent/fast/events/before-unload-return-value-from-listener.html [ Crash Failure ]
   virtual/pointerevent/fast/events/before-unload-returnValue.html [ Crash Failure ]
   virtual/pointerevent/fast/events/drop-handler-should-not-stop-navigate.html [ Crash Failure ]
@@ -245,11 +245,11 @@
   fast/parser/empty-text-resource.html [ Crash Timeout ]
   fast/table/crash-splitColumn-2.html [ Crash Timeout ]
   fast/table/giantCellspacing.html [ Crash Timeout ]
-  fast/xmlhttprequest/null-document-xmlhttprequest-open.html [ Crash ]
+  fast/xmlhttprequest/null-document-xmlhttprequest-open.html [ Crash Timeout ]
   http/tests/loading/bad-server-subframe.html [ Crash Timeout ]
   http/tests/loading/pdf-commit-load-callbacks.html [ Crash ]
   http/tests/loading/redirect-methods.html [ Crash Failure ]
-  imported/web-platform-tests/html/browsers/browsing-the-web/history-traversal/popstate_event.html [ Crash Failure Crash Failure ]
+  imported/web-platform-tests/html/browsers/browsing-the-web/history-traversal/popstate_event.html [ Crash Failure Timeout ]
   imported/web-platform-tests/html/browsers/windows/browsing-context-names/browsing-context-default-name.html [ Crash Timeout ]
   imported/web-platform-tests/html/dom/dynamic-markup-insertion/opening-the-input-stream/004.html [ Crash Timeout ]
   imported/web-platform-tests/html/dom/dynamic-markup-insertion/opening-the-input-stream/005.html [ Crash Timeout ]
@@ -347,3 +347,9 @@
 
 # Regressions: Unexpected text-only failures (1)
   svg/filters/filter-refresh.svg [ Failure ]
+
+# Update on 16-4-13
+
+# Regressions: Unexpected text-only failures (3)
+  imported/web-platform-tests/web-animations/keyframe-effect/getComputedTiming-currentIteration.html [ Failure ]
+  imported/web-platform-tests/web-animations/keyframe-effect/getComputedTiming-progress.html [ Failure ]
