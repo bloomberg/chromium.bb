@@ -42,7 +42,7 @@ if (!{{field.kind|cpp_wrapper_type}}::Data_::Validate(
 {%- endmacro -%}
 
 {%- macro validate_enum(field_expr, field) -%}
-if (!mojo::internal::ValidateEnum(*{{field_expr}}))
+if (!{{field.kind|get_qualified_name_for_kind(internal=True)}}::Validate(*{{field_expr}}))
   return false;
 {%- endmacro -%}
 

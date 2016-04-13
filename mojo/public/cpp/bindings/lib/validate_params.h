@@ -12,6 +12,8 @@
 namespace mojo {
 namespace internal {
 
+using ValidateEnumFunc = bool (*)(int32_t);
+
 class ArrayValidateParams {
  public:
   // ArrayValidateParams takes ownership of |in_element_validate params|.
@@ -20,14 +22,21 @@ class ArrayValidateParams {
                       ArrayValidateParams* in_element_validate_params)
       : expected_num_elements(in_expected_num_elements),
         element_is_nullable(in_element_is_nullable),
-        element_validate_params(in_element_validate_params) {}
+        element_validate_params(in_element_validate_params),
+        validate_enum_func(nullptr) {}
+
+  // Validates an array of enums.
+  ArrayValidateParams(uint32_t in_expected_num_elements,
+                      ValidateEnumFunc in_validate_enum_func)
+      : expected_num_elements(in_expected_num_elements),
+        element_is_nullable(false),
+        element_validate_params(nullptr),
+        validate_enum_func(in_validate_enum_func) {}
 
   ~ArrayValidateParams() {
     if (element_validate_params)
       delete element_validate_params;
   }
-
-  // TODO(vtl): The members of this class shouldn't be public.
 
   // If |expected_num_elements| is not 0, the array is expected to have exactly
   // that number of elements.
@@ -40,6 +49,9 @@ class ArrayValidateParams {
   // instance of ArrayValidateParams (if elements are arrays or maps), or
   // nullptr. In the case of maps, this is used to validate the value array.
   ArrayValidateParams* element_validate_params;
+
+  // Validation function for enum elements.
+  ValidateEnumFunc validate_enum_func;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ArrayValidateParams);

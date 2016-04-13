@@ -173,30 +173,16 @@ struct ArraySerializationHelper<T, false, false> {
     DCHECK(!validate_params->element_validate_params)
         << "Primitive type should not have array validate params";
 
-    return ValidateCaller<ElementType>::Run(header, elements);
+    if (!validate_params->validate_enum_func)
+      return true;
+
+    // Enum validation.
+    for (uint32_t i = 0; i < header->num_elements; ++i) {
+      if (!validate_params->validate_enum_func(elements[i]))
+        return false;
+    }
+    return true;
   }
-
- private:
-  template <typename U, bool is_enum = IsEnumDataType<U>::value>
-  struct ValidateCaller {};
-
-  template <typename U>
-  struct ValidateCaller<U, false> {
-    static bool Run(const ArrayHeader* header, const ElementType* elements) {
-      return true;
-    }
-  };
-
-  template <typename U>
-  struct ValidateCaller<U, true> {
-    static bool Run(const ArrayHeader* header, const ElementType* elements) {
-      for (uint32_t i = 0; i < header->num_elements; ++i) {
-        if (!ValidateEnum(elements[i]))
-          return false;
-      }
-      return true;
-    }
-  };
 };
 
 template <>

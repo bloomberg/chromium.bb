@@ -16,9 +16,6 @@ enum class {{enum.name}} : int32_t {
 {%- macro enum_data_decl(enum) %}
 struct {{enum.name}}_Data {
  public:
-  // Used to identify Mojom Enum Data Classes.
-  typedef void MojomEnumDataType;
-
   static bool const kIsExtensible = {% if enum.extensible %}true{% else %}false{% endif %};
 
   static bool IsKnownValue(int32_t value) {
@@ -31,7 +28,13 @@ struct {{enum.name}}_Data {
     return false;
   }
 
-  int32_t value;
+  static bool Validate(int32_t value) {
+    if (kIsExtensible || IsKnownValue(value))
+      return true;
+
+    ReportValidationError(mojo::internal::VALIDATION_ERROR_UNKNOWN_ENUM_VALUE);
+    return false;
+  }
 };
 {%- endmacro %}
 

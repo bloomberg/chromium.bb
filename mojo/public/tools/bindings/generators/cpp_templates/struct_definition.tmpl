@@ -96,7 +96,7 @@
 {%- macro _validate_enum(struct, packed_field) %}
 {%-   set name = packed_field.field.name %}
 {%-   set kind = packed_field.field.kind %}
-  if (!mojo::internal::ValidateEnum(object->{{name}}))
+  if (!{{kind|get_qualified_name_for_kind(internal=True)}}::Validate(object->{{name}}))
     return false;
 {%- endmacro %}
 

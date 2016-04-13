@@ -189,7 +189,7 @@ def GetCppType(kind):
   if mojom.IsAssociatedInterfaceRequestKind(kind):
     return "mojo::internal::AssociatedInterfaceRequest_Data"
   if mojom.IsEnumKind(kind):
-    return GetNameForKind(kind, internal=True)
+    return "int32_t"
   if mojom.IsStringKind(kind):
     return "mojo::internal::String_Data*"
   return _kind_to_cpp_type[kind]
@@ -384,7 +384,7 @@ def GetCppFieldType(kind):
   if mojom.IsAssociatedInterfaceRequestKind(kind):
     return "mojo::internal::AssociatedInterfaceRequest_Data"
   if mojom.IsEnumKind(kind):
-    return GetNameForKind(kind, internal=True)
+    return "int32_t"
   if mojom.IsStringKind(kind):
     return "mojo::internal::StringPointer"
   return _kind_to_cpp_type[kind]
@@ -394,6 +394,8 @@ def GetCppUnionFieldType(kind):
     return "MojoHandle"
   if mojom.IsInterfaceKind(kind):
     return "uint64_t"
+  if mojom.IsEnumKind(kind):
+    return "int32_t"
   if mojom.IsUnionKind(kind):
     return ("mojo::internal::UnionPointer<%s>" %
         GetNameForKind(kind, internal=True))
@@ -461,18 +463,28 @@ def GetArrayValidateParamsCtorArgs(kind):
     expected_num_elements = 0
     element_is_nullable = False
     element_validate_params = "nullptr"
+    enum_validate_func = "nullptr"
   elif mojom.IsMapKind(kind):
     expected_num_elements = 0
     element_is_nullable = mojom.IsNullableKind(kind.value_kind)
     element_validate_params = GetNewArrayValidateParams(kind.value_kind)
+    enum_validate_func = "nullptr"
   else:
     expected_num_elements = generator.ExpectedArraySize(kind) or 0
     element_is_nullable = mojom.IsNullableKind(kind.kind)
     element_validate_params = GetNewArrayValidateParams(kind.kind)
+    if mojom.IsEnumKind(kind.kind):
+      enum_validate_func = ("%s::Validate" %
+                            GetQualifiedNameForKind(kind.kind, internal=True))
+    else:
+      enum_validate_func = "nullptr"
 
-  return "%d, %s, %s" % (expected_num_elements,
-                         "true" if element_is_nullable else "false",
-                         element_validate_params)
+  if enum_validate_func == "nullptr":
+    return "%d, %s, %s" % (expected_num_elements,
+                           "true" if element_is_nullable else "false",
+                           element_validate_params)
+  else:
+    return "%d, %s" % (expected_num_elements, enum_validate_func)
 
 def GetNewArrayValidateParams(kind):
   if (not mojom.IsArrayKind(kind) and not mojom.IsMapKind(kind) and

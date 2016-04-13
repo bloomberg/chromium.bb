@@ -76,7 +76,7 @@ class {{struct.name}}_Reader {
   // TODO(rockot): Support reading associated kinds. ({{name}}() omitted)
 {%-     elif kind|is_enum_kind %}
   {{kind|cpp_result_type}} {{name}}() const {
-    return static_cast<{{kind|cpp_result_type}}>(data_->{{name}}.value);
+    return static_cast<{{kind|cpp_result_type}}>(data_->{{name}});
   }
 {%-     else %}
   {{kind|cpp_result_type}} {{name}}() const { return data_->{{name}}; }
