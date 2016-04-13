@@ -58,7 +58,13 @@ class LevelDBServiceTest : public mojo::test::ShellTest {
   DISALLOW_COPY_AND_ASSIGN(LevelDBServiceTest);
 };
 
-TEST_F(LevelDBServiceTest, Basic) {
+// TODO(crbug.com/602820) Test is flaky.
+#if defined(OS_LINUX)
+#define MAYBE_Basic DISABLED_Basic
+#else
+#define MAYBE_Basic Basic
+#endif
+TEST_F(LevelDBServiceTest, MAYBE_Basic) {
   filesystem::DirectoryPtr directory;
   GetUserDataDir(&directory);
 
@@ -103,7 +109,13 @@ TEST_F(LevelDBServiceTest, Basic) {
   EXPECT_EQ("", value.To<std::string>());
 }
 
-TEST_F(LevelDBServiceTest, WriteBatch) {
+// TODO(crbug.com/602820) Test is flaky.
+#if defined(OS_LINUX)
+#define MAYBE_WriteBatch DISABLED_WriteBatch
+#else
+#define MAYBE_WriteBatch WriteBatch
+#endif
+TEST_F(LevelDBServiceTest, MAYBE_WriteBatch) {
   filesystem::DirectoryPtr directory;
   GetUserDataDir(&directory);
 
@@ -156,7 +168,13 @@ TEST_F(LevelDBServiceTest, WriteBatch) {
   EXPECT_EQ("more", value.To<std::string>());
 }
 
-TEST_F(LevelDBServiceTest, Reconnect) {
+// TODO(crbug.com/602820) Test is flaky.
+#if defined(OS_LINUX)
+#define MAYBE_Reconnect DISABLED_Reconnect
+#else
+#define MAYBE_Reconnect Reconnect
+#endif
+TEST_F(LevelDBServiceTest, MAYBE_Reconnect) {
   DatabaseError error;
 
   {
@@ -202,7 +220,13 @@ TEST_F(LevelDBServiceTest, Reconnect) {
   }
 }
 
-TEST_F(LevelDBServiceTest, GetSnapshotSimple) {
+// TODO(crbug.com/602820) Test is flaky.
+#if defined(OS_LINUX)
+#define MAYBE_GetSnapshotSimple DISABLED_GetSnapshotSimple
+#else
+#define MAYBE_GetSnapshotSimple GetSnapshotSimple
+#endif
+TEST_F(LevelDBServiceTest, MAYBE_GetSnapshotSimple) {
   DatabaseError error;
 
   filesystem::DirectoryPtr directory;
@@ -220,7 +244,13 @@ TEST_F(LevelDBServiceTest, GetSnapshotSimple) {
   EXPECT_NE(static_cast<uint64_t>(0), snapshot_id);
 }
 
-TEST_F(LevelDBServiceTest, GetFromSnapshots) {
+// TODO(crbug.com/602820) Test is flaky.
+#if defined(OS_LINUX)
+#define MAYBE_GetFromSnapshots DISABLED_GetFromSnapshots
+#else
+#define MAYBE_GetFromSnapshots GetFromSnapshots
+#endif
+TEST_F(LevelDBServiceTest, MAYBE_GetFromSnapshots) {
   DatabaseError error;
 
   filesystem::DirectoryPtr directory;
@@ -274,7 +304,13 @@ TEST_F(LevelDBServiceTest, GetFromSnapshots) {
   EXPECT_EQ("value", value.To<std::string>());
 }
 
-TEST_F(LevelDBServiceTest, InvalidArgumentOnInvalidSnapshot) {
+// TODO(crbug.com/602820) Test is flaky.
+#if defined(OS_LINUX)
+#define MAYBE_InvalidArgumentOnInvalidSnapshot DISABLED_InvalidArgumentOnInvalidSnapshot
+#else
+#define MAYBE_InvalidArgumentOnInvalidSnapshot InvalidArgumentOnInvalidSnapshot
+#endif
+TEST_F(LevelDBServiceTest, MAYBE_InvalidArgumentOnInvalidSnapshot) {
   filesystem::DirectoryPtr directory;
   GetUserDataDir(&directory);
 
