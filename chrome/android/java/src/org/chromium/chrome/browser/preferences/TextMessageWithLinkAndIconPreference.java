@@ -5,13 +5,17 @@
 package org.chromium.chrome.browser.preferences;
 
 import android.content.Context;
+import android.content.res.TypedArray;
+import android.graphics.Paint.FontMetrics;
 import android.text.SpannableString;
 import android.text.method.LinkMovementMethod;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.text.SpanApplier;
@@ -22,6 +26,7 @@ import org.chromium.ui.text.SpanApplier;
  */
 public class TextMessageWithLinkAndIconPreference extends TextMessagePreference {
     private Runnable mLinkClickDelegate;
+    private boolean mNoBottomSpacing;
 
     /**
      * Constructor for inflating from XML.
@@ -29,6 +34,12 @@ public class TextMessageWithLinkAndIconPreference extends TextMessagePreference 
     public TextMessageWithLinkAndIconPreference(Context context, AttributeSet attrs) {
         super(context, attrs);
         setLayoutResource(R.layout.text_message_with_link_and_icon_preference);
+
+        TypedArray a = context.obtainStyledAttributes(
+                attrs, R.styleable.TextMessageWithLinkAndIconPreference);
+        mNoBottomSpacing = a.getBoolean(
+                R.styleable.TextMessageWithLinkAndIconPreference_noBottomSpacing, false);
+        a.recycle();
     }
 
     /**
@@ -62,8 +73,28 @@ public class TextMessageWithLinkAndIconPreference extends TextMessagePreference 
     @Override
     public View onCreateView(ViewGroup parent) {
         View view = super.onCreateView(parent);
+
+        if (mNoBottomSpacing) {
+            ApiCompatibilityUtils.setPaddingRelative(
+                    view,
+                    ApiCompatibilityUtils.getPaddingStart(view),
+                    view.getPaddingTop(),
+                    ApiCompatibilityUtils.getPaddingEnd(view),
+                    0);
+        }
+
         ((TextView) view.findViewById(android.R.id.summary)).setMovementMethod(
                 LinkMovementMethod.getInstance());
+
+        // The icon is aligned to the top of the text view, which can be higher than the
+        // ascender line of the text, and makes it look aligned improperly.
+        TextView textView = (TextView) view.findViewById(
+                getTitle() != null ? android.R.id.title : android.R.id.summary);
+        FontMetrics metrics = textView.getPaint().getFontMetrics();
+        ImageView icon = (ImageView) view.findViewById(android.R.id.icon);
+        ApiCompatibilityUtils.setPaddingRelative(
+                icon, 0, (int) java.lang.Math.ceil(metrics.ascent - metrics.top), 0, 0);
+
         return view;
     }
 }

@@ -47,7 +47,8 @@
     <org.chromium.chrome.browser.preferences.TextMessageWithLinkAndIconPreference
         android:key="google_summary"
         android:summary="@string/clear_browsing_data_footnote_signed"
-        android:icon="@drawable/googleg" />
+        android:icon="@drawable/googleg"
+        chrome:noBottomSpacing="true" />
 
     <org.chromium.chrome.browser.preferences.TextMessageWithLinkAndIconPreference
         android:key="general_summary"
