@@ -70,6 +70,12 @@ WTF_EXPORT unsigned calculateStringHashAndLengthFromUTF8MaskingTop8Bits(const ch
 WTF_EXPORT bool equalUTF16WithUTF8(const UChar* a, const UChar* aEnd, const char* b, const char* bEnd);
 WTF_EXPORT bool equalLatin1WithUTF8(const LChar* a, const LChar* aEnd, const char* b, const char* bEnd);
 
+
+// Given a sequence of bytes in |data| of length |len|, check if the content is
+// encoded in UTF-8. Pure ASCII text is not regarded as UTF-8 in order to
+// respect the default encoding since it can be of any encoding.
+WTF_EXPORT bool isUTF8andNotASCII(const char* data, size_t length);
+
 } // namespace Unicode
 } // namespace WTF
 

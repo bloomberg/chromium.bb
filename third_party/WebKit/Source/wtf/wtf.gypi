@@ -225,6 +225,7 @@
             'text/StringOperatorsTest.cpp',
             'text/TextCodecReplacementTest.cpp',
             'text/TextCodecUTF8Test.cpp',
+            "text/UTF8Test.cpp",
             'text/WTFStringTest.cpp',
             'typed_arrays/ArrayBufferBuilderTest.cpp',
         ],
