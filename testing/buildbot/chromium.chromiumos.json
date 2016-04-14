@@ -1,4 +1,9 @@
 {
+  "Linux ChromiumOS Builder": {
+    "additional_compile_targets": [
+      "All"
+    ]
+  },
   "Linux ChromiumOS GN": {
     "additional_compile_targets": [
       "gn_all"

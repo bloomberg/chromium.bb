@@ -876,6 +876,15 @@ group("chromium_builder_perf") {
   }
 }
 
+# For compatibility with GYP. The linux_chromium_chromeos_rel_ng and
+# linux_chromium_chromeos_compile_rel_ng bots reference this target as
+# something to build, but all targets for those bots to compile are set
+# up differently.
+# TODO bug 601920: Remove reference to aura_builder on bot config and delete
+# this group.
+group("aura_builder") {
+}
+
 # Because of the source assignment filter, many targets end up over-filtering
 # their sources if the output directory contains a platform name. Assert that
 # this doesn't happen. http://crbug.com/548283

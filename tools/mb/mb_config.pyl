@@ -688,7 +688,7 @@
       'linux_chromium_cfi_rel_ng': 'gn_cfi_release_trybot',
       'linux_chromium_chromeos_asan_variable': 'findit',
       'linux_chromium_chromeos_compile_rel_ng':
-        'swarming_chromeos_gyp_release_trybot',
+        'swarming_chromeos_gn_release_trybot',
       'linux_chromium_chromeos_rel_ng': 'swarming_chromeos_gyp_release_trybot',
       'linux_chromium_chromeos_variable': 'findit',
       'linux_chromium_chromeos_variable_chrome': 'findit',
@@ -1246,6 +1246,10 @@
 
     'swarming_asan_lsan_gyp_release_trybot': [
       'swarming', 'asan', 'lsan', 'release_trybot',
+    ],
+
+    'swarming_chromeos_gn_release_trybot': [
+      'swarming', 'chromeos_with_codecs', 'gn', 'release_trybot',
     ],
 
     'swarming_chromeos_gyp_debug_bot': [

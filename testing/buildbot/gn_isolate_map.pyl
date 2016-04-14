@@ -189,7 +189,7 @@
   },
   "chromeos_unittests": {
     "label": "//chromeos:chromeos_unittests",
-    "type": "unknown",
+    "type": "console_test_launcher",
   },
   "components_browsertests": {
     "label": "//components:components_browsertests",
