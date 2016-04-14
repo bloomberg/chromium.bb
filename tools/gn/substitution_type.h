@@ -56,6 +56,7 @@ enum SubstitutionType {
   SUBSTITUTION_LINKER_INPUTS_NEWLINE,  // {{inputs_newline}}
   SUBSTITUTION_LDFLAGS,  // {{ldflags}}
   SUBSTITUTION_LIBS,  // {{libs}}
+  SUBSTITUTION_OUTPUT_DIR,  // {{output_dir}}
   SUBSTITUTION_OUTPUT_EXTENSION,  // {{output_extension}}
   SUBSTITUTION_SOLIBS,  // {{solibs}}
 

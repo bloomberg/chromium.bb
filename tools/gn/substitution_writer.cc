@@ -56,6 +56,10 @@ const char kSourceExpansion_Help[] =
     "\n"
     "Placeholders\n"
     "\n"
+    "  This section discusses only placeholders for actions. There are other\n"
+    "  placeholders used in the definition of tools. See \"gn help tool\" for\n"
+    "  those.\n"
+    "\n"
     "  {{source}}\n"
     "      The name of the source file including directory (*). This will\n"
     "      generally be used for specifying inputs to a script in the\n"
@@ -546,6 +550,23 @@ std::string SubstitutionWriter::GetLinkerSubstitution(
 
   // Fall-through to the linker-specific ones.
   switch (type) {
+    case SUBSTITUTION_OUTPUT_DIR:
+      // Use the target's value if there is one (it will have no expansion
+      // patterns since it can directly use GN variables to compute whatever
+      // path it wants), or the tool's default (which will contain further
+      // expansions).
+      if (target->output_dir().is_null()) {
+        return ApplyPatternToLinkerAsOutputFile(
+            target, tool, tool->default_output_dir()).value();
+      } else {
+        SetDirOrDotWithNoSlash(RebasePath(
+                target->output_dir().value(),
+                target->settings()->build_settings()->build_dir()),
+            &result);
+        return result;
+      }
+      break;
+
     case SUBSTITUTION_OUTPUT_EXTENSION:
       // Use the extension provided on the target if specified, otherwise
       // fall back on the default. Note that the target's output extension

@@ -100,6 +100,12 @@ class Target : public Item {
     output_prefix_override_ = prefix_override;
   }
 
+  // Desired output directory for the final output. This will be used for
+  // the {{output_dir}} substitution in the tool if it is specified. If
+  // is_null, the tool default will be used.
+  const SourceDir& output_dir() const { return output_dir_; }
+  void set_output_dir(const SourceDir& dir) { output_dir_ = dir; }
+
   // The output extension is really a tri-state: unset (output_extension_set
   // is false and the string is empty, meaning the default extension should be
   // used), the output extension is set but empty (output should have no
@@ -332,6 +338,7 @@ class Target : public Item {
   OutputType output_type_;
   std::string output_name_;
   bool output_prefix_override_;
+  SourceDir output_dir_;
   std::string output_extension_;
   bool output_extension_set_;
 

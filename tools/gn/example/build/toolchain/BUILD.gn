@@ -37,9 +37,10 @@ toolchain("gcc") {
 
   tool("solink") {
     soname = "{{target_output_name}}{{output_extension}}"  # e.g. "libfoo.so".
+    sofile = "{{output_dir}}/$soname"
     rspfile = soname + ".rsp"
 
-    command = "g++ -shared {{ldflags}} -o $soname -Wl,-soname=$soname @$rspfile"
+    command = "g++ -shared {{ldflags}} -o $sofile -Wl,-soname=$soname @$rspfile"
     rspfile_content = "-Wl,--whole-archive {{inputs}} {{solibs}} -Wl,--no-whole-archive {{libs}}"
 
     description = "SOLINK $soname"
@@ -49,11 +50,15 @@ toolchain("gcc") {
     # specifies).
     default_output_extension = ".so"
 
+    # Use this for {{output_dir}} expansions unless a target manually overrides
+    # it (in which case {{output_dir}} will be what the target specifies).
+    default_output_dir = "{{root_out_dir}}"
+
     outputs = [
-      soname,
+      sofile,
     ]
-    link_output = soname
-    depend_output = soname
+    link_output = sofile
+    depend_output = sofile
     output_prefix = "lib"
   }
 
@@ -62,6 +67,7 @@ toolchain("gcc") {
     rspfile = "$outfile.rsp"
     command = "g++ {{ldflags}} -o $outfile -Wl,--start-group @$rspfile {{solibs}} -Wl,--end-group {{libs}}"
     description = "LINK $outfile"
+    default_output_dir = "{{root_out_dir}}"
     rspfile_content = "{{inputs}}"
     outputs = [
       outfile,

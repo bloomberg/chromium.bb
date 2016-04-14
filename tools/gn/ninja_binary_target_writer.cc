@@ -780,7 +780,7 @@ void NinjaBinaryTargetWriter::WriteLinkerStuff(
     WriteLinkerFlags(optional_def_file);
     WriteLibs();
   }
-  WriteOutputExtension();
+  WriteOutputSubstitutions();
   WriteSolibs(solibs);
 }
 
@@ -847,10 +847,14 @@ void NinjaBinaryTargetWriter::WriteLibs() {
   out_ << std::endl;
 }
 
-void NinjaBinaryTargetWriter::WriteOutputExtension() {
+void NinjaBinaryTargetWriter::WriteOutputSubstitutions() {
   out_ << "  output_extension = "
        << SubstitutionWriter::GetLinkerSubstitution(
               target_, tool_, SUBSTITUTION_OUTPUT_EXTENSION);
+  out_ << std::endl;
+  out_ << "  output_dir = "
+       << SubstitutionWriter::GetLinkerSubstitution(
+              target_, tool_, SUBSTITUTION_OUTPUT_DIR);
   out_ << std::endl;
 }
 

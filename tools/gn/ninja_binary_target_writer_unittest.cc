@@ -82,7 +82,8 @@ TEST(NinjaBinaryTargetWriter, SourceSet) {
             "|| obj/foo/bar.stamp\n"
         "  ldflags =\n"
         "  libs =\n"
-        "  output_extension = .so\n";
+        "  output_extension = .so\n"
+        "  output_dir = \n";
     std::string out_str = out.str();
     EXPECT_EQ(expected, out_str);
   }
@@ -110,7 +111,8 @@ TEST(NinjaBinaryTargetWriter, SourceSet) {
         // There are no sources so there are no params to alink. (In practice
         // this will probably fail in the archive tool.)
         "build obj/foo/libstlib.a: alink || obj/foo/bar.stamp\n"
-        "  output_extension = \n";
+        "  output_extension = \n"
+        "  output_dir = \n";
     std::string out_str = out.str();
     EXPECT_EQ(expected, out_str);
   }
@@ -136,15 +138,16 @@ TEST(NinjaBinaryTargetWriter, SourceSet) {
         "build obj/foo/libstlib.a: alink obj/foo/bar.input1.o "
             "obj/foo/bar.input2.o ../../foo/input3.o ../../foo/input4.obj "
             "|| obj/foo/bar.stamp\n"
-        "  output_extension = \n";
+        "  output_extension = \n"
+        "  output_dir = \n";
     std::string out_str = out.str();
     EXPECT_EQ(expected, out_str);
   }
 }
 
-// This tests that output extension overrides apply, and input dependencies
-// are applied.
-TEST(NinjaBinaryTargetWriter, ProductExtensionAndInputDeps) {
+// This tests that output extension and output dir overrides apply, and input
+// dependencies are applied.
+TEST(NinjaBinaryTargetWriter, OutputExtensionAndInputDeps) {
   TestWithScope setup;
   Err err;
 
@@ -157,10 +160,11 @@ TEST(NinjaBinaryTargetWriter, ProductExtensionAndInputDeps) {
   action.SetToolchain(setup.toolchain());
   ASSERT_TRUE(action.OnResolved(&err));
 
-  // A shared library w/ the product_extension set to a custom value.
+  // A shared library w/ the output_extension set to a custom value.
   Target target(setup.settings(), Label(SourceDir("//foo/"), "shlib"));
   target.set_output_type(Target::SHARED_LIBRARY);
   target.set_output_extension(std::string("so.6"));
+  target.set_output_dir(SourceDir("//out/Debug/foo/"));
   target.sources().push_back(SourceFile("//foo/input1.cc"));
   target.sources().push_back(SourceFile("//foo/input2.cc"));
   target.public_deps().push_back(LabelTargetPair(&action));
@@ -192,7 +196,8 @@ TEST(NinjaBinaryTargetWriter, ProductExtensionAndInputDeps) {
           "obj/foo/libshlib.input2.o || obj/foo/action.stamp\n"
       "  ldflags =\n"
       "  libs =\n"
-      "  output_extension = .so.6\n";
+      "  output_extension = .so.6\n"
+      "  output_dir = foo\n";
 
   std::string out_str = out.str();
   EXPECT_EQ(expected, out_str);
@@ -229,19 +234,20 @@ TEST(NinjaBinaryTargetWriter, LibsAndLibDirs) {
       "build ./libshlib.so: solink | ../../foo/lib1.a\n"
       "  ldflags = -L../../foo/bar\n"
       "  libs = ../../foo/lib1.a -lfoo\n"
-      "  output_extension = .so\n";
+      "  output_extension = .so\n"
+      "  output_dir = \n";
 
   std::string out_str = out.str();
   EXPECT_EQ(expected, out_str);
 }
 
-TEST(NinjaBinaryTargetWriter, EmptyProductExtension) {
+TEST(NinjaBinaryTargetWriter, EmptyOutputExtension) {
   TestWithScope setup;
   Err err;
 
   setup.build_settings()->SetBuildDir(SourceDir("//out/Debug/"));
 
-  // This test is the same as ProductExtension, except that we call
+  // This test is the same as OutputExtensionAndInputDeps, except that we call
   // set_output_extension("") and ensure that we get an empty one and override
   // the output prefix so that the name matches the target exactly.
   Target target(setup.settings(), Label(SourceDir("//foo/"), "shlib"));
@@ -274,7 +280,8 @@ TEST(NinjaBinaryTargetWriter, EmptyProductExtension) {
           "obj/foo/shlib.input2.o\n"
       "  ldflags =\n"
       "  libs =\n"
-      "  output_extension = \n";
+      "  output_extension = \n"
+      "  output_dir = \n";
 
   std::string out_str = out.str();
   EXPECT_EQ(expected, out_str);
@@ -357,7 +364,8 @@ TEST(NinjaBinaryTargetWriter, SourceSetDataDeps) {
           "obj/foo/inter.stamp\n"
       "  ldflags =\n"
       "  libs =\n"
-      "  output_extension = \n";
+      "  output_extension = \n"
+      "  output_dir = \n";
   EXPECT_EQ(final_expected, final_out.str());
 }
 
@@ -392,7 +400,8 @@ TEST(NinjaBinaryTargetWriter, SharedLibraryModuleDefinitionFile) {
       "build ./libbar.so: solink obj/foo/libbar.sources.o | ../../foo/bar.def\n"
       "  ldflags = /DEF:../../foo/bar.def\n"
       "  libs =\n"
-      "  output_extension = .so\n";
+      "  output_extension = .so\n"
+      "  output_dir = \n";
   EXPECT_EQ(expected, out.str());
 }
 
@@ -427,7 +436,8 @@ TEST(NinjaBinaryTargetWriter, LoadableModule) {
       "build ./libbar.so: solink_module obj/foo/libbar.sources.o\n"
       "  ldflags =\n"
       "  libs =\n"
-      "  output_extension = .so\n";
+      "  output_extension = .so\n"
+      "  output_dir = \n";
   EXPECT_EQ(loadable_expected, out.str());
 
   // Final target.
@@ -458,7 +468,8 @@ TEST(NinjaBinaryTargetWriter, LoadableModule) {
       "build ./exe: link obj/foo/exe.final.o || ./libbar.so\n"
       "  ldflags =\n"
       "  libs =\n"
-      "  output_extension = \n";
+      "  output_extension = \n"
+      "  output_dir = \n";
   EXPECT_EQ(final_expected, final_out.str());
 }
 

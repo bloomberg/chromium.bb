@@ -99,7 +99,7 @@ class NinjaBinaryTargetWriter : public NinjaTargetWriter {
                         const std::vector<SourceFile>& other_files);
   void WriteLinkerFlags(const SourceFile* optional_def_file);
   void WriteLibs();
-  void WriteOutputExtension();
+  void WriteOutputSubstitutions();
   void WriteSolibs(const std::vector<OutputFile>& solibs);
 
   // Writes the stamp line for a source set. These are not linked.

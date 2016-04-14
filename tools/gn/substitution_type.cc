@@ -43,6 +43,7 @@ const char* kSubstitutionNames[SUBSTITUTION_NUM_TYPES] = {
   "{{inputs_newline}}",  // SUBSTITUTION_LINKER_INPUTS_NEWLINE
   "{{ldflags}}",  // SUBSTITUTION_LDFLAGS
   "{{libs}}",  // SUBSTITUTION_LIBS
+  "{{output_dir}}",  // SUBSTITUTION_OUTPUT_DIR
   "{{output_extension}}",  // SUBSTITUTION_OUTPUT_EXTENSION
   "{{solibs}}",  // SUBSTITUTION_SOLIBS
 
@@ -91,6 +92,7 @@ const char* kSubstitutionNinjaNames[SUBSTITUTION_NUM_TYPES] = {
     "in_newline",        // SUBSTITUTION_LINKER_INPUTS_NEWLINE
     "ldflags",           // SUBSTITUTION_LDFLAGS
     "libs",              // SUBSTITUTION_LIBS
+    "output_dir",        // SUBSTITUTION_OUTPUT_DIR
     "output_extension",  // SUBSTITUTION_OUTPUT_EXTENSION
     "solibs",            // SUBSTITUTION_SOLIBS
 
@@ -193,6 +195,7 @@ bool IsValidLinkerSubstitution(SubstitutionType type) {
          type == SUBSTITUTION_LINKER_INPUTS_NEWLINE ||
          type == SUBSTITUTION_LDFLAGS ||
          type == SUBSTITUTION_LIBS ||
+         type == SUBSTITUTION_OUTPUT_DIR ||
          type == SUBSTITUTION_OUTPUT_EXTENSION ||
          type == SUBSTITUTION_SOLIBS;
 }
@@ -200,6 +203,7 @@ bool IsValidLinkerSubstitution(SubstitutionType type) {
 bool IsValidLinkerOutputsSubstitution(SubstitutionType type) {
   // All valid compiler outputs plus the output extension.
   return IsValidCompilerOutputsSubstitution(type) ||
+         type == SUBSTITUTION_OUTPUT_DIR ||
          type == SUBSTITUTION_OUTPUT_EXTENSION;
 }
 

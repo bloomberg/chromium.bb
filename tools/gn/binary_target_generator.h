@@ -27,6 +27,7 @@ class BinaryTargetGenerator : public TargetGenerator {
   bool FillCompleteStaticLib();
   bool FillOutputName();
   bool FillOutputPrefixOverride();
+  bool FillOutputDir();
   bool FillOutputExtension();
   bool FillAllowCircularIncludesFrom();
 

@@ -278,4 +278,46 @@ TEST(SubstitutionWriter, LinkerSubstitutions) {
   EXPECT_EQ("",
             SubstitutionWriter::GetLinkerSubstitution(
                 &target, tool, SUBSTITUTION_OUTPUT_EXTENSION));
+
+  // Output directory is tested in a separate test below.
+}
+
+TEST(SubstitutionWriter, OutputDir) {
+  TestWithScope setup;
+  Err err;
+
+  // This tool has an output directory pattern and uses that for the
+  // output name.
+  Tool tool;
+  SubstitutionPattern out_dir_pattern;
+  ASSERT_TRUE(out_dir_pattern.Parse("{{root_out_dir}}/{{target_output_name}}",
+                                    nullptr, &err));
+  tool.set_default_output_dir(out_dir_pattern);
+  tool.SetComplete();
+
+  // Default target with no output dir overrides.
+  Target target(setup.settings(), Label(SourceDir("//foo/"), "baz"));
+  target.set_output_type(Target::EXECUTABLE);
+  target.SetToolchain(setup.toolchain());
+  ASSERT_TRUE(target.OnResolved(&err));
+
+  // The output should expand the default from the patterns in the tool.
+  SubstitutionPattern output_name;
+  ASSERT_TRUE(output_name.Parse("{{output_dir}}/{{target_output_name}}.exe",
+                                nullptr, &err));
+  EXPECT_EQ("./baz/baz.exe",
+            SubstitutionWriter::ApplyPatternToLinkerAsOutputFile(
+                &target, &tool, output_name).value());
+
+  // Override the output name to the root build dir.
+  target.set_output_dir(SourceDir("//out/Debug/"));
+  EXPECT_EQ("./baz.exe",
+            SubstitutionWriter::ApplyPatternToLinkerAsOutputFile(
+                &target, &tool, output_name).value());
+
+  // Override the output name to a new subdirectory.
+  target.set_output_dir(SourceDir("//out/Debug/foo/bar"));
+  EXPECT_EQ("foo/bar/baz.exe",
+            SubstitutionWriter::ApplyPatternToLinkerAsOutputFile(
+                &target, &tool, output_name).value());
 }

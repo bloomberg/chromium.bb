@@ -7,8 +7,10 @@
 #include "tools/gn/config_values_generator.h"
 #include "tools/gn/deps_iterator.h"
 #include "tools/gn/err.h"
+#include "tools/gn/filesystem_utils.h"
 #include "tools/gn/functions.h"
 #include "tools/gn/scope.h"
+#include "tools/gn/settings.h"
 #include "tools/gn/value_extractors.h"
 #include "tools/gn/variables.h"
 
@@ -32,6 +34,9 @@ void BinaryTargetGenerator::DoRun() {
     return;
 
   if (!FillOutputPrefixOverride())
+    return;
+
+  if (!FillOutputDir())
     return;
 
   if (!FillOutputExtension())
@@ -95,6 +100,29 @@ bool BinaryTargetGenerator::FillOutputPrefixOverride() {
   if (!value->VerifyTypeIs(Value::BOOLEAN, err_))
     return false;
   target_->set_output_prefix_override(value->boolean_value());
+  return true;
+}
+
+bool BinaryTargetGenerator::FillOutputDir() {
+  const Value* value = scope_->GetValue(variables::kOutputDir, true);
+  if (!value)
+    return true;
+  if (!value->VerifyTypeIs(Value::STRING, err_))
+    return false;
+
+  if (value->string_value().empty())
+    return true;  // Treat empty string as the default and do nothing.
+
+  const BuildSettings* build_settings = scope_->settings()->build_settings();
+  SourceDir dir = scope_->GetSourceDir().ResolveRelativeDir(
+      *value, err_, build_settings->root_path_utf8());
+  if (err_->has_error())
+    return false;
+
+  if (!EnsureStringIsInOutputDir(build_settings->build_dir(),
+                                 dir.value(), value->origin(), err_))
+    return false;
+  target_->set_output_dir(dir);
   return true;
 }
 

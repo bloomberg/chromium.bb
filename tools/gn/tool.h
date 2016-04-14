@@ -52,6 +52,14 @@ class Tool {
     default_output_extension_ = ext;
   }
 
+  const SubstitutionPattern& default_output_dir() const {
+    return default_output_dir_;
+  }
+  void set_default_output_dir(const SubstitutionPattern& dir) {
+    DCHECK(!complete_);
+    default_output_dir_ = dir;
+  }
+
   // Dependency file (if supported).
   const SubstitutionPattern& depfile() const {
     return depfile_;
@@ -186,6 +194,7 @@ class Tool {
  private:
   SubstitutionPattern command_;
   std::string default_output_extension_;
+  SubstitutionPattern default_output_dir_;
   SubstitutionPattern depfile_;
   DepsFormat depsformat_;
   PrecompiledHeaderType precompiled_header_type_;

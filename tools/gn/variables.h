@@ -183,6 +183,10 @@ extern const char kLibs[];
 extern const char kLibs_HelpShort[];
 extern const char kLibs_Help[];
 
+extern const char kOutputDir[];
+extern const char kOutputDir_HelpShort[];
+extern const char kOutputDir_Help[];
+
 extern const char kOutputExtension[];
 extern const char kOutputExtension_HelpShort[];
 extern const char kOutputExtension_Help[];

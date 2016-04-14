@@ -2730,6 +2730,20 @@
 
         The command to run.
 
+    default_output_dir  [string with substitutions]
+        Valid for: linker tools
+
+        Default directory name for the output file relative to the
+        root_build_dir. It can contain other substitution patterns.
+        This will be the default value for the {{output_dir}} expansion
+        (discussed below) but will be overridden by the "output_dir"
+        variable in a target, if one is specified.
+
+        GN doesn't do anything with this string other than pass it
+        along, potentially with target-specific overrides. It is the
+        tool's job to use the expansion so that the files will be in
+        the right place.
+
     default_output_extension  [string]
         Valid for: linker tools
 
@@ -2746,7 +2760,7 @@
 
         Example: default_output_extension = ".exe"
 
-    depfile  [string]
+    depfile  [string with substitutions]
         Valid for: compiler tools (optional)
 
         If the tool can write ".d" files, this specifies the name of
@@ -2808,13 +2822,11 @@
           ]
 
         Example for a linker tool that produces a .dll and a .lib. The
-        use of {{output_extension}} rather than hardcoding ".dll"
-        allows the extension of the library to be overridden on a
-        target-by-target basis, but in this example, it always
-        produces a ".lib" import library:
+        use of {{target_output_name}}, {{output_extension}} and
+        {{output_dir}} allows the target to override these values.
           outputs = [
-            "{{root_out_dir}}/{{target_output_name}}{{output_extension}}",
-            "{{root_out_dir}}/{{target_output_name}}.lib",
+            "{{output_dir}}/{{target_output_name}}{{output_extension}}",
+            "{{output_dir}}/{{target_output_name}}.lib",
           ]
 
     link_output  [string with substitutions]
@@ -2827,7 +2839,7 @@
         should match entries in the "outputs". If unspecified, the
         first item in the "outputs" array will be used for all. See
         "Separate linking and dependencies for shared libraries"
-        below for more.  If link_output is set but runtime_link_output
+        below for more. If link_output is set but runtime_link_output
         is not set, runtime_link_output defaults to link_output.
 
         On Windows, where the tools produce a .dll shared library and
@@ -2937,7 +2949,7 @@
     {{target_out_dir}}
         The directory of the generated file and output directories,
         respectively, for the current target. There is no trailing
-        slash.
+        slash. See also {{output_dir}} for linker tools.
         Example: "out/base/test"
 
     {{target_output_name}}
@@ -3020,6 +3032,21 @@
 
         Example: "-lfoo -lbar"
 
+    {{output_dir}}
+        The value of the "output_dir" variable in the target, or the
+        the value of the "default_output_dir" value in the tool if the
+        target does not override the output directory. This will be
+        relative to the root_build_dir and will not end in a slash.
+        Will be "." for output to the root_build_dir.
+
+        This is subtly different than {{target_out_dir}} which is
+        defined by GN based on the target's path and not overridable.
+        {{output_dir}} is for the final output, {{target_out_dir}} is
+        generally for object files and other outputs.
+
+        Usually {{output_dir}} would be defined in terms of either
+        {{target_out_dir}} or {{root_out_dir}}
+
     {{output_extension}}
         The value of the "output_extension" variable in the target,
         or the value of the "default_output_extension" value in the
@@ -3075,13 +3102,13 @@
     tool("solink") {
       command = "..."
       outputs = [
-        "{{root_out_dir}}/{{target_output_name}}{{output_extension}}",
-        "{{root_out_dir}}/{{target_output_name}}{{output_extension}}.TOC",
+        "{{output_dir}}/{{target_output_name}}{{output_extension}}",
+        "{{output_dir}}/{{target_output_name}}{{output_extension}}.TOC",
       ]
       link_output =
-        "{{root_out_dir}}/{{target_output_name}}{{output_extension}}"
+        "{{output_dir}}/{{target_output_name}}{{output_extension}}"
       depend_output =
-        "{{root_out_dir}}/{{target_output_name}}{{output_extension}}.TOC"
+        "{{output_dir}}/{{target_output_name}}{{output_extension}}.TOC"
       restat = true
     }
 
@@ -4660,6 +4687,36 @@
 
 
 ```
+## **output_dir**: [directory] Directory to put output file in.
+
+```
+  For library and executable targets, overrides the directory for the
+  final output. This must be in the root_build_dir or a child thereof.
+
+  This should generally be in the root_out_dir or a subdirectory thereof
+  (the root_out_dir will be the same as the root_build_dir for the
+  default toolchain, and will be a subdirectory for other toolchains).
+  Not putting the output in a subdirectory of root_out_dir can result
+  in collisions between different toolchains, so you will need to take
+  steps to ensure that your target is only present in one toolchain.
+
+  Normally the toolchain specifies the output directory for libraries
+  and executables (see "gn help tool"). You will have to consult that
+  for the default location. The default location will be used if
+  output_dir is undefined or empty.
+
+```
+
+### **Example**
+
+```
+  shared_library("doom_melon") {
+    output_dir = "$root_out_dir/plugin_libs"
+    ...
+  }
+
+
+```
 ## **output_extension**: Value to use for the output's file extension.
 
 ```
@@ -5724,6 +5781,10 @@
 ### **Placeholders**
 
 ```
+  This section discusses only placeholders for actions. There are other
+  placeholders used in the definition of tools. See "gn help tool" for
+  those.
+
   {{source}}
       The name of the source file including directory (*). This will
       generally be used for specifying inputs to a script in the
