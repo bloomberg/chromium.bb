@@ -712,5 +712,183 @@
         'enable_data_reduction_proxy_support%': 0,
       },
     }],  # OS=="android"
+    ['OS=="ios"', {
+      'targets': [
+        { # TODO(mef): Dedup this with copy in OS=="android" section.
+          'target_name': 'cronet_version_header',
+          'type': 'none',
+          # Need to set hard_depency flag because cronet_version generates a
+          # header.
+          'hard_dependency': 1,
+          'direct_dependent_settings': {
+            'include_dirs': [
+              '<(SHARED_INTERMEDIATE_DIR)/',
+            ],
+          },
+          'actions': [
+            {
+              'action_name': 'version_header',
+              'message': 'Generating version header file: <@(_outputs)',
+              'inputs': [
+                '<(version_path)',
+                'cronet/version.h.in',
+              ],
+              'outputs': [
+                '<(SHARED_INTERMEDIATE_DIR)/components/cronet/version.h',
+              ],
+              'action': [
+                'python',
+                '<(version_py_path)',
+                '-e', 'VERSION_FULL="<(version_full)"',
+                'cronet/version.h.in',
+                '<@(_outputs)',
+              ],
+              'includes': [
+                '../build/util/version.gypi',
+              ],
+            },
+          ],
+        },
+        {
+          'target_name': 'cronet_static',
+          'type': 'static_library',
+          'sources': [
+            'cronet/ios/Cronet.h',
+            'cronet/ios/Cronet.mm',
+            'cronet/ios/cronet_bidirectional_stream.h',
+            'cronet/ios/cronet_bidirectional_stream.cc',
+            'cronet/ios/cronet_c_for_grpc.h',
+            'cronet/ios/cronet_c_for_grpc.cc',
+            'cronet/ios/cronet_environment.cc',
+            'cronet/ios/cronet_environment.h',
+            'cronet/url_request_context_config.cc',
+            'cronet/url_request_context_config.h',
+          ],
+          'dependencies': [
+            'cronet_version_header',
+            '../base/base.gyp:base',
+            '../net/net.gyp:net',
+          ],
+          'cflags': [
+            '-fdata-sections',
+            '-ffunction-sections',
+            '-fno-rtti',
+            '-fvisibility-inlines-hidden',
+            '-Wno-sign-promo',
+            '-Wno-missing-field-initializers',
+          ],
+          'ldflags': [
+            '-llog',
+            '-Wl,--gc-sections',
+            '-Wl,--exclude-libs,ALL'
+          ],
+        },
+        {
+          'target_name': 'libcronet',
+          'type': 'shared_library',
+          'sources': [
+            'cronet/ios/Cronet.h',
+            'cronet/ios/Cronet.mm',
+          ],
+          'dependencies': [
+            'cronet_static',
+            '../base/base.gyp:base',
+          ],
+        },
+        {
+          'target_name': 'cronet_test',
+          'type': 'executable',
+          'dependencies': [
+            'cronet_static',
+            '../net/net.gyp:net_quic_proto',
+            '../net/net.gyp:net_test_support',
+            '../net/net.gyp:simple_quic_tools',
+            '../testing/gtest.gyp:gtest',
+          ],
+          'sources': [
+            'cronet/ios/test/cronet_bidirectional_stream_test.mm',
+            'cronet/ios/test/cronet_test_runner.mm',
+            'cronet/ios/test/quic_test_server.cc',
+            'cronet/ios/test/quic_test_server.h',
+          ],
+          'mac_bundle_resources': [
+            '../net/data/ssl/certificates/quic_test.example.com.crt',
+            '../net/data/ssl/certificates/quic_test.example.com.key',
+            '../net/data/ssl/certificates/quic_test.example.com.key.pkcs8',
+            '../net/data/ssl/certificates/quic_test.example.com.key.sct',
+          ],
+          'include_dirs': [
+            '..',
+          ],
+        },
+        {
+            # Build this target to package a standalone Cronet in a single
+            # .a file.
+            'target_name': 'cronet_package',
+            'type': 'none',
+            'variables' : {
+              'package_dir': '<(PRODUCT_DIR)/cronet',
+            },
+            'dependencies': [
+              # Depend on the dummy target so that all of CrNet's dependencies
+              # are built before packaging.
+              'libcronet',
+            ],
+            'actions': [
+              {
+                'action_name': 'Package Cronet',
+                'variables': {
+                  'tool_path':
+                      'cronet/tools/link_dependencies.py',
+                },
+                # Actions need an inputs list, even if it's empty.
+                'inputs': [
+                  '<(tool_path)',
+                  '<(PRODUCT_DIR)/libcronet.dylib',
+                ],
+                # Only specify one output, since this will be libtool's output.
+                'outputs': [ '<(package_dir)/libcronet_standalone_with_symbols.a' ],
+                'action': ['<(tool_path)',
+                           '<(PRODUCT_DIR)',
+                           'libcronet.dylib',
+                           '<@(_outputs)',
+                ],
+              },
+              {
+                'action_name': 'Stripping standalone library',
+                # Actions need an inputs list, even if it's empty.
+                'inputs': [
+                  '<(package_dir)/libcronet_standalone_with_symbols.a',
+                ],
+                # Only specify one output, since this will be libtool's output.
+                'outputs': [ '<(package_dir)/libcronet_standalone.a' ],
+                'action': ['strip',
+                           '-S',
+                           '<@(_inputs)',
+                           '-o',
+                           '<@(_outputs)',
+                ],
+              },
+            ],
+            'copies': [
+              {
+                'destination': '<(package_dir)',
+                'files': [
+                  '../chrome/VERSION',
+                  'cronet/ios/Cronet.h',
+                  'cronet/ios/cronet_c_for_grpc.h',
+                ],
+              },
+              {
+                'destination': '<(package_dir)/test',
+                'files': [
+                  'cronet/ios/test/cronet_bidirectional_stream_test.mm',
+                  'cronet/ios/test/cronet_test_runner.mm',
+                ],
+              },
+            ],
+          },
+      ],
+    }],  # OS=="ios"
   ],
 }
