@@ -59,10 +59,7 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
     private NativeInitializationController mNativeInitializationController;
     private MemoryUma mMemoryUma;
     private long mLastUserInteractionTime;
-
     private boolean mIsTablet;
-    private boolean mIsSmallestScreenWidthDpOverriden;
-    private int mSmallestScreenWidthDpOverride;
 
     public AsyncInitializationActivity() {
         mHandler = new Handler();
@@ -86,8 +83,6 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
             int smallestDeviceWidthDp = DeviceFormFactor.getSmallestDeviceWidthDp(this);
 
             if (smallestDeviceWidthDp >= DeviceFormFactor.MINIMUM_TABLET_WIDTH_DP) {
-                mIsSmallestScreenWidthDpOverriden = true;
-                mSmallestScreenWidthDpOverride = smallestDeviceWidthDp;
                 Configuration overrideConfiguration = new Configuration();
                 overrideConfiguration.smallestScreenWidthDp = smallestDeviceWidthDp;
                 applyOverrideConfiguration(overrideConfiguration);
@@ -367,20 +362,6 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
     @Override
     public void onUserInteraction() {
         mLastUserInteractionTime = SystemClock.elapsedRealtime();
-    }
-
-    @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        // AppCompatActivity#onConfigurationChanged() updates the activity resources with the
-        // newConfig without taking into account the configuration override we apply in
-        // #onAttachBaseContext(). For now, we can work around that by setting the
-        // smallestScreenWidthDp on the newConfig before calling super.onConfigurationChanged().
-        // See crbug.com/594540.
-        // TODO(twellington): Remove this once AppCompatActivity bug is fixed.
-        if (mIsSmallestScreenWidthDpOverriden) {
-            newConfig.smallestScreenWidthDp = mSmallestScreenWidthDpOverride;
-        }
-        super.onConfigurationChanged(newConfig);
     }
 
     /**
