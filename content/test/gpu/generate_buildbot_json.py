@@ -670,7 +670,14 @@ TELEMETRY_TESTS = {
   'gpu_process_launch_tests': {'target_name': 'gpu_process'},
   'gpu_rasterization': {},
   'hardware_accelerated_feature': {},
-  'maps_pixel_test': {'target_name': 'maps'},
+  'maps_pixel_test': {
+    'target_name': 'maps',
+    'tester_configs': [
+      {
+        'allow_on_mac_nvidia': True,
+      },
+    ],
+  },
   'memory_test': {},
   'pixel_test': {
     'target_name': 'pixel',
@@ -689,7 +696,12 @@ TELEMETRY_TESTS = {
     ],
     'precommit_args': [
       '--download-refimg-from-cloud-storage',
-    ]
+    ],
+    'tester_configs': [
+      {
+        'allow_on_mac_nvidia': True,
+      },
+    ],
   },
   'screenshot_sync': {},
   'trace_test': {},
