@@ -17,6 +17,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/extensions/wallpaper_private_api.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -93,6 +94,18 @@ class WallpaperFetcher : public net::URLFetcherDelegate {
 base::LazyInstance<WallpaperFetcher> g_wallpaper_fetcher =
     LAZY_INSTANCE_INITIALIZER;
 
+// Gets the |User| for a given |BrowserContext|. The function will only return
+// valid objects.
+const user_manager::User* GetUserFromBrowserContext(
+    content::BrowserContext* context) {
+  Profile* profile = Profile::FromBrowserContext(context);
+  DCHECK(profile);
+  const user_manager::User* user =
+      chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
+  DCHECK(user);
+  return user;
+}
+
 }  // namespace
 
 WallpaperSetWallpaperFunction::WallpaperSetWallpaperFunction() {
@@ -106,9 +119,8 @@ bool WallpaperSetWallpaperFunction::RunAsync() {
   params_ = set_wallpaper::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_);
 
-  // Gets account id and user wallpaper files id while at UI thread.
-  const user_manager::User* user =
-      user_manager::UserManager::Get()->GetLoggedInUser();
+  // Gets account id from the caller, ensuring multiprofile compatibility.
+  const user_manager::User* user = GetUserFromBrowserContext(browser_context());
   account_id_ = user->GetAccountId();
   chromeos::WallpaperManager* wallpaper_manager =
       chromeos::WallpaperManager::Get();
