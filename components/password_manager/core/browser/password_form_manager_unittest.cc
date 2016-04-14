@@ -762,25 +762,35 @@ TEST_F(PasswordFormManagerTest, TestBlacklistMatching) {
   blacklisted_not_match.origin = GURL("http://google.com/a/LoginAuth");
   blacklisted_not_match.blacklisted_by_user = true;
 
-  // Doesn't match because of different username element.
+  // Doesn't match because of different username element and different page.
   PasswordForm blacklisted_not_match2 = *observed_form();
+  blacklisted_not_match2.origin = GURL("http://accounts.google.com/a/Login123");
   blacklisted_not_match2.username_element = ASCIIToUTF16("Element");
   blacklisted_not_match2.blacklisted_by_user = true;
 
+  // Matches because of same element names, despite different page
   PasswordForm blacklisted_match = *observed_form();
   blacklisted_match.origin = GURL("http://accounts.google.com/a/LoginAuth1234");
   blacklisted_match.blacklisted_by_user = true;
+
+  // Matches because of same page, despite different element names
+  PasswordForm blacklisted_match2 = *observed_form();
+  blacklisted_match2.origin = GURL("http://accounts.google.com/a/LoginAuth");
+  blacklisted_match2.username_element = ASCIIToUTF16("Element");
+  blacklisted_match2.blacklisted_by_user = true;
 
   ScopedVector<PasswordForm> result;
   result.push_back(new PasswordForm(blacklisted_psl));
   result.push_back(new PasswordForm(blacklisted_not_match));
   result.push_back(new PasswordForm(blacklisted_not_match2));
   result.push_back(new PasswordForm(blacklisted_match));
+  result.push_back(new PasswordForm(blacklisted_match2));
   result.push_back(new PasswordForm(*saved_match()));
   form_manager.OnGetPasswordStoreResults(std::move(result));
   EXPECT_TRUE(form_manager.IsBlacklisted());
-  EXPECT_THAT(form_manager.blacklisted_matches(),
-              ElementsAre(Pointee(blacklisted_match)));
+  EXPECT_THAT(
+      form_manager.blacklisted_matches(),
+      ElementsAre(Pointee(blacklisted_match), Pointee(blacklisted_match2)));
   EXPECT_EQ(1u, form_manager.best_matches().size());
   EXPECT_EQ(*saved_match(), *form_manager.preferred_match());
 }

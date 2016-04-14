@@ -1251,15 +1251,13 @@ bool PasswordFormManager::IsBlacklistMatch(
   if (blacklisted_form.origin.GetOrigin() != observed_form_.origin.GetOrigin())
     return false;
   if (observed_form_.scheme == PasswordForm::SCHEME_HTML) {
-    if (!AreStringsEqualOrEmpty(blacklisted_form.submit_element,
-                                observed_form_.submit_element))
-      return false;
-    if (!AreStringsEqualOrEmpty(blacklisted_form.password_element,
-                                observed_form_.password_element))
-      return false;
-    if (!AreStringsEqualOrEmpty(blacklisted_form.username_element,
-                                observed_form_.username_element))
-      return false;
+    return (blacklisted_form.origin.path() == observed_form_.origin.path()) ||
+           (AreStringsEqualOrEmpty(blacklisted_form.submit_element,
+                                   observed_form_.submit_element) &&
+            AreStringsEqualOrEmpty(blacklisted_form.password_element,
+                                   observed_form_.password_element) &&
+            AreStringsEqualOrEmpty(blacklisted_form.username_element,
+                                   observed_form_.username_element));
   }
   return true;
 }
