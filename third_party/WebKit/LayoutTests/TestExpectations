@@ -52,6 +52,10 @@ crbug.com/574660 [ Win7 ] fast/text/emphasis-combined-text.html [ Pass Failure ]
 # TODO(wangxianzhu): verify this after rebaseline for crbug.com/602483
 # crbug.com/584211 [ Mac ] svg/transforms/animated-path-inside-transformed-html.xhtml [ Pass Failure ]
 
+# This test violates lifecycle assertions.
+# Timeout because of crbug.com/603231
+crbug.com/372245 media/track/track-word-breaking.html [ Crash Timeout ]
+
 # ====== Oilpan-only failures until here ======
 
 # Run these tests with under virtual/spv2 only.

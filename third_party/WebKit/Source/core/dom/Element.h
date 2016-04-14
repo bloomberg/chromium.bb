@@ -404,10 +404,13 @@ public:
     void setDistributeScroll(ScrollStateCallback*, String nativeScrollBehavior);
     void nativeDistributeScroll(ScrollState&);
     void setApplyScroll(ScrollStateCallback*, String nativeScrollBehavior);
+    void removeApplyScroll();
     void nativeApplyScroll(ScrollState&);
 
     void callDistributeScroll(ScrollState&);
     void callApplyScroll(ScrollState&);
+
+    ScrollStateCallback* getApplyScroll();
 
     // Whether this element can receive focus at all. Most elements are not
     // focusable but some elements, such as form controls and links, are. Unlike

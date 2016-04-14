@@ -26,6 +26,11 @@ void ScrollCustomizationCallbacks::setApplyScroll(Element* element, ScrollStateC
     m_applyScrollCallbacks.set(element, scrollStateCallback);
 }
 
+void ScrollCustomizationCallbacks::removeApplyScroll(Element* element)
+{
+    m_applyScrollCallbacks.remove(element);
+}
+
 ScrollStateCallback* ScrollCustomizationCallbacks::getApplyScroll(Element* element)
 {
     auto it = m_applyScrollCallbacks.find(element);

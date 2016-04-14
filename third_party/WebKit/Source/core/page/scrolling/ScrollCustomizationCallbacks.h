@@ -22,6 +22,7 @@ public:
     void setDistributeScroll(Element*, ScrollStateCallback*);
     ScrollStateCallback* getDistributeScroll(Element*);
     void setApplyScroll(Element*, ScrollStateCallback*);
+    void removeApplyScroll(Element*);
     ScrollStateCallback* getApplyScroll(Element*);
 
     DEFINE_INLINE_TRACE()

@@ -171,10 +171,6 @@ public:
     bool shouldReuseDefaultView(const KURL&) const;
     void removeSpellingMarkersUnderWords(const Vector<String>& words);
 
-    // FIXME: once scroll customization is enabled everywhere
-    // (crbug.com/416862), this should take a ScrollState object.
-    ScrollResult applyScrollDelta(ScrollGranularity, const FloatSize& delta, bool isScrollBegin);
-
     // DisplayItemClient methods
     String debugName() const final { return "LocalFrame"; }
     // TODO(chrishtr): fix this.
@@ -194,8 +190,6 @@ private:
     friend class FrameNavigationDisabler;
 
     LocalFrame(FrameLoaderClient*, FrameHost*, FrameOwner*, ServiceRegistry*);
-
-    bool shouldScrollTopControls(ScrollGranularity, const FloatSize& delta) const;
 
     // Internal Frame helper overrides:
     WindowProxyManager* getWindowProxyManager() const override;

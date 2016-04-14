@@ -194,6 +194,7 @@
 #include "core/page/Page.h"
 #include "core/page/PointerLockController.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
+#include "core/page/scrolling/ViewportScrollCallback.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGTitleElement.h"
 #include "core/svg/SVGUseElement.h"
@@ -699,6 +700,47 @@ void Document::childrenChanged(const ChildrenChange& change)
 {
     ContainerNode::childrenChanged(change);
     m_documentElement = ElementTraversal::firstWithin(*this);
+}
+
+void Document::updateViewportApplyScroll()
+{
+    if (!m_documentElement
+        || !m_documentElement->isHTMLElement()
+        || ownerElement())
+        return;
+
+    Element* newScrollingElement = scrollingElement();
+
+    // If there is no scrolling element (in QuirksMode and body is scrollable),
+    // install the viewport scroll callback on the <HTML> element.
+    if (!newScrollingElement)
+        newScrollingElement = m_documentElement;
+
+    if (newScrollingElement == m_oldScrollingElement)
+        return;
+
+    ScrollStateCallback* applyScroll = nullptr;
+
+    // If the scrolling element changed, remove the apply scroll from the
+    // old one and keep it to put on the new scrolling element.
+    if (m_oldScrollingElement) {
+        applyScroll = m_oldScrollingElement->getApplyScroll();
+        m_oldScrollingElement->removeApplyScroll();
+    }
+
+    if (newScrollingElement) {
+        if (!applyScroll)
+            applyScroll = new ViewportScrollCallback(*this, *frameHost());
+
+        // Use disable-native-scroll since the ViewportScrollCallback needs to
+        // apply scroll actions before (TopControls) and after (overscroll)
+        // scrolling the element so it applies scroll to the element itself.
+        newScrollingElement->setApplyScroll(
+            applyScroll,
+            "disable-native-scroll");
+    }
+
+    m_oldScrollingElement = newScrollingElement;
 }
 
 AtomicString Document::convertLocalName(const AtomicString& name)
@@ -1979,6 +2021,8 @@ void Document::updateLayout()
 
 void Document::layoutUpdated()
 {
+    updateViewportApplyScroll();
+
     // Plugins can run script inside layout which can detach the page.
     // TODO(esprehn): Can this still happen now that all plugins are out of
     // process?
@@ -5990,6 +6034,7 @@ DEFINE_TRACE(Document)
     visitor->trace(m_contextFeatures);
     visitor->trace(m_styleSheetList);
     visitor->trace(m_documentTiming);
+    visitor->trace(m_oldScrollingElement);
     visitor->trace(m_mediaQueryMatcher);
     visitor->trace(m_scriptedAnimationController);
     visitor->trace(m_scriptedIdleTaskController);
