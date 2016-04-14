@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.download;
 
 import android.os.Environment;
+import android.test.FlakyTest;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.view.View;
 
@@ -202,6 +203,7 @@ public class DownloadTest extends DownloadTestBase {
     */
     @MediumTest
     @Feature({"Downloads"})
+    @FlakyTest
     public void testDuplicateHttpPostDownload_Dismiss() throws Exception {
         // Download a file.
         loadUrl(mTestServer.getURL("/chrome/test/data/android/download/post.html"));
