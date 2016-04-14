@@ -264,8 +264,6 @@ public class DataReductionProxySettings {
         map.put(DATA_REDUCTION_PROXY_ENABLED_KEY, String.valueOf(isDataReductionProxyEnabled()));
         map.put("Data Reduction Proxy HTTP Proxies",
                 nativeGetHttpProxyList(mNativeDataReductionProxySettings));
-        map.put("Data Reduction Proxy HTTPS Proxies",
-                nativeGetHttpsProxyList(mNativeDataReductionProxySettings));
         map.put("Data Reduction Proxy Last Bypass",
                 nativeGetLastBypassEvent(mNativeDataReductionProxySettings));
         return map;
@@ -340,6 +338,5 @@ public class DataReductionProxySettings {
     private native boolean nativeAreLoFiPreviewsEnabled(
             long nativeDataReductionProxySettingsAndroid);
     private native String nativeGetHttpProxyList(long nativeDataReductionProxySettingsAndroid);
-    private native String nativeGetHttpsProxyList(long nativeDataReductionProxySettingsAndroid);
     private native String nativeGetLastBypassEvent(long nativeDataReductionProxySettingsAndroid);
 }

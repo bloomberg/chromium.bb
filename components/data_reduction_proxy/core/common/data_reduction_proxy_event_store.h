@@ -67,9 +67,6 @@ class DataReductionProxyEventStore
   // Returns the list of proxy servers for HTTP origins.
   std::string GetHttpProxyList() const;
 
-  // Returns the list of proxy servers for HTTPS origins.
-  std::string GetHttpsProxyList() const;
-
   // Returns a sanitized version of the last seen bypass event.
   std::string SanitizedLastBypassEvent() const;
 

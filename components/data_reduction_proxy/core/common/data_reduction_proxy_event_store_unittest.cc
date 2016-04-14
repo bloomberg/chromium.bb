@@ -89,9 +89,7 @@ class DataReductionProxyEventStoreTest : public testing::Test {
 TEST_F(DataReductionProxyEventStoreTest, TestAddProxyEnabledEvent) {
   EXPECT_EQ(0u, event_count());
   std::vector<net::ProxyServer> proxies_for_http;
-  std::vector<net::ProxyServer> proxies_for_https;
-  event_creator()->AddProxyEnabledEvent(net_log(), false, proxies_for_http,
-                                        proxies_for_https);
+  event_creator()->AddProxyEnabledEvent(net_log(), false, proxies_for_http);
   EXPECT_EQ(1u, event_count());
   net::TestNetLogEntry entry = GetSingleEntry();
   EXPECT_EQ(net::NetLog::TYPE_DATA_REDUCTION_PROXY_ENABLED,
@@ -217,32 +215,25 @@ TEST_F(DataReductionProxyEventStoreTest, TestEndSecureProxyCheckFailed) {
 TEST_F(DataReductionProxyEventStoreTest, TestFeedbackMethods) {
   DataReductionProxyConfigurator configurator(net_log(), event_creator());
   EXPECT_EQ(std::string(), event_store()->GetHttpProxyList());
-  EXPECT_EQ(std::string(), event_store()->GetHttpsProxyList());
   EXPECT_EQ(std::string(), event_store()->SanitizedLastBypassEvent());
 
   std::vector<net::ProxyServer> http_proxies;
-  std::vector<net::ProxyServer> https_proxies;
   http_proxies.push_back(net::ProxyServer(net::ProxyServer::SCHEME_HTTP,
                                           net::HostPortPair("foo.com", 80)));
   http_proxies.push_back(net::ProxyServer(net::ProxyServer::SCHEME_HTTPS,
                                           net::HostPortPair("bar.com", 443)));
-  https_proxies.push_back(net::ProxyServer(net::ProxyServer::SCHEME_HTTP,
-                                           net::HostPortPair("baz.com", 80)));
-  configurator.Enable(false, http_proxies, https_proxies);
+  configurator.Enable(false, http_proxies);
   EXPECT_EQ("foo.com:80;https://bar.com:443",
             event_store()->GetHttpProxyList());
-  EXPECT_EQ("baz.com:80", event_store()->GetHttpsProxyList());
 
   configurator.Disable();
   EXPECT_EQ(std::string(), event_store()->GetHttpProxyList());
-  EXPECT_EQ(std::string(), event_store()->GetHttpsProxyList());
 }
 
 TEST_F(DataReductionProxyEventStoreTest, TestFeedbackLastBypassEventFullURL) {
   DataReductionProxyConfigurator configurator(net_log(), event_creator());
   std::vector<net::ProxyServer> http_proxies;
-  std::vector<net::ProxyServer> https_proxies;
-  configurator.Enable(false, http_proxies, https_proxies);
+  configurator.Enable(false, http_proxies);
 
   std::unique_ptr<base::DictionaryValue> bypass_event(
       new base::DictionaryValue());
@@ -275,8 +266,7 @@ TEST_F(DataReductionProxyEventStoreTest, TestFeedbackLastBypassEventFullURL) {
 TEST_F(DataReductionProxyEventStoreTest, TestFeedbackLastBypassEventHostOnly) {
   DataReductionProxyConfigurator configurator(net_log(), event_creator());
   std::vector<net::ProxyServer> http_proxies;
-  std::vector<net::ProxyServer> https_proxies;
-  configurator.Enable(false, http_proxies, https_proxies);
+  configurator.Enable(false, http_proxies);
 
   std::unique_ptr<base::DictionaryValue> bypass_event(
       new base::DictionaryValue());

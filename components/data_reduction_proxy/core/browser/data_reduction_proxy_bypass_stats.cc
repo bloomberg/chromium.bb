@@ -158,9 +158,6 @@ void DataReductionProxyBypassStats::OnProxyFallback(
   if (bypassed_proxy.is_valid() && !bypassed_proxy.is_direct() &&
       data_reduction_proxy_config_->IsDataReductionProxy(
           bypassed_proxy.host_port_pair(), &data_reduction_proxy_info)) {
-    if (data_reduction_proxy_info.is_ssl)
-      return;
-
     proxy_net_errors_count_++;
 
     // To account for the case when the proxy is reachable for sometime, and
@@ -185,16 +182,6 @@ void DataReductionProxyBypassStats::OnProxyFallback(
       RecordDataReductionProxyBypassOnNetworkError(
           false, bypassed_proxy, net_error);
     }
-  }
-}
-
-void DataReductionProxyBypassStats::OnConnectComplete(
-    const net::HostPortPair& proxy_server,
-    int net_error) {
-  if (data_reduction_proxy_config_->IsDataReductionProxy(proxy_server, NULL)) {
-    UMA_HISTOGRAM_SPARSE_SLOWLY(
-      "DataReductionProxy.HTTPConnectCompleted",
-      std::abs(net_error));
   }
 }
 

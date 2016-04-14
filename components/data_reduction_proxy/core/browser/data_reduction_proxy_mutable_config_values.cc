@@ -57,11 +57,6 @@ bool DataReductionProxyMutableConfigValues::fallback_allowed() const {
   return fallback_allowed_;
 }
 
-bool DataReductionProxyMutableConfigValues::UsingHTTPTunnel(
-    const net::HostPortPair& proxy_server) const {
-  return false;
-}
-
 const std::vector<net::ProxyServer>&
 DataReductionProxyMutableConfigValues::proxies_for_http() const {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -78,12 +73,6 @@ DataReductionProxyMutableConfigValues::proxies_for_http() const {
   return proxies_for_http_;
 }
 
-const std::vector<net::ProxyServer>&
-DataReductionProxyMutableConfigValues::proxies_for_https() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return proxies_for_https_;
-}
-
 const GURL& DataReductionProxyMutableConfigValues::secure_proxy_check_url()
     const {
   return secure_proxy_check_url_;
@@ -98,7 +87,6 @@ void DataReductionProxyMutableConfigValues::UpdateValues(
 void DataReductionProxyMutableConfigValues::Invalidate() {
   DCHECK(thread_checker_.CalledOnValidThread());
   proxies_for_http_.clear();
-  proxies_for_https_.clear();
 }
 
 }  // namespace data_reduction_proxy

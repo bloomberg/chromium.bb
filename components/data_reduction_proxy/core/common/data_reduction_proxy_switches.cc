@@ -62,9 +62,6 @@ const char kDataReductionProxyStartSecureDisabled[] =
 // network changes.
 const char kDataReductionProxyWarmupURL[] = "data-reduction-proxy-warmup-url";
 
-// The origin of the data reduction SSL proxy.
-const char kDataReductionSSLProxy[] = "data-reduction-ssl-proxy";
-
 // Enable the data reduction proxy.
 const char kEnableDataReductionProxy[] = "enable-spdy-proxy-auth";
 

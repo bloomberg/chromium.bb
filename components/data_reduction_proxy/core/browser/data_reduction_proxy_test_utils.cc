@@ -275,8 +275,7 @@ DataReductionProxyTestContext::Builder::Builder()
     : params_flags_(DataReductionProxyParams::kAllowed |
                     DataReductionProxyParams::kFallbackAllowed |
                     DataReductionProxyParams::kPromoAllowed),
-      params_definitions_(TestDataReductionProxyParams::HAS_EVERYTHING &
-                          ~TestDataReductionProxyParams::HAS_SSL_ORIGIN),
+      params_definitions_(TestDataReductionProxyParams::HAS_EVERYTHING),
       client_(Client::UNKNOWN),
       request_context_(nullptr),
       mock_socket_factory_(nullptr),

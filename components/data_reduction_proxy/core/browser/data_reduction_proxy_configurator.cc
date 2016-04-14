@@ -31,8 +31,7 @@ DataReductionProxyConfigurator::~DataReductionProxyConfigurator() {
 
 void DataReductionProxyConfigurator::Enable(
     bool secure_transport_restricted,
-    const std::vector<net::ProxyServer>& proxies_for_http,
-    const std::vector<net::ProxyServer>& proxies_for_https) {
+    const std::vector<net::ProxyServer>& proxies_for_http) {
   DCHECK(thread_checker_.CalledOnValidThread());
   net::ProxyConfig config;
   config.proxy_rules().type =
@@ -51,19 +50,6 @@ void DataReductionProxyConfigurator::Enable(
         net::ProxyServer::Direct());
   }
 
-  for (const auto& https_proxy : proxies_for_https) {
-    if (!secure_transport_restricted ||
-        (https_proxy.scheme() != net::ProxyServer::SCHEME_HTTPS &&
-         https_proxy.scheme() != net::ProxyServer::SCHEME_QUIC)) {
-      config.proxy_rules().proxies_for_https.AddProxyServer(https_proxy);
-    }
-  }
-
-  if (!config.proxy_rules().proxies_for_https.IsEmpty()) {
-    config.proxy_rules().proxies_for_https.AddProxyServer(
-        net::ProxyServer::Direct());
-  }
-
   config.proxy_rules().bypass_rules.ParseFromString(
       base::JoinString(bypass_rules_, ", "));
   // The ID is set to a bogus value. It cannot be left uninitialized, else the
@@ -71,8 +57,7 @@ void DataReductionProxyConfigurator::Enable(
   net::ProxyConfig::ID unused_id = 1;
   config.set_id(unused_id);
   data_reduction_proxy_event_creator_->AddProxyEnabledEvent(
-      net_log_, secure_transport_restricted, proxies_for_http,
-      proxies_for_https);
+      net_log_, secure_transport_restricted, proxies_for_http);
   config_ = config;
 }
 

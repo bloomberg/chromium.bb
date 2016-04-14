@@ -29,8 +29,7 @@ class TestDataReductionProxyConfigurator
 
   // Overrides of DataReductionProxyConfigurator
   void Enable(bool secure_transport_restricted,
-              const std::vector<net::ProxyServer>& proxies_for_http,
-              const std::vector<net::ProxyServer>& proxies_for_https) override;
+              const std::vector<net::ProxyServer>& proxies_for_http) override;
 
   void Disable() override;
 
@@ -50,10 +49,6 @@ class TestDataReductionProxyConfigurator
     return proxies_for_http_;
   }
 
-  const std::vector<net::ProxyServer>& proxies_for_https() const {
-    return proxies_for_https_;
-  }
-
  private:
   // True if the proxy has been enabled, i.e., only after |Enable| has been
   // called. Defaults to false.
@@ -66,7 +61,6 @@ class TestDataReductionProxyConfigurator
 
   // The origins that are passed to |Enable|.
   std::vector<net::ProxyServer> proxies_for_http_;
-  std::vector<net::ProxyServer> proxies_for_https_;
 };
 
 }  // namespace data_reduction_proxy

@@ -19,19 +19,16 @@ TestDataReductionProxyConfigurator::~TestDataReductionProxyConfigurator() {
 
 void TestDataReductionProxyConfigurator::Enable(
     bool secure_transport_restricted,
-    const std::vector<net::ProxyServer>& proxies_for_http,
-    const std::vector<net::ProxyServer>& proxies_for_https) {
+    const std::vector<net::ProxyServer>& proxies_for_http) {
   enabled_ = true;
   restricted_ = secure_transport_restricted;
   proxies_for_http_ = proxies_for_http;
-  proxies_for_https_ = proxies_for_https;
 }
 
 void TestDataReductionProxyConfigurator::Disable() {
   enabled_ = false;
   restricted_ = false;
   proxies_for_http_ = std::vector<net::ProxyServer>();
-  proxies_for_https_ = std::vector<net::ProxyServer>();
 }
 
 }  // namespace data_reduction_proxy

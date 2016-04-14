@@ -28,7 +28,6 @@ class TestDataReductionProxyParams : public DataReductionProxyParams {
     HAS_NOTHING = 0x0,
     HAS_ORIGIN = 0x2,
     HAS_FALLBACK_ORIGIN = 0x4,
-    HAS_SSL_ORIGIN = 0x08,
     HAS_SECURE_PROXY_CHECK_URL = 0x40,
     HAS_EVERYTHING = 0xff,
   };
@@ -42,20 +41,16 @@ class TestDataReductionProxyParams : public DataReductionProxyParams {
   // Test values to replace the values specified in preprocessor defines.
   static std::string DefaultOrigin();
   static std::string DefaultFallbackOrigin();
-  static std::string DefaultSSLOrigin();
   static std::string DefaultSecureProxyCheckURL();
 
   static std::string FlagOrigin();
   static std::string FlagFallbackOrigin();
-  static std::string FlagSSLOrigin();
   static std::string FlagSecureProxyCheckURL();
 
  protected:
   std::string GetDefaultOrigin() const override;
 
   std::string GetDefaultFallbackOrigin() const override;
-
-  std::string GetDefaultSSLOrigin() const override;
 
   std::string GetDefaultSecureProxyCheckURL() const override;
 

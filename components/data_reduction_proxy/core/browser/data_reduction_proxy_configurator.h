@@ -40,8 +40,7 @@ class DataReductionProxyConfigurator {
   // proxy. If true, |secure_transport_restricted| indicates that proxies going
   // over secure transports (HTTPS) should/can not be used.
   virtual void Enable(bool secure_transport_restricted,
-                      const std::vector<net::ProxyServer>& proxies_for_http,
-                      const std::vector<net::ProxyServer>& proxies_for_https);
+                      const std::vector<net::ProxyServer>& proxies_for_http);
 
   // Constructs a proxy configuration suitable for disabling the Data Reduction
   // proxy.

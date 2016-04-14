@@ -48,8 +48,7 @@ class DataReductionProxyEventCreator {
   void AddProxyEnabledEvent(
       net::NetLog* net_log,
       bool secure_transport_restricted,
-      const std::vector<net::ProxyServer>& proxies_for_http,
-      const std::vector<net::ProxyServer>& proxies_for_https);
+      const std::vector<net::ProxyServer>& proxies_for_http);
 
   // Adds the DATA_REDUCTION_PROXY_ENABLED event (with enabled=false) to the
   // event store.

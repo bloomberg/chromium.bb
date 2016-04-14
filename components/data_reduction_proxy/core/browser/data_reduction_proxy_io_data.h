@@ -219,7 +219,7 @@ class DataReductionProxyIOData : public DataReductionProxyEventStorageDelegate {
   // Setter of the Data Reduction Proxy-specific proxy configuration.
   std::unique_ptr<DataReductionProxyConfigurator> configurator_;
 
-  // A proxy delegate. Used, for example, to add authentication to HTTP CONNECT
+  // A proxy delegate. Used, for example, for Data Reduction Proxy resolution.
   // request.
   std::unique_ptr<DataReductionProxyDelegate> proxy_delegate_;
 

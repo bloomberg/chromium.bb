@@ -43,7 +43,6 @@ int64_t GetExpirationTicks(int bypass_seconds) {
 std::unique_ptr<base::Value> EnableDataReductionProxyCallback(
     bool secure_transport_restricted,
     const std::vector<net::ProxyServer>& proxies_for_http,
-    const std::vector<net::ProxyServer>& proxies_for_https,
     net::NetLogCaptureMode /* capture_mode */) {
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetBoolean("enabled", true);
@@ -52,12 +51,7 @@ std::unique_ptr<base::Value> EnableDataReductionProxyCallback(
   for (const auto& proxy : proxies_for_http)
     http_proxy_list->AppendString(proxy.ToURI());
 
-  std::unique_ptr<base::ListValue> https_proxy_list(new base::ListValue());
-  for (const auto& proxy : proxies_for_https)
-    https_proxy_list->AppendString(proxy.ToURI());
-
   dict->Set("http_proxy_list", std::move(http_proxy_list));
-  dict->Set("https_proxy_list", std::move(https_proxy_list));
 
   return std::move(dict);
 }
@@ -179,12 +173,11 @@ DataReductionProxyEventCreator::~DataReductionProxyEventCreator() {
 void DataReductionProxyEventCreator::AddProxyEnabledEvent(
     net::NetLog* net_log,
     bool secure_transport_restricted,
-    const std::vector<net::ProxyServer>& proxies_for_http,
-    const std::vector<net::ProxyServer>& proxies_for_https) {
+    const std::vector<net::ProxyServer>& proxies_for_http) {
   DCHECK(thread_checker_.CalledOnValidThread());
   const net::NetLog::ParametersCallback& parameters_callback =
       base::Bind(&EnableDataReductionProxyCallback, secure_transport_restricted,
-                 proxies_for_http, proxies_for_https);
+                 proxies_for_http);
   PostEnabledEvent(net_log, net::NetLog::TYPE_DATA_REDUCTION_PROXY_ENABLED,
                    true, parameters_callback);
 }

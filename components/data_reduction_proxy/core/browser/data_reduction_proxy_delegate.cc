@@ -63,10 +63,6 @@ void DataReductionProxyDelegate::OnTunnelConnectCompleted(
     const net::HostPortPair& endpoint,
     const net::HostPortPair& proxy_server,
     int net_error) {
-  if (config_->IsDataReductionProxy(proxy_server, NULL)) {
-    UMA_HISTOGRAM_SPARSE_SLOWLY("DataReductionProxy.HTTPConnectCompleted",
-                                std::abs(net_error));
-  }
 }
 
 void DataReductionProxyDelegate::OnFallback(const net::ProxyServer& bad_proxy,
@@ -90,8 +86,6 @@ void DataReductionProxyDelegate::OnBeforeSendHeaders(
 void DataReductionProxyDelegate::OnBeforeTunnelRequest(
     const net::HostPortPair& proxy_server,
     net::HttpRequestHeaders* extra_headers) {
-  request_options_->MaybeAddProxyTunnelRequestHandler(
-      proxy_server, extra_headers);
 }
 
 bool DataReductionProxyDelegate::IsTrustedSpdyProxy(

@@ -117,9 +117,8 @@ class DataReductionProxyConfig
   // proxy that was used. Subsequent entries in |proxy_info.proxy_servers| will
   // contain the names of the Data Reduction Proxy servers that would be used if
   // |proxy_info.proxy_servers.front()| is bypassed, if any exist. In addition,
-  // |proxy_info| will note if the proxy used was a fallback, or a proxy for
-  // ssl; these are not mutually exclusive. |proxy_info| can be NULL if the
-  // caller isn't interested in its values.
+  // |proxy_info| will note if the proxy used was a fallback. |proxy_info| can
+  // be NULL if the caller isn't interested in its values.
   virtual bool WasDataReductionProxyUsed(
       const net::URLRequest* request,
       DataReductionProxyTypeInfo* proxy_info) const;
@@ -129,10 +128,9 @@ class DataReductionProxyConfig
   // the proxy that matches. Subsequent entries in |proxy_info.proxy_servers|
   // will contain the name of the Data Reduction Proxy servers that would be
   // used if |proxy_info.proxy_servers.front()| is bypassed, if any exist. In
-  // addition, |proxy_info| will note if the proxy was a fallback or a proxy for
-  // ssl; these are not mutually exclusive. |proxy_info| can be NULL if the
-  // caller isn't interested in its values.
-  // Virtual for testing.
+  // addition, |proxy_info| will note if the proxy was a fallback. |proxy_info|
+  // can be NULL if the caller isn't interested in its values. Virtual for
+  // testing.
   virtual bool IsDataReductionProxy(
       const net::HostPortPair& host_port_pair,
       DataReductionProxyTypeInfo* proxy_info) const;
@@ -168,9 +166,6 @@ class DataReductionProxyConfig
   // Check whether the |proxy_rules| contain any of the data reduction proxies.
   virtual bool ContainsDataReductionProxy(
       const net::ProxyConfig::ProxyRules& proxy_rules) const;
-
-  // Returns true if the proxy was using the HTTP tunnel for a HTTPS origin.
-  bool UsingHTTPTunnel(const net::HostPortPair& proxy_server) const;
 
   // Returns true if the Data Reduction Proxy configuration may be used.
   bool allowed() const;

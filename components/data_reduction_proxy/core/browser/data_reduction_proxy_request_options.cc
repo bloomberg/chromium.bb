@@ -185,15 +185,12 @@ void DataReductionProxyRequestOptions::MaybeAddRequestHeader(
     return;
   if (proxy_server.is_direct())
     return;
-  MaybeAddRequestHeaderImpl(proxy_server.host_port_pair(), false,
-                            request_headers);
-}
-
-void DataReductionProxyRequestOptions::MaybeAddProxyTunnelRequestHandler(
-    const net::HostPortPair& proxy_server,
-    net::HttpRequestHeaders* request_headers) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  MaybeAddRequestHeaderImpl(proxy_server, true, request_headers);
+  if (proxy_server.host_port_pair().IsEmpty())
+    return;
+  if (data_reduction_proxy_config_->IsDataReductionProxy(
+          proxy_server.host_port_pair(), NULL)) {
+    SetHeader(request_headers);
+  }
 }
 
 void DataReductionProxyRequestOptions::SetHeader(
@@ -288,19 +285,6 @@ std::string DataReductionProxyRequestOptions::GetDefaultKey() const {
 
 const std::string& DataReductionProxyRequestOptions::GetSecureSession() const {
   return secure_session_;
-}
-
-void DataReductionProxyRequestOptions::MaybeAddRequestHeaderImpl(
-    const net::HostPortPair& proxy_server,
-    bool expect_ssl,
-    net::HttpRequestHeaders* request_headers) {
-  if (proxy_server.IsEmpty())
-    return;
-  if (data_reduction_proxy_config_->IsDataReductionProxy(proxy_server, NULL) &&
-      data_reduction_proxy_config_->UsingHTTPTunnel(proxy_server) ==
-          expect_ssl) {
-    SetHeader(request_headers);
-  }
 }
 
 void DataReductionProxyRequestOptions::RegenerateRequestHeaderValue() {

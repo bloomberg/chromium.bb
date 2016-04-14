@@ -15,7 +15,6 @@
 #include "base/strings/string_util.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/variations/variations_associated_data.h"
-#include "net/base/host_port_pair.h"
 #include "net/proxy/proxy_server.h"
 #include "url/url_constants.h"
 
@@ -303,9 +302,7 @@ void DataReductionProxyParams::EnableQuic(bool enable) {
   }
 }
 
-DataReductionProxyTypeInfo::DataReductionProxyTypeInfo()
-    : is_fallback(false), is_ssl(false) {
-}
+DataReductionProxyTypeInfo::DataReductionProxyTypeInfo() : is_fallback(false) {}
 
 DataReductionProxyTypeInfo::DataReductionProxyTypeInfo(
     const DataReductionProxyTypeInfo& other) = default;
@@ -381,11 +378,8 @@ void DataReductionProxyParams::InitWithoutChecks() {
   origin = command_line.GetSwitchValueASCII(switches::kDataReductionProxy);
   std::string fallback_origin =
       command_line.GetSwitchValueASCII(switches::kDataReductionProxyFallback);
-  std::string ssl_origin =
-      command_line.GetSwitchValueASCII(switches::kDataReductionSSLProxy);
 
-  configured_on_command_line_ =
-      !(origin.empty() && fallback_origin.empty() && ssl_origin.empty());
+  configured_on_command_line_ = !(origin.empty() && fallback_origin.empty());
 
   // Configuring the proxy on the command line overrides the values of
   // |allowed_|.
@@ -404,8 +398,6 @@ void DataReductionProxyParams::InitWithoutChecks() {
     origin = GetDefaultOrigin();
   if (fallback_origin.empty())
     fallback_origin = GetDefaultFallbackOrigin();
-  if (ssl_origin.empty())
-    ssl_origin = GetDefaultSSLOrigin();
   if (secure_proxy_check_url.empty())
     secure_proxy_check_url = GetDefaultSecureProxyCheckURL();
   if (warmup_url.empty())
@@ -414,23 +406,13 @@ void DataReductionProxyParams::InitWithoutChecks() {
   origin_ = net::ProxyServer::FromURI(origin, net::ProxyServer::SCHEME_HTTP);
   fallback_origin_ =
       net::ProxyServer::FromURI(fallback_origin, net::ProxyServer::SCHEME_HTTP);
-  ssl_origin_ =
-      net::ProxyServer::FromURI(ssl_origin, net::ProxyServer::SCHEME_HTTP);
   if (origin_.is_valid())
     proxies_for_http_.push_back(origin_);
   if (fallback_allowed_ && fallback_origin_.is_valid())
     proxies_for_http_.push_back(fallback_origin_);
-  if (ssl_origin_.is_valid())
-    proxies_for_https_.push_back(ssl_origin_);
 
   secure_proxy_check_url_ = GURL(secure_proxy_check_url);
   warmup_url_ = GURL(warmup_url);
-}
-
-bool DataReductionProxyParams::UsingHTTPTunnel(
-    const net::HostPortPair& proxy_server) const {
-  return ssl_origin_.is_valid() &&
-         ssl_origin_.host_port_pair().Equals(proxy_server);
 }
 
 const std::vector<net::ProxyServer>&
@@ -438,11 +420,6 @@ DataReductionProxyParams::proxies_for_http() const {
   if (use_override_proxies_for_http_)
     return override_proxies_for_http_;
   return proxies_for_http_;
-}
-
-const std::vector<net::ProxyServer>&
-DataReductionProxyParams::proxies_for_https() const {
-  return proxies_for_https_;
 }
 
 // Returns the URL to check to decide if the secure proxy origin should be
@@ -486,10 +463,6 @@ std::string DataReductionProxyParams::GetDefaultOrigin() const {
 
 std::string DataReductionProxyParams::GetDefaultFallbackOrigin() const {
   return kDefaultFallbackOrigin;
-}
-
-std::string DataReductionProxyParams::GetDefaultSSLOrigin() const {
-  return std::string();
 }
 
 std::string DataReductionProxyParams::GetDefaultSecureProxyCheckURL() const {

@@ -303,20 +303,6 @@ bool DataReductionProxyConfig::IsDataReductionProxy(
     }
     return true;
   }
-
-  if (FindProxyInList(config_values_->proxies_for_https(), host_port_pair,
-                      &proxy_index)) {
-    if (proxy_info) {
-      const std::vector<net::ProxyServer>& proxy_list =
-          config_values_->proxies_for_https();
-      proxy_info->proxy_servers = std::vector<net::ProxyServer>(
-          proxy_list.begin() + proxy_index, proxy_list.end());
-      proxy_info->is_fallback = (proxy_index != 0);
-      proxy_info->is_ssl = true;
-    }
-    return true;
-  }
-
   return false;
 }
 
@@ -361,8 +347,10 @@ bool DataReductionProxyConfig::AreProxiesBypassed(
   if (proxy_rules.type != net::ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME)
     return false;
 
-  const net::ProxyList* proxies = is_https ?
-      proxy_rules.MapUrlSchemeToProxyList(url::kHttpsScheme) :
+  if (is_https)
+    return false;
+
+  const net::ProxyList* proxies =
       proxy_rules.MapUrlSchemeToProxyList(url::kHttpScheme);
 
   if (!proxies)
@@ -523,14 +511,6 @@ bool DataReductionProxyConfig::ContainsDataReductionProxy(
   if (proxy_rules.type != net::ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME)
     return false;
 
-  const net::ProxyList* https_proxy_list =
-      proxy_rules.MapUrlSchemeToProxyList("https");
-  if (https_proxy_list && !https_proxy_list->IsEmpty() &&
-      // Sufficient to check only the first proxy.
-      IsDataReductionProxy(https_proxy_list->Get().host_port_pair(), NULL)) {
-    return true;
-  }
-
   const net::ProxyList* http_proxy_list =
       proxy_rules.MapUrlSchemeToProxyList("http");
   if (http_proxy_list && !http_proxy_list->IsEmpty() &&
@@ -540,12 +520,6 @@ bool DataReductionProxyConfig::ContainsDataReductionProxy(
   }
 
   return false;
-}
-
-bool DataReductionProxyConfig::UsingHTTPTunnel(
-    const net::HostPortPair& proxy_server) const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return config_values_->UsingHTTPTunnel(proxy_server);
 }
 
 // Returns true if the Data Reduction Proxy configuration may be used.
@@ -581,12 +555,8 @@ void DataReductionProxyConfig::UpdateConfigurator(bool enabled,
   DCHECK(configurator_);
   std::vector<net::ProxyServer> proxies_for_http =
       config_values_->proxies_for_http();
-  std::vector<net::ProxyServer> proxies_for_https =
-      config_values_->proxies_for_https();
-  if (enabled && !config_values_->holdback() &&
-      (!proxies_for_http.empty() || !proxies_for_https.empty())) {
-    configurator_->Enable(!secure_proxy_allowed, proxies_for_http,
-                          proxies_for_https);
+  if (enabled && !config_values_->holdback() && !proxies_for_http.empty()) {
+    configurator_->Enable(!secure_proxy_allowed, proxies_for_http);
   } else {
     configurator_->Disable();
   }

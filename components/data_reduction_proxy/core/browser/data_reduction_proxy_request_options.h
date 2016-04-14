@@ -81,18 +81,9 @@ class DataReductionProxyRequestOptions {
 
   // Adds a 'Chrome-Proxy' header to |request_headers| with the data reduction
   // proxy authentication credentials. Only adds this header if the
-  // provided |proxy_server| is a data reduction proxy and not the data
-  // reduction proxy's CONNECT server.
+  // provided |proxy_server| is a data reduction proxy.
   void MaybeAddRequestHeader(const net::ProxyServer& proxy_server,
                              net::HttpRequestHeaders* request_headers);
-
-  // Adds a 'Chrome-Proxy' header to |request_headers| with the data reduction
-  // proxy authentication credentials. Only adds this header if the provided
-  // |proxy_server| is the data reduction proxy's CONNECT server. Must be called
-  // on the IO thread.
-  void MaybeAddProxyTunnelRequestHandler(
-      const net::HostPortPair& proxy_server,
-      net::HttpRequestHeaders* request_headers);
 
   // Stores the supplied key and sets up credentials suitable for authenticating
   // with the data reduction proxy.
@@ -154,14 +145,6 @@ class DataReductionProxyRequestOptions {
 
   // Generates and updates the session ID and credentials.
   void UpdateCredentials();
-
-  // Adds authentication headers only if |expects_ssl| is true and
-  // |proxy_server| is a data reduction proxy used for ssl tunneling via
-  // HTTP CONNECT, or |expect_ssl| is false and |proxy_server| is a data
-  // reduction proxy for HTTP traffic.
-  void MaybeAddRequestHeaderImpl(const net::HostPortPair& proxy_server,
-                                 bool expect_ssl,
-                                 net::HttpRequestHeaders* request_headers);
 
   // Regenerates the |header_value_| string which is concatenated to the
   // Chrome-proxy header.

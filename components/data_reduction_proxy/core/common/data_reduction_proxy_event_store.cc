@@ -210,26 +210,6 @@ std::string DataReductionProxyEventStore::GetHttpProxyList() const {
   return JoinListValueStrings(proxy_list);
 }
 
-std::string DataReductionProxyEventStore::GetHttpsProxyList() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  if (!enabled_ || !current_configuration_)
-    return std::string();
-
-  base::DictionaryValue* config_dict;
-  if (!current_configuration_->GetAsDictionary(&config_dict))
-    return std::string();
-
-  base::DictionaryValue* params_dict;
-  if (!config_dict->GetDictionary("params", &params_dict))
-    return std::string();
-
-  base::ListValue* proxy_list;
-  if (!params_dict->GetList("https_proxy_list", &proxy_list))
-    return std::string();
-
-  return JoinListValueStrings(proxy_list);
-}
-
 std::string DataReductionProxyEventStore::SanitizedLastBypassEvent() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!enabled_ || !last_bypass_event_)

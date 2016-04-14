@@ -36,10 +36,8 @@ class DataReductionProxyParamsTest : public testing::Test {
   void CheckValues(const TestDataReductionProxyParams& params,
                    const std::string& expected_origin,
                    const std::string& expected_fallback_origin,
-                   const std::string& expected_ssl_origin,
                    const std::string& expected_secure_proxy_check_url) {
     std::vector<net::ProxyServer> proxies_for_http;
-    std::vector<net::ProxyServer> proxies_for_https;
     if (!expected_origin.empty()) {
       proxies_for_http.push_back(net::ProxyServer::FromURI(
           expected_origin, net::ProxyServer::SCHEME_HTTP));
@@ -50,15 +48,8 @@ class DataReductionProxyParamsTest : public testing::Test {
           expected_fallback_origin, net::ProxyServer::SCHEME_HTTP));
     }
 
-    if (!expected_ssl_origin.empty()) {
-      proxies_for_https.push_back(net::ProxyServer::FromURI(
-          expected_ssl_origin, net::ProxyServer::SCHEME_HTTP));
-    }
-
     EXPECT_THAT(proxies_for_http,
                 testing::ContainerEq(params.proxies_for_http()));
-    EXPECT_THAT(proxies_for_https,
-                testing::ContainerEq(params.proxies_for_https()));
     EXPECT_EQ(GURL(expected_secure_proxy_check_url),
               params.secure_proxy_check_url());
   }
@@ -73,7 +64,6 @@ TEST_F(DataReductionProxyParamsTest, EverythingDefined) {
   CheckParams(params, true, true, true, true);
   CheckValues(params, TestDataReductionProxyParams::DefaultOrigin(),
               TestDataReductionProxyParams::DefaultFallbackOrigin(),
-              TestDataReductionProxyParams::DefaultSSLOrigin(),
               TestDataReductionProxyParams::DefaultSecureProxyCheckURL());
 }
 
@@ -85,9 +75,6 @@ TEST_F(DataReductionProxyParamsTest, Flags) {
       switches::kDataReductionProxyFallback,
       TestDataReductionProxyParams::FlagFallbackOrigin());
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kDataReductionSSLProxy,
-      TestDataReductionProxyParams::FlagSSLOrigin());
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kDataReductionProxySecureProxyCheckURL,
       TestDataReductionProxyParams::FlagSecureProxyCheckURL());
   TestDataReductionProxyParams params(
@@ -98,7 +85,6 @@ TEST_F(DataReductionProxyParamsTest, Flags) {
   CheckParams(params, true, true, true, true);
   CheckValues(params, TestDataReductionProxyParams::FlagOrigin(),
               TestDataReductionProxyParams::FlagFallbackOrigin(),
-              TestDataReductionProxyParams::FlagSSLOrigin(),
               TestDataReductionProxyParams::FlagSecureProxyCheckURL());
 }
 
@@ -143,9 +129,6 @@ TEST_F(DataReductionProxyParamsTest, InvalidConfigurations) {
        TestDataReductionProxyParams::HAS_SECURE_PROXY_CHECK_URL, false},
       {false, true, true,
        TestDataReductionProxyParams::HAS_SECURE_PROXY_CHECK_URL, false},
-      {true, true, true, TestDataReductionProxyParams::HAS_SSL_ORIGIN, true},
-      {true, false, true, TestDataReductionProxyParams::HAS_SSL_ORIGIN, true},
-      {false, true, true, TestDataReductionProxyParams::HAS_SSL_ORIGIN, false},
   };
 
   for (size_t i = 0; i < arraysize(tests); ++i) {

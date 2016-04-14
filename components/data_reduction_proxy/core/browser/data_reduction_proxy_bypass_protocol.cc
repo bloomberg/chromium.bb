@@ -119,15 +119,9 @@ bool DataReductionProxyBypassProtocol::MaybeBypassProxyAndPrepareToRetry(
     data_reduction_proxy_type_info.proxy_servers.push_back(net::ProxyServer(
         net::ProxyServer::SCHEME_HTTP, request->proxy_server()));
     data_reduction_proxy_type_info.is_fallback = false;
-    data_reduction_proxy_type_info.is_ssl =
-        request->url().SchemeIsCryptographic();
   } else {
     ReportResponseProxyServerStatusHistogram(RESPONSE_PROXY_SERVER_STATUS_DRP);
   }
-
-  // TODO(bengr): Implement bypass for CONNECT tunnel.
-  if (data_reduction_proxy_type_info.is_ssl)
-    return false;
 
   if (data_reduction_proxy_type_info.proxy_servers.empty())
     return false;
