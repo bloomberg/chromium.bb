@@ -313,16 +313,12 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac'], bug=483282)
     self.Skip('deqp/functional/gles3/floatstatequery.html',
         ['mac'], bug=483282)
-    self.Fail('deqp/functional/gles3/internalformatquery.html',
-        ['mac'], bug=483282)
     self.Fail('deqp/functional/gles3/pixelbufferobject.html',
         ['mac'], bug=483282)
     self.Fail('deqp/functional/gles3/texturestatequery.html',
         ['mac'], bug=483282)
     self.Skip('deqp/functional/gles3/shaderswitch.html',
         ['mavericks'], bug=483282)
-    self.Fail('deqp/functional/gles3/rbostatequery.html',
-        ['mac'], bug=569808)
     self.Fail('deqp/functional/gles3/negativeshaderapi.html',
         ['mac'], bug=483282)
     self.Fail('deqp/functional/gles3/vertexarrays.html',
@@ -333,9 +329,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/buffers/buffer-type-restrictions.html',
         ['mac'], bug=483282)
     self.Fail('conformance2/reading/read-pixels-from-fbo-test.html',
-        ['mac'], bug=483282)
-    self.Fail('conformance2/renderbuffers/' +
-        'multisampled-renderbuffer-initialization.html',
         ['mac'], bug=483282)
     self.Fail('conformance2/textures/misc/compressed-tex-image.html',
         ['mac'], bug=565438)
