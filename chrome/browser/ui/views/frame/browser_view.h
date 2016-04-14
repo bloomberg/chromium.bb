@@ -682,9 +682,6 @@ class BrowserView : public BrowserWindow,
 
   views::UnhandledKeyboardEventHandler unhandled_keyboard_event_handler_;
 
-  // Used to measure the loading spinner animation rate.
-  base::TimeTicks last_animation_time_;
-
   // If this flag is set then SetFocusToLocationBar() will set focus to the
   // location bar even if the browser window is not active.
   bool force_location_bar_focus_;
