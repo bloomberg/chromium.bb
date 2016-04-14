@@ -11,4 +11,4 @@ class ScreenshotSyncExpectations(GpuTestExpectations):
     super(ScreenshotSyncExpectations, self).__init__(*args, **kwargs)
 
   def SetExpectations(self):
-    pass
+    self.Flaky('ScreenshotSync.WithCanvas', ['win', 'amd'], bug=602313)
