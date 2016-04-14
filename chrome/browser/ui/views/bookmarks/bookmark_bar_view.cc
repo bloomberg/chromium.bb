@@ -189,6 +189,12 @@ int GetHorizontalMargin() {
   return kHorizontalMargin[ui::MaterialDesignController::GetMode()];
 }
 
+gfx::Size CalculateInkDropSize(const gfx::Size& button_size) {
+  gfx::Size ink_drop_size(button_size);
+  ink_drop_size.Enlarge(0, -2);
+  return ink_drop_size;
+}
+
 // BookmarkButtonBase -----------------------------------------------
 
 // Base class for non-menu hosting buttons used on the bookmark bar.
@@ -234,14 +240,16 @@ class BookmarkButtonBase : public views::LabelButton {
   std::unique_ptr<views::InkDropAnimation> CreateInkDropAnimation()
       const override {
     return base::WrapUnique(new views::FloodFillInkDropAnimation(
-        size(), GetInkDropCenter(), GetInkDropBaseColor()));
+        CalculateInkDropSize(size()), GetInkDropCenter(),
+        GetInkDropBaseColor()));
   }
 
   std::unique_ptr<views::InkDropHover> CreateInkDropHover() const override {
     if (!ShouldShowInkDropHover())
       return nullptr;
-    return base::WrapUnique(new views::InkDropHover(
-        size(), 0, GetInkDropCenter(), GetInkDropBaseColor()));
+    return base::WrapUnique(
+        new views::InkDropHover(CalculateInkDropSize(size()), 0,
+                                GetInkDropCenter(), GetInkDropBaseColor()));
   }
 
   SkColor GetInkDropBaseColor() const override {
@@ -333,14 +341,16 @@ class BookmarkMenuButtonBase : public views::MenuButton {
   std::unique_ptr<views::InkDropAnimation> CreateInkDropAnimation()
       const override {
     return base::WrapUnique(new views::FloodFillInkDropAnimation(
-        size(), GetInkDropCenter(), GetInkDropBaseColor()));
+        CalculateInkDropSize(size()), GetInkDropCenter(),
+        GetInkDropBaseColor()));
   }
 
   std::unique_ptr<views::InkDropHover> CreateInkDropHover() const override {
     if (!ShouldShowInkDropHover())
       return nullptr;
-    return base::WrapUnique(new views::InkDropHover(
-        size(), 0, GetInkDropCenter(), GetInkDropBaseColor()));
+    return base::WrapUnique(
+        new views::InkDropHover(CalculateInkDropSize(size()), 0,
+                                GetInkDropCenter(), GetInkDropBaseColor()));
   }
 
   SkColor GetInkDropBaseColor() const override {

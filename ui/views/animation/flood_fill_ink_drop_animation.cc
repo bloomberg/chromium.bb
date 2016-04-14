@@ -120,6 +120,12 @@ FloodFillInkDropAnimation::FloodFillInkDropAnimation(
   root_layer_.SetMasksToBounds(true);
   root_layer_.SetBounds(gfx::Rect(size_));
 
+  const gfx::Vector2dF translate_vector =
+      center_point_ - root_layer_.bounds().CenterPoint();
+  gfx::Transform transfrom;
+  transfrom.Translate(translate_vector.x(), translate_vector.y());
+  root_layer_.SetTransform(transfrom);
+
   const int painted_size_length = 2 * std::max(size_.width(), size_.height());
 
   painted_layer_.SetBounds(gfx::Rect(painted_size_length, painted_size_length));
@@ -307,7 +313,8 @@ gfx::Transform FloodFillInkDropAnimation::CalculateTransform(
       ToRoundedPoint(circle_layer_delegate_.GetCenterPoint());
 
   gfx::Transform transform = gfx::Transform();
-  transform.Translate(center_point_.x(), center_point_.y());
+  transform.Translate(root_layer_.bounds().CenterPoint().x(),
+                      root_layer_.bounds().CenterPoint().y());
   transform.Scale(target_scale, target_scale);
   transform.Translate(-drawn_center_point.x(), -drawn_center_point.y());
 
