@@ -7,6 +7,16 @@
  * displayes a URL that is loaded during startup. It includes a menu that allows
  * the user to edit/remove the entry.
  */
+
+cr.exportPath('settings');
+
+/**
+ * The name of the event fired from this element when the "Edit" option is
+ * tapped.
+ * @const {string}
+ */
+settings.EDIT_STARTUP_URL_EVENT = 'edit-startup-url';
+
 Polymer({
   is: 'settings-startup-url-entry',
 
@@ -26,7 +36,14 @@ Polymer({
 
   /** @private */
   onRemoveTap_: function() {
+    this.$$('iron-dropdown').close();
     settings.StartupUrlsPageBrowserProxyImpl.getInstance().removeStartupPage(
         this.model.modelIndex);
+  },
+
+  /** @private */
+  onEditTap_: function() {
+    this.$$('iron-dropdown').close();
+    this.fire(settings.EDIT_STARTUP_URL_EVENT, this.model);
   },
 });

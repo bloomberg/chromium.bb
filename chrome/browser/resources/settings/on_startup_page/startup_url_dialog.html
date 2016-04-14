@@ -9,7 +9,7 @@
   <template>
     <style include="settings-shared"></style>
     <settings-dialog id="dialog">
-      <div class="title">$i18n{onStartupAddNewPage}</div>
+      <div class="title">[[dialogTitle_]]</div>
       <div class="body">
         <paper-input always-float-label id="url"
             value="{{url_}}" on-input="validate_">
@@ -20,8 +20,8 @@
         <div class="action-buttons">
           <paper-button class="cancel-button" on-tap="onCancelTap_"
               id="cancel">$i18n{cancel}</paper-button>
-          <paper-button id="add" class="action-button" on-tap="onAddTap_"
-            disabled>$i18n{add}</paper-button>
+          <paper-button id="actionButton" class="action-button"
+              on-tap="onActionButtonTap_">[[actionButtonText_]]</paper-button>
         </div>
       </div>
     </settings-dialog>

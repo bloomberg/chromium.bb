@@ -573,11 +573,17 @@
   <message name="IDS_SETTINGS_ON_STARTUP_ADD_NEW_PAGE" desc="Entry prompt to add a new page.">
     Add a new page
   </message>
+  <message name="IDS_SETTINGS_ON_STARTUP_EDIT_PAGE" desc="Title of the dialog that allows the user to edit an existing startup page.">
+   Edit page
+  </message>
   <message name="IDS_SETTINGS_ON_STARTUP_SITE_URL" desc="Prompt to add a new page.">
     Site URL
   </message>
   <message name="IDS_SETTINGS_ON_STARTUP_REMOVE" desc="Text displayed on a menu button allowing the user to remove a URL from the list of startup URLs.">
     Remove
+  </message>
+  <message name="IDS_SETTINGS_ON_STARTUP_EDIT" desc="Text displayed on a menu button allowing the user to edit a URL from the list of startup URLs.">
+    Edit
   </message>
 
   <!-- Languages Page -->

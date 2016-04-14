@@ -12,18 +12,39 @@ Polymer({
   properties: {
     /** @private {string} */
     url_: String,
+
+    /**
+     * If specified the dialog acts as an "Edit page" dialog, otherwise as an
+     * "Add new page" dialog.
+     * @type {?StartupPageInfo}
+     */
+    model: Object,
+
+    /** @private {string} */
+    dialogTitle_: String,
+
+    /** @private {string} */
+    actionButtonText_: String,
   },
 
   /** @private {!settings.SearchEnginesBrowserProxy} */
   browserProxy_: null,
 
   /** @override */
-  ready: function() {
-    this.browserProxy_ = settings.StartupUrlsPageBrowserProxyImpl.getInstance();
-  },
-
-  /** @override */
   attached: function() {
+    this.browserProxy_ = settings.StartupUrlsPageBrowserProxyImpl.getInstance();
+
+    if (this.model) {
+      this.dialogTitle_ = loadTimeData.getString('onStartupEditPage');
+      this.actionButtonText_ = loadTimeData.getString('onStartupEdit');
+      this.$.actionButton.disabled = false;
+      // Pre-populate the input field.
+      this.url_ = this.model.url;
+    } else {
+      this.dialogTitle_ = loadTimeData.getString('onStartupAddNewPage');
+      this.actionButtonText_ = loadTimeData.getString('add');
+      this.$.actionButton.disabled = true;
+    }
     this.$.dialog.open();
   },
 
@@ -33,8 +54,12 @@ Polymer({
   },
 
   /** @private */
-  onAddTap_: function() {
-    this.browserProxy_.addStartupPage(this.url_).then(function(success) {
+  onActionButtonTap_: function() {
+    var whenDone = this.model ?
+        this.browserProxy_.editStartupPage(this.model.modelIndex, this.url_) :
+        this.browserProxy_.addStartupPage(this.url_);
+
+    whenDone.then(function(success) {
       if (success)
         this.$.dialog.close();
       // If the URL was invalid, there is nothing to do, just leave the dialog
@@ -45,7 +70,7 @@ Polymer({
   /** @private */
   validate_: function() {
     this.browserProxy_.validateStartupPage(this.url_).then(function(isValid) {
-      this.$.add.disabled = !isValid;
+      this.$.actionButton.disabled = !isValid;
     }.bind(this));
   },
 });

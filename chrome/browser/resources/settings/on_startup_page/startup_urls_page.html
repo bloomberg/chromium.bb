@@ -21,7 +21,8 @@
           on-tap="onUseCurrentPagesTap_">$i18n{onStartupUseCurrent}</div>
     </div>
     <template is="dom-if" if="[[showStartupUrlDialog_]]" restamp>
-      <settings-startup-url-dialog></settings-startup-url-dialog>
+      <settings-startup-url-dialog model="[[startupUrlDialogModel_]]">
+      </settings-startup-url-dialog>
     </template>
   </template>
   <script src="startup_urls_page.js"></script>

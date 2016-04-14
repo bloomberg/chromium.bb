@@ -22,7 +22,11 @@ Polymer({
      */
     startupPages_: Array,
 
+    /** @private */
     showStartupUrlDialog_: Boolean,
+
+    /** @private {?StartupPageInfo} */
+    startupUrlDialogModel_: Object,
   },
 
   /** @override */
@@ -32,6 +36,17 @@ Polymer({
       this.startupPages_ = startupPages;
     }.bind(this));
     this.browserProxy_.loadStartupPages();
+
+    this.addEventListener(settings.EDIT_STARTUP_URL_EVENT, function(event) {
+      this.startupUrlDialogModel_ = event.detail;
+      this.openDialog_();
+      event.stopPropagation();
+    }.bind(this));
+  },
+
+  /** @private */
+  onAddPageTap_: function() {
+    this.openDialog_();
   },
 
   /**
@@ -40,12 +55,13 @@ Polymer({
    * (because of 'restamp').
    * @private
    */
-  onAddPageTap_: function() {
+  openDialog_: function() {
     this.showStartupUrlDialog_ = true;
     this.async(function() {
       var dialog = this.$$('settings-startup-url-dialog');
       dialog.addEventListener('iron-overlay-closed', function() {
         this.showStartupUrlDialog_ = false;
+        this.startupUrlDialogModel_ = null;
       }.bind(this));
     }.bind(this));
   },

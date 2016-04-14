@@ -40,6 +40,7 @@
         <iron-dropdown vertical-align="top" horizontal-align="right"
             opened="{{menuOpened}}">
           <div class="dropdown-content">
+            <paper-item on-tap="onEditTap_">$i18n{onStartupEdit}</paper-item>
             <paper-item id="remove" on-tap="onRemoveTap_">
               $i18n{onStartupRemove}
             </paper-item>
