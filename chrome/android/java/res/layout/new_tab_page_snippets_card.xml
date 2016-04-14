@@ -46,9 +46,10 @@
         android:ellipsize="end"
         android:textSize="14sp"
         android:textColor="@color/snippets_publisher_name_color" />
-        
+
     <ImageView
         android:id="@+id/article_thumbnail"
+        android:background="@color/snippets_thumnail_placeholder_bg"
         android:layout_width="@dimen/snippets_thumbnail_size"
         android:layout_height="@dimen/snippets_thumbnail_size"
         android:layout_alignParentTop="true"
