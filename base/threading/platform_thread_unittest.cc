@@ -14,6 +14,7 @@
 #if defined(OS_POSIX)
 #include <sys/types.h>
 #include <unistd.h>
+#include "base/threading/platform_thread_internal_posix.h"
 #elif defined(OS_WIN)
 #include <windows.h>
 #endif
@@ -270,5 +271,65 @@ TEST(PlatformThreadTest, ThreadPriorityCurrentThread) {
     ASSERT_FALSE(thread.IsRunning());
   }
 }
+
+// Test for a function defined in platform_thread_internal_posix.cc. On OSX and
+// iOS, platform_thread_internal_posix.cc is not compiled, so these platforms
+// are excluded here, too.
+#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_IOS)
+TEST(PlatformThreadTest, GetNiceValueToThreadPriority) {
+  using internal::NiceValueToThreadPriority;
+  using internal::kThreadPriorityToNiceValueMap;
+
+  EXPECT_EQ(ThreadPriority::BACKGROUND,
+            kThreadPriorityToNiceValueMap[0].priority);
+  EXPECT_EQ(ThreadPriority::NORMAL,
+            kThreadPriorityToNiceValueMap[1].priority);
+  EXPECT_EQ(ThreadPriority::DISPLAY,
+            kThreadPriorityToNiceValueMap[2].priority);
+  EXPECT_EQ(ThreadPriority::REALTIME_AUDIO,
+            kThreadPriorityToNiceValueMap[3].priority);
+
+  static const int kBackgroundNiceValue =
+      kThreadPriorityToNiceValueMap[0].nice_value;
+  static const int kNormalNiceValue =
+      kThreadPriorityToNiceValueMap[1].nice_value;
+  static const int kDisplayNiceValue =
+      kThreadPriorityToNiceValueMap[2].nice_value;
+  static const int kRealtimeAudioNiceValue =
+      kThreadPriorityToNiceValueMap[3].nice_value;
+
+  // The tests below assume the nice values specified in the map are within
+  // the range below (both ends exclusive).
+  static const int kHighestNiceValue = 19;
+  static const int kLowestNiceValue = -20;
+
+  EXPECT_GT(kHighestNiceValue, kBackgroundNiceValue);
+  EXPECT_GT(kBackgroundNiceValue, kNormalNiceValue);
+  EXPECT_GT(kNormalNiceValue, kDisplayNiceValue);
+  EXPECT_GT(kDisplayNiceValue, kRealtimeAudioNiceValue);
+  EXPECT_GT(kRealtimeAudioNiceValue, kLowestNiceValue);
+
+  EXPECT_EQ(ThreadPriority::BACKGROUND,
+            NiceValueToThreadPriority(kHighestNiceValue));
+  EXPECT_EQ(ThreadPriority::BACKGROUND,
+            NiceValueToThreadPriority(kBackgroundNiceValue + 1));
+  EXPECT_EQ(ThreadPriority::BACKGROUND,
+            NiceValueToThreadPriority(kBackgroundNiceValue));
+  EXPECT_EQ(ThreadPriority::BACKGROUND,
+            NiceValueToThreadPriority(kNormalNiceValue + 1));
+  EXPECT_EQ(ThreadPriority::NORMAL,
+            NiceValueToThreadPriority(kNormalNiceValue));
+  EXPECT_EQ(ThreadPriority::NORMAL,
+            NiceValueToThreadPriority(kDisplayNiceValue + 1));
+  EXPECT_EQ(ThreadPriority::DISPLAY,
+            NiceValueToThreadPriority(kDisplayNiceValue));
+  EXPECT_EQ(ThreadPriority::DISPLAY,
+            NiceValueToThreadPriority(kRealtimeAudioNiceValue + 1));
+  EXPECT_EQ(ThreadPriority::REALTIME_AUDIO,
+            NiceValueToThreadPriority(kRealtimeAudioNiceValue));
+  EXPECT_EQ(ThreadPriority::REALTIME_AUDIO,
+            NiceValueToThreadPriority(kLowestNiceValue));
+}
+#endif
 
 }  // namespace base
