@@ -15,6 +15,8 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_delegate.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_delegate_factory.h"
+#include "chrome/browser/extensions/api/passwords_private/passwords_private_event_router.h"
+#include "chrome/browser/extensions/api/passwords_private/passwords_private_event_router_factory.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/common/extensions/api/passwords_private.h"
 #include "chrome/test/base/testing_profile.h"
@@ -54,7 +56,7 @@ std::string CreateException(size_t num) {
 // or RemovePasswordException() is called.
 class TestDelegate : public PasswordsPrivateDelegate {
  public:
-  TestDelegate() {
+  TestDelegate() : profile_(nullptr) {
     // Create mock data.
     for (size_t i = 0; i < kNumMocks; i++) {
       current_entries_.push_back(CreateEntry(i));
@@ -63,14 +65,18 @@ class TestDelegate : public PasswordsPrivateDelegate {
   }
   ~TestDelegate() override {}
 
-  void AddObserver(Observer* observer) override {
-    observers_.AddObserver(observer);
-    SendSavedPasswordsList();
-    SendPasswordExceptionsList();
+  void SendSavedPasswordsList() override {
+    PasswordsPrivateEventRouter* router =
+        PasswordsPrivateEventRouterFactory::GetForProfile(profile_);
+    if (router)
+      router->OnSavedPasswordsListChanged(current_entries_);
   }
 
-  void RemoveObserver(Observer* observer) override {
-    observers_.RemoveObserver(observer);
+  void SendPasswordExceptionsList() override {
+    PasswordsPrivateEventRouter* router =
+        PasswordsPrivateEventRouterFactory::GetForProfile(profile_);
+    if (router)
+      router->OnPasswordExceptionsListChanged(current_exceptions_);
   }
 
   void RemoveSavedPassword(
@@ -99,30 +105,23 @@ class TestDelegate : public PasswordsPrivateDelegate {
                            content::WebContents* web_contents) override {
     // Return a mocked password value.
     std::string plaintext_password(kPlaintextPassword);
-    FOR_EACH_OBSERVER(
-        Observer, observers_,
-        OnPlaintextPasswordFetched(origin_url, username, plaintext_password));
+    PasswordsPrivateEventRouter* router =
+        PasswordsPrivateEventRouterFactory::GetForProfile(profile_);
+    if (router) {
+      router->OnPlaintextPasswordFetched(origin_url, username,
+                                         plaintext_password);
+    }
   }
+
+  void SetProfile(Profile* profile) { profile_ = profile; }
 
  private:
-  void SendSavedPasswordsList() {
-    FOR_EACH_OBSERVER(Observer, observers_,
-                      OnSavedPasswordsListChanged(current_entries_));
-  }
-
-  void SendPasswordExceptionsList() {
-    FOR_EACH_OBSERVER(Observer, observers_,
-                      OnPasswordExceptionsListChanged(current_exceptions_));
-  }
-
   // The current list of entries/exceptions. Cached here so that when new
   // observers are added, this delegate can send the current lists without
   // having to request them from |password_manager_presenter_| again.
   std::vector<api::passwords_private::PasswordUiEntry> current_entries_;
   std::vector<std::string> current_exceptions_;
-
-  // The observers.
-  base::ObserverList<Observer> observers_;
+  Profile* profile_;
 };
 
 class PasswordsPrivateApiTest : public ExtensionApiTest {
@@ -152,6 +151,7 @@ class PasswordsPrivateApiTest : public ExtensionApiTest {
     ExtensionApiTest::SetUpOnMainThread();
     PasswordsPrivateDelegateFactory::GetInstance()->SetTestingFactory(
         profile(), &PasswordsPrivateApiTest::GetPasswordsPrivateDelegate);
+    s_test_delegate_->SetProfile(profile());
     content::RunAllPendingInMessageLoop();
   }
 

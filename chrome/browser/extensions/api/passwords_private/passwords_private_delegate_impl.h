@@ -39,8 +39,8 @@ class PasswordsPrivateDelegateImpl : public PasswordsPrivateDelegate,
   ~PasswordsPrivateDelegateImpl() override;
 
   // PasswordsPrivateDelegate implementation.
-  void AddObserver(Observer* observer) override;
-  void RemoveObserver(Observer* observer) override;
+  void SendSavedPasswordsList() override;
+  void SendPasswordExceptionsList() override;
   void RemoveSavedPassword(
       const std::string& origin_url, const std::string& username) override;
   void RemovePasswordException(const std::string& exception_url) override;
@@ -84,8 +84,6 @@ class PasswordsPrivateDelegateImpl : public PasswordsPrivateDelegate,
   void RequestShowPasswordInternal(const std::string& origin_url,
                                    const std::string& username,
                                    content::WebContents* web_contents);
-  void SendSavedPasswordsList();
-  void SendPasswordExceptionsList();
 
   // Not owned by this class.
   Profile* profile_;
@@ -114,9 +112,6 @@ class PasswordsPrivateDelegateImpl : public PasswordsPrivateDelegate,
   // The WebContents used when invoking this API. Used to fetch the
   // NativeWindow for the window where the API was called.
   content::WebContents* web_contents_;
-
-  // The observers.
-  base::ObserverList<Observer> observers_;
 
   // Map from origin URL and username to the index of |password_list_| at which
   // the corresponding entry resides.

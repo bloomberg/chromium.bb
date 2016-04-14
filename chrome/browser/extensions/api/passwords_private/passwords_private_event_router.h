@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_EXTENSIONS_API_PASSWORDS_PRIVATE_PASSWORDS_PRIVATE_EVENT_ROUTER_H_
 
 #include "base/macros.h"
-#include "chrome/browser/extensions/api/passwords_private/passwords_private_delegate.h"
+#include "chrome/common/extensions/api/passwords_private.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "extensions/browser/event_router.h"
 
@@ -21,12 +21,30 @@ namespace extensions {
 // onPasswordExceptionsListChanged events of changes.
 class PasswordsPrivateEventRouter :
     public KeyedService,
-    public EventRouter::Observer,
-    public PasswordsPrivateDelegate::Observer {
+    public EventRouter::Observer {
  public:
   static PasswordsPrivateEventRouter* Create(
       content::BrowserContext* browser_context);
   ~PasswordsPrivateEventRouter() override;
+
+  // Notifies listeners of updated passwords.
+  // |entries| The new list of saved passwords.
+  void OnSavedPasswordsListChanged(
+      const std::vector<api::passwords_private::PasswordUiEntry>& entries);
+
+  // Notifies listeners of updated exceptions.
+  // |exceptions| The new list of password exceptions.
+  void OnPasswordExceptionsListChanged(
+      const std::vector<std::string>& exceptions);
+
+  // Notifies listeners after fetching a plain-text password.
+  // |origin_url| The origin which the password is saved for.
+  // |username| The username that this password belongs to.
+  // |plaintext_password| The human-readable password.
+  void OnPlaintextPasswordFetched(
+      const std::string& origin_url,
+      const std::string& username,
+      const std::string& plaintext_password);
 
  protected:
   explicit PasswordsPrivateEventRouter(content::BrowserContext* context);
@@ -36,25 +54,8 @@ class PasswordsPrivateEventRouter :
 
   // EventRouter::Observer overrides:
   void OnListenerAdded(const EventListenerInfo& details) override;
-  void OnListenerRemoved(const EventListenerInfo& details) override;
-
-  // PasswordsPrivateDelegate::Observer overrides:
-  void OnSavedPasswordsListChanged(
-      const std::vector<api::passwords_private::PasswordUiEntry>& entries)
-      override;
-  void OnPasswordExceptionsListChanged(
-      const std::vector<std::string>& exceptions) override;
-  void OnPlaintextPasswordFetched(
-      const std::string& origin_url,
-      const std::string& username,
-      const std::string& plaintext_password) override;
 
  private:
-  // Either listens or unlistens for changes to saved passwords, password
-  // exceptions, or the retrieval of plaintext passwords, depending on whether
-  // clients are listening to the passwordsPrivate API events.
-  void StartOrStopListeningForChanges();
-
   void SendSavedPasswordListToListeners();
   void SendPasswordExceptionListToListeners();
 
@@ -66,12 +67,6 @@ class PasswordsPrivateEventRouter :
   // most up-to-date lists can be sent to them immediately.
   std::unique_ptr<base::ListValue> cached_saved_password_parameters_;
   std::unique_ptr<base::ListValue> cached_password_exception_parameters_;
-
-  // Whether this class is currently listening for changes to password changes.
-  bool listening_;
-
-  // True if we should ignore an update from PasswordsPrivateDelegate.
-  bool ignore_updates_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordsPrivateEventRouter);
 };

@@ -6,6 +6,8 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "chrome/browser/extensions/api/passwords_private/passwords_private_event_router.h"
+#include "chrome/browser/extensions/api/passwords_private/passwords_private_event_router_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "chrome/common/pref_names.h"
@@ -40,20 +42,18 @@ PasswordsPrivateDelegateImpl::PasswordsPrivateDelegateImpl(Profile* profile)
 
 PasswordsPrivateDelegateImpl::~PasswordsPrivateDelegateImpl() {}
 
-void PasswordsPrivateDelegateImpl::AddObserver(Observer* observer) {
-  observers_.AddObserver(observer);
-
-  // Send the current cached lists to the new observer.
-  ExecuteFunction(base::Bind(
-      &PasswordsPrivateDelegateImpl::SendSavedPasswordsList,
-      base::Unretained(this)));
-  ExecuteFunction(base::Bind(
-      &PasswordsPrivateDelegateImpl::SendPasswordExceptionsList,
-      base::Unretained(this)));
+void PasswordsPrivateDelegateImpl::SendSavedPasswordsList() {
+  PasswordsPrivateEventRouter* router =
+      PasswordsPrivateEventRouterFactory::GetForProfile(profile_);
+  if (router)
+    router->OnSavedPasswordsListChanged(current_entries_);
 }
 
-void PasswordsPrivateDelegateImpl::RemoveObserver(Observer* observer) {
-  observers_.RemoveObserver(observer);
+void PasswordsPrivateDelegateImpl::SendPasswordExceptionsList() {
+  PasswordsPrivateEventRouter* router =
+      PasswordsPrivateEventRouterFactory::GetForProfile(profile_);
+  if (router)
+    router->OnPasswordExceptionsListChanged(current_exceptions_);
 }
 
 void PasswordsPrivateDelegateImpl::RemoveSavedPassword(
@@ -138,10 +138,12 @@ void PasswordsPrivateDelegateImpl::ShowPassword(
     const std::string& origin_url,
     const std::string& username,
     const base::string16& password_value) {
-  FOR_EACH_OBSERVER(
-      Observer, observers_,
-      OnPlaintextPasswordFetched(origin_url, username,
-                                 base::UTF16ToUTF8(password_value)));
+  PasswordsPrivateEventRouter* router =
+      PasswordsPrivateEventRouterFactory::GetForProfile(profile_);
+  if (router) {
+    router->OnPlaintextPasswordFetched(origin_url, username,
+                                       base::UTF16ToUTF8(password_value));
+  }
 }
 
 void PasswordsPrivateDelegateImpl::SetPasswordList(
@@ -180,11 +182,6 @@ void PasswordsPrivateDelegateImpl::SetPasswordList(
   InitializeIfNecessary();
 }
 
-void PasswordsPrivateDelegateImpl::SendSavedPasswordsList() {
-  FOR_EACH_OBSERVER(Observer, observers_,
-                    OnSavedPasswordsListChanged(current_entries_));
-}
-
 void PasswordsPrivateDelegateImpl::SetPasswordExceptionList(
     const std::vector<std::unique_ptr<autofill::PasswordForm>>&
         password_exception_list) {
@@ -208,12 +205,6 @@ void PasswordsPrivateDelegateImpl::SetPasswordExceptionList(
 
   set_password_exception_list_called_ = true;
   InitializeIfNecessary();
-}
-
-void PasswordsPrivateDelegateImpl::SendPasswordExceptionsList() {
-  FOR_EACH_OBSERVER(
-      Observer, observers_,
-      Observer::OnPasswordExceptionsListChanged(current_exceptions_));
 }
 
 #if !defined(OS_ANDROID)
