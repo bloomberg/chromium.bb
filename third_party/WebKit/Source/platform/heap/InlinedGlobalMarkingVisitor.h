@@ -16,11 +16,7 @@ public:
     friend class MarkingVisitorImpl<InlinedGlobalMarkingVisitor>;
     using Impl = MarkingVisitorImpl<InlinedGlobalMarkingVisitor>;
 
-    explicit InlinedGlobalMarkingVisitor(Visitor* visitor)
-        : m_visitor(visitor)
-    {
-        ASSERT(visitor->getMarkingMode() == Visitor::GlobalMarking);
-    }
+    InlinedGlobalMarkingVisitor() { }
 
     // Hack to unify interface to visitor->trace().
     // Without this hack, we need to use visitor.trace() for
@@ -48,7 +44,6 @@ public:
         Helper::template registerWeakMembers<T, method>(obj);
     }
 
-    Visitor* getUninlined() { return m_visitor; }
 protected:
     // Methods to be called from MarkingVisitorImpl.
 
@@ -60,7 +55,7 @@ protected:
 
     inline Visitor::MarkingMode getMarkingMode() const
     {
-        return m_visitor->getMarkingMode();
+        return Visitor::GlobalMarking;
     }
 
 private:
@@ -68,8 +63,6 @@ private:
     {
         return *static_cast<InlinedGlobalMarkingVisitor*>(helper);
     }
-
-    Visitor* m_visitor;
 };
 
 inline void GarbageCollectedMixin::trace(InlinedGlobalMarkingVisitor)
