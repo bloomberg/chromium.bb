@@ -230,10 +230,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['android'], bug=478572)
     self.Fail('conformance/textures/image/tex-2d-rgb-rgb-unsigned_byte.html',
         ['android'], bug=586183)
-    self.Fail('conformance/textures/misc/texture-npot-video.html',
-        ['android', 'android-content-shell'], bug=601110)
-    self.Fail('conformance/textures/video/*',
-        ['android'], bug=601110)
     # The following tests timed out on android, so skip them for now.
     self.Skip('conformance/textures/image_bitmap_from_video/*',
         ['android'], bug=585108)
