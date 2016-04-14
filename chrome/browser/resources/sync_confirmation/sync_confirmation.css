@@ -7,11 +7,6 @@ body {
   padding: 0;
 }
 
-a {
-  color: rgb(85, 149, 254);
-  text-decoration: none;
-}
-
 .picture img {
   border-radius: 50%;
   max-height: 100%;
@@ -20,29 +15,22 @@ a {
 
 .container {
   background-color: white;
+  color: #333;
   overflow: hidden;
   width: 448px;
 }
 
 .top-title-bar {
-  -webkit-padding-start: 24px;
   align-items: center;
   border-bottom: 1px solid lightgray;
-  color: #333;
   display: flex;
   font-size: 16px;
   height: 52px;
+  padding: 0 24px;
 }
 
 .details {
-  font-size: 13px;
-  padding: 20px 24px;
-}
-
-.sync-message {
-  color: #595959;
-  line-height: 150%;
-  padding-bottom: 32px;
+  padding: 0 24px;
 }
 
 #picture-container {
@@ -50,6 +38,7 @@ a {
   display: flex;
   justify-content: center;
   padding-bottom: 32px;
+  padding-top: 24px;
 }
 
 .picture {
@@ -64,21 +53,62 @@ a {
   position: absolute;
 }
 
-.action-container {
-  align-items: baseline;
+.message-container {
   display: flex;
-  justify-content: flex-end;
+  margin-bottom: 16px;
 }
 
-paper-button {
+.message-container:last-child {
+  margin-bottom: 32px;
+}
+
+.message-container .logo {
+  -webkit-margin-end: 20px;
+  background-size: cover;
+  flex-shrink: 0;
+  height: 20px;
+  position: relative;
+  top: -2px;
+  width: 20px;
+}
+
+#chrome-logo {
+  background-image: url(../../../../ui/webui/resources/images/200-logo_chrome.png);
+}
+
+#googleg-logo {
+  background-image: url(../../../../ui/webui/resources/images/200-logo_googleg.png);
+}
+
+.message-container .title {
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.message-container .body {
+  color: #646464;
+}
+
+.message-container .text {
+  line-height: 20px;
+}
+
+.message-container #activityControlsCheckbox {
+  -webkit-margin-start: 40px;
+}
+
+.action-container {
+  display: flex;
+  justify-content: flex-end;
+  padding: 16px;
+}
+
+#confirmButton,
+#undoButton {
   font-weight: 500;
   line-height: 16px;
   margin: 0;
   padding: 8px 16px;
-}
-
-paper-button + paper-button {
-  -webkit-margin-start: 8px;
 }
 
 #confirmButton {
@@ -87,6 +117,7 @@ paper-button + paper-button {
 }
 
 #undoButton {
+  -webkit-margin-start: 8px;
   color: #5A5A5A;
 }
 

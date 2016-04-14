@@ -56,9 +56,14 @@ class SyncConfirmationHandler : public content::WebUIMessageHandler,
   virtual void SetUserImageURL(const std::string& url);
 
   Browser* GetDesktopBrowser();
-  void CloseModalSigninWindow(
-      LoginUIService::SyncConfirmationUIClosedResults results);
 
+  // Closes the modal signin window and calls
+  // LoginUIService::SyncConfirmationUIClosed with |result|. |result| indicates
+  // the option chosen by the user in the confirmation UI.
+  void CloseModalSigninWindow(
+      LoginUIService::SyncConfirmationUIClosedResult result);
+
+ private:
   DISALLOW_COPY_AND_ASSIGN(SyncConfirmationHandler);
 };
 

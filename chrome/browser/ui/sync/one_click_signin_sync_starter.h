@@ -132,7 +132,7 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer,
 
   // LoginUIService::Observer override.
   void OnSyncConfirmationUIClosed(
-      LoginUIService::SyncConfirmationUIClosedResults results) override;
+      LoginUIService::SyncConfirmationUIClosedResult result) override;
 
   // User input handler for the signin confirmation dialog.
   class SigninDialogDelegate

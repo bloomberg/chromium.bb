@@ -33,7 +33,7 @@ class LoginUIService : public KeyedService {
 
   // Used when the sync confirmation UI is closed to signify which option was
   // selected by the user.
-  enum SyncConfirmationUIClosedResults {
+  enum SyncConfirmationUIClosedResult {
     // Start sync immediately.
     SYNC_WITH_DEFAULT_SETTINGS,
     // Show the user the sync settings before starting sync.
@@ -53,10 +53,10 @@ class LoginUIService : public KeyedService {
     // |ui| The login UI that was just closed; will never be null.
     virtual void OnLoginUIClosed(LoginUI* ui) {}
 
-    // Called when the sync confirmation UI is closed. |results| indicates the
+    // Called when the sync confirmation UI is closed. |result| indicates the
     // option chosen by the user in the confirmation UI.
     virtual void OnSyncConfirmationUIClosed(
-        SyncConfirmationUIClosedResults results) {}
+        SyncConfirmationUIClosedResult result) {}
 
     // Called when a confirmation UI for untrusted signin is shown.
     virtual void OnUntrustedLoginUIShown() {}
@@ -85,8 +85,9 @@ class LoginUIService : public KeyedService {
   // sets current_login_ui() to null.
   void LoginUIClosed(LoginUI* ui);
 
-  // Called when the sync settings confirmation UI is closed.
-  void SyncConfirmationUIClosed(SyncConfirmationUIClosedResults results);
+  // Called when the sync confirmation UI is closed. |result| indicates the
+  // option chosen by the user in the confirmation UI.
+  void SyncConfirmationUIClosed(SyncConfirmationUIClosedResult result);
 
   // Called when a confirmation UI for untrusted signin is shown.
   void UntrustedLoginUIShown();

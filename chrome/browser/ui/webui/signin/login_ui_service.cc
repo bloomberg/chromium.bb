@@ -45,11 +45,11 @@ void LoginUIService::LoginUIClosed(LoginUI* ui) {
 }
 
 void LoginUIService::SyncConfirmationUIClosed(
-    SyncConfirmationUIClosedResults results) {
+    SyncConfirmationUIClosedResult result) {
   FOR_EACH_OBSERVER(
       Observer,
       observer_list_,
-      OnSyncConfirmationUIClosed(results));
+      OnSyncConfirmationUIClosed(result));
 }
 
 void LoginUIService::UntrustedLoginUIShown() {

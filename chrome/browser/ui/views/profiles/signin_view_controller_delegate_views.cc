@@ -22,7 +22,7 @@ const int kPasswordCombinedFixedGaiaViewHeight = 440;
 const int kPasswordCombinedFixedGaiaViewWidth = 360;
 const int kFixedGaiaViewHeight = 612;
 const int kModalDialogWidth = 448;
-const int kSyncConfirmationDialogHeight = 351;
+const int kSyncConfirmationDialogHeight = 487;
 
 SigninViewControllerDelegateViews::SigninViewControllerDelegateViews(
     SigninViewController* signin_view_controller,

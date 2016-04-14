@@ -390,7 +390,7 @@ void OneClickSigninSyncStarter::UntrustedSigninConfirmed(
 }
 
 void OneClickSigninSyncStarter::OnSyncConfirmationUIClosed(
-    LoginUIService::SyncConfirmationUIClosedResults results) {
+    LoginUIService::SyncConfirmationUIClosedResult result) {
 
   if (switches::UsePasswordSeparatedSigninFlow()) {
     // We didn't run this callback in AccountAddedToCookie so do it now.
@@ -398,7 +398,7 @@ void OneClickSigninSyncStarter::OnSyncConfirmationUIClosed(
       sync_setup_completed_callback_.Run(SYNC_SETUP_SUCCESS);
   }
 
-  switch (results) {
+  switch (result) {
     case LoginUIService::CONFIGURE_SYNC_FIRST:
       content::RecordAction(
           base::UserMetricsAction("Signin_Signin_WithAdvancedSyncSettings"));

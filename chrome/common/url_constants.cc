@@ -367,6 +367,9 @@ const char kExtensionResourceInvalidRequestURL[] =
 const char kSyncGoogleDashboardURL[] =
     "https://www.google.com/settings/chrome/sync/";
 
+const char kGoogleAccountActivityControlsURL[] =
+    "https://myaccount.google.com/activitycontrols/search";
+
 const char kPasswordManagerLearnMoreURL[] =
 #if defined(OS_CHROMEOS)
     "https://support.google.com/chromebook/?p=settings_password";

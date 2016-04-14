@@ -201,6 +201,14 @@ void SyncSetupHandler::GetStaticLocalizedValues(
       "encryptionSectionMessage",
       GetStringFUTF16(IDS_SYNC_ENCRYPTION_SECTION_MESSAGE, product_name));
   localized_strings->SetString(
+      "personalizeGoogleServicesTitle",
+      GetStringUTF16(IDS_SYNC_CONFIRMATION_PERSONALIZE_SERVICES_TITLE));
+  localized_strings->SetString(
+      "personalizeGoogleServicesMessage",
+      GetStringFUTF16(
+          IDS_SYNC_PERSONALIZE_GOOGLE_SERVICES_MESSAGE,
+          base::ASCIIToUTF16(chrome::kGoogleAccountActivityControlsURL)));
+  localized_strings->SetString(
       "passphraseRecover",
       GetStringFUTF16(
           IDS_SYNC_PASSPHRASE_RECOVER,

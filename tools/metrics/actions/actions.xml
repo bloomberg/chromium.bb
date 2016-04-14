@@ -12544,6 +12544,14 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="Signin_AccountSettings_GoogleActivityControlsClicked">
+  <owner>mahmadi@chromium.org</owner>
+  <description>
+    Recorded when the user clicks the &quot;Google Activity Controls&quot; link
+    in the account settings page.
+  </description>
+</action>
+
 <action name="Signin_AddAccountToDevice">
   <owner>gogerald@chromium.org</owner>
   <description>

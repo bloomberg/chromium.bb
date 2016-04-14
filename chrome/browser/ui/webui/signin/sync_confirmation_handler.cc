@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/signin/sync_confirmation_handler.h"
 
+#include <vector>
+
 #include "base/bind.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
@@ -89,10 +91,10 @@ Browser* SyncConfirmationHandler::GetDesktopBrowser() {
 }
 
 void SyncConfirmationHandler::CloseModalSigninWindow(
-    LoginUIService::SyncConfirmationUIClosedResults results) {
+    LoginUIService::SyncConfirmationUIClosedResult result) {
   Browser* browser = GetDesktopBrowser();
   LoginUIServiceFactory::GetForProfile(browser->profile())->
-      SyncConfirmationUIClosed(results);
+      SyncConfirmationUIClosed(result);
   browser->CloseModalSigninWindow();
 }
 
