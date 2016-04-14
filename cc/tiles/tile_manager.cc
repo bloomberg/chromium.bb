@@ -880,9 +880,8 @@ scoped_refptr<RasterTask> TileManager::CreateRasterTask(
         tile->enclosing_layer_rect(), tile->contents_scale(), &images);
   }
 
-  // TODO(vmpstr): We should disable image hijack canvas in
-  // |playback_settings| here if |images| is empty.
-
+  // We can skip the image hijack canvas if we have no images.
+  playback_settings.use_image_hijack_canvas = !images.empty();
   for (auto it = images.begin(); it != images.end();) {
     scoped_refptr<ImageDecodeTask> task;
     bool need_to_unref_when_finished =

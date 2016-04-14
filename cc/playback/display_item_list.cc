@@ -308,8 +308,4 @@ void DisplayItemList::GetDiscardableImagesInRect(
   image_map_.GetDiscardableImagesInRect(rect, raster_scale, images);
 }
 
-bool DisplayItemList::MayHaveDiscardableImages() const {
-  return !image_map_.empty();
-}
-
 }  // namespace cc

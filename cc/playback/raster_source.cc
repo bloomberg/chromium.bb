@@ -100,8 +100,7 @@ void RasterSource::PlaybackToCanvas(SkCanvas* raster_canvas,
     SkipImageCanvas canvas(raster_canvas);
     RasterCommon(&canvas, nullptr, canvas_bitmap_rect, canvas_playback_rect,
                  contents_scale);
-  } else if (settings.use_image_hijack_canvas &&
-             display_list_->MayHaveDiscardableImages()) {
+  } else if (settings.use_image_hijack_canvas) {
     const SkImageInfo& info = raster_canvas->imageInfo();
 
     ImageHijackCanvas canvas(info.width(), info.height(),
