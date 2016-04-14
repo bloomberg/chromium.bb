@@ -9,12 +9,8 @@
 
 #include <sys/cdefs.h>  // for __THROW
 
-#ifndef __THROW  // Not a glibc system
-#ifdef _NOEXCEPT  // LLVM libc++ uses noexcept instead
-#define __THROW _NOEXCEPT
-#else
+#ifndef __THROW /* Not a glibc system */
 #define __THROW
-#endif  // !_NOEXCEPT
 #endif
 
 // Shim layer symbols need to be ALWAYS exported, regardless of component build.
