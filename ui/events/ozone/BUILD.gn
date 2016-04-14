@@ -202,13 +202,11 @@ component("events_ozone_layout") {
     configs += [ ":xkbcommon" ]
 
     sources += [
-      "layout/xkb/xkb.h",
       "layout/xkb/xkb_evdev_codes.cc",
       "layout/xkb/xkb_evdev_codes.h",
       "layout/xkb/xkb_key_code_converter.h",
       "layout/xkb/xkb_keyboard_layout_engine.cc",
       "layout/xkb/xkb_keyboard_layout_engine.h",
-      "layout/xkb/xkb_keysym.h",
     ]
   }
 }
