@@ -68,7 +68,7 @@ class CallStack {
   // Set the TID associated with this call stack.
   void set_tid(uint32_t tid) { tid_ = tid; }
 
-  uint32_t tid() { return tid_; }
+  uint32_t tid() const { return tid_; }
 
  private:
   // Stackwalker is responsible for building the frames_ vector.
