@@ -31,7 +31,6 @@ _DEFAULT_ISOLATE_FILE_PATHS = {
       'third_party/WebKit/Source/platform/heap/BlinkHeapUnitTests.isolate',
     'blink_platform_unittests':
       'third_party/WebKit/Source/platform/blink_platform_unittests.isolate',
-    'breakpad_unittests': 'breakpad/breakpad_unittests.isolate',
     'cc_perftests': 'cc/cc_perftests.isolate',
     'components_browsertests': 'components/components_browsertests.isolate',
     'components_unittests': 'components/components_unittests.isolate',
@@ -301,8 +300,6 @@ class GtestTestInstance(test_instance.TestInstance):
       self._isolate_delegate.PurgeExcluded(_DEPS_EXCLUSION_LIST)
       self._isolate_delegate.MoveOutputDeps()
       dest_dir = None
-      if self._suite == 'breakpad_unittests':
-        dest_dir = '/data/local/tmp/'
       self._data_deps.extend([
           (self._isolate_delegate.isolate_deps_dir, dest_dir)])
 

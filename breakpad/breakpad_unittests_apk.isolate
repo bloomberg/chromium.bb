@@ -4,7 +4,6 @@
 {
   'includes': [
     '../build/android/android.isolate',
-    'breakpad_unittests.isolate',
   ],
   'variables': {
     'command': [
@@ -14,7 +13,6 @@
     'files': [
       '<(PRODUCT_DIR)/bin/run_breakpad_unittests',
       '<(PRODUCT_DIR)/breakpad_unittests',
-      'breakpad_unittests.isolate',
     ]
   },
 }

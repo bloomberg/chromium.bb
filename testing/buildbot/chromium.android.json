@@ -52,9 +52,6 @@
         "test": "blimp_unittests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/breakpad/breakpad_unittests.isolate"
-        ],
         "override_compile_targets": [
           "breakpad_unittests_deps"
         ],
@@ -189,9 +186,6 @@
         "test": "blimp_unittests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/breakpad/breakpad_unittests.isolate"
-        ],
         "override_compile_targets": [
           "breakpad_unittests_deps"
         ],
@@ -329,9 +323,6 @@
         "test": "blimp_unittests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/breakpad/breakpad_unittests.isolate"
-        ],
         "override_compile_targets": [
           "breakpad_unittests_deps"
         ],
@@ -469,9 +460,6 @@
         "test": "blimp_unittests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/breakpad/breakpad_unittests.isolate"
-        ],
         "override_compile_targets": [
           "breakpad_unittests_deps"
         ],
@@ -609,9 +597,6 @@
         "test": "blimp_unittests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/breakpad/breakpad_unittests.isolate"
-        ],
         "override_compile_targets": [
           "breakpad_unittests_deps"
         ],
@@ -749,9 +734,6 @@
         "test": "blimp_unittests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/breakpad/breakpad_unittests.isolate"
-        ],
         "override_compile_targets": [
           "breakpad_unittests_deps"
         ],
@@ -901,9 +883,6 @@
         "test": "blink_platform_unittests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/breakpad/breakpad_unittests.isolate"
-        ],
         "override_compile_targets": [
           "breakpad_unittests_deps"
         ],
@@ -1041,9 +1020,6 @@
         "test": "blimp_unittests"
       },
       {
-        "args": [
-          "--isolate_file_path=src/breakpad/breakpad_unittests.isolate"
-        ],
         "override_compile_targets": [
           "breakpad_unittests_deps"
         ],
