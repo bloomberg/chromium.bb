@@ -7903,6 +7903,93 @@ should be able to be added at any place in this file.
   <description>A tab is no longer audible.</description>
 </action>
 
+<action name="Media.Controls.Cast">
+  <owner>mlamouri@chromium.org</owner>
+  <description>The user clicked on the cast controls button.</description>
+</action>
+
+<action name="Media.Controls.CastOverlay">
+  <owner>mlamouri@chromium.org</owner>
+  <description>The user clicked on the cast overlay button.</description>
+</action>
+
+<action name="Media.Controls.ClosedCaptionHide">
+  <owner>mlamouri@chromium.org</owner>
+  <description>The user hid the closed caption from the controls.</description>
+</action>
+
+<action name="Media.Controls.ClosedCaptionShow">
+  <owner>mlamouri@chromium.org</owner>
+  <description>
+    The user showed the closed caption from the controls.
+  </description>
+</action>
+
+<action name="Media.Controls.EnterFullscreen">
+  <owner>mlamouri@chromium.org</owner>
+  <description>The user entered fullscreen mode from the controls.</description>
+</action>
+
+<action name="Media.Controls.ExitFullscreen">
+  <owner>mlamouri@chromium.org</owner>
+  <description>The user left fullscreen mode from the controls.</description>
+</action>
+
+<action name="Media.Controls.Mute">
+  <owner>mlamouri@chromium.org</owner>
+  <description>The user muted a media element from the controls.</description>
+</action>
+
+<action name="Media.Controls.Pause">
+  <owner>mlamouri@chromium.org</owner>
+  <description>The user paused a media element from the controls.</description>
+</action>
+
+<action name="Media.Controls.Play">
+  <owner>mlamouri@chromium.org</owner>
+  <description>The user played a media element from the controls.</description>
+</action>
+
+<action name="Media.Controls.PlayOverlay">
+  <owner>mlamouri@chromium.org</owner>
+  <description>
+    The user played a media element from the play overlay button.
+  </description>
+</action>
+
+<action name="Media.Controls.ScrubbingBegin">
+  <owner>mlamouri@chromium.org</owner>
+  <description>
+    The user started to interact with the control's scrubber.
+  </description>
+</action>
+
+<action name="Media.Controls.ScrubbingEnd">
+  <owner>mlamouri@chromium.org</owner>
+  <description>
+    The user stopped interacting with the control's scrubber.
+  </description>
+</action>
+
+<action name="Media.Controls.Unmute">
+  <owner>mlamouri@chromium.org</owner>
+  <description>The user unmuted a media element from the controls.</description>
+</action>
+
+<action name="Media.Controls.VolumeChangeBegin">
+  <owner>mlamouri@chromium.org</owner>
+  <description>
+    The user started to interact with the control's volume slider.
+  </description>
+</action>
+
+<action name="Media.Controls.VolumeChangeEnd">
+  <owner>mlamouri@chromium.org</owner>
+  <description>
+    The user stopped interacting with the control's volume slider.
+  </description>
+</action>
+
 <action name="MediaContextMenu_Controls">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>

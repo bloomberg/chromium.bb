@@ -45,6 +45,8 @@
 #include "core/layout/api/LayoutSliderItem.h"
 #include "platform/Histogram.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "public/platform/Platform.h"
+#include "public/platform/UserMetricsAction.h"
 
 namespace blink {
 
@@ -254,6 +256,11 @@ MediaControlMuteButtonElement* MediaControlMuteButtonElement::create(MediaContro
 void MediaControlMuteButtonElement::defaultEventHandler(Event* event)
 {
     if (event->type() == EventTypeNames::click) {
+        if (mediaElement().muted())
+            Platform::current()->recordAction(UserMetricsAction("Media.Controls.Unmute"));
+        else
+            Platform::current()->recordAction(UserMetricsAction("Media.Controls.Mute"));
+
         mediaElement().setMuted(!mediaElement().muted());
         event->setDefaultHandled();
     }
@@ -285,6 +292,11 @@ MediaControlPlayButtonElement* MediaControlPlayButtonElement::create(MediaContro
 void MediaControlPlayButtonElement::defaultEventHandler(Event* event)
 {
     if (event->type() == EventTypeNames::click) {
+        if (mediaElement().paused())
+            Platform::current()->recordAction(UserMetricsAction("Media.Controls.Play"));
+        else
+            Platform::current()->recordAction(UserMetricsAction("Media.Controls.Pause"));
+
         // Allow play attempts for plain src= media to force a reload in the error state. This allows potential
         // recovery for transient network and decoder resource issues.
         const String& url = mediaElement().currentSrc().getString();
@@ -322,6 +334,7 @@ MediaControlOverlayPlayButtonElement* MediaControlOverlayPlayButtonElement::crea
 void MediaControlOverlayPlayButtonElement::defaultEventHandler(Event* event)
 {
     if (event->type() == EventTypeNames::click && mediaElement().paused()) {
+        Platform::current()->recordAction(UserMetricsAction("Media.Controls.PlayOverlay"));
         mediaElement().play();
         updateDisplayType();
         event->setDefaultHandled();
@@ -366,6 +379,10 @@ void MediaControlToggleClosedCaptionsButtonElement::updateDisplayType()
 void MediaControlToggleClosedCaptionsButtonElement::defaultEventHandler(Event* event)
 {
     if (event->type() == EventTypeNames::click) {
+        if (mediaElement().closedCaptionsVisible())
+            Platform::current()->recordAction(UserMetricsAction("Media.Controls.ClosedCaptionHide"));
+        else
+            Platform::current()->recordAction(UserMetricsAction("Media.Controls.ClosedCaptionShow"));
         mediaElement().setClosedCaptionsVisible(!mediaElement().closedCaptionsVisible());
         setChecked(mediaElement().closedCaptionsVisible());
         updateDisplayType();
@@ -400,11 +417,15 @@ void MediaControlTimelineElement::defaultEventHandler(Event* event)
     if (!inShadowIncludingDocument() || !document().isActive())
         return;
 
-    if (event->type() == EventTypeNames::mousedown)
+    if (event->type() == EventTypeNames::mousedown) {
+        Platform::current()->recordAction(UserMetricsAction("Media.Controls.ScrubbingBegin"));
         mediaControls().beginScrubbing();
+    }
 
-    if (event->type() == EventTypeNames::mouseup)
+    if (event->type() == EventTypeNames::mouseup) {
+        Platform::current()->recordAction(UserMetricsAction("Media.Controls.ScrubbingEnd"));
         mediaControls().endScrubbing();
+    }
 
     MediaControlInputElement::defaultEventHandler(event);
 
@@ -481,6 +502,12 @@ void MediaControlVolumeSliderElement::defaultEventHandler(Event* event)
     if (event->type() == EventTypeNames::mouseover || event->type() == EventTypeNames::mouseout || event->type() == EventTypeNames::mousemove)
         return;
 
+    if (event->type() == EventTypeNames::mousedown)
+        Platform::current()->recordAction(UserMetricsAction("Media.Controls.VolumeChangeBegin"));
+
+    if (event->type() == EventTypeNames::mouseup)
+        Platform::current()->recordAction(UserMetricsAction("Media.Controls.VolumeChangeEnd"));
+
     double volume = value().toDouble();
     mediaElement().setVolume(volume, ASSERT_NO_EXCEPTION);
     mediaElement().setMuted(false);
@@ -533,10 +560,13 @@ MediaControlFullscreenButtonElement* MediaControlFullscreenButtonElement::create
 void MediaControlFullscreenButtonElement::defaultEventHandler(Event* event)
 {
     if (event->type() == EventTypeNames::click) {
-        if (mediaElement().isFullscreen())
+        if (mediaElement().isFullscreen()) {
+            Platform::current()->recordAction(UserMetricsAction("Media.Controls.ExitFullscreen"));
             mediaElement().exitFullscreen();
-        else
+        } else {
+            Platform::current()->recordAction(UserMetricsAction("Media.Controls.EnterFullscreen"));
             mediaElement().enterFullscreen();
+        }
         event->setDefaultHandled();
     }
     HTMLInputElement::defaultEventHandler(event);
@@ -568,6 +598,11 @@ MediaControlCastButtonElement* MediaControlCastButtonElement::create(MediaContro
 void MediaControlCastButtonElement::defaultEventHandler(Event* event)
 {
     if (event->type() == EventTypeNames::click) {
+        if (m_isOverlayButton)
+            Platform::current()->recordAction(UserMetricsAction("Media.Controls.CastOverlay"));
+        else
+            Platform::current()->recordAction(UserMetricsAction("Media.Controls.Cast"));
+
         if (m_isOverlayButton && !m_clickUseCounted) {
             m_clickUseCounted = true;
             recordMetrics(CastOverlayMetrics::Clicked);
