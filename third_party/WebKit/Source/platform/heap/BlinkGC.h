@@ -50,9 +50,9 @@ public:
 
     enum GCType {
         // Both of the marking task and the sweeping task run in
-        // ThreadHeap::collectGarbage().
+        // Heap::collectGarbage().
         GCWithSweep,
-        // Only the marking task runs in ThreadHeap::collectGarbage().
+        // Only the marking task runs in Heap::collectGarbage().
         // The sweeping task is split into chunks and scheduled lazily.
         GCWithoutSweep,
         // Only the marking task runs just to take a heap snapshot.

@@ -163,7 +163,7 @@ ShareableElementData::ShareableElementData(const UniqueElementData& other)
 
 ShareableElementData* ShareableElementData::createWithAttributes(const Vector<Attribute>& attributes)
 {
-    void* slot = ThreadHeap::allocate<ElementData>(sizeForShareableElementDataWithAttributeCount(attributes.size()));
+    void* slot = Heap::allocate<ElementData>(sizeForShareableElementDataWithAttributeCount(attributes.size()));
     return new (slot) ShareableElementData(attributes);
 }
 
@@ -199,7 +199,7 @@ UniqueElementData* UniqueElementData::create()
 
 ShareableElementData* UniqueElementData::makeShareableCopy() const
 {
-    void* slot = ThreadHeap::allocate<ElementData>(sizeForShareableElementDataWithAttributeCount(m_attributeVector.size()));
+    void* slot = Heap::allocate<ElementData>(sizeForShareableElementDataWithAttributeCount(m_attributeVector.size()));
     return new (slot) ShareableElementData(*this);
 }
 

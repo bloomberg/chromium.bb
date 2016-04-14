@@ -26,7 +26,7 @@ void dumpMemoryTotals(blink::WebProcessMemoryDump* memoryDump)
     dumpName.append("/allocated_objects");
     WebMemoryAllocatorDump* objectsDump = memoryDump->createMemoryAllocatorDump(dumpName);
 
-    // ThreadHeap::markedObjectSize() can be underestimated if we're still in the
+    // Heap::markedObjectSize() can be underestimated if we're still in the
     // process of lazy sweeping.
     objectsDump->addScalar("size", "bytes", ProcessHeap::totalAllocatedObjectSize() + ProcessHeap::totalMarkedObjectSize());
 }
@@ -58,7 +58,7 @@ bool BlinkGCMemoryDumpProvider::onMemoryDump(WebMemoryDumpLevelOfDetail levelOfD
     // In the case of a detailed dump perform a mark-only GC pass to collect
     // more detailed stats.
     if (levelOfDetail == WebMemoryDumpLevelOfDetail::Detailed)
-        ThreadHeap::collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::TakeSnapshot, BlinkGC::ForcedGC);
+        Heap::collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::TakeSnapshot, BlinkGC::ForcedGC);
     dumpMemoryTotals(memoryDump);
 
     if (m_isHeapProfilingEnabled) {
@@ -76,7 +76,7 @@ bool BlinkGCMemoryDumpProvider::onMemoryDump(WebMemoryDumpLevelOfDetail levelOfD
         memoryDump->dumpHeapUsage(bytesByContext, overhead, "blink_gc");
     }
 
-    // Merge all dumps collected by ThreadHeap::collectGarbage.
+    // Merge all dumps collected by Heap::collectGarbage.
     if (levelOfDetail == WebMemoryDumpLevelOfDetail::Detailed)
         memoryDump->takeAllDumpsFrom(m_currentProcessMemoryDump.get());
     return true;

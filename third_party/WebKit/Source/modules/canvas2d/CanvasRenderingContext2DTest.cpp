@@ -170,7 +170,7 @@ void CanvasRenderingContext2DTest::SetUp()
 
 void CanvasRenderingContext2DTest::TearDown()
 {
-    ThreadHeap::collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithSweep, BlinkGC::ForcedGC);
+    Heap::collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithSweep, BlinkGC::ForcedGC);
     replaceMemoryCacheForTesting(m_globalMemoryCache.release());
 }
 

@@ -320,7 +320,7 @@ TEST(DataConsumerTeeTest, DetachBothDestinationsShouldStopSourceReader)
     dest2 = nullptr;
 
     // Collect garbage to finalize the source reader.
-    ThreadHeap::collectAllGarbage();
+    Heap::collectAllGarbage();
     context->detached()->wait();
 }
 

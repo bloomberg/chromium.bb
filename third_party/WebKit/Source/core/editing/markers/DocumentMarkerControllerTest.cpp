@@ -101,7 +101,7 @@ TEST_F(DocumentMarkerControllerTest, DidMoveToNewDocument)
     anotherDocument->adoptNode(parent, ASSERT_NO_EXCEPTION);
 
     // No more reference to marked node.
-    ThreadHeap::collectAllGarbage();
+    Heap::collectAllGarbage();
     EXPECT_EQ(0u, markerController().markers().size());
     EXPECT_EQ(0u, anotherDocument->markers().markers().size());
 }
@@ -117,7 +117,7 @@ TEST_F(DocumentMarkerControllerTest, NodeWillBeRemovedMarkedByNormalize)
         parent->normalize();
     }
     // No more reference to marked node.
-    ThreadHeap::collectAllGarbage();
+    Heap::collectAllGarbage();
     EXPECT_EQ(1u, markerController().markers().size());
 }
 
@@ -129,7 +129,7 @@ TEST_F(DocumentMarkerControllerTest, NodeWillBeRemovedMarkedByRemoveChildren)
     EXPECT_EQ(1u, markerController().markers().size());
     parent->removeChildren();
     // No more reference to marked node.
-    ThreadHeap::collectAllGarbage();
+    Heap::collectAllGarbage();
     EXPECT_EQ(0u, markerController().markers().size());
 }
 
@@ -143,7 +143,7 @@ TEST_F(DocumentMarkerControllerTest, NodeWillBeRemovedByRemoveMarked)
         parent->removeChild(parent->firstChild());
     }
     // No more reference to marked node.
-    ThreadHeap::collectAllGarbage();
+    Heap::collectAllGarbage();
     EXPECT_EQ(0u, markerController().markers().size());
 }
 
@@ -157,7 +157,7 @@ TEST_F(DocumentMarkerControllerTest, NodeWillBeRemovedMarkedByRemoveAncestor)
         parent->parentNode()->parentNode()->removeChild(parent->parentNode());
     }
     // No more reference to marked node.
-    ThreadHeap::collectAllGarbage();
+    Heap::collectAllGarbage();
     EXPECT_EQ(0u, markerController().markers().size());
 }
 
@@ -171,7 +171,7 @@ TEST_F(DocumentMarkerControllerTest, NodeWillBeRemovedMarkedByRemoveParent)
         parent->parentNode()->removeChild(parent);
     }
     // No more reference to marked node.
-    ThreadHeap::collectAllGarbage();
+    Heap::collectAllGarbage();
     EXPECT_EQ(0u, markerController().markers().size());
 }
 
@@ -185,7 +185,7 @@ TEST_F(DocumentMarkerControllerTest, NodeWillBeRemovedMarkedByReplaceChild)
         parent->replaceChild(createTextNode("bar"), parent->firstChild());
     }
     // No more reference to marked node.
-    ThreadHeap::collectAllGarbage();
+    Heap::collectAllGarbage();
     EXPECT_EQ(0u, markerController().markers().size());
 }
 
@@ -199,7 +199,7 @@ TEST_F(DocumentMarkerControllerTest, NodeWillBeRemovedBySetInnerHTML)
         setBodyInnerHTML("");
     }
     // No more reference to marked node.
-    ThreadHeap::collectAllGarbage();
+    Heap::collectAllGarbage();
     EXPECT_EQ(0u, markerController().markers().size());
 }
 

@@ -124,7 +124,7 @@ public:
         // causing a test failure.
         m_helper.clear();
         m_client.clear();
-        ThreadHeap::collectAllGarbage();
+        Heap::collectAllGarbage();
     }
 
     Persistent<MockAutoplayClient> m_client;

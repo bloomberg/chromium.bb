@@ -112,7 +112,7 @@ TEST_F(CSSStyleSheetResourceTest, PruneCanCauseEviction)
         }
         ASSERT_TRUE(memoryCache()->isInSameLRUListForTest(cssResource, imageResource));
     }
-    ThreadHeap::collectAllGarbage();
+    Heap::collectAllGarbage();
     // This operation should not lead to crash!
     memoryCache()->pruneAll();
 }

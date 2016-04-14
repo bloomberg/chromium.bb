@@ -33,7 +33,7 @@ public:
     static size_t quantizedSize(size_t count)
     {
         RELEASE_ASSERT(count <= maxHeapObjectSize / sizeof(T));
-        return ThreadHeap::allocationSizeFromSize(count * sizeof(T)) - sizeof(HeapObjectHeader);
+        return Heap::allocationSizeFromSize(count * sizeof(T)) - sizeof(HeapObjectHeader);
     }
     template <typename T>
     static T* allocateVectorBacking(size_t size)
@@ -42,7 +42,7 @@ public:
         ASSERT(state->isAllocationAllowed());
         size_t gcInfoIndex = GCInfoTrait<HeapVectorBacking<T, VectorTraits<T>>>::index();
         NormalPageArena* arena = static_cast<NormalPageArena*>(state->vectorBackingArena(gcInfoIndex));
-        return reinterpret_cast<T*>(arena->allocateObject(ThreadHeap::allocationSizeFromSize(size), gcInfoIndex));
+        return reinterpret_cast<T*>(arena->allocateObject(Heap::allocationSizeFromSize(size), gcInfoIndex));
     }
     template <typename T>
     static T* allocateExpandedVectorBacking(size_t size)
@@ -51,7 +51,7 @@ public:
         ASSERT(state->isAllocationAllowed());
         size_t gcInfoIndex = GCInfoTrait<HeapVectorBacking<T, VectorTraits<T>>>::index();
         NormalPageArena* arena = static_cast<NormalPageArena*>(state->expandedVectorBackingArena(gcInfoIndex));
-        return reinterpret_cast<T*>(arena->allocateObject(ThreadHeap::allocationSizeFromSize(size), gcInfoIndex));
+        return reinterpret_cast<T*>(arena->allocateObject(Heap::allocationSizeFromSize(size), gcInfoIndex));
     }
     static void freeVectorBacking(void*);
     static bool expandVectorBacking(void*, size_t);
@@ -64,7 +64,7 @@ public:
 #define COMMA ,
         const char* typeName = WTF_HEAP_PROFILER_TYPE_NAME(HeapVectorBacking<T COMMA VectorTraits<T>>);
 #undef COMMA
-        return reinterpret_cast<T*>(ThreadHeap::allocateOnArenaIndex(state, size, BlinkGC::InlineVectorArenaIndex, gcInfoIndex, typeName));
+        return reinterpret_cast<T*>(Heap::allocateOnArenaIndex(state, size, BlinkGC::InlineVectorArenaIndex, gcInfoIndex, typeName));
     }
     static void freeInlineVectorBacking(void*);
     static bool expandInlineVectorBacking(void*, size_t);
@@ -76,7 +76,7 @@ public:
         size_t gcInfoIndex = GCInfoTrait<HeapHashTableBacking<HashTable>>::index();
         ThreadState* state = ThreadStateFor<ThreadingTrait<T>::Affinity>::state();
         const char* typeName = WTF_HEAP_PROFILER_TYPE_NAME(HeapHashTableBacking<HashTable>);
-        return reinterpret_cast<T*>(ThreadHeap::allocateOnArenaIndex(state, size, BlinkGC::HashTableArenaIndex, gcInfoIndex, typeName));
+        return reinterpret_cast<T*>(Heap::allocateOnArenaIndex(state, size, BlinkGC::HashTableArenaIndex, gcInfoIndex, typeName));
     }
     template <typename T, typename HashTable>
     static T* allocateZeroedHashTableBacking(size_t size)
@@ -89,7 +89,7 @@ public:
     template <typename Return, typename Metadata>
     static Return malloc(size_t size, const char* typeName)
     {
-        return reinterpret_cast<Return>(ThreadHeap::allocate<Metadata>(size, IsEagerlyFinalizedType<Metadata>::value));
+        return reinterpret_cast<Return>(Heap::allocate<Metadata>(size, IsEagerlyFinalizedType<Metadata>::value));
     }
     static void free(void* address) { }
     template<typename T>
@@ -112,7 +112,7 @@ public:
     template<typename T>
     static bool isHeapObjectAlive(T* object)
     {
-        return ThreadHeap::isHeapObjectAlive(object);
+        return Heap::isHeapObjectAlive(object);
     }
 
     template<typename VisitorDispatcher>
@@ -520,7 +520,7 @@ template<typename T> struct HashTraits<blink::WeakMember<T>> : SimpleClassHashTr
             visitor->trace(weakMember.get()); // Strongified visit.
             return false;
         }
-        return !blink::ThreadHeap::isHeapObjectAlive(weakMember);
+        return !blink::Heap::isHeapObjectAlive(weakMember);
     }
 };
 

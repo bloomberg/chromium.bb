@@ -76,7 +76,7 @@ protected:
         document.release();
         element.release();
         timeline.release();
-        ThreadHeap::collectAllGarbage();
+        Heap::collectAllGarbage();
     }
 
     void updateClockAndService(double time)

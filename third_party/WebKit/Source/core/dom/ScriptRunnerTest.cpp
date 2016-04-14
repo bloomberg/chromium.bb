@@ -437,7 +437,7 @@ TEST_F(ScriptRunnerTest, TasksWithDeadScriptRunner)
 
     m_scriptRunner.release();
 
-    ThreadHeap::collectAllGarbage();
+    Heap::collectAllGarbage();
 
     // m_scriptRunner is gone. We need to make sure that ScriptRunner::Task do not access dead object.
     EXPECT_CALL(*scriptLoader1, execute()).Times(0);

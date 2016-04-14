@@ -46,10 +46,10 @@ DEFINE_TRACE(SVGElementRareData)
 void SVGElementRareData::processWeakMembers(Visitor* visitor)
 {
     ASSERT(m_owner);
-    if (!ThreadHeap::isHeapObjectAlive(m_cursorElement))
+    if (!Heap::isHeapObjectAlive(m_cursorElement))
         m_cursorElement = nullptr;
 
-    if (!ThreadHeap::isHeapObjectAlive(m_cursorImageValue)) {
+    if (!Heap::isHeapObjectAlive(m_cursorImageValue)) {
         // The owning SVGElement is still alive and if it is pointing to an SVGCursorElement
         // we unregister it when the CSSCursorImageValue dies.
         if (m_cursorElement) {
@@ -58,8 +58,8 @@ void SVGElementRareData::processWeakMembers(Visitor* visitor)
         }
         m_cursorImageValue = nullptr;
     }
-    ASSERT(!m_cursorElement || ThreadHeap::isHeapObjectAlive(m_cursorElement));
-    ASSERT(!m_cursorImageValue || ThreadHeap::isHeapObjectAlive(m_cursorImageValue));
+    ASSERT(!m_cursorElement || Heap::isHeapObjectAlive(m_cursorElement));
+    ASSERT(!m_cursorImageValue || Heap::isHeapObjectAlive(m_cursorImageValue));
 }
 
 AffineTransform* SVGElementRareData::animateMotionTransform()

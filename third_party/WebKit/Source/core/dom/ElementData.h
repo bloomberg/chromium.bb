@@ -135,7 +135,7 @@ public:
 
     // Add support for placement new as ShareableElementData is not allocated
     // with a fixed size. Instead the allocated memory size is computed based on
-    // the number of attributes. This requires us to use ThreadHeap::allocate directly
+    // the number of attributes. This requires us to use Heap::allocate directly
     // with the computed size and subsequently call placement new with the
     // allocated memory address.
     void* operator new(std::size_t, void* location)

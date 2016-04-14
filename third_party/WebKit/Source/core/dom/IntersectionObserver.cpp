@@ -154,7 +154,7 @@ IntersectionObserver::IntersectionObserver(IntersectionObserverCallback& callbac
 #if ENABLE(OILPAN)
 void IntersectionObserver::clearWeakMembers(Visitor* visitor)
 {
-    if (ThreadHeap::isHeapObjectAlive(m_root))
+    if (Heap::isHeapObjectAlive(m_root))
         return;
     disconnect();
     m_root = nullptr;

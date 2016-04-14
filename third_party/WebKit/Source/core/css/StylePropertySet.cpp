@@ -48,7 +48,7 @@ static size_t sizeForImmutableStylePropertySetWithPropertyCount(unsigned count)
 ImmutableStylePropertySet* ImmutableStylePropertySet::create(const CSSProperty* properties, unsigned count, CSSParserMode cssParserMode)
 {
     ASSERT(count <= MaxArraySize);
-    void* slot = ThreadHeap::allocate<StylePropertySet>(sizeForImmutableStylePropertySetWithPropertyCount(count));
+    void* slot = Heap::allocate<StylePropertySet>(sizeForImmutableStylePropertySetWithPropertyCount(count));
     return new (slot) ImmutableStylePropertySet(properties, count, cssParserMode);
 }
 
