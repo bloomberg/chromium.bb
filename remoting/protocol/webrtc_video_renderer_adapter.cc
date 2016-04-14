@@ -59,7 +59,7 @@ void WebrtcVideoRendererAdapter::OnFrame(const cricket::VideoFrame& frame) {
   // BasicDesktopFrame is created directly. This will not work correctly with
   // all FrameConsumer implementations. Fix this somehow.
   std::unique_ptr<webrtc::DesktopFrame> rgb_frame(new webrtc::BasicDesktopFrame(
-      webrtc::DesktopSize(frame.GetWidth(), frame.GetHeight())));
+      webrtc::DesktopSize(frame.width(), frame.height())));
 
   frame.ConvertToRgbBuffer(
       output_format_fourcc_, rgb_frame->data(),

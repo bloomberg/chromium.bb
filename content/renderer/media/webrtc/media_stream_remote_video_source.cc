@@ -103,7 +103,7 @@ void MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::OnFrame(
     const cricket::VideoFrame* frame =
         incoming_frame.GetCopyWithRotationApplied();
 
-    gfx::Size size(frame->GetWidth(), frame->GetHeight());
+    gfx::Size size(frame->width(), frame->height());
 
     // Make a shallow copy. Both |frame| and |video_frame| will share a single
     // reference counted frame buffer. Const cast and hope no one will overwrite

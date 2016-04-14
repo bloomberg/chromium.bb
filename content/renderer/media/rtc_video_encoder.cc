@@ -509,8 +509,9 @@ void RTCVideoEncoder::Impl::EncodeOneFrame() {
   const int index = input_buffers_free_.back();
   bool requires_copy = false;
   scoped_refptr<media::VideoFrame> frame;
-  if (next_frame->native_handle()) {
-    frame = static_cast<media::VideoFrame*>(next_frame->native_handle());
+  if (next_frame->video_frame_buffer()->native_handle()) {
+    frame = static_cast<media::VideoFrame*>(
+        next_frame->video_frame_buffer()->native_handle());
     requires_copy = RequiresSizeChange(frame);
   } else {
     requires_copy = true;
