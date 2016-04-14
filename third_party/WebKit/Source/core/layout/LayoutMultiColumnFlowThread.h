@@ -185,6 +185,8 @@ public:
 
     LayoutPoint visualPointToFlowThreadPoint(const LayoutPoint& visualPoint) const override;
 
+    int inlineBlockBaseline(LineDirectionMode) const override;
+
     LayoutMultiColumnSet* columnSetAtBlockOffset(LayoutUnit) const final;
 
     void layoutColumns(SubtreeLayoutScope&);

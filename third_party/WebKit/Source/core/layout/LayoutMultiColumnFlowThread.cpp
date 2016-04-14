@@ -345,6 +345,15 @@ LayoutPoint LayoutMultiColumnFlowThread::visualPointToFlowThreadPoint(const Layo
     return columnSet ? columnSet->visualPointToFlowThreadPoint(toLayoutPoint(visualPoint + location() - columnSet->location())) : visualPoint;
 }
 
+int LayoutMultiColumnFlowThread::inlineBlockBaseline(LineDirectionMode lineDirection) const
+{
+    LayoutUnit baselineInFlowThread = LayoutUnit(LayoutFlowThread::inlineBlockBaseline(lineDirection));
+    LayoutMultiColumnSet* columnSet = columnSetAtBlockOffset(baselineInFlowThread);
+    if (!columnSet)
+        return baselineInFlowThread.toInt();
+    return (baselineInFlowThread - columnSet->pageLogicalTopForOffset(baselineInFlowThread)).ceil();
+}
+
 LayoutMultiColumnSet* LayoutMultiColumnFlowThread::columnSetAtBlockOffset(LayoutUnit offset) const
 {
     if (LayoutMultiColumnSet* columnSet = m_lastSetWorkedOn) {
