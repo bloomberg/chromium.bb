@@ -71806,6 +71806,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="162705488" label="manufacturer_name_string"/>
   <int value="164418508" label="weight_measurement"/>
   <int value="177223896" label="report_map"/>
+  <int value="203846063" label="ff0c"/>
   <int value="205016416" label="body_composition_measurement"/>
   <int value="235785246" label="irradiance"/>
   <int value="248349383" label="csc_measurement"/>
@@ -71829,6 +71830,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="405569435" label="boot_keyboard_output_report"/>
   <int value="409618715" label="cycling_power_vector"/>
   <int value="419477741" label="body_composition_feature"/>
+  <int value="469191968" label="Playbulb Candle Color; fffc"/>
   <int value="486368335" label="location_name"/>
   <int value="512543326" label="date_of_threshold_assessment"/>
   <int value="531135021" label="cgm_specific_ops_control_point"/>
@@ -71861,6 +71863,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="868892960" label="heat_index"/>
   <int value="873660243" label="body_sensor_location"/>
   <int value="893588698" label="scan_interval_window"/>
+  <int value="910416910"
+      label="nRF UART RX; 6e400003-b5a3-f393-e0a9-e50e24dcca9e"/>
   <int value="917477908" label="software_revision_string"/>
   <int value="918961501" label="plx_spot_check_measurement"/>
   <int value="922434244" label="ln_feature"/>
@@ -71871,6 +71875,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="987658962" label="glucose_measurement"/>
   <int value="1002619180" label="exact_time_256"/>
   <int value="1025676359" label="dst_offset"/>
+  <int value="1050948662"
+      label="nRF UART TX; 6e400002-b5a3-f393-e0a9-e50e24dcca9e"/>
   <int value="1061486494" label="anaerobic_heart_rate_upper_limit"/>
   <int value="1072163984" label="gap.reconnection_address"/>
   <int value="1100640868" label="day_of_week"/>
@@ -71878,6 +71884,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1134538374" label="hip_circumference"/>
   <int value="1136624215" label="maximum_recommended_heart_rate"/>
   <int value="1136682523" label="date_time"/>
+  <int value="1161713439" label="Playbulb Candle Effect; fffb"/>
   <int value="1167525145" label="alert_status"/>
   <int value="1183399370" label="magnetic_flux_density_3D"/>
   <int value="1193066711" label="uv_index"/>
@@ -71960,37 +71967,316 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <enum name="GATTServiceHash" type="int">
   <int value="7464675" label="pulse_oximeter"/>
+  <int value="26695985" label="fe20"/>
+  <int value="35226455" label="fe44"/>
+  <int value="35347197" label="fe26"/>
+  <int value="41430862" label="fea8"/>
+  <int value="44208286" label="fe29"/>
+  <int value="46512116" label="fe03"/>
+  <int value="47251880" label="fe8c"/>
+  <int value="48328546" label="febf"/>
+  <int value="56938056" label="feb9"/>
+  <int value="62669585" label="feff"/>
+  <int value="70653353" label="fe37"/>
   <int value="81094401" label="link_loss"/>
+  <int value="85709298" label="fe38"/>
+  <int value="91953454" label="fe7b"/>
+  <int value="109066436" label="Printer; 18f0"/>
+  <int value="117033282" label="fe1e"/>
+  <int value="119232939" label="fe16"/>
+  <int value="126220948" label="fec4"/>
+  <int value="130754956" label="fe0d"/>
+  <int value="134110769" label="fecf"/>
+  <int value="141942246" label="fe1d"/>
+  <int value="152492105" label="fe5f"/>
+  <int value="169501939" label="fe4d"/>
+  <int value="199936534" label="fe3c"/>
+  <int value="214038522" label="fed3"/>
   <int value="217781951" label="human_interface_device"/>
+  <int value="219286671" label="fe04"/>
+  <int value="221983129" label="fe66"/>
+  <int value="228594985" label="fe21"/>
+  <int value="229725863"
+      label="Juggglow; 624e957f-cb42-4cd6-bacc-84aeb898f69b"/>
+  <int value="239745754" label="fe22"/>
+  <int value="252638028" label="fe9c"/>
+  <int value="253001319" label="fe84"/>
+  <int value="267848299" label="fe3e"/>
+  <int value="270670950" label="fe62"/>
   <int value="272218751" label="automation_io"/>
+  <int value="273356483" label="fe68"/>
+  <int value="278860884" label="fe5c"/>
+  <int value="289754407" label="fe01"/>
+  <int value="291870040" label="fe6d"/>
+  <int value="295205583" label="fe27"/>
+  <int value="310654399" label="fe54"/>
+  <int value="314884784" label="fe65"/>
+  <int value="315044617" label="fea9"/>
+  <int value="321399472" label="fe86"/>
+  <int value="335078161" label="DOTTI; fff0"/>
+  <int value="336095190" label="fe1c"/>
+  <int value="337129282" label="fe73"/>
+  <int value="347254994" label="feb6"/>
+  <int value="350589357" label="fe8e"/>
+  <int value="353919198" label="fe41"/>
+  <int value="367801999" label="fe19"/>
   <int value="381944619" label="continuous_glucose_monitoring"/>
+  <int value="393442080" label="fe47"/>
+  <int value="404751265" label="fe34"/>
+  <int value="406443827" label="fe08"/>
+  <int value="406667138" label="fe1b"/>
+  <int value="408422717" label="fe12"/>
+  <int value="411422080" label="feaf"/>
+  <int value="428955508" label="fed8"/>
+  <int value="436040838" label="fe49"/>
+  <int value="442258066" label="fec6"/>
+  <int value="448479874" label="fe13"/>
+  <int value="452749537" label="fe6f"/>
+  <int value="486403409" label="fe7e"/>
+  <int value="493187195"
+      label="Insight cards; 13630000-aeb9-10cf-ef69-81e145a91113"/>
+  <int value="499379297" label="fe0c"/>
+  <int value="517314925" label="fe0e"/>
+  <int value="534472233" label="feea"/>
+  <int value="535574137" label="feb1"/>
+  <int value="547028880" label="fed0"/>
+  <int value="547391938" label="feee"/>
+  <int value="563178896" label="fec8"/>
+  <int value="572734315"
+      label="Sphero Robot; 22bb746f-2bb0-7554-2d6f-726568705327"/>
+  <int value="587509991" label="feba"/>
+  <int value="593291030" label="fe80"/>
+  <int value="593725623" label="fef8"/>
   <int value="594122172" label="health_thermometer"/>
+  <int value="598801180" label="fe64"/>
+  <int value="599398840" label="feb4"/>
+  <int value="601952480"
+      label="PowerUp RC plane; 75b64e51-f181-4ed1-921a-476090d80ba7"/>
+  <int value="603143198" label="fef5"/>
+  <int value="604112254" label="fee4"/>
+  <int value="617434027" label="fe59"/>
+  <int value="621358948" label="fec7"/>
+  <int value="633977000" label="fedf"/>
+  <int value="642914459" label="fe3d"/>
+  <int value="643543662" label="fefe"/>
+  <int value="675211143" label="fe4a"/>
+  <int value="677930586" label="fe11"/>
+  <int value="683753134" label="fe82"/>
+  <int value="684646659" label="febb"/>
+  <int value="687580695" label="fe7a"/>
+  <int value="687720133" label="fe91"/>
+  <int value="688383299" label="fe1f"/>
   <int value="690691504" label="bond_management"/>
+  <int value="695100933" label="fed4"/>
+  <int value="702341883" label="fed5"/>
+  <int value="703883979" label="fe87"/>
+  <int value="706159123" label="fe32"/>
+  <int value="712814660"
+      label="Eddystone-URL Beacon Configuration;
+             ee0c2080-8786-40ba-ab96-99b91ac981d8"/>
+  <int value="739317418" label="fe05"/>
+  <int value="741183887" label="fe78"/>
+  <int value="749323131" label="fece"/>
+  <int value="762562796" label="fe5e"/>
+  <int value="775377708" label="fe2b"/>
+  <int value="780195705" label="fead"/>
+  <int value="786171562" label="fe0a"/>
+  <int value="803680658" label="fea3"/>
   <int value="805645044" label="glucose"/>
+  <int value="807272540" label="fe1a"/>
+  <int value="817497010" label="fe18"/>
   <int value="836214784" label="cycling_power"/>
+  <int value="841972234" label="feeb"/>
   <int value="869059214" label="next_dst_change"/>
+  <int value="869682406" label="fe60"/>
   <int value="876407493" label="location_and_navigation"/>
+  <int value="878416856" label="fe85"/>
+  <int value="882315332" label="fe55"/>
+  <int value="889111031" label="fecd"/>
   <int value="890629650" label="running_speed_and_cadence"/>
+  <int value="901700952" label="fedd"/>
+  <int value="902817086" label="fea2"/>
+  <int value="918911989" label="fed1"/>
+  <int value="931929648" label="Mi Band; fee0"/>
+  <int value="935427983" label="fed7"/>
+  <int value="936179325" label="feb5"/>
+  <int value="939739701" label="fe8f"/>
+  <int value="939958322" label="febc"/>
+  <int value="940942235" label="feef"/>
+  <int value="953202155" label="fe8d"/>
+  <int value="960854785" label="fe53"/>
+  <int value="961193127" label="feb8"/>
+  <int value="963656436" label="fe77"/>
+  <int value="1001310815" label="fe75"/>
+  <int value="1024550252" label="feda"/>
   <int value="1029767622" label="internet_protocol_support"/>
+  <int value="1035129135" label="fe74"/>
+  <int value="1044298649" label="fe99"/>
+  <int value="1047979067" label="fe17"/>
+  <int value="1054370387" label="fef9"/>
+  <int value="1061554458" label="feaa"/>
+  <int value="1067649821" label="fe3f"/>
+  <int value="1079263879" label="fe06"/>
+  <int value="1085187782" label="feae"/>
+  <int value="1088150526" label="feb2"/>
+  <int value="1091337779" label="fefb"/>
+  <int value="1096286291" label="fed6"/>
+  <int value="1102290958" label="fe56"/>
+  <int value="1103440256" label="fee9"/>
   <int value="1107293675" label="cycling_speed_and_cadence"/>
+  <int value="1107743017" label="fe00"/>
+  <int value="1108163795" label="fec0"/>
+  <int value="1108885324" label="fe48"/>
+  <int value="1122138707" label="fed2"/>
+  <int value="1122276223" label="fe67"/>
+  <int value="1122861451" label="Playbulb Candle; ff02"/>
+  <int value="1132318862" label="fe6a"/>
+  <int value="1133574029" label="fede"/>
+  <int value="1134418737" label="fed9"/>
+  <int value="1146291045" label="fe2e"/>
+  <int value="1155522736" label="fea0"/>
+  <int value="1181418959" label="feca"/>
+  <int value="1185484517" label="fe02"/>
   <int value="1188875912" label="phone_alert_status"/>
+  <int value="1204532270" label="fea1"/>
+  <int value="1205730714" label="fe81"/>
+  <int value="1213218283" label="feb7"/>
   <int value="1219993345" label="device_information"/>
+  <int value="1225001939" label="fe6c"/>
+  <int value="1235220658" label="fe6e"/>
+  <int value="1236903028" label="fe9d"/>
   <int value="1239202871" label="generic_attribute"/>
+  <int value="1244946418" label="fe61"/>
+  <int value="1250531601" label="fe15"/>
+  <int value="1257014053" label="fe33"/>
+  <int value="1262008705" label="fef2"/>
   <int value="1265172773" label="indoor_positioning"/>
+  <int value="1265779630" label="fe7d"/>
+  <int value="1275725183" label="febe"/>
+  <int value="1276692887" label="fe09"/>
   <int value="1280998251" label="blood_pressure"/>
+  <int value="1289827687" label="fe7c"/>
+  <int value="1293391247" label="fea4"/>
+  <int value="1295501517" label="fef3"/>
+  <int value="1300474367" label="fe70"/>
+  <int value="1300496660" label="fe23"/>
+  <int value="1327498374"
+      label="nRF UART; 6e400001-b5a3-f393-e0a9-e50e24dcca9e"/>
+  <int value="1344502489" label="fe92"/>
+  <int value="1352591424" label="fe2d"/>
+  <int value="1357782294" label="fe90"/>
+  <int value="1357850359" label="fefc"/>
+  <int value="1362860533" label="fe9a"/>
+  <int value="1366014117" label="fe2c"/>
   <int value="1369789354" label="current_time"/>
+  <int value="1376579922" label="fef0"/>
+  <int value="1377872916" label="fe51"/>
+  <int value="1380007534" label="fe96"/>
+  <int value="1382767841" label="fe93"/>
+  <int value="1394327958" label="fe24"/>
   <int value="1398099241" label="user_data"/>
+  <int value="1402127045" label="fef4"/>
   <int value="1415105941" label="scan_parameters"/>
+  <int value="1416866355" label="fe3b"/>
+  <int value="1422100109"
+      label="Sphero Robot; 22bb746f-2ba0-7554-2d6f-726568705327"/>
   <int value="1424865940" label="alert_notification"/>
+  <int value="1432421356" label="fe14"/>
+  <int value="1433847022" label="fefa"/>
+  <int value="1465794357" label="feb0"/>
+  <int value="1484296385" label="fe30"/>
+  <int value="1513113754" label="fe39"/>
+  <int value="1515793787" label="fef1"/>
+  <int value="1548928839" label="fec5"/>
+  <int value="1553614739" label="fe6b"/>
+  <int value="1563543855" label="fe72"/>
   <int value="1569655226" label="generic_access"/>
+  <int value="1573199922" label="fe71"/>
+  <int value="1594426590" label="fe4e"/>
+  <int value="1600490722" label="fe46"/>
+  <int value="1604724337" label="fe88"/>
+  <int value="1606985074" label="feed"/>
+  <int value="1607594729" label="fe0f"/>
+  <int value="1618872680" label="fe9b"/>
+  <int value="1631386264" label="fefd"/>
+  <int value="1635890706" label="fe9e"/>
+  <int value="1637021391" label="fe95"/>
+  <int value="1638012344" label="fe97"/>
+  <int value="1648320092" label="fe7f"/>
+  <int value="1651126525" label="fe25"/>
+  <int value="1651610232" label="fe52"/>
   <int value="1660904097" label="immediate_alert"/>
   <int value="1663141542" label="battery_service"/>
+  <int value="1671670551" label="fe5a"/>
+  <int value="1673238799" label="fee3"/>
+  <int value="1680929515" label="fe79"/>
+  <int value="1681595304" label="fe4b"/>
+  <int value="1682716946" label="fe45"/>
+  <int value="1694516494" label="fe31"/>
   <int value="1696287138" label="weight_scale"/>
+  <int value="1701893879" label="feac"/>
+  <int value="1706666451" label="fea7"/>
+  <int value="1714031075" label="fe10"/>
+  <int value="1724509641" label="fe8b"/>
+  <int value="1729966097"
+      label="Anki OVERDRIVE cars; be15beef-6186-407e-8381-0bd89c4d8df4"/>
   <int value="1753170093" label="environmental_sensing"/>
+  <int value="1763555668" label="fe76"/>
+  <int value="1779377938" label="fe5d"/>
+  <int value="1784351685" label="feab"/>
+  <int value="1788143374" label="feb3"/>
+  <int value="1788905945" label="fedb"/>
+  <int value="1789684919" label="fe36"/>
+  <int value="1805849785" label="fe98"/>
+  <int value="1808789304" label="fe3a"/>
+  <int value="1821803686" label="TI SensorTag Simple Keys; ffe0"/>
   <int value="1823176820" label="body_composition"/>
+  <int value="1826466999" label="fee1"/>
+  <int value="1829698279" label="fe0b"/>
+  <int value="1833458622" label="fe42"/>
+  <int value="1844072312" label="fe40"/>
+  <int value="1849709266" label="fec3"/>
+  <int value="1855849484"
+      label="iHealth Edge; 636f6d2e-6a69-7561-6e2e-414d56313100"/>
+  <int value="1891274929" label="fee2"/>
+  <int value="1891804450" label="fe58"/>
+  <int value="1905398969" label="fee6"/>
+  <int value="1915568448" label="fe89"/>
+  <int value="1922068523" label="fef6"/>
+  <int value="1922152740" label="fe8a"/>
+  <int value="1922853101" label="fe28"/>
+  <int value="1925022679" label="fe57"/>
+  <int value="1940012814" label="fe2a"/>
+  <int value="1946977319" label="fec1"/>
+  <int value="1953707948" label="fe9f"/>
+  <int value="1960388103" label="fecb"/>
+  <int value="1969478137" label="fe63"/>
   <int value="1970234661" label="reference_time_update"/>
+  <int value="1971997463" label="fe07"/>
+  <int value="1976176123" label="fe4c"/>
+  <int value="1983035069" label="fec9"/>
+  <int value="1984351068" label="fea6"/>
+  <int value="2016025023" label="febd"/>
+  <int value="2017827114" label="fe4f"/>
+  <int value="2022676622" label="fe35"/>
+  <int value="2051635436" label="fe50"/>
+  <int value="2055825405" label="fedc"/>
+  <int value="2058080782" label="fecc"/>
+  <int value="2061595680" label="fea5"/>
+  <int value="2069612985" label="fee5"/>
+  <int value="2070392722" label="fec2"/>
   <int value="2075745564" label="heart_rate"/>
+  <int value="2081534039" label="fe83"/>
   <int value="2086529225" label="tx_power"/>
+  <int value="2097896377" label="fee8"/>
+  <int value="2100033855" label="fef7"/>
+  <int value="2107223399" label="fee7"/>
+  <int value="2108894990" label="fe2f"/>
+  <int value="2110412550" label="fe43"/>
+  <int value="2113887919" label="fe5b"/>
+  <int value="2115271248" label="fe94"/>
+  <int value="2132514937" label="feec"/>
+  <int value="2136716957" label="fe69"/>
 </enum>
 
 <enum name="GCMCheckinRequestStatus" type="int">
