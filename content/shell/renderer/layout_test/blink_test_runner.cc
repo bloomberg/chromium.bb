@@ -592,8 +592,7 @@ bool BlinkTestRunner::AllowExternalPages() {
   return test_config_.allow_external_pages;
 }
 
-std::string BlinkTestRunner::DumpHistoryForWindow(
-    test_runner::WebTestProxyBase* proxy) {
+std::string BlinkTestRunner::DumpHistoryForWindow(blink::WebView* web_view) {
   size_t pos = 0;
   std::vector<int>::iterator id;
   for (id = routing_ids_.begin(); id != routing_ids_.end(); ++id, ++pos) {
@@ -602,7 +601,7 @@ std::string BlinkTestRunner::DumpHistoryForWindow(
       NOTREACHED();
       continue;
     }
-    if (BlinkTestRunner::Get(render_view)->proxy() == proxy)
+    if (render_view->GetWebView() == web_view)
       break;
   }
 
@@ -830,7 +829,8 @@ void BlinkTestRunner::OnLayoutDumpCompleted(std::string completed_layout_dump) {
   test_runner::WebTestInterfaces* interfaces =
       LayoutTestRenderProcessObserver::GetInstance()->test_interfaces();
   if (interfaces->TestRunner()->ShouldDumpBackForwardList()) {
-    completed_layout_dump.append(proxy()->DumpBackForwardLists());
+    for (WebView* web_view : interfaces->GetWindowList())
+      completed_layout_dump.append(DumpHistoryForWindow(web_view));
   }
 
   Send(new ShellViewHostMsg_TextDump(routing_id(), completed_layout_dump));

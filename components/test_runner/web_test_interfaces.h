@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_TEST_RUNNER_WEB_TEST_INTERFACES_H_
 #define COMPONENTS_TEST_RUNNER_WEB_TEST_INTERFACES_H_
 
+#include <vector>
+
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/test_runner/test_runner_export.h"
@@ -78,6 +80,9 @@ class TEST_RUNNER_EXPORT WebTestInterfaces {
   // and/or the lifetime of |web_test_proxy_base|.
   scoped_ptr<WebViewTestClient> CreateWebViewTestClient(
       WebTestProxyBase* web_test_proxy_base);
+
+  // Gets a list of currently opened windows created by the current test.
+  std::vector<blink::WebView*> GetWindowList();
 
  private:
   scoped_ptr<TestInterfaces> interfaces_;

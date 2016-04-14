@@ -234,10 +234,6 @@ class WebTestDelegate {
   // Returns true if resource requests to external URLs should be permitted.
   virtual bool AllowExternalPages() = 0;
 
-  // Returns a text dump the back/forward history for the WebView associated
-  // with the given WebTestProxyBase.
-  virtual std::string DumpHistoryForWindow(WebTestProxyBase* proxy) = 0;
-
   // Fetch the manifest for a given WebView from the given url.
   virtual void FetchManifest(
       blink::WebView* view,

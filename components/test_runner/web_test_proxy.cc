@@ -15,20 +15,6 @@
 
 namespace test_runner {
 
-namespace {
-
-std::string DumpAllBackForwardLists(TestInterfaces* interfaces,
-                                    WebTestDelegate* delegate) {
-  std::string result;
-  const std::vector<WebTestProxyBase*>& window_list =
-      interfaces->GetWindowList();
-  for (size_t i = 0; i < window_list.size(); ++i)
-    result.append(delegate->DumpHistoryForWindow(window_list.at(i)));
-  return result;
-}
-
-}  // namespace
-
 WebTestProxyBase::WebTestProxyBase()
     : test_interfaces_(nullptr),
       delegate_(nullptr),
@@ -42,10 +28,6 @@ WebTestProxyBase::~WebTestProxyBase() {
 void WebTestProxyBase::SetInterfaces(WebTestInterfaces* interfaces) {
   test_interfaces_ = interfaces->GetTestInterfaces();
   test_interfaces_->WindowOpened(this);
-}
-
-std::string WebTestProxyBase::DumpBackForwardLists() {
-  return DumpAllBackForwardLists(test_interfaces_, delegate_);
 }
 
 void WebTestProxyBase::GetScreenOrientationForTesting(

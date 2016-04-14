@@ -130,8 +130,6 @@ class BlinkTestRunner : public RenderViewObserver,
   void LoadURLForFrame(const blink::WebURL& url,
                        const std::string& frame_name) override;
   bool AllowExternalPages() override;
-  std::string DumpHistoryForWindow(
-      test_runner::WebTestProxyBase* proxy) override;
   void FetchManifest(
       blink::WebView* view,
       const GURL& url,
@@ -192,6 +190,7 @@ class BlinkTestRunner : public RenderViewObserver,
   void CaptureDumpContinued();
   void OnPixelsDumpCompleted(const SkBitmap& snapshot);
   void CaptureDumpComplete();
+  std::string DumpHistoryForWindow(blink::WebView* web_view);
 
   mojom::LayoutTestBluetoothFakeAdapterSetter&
   GetBluetoothFakeAdapterSetter();
