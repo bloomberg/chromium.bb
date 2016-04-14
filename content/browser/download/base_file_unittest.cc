@@ -517,7 +517,8 @@ TEST_F(BaseFileTest, ReadonlyBaseFile) {
 // file is known and matches the existing contents.
 TEST_F(BaseFileTest, ExistingBaseFileKnownHash) {
   base::FilePath file_path = temp_dir_.path().AppendASCII("existing");
-  ASSERT_TRUE(base::WriteFile(file_path, kTestData1, kTestDataLength1));
+  ASSERT_EQ(kTestDataLength1,
+            base::WriteFile(file_path, kTestData1, kTestDataLength1));
 
   std::string hash_so_far(std::begin(kHashOfTestData1),
                           std::end(kHashOfTestData1));
@@ -535,7 +536,8 @@ TEST_F(BaseFileTest, ExistingBaseFileKnownHash) {
 // file is unknown.
 TEST_F(BaseFileTest, ExistingBaseFileUnknownHash) {
   base::FilePath file_path = temp_dir_.path().AppendASCII("existing");
-  ASSERT_TRUE(base::WriteFile(file_path, kTestData1, kTestDataLength1));
+  ASSERT_EQ(kTestDataLength1,
+            base::WriteFile(file_path, kTestData1, kTestDataLength1));
 
   EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_NONE,
             base_file_->Initialize(file_path, base::FilePath(), base::File(),
@@ -550,7 +552,8 @@ TEST_F(BaseFileTest, ExistingBaseFileUnknownHash) {
 // Open an existing file. The contentsof the file doesn't match the known hash.
 TEST_F(BaseFileTest, ExistingBaseFileIncorrectHash) {
   base::FilePath file_path = temp_dir_.path().AppendASCII("existing");
-  ASSERT_TRUE(base::WriteFile(file_path, kTestData2, kTestDataLength2));
+  ASSERT_EQ(kTestDataLength2,
+            base::WriteFile(file_path, kTestData2, kTestDataLength2));
 
   std::string hash_so_far(std::begin(kHashOfTestData1),
                           std::end(kHashOfTestData1));
@@ -565,7 +568,8 @@ TEST_F(BaseFileTest, ExistingBaseFileIncorrectHash) {
 TEST_F(BaseFileTest, ExistingBaseFileLargeSizeKnownHash) {
   base::FilePath file_path = temp_dir_.path().AppendASCII("existing");
   std::string big_buffer(1024 * 200, 'a');
-  ASSERT_TRUE(base::WriteFile(file_path, big_buffer.data(), big_buffer.size()));
+  ASSERT_EQ(static_cast<int>(big_buffer.size()),
+            base::WriteFile(file_path, big_buffer.data(), big_buffer.size()));
 
   // Hash of partial file (1024*200 * 'a')
   const uint8_t kExpectedPartialHash[] = {
@@ -594,7 +598,8 @@ TEST_F(BaseFileTest, ExistingBaseFileLargeSizeKnownHash) {
 TEST_F(BaseFileTest, ExistingBaseFileLargeSizeIncorrectHash) {
   base::FilePath file_path = temp_dir_.path().AppendASCII("existing");
   std::string big_buffer(1024 * 200, 'a');
-  ASSERT_TRUE(base::WriteFile(file_path, big_buffer.data(), big_buffer.size()));
+  ASSERT_EQ(static_cast<int>(big_buffer.size()),
+            base::WriteFile(file_path, big_buffer.data(), big_buffer.size()));
 
   // Incorrect hash of partial file (1024*200 * 'a')
   const uint8_t kExpectedPartialHash[] = {
@@ -614,7 +619,8 @@ TEST_F(BaseFileTest, ExistingBaseFileLargeSizeIncorrectHash) {
 // Open an existing file. The size of the file is too short.
 TEST_F(BaseFileTest, ExistingBaseFileTooShort) {
   base::FilePath file_path = temp_dir_.path().AppendASCII("existing");
-  ASSERT_TRUE(base::WriteFile(file_path, kTestData1, kTestDataLength1));
+  ASSERT_EQ(kTestDataLength1,
+            base::WriteFile(file_path, kTestData1, kTestDataLength1));
 
   EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_FILE_TOO_SHORT,
             base_file_->Initialize(file_path, base::FilePath(), base::File(),
@@ -629,7 +635,8 @@ TEST_F(BaseFileTest, ExistingBaseFileKnownHashTooLong) {
   std::string contents;
   contents.append(kTestData1);
   contents.append("Something extra");
-  ASSERT_TRUE(base::WriteFile(file_path, contents.data(), contents.size()));
+  ASSERT_EQ(static_cast<int>(contents.size()),
+            base::WriteFile(file_path, contents.data(), contents.size()));
 
   std::string hash_so_far(std::begin(kHashOfTestData1),
                           std::end(kHashOfTestData1));
@@ -650,7 +657,8 @@ TEST_F(BaseFileTest, ExistingBaseFileUnknownHashTooLong) {
   std::string contents;
   contents.append(kTestData1);
   contents.append("Something extra");
-  ASSERT_TRUE(base::WriteFile(file_path, contents.data(), contents.size()));
+  ASSERT_EQ(static_cast<int>(contents.size()),
+            base::WriteFile(file_path, contents.data(), contents.size()));
 
   EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_NONE,
             base_file_->Initialize(file_path, base::FilePath(), base::File(),
@@ -660,6 +668,36 @@ TEST_F(BaseFileTest, ExistingBaseFileUnknownHashTooLong) {
   ASSERT_TRUE(AppendDataToFile(kTestData2));
   ASSERT_TRUE(AppendDataToFile(kTestData3));
   ExpectHashValue(kHashOfTestData1To3, base_file_->Finish());
+}
+
+// Similar to ExistingBaseFileKnownHashTooLong test, but with a file large
+// enough to requre multiple Read()s to complete. This provides additional code
+// coverage for the CalculatePartialHash() logic.
+TEST_F(BaseFileTest, ExistingBaseFileUnknownHashTooLongForLargeFile) {
+  base::FilePath file_path = temp_dir_.path().AppendASCII("existing");
+  const size_t kFileSize = 1024 * 1024;
+  const size_t kIntermediateSize = kFileSize / 2 + 111;
+  // |contents| is 100 bytes longer than kIntermediateSize. The latter is the
+  // expected size.
+  std::string contents(kIntermediateSize + 100, 'a');
+  ASSERT_EQ(static_cast<int>(contents.size()),
+            base::WriteFile(file_path, contents.data(), contents.size()));
+
+  EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_NONE,
+            base_file_->Initialize(file_path, base::FilePath(), base::File(),
+                                   kIntermediateSize, std::string(),
+                                   std::unique_ptr<crypto::SecureHash>()));
+  // The extra bytes should be stripped during Initialize().
+  contents.resize(kIntermediateSize, 'a');
+  set_expected_data(contents);
+  std::string new_data(kFileSize - kIntermediateSize, 'a');
+  ASSERT_TRUE(AppendDataToFile(new_data));
+  const uint8_t kExpectedHash[] = {
+      0x9b, 0xc1, 0xb2, 0xa2, 0x88, 0xb2, 0x6a, 0xf7, 0x25, 0x7a, 0x36,
+      0x27, 0x7a, 0xe3, 0x81, 0x6a, 0x7d, 0x4f, 0x16, 0xe8, 0x9c, 0x1e,
+      0x7e, 0x77, 0xd0, 0xa5, 0xc4, 0x8b, 0xad, 0x62, 0xb3, 0x60,
+  };
+  ExpectHashValue(kExpectedHash, base_file_->Finish());
 }
 
 // Test that a temporary file is created in the default download directory.

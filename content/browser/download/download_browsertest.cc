@@ -2225,6 +2225,74 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeRestoredDownload_ShortFile) {
   EXPECT_EQ(parameters.size, completed_requests[1].transferred_byte_count);
 }
 
+IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeRestoredDownload_LongFile) {
+  // These numbers are sufficiently large that the intermediate file won't be
+  // read in a single Read().
+  const int kFileSize = 1024 * 1024;
+  const int kIntermediateSize = kFileSize / 2 + 111;
+
+  TestDownloadRequestHandler request_handler;
+  TestDownloadRequestHandler::Parameters parameters;
+  parameters.size = kFileSize;
+  request_handler.StartServing(parameters);
+
+  base::FilePath intermediate_file_path =
+      GetDownloadDirectory().AppendASCII("intermediate");
+  std::vector<GURL> url_chain;
+
+  // Size of file is slightly longer than the size known to DownloadItem.
+  std::vector<char> buffer(kIntermediateSize + 100);
+  request_handler.GetPatternBytes(
+      parameters.pattern_generator_seed, 0, buffer.size(), buffer.data());
+  ASSERT_EQ(
+      kIntermediateSize + 100,
+      base::WriteFile(intermediate_file_path, buffer.data(), buffer.size()));
+  url_chain.push_back(request_handler.url());
+
+  DownloadItem* download = DownloadManagerForShell(shell())->CreateDownloadItem(
+      "F7FB1F59-7DE1-4845-AFDB-8A688F70F583",
+      1,
+      intermediate_file_path,
+      base::FilePath(),
+      url_chain,
+      GURL(),
+      GURL(),
+      GURL(),
+      "application/octet-stream",
+      "application/octet-stream",
+      base::Time::Now(),
+      base::Time(),
+      parameters.etag,
+      std::string(),
+      kIntermediateSize,
+      parameters.size,
+      std::string(),
+      DownloadItem::INTERRUPTED,
+      DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+      DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED,
+      false);
+
+  download->Resume();
+  WaitForCompletion(download);
+
+  EXPECT_FALSE(base::PathExists(intermediate_file_path));
+  ReadAndVerifyFileContents(parameters.pattern_generator_seed,
+                            parameters.size,
+                            download->GetTargetFilePath());
+
+  TestDownloadRequestHandler::CompletedRequests completed_requests;
+  request_handler.GetCompletedRequestInfo(&completed_requests);
+
+  // There should be only one request. The intermediate file should be truncated
+  // to the expected size, and the request should be issued for the remainder.
+  //
+  // TODO(asanka): Ideally we'll check that the intermediate file matches
+  // expectations prior to issuing the first resumption request.
+  ASSERT_EQ(1u, completed_requests.size());
+  EXPECT_EQ(parameters.size - kIntermediateSize,
+            completed_requests[0].transferred_byte_count);
+}
+
 // Check that the cookie policy is correctly updated when downloading a file
 // that redirects cross origin.
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, CookiePolicy) {
