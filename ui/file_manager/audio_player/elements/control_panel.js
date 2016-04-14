@@ -139,10 +139,6 @@
         if (!this.dragging)
           this.dragging = true;
       }.bind(this));
-      timeSlider.addEventListener('keydown',
-          this.onProgressKeyDownOrKeyPress_.bind(this));
-      timeSlider.addEventListener('keypress',
-          this.onProgressKeyDownOrKeyPress_.bind(this));
 
       // Update volume on user inputs for volume slider.
       // During a drag operation, the volume should be updated immediately.
@@ -187,6 +183,40 @@
       } else {
         this.volume = this.savedVolume_ || 50;
       }
+    },
+
+    /**
+     * Skips min(5 seconds, 10% of duration).
+     * @param {boolean} forward Whether to skip forward/backword.
+     */
+    smallSkip: function(forward) {
+      var millisecondsToSkip = Math.min(5000, this.duration / 10);
+      if (!forward) {
+        millisecondsToSkip *= -1;
+      }
+      this.skip_(millisecondsToSkip);
+    },
+
+    /**
+     * Skips min(10 seconds, 20% of duration).
+     * @param {boolean} forward Whether to skip forward/backword.
+     */
+    bigSkip: function(forward) {
+      var millisecondsToSkip = Math.min(10000, this.duration / 5);
+      if (!forward) {
+        millisecondsToSkip *= -1;
+      }
+      this.skip_(millisecondsToSkip);
+    },
+
+    /**
+     * Skips forward/backword.
+     * @param {number} sec Seconds to skip. Set negative value to skip backword.
+     * @private
+     */
+    skip_: function(millis) {
+      if (this.duration > 0)
+        this.time = Math.max(Math.min(this.time + millis, this.duration), 0);
     },
 
     /**
@@ -274,29 +304,5 @@
           this.volume !== 0 ? ariaLabels.mute : ariaLabels.unmute);
       this.$.volumeSlider.setAttribute('aria-label', ariaLabels.volumeSlider);
     },
-
-    /**
-     * Handles arrow keys on time slider to skip forward/backword.
-     * @param {!Event} event
-     * @private
-     */
-    onProgressKeyDownOrKeyPress_: function(event) {
-      if (event.code !== 'ArrowRight' && event.code !== 'ArrowLeft' &&
-          event.code !== 'ArrowUp' && event.code !== 'ArrowDown') {
-        return;
-      }
-
-      event.preventDefault();
-
-      if (this.duration > 0) {
-        // Skip 5 seconds or 10% of duration, whichever is smaller.
-        var millisecondsToSkip = Math.min(5000, this.duration / 10);
-        if (event.code === 'ArrowRight' || event.code === 'ArrowUp') {
-          this.time = Math.min(this.time + millisecondsToSkip, this.duration);
-        } else {
-          this.time = Math.max(this.time - millisecondsToSkip, 0);
-        }
-      }
-    }
   });
 })();  // Anonymous closure

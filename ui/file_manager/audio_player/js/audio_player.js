@@ -368,6 +368,27 @@ AudioPlayer.prototype.onKeyDown_ = function(event) {
     case 'Ctrl-Shift-U+0042': // Ctrl+Shift+B
       chrome.fileManagerPrivate.openInspector('background');
       break;
+
+    case 'U+0020': // Space
+    case 'U+004B': // K
+      this.player_.$.audioController.playClick();
+      break;
+    case 'Up':
+    case 'Right':
+      if (event.target.id !== 'volumeSlider')
+        this.player_.$.audioController.smallSkip(true);
+      break;
+    case 'Down':
+    case 'Left':
+      if (event.target.id !== 'volumeSlider')
+        this.player_.$.audioController.smallSkip(false);
+      break;
+    case 'U+004C': // L
+      this.player_.$.audioController.bigSkip(true);
+      break;
+    case 'U+004A': // J
+      this.player_.$.audioController.bigSkip(false);
+      break;
   }
 };
 
