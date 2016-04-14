@@ -128,7 +128,6 @@ void SpeechRecognizer::EventListener::StartOnIOThread(
 
   content::SpeechRecognitionSessionConfig config;
   config.language = locale_;
-  config.is_legacy_api = false;
   config.continuous = true;
   config.interim_results = true;
   config.max_hypotheses = 1;

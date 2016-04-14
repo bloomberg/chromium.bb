@@ -158,7 +158,6 @@ void SpeechRecognitionDispatcherHost::OnStartRequestOnIO(
   context.request_id = params.request_id;
 
   SpeechRecognitionSessionConfig config;
-  config.is_legacy_api = false;
   config.language = params.language;
   config.grammars = params.grammars;
   config.max_hypotheses = params.max_hypotheses;

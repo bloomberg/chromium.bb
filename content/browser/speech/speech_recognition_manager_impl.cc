@@ -113,9 +113,6 @@ int SpeechRecognitionManagerImpl::CreateSession(
   if (delegate_)
     delegate_->GetDiagnosticInformation(&can_report_metrics, &hardware_info);
 
-  // The legacy api cannot use continuous mode.
-  DCHECK(!config.is_legacy_api || !config.continuous);
-
 #if !defined(OS_ANDROID)
   // A SpeechRecognitionEngine (and corresponding Config) is required only
   // when using SpeechRecognizerImpl, which performs the audio capture and
@@ -141,15 +138,8 @@ int SpeechRecognitionManagerImpl::CreateSession(
   remote_engine_config.auth_scope = config.auth_scope;
   remote_engine_config.preamble = config.preamble;
 
-  SpeechRecognitionEngine* google_remote_engine;
-  if (config.is_legacy_api) {
-    google_remote_engine =
-        new GoogleOneShotRemoteEngine(config.url_request_context_getter.get());
-  } else {
-    google_remote_engine = new GoogleStreamingRemoteEngine(
-        config.url_request_context_getter.get());
-  }
-
+  SpeechRecognitionEngine* google_remote_engine =
+      new GoogleStreamingRemoteEngine(config.url_request_context_getter.get());
   google_remote_engine->SetConfig(remote_engine_config);
 
   session->recognizer = new SpeechRecognizerImpl(
