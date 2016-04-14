@@ -64,3 +64,6 @@ WebRtcMediaRecorderTest.MediaRecorderPeerConnection
 
 # https://crbug.com/592320
 SitePerProcessBrowserTest.SubframeGestureEventRouting
+
+# https://crbug.com/603337
+SingleProcessMemoryTracingTest.ManyInterleavedDumps

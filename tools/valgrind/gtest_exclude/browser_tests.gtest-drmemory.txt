@@ -58,9 +58,6 @@ SmartSessionRestoreTest.CorrectLoadingOrder
 # https://crbug.com/516368
 PushMessagingBrowserTest.PushEventSuccess
 
-# https://crbug.com/519039
-AppViewTest.KillGuestCommunicatingWithWrongAppView
-
 # https://crbug.com/519087
 ExtensionTabsTest.GetAllWindowsAllTypes
 
@@ -157,3 +154,6 @@ SubframeTaskBrowserTest.TaskManagerShowsSubframeTasks
 SyncSetupWebUITestAsync.RestoreSyncDataTypes
 WebUIWebView*
 ZoomControllerBrowserTest.NavigationResetsManualMode
+
+# https://crbug.com/603334
+AppViewTests/AppViewTest.KillGuestCommunicatingWithWrongAppView/*
