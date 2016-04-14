@@ -118,9 +118,33 @@ void ArcBluetoothBridge::DeviceAddressChanged(BluetoothAdapter* adapter,
   // Must be implemented for LE Privacy/GATT client.
 }
 
+void ArcBluetoothBridge::DevicePairedChanged(BluetoothAdapter* adapter,
+                                             BluetoothDevice* device,
+                                             bool new_paired_status) {
+  DCHECK(adapter);
+  DCHECK(device);
+
+  BluetoothAddressPtr addr = BluetoothAddress::From(device->GetAddress());
+
+  if (new_paired_status) {
+    // OnBondStateChanged must be called with BluetoothBondState::BONDING to
+    // make sure the bond state machine on Android is ready to take the
+    // pair-done event. Otherwise the pair-done event will be dropped as an
+    // invalid change of paired status.
+    OnPairing(addr->Clone());
+    OnPairedDone(std::move(addr));
+  } else {
+    OnForgetDone(std::move(addr));
+  }
+}
+
 void ArcBluetoothBridge::DeviceRemoved(BluetoothAdapter* adapter,
                                        BluetoothDevice* device) {
-  // TODO(smbarber): device removed; inform the container.
+  DCHECK(adapter);
+  DCHECK(device);
+
+  BluetoothAddressPtr addr = BluetoothAddress::From(device->GetAddress());
+  OnForgetDone(std::move(addr));
 }
 
 void ArcBluetoothBridge::GattServiceAdded(BluetoothAdapter* adapter,
@@ -191,11 +215,16 @@ void ArcBluetoothBridge::GattDescriptorValueChanged(
 
 void ArcBluetoothBridge::EnableAdapter(const EnableAdapterCallback& callback) {
   DCHECK(bluetooth_adapter_);
-  bluetooth_adapter_->SetPowered(
-      true, base::Bind(&ArcBluetoothBridge::OnPoweredOn,
-                       weak_factory_.GetWeakPtr(), callback),
-      base::Bind(&ArcBluetoothBridge::OnPoweredError,
-                 weak_factory_.GetWeakPtr(), callback));
+  if (!bluetooth_adapter_->IsPowered()) {
+    bluetooth_adapter_->SetPowered(
+        true, base::Bind(&ArcBluetoothBridge::OnPoweredOn,
+                         weak_factory_.GetWeakPtr(), callback),
+        base::Bind(&ArcBluetoothBridge::OnPoweredError,
+                   weak_factory_.GetWeakPtr(), callback));
+    return;
+  }
+
+  OnPoweredOn(callback);
 }
 
 void ArcBluetoothBridge::DisableAdapter(
@@ -241,9 +270,15 @@ void ArcBluetoothBridge::GetRemoteDeviceProperty(
 
   mojo::Array<BluetoothPropertyPtr> properties =
       GetDeviceProperties(type, device);
+  BluetoothStatus status = BluetoothStatus::SUCCESS;
+
+  if (!device) {
+    VLOG(1) << __func__ << ": device " << addr_str << " not available";
+    status = BluetoothStatus::FAIL;
+  }
 
   arc_bridge_service()->bluetooth_instance()->OnRemoteDeviceProperties(
-      BluetoothStatus::SUCCESS, std::move(remote_addr), std::move(properties));
+      status, std::move(remote_addr), std::move(properties));
 }
 
 void ArcBluetoothBridge::SetRemoteDeviceProperty(
@@ -298,6 +333,7 @@ void ArcBluetoothBridge::CancelDiscovery() {
 void ArcBluetoothBridge::OnPoweredOn(
     const mojo::Callback<void(BluetoothAdapterState)>& callback) const {
   callback.Run(BluetoothAdapterState::ON);
+  SendCachedPairedDevices();
 }
 
 void ArcBluetoothBridge::OnPoweredOff(
@@ -338,15 +374,63 @@ void ArcBluetoothBridge::OnDiscoveryStopped() {
 
 void ArcBluetoothBridge::CreateBond(BluetoothAddressPtr addr,
                                     int32_t transport) {
-  // TODO(smbarber): Implement CreateBond
+  std::string addr_str = addr->To<std::string>();
+  BluetoothDevice* device = bluetooth_adapter_->GetDevice(addr_str);
+  if (!device || !device->IsPairable()) {
+    VLOG(1) << __func__ << ": device " << addr_str
+            << " is no longer valid or pairable";
+    OnPairedError(std::move(addr), BluetoothDevice::ERROR_FAILED);
+    return;
+  }
+
+  if (device->IsPaired()) {
+    OnPairedDone(std::move(addr));
+    return;
+  }
+
+  // Use the default pairing delegate which is the delegate registered and owned
+  // by ash.
+  BluetoothDevice::PairingDelegate* delegate =
+      bluetooth_adapter_->DefaultPairingDelegate();
+
+  if (!delegate) {
+    OnPairedError(std::move(addr), BluetoothDevice::ERROR_FAILED);
+    return;
+  }
+
+  // If pairing finished successfully, DevicePairedChanged will notify Android
+  // on paired state change event, so DoNothing is passed as a success callback.
+  device->Pair(delegate, base::Bind(&base::DoNothing),
+               base::Bind(&ArcBluetoothBridge::OnPairedError,
+                          weak_factory_.GetWeakPtr(), base::Passed(&addr)));
 }
 
 void ArcBluetoothBridge::RemoveBond(BluetoothAddressPtr addr) {
-  // TODO(smbarber): Implement RemoveBond
+  // Forget the device if it is no longer valid or not even paired.
+  BluetoothDevice* device =
+      bluetooth_adapter_->GetDevice(addr->To<std::string>());
+  if (!device || !device->IsPaired()) {
+    OnForgetDone(std::move(addr));
+    return;
+  }
+
+  // If unpairing finished successfully, DevicePairedChanged will notify Android
+  // on paired state change event, so DoNothing is passed as a success callback.
+  device->Forget(base::Bind(&base::DoNothing),
+                 base::Bind(&ArcBluetoothBridge::OnForgetError,
+                            weak_factory_.GetWeakPtr(), base::Passed(&addr)));
 }
 
 void ArcBluetoothBridge::CancelBond(BluetoothAddressPtr addr) {
-  // TODO(smbarber): Implement CancelBond
+  BluetoothDevice* device =
+      bluetooth_adapter_->GetDevice(addr->To<std::string>());
+  if (!device) {
+    OnForgetDone(std::move(addr));
+    return;
+  }
+
+  device->CancelPairing();
+  OnForgetDone(std::move(addr));
 }
 
 void ArcBluetoothBridge::GetConnectionState(
@@ -357,8 +441,8 @@ void ArcBluetoothBridge::GetConnectionState(
     return;
   }
 
-  std::string addr_str = addr->To<std::string>();
-  BluetoothDevice* device = bluetooth_adapter_->GetDevice(addr_str);
+  BluetoothDevice* device =
+      bluetooth_adapter_->GetDevice(addr->To<std::string>());
   if (!device) {
     callback.Run(false);
     return;
@@ -371,9 +455,57 @@ void ArcBluetoothBridge::OnDiscoveryError() {
   LOG(WARNING) << "failed to change discovery state";
 }
 
+void ArcBluetoothBridge::OnPairing(BluetoothAddressPtr addr) const {
+  if (!HasBluetoothInstance())
+    return;
+
+  arc_bridge_service()->bluetooth_instance()->OnBondStateChanged(
+      BluetoothStatus::SUCCESS, std::move(addr), BluetoothBondState::BONDING);
+}
+
+void ArcBluetoothBridge::OnPairedDone(BluetoothAddressPtr addr) const {
+  if (!HasBluetoothInstance())
+    return;
+
+  arc_bridge_service()->bluetooth_instance()->OnBondStateChanged(
+      BluetoothStatus::SUCCESS, std::move(addr), BluetoothBondState::BONDED);
+}
+
+void ArcBluetoothBridge::OnPairedError(
+    BluetoothAddressPtr addr,
+    BluetoothDevice::ConnectErrorCode error_code) const {
+  if (!HasBluetoothInstance())
+    return;
+
+  arc_bridge_service()->bluetooth_instance()->OnBondStateChanged(
+      BluetoothStatus::FAIL, std::move(addr), BluetoothBondState::NONE);
+}
+
+void ArcBluetoothBridge::OnForgetDone(BluetoothAddressPtr addr) const {
+  if (!HasBluetoothInstance())
+    return;
+
+  arc_bridge_service()->bluetooth_instance()->OnBondStateChanged(
+      BluetoothStatus::SUCCESS, std::move(addr), BluetoothBondState::NONE);
+}
+
+void ArcBluetoothBridge::OnForgetError(BluetoothAddressPtr addr) const {
+  if (!HasBluetoothInstance())
+    return;
+
+  BluetoothDevice* device =
+      bluetooth_adapter_->GetDevice(addr->To<std::string>());
+  BluetoothBondState bond_state = BluetoothBondState::NONE;
+  if (device && device->IsPaired()) {
+    bond_state = BluetoothBondState::BONDED;
+  }
+  arc_bridge_service()->bluetooth_instance()->OnBondStateChanged(
+      BluetoothStatus::FAIL, std::move(addr), bond_state);
+}
+
 mojo::Array<BluetoothPropertyPtr> ArcBluetoothBridge::GetDeviceProperties(
     BluetoothPropertyType type,
-    BluetoothDevice* device) {
+    BluetoothDevice* device) const {
   mojo::Array<BluetoothPropertyPtr> properties;
 
   if (!device) {
@@ -437,7 +569,7 @@ mojo::Array<BluetoothPropertyPtr> ArcBluetoothBridge::GetDeviceProperties(
 }
 
 mojo::Array<BluetoothPropertyPtr> ArcBluetoothBridge::GetAdapterProperties(
-    BluetoothPropertyType type) {
+    BluetoothPropertyType type) const {
   mojo::Array<BluetoothPropertyPtr> properties;
 
   if (type == BluetoothPropertyType::ALL ||
@@ -512,7 +644,7 @@ mojo::Array<BluetoothPropertyPtr> ArcBluetoothBridge::GetAdapterProperties(
   return properties;
 }
 
-void ArcBluetoothBridge::SendCachedDevicesFound() {
+void ArcBluetoothBridge::SendCachedDevicesFound() const {
   // Send devices that have already been discovered, but aren't connected.
   if (!HasBluetoothInstance())
     return;
@@ -530,13 +662,38 @@ void ArcBluetoothBridge::SendCachedDevicesFound() {
   }
 }
 
-bool ArcBluetoothBridge::HasBluetoothInstance() {
+bool ArcBluetoothBridge::HasBluetoothInstance() const {
   if (!arc_bridge_service()->bluetooth_instance()) {
     LOG(WARNING) << "no Bluetooth instance available";
     return false;
   }
 
   return true;
+}
+
+void ArcBluetoothBridge::SendCachedPairedDevices() const {
+  DCHECK(bluetooth_adapter_);
+
+  BluetoothAdapter::DeviceList devices = bluetooth_adapter_->GetDevices();
+  for (BluetoothDevice* device : devices) {
+    if (!device->IsPaired())
+      continue;
+
+    mojo::Array<BluetoothPropertyPtr> properties =
+        GetDeviceProperties(BluetoothPropertyType::ALL, device);
+
+    arc_bridge_service()->bluetooth_instance()->OnDeviceFound(
+        std::move(properties));
+
+    BluetoothAddressPtr addr = BluetoothAddress::From(device->GetAddress());
+
+    // OnBondStateChanged must be called with BluetoothBondState::BONDING to
+    // make sure the bond state machine on Android is ready to take the
+    // pair-done event. Otherwise the pair-done event will be dropped as an
+    // invalid change of paired status.
+    OnPairing(addr->Clone());
+    OnPairedDone(std::move(addr));
+  }
 }
 
 }  // namespace arc

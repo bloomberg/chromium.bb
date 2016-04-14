@@ -58,6 +58,10 @@ class ArcBluetoothBridge
                             device::BluetoothDevice* device,
                             const std::string& old_address) override;
 
+  void DevicePairedChanged(device::BluetoothAdapter* adapter,
+                           device::BluetoothDevice* device,
+                           bool new_paired_status) override;
+
   void DeviceRemoved(device::BluetoothAdapter* adapter,
                      device::BluetoothDevice* device) override;
 
@@ -141,16 +145,26 @@ class ArcBluetoothBridge
       scoped_ptr<device::BluetoothDiscoverySession> session);
   void OnDiscoveryStopped();
   void OnDiscoveryError();
+  void OnPairing(BluetoothAddressPtr addr) const;
+  void OnPairedDone(BluetoothAddressPtr addr) const;
+  void OnPairedError(
+      BluetoothAddressPtr addr,
+      device::BluetoothDevice::ConnectErrorCode error_code) const;
+  void OnForgetDone(BluetoothAddressPtr addr) const;
+  void OnForgetError(BluetoothAddressPtr addr) const;
 
  private:
   mojo::Array<BluetoothPropertyPtr> GetDeviceProperties(
       BluetoothPropertyType type,
-      device::BluetoothDevice* device);
+      device::BluetoothDevice* device) const;
   mojo::Array<BluetoothPropertyPtr> GetAdapterProperties(
-      BluetoothPropertyType type);
+      BluetoothPropertyType type) const;
 
-  void SendCachedDevicesFound();
-  bool HasBluetoothInstance();
+  void SendCachedDevicesFound() const;
+  bool HasBluetoothInstance() const;
+
+  // Propagates the list of paired device to Android.
+  void SendCachedPairedDevices() const;
 
   mojo::Binding<BluetoothHost> binding_;
 
