@@ -62,13 +62,34 @@ std::string GetTestExpiredJson() {
                      NTPSnippet::TimeToJsonString(base::Time::Now()));
 }
 
+std::string GetInvalidJson() {
+  std::string json_str = GetTestJson();
+  // Make the json invalid by removing the final closing brace.
+  return json_str.substr(0, json_str.size() - 1);
+}
+
+std::string GetIncompleteJson() {
+  std::string json_str = GetTestJson();
+  // Rename the "url" entry. The result is syntactically valid json that will
+  // fail to parse as snippets.
+  size_t pos = json_str.find("\"url\"");
+  if (pos == std::string::npos) {
+    NOTREACHED();
+    return std::string();
+  }
+  json_str[pos + 1] = 'x';
+  return json_str;
+}
+
 void ParseJson(
+    bool expect_success,
     const std::string& json,
     const ntp_snippets::NTPSnippetsService::SuccessCallback& success_callback,
     const ntp_snippets::NTPSnippetsService::ErrorCallback& error_callback) {
   base::JSONReader json_reader;
   scoped_ptr<base::Value> value = json_reader.ReadToValue(json);
-  ASSERT_TRUE(value);
+  bool success = !!value;
+  EXPECT_EQ(expect_success, success);
   if (value) {
     success_callback.Run(std::move(value));
   } else {
@@ -100,7 +121,7 @@ class NTPSnippetsServiceTest : public testing::Test {
         pref_service_.get(), nullptr, task_runner, std::string("fr"), nullptr,
         make_scoped_ptr(new NTPSnippetsFetcher(
             task_runner, std::move(request_context_getter), true)),
-        base::Bind(&ParseJson)));
+        base::Bind(&ParseJson, true)));
     service_->Init(true);
   }
 
@@ -111,6 +132,10 @@ class NTPSnippetsServiceTest : public testing::Test {
 
   void LoadFromJSONString(const std::string& json) {
     service_->OnSnippetsDownloaded(json);
+  }
+
+  void SetExpectJsonParseSuccess(bool expect_success) {
+    service_->parse_json_callback_ = base::Bind(&ParseJson, expect_success);
   }
 
  private:
@@ -157,6 +182,36 @@ TEST_F(NTPSnippetsServiceTest, Full) {
               GURL("http://localhost/salient_image"));
     EXPECT_EQ(GetDefaultCreationTime(), snippet.publish_date());
   }
+}
+
+TEST_F(NTPSnippetsServiceTest, LoadInvalidJson) {
+  SetExpectJsonParseSuccess(false);
+  LoadFromJSONString(GetInvalidJson());
+  EXPECT_EQ(service()->size(), 0u);
+}
+
+TEST_F(NTPSnippetsServiceTest, LoadInvalidJsonWithExistingSnippets) {
+  LoadFromJSONString(GetTestJson());
+  ASSERT_EQ(service()->size(), 1u);
+
+  SetExpectJsonParseSuccess(false);
+  LoadFromJSONString(GetInvalidJson());
+  // This should not have changed the existing snippets.
+  EXPECT_EQ(service()->size(), 1u);
+}
+
+TEST_F(NTPSnippetsServiceTest, LoadIncompleteJson) {
+  LoadFromJSONString(GetIncompleteJson());
+  EXPECT_EQ(service()->size(), 0u);
+}
+
+TEST_F(NTPSnippetsServiceTest, LoadIncompleteJsonWithExistingSnippets) {
+  LoadFromJSONString(GetTestJson());
+  ASSERT_EQ(service()->size(), 1u);
+
+  LoadFromJSONString(GetIncompleteJson());
+  // This should not have changed the existing snippets.
+  EXPECT_EQ(service()->size(), 1u);
 }
 
 TEST_F(NTPSnippetsServiceTest, Discard) {

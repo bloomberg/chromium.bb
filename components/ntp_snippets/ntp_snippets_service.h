@@ -172,7 +172,7 @@ class NTPSnippetsService : public KeyedService {
   // Timer that calls us back when the next snippet expires.
   base::OneShotTimer expiry_timer_;
 
-  const ParseJSONCallback parse_json_callback_;
+  ParseJSONCallback parse_json_callback_;
 
   base::WeakPtrFactory<NTPSnippetsService> weak_ptr_factory_;
 
