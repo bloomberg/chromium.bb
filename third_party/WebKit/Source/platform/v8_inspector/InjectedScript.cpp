@@ -266,14 +266,9 @@ String16 InjectedScript::objectGroupName(const RemoteObjectId& objectId) const
 
 void InjectedScript::releaseObjectGroup(const String16& objectGroup)
 {
-    v8::HandleScope handles(m_context->isolate());
     m_native->releaseObjectGroup(objectGroup);
-    if (objectGroup == "console") {
-        V8FunctionCall function(m_context->debugger(), m_context->context(), v8Value(), "clearLastEvaluationResult");
-        bool hadException = false;
-        function.call(hadException);
-        ASSERT(!hadException);
-    }
+    if (objectGroup == "console")
+        m_lastEvaluationResult.Reset();
 }
 
 void InjectedScript::setCustomObjectFormatterEnabled(bool enabled)
@@ -299,13 +294,11 @@ v8::Local<v8::Value> InjectedScript::v8Value() const
     return m_value.Get(m_context->isolate());
 }
 
-bool InjectedScript::setLastEvaluationResult(ErrorString* errorString, v8::Local<v8::Value> value)
+v8::Local<v8::Value> InjectedScript::lastEvaluationResult() const
 {
-    V8FunctionCall function(m_context->debugger(), m_context->context(), v8Value(), "setLastEvaluationResult");
-    function.appendArgument(value);
-    bool hadException = false;
-    function.call(hadException, false);
-    return !hasInternalError(errorString, hadException);
+    if (m_lastEvaluationResult.IsEmpty())
+        return v8::Undefined(m_context->isolate());
+    return m_lastEvaluationResult.Get(m_context->isolate());
 }
 
 v8::MaybeLocal<v8::Value> InjectedScript::resolveCallArgument(ErrorString* errorString, protocol::Runtime::CallArgument* callArgument)
@@ -365,8 +358,8 @@ void InjectedScript::wrapEvaluateResult(ErrorString* errorString, v8::MaybeLocal
         OwnPtr<RemoteObject> remoteObject = wrapObject(errorString, resultValue, objectGroup, returnByValue, generatePreview);
         if (!remoteObject)
             return;
-        if (objectGroup == "console" && !setLastEvaluationResult(errorString, resultValue))
-            return;
+        if (objectGroup == "console")
+            m_lastEvaluationResult.Reset(m_context->isolate(), resultValue);
         *result = remoteObject.release();
         if (wasThrown)
             *wasThrown = false;
@@ -416,7 +409,10 @@ bool InjectedScript::Scope::installCommandLineAPI()
 {
     ASSERT(m_injectedScript && !m_context.IsEmpty());
     V8FunctionCall function(m_debugger, m_context, m_injectedScript->v8Value(), "commandLineAPI");
-    return installGlobalObjectExtension(function);
+    v8::Local<v8::Object> extensionObject;
+    if (!installGlobalObjectExtension(function).ToLocal(&extensionObject))
+        return false;
+    return extensionObject->Set(m_context, toV8StringInternalized(m_context->GetIsolate(), "$_"), m_injectedScript->lastEvaluationResult()).FromMaybe(false);
 }
 
 bool InjectedScript::Scope::installRemoteObjectAPI(const String16& objectGroupName)
@@ -424,16 +420,17 @@ bool InjectedScript::Scope::installRemoteObjectAPI(const String16& objectGroupNa
     ASSERT(m_injectedScript && !m_context.IsEmpty());
     V8FunctionCall function(m_debugger, m_context, m_injectedScript->v8Value(), "remoteObjectAPI");
     function.appendArgument(objectGroupName);
-    return installGlobalObjectExtension(function);
+    v8::Local<v8::Object> extensionObject;
+    return installGlobalObjectExtension(function).ToLocal(&extensionObject);
 }
 
-bool InjectedScript::Scope::installGlobalObjectExtension(V8FunctionCall& function)
+v8::MaybeLocal<v8::Object> InjectedScript::Scope::installGlobalObjectExtension(V8FunctionCall& function)
 {
     bool hadException = false;
     v8::Local<v8::Value> extension = function.call(hadException, false);
-    if (hadException || extension.IsEmpty()) {
+    if (hadException || extension.IsEmpty() || !extension->IsObject()) {
         *m_errorString = "Internal error";
-        return false;
+        return v8::MaybeLocal<v8::Object>();
     }
 
     ASSERT(m_global.IsEmpty());
@@ -441,11 +438,11 @@ bool InjectedScript::Scope::installGlobalObjectExtension(V8FunctionCall& functio
     v8::Local<v8::Object> global = m_context->Global();
     if (!global->Set(m_context, m_extensionSymbol, extension).FromMaybe(false)) {
         *m_errorString = "Internal error";
-        return false;
+        return v8::MaybeLocal<v8::Object>();
     }
 
     m_global = global;
-    return true;
+    return extension.As<v8::Object>();
 }
 
 void InjectedScript::Scope::ignoreExceptionsAndMuteConsole()

@@ -419,19 +419,6 @@ InjectedScript.prototype = {
         return "{\"injectedScriptId\":" + injectedScriptId + ",\"id\":" + id + "}";
     },
 
-    clearLastEvaluationResult: function()
-    {
-        delete this._lastResult;
-    },
-
-    /**
-     * @param {*} result
-     */
-    setLastEvaluationResult: function(result)
-    {
-        this._lastResult = result;
-    },
-
     /**
      * @param {!Object} object
      * @param {string} objectGroupName
@@ -1185,9 +1172,6 @@ function CommandLineAPI(commandLineAPIImpl)
         var member = "$" + i;
         this[member] = bind(commandLineAPIImpl._inspectedObject, commandLineAPIImpl, i);
     }
-
-    this.$_ = injectedScript._lastResult;
-
     this.__proto__ = null;
 }
 

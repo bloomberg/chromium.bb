@@ -110,7 +110,7 @@ public:
     private:
         void cleanup();
         V8DebuggerImpl::PauseOnExceptionsState setPauseOnExceptionsState(V8DebuggerImpl::PauseOnExceptionsState);
-        bool installGlobalObjectExtension(V8FunctionCall&);
+        v8::MaybeLocal<v8::Object> installGlobalObjectExtension(V8FunctionCall&);
 
         v8::HandleScope m_handleScope;
         v8::TryCatch m_tryCatch;
@@ -160,12 +160,13 @@ public:
 private:
     InjectedScript(InspectedContext*, v8::Local<v8::Object>, PassOwnPtr<InjectedScriptNative>);
     bool canAccessInspectedWindow() const;
-    bool setLastEvaluationResult(ErrorString*, v8::Local<v8::Value>);
+    v8::Local<v8::Value> lastEvaluationResult() const;
     v8::Local<v8::Value> v8Value() const;
     v8::MaybeLocal<v8::Value> wrapValue(ErrorString*, v8::Local<v8::Value>, const String16& groupName, bool forceValueType, bool generatePreview) const;
 
     InspectedContext* m_context;
     v8::Global<v8::Value> m_value;
+    v8::Global<v8::Value> m_lastEvaluationResult;
     OwnPtr<InjectedScriptNative> m_native;
 };
 
