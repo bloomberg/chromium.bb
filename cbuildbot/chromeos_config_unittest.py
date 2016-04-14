@@ -783,6 +783,9 @@ class OverrideForTrybotTest(GenerateChromeosConfigTestBase):
 
   def testWaterfallManualConfigIsValid(self):
     """Verify the correctness of the manual waterfall configuration."""
+    # Release branches do not allow for manual configs.
+    if chromeos_config.IS_RELEASE_BRANCH:
+      return
     all_build_names = set(self.all_configs.iterkeys())
     redundant = set()
     seen = set()
