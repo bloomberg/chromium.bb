@@ -2088,6 +2088,11 @@ error::Error GLES2DecoderImpl::HandleInvalidateFramebufferImmediate(
   GLenum target = static_cast<GLenum>(c.target);
   GLsizei count = static_cast<GLsizei>(c.count);
   uint32_t data_size;
+  if (count < 0) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "InvalidateFramebufferImmediate",
+                       "negative count");
+    return error::kNoError;
+  }
   if (!ComputeDataSize(count, sizeof(GLenum), 1, &data_size)) {
     return error::kOutOfBounds;
   }
@@ -2099,7 +2104,7 @@ error::Error GLES2DecoderImpl::HandleInvalidateFramebufferImmediate(
   if (attachments == NULL) {
     return error::kOutOfBounds;
   }
-  glInvalidateFramebuffer(target, count, attachments);
+  DoInvalidateFramebuffer(target, count, attachments);
   return error::kNoError;
 }
 
@@ -2115,6 +2120,11 @@ error::Error GLES2DecoderImpl::HandleInvalidateSubFramebufferImmediate(
   GLenum target = static_cast<GLenum>(c.target);
   GLsizei count = static_cast<GLsizei>(c.count);
   uint32_t data_size;
+  if (count < 0) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "InvalidateSubFramebufferImmediate",
+                       "negative count");
+    return error::kNoError;
+  }
   if (!ComputeDataSize(count, sizeof(GLenum), 1, &data_size)) {
     return error::kOutOfBounds;
   }
@@ -2130,7 +2140,7 @@ error::Error GLES2DecoderImpl::HandleInvalidateSubFramebufferImmediate(
   if (attachments == NULL) {
     return error::kOutOfBounds;
   }
-  glInvalidateSubFramebuffer(target, count, attachments, x, y, width, height);
+  DoInvalidateSubFramebuffer(target, count, attachments, x, y, width, height);
   return error::kNoError;
 }
 
@@ -2960,6 +2970,11 @@ error::Error GLES2DecoderImpl::HandleUniform1fvImmediate(
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
   uint32_t data_size;
+  if (count < 0) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "Uniform1fvImmediate",
+                       "negative count");
+    return error::kNoError;
+  }
   if (!ComputeDataSize(count, sizeof(GLfloat), 1, &data_size)) {
     return error::kOutOfBounds;
   }
@@ -2995,6 +3010,11 @@ error::Error GLES2DecoderImpl::HandleUniform1ivImmediate(
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
   uint32_t data_size;
+  if (count < 0) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "Uniform1ivImmediate",
+                       "negative count");
+    return error::kNoError;
+  }
   if (!ComputeDataSize(count, sizeof(GLint), 1, &data_size)) {
     return error::kOutOfBounds;
   }
@@ -3037,6 +3057,11 @@ error::Error GLES2DecoderImpl::HandleUniform1uivImmediate(
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
   uint32_t data_size;
+  if (count < 0) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "Uniform1uivImmediate",
+                       "negative count");
+    return error::kNoError;
+  }
   if (!ComputeDataSize(count, sizeof(GLuint), 1, &data_size)) {
     return error::kOutOfBounds;
   }
@@ -3076,6 +3101,11 @@ error::Error GLES2DecoderImpl::HandleUniform2fvImmediate(
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
   uint32_t data_size;
+  if (count < 0) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "Uniform2fvImmediate",
+                       "negative count");
+    return error::kNoError;
+  }
   if (!ComputeDataSize(count, sizeof(GLfloat), 2, &data_size)) {
     return error::kOutOfBounds;
   }
@@ -3115,6 +3145,11 @@ error::Error GLES2DecoderImpl::HandleUniform2ivImmediate(
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
   uint32_t data_size;
+  if (count < 0) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "Uniform2ivImmediate",
+                       "negative count");
+    return error::kNoError;
+  }
   if (!ComputeDataSize(count, sizeof(GLint), 2, &data_size)) {
     return error::kOutOfBounds;
   }
@@ -3158,6 +3193,11 @@ error::Error GLES2DecoderImpl::HandleUniform2uivImmediate(
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
   uint32_t data_size;
+  if (count < 0) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "Uniform2uivImmediate",
+                       "negative count");
+    return error::kNoError;
+  }
   if (!ComputeDataSize(count, sizeof(GLuint), 2, &data_size)) {
     return error::kOutOfBounds;
   }
@@ -3198,6 +3238,11 @@ error::Error GLES2DecoderImpl::HandleUniform3fvImmediate(
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
   uint32_t data_size;
+  if (count < 0) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "Uniform3fvImmediate",
+                       "negative count");
+    return error::kNoError;
+  }
   if (!ComputeDataSize(count, sizeof(GLfloat), 3, &data_size)) {
     return error::kOutOfBounds;
   }
@@ -3238,6 +3283,11 @@ error::Error GLES2DecoderImpl::HandleUniform3ivImmediate(
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
   uint32_t data_size;
+  if (count < 0) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "Uniform3ivImmediate",
+                       "negative count");
+    return error::kNoError;
+  }
   if (!ComputeDataSize(count, sizeof(GLint), 3, &data_size)) {
     return error::kOutOfBounds;
   }
@@ -3282,6 +3332,11 @@ error::Error GLES2DecoderImpl::HandleUniform3uivImmediate(
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
   uint32_t data_size;
+  if (count < 0) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "Uniform3uivImmediate",
+                       "negative count");
+    return error::kNoError;
+  }
   if (!ComputeDataSize(count, sizeof(GLuint), 3, &data_size)) {
     return error::kOutOfBounds;
   }
@@ -3323,6 +3378,11 @@ error::Error GLES2DecoderImpl::HandleUniform4fvImmediate(
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
   uint32_t data_size;
+  if (count < 0) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "Uniform4fvImmediate",
+                       "negative count");
+    return error::kNoError;
+  }
   if (!ComputeDataSize(count, sizeof(GLfloat), 4, &data_size)) {
     return error::kOutOfBounds;
   }
@@ -3364,6 +3424,11 @@ error::Error GLES2DecoderImpl::HandleUniform4ivImmediate(
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
   uint32_t data_size;
+  if (count < 0) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "Uniform4ivImmediate",
+                       "negative count");
+    return error::kNoError;
+  }
   if (!ComputeDataSize(count, sizeof(GLint), 4, &data_size)) {
     return error::kOutOfBounds;
   }
@@ -3409,6 +3474,11 @@ error::Error GLES2DecoderImpl::HandleUniform4uivImmediate(
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
   uint32_t data_size;
+  if (count < 0) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "Uniform4uivImmediate",
+                       "negative count");
+    return error::kNoError;
+  }
   if (!ComputeDataSize(count, sizeof(GLuint), 4, &data_size)) {
     return error::kOutOfBounds;
   }
@@ -3434,6 +3504,11 @@ error::Error GLES2DecoderImpl::HandleUniformMatrix2fvImmediate(
   GLsizei count = static_cast<GLsizei>(c.count);
   GLboolean transpose = static_cast<GLboolean>(c.transpose);
   uint32_t data_size;
+  if (count < 0) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "UniformMatrix2fvImmediate",
+                       "negative count");
+    return error::kNoError;
+  }
   if (!ComputeDataSize(count, sizeof(GLfloat), 4, &data_size)) {
     return error::kOutOfBounds;
   }
@@ -3461,6 +3536,11 @@ error::Error GLES2DecoderImpl::HandleUniformMatrix2x3fvImmediate(
   GLsizei count = static_cast<GLsizei>(c.count);
   GLboolean transpose = static_cast<GLboolean>(c.transpose);
   uint32_t data_size;
+  if (count < 0) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "UniformMatrix2x3fvImmediate",
+                       "negative count");
+    return error::kNoError;
+  }
   if (!ComputeDataSize(count, sizeof(GLfloat), 6, &data_size)) {
     return error::kOutOfBounds;
   }
@@ -3488,6 +3568,11 @@ error::Error GLES2DecoderImpl::HandleUniformMatrix2x4fvImmediate(
   GLsizei count = static_cast<GLsizei>(c.count);
   GLboolean transpose = static_cast<GLboolean>(c.transpose);
   uint32_t data_size;
+  if (count < 0) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "UniformMatrix2x4fvImmediate",
+                       "negative count");
+    return error::kNoError;
+  }
   if (!ComputeDataSize(count, sizeof(GLfloat), 8, &data_size)) {
     return error::kOutOfBounds;
   }
@@ -3513,6 +3598,11 @@ error::Error GLES2DecoderImpl::HandleUniformMatrix3fvImmediate(
   GLsizei count = static_cast<GLsizei>(c.count);
   GLboolean transpose = static_cast<GLboolean>(c.transpose);
   uint32_t data_size;
+  if (count < 0) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "UniformMatrix3fvImmediate",
+                       "negative count");
+    return error::kNoError;
+  }
   if (!ComputeDataSize(count, sizeof(GLfloat), 9, &data_size)) {
     return error::kOutOfBounds;
   }
@@ -3540,6 +3630,11 @@ error::Error GLES2DecoderImpl::HandleUniformMatrix3x2fvImmediate(
   GLsizei count = static_cast<GLsizei>(c.count);
   GLboolean transpose = static_cast<GLboolean>(c.transpose);
   uint32_t data_size;
+  if (count < 0) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "UniformMatrix3x2fvImmediate",
+                       "negative count");
+    return error::kNoError;
+  }
   if (!ComputeDataSize(count, sizeof(GLfloat), 6, &data_size)) {
     return error::kOutOfBounds;
   }
@@ -3567,6 +3662,11 @@ error::Error GLES2DecoderImpl::HandleUniformMatrix3x4fvImmediate(
   GLsizei count = static_cast<GLsizei>(c.count);
   GLboolean transpose = static_cast<GLboolean>(c.transpose);
   uint32_t data_size;
+  if (count < 0) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "UniformMatrix3x4fvImmediate",
+                       "negative count");
+    return error::kNoError;
+  }
   if (!ComputeDataSize(count, sizeof(GLfloat), 12, &data_size)) {
     return error::kOutOfBounds;
   }
@@ -3592,6 +3692,11 @@ error::Error GLES2DecoderImpl::HandleUniformMatrix4fvImmediate(
   GLsizei count = static_cast<GLsizei>(c.count);
   GLboolean transpose = static_cast<GLboolean>(c.transpose);
   uint32_t data_size;
+  if (count < 0) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "UniformMatrix4fvImmediate",
+                       "negative count");
+    return error::kNoError;
+  }
   if (!ComputeDataSize(count, sizeof(GLfloat), 16, &data_size)) {
     return error::kOutOfBounds;
   }
@@ -3619,6 +3724,11 @@ error::Error GLES2DecoderImpl::HandleUniformMatrix4x2fvImmediate(
   GLsizei count = static_cast<GLsizei>(c.count);
   GLboolean transpose = static_cast<GLboolean>(c.transpose);
   uint32_t data_size;
+  if (count < 0) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "UniformMatrix4x2fvImmediate",
+                       "negative count");
+    return error::kNoError;
+  }
   if (!ComputeDataSize(count, sizeof(GLfloat), 8, &data_size)) {
     return error::kOutOfBounds;
   }
@@ -3646,6 +3756,11 @@ error::Error GLES2DecoderImpl::HandleUniformMatrix4x3fvImmediate(
   GLsizei count = static_cast<GLsizei>(c.count);
   GLboolean transpose = static_cast<GLboolean>(c.transpose);
   uint32_t data_size;
+  if (count < 0) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "UniformMatrix4x3fvImmediate",
+                       "negative count");
+    return error::kNoError;
+  }
   if (!ComputeDataSize(count, sizeof(GLfloat), 12, &data_size)) {
     return error::kOutOfBounds;
   }
@@ -4763,6 +4878,11 @@ error::Error GLES2DecoderImpl::HandleDiscardFramebufferEXTImmediate(
   GLenum target = static_cast<GLenum>(c.target);
   GLsizei count = static_cast<GLsizei>(c.count);
   uint32_t data_size;
+  if (count < 0) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "DiscardFramebufferEXTImmediate",
+                       "negative count");
+    return error::kNoError;
+  }
   if (!ComputeDataSize(count, sizeof(GLenum), 1, &data_size)) {
     return error::kOutOfBounds;
   }
@@ -4812,6 +4932,11 @@ error::Error GLES2DecoderImpl::HandleDrawBuffersEXTImmediate(
   (void)c;
   GLsizei count = static_cast<GLsizei>(c.count);
   uint32_t data_size;
+  if (count < 0) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "DrawBuffersEXTImmediate",
+                       "negative count");
+    return error::kNoError;
+  }
   if (!ComputeDataSize(count, sizeof(GLenum), 1, &data_size)) {
     return error::kOutOfBounds;
   }

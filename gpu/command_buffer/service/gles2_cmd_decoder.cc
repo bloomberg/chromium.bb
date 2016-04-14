@@ -723,6 +723,12 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   friend class ScopedResolvedFrameBufferBinder;
   friend class BackFramebuffer;
 
+  enum FramebufferOperation {
+    kFramebufferDiscard,
+    kFramebufferInvalidate,
+    kFramebufferInvalidateSub
+  };
+
   // Initialize or re-initialize the shader translator.
   bool InitializeShaderTranslator();
 
@@ -1450,9 +1456,20 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
 
   // Wrapper for glDiscardFramebufferEXT, since we need to track undefined
   // attachments.
-  void DoDiscardFramebufferEXT(GLenum target,
-                               GLsizei numAttachments,
-                               const GLenum* attachments);
+  void DoDiscardFramebufferEXT(
+      GLenum target, GLsizei count, const GLenum* attachments);
+
+  void DoInvalidateFramebuffer(
+      GLenum target, GLsizei count, const GLenum* attachments);
+  void DoInvalidateSubFramebuffer(
+      GLenum target, GLsizei count, const GLenum* attachments,
+      GLint x, GLint y, GLsizei width, GLsizei height);
+
+  // Helper for DoDiscardFramebufferEXT, DoInvalidate{Sub}Framebuffer.
+  void InvalidateFramebufferImpl(
+      GLenum target, GLsizei count, const GLenum* attachments,
+      GLint x, GLint y, GLsizei width, GLsizei height,
+      const char* function_name, FramebufferOperation op);
 
   // Wrapper for glEnable
   void DoEnable(GLenum cap);
@@ -5055,30 +5072,103 @@ void GLES2DecoderImpl::DoDisableVertexAttribArray(GLuint index) {
   }
 }
 
-void GLES2DecoderImpl::DoDiscardFramebufferEXT(GLenum target,
-                                               GLsizei numAttachments,
-                                               const GLenum* attachments) {
-  if (workarounds().disable_discard_framebuffer)
+void GLES2DecoderImpl::InvalidateFramebufferImpl(
+    GLenum target, GLsizei count, const GLenum* attachments,
+    GLint x, GLint y, GLsizei width, GLsizei height,
+    const char* function_name, FramebufferOperation op) {
+  if (!validators_->frame_buffer_target.IsValid(target)) {
+    LOCAL_SET_GL_ERROR_INVALID_ENUM(function_name, target, "target");
     return;
+  }
+  Framebuffer* framebuffer = GetFramebufferInfoForTarget(GL_FRAMEBUFFER);
 
-  Framebuffer* framebuffer =
-      GetFramebufferInfoForTarget(GL_FRAMEBUFFER);
-
-  // Validates the attachments. If one of them fails
-  // the whole command fails.
-  for (GLsizei i = 0; i < numAttachments; ++i) {
-    if ((framebuffer &&
-        !validators_->attachment.IsValid(attachments[i])) ||
-       (!framebuffer &&
-        !validators_->backbuffer_attachment.IsValid(attachments[i]))) {
-      LOCAL_SET_GL_ERROR_INVALID_ENUM(
-          "glDiscardFramebufferEXT", attachments[i], "attachments");
-      return;
+  // Validates the attachments. If one of them fails, the whole command fails.
+  GLenum thresh0 = GL_COLOR_ATTACHMENT0 + group_->max_color_attachments();
+  GLenum thresh1 = GL_COLOR_ATTACHMENT15;
+  for (GLsizei i = 0; i < count; ++i) {
+    if (framebuffer) {
+      if (attachments[i] >= thresh0 && attachments[i] <= thresh1) {
+        LOCAL_SET_GL_ERROR(
+            GL_INVALID_OPERATION, function_name, "invalid attachment");
+        return;
+      }
+      if (!validators_->attachment.IsValid(attachments[i])) {
+        LOCAL_SET_GL_ERROR_INVALID_ENUM(
+            function_name, attachments[i], "attachments");
+        return;
+      }
+    } else {
+      if (!validators_->backbuffer_attachment.IsValid(attachments[i])) {
+        LOCAL_SET_GL_ERROR_INVALID_ENUM(
+            function_name, attachments[i], "attachments");
+        return;
+      }
     }
   }
 
-  // Marks each one of them as not cleared
-  for (GLsizei i = 0; i < numAttachments; ++i) {
+  if (width < 0 || height < 0) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, function_name, "negative size");
+    return;
+  }
+
+  // If the default framebuffer is bound but we are still rendering to an
+  // FBO, translate attachment names that refer to default framebuffer
+  // channels to corresponding framebuffer attachments.
+  scoped_ptr<GLenum[]> translated_attachments(new GLenum[count]);
+  for (GLsizei i = 0; i < count; ++i) {
+    GLenum attachment = attachments[i];
+    if (!framebuffer && GetBackbufferServiceId()) {
+      switch (attachment) {
+        case GL_COLOR_EXT:
+          attachment = GL_COLOR_ATTACHMENT0;
+          break;
+        case GL_DEPTH_EXT:
+          attachment = GL_DEPTH_ATTACHMENT;
+          break;
+        case GL_STENCIL_EXT:
+          attachment = GL_STENCIL_ATTACHMENT;
+          break;
+        default:
+          NOTREACHED();
+          return;
+      }
+    }
+    translated_attachments[i] = attachment;
+  }
+
+  bool dirty = false;
+  switch (op) {
+    case kFramebufferDiscard:
+      if (feature_info_->gl_version_info().is_es3) {
+        glInvalidateFramebuffer(
+            target, count, translated_attachments.get());
+      } else {
+        glDiscardFramebufferEXT(
+            target, count, translated_attachments.get());
+      }
+      dirty = true;
+      break;
+    case kFramebufferInvalidate:
+      if (feature_info_->gl_version_info().IsLowerThanGL(4, 3)) {
+        // no-op since the function isn't supported.
+      } else {
+        glInvalidateFramebuffer(
+            target, count, translated_attachments.get());
+        dirty = true;
+      }
+      break;
+    case kFramebufferInvalidateSub:
+      // Make it an no-op because we don't have a mechanism to mark partial
+      // pixels uncleared yet.
+      // TODO(zmo): Revisit this.
+      break;
+  }
+
+  if (!dirty)
+    return;
+
+  // Marks each one of them as not cleared.
+  for (GLsizei i = 0; i < count; ++i) {
     if (framebuffer) {
       framebuffer->MarkAttachmentAsCleared(renderbuffer_manager(),
                                            texture_manager(),
@@ -5101,39 +5191,36 @@ void GLES2DecoderImpl::DoDiscardFramebufferEXT(GLenum target,
       }
     }
   }
+}
 
-  // If the default framebuffer is bound but we are still rendering to an
-  // FBO, translate attachment names that refer to default framebuffer
-  // channels to corresponding framebuffer attachments.
-  scoped_ptr<GLenum[]> translated_attachments(new GLenum[numAttachments]);
-  for (GLsizei i = 0; i < numAttachments; ++i) {
-    GLenum attachment = attachments[i];
-    if (!framebuffer && GetBackbufferServiceId()) {
-      switch (attachment) {
-        case GL_COLOR_EXT:
-          attachment = GL_COLOR_ATTACHMENT0;
-          break;
-        case GL_DEPTH_EXT:
-          attachment = GL_DEPTH_ATTACHMENT;
-          break;
-        case GL_STENCIL_EXT:
-          attachment = GL_STENCIL_ATTACHMENT;
-          break;
-        default:
-          NOTREACHED();
-          return;
-      }
-    }
-    translated_attachments[i] = attachment;
-  }
+void GLES2DecoderImpl::DoDiscardFramebufferEXT(GLenum target,
+                                               GLsizei count,
+                                               const GLenum* attachments) {
+  if (workarounds().disable_discard_framebuffer)
+    return;
 
-  if (feature_info_->gl_version_info().is_es3) {
-    glInvalidateFramebuffer(
-        target, numAttachments, translated_attachments.get());
-  } else {
-    glDiscardFramebufferEXT(
-        target, numAttachments, translated_attachments.get());
-  }
+  const GLsizei kWidthNotUsed = 1;
+  const GLsizei kHeightNotUsed = 1;
+  InvalidateFramebufferImpl(
+      target, count, attachments, 0, 0, kWidthNotUsed, kHeightNotUsed,
+      "glDiscardFramebufferEXT", kFramebufferDiscard);
+}
+
+void GLES2DecoderImpl::DoInvalidateFramebuffer(
+    GLenum target, GLsizei count, const GLenum* attachments) {
+  const GLsizei kWidthNotUsed = 1;
+  const GLsizei kHeightNotUsed = 1;
+  InvalidateFramebufferImpl(
+      target, count, attachments, 0, 0, kWidthNotUsed, kHeightNotUsed,
+      "glInvalidateFramebuffer", kFramebufferInvalidate);
+}
+
+void GLES2DecoderImpl::DoInvalidateSubFramebuffer(
+    GLenum target, GLsizei count, const GLenum* attachments,
+    GLint x, GLint y, GLsizei width, GLsizei height) {
+  InvalidateFramebufferImpl(
+      target, count, attachments, x, y, width, height,
+      "glInvalidateSubFramebuffer", kFramebufferInvalidateSub);
 }
 
 void GLES2DecoderImpl::DoEnableVertexAttribArray(GLuint index) {
@@ -15078,34 +15165,76 @@ error::Error GLES2DecoderImpl::HandleGetInternalformativ(
     LOCAL_SET_GL_ERROR_INVALID_ENUM("glGetInternalformativ", pname, "pname");
     return error::kNoError;
   }
+
   typedef cmds::GetInternalformativ::Result Result;
   GLsizei num_values = 0;
-  switch (pname) {
-    case GL_NUM_SAMPLE_COUNTS:
-      num_values = 1;
-      break;
-    case GL_SAMPLES:
-      {
-        GLint value = 0;
-        glGetInternalformativ(target, format, GL_NUM_SAMPLE_COUNTS, 1, &value);
-        num_values = static_cast<GLsizei>(value);
+  std::vector<GLint> samples;
+  if (feature_info_->gl_version_info().IsLowerThanGL(4, 2)) {
+    if (!GLES2Util::IsIntegerFormat(format) &&
+        !GLES2Util::IsFloatFormat(format)) {
+      // No multisampling for integer formats and float formats.
+      GLint max_samples = renderbuffer_manager()->max_samples();
+      while (max_samples > 0) {
+        samples.push_back(max_samples);
+        max_samples = max_samples >> 1;
       }
-      break;
-    default:
-      NOTREACHED();
-      break;
+    }
+    switch (pname) {
+      case GL_NUM_SAMPLE_COUNTS:
+        num_values = 1;
+        break;
+      case GL_SAMPLES:
+        num_values = static_cast<GLsizei>(samples.size());
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
+  } else {
+    switch (pname) {
+      case GL_NUM_SAMPLE_COUNTS:
+        num_values = 1;
+        break;
+      case GL_SAMPLES:
+        {
+          GLint value = 0;
+          glGetInternalformativ(
+              target, format, GL_NUM_SAMPLE_COUNTS, 1, &value);
+          num_values = static_cast<GLsizei>(value);
+        }
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
   }
   Result* result = GetSharedMemoryAs<Result*>(
       c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
   GLint* params = result ? result->GetData() : NULL;
-  if (params == NULL) {
+  if (params == nullptr) {
     return error::kOutOfBounds;
   }
   // Check that the client initialized the result.
   if (result->size != 0) {
     return error::kInvalidArguments;
   }
-  glGetInternalformativ(target, format, pname, num_values, params);
+  if (feature_info_->gl_version_info().IsLowerThanGL(4, 2)) {
+    switch (pname) {
+      case GL_NUM_SAMPLE_COUNTS:
+        params[0] = static_cast<GLint>(samples.size());
+        break;
+      case GL_SAMPLES:
+        for (size_t ii = 0; ii < samples.size(); ++ii) {
+          params[ii] = samples[ii];
+        }
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
+  } else {
+    glGetInternalformativ(target, format, pname, num_values, params);
+  }
   result->SetNumResults(num_values);
   return error::kNoError;
 }

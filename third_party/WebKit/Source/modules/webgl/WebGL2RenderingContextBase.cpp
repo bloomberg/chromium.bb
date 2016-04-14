@@ -430,49 +430,31 @@ ScriptValue WebGL2RenderingContextBase::getInternalformatParameter(ScriptState* 
     }
 }
 
-bool WebGL2RenderingContextBase::checkAndTranslateAttachments(const char* functionName, GLenum target, const Vector<GLenum>& attachments, Vector<GLenum>& translatedAttachments)
+bool WebGL2RenderingContextBase::checkAndTranslateAttachments(const char* functionName, GLenum target, Vector<GLenum>& attachments)
 {
-    GLsizei size = attachments.size();
-    translatedAttachments.resize(size);
+    if (!validateFramebufferTarget(target)) {
+        synthesizeGLError(GL_INVALID_ENUM, functionName, "invalid target");
+        return false;
+    }
 
     WebGLFramebuffer* framebufferBinding = getFramebufferBinding(target);
     ASSERT(framebufferBinding || drawingBuffer());
     if (!framebufferBinding) {
         // For the default framebuffer
         // Translate GL_COLOR/GL_DEPTH/GL_STENCIL, because the default framebuffer of WebGL is not fb 0, it is an internal fbo
-        for (GLsizei i = 0; i < size; ++i) {
+        for (size_t i = 0; i < attachments.size(); ++i) {
             switch (attachments[i]) {
             case GL_COLOR:
-                translatedAttachments[i] = GL_COLOR_ATTACHMENT0;
+                attachments[i] = GL_COLOR_ATTACHMENT0;
                 break;
             case GL_DEPTH:
-                translatedAttachments[i] = GL_DEPTH_ATTACHMENT;
+                attachments[i] = GL_DEPTH_ATTACHMENT;
                 break;
             case GL_STENCIL:
-                translatedAttachments[i] = GL_STENCIL_ATTACHMENT;
+                attachments[i] = GL_STENCIL_ATTACHMENT;
                 break;
             default:
                 synthesizeGLError(GL_INVALID_ENUM, functionName, "invalid attachment");
-                return false;
-            }
-        }
-    } else {
-        // For the FBO
-        for (GLsizei i = 0; i < size; ++i) {
-            switch (attachments[i]) {
-            case GL_COLOR_ATTACHMENT0:
-            case GL_DEPTH_ATTACHMENT:
-            case GL_STENCIL_ATTACHMENT:
-            case GL_DEPTH_STENCIL_ATTACHMENT:
-                translatedAttachments[i] = attachments[i];
-                break;
-            default:
-                if (attachments[i] > GL_COLOR_ATTACHMENT0
-                    && attachments[i] < static_cast<GLenum>(GL_COLOR_ATTACHMENT0 + maxColorAttachments())) {
-                    translatedAttachments[i] = attachments[i];
-                    break;
-                }
-                synthesizeGLError(GL_INVALID_OPERATION, functionName, "invalid attachment");
                 return false;
             }
         }
@@ -485,15 +467,9 @@ void WebGL2RenderingContextBase::invalidateFramebuffer(GLenum target, const Vect
     if (isContextLost())
         return;
 
-    if (!validateFramebufferTarget(target)) {
-        synthesizeGLError(GL_INVALID_ENUM, "invalidateFramebuffer", "invalid target");
+    Vector<GLenum> translatedAttachments = attachments;
+    if (!checkAndTranslateAttachments("invalidateFramebuffer", target, translatedAttachments))
         return;
-    }
-
-    Vector<GLenum> translatedAttachments;
-    if (!checkAndTranslateAttachments("invalidateFramebuffer", target, attachments, translatedAttachments))
-        return;
-
     contextGL()->InvalidateFramebuffer(target, translatedAttachments.size(), translatedAttachments.data());
 }
 
@@ -502,20 +478,9 @@ void WebGL2RenderingContextBase::invalidateSubFramebuffer(GLenum target, const V
     if (isContextLost())
         return;
 
-    if (!validateFramebufferTarget(target)) {
-        synthesizeGLError(GL_INVALID_ENUM, "invalidateFramebuffer", "invalid target");
+    Vector<GLenum> translatedAttachments = attachments;
+    if (!checkAndTranslateAttachments("invalidateSubFramebuffer", target, translatedAttachments))
         return;
-    }
-
-    if (width < 0 || height < 0) {
-        synthesizeGLError(GL_INVALID_VALUE, "invalidateSubFramebuffer", "invalid width or height");
-        return;
-    }
-
-    Vector<GLenum> translatedAttachments;
-    if (!checkAndTranslateAttachments("invalidateSubFramebuffer", target, attachments, translatedAttachments))
-        return;
-
     contextGL()->InvalidateSubFramebuffer(target, translatedAttachments.size(), translatedAttachments.data(), x, y, width, height);
 }
 

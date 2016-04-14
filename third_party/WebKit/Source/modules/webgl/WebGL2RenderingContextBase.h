@@ -248,7 +248,7 @@ protected:
     WebGLImageConversion::PixelStoreParams getPackPixelStoreParams() override;
     WebGLImageConversion::PixelStoreParams getUnpackPixelStoreParams(TexImageDimension) override;
 
-    bool checkAndTranslateAttachments(const char* functionName, GLenum, const Vector<GLenum>&, Vector<GLenum>&);
+    bool checkAndTranslateAttachments(const char* functionName, GLenum, Vector<GLenum>&);
 
     /* WebGLRenderingContextBase overrides */
     unsigned getMaxWebGLLocationLength() const override { return 1024; };

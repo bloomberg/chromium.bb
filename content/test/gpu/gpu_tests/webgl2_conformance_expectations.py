@@ -344,8 +344,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac'], bug=483282)
     self.Fail('conformance2/textures/misc/tex-storage-compressed-formats.html',
         ['mac'], bug=295792)
-    self.Fail('conformance2/renderbuffers/invalidate-framebuffer.html',
-        ['mac'], bug=483282)
     self.Fail('conformance2/renderbuffers/framebuffer-test.html',
         ['mac'], bug=483282)
     self.Fail('conformance2/renderbuffers/readbuffer.html',

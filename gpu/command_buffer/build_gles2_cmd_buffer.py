@@ -3411,6 +3411,7 @@ _FUNCTION_INFO = {
   'InvalidateFramebuffer': {
     'type': 'PUTn',
     'count': 1,
+    'decoder_func': 'DoInvalidateFramebuffer',
     'client_test': False,
     'unit_test': False,
     'unsafe': True,
@@ -3418,6 +3419,7 @@ _FUNCTION_INFO = {
   'InvalidateSubFramebuffer': {
     'type': 'PUTn',
     'count': 1,
+    'decoder_func': 'DoInvalidateSubFramebuffer',
     'client_test': False,
     'unit_test': False,
     'unsafe': True,
@@ -7598,11 +7600,17 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
   def WriteGetDataSizeCode(self, func, f):
     """Overrriden from TypeHandler."""
     code = """  uint32_t data_size;
+  if (count < 0) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "%s", "negative count");
+    return error::kNoError;
+  }
   if (!ComputeDataSize(count, sizeof(%s), %d, &data_size)) {
     return error::kOutOfBounds;
   }
 """
-    f.write(code % (self.GetArrayType(func), self.GetArrayCount(func)))
+    f.write(code % (func.name,
+                    self.GetArrayType(func),
+                    self.GetArrayCount(func)))
     if func.IsImmediate():
       f.write("  if (data_size > immediate_data_size) {\n")
       f.write("    return error::kOutOfBounds;\n")
