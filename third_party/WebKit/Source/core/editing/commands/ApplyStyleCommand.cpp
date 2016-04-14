@@ -1183,7 +1183,7 @@ void ApplyStyleCommand::removeInlineStyle(EditingStyle* style, const Position &s
     ASSERT(start.inShadowIncludingDocument());
     ASSERT(end.inShadowIncludingDocument());
     ASSERT(Position::commonAncestorTreeScope(start, end));
-    ASSERT(comparePositions(start, end) <= 0);
+    DCHECK_LE(start, end);
     // FIXME: We should assert that start/end are not in the middle of a text node.
 
     Position pushDownStart = mostForwardCaretPosition(start);

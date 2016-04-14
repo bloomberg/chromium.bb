@@ -217,6 +217,8 @@ CORE_EXPORT int nextGraphemeBoundaryOf(const Node*, int current);
 // positions don't have common ancestor.
 int comparePositionsInDOMTree(Node* containerA, int offsetA, Node* containerB, int offsetB, bool* disconnected = nullptr);
 int comparePositionsInFlatTree(Node* containerA, int offsetA, Node* containerB, int offsetB, bool* disconnected = nullptr);
+// TODO(yosin): We replace |comparePositions()| by |Position::opeator<()| to
+// utilize |DCHECK_XX()|.
 int comparePositions(const Position&, const Position&);
 int comparePositions(const PositionWithAffinity&, const PositionWithAffinity&);
 

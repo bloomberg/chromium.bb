@@ -309,6 +309,30 @@ int PositionTemplate<Strategy>::compareTo(const PositionTemplate<Strategy>& othe
 }
 
 template <typename Strategy>
+bool PositionTemplate<Strategy>::operator<(const PositionTemplate<Strategy>& other) const
+{
+    return comparePositions(*this, other) < 0;
+}
+
+template <typename Strategy>
+bool PositionTemplate<Strategy>::operator<=(const PositionTemplate<Strategy>& other) const
+{
+    return comparePositions(*this, other) <= 0;
+}
+
+template <typename Strategy>
+bool PositionTemplate<Strategy>::operator>(const PositionTemplate<Strategy>& other) const
+{
+    return comparePositions(*this, other) > 0;
+}
+
+template <typename Strategy>
+bool PositionTemplate<Strategy>::operator>=(const PositionTemplate<Strategy>& other) const
+{
+    return comparePositions(*this, other) >= 0;
+}
+
+template <typename Strategy>
 bool PositionTemplate<Strategy>::atFirstEditingPositionForNode() const
 {
     if (isNull())

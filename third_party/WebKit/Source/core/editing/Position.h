@@ -143,7 +143,15 @@ public:
     bool isNotNull() const { return m_anchorNode; }
     bool isOrphan() const { return m_anchorNode && !m_anchorNode->inShadowIncludingDocument(); }
 
+    // Note: Comparison of positions require both parameters are non-null. You
+    // should check null-position before comparing them.
+    // TODO(yosin): We should use |Position::operator<()| instead of
+    // |Position::comapreTo()| to utilize |DHCECK_XX()|.
     int compareTo(const PositionTemplate<Strategy>&) const;
+    bool operator<(const PositionTemplate<Strategy>&) const;
+    bool operator<=(const PositionTemplate<Strategy>&) const;
+    bool operator>(const PositionTemplate<Strategy>&) const;
+    bool operator>=(const PositionTemplate<Strategy>&) const;
 
     // These can be either inside or just before/after the node, depending on
     // if the node is ignored by editing or not.

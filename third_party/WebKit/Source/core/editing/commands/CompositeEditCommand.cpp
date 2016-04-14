@@ -1054,7 +1054,7 @@ void CompositeEditCommand::pushAnchorElementDown(Element* anchorNode, EditingSta
 
 void CompositeEditCommand::cloneParagraphUnderNewElement(const Position& start, const Position& end, Node* passedOuterNode, Element* blockElement, EditingState* editingState)
 {
-    ASSERT(comparePositions(start, end) <= 0);
+    DCHECK_LE(start, end);
     ASSERT(passedOuterNode);
     ASSERT(blockElement);
 
