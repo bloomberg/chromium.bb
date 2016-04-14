@@ -41,8 +41,8 @@ void MetricsRenderFrameObserver::DidChangePerformanceTiming() {
 
 void MetricsRenderFrameObserver::DidObserveLoadingBehavior(
     blink::WebLoadingBehaviorFlag behavior) {
-  DCHECK(page_timing_metrics_sender_);
-  page_timing_metrics_sender_->DidObserveLoadingBehavior(behavior);
+  if (page_timing_metrics_sender_)
+    page_timing_metrics_sender_->DidObserveLoadingBehavior(behavior);
 }
 
 void MetricsRenderFrameObserver::DidCommitProvisionalLoad(
