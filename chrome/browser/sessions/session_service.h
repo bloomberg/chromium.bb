@@ -327,8 +327,6 @@ class SessionService : public sessions::BaseSessionServiceDelegate,
   void RecordUpdatedNavListPruned(base::TimeDelta delta, bool use_long_period);
   void RecordUpdatedNavEntryCommit(base::TimeDelta delta, bool use_long_period);
   void RecordUpdatedSaveTime(base::TimeDelta delta, bool use_long_period);
-  void RecordUpdatedSessionNavigationOrTab(base::TimeDelta delta,
-                                           bool use_long_period);
 
   // Deletes session data if no windows are open for the current profile.
   void MaybeDeleteSessionOnlyData();
