@@ -138,8 +138,11 @@ void AttachmentDownloaderImpl::OnGetTokenFailure(
     scoped_refptr<base::RefCountedString> null_attachment_data;
     ReportResult(*download_state, DOWNLOAD_TRANSIENT_ERROR,
                  null_attachment_data);
-    DCHECK(state_map_.find(download_state->attachment_url) != state_map_.end());
-    state_map_.erase(download_state->attachment_url);
+    // Don't delete using the URL directly to avoid an access after free error
+    // due to std::unordered_map's implementation. See crbug.com/603275.
+    auto erase_iter = state_map_.find(download_state->attachment_url);
+    DCHECK(erase_iter != state_map_.end());
+    state_map_.erase(erase_iter);
   }
   requests_waiting_for_access_token_.clear();
 }
