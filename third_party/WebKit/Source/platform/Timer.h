@@ -150,7 +150,7 @@ class TimerIsObjectAliveTrait<T, true> {
 public:
     static bool isHeapObjectAlive(T* objectPointer)
     {
-        return !Heap::willObjectBeLazilySwept(objectPointer);
+        return !ThreadHeap::willObjectBeLazilySwept(objectPointer);
     }
 };
 

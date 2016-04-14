@@ -85,7 +85,7 @@ const uint8_t reuseAllowedZapValue = 0x2a;
 const uint8_t reuseForbiddenZapValue = 0x2c;
 
 // In non-production builds, memory is zapped when it's freed. The zapped
-// memory is zeroed out when the memory is reused in Heap::allocateObject().
+// memory is zeroed out when the memory is reused in ThreadHeap::allocateObject().
 // In production builds, memory is not zapped (for performance). The memory
 // is just zeroed out when it is added to the free list.
 #if defined(MEMORY_SANITIZER)

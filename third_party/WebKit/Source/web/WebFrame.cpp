@@ -313,9 +313,9 @@ ALWAYS_INLINE bool WebFrame::isFrameAlive(const WebFrame* frame)
         return true;
 
     if (frame->isWebLocalFrame())
-        return Heap::isHeapObjectAlive(toWebLocalFrameImpl(frame));
+        return ThreadHeap::isHeapObjectAlive(toWebLocalFrameImpl(frame));
 
-    return Heap::isHeapObjectAlive(toWebRemoteFrameImpl(frame));
+    return ThreadHeap::isHeapObjectAlive(toWebRemoteFrameImpl(frame));
 }
 
 template <typename VisitorDispatcher>

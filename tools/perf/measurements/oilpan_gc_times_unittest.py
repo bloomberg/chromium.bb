@@ -75,7 +75,7 @@ class OilpanGCTimesTest(page_test_test_case.PageTestTestCase):
      that all metrics were added to the results.  The test is purely functional,
      i.e. it only checks if the metrics are present and non-zero.
   """
-  _KEY_MARK = 'Heap::collectGarbage'
+  _KEY_MARK = 'BlinkGCMarking'
   _KEY_LAZY_SWEEP = 'ThreadHeap::lazySweepPages'
   _KEY_COMPLETE_SWEEP = 'ThreadState::completeSweep'
   _KEY_COALESCE = 'ThreadHeap::coalesce'

@@ -182,7 +182,7 @@ public:
     {
         ThreadState* state = ThreadStateFor<ThreadingTrait<Node>::Affinity>::state();
         const char typeName[] = "blink::Node";
-        return Heap::allocateOnArenaIndex(state, size, isEager ? BlinkGC::EagerSweepArenaIndex : BlinkGC::NodeArenaIndex, GCInfoTrait<EventTarget>::index(), typeName);
+        return ThreadHeap::allocateOnArenaIndex(state, size, isEager ? BlinkGC::EagerSweepArenaIndex : BlinkGC::NodeArenaIndex, GCInfoTrait<EventTarget>::index(), typeName);
     }
 #else // !ENABLE(OILPAN)
     // All Nodes are placed in their own heap partition for security.

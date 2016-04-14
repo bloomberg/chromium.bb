@@ -91,7 +91,7 @@ void Platform::initialize(Platform* platform)
     WTF::Partitions::initialize(maxObservedSizeFunction);
     WTF::initialize(callOnMainThreadFunction);
 
-    Heap::init();
+    ThreadHeap::init();
 
     ThreadState::attachMainThread();
 
@@ -123,7 +123,7 @@ void Platform::shutdown()
     // so that the main thread won't get involved in a GC during the shutdown.
     ThreadState::detachMainThread();
 
-    Heap::shutdown();
+    ThreadHeap::shutdown();
 
     WTF::shutdown();
     WTF::Partitions::shutdown();

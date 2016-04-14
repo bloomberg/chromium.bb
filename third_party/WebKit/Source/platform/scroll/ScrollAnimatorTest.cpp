@@ -514,7 +514,7 @@ TEST(ScrollAnimatorTest, CancellingCompositorAnimation)
     reset(*scrollAnimator);
 
     // Forced GC in order to finalize objects depending on the mock object.
-    Heap::collectAllGarbage();
+    ThreadHeap::collectAllGarbage();
 }
 
 } // namespace blink

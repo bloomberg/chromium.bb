@@ -39,12 +39,12 @@ private:
 
         static PassPtr create(size_t capacity)
         {
-            return reinterpret_cast<HeapTerminatedArray*>(Heap::allocate<HeapTerminatedArray>(capacity * sizeof(T), IsEagerlyFinalizedType<T>::value));
+            return reinterpret_cast<HeapTerminatedArray*>(ThreadHeap::allocate<HeapTerminatedArray>(capacity * sizeof(T), IsEagerlyFinalizedType<T>::value));
         }
 
         static PassPtr resize(PassPtr ptr, size_t capacity)
         {
-            return reinterpret_cast<HeapTerminatedArray*>(Heap::reallocate<HeapTerminatedArray>(ptr, capacity * sizeof(T)));
+            return reinterpret_cast<HeapTerminatedArray*>(ThreadHeap::reallocate<HeapTerminatedArray>(ptr, capacity * sizeof(T)));
         }
     };
 

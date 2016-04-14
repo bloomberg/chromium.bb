@@ -106,7 +106,7 @@ public:                                             \
 static bool invokePreFinalizer(void* object)        \
 {                                                   \
     Class* self = reinterpret_cast<Class*>(object); \
-    if (Heap::isHeapObjectAlive(self))              \
+    if (ThreadHeap::isHeapObjectAlive(self))              \
         return false;                               \
     self->Class::preFinalizer();                    \
     return true;                                    \
@@ -255,7 +255,7 @@ public:
     //
     // 1) All threads park at safe points.
     // 2) The GCing thread calls preGC() for all ThreadStates.
-    // 3) The GCing thread calls Heap::collectGarbage().
+    // 3) The GCing thread calls ThreadHeap::collectGarbage().
     //    This does marking but doesn't do sweeping.
     // 4) The GCing thread calls postGC() for all ThreadStates.
     // 5) The GCing thread resume all threads.

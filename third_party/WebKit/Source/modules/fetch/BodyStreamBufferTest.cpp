@@ -269,7 +269,7 @@ TEST_F(BodyStreamBufferTest, LoaderShouldBeKeptAliveByBodyStreamBuffer)
     Persistent<BodyStreamBuffer> buffer = new BodyStreamBuffer(createFetchDataConsumerHandleFromWebHandle(handle.release()));
     buffer->startLoading(getExecutionContext(), FetchDataLoader::createLoaderAsString(), client);
 
-    Heap::collectAllGarbage();
+    ThreadHeap::collectAllGarbage();
     checkpoint.Call(1);
     testing::runPendingTasks();
     checkpoint.Call(2);

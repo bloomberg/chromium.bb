@@ -98,7 +98,7 @@ void HeapObjectHeader::zapMagic()
 void HeapObjectHeader::finalize(Address object, size_t objectSize)
 {
     HeapAllocHooks::freeHookIfEnabled(object);
-    const GCInfo* gcInfo = Heap::gcInfo(gcInfoIndex());
+    const GCInfo* gcInfo = ThreadHeap::gcInfo(gcInfoIndex());
     if (gcInfo->hasFinalizer())
         gcInfo->m_finalize(object);
 
@@ -126,8 +126,8 @@ void BaseArena::cleanupPages()
     ASSERT(!m_firstUnsweptPage);
     // Add the BaseArena's pages to the orphanedPagePool.
     for (BasePage* page = m_firstPage; page; page = page->next()) {
-        Heap::heapStats().decreaseAllocatedSpace(page->size());
-        Heap::getOrphanedPagePool()->addOrphanedPage(arenaIndex(), page);
+        ThreadHeap::heapStats().decreaseAllocatedSpace(page->size());
+        ThreadHeap::getOrphanedPagePool()->addOrphanedPage(arenaIndex(), page);
     }
     m_firstPage = nullptr;
 }
@@ -282,7 +282,7 @@ Address BaseArena::lazySweep(size_t allocationSize, size_t gcInfoIndex)
     double startTime = WTF::currentTimeMS();
     Address result = lazySweepPages(allocationSize, gcInfoIndex);
     getThreadState()->accumulateSweepingTime(WTF::currentTimeMS() - startTime);
-    Heap::reportMemoryUsageForTracing();
+    ThreadHeap::reportMemoryUsageForTracing();
 
     return result;
 }
@@ -320,13 +320,13 @@ bool BaseArena::lazySweepWithDeadline(double deadlineSeconds)
         if (pageCount % deadlineCheckInterval == 0) {
             if (deadlineSeconds <= monotonicallyIncreasingTime()) {
                 // Deadline has come.
-                Heap::reportMemoryUsageForTracing();
+                ThreadHeap::reportMemoryUsageForTracing();
                 return !m_firstUnsweptPage;
             }
         }
         pageCount++;
     }
-    Heap::reportMemoryUsageForTracing();
+    ThreadHeap::reportMemoryUsageForTracing();
     return true;
 }
 
@@ -339,7 +339,7 @@ void BaseArena::completeSweep()
     while (m_firstUnsweptPage) {
         sweepUnsweptPage();
     }
-    Heap::reportMemoryUsageForTracing();
+    ThreadHeap::reportMemoryUsageForTracing();
 }
 
 NormalPageArena::NormalPageArena(ThreadState* state, int index)
@@ -398,7 +398,7 @@ void NormalPageArena::takeFreelistSnapshot(const String& dumpName)
 void NormalPageArena::allocatePage()
 {
     getThreadState()->shouldFlushHeapDoesNotContainCache();
-    PageMemory* pageMemory = Heap::getFreePagePool()->takeFreePage(arenaIndex());
+    PageMemory* pageMemory = ThreadHeap::getFreePagePool()->takeFreePage(arenaIndex());
 
     if (!pageMemory) {
         // Allocate a memory region for blinkPagesPerRegion pages that
@@ -406,7 +406,7 @@ void NormalPageArena::allocatePage()
         //
         //    [ guard os page | ... payload ... | guard os page ]
         //    ^---{ aligned to blink page size }
-        PageMemoryRegion* region = PageMemoryRegion::allocateNormalPages(Heap::getRegionTree());
+        PageMemoryRegion* region = PageMemoryRegion::allocateNormalPages(ThreadHeap::getRegionTree());
 
         // Setup the PageMemory object for each of the pages in the region.
         for (size_t i = 0; i < blinkPagesPerRegion; ++i) {
@@ -421,7 +421,7 @@ void NormalPageArena::allocatePage()
                 RELEASE_ASSERT(result);
                 pageMemory = memory;
             } else {
-                Heap::getFreePagePool()->addFreePage(arenaIndex(), memory);
+                ThreadHeap::getFreePagePool()->addFreePage(arenaIndex(), memory);
             }
         }
     }
@@ -429,7 +429,7 @@ void NormalPageArena::allocatePage()
     NormalPage* page = new (pageMemory->writableStart()) NormalPage(pageMemory, this);
     page->link(&m_firstPage);
 
-    Heap::heapStats().increaseAllocatedSpace(page->size());
+    ThreadHeap::heapStats().increaseAllocatedSpace(page->size());
 #if ENABLE(ASSERT) || defined(LEAK_SANITIZER) || defined(ADDRESS_SANITIZER)
     // Allow the following addToFreeList() to add the newly allocated memory
     // to the free list.
@@ -444,7 +444,7 @@ void NormalPageArena::allocatePage()
 
 void NormalPageArena::freePage(NormalPage* page)
 {
-    Heap::heapStats().decreaseAllocatedSpace(page->size());
+    ThreadHeap::heapStats().decreaseAllocatedSpace(page->size());
 
     if (page->terminating()) {
         // The thread is shutting down and this page is being removed as a part
@@ -455,11 +455,11 @@ void NormalPageArena::freePage(NormalPage* page)
         // ensures that tracing the dangling pointer in the next global GC just
         // crashes instead of causing use-after-frees.  After the next global
         // GC, the orphaned pages are removed.
-        Heap::getOrphanedPagePool()->addOrphanedPage(arenaIndex(), page);
+        ThreadHeap::getOrphanedPagePool()->addOrphanedPage(arenaIndex(), page);
     } else {
         PageMemory* memory = page->storage();
         page->~NormalPage();
-        Heap::getFreePagePool()->addFreePage(arenaIndex(), memory);
+        ThreadHeap::getFreePagePool()->addFreePage(arenaIndex(), memory);
     }
 }
 
@@ -565,7 +565,7 @@ bool NormalPageArena::expandObject(HeapObjectHeader* header, size_t newSize)
     ASSERT(header->checkHeader());
     if (header->payloadSize() >= newSize)
         return true;
-    size_t allocationSize = Heap::allocationSizeFromSize(newSize);
+    size_t allocationSize = ThreadHeap::allocationSizeFromSize(newSize);
     ASSERT(allocationSize > header->size());
     size_t expandSize = allocationSize - header->size();
     if (isObjectAllocatedAtAllocationPoint(header) && expandSize <= m_remainingAllocationSize) {
@@ -585,7 +585,7 @@ bool NormalPageArena::shrinkObject(HeapObjectHeader* header, size_t newSize)
 {
     ASSERT(header->checkHeader());
     ASSERT(header->payloadSize() > newSize);
-    size_t allocationSize = Heap::allocationSizeFromSize(newSize);
+    size_t allocationSize = ThreadHeap::allocationSizeFromSize(newSize);
     ASSERT(header->size() > allocationSize);
     size_t shrinkSize = header->size() - allocationSize;
     if (isObjectAllocatedAtAllocationPoint(header)) {
@@ -796,7 +796,7 @@ Address LargeObjectArena::doAllocateLargeObjectPage(size_t allocationSize, size_
 #endif
 
     getThreadState()->shouldFlushHeapDoesNotContainCache();
-    PageMemory* pageMemory = PageMemory::allocate(largeObjectSize, Heap::getRegionTree());
+    PageMemory* pageMemory = PageMemory::allocate(largeObjectSize, ThreadHeap::getRegionTree());
     Address largeObjectAddress = pageMemory->writableStart();
     Address headerAddress = largeObjectAddress + LargeObjectPage::pageHeaderSize();
 #if ENABLE(ASSERT)
@@ -817,7 +817,7 @@ Address LargeObjectArena::doAllocateLargeObjectPage(size_t allocationSize, size_
 
     largeObject->link(&m_firstPage);
 
-    Heap::heapStats().increaseAllocatedSpace(largeObject->size());
+    ThreadHeap::heapStats().increaseAllocatedSpace(largeObject->size());
     getThreadState()->increaseAllocatedObjectSize(largeObject->size());
     return result;
 }
@@ -826,7 +826,7 @@ void LargeObjectArena::freeLargeObjectPage(LargeObjectPage* object)
 {
     ASAN_UNPOISON_MEMORY_REGION(object->payload(), object->payloadSize());
     object->heapObjectHeader()->finalize(object->payload(), object->payloadSize());
-    Heap::heapStats().decreaseAllocatedSpace(object->size());
+    ThreadHeap::heapStats().decreaseAllocatedSpace(object->size());
 
     // Unpoison the object header and allocationGranularity bytes after the
     // object before freeing.
@@ -843,7 +843,7 @@ void LargeObjectArena::freeLargeObjectPage(LargeObjectPage* object)
         // ensures that tracing the dangling pointer in the next global GC just
         // crashes instead of causing use-after-frees.  After the next global
         // GC, the orphaned pages are removed.
-        Heap::getOrphanedPagePool()->addOrphanedPage(arenaIndex(), object);
+        ThreadHeap::getOrphanedPagePool()->addOrphanedPage(arenaIndex(), object);
     } else {
         ASSERT(!ThreadState::current()->isTerminating());
         PageMemory* memory = object->storage();
@@ -1318,7 +1318,7 @@ static bool isUninitializedMemory(void* objectPointer, size_t objectSize)
 static void markPointer(Visitor* visitor, HeapObjectHeader* header)
 {
     ASSERT(header->checkHeader());
-    const GCInfo* gcInfo = Heap::gcInfo(header->gcInfoIndex());
+    const GCInfo* gcInfo = ThreadHeap::gcInfo(header->gcInfoIndex());
     if (gcInfo->hasVTable() && !vTableInitialized(header->payload())) {
         // We hit this branch when a GC strikes before GarbageCollected<>'s
         // constructor runs.
