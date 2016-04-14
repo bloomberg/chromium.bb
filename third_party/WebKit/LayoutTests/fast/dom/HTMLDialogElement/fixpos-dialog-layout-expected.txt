@@ -7,9 +7,9 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 showModal() should center in the viewport.
 PASS dialog.getBoundingClientRect().top is centeredTop
 
-The computed top and bottom of a centered dialog should still have position auto.
-PASS window.getComputedStyle(dialog).top is "auto"
-PASS window.getComputedStyle(dialog).bottom is "auto"
+The dialog is a positioned element, so the top and bottom should not have style auto.
+PASS window.getComputedStyle(dialog).top is "290px"
+PASS window.getComputedStyle(dialog).bottom is "290px"
 
 The dialog shold stay centered on scroll.
 PASS dialog.getBoundingClientRect().top is centeredTop
