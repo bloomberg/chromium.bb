@@ -34,7 +34,7 @@
 #endif  // defined(USE_ASH)
 
 #if defined(OS_WIN)
-#include "chrome/browser/shell_integration.h"
+#include "chrome/browser/shell_integration_win.h"
 #include "ui/base/win/shell.h"
 #include "ui/views/win/hwnd_util.h"
 #endif  // defined(OS_WIN)
@@ -80,7 +80,7 @@ void NewTaskManagerView::Show(Browser* browser) {
   // process.
   if (browser) {
     ui::win::SetAppIdForWindow(
-        shell_integration::GetChromiumModelIdForProfile(
+        shell_integration::win::GetChromiumModelIdForProfile(
             browser->profile()->GetPath()),
         views::HWNDForWidget(g_task_manager_view->GetWidget()));
   }

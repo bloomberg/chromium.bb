@@ -20,7 +20,7 @@
 #include "chrome/browser/metrics/jumplist_metrics_win.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
-#include "chrome/browser/shell_integration.h"
+#include "chrome/browser/shell_integration_win.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -277,7 +277,7 @@ JumpList::JumpList(Profile* profile)
     return;
 
   app_id_ =
-      shell_integration::GetChromiumModelIdForProfile(profile_->GetPath());
+      shell_integration::win::GetChromiumModelIdForProfile(profile_->GetPath());
   icon_dir_ = profile_->GetPath().Append(chrome::kJumpListIconDirname);
 
   scoped_refptr<history::TopSites> top_sites =

@@ -11,7 +11,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_shortcut_manager_win.h"
-#include "chrome/browser/shell_integration.h"
+#include "chrome/browser/shell_integration_win.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_win.h"
@@ -51,9 +51,10 @@ void BrowserWindowPropertyManager::UpdateWindowProperties() {
   // name. See http://crbug.com/7028.
   base::string16 app_id =
       browser->is_app()
-          ? shell_integration::GetAppModelIdForProfile(
+          ? shell_integration::win::GetAppModelIdForProfile(
                 base::UTF8ToWide(browser->app_name()), profile->GetPath())
-          : shell_integration::GetChromiumModelIdForProfile(profile->GetPath());
+          : shell_integration::win::GetChromiumModelIdForProfile(
+                profile->GetPath());
   base::FilePath icon_path;
   base::string16 command_line_string;
   base::string16 pinned_name;

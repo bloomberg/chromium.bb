@@ -10,7 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/shell_integration.h"
+#include "chrome/browser/shell_integration_win.h"
 #include "chrome/browser/ui/views/apps/app_window_desktop_native_widget_aura_win.h"
 #include "chrome/browser/ui/views/apps/glass_app_window_frame_view_win.h"
 #include "chrome/browser/web_applications/web_app.h"
@@ -73,7 +73,7 @@ void ChromeNativeAppWindowViewsWin::InitializeDefaultWindow(
   HWND hwnd = GetNativeAppWindowHWND();
   Profile* profile =
       Profile::FromBrowserContext(app_window()->browser_context());
-  app_model_id_ = shell_integration::GetAppModelIdForProfile(
+  app_model_id_ = shell_integration::win::GetAppModelIdForProfile(
       app_name_wide, profile->GetPath());
   ui::win::SetAppIdForWindow(app_model_id_, hwnd);
   web_app::UpdateRelaunchDetailsForApp(profile, extension, hwnd);

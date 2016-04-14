@@ -142,7 +142,7 @@ base::string16 GetExpectedAppId(const base::CommandLine& command_line,
   }
   DCHECK(!app_name.empty());
 
-  return GetAppModelIdForProfile(app_name, profile_path);
+  return win::GetAppModelIdForProfile(app_name, profile_path);
 }
 
 void MigrateTaskbarPinsCallback() {
@@ -160,7 +160,7 @@ void MigrateTaskbarPinsCallback() {
     return;
   }
 
-  MigrateShortcutsInPathInternal(chrome_exe, pins_path);
+  win::MigrateShortcutsInPathInternal(chrome_exe, pins_path);
 }
 
 // Windows 8 introduced a new protocol->executable binding system which cannot
@@ -452,6 +452,63 @@ DefaultWebClientState IsDefaultProtocolClient(const std::string& protocol) {
           base::UTF8ToUTF16(protocol)));
 }
 
+namespace win {
+
+bool SetAsDefaultBrowserUsingIntentPicker() {
+  base::FilePath chrome_exe;
+  if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
+    NOTREACHED() << "Error getting app exe path";
+    return false;
+  }
+
+  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+  if (!ShellUtil::ShowMakeChromeDefaultSystemUI(dist, chrome_exe)) {
+    LOG(ERROR) << "Failed to launch the set-default-browser Windows UI.";
+    return false;
+  }
+
+  VLOG(1) << "Set-default-browser Windows UI completed.";
+  return true;
+}
+
+void SetAsDefaultBrowserUsingSystemSettings(
+    const base::Closure& on_finished_callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+
+  base::FilePath chrome_exe;
+  if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
+    NOTREACHED() << "Error getting app exe path";
+    on_finished_callback.Run();
+    return;
+  }
+
+  // The helper manages its own lifetime.
+  static const wchar_t* const kProtocols[] = {L"http", L"https", nullptr};
+  OpenSystemSettingsHelper::Begin(kProtocols, on_finished_callback);
+
+  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+  ShellUtil::ShowMakeChromeDefaultSystemUI(dist, chrome_exe);
+}
+
+bool SetAsDefaultProtocolClientUsingIntentPicker(const std::string& protocol) {
+  base::FilePath chrome_exe;
+  if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
+    NOTREACHED() << "Error getting app exe path";
+    return false;
+  }
+
+  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+  base::string16 wprotocol(base::UTF8ToUTF16(protocol));
+  if (!ShellUtil::ShowMakeChromeDefaultProtocolClientSystemUI(dist, chrome_exe,
+                                                              wprotocol)) {
+    LOG(ERROR) << "Failed to launch the set-default-client Windows UI.";
+    return false;
+  }
+
+  VLOG(1) << "Set-default-client Windows UI completed.";
+  return true;
+}
+
 base::string16 GetAppModelIdForProfile(const base::string16& app_name,
                                        const base::FilePath& profile_path) {
   std::vector<base::string16> components;
@@ -630,63 +687,6 @@ base::FilePath GetStartMenuShortcut(const base::FilePath& chrome_exe) {
   }
 
   return base::FilePath();
-}
-
-namespace win {
-
-bool SetAsDefaultBrowserUsingIntentPicker() {
-  base::FilePath chrome_exe;
-  if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
-    NOTREACHED() << "Error getting app exe path";
-    return false;
-  }
-
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  if (!ShellUtil::ShowMakeChromeDefaultSystemUI(dist, chrome_exe)) {
-    LOG(ERROR) << "Failed to launch the set-default-browser Windows UI.";
-    return false;
-  }
-
-  VLOG(1) << "Set-default-browser Windows UI completed.";
-  return true;
-}
-
-void SetAsDefaultBrowserUsingSystemSettings(
-    const base::Closure& on_finished_callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-
-  base::FilePath chrome_exe;
-  if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
-    NOTREACHED() << "Error getting app exe path";
-    on_finished_callback.Run();
-    return;
-  }
-
-  // The helper manages its own lifetime.
-  static const wchar_t* const kProtocols[] = {L"http", L"https", nullptr};
-  OpenSystemSettingsHelper::Begin(kProtocols, on_finished_callback);
-
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  ShellUtil::ShowMakeChromeDefaultSystemUI(dist, chrome_exe);
-}
-
-bool SetAsDefaultProtocolClientUsingIntentPicker(const std::string& protocol) {
-  base::FilePath chrome_exe;
-  if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
-    NOTREACHED() << "Error getting app exe path";
-    return false;
-  }
-
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  base::string16 wprotocol(base::UTF8ToUTF16(protocol));
-  if (!ShellUtil::ShowMakeChromeDefaultProtocolClientSystemUI(dist, chrome_exe,
-                                                              wprotocol)) {
-    LOG(ERROR) << "Failed to launch the set-default-client Windows UI.";
-    return false;
-  }
-
-  VLOG(1) << "Set-default-client Windows UI completed.";
-  return true;
 }
 
 }  // namespace win

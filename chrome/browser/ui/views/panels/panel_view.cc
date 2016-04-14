@@ -35,7 +35,7 @@
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
-#include "chrome/browser/shell_integration.h"
+#include "chrome/browser/shell_integration_win.h"
 #include "chrome/browser/ui/views/panels/taskbar_window_thumbnailer_win.h"
 #include "ui/base/win/shell.h"
 #include "ui/gfx/icon_util.h"
@@ -323,7 +323,7 @@ PanelView::PanelView(Panel* panel, const gfx::Rect& bounds, bool always_on_top)
 
 #if defined(OS_WIN)
   ui::win::SetAppIdForWindow(
-      shell_integration::GetAppModelIdForProfile(
+      shell_integration::win::GetAppModelIdForProfile(
           base::UTF8ToWide(panel->app_name()), panel->profile()->GetPath()),
       views::HWNDForWidget(window_));
   ui::win::PreventWindowFromPinning(views::HWNDForWidget(window_));

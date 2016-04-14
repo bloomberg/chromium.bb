@@ -22,6 +22,7 @@
 #include "base/win/shortcut.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/shell_integration_win.h"
 #include "chrome/browser/web_applications/update_shortcut_worker_win.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/installer/util/browser_distribution.h"
@@ -213,7 +214,7 @@ bool CreateShortcutsInPaths(
 
   // Generates app id from web app url and profile path.
   std::string app_name(web_app::GenerateApplicationNameFromInfo(shortcut_info));
-  base::string16 app_id(shell_integration::GetAppModelIdForProfile(
+  base::string16 app_id(shell_integration::win::GetAppModelIdForProfile(
       base::UTF8ToUTF16(app_name), shortcut_info.profile_path));
 
   bool success = true;

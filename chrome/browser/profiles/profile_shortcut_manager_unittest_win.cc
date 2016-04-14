@@ -18,7 +18,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_shortcut_manager.h"
 #include "chrome/browser/profiles/profile_shortcut_manager_win.h"
-#include "chrome/browser/shell_integration.h"
+#include "chrome/browser/shell_integration_win.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/product.h"
@@ -143,7 +143,7 @@ class ProfileShortcutManagerTest : public testing::Test {
 
     base::win::ShortcutProperties expected_properties;
     expected_properties.set_app_id(
-        shell_integration::GetChromiumModelIdForProfile(profile_path));
+        shell_integration::win::GetChromiumModelIdForProfile(profile_path));
     expected_properties.set_target(GetExePath());
     expected_properties.set_description(GetDistribution()->GetAppDescription());
     expected_properties.set_dual_mode(false);

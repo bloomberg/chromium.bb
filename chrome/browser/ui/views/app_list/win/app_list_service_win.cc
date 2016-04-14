@@ -27,7 +27,7 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/shell_integration.h"
+#include "chrome/browser/shell_integration_win.h"
 #include "chrome/browser/ui/app_list/app_list_util.h"
 #include "chrome/browser/ui/ash/app_list/app_list_service_ash.h"
 #include "chrome/browser/ui/views/app_list/win/activation_tracker_win.h"
@@ -115,7 +115,7 @@ base::string16 GetAppModelId() {
         command_line->GetSwitchValuePath(switches::kUserDataDir).AppendASCII(
             chrome::kInitialProfile);
   }
-  return shell_integration::GetAppListAppModelIdForProfile(
+  return shell_integration::win::GetAppListAppModelIdForProfile(
       initial_profile_path);
 }
 

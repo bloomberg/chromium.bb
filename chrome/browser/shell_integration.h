@@ -113,43 +113,6 @@ base::CommandLine CommandLineArgsForLauncher(
 void AppendProfileArgs(const base::FilePath& profile_path,
                        base::CommandLine* command_line);
 
-#if defined(OS_WIN)
-// Generates an application user model ID (AppUserModelId) for a given app
-// name and profile path. The returned app id is in the format of
-// "|app_name|[.<profile_id>]". "profile_id" is appended when user override
-// the default value.
-// Note: If the app has an installation specific suffix (e.g. on user-level
-// Chrome installs), |app_name| should already be suffixed, this method will
-// then further suffix it with the profile id as described above.
-base::string16 GetAppModelIdForProfile(const base::string16& app_name,
-                                       const base::FilePath& profile_path);
-
-// Generates an application user model ID (AppUserModelId) for Chromium by
-// calling GetAppModelIdForProfile() with ShellUtil::GetAppId() as app_name.
-base::string16 GetChromiumModelIdForProfile(const base::FilePath& profile_path);
-
-// Get the AppUserModelId for the App List, for the profile in |profile_path|.
-base::string16 GetAppListAppModelIdForProfile(
-    const base::FilePath& profile_path);
-
-// Migrates existing chrome taskbar pins by tagging them with correct app id.
-// see http://crbug.com/28104
-void MigrateTaskbarPins();
-
-// Migrates all shortcuts in |path| which point to |chrome_exe| such that they
-// have the appropriate AppUserModelId. Also clears the legacy dual_mode
-// property from shortcuts with the default chrome app id.
-// Returns the number of shortcuts migrated.
-// This method should not be called prior to Windows 7.
-// This method is only public for the sake of tests and shouldn't be called
-// externally otherwise.
-int MigrateShortcutsInPathInternal(const base::FilePath& chrome_exe,
-                                   const base::FilePath& path);
-
-// Returns the path to the Start Menu shortcut for the given Chrome.
-base::FilePath GetStartMenuShortcut(const base::FilePath& chrome_exe);
-#endif  // defined(OS_WIN)
-
 #if !defined(OS_WIN)
 // TODO(calamity): replace with
 // BrowserDistribution::GetStartMenuShortcutSubfolder() once

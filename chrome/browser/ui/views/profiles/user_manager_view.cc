@@ -38,7 +38,7 @@
 #include "ui/views/window/dialog_client_view.h"
 
 #if defined(OS_WIN)
-#include "chrome/browser/shell_integration.h"
+#include "chrome/browser/shell_integration_win.h"
 #include "ui/base/win/shell.h"
 #include "ui/views/win/hwnd_util.h"
 #endif
@@ -323,9 +323,10 @@ void UserManagerView::Init(Profile* system_profile, const GURL& url) {
 
 #if defined(OS_WIN)
   // Set the app id for the task manager to the app id of its parent
-  ui::win::SetAppIdForWindow(shell_integration::GetChromiumModelIdForProfile(
-                                 system_profile->GetPath()),
-                             views::HWNDForWidget(GetWidget()));
+  ui::win::SetAppIdForWindow(
+      shell_integration::win::GetChromiumModelIdForProfile(
+          system_profile->GetPath()),
+      views::HWNDForWidget(GetWidget()));
 #endif
 
 #if defined(USE_ASH)

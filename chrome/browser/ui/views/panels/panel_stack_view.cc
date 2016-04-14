@@ -20,7 +20,7 @@
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
-#include "chrome/browser/shell_integration.h"
+#include "chrome/browser/shell_integration_win.h"
 #include "ui/base/win/shell.h"
 #include "ui/views/win/hwnd_util.h"
 #endif
@@ -505,7 +505,7 @@ views::Widget* PanelStackView::CreateWindowWithBounds(const gfx::Rect& bounds) {
   DCHECK(!panels_.empty());
   Panel* panel = panels_.front();
   ui::win::SetAppIdForWindow(
-      shell_integration::GetAppModelIdForProfile(
+      shell_integration::win::GetAppModelIdForProfile(
           base::UTF8ToWide(panel->app_name()), panel->profile()->GetPath()),
       views::HWNDForWidget(window));
 

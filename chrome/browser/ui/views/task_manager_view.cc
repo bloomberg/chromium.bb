@@ -47,7 +47,7 @@
 #endif
 
 #if defined(OS_WIN)
-#include "chrome/browser/shell_integration.h"
+#include "chrome/browser/shell_integration_win.h"
 #include "ui/base/win/shell.h"
 #include "ui/views/win/hwnd_util.h"
 #endif
@@ -444,9 +444,10 @@ void TaskManagerView::Show(Browser* browser) {
   // no parent is specified, the app id will default to that of the initial
   // process.
   if (browser) {
-    ui::win::SetAppIdForWindow(shell_integration::GetChromiumModelIdForProfile(
-                                   browser->profile()->GetPath()),
-                               views::HWNDForWidget(instance_->GetWidget()));
+    ui::win::SetAppIdForWindow(
+        shell_integration::win::GetChromiumModelIdForProfile(
+            browser->profile()->GetPath()),
+        views::HWNDForWidget(instance_->GetWidget()));
   }
 #endif
   instance_->GetWidget()->Show();

@@ -29,7 +29,7 @@
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_info_cache_observer.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/shell_integration.h"
+#include "chrome/browser/shell_integration_win.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/chromium_strings.h"
@@ -542,8 +542,8 @@ void CreateOrUpdateDesktopShortcutsAndIconForProfile(
     properties.set_arguments(base::string16());
   }
 
-  properties.set_app_id(
-      shell_integration::GetChromiumModelIdForProfile(params.profile_path));
+  properties.set_app_id(shell_integration::win::GetChromiumModelIdForProfile(
+      params.profile_path));
 
   ShellUtil::ShortcutOperation operation =
       ShellUtil::SHELL_SHORTCUT_REPLACE_EXISTING;
