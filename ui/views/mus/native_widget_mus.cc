@@ -146,15 +146,15 @@ class ClientSideNonClientFrameView : public NonClientFrameView {
   void ResetWindowControls() override {
     // TODO(sky): push to wm?
   }
-  void UpdateWindowIcon() override {
-    // NOTIMPLEMENTED();
-  }
-  void UpdateWindowTitle() override {
-    // NOTIMPLEMENTED();
-  }
-  void SizeConstraintsChanged() override {
-    // NOTIMPLEMENTED();
-  }
+
+  // These have no implementation. The Window Manager handles the actual
+  // rendering of the icon/title. See NonClientFrameViewMash. The values
+  // associated with these methods are pushed to the server by the way of
+  // NativeWidgetMus functions.
+  void UpdateWindowIcon() override {}
+  void UpdateWindowTitle() override {}
+  void SizeConstraintsChanged() override {}
+
   gfx::Size GetPreferredSize() const override {
     return widget_->non_client_view()
         ->GetWindowBoundsForClientBounds(
