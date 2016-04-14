@@ -22,6 +22,7 @@ action("make_file_types_protobuf") {
   # This script requires the generated python proto code
   deps = [
     "//chrome/common/safe_browsing:proto",
+    "//third_party/protobuf:py_proto",
   ]
 
   outputs = [

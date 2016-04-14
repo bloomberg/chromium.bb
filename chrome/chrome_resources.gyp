@@ -305,6 +305,7 @@
       'hard_dependency': 1,
       'dependencies': [
         'chrome.gyp:safe_browsing_proto',
+        '<(DEPTH)/third_party/protobuf/protobuf.gyp:py_proto',
       ],
       'actions': [
         {
