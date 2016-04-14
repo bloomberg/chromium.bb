@@ -126,8 +126,6 @@
 #include "content/common/frame_messages.h"
 #include "content/common/gpu_host_messages.h"
 #include "content/common/in_process_child_thread_params.h"
-#include "content/common/mojo/channel_init.h"
-#include "content/common/mojo/mojo_messages.h"
 #include "content/common/mojo/mojo_shell_connection_impl.h"
 #include "content/common/render_process_messages.h"
 #include "content/common/resource_messages.h"
@@ -732,9 +730,6 @@ bool RenderProcessHostImpl::Init() {
       content::BrowserThread::IO));
 #endif
 
-  // Setup the Mojo channel.
-  mojo_application_host_->Init();
-
   // Call the embedder first so that their IPC filters have priority.
   GetContentClient()->browser()->RenderProcessWillLaunch(this);
 
@@ -754,7 +749,7 @@ bool RenderProcessHostImpl::Init() {
             channel_id,
             BrowserThread::UnsafeGetMessageLoopForThread(BrowserThread::IO)
                 ->task_runner(),
-            in_process_renderer_handle_.release())));
+            mojo_channel_token_, mojo_application_host_->GetToken())));
 
     base::Thread::Options options;
 #if defined(OS_WIN) && !defined(OS_MACOSX)
@@ -813,16 +808,9 @@ std::unique_ptr<IPC::ChannelProxy> RenderProcessHostImpl::CreateChannelProxy(
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);
   if (ShouldUseMojoChannel()) {
     VLOG(1) << "Mojo Channel is enabled on host";
-    mojo::ScopedMessagePipeHandle handle;
-
-    if (run_renderer_in_process()) {
-      mojo::MessagePipe pipe;
-      handle = std::move(pipe.handle0);
-      in_process_renderer_handle_ = std::move(pipe.handle1);
-    } else {
-      mojo_channel_token_ = mojo::edk::GenerateRandomToken();
-      handle = mojo::edk::CreateParentMessagePipe(mojo_channel_token_);
-    }
+    mojo_channel_token_ = mojo::edk::GenerateRandomToken();
+    mojo::ScopedMessagePipeHandle handle =
+        mojo::edk::CreateParentMessagePipe(mojo_channel_token_);
 
     // Do NOT expand ifdef or run time condition checks here! Synchronous
     // IPCs from browser process are banned. It is only narrowly allowed
@@ -1381,6 +1369,8 @@ void RenderProcessHostImpl::AppendRendererCommandLine(
     command_line->AppendSwitchASCII(switches::kMojoChannelToken,
                                     mojo_channel_token_);
   }
+  command_line->AppendSwitchASCII(switches::kMojoApplicationChannelToken,
+                                  mojo_application_host_->GetToken());
 }
 
 void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
@@ -2617,11 +2607,6 @@ void RenderProcessHostImpl::OnProcessLaunched() {
   NotificationService::current()->Notify(NOTIFICATION_RENDERER_PROCESS_CREATED,
                                          Source<RenderProcessHost>(this),
                                          NotificationService::NoDetails());
-
-  // Allow Mojo to be setup before the renderer sees any Chrome IPC messages.
-  // This way, Mojo can be safely used from the renderer in response to any
-  // Chrome IPC message.
-  mojo_application_host_->Activate(this, GetHandle());
 
   while (!queued_messages_.empty()) {
     Send(queued_messages_.front());

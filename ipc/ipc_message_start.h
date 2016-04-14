@@ -91,7 +91,6 @@ enum IPCMessageStart {
   ScreenOrientationMsgStart,
   MediaStreamTrackMetricsHostMsgStart,
   ChromeExtensionMsgStart,
-  MojoMsgStart,
   TranslateMsgStart,
   CldDataProviderMsgStart,
   PushMessagingMsgStart,

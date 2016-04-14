@@ -259,8 +259,6 @@ bool UtilityProcessHostImpl::StartProcess() {
     return false;
   }
 
-  std::string mojo_token = mojo_application_host_->InitWithToken();
-
   if (RenderProcessHost::run_renderer_in_process()) {
     DCHECK(g_utility_main_thread_factory);
     // See comment in RenderProcessHostImpl::Init() for the background on why we
@@ -269,7 +267,7 @@ bool UtilityProcessHostImpl::StartProcess() {
         g_utility_main_thread_factory(InProcessChildThreadParams(
             channel_id, BrowserThread::UnsafeGetMessageLoopForThread(
                             BrowserThread::IO)->task_runner(),
-            mojo::MessagePipeHandle(), mojo_token)));
+            std::string(), mojo_application_host_->GetToken())));
     in_process_thread_->Start();
   } else {
     const base::CommandLine& browser_command_line =
@@ -348,7 +346,7 @@ bool UtilityProcessHostImpl::StartProcess() {
 #endif
 
     cmd_line->AppendSwitchASCII(switches::kMojoApplicationChannelToken,
-                                mojo_token);
+                                mojo_application_host_->GetToken());
 
     process_->Launch(
         new UtilitySandboxedProcessLauncherDelegate(exposed_dir_,
