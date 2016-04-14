@@ -80,6 +80,9 @@ class VIEWS_EXPORT LinuxUI : public ui::LinuxInputMethodContextFactory,
   static LinuxUI* instance();
 
   virtual void Initialize() = 0;
+  // TODO(varkha): This should not be necessary once Material Design is on
+  // unconditionally.
+  virtual void MaterialDesignControllerReady() = 0;
 
   // Returns a themed image per theme_provider.h
   virtual gfx::Image GetThemeImageNamed(int id) const = 0;

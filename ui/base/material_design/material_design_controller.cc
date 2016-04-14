@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/trace_event/trace_event.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/ui_base_switches.h"
 
@@ -29,18 +30,47 @@ bool MaterialDesignController::is_mode_initialized_ = false;
 MaterialDesignController::Mode MaterialDesignController::mode_ =
     MaterialDesignController::Mode::NON_MATERIAL;
 
+// static
+void MaterialDesignController::Initialize() {
+  TRACE_EVENT0("startup", "MaterialDesignController::InitializeMode");
+  CHECK(!is_mode_initialized_);
+#if !defined(ENABLE_TOPCHROME_MD)
+  SetMode(Mode::NON_MATERIAL);
+#else
+  const std::string switch_value =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kTopChromeMD);
+
+  if (switch_value == switches::kTopChromeMDMaterial) {
+    SetMode(Mode::MATERIAL_NORMAL);
+  } else if (switch_value == switches::kTopChromeMDMaterialHybrid) {
+    SetMode(Mode::MATERIAL_HYBRID);
+  } else if (switch_value == switches::kTopChromeMDNonMaterial) {
+    SetMode(Mode::NON_MATERIAL);
+  } else {
+    if (!switch_value.empty()) {
+      LOG(ERROR) << "Invalid value='" << switch_value
+                 << "' for command line switch '" << switches::kTopChromeMD
+                 << "'.";
+    }
+    SetMode(DefaultMode());
+  }
+#endif  // !defined(ENABLE_TOPCHROME_MD)
+}
+
+// static
 MaterialDesignController::Mode MaterialDesignController::GetMode() {
-  if (!is_mode_initialized_)
-    InitializeMode();
   CHECK(is_mode_initialized_);
   return mode_;
 }
 
+// static
 bool MaterialDesignController::IsModeMaterial() {
   return GetMode() == Mode::MATERIAL_NORMAL ||
          GetMode() == Mode::MATERIAL_HYBRID;
 }
 
+// static
 MaterialDesignController::Mode MaterialDesignController::DefaultMode() {
 #if defined(OS_CHROMEOS)
   if (DeviceDataManager::HasInstance() &&
@@ -74,37 +104,12 @@ MaterialDesignController::Mode MaterialDesignController::DefaultMode() {
 #endif  // defined(OS_CHROMEOS)
 }
 
-void MaterialDesignController::InitializeMode() {
-#if !defined(ENABLE_TOPCHROME_MD)
-  SetMode(Mode::NON_MATERIAL);
-#else
-  const std::string switch_value =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kTopChromeMD);
-
-  if (switch_value == switches::kTopChromeMDMaterial) {
-    SetMode(Mode::MATERIAL_NORMAL);
-  } else if (switch_value == switches::kTopChromeMDMaterialHybrid) {
-    SetMode(Mode::MATERIAL_HYBRID);
-  } else if (switch_value == switches::kTopChromeMDNonMaterial) {
-    SetMode(Mode::NON_MATERIAL);
-  } else {
-    if (!switch_value.empty()) {
-      LOG(ERROR) << "Invalid value='" << switch_value
-                 << "' for command line switch '" << switches::kTopChromeMD
-                 << "'.";
-    }
-    SetMode(DefaultMode());
-  }
-#endif  // !defined(ENABLE_TOPCHROME_MD)
-}
-
-void MaterialDesignController::UninitializeMode() {
-  MaterialDesignController::SetMode(
-      MaterialDesignController::Mode::NON_MATERIAL);
+// static
+void MaterialDesignController::Uninitialize() {
   is_mode_initialized_ = false;
 }
 
+// static
 void MaterialDesignController::SetMode(MaterialDesignController::Mode mode) {
   mode_ = mode;
   is_mode_initialized_ = true;

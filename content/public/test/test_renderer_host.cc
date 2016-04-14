@@ -24,6 +24,8 @@
 #include "content/test/test_render_view_host.h"
 #include "content/test/test_render_view_host_factory.h"
 #include "content/test/test_web_contents.h"
+#include "ui/base/material_design/material_design_controller.h"
+#include "ui/base/test/material_design_controller_test_api.h"
 
 #if defined(OS_WIN)
 #include "ui/base/win/scoped_ole_initializer.h"
@@ -179,6 +181,10 @@ void RenderViewHostTestHarness::FailedReload() {
 }
 
 void RenderViewHostTestHarness::SetUp() {
+  // ContentTestSuiteBase might have already initialized
+  // MaterialDesignController in unit_tests suite.
+  ui::test::MaterialDesignControllerTestAPI::Uninitialize();
+  ui::MaterialDesignController::Initialize();
   thread_bundle_.reset(new TestBrowserThreadBundle(thread_bundle_options_));
 
 #if defined(OS_WIN)

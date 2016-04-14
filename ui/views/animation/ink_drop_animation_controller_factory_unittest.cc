@@ -46,6 +46,9 @@ class InkDropAnimationControllerFactoryTest
   // Required by base::Timer's.
   std::unique_ptr<base::ThreadTaskRunnerHandle> thread_task_runner_handle_;
 
+  std::unique_ptr<ui::test::MaterialDesignControllerTestAPI>
+      material_design_state_;
+
   DISALLOW_COPY_AND_ASSIGN(InkDropAnimationControllerFactoryTest);
 };
 
@@ -54,8 +57,8 @@ InkDropAnimationControllerFactoryTest::InkDropAnimationControllerFactoryTest()
   // Any call by a previous test to MaterialDesignController::GetMode() will
   // initialize and cache the mode. This ensures that these tests will run from
   // a non-initialized state.
-  ui::test::MaterialDesignControllerTestAPI::UninitializeMode();
-  ui::test::MaterialDesignControllerTestAPI::SetMode(GetMaterialMode());
+  material_design_state_.reset(
+      new ui::test::MaterialDesignControllerTestAPI(GetMaterialMode()));
   ink_drop_animation_controller_.reset(
       InkDropAnimationControllerFactory::CreateInkDropAnimationController(
           &test_ink_drop_host_)
@@ -81,7 +84,7 @@ InkDropAnimationControllerFactoryTest::InkDropAnimationControllerFactoryTest()
 
 InkDropAnimationControllerFactoryTest::
     ~InkDropAnimationControllerFactoryTest() {
-  ui::test::MaterialDesignControllerTestAPI::UninitializeMode();
+  material_design_state_.reset();
 }
 
 ui::MaterialDesignController::Mode

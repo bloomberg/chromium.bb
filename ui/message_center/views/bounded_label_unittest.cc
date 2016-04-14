@@ -12,6 +12,7 @@
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/text_utils.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/test/views_test_base.h"
 
 namespace message_center {
 
@@ -19,7 +20,7 @@ namespace test {
 
 /* Test fixture ***************************************************************/
 
-class BoundedLabelTest : public testing::Test {
+class BoundedLabelTest : public views::ViewsTestBase {
  public:
   BoundedLabelTest() {
     digit_pixels_ = gfx::GetStringWidth(base::UTF8ToUTF16("0"), font_list_);

@@ -28,6 +28,9 @@ class UI_BASE_EXPORT MaterialDesignController {
     MATERIAL_HYBRID = 2
   };
 
+  // Initializes |mode_|. Must be called before checking |mode_|.
+  static void Initialize();
+
   // Get the current Mode that should be used by the system.
   static Mode GetMode();
 
@@ -51,12 +54,9 @@ class UI_BASE_EXPORT MaterialDesignController {
   MaterialDesignController();
   ~MaterialDesignController();
 
-  // Initializes |mode_|.
-  static void InitializeMode();
-
-  // Resets the Mode state to uninitialized. To be used by tests to cleanup
-  // global state.
-  static void UninitializeMode();
+  // Resets the initialization state to uninitialized. To be used by tests to
+  // allow calling Initialize() more than once.
+  static void Uninitialize();
 
   // Set |mode_| to |mode| and updates |is_mode_initialized_| to true. Can be
   // used by tests to directly set the mode.

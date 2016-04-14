@@ -134,7 +134,7 @@ void MaybeShowInvalidUserDataDirWarningDialog() {
     if (locale.empty())
       locale = kUserDataDirDialogFallbackLocale;
     ui::ResourceBundle::InitSharedInstanceWithLocale(
-        locale, NULL, ui::ResourceBundle::LOAD_COMMON_RESOURCES);
+        locale, NULL, ui::ResourceBundle::DO_NOT_LOAD_COMMON_RESOURCES);
   }
 
   const base::string16& title =

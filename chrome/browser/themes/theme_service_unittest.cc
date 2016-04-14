@@ -402,14 +402,19 @@ class ThemeServiceMaterialDesignTest : public ThemeServiceTest {
  public:
   void SetUp() override {
     ThemeServiceTest::SetUp();
-    ui::test::MaterialDesignControllerTestAPI::SetMode(
-        ui::MaterialDesignController::MATERIAL_NORMAL);
+    material_design_state_.reset(
+        new ui::test::MaterialDesignControllerTestAPI(
+            ui::MaterialDesignController::MATERIAL_NORMAL));
   }
 
   void TearDown() override {
+    material_design_state_.reset();
     ThemeServiceTest::TearDown();
-    ui::test::MaterialDesignControllerTestAPI::UninitializeMode();
   }
+
+ private:
+  std::unique_ptr<ui::test::MaterialDesignControllerTestAPI>
+      material_design_state_;
 };
 
 // Check that the function which computes the separator color behaves as

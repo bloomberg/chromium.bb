@@ -112,11 +112,8 @@ void ToolbarActionsBarUnitTest::SetUp() {
       extensions::extension_action_test_util::CreateToolbarModelForProfile(
           profile());
 
-  // Any call by a previous test to MaterialDesignController::GetMode() will
-  // initialize and cache the mode. This ensures that these tests will run from
-  // a non-initialized state.
-  ui::test::MaterialDesignControllerTestAPI::UninitializeMode();
-  ui::test::MaterialDesignControllerTestAPI::SetMode(GetParam());
+  material_design_state_.reset(
+      new ui::test::MaterialDesignControllerTestAPI(GetParam()));
   ToolbarActionsBar::disable_animations_for_testing_ = true;
   browser_action_test_util_.reset(new BrowserActionTestUtil(browser(), false));
 
@@ -133,7 +130,7 @@ void ToolbarActionsBarUnitTest::TearDown() {
   overflow_browser_action_test_util_.reset();
   ToolbarActionsBar::disable_animations_for_testing_ = false;
   redesign_switch_.reset();
-  ui::test::MaterialDesignControllerTestAPI::UninitializeMode();
+  material_design_state_.reset();
   BrowserWithTestWindowTest::TearDown();
 }
 

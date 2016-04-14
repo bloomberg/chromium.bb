@@ -7,13 +7,20 @@
 namespace ui {
 namespace test {
 
-void MaterialDesignControllerTestAPI::SetMode(
-    MaterialDesignController::Mode mode) {
+MaterialDesignControllerTestAPI::MaterialDesignControllerTestAPI(
+    MaterialDesignController::Mode mode)
+    : previous_mode_(MaterialDesignController::mode_),
+      previous_initialized_(MaterialDesignController::is_mode_initialized_) {
   MaterialDesignController::SetMode(mode);
 }
 
-void MaterialDesignControllerTestAPI::UninitializeMode() {
-  MaterialDesignController::UninitializeMode();
+MaterialDesignControllerTestAPI::~MaterialDesignControllerTestAPI() {
+  MaterialDesignController::is_mode_initialized_ = previous_initialized_;
+  MaterialDesignController::mode_ = previous_mode_;
+}
+
+void MaterialDesignControllerTestAPI::Uninitialize() {
+  MaterialDesignController::Uninitialize();
 }
 
 }  // namespace test

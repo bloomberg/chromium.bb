@@ -9,6 +9,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/message_center/fake_notifier_settings_provider.h"
 #include "ui/message_center/views/notifier_settings_view.h"
+#include "ui/views/test/views_test_base.h"
 
 namespace message_center {
 
@@ -58,7 +59,7 @@ class TestingNotifierSettingsProvider
 
 }  // namespace
 
-class NotifierSettingsViewTest : public testing::Test {
+class NotifierSettingsViewTest : public views::ViewsTestBase {
  public:
   NotifierSettingsViewTest();
   ~NotifierSettingsViewTest() override;
@@ -83,6 +84,7 @@ NotifierSettingsViewTest::NotifierSettingsViewTest() {}
 NotifierSettingsViewTest::~NotifierSettingsViewTest() {}
 
 void NotifierSettingsViewTest::SetUp() {
+  views::ViewsTestBase::SetUp();
   std::vector<Notifier*> notifiers;
   notifiers.push_back(NewNotifier("id", "title", /*enabled=*/true));
   notifiers.push_back(NewNotifier("id2", "other title", /*enabled=*/false));
@@ -95,6 +97,7 @@ void NotifierSettingsViewTest::SetUp() {
 void NotifierSettingsViewTest::TearDown() {
   notifier_settings_view_.reset();
   settings_provider_.reset();
+  views::ViewsTestBase::TearDown();
 }
 
 NotifierSettingsView* NotifierSettingsViewTest::GetView() const {

@@ -4,12 +4,14 @@
 
 #include "ui/views/controls/button/label_button.h"
 
+#include "base/command_line.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/test/material_design_controller_test_api.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_list.h"
@@ -450,9 +452,8 @@ class InkDropLabelButtonTest : public ViewsTestBase {
 
   // ViewsTestBase:
   void SetUp() override {
-    ui::test::MaterialDesignControllerTestAPI::SetMode(
-        ui::MaterialDesignController::MATERIAL_NORMAL);
-
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        switches::kTopChromeMD, switches::kTopChromeMDMaterial);
     ViewsTestBase::SetUp();
 
     // Create a widget so that the CustomButton can query the hover state
@@ -471,7 +472,7 @@ class InkDropLabelButtonTest : public ViewsTestBase {
   void TearDown() override {
     widget_.reset();
     ViewsTestBase::TearDown();
-    ui::test::MaterialDesignControllerTestAPI::UninitializeMode();
+    ui::test::MaterialDesignControllerTestAPI::Uninitialize();
   }
 
  protected:

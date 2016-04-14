@@ -106,6 +106,9 @@ class ToolbarActionsBarUnitTest :
 
   std::unique_ptr<extensions::FeatureSwitch::ScopedOverride> redesign_switch_;
 
+  std::unique_ptr<ui::test::MaterialDesignControllerTestAPI>
+      material_design_state_;
+
   DISALLOW_COPY_AND_ASSIGN(ToolbarActionsBarUnitTest);
 };
 

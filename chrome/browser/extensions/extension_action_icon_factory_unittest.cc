@@ -144,15 +144,12 @@ class ExtensionActionIconFactoryTest
     extension_service_ = static_cast<extensions::TestExtensionSystem*>(
         extensions::ExtensionSystem::Get(profile_.get()))->
         CreateExtensionService(&command_line, base::FilePath(), false);
-    // Any call by a previous test to MaterialDesignController::GetMode() will
-    // initialize and cache the mode. This ensures that these tests will run
-    // from a non-initialized state.
-    ui::test::MaterialDesignControllerTestAPI::UninitializeMode();
-    ui::test::MaterialDesignControllerTestAPI::SetMode(GetParam());
+    material_design_state_.reset(
+        new ui::test::MaterialDesignControllerTestAPI(GetParam()));
   }
 
   void TearDown() override {
-    ui::test::MaterialDesignControllerTestAPI::UninitializeMode();
+    material_design_state_.reset();
     profile_.reset();  // Get all DeleteSoon calls sent to ui_loop_.
     ui_loop_.RunUntilIdle();
   }
@@ -182,6 +179,8 @@ class ExtensionActionIconFactoryTest
   content::TestBrowserThread io_thread_;
   std::unique_ptr<TestingProfile> profile_;
   ExtensionService* extension_service_;
+  std::unique_ptr<ui::test::MaterialDesignControllerTestAPI>
+      material_design_state_;
 
 #if defined OS_CHROMEOS
   chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;
