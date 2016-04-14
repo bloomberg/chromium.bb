@@ -125,18 +125,23 @@ ToolbarController.prototype.onSelectionChanged_ = function() {
   var selection = this.selectionHandler_.selection;
 
   // Update the label "x files selected." on the header.
+  var text;
   if (selection.totalCount === 0) {
-    this.filesSelectedLabel_.textContent = '';
+    text = '';
+  } else if (selection.totalCount === 1) {
+    if (selection.directoryCount == 0)
+      text = str('ONE_FILE_SELECTED');
+    else if (selection.fileCount == 0)
+      text = str('ONE_DIRECTORY_SELECTED');
   } else {
-    var text;
     if (selection.directoryCount == 0)
       text = strf('MANY_FILES_SELECTED', selection.fileCount);
     else if (selection.fileCount == 0)
       text = strf('MANY_DIRECTORIES_SELECTED', selection.directoryCount);
     else
       text = strf('MANY_ENTRIES_SELECTED', selection.totalCount);
-    this.filesSelectedLabel_.textContent = text;
   }
+  this.filesSelectedLabel_.textContent = text;
 
   // Update visibility of the delete button.
   this.deleteButton_.hidden =
