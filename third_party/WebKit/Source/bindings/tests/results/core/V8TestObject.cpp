@@ -1549,7 +1549,7 @@ static void testInterfaceEmptyArrayAttributeAttributeSetter(v8::Local<v8::Value>
     v8::Local<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "testInterfaceEmptyArrayAttribute", "TestObject", holder, info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(holder);
-    HeapVector<Member<TestInterfaceEmpty>> cppValue = (toMemberNativeArray<TestInterfaceEmpty, V8TestInterfaceEmpty>(v8Value, 0, info.GetIsolate(), exceptionState));
+    HeapVector<Member<TestInterfaceEmpty>> cppValue = (toMemberNativeArray<TestInterfaceEmpty>(v8Value, 0, info.GetIsolate(), exceptionState));
     if (exceptionState.throwIfNeeded())
         return;
     impl->setTestInterfaceEmptyArrayAttribute(cppValue);
@@ -6138,7 +6138,7 @@ static void voidMethodArrayTestInterfaceEmptyArgMethod(const v8::FunctionCallbac
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     HeapVector<Member<TestInterfaceEmpty>> arrayTestInterfaceEmptyArg;
     {
-        arrayTestInterfaceEmptyArg = (toMemberNativeArray<TestInterfaceEmpty, V8TestInterfaceEmpty>(info[0], 1, info.GetIsolate(), exceptionState));
+        arrayTestInterfaceEmptyArg = (toMemberNativeArray<TestInterfaceEmpty>(info[0], 1, info.GetIsolate(), exceptionState));
         if (exceptionState.throwIfNeeded())
             return;
     }
@@ -6265,7 +6265,7 @@ static void voidMethodSequenceTestInterfaceEmptyArgMethod(const v8::FunctionCall
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     HeapVector<Member<TestInterfaceEmpty>> testInterfaceEmptySequenceArg;
     {
-        testInterfaceEmptySequenceArg = (toMemberNativeArray<TestInterfaceEmpty, V8TestInterfaceEmpty>(info[0], 1, info.GetIsolate(), exceptionState));
+        testInterfaceEmptySequenceArg = (toMemberNativeArray<TestInterfaceEmpty>(info[0], 1, info.GetIsolate(), exceptionState));
         if (exceptionState.throwIfNeeded())
             return;
     }
@@ -10707,7 +10707,7 @@ static void voidMethodTestInterfaceGarbageCollectedSequenceArgMethod(const v8::F
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     HeapVector<Member<TestInterfaceGarbageCollected>> testInterfaceGarbageCollectedSequenceArg;
     {
-        testInterfaceGarbageCollectedSequenceArg = (toMemberNativeArray<TestInterfaceGarbageCollected, V8TestInterfaceGarbageCollected>(info[0], 1, info.GetIsolate(), exceptionState));
+        testInterfaceGarbageCollectedSequenceArg = (toMemberNativeArray<TestInterfaceGarbageCollected>(info[0], 1, info.GetIsolate(), exceptionState));
         if (exceptionState.throwIfNeeded())
             return;
     }
@@ -10730,7 +10730,7 @@ static void voidMethodTestInterfaceGarbageCollectedArrayArgMethod(const v8::Func
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     HeapVector<Member<TestInterfaceGarbageCollected>> testInterfaceGarbageCollectedArrayArg;
     {
-        testInterfaceGarbageCollectedArrayArg = (toMemberNativeArray<TestInterfaceGarbageCollected, V8TestInterfaceGarbageCollected>(info[0], 1, info.GetIsolate(), exceptionState));
+        testInterfaceGarbageCollectedArrayArg = (toMemberNativeArray<TestInterfaceGarbageCollected>(info[0], 1, info.GetIsolate(), exceptionState));
         if (exceptionState.throwIfNeeded())
             return;
     }

@@ -188,7 +188,7 @@ static void uLongLongMethodTestInterfaceEmptyTypeSequenceArgMethod(const v8::Fun
     TestTypedefs* impl = V8TestTypedefs::toImpl(info.Holder());
     HeapVector<Member<TestInterfaceEmpty>> testInterfaceEmptyTypeSequenceArg;
     {
-        testInterfaceEmptyTypeSequenceArg = (toMemberNativeArray<TestInterfaceEmpty, V8TestInterfaceEmpty>(info[0], 1, info.GetIsolate(), exceptionState));
+        testInterfaceEmptyTypeSequenceArg = (toMemberNativeArray<TestInterfaceEmpty>(info[0], 1, info.GetIsolate(), exceptionState));
         if (exceptionState.throwIfNeeded())
             return;
     }

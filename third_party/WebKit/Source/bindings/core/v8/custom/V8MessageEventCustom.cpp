@@ -114,7 +114,7 @@ void V8MessageEvent::initMessageEventMethodCustom(const v8::FunctionCallbackInfo
     const int portArrayIndex = 7;
     if (!isUndefinedOrNull(info[portArrayIndex])) {
         portArray = new MessagePortArray;
-        *portArray = toMemberNativeArray<MessagePort, V8MessagePort>(info[portArrayIndex], portArrayIndex + 1, info.GetIsolate(), exceptionState);
+        *portArray = toMemberNativeArray<MessagePort>(info[portArrayIndex], portArrayIndex + 1, info.GetIsolate(), exceptionState);
         if (exceptionState.throwIfNeeded())
             return;
     }

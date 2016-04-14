@@ -588,7 +588,7 @@ def v8_value_to_cpp_value_array_or_sequence(native_array_element_type, v8_value,
         native_array_element_type.name != 'Dictionary'):
         this_cpp_type = None
         ref_ptr_type = 'Member'
-        expression_format = '(to{ref_ptr_type}NativeArray<{native_array_element_type}, V8{native_array_element_type}>({v8_value}, {index}, {isolate}, exceptionState))'
+        expression_format = '(to{ref_ptr_type}NativeArray<{native_array_element_type}>({v8_value}, {index}, {isolate}, exceptionState))'
     else:
         ref_ptr_type = None
         this_cpp_type = native_array_element_type.cpp_type

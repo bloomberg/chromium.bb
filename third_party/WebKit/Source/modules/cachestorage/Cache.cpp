@@ -231,7 +231,7 @@ public:
     ScriptValue call(ScriptValue value) override
     {
         NonThrowableExceptionState exceptionState;
-        HeapVector<Member<Response>> responses = toMemberNativeArray<Response, V8Response>(value.v8Value(), m_requests.size(), getScriptState()->isolate(), exceptionState);
+        HeapVector<Member<Response>> responses = toMemberNativeArray<Response>(value.v8Value(), m_requests.size(), getScriptState()->isolate(), exceptionState);
 
         for (const auto& response : responses) {
             if (!response->ok()) {
