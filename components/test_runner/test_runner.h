@@ -59,7 +59,7 @@ class TestRunner : public WebTestRunner {
   void Install(blink::WebFrame* frame);
 
   void SetDelegate(WebTestDelegate*);
-  void SetWebView(blink::WebView*, WebTestProxyBase*);
+  void SetWebView(blink::WebView*);
 
   void Reset();
 
@@ -790,7 +790,6 @@ class TestRunner : public WebTestRunner {
   TestInterfaces* test_interfaces_;
   WebTestDelegate* delegate_;
   blink::WebView* web_view_;
-  WebTestProxyBase* proxy_;
 
   // This is non-0 IFF a load is in progress.
   blink::WebFrame* top_loading_frame_;

@@ -32,6 +32,7 @@
 #include "build/build_config.h"
 #include "components/plugins/renderer/plugin_placeholder.h"
 #include "components/test_runner/gamepad_controller.h"
+#include "components/test_runner/layout_and_paint_async_then.h"
 #include "components/test_runner/pixel_dump.h"
 #include "components/test_runner/web_test_interfaces.h"
 #include "components/test_runner/web_test_proxy.h"
@@ -854,8 +855,10 @@ void BlinkTestRunner::CaptureDumpContinued() {
 #ifndef NDEBUG
   // Force a layout/paint by the end of the test to ensure test coverage of
   // incremental painting.
-  proxy()->LayoutAndPaintAsyncThen(base::Bind(
-      &BlinkTestRunner::CaptureDumpComplete, base::Unretained(this)));
+  test_runner::LayoutAndPaintAsyncThen(
+      render_view()->GetWebView(),
+      base::Bind(&BlinkTestRunner::CaptureDumpComplete,
+                 base::Unretained(this)));
 #else
   CaptureDumpComplete();
 #endif

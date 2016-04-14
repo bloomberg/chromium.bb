@@ -15,6 +15,7 @@
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "components/test_runner/app_banner_client.h"
+#include "components/test_runner/layout_and_paint_async_then.h"
 #include "components/test_runner/layout_dump.h"
 #include "components/test_runner/mock_content_settings_client.h"
 #include "components/test_runner/mock_credential_manager_client.h"
@@ -1597,9 +1598,8 @@ void TestRunner::SetDelegate(WebTestDelegate* delegate) {
     speech_recognizer_->SetDelegate(delegate);
 }
 
-void TestRunner::SetWebView(WebView* webView, WebTestProxyBase* proxy) {
+void TestRunner::SetWebView(WebView* webView) {
   web_view_ = webView;
-  proxy_ = proxy;
 }
 
 void TestRunner::Reset() {
@@ -1845,7 +1845,7 @@ void TestRunner::DumpPixelsAsync(
     return;
   }
 
-  test_runner::DumpPixelsAsync(proxy_->web_view(), layout_test_runtime_flags_,
+  test_runner::DumpPixelsAsync(web_view_, layout_test_runtime_flags_,
                                delegate_->GetDeviceScaleFactorForTest(),
                                callback);
 }
@@ -2632,7 +2632,7 @@ void TestRunner::SetAcceptLanguages(const std::string& accept_languages) {
 
   layout_test_runtime_flags_.set_accept_languages(accept_languages);
   OnLayoutTestRuntimeFlagsChanged();
-  proxy_->web_view()->acceptLanguagesChanged();
+  web_view_->acceptLanguagesChanged();
 }
 
 void TestRunner::SetPluginsEnabled(bool enabled) {
@@ -2885,7 +2885,7 @@ void TestRunner::SetAlwaysAcceptCookies(bool accept) {
 }
 
 void TestRunner::SetWindowIsKey(bool value) {
-  SetFocus(proxy_->web_view(), value);
+  SetFocus(web_view_, value);
 }
 
 void TestRunner::SetFocus(blink::WebView* web_view, bool focus) {
@@ -3046,11 +3046,12 @@ void TestRunner::RemoveWebPageOverlay() {
 }
 
 void TestRunner::LayoutAndPaintAsync() {
-  proxy_->LayoutAndPaintAsyncThen(base::Closure());
+  test_runner::LayoutAndPaintAsyncThen(web_view_, base::Closure());
 }
 
 void TestRunner::LayoutAndPaintAsyncThen(v8::Local<v8::Function> callback) {
-  proxy_->LayoutAndPaintAsyncThen(CreateClosureThatPostsV8Callback(callback));
+  test_runner::LayoutAndPaintAsyncThen(
+      web_view_, CreateClosureThatPostsV8Callback(callback));
 }
 
 void TestRunner::GetManifestThen(v8::Local<v8::Function> callback) {
@@ -3080,7 +3081,7 @@ void TestRunner::CapturePixelsAsyncThen(v8::Local<v8::Function> callback) {
   }
 
   DumpPixelsAsync(
-      proxy_->web_view(),
+      web_view_,
       base::Bind(&TestRunner::CapturePixelsCallback, weak_factory_.GetWeakPtr(),
                  base::Passed(std::move(persistent_callback))));
 }
@@ -3115,7 +3116,7 @@ void TestRunner::CopyImageAtAndCapturePixelsAsyncThen(
   }
 
   CopyImageAtAndCapturePixels(
-      proxy_->web_view(), x, y,
+      web_view_, x, y,
       base::Bind(&TestRunner::CapturePixelsCallback, weak_factory_.GetWeakPtr(),
                  base::Passed(std::move(persistent_callback))));
 }

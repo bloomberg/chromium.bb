@@ -83,8 +83,6 @@ class TEST_RUNNER_EXPORT WebTestProxyBase {
 
   std::string DumpBackForwardLists();
 
-  void LayoutAndPaintAsyncThen(const base::Closure& callback);
-
   void GetScreenOrientationForTesting(blink::WebScreenInfo&);
 
  protected:

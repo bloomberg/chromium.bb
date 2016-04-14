@@ -51,6 +51,8 @@
         'gamepad_controller.h',
         'gc_controller.cc',
         'gc_controller.h',
+        'layout_and_paint_async_then.cc',
+        'layout_and_paint_async_then.h',
         'layout_dump.cc',
         'layout_dump.h',
         'layout_test_runtime_flags.cc',

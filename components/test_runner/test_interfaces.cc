@@ -43,17 +43,17 @@ TestInterfaces::TestInterfaces()
 }
 
 TestInterfaces::~TestInterfaces() {
-  accessibility_controller_->SetWebView(0);
-  event_sender_->SetWebView(0);
+  accessibility_controller_->SetWebView(nullptr);
+  event_sender_->SetWebView(nullptr);
   // gamepad_controller_ doesn't depend on WebView.
-  text_input_controller_->SetWebView(NULL);
-  test_runner_->SetWebView(0, 0);
+  text_input_controller_->SetWebView(nullptr);
+  test_runner_->SetWebView(nullptr);
 
-  accessibility_controller_->SetDelegate(0);
-  event_sender_->SetDelegate(0);
-  // gamepad_controller_ ignores SetDelegate(0)
+  accessibility_controller_->SetDelegate(nullptr);
+  event_sender_->SetDelegate(nullptr);
+  // gamepad_controller_ ignores SetDelegate(nullptr)
   // text_input_controller_ doesn't depend on WebTestDelegate.
-  test_runner_->SetDelegate(0);
+  test_runner_->SetDelegate(nullptr);
 }
 
 void TestInterfaces::SetWebView(blink::WebView* web_view,
@@ -62,7 +62,7 @@ void TestInterfaces::SetWebView(blink::WebView* web_view,
   event_sender_->SetWebView(web_view);
   // gamepad_controller_ doesn't depend on WebView.
   text_input_controller_->SetWebView(web_view);
-  test_runner_->SetWebView(web_view, proxy);
+  test_runner_->SetWebView(web_view);
 }
 
 void TestInterfaces::SetDelegate(WebTestDelegate* delegate) {
