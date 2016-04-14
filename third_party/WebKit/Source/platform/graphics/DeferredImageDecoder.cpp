@@ -287,7 +287,6 @@ PassRefPtr<SkImage> DeferredImageDecoder::createFrameImageAtIndex(size_t index, 
     if (!image)
         return nullptr;
 
-    generator->setGenerationId(image->uniqueID());
     generator->setCanYUVDecode(m_canYUVDecode);
 
     return image.release();

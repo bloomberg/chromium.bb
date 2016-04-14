@@ -38,7 +38,6 @@ DecodingImageGenerator::DecodingImageGenerator(PassRefPtr<ImageFrameGenerator> f
     : SkImageGenerator(info)
     , m_frameGenerator(frameGenerator)
     , m_frameIndex(index)
-    , m_generationId(0)
     , m_canYUVDecode(false)
 {
 }
@@ -68,7 +67,7 @@ bool DecodingImageGenerator::onGetPixels(const SkImageInfo& info, void* pixels, 
         return false;
     }
 
-    PlatformInstrumentation::willDecodeLazyPixelRef(m_generationId);
+    PlatformInstrumentation::willDecodeLazyPixelRef(uniqueID());
     bool decoded = m_frameGenerator->decodeAndScale(m_frameIndex, getInfo(), pixels, rowBytes);
     PlatformInstrumentation::didDecodeLazyPixelRef();
 
@@ -94,7 +93,7 @@ bool DecodingImageGenerator::onGetYUV8Planes(const SkYUVSizeInfo& sizeInfo, void
 
     TRACE_EVENT1("blink", "DecodingImageGenerator::getYUV8Planes", "frame index", static_cast<int>(m_frameIndex));
 
-    PlatformInstrumentation::willDecodeLazyPixelRef(m_generationId);
+    PlatformInstrumentation::willDecodeLazyPixelRef(uniqueID());
     bool decoded = m_frameGenerator->decodeToYUV(m_frameIndex, sizeInfo.fSizes, planes, sizeInfo.fWidthBytes);
     PlatformInstrumentation::didDecodeLazyPixelRef();
 
