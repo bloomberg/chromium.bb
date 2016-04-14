@@ -25,14 +25,17 @@
 #include "chrome/browser/supervised_user/legacy/supervised_user_sync_service.h"
 #include "chrome/browser/supervised_user/legacy/supervised_user_sync_service_factory.h"
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/signin_error_controller.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/web_ui.h"
+#include "content/public/common/referrer.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "url/gurl.h"
 
 
 SigninSupervisedUserImportHandler::SigninSupervisedUserImportHandler()
@@ -44,9 +47,12 @@ SigninSupervisedUserImportHandler::~SigninSupervisedUserImportHandler() {
 
 void SigninSupervisedUserImportHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("getExistingSupervisedUsers",
-      base::Bind(&SigninSupervisedUserImportHandler::
-                      GetExistingSupervisedUsers,
+      base::Bind(&SigninSupervisedUserImportHandler::GetExistingSupervisedUsers,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("openUrlInLastActiveProfileBrowser",
+      base::Bind(
+          &SigninSupervisedUserImportHandler::OpenUrlInLastActiveProfileBrowser,
+          base::Unretained(this)));
 }
 
 void SigninSupervisedUserImportHandler::AssignWebUICallbackId(
@@ -54,6 +60,25 @@ void SigninSupervisedUserImportHandler::AssignWebUICallbackId(
   CHECK_LE(1U, args->GetSize());
   CHECK(webui_callback_id_.empty());
   CHECK(args->GetString(0, &webui_callback_id_));
+}
+
+void SigninSupervisedUserImportHandler::OpenUrlInLastActiveProfileBrowser(
+    const base::ListValue* args) {
+  CHECK_EQ(1U, args->GetSize());
+  std::string url;
+  bool success = args->GetString(0, &url);
+  DCHECK(success);
+  content::OpenURLParams params(GURL(url),
+                                content::Referrer(),
+                                NEW_BACKGROUND_TAB,
+                                ui::PAGE_TRANSITION_LINK,
+                                false);
+  // Get the browser owned by the last used profile.
+  Browser* browser =
+      chrome::FindLastActiveWithProfile(ProfileManager::GetLastUsedProfile());
+  DCHECK(browser);
+  if (browser)
+    browser->OpenURL(params);
 }
 
 void SigninSupervisedUserImportHandler::GetExistingSupervisedUsers(

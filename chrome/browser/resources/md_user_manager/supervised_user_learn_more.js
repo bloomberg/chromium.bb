@@ -10,8 +10,37 @@
 Polymer({
   is: 'supervised-user-learn-more',
 
+  properties: {
+    /** @private {!signin.ProfileBrowserProxy} */
+    browserProxy_: Object
+  },
+
+  listeners: {
+    'tap': 'onTap_'
+  },
+
+  /** @override */
+  created: function() {
+    this.browserProxy_ = signin.ProfileBrowserProxyImpl.getInstance();
+  },
+
   /**
-   * Handler for the 'Done' button click event.
+   * General handler for tap event on the host.
+   * @param {!Event} event
+   * @private
+   */
+  onTap_: function(event) {
+    var element = Polymer.dom(event).rootTarget;
+
+    // Handle the tap event only if the target is a '<a>' element.
+    if (element.nodeName == 'A') {
+      this.browserProxy_.openUrlInLastActiveProfileBrowser(element.href);
+      event.preventDefault();
+    }
+  },
+
+  /**
+   * Handler for the 'Done' button tap event.
    * @param {!Event} event
    * @private
    */

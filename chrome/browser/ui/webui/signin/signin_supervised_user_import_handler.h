@@ -34,6 +34,12 @@ class SigninSupervisedUserImportHandler : public content::WebUIMessageHandler {
   // has been fulfilled.
   void AssignWebUICallbackId(const base::ListValue* args);
 
+  // Callback for the "openUrlInLastActiveProfileBrowser" message. Opens the
+  // given url in a new background tab in the browser owned by the last active
+  // profile. Hyperlinks don't work in the user manager since the system profile
+  // browser is not tabbed.
+  void OpenUrlInLastActiveProfileBrowser(const base::ListValue* args);
+
   // Callback for the "getExistingSupervisedUsers" message.
   // Checks the sign-in status of the custodian and accordingly
   // sends an update to the WebUI.

@@ -91,7 +91,17 @@ cr.define('signin', function() {
      */
     launchUser: function(profilePath) {
       assertNotReached();
-    }
+    },
+
+    /**
+     * Opens the given url in a new tab in the browser instance of the last
+     * active profile. Hyperlinks don't work in the user manager since its
+     * browser instance does not support tabs.
+     * @param {string} url
+     */
+    openUrlInLastActiveProfileBrowser: function(url) {
+      assertNotReached();
+    },
   };
 
   /**
@@ -146,7 +156,12 @@ cr.define('signin', function() {
     /** @override */
     launchUser: function(profilePath) {
       chrome.send('launchUser', [profilePath]);
-    }
+    },
+
+    /** @override */
+    openUrlInLastActiveProfileBrowser: function(url) {
+      chrome.send('openUrlInLastActiveProfileBrowser', [url]);
+    },
   };
 
   return {
