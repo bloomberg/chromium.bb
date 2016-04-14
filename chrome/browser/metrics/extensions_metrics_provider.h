@@ -7,10 +7,10 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/metrics/metrics_provider.h"
 
 class Profile;
@@ -43,7 +43,7 @@ class ExtensionsMetricsProvider : public metrics::MetricsProvider {
   // Exposed for the sake of mocking in test code.
 
   // Retrieves the set of extensions installed in the given |profile|.
-  virtual scoped_ptr<extensions::ExtensionSet> GetInstalledExtensions(
+  virtual std::unique_ptr<extensions::ExtensionSet> GetInstalledExtensions(
       Profile* profile);
 
   // Retrieves the client ID.

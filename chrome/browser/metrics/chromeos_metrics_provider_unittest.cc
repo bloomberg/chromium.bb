@@ -64,33 +64,33 @@ class ChromeOSMetricsProviderTest : public testing::Test {
 #endif
 
     // Set up the fake Bluetooth environment,
-    scoped_ptr<BluezDBusManagerSetter> bluez_dbus_setter =
+    std::unique_ptr<BluezDBusManagerSetter> bluez_dbus_setter =
         BluezDBusManager::GetSetterForTesting();
     bluez_dbus_setter->SetBluetoothAdapterClient(
-        scoped_ptr<BluetoothAdapterClient>(new FakeBluetoothAdapterClient));
+        std::unique_ptr<BluetoothAdapterClient>(
+            new FakeBluetoothAdapterClient));
     bluez_dbus_setter->SetBluetoothDeviceClient(
-        scoped_ptr<BluetoothDeviceClient>(new FakeBluetoothDeviceClient));
+        std::unique_ptr<BluetoothDeviceClient>(new FakeBluetoothDeviceClient));
     bluez_dbus_setter->SetBluetoothGattCharacteristicClient(
-        scoped_ptr<BluetoothGattCharacteristicClient>(
+        std::unique_ptr<BluetoothGattCharacteristicClient>(
             new FakeBluetoothGattCharacteristicClient));
     bluez_dbus_setter->SetBluetoothGattDescriptorClient(
-        scoped_ptr<BluetoothGattDescriptorClient>(
+        std::unique_ptr<BluetoothGattDescriptorClient>(
             new FakeBluetoothGattDescriptorClient));
     bluez_dbus_setter->SetBluetoothGattServiceClient(
-        scoped_ptr<BluetoothGattServiceClient>(
+        std::unique_ptr<BluetoothGattServiceClient>(
             new FakeBluetoothGattServiceClient));
     bluez_dbus_setter->SetBluetoothInputClient(
-        scoped_ptr<BluetoothInputClient>(new FakeBluetoothInputClient));
+        std::unique_ptr<BluetoothInputClient>(new FakeBluetoothInputClient));
     bluez_dbus_setter->SetBluetoothAgentManagerClient(
-        scoped_ptr<BluetoothAgentManagerClient>(
+        std::unique_ptr<BluetoothAgentManagerClient>(
             new FakeBluetoothAgentManagerClient));
 
     // Set up a PowerManagerClient instance for PerfProvider.
-    scoped_ptr<DBusThreadManagerSetter> dbus_setter =
+    std::unique_ptr<DBusThreadManagerSetter> dbus_setter =
         DBusThreadManager::GetSetterForTesting();
-    dbus_setter->SetPowerManagerClient(
-        scoped_ptr<PowerManagerClient>(
-            PowerManagerClient::Create(STUB_DBUS_CLIENT_IMPLEMENTATION)));
+    dbus_setter->SetPowerManagerClient(std::unique_ptr<PowerManagerClient>(
+        PowerManagerClient::Create(STUB_DBUS_CLIENT_IMPLEMENTATION)));
 
     // Grab pointers to members of the thread manager for easier testing.
     fake_bluetooth_adapter_client_ = static_cast<FakeBluetoothAdapterClient*>(

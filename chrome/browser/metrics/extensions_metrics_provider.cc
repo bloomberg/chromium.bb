@@ -7,11 +7,11 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <memory>
 #include <set>
 #include <vector>
 
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/install_verifier.h"
@@ -158,13 +158,13 @@ Profile* ExtensionsMetricsProvider::GetMetricsProfile() {
   return cached_profile_;
 }
 
-scoped_ptr<extensions::ExtensionSet>
+std::unique_ptr<extensions::ExtensionSet>
 ExtensionsMetricsProvider::GetInstalledExtensions(Profile* profile) {
   if (profile) {
     return extensions::ExtensionRegistry::Get(profile)
         ->GenerateInstalledExtensionsSet();
   }
-  return scoped_ptr<extensions::ExtensionSet>();
+  return std::unique_ptr<extensions::ExtensionSet>();
 }
 
 uint64_t ExtensionsMetricsProvider::GetClientID() {
@@ -195,7 +195,7 @@ void ExtensionsMetricsProvider::ProvideOffStoreMetric(
     extensions::InstallVerifier* verifier =
         extensions::InstallVerifier::Get(profiles[i]);
 
-    scoped_ptr<extensions::ExtensionSet> extensions(
+    std::unique_ptr<extensions::ExtensionSet> extensions(
         GetInstalledExtensions(profiles[i]));
     if (!extensions)
       continue;
@@ -216,7 +216,7 @@ void ExtensionsMetricsProvider::ProvideOccupiedBucketMetric(
   // profiles.
   Profile* profile = GetMetricsProfile();
 
-  scoped_ptr<extensions::ExtensionSet> extensions(
+  std::unique_ptr<extensions::ExtensionSet> extensions(
       GetInstalledExtensions(profile));
   if (!extensions)
     return;

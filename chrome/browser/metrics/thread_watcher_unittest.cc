@@ -2,14 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/metrics/thread_watcher.h"
+
 #include <math.h>
 #include <stdint.h>
+
+#include <memory>
 
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -23,7 +26,6 @@
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "chrome/browser/metrics/thread_watcher.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -320,9 +322,9 @@ class ThreadWatcherTest : public ::testing::Test {
   base::Lock lock_;
   base::ConditionVariable setup_complete_;
   bool initialized_;
-  scoped_ptr<content::TestBrowserThread> db_thread_;
-  scoped_ptr<content::TestBrowserThread> io_thread_;
-  scoped_ptr<WatchDogThread> watchdog_thread_;
+  std::unique_ptr<content::TestBrowserThread> db_thread_;
+  std::unique_ptr<content::TestBrowserThread> io_thread_;
+  std::unique_ptr<WatchDogThread> watchdog_thread_;
 };
 
 // Define static constants.
@@ -691,7 +693,7 @@ TEST_F(ThreadWatcherListTest, Restart) {
   base::MessageLoopForUI message_loop_for_ui;
   content::TestBrowserThread ui_thread(BrowserThread::UI, &message_loop_for_ui);
 
-  scoped_ptr<WatchDogThread> watchdog_thread_(new WatchDogThread());
+  std::unique_ptr<WatchDogThread> watchdog_thread_(new WatchDogThread());
   watchdog_thread_->StartAndWaitForTesting();
 
   // See http://crbug.com/347887.
@@ -794,7 +796,7 @@ class JankTimeBombTest : public ::testing::Test {
     event->Wait();
   }
 
-  scoped_ptr<WatchDogThread> watchdog_thread_;
+  std::unique_ptr<WatchDogThread> watchdog_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(JankTimeBombTest);
 };

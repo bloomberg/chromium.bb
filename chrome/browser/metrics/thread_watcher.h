@@ -553,7 +553,7 @@ class ThreadWatcherObserver : public content::NotificationObserver {
 
   // Subscription for receiving callbacks that a URL was opened from the
   // omnibox.
-  scoped_ptr<base::CallbackList<void(OmniboxLog*)>::Subscription>
+  std::unique_ptr<base::CallbackList<void(OmniboxLog*)>::Subscription>
       omnibox_url_opened_subscription_;
 
   DISALLOW_COPY_AND_ASSIGN(ThreadWatcherObserver);
@@ -662,7 +662,7 @@ class JankTimeBomb {
  private:
   // A profiler that periodically samples stack traces. Used to sample jank
   // behavior.
-  scoped_ptr<base::StackSamplingProfiler> sampling_profiler_;
+  std::unique_ptr<base::StackSamplingProfiler> sampling_profiler_;
 
   // We use this factory during creation and starting timer.
   base::WeakPtrFactory<JankTimeBomb> weak_ptr_factory_;

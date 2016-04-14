@@ -48,7 +48,7 @@ class PluginMetricsProviderTest : public ::testing::Test {
   }
 
  private:
-  scoped_ptr<TestingPrefServiceSimple> prefs_;
+  std::unique_ptr<TestingPrefServiceSimple> prefs_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginMetricsProviderTest);
 };
@@ -88,7 +88,7 @@ TEST_F(PluginMetricsProviderTest, Plugins) {
   EXPECT_TRUE(system_profile.plugin(1).is_pepper());
 
   // Now set some plugin stability stats for p2 and verify they're recorded.
-  scoped_ptr<base::DictionaryValue> plugin_dict(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> plugin_dict(new base::DictionaryValue);
   plugin_dict->SetString(prefs::kStabilityPluginName, "p2");
   plugin_dict->SetInteger(prefs::kStabilityPluginLaunches, 1);
   plugin_dict->SetInteger(prefs::kStabilityPluginCrashes, 2);

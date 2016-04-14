@@ -7,11 +7,11 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "build/build_config.h"
@@ -49,7 +49,7 @@ class ChromeMetricsServiceClient
   ~ChromeMetricsServiceClient() override;
 
   // Factory function.
-  static scoped_ptr<ChromeMetricsServiceClient> Create(
+  static std::unique_ptr<ChromeMetricsServiceClient> Create(
       metrics::MetricsStateManager* state_manager,
       PrefService* local_state);
 
@@ -70,7 +70,7 @@ class ChromeMetricsServiceClient
   void InitializeSystemProfileMetrics(
       const base::Closure& done_callback) override;
   void CollectFinalMetricsForLog(const base::Closure& done_callback) override;
-  scoped_ptr<metrics::MetricsLogUploader> CreateUploader(
+  std::unique_ptr<metrics::MetricsLogUploader> CreateUploader(
       const base::Callback<void(int)>& on_upload_complete) override;
   base::TimeDelta GetStandardUploadInterval() override;
   base::string16 GetRegistryBackupKey() override;
@@ -151,7 +151,7 @@ class ChromeMetricsServiceClient
   metrics::MetricsStateManager* metrics_state_manager_;
 
   // The MetricsService that |this| is a client of.
-  scoped_ptr<metrics::MetricsService> metrics_service_;
+  std::unique_ptr<metrics::MetricsService> metrics_service_;
 
   content::NotificationRegistrar registrar_;
 
@@ -206,7 +206,7 @@ class ChromeMetricsServiceClient
 
   // Subscription for receiving callbacks that a URL was opened from the
   // omnibox.
-  scoped_ptr<base::CallbackList<void(OmniboxLog*)>::Subscription>
+  std::unique_ptr<base::CallbackList<void(OmniboxLog*)>::Subscription>
       omnibox_url_opened_subscription_;
 
   // Whether this client has already uploaded profiler data during this session.

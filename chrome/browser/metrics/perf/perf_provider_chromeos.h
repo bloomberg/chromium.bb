@@ -132,8 +132,8 @@ class PerfProvider : public base::NonThreadSafe,
   // |result| is the return value of running perf/quipper. It is 0 if successful
   // and nonzero if not successful.
   void ParseOutputProtoIfValid(
-      scoped_ptr<WindowedIncognitoObserver> incognito_observer,
-      scoped_ptr<SampledProfile> sampled_profile,
+      std::unique_ptr<WindowedIncognitoObserver> incognito_observer,
+      std::unique_ptr<SampledProfile> sampled_profile,
       int result,
       const std::vector<uint8_t>& perf_data,
       const std::vector<uint8_t>& perf_stat);
@@ -194,7 +194,7 @@ class PerfProvider : public base::NonThreadSafe,
 
   // Collects perf data for a given |trigger_event|. Calls perf via the ChromeOS
   // debug daemon's dbus interface.
-  void CollectIfNecessary(scoped_ptr<SampledProfile> sampled_profile);
+  void CollectIfNecessary(std::unique_ptr<SampledProfile> sampled_profile);
 
   // Collects perf data on a repeating basis by calling CollectIfNecessary() and
   // reschedules it to be collected again.

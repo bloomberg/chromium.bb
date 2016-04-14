@@ -7,9 +7,10 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
 #include "ui/gfx/display_observer.h"
@@ -59,7 +60,7 @@ class ChromeBrowserMainExtraPartsMetrics
   bool is_screen_observer_;
 
 #if defined(USE_OZONE) || defined(USE_X11)
-  scoped_ptr<ui::InputDeviceEventObserver> input_device_event_observer_;
+  std::unique_ptr<ui::InputDeviceEventObserver> input_device_event_observer_;
 #endif  // defined(USE_OZONE) || defined(USE_X11)
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainExtraPartsMetrics);

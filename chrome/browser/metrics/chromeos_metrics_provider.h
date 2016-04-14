@@ -91,7 +91,7 @@ class ChromeOSMetricsProvider : public metrics::MetricsProvider {
   metrics::PerfProvider perf_provider_;
 
   // Enables runtime memory leak detection and gets notified of leak reports.
-  scoped_ptr<metrics::LeakDetectorController> leak_detector_controller_;
+  std::unique_ptr<metrics::LeakDetectorController> leak_detector_controller_;
 
   // Bluetooth Adapter instance for collecting information about paired devices.
   scoped_refptr<device::BluetoothAdapter> adapter_;

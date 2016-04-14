@@ -39,7 +39,7 @@ class ChromeStabilityMetricsProviderTest : public testing::Test {
   TestingPrefServiceSimple* prefs() { return prefs_.get(); }
 
  private:
-  scoped_ptr<TestingPrefServiceSimple> prefs_;
+  std::unique_ptr<TestingPrefServiceSimple> prefs_;
   content::TestBrowserThreadBundle thread_bundle_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeStabilityMetricsProviderTest);
@@ -69,7 +69,7 @@ TEST_F(ChromeStabilityMetricsProviderTest, BrowserChildProcessObserver) {
 
 TEST_F(ChromeStabilityMetricsProviderTest, NotificationObserver) {
   ChromeStabilityMetricsProvider provider(prefs());
-  scoped_ptr<TestingProfileManager> profile_manager(
+  std::unique_ptr<TestingProfileManager> profile_manager(
       new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
   EXPECT_TRUE(profile_manager->SetUp());
 
@@ -77,7 +77,7 @@ TEST_F(ChromeStabilityMetricsProviderTest, NotificationObserver) {
   TestingProfile* profile(
       profile_manager->CreateTestingProfile("StabilityTestProfile"));
 
-  scoped_ptr<content::MockRenderProcessHostFactory> rph_factory(
+  std::unique_ptr<content::MockRenderProcessHostFactory> rph_factory(
       new content::MockRenderProcessHostFactory());
   scoped_refptr<content::SiteInstance> site_instance(
       content::SiteInstance::Create(profile));

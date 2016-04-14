@@ -45,8 +45,7 @@ TEST(ThreadWatcherAndroidTest, ApplicationStatusNotification) {
   base::MessageLoopForUI message_loop_for_ui;
   content::TestBrowserThread ui_thread(BrowserThread::UI, &message_loop_for_ui);
 
-
-  scoped_ptr<WatchDogThread> watchdog_thread_(new WatchDogThread());
+  std::unique_ptr<WatchDogThread> watchdog_thread_(new WatchDogThread());
   watchdog_thread_->StartAndWaitForTesting();
 
   EXPECT_FALSE(ThreadWatcherList::g_thread_watcher_list_);

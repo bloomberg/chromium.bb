@@ -384,8 +384,8 @@ bool PerfProvider::GetSampledProfiles(
 }
 
 void PerfProvider::ParseOutputProtoIfValid(
-    scoped_ptr<WindowedIncognitoObserver> incognito_observer,
-    scoped_ptr<SampledProfile> sampled_profile,
+    std::unique_ptr<WindowedIncognitoObserver> incognito_observer,
+    std::unique_ptr<SampledProfile> sampled_profile,
     int result,
     const std::vector<uint8_t>& perf_data,
     const std::vector<uint8_t>& perf_stat) {
@@ -553,7 +553,7 @@ void PerfProvider::ScheduleIntervalCollection() {
 }
 
 void PerfProvider::CollectIfNecessary(
-    scoped_ptr<SampledProfile> sampled_profile) {
+    std::unique_ptr<SampledProfile> sampled_profile) {
   DCHECK(CalledOnValidThread());
 
   // Schedule another interval collection. This call makes sense regardless of
@@ -580,7 +580,7 @@ void PerfProvider::CollectIfNecessary(
     return;
   }
 
-  scoped_ptr<WindowedIncognitoObserver> incognito_observer(
+  std::unique_ptr<WindowedIncognitoObserver> incognito_observer(
       new WindowedIncognitoObserver);
 
   chromeos::DebugDaemonClient* client =
@@ -597,7 +597,7 @@ void PerfProvider::CollectIfNecessary(
 }
 
 void PerfProvider::DoPeriodicCollection() {
-  scoped_ptr<SampledProfile> sampled_profile(new SampledProfile);
+  std::unique_ptr<SampledProfile> sampled_profile(new SampledProfile);
   sampled_profile->set_trigger_event(SampledProfile::PERIODIC_COLLECTION);
 
   CollectIfNecessary(std::move(sampled_profile));
@@ -607,7 +607,7 @@ void PerfProvider::CollectPerfDataAfterResume(
     const base::TimeDelta& sleep_duration,
     const base::TimeDelta& time_after_resume) {
   // Fill out a SampledProfile protobuf that will contain the collected data.
-  scoped_ptr<SampledProfile> sampled_profile(new SampledProfile);
+  std::unique_ptr<SampledProfile> sampled_profile(new SampledProfile);
   sampled_profile->set_trigger_event(SampledProfile::RESUME_FROM_SUSPEND);
   sampled_profile->set_suspend_duration_ms(sleep_duration.InMilliseconds());
   sampled_profile->set_ms_after_resume(time_after_resume.InMilliseconds());
@@ -619,7 +619,7 @@ void PerfProvider::CollectPerfDataAfterSessionRestore(
     const base::TimeDelta& time_after_restore,
     int num_tabs_restored) {
   // Fill out a SampledProfile protobuf that will contain the collected data.
-  scoped_ptr<SampledProfile> sampled_profile(new SampledProfile);
+  std::unique_ptr<SampledProfile> sampled_profile(new SampledProfile);
   sampled_profile->set_trigger_event(SampledProfile::RESTORE_SESSION);
   sampled_profile->set_ms_after_restore(time_after_restore.InMilliseconds());
   sampled_profile->set_num_tabs_restored(num_tabs_restored);
