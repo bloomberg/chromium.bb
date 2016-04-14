@@ -1150,9 +1150,12 @@ public class DownloadManagerService extends BroadcastReceiver implements
      */
     void pauseDownload(String downloadGuid) {
         nativePauseDownload(getNativeDownloadManagerService(), downloadGuid);
-        // Calling pause will stop listening to the download item. Update its progress now.
         DownloadProgress progress = mDownloadProgressMap.get(downloadGuid);
-        if (progress != null) {
+        // Calling pause will stop listening to the download item. Update its progress now.
+        // If download is already completed, canceled or failed, there is no need to update the
+        // download notification.
+        if (progress != null && (progress.mDownloadStatus == DOWNLOAD_STATUS_INTERRUPTED
+                || progress.mDownloadStatus == DOWNLOAD_STATUS_IN_PROGRESS)) {
             DownloadInfo info = DownloadInfo.Builder.fromDownloadInfo(
                     progress.mDownloadItem.getDownloadInfo()).setIsPaused(true).build();
             onDownloadUpdated(info);
