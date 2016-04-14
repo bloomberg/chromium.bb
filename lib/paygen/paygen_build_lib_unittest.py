@@ -1701,7 +1701,7 @@ The suite job has another 2:39:39.789250 till timeout.
         pool='bvt', priority=constants.HWTEST_BUILD_PRIORITY,
         suite='paygen_au_foo', timeout_mins=timeout_mins,
         retry=True, wait_for_results=True,
-        suite_min_duts=2, debug=False).AndReturn(
+        suite_min_duts=2, debug=False, skip_duts_check=False).AndReturn(
             commands.HWTestSuiteResult(None, None))
 
     self.mox.ReplayAll()
@@ -1730,7 +1730,8 @@ The suite job has another 2:39:39.789250 till timeout.
         pool='bvt', priority=constants.HWTEST_BUILD_PRIORITY,
         suite='paygen_au_foo', timeout_mins=timeout_mins,
         retry=True, wait_for_results=True, suite_min_duts=2,
-        debug=False).AndReturn(commands.HWTestSuiteResult(to_raise, None))
+        debug=False, skip_duts_check=False).AndReturn(
+            commands.HWTestSuiteResult(to_raise, None))
 
     self.mox.ReplayAll()
 

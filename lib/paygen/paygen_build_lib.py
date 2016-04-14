@@ -401,7 +401,8 @@ class _PaygenBuild(object):
                skip_full_payloads=False, skip_delta_payloads=False,
                skip_test_payloads=False, skip_nontest_payloads=False,
                control_dir=None, output_dir=None,
-               run_parallel=False, run_on_builder=False, au_generator_uri=None):
+               run_parallel=False, run_on_builder=False, au_generator_uri=None,
+               skip_duts_check=False):
     """Initializer."""
     self._build = build
     self._work_dir = work_dir
@@ -420,6 +421,7 @@ class _PaygenBuild(object):
     self._archive_build = None
     self._archive_build_uri = None
     self._au_generator_uri = au_generator_uri
+    self._skip_duts_check = skip_duts_check
 
     # Cached goldeneye data.
     self.cachedFsisJson = {}
@@ -1186,7 +1188,8 @@ class _PaygenBuild(object):
           wait_for_results=True,
           timeout_mins=timeout_mins,
           suite_min_duts=2,
-          debug=bool(self._drm))
+          debug=bool(self._drm),
+          skip_duts_check=self._skip_duts_check)
       if cmd_result.to_raise:
         if isinstance(cmd_result.to_raise, failures_lib.TestWarning):
           logging.warning('Warning running test suite; error output:\n%s',
@@ -1207,6 +1210,8 @@ class _PaygenBuild(object):
           '--no_wait', 'False',
           '--suite_min_duts', '2',
       ]
+      if self._skip_duts_check:
+        cmd.append('--skip_duts_check')
       logging.info('Running autotest suite: %s', ' '.join(cmd))
       try:
         cros_build_lib.RunCommand(cmd)
@@ -1571,7 +1576,7 @@ def CreatePayloads(build, work_dir, site_config, dry_run=False,
                    skip_delta_payloads=False, skip_test_payloads=False,
                    skip_nontest_payloads=False, disable_tests=False,
                    output_dir=None, run_parallel=False, run_on_builder=False,
-                   au_generator_uri=None):
+                   au_generator_uri=None, skip_duts_check=False):
   """Helper method than generates payloads for a given build.
 
   Args:
@@ -1589,6 +1594,7 @@ def CreatePayloads(build, work_dir, site_config, dry_run=False,
     run_parallel: Generate payloads in parallel processes.
     run_on_builder: Running in a cbuildbot environment on a builder.
     au_generator_uri: URI of au_generator.zip to use, None to use the default.
+    skip_duts_check: Do not force checking minimum available DUTs
   """
   ValidateBoardConfig(build.board)
 
@@ -1607,7 +1613,8 @@ def CreatePayloads(build, work_dir, site_config, dry_run=False,
                  control_dir=control_dir, output_dir=output_dir,
                  run_parallel=run_parallel,
                  run_on_builder=run_on_builder,
-                 au_generator_uri=au_generator_uri).CreatePayloads()
+                 au_generator_uri=au_generator_uri,
+                 skip_duts_check=skip_duts_check).CreatePayloads()
 
   finally:
     if control_dir:

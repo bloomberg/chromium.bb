@@ -360,6 +360,10 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
     else:
       subsystems = None
 
+    skip_duts_check = False
+    if config_lib.IsCanaryType(self._run.config.build_type):
+      skip_duts_check = True
+
     build_id, db = self._run.GetCIDBHandle()
     cmd_result = commands.RunHWTestSuite(
         build, self.suite_config.suite, self._current_board,
@@ -373,7 +377,7 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
         minimum_duts=self.suite_config.minimum_duts,
         suite_min_duts=self.suite_config.suite_min_duts,
         offload_failures_only=self.suite_config.offload_failures_only,
-        debug=debug, subsystems=subsystems)
+        debug=debug, subsystems=subsystems, skip_duts_check=skip_duts_check)
     subsys_tuple = self.GenerateSubsysResult(cmd_result.json_dump_result,
                                              subsystems)
     if db:

@@ -848,7 +848,8 @@ def RunHWTestSuite(build, suite, board, pool=None, num=None, file_bugs=None,
                    wait_for_results=None, priority=None, timeout_mins=None,
                    retry=None, max_retries=None,
                    minimum_duts=0, suite_min_duts=0,
-                   offload_failures_only=None, debug=True, subsystems=None):
+                   offload_failures_only=None, debug=True, subsystems=None,
+                   skip_duts_check=False):
   """Run the test suite in the Autotest lab.
 
   Args:
@@ -877,6 +878,7 @@ def RunHWTestSuite(build, suite, board, pool=None, num=None, file_bugs=None,
     debug: Whether we are in debug mode.
     subsystems: A set of subsystems that the relevant changes affect, for
                 testing purposes.
+    skip_duts_check: If True, skip minimum available DUTs check.
 
   Returns:
     An instance of named tuple HWTestSuiteResult, the first element is the
@@ -888,7 +890,7 @@ def RunHWTestSuite(build, suite, board, pool=None, num=None, file_bugs=None,
     cmd += _GetRunSuiteArgs(build, suite, board, pool, num, file_bugs,
                             priority, timeout_mins, retry, max_retries,
                             minimum_duts, suite_min_duts, offload_failures_only,
-                            subsystems)
+                            subsystems, skip_duts_check)
     swarming_args = _CreateSwarmingArgs(build, suite, timeout_mins)
     running_json_dump_flag = False
     json_dump_result = None
@@ -969,7 +971,7 @@ def _GetRunSuiteArgs(build, suite, board, pool=None, num=None,
                      file_bugs=None, priority=None, timeout_mins=None,
                      retry=None, max_retries=None, minimum_duts=0,
                      suite_min_duts=0, offload_failures_only=None,
-                     subsystems=None):
+                     subsystems=None, skip_duts_check=False):
   """Get a list of args for run_suite.
 
   Args:
@@ -1033,6 +1035,8 @@ def _GetRunSuiteArgs(build, suite, board, pool=None, num=None,
     suite_args_dict = repr({'attr_filter' : attr_value})
     args += ['--suite_args', suite_args_dict]
 
+    if skip_duts_check:
+      args += ['--skip_duts_check']
   return args
 
 

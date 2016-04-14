@@ -11,6 +11,7 @@ import os
 
 from chromite.cbuildbot import commands
 from chromite.cbuildbot import failures_lib
+from chromite.cbuildbot import config_lib
 from chromite.cbuildbot.stages import artifact_stages
 from chromite.cbuildbot.stages import generic_stages
 from chromite.lib import cros_logging as logging
@@ -388,14 +389,22 @@ class PaygenStage(generic_stages.BoardSpecificBuilderStage):
 
     with parallel.BackgroundTaskRunner(self._RunPaygenInProcess) as per_channel:
       logging.info("Using channels: %s", self.channels)
+
+      # Default to False, set to True if it's a canary type build
+      skip_duts_check = False
+      if config_lib.IsCanaryType(self._run.config.build_type):
+        skip_duts_check = True
+
       # If we have an explicit list of channels, use it.
       for channel in self.channels:
         per_channel.put((channel, board, version, self._run.debug,
                          self._run.config.paygen_skip_testing,
-                         self._run.config.paygen_skip_delta_payloads))
+                         self._run.config.paygen_skip_delta_payloads,
+                         skip_duts_check))
 
   def _RunPaygenInProcess(self, channel, board, version, debug,
-                          disable_tests, skip_delta_payloads):
+                          disable_tests, skip_delta_payloads,
+                          skip_duts_check=False):
     """Helper for PaygenStage that invokes payload generation.
 
     This method is intended to be safe to invoke inside a process.
@@ -407,6 +416,7 @@ class PaygenStage(generic_stages.BoardSpecificBuilderStage):
       debug: Flag telling if this is a real run, or a test run.
       disable_tests: Do not generate test artifacts are run payload tests.
       skip_delta_payloads: Skip generating delta payloads.
+      skip_duts_check: Do not check minimum available DUTs
     """
     # Convert to release tools naming for channels.
     if not channel.endswith('-channel'):
@@ -428,7 +438,8 @@ class PaygenStage(generic_stages.BoardSpecificBuilderStage):
                                         run_parallel=True,
                                         run_on_builder=True,
                                         skip_delta_payloads=skip_delta_payloads,
-                                        disable_tests=disable_tests)
+                                        disable_tests=disable_tests,
+                                        skip_duts_check=skip_duts_check)
       except (paygen_build_lib.BuildFinished,
               paygen_build_lib.BuildLocked,
               paygen_build_lib.BuildSkip) as e:

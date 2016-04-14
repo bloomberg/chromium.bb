@@ -345,8 +345,10 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTestCase,
       # Verify that we queue up work
       self.assertEqual(
           queue.put.call_args_list,
-          [mock.call(('stable', 'x86-alex-he', '0.0.1', False, True, False)),
-           mock.call(('beta', 'x86-alex-he', '0.0.1', False, True, False))])
+          [mock.call(('stable', 'x86-alex-he', '0.0.1',
+                      False, True, False, True)),
+           mock.call(('beta', 'x86-alex-he', '0.0.1',
+                      False, True, False, True))])
 
   def testPerformStageNoChannels(self):
     """Test that PaygenStage works when signing works."""
@@ -391,8 +393,10 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTestCase,
       # still got results right away.
       self.assertEqual(
           queue.put.call_args_list,
-          [mock.call(('foo', 'x86-alex-he', '0.0.1', False, True, False)),
-           mock.call(('bar', 'x86-alex-he', '0.0.1', False, True, False))])
+          [mock.call(('foo', 'x86-alex-he', '0.0.1',
+                      False, True, False, True)),
+           mock.call(('bar', 'x86-alex-he', '0.0.1',
+                      False, True, False, True))])
 
   def testPerformStageUnknownBoard(self):
     """Test that PaygenStage exits when an unknown board is specified."""
@@ -413,7 +417,7 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTestCase,
       # Call the method under test.
       stage = self.ConstructStage()
       stage._RunPaygenInProcess('foo', 'foo-board', 'foo-version',
-                                False, False, False)
+                                False, False, False, skip_duts_check=False)
 
       # Ensure arguments are properly converted and passed along.
       create_payloads.assert_called_with(gspaths.Build(version='foo-version',
@@ -425,7 +429,8 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTestCase,
                                          run_parallel=True,
                                          run_on_builder=True,
                                          skip_delta_payloads=False,
-                                         disable_tests=False)
+                                         disable_tests=False,
+                                         skip_duts_check=False)
 
   def testRunPaygenInProcessComplex(self):
     """Test that _RunPaygenInProcess with arguments that are more unusual."""
@@ -434,7 +439,8 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTestCase,
       # Use release tools channel naming, and a board name including a variant.
       stage = self.ConstructStage()
       stage._RunPaygenInProcess('foo-channel', 'foo-board-variant',
-                                'foo-version', True, True, True)
+                                'foo-version', True, True, True,
+                                skip_duts_check=False)
 
       # Ensure arguments are properly converted and passed along.
       create_payloads.assert_called_with(
@@ -447,4 +453,5 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTestCase,
           run_parallel=True,
           run_on_builder=True,
           skip_delta_payloads=True,
-          disable_tests=True)
+          disable_tests=True,
+          skip_duts_check=False)
