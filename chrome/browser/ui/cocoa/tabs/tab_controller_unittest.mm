@@ -473,12 +473,7 @@ TEST_F(TabControllerTest, TitleViewLayout) {
                         [[controller tabView] titleFrame]));
 }
 
-// A comprehensive test of the layout and visibility of all elements (favicon,
-// throbber indicators, titile text, alert indicator button, and close button)
-// over all relevant combinations of tab state.  This test overlaps with parts
-// of the other tests above.
-// Flaky: https://code.google.com/p/chromium/issues/detail?id=311668
-TEST_F(TabControllerTest, DISABLED_LayoutAndVisibilityOfSubviews) {
+TEST_F(TabControllerTest, LayoutAndVisibilityOfSubviews) {
   static const TabAlertState kAlertStatesToTest[] = {
     TabAlertState::NONE, TabAlertState::TAB_CAPTURING,
     TabAlertState::AUDIO_PLAYING, TabAlertState::AUDIO_MUTING
