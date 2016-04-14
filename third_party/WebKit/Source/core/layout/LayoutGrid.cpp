@@ -308,7 +308,9 @@ void LayoutGrid::styleDidChange(StyleDifference diff, const ComputedStyle* oldSt
 bool LayoutGrid::explicitGridDidResize(const ComputedStyle& oldStyle) const
 {
     return oldStyle.gridTemplateColumns().size() != styleRef().gridTemplateColumns().size()
-        || oldStyle.gridTemplateRows().size() != styleRef().gridTemplateRows().size();
+        || oldStyle.gridTemplateRows().size() != styleRef().gridTemplateRows().size()
+        || oldStyle.namedGridAreaColumnCount() != styleRef().namedGridAreaColumnCount()
+        || oldStyle.namedGridAreaRowCount() != styleRef().namedGridAreaRowCount();
 }
 
 bool LayoutGrid::namedGridLinesDefinitionDidChange(const ComputedStyle& oldStyle) const

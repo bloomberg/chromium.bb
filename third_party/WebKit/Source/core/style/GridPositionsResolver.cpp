@@ -207,12 +207,12 @@ static GridSpan definiteGridSpanWithNamedSpanAgainstOpposite(int oppositeLine, c
 
 size_t GridPositionsResolver::explicitGridColumnCount(const ComputedStyle& gridContainerStyle, size_t autoRepeatTracksCount)
 {
-    return std::min<size_t>(gridContainerStyle.gridTemplateColumns().size() + autoRepeatTracksCount, kGridMaxTracks);
+    return std::min<size_t>(std::max(gridContainerStyle.gridTemplateColumns().size() + autoRepeatTracksCount, gridContainerStyle.namedGridAreaColumnCount()), kGridMaxTracks);
 }
 
 size_t GridPositionsResolver::explicitGridRowCount(const ComputedStyle& gridContainerStyle, size_t autoRepeatTracksCount)
 {
-    return std::min<size_t>(gridContainerStyle.gridTemplateRows().size() + autoRepeatTracksCount, kGridMaxTracks);
+    return std::min<size_t>(std::max(gridContainerStyle.gridTemplateRows().size() + autoRepeatTracksCount, gridContainerStyle.namedGridAreaRowCount()), kGridMaxTracks);
 }
 
 static size_t explicitGridSizeForSide(const ComputedStyle& gridContainerStyle, GridPositionSide side, size_t autoRepeatTracksCount)

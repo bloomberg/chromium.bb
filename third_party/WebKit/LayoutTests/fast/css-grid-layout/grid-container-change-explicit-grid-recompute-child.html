@@ -5,6 +5,8 @@
 <style>
 .grid {
     grid-auto-flow: row dense;
+    grid-auto-rows: 5px;
+    grid-auto-columns: 5px;
 }
 #firstGridItem {
     grid-row: auto;
@@ -22,11 +24,12 @@
 }
 </style>
 <script>
-function testGridDefinitions(gridTemplateRows, gridTemplateColumns, firstGridItemData, secondGridItemData, thirdGridItemData)
+function testGridDefinitions(gridTemplateRows, gridTemplateColumns, gridTemplateAreas, firstGridItemData, secondGridItemData, thirdGridItemData)
 {
     var gridElement = document.getElementsByClassName("grid")[0];
     gridElement.style.gridTemplateRows = gridTemplateRows;
     gridElement.style.gridTemplateColumns = gridTemplateColumns;
+    gridElement.style.gridTemplateAreas = gridTemplateAreas;
 
     var firstGridItem = document.getElementById("firstGridItem");
     firstGridItem.setAttribute("data-expected-width", firstGridItemData.width);
@@ -51,10 +54,12 @@ function testGridDefinitions(gridTemplateRows, gridTemplateColumns, firstGridIte
 
 function testChangingGridDefinitions()
 {
-    testGridDefinitions('10px 20px', '10px', { 'width': '10', 'height': '20', 'x': '0', 'y': '10' }, { 'width': '10', 'height': '10', 'x': '0', 'y': '0' }, { 'width': '10', 'height': '0', 'x': '0', 'y': '30' });
-    testGridDefinitions('50px', '30px 40px', { 'width': '30', 'height': '0', 'x': '0', 'y': '50' }, { 'width': '30', 'height': '50', 'x': '0', 'y': '0' }, { 'width': '40', 'height': '50', 'x': '30', 'y': '0' });
-    testGridDefinitions('50px', '60px', { 'width': '60', 'height': '0', 'x': '0', 'y': '50' }, { 'width': '60', 'height': '50', 'x': '0', 'y': '0' }, { 'width': '60', 'height': '0', 'x': '0', 'y': '50' });
-    testGridDefinitions('50px 100px 150px', '60px', { 'width': '60', 'height': '100', 'x': '0', 'y': '50' }, { 'width': '60', 'height': '50', 'x': '0', 'y': '0' }, { 'width': '60', 'height': '150', 'x': '0', 'y': '150' });
+    testGridDefinitions('10px 20px', '10px', '', { 'width': '10', 'height': '20', 'x': '0', 'y': '10' }, { 'width': '10', 'height': '10', 'x': '0', 'y': '0' }, { 'width': '10', 'height': '5', 'x': '0', 'y': '30' });
+    testGridDefinitions('10px', '10px', '"a"', { 'width': '10', 'height': '5', 'x': '0', 'y': '10' }, { 'width': '10', 'height': '10', 'x': '0', 'y': '0' }, { 'width': '10', 'height': '5', 'x': '0', 'y': '15' });
+    testGridDefinitions('10px', '10px', '"a ."', { 'width': '10', 'height': '5', 'x': '0', 'y': '10' }, { 'width': '10', 'height': '10', 'x': '0', 'y': '0' }, { 'width': '5', 'height': '10', 'x': '10', 'y': '0' });
+    testGridDefinitions('50px', '30px 40px', '', { 'width': '30', 'height': '5', 'x': '0', 'y': '50' }, { 'width': '30', 'height': '50', 'x': '0', 'y': '0' }, { 'width': '40', 'height': '50', 'x': '30', 'y': '0' });
+    testGridDefinitions('50px', '60px', '', { 'width': '60', 'height': '5', 'x': '0', 'y': '50' }, { 'width': '60', 'height': '50', 'x': '0', 'y': '0' }, { 'width': '60', 'height': '5', 'x': '0', 'y': '55' });
+    testGridDefinitions('50px 100px 150px', '60px', '', { 'width': '60', 'height': '100', 'x': '0', 'y': '50' }, { 'width': '60', 'height': '50', 'x': '0', 'y': '0' }, { 'width': '60', 'height': '150', 'x': '0', 'y': '150' });
 }
 
 window.addEventListener("load", testChangingGridDefinitions, false);
