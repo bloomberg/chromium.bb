@@ -24,50 +24,94 @@
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "ui/gfx/buffer_types.h"
 
+namespace {
+
+class EmptyBeginFrameSource : public cc::BeginFrameSource {
+ public:
+  void DidFinishFrame(size_t remaining_frames) override{};
+  void AddObserver(cc::BeginFrameObserver* obs) override{};
+  void RemoveObserver(cc::BeginFrameObserver* obs) override{};
+  void AsValueInto(base::trace_event::TracedValue* dict) const override{};
+};
+
+}  // namespace
+
 namespace cc {
 
 Display::Display(DisplayClient* client,
                  SurfaceManager* manager,
                  SharedBitmapManager* bitmap_manager,
                  gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
-                 const RendererSettings& settings)
+                 const RendererSettings& settings,
+                 uint32_t compositor_surface_namespace)
     : client_(client),
-      manager_(manager),
+      surface_manager_(manager),
       bitmap_manager_(bitmap_manager),
       gpu_memory_buffer_manager_(gpu_memory_buffer_manager),
       settings_(settings),
+      compositor_surface_namespace_(compositor_surface_namespace),
       device_scale_factor_(1.f),
       swapped_since_resize_(false),
-      scheduler_(nullptr),
+      vsync_begin_frame_source_(nullptr),
+      observed_begin_frame_source_(nullptr),
       texture_mailbox_deleter_(new TextureMailboxDeleter(nullptr)) {
-  manager_->AddObserver(this);
+  surface_manager_->AddObserver(this);
 }
 
 Display::~Display() {
-  manager_->RemoveObserver(this);
+  if (observed_begin_frame_source_)
+    surface_manager_->UnregisterBeginFrameSource(observed_begin_frame_source_);
+  surface_manager_->RemoveObserver(this);
   if (aggregator_) {
     for (const auto& id_entry : aggregator_->previous_contained_surfaces()) {
-      Surface* surface = manager_->GetSurfaceForId(id_entry.first);
+      Surface* surface = surface_manager_->GetSurfaceForId(id_entry.first);
       if (surface)
         surface->RunDrawCallbacks(SurfaceDrawStatus::DRAW_SKIPPED);
     }
   }
 }
 
+void Display::CreateScheduler(base::SingleThreadTaskRunner* task_runner) {
+  DCHECK(!scheduler_);
+  if (!task_runner) {
+    // WebView doesn't have a task runner or a real begin frame source,
+    // so just create something fake here.
+    internal_begin_frame_source_.reset(new EmptyBeginFrameSource());
+    vsync_begin_frame_source_ = internal_begin_frame_source_.get();
+    observed_begin_frame_source_ = vsync_begin_frame_source_;
+  } else {
+    DCHECK(vsync_begin_frame_source_);
+
+    observed_begin_frame_source_ = vsync_begin_frame_source_;
+    if (settings_.disable_display_vsync) {
+      internal_begin_frame_source_.reset(
+          new BackToBackBeginFrameSource(task_runner));
+      observed_begin_frame_source_ = internal_begin_frame_source_.get();
+    }
+  }
+
+  scheduler_.reset(
+      new DisplayScheduler(this, observed_begin_frame_source_, task_runner,
+                           output_surface_->capabilities().max_frames_pending));
+  surface_manager_->RegisterBeginFrameSource(observed_begin_frame_source_,
+                                             compositor_surface_namespace_);
+}
+
 bool Display::Initialize(std::unique_ptr<OutputSurface> output_surface,
-                         DisplayScheduler* scheduler) {
-  // TODO(enne): register/unregister BeginFrameSource with SurfaceManager here.
+                         base::SingleThreadTaskRunner* task_runner) {
   output_surface_ = std::move(output_surface);
-  scheduler_ = scheduler;
-  return output_surface_->BindToClient(this);
+  if (!output_surface_->BindToClient(this))
+    return false;
+  CreateScheduler(task_runner);
+  return true;
 }
 
 void Display::SetSurfaceId(SurfaceId id, float device_scale_factor) {
+  DCHECK_EQ(id.id_namespace(), compositor_surface_namespace_);
   if (current_surface_id_ == id && device_scale_factor_ == device_scale_factor)
     return;
 
   TRACE_EVENT0("cc", "Display::SetSurfaceId");
-
   current_surface_id_ = id;
   device_scale_factor_ = device_scale_factor;
 
@@ -136,8 +180,8 @@ void Display::InitializeRenderer() {
   // overlays.
   bool output_partial_list = renderer_->Capabilities().using_partial_swap &&
                              !output_surface_->GetOverlayCandidateValidator();
-  aggregator_.reset(new SurfaceAggregator(manager_, resource_provider_.get(),
-                                          output_partial_list));
+  aggregator_.reset(new SurfaceAggregator(
+      surface_manager_, resource_provider_.get(), output_partial_list));
 }
 
 void Display::DidLoseOutputSurface() {
@@ -149,7 +193,7 @@ void Display::DidLoseOutputSurface() {
 }
 
 void Display::UpdateRootSurfaceResourcesLocked() {
-  Surface* surface = manager_->GetSurfaceForId(current_surface_id_);
+  Surface* surface = surface_manager_->GetSurfaceForId(current_surface_id_);
   bool root_surface_resources_locked = !surface || !surface->GetEligibleFrame();
   if (scheduler_)
     scheduler_->SetRootSurfaceResourcesLocked(root_surface_resources_locked);
@@ -179,7 +223,7 @@ bool Display::DrawAndSwap() {
 
   // Run callbacks early to allow pipelining.
   for (const auto& id_entry : aggregator_->previous_contained_surfaces()) {
-    Surface* surface = manager_->GetSurfaceForId(id_entry.first);
+    Surface* surface = surface_manager_->GetSurfaceForId(id_entry.first);
     if (surface)
       surface->RunDrawCallbacks(SurfaceDrawStatus::DRAWN);
   }
@@ -277,9 +321,15 @@ void Display::DidSwapBuffersComplete() {
     renderer_->SwapBuffersComplete();
 }
 
-void Display::CommitVSyncParameters(base::TimeTicks timebase,
-                                    base::TimeDelta interval) {
-  client_->CommitVSyncParameters(timebase, interval);
+void Display::SetBeginFrameSource(BeginFrameSource* source) {
+  // It's expected that there's only a single source from the
+  // BrowserCompositorOutputSurface that corresponds to vsync.  The BFS is
+  // passed BrowserCompositorOutputSurface -> Display -> DisplayScheduler as an
+  // input.  DisplayScheduler makes a decision about which BFS to use and
+  // calls back to Display as DisplaySchedulerClient to register for that
+  // surface id.
+  DCHECK(!vsync_begin_frame_source_);
+  vsync_begin_frame_source_ = source;
 }
 
 void Display::SetMemoryPolicy(const ManagedMemoryPolicy& policy) {
@@ -321,7 +371,7 @@ void Display::SetFullRootLayerDamage() {
 void Display::OnSurfaceDamaged(SurfaceId surface_id, bool* changed) {
   if (aggregator_ &&
       aggregator_->previous_contained_surfaces().count(surface_id)) {
-    Surface* surface = manager_->GetSurfaceForId(surface_id);
+    Surface* surface = surface_manager_->GetSurfaceForId(surface_id);
     if (surface) {
       const CompositorFrame* current_frame = surface->GetEligibleFrame();
       if (!current_frame || !current_frame->delegated_frame_data ||

@@ -2,9 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/compositor/reflector_impl.h"
-
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
@@ -13,6 +10,7 @@
 #include "cc/test/test_web_graphics_context_3d.h"
 #include "content/browser/compositor/browser_compositor_output_surface.h"
 #include "content/browser/compositor/browser_compositor_overlay_candidate_validator.h"
+#include "content/browser/compositor/reflector_impl.h"
 #include "content/browser/compositor/reflector_texture.h"
 #include "content/browser/compositor/test/no_transport_image_transport_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -75,10 +73,12 @@ class TestOutputSurface : public BrowserCompositorOutputSurface {
  public:
   TestOutputSurface(
       const scoped_refptr<cc::ContextProvider>& context_provider,
-      const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager)
+      const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager,
+      base::SingleThreadTaskRunner* task_runner)
       : BrowserCompositorOutputSurface(context_provider,
                                        nullptr,
                                        vsync_manager,
+                                       task_runner,
                                        CreateTestValidatorOzone()) {
     surface_size_ = gfx::Size(256, 256);
     device_scale_factor_ = 1.f;
@@ -136,7 +136,8 @@ class ReflectorImplTest : public testing::Test {
     context_provider_ =
         cc::TestContextProvider::Create(cc::TestWebGraphicsContext3D::Create());
     output_surface_ = std::unique_ptr<TestOutputSurface>(
-        new TestOutputSurface(context_provider_, compositor_->vsync_manager()));
+        new TestOutputSurface(context_provider_, compositor_->vsync_manager(),
+                              compositor_task_runner_.get()));
     CHECK(output_surface_->BindToClient(&output_surface_client_));
 
     root_layer_.reset(new ui::Layer(ui::LAYER_SOLID_COLOR));

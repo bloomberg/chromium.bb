@@ -30,6 +30,7 @@ class OffscreenBrowserCompositorOutputSurface
       const scoped_refptr<ContextProviderCommandBuffer>& context,
       const scoped_refptr<ContextProviderCommandBuffer>& worker_context,
       const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager,
+      base::SingleThreadTaskRunner* task_runner,
       std::unique_ptr<BrowserCompositorOverlayCandidateValidator>
           overlay_candidate_validator);
 

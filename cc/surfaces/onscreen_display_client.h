@@ -19,7 +19,6 @@ class SingleThreadTaskRunner;
 }
 
 namespace cc {
-class BeginFrameSource;
 class ContextProvider;
 class DisplayScheduler;
 class SurfaceManager;
@@ -30,13 +29,13 @@ class SurfaceDisplayOutputSurface;
 class CC_SURFACES_EXPORT OnscreenDisplayClient
     : NON_EXPORTED_BASE(DisplayClient) {
  public:
-  OnscreenDisplayClient(
-      std::unique_ptr<OutputSurface> output_surface,
-      SurfaceManager* manager,
-      SharedBitmapManager* bitmap_manager,
-      gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
-      const RendererSettings& settings,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+  OnscreenDisplayClient(std::unique_ptr<OutputSurface> output_surface,
+                        SurfaceManager* manager,
+                        SharedBitmapManager* bitmap_manager,
+                        gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
+                        const RendererSettings& settings,
+                        scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+                        uint32_t compositor_surface_namespace);
   ~OnscreenDisplayClient() override;
 
   bool Initialize();
@@ -46,8 +45,6 @@ class CC_SURFACES_EXPORT OnscreenDisplayClient
   }
 
   // DisplayClient implementation.
-  void CommitVSyncParameters(base::TimeTicks timebase,
-                             base::TimeDelta interval) override;
   void OutputSurfaceLost() override;
   void SetMemoryPolicy(const ManagedMemoryPolicy& policy) override;
 
@@ -59,13 +56,9 @@ class CC_SURFACES_EXPORT OnscreenDisplayClient
   // Display depends on DisplayScheduler depends on *BeginFrameSource
   // depends on TaskRunner.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  std::unique_ptr<SyntheticBeginFrameSource> synthetic_frame_source_;
-  std::unique_ptr<BackToBackBeginFrameSource> unthrottled_frame_source_;
-  std::unique_ptr<DisplayScheduler> scheduler_;
   std::unique_ptr<Display> display_;
   SurfaceDisplayOutputSurface* surface_display_output_surface_;
   bool output_surface_lost_;
-  bool disable_display_vsync_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(OnscreenDisplayClient);

@@ -2368,6 +2368,10 @@ void LayerTreeHostImpl::CommitVSyncParameters(base::TimeTicks timebase,
   client_->CommitVSyncParameters(timebase, interval);
 }
 
+void LayerTreeHostImpl::SetBeginFrameSource(BeginFrameSource* source) {
+  client_->SetBeginFrameSource(source);
+}
+
 void LayerTreeHostImpl::SetViewportSize(const gfx::Size& device_viewport_size) {
   if (device_viewport_size == device_viewport_size_)
     return;

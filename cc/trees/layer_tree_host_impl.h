@@ -99,6 +99,7 @@ class LayerTreeHostImplClient {
   virtual void DidLoseOutputSurfaceOnImplThread() = 0;
   virtual void CommitVSyncParameters(base::TimeTicks timebase,
                                      base::TimeDelta interval) = 0;
+  virtual void SetBeginFrameSource(BeginFrameSource* source) = 0;
   virtual void SetEstimatedParentDrawTime(base::TimeDelta draw_time) = 0;
   virtual void DidSwapBuffersOnImplThread() = 0;
   virtual void DidSwapBuffersCompleteOnImplThread() = 0;
@@ -354,6 +355,7 @@ class CC_EXPORT LayerTreeHostImpl
   // OutputSurfaceClient implementation.
   void CommitVSyncParameters(base::TimeTicks timebase,
                              base::TimeDelta interval) override;
+  void SetBeginFrameSource(BeginFrameSource* source) override;
   void SetNeedsRedrawRect(const gfx::Rect& rect) override;
   void SetExternalTilePriorityConstraints(
       const gfx::Rect& viewport_rect,

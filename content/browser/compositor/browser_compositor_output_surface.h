@@ -5,12 +5,11 @@
 #ifndef CONTENT_BROWSER_COMPOSITOR_BROWSER_COMPOSITOR_OUTPUT_SURFACE_H_
 #define CONTENT_BROWSER_COMPOSITOR_BROWSER_COMPOSITOR_OUTPUT_SURFACE_H_
 
-#include <memory>
-
 #include "base/macros.h"
 #include "base/threading/non_thread_safe.h"
 #include "build/build_config.h"
 #include "cc/output/output_surface.h"
+#include "cc/scheduler/begin_frame_source.h"
 #include "content/common/content_export.h"
 #include "ui/compositor/compositor_vsync_manager.h"
 
@@ -70,15 +69,18 @@ class CONTENT_EXPORT BrowserCompositorOutputSurface
       const scoped_refptr<cc::ContextProvider>& context,
       const scoped_refptr<cc::ContextProvider>& worker_context,
       const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager,
+      base::SingleThreadTaskRunner* task_runner,
       std::unique_ptr<BrowserCompositorOverlayCandidateValidator>
           overlay_candidate_validator);
 
   // Constructor used by the software implementation.
   BrowserCompositorOutputSurface(
       std::unique_ptr<cc::SoftwareOutputDevice> software_device,
-      const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager);
+      const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager,
+      base::SingleThreadTaskRunner* task_runner);
 
   scoped_refptr<ui::CompositorVSyncManager> vsync_manager_;
+  std::unique_ptr<cc::SyntheticBeginFrameSource> synthetic_begin_frame_source_;
   ReflectorImpl* reflector_;
 
   // True when BeginFrame scheduling is enabled.
@@ -86,6 +88,9 @@ class CONTENT_EXPORT BrowserCompositorOutputSurface
 
  private:
   void Initialize();
+
+  void UpdateVSyncParametersInternal(base::TimeTicks timebase,
+                                     base::TimeDelta interval);
 
   std::unique_ptr<BrowserCompositorOverlayCandidateValidator>
       overlay_candidate_validator_;

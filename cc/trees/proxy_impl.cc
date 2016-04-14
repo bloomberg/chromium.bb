@@ -303,6 +303,12 @@ void ProxyImpl::CommitVSyncParameters(base::TimeTicks timebase,
   synthetic_begin_frame_source_->OnUpdateVSyncParameters(timebase, interval);
 }
 
+void ProxyImpl::SetBeginFrameSource(BeginFrameSource* source) {
+  // TODO(enne): this overrides any preexisting begin frame source.  Those
+  // other sources will eventually be removed and this will be the only path.
+  scheduler_->SetBeginFrameSource(source);
+}
+
 void ProxyImpl::SetEstimatedParentDrawTime(base::TimeDelta draw_time) {
   DCHECK(IsImplThread());
   scheduler_->SetEstimatedParentDrawTime(draw_time);

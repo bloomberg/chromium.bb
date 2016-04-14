@@ -28,12 +28,17 @@ const size_t kDefaultMaxTransferBufferSize = 16 * 1024 * 1024;
 }
 
 SurfacesContextProvider::SurfacesContextProvider(
-    SurfacesContextProviderDelegate* delegate,
     gfx::AcceleratedWidget widget,
     const scoped_refptr<GpuState>& state)
-    : delegate_(delegate), widget_(widget), command_buffer_local_(nullptr) {
+    : delegate_(nullptr), widget_(widget), command_buffer_local_(nullptr) {
   capabilities_.gpu.image = true;
   command_buffer_local_ = new CommandBufferLocal(this, widget_, state);
+}
+
+void SurfacesContextProvider::SetDelegate(
+    SurfacesContextProviderDelegate* delegate) {
+  DCHECK(!delegate_);
+  delegate_ = delegate;
 }
 
 // This routine needs to be safe to call more than once.

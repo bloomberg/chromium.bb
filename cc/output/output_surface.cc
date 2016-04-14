@@ -189,17 +189,6 @@ OutputSurface::OutputSurface(
                     std::move(software_device)) {
 }
 
-void OutputSurface::CommitVSyncParameters(base::TimeTicks timebase,
-                                          base::TimeDelta interval) {
-  TRACE_EVENT2("cc",
-               "OutputSurface::CommitVSyncParameters",
-               "timebase",
-               (timebase - base::TimeTicks()).InSecondsF(),
-               "interval",
-               interval.InSecondsF());
-  client_->CommitVSyncParameters(timebase, interval);
-}
-
 // Forwarded to OutputSurfaceClient
 void OutputSurface::SetNeedsRedrawRect(const gfx::Rect& damage_rect) {
   TRACE_EVENT0("cc", "OutputSurface::SetNeedsRedrawRect");

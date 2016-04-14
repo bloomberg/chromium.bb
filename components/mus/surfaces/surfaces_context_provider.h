@@ -39,9 +39,10 @@ class SurfacesContextProvider : public cc::ContextProvider,
                                 public CommandBufferLocalClient,
                                 public base::NonThreadSafe {
  public:
-  SurfacesContextProvider(SurfacesContextProviderDelegate* delegate,
-                          gfx::AcceleratedWidget widget,
+  SurfacesContextProvider(gfx::AcceleratedWidget widget,
                           const scoped_refptr<GpuState>& state);
+
+  void SetDelegate(SurfacesContextProviderDelegate* delegate);
 
   // cc::ContextProvider implementation.
   bool BindToCurrentThread() override;

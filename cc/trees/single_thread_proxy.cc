@@ -73,18 +73,21 @@ void SingleThreadProxy::Start(
             CompositorTimingHistory::BROWSER_UMA,
             layer_tree_host_->rendering_stats_instrumentation()));
 
-    BeginFrameSource* frame_source = external_begin_frame_source_.get();
-    if (!scheduler_settings.throttle_frame_production) {
-      // Unthrottled source takes precedence over external sources.
-      unthrottled_begin_frame_source_.reset(new BackToBackBeginFrameSource(
-          task_runner_provider_->MainThreadTaskRunner()));
-      frame_source = unthrottled_begin_frame_source_.get();
-    }
-    if (!frame_source) {
-      synthetic_begin_frame_source_.reset(new SyntheticBeginFrameSource(
-          task_runner_provider_->MainThreadTaskRunner(),
-          BeginFrameArgs::DefaultInterval()));
-      frame_source = synthetic_begin_frame_source_.get();
+    BeginFrameSource* frame_source = nullptr;
+    if (!layer_tree_host_->settings().use_output_surface_begin_frame_source) {
+      frame_source = external_begin_frame_source_.get();
+      if (!scheduler_settings.throttle_frame_production) {
+        // Unthrottled source takes precedence over external sources.
+        unthrottled_begin_frame_source_.reset(new BackToBackBeginFrameSource(
+            task_runner_provider_->MainThreadTaskRunner()));
+        frame_source = unthrottled_begin_frame_source_.get();
+      }
+      if (!frame_source) {
+        synthetic_begin_frame_source_.reset(new SyntheticBeginFrameSource(
+            task_runner_provider_->MainThreadTaskRunner(),
+            BeginFrameArgs::DefaultInterval()));
+        frame_source = synthetic_begin_frame_source_.get();
+      }
     }
 
     scheduler_on_impl_thread_ =
@@ -489,6 +492,16 @@ void SingleThreadProxy::CommitVSyncParameters(base::TimeTicks timebase,
 
   if (synthetic_begin_frame_source_)
     synthetic_begin_frame_source_->OnUpdateVSyncParameters(timebase, interval);
+}
+
+void SingleThreadProxy::SetBeginFrameSource(BeginFrameSource* source) {
+  DCHECK(layer_tree_host_->settings().single_thread_proxy_scheduler);
+  // TODO(enne): this overrides any preexisting begin frame source.  Those
+  // other sources will eventually be removed and this will be the only path.
+  if (!layer_tree_host_->settings().use_output_surface_begin_frame_source)
+    return;
+  if (scheduler_on_impl_thread_)
+    scheduler_on_impl_thread_->SetBeginFrameSource(source);
 }
 
 void SingleThreadProxy::SetEstimatedParentDrawTime(base::TimeDelta draw_time) {

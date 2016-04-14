@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/location.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
@@ -329,7 +328,7 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
   if (!create_gpu_output_surface) {
     surface = base::WrapUnique(new SoftwareBrowserCompositorOutputSurface(
         CreateSoftwareOutputDevice(compositor.get()),
-        compositor->vsync_manager()));
+        compositor->vsync_manager(), compositor->task_runner().get()));
   } else {
     DCHECK(context_provider);
     ContextProvider::Capabilities capabilities =
@@ -337,7 +336,7 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
     if (!data->surface_id) {
       surface = base::WrapUnique(new OffscreenBrowserCompositorOutputSurface(
           context_provider, shared_worker_context_provider_,
-          compositor->vsync_manager(),
+          compositor->vsync_manager(), compositor->task_runner().get(),
           std::unique_ptr<BrowserCompositorOverlayCandidateValidator>()));
     } else if (capabilities.gpu.surfaceless) {
       GLenum target = GL_TEXTURE_2D;
@@ -350,6 +349,7 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
           base::WrapUnique(new GpuSurfacelessBrowserCompositorOutputSurface(
               context_provider, shared_worker_context_provider_,
               data->surface_id, compositor->vsync_manager(),
+              compositor->task_runner().get(),
               CreateOverlayCandidateValidator(compositor->widget()), target,
               format, BrowserGpuMemoryBufferManager::current()));
     } else {
@@ -360,7 +360,8 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
 #endif
       surface = base::WrapUnique(new GpuBrowserCompositorOutputSurface(
           context_provider, shared_worker_context_provider_,
-          compositor->vsync_manager(), std::move(validator)));
+          compositor->vsync_manager(), compositor->task_runner().get(),
+          std::move(validator)));
     }
   }
 
@@ -385,7 +386,8 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
       new cc::OnscreenDisplayClient(
           std::move(surface), manager, HostSharedBitmapManager::current(),
           BrowserGpuMemoryBufferManager::current(),
-          compositor->GetRendererSettings(), compositor->task_runner()));
+          compositor->GetRendererSettings(), compositor->task_runner(),
+          compositor->surface_id_allocator()->id_namespace()));
 
   std::unique_ptr<cc::SurfaceDisplayOutputSurface> output_surface(
       new cc::SurfaceDisplayOutputSurface(
@@ -440,7 +442,7 @@ void GpuProcessTransportFactory::RemoveCompositor(ui::Compositor* compositor) {
     // causing things to request a new GLHelper. Due to crbug.com/176091 the
     // GLHelper created in this case would be lost/leaked if we just reset()
     // on the |gl_helper_| variable directly. So instead we call reset() on a
-    // local scoped_ptr.
+    // local std::unique_ptr.
     std::unique_ptr<GLHelper> helper = std::move(gl_helper_);
 
     // If there are any observer left at this point, make sure they clean up

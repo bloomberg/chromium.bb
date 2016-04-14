@@ -57,6 +57,7 @@ LayerTreeSettingsScrollbarAnimatorFromProto(
 LayerTreeSettings::LayerTreeSettings()
     : single_thread_proxy_scheduler(true),
       use_external_begin_frame_source(false),
+      use_output_surface_begin_frame_source(false),
       main_frame_before_activation_enabled(false),
       using_synchronous_renderer_compositor(false),
       can_use_lcd_text(true),

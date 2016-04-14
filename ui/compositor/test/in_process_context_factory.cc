@@ -47,13 +47,22 @@ class DirectOutputSurface : public cc::OutputSurface {
  public:
   DirectOutputSurface(
       const scoped_refptr<cc::ContextProvider>& context_provider,
-      const scoped_refptr<cc::ContextProvider>& worker_context_provider)
+      const scoped_refptr<cc::ContextProvider>& worker_context_provider,
+      std::unique_ptr<cc::BeginFrameSource> begin_frame_source)
       : cc::OutputSurface(context_provider, worker_context_provider),
+        begin_frame_source_(std::move(begin_frame_source)),
         weak_ptr_factory_(this) {}
 
   ~DirectOutputSurface() override {}
 
   // cc::OutputSurface implementation
+  bool BindToClient(cc::OutputSurfaceClient* client) override {
+    if (!OutputSurface::BindToClient(client))
+      return false;
+
+    client->SetBeginFrameSource(begin_frame_source_.get());
+    return true;
+  }
   void SwapBuffers(cc::CompositorFrame* frame) override {
     DCHECK(context_provider_.get());
     DCHECK(frame->gl_frame_data);
@@ -78,6 +87,8 @@ class DirectOutputSurface : public cc::OutputSurface {
   }
 
  private:
+  std::unique_ptr<cc::BeginFrameSource> begin_frame_source_;
+
   base::WeakPtrFactory<DirectOutputSurface> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DirectOutputSurface);
@@ -141,15 +152,19 @@ void InProcessContextFactory::CreateOutputSurface(
           "UICompositor");
 
   std::unique_ptr<cc::OutputSurface> real_output_surface;
+  std::unique_ptr<cc::SyntheticBeginFrameSource> begin_frame_source(
+      new cc::SyntheticBeginFrameSource(compositor->task_runner().get(),
+                                        cc::BeginFrameArgs::DefaultInterval()));
 
   if (use_test_surface_) {
     bool flipped_output_surface = false;
     real_output_surface = base::WrapUnique(new cc::PixelTestOutputSurface(
         context_provider, shared_worker_context_provider_,
-        flipped_output_surface));
+        flipped_output_surface, std::move(begin_frame_source)));
   } else {
     real_output_surface = base::WrapUnique(new DirectOutputSurface(
-        context_provider, shared_worker_context_provider_));
+        context_provider, shared_worker_context_provider_,
+        std::move(begin_frame_source)));
   }
 
   if (surface_manager_) {
@@ -157,7 +172,8 @@ void InProcessContextFactory::CreateOutputSurface(
         new cc::OnscreenDisplayClient(
             std::move(real_output_surface), surface_manager_,
             GetSharedBitmapManager(), GetGpuMemoryBufferManager(),
-            compositor->GetRendererSettings(), compositor->task_runner()));
+            compositor->GetRendererSettings(), compositor->task_runner(),
+            compositor->surface_id_allocator()->id_namespace()));
     std::unique_ptr<cc::SurfaceDisplayOutputSurface> surface_output_surface(
         new cc::SurfaceDisplayOutputSurface(
             surface_manager_, compositor->surface_id_allocator(),

@@ -175,6 +175,8 @@ Compositor::Compositor(ui::ContextFactory* context_factory,
   // thread.
   settings.image_decode_tasks_enabled = false;
 
+  settings.use_output_surface_begin_frame_source = true;
+
 #if !defined(OS_ANDROID)
   // TODO(sohanjg): Revisit this memory usage in tile manager.
   cc::ManagedMemoryPolicy policy(

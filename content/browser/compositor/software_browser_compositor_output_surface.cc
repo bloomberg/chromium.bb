@@ -23,8 +23,11 @@ namespace content {
 
 SoftwareBrowserCompositorOutputSurface::SoftwareBrowserCompositorOutputSurface(
     std::unique_ptr<cc::SoftwareOutputDevice> software_device,
-    const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager)
-    : BrowserCompositorOutputSurface(std::move(software_device), vsync_manager),
+    const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager,
+    base::SingleThreadTaskRunner* task_runner)
+    : BrowserCompositorOutputSurface(std::move(software_device),
+                                     vsync_manager,
+                                     task_runner),
       weak_factory_(this) {}
 
 SoftwareBrowserCompositorOutputSurface::

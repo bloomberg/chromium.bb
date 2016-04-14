@@ -10,6 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "cc/output/context_provider.h"
 #include "cc/output/output_surface.h"
+#include "cc/scheduler/begin_frame_source.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/swap_result.h"
@@ -37,6 +38,7 @@ class DirectOutputSurfaceOzone : public cc::OutputSurface {
   DirectOutputSurfaceOzone(
       const scoped_refptr<SurfacesContextProvider>& context_provider,
       gfx::AcceleratedWidget widget,
+      base::SingleThreadTaskRunner* task_runner,
       uint32_t target,
       uint32_t internalformat);
 
@@ -61,6 +63,7 @@ class DirectOutputSurfaceOzone : public cc::OutputSurface {
   void OnGpuSwapBuffersCompleted(gfx::SwapResult result);
 
   std::unique_ptr<BufferQueue> output_surface_;
+  std::unique_ptr<cc::SyntheticBeginFrameSource> synthetic_begin_frame_source_;
 
   base::WeakPtrFactory<DirectOutputSurfaceOzone> weak_ptr_factory_;
 };

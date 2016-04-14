@@ -59,7 +59,8 @@ HardwareRenderer::HardwareRenderer(RenderThreadManager* state)
   surface_manager_->RegisterSurfaceFactoryClient(
       surface_id_allocator_->id_namespace(), this);
   display_.reset(new cc::Display(this, surface_manager_.get(), nullptr, nullptr,
-                                 settings));
+                                 settings,
+                                 surface_id_allocator_->id_namespace()));
 }
 
 HardwareRenderer::~HardwareRenderer() {

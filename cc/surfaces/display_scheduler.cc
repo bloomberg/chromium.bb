@@ -33,10 +33,6 @@ DisplayScheduler::DisplayScheduler(DisplaySchedulerClient* client,
       weak_ptr_factory_(this) {
   begin_frame_deadline_closure_ = base::Bind(
       &DisplayScheduler::OnBeginFrameDeadline, weak_ptr_factory_.GetWeakPtr());
-
-  // TODO(tansell): Set this to something useful.
-  begin_frame_source_for_children_.reset(new SyntheticBeginFrameSource(
-      task_runner, BeginFrameArgs::DefaultInterval()));
 }
 
 DisplayScheduler::~DisplayScheduler() {

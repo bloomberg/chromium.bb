@@ -21,11 +21,15 @@ namespace mus {
 DirectOutputSurfaceOzone::DirectOutputSurfaceOzone(
     const scoped_refptr<SurfacesContextProvider>& context_provider,
     gfx::AcceleratedWidget widget,
+    base::SingleThreadTaskRunner* task_runner,
     uint32_t target,
     uint32_t internalformat)
     : cc::OutputSurface(context_provider),
       output_surface_(
           new BufferQueue(context_provider, target, internalformat, widget)),
+      synthetic_begin_frame_source_(new cc::SyntheticBeginFrameSource(
+          task_runner,
+          cc::BeginFrameArgs::DefaultInterval())),
       weak_ptr_factory_(this) {
   capabilities_.uses_default_gl_framebuffer = false;
   capabilities_.flipped_output_surface = true;
@@ -88,6 +92,8 @@ bool DirectOutputSurfaceOzone::BindToClient(cc::OutputSurfaceClient* client) {
   if (!cc::OutputSurface::BindToClient(client))
     return false;
 
+  client->SetBeginFrameSource(synthetic_begin_frame_source_.get());
+
   if (capabilities_.uses_default_gl_framebuffer) {
     capabilities_.flipped_output_surface =
         context_provider()->ContextCapabilities().gpu.flips_vertically;
@@ -95,13 +101,11 @@ bool DirectOutputSurfaceOzone::BindToClient(cc::OutputSurfaceClient* client) {
   return true;
 }
 
-// TODO(rjkroege): Plumb vsync properties.
 void DirectOutputSurfaceOzone::OnUpdateVSyncParametersFromGpu(
     base::TimeTicks timebase,
     base::TimeDelta interval) {
   DCHECK(HasClient());
-  CommitVSyncParameters(timebase, interval);
-  // vsync_manager_->UpdateVSyncParameters(timebase, interval);
+  synthetic_begin_frame_source_->OnUpdateVSyncParameters(timebase, interval);
 }
 
 void DirectOutputSurfaceOzone::OnGpuSwapBuffersCompleted(

@@ -33,11 +33,10 @@ class CC_SURFACES_EXPORT SurfaceDisplayOutputSurface
   ~SurfaceDisplayOutputSurface() override;
 
   void set_display_client(OnscreenDisplayClient* display_client) {
+    DCHECK(!display_client_);
     display_client_ = display_client;
   }
   SurfaceFactory* factory() { return &factory_; }
-  void ReceivedVSyncParameters(base::TimeTicks timebase,
-                               base::TimeDelta interval);
 
   // OutputSurface implementation.
   void SwapBuffers(CompositorFrame* frame) override;

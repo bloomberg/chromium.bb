@@ -76,6 +76,33 @@ namespace {
 
 const unsigned int kMaxDisplaySwapBuffers = 1U;
 
+class ExternalBeginFrameSource : public cc::BeginFrameSourceBase,
+                                 public CompositorImpl::VSyncObserver {
+ public:
+  ExternalBeginFrameSource(CompositorImpl* compositor)
+      : compositor_(compositor) {
+    compositor_->AddObserver(this);
+  }
+
+  ~ExternalBeginFrameSource() override { compositor_->RemoveObserver(this); }
+
+  // cc::BeginFrameSourceBase implementation:
+  void OnNeedsBeginFramesChanged(bool needs_begin_frames) override {
+    compositor_->OnNeedsBeginFramesChange(needs_begin_frames);
+  }
+
+  // CompositorImpl::VSyncObserver implementation:
+  void OnVSync(base::TimeTicks frame_time,
+               base::TimeDelta vsync_period) override {
+    CallOnBeginFrame(cc::BeginFrameArgs::Create(
+        BEGINFRAME_FROM_HERE, frame_time, base::TimeTicks::Now(), vsync_period,
+        cc::BeginFrameArgs::NORMAL));
+  }
+
+ private:
+  CompositorImpl* compositor_;
+};
+
 // Used to override capabilities_.adjust_deadline_for_parent to false
 class OutputSurfaceWithoutParent : public cc::OutputSurface,
                                    public CompositorImpl::VSyncObserver {
@@ -84,7 +111,8 @@ class OutputSurfaceWithoutParent : public cc::OutputSurface,
       CompositorImpl* compositor,
       const scoped_refptr<ContextProviderCommandBuffer>& context_provider,
       const base::Callback<void(gpu::Capabilities)>&
-          populate_gpu_capabilities_callback)
+          populate_gpu_capabilities_callback,
+      std::unique_ptr<ExternalBeginFrameSource> begin_frame_source)
       : cc::OutputSurface(context_provider),
         compositor_(compositor),
         populate_gpu_capabilities_callback_(populate_gpu_capabilities_callback),
@@ -92,7 +120,8 @@ class OutputSurfaceWithoutParent : public cc::OutputSurface,
             base::Bind(&OutputSurfaceWithoutParent::OnSwapBuffersCompleted,
                        base::Unretained(this))),
         overlay_candidate_validator_(
-            new BrowserCompositorOverlayCandidateValidatorAndroid()) {
+            new BrowserCompositorOverlayCandidateValidatorAndroid()),
+        begin_frame_source_(std::move(begin_frame_source)) {
     capabilities_.adjust_deadline_for_parent = false;
     capabilities_.max_frames_pending = kMaxDisplaySwapBuffers;
   }
@@ -122,7 +151,14 @@ class OutputSurfaceWithoutParent : public cc::OutputSurface,
         context_provider_->ContextCapabilities().gpu);
     compositor_->AddObserver(this);
 
+    client->SetBeginFrameSource(begin_frame_source_.get());
+
     return true;
+  }
+
+  void DetachFromClient() override {
+    client_->SetBeginFrameSource(nullptr);
+    OutputSurface::DetachFromClient();
   }
 
   cc::OverlayCandidateValidator* GetOverlayCandidateValidator() const override {
@@ -147,44 +183,17 @@ class OutputSurfaceWithoutParent : public cc::OutputSurface,
   }
 
   void OnVSync(base::TimeTicks timebase, base::TimeDelta interval) override {
-    CommitVSyncParameters(timebase, interval);
+    client_->CommitVSyncParameters(timebase, interval);
   }
 
+ private:
   CompositorImpl* compositor_;
   base::Callback<void(gpu::Capabilities)> populate_gpu_capabilities_callback_;
   base::CancelableCallback<void(const std::vector<ui::LatencyInfo>&,
                                 gfx::SwapResult)>
       swap_buffers_completion_callback_;
   std::unique_ptr<cc::OverlayCandidateValidator> overlay_candidate_validator_;
-};
-
-class ExternalBeginFrameSource : public cc::BeginFrameSourceBase,
-                                 public CompositorImpl::VSyncObserver {
- public:
-  ExternalBeginFrameSource(CompositorImpl* compositor)
-      : compositor_(compositor) {
-    compositor_->AddObserver(this);
-  }
-
-  ~ExternalBeginFrameSource() override {
-    compositor_->RemoveObserver(this);
-  }
-
-  // cc::BeginFrameSourceBase implementation:
-  void OnNeedsBeginFramesChanged(bool needs_begin_frames) override {
-    compositor_->OnNeedsBeginFramesChange(needs_begin_frames);
-  }
-
-  // CompositorImpl::VSyncObserver implementation:
-  void OnVSync(base::TimeTicks frame_time,
-               base::TimeDelta vsync_period) override {
-    CallOnBeginFrame(cc::BeginFrameArgs::Create(
-        BEGINFRAME_FROM_HERE, frame_time, base::TimeTicks::Now(), vsync_period,
-        cc::BeginFrameArgs::NORMAL));
-  }
-
- private:
-  CompositorImpl* compositor_;
+  std::unique_ptr<ExternalBeginFrameSource> begin_frame_source_;
 };
 
 static bool g_initialized = false;
@@ -336,7 +345,6 @@ void CompositorImpl::CreateLayerTreeHost() {
   settings.renderer_settings.allow_antialiasing = false;
   settings.renderer_settings.highp_threshold_min = 2048;
   settings.use_zero_copy = true;
-  settings.use_external_begin_frame_source = true;
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   settings.initial_debug_state.SetRecordRenderingStats(
@@ -352,7 +360,6 @@ void CompositorImpl::CreateLayerTreeHost() {
   params.task_graph_runner = g_task_graph_runner.Pointer();
   params.main_task_runner = base::ThreadTaskRunnerHandle::Get();
   params.settings = &settings;
-  params.external_begin_frame_source.reset(new ExternalBeginFrameSource(this));
   host_ = cc::LayerTreeHost::CreateSingleThreaded(this, &params);
   DCHECK(!host_->visible());
   host_->SetRootLayer(root_layer_);
@@ -554,15 +561,16 @@ void CompositorImpl::CreateOutputSurface() {
       new OutputSurfaceWithoutParent(
           this, context_provider,
           base::Bind(&CompositorImpl::PopulateGpuCapabilities,
-                     base::Unretained(this))));
+                     base::Unretained(this)),
+          base::WrapUnique(new ExternalBeginFrameSource(this))));
 
   cc::SurfaceManager* manager = GetSurfaceManager();
-  display_client_.reset(
-      new cc::OnscreenDisplayClient(std::move(real_output_surface), manager,
-                                    HostSharedBitmapManager::current(),
-                                    BrowserGpuMemoryBufferManager::current(),
-                                    host_->settings().renderer_settings,
-                                    base::ThreadTaskRunnerHandle::Get()));
+  display_client_.reset(new cc::OnscreenDisplayClient(
+      std::move(real_output_surface), manager,
+      HostSharedBitmapManager::current(),
+      BrowserGpuMemoryBufferManager::current(),
+      host_->settings().renderer_settings, base::ThreadTaskRunnerHandle::Get(),
+      surface_id_allocator_->id_namespace()));
   std::unique_ptr<cc::SurfaceDisplayOutputSurface> surface_output_surface(
       new cc::SurfaceDisplayOutputSurface(manager, surface_id_allocator_.get(),
                                           context_provider, nullptr));

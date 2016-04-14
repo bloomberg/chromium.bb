@@ -42,8 +42,6 @@ class HardwareRenderer : public cc::DisplayClient,
 
  private:
   // cc::DisplayClient overrides.
-  void CommitVSyncParameters(base::TimeTicks timebase,
-                             base::TimeDelta interval) override {}
   void OutputSurfaceLost() override {}
   void SetMemoryPolicy(const cc::ManagedMemoryPolicy& policy) override {}
 

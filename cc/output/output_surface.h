@@ -199,9 +199,6 @@ class CC_EXPORT OutputSurface : public base::trace_event::MemoryDumpProvider {
   bool has_alpha_;
   base::ThreadChecker client_thread_checker_;
 
-  void CommitVSyncParameters(base::TimeTicks timebase,
-                             base::TimeDelta interval);
-
   void SetNeedsRedrawRect(const gfx::Rect& damage_rect);
   void ReclaimResources(const CompositorFrameAck* ack);
   void SetExternalStencilTest(bool enabled);

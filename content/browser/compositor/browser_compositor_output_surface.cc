@@ -11,6 +11,7 @@
 #include "base/location.h"
 #include "base/strings/string_number_conversions.h"
 #include "cc/base/switches.h"
+#include "cc/output/output_surface_client.h"
 #include "content/browser/compositor/browser_compositor_overlay_candidate_validator.h"
 #include "content/browser/compositor/reflector_impl.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
@@ -21,10 +22,14 @@ BrowserCompositorOutputSurface::BrowserCompositorOutputSurface(
     const scoped_refptr<cc::ContextProvider>& context_provider,
     const scoped_refptr<cc::ContextProvider>& worker_context_provider,
     const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager,
+    base::SingleThreadTaskRunner* task_runner,
     std::unique_ptr<BrowserCompositorOverlayCandidateValidator>
         overlay_candidate_validator)
     : OutputSurface(context_provider, worker_context_provider),
       vsync_manager_(vsync_manager),
+      synthetic_begin_frame_source_(new cc::SyntheticBeginFrameSource(
+          task_runner,
+          cc::BeginFrameArgs::DefaultInterval())),
       reflector_(nullptr),
       use_begin_frame_scheduling_(
           base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -35,9 +40,13 @@ BrowserCompositorOutputSurface::BrowserCompositorOutputSurface(
 
 BrowserCompositorOutputSurface::BrowserCompositorOutputSurface(
     std::unique_ptr<cc::SoftwareOutputDevice> software_device,
-    const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager)
+    const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager,
+    base::SingleThreadTaskRunner* task_runner)
     : OutputSurface(std::move(software_device)),
       vsync_manager_(vsync_manager),
+      synthetic_begin_frame_source_(new cc::SyntheticBeginFrameSource(
+          task_runner,
+          cc::BeginFrameArgs::DefaultInterval())),
       reflector_(nullptr),
       use_begin_frame_scheduling_(
           base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -67,10 +76,23 @@ bool BrowserCompositorOutputSurface::BindToClient(
   if (!OutputSurface::BindToClient(client))
     return false;
 
+  // Pass begin frame source up to Display to use for DisplayScheduler.
+  client->SetBeginFrameSource(synthetic_begin_frame_source_.get());
+
   // Don't want vsync notifications until there is a client.
   if (!use_begin_frame_scheduling_)
     vsync_manager_->AddObserver(this);
   return true;
+}
+
+void BrowserCompositorOutputSurface::UpdateVSyncParametersInternal(
+    base::TimeTicks timebase,
+    base::TimeDelta interval) {
+  if (interval == base::TimeDelta()) {
+    // TODO(brianderson): We should not be receiving 0 intervals.
+    interval = cc::BeginFrameArgs::DefaultInterval();
+  }
+  synthetic_begin_frame_source_->OnUpdateVSyncParameters(timebase, interval);
 }
 
 void BrowserCompositorOutputSurface::OnUpdateVSyncParameters(
@@ -78,7 +100,7 @@ void BrowserCompositorOutputSurface::OnUpdateVSyncParameters(
     base::TimeDelta interval) {
   DCHECK(HasClient());
   DCHECK(!use_begin_frame_scheduling_);
-  CommitVSyncParameters(timebase, interval);
+  UpdateVSyncParametersInternal(timebase, interval);
 }
 
 void BrowserCompositorOutputSurface::OnUpdateVSyncParametersFromGpu(
@@ -86,7 +108,7 @@ void BrowserCompositorOutputSurface::OnUpdateVSyncParametersFromGpu(
     base::TimeDelta interval) {
   DCHECK(HasClient());
   if (use_begin_frame_scheduling_) {
-    CommitVSyncParameters(timebase, interval);
+    UpdateVSyncParametersInternal(timebase, interval);
     return;
   }
 

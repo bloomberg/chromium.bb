@@ -42,11 +42,6 @@ class TestOutputSurface : public OutputSurface {
     client_->DidSwapBuffersComplete();
   }
 
-  void CommitVSyncParametersForTesting(base::TimeTicks timebase,
-                                       base::TimeDelta interval) {
-    CommitVSyncParameters(timebase, interval);
-  }
-
   void DidSwapBuffersForTesting() { client_->DidSwapBuffers(); }
 
   void OnSwapBuffersCompleteForTesting() { client_->DidSwapBuffersComplete(); }

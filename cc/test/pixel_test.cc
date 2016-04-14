@@ -5,7 +5,6 @@
 #include "cc/test/pixel_test.h"
 
 #include "base/command_line.h"
-#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/thread_task_runner_handle.h"
@@ -19,6 +18,7 @@
 #include "cc/output/texture_mailbox_deleter.h"
 #include "cc/raster/tile_task_worker_pool.h"
 #include "cc/resources/resource_provider.h"
+#include "cc/scheduler/begin_frame_source.h"
 #include "cc/test/fake_output_surface_client.h"
 #include "cc/test/paths.h"
 #include "cc/test/pixel_test_output_surface.h"
@@ -128,8 +128,9 @@ void PixelTest::SetUpGLRenderer(bool use_skia_gpu_backend,
       new TestInProcessContextProvider(nullptr));
   scoped_refptr<TestInProcessContextProvider> worker(
       new TestInProcessContextProvider(compositor.get()));
-  output_surface_.reset(new PixelTestOutputSurface(
-      std::move(compositor), std::move(worker), flipped_output_surface));
+  output_surface_.reset(
+      new PixelTestOutputSurface(std::move(compositor), std::move(worker),
+                                 flipped_output_surface, nullptr));
   output_surface_->BindToClient(output_surface_client_.get());
 
   shared_bitmap_manager_.reset(new TestSharedBitmapManager);
@@ -174,7 +175,7 @@ void PixelTest::EnableExternalStencilTest() {
 void PixelTest::SetUpSoftwareRenderer() {
   std::unique_ptr<SoftwareOutputDevice> device(
       new PixelTestSoftwareOutputDevice());
-  output_surface_.reset(new PixelTestOutputSurface(std::move(device)));
+  output_surface_.reset(new PixelTestOutputSurface(std::move(device), nullptr));
   output_surface_->BindToClient(output_surface_client_.get());
   shared_bitmap_manager_.reset(new TestSharedBitmapManager());
   resource_provider_ = ResourceProvider::Create(

@@ -177,7 +177,11 @@ void CompositorOutputSurface::OnUpdateVSyncParametersFromBrowser(
     base::TimeTicks timebase,
     base::TimeDelta interval) {
   DCHECK(client_thread_checker_.CalledOnValidThread());
-  CommitVSyncParameters(timebase, interval);
+  TRACE_EVENT2("cc",
+               "CompositorOutputSurface::OnUpdateVSyncParametersFromBrowser",
+               "timebase", (timebase - base::TimeTicks()).InSecondsF(),
+               "interval", interval.InSecondsF());
+  client_->CommitVSyncParameters(timebase, interval);
 }
 
 void CompositorOutputSurface::OnSwapAck(uint32_t output_surface_id,

@@ -9,18 +9,25 @@
 
 namespace cc {
 
+class BeginFrameSource;
+
 class PixelTestOutputSurface : public OutputSurface {
  public:
   explicit PixelTestOutputSurface(
       scoped_refptr<ContextProvider> context_provider,
       scoped_refptr<ContextProvider> worker_context_provider,
-      bool flipped_output_surface);
+      bool flipped_output_surface,
+      std::unique_ptr<BeginFrameSource> begin_frame_source);
   explicit PixelTestOutputSurface(
       scoped_refptr<ContextProvider> context_provider,
-      bool flipped_output_surface);
+      bool flipped_output_surface,
+      std::unique_ptr<BeginFrameSource> begin_frame_source);
   explicit PixelTestOutputSurface(
-      std::unique_ptr<SoftwareOutputDevice> software_device);
+      std::unique_ptr<SoftwareOutputDevice> software_device,
+      std::unique_ptr<BeginFrameSource> begin_frame_source);
+  ~PixelTestOutputSurface() override;
 
+  bool BindToClient(OutputSurfaceClient* client) override;
   void Reshape(const gfx::Size& size, float scale_factor, bool alpha) override;
   bool HasExternalStencilTest() const override;
   void SwapBuffers(CompositorFrame* frame) override;
@@ -33,6 +40,7 @@ class PixelTestOutputSurface : public OutputSurface {
   }
 
  private:
+  std::unique_ptr<BeginFrameSource> begin_frame_source_;
   gfx::Size surface_expansion_size_;
   bool external_stencil_test_;
 };

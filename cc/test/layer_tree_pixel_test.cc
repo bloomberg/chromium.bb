@@ -8,7 +8,6 @@
 #include <stdint.h>
 
 #include "base/command_line.h"
-#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "cc/base/switches.h"
 #include "cc/layers/solid_color_layer.h"
@@ -49,8 +48,8 @@ std::unique_ptr<OutputSurface> LayerTreePixelTest::CreateOutputSurface() {
           new PixelTestSoftwareOutputDevice);
       software_output_device->set_surface_expansion_size(
           surface_expansion_size);
-      output_surface = base::WrapUnique(
-          new PixelTestOutputSurface(std::move(software_output_device)));
+      output_surface = base::WrapUnique(new PixelTestOutputSurface(
+          std::move(software_output_device), nullptr));
       break;
     }
     case PIXEL_TEST_GL: {
@@ -59,8 +58,9 @@ std::unique_ptr<OutputSurface> LayerTreePixelTest::CreateOutputSurface() {
           new TestInProcessContextProvider(nullptr));
       scoped_refptr<TestInProcessContextProvider> worker(
           new TestInProcessContextProvider(compositor.get()));
-      output_surface = base::WrapUnique(new PixelTestOutputSurface(
-          std::move(compositor), std::move(worker), flipped_output_surface));
+      output_surface = base::WrapUnique(
+          new PixelTestOutputSurface(std::move(compositor), std::move(worker),
+                                     flipped_output_surface, nullptr));
       break;
     }
   }

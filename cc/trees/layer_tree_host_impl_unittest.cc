@@ -124,6 +124,7 @@ class LayerTreeHostImplTest : public testing::Test,
   void DidLoseOutputSurfaceOnImplThread() override {}
   void CommitVSyncParameters(base::TimeTicks timebase,
                              base::TimeDelta interval) override {}
+  void SetBeginFrameSource(BeginFrameSource* source) override {}
   void SetEstimatedParentDrawTime(base::TimeDelta draw_time) override {}
   void DidSwapBuffersOnImplThread() override {}
   void DidSwapBuffersCompleteOnImplThread() override {}
