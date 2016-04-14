@@ -3051,14 +3051,6 @@ bool GLES2DecoderImpl::Initialize(const scoped_refptr<gfx::GLSurface>& surface,
     glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
   }
 
-  // ES3 requires sRGB-linear color space conversion if
-  // FRAMEBUFFER_ATTACHMENT_COLOR_ENCODING for a buffer is sRGB, for situations
-  // like blending, clearing, etc.
-  // On Desktop GL, this is not enabled by default.
-  if (feature_info_->gl_version_info().IsAtLeastGL(3, 2)) {
-    glEnable(GL_FRAMEBUFFER_SRGB);
-  }
-
   has_robustness_extension_ =
       context->HasExtension("GL_ARB_robustness") ||
       context->HasExtension("GL_KHR_robustness") ||
