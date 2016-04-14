@@ -7,8 +7,9 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/spellchecker/spelling_service_client.h"
 #include "content/public/browser/browser_message_filter.h"
 
@@ -70,7 +71,7 @@ class SpellCheckMessageFilter : public content::BrowserMessageFilter {
   int render_process_id_;
 
   // A JSON-RPC client that calls the Spelling service in the background.
-  scoped_ptr<SpellingServiceClient> client_;
+  std::unique_ptr<SpellingServiceClient> client_;
 };
 
 #endif  // CHROME_BROWSER_SPELLCHECKER_SPELLCHECK_MESSAGE_FILTER_H_

@@ -6,12 +6,12 @@
 #define CHROME_BROWSER_SPELLCHECKER_SPELLING_SERVICE_CLIENT_H_
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
@@ -54,7 +54,7 @@ class URLFetcher;
 //                       base::Unretained(this));
 //     }
 //    private:
-//     scoped_ptr<SpellingServiceClient> client_;
+//     std::unique_ptr<SpellingServiceClient> client_;
 //   };
 //
 class SpellingServiceClient : public net::URLFetcherDelegate {
@@ -115,7 +115,7 @@ class SpellingServiceClient : public net::URLFetcherDelegate {
   // Creates a URLFetcher object used for sending a JSON-RPC request. This
   // function is overridden by unit tests to prevent them from actually sending
   // requests to the Spelling service.
-  virtual scoped_ptr<net::URLFetcher> CreateURLFetcher(const GURL& url);
+  virtual std::unique_ptr<net::URLFetcher> CreateURLFetcher(const GURL& url);
 
   // The URLFetcher object used for sending a JSON-RPC request.
   std::map<const net::URLFetcher*, TextCheckCallbackData*> spellcheck_fetchers_;

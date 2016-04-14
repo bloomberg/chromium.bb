@@ -82,7 +82,7 @@ uint32_t BuildHash(const base::Time& session_start, size_t suggestion_index) {
 
 uint64_t BuildAnonymousHash(const FeedbackSender::RandSalt& r,
                             const base::string16& s) {
-  scoped_ptr<crypto::SecureHash> hash(
+  std::unique_ptr<crypto::SecureHash> hash(
       crypto::SecureHash::Create(crypto::SecureHash::SHA256));
 
   hash->Update(s.data(), s.size() * sizeof(s[0]));
@@ -110,13 +110,13 @@ Misspelling BuildFeedback(const SpellCheckResult& result,
 }
 
 // Builds suggestion info from |suggestions|.
-scoped_ptr<base::ListValue> BuildSuggestionInfo(
+std::unique_ptr<base::ListValue> BuildSuggestionInfo(
     const std::vector<Misspelling>& misspellings,
     bool is_first_feedback_batch,
     const FeedbackSender::RandSalt& salt) {
-  scoped_ptr<base::ListValue> list(new base::ListValue);
+  std::unique_ptr<base::ListValue> list(new base::ListValue);
   for (const auto& raw_misspelling : misspellings) {
-    scoped_ptr<base::DictionaryValue> misspelling(
+    std::unique_ptr<base::DictionaryValue> misspelling(
         SerializeMisspelling(raw_misspelling));
     misspelling->SetBoolean("isFirstInSession", is_first_feedback_batch);
     misspelling->SetBoolean("isAutoCorrection", false);
@@ -128,7 +128,7 @@ scoped_ptr<base::ListValue> BuildSuggestionInfo(
             salt, raw_misspelling.context.substr(raw_misspelling.location,
                                                  raw_misspelling.length))));
     // repeated fixed64 user_suggestion_id = ...
-    scoped_ptr<base::ListValue> suggestion_list(new base::ListValue());
+    std::unique_ptr<base::ListValue> suggestion_list(new base::ListValue());
     for (const auto& suggestion : raw_misspelling.suggestions) {
       suggestion_list->AppendString(
           base::Uint64ToString(BuildAnonymousHash(salt, suggestion)));
@@ -141,11 +141,11 @@ scoped_ptr<base::ListValue> BuildSuggestionInfo(
 
 // Builds feedback parameters from |suggestion_info|, |language|, and |country|.
 // Takes ownership of |suggestion_list|.
-scoped_ptr<base::DictionaryValue> BuildParams(
-    scoped_ptr<base::ListValue> suggestion_info,
+std::unique_ptr<base::DictionaryValue> BuildParams(
+    std::unique_ptr<base::ListValue> suggestion_info,
     const std::string& language,
     const std::string& country) {
-  scoped_ptr<base::DictionaryValue> params(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> params(new base::DictionaryValue);
   params->Set("suggestionInfo", suggestion_info.release());
   params->SetString("key", google_apis::GetAPIKey());
   params->SetString("language", language);
@@ -155,10 +155,10 @@ scoped_ptr<base::DictionaryValue> BuildParams(
 }
 
 // Builds feedback data from |params|. Takes ownership of |params|.
-scoped_ptr<base::Value> BuildFeedbackValue(
-    scoped_ptr<base::DictionaryValue> params,
+std::unique_ptr<base::Value> BuildFeedbackValue(
+    std::unique_ptr<base::DictionaryValue> params,
     const std::string& api_version) {
-  scoped_ptr<base::DictionaryValue> result(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue);
   result->Set("params", params.release());
   result->SetString("method", "spelling.feedback");
   result->SetString("apiVersion", api_version);
@@ -433,7 +433,7 @@ void FeedbackSender::SendFeedback(const std::vector<Misspelling>& feedback_data,
     RandBytes(&salt_, sizeof(salt_));
     last_salt_update_ = base::Time::Now();
   }
-  scoped_ptr<base::Value> feedback_value(BuildFeedbackValue(
+  std::unique_ptr<base::Value> feedback_value(BuildFeedbackValue(
       BuildParams(
           BuildSuggestionInfo(feedback_data, is_first_feedback_batch, salt_),
           language_, country_),

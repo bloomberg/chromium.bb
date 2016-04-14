@@ -197,9 +197,10 @@ bool SpellingServiceClient::ParseResponse(
   //     "data": [...]
   //   }
   // }
-  scoped_ptr<base::DictionaryValue> value(static_cast<base::DictionaryValue*>(
-      base::JSONReader::Read(data, base::JSON_ALLOW_TRAILING_COMMAS)
-          .release()));
+  std::unique_ptr<base::DictionaryValue> value(
+      static_cast<base::DictionaryValue*>(
+          base::JSONReader::Read(data, base::JSON_ALLOW_TRAILING_COMMAS)
+              .release()));
   if (!value.get() || !value->IsType(base::Value::TYPE_DICTIONARY))
     return false;
 
@@ -258,9 +259,9 @@ SpellingServiceClient::TextCheckCallbackData::~TextCheckCallbackData() {
 void SpellingServiceClient::OnURLFetchComplete(
     const net::URLFetcher* source) {
   DCHECK(spellcheck_fetchers_[source]);
-  scoped_ptr<const net::URLFetcher> fetcher(source);
-  scoped_ptr<TextCheckCallbackData>
-      callback_data(spellcheck_fetchers_[fetcher.get()]);
+  std::unique_ptr<const net::URLFetcher> fetcher(source);
+  std::unique_ptr<TextCheckCallbackData> callback_data(
+      spellcheck_fetchers_[fetcher.get()]);
   bool success = false;
   std::vector<SpellCheckResult> results;
   if (fetcher->GetResponseCode() / 100 == 2) {
@@ -275,7 +276,7 @@ void SpellingServiceClient::OnURLFetchComplete(
   callback_data->callback.Run(success, callback_data->text, results);
 }
 
-scoped_ptr<net::URLFetcher> SpellingServiceClient::CreateURLFetcher(
+std::unique_ptr<net::URLFetcher> SpellingServiceClient::CreateURLFetcher(
     const GURL& url) {
   return net::URLFetcher::Create(url, net::URLFetcher::POST, this);
 }

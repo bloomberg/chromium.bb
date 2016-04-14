@@ -15,9 +15,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "chrome/browser/spellchecker/spellcheck_action.h"
 
@@ -66,7 +66,7 @@ struct Misspelling {
 };
 
 // Serializes the data in this object into a dictionary value.
-scoped_ptr<base::DictionaryValue> SerializeMisspelling(
+std::unique_ptr<base::DictionaryValue> SerializeMisspelling(
     const Misspelling& misspelling);
 
 // Returns the substring of |context| that begins at |location| and contains

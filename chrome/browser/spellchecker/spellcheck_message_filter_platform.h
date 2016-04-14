@@ -59,11 +59,11 @@ class SpellCheckMessageFilterPlatform : public content::BrowserMessageFilter {
   void OnToggleSpellCheck(bool enabled, bool checked);
 
   // Android-specific object used to query the Android spellchecker.
-  scoped_ptr<SpellCheckerSessionBridge> impl_;
+  std::unique_ptr<SpellCheckerSessionBridge> impl_;
 #endif
 
   // A JSON-RPC client that calls the Spelling service in the background.
-  scoped_ptr<SpellingServiceClient> client_;
+  std::unique_ptr<SpellingServiceClient> client_;
 
   DISALLOW_COPY_AND_ASSIGN(SpellCheckMessageFilterPlatform);
 };

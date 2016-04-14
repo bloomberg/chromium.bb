@@ -2,19 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/spellchecker/spelling_service_client.h"
+
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/json/json_reader.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/spellchecker/spelling_service_client.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/spellcheck_result.h"
 #include "chrome/test/base/testing_profile.h"
@@ -57,9 +58,11 @@ class TestSpellingURLFetcher : public net::TestURLFetcher {
     EXPECT_EQ("application/json", upload_content_type);
 
     // Parse the JSON to be sent to the service, and verify its parameters.
-    scoped_ptr<base::DictionaryValue> value(static_cast<base::DictionaryValue*>(
-        base::JSONReader::Read(upload_content, base::JSON_ALLOW_TRAILING_COMMAS)
-            .release()));
+    std::unique_ptr<base::DictionaryValue> value(
+        static_cast<base::DictionaryValue*>(
+            base::JSONReader::Read(upload_content,
+                                   base::JSON_ALLOW_TRAILING_COMMAS)
+                .release()));
     ASSERT_TRUE(value.get());
     std::string method;
     EXPECT_TRUE(value->GetString("method", &method));
@@ -168,12 +171,12 @@ class TestingSpellingServiceClient : public SpellingServiceClient {
   }
 
  private:
-  scoped_ptr<net::URLFetcher> CreateURLFetcher(const GURL& url) override {
+  std::unique_ptr<net::URLFetcher> CreateURLFetcher(const GURL& url) override {
     EXPECT_EQ("https://www.googleapis.com/rpc", url.spec());
     fetcher_ = new TestSpellingURLFetcher(
         0, url, this, request_type_, sanitized_request_text_, request_language_,
         response_status_, response_data_);
-    return scoped_ptr<net::URLFetcher>(fetcher_);
+    return std::unique_ptr<net::URLFetcher>(fetcher_);
   }
 
   int request_type_;

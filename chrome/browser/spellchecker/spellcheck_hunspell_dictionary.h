@@ -5,12 +5,12 @@
 #ifndef CHROME_BROWSER_SPELLCHECKER_SPELLCHECK_HUNSPELL_DICTIONARY_H_
 #define CHROME_BROWSER_SPELLCHECKER_SPELLCHECK_HUNSPELL_DICTIONARY_H_
 
+#include <memory>
 #include <string>
 
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/move.h"
 #include "base/observer_list.h"
@@ -151,7 +151,7 @@ class SpellcheckHunspellDictionary
   net::URLRequestContextGetter* request_context_getter_;
 
   // Used for downloading the dictionary file.
-  scoped_ptr<net::URLFetcher> fetcher_;
+  std::unique_ptr<net::URLFetcher> fetcher_;
 
   SpellcheckService* spellcheck_service_;
 

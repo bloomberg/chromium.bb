@@ -2,16 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/spellchecker/spellcheck_action.h"
+
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 
 #include "base/json/json_reader.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/spellchecker/spellcheck_action.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 TEST(SpellcheckActionTest, FinalActionsTest) {
@@ -90,9 +91,9 @@ TEST(SpellcheckActionTest, SerializeTest) {
       "{\"actionTargetIndex\": 42, \"actionType\": \"SELECT\"}" },
   };
   for (size_t i = 0; i < kNumTestCases; ++i) {
-    scoped_ptr<base::DictionaryValue> serialized(
+    std::unique_ptr<base::DictionaryValue> serialized(
         kTestCases[i].action.Serialize());
-    scoped_ptr<base::Value> expected =
+    std::unique_ptr<base::Value> expected =
         base::JSONReader::Read(kTestCases[i].expected);
     EXPECT_TRUE(serialized->Equals(expected.get()));
   }

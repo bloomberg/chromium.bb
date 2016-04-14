@@ -159,7 +159,7 @@ class SpellcheckServiceBrowserTest : public InProcessBrowserTest {
   }
 
  private:
-  scoped_ptr<content::MockRenderProcessHost> renderer_;
+  std::unique_ptr<content::MockRenderProcessHost> renderer_;
 
   // Not owned preferences service.
   PrefService* prefs_;

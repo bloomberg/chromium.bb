@@ -20,7 +20,7 @@ TEST(MisspellingTest, SerializeTest) {
   misspelling.hash = 9001;
   misspelling.suggestions.push_back(base::ASCIIToUTF16("does it"));
 
-  scoped_ptr<base::Value> expected = base::JSONReader::Read(
+  std::unique_ptr<base::Value> expected = base::JSONReader::Read(
       "{\"originalText\": \"How doe sit know\","
       "\"misspelledStart\": 4,"
       "\"misspelledLength\": 7,"
@@ -29,7 +29,7 @@ TEST(MisspellingTest, SerializeTest) {
       "\"suggestions\": [\"does it\"],"
       "\"userActions\": [{\"actionType\": \"PENDING\"}]}");
 
-  scoped_ptr<base::DictionaryValue> serialized(
+  std::unique_ptr<base::DictionaryValue> serialized(
       SerializeMisspelling(misspelling));
   EXPECT_TRUE(serialized->Equals(expected.get()));
 }

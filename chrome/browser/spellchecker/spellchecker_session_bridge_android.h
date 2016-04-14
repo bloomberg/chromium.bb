@@ -7,9 +7,10 @@
 
 #include <jni.h>
 
+#include <memory>
+
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 
 // A class used to interface between the Java class of the same name and the
@@ -52,8 +53,8 @@ class SpellCheckerSessionBridge {
 
   int render_process_id_;
 
-  scoped_ptr<SpellingRequest> active_request_;
-  scoped_ptr<SpellingRequest> pending_request_;
+  std::unique_ptr<SpellingRequest> active_request_;
+  std::unique_ptr<SpellingRequest> pending_request_;
 
   base::android::ScopedJavaGlobalRef<jobject> java_object_;
   bool java_object_initialization_failed_;

@@ -6,8 +6,9 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/metrics/statistics_recorder.h"
@@ -37,7 +38,7 @@ class SpellcheckHostMetricsTest : public testing::Test {
 
  private:
   base::MessageLoop loop_;
-  scoped_ptr<SpellCheckHostMetrics> metrics_;
+  std::unique_ptr<SpellCheckHostMetrics> metrics_;
 };
 
 TEST_F(SpellcheckHostMetricsTest, RecordEnabledStats) {

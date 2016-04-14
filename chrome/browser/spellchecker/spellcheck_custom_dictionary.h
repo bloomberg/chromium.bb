@@ -5,13 +5,13 @@
 #ifndef CHROME_BROWSER_SPELLCHECKER_SPELLCHECK_CUSTOM_DICTIONARY_H_
 #define CHROME_BROWSER_SPELLCHECKER_SPELLCHECK_CUSTOM_DICTIONARY_H_
 
+#include <memory>
 #include <set>
 #include <string>
 
 #include "base/cancelable_callback.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/spellchecker/spellcheck_dictionary.h"
@@ -148,8 +148,8 @@ class SpellcheckCustomDictionary : public SpellcheckDictionary,
   syncer::SyncMergeResult MergeDataAndStartSyncing(
       syncer::ModelType type,
       const syncer::SyncDataList& initial_sync_data,
-      scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
-      scoped_ptr<syncer::SyncErrorFactory> sync_error_handler) override;
+      std::unique_ptr<syncer::SyncChangeProcessor> sync_processor,
+      std::unique_ptr<syncer::SyncErrorFactory> sync_error_handler) override;
   void StopSyncing(syncer::ModelType type) override;
   syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const override;
   syncer::SyncError ProcessSyncChanges(
@@ -163,29 +163,29 @@ class SpellcheckCustomDictionary : public SpellcheckDictionary,
   // Returns the list of words in the custom spellcheck dictionary at |path|.
   // Validates that the custom dictionary file does not have duplicates and
   // contains only valid words. Must be called on the FILE thread.
-  static scoped_ptr<LoadFileResult> LoadDictionaryFile(
+  static std::unique_ptr<LoadFileResult> LoadDictionaryFile(
       const base::FilePath& path);
 
   // Applies the change in |dictionary_change| to the custom spellcheck
   // dictionary. Assumes that |dictionary_change| has been sanitized. Must be
   // called on the FILE thread. Takes ownership of |dictionary_change|.
-  static void UpdateDictionaryFile(scoped_ptr<Change> dictionary_change,
+  static void UpdateDictionaryFile(std::unique_ptr<Change> dictionary_change,
                                    const base::FilePath& path);
 
   // The reply point for PostTaskAndReplyWithResult, called when
   // LoadDictionaryFile finishes reading the dictionary file.
-  void OnLoaded(scoped_ptr<LoadFileResult> result);
+  void OnLoaded(std::unique_ptr<LoadFileResult> result);
 
   // Applies the |dictionary_change| to the in-memory copy of the dictionary.
   void Apply(const Change& dictionary_change);
 
   // Schedules a write of the words in |load_file_result| to disk when the
   // custom dictionary file is invalid.
-  void FixInvalidFile(scoped_ptr<LoadFileResult> load_file_result);
+  void FixInvalidFile(std::unique_ptr<LoadFileResult> load_file_result);
 
   // Schedules a write of |dictionary_change| to disk. Takes ownership of
   // |dictionary_change| to pass it to the FILE thread.
-  void Save(scoped_ptr<Change> dictionary_change);
+  void Save(std::unique_ptr<Change> dictionary_change);
 
   // Notifies the sync service of the |dictionary_change|. Syncs up to the
   // maximum syncable words on the server. Disables syncing of this dictionary
@@ -206,10 +206,10 @@ class SpellcheckCustomDictionary : public SpellcheckDictionary,
   base::ObserverList<Observer> observers_;
 
   // Used to send local changes to the sync infrastructure.
-  scoped_ptr<syncer::SyncChangeProcessor> sync_processor_;
+  std::unique_ptr<syncer::SyncChangeProcessor> sync_processor_;
 
   // Used to send sync-related errors to the sync infrastructure.
-  scoped_ptr<syncer::SyncErrorFactory> sync_error_handler_;
+  std::unique_ptr<syncer::SyncErrorFactory> sync_error_handler_;
 
   // True if the dictionary has been loaded. Otherwise false.
   bool is_loaded_;

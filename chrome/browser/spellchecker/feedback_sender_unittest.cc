@@ -78,7 +78,7 @@ class MockFeedbackSender : public spellcheck::FeedbackSender {
 };
 
 std::string GetMisspellingId(const std::string& raw_data) {
-  scoped_ptr<base::Value> parsed_data(
+  std::unique_ptr<base::Value> parsed_data(
       base::JSONReader::Read(raw_data).release());
   EXPECT_TRUE(parsed_data.get());
   base::DictionaryValue* actual_data;
@@ -178,13 +178,13 @@ class FeedbackSenderTest : public testing::Test {
     feedback_->last_salt_update_ += offset;
   }
 
-  scoped_ptr<MockFeedbackSender> feedback_;
+  std::unique_ptr<MockFeedbackSender> feedback_;
 
  private:
   base::MessageLoop loop_;
   TestingProfile profile_;
   content::TestBrowserThread ui_thread_;
-  scoped_ptr<base::FieldTrialList> field_trial_list_;
+  std::unique_ptr<base::FieldTrialList> field_trial_list_;
   scoped_refptr<base::FieldTrial> field_trial_;
   net::TestURLFetcherFactory fetchers_;
 };
@@ -222,8 +222,9 @@ TEST_F(FeedbackSenderTest, IdenticalFeedback) {
   hashes.push_back(AddPendingFeedback());
   feedback_->OnReceiveDocumentMarkers(kRendererProcessId, hashes);
   std::string actual_data = GetUploadData();
-  scoped_ptr<base::DictionaryValue> actual(static_cast<base::DictionaryValue*>(
-      base::JSONReader::Read(GetUploadData()).release()));
+  std::unique_ptr<base::DictionaryValue> actual(
+      static_cast<base::DictionaryValue*>(
+          base::JSONReader::Read(GetUploadData()).release()));
   base::ListValue* suggestions = NULL;
   ASSERT_TRUE(actual->GetList("params.suggestionInfo", &suggestions));
   base::DictionaryValue* suggestion0 = NULL;
@@ -499,8 +500,9 @@ TEST_F(FeedbackSenderTest, FeedbackAPI) {
   feedback_->OnReceiveDocumentMarkers(kRendererProcessId,
                                       std::vector<uint32_t>());
   std::string actual_data = GetUploadData();
-  scoped_ptr<base::DictionaryValue> actual(static_cast<base::DictionaryValue*>(
-      base::JSONReader::Read(actual_data).release()));
+  std::unique_ptr<base::DictionaryValue> actual(
+      static_cast<base::DictionaryValue*>(
+          base::JSONReader::Read(actual_data).release()));
   actual->SetString("params.key", "TestDummyKey");
   base::ListValue* suggestions = nullptr;
   actual->GetList("params.suggestionInfo", &suggestions);
@@ -528,7 +530,7 @@ TEST_F(FeedbackSenderTest, FeedbackAPI) {
       "\"userActions\":[{\"actionType\":\"NO_ACTION\"}],"
       "\"userMisspellingId\":\"14573599553589145012\","
       "\"userSuggestionId\":[\"14761077877524043800\"]}]}}";
-  scoped_ptr<base::Value> expected = base::JSONReader::Read(expected_data);
+  std::unique_ptr<base::Value> expected = base::JSONReader::Read(expected_data);
   EXPECT_TRUE(expected->Equals(actual.get()))
       << "Expected data: " << expected_data
       << "\nActual data:   " << actual_data;

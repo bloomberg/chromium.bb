@@ -15,16 +15,17 @@
 namespace {
 
 // Builds a value from a list of spellcheck suggestions.
-scoped_ptr<base::Value> BuildSuggestionsValue(
+std::unique_ptr<base::Value> BuildSuggestionsValue(
     const std::vector<base::string16>& list) {
-  scoped_ptr<base::ListValue> result(new base::ListValue);
+  std::unique_ptr<base::ListValue> result(new base::ListValue);
   result->AppendStrings(list);
   return std::move(result);
 }
 
 // Builds a value from a spellcheck action.
-scoped_ptr<base::Value> BuildUserActionValue(const SpellcheckAction& action) {
-  scoped_ptr<base::ListValue> result(new base::ListValue);
+std::unique_ptr<base::Value> BuildUserActionValue(
+    const SpellcheckAction& action) {
+  std::unique_ptr<base::ListValue> result(new base::ListValue);
   result->Append(action.Serialize());
   return std::move(result);
 }
@@ -50,9 +51,9 @@ Misspelling::Misspelling(const Misspelling& other) = default;
 
 Misspelling::~Misspelling() {}
 
-scoped_ptr<base::DictionaryValue> SerializeMisspelling(
+std::unique_ptr<base::DictionaryValue> SerializeMisspelling(
     const Misspelling& misspelling) {
-  scoped_ptr<base::DictionaryValue> result(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue);
   result->SetString(
       "timestamp",
       base::Int64ToString(static_cast<long>(misspelling.timestamp.ToJsTime())));

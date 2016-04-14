@@ -53,7 +53,7 @@ class TestingSpellCheckMessageFilter : public SpellCheckMessageFilter {
 
   content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
-  scoped_ptr<SpellcheckService> spellcheck_;
+  std::unique_ptr<SpellcheckService> spellcheck_;
 
   DISALLOW_COPY_AND_ASSIGN(TestingSpellCheckMessageFilter);
 };
