@@ -60,6 +60,7 @@ def main(args):
   group.add_argument('--additional-apk-list')
   group.add_argument('--apk-under-test')
   group.add_argument('--apk-under-test-incremental-install-script')
+  group.add_argument('--executable-dist-dir')
   group.add_argument('--isolate-file-path')
   group.add_argument('--output-directory')
   group.add_argument('--test-apk')
@@ -92,6 +93,10 @@ def main(args):
         ('--apk-under-test-incremental-install-script',
          RelativizePathToScript(
              args.apk_under_test_incremental_install_script)))
+  if args.executable_dist_dir:
+    test_runner_path_args.append(
+        ('--executable-dist-dir',
+         RelativizePathToScript(args.executable_dist_dir)))
   if args.isolate_file_path:
     test_runner_path_args.append(
         ('--isolate-file-path', RelativizePathToScript(args.isolate_file_path)))
