@@ -5,6 +5,14 @@
 Polymer({
   is: 'audio-player',
 
+  listeners: {
+    'toggle-pause-event': 'onTogglePauseEvent_',
+    'small-forward-skip-event': 'onSmallForwardSkipEvent_',
+    'small-backword-skip-event': 'onSmallBackwordSkipEvent_',
+    'big-forward-skip-event': 'onBigForwardSkipEvent_',
+    'big-backword-skip-event': 'onBigBackwordSkipEvent_',
+  },
+
   properties: {
     /**
      * Flag whether the audio is playing or paused. True if playing, or false
@@ -443,5 +451,45 @@ Polymer({
    */
   computeAudioVolume_: function(volume) {
     return volume / 100;
-  }
+  },
+
+  /**
+   * Toggle pause.
+   * @private
+   */
+  onTogglePauseEvent_: function(event) {
+    this.$.audioController.playClick();
+  },
+
+  /**
+   * Small skip forward.
+   * @private
+   */
+  onSmallForwardSkipEvent_: function(event) {
+    this.$.audioController.smallSkip(true);
+  },
+
+  /**
+   * Small skip backword.
+   * @private
+   */
+  onSmallBackwordSkipEvent_: function(event) {
+    this.$.audioController.smallSkip(false);
+  },
+
+  /**
+   * Big skip forward.
+   * @private
+   */
+  onBigForwardSkipEvent_: function(event) {
+    this.$.audioController.bigSkip(true);
+  },
+
+  /**
+   * Big skip backword.
+   * @private
+   */
+  onBigBackwordSkipEvent_: function(event) {
+    this.$.audioController.bigSkip(false);
+  },
 });

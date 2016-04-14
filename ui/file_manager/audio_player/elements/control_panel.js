@@ -211,7 +211,8 @@
 
     /**
      * Skips forward/backword.
-     * @param {number} sec Seconds to skip. Set negative value to skip backword.
+     * @param {number} millis Milliseconds to skip. Set negative value to skip
+     *     backword.
      * @private
      */
     skip_: function(millis) {

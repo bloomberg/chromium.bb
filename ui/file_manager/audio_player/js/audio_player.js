@@ -371,23 +371,23 @@ AudioPlayer.prototype.onKeyDown_ = function(event) {
 
     case 'U+0020': // Space
     case 'U+004B': // K
-      this.player_.$.audioController.playClick();
+      this.player_.dispatchEvent(new Event('toggle-pause-event'));
       break;
     case 'Up':
     case 'Right':
       if (event.target.id !== 'volumeSlider')
-        this.player_.$.audioController.smallSkip(true);
+        this.player_.dispatchEvent(new Event('small-forward-skip-event'));
       break;
     case 'Down':
     case 'Left':
       if (event.target.id !== 'volumeSlider')
-        this.player_.$.audioController.smallSkip(false);
+        this.player_.dispatchEvent(new Event('small-backword-skip-event'));
       break;
     case 'U+004C': // L
-      this.player_.$.audioController.bigSkip(true);
+      this.player_.dispatchEvent(new Event('big-forward-skip-event'));
       break;
     case 'U+004A': // J
-      this.player_.$.audioController.bigSkip(false);
+      this.player_.dispatchEvent(new Event('big-backword-skip-event'));
       break;
   }
 };
