@@ -227,7 +227,12 @@ void NavigatorImpl::DidFailProvisionalLoadWithError(
     // TODO(creis): Find a way to cancel any pending RFH here.
   }
 
-  DiscardPendingEntryOnFailureIfNeeded(render_frame_host->navigation_handle());
+  // Discard the pending navigation entry if needed.
+  // PlzNavigate: the entry has already been discarded in FailedNavigation.
+  if (!IsBrowserSideNavigationEnabled()) {
+    DiscardPendingEntryOnFailureIfNeeded(
+        render_frame_host->navigation_handle());
+  }
 
   if (delegate_)
     delegate_->DidFailProvisionalLoadWithError(render_frame_host, params);

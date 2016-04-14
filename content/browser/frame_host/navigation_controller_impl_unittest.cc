@@ -45,6 +45,7 @@
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_notification_tracker.h"
 #include "content/public/test/test_utils.h"
+#include "content/test/browser_side_navigation_test_utils.h"
 #include "content/test/test_render_frame_host.h"
 #include "content/test/test_render_view_host.h"
 #include "content/test/test_web_contents.h"
@@ -316,6 +317,17 @@ class LoadCommittedDetailsObserver : public WebContentsObserver {
   LoadCommittedDetails details_;
 };
 
+// PlzNavigate
+// A NavigationControllerTest run with --enable-browser-side-navigation.
+class NavigationControllerTestWithBrowserSideNavigation
+    : public NavigationControllerTest {
+ public:
+  void SetUp() override {
+    EnableBrowserSideNavigation();
+    NavigationControllerTest::SetUp();
+  }
+};
+
 // -----------------------------------------------------------------------------
 
 TEST_F(NavigationControllerTest, Defaults) {
@@ -416,6 +428,14 @@ TEST_F(NavigationControllerTest, GoToOffset) {
 // is being aborted. This caused the last committed entry to be displayed in
 // the omnibox, which is the entry before A was created.
 TEST_F(NavigationControllerTest, DontDiscardWrongPendingEntry) {
+  if (IsBrowserSideNavigationEnabled()) {
+    // PlzNavigate: this exact order of events cannot happen in PlzNavigate. A
+    // similar issue with the wrong pending entry being discarded is tested in
+    // the PlzNavigate version of the test below.
+    SUCCEED() << "Test is not applicable with PlzNavigate.";
+    return;
+  }
+
   NavigationControllerImpl& controller = controller_impl();
   GURL initial_url("http://www.google.com");
   GURL url_1("http://foo.com");
@@ -445,6 +465,52 @@ TEST_F(NavigationControllerTest, DontDiscardWrongPendingEntry) {
   // Get the DidStartProvisionalLoad message for url_2.
   main_test_rfh()->SimulateNavigationStart(url_2);
 
+  EXPECT_EQ(url_2, controller.GetVisibleEntry()->GetURL());
+}
+
+// PlzNavigate: tests a case similar to
+// NavigationControllerTest.DontDiscardWrongPendingEntry.
+// Tests hat receiving a DidFailProvisionalLoad from the renderer that is
+// trying to commit an error page won't reset the pending entry of a navigation
+// that just started.
+TEST_F(NavigationControllerTestWithBrowserSideNavigation,
+       DontDiscardWrongPendingEntry) {
+  NavigationControllerImpl& controller = controller_impl();
+  GURL initial_url("http://www.google.com");
+  GURL url_1("http://google.com/foo");
+  GURL url_2("http://foo2.com");
+
+  // Navigate inititally. This is the url that could erroneously be the visible
+  // entry when url_1 fails.
+  NavigateAndCommit(initial_url);
+
+  // Set the pending entry as url_1 and receive the DidStartProvisionalLoad
+  // message, creating the NavigationHandle.
+  controller.LoadURL(url_1, Referrer(), ui::PAGE_TRANSITION_TYPED,
+                     std::string());
+  EXPECT_EQ(url_1, controller.GetVisibleEntry()->GetURL());
+  main_test_rfh()->SimulateNavigationStart(url_1);
+  EXPECT_EQ(url_1, controller.GetVisibleEntry()->GetURL());
+
+  // The navigation fails and needs to show an error page. This resets the
+  // pending entry.
+  main_test_rfh()->SimulateNavigationError(url_1, net::ERR_TIMED_OUT);
+  EXPECT_EQ(initial_url, controller.GetVisibleEntry()->GetURL());
+
+  // A navigation to url_2 starts, creating a pending navigation entry.
+  controller.LoadURL(url_2, Referrer(), ui::PAGE_TRANSITION_TYPED,
+                     std::string());
+  EXPECT_EQ(url_2, controller.GetVisibleEntry()->GetURL());
+
+  // The DidFailProvsionalLoad IPC is received from the current RFH that is
+  // committing an error page. This should not reset the pending entry for the
+  // new ongoing navigation.
+  FrameHostMsg_DidFailProvisionalLoadWithError_Params error;
+  error.error_code = net::ERR_TIMED_OUT;
+  error.url = url_1;
+  main_test_rfh()->OnMessageReceived(
+      FrameHostMsg_DidFailProvisionalLoadWithError(
+          main_test_rfh()->GetRoutingID(), error));
   EXPECT_EQ(url_2, controller.GetVisibleEntry()->GetURL());
 }
 
