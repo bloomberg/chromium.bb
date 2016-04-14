@@ -317,9 +317,13 @@ class MetaBuildWrapper(object):
       for config in self.masters[master].values():
         all_configs[config] = master
 
-    # Check that every referenced config actually exists.
+    # Check that every referenced args file or config actually exists.
     for config, loc in all_configs.items():
-      if not config in self.configs:
+      if config.startswith('//'):
+        if not self.Exists(self.ToAbsPath(config)):
+          errs.append('Unknown args file "%s" referenced from "%s".' %
+                      (config, loc))
+      elif not config in self.configs:
         errs.append('Unknown config "%s" referenced from "%s".' %
                     (config, loc))
 
@@ -550,11 +554,19 @@ class MetaBuildWrapper(object):
     if not vals:
       self.ReadConfigFile()
       config = self.ConfigFromArgs()
-      if not config in self.configs:
-        raise MBErr('Config "%s" not found in %s' %
-                    (config, self.args.config_file))
-
-      vals = self.FlattenConfig(config)
+      if config.startswith('//'):
+        if not self.Exists(self.ToAbsPath(config)):
+          raise MBErr('args file "%s" not found' % config)
+        vals = {
+          'type': 'gn',
+          'args_file': config,
+          'gn_args': '',
+        }
+      else:
+        if not config in self.configs:
+          raise MBErr('Config "%s" not found in %s' %
+                      (config, self.args.config_file))
+        vals = self.FlattenConfig(config)
 
     # Do some basic sanity checking on the config so that we
     # don't have to do this in every caller.
@@ -873,6 +885,9 @@ class MetaBuildWrapper(object):
     # the last instance of each arg is listed.
     gn_args = gn_helpers.ToGNString(gn_helpers.FromGNArgs(gn_args))
 
+    args_file = vals.get('args_file', None)
+    if args_file:
+      gn_args = ('import("%s")\n' % vals['args_file']) + gn_args
     return gn_args
 
   def RunGYPGen(self, vals):

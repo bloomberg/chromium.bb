@@ -563,7 +563,7 @@
     },
 
     'official.desktop': {
-      'blimp-engine': 'gn_blimp_debug',
+      'blimp-engine': '//build/args/bots/official.desktop/blimp-engine.gn',
       'mac64': 'gyp_official',
       'precise64': 'gn_official',
 
@@ -1014,13 +1014,6 @@
     # be an error if MB ever sees an actual *_variable_* bot name.
     'findit': [
       'error',
-    ],
-
-    # This is the "deployment" config for the blimp builds. Currently
-    # we want them to be debug, non-optimized builds (and we don't need any
-    # chrome branding), so we don't use the "official" mixin.
-    'gn_blimp_debug': [
-      'gn', 'blimp', 'debug',
     ],
 
     'gn_cfi_release_bot': [
@@ -1562,19 +1555,6 @@
     'asan': {
       'gn_args': 'is_asan=true',
       'gyp_defines': 'asan=1',
-    },
-
-    # Removes dependencies on X11 and audio libraries for a containerized
-    # build.
-    'blimp': {
-      # This list must be kept in sync with the list in
-      # //build/args/blimp_engine.gn.
-      'gn_args': ('use_aura=true use_ozone=true ozone_auto_platforms=false '
-                  'ozone_platform="headless" ozone_platform_headless=true '
-                  'metrics_use_blimp=true '
-                  'use_low_quality_image_interpolation=true use_alsa=false '
-                  'use_pulseaudio=false use_cups=false use_glib=false'),
-      'gyp_defines': 'target_arch=unknown',
     },
 
     'cast': {

@@ -118,6 +118,7 @@ TEST_CONFIG = """\
       'fake_gyp_crosscompile_builder': 'gyp_crosscompile',
       'fake_gn_debug_builder': 'gn_debug_goma',
       'fake_gyp_builder': 'gyp_debug',
+      'fake_gn_args_bot': '//build/args/bots/fake_master/fake_gn_args_bot.gn',
     },
   },
   'mixins': {
@@ -176,6 +177,9 @@ class UnitTest(unittest.TestCase):
   def fake_mbw(self, files=None, win32=False):
     mbw = FakeMBW(win32=win32)
     mbw.files.setdefault(mbw.default_config, TEST_CONFIG)
+    mbw.files.setdefault(
+        mbw.ToAbsPath('//build/args/bots/fake_master/fake_gn_args_bot.gn'),
+        'is_debug = false\n')
     if files:
       for path, contents in files.items():
         mbw.files[path] = contents
@@ -319,6 +323,14 @@ class UnitTest(unittest.TestCase):
                                'is_debug = true\n'
                                'use_goma = true\n'))
 
+    mbw = self.fake_mbw()
+    self.check(['gen', '-m', 'fake_master', '-b', 'fake_gn_args_bot',
+                '//out/Debug'],
+               mbw=mbw, ret=0)
+    self.assertEqual(
+        mbw.files['/fake_src/out/Debug/args.gn'],
+        'import("//build/args/bots/fake_master/fake_gn_args_bot.gn")\n')
+
 
   def test_gn_gen_fails(self):
     mbw = self.fake_mbw()
@@ -448,7 +460,6 @@ class UnitTest(unittest.TestCase):
 
   def test_validate(self):
     mbw = self.fake_mbw()
-    mbw.files[mbw.default_config] = TEST_CONFIG
     self.check(['validate'], mbw=mbw, ret=0)
 
   def test_bad_validate(self):
