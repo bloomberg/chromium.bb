@@ -933,7 +933,7 @@ void Widget::SetCapture(View* view) {
 
   if (internal::NativeWidgetPrivate::IsMouseButtonDown())
     is_mouse_button_pressed_ = true;
-  root_view_->SetMouseHandler(view, auto_release_capture_);
+  root_view_->SetMouseHandler(view);
 }
 
 void Widget::ReleaseCapture() {

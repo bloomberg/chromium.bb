@@ -83,15 +83,18 @@ class GestureCaptureView : public View {
 // A view that always processes all mouse events.
 class MouseView : public View {
  public:
-  MouseView() {}
+  MouseView()
+      : View(),
+        entered_(0),
+        exited_(0),
+        pressed_(0) {
+  }
   ~MouseView() override {}
 
   bool OnMousePressed(const ui::MouseEvent& event) override {
     pressed_++;
     return true;
   }
-
-  void OnMouseReleased(const ui::MouseEvent& event) override { released_++; }
 
   void OnMouseEntered(const ui::MouseEvent& event) override { entered_++; }
 
@@ -112,14 +115,12 @@ class MouseView : public View {
   }
 
   int pressed() const { return pressed_; }
-  int released() const { return released_; }
 
  private:
-  int entered_ = 0;
-  int exited_ = 0;
+  int entered_;
+  int exited_;
 
-  int pressed_ = 0;
-  int released_ = 0;
+  int pressed_;
 
   DISALLOW_COPY_AND_ASSIGN(MouseView);
 };
@@ -365,7 +366,7 @@ TEST_F(WidgetTestInteractive, CaptureAutoReset) {
   toplevel->SetContentsView(container);
 
   EXPECT_FALSE(toplevel->HasCapture());
-  toplevel->SetCapture(nullptr);
+  toplevel->SetCapture(NULL);
   EXPECT_TRUE(toplevel->HasCapture());
 
   // By default, mouse release removes capture.
@@ -378,53 +379,15 @@ TEST_F(WidgetTestInteractive, CaptureAutoReset) {
 
   // Now a mouse release shouldn't remove capture.
   toplevel->set_auto_release_capture(false);
-  toplevel->SetCapture(nullptr);
+  toplevel->SetCapture(NULL);
   EXPECT_TRUE(toplevel->HasCapture());
   toplevel->OnMouseEvent(&release);
   EXPECT_TRUE(toplevel->HasCapture());
   toplevel->ReleaseCapture();
   EXPECT_FALSE(toplevel->HasCapture());
 
-  toplevel->CloseNow();
-}
-
-// Tests capture when auto-release is disabled and events are captured to a
-// specific view.
-TEST_F(WidgetTestInteractive, CaptureToViewWithoutAutoRelease) {
-  Widget* widget = CreateTopLevelFramelessPlatformWidget();
-  MouseView* target_view = new MouseView;
-  widget->SetContentsView(target_view);
-
-  // Set capture to a specific view.
-  widget->set_auto_release_capture(false);
-  widget->SetCapture(target_view);
-  EXPECT_TRUE(widget->HasCapture());
-
-  // A click is routed to the view and capture is not released on mouse release.
-  gfx::Point point(12, 34);
-  ui::MouseEvent press(ui::ET_MOUSE_PRESSED, point, point,
-                       ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
-                       ui::EF_LEFT_MOUSE_BUTTON);
-  ui::MouseEvent release(ui::ET_MOUSE_RELEASED, point, point,
-                         ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
-                         ui::EF_LEFT_MOUSE_BUTTON);
-  widget->OnMouseEvent(&press);
-  widget->OnMouseEvent(&release);
-  EXPECT_EQ(1, target_view->pressed());
-  EXPECT_EQ(1, target_view->released());
-
-  // Future events are still routed to the view.
-  widget->OnMouseEvent(&press);
-  widget->OnMouseEvent(&release);
-  EXPECT_EQ(2, target_view->pressed());
-  EXPECT_EQ(2, target_view->released());
-
-  // Capture must be explicitly released.
-  EXPECT_TRUE(widget->HasCapture());
-  widget->ReleaseCapture();
-  EXPECT_FALSE(widget->HasCapture());
-
-  widget->CloseNow();
+  toplevel->Close();
+  RunPendingMessages();
 }
 
 TEST_F(WidgetTestInteractive, ResetCaptureOnGestureEnd) {

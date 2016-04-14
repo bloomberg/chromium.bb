@@ -281,14 +281,14 @@ TrayBubbleView::InitParams::InitParams(AnchorType anchor_type,
       max_height(0),
       can_activate(false),
       close_on_deactivate(true),
-      close_via_capture(false),
       arrow_color(SK_ColorBLACK),
       first_item_has_no_margin(false),
       arrow(BubbleBorder::NONE),
       arrow_offset(kArrowDefaultOffset),
       arrow_paint_type(BubbleBorder::PAINT_NORMAL),
       shadow(BubbleBorder::BIG_SHADOW),
-      arrow_alignment(BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE) {}
+      arrow_alignment(BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE) {
+}
 
 TrayBubbleView::InitParams::InitParams(const InitParams& other) = default;
 
@@ -356,12 +356,6 @@ void TrayBubbleView::InitializeAndShowBubble() {
   GetWidget()->GetNativeWindow()->SetEventTargeter(
       std::unique_ptr<ui::EventTargeter>(new BubbleWindowTargeter(this)));
   UpdateBubble();
-
-  if (params_.close_via_capture) {
-    GetWidget()->set_auto_release_capture(false);
-    // Capture events to this view so it will be notified of capture loss.
-    GetWidget()->SetCapture(this);
-  }
 }
 
 void TrayBubbleView::UpdateBubble() {
@@ -454,13 +448,6 @@ int TrayBubbleView::GetHeightForWidth(int width) const {
       std::min(height, params_.max_height) : height;
 }
 
-void TrayBubbleView::OnMouseCaptureLost() {
-  if (params_.close_via_capture && delegate_) {
-    // Let the delegate destroy the bubble in case it needs to do cleanup.
-    delegate_->HideBubble(this);
-  }
-}
-
 void TrayBubbleView::OnMouseEntered(const ui::MouseEvent& event) {
   mouse_watcher_.reset();
   if (delegate_ && !(event.flags() & ui::EF_IS_SYNTHESIZED)) {
@@ -493,17 +480,6 @@ void TrayBubbleView::OnMouseExited(const ui::MouseEvent& event) {
   // Do not notify the delegate of an exit if we never told it that we entered.
   if (delegate_ && mouse_actively_entered_)
     delegate_->OnMouseExitedView();
-}
-
-bool TrayBubbleView::OnMousePressed(const ui::MouseEvent& event) {
-  if (params_.close_via_capture && GetWidget()->HasCapture() &&
-      !bounds().Contains(event.location())) {
-    // Explicitly releasing capture will close the bubble.
-    GetWidget()->ReleaseCapture();
-    // Don't return that the event was handled because other views may want to
-    // handle it or the window server may want to repost it.
-  }
-  return views::BubbleDelegateView::OnMousePressed(event);
 }
 
 void TrayBubbleView::GetAccessibleState(ui::AXViewState* state) {

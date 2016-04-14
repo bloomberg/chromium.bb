@@ -227,9 +227,6 @@ void PlatformWindowMus::OnWindowInputEvent(
   // It's possible dispatching the event will spin a nested message loop. Ack
   // the callback now, otherwise we appear unresponsive for the life of the
   // nested message loop.
-  // TODO(jamescook): Only ack the event as handled if a nested message loop
-  // actually starts, perhaps through an observer on MessageLoop. Otherwise
-  // ack the event with the actual handled state below DispatchEvent().
   (*ack_callback)->Run(true);
   ack_callback->reset();
   // TODO(moshayedi): Avoid cloning after updating PlatformWindowDelegate to

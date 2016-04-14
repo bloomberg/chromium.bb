@@ -104,10 +104,6 @@ class VIEWS_EXPORT TrayBubbleView : public views::BubbleDelegateView,
     int max_height;
     bool can_activate;
     bool close_on_deactivate;
-    // When true the bubble starts event capture when it opens and closes itself
-    // on mouse events outside its bounds. Used on mus. Can be combined with
-    // close_on_deactivate. Defaults to false.
-    bool close_via_capture;
     SkColor arrow_color;
     bool first_item_has_no_margin;
     views::BubbleBorder::Arrow arrow;
@@ -166,8 +162,6 @@ class VIEWS_EXPORT TrayBubbleView : public views::BubbleDelegateView,
   gfx::Size GetPreferredSize() const override;
   gfx::Size GetMaximumSize() const override;
   int GetHeightForWidth(int width) const override;
-  bool OnMousePressed(const ui::MouseEvent& event) override;
-  void OnMouseCaptureLost() override;
   void OnMouseEntered(const ui::MouseEvent& event) override;
   void OnMouseExited(const ui::MouseEvent& event) override;
   void GetAccessibleState(ui::AXViewState* state) override;

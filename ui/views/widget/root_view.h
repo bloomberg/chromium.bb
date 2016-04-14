@@ -159,12 +159,6 @@ class VIEWS_EXPORT RootView : public View,
       View* view,
       View* sibling) WARN_UNUSED_RESULT;
 
-  // Specialized version of SetMouseHandler(). If |clear_on_release| is true the
-  // mouse handler will be cleared on mouse release, which is the common case
-  // and used for drags. If |clear_on_release| is false then the mouse handler
-  // must be explicitly released by calling SetMouseHandler() with null.
-  void SetMouseHandler(View* view, bool clear_on_release);
-
   // Overridden from ui::EventDispatcherDelegate:
   bool CanDispatchToTarget(ui::EventTarget* target) override;
   ui::EventDispatchDetails PreDispatchEvent(ui::EventTarget* target,
@@ -193,12 +187,8 @@ class VIEWS_EXPORT RootView : public View,
   // a double-click lands on the same view as its single-click part.
   View* last_click_handler_;
 
-  // True if mouse_pressed_handler_ has been explicitly set.
+  // true if mouse_pressed_handler_ has been explicitly set
   bool explicit_mouse_handler_;
-
-  // True if mouse_pressed_handler_ should be automatically cleared on mouse
-  // release, as is common during drags.
-  bool clear_mouse_handler_on_release_;
 
   // Last position/flag of a mouse press/drag. Used if capture stops and we need
   // to synthesize a release.

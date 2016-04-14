@@ -500,8 +500,6 @@ void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
                                            menu_width,
                                            kTrayPopupMaxWidth);
     init_params.can_activate = can_activate;
-    // Mus cannot use EventHandlers to close the tray, so it uses capture.
-    init_params.close_via_capture = Shell::GetInstance()->in_mus();
     init_params.first_item_has_no_margin = true;
     if (detailed) {
       // This is the case where a volume control or brightness control bubble
@@ -574,8 +572,6 @@ void SystemTray::UpdateNotificationBubble() {
                                          GetAnchorAlignment(),
                                          kTrayPopupMinWidth,
                                          kTrayPopupMaxWidth);
-  // Mus cannot use EventHandlers to close the tray, so it uses capture.
-  init_params.close_via_capture = Shell::GetInstance()->in_mus();
   init_params.first_item_has_no_margin = true;
   init_params.arrow_color = kBackgroundColor;
   init_params.arrow_offset = GetTrayXOffset(notification_items_[0]);
