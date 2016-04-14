@@ -287,7 +287,7 @@ const DestinationInsertionPoints* ElementShadow::destinationInsertionPointsFor(c
 void ElementShadow::distribute()
 {
     if (isV1())
-        distributeV1();
+        youngestShadowRoot().distributeV1();
     else
         distributeV0();
 }
@@ -333,13 +333,6 @@ void ElementShadow::distributeV0()
             shadow->setNeedsDistributionRecalc();
     }
     InspectorInstrumentation::didPerformElementShadowDistribution(host());
-}
-
-void ElementShadow::distributeV1()
-{
-    if (!m_slotAssignment)
-        m_slotAssignment = SlotAssignment::create();
-    m_slotAssignment->resolveAssignment(youngestShadowRoot());
 }
 
 void ElementShadow::didDistributeNode(const Node* node, InsertionPoint* insertionPoint)
@@ -408,7 +401,6 @@ DEFINE_TRACE(ElementShadow)
     // It is therefore enough to trace one of the shadow roots here and the
     // rest will be traced from there.
     visitor->trace(m_shadowRoots.head());
-    visitor->trace(m_slotAssignment);
 }
 
 } // namespace blink

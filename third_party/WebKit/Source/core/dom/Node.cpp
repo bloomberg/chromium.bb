@@ -2320,20 +2320,20 @@ HTMLSlotElement* Node::assignedSlot() const
 #if DCHECK_IS_ON()
     DCHECK(!needsDistributionRecalc());
 #endif
-    if (ElementShadow* shadow = parentElementShadow()) {
-        if (shadow->isV1())
-            return shadow->assignedSlotFor(*this);
-    }
+    Element* parent = parentElement();
+    ShadowRoot* root = parent ? parent->youngestShadowRoot() : nullptr;
+    if (root && root->isV1())
+        return root->assignedSlotFor(*this);
     return nullptr;
 }
 
 HTMLSlotElement* Node::assignedSlotForBinding()
 {
     updateDistribution();
-    if (ElementShadow* shadow = parentElementShadow()) {
-        if (shadow->isV1() && shadow->isOpenOrV0())
-            return shadow->assignedSlotFor(*this);
-    }
+    Element* parent = parentElement();
+    ShadowRoot* root = parent ? parent->youngestShadowRoot() : nullptr;
+    if (root && root->type() == ShadowRootType::Open)
+        return root->assignedSlotFor(*this);
     return nullptr;
 }
 

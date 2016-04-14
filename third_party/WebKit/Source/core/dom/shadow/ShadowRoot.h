@@ -32,6 +32,7 @@
 #include "core/dom/DocumentFragment.h"
 #include "core/dom/Element.h"
 #include "core/dom/TreeScope.h"
+#include "core/dom/shadow/SlotAssignment.h"
 #include "wtf/DoublyLinkedList.h"
 
 namespace blink {
@@ -120,6 +121,14 @@ public:
     void didRemoveSlot();
     const HeapVector<Member<HTMLSlotElement>>& descendantSlots();
 
+    void distributeV1();
+
+    HTMLSlotElement* assignedSlotFor(const Node& node) const
+    {
+        DCHECK(m_slotAssignment);
+        return m_slotAssignment->assignedSlotFor(node);
+    }
+
     // Make protected methods from base class public here.
     using TreeScope::setDocument;
     using TreeScope::setParentTreeScope;
@@ -169,6 +178,7 @@ private:
     Member<ShadowRoot> m_prev;
     Member<ShadowRoot> m_next;
     Member<ShadowRootRareData> m_shadowRootRareData;
+    Member<SlotAssignment> m_slotAssignment;
     unsigned m_numberOfStyles : 26;
     unsigned m_type : 2;
     unsigned m_registeredWithParentShadowRoot : 1;
@@ -180,6 +190,14 @@ private:
 inline Element* ShadowRoot::activeElement() const
 {
     return adjustedFocusedElement();
+}
+
+inline ShadowRoot* Element::shadowRootIfV1() const
+{
+    ShadowRoot* root = this->shadowRoot();
+    if (root && root->isV1())
+        return root;
+    return nullptr;
 }
 
 DEFINE_NODE_TYPE_CASTS(ShadowRoot, isShadowRoot());

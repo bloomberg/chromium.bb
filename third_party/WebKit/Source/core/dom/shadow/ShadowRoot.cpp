@@ -46,7 +46,7 @@ struct SameSizeAsShadowRoot : public DocumentFragment, public TreeScope, public 
 #if ENABLE(OILPAN)
     char emptyClassFieldsDueToGCMixinMarker[1];
 #endif
-    Member<void*> willbeMember[3];
+    Member<void*> willbeMember[4];
     unsigned countersAndFlags[1];
 };
 
@@ -57,6 +57,7 @@ ShadowRoot::ShadowRoot(Document& document, ShadowRootType type)
     , TreeScope(*this, document)
     , m_prev(nullptr)
     , m_next(nullptr)
+    , m_slotAssignment(nullptr)
     , m_numberOfStyles(0)
     , m_type(static_cast<unsigned>(type))
     , m_registeredWithParentShadowRoot(false)
@@ -367,11 +368,19 @@ const HeapVector<Member<HTMLSlotElement>>& ShadowRoot::descendantSlots()
     return m_shadowRootRareData->descendantSlots();
 }
 
+void ShadowRoot::distributeV1()
+{
+    if (!m_slotAssignment)
+        m_slotAssignment = SlotAssignment::create();
+    m_slotAssignment->resolveAssignment(*this);
+}
+
 DEFINE_TRACE(ShadowRoot)
 {
     visitor->trace(m_prev);
     visitor->trace(m_next);
     visitor->trace(m_shadowRootRareData);
+    visitor->trace(m_slotAssignment);
     TreeScope::trace(visitor);
     DocumentFragment::trace(visitor);
 }

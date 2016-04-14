@@ -31,7 +31,6 @@
 #include "core/dom/shadow/InsertionPoint.h"
 #include "core/dom/shadow/SelectRuleFeatureSet.h"
 #include "core/dom/shadow/ShadowRoot.h"
-#include "core/dom/shadow/SlotAssignment.h"
 #include "platform/heap/Handle.h"
 #include "wtf/DoublyLinkedList.h"
 #include "wtf/HashMap.h"
@@ -49,19 +48,6 @@ public:
     ShadowRoot& youngestShadowRoot() const { DCHECK(m_shadowRoots.head()); return *m_shadowRoots.head(); }
     ShadowRoot* oldestShadowRoot() const { return m_shadowRoots.tail(); }
     ElementShadow* containingShadow() const;
-
-    ShadowRoot* shadowRootIfV1() const
-    {
-        if (isV1())
-            return &youngestShadowRoot();
-        return nullptr;
-    }
-
-    HTMLSlotElement* assignedSlotFor(const Node& node) const
-    {
-        DCHECK(m_slotAssignment);
-        return m_slotAssignment->assignedSlotFor(node);
-    }
 
     ShadowRoot& addShadowRoot(Element& shadowHost, ShadowRootType);
 
@@ -120,9 +106,6 @@ private:
     DoublyLinkedList<ShadowRoot> m_shadowRoots;
     bool m_needsDistributionRecalc;
     bool m_needsSelectFeatureSet;
-
-    // TODO(hayato): ShadowRoot should be an owner of SlotAssigment
-    Member<SlotAssignment> m_slotAssignment;
 };
 
 inline Element* ElementShadow::host() const
@@ -143,13 +126,6 @@ inline ShadowRoot* Element::youngestShadowRoot() const
     if (ElementShadow* shadow = this->shadow())
         return &shadow->youngestShadowRoot();
     return 0;
-}
-
-inline ShadowRoot* Element::shadowRootIfV1() const
-{
-    if (ElementShadow* shadow = this->shadow())
-        return shadow->shadowRootIfV1();
-    return nullptr;
 }
 
 inline ElementShadow* ElementShadow::containingShadow() const
