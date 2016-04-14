@@ -62,6 +62,7 @@ public:
     void fontCacheInvalidated() override;
 
     void registerForInvalidationCallbacks(CSSFontSelectorClient*);
+    void unregisterForInvalidationCallbacks(CSSFontSelectorClient*);
 
     Document* document() const { return m_document; }
     FontFaceCache* fontFaceCache() { return &m_fontFaceCache; }

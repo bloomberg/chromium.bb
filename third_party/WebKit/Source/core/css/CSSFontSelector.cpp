@@ -65,6 +65,11 @@ void CSSFontSelector::registerForInvalidationCallbacks(CSSFontSelectorClient* cl
     m_clients.add(client);
 }
 
+void CSSFontSelector::unregisterForInvalidationCallbacks(CSSFontSelectorClient* client)
+{
+    m_clients.remove(client);
+}
+
 void CSSFontSelector::dispatchInvalidationCallbacks()
 {
     m_fontFaceCache.incrementVersion();
