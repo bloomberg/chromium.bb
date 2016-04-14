@@ -92,7 +92,7 @@ PairwiseInterpolationValue ListInterpolationFunctions::mergeSingleConversions(In
     return PairwiseInterpolationValue(
         resultStartInterpolableList.release(),
         resultEndInterpolableList.release(),
-        NonInterpolableList::create(resultNonInterpolableValues));
+        NonInterpolableList::create(std::move(resultNonInterpolableValues)));
 }
 
 static void repeatToLength(InterpolationValue& value, size_t length)
@@ -111,7 +111,7 @@ static void repeatToLength(InterpolationValue& value, size_t length)
         newNonInterpolableValues[i] = nonInterpolableList.get(i % currentLength);
     }
     value.interpolableValue = newInterpolableList.release();
-    value.nonInterpolableValue = NonInterpolableList::create(newNonInterpolableValues);
+    value.nonInterpolableValue = NonInterpolableList::create(std::move(newNonInterpolableValues));
 }
 
 static bool nonInterpolableListsAreCompatible(const NonInterpolableList& a, const NonInterpolableList& b, size_t length, ListInterpolationFunctions::NonInterpolableValuesAreCompatibleCallback nonInterpolableValuesAreCompatible)

@@ -117,7 +117,7 @@ InterpolationValue CSSImageListInterpolationType::maybeConvertValue(const CSSVal
         interpolableList->set(i, component.interpolableValue.release());
         nonInterpolableValues[i] = component.nonInterpolableValue.release();
     }
-    return InterpolationValue(interpolableList.release(), NonInterpolableList::create(nonInterpolableValues));
+    return InterpolationValue(interpolableList.release(), NonInterpolableList::create(std::move(nonInterpolableValues)));
 }
 
 PairwiseInterpolationValue CSSImageListInterpolationType::mergeSingleConversions(InterpolationValue&& start, InterpolationValue&& end) const

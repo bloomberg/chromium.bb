@@ -76,7 +76,7 @@ InterpolationValue convertFilterList(const FilterOperations& filterOperations, d
         interpolableList->set(i, filterResult.interpolableValue.release());
         nonInterpolableValues[i] = filterResult.nonInterpolableValue.release();
     }
-    return InterpolationValue(interpolableList.release(), NonInterpolableList::create(nonInterpolableValues));
+    return InterpolationValue(interpolableList.release(), NonInterpolableList::create(std::move(nonInterpolableValues)));
 }
 
 } // namespace
@@ -120,7 +120,7 @@ InterpolationValue CSSFilterListInterpolationType::maybeConvertValue(const CSSVa
         interpolableList->set(i, itemResult.interpolableValue.release());
         nonInterpolableValues[i] = itemResult.nonInterpolableValue.release();
     }
-    return InterpolationValue(interpolableList.release(), NonInterpolableList::create(nonInterpolableValues));
+    return InterpolationValue(interpolableList.release(), NonInterpolableList::create(std::move(nonInterpolableValues)));
 }
 
 InterpolationValue CSSFilterListInterpolationType::maybeConvertUnderlyingValue(const InterpolationEnvironment& environment) const
