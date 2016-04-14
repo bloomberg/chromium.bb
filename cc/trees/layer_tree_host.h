@@ -53,7 +53,6 @@ class GpuMemoryBufferManager;
 namespace cc {
 
 class AnimationEvents;
-class AnimationRegistrar;
 class AnimationHost;
 class BeginFrameSource;
 class HeadsUpDisplayLayer;

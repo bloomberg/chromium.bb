@@ -8,7 +8,6 @@
 #include "cc/animation/animation_events.h"
 #include "cc/animation/animation_id_provider.h"
 #include "cc/animation/animation_player.h"
-#include "cc/animation/animation_registrar.h"
 #include "cc/animation/animation_timeline.h"
 #include "cc/animation/element_animations.h"
 #include "cc/output/filter_operation.h"
@@ -235,16 +234,15 @@ void AnimationTimelinesTest::ReleaseRefPtrs() {
 void AnimationTimelinesTest::AnimateLayersTransferEvents(
     base::TimeTicks time,
     unsigned expect_events) {
-  std::unique_ptr<AnimationEvents> events =
-      host_->animation_registrar()->CreateEvents();
+  std::unique_ptr<AnimationEvents> events = host_->CreateEvents();
 
-  host_impl_->animation_registrar()->AnimateLayers(time);
-  host_impl_->animation_registrar()->UpdateAnimationState(true, events.get());
+  host_impl_->AnimateLayers(time);
+  host_impl_->UpdateAnimationState(true, events.get());
   EXPECT_EQ(expect_events, events->events_.size());
 
-  host_->animation_registrar()->AnimateLayers(time);
-  host_->animation_registrar()->UpdateAnimationState(true, nullptr);
-  host_->animation_registrar()->SetAnimationEvents(std::move(events));
+  host_->AnimateLayers(time);
+  host_->UpdateAnimationState(true, nullptr);
+  host_->SetAnimationEvents(std::move(events));
 }
 
 AnimationPlayer* AnimationTimelinesTest::GetPlayerForLayerId(int layer_id) {

@@ -10,7 +10,6 @@
 #include "cc/animation/animation_host.h"
 #include "cc/animation/animation_id_provider.h"
 #include "cc/animation/animation_player.h"
-#include "cc/animation/animation_registrar.h"
 #include "cc/animation/animation_timeline.h"
 #include "cc/animation/element_animations.h"
 #include "cc/animation/layer_animation_controller.h"
@@ -233,7 +232,6 @@ class LayerTreeHostAnimationTestAnimationsGetDeleted
   void AnimateLayers(LayerTreeHostImpl* host_impl,
                      base::TimeTicks monotonic_time) override {
     bool have_animations = !host_impl->animation_host()
-                                ->animation_registrar()
                                 ->active_animation_controllers_for_testing()
                                 .empty();
     if (!started_animating_ && have_animations) {
@@ -1086,10 +1084,7 @@ class LayerTreeHostAnimationTestAnimatedLayerRemovedAndAdded
                         ->has_active_value_observer_for_testing());
         EXPECT_FALSE(player_->element_animations()
                          ->has_pending_value_observer_for_testing());
-        EXPECT_TRUE(layer_tree_host()
-                        ->animation_host()
-                        ->animation_registrar()
-                        ->needs_animate_layers());
+        EXPECT_TRUE(layer_tree_host()->animation_host()->NeedsAnimateLayers());
         break;
       case 1:
         layer_->RemoveFromParent();
@@ -1097,10 +1092,7 @@ class LayerTreeHostAnimationTestAnimatedLayerRemovedAndAdded
                          ->has_active_value_observer_for_testing());
         EXPECT_FALSE(player_->element_animations()
                          ->has_pending_value_observer_for_testing());
-        EXPECT_TRUE(layer_tree_host()
-                        ->animation_host()
-                        ->animation_registrar()
-                        ->needs_animate_layers());
+        EXPECT_TRUE(layer_tree_host()->animation_host()->NeedsAnimateLayers());
         break;
       case 2:
         layer_tree_host()->root_layer()->AddChild(layer_);
@@ -1108,10 +1100,7 @@ class LayerTreeHostAnimationTestAnimatedLayerRemovedAndAdded
                         ->has_active_value_observer_for_testing());
         EXPECT_FALSE(player_->element_animations()
                          ->has_pending_value_observer_for_testing());
-        EXPECT_TRUE(layer_tree_host()
-                        ->animation_host()
-                        ->animation_registrar()
-                        ->needs_animate_layers());
+        EXPECT_TRUE(layer_tree_host()->animation_host()->NeedsAnimateLayers());
         break;
     }
   }
@@ -1126,23 +1115,17 @@ class LayerTreeHostAnimationTestAnimatedLayerRemovedAndAdded
       case 0:
         EXPECT_TRUE(player_impl->element_animations()
                         ->has_active_value_observer_for_testing());
-        EXPECT_TRUE(host_impl->animation_host()
-                        ->animation_registrar()
-                        ->needs_animate_layers());
+        EXPECT_TRUE(host_impl->animation_host()->NeedsAnimateLayers());
         break;
       case 1:
         EXPECT_FALSE(player_impl->element_animations()
                          ->has_active_value_observer_for_testing());
-        EXPECT_TRUE(host_impl->animation_host()
-                        ->animation_registrar()
-                        ->needs_animate_layers());
+        EXPECT_TRUE(host_impl->animation_host()->NeedsAnimateLayers());
         break;
       case 2:
         EXPECT_TRUE(player_impl->element_animations()
                         ->has_active_value_observer_for_testing());
-        EXPECT_TRUE(host_impl->animation_host()
-                        ->animation_registrar()
-                        ->needs_animate_layers());
+        EXPECT_TRUE(host_impl->animation_host()->NeedsAnimateLayers());
         EndTest();
         break;
     }
@@ -1193,10 +1176,8 @@ class LayerTreeHostAnimationTestAddAnimationAfterAnimating
     // start times.
     if (host_impl->active_tree()->source_frame_number() < 2)
       return;
-    AnimationRegistrar::AnimationControllerMap controllers_copy =
-        host_impl->animation_host()
-            ->animation_registrar()
-            ->active_animation_controllers_for_testing();
+    AnimationHost::AnimationControllerMap controllers_copy =
+        host_impl->animation_host()->active_animation_controllers_for_testing();
     EXPECT_EQ(2u, controllers_copy.size());
     for (auto& it : controllers_copy) {
       int id = it.first;

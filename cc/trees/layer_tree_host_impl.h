@@ -16,7 +16,6 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/time/time.h"
-#include "cc/animation/animation_registrar.h"
 #include "cc/animation/layer_tree_mutator.h"
 #include "cc/base/cc_export.h"
 #include "cc/base/synced_property.h"

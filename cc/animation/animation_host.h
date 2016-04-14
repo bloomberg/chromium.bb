@@ -77,10 +77,6 @@ class CC_EXPORT AnimationHost {
 
   void PushPropertiesTo(AnimationHost* host_impl);
 
-  AnimationRegistrar* animation_registrar() const {
-    return animation_registrar_.get();
-  }
-
   void SetSupportsScrollAnimations(bool supports_scroll_animations);
   bool SupportsScrollAnimations() const;
   bool NeedsAnimateLayers() const;
@@ -150,6 +146,26 @@ class CC_EXPORT AnimationHost {
       base::TimeTicks frame_monotonic_time);
 
   void ScrollAnimationAbort(bool needs_completion);
+
+  // If an animation has been registered for the given id, return it. Otherwise
+  // creates a new one and returns a scoped_refptr to it.
+  scoped_refptr<LayerAnimationController> GetAnimationControllerForId(int id);
+
+  void SetAnimationRegistrarFor(
+      scoped_refptr<LayerAnimationController> controller);
+  void ResetAnimationRegistrarFor(
+      scoped_refptr<LayerAnimationController> controller);
+
+  // Registers the given controller as alive.
+  void RegisterAnimationController(LayerAnimationController* controller);
+  // Unregisters the given controller as alive.
+  void UnregisterAnimationController(LayerAnimationController* controller);
+
+  using AnimationControllerMap =
+      std::unordered_map<int, LayerAnimationController*>;
+  const AnimationControllerMap& active_animation_controllers_for_testing()
+      const;
+  const AnimationControllerMap& all_animation_controllers_for_testing() const;
 
  private:
   explicit AnimationHost(ThreadInstance thread_instance);

@@ -11,7 +11,7 @@
 #include "cc/animation/animation_curve.h"
 #include "cc/animation/animation_delegate.h"
 #include "cc/animation/animation_events.h"
-#include "cc/animation/animation_registrar.h"
+#include "cc/animation/animation_host.h"
 #include "cc/animation/keyframed_animation_curve.h"
 #include "cc/animation/scroll_offset_animation_curve.h"
 #include "cc/animation/transform_operations.h"
@@ -217,9 +217,10 @@ TEST(LayerAnimationControllerTest, UseSpecifiedStartTimes) {
 
 // Tests that controllers activate and deactivate as expected.
 TEST(LayerAnimationControllerTest, Activation) {
-  std::unique_ptr<AnimationRegistrar> registrar = AnimationRegistrar::Create();
-  std::unique_ptr<AnimationRegistrar> registrar_impl =
-      AnimationRegistrar::Create();
+  std::unique_ptr<AnimationHost> host =
+      AnimationHost::Create(ThreadInstance::MAIN);
+  std::unique_ptr<AnimationHost> host_impl =
+      AnimationHost::Create(ThreadInstance::IMPL);
 
   FakeLayerAnimationValueObserver dummy_impl;
   scoped_refptr<LayerAnimationController> controller_impl(
@@ -229,47 +230,44 @@ TEST(LayerAnimationControllerTest, Activation) {
   scoped_refptr<LayerAnimationController> controller(
       LayerAnimationController::Create(0));
   controller->AddValueObserver(&dummy);
-  std::unique_ptr<AnimationEvents> events = registrar->CreateEvents();
+  std::unique_ptr<AnimationEvents> events = host->CreateEvents();
 
-  controller->SetAnimationRegistrar(registrar.get());
-  controller_impl->SetAnimationRegistrar(registrar_impl.get());
-  EXPECT_EQ(1u, registrar->all_animation_controllers_for_testing().size());
-  EXPECT_EQ(1u, registrar_impl->all_animation_controllers_for_testing().size());
+  host->SetAnimationRegistrarFor(controller);
+  host_impl->SetAnimationRegistrarFor(controller_impl);
+  EXPECT_EQ(1u, host->all_animation_controllers_for_testing().size());
+  EXPECT_EQ(1u, host_impl->all_animation_controllers_for_testing().size());
 
   // Initially, both controllers should be inactive.
-  EXPECT_EQ(0u, registrar->active_animation_controllers_for_testing().size());
-  EXPECT_EQ(0u,
-            registrar_impl->active_animation_controllers_for_testing().size());
+  EXPECT_EQ(0u, host->active_animation_controllers_for_testing().size());
+  EXPECT_EQ(0u, host_impl->active_animation_controllers_for_testing().size());
 
   AddOpacityTransitionToController(controller.get(), 1, 0, 1, false);
   // The main thread controller should now be active.
-  EXPECT_EQ(1u, registrar->active_animation_controllers_for_testing().size());
+  EXPECT_EQ(1u, host->active_animation_controllers_for_testing().size());
 
   controller->PushAnimationUpdatesTo(controller_impl.get());
   controller_impl->ActivateAnimations();
   // Both controllers should now be active.
-  EXPECT_EQ(1u, registrar->active_animation_controllers_for_testing().size());
-  EXPECT_EQ(1u,
-            registrar_impl->active_animation_controllers_for_testing().size());
+  EXPECT_EQ(1u, host->active_animation_controllers_for_testing().size());
+  EXPECT_EQ(1u, host_impl->active_animation_controllers_for_testing().size());
 
   controller_impl->Animate(kInitialTickTime);
   controller_impl->UpdateState(true, events.get());
   EXPECT_EQ(1u, events->events_.size());
   controller->NotifyAnimationStarted(events->events_[0]);
 
-  EXPECT_EQ(1u, registrar->active_animation_controllers_for_testing().size());
-  EXPECT_EQ(1u,
-            registrar_impl->active_animation_controllers_for_testing().size());
+  EXPECT_EQ(1u, host->active_animation_controllers_for_testing().size());
+  EXPECT_EQ(1u, host_impl->active_animation_controllers_for_testing().size());
 
   controller->Animate(kInitialTickTime + TimeDelta::FromMilliseconds(500));
   controller->UpdateState(true, nullptr);
-  EXPECT_EQ(1u, registrar->active_animation_controllers_for_testing().size());
+  EXPECT_EQ(1u, host->active_animation_controllers_for_testing().size());
 
   controller->Animate(kInitialTickTime + TimeDelta::FromMilliseconds(1000));
   controller->UpdateState(true, nullptr);
   EXPECT_EQ(Animation::FINISHED,
             controller->GetAnimation(TargetProperty::OPACITY)->run_state());
-  EXPECT_EQ(1u, registrar->active_animation_controllers_for_testing().size());
+  EXPECT_EQ(1u, host->active_animation_controllers_for_testing().size());
 
   events.reset(new AnimationEvents);
   controller_impl->Animate(kInitialTickTime +
@@ -280,8 +278,7 @@ TEST(LayerAnimationControllerTest, Activation) {
       Animation::WAITING_FOR_DELETION,
       controller_impl->GetAnimation(TargetProperty::OPACITY)->run_state());
   // The impl thread controller should have de-activated.
-  EXPECT_EQ(0u,
-            registrar_impl->active_animation_controllers_for_testing().size());
+  EXPECT_EQ(0u, host_impl->active_animation_controllers_for_testing().size());
 
   EXPECT_EQ(1u, events->events_.size());
   controller->NotifyAnimationFinished(events->events_[0]);
@@ -291,18 +288,17 @@ TEST(LayerAnimationControllerTest, Activation) {
   EXPECT_EQ(Animation::WAITING_FOR_DELETION,
             controller->GetAnimation(TargetProperty::OPACITY)->run_state());
   // The main thread controller should have de-activated.
-  EXPECT_EQ(0u, registrar->active_animation_controllers_for_testing().size());
+  EXPECT_EQ(0u, host->active_animation_controllers_for_testing().size());
 
   controller->PushAnimationUpdatesTo(controller_impl.get());
   controller_impl->ActivateAnimations();
   EXPECT_FALSE(controller->has_any_animation());
   EXPECT_FALSE(controller_impl->has_any_animation());
-  EXPECT_EQ(0u, registrar->active_animation_controllers_for_testing().size());
-  EXPECT_EQ(0u,
-            registrar_impl->active_animation_controllers_for_testing().size());
+  EXPECT_EQ(0u, host->active_animation_controllers_for_testing().size());
+  EXPECT_EQ(0u, host_impl->active_animation_controllers_for_testing().size());
 
-  controller->SetAnimationRegistrar(nullptr);
-  controller_impl->SetAnimationRegistrar(nullptr);
+  host->ResetAnimationRegistrarFor(controller);
+  host_impl->ResetAnimationRegistrarFor(controller_impl);
 }
 
 TEST(LayerAnimationControllerTest, SyncPause) {

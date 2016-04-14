@@ -8,7 +8,6 @@
 #include "base/memory/ptr_util.h"
 #include "cc/animation/animation_host.h"
 #include "cc/animation/animation_player.h"
-#include "cc/animation/animation_registrar.h"
 #include "cc/animation/layer_animation_value_observer.h"
 #include "cc/trees/mutator_host_client.h"
 
@@ -76,12 +75,9 @@ void ElementAnimations::CreateLayerAnimationController(int layer_id) {
   DCHECK(!layer_animation_controller_);
   DCHECK(animation_host_);
 
-  AnimationRegistrar* registrar = animation_host_->animation_registrar();
-  DCHECK(registrar);
-
   layer_animation_controller_ =
-      registrar->GetAnimationControllerForId(layer_id);
-  layer_animation_controller_->SetAnimationRegistrar(registrar);
+      animation_host_->GetAnimationControllerForId(layer_id);
+  animation_host_->SetAnimationRegistrarFor(layer_animation_controller_);
   layer_animation_controller_->set_layer_animation_delegate(this);
   layer_animation_controller_->set_value_provider(this);
 
@@ -108,7 +104,7 @@ void ElementAnimations::DestroyLayerAnimationController() {
   if (layer_animation_controller_) {
     layer_animation_controller_->remove_value_provider(this);
     layer_animation_controller_->remove_layer_animation_delegate(this);
-    layer_animation_controller_->SetAnimationRegistrar(nullptr);
+    animation_host_->ResetAnimationRegistrarFor(layer_animation_controller_);
     layer_animation_controller_ = nullptr;
   }
 }

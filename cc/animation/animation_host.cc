@@ -604,4 +604,39 @@ void AnimationHost::ScrollAnimationAbort(bool needs_completion) {
   return scroll_offset_animations_->ScrollAnimationAbort(needs_completion);
 }
 
+scoped_refptr<LayerAnimationController>
+AnimationHost::GetAnimationControllerForId(int id) {
+  return animation_registrar_->GetAnimationControllerForId(id);
+}
+
+void AnimationHost::SetAnimationRegistrarFor(
+    scoped_refptr<LayerAnimationController> controller) {
+  controller->SetAnimationRegistrar(animation_registrar_.get());
+}
+
+void AnimationHost::ResetAnimationRegistrarFor(
+    scoped_refptr<LayerAnimationController> controller) {
+  controller->SetAnimationRegistrar(nullptr);
+}
+
+void AnimationHost::RegisterAnimationController(
+    LayerAnimationController* controller) {
+  animation_registrar_->RegisterAnimationController(controller);
+}
+
+void AnimationHost::UnregisterAnimationController(
+    LayerAnimationController* controller) {
+  animation_registrar_->UnregisterAnimationController(controller);
+}
+
+const AnimationHost::AnimationControllerMap&
+AnimationHost::active_animation_controllers_for_testing() const {
+  return animation_registrar_->active_animation_controllers_for_testing();
+}
+
+const AnimationHost::AnimationControllerMap&
+AnimationHost::all_animation_controllers_for_testing() const {
+  return animation_registrar_->all_animation_controllers_for_testing();
+}
+
 }  // namespace cc

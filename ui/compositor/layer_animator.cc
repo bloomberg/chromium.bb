@@ -14,7 +14,6 @@
 #include "cc/animation/animation_host.h"
 #include "cc/animation/animation_id_provider.h"
 #include "cc/animation/animation_player.h"
-#include "cc/animation/animation_registrar.h"
 #include "cc/animation/animation_timeline.h"
 #include "cc/animation/element_animations.h"
 #include "cc/animation/layer_animation_controller.h"
@@ -161,7 +160,6 @@ void LayerAnimator::SetCompositor(Compositor* compositor) {
     DCHECK_EQ(animation_controller_state_->id(),
               delegate_->GetCcLayer()->id());
     timeline->animation_host()
-        ->animation_registrar()
         ->RegisterAnimationController(animation_controller_state_.get());
   }
 
