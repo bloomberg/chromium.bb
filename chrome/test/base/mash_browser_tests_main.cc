@@ -125,11 +125,14 @@ bool RunMashBrowserTests(int argc, char** argv, int* exit_code) {
       !command_line.HasSwitch(MojoTestConnector::kTestSwitch)) {
     base::AtExitManager at_exit;
     shell::InitializeLogging();
+    // TODO(sky): nuke once resolve why test isn't shutting down: 594600.
+    LOG(ERROR) << "starting app " << command_line.GetCommandLineString();
     shell::WaitForDebuggerIfNecessary();
 #if !defined(OFFICIAL_BUILD) && defined(OS_WIN)
     base::RouteStdioToConsole(false);
 #endif
     *exit_code = shell::ChildProcessMain();
+    // TODO(sky): nuke once resolve why test isn't shutting down: 594600.
     LOG(ERROR) << "child exit_code=" << *exit_code;
     return true;
   }
@@ -147,6 +150,7 @@ bool RunMashBrowserTests(int argc, char** argv, int* exit_code) {
     content::MojoShellConnection::SetFactoryForTest(&shell_connection_factory);
   }
   *exit_code = LaunchChromeTests(default_jobs, &delegate, argc, argv);
+  // TODO(sky): nuke once resolve why test isn't shutting down: 594600.
   LOG(ERROR) << "RunMashBrowserTests exit_code=" << *exit_code;
   return true;
 }
