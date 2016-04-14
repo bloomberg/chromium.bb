@@ -108,7 +108,7 @@ void SyncControlVSyncProvider::GetVSyncParameters(
     last_computed_intervals_.pop();
 
   int32_t numerator, denominator;
-  if (GetMscRate(&numerator, &denominator)) {
+  if (GetMscRate(&numerator, &denominator) && numerator) {
     last_computed_intervals_.push(base::TimeDelta::FromSeconds(denominator) /
                                   numerator);
   } else if (!last_timebase_.is_null()) {
