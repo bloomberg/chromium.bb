@@ -82,7 +82,10 @@
 
     <!-- Account Signin Colors -->
     <!-- As in dimens.xml, signin uses values from the First Run Experience -->
-    <color name="signin_light_text_color">#494949</color>
+    <color name="signin_head_background">#fff</color>
+    <color name="signin_body_background">#fafafa</color>
+    <color name="signin_border_line_color">#000</color>
+    <color name="signin_button_disabled_color">#4f4f4f</color>
 
     <!-- Sad Tab colors -->
     <color name="sad_tab_header_text_color">#333333</color>
@@ -103,9 +106,6 @@
     <color name="snippets_text_color">#646464</color>
     <color name="snippets_list_header_text_color">#646464</color>
     <color name="snippets_headline_text_color">#333333</color>
-
-    <!-- Signin promo screen colors -->
-    <color name="illustration_background_color">#4FC3F7</color>
 
     <!-- Contextual Search colors -->
     <color name="contextual_search_promo_text_color">#333333</color>

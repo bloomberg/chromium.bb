@@ -7,26 +7,22 @@ package org.chromium.chrome.browser.signin;
 import android.app.FragmentManager;
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.drawable.Drawable;
-import android.os.Bundle;
 import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
 import android.util.AttributeSet;
+import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.Spinner;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.firstrun.FirstRunView;
-import org.chromium.chrome.browser.firstrun.ImageCarousel;
-import org.chromium.chrome.browser.firstrun.ImageCarousel.ImageCarouselPositionChangeListener;
 import org.chromium.chrome.browser.firstrun.ProfileDataCache;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.profiles.ProfileDownloader;
@@ -39,8 +35,12 @@ import org.chromium.sync.signin.AccountManagerHelper;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.text.SpanApplier;
 import org.chromium.ui.text.SpanApplier.SpanInfo;
+import org.chromium.ui.widget.ButtonCompat;
 
 import java.util.List;
+
+// TODO(gogerald): add landscape mode (http://crbug.com/599139).
+// TODO(gogerald): refactor common part into one place after redesign all sign in screens.
 
 /**
  * This view allows the user to select an account to log in to, add an account,
@@ -49,9 +49,8 @@ import java.util.List;
  * {@link AccountSigninView#setDelegate(Delegate)} after the view has been inflated.
  */
 
-public class AccountSigninView extends FirstRunView
-        implements ImageCarouselPositionChangeListener, ProfileDownloader.Observer {
-
+public class AccountSigninView
+        extends FrameLayout implements AdapterView.OnItemClickListener, ProfileDownloader.Observer {
     /**
      * Callbacks for various account selection events.
      */
@@ -93,65 +92,33 @@ public class AccountSigninView extends FirstRunView
         public FragmentManager getFragmentManager();
     }
 
-    private class SpinnerOnItemSelectedListener implements AdapterView.OnItemSelectedListener {
-        @Override
-        public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
-            String accountName = parent.getItemAtPosition(pos).toString();
-            if (accountName.equals(mAddAnotherAccount)) {
-                // Don't allow "add account" to remain selected. http://crbug.com/421052
-                int oldPosition = mArrayAdapter.getPosition(mAccountName);
-                if (oldPosition == -1) oldPosition = 0;
-                mSpinner.setSelection(oldPosition, false);
-
-                mListener.onNewAccount();
-                RecordUserAction.record("Signin_AddAccountToDevice");
-            } else {
-                mAccountName = accountName;
-                if (!mPositionSetProgrammatically) mImageCarousel.scrollTo(pos, false, false);
-                mPositionSetProgrammatically = false;
-            }
-        }
-        @Override
-        public void onNothingSelected(AdapterView<?> parent) {
-            mAccountName = parent.getItemAtPosition(0).toString();
-        }
-    }
-
-    private static final String TAG = "AccountFirstRunView";
-
-    private static final int EXPERIMENT_TITLE_VARIANT_MASK = 1;
-    private static final int EXPERIMENT_SUMMARY_VARIANT_MASK = 2;
-    private static final int EXPERIMENT_LAYOUT_VARIANT_MASK = 4;
-    private static final int EXPERIMENT_MAX_VALUE = 7;
+    private static final String TAG = "AccountSigninView";
 
     private static final String SETTINGS_LINK_OPEN = "<LINK1>";
     private static final String SETTINGS_LINK_CLOSE = "</LINK1>";
 
     private AccountManagerHelper mAccountManagerHelper;
     private List<String> mAccountNames;
-    private ArrayAdapter<CharSequence> mArrayAdapter;
-    private ImageCarousel mImageCarousel;
-    private Button mPositiveButton;
+    private View mSigninView;
+    private AccountListAdapter mAccountListAdapter;
+    private ListView mAccountListView;
+    private ButtonCompat mPositiveButton;
     private Button mNegativeButton;
     private TextView mTitle;
-    private TextView mDescriptionText;
     private Listener mListener;
     private Delegate mDelegate;
-    private Spinner mSpinner;
-    private TextView mConfirmAccountEmail;
-    private Drawable mSpinnerBackground;
     private String mForcedAccountName;
-    private String mAccountName;
-    private String mAddAnotherAccount;
     private ProfileDataCache mProfileData;
     private boolean mSignedIn;
-    private boolean mPositionSetProgrammatically;
-    private int mDescriptionTextId;
     private int mCancelButtonTextId;
     private boolean mIsChildAccount;
-    private boolean mHorizontalModeEnabled = true;
-    private boolean mDynamicPaddingEnabled = true;
     private boolean mShowSettingsSpan = true;
+
+    private AccountSigninConfirmationView mSigninConfirmationView;
+    private ImageView mSigninAccountImage;
+    private TextView mSigninAccountName;
+    private TextView mSigninAccountEmail;
+    private TextView mSigninSettingsControl;
 
     public AccountSigninView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -163,27 +130,58 @@ public class AccountSigninView extends FirstRunView
      * @param profileData ProfileDataCache that will be used to call to retrieve user account info.
      */
     public void init(ProfileDataCache profileData) {
-        setProfileDataCache(profileData);
-    }
-
-    /**
-     * Sets the profile data cache.
-     * @param profileData ProfileDataCache that will be used to call to retrieve user account info.
-     */
-    public void setProfileDataCache(ProfileDataCache profileData) {
         mProfileData = profileData;
         mProfileData.setObserver(this);
-        updateProfileImages();
+        mAccountListAdapter = new AccountListAdapter(getContext(), profileData);
+        mAccountListView.setAdapter(mAccountListAdapter);
+        showSigninPage();
     }
 
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
 
-        mImageCarousel = (ImageCarousel) findViewById(R.id.image);
-        mImageCarousel.setListener(this);
+        mSigninView = findViewById(R.id.signin_choose_account_view);
 
-        mPositiveButton = (Button) findViewById(R.id.positive_button);
+        mTitle = (TextView) findViewById(R.id.signin_title);
+
+        mAccountListView = (ListView) findViewById(R.id.signin_account_list);
+        mAccountListView.setOnItemClickListener(this);
+        View signinChoiceDescription =
+                LayoutInflater.from(getContext())
+                        .inflate(R.layout.account_signin_choice_description_view, null, false);
+        signinChoiceDescription.setOnClickListener(null);
+        mAccountListView.addHeaderView(signinChoiceDescription);
+
+        // Once the user has touched this ListView, prevent the parent view from handling touch
+        // events. This allows the ListView to behave reasonably when nested inside a ListView.
+        // TODO(gogerald): Remove this listener after https://crbug.com/583774 has been fixed.
+        mAccountListView.setOnTouchListener(new ListView.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent event) {
+                int action = event.getAction();
+                switch (action) {
+                    case MotionEvent.ACTION_DOWN:
+                        view.getParent().requestDisallowInterceptTouchEvent(true);
+                        break;
+
+                    case MotionEvent.ACTION_UP:
+                        view.performClick();
+                        view.getParent().requestDisallowInterceptTouchEvent(false);
+                        break;
+                    default:
+                        // Ignore.
+                        break;
+                }
+
+                view.onTouchEvent(event);
+                return true;
+            }
+        });
+
+        mPositiveButton = (ButtonCompat) findViewById(R.id.positive_button);
+        // Remove drop shadow effect.
+        mPositiveButton.setRaised(false);
         mNegativeButton = (Button) findViewById(R.id.negative_button);
 
         // A workaround for Android support library ignoring padding set in XML. b/20307607
@@ -191,46 +189,41 @@ public class AccountSigninView extends FirstRunView
         ApiCompatibilityUtils.setPaddingRelative(mPositiveButton, padding, 0, padding, 0);
         ApiCompatibilityUtils.setPaddingRelative(mNegativeButton, padding, 0, padding, 0);
 
-        mTitle = (TextView) findViewById(R.id.title);
-        mDescriptionText = (TextView) findViewById(R.id.description);
-        // For the spans to be clickable.
-        mDescriptionText.setMovementMethod(LinkMovementMethod.getInstance());
-        mDescriptionTextId = R.string.signin_account_choice_description;
-
         // TODO(peconn): Ensure this is changed to R.string.cancel when used in Settings > Sign In.
         mCancelButtonTextId = R.string.no_thanks;
 
-        mAddAnotherAccount = getResources().getString(R.string.signin_add_account);
+        mSigninConfirmationView =
+                (AccountSigninConfirmationView) findViewById(R.id.signin_confirmation_view);
+        mSigninConfirmationView.setScrolledToBottomObserver(
+                new AccountSigninConfirmationView.Observer() {
+                    @Override
+                    public void onScrolledToBottom() {
+                        setPositiveButtonEnabled();
+                    }
+                });
+        mSigninAccountImage = (ImageView) findViewById(R.id.signin_account_image);
+        mSigninAccountName = (TextView) findViewById(R.id.signin_account_name);
+        mSigninAccountEmail = (TextView) findViewById(R.id.signin_account_email);
+        mSigninSettingsControl = (TextView) findViewById(R.id.signin_settings_control);
+        // For the spans to be clickable.
+        mSigninSettingsControl.setMovementMethod(LinkMovementMethod.getInstance());
+    }
 
-        mConfirmAccountEmail = (TextView) findViewById(R.id.confirm_account_email);
-        mSpinner = (Spinner) findViewById(R.id.google_accounts_spinner);
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        // This assumes that view's layout_width and layout_height are set to match_parent.
+        assert MeasureSpec.getMode(widthMeasureSpec) == MeasureSpec.EXACTLY;
+        assert MeasureSpec.getMode(heightMeasureSpec) == MeasureSpec.EXACTLY;
 
-        mSpinnerBackground = mSpinner.getBackground();
-        mArrayAdapter = new ArrayAdapter<CharSequence>(getContext().getApplicationContext(),
-                R.layout.fre_spinner_text);
+        int width = MeasureSpec.getSize(widthMeasureSpec);
+        int height = MeasureSpec.getSize(heightMeasureSpec);
 
-        mArrayAdapter.setDropDownViewResource(R.layout.fre_spinner_dropdown);
-        mSpinner.setAdapter(mArrayAdapter);
-        mSpinner.setOnItemSelectedListener(new SpinnerOnItemSelectedListener());
+        // Sets title aspect ratio to be 16:9.
+        if (height > width) {
+            mTitle.setHeight(width * 9 / 16);
+        }
 
-        // Only set the spinner's content description right before the accessibility action is going
-        // to be performed. Otherwise, the the content description is read when the
-        // AccountFirstRunView is created because setting the spinner's adapter causes a
-        // TYPE_VIEW_SELECTED event. ViewPager loads the next and previous pages according to
-        // it's off-screen page limit, which is one by default, so without this the content
-        // description ends up being read when the card before this one shown.
-        mSpinner.setAccessibilityDelegate(new AccessibilityDelegate() {
-            @Override
-            public boolean performAccessibilityAction(View host, int action, Bundle args) {
-                if (mSpinner.getContentDescription() == null) {
-                    mSpinner.setContentDescription(getResources().getString(
-                            R.string.accessibility_signin_account_spinner));
-                }
-                return super.performAccessibilityAction(host, action, args);
-            }
-        });
-
-        showSigninPage();
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
     }
 
     @Override
@@ -252,70 +245,17 @@ public class AccountSigninView extends FirstRunView
         }
     }
 
-    @Override
-    protected boolean isHorizontalModeEnabled() {
-        return mHorizontalModeEnabled;
-    }
-
-    @Override
-    protected boolean isDynamicPaddingEnabled() {
-        return mDynamicPaddingEnabled;
-    }
-
     /**
      * Changes the visuals slightly for when this view appears in the recent tabs page instead of
-     * in first run. For example, the title text is changed as well as the button style.
+     * in first run.
      * This is currently used in the Recent Tabs Promo and the bookmarks page.
      */
     public void configureForRecentTabsOrBookmarksPage() {
-        mHorizontalModeEnabled = false;
-        mDynamicPaddingEnabled = false;
         mShowSettingsSpan = false;
 
         setBackgroundResource(R.color.ntp_bg);
-        mTitle.setText(R.string.sign_in_to_chrome);
-
         mCancelButtonTextId = R.string.cancel;
         setUpCancelButton();
-
-        setPadding(0, 0, 0,
-                getResources().getDimensionPixelOffset(R.dimen.sign_in_promo_padding_bottom));
-    }
-
-    /**
-     * Changes the visuals slightly for when this view appears in the settings menu.
-     */
-    public void configureForSettingsPage() {
-        mHorizontalModeEnabled = false;
-    }
-
-    /**
-     * Changes the visuals slightly for when this view is shown in a subsequent run after user adds
-     * a Google account to the device.
-     */
-    public void configureForAddAccountPromo() {
-        int experimentGroup = SigninManager.getAndroidSigninPromoExperimentGroup();
-        assert experimentGroup >= 0 && experimentGroup <= EXPERIMENT_MAX_VALUE;
-
-        if ((experimentGroup & EXPERIMENT_TITLE_VARIANT_MASK) != 0) {
-            mTitle.setText(R.string.make_chrome_yours);
-        }
-
-        mDescriptionTextId = (experimentGroup & EXPERIMENT_SUMMARY_VARIANT_MASK) != 0
-                ? R.string.signin_sign_in_to_chrome_summary_variant
-                : R.string.sign_in_to_chrome_summary;
-
-        if ((experimentGroup & EXPERIMENT_LAYOUT_VARIANT_MASK) != 0) {
-            mImageCarousel.setVisibility(GONE);
-
-            ImageView illustrationView = new ImageView(getContext());
-            illustrationView.setImageResource(R.drawable.signin_promo_illustration);
-            illustrationView.setBackgroundColor(ApiCompatibilityUtils.getColor(getResources(),
-                    R.color.illustration_background_color));
-
-            LinearLayout linearLayout = (LinearLayout) findViewById(R.id.fre_main_layout);
-            linearLayout.addView(illustrationView, 0);
-        }
     }
 
     /**
@@ -351,7 +291,7 @@ public class AccountSigninView extends FirstRunView
      *         selected).
      */
     private boolean updateAccounts() {
-        if (mSignedIn) return false;
+        if (mSignedIn || mProfileData == null) return false;
 
         List<String> oldAccountNames = mAccountNames;
         mAccountNames = mAccountManagerHelper.getGoogleAccountNames();
@@ -363,32 +303,24 @@ public class AccountSigninView extends FirstRunView
                 return false;
             }
         } else {
-            accountToSelect = getIndexOfNewElement(
-                    oldAccountNames, mAccountNames, mSpinner.getSelectedItemPosition());
+            accountToSelect = getIndexOfNewElement(oldAccountNames, mAccountNames,
+                    mAccountListAdapter.getSelectedAccountPosition());
         }
 
-        mArrayAdapter.clear();
+        mAccountListAdapter.clear();
         if (!mAccountNames.isEmpty()) {
-            mSpinner.setVisibility(View.VISIBLE);
-            mArrayAdapter.addAll(mAccountNames);
-            mArrayAdapter.add(mAddAnotherAccount);
+            mAccountListAdapter.addAll(mAccountNames);
+            mAccountListAdapter.add(getResources().getString(R.string.signin_add_account));
 
             setUpSigninButton(true);
-            mDescriptionText.setText(mDescriptionTextId);
-
         } else {
-            mSpinner.setVisibility(View.GONE);
-            mArrayAdapter.add(mAddAnotherAccount);
             setUpSigninButton(false);
-            mDescriptionText.setText(R.string.signin_no_account_choice_description);
         }
 
-        if (mProfileData != null) mProfileData.update();
+        mProfileData.update();
         updateProfileImages();
 
-        mSpinner.setSelection(accountToSelect);
-        mAccountName = mArrayAdapter.getItem(accountToSelect).toString();
-        mImageCarousel.scrollTo(accountToSelect, false, false);
+        selectAccount(accountToSelect);
 
         return oldAccountNames != null
                 && !(oldAccountNames.size() == mAccountNames.size()
@@ -426,34 +358,21 @@ public class AccountSigninView extends FirstRunView
     private void updateProfileImages() {
         if (mProfileData == null) return;
 
-        int count = mAccountNames.size();
+        mAccountListAdapter.notifyDataSetChanged();
 
-        Bitmap[] images;
-        if (count == 0) {
-            images = new Bitmap[1];
-            images[0] = mProfileData.getImage(null);
-        } else {
-            images = new Bitmap[count];
-            for (int i = 0; i < count; ++i) {
-                images[i] = mProfileData.getImage(mAccountNames.get(i));
-            }
-        }
-
-        mImageCarousel.setImages(images);
-        updateProfileName();
+        if (mSignedIn) updateSignedInAccountInfo();
     }
 
-    private void updateProfileName() {
-        if (!mSignedIn) return;
-
+    private void updateSignedInAccountInfo() {
+        String selectedAccountEmail = getSelectedAccountName();
+        mSigninAccountImage.setImageBitmap(mProfileData.getImage(selectedAccountEmail));
         String name = null;
-        if (mProfileData != null) {
-            if (mIsChildAccount) name = mProfileData.getGivenName(mAccountName);
-            if (name == null) name = mProfileData.getFullName(mAccountName);
-        }
-        if (name == null) name = mAccountName;
+        if (mIsChildAccount) name = mProfileData.getGivenName(selectedAccountEmail);
+        if (name == null) name = mProfileData.getFullName(selectedAccountEmail);
+        if (name == null) name = selectedAccountEmail;
         String text = String.format(getResources().getString(R.string.signin_hi_name), name);
-        mTitle.setText(text);
+        mSigninAccountName.setText(text);
+        mSigninAccountEmail.setText(selectedAccountEmail);
     }
 
     /**
@@ -466,53 +385,45 @@ public class AccountSigninView extends FirstRunView
         showConfirmSigninPage();
     }
 
-    private void configureSpinner(boolean signinPage) {
-        mSpinner.setEnabled(signinPage);
-        mSpinner.setVisibility(signinPage ? View.VISIBLE : View.GONE);
-        mConfirmAccountEmail.setVisibility(signinPage ? View.GONE : View.VISIBLE);
-        mConfirmAccountEmail.setText(mAccountName);
-    }
-
     private void showSigninPage() {
         mSignedIn = false;
-        mTitle.setText(R.string.sign_in_to_chrome);
 
-        configureSpinner(true);
-        mImageCarousel.setVisibility(VISIBLE);
+        mSigninConfirmationView.setVisibility(View.GONE);
+        mSigninView.setVisibility(View.VISIBLE);
 
         setUpCancelButton();
         updateAccounts();
-
-        mImageCarousel.setSignedInMode(false);
     }
 
     private void showConfirmSigninPage() {
         mSignedIn = true;
-        updateProfileName();
 
-        configureSpinner(false);
+        updateSignedInAccountInfo();
+
+        mSigninView.setVisibility(View.GONE);
+        mSigninConfirmationView.setVisibility(View.VISIBLE);
+
         setButtonsEnabled(true);
         setUpConfirmButton();
+        setPositiveButtonDisabled();
         setUpUndoButton();
 
         if (mShowSettingsSpan) {
             NoUnderlineClickableSpan settingsSpan = new NoUnderlineClickableSpan() {
                 @Override
                 public void onClick(View widget) {
-                    mListener.onAccountSelected(mAccountName, true);
+                    mListener.onAccountSelected(getSelectedAccountName(), true);
                 }
             };
-            mDescriptionText.setText(SpanApplier.applySpans(getSignedInDescription(mIsChildAccount),
-                    new SpanInfo(SETTINGS_LINK_OPEN, SETTINGS_LINK_CLOSE, settingsSpan)));
+            mSigninSettingsControl.setText(
+                    SpanApplier.applySpans(getSettingsControlDescription(mIsChildAccount),
+                            new SpanInfo(SETTINGS_LINK_OPEN, SETTINGS_LINK_CLOSE, settingsSpan)));
         } else {
             // If we aren't showing the span, get rid of the LINK1 annotations.
-            mDescriptionText.setText(getSignedInDescription(mIsChildAccount)
-                                             .replace(SETTINGS_LINK_OPEN, "")
-                                             .replace(SETTINGS_LINK_CLOSE, ""));
+            mSigninSettingsControl.setText(getSettingsControlDescription(mIsChildAccount)
+                                                   .replace(SETTINGS_LINK_OPEN, "")
+                                                   .replace(SETTINGS_LINK_CLOSE, ""));
         }
-
-        mImageCarousel.setVisibility(VISIBLE);
-        mImageCarousel.setSignedInMode(true);
     }
 
     private void showConfirmSigninPageAccountTrackerServiceCheck() {
@@ -540,14 +451,11 @@ public class AccountSigninView extends FirstRunView
     }
 
     private void showConfirmSigninPagePreviousAccountCheck() {
-        if (SigninInvestigator.investigate(mAccountName)
-                == InvestigatedScenario.DIFFERENT_ACCOUNT) {
-
+        String accountName = getSelectedAccountName();
+        if (SigninInvestigator.investigate(accountName) == InvestigatedScenario.DIFFERENT_ACCOUNT) {
             ConfirmImportSyncDataDialog.showNewInstance(
-                    PrefServiceBridge.getInstance().getSyncLastAccountName(),
-                    mAccountName,
-                    ImportSyncType.PREVIOUS_DATA_FOUND,
-                    mDelegate.getFragmentManager(),
+                    PrefServiceBridge.getInstance().getSyncLastAccountName(), accountName,
+                    ImportSyncType.PREVIOUS_DATA_FOUND, mDelegate.getFragmentManager(),
                     new ConfirmImportSyncDataDialog.Listener() {
                         @Override
                         public void onConfirm(boolean wipeData) {
@@ -587,8 +495,8 @@ public class AccountSigninView extends FirstRunView
     }
 
     private void setUpSigninButton(boolean hasAccounts) {
-        mPositiveButton.setText(R.string.choose_account_sign_in);
         if (hasAccounts) {
+            mPositiveButton.setText(R.string.continue_sign_in);
             mPositiveButton.setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -596,6 +504,7 @@ public class AccountSigninView extends FirstRunView
                 }
             });
         } else {
+            mPositiveButton.setText(R.string.choose_account_sign_in);
             mPositiveButton.setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -604,6 +513,7 @@ public class AccountSigninView extends FirstRunView
                 }
             });
         }
+        setPositiveButtonEnabled();
     }
 
     private void setUpUndoButton() {
@@ -625,7 +535,7 @@ public class AccountSigninView extends FirstRunView
         mPositiveButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                mListener.onAccountSelected(mAccountName, false);
+                mListener.onAccountSelected(getSelectedAccountName(), false);
             }
         });
     }
@@ -640,12 +550,12 @@ public class AccountSigninView extends FirstRunView
         }
     }
 
-    private String getSignedInDescription(boolean childAccount) {
+    private String getSettingsControlDescription(boolean childAccount) {
         if (childAccount) {
-            return getResources().getString(R.string.signin_signed_in_description) + '\n'
+            return getResources().getString(R.string.signin_signed_in_settings_description) + '\n'
                     + getResources().getString(R.string.signin_signed_in_description_uca_addendum);
         } else {
-            return getResources().getString(R.string.signin_signed_in_description);
+            return getResources().getString(R.string.signin_signed_in_settings_description);
         }
     }
 
@@ -663,9 +573,9 @@ public class AccountSigninView extends FirstRunView
     public void switchToForcedAccountMode(String forcedAccountName) {
         mForcedAccountName = forcedAccountName;
         updateAccounts();
-        assert TextUtils.equals(mAccountName, mForcedAccountName);
+        assert TextUtils.equals(getSelectedAccountName(), mForcedAccountName);
         switchToSignedMode();
-        assert TextUtils.equals(mAccountName, mForcedAccountName);
+        assert TextUtils.equals(getSelectedAccountName(), mForcedAccountName);
     }
 
     /**
@@ -682,9 +592,42 @@ public class AccountSigninView extends FirstRunView
         return mForcedAccountName != null;
     }
 
+    // Overrides AdapterView.OnItemClickListener.
     @Override
-    public void onPositionChanged(int i) {
-        mPositionSetProgrammatically = true;
-        mSpinner.setSelection(i);
+    public void onItemClick(AdapterView<?> adapter, View view, int position, long id) {
+        int positionInAccountListAdapter = position - mAccountListView.getHeaderViewsCount();
+        if (positionInAccountListAdapter == mAccountListAdapter.getCount() - 1) {
+            mListener.onNewAccount();
+            RecordUserAction.record("Signin_AddAccountToDevice");
+        } else {
+            selectAccount(positionInAccountListAdapter);
+        }
+    }
+
+    private void selectAccount(int position) {
+        mAccountListAdapter.setSelectedAccountPosition(position);
+        mAccountListAdapter.notifyDataSetChanged();
+    }
+
+    private void setPositiveButtonEnabled() {
+        mPositiveButton.setButtonColor(
+                ApiCompatibilityUtils.getColor(getResources(), R.color.light_active_color));
+        mPositiveButton.setTextColor(
+                ApiCompatibilityUtils.getColor(getResources(), R.color.signin_head_background));
+        mPositiveButton.setAlpha(1f);
+        mPositiveButton.setEnabled(true);
+    }
+
+    private void setPositiveButtonDisabled() {
+        mPositiveButton.setButtonColor(ApiCompatibilityUtils.getColor(
+                getResources(), R.color.signin_button_disabled_color));
+        mPositiveButton.setTextColor(
+                ApiCompatibilityUtils.getColor(getResources(), R.color.fre_text_color));
+        mPositiveButton.setAlpha(0.26f);
+        mPositiveButton.setEnabled(false);
+    }
+
+    private String getSelectedAccountName() {
+        return mAccountNames.get(mAccountListAdapter.getSelectedAccountPosition());
     }
 }

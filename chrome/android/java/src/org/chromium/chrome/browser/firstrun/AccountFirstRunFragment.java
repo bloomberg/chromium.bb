@@ -81,7 +81,6 @@ public class AccountFirstRunFragment extends FirstRunPage implements AccountSign
     @Override
     public void onStart() {
         super.onStart();
-        mView.setProfileDataCache(getPageDelegate().getProfileDataCache());
         getPageDelegate().onSigninDialogShown();
     }
 

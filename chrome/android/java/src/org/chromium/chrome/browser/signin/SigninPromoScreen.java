@@ -77,7 +77,6 @@ public class SigninPromoScreen extends AlwaysDismissedDialog
                 inflater.inflate(R.layout.account_signin_view, null);
         mProfileDataCache = new ProfileDataCache(activity, Profile.getLastUsedProfile());
         mAccountFirstRunView.init(mProfileDataCache);
-        mAccountFirstRunView.configureForAddAccountPromo();
         mAccountFirstRunView.setListener(this);
         mAccountFirstRunView.setDelegate(this);
 

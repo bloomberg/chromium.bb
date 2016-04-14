@@ -1675,6 +1675,9 @@ You are signing in with a managed account and giving its administrator control o
       <message name="IDS_CHOOSE_ACCOUNT_SIGN_IN" desc="Sign in button for choose google account dialog [CHAR-LIMIT=20]">
         Sign in
       </message>
+      <message name="IDS_CONTINUE_SIGN_IN" desc="Sign in button for proceed sign in with selected account [CHAR-LIMIT=20]">
+        Continue
+      </message>
       <message name="IDS_SIGNIN_ACCOUNT_CHOICE_DESCRIPTION" desc="Text for account chooser page">
         Sign in to get your bookmarks, history, passwords, and other settings on all your devices.
       </message>
@@ -1687,23 +1690,14 @@ You are signing in with a managed account and giving its administrator control o
       <message name="IDS_MAKE_CHROME_YOURS" desc="Title for the signin promo that prompts the user to sign in to Chrome to have a personalized experirence. [CHAR-LIMIT=24]">
         Make Chrome yours
       </message>
-      <message name="IDS_SIGNIN_NO_ACCOUNT_CHOICE_DESCRIPTION" desc="Text for account chooser page when there are no accounts on the device.">
-        Add an account to get your bookmarks, history, passwords, and other settings on all your devices.
-      </message>
-      <message name="IDS_SIGNIN_SIGN_IN_TO_CHROME_SUMMARY_VARIANT" desc="A variant of summary for the signin promo; lists reasons to sign in to Chrome.">
-        Sign in to access all your web stuff from any device
-      </message>
       <message name="IDS_SIGNIN_HI_NAME" desc="Title welcoming the user by their name after they have signed in.">
         Hi, <ph name="FULL_NAME">%1$s<ex>John Smith</ex></ph>
-      </message>
-      <message name="IDS_SIGNIN_SIGNED_IN_DESCRIPTION" desc="Explanation of what gets synced after the user signed in">
-        Your bookmarks, history, passwords, and other settings will be synced to your Google Account so you can use them on all your devices. You can choose what to sync in <ph name="BEGIN_LINK1">&lt;LINK1&gt;</ph>Settings<ph name="END_LINK1">&lt;/LINK1&gt;</ph>.
       </message>
       <message name="IDS_SIGNIN_SIGNED_IN_DESCRIPTION_UCA_ADDENDUM" desc="Additional explanation for child accounts that synced settings are managed by parents.">
         Your parents help manage these settings.
       </message>
-      <message name="IDS_ACCESSIBILITY_SIGNIN_ACCOUNT_SPINNER" desc="Content description for the first run account drop down spinner.">
-        Choose account
+      <message name="IDS_SIGNIN_SIGNED_IN_SETTINGS_DESCRIPTION" desc="Label of the section containing the link to go to the settings page.">
+        Control how this works in <ph name="BEGIN_LINK1">&lt;LINK1&gt;</ph>Settings<ph name="END_LINK1">&lt;/LINK1&gt;</ph>
       </message>
 
       <!-- External Navigation Strings -->

@@ -57,7 +57,6 @@ public class AccountSigninActivity extends AppCompatActivity
         mView = (AccountSigninView) LayoutInflater.from(this).inflate(
                 R.layout.account_signin_view, null);
         mView.init(new ProfileDataCache(this, Profile.getLastUsedProfile()));
-        mView.configureForSettingsPage();
         mView.setListener(this);
         mView.setDelegate(this);
 
