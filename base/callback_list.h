@@ -9,7 +9,6 @@
 #include <memory>
 
 #include "base/callback.h"
-#include "base/callback_internal.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -211,8 +210,8 @@ class CallbackList<void(Args...)>
 
   CallbackList() {}
 
-  void Notify(
-      typename internal::CallbackParamTraits<Args>::ForwardType... args) {
+  template <typename... RunArgs>
+  void Notify(RunArgs&&... args) {
     typename internal::CallbackListBase<CallbackType>::Iterator it =
         this->GetIterator();
     CallbackType* cb;
