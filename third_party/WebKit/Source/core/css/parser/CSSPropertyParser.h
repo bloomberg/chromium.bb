@@ -23,30 +23,17 @@
 #ifndef CSSPropertyParser_h
 #define CSSPropertyParser_h
 
-#include "core/css/CSSGridTemplateAreasValue.h"
 #include "core/css/StyleRule.h"
 #include "core/css/parser/CSSParserTokenRange.h"
-#include "platform/Length.h"
 
 namespace blink {
 
-class CSSCustomIdentValue;
-class CSSFunctionValue;
-class CSSGradientValue;
-class CSSGridLineNamesValue;
 struct CSSParserString;
-struct CSSParserValue;
-class CSSParserValueList;
-class CSSPrimitiveValue;
 class CSSProperty;
 class CSSValue;
-class CSSValueList;
 class StylePropertyShorthand;
 
-// TODO(rob.buis) to move to cpp file once legacy parser is removed.
-enum TrackSizeRestriction { FixedSizeOnly, AllowAll };
-
-// Inputs: PropertyID, isImportant bool, CSSParserValueList.
+// Inputs: PropertyID, isImportant bool, CSSParserTokenRange.
 // Outputs: Vector of CSSProperties
 
 class CSSPropertyParser {
@@ -73,9 +60,6 @@ private:
     bool consumeCSSWideKeyword(CSSPropertyID unresolvedProperty, bool important);
     CSSValue* parseSingleValue(CSSPropertyID);
 
-    bool legacyParseShorthand(CSSPropertyID, bool important);
-
-    bool inShorthand() const { return m_inParseShorthand; }
     bool inQuirksMode() const { return isQuirksModeBehavior(m_context.mode()); }
 
     bool parseViewportDescriptor(CSSPropertyID propId, bool important);
@@ -99,9 +83,8 @@ private:
     bool consumeGridItemPositionShorthand(CSSPropertyID, bool important);
     bool consumeGridTemplateRowsAndAreasAndColumns(bool important);
     bool consumeGridTemplateShorthand(bool important);
-    bool parseGridShorthand(bool important);
+    bool consumeGridShorthand(bool important);
     bool consumeGridAreaShorthand(bool important);
-    bool parseGridLineNames(CSSParserValueList&, CSSValueList&, CSSGridLineNamesValue* = nullptr);
 
     bool consumeFont(bool important);
     bool consumeSystemFont(bool important);
@@ -135,7 +118,6 @@ private:
 
 private:
     // Inputs:
-    CSSParserValueList* m_valueList;
     CSSParserTokenRange m_range;
     const CSSParserContext& m_context;
 
@@ -145,14 +127,7 @@ private:
     // Locals during parsing:
     int m_inParseShorthand;
     CSSPropertyID m_currentShorthand;
-    Member<CSSCalcValue> m_parsedCalculation;
 };
-
-// TODO(rob.buis): should move to CSSPropertyParser after conversion.
-bool allTracksAreFixedSized(CSSValueList&);
-bool parseGridTemplateAreasRow(const String&, NamedGridAreaMap&, const size_t, size_t&);
-CSSValueList* consumeGridAutoFlow(CSSParserTokenRange&);
-CSSValue* consumeGridTrackSize(CSSParserTokenRange&, CSSParserMode, TrackSizeRestriction = AllowAll);
 
 CSSPropertyID unresolvedCSSPropertyID(const CSSParserString&);
 CSSValueID cssValueKeywordID(const CSSParserString&);

@@ -1391,7 +1391,6 @@
             'css/parser/CSSTokenizerInputStream.cpp',
             'css/parser/CSSVariableParser.cpp',
             'css/parser/CSSVariableParser.h',
-            'css/parser/LegacyCSSPropertyParser.cpp',
             'css/parser/MediaQueryBlockWatcher.cpp',
             'css/parser/MediaQueryParser.cpp',
             'css/parser/SizesAttributeParser.cpp',
