@@ -118,6 +118,7 @@ template("fuzzer_test") {
       if (defined(invoker.additional_configs)) {
         configs += invoker.additional_configs
       }
+      configs += [ "//testing/libfuzzer:fuzzer_test_config" ]
     }
   } else {
     # noop on unsupported platforms.
