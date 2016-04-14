@@ -162,6 +162,13 @@ void FontBuilder::setVariant(FontVariant smallCaps)
     m_fontDescription.setVariant(smallCaps);
 }
 
+void FontBuilder::setVariantCaps(FontDescription::FontVariantCaps caps)
+{
+    set(PropertySetFlag::VariantCaps);
+
+    m_fontDescription.setVariantCaps(caps);
+}
+
 void FontBuilder::setVariantLigatures(const FontDescription::VariantLigatures& ligatures)
 {
     set(PropertySetFlag::VariantLigatures);
@@ -369,6 +376,8 @@ void FontBuilder::createFont(FontSelector* fontSelector, ComputedStyle& style)
         description.setStyle(m_fontDescription.style());
     if (isSet(PropertySetFlag::Variant))
         description.setVariant(m_fontDescription.variant());
+    if (isSet(PropertySetFlag::VariantCaps))
+        description.setVariantCaps(m_fontDescription.variantCaps());
     if (isSet(PropertySetFlag::VariantLigatures))
         description.setVariantLigatures(m_fontDescription.getVariantLigatures());
     if (isSet(PropertySetFlag::TextRendering))

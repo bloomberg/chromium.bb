@@ -112,6 +112,9 @@ static void fontStyleValue(FontBuilder& b) { b.setStyle(FontStyleNormal); }
 static void fontVariantBase(FontDescription& d) { d.setVariant(FontVariantSmallCaps); }
 static void fontVariantValue(FontBuilder& b) { b.setVariant(FontVariantNormal); }
 
+static void fontVariantCapsBase(FontDescription& d) { d.setVariantCaps(FontDescription::SmallCaps); }
+static void fontVariantCapsValue(FontBuilder& b) { b.setVariantCaps(FontDescription::CapsNormal); }
+
 static void fontVariantLigaturesBase(FontDescription& d) { d.setVariantLigatures(FontDescription::VariantLigatures(FontDescription::EnabledLigaturesState)); }
 static void fontVariantLigaturesValue(FontBuilder& b) { b.setVariantLigatures(FontDescription::VariantLigatures(FontDescription::DisabledLigaturesState)); }
 
@@ -152,6 +155,7 @@ INSTANTIATE_TEST_CASE_P(AllFields, FontBuilderAdditiveTest,
     FunctionPair(fontFeatureSettingsBase, fontFeatureSettingsValue),
     FunctionPair(fontStyleBase, fontStyleValue),
     FunctionPair(fontVariantBase, fontVariantValue),
+    FunctionPair(fontVariantCapsBase, fontVariantCapsValue),
     FunctionPair(fontVariantLigaturesBase, fontVariantLigaturesValue),
     FunctionPair(fontTextRenderingBase, fontTextRenderingValue),
     FunctionPair(fontKerningBase, fontKerningValue),

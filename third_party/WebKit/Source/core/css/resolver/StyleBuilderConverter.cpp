@@ -263,6 +263,30 @@ FontWeight StyleBuilderConverter::convertFontWeight(StyleResolverState& state, c
     }
 }
 
+FontDescription::FontVariantCaps StyleBuilderConverter::convertFontVariantCaps(StyleResolverState&, const CSSValue& value)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(value.isPrimitiveValue());
+    CSSValueID valueID = toCSSPrimitiveValue(value).getValueID();
+    switch (valueID) {
+    case CSSValueNormal:
+        return FontDescription::CapsNormal;
+    case CSSValueSmallCaps:
+        return FontDescription::SmallCaps;
+    case CSSValueAllSmallCaps:
+        return FontDescription::AllSmallCaps;
+    case CSSValuePetiteCaps:
+        return FontDescription::PetiteCaps;
+    case CSSValueAllPetiteCaps:
+        return FontDescription::AllPetiteCaps;
+    case CSSValueUnicase:
+        return FontDescription::Unicase;
+    case CSSValueTitlingCaps:
+        return FontDescription::TitlingCaps;
+    default:
+        return FontDescription::CapsNormal;
+    }
+}
+
 FontDescription::VariantLigatures StyleBuilderConverter::convertFontVariantLigatures(StyleResolverState&, const CSSValue& value)
 {
     if (value.isValueList()) {

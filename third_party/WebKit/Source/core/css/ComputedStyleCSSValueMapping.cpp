@@ -2167,6 +2167,25 @@ CSSValue* ComputedStyleCSSValueMapping::get(CSSPropertyID propertyID, const Comp
             valueList->append(cssValuePool().createIdentifierValue(contextualLigaturesState == FontDescription::DisabledLigaturesState ? CSSValueNoContextual : CSSValueContextual));
         return valueList;
     }
+    case CSSPropertyFontVariantCaps: {
+        FontDescription::FontVariantCaps variantCaps = style.getFontDescription().variantCaps();
+        switch (variantCaps) {
+        case FontDescription::CapsNormal:
+            return cssValuePool().createIdentifierValue(CSSValueNormal);
+        case FontDescription::SmallCaps:
+            return cssValuePool().createIdentifierValue(CSSValueSmallCaps);
+        case FontDescription::AllSmallCaps:
+            return cssValuePool().createIdentifierValue(CSSValueAllSmallCaps);
+        case FontDescription::PetiteCaps:
+            return cssValuePool().createIdentifierValue(CSSValuePetiteCaps);
+        case FontDescription::AllPetiteCaps:
+            return cssValuePool().createIdentifierValue(CSSValueAllPetiteCaps);
+        case FontDescription::Unicase:
+            return cssValuePool().createIdentifierValue(CSSValueUnicase);
+        case FontDescription::TitlingCaps:
+            return cssValuePool().createIdentifierValue(CSSValueTitlingCaps);
+        }
+    }
     case CSSPropertyZIndex:
         if (style.hasAutoZIndex())
             return cssValuePool().createIdentifierValue(CSSValueAuto);

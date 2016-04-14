@@ -66,6 +66,16 @@ no-historical-ligatures
 contextual
 no-contextual
 
+// font-variant-caps:
+//
+// normal
+small-caps
+all-small-caps
+petite-caps
+all-petite-caps
+unicase
+titling-caps
+
 //
 // font-weigth
 //

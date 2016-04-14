@@ -110,6 +110,7 @@ static const CSSPropertyID staticComputableProperties[] = {
     CSSPropertyFontStyle,
     CSSPropertyFontVariant,
     CSSPropertyFontVariantLigatures,
+    CSSPropertyFontVariantCaps,
     CSSPropertyFontWeight,
     CSSPropertyHeight,
     CSSPropertyImageOrientation,

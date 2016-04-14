@@ -76230,6 +76230,8 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="529" label="column-span"/>
   <int value="530" label="column-width"/>
   <int value="531" label="columns"/>
+  <int value="532" label="apply-at-rule"/>
+  <int value="533" label="font-variant-caps"/>
 </enum>
 
 <enum name="MappedEditingCommands" type="int">

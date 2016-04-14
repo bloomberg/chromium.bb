@@ -66,6 +66,10 @@ enum FontStyle {
     FontStyleItalic = 2
 };
 
+// TODO(drott): crbug.com/516673 Move this from here to FontDescription,
+// what's the spec equivalent of FontTraits?
+// Variant is not used for font matching and should probably
+// not be part of FontTraits.
 enum FontVariant {
     FontVariantNormal = 0,
     FontVariantSmallCaps = 1

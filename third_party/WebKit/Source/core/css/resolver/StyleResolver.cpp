@@ -1276,6 +1276,7 @@ static inline bool isValidFirstLetterStyleProperty(CSSPropertyID id)
     case CSSPropertyFontStretch:
     case CSSPropertyFontStyle:
     case CSSPropertyFontVariant:
+    case CSSPropertyFontVariantCaps:
     case CSSPropertyFontVariantLigatures:
     case CSSPropertyFontWeight:
     case CSSPropertyLetterSpacing:

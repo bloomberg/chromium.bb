@@ -63,6 +63,7 @@ public:
     void setLocale(const AtomicString&);
     void setStyle(FontStyle);
     void setVariant(FontVariant);
+    void setVariantCaps(FontDescription::FontVariantCaps);
     void setVariantLigatures(const FontDescription::VariantLigatures&);
     void setTextRendering(TextRenderingMode);
     void setKerning(FontDescription::Kerning);
@@ -82,6 +83,7 @@ public:
     static float initialSizeAdjust() { return FontSizeAdjustNone; }
     static TextRenderingMode initialTextRendering() { return AutoTextRendering; }
     static FontVariant initialVariant() { return FontVariantNormal; }
+    static FontDescription::FontVariantCaps initialVariantCaps() { return FontDescription::CapsNormal; }
     static FontDescription::VariantLigatures initialVariantLigatures() { return FontDescription::VariantLigatures(); }
     static const AtomicString& initialLocale() { return nullAtom; }
     static FontStyle initialStyle() { return FontStyleNormal; }
@@ -116,6 +118,7 @@ private:
         Style,
         SizeAdjust,
         Variant,
+        VariantCaps,
         VariantLigatures,
         TextRendering,
         Kerning,

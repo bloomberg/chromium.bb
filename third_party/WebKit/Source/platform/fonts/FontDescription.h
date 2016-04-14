@@ -73,6 +73,7 @@ public:
         m_fields.m_widthVariant = RegularWidth;
         m_fields.m_style = FontStyleNormal;
         m_fields.m_variant = FontVariantNormal;
+        m_fields.m_variantCaps = CapsNormal;
         m_fields.m_isAbsoluteSize = false;
         m_fields.m_weight = FontWeightNormal;
         m_fields.m_stretch = FontStretchNormal;
@@ -148,6 +149,7 @@ public:
     FontStyle style() const { return static_cast<FontStyle>(m_fields.m_style); }
     int computedPixelSize() const { return int(m_computedSize + 0.5f); }
     FontVariant variant() const { return static_cast<FontVariant>(m_fields.m_variant); }
+    FontVariantCaps variantCaps() const { return static_cast<FontVariantCaps>(m_fields.m_variantCaps); }
     bool isAbsoluteSize() const { return m_fields.m_isAbsoluteSize; }
     FontWeight weight() const { return static_cast<FontWeight>(m_fields.m_weight); }
     FontStretch stretch() const { return static_cast<FontStretch>(m_fields.m_stretch); }
@@ -198,6 +200,7 @@ public:
     void setSizeAdjust(float aspect) { m_sizeAdjust = clampTo<float>(aspect); }
     void setStyle(FontStyle i) { m_fields.m_style = i; }
     void setVariant(FontVariant c) { m_fields.m_variant = c; }
+    void setVariantCaps(FontVariantCaps variantCaps) { m_fields.m_variantCaps = variantCaps; }
     void setVariantLigatures(const VariantLigatures&);
     void setIsAbsoluteSize(bool s) { m_fields.m_isAbsoluteSize = s; }
     void setWeight(FontWeight w) { m_fields.m_weight = w; }
@@ -263,6 +266,7 @@ private:
 
         unsigned m_style : 2; // FontStyle
         unsigned m_variant : 1; // FontVariant
+        unsigned m_variantCaps : 3; // FontVariantCaps
         unsigned m_isAbsoluteSize : 1; // Whether or not CSS specified an explicit size
         // (logical sizes like "medium" don't count).
         unsigned m_weight : 4; // FontWeight

@@ -103,6 +103,7 @@ font-stretch inherited, font, type_name=FontStretch, name_for_methods=Stretch
 font-style inherited, font, type_name=FontStyle, name_for_methods=Style
 font-variant inherited, font, type_name=FontVariant, name_for_methods=Variant
 font-variant-ligatures inherited, font, type_name=VariantLigatures, name_for_methods=VariantLigatures, converter=convertFontVariantLigatures
+font-variant-caps inherited, font, name_for_methods=VariantCaps, converter=convertFontVariantCaps
 font-weight interpolable, inherited, font, type_name=FontWeight, name_for_methods=Weight, converter=convertFontWeight
 font-feature-settings inherited, font, name_for_methods=FeatureSettings, converter=convertFontFeatureSettings
 -webkit-font-smoothing inherited, font, type_name=FontSmoothingMode

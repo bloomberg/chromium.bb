@@ -501,6 +501,13 @@ static CSSValue* consumeFontVariantLigatures(CSSParserTokenRange& range)
     return ligatureValues;
 }
 
+static CSSValue* consumeFontVariantCaps(CSSParserTokenRange& range)
+{
+    return consumeIdent<CSSValueNormal, CSSValueSmallCaps, CSSValueAllSmallCaps,
+        CSSValuePetiteCaps, CSSValueAllPetiteCaps,
+        CSSValueUnicase, CSSValueTitlingCaps>(range);
+}
+
 static CSSPrimitiveValue* consumeFontVariant(CSSParserTokenRange& range)
 {
     return consumeIdent<CSSValueNormal, CSSValueSmallCaps>(range);
@@ -3443,6 +3450,8 @@ CSSValue* CSSPropertyParser::parseSingleValue(CSSPropertyID unresolvedProperty)
         return consumeQuotes(m_range);
     case CSSPropertyWebkitHighlight:
         return consumeWebkitHighlight(m_range);
+    case CSSPropertyFontVariantCaps:
+        return consumeFontVariantCaps(m_range);
     case CSSPropertyFontVariantLigatures:
         return consumeFontVariantLigatures(m_range);
     case CSSPropertyFontFeatureSettings:
@@ -3982,6 +3991,7 @@ bool CSSPropertyParser::consumeFont(bool important)
         }
         if (!fontVariant) {
             // Font variant in the shorthand is particular, it only accepts normal or small-caps.
+            // TODO: Make consumeFontVariant only accept the css21 values.
             fontVariant = consumeFontVariant(m_range);
             if (fontVariant)
                 continue;
