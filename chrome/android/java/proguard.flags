@@ -112,7 +112,7 @@
   *;
 }
 
--keep class android.support.v4.app.NotificationCompat** {
+-keep class android.support.v7.app.NotificationCompat** {
   *;
 }
 

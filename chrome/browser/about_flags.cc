@@ -1822,6 +1822,12 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_TAB_DETACHING_IN_FULLSCREEN_DESCRIPTION, kOsMac,
      SINGLE_VALUE_TYPE(switches::kEnableFullscreenTabDetaching)},
 #endif
+#if defined(OS_ANDROID)
+    {"media-style-notification",
+     IDS_FLAGS_MEDIA_STYLE_NOTIFICATION_NAME,
+     IDS_FLAGS_MEDIA_STYLE_NOTIFICATION_DESCRIPTION, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kMediaStyleNotification)},
+#endif
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in
     // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.

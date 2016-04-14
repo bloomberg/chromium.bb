@@ -82,7 +82,7 @@ public class CastNotificationControl implements MediaRouteController.UiListener,
         }
         mPosterBitmap = posterBitmap;
         if (mNotificationBuilder == null || mMediaRouteController == null) return;
-        mNotificationBuilder.setImage(mMediaRouteController.getPoster());
+        mNotificationBuilder.setLargeIcon(mMediaRouteController.getPoster());
         updateNotification();
     }
 
@@ -105,7 +105,7 @@ public class CastNotificationControl implements MediaRouteController.UiListener,
                 .setPrivate(false)
                 .setIcon(R.drawable.ic_notification_media_route)
                 .setContentIntent(contentIntent)
-                .setImage(mMediaRouteController.getPoster())
+                .setLargeIcon(mMediaRouteController.getPoster())
                 .setId(R.id.remote_notification)
                 .setListener(this);
         mState = initialState;
@@ -136,7 +136,7 @@ public class CastNotificationControl implements MediaRouteController.UiListener,
     // poster changes.
     public void onPosterBitmapChanged() {
         if (mNotificationBuilder == null || mMediaRouteController == null) return;
-        mNotificationBuilder.setImage(mMediaRouteController.getPoster());
+        mNotificationBuilder.setLargeIcon(mMediaRouteController.getPoster());
         updateNotification();
     }
 
