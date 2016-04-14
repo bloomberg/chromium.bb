@@ -70,7 +70,8 @@ TEST_F(SyncedSessionTrackerTest, PutTabInWindow) {
 
 TEST_F(SyncedSessionTrackerTest, LookupAllForeignSessions) {
   std::vector<const sync_driver::SyncedSession*> sessions;
-  ASSERT_FALSE(GetTracker()->LookupAllForeignSessions(&sessions));
+  ASSERT_FALSE(GetTracker()->LookupAllForeignSessions(
+      &sessions, SyncedSessionTracker::PRESENTABLE));
   GetTracker()->GetSession("tag1");
   GetTracker()->PutWindowInSession("tag1", 0);
   GetTracker()->PutTabInWindow("tag1", 0, 15, 0);
@@ -88,10 +89,15 @@ TEST_F(SyncedSessionTrackerTest, LookupAllForeignSessions) {
   tab->navigations.push_back(
       sessions::SerializedNavigationEntryTestHelper::CreateNavigation(
           kInvalidUrl, "title"));
-  ASSERT_TRUE(GetTracker()->LookupAllForeignSessions(&sessions));
+  ASSERT_TRUE(GetTracker()->LookupAllForeignSessions(
+      &sessions, SyncedSessionTracker::PRESENTABLE));
   // Only the session with a valid window and tab gets returned.
   ASSERT_EQ(1U, sessions.size());
   ASSERT_EQ("tag1", sessions[0]->session_tag);
+
+  ASSERT_TRUE(GetTracker()->LookupAllForeignSessions(
+      &sessions, SyncedSessionTracker::RAW));
+  ASSERT_EQ(3U, sessions.size());
 }
 
 TEST_F(SyncedSessionTrackerTest, LookupSessionWindows) {
@@ -133,19 +139,20 @@ TEST_F(SyncedSessionTrackerTest, Complex) {
   tabs1.push_back(GetTracker()->GetTab(tag1, 1, 1));
   tabs1.push_back(GetTracker()->GetTab(tag1, 2, 2));
   ASSERT_EQ(3U, GetTracker()->num_synced_tabs(tag1));
-  ASSERT_EQ(0U, GetTracker()->num_synced_sessions());
+  ASSERT_EQ(1U, GetTracker()->num_synced_sessions());
   temp_tab = GetTracker()->GetTab(tag1, 0, 0);  // Already created.
   ASSERT_EQ(3U, GetTracker()->num_synced_tabs(tag1));
-  ASSERT_EQ(0U, GetTracker()->num_synced_sessions());
+  ASSERT_EQ(1U, GetTracker()->num_synced_sessions());
   ASSERT_EQ(tabs1[0], temp_tab);
   tabs2.push_back(GetTracker()->GetTab(tag2, 0, 0));
   ASSERT_EQ(1U, GetTracker()->num_synced_tabs(tag2));
-  ASSERT_EQ(0U, GetTracker()->num_synced_sessions());
+  ASSERT_EQ(2U, GetTracker()->num_synced_sessions());
   ASSERT_FALSE(GetTracker()->DeleteSession(tag3));
 
   sync_driver::SyncedSession* session = GetTracker()->GetSession(tag1);
   sync_driver::SyncedSession* session2 = GetTracker()->GetSession(tag2);
   sync_driver::SyncedSession* session3 = GetTracker()->GetSession(tag3);
+  session3->device_type = sync_driver::SyncedSession::TYPE_OTHER;
   ASSERT_EQ(3U, GetTracker()->num_synced_sessions());
 
   ASSERT_TRUE(session);
@@ -176,7 +183,11 @@ TEST_F(SyncedSessionTrackerTest, Complex) {
 
   // The sessions don't have valid tabs, lookup should not succeed.
   std::vector<const sync_driver::SyncedSession*> sessions;
-  ASSERT_FALSE(GetTracker()->LookupAllForeignSessions(&sessions));
+  ASSERT_FALSE(GetTracker()->LookupAllForeignSessions(
+      &sessions, SyncedSessionTracker::PRESENTABLE));
+  ASSERT_TRUE(GetTracker()->LookupAllForeignSessions(
+      &sessions, SyncedSessionTracker::RAW));
+  ASSERT_EQ(2U, sessions.size());
 
   GetTracker()->Clear();
   ASSERT_EQ(0U, GetTracker()->num_synced_tabs(tag1));
@@ -210,49 +221,63 @@ TEST_F(SyncedSessionTrackerTest, LookupTabNodeIds) {
 
   GetTracker()->GetTab(tag1, 1, 1);
   GetTracker()->GetTab(tag1, 2, 2);
-  EXPECT_TRUE(GetTracker()->LookupTabNodeIds(tag1, &result));
+  GetTracker()->LookupTabNodeIds(tag1, &result);
   EXPECT_EQ(2U, result.size());
   EXPECT_FALSE(result.end() == result.find(1));
   EXPECT_FALSE(result.end() == result.find(2));
-  EXPECT_FALSE(GetTracker()->LookupTabNodeIds(tag2, &result));
+  GetTracker()->LookupTabNodeIds(tag2, &result);
+  EXPECT_TRUE(result.empty());
 
   GetTracker()->PutWindowInSession(tag1, 0);
   GetTracker()->PutTabInWindow(tag1, 0, 3, 0);
-  EXPECT_TRUE(GetTracker()->LookupTabNodeIds(tag1, &result));
+  GetTracker()->LookupTabNodeIds(tag1, &result);
   EXPECT_EQ(2U, result.size());
 
   GetTracker()->GetTab(tag1, 3, 3);
-  EXPECT_TRUE(GetTracker()->LookupTabNodeIds(tag1, &result));
+  GetTracker()->LookupTabNodeIds(tag1, &result);
   EXPECT_EQ(3U, result.size());
   EXPECT_FALSE(result.end() == result.find(3));
 
   GetTracker()->GetTab(tag2, 1, 21);
   GetTracker()->GetTab(tag2, 2, 22);
-  EXPECT_TRUE(GetTracker()->LookupTabNodeIds(tag2, &result));
+  GetTracker()->LookupTabNodeIds(tag2, &result);
   EXPECT_EQ(2U, result.size());
   EXPECT_FALSE(result.end() == result.find(21));
   EXPECT_FALSE(result.end() == result.find(22));
-  EXPECT_TRUE(GetTracker()->LookupTabNodeIds(tag1, &result));
+  GetTracker()->LookupTabNodeIds(tag1, &result);
   EXPECT_EQ(3U, result.size());
   EXPECT_FALSE(result.end() == result.find(1));
   EXPECT_FALSE(result.end() == result.find(2));
 
-  EXPECT_FALSE(GetTracker()->LookupTabNodeIds(tag3, &result));
+  GetTracker()->LookupTabNodeIds(tag3, &result);
+  EXPECT_TRUE(result.empty());
   GetTracker()->PutWindowInSession(tag3, 1);
   GetTracker()->PutTabInWindow(tag3, 1, 5, 0);
-  EXPECT_TRUE(GetTracker()->LookupTabNodeIds(tag3, &result));
+  GetTracker()->LookupTabNodeIds(tag3, &result);
   EXPECT_TRUE(result.empty());
-  EXPECT_TRUE(GetTracker()->DeleteSession(tag3));
-  EXPECT_FALSE(GetTracker()->LookupTabNodeIds(tag3, &result));
+  EXPECT_FALSE(GetTracker()->DeleteSession(tag3));
+  GetTracker()->LookupTabNodeIds(tag3, &result);
+  EXPECT_TRUE(result.empty());
 
-  EXPECT_TRUE(GetTracker()->DeleteSession(tag1));
-  EXPECT_FALSE(GetTracker()->LookupTabNodeIds(tag1, &result));
-  EXPECT_TRUE(GetTracker()->LookupTabNodeIds(tag2, &result));
+  EXPECT_FALSE(GetTracker()->DeleteSession(tag1));
+  GetTracker()->LookupTabNodeIds(tag1, &result);
+  EXPECT_TRUE(result.empty());
+  GetTracker()->LookupTabNodeIds(tag2, &result);
   EXPECT_EQ(2U, result.size());
   EXPECT_FALSE(result.end() == result.find(21));
   EXPECT_FALSE(result.end() == result.find(22));
-  EXPECT_TRUE(GetTracker()->DeleteSession(tag2));
-  EXPECT_FALSE(GetTracker()->LookupTabNodeIds(tag2, &result));
+
+  GetTracker()->GetTab(tag2, 1, 21);
+  GetTracker()->GetTab(tag2, 2, 23);
+  GetTracker()->LookupTabNodeIds(tag2, &result);
+  EXPECT_EQ(3U, result.size());
+  EXPECT_FALSE(result.end() == result.find(21));
+  EXPECT_FALSE(result.end() == result.find(22));
+  EXPECT_FALSE(result.end() == result.find(23));
+
+  EXPECT_FALSE(GetTracker()->DeleteSession(tag2));
+  GetTracker()->LookupTabNodeIds(tag2, &result);
+  EXPECT_TRUE(result.empty());
 }
 
 TEST_F(SyncedSessionTrackerTest, SessionTracking) {
@@ -313,6 +338,34 @@ TEST_F(SyncedSessionTrackerTest, SessionTracking) {
 
   // All memory should be properly deallocated by destructor for the
   // SyncedSessionTracker.
+}
+
+TEST_F(SyncedSessionTrackerTest, DeleteForeignTab) {
+  std::string session_tag = "session_tag";
+  int tab_id_1 = 1;
+  int tab_id_2 = 2;
+  int tab_node_id_3 = 3;
+  int tab_node_id_4 = 4;
+  std::set<int> result;
+
+  GetTracker()->GetTab(session_tag, tab_id_1, tab_node_id_3);
+  GetTracker()->GetTab(session_tag, tab_id_1, tab_node_id_4);
+  GetTracker()->GetTab(session_tag, tab_id_2, tab_node_id_3);
+  GetTracker()->GetTab(session_tag, tab_id_2, tab_node_id_4);
+
+  GetTracker()->LookupTabNodeIds(session_tag, &result);
+  EXPECT_EQ(2U, result.size());
+  EXPECT_TRUE(result.find(tab_node_id_3) != result.end());
+  EXPECT_TRUE(result.find(tab_node_id_4) != result.end());
+
+  GetTracker()->DeleteForeignTab(session_tag, tab_node_id_3);
+  GetTracker()->LookupTabNodeIds(session_tag, &result);
+  EXPECT_EQ(1U, result.size());
+  EXPECT_TRUE(result.find(tab_node_id_4) != result.end());
+
+  GetTracker()->DeleteForeignTab(session_tag, tab_node_id_4);
+  GetTracker()->LookupTabNodeIds(session_tag, &result);
+  EXPECT_TRUE(result.empty());
 }
 
 }  // namespace browser_sync

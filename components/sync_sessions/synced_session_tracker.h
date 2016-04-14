@@ -31,6 +31,12 @@ namespace browser_sync {
 // the local session (whose tag we maintain separately).
 class SyncedSessionTracker {
  public:
+  // Different ways to lookup/filter tabs.
+  enum SessionLookup {
+    RAW,         // Return all foreign sessions.
+    PRESENTABLE  // Have one window with at least one tab with syncable content.
+  };
+
   explicit SyncedSessionTracker(
       sync_sessions::SyncSessionsClient* sessions_client);
   ~SyncedSessionTracker();
@@ -40,10 +46,12 @@ class SyncedSessionTracker {
 
   // Fill a preallocated vector with all foreign sessions we're tracking (skips
   // the local session object). SyncedSession ownership remains within the
-  // SyncedSessionTracker.
+  // SyncedSessionTracker. Lookup parameter is used to decide which foreign tabs
+  // should be include.
   // Returns true if we had foreign sessions to fill it with, false otherwise.
   bool LookupAllForeignSessions(
-      std::vector<const sync_driver::SyncedSession*>* sessions) const;
+      std::vector<const sync_driver::SyncedSession*>* sessions,
+      SessionLookup lookup) const;
 
   // Attempts to look up the session windows associatd with the session given
   // by |session_tag|. Ownership Of SessionWindows stays within the
@@ -71,7 +79,7 @@ class SyncedSessionTracker {
   bool LookupLocalSession(const sync_driver::SyncedSession** output) const;
 
   // Returns a pointer to the SyncedSession object associated with
-  // |session_tag|.  If none exists, creates one. Ownership of the
+  // |session_tag|. If none exists, creates one. Ownership of the
   // SyncedSession remains within the SyncedSessionTracker.
   sync_driver::SyncedSession* GetSession(const std::string& session_tag);
 
@@ -88,6 +96,15 @@ class SyncedSessionTracker {
   // to their session. The next call to CleanupSession(...) will delete those
   // windows and tabs not owned.
   void ResetSessionTracking(const std::string& session_tag);
+
+  // Tracks the deletion of a foreign tab by removing the given |tab_node_id|
+  // from the parent session. Doesn't actually remove any tab objects because
+  // the header may have or may not have already been updated to no longer
+  // parent this tab. Regardless, when the header is updated then cleanup will
+  // remove the actual tab data. However, this method always needs to be called
+  // upon foreign tab deletion, otherwise LookupTabNodeIds(...) may return
+  // already deleted tab node ids.
+  void DeleteForeignTab(const std::string& session_tag, int tab_node_id);
 
   // Deletes those windows and tabs associated with |session_tag| that are no
   // longer owned.
@@ -122,15 +139,7 @@ class SyncedSessionTracker {
 
   // Fills |tab_node_ids| with the tab node ids (see GetTab) for all the tabs*
   // associated with the session having tag |session_tag|.
-  // Returns false if we don't have any record of the session.  If no tabs were
-  // found as part of the session, the return value will be true but
-  // |tab_node_ids| will be empty.
-  //
-  // * - note that this only returns the ids we're aware of; it's possible we
-  // don't have the latest tab state from a foreign session and it's also
-  // possible we just haven't updated the tab_node_id for a tab yet, so the
-  // result list should not be treated as authoritative.
-  bool LookupTabNodeIds(const std::string& session_tag,
+  void LookupTabNodeIds(const std::string& session_tag,
                         std::set<int>* tab_node_ids);
 
   // Free the memory for all dynamically allocated objects and clear the
@@ -176,21 +185,13 @@ class SyncedSessionTracker {
   // mapped tabs, unmapped tabs are owned by the unmapped_tabs_ container).
   // Note, we pair pointers with bools so that we can track what is owned and
   // what can be deleted (see ResetSessionTracking(..) and CleanupSession(..)
-  // above).
-  // The wrappers also serve as a convenient place to augment state stored in
-  // SessionTab for sync purposes, such as |tab_node_id|.
-  // IsOwned is used as a wrapper constructor parameter for readability.
+  // above). IsOwned is used as a wrapper constructor parameter for readability.
   struct SessionTabWrapper {
-    SessionTabWrapper()
-        : tab_ptr(NULL),
-          owned(false),
-          tab_node_id(TabNodePool::kInvalidTabNodeID) {}
-    SessionTabWrapper(sessions::SessionTab* tab_ptr,
-                      OwnedState owned,
-                      int tab_node_id)
-        : tab_ptr(tab_ptr),
-          owned(owned == IS_OWNED),
-          tab_node_id(tab_node_id) {}
+    SessionTabWrapper() : tab_ptr(NULL), owned(false) {}
+
+    SessionTabWrapper(sessions::SessionTab* tab_ptr, OwnedState owned)
+        : tab_ptr(tab_ptr), owned(owned == IS_OWNED) {}
+
     sessions::SessionTab* tab_ptr;
 
     // This is used as part of a mark-and-sweep approach to garbage
@@ -198,11 +199,6 @@ class SyncedSessionTracker {
     // ResetSessionTracking will clear |owned| bits, and if it is not claimed
     // by a window by the time CleanupSession is called it will be deleted.
     bool owned;
-
-    // This lets us identify the sync node that is "backing" this tab in the
-    // sync model, whether it is part of a local or foreign session. The
-    // "tab node id" is described in session_specifics.proto.
-    int tab_node_id;
   };
   typedef std::map<SessionID::id_type, SessionTabWrapper> IDToSessionTabMap;
   typedef std::map<std::string, IDToSessionTabMap> SyncedTabMap;
@@ -221,8 +217,9 @@ class SyncedSessionTracker {
   typedef std::map<std::string, sync_driver::SyncedSession*> SyncedSessionMap;
 
   // Helper methods for deleting SessionWindows and SessionTabs without owners.
-  bool DeleteOldSessionWindowIfNecessary(SessionWindowWrapper window_wrapper);
-  bool DeleteOldSessionTabIfNecessary(SessionTabWrapper tab_wrapper);
+  bool DeleteOldSessionWindowIfNecessary(
+      const SessionWindowWrapper& window_wrapper);
+  bool DeleteOldSessionTabIfNecessary(const SessionTabWrapper& tab_wrapper);
 
   // Implementation for GetTab(...) above, permits invalid tab_node_id.
   sessions::SessionTab* GetTabImpl(const std::string& session_tag,

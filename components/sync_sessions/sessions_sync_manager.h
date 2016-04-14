@@ -160,6 +160,10 @@ class SessionsSyncManager : public syncer::SyncableService,
   FRIEND_TEST_ALL_PREFIXES(SessionsSyncManagerTest, BlockedNavigations);
   FRIEND_TEST_ALL_PREFIXES(SessionsSyncManagerTest, DeleteForeignSession);
   FRIEND_TEST_ALL_PREFIXES(SessionsSyncManagerTest,
+                           ProcessForeignDeleteTabsWithShadowing);
+  FRIEND_TEST_ALL_PREFIXES(SessionsSyncManagerTest,
+                           ProcessForeignDeleteTabsWithReusedNodeIds);
+  FRIEND_TEST_ALL_PREFIXES(SessionsSyncManagerTest,
                            SaveUnassociatedNodesForReassociation);
   FRIEND_TEST_ALL_PREFIXES(SessionsSyncManagerTest, MergeDeletesCorruptNode);
   FRIEND_TEST_ALL_PREFIXES(SessionsSyncManagerTest,
@@ -342,7 +346,7 @@ class SessionsSyncManager : public syncer::SyncableService,
 
   // Number of days without activity after which we consider a session to be
   // stale and a candidate for garbage collection.
-  size_t stale_session_threshold_days_;
+  int stale_session_threshold_days_;
 
   scoped_ptr<LocalSessionEventRouter> local_event_router_;
 

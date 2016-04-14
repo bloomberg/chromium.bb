@@ -43,7 +43,7 @@ const char kNTPOpenTabSyncURL[] = "chrome://newtab/#open_tabs";
 
 // Default number of days without activity after which a session is considered
 // stale and becomes a candidate for garbage collection.
-const size_t kDefaultStaleSessionThresholdDays = 14;  // 2 weeks.
+const int kDefaultStaleSessionThresholdDays = 14;  // 2 weeks.
 
 // Comparator function for use with std::sort that will sort tabs by
 // descending timestamp (i.e., most recent first).
@@ -515,6 +515,16 @@ syncer::SyncError SessionsSyncManager::ProcessSyncChanges(
           // deletions, the header node will be updated and foreign tab will
           // get deleted.
           DisassociateForeignSession(session.session_tag());
+        } else if (session.has_tab()) {
+          // The challenge here is that we don't know if this tab deletion is
+          // being processed before or after the parent was updated to no longer
+          // references the tab. Or, even more extreme, the parent has been
+          // deleted as well. Tell the tracker to do what it can. The header's
+          // update will mostly get us into the correct state, the only thing
+          // this deletion needs to accomplish is make sure we never tell sync
+          // to delete this tab later during garbage collection.
+          session_tracker_.DeleteForeignTab(session.session_tag(),
+                                            session.tab_node_id());
         }
         break;
       case syncer::SyncChange::ACTION_ADD:
@@ -523,9 +533,6 @@ syncer::SyncError SessionsSyncManager::ProcessSyncChanges(
           // We should only ever receive a change to our own machine's session
           // info if encryption was turned on. In that case, the data is still
           // the same, so we can ignore.
-          // TODO(skym): Is it really safe to return here? Why not continue?
-          // Couldn't there be multiple SessionSpecifics in the SyncChangeList
-          // that contain different session tags?
           LOG(WARNING) << "Dropping modification to local session.";
           return syncer::SyncError();
         }
@@ -558,7 +565,8 @@ syncer::SyncChange SessionsSyncManager::TombstoneTab(
 
 bool SessionsSyncManager::GetAllForeignSessions(
     std::vector<const sync_driver::SyncedSession*>* sessions) {
-  if (!session_tracker_.LookupAllForeignSessions(sessions))
+  if (!session_tracker_.LookupAllForeignSessions(
+          sessions, SyncedSessionTracker::PRESENTABLE))
     return false;
   std::sort(sessions->begin(), sessions->end(), SessionsRecencyComparator);
   return true;
@@ -571,8 +579,6 @@ bool SessionsSyncManager::InitFromSyncModel(
   bool found_current_header = false;
   for (syncer::SyncDataList::const_iterator it = sync_data.begin();
        it != sync_data.end(); ++it) {
-    // TODO(skym): Why don't we ever look at data.change_type()? Why is this
-    // code path so much different from ProcessSyncChanges?
     const syncer::SyncData& data = *it;
     DCHECK(data.GetSpecifics().has_session());
     const sync_pb::SessionSpecifics& specifics = data.GetSpecifics().session();
@@ -608,6 +614,16 @@ bool SessionsSyncManager::InitFromSyncModel(
       }
     }
   }
+
+  // Cleanup all foreign sessions, since orphaned tabs may have been added after
+  // the header.
+  std::vector<const sync_driver::SyncedSession*> sessions;
+  session_tracker_.LookupAllForeignSessions(&sessions,
+                                            SyncedSessionTracker::RAW);
+  for (const auto* session : sessions) {
+    session_tracker_.CleanupSession(session->session_tag);
+  }
+
   return found_current_header;
 }
 
@@ -663,6 +679,10 @@ void SessionsSyncManager::UpdateTrackerWithForeignSession(
     if (session_tracker_.LookupSessionTab(foreign_session_tag, tab_id,
                                           &existing_tab) &&
         existing_tab->timestamp > modification_time) {
+      // Force the tracker to remember this tab node id, even if it isn't
+      // currently being used.
+      session_tracker_.GetTab(foreign_session_tag, tab_id,
+                              specifics.tab_node_id());
       DVLOG(1) << "Ignoring " << foreign_session_tag << "'s session tab "
                << tab_id << " with earlier modification time";
       return;
@@ -740,7 +760,8 @@ void SessionsSyncManager::PopulateSessionHeaderFromSpecifics(
         break;
     }
   }
-  session_header->modified_time = mtime;
+  session_header->modified_time =
+      std::max(mtime, session_header->modified_time);
 }
 
 // static
@@ -811,16 +832,12 @@ void SessionsSyncManager::DeleteForeignSessionInternal(
 
   std::set<int> tab_node_ids_to_delete;
   session_tracker_.LookupTabNodeIds(tag, &tab_node_ids_to_delete);
-  if (!DisassociateForeignSession(tag)) {
-    // We don't have any data for this session, our work here is done!
-    return;
+  if (DisassociateForeignSession(tag)) {
+    // Only tell sync to delete the header if there was one.
+    change_output->push_back(
+        syncer::SyncChange(FROM_HERE, SyncChange::ACTION_DELETE,
+                           SyncData::CreateLocalDelete(tag, syncer::SESSIONS)));
   }
-
-  // Prepare deletes for the meta-node as well as individual tab nodes.
-  change_output->push_back(
-      syncer::SyncChange(FROM_HERE, SyncChange::ACTION_DELETE,
-                         SyncData::CreateLocalDelete(tag, syncer::SESSIONS)));
-
   for (std::set<int>::const_iterator it = tab_node_ids_to_delete.begin();
        it != tab_node_ids_to_delete.end(); ++it) {
     change_output->push_back(syncer::SyncChange(
@@ -834,11 +851,7 @@ void SessionsSyncManager::DeleteForeignSessionInternal(
 
 bool SessionsSyncManager::DisassociateForeignSession(
     const std::string& foreign_session_tag) {
-  if (foreign_session_tag == current_machine_tag()) {
-    DVLOG(1) << "Local session deleted! Doing nothing until a navigation is "
-             << "triggered.";
-    return false;
-  }
+  DCHECK_NE(foreign_session_tag, current_machine_tag());
   DVLOG(1) << "Disassociating session " << foreign_session_tag;
   return session_tracker_.DeleteSession(foreign_session_tag);
 }
@@ -1030,22 +1043,18 @@ SessionsSyncManager::synced_window_delegates_getter() const {
 
 void SessionsSyncManager::DoGarbageCollection() {
   std::vector<const sync_driver::SyncedSession*> sessions;
-  if (!GetAllForeignSessions(&sessions))
+  if (!session_tracker_.LookupAllForeignSessions(&sessions,
+                                                 SyncedSessionTracker::RAW))
     return;  // No foreign sessions.
 
   // Iterate through all the sessions and delete any with age older than
   // |stale_session_threshold_days_|.
   syncer::SyncChangeList changes;
-  for (std::vector<const sync_driver::SyncedSession*>::const_iterator iter =
-           sessions.begin();
-       iter != sessions.end(); ++iter) {
-    const sync_driver::SyncedSession* session = *iter;
+  for (const auto* session : sessions) {
     int session_age_in_days =
         (base::Time::Now() - session->modified_time).InDays();
-    std::string session_tag = session->session_tag;
-    if (session_age_in_days > 0 &&  // If false, local clock is not trustworty.
-        static_cast<size_t>(session_age_in_days) >
-            stale_session_threshold_days_) {
+    if (session_age_in_days > stale_session_threshold_days_) {
+      std::string session_tag = session->session_tag;
       DVLOG(1) << "Found stale session " << session_tag << " with age "
                << session_age_in_days << ", deleting.";
       DeleteForeignSessionInternal(session_tag, &changes);
