@@ -38,6 +38,8 @@ class PageLoadMetricsObserverTestHarness
   // to the browser process. These will update the timing information for the
   // most recently committed navigation.
   void SimulateTimingUpdate(const PageLoadTiming& timing);
+  void SimulateTimingAndMetadataUpdate(const PageLoadTiming& timing,
+                                       const PageLoadMetadata& metadata);
 
   const base::HistogramTester& histogram_tester() const;
 

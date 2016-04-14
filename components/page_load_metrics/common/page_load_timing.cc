@@ -41,4 +41,10 @@ bool PageLoadTiming::IsEmpty() const {
          parse_blocked_on_script_load_from_document_write_duration.is_zero();
 }
 
+PageLoadMetadata::PageLoadMetadata() {}
+
+bool PageLoadMetadata::operator==(const PageLoadMetadata& other) const {
+  return behavior_flags == other.behavior_flags;
+}
+
 }  // namespace page_load_metrics

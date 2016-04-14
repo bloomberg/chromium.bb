@@ -30,7 +30,12 @@ IPC_STRUCT_TRAITS_BEGIN(page_load_metrics::PageLoadTiming)
       parse_blocked_on_script_load_from_document_write_duration)
 IPC_STRUCT_TRAITS_END()
 
+IPC_STRUCT_TRAITS_BEGIN(page_load_metrics::PageLoadMetadata)
+  IPC_STRUCT_TRAITS_MEMBER(behavior_flags)
+IPC_STRUCT_TRAITS_END()
+
 // Sent from renderer to browser process when the PageLoadTiming for the
 // associated frame changed.
-IPC_MESSAGE_ROUTED1(PageLoadMetricsMsg_TimingUpdated,
-                    page_load_metrics::PageLoadTiming)
+IPC_MESSAGE_ROUTED2(PageLoadMetricsMsg_TimingUpdated,
+                    page_load_metrics::PageLoadTiming,
+                    page_load_metrics::PageLoadMetadata);

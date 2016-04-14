@@ -34769,6 +34769,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PageLoad.Timing2.ParseStartToFirstContentfulPaint" units="ms">
+  <owner>bmcquade@chromium.org</owner>
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    Measures the time from when the HTML parser started, to when the page first
+    paints content.
+  </summary>
+</histogram>
+
 <histogram name="PartitionAlloc.CommittedSize" units="MB">
   <owner>haraken@chromium.org</owner>
   <summary>
@@ -90790,6 +90799,14 @@ To add a new entry, add it with any value and run test to compute valid value.
 </histogram_suffixes>
 
 <histogram_suffixes name="PageLoadBackgrounded2" separator=".">
+  <affected-histogram
+      name="PageLoad.Clients.DocWrite.Evaluator.Timing2.NavigationToFirstContentfulPaint"/>
+  <affected-histogram
+      name="PageLoad.Clients.DocWrite.Evaluator.Timing2.ParseBlockedOnScriptLoad"/>
+  <affected-histogram
+      name="PageLoad.Clients.DocWrite.Evaluator.Timing2.ParseBlockedOnScriptLoadFromDocumentWrite"/>
+  <affected-histogram
+      name="PageLoad.Clients.DocWrite.Evaluator.Timing2.ParseDuration"/>
   <suffix name="Background"
       label="The page was backgrounded at least once from navigation start to
              this event."/>
@@ -90833,6 +90850,9 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="Clients.FromGWS"
       label="PageLoadMetrics that are a result of a navigation from a Google
              web search"/>
+  <suffix name="Clients.DocWrite.Evaluator"
+      label="PageLoadMetrics from a page that could have been evaluated by
+             the DocumentWriteEvaluator"/>
   <affected-histogram
       name="PageLoad.Timing2.DOMLoadingToDOMContentLoadedEventFired"/>
   <affected-histogram name="PageLoad.Timing2.DOMLoadingToFirstContentfulPaint"/>
@@ -90844,6 +90864,15 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="PageLoad.Timing2.NavigationToFirstPaint"/>
   <affected-histogram name="PageLoad.Timing2.NavigationToFirstTextPaint"/>
   <affected-histogram name="PageLoad.Timing2.NavigationToLoadEventFired"/>
+  <affected-histogram name="PageLoad.Timing2.ParseBlockedOnScriptLoad"/>
+  <affected-histogram
+      name="PageLoad.Timing2.ParseBlockedOnScriptLoad.ParseComplete"/>
+  <affected-histogram
+      name="PageLoad.Timing2.ParseBlockedOnScriptLoadFromDocumentWrite"/>
+  <affected-histogram
+      name="PageLoad.Timing2.ParseBlockedOnScriptLoadFromDocumentWrite.ParseComplete"/>
+  <affected-histogram name="PageLoad.Timing2.ParseDuration"/>
+  <affected-histogram name="PageLoad.Timing2.ParseStartToFirstContentfulPaint"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="PageLoadType">

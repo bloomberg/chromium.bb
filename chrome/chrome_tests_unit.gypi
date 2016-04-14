@@ -154,6 +154,7 @@
       'browser/net/url_info_unittest.cc',
       'browser/page_load_metrics/observers/aborts_page_load_metrics_observer_unittest.cc',
       'browser/page_load_metrics/observers/core_page_load_metrics_observer_unittest.cc',
+      'browser/page_load_metrics/observers/document_write_page_load_metrics_observer_unittest.cc',
       'browser/page_load_metrics/observers/from_gws_page_load_metrics_observer_unittest.cc',
       'browser/page_load_metrics/observers/google_captcha_observer_unittest.cc',
       'browser/page_load_metrics/observers/page_load_metrics_observer_test_harness.cc',

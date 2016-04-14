@@ -23,7 +23,8 @@ PageTimingMetricsSender::PageTimingMetricsSender(IPC::Sender* ipc_sender,
                                                  scoped_ptr<base::Timer> timer)
     : ipc_sender_(ipc_sender),
       routing_id_(routing_id),
-      timer_(std::move(timer)) {}
+      timer_(std::move(timer)),
+      metadata_(PageLoadMetadata()) {}
 
 // On destruction, we want to send any data we have if we have a timer
 // currently running (and thus are talking to a browser process)
@@ -32,6 +33,14 @@ PageTimingMetricsSender::~PageTimingMetricsSender() {
     timer_->Stop();
     SendNow();
   }
+}
+
+void PageTimingMetricsSender::DidObserveLoadingBehavior(
+    blink::WebLoadingBehaviorFlag behavior) {
+  if (behavior & metadata_.behavior_flags)
+    return;
+  metadata_.behavior_flags |= behavior;
+  EnsureSendTimer();
 }
 
 void PageTimingMetricsSender::Send(const PageLoadTiming& timing) {
@@ -47,7 +56,10 @@ void PageTimingMetricsSender::Send(const PageLoadTiming& timing) {
   }
 
   last_timing_ = timing;
+  EnsureSendTimer();
+}
 
+void PageTimingMetricsSender::EnsureSendTimer() {
   if (!timer_->IsRunning())
     timer_->Start(
         FROM_HERE, base::TimeDelta::FromMilliseconds(kTimerDelayMillis),
@@ -55,8 +67,8 @@ void PageTimingMetricsSender::Send(const PageLoadTiming& timing) {
 }
 
 void PageTimingMetricsSender::SendNow() {
-  ipc_sender_->Send(
-      new PageLoadMetricsMsg_TimingUpdated(routing_id_, last_timing_));
+  ipc_sender_->Send(new PageLoadMetricsMsg_TimingUpdated(
+      routing_id_, last_timing_, metadata_));
 }
 
 }  // namespace page_load_metrics

@@ -411,6 +411,8 @@
       'browser/page_load_metrics/observers/aborts_page_load_metrics_observer.h',
       'browser/page_load_metrics/observers/core_page_load_metrics_observer.cc',
       'browser/page_load_metrics/observers/core_page_load_metrics_observer.h',
+      'browser/page_load_metrics/observers/document_write_page_load_metrics_observer.cc',
+      'browser/page_load_metrics/observers/document_write_page_load_metrics_observer.h',
       'browser/page_load_metrics/observers/from_gws_page_load_metrics_observer.cc',
       'browser/page_load_metrics/observers/from_gws_page_load_metrics_observer.h',
       'browser/page_load_metrics/observers/google_captcha_observer.cc',

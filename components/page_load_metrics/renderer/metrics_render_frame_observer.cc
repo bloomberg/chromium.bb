@@ -39,6 +39,12 @@ void MetricsRenderFrameObserver::DidChangePerformanceTiming() {
   SendMetrics();
 }
 
+void MetricsRenderFrameObserver::DidObserveLoadingBehavior(
+    blink::WebLoadingBehaviorFlag behavior) {
+  DCHECK(page_timing_metrics_sender_);
+  page_timing_metrics_sender_->DidObserveLoadingBehavior(behavior);
+}
+
 void MetricsRenderFrameObserver::DidCommitProvisionalLoad(
     bool is_new_navigation,
     bool is_same_page_navigation) {

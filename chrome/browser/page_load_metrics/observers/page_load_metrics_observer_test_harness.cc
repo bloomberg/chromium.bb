@@ -99,9 +99,15 @@ void PageLoadMetricsObserverTestHarness::StartNavigation(const GURL& gurl) {
 
 void PageLoadMetricsObserverTestHarness::SimulateTimingUpdate(
     const PageLoadTiming& timing) {
-  observer_->OnMessageReceived(
-      PageLoadMetricsMsg_TimingUpdated(observer_->routing_id(), timing),
-      web_contents()->GetMainFrame());
+  SimulateTimingAndMetadataUpdate(timing, PageLoadMetadata());
+}
+
+void PageLoadMetricsObserverTestHarness::SimulateTimingAndMetadataUpdate(
+    const PageLoadTiming& timing,
+    const PageLoadMetadata& metadata) {
+  observer_->OnMessageReceived(PageLoadMetricsMsg_TimingUpdated(
+                                   observer_->routing_id(), timing, metadata),
+                               web_contents()->GetMainFrame());
 }
 
 const base::HistogramTester&

@@ -57,7 +57,8 @@ struct PageLoadExtraInfo {
                     const GURL& committed_url,
                     base::TimeDelta time_to_commit,
                     UserAbortType abort_type,
-                    base::TimeDelta time_to_abort);
+                    base::TimeDelta time_to_abort,
+                    const PageLoadMetadata& metadata);
 
   // The first time that the page was backgrounded since the navigation started.
   // If the page has not been backgrounded this will be base::TimeDelta().
@@ -83,6 +84,10 @@ struct PageLoadExtraInfo {
   // |base::TimeDelta()|.
   const UserAbortType abort_type;
   const base::TimeDelta time_to_abort;
+
+  // Extra information supplied to the page load metrics system from the
+  // renderer.
+  const PageLoadMetadata metadata;
 };
 
 // Interface for PageLoadMetrics observers. All instances of this class are

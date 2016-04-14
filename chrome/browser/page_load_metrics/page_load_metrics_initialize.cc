@@ -6,6 +6,7 @@
 
 #include "chrome/browser/page_load_metrics/observers/aborts_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/core_page_load_metrics_observer.h"
+#include "chrome/browser/page_load_metrics/observers/document_write_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/from_gws_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/google_captcha_observer.h"
 #include "chrome/browser/page_load_metrics/observers/stale_while_revalidate_metrics_observer.h"
@@ -35,6 +36,8 @@ void PageLoadMetricsEmbedder::RegisterObservers(
   // TODO(ricea): Remove this in April 2016 or before. crbug.com/348877
   tracker->AddObserver(
       make_scoped_ptr(new chrome::StaleWhileRevalidateMetricsObserver()));
+  tracker->AddObserver(
+      make_scoped_ptr(new DocumentWritePageLoadMetricsObserver()));
 }
 
 bool PageLoadMetricsEmbedder::IsPrerendering(

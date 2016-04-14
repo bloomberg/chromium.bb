@@ -32,7 +32,7 @@ class MockIPCInterceptor {
     IPC_END_MESSAGE_MAP()
   }
 
-  MOCK_METHOD1(OnTimingUpdated, void(PageLoadTiming));
+  MOCK_METHOD2(OnTimingUpdated, void(PageLoadTiming, PageLoadMetadata));
 };
 
 // Implementation of the MetricsRenderFrameObserver class we're testing,
@@ -101,7 +101,8 @@ TEST_F(MetricsRenderFrameObserverTest, SingleMetric) {
   timing.first_layout = first_layout;
   EXPECT_CALL(observer, GetTiming()).WillRepeatedly(Return(timing));
 
-  EXPECT_CALL(*observer.ipc_interceptor(), OnTimingUpdated(timing));
+  EXPECT_CALL(*observer.ipc_interceptor(),
+              OnTimingUpdated(timing, PageLoadMetadata()));
 
   observer.DidChangePerformanceTiming();
   mock_timer->Fire();
@@ -124,7 +125,8 @@ TEST_F(MetricsRenderFrameObserverTest, MultipleMetrics) {
   timing.dom_content_loaded_event_start = dom_event;
   EXPECT_CALL(observer, GetTiming()).WillRepeatedly(Return(timing));
 
-  EXPECT_CALL(*observer.ipc_interceptor(), OnTimingUpdated(timing));
+  EXPECT_CALL(*observer.ipc_interceptor(),
+              OnTimingUpdated(timing, PageLoadMetadata()));
   observer.DidChangePerformanceTiming();
   mock_timer->Fire();
 
@@ -136,7 +138,8 @@ TEST_F(MetricsRenderFrameObserverTest, MultipleMetrics) {
   timing.load_event_start = load_event;
   EXPECT_CALL(observer, GetTiming()).WillRepeatedly(Return(timing));
 
-  EXPECT_CALL(*observer.ipc_interceptor(), OnTimingUpdated(timing));
+  EXPECT_CALL(*observer.ipc_interceptor(),
+              OnTimingUpdated(timing, PageLoadMetadata()));
   observer.DidChangePerformanceTiming();
   mock_timer->Fire();
 
@@ -169,7 +172,8 @@ TEST_F(MetricsRenderFrameObserverTest, MultipleNavigations) {
   timing.dom_content_loaded_event_start = dom_event;
   timing.load_event_start = load_event;
   EXPECT_CALL(observer, GetTiming()).WillRepeatedly(Return(timing));
-  EXPECT_CALL(*observer.ipc_interceptor(), OnTimingUpdated(timing));
+  EXPECT_CALL(*observer.ipc_interceptor(),
+              OnTimingUpdated(timing, PageLoadMetadata()));
   observer.DidChangePerformanceTiming();
   mock_timer->Fire();
 
@@ -191,7 +195,8 @@ TEST_F(MetricsRenderFrameObserverTest, MultipleNavigations) {
   base::MockTimer* mock_timer2 = new base::MockTimer(false, false);
   observer.set_mock_timer(make_scoped_ptr(mock_timer2));
   observer.DidCommitProvisionalLoad(true, false);
-  EXPECT_CALL(*observer.ipc_interceptor(), OnTimingUpdated(timing));
+  EXPECT_CALL(*observer.ipc_interceptor(),
+              OnTimingUpdated(timing, PageLoadMetadata()));
   observer.DidChangePerformanceTiming();
   mock_timer2->Fire();
 }

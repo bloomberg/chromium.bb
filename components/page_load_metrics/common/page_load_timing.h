@@ -6,6 +6,7 @@
 #define COMPONENTS_PAGE_LOAD_METRICS_COMMON_PAGE_LOAD_TIMING_H_
 
 #include "base/time/time.h"
+#include "third_party/WebKit/public/platform/WebLoadingBehaviorFlag.h"
 
 namespace page_load_metrics {
 
@@ -71,6 +72,13 @@ struct PageLoadTiming {
 
   // If you add additional members, also be sure to update operator==,
   // page_load_metrics_messages.h, and IsEmpty().
+};
+
+struct PageLoadMetadata {
+  PageLoadMetadata();
+  bool operator==(const PageLoadMetadata& other) const;
+  // These are packed blink::WebLoadingBehaviorFlag enums.
+  int behavior_flags = blink::WebLoadingBehaviorNone;
 };
 
 }  // namespace page_load_metrics

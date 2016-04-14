@@ -63,6 +63,8 @@ const char kHistogramParseBlockedOnScriptLoad[] =
     "PageLoad.Timing2.ParseBlockedOnScriptLoad";
 const char kHistogramParseBlockedOnScriptLoadParseComplete[] =
     "PageLoad.Timing2.ParseBlockedOnScriptLoad.ParseComplete";
+const char kHistogramParseStartToFirstContentfulPaint[] =
+    "PageLoad.Timing2.ParseStartToFirstContentfulPaint";
 const char kHistogramParseBlockedOnScriptLoadDocumentWrite[] =
     "PageLoad.Timing2.ParseBlockedOnScriptLoadFromDocumentWrite";
 const char kHistogramParseBlockedOnScriptLoadDocumentWriteParseComplete[] =
@@ -290,6 +292,11 @@ void CorePageLoadMetricsObserver::RecordTimingHistograms(
     }
   }
   if (!timing.parse_start.is_zero()) {
+    if (WasStartedInForegroundEventInForeground(timing.first_contentful_paint,
+                                                info)) {
+      PAGE_LOAD_HISTOGRAM(internal::kHistogramParseStartToFirstContentfulPaint,
+                          timing.first_contentful_paint - timing.parse_start);
+    }
     const bool incomplete_parse_in_foreground =
         timing.parse_stop.is_zero() && info.started_in_foreground &&
         info.first_background_time.is_zero();

@@ -120,7 +120,8 @@ class PageLoadTracker {
   void WebContentsShown();
 
   // Returns true if the timing was successfully updated.
-  bool UpdateTiming(const PageLoadTiming& timing);
+  bool UpdateTiming(const PageLoadTiming& timing,
+                    const PageLoadMetadata& metadata);
   bool HasBackgrounded();
 
   void set_renderer_tracked(bool renderer_tracked);
@@ -192,6 +193,7 @@ class PageLoadTracker {
   bool started_in_foreground_;
 
   PageLoadTiming timing_;
+  PageLoadMetadata metadata_;
 
   // This is a subtle member. If a provisional load A gets aborted by
   // provisional load B, which gets aborted by C that eventually commits, then
@@ -258,7 +260,9 @@ class MetricsWebContentsObserver
   scoped_ptr<PageLoadTracker> NotifyAbortedProvisionalLoadsNewNavigation(
       content::NavigationHandle* new_navigation);
 
-  void OnTimingUpdated(content::RenderFrameHost*, const PageLoadTiming& timing);
+  void OnTimingUpdated(content::RenderFrameHost*,
+                       const PageLoadTiming& timing,
+                       const PageLoadMetadata& metadata);
 
   // True if the web contents is currently in the foreground.
   bool in_foreground_;

@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "components/page_load_metrics/common/page_load_timing.h"
 #include "content/public/renderer/render_frame_observer.h"
+#include "third_party/WebKit/public/platform/WebLoadingBehaviorFlag.h"
 
 namespace base {
 class Timer;
@@ -27,6 +28,8 @@ class MetricsRenderFrameObserver : public content::RenderFrameObserver {
 
   // RenderFrameObserver implementation
   void DidChangePerformanceTiming() override;
+  void DidObserveLoadingBehavior(
+      blink::WebLoadingBehaviorFlag behavior) override;
   void DidCommitProvisionalLoad(bool is_new_navigation,
                                 bool is_same_page_navigation) override;
 

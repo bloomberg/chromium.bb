@@ -139,7 +139,8 @@ TEST_F(MetricsWebContentsObserverTest, NotInMainFrame) {
   subframe_tester->SimulateNavigationStart(GURL(kDefaultTestUrl2));
   subframe_tester->SimulateNavigationCommit(GURL(kDefaultTestUrl2));
   observer_->OnMessageReceived(
-      PageLoadMetricsMsg_TimingUpdated(observer_->routing_id(), timing),
+      PageLoadMetricsMsg_TimingUpdated(observer_->routing_id(), timing,
+                                       PageLoadMetadata()),
       subframe);
   subframe_tester->SimulateNavigationStop();
 
@@ -160,7 +161,8 @@ TEST_F(MetricsWebContentsObserverTest, SamePageNoTrigger) {
   web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
 
   observer_->OnMessageReceived(
-      PageLoadMetricsMsg_TimingUpdated(observer_->routing_id(), timing),
+      PageLoadMetricsMsg_TimingUpdated(observer_->routing_id(), timing,
+                                       PageLoadMetadata()),
       web_contents()->GetMainFrame());
   web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrlAnchor));
   // A same page navigation shouldn't trigger logging UMA for the original.
@@ -178,7 +180,8 @@ TEST_F(MetricsWebContentsObserverTest, DontLogPrerender) {
 
   web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
   observer_->OnMessageReceived(
-      PageLoadMetricsMsg_TimingUpdated(observer_->routing_id(), timing),
+      PageLoadMetricsMsg_TimingUpdated(observer_->routing_id(), timing,
+                                       PageLoadMetadata()),
       web_contents()->GetMainFrame());
 
   web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl2));
@@ -198,7 +201,8 @@ TEST_F(MetricsWebContentsObserverTest, DontLogIrrelevantNavigation) {
   web_contents_tester->NavigateAndCommit(about_blank_url);
 
   observer_->OnMessageReceived(
-      PageLoadMetricsMsg_TimingUpdated(observer_->routing_id(), timing),
+      PageLoadMetricsMsg_TimingUpdated(observer_->routing_id(), timing,
+                                       PageLoadMetadata()),
       main_rfh());
 
   web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
@@ -225,7 +229,8 @@ TEST_F(MetricsWebContentsObserverTest, NotInMainError) {
   subframe_tester->SimulateNavigationStart(GURL(kDefaultTestUrl2));
   subframe_tester->SimulateNavigationCommit(GURL(kDefaultTestUrl2));
   observer_->OnMessageReceived(
-      PageLoadMetricsMsg_TimingUpdated(observer_->routing_id(), timing),
+      PageLoadMetricsMsg_TimingUpdated(observer_->routing_id(), timing,
+                                       PageLoadMetadata()),
       subframe);
   CheckErrorEvent(ERR_IPC_FROM_WRONG_FRAME, 1);
   CheckTotalErrorEvents();
@@ -242,10 +247,12 @@ TEST_F(MetricsWebContentsObserverTest, BadIPC) {
   web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
 
   observer_->OnMessageReceived(
-      PageLoadMetricsMsg_TimingUpdated(observer_->routing_id(), timing),
+      PageLoadMetricsMsg_TimingUpdated(observer_->routing_id(), timing,
+                                       PageLoadMetadata()),
       main_rfh());
   observer_->OnMessageReceived(
-      PageLoadMetricsMsg_TimingUpdated(observer_->routing_id(), timing2),
+      PageLoadMetricsMsg_TimingUpdated(observer_->routing_id(), timing2,
+                                       PageLoadMetadata()),
       main_rfh());
 
   CheckErrorEvent(ERR_BAD_TIMING_IPC, 1);
@@ -270,7 +277,8 @@ TEST_F(MetricsWebContentsObserverTest, ObservePartialNavigation) {
   rfh_tester->SimulateNavigationCommit(GURL(kDefaultTestUrl));
 
   observer_->OnMessageReceived(
-      PageLoadMetricsMsg_TimingUpdated(observer_->routing_id(), timing),
+      PageLoadMetricsMsg_TimingUpdated(observer_->routing_id(), timing,
+                                       PageLoadMetadata()),
       main_rfh());
   // Navigate again to force histogram logging.
   web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl2));

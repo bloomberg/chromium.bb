@@ -28,7 +28,7 @@ class MockIPCSender : public IPC::Sender {
     return true;
   }
 
-  MOCK_METHOD1(OnTimingUpdated, void(PageLoadTiming));
+  MOCK_METHOD2(OnTimingUpdated, void(PageLoadTiming, PageLoadMetadata));
 };
 
 // Thin wrapper around PageTimingMetricsSender that provides access to the
@@ -66,7 +66,7 @@ TEST_F(PageTimingMetricsSenderTest, Basic) {
   metrics_sender_.Send(timing);
 
   // Firing the timer should trigger sending of an OnTimingUpdated IPC.
-  EXPECT_CALL(mock_ipc_sender_, OnTimingUpdated(timing));
+  EXPECT_CALL(mock_ipc_sender_, OnTimingUpdated(timing, PageLoadMetadata()));
   ASSERT_TRUE(metrics_sender_.mock_timer()->IsRunning());
   metrics_sender_.mock_timer()->Fire();
   EXPECT_FALSE(metrics_sender_.mock_timer()->IsRunning());
@@ -99,7 +99,7 @@ TEST_F(PageTimingMetricsSenderTest, CoalesceMultipleIPCs) {
 
   // Firing the timer should trigger sending of the OnTimingUpdated IPC with
   // the most recently provided PageLoadTiming instance.
-  EXPECT_CALL(mock_ipc_sender_, OnTimingUpdated(timing));
+  EXPECT_CALL(mock_ipc_sender_, OnTimingUpdated(timing, PageLoadMetadata()));
   metrics_sender_.mock_timer()->Fire();
   EXPECT_FALSE(metrics_sender_.mock_timer()->IsRunning());
 }
@@ -115,7 +115,7 @@ TEST_F(PageTimingMetricsSenderTest, MultipleIPCs) {
 
   metrics_sender_.Send(timing);
   ASSERT_TRUE(metrics_sender_.mock_timer()->IsRunning());
-  EXPECT_CALL(mock_ipc_sender_, OnTimingUpdated(timing));
+  EXPECT_CALL(mock_ipc_sender_, OnTimingUpdated(timing, PageLoadMetadata()));
   metrics_sender_.mock_timer()->Fire();
   EXPECT_FALSE(metrics_sender_.mock_timer()->IsRunning());
   testing::Mock::VerifyAndClearExpectations(&mock_ipc_sender_);
@@ -125,7 +125,7 @@ TEST_F(PageTimingMetricsSenderTest, MultipleIPCs) {
   timing.load_event_start = load_event;
   metrics_sender_.Send(timing);
   ASSERT_TRUE(metrics_sender_.mock_timer()->IsRunning());
-  EXPECT_CALL(mock_ipc_sender_, OnTimingUpdated(timing));
+  EXPECT_CALL(mock_ipc_sender_, OnTimingUpdated(timing, PageLoadMetadata()));
   metrics_sender_.mock_timer()->Fire();
   EXPECT_FALSE(metrics_sender_.mock_timer()->IsRunning());
 }
@@ -140,7 +140,7 @@ TEST_F(PageTimingMetricsSenderTest, SendIPCOnDestructor) {
     TestPageTimingMetricsSender sender(&mock_ipc_sender_);
 
     sender.Send(timing);
-    EXPECT_CALL(mock_ipc_sender_, OnTimingUpdated(timing));
+    EXPECT_CALL(mock_ipc_sender_, OnTimingUpdated(timing, PageLoadMetadata()));
     ASSERT_TRUE(sender.mock_timer()->IsRunning());
   }
 }
