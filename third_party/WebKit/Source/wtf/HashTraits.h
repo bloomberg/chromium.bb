@@ -210,8 +210,6 @@ template <typename P> struct HashTraits<RefPtr<P>> : SimpleClassHashTraits<RefPt
     static PeekOutType peek(std::nullptr_t) { return 0; }
 };
 
-template <typename T> struct HashTraits<RawPtr<T>> : HashTraits<T*> { };
-
 template <typename T>
 struct HashTraits<std::unique_ptr<T>> : SimpleClassHashTraits<std::unique_ptr<T>> {
     using EmptyValueType = std::nullptr_t;

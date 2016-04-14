@@ -4314,13 +4314,6 @@ void rawPtrInHashHelper()
     }
 }
 
-TEST(HeapTest, RawPtrInHash)
-{
-    rawPtrInHashHelper<HashSet<RawPtr<int>>>();
-    rawPtrInHashHelper<ListHashSet<RawPtr<int>>>();
-    rawPtrInHashHelper<LinkedHashSet<RawPtr<int>>>();
-}
-
 TEST(HeapTest, HeapTerminatedArray)
 {
     clearOutOldGarbage();
@@ -4982,16 +4975,11 @@ TEST(HeapTest, RegressNullIsStrongified)
 TEST(HeapTest, Bind)
 {
     OwnPtr<SameThreadClosure> closure = bind(static_cast<void (Bar::*)(Visitor*)>(&Bar::trace), Bar::create(), static_cast<Visitor*>(0));
+    // OffHeapInt* should not make Persistent.
+    OwnPtr<SameThreadClosure> closure2 = bind(&OffHeapInt::voidFunction, OffHeapInt::create(1));
     preciselyCollectGarbage();
     // The closure should have a persistent handle to the Bar.
     EXPECT_EQ(1u, Bar::s_live);
-
-    OwnPtr<SameThreadClosure> closure2 = bind(static_cast<void (Bar::*)(Visitor*)>(&Bar::trace), RawPtr<Bar>(Bar::create()), static_cast<Visitor*>(0));
-    preciselyCollectGarbage();
-    // The closure should have a persistent handle to the Bar.
-    EXPECT_EQ(2u, Bar::s_live);
-    // RawPtr<OffHeapInt> should not make Persistent.
-    OwnPtr<SameThreadClosure> closure3 = bind(&OffHeapInt::voidFunction, RawPtr<OffHeapInt>(OffHeapInt::create(1).get()));
 
     UseMixin::s_traceCount = 0;
     Mixin* mixin = UseMixin::create();
@@ -5978,7 +5966,6 @@ TEST(HeapTest, TraceTypesEagerly)
     static_assert(TraceEagerlyTrait<TraceTypeEagerly1>::value, "should be true");
     static_assert(TraceEagerlyTrait<Member<TraceTypeEagerly1>>::value, "should be true");
     static_assert(TraceEagerlyTrait<WeakMember<TraceTypeEagerly1>>::value, "should be true");
-    static_assert(TraceEagerlyTrait<RawPtr<TraceTypeEagerly1>>::value, "should be true");
     static_assert(TraceEagerlyTrait<HeapVector<Member<TraceTypeEagerly1>>>::value, "should be true");
     static_assert(TraceEagerlyTrait<HeapVector<WeakMember<TraceTypeEagerly1>>>::value, "should be true");
     static_assert(TraceEagerlyTrait<HeapHashSet<Member<TraceTypeEagerly1>>>::value, "should be true");

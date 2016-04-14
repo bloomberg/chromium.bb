@@ -35,7 +35,7 @@ public:
         } else {
             ASSERT(m_array->at(m_count - 1).isLastInArray());
             m_capacity += count;
-            m_array = ArrayType<T>::Allocator::resize(m_array.release(), m_capacity);
+            m_array = ArrayType<T>::Allocator::resize(ArrayType<T>::Allocator::release(m_array), m_capacity);
             m_array->at(m_count - 1).setLastInArray(false);
         }
         m_array->at(m_capacity - 1).setLastInArray(true);
@@ -54,7 +54,7 @@ public:
     {
         RELEASE_ASSERT(m_count == m_capacity);
         assertValid();
-        return m_array.release();
+        return ArrayType<T>::Allocator::release(m_array);
     }
 
 private:

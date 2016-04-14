@@ -211,9 +211,9 @@ public:
         return isHeapObjectAlive(member.get());
     }
     template<typename T>
-    static inline bool isHeapObjectAlive(const RawPtr<T>& ptr)
+    static inline bool isHeapObjectAlive(const T*& ptr)
     {
-        return isHeapObjectAlive(ptr.get());
+        return isHeapObjectAlive(ptr);
     }
 
     // Is the finalizable GC object still alive, but slated for lazy sweeping?

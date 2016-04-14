@@ -37,8 +37,6 @@ inline const char* getStringWithTypeName()
     return WTF_PRETTY_FUNCTION;
 }
 
-template<typename T> class RawPtr;
-
 template <typename T> struct IsWeak {
     static const bool value = false;
 };
@@ -328,11 +326,6 @@ public:
 };
 template<typename T>
 class IsPointerToGarbageCollectedType<T*> {
-public:
-    static const bool value = IsGarbageCollectedType<T>::value;
-};
-template<typename T>
-class IsPointerToGarbageCollectedType<RawPtr<T>> {
 public:
     static const bool value = IsGarbageCollectedType<T>::value;
 };

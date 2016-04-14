@@ -339,13 +339,12 @@ public:
 
 template <typename T> struct RemoveHeapPointerWrapperTypes {
     STATIC_ONLY(RemoveHeapPointerWrapperTypes);
-    using Type = typename WTF::RemoveTemplate<typename WTF::RemoveTemplate<typename WTF::RemoveTemplate<T, Member>::Type, WeakMember>::Type, RawPtr>::Type;
+    using Type = typename WTF::RemoveTemplate<typename WTF::RemoveTemplate<T, Member>::Type, WeakMember>::Type;
 };
 
 // FIXME: Oilpan: TraceIfNeeded should be implemented ala:
 // NeedsTracing<T>::value || IsWeakMember<T>::value. It should not need to test
-// raw pointer types. To remove these tests, we may need support for
-// instantiating a template with a RawPtrOrMember'ish template.
+// raw pointer types.
 template<typename T>
 struct TraceIfNeeded : public TraceIfEnabled<T, WTF::NeedsTracing<T>::value || IsGarbageCollectedType<typename RemoveHeapPointerWrapperTypes<typename std::remove_pointer<T>::type>::Type>::value> {
     STATIC_ONLY(TraceIfNeeded);

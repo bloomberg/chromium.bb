@@ -466,8 +466,8 @@ template<typename T> struct HashTraits<blink::Member<T>> : SimpleClassHashTraits
     // types can be merged into PassInType.
     // FIXME: Implement proper const'ness for iterator types. Requires support
     // in the marking Visitor.
-    using PeekInType = RawPtr<T>;
-    using PassInType = RawPtr<T>;
+    using PeekInType = T*;
+    using PassInType = T*;
     using IteratorGetType = blink::Member<T>*;
     using IteratorConstGetType = const blink::Member<T>*;
     using IteratorReferenceType = blink::Member<T>&;
@@ -494,8 +494,8 @@ template<typename T> struct HashTraits<blink::WeakMember<T>> : SimpleClassHashTr
     // types can be merged into PassInType.
     // FIXME: Implement proper const'ness for iterator types. Requires support
     // in the marking Visitor.
-    using PeekInType = RawPtr<T>;
-    using PassInType = RawPtr<T>;
+    using PeekInType = T*;
+    using PassInType = T*;
     using IteratorGetType = blink::WeakMember<T>*;
     using IteratorConstGetType = const blink::WeakMember<T>*;
     using IteratorReferenceType = blink::WeakMember<T>&;
@@ -531,8 +531,8 @@ template<typename T> struct HashTraits<blink::UntracedMember<T>> : SimpleClassHa
     // the sake of the reference counting handles. When they are gone the two
     // types can be merged into PassInType.
     // FIXME: Implement proper const'ness for iterator types.
-    using PeekInType = RawPtr<T>;
-    using PassInType = RawPtr<T>;
+    using PeekInType = T*;
+    using PassInType = T*;
     using IteratorGetType = blink::UntracedMember<T>*;
     using IteratorConstGetType = const blink::UntracedMember<T>*;
     using IteratorReferenceType = blink::UntracedMember<T>&;

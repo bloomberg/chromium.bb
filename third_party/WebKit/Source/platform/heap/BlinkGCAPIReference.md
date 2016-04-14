@@ -231,12 +231,6 @@ void someFunction()
 // OK to leave the object behind. The Blink GC system will free it up when it becomes unused.
 ```
 
-*** aside
-*Transitional only*
-
-`RawPtr<T>` is a simple wrapper of a raw pointer `T*` used in the transitional period.
-Most`RawPtr<T>`s will be replaced with raw pointers.
-
 ### Member, WeakMember
 
 In a garbage-collected class, on-heap objects must be retained by `Member<T>` or `WeakMember<T>`, depending on

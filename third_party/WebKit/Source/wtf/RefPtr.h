@@ -26,7 +26,6 @@
 #include "wtf/Allocator.h"
 #include "wtf/HashTableDeletedValueType.h"
 #include "wtf/PassRefPtr.h"
-#include "wtf/RawPtr.h"
 #include <algorithm>
 #include <utility>
 
@@ -41,7 +40,6 @@ public:
     ALWAYS_INLINE RefPtr() : m_ptr(nullptr) {}
     ALWAYS_INLINE RefPtr(std::nullptr_t) : m_ptr(nullptr) {}
     ALWAYS_INLINE RefPtr(T* ptr) : m_ptr(ptr) { refIfNotNull(ptr); }
-    template <typename U> RefPtr(const RawPtr<U>& ptr, EnsurePtrConvertibleArgDecl(U, T)) : m_ptr(ptr.get()) { refIfNotNull(m_ptr); }
     ALWAYS_INLINE explicit RefPtr(T& ref) : m_ptr(&ref) { m_ptr->ref(); }
     ALWAYS_INLINE RefPtr(const RefPtr& o) : m_ptr(o.m_ptr) { refIfNotNull(m_ptr); }
     template <typename U> RefPtr(const RefPtr<U>& o, EnsurePtrConvertibleArgDecl(U, T)) : m_ptr(o.get()) { refIfNotNull(m_ptr); }

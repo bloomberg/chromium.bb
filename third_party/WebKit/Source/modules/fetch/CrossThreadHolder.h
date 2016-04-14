@@ -65,12 +65,12 @@ public:
 private:
     // Object graph:
     //                 +------+                          +-----------------+
-    //     T <-OwnPtr- |Bridge| ---------RawPtr--------> |CrossThreadHolder|
+    //     T <-OwnPtr- |Bridge| ---------*-------------> |CrossThreadHolder|
     //                 |      | <-CrossThreadPersistent- |                 |
     //                 +------+                          +-----------------+
     //                    |                                    |
     //                    +--RefPtr--> MutexWrapper <--RefPtr--+
-    // The CrossThreadPersistent/RawPtr between CrossThreadHolder and Bridge
+    // The CrossThreadPersistent<T>/T* between CrossThreadHolder and Bridge
     // are protected by MutexWrapper
     // and cleared when CrossThreadHolder::clearInternal() is called, i.e.:
     // [1] when |executionContext| is stopped, or

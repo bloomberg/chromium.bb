@@ -23,7 +23,6 @@
 
 #include "wtf/Allocator.h"
 #include "wtf/Assertions.h"
-#include "wtf/RawPtr.h"
 #include "wtf/TypeTraits.h"
 
 namespace WTF {
@@ -62,7 +61,6 @@ public:
     PassRefPtr() : m_ptr(nullptr) {}
     PassRefPtr(std::nullptr_t) : m_ptr(nullptr) {}
     PassRefPtr(T* ptr) : m_ptr(ptr) { refIfNotNull(ptr); }
-    template <typename U> PassRefPtr(const RawPtr<U>& ptr, EnsurePtrConvertibleArgDecl(U, T)) : m_ptr(ptr.get()) { refIfNotNull(m_ptr); }
     explicit PassRefPtr(T& ptr) : m_ptr(&ptr) { m_ptr->ref(); }
     // It somewhat breaks the type system to allow transfer of ownership out of
     // a const PassRefPtr. However, it makes it much easier to work with
@@ -144,16 +142,6 @@ template <typename T, typename U> inline bool operator==(T* a, const PassRefPtr<
     return a == b.get();
 }
 
-template <typename T, typename U> inline bool operator==(const PassRefPtr<T>& a, const RawPtr<U>& b)
-{
-    return a.get() == b.get();
-}
-
-template <typename T, typename U> inline bool operator==(const RawPtr<T>& a, const PassRefPtr<U>& b)
-{
-    return a.get() == b.get();
-}
-
 template <typename T, typename U> inline bool operator!=(const PassRefPtr<T>& a, const PassRefPtr<U>& b)
 {
     return a.get() != b.get();
@@ -177,16 +165,6 @@ template <typename T, typename U> inline bool operator!=(const PassRefPtr<T>& a,
 template <typename T, typename U> inline bool operator!=(T* a, const PassRefPtr<U>& b)
 {
     return a != b.get();
-}
-
-template <typename T, typename U> inline bool operator!=(const PassRefPtr<T>& a, const RawPtr<U>& b)
-{
-    return a.get() != b.get();
-}
-
-template <typename T, typename U> inline bool operator!=(const RawPtr<T>& a, const PassRefPtr<U>& b)
-{
-    return a.get() != b.get();
 }
 
 template <typename T> PassRefPtr<T> adoptRef(T* p)

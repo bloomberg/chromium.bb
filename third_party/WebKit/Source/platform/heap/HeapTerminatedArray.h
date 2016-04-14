@@ -30,7 +30,12 @@ private:
     struct Allocator final {
         STATIC_ONLY(Allocator);
         typedef HeapTerminatedArray* PassPtr;
-        typedef RawPtr<HeapTerminatedArray> Ptr;
+        typedef HeapTerminatedArray* Ptr;
+
+        static PassPtr release(Ptr ptr)
+        {
+            return ptr;
+        }
 
         static PassPtr create(size_t capacity)
         {

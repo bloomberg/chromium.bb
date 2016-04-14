@@ -28,7 +28,6 @@
 #include "core/loader/DocumentLoader.h"
 #include "platform/TraceEvent.h"
 #include "platform/weborigin/SecurityOrigin.h"
-#include "wtf/RawPtr.h"
 #include "wtf/RefPtr.h"
 
 namespace blink {

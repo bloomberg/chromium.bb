@@ -7,7 +7,6 @@
 #include "core/dom/Document.h"
 #include "core/loader/DocumentLoader.h"
 #include "platform/TraceEvent.h"
-#include "wtf/RawPtr.h"
 
 namespace blink {
 

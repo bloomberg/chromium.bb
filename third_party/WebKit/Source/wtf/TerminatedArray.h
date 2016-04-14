@@ -77,12 +77,17 @@ private:
         typedef PassOwnPtr<TerminatedArray> PassPtr;
         typedef OwnPtr<TerminatedArray> Ptr;
 
+        static PassPtr release(Ptr& ptr)
+        {
+            return ptr.release();
+        }
+
         static PassPtr create(size_t capacity)
         {
             return adoptPtr(static_cast<TerminatedArray*>(WTF::Partitions::fastMalloc(capacity * sizeof(T), WTF_HEAP_PROFILER_TYPE_NAME(T))));
         }
 
-        static PassPtr resize(PassPtr ptr, size_t capacity)
+        static PassPtr resize(Ptr ptr, size_t capacity)
         {
             return adoptPtr(static_cast<TerminatedArray*>(WTF::Partitions::fastRealloc(ptr.leakPtr(), capacity * sizeof(T), WTF_HEAP_PROFILER_TYPE_NAME(T))));
         }

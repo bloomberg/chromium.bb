@@ -143,7 +143,7 @@ public:
 template<typename T, WebPrivatePtrDestruction crossThreadDestruction, WebPrivatePtrStrength strongOrWeak>
 class PtrStorageImpl<T, crossThreadDestruction, strongOrWeak, GarbageCollectedLifetime> {
 public:
-    void assign(const RawPtr<T>& val)
+    void assign(T* val)
     {
         if (!val) {
             release();
@@ -156,8 +156,7 @@ public:
         (*m_handle) = val;
     }
 
-    void assign(T* ptr) { assign(RawPtr<T>(ptr)); }
-    template<typename U> void assign(const RawPtr<U>& val) { assign(RawPtr<T>(val)); }
+    template<typename U> void assign(U* val) { assign(static_cast<T*>(val)); }
 
     void assign(const PtrStorageImpl& other) { assign(other.get()); }
 
@@ -176,7 +175,7 @@ private:
 template<typename T, WebPrivatePtrDestruction crossThreadDestruction, WebPrivatePtrStrength strongOrWeak>
 class PtrStorageImpl<T, crossThreadDestruction, strongOrWeak, RefCountedGarbageCollectedLifetime> : public PtrStorageImpl<T, crossThreadDestruction, strongOrWeak, GarbageCollectedLifetime> {
 public:
-    void assign(const RawPtr<T>& val) { PtrStorageImpl<T, crossThreadDestruction, strongOrWeak, GarbageCollectedLifetime>::assign(val.get()); }
+    void assign(T* val) { PtrStorageImpl<T, crossThreadDestruction, strongOrWeak, GarbageCollectedLifetime>::assign(val); }
 
     void assign(const PtrStorageImpl& other) { PtrStorageImpl<T, crossThreadDestruction, strongOrWeak, GarbageCollectedLifetime>::assign(other.get()); }
 };

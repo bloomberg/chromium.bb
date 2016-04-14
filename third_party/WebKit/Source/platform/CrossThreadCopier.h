@@ -37,7 +37,6 @@
 #include "wtf/Forward.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
-#include "wtf/RawPtr.h"
 #include "wtf/RefPtr.h"
 #include "wtf/ThreadSafeRefCounted.h"
 #include "wtf/TypeTraits.h"
@@ -100,7 +99,7 @@ template <typename T>
 struct CrossThreadCopierBase<T, false, false, true> {
     STATIC_ONLY(CrossThreadCopierBase);
     typedef typename std::remove_pointer<T>::type TypeWithoutPointer;
-    typedef RawPtr<TypeWithoutPointer> Type;
+    typedef TypeWithoutPointer* Type;
     static Type copy(const T& ptr)
     {
         return ptr;
@@ -202,21 +201,10 @@ struct CrossThreadCopier<ResourceResponse> {
 };
 
 template <typename T>
-struct CrossThreadCopier<RawPtr<T>> {
-    STATIC_ONLY(CrossThreadCopier);
-    static_assert(IsGarbageCollectedType<T>::value, "T must be a garbage-collected type.");
-    typedef RawPtr<T> Type;
-    static Type copy(const Type& ptr)
-    {
-        return ptr;
-    }
-};
-
-template <typename T>
 struct CrossThreadCopier<Member<T>> {
     STATIC_ONLY(CrossThreadCopier);
     static_assert(IsGarbageCollectedType<T>::value, "T must be a garbage-collected type.");
-    typedef RawPtr<T> Type;
+    typedef T* Type;
     static Type copy(const Member<T>& ptr)
     {
         return ptr;
@@ -227,7 +215,7 @@ template <typename T>
 struct CrossThreadCopier<WeakMember<T>> {
     STATIC_ONLY(CrossThreadCopier);
     static_assert(IsGarbageCollectedType<T>::value, "T must be a garbage-collected type.");
-    typedef RawPtr<T> Type;
+    typedef T* Type;
     static Type copy(const WeakMember<T>& ptr)
     {
         return ptr;
