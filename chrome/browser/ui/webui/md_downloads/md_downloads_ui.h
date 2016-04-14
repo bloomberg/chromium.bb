@@ -26,9 +26,6 @@ class MdDownloadsUI : public content::WebUIController {
   static base::RefCountedMemory* GetFaviconResourceBytes(
       ui::ScaleFactor scale_factor);
 
-  // content::WebUIController:
-  void RenderViewReused(content::RenderViewHost* render_view_host) override;
-
  private:
   MdDownloadsDOMHandler* handler_;  // Weak.
 

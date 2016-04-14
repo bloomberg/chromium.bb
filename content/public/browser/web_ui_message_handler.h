@@ -47,6 +47,9 @@ class CONTENT_EXPORT WebUIMessageHandler {
   // Extract a string value from a list Value.
   static base::string16 ExtractStringValue(const base::ListValue* value);
 
+  // Called when a RenderView is reused to display a page (i.e. reload).
+  virtual void RenderViewReused() {}
+
   // This is where subclasses specify which messages they'd like to handle and
   // perform any additional initialization.. At this point web_ui() will return
   // the associated WebUI object.

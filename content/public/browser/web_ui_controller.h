@@ -33,12 +33,8 @@ class CONTENT_EXPORT WebUIController {
                                           const base::ListValue& args);
 
   // Called when RenderView is first created. This is *not* called for every
-  // page load because in some cases a RenderView will be reused. In those
-  // cases, RenderViewReused will be called instead.
+  // page load because in some cases a RenderView will be reused.
   virtual void RenderViewCreated(RenderViewHost* render_view_host) {}
-
-  // Called when a RenderView is reused to display a page.
-  virtual void RenderViewReused(RenderViewHost* render_view_host) {}
 
   WebUI* web_ui() const { return web_ui_; }
 

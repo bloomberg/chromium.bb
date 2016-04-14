@@ -96,7 +96,8 @@ void WebUIImpl::RenderViewReused(RenderViewHost* render_view_host,
     GetContentClient()->browser()->LogWebUIUrl(site_url);
   }
 
-  controller_->RenderViewReused(render_view_host);
+  for (WebUIMessageHandler* handler : handlers_)
+    handler->RenderViewReused();
 }
 
 WebContents* WebUIImpl::GetWebContents() const {

@@ -106,12 +106,6 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
 MdSettingsUI::~MdSettingsUI() {
 }
 
-void MdSettingsUI::RenderViewReused(
-    content::RenderViewHost* /*render_view_host*/) {
-  for (SettingsPageUIHandler* handler : handlers_)
-    handler->RenderViewReused();
-}
-
 void MdSettingsUI::AddSettingsPageUIHandler(SettingsPageUIHandler* handler) {
   DCHECK(handler);
   handlers_.insert(handler);

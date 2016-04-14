@@ -165,8 +165,3 @@ base::RefCountedMemory* MdDownloadsUI::GetFaviconResourceBytes(
   return ResourceBundle::GetSharedInstance().
       LoadDataResourceBytesForScale(IDR_DOWNLOADS_FAVICON, scale_factor);
 }
-
-void MdDownloadsUI::RenderViewReused(
-    content::RenderViewHost* render_view_host) {
-  handler_->RenderViewReused(render_view_host);
-}

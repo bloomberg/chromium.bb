@@ -23,9 +23,6 @@ class MdSettingsUI : public content::WebUIController,
   explicit MdSettingsUI(content::WebUI* web_ui);
   ~MdSettingsUI() override;
 
-  // content::WebUIController:
-  void RenderViewReused(content::RenderViewHost* render_view_host) override;
-
   // content::WebContentsObserver:
   void DidStartProvisionalLoadForFrame(
       content::RenderFrameHost* render_frame_host,

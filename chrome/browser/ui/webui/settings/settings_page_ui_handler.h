@@ -20,10 +20,6 @@ class SettingsPageUIHandler : public content::WebUIMessageHandler {
   // WebUIMessageHandler implementation.
   void RegisterMessages() override {}
 
-  // TODO(dbeam): move to WebUIMessageHandler?
-  // Called when a navigation re-uses a renderer process (i.e. reload).
-  virtual void RenderViewReused() {}
-
  protected:
   // Helper method for responding to JS requests initiated with
   // cr.sendWithPromise(), for the case where the returned promise should be

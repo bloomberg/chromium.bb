@@ -133,8 +133,7 @@ void MdDownloadsDOMHandler::RegisterMessages() {
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-void MdDownloadsDOMHandler::RenderViewReused(
-    content::RenderViewHost* render_view_host) {
+void MdDownloadsDOMHandler::RenderViewReused() {
   list_tracker_.Stop();
   list_tracker_.Reset();
   CheckForRemovedFiles();
