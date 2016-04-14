@@ -131,8 +131,11 @@ std::string ModuleSystem::ExceptionHandler::CreateExceptionString(
     error_message.assign(*error_message_v8, error_message_v8.length());
   }
 
-  auto maybe = message->GetLineNumber(context_->v8_context());
-  int line_number = maybe.IsJust() ? maybe.FromJust() : 0;
+  int line_number = 0;
+  if (context_) {  // |context_| can be null in unittests.
+    auto maybe = message->GetLineNumber(context_->v8_context());
+    line_number = maybe.IsJust() ? maybe.FromJust() : 0;
+  }
   return base::StringPrintf("%s:%d: %s",
                             resource_name.c_str(),
                             line_number,
