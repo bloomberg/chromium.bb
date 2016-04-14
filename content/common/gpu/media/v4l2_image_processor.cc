@@ -99,13 +99,13 @@ void V4L2ImageProcessor::NotifyErrorOnChildThread(
   error_cb_.Run();
 }
 
-bool V4L2ImageProcessor::Initialize(const base::Closure& error_cb,
-                                    media::VideoPixelFormat input_format,
+bool V4L2ImageProcessor::Initialize(media::VideoPixelFormat input_format,
                                     media::VideoPixelFormat output_format,
-                                    int num_buffers,
                                     gfx::Size input_visible_size,
                                     gfx::Size output_visible_size,
-                                    gfx::Size* output_allocated_size) {
+                                    gfx::Size output_allocated_size,
+                                    int num_buffers,
+                                    const base::Closure& error_cb) {
   DCHECK(!error_cb.is_null());
   error_cb_ = error_cb;
 
@@ -129,7 +129,7 @@ bool V4L2ImageProcessor::Initialize(const base::Closure& error_cb,
 
   input_visible_size_ = input_visible_size;
   output_visible_size_ = output_visible_size;
-  output_allocated_size_ = *output_allocated_size;
+  output_allocated_size_ = output_allocated_size;
 
   input_planes_count_ = media::VideoFrame::NumPlanes(input_format);
   DCHECK_LE(input_planes_count_, static_cast<size_t>(VIDEO_MAX_PLANES));
@@ -149,8 +149,6 @@ bool V4L2ImageProcessor::Initialize(const base::Closure& error_cb,
 
   if (!CreateInputBuffers() || !CreateOutputBuffers())
     return false;
-  // CreateOutputBuffers may adjust |output_allocated_size_|.
-  *output_allocated_size = output_allocated_size_;
 
   if (!device_thread_.Start()) {
     LOG(ERROR) << "Initialize(): encoder thread failed to start";

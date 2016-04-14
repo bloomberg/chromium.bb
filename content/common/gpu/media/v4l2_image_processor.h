@@ -33,17 +33,16 @@ class CONTENT_EXPORT V4L2ImageProcessor {
   // Initializes the processor to convert from |input_format| to |output_format|
   // and/or scale from |input_visible_size| to |output_visible_size|.
   // Request the output buffers to be of at least |output_allocated_size|. The
-  // adjusted size will be stored back to |output_allocated_size|. The number of
-  // input buffers and output buffers will be |num_buffers|. Provided |error_cb|
-  // will be called if an error occurs. Return true if the requested
+  // number of input buffers and output buffers will be |num_buffers|. Provided
+  // |error_cb| will be called if an error occurs. Return true if the requested
   // configuration is supported.
-  bool Initialize(const base::Closure& error_cb,
-                  media::VideoPixelFormat input_format,
+  bool Initialize(media::VideoPixelFormat input_format,
                   media::VideoPixelFormat output_format,
-                  int num_buffers,
                   gfx::Size input_visible_size,
                   gfx::Size output_visible_size,
-                  gfx::Size* output_allocated_size);
+                  gfx::Size output_allocated_size,
+                  int num_buffers,
+                  const base::Closure& error_cb);
 
   // Return a vector of dmabuf file descriptors, exported for V4L2 output buffer
   // with |index|. The size of vector will be the number of planes of the
@@ -51,8 +50,11 @@ class CONTENT_EXPORT V4L2ImageProcessor {
   std::vector<base::ScopedFD> GetDmabufsForOutputBuffer(
       int output_buffer_index);
 
-  // Returns allocated size required by the processor to be fed with.
-  gfx::Size input_allocated_size() { return input_allocated_size_; }
+  // Returns input allocated size required by the processor to be fed with.
+  gfx::Size input_allocated_size() const { return input_allocated_size_; }
+
+  // Returns output allocated size required by the processor.
+  gfx::Size output_allocated_size() const { return output_allocated_size_; }
 
   // Callback to be used to return the index of a processed image to the
   // client. After the client is done with the frame, call Process with the

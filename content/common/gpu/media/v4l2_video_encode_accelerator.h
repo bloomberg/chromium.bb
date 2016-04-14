@@ -267,8 +267,6 @@ class CONTENT_EXPORT V4L2VideoEncodeAccelerator
   // Indexes of free image processor output buffers. Only accessed on child
   // thread.
   std::vector<int> free_image_processor_output_buffers_;
-  // Output allocated size of image processor.
-  gfx::Size image_processor_output_allocated_size_;
   // Video frames ready to be processed. Only accessed on child thread.
   std::queue<ImageProcessorInputRecord> image_processor_input_queue_;
   // Mapping of int index to fds of image processor output buffer.

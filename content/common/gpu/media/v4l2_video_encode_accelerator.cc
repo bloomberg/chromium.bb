@@ -154,13 +154,11 @@ bool V4L2VideoEncodeAccelerator::Initialize(
     // Convert from input_format to device_input_format_, keeping the size
     // at visible_size_ and requiring the output buffers to be of at least
     // input_allocated_size_.
-    image_processor_output_allocated_size_ = input_allocated_size_;
     if (!image_processor_->Initialize(
+            input_format, device_input_format_, visible_size_, visible_size_,
+            input_allocated_size_, kImageProcBufferCount,
             base::Bind(&V4L2VideoEncodeAccelerator::ImageProcessorError,
-                       weak_this_),
-            input_format, device_input_format_, kImageProcBufferCount,
-            visible_size_, visible_size_,
-            &image_processor_output_allocated_size_)) {
+                       weak_this_))) {
       LOG(ERROR) << "Failed initializing image processor";
       return false;
     }
@@ -366,7 +364,7 @@ void V4L2VideoEncodeAccelerator::FrameProcessed(bool force_keyframe,
   }
   scoped_refptr<media::VideoFrame> output_frame =
       media::VideoFrame::WrapExternalDmabufs(
-          device_input_format_, image_processor_output_allocated_size_,
+          device_input_format_, image_processor_->output_allocated_size(),
           gfx::Rect(visible_size_), visible_size_, fds, timestamp);
   if (!output_frame) {
     NOTIFY_ERROR(kPlatformFailureError);
