@@ -129,6 +129,9 @@ source_set("blink_headers") {
     "//third_party/icu:icu_config",
   ]
   sources = blink_headers_values.blink_public_sources
+  deps = [
+    ":generate_mojo_bindings",
+  ]
 }
 
 # GYP version: WebKit/public/blink_devtools.gyp:blink_devtools_frontend_resources
@@ -208,4 +211,11 @@ if (is_android) {
       "platform/modules/payments/payment_request.mojom",
     ]
   }
+}
+
+group("generate_mojo_bindings") {
+  deps = [
+    ":mojo_bindings__generator",
+    ":mojo_bindings_blink__generator",
+  ]
 }
