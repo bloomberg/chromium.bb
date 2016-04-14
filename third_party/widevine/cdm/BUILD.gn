@@ -128,7 +128,6 @@ if ((is_chrome_branded || enable_widevine) && enable_pepper_cdms) {
       ":version_h",
       ":widevinecdm",
       ":widevinecdmadapter_resources",
-      "//ppapi/cpp",
     ]
 
     if (is_linux) {

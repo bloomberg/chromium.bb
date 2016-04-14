@@ -70,6 +70,12 @@ config("media_dependent_config") {
   }
 }
 
+source_set("cdm_api") {
+  sources = [
+    "cdm/api/content_decryption_module.h",
+  ]
+}
+
 component("media") {
   sources = [
     "cdm/aes_decryptor.cc",
@@ -80,6 +86,7 @@ component("media") {
     "cdm/cdm_allocator.h",
     "cdm/cdm_helpers.cc",
     "cdm/cdm_helpers.h",
+    "cdm/cdm_wrapper.h",
     "cdm/default_cdm_factory.cc",
     "cdm/default_cdm_factory.h",
     "cdm/json_web_key.cc",
@@ -227,7 +234,9 @@ component("media") {
   cflags = []
   libs = []
   defines = []
-  deps = []
+  deps = [
+    ":cdm_api",
+  ]
 
   include_dirs = [ "." ]
   if (media_use_ffmpeg) {

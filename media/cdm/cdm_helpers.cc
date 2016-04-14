@@ -6,7 +6,7 @@
 
 #if defined(USE_PPAPI_CDM_ADAPTER)
 // When building the ppapi adapter do not include any non-trivial base/ headers.
-#include "ppapi/cpp/logging.h"
+#include "ppapi/cpp/logging.h"  // nogncheck
 #define PLATFORM_DCHECK PP_DCHECK
 #else
 #include "base/logging.h"

@@ -18,8 +18,11 @@ template("ppapi_cdm_adapter") {
     forward_variables_from(invoker, "*")
 
     defines += [ "USE_PPAPI_CDM_ADAPTER" ]
+    deps += [
+      "//media:cdm_api",
+      "//ppapi/cpp",
+    ]
     sources += [
-      "//media/cdm/api/content_decryption_module.h",
       "//media/cdm/cdm_helpers.cc",
       "//media/cdm/cdm_helpers.h",
       "//media/cdm/cdm_wrapper.h",

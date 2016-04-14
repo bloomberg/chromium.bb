@@ -65,6 +65,5 @@ ppapi_cdm_adapter("clearkeycdmadapter") {
     ":clearkeycdm",
     ":clearkeycdmadapter_resources",
     "//base",  # Required for the allocator implementation.
-    "//ppapi/cpp",
   ]
 }
