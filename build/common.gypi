@@ -1070,9 +1070,9 @@
         # Windows.
         ['OS=="win" and target_arch=="ia32" and branding=="Chrome"', {
           # Enable hang reports from the watcher process.
-          'kasko_hang_reports%': 0,
+          'kasko_hang_reports%': 1,
           # Enable failed rendez-vous reports.
-          'kasko_failed_rdv_reports%': 0,
+          'kasko_failed_rdv_reports%': 1,
         }, {
           # Enable hang reports from the watcher process.
           'kasko_hang_reports%': 0,
