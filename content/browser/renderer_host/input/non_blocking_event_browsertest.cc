@@ -57,6 +57,24 @@ const char kNonBlockingEventDataURL[] =
     "  document.title='ready';"
     "</script>";
 
+const char kPassiveTouchStartBlockingTouchEndDataURL[] =
+    "data:text/html;charset=utf-8,"
+    "<!DOCTYPE html>"
+    "<meta name='viewport' content='width=device-width'/>"
+    "<style>"
+    "html, body {"
+    "  margin: 0;"
+    "}"
+    ".spacer { height: 10000px; }"
+    "</style>"
+    "<div class=spacer></div>"
+    "<script>"
+    "  document.addEventListener('touchstart', function(e) { while(true) {} }, "
+    "{'passive': true});"
+    "  document.addEventListener('touchend', function(e) { while(true) {} });"
+    "  document.title='ready';"
+    "</script>";
+
 }  // namespace
 
 namespace content {
@@ -76,8 +94,8 @@ class NonBlockingEventBrowserTest : public ContentBrowserTest {
   }
 
  protected:
-  void LoadURL() {
-    const GURL data_url(kNonBlockingEventDataURL);
+  void LoadURL(const char* page_data) {
+    const GURL data_url(page_data);
     NavigateToURL(shell(), data_url);
 
     RenderWidgetHostImpl* host = GetWidgetHost();
@@ -168,7 +186,7 @@ class NonBlockingEventBrowserTest : public ContentBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(NonBlockingEventBrowserTest, MouseWheel) {
-  LoadURL();
+  LoadURL(kNonBlockingEventDataURL);
   DoWheelScroll();
 }
 
@@ -179,7 +197,21 @@ IN_PROC_BROWSER_TEST_F(NonBlockingEventBrowserTest, MouseWheel) {
 #define MAYBE_TouchStart TouchStart
 #endif
 IN_PROC_BROWSER_TEST_F(NonBlockingEventBrowserTest, MAYBE_TouchStart) {
-  LoadURL();
+  LoadURL(kNonBlockingEventDataURL);
+  DoTouchScroll();
+}
+
+// Disabled on MacOS because it doesn't support touch input.
+#if defined(OS_MACOSX)
+#define MAYBE_PassiveTouchStartBlockingTouchEnd \
+  DISABLED_PassiveTouchStartBlockingTouchEnd
+#else
+#define MAYBE_PassiveTouchStartBlockingTouchEnd \
+  PassiveTouchStartBlockingTouchEnd
+#endif
+IN_PROC_BROWSER_TEST_F(NonBlockingEventBrowserTest,
+                       MAYBE_PassiveTouchStartBlockingTouchEnd) {
+  LoadURL(kPassiveTouchStartBlockingTouchEndDataURL);
   DoTouchScroll();
 }
 

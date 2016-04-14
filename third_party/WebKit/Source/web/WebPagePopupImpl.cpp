@@ -165,10 +165,16 @@ private:
 
     void setEventListenerProperties(WebEventListenerClass eventClass, WebEventListenerProperties properties) override
     {
-        if (eventClass == WebEventListenerClass::Touch)
-            m_popup->widgetClient()->hasTouchEventHandlers(properties != WebEventListenerProperties::Nothing);
-        if (m_popup->m_layerTreeView)
+        if (m_popup->m_layerTreeView) {
             m_popup->m_layerTreeView->setEventListenerProperties(eventClass, properties);
+            if (eventClass == WebEventListenerClass::TouchStartOrMove) {
+                m_popup->widgetClient()->hasTouchEventHandlers(properties != WebEventListenerProperties::Nothing || eventListenerProperties(WebEventListenerClass::TouchEndOrCancel) != WebEventListenerProperties::Nothing);
+            } else if (eventClass == WebEventListenerClass::TouchEndOrCancel) {
+                m_popup->widgetClient()->hasTouchEventHandlers(properties != WebEventListenerProperties::Nothing || eventListenerProperties(WebEventListenerClass::TouchStartOrMove) != WebEventListenerProperties::Nothing);
+            }
+        } else {
+            m_popup->widgetClient()->hasTouchEventHandlers(true);
+        }
     }
     WebEventListenerProperties eventListenerProperties(WebEventListenerClass eventClass) const override
     {
@@ -177,13 +183,13 @@ private:
         return WebEventListenerProperties::Nothing;
     }
 
-    void setHaveScrollEventHandlers(bool hasEventHandlers) override
+    void setHasScrollEventHandlers(bool hasEventHandlers) override
     {
         if (m_popup->m_layerTreeView)
             m_popup->m_layerTreeView->setHaveScrollEventHandlers(hasEventHandlers);
     }
 
-    bool haveScrollEventHandlers() const override
+    bool hasScrollEventHandlers() const override
     {
         if (m_popup->m_layerTreeView)
             return m_popup->m_layerTreeView->haveScrollEventHandlers();

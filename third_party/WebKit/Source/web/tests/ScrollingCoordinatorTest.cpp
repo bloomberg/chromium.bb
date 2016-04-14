@@ -128,7 +128,7 @@ TEST_F(ScrollingCoordinatorTest, fastScrollingByDefault)
     WebLayer* rootScrollLayer = getRootScrollLayer();
     ASSERT_TRUE(rootScrollLayer->scrollable());
     ASSERT_FALSE(rootScrollLayer->shouldScrollOnMainThread());
-    ASSERT_EQ(WebEventListenerProperties::Nothing, webLayerTreeView()->eventListenerProperties(WebEventListenerClass::Touch));
+    ASSERT_EQ(WebEventListenerProperties::Nothing, webLayerTreeView()->eventListenerProperties(WebEventListenerClass::TouchStartOrMove));
     ASSERT_EQ(WebEventListenerProperties::Nothing, webLayerTreeView()->eventListenerProperties(WebEventListenerClass::MouseWheel));
 }
 
@@ -294,7 +294,7 @@ TEST_F(ScrollingCoordinatorTest, touchEventHandler)
     navigateTo(m_baseURL + "touch-event-handler.html");
     forceFullCompositingUpdate();
 
-    ASSERT_EQ(WebEventListenerProperties::Blocking, webLayerTreeView()->eventListenerProperties(WebEventListenerClass::Touch));
+    ASSERT_EQ(WebEventListenerProperties::Blocking, webLayerTreeView()->eventListenerProperties(WebEventListenerClass::TouchStartOrMove));
 }
 
 TEST_F(ScrollingCoordinatorTest, touchEventHandlerPassive)
@@ -303,7 +303,7 @@ TEST_F(ScrollingCoordinatorTest, touchEventHandlerPassive)
     navigateTo(m_baseURL + "touch-event-handler-passive.html");
     forceFullCompositingUpdate();
 
-    ASSERT_EQ(WebEventListenerProperties::Passive, webLayerTreeView()->eventListenerProperties(WebEventListenerClass::Touch));
+    ASSERT_EQ(WebEventListenerProperties::Passive, webLayerTreeView()->eventListenerProperties(WebEventListenerClass::TouchStartOrMove));
 }
 
 TEST_F(ScrollingCoordinatorTest, touchEventHandlerBoth)
@@ -312,7 +312,7 @@ TEST_F(ScrollingCoordinatorTest, touchEventHandlerBoth)
     navigateTo(m_baseURL + "touch-event-handler-both.html");
     forceFullCompositingUpdate();
 
-    ASSERT_EQ(WebEventListenerProperties::BlockingAndPassive, webLayerTreeView()->eventListenerProperties(WebEventListenerClass::Touch));
+    ASSERT_EQ(WebEventListenerProperties::BlockingAndPassive, webLayerTreeView()->eventListenerProperties(WebEventListenerClass::TouchStartOrMove));
 }
 
 TEST_F(ScrollingCoordinatorTest, wheelEventHandler)

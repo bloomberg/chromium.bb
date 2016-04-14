@@ -11,12 +11,12 @@ if (window.testRunner) {
         var div = document.createElement('div');
         div.ontouchstart = function() { };
         document.body.appendChild(div);
-        window.internals.touchEventHandlerCount(document);
+        window.internals.touchStartOrMoveEventHandlerCount(document);
         div.parentNode.removeChild(div);
         div = 0;
         if (window.GCController)
             GCController.collect();
-        window.internals.touchEventHandlerCount(document);
+        window.internals.touchStartOrMoveEventHandlerCount(document);
     }
 
     crash();

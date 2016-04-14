@@ -7,7 +7,15 @@
 
 namespace cc {
 
-enum class EventListenerClass { kTouch, kMouseWheel, kNumClasses };
+enum class EventListenerClass {
+  // This value includes "touchstart", "touchmove", and "pointer" events.
+  kTouchStartOrMove,
+  // This value includes "wheel" and "mousewheel" events.
+  kMouseWheel,
+  // This value includes "touchend" and "touchcancel" events.
+  kTouchEndOrCancel,
+  kNumClasses
+};
 
 enum class EventListenerProperties {
   kNone,

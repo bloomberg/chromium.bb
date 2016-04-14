@@ -206,8 +206,8 @@ public:
 
     virtual void setEventListenerProperties(WebEventListenerClass, WebEventListenerProperties) = 0;
     virtual WebEventListenerProperties eventListenerProperties(WebEventListenerClass) const = 0;
-    virtual void setHaveScrollEventHandlers(bool) = 0;
-    virtual bool haveScrollEventHandlers() const = 0;
+    virtual void setHasScrollEventHandlers(bool) = 0;
+    virtual bool hasScrollEventHandlers() const = 0;
 
     virtual void setTouchAction(TouchAction) = 0;
 

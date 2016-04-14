@@ -418,11 +418,14 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
   target_tree->set_has_transparent_background(has_transparent_background());
   target_tree->set_have_scroll_event_handlers(have_scroll_event_handlers());
   target_tree->set_event_listener_properties(
-      EventListenerClass::kTouch,
-      event_listener_properties(EventListenerClass::kTouch));
+      EventListenerClass::kTouchStartOrMove,
+      event_listener_properties(EventListenerClass::kTouchStartOrMove));
   target_tree->set_event_listener_properties(
       EventListenerClass::kMouseWheel,
       event_listener_properties(EventListenerClass::kMouseWheel));
+  target_tree->set_event_listener_properties(
+      EventListenerClass::kTouchEndOrCancel,
+      event_listener_properties(EventListenerClass::kTouchEndOrCancel));
 
   if (ViewportSizeInvalid())
     target_tree->SetViewportSizeInvalid();

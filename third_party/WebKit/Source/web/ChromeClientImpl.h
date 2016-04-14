@@ -118,8 +118,8 @@ public:
     Cursor lastSetCursorForTesting() const override;
     void setEventListenerProperties(WebEventListenerClass, WebEventListenerProperties) override;
     WebEventListenerProperties eventListenerProperties(WebEventListenerClass) const override;
-    void setHaveScrollEventHandlers(bool hasEventHandlers) override;
-    bool haveScrollEventHandlers() const override;
+    void setHasScrollEventHandlers(bool hasEventHandlers) override;
+    bool hasScrollEventHandlers() const override;
     void setTouchAction(TouchAction) override;
 
     // Pass 0 as the GraphicsLayer to detatch the root layer.

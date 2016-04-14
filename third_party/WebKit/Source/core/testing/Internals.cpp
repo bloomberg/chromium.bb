@@ -1271,10 +1271,16 @@ unsigned Internals::scrollEventHandlerCount(Document* document)
     return eventHandlerCount(*document, EventHandlerRegistry::ScrollEvent);
 }
 
-unsigned Internals::touchEventHandlerCount(Document* document)
+unsigned Internals::touchStartOrMoveEventHandlerCount(Document* document)
 {
     ASSERT(document);
-    return eventHandlerCount(*document, EventHandlerRegistry::TouchEventBlocking);
+    return eventHandlerCount(*document, EventHandlerRegistry::TouchStartOrMoveEventBlocking) + eventHandlerCount(*document, EventHandlerRegistry::TouchStartOrMoveEventPassive);
+}
+
+unsigned Internals::touchEndOrCancelEventHandlerCount(Document* document)
+{
+    ASSERT(document);
+    return eventHandlerCount(*document, EventHandlerRegistry::TouchEndOrCancelEventBlocking) + eventHandlerCount(*document, EventHandlerRegistry::TouchEndOrCancelEventPassive);
 }
 
 static PaintLayer* findLayerForGraphicsLayer(PaintLayer* searchRoot, GraphicsLayer* graphicsLayer, IntSize* layerOffset, String* layerType)

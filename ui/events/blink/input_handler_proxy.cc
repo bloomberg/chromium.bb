@@ -812,7 +812,7 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleTouchStart(
   // If |result| is DROP_EVENT it wasn't processed above.
   if (result == DROP_EVENT) {
     switch (input_handler_->GetEventListenerProperties(
-        cc::EventListenerClass::kTouch)) {
+        cc::EventListenerClass::kTouchStartOrMove)) {
       case cc::EventListenerProperties::kPassive:
         result = DID_HANDLE_NON_BLOCKING;
         break;
@@ -842,6 +842,17 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleTouchStart(
   if (touch_start_result_ == kEventDispositionUndefined ||
       touch_start_result_ == DROP_EVENT || result == DID_NOT_HANDLE)
     touch_start_result_ = result;
+
+  // If |result| is still DROP_EVENT look at the touch end handler as
+  // we may not want to discard the entire touch sequence. Note this
+  // code is explicitly after the assignment of the |touch_start_result_|
+  // so the touch moves are not sent to the main thread un-necessarily.
+  if (result == DROP_EVENT &&
+      input_handler_->GetEventListenerProperties(
+          cc::EventListenerClass::kTouchEndOrCancel) !=
+          cc::EventListenerProperties::kNone) {
+    result = DID_HANDLE_NON_BLOCKING;
+  }
 
   return result;
 }

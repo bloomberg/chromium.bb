@@ -33,7 +33,7 @@ var nestedDocument;
 
 function getTouchHandlerCount(doc) {
     window.internals.updateStyleAndReturnAffectedElementCount();
-    return window.internals.touchEventHandlerCount(doc);
+    return window.internals.touchStartOrMoveEventHandlerCount(doc);
 }
 
 function runTests() {

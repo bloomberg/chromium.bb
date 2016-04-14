@@ -772,7 +772,7 @@ Region ScrollingCoordinator::computeShouldHandleScrollGestureOnMainThreadRegion(
 static void accumulateDocumentTouchEventTargetRects(LayerHitTestRects& rects, const Document* document)
 {
     ASSERT(document);
-    const EventTargetSet* targets = document->frameHost()->eventHandlerRegistry().eventHandlerTargets(EventHandlerRegistry::TouchEventBlocking);
+    const EventTargetSet* targets = document->frameHost()->eventHandlerRegistry().eventHandlerTargets(EventHandlerRegistry::TouchStartOrMoveEventBlocking);
     if (!targets)
         return;
 

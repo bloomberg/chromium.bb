@@ -1496,7 +1496,11 @@ class LayerTreeHostTestCommit : public LayerTreeHostTest {
     layer_tree_host()->SetEventListenerProperties(
         EventListenerClass::kMouseWheel, EventListenerProperties::kPassive);
     layer_tree_host()->SetEventListenerProperties(
-        EventListenerClass::kTouch, EventListenerProperties::kBlocking);
+        EventListenerClass::kTouchStartOrMove,
+        EventListenerProperties::kBlocking);
+    layer_tree_host()->SetEventListenerProperties(
+        EventListenerClass::kTouchEndOrCancel,
+        EventListenerProperties::kBlockingAndPassive);
     layer_tree_host()->SetHaveScrollEventHandlers(true);
 
     PostSetNeedsCommitToMainThread();
@@ -1510,7 +1514,10 @@ class LayerTreeHostTestCommit : public LayerTreeHostTest {
                   EventListenerClass::kMouseWheel));
     EXPECT_EQ(EventListenerProperties::kBlocking,
               impl->active_tree()->event_listener_properties(
-                  EventListenerClass::kTouch));
+                  EventListenerClass::kTouchStartOrMove));
+    EXPECT_EQ(EventListenerProperties::kBlockingAndPassive,
+              impl->active_tree()->event_listener_properties(
+                  EventListenerClass::kTouchEndOrCancel));
     EXPECT_TRUE(impl->active_tree()->have_scroll_event_handlers());
 
     EndTest();

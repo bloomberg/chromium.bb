@@ -732,10 +732,10 @@ void RenderWidgetCompositor::clearSelection() {
   layer_tree_host_->RegisterSelection(empty_selection);
 }
 
-static_assert(
-    static_cast<cc::EventListenerClass>(blink::WebEventListenerClass::Touch) ==
-        cc::EventListenerClass::kTouch,
-    "EventListenerClass and WebEventListenerClass enums must match");
+static_assert(static_cast<cc::EventListenerClass>(
+                  blink::WebEventListenerClass::TouchStartOrMove) ==
+                  cc::EventListenerClass::kTouchStartOrMove,
+              "EventListenerClass and WebEventListenerClass enums must match");
 static_assert(static_cast<cc::EventListenerClass>(
                   blink::WebEventListenerClass::MouseWheel) ==
                   cc::EventListenerClass::kMouseWheel,

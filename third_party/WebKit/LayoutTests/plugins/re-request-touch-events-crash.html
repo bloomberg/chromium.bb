@@ -15,9 +15,9 @@ if (window.testRunner) {
     // Force the plugin to initialize
     touch_plugin.offsetTop;
 
-    shouldBe("window.internals.touchEventHandlerCount(document)", "1")
+    shouldBe("window.internals.touchStartOrMoveEventHandlerCount(document)", "1")
     touch_plugin.parentNode.removeChild(touch_plugin);
-    shouldBe("window.internals.touchEventHandlerCount(document)", "0")
+    shouldBe("window.internals.touchStartOrMoveEventHandlerCount(document)", "0")
 }
 
 </script>

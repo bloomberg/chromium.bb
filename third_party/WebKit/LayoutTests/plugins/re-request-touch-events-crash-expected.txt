@@ -1,5 +1,5 @@
-PASS window.internals.touchEventHandlerCount(document) is 1
-PASS window.internals.touchEventHandlerCount(document) is 0
+PASS window.internals.touchStartOrMoveEventHandlerCount(document) is 1
+PASS window.internals.touchStartOrMoveEventHandlerCount(document) is 0
 PASS successfullyParsed is true
 
 TEST COMPLETE

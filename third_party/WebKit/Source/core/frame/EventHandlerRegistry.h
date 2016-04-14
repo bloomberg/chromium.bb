@@ -31,8 +31,10 @@ public:
         ScrollEvent,
         WheelEventBlocking,
         WheelEventPassive,
-        TouchEventBlocking,
-        TouchEventPassive,
+        TouchStartOrMoveEventBlocking,
+        TouchStartOrMoveEventPassive,
+        TouchEndOrCancelEventBlocking,
+        TouchEndOrCancelEventPassive,
 #if ENABLE(ASSERT)
         // Additional event categories for verifying handler tracking logic.
         EventsForTesting,

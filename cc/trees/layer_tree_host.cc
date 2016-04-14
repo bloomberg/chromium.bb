@@ -441,11 +441,14 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
   sync_tree->set_has_transparent_background(has_transparent_background_);
   sync_tree->set_have_scroll_event_handlers(have_scroll_event_handlers_);
   sync_tree->set_event_listener_properties(
-      EventListenerClass::kTouch,
-      event_listener_properties(EventListenerClass::kTouch));
+      EventListenerClass::kTouchStartOrMove,
+      event_listener_properties(EventListenerClass::kTouchStartOrMove));
   sync_tree->set_event_listener_properties(
       EventListenerClass::kMouseWheel,
       event_listener_properties(EventListenerClass::kMouseWheel));
+  sync_tree->set_event_listener_properties(
+      EventListenerClass::kTouchEndOrCancel,
+      event_listener_properties(EventListenerClass::kTouchEndOrCancel));
 
   if (page_scale_layer_.get() && inner_viewport_scroll_layer_.get()) {
     sync_tree->SetViewportLayersFromIds(
@@ -1529,8 +1532,12 @@ void LayerTreeHost::ToProtobufForCommit(proto::LayerTreeHost* proto) {
   proto->set_have_scroll_event_handlers(have_scroll_event_handlers_);
   proto->set_wheel_event_listener_properties(static_cast<uint32_t>(
       event_listener_properties(EventListenerClass::kMouseWheel)));
-  proto->set_touch_event_listener_properties(static_cast<uint32_t>(
-      event_listener_properties(EventListenerClass::kTouch)));
+  proto->set_touch_start_or_move_event_listener_properties(
+      static_cast<uint32_t>(
+          event_listener_properties(EventListenerClass::kTouchStartOrMove)));
+  proto->set_touch_end_or_cancel_event_listener_properties(
+      static_cast<uint32_t>(
+          event_listener_properties(EventListenerClass::kTouchEndOrCancel)));
   proto->set_in_paint_layer_contents(in_paint_layer_contents_);
   proto->set_id(id_);
   proto->set_next_commit_forces_redraw(next_commit_forces_redraw_);
@@ -1599,9 +1606,14 @@ void LayerTreeHost::FromProtobufForCommit(const proto::LayerTreeHost& proto) {
       EventListenerClass::kMouseWheel)] =
       static_cast<EventListenerProperties>(
           proto.wheel_event_listener_properties());
-  event_listener_properties_[static_cast<size_t>(EventListenerClass::kTouch)] =
+  event_listener_properties_[static_cast<size_t>(
+      EventListenerClass::kTouchStartOrMove)] =
       static_cast<EventListenerProperties>(
-          proto.touch_event_listener_properties());
+          proto.touch_start_or_move_event_listener_properties());
+  event_listener_properties_[static_cast<size_t>(
+      EventListenerClass::kTouchEndOrCancel)] =
+      static_cast<EventListenerProperties>(
+          proto.touch_end_or_cancel_event_listener_properties());
   in_paint_layer_contents_ = proto.in_paint_layer_contents();
   id_ = proto.id();
   next_commit_forces_redraw_ = proto.next_commit_forces_redraw();

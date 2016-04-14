@@ -7,92 +7,106 @@ debug("Test addEventListener/removeEventListener on the document.");
 (function() {
     var listener = function() { }
 
-    shouldBe('window.internals.touchEventHandlerCount(document)', '0');
+    shouldBe('window.internals.touchStartOrMoveEventHandlerCount(document)', '0');
     document.addEventListener('touchstart', listener, true);
-    shouldBe('window.internals.touchEventHandlerCount(document)', '1');
+    shouldBe('window.internals.touchStartOrMoveEventHandlerCount(document)', '1');
     document.addEventListener('touchmove', listener, true);
-    shouldBe('window.internals.touchEventHandlerCount(document)', '2');
+    shouldBe('window.internals.touchStartOrMoveEventHandlerCount(document)', '2');
     document.addEventListener('touchstart', listener, false);
-    shouldBe('window.internals.touchEventHandlerCount(document)', '3');
+    shouldBe('window.internals.touchStartOrMoveEventHandlerCount(document)', '3');
     document.removeEventListener('touchmove', listener, true);
-    shouldBe('window.internals.touchEventHandlerCount(document)', '2');
+    shouldBe('window.internals.touchStartOrMoveEventHandlerCount(document)', '2');
     document.removeEventListener('touchstart', listener, true);
-    shouldBe('window.internals.touchEventHandlerCount(document)', '1');
+    shouldBe('window.internals.touchStartOrMoveEventHandlerCount(document)', '1');
 
     // Try removing the capturing listener again.
     document.removeEventListener('touchstart', listener, true);
-    shouldBe('window.internals.touchEventHandlerCount(document)', '1');
+    shouldBe('window.internals.touchStartOrMoveEventHandlerCount(document)', '1');
     document.removeEventListener('touchmove', listener, true);
-    shouldBe('window.internals.touchEventHandlerCount(document)', '1');
+    shouldBe('window.internals.touchStartOrMoveEventHandlerCount(document)', '1');
 
     document.removeEventListener('touchstart', listener, false);
-    shouldBe('window.internals.touchEventHandlerCount(document)', '0');
+    shouldBe('window.internals.touchStartOrMoveEventHandlerCount(document)', '0');
 })();
 
 debug("Test setting touch handlers on the document.");
 (function() {
-    shouldBe('window.internals.touchEventHandlerCount(document)', '0');
+    shouldBe('window.internals.touchStartOrMoveEventHandlerCount(document)', '0');
     document.ontouchstart = function() { }
     document.ontouchmove = function() {}
     document.ontouchend = function() {}
     document.ontouchcancel = function() {}
-    shouldBe('window.internals.touchEventHandlerCount(document)', '4');
+    shouldBe('window.internals.touchStartOrMoveEventHandlerCount(document)', '2');
+    shouldBe('window.internals.touchEndOrCancelEventHandlerCount(document)', '2');
     document.ontouchstart = function() { }
-    shouldBe('window.internals.touchEventHandlerCount(document)', '4');
+    shouldBe('window.internals.touchStartOrMoveEventHandlerCount(document)', '2');
+    shouldBe('window.internals.touchEndOrCancelEventHandlerCount(document)', '2');
     document.ontouchstart = null;
-    shouldBe('window.internals.touchEventHandlerCount(document)', '3');
+    shouldBe('window.internals.touchStartOrMoveEventHandlerCount(document)', '1');
+    shouldBe('window.internals.touchEndOrCancelEventHandlerCount(document)', '2');
     document.ontouchstart = null;
-    shouldBe('window.internals.touchEventHandlerCount(document)', '3');
-    document.ontouchmove = null;
+    shouldBe('window.internals.touchStartOrMoveEventHandlerCount(document)', '1');
+    shouldBe('window.internals.touchEndOrCancelEventHandlerCount(document)', '2');
     document.ontouchend = null;
+    shouldBe('window.internals.touchStartOrMoveEventHandlerCount(document)', '1');
+    shouldBe('window.internals.touchEndOrCancelEventHandlerCount(document)', '1');
+    document.ontouchmove = null;
     document.ontouchcancel = null;
-    shouldBe('window.internals.touchEventHandlerCount(document)', '0');
+    shouldBe('window.internals.touchStartOrMoveEventHandlerCount(document)', '0');
+    shouldBe('window.internals.touchEndOrCancelEventHandlerCount(document)', '0');
 })();
 
 debug("Test addEventListener/removeEventListener on the window.");
 (function() {
     var listener = function() { }
 
-    shouldBe('window.internals.touchEventHandlerCount(document)', '0');
+    shouldBe('window.internals.touchStartOrMoveEventHandlerCount(document)', '0');
     window.addEventListener('touchstart', listener, true);
-    shouldBe('window.internals.touchEventHandlerCount(document)', '1');
+    shouldBe('window.internals.touchStartOrMoveEventHandlerCount(document)', '1');
     window.addEventListener('touchmove', listener, true);
-    shouldBe('window.internals.touchEventHandlerCount(document)', '2');
+    shouldBe('window.internals.touchStartOrMoveEventHandlerCount(document)', '2');
     window.addEventListener('touchstart', listener, false);
-    shouldBe('window.internals.touchEventHandlerCount(document)', '3');
+    shouldBe('window.internals.touchStartOrMoveEventHandlerCount(document)', '3');
     window.removeEventListener('touchmove', listener, true);
-    shouldBe('window.internals.touchEventHandlerCount(document)', '2');
+    shouldBe('window.internals.touchStartOrMoveEventHandlerCount(document)', '2');
     window.removeEventListener('touchstart', listener, true);
-    shouldBe('window.internals.touchEventHandlerCount(document)', '1');
+    shouldBe('window.internals.touchStartOrMoveEventHandlerCount(document)', '1');
 
     // Try removing the capturing listener again.
     window.removeEventListener('touchstart', listener, true);
-    shouldBe('window.internals.touchEventHandlerCount(document)', '1');
+    shouldBe('window.internals.touchStartOrMoveEventHandlerCount(document)', '1');
     window.removeEventListener('touchmove', listener, true);
-    shouldBe('window.internals.touchEventHandlerCount(document)', '1');
+    shouldBe('window.internals.touchStartOrMoveEventHandlerCount(document)', '1');
 
     window.removeEventListener('touchstart', listener, false);
-    shouldBe('window.internals.touchEventHandlerCount(document)', '0');
+    shouldBe('window.internals.touchStartOrMoveEventHandlerCount(document)', '0');
 })();
 
 debug("Test setting touch handlers on the window.");
 (function() {
-    shouldBe('window.internals.touchEventHandlerCount(document)', '0');
+    shouldBe('window.internals.touchStartOrMoveEventHandlerCount(document)', '0');
     window.ontouchstart = function() { }
     window.ontouchmove = function() {}
     window.ontouchend = function() {}
     window.ontouchcancel = function() {}
-    shouldBe('window.internals.touchEventHandlerCount(document)', '4');
+    shouldBe('window.internals.touchStartOrMoveEventHandlerCount(document)', '2');
+    shouldBe('window.internals.touchEndOrCancelEventHandlerCount(document)', '2');
     window.ontouchstart = function() { }
-    shouldBe('window.internals.touchEventHandlerCount(document)', '4');
+    shouldBe('window.internals.touchStartOrMoveEventHandlerCount(document)', '2');
+    shouldBe('window.internals.touchEndOrCancelEventHandlerCount(document)', '2');
     window.ontouchstart = null;
-    shouldBe('window.internals.touchEventHandlerCount(document)', '3');
+    shouldBe('window.internals.touchStartOrMoveEventHandlerCount(document)', '1');
+    shouldBe('window.internals.touchEndOrCancelEventHandlerCount(document)', '2');
     window.ontouchstart = null;
-    shouldBe('window.internals.touchEventHandlerCount(document)', '3');
-    window.ontouchmove = null;
+    shouldBe('window.internals.touchStartOrMoveEventHandlerCount(document)', '1');
+    shouldBe('window.internals.touchEndOrCancelEventHandlerCount(document)', '2');
     window.ontouchend = null;
+    shouldBe('window.internals.touchStartOrMoveEventHandlerCount(document)', '1');
+    shouldBe('window.internals.touchEndOrCancelEventHandlerCount(document)', '1');
+    window.ontouchmove = null;
     window.ontouchcancel = null;
-    shouldBe('window.internals.touchEventHandlerCount(document)', '0');
+    shouldBe('window.internals.touchStartOrMoveEventHandlerCount(document)', '0');
+    shouldBe('window.internals.touchEndOrCancelEventHandlerCount(document)', '0');
 })();
 
 debug("Test addEventListener/removeEventListener on a div.");
@@ -100,48 +114,55 @@ debug("Test addEventListener/removeEventListener on a div.");
     var listener = function() { }
     var div = document.getElementById('touchtarget');
 
-    shouldBe('window.internals.touchEventHandlerCount(document)', '0');
+    shouldBe('window.internals.touchStartOrMoveEventHandlerCount(document)', '0');
     div.addEventListener('touchstart', listener, true);
-    shouldBe('window.internals.touchEventHandlerCount(document)', '1');
+    shouldBe('window.internals.touchStartOrMoveEventHandlerCount(document)', '1');
     div.addEventListener('touchmove', listener, true);
-    shouldBe('window.internals.touchEventHandlerCount(document)', '2');
+    shouldBe('window.internals.touchStartOrMoveEventHandlerCount(document)', '2');
     div.addEventListener('touchstart', listener, false);
-    shouldBe('window.internals.touchEventHandlerCount(document)', '3');
+    shouldBe('window.internals.touchStartOrMoveEventHandlerCount(document)', '3');
     div.removeEventListener('touchmove', listener, true);
-    shouldBe('window.internals.touchEventHandlerCount(document)', '2');
+    shouldBe('window.internals.touchStartOrMoveEventHandlerCount(document)', '2');
     div.removeEventListener('touchstart', listener, true);
-    shouldBe('window.internals.touchEventHandlerCount(document)', '1');
+    shouldBe('window.internals.touchStartOrMoveEventHandlerCount(document)', '1');
 
     // Try removing the capturing listener again.
     div.removeEventListener('touchstart', listener, true);
-    shouldBe('window.internals.touchEventHandlerCount(document)', '1');
+    shouldBe('window.internals.touchStartOrMoveEventHandlerCount(document)', '1');
     div.removeEventListener('touchmove', listener, true);
-    shouldBe('window.internals.touchEventHandlerCount(document)', '1');
+    shouldBe('window.internals.touchStartOrMoveEventHandlerCount(document)', '1');
 
     div.removeEventListener('touchstart', listener, false);
-    shouldBe('window.internals.touchEventHandlerCount(document)', '0');
+    shouldBe('window.internals.touchStartOrMoveEventHandlerCount(document)', '0');
 })();
 
 debug("Test setting touch handlers on a div.");
 (function() {
     var div = document.getElementById('touchtarget');
 
-    shouldBe('window.internals.touchEventHandlerCount(document)', '0');
+    shouldBe('window.internals.touchStartOrMoveEventHandlerCount(document)', '0');
     div.ontouchstart = function() { }
     div.ontouchmove = function() { }
     div.ontouchend = function() { }
     div.ontouchcancel = function() { }
-    shouldBe('window.internals.touchEventHandlerCount(document)', '4');
+    shouldBe('window.internals.touchStartOrMoveEventHandlerCount(document)', '2');
+    shouldBe('window.internals.touchEndOrCancelEventHandlerCount(document)', '2');
     div.ontouchstart = function() { }
-    shouldBe('window.internals.touchEventHandlerCount(document)', '4');
+    shouldBe('window.internals.touchStartOrMoveEventHandlerCount(document)', '2');
+    shouldBe('window.internals.touchEndOrCancelEventHandlerCount(document)', '2');
     div.ontouchstart = null;
-    shouldBe('window.internals.touchEventHandlerCount(document)', '3');
+    shouldBe('window.internals.touchStartOrMoveEventHandlerCount(document)', '1');
+    shouldBe('window.internals.touchEndOrCancelEventHandlerCount(document)', '2');
     div.ontouchstart = null;
-    shouldBe('window.internals.touchEventHandlerCount(document)', '3');
-    div.ontouchmove = null;
+    shouldBe('window.internals.touchStartOrMoveEventHandlerCount(document)', '1');
+    shouldBe('window.internals.touchEndOrCancelEventHandlerCount(document)', '2');
     div.ontouchend = null;
+    shouldBe('window.internals.touchStartOrMoveEventHandlerCount(document)', '1');
+    shouldBe('window.internals.touchEndOrCancelEventHandlerCount(document)', '1');
+    div.ontouchmove = null;
     div.ontouchcancel = null;
-    shouldBe('window.internals.touchEventHandlerCount(document)', '0');
+    shouldBe('window.internals.touchStartOrMoveEventHandlerCount(document)', '0');
+    shouldBe('window.internals.touchEndOrCancelEventHandlerCount(document)', '0');
 })();
 
 debug("Test redudant addEventListener on a div.");
@@ -149,14 +170,14 @@ debug("Test redudant addEventListener on a div.");
     var listener = function() { }
     var div = document.getElementById('touchtarget');
 
-    shouldBe('window.internals.touchEventHandlerCount(document)', '0');
+    shouldBe('window.internals.touchStartOrMoveEventHandlerCount(document)', '0');
     div.addEventListener('touchstart', listener, false);
-    shouldBe('window.internals.touchEventHandlerCount(document)', '1');
+    shouldBe('window.internals.touchStartOrMoveEventHandlerCount(document)', '1');
     div.addEventListener('touchstart', listener, false);
-    shouldBe('window.internals.touchEventHandlerCount(document)', '1');
+    shouldBe('window.internals.touchStartOrMoveEventHandlerCount(document)', '1');
 
     div.removeEventListener('touchstart', listener, false);
-    shouldBe('window.internals.touchEventHandlerCount(document)', '0');
+    shouldBe('window.internals.touchStartOrMoveEventHandlerCount(document)', '0');
 })();
 
 
@@ -166,30 +187,35 @@ debug("Test addEventListener/removeEventListener on a new div.");
     var touchtarget = document.getElementById('touchtarget');
     var listener = function() { }
 
-    shouldBe('window.internals.touchEventHandlerCount(document)', '0');
+    shouldBe('window.internals.touchStartOrMoveEventHandlerCount(document)', '0');
+    shouldBe('window.internals.touchEndOrCancelEventHandlerCount(document)', '0');
 
     div.addEventListener('touchstart', listener, true);
     div.addEventListener('touchmove', listener, true);
-    shouldBe('window.internals.touchEventHandlerCount(document)', '2');
+    shouldBe('window.internals.touchStartOrMoveEventHandlerCount(document)', '2');
+    shouldBe('window.internals.touchEndOrCancelEventHandlerCount(document)', '0');
 
     touchtarget.appendChild(div);
-    shouldBe('window.internals.touchEventHandlerCount(document)', '2');
+    shouldBe('window.internals.touchStartOrMoveEventHandlerCount(document)', '2');
+    shouldBe('window.internals.touchEndOrCancelEventHandlerCount(document)', '0');
 
     div.addEventListener('touchend', listener, true);
-    shouldBe('window.internals.touchEventHandlerCount(document)', '3');
+    shouldBe('window.internals.touchStartOrMoveEventHandlerCount(document)', '2');
+    shouldBe('window.internals.touchEndOrCancelEventHandlerCount(document)', '1');
 
     div.removeEventListener('touchstart', listener, true);
-    shouldBe('window.internals.touchEventHandlerCount(document)', '2');
+    shouldBe('window.internals.touchStartOrMoveEventHandlerCount(document)', '1');
 
     touchtarget.removeChild(div);
-    shouldBe('window.internals.touchEventHandlerCount(document)', '2');
+    shouldBe('window.internals.touchStartOrMoveEventHandlerCount(document)', '1');
 
     div.removeEventListener('touchmove', listener, false);
-    shouldBe('window.internals.touchEventHandlerCount(document)', '2');
+    shouldBe('window.internals.touchStartOrMoveEventHandlerCount(document)', '1');
 
     div.removeEventListener('touchmove', listener, true);
     div.removeEventListener('touchend', listener, true);
-    shouldBe('window.internals.touchEventHandlerCount(document)', '0');
+    shouldBe('window.internals.touchStartOrMoveEventHandlerCount(document)', '0');
+    shouldBe('window.internals.touchEndOrCancelEventHandlerCount(document)', '0');
 })();
 
 debug("Test setting touch handlers on a new div.");
@@ -197,27 +223,32 @@ debug("Test setting touch handlers on a new div.");
     var div = document.createElement('div');
     var touchtarget = document.getElementById('touchtarget');
 
-    shouldBe('window.internals.touchEventHandlerCount(document)', '0');
+    shouldBe('window.internals.touchStartOrMoveEventHandlerCount(document)', '0');
 
     div.ontouchstart = function() { }
     div.ontouchmove = function() { }
-    shouldBe('window.internals.touchEventHandlerCount(document)', '2');
+    shouldBe('window.internals.touchStartOrMoveEventHandlerCount(document)', '2');
 
     touchtarget.appendChild(div);
-    shouldBe('window.internals.touchEventHandlerCount(document)', '2');
+    shouldBe('window.internals.touchStartOrMoveEventHandlerCount(document)', '2');
+    shouldBe('window.internals.touchEndOrCancelEventHandlerCount(document)', '0');
 
     div.ontouchend = function() { }
-    shouldBe('window.internals.touchEventHandlerCount(document)', '3');
+    shouldBe('window.internals.touchStartOrMoveEventHandlerCount(document)', '2');
+    shouldBe('window.internals.touchEndOrCancelEventHandlerCount(document)', '1');
 
     div.ontouchstart = null;
-    shouldBe('window.internals.touchEventHandlerCount(document)', '2');
+    shouldBe('window.internals.touchStartOrMoveEventHandlerCount(document)', '1');
+    shouldBe('window.internals.touchEndOrCancelEventHandlerCount(document)', '1');
 
     touchtarget.removeChild(div);
-    shouldBe('window.internals.touchEventHandlerCount(document)', '2');
+    shouldBe('window.internals.touchStartOrMoveEventHandlerCount(document)', '1');
+    shouldBe('window.internals.touchEndOrCancelEventHandlerCount(document)', '1');
 
     div.ontouchend = null;
     div.ontouchmove = null;
-    shouldBe('window.internals.touchEventHandlerCount(document)', '0');
+    shouldBe('window.internals.touchStartOrMoveEventHandlerCount(document)', '0');
+    shouldBe('window.internals.touchEndOrCancelEventHandlerCount(document)', '0');
 })();
 
 var nestedDocument;
@@ -228,7 +259,8 @@ debug("Test that nested Documents' touch handlers are properly tracked in their 
     var touchtarget = document.getElementById('touchtarget');
     touchtarget.ontouchend = function() {};
 
-    shouldBe('window.internals.touchEventHandlerCount(document)', '1');
+    shouldBe('window.internals.touchStartOrMoveEventHandlerCount(document)', '0');
+    shouldBe('window.internals.touchEndOrCancelEventHandlerCount(document)', '1');
 
     touchtarget.appendChild(iframe);
 
@@ -236,25 +268,34 @@ debug("Test that nested Documents' touch handlers are properly tracked in their 
     nestedDocument.open('text/html', 'replace');
     nestedDocument.write('<!DOCTYPE html>\n<script>\nwindow.ontouchstart=function(){};\n</' + 'script>\n' +
         '<div id=twoHandlers ontouchmove="function(){}" ontouchcancel="function(){}"></div>');
-    shouldBe('window.internals.touchEventHandlerCount(nestedDocument)', '4');
-    shouldBe('window.internals.touchEventHandlerCount(document)', '4');
+    shouldBe('window.internals.touchStartOrMoveEventHandlerCount(nestedDocument)', '2');
+    shouldBe('window.internals.touchEndOrCancelEventHandlerCount(nestedDocument)', '2');
+    shouldBe('window.internals.touchStartOrMoveEventHandlerCount(document)', '2');
+    shouldBe('window.internals.touchEndOrCancelEventHandlerCount(document)', '2');
 
     nestedDocument.write('<script>window.ontouchstart=undefined</' + 'script>\n');
-    shouldBe('window.internals.touchEventHandlerCount(nestedDocument)', '3');
-    shouldBe('window.internals.touchEventHandlerCount(document)', '3');
+    shouldBe('window.internals.touchStartOrMoveEventHandlerCount(nestedDocument)', '1');
+    shouldBe('window.internals.touchEndOrCancelEventHandlerCount(nestedDocument)', '2');
+    shouldBe('window.internals.touchStartOrMoveEventHandlerCount(document)', '1');
+    shouldBe('window.internals.touchEndOrCancelEventHandlerCount(document)', '2');
 
     nestedDocument.write('<script>document.addEventListener("touchmove", function(){});</' + 'script>\n');
-    shouldBe('window.internals.touchEventHandlerCount(nestedDocument)', '4');
-    shouldBe('window.internals.touchEventHandlerCount(document)', '4');
+    shouldBe('window.internals.touchStartOrMoveEventHandlerCount(nestedDocument)', '2');
+    shouldBe('window.internals.touchEndOrCancelEventHandlerCount(nestedDocument)', '2');
+    shouldBe('window.internals.touchStartOrMoveEventHandlerCount(document)', '2');
+    shouldBe('window.internals.touchEndOrCancelEventHandlerCount(document)', '2');
     
     nestedDocument.write('<script>document.getElementById("twoHandlers").remove();</' + 'script>\n');
     gc();
-    shouldBe('window.internals.touchEventHandlerCount(nestedDocument)', '2');
-    shouldBe('window.internals.touchEventHandlerCount(document)', '2');
+    shouldBe('window.internals.touchStartOrMoveEventHandlerCount(nestedDocument)', '1');
+    shouldBe('window.internals.touchEndOrCancelEventHandlerCount(nestedDocument)', '1');
+    shouldBe('window.internals.touchStartOrMoveEventHandlerCount(document)', '1');
+    shouldBe('window.internals.touchEndOrCancelEventHandlerCount(document)', '1');
     nestedDocument.close();    
 
     touchtarget.removeChild(iframe);
-    shouldBe('window.internals.touchEventHandlerCount(document)', '1');
+    shouldBe('window.internals.touchStartOrMoveEventHandlerCount(document)', '0');
+    shouldBe('window.internals.touchEndOrCancelEventHandlerCount(document)', '1');
 })();
 </script>
 </body>

@@ -3,8 +3,8 @@ This tests ensures that an event listener on an attribute node inside a shadow D
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS window.internals.touchEventHandlerCount(document) is 1
-PASS window.internals.touchEventHandlerCount(document) is 0
+PASS window.internals.touchStartOrMoveEventHandlerCount(document) is 1
+PASS window.internals.touchStartOrMoveEventHandlerCount(document) is 0
 PASS successfullyParsed is true
 
 TEST COMPLETE

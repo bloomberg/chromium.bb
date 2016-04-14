@@ -55,6 +55,7 @@ message LayerTreeHost {
   optional uint32 next_surface_sequence = 33;
   optional uint32 wheel_event_listener_properties = 34;
   optional bool have_scroll_event_handlers = 35;
-  optional uint32 touch_event_listener_properties = 36;
+  optional uint32 touch_start_or_move_event_listener_properties = 36;
   repeated int32 layers_that_should_push_properties = 37;
+  optional uint32 touch_end_or_cancel_event_listener_properties = 38;
 }

@@ -1109,8 +1109,9 @@ void FrameLoader::commitProvisionalLoad()
         return;
 
     if (isLoadingMainFrame()) {
-        m_frame->page()->chromeClient().setEventListenerProperties(WebEventListenerClass::Touch, WebEventListenerProperties::Nothing);
+        m_frame->page()->chromeClient().setEventListenerProperties(WebEventListenerClass::TouchStartOrMove, WebEventListenerProperties::Nothing);
         m_frame->page()->chromeClient().setEventListenerProperties(WebEventListenerClass::MouseWheel, WebEventListenerProperties::Nothing);
+        m_frame->page()->chromeClient().setEventListenerProperties(WebEventListenerClass::TouchEndOrCancel, WebEventListenerProperties::Nothing);
     }
 
     client()->transitionToCommittedForNewPage();

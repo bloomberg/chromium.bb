@@ -109,8 +109,10 @@ namespace {
 
 bool hasTouchHandlers(const EventHandlerRegistry& registry)
 {
-    return registry.hasEventHandlers(EventHandlerRegistry::TouchEventBlocking)
-        || registry.hasEventHandlers(EventHandlerRegistry::TouchEventPassive);
+    return registry.hasEventHandlers(EventHandlerRegistry::TouchStartOrMoveEventBlocking)
+        || registry.hasEventHandlers(EventHandlerRegistry::TouchStartOrMoveEventPassive)
+        || registry.hasEventHandlers(EventHandlerRegistry::TouchEndOrCancelEventBlocking)
+        || registry.hasEventHandlers(EventHandlerRegistry::TouchEndOrCancelEventPassive);
 }
 
 const AtomicString& touchEventNameForTouchPointState(PlatformTouchPoint::TouchState state)

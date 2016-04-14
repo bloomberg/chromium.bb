@@ -423,9 +423,9 @@ void HTMLInputElement::updateTouchEventHandlerRegistry()
         EventHandlerRegistry& registry = document().frameHost()->eventHandlerRegistry();
         // TODO(dtapuska): Make this passive touch listener see crbug.com/584438
         if (hasTouchEventHandler)
-            registry.didAddEventHandler(*this, EventHandlerRegistry::TouchEventBlocking);
+            registry.didAddEventHandler(*this, EventHandlerRegistry::TouchStartOrMoveEventBlocking);
         else
-            registry.didRemoveEventHandler(*this, EventHandlerRegistry::TouchEventBlocking);
+            registry.didRemoveEventHandler(*this, EventHandlerRegistry::TouchStartOrMoveEventBlocking);
         m_hasTouchEventHandler = hasTouchEventHandler;
     }
 }

@@ -157,8 +157,8 @@ public:
 
     void setEventListenerProperties(WebEventListenerClass, WebEventListenerProperties) override {}
     WebEventListenerProperties eventListenerProperties(WebEventListenerClass) const override { return WebEventListenerProperties::Nothing; }
-    void setHaveScrollEventHandlers(bool) override {}
-    bool haveScrollEventHandlers() const override { return false; }
+    void setHasScrollEventHandlers(bool) override {}
+    bool hasScrollEventHandlers() const override { return false; }
 
     void setTouchAction(TouchAction) override {}
 

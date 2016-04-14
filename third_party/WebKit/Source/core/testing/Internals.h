@@ -193,7 +193,8 @@ public:
     unsigned activeDOMObjectCount(Document*);
     unsigned wheelEventHandlerCount(Document*);
     unsigned scrollEventHandlerCount(Document*);
-    unsigned touchEventHandlerCount(Document*);
+    unsigned touchStartOrMoveEventHandlerCount(Document*);
+    unsigned touchEndOrCancelEventHandlerCount(Document*);
     LayerRectList* touchEventTargetLayerRects(Document*, ExceptionState&);
 
     bool executeCommand(Document*, const String& name, const String& value, ExceptionState&);

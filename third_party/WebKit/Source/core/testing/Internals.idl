@@ -144,7 +144,8 @@
     unsigned long activeDOMObjectCount(Document document);
     unsigned long wheelEventHandlerCount(Document document);
     unsigned long scrollEventHandlerCount(Document document);
-    unsigned long touchEventHandlerCount(Document document);
+    unsigned long touchStartOrMoveEventHandlerCount(Document document);
+    unsigned long touchEndOrCancelEventHandlerCount(Document document);
     [RaisesException] LayerRectList touchEventTargetLayerRects(Document document);
 
     [RaisesException] boolean executeCommand(Document document, DOMString name, DOMString value);

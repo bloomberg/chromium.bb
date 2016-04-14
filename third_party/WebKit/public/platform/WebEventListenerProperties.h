@@ -10,8 +10,9 @@
 namespace blink {
 
 enum class WebEventListenerClass {
-    Touch, // This value includes "pointer" events.
-    MouseWheel // This value includes "wheel" and "mousewheel" events.
+    TouchStartOrMove, // This value includes "touchstart", "touchmove" and "pointer" events.
+    MouseWheel, // This value includes "wheel" and "mousewheel" events.
+    TouchEndOrCancel, // This value includes "touchend", "touchcancel" events.
 };
 
 // Indicates the variety of event listener types for a given WebEventListenerClass.

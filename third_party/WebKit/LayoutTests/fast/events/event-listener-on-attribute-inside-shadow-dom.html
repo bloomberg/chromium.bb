@@ -14,7 +14,7 @@ var shadowRoot = div2.createShadowRoot();
 // Register an event listener on an attribute node.
 div1.attributes[0].addEventListener('touchstart', function() { });
 if (window.internals)
-    shouldBe('window.internals.touchEventHandlerCount(document)', '1');
+    shouldBe('window.internals.touchStartOrMoveEventHandlerCount(document)', '1');
 
 // Move the parent element into a shadow DOM.
 shadowRoot.appendChild(div1);
@@ -25,6 +25,6 @@ doc.adoptNode(div2);
 
 // Make sure the handler was unregistered.
 if (window.internals)
-    shouldBe('window.internals.touchEventHandlerCount(document)', '0');
+    shouldBe('window.internals.touchStartOrMoveEventHandlerCount(document)', '0');
 
 </script>

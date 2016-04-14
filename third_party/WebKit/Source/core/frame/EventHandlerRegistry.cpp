@@ -16,14 +16,6 @@ namespace blink {
 
 namespace {
 
-inline bool isTouchEventType(const AtomicString& eventType)
-{
-    return eventType == EventTypeNames::touchstart
-        || eventType == EventTypeNames::touchmove
-        || eventType == EventTypeNames::touchend
-        || eventType == EventTypeNames::touchcancel;
-}
-
 inline bool isPointerEventType(const AtomicString& eventType)
 {
     return eventType == EventTypeNames::gotpointercapture
@@ -67,13 +59,15 @@ bool EventHandlerRegistry::eventTypeToClass(const AtomicString& eventType, const
         *result = ScrollEvent;
     } else if (eventType == EventTypeNames::wheel || eventType == EventTypeNames::mousewheel) {
         *result = options.passive() ? WheelEventPassive : WheelEventBlocking;
-    } else if (isTouchEventType(eventType)) {
-        *result = options.passive() ? TouchEventPassive : TouchEventBlocking;
+    } else if (eventType == EventTypeNames::touchend || eventType == EventTypeNames::touchcancel) {
+        *result = options.passive() ? TouchEndOrCancelEventPassive : TouchEndOrCancelEventBlocking;
+    } else if (eventType == EventTypeNames::touchstart || eventType == EventTypeNames::touchmove) {
+        *result = options.passive() ? TouchStartOrMoveEventPassive : TouchStartOrMoveEventBlocking;
     } else if (isPointerEventType(eventType)) {
-        // The EventHandlerClass is TouchEventPassive since the pointer events
-        // never block scrolling and the compositor only needs to know
-        // about the touch listeners.
-        *result = TouchEventPassive;
+        // The EventHandlerClass is TouchStartOrMoveEventPassive since
+        // the pointer events never block scrolling and the compositor
+        // only needs to know about the touch listeners.
+        *result = TouchStartOrMoveEventPassive;
 #if ENABLE(ASSERT)
     } else if (eventType == EventTypeNames::load || eventType == EventTypeNames::mousemove || eventType == EventTypeNames::touchstart) {
         *result = EventsForTesting;
@@ -213,15 +207,19 @@ void EventHandlerRegistry::notifyHasHandlersChanged(EventHandlerClass handlerCla
 {
     switch (handlerClass) {
     case ScrollEvent:
-        m_frameHost->chromeClient().setHaveScrollEventHandlers(hasActiveHandlers);
+        m_frameHost->chromeClient().setHasScrollEventHandlers(hasActiveHandlers);
         break;
     case WheelEventBlocking:
     case WheelEventPassive:
         m_frameHost->chromeClient().setEventListenerProperties(WebEventListenerClass::MouseWheel, webEventListenerProperties(hasEventHandlers(WheelEventBlocking), hasEventHandlers(WheelEventPassive)));
         break;
-    case TouchEventBlocking:
-    case TouchEventPassive:
-        m_frameHost->chromeClient().setEventListenerProperties(WebEventListenerClass::Touch, webEventListenerProperties(hasEventHandlers(TouchEventBlocking), hasEventHandlers(TouchEventPassive)));
+    case TouchStartOrMoveEventBlocking:
+    case TouchStartOrMoveEventPassive:
+        m_frameHost->chromeClient().setEventListenerProperties(WebEventListenerClass::TouchStartOrMove, webEventListenerProperties(hasEventHandlers(TouchStartOrMoveEventBlocking), hasEventHandlers(TouchStartOrMoveEventPassive)));
+        break;
+    case TouchEndOrCancelEventBlocking:
+    case TouchEndOrCancelEventPassive:
+        m_frameHost->chromeClient().setEventListenerProperties(WebEventListenerClass::TouchEndOrCancel, webEventListenerProperties(hasEventHandlers(TouchEndOrCancelEventBlocking), hasEventHandlers(TouchEndOrCancelEventPassive)));
         break;
 #if ENABLE(ASSERT)
     case EventsForTesting:
@@ -236,7 +234,7 @@ void EventHandlerRegistry::notifyHasHandlersChanged(EventHandlerClass handlerCla
 void EventHandlerRegistry::notifyDidAddOrRemoveEventHandlerTarget(EventHandlerClass handlerClass)
 {
     ScrollingCoordinator* scrollingCoordinator = m_frameHost->page().scrollingCoordinator();
-    if (scrollingCoordinator && handlerClass == TouchEventBlocking)
+    if (scrollingCoordinator && handlerClass == TouchStartOrMoveEventBlocking)
         scrollingCoordinator->touchEventTargetRectsDidChange();
 }
 

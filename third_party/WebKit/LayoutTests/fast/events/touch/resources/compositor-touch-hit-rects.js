@@ -136,6 +136,12 @@ if (window.internals) {
 window.onload = function() {
     // Run each general test case.
     var tests = document.querySelectorAll('.testcase');
+
+    // Add document wide touchend and touchcancel listeners and ensure the
+    // listeners do not affect compositor hit test rects.
+    document.documentElement.addEventListener('touchend', listener, false);
+    document.documentElement.addEventListener('touchcancel', listener, false);
+
     for ( var i = 0; i < tests.length; i++) {
         // Force a compositing update before testing each case to ensure that
         // any subsequent touch rect updates are actually done because of
