@@ -172,9 +172,6 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
 
   bool Init();
 
-  // Sets up mojo support in GPU process. Returns false upon failure.
-  bool SetupMojo();
-
   // Post an IPC message to the UI shim's message handler on the UI thread.
   void RouteOnUIThread(const IPC::Message& message);
 

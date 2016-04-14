@@ -8,44 +8,26 @@
 #include <string>
 
 #include "base/macros.h"
-#include "content/common/mojo/channel_init.h"
 #include "content/common/mojo/service_registry_impl.h"
-#include "ipc/ipc_platform_file.h"
-#include "mojo/public/cpp/system/message_pipe.h"
-
-namespace base {
-class SequencedTaskRunner;
-}
-
-namespace IPC {
-class Message;
-}
 
 namespace content {
 
 // MojoApplication represents the code needed to setup a child process as a
-// Mojo application via Chrome IPC. Instantiate MojoApplication and call its
-// OnMessageReceived method to give it a shot at handling Chrome IPC messages.
-// It makes the ServiceRegistry interface available.
+// Mojo application. Instantiate MojoApplication and call InitWithToken() with
+// a token passed from the process host. It makes the ServiceRegistry interface
+// available.
 class MojoApplication {
  public:
-  explicit MojoApplication(
-      scoped_refptr<base::SequencedTaskRunner> io_task_runner);
+  MojoApplication();
   virtual ~MojoApplication();
 
-  // TODO(amistry): Remove OnMessageReceived() when all bootstrapping has
-  // migrated to these functions.
-  void InitWithToken(std::string token);
-
-  bool OnMessageReceived(const IPC::Message& msg);
+  // Initializes this MojoApplicaiton with a message pipe obtained using
+  // |token|.
+  void InitWithToken(const std::string& token);
 
   ServiceRegistry* service_registry() { return &service_registry_; }
 
  private:
-  void OnActivate(const IPC::PlatformFileForTransit& file);
-
-  scoped_refptr<base::SequencedTaskRunner> io_task_runner_;
-  ChannelInit channel_init_;
   ServiceRegistryImpl service_registry_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoApplication);
