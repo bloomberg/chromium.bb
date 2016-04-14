@@ -619,7 +619,8 @@ double LocalFrame::devicePixelRatio() const
 
 PassOwnPtr<DragImage> LocalFrame::nodeImage(Node& node)
 {
-    m_view->updateLifecycleToCompositingCleanPlusScrolling();
+    // TODO(crbug.com/603230): Synchronized painting is unnecessary in this lifecycle update.
+    m_view->updateAllLifecyclePhases();
     LayoutObject* layoutObject = node.layoutObject();
     if (!layoutObject)
         return nullptr;
@@ -645,7 +646,8 @@ PassOwnPtr<DragImage> LocalFrame::dragImageForSelection(float opacity)
     if (!selection().isRange())
         return nullptr;
 
-    m_view->updateLifecycleToCompositingCleanPlusScrolling();
+    // TODO(crbug.com/603230): Synchronized painting is unnecessary in the lifecycle update.
+    m_view->updateAllLifecyclePhases();
     ASSERT(document()->isActive());
 
     FloatRect paintingRect = FloatRect(selection().bounds());

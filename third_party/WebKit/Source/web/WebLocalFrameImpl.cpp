@@ -303,7 +303,8 @@ public:
         if (!frame()->document() || !frame()->document()->layoutView())
             return 0;
 
-        frame()->view()->updateLifecycleToCompositingCleanPlusScrolling();
+        // TODO(crbug.com/603230): Synchronized painting is unnecessary in this lifecycle update.
+        frame()->view()->updateAllLifecyclePhases();
         if (!frame()->document() || !frame()->document()->layoutView())
             return 0;
 
@@ -322,8 +323,7 @@ public:
         if (!frame()->document() || !frame()->document()->layoutView())
             return;
 
-        // TODO(chrishtr): this should be updateLifecycleToCompositingCleanPlusScrolling, but
-        // for some reason it makes printing/absolute-position-headers-and-footers.html fail.
+        // TODO(crbug.com/603230): Synchronized painting is unnecessary in this lifecycle update.
         frame()->view()->updateAllLifecyclePhases();
         if (!frame()->document() || !frame()->document()->layoutView())
             return;
