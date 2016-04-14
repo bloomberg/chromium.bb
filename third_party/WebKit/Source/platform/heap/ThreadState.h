@@ -92,7 +92,7 @@ class Visitor;
 // public:
 //     Foo()
 //     {
-//         ThreadState::current()->registerPreFinalizer(dispose);
+//         ThreadState::current()->registerPreFinalizer(this);
 //     }
 // private:
 //     void dispose()
