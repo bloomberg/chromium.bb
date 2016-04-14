@@ -38,6 +38,7 @@
 #include "platform/v8_inspector/InjectedScriptSource.h"
 #include "platform/v8_inspector/InspectedContext.h"
 #include "platform/v8_inspector/RemoteObjectId.h"
+#include "platform/v8_inspector/V8Compat.h"
 #include "platform/v8_inspector/V8DebuggerImpl.h"
 #include "platform/v8_inspector/V8FunctionCall.h"
 #include "platform/v8_inspector/V8InjectedScriptHost.h"

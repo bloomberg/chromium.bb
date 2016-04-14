@@ -30,6 +30,7 @@
 
 #include "platform/v8_inspector/JavaScriptCallFrame.h"
 
+#include "platform/v8_inspector/V8Compat.h"
 #include "platform/v8_inspector/V8StringUtil.h"
 
 #include <v8-debug.h>

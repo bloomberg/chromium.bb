@@ -598,7 +598,11 @@ DebuggerScript._frameMirrorToJSCallFrame = function(frameMirror)
      */
     function contextId()
     {
-        var context = ensureFuncMirror().context();
+        var mirror = ensureFuncMirror();
+        // Old V8 do not have context() function on these objects
+        if (!mirror.context)
+            return DebuggerScript._executionContextId(mirror.script().value().context_data);
+        var context = mirror.context();
         if (context)
             return DebuggerScript._executionContextId(context.data());
         return 0;

@@ -4,6 +4,7 @@
 
 #include "platform/v8_inspector/InspectorWrapper.h"
 
+#include "platform/v8_inspector/V8Compat.h"
 #include "platform/v8_inspector/public/V8DebuggerClient.h"
 
 #include <v8-debug.h>

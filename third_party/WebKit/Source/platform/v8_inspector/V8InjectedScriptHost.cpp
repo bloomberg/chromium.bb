@@ -10,6 +10,7 @@
 #include "platform/v8_inspector/InjectedScriptHost.h"
 #include "platform/v8_inspector/InspectorWrapper.h"
 #include "platform/v8_inspector/JavaScriptCallFrame.h"
+#include "platform/v8_inspector/V8Compat.h"
 #include "platform/v8_inspector/V8DebuggerImpl.h"
 #include "platform/v8_inspector/V8StringUtil.h"
 #include "platform/v8_inspector/public/V8DebuggerClient.h"
