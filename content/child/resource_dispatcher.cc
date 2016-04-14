@@ -260,8 +260,6 @@ void ResourceDispatcher::OnReceivedData(int request_id,
     CHECK(base::SharedMemory::IsHandleValid(request_info->buffer->handle()));
     CHECK_GE(request_info->buffer_size, data_offset + data_length);
 
-    base::TimeTicks time_start = base::TimeTicks::Now();
-
     const char* data_start = static_cast<char*>(request_info->buffer->memory());
     CHECK(data_start);
     CHECK(data_start + data_offset);
@@ -281,9 +279,6 @@ void ResourceDispatcher::OnReceivedData(int request_id,
     // |data| takes care of ACKing.
     send_ack = false;
     request_info->peer->OnReceivedData(std::move(data));
-
-    UMA_HISTOGRAM_TIMES("ResourceDispatcher.OnReceivedDataTime",
-                        base::TimeTicks::Now() - time_start);
   }
 
   // Acknowledge the reception of this data.
