@@ -214,6 +214,9 @@
       'WinClang': 'win_clang_debug_bot',
       'Windows Browser (DrMemory light) (1)': 'none',
       'Windows Browser (DrMemory light) (2)': 'none',
+
+      'Linux Kitchen (kitchen_run)': 'swarming_gn_release_bot',
+      'Linux Kitchen (annotated_run)': 'swarming_gn_release_bot',
     },
 
     'chromium.gpu': {
