@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "8.61",
+  "version": "8.62",
   "entries": [
     {
       "id": 1,
@@ -1911,6 +1911,73 @@ LONG_STRING_CONST(
       },
       "features": [
         "disable_overlay_ca_layers"
+      ]
+    },
+    {
+      "id": 159,
+      "cr_bugs": [570897],
+      "description": "Framebuffer discarding can hurt performance on non-tilers",
+      "os": {
+        "type": "linux"
+      },
+      "vendor_id": "0x10de",
+      "gl_vendor": "NVIDIA.*",
+      "gl_type": "gl",
+      "features": [
+        "disable_discard_framebuffer"
+      ]
+    },
+    {
+      "id": 160,
+      "cr_bugs": [601753],
+      "description": "Framebuffer discarding not useful on NVIDIA Kepler architecture and later",
+      "os": {
+        "type": "linux"
+      },
+      "vendor_id": "0x10de",
+      "gl_vendor": "NVIDIA.*",
+      "gl_type": "gles",
+      "gl_version": {
+        "op": ">=",
+        "value": "3.0"
+      },
+      "features": [
+        "disable_discard_framebuffer"
+      ]
+    },
+    {
+      "id": 161,
+      "cr_bugs": [601753],
+      "description": "Framebuffer discarding not useful on NVIDIA Kepler architecture and later",
+      "os": {
+        "type": "chromeos"
+      },
+      "vendor_id": "0x10de",
+      "gl_vendor": "NVIDIA.*",
+      "gl_type": "gles",
+      "gl_version": {
+        "op": ">=",
+        "value": "3.0"
+      },
+      "features": [
+        "disable_discard_framebuffer"
+      ]
+    },
+    {
+      "id": 162,
+      "cr_bugs": [601753],
+      "description": "Framebuffer discarding not useful on NVIDIA Kepler architecture and later",
+      "os": {
+        "type": "android"
+      },
+      "gl_vendor": "NVIDIA.*",
+      "gl_type": "gles",
+      "gl_version": {
+        "op": ">=",
+        "value": "3.0"
+      },
+      "features": [
+        "disable_discard_framebuffer"
       ]
     }
   ]
