@@ -39,10 +39,7 @@
 #include "core/layout/line/RootInlineBox.h"
 #include "platform/geometry/FloatQuad.h"
 #include "wtf/text/CString.h"
-
-#ifndef NDEBUG
-#include <stdio.h>
-#endif
+#include <ostream> // NOLINT
 
 namespace blink {
 
@@ -142,10 +139,11 @@ std::ostream& operator<<(std::ostream& ostream, const VisiblePositionInFlatTree&
 
 void showTree(const blink::VisiblePosition* vpos)
 {
-    if (vpos)
+    if (vpos) {
         vpos->showTreeForThis();
-    else
-        fprintf(stderr, "Cannot showTree for (nil) VisiblePosition.\n");
+        return;
+    }
+    DVLOG(0) << "Cannot showTree for (nil) VisiblePosition.";
 }
 
 void showTree(const blink::VisiblePosition& vpos)
