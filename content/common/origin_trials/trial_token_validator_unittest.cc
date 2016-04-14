@@ -48,9 +48,13 @@ const uint8_t kTestPublicKey2[] = {
 // This is a good trial token, signed with the above test private key.
 // TODO(iclelland): This token expires in 2033. Update it or find a way
 // to autogenerate it before then.
+// Generate this token with the command (in tools/origin_trials):
+// generate_token.py valid.example.com Frobulate --expire-timestamp=2000000000
 const char kSampleToken[] =
-    "1|w694328Rl8l2vd96nkbAumpwvOOnvhWTj9/pfBRkvcWMDAsmiMEhZGEPzdBRy5Yao6il5qC"
-    "OyS6Ah7uuHf7JAQ==|https://valid.example.com|Frobulate|2000000000";
+    "AuR/1mg+/w5ROLN54Ok20rApK3opgR7Tq9ZfzhATQmnCa+BtPA1RRw4Nigf336r+"
+    "O4fM3Sa+MEd+5JcIgSZafw8AAABZeyJvcmlnaW4iOiAiaHR0cHM6Ly92YWxpZC5l"
+    "eGFtcGxlLmNvbTo0NDMiLCAiZmVhdHVyZSI6ICJGcm9idWxhdGUiLCAiZXhwaXJ5"
+    "IjogMjAwMDAwMDAwMH0=";
 
 // The token should be valid for this origin and for this feature.
 const char kAppropriateOrigin[] = "https://valid.example.com";
@@ -61,14 +65,21 @@ const char kInappropriateOrigin[] = "https://invalid.example.com";
 const char kInsecureOrigin[] = "http://valid.example.com";
 
 // Well-formed trial token with an invalid signature.
+// This token is a corruption of the above valid token.
 const char kInvalidSignatureToken[] =
-    "1|CO8hDne98QeFeOJ0DbRZCBN3uE0nyaPgaLlkYhSWnbRoDfEAg+TXELaYfQPfEvKYFauBg/h"
-    "nxmba765hz0mXMc==|https://valid.example.com|Frobulate|2000000000";
+    "AuR/1mg+/w5ROLN54Ok20rApK3opgR7Tq9ZfzhATQmnCa+BtPA1RRw4Nigf336r+"
+    "RrOtlAwa0gPqqn+A8GTD3AQAAABZeyJvcmlnaW4iOiAiaHR0cHM6Ly92YWxpZC5l"
+    "eGFtcGxlLmNvbTo0NDMiLCAiZmVhdHVyZSI6ICJGcm9idWxhdGUiLCAiZXhwaXJ5"
+    "IjogMjAwMDAwMDAwMH0=";
 
 // Well-formed, but expired, trial token. (Expired in 2001)
+// Generate this token with the command (in tools/origin_trials):
+// generate_token.py valid.example.com Frobulate --expire-timestamp=1000000000
 const char kExpiredToken[] =
-    "1|Vtzq/H0qMxsMXPThIgGEvI13d3Fd8K3W11/0E+FrJJXqBpx6n/dFkeFkEUsPaP3KeT8PCPF"
-    "1zpZ7kVgWYRLpAA==|https://valid.example.com|Frobulate|1000000000";
+    "AmHPUIXMaXe9jWW8kJeDFXolVjT93p4XMnK4+jMYd2pjqtFcYB1bUmdD8PunQKM+"
+    "RrOtlAwa0gPqqn+A8GTD3AQAAABZeyJvcmlnaW4iOiAiaHR0cHM6Ly92YWxpZC5l"
+    "eGFtcGxlLmNvbTo0NDMiLCAiZmVhdHVyZSI6ICJGcm9idWxhdGUiLCAiZXhwaXJ5"
+    "IjogMTAwMDAwMDAwMH0=";
 
 const char kUnparsableToken[] = "abcde";
 

@@ -3,7 +3,10 @@
 <!-- TODO(iclelland): Generate this sample token during the build. The token
   below will expire in 2033, but it would be better to always have a token which
   is guaranteed to be valid when the tests are run. -->
-<meta http-equiv="origin-trial" content="1|ak4CUgJ69tforMyzN7lgxhWaaIny/lGqtLjIqJjMXBA2b8lqul1KhyyLmKZ38+tJnZDLXZmQUn5ZjMFE/SmNDw==|https://invalid.example.com|Frobulate|2000000000" />
+<!-- Generate this token with the command:
+generate_token.py invalid.example.com Frobulate -expire-timestamp=2000000000
+-->
+<meta http-equiv="origin-trial" content="AqIqd5EqkNMJncc7Klowr3EI/hk7Aw8VecWqlGxZN145I+d1A4nUu7QeN8bj0zjpMhTbNHoESXE4Ec+pTECLQgUAAABbeyJvcmlnaW4iOiAiaHR0cHM6Ly9pbnZhbGlkLmV4YW1wbGUuY29tOjQ0MyIsICJmZWF0dXJlIjogIkZyb2J1bGF0ZSIsICJleHBpcnkiOiAyMDAwMDAwMDAwfQ==" />
 <title>Test Sample API when token is present for a different origin</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharness-helpers.js"></script>

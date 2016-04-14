@@ -49,14 +49,14 @@ const uint8_t kTestPublicKey2[] = {
 };
 
 // This is a good trial token, signed with the above test private key.
+// Generate this token with the command (in tools/origin_trials):
+// generate_token.py valid.example.com Frobulate --expire-timestamp=1458766277
 const char* kSampleToken =
-    "1|UsEO0cNxoUtBnHDJdGPWTlXuLENjXcEIPL7Bs7sbvicPCcvAtyqhQuTJ9h/u1R3VZpWigtI+"
-    "SdUwk7Dyk/qbDw==|https://valid.example.com|Frobulate|1458766277";
-const uint8_t kExpectedVersion = 1;
-const char* kExpectedSignature =
-    "UsEO0cNxoUtBnHDJdGPWTlXuLENjXcEIPL7Bs7sbvicPCcvAtyqhQuTJ9h/u1R3VZpWigtI+S"
-    "dUwk7Dyk/qbDw==";
-const char* kExpectedData = "https://valid.example.com|Frobulate|1458766277";
+    "Ap+Q/Qm0ELadZql+dlEGSwnAVsFZKgCEtUZg8idQC3uekkIeSZIY1tftoYdrwhqj"
+    "7FO5L22sNvkZZnacLvmfNwsAAABZeyJvcmlnaW4iOiAiaHR0cHM6Ly92YWxpZC5l"
+    "eGFtcGxlLmNvbTo0NDMiLCAiZmVhdHVyZSI6ICJGcm9idWxhdGUiLCAiZXhwaXJ5"
+    "IjogMTQ1ODc2NjI3N30=";
+
 const char* kExpectedFeatureName = "Frobulate";
 const char* kExpectedOrigin = "https://valid.example.com";
 const uint64_t kExpectedExpiry = 1458766277;
@@ -75,49 +75,76 @@ double kInvalidTimestamp = 1458766278.0;
 
 // Well-formed trial token with an invalid signature.
 const char* kInvalidSignatureToken =
-    "1|CO8hDne98QeFeOJ0DbRZCBN3uE0nyaPgaLlkYhSWnbRoDfEAg+TXELaYfQPfEvKYFauBg/"
-    "hnxmba765hz0mXMc==|https://valid.example.com|Frobulate|1458766277";
+    "AYeNXSDktgG9p4ns5B1WKsLq2TytMxfR4whfbi+oyT0rXyzh+qXYfxbDMGmyjU2Z"
+    "lEJ16vQObMXJoOaYUqd8xwkAAABZeyJvcmlnaW4iOiAiaHR0cHM6Ly92YWxpZC5l"
+    "eGFtcGxlLmNvbTo0NDMiLCAiZmVhdHVyZSI6ICJGcm9idWxhdGUiLCAiZXhwaXJ5"
+    "IjogMTQ1ODc2NjI3N30=";
+
+// Trial token truncated in the middle of the length field; too short to
+// possibly be valid.
+const char kTruncatedToken[] =
+    "Ap+Q/Qm0ELadZql+dlEGSwnAVsFZKgCEtUZg8idQC3uekkIeSZIY1tftoYdrwhqj"
+    "7FO5L22sNvkZZnacLvmfNwsA";
+
+// Trial token with an incorrectly-declared length, but with a valid signature.
+const char kIncorrectLengthToken[] =
+    "Ao06eNl/CZuM88qurWKX4RfoVEpHcVHWxdOTrEXZkaC1GUHyb/8L4sthADiVWdc9"
+    "kXFyF1BW5bbraqp6MBVr3wEAAABaeyJvcmlnaW4iOiAiaHR0cHM6Ly92YWxpZC5l"
+    "eGFtcGxlLmNvbTo0NDMiLCAiZmVhdHVyZSI6ICJGcm9idWxhdGUiLCAiZXhwaXJ5"
+    "IjogMTQ1ODc2NjI3N30=";
+
+// Trial token with a misidentified version (42).
+const char kIncorrectVersionToken[] =
+    "KlH8wVLT5o59uDvlJESorMDjzgWnvG1hmIn/GiT9Ng3f45ratVeiXCNTeaJheOaG"
+    "A6kX4ir4Amv8aHVC+OJHZQkAAABZeyJvcmlnaW4iOiAiaHR0cHM6Ly92YWxpZC5l"
+    "eGFtcGxlLmNvbTo0NDMiLCAiZmVhdHVyZSI6ICJGcm9idWxhdGUiLCAiZXhwaXJ5"
+    "IjogMTQ1ODc2NjI3N30=";
+
+const char kSampleTokenJSON[] =
+    "{\"origin\": \"https://valid.example.com:443\", \"feature\": "
+    "\"Frobulate\", \"expiry\": 1458766277}";
 
 // Various ill-formed trial tokens. These should all fail to parse.
 const char* kInvalidTokens[] = {
-    // Invalid - only one part
+    // Invalid - Not JSON at all
     "abcde",
-    // Not enough parts
-    "https://valid.example.com|FeatureName|1458766277",
-    "Signature|https://valid.example.com|FeatureName|1458766277",
-    // Non-numeric version
-    "a|Signature|https://valid.example.com|FeatureName|1458766277",
-    "1x|Signature|https://valid.example.com|FeatureName|1458766277",
-    // Unsupported version (< min, > max, negative, overflow)
-    "0|Signature|https://valid.example.com|FeatureName|1458766277",
-    "2|Signature|https://valid.example.com|FeatureName|1458766277",
-    "-1|Signature|https://valid.example.com|FeatureName|1458766277",
-    "99999|Signature|https://valid.example.com|FeatureName|1458766277",
-    // Delimiter in feature name
-    "1|Signature|https://valid.example.com|Feature|Name|1458766277",
-    // Extra string field
-    "1|Signature|https://valid.example.com|FeatureName|1458766277|ExtraField",
-    // Extra numeric field
-    "1|Signature|https://valid.example.com|FeatureName|1458766277|1458766277",
-    // Non-numeric expiry timestamp
-    "1|Signature|https://valid.example.com|FeatureName|abcdefghij",
-    "1|Signature|https://valid.example.com|FeatureName|1458766277x",
+    // Invalid JSON
+    "{",
+    // Not an object
+    "\"abcde\"",
+    "123.4",
+    "[0, 1, 2]",
+    // Missing keys
+    "{}",
+    "{\"something\": 1}",
+    "{\"origin\": \"https://a.a\"}",
+    "{\"origin\": \"https://a.a\", \"feature\": \"a\"}"
+    "{\"origin\": \"https://a.a\", \"expiry\": 1458766277}",
+    "{\"feature\": \"FeatureName\", \"expiry\": 1458766277}",
+    // Incorrect types
+    "{\"origin\": 1, \"feature\": \"a\", \"expiry\": 1458766277}",
+    "{\"origin\": \"https://a.a\", \"feature\": 1, \"expiry\": 1458766277}",
+    "{\"origin\": \"https://a.a\", \"feature\": \"a\", \"expiry\": \"1\"}",
     // Negative expiry timestamp
-    "1|Signature|https://valid.example.com|FeatureName|-1458766277",
+    "{\"origin\": \"https://a.a\", \"feature\": \"a\", \"expiry\": -1}",
     // Origin not a proper origin URL
-    "1|Signature|abcdef|FeatureName|1458766277",
-    "1|Signature|data:text/plain,abcdef|FeatureName|1458766277",
-    "1|Signature|javascript:alert(1)|FeatureName|1458766277"};
-const size_t kNumInvalidTokens = arraysize(kInvalidTokens);
+    "{\"origin\": \"abcdef\", \"feature\": \"a\", \"expiry\": 1458766277}",
+    "{\"origin\": \"data:text/plain,abcdef\", \"feature\": \"a\", \"expiry\": "
+    "1458766277}",
+    "{\"origin\": \"javascript:alert(1)\", \"feature\": \"a\", \"expiry\": "
+    "1458766277}"};
 
 }  // namespace
 
-class TrialTokenTest : public testing::Test {
+class TrialTokenTest : public testing::TestWithParam<const char*> {
  public:
   TrialTokenTest()
       : expected_origin_(GURL(kExpectedOrigin)),
         invalid_origin_(GURL(kInvalidOrigin)),
         insecure_origin_(GURL(kInsecureOrigin)),
+        expected_expiry_(base::Time::FromDoubleT(kExpectedExpiry)),
+        valid_timestamp_(base::Time::FromDoubleT(kValidTimestamp)),
+        invalid_timestamp_(base::Time::FromDoubleT(kInvalidTimestamp)),
         correct_public_key_(
             base::StringPiece(reinterpret_cast<const char*>(kTestPublicKey),
                               arraysize(kTestPublicKey))),
@@ -126,6 +153,14 @@ class TrialTokenTest : public testing::Test {
                               arraysize(kTestPublicKey2))) {}
 
  protected:
+  std::unique_ptr<std::string> Extract(const std::string& token_text,
+                                       base::StringPiece public_key) {
+    return TrialToken::Extract(token_text, public_key);
+  }
+  std::unique_ptr<TrialToken> Parse(const std::string& token_payload) {
+    return TrialToken::Parse(token_payload);
+  }
+
   bool ValidateOrigin(TrialToken* token, const url::Origin origin) {
     return token->ValidateOrigin(origin);
   }
@@ -138,11 +173,6 @@ class TrialTokenTest : public testing::Test {
     return token->ValidateDate(now);
   }
 
-  bool ValidateSignature(TrialToken* token,
-                         const base::StringPiece& public_key) {
-    return token->ValidateSignature(public_key);
-  }
-
   base::StringPiece correct_public_key() { return correct_public_key_; }
   base::StringPiece incorrect_public_key() { return incorrect_public_key_; }
 
@@ -150,38 +180,88 @@ class TrialTokenTest : public testing::Test {
   const url::Origin invalid_origin_;
   const url::Origin insecure_origin_;
 
+  const base::Time expected_expiry_;
+  const base::Time valid_timestamp_;
+  const base::Time invalid_timestamp_;
+
  private:
   base::StringPiece correct_public_key_;
   base::StringPiece incorrect_public_key_;
 };
 
+// Test the extraction of the signed payload from token strings. This includes
+// checking the included version identifier, payload length, and cryptographic
+// signature.
+
+// Test verification of signature and extraction of token JSON from signed
+// token.
+TEST_F(TrialTokenTest, ValidateValidSignature) {
+  std::unique_ptr<std::string> token_payload =
+      Extract(kSampleToken, correct_public_key());
+  ASSERT_TRUE(token_payload);
+  EXPECT_STREQ(kSampleTokenJSON, token_payload.get()->c_str());
+}
+
+TEST_F(TrialTokenTest, ValidateInvalidSignature) {
+  std::unique_ptr<std::string> token_payload =
+      Extract(kInvalidSignatureToken, correct_public_key());
+  ASSERT_FALSE(token_payload);
+}
+
+TEST_F(TrialTokenTest, ValidateSignatureWithIncorrectKey) {
+  std::unique_ptr<std::string> token_payload =
+      Extract(kSampleToken, incorrect_public_key());
+  ASSERT_FALSE(token_payload);
+}
+
+TEST_F(TrialTokenTest, ValidateEmptyToken) {
+  std::unique_ptr<std::string> token_payload =
+      Extract("", correct_public_key());
+  ASSERT_FALSE(token_payload);
+}
+
+TEST_F(TrialTokenTest, ValidateShortToken) {
+  std::unique_ptr<std::string> token_payload =
+      Extract(kTruncatedToken, correct_public_key());
+  ASSERT_FALSE(token_payload);
+}
+
+TEST_F(TrialTokenTest, ValidateUnsupportedVersion) {
+  std::unique_ptr<std::string> token_payload =
+      Extract(kIncorrectVersionToken, correct_public_key());
+  ASSERT_FALSE(token_payload);
+}
+
+TEST_F(TrialTokenTest, ValidateSignatureWithIncorrectLength) {
+  std::unique_ptr<std::string> token_payload =
+      Extract(kIncorrectLengthToken, correct_public_key());
+  ASSERT_FALSE(token_payload);
+}
+
+// Test parsing of fields from JSON token.
+
 TEST_F(TrialTokenTest, ParseEmptyString) {
-  std::unique_ptr<TrialToken> empty_token = TrialToken::Parse("");
+  std::unique_ptr<TrialToken> empty_token = Parse("");
   EXPECT_FALSE(empty_token);
 }
 
-TEST_F(TrialTokenTest, ParseInvalidStrings) {
-  for (size_t i = 0; i < kNumInvalidTokens; ++i) {
-    std::unique_ptr<TrialToken> empty_token =
-        TrialToken::Parse(kInvalidTokens[i]);
-    EXPECT_FALSE(empty_token) << "Invalid trial token should not parse: "
-                              << kInvalidTokens[i];
-  }
+TEST_P(TrialTokenTest, ParseInvalidString) {
+  std::unique_ptr<TrialToken> empty_token = Parse(GetParam());
+  EXPECT_FALSE(empty_token) << "Invalid trial token should not parse.";
 }
 
+INSTANTIATE_TEST_CASE_P(, TrialTokenTest, ::testing::ValuesIn(kInvalidTokens));
+
 TEST_F(TrialTokenTest, ParseValidToken) {
-  std::unique_ptr<TrialToken> token = TrialToken::Parse(kSampleToken);
+  std::unique_ptr<TrialToken> token = Parse(kSampleTokenJSON);
   ASSERT_TRUE(token);
-  EXPECT_EQ(kExpectedVersion, token->version());
   EXPECT_EQ(kExpectedFeatureName, token->feature_name());
-  EXPECT_EQ(kExpectedSignature, token->signature());
-  EXPECT_EQ(kExpectedData, token->data());
   EXPECT_EQ(expected_origin_, token->origin());
-  EXPECT_EQ(base::Time::FromDoubleT(kExpectedExpiry), token->expiry_time());
+  EXPECT_EQ(expected_expiry_, token->expiry_time());
 }
 
 TEST_F(TrialTokenTest, ValidateValidToken) {
-  std::unique_ptr<TrialToken> token = TrialToken::Parse(kSampleToken);
+  std::unique_ptr<TrialToken> token = Parse(kSampleTokenJSON);
   ASSERT_TRUE(token);
   EXPECT_TRUE(ValidateOrigin(token.get(), expected_origin_));
   EXPECT_FALSE(ValidateOrigin(token.get(), invalid_origin_));
@@ -192,54 +272,29 @@ TEST_F(TrialTokenTest, ValidateValidToken) {
       token.get(), base::ToUpperASCII(kExpectedFeatureName).c_str()));
   EXPECT_FALSE(ValidateFeatureName(
       token.get(), base::ToLowerASCII(kExpectedFeatureName).c_str()));
-  EXPECT_TRUE(
-      ValidateDate(token.get(), base::Time::FromDoubleT(kValidTimestamp)));
-  EXPECT_FALSE(
-      ValidateDate(token.get(), base::Time::FromDoubleT(kInvalidTimestamp)));
+  EXPECT_TRUE(ValidateDate(token.get(), valid_timestamp_));
+  EXPECT_FALSE(ValidateDate(token.get(), invalid_timestamp_));
 }
 
-TEST_F(TrialTokenTest, TokenIsAppropriateForOriginAndFeature) {
-  std::unique_ptr<TrialToken> token = TrialToken::Parse(kSampleToken);
+TEST_F(TrialTokenTest, TokenIsValidForFeature) {
+  std::unique_ptr<TrialToken> token = Parse(kSampleTokenJSON);
   ASSERT_TRUE(token);
-  EXPECT_TRUE(token->IsAppropriate(expected_origin_, kExpectedFeatureName));
-  EXPECT_FALSE(token->IsAppropriate(expected_origin_,
-                                    base::ToUpperASCII(kExpectedFeatureName)));
-  EXPECT_FALSE(token->IsAppropriate(expected_origin_,
-                                    base::ToLowerASCII(kExpectedFeatureName)));
-  EXPECT_FALSE(token->IsAppropriate(invalid_origin_, kExpectedFeatureName));
-  EXPECT_FALSE(token->IsAppropriate(insecure_origin_, kExpectedFeatureName));
-  EXPECT_FALSE(token->IsAppropriate(expected_origin_, kInvalidFeatureName));
-}
-
-TEST_F(TrialTokenTest, ValidateValidSignature) {
-  std::unique_ptr<TrialToken> token = TrialToken::Parse(kSampleToken);
-  ASSERT_TRUE(token);
-  EXPECT_TRUE(ValidateSignature(token.get(), correct_public_key()));
-}
-
-TEST_F(TrialTokenTest, ValidateInvalidSignature) {
-  std::unique_ptr<TrialToken> token = TrialToken::Parse(kInvalidSignatureToken);
-  ASSERT_TRUE(token);
-  EXPECT_FALSE(ValidateSignature(token.get(), correct_public_key()));
-}
-
-TEST_F(TrialTokenTest, ValidateTokenWithCorrectKey) {
-  std::unique_ptr<TrialToken> token = TrialToken::Parse(kSampleToken);
-  ASSERT_TRUE(token);
-  EXPECT_TRUE(token->IsValid(base::Time::FromDoubleT(kValidTimestamp),
-                             correct_public_key()));
-}
-
-TEST_F(TrialTokenTest, ValidateSignatureWithIncorrectKey) {
-  std::unique_ptr<TrialToken> token = TrialToken::Parse(kSampleToken);
-  ASSERT_TRUE(token);
-  EXPECT_FALSE(token->IsValid(base::Time::FromDoubleT(kValidTimestamp),
-                              incorrect_public_key()));
-}
-
-TEST_F(TrialTokenTest, ValidateWhenNotExpired) {
-  std::unique_ptr<TrialToken> token = TrialToken::Parse(kSampleToken);
-  ASSERT_TRUE(token);
+  EXPECT_TRUE(token->IsValidForFeature(expected_origin_, kExpectedFeatureName,
+                                       valid_timestamp_));
+  EXPECT_FALSE(token->IsValidForFeature(
+      expected_origin_, base::ToUpperASCII(kExpectedFeatureName),
+      valid_timestamp_));
+  EXPECT_FALSE(token->IsValidForFeature(
+      expected_origin_, base::ToLowerASCII(kExpectedFeatureName),
+      valid_timestamp_));
+  EXPECT_FALSE(token->IsValidForFeature(invalid_origin_, kExpectedFeatureName,
+                                        valid_timestamp_));
+  EXPECT_FALSE(token->IsValidForFeature(insecure_origin_, kExpectedFeatureName,
+                                        valid_timestamp_));
+  EXPECT_FALSE(token->IsValidForFeature(expected_origin_, kInvalidFeatureName,
+                                        valid_timestamp_));
+  EXPECT_FALSE(token->IsValidForFeature(expected_origin_, kExpectedFeatureName,
+                                        invalid_timestamp_));
 }
 
 }  // namespace content

@@ -14,8 +14,10 @@ Run "generate_token.py -h" for more help on usage.
 """
 import argparse
 import base64
+import json
 import re
 import os
+import struct
 import sys
 import time
 import urlparse
@@ -28,6 +30,9 @@ import ed25519
 # Matches a valid DNS name label (alphanumeric plus hyphens, except at the ends,
 # no longer than 63 ASCII characters)
 DNS_LABEL_REGEX = re.compile(r"^(?!-)[a-z\d-]{1,63}(?<!-)$", re.IGNORECASE)
+
+# This script generates Version 2 tokens.
+VERSION = "\x02"
 
 def HostnameFromArg(arg):
   """Determines whether a string represents a valid hostname.
@@ -75,13 +80,19 @@ def ExpiryFromArgs(args):
   return (int(time.time()) + (int(args.expire_days) * 86400))
 
 def GenerateTokenData(origin, api_name, expiry):
-  return "{0}|{1}|{2}".format(origin, api_name, expiry)
+  return json.dumps({"origin": origin,
+                     "feature": api_name,
+                     "expiry": expiry}).encode('utf-8')
+
+def GenerateDataToSign(version, data):
+  return version + struct.pack(">I",len(data)) + data
 
 def Sign(private_key, data):
   return ed25519.signature(data, private_key[:32], private_key[32:])
 
 def FormatToken(version, signature, data):
-  return version + "|" + base64.b64encode(signature) + "|" + data
+  return base64.b64encode(version + signature +
+                          struct.pack(">I",len(data)) + data)
 
 def main():
   parser = argparse.ArgumentParser(
@@ -123,11 +134,12 @@ def main():
     sys.exit(1)
 
   token_data = GenerateTokenData(args.origin, args.trial_name, expiry)
-  signature = Sign(private_key, token_data)
+  data_to_sign = GenerateDataToSign(VERSION, token_data)
+  signature = Sign(private_key, data_to_sign)
 
   # Verify that that the signature is correct before printing it.
   try:
-    ed25519.checkvalid(signature, token_data, private_key[32:])
+    ed25519.checkvalid(signature, data_to_sign, private_key[32:])
   except Exception, exc:
     print "There was an error generating the signature."
     print "(The original error was: %s)" % exc
@@ -135,7 +147,7 @@ def main():
 
   # Output a properly-formatted token. Version 1 is hard-coded, as it is
   # the only defined token version.
-  print FormatToken("1", signature, token_data)
+  print FormatToken(VERSION, signature, token_data)
 
 if __name__ == "__main__":
   main()

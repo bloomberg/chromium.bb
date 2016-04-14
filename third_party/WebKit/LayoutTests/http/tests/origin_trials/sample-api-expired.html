@@ -4,7 +4,10 @@
   below has a valid signature for the current signing key, but it would be
   better to always have a token which is guaranteed to be valid when the tests
   are run. -->
-<meta http-equiv="origin-trial" content="1|W5OpLTgzFacJn++BqWVqbeyfxdbimq4hqMg65lHYlmod6ZB2Jl5pfNWlHtRJBOl88/paQB5wqWq5e3z870tfCw==|http://127.0.0.1:8000|Frobulate|1000000000" />
+<!-- Generate this token with the command:
+generate_token.py http://127.0.0.1:8000 Frobulate -expire-timestamp=1000000000
+-->
+<meta http-equiv="origin-trial" content="AtA29m1y4Qfx7TACfDcePevArXCxKUObQS+TTb2bOi5YumkWgcWB5O0MasQU4cY4qZXXAQmbMBf7OtBh6qI2qA4AAABReyJvcmlnaW4iOiAiaHR0cDovLzEyNy4wLjAuMTo4MDAwIiwgImZlYXR1cmUiOiAiRnJvYnVsYXRlIiwgImV4cGlyeSI6IDEwMDAwMDAwMDB9" />
 <title>Test Sample API when trial has expired</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharness-helpers.js"></script>

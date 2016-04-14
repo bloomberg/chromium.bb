@@ -12,17 +12,19 @@ namespace content {
 
 bool TrialTokenValidator::ValidateToken(const std::string& token,
                                         const url::Origin& origin,
-                                        base::StringPiece featureName) {
-  std::unique_ptr<TrialToken> trial_token = TrialToken::Parse(token);
-
+                                        base::StringPiece feature_name) {
   // TODO(iclelland): Allow for multiple signing keys, and iterate over all
   // active keys here. https://crbug.com/543220
   ContentClient* content_client = GetContentClient();
   base::StringPiece public_key = content_client->GetOriginTrialPublicKey();
+  if (public_key.empty()) {
+    return false;
+  }
+  std::unique_ptr<TrialToken> trial_token = TrialToken::From(token, public_key);
 
-  return !public_key.empty() && trial_token &&
-         trial_token->IsAppropriate(origin, featureName) &&
-         trial_token->IsValid(base::Time::Now(), public_key);
+  return trial_token &&
+         trial_token->IsValidForFeature(origin, feature_name,
+                                        base::Time::Now());
 }
 
 }  // namespace content

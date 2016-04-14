@@ -17,7 +17,7 @@ namespace TrialTokenValidator {
 // This method is thread-safe.
 CONTENT_EXPORT bool ValidateToken(const std::string& token,
                                   const url::Origin& origin,
-                                  base::StringPiece featureName);
+                                  base::StringPiece feature_name);
 
 }  // namespace TrialTokenValidator
 

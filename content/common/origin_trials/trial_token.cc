@@ -9,13 +9,13 @@
 #include <vector>
 
 #include "base/base64.h"
+#include "base/big_endian.h"
+#include "base/json/json_reader.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/strings/string_split.h"
-#include "base/strings/string_util.h"
-#include "base/strings/utf_string_conversions.h"
+#include "base/strings/string_piece.h"
 #include "base/time/time.h"
+#include "base/values.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -23,84 +23,133 @@ namespace content {
 
 namespace {
 
-// Version 1 is the only token version currently supported
-const uint8_t kVersion1 = 1;
+// Version is a 1-byte field at offset 0.
+const size_t kVersionOffset = 0;
+const size_t kVersionSize = 1;
 
-const char kFieldSeparator[] = "|";
+// These constants define the Version 2 field sizes and offsets.
+const size_t kSignatureOffset = kVersionOffset + kVersionSize;
+const size_t kSignatureSize = 64;
+const size_t kPayloadLengthOffset = kSignatureOffset + kSignatureSize;
+const size_t kPayloadLengthSize = 4;
+const size_t kPayloadOffset = kPayloadLengthOffset + kPayloadLengthSize;
+
+// Version 2 is the only token version currently supported. Version 1 was
+// introduced in Chrome M50, and removed in M51. There were no experiments
+// enabled in the stable M50 release which would have used those tokens.
+const uint8_t kVersion2 = 2;
 
 }  // namespace
 
 TrialToken::~TrialToken() {}
 
-std::unique_ptr<TrialToken> TrialToken::Parse(const std::string& token_text) {
-  if (token_text.empty()) {
+// static
+std::unique_ptr<TrialToken> TrialToken::From(const std::string& token_text,
+                                             base::StringPiece public_key) {
+  std::unique_ptr<std::string> token_payload = Extract(token_text, public_key);
+  if (!token_payload) {
+    return nullptr;
+  }
+  return Parse(*token_payload);
+}
+
+bool TrialToken::IsValidForFeature(const url::Origin& origin,
+                                   base::StringPiece feature_name,
+                                   const base::Time& now) const {
+  return ValidateOrigin(origin) && ValidateFeatureName(feature_name) &&
+         ValidateDate(now);
+}
+
+std::unique_ptr<std::string> TrialToken::Extract(
+    const std::string& token_payload,
+    base::StringPiece public_key) {
+  if (token_payload.empty()) {
     return nullptr;
   }
 
-  // Extract the version from the token. The version must be the first part of
-  // the token, separated from the remainder, as:
-  // version|<version-specific contents>
-  size_t version_end = token_text.find(kFieldSeparator);
-  if (version_end == std::string::npos) {
+  // Token is base64-encoded; decode first.
+  std::string token_contents;
+  if (!base::Base64Decode(token_payload, &token_contents)) {
     return nullptr;
   }
 
-  std::string version_string = token_text.substr(0, version_end);
-  unsigned int version = 0;
-  if (!base::StringToUint(version_string, &version) || version > UINT8_MAX) {
+  // Only version 2 currently supported.
+  if (token_contents.length() < (kVersionOffset + kVersionSize)) {
+    return nullptr;
+  }
+  uint8_t version = token_contents[kVersionOffset];
+  if (version != kVersion2) {
     return nullptr;
   }
 
-  // Only version 1 currently supported
-  if (version != kVersion1) {
+  // Token must be large enough to contain a version, signature, and payload
+  // length.
+  if (token_contents.length() < (kPayloadLengthOffset + kPayloadLengthSize)) {
     return nullptr;
   }
 
-  // Extract the version-specific contents of the token
-  std::string token_contents = token_text.substr(version_end + 1);
+  // Extract the length of the signed data (Big-endian).
+  uint32_t payload_length;
+  base::ReadBigEndian(&(token_contents[kPayloadLengthOffset]), &payload_length);
 
-  // The contents of a valid version 1 token should resemble:
-  // signature|origin|feature_name|expiry_timestamp
-  std::vector<std::string> parts =
-      SplitString(token_contents, kFieldSeparator, base::KEEP_WHITESPACE,
-                  base::SPLIT_WANT_ALL);
-  if (parts.size() != 4) {
+  // Validate that the stated length matches the actual payload length.
+  if (payload_length != token_contents.length() - kPayloadOffset) {
     return nullptr;
   }
 
-  const std::string& signature = parts[0];
-  const std::string& origin_string = parts[1];
-  const std::string& feature_name = parts[2];
-  const std::string& expiry_string = parts[3];
+  // Extract the version-specific contents of the token.
+  const char* token_bytes = token_contents.data();
+  base::StringPiece version_piece(token_bytes + kVersionOffset, kVersionSize);
+  base::StringPiece signature(token_bytes + kSignatureOffset, kSignatureSize);
+  base::StringPiece payload_piece(token_bytes + kPayloadLengthOffset,
+                                  kPayloadLengthSize + payload_length);
 
-  uint64_t expiry_timestamp;
-  if (!base::StringToUint64(expiry_string, &expiry_timestamp)) {
+  // The data which is covered by the signature is (version + length + payload).
+  std::string signed_data =
+      version_piece.as_string() + payload_piece.as_string();
+
+  // Validate the signature on the data before proceeding.
+  if (!TrialToken::ValidateSignature(signature, signed_data, public_key)) {
     return nullptr;
   }
 
-  // Ensure that the origin is a valid (non-unique) origin URL
+  // Return just the payload, as a new string.
+  return base::WrapUnique(
+      new std::string(token_contents, kPayloadOffset, payload_length));
+}
+
+std::unique_ptr<TrialToken> TrialToken::Parse(const std::string& token_json) {
+  std::unique_ptr<base::DictionaryValue> datadict =
+      base::DictionaryValue::From(base::JSONReader::Read(token_json));
+  if (!datadict) {
+    return nullptr;
+  }
+
+  std::string origin_string;
+  std::string feature_name;
+  int expiry_timestamp = 0;
+  datadict->GetString("origin", &origin_string);
+  datadict->GetString("feature", &feature_name);
+  datadict->GetInteger("expiry", &expiry_timestamp);
+
+  // Ensure that the origin is a valid (non-unique) origin URL.
   url::Origin origin = url::Origin(GURL(origin_string));
   if (origin.unique()) {
     return nullptr;
   }
 
-  // Signed data is (origin + "|" + feature_name + "|" + expiry).
-  std::string data = token_contents.substr(signature.length() + 1);
+  // Ensure that the feature name is a valid string.
+  if (feature_name.empty()) {
+    return nullptr;
+  }
 
-  return base::WrapUnique(new TrialToken(version, signature, data, origin,
-                                         feature_name, expiry_timestamp));
-}
+  // Ensure that the expiry timestamp is a valid (positive) integer.
+  if (expiry_timestamp <= 0) {
+    return nullptr;
+  }
 
-bool TrialToken::IsAppropriate(const url::Origin& origin,
-                               base::StringPiece feature_name) const {
-  return ValidateOrigin(origin) && ValidateFeatureName(feature_name);
-}
-
-bool TrialToken::IsValid(const base::Time& now,
-                         base::StringPiece public_key) const {
-  // TODO(iclelland): Allow for multiple signing keys, and iterate over all
-  // active keys here. https://crbug.com/543220
-  return ValidateDate(now) && ValidateSignature(public_key);
+  return base::WrapUnique(
+      new TrialToken(origin, feature_name, expiry_timestamp));
 }
 
 bool TrialToken::ValidateOrigin(const url::Origin& origin) const {
@@ -115,24 +164,14 @@ bool TrialToken::ValidateDate(const base::Time& now) const {
   return expiry_time_ > now;
 }
 
-bool TrialToken::ValidateSignature(base::StringPiece public_key) const {
-  return ValidateSignature(signature_, data_, public_key);
-}
-
 // static
-bool TrialToken::ValidateSignature(const std::string& signature_text,
+bool TrialToken::ValidateSignature(base::StringPiece signature,
                                    const std::string& data,
                                    base::StringPiece public_key) {
   // Public key must be 32 bytes long for Ed25519.
   CHECK_EQ(public_key.length(), 32UL);
 
-  std::string signature;
-  // signature_text is base64-encoded; decode first.
-  if (!base::Base64Decode(signature_text, &signature)) {
-    return false;
-  }
-
-  // Signature must be 64 bytes long
+  // Signature must be 64 bytes long.
   if (signature.length() != 64) {
     return false;
   }
@@ -144,16 +183,10 @@ bool TrialToken::ValidateSignature(const std::string& signature_text,
   return (result != 0);
 }
 
-TrialToken::TrialToken(uint8_t version,
-                       const std::string& signature,
-                       const std::string& data,
-                       const url::Origin& origin,
+TrialToken::TrialToken(const url::Origin& origin,
                        const std::string& feature_name,
                        uint64_t expiry_timestamp)
-    : version_(version),
-      signature_(signature),
-      data_(data),
-      origin_(origin),
+    : origin_(origin),
       feature_name_(feature_name),
       expiry_time_(base::Time::FromDoubleT(expiry_timestamp)) {}
 

@@ -32,23 +32,20 @@ class CONTENT_EXPORT TrialToken {
  public:
   ~TrialToken();
 
-  // Returns a token object if the string represents a well-formed token, or
-  // nullptr otherwise. (This does not mean that the token is valid, just that
-  // it can be parsed.)
-  static std::unique_ptr<TrialToken> Parse(const std::string& token_text);
+  // Returns a token object if the string represents a signed well-formed token,
+  // or nullptr otherwise. (This does not mean that the token is currently
+  // valid, or appropriate for a given origin / feature, just that it is
+  // correctly formatted and signed by the supplied public key, and can be
+  // parsed.)
+  static std::unique_ptr<TrialToken> From(const std::string& token_text,
+                                          base::StringPiece public_key);
 
-  // Returns true if this feature is appropriate for use by the given origin,
-  // for the given feature name. This does not check whether the signature is
-  // valid, or whether the token itself has expired.
-  bool IsAppropriate(const url::Origin& origin,
-                     base::StringPiece feature_name) const;
+  // Returns true if this token is appropriate for use by the given origin,
+  // for the given feature name, and has not yet expired.
+  bool IsValidForFeature(const url::Origin& origin,
+                         base::StringPiece feature_name,
+                         const base::Time& now) const;
 
-  // Returns true if this token has a valid signature, and has not expired.
-  bool IsValid(const base::Time& now, base::StringPiece public_key) const;
-
-  uint8_t version() { return version_; }
-  std::string signature() { return signature_; }
-  std::string data() { return data_; }
   url::Origin origin() { return origin_; }
   std::string feature_name() { return feature_name_; }
   base::Time expiry_time() { return expiry_time_; }
@@ -56,43 +53,27 @@ class CONTENT_EXPORT TrialToken {
  protected:
   friend class TrialTokenTest;
 
+  // Returns the payload of a signed token, or nullptr if the token is not
+  // properly signed, or is not well-formed.
+  static std::unique_ptr<std::string> Extract(const std::string& token_text,
+                                              base::StringPiece public_key);
+
+  // Returns a token object if the string represents a well-formed JSON token
+  // payload, or nullptr otherwise.
+  static std::unique_ptr<TrialToken> Parse(const std::string& token_json);
+
   bool ValidateOrigin(const url::Origin& origin) const;
   bool ValidateFeatureName(base::StringPiece feature_name) const;
   bool ValidateDate(const base::Time& now) const;
-  bool ValidateSignature(base::StringPiece public_key) const;
 
-  static bool ValidateSignature(const std::string& signature_text,
+  static bool ValidateSignature(base::StringPiece signature_text,
                                 const std::string& data,
                                 base::StringPiece public_key);
 
  private:
-  TrialToken(uint8_t version,
-             const std::string& signature,
-             const std::string& data,
-             const url::Origin& origin,
+  TrialToken(const url::Origin& origin,
              const std::string& feature_name,
              uint64_t expiry_timestamp);
-
-  // The version number for this token. The version identifies the structure of
-  // the token, as well as the algorithm used to generate/validate the token.
-  // The version number is only incremented when incompatible changes are made
-  // to either the structure (e.g. adding a field), or the algorithm (e.g.
-  // changing the hash or signing algorithm).
-  // NOTE: The version number is not part of the token signature and validation.
-  //       Thus it is possible to modify a token to use a different version from
-  //       that used to generate the signature. To mitigate cross-version
-  //       attacks, the signing key(s) should be changed whenever there are
-  //       changes to the token structure or algorithms.
-  uint8_t version_;
-
-  // The base64-encoded-signature portion of the token. For the token to be
-  // valid, this must be a valid signature for the data portion of the token, as
-  // verified by the public key in trial_token.cc.
-  std::string signature_;
-
-  // The portion of the token string which is signed, and whose signature is
-  // contained in the signature_ member.
-  std::string data_;
 
   // The origin for which this token is valid. Must be a secure origin.
   url::Origin origin_;
