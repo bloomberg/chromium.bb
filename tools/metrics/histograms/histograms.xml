@@ -57444,6 +57444,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </details>
 </histogram>
 
+<histogram name="WebCore.Framebust" enum="FramebustPermissions">
+  <owner>japhet@chromium.org</owner>
+  <summary>
+    Records instances of child frames navigating the top frame. Includes whether
+    or not the navigation would have been permitted if not for our special case
+    for 'framebusting', the practice of ensuring a given document is never
+    displayed in a frame.
+  </summary>
+</histogram>
+
 <histogram name="WebCore.IndexedDB.BackingStore.ConsistencyError"
     enum="IDBLevelDBBackingStoreInternalErrorType">
   <owner>dgrogan@chromium.org</owner>
@@ -71708,6 +71718,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="3" label="Libsecret failure"/>
   <int value="4" label="GNOME success"/>
   <int value="5" label="GNOME failure"/>
+</enum>
+
+<enum name="FramebustPermissions" type="int">
+  <int value="0" label="Only permitted for framebusting, no user gesture"/>
+  <int value="1" label="Only permitted for framebusting, user gesture"/>
+  <int value="2" label="Allowed navigation, no user gesture"/>
+  <int value="3" label="Allowed navigation, user gesture"/>
 </enum>
 
 <enum name="FtpDataConnectionError" type="int">

@@ -141,6 +141,8 @@ protected:
     Member<FrameOwner> m_owner;
 
 private:
+    bool canNavigateWithoutFramebusting(const Frame&, String& errorReason);
+
     Member<FrameClient> m_client;
     // Needed to identify Frame Timing requests.
     int64_t m_frameID;
