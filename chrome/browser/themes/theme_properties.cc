@@ -71,14 +71,15 @@ const SkColor kDefaultDetachedBookmarkBarBackground[] = {
 const SkColor kDefaultDetachedBookmarkBarBackgroundIncognito[] = {
     SkColorSetRGB(0xF1, 0xF1, 0xF1), SkColorSetRGB(0x32, 0x32, 0x32)};
 
-const SkColor kDefaultColorTabText = SK_ColorBLACK;
-const SkColor kDefaultColorTabTextIncognito[] = {SK_ColorBLACK, SK_ColorWHITE};
+constexpr SkColor kDefaultColorTabText = SK_ColorBLACK;
+constexpr SkColor kDefaultColorTabTextIncognito[] = {kDefaultColorTabText,
+                                                     SK_ColorWHITE};
 
 #if defined(OS_MACOSX)
-const SkColor kDefaultColorBackgroundTabText[] = {
-    SK_ColorBLACK, SK_ColorBLACK };
-const SkColor kDefaultColorBackgroundTabTextIncognito[] = {
-    SK_ColorBLACK, SK_ColorWHITE };
+constexpr SkColor kDefaultColorBackgroundTabText[] = {SK_ColorBLACK,
+                                                      SK_ColorBLACK};
+constexpr SkColor kDefaultColorBackgroundTabTextIncognito[] = {
+    kDefaultColorBackgroundTabText[0], SK_ColorWHITE};
 #else
 const SkColor kDefaultColorBackgroundTabText[] = {
     SkColorSetRGB(64, 64, 64), SK_ColorBLACK };
@@ -86,9 +87,9 @@ const SkColor kDefaultColorBackgroundTabTextIncognito[] = {
     SkColorSetRGB(64, 64, 64), SK_ColorWHITE };
 #endif  // OS_MACOSX
 
-const SkColor kDefaultColorBookmarkText = SK_ColorBLACK;
-const SkColor kDefaultColorBookmarkTextIncognito[] = {SK_ColorBLACK,
-                                                      SK_ColorWHITE};
+constexpr SkColor kDefaultColorBookmarkText = SK_ColorBLACK;
+constexpr SkColor kDefaultColorBookmarkTextIncognito[] = {
+    kDefaultColorBookmarkText, SK_ColorWHITE};
 
 #if defined(OS_WIN)
 const SkColor kDefaultColorNTPBackground =
@@ -99,32 +100,31 @@ const SkColor kDefaultColorNTPLink =
     color_utils::GetSysSkColor(COLOR_HOTLIGHT);
 #else
 // TODO(beng): source from theme provider.
-const SkColor kDefaultColorNTPBackground = SK_ColorWHITE;
-const SkColor kDefaultColorNTPText = SK_ColorBLACK;
+constexpr SkColor kDefaultColorNTPBackground = SK_ColorWHITE;
+constexpr SkColor kDefaultColorNTPText = SK_ColorBLACK;
 const SkColor kDefaultColorNTPLink = SkColorSetRGB(6, 55, 116);
 #endif  // OS_WIN
 
 const SkColor kDefaultColorNTPHeader = SkColorSetRGB(150, 150, 150);
 const SkColor kDefaultColorNTPSection = SkColorSetRGB(229, 229, 229);
-const SkColor kDefaultColorNTPSectionText = SK_ColorBLACK;
+constexpr SkColor kDefaultColorNTPSectionText = SK_ColorBLACK;
 const SkColor kDefaultColorNTPSectionLink = SkColorSetRGB(6, 55, 116);
-const SkColor kDefaultColorButtonBackground = SkColorSetARGB(0, 0, 0, 0);
+constexpr SkColor kDefaultColorButtonBackground = SK_ColorTRANSPARENT;
 
 // Default tints.
-const color_utils::HSL kDefaultTintButtons = {-1, -1, -1};
-// In pre-md, reuse the normal tint for incognito.
-const color_utils::HSL kDefaultTintButtonsIncognito[] = {{-1, -1, -1},
-                                                         {-1, -1, 0.85}};
-const color_utils::HSL kDefaultTintFrame = {-1, -1, -1};
-const color_utils::HSL kDefaultTintFrameInactive = {-1, -1, 0.75};
-const color_utils::HSL kDefaultTintFrameIncognito = {-1, 0.2, 0.35};
-const color_utils::HSL kDefaultTintFrameIncognitoInactive = {-1, 0.3, 0.6};
-const color_utils::HSL kDefaultTintBackgroundTab = {-1, -1, 0.75};
+constexpr color_utils::HSL kDefaultTintButtons = {-1, -1, -1};
+constexpr color_utils::HSL kDefaultTintButtonsIncognito[] = {
+    kDefaultTintButtons, {-1, -1, 0.85}};
+constexpr color_utils::HSL kDefaultTintFrame = {-1, -1, -1};
+constexpr color_utils::HSL kDefaultTintFrameInactive = {-1, -1, 0.75};
+constexpr color_utils::HSL kDefaultTintFrameIncognito = {-1, 0.2, 0.35};
+constexpr color_utils::HSL kDefaultTintFrameIncognitoInactive = {-1, 0.3, 0.6};
+constexpr color_utils::HSL kDefaultTintBackgroundTab = {-1, -1, 0.75};
 
 // ----------------------------------------------------------------------------
 // Defaults for properties which are not stored in the browser theme pack.
 
-const SkColor kDefaultColorControlBackground = SK_ColorWHITE;
+constexpr SkColor kDefaultColorControlBackground = SK_ColorWHITE;
 const SkColor kDefaultDetachedBookmarkBarSeparator[] = {
     SkColorSetRGB(170, 170, 171), SkColorSetRGB(182, 180, 182)};
 const SkColor kDefaultDetachedBookmarkBarSeparatorIncognito[] = {
@@ -159,17 +159,17 @@ const SkColor kDefaultColorToolbarStrokeThemeInactive =
 // ----------------------------------------------------------------------------
 
 // Strings used in alignment properties.
-const char kAlignmentCenter[] = "center";
-const char kAlignmentTop[] = "top";
-const char kAlignmentBottom[] = "bottom";
-const char kAlignmentLeft[] = "left";
-const char kAlignmentRight[] = "right";
+constexpr char kAlignmentCenter[] = "center";
+constexpr char kAlignmentTop[] = "top";
+constexpr char kAlignmentBottom[] = "bottom";
+constexpr char kAlignmentLeft[] = "left";
+constexpr char kAlignmentRight[] = "right";
 
 // Strings used in background tiling repetition properties.
-const char kTilingNoRepeat[] = "no-repeat";
-const char kTilingRepeatX[] = "repeat-x";
-const char kTilingRepeatY[] = "repeat-y";
-const char kTilingRepeat[] = "repeat";
+constexpr char kTilingNoRepeat[] = "no-repeat";
+constexpr char kTilingRepeatX[] = "repeat-x";
+constexpr char kTilingRepeatY[] = "repeat-y";
+constexpr char kTilingRepeat[] = "repeat";
 
 // The image resources that will be tinted by the 'button' tint value.
 // If you change this list, you must increment the version number in
@@ -179,17 +179,35 @@ const char kTilingRepeat[] = "repeat";
 //
 // TODO(erg): The cocoa port is the last user of the IDR_*_[HP] variants. These
 // should be removed once the cocoa port no longer uses them.
-const int kToolbarButtonIDs[] = {
-  IDR_BACK, IDR_BACK_D, IDR_BACK_H, IDR_BACK_P,
-  IDR_FORWARD, IDR_FORWARD_D, IDR_FORWARD_H, IDR_FORWARD_P,
-  IDR_HOME, IDR_HOME_H, IDR_HOME_P,
-  IDR_RELOAD, IDR_RELOAD_H, IDR_RELOAD_P,
-  IDR_STOP, IDR_STOP_D, IDR_STOP_H, IDR_STOP_P,
-  IDR_BROWSER_ACTIONS_OVERFLOW, IDR_BROWSER_ACTIONS_OVERFLOW_H,
-  IDR_BROWSER_ACTIONS_OVERFLOW_P,
-  IDR_TOOLS, IDR_TOOLS_H, IDR_TOOLS_P,
-  IDR_MENU_DROPARROW,
-  IDR_TOOLBAR_BEZEL_HOVER, IDR_TOOLBAR_BEZEL_PRESSED, IDR_TOOLS_BAR,
+constexpr int kToolbarButtonIDs[] = {
+    IDR_BACK,
+    IDR_BACK_D,
+    IDR_BACK_H,
+    IDR_BACK_P,
+    IDR_FORWARD,
+    IDR_FORWARD_D,
+    IDR_FORWARD_H,
+    IDR_FORWARD_P,
+    IDR_HOME,
+    IDR_HOME_H,
+    IDR_HOME_P,
+    IDR_RELOAD,
+    IDR_RELOAD_H,
+    IDR_RELOAD_P,
+    IDR_STOP,
+    IDR_STOP_D,
+    IDR_STOP_H,
+    IDR_STOP_P,
+    IDR_BROWSER_ACTIONS_OVERFLOW,
+    IDR_BROWSER_ACTIONS_OVERFLOW_H,
+    IDR_BROWSER_ACTIONS_OVERFLOW_P,
+    IDR_TOOLS,
+    IDR_TOOLS_H,
+    IDR_TOOLS_P,
+    IDR_MENU_DROPARROW,
+    IDR_TOOLBAR_BEZEL_HOVER,
+    IDR_TOOLBAR_BEZEL_PRESSED,
+    IDR_TOOLS_BAR,
 };
 
 SkColor TintForUnderline(SkColor input) {

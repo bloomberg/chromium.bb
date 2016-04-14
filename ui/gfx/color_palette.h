@@ -11,7 +11,7 @@ namespace gfx {
 
 // A placeholder value for unset colors. This should never be visible and is red
 // as a visual flag for misbehaving code.
-const SkColor kPlaceholderColor = SK_ColorRED;
+constexpr SkColor kPlaceholderColor = SK_ColorRED;
 
 const SkColor kChromeIconGrey = SkColorSetRGB(0x5A, 0x5A, 0x5A);
 

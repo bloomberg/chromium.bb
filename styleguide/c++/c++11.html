@@ -110,6 +110,14 @@ Style Guide on <code>auto</code></a>. <a href="https://groups.google.com/a/chrom
 </tr>
 
 <tr>
+<td>Constant Expressions</td>
+<td><code>constexpr</code></td>
+<td>Compile-time constant expressions</td>
+<td><a href="http://en.cppreference.com/w/cpp/language/constexpr">constexpr specifier</a></td>
+<td>Prefer to <code>const</code> for variables where possible. Use cautiously on functions. Don't go out of the way to convert existing code. <a href="https://google.github.io/styleguide/cppguide.html#Use_of_constexpr">Google Style Guide</a></td>
+</tr>
+
+<tr>
 <td>Declared Type Accessor</td>
 <td><code>decltype(<i>expression</i>)</code></td>
 <td>Provides a means to determine the type of an expression at compile-time,
@@ -557,17 +565,6 @@ MSVS2013</a>.
 supports them</a>; reevaluate after MSVS2015 is available.
 <a href="https://groups.google.com/a/chromium.org/d/msg/cxx/rwXN02jzzq0/CpUc1ZzMBQAJ">Discussion thread</a>
 </td>
-</tr>
-
-<tr>
-<td>Constant Expressions</td>
-<td><code>constexpr</code></td>
-<td>Compile-time constant expressions</td>
-<td><a href="http://en.cppreference.com/w/cpp/language/constexpr">
-constexpr specifier</a></td>
-<td>Doesn't work in MSVS2013. Reevalute once it does. <a
-href="https://google.github.io/styleguide/cppguide.html#Use_of_constexpr">Google
-Style Guide on <code>constexpr</code></a></td>
 </tr>
 
 <tr>
