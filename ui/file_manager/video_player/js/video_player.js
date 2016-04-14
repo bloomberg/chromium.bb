@@ -46,6 +46,7 @@ function FullWindowVideoControls(
         break;
 
       case 'U+0020': // Space
+      case 'U+004B': // K
       case 'MediaPlayPause':
         if (!e.target.classList.contains('menu-button'))
           this.togglePlayStateWithFeedback();
@@ -55,13 +56,25 @@ function FullWindowVideoControls(
             chrome.app.window.current(),
             false);  // Leave the full screen mode.
         break;
-      case 'Right':
       case 'MediaNextTrack':
         player.advance_(1);
         break;
-      case 'Left':
       case 'MediaPreviousTrack':
         player.advance_(0);
+        break;
+      case 'Right':
+        if (!e.target.classList.contains('volume'))
+          this.smallSkip(true);
+        break;
+      case 'Left':
+        if (!e.target.classList.contains('volume'))
+          this.smallSkip(false);
+        break;
+      case 'U+004C': // L
+        this.bigSkip(true);
+        break;
+      case 'U+004A': // J
+        this.bigSkip(false);
         break;
       case 'MediaStop':
         // TODO: Define "Stop" behavior.
