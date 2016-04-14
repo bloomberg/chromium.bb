@@ -5,6 +5,6 @@
 // https://w3c.github.io/mediacapture-main/getusermedia.html#idl-def-MediaStreamConstraints
 
 dictionary MediaStreamConstraints {
-  (boolean or MediaTrackConstraintSet) video;
-  (boolean or MediaTrackConstraintSet) audio;
+  (boolean or MediaTrackConstraints) video;
+  (boolean or MediaTrackConstraints) audio;
 };

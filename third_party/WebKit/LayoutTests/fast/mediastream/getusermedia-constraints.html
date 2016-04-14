@@ -102,6 +102,11 @@ check_constraints(
   'Using both mandatory and height should give TypeError',
   {'mandatory': {'height': '270'}, 'height': '270'}, 'TypeError');
 
+// Shows that the advanced element is not ignored.
+check_constraints(
+  'Advanced constraints with illegal content gives TypeError',
+  {'advanced': [{'height': 270}]}, 'TypeError');
+
 </script>
 </body>
 </html>

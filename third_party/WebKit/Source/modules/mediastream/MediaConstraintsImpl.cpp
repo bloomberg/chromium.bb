@@ -37,7 +37,7 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/frame/UseCounter.h"
 #include "core/inspector/ConsoleMessage.h"
-#include "modules/mediastream/MediaTrackConstraintSet.h"
+#include "modules/mediastream/MediaTrackConstraints.h"
 #include "platform/Logging.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "wtf/HashMap.h"
@@ -243,7 +243,7 @@ static bool parse(const Dictionary& constraintsDictionary, WebVector<WebMediaCon
     return true;
 }
 
-static bool parse(const MediaTrackConstraintSet& constraintsIn, WebVector<WebMediaConstraint>& optional, WebVector<WebMediaConstraint>& mandatory)
+static bool parse(const MediaTrackConstraints& constraintsIn, WebVector<WebMediaConstraint>& optional, WebVector<WebMediaConstraint>& mandatory)
 {
     Vector<WebMediaConstraint> mandatoryConstraintsVector;
     if (constraintsIn.hasMandatory()) {
@@ -554,17 +554,24 @@ void copyConstraints(const MediaTrackConstraintSet& constraintsIn, WebMediaTrack
     }
 }
 
-WebMediaConstraints create(ExecutionContext* context, const MediaTrackConstraintSet& constraintsIn, MediaErrorState& errorState)
+WebMediaConstraints create(ExecutionContext* context, const MediaTrackConstraints& constraintsIn, MediaErrorState& errorState)
 {
     WebMediaConstraints constraints;
     WebMediaTrackConstraintSet constraintBuffer;
-    WebVector<WebMediaTrackConstraintSet> advancedBuffer;
+    Vector<WebMediaTrackConstraintSet> advancedBuffer;
     copyConstraints(constraintsIn, constraintBuffer);
+    if (constraintsIn.hasAdvanced()) {
+        for (const auto& element : constraintsIn.advanced()) {
+            WebMediaTrackConstraintSet advancedElement;
+            copyConstraints(element, advancedElement);
+            advancedBuffer.append(advancedElement);
+        }
+    }
     // TODO(hta): Add initialization of advanced constraints once present.
     // https://crbug.com/253412
     if (constraintsIn.hasOptional() || constraintsIn.hasMandatory()) {
-        if (!constraintBuffer.isEmpty()) {
-            errorState.throwTypeError("Malformed constraint: Cannot use both optional/mandatory and specific constraints.");
+        if (!constraintBuffer.isEmpty() || constraintsIn.hasAdvanced()) {
+            errorState.throwTypeError("Malformed constraint: Cannot use both optional/mandatory and specific or advanced constraints.");
             return WebMediaConstraints();
         }
         WebVector<WebMediaConstraint> optional;
