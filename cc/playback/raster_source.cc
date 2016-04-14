@@ -103,8 +103,14 @@ void RasterSource::PlaybackToCanvas(SkCanvas* raster_canvas,
   } else if (settings.use_image_hijack_canvas &&
              display_list_->MayHaveDiscardableImages()) {
     const SkImageInfo& info = raster_canvas->imageInfo();
+
     ImageHijackCanvas canvas(info.width(), info.height(),
                              image_decode_controller_);
+    // Before adding the canvas, make sure that the ImageHijackCanvas is aware
+    // of the current transform, which may affect the clip bounds. Since we
+    // query the clip bounds of the current canvas to get the list of draw
+    // commands to process, this is important to produce correct content.
+    canvas.setMatrix(raster_canvas->getTotalMatrix());
     canvas.addCanvas(raster_canvas);
 
     RasterCommon(&canvas, nullptr, canvas_bitmap_rect, canvas_playback_rect,

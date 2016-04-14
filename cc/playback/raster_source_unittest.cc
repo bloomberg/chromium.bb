@@ -10,6 +10,7 @@
 
 #include "cc/test/fake_recording_source.h"
 #include "cc/test/skia_common.h"
+#include "cc/tiles/software_image_decode_controller.h"
 #include "skia/ext/refptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkPixelRef.h"
@@ -536,6 +537,65 @@ TEST(RasterSourceTest, GetPictureMemoryUsageIncludesClientReportedMemory) {
   size_t total_memory_usage = raster->GetPictureMemoryUsage();
   EXPECT_GE(total_memory_usage, kReportedMemoryUsageInBytes);
   EXPECT_LT(total_memory_usage, 2 * kReportedMemoryUsageInBytes);
+}
+
+TEST(RasterSourceTest, ImageHijackCanvasRespectsSharedCanvasTransform) {
+  gfx::Size size(100, 100);
+
+  // Create a recording source that is filled with red and every corner is
+  // green (4x4 rects in the corner are green to account for blending when
+  // scaling). Note that we paint an image first, so that we can force image
+  // hijack canvas to be used.
+  std::unique_ptr<FakeRecordingSource> recording_source =
+      FakeRecordingSource::CreateFilledRecordingSource(size);
+
+  // 1. Paint the image.
+  skia::RefPtr<SkImage> image = CreateDiscardableImage(gfx::Size(5, 5));
+  recording_source->add_draw_image(image.get(), gfx::Point(0, 0));
+
+  // 2. Cover everything in red.
+  SkPaint paint;
+  paint.setColor(SK_ColorRED);
+  recording_source->add_draw_rect_with_paint(gfx::Rect(size), paint);
+
+  // 3. Draw 4x4 green rects into every corner.
+  paint.setColor(SK_ColorGREEN);
+  recording_source->add_draw_rect_with_paint(gfx::Rect(0, 0, 4, 4), paint);
+  recording_source->add_draw_rect_with_paint(
+      gfx::Rect(size.width() - 4, 0, 4, 4), paint);
+  recording_source->add_draw_rect_with_paint(
+      gfx::Rect(0, size.height() - 4, 4, 4), paint);
+  recording_source->add_draw_rect_with_paint(
+      gfx::Rect(size.width() - 4, size.height() - 4, 4, 4), paint);
+
+  recording_source->SetGenerateDiscardableImagesMetadata(true);
+  recording_source->Rerecord();
+
+  bool can_use_lcd = true;
+  scoped_refptr<RasterSource> raster_source =
+      recording_source->CreateRasterSource(can_use_lcd);
+  SoftwareImageDecodeController controller;
+  raster_source->SetImageDecodeController(&controller);
+
+  SkBitmap bitmap;
+  bitmap.allocN32Pixels(size.width() * 0.5f, size.height() * 0.25f);
+  SkCanvas canvas(bitmap);
+  canvas.scale(0.5f, 0.25f);
+
+  RasterSource::PlaybackSettings settings;
+  settings.playback_to_shared_canvas = true;
+  settings.use_image_hijack_canvas = true;
+  raster_source->PlaybackToCanvas(&canvas, gfx::Rect(size), gfx::Rect(size),
+                                  1.f, settings);
+
+  EXPECT_EQ(SK_ColorGREEN, bitmap.getColor(0, 0));
+  EXPECT_EQ(SK_ColorGREEN, bitmap.getColor(49, 0));
+  EXPECT_EQ(SK_ColorGREEN, bitmap.getColor(0, 24));
+  EXPECT_EQ(SK_ColorGREEN, bitmap.getColor(49, 24));
+  for (int x = 0; x < 49; ++x)
+    EXPECT_EQ(SK_ColorRED, bitmap.getColor(x, 12));
+  for (int y = 0; y < 24; ++y)
+    EXPECT_EQ(SK_ColorRED, bitmap.getColor(24, y));
 }
 
 }  // namespace
