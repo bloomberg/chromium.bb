@@ -81,6 +81,12 @@ class MetaBuildWrapper(object):
                             '(default is //tools/mb/mb_config.pyl)')
       subp.add_argument('-g', '--goma-dir',
                         help='path to goma directory')
+      subp.add_argument('--android-version-code',
+                        help='Sets GN arg android_default_version_code and '
+                             'GYP_DEFINE app_manifest_version_code')
+      subp.add_argument('--android-version-name',
+                        help='Sets GN arg android_default_version_name and '
+                             'GYP_DEFINE app_manifest_version_name')
       subp.add_argument('-n', '--dryrun', action='store_true',
                         help='Do a dry run (i.e., do nothing, just print '
                              'the commands that will run)')
@@ -880,6 +886,14 @@ class MetaBuildWrapper(object):
     if self.args.goma_dir:
       gn_args += ' goma_dir="%s"' % self.args.goma_dir
 
+    android_version_code = self.args.android_version_code
+    if android_version_code:
+      gn_args += ' android_default_version_code="%s"' % android_version_code
+
+    android_version_name = self.args.android_version_name
+    if android_version_name:
+      gn_args += ' android_default_version_name="%s"' % android_version_name
+
     # Canonicalize the arg string into a sorted, newline-separated list
     # of key-value pairs, and de-dup the keys if need be so that only
     # the last instance of each arg is listed.
@@ -1041,6 +1055,14 @@ class MetaBuildWrapper(object):
 
     if goma_dir:
       gyp_defines += ' gomadir=%s' % goma_dir
+
+    android_version_code = self.args.android_version_code
+    if android_version_code:
+      gyp_defines += ' app_manifest_version_code=%s' % android_version_code
+
+    android_version_name = self.args.android_version_name
+    if android_version_name:
+      gyp_defines += ' app_manifest_version_name=%s' % android_version_name
 
     cmd = [
         self.executable,
