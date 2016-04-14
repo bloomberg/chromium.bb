@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/speech/google_streaming_remote_engine.h"
+#include "content/browser/speech/speech_recognition_engine.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -40,10 +40,11 @@ static const uint32_t kFrameTypeRecognitionAudio = 1;
 // Note: the terms upstream and downstream are from the point-of-view of the
 // client (engine_under_test_).
 
-class GoogleStreamingRemoteEngineTest : public SpeechRecognitionEngineDelegate,
-                                        public testing::Test {
+class SpeechRecognitionEngineTest
+    : public SpeechRecognitionEngine::Delegate,
+      public testing::Test {
  public:
-  GoogleStreamingRemoteEngineTest()
+  SpeechRecognitionEngineTest()
       : last_number_of_upstream_chunks_seen_(0U),
         error_(SPEECH_RECOGNITION_ERROR_NONE),
         end_of_utterance_counter_(0) { }
@@ -95,7 +96,7 @@ class GoogleStreamingRemoteEngineTest : public SpeechRecognitionEngineDelegate,
   void ExpectFramedChunk(const std::string& chunk, uint32_t type);
   void CloseMockDownstream(DownstreamError error);
 
-  std::unique_ptr<GoogleStreamingRemoteEngine> engine_under_test_;
+  std::unique_ptr<SpeechRecognitionEngine> engine_under_test_;
   TestURLFetcherFactory url_fetcher_factory_;
   size_t last_number_of_upstream_chunks_seen_;
   base::MessageLoop message_loop_;
@@ -105,7 +106,7 @@ class GoogleStreamingRemoteEngineTest : public SpeechRecognitionEngineDelegate,
   std::queue<SpeechRecognitionResults> results_;
 };
 
-TEST_F(GoogleStreamingRemoteEngineTest, SingleDefinitiveResult) {
+TEST_F(SpeechRecognitionEngineTest, SingleDefinitiveResult) {
   StartMockRecognition();
   ASSERT_TRUE(GetUpstreamFetcher());
   ASSERT_EQ(0U, UpstreamChunksUploadedFromLastCall());
@@ -145,7 +146,7 @@ TEST_F(GoogleStreamingRemoteEngineTest, SingleDefinitiveResult) {
   ASSERT_EQ(0U, results_.size());
 }
 
-TEST_F(GoogleStreamingRemoteEngineTest, SeveralStreamingResults) {
+TEST_F(SpeechRecognitionEngineTest, SeveralStreamingResults) {
   StartMockRecognition();
   ASSERT_TRUE(GetUpstreamFetcher());
   ASSERT_EQ(0U, UpstreamChunksUploadedFromLastCall());
@@ -191,7 +192,7 @@ TEST_F(GoogleStreamingRemoteEngineTest, SeveralStreamingResults) {
   ASSERT_EQ(0U, results_.size());
 }
 
-TEST_F(GoogleStreamingRemoteEngineTest, NoFinalResultAfterAudioChunksEnded) {
+TEST_F(SpeechRecognitionEngineTest, NoFinalResultAfterAudioChunksEnded) {
   StartMockRecognition();
   ASSERT_TRUE(GetUpstreamFetcher());
   ASSERT_EQ(0U, UpstreamChunksUploadedFromLastCall());
@@ -228,7 +229,7 @@ TEST_F(GoogleStreamingRemoteEngineTest, NoFinalResultAfterAudioChunksEnded) {
   ASSERT_EQ(0U, results_.size());
 }
 
-TEST_F(GoogleStreamingRemoteEngineTest, NoMatchError) {
+TEST_F(SpeechRecognitionEngineTest, NoMatchError) {
   StartMockRecognition();
   ASSERT_TRUE(GetUpstreamFetcher());
   ASSERT_EQ(0U, UpstreamChunksUploadedFromLastCall());
@@ -259,7 +260,7 @@ TEST_F(GoogleStreamingRemoteEngineTest, NoMatchError) {
   ExpectResultsReceived(empty_result);
 }
 
-TEST_F(GoogleStreamingRemoteEngineTest, HTTPError) {
+TEST_F(SpeechRecognitionEngineTest, HTTPError) {
   StartMockRecognition();
   ASSERT_TRUE(GetUpstreamFetcher());
   ASSERT_EQ(0U, UpstreamChunksUploadedFromLastCall());
@@ -277,7 +278,7 @@ TEST_F(GoogleStreamingRemoteEngineTest, HTTPError) {
   ASSERT_EQ(0U, results_.size());
 }
 
-TEST_F(GoogleStreamingRemoteEngineTest, NetworkError) {
+TEST_F(SpeechRecognitionEngineTest, NetworkError) {
   StartMockRecognition();
   ASSERT_TRUE(GetUpstreamFetcher());
   ASSERT_EQ(0U, UpstreamChunksUploadedFromLastCall());
@@ -295,7 +296,7 @@ TEST_F(GoogleStreamingRemoteEngineTest, NetworkError) {
   ASSERT_EQ(0U, results_.size());
 }
 
-TEST_F(GoogleStreamingRemoteEngineTest, Stability) {
+TEST_F(SpeechRecognitionEngineTest, Stability) {
   StartMockRecognition();
   ASSERT_TRUE(GetUpstreamFetcher());
   ASSERT_EQ(0U, UpstreamChunksUploadedFromLastCall());
@@ -342,7 +343,7 @@ TEST_F(GoogleStreamingRemoteEngineTest, Stability) {
   ASSERT_EQ(0U, results_.size());
 }
 
-TEST_F(GoogleStreamingRemoteEngineTest, EndOfUtterance) {
+TEST_F(SpeechRecognitionEngineTest, EndOfUtterance) {
   StartMockRecognition();
   ASSERT_TRUE(GetUpstreamFetcher());
 
@@ -367,7 +368,7 @@ TEST_F(GoogleStreamingRemoteEngineTest, EndOfUtterance) {
   EndMockRecognition();
 }
 
-TEST_F(GoogleStreamingRemoteEngineTest, SendPreamble) {
+TEST_F(SpeechRecognitionEngineTest, SendPreamble) {
   const size_t kPreambleLength = 100;
   scoped_refptr<SpeechRecognitionSessionPreamble> preamble =
       new SpeechRecognitionSessionPreamble();
@@ -417,29 +418,29 @@ TEST_F(GoogleStreamingRemoteEngineTest, SendPreamble) {
   ASSERT_EQ(0U, results_.size());
 }
 
-void GoogleStreamingRemoteEngineTest::SetUp() {
+void SpeechRecognitionEngineTest::SetUp() {
   engine_under_test_.reset(
-      new  GoogleStreamingRemoteEngine(NULL /*URLRequestContextGetter*/));
+      new SpeechRecognitionEngine(NULL /*URLRequestContextGetter*/));
   engine_under_test_->set_delegate(this);
 }
 
-void GoogleStreamingRemoteEngineTest::TearDown() {
+void SpeechRecognitionEngineTest::TearDown() {
   engine_under_test_.reset();
 }
 
-TestURLFetcher* GoogleStreamingRemoteEngineTest::GetUpstreamFetcher() {
+TestURLFetcher* SpeechRecognitionEngineTest::GetUpstreamFetcher() {
   return url_fetcher_factory_.GetFetcherByID(
-        GoogleStreamingRemoteEngine::kUpstreamUrlFetcherIdForTesting);
+        SpeechRecognitionEngine::kUpstreamUrlFetcherIdForTesting);
 }
 
-TestURLFetcher* GoogleStreamingRemoteEngineTest::GetDownstreamFetcher() {
+TestURLFetcher* SpeechRecognitionEngineTest::GetDownstreamFetcher() {
   return url_fetcher_factory_.GetFetcherByID(
-        GoogleStreamingRemoteEngine::kDownstreamUrlFetcherIdForTesting);
+        SpeechRecognitionEngine::kDownstreamUrlFetcherIdForTesting);
 }
 
 // Starts recognition on the engine, ensuring that both stream fetchers are
 // created.
-void GoogleStreamingRemoteEngineTest::StartMockRecognition() {
+void SpeechRecognitionEngineTest::StartMockRecognition() {
   DCHECK(engine_under_test_.get());
 
   ASSERT_FALSE(engine_under_test_->IsRecognitionPending());
@@ -456,7 +457,7 @@ void GoogleStreamingRemoteEngineTest::StartMockRecognition() {
   downstream_fetcher->set_url(downstream_fetcher->GetOriginalURL());
 }
 
-void GoogleStreamingRemoteEngineTest::EndMockRecognition() {
+void SpeechRecognitionEngineTest::EndMockRecognition() {
   DCHECK(engine_under_test_.get());
   engine_under_test_->EndRecognition();
   ASSERT_FALSE(engine_under_test_->IsRecognitionPending());
@@ -468,7 +469,7 @@ void GoogleStreamingRemoteEngineTest::EndMockRecognition() {
   // de-registered from the TestURLFetcherFactory on destruction.
 }
 
-void GoogleStreamingRemoteEngineTest::InjectDummyAudioChunk() {
+void SpeechRecognitionEngineTest::InjectDummyAudioChunk() {
   unsigned char dummy_audio_buffer_data[2] = {'\0', '\0'};
   scoped_refptr<AudioChunk> dummy_audio_chunk(
       new AudioChunk(&dummy_audio_buffer_data[0],
@@ -478,7 +479,7 @@ void GoogleStreamingRemoteEngineTest::InjectDummyAudioChunk() {
   engine_under_test_->TakeAudioChunk(*dummy_audio_chunk.get());
 }
 
-size_t GoogleStreamingRemoteEngineTest::UpstreamChunksUploadedFromLastCall() {
+size_t SpeechRecognitionEngineTest::UpstreamChunksUploadedFromLastCall() {
   TestURLFetcher* upstream_fetcher = GetUpstreamFetcher();
   DCHECK(upstream_fetcher);
   const size_t number_of_chunks = upstream_fetcher->upload_chunks().size();
@@ -489,14 +490,14 @@ size_t GoogleStreamingRemoteEngineTest::UpstreamChunksUploadedFromLastCall() {
   return new_chunks;
 }
 
-std::string GoogleStreamingRemoteEngineTest::LastUpstreamChunkUploaded() {
+std::string SpeechRecognitionEngineTest::LastUpstreamChunkUploaded() {
   TestURLFetcher* upstream_fetcher = GetUpstreamFetcher();
   DCHECK(upstream_fetcher);
   DCHECK(!upstream_fetcher->upload_chunks().empty());
   return upstream_fetcher->upload_chunks().back();
 }
 
-void GoogleStreamingRemoteEngineTest::ProvideMockProtoResultDownstream(
+void SpeechRecognitionEngineTest::ProvideMockProtoResultDownstream(
     const proto::SpeechRecognitionEvent& result) {
   TestURLFetcher* downstream_fetcher = GetDownstreamFetcher();
 
@@ -513,7 +514,7 @@ void GoogleStreamingRemoteEngineTest::ProvideMockProtoResultDownstream(
       -1 /* total response length not used */);
 }
 
-void GoogleStreamingRemoteEngineTest::ProvideMockResultDownstream(
+void SpeechRecognitionEngineTest::ProvideMockResultDownstream(
     const SpeechRecognitionResult& result) {
   proto::SpeechRecognitionEvent proto_event;
   proto_event.set_status(proto::SpeechRecognitionEvent::STATUS_SUCCESS);
@@ -529,7 +530,7 @@ void GoogleStreamingRemoteEngineTest::ProvideMockResultDownstream(
   ProvideMockProtoResultDownstream(proto_event);
 }
 
-void GoogleStreamingRemoteEngineTest::CloseMockDownstream(
+void SpeechRecognitionEngineTest::CloseMockDownstream(
     DownstreamError error) {
   TestURLFetcher* downstream_fetcher = GetDownstreamFetcher();
   ASSERT_TRUE(downstream_fetcher);
@@ -549,14 +550,14 @@ void GoogleStreamingRemoteEngineTest::CloseMockDownstream(
   downstream_fetcher->delegate()->OnURLFetchComplete(downstream_fetcher);
 }
 
-void GoogleStreamingRemoteEngineTest::ExpectResultsReceived(
+void SpeechRecognitionEngineTest::ExpectResultsReceived(
     const SpeechRecognitionResults& results) {
   ASSERT_GE(1U, results_.size());
   ASSERT_TRUE(ResultsAreEqual(results, results_.front()));
   results_.pop();
 }
 
-bool GoogleStreamingRemoteEngineTest::ResultsAreEqual(
+bool SpeechRecognitionEngineTest::ResultsAreEqual(
     const SpeechRecognitionResults& a, const SpeechRecognitionResults& b) {
   if (a.size() != b.size())
     return false;
@@ -581,7 +582,7 @@ bool GoogleStreamingRemoteEngineTest::ResultsAreEqual(
   return true;
 }
 
-void GoogleStreamingRemoteEngineTest::ExpectFramedChunk(
+void SpeechRecognitionEngineTest::ExpectFramedChunk(
     const std::string& chunk, uint32_t type) {
   uint32_t value;
   base::ReadBigEndian(&chunk[0], &value);
@@ -590,7 +591,7 @@ void GoogleStreamingRemoteEngineTest::ExpectFramedChunk(
   EXPECT_EQ(type, value);
 }
 
-std::string GoogleStreamingRemoteEngineTest::SerializeProtobufResponse(
+std::string SpeechRecognitionEngineTest::SerializeProtobufResponse(
     const proto::SpeechRecognitionEvent& msg) {
   std::string msg_string;
   msg.SerializeToString(&msg_string);

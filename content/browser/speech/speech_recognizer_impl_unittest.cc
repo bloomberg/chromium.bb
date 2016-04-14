@@ -9,8 +9,8 @@
 
 #include "base/sys_byteorder.h"
 #include "content/browser/browser_thread_impl.h"
-#include "content/browser/speech/google_streaming_remote_engine.h"
 #include "content/browser/speech/proto/google_streaming_api.pb.h"
+#include "content/browser/speech/speech_recognition_engine.h"
 #include "content/browser/speech/speech_recognizer_impl.h"
 #include "content/public/browser/speech_recognition_event_listener.h"
 #include "media/audio/audio_manager_base.h"
@@ -50,8 +50,8 @@ class SpeechRecognizerImplTest : public SpeechRecognitionEventListener,
         volume_(-1.0f) {
     // SpeechRecognizer takes ownership of sr_engine.
     SpeechRecognitionEngine* sr_engine =
-        new GoogleStreamingRemoteEngine(NULL /* URLRequestContextGetter */);
-    SpeechRecognitionEngineConfig config;
+        new SpeechRecognitionEngine(NULL /* URLRequestContextGetter */);
+    SpeechRecognitionEngine::Config config;
     config.audio_num_bits_per_sample =
         SpeechRecognizerImpl::kNumBitsPerAudioSample;
     config.audio_sample_rate = SpeechRecognizerImpl::kAudioSampleRate;
@@ -67,7 +67,7 @@ class SpeechRecognizerImplTest : public SpeechRecognitionEventListener,
 
     int audio_packet_length_bytes =
         (SpeechRecognizerImpl::kAudioSampleRate *
-         GoogleStreamingRemoteEngine::kAudioPacketIntervalMs *
+         SpeechRecognitionEngine::kAudioPacketIntervalMs *
          ChannelLayoutToChannelCount(SpeechRecognizerImpl::kChannelLayout) *
          SpeechRecognizerImpl::kNumBitsPerAudioSample) / (8 * 1000);
     audio_packet_.resize(audio_packet_length_bytes);
@@ -277,7 +277,7 @@ TEST_F(SpeechRecognizerImplTest, StopWithData) {
 
   // Issue the network callback to complete the process.
   net::TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(
-      GoogleStreamingRemoteEngine::kDownstreamUrlFetcherIdForTesting);
+      SpeechRecognitionEngine::kDownstreamUrlFetcherIdForTesting);
   ASSERT_TRUE(fetcher);
   fetcher->set_url(fetcher->GetOriginalURL());
   fetcher->set_status(net::URLRequestStatus());
@@ -427,7 +427,7 @@ TEST_F(SpeechRecognizerImplTest, NoSpeechCallbackIssued) {
   ASSERT_TRUE(controller);
 
   int num_packets = (SpeechRecognizerImpl::kNoSpeechTimeoutMs) /
-                     GoogleStreamingRemoteEngine::kAudioPacketIntervalMs + 1;
+                     SpeechRecognitionEngine::kAudioPacketIntervalMs + 1;
   // The vector is already filled with zero value samples on create.
   for (int i = 0; i < num_packets; ++i) {
     controller->event_handler()->OnData(controller, audio_bus_.get());
@@ -454,7 +454,7 @@ TEST_F(SpeechRecognizerImplTest, NoSpeechCallbackNotIssued) {
   ASSERT_TRUE(controller);
 
   int num_packets = (SpeechRecognizerImpl::kNoSpeechTimeoutMs) /
-                     GoogleStreamingRemoteEngine::kAudioPacketIntervalMs;
+                     SpeechRecognitionEngine::kAudioPacketIntervalMs;
 
   // The vector is already filled with zero value samples on create.
   for (int i = 0; i < num_packets / 2; ++i) {
@@ -491,7 +491,7 @@ TEST_F(SpeechRecognizerImplTest, SetInputVolumeCallback) {
 
   // Feed some samples to begin with for the endpointer to do noise estimation.
   int num_packets = SpeechRecognizerImpl::kEndpointerEstimationTimeMs /
-                    GoogleStreamingRemoteEngine::kAudioPacketIntervalMs;
+                    SpeechRecognitionEngine::kAudioPacketIntervalMs;
   FillPacketWithNoise();
   for (int i = 0; i < num_packets; ++i) {
     controller->event_handler()->OnData(controller, audio_bus_.get());

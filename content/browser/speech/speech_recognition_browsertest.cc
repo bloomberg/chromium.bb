@@ -15,7 +15,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
-#include "content/browser/speech/google_streaming_remote_engine.h"
+#include "content/browser/speech/speech_recognition_engine.h"
 #include "content/browser/speech/speech_recognition_manager_impl.h"
 #include "content/browser/speech/speech_recognizer_impl.h"
 #include "content/public/browser/browser_thread.h"
@@ -79,7 +79,7 @@ class SpeechRecognitionBrowserTest :
     const int capture_packet_interval_ms =
         (1000 * controller->audio_parameters().frames_per_buffer()) /
         controller->audio_parameters().sample_rate();
-    ASSERT_EQ(GoogleStreamingRemoteEngine::kAudioPacketIntervalMs,
+    ASSERT_EQ(SpeechRecognitionEngine::kAudioPacketIntervalMs,
         capture_packet_interval_ms);
     FeedAudioController(500 /* ms */, /*noise=*/ false);
     FeedAudioController(1000 /* ms */, /*noise=*/ true);

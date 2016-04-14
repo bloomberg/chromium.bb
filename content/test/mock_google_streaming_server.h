@@ -18,7 +18,7 @@ struct SpeechRecognitionResult;
 // recognition webservice, exploiting the TestURLFetcher to extract request
 // parameters and provide forged JSON responses back to the client.
 // It is intended for closing the server-side loop in speech tests that involve
-// the GoogleStreamingRemoteEngine client.
+// the SpeechRecognitionEngine client.
 class MockGoogleStreamingServer : public net::TestURLFetcherDelegateForTests {
  public:
   class Delegate {

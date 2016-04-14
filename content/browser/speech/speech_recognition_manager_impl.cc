@@ -14,7 +14,6 @@
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/media/media_stream_ui_proxy.h"
-#include "content/browser/speech/google_streaming_remote_engine.h"
 #include "content/browser/speech/speech_recognition_engine.h"
 #include "content/browser/speech/speech_recognizer_impl.h"
 #include "content/public/browser/browser_thread.h"
@@ -120,7 +119,7 @@ int SpeechRecognitionManagerImpl::CreateSession(
   // activities performed outside of the browser (delegated via JNI to the
   // Android API implementation).
 
-  SpeechRecognitionEngineConfig remote_engine_config;
+  SpeechRecognitionEngine::Config remote_engine_config;
   remote_engine_config.language = config.language;
   remote_engine_config.grammars = config.grammars;
   remote_engine_config.audio_sample_rate =
@@ -138,7 +137,7 @@ int SpeechRecognitionManagerImpl::CreateSession(
   remote_engine_config.preamble = config.preamble;
 
   SpeechRecognitionEngine* google_remote_engine =
-      new GoogleStreamingRemoteEngine(config.url_request_context_getter.get());
+      new SpeechRecognitionEngine(config.url_request_context_getter.get());
   google_remote_engine->SetConfig(remote_engine_config);
 
   session->recognizer = new SpeechRecognizerImpl(

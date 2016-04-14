@@ -1519,8 +1519,6 @@
       'browser/speech/endpointer/energy_endpointer.h',
       'browser/speech/endpointer/energy_endpointer_params.cc',
       'browser/speech/endpointer/energy_endpointer_params.h',
-      'browser/speech/google_streaming_remote_engine.cc',
-      'browser/speech/google_streaming_remote_engine.h',
       'browser/speech/speech_recognition_dispatcher_host.cc',
       'browser/speech/speech_recognition_dispatcher_host.h',
       'browser/speech/speech_recognition_engine.cc',

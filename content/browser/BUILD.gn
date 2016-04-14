@@ -357,8 +357,6 @@ source_set("browser") {
       "speech/endpointer/energy_endpointer.h",
       "speech/endpointer/energy_endpointer_params.cc",
       "speech/endpointer/energy_endpointer_params.h",
-      "speech/google_streaming_remote_engine.cc",
-      "speech/google_streaming_remote_engine.h",
       "speech/speech_recognition_engine.cc",
       "speech/speech_recognition_engine.h",
       "speech/speech_recognizer_impl.cc",

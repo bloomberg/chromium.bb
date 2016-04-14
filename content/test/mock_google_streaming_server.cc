@@ -14,8 +14,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_byteorder.h"
 #include "base/values.h"
-#include "content/browser/speech/google_streaming_remote_engine.h"
 #include "content/browser/speech/proto/google_streaming_api.pb.h"
+#include "content/browser/speech/speech_recognition_engine.h"
 #include "content/browser/speech/speech_recognition_manager_impl.h"
 #include "net/base/escape.h"
 #include "net/base/net_errors.h"
@@ -30,9 +30,9 @@ namespace content {
 MockGoogleStreamingServer::MockGoogleStreamingServer(Delegate* delegate)
     : delegate_(delegate),
       kDownstreamUrlFetcherId(
-          GoogleStreamingRemoteEngine::kDownstreamUrlFetcherIdForTesting),
+          SpeechRecognitionEngine::kDownstreamUrlFetcherIdForTesting),
       kUpstreamUrlFetcherId(
-          GoogleStreamingRemoteEngine::kUpstreamUrlFetcherIdForTesting) {
+          SpeechRecognitionEngine::kUpstreamUrlFetcherIdForTesting) {
   url_fetcher_factory_.SetDelegateForTests(this);
 }
 

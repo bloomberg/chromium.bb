@@ -32,7 +32,7 @@ class SpeechRecognitionEventListener;
 class CONTENT_EXPORT SpeechRecognizerImpl
     : public SpeechRecognizer,
       public media::AudioInputController::EventHandler,
-      public NON_EXPORTED_BASE(SpeechRecognitionEngineDelegate) {
+      public NON_EXPORTED_BASE(SpeechRecognitionEngine::Delegate) {
  public:
   static const int kAudioSampleRate;
   static const media::ChannelLayout kChannelLayout;
