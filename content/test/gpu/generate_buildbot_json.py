@@ -784,6 +784,10 @@ TELEMETRY_TESTS = {
           # http://crbug.com/599451: this test is currently too slow
           # to run on x64 in Debug mode. Need to shard the tests.
           'Win7 x64 Debug (NVIDIA)',
+          # http://crbug.com/540543: Linux Intel driver is GL 3.0 and
+          # doesn't support features needed for ES3
+          'Linux Release (New Intel)',
+          'Linux Debug (New Intel)',
         ],
       },
     ],

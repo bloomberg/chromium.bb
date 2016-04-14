@@ -424,9 +424,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/textures/misc/tex-mipmap-levels.html',
         ['linux', 'amd'], bug=483282)
 
-    # Linux Intel: driver is GL 3.0 and doesn't support features needed for ES3.
-    self.Skip('*', ['linux', 'intel'], bug=540543)
-
     # Conflicting expectations to test that the
     # "Expectations Have No collisions" unittest works.
     # page_name = 'conformance/glsl/constructors/glsl-construct-ivec4.html'
