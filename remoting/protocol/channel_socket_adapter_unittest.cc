@@ -54,13 +54,11 @@ class MockTransportChannel : public cricket::TransportChannel {
   MOCK_METHOD1(GetSslCipher, bool(std::string* cipher));
   MOCK_CONST_METHOD0(GetLocalCertificate,
                      rtc::scoped_refptr<rtc::RTCCertificate>());
-  MOCK_CONST_METHOD1(GetRemoteSSLCertificate,
-                     bool(rtc::SSLCertificate** cert));
 
   // This can't be a real mock method because gmock doesn't support move-only
   // return values.
-  virtual rtc::scoped_ptr<rtc::SSLCertificate> GetRemoteSSLCertificate()
-      const {
+  rtc::scoped_ptr<rtc::SSLCertificate> GetRemoteSSLCertificate()
+      const override {
     EXPECT_TRUE(false);  // Never called.
     return nullptr;
   }
