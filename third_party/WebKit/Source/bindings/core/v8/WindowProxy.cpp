@@ -311,8 +311,6 @@ void WindowProxy::createContext()
     if (globalTemplate.IsEmpty())
         return;
 
-    double contextCreationStartInSeconds = currentTime();
-
     // FIXME: It's not clear what the right thing to do for remote frames is.
     // The extensions registered don't generally seem to make sense for remote
     // frames, so skip it for now.
@@ -337,15 +335,6 @@ void WindowProxy::createContext()
     if (context.IsEmpty())
         return;
     m_scriptState = ScriptState::create(context, m_world);
-
-    double contextCreationDurationInMilliseconds = (currentTime() - contextCreationStartInSeconds) * 1000;
-    if (!m_world->isMainWorld()) {
-        DEFINE_STATIC_LOCAL(CustomCountHistogram, isolatedWorldHistogram, ("WebCore.WindowProxy.createContext.IsolatedWorld", 0, 10000, 50));
-        isolatedWorldHistogram.count(contextCreationDurationInMilliseconds);
-    } else {
-        DEFINE_STATIC_LOCAL(CustomCountHistogram, mainWorldHistogram, ("WebCore.WindowProxy.createContext.MainWorld", 0, 10000, 50));
-        mainWorldHistogram.count(contextCreationDurationInMilliseconds);
-    }
 }
 
 static v8::Local<v8::Object> toInnerGlobalObject(v8::Local<v8::Context> context)

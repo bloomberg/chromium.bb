@@ -98,11 +98,7 @@ DEFINE_TRACE(ScriptController)
 
 void ScriptController::clearForClose()
 {
-    double start = currentTime();
     m_windowProxyManager->clearForClose();
-    double end = currentTime();
-    DEFINE_STATIC_LOCAL(CustomCountHistogram, clearForCloseHistogram, ("WebCore.ScriptController.clearForClose", 0, 10000, 50));
-    clearForCloseHistogram.count((end - start) * 1000);
 }
 
 void ScriptController::updateSecurityOrigin(SecurityOrigin* origin)
@@ -255,13 +251,7 @@ void ScriptController::clearWindowProxy()
 {
     // V8 binding expects ScriptController::clearWindowProxy only be called
     // when a frame is loading a new page. This creates a new context for the new page.
-
-    double start = currentTime();
-
     m_windowProxyManager->clearForNavigation();
-    double end = currentTime();
-    DEFINE_STATIC_LOCAL(CustomCountHistogram, clearWindowProxyHistogram, ("WebCore.ScriptController.clearWindowProxy", 0, 10000, 50));
-    clearWindowProxyHistogram.count((end - start) * 1000);
 }
 
 void ScriptController::setCaptureCallStackForUncaughtExceptions(v8::Isolate* isolate, bool value)
