@@ -12,6 +12,7 @@
 #include <set>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/containers/scoped_ptr_hash_map.h"
@@ -91,6 +92,16 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
     virtual void DeviceAddressChanged(BluetoothAdapter* adapter,
                                       BluetoothDevice* device,
                                       const std::string& old_address) {}
+
+#if defined(OS_CHROMEOS) || defined(OS_LINUX)
+    // This function is implemented for ChromeOS only, and the support for
+    // Android, MaxOS and Windows should be added on demand in the future.
+    // Called when paired property of the device |device| known to the adapter
+    // |adapter| changed.
+    virtual void DevicePairedChanged(BluetoothAdapter* adapter,
+                                     BluetoothDevice* device,
+                                     bool new_paired_status) {}
+#endif
 
     // Called when the device |device| is removed from the adapter |adapter|,
     // either as a result of a discovered device being lost between discovering
@@ -407,6 +418,12 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
 
   // The following methods are used to send various events to observers.
   void NotifyAdapterStateChanged(bool powered);
+#if defined(OS_CHROMEOS) || defined(OS_LINUX)
+  // This function is implemented for ChromeOS only, and the support on
+  // Android, MaxOS and Windows should be added on demand in the future.
+  void NotifyDevicePairedChanged(BluetoothDevice* device,
+                                 bool new_paired_status);
+#endif
   void NotifyGattServiceAdded(BluetoothGattService* service);
   void NotifyGattServiceRemoved(BluetoothGattService* service);
   void NotifyGattServiceChanged(BluetoothGattService* service);

@@ -4,6 +4,9 @@
 
 #include "device/bluetooth/test/test_bluetooth_adapter_observer.h"
 
+#include <string>
+#include <vector>
+
 #include "base/message_loop/message_loop.h"
 #include "device/bluetooth/bluetooth_gatt_characteristic.h"
 #include "device/bluetooth/bluetooth_gatt_descriptor.h"
@@ -34,6 +37,10 @@ void TestBluetoothAdapterObserver::Reset() {
   device_added_count_ = 0;
   device_changed_count_ = 0;
   device_address_changed_count_ = 0;
+#if defined(OS_CHROMEOS) || defined(OS_LINUX)
+  device_paired_changed_count_ = 0;
+  device_new_paired_status_ = false;
+#endif
   device_removed_count_ = 0;
   last_device_ = NULL;
   last_device_address_.clear();
@@ -125,6 +132,19 @@ void TestBluetoothAdapterObserver::DeviceAddressChanged(
 
   QuitMessageLoop();
 }
+
+#if defined(OS_CHROMEOS) || defined(OS_LINUX)
+void TestBluetoothAdapterObserver::DevicePairedChanged(
+    device::BluetoothAdapter* adapter,
+    device::BluetoothDevice* device,
+    bool new_paired_status) {
+  ++device_paired_changed_count_;
+  last_device_ = device;
+  device_new_paired_status_ = new_paired_status;
+
+  QuitMessageLoop();
+}
+#endif
 
 void TestBluetoothAdapterObserver::DeviceRemoved(BluetoothAdapter* adapter,
                                                  BluetoothDevice* device) {

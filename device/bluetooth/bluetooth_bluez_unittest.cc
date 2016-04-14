@@ -49,10 +49,10 @@ namespace {
 void SaveConnectionInfo(BluetoothDevice::ConnectionInfo* out,
                         const BluetoothDevice::ConnectionInfo& conn_info) {
   *out = conn_info;
-};
+}
 
 // Find |address| in |devices|, if found returns the index otherwise returns -1.
-int GetDeviceIndexByAddress(BluetoothAdapter::DeviceList& devices,
+int GetDeviceIndexByAddress(const BluetoothAdapter::DeviceList& devices,
                             const char* address) {
   int idx = -1;
   for (auto& device : devices) {
@@ -2380,6 +2380,47 @@ TEST_F(BluetoothBlueZTest, DeviceAddressChanged) {
 
   EXPECT_EQ(std::string(kNewAddress), devices[idx]->GetAddress());
 }
+
+#if defined(OS_CHROMEOS) || defined(OS_LINUX)
+TEST_F(BluetoothBlueZTest, DevicePairedChanged) {
+  // Simulate a change of paired state of a device.
+  GetAdapter();
+
+  BluetoothAdapter::DeviceList devices = adapter_->GetDevices();
+  ASSERT_EQ(2U, devices.size());
+
+  int idx = GetDeviceIndexByAddress(
+      devices, bluez::FakeBluetoothDeviceClient::kPairedDeviceAddress);
+  ASSERT_NE(-1, idx);
+  ASSERT_EQ(bluez::FakeBluetoothDeviceClient::kPairedDeviceAddress,
+            devices[idx]->GetAddress());
+  ASSERT_EQ(true, devices[idx]->IsPaired());
+
+  // Install an observer; expect the DevicePairedChanged method to be called
+  // when we change the paired state of the device.
+  TestBluetoothAdapterObserver observer(adapter_);
+
+  bluez::FakeBluetoothDeviceClient::Properties* properties =
+      fake_bluetooth_device_client_->GetProperties(dbus::ObjectPath(
+          bluez::FakeBluetoothDeviceClient::kPairedDevicePath));
+
+  properties->paired.ReplaceValue(false);
+
+  EXPECT_EQ(1, observer.device_changed_count());
+  EXPECT_EQ(1, observer.device_paired_changed_count());
+  EXPECT_FALSE(observer.device_new_paired_status());
+  EXPECT_EQ(devices[idx], observer.last_device());
+
+  // Change the paired state back to true to examine the consistent behavior of
+  // DevicePairedChanged method.
+  properties->paired.ReplaceValue(true);
+
+  EXPECT_EQ(2, observer.device_changed_count());
+  EXPECT_EQ(2, observer.device_paired_changed_count());
+  EXPECT_TRUE(observer.device_new_paired_status());
+  EXPECT_EQ(devices[idx], observer.last_device());
+}
+#endif
 
 TEST_F(BluetoothBlueZTest, DeviceUuidsChanged) {
   // Simulate a change of advertised services of a device.
