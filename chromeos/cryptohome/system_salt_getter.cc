@@ -42,15 +42,6 @@ void SystemSaltGetter::GetSystemSalt(
                  callback));
 }
 
-const SystemSaltGetter::RawSalt* SystemSaltGetter::GetRawSalt() const {
-  return raw_salt_.empty() ? nullptr : &raw_salt_;
-}
-
-void SystemSaltGetter::SetRawSaltForTesting(
-    const SystemSaltGetter::RawSalt& raw_salt) {
-  raw_salt_ = raw_salt;
-}
-
 void SystemSaltGetter::DidWaitForServiceToBeAvailable(
     const GetSystemSaltCallback& callback,
     bool service_is_available) {

@@ -864,8 +864,7 @@ void WallpaperManagerBase::MoveLoggedInUserCustomWallpaper() {
     task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&WallpaperManagerBase::MoveCustomWallpapersOnWorker,
-                   logged_in_user->GetAccountId(),
-                   GetFilesId(logged_in_user->GetAccountId()),
+                   logged_in_user->GetAccountId(), GetFilesId(*logged_in_user),
                    base::ThreadTaskRunnerHandle::Get(),
                    weak_factory_.GetWeakPtr()));
   }
