@@ -1580,6 +1580,7 @@ TestRunner::TestRunner(TestInterfaces* interfaces)
       mock_screen_orientation_client_(new MockScreenOrientationClient),
       spellcheck_(new SpellCheckClient(this)),
       chooser_count_(0),
+      previously_focused_view_(nullptr),
       weak_factory_(this) {}
 
 TestRunner::~TestRunner() {}
@@ -2884,7 +2885,22 @@ void TestRunner::SetAlwaysAcceptCookies(bool accept) {
 }
 
 void TestRunner::SetWindowIsKey(bool value) {
-  delegate_->SetFocus(proxy_->web_view(), value);
+  SetFocus(proxy_->web_view(), value);
+}
+
+void TestRunner::SetFocus(blink::WebView* web_view, bool focus) {
+  if (focus) {
+    if (previously_focused_view_ != web_view) {
+      delegate_->SetFocus(previously_focused_view_, false);
+      delegate_->SetFocus(web_view, true);
+      previously_focused_view_ = web_view;
+    }
+  } else {
+    if (previously_focused_view_ == web_view) {
+      delegate_->SetFocus(web_view, false);
+      previously_focused_view_ = nullptr;
+    }
+  }
 }
 
 std::string TestRunner::PathToLocalResource(const std::string& path) {

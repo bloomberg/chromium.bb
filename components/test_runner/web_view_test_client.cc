@@ -197,7 +197,7 @@ bool WebViewTestClient::isPointerLocked() {
 }
 
 void WebViewTestClient::didFocus() {
-  delegate_->SetFocus(web_test_proxy_base_->web_view(), true);
+  test_runner_->SetFocus(web_test_proxy_base_->web_view(), true);
 }
 
 void WebViewTestClient::setToolTipText(const blink::WebString& text,

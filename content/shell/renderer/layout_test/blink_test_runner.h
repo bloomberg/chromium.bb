@@ -199,8 +199,6 @@ class BlinkTestRunner : public RenderViewObserver,
 
   test_runner::WebTestProxyBase* proxy_;
 
-  RenderView* focused_view_;
-
   test_runner::TestPreferences prefs_;
 
   ShellTestConfiguration test_config_;

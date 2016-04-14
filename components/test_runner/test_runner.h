@@ -83,6 +83,7 @@ class TestRunner : public WebTestRunner {
   bool ShouldDumpBackForwardList() const override;
   blink::WebContentSettingsClient* GetWebContentSettings() const override;
   void InitializeWebViewWithMocks(blink::WebView* web_view) override;
+  void SetFocus(blink::WebView* web_view, bool focus) override;
 
   // Methods used by WebViewTestClient and WebFrameTestClient.
   void OnAnimationScheduled(blink::WebView* view);
@@ -522,7 +523,7 @@ class TestRunner : public WebTestRunner {
   // Changes the cookie policy from the default to allow all cookies.
   void SetAlwaysAcceptCookies(bool accept);
 
-  // Gives focus to the window.
+  // Gives focus to the main test window.
   void SetWindowIsKey(bool value);
 
   // Converts a URL starting with file:///tmp/ to the local mapping.
@@ -816,6 +817,11 @@ class TestRunner : public WebTestRunner {
 
   // Captured drag image.
   blink::WebImage drag_image_;
+
+  // View that was focused by a previous call to TestRunner::SetFocus method.
+  // Note - this can be a dangling pointer to an already destroyed WebView (this
+  // is ok, because this is taken care of in WebTestDelegate::SetFocus).
+  blink::WebView* previously_focused_view_;
 
   std::set<blink::WebView*> views_with_scheduled_animations_;
 

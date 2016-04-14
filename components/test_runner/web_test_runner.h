@@ -79,6 +79,10 @@ class WebTestRunner {
   // method covers blink::WebCredentialManagerClient and
   // blink::WebSpellCheckClient.
   virtual void InitializeWebViewWithMocks(blink::WebView* web_view) = 0;
+
+  // Sets focus on the given view.  Internally tracks currently focused view,
+  // to aid in defocusing previously focused views at the right time.
+  virtual void SetFocus(blink::WebView* web_view, bool focus) = 0;
 };
 
 }  // namespace test_runner
