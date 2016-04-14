@@ -160,7 +160,6 @@ font-size-adjust: none
 font-stretch: normal
 font-style: normal
 font-variant: normal
-font-variant-caps: normal
 font-variant-ligatures: normal
 font-weight: normal
 grid-auto-columns: auto

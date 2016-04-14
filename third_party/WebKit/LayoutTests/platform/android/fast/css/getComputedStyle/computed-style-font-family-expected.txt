@@ -1,6 +1,6 @@
-Font attributes. The font-family should list the empty string:
+Font attributes. The font-family should list three families:
 
-font-family: "";
+font-family: monospace, "Lucida Grande", sans-serif;
 font-kerning: auto;
 font-size: 16px;
 font-size-adjust: none;
@@ -8,6 +8,5 @@ font-stretch: normal;
 font-style: normal;
 font-variant: normal;
 font-variant-ligatures: normal;
-font-variant-caps: normal;
 font-weight: normal;
 

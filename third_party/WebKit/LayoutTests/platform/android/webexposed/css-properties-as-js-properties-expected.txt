@@ -128,7 +128,6 @@ fontSizeAdjust
 fontStretch
 fontStyle
 fontVariant
-fontVariantCaps
 fontVariantLigatures
 fontWeight
 getPropertyPriority

@@ -8,5 +8,6 @@ font-stretch: normal;
 font-style: normal;
 font-variant: normal;
 font-variant-ligatures: normal;
+font-variant-caps: normal;
 font-weight: normal;
 

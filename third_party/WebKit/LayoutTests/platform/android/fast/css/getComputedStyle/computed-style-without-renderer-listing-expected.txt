@@ -1,4 +1,4 @@
-This test documents all computed styles on a div element.
+This test documents all computed styles on a display: none element.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
@@ -139,7 +139,7 @@ cx: 0px
 cy: 0px
 d: none
 direction: ltr
-display: block
+display: none
 dominant-baseline: auto
 empty-cells: show
 fill: rgb(0, 0, 0)
@@ -160,7 +160,6 @@ font-size-adjust: none
 font-stretch: normal
 font-style: normal
 font-variant: normal
-font-variant-caps: normal
 font-variant-ligatures: normal
 font-weight: normal
 grid-auto-columns: auto
@@ -175,7 +174,7 @@ grid-row-start: auto
 grid-template-areas: none
 grid-template-columns: none
 grid-template-rows: none
-height: 0px
+height: auto
 image-orientation: 0deg
 image-rendering: auto
 isolation: auto
@@ -226,7 +225,7 @@ padding-right: 0px
 padding-top: 0px
 paint-order: fill stroke markers
 perspective: none
-perspective-origin: 384.5px 0px
+perspective-origin: 50% 50%
 pointer-events: auto
 position: static
 r: 0px
@@ -277,7 +276,7 @@ text-underline-position: auto
 top: auto
 touch-action: auto
 transform: none
-transform-origin: 384.5px 0px
+transform-origin: 50% 50%
 transform-style: flat
 transition-delay: 0s
 transition-duration: 0s
@@ -290,7 +289,7 @@ vertical-align: baseline
 visibility: visible
 white-space: normal
 widows: 1
-width: 769px
+width: auto
 will-change: auto
 word-break: normal
 word-spacing: 0px
