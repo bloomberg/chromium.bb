@@ -100,6 +100,8 @@ extern NSString* const kBrowserActionButtonDragEndNotification;
 - (void)setTestContextMenu:(NSMenu*)testContextMenu;
 // Returns true if the action wants to run.
 - (BOOL)wantsToRunForTesting;
+// Returns true if the cell is highlighted.
+- (BOOL)isHighlighted;
 @end
 
 @interface BrowserActionCell : ImageButtonCell {

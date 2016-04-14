@@ -277,6 +277,9 @@ void CheckActionIsPoppedOut(BrowserActionsController* actionsController,
   EXPECT_EQ([actionsController containerView], [actionButton superview]);
   EXPECT_EQ([actionButton viewController],
             [actionsController toolbarActionsBar]->popped_out_action());
+  // Since the button is popped out for a popup or context menu, it should be
+  // highlighted.
+  EXPECT_TRUE([actionButton isHighlighted]);
 }
 
 // Test that opening a context menu works for both actions on the main bar and
@@ -321,6 +324,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionButtonUiTest,
     runLoop.Run();
     // The menu should have opened from the click.
     EXPECT_TRUE([menuHelper menuOpened]);
+    EXPECT_FALSE([actionButton isHighlighted]);
   }
 
   // Reset the menu helper so we can use it again.
@@ -356,6 +360,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionButtonUiTest,
     // action button, not the overflow's. Since Cocoa doesn't support running
     // a menu-within-a-menu, this is what has to happen.
     EXPECT_TRUE([menuHelper menuOpened]);
+    EXPECT_FALSE([actionButton isHighlighted]);
   }
 }
 

@@ -169,14 +169,15 @@ void ToolbarActionViewDelegateBridge::DoShowContextMenu() {
   // to avoid the magic '5' here, but since it's built into Cocoa, it's not too
   // hopeful.
   NSPoint menuPoint = NSMakePoint(0, NSHeight([owner_ bounds]) + 5);
-  base::WeakPtr<ToolbarActionViewDelegateBridge> weak_this;
+  base::WeakPtr<ToolbarActionViewDelegateBridge> weakThis =
+      weakFactory_.GetWeakPtr();
   [[owner_ cell] setHighlighted:YES];
   [[owner_ menu] popUpMenuPositioningItem:nil
                                atLocation:menuPoint
                                    inView:owner_];
   // Since menus run in a blocking way, it's possible that the extension was
   // unloaded since this point.
-  if (!weak_this)
+  if (!weakThis)
     return;
   [[owner_ cell] setHighlighted:NO];
   contextMenuRunning_ = false;
@@ -538,6 +539,10 @@ void ToolbarActionViewDelegateBridge::DoShowContextMenu() {
 - (BOOL)wantsToRunForTesting {
   return viewController_->WantsToRun(
       [browserActionsController_ currentWebContents]);
+}
+
+- (BOOL)isHighlighted {
+  return [[self cell] isHighlighted];
 }
 
 @end
