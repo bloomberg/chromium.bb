@@ -324,6 +324,10 @@ template("ios_framework_bundle") {
     config(_headers_map_config) {
       visibility = [ ":$_target_name" ]
       include_dirs = [ _header_map_filename ]
+      ldflags = [
+        "-install_name",
+        "@rpath/$_framework_name/$_output_name",
+      ]
     }
 
     _framework_public_config = _target_name + "_public_config"
