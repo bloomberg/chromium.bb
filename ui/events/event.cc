@@ -240,6 +240,16 @@ const KeyEvent* Event::AsKeyEvent() const {
   return static_cast<const KeyEvent*>(this);
 }
 
+LocatedEvent* Event::AsLocatedEvent() {
+  CHECK(IsLocatedEvent());
+  return static_cast<LocatedEvent*>(this);
+}
+
+const LocatedEvent* Event::AsLocatedEvent() const {
+  CHECK(IsLocatedEvent());
+  return static_cast<const LocatedEvent*>(this);
+}
+
 MouseEvent* Event::AsMouseEvent() {
   CHECK(IsMouseEvent());
   return static_cast<MouseEvent*>(this);

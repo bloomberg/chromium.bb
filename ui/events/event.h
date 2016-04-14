@@ -35,6 +35,7 @@ template <class P> struct ParamTraits;
 namespace ui {
 class EventTarget;
 class KeyEvent;
+class LocatedEvent;
 class MouseEvent;
 class MouseWheelEvent;
 class PointerEvent;
@@ -230,6 +231,11 @@ class EVENTS_EXPORT Event {
   // must be true as a precondition to calling these methods.
   KeyEvent* AsKeyEvent();
   const KeyEvent* AsKeyEvent() const;
+
+  // Convenience methods to cast |this| to a LocatedEvent. IsLocatedEvent()
+  // must be true as a precondition to calling these methods.
+  LocatedEvent* AsLocatedEvent();
+  const LocatedEvent* AsLocatedEvent() const;
 
   // Convenience methods to cast |this| to a MouseEvent. IsMouseEvent()
   // must be true as a precondition to calling these methods.

@@ -20,7 +20,6 @@ namespace ui {
 class Event;
 class KeyEvent;
 class LocatedEvent;
-class PointerEvent;
 }
 
 namespace mus {
@@ -119,7 +118,7 @@ class EventDispatcher : public ServerWindowObserver {
   //   when no buttons on the mouse are down.
   // This also generates exit events as appropriate. For example, if the mouse
   // moves between one window to another an exit is generated on the first.
-  void ProcessPointerEvent(const ui::PointerEvent& event);
+  void ProcessLocatedEvent(const ui::LocatedEvent& event);
 
   // Adds |pointer_target| to |pointer_targets_|.
   void StartTrackingPointer(int32_t pointer_id,
@@ -131,17 +130,18 @@ class EventDispatcher : public ServerWindowObserver {
   // Starts tracking the pointer for |event|, or if already tracking the
   // pointer sends the appropriate event to the delegate and updates the
   // currently tracked PointerTarget appropriately.
-  void UpdateTargetForPointer(const ui::PointerEvent& event);
+  void UpdateTargetForPointer(int32_t pointer_id,
+                              const ui::LocatedEvent& event);
 
-  // Returns a PointerTarget from the supplied Event.
-  PointerTarget PointerTargetForEvent(const ui::PointerEvent& event) const;
+  // Returns a PointerTarget from the supplied event.
+  PointerTarget PointerTargetForEvent(const ui::LocatedEvent& event) const;
 
   // Returns true if any pointers are in the pressed/down state.
   bool AreAnyPointersDown() const;
 
   // If |target->window| is valid, then passes the event to the delegate.
   void DispatchToPointerTarget(const PointerTarget& target,
-                               const ui::PointerEvent& event);
+                               const ui::LocatedEvent& event);
 
   // Stops sending pointer events to |window|. This does not remove the entry
   // for |window| from |pointer_targets_|, rather it nulls out the window. This

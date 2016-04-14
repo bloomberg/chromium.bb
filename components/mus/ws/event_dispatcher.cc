@@ -53,6 +53,16 @@ bool IsLocationInNonclientArea(const ServerWindow* target,
   return true;
 }
 
+uint32_t PointerId(const ui::LocatedEvent& event) {
+  if (event.IsPointerEvent())
+    return event.AsPointerEvent()->pointer_id();
+  if (event.IsMouseWheelEvent())
+    return ui::PointerEvent::kMousePointerId;
+
+  NOTREACHED();
+  return 0;
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -203,8 +213,8 @@ void EventDispatcher::ProcessEvent(const ui::Event& event) {
     return;
   }
 
-  if (event.IsPointerEvent()) {
-    ProcessPointerEvent(*event.AsPointerEvent());
+  if (event.IsPointerEvent() || event.IsMouseWheelEvent()) {
+    ProcessLocatedEvent(*event.AsLocatedEvent());
     return;
   }
 
@@ -224,8 +234,10 @@ void EventDispatcher::ProcessKeyEvent(const ui::KeyEvent& event) {
   }
 }
 
-void EventDispatcher::ProcessPointerEvent(const ui::PointerEvent& event) {
-  const bool is_mouse_event = event.IsMousePointerEvent();
+void EventDispatcher::ProcessLocatedEvent(const ui::LocatedEvent& event) {
+  DCHECK(event.IsPointerEvent() || event.IsMouseWheelEvent());
+  const bool is_mouse_event =
+      event.IsMousePointerEvent() || event.IsMouseWheelEvent();
 
   if (is_mouse_event)
     mouse_pointer_last_location_ = event.location();
@@ -254,11 +266,11 @@ void EventDispatcher::ProcessPointerEvent(const ui::PointerEvent& event) {
     return;
   }
 
-  const int32_t pointer_id = event.pointer_id();
+  const int32_t pointer_id = PointerId(event);
   if (!IsTrackingPointer(pointer_id) ||
       !pointer_targets_[pointer_id].is_pointer_down) {
     const bool any_pointers_down = AreAnyPointersDown();
-    UpdateTargetForPointer(event);
+    UpdateTargetForPointer(pointer_id, event);
     if (is_mouse_event)
       mouse_cursor_source_window_ = pointer_targets_[pointer_id].window;
 
@@ -310,8 +322,8 @@ void EventDispatcher::StopTrackingPointer(int32_t pointer_id) {
     window->RemoveObserver(this);
 }
 
-void EventDispatcher::UpdateTargetForPointer(const ui::PointerEvent& event) {
-  const int32_t pointer_id = event.pointer_id();
+void EventDispatcher::UpdateTargetForPointer(int32_t pointer_id,
+                                             const ui::LocatedEvent& event) {
   if (!IsTrackingPointer(pointer_id)) {
     StartTrackingPointer(pointer_id, PointerTargetForEvent(event));
     return;
@@ -322,7 +334,7 @@ void EventDispatcher::UpdateTargetForPointer(const ui::PointerEvent& event) {
       pointer_target.in_nonclient_area ==
           pointer_targets_[pointer_id].in_nonclient_area) {
     // The targets are the same, only set the down state to true if necessary.
-    // Down going to up is handled by ProcessPointerEvent().
+    // Down going to up is handled by ProcessLocatedEvent().
     if (pointer_target.is_pointer_down)
       pointer_targets_[pointer_id].is_pointer_down = true;
     return;
@@ -344,7 +356,7 @@ void EventDispatcher::UpdateTargetForPointer(const ui::PointerEvent& event) {
 }
 
 EventDispatcher::PointerTarget EventDispatcher::PointerTargetForEvent(
-    const ui::PointerEvent& event) const {
+    const ui::LocatedEvent& event) const {
   PointerTarget pointer_target;
   gfx::Point location(event.location());
   ServerWindow* target_window =
@@ -367,7 +379,7 @@ bool EventDispatcher::AreAnyPointersDown() const {
 }
 
 void EventDispatcher::DispatchToPointerTarget(const PointerTarget& target,
-                                              const ui::PointerEvent& event) {
+                                              const ui::LocatedEvent& event) {
   if (!target.window)
     return;
 
@@ -375,7 +387,7 @@ void EventDispatcher::DispatchToPointerTarget(const PointerTarget& target,
   gfx::Transform transform(GetTransformToWindow(surface_id_, target.window));
   transform.TransformPoint(&location);
   scoped_ptr<ui::Event> clone = ui::Event::Clone(event);
-  clone->AsPointerEvent()->set_location(location);
+  clone->AsLocatedEvent()->set_location(location);
   // TODO(jonross): add post-target accelerator support once accelerators
   // support pointer events.
   delegate_->DispatchInputEventToWindow(target.window, target.in_nonclient_area,

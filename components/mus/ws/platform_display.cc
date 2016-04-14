@@ -358,12 +358,7 @@ void DefaultPlatformDisplay::OnDamageRect(const gfx::Rect& damaged_region) {
 }
 
 void DefaultPlatformDisplay::DispatchEvent(ui::Event* event) {
-  // TODO(moshayedi): crbug.com/590226. Enable this after we support wheel
-  // events in mus event dispatcher.
-  if (event->IsMouseWheelEvent())
-    return;
-
-  if (event->IsMouseEvent()) {
+  if (event->IsMouseEvent() && !event->IsMouseWheelEvent()) {
     delegate_->OnEvent(ui::PointerEvent(*event->AsMouseEvent()));
   } else if (event->IsTouchEvent()) {
     delegate_->OnEvent(ui::PointerEvent(*event->AsTouchEvent()));

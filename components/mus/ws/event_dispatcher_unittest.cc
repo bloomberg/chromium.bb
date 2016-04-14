@@ -138,12 +138,10 @@ void ExpectDispatchedEventDetailsMatches(const DispatchedEventDetails* details,
 
   ASSERT_EQ(target, details->window);
   ASSERT_TRUE(details->event);
-  ASSERT_TRUE(details->event->IsPointerEvent());
+  ASSERT_TRUE(details->event->IsLocatedEvent());
   ASSERT_FALSE(details->in_nonclient_area);
-  ui::MouseEvent* dispatched_mouse_event =
-      static_cast<ui::MouseEvent*>(details->event.get());
-  ASSERT_EQ(root_location, dispatched_mouse_event->root_location());
-  ASSERT_EQ(location, dispatched_mouse_event->location());
+  ASSERT_EQ(root_location, details->event->AsLocatedEvent()->root_location());
+  ASSERT_EQ(location, details->event->AsLocatedEvent()->location());
 }
 
 void RunMouseEventTests(EventDispatcher* dispatcher,
@@ -154,7 +152,10 @@ void RunMouseEventTests(EventDispatcher* dispatcher,
     const MouseEventTest& test = tests[i];
     ASSERT_FALSE(dispatcher_delegate->has_queued_events())
         << " unexpected queued events before running " << i;
-    dispatcher->ProcessEvent(ui::PointerEvent(test.input_event));
+    if (test.input_event.IsMouseWheelEvent())
+      dispatcher->ProcessEvent(test.input_event);
+    else
+      dispatcher->ProcessEvent(ui::PointerEvent(test.input_event));
 
     scoped_ptr<DispatchedEventDetails> details =
         dispatcher_delegate->GetAndAdvanceDispatchedEventDetails();
@@ -769,9 +770,7 @@ TEST_F(EventDispatcherTest, MouseInExtendedHitTestRegion) {
   EXPECT_EQ(gfx::Point(-2, -1), details->event->AsPointerEvent()->location());
 }
 
-// TODO(moshayedi): crbug.com/590226. Enable this after we support wheel events
-// in mus event dispatcher.
-TEST_F(EventDispatcherTest, DISABLED_WheelWhileDown) {
+TEST_F(EventDispatcherTest, WheelWhileDown) {
   scoped_ptr<ServerWindow> child1 = CreateChildWindow(WindowId(1, 3));
   scoped_ptr<ServerWindow> child2 = CreateChildWindow(WindowId(1, 4));
 
