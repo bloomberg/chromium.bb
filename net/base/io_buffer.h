@@ -81,7 +81,7 @@ class NET_EXPORT IOBuffer : public base::RefCountedThreadSafe<IOBuffer> {
   explicit IOBuffer(int buffer_size);
   explicit IOBuffer(size_t buffer_size);
 
-  char* data() { return data_; }
+  char* data() const { return data_; }
 
  protected:
   friend class base::RefCountedThreadSafe<IOBuffer>;
