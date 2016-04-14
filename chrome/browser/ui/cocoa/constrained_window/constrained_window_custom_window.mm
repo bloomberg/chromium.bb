@@ -4,9 +4,11 @@
 
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_window.h"
 
+#include "base/command_line.h"
 #import "base/mac/scoped_nsobject.h"
 #import "chrome/browser/ui/chrome_style.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_sheet_controller.h"
+#include "content/public/common/content_switches.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
@@ -39,7 +41,11 @@
                                styleMask:windowStyle
                                  backing:bufferingType
                                    defer:NO])) {
-    [self setHasShadow:YES];
+    // Don't draw shadows in tests, as that causes Window Server crashes on VMs.
+    // https://crbug.com/515627
+    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+    if (!command_line->HasSwitch(switches::kTestType))
+      [self setHasShadow:YES];
     [self setBackgroundColor:skia::SkColorToCalibratedNSColor(
         chrome_style::GetBackgroundColor())];
     [self setOpaque:NO];
