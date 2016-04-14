@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../../resources/js-test.js"></script>
+</head>
+<body>
+<script>
+description("Verify that MediaStreamTracks created while dispatching MediaStreamSource events do not crash.");
+
+if (window.testRunner) {
+    testRunner.dumpAsText();
+    testRunner.waitUntilDone();
+}
+
+var jsTestIsAsync = true;
+
+function getUserMedia(constraints, callback) {
+    try {
+        navigator.webkitGetUserMedia(constraints, callback, function () { });
+    } catch (e) {
+        testFailed("Unexpected exception: " + e.toString());
+        finishJSTest();
+    }
+}
+
+getUserMedia({audio: true,video: true}, function (stream) {
+    var track = stream.getTracks()[0];
+    track.onmute = function () {
+        track.clone();
+        track.stop();
+    };
+    track.onended = function () {
+        track.clone(undefined);
+        testPassed("Test did not crash.");
+        finishJSTest();
+    };
+    track.enabled = false;
+});
+</script>
+</body>
+</html>

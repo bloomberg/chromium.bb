@@ -53,8 +53,13 @@ void MediaStreamSource::setReadyState(ReadyState readyState)
 {
     if (m_readyState != ReadyStateEnded && m_readyState != readyState) {
         m_readyState = readyState;
-        for (auto i = m_observers.begin(); i != m_observers.end(); ++i)
-            (*i)->sourceChangedState();
+
+        // Observers may dispatch events which create and add new Observers;
+        // take a snapshot so as to safely iterate.
+        HeapVector<Member<Observer>> observers;
+        copyToVector(m_observers, observers);
+        for (auto observer : observers)
+            observer->sourceChangedState();
     }
 }
 
