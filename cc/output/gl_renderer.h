@@ -332,7 +332,11 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   typedef ProgramBinding<VertexShaderPosTexYUVStretchOffset,
                          FragmentShaderYUVVideo> VideoYUVProgram;
   typedef ProgramBinding<VertexShaderPosTexYUVStretchOffset,
-                         FragmentShaderYUVAVideo> VideoYUVAProgram;
+                         FragmentShaderNV12Video>
+      VideoNV12Program;
+  typedef ProgramBinding<VertexShaderPosTexYUVStretchOffset,
+                         FragmentShaderYUVAVideo>
+      VideoYUVAProgram;
 
   // Special purpose / effects shaders.
   typedef ProgramBinding<VertexShaderPos, FragmentShaderColor>
@@ -402,6 +406,8 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
 
   const VideoYUVProgram* GetVideoYUVProgram(TexCoordPrecision precision,
                                             SamplerType sampler);
+  const VideoNV12Program* GetVideoNV12Program(TexCoordPrecision precision,
+                                              SamplerType sampler);
   const VideoYUVAProgram* GetVideoYUVAProgram(TexCoordPrecision precision,
                                               SamplerType sampler);
   const VideoStreamTextureProgram* GetVideoStreamTextureProgram(
@@ -471,6 +477,8 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
 
   VideoYUVProgram
       video_yuv_program_[LAST_TEX_COORD_PRECISION + 1][LAST_SAMPLER_TYPE + 1];
+  VideoNV12Program video_nv12_program_[LAST_TEX_COORD_PRECISION + 1]
+                                      [LAST_SAMPLER_TYPE + 1];
   VideoYUVAProgram
       video_yuva_program_[LAST_TEX_COORD_PRECISION + 1][LAST_SAMPLER_TYPE + 1];
   VideoStreamTextureProgram

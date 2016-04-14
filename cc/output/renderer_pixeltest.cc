@@ -470,6 +470,60 @@ void CreateTestYUVVideoDrawQuad_Solid(
       video_resource_updater, rect, visible_rect, resource_provider);
 }
 
+void CreateTestYUVVideoDrawQuad_NV12(const SharedQuadState* shared_state,
+                                     media::ColorSpace video_frame_color_space,
+                                     const gfx::RectF& tex_coord_rect,
+                                     uint8_t y,
+                                     uint8_t u,
+                                     uint8_t v,
+                                     RenderPass* render_pass,
+                                     const gfx::Rect& rect,
+                                     const gfx::Rect& visible_rect,
+                                     ResourceProvider* resource_provider) {
+  YUVVideoDrawQuad::ColorSpace color_space = YUVVideoDrawQuad::REC_601;
+  if (video_frame_color_space == media::COLOR_SPACE_JPEG) {
+    color_space = YUVVideoDrawQuad::JPEG;
+  }
+
+  const gfx::Rect opaque_rect(0, 0, 0, 0);
+  const gfx::Size ya_tex_size = rect.size();
+  const gfx::Size uv_tex_size = media::VideoFrame::PlaneSize(
+      media::PIXEL_FORMAT_NV12, media::VideoFrame::kUVPlane, rect.size());
+
+  ResourceId y_resource = resource_provider->CreateResource(
+      rect.size(), ResourceProvider::TEXTURE_HINT_DEFAULT,
+      resource_provider->YuvResourceFormat(8));
+  ResourceId u_resource = resource_provider->CreateResource(
+      uv_tex_size, ResourceProvider::TEXTURE_HINT_DEFAULT, RGBA_8888);
+  ResourceId v_resource = u_resource;
+  ResourceId a_resource = 0;
+
+  std::vector<uint8_t> y_pixels(ya_tex_size.GetArea(), y);
+  resource_provider->CopyToResource(y_resource, y_pixels.data(), ya_tex_size);
+
+  // U goes in the R component and V goes in the G component.
+  uint32_t rgba_pixel = (u << 24) | (v << 16);
+  std::vector<uint32_t> uv_pixels(uv_tex_size.GetArea(), rgba_pixel);
+  resource_provider->CopyToResource(
+      u_resource, reinterpret_cast<uint8_t*>(uv_pixels.data()), uv_tex_size);
+
+  gfx::RectF ya_tex_coord_rect(tex_coord_rect.x() * ya_tex_size.width(),
+                               tex_coord_rect.y() * ya_tex_size.height(),
+                               tex_coord_rect.width() * ya_tex_size.width(),
+                               tex_coord_rect.height() * ya_tex_size.height());
+  gfx::RectF uv_tex_coord_rect(tex_coord_rect.x() * uv_tex_size.width(),
+                               tex_coord_rect.y() * uv_tex_size.height(),
+                               tex_coord_rect.width() * uv_tex_size.width(),
+                               tex_coord_rect.height() * uv_tex_size.height());
+
+  YUVVideoDrawQuad* yuv_quad =
+      render_pass->CreateAndAppendDrawQuad<YUVVideoDrawQuad>();
+  yuv_quad->SetNew(shared_state, rect, opaque_rect, visible_rect,
+                   ya_tex_coord_rect, uv_tex_coord_rect, ya_tex_size,
+                   uv_tex_size, y_resource, u_resource, v_resource, a_resource,
+                   color_space, 0.0f, 1.0f);
+}
+
 typedef ::testing::Types<GLRenderer,
                          SoftwareRenderer,
                          GLRendererWithExpandedViewport,
@@ -1146,6 +1200,28 @@ TEST_F(VideoGLRendererPixelTest, SimpleYUVJRect) {
       shared_state, media::PIXEL_FORMAT_YV12, media::COLOR_SPACE_JPEG, false,
       gfx::RectF(0.0f, 0.0f, 1.0f, 1.0f), 149, 43, 21, pass.get(),
       video_resource_updater_.get(), rect, rect, resource_provider_.get());
+
+  RenderPassList pass_list;
+  pass_list.push_back(std::move(pass));
+
+  EXPECT_TRUE(this->RunPixelTest(&pass_list,
+                                 base::FilePath(FILE_PATH_LITERAL("green.png")),
+                                 FuzzyPixelOffByOneComparator(true)));
+}
+
+TEST_F(VideoGLRendererPixelTest, SimpleNV12JRect) {
+  gfx::Rect rect(this->device_viewport_size_);
+
+  RenderPassId id(1, 1);
+  scoped_ptr<RenderPass> pass = CreateTestRootRenderPass(id, rect);
+
+  SharedQuadState* shared_state =
+      CreateTestSharedQuadState(gfx::Transform(), rect, pass.get());
+
+  // YUV of (149,43,21) should be green (0,255,0) in RGB.
+  CreateTestYUVVideoDrawQuad_NV12(
+      shared_state, media::COLOR_SPACE_JPEG, gfx::RectF(0.0f, 0.0f, 1.0f, 1.0f),
+      149, 43, 21, pass.get(), rect, rect, resource_provider_.get());
 
   RenderPassList pass_list;
   pass_list.push_back(std::move(pass));

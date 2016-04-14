@@ -1957,15 +1957,23 @@ void GLRenderer::DrawYUVVideoQuad(const DrawingFrame* frame,
       quad->shared_quad_state->visible_quad_layer_rect.bottom_right());
 
   bool use_alpha_plane = quad->a_plane_resource_id() != 0;
+  bool use_nv12 = quad->v_plane_resource_id() == quad->u_plane_resource_id();
+
+  DCHECK(!(use_nv12 && use_alpha_plane));
 
   ResourceProvider::ScopedSamplerGL y_plane_lock(
       resource_provider_, quad->y_plane_resource_id(), GL_TEXTURE1, GL_LINEAR);
   ResourceProvider::ScopedSamplerGL u_plane_lock(
       resource_provider_, quad->u_plane_resource_id(), GL_TEXTURE2, GL_LINEAR);
   DCHECK_EQ(y_plane_lock.target(), u_plane_lock.target());
-  ResourceProvider::ScopedSamplerGL v_plane_lock(
-      resource_provider_, quad->v_plane_resource_id(), GL_TEXTURE3, GL_LINEAR);
-  DCHECK_EQ(y_plane_lock.target(), v_plane_lock.target());
+  // TODO(jbauman): Use base::Optional when available.
+  std::unique_ptr<ResourceProvider::ScopedSamplerGL> v_plane_lock;
+  if (!use_nv12) {
+    v_plane_lock.reset(new ResourceProvider::ScopedSamplerGL(
+        resource_provider_, quad->v_plane_resource_id(), GL_TEXTURE3,
+        GL_LINEAR));
+    DCHECK_EQ(y_plane_lock.target(), v_plane_lock->target());
+  }
   std::unique_ptr<ResourceProvider::ScopedSamplerGL> a_plane_lock;
   if (use_alpha_plane) {
     a_plane_lock.reset(new ResourceProvider::ScopedSamplerGL(
@@ -2012,7 +2020,7 @@ void GLRenderer::DrawYUVVideoQuad(const DrawingFrame* frame,
     uv_clamp_rect_location =
         program->fragment_shader().uv_clamp_rect_location();
     alpha_location = program->fragment_shader().alpha_location();
-  } else {
+  } else if (!use_nv12) {
     const VideoYUVProgram* program =
         GetVideoYUVProgram(tex_coord_precision, sampler);
     DCHECK(program && (program->initialized() || IsContextLost()));
@@ -2025,6 +2033,25 @@ void GLRenderer::DrawYUVVideoQuad(const DrawingFrame* frame,
     y_texture_location = program->fragment_shader().y_texture_location();
     u_texture_location = program->fragment_shader().u_texture_location();
     v_texture_location = program->fragment_shader().v_texture_location();
+    yuv_matrix_location = program->fragment_shader().yuv_matrix_location();
+    yuv_adj_location = program->fragment_shader().yuv_adj_location();
+    ya_clamp_rect_location =
+        program->fragment_shader().ya_clamp_rect_location();
+    uv_clamp_rect_location =
+        program->fragment_shader().uv_clamp_rect_location();
+    alpha_location = program->fragment_shader().alpha_location();
+  } else {
+    const VideoNV12Program* program =
+        GetVideoNV12Program(tex_coord_precision, sampler);
+    DCHECK(program && (program->initialized() || IsContextLost()));
+    SetUseProgram(program->program());
+    matrix_location = program->vertex_shader().matrix_location();
+    ya_tex_scale_location = program->vertex_shader().ya_tex_scale_location();
+    ya_tex_offset_location = program->vertex_shader().ya_tex_offset_location();
+    uv_tex_scale_location = program->vertex_shader().uv_tex_scale_location();
+    uv_tex_offset_location = program->vertex_shader().uv_tex_offset_location();
+    y_texture_location = program->fragment_shader().y_texture_location();
+    u_texture_location = program->fragment_shader().uv_texture_location();
     yuv_matrix_location = program->fragment_shader().yuv_matrix_location();
     yuv_adj_location = program->fragment_shader().yuv_adj_location();
     ya_clamp_rect_location =
@@ -2087,7 +2114,8 @@ void GLRenderer::DrawYUVVideoQuad(const DrawingFrame* frame,
 
   gl_->Uniform1i(y_texture_location, 1);
   gl_->Uniform1i(u_texture_location, 2);
-  gl_->Uniform1i(v_texture_location, 3);
+  if (!use_nv12)
+    gl_->Uniform1i(v_texture_location, 3);
   if (use_alpha_plane)
     gl_->Uniform1i(a_texture_location, 4);
 
@@ -3400,6 +3428,22 @@ const GLRenderer::VideoYUVProgram* GLRenderer::GetVideoYUVProgram(
   return program;
 }
 
+const GLRenderer::VideoNV12Program* GLRenderer::GetVideoNV12Program(
+    TexCoordPrecision precision,
+    SamplerType sampler) {
+  DCHECK_GE(precision, 0);
+  DCHECK_LE(precision, LAST_TEX_COORD_PRECISION);
+  DCHECK_GE(sampler, 0);
+  DCHECK_LE(sampler, LAST_SAMPLER_TYPE);
+  VideoNV12Program* program = &video_nv12_program_[precision][sampler];
+  if (!program->initialized()) {
+    TRACE_EVENT0("cc", "GLRenderer::videoNV12Program::initialize");
+    program->Initialize(output_surface_->context_provider(), precision,
+                        sampler);
+  }
+  return program;
+}
+
 const GLRenderer::VideoYUVAProgram* GLRenderer::GetVideoYUVAProgram(
     TexCoordPrecision precision,
     SamplerType sampler) {
@@ -3453,6 +3497,7 @@ void GLRenderer::CleanupSharedObjects() {
 
       video_yuv_program_[i][j].Cleanup(gl_);
       video_yuva_program_[i][j].Cleanup(gl_);
+      video_nv12_program_[i][j].Cleanup(gl_);
     }
     for (int j = 0; j <= LAST_BLEND_MODE; j++) {
       render_pass_program_[i][j].Cleanup(gl_);

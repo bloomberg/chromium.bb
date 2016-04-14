@@ -175,6 +175,7 @@ class GLRendererShaderPixelTest : public GLRendererPixelTest {
     EXPECT_PROGRAM_VALID(
         renderer()->GetTileProgramSwizzleAA(precision, sampler));
     EXPECT_PROGRAM_VALID(renderer()->GetVideoYUVProgram(precision, sampler));
+    EXPECT_PROGRAM_VALID(renderer()->GetVideoNV12Program(precision, sampler));
     EXPECT_PROGRAM_VALID(renderer()->GetVideoYUVAProgram(precision, sampler));
   }
 
