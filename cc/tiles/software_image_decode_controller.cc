@@ -370,116 +370,22 @@ SoftwareImageDecodeController::DecodeImageInternal(
                "SoftwareImageDecodeController::DecodeImageInternal", "key",
                key.ToString());
   const SkImage* image = draw_image.image();
-
-  // If we can use the original decode, then we don't need to do scaling. We can
-  // just read pixels into the final memory.
-  if (key.can_use_original_decode()) {
-    SkImageInfo decoded_info =
-        CreateImageInfo(image->width(), image->height(), format_);
-    std::unique_ptr<base::DiscardableMemory> decoded_pixels;
-    {
-      TRACE_EVENT0(
-          "disabled-by-default-cc.debug",
-          "SoftwareImageDecodeController::DecodeImageInternal - allocate "
-          "decoded pixels");
-      decoded_pixels =
-          base::DiscardableMemoryAllocator::GetInstance()
-              ->AllocateLockedDiscardableMemory(decoded_info.minRowBytes() *
-                                                decoded_info.height());
-    }
-    {
-      TRACE_EVENT0(
-          "disabled-by-default-cc.debug",
-          "SoftwareImageDecodeController::DecodeImageInternal - read pixels");
-      bool result = image->readPixels(decoded_info, decoded_pixels->data(),
-                                      decoded_info.minRowBytes(), 0, 0,
-                                      SkImage::kDisallow_CachingHint);
-
-      if (!result) {
-        decoded_pixels->Unlock();
-        return nullptr;
-      }
-    }
-
-    return base::WrapUnique(
-        new DecodedImage(decoded_info, std::move(decoded_pixels),
-                         SkSize::Make(0, 0), next_tracing_id_.GetNext()));
-  }
-
-  // If we get here, that means we couldn't use the original sized decode for
-  // whatever reason. However, in all cases we do need an original decode to
-  // either do a scale or to extract a subrect from the image. So, what we can
-  // do is construct a key that would require a full sized decode, then get that
-  // decode via GetDecodedImageForDrawInternal(), use it, and unref it. This
-  // ensures that if the original sized decode is already available in any of
-  // the caches, we reuse that. We also ensure that all the proper locking takes
-  // place. If, on the other hand, the decode was not available,
-  // GetDecodedImageForDrawInternal() would decode the image, and unreffing it
-  // later ensures that we will store the discardable memory unlocked in the
-  // cache to be used by future requests.
-  gfx::Rect full_image_rect(image->width(), image->height());
-  DrawImage original_size_draw_image(image, gfx::RectToSkIRect(full_image_rect),
-                                     kNone_SkFilterQuality, SkMatrix::I());
-  ImageKey original_size_key =
-      ImageKey::FromDrawImage(original_size_draw_image);
-  // Sanity checks.
-  DCHECK(original_size_key.can_use_original_decode())
-      << original_size_key.ToString();
-  DCHECK(full_image_rect.size() == original_size_key.target_size());
-
-  auto decoded_draw_image = GetDecodedImageForDrawInternal(
-      original_size_key, original_size_draw_image);
-  if (!decoded_draw_image.image()) {
-    DrawWithImageFinished(original_size_draw_image, decoded_draw_image);
+  if (!image)
     return nullptr;
-  }
 
-  SkPixmap decoded_pixmap;
-  bool result = decoded_draw_image.image()->peekPixels(&decoded_pixmap);
-  DCHECK(result) << key.ToString();
-  if (key.src_rect() != full_image_rect) {
-    result = decoded_pixmap.extractSubset(&decoded_pixmap,
-                                          gfx::RectToSkIRect(key.src_rect()));
-    DCHECK(result) << key.ToString();
+  switch (key.filter_quality()) {
+    case kNone_SkFilterQuality:
+    case kLow_SkFilterQuality:
+      return GetOriginalImageDecode(key, *image);
+    case kMedium_SkFilterQuality:
+      NOTIMPLEMENTED();
+      return nullptr;
+    case kHigh_SkFilterQuality:
+      return GetScaledImageDecode(key, *image);
+    default:
+      NOTREACHED();
+      return nullptr;
   }
-
-  // Now we have a decoded_pixmap which represents the src_rect at the
-  // original scale. All we need to do is scale it.
-  DCHECK(!key.target_size().IsEmpty());
-  SkImageInfo scaled_info = CreateImageInfo(
-      key.target_size().width(), key.target_size().height(), format_);
-  std::unique_ptr<base::DiscardableMemory> scaled_pixels;
-  {
-    TRACE_EVENT0(
-        "disabled-by-default-cc.debug",
-        "SoftwareImageDecodeController::DecodeImageInternal - allocate "
-        "scaled pixels");
-    scaled_pixels = base::DiscardableMemoryAllocator::GetInstance()
-                        ->AllocateLockedDiscardableMemory(
-                            scaled_info.minRowBytes() * scaled_info.height());
-  }
-  SkPixmap scaled_pixmap(scaled_info, scaled_pixels->data(),
-                         scaled_info.minRowBytes());
-  // TODO(vmpstr): Start handling more than just high filter quality.
-  DCHECK_EQ(kHigh_SkFilterQuality, key.filter_quality());
-  {
-    TRACE_EVENT0(
-        "disabled-by-default-cc.debug",
-        "SoftwareImageDecodeController::DecodeImageInternal - scale pixels");
-    bool result =
-        decoded_pixmap.scalePixels(scaled_pixmap, key.filter_quality());
-    DCHECK(result) << key.ToString();
-  }
-
-  // Release the original sized decode. Any other intermediate result to release
-  // would be the subrect memory. However, that's in a unique_ptr and will be
-  // deleted automatically when we return.
-  DrawWithImageFinished(original_size_draw_image, decoded_draw_image);
-
-  return base::WrapUnique(
-      new DecodedImage(scaled_info, std::move(scaled_pixels),
-                       SkSize::Make(-key.src_rect().x(), -key.src_rect().y()),
-                       next_tracing_id_.GetNext()));
 }
 
 DecodedDrawImage SoftwareImageDecodeController::GetDecodedImageForDraw(
@@ -589,6 +495,106 @@ DecodedDrawImage SoftwareImageDecodeController::GetDecodedImageForDrawInternal(
                        GetScaleAdjustment(key), GetDecodedFilterQuality(key));
   decoded_draw_image.set_at_raster_decode(true);
   return decoded_draw_image;
+}
+
+std::unique_ptr<SoftwareImageDecodeController::DecodedImage>
+SoftwareImageDecodeController::GetOriginalImageDecode(const ImageKey& key,
+                                                      const SkImage& image) {
+  SkImageInfo decoded_info =
+      CreateImageInfo(image.width(), image.height(), format_);
+  std::unique_ptr<base::DiscardableMemory> decoded_pixels;
+  {
+    TRACE_EVENT0("disabled-by-default-cc.debug",
+                 "SoftwareImageDecodeController::GetOriginalImageDecode - "
+                 "allocate decoded pixels");
+    decoded_pixels =
+        base::DiscardableMemoryAllocator::GetInstance()
+            ->AllocateLockedDiscardableMemory(decoded_info.minRowBytes() *
+                                              decoded_info.height());
+  }
+  {
+    TRACE_EVENT0("disabled-by-default-cc.debug",
+                 "SoftwareImageDecodeController::GetOriginalImageDecode - "
+                 "read pixels");
+    bool result = image.readPixels(decoded_info, decoded_pixels->data(),
+                                   decoded_info.minRowBytes(), 0, 0,
+                                   SkImage::kDisallow_CachingHint);
+
+    if (!result) {
+      decoded_pixels->Unlock();
+      return nullptr;
+    }
+  }
+  return base::WrapUnique(
+      new DecodedImage(decoded_info, std::move(decoded_pixels),
+                       SkSize::Make(0, 0), next_tracing_id_.GetNext()));
+}
+
+std::unique_ptr<SoftwareImageDecodeController::DecodedImage>
+SoftwareImageDecodeController::GetScaledImageDecode(const ImageKey& key,
+                                                    const SkImage& image) {
+  // Construct a key to use in GetDecodedImageForDrawInternal().
+  // This allows us to reuse an image in any cache if available.
+  gfx::Rect full_image_rect(image.width(), image.height());
+  DrawImage original_size_draw_image(&image,
+                                     gfx::RectToSkIRect(full_image_rect),
+                                     kNone_SkFilterQuality, SkMatrix::I());
+  ImageKey original_size_key =
+      ImageKey::FromDrawImage(original_size_draw_image);
+  // Sanity checks.
+  DCHECK(original_size_key.can_use_original_decode())
+      << original_size_key.ToString();
+  DCHECK(full_image_rect.size() == original_size_key.target_size());
+
+  auto decoded_draw_image = GetDecodedImageForDrawInternal(
+      original_size_key, original_size_draw_image);
+  if (!decoded_draw_image.image()) {
+    DrawWithImageFinished(original_size_draw_image, decoded_draw_image);
+    return nullptr;
+  }
+
+  SkPixmap decoded_pixmap;
+  bool result = decoded_draw_image.image()->peekPixels(&decoded_pixmap);
+  DCHECK(result) << key.ToString();
+  if (key.src_rect() != full_image_rect) {
+    result = decoded_pixmap.extractSubset(&decoded_pixmap,
+                                          gfx::RectToSkIRect(key.src_rect()));
+    DCHECK(result) << key.ToString();
+  }
+
+  DCHECK(!key.target_size().IsEmpty());
+  SkImageInfo scaled_info = CreateImageInfo(
+      key.target_size().width(), key.target_size().height(), format_);
+  std::unique_ptr<base::DiscardableMemory> scaled_pixels;
+  {
+    TRACE_EVENT0(
+        "disabled-by-default-cc.debug",
+        "SoftwareImageDecodeController::ScaleImage - allocate scaled pixels");
+    scaled_pixels = base::DiscardableMemoryAllocator::GetInstance()
+                        ->AllocateLockedDiscardableMemory(
+                            scaled_info.minRowBytes() * scaled_info.height());
+  }
+  SkPixmap scaled_pixmap(scaled_info, scaled_pixels->data(),
+                         scaled_info.minRowBytes());
+  // TODO(vmpstr): Start handling more than just high filter quality.
+  DCHECK_EQ(kHigh_SkFilterQuality, key.filter_quality());
+  {
+    TRACE_EVENT0("disabled-by-default-cc.debug",
+                 "SoftwareImageDecodeController::ScaleImage - scale pixels");
+    bool result =
+        decoded_pixmap.scalePixels(scaled_pixmap, key.filter_quality());
+    DCHECK(result) << key.ToString();
+  }
+
+  // Release the original sized decode. Any other intermediate result to release
+  // would be the subrect memory. However, that's in a scoped_ptr and will be
+  // deleted automatically when we return.
+  DrawWithImageFinished(original_size_draw_image, decoded_draw_image);
+
+  return base::WrapUnique(
+      new DecodedImage(scaled_info, std::move(scaled_pixels),
+                       SkSize::Make(-key.src_rect().x(), -key.src_rect().y()),
+                       next_tracing_id_.GetNext()));
 }
 
 void SoftwareImageDecodeController::DrawWithImageFinished(

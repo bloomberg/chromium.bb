@@ -211,6 +211,19 @@ class CC_EXPORT SoftwareImageDecodeController
   DecodedDrawImage GetDecodedImageForDrawInternal(const ImageKey& key,
                                                   const DrawImage& draw_image);
 
+  // GetOriginalImageDecode is called by DecodeImageInternal when the quality
+  // does not scale the image. Like DecodeImageInternal, it should be called
+  // with no lock acquired and it returns nullptr if the decoding failed.
+  std::unique_ptr<DecodedImage> GetOriginalImageDecode(const ImageKey& key,
+                                                       const SkImage& image);
+
+  // GetScaledImageDecode is called by DecodeImageInternal when the quality
+  // requires the image be scaled. Like DecodeImageInternal, it should be
+  // called with no lock acquired and it returns nullptr if the decoding or
+  // scaling failed.
+  std::unique_ptr<DecodedImage> GetScaledImageDecode(const ImageKey& key,
+                                                     const SkImage& image);
+
   void SanityCheckState(int line, bool lock_acquired);
   void RefImage(const ImageKey& key);
   void RefAtRasterImage(const ImageKey& key);
