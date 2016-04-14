@@ -145,10 +145,10 @@
     ],
     "ResourcePriorities": [
         {
-            "group_name": "AllExceptAsyncScripts_11011_1_1_10"
+            "group_name": "Launch50pct_11011_1_1_10"
         },
         {
-            "group_name": "Control"
+            "group_name": "Control50pct"
         }
     ],
     "SSLCommonNameMismatchHandling": [
