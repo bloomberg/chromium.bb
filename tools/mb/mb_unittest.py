@@ -299,18 +299,25 @@ class UnitTest(unittest.TestCase):
     })
 
   def test_gn_gen(self):
+    mbw = self.fake_mbw()
     self.check(['gen', '-c', 'gn_debug_goma', '//out/Default', '-g', '/goma'],
-               ret=0,
+               mbw=mbw, ret=0,
                out=('/fake_src/buildtools/linux64/gn gen //out/Default '
-                    '\'--args=is_debug=true use_goma=true goma_dir="/goma"\' '
                     '--check\n'))
+    self.assertMultiLineEqual(mbw.files['/fake_src/out/Default/args.gn'],
+                              ('goma_dir = "/goma"\n'
+                               'is_debug = true\n'
+                               'use_goma = true\n'))
 
     mbw = self.fake_mbw(win32=True)
     self.check(['gen', '-c', 'gn_debug_goma', '-g', 'c:\\goma', '//out/Debug'],
                mbw=mbw, ret=0,
                out=('c:\\fake_src\\buildtools\\win\\gn.exe gen //out/Debug '
-                    '"--args=is_debug=true use_goma=true goma_dir=\\"'
-                    'c:\\goma\\"" --check\n'))
+                    '--check\n'))
+    self.assertMultiLineEqual(mbw.files['c:\\fake_src\\out\\Debug\\args.gn'],
+                              ('goma_dir = "c:\\\\goma"\n'
+                               'is_debug = true\n'
+                               'use_goma = true\n'))
 
 
   def test_gn_gen_fails(self):
@@ -388,9 +395,13 @@ class UnitTest(unittest.TestCase):
 
   def test_gn_lookup_goma_dir_expansion(self):
     self.check(['lookup', '-c', 'gn_rel_bot', '-g', '/foo'], ret=0,
-               out=("/fake_src/buildtools/linux64/gn gen _path_ "
-                    "'--args=is_debug=false use_goma=true "
-                    "goma_dir=\"/foo\"'\n" ))
+               out=('\n'
+                    'Writing """\\\n'
+                    'goma_dir = "/foo"\n'
+                    'is_debug = false\n'
+                    'use_goma = true\n'
+                    '""" to _path_/args.gn.\n\n'
+                    '/fake_src/buildtools/linux64/gn gen _path_\n'))
 
   def test_gyp_analyze(self):
     mbw = self.check(['analyze', '-c', 'gyp_rel_bot', '//out/Release',
