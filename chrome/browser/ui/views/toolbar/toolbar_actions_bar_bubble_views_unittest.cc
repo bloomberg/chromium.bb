@@ -2,29 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/ui/views/toolbar/toolbar_actions_bar_bubble_views.h"
+
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/toolbar/test_toolbar_actions_bar_bubble_delegate.h"
-#include "chrome/browser/ui/views/toolbar/toolbar_actions_bar_bubble_views.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/test/event_generator.h"
-#include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/test/test_widget_observer.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
-
-namespace {
-
-gfx::Point GetCenterInScreenCoordinates(const views::View* view) {
-  gfx::Point center(view->width() / 2, view->height() / 2);
-  views::View::ConvertPointToScreen(view, &center);
-  return center;
-}
-
-}  // namespace
+#include "ui/views/window/dialog_client_view.h"
 
 class ToolbarActionsBarBubbleViewsTest : public views::ViewsTestBase {
  protected:
@@ -52,8 +43,7 @@ class ToolbarActionsBarBubbleViewsTest : public views::ViewsTestBase {
     anchor_widget_ = CreateAnchorWidget();
     bubble_ = new ToolbarActionsBarBubbleViews(
       anchor_widget_->GetContentsView(), delegate->GetDelegate());
-    bubble_widget_ =
-        views::BubbleDelegateView::CreateBubble(bubble_);
+    bubble_widget_ = views::BubbleDialogDelegateView::CreateBubble(bubble_);
     bubble_->Show();
   }
 
@@ -69,7 +59,7 @@ class ToolbarActionsBarBubbleViewsTest : public views::ViewsTestBase {
     ASSERT_TRUE(view);
     ui::test::EventGenerator generator(GetContext(),
                                        anchor_widget_->GetNativeWindow());
-    generator.MoveMouseTo(GetCenterInScreenCoordinates(view));
+    generator.MoveMouseTo(view->GetBoundsInScreen().CenterPoint());
     generator.ClickLeftButton();
     base::RunLoop().RunUntilIdle();
   }
@@ -100,15 +90,10 @@ TEST_F(ToolbarActionsBarBubbleViewsTest, TestBubbleLayoutActionButton) {
                                                ActionString());
   ShowBubble(&delegate);
 
-  EXPECT_TRUE(bubble()->heading_label());
-  EXPECT_EQ(HeadingString(), bubble()->heading_label()->text());
-  EXPECT_TRUE(bubble()->content_label());
-  EXPECT_EQ(BodyString(), bubble()->content_label()->text());
-  EXPECT_TRUE(bubble()->action_button());
-  EXPECT_EQ(ActionString(), bubble()->action_button()->GetText());
-  EXPECT_FALSE(bubble()->dismiss_button());
-  EXPECT_FALSE(bubble()->learn_more_button());
-  EXPECT_FALSE(bubble()->item_list());
+  EXPECT_TRUE(bubble()->GetDialogClientView()->ok_button());
+  EXPECT_EQ(ActionString(),
+            bubble()->GetDialogClientView()->ok_button()->GetText());
+  EXPECT_FALSE(bubble()->GetDialogClientView()->cancel_button());
 
   CloseBubble();
 }
@@ -118,16 +103,16 @@ TEST_F(ToolbarActionsBarBubbleViewsTest,
   TestToolbarActionsBarBubbleDelegate delegate(HeadingString(), BodyString(),
                                                ActionString());
   delegate.set_dismiss_button_text(DismissString());
+
   ShowBubble(&delegate);
 
-  EXPECT_TRUE(bubble()->heading_label());
-  EXPECT_EQ(HeadingString(), bubble()->heading_label()->text());
-  EXPECT_TRUE(bubble()->content_label());
-  EXPECT_EQ(BodyString(), bubble()->content_label()->text());
-  EXPECT_TRUE(bubble()->action_button());
-  EXPECT_EQ(ActionString(), bubble()->action_button()->GetText());
-  EXPECT_TRUE(bubble()->dismiss_button());
-  EXPECT_EQ(DismissString(), bubble()->dismiss_button()->GetText());
+  EXPECT_TRUE(bubble()->GetDialogClientView()->ok_button());
+  EXPECT_EQ(ActionString(),
+            bubble()->GetDialogClientView()->ok_button()->GetText());
+  EXPECT_TRUE(bubble()->GetDialogClientView()->cancel_button());
+  EXPECT_EQ(DismissString(),
+            bubble()->GetDialogClientView()->cancel_button()->GetText());
+
   EXPECT_FALSE(bubble()->learn_more_button());
   EXPECT_FALSE(bubble()->item_list());
 
@@ -142,14 +127,12 @@ TEST_F(ToolbarActionsBarBubbleViewsTest,
   delegate.set_learn_more_button_text(LearnMoreString());
   ShowBubble(&delegate);
 
-  EXPECT_TRUE(bubble()->heading_label());
-  EXPECT_EQ(HeadingString(), bubble()->heading_label()->text());
-  EXPECT_TRUE(bubble()->content_label());
-  EXPECT_EQ(BodyString(), bubble()->content_label()->text());
-  EXPECT_TRUE(bubble()->action_button());
-  EXPECT_EQ(ActionString(), bubble()->action_button()->GetText());
-  EXPECT_TRUE(bubble()->dismiss_button());
-  EXPECT_EQ(DismissString(), bubble()->dismiss_button()->GetText());
+  EXPECT_TRUE(bubble()->GetDialogClientView()->ok_button());
+  EXPECT_EQ(ActionString(),
+            bubble()->GetDialogClientView()->ok_button()->GetText());
+  EXPECT_TRUE(bubble()->GetDialogClientView()->cancel_button());
+  EXPECT_EQ(DismissString(),
+            bubble()->GetDialogClientView()->cancel_button()->GetText());
   EXPECT_TRUE(bubble()->learn_more_button());
   EXPECT_EQ(LearnMoreString(), bubble()->learn_more_button()->text());
   EXPECT_FALSE(bubble()->item_list());
@@ -163,13 +146,10 @@ TEST_F(ToolbarActionsBarBubbleViewsTest, TestBubbleLayoutListView) {
   delegate.set_item_list_text(ItemListString());
   ShowBubble(&delegate);
 
-  EXPECT_TRUE(bubble()->heading_label());
-  EXPECT_EQ(HeadingString(), bubble()->heading_label()->text());
-  EXPECT_TRUE(bubble()->content_label());
-  EXPECT_EQ(BodyString(), bubble()->content_label()->text());
-  EXPECT_TRUE(bubble()->action_button());
-  EXPECT_EQ(ActionString(), bubble()->action_button()->GetText());
-  EXPECT_FALSE(bubble()->dismiss_button());
+  EXPECT_TRUE(bubble()->GetDialogClientView()->ok_button());
+  EXPECT_EQ(ActionString(),
+            bubble()->GetDialogClientView()->ok_button()->GetText());
+  EXPECT_FALSE(bubble()->GetDialogClientView()->cancel_button());
   EXPECT_FALSE(bubble()->learn_more_button());
   EXPECT_TRUE(bubble()->item_list());
   EXPECT_EQ(ItemListString(), bubble()->item_list()->text());
@@ -188,13 +168,13 @@ TEST_F(ToolbarActionsBarBubbleViewsTest, TestShowAndCloseBubble) {
   EXPECT_FALSE(delegate.shown());
   EXPECT_FALSE(delegate.close_action());
   views::Widget* bubble_widget =
-      views::BubbleDelegateView::CreateBubble(bubble);
+      views::BubbleDialogDelegateView::CreateBubble(bubble);
   views::test::TestWidgetObserver bubble_observer(bubble_widget);
   bubble->Show();
   EXPECT_TRUE(delegate.shown());
   EXPECT_FALSE(delegate.close_action());
 
-  bubble_widget->Close();
+  bubble->GetDialogClientView()->CancelWindow();
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(delegate.close_action());
   EXPECT_EQ(ToolbarActionsBarBubbleDelegate::CLOSE_DISMISS_USER_ACTION,
@@ -211,7 +191,7 @@ TEST_F(ToolbarActionsBarBubbleViewsTest, TestClickActionButton) {
   views::test::TestWidgetObserver bubble_observer(bubble_widget());
 
   EXPECT_FALSE(delegate.close_action());
-  ClickView(bubble()->action_button());
+  ClickView(bubble()->GetDialogClientView()->ok_button());
   ASSERT_TRUE(delegate.close_action());
   EXPECT_EQ(ToolbarActionsBarBubbleDelegate::CLOSE_EXECUTE,
             *delegate.close_action());
@@ -227,7 +207,7 @@ TEST_F(ToolbarActionsBarBubbleViewsTest, TestClickDismissButton) {
   views::test::TestWidgetObserver bubble_observer(bubble_widget());
 
   EXPECT_FALSE(delegate.close_action());
-  ClickView(bubble()->dismiss_button());
+  ClickView(bubble()->GetDialogClientView()->cancel_button());
   ASSERT_TRUE(delegate.close_action());
   EXPECT_EQ(ToolbarActionsBarBubbleDelegate::CLOSE_DISMISS_USER_ACTION,
             *delegate.close_action());

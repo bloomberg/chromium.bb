@@ -32,7 +32,7 @@ class Extension;
 }
 
 namespace views {
-class BubbleDelegateView;
+class BubbleDialogDelegateView;
 class ResizeArea;
 }
 
@@ -246,7 +246,7 @@ class BrowserActionsContainer : public views::View,
   void OnWidgetClosing(views::Widget* widget) override;
   void OnWidgetDestroying(views::Widget* widget) override;
 
-  views::BubbleDelegateView* active_bubble() { return active_bubble_; }
+  views::BubbleDialogDelegateView* active_bubble() { return active_bubble_; }
 
   ChevronMenuButton* chevron_for_testing() { return chevron_; }
 
@@ -328,7 +328,7 @@ class BrowserActionsContainer : public views::View,
   std::unique_ptr<DropPosition> drop_position_;
 
   // The extension bubble that is actively showing, if any.
-  views::BubbleDelegateView* active_bubble_;
+  views::BubbleDialogDelegateView* active_bubble_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserActionsContainer);
 };

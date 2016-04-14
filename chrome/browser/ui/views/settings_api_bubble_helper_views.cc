@@ -45,7 +45,7 @@ void ShowSettingsApiBubble(SettingsApiOverrideType type,
               new ExtensionMessageBubbleBridge(
                   std::move(settings_api_bubble))));
   bubble->set_arrow(arrow);
-  views::BubbleDelegateView::CreateBubble(bubble);
+  views::BubbleDialogDelegateView::CreateBubble(bubble);
   bubble->Show();
 }
 
@@ -122,7 +122,7 @@ void MaybeShowExtensionControlledNewTabPage(
       std::unique_ptr<ToolbarActionsBarBubbleDelegate>(
           new ExtensionMessageBubbleBridge(std::move(ntp_overridden_bubble))));
   bubble->set_arrow(views::BubbleBorder::TOP_RIGHT);
-  views::BubbleDelegateView::CreateBubble(bubble);
+  views::BubbleDialogDelegateView::CreateBubble(bubble);
   bubble->Show();
 }
 

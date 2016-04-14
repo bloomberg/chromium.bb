@@ -20,24 +20,19 @@ ToolbarView* GetToolbarViewForBrowser(Browser* browser) {
 
 // Checks that the |bubble| is using the |expected_reference_view|, and is in
 // approximately the correct position.
-void CheckBubbleAndReferenceView(views::BubbleDelegateView* bubble,
+void CheckBubbleAndReferenceView(views::BubbleDialogDelegateView* bubble,
                                  views::View* expected_reference_view) {
   ASSERT_TRUE(bubble);
   ASSERT_TRUE(expected_reference_view);
   EXPECT_EQ(expected_reference_view, bubble->GetAnchorView());
 
   // Do a rough check that the bubble is in the right place.
-  gfx::Rect bubble_bounds = bubble->GetBoundsInScreen();
+  gfx::Rect bubble_bounds = bubble->GetWidget()->GetWindowBoundsInScreen();
   gfx::Rect reference_bounds = expected_reference_view->GetBoundsInScreen();
   // It should be below the reference view, but not too far below.
-  EXPECT_GE(bubble_bounds.y(), reference_bounds.bottom());
-  // "Too far below" is kind of ambiguous. The exact logic of where a bubble
-  // is positioned with respect to its anchor view should be tested as part of
-  // the bubble logic, but we still want to make sure we didn't accidentally
-  // place it somewhere crazy (which can happen if we draw it, and then
-  // animate or reposition the reference view).
-  const int kFudgeFactor = 50;
-  EXPECT_LE(bubble_bounds.y(), reference_bounds.bottom() + kFudgeFactor);
+  EXPECT_GE(bubble_bounds.y(), reference_bounds.y());
+  // The arrow should be poking into the anchor.
+  EXPECT_LE(bubble_bounds.y(), reference_bounds.bottom());
   // The bubble should intersect the reference view somewhere along the x-axis.
   EXPECT_FALSE(bubble_bounds.x() > reference_bounds.right());
   EXPECT_FALSE(reference_bounds.x() > bubble_bounds.right());
@@ -69,7 +64,7 @@ void ExtensionMessageBubbleViewBrowserTest::CheckBubble(Browser* browser,
                                                         AnchorPosition anchor) {
   ToolbarView* toolbar_view = GetToolbarViewForBrowser(browser);
   BrowserActionsContainer* container = toolbar_view->browser_actions();
-  views::BubbleDelegateView* bubble = container->active_bubble();
+  views::BubbleDialogDelegateView* bubble = container->active_bubble();
   views::View* anchor_view = nullptr;
   switch (anchor) {
     case ANCHOR_BROWSER_ACTION:
@@ -85,7 +80,7 @@ void ExtensionMessageBubbleViewBrowserTest::CheckBubble(Browser* browser,
 void ExtensionMessageBubbleViewBrowserTest::CloseBubble(Browser* browser) {
   BrowserActionsContainer* container =
       GetToolbarViewForBrowser(browser)->browser_actions();
-  views::BubbleDelegateView* bubble = container->active_bubble();
+  views::BubbleDialogDelegateView* bubble = container->active_bubble();
   ASSERT_TRUE(bubble);
   bubble->GetWidget()->Close();
   EXPECT_EQ(nullptr, container->active_bubble());
