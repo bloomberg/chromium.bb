@@ -161,21 +161,10 @@ HTMLDocumentParser::HTMLDocumentParser(DocumentFragment* fragment, Element* cont
 
 HTMLDocumentParser::~HTMLDocumentParser()
 {
-#if ENABLE(OILPAN)
-    if (m_haveBackgroundParser)
-        stopBackgroundParser();
     // In Oilpan, HTMLDocumentParser can die together with Document, and
     // detach() is not called in this case.
-#else
-    ASSERT(!m_parserScheduler);
-    ASSERT(!m_pumpSessionNestingLevel);
-    ASSERT(!m_preloadScanner);
-    ASSERT(!m_insertionPreloadScanner);
-    ASSERT(!m_haveBackgroundParser);
-    // FIXME: We should be able to ASSERT(m_speculations.isEmpty()),
-    // but there are cases where that's not true currently. For example,
-    // we we're told to stop parsing before we've consumed all the input.
-#endif
+    if (m_haveBackgroundParser)
+        stopBackgroundParser();
 }
 
 DEFINE_TRACE(HTMLDocumentParser)
@@ -444,10 +433,6 @@ size_t HTMLDocumentParser::processParsedChunkFromBackgroundParser(PassOwnPtr<Par
     ASSERT(!isParsingFragment());
     ASSERT(!isWaitingForScripts());
     ASSERT(!isStopped());
-#if !ENABLE(OILPAN)
-    // ASSERT that this object is both attached to the Document and protected.
-    ASSERT(refCount() >= 2);
-#endif
     ASSERT(shouldUseThreading());
     ASSERT(!m_tokenizer);
     ASSERT(!m_token);
@@ -535,10 +520,6 @@ size_t HTMLDocumentParser::processParsedChunkFromBackgroundParser(PassOwnPtr<Par
 
 void HTMLDocumentParser::pumpPendingSpeculations()
 {
-#if !ENABLE(OILPAN)
-    // ASSERT that this object is both attached to the Document and protected.
-    ASSERT(refCount() >= 2);
-#endif
     // If this assert fails, you need to call validateSpeculations to make sure
     // m_tokenizer and m_token don't have state that invalidates m_speculations.
     ASSERT(!m_tokenizer);
@@ -602,10 +583,6 @@ void HTMLDocumentParser::forcePlaintextForTextDocument()
 void HTMLDocumentParser::pumpTokenizer()
 {
     ASSERT(!isStopped());
-#if !ENABLE(OILPAN)
-    // ASSERT that this object is both attached to the Document and protected.
-    ASSERT(refCount() >= 2);
-#endif
     ASSERT(m_tokenizer);
     ASSERT(m_token);
 
@@ -640,12 +617,6 @@ void HTMLDocumentParser::pumpTokenizer()
         constructTreeFromHTMLToken();
         ASSERT(isStopped() || token().isUninitialized());
     }
-
-#if !ENABLE(OILPAN)
-    // Ensure we haven't been totally deref'ed after pumping. Any caller of this
-    // function should be holding a RefPtr to this to ensure we weren't deleted.
-    ASSERT(refCount() >= 1);
-#endif
 
     if (isStopped())
         return;

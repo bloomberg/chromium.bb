@@ -125,12 +125,6 @@ HTMLElementStack::ElementRecord::ElementRecord(HTMLStackItem* item, ElementRecor
     ASSERT(m_item);
 }
 
-#if !ENABLE(OILPAN)
-HTMLElementStack::ElementRecord::~ElementRecord()
-{
-}
-#endif
-
 void HTMLElementStack::ElementRecord::replaceElement(HTMLStackItem* item)
 {
     ASSERT(item);

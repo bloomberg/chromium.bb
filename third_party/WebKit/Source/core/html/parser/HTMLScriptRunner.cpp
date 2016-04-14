@@ -139,9 +139,7 @@ HTMLScriptRunner::HTMLScriptRunner(Document* document, HTMLScriptRunnerHost* hos
     , m_hasScriptsWaitingForResources(false)
 {
     ASSERT(m_host);
-#if ENABLE(OILPAN)
     ThreadState::current()->registerPreFinalizer(this);
-#endif
 }
 
 HTMLScriptRunner::~HTMLScriptRunner()
