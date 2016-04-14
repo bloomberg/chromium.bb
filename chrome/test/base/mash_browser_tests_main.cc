@@ -130,6 +130,7 @@ bool RunMashBrowserTests(int argc, char** argv, int* exit_code) {
     base::RouteStdioToConsole(false);
 #endif
     *exit_code = shell::ChildProcessMain();
+    LOG(ERROR) << "child exit_code=" << *exit_code;
     return true;
   }
 
@@ -146,5 +147,6 @@ bool RunMashBrowserTests(int argc, char** argv, int* exit_code) {
     content::MojoShellConnection::SetFactoryForTest(&shell_connection_factory);
   }
   *exit_code = LaunchChromeTests(default_jobs, &delegate, argc, argv);
+  LOG(ERROR) << "RunMashBrowserTests exit_code=" << *exit_code;
   return true;
 }
