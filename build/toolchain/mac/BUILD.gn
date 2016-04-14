@@ -114,14 +114,15 @@ template("mac_toolchain") {
       command = "rm -f {{output}} && ./gyp-mac-tool filter-libtool libtool -static -o {{output}} {{inputs}}"
       description = "LIBTOOL-STATIC {{output}}"
       outputs = [
-        "{{target_out_dir}}/{{target_output_name}}{{output_extension}}",
+        "{{output_dir}}/{{target_output_name}}{{output_extension}}",
       ]
+      default_output_dir = "{{target_out_dir}}"
       default_output_extension = ".a"
       output_prefix = "lib"
     }
 
     tool("solink") {
-      dylib = "{{root_out_dir}}/{{target_output_name}}{{output_extension}}"  # eg "./libfoo.dylib"
+      dylib = "{{output_dir}}/{{target_output_name}}{{output_extension}}"  # eg "./libfoo.dylib"
       rspfile = dylib + ".rsp"
 
       # These variables are not built into GN but are helpers that implement
@@ -156,6 +157,7 @@ template("mac_toolchain") {
       # Use this for {{output_extension}} expansions unless a target manually
       # overrides it (in which case {{output_extension}} will be what the target
       # specifies).
+      default_output_dir = "{{root_out_dir}}"
       default_output_extension = ".dylib"
 
       output_prefix = "lib"
@@ -176,7 +178,7 @@ template("mac_toolchain") {
     }
 
     tool("solink_module") {
-      sofile = "{{root_out_dir}}/{{target_output_name}}{{output_extension}}"  # eg "./libfoo.so"
+      sofile = "{{output_dir}}/{{target_output_name}}{{output_extension}}"  # eg "./libfoo.so"
       rspfile = sofile + ".rsp"
 
       link_command =
@@ -194,6 +196,7 @@ template("mac_toolchain") {
       # Use this for {{output_extension}} expansions unless a target manually
       # overrides it (in which case {{output_extension}} will be what the target
       # specifies).
+      default_output_dir = "{{root_out_dir}}"
       default_output_extension = ".so"
 
       outputs = [
@@ -202,7 +205,7 @@ template("mac_toolchain") {
     }
 
     tool("link") {
-      outfile = "{{root_out_dir}}/{{target_output_name}}{{output_extension}}"
+      outfile = "{{output_dir}}/{{target_output_name}}{{output_extension}}"
       rspfile = "$outfile.rsp"
 
       # Note about --filelist: Apple's linker reads the file list file and
@@ -219,6 +222,8 @@ template("mac_toolchain") {
       outputs = [
         outfile,
       ]
+
+      default_output_dir = "{{root_out_dir}}"
     }
 
     # These two are really entirely generic, but have to be repeated in

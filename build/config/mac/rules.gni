@@ -57,13 +57,14 @@ template("framework_bundle") {
     output_name = _output_name
     output_prefix_override = true
     output_extension = ""
+    output_dir = "$target_out_dir/$_shared_library_target"
   }
 
   bundle_data(_shared_library_bundle_data) {
     visibility = [ ":$_framework_target" ]
     forward_variables_from(invoker, [ "testonly" ])
     sources = [
-      "$root_out_dir/${_output_name}",
+      "$target_out_dir/$_shared_library_target/$_output_name",
     ]
     outputs = [
       "{{bundle_executable_dir}}/$_output_name",
