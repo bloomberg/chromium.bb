@@ -1605,9 +1605,11 @@
 
     'cronet': {
       'gn_args': ('disable_file_support=true disable_ftp_support=true '
-                  'enable_websockets=false'),
+                  'enable_websockets=false use_platform_icu_alternatives=true '
+                  'disable_brotli_filter=true'),
       'gyp_defines': ('disable_file_support=1 disable_ftp_support=1 '
-                      'enable_websockets=0'),
+                      'enable_websockets=0 use_platform_icu_alternatives=1 '
+                      'disable_brotli_filter=1'),
     },
 
     'crosscompile': {

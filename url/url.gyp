@@ -19,8 +19,7 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
-        '../third_party/icu/icu.gyp:icui18n',
-        '../third_party/icu/icu.gyp:icuuc',
+        ':url_url_features',
       ],
       'sources': [
         '<@(gurl_sources)',
@@ -35,6 +34,40 @@
       ],
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
       'msvs_disabled_warnings': [4267, ],
+
+      # ICU Alternatives for Android & iOS
+      'conditions': [
+        ['use_platform_icu_alternatives == 1', {
+          'sources!': [
+            'url_canon_icu.cc',
+            'url_canon_icu.h',
+          ],
+          'conditions': [
+            ['OS == "android"', {
+              'dependencies': [
+                'url_java',
+                'url_jni_headers',
+              ],
+              'sources': [
+                'url_canon_icu_alternatives_android.cc',
+                'url_canon_icu_alternatives_android.h',
+              ],
+            }],
+            ['OS == "ios"', {
+              'sources': [
+                'url_canon_icu_alternatives_ios.mm',
+              ],
+            }],
+          ],
+        },
+        # 'use_platform_icu_alternatives != 1'
+        {
+          'dependencies': [
+            '../third_party/icu/icu.gyp:icui18n',
+            '../third_party/icu/icu.gyp:icuuc',
+          ],
+        }],
+      ],
     },
     {
       'target_name': 'url_unittests',
@@ -62,6 +95,21 @@
         ['OS!="ios"', {
           'sources': [
             'mojo/url_gurl_struct_traits_unittest.cc',
+          ],
+        }],
+        # Unit tests that are not supported by the current ICU alternatives on Android.
+        ['OS == "android" and use_platform_icu_alternatives == 1', {
+          'sources!': [
+            'url_canon_icu_unittest.cc',
+          ],
+        }],
+        # Unit tests that are not supported by the current ICU alternatives on iOS.
+        ['OS == "ios" and use_platform_icu_alternatives == 1', {
+          'sources!': [
+            'origin_unittest.cc',
+            'scheme_host_port_unittest.cc',
+            'url_canon_icu_unittest.cc',
+            'url_canon_unittest.cc',
           ],
         }],
       ],
@@ -124,6 +172,17 @@
         'url_test_interfaces_mojom',
       ],
     },
+    {
+      # GN version: //url:url_features
+      'target_name': 'url_url_features',
+      'includes': [ '../build/buildflag_header.gypi' ],
+      'variables': {
+        'buildflag_header_path': 'url/url_features.h',
+        'buildflag_flags': [
+          'USE_PLATFORM_ICU_ALTERNATIVES=<(use_platform_icu_alternatives)',
+        ],
+      },
+    }
   ],
   'conditions': [
     ['OS=="android"', {
@@ -149,35 +208,6 @@
             '../base/base.gyp:base',
           ],
           'includes': [ '../build/java.gypi' ],
-        },
-        {
-          # Same as url_lib but using ICU alternatives on Android.
-          'target_name': 'url_lib_use_icu_alternatives_on_android',
-          'type': '<(component)',
-          'dependencies': [
-            '../base/base.gyp:base',
-            '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
-            'url_java',
-            'url_jni_headers',
-          ],
-          'sources': [
-            '<@(gurl_sources)',
-            'url_canon_icu_alternatives_android.cc',
-            'url_canon_icu_alternatives_android.h',
-          ],
-          'sources!': [
-            'url_canon_icu.cc',
-            'url_canon_icu.h',
-          ],
-          'direct_dependent_settings': {
-            'include_dirs': [
-              '..',
-            ],
-          },
-          'defines': [
-            'URL_IMPLEMENTATION',
-            'USE_ICU_ALTERNATIVES_ON_ANDROID=1',
-          ],
         },
       ],
     }],

@@ -3,16 +3,17 @@
 # found in the LICENSE file.
 
 {
-  # This target is included into both 'cronet_static' and 'cronet_static_small'.
+  # Included in 'cronet_static'.
   'dependencies': [
     '../base/base.gyp:base',
     '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
-    'cronet_jni_headers',
+    '../url/url.gyp:url_url_features',
     'chromium_url_request_java',
-    'url_request_error_java',
+    'cronet_jni_headers',
     'cronet_version',
     'cronet_version_header',
     'metrics',
+    'url_request_error_java',
   ],
   'sources': [
     'android/chromium_url_request.cc',

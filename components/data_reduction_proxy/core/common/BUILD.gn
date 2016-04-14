@@ -46,15 +46,6 @@ template("common_tmpl") {
   }
 }
 
-if (is_android) {
-  common_tmpl("common_small") {
-    deps = [
-      "//net:net_small",
-      "//url:url_lib_use_icu_alternatives_on_android",
-    ]
-  }
-}
-
 common_tmpl("common") {
   deps = [
     "//net",

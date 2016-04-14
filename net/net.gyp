@@ -106,20 +106,57 @@
       # GN version: //net
       'target_name': 'net',
       'dependencies': [
-        '../base/base.gyp:base_i18n',
-        '../third_party/brotli/brotli.gyp:brotli',
-        '../third_party/icu/icu.gyp:icui18n',
-        '../third_party/icu/icu.gyp:icuuc',
-        '../third_party/protobuf/protobuf.gyp:protobuf_lite',
         '../url/url.gyp:url_lib',
-        'net_quic_proto',
-      ],
-      'sources': [
-        'base/filename_util_icu.cc',
-        'base/net_string_util_icu.cc',
-        'filter/brotli_filter.cc',
       ],
       'includes': [ 'net_common.gypi' ],
+
+      'conditions': [
+        # ICU Alternatives
+        ['use_platform_icu_alternatives == 1', {
+          'conditions': [
+            ['OS == "android"', {
+              'sources': [
+                'base/net_string_util_icu_alternatives_android.cc',
+                'base/net_string_util_icu_alternatives_android.h',
+              ],
+            }],
+            ['OS == "ios"', {
+              'sources': [
+                'base/net_string_util_icu_alternatives_ios.mm',
+              ],
+            }],
+          ],
+        },
+        # 'use_platform_icu_alternatives != 1'
+        {
+          'sources': [
+            'base/filename_util_icu.cc',
+            'base/net_string_util_icu.cc',
+          ],
+          'dependencies': [
+            '../base/base.gyp:base_i18n',
+            '../third_party/icu/icu.gyp:icui18n',
+            '../third_party/icu/icu.gyp:icuuc',
+            '../third_party/protobuf/protobuf.gyp:protobuf_lite',
+            'net_quic_proto',
+          ],
+        }],
+        # Brotli support.
+        ['disable_brotli_filter == 1', {
+          'sources': [
+            'filter/brotli_filter_disabled.cc',
+          ],
+        },
+        # 'disable_brotli_filter != 1'
+        {
+          'sources': [
+            'filter/brotli_filter.cc',
+          ],
+          'dependencies': [
+            '../third_party/brotli/brotli.gyp:brotli',
+          ],
+        }],
+      ],
     },
     {
       # GN version: //net:net_unittests
@@ -134,6 +171,7 @@
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
         '../third_party/zlib/zlib.gyp:zlib',
+        '../url/url.gyp:url_url_features',
         '../url/url.gyp:url_lib',
         'balsa',
         'net',
@@ -220,7 +258,7 @@
             'http/mock_gssapi_library_posix.h',
           ],
         }],
-       [ 'use_kerberos==0', {
+        [ 'use_kerberos==0', {
           'sources!': [
             'http/http_auth_handler_negotiate_unittest.cc',
           ],
@@ -420,6 +458,39 @@
           'dependencies': [
             '../gin/gin.gyp:gin',
           ]
+        }],
+        # Unit tests that are not supported by the current ICU alternatives on Android.
+        ['OS == "android" and use_platform_icu_alternatives == 1', {
+          'sources!': [
+            'base/filename_util_unittest.cc',
+            'url_request/url_request_job_unittest.cc',
+          ],
+        }],
+        # Unit tests that are not supported by the current ICU alternatives on iOS.
+        ['OS == "ios" and use_platform_icu_alternatives == 1', {
+          'sources!': [
+            'base/filename_util_unittest.cc',
+            'base/url_util_unittest.cc',
+            'cert/x509_certificate_unittest.cc',
+            'socket/ssl_client_socket_pool_unittest.cc',
+            'http/http_auth_handler_basic_unittest.cc',
+            'http/http_auth_handler_digest_unittest.cc',
+            'http/http_auth_handler_factory_unittest.cc',
+            'http/http_auth_unittest.cc',
+            'http/http_content_disposition_unittest.cc',
+            'http/http_network_transaction_unittest.cc',
+            'http/http_proxy_client_socket_pool_unittest.cc',
+            'spdy/spdy_network_transaction_unittest.cc',
+            'spdy/spdy_proxy_client_socket_unittest.cc',
+            'url_request/url_request_job_unittest.cc',
+            'url_request/url_request_unittest.cc',
+          ],
+        }],
+        # Exclude brotli test if the support for brotli is disabled.
+        ['disable_brotli_filter == 1', {
+          'sources!': [
+            'filter/brotli_filter_unittest.cc',
+          ],
         }],
       ],
       'target_conditions': [
@@ -1308,29 +1379,6 @@
     }],
     ['OS=="android"', {
       'targets': [
-        { # The same target as 'net', but with smaller binary size due to
-          # exclusion of ICU, FTP, FILE and WebSockets support.
-          'target_name': 'net_small',
-          'variables': {
-            'disable_ftp_support': 1,
-            'disable_file_support': 1,
-            'enable_websockets': 0,
-          },
-          'dependencies': [
-            '../url/url.gyp:url_lib_use_icu_alternatives_on_android',
-          ],
-          'defines': [
-            'USE_ICU_ALTERNATIVES_ON_ANDROID=1',
-            'DISABLE_FILE_SUPPORT=1',
-            'DISABLE_FTP_SUPPORT=1',
-          ],
-          'sources': [
-            'filter/brotli_filter_disabled.cc',
-            'base/net_string_util_icu_alternatives_android.cc',
-            'base/net_string_util_icu_alternatives_android.h',
-          ],
-          'includes': [ 'net_common.gypi' ],
-        },
         {
           'target_name': 'net_jni_headers',
           'type': 'none',

@@ -607,6 +607,12 @@
       # Enable FTP support by default.
       'disable_ftp_support%': 0,
 
+      # Do not use the platform ICU alternatives by default.
+      'use_platform_icu_alternatives%': 0,
+
+      # Do not disable brotli filter by default.
+      'disable_brotli_filter%': 0,
+
       # Use of precompiled headers on Windows.
       #
       # This variable may be explicitly set to 1 (enabled) or 0
@@ -1270,6 +1276,8 @@
     'enable_captive_portal_detection%': '<(enable_captive_portal_detection)',
     'disable_file_support%': '<(disable_file_support)',
     'disable_ftp_support%': '<(disable_ftp_support)',
+    'use_platform_icu_alternatives%': '<(use_platform_icu_alternatives)',
+    'disable_brotli_filter%': '<(disable_brotli_filter)',
     'enable_task_manager%': '<(enable_task_manager)',
     'sas_dll_path%': '<(sas_dll_path)',
     'wix_path%': '<(wix_path)',

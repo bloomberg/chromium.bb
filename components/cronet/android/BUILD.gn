@@ -8,6 +8,7 @@ import("//build/config/android/rules.gni")
 import("//build/util/version.gni")
 import("//chrome/version.gni")
 import("//testing/test.gni")
+import("//url/features.gni")
 
 assert(!is_component_build, "Cronet requires static library build.")
 
@@ -120,6 +121,7 @@ template("cronet_static_tmpl") {
       "//base/third_party/dynamic_annotations",
       "//components/metrics",
       "//components/prefs",
+      "//url:url_features",
     ]
     sources = [
       "//components/cronet/android/chromium_url_request.cc",
@@ -186,41 +188,21 @@ template("cronet_static_tmpl") {
   }
 }
 
-# cronet_static_small target has reduced binary size through using
-# ICU alternatives which requires file and ftp support be disabled.
-cronet_static_tmpl("cronet_static_small") {
-  defines = [
-    "USE_ICU_ALTERNATIVES_ON_ANDROID=1",
-    "DISABLE_FILE_SUPPORT=1",
-    "DISABLE_FTP_SUPPORT=1",
-  ]
-
-  deps = [
-    "//net:net_small",
-    "//url:url_lib_use_icu_alternatives_on_android",
-  ]
-
-  if (cronet_enable_data_reduction_proxy_support) {
-    deps += [
-      "//components/data_reduction_proxy/core/browser:browser_small",
-      "//components/data_reduction_proxy/core/common:common_small",
-    ]
-  }
-}
-
-# cronet_static target depends on ICU and includes file and ftp support.
 cronet_static_tmpl("cronet_static") {
   deps = [
-    "//base:i18n",
     "//net",
     "//url",
   ]
 
   if (cronet_enable_data_reduction_proxy_support) {
     deps += [
-      "//components/data_reduction_proxy/core/browser",
+      "//components/data_reduction_proxy/core/browser:browser_small",
       "//components/data_reduction_proxy/core/common",
     ]
+  }
+
+  if (!use_platform_icu_alternatives) {
+    deps += [ "//base:i18n" ]
   }
 }
 
@@ -229,9 +211,9 @@ shared_library("cronet") {
     "cronet_jni.cc",
   ]
   deps = [
-    ":cronet_static_small",
+    ":cronet_static",
     "//base",
-    "//net:net_small",
+    "//net:net",
   ]
   ldflags = [ "-Wl,--version-script=" +
               rebase_path("//components/cronet/android/only_jni_exports.lst") ]
@@ -465,7 +447,7 @@ shared_library("cronet_tests") {
   configs -= [ "//build/config/android:hide_native_jni_exports" ]
 
   if (cronet_enable_data_reduction_proxy_support) {
-    deps += [ "//components/data_reduction_proxy/core/browser" ]
+    deps += [ "//components/data_reduction_proxy/core/browser:browser_small" ]
   }
 }
 

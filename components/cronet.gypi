@@ -174,18 +174,11 @@
           ],
         },
         {
-          # cronet_static_small target has reduced binary size through using
-          # ICU alternatives which requires file and ftp support be disabled.
-          'target_name': 'cronet_static_small',
+          'target_name': 'cronet_static',
           'type': 'static_library',
-          'defines': [
-            'USE_ICU_ALTERNATIVES_ON_ANDROID=1',
-            'DISABLE_FILE_SUPPORT=1',
-            'DISABLE_FTP_SUPPORT=1',
-          ],
           'dependencies': [
-            '../net/net.gyp:net_small',
-            '../url/url.gyp:url_lib_use_icu_alternatives_on_android',
+            '../net/net.gyp:net',
+            '../url/url.gyp:url_lib',
           ],
           'conditions': [
             ['enable_data_reduction_proxy_support==1',
@@ -195,23 +188,10 @@
                 ],
               },
             ],
-          ],
-          'includes': [ 'cronet/cronet_static.gypi' ],
-        },
-        {
-          # cronet_static target depends on ICU and includes file and ftp support.
-          'target_name': 'cronet_static',
-          'type': 'static_library',
-          'dependencies': [
-            '../base/base.gyp:base_i18n',
-            '../net/net.gyp:net',
-            '../url/url.gyp:url_lib',
-          ],
-          'conditions': [
-            ['enable_data_reduction_proxy_support==1',
+            ['use_platform_icu_alternatives!=1',
               {
                 'dependencies': [
-                  '../components/components.gyp:data_reduction_proxy_core_browser',
+                  '../base/base.gyp:base_i18n',
                 ],
               },
             ],
@@ -225,9 +205,9 @@
             'cronet/android/cronet_jni.cc',
           ],
           'dependencies': [
-            'cronet_static_small',
+            'cronet_static',
             '../base/base.gyp:base',
-            '../net/net.gyp:net_small',
+            '../net/net.gyp:net',
           ],
           'ldflags': [
             '-Wl,--version-script=<!(cd <(DEPTH) && pwd -P)/components/cronet/android/only_jni_exports.lst',
@@ -431,7 +411,7 @@
             ['enable_data_reduction_proxy_support==1',
               {
                 'dependencies': [
-                  '../components/components.gyp:data_reduction_proxy_core_browser',
+                  '../components/components.gyp:data_reduction_proxy_core_browser_small',
                 ],
               },
             ],

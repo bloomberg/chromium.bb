@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 {
-  # This target is included in both 'net' and 'net_small'.
+  # This target is included by 'net' target.
   'type': '<(component)',
   'variables': { 'enable_wexit_time_destructors': 1, },
   'dependencies': [
@@ -13,6 +13,7 @@
     '../sdch/sdch.gyp:sdch',
     '../third_party/protobuf/protobuf.gyp:protobuf_lite',
     '../third_party/zlib/zlib.gyp:zlib',
+    '../url/url.gyp:url_url_features',
     'net_derived_sources',
     'net_quic_proto',
     'net_resources',

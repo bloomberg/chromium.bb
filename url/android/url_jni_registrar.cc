@@ -3,8 +3,9 @@
 // found in the LICENSE file.
 
 #include "url/android/url_jni_registrar.h"
+#include "url/url_features.h"
 
-#ifdef USE_ICU_ALTERNATIVES_ON_ANDROID
+#if BUILDFLAG(USE_PLATFORM_ICU_ALTERNATIVES)
 #include "url/url_canon_icu_alternatives_android.h"
 #endif
 
@@ -12,11 +13,11 @@ namespace url {
 namespace android {
 
 bool RegisterJni(JNIEnv* env) {
-#ifdef USE_ICU_ALTERNATIVES_ON_ANDROID
+#if BUILDFLAG(USE_PLATFORM_ICU_ALTERNATIVES)
   return RegisterIcuAlternativesJni(env);
 #endif
 
-  // Do nothing if USE_ICU_ALTERNATIVES_ON_ANDROID is not defined.
+  // Do nothing if USE_PLATFORM_ICU_ALTERNATIVES is false.
   return true;
 }
 

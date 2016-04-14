@@ -182,14 +182,6 @@ google_apis_tmpl("google_apis") {
   ]
 }
 
-if (is_android) {
-  google_apis_tmpl("google_apis_small") {
-    deps = [
-      "//net:net_small",
-    ]
-  }
-}
-
 source_set("test_support") {
   testonly = true
   sources = [

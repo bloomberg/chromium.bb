@@ -14,8 +14,9 @@
 #include "net/android/traffic_stats.h"
 #include "net/cert/x509_util_android.h"
 #include "net/proxy/proxy_config_service_android.h"
+#include "url/url_features.h"
 
-#if defined(USE_ICU_ALTERNATIVES_ON_ANDROID)
+#if BUILDFLAG(USE_PLATFORM_ICU_ALTERNATIVES)
 #include "net/base/net_string_util_icu_alternatives_android.h"  // nogncheck
 #endif
 
@@ -32,7 +33,7 @@ static base::android::RegistrationMethod kNetRegisteredMethods[] = {
     {"NetworkChangeNotifierAndroid", NetworkChangeNotifierAndroid::Register},
     {"ProxyConfigService", ProxyConfigServiceAndroid::Register},
     {"X509Util", RegisterX509Util},
-#if defined(USE_ICU_ALTERNATIVES_ON_ANDROID)
+#if BUILDFLAG(USE_PLATFORM_ICU_ALTERNATIVES)
     {"NetStringUtils", RegisterNetStringUtils}
 #endif
 };
