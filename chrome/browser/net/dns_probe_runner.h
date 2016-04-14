@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_NET_DNS_PROBE_RUNNER_H_
 #define CHROME_BROWSER_NET_DNS_PROBE_RUNNER_H_
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 
 namespace net {
@@ -41,7 +42,7 @@ class DnsProbeRunner {
   // Sets the DnsClient that will be used for DNS probes sent by this runner.
   // Must be called before RunProbe; can be called repeatedly, including during
   // a probe.  It will not affect an in-flight probe, if one is running.
-  void SetClient(scoped_ptr<net::DnsClient> client);
+  void SetClient(std::unique_ptr<net::DnsClient> client);
 
   // Starts a probe using the client specified with SetClient, which must have
   // been called before RunProbe.  |callback| will be called asynchronously
@@ -63,7 +64,7 @@ class DnsProbeRunner {
                              const net::DnsResponse* response);
   void CallCallback();
 
-  scoped_ptr<net::DnsClient> client_;
+  std::unique_ptr<net::DnsClient> client_;
 
   // The callback passed to |RunProbe|.  Cleared right before calling the
   // callback.
@@ -71,7 +72,7 @@ class DnsProbeRunner {
 
   // The transaction started in |RunProbe| for the DNS probe.  Reset once the
   // results have been examined.
-  scoped_ptr<net::DnsTransaction> transaction_;
+  std::unique_ptr<net::DnsTransaction> transaction_;
 
   Result result_;
 

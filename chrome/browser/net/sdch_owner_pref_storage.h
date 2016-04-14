@@ -26,7 +26,7 @@ class SdchOwnerPrefStorage
   ReadError GetReadError() const override;
   bool GetValue(const base::DictionaryValue** result) const override;
   bool GetMutableValue(base::DictionaryValue** result) override;
-  void SetValue(scoped_ptr<base::DictionaryValue> value) override;
+  void SetValue(std::unique_ptr<base::DictionaryValue> value) override;
   void ReportValueChanged() override;
   bool IsInitializationComplete() override;
   void StartObservingInit(net::SdchOwner* observer) override;

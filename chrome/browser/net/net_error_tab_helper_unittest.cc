@@ -138,7 +138,7 @@ class NetErrorTabHelperTest : public ChromeRenderViewHostTestHarness {
 
  private:
   content::RenderFrameHost* subframe_;
-  scoped_ptr<TestNetErrorTabHelper> tab_helper_;
+  std::unique_ptr<TestNetErrorTabHelper> tab_helper_;
   GURL bogus_url_;
 };
 

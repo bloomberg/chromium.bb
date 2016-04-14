@@ -4,7 +4,8 @@
 
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_infobar_delegate_android.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "chrome/browser/infobars/infobar_service.h"
 #include "components/infobars/core/infobar.h"
 #include "components/infobars/core/infobar_delegate.h"
@@ -22,7 +23,7 @@ void DataReductionProxyInfoBarDelegateAndroid::Create(
   infobar_service->AddInfoBar(
       DataReductionProxyInfoBarDelegateAndroid::CreateInfoBar(
           infobar_service,
-          scoped_ptr<DataReductionProxyInfoBarDelegateAndroid>(
+          std::unique_ptr<DataReductionProxyInfoBarDelegateAndroid>(
               new DataReductionProxyInfoBarDelegateAndroid(link_url))));
 }
 

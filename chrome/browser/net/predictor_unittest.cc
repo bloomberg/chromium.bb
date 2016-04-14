@@ -2,16 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/net/predictor.h"
+
 #include <stddef.h>
 #include <time.h>
 
 #include <algorithm>
+#include <memory>
 #include <sstream>
 #include <string>
 
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -19,7 +21,6 @@
 #include "base/timer/timer.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "chrome/browser/net/predictor.h"
 #include "chrome/browser/net/url_info.h"
 #include "components/network_hints/common/network_hints_common.h"
 #include "content/public/test/test_browser_thread.h"
@@ -130,7 +131,7 @@ class PredictorTest : public testing::Test {
   content::TestBrowserThread io_thread_;
 
  protected:
-  scoped_ptr<net::MockCachingHostResolver> host_resolver_;
+  std::unique_ptr<net::MockCachingHostResolver> host_resolver_;
 };
 
 //------------------------------------------------------------------------------
@@ -142,7 +143,8 @@ TEST_F(PredictorTest, StartupShutdownTest) {
 
 
 TEST_F(PredictorTest, ShutdownWhenResolutionIsPendingTest) {
-  scoped_ptr<net::HostResolver> host_resolver(new net::HangingHostResolver());
+  std::unique_ptr<net::HostResolver> host_resolver(
+      new net::HangingHostResolver());
 
   Predictor testing_master(true, true);
   testing_master.SetHostResolver(host_resolver.get());
@@ -370,7 +372,7 @@ TEST_F(PredictorTest, ReferrerSerializationNilTest) {
   Predictor predictor(true, true);
   predictor.SetHostResolver(host_resolver_.get());
 
-  scoped_ptr<base::ListValue> referral_list(NewEmptySerializationList());
+  std::unique_ptr<base::ListValue> referral_list(NewEmptySerializationList());
   predictor.SerializeReferrers(referral_list.get());
   EXPECT_EQ(1U, referral_list->GetSize());
   EXPECT_FALSE(GetDataFromSerialization(
@@ -389,7 +391,7 @@ TEST_F(PredictorTest, ReferrerSerializationSingleReferrerTest) {
   const GURL motivation_url("http://www.google.com:91");
   const GURL subresource_url("http://icons.google.com:90");
   const double kUseRate = 23.4;
-  scoped_ptr<base::ListValue> referral_list(NewEmptySerializationList());
+  std::unique_ptr<base::ListValue> referral_list(NewEmptySerializationList());
 
   AddToSerializedList(motivation_url, subresource_url,
       kUseRate, referral_list.get());
@@ -414,7 +416,7 @@ TEST_F(PredictorTest, GetHtmlReferrerLists) {
   Predictor predictor(true, true);
   predictor.SetHostResolver(host_resolver_.get());
   const double kUseRate = 23.4;
-  scoped_ptr<base::ListValue> referral_list(NewEmptySerializationList());
+  std::unique_ptr<base::ListValue> referral_list(NewEmptySerializationList());
 
   AddToSerializedList(
       GURL("http://d.google.com/x1"),
@@ -505,7 +507,7 @@ TEST_F(PredictorTest, ReferrerSerializationTrimTest) {
   GURL img_subresource_url("http://img.google.com:118");
   const double kRateImg = 8.0 * Predictor::kDiscardableExpectedValue;
 
-  scoped_ptr<base::ListValue> referral_list(NewEmptySerializationList());
+  std::unique_ptr<base::ListValue> referral_list(NewEmptySerializationList());
   AddToSerializedList(
       motivation_url, icon_subresource_url, kRateIcon, referral_list.get());
   AddToSerializedList(
@@ -759,7 +761,7 @@ TEST_F(PredictorTest, HSTSRedirectSubresources) {
   predictor.SetObserver(&observer);
   predictor.SetTransportSecurityState(&state);
 
-  scoped_ptr<base::ListValue> referral_list(NewEmptySerializationList());
+  std::unique_ptr<base::ListValue> referral_list(NewEmptySerializationList());
   AddToSerializedList(
       kHttpsUrl, kSubresourceUrl, kUseRate, referral_list.get());
   predictor.DeserializeReferrers(*referral_list.get());
@@ -793,7 +795,7 @@ TEST_F(PredictorTest, ProxyDefinitelyEnabled) {
 
   net::ProxyConfig config;
   config.proxy_rules().ParseFromString("http=socks://localhost:12345");
-  scoped_ptr<net::ProxyService> proxy_service(
+  std::unique_ptr<net::ProxyService> proxy_service(
       net::ProxyService::CreateFixed(config));
   testing_master.proxy_service_ = proxy_service.get();
 
@@ -812,7 +814,7 @@ TEST_F(PredictorTest, ProxyDefinitelyNotEnabled) {
 
   Predictor testing_master(true, true);
   net::ProxyConfig config = net::ProxyConfig::CreateDirect();
-  scoped_ptr<net::ProxyService> proxy_service(
+  std::unique_ptr<net::ProxyService> proxy_service(
       net::ProxyService::CreateFixed(config));
   testing_master.proxy_service_ = proxy_service.get();
 
@@ -832,7 +834,7 @@ TEST_F(PredictorTest, ProxyMaybeEnabled) {
   Predictor testing_master(true, true);
   net::ProxyConfig config = net::ProxyConfig::CreateFromCustomPacURL(GURL(
       "http://foopy/proxy.pac"));
-  scoped_ptr<net::ProxyService> proxy_service(
+  std::unique_ptr<net::ProxyService> proxy_service(
       net::ProxyService::CreateFixed(config));
   testing_master.proxy_service_ = proxy_service.get();
 

@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
+
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/test/histogram_tester.h"
-#include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
@@ -23,7 +25,7 @@ class DataReductionProxyChromeSettingsTest : public testing::Test {
  public:
   void SetUp() override {
     drp_chrome_settings_ =
-        make_scoped_ptr(new DataReductionProxyChromeSettings());
+        base::WrapUnique(new DataReductionProxyChromeSettings());
     test_context_ =
         data_reduction_proxy::DataReductionProxyTestContext::Builder()
             .WithMockConfig()
@@ -31,16 +33,17 @@ class DataReductionProxyChromeSettingsTest : public testing::Test {
             .Build();
     config_ = test_context_->mock_config();
     drp_chrome_settings_->ResetConfigForTest(config_);
-    dict_ = make_scoped_ptr(new base::DictionaryValue());
+    dict_ = base::WrapUnique(new base::DictionaryValue());
 
     PrefRegistrySimple* registry = test_context_->pref_service()->registry();
     registry->RegisterDictionaryPref(proxy_config::prefs::kProxy);
   }
 
   base::MessageLoopForIO message_loop_;
-  scoped_ptr<DataReductionProxyChromeSettings> drp_chrome_settings_;
-  scoped_ptr<base::DictionaryValue> dict_;
-  scoped_ptr<data_reduction_proxy::DataReductionProxyTestContext> test_context_;
+  std::unique_ptr<DataReductionProxyChromeSettings> drp_chrome_settings_;
+  std::unique_ptr<base::DictionaryValue> dict_;
+  std::unique_ptr<data_reduction_proxy::DataReductionProxyTestContext>
+      test_context_;
   data_reduction_proxy::MockDataReductionProxyConfig* config_;
 };
 

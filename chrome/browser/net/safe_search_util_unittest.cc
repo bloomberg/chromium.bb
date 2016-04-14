@@ -17,15 +17,15 @@ class SafeSearchUtilTest : public ::testing::Test {
   SafeSearchUtilTest() {}
   ~SafeSearchUtilTest() override {}
 
-  scoped_ptr<net::URLRequest> CreateRequest(const std::string& url) {
+  std::unique_ptr<net::URLRequest> CreateRequest(const std::string& url) {
     return context_.CreateRequest(GURL(url), net::DEFAULT_PRIORITY, NULL);
   }
 
-  scoped_ptr<net::URLRequest> CreateYoutubeRequest() {
+  std::unique_ptr<net::URLRequest> CreateYoutubeRequest() {
     return CreateRequest("http://www.youtube.com");
   }
 
-  scoped_ptr<net::URLRequest> CreateNonYoutubeRequest() {
+  std::unique_ptr<net::URLRequest> CreateNonYoutubeRequest() {
     return CreateRequest("http://www.notyoutube.com");
   }
 
@@ -37,7 +37,7 @@ class SafeSearchUtilTest : public ::testing::Test {
     // Show the URL in the trace so we know where we failed.
     SCOPED_TRACE(url_string);
 
-    scoped_ptr<net::URLRequest> request(CreateRequest(url_string));
+    std::unique_ptr<net::URLRequest> request(CreateRequest(url_string));
     GURL result(url_string);
     safe_search_util::ForceGoogleSafeSearch(request.get(), &result);
 
@@ -141,7 +141,7 @@ TEST_F(SafeSearchUtilTest, AddGoogleSafeSearchParams) {
 }
 
 TEST_F(SafeSearchUtilTest, SetYoutubeHeader) {
-  scoped_ptr<net::URLRequest> request = CreateYoutubeRequest();
+  std::unique_ptr<net::URLRequest> request = CreateYoutubeRequest();
   net::HttpRequestHeaders headers;
   safe_search_util::ForceYouTubeSafetyMode(request.get(), &headers);
   std::string value;
@@ -150,7 +150,7 @@ TEST_F(SafeSearchUtilTest, SetYoutubeHeader) {
 }
 
 TEST_F(SafeSearchUtilTest, OverrideYoutubeHeader) {
-  scoped_ptr<net::URLRequest> request = CreateYoutubeRequest();
+  std::unique_ptr<net::URLRequest> request = CreateYoutubeRequest();
   net::HttpRequestHeaders headers;
   headers.SetHeader("Youtube-Safety-Mode", "Off");
   safe_search_util::ForceYouTubeSafetyMode(request.get(), &headers);
@@ -160,7 +160,7 @@ TEST_F(SafeSearchUtilTest, OverrideYoutubeHeader) {
 }
 
 TEST_F(SafeSearchUtilTest, DoesntTouchNonYoutubeURL) {
-  scoped_ptr<net::URLRequest> request = CreateNonYoutubeRequest();
+  std::unique_ptr<net::URLRequest> request = CreateNonYoutubeRequest();
   net::HttpRequestHeaders headers;
   headers.SetHeader("Youtube-Safety-Mode", "Off");
   safe_search_util::ForceYouTubeSafetyMode(request.get(), &headers);

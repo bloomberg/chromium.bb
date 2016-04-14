@@ -31,7 +31,7 @@ class UtilityProcessMojoProxyResolverFactory
   static UtilityProcessMojoProxyResolverFactory* GetInstance();
 
   // Overridden from net::MojoProxyResolverFactory:
-  scoped_ptr<base::ScopedClosureRunner> CreateResolver(
+  std::unique_ptr<base::ScopedClosureRunner> CreateResolver(
       const mojo::String& pac_script,
       mojo::InterfaceRequest<net::interfaces::ProxyResolver> req,
       net::interfaces::ProxyResolverFactoryRequestClientPtr client) override;

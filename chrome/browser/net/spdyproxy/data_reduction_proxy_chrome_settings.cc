@@ -4,12 +4,13 @@
 
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 
 #include "base/base64.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
@@ -186,7 +187,7 @@ void DataReductionProxyChromeSettings::InitDataReductionProxySettings(
     data_reduction_proxy::DataReductionProxyIOData* io_data,
     PrefService* profile_prefs,
     net::URLRequestContextGetter* request_context_getter,
-    scoped_ptr<data_reduction_proxy::DataStore> store,
+    std::unique_ptr<data_reduction_proxy::DataStore> store,
     const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner,
     const scoped_refptr<base::SequencedTaskRunner>& db_task_runner) {
 #if defined(OS_ANDROID)
@@ -200,8 +201,8 @@ void DataReductionProxyChromeSettings::InitDataReductionProxySettings(
   base::TimeDelta commit_delay = base::TimeDelta::FromMinutes(60);
 #endif
 
-  scoped_ptr<data_reduction_proxy::DataReductionProxyService> service =
-      make_scoped_ptr(new data_reduction_proxy::DataReductionProxyService(
+  std::unique_ptr<data_reduction_proxy::DataReductionProxyService> service =
+      base::WrapUnique(new data_reduction_proxy::DataReductionProxyService(
           this, profile_prefs, request_context_getter, std::move(store),
           ui_task_runner, io_data->io_task_runner(), db_task_runner,
           commit_delay));

@@ -23,6 +23,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <queue>
 #include <set>
 #include <string>
@@ -30,7 +31,6 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/net/prediction_options.h"
 #include "chrome/browser/net/referrer.h"
@@ -506,7 +506,7 @@ class Predictor {
 
   // ------------- End IO thread methods.
 
-  scoped_ptr<InitialObserver> initial_observer_;
+  std::unique_ptr<InitialObserver> initial_observer_;
 
   // Reference to URLRequestContextGetter from the Profile which owns the
   // predictor. Used by Preconnect.
@@ -595,7 +595,7 @@ class Predictor {
   // An observer for testing.
   PredictorObserver* observer_;
 
-  scoped_ptr<base::WeakPtrFactory<Predictor> > weak_factory_;
+  std::unique_ptr<base::WeakPtrFactory<Predictor>> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(Predictor);
 };

@@ -18,7 +18,7 @@ using net::MockDnsClientRuleList;
 
 namespace chrome_browser_net {
 
-scoped_ptr<DnsClient> CreateMockDnsClientForProbes(
+std::unique_ptr<DnsClient> CreateMockDnsClientForProbes(
     MockDnsClientRule::Result result) {
   DnsConfig config;
   net::IPAddress dns_ip(192, 168, 1, 1);
@@ -30,7 +30,7 @@ scoped_ptr<DnsClient> CreateMockDnsClientForProbes(
   rules.push_back(MockDnsClientRule(DnsProbeRunner::kKnownGoodHostname, kTypeA,
                                     result, false));
 
-  return scoped_ptr<DnsClient>(new net::MockDnsClient(config, rules));
+  return std::unique_ptr<DnsClient>(new net::MockDnsClient(config, rules));
 }
 
 }  // namespace chrome_browser_net

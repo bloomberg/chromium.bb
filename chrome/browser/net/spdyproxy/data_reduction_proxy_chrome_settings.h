@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_NET_SPDYPROXY_DATA_REDUCTION_PROXY_CHROME_SETTINGS_H_
 #define CHROME_BROWSER_NET_SPDYPROXY_DATA_REDUCTION_PROXY_CHROME_SETTINGS_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -67,7 +67,7 @@ class DataReductionProxyChromeSettings
       data_reduction_proxy::DataReductionProxyIOData* io_data,
       PrefService* profile_prefs,
       net::URLRequestContextGetter* request_context_getter,
-      scoped_ptr<data_reduction_proxy::DataStore> store,
+      std::unique_ptr<data_reduction_proxy::DataStore> store,
       const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner,
       const scoped_refptr<base::SequencedTaskRunner>& db_task_runner);
 

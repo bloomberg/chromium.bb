@@ -5,10 +5,11 @@
 #ifndef CHROME_BROWSER_NET_FILE_DOWNLOADER_H_
 #define CHROME_BROWSER_NET_FILE_DOWNLOADER_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
@@ -56,7 +57,7 @@ class FileDownloader : public net::URLFetcherDelegate {
 
   DownloadFinishedCallback callback_;
 
-  scoped_ptr<net::URLFetcher> fetcher_;
+  std::unique_ptr<net::URLFetcher> fetcher_;
 
   base::FilePath local_path_;
 

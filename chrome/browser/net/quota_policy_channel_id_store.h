@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_NET_QUOTA_POLICY_CHANNEL_ID_STORE_H_
 #define CHROME_BROWSER_NET_QUOTA_POLICY_CHANNEL_ID_STORE_H_
 
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
@@ -13,7 +14,6 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "net/extras/sqlite/sqlite_channel_id_store.h"
 #include "net/ssl/default_channel_id_store.h"
@@ -51,13 +51,13 @@ class QuotaPolicyChannelIDStore
   void SetForceKeepSessionState() override;
 
  private:
-  typedef std::vector<scoped_ptr<net::DefaultChannelIDStore::ChannelID>>
+  typedef std::vector<std::unique_ptr<net::DefaultChannelIDStore::ChannelID>>
       ChannelIDVector;
 
   ~QuotaPolicyChannelIDStore() override;
 
   void OnLoad(const LoadedCallback& loaded_callback,
-              scoped_ptr<ChannelIDVector> channel_ids);
+              std::unique_ptr<ChannelIDVector> channel_ids);
 
   scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy_;
   scoped_refptr<net::SQLiteChannelIDStore> persistent_store_;

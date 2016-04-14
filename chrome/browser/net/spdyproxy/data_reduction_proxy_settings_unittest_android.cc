@@ -6,12 +6,13 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/base64.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/time/time.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
@@ -117,7 +118,7 @@ class DataReductionProxySettingsAndroidTest
     return settings_android_.get();
   }
 
-  scoped_ptr<DataReductionProxySettingsAndroid> settings_android_;
+  std::unique_ptr<DataReductionProxySettingsAndroid> settings_android_;
   JNIEnv* env_;
 };
 

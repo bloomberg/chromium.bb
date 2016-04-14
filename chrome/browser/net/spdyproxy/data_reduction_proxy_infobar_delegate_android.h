@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_NET_SPDYPROXY_DATA_REDUCTION_PROXY_INFOBAR_DELEGATE_ANDROID_H_
 #define CHROME_BROWSER_NET_SPDYPROXY_DATA_REDUCTION_PROXY_INFOBAR_DELEGATE_ANDROID_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/infobars/core/infobar_delegate.h"
 
@@ -34,9 +35,9 @@ class DataReductionProxyInfoBarDelegateAndroid : public ConfirmInfoBarDelegate {
       const std::string& link_url);
 
   // Returns a Data Reduction Proxy infobar that owns |delegate|.
-  static scoped_ptr<infobars::InfoBar> CreateInfoBar(
+  static std::unique_ptr<infobars::InfoBar> CreateInfoBar(
       infobars::InfoBarManager* infobar_manager,
-      scoped_ptr<DataReductionProxyInfoBarDelegateAndroid> delegate);
+      std::unique_ptr<DataReductionProxyInfoBarDelegateAndroid> delegate);
 
   // ConfirmInfoBarDelegate
   infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;

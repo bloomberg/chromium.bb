@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <set>
 
 #include "base/bind.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
@@ -362,7 +362,8 @@ void DnsProbeBrowserTestIOThreadHelper::SetUpOnIOThread(IOThread* io_thread) {
   interceptor_ =
       new BreakableCorrectionInterceptor(mock_corrections_file_path_);
   URLRequestFilter::GetInstance()->AddUrlInterceptor(
-      LinkDoctorBaseURL(), scoped_ptr<URLRequestInterceptor>(interceptor_));
+      LinkDoctorBaseURL(),
+      std::unique_ptr<URLRequestInterceptor>(interceptor_));
 }
 
 void DnsProbeBrowserTestIOThreadHelper::CleanUpOnIOThreadAndDeleteHelper() {
@@ -371,7 +372,7 @@ void DnsProbeBrowserTestIOThreadHelper::CleanUpOnIOThreadAndDeleteHelper() {
   URLRequestFilter::GetInstance()->ClearHandlers();
 
   IOThread::Globals* globals = io_thread_->globals();
-  scoped_ptr<DnsProbeService> delaying_dns_probe_service(
+  std::unique_ptr<DnsProbeService> delaying_dns_probe_service(
       globals->dns_probe_service.release());
   globals->dns_probe_service.reset(original_dns_probe_service_);
 

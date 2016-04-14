@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_NET_PROXY_SERVICE_FACTORY_H_
 #define CHROME_BROWSER_NET_PROXY_SERVICE_FACTORY_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 class PrefProxyConfigTracker;
 class PrefService;
@@ -27,7 +28,7 @@ class ProxyServiceFactory {
  public:
   // Creates a ProxyConfigService that delivers the system preferences
   // (or the respective ChromeOS equivalent).
-  static scoped_ptr<net::ProxyConfigService> CreateProxyConfigService(
+  static std::unique_ptr<net::ProxyConfigService> CreateProxyConfigService(
       PrefProxyConfigTracker* tracker);
 
   // Creates a PrefProxyConfigTracker that tracks preferences of a
@@ -45,11 +46,11 @@ class ProxyServiceFactory {
       PrefService* local_state_prefs);
 
   // Create a proxy service according to the options on command line.
-  static scoped_ptr<net::ProxyService> CreateProxyService(
+  static std::unique_ptr<net::ProxyService> CreateProxyService(
       net::NetLog* net_log,
       net::URLRequestContext* context,
       net::NetworkDelegate* network_delegate,
-      scoped_ptr<net::ProxyConfigService> proxy_config_service,
+      std::unique_ptr<net::ProxyConfigService> proxy_config_service,
       const base::CommandLine& command_line,
       bool quick_check_enabled);
 

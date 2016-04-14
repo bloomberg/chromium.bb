@@ -83,7 +83,7 @@ DnsProbeRunner::DnsProbeRunner() : result_(UNKNOWN), weak_factory_(this) {}
 
 DnsProbeRunner::~DnsProbeRunner() {}
 
-void DnsProbeRunner::SetClient(scoped_ptr<net::DnsClient> client) {
+void DnsProbeRunner::SetClient(std::unique_ptr<net::DnsClient> client) {
   client_ = std::move(client);
 }
 

@@ -302,12 +302,13 @@ class PredictorBrowserTest : public InProcessBrowserTest {
   const GURL startup_url_;
   const GURL referring_url_;
   const GURL target_url_;
-  scoped_ptr<ConnectionListener> connection_listener_;
+  std::unique_ptr<ConnectionListener> connection_listener_;
 
  private:
   scoped_refptr<HostResolutionRequestRecorder>
       host_resolution_request_recorder_;
-  scoped_ptr<net::ScopedDefaultHostResolverProc> scoped_host_resolver_proc_;
+  std::unique_ptr<net::ScopedDefaultHostResolverProc>
+      scoped_host_resolver_proc_;
 };
 
 IN_PROC_BROWSER_TEST_F(PredictorBrowserTest, PRE_ShutdownStartupCycle) {

@@ -121,12 +121,12 @@ void DnsProbeService::OnInitialDNSConfigRead() {
 }
 
 void DnsProbeService::SetSystemClientForTesting(
-    scoped_ptr<DnsClient> system_client) {
+    std::unique_ptr<DnsClient> system_client) {
   system_runner_.SetClient(std::move(system_client));
 }
 
 void DnsProbeService::SetPublicClientForTesting(
-    scoped_ptr<DnsClient> public_client) {
+    std::unique_ptr<DnsClient> public_client) {
   public_runner_.SetClient(std::move(public_client));
 }
 
@@ -141,7 +141,7 @@ void DnsProbeService::SetSystemClientToCurrentConfig() {
   system_config.attempts = 1;
   system_config.randomize_ports = false;
 
-  scoped_ptr<DnsClient> system_client(DnsClient::CreateClient(NULL));
+  std::unique_ptr<DnsClient> system_client(DnsClient::CreateClient(NULL));
   system_client->SetConfig(system_config);
 
   system_runner_.SetClient(std::move(system_client));
@@ -156,7 +156,7 @@ void DnsProbeService::SetPublicClientToGooglePublicDns() {
   public_config.attempts = 1;
   public_config.randomize_ports = false;
 
-  scoped_ptr<DnsClient> public_client(DnsClient::CreateClient(NULL));
+  std::unique_ptr<DnsClient> public_client(DnsClient::CreateClient(NULL));
   public_client->SetConfig(public_config);
 
   public_runner_.SetClient(std::move(public_client));

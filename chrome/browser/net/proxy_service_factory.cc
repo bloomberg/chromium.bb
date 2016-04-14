@@ -58,13 +58,13 @@ bool EnableOutOfProcessV8Pac(const base::CommandLine& command_line) {
 }  // namespace
 
 // static
-scoped_ptr<net::ProxyConfigService>
+std::unique_ptr<net::ProxyConfigService>
 ProxyServiceFactory::CreateProxyConfigService(PrefProxyConfigTracker* tracker) {
   // The linux gconf-based proxy settings getter relies on being initialized
   // from the UI thread.
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  scoped_ptr<net::ProxyConfigService> base_service;
+  std::unique_ptr<net::ProxyConfigService> base_service;
 
 #if !defined(OS_CHROMEOS)
   // On ChromeOS, base service is NULL; chromeos::ProxyConfigServiceImpl
@@ -114,11 +114,11 @@ ProxyServiceFactory::CreatePrefProxyConfigTrackerOfLocalState(
 }
 
 // static
-scoped_ptr<net::ProxyService> ProxyServiceFactory::CreateProxyService(
+std::unique_ptr<net::ProxyService> ProxyServiceFactory::CreateProxyService(
     net::NetLog* net_log,
     net::URLRequestContext* context,
     net::NetworkDelegate* network_delegate,
-    scoped_ptr<net::ProxyConfigService> proxy_config_service,
+    std::unique_ptr<net::ProxyConfigService> proxy_config_service,
     const base::CommandLine& command_line,
     bool quick_check_enabled) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -147,9 +147,9 @@ scoped_ptr<net::ProxyService> ProxyServiceFactory::CreateProxyService(
     }
   }
 
-  scoped_ptr<net::ProxyService> proxy_service;
+  std::unique_ptr<net::ProxyService> proxy_service;
   if (use_v8) {
-    scoped_ptr<net::DhcpProxyScriptFetcher> dhcp_proxy_script_fetcher;
+    std::unique_ptr<net::DhcpProxyScriptFetcher> dhcp_proxy_script_fetcher;
 #if defined(OS_CHROMEOS)
     dhcp_proxy_script_fetcher.reset(
         new chromeos::DhcpProxyScriptFetcherChromeos(context));

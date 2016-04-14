@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_NET_CONNECT_INTERCEPTOR_H_
 #define CHROME_BROWSER_NET_CONNECT_INTERCEPTOR_H_
 
+#include <memory>
+
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/net/timed_cache.h"
 
 class GURL;

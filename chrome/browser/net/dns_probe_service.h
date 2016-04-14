@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_NET_DNS_PROBE_SERVICE_H_
 #define CHROME_BROWSER_NET_DNS_PROBE_SERVICE_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "chrome/browser/net/dns_probe_runner.h"
 #include "components/error_page/common/net_error_info.h"
@@ -41,8 +41,8 @@ class DnsProbeService : public net::NetworkChangeNotifier::DNSObserver {
   void OnDNSChanged() override;
   void OnInitialDNSConfigRead() override;
 
-  void SetSystemClientForTesting(scoped_ptr<net::DnsClient> system_client);
-  void SetPublicClientForTesting(scoped_ptr<net::DnsClient> public_client);
+  void SetSystemClientForTesting(std::unique_ptr<net::DnsClient> system_client);
+  void SetPublicClientForTesting(std::unique_ptr<net::DnsClient> public_client);
   void ClearCachedResultForTesting();
 
  private:

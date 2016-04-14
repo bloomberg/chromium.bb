@@ -92,7 +92,7 @@ TEST_F(DnsProbeRunnerTest, TwoProbes) {
 }
 
 TEST_F(DnsProbeRunnerTest, InvalidDnsConfig) {
-  scoped_ptr<DnsClient> dns_client(DnsClient::CreateClient(NULL));
+  std::unique_ptr<DnsClient> dns_client(DnsClient::CreateClient(NULL));
   DnsConfig empty_config;
   dns_client->SetConfig(empty_config);
   ASSERT_EQ(NULL, dns_client->GetTransactionFactory());

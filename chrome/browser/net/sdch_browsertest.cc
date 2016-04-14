@@ -188,11 +188,11 @@ class SdchResponseHandler {
     return value == dictionary_client_hash_;
   }
 
-  scoped_ptr<net::test_server::HttpResponse> HandleRequest(
+  std::unique_ptr<net::test_server::HttpResponse> HandleRequest(
       const net::test_server::HttpRequest& request) {
     request_vector_.push_back(request);
 
-    scoped_ptr<net::test_server::BasicHttpResponse> response(
+    std::unique_ptr<net::test_server::BasicHttpResponse> response(
         new net::test_server::BasicHttpResponse);
     if (request.relative_url == kDataURLPath) {
       if (ShouldRespondWithSdchEncoding(request.headers)) {
@@ -649,7 +649,7 @@ class SdchBrowserTest : public InProcessBrowserTest,
   SdchResponseHandler response_handler_;
   net::EmbeddedTestServer test_server_;
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
-  scoped_ptr<net::URLFetcher> fetcher_;
+  std::unique_ptr<net::URLFetcher> fetcher_;
   bool url_fetch_complete_;
   bool waiting_;
   base::ScopedTempDir second_profile_data_dir_;

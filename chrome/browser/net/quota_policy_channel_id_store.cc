@@ -68,7 +68,7 @@ void QuotaPolicyChannelIDStore::SetForceKeepSessionState() {
 
 void QuotaPolicyChannelIDStore::OnLoad(
     const LoadedCallback& loaded_callback,
-    scoped_ptr<ChannelIDVector> channel_ids) {
+    std::unique_ptr<ChannelIDVector> channel_ids) {
   for (ChannelIDVector::const_iterator channel_id = channel_ids->begin();
        channel_id != channel_ids->end();
        ++channel_id) {

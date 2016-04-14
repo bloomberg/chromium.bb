@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <string>
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
@@ -232,7 +232,7 @@ class TestInterceptor : public net::URLRequestInterceptor {
   void Register() {
     EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
     net::URLRequestFilter::GetInstance()->AddHostnameInterceptor(
-        "http", kTestDomain, scoped_ptr<net::URLRequestInterceptor>(this));
+        "http", kTestDomain, std::unique_ptr<net::URLRequestInterceptor>(this));
   }
 
   // Unregisters |this| with the URLRequestFilter, which should then delete

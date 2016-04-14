@@ -73,7 +73,7 @@ class WebSocketBrowserTest : public InProcessBrowserTest {
 
  private:
   typedef net::SpawnedTestServer::SSLOptions SSLOptions;
-  scoped_ptr<content::TitleWatcher> watcher_;
+  std::unique_ptr<content::TitleWatcher> watcher_;
 
   DISALLOW_COPY_AND_ASSIGN(WebSocketBrowserTest);
 };

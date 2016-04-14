@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
@@ -66,7 +67,7 @@ void UtilityProcessMojoProxyResolverFactory::CreateProcessAndConnect() {
   }
 }
 
-scoped_ptr<base::ScopedClosureRunner>
+std::unique_ptr<base::ScopedClosureRunner>
 UtilityProcessMojoProxyResolverFactory::CreateResolver(
     const mojo::String& pac_script,
     mojo::InterfaceRequest<net::interfaces::ProxyResolver> req,
@@ -85,7 +86,7 @@ UtilityProcessMojoProxyResolverFactory::CreateResolver(
   num_proxy_resolvers_++;
   resolver_factory_->CreateResolver(pac_script, std::move(req),
                                     std::move(client));
-  return make_scoped_ptr(new base::ScopedClosureRunner(
+  return base::WrapUnique(new base::ScopedClosureRunner(
       base::Bind(&UtilityProcessMojoProxyResolverFactory::OnResolverDestroyed,
                  base::Unretained(this))));
 }

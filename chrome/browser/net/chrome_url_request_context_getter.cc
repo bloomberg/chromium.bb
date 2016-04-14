@@ -84,7 +84,7 @@ class FactoryForIsolatedApp : public ChromeURLRequestContextFactory {
       const ProfileIOData* profile_io_data,
       const StoragePartitionDescriptor& partition_descriptor,
       ChromeURLRequestContextGetter* main_context,
-      scoped_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
+      std::unique_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
           protocol_handler_interceptor,
       content::ProtocolHandlerMap* protocol_handlers,
       content::URLRequestInterceptorScopedVector request_interceptors)
@@ -113,7 +113,7 @@ class FactoryForIsolatedApp : public ChromeURLRequestContextFactory {
   const StoragePartitionDescriptor partition_descriptor_;
   scoped_refptr<ChromeURLRequestContextGetter>
       main_request_context_getter_;
-  scoped_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
+  std::unique_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
       protocol_handler_interceptor_;
   content::ProtocolHandlerMap protocol_handlers_;
   content::URLRequestInterceptorScopedVector request_interceptors_;
@@ -241,7 +241,7 @@ ChromeURLRequestContextGetter::CreateForIsolatedApp(
     Profile* profile,
     const ProfileIOData* profile_io_data,
     const StoragePartitionDescriptor& partition_descriptor,
-    scoped_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
+    std::unique_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
         protocol_handler_interceptor,
     content::ProtocolHandlerMap* protocol_handlers,
     content::URLRequestInterceptorScopedVector request_interceptors) {

@@ -7,13 +7,13 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "components/data_use_measurement/content/data_use_measurement.h"
@@ -194,13 +194,13 @@ class ChromeNetworkDelegate : public net::NetworkDelegateImpl {
                             int64_t tx_bytes,
                             int64_t rx_bytes);
 
-  scoped_ptr<ChromeExtensionsNetworkDelegate> extensions_delegate_;
+  std::unique_ptr<ChromeExtensionsNetworkDelegate> extensions_delegate_;
 
   void* profile_;
   base::FilePath profile_path_;
   scoped_refptr<content_settings::CookieSettings> cookie_settings_;
 
-  scoped_ptr<chrome_browser_net::ConnectInterceptor> connect_interceptor_;
+  std::unique_ptr<chrome_browser_net::ConnectInterceptor> connect_interceptor_;
 
   // Weak, owned by our owner.
   BooleanPrefMember* enable_referrers_;

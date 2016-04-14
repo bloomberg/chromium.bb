@@ -67,7 +67,7 @@ class NSSCertDatabaseChromeOSManager : public base::SupportsUserData::Data {
   }
 
   std::string username_hash_;
-  scoped_ptr<net::NSSCertDatabaseChromeOS> nss_cert_database_;
+  std::unique_ptr<net::NSSCertDatabaseChromeOS> nss_cert_database_;
   ReadyCallbackList ready_callback_list_;
   base::WeakPtrFactory<NSSCertDatabaseChromeOSManager> weak_ptr_factory_;
 
