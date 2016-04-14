@@ -5,8 +5,9 @@
 import("//build/config/ios/rules.gni")
 
 ios_framework_bundle("ochamcrest") {
-  testonly = true
   output_name = "OCHamcrest"
+
+  testonly = true
   sources = [
     "src/Source/Core/HCAssertThat.h",
     "src/Source/Core/HCAssertThat.m",

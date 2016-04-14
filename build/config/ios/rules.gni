@@ -253,19 +253,18 @@ template("bundle_data_xib") {
 # See "gn help shared_library" for more information on arguments supported
 # by shared library target.
 template("ios_framework_bundle") {
+  _target_name = target_name
+  _output_name = target_name
+  if (defined(invoker.output_name)) {
+    _output_name = invoker.output_name
+  }
+  _framework_target = _target_name
+
   if (defined(invoker.public_headers) && invoker.public_headers != []) {
-    assert(defined(invoker.sources) && invoker.sources != [],
-           "sources must be set for $target_name when public_headers is set")
-
-    _target_name = target_name
-    _output_name = target_name
-    if (defined(invoker.output_name)) {
-      _output_name = invoker.output_name
-    }
-
     _public_headers = invoker.public_headers
     _framework_name = _output_name + ".framework"
     _framework_root = "$root_out_dir/$_framework_name"
+    _framework_target = target_name + "_internal"
 
     _header_map_filename = "$target_gen_dir/$_output_name.headers.hmap"
     _framework_headers_target = _target_name + "_framework_headers"
@@ -327,6 +326,18 @@ template("ios_framework_bundle") {
       include_dirs = [ _header_map_filename ]
     }
 
+    _framework_public_config = _target_name + "_public_config"
+    config(_framework_public_config) {
+      # TODO(sdefresne): should we have a framework_dirs similar to lib_dirs
+      # and include_dirs to avoid duplicate values on the command-line.
+      common_flags = [ "-F" + rebase_path("$root_out_dir/.", root_out_dir) ]
+      cflags_objc = common_flags
+      cflags_objcc = common_flags
+      ldflags = common_flags
+      lib_dirs = [ root_out_dir ]
+      libs = [ _framework_name ]
+    }
+
     group(_framework_headers_target) {
       deps = [
         ":$_compile_headers_map_target",
@@ -336,15 +347,45 @@ template("ios_framework_bundle") {
     }
   }
 
-  framework_bundle(target_name) {
-    forward_variables_from(invoker, "*", [ "public_headers" ])
+  framework_bundle(_framework_target) {
+    forward_variables_from(invoker,
+                           "*",
+                           [
+                             "output_name",
+                             "public_headers",
+                             "visibility",
+                           ])
+    output_name = _output_name
 
     if (defined(_public_headers)) {
+      visibility = [ ":$_target_name" ]
       configs += [ ":$_headers_map_config" ]
+
       if (!defined(deps)) {
         deps = []
       }
       deps += [ ":$_framework_headers_target" ]
+    } else {
+      forward_variables_from(invoker, [ "visibility" ])
+    }
+  }
+
+  if (defined(_public_headers)) {
+    group(_target_name) {
+      forward_variables_from(invoker,
+                             [
+                               "testonly",
+                               "visibility",
+                               "public_configs",
+                             ])
+
+      deps = [
+        ":$_framework_target",
+      ]
+      if (!defined(public_configs)) {
+        public_configs = []
+      }
+      public_configs += [ ":$_framework_public_config" ]
     }
   }
 }

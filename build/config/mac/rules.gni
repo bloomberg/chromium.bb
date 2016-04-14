@@ -88,10 +88,10 @@ template("framework_bundle") {
       forward_variables_from(invoker, [ "visibility" ])
     }
 
-    if (!defined(deps)) {
-      deps = []
+    if (!defined(public_deps)) {
+      public_deps = []
     }
-    deps += [ ":$_shared_library_bundle_data" ]
+    public_deps += [ ":$_shared_library_bundle_data" ]
 
     bundle_root_dir = _framework_root_dir
     bundle_resources_dir = "$bundle_root_dir/Resources"
@@ -114,7 +114,7 @@ template("framework_bundle") {
         "$_framework_name",
         "$_framework_version",
       ]
-      deps = [
+      public_deps = [
         ":$_framework_target",
       ]
     }
