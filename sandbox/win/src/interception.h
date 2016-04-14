@@ -137,6 +137,7 @@ class InterceptionManager {
   // Used to store the interception information until the actual set-up.
   struct InterceptionData {
     InterceptionData();
+    InterceptionData(const InterceptionData& other);
     ~InterceptionData();
 
     InterceptionType type;            // Interception type.

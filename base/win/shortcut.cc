@@ -46,6 +46,9 @@ ShortcutProperties::ShortcutProperties()
     : icon_index(-1), dual_mode(false), options(0U) {
 }
 
+ShortcutProperties::ShortcutProperties(const ShortcutProperties& other) =
+    default;
+
 ShortcutProperties::~ShortcutProperties() {
 }
 

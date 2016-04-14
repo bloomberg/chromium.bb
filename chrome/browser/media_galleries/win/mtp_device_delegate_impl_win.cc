@@ -359,6 +359,9 @@ MTPDeviceDelegateImplWin::PendingTaskInfo::PendingTaskInfo(
       reply(reply) {
 }
 
+MTPDeviceDelegateImplWin::PendingTaskInfo::PendingTaskInfo(
+    const PendingTaskInfo& other) = default;
+
 MTPDeviceDelegateImplWin::PendingTaskInfo::~PendingTaskInfo() {
 }
 

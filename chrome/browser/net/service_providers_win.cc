@@ -16,6 +16,9 @@
 WinsockLayeredServiceProvider::WinsockLayeredServiceProvider() {
 }
 
+WinsockLayeredServiceProvider::WinsockLayeredServiceProvider(
+    const WinsockLayeredServiceProvider& other) = default;
+
 WinsockLayeredServiceProvider::~WinsockLayeredServiceProvider() {
 }
 

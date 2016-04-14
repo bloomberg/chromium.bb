@@ -26,6 +26,9 @@ PrinterSemanticCapsAndDefaults::PrinterSemanticCapsAndDefaults()
       bw_model(UNKNOWN_COLOR_MODEL)
 {}
 
+PrinterSemanticCapsAndDefaults::PrinterSemanticCapsAndDefaults(
+    const PrinterSemanticCapsAndDefaults& other) = default;
+
 PrinterSemanticCapsAndDefaults::~PrinterSemanticCapsAndDefaults() {}
 
 PrinterCapsAndDefaults::PrinterCapsAndDefaults() {}

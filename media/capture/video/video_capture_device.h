@@ -93,6 +93,7 @@ class MEDIA_EXPORT VideoCaptureDevice {
          const CaptureApiType api_type,
          const TransportType transport_type);
 #endif
+    Name(const Name& other);
     ~Name();
 
     // Friendly name of a device

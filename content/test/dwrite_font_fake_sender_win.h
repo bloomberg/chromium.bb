@@ -32,6 +32,8 @@ class FakeFont {
  public:
   explicit FakeFont(const base::string16& name);
 
+  FakeFont(const FakeFont& other);
+
   ~FakeFont();
 
   FakeFont& AddFilePath(const base::string16& file_path) {

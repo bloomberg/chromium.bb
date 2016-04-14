@@ -891,6 +891,9 @@ DXVAVideoDecodeAccelerator::PendingSampleInfo::PendingSampleInfo(
   output_sample.Attach(sample);
 }
 
+DXVAVideoDecodeAccelerator::PendingSampleInfo::PendingSampleInfo(
+    const PendingSampleInfo& other) = default;
+
 DXVAVideoDecodeAccelerator::PendingSampleInfo::~PendingSampleInfo() {}
 
 DXVAVideoDecodeAccelerator::DXVAVideoDecodeAccelerator(

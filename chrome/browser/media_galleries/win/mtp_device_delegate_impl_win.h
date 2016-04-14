@@ -77,6 +77,7 @@ class MTPDeviceDelegateImplWin : public MTPDeviceAsyncDelegate {
     PendingTaskInfo(const tracked_objects::Location& location,
                     const base::Callback<base::File::Error(void)>& task,
                     const base::Callback<void(base::File::Error)>& reply);
+    PendingTaskInfo(const PendingTaskInfo& other);
     ~PendingTaskInfo();
 
     const tracked_objects::Location location;

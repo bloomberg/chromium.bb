@@ -67,6 +67,9 @@ const char kUnloadDLLDummyFunction[] = "@";
 InterceptionManager::InterceptionData::InterceptionData() {
 }
 
+InterceptionManager::InterceptionData::InterceptionData(
+    const InterceptionData& other) = default;
+
 InterceptionManager::InterceptionData::~InterceptionData() {
 }
 

@@ -19,6 +19,7 @@ typedef std::vector<WinsockNamespaceProvider> WinsockNamespaceProviderList;
 
 struct WinsockLayeredServiceProvider {
   WinsockLayeredServiceProvider();
+  WinsockLayeredServiceProvider(const WinsockLayeredServiceProvider& other);
   ~WinsockLayeredServiceProvider();
 
   base::string16 name;

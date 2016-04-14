@@ -374,6 +374,7 @@ class CONTENT_EXPORT DXVAVideoDecodeAccelerator
   // Contains information about a decoded sample.
   struct PendingSampleInfo {
     PendingSampleInfo(int32_t buffer_id, IMFSample* sample);
+    PendingSampleInfo(const PendingSampleInfo& other);
     ~PendingSampleInfo();
 
     int32_t input_buffer_id;

@@ -55,6 +55,8 @@ struct PasswordEntry {
 IE7PasswordInfo::IE7PasswordInfo() {
 }
 
+IE7PasswordInfo::IE7PasswordInfo(const IE7PasswordInfo& other) = default;
+
 IE7PasswordInfo::~IE7PasswordInfo() {
 }
 

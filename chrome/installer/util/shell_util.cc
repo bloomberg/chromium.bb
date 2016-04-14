@@ -1391,6 +1391,9 @@ ShellUtil::ShortcutProperties::ShortcutProperties(ShellChange level_in)
       pin_to_taskbar(false),
       options(0U) {}
 
+ShellUtil::ShortcutProperties::ShortcutProperties(
+    const ShortcutProperties& other) = default;
+
 ShellUtil::ShortcutProperties::~ShortcutProperties() {
 }
 

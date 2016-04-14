@@ -75,6 +75,8 @@ VideoCaptureDevice::Name::Name(const std::string& name,
 }
 #endif
 
+VideoCaptureDevice::Name::Name(const Name& other) = default;
+
 VideoCaptureDevice::Name::~Name() {
 }
 

@@ -18,6 +18,7 @@ struct SnapshotRequestInfo {
       const MTPDeviceAsyncDelegate::CreateSnapshotFileSuccessCallback&
           success_callback,
       const MTPDeviceAsyncDelegate::ErrorCallback& error_callback);
+  SnapshotRequestInfo(const SnapshotRequestInfo& other);
   ~SnapshotRequestInfo();
 
   // Device file path.
@@ -38,6 +39,7 @@ struct SnapshotRequestInfo {
 class SnapshotFileDetails {
  public:
   explicit SnapshotFileDetails(const SnapshotRequestInfo& request_info);
+  SnapshotFileDetails(const SnapshotFileDetails& other);
   ~SnapshotFileDetails();
 
   void set_file_info(const base::File::Info& file_info);

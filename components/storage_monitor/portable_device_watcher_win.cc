@@ -481,6 +481,9 @@ PortableDeviceWatcherWin::DeviceStorageObject::DeviceStorageObject(
 PortableDeviceWatcherWin::DeviceDetails::DeviceDetails() {
 }
 
+PortableDeviceWatcherWin::DeviceDetails::DeviceDetails(
+    const DeviceDetails& other) = default;
+
 PortableDeviceWatcherWin::DeviceDetails::~DeviceDetails() {
 }
 

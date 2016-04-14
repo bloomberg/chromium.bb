@@ -24,6 +24,9 @@ SnapshotRequestInfo::SnapshotRequestInfo(
       error_callback(error_callback) {
 }
 
+SnapshotRequestInfo::SnapshotRequestInfo(const SnapshotRequestInfo& other) =
+    default;
+
 SnapshotRequestInfo::~SnapshotRequestInfo() {
 }
 
@@ -37,6 +40,9 @@ SnapshotFileDetails::SnapshotFileDetails(
       optimal_transfer_size_(0),
       bytes_written_(0) {
 }
+
+SnapshotFileDetails::SnapshotFileDetails(const SnapshotFileDetails& other) =
+    default;
 
 SnapshotFileDetails::~SnapshotFileDetails() {
   file_stream_.Release();

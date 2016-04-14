@@ -97,6 +97,7 @@ class ShellUtil {
     };
 
     explicit ShortcutProperties(ShellChange level_in);
+    ShortcutProperties(const ShortcutProperties& other);
     ~ShortcutProperties();
 
     // Sets the target executable to launch from this shortcut.

@@ -38,6 +38,8 @@ IPC::Sender* CreateFakeCollectionSender() {
 
 FakeFont::FakeFont(const base::string16& name) : font_name_(name) {}
 
+FakeFont::FakeFont(const FakeFont& other) = default;
+
 FakeFont::~FakeFont() = default;
 
 FakeFontCollection::FakeFontCollection() = default;
