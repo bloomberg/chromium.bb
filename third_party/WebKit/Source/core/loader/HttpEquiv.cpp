@@ -35,7 +35,7 @@ void HttpEquiv::process(Document& document, const AtomicString& equiv, const Ato
     } else if (equalIgnoringCase(equiv, "x-dns-prefetch-control")) {
         document.parseDNSPrefetchControlHeader(content);
     } else if (equalIgnoringCase(equiv, "x-frame-options")) {
-        processHttpEquivXFrameOptions(document, content);
+        document.addConsoleMessage(ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, "X-Frame-Options may only be set via an HTTP header sent along with a document. It may not be set inside <meta>."));
     } else if (equalIgnoringCase(equiv, "accept-ch")) {
         processHttpEquivAcceptCH(document, content);
     } else if (equalIgnoringCase(equiv, "content-security-policy") || equalIgnoringCase(equiv, "content-security-policy-report-only")) {
@@ -90,30 +90,6 @@ void HttpEquiv::processHttpEquivSetCookie(Document& document, const AtomicString
 
     // Exception (for sandboxed documents) ignored.
     toHTMLDocument(document).setCookie(content, IGNORE_EXCEPTION);
-}
-
-void HttpEquiv::processHttpEquivXFrameOptions(Document& document, const AtomicString& content)
-{
-    LocalFrame* frame = document.frame();
-    if (!frame)
-        return;
-
-    unsigned long requestIdentifier = document.loader()->mainResourceIdentifier();
-    if (!frame->loader().shouldInterruptLoadForXFrameOptions(content, document.url(), requestIdentifier))
-        return;
-
-    ConsoleMessage* consoleMessage = ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel,
-        "Refused to display '" + document.url().elidedString() + "' in a frame because it set 'X-Frame-Options' to '" + content + "'.");
-    consoleMessage->setRequestIdentifier(requestIdentifier);
-    document.addConsoleMessage(consoleMessage);
-
-    frame->loader().stopAllLoaders();
-    // Stopping the loader isn't enough, as we're already parsing the document; to honor the header's
-    // intent, we must navigate away from the possibly partially-rendered document to a location that
-    // doesn't inherit the parent's SecurityOrigin.
-    // TODO(dglazkov): This should probably check document lifecycle instead.
-    if (document.frame())
-        frame->navigate(document, SecurityOrigin::urlWithUniqueSecurityOrigin(), true, UserGestureStatus::None);
 }
 
 } // namespace blink
