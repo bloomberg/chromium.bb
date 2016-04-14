@@ -85,7 +85,6 @@ private:
 };
 
 unsigned DOMWrapperWorld::isolatedWorldCount = 0;
-DOMWrapperWorld* DOMWrapperWorld::worldOfInitializingWindow = 0;
 
 PassRefPtr<DOMWrapperWorld> DOMWrapperWorld::create(v8::Isolate* isolate, int worldId, int extensionGroup)
 {

@@ -77,13 +77,6 @@ public:
 
     static DOMWrapperWorld& current(v8::Isolate* isolate)
     {
-        if (isMainThread() && worldOfInitializingWindow) {
-            // It's possible that current() is being called while window is being initialized.
-            // In order to make current() workable during the initialization phase,
-            // we cache the world of the initializing window on worldOfInitializingWindow.
-            // If there is no initiazing window, worldOfInitializingWindow is 0.
-            return *worldOfInitializingWindow;
-        }
         return world(isolate->GetCurrentContext());
     }
 
@@ -119,12 +112,6 @@ public:
     int extensionGroup() const { return m_extensionGroup; }
     DOMDataStore& domDataStore() const { return *m_domDataStore; }
 
-    static void setWorldOfInitializingWindow(DOMWrapperWorld* world)
-    {
-        ASSERT(isMainThread());
-        worldOfInitializingWindow = world;
-    }
-
 public:
     template<typename T>
     void registerDOMObjectHolder(v8::Isolate*, T*, v8::Local<v8::Value>);
@@ -137,7 +124,6 @@ private:
     void unregisterDOMObjectHolder(DOMObjectHolderBase*);
 
     static unsigned isolatedWorldCount;
-    static DOMWrapperWorld* worldOfInitializingWindow;
 
     const int m_worldId;
     const int m_extensionGroup;

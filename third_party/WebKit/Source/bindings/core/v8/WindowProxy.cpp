@@ -218,10 +218,7 @@ bool WindowProxy::initializeIfNeeded()
     if (isContextInitialized())
         return true;
 
-    DOMWrapperWorld::setWorldOfInitializingWindow(m_world.get());
-    bool result = initialize();
-    DOMWrapperWorld::setWorldOfInitializingWindow(0);
-    return result;
+    return initialize();
 }
 
 bool WindowProxy::initialize()
