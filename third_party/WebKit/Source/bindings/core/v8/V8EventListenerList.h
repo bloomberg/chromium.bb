@@ -48,7 +48,7 @@ enum ListenerLookupType {
 class V8EventListenerList {
     STATIC_ONLY(V8EventListenerList);
 public:
-    static RawPtr<V8EventListener> findWrapper(v8::Local<v8::Value> value, ScriptState* scriptState)
+    static V8EventListener* findWrapper(v8::Local<v8::Value> value, ScriptState* scriptState)
     {
         ASSERT(scriptState->isolate()->InContext());
         if (!value->IsObject())
@@ -59,9 +59,9 @@ public:
     }
 
     template<typename WrapperType>
-    static RawPtr<V8EventListener> findOrCreateWrapper(v8::Local<v8::Value>, bool isAttribute, ScriptState*);
+    static V8EventListener* findOrCreateWrapper(v8::Local<v8::Value>, bool isAttribute, ScriptState*);
 
-    CORE_EXPORT static RawPtr<EventListener> getEventListener(ScriptState*, v8::Local<v8::Value>, bool isAttribute, ListenerLookupType);
+    CORE_EXPORT static EventListener* getEventListener(ScriptState*, v8::Local<v8::Value>, bool isAttribute, ListenerLookupType);
 
 private:
     static V8EventListener* doFindWrapper(v8::Local<v8::Object> object, v8::Local<v8::String> wrapperProperty, ScriptState* scriptState)
@@ -81,7 +81,7 @@ private:
 };
 
 template<typename WrapperType>
-RawPtr<V8EventListener> V8EventListenerList::findOrCreateWrapper(v8::Local<v8::Value> value, bool isAttribute, ScriptState* scriptState)
+V8EventListener* V8EventListenerList::findOrCreateWrapper(v8::Local<v8::Value> value, bool isAttribute, ScriptState* scriptState)
 {
     v8::Isolate* isolate = scriptState->isolate();
     ASSERT(isolate->InContext());

@@ -45,7 +45,7 @@ class Node;
 // A V8LazyEventListener is either a HTML or SVG event handler.
 class V8LazyEventListener final : public V8AbstractEventListener {
 public:
-    static RawPtr<V8LazyEventListener> create(const AtomicString& functionName, const AtomicString& eventParameterName, const String& code, const String& sourceURL, const TextPosition& position, Node* node, v8::Isolate* isolate)
+    static V8LazyEventListener* create(const AtomicString& functionName, const AtomicString& eventParameterName, const String& code, const String& sourceURL, const TextPosition& position, Node* node, v8::Isolate* isolate)
     {
         return new V8LazyEventListener(isolate, functionName, eventParameterName, code, sourceURL, position, node);
     }

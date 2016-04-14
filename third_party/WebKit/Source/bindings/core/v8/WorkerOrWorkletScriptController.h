@@ -54,7 +54,7 @@ class WorkerOrWorkletGlobalScope;
 class CORE_EXPORT WorkerOrWorkletScriptController : public GarbageCollectedFinalized<WorkerOrWorkletScriptController> {
     WTF_MAKE_NONCOPYABLE(WorkerOrWorkletScriptController);
 public:
-    static RawPtr<WorkerOrWorkletScriptController> create(WorkerOrWorkletGlobalScope*, v8::Isolate*);
+    static WorkerOrWorkletScriptController* create(WorkerOrWorkletGlobalScope*, v8::Isolate*);
     virtual ~WorkerOrWorkletScriptController();
     void dispose();
 
@@ -78,7 +78,7 @@ public:
     void willScheduleExecutionTermination();
 
     // Used by WorkerGlobalScope:
-    void rethrowExceptionFromImportedScript(RawPtr<ErrorEvent>, ExceptionState&);
+    void rethrowExceptionFromImportedScript(ErrorEvent*, ExceptionState&);
     void disableEval(const String&);
 
     // Used by Inspector agents:

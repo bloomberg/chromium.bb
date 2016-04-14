@@ -48,8 +48,8 @@ class WorkerGlobalScope;
 class ScheduledAction final : public GarbageCollectedFinalized<ScheduledAction> {
     WTF_MAKE_NONCOPYABLE(ScheduledAction);
 public:
-    static RawPtr<ScheduledAction> create(ScriptState*, const ScriptValue& handler, const Vector<ScriptValue>& arguments);
-    static RawPtr<ScheduledAction> create(ScriptState*, const String& handler);
+    static ScheduledAction* create(ScriptState*, const ScriptValue& handler, const Vector<ScriptValue>& arguments);
+    static ScheduledAction* create(ScriptState*, const String& handler);
 
     ~ScheduledAction();
     DECLARE_TRACE();

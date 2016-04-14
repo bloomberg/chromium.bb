@@ -50,7 +50,7 @@ public:
     explicit ScriptSourceCode(ScriptResource*);
     ScriptSourceCode(const String&, const KURL& = KURL(), const TextPosition& startPosition = TextPosition::minimumPosition());
     ScriptSourceCode(const CompressibleString&, const KURL& = KURL(), const TextPosition& startPosition = TextPosition::minimumPosition());
-    ScriptSourceCode(RawPtr<ScriptStreamer>, ScriptResource*);
+    ScriptSourceCode(ScriptStreamer*, ScriptResource*);
 
     ~ScriptSourceCode();
     DECLARE_TRACE();

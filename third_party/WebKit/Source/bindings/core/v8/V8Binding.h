@@ -241,12 +241,6 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo, PassRefPtr<T> imp
     v8SetReturnValue(callbackInfo, impl.get());
 }
 
-template<typename CallbackInfo, typename T>
-inline void v8SetReturnValue(const CallbackInfo& callbackInfo, RawPtr<T> impl)
-{
-    v8SetReturnValue(callbackInfo, impl.get());
-}
-
 template<typename CallbackInfo>
 inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, ScriptWrappable* impl)
 {
@@ -311,12 +305,6 @@ inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, PassR
     v8SetReturnValueForMainWorld(callbackInfo, impl.get());
 }
 
-template<typename CallbackInfo, typename T>
-inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, RawPtr<T> impl)
-{
-    v8SetReturnValueForMainWorld(callbackInfo, impl.get());
-}
-
 template<typename CallbackInfo>
 inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, ScriptWrappable* impl, const ScriptWrappable* wrappable)
 {
@@ -365,12 +353,6 @@ inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, WorkerGlobalS
 
 template<typename CallbackInfo, typename T, typename Wrappable>
 inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, PassRefPtr<T> impl, const Wrappable* wrappable)
-{
-    v8SetReturnValueFast(callbackInfo, impl.get(), wrappable);
-}
-
-template<typename CallbackInfo, typename T, typename Wrappable>
-inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, RawPtr<T> impl, const Wrappable* wrappable)
 {
     v8SetReturnValueFast(callbackInfo, impl.get(), wrappable);
 }
@@ -592,7 +574,7 @@ inline v8::MaybeLocal<v8::Value> v8DateOrNaN(v8::Isolate* isolate, double value)
 }
 
 // FIXME: Remove the special casing for NodeFilter and XPathNSResolver.
-RawPtr<NodeFilter> toNodeFilter(v8::Local<v8::Value>, v8::Local<v8::Object>, ScriptState*);
+NodeFilter* toNodeFilter(v8::Local<v8::Value>, v8::Local<v8::Object>, ScriptState*);
 XPathNSResolver* toXPathNSResolver(ScriptState*, v8::Local<v8::Value>);
 
 bool toV8Sequence(v8::Local<v8::Value>, uint32_t& length, v8::Isolate*, ExceptionState&);

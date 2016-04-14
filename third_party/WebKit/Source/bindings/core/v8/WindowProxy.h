@@ -52,7 +52,7 @@ class SecurityOrigin;
 // persist between navigations.
 class WindowProxy final : public GarbageCollectedFinalized<WindowProxy> {
 public:
-    static RawPtr<WindowProxy> create(v8::Isolate*, Frame*, DOMWrapperWorld&);
+    static WindowProxy* create(v8::Isolate*, Frame*, DOMWrapperWorld&);
 
     ~WindowProxy();
     DECLARE_TRACE();

@@ -44,7 +44,7 @@
 
 namespace blink {
 
-RawPtr<V8LazyEventListener> createAttributeEventListener(Node* node, const QualifiedName& name, const AtomicString& value, const AtomicString& eventParameterName)
+V8LazyEventListener* createAttributeEventListener(Node* node, const QualifiedName& name, const AtomicString& value, const AtomicString& eventParameterName)
 {
     ASSERT(node);
     if (value.isNull())
@@ -69,7 +69,7 @@ RawPtr<V8LazyEventListener> createAttributeEventListener(Node* node, const Quali
     return V8LazyEventListener::create(name.localName(), eventParameterName, value, sourceURL, position, node, isolate);
 }
 
-RawPtr<V8LazyEventListener> createAttributeEventListener(LocalFrame* frame, const QualifiedName& name, const AtomicString& value, const AtomicString& eventParameterName)
+V8LazyEventListener* createAttributeEventListener(LocalFrame* frame, const QualifiedName& name, const AtomicString& value, const AtomicString& eventParameterName)
 {
     if (!frame)
         return nullptr;

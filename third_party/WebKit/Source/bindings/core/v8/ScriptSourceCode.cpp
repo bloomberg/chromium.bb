@@ -34,7 +34,7 @@ ScriptSourceCode::ScriptSourceCode(ScriptResource* resource)
     treatNullSourceAsEmpty();
 }
 
-ScriptSourceCode::ScriptSourceCode(RawPtr<ScriptStreamer> streamer, ScriptResource* resource)
+ScriptSourceCode::ScriptSourceCode(ScriptStreamer* streamer, ScriptResource* resource)
     : m_source(resource->script())
     , m_resource(resource)
     , m_streamer(streamer)

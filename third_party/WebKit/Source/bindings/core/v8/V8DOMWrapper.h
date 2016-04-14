@@ -37,7 +37,6 @@
 #include "bindings/core/v8/V8Binding.h"
 #include "core/CoreExport.h"
 #include "wtf/PassRefPtr.h"
-#include "wtf/RawPtr.h"
 #include "wtf/text/AtomicString.h"
 #include <v8.h>
 

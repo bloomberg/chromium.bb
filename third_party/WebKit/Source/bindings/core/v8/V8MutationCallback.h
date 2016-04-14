@@ -41,7 +41,7 @@ class ExecutionContext;
 class V8MutationCallback final : public MutationCallback, public ActiveDOMCallback {
     USING_GARBAGE_COLLECTED_MIXIN(V8MutationCallback);
 public:
-    static RawPtr<V8MutationCallback> create(v8::Local<v8::Function> callback, v8::Local<v8::Object> owner, ScriptState* scriptState)
+    static V8MutationCallback* create(v8::Local<v8::Function> callback, v8::Local<v8::Object> owner, ScriptState* scriptState)
     {
         return new V8MutationCallback(callback, owner, scriptState);
     }

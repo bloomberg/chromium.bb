@@ -48,7 +48,7 @@ namespace blink {
     V(detached, DetachedCallback)           \
     V(attributeChanged, AttributeChangedCallback)
 
-RawPtr<V8CustomElementLifecycleCallbacks> V8CustomElementLifecycleCallbacks::create(ScriptState* scriptState, v8::Local<v8::Object> prototype, v8::MaybeLocal<v8::Function> created, v8::MaybeLocal<v8::Function> attached, v8::MaybeLocal<v8::Function> detached, v8::MaybeLocal<v8::Function> attributeChanged)
+V8CustomElementLifecycleCallbacks* V8CustomElementLifecycleCallbacks::create(ScriptState* scriptState, v8::Local<v8::Object> prototype, v8::MaybeLocal<v8::Function> created, v8::MaybeLocal<v8::Function> attached, v8::MaybeLocal<v8::Function> detached, v8::MaybeLocal<v8::Function> attributeChanged)
 {
     v8::Isolate* isolate = scriptState->isolate();
     // A given object can only be used as a Custom Element prototype

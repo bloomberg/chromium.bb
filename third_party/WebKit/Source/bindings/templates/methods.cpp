@@ -83,7 +83,7 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
 {######################################}
 {% macro generate_arguments(method, world_suffix) %}
 {% for argument in method.arguments %}
-{{generate_argument_var_declaration(argument)}};
+{{argument.cpp_type}} {{argument.name}};
 {% endfor %}
 {
     {% if method.has_optional_argument_without_default_value %}
@@ -109,17 +109,6 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
     {% endif %}
     {% endfor %}
 }
-{% endmacro %}
-
-
-{######################################}
-{% macro generate_argument_var_declaration(argument) %}
-{# FIXME: remove EventListener special case #}
-{% if argument.idl_type == 'EventListener' %}
-RawPtr<{{argument.idl_type}}> {{argument.name}}
-{%- else %}
-{{argument.cpp_type}} {{argument.name}}
-{%- endif %}{# argument.idl_type == 'EventListener' #}
 {% endmacro %}
 
 

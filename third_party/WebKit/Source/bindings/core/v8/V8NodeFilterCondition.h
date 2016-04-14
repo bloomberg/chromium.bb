@@ -62,7 +62,7 @@ class ExceptionState;
 // (V8)
 class V8NodeFilterCondition final : public NodeFilterCondition {
 public:
-    static RawPtr<V8NodeFilterCondition> create(v8::Local<v8::Value> filter, v8::Local<v8::Object> owner, ScriptState* scriptState)
+    static V8NodeFilterCondition* create(v8::Local<v8::Value> filter, v8::Local<v8::Object> owner, ScriptState* scriptState)
     {
         return new V8NodeFilterCondition(filter, owner, scriptState);
     }

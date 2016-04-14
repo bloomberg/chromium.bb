@@ -98,7 +98,7 @@ private:
     // streamed. Non-const for testing.
     static size_t s_smallScriptThreshold;
 
-    static RawPtr<ScriptStreamer> create(PendingScript* script, Type scriptType, ScriptState* scriptState, v8::ScriptCompiler::CompileOptions compileOptions, WebTaskRunner* loadingTaskRunner)
+    static ScriptStreamer* create(PendingScript* script, Type scriptType, ScriptState* scriptState, v8::ScriptCompiler::CompileOptions compileOptions, WebTaskRunner* loadingTaskRunner)
     {
         return new ScriptStreamer(script, scriptType, scriptState, compileOptions, loadingTaskRunner);
     }

@@ -56,16 +56,10 @@ CORE_EXPORT v8::Local<v8::Value> toV8(DOMWindow*, v8::Local<v8::Object> creation
 CORE_EXPORT v8::Local<v8::Value> toV8(EventTarget*, v8::Local<v8::Object> creationContext, v8::Isolate*);
 v8::Local<v8::Value> toV8(WorkerOrWorkletGlobalScope*, v8::Local<v8::Object> creationContext, v8::Isolate*);
 
-// PassRefPtr, RawPtr and RefPtr
+// PassRefPtr and RefPtr
 
 template<typename T>
 inline v8::Local<v8::Value> toV8(PassRefPtr<T> impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
-{
-    return toV8(impl.get(), creationContext, isolate);
-}
-
-template<typename T>
-inline v8::Local<v8::Value> toV8(RawPtr<T> impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
 {
     return toV8(impl.get(), creationContext, isolate);
 }

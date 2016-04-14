@@ -102,7 +102,7 @@ public:
     ExecutionState* m_outerState;
 };
 
-RawPtr<WorkerOrWorkletScriptController> WorkerOrWorkletScriptController::create(WorkerOrWorkletGlobalScope* globalScope, v8::Isolate* isolate)
+WorkerOrWorkletScriptController* WorkerOrWorkletScriptController::create(WorkerOrWorkletGlobalScope* globalScope, v8::Isolate* isolate)
 {
     return new WorkerOrWorkletScriptController(globalScope, isolate);
 }
@@ -312,7 +312,7 @@ void WorkerOrWorkletScriptController::disableEval(const String& errorMessage)
     m_disableEvalPending = errorMessage;
 }
 
-void WorkerOrWorkletScriptController::rethrowExceptionFromImportedScript(RawPtr<ErrorEvent> errorEvent, ExceptionState& exceptionState)
+void WorkerOrWorkletScriptController::rethrowExceptionFromImportedScript(ErrorEvent* errorEvent, ExceptionState& exceptionState)
 {
     const String& errorMessage = errorEvent->message();
     if (m_executionState)

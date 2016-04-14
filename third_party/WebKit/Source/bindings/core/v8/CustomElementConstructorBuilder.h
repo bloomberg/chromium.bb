@@ -65,7 +65,7 @@ public:
 
     bool isFeatureAllowed() const;
     bool validateOptions(const AtomicString& type, QualifiedName& tagName, ExceptionState&);
-    RawPtr<CustomElementLifecycleCallbacks> createCallbacks();
+    CustomElementLifecycleCallbacks* createCallbacks();
     bool createConstructor(Document*, CustomElementDefinition*, ExceptionState&);
     bool didRegisterDefinition() const;
 

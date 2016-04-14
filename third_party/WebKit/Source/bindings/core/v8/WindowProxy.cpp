@@ -76,7 +76,7 @@ static void checkDocumentWrapper(v8::Local<v8::Object> wrapper, Document* docume
     ASSERT(V8Document::toImpl(wrapper) == document);
 }
 
-RawPtr<WindowProxy> WindowProxy::create(v8::Isolate* isolate, Frame* frame, DOMWrapperWorld& world)
+WindowProxy* WindowProxy::create(v8::Isolate* isolate, Frame* frame, DOMWrapperWorld& world)
 {
     return new WindowProxy(frame, &world, isolate);
 }

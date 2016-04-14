@@ -41,7 +41,7 @@ class ErrorEvent;
 
 class V8ErrorHandler final : public V8EventListener {
 public:
-    static RawPtr<V8ErrorHandler> create(v8::Local<v8::Object> listener, bool isInline, ScriptState* scriptState)
+    static V8ErrorHandler* create(v8::Local<v8::Object> listener, bool isInline, ScriptState* scriptState)
     {
         V8ErrorHandler* eventListener = new V8ErrorHandler(isInline, scriptState);
         eventListener->setListenerObject(listener);

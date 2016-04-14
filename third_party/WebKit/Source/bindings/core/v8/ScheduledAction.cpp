@@ -45,13 +45,13 @@
 
 namespace blink {
 
-RawPtr<ScheduledAction> ScheduledAction::create(ScriptState* scriptState, const ScriptValue& handler, const Vector<ScriptValue>& arguments)
+ScheduledAction* ScheduledAction::create(ScriptState* scriptState, const ScriptValue& handler, const Vector<ScriptValue>& arguments)
 {
     ASSERT(handler.isFunction());
     return new ScheduledAction(scriptState, handler, arguments);
 }
 
-RawPtr<ScheduledAction> ScheduledAction::create(ScriptState* scriptState, const String& handler)
+ScheduledAction* ScheduledAction::create(ScriptState* scriptState, const String& handler)
 {
     return new ScheduledAction(scriptState, handler);
 }

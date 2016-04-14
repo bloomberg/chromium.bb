@@ -21,7 +21,7 @@ namespace blink {
 
 using namespace {{namespace}}Names;
 
-typedef RawPtr<{{namespace}}Element> (*ConstructorFunction)(
+typedef {{namespace}}Element* (*ConstructorFunction)(
     Document&,
     {% if namespace == 'HTML' %}
     HTMLFormElement*,
@@ -33,7 +33,7 @@ typedef HashMap<AtomicString, ConstructorFunction> FunctionMap;
 static FunctionMap* g_constructors = 0;
 
 {% for tag in tags|sort if not tag.noConstructor %}
-static RawPtr<{{namespace}}Element> {{tag|symbol}}Constructor(
+static {{namespace}}Element* {{tag|symbol}}Constructor(
     Document& document,
     {% if namespace == 'HTML' %}
     HTMLFormElement* formElement,
@@ -73,7 +73,7 @@ static void create{{namespace}}FunctionMap()
         g_constructors->set(data[i].tag.localName(), data[i].func);
 }
 
-RawPtr<{{namespace}}Element> {{namespace}}ElementFactory::create{{namespace}}Element(
+{{namespace}}Element* {{namespace}}ElementFactory::create{{namespace}}Element(
     const AtomicString& localName,
     Document& document,
     {% if namespace == 'HTML' %}

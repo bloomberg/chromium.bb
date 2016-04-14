@@ -67,7 +67,6 @@ TEST_F(ToV8Test, garbageCollectedScriptWrappable)
     OffHeapGarbageCollectedHolder offHeapHolder(object);
 
     TEST_TOV8("world", object);
-    TEST_TOV8("world", RawPtr<GarbageCollectedScriptWrappable>(object));
     TEST_TOV8("world", holder.m_scriptWrappable);
     TEST_TOV8("world", offHeapHolder.m_scriptWrappable);
 
@@ -76,7 +75,6 @@ TEST_F(ToV8Test, garbageCollectedScriptWrappable)
     offHeapHolder.m_scriptWrappable = nullptr;
 
     TEST_TOV8("null", object);
-    TEST_TOV8("null", RawPtr<GarbageCollectedScriptWrappable>(object));
     TEST_TOV8("null", holder.m_scriptWrappable);
     TEST_TOV8("null", offHeapHolder.m_scriptWrappable);
 }

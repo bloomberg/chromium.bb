@@ -10,7 +10,7 @@
 
 namespace blink {
 
-RawPtr<WindowProxyManager> WindowProxyManager::create(Frame& frame)
+WindowProxyManager* WindowProxyManager::create(Frame& frame)
 {
     return new WindowProxyManager(frame);
 }

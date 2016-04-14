@@ -72,7 +72,7 @@ public:
         DoNotExecuteScriptWhenScriptsDisabled
     };
 
-    static RawPtr<ScriptController> create(LocalFrame* frame)
+    static ScriptController* create(LocalFrame* frame)
     {
         return new ScriptController(frame);
     }

@@ -92,7 +92,7 @@ void setMinimumArityTypeError(ExceptionState& exceptionState, unsigned expected,
     exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(expected, provided));
 }
 
-RawPtr<NodeFilter> toNodeFilter(v8::Local<v8::Value> callback, v8::Local<v8::Object> creationContext, ScriptState* scriptState)
+NodeFilter* toNodeFilter(v8::Local<v8::Value> callback, v8::Local<v8::Object> creationContext, ScriptState* scriptState)
 {
     if (callback->IsNull())
         return nullptr;
