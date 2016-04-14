@@ -17,6 +17,22 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 
+namespace {
+
+void DeleteExistingDownloadFile(
+    const base::FilePath& download_path,
+    const DownloadTargetDeterminerDelegate::FileSelectedCallback& callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
+  base::File::Info info;
+  if (GetFileInfo(download_path, &info) && !info.is_directory)
+    base::DeleteFile(download_path, false);
+
+  content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
+                                   base::Bind(callback, download_path));
+}
+
+}  // namespace
+
 namespace chrome {
 namespace android {
 
@@ -49,7 +65,10 @@ ChromeDownloadManagerOverwriteInfoBarDelegate::GetIdentifier() const {
 }
 
 bool ChromeDownloadManagerOverwriteInfoBarDelegate::OverwriteExistingFile() {
-  file_selected_callback_.Run(suggested_download_path_);
+  content::BrowserThread::PostTask(
+      content::BrowserThread::FILE, FROM_HERE,
+      base::Bind(&DeleteExistingDownloadFile, suggested_download_path_,
+                 file_selected_callback_));
   return true;
 }
 
