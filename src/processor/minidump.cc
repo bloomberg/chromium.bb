@@ -1180,7 +1180,7 @@ bool MinidumpContext::CheckAgainstSystemInfo(uint32_t context_cpu_type) {
 //
 
 
-uint32_t MinidumpMemoryRegion::max_bytes_ = 1024 * 1024;  // 1MB
+uint32_t MinidumpMemoryRegion::max_bytes_ = 2 * 1024 * 1024;  // 2MB
 
 
 MinidumpMemoryRegion::MinidumpMemoryRegion(Minidump* minidump)
