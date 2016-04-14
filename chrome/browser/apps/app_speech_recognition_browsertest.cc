@@ -39,7 +39,7 @@ class SpeechRecognitionTest : public extensions::PlatformAppBrowserTest {
   }
 
  private:
-  scoped_ptr<content::FakeSpeechRecognitionManager>
+  std::unique_ptr<content::FakeSpeechRecognitionManager>
       fake_speech_recognition_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(SpeechRecognitionTest);

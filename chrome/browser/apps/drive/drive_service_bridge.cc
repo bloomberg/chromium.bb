@@ -46,8 +46,8 @@ class DriveServiceBridgeImpl : public DriveServiceBridge,
 
  private:
   Profile* profile_;
-  scoped_ptr<drive::DriveServiceInterface> drive_service_;
-  scoped_ptr<drive::DriveAppRegistry> drive_app_registry_;
+  std::unique_ptr<drive::DriveServiceInterface> drive_service_;
+  std::unique_ptr<drive::DriveAppRegistry> drive_app_registry_;
 
   DISALLOW_COPY_AND_ASSIGN(DriveServiceBridgeImpl);
 };
@@ -123,8 +123,9 @@ void DriveServiceBridgeImpl::OnPushNotificationEnabled(bool enabled) {
 }  // namespace
 
 // static
-scoped_ptr<DriveServiceBridge> DriveServiceBridge::Create(Profile* profile) {
-  scoped_ptr<DriveServiceBridgeImpl> bridge(
+std::unique_ptr<DriveServiceBridge> DriveServiceBridge::Create(
+    Profile* profile) {
+  std::unique_ptr<DriveServiceBridgeImpl> bridge(
       new DriveServiceBridgeImpl(profile));
   bridge->Initialize();
   return std::move(bridge);

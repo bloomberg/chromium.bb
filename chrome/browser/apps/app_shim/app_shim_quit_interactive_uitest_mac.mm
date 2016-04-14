@@ -101,7 +101,7 @@ class AppShimQuitTest : public PlatformAppBrowserTest {
   base::FilePath app_path_;
   ExtensionAppShimHandler* handler_;
   std::string extension_id_;
-  scoped_ptr<FakeHost> host_;
+  std::unique_ptr<FakeHost> host_;
 
   DISALLOW_COPY_AND_ASSIGN(AppShimQuitTest);
 };

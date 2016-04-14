@@ -65,7 +65,7 @@ void DriveAppProvider::AppendDependsOnFactories(
 }
 
 void DriveAppProvider::SetDriveServiceBridgeForTest(
-    scoped_ptr<DriveServiceBridge> test_bridge) {
+    std::unique_ptr<DriveServiceBridge> test_bridge) {
   service_bridge_->GetAppRegistry()->RemoveObserver(this);
   service_bridge_ = std::move(test_bridge);
   service_bridge_->GetAppRegistry()->AddObserver(this);

@@ -108,7 +108,7 @@ class WindowedAppShimLaunchObserver : public apps::AppShimHandler {
  private:
   std::string app_mode_id_;
   bool observed_;
-  scoped_ptr<base::RunLoop> run_loop_;
+  std::unique_ptr<base::RunLoop> run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowedAppShimLaunchObserver);
 };
@@ -166,7 +166,7 @@ class HostedAppBrowserListObserver : public chrome::BrowserListObserver {
   std::string app_id_;
   bool observed_add_;
   bool observed_removed_;
-  scoped_ptr<base::RunLoop> run_loop_;
+  std::unique_ptr<base::RunLoop> run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(HostedAppBrowserListObserver);
 };
@@ -219,7 +219,7 @@ bool HasAppShimHost(Profile* profile, const std::string& app_id) {
 base::FilePath GetAppShimPath(Profile* profile,
                               const extensions::Extension* app) {
   // Use a WebAppShortcutCreator to get the path.
-  scoped_ptr<web_app::ShortcutInfo> shortcut_info =
+  std::unique_ptr<web_app::ShortcutInfo> shortcut_info =
       web_app::ShortcutInfoForExtensionAndProfile(app, profile);
   web_app::WebAppShortcutCreator shortcut_creator(
       web_app::GetWebAppDataDirectory(profile->GetPath(), app->id(), GURL()),
@@ -556,7 +556,7 @@ IN_PROC_BROWSER_TEST_F(AppShimInteractiveTest, MAYBE_RebuildShim) {
   const extensions::Extension* app = InstallPlatformApp("minimal");
 
   // Use WebAppShortcutCreator to create a 64 bit shim.
-  scoped_ptr<web_app::ShortcutInfo> shortcut_info =
+  std::unique_ptr<web_app::ShortcutInfo> shortcut_info =
       web_app::ShortcutInfoForExtensionAndProfile(app, profile());
   web_app::WebAppShortcutCreator shortcut_creator(
       web_app::GetWebAppDataDirectory(profile()->GetPath(), app->id(), GURL()),

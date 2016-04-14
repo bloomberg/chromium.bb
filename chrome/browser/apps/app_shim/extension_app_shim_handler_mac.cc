@@ -141,7 +141,7 @@ class EnableViaPrompt : public ExtensionEnableFlowDelegate {
   Profile* profile_;
   std::string extension_id_;
   base::Callback<void()> callback_;
-  scoped_ptr<ExtensionEnableFlow> flow_;
+  std::unique_ptr<ExtensionEnableFlow> flow_;
 
   DISALLOW_COPY_AND_ASSIGN(EnableViaPrompt);
 };

@@ -4,11 +4,11 @@
 
 #include "chrome/browser/apps/drive/drive_app_converter.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/version.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
@@ -100,7 +100,7 @@ class DriveAppConverterTest : public ExtensionBrowserTest {
       runner_->Quit();
   }
 
-  scoped_ptr<DriveAppConverter> converter_;
+  std::unique_ptr<DriveAppConverter> converter_;
   scoped_refptr<content::MessageLoopRunner> runner_;
 
   DISALLOW_COPY_AND_ASSIGN(DriveAppConverterTest);

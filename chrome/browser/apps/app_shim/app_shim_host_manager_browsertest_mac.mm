@@ -46,7 +46,7 @@ class TestShimClient : public IPC::Listener {
   void OnChannelError() override;
 
   base::Thread io_thread_;
-  scoped_ptr<IPC::ChannelProxy> channel_;
+  std::unique_ptr<IPC::ChannelProxy> channel_;
 
   DISALLOW_COPY_AND_ASSIGN(TestShimClient);
 };
@@ -110,7 +110,7 @@ class AppShimHostManagerBrowserTest : public InProcessBrowserTest,
   }
   void OnShimQuit(apps::AppShimHandler::Host* host) override;
 
-  scoped_ptr<TestShimClient> test_client_;
+  std::unique_ptr<TestShimClient> test_client_;
   std::vector<base::FilePath> last_launch_files_;
   apps::AppShimLaunchType last_launch_type_;
 

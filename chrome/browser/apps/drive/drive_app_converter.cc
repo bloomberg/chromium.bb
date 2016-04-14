@@ -60,7 +60,7 @@ class DriveAppConverter::IconFetcher : public net::URLFetcherDelegate,
   // net::URLFetcherDelegate overrides:
   void OnURLFetchComplete(const net::URLFetcher* source) override {
     CHECK_EQ(fetcher_.get(), source);
-    scoped_ptr<net::URLFetcher> fetcher(std::move(fetcher_));
+    std::unique_ptr<net::URLFetcher> fetcher(std::move(fetcher_));
 
     if (!fetcher->GetStatus().is_success() ||
         fetcher->GetResponseCode() != net::HTTP_OK) {
@@ -87,7 +87,7 @@ class DriveAppConverter::IconFetcher : public net::URLFetcherDelegate,
   const GURL icon_url_;
   const int expected_size_;
 
-  scoped_ptr<net::URLFetcher> fetcher_;
+  std::unique_ptr<net::URLFetcher> fetcher_;
   SkBitmap icon_;
 
   DISALLOW_COPY_AND_ASSIGN(IconFetcher);

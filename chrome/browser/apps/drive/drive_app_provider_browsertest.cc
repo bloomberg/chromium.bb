@@ -4,12 +4,13 @@
 
 #include "chrome/browser/apps/drive/drive_app_provider.h"
 
+#include <memory>
 #include <set>
 #include <string>
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/timer/timer.h"
@@ -107,7 +108,7 @@ class DriveAppProviderTest : public ExtensionBrowserTest,
     provider_.reset(
         new DriveAppProvider(profile(), fake_uninstall_sync_service_.get()));
     provider_->SetDriveServiceBridgeForTest(
-        make_scoped_ptr(new TestDriveServiceBridge(apps_registry_.get())));
+        base::WrapUnique(new TestDriveServiceBridge(apps_registry_.get())));
 
     // The DriveAppProvider in AppListSyncalbeService interferes with the
     // test. So resets it.
@@ -208,10 +209,10 @@ class DriveAppProviderTest : public ExtensionBrowserTest,
     runner_->Quit();
   }
 
-  scoped_ptr<drive::FakeDriveService> fake_drive_service_;
-  scoped_ptr<FakeUninstallSyncService> fake_uninstall_sync_service_;
-  scoped_ptr<drive::DriveAppRegistry> apps_registry_;
-  scoped_ptr<DriveAppProvider> provider_;
+  std::unique_ptr<drive::FakeDriveService> fake_drive_service_;
+  std::unique_ptr<FakeUninstallSyncService> fake_uninstall_sync_service_;
+  std::unique_ptr<drive::DriveAppRegistry> apps_registry_;
+  std::unique_ptr<DriveAppProvider> provider_;
 
   base::RepeatingTimer pending_drive_app_converter_check_timer_;
   scoped_refptr<content::MessageLoopRunner> runner_;

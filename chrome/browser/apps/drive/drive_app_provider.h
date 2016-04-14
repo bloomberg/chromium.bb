@@ -5,12 +5,12 @@
 #ifndef CHROME_BROWSER_APPS_DRIVE_DRIVE_APP_PROVIDER_H_
 #define CHROME_BROWSER_APPS_DRIVE_DRIVE_APP_PROVIDER_H_
 
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "components/drive/drive_app_registry_observer.h"
@@ -44,7 +44,8 @@ class DriveAppProvider : public drive::DriveAppRegistryObserver,
   static void AppendDependsOnFactories(
       std::set<BrowserContextKeyedServiceFactory*>* factories);
 
-  void SetDriveServiceBridgeForTest(scoped_ptr<DriveServiceBridge> test_bridge);
+  void SetDriveServiceBridgeForTest(
+      std::unique_ptr<DriveServiceBridge> test_bridge);
 
   // Adds/removes uninstalled Drive app id from DriveAppUninstallSyncService.
   // If a Drive app id is added as uninstalled Drive app, DriveAppProvider
@@ -93,8 +94,8 @@ class DriveAppProvider : public drive::DriveAppRegistryObserver,
   Profile* profile_;
   DriveAppUninstallSyncService* uninstall_sync_service_;
 
-  scoped_ptr<DriveServiceBridge> service_bridge_;
-  scoped_ptr<DriveAppMapping> mapping_;
+  std::unique_ptr<DriveServiceBridge> service_bridge_;
+  std::unique_ptr<DriveAppMapping> mapping_;
   DriveAppInfos drive_apps_;
   bool drive_app_registry_updated_;
 

@@ -404,21 +404,21 @@ class WebViewTestBase : public extensions::PlatformAppBrowserTest {
 
   // Handles |request| by serving a redirect response if the |User-Agent| is
   // foobar.
-  static scoped_ptr<net::test_server::HttpResponse> UserAgentResponseHandler(
-      const std::string& path,
-      const GURL& redirect_target,
-      const net::test_server::HttpRequest& request) {
+  static std::unique_ptr<net::test_server::HttpResponse>
+  UserAgentResponseHandler(const std::string& path,
+                           const GURL& redirect_target,
+                           const net::test_server::HttpRequest& request) {
     if (!base::StartsWith(path, request.relative_url,
                           base::CompareCase::SENSITIVE))
-      return scoped_ptr<net::test_server::HttpResponse>();
+      return std::unique_ptr<net::test_server::HttpResponse>();
 
     auto it = request.headers.find("User-Agent");
     EXPECT_TRUE(it != request.headers.end());
     if (!base::StartsWith("foobar", it->second,
                           base::CompareCase::SENSITIVE))
-      return scoped_ptr<net::test_server::HttpResponse>();
+      return std::unique_ptr<net::test_server::HttpResponse>();
 
-    scoped_ptr<net::test_server::BasicHttpResponse> http_response(
+    std::unique_ptr<net::test_server::BasicHttpResponse> http_response(
         new net::test_server::BasicHttpResponse);
     http_response->set_code(net::HTTP_MOVED_PERMANENTLY);
     http_response->AddCustomHeader("Location", redirect_target.spec());
@@ -426,15 +426,15 @@ class WebViewTestBase : public extensions::PlatformAppBrowserTest {
   }
 
   // Handles |request| by serving a redirect response.
-  static scoped_ptr<net::test_server::HttpResponse> RedirectResponseHandler(
-      const std::string& path,
-      const GURL& redirect_target,
-      const net::test_server::HttpRequest& request) {
+  static std::unique_ptr<net::test_server::HttpResponse>
+  RedirectResponseHandler(const std::string& path,
+                          const GURL& redirect_target,
+                          const net::test_server::HttpRequest& request) {
     if (!base::StartsWith(path, request.relative_url,
                           base::CompareCase::SENSITIVE))
-      return scoped_ptr<net::test_server::HttpResponse>();
+      return std::unique_ptr<net::test_server::HttpResponse>();
 
-    scoped_ptr<net::test_server::BasicHttpResponse> http_response(
+    std::unique_ptr<net::test_server::BasicHttpResponse> http_response(
         new net::test_server::BasicHttpResponse);
     http_response->set_code(net::HTTP_MOVED_PERMANENTLY);
     http_response->AddCustomHeader("Location", redirect_target.spec());
@@ -442,26 +442,26 @@ class WebViewTestBase : public extensions::PlatformAppBrowserTest {
   }
 
   // Handles |request| by serving an empty response.
-  static scoped_ptr<net::test_server::HttpResponse> EmptyResponseHandler(
+  static std::unique_ptr<net::test_server::HttpResponse> EmptyResponseHandler(
       const std::string& path,
       const net::test_server::HttpRequest& request) {
     if (base::StartsWith(path, request.relative_url,
                          base::CompareCase::SENSITIVE))
-      return scoped_ptr<net::test_server::HttpResponse>(
+      return std::unique_ptr<net::test_server::HttpResponse>(
           new net::test_server::RawHttpResponse("", ""));
 
-    return scoped_ptr<net::test_server::HttpResponse>();
+    return std::unique_ptr<net::test_server::HttpResponse>();
   }
 
   // Handles |request| by serving cache-able response.
-  static scoped_ptr<net::test_server::HttpResponse> CacheControlResponseHandler(
-      const std::string& path,
-      const net::test_server::HttpRequest& request) {
+  static std::unique_ptr<net::test_server::HttpResponse>
+  CacheControlResponseHandler(const std::string& path,
+                              const net::test_server::HttpRequest& request) {
     if (!base::StartsWith(path, request.relative_url,
                           base::CompareCase::SENSITIVE))
-      return scoped_ptr<net::test_server::HttpResponse>();
+      return std::unique_ptr<net::test_server::HttpResponse>();
 
-    scoped_ptr<net::test_server::BasicHttpResponse> http_response(
+    std::unique_ptr<net::test_server::BasicHttpResponse> http_response(
         new net::test_server::BasicHttpResponse);
     http_response->AddCustomHeader("Cache-control", "max-age=3600");
     http_response->set_content_type("text/plain");
@@ -634,7 +634,7 @@ class WebViewTestBase : public extensions::PlatformAppBrowserTest {
 
   void SendMessageToGuestAndWait(const std::string& message,
                                  const std::string& wait_message) {
-    scoped_ptr<ExtensionTestMessageListener> listener;
+    std::unique_ptr<ExtensionTestMessageListener> listener;
     if (!wait_message.empty()) {
       listener.reset(new ExtensionTestMessageListener(wait_message, false));
     }
@@ -707,7 +707,7 @@ class WebViewTestBase : public extensions::PlatformAppBrowserTest {
     return !strncmp(test_info->name(), name, strlen(name));
   }
 
-  scoped_ptr<content::FakeSpeechRecognitionManager>
+  std::unique_ptr<content::FakeSpeechRecognitionManager>
       fake_speech_recognition_manager_;
 
   TestGuestViewManagerFactory factory_;
@@ -1685,7 +1685,7 @@ void WebViewTestBase::MediaAccessAPIAllowTestHelper(
 
   content::WebContents* embedder_web_contents = GetFirstAppWindowWebContents();
   ASSERT_TRUE(embedder_web_contents);
-  scoped_ptr<MockWebContentsDelegate> mock(new MockWebContentsDelegate());
+  std::unique_ptr<MockWebContentsDelegate> mock(new MockWebContentsDelegate());
   embedder_web_contents->SetDelegate(mock.get());
 
   ExtensionTestMessageListener done_listener("TEST_PASSED", false);
@@ -1801,8 +1801,9 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, ContextMenuLanguageSettings) {
   content::WebContentsAddedObserver web_contents_added_observer;
 
   GURL page_url("http://www.google.com");
-  scoped_ptr<TestRenderViewContextMenu> menu(TestRenderViewContextMenu::Create(
-      guest_web_contents, page_url, GURL(), GURL()));
+  std::unique_ptr<TestRenderViewContextMenu> menu(
+      TestRenderViewContextMenu::Create(guest_web_contents, page_url, GURL(),
+                                        GURL()));
   menu->ExecuteCommand(IDC_CONTENT_CONTEXT_LANGUAGE_SETTINGS, 0);
 
   content::WebContents* new_contents =
@@ -1831,8 +1832,9 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, ContextMenusAPI_Basic) {
   ExtensionTestMessageListener click_listener("ITEM_CLICKED", false);
   GURL page_url("http://www.google.com");
   // Create and build our test context menu.
-  scoped_ptr<TestRenderViewContextMenu> menu(TestRenderViewContextMenu::Create(
-      guest_web_contents, page_url, GURL(), GURL()));
+  std::unique_ptr<TestRenderViewContextMenu> menu(
+      TestRenderViewContextMenu::Create(guest_web_contents, page_url, GURL(),
+                                        GURL()));
   // Look for the extension item in the menu, and execute it.
   int command_id = ContextMenuMatcher::ConvertToExtensionsCustomCommandId(0);
   ASSERT_TRUE(menu->IsCommandIdEnabled(command_id));
@@ -1956,7 +1958,7 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, MediaAccessAPIAllow_TestCheck) {
 
   content::WebContents* embedder_web_contents = GetFirstAppWindowWebContents();
   ASSERT_TRUE(embedder_web_contents);
-  scoped_ptr<MockWebContentsDelegate> mock(new MockWebContentsDelegate());
+  std::unique_ptr<MockWebContentsDelegate> mock(new MockWebContentsDelegate());
   embedder_web_contents->SetDelegate(mock.get());
 
   ExtensionTestMessageListener done_listener("TEST_PASSED", false);
@@ -2222,8 +2224,8 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, DownloadPermission) {
   // Replace WebContentsDelegate with mock version so we can intercept download
   // requests.
   content::WebContentsDelegate* delegate = guest_web_contents->GetDelegate();
-  scoped_ptr<MockDownloadWebContentsDelegate>
-      mock_delegate(new MockDownloadWebContentsDelegate(delegate));
+  std::unique_ptr<MockDownloadWebContentsDelegate> mock_delegate(
+      new MockDownloadWebContentsDelegate(delegate));
   guest_web_contents->SetDelegate(mock_delegate.get());
 
   // Start test.
@@ -2483,7 +2485,7 @@ IN_PROC_BROWSER_TEST_P(
 
   content::WebContents* embedder_web_contents = GetEmbedderWebContents();
   ASSERT_TRUE(embedder_web_contents);
-  scoped_ptr<EmbedderWebContentsObserver> observer(
+  std::unique_ptr<EmbedderWebContentsObserver> observer(
       new EmbedderWebContentsObserver(embedder_web_contents));
 
   content::WebContents* guest_web_contents = GetGuestWebContents();

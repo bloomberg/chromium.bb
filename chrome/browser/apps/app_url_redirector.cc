@@ -69,7 +69,7 @@ bool LaunchAppWithUrl(
 }  // namespace
 
 // static
-scoped_ptr<content::NavigationThrottle>
+std::unique_ptr<content::NavigationThrottle>
 AppUrlRedirector::MaybeCreateThrottleFor(content::NavigationHandle* handle) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DVLOG(1) << "Considering URL for redirection: " << handle->GetURL().spec();
@@ -109,7 +109,7 @@ AppUrlRedirector::MaybeCreateThrottleFor(content::NavigationHandle* handle) {
       DVLOG(1) << "Found matching app handler for redirection: "
                << (*iter)->name() << "(" << (*iter)->id() << "):"
                << handler->id;
-      return scoped_ptr<content::NavigationThrottle>(
+      return std::unique_ptr<content::NavigationThrottle>(
           new navigation_interception::InterceptNavigationThrottle(
               handle,
               base::Bind(&LaunchAppWithUrl,

@@ -28,7 +28,7 @@ const base::FilePath& AppShimHostManagerTestApi::directory_in_tmp() {
 }
 
 void AppShimHostManagerTestApi::SetExtensionAppShimHandler(
-    scoped_ptr<apps::ExtensionAppShimHandler> handler) {
+    std::unique_ptr<apps::ExtensionAppShimHandler> handler) {
   apps::AppShimHandler::SetDefaultHandler(nullptr);
   apps::AppShimHandler::SetDefaultHandler(handler.get());
   host_manager_->extension_app_shim_handler_.swap(handler);

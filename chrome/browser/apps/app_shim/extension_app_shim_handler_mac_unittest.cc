@@ -4,10 +4,10 @@
 
 #include "chrome/browser/apps/app_shim/extension_app_shim_handler_mac.h"
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/apps/app_shim/app_shim_host_mac.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/test/base/testing_profile.h"
@@ -236,7 +236,7 @@ class ExtensionAppShimHandlerTest : public testing::Test {
 
   content::TestBrowserThreadBundle thread_bundle_;
   MockDelegate* delegate_;
-  scoped_ptr<TestingExtensionAppShimHandler> handler_;
+  std::unique_ptr<TestingExtensionAppShimHandler> handler_;
   base::FilePath profile_path_a_;
   base::FilePath profile_path_b_;
   TestingProfile profile_a_;

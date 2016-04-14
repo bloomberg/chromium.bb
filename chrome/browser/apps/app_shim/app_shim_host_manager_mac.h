@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_APPS_APP_SHIM_APP_SHIM_HOST_MANAGER_MAC_H_
 #define CHROME_BROWSER_APPS_APP_SHIM_APP_SHIM_HOST_MANAGER_MAC_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/apps/app_shim/unix_domain_socket_acceptor.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -63,9 +64,9 @@ class AppShimHostManager : public apps::UnixDomainSocketAcceptor::Delegate,
 
   base::FilePath directory_in_tmp_;
 
-  scoped_ptr<apps::UnixDomainSocketAcceptor> acceptor_;
+  std::unique_ptr<apps::UnixDomainSocketAcceptor> acceptor_;
 
-  scoped_ptr<apps::ExtensionAppShimHandler> extension_app_shim_handler_;
+  std::unique_ptr<apps::ExtensionAppShimHandler> extension_app_shim_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(AppShimHostManager);
 };

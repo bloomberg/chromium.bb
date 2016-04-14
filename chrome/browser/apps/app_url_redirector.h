@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_APPS_APP_URL_REDIRECTOR_H_
 #define CHROME_BROWSER_APPS_APP_URL_REDIRECTOR_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/public/browser/navigation_throttle.h"
 
 namespace content {
@@ -20,7 +21,7 @@ class WebContents;
 // a UI thread class.
 class AppUrlRedirector {
  public:
-  static scoped_ptr<content::NavigationThrottle> MaybeCreateThrottleFor(
+  static std::unique_ptr<content::NavigationThrottle> MaybeCreateThrottleFor(
       content::NavigationHandle* handle);
 
  private:

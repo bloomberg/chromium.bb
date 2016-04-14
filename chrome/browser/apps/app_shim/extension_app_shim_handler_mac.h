@@ -6,13 +6,13 @@
 #define CHROME_BROWSER_APPS_APP_SHIM_EXTENSION_APP_SHIM_HANDLER_MAC_H_
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
 
 #include "apps/app_lifetime_monitor.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/apps/app_shim/app_shim_handler_mac.h"
 #include "chrome/browser/ui/browser.h"
@@ -183,7 +183,7 @@ class ExtensionAppShimHandler : public AppShimHandler,
                           const std::string& app_id,
                           const std::vector<base::FilePath>& files);
 
-  scoped_ptr<Delegate> delegate_;
+  std::unique_ptr<Delegate> delegate_;
 
   HostMap hosts_;
 

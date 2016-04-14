@@ -143,7 +143,7 @@ class AppViewTest : public extensions::PlatformAppBrowserTest,
     test_guest_view_manager_ = static_cast<guest_view::TestGuestViewManager*>(
         guest_view::GuestViewManager::CreateWithDelegate(
             browser()->profile(),
-            scoped_ptr<guest_view::GuestViewManagerDelegate>(
+            std::unique_ptr<guest_view::GuestViewManagerDelegate>(
                 ExtensionsAPIClient::Get()->CreateGuestViewManagerDelegate(
                     browser()->profile()))));
   }
@@ -255,7 +255,7 @@ IN_PROC_BROWSER_TEST_P(AppViewTest, KillGuestCommunicatingWithWrongAppView) {
       extensions::ProcessManager::Get(browser()->profile())
           ->GetBackgroundHostForExtension(bad_app->id())
           ->render_process_host());
-  scoped_ptr<base::DictionaryValue> fake_embed_request_param(
+  std::unique_ptr<base::DictionaryValue> fake_embed_request_param(
       new base::DictionaryValue);
   fake_embed_request_param->SetInteger(appview::kGuestInstanceID,
                                        guest_instance_id);

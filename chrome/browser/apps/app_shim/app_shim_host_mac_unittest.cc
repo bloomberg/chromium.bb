@@ -117,7 +117,7 @@ class AppShimHostTest : public testing::Test,
     host_.reset(new TestingAppShimHost());
   }
 
-  scoped_ptr<TestingAppShimHost> host_;
+  std::unique_ptr<TestingAppShimHost> host_;
 
   DISALLOW_COPY_AND_ASSIGN(AppShimHostTest);
 };
