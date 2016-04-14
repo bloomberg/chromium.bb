@@ -5,5 +5,5 @@
 #include "services/shell/standalone/desktop/main_helper.h"
 
 int main(int argc, char** argv) {
-  return mojo::shell::StandaloneShellMain(argc, argv);
+  return shell::StandaloneShellMain(argc, argv);
 }

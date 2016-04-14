@@ -73,16 +73,16 @@ void OnApplicationLoaded(const std::string& name, bool success) {
 // This launches a utility process and forwards the Load request the
 // mojom::ProcessControl service there. The utility process is sandboxed iff
 // |use_sandbox| is true.
-class UtilityProcessLoader : public mojo::shell::Loader {
+class UtilityProcessLoader : public shell::Loader {
  public:
   UtilityProcessLoader(const base::string16& process_name, bool use_sandbox)
       : process_name_(process_name), use_sandbox_(use_sandbox) {}
   ~UtilityProcessLoader() override {}
 
  private:
-  // mojo::shell::Loader:
+  // shell::Loader:
   void Load(const std::string& name,
-            mojo::shell::mojom::ShellClientRequest request) override {
+            shell::mojom::ShellClientRequest request) override {
     mojom::ProcessControlPtr process_control;
     auto process_request = mojo::GetProxy(&process_control);
     BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
@@ -121,15 +121,15 @@ void RequestGpuProcessControl(
 }
 
 // Forwards the load request to the GPU process.
-class GpuProcessLoader : public mojo::shell::Loader {
+class GpuProcessLoader : public shell::Loader {
  public:
   GpuProcessLoader() {}
   ~GpuProcessLoader() override {}
 
  private:
-  // mojo::shell::Loader:
+  // shell::Loader:
   void Load(const std::string& name,
-            mojo::shell::mojom::ShellClientRequest request) override {
+            shell::mojom::ShellClientRequest request) override {
     mojom::ProcessControlPtr process_control;
     auto process_request = mojo::GetProxy(&process_control);
     BrowserThread::PostTask(
@@ -188,9 +188,9 @@ class MojoShellContext::Proxy {
       const std::string& user_id,
       const std::string& name,
       const std::string& requestor_name,
-      mojo::shell::mojom::InterfaceProviderRequest request,
-      mojo::shell::mojom::InterfaceProviderPtr exposed_services,
-      const mojo::shell::mojom::Connector::ConnectCallback& callback) {
+      shell::mojom::InterfaceProviderRequest request,
+      shell::mojom::InterfaceProviderPtr exposed_services,
+      const shell::mojom::Connector::ConnectCallback& callback) {
     if (task_runner_ == base::ThreadTaskRunnerHandle::Get()) {
       if (shell_context_) {
         shell_context_->ConnectToApplicationOnOwnThread(
@@ -230,8 +230,8 @@ MojoShellContext::MojoShellContext() {
 
   scoped_refptr<base::SingleThreadTaskRunner> file_task_runner =
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE);
-  std::unique_ptr<mojo::shell::NativeRunnerFactory> native_runner_factory(
-      new mojo::shell::InProcessNativeRunnerFactory(
+  std::unique_ptr<shell::NativeRunnerFactory> native_runner_factory(
+      new shell::InProcessNativeRunnerFactory(
           BrowserThread::GetBlockingPool()));
 
   manifest_provider_.reset(new BuiltinManifestProvider);
@@ -246,8 +246,8 @@ MojoShellContext::MojoShellContext() {
 
   catalog_.reset(new catalog::Factory(file_task_runner.get(), nullptr,
                                       manifest_provider_.get()));
-  shell_.reset(new mojo::shell::Shell(std::move(native_runner_factory),
-                                      catalog_->TakeShellClient()));
+  shell_.reset(new shell::Shell(std::move(native_runner_factory),
+                                catalog_->TakeShellClient()));
 
   StaticApplicationMap apps;
   GetContentClient()->browser()->RegisterInProcessMojoApplications(&apps);
@@ -304,9 +304,9 @@ void MojoShellContext::ConnectToApplication(
     const std::string& user_id,
     const std::string& name,
     const std::string& requestor_name,
-    mojo::shell::mojom::InterfaceProviderRequest request,
-    mojo::shell::mojom::InterfaceProviderPtr exposed_services,
-    const mojo::shell::mojom::Connector::ConnectCallback& callback) {
+    shell::mojom::InterfaceProviderRequest request,
+    shell::mojom::InterfaceProviderPtr exposed_services,
+    const shell::mojom::Connector::ConnectCallback& callback) {
   proxy_.Get()->ConnectToApplication(user_id, name, requestor_name,
                                      std::move(request),
                                      std::move(exposed_services), callback);
@@ -316,14 +316,13 @@ void MojoShellContext::ConnectToApplicationOnOwnThread(
     const std::string& user_id,
     const std::string& name,
     const std::string& requestor_name,
-    mojo::shell::mojom::InterfaceProviderRequest request,
-    mojo::shell::mojom::InterfaceProviderPtr exposed_services,
-    const mojo::shell::mojom::Connector::ConnectCallback& callback) {
-  std::unique_ptr<mojo::shell::ConnectParams> params(
-      new mojo::shell::ConnectParams);
-  mojo::Identity source_id(requestor_name, user_id);
+    shell::mojom::InterfaceProviderRequest request,
+    shell::mojom::InterfaceProviderPtr exposed_services,
+    const shell::mojom::Connector::ConnectCallback& callback) {
+  std::unique_ptr<shell::ConnectParams> params(new shell::ConnectParams);
+  shell::Identity source_id(requestor_name, user_id);
   params->set_source(source_id);
-  params->set_target(mojo::Identity(name, user_id));
+  params->set_target(shell::Identity(name, user_id));
   params->set_remote_interfaces(std::move(request));
   params->set_local_interfaces(std::move(exposed_services));
   params->set_connect_callback(callback);

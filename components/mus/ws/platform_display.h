@@ -35,9 +35,9 @@ namespace gles2 {
 class GpuState;
 }  // namespace gles2
 
-namespace mojo {
+namespace shell {
 class Connector;
-}  // namespace mojo
+}  // namespace shell
 
 namespace ui {
 class CursorLoader;
@@ -157,7 +157,7 @@ class DefaultPlatformDisplay : public PlatformDisplay,
   void OnAcceleratedWidgetDestroyed() override;
   void OnActivationChanged(bool active) override;
 
-  mojo::Connector* connector_;
+  shell::Connector* connector_;
   scoped_refptr<GpuState> gpu_state_;
   scoped_refptr<SurfacesState> surfaces_state_;
   PlatformDisplayDelegate* delegate_;

@@ -4,7 +4,7 @@
 
 #include "services/shell/public/cpp/shell_client.h"
 
-namespace mojo {
+namespace shell {
 
 ShellClient::ShellClient() {}
 ShellClient::~ShellClient() {}
@@ -19,4 +19,4 @@ bool ShellClient::AcceptConnection(Connection* connection) {
 
 bool ShellClient::ShellConnectionLost() { return true; }
 
-}  // namespace mojo
+}  // namespace shell

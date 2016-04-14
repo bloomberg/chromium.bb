@@ -26,13 +26,13 @@ class Store;
 struct ReadManifestResult {
   ReadManifestResult();
   ~ReadManifestResult();
-  mojo::shell::mojom::ResolveResultPtr resolve_result;
+  shell::mojom::ResolveResultPtr resolve_result;
   scoped_ptr<Entry> catalog_entry;
   base::FilePath package_dir;
 };
 
 class Catalog : public mojom::Resolver,
-                public mojo::shell::mojom::ShellResolver,
+                public shell::mojom::ShellResolver,
                 public mojom::Catalog {
  public:
   // |manifest_provider| may be null.
@@ -43,7 +43,7 @@ class Catalog : public mojom::Resolver,
   ~Catalog() override;
 
   void BindResolver(mojom::ResolverRequest request);
-  void BindShellResolver(mojo::shell::mojom::ShellResolverRequest request);
+  void BindShellResolver(shell::mojom::ShellResolverRequest request);
   void BindCatalog(mojom::CatalogRequest request);
 
  private:
@@ -59,7 +59,7 @@ class Catalog : public mojom::Resolver,
       const mojo::String& scheme,
       const ResolveProtocolSchemeCallback& callback) override;
 
-  // mojo::shell::mojom::ShellResolver:
+  // shell::mojom::ShellResolver:
   void ResolveMojoName(const mojo::String& mojo_name,
                        const ResolveMojoNameCallback& callback) override;
 
@@ -96,7 +96,7 @@ class Catalog : public mojom::Resolver,
   base::TaskRunner* const file_task_runner_;
 
   mojo::BindingSet<mojom::Resolver> resolver_bindings_;
-  mojo::BindingSet<mojo::shell::mojom::ShellResolver> shell_resolver_bindings_;
+  mojo::BindingSet<shell::mojom::ShellResolver> shell_resolver_bindings_;
   mojo::BindingSet<mojom::Catalog> catalog_bindings_;
 
   // The current user's packages, constructed from Store/package manifests.

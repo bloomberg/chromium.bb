@@ -4,19 +4,19 @@
 
 #include "build/build_config.h"
 
-namespace mojo {
+namespace shell {
 
 extern int g_application_runner_argc;
 extern const char* const* g_application_runner_argv;
 
-}
+}  // namespace shell
 
 #if !defined(OS_WIN)
 extern "C" {
 __attribute__((visibility("default"))) void InitCommandLineArgs(
     int argc, const char* const* argv) {
-  mojo::g_application_runner_argc = argc;
-  mojo::g_application_runner_argv = argv;
+  shell::g_application_runner_argc = argc;
+  shell::g_application_runner_argv = argv;
 }
 }
 #endif

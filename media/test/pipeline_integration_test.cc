@@ -653,7 +653,7 @@ class MockMediaSource {
 };
 
 #if defined(MOJO_RENDERER)
-class PipelineIntegrationTestHost : public mojo::test::ApplicationTestBase,
+class PipelineIntegrationTestHost : public shell::test::ApplicationTestBase,
                                     public PipelineIntegrationTestBase {
  public:
   bool ShouldCreateDefaultRunLoop() override { return false; }

@@ -5,6 +5,8 @@
 #ifndef SERVICES_SHELL_TESTS_LIFECYCLE_APP_CLIENT_H_
 #define SERVICES_SHELL_TESTS_LIFECYCLE_APP_CLIENT_H_
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -14,13 +16,12 @@
 #include "services/shell/public/interfaces/shell_client.mojom.h"
 #include "services/shell/tests/lifecycle/lifecycle_unittest.mojom.h"
 
-using LifecycleControl = mojo::shell::test::mojom::LifecycleControl;
-using LifecycleControlRequest =
-    mojo::shell::test::mojom::LifecycleControlRequest;
+using LifecycleControl = shell::test::mojom::LifecycleControl;
+using LifecycleControlRequest = shell::test::mojom::LifecycleControlRequest;
 
-namespace mojo {
-class ShellConnection;
 namespace shell {
+class ShellConnection;
+
 namespace test {
 
 class AppClient : public ShellClient,
@@ -51,14 +52,13 @@ class AppClient : public ShellClient,
   void BindingLost();
 
   ApplicationRunner* runner_ = nullptr;
-  BindingSet<LifecycleControl> bindings_;
-  scoped_ptr<ShellConnection> connection_;
+  mojo::BindingSet<LifecycleControl> bindings_;
+  std::unique_ptr<ShellConnection> connection_;
 
   DISALLOW_COPY_AND_ASSIGN(AppClient);
 };
 
 }  // namespace test
 }  // namespace shell
-}  // namespace mojo
 
 #endif  // SERVICES_SHELL_TESTS_LIFECYCLE_APP_CLIENT_H_

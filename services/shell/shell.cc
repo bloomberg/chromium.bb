@@ -31,9 +31,10 @@
 #include "services/shell/public/interfaces/shell_client.mojom.h"
 #include "url/gurl.h"
 
-namespace mojo {
 namespace shell {
+
 namespace {
+
 const char kCatalogName[] = "mojo:catalog";
 const char kShellName[] = "mojo:shell";
 const char kCapabilityClass_UserID[] = "user_id";
@@ -43,7 +44,7 @@ const char kCapabilityClass_AllUsers[] = "all_users";
 
 void EmptyResolverCallback(mojom::ResolveResultPtr result) {}
 
-}
+}  // namespace
 
 Identity CreateShellIdentity() {
   return Identity(kShellName, mojom::kRootUserID);
@@ -136,10 +137,12 @@ class Shell::Instance : public mojom::Connector,
   }
 
   Instance* parent() { return parent_; }
+
   void AddChild(Instance* child) {
     children_.insert(child);
     child->parent_ = this;
   }
+
   void RemoveChild(Instance* child) {
     auto it = children_.find(child);
     DCHECK(it != children_.end());
@@ -147,7 +150,7 @@ class Shell::Instance : public mojom::Connector,
     child->parent_ = nullptr;
   }
 
-  void ConnectToClient(scoped_ptr<ConnectParams> params) {
+  void ConnectToClient(std::unique_ptr<ConnectParams> params) {
     CHECK(shell_client_.is_bound());
     params->connect_callback().Run(mojom::ConnectResult::SUCCEEDED,
                                    identity_.user_id(), id_);
@@ -189,7 +192,7 @@ class Shell::Instance : public mojom::Connector,
 
   void StartWithFilePath(const base::FilePath& path) {
     CHECK(!shell_client_);
-    scoped_ptr<NativeRunner> runner =
+    std::unique_ptr<NativeRunner> runner =
         shell_->native_runner_factory_->Create(path);
     bool start_sandboxed = false;
     mojom::ShellClientPtr client = runner->Start(
@@ -241,7 +244,7 @@ class Shell::Instance : public mojom::Connector,
     if (!ValidateCapabilities(target, callback))
       return;
 
-    scoped_ptr<ConnectParams> params(new ConnectParams);
+    std::unique_ptr<ConnectParams> params(new ConnectParams);
     params->set_source(identity_);
     params->set_target(target);
     params->set_remote_interfaces(std::move(remote_interfaces));
@@ -412,9 +415,9 @@ class Shell::Instance : public mojom::Connector,
   const CapabilitySpec capability_spec_;
   const bool allow_any_application_;
   mojom::ShellClientPtr shell_client_;
-  Binding<mojom::PIDReceiver> pid_receiver_binding_;
-  BindingSet<mojom::Connector> connectors_;
-  BindingSet<mojom::Shell> shell_bindings_;
+  mojo::Binding<mojom::PIDReceiver> pid_receiver_binding_;
+  mojo::BindingSet<mojom::Connector> connectors_;
+  mojo::BindingSet<mojom::Shell> shell_bindings_;
   NativeRunner* runner_ = nullptr;
   base::ProcessId pid_ = base::kNullProcessId;
   Instance* parent_ = nullptr;
@@ -439,12 +442,12 @@ bool Shell::TestAPI::HasRunningInstanceForName(const std::string& name) const {
 ////////////////////////////////////////////////////////////////////////////////
 // Shell, public:
 
-Shell::Shell(scoped_ptr<NativeRunnerFactory> native_runner_factory,
+Shell::Shell(std::unique_ptr<NativeRunnerFactory> native_runner_factory,
              mojom::ShellClientPtr catalog)
     : native_runner_factory_(std::move(native_runner_factory)),
       weak_ptr_factory_(this) {
   mojom::ShellClientPtr client;
-  mojom::ShellClientRequest request = GetProxy(&client);
+  mojom::ShellClientRequest request = mojo::GetProxy(&client);
   Instance* instance = CreateInstance(Identity(), CreateShellIdentity(),
                                       GetPermissiveCapabilities());
   instance->StartWithClient(std::move(client));
@@ -467,26 +470,26 @@ void Shell::SetInstanceQuitCallback(
   instance_quit_callback_ = callback;
 }
 
-void Shell::Connect(scoped_ptr<ConnectParams> params) {
+void Shell::Connect(std::unique_ptr<ConnectParams> params) {
   Connect(std::move(params), nullptr);
 }
 
 mojom::ShellClientRequest Shell::InitInstanceForEmbedder(
     const std::string& name) {
-  scoped_ptr<ConnectParams> params(new ConnectParams);
+  std::unique_ptr<ConnectParams> params(new ConnectParams);
 
   Identity embedder_identity(name, mojom::kRootUserID);
   params->set_source(embedder_identity);
   params->set_target(embedder_identity);
 
   mojom::ShellClientPtr client;
-  mojom::ShellClientRequest request = GetProxy(&client);
+  mojom::ShellClientRequest request = mojo::GetProxy(&client);
   Connect(std::move(params), std::move(client));
 
   return request;
 }
 
-void Shell::SetLoaderForName(scoped_ptr<Loader> loader,
+void Shell::SetLoaderForName(std::unique_ptr<Loader> loader,
                              const std::string& name) {
   auto it = name_to_loader_.find(name);
   if (it != name_to_loader_.end())
@@ -525,7 +528,7 @@ void Shell::InitCatalog(mojom::ShellClientPtr catalog) {
 
   // TODO(beng): this doesn't work anymore.
   // Seed the catalog with manifest info for the shell & catalog.
-  shell::mojom::ShellResolverPtr resolver;
+  mojom::ShellResolverPtr resolver;
   shell_connection_->connector()->ConnectToInterface(kCatalogName, &resolver);
   resolver->ResolveMojoName(kCatalogName, base::Bind(&EmptyResolverCallback));
   resolver->ResolveMojoName(kShellName, base::Bind(&EmptyResolverCallback));
@@ -552,7 +555,7 @@ void Shell::OnInstanceError(Instance* instance) {
     instance_quit_callback_.Run(identity);
 }
 
-void Shell::Connect(scoped_ptr<ConnectParams> params,
+void Shell::Connect(std::unique_ptr<ConnectParams> params,
                     mojom::ShellClientPtr client) {
   TRACE_EVENT_INSTANT1("mojo_shell", "Shell::Connect",
                        TRACE_EVENT_SCOPE_THREAD, "original_name",
@@ -577,10 +580,10 @@ void Shell::Connect(scoped_ptr<ConnectParams> params,
   std::string name = params->target().name();
   mojom::ShellResolver* resolver_raw = resolver.get();
   resolver_raw->ResolveMojoName(
-      name,
-      base::Bind(&Shell::OnGotResolvedName, weak_ptr_factory_.GetWeakPtr(),
-                 base::Passed(std::move(resolver)), base::Passed(&params),
-                 base::Passed(&client)));
+      name, base::Bind(&shell::Shell::OnGotResolvedName,
+                       weak_ptr_factory_.GetWeakPtr(),
+                       base::Passed(std::move(resolver)), base::Passed(&params),
+                       base::Passed(&client)));
 }
 
 Shell::Instance* Shell::GetExistingInstance(const Identity& identity) const {
@@ -606,7 +609,7 @@ void Shell::NotifyPIDAvailable(uint32_t id, base::ProcessId pid) {
                                  });
 }
 
-bool Shell::ConnectToExistingInstance(scoped_ptr<ConnectParams>* params) {
+bool Shell::ConnectToExistingInstance(std::unique_ptr<ConnectParams>* params) {
   Instance* instance = GetExistingInstance((*params)->target());
   if (instance)
     instance->ConnectToClient(std::move(*params));
@@ -634,7 +637,7 @@ Shell::Instance* Shell::CreateInstance(const Identity& source,
 
 void Shell::AddInstanceListener(mojom::InstanceListenerPtr listener) {
   // TODO(beng): filter instances provided by those visible to this client.
-  Array<mojom::InstanceInfoPtr> instances;
+  mojo::Array<mojom::InstanceInfoPtr> instances;
   for (auto& instance : identity_to_instance_)
     instances.push_back(instance.second->CreateInstanceInfo());
   listener->SetExistingInstances(std::move(instances));
@@ -661,10 +664,9 @@ mojom::ShellClientFactory* Shell::GetShellClientFactory(
   ConnectToInterface(this, source_identity, shell_client_factory_identity,
                      &factory);
   mojom::ShellClientFactory* factory_interface = factory.get();
-  factory.set_connection_error_handler(
-      base::Bind(&Shell::OnShellClientFactoryLost,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 shell_client_factory_identity));
+  factory.set_connection_error_handler(base::Bind(
+      &shell::Shell::OnShellClientFactoryLost, weak_ptr_factory_.GetWeakPtr(),
+      shell_client_factory_identity));
   shell_client_factories_[shell_client_factory_identity] = std::move(factory);
   return factory_interface;
 }
@@ -677,7 +679,7 @@ void Shell::OnShellClientFactoryLost(const Identity& which) {
 }
 
 void Shell::OnGotResolvedName(mojom::ShellResolverPtr resolver,
-                              scoped_ptr<ConnectParams> params,
+                              std::unique_ptr<ConnectParams> params,
                               mojom::ShellClientPtr client,
                               mojom::ResolveResultPtr result) {
   std::string instance_name = params->target().instance();
@@ -748,7 +750,7 @@ void Shell::OnGotResolvedName(mojom::ShellResolverPtr resolver,
                                      std::move(request));
       } else {
         instance->StartWithFilePath(
-            util::UrlToFilePath(result->package_url.To<GURL>()));
+            mojo::util::UrlToFilePath(result->package_url.To<GURL>()));
       }
     }
   }
@@ -787,4 +789,3 @@ void Shell::CleanupRunner(NativeRunner* runner) {
 }
 
 }  // namespace shell
-}  // namespace mojo

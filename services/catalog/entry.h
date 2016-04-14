@@ -46,8 +46,8 @@ class Entry {
   void set_display_name(const std::string& display_name) {
     display_name_ = display_name;
   }
-  const mojo::CapabilitySpec& capabilities() const { return capabilities_; }
-  void set_capabilities(const mojo::CapabilitySpec& capabilities) {
+  const shell::CapabilitySpec& capabilities() const { return capabilities_; }
+  void set_capabilities(const shell::CapabilitySpec& capabilities) {
     capabilities_ = capabilities;
   }
   const Entry* package() const { return package_; }
@@ -59,7 +59,7 @@ class Entry {
   base::FilePath path_;
   std::string qualifier_;
   std::string display_name_;
-  mojo::CapabilitySpec capabilities_;
+  shell::CapabilitySpec capabilities_;
   Entry* package_ = nullptr;
   std::set<Entry*> applications_;
 };

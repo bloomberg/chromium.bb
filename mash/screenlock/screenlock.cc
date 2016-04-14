@@ -25,7 +25,7 @@ namespace {
 class ScreenlockView : public views::WidgetDelegateView,
                        public views::ButtonListener {
  public:
-  explicit ScreenlockView(mojo::Connector* connector)
+  explicit ScreenlockView(shell::Connector* connector)
       : connector_(connector),
         unlock_button_(
             new views::LabelButton(this, base::ASCIIToUTF16("Unlock"))) {
@@ -64,7 +64,7 @@ class ScreenlockView : public views::WidgetDelegateView,
     session->UnlockScreen();
   }
 
-  mojo::Connector* connector_;
+  shell::Connector* connector_;
   views::LabelButton* unlock_button_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenlockView);
@@ -75,8 +75,8 @@ class ScreenlockView : public views::WidgetDelegateView,
 Screenlock::Screenlock() {}
 Screenlock::~Screenlock() {}
 
-void Screenlock::Initialize(mojo::Connector* connector,
-                            const mojo::Identity& identity,
+void Screenlock::Initialize(shell::Connector* connector,
+                            const shell::Identity& identity,
                             uint32_t id) {
   tracing_.Initialize(connector, identity.name());
 

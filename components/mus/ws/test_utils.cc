@@ -129,7 +129,7 @@ int EventDispatcherTestApi::NumberPointerTargetsForWindow(
 
 WindowTree* TestDisplayBinding::CreateWindowTree(ServerWindow* root) {
   return window_server_->EmbedAtWindow(
-      root, mojo::shell::mojom::kRootUserID, mus::mojom::WindowTreeClientPtr(),
+      root, shell::mojom::kRootUserID, mus::mojom::WindowTreeClientPtr(),
       make_scoped_ptr(new WindowManagerAccessPolicy));
 }
 

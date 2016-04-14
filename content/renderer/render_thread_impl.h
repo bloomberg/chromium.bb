@@ -454,8 +454,8 @@ class CONTENT_EXPORT RenderThreadImpl
 
   void RegisterPendingRenderFrameConnect(
       int routing_id,
-      mojo::shell::mojom::InterfaceProviderRequest services,
-      mojo::shell::mojom::InterfaceProviderPtr exposed_services);
+      shell::mojom::InterfaceProviderRequest services,
+      shell::mojom::InterfaceProviderPtr exposed_services);
 
   mojom::StoragePartitionService* GetStoragePartitionService();
 
@@ -686,14 +686,12 @@ class CONTENT_EXPORT RenderThreadImpl
    public:
     PendingRenderFrameConnect(
         int routing_id,
-        mojo::shell::mojom::InterfaceProviderRequest services,
-        mojo::shell::mojom::InterfaceProviderPtr exposed_services);
+        shell::mojom::InterfaceProviderRequest services,
+        shell::mojom::InterfaceProviderPtr exposed_services);
 
-    mojo::shell::mojom::InterfaceProviderRequest& services() {
-      return services_;
-    }
+    shell::mojom::InterfaceProviderRequest& services() { return services_; }
 
-    mojo::shell::mojom::InterfaceProviderPtr& exposed_services() {
+    shell::mojom::InterfaceProviderPtr& exposed_services() {
       return exposed_services_;
     }
 
@@ -706,8 +704,8 @@ class CONTENT_EXPORT RenderThreadImpl
     void OnConnectionError();
 
     int routing_id_;
-    mojo::shell::mojom::InterfaceProviderRequest services_;
-    mojo::shell::mojom::InterfaceProviderPtr exposed_services_;
+    shell::mojom::InterfaceProviderRequest services_;
+    shell::mojom::InterfaceProviderPtr exposed_services_;
   };
 
   typedef std::map<int, scoped_refptr<PendingRenderFrameConnect>>

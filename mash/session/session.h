@@ -23,19 +23,19 @@ class Connection;
 namespace mash {
 namespace session {
 
-class Session : public mojo::ShellClient,
+class Session : public shell::ShellClient,
                 public mojom::Session,
-                public mojo::InterfaceFactory<mojom::Session> {
+                public shell::InterfaceFactory<mojom::Session> {
  public:
   Session();
   ~Session() override;
 
  private:
-  // mojo::ShellClient:
-  void Initialize(mojo::Connector* connector,
-                  const mojo::Identity& identity,
+  // shell::ShellClient:
+  void Initialize(shell::Connector* connector,
+                  const shell::Identity& identity,
                   uint32_t id) override;
-  bool AcceptConnection(mojo::Connection* connection) override;
+  bool AcceptConnection(shell::Connection* connection) override;
 
   // mojom::Session:
   void Logout() override;
@@ -45,8 +45,8 @@ class Session : public mojo::ShellClient,
   void LockScreen() override;
   void UnlockScreen() override;
 
-  // mojo::InterfaceFactory<mojom::Session>:
-  void Create(mojo::Connection* connection,
+  // shell::InterfaceFactory<mojom::Session>:
+  void Create(shell::Connection* connection,
               mojom::SessionRequest request) override;
 
   void StartWindowManager();
@@ -62,8 +62,8 @@ class Session : public mojo::ShellClient,
   void StartRestartableService(const std::string& url,
                                const base::Closure& restart_callback);
 
-  mojo::Connector* connector_;
-  std::map<std::string, std::unique_ptr<mojo::Connection>> connections_;
+  shell::Connector* connector_;
+  std::map<std::string, std::unique_ptr<shell::Connection>> connections_;
   bool screen_locked_;
   mojo::BindingSet<mojom::Session> bindings_;
   mojo::InterfacePtrSet<mojom::ScreenlockStateListener> screenlock_listeners_;

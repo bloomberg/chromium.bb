@@ -10,12 +10,11 @@
 #include "services/shell/public/cpp/identity.h"
 #include "services/shell/public/interfaces/connector.mojom.h"
 
-namespace mojo {
 namespace shell {
 
 class Shell;
 
-ScopedMessagePipeHandle ConnectToInterfaceByName(
+mojo::ScopedMessagePipeHandle ConnectToInterfaceByName(
     Shell* shell,
     const Identity& source,
     const Identity& target,
@@ -27,24 +26,22 @@ template <typename Interface>
 inline void ConnectToInterface(Shell* shell,
                                const Identity& source,
                                const Identity& target,
-                               InterfacePtr<Interface>* ptr) {
-  ScopedMessagePipeHandle service_handle =
+                               mojo::InterfacePtr<Interface>* ptr) {
+  mojo::ScopedMessagePipeHandle service_handle =
       ConnectToInterfaceByName(shell, source, target, Interface::Name_);
-  ptr->Bind(InterfacePtrInfo<Interface>(std::move(service_handle), 0u));
+  ptr->Bind(mojo::InterfacePtrInfo<Interface>(std::move(service_handle), 0u));
 }
 
 template <typename Interface>
 inline void ConnectToInterface(Shell* shell,
                                const Identity& source,
                                const std::string& name,
-                               InterfacePtr<Interface>* ptr) {
-  ScopedMessagePipeHandle service_handle = ConnectToInterfaceByName(
-      shell, source, Identity(name, mojom::kInheritUserID),
-      Interface::Name_);
-  ptr->Bind(InterfacePtrInfo<Interface>(std::move(service_handle), 0u));
+                               mojo::InterfacePtr<Interface>* ptr) {
+  mojo::ScopedMessagePipeHandle service_handle = ConnectToInterfaceByName(
+      shell, source, Identity(name, mojom::kInheritUserID), Interface::Name_);
+  ptr->Bind(mojo::InterfacePtrInfo<Interface>(std::move(service_handle), 0u));
 }
 
 }  // namespace shell
-}  // namespace mojo
 
 #endif  // SERVICES_SHELL_CONNECT_UTIL_H_

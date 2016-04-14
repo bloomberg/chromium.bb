@@ -7,20 +7,19 @@
 #include "base/at_exit.h"
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/process/launch.h"
 #include "base/run_loop.h"
 #include "services/shell/public/cpp/shell_client.h"
 #include "services/shell/public/cpp/shell_connection.h"
 
-namespace mojo {
+namespace shell {
 
 int g_application_runner_argc;
 const char* const* g_application_runner_argv;
 
 ApplicationRunner::ApplicationRunner(ShellClient* client)
-    : client_(scoped_ptr<ShellClient>(client)),
+    : client_(std::unique_ptr<ShellClient>(client)),
       message_loop_type_(base::MessageLoop::TYPE_DEFAULT),
       has_run_(false) {}
 
@@ -42,20 +41,20 @@ MojoResult ApplicationRunner::Run(MojoHandle shell_client_request_handle,
   DCHECK(!has_run_);
   has_run_ = true;
 
-  scoped_ptr<base::AtExitManager> at_exit;
+  std::unique_ptr<base::AtExitManager> at_exit;
   if (init_base) {
     InitBaseCommandLine();
     at_exit.reset(new base::AtExitManager);
   }
 
   {
-    scoped_ptr<base::MessageLoop> loop;
+    std::unique_ptr<base::MessageLoop> loop;
     loop.reset(new base::MessageLoop(message_loop_type_));
 
     connection_.reset(new ShellConnection(
         client_.get(),
-        MakeRequest<shell::mojom::ShellClient>(MakeScopedHandle(
-            MessagePipeHandle(shell_client_request_handle)))));
+        mojo::MakeRequest<mojom::ShellClient>(mojo::MakeScopedHandle(
+            mojo::MessagePipeHandle(shell_client_request_handle)))));
     base::RunLoop run_loop;
     connection_->set_connection_lost_closure(run_loop.QuitClosure());
     run_loop.Run();
@@ -89,4 +88,4 @@ void ApplicationRunner::Quit() {
   base::MessageLoop::current()->QuitWhenIdle();
 }
 
-}  // namespace mojo
+}  // namespace shell

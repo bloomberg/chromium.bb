@@ -7,13 +7,11 @@
 
 #include "base/callback_forward.h"
 
-namespace mojo {
 namespace shell {
 
 // Main method for the launcher process.
 int LauncherProcessMain();
 
 }  // namespace shell
-}  // namespace mojo
 
 #endif  // SERVICES_SHELL_STANDALONE_LAUNCHER_PROCESS_H_

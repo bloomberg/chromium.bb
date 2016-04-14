@@ -7,7 +7,6 @@
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 
-namespace mojo {
 namespace shell {
 
 namespace {
@@ -42,4 +41,3 @@ void MachBroker::RemovePid(base::ProcessHandle pid) {
 }
 
 }  // namespace shell
-}  // namespace mojo

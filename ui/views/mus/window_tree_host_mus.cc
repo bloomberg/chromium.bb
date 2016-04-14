@@ -17,7 +17,7 @@ namespace views {
 ////////////////////////////////////////////////////////////////////////////////
 // WindowTreeHostMus, public:
 
-WindowTreeHostMus::WindowTreeHostMus(mojo::Connector* connector,
+WindowTreeHostMus::WindowTreeHostMus(shell::Connector* connector,
                                      NativeWidgetMus* native_widget,
                                      mus::Window* window)
     : native_widget_(native_widget),

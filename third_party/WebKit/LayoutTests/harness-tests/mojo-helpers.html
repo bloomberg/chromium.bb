@@ -97,7 +97,7 @@ mojo_test(() => {
       ['services/shell/public/interfaces/interface_provider.mojom']).then(mojo => {
     let interfaceProvider = mojo.modules[0];
     assert_equals(interfaceProvider.InterfaceProvider.name,
-                  'mojo::shell::mojom::InterfaceProvider');
+                  'shell::mojom::InterfaceProvider');
 
   });
 }, 'Generated mojo bindings can be loaded in tests');

@@ -621,8 +621,9 @@ bool IsReload(FrameMsg_Navigate_Type::Value navigation_type) {
 RenderFrameImpl::CreateRenderFrameImplFunction g_create_render_frame_impl =
     nullptr;
 
-void OnGotInstanceID(mojo::shell::mojom::ConnectResult result,
-                     const std::string& user_id, uint32_t instance_id) {}
+void OnGotInstanceID(shell::mojom::ConnectResult result,
+                     const std::string& user_id,
+                     uint32_t instance_id) {}
 
 WebString ConvertRelativePathToHtmlAttribute(const base::FilePath& path) {
   DCHECK(!path.IsAbsolute());
@@ -1490,8 +1491,8 @@ void RenderFrameImpl::OnNavigate(
 }
 
 void RenderFrameImpl::BindServiceRegistry(
-    mojo::shell::mojom::InterfaceProviderRequest services,
-    mojo::shell::mojom::InterfaceProviderPtr exposed_services) {
+    shell::mojom::InterfaceProviderRequest services,
+    shell::mojom::InterfaceProviderPtr exposed_services) {
   service_registry_.Bind(std::move(services));
   service_registry_.BindRemoteServiceProvider(std::move(exposed_services));
 }
@@ -5914,8 +5915,7 @@ media::MediaPermission* RenderFrameImpl::GetMediaPermission() {
 }
 
 #if defined(ENABLE_MOJO_MEDIA)
-mojo::shell::mojom::InterfaceProvider*
-RenderFrameImpl::GetMediaInterfaceProvider() {
+shell::mojom::InterfaceProvider* RenderFrameImpl::GetMediaInterfaceProvider() {
   if (!media_interface_provider_) {
     media_interface_provider_.reset(new MediaInterfaceProvider(base::Bind(
         &RenderFrameImpl::ConnectToApplication, base::Unretained(this))));
@@ -5982,14 +5982,14 @@ void RenderFrameImpl::GetInterface(mojo::InterfaceRequest<Interface> request) {
   GetServiceRegistry()->ConnectToRemoteService(std::move(request));
 }
 
-mojo::shell::mojom::InterfaceProviderPtr RenderFrameImpl::ConnectToApplication(
+shell::mojom::InterfaceProviderPtr RenderFrameImpl::ConnectToApplication(
     const GURL& url) {
   if (!connector_)
     GetServiceRegistry()->ConnectToRemoteService(mojo::GetProxy(&connector_));
-  mojo::shell::mojom::InterfaceProviderPtr interface_provider;
-  mojo::shell::mojom::IdentityPtr target(mojo::shell::mojom::Identity::New());
+  shell::mojom::InterfaceProviderPtr interface_provider;
+  shell::mojom::IdentityPtr target(shell::mojom::Identity::New());
   target->name = url.spec();
-  target->user_id = mojo::shell::mojom::kInheritUserID;
+  target->user_id = shell::mojom::kInheritUserID;
   target->instance = "";
   connector_->Connect(std::move(target), GetProxy(&interface_provider), nullptr,
                       nullptr, base::Bind(&OnGotInstanceID));

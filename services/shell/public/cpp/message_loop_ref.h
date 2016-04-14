@@ -5,12 +5,13 @@
 #ifndef SERVICES_SHELL_PUBLIC_CPP_MESSAGE_LOOP_REF_H_
 #define SERVICES_SHELL_PUBLIC_CPP_MESSAGE_LOOP_REF_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "mojo/public/cpp/system/core.h"
 
-namespace mojo {
+namespace shell {
 
 class MessageLoopRefImpl;
 
@@ -25,7 +26,7 @@ class MessageLoopRef {
  public:
   virtual ~MessageLoopRef() {}
 
-  virtual scoped_ptr<MessageLoopRef> Clone() = 0;
+  virtual std::unique_ptr<MessageLoopRef> Clone() = 0;
 };
 
 class MessageLoopRefFactory {
@@ -37,7 +38,7 @@ class MessageLoopRefFactory {
     quit_closure_ = quit_closure;
   }
 
-  scoped_ptr<MessageLoopRef> CreateRef();
+  std::unique_ptr<MessageLoopRef> CreateRef();
 
  private:
   friend MessageLoopRefImpl;
@@ -52,6 +53,6 @@ class MessageLoopRefFactory {
   DISALLOW_COPY_AND_ASSIGN(MessageLoopRefFactory);
 };
 
-}  // namespace mojo
+}  // namespace shell
 
 #endif  // SERVICES_SHELL_PUBLIC_CPP_MESSAGE_LOOP_REF_H_

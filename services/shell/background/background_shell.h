@@ -5,10 +5,10 @@
 #ifndef SERVICES_SHELL_BACKGROUND_BACKGROUND_SHELL_H_
 #define SERVICES_SHELL_BACKGROUND_BACKGROUND_SHELL_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/catalog/store.h"
 #include "services/shell/public/interfaces/shell_client.mojom.h"
@@ -17,7 +17,6 @@ namespace catalog {
 class Store;
 }
 
-namespace mojo {
 namespace shell {
 
 class NativeRunnerDelegate;
@@ -34,7 +33,7 @@ class BackgroundShell {
     ~InitParams();
 
     NativeRunnerDelegate* native_runner_delegate = nullptr;
-    scoped_ptr<catalog::Store> catalog_store;
+    std::unique_ptr<catalog::Store> catalog_store;
     // If true the edk is initialized.
     bool init_edk = true;
   };
@@ -44,7 +43,7 @@ class BackgroundShell {
 
   // Starts the background shell. |command_line_switches| are additional
   // switches applied to any processes spawned by this call.
-  void Init(scoped_ptr<InitParams> init_params);
+  void Init(std::unique_ptr<InitParams> init_params);
 
   // Obtains an InterfaceRequest for the specified name.
   mojom::ShellClientRequest CreateShellClientRequest(
@@ -58,12 +57,11 @@ class BackgroundShell {
  private:
   class MojoThread;
 
-  scoped_ptr<MojoThread> thread_;
+  std::unique_ptr<MojoThread> thread_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundShell);
 };
 
 }  // namespace shell
-}  // namespace mojo
 
 #endif  // SERVICES_SHELL_BACKGROUND_BACKGROUND_SHELL_H_

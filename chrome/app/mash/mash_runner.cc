@@ -37,7 +37,7 @@
 #include "components/font_service/font_service_app.h"
 #endif
 
-using mojo::shell::mojom::ShellClientFactory;
+using shell::mojom::ShellClientFactory;
 
 namespace {
 
@@ -45,27 +45,27 @@ namespace {
 const char* kMashChild = "mash-child";
 
 // ShellClient responsible for starting the appropriate app.
-class DefaultShellClient : public mojo::ShellClient,
+class DefaultShellClient : public shell::ShellClient,
                            public ShellClientFactory,
-                           public mojo::InterfaceFactory<ShellClientFactory> {
+                           public shell::InterfaceFactory<ShellClientFactory> {
  public:
   DefaultShellClient() {}
   ~DefaultShellClient() override {}
 
-  // mojo::ShellClient:
-  bool AcceptConnection(mojo::Connection* connection) override {
+  // shell::ShellClient:
+  bool AcceptConnection(shell::Connection* connection) override {
     connection->AddInterface<ShellClientFactory>(this);
     return true;
   }
 
-  // mojo::InterfaceFactory<ShellClientFactory>
-  void Create(mojo::Connection* connection,
+  // shell::InterfaceFactory<ShellClientFactory>
+  void Create(shell::Connection* connection,
               mojo::InterfaceRequest<ShellClientFactory> request) override {
     shell_client_factory_bindings_.AddBinding(this, std::move(request));
   }
 
   // ShellClientFactory:
-  void CreateShellClient(mojo::shell::mojom::ShellClientRequest request,
+  void CreateShellClient(shell::mojom::ShellClientRequest request,
                          const mojo::String& mojo_name) override {
     if (shell_client_) {
       LOG(ERROR) << "request to create additional app " << mojo_name;
@@ -74,7 +74,7 @@ class DefaultShellClient : public mojo::ShellClient,
     shell_client_ = CreateShellClient(mojo_name);
     if (shell_client_) {
       shell_connection_.reset(
-          new mojo::ShellConnection(shell_client_.get(), std::move(request)));
+          new shell::ShellConnection(shell_client_.get(), std::move(request)));
       return;
     }
     LOG(ERROR) << "unknown name " << mojo_name;
@@ -83,7 +83,7 @@ class DefaultShellClient : public mojo::ShellClient,
 
  private:
   // TODO(sky): move this into mash.
-  scoped_ptr<mojo::ShellClient> CreateShellClient(const std::string& name) {
+  scoped_ptr<shell::ShellClient> CreateShellClient(const std::string& name) {
     if (name == "mojo:ash_sysui")
       return base::WrapUnique(new ash::sysui::SysUIApplication);
     if (name == "mojo:desktop_wm")
@@ -112,8 +112,8 @@ class DefaultShellClient : public mojo::ShellClient,
   }
 
   mojo::BindingSet<ShellClientFactory> shell_client_factory_bindings_;
-  scoped_ptr<mojo::ShellClient> shell_client_;
-  scoped_ptr<mojo::ShellConnection> shell_connection_;
+  scoped_ptr<shell::ShellClient> shell_client_;
+  scoped_ptr<shell::ShellConnection> shell_connection_;
 
   DISALLOW_COPY_AND_ASSIGN(DefaultShellClient);
 };
@@ -137,15 +137,15 @@ void ChangeChromeMashToChrome(base::CommandLine* command_line) {
   command_line->SetProgram(exe_path);
 }
 
-class NativeRunnerDelegateImpl : public mojo::shell::NativeRunnerDelegate {
+class NativeRunnerDelegateImpl : public shell::NativeRunnerDelegate {
  public:
   NativeRunnerDelegateImpl() {}
   ~NativeRunnerDelegateImpl() override {}
 
  private:
-  // mojo::shell::NativeRunnerDelegate:
+  // shell::NativeRunnerDelegate:
   void AdjustCommandLineArgumentsForTarget(
-      const mojo::Identity& target,
+      const shell::Identity& target,
       base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kWaitForMojoShell);
     if (target.name() != "exe:chrome") {
@@ -187,13 +187,13 @@ void MashRunner::RunMain() {
   // shouldn't we using context as it has a lot of stuff we don't really want
   // in chrome.
   NativeRunnerDelegateImpl native_runner_delegate;
-  mojo::shell::BackgroundShell background_shell;
-  scoped_ptr<mojo::shell::BackgroundShell::InitParams> init_params(
-      new mojo::shell::BackgroundShell::InitParams);
+  shell::BackgroundShell background_shell;
+  scoped_ptr<shell::BackgroundShell::InitParams> init_params(
+      new shell::BackgroundShell::InitParams);
   init_params->native_runner_delegate = &native_runner_delegate;
   background_shell.Init(std::move(init_params));
   shell_client_.reset(new DefaultShellClient);
-  shell_connection_.reset(new mojo::ShellConnection(
+  shell_connection_.reset(new shell::ShellConnection(
       shell_client_.get(),
       background_shell.CreateShellClientRequest("exe:chrome_mash")));
   shell_connection_->connector()->Connect("mojo:mash_session");
@@ -202,17 +202,17 @@ void MashRunner::RunMain() {
 
 void MashRunner::RunChild() {
   base::i18n::InitializeICU();
-  mojo::shell::ChildProcessMain(
+  shell::ChildProcessMain(
       base::Bind(&MashRunner::StartChildApp, base::Unretained(this)));
 }
 
 void MashRunner::StartChildApp(
-    mojo::shell::mojom::ShellClientRequest client_request) {
+    shell::mojom::ShellClientRequest client_request) {
   // TODO(sky): use MessagePumpMojo.
   base::MessageLoop message_loop(base::MessageLoop::TYPE_UI);
   shell_client_.reset(new DefaultShellClient);
-  shell_connection_.reset(new mojo::ShellConnection(shell_client_.get(),
-                                                    std::move(client_request)));
+  shell_connection_.reset(new shell::ShellConnection(
+      shell_client_.get(), std::move(client_request)));
   message_loop.Run();
 }
 

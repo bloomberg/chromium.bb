@@ -9,9 +9,8 @@ namespace base {
 class CommandLine;
 }
 
-namespace mojo {
-class Identity;
 namespace shell {
+class Identity;
 
 class NativeRunnerDelegate {
  public:
@@ -26,6 +25,5 @@ class NativeRunnerDelegate {
 };
 
 }  // namespace shell
-}  // namespace mojo
 
 #endif  // SERVICES_SHELL_NATIVE_RUNNER_DELEGATE_H_

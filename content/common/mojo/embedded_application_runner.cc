@@ -26,14 +26,14 @@ class EmbeddedApplicationRunner::Instance
     thread_checker_.DetachFromThread();
   }
 
-  void BindShellClientRequest(mojo::shell::mojom::ShellClientRequest request) {
+  void BindShellClientRequest(shell::mojom::ShellClientRequest request) {
     DCHECK(thread_checker_.CalledOnValidThread());
 
     if (!shell_client_)
       shell_client_ = factory_callback_.Run();
 
-    std::unique_ptr<mojo::ShellConnection> new_connection(
-        new mojo::ShellConnection(shell_client_.get(), std::move(request)));
+    std::unique_ptr<shell::ShellConnection> new_connection(
+        new shell::ShellConnection(shell_client_.get(), std::move(request)));
     new_connection->set_connection_lost_closure(
         base::Bind(&Instance::OnShellConnectionLost,
                    base::Unretained(this), new_connection.get()));
@@ -45,7 +45,7 @@ class EmbeddedApplicationRunner::Instance
 
   ~Instance() { DCHECK(thread_checker_.CalledOnValidThread()); }
 
-  void OnShellConnectionLost(mojo::ShellConnection* connection) {
+  void OnShellConnectionLost(shell::ShellConnection* connection) {
     DCHECK(thread_checker_.CalledOnValidThread());
 
     for (auto it = shell_connections_.begin(); it != shell_connections_.end();
@@ -62,8 +62,8 @@ class EmbeddedApplicationRunner::Instance
 
   base::ThreadChecker thread_checker_;
   const FactoryCallback factory_callback_;
-  std::unique_ptr<mojo::ShellClient> shell_client_;
-  std::vector<std::unique_ptr<mojo::ShellConnection>> shell_connections_;
+  std::unique_ptr<shell::ShellClient> shell_client_;
+  std::vector<std::unique_ptr<shell::ShellConnection>> shell_connections_;
 
   DISALLOW_COPY_AND_ASSIGN(Instance);
 };
@@ -80,7 +80,7 @@ EmbeddedApplicationRunner::~EmbeddedApplicationRunner() {
 }
 
 void EmbeddedApplicationRunner::BindShellClientRequest(
-    mojo::shell::mojom::ShellClientRequest request) {
+    shell::mojom::ShellClientRequest request) {
   application_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&Instance::BindShellClientRequest, instance_,

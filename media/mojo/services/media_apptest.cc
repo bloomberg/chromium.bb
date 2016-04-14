@@ -52,7 +52,7 @@ class MockRendererClient : public interfaces::RendererClient {
   DISALLOW_COPY_AND_ASSIGN(MockRendererClient);
 };
 
-class MediaAppTest : public mojo::test::ApplicationTestBase {
+class MediaAppTest : public shell::test::ApplicationTestBase {
  public:
   MediaAppTest()
       : renderer_client_binding_(&renderer_client_),
@@ -128,7 +128,7 @@ class MediaAppTest : public mojo::test::ApplicationTestBase {
   StrictMock<MockDemuxerStream> video_demuxer_stream_;
 
  private:
-  std::unique_ptr<mojo::Connection> connection_;
+  std::unique_ptr<shell::Connection> connection_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaAppTest);
 };

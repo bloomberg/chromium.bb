@@ -14,8 +14,8 @@ namespace content {
 
 namespace {
 
-std::unique_ptr<mojo::ShellClient> CreateTestApp() {
-  return std::unique_ptr<mojo::ShellClient>(new TestMojoApp);
+std::unique_ptr<shell::ShellClient> CreateTestApp() {
+  return std::unique_ptr<shell::ShellClient>(new TestMojoApp);
 }
 
 }  // namespace

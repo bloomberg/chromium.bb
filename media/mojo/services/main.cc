@@ -13,10 +13,10 @@
 MojoResult MojoMain(MojoHandle mojo_handle) {
   // Enable logging.
   base::AtExitManager at_exit;
-  mojo::ApplicationRunner::InitBaseCommandLine();
+  shell::ApplicationRunner::InitBaseCommandLine();
   mojo::InitLogging();
 
-  mojo::ApplicationRunner runner(new media::MojoMediaApplication(
+  shell::ApplicationRunner runner(new media::MojoMediaApplication(
       base::WrapUnique(new media::TestMojoMediaClient())));
   return runner.Run(mojo_handle, false /* init_base */);
 }

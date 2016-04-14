@@ -21,7 +21,7 @@ class DefaultMojoMediaClient : public MojoMediaClient {
   // MojoMediaClient implementation.
   void Initialize() final;
   std::unique_ptr<CdmFactory> CreateCdmFactory(
-      mojo::shell::mojom::InterfaceProvider* /* interface_provider */) final;
+      shell::mojom::InterfaceProvider* /* interface_provider */) final;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DefaultMojoMediaClient);

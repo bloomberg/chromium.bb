@@ -48,9 +48,9 @@ MediaInterfaceProvider::GetMediaServiceFactory() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!media_service_factory_) {
-    mojo::shell::mojom::InterfaceProviderPtr interface_provider =
+    shell::mojom::InterfaceProviderPtr interface_provider =
         connect_to_app_cb_.Run(GURL("mojo:media"));
-    mojo::GetInterface(interface_provider.get(), &media_service_factory_);
+    shell::GetInterface(interface_provider.get(), &media_service_factory_);
     media_service_factory_.set_connection_error_handler(base::Bind(
         &MediaInterfaceProvider::OnConnectionError, base::Unretained(this)));
   }

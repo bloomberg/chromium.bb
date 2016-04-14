@@ -7,6 +7,6 @@
 #include "services/shell/public/cpp/application_runner.h"
 
 MojoResult MojoMain(MojoHandle shell_handle) {
-  mojo::ApplicationRunner runner(new font_service::FontServiceApp);
+  shell::ApplicationRunner runner(new font_service::FontServiceApp);
   return runner.Run(shell_handle);
 }

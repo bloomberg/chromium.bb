@@ -19,11 +19,11 @@ namespace content {
 // provides media related services and handles app disconnection automatically.
 // This class is single threaded.
 class CONTENT_EXPORT MediaInterfaceProvider
-    : public mojo::shell::mojom::InterfaceProvider {
+    : public shell::mojom::InterfaceProvider {
  public:
   // Callback used to connect to a mojo application.
   using ConnectToApplicationCB =
-      base::Callback<mojo::shell::mojom::InterfaceProviderPtr(const GURL& url)>;
+      base::Callback<shell::mojom::InterfaceProviderPtr(const GURL& url)>;
 
   explicit MediaInterfaceProvider(
       const ConnectToApplicationCB& connect_to_app_cb);

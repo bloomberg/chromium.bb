@@ -5,9 +5,10 @@
 #include "services/shell/public/cpp/message_loop_ref.h"
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 
-namespace mojo {
+namespace shell {
 
 class MessageLoopRefImpl : public MessageLoopRef {
  public:
@@ -37,7 +38,7 @@ class MessageLoopRefImpl : public MessageLoopRef {
 
  private:
   // MessageLoopRef:
-  scoped_ptr<MessageLoopRef> Clone() override {
+  std::unique_ptr<MessageLoopRef> Clone() override {
     if (app_task_runner_->BelongsToCurrentThread()) {
       factory_->AddRef();
     } else {
@@ -58,7 +59,7 @@ class MessageLoopRefImpl : public MessageLoopRef {
     }
 #endif
 
-    return make_scoped_ptr(new MessageLoopRefImpl(factory_, app_task_runner_));
+    return base::WrapUnique(new MessageLoopRefImpl(factory_, app_task_runner_));
   }
 
   MessageLoopRefFactory* factory_;
@@ -74,9 +75,9 @@ class MessageLoopRefImpl : public MessageLoopRef {
 MessageLoopRefFactory::MessageLoopRefFactory() {}
 MessageLoopRefFactory::~MessageLoopRefFactory() {}
 
-scoped_ptr<MessageLoopRef> MessageLoopRefFactory::CreateRef() {
+std::unique_ptr<MessageLoopRef> MessageLoopRefFactory::CreateRef() {
   AddRef();
-  return make_scoped_ptr(new MessageLoopRefImpl(
+  return base::WrapUnique(new MessageLoopRefImpl(
       this, base::MessageLoop::current()->task_runner()));
 }
 
@@ -95,4 +96,4 @@ void MessageLoopRefFactory::Release() {
   }
 }
 
-}  // namespace mojo
+}  // namespace shell

@@ -7,7 +7,7 @@
 
 #include <string>
 
-namespace mojo {
+namespace shell {
 
 extern const char kNameType_Mojo[];
 extern const char kNameType_Exe[];
@@ -51,6 +51,6 @@ std::string GetNameType(const std::string& name);
 // Get the path component of the specified name.
 std::string GetNamePath(const std::string& name);
 
-}  // namespace mojo
+}  // namespace shell
 
 #endif  // SERVICES_SHELL_PUBLIC_CPP_NAMES_H_

@@ -53,7 +53,6 @@
       'public/cpp/lib/shell_connection.cc',
       'public/cpp/message_loop_ref.h',
       'public/cpp/names.h',
-      'public/cpp/shell.h',
       'public/cpp/shell_client.h',
       'public/cpp/shell_connection.h',
     ],

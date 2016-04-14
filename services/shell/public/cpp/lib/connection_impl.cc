@@ -13,7 +13,7 @@
 #include "services/shell/public/cpp/connection.h"
 #include "services/shell/public/cpp/interface_binder.h"
 
-namespace mojo {
+namespace shell {
 namespace internal {
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -65,7 +65,7 @@ const Identity& ConnectionImpl::GetRemoteIdentity() const {
   return remote_;
 }
 
-void ConnectionImpl::SetConnectionLostClosure(const Closure& handler) {
+void ConnectionImpl::SetConnectionLostClosure(const mojo::Closure& handler) {
   remote_interfaces_.set_connection_error_handler(handler);
 }
 
@@ -81,7 +81,8 @@ uint32_t ConnectionImpl::GetRemoteInstanceID() const {
   return remote_id_;
 }
 
-void ConnectionImpl::AddConnectionCompletedClosure(const Closure& callback) {
+void ConnectionImpl::AddConnectionCompletedClosure(
+    const mojo::Closure& callback) {
   if (IsPending())
     connection_completed_callbacks_.push_back(callback);
   else
@@ -118,11 +119,11 @@ void ConnectionImpl::OnConnectionCompleted(shell::mojom::ConnectResult result,
       State::CONNECTED : State::DISCONNECTED;
   remote_id_ = target_application_id;
   remote_.set_user_id(target_user_id);
-  std::vector<Closure> callbacks;
+  std::vector<mojo::Closure> callbacks;
   callbacks.swap(connection_completed_callbacks_);
   for (auto callback : callbacks)
     callback.Run();
 }
 
 }  // namespace internal
-}  // namespace mojo
+}  // namespace shell

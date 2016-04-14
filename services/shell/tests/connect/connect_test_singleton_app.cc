@@ -7,7 +7,6 @@
 #include "services/shell/public/cpp/application_runner.h"
 #include "services/shell/public/cpp/shell_client.h"
 
-namespace mojo {
 namespace shell {
 
 class ConnectTestSingletonApp : public ShellClient {
@@ -16,7 +15,7 @@ class ConnectTestSingletonApp : public ShellClient {
   ~ConnectTestSingletonApp() override {}
 
  private:
-  // mojo::ShellClient:
+  // shell::ShellClient:
   void Initialize(Connector* connector, const Identity& identity,
                   uint32_t id) override {}
   bool AcceptConnection(Connection* connection) override {
@@ -27,10 +26,9 @@ class ConnectTestSingletonApp : public ShellClient {
 };
 
 }  // namespace shell
-}  // namespace mojo
 
 
 MojoResult MojoMain(MojoHandle shell_handle) {
-  return mojo::ApplicationRunner(
-      new mojo::shell::ConnectTestSingletonApp).Run(shell_handle);
+  return shell::ApplicationRunner(new shell::ConnectTestSingletonApp)
+      .Run(shell_handle);
 }

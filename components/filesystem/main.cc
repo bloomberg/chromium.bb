@@ -8,6 +8,6 @@
 #include "services/shell/public/cpp/application_runner.h"
 
 MojoResult MojoMain(MojoHandle request) {
-  mojo::ApplicationRunner runner(new filesystem::FileSystemApp());
+  shell::ApplicationRunner runner(new filesystem::FileSystemApp());
   return runner.Run(request);
 }

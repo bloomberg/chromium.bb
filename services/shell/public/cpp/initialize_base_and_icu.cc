@@ -9,9 +9,10 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/files/file.h"
 #include "base/i18n/icu_util.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/rand_util.h"
 #include "base/sys_info.h"
 #include "mojo/public/c/system/types.h"
@@ -45,7 +46,7 @@ InitializeBase(const uint8_t* icu_data) {
   // Olson timezone ID by accessing the zoneinfo files on disk. After
   // TimeZone::createDefault is called once here, the timezone ID is
   // cached and there's no more need to access the file system.
-  scoped_ptr<icu::TimeZone> zone(icu::TimeZone::createDefault());
+  std::unique_ptr<icu::TimeZone> zone(icu::TimeZone::createDefault());
 #endif
 }
 }

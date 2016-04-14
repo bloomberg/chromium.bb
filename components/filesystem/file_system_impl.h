@@ -15,7 +15,7 @@ namespace base {
 class FilePath;
 }
 
-namespace mojo {
+namespace shell {
 class Connection;
 }
 
@@ -29,7 +29,7 @@ class FileSystemImpl : public FileSystem {
  public:
   // |persistent_dir| is the directory served to callers of
   // |OpenPersistentFileSystem().
-  FileSystemImpl(mojo::Connection* connection,
+  FileSystemImpl(shell::Connection* connection,
                  mojo::InterfaceRequest<FileSystem> request,
                  base::FilePath persistent_dir,
                  scoped_refptr<LockTable> lock_table);

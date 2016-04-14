@@ -25,7 +25,8 @@ namespace {
 // MojoShellConnection::Listener.
 class RenderWidgetWindowTreeClientFactoryImpl
     : public MojoShellConnection::Listener,
-      public mojo::InterfaceFactory<mojom::RenderWidgetWindowTreeClientFactory>,
+      public shell::InterfaceFactory<
+          mojom::RenderWidgetWindowTreeClientFactory>,
       public mojom::RenderWidgetWindowTreeClientFactory {
  public:
   RenderWidgetWindowTreeClientFactoryImpl() {
@@ -37,13 +38,13 @@ class RenderWidgetWindowTreeClientFactoryImpl
 
  private:
   // MojoShellConnection::Listener implementation:
-  bool AcceptConnection(mojo::Connection* connection) override {
+  bool AcceptConnection(shell::Connection* connection) override {
     connection->AddInterface<mojom::RenderWidgetWindowTreeClientFactory>(this);
     return true;
   }
 
-  // mojo::InterfaceFactory<mojom::RenderWidgetWindowTreeClientFactory>:
-  void Create(mojo::Connection* connection,
+  // shell::InterfaceFactory<mojom::RenderWidgetWindowTreeClientFactory>:
+  void Create(shell::Connection* connection,
               mojo::InterfaceRequest<mojom::RenderWidgetWindowTreeClientFactory>
                   request) override {
     bindings_.AddBinding(this, std::move(request));

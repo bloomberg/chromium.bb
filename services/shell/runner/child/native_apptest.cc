@@ -7,15 +7,17 @@
 #include "services/shell/public/cpp/application_test_base.h"
 #include "services/shell/runner/child/test_native_service.mojom.h"
 
-namespace mojo {
 namespace shell {
+
 namespace {
+
 void InvertCallback(bool* result, bool from_native) {
   *result = from_native;
 }
+
 }  // namespace
 
-using NativeAppTest = mojo::test::ApplicationTestBase;
+using NativeAppTest = test::ApplicationTestBase;
 
 TEST_F(NativeAppTest, Connect) {
   test::TestNativeServicePtr native_service;
@@ -35,4 +37,3 @@ TEST_F(NativeAppTest, Connect) {
 }
 
 }  // namespace shell
-}  // namespace mojo

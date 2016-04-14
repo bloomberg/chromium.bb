@@ -106,8 +106,8 @@ void WindowManagerApplication::OnAcceleratorRegistrarDestroyed(
   accelerator_registrars_.erase(registrar);
 }
 
-void WindowManagerApplication::Initialize(mojo::Connector* connector,
-                                          const mojo::Identity& identity,
+void WindowManagerApplication::Initialize(shell::Connector* connector,
+                                          const shell::Identity& identity,
                                           uint32_t id) {
   connector_ = connector;
   tracing_.Initialize(connector, identity.name());
@@ -120,7 +120,7 @@ void WindowManagerApplication::Initialize(mojo::Connector* connector,
   user_window_controller_.reset(new UserWindowControllerImpl());
 }
 
-bool WindowManagerApplication::AcceptConnection(mojo::Connection* connection) {
+bool WindowManagerApplication::AcceptConnection(shell::Connection* connection) {
   connection->AddInterface<mash::wm::mojom::UserWindowController>(this);
   connection->AddInterface<mus::mojom::AcceleratorRegistrar>(this);
   if (connection->GetRemoteIdentity().name() == "mojo:mash_session")
@@ -129,7 +129,7 @@ bool WindowManagerApplication::AcceptConnection(mojo::Connection* connection) {
 }
 
 void WindowManagerApplication::Create(
-    mojo::Connection* connection,
+    shell::Connection* connection,
     mojo::InterfaceRequest<mash::wm::mojom::UserWindowController> request) {
   if (!root_controllers_.empty() && (*root_controllers_.begin())->root()) {
     user_window_controller_binding_.AddBinding(user_window_controller_.get(),
@@ -142,7 +142,7 @@ void WindowManagerApplication::Create(
 }
 
 void WindowManagerApplication::Create(
-    mojo::Connection* connection,
+    shell::Connection* connection,
     mojo::InterfaceRequest<mus::mojom::AcceleratorRegistrar> request) {
   static int accelerator_registrar_count = 0;
   if (accelerator_registrar_count == std::numeric_limits<int>::max()) {

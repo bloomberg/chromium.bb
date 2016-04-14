@@ -5,10 +5,12 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/process/process_handle.h"
 #include "base/run_loop.h"
@@ -19,17 +21,17 @@
 #include "services/shell/public/interfaces/shell.mojom.h"
 #include "services/shell/tests/shell/shell_unittest.mojom.h"
 
-namespace mojo {
 namespace shell {
+
 namespace {
 
 class ShellTestClient
-    : public mojo::test::ShellTestClient,
+    : public test::ShellTestClient,
       public InterfaceFactory<test::mojom::CreateInstanceTest>,
       public test::mojom::CreateInstanceTest {
  public:
-  explicit ShellTestClient(mojo::test::ShellTest* test)
-      : mojo::test::ShellTestClient(test),
+  explicit ShellTestClient(test::ShellTest* test)
+      : test::ShellTestClient(test),
         target_id_(shell::mojom::kInvalidInstanceID),
         binding_(this) {}
   ~ShellTestClient() override {}
@@ -37,7 +39,7 @@ class ShellTestClient
   uint32_t target_id() const { return target_id_; }
 
  private:
-  // mojo::ShellClient:
+  // test::ShellTestClient:
   bool AcceptConnection(Connection* connection) override {
     connection->AddInterface<test::mojom::CreateInstanceTest>(this);
     return true;
@@ -58,18 +60,17 @@ class ShellTestClient
 
   uint32_t target_id_;
 
-  Binding<test::mojom::CreateInstanceTest> binding_;
+  mojo::Binding<test::mojom::CreateInstanceTest> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellTestClient);
 };
 
 }  // namespace
 
-class ShellTest : public mojo::test::ShellTest,
-                  public mojom::InstanceListener {
+class ShellTest : public test::ShellTest, public mojom::InstanceListener {
  public:
   ShellTest()
-      : mojo::test::ShellTest("mojo:shell_unittest"),
+      : test::ShellTest("mojo:shell_unittest"),
         shell_client_(nullptr),
         binding_(this) {}
   ~ShellTest() override {}
@@ -121,13 +122,14 @@ class ShellTest : public mojo::test::ShellTest,
 
  private:
   // test::ShellTest:
-  scoped_ptr<ShellClient> CreateShellClient() override {
+  std::unique_ptr<ShellClient> CreateShellClient() override {
     shell_client_ = new ShellTestClient(this);
-    return make_scoped_ptr(shell_client_);
+    return base::WrapUnique(shell_client_);
   }
 
   // mojom::InstanceListener:
-  void SetExistingInstances(Array<mojom::InstanceInfoPtr> instances) override {
+  void SetExistingInstances(
+      mojo::Array<mojom::InstanceInfoPtr> instances) override {
     for (size_t i = 0; i < instances.size(); ++i) {
       initial_instances_.push_back(InstanceInfo(instances[i]->id,
                                                 instances[i]->identity->name));
@@ -161,10 +163,10 @@ class ShellTest : public mojo::test::ShellTest,
   }
 
   ShellTestClient* shell_client_;
-  Binding<mojom::InstanceListener> binding_;
+  mojo::Binding<mojom::InstanceListener> binding_;
   std::vector<InstanceInfo> instances_;
   std::vector<InstanceInfo> initial_instances_;
-  scoped_ptr<base::RunLoop> wait_for_instances_loop_;
+  std::unique_ptr<base::RunLoop> wait_for_instances_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellTest);
 };
@@ -174,8 +176,8 @@ TEST_F(ShellTest, CreateInstance) {
 
   // 1. Launch a process. (Actually, have the runner launch a process that
   //    launches a process.)
-  mojo::shell::test::mojom::DriverPtr driver;
-  scoped_ptr<Connection> connection =
+  test::mojom::DriverPtr driver;
+  std::unique_ptr<Connection> connection =
       connector()->Connect("exe:shell_unittest_driver");
   connection->GetInterface(&driver);
 
@@ -185,7 +187,7 @@ TEST_F(ShellTest, CreateInstance) {
 
   EXPECT_FALSE(connection->IsPending());
   uint32_t remote_id = connection->GetRemoteInstanceID();
-  EXPECT_NE(shell::mojom::kInvalidInstanceID, remote_id);
+  EXPECT_NE(mojom::kInvalidInstanceID, remote_id);
 
   // 3. Validate that this test suite's name was received from the application
   //    manager.
@@ -217,4 +219,3 @@ TEST_F(ShellTest, CreateInstance) {
 }
 
 }  // namespace shell
-}  // namespace mojo

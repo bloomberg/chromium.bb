@@ -5,8 +5,9 @@
 #ifndef SERVICES_SHELL_PUBLIC_CPP_APPLICATION_TEST_BASE_H_
 #define SERVICES_SHELL_PUBLIC_CPP_APPLICATION_TEST_BASE_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "mojo/public/cpp/bindings/array.h"
 #include "mojo/public/cpp/bindings/string.h"
 #include "services/shell/public/cpp/connector.h"
@@ -15,7 +16,7 @@
 #include "services/shell/public/interfaces/shell_client.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace mojo {
+namespace shell {
 
 class ShellConnection;
 
@@ -43,7 +44,7 @@ class TestHelper {
   ShellClient default_shell_client_;
 
   // The application implementation instance, reconstructed for each test.
-  scoped_ptr<ShellConnection> shell_connection_;
+  std::unique_ptr<ShellConnection> shell_connection_;
 
   std::string name_;
   std::string userid_;
@@ -69,8 +70,8 @@ class ApplicationTestBase : public testing::Test {
     return test_helper_ ? test_helper_->test_userid() : inherit_user_id_;
   }
   uint32_t test_instance_id() const {
-    return test_helper_ ? test_helper_->test_instance_id() :
-        shell::mojom::kInvalidInstanceID;
+    return test_helper_ ? test_helper_->test_instance_id()
+                        : mojom::kInvalidInstanceID;
   }
 
   // Get the ShellClient for the application to be tested.
@@ -86,15 +87,15 @@ class ApplicationTestBase : public testing::Test {
   virtual bool ShouldCreateDefaultRunLoop();
 
  private:
-  scoped_ptr<TestHelper> test_helper_;
+  std::unique_ptr<TestHelper> test_helper_;
   std::string empty_;
-  std::string inherit_user_id_ = shell::mojom::kInheritUserID;
+  std::string inherit_user_id_ = mojom::kInheritUserID;
 
   DISALLOW_COPY_AND_ASSIGN(ApplicationTestBase);
 };
 
 }  // namespace test
 
-}  // namespace mojo
+}  // namespace shell
 
 #endif  // SERVICES_SHELL_PUBLIC_CPP_APPLICATION_TEST_BASE_H_

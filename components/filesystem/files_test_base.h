@@ -12,12 +12,12 @@
 
 namespace filesystem {
 
-class FilesTestBase : public mojo::test::ShellTest {
+class FilesTestBase : public shell::test::ShellTest {
  public:
   FilesTestBase();
   ~FilesTestBase() override;
 
-  // Overridden from mojo::test::ShellTest:
+  // Overridden from shell::test::ShellTest:
   void SetUp() override;
 
  protected:

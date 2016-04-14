@@ -19,21 +19,21 @@ namespace sysui {
 class AshInit;
 
 class SysUIApplication
-    : public mojo::ShellClient,
-      public mojo::InterfaceFactory<mash::shelf::mojom::ShelfController> {
+    : public shell::ShellClient,
+      public shell::InterfaceFactory<mash::shelf::mojom::ShelfController> {
  public:
   SysUIApplication();
   ~SysUIApplication() override;
 
  private:
-  // mojo::ShellClient:
-  void Initialize(mojo::Connector* connector,
-                  const mojo::Identity& identity,
+  // shell::ShellClient:
+  void Initialize(::shell::Connector* connector,
+                  const ::shell::Identity& identity,
                   uint32_t id) override;
-  bool AcceptConnection(mojo::Connection* connection) override;
+  bool AcceptConnection(shell::Connection* connection) override;
 
   // InterfaceFactory<mash::shelf::mojom::ShelfController>:
-  void Create(mojo::Connection* connection,
+  void Create(shell::Connection* connection,
               mojo::InterfaceRequest<mash::shelf::mojom::ShelfController>
                   request) override;
 

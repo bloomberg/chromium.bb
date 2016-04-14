@@ -6,7 +6,6 @@
 
 #include "services/shell/public/cpp/shell_connection.h"
 
-namespace mojo {
 namespace shell {
 namespace test {
 
@@ -15,12 +14,12 @@ AppClient::AppClient(shell::mojom::ShellClientRequest request)
     : connection_(new ShellConnection(this, std::move(request))) {}
 AppClient::~AppClient() {}
 
-bool AppClient::AcceptConnection(mojo::Connection* connection) {
+bool AppClient::AcceptConnection(Connection* connection) {
   connection->AddInterface<LifecycleControl>(this);
   return true;
 }
 
-void AppClient::Create(mojo::Connection* connection,
+void AppClient::Create(Connection* connection,
                        LifecycleControlRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
@@ -55,6 +54,5 @@ void AppClient::BindingLost() {
 
 }  // namespace test
 }  // namespace shell
-}  // namespace mojo
 
 

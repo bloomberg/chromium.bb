@@ -21,8 +21,8 @@ using DefaultClient = media::DefaultMojoMediaClient;
 namespace media {
 
 // static
-std::unique_ptr<mojo::ShellClient> CreateMojoMediaApplication() {
-  return std::unique_ptr<mojo::ShellClient>(
+std::unique_ptr<shell::ShellClient> CreateMojoMediaApplication() {
+  return std::unique_ptr<shell::ShellClient>(
       new MojoMediaApplication(base::WrapUnique(new DefaultClient())));
 }
 

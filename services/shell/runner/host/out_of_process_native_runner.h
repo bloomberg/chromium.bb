@@ -7,19 +7,18 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "services/shell/native_runner.h"
 
 namespace base {
 class TaskRunner;
 }
 
-namespace mojo {
 namespace shell {
 
 class ChildProcessHost;
@@ -50,7 +49,7 @@ class OutOfProcessNativeRunner : public NativeRunner {
   base::FilePath app_path_;
   base::Closure app_completed_callback_;
 
-  scoped_ptr<ChildProcessHost> child_process_host_;
+  std::unique_ptr<ChildProcessHost> child_process_host_;
 
   DISALLOW_COPY_AND_ASSIGN(OutOfProcessNativeRunner);
 };
@@ -61,7 +60,7 @@ class OutOfProcessNativeRunnerFactory : public NativeRunnerFactory {
                                   NativeRunnerDelegate* delegate);
   ~OutOfProcessNativeRunnerFactory() override;
 
-  scoped_ptr<NativeRunner> Create(const base::FilePath& app_path) override;
+  std::unique_ptr<NativeRunner> Create(const base::FilePath& app_path) override;
 
  private:
   base::TaskRunner* const launch_process_runner_;
@@ -71,6 +70,5 @@ class OutOfProcessNativeRunnerFactory : public NativeRunnerFactory {
 };
 
 }  // namespace shell
-}  // namespace mojo
 
 #endif  // SERVICES_SHELL_RUNNER_HOST_OUT_OF_PROCESS_NATIVE_RUNNER_H_

@@ -23,7 +23,7 @@ void DoNothingHandleReadError(PersistentPrefStore::PrefReadError error) {}
 
 }  // namespace
 
-scoped_ptr<PrefService> CreatePrefService(mojo::Connector* connector,
+scoped_ptr<PrefService> CreatePrefService(shell::Connector* connector,
                                           PrefRegistry* pref_registry) {
   filesystem::FileSystemPtr filesystem;
   connector->ConnectToInterface("mojo:filesystem", &filesystem);

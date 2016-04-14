@@ -28,7 +28,6 @@
 
 using sandbox::syscall_broker::BrokerFilePermission;
 
-namespace mojo {
 namespace shell {
 
 namespace {
@@ -166,4 +165,3 @@ void LinuxSandbox::Seal() {
 }
 
 }  // namespace shell
-}  // namespace mojo

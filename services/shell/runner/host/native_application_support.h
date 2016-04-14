@@ -13,8 +13,6 @@ namespace base {
 class FilePath;
 }
 
-namespace mojo {
-class Application;
 namespace shell {
 
 // Loads the native Mojo application from the DSO specified by |app_path|.
@@ -33,9 +31,8 @@ base::NativeLibrary LoadNativeApplication(const base::FilePath& app_path);
 // true if |MojoMain()| was called (even if it returns an error), and false
 // otherwise.
 bool RunNativeApplication(base::NativeLibrary app_library,
-                          InterfaceRequest<mojom::ShellClient> request);
+                          mojom::ShellClientRequest request);
 
 }  // namespace shell
-}  // namespace mojo
 
 #endif  // SERVICES_SHELL_RUNNER_HOST_NATIVE_APPLICATION_SUPPORT_H_

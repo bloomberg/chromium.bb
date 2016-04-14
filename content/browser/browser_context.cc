@@ -127,8 +127,8 @@ class BrowserContextShellConnectionHolder
     : public base::SupportsUserData::Data {
  public:
   BrowserContextShellConnectionHolder(
-      std::unique_ptr<mojo::Connection> connection,
-      mojo::shell::mojom::ShellClientRequest request)
+      std::unique_ptr<shell::Connection> connection,
+      shell::mojom::ShellClientRequest request)
       : root_connection_(std::move(connection)),
         shell_connection_(new BrowserShellConnection(std::move(request))) {}
   ~BrowserContextShellConnectionHolder() override {}
@@ -136,7 +136,7 @@ class BrowserContextShellConnectionHolder
   BrowserShellConnection* shell_connection() { return shell_connection_.get(); }
 
  private:
-  std::unique_ptr<mojo::Connection> root_connection_;
+  std::unique_ptr<shell::Connection> root_connection_;
   std::unique_ptr<BrowserShellConnection> shell_connection_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserContextShellConnectionHolder);
@@ -383,13 +383,13 @@ void BrowserContext::Initialize(
     // NOTE: Many unit tests create a TestBrowserContext without initializing
     // Mojo or the global Mojo shell connection.
 
-    mojo::shell::mojom::ShellClientPtr shell_client;
-    mojo::shell::mojom::ShellClientRequest shell_client_request =
+    shell::mojom::ShellClientPtr shell_client;
+    shell::mojom::ShellClientRequest shell_client_request =
         mojo::GetProxy(&shell_client);
 
-    mojo::shell::mojom::PIDReceiverPtr pid_receiver;
-    mojo::Connector::ConnectParams params(
-        mojo::Identity(kBrowserMojoApplicationName, new_id));
+    shell::mojom::PIDReceiverPtr pid_receiver;
+    shell::Connector::ConnectParams params(
+        shell::Identity(kBrowserMojoApplicationName, new_id));
     params.set_client_process_connection(std::move(shell_client),
                                          mojo::GetProxy(&pid_receiver));
     pid_receiver->SetPID(base::GetCurrentProcId());
@@ -434,7 +434,7 @@ const std::string& BrowserContext::GetMojoUserIdFor(
 }
 
 // static
-mojo::Connector* BrowserContext::GetMojoConnectorFor(
+shell::Connector* BrowserContext::GetMojoConnectorFor(
     BrowserContext* browser_context) {
   BrowserContextShellConnectionHolder* connection_holder =
       static_cast<BrowserContextShellConnectionHolder*>(

@@ -24,7 +24,7 @@ class WindowServerTestBase
     : public WindowServerShellTestBase,
       public WindowTreeDelegate,
       public WindowManagerDelegate,
-      public mojo::InterfaceFactory<mojom::WindowTreeClient> {
+      public shell::InterfaceFactory<mojom::WindowTreeClient> {
  public:
   WindowServerTestBase();
   ~WindowServerTestBase() override;
@@ -62,7 +62,7 @@ class WindowServerTestBase
   void SetUp() override;
 
   // WindowServerShellTestBase:
-  bool AcceptConnection(mojo::Connection* connection) override;
+  bool AcceptConnection(shell::Connection* connection) override;
 
   // WindowTreeDelegate:
   void OnEmbed(Window* root) override;
@@ -79,7 +79,7 @@ class WindowServerTestBase
   void OnAccelerator(uint32_t id, const ui::Event& event) override;
 
   // InterfaceFactory<WindowTreeClient>:
-  void Create(mojo::Connection* connection,
+  void Create(shell::Connection* connection,
               mojo::InterfaceRequest<mojom::WindowTreeClient> request) override;
 
   // Used to receive the most recent window tree connection loaded by an embed

@@ -34,14 +34,14 @@ namespace mash {
 namespace task_viewer {
 namespace {
 
-using mojo::shell::mojom::InstanceInfoPtr;
+using shell::mojom::InstanceInfoPtr;
 
 class TaskViewerContents : public views::WidgetDelegateView,
                            public ui::TableModel,
                            public views::ButtonListener,
-                           public mojo::shell::mojom::InstanceListener {
+                           public shell::mojom::InstanceListener {
  public:
-  TaskViewerContents(mojo::shell::mojom::InstanceListenerRequest request,
+  TaskViewerContents(shell::mojom::InstanceListenerRequest request,
                      catalog::mojom::CatalogPtr catalog)
       : binding_(this, std::move(request)),
         catalog_(std::move(catalog)),
@@ -149,7 +149,7 @@ class TaskViewerContents : public views::WidgetDelegateView,
     process.Terminate(9, true);
   }
 
-  // Overridden from mojo::shell::mojom::InstanceListener:
+  // Overridden from shell::mojom::InstanceListener:
   void SetExistingInstances(mojo::Array<InstanceInfoPtr> instances) override {
     // This callback should only be called with an empty model.
     DCHECK(instances_.empty());
@@ -251,7 +251,7 @@ class TaskViewerContents : public views::WidgetDelegateView,
     return columns;
   }
 
-  mojo::Binding<mojo::shell::mojom::InstanceListener> binding_;
+  mojo::Binding<shell::mojom::InstanceListener> binding_;
   catalog::mojom::CatalogPtr catalog_;
 
   views::TableView* table_view_;
@@ -271,19 +271,19 @@ class TaskViewerContents : public views::WidgetDelegateView,
 TaskViewer::TaskViewer() {}
 TaskViewer::~TaskViewer() {}
 
-void TaskViewer::Initialize(mojo::Connector* connector,
-                            const mojo::Identity& identity,
+void TaskViewer::Initialize(shell::Connector* connector,
+                            const shell::Identity& identity,
                             uint32_t id) {
   tracing_.Initialize(connector, identity.name());
 
   aura_init_.reset(new views::AuraInit(connector, "views_mus_resources.pak"));
   views::WindowManagerConnection::Create(connector);
 
-  mojo::shell::mojom::ShellPtr shell;
+  shell::mojom::ShellPtr shell;
   connector->ConnectToInterface("mojo:shell", &shell);
 
-  mojo::shell::mojom::InstanceListenerPtr listener;
-  mojo::shell::mojom::InstanceListenerRequest request = GetProxy(&listener);
+  shell::mojom::InstanceListenerPtr listener;
+  shell::mojom::InstanceListenerRequest request = GetProxy(&listener);
   shell->AddInstanceListener(std::move(listener));
 
   catalog::mojom::CatalogPtr catalog;

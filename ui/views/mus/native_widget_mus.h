@@ -29,13 +29,13 @@ class WindowTreeClient;
 class Window;
 }
 
-namespace mojo {
-class Connector;
-}
-
 namespace mus {
 class Window;
 class WindowTreeConnection;
+}
+
+namespace shell {
+class Connector;
 }
 
 namespace wm {
@@ -58,7 +58,7 @@ class VIEWS_MUS_EXPORT NativeWidgetMus : public internal::NativeWidgetPrivate,
                                          public aura::WindowTreeHostObserver {
  public:
   NativeWidgetMus(internal::NativeWidgetDelegate* delegate,
-                  mojo::Connector* connector,
+                  shell::Connector* connector,
                   mus::Window* window,
                   mus::mojom::SurfaceType surface_type);
   ~NativeWidgetMus() override;

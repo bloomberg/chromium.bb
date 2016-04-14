@@ -25,7 +25,7 @@ class AuraInit;
 class MUSViewsInit : public views::ViewsDelegate,
                      public mus::WindowTreeDelegate {
  public:
-  explicit MUSViewsInit(mojo::ShellConnection* app);
+  explicit MUSViewsInit(shell::ShellConnection* app);
   ~MUSViewsInit() override;
 
  private:
@@ -45,7 +45,7 @@ class MUSViewsInit : public views::ViewsDelegate,
   HICON GetSmallWindowIcon() const override;
 #endif
 
-  mojo::ShellConnection* app_;
+  shell::ShellConnection* app_;
   std::unique_ptr<views::AuraInit> aura_init_;
   mus::mojom::WindowManagerPtr window_manager_;
 

@@ -15,27 +15,27 @@
 #include "services/shell/public/cpp/shell_connection.h"
 #include "services/shell/public/interfaces/shell_client.mojom.h"
 
-namespace mojo {
+namespace shell {
 namespace test {
 
 namespace {
 
 // Share the application name with multiple application tests.
-shell::mojom::IdentityPtr g_identity;
-uint32_t g_id = shell::mojom::kInvalidInstanceID;
+mojom::IdentityPtr g_identity;
+uint32_t g_id = mojom::kInvalidInstanceID;
 
 // ShellClient request handle passed from the shell in MojoMain, stored in
 // between SetUp()/TearDown() so we can (re-)intialize new ShellConnections.
-InterfaceRequest<shell::mojom::ShellClient> g_shell_client_request;
+mojom::ShellClientRequest g_shell_client_request;
 
 // Connector pointer passed in the initial mojo.ShellClient.Initialize() call,
 // stored in between initial setup and the first test and between SetUp/TearDown
 // calls so we can (re-)initialize new ShellConnections.
-shell::mojom::ConnectorPtr g_connector;
+mojom::ConnectorPtr g_connector;
 
-class ShellGrabber : public shell::mojom::ShellClient {
+class ShellGrabber : public mojom::ShellClient {
  public:
-  explicit ShellGrabber(InterfaceRequest<shell::mojom::ShellClient> request)
+  explicit ShellGrabber(mojom::ShellClientRequest request)
       : binding_(this, std::move(request)) {
     binding_.set_connection_error_handler([] { _exit(1); });
   }
@@ -46,8 +46,8 @@ class ShellGrabber : public shell::mojom::ShellClient {
   }
 
  private:
-  // shell::mojom::ShellClient implementation.
-  void Initialize(shell::mojom::IdentityPtr identity,
+  // mojom::ShellClient implementation.
+  void Initialize(mojom::IdentityPtr identity,
                   uint32_t id,
                   const InitializeCallback& callback) override {
     callback.Run(GetProxy(&g_connector));
@@ -57,20 +57,19 @@ class ShellGrabber : public shell::mojom::ShellClient {
     g_shell_client_request = binding_.Unbind();
   }
 
-  void AcceptConnection(
-      shell::mojom::IdentityPtr source,
-      uint32_t source_id,
-      shell::mojom::InterfaceProviderRequest local_interfaces,
-      shell::mojom::InterfaceProviderPtr remote_interfaces,
-      shell::mojom::CapabilityRequestPtr capability_spec,
-      const String& name) override {
+  void AcceptConnection(mojom::IdentityPtr source,
+                        uint32_t source_id,
+                        mojom::InterfaceProviderRequest local_interfaces,
+                        mojom::InterfaceProviderPtr remote_interfaces,
+                        mojom::CapabilityRequestPtr capability_spec,
+                        const mojo::String& name) override {
     CHECK(false);
   }
 
-  Binding<ShellClient> binding_;
+  mojo::Binding<ShellClient> binding_;
 };
 
-void IgnoreConnectorRequest(shell::mojom::ConnectorRequest) {}
+void IgnoreConnectorRequest(mojom::ConnectorRequest) {}
 
 }  // namespace
 
@@ -81,8 +80,8 @@ MojoResult RunAllTests(MojoHandle shell_client_request_handle) {
 
     // Grab the shell handle.
     ShellGrabber grabber(
-        MakeRequest<shell::mojom::ShellClient>(MakeScopedHandle(
-            MessagePipeHandle(shell_client_request_handle))));
+        mojo::MakeRequest<mojom::ShellClient>(mojo::MakeScopedHandle(
+            mojo::MessagePipeHandle(shell_client_request_handle))));
     grabber.WaitForInitialize();
     CHECK(g_connector);
     CHECK(g_shell_client_request.is_pending());
@@ -125,7 +124,7 @@ TestHelper::TestHelper(ShellClient* client)
   shell_connection_->SetAppTestConnectorForTesting(std::move(g_connector));
 
   // Fake ShellClient initialization.
-  shell::mojom::ShellClient* shell_client = shell_connection_.get();
+  mojom::ShellClient* shell_client = shell_connection_.get();
   shell_client->Initialize(std::move(g_identity), g_id,
                            base::Bind(&IgnoreConnectorRequest));
 }
@@ -180,4 +179,4 @@ bool ApplicationTestBase::ShouldCreateDefaultRunLoop() {
 }
 
 }  // namespace test
-}  // namespace mojo
+}  // namespace shell

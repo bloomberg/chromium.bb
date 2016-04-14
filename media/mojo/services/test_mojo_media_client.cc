@@ -65,7 +65,7 @@ VideoRendererSink* TestMojoMediaClient::CreateVideoRendererSink(
 }
 
 std::unique_ptr<CdmFactory> TestMojoMediaClient::CreateCdmFactory(
-    mojo::shell::mojom::InterfaceProvider* /* interface_provider */) {
+    shell::mojom::InterfaceProvider* /* interface_provider */) {
   DVLOG(1) << __FUNCTION__;
   return base::WrapUnique(new DefaultCdmFactory());
 }

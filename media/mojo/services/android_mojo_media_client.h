@@ -22,7 +22,7 @@ class AndroidMojoMediaClient : public MojoMediaClient {
       scoped_refptr<base::SingleThreadTaskRunner> task_runner) final;
 
   std::unique_ptr<CdmFactory> CreateCdmFactory(
-      mojo::shell::mojom::InterfaceProvider* interface_provider) final;
+      shell::mojom::InterfaceProvider* interface_provider) final;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AndroidMojoMediaClient);

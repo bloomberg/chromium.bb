@@ -27,7 +27,7 @@ namespace views {
 
 class VIEWS_MUS_EXPORT SurfaceContextFactory : public ui::ContextFactory {
  public:
-  SurfaceContextFactory(mojo::Connector* connector,
+  SurfaceContextFactory(shell::Connector* connector,
                         mus::Window* window,
                         mus::mojom::SurfaceType surface_type);
   ~SurfaceContextFactory() override;

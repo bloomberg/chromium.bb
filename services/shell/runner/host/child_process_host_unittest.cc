@@ -6,6 +6,7 @@
 
 #include "services/shell/runner/host/child_process_host.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -23,7 +24,6 @@
 #include "services/shell/native_runner_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace mojo {
 namespace shell {
 namespace {
 
@@ -32,7 +32,7 @@ void ProcessReadyCallbackAdapater(const base::Closure& callback,
   callback.Run();
 }
 
-class ProcessDelegate : public edk::ProcessDelegate {
+class ProcessDelegate : public mojo::edk::ProcessDelegate {
  public:
   ProcessDelegate() {}
   ~ProcessDelegate() override {}
@@ -78,7 +78,7 @@ TEST(ChildProcessHostTest, MAYBE_StartJoin) {
   base::FilePath shell_dir;
   PathService::Get(base::DIR_MODULE, &shell_dir);
   base::MessageLoop message_loop(
-      scoped_ptr<base::MessagePump>(new common::MessagePumpMojo()));
+      std::unique_ptr<base::MessagePump>(new mojo::common::MessagePumpMojo()));
   scoped_refptr<base::SequencedWorkerPool> blocking_pool(
       new base::SequencedWorkerPool(3, "blocking_pool"));
 
@@ -88,7 +88,7 @@ TEST(ChildProcessHostTest, MAYBE_StartJoin) {
   io_thread.StartWithOptions(options);
 
   ProcessDelegate delegate;
-  edk::InitIPCSupport(&delegate, io_thread.task_runner());
+  mojo::edk::InitIPCSupport(&delegate, io_thread.task_runner());
 
   NativeRunnerDelegateImpl native_runner_delegate;
   ChildProcessHost child_process_host(blocking_pool.get(),
@@ -103,10 +103,9 @@ TEST(ChildProcessHostTest, MAYBE_StartJoin) {
 
   child_process_host.Join();
   blocking_pool->Shutdown();
-  edk::ShutdownIPCSupport();
+  mojo::edk::ShutdownIPCSupport();
   EXPECT_EQ(1u, native_runner_delegate.get_and_clear_adjust_count());
 }
 
 }  // namespace
 }  // namespace shell
-}  // namespace mojo

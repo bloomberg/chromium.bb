@@ -10,10 +10,10 @@
 namespace resource_provider {
 namespace test {
 
-class ResourceProviderTest : public mojo::test::ShellTest {
+class ResourceProviderTest : public shell::test::ShellTest {
  public:
   ResourceProviderTest()
-      : mojo::test::ShellTest("exe:resource_provider_unittests") {}
+      : shell::test::ShellTest("exe:resource_provider_unittests") {}
   ~ResourceProviderTest() override {}
 
  private:

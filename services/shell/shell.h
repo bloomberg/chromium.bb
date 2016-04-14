@@ -6,10 +6,10 @@
 #define SERVICES_SHELL_SHELL_H_
 
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
@@ -27,9 +27,8 @@
 #include "services/shell/public/interfaces/shell_client_factory.mojom.h"
 #include "services/shell/public/interfaces/shell_resolver.mojom.h"
 
-namespace mojo {
-class ShellConnection;
 namespace shell {
+class ShellConnection;
 
 // Creates an identity for the Shell, used when the Shell connects to
 // applications.
@@ -57,7 +56,7 @@ class Shell : public ShellClient {
   // |file_task_runner| provides access to a thread to perform file copy
   // operations on. This may be null only in testing environments where
   // applications are loaded via Loader implementations.
-  Shell(scoped_ptr<NativeRunnerFactory> native_runner_factory,
+  Shell(std::unique_ptr<NativeRunnerFactory> native_runner_factory,
         mojom::ShellClientPtr catalog);
   ~Shell() override;
 
@@ -69,7 +68,7 @@ class Shell : public ShellClient {
   // Completes a connection between a source and target application as defined
   // by |params|, exchanging InterfaceProviders between them. If no existing
   // instance of the target application is running, one will be loaded.
-  void Connect(scoped_ptr<ConnectParams> params);
+  void Connect(std::unique_ptr<ConnectParams> params);
 
   // Creates a new Instance identified as |name|. This is intended for use by
   // the Shell's embedder to register itself with the shell. This must only be
@@ -77,12 +76,13 @@ class Shell : public ShellClient {
   mojom::ShellClientRequest InitInstanceForEmbedder(const std::string& name);
 
   // Sets the default Loader to be used if not overridden by SetLoaderForName().
-  void set_default_loader(scoped_ptr<Loader> loader) {
+  void set_default_loader(std::unique_ptr<Loader> loader) {
     default_loader_ = std::move(loader);
   }
 
   // Sets a Loader to be used for a specific name.
-  void SetLoaderForName(scoped_ptr<Loader> loader, const std::string& name);
+  void SetLoaderForName(std::unique_ptr<Loader> loader,
+                        const std::string& name);
 
  private:
   class Instance;
@@ -107,7 +107,8 @@ class Shell : public ShellClient {
   // If |client| is not null, there must not be an instance of the target
   // application already running. The shell will create a new instance and use
   // |client| to control it.
-  void Connect(scoped_ptr<ConnectParams> params, mojom::ShellClientPtr client);
+  void Connect(std::unique_ptr<ConnectParams> params,
+               mojom::ShellClientPtr client);
 
   // Returns a running instance matching |identity|. This might be an instance
   // running as a different user if one is available that services all users.
@@ -118,7 +119,7 @@ class Shell : public ShellClient {
   // Attempt to complete the connection requested by |params| by connecting to
   // an existing instance. If there is an existing instance, |params| is taken,
   // and this function returns true.
-  bool ConnectToExistingInstance(scoped_ptr<ConnectParams>* params);
+  bool ConnectToExistingInstance(std::unique_ptr<ConnectParams>* params);
 
   Instance* CreateInstance(const Identity& source,
                            const Identity& target,
@@ -142,7 +143,7 @@ class Shell : public ShellClient {
   // new application instance. This may be null.
   // |result| contains the result of the resolve operation.
   void OnGotResolvedName(mojom::ShellResolverPtr resolver,
-                         scoped_ptr<ConnectParams> params,
+                         std::unique_ptr<ConnectParams> params,
                          mojom::ShellClientPtr client,
                          mojom::ResolveResultPtr result);
 
@@ -162,7 +163,7 @@ class Shell : public ShellClient {
   // Loader management.
   // Loaders are chosen in the order they are listed here.
   std::map<std::string, Loader*> name_to_loader_;
-  scoped_ptr<Loader> default_loader_;
+  std::unique_ptr<Loader> default_loader_;
 
   std::map<Identity, Instance*> identity_to_instance_;
 
@@ -174,12 +175,12 @@ class Shell : public ShellClient {
   // Counter used to assign ids to client factories.
   uint32_t shell_client_factory_id_counter_;
 
-  InterfacePtrSet<mojom::InstanceListener> instance_listeners_;
+  mojo::InterfacePtrSet<mojom::InstanceListener> instance_listeners_;
 
   base::Callback<void(const Identity&)> instance_quit_callback_;
-  scoped_ptr<NativeRunnerFactory> native_runner_factory_;
-  std::vector<scoped_ptr<NativeRunner>> native_runners_;
-  scoped_ptr<ShellConnection> shell_connection_;
+  std::unique_ptr<NativeRunnerFactory> native_runner_factory_;
+  std::vector<std::unique_ptr<NativeRunner>> native_runners_;
+  std::unique_ptr<ShellConnection> shell_connection_;
   base::WeakPtrFactory<Shell> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(Shell);
@@ -188,6 +189,5 @@ class Shell : public ShellClient {
 mojom::Connector::ConnectCallback EmptyConnectCallback();
 
 }  // namespace shell
-}  // namespace mojo
 
 #endif  // SERVICES_SHELL_SHELL_H_

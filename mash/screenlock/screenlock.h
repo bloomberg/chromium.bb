@@ -21,16 +21,16 @@ class AuraInit;
 namespace mash {
 namespace screenlock {
 
-class Screenlock : public mojo::ShellClient,
+class Screenlock : public shell::ShellClient,
                    public session::mojom::ScreenlockStateListener {
  public:
   Screenlock();
   ~Screenlock() override;
 
  private:
-  // mojo::ShellClient:
-  void Initialize(mojo::Connector* connector,
-                  const mojo::Identity& identity,
+  // shell::ShellClient:
+  void Initialize(shell::Connector* connector,
+                  const shell::Identity& identity,
                   uint32_t id) override;
 
   // session::mojom::ScreenlockStateListener:

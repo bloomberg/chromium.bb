@@ -12,7 +12,7 @@
 
 namespace ash {
 
-KeyboardUIMus::KeyboardUIMus(mojo::Connector* connector)
+KeyboardUIMus::KeyboardUIMus(::shell::Connector* connector)
     : is_enabled_(false), observer_binding_(this) {
   // TODO(sky): should be something like mojo:keyboard, but need mapping.
   connector->ConnectToInterface("exe:chrome", &keyboard_);
@@ -22,7 +22,8 @@ KeyboardUIMus::KeyboardUIMus(mojo::Connector* connector)
 KeyboardUIMus::~KeyboardUIMus() {}
 
 // static
-std::unique_ptr<KeyboardUI> KeyboardUIMus::Create(mojo::Connector* connector) {
+std::unique_ptr<KeyboardUI> KeyboardUIMus::Create(
+    ::shell::Connector* connector) {
   return base::WrapUnique(new KeyboardUIMus(connector));
 }
 

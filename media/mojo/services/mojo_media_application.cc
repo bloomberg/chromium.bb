@@ -25,20 +25,20 @@ MojoMediaApplication::MojoMediaApplication(
 
 MojoMediaApplication::~MojoMediaApplication() {}
 
-void MojoMediaApplication::Initialize(mojo::Connector* connector,
-                                      const mojo::Identity& identity,
+void MojoMediaApplication::Initialize(shell::Connector* connector,
+                                      const shell::Identity& identity,
                                       uint32_t /* id */) {
   connector_ = connector;
   mojo_media_client_->Initialize();
 }
 
-bool MojoMediaApplication::AcceptConnection(mojo::Connection* connection) {
+bool MojoMediaApplication::AcceptConnection(shell::Connection* connection) {
   connection->AddInterface<interfaces::ServiceFactory>(this);
   return true;
 }
 
 void MojoMediaApplication::Create(
-    mojo::Connection* connection,
+    shell::Connection* connection,
     mojo::InterfaceRequest<interfaces::ServiceFactory> request) {
   // The created object is owned by the pipe.
   new ServiceFactoryImpl(std::move(request), connection->GetRemoteInterfaces(),

@@ -23,22 +23,22 @@ class MediaLog;
 class MojoMediaClient;
 
 class MojoMediaApplication
-    : public mojo::ShellClient,
-      public mojo::InterfaceFactory<interfaces::ServiceFactory> {
+    : public shell::ShellClient,
+      public shell::InterfaceFactory<interfaces::ServiceFactory> {
  public:
   explicit MojoMediaApplication(
       std::unique_ptr<MojoMediaClient> mojo_media_client);
   ~MojoMediaApplication() final;
 
  private:
-  // mojo::ShellClient implementation.
-  void Initialize(mojo::Connector* connector,
-                  const mojo::Identity& identity,
+  // shell::ShellClient implementation.
+  void Initialize(shell::Connector* connector,
+                  const shell::Identity& identity,
                   uint32_t id) final;
-  bool AcceptConnection(mojo::Connection* connection) final;
+  bool AcceptConnection(shell::Connection* connection) final;
 
-  // mojo::InterfaceFactory<interfaces::ServiceFactory> implementation.
-  void Create(mojo::Connection* connection,
+  // shell::InterfaceFactory<interfaces::ServiceFactory> implementation.
+  void Create(shell::Connection* connection,
               mojo::InterfaceRequest<interfaces::ServiceFactory> request) final;
 
   // Note: Since each instance runs on a different thread, do not share a common
@@ -46,9 +46,9 @@ class MojoMediaApplication
   // a unique_ptr here.
   std::unique_ptr<MojoMediaClient> mojo_media_client_;
 
-  mojo::Connector* connector_;
+  shell::Connector* connector_;
   scoped_refptr<MediaLog> media_log_;
-  mojo::MessageLoopRefFactory ref_factory_;
+  shell::MessageLoopRefFactory ref_factory_;
 };
 
 }  // namespace media

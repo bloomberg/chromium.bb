@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdio.h>
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
@@ -17,7 +18,6 @@
 #include "services/tracing/public/cpp/trace_provider_impl.h"
 #include "services/tracing/public/interfaces/tracing.mojom.h"
 
-namespace mojo {
 namespace shell {
 
 // Tracer collects tracing data from base/trace_event and from externally
@@ -77,7 +77,7 @@ class Tracer : public mojo::common::DataPipeDrainer::Client {
 
   // Set when connected to the tracing service.
   tracing::TraceCollectorPtr coordinator_;
-  scoped_ptr<mojo::common::DataPipeDrainer> drainer_;
+  std::unique_ptr<mojo::common::DataPipeDrainer> drainer_;
 
   mojo::TraceProviderImpl trace_provider_impl_;
   // Whether we're currently tracing.
@@ -97,6 +97,5 @@ class Tracer : public mojo::common::DataPipeDrainer::Client {
 };
 
 }  // namespace shell
-}  // namespace mojo
 
 #endif  // SERVICES_SHELL_STANDALONE_TRACER_H_

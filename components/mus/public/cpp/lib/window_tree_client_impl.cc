@@ -85,8 +85,9 @@ Window* BuildWindowTree(WindowTreeClientImpl* client,
   return root;
 }
 
-WindowTreeConnection* WindowTreeConnection::Create(WindowTreeDelegate* delegate,
-                                                   mojo::Connector* connector) {
+WindowTreeConnection* WindowTreeConnection::Create(
+    WindowTreeDelegate* delegate,
+    shell::Connector* connector) {
   WindowTreeClientImpl* client =
       new WindowTreeClientImpl(delegate, nullptr, nullptr);
   client->ConnectViaWindowTreeFactory(connector);
@@ -164,7 +165,7 @@ WindowTreeClientImpl::~WindowTreeClientImpl() {
 }
 
 void WindowTreeClientImpl::ConnectViaWindowTreeFactory(
-    mojo::Connector* connector) {
+    shell::Connector* connector) {
   // Clients created with no root shouldn't delete automatically.
   delete_on_no_roots_ = false;
 

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/macros.h"
@@ -15,25 +17,26 @@
 #include "services/shell/tests/connect/connect_test.mojom.h"
 #include "services/shell/tests/util.h"
 
-using mojo::shell::test::mojom::ClientProcessTest;
-using mojo::shell::test::mojom::ClientProcessTestRequest;
+using shell::test::mojom::ClientProcessTest;
+using shell::test::mojom::ClientProcessTestRequest;
 
 namespace {
 
-class Driver : public mojo::ShellClient,
-               public mojo::InterfaceFactory<ClientProcessTest>,
+class Driver : public shell::ShellClient,
+               public shell::InterfaceFactory<ClientProcessTest>,
                public ClientProcessTest {
  public:
   Driver() {}
   ~Driver() override {}
 
  private:
-  // mojo::ShellClient:
-  void Initialize(mojo::Connector* connector, const mojo::Identity& identity,
+  // shell::ShellClient:
+  void Initialize(shell::Connector* connector,
+                  const shell::Identity& identity,
                   uint32_t id) override {
     connector_ = connector;
   }
-  bool AcceptConnection(mojo::Connection* connection) override {
+  bool AcceptConnection(shell::Connection* connection) override {
     connection->AddInterface<ClientProcessTest>(this);
     return true;
   }
@@ -43,8 +46,8 @@ class Driver : public mojo::ShellClient,
     _exit(1);
   }
 
-  // mojo::InterfaceFactory<ConnectTestService>:
-  void Create(mojo::Connection* connection,
+  // shell::InterfaceFactory<ConnectTestService>:
+  void Create(shell::Connection* connection,
               ClientProcessTestRequest request) override {
     bindings_.AddBinding(this, std::move(request));
   }
@@ -53,23 +56,21 @@ class Driver : public mojo::ShellClient,
   void LaunchAndConnectToProcess(
       const LaunchAndConnectToProcessCallback& callback) override {
     base::Process process;
-    scoped_ptr<mojo::Connection> connection =
-        mojo::shell::test::LaunchAndConnectToProcess(
+    std::unique_ptr<shell::Connection> connection =
+        shell::test::LaunchAndConnectToProcess(
 #if defined(OS_WIN)
             "connect_test_exe.exe",
 #else
             "connect_test_exe",
 #endif
-            mojo::Identity("exe:connect_test_exe",
-                           mojo::shell::mojom::kInheritUserID),
-            connector_,
-            &process);
+            shell::Identity("exe:connect_test_exe",
+                            shell::mojom::kInheritUserID),
+            connector_, &process);
     callback.Run(static_cast<int32_t>(connection->GetResult()),
-                 mojo::shell::mojom::Identity::From(
-                    connection->GetRemoteIdentity()));
+                 shell::mojom::Identity::From(connection->GetRemoteIdentity()));
   }
 
-  mojo::Connector* connector_ = nullptr;
+  shell::Connector* connector_ = nullptr;
   mojo::BindingSet<ClientProcessTest> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(Driver);
@@ -81,8 +82,8 @@ int main(int argc, char** argv) {
   base::AtExitManager at_exit;
   base::CommandLine::Init(argc, argv);
 
-  mojo::shell::InitializeLogging();
+  shell::InitializeLogging();
 
   Driver driver;
-  return mojo::shell::TestNativeMain(&driver);
+  return shell::TestNativeMain(&driver);
 }

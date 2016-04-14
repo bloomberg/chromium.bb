@@ -15,7 +15,7 @@
 #include "ui/gfx/screen.h"
 #include "ui/views/mus/mus_export.h"
 
-namespace mojo {
+namespace shell {
 class Connector;
 }
 
@@ -31,7 +31,7 @@ class VIEWS_MUS_EXPORT ScreenMus
   explicit ScreenMus(ScreenMusDelegate* delegate);
   ~ScreenMus() override;
 
-  void Init(mojo::Connector* connector);
+  void Init(shell::Connector* connector);
 
  private:
   int FindDisplayIndexById(int64_t id) const;

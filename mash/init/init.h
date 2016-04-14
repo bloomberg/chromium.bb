@@ -22,21 +22,22 @@ class Connection;
 namespace mash {
 namespace init {
 
-class Init : public mojo::ShellClient,
-             public mojo::InterfaceFactory<mojom::Init>,
+class Init : public shell::ShellClient,
+             public shell::InterfaceFactory<mojom::Init>,
              public mojom::Init {
  public:
   Init();
   ~Init() override;
 
  private:
-  // mojo::ShellClient:
-  void Initialize(mojo::Connector* connector, const mojo::Identity& identity,
+  // shell::ShellClient:
+  void Initialize(shell::Connector* connector,
+                  const shell::Identity& identity,
                   uint32_t id) override;
-  bool AcceptConnection(mojo::Connection* connection) override;
+  bool AcceptConnection(shell::Connection* connection) override;
 
-  // mojo::InterfaceFactory<mojom::Login>:
-  void Create(mojo::Connection* connection,
+  // shell::InterfaceFactory<mojom::Login>:
+  void Create(shell::Connection* connection,
               mojom::InitRequest request) override;
 
   // mojom::Init:
@@ -50,10 +51,10 @@ class Init : public mojo::ShellClient,
   void StartResourceProvider();
   void StartLogin();
 
-  mojo::Connector* connector_;
-  std::unique_ptr<mojo::Connection> login_connection_;
+  shell::Connector* connector_;
+  std::unique_ptr<shell::Connection> login_connection_;
   mojo::BindingSet<mojom::Init> init_bindings_;
-  std::map<std::string, std::unique_ptr<mojo::Connection>> user_services_;
+  std::map<std::string, std::unique_ptr<shell::Connection>> user_services_;
 
   DISALLOW_COPY_AND_ASSIGN(Init);
 };

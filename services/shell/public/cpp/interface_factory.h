@@ -7,11 +7,9 @@
 
 #include "mojo/public/cpp/bindings/interface_request.h"
 
-namespace mojo {
+namespace shell {
 
 class Connection;
-template <typename Interface>
-class InterfaceRequest;
 
 // Implement this class to provide implementations of a given interface and
 // bind them to incoming requests. The implementation of this class is
@@ -22,9 +20,9 @@ class InterfaceFactory {
  public:
   virtual ~InterfaceFactory() {}
   virtual void Create(Connection* connection,
-                      InterfaceRequest<Interface> request) = 0;
+                      mojo::InterfaceRequest<Interface> request) = 0;
 };
 
-}  // namespace mojo
+}  // namespace shell
 
 #endif  // SERVICES_SHELL_PUBLIC_CPP_INTERFACE_FACTORY_H_

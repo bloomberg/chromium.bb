@@ -12,11 +12,9 @@
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/shell/public/interfaces/shell_client.mojom.h"
 
-namespace mojo {
 namespace shell {
 class Loader;
 }  // namespace shell
-}  // namespace mojo
 
 namespace content {
 
@@ -26,7 +24,7 @@ class ProcessControlImpl : public mojom::ProcessControl {
   ProcessControlImpl();
   ~ProcessControlImpl() override;
 
-  using NameToLoaderMap = std::map<std::string, mojo::shell::Loader*>;
+  using NameToLoaderMap = std::map<std::string, shell::Loader*>;
 
   // Registers Mojo loaders for names.
   virtual void RegisterLoaders(NameToLoaderMap* name_to_loader_map) = 0;
@@ -34,7 +32,7 @@ class ProcessControlImpl : public mojom::ProcessControl {
   // ProcessControl:
   void LoadApplication(
       const mojo::String& name,
-      mojo::InterfaceRequest<mojo::shell::mojom::ShellClient> request,
+      mojo::InterfaceRequest<shell::mojom::ShellClient> request,
       const LoadApplicationCallback& callback) override;
 
  private:

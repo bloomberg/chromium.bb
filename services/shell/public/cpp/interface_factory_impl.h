@@ -7,7 +7,7 @@
 
 #include "services/shell/public/cpp/interface_factory.h"
 
-namespace mojo {
+namespace shell {
 
 // Use this class to allocate and bind instances of Impl to interface requests.
 // The lifetime of the constructed Impl is bound to the pipe.
@@ -18,7 +18,7 @@ class InterfaceFactoryImpl : public InterfaceFactory<Interface> {
   virtual ~InterfaceFactoryImpl() {}
 
   virtual void Create(Connection* connection,
-                      InterfaceRequest<Interface> request) override {
+                      mojo::InterfaceRequest<Interface> request) override {
     BindToRequest(new Impl(), &request);
   }
 };
@@ -36,7 +36,7 @@ class InterfaceFactoryImplWithContext : public InterfaceFactory<Interface> {
   virtual ~InterfaceFactoryImplWithContext() {}
 
   virtual void Create(Connection* connection,
-                      InterfaceRequest<Interface> request) override {
+                      mojo::InterfaceRequest<Interface> request) override {
     BindToRequest(new Impl(context_), &request);
   }
 
@@ -44,6 +44,6 @@ class InterfaceFactoryImplWithContext : public InterfaceFactory<Interface> {
   Context* context_;
 };
 
-}  // namespace mojo
+}  // namespace shell
 
 #endif  // SERVICES_SHELL_PUBLIC_CPP_INTERFACE_FACTORY_IMPL_H_

@@ -13,31 +13,32 @@
 #include "services/shell/runner/init.h"
 #include "services/shell/tests/connect/connect_test.mojom.h"
 
-using mojo::shell::test::mojom::ConnectTestService;
-using mojo::shell::test::mojom::ConnectTestServiceRequest;
+using shell::test::mojom::ConnectTestService;
+using shell::test::mojom::ConnectTestServiceRequest;
 
 namespace {
 
-class Target : public mojo::ShellClient,
-               public mojo::InterfaceFactory<ConnectTestService>,
+class Target : public shell::ShellClient,
+               public shell::InterfaceFactory<ConnectTestService>,
                public ConnectTestService {
  public:
   Target() {}
   ~Target() override {}
 
  private:
-  // mojo::ShellClient:
-  void Initialize(mojo::Connector* connector, const mojo::Identity& identity,
+  // shell::ShellClient:
+  void Initialize(shell::Connector* connector,
+                  const shell::Identity& identity,
                   uint32_t id) override {
     identity_ = identity;
   }
-  bool AcceptConnection(mojo::Connection* connection) override {
+  bool AcceptConnection(shell::Connection* connection) override {
     connection->AddInterface<ConnectTestService>(this);
     return true;
   }
 
-  // mojo::InterfaceFactory<ConnectTestService>:
-  void Create(mojo::Connection* connection,
+  // shell::InterfaceFactory<ConnectTestService>:
+  void Create(shell::Connection* connection,
               ConnectTestServiceRequest request) override {
     bindings_.AddBinding(this, std::move(request));
   }
@@ -50,7 +51,7 @@ class Target : public mojo::ShellClient,
     callback.Run(identity_.instance());
   }
 
-  mojo::Identity identity_;
+  shell::Identity identity_;
   mojo::BindingSet<ConnectTestService> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(Target);
@@ -62,8 +63,8 @@ int main(int argc, char** argv) {
   base::AtExitManager at_exit;
   base::CommandLine::Init(argc, argv);
 
-  mojo::shell::InitializeLogging();
+  shell::InitializeLogging();
 
   Target target;
-  return mojo::shell::TestNativeMain(&target);
+  return shell::TestNativeMain(&target);
 }

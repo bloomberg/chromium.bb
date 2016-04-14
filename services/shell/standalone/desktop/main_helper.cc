@@ -25,7 +25,6 @@
 #include <unistd.h>
 #endif
 
-namespace mojo {
 namespace shell {
 
 int StandaloneShellMain(int argc, char** argv) {
@@ -48,4 +47,3 @@ int StandaloneShellMain(int argc, char** argv) {
 }
 
 }  // namespace shell
-}  // namespace mojo

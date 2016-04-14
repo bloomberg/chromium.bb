@@ -16,7 +16,6 @@
 #include "base/trace_event/trace_config.h"
 #include "base/trace_event/trace_event.h"
 
-namespace mojo {
 namespace shell {
 
 Tracer::Tracer()
@@ -161,4 +160,3 @@ void Tracer::WriteCommaIfNeeded() {
 }
 
 }  // namespace shell
-}  // namespace mojo

@@ -10,12 +10,10 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/shell/public/cpp/identity.h"
 #include "services/shell/public/interfaces/connector.mojom.h"
 #include "services/shell/public/interfaces/interface_provider.mojom.h"
 
-namespace mojo {
 namespace shell {
 
 // This class represents a request for the application manager to connect to an
@@ -30,33 +28,32 @@ class ConnectParams {
   void set_target(const Identity& target) { target_ = target; }
   const Identity& target() const { return target_; }
 
-  void set_remote_interfaces(shell::mojom::InterfaceProviderRequest value) {
+  void set_remote_interfaces(mojom::InterfaceProviderRequest value) {
     remote_interfaces_ = std::move(value);
   }
-  shell::mojom::InterfaceProviderRequest TakeRemoteInterfaces() {
+  mojom::InterfaceProviderRequest TakeRemoteInterfaces() {
     return std::move(remote_interfaces_);
   }
 
-  void set_local_interfaces(shell::mojom::InterfaceProviderPtr value) {
+  void set_local_interfaces(mojom::InterfaceProviderPtr value) {
     local_interfaces_ = std::move(value);
   }
-  shell::mojom::InterfaceProviderPtr TakeLocalInterfaces() {
+  mojom::InterfaceProviderPtr TakeLocalInterfaces() {
     return std::move(local_interfaces_);
   }
 
   void set_client_process_connection(
-      shell::mojom::ClientProcessConnectionPtr client_process_connection) {
+      mojom::ClientProcessConnectionPtr client_process_connection) {
     client_process_connection_ = std::move(client_process_connection);
   }
-  shell::mojom::ClientProcessConnectionPtr TakeClientProcessConnection() {
+  mojom::ClientProcessConnectionPtr TakeClientProcessConnection() {
     return std::move(client_process_connection_);
   }
 
-  void set_connect_callback(
-      const shell::mojom::Connector::ConnectCallback& value) {
+  void set_connect_callback(const mojom::Connector::ConnectCallback& value) {
     connect_callback_ = value;
   }
-  const shell::mojom::Connector::ConnectCallback& connect_callback() const {
+  const mojom::Connector::ConnectCallback& connect_callback() const {
     return connect_callback_;
   }
 
@@ -67,15 +64,14 @@ class ConnectParams {
   // The identity of the application being connected to.
   Identity target_;
 
-  shell::mojom::InterfaceProviderRequest remote_interfaces_;
-  shell::mojom::InterfaceProviderPtr local_interfaces_;
-  shell::mojom::ClientProcessConnectionPtr client_process_connection_;
-  shell::mojom::Connector::ConnectCallback connect_callback_;
+  mojom::InterfaceProviderRequest remote_interfaces_;
+  mojom::InterfaceProviderPtr local_interfaces_;
+  mojom::ClientProcessConnectionPtr client_process_connection_;
+  mojom::Connector::ConnectCallback connect_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ConnectParams);
 };
 
 }  // namespace shell
-}  // namespace mojo
 
 #endif  // SERVICES_SHELL_CONNECT_PARAMS_H_

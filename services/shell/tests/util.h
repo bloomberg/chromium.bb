@@ -5,32 +5,30 @@
 #ifndef SERVICES_SHELL_TESTS_UTIL_H_
 #define SERVICES_SHELL_TESTS_UTIL_H_
 
+#include <memory>
 #include <string>
-
-#include "base/memory/scoped_ptr.h"
 
 namespace base {
 class Process;
 }
 
-namespace mojo {
+namespace shell {
 class Connection;
 class Connector;
 class Identity;
-namespace shell {
+
 namespace test {
 
 // Starts the process @ |target_exe_name| and connects to it as |target| using
 // |connector|, returning the connection & the process.
 // This blocks until the connection is established/rejected by the shell.
-scoped_ptr<Connection> LaunchAndConnectToProcess(
+std::unique_ptr<Connection> LaunchAndConnectToProcess(
     const std::string& target_exe_name,
     const Identity target,
-    mojo::Connector* connector,
+    shell::Connector* connector,
     base::Process* process);
 
 }  // namespace test
 }  // namespace shell
-}  // namespace mojo
 
 #endif  // SERVICES_SHELL_TESTS_UTIL_H_

@@ -7,8 +7,8 @@
 #include "services/shell/tests/lifecycle/app_client.h"
 
 MojoResult MojoMain(MojoHandle shell_handle) {
-  mojo::shell::test::AppClient* app = new mojo::shell::test::AppClient;
-  mojo::ApplicationRunner runner(app);
+  shell::test::AppClient* app = new shell::test::AppClient;
+  shell::ApplicationRunner runner(app);
   app->set_runner(&runner);
   return runner.Run(shell_handle);
 }

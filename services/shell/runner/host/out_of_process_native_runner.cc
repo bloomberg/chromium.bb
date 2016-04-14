@@ -12,12 +12,12 @@
 #include "base/callback_helpers.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/task_runner.h"
 #include "services/shell/runner/common/client_util.h"
 #include "services/shell/runner/host/child_process_host.h"
 #include "services/shell/runner/host/in_process_native_runner.h"
 
-namespace mojo {
 namespace shell {
 
 OutOfProcessNativeRunner::OutOfProcessNativeRunner(
@@ -66,11 +66,10 @@ OutOfProcessNativeRunnerFactory::OutOfProcessNativeRunnerFactory(
     : launch_process_runner_(launch_process_runner), delegate_(delegate) {}
 OutOfProcessNativeRunnerFactory::~OutOfProcessNativeRunnerFactory() {}
 
-scoped_ptr<shell::NativeRunner> OutOfProcessNativeRunnerFactory::Create(
+std::unique_ptr<NativeRunner> OutOfProcessNativeRunnerFactory::Create(
     const base::FilePath& app_path) {
-  return make_scoped_ptr(
+  return base::WrapUnique(
       new OutOfProcessNativeRunner(launch_process_runner_, delegate_));
 }
 
 }  // namespace shell
-}  // namespace mojo

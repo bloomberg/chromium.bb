@@ -10,7 +10,7 @@
 #include "base/process/process_handle.h"
 #include "services/shell/public/interfaces/shell.mojom.h"
 
-namespace mojo {
+namespace shell {
 class Connection;
 }
 
@@ -18,7 +18,7 @@ namespace content {
 
 class RenderProcessHost;
 
-// Establish a mojo::Connection to the child process, using a pipe created for
+// Establish a shell::Connection to the child process, using a pipe created for
 // that purpose. Returns a token that should be passed to the child process and
 // exchanged for a pipe there. That pipe can in turn be passed to
 // MojoShellConnectionImpl::BindToMessagePipe() to initialize the child's
@@ -29,7 +29,7 @@ std::string MojoConnectToChild(int child_process_id,
 
 // Returns a mojo connection to the provided render process host. This
 // connection was opened when MojoConnectToChild() was called.
-mojo::Connection* GetMojoConnection(RenderProcessHost* render_process_host);
+shell::Connection* GetMojoConnection(RenderProcessHost* render_process_host);
 
 }  // namespace content
 

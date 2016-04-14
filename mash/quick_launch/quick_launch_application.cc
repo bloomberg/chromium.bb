@@ -32,7 +32,7 @@ namespace quick_launch {
 class QuickLaunchUI : public views::WidgetDelegateView,
                       public views::TextfieldController {
  public:
-  QuickLaunchUI(mojo::Connector* connector, catalog::mojom::CatalogPtr catalog)
+  QuickLaunchUI(shell::Connector* connector, catalog::mojom::CatalogPtr catalog)
       : connector_(connector),
         prompt_(new views::Textfield),
         catalog_(std::move(catalog)) {
@@ -128,9 +128,9 @@ class QuickLaunchUI : public views::WidgetDelegateView,
       app_names_.insert(base::UTF8ToUTF16(entry.first.get()));
   }
 
-  mojo::Connector* connector_;
+  shell::Connector* connector_;
   views::Textfield* prompt_;
-  std::vector<std::unique_ptr<mojo::Connection>> connections_;
+  std::vector<std::unique_ptr<shell::Connection>> connections_;
   catalog::mojom::CatalogPtr catalog_;
   std::set<base::string16> app_names_;
   bool suggestion_rejected_ = false;
@@ -141,8 +141,8 @@ class QuickLaunchUI : public views::WidgetDelegateView,
 QuickLaunchApplication::QuickLaunchApplication() {}
 QuickLaunchApplication::~QuickLaunchApplication() {}
 
-void QuickLaunchApplication::Initialize(mojo::Connector* connector,
-                                        const mojo::Identity& identity,
+void QuickLaunchApplication::Initialize(shell::Connector* connector,
+                                        const shell::Identity& identity,
                                         uint32_t id) {
   tracing_.Initialize(connector, identity.name());
 
@@ -158,7 +158,7 @@ void QuickLaunchApplication::Initialize(mojo::Connector* connector,
   window->Show();
 }
 
-bool QuickLaunchApplication::AcceptConnection(mojo::Connection* connection) {
+bool QuickLaunchApplication::AcceptConnection(shell::Connection* connection) {
   return true;
 }
 

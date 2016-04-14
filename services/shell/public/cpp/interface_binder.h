@@ -9,7 +9,7 @@
 
 #include "mojo/public/cpp/system/message_pipe.h"
 
-namespace mojo {
+namespace shell {
 
 class Connection;
 
@@ -22,9 +22,9 @@ class InterfaceBinder {
   // an implementation it must take ownership of the request handle.
   virtual void BindInterface(Connection* connection,
                              const std::string& interface_name,
-                             ScopedMessagePipeHandle handle) = 0;
+                             mojo::ScopedMessagePipeHandle handle) = 0;
 };
 
-}  // namespace mojo
+}  // namespace shell
 
 #endif  // SERVICES_SHELL_PUBLIC_CPP_INTERFACE_BINDER_H_

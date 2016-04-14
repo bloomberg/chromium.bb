@@ -10,10 +10,12 @@
 #include "services/tracing/public/cpp/trace_provider_impl.h"
 #include "services/tracing/public/interfaces/tracing.mojom.h"
 
-namespace mojo {
-
+namespace shell {
 class Connection;
 class Connector;
+}
+
+namespace mojo {
 
 // Connects to mojo:tracing during your Application's Initialize() call once
 // per process.
@@ -25,21 +27,21 @@ class Connector;
 //
 // Have your bundle ContentHandler own a TracingImpl, and each Application own
 // a TracingImpl. In bundles, the second TracingImpl will be a no-op.
-class TracingImpl : public InterfaceFactory<tracing::TraceProvider> {
+class TracingImpl : public shell::InterfaceFactory<tracing::TraceProvider> {
  public:
   TracingImpl();
   ~TracingImpl() override;
 
   // This connects to the tracing service and registers ourselves to provide
   // tracing data on demand.
-  void Initialize(Connector* connector, const std::string& url);
+  void Initialize(shell::Connector* connector, const std::string& url);
 
  private:
   // InterfaceFactory<tracing::TraceProvider> implementation.
-  void Create(Connection* connection,
+  void Create(shell::Connection* connection,
               InterfaceRequest<tracing::TraceProvider> request) override;
 
-  scoped_ptr<Connection> connection_;
+  scoped_ptr<shell::Connection> connection_;
   TraceProviderImpl provider_impl_;
 
   DISALLOW_COPY_AND_ASSIGN(TracingImpl);

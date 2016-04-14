@@ -15,7 +15,7 @@ void DefaultMojoMediaClient::Initialize() {
 }
 
 std::unique_ptr<CdmFactory> DefaultMojoMediaClient::CreateCdmFactory(
-    mojo::shell::mojom::InterfaceProvider* /* interface_provider */) {
+    shell::mojom::InterfaceProvider* /* interface_provider */) {
   DVLOG(1) << __FUNCTION__;
   // TODO(jrummell): Return a CdmFactory that can create CdmAdapter here.
   return nullptr;

@@ -46,7 +46,6 @@ source_set("sources") {
     "lib/shell_connection.cc",
     "message_loop_ref.h",
     "names.h",
-    "shell.h",
     "shell_client.h",
     "shell_connection.h",
   ]

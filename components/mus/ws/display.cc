@@ -255,8 +255,7 @@ void Display::InitWindowManagersIfNecessary() {
     WindowManagerState* wms = wms_ptr.get();
     // For this case we never create additional WindowManagerStates, so any
     // id works.
-    window_manager_state_map_[mojo::shell::mojom::kRootUserID] =
-        std::move(wms_ptr);
+    window_manager_state_map_[shell::mojom::kRootUserID] = std::move(wms_ptr);
     wms->tree_ = binding_->CreateWindowTree(wms->root());
   } else {
     CreateWindowManagerStatesFromRegistry();

@@ -19,7 +19,6 @@
 #include "services/shell/runner/common/client_util.h"
 #include "services/shell/runner/init.h"
 
-namespace mojo {
 namespace shell {
 namespace {
 
@@ -36,8 +35,8 @@ class ProcessDelegate : public mojo::edk::ProcessDelegate {
 
 }  // namespace
 
-int TestNativeMain(mojo::ShellClient* shell_client) {
-  mojo::shell::WaitForDebuggerIfNecessary();
+int TestNativeMain(shell::ShellClient* shell_client) {
+  shell::WaitForDebuggerIfNecessary();
 
 #if !defined(OFFICIAL_BUILD)
   base::debug::EnableInProcessStackDumping();
@@ -58,8 +57,8 @@ int TestNativeMain(mojo::ShellClient* shell_client) {
     mojo::edk::SetParentPipeHandleFromCommandLine();
 
     base::MessageLoop loop;
-    mojo::ShellConnection impl(
-        shell_client, mojo::shell::GetShellClientRequestFromCommandLine());
+    shell::ShellConnection impl(shell_client,
+                                shell::GetShellClientRequestFromCommandLine());
     loop.Run();
 
     mojo::edk::ShutdownIPCSupport();
@@ -69,4 +68,3 @@ int TestNativeMain(mojo::ShellClient* shell_client) {
 }
 
 }  // namespace shell
-}  // namespace mojo

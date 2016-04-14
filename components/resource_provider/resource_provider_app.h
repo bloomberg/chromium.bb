@@ -17,20 +17,21 @@
 
 namespace resource_provider {
 
-class ResourceProviderApp : public mojo::ShellClient,
-                            public mojo::InterfaceFactory<ResourceProvider> {
+class ResourceProviderApp : public shell::ShellClient,
+                            public shell::InterfaceFactory<ResourceProvider> {
  public:
   explicit ResourceProviderApp(const std::string& resource_provider_app_url);
   ~ResourceProviderApp() override;
 
  private:
-  // mojo::ShellClient:
-  void Initialize(mojo::Connector* connector, const mojo::Identity& identity,
+  // shell::ShellClient:
+  void Initialize(shell::Connector* connector,
+                  const shell::Identity& identity,
                   uint32_t id) override;
-  bool AcceptConnection(mojo::Connection* connection) override;
+  bool AcceptConnection(shell::Connection* connection) override;
 
-  // mojo::InterfaceFactory<ResourceProvider>:
-  void Create(mojo::Connection* connection,
+  // shell::InterfaceFactory<ResourceProvider>:
+  void Create(shell::Connection* connection,
               mojo::InterfaceRequest<ResourceProvider> request) override;
 
   mojo::TracingImpl tracing_;

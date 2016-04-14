@@ -16,13 +16,14 @@
 
 namespace user_service {
 
-scoped_ptr<mojo::ShellClient> CreateUserShellClient(
+scoped_ptr<shell::ShellClient> CreateUserShellClient(
     scoped_refptr<base::SingleThreadTaskRunner> user_service_runner,
     scoped_refptr<base::SingleThreadTaskRunner> leveldb_service_runner);
 
-class UserShellClient : public mojo::ShellClient,
-                        public mojo::InterfaceFactory<mojom::UserService>,
-                        public mojo::InterfaceFactory<leveldb::LevelDBService> {
+class UserShellClient
+    : public shell::ShellClient,
+      public shell::InterfaceFactory<mojom::UserService>,
+      public shell::InterfaceFactory<leveldb::LevelDBService> {
  public:
   UserShellClient(
       scoped_refptr<base::SingleThreadTaskRunner> user_service_runner,
@@ -31,20 +32,20 @@ class UserShellClient : public mojo::ShellClient,
 
  private:
   // |ShellClient| override:
-  void Initialize(mojo::Connector* connector,
-                  const mojo::Identity& identity,
+  void Initialize(shell::Connector* connector,
+                  const shell::Identity& identity,
                   uint32_t id) override;
-  bool AcceptConnection(mojo::Connection* connection) override;
+  bool AcceptConnection(shell::Connection* connection) override;
 
   // |InterfaceFactory<mojom::UserService>| implementation:
-  void Create(mojo::Connection* connection,
+  void Create(shell::Connection* connection,
               mojom::UserServiceRequest request) override;
 
   // |InterfaceFactory<LevelDBService>| implementation:
-  void Create(mojo::Connection* connection,
+  void Create(shell::Connection* connection,
               leveldb::LevelDBServiceRequest request) override;
 
-  void OnLevelDBServiceRequest(mojo::Connection* connection,
+  void OnLevelDBServiceRequest(shell::Connection* connection,
                                leveldb::LevelDBServiceRequest request);
   void OnLevelDBServiceError();
 

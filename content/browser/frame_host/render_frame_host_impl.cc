@@ -1912,7 +1912,7 @@ void RenderFrameHostImpl::RegisterMojoServices() {
   if (!frame_mojo_shell_)
     frame_mojo_shell_.reset(new FrameMojoShell(this));
 
-  GetServiceRegistry()->AddService<mojo::shell::mojom::Connector>(base::Bind(
+  GetServiceRegistry()->AddService<shell::mojom::Connector>(base::Bind(
       &FrameMojoShell::BindRequest, base::Unretained(frame_mojo_shell_.get())));
 
 #if defined(ENABLE_WEBVR)
@@ -2244,10 +2244,10 @@ void RenderFrameHostImpl::SetUpMojoIfNeeded() {
   GetProcess()->GetServiceRegistry()->ConnectToRemoteService(
       mojo::GetProxy(&setup));
 
-  mojo::shell::mojom::InterfaceProviderPtr exposed_services;
+  shell::mojom::InterfaceProviderPtr exposed_services;
   service_registry_->Bind(GetProxy(&exposed_services));
 
-  mojo::shell::mojom::InterfaceProviderPtr services;
+  shell::mojom::InterfaceProviderPtr services;
   setup->ExchangeInterfaceProviders(routing_id_, GetProxy(&services),
                                     std::move(exposed_services));
   service_registry_->BindRemoteServiceProvider(std::move(services));

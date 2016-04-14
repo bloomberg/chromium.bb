@@ -6,17 +6,14 @@
 
 #include "services/shell/public/cpp/connection.h"
 
-namespace mojo {
+namespace shell {
 
 InterfaceRegistry::InterfaceRegistry(Connection* connection)
     : InterfaceRegistry(nullptr, connection) {}
 
-InterfaceRegistry::InterfaceRegistry(
-    shell::mojom::InterfaceProviderRequest request,
-    Connection* connection)
-    : binding_(this),
-      connection_(connection),
-      default_binder_(nullptr) {
+InterfaceRegistry::InterfaceRegistry(mojom::InterfaceProviderRequest request,
+                                     Connection* connection)
+    : binding_(this), connection_(connection), default_binder_(nullptr) {
   if (!request.is_pending())
     request = GetProxy(&client_handle_);
   binding_.Bind(std::move(request));
@@ -28,13 +25,13 @@ InterfaceRegistry::~InterfaceRegistry() {
   name_to_binder_.clear();
 }
 
-shell::mojom::InterfaceProviderPtr InterfaceRegistry::TakeClientHandle() {
+mojom::InterfaceProviderPtr InterfaceRegistry::TakeClientHandle() {
   return std::move(client_handle_);
 }
 
-// shell::mojom::InterfaceProvider:
-void InterfaceRegistry::GetInterface(const String& interface_name,
-                                     ScopedMessagePipeHandle handle) {
+// mojom::InterfaceProvider:
+void InterfaceRegistry::GetInterface(const mojo::String& interface_name,
+                                     mojo::ScopedMessagePipeHandle handle) {
   auto iter = name_to_binder_.find(interface_name);
   InterfaceBinder* binder = iter != name_to_binder_.end() ? iter->second :
       default_binder_;
@@ -67,4 +64,4 @@ void InterfaceRegistry::RemoveInterfaceBinderForName(
   name_to_binder_.erase(it);
 }
 
-}  // namespace mojo
+}  // namespace shell

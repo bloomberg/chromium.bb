@@ -21,7 +21,7 @@ namespace font_service {
 class FontLoader;
 }
 
-namespace mojo {
+namespace shell {
 class Connector;
 }
 
@@ -32,11 +32,11 @@ class ViewsDelegate;
 // |resource_file| is the path to the apk file containing the resources.
 class VIEWS_MUS_EXPORT AuraInit {
  public:
-  AuraInit(mojo::Connector* connector, const std::string& resource_file);
+  AuraInit(shell::Connector* connector, const std::string& resource_file);
   ~AuraInit();
 
  private:
-  void InitializeResources(mojo::Connector* connector);
+  void InitializeResources(shell::Connector* connector);
 
 #if defined(OS_LINUX) && !defined(OS_ANDROID)
   skia::RefPtr<font_service::FontLoader> font_loader_;

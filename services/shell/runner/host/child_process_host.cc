@@ -38,7 +38,6 @@
 #include "services/shell/runner/host/mach_broker.h"
 #endif
 
-namespace mojo {
 namespace shell {
 
 ChildProcessHost::ChildProcessHost(base::TaskRunner* launch_process_runner,
@@ -77,7 +76,7 @@ mojom::ShellClientPtr ChildProcessHost::Start(
     target_path = app_path_;
   }
 
-  scoped_ptr<base::CommandLine> child_command_line(
+  std::unique_ptr<base::CommandLine> child_command_line(
       new base::CommandLine(target_path));
 
   child_command_line->AppendArguments(*parent_command_line, false);
@@ -93,7 +92,7 @@ mojom::ShellClientPtr ChildProcessHost::Start(
   if (start_sandboxed_)
     child_command_line->AppendSwitch(switches::kEnableSandbox);
 
-  mojo_ipc_channel_.reset(new edk::PlatformChannelPair);
+  mojo_ipc_channel_.reset(new mojo::edk::PlatformChannelPair);
   mojo_ipc_channel_->PrepareToPassClientHandleToChildProcess(
       child_command_line.get(), &handle_passing_info_);
 
@@ -130,7 +129,7 @@ void ChildProcessHost::DidStart(const ProcessReadyCallback& callback) {
 }
 
 void ChildProcessHost::DoLaunch(
-    scoped_ptr<base::CommandLine> child_command_line) {
+    std::unique_ptr<base::CommandLine> child_command_line) {
   if (delegate_) {
     delegate_->AdjustCommandLineArgumentsForTarget(target_,
                                                    child_command_line.get());
@@ -209,4 +208,3 @@ void ChildProcessHost::DoLaunch(
 }
 
 }  // namespace shell
-}  // namespace mojo

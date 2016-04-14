@@ -31,7 +31,7 @@ base::LazyInstance<WindowManagerConnectionPtr>::Leaky lazy_tls_ptr =
 }  // namespace
 
 // static
-void WindowManagerConnection::Create(mojo::Connector* connector) {
+void WindowManagerConnection::Create(shell::Connector* connector) {
   DCHECK(!lazy_tls_ptr.Pointer()->Get());
   lazy_tls_ptr.Pointer()->Set(new WindowManagerConnection(connector));
 }
@@ -69,7 +69,7 @@ NativeWidget* WindowManagerConnection::CreateNativeWidgetMus(
                              mus::mojom::SurfaceType::DEFAULT);
 }
 
-WindowManagerConnection::WindowManagerConnection(mojo::Connector* connector)
+WindowManagerConnection::WindowManagerConnection(shell::Connector* connector)
     : connector_(connector), window_tree_connection_(nullptr) {
   window_tree_connection_.reset(
       mus::WindowTreeConnection::Create(this, connector_));

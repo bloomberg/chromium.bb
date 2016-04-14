@@ -14,14 +14,15 @@ namespace views {
 class AuraInit;
 }
 
-class WindowTypeLauncher : public mojo::ShellClient {
+class WindowTypeLauncher : public shell::ShellClient {
  public:
   WindowTypeLauncher();
   ~WindowTypeLauncher() override;
 
  private:
-  // mojo::ShellClient:
-  void Initialize(mojo::Connector* connector, const mojo::Identity& identity,
+  // shell::ShellClient:
+  void Initialize(shell::Connector* connector,
+                  const shell::Identity& identity,
                   uint32_t id) override;
   bool ShellConnectionLost() override;
 

@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <utility>
 
 #include "base/at_exit.h"
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -24,7 +26,6 @@
 #include "services/shell/tests/test.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace mojo {
 namespace shell {
 namespace test {
 
@@ -50,7 +51,7 @@ void QuitClosure(const Identity& expected,
 
 class TestServiceImpl : public TestService {
  public:
-  TestServiceImpl(TestContext* context, InterfaceRequest<TestService> request)
+  TestServiceImpl(TestContext* context, TestServiceRequest request)
       : context_(context), binding_(this, std::move(request)) {
     ++context_->num_impls;
   }
@@ -63,15 +64,15 @@ class TestServiceImpl : public TestService {
   }
 
   // TestService implementation:
-  void Test(const String& test_string,
-            const Callback<void()>& callback) override {
+  void Test(const mojo::String& test_string,
+            const mojo::Closure& callback) override {
     context_->last_test_string = test_string;
     callback.Run();
   }
 
  private:
   TestContext* context_;
-  StrongBinding<TestService> binding_;
+  mojo::StrongBinding<TestService> binding_;
 };
 
 class TestClient {
@@ -121,7 +122,7 @@ class TestLoader : public Loader,
     shell_connection_.reset(new ShellConnection(this, std::move(request)));
   }
 
-  // mojo::ShellClient implementation.
+  // ShellClient implementation.
   bool AcceptConnection(Connection* connection) override {
     connection->AddInterface<TestService>(this);
     last_requestor_name_ = connection->GetRemoteIdentity().name();
@@ -129,12 +130,11 @@ class TestLoader : public Loader,
   }
 
   // InterfaceFactory<TestService> implementation.
-  void Create(Connection* connection,
-              InterfaceRequest<TestService> request) override {
+  void Create(Connection* connection, TestServiceRequest request) override {
     new TestServiceImpl(context_, std::move(request));
   }
 
-  scoped_ptr<ShellConnection> shell_connection_;
+  std::unique_ptr<ShellConnection> shell_connection_;
   TestContext* context_;
   int num_loads_;
   std::string last_requestor_name_;
@@ -250,7 +250,7 @@ class TestAImpl : public TestA {
  public:
   TestAImpl(Connector* connector,
             TesterContext* test_context,
-            InterfaceRequest<TestA> request,
+            TestARequest request,
             InterfaceFactory<TestC>* factory)
       : test_context_(test_context), binding_(this, std::move(request)) {
     connection_ = connector->Connect(kTestBURLString);
@@ -279,17 +279,17 @@ class TestAImpl : public TestA {
     test_context_->QuitSoon();
   }
 
-  scoped_ptr<Connection> connection_;
+  std::unique_ptr<Connection> connection_;
   TesterContext* test_context_;
   TestBPtr b_;
-  StrongBinding<TestA> binding_;
+  mojo::StrongBinding<TestA> binding_;
 };
 
 class TestBImpl : public TestB {
  public:
   TestBImpl(Connection* connection,
             TesterContext* test_context,
-            InterfaceRequest<TestB> request)
+            TestBRequest request)
       : test_context_(test_context), binding_(this, std::move(request)) {
     connection->GetInterface(&c_);
   }
@@ -302,38 +302,38 @@ class TestBImpl : public TestB {
   }
 
  private:
-  void B(const Callback<void()>& callback) override {
+  void B(const mojo::Closure& callback) override {
     test_context_->IncrementNumBCalls();
     callback.Run();
   }
 
-  void CallC(const Callback<void()>& callback) override {
+  void CallC(const mojo::Closure& callback) override {
     test_context_->IncrementNumBCalls();
     c_->C(callback);
   }
 
   TesterContext* test_context_;
   TestCPtr c_;
-  StrongBinding<TestB> binding_;
+  mojo::StrongBinding<TestB> binding_;
 };
 
 class TestCImpl : public TestC {
  public:
   TestCImpl(Connection* connection,
             TesterContext* test_context,
-            InterfaceRequest<TestC> request)
+            TestCRequest request)
       : test_context_(test_context), binding_(this, std::move(request)) {}
 
   ~TestCImpl() override { test_context_->IncrementNumCDeletes(); }
 
  private:
-  void C(const Callback<void()>& callback) override {
+  void C(const mojo::Closure& callback) override {
     test_context_->IncrementNumCCalls();
     callback.Run();
   }
 
   TesterContext* test_context_;
-  StrongBinding<TestC> binding_;
+  mojo::StrongBinding<TestC> binding_;
 };
 
 class Tester : public ShellClient,
@@ -348,7 +348,7 @@ class Tester : public ShellClient,
 
  private:
   void Load(const std::string& name,
-            InterfaceRequest<mojom::ShellClient> request) override {
+            mojom::ShellClientRequest request) override {
     app_.reset(new ShellConnection(this, std::move(request)));
   }
 
@@ -368,30 +368,29 @@ class Tester : public ShellClient,
     return true;
   }
 
-  void Create(Connection* connection,
-              InterfaceRequest<TestA> request) override {
+  void Create(Connection* connection, TestARequest request) override {
     a_bindings_.push_back(
         new TestAImpl(app_->connector(), context_, std::move(request), this));
   }
 
-  void Create(Connection* connection,
-              InterfaceRequest<TestB> request) override {
+  void Create(Connection* connection, TestBRequest request) override {
     new TestBImpl(connection, context_, std::move(request));
   }
 
-  void Create(Connection* connection,
-              InterfaceRequest<TestC> request) override {
+  void Create(Connection* connection, TestCRequest request) override {
     new TestCImpl(connection, context_, std::move(request));
   }
 
   TesterContext* context_;
-  scoped_ptr<ShellConnection> app_;
+  std::unique_ptr<ShellConnection> app_;
   std::string requestor_name_;
   ScopedVector<TestAImpl> a_bindings_;
 };
 
-void OnConnect(base::RunLoop* loop, mojom::ConnectResult result,
-               const String& user_id, uint32_t instance_id) {
+void OnConnect(base::RunLoop* loop,
+               mojom::ConnectResult result,
+               const mojo::String& user_id,
+               uint32_t instance_id) {
   loop->Quit();
 }
 
@@ -406,7 +405,7 @@ class LoaderTest : public testing::Test {
         new catalog::Factory(blocking_pool_.get(), nullptr, nullptr));
     shell_.reset(new Shell(nullptr, catalog_->TakeShellClient()));
     test_loader_ = new TestLoader(&context_);
-    shell_->set_default_loader(scoped_ptr<Loader>(test_loader_));
+    shell_->set_default_loader(std::unique_ptr<Loader>(test_loader_));
 
     TestServicePtr service_proxy;
     ConnectToInterface(kTestURLString, &service_proxy);
@@ -422,7 +421,7 @@ class LoaderTest : public testing::Test {
   void AddLoaderForName(const std::string& name,
                         const std::string& requestor_name) {
     shell_->SetLoaderForName(
-        make_scoped_ptr(new Tester(&tester_context_, requestor_name)), name);
+        base::WrapUnique(new Tester(&tester_context_, requestor_name)), name);
   }
 
   bool HasRunningInstanceForName(const std::string& name) {
@@ -433,19 +432,19 @@ class LoaderTest : public testing::Test {
  protected:
   template <typename Interface>
   void ConnectToInterface(const std::string& name,
-                          InterfacePtr<Interface>* ptr) {
+                          mojo::InterfacePtr<Interface>* ptr) {
     base::RunLoop loop;
     mojom::InterfaceProviderPtr remote_interfaces;
-    scoped_ptr<ConnectParams> params(new ConnectParams);
+    std::unique_ptr<ConnectParams> params(new ConnectParams);
     params->set_source(CreateShellIdentity());
     params->set_target(Identity(name, mojom::kRootUserID));
-    params->set_remote_interfaces(GetProxy(&remote_interfaces));
+    params->set_remote_interfaces(mojo::GetProxy(&remote_interfaces));
     params->set_connect_callback(
         base::Bind(&OnConnect, base::Unretained(&loop)));
     shell_->Connect(std::move(params));
     loop.Run();
 
-    mojo::GetInterface(remote_interfaces.get(), ptr);
+    GetInterface(remote_interfaces.get(), ptr);
   }
 
   base::ShadowingAtExitManager at_exit_;
@@ -453,10 +452,11 @@ class LoaderTest : public testing::Test {
   TesterContext tester_context_;
   TestContext context_;
   base::MessageLoop loop_;
-  scoped_ptr<TestClient> test_client_;
-  scoped_ptr<catalog::Factory> catalog_;
+  std::unique_ptr<TestClient> test_client_;
+  std::unique_ptr<catalog::Factory> catalog_;
   scoped_refptr<base::SequencedWorkerPool> blocking_pool_;
-  scoped_ptr<Shell> shell_;
+  std::unique_ptr<Shell> shell_;
+
   DISALLOW_COPY_AND_ASSIGN(LoaderTest);
 };
 
@@ -484,9 +484,9 @@ TEST_F(LoaderTest, Deletes) {
     TestLoader* default_loader = new TestLoader(&context_);
     TestLoader* name_loader1 = new TestLoader(&context_);
     TestLoader* name_loader2 = new TestLoader(&context_);
-    shell.set_default_loader(scoped_ptr<Loader>(default_loader));
-    shell.SetLoaderForName(scoped_ptr<Loader>(name_loader1), "test:test1");
-    shell.SetLoaderForName(scoped_ptr<Loader>(name_loader2), "test:test1");
+    shell.set_default_loader(std::unique_ptr<Loader>(default_loader));
+    shell.SetLoaderForName(std::unique_ptr<Loader>(name_loader1), "test:test1");
+    shell.SetLoaderForName(std::unique_ptr<Loader>(name_loader2), "test:test1");
   }
   EXPECT_EQ(3, context_.num_loader_deletes);
 }
@@ -495,8 +495,8 @@ TEST_F(LoaderTest, Deletes) {
 TEST_F(LoaderTest, SetLoaders) {
   TestLoader* default_loader = new TestLoader(&context_);
   TestLoader* name_loader = new TestLoader(&context_);
-  shell_->set_default_loader(scoped_ptr<Loader>(default_loader));
-  shell_->SetLoaderForName(scoped_ptr<Loader>(name_loader), "test:test1");
+  shell_->set_default_loader(std::unique_ptr<Loader>(default_loader));
+  shell_->SetLoaderForName(std::unique_ptr<Loader>(name_loader), "test:test1");
 
   // test::test1 should go to name_loader.
   TestServicePtr test_service;
@@ -526,10 +526,10 @@ TEST_F(LoaderTest, NoServiceNoLoad) {
 
 TEST_F(LoaderTest, TestEndApplicationClosure) {
   ClosingLoader* loader = new ClosingLoader();
-  shell_->SetLoaderForName(scoped_ptr<Loader>(loader), "test:test");
+  shell_->SetLoaderForName(std::unique_ptr<Loader>(loader), "test:test");
 
   bool called = false;
-  scoped_ptr<ConnectParams> params(new ConnectParams);
+  std::unique_ptr<ConnectParams> params(new ConnectParams);
   params->set_source(CreateShellIdentity());
   params->set_target(Identity("test:test", mojom::kRootUserID));
   shell_->SetInstanceQuitCallback(
@@ -558,4 +558,3 @@ TEST_F(LoaderTest, SameIdentityShouldNotCauseDuplicateLoad) {
 
 }  // namespace test
 }  // namespace shell
-}  // namespace mojo

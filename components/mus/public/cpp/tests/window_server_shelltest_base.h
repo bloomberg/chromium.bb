@@ -12,16 +12,16 @@
 namespace mus {
 
 // Base class for all window manager shelltests to perform some common setup.
-class WindowServerShellTestBase : public mojo::test::ShellTest {
+class WindowServerShellTestBase : public shell::test::ShellTest {
  public:
   WindowServerShellTestBase();
   ~WindowServerShellTestBase() override;
 
-  virtual bool AcceptConnection(mojo::Connection* connection) = 0;
+  virtual bool AcceptConnection(shell::Connection* connection) = 0;
 
  private:
-  // mojo::test::ShellTest:
-  scoped_ptr<mojo::ShellClient> CreateShellClient() override;
+  // shell::test::ShellTest:
+  scoped_ptr<shell::ShellClient> CreateShellClient() override;
 
   DISALLOW_COPY_AND_ASSIGN(WindowServerShellTestBase);
 };

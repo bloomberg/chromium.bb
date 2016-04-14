@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <utility>
 
 #include "base/base_switches.h"
@@ -19,7 +20,6 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
@@ -48,13 +48,12 @@
 #include "services/shell/runner/host/mach_broker.h"
 #endif
 
-namespace mojo {
 namespace shell {
 
 namespace {
 
 #if defined(OS_LINUX) && !defined(OS_ANDROID)
-scoped_ptr<mojo::shell::LinuxSandbox> InitializeSandbox() {
+std::unique_ptr<LinuxSandbox> InitializeSandbox() {
   using sandbox::syscall_broker::BrokerFilePermission;
   // Warm parts of base in the copy of base in the mojo runner.
   base::RandUint64();
@@ -69,8 +68,7 @@ scoped_ptr<mojo::shell::LinuxSandbox> InitializeSandbox() {
   std::vector<BrokerFilePermission> permissions;
   permissions.push_back(
       BrokerFilePermission::ReadWriteCreateUnlinkRecursive("/dev/shm/"));
-  scoped_ptr<mojo::shell::LinuxSandbox> sandbox(
-      new mojo::shell::LinuxSandbox(permissions));
+  std::unique_ptr<LinuxSandbox> sandbox(new LinuxSandbox(permissions));
   sandbox->Warmup();
   sandbox->EngageNamespaceSandbox();
   sandbox->EngageSeccompSandbox();
@@ -79,9 +77,8 @@ scoped_ptr<mojo::shell::LinuxSandbox> InitializeSandbox() {
 }
 #endif
 
-void RunNativeLibrary(
-    base::NativeLibrary app_library,
-    InterfaceRequest<mojom::ShellClient> shell_client_request) {
+void RunNativeLibrary(base::NativeLibrary app_library,
+                      mojom::ShellClientRequest shell_client_request) {
   if (!RunNativeApplication(app_library, std::move(shell_client_request))) {
     LOG(ERROR) << "Failure to RunNativeApplication()";
   }
@@ -95,14 +92,14 @@ int ChildProcessMain() {
       *base::CommandLine::ForCurrentProcess();
 
 #if defined(OS_LINUX) && !defined(OS_ANDROID)
-  scoped_ptr<mojo::shell::LinuxSandbox> sandbox;
+  std::unique_ptr<LinuxSandbox> sandbox;
 #endif
   base::NativeLibrary app_library = 0;
   // Load the application library before we engage the sandbox.
   base::FilePath app_library_path =
       command_line.GetSwitchValuePath(switches::kChildProcess);
   if (!app_library_path.empty())
-    app_library = mojo::shell::LoadNativeApplication(app_library_path);
+    app_library = LoadNativeApplication(app_library_path);
   base::i18n::InitializeICU();
   if (app_library)
     CallLibraryEarlyInitialization(app_library);
@@ -128,4 +125,3 @@ int ChildProcessMain() {
 }
 
 }  // namespace shell
-}  // namespace mojo

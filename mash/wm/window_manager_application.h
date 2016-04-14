@@ -47,15 +47,15 @@ class RootWindowsObserver;
 class UserWindowControllerImpl;
 
 class WindowManagerApplication
-    : public mojo::ShellClient,
+    : public shell::ShellClient,
       public mus::mojom::WindowManagerFactory,
-      public mojo::InterfaceFactory<mash::wm::mojom::UserWindowController>,
-      public mojo::InterfaceFactory<mus::mojom::AcceleratorRegistrar> {
+      public shell::InterfaceFactory<mash::wm::mojom::UserWindowController>,
+      public shell::InterfaceFactory<mus::mojom::AcceleratorRegistrar> {
  public:
   WindowManagerApplication();
   ~WindowManagerApplication() override;
 
-  mojo::Connector* connector() { return connector_; }
+  shell::Connector* connector() { return connector_; }
 
   // Returns the RootWindowControllers that have valid roots.
   //
@@ -86,18 +86,19 @@ class WindowManagerApplication
  private:
   void OnAcceleratorRegistrarDestroyed(AcceleratorRegistrarImpl* registrar);
 
-  // mojo::ShellClient:
-  void Initialize(mojo::Connector* connector, const mojo::Identity& identity,
+  // shell::ShellClient:
+  void Initialize(shell::Connector* connector,
+                  const shell::Identity& identity,
                   uint32_t id) override;
-  bool AcceptConnection(mojo::Connection* connection) override;
+  bool AcceptConnection(shell::Connection* connection) override;
 
   // InterfaceFactory<mash::wm::mojom::UserWindowController>:
-  void Create(mojo::Connection* connection,
+  void Create(shell::Connection* connection,
               mojo::InterfaceRequest<mash::wm::mojom::UserWindowController>
                   request) override;
 
   // InterfaceFactory<mus::mojom::AcceleratorRegistrar>:
-  void Create(mojo::Connection* connection,
+  void Create(shell::Connection* connection,
               mojo::InterfaceRequest<mus::mojom::AcceleratorRegistrar> request)
       override;
 
@@ -106,7 +107,7 @@ class WindowManagerApplication
                            mojo::InterfaceRequest<mus::mojom::WindowTreeClient>
                                client_request) override;
 
-  mojo::Connector* connector_;
+  shell::Connector* connector_;
 
   mojo::TracingImpl tracing_;
 

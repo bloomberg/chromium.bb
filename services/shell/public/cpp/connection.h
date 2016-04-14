@@ -17,7 +17,7 @@
 #include "services/shell/public/interfaces/connector.mojom.h"
 #include "services/shell/public/interfaces/interface_provider.mojom.h"
 
-namespace mojo {
+namespace shell {
 
 class InterfaceBinder;
 
@@ -46,7 +46,7 @@ class Connection {
     PENDING,
 
     // The shell processed the connection and it was established. GetResult()
-    // returns mojom::shell::ConnectionResult::SUCCESS.
+    // returns mojom::ConnectionResult::SUCCESS.
     CONNECTED,
 
     // The shell processed the connection and establishment was prevented by
@@ -78,8 +78,8 @@ class Connection {
   // |ptr| can immediately be used to start sending requests to the remote
   // interface.
   template <typename Interface>
-  void GetInterface(InterfacePtr<Interface>* ptr) {
-    mojo::GetInterface(GetRemoteInterfaces(), ptr);
+  void GetInterface(mojo::InterfacePtr<Interface>* ptr) {
+    shell::GetInterface(GetRemoteInterfaces(), ptr);
   }
 
   // Returns true if the remote application has the specified capability class
@@ -103,20 +103,20 @@ class Connection {
 
   // Register a handler to receive an error notification on the pipe to the
   // remote application's InterfaceProvider.
-  virtual void SetConnectionLostClosure(const Closure& handler) = 0;
+  virtual void SetConnectionLostClosure(const mojo::Closure& handler) = 0;
 
   // Returns the result of the connection. This function should only be called
   // when the connection state is not pending. Call
   // AddConnectionCompletedClosure() to schedule a closure to be run when the
   // connection is processed by the shell.
-  virtual shell::mojom::ConnectResult GetResult() const = 0;
+  virtual mojom::ConnectResult GetResult() const = 0;
 
   // Returns true if the connection has not yet been processed by the shell.
   virtual bool IsPending() const = 0;
 
   // Returns the instance id of the remote application if it is known at the
   // time this function is called. When IsPending() returns true, this function
-  // will return shell::mojom::kInvalidInstanceID. Use
+  // will return mojom::kInvalidInstanceID. Use
   // AddConnectionCompletedClosure() to schedule a closure to be run when the
   // connection is processed by the shell and remote id is available.
   virtual uint32_t GetRemoteInstanceID() const = 0;
@@ -125,7 +125,7 @@ class Connection {
   // shell and remote metadata is available. Useful only for connections created
   // via Connector::Connect(). Once the connection is complete, metadata is
   // available immediately.
-  virtual void AddConnectionCompletedClosure(const Closure& callback) = 0;
+  virtual void AddConnectionCompletedClosure(const mojo::Closure& callback) = 0;
 
   // Returns true if the Shell allows |interface_name| to be exposed to the
   // remote application.
@@ -134,7 +134,7 @@ class Connection {
   // Returns the raw proxy to the remote application's InterfaceProvider
   // interface. Most applications will just use GetInterface() instead.
   // Caller does not take ownership.
-  virtual shell::mojom::InterfaceProvider* GetRemoteInterfaces() = 0;
+  virtual mojom::InterfaceProvider* GetRemoteInterfaces() = 0;
 
  protected:
   virtual InterfaceRegistry* GetLocalRegistry() = 0;
@@ -142,6 +142,6 @@ class Connection {
   virtual base::WeakPtr<Connection> GetWeakPtr() = 0;
 };
 
-}  // namespace mojo
+}  // namespace shell
 
 #endif  // SERVICES_SHELL_PUBLIC_CPP_CONNECTION_H_

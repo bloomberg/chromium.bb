@@ -15,19 +15,18 @@
 #include "mojo/edk/embedder/process_delegate.h"
 #include "services/shell/runner/common/client_util.h"
 
-namespace mojo {
 namespace shell {
 
 namespace {
 
 // Should be created and initialized on the main thread and kept alive as long
 // a Mojo application is running in the current process.
-class ScopedAppContext : public edk::ProcessDelegate {
+class ScopedAppContext : public mojo::edk::ProcessDelegate {
  public:
   ScopedAppContext()
       : io_thread_("io_thread"), wait_for_shutdown_event_(true, false) {
     // Initialize Mojo before starting any threads.
-    edk::Init();
+    mojo::edk::Init();
 
     // Create and start our I/O thread.
     base::Thread::Options io_thread_options(base::MessageLoop::TYPE_IO, 0);
@@ -35,12 +34,12 @@ class ScopedAppContext : public edk::ProcessDelegate {
     io_runner_ = io_thread_.task_runner().get();
     CHECK(io_runner_.get());
 
-    edk::InitIPCSupport(this, io_runner_);
-    edk::SetParentPipeHandleFromCommandLine();
+    mojo::edk::InitIPCSupport(this, io_runner_);
+    mojo::edk::SetParentPipeHandleFromCommandLine();
   }
 
   ~ScopedAppContext() override {
-    edk::ShutdownIPCSupport();
+    mojo::edk::ShutdownIPCSupport();
     wait_for_shutdown_event_.Wait();
   }
 
@@ -69,4 +68,3 @@ void ChildProcessMain(const RunCallback& callback) {
 }
 
 }  // namespace shell
-}  // namespace mojo

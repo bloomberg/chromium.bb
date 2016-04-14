@@ -67,9 +67,9 @@ class TestAcceleratorHandler : public AcceleratorHandler {
   DISALLOW_COPY_AND_ASSIGN(TestAcceleratorHandler);
 };
 
-class AcceleratorRegistrarTest : public mojo::test::ShellTest {
+class AcceleratorRegistrarTest : public shell::test::ShellTest {
  public:
-  AcceleratorRegistrarTest() : mojo::test::ShellTest("exe:mash_unittests") {}
+  AcceleratorRegistrarTest() : shell::test::ShellTest("exe:mash_unittests") {}
   ~AcceleratorRegistrarTest() override {}
 
  protected:

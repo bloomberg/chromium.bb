@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/guid.h"
 #include "base/macros.h"
@@ -16,9 +18,10 @@
 #include "services/shell/public/interfaces/connector.mojom.h"
 #include "services/shell/tests/connect/connect_test.mojom.h"
 
-namespace mojo {
 namespace shell {
+
 namespace {
+
 void QuitLoop(base::RunLoop* loop) {
   loop->Quit();
 }
@@ -28,7 +31,8 @@ void ReceiveString(std::string* string, base::RunLoop* loop,
   *string = response;
   loop->Quit();
 }
-}
+
+}  // namespace
 
 using GetTitleCallback = test::mojom::ConnectTestService::GetTitleCallback;
 
@@ -46,7 +50,7 @@ class ConnectTestApp : public ShellClient,
   ~ConnectTestApp() override {}
 
  private:
-  // mojo::ShellClient:
+  // shell::ShellClient:
   void Initialize(Connector* connector, const Identity& identity,
                   uint32_t id) override {
     connector_ = connector;
@@ -116,7 +120,7 @@ class ConnectTestApp : public ShellClient,
   void ConnectToAllowedAppInBlockedPackage(
       const ConnectToAllowedAppInBlockedPackageCallback& callback) override {
     base::RunLoop run_loop;
-    scoped_ptr<Connection> connection =
+    std::unique_ptr<Connection> connection =
         connector_->Connect("mojo:connect_test_a");
     connection->SetConnectionLostClosure(
         base::Bind(&ConnectTestApp::OnConnectionBlocked,
@@ -136,7 +140,7 @@ class ConnectTestApp : public ShellClient,
   }
   void ConnectToClassInterface(
       const ConnectToClassInterfaceCallback& callback) override {
-    scoped_ptr<Connection> connection =
+    std::unique_ptr<Connection> connection =
         connector_->Connect("mojo:connect_test_class_app");
     test::mojom::ClassInterfacePtr class_interface;
     connection->GetInterface(&class_interface);
@@ -171,7 +175,7 @@ class ConnectTestApp : public ShellClient,
       mojom::IdentityPtr target,
       const ConnectToClassAppAsDifferentUserCallback& callback) override {
     Connector::ConnectParams params(target.To<Identity>());
-    scoped_ptr<Connection> connection = connector_->Connect(&params);
+    std::unique_ptr<Connection> connection = connector_->Connect(&params);
     {
       base::RunLoop loop;
       connection->AddConnectionCompletedClosure(base::Bind(&QuitLoop, &loop));
@@ -205,22 +209,20 @@ class ConnectTestApp : public ShellClient,
 
   Connector* connector_ = nullptr;
   Identity identity_;
-  uint32_t id_ = shell::mojom::kInvalidInstanceID;
-  BindingSet<test::mojom::ConnectTestService> bindings_;
-  BindingSet<test::mojom::StandaloneApp> standalone_bindings_;
-  BindingSet<test::mojom::BlockedInterface> blocked_bindings_;
-  BindingSet<test::mojom::UserIdTest> user_id_test_bindings_;
+  uint32_t id_ = mojom::kInvalidInstanceID;
+  mojo::BindingSet<test::mojom::ConnectTestService> bindings_;
+  mojo::BindingSet<test::mojom::StandaloneApp> standalone_bindings_;
+  mojo::BindingSet<test::mojom::BlockedInterface> blocked_bindings_;
+  mojo::BindingSet<test::mojom::UserIdTest> user_id_test_bindings_;
   test::mojom::ExposedInterfacePtr caller_;
 
   DISALLOW_COPY_AND_ASSIGN(ConnectTestApp);
 };
 
 }  // namespace shell
-}  // namespace mojo
-
 
 MojoResult MojoMain(MojoHandle shell_handle) {
-  MojoResult rv = mojo::ApplicationRunner(
-      new mojo::shell::ConnectTestApp).Run(shell_handle);
+  MojoResult rv =
+      shell::ApplicationRunner(new shell::ConnectTestApp).Run(shell_handle);
   return rv;
 }

@@ -8,7 +8,6 @@
 #include "base/callback.h"
 #include "services/shell/public/interfaces/shell_client.mojom.h"
 
-namespace mojo {
 namespace shell {
 
 // Child processes call this to establish the connection to the shell and obtain
@@ -18,6 +17,5 @@ using RunCallback = base::Callback<void(mojom::ShellClientRequest)>;
 void ChildProcessMain(const RunCallback& callback);
 
 }  // namespace shell
-}  // namespace mojo
 
 #endif  // SERVICES_SHELL_RUNNER_HOST_CHILD_PROCESS_BASE_H_

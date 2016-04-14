@@ -7,6 +7,6 @@
 #include "services/shell/public/cpp/application_runner.h"
 
 MojoResult MojoMain(MojoHandle shell_handle) {
-  mojo::ApplicationRunner runner(new mash::wm::WindowManagerApplication);
+  shell::ApplicationRunner runner(new mash::wm::WindowManagerApplication);
   return runner.Run(shell_handle);
 }

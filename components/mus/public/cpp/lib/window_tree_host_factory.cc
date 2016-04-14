@@ -22,7 +22,7 @@ void CreateWindowTreeHost(mojom::WindowTreeHostFactory* factory,
   factory->CreateWindowTreeHost(GetProxy(host), std::move(tree_client));
 }
 
-void CreateWindowTreeHost(mojo::Connector* connector,
+void CreateWindowTreeHost(shell::Connector* connector,
                           WindowTreeDelegate* delegate,
                           mojom::WindowTreeHostPtr* host,
                           WindowManagerDelegate* window_manager_delegate) {

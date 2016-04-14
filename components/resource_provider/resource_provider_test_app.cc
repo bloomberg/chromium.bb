@@ -46,7 +46,7 @@ std::set<std::string> SetWithStrings(const std::string& contents1,
 
 class Test : public mojom::Test {
  public:
-  explicit Test(mojo::Connector* connector) : connector_(connector) {}
+  explicit Test(shell::Connector* connector) : connector_(connector) {}
   ~Test() override {}
 
   // mojom::Test:
@@ -78,30 +78,30 @@ class Test : public mojom::Test {
     return results;
   }
 
-  mojo::Connector* connector_;
+  shell::Connector* connector_;
 
   DISALLOW_COPY_AND_ASSIGN(Test);
 };
 
-class TestApp : public mojo::ShellClient,
-                public mojo::InterfaceFactory<mojom::Test> {
+class TestApp : public shell::ShellClient,
+                public shell::InterfaceFactory<mojom::Test> {
  public:
   TestApp() {}
   ~TestApp() override {}
 
-  // mojo::ShellClient:
-  void Initialize(mojo::Connector* connector,
-                  const mojo::Identity& identity,
+  // shell::ShellClient:
+  void Initialize(shell::Connector* connector,
+                  const shell::Identity& identity,
                   uint32_t id) override {
     test_.reset(new Test(connector));
   }
-  bool AcceptConnection(mojo::Connection* connection) override {
+  bool AcceptConnection(shell::Connection* connection) override {
     connection->AddInterface<mojom::Test>(this);
     return true;
   }
 
   // InterfaceFactory<mojom::Test>:
-  void Create(mojo::Connection* connection,
+  void Create(shell::Connection* connection,
               mojom::TestRequest request) override {
     printf("test app create\n");
     bindings_.AddBinding(test_.get(), std::move(request));
@@ -118,6 +118,6 @@ class TestApp : public mojo::ShellClient,
 }  // namespace resource_provider
 
 MojoResult MojoMain(MojoHandle shell_handle) {
-  return mojo::ApplicationRunner(new resource_provider::test::TestApp)
+  return shell::ApplicationRunner(new resource_provider::test::TestApp)
       .Run(shell_handle);
 }

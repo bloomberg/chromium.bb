@@ -7,7 +7,6 @@
 
 #include "base/native_library.h"
 
-namespace mojo {
 namespace shell {
 
 // Initialization routines shared by desktop and Android main functions.
@@ -20,6 +19,5 @@ void WaitForDebuggerIfNecessary();
 void CallLibraryEarlyInitialization(base::NativeLibrary app_library);
 
 }  // namespace shell
-}  // namespace mojo
 
 #endif  // SERVICES_SHELL_RUNNER_INIT_H_

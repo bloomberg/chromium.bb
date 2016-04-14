@@ -74,7 +74,7 @@ ScreenMus::ScreenMus(ScreenMusDelegate* delegate)
 
 ScreenMus::~ScreenMus() {}
 
-void ScreenMus::Init(mojo::Connector* connector) {
+void ScreenMus::Init(shell::Connector* connector) {
   gfx::Screen::SetScreenInstance(this);
 
   connector->ConnectToInterface("mojo:mus", &display_manager_);

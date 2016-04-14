@@ -11,7 +11,6 @@ namespace base {
 template <typename T> struct DefaultSingletonTraits;
 }
 
-namespace mojo {
 namespace shell {
 
 // A global singleton |MachBroker| is used by the shell to provide access to
@@ -49,6 +48,5 @@ class MachBroker {
 };
 
 }  // namespace shell
-}  // namespace mojo
 
 #endif  // SERVICES_SHELL_RUNNER_HOST_MACH_BROKER_H_

@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "content/public/common/mojo_shell_connection.h"
 #include "mojo/public/cpp/system/message_pipe.h"
-#include "services/shell/public/cpp/shell.h"
 #include "services/shell/public/cpp/shell_client.h"
 #include "services/shell/public/cpp/shell_connection.h"
 
@@ -21,7 +20,7 @@ namespace content {
 bool IsRunningInMojoShell();
 
 class MojoShellConnectionImpl : public MojoShellConnection,
-                                public mojo::ShellClient {
+                                public shell::ShellClient {
  public:
   // Creates the MojoShellConnection using MojoShellConnection::Factory. Returns
   // true if a factory was set and the connection was created, false otherwise.
@@ -48,21 +47,21 @@ class MojoShellConnectionImpl : public MojoShellConnection,
 
   void WaitForShellIfNecessary();
 
-  // mojo::ShellClient:
-  void Initialize(mojo::Connector* connector,
-                  const mojo::Identity& identity,
+  // shell::ShellClient:
+  void Initialize(shell::Connector* connector,
+                  const shell::Identity& identity,
                   uint32_t id) override;
-  bool AcceptConnection(mojo::Connection* connection) override;
+  bool AcceptConnection(shell::Connection* connection) override;
 
   // MojoShellConnection:
-  mojo::Connector* GetConnector() override;
+  shell::Connector* GetConnector() override;
   bool UsingExternalShell() const override;
   void SetConnectionLostClosure(const base::Closure& closure) override;
   void AddListener(Listener* listener) override;
   void RemoveListener(Listener* listener) override;
 
   const bool external_;
-  std::unique_ptr<mojo::ShellConnection> shell_connection_;
+  std::unique_ptr<shell::ShellConnection> shell_connection_;
   std::vector<Listener*> listeners_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoShellConnectionImpl);

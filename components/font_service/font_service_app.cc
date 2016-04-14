@@ -51,18 +51,18 @@ FontServiceApp::FontServiceApp() {}
 
 FontServiceApp::~FontServiceApp() {}
 
-void FontServiceApp::Initialize(mojo::Connector* connector,
-                                const mojo::Identity& identity,
+void FontServiceApp::Initialize(shell::Connector* connector,
+                                const shell::Identity& identity,
                                 uint32_t id) {
   tracing_.Initialize(connector, identity.name());
 }
 
-bool FontServiceApp::AcceptConnection(mojo::Connection* connection) {
+bool FontServiceApp::AcceptConnection(shell::Connection* connection) {
   connection->AddInterface(this);
   return true;
 }
 
-void FontServiceApp::Create(mojo::Connection* connection,
+void FontServiceApp::Create(shell::Connection* connection,
                             mojo::InterfaceRequest<FontService> request) {
   bindings_.AddBinding(this, std::move(request));
 }

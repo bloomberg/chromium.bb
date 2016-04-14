@@ -7,7 +7,7 @@
 #include "services/shell/public/cpp/application_runner.h"
 
 MojoResult MojoMain(MojoHandle shell_handle) {
-  mojo::ApplicationRunner runner(
+  shell::ApplicationRunner runner(
       new mash::browser_driver::BrowserDriverApplicationDelegate);
   return runner.Run(shell_handle);
 }

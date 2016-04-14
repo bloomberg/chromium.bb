@@ -86,9 +86,8 @@ class ServiceWorkerContextClient
   // Called some time after the worker has started. Attempts to use the
   // ServiceRegistry to connect to services before this method is called are
   // queued up and will resolve after this method is called.
-  void BindServiceRegistry(
-      mojo::shell::mojom::InterfaceProviderRequest services,
-      mojo::shell::mojom::InterfaceProviderPtr exposed_services);
+  void BindServiceRegistry(shell::mojom::InterfaceProviderRequest services,
+                           shell::mojom::InterfaceProviderPtr exposed_services);
 
   // WebServiceWorkerContextClient overrides.
   blink::WebURL scope() const override;

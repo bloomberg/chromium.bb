@@ -165,38 +165,48 @@ class WindowTypeLauncherView : public views::WidgetDelegateView,
                                public views::MenuDelegate,
                                public views::ContextMenuController {
  public:
-  explicit WindowTypeLauncherView(mojo::Connector* connector)
+  explicit WindowTypeLauncherView(shell::Connector* connector)
       : connector_(connector),
-        create_button_(new views::LabelButton(
-            this, base::ASCIIToUTF16("Create Window"))),
-        panel_button_(new views::LabelButton(
-            this, base::ASCIIToUTF16("Create Panel"))),
+        create_button_(
+            new views::LabelButton(this, base::ASCIIToUTF16("Create Window"))),
+        panel_button_(
+            new views::LabelButton(this, base::ASCIIToUTF16("Create Panel"))),
         create_nonresizable_button_(new views::LabelButton(
-            this, base::ASCIIToUTF16("Create Non-Resizable Window"))),
-        bubble_button_(new views::LabelButton(
-            this, base::ASCIIToUTF16("Create Pointy Bubble"))),
-        lock_button_(new views::LabelButton(
-            this, base::ASCIIToUTF16("Lock Screen"))),
-        logout_button_(new views::LabelButton(
-            this, base::ASCIIToUTF16("Log Out"))),
-        switch_user_button_(new views::LabelButton(
-            this, base::ASCIIToUTF16("Switch User"))),
-        widgets_button_(new views::LabelButton(
-            this, base::ASCIIToUTF16("Show Example Widgets"))),
+            this,
+            base::ASCIIToUTF16("Create Non-Resizable Window"))),
+        bubble_button_(
+            new views::LabelButton(this,
+                                   base::ASCIIToUTF16("Create Pointy Bubble"))),
+        lock_button_(
+            new views::LabelButton(this, base::ASCIIToUTF16("Lock Screen"))),
+        logout_button_(
+            new views::LabelButton(this, base::ASCIIToUTF16("Log Out"))),
+        switch_user_button_(
+            new views::LabelButton(this, base::ASCIIToUTF16("Switch User"))),
+        widgets_button_(
+            new views::LabelButton(this,
+                                   base::ASCIIToUTF16("Show Example Widgets"))),
         system_modal_button_(new views::LabelButton(
-            this, base::ASCIIToUTF16("Open System Modal Window"))),
+            this,
+            base::ASCIIToUTF16("Open System Modal Window"))),
         window_modal_button_(new views::LabelButton(
-            this, base::ASCIIToUTF16("Open Window Modal Window"))),
+            this,
+            base::ASCIIToUTF16("Open Window Modal Window"))),
         child_modal_button_(new views::LabelButton(
-            this, base::ASCIIToUTF16("Open Child Modal Window"))),
+            this,
+            base::ASCIIToUTF16("Open Child Modal Window"))),
         transient_button_(new views::LabelButton(
-            this, base::ASCIIToUTF16("Open Non-Modal Transient Window"))),
+            this,
+            base::ASCIIToUTF16("Open Non-Modal Transient Window"))),
         examples_button_(new views::LabelButton(
-            this, base::ASCIIToUTF16("Open Views Examples Window"))),
-        show_hide_window_button_(new views::LabelButton(
-            this, base::ASCIIToUTF16("Show/Hide a Window"))),
+            this,
+            base::ASCIIToUTF16("Open Views Examples Window"))),
+        show_hide_window_button_(
+            new views::LabelButton(this,
+                                   base::ASCIIToUTF16("Show/Hide a Window"))),
         show_web_notification_(new views::LabelButton(
-            this, base::ASCIIToUTF16("Show a web/app notification"))) {
+            this,
+            base::ASCIIToUTF16("Show a web/app notification"))) {
     create_button_->SetStyle(views::Button::STYLE_BUTTON);
     panel_button_->SetStyle(views::Button::STYLE_BUTTON);
     create_nonresizable_button_->SetStyle(views::Button::STYLE_BUTTON);
@@ -344,7 +354,7 @@ class WindowTypeLauncherView : public views::WidgetDelegateView,
     }
   }
 
-  mojo::Connector* connector_;
+  shell::Connector* connector_;
   views::LabelButton* create_button_;
   views::LabelButton* panel_button_;
   views::LabelButton* create_nonresizable_button_;
@@ -370,8 +380,8 @@ class WindowTypeLauncherView : public views::WidgetDelegateView,
 WindowTypeLauncher::WindowTypeLauncher() {}
 WindowTypeLauncher::~WindowTypeLauncher() {}
 
-void WindowTypeLauncher::Initialize(mojo::Connector* connector,
-                                    const mojo::Identity& identity,
+void WindowTypeLauncher::Initialize(shell::Connector* connector,
+                                    const shell::Identity& identity,
                                     uint32_t id) {
   aura_init_.reset(new views::AuraInit(connector, "views_mus_resources.pak"));
 

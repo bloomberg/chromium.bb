@@ -16,12 +16,12 @@ namespace cc {
 class OutputSurface;
 }
 
-namespace mojo {
-class Connector;
-}
-
 namespace mus {
 class Window;
+}
+
+namespace shell {
+class Connector;
 }
 
 namespace views {
@@ -33,7 +33,7 @@ namespace views {
 // connection.
 class VIEWS_MUS_EXPORT SurfaceBinding {
  public:
-  SurfaceBinding(mojo::Connector* connector,
+  SurfaceBinding(shell::Connector* connector,
                  mus::Window* window,
                  mus::mojom::SurfaceType surface_type);
   ~SurfaceBinding();

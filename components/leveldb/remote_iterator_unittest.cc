@@ -17,7 +17,7 @@ using mojo::Capture;
 namespace leveldb {
 namespace {
 
-class RemoteIteratorTest : public mojo::test::ShellTest {
+class RemoteIteratorTest : public shell::test::ShellTest {
  public:
   RemoteIteratorTest() : ShellTest("exe:leveldb_service_unittests") {}
   ~RemoteIteratorTest() override {}

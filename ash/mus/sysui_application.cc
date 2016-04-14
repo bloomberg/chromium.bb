@@ -193,7 +193,7 @@ class AshInit {
 
   aura::Window* root() { return ash::Shell::GetPrimaryRootWindow(); }
 
-  void Initialize(mojo::Connector* connector) {
+  void Initialize(::shell::Connector* connector) {
     InitializeResourceBundle(connector);
     aura_init_.reset(new views::AuraInit(connector, "views_mus_resources.pak"));
     views::WindowManagerConnection::Create(connector);
@@ -232,7 +232,7 @@ class AshInit {
     SetupWallpaper(SkColorSetARGB(255, 0, 255, 0));
   }
 
-  void InitializeResourceBundle(mojo::Connector* connector) {
+  void InitializeResourceBundle(::shell::Connector* connector) {
     if (ui::ResourceBundle::HasSharedInstance())
       return;
 
@@ -302,20 +302,20 @@ SysUIApplication::SysUIApplication() {}
 
 SysUIApplication::~SysUIApplication() {}
 
-void SysUIApplication::Initialize(mojo::Connector* connector,
-                                  const mojo::Identity& identity,
+void SysUIApplication::Initialize(::shell::Connector* connector,
+                                  const ::shell::Identity& identity,
                                   uint32_t id) {
   ash_init_.reset(new AshInit());
   ash_init_->Initialize(connector);
 }
 
-bool SysUIApplication::AcceptConnection(mojo::Connection* connection) {
+bool SysUIApplication::AcceptConnection(::shell::Connection* connection) {
   connection->AddInterface<mash::shelf::mojom::ShelfController>(this);
   return true;
 }
 
 void SysUIApplication::Create(
-    mojo::Connection* connection,
+    ::shell::Connection* connection,
     mojo::InterfaceRequest<mash::shelf::mojom::ShelfController> request) {
   mash::shelf::mojom::ShelfController* shelf_controller =
       static_cast<ShelfDelegateMus*>(Shell::GetInstance()->GetShelfDelegate());

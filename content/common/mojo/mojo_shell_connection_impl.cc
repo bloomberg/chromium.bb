@@ -65,14 +65,14 @@ void MojoShellConnectionImpl::Create() {
 }
 
 // static
-void MojoShellConnection::Create(mojo::shell::mojom::ShellClientRequest request,
+void MojoShellConnection::Create(shell::mojom::ShellClientRequest request,
                                  bool is_external) {
   DCHECK(!lazy_tls_ptr.Pointer()->Get());
   MojoShellConnectionImpl* connection =
       new MojoShellConnectionImpl(is_external);
   lazy_tls_ptr.Pointer()->Set(connection);
   connection->shell_connection_.reset(
-      new mojo::ShellConnection(connection, std::move(request)));
+      new shell::ShellConnection(connection, std::move(request)));
   if (is_external)
     connection->WaitForShellIfNecessary();
 }
@@ -92,8 +92,8 @@ MojoShellConnectionImpl* MojoShellConnectionImpl::Get() {
 
 void MojoShellConnectionImpl::BindToRequestFromCommandLine() {
   DCHECK(!shell_connection_);
-  shell_connection_.reset(new mojo::ShellConnection(
-      this, mojo::shell::GetShellClientRequestFromCommandLine()));
+  shell_connection_.reset(new shell::ShellConnection(
+      this, shell::GetShellClientRequestFromCommandLine()));
   WaitForShellIfNecessary();
 }
 
@@ -113,19 +113,18 @@ void MojoShellConnectionImpl::WaitForShellIfNecessary() {
   }
 }
 
-void MojoShellConnectionImpl::Initialize(mojo::Connector* connector,
-                                         const mojo::Identity& identity,
-                                         uint32_t id) {
-}
+void MojoShellConnectionImpl::Initialize(shell::Connector* connector,
+                                         const shell::Identity& identity,
+                                         uint32_t id) {}
 
-bool MojoShellConnectionImpl::AcceptConnection(mojo::Connection* connection) {
+bool MojoShellConnectionImpl::AcceptConnection(shell::Connection* connection) {
   bool found = false;
   for (auto listener : listeners_)
     found |= listener->AcceptConnection(connection);
   return found;
 }
 
-mojo::Connector* MojoShellConnectionImpl::GetConnector() {
+shell::Connector* MojoShellConnectionImpl::GetConnector() {
   DCHECK(shell_connection_);
   return shell_connection_->connector();
 }

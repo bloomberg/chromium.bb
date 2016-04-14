@@ -13,7 +13,7 @@
 
 class GURL;
 
-namespace mojo {
+namespace shell {
 class ShellClient;
 }
 
@@ -26,7 +26,7 @@ class CONTENT_EXPORT ContentUtilityClient {
  public:
   using StaticMojoApplicationMap =
       std::map<std::string,
-               base::Callback<std::unique_ptr<mojo::ShellClient>()>>;
+               base::Callback<std::unique_ptr<shell::ShellClient>()>>;
 
   virtual ~ContentUtilityClient() {}
 

@@ -5,13 +5,12 @@
 #ifndef SERVICES_SHELL_RUNNER_CHILD_TEST_NATIVE_MAIN_H_
 #define SERVICES_SHELL_RUNNER_CHILD_TEST_NATIVE_MAIN_H_
 
-namespace mojo {
-class ShellClient;
 namespace shell {
 
-int TestNativeMain(mojo::ShellClient* shell_client);
+class ShellClient;
+
+int TestNativeMain(ShellClient* shell_client);
 
 }  // namespace shell
-}  // namespace mojo
 
 #endif  // SERVICES_SHELL_RUNNER_CHILD_TEST_NATIVE_MAIN_H_

@@ -9,7 +9,7 @@
 #include "content/common/content_export.h"
 #include "services/shell/public/interfaces/shell_client.mojom.h"
 
-namespace mojo {
+namespace shell {
 class Connection;
 class Connector;
 }
@@ -29,7 +29,7 @@ class CONTENT_EXPORT MojoShellConnection {
   // TODO(beng): This should just be ShellClient.
   class Listener {
    public:
-    virtual bool AcceptConnection(mojo::Connection* connection) = 0;
+    virtual bool AcceptConnection(shell::Connection* connection) = 0;
 
     virtual ~Listener() {}
   };
@@ -50,10 +50,10 @@ class CONTENT_EXPORT MojoShellConnection {
 
   // Creates the appropriate MojoShellConnection from |request|. See
   // UsingExternalShell() for details of |is_external|.
-  static void Create(mojo::shell::mojom::ShellClientRequest request,
+  static void Create(shell::mojom::ShellClientRequest request,
                      bool is_external);
 
-  virtual mojo::Connector* GetConnector() = 0;
+  virtual shell::Connector* GetConnector() = 0;
 
   // Indicates whether the shell connection is to an external shell (true) or
   // a shell embedded in the browser process (false).

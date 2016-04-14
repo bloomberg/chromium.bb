@@ -15,7 +15,6 @@
 #include "services/shell/public/interfaces/connector.mojom.h"
 #include "services/shell/tests/connect/connect_test.mojom.h"
 
-namespace mojo {
 namespace shell {
 
 using GetTitleCallback = test::mojom::ConnectTestService::GetTitleCallback;
@@ -31,7 +30,7 @@ class ConnectTestClassApp
   ~ConnectTestClassApp() override {}
 
  private:
-  // mojo::ShellClient:
+  // shell::ShellClient:
   void Initialize(Connector* connector, const Identity& identity,
                   uint32_t id) override {
     connector_ = connector;
@@ -84,18 +83,17 @@ class ConnectTestClassApp
   Connector* connector_ = nullptr;
   Identity identity_;
   std::set<Connection*> inbound_connections_;
-  BindingSet<test::mojom::ConnectTestService> bindings_;
-  BindingSet<test::mojom::ClassInterface> class_interface_bindings_;
+  mojo::BindingSet<test::mojom::ConnectTestService> bindings_;
+  mojo::BindingSet<test::mojom::ClassInterface> class_interface_bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(ConnectTestClassApp);
 };
 
 }  // namespace shell
-}  // namespace mojo
 
 
 MojoResult MojoMain(MojoHandle shell_handle) {
-  MojoResult rv = mojo::ApplicationRunner(
-      new mojo::shell::ConnectTestClassApp).Run(shell_handle);
+  MojoResult rv = shell::ApplicationRunner(new shell::ConnectTestClassApp)
+                      .Run(shell_handle);
   return rv;
 }

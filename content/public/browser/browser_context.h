@@ -30,7 +30,7 @@ class FilePath;
 class Time;
 }
 
-namespace mojo {
+namespace shell {
 class Connector;
 }
 
@@ -158,7 +158,7 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
 
   // Returns a Connector associated with this BrowserContext, which can be used
   // to connect to Mojo application instances bound to a specific user.
-  static mojo::Connector* GetMojoConnectorFor(BrowserContext* browser_context);
+  static shell::Connector* GetMojoConnectorFor(BrowserContext* browser_context);
 
   ~BrowserContext() override;
 

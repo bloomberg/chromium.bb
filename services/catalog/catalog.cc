@@ -24,33 +24,33 @@ namespace {
 base::FilePath GetManifestPath(const base::FilePath& package_dir,
                                const std::string& name) {
   // TODO(beng): think more about how this should be done for exe targets.
-  std::string type = mojo::GetNameType(name);
-  std::string path = mojo::GetNamePath(name);
-  if (type == mojo::kNameType_Mojo) {
+  std::string type = shell::GetNameType(name);
+  std::string path = shell::GetNamePath(name);
+  if (type == shell::kNameType_Mojo) {
     return package_dir.AppendASCII("Mojo Applications").AppendASCII(
         path + "/manifest.json");
   }
-  if (type == mojo::kNameType_Exe)
+  if (type == shell::kNameType_Exe)
     return package_dir.AppendASCII(path + "_manifest.json");
   return base::FilePath();
 }
 
 base::FilePath GetPackagePath(const base::FilePath& package_dir,
                               const std::string& name) {
-  std::string type = mojo::GetNameType(name);
-  if (type == mojo::kNameType_Mojo) {
+  std::string type = shell::GetNameType(name);
+  if (type == shell::kNameType_Mojo) {
     // It's still a mojo: URL, use the default mapping scheme.
-    const std::string host = mojo::GetNamePath(name);
+    const std::string host = shell::GetNamePath(name);
     return package_dir.AppendASCII("Mojo Applications").AppendASCII(
         host + "/" + host + ".mojo");
   }
-  if (type == mojo::kNameType_Exe) {
+  if (type == shell::kNameType_Exe) {
 #if defined OS_WIN
     std::string extension = ".exe";
 #else
     std::string extension;
 #endif
-    return package_dir.AppendASCII(mojo::GetNamePath(name) + extension);
+    return package_dir.AppendASCII(shell::GetNamePath(name) + extension);
   }
   return base::FilePath();
 }
@@ -70,7 +70,7 @@ scoped_ptr<ReadManifestResult> ProcessManifest(
 
   scoped_ptr<ReadManifestResult> result(new ReadManifestResult);
   // NOTE: This TypeConverter must run on a thread which allows IO.
-  result->resolve_result = mojo::shell::mojom::ResolveResult::From(*entry);
+  result->resolve_result = shell::mojom::ResolveResult::From(*entry);
   result->catalog_entry = std::move(entry);
   result->package_dir = system_package_dir;
   return result;
@@ -125,8 +125,7 @@ void Catalog::BindResolver(mojom::ResolverRequest request) {
   resolver_bindings_.AddBinding(this, std::move(request));
 }
 
-void Catalog::BindShellResolver(
-    mojo::shell::mojom::ShellResolverRequest request) {
+void Catalog::BindShellResolver(shell::mojom::ShellResolverRequest request) {
   shell_resolver_bindings_.AddBinding(this, std::move(request));
 }
 
@@ -154,25 +153,25 @@ void Catalog::ResolveProtocolScheme(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// Catalog, mojo::shell::mojom::ShellResolver:
+// Catalog, shell::mojom::ShellResolver:
 
 void Catalog::ResolveMojoName(const mojo::String& mojo_name,
                               const ResolveMojoNameCallback& callback) {
-  std::string type = mojo::GetNameType(mojo_name);
+  std::string type = shell::GetNameType(mojo_name);
   if (type != "mojo" && type != "exe") {
     scoped_ptr<Entry> entry(new Entry(mojo_name));
-    callback.Run(mojo::shell::mojom::ResolveResult::From(*entry));
+    callback.Run(shell::mojom::ResolveResult::From(*entry));
     return;
   }
 
   auto entry = user_catalog_.find(mojo_name);
   if (entry != user_catalog_.end()) {
-    callback.Run(mojo::shell::mojom::ResolveResult::From(*entry->second));
+    callback.Run(shell::mojom::ResolveResult::From(*entry->second));
     return;
   }
   entry = system_catalog_->find(mojo_name);
   if (entry != system_catalog_->end()) {
-    callback.Run(mojo::shell::mojom::ResolveResult::From(*entry->second));
+    callback.Run(shell::mojom::ResolveResult::From(*entry->second));
     return;
   }
 

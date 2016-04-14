@@ -42,7 +42,7 @@
 #include "ui/ozone/public/ozone_platform.h"
 #endif
 
-using mojo::Connection;
+using shell::Connection;
 using mojo::InterfaceRequest;
 using mus::mojom::WindowTreeHostFactory;
 using mus::mojom::Gpu;
@@ -59,7 +59,7 @@ const char kResourceFile200[] = "mus_app_resources_200.pak";
 
 // TODO(sky): this is a pretty typical pattern, make it easier to do.
 struct MandolineUIServicesApp::PendingRequest {
-  mojo::Connection* connection;
+  shell::Connection* connection;
   scoped_ptr<mojo::InterfaceRequest<mojom::WindowTreeFactory>> wtf_request;
 };
 
@@ -80,7 +80,7 @@ MandolineUIServicesApp::~MandolineUIServicesApp() {
     platform_display_init_params_.gpu_state->StopThreads();
 }
 
-void MandolineUIServicesApp::InitializeResources(mojo::Connector* connector) {
+void MandolineUIServicesApp::InitializeResources(shell::Connector* connector) {
   if (ui::ResourceBundle::HasSharedInstance())
     return;
 
@@ -106,7 +106,7 @@ void MandolineUIServicesApp::InitializeResources(mojo::Connector* connector) {
 }
 
 MandolineUIServicesApp::UserState* MandolineUIServicesApp::GetUserState(
-    mojo::Connection* connection) {
+    shell::Connection* connection) {
   const ws::UserId& user_id = connection->GetRemoteIdentity().user_id();
   auto it = user_id_to_user_state_.find(user_id);
   if (it != user_id_to_user_state_.end())
@@ -115,13 +115,13 @@ MandolineUIServicesApp::UserState* MandolineUIServicesApp::GetUserState(
   return user_id_to_user_state_[user_id].get();
 }
 
-void MandolineUIServicesApp::AddUserIfNecessary(mojo::Connection* connection) {
+void MandolineUIServicesApp::AddUserIfNecessary(shell::Connection* connection) {
   window_server_->user_id_tracker()->AddUserId(
       connection->GetRemoteIdentity().user_id());
 }
 
-void MandolineUIServicesApp::Initialize(mojo::Connector* connector,
-                                        const mojo::Identity& identity,
+void MandolineUIServicesApp::Initialize(shell::Connector* connector,
+                                        const shell::Identity& identity,
                                         uint32_t id) {
   platform_display_init_params_.connector = connector;
   platform_display_init_params_.surfaces_state = new SurfacesState;
@@ -197,20 +197,20 @@ void MandolineUIServicesApp::CreateDefaultDisplays() {
   host_impl->Init(nullptr);
 }
 
-void MandolineUIServicesApp::Create(mojo::Connection* connection,
+void MandolineUIServicesApp::Create(shell::Connection* connection,
                                     mojom::DisplayManagerRequest request) {
   window_server_->display_manager()
       ->GetUserDisplayManager(connection->GetRemoteIdentity().user_id())
       ->AddDisplayManagerBinding(std::move(request));
 }
 
-void MandolineUIServicesApp::Create(mojo::Connection* connection,
+void MandolineUIServicesApp::Create(shell::Connection* connection,
                                     mojom::UserAccessManagerRequest request) {
   window_server_->user_id_tracker()->Bind(std::move(request));
 }
 
 void MandolineUIServicesApp::Create(
-    mojo::Connection* connection,
+    shell::Connection* connection,
     mojom::WindowManagerFactoryServiceRequest request) {
   AddUserIfNecessary(connection);
   window_server_->window_manager_factory_registry()->Register(
@@ -250,7 +250,7 @@ void MandolineUIServicesApp::Create(
   user_state->window_tree_host_factory->AddBinding(std::move(request));
 }
 
-void MandolineUIServicesApp::Create(mojo::Connection* connection,
+void MandolineUIServicesApp::Create(shell::Connection* connection,
                                     mojom::GpuRequest request) {
   DCHECK(platform_display_init_params_.gpu_state);
   new GpuImpl(std::move(request), platform_display_init_params_.gpu_state);

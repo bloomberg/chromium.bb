@@ -15,16 +15,17 @@ namespace views {
 class AuraInit;
 }
 
-class ViewsExamplesApplicationDelegate : public mojo::ShellClient {
+class ViewsExamplesApplicationDelegate : public shell::ShellClient {
  public:
   ViewsExamplesApplicationDelegate();
   ~ViewsExamplesApplicationDelegate() override;
 
  private:
-  // mojo::ShellClient:
-  void Initialize(mojo::Connector* connector, const mojo::Identity& identity,
+  // shell::ShellClient:
+  void Initialize(shell::Connector* connector,
+                  const shell::Identity& identity,
                   uint32_t id) override;
-  bool AcceptConnection(mojo::Connection* connection) override;
+  bool AcceptConnection(shell::Connection* connection) override;
 
   mojo::TracingImpl tracing_;
 

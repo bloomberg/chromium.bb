@@ -23,7 +23,7 @@ namespace base {
 class TaskRunner;
 }
 
-namespace mojo{
+namespace shell {
 class ShellConnection;
 }
 
@@ -35,11 +35,10 @@ class Store;
 
 // Creates and owns an instance of the catalog. Exposes a ShellClientPtr that
 // can be passed to the Shell, potentially in a different process.
-class Factory
-    : public mojo::ShellClient,
-      public mojo::InterfaceFactory<mojom::Catalog>,
-      public mojo::InterfaceFactory<mojom::Resolver>,
-      public mojo::InterfaceFactory<mojo::shell::mojom::ShellResolver> {
+class Factory : public shell::ShellClient,
+                public shell::InterfaceFactory<mojom::Catalog>,
+                public shell::InterfaceFactory<mojom::Resolver>,
+                public shell::InterfaceFactory<shell::mojom::ShellResolver> {
  public:
   // |manifest_provider| may be null.
   Factory(base::TaskRunner* file_task_runner,
@@ -47,22 +46,22 @@ class Factory
           ManifestProvider* manifest_provider);
   ~Factory() override;
 
-  mojo::shell::mojom::ShellClientPtr TakeShellClient();
+  shell::mojom::ShellClientPtr TakeShellClient();
 
  private:
-  // mojo::ShellClient:
-  bool AcceptConnection(mojo::Connection* connection) override;
+  // shell::ShellClient:
+  bool AcceptConnection(shell::Connection* connection) override;
 
-  // mojo::InterfaceFactory<mojom::Resolver>:
-  void Create(mojo::Connection* connection,
+  // shell::InterfaceFactory<mojom::Resolver>:
+  void Create(shell::Connection* connection,
               mojom::ResolverRequest request) override;
 
-  // mojo::InterfaceFactory<mojo::shell::mojom::ShellResolver>:
-  void Create(mojo::Connection* connection,
-              mojo::shell::mojom::ShellResolverRequest request) override;
+  // shell::InterfaceFactory<shell::mojom::ShellResolver>:
+  void Create(shell::Connection* connection,
+              shell::mojom::ShellResolverRequest request) override;
 
-  // mojo::InterfaceFactory<mojom::Catalog>:
-  void Create(mojo::Connection* connection,
+  // shell::InterfaceFactory<mojom::Catalog>:
+  void Create(shell::Connection* connection,
               mojom::CatalogRequest request) override;
 
   Catalog* GetCatalogForUserId(const std::string& user_id);
@@ -71,8 +70,8 @@ class Factory
   scoped_ptr<Store> store_;
   ManifestProvider* const manifest_provider_;
 
-  mojo::shell::mojom::ShellClientPtr shell_client_;
-  scoped_ptr<mojo::ShellConnection> shell_connection_;
+  shell::mojom::ShellClientPtr shell_client_;
+  scoped_ptr<shell::ShellConnection> shell_connection_;
 
   std::map<std::string, scoped_ptr<Catalog>> catalogs_;
 

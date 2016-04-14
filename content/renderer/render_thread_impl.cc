@@ -363,9 +363,8 @@ class RenderFrameSetupImpl : public mojom::RenderFrameSetup {
 
   void ExchangeInterfaceProviders(
       int32_t frame_routing_id,
-      mojo::shell::mojom::InterfaceProviderRequest services,
-      mojo::shell::mojom::InterfaceProviderPtr exposed_services)
-      override {
+      shell::mojom::InterfaceProviderRequest services,
+      shell::mojom::InterfaceProviderPtr exposed_services) override {
     // TODO(morrita): This is for investigating http://crbug.com/415059 and
     // should be removed once it is fixed.
     CHECK_LT(routing_id_highmark_, frame_routing_id);
@@ -396,8 +395,8 @@ void CreateRenderFrameSetup(
 }
 
 void SetupEmbeddedWorkerOnWorkerThread(
-    mojo::shell::mojom::InterfaceProviderRequest services,
-    mojo::shell::mojom::InterfaceProviderPtrInfo exposed_services) {
+    shell::mojom::InterfaceProviderRequest services,
+    shell::mojom::InterfaceProviderPtrInfo exposed_services) {
   ServiceWorkerContextClient* client =
       ServiceWorkerContextClient::ThreadSpecificInstance();
   // It is possible for client to be null if for some reason the worker died
@@ -417,8 +416,8 @@ class EmbeddedWorkerSetupImpl : public mojom::EmbeddedWorkerSetup {
 
   void ExchangeInterfaceProviders(
       int32_t thread_id,
-      mojo::shell::mojom::InterfaceProviderRequest services,
-      mojo::shell::mojom::InterfaceProviderPtr exposed_services) override {
+      shell::mojom::InterfaceProviderRequest services,
+      shell::mojom::InterfaceProviderPtr exposed_services) override {
     WorkerThreadRegistry::Instance()->GetTaskRunnerFor(thread_id)->PostTask(
         FROM_HERE,
         base::Bind(&SetupEmbeddedWorkerOnWorkerThread, base::Passed(&services),
@@ -1049,9 +1048,9 @@ void RenderThreadImpl::AddRoute(int32_t routing_id, IPC::Listener* listener) {
     return;
 
   scoped_refptr<PendingRenderFrameConnect> connection(it->second);
-  mojo::shell::mojom::InterfaceProviderRequest services(
+  shell::mojom::InterfaceProviderRequest services(
       std::move(connection->services()));
-  mojo::shell::mojom::InterfaceProviderPtr exposed_services(
+  shell::mojom::InterfaceProviderPtr exposed_services(
       std::move(connection->exposed_services()));
   exposed_services.set_connection_error_handler(mojo::Closure());
   pending_render_frame_connects_.erase(it);
@@ -1082,8 +1081,8 @@ void RenderThreadImpl::RemoveEmbeddedWorkerRoute(int32_t routing_id) {
 
 void RenderThreadImpl::RegisterPendingRenderFrameConnect(
     int routing_id,
-    mojo::shell::mojom::InterfaceProviderRequest services,
-    mojo::shell::mojom::InterfaceProviderPtr exposed_services) {
+    shell::mojom::InterfaceProviderRequest services,
+    shell::mojom::InterfaceProviderPtr exposed_services) {
   std::pair<PendingRenderFrameConnectMap::iterator, bool> result =
       pending_render_frame_connects_.insert(std::make_pair(
           routing_id,
@@ -2127,8 +2126,8 @@ void RenderThreadImpl::ReleaseFreeMemory() {
 
 RenderThreadImpl::PendingRenderFrameConnect::PendingRenderFrameConnect(
     int routing_id,
-    mojo::shell::mojom::InterfaceProviderRequest services,
-    mojo::shell::mojom::InterfaceProviderPtr exposed_services)
+    shell::mojom::InterfaceProviderRequest services,
+    shell::mojom::InterfaceProviderPtr exposed_services)
     : routing_id_(routing_id),
       services_(std::move(services)),
       exposed_services_(std::move(exposed_services)) {

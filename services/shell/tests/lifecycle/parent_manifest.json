@@ -5,7 +5,7 @@
   "capabilities": {
     "required": {
       "mojo:lifecycle_unittest_app": {
-        "interfaces": [ "mojo::shell::test::mojom::LifecycleControl" ]
+        "interfaces": [ "shell::test::mojom::LifecycleControl" ]
       }
     }
   }

@@ -18,8 +18,8 @@ Init::Init()
     : connector_(nullptr) {}
 Init::~Init() {}
 
-void Init::Initialize(mojo::Connector* connector,
-                      const mojo::Identity& identity,
+void Init::Initialize(shell::Connector* connector,
+                      const shell::Identity& identity,
                       uint32_t id) {
   connector_ = connector;
   connector_->Connect("mojo:mus");
@@ -28,7 +28,7 @@ void Init::Initialize(mojo::Connector* connector,
   StartLogin();
 }
 
-bool Init::AcceptConnection(mojo::Connection* connection) {
+bool Init::AcceptConnection(shell::Connection* connection) {
   connection->AddInterface<mojom::Init>(this);
   return true;
 }
@@ -36,8 +36,9 @@ bool Init::AcceptConnection(mojo::Connection* connection) {
 void Init::StartService(const mojo::String& name,
                         const mojo::String& user_id) {
   if (user_services_.find(user_id) == user_services_.end()) {
-    mojo::Connector::ConnectParams params(mojo::Identity(name, user_id));
-    std::unique_ptr<mojo::Connection> connection = connector_->Connect(&params);
+    shell::Connector::ConnectParams params(shell::Identity(name, user_id));
+    std::unique_ptr<shell::Connection> connection =
+        connector_->Connect(&params);
     connection->SetConnectionLostClosure(
         base::Bind(&Init::UserServiceQuit, base::Unretained(this), user_id));
     user_services_[user_id] = std::move(connection);
@@ -50,7 +51,7 @@ void Init::StopServicesForUser(const mojo::String& user_id) {
     user_services_.erase(it);
 }
 
-void Init::Create(mojo::Connection* connection, mojom::InitRequest request) {
+void Init::Create(shell::Connection* connection, mojom::InitRequest request) {
   init_bindings_.AddBinding(this, std::move(request));
 }
 

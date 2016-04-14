@@ -20,7 +20,6 @@
 #include "services/shell/standalone/context.h"
 #include "services/shell/switches.h"
 
-namespace mojo {
 namespace shell {
 
 int LauncherProcessMain() {
@@ -56,4 +55,3 @@ int LauncherProcessMain() {
 }
 
 }  // namespace shell
-}  // namespace mojo

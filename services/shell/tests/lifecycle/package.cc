@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <algorithm>
+#include <memory>
 
 #include "base/bind.h"
 #include "base/macros.h"
@@ -16,16 +17,16 @@
 
 namespace {
 
-class PackagedApp : public mojo::ShellClient,
-                    public mojo::InterfaceFactory<LifecycleControl>,
+class PackagedApp : public shell::ShellClient,
+                    public shell::InterfaceFactory<LifecycleControl>,
                     public LifecycleControl {
  public:
   using DestructCallback = base::Callback<void(PackagedApp*)>;
 
-  PackagedApp(mojo::shell::mojom::ShellClientRequest request,
+  PackagedApp(shell::mojom::ShellClientRequest request,
               const DestructCallback& shell_connection_closed_callback,
               const DestructCallback& destruct_callback)
-      : connection_(new mojo::ShellConnection(this, std::move(request))),
+      : connection_(new shell::ShellConnection(this, std::move(request))),
         shell_connection_closed_callback_(shell_connection_closed_callback),
         destruct_callback_(destruct_callback) {
     bindings_.set_connection_error_handler(base::Bind(&PackagedApp::BindingLost,
@@ -36,14 +37,14 @@ class PackagedApp : public mojo::ShellClient,
   }
 
  private:
-  // mojo::ShellClient:
-  bool AcceptConnection(mojo::Connection* connection) override {
+  // shell::ShellClient:
+  bool AcceptConnection(shell::Connection* connection) override {
     connection->AddInterface<LifecycleControl>(this);
     return true;
   }
 
-  // mojo::InterfaceFactory<LifecycleControl>
-  void Create(mojo::Connection* connection,
+  // shell::InterfaceFactory<LifecycleControl>
+  void Create(shell::Connection* connection,
               LifecycleControlRequest request) override {
     bindings_.AddBinding(this, std::move(request));
   }
@@ -74,7 +75,7 @@ class PackagedApp : public mojo::ShellClient,
       delete this;
   }
 
-  scoped_ptr<mojo::ShellConnection> connection_;
+  std::unique_ptr<shell::ShellConnection> connection_;
   mojo::BindingSet<LifecycleControl> bindings_;
   // Run when this object's connection to the shell is closed.
   DestructCallback shell_connection_closed_callback_;
@@ -85,32 +86,32 @@ class PackagedApp : public mojo::ShellClient,
 };
 
 class Package
-    : public mojo::ShellClient,
-      public mojo::InterfaceFactory<mojo::shell::mojom::ShellClientFactory>,
-      public mojo::shell::mojom::ShellClientFactory {
+    : public shell::ShellClient,
+      public shell::InterfaceFactory<shell::mojom::ShellClientFactory>,
+      public shell::mojom::ShellClientFactory {
  public:
   Package() {}
   ~Package() override {}
 
-  void set_runner(mojo::ApplicationRunner* runner) {
+  void set_runner(shell::ApplicationRunner* runner) {
     app_client_.set_runner(runner);
   }
 
  private:
-  // mojo::shell::test::AppClient:
-  bool AcceptConnection(mojo::Connection* connection) override {
-    connection->AddInterface<mojo::shell::mojom::ShellClientFactory>(this);
+  // shell::test::AppClient:
+  bool AcceptConnection(shell::Connection* connection) override {
+    connection->AddInterface<shell::mojom::ShellClientFactory>(this);
     return app_client_.AcceptConnection(connection);
   }
 
-  // mojo::InterfaceFactory<mojo::shell::mojom::ShellClientFactory>:
-  void Create(mojo::Connection* connection,
-              mojo::shell::mojom::ShellClientFactoryRequest request) override {
+  // shell::InterfaceFactory<shell::mojom::ShellClientFactory>:
+  void Create(shell::Connection* connection,
+              shell::mojom::ShellClientFactoryRequest request) override {
     bindings_.AddBinding(this, std::move(request));
   }
 
-  // mojo::shell::mojom::ShellClientFactory:
-  void CreateShellClient(mojo::shell::mojom::ShellClientRequest request,
+  // shell::mojom::ShellClientFactory:
+  void CreateShellClient(shell::mojom::ShellClientRequest request,
                          const mojo::String& name) override {
     ++shell_connection_refcount_;
     apps_.push_back(
@@ -134,9 +135,9 @@ class Package
       base::MessageLoop::current()->QuitWhenIdle();
   }
 
-  mojo::shell::test::AppClient app_client_;
+  shell::test::AppClient app_client_;
   int shell_connection_refcount_ = 0;
-  mojo::BindingSet<mojo::shell::mojom::ShellClientFactory> bindings_;
+  mojo::BindingSet<shell::mojom::ShellClientFactory> bindings_;
   std::vector<PackagedApp*> apps_;
 
   DISALLOW_COPY_AND_ASSIGN(Package);
@@ -146,7 +147,7 @@ class Package
 
 MojoResult MojoMain(MojoHandle shell_handle) {
   Package* package = new Package;
-  mojo::ApplicationRunner runner(package);
+  shell::ApplicationRunner runner(package);
   package->set_runner(&runner);
   return runner.Run(shell_handle);
 }

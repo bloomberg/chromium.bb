@@ -58,8 +58,8 @@ MusDemo::MusDemo() {}
 
 MusDemo::~MusDemo() {}
 
-void MusDemo::Initialize(mojo::Connector* connector,
-                         const mojo::Identity& identity,
+void MusDemo::Initialize(shell::Connector* connector,
+                         const shell::Identity& identity,
                          uint32_t id) {
   connector_ = connector;
 
@@ -67,7 +67,7 @@ void MusDemo::Initialize(mojo::Connector* connector,
   window_tree_host_->SetTitle("MUS Demo");
 }
 
-bool MusDemo::AcceptConnection(mojo::Connection* connection) {
+bool MusDemo::AcceptConnection(shell::Connection* connection) {
   return true;
 }
 

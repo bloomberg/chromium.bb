@@ -19,17 +19,17 @@ class AuraInit;
 namespace mash {
 namespace quick_launch {
 
-class QuickLaunchApplication : public mojo::ShellClient {
+class QuickLaunchApplication : public shell::ShellClient {
  public:
   QuickLaunchApplication();
   ~QuickLaunchApplication() override;
 
  private:
-  // mojo::ShellClient:
-  void Initialize(mojo::Connector* connector,
-                  const mojo::Identity& identity,
+  // shell::ShellClient:
+  void Initialize(shell::Connector* connector,
+                  const shell::Identity& identity,
                   uint32_t id) override;
-  bool AcceptConnection(mojo::Connection* connection) override;
+  bool AcceptConnection(shell::Connection* connection) override;
 
   mojo::TracingImpl tracing_;
   std::unique_ptr<views::AuraInit> aura_init_;

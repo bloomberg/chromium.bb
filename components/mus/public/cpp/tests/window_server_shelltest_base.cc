@@ -18,15 +18,15 @@ namespace {
 
 const char kTestAppName[] = "mojo:mus_ws_unittests_app";
 
-class WindowServerShellTestClient : public mojo::test::ShellTestClient {
+class WindowServerShellTestClient : public shell::test::ShellTestClient {
  public:
   explicit WindowServerShellTestClient(WindowServerShellTestBase* test)
       : ShellTestClient(test), test_(test) {}
   ~WindowServerShellTestClient() override {}
 
  private:
-  // mojo::test::ShellTestClient:
-  bool AcceptConnection(mojo::Connection* connection) override {
+  // shell::test::ShellTestClient:
+  bool AcceptConnection(shell::Connection* connection) override {
     return test_->AcceptConnection(connection);
   }
 
@@ -51,7 +51,7 @@ WindowServerShellTestBase::WindowServerShellTestBase()
 
 WindowServerShellTestBase::~WindowServerShellTestBase() {}
 
-scoped_ptr<mojo::ShellClient> WindowServerShellTestBase::CreateShellClient() {
+scoped_ptr<shell::ShellClient> WindowServerShellTestBase::CreateShellClient() {
   return make_scoped_ptr(new WindowServerShellTestClient(this));
 }
 

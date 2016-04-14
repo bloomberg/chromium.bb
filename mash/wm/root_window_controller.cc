@@ -63,7 +63,7 @@ void RootWindowController::Destroy() {
   }
 }
 
-mojo::Connector* RootWindowController::GetConnector() {
+shell::Connector* RootWindowController::GetConnector() {
   return app_->connector();
 }
 

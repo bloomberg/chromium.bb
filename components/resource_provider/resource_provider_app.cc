@@ -21,13 +21,13 @@ ResourceProviderApp::ResourceProviderApp(
 ResourceProviderApp::~ResourceProviderApp() {
 }
 
-void ResourceProviderApp::Initialize(mojo::Connector* connector,
-                                     const mojo::Identity& identity,
+void ResourceProviderApp::Initialize(shell::Connector* connector,
+                                     const shell::Identity& identity,
                                      uint32_t id) {
   tracing_.Initialize(connector, identity.name());
 }
 
-bool ResourceProviderApp::AcceptConnection(mojo::Connection* connection) {
+bool ResourceProviderApp::AcceptConnection(shell::Connection* connection) {
   const base::FilePath app_path(
       GetPathForApplicationName(connection->GetRemoteIdentity().name()));
   if (app_path.empty())
@@ -38,7 +38,7 @@ bool ResourceProviderApp::AcceptConnection(mojo::Connection* connection) {
 }
 
 void ResourceProviderApp::Create(
-    mojo::Connection* connection,
+    shell::Connection* connection,
     mojo::InterfaceRequest<ResourceProvider> request) {
   const base::FilePath app_path(
       GetPathForApplicationName(connection->GetRemoteIdentity().name()));

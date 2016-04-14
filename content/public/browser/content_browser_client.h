@@ -58,7 +58,7 @@ namespace media {
 class CdmFactory;
 }
 
-namespace mojo {
+namespace shell {
 class ShellClient;
 }
 
@@ -651,7 +651,7 @@ class CONTENT_EXPORT ContentBrowserClient {
 
   using StaticMojoApplicationMap =
       std::map<std::string,
-               base::Callback<std::unique_ptr<mojo::ShellClient>()>>;
+               base::Callback<std::unique_ptr<shell::ShellClient>()>>;
 
   // Registers Mojo applications to be loaded in the browser process by the
   // browser's global Mojo shell.

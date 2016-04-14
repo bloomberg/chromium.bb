@@ -17,7 +17,7 @@
 #include "services/shell/public/interfaces/connector.mojom.h"
 #include "services/shell/public/interfaces/interface_provider.mojom.h"
 
-namespace mojo {
+namespace shell {
 namespace internal {
 
 // A ConnectionImpl represents each half of a connection between two
@@ -45,11 +45,11 @@ class ConnectionImpl : public Connection {
   bool HasCapabilityClass(const std::string& class_name) const override;
   const std::string& GetConnectionName() override;
   const Identity& GetRemoteIdentity() const override;
-  void SetConnectionLostClosure(const Closure& handler) override;
+  void SetConnectionLostClosure(const mojo::Closure& handler) override;
   shell::mojom::ConnectResult GetResult() const override;
   bool IsPending() const override;
   uint32_t GetRemoteInstanceID() const override;
-  void AddConnectionCompletedClosure(const Closure& callback) override;
+  void AddConnectionCompletedClosure(const mojo::Closure& callback) override;
   bool AllowsInterface(const std::string& interface_name) const override;
   shell::mojom::InterfaceProvider* GetRemoteInterfaces() override;
   InterfaceRegistry* GetLocalRegistry() override;
@@ -65,7 +65,7 @@ class ConnectionImpl : public Connection {
 
   State state_;
   shell::mojom::ConnectResult result_ = shell::mojom::ConnectResult::SUCCEEDED;
-  std::vector<Closure> connection_completed_callbacks_;
+  std::vector<mojo::Closure> connection_completed_callbacks_;
 
   InterfaceRegistry local_registry_;
   shell::mojom::InterfaceProviderPtr remote_interfaces_;
@@ -79,6 +79,6 @@ class ConnectionImpl : public Connection {
 };
 
 }  // namespace internal
-}  // namespace mojo
+}  // namespace shell
 
 #endif  // SERVICES_SHELL_PUBLIC_CPP_LIB_CONNECTION_IMPL_H_

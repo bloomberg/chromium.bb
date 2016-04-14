@@ -16,8 +16,8 @@ int main(int argc, char** argv) {
   base::AtExitManager at_exit;
   base::CommandLine::Init(argc, argv);
 
-  mojo::shell::InitializeLogging();
+  shell::InitializeLogging();
 
-  mojo::shell::test::AppClient client;
-  return mojo::shell::TestNativeMain(&client);
+  shell::test::AppClient client;
+  return shell::TestNativeMain(&client);
 }

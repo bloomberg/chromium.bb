@@ -12,7 +12,7 @@
 #include "services/shell/public/cpp/connection.h"
 #include "services/shell/public/cpp/identity.h"
 
-namespace mojo {
+namespace shell {
 
 class Connector;
 
@@ -55,6 +55,6 @@ class ShellClient {
   DISALLOW_COPY_AND_ASSIGN(ShellClient);
 };
 
-}  // namespace mojo
+}  // namespace shell
 
 #endif  // SERVICES_SHELL_PUBLIC_CPP_SHELL_CLIENT_H_

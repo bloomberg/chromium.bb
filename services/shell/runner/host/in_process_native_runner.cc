@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_runner.h"
 #include "base/thread_task_runner_handle.h"
@@ -18,7 +19,6 @@
 #include "services/shell/runner/host/out_of_process_native_runner.h"
 #include "services/shell/runner/init.h"
 
-namespace mojo {
 namespace shell {
 
 InProcessNativeRunner::InProcessNativeRunner() : app_library_(nullptr) {}
@@ -81,15 +81,14 @@ void InProcessNativeRunner::Run() {
   app_completed_callback_runner_.Reset();
 }
 
-scoped_ptr<NativeRunner> InProcessNativeRunnerFactory::Create(
+std::unique_ptr<NativeRunner> InProcessNativeRunnerFactory::Create(
     const base::FilePath& app_path) {
   // Non-Mojo apps are always run in a new process.
   if (!app_path.MatchesExtension(FILE_PATH_LITERAL(".mojo"))) {
-    return make_scoped_ptr(
+    return base::WrapUnique(
         new OutOfProcessNativeRunner(launch_process_runner_, nullptr));
   }
-  return make_scoped_ptr(new InProcessNativeRunner);
+  return base::WrapUnique(new InProcessNativeRunner);
 }
 
 }  // namespace shell
-}  // namespace mojo

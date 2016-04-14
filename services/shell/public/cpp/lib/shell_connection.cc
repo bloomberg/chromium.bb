@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "services/shell/public/cpp/shell_connection.h"
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
@@ -12,17 +14,16 @@
 #include "services/shell/public/cpp/lib/connection_impl.h"
 #include "services/shell/public/cpp/lib/connector_impl.h"
 #include "services/shell/public/cpp/shell_client.h"
-#include "services/shell/public/cpp/shell_connection.h"
 
-namespace mojo {
+namespace shell {
 
 ////////////////////////////////////////////////////////////////////////////////
 // ShellConnection, public:
 
-ShellConnection::ShellConnection(mojo::ShellClient* client,
-                                 shell::mojom::ShellClientRequest request)
+ShellConnection::ShellConnection(shell::ShellClient* client,
+                                 mojom::ShellClientRequest request)
     : client_(client), binding_(this) {
-  shell::mojom::ConnectorPtr connector;
+  mojom::ConnectorPtr connector;
   pending_connector_request_ = GetProxy(&connector);
   connector_.reset(new ConnectorImpl(std::move(connector)));
 
@@ -37,15 +38,15 @@ void ShellConnection::set_initialize_handler(const base::Closure& callback) {
 }
 
 void ShellConnection::SetAppTestConnectorForTesting(
-    shell::mojom::ConnectorPtr connector) {
+    mojom::ConnectorPtr connector) {
   pending_connector_request_ = nullptr;
   connector_.reset(new ConnectorImpl(std::move(connector)));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// ShellConnection, shell::mojom::ShellClient implementation:
+// ShellConnection, mojom::ShellClient implementation:
 
-void ShellConnection::Initialize(shell::mojom::IdentityPtr identity,
+void ShellConnection::Initialize(mojom::IdentityPtr identity,
                                  uint32_t id,
                                  const InitializeCallback& callback) {
   if (!initialize_handler_.is_null())
@@ -60,16 +61,15 @@ void ShellConnection::Initialize(shell::mojom::IdentityPtr identity,
 }
 
 void ShellConnection::AcceptConnection(
-    shell::mojom::IdentityPtr source,
+    mojom::IdentityPtr source,
     uint32_t source_id,
-    shell::mojom::InterfaceProviderRequest local_interfaces,
-    shell::mojom::InterfaceProviderPtr remote_interfaces,
-    shell::mojom::CapabilityRequestPtr allowed_capabilities,
-    const String& name) {
-  scoped_ptr<Connection> registry(new internal::ConnectionImpl(
+    mojom::InterfaceProviderRequest local_interfaces,
+    mojom::InterfaceProviderPtr remote_interfaces,
+    mojom::CapabilityRequestPtr allowed_capabilities,
+    const mojo::String& name) {
+  std::unique_ptr<Connection> registry(new internal::ConnectionImpl(
       name, source.To<Identity>(), source_id, std::move(remote_interfaces),
-      std::move(local_interfaces),
-      allowed_capabilities.To<CapabilityRequest>(),
+      std::move(local_interfaces), allowed_capabilities.To<CapabilityRequest>(),
       Connection::State::CONNECTED));
   if (!client_->AcceptConnection(registry.get()))
     return;
@@ -92,4 +92,4 @@ void ShellConnection::OnConnectionError() {
   // Connect() will return nullptr if they try to connect to anything.
 }
 
-}  // namespace mojo
+}  // namespace shell

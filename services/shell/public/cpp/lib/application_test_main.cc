@@ -15,9 +15,9 @@ MojoResult MojoMain(MojoHandle handle) {
   base::AtExitManager at_exit;
 
   // Initialize the current process Commandline and test timeouts.
-  mojo::ApplicationRunner::InitBaseCommandLine();
+  shell::ApplicationRunner::InitBaseCommandLine();
   mojo::InitLogging();
   TestTimeouts::Initialize();
 
-  return mojo::test::RunAllTests(handle);
+  return shell::test::RunAllTests(handle);
 }

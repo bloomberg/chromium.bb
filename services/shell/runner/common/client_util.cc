@@ -10,17 +10,16 @@
 #include "mojo/edk/embedder/embedder.h"
 #include "services/shell/runner/common/switches.h"
 
-namespace mojo {
 namespace shell {
 
 mojom::ShellClientPtr PassShellClientRequestOnCommandLine(
     base::CommandLine* command_line) {
-  std::string token = edk::GenerateRandomToken();
+  std::string token = mojo::edk::GenerateRandomToken();
   command_line->AppendSwitchASCII(switches::kPrimordialPipeToken, token);
 
   mojom::ShellClientPtr client;
   client.Bind(
-      mojom::ShellClientPtrInfo(edk::CreateParentMessagePipe(token), 0));
+      mojom::ShellClientPtrInfo(mojo::edk::CreateParentMessagePipe(token), 0));
   return client;
 }
 
@@ -30,9 +29,8 @@ mojom::ShellClientRequest GetShellClientRequestFromCommandLine() {
           switches::kPrimordialPipeToken);
   mojom::ShellClientRequest request;
   if (!token.empty())
-    request.Bind(edk::CreateChildMessagePipe(token));
+    request.Bind(mojo::edk::CreateChildMessagePipe(token));
   return request;
 }
 
 }  // namespace shell
-}  // namespace mojo

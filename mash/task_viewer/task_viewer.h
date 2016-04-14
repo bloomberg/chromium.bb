@@ -20,15 +20,15 @@ class AuraInit;
 namespace mash {
 namespace task_viewer {
 
-class TaskViewer : public mojo::ShellClient {
+class TaskViewer : public shell::ShellClient {
  public:
   TaskViewer();
   ~TaskViewer() override;
 
  private:
-  // mojo::ShellClient:
-  void Initialize(mojo::Connector* connector,
-                  const mojo::Identity& identity,
+  // shell::ShellClient:
+  void Initialize(shell::Connector* connector,
+                  const shell::Identity& identity,
                   uint32_t id) override;
 
   mojo::TracingImpl tracing_;

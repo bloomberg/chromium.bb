@@ -9,7 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "services/shell/public/interfaces/shell_client.mojom.h"
 
-namespace mojo {
+namespace shell {
 class ShellClient;
 class ShellConnection;
 }
@@ -26,10 +26,10 @@ class MashRunner {
   void RunMain();
   void RunChild();
 
-  void StartChildApp(mojo::shell::mojom::ShellClientRequest client_request);
+  void StartChildApp(shell::mojom::ShellClientRequest client_request);
 
-  scoped_ptr<mojo::ShellClient> shell_client_;
-  scoped_ptr<mojo::ShellConnection> shell_connection_;
+  scoped_ptr<shell::ShellClient> shell_client_;
+  scoped_ptr<shell::ShellConnection> shell_connection_;
 
   DISALLOW_COPY_AND_ASSIGN(MashRunner);
 };

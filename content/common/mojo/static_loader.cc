@@ -24,7 +24,7 @@ namespace {
 class RunnerThread : public base::SimpleThread {
  public:
   RunnerThread(const std::string& name,
-               mojo::shell::mojom::ShellClientRequest request,
+               shell::mojom::ShellClientRequest request,
                scoped_refptr<base::TaskRunner> exit_task_runner,
                const base::Closure& exit_callback,
                const StaticLoader::ApplicationFactory& factory)
@@ -35,15 +35,15 @@ class RunnerThread : public base::SimpleThread {
         factory_(factory) {}
 
   void Run() override {
-    std::unique_ptr<mojo::ApplicationRunner> runner(
-        new mojo::ApplicationRunner(factory_.Run().release()));
+    std::unique_ptr<shell::ApplicationRunner> runner(
+        new shell::ApplicationRunner(factory_.Run().release()));
     runner->Run(request_.PassMessagePipe().release().value(),
                 false /* init_base */);
     exit_task_runner_->PostTask(FROM_HERE, exit_callback_);
   }
 
  private:
-  mojo::shell::mojom::ShellClientRequest request_;
+  shell::mojom::ShellClientRequest request_;
   scoped_refptr<base::TaskRunner> exit_task_runner_;
   base::Closure exit_callback_;
   StaticLoader::ApplicationFactory factory_;
@@ -68,7 +68,7 @@ StaticLoader::~StaticLoader() {
 }
 
 void StaticLoader::Load(const std::string& name,
-                        mojo::shell::mojom::ShellClientRequest request) {
+                        shell::mojom::ShellClientRequest request) {
   if (thread_)
     return;
 

@@ -19,7 +19,7 @@ namespace filesystem {
 // This factory method creates a PrefService for the local process based on the
 // preference registry passed in. This PrefService will synchronize with a JSON
 // file in the mojo:filesystem.
-scoped_ptr<PrefService> CreatePrefService(mojo::Connector* connector,
+scoped_ptr<PrefService> CreatePrefService(shell::Connector* connector,
                                           PrefRegistry* registry);
 
 }  // namespace filesystem

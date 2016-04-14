@@ -21,10 +21,10 @@
 
 using mojo::Array;
 using mojo::Callback;
-using mojo::Connection;
+using shell::Connection;
 using mojo::InterfaceRequest;
 using mojo::RectPtr;
-using mojo::ShellClient;
+using shell::ShellClient;
 using mojo::String;
 using mus::mojom::ErrorCode;
 using mus::mojom::EventPtr;
@@ -64,7 +64,7 @@ void EmbedCallbackImpl(base::RunLoop* run_loop,
 
 // -----------------------------------------------------------------------------
 
-bool EmbedUrl(mojo::Connector* connector,
+bool EmbedUrl(shell::Connector* connector,
               WindowTree* tree,
               const String& url,
               Id root_id) {
@@ -444,7 +444,7 @@ class TestWindowTreeClientImpl : public mojom::WindowTreeClient,
 
 // InterfaceFactory for vending TestWindowTreeClientImpls.
 class WindowTreeClientFactory
-    : public mojo::InterfaceFactory<WindowTreeClient> {
+    : public shell::InterfaceFactory<WindowTreeClient> {
  public:
   WindowTreeClientFactory() {}
   ~WindowTreeClientFactory() override {}
@@ -573,7 +573,7 @@ class WindowTreeClientTest : public WindowServerShellTestBase {
   }
 
   // WindowServerShellTestBase:
-  bool AcceptConnection(mojo::Connection* connection) override {
+  bool AcceptConnection(shell::Connection* connection) override {
     connection->AddInterface(client_factory_.get());
     return true;
   }

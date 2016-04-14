@@ -50,7 +50,8 @@ class MusViewsDelegate : public ViewsDelegate {
 
 }  // namespace
 
-AuraInit::AuraInit(mojo::Connector* connector, const std::string& resource_file)
+AuraInit::AuraInit(shell::Connector* connector,
+                   const std::string& resource_file)
     : resource_file_(resource_file),
       env_(aura::Env::CreateInstance()),
       views_delegate_(new MusViewsDelegate) {
@@ -71,7 +72,7 @@ AuraInit::~AuraInit() {
 #endif
 }
 
-void AuraInit::InitializeResources(mojo::Connector* connector) {
+void AuraInit::InitializeResources(shell::Connector* connector) {
   if (ui::ResourceBundle::HasSharedInstance())
     return;
   resource_provider::ResourceLoader resource_loader(

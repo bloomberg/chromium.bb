@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -18,10 +20,9 @@ void QuitLoop(base::RunLoop* loop) {
   loop->Quit();
 }
 
-class Parent
-    : public mojo::ShellClient,
-      public mojo::InterfaceFactory<mojo::shell::test::mojom::Parent>,
-      public mojo::shell::test::mojom::Parent {
+class Parent : public shell::ShellClient,
+               public shell::InterfaceFactory<shell::test::mojom::Parent>,
+               public shell::test::mojom::Parent {
  public:
   Parent() {}
   ~Parent() override {
@@ -32,25 +33,26 @@ class Parent
 
  private:
   // ShellClient:
-  void Initialize(mojo::Connector* connector, const mojo::Identity& identity,
+  void Initialize(shell::Connector* connector,
+                  const shell::Identity& identity,
                   uint32_t id) override {
     connector_ = connector;
   }
-  bool AcceptConnection(mojo::Connection* connection) override {
-    connection->AddInterface<mojo::shell::test::mojom::Parent>(this);
+  bool AcceptConnection(shell::Connection* connection) override {
+    connection->AddInterface<shell::test::mojom::Parent>(this);
     return true;
   }
 
-  // InterfaceFactory<mojo::shell::test::mojom::Parent>:
-  void Create(mojo::Connection* connection,
-              mojo::shell::test::mojom::ParentRequest request) override {
+  // InterfaceFactory<shell::test::mojom::Parent>:
+  void Create(shell::Connection* connection,
+              shell::test::mojom::ParentRequest request) override {
     parent_bindings_.AddBinding(this, std::move(request));
   }
 
   // Parent:
   void ConnectToChild(const ConnectToChildCallback& callback) override {
     child_connection_ = connector_->Connect("mojo:lifecycle_unittest_app");
-    mojo::shell::test::mojom::LifecycleControlPtr lifecycle;
+    shell::test::mojom::LifecycleControlPtr lifecycle;
     child_connection_->GetInterface(&lifecycle);
     {
       base::RunLoop loop;
@@ -65,9 +67,9 @@ class Parent
     base::MessageLoop::current()->QuitWhenIdle();
   }
 
-  mojo::Connector* connector_;
-  scoped_ptr<mojo::Connection> child_connection_;
-  mojo::BindingSet<mojo::shell::test::mojom::Parent> parent_bindings_;
+  shell::Connector* connector_;
+  std::unique_ptr<shell::Connection> child_connection_;
+  mojo::BindingSet<shell::test::mojom::Parent> parent_bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(Parent);
 };
@@ -76,5 +78,5 @@ class Parent
 
 MojoResult MojoMain(MojoHandle shell_handle) {
   Parent* parent = new Parent;
-  return mojo::ApplicationRunner(parent).Run(shell_handle);
+  return shell::ApplicationRunner(parent).Run(shell_handle);
 }

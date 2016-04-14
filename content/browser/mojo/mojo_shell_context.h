@@ -32,7 +32,7 @@ class CONTENT_EXPORT MojoShellContext {
  public:
   using StaticApplicationMap =
       std::map<std::string,
-               base::Callback<std::unique_ptr<mojo::ShellClient>()>>;
+               base::Callback<std::unique_ptr<shell::ShellClient>()>>;
 
   MojoShellContext();
   ~MojoShellContext();
@@ -45,9 +45,9 @@ class CONTENT_EXPORT MojoShellContext {
       const std::string& user_id,
       const std::string& name,
       const std::string& requestor_name,
-      mojo::shell::mojom::InterfaceProviderRequest request,
-      mojo::shell::mojom::InterfaceProviderPtr exposed_services,
-      const mojo::shell::mojom::Connector::ConnectCallback& callback);
+      shell::mojom::InterfaceProviderRequest request,
+      shell::mojom::InterfaceProviderPtr exposed_services,
+      const shell::mojom::Connector::ConnectCallback& callback);
 
   static void SetApplicationsForTest(const StaticApplicationMap* apps);
 
@@ -60,15 +60,15 @@ class CONTENT_EXPORT MojoShellContext {
       const std::string& user_id,
       const std::string& name,
       const std::string& requestor_name,
-      mojo::shell::mojom::InterfaceProviderRequest request,
-      mojo::shell::mojom::InterfaceProviderPtr exposed_services,
-      const mojo::shell::mojom::Connector::ConnectCallback& callback);
+      shell::mojom::InterfaceProviderRequest request,
+      shell::mojom::InterfaceProviderPtr exposed_services,
+      const shell::mojom::Connector::ConnectCallback& callback);
 
   static base::LazyInstance<std::unique_ptr<Proxy>> proxy_;
 
   std::unique_ptr<BuiltinManifestProvider> manifest_provider_;
   std::unique_ptr<catalog::Factory> catalog_;
-  std::unique_ptr<mojo::shell::Shell> shell_;
+  std::unique_ptr<shell::Shell> shell_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoShellContext);
 };

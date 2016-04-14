@@ -162,10 +162,9 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
   void OnFetchEventStub(int request_id,
                         const ServiceWorkerFetchRequest& request);
   void OnPushEventStub(int request_id, const PushEventPayload& payload);
-  void OnSetupMojoStub(
-      int thread_id,
-      mojo::shell::mojom::InterfaceProviderRequest services,
-      mojo::shell::mojom::InterfaceProviderPtr exposed_services);
+  void OnSetupMojoStub(int thread_id,
+                       shell::mojom::InterfaceProviderRequest services,
+                       shell::mojom::InterfaceProviderPtr exposed_services);
 
   MessagePortMessageFilter* NewMessagePortMessageFilter();
 

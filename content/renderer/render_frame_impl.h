@@ -636,9 +636,8 @@ class CONTENT_EXPORT RenderFrameImpl
       override;
 
   // Binds this render frame's service registry.
-  void BindServiceRegistry(
-      mojo::shell::mojom::InterfaceProviderRequest services,
-      mojo::shell::mojom::InterfaceProviderPtr exposed_services);
+  void BindServiceRegistry(shell::mojom::InterfaceProviderRequest services,
+                           shell::mojom::InterfaceProviderPtr exposed_services);
 
   ManifestManager* manifest_manager();
 
@@ -960,7 +959,7 @@ class CONTENT_EXPORT RenderFrameImpl
   bool AreSecureCodecsSupported();
 
 #if defined(ENABLE_MOJO_MEDIA)
-  mojo::shell::mojom::InterfaceProvider* GetMediaInterfaceProvider();
+  shell::mojom::InterfaceProvider* GetMediaInterfaceProvider();
 #endif
 
   media::CdmFactory* GetCdmFactory();
@@ -974,8 +973,7 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // Connects to a Mojo application and returns a proxy to its exposed
   // ServiceProvider.
-  mojo::shell::mojom::InterfaceProviderPtr ConnectToApplication(
-      const GURL& url);
+  shell::mojom::InterfaceProviderPtr ConnectToApplication(const GURL& url);
 
   // Returns the media delegate for WebMediaPlayer usage.  If
   // |media_player_delegate_| is NULL, one is created.
@@ -1176,7 +1174,7 @@ class CONTENT_EXPORT RenderFrameImpl
   BlinkServiceRegistryImpl blink_service_registry_;
 
   // The shell proxy used to connect to Mojo applications.
-  mojo::shell::mojom::ConnectorPtr connector_;
+  shell::mojom::ConnectorPtr connector_;
 
   // The screen orientation dispatcher attached to the frame, lazily
   // initialized.

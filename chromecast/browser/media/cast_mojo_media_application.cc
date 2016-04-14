@@ -14,9 +14,9 @@
 namespace {
 void CreateServiceFactory(
     mojo::InterfaceRequest<media::interfaces::ServiceFactory> request,
-    mojo::shell::mojom::InterfaceProvider* interfaces,
+    shell::mojom::InterfaceProvider* interfaces,
     scoped_refptr<media::MediaLog> media_log,
-    std::unique_ptr<mojo::MessageLoopRef> app_refcount,
+    std::unique_ptr<shell::MessageLoopRef> app_refcount,
     media::MojoMediaClient* mojo_media_client) {
   new ::media::ServiceFactoryImpl(std::move(request), interfaces,
                                   std::move(media_log), std::move(app_refcount),
@@ -39,24 +39,25 @@ CastMojoMediaApplication::CastMojoMediaApplication(
 
 CastMojoMediaApplication::~CastMojoMediaApplication() {}
 
-void CastMojoMediaApplication::Initialize(mojo::Connector* connector,
-                                          const mojo::Identity& identity,
+void CastMojoMediaApplication::Initialize(shell::Connector* connector,
+                                          const shell::Identity& identity,
                                           uint32_t /* id */) {}
 
-bool CastMojoMediaApplication::AcceptConnection(mojo::Connection* connection) {
+bool CastMojoMediaApplication::AcceptConnection(shell::Connection* connection) {
   connection->AddInterface<::media::interfaces::ServiceFactory>(this);
   return true;
 }
 
 void CastMojoMediaApplication::Create(
-    mojo::Connection* connection,
+    shell::Connection* connection,
     mojo::InterfaceRequest<::media::interfaces::ServiceFactory> request) {
   // Create the app refcount here on the application task runner so that
   // 1. It is bound to the application task runner, which in turn will
   //    stop the app message loop when destroyed on the app task runner.
   // 2. It will prevent CastMojoMediaApplication from getting destroyed until
   //    the task posted to the media thread is run.
-  std::unique_ptr<mojo::MessageLoopRef> app_refcount = ref_factory_.CreateRef();
+  std::unique_ptr<shell::MessageLoopRef> app_refcount =
+      ref_factory_.CreateRef();
   media_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&CreateServiceFactory, base::Passed(&request),

@@ -19,7 +19,7 @@
 #include "gpu/GLES2/gl2extchromium.h"
 #include "mojo/public/c/gles2/gles2.h"
 
-namespace mojo {
+namespace shell {
 class Connector;
 }
 
@@ -35,7 +35,7 @@ class BITMAP_UPLOADER_EXPORT BitmapUploader
   explicit BitmapUploader(mus::Window* window);
   ~BitmapUploader() override;
 
-  void Init(mojo::Connector* connector);
+  void Init(shell::Connector* connector);
 
   // Sets the color which is RGBA.
   void SetColor(uint32_t color);

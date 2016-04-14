@@ -59,7 +59,7 @@ ChromeMashShelfController::ChromeMashShelfController()
     : observer_binding_(this) {}
 
 void ChromeMashShelfController::Init() {
-  mojo::Connector* connector =
+  shell::Connector* connector =
       content::MojoShellConnection::Get()->GetConnector();
   connector->ConnectToInterface("mojo:ash_sysui", &shelf_controller_);
 

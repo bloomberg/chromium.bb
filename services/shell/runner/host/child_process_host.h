@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
@@ -14,7 +15,6 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/process/process.h"
 #include "base/synchronization/lock.h"
@@ -29,10 +29,9 @@ namespace base {
 class TaskRunner;
 }
 
-namespace mojo {
-class Identity;
 namespace shell {
 
+class Identity;
 class NativeRunnerDelegate;
 
 // This class represents a "child process host". Handles launching and
@@ -72,7 +71,7 @@ class ChildProcessHost {
   void DidStart(const ProcessReadyCallback& callback);
 
  private:
-  void DoLaunch(scoped_ptr<base::CommandLine> child_command_line);
+  void DoLaunch(std::unique_ptr<base::CommandLine> child_command_line);
 
   scoped_refptr<base::TaskRunner> launch_process_runner_;
   NativeRunnerDelegate* delegate_ = nullptr;
@@ -82,8 +81,8 @@ class ChildProcessHost {
   base::Process child_process_;
 
   // Used to initialize the Mojo IPC channel between parent and child.
-  scoped_ptr<edk::PlatformChannelPair> mojo_ipc_channel_;
-  edk::HandlePassingInformation handle_passing_info_;
+  std::unique_ptr<mojo::edk::PlatformChannelPair> mojo_ipc_channel_;
+  mojo::edk::HandlePassingInformation handle_passing_info_;
 
   // Since Start() calls a method on another thread, we use an event to block
   // the main thread if it tries to destruct |this| while launching the process.
@@ -95,6 +94,5 @@ class ChildProcessHost {
 };
 
 }  // namespace shell
-}  // namespace mojo
 
 #endif  // SERVICES_SHELL_RUNNER_HOST_CHILD_PROCESS_HOST_H_

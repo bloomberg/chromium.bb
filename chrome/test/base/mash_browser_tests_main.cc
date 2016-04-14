@@ -24,7 +24,7 @@
 
 namespace {
 
-void ConnectToDefaultApps(mojo::Connector* connector) {
+void ConnectToDefaultApps(shell::Connector* connector) {
   connector->Connect("mojo:mash_session");
 }
 
@@ -80,8 +80,8 @@ class MashTestLauncherDelegate : public ChromeTestLauncherDelegate {
       base::TestLauncher::LaunchOptions* test_launch_options) override {
     if (!mojo_test_connector_) {
       mojo_test_connector_.reset(new MojoTestConnector);
-      shell_client_.reset(new mojo::ShellClient);
-      shell_connection_.reset(new mojo::ShellConnection(
+      shell_client_.reset(new shell::ShellClient);
+      shell_connection_.reset(new shell::ShellConnection(
           shell_client_.get(), mojo_test_connector_->Init()));
       ConnectToDefaultApps(shell_connection_->connector());
     }
@@ -98,8 +98,8 @@ class MashTestLauncherDelegate : public ChromeTestLauncherDelegate {
 
   std::unique_ptr<MashTestSuite> test_suite_;
   std::unique_ptr<MojoTestConnector> mojo_test_connector_;
-  std::unique_ptr<mojo::ShellClient> shell_client_;
-  std::unique_ptr<mojo::ShellConnection> shell_connection_;
+  std::unique_ptr<shell::ShellClient> shell_client_;
+  std::unique_ptr<shell::ShellConnection> shell_connection_;
 
   DISALLOW_COPY_AND_ASSIGN(MashTestLauncherDelegate);
 };
@@ -124,12 +124,12 @@ bool RunMashBrowserTests(int argc, char** argv, int* exit_code) {
   if (command_line.HasSwitch(switches::kChildProcess) &&
       !command_line.HasSwitch(MojoTestConnector::kTestSwitch)) {
     base::AtExitManager at_exit;
-    mojo::shell::InitializeLogging();
-    mojo::shell::WaitForDebuggerIfNecessary();
+    shell::InitializeLogging();
+    shell::WaitForDebuggerIfNecessary();
 #if !defined(OFFICIAL_BUILD) && defined(OS_WIN)
     base::RouteStdioToConsole(false);
 #endif
-    *exit_code = mojo::shell::ChildProcessMain();
+    *exit_code = shell::ChildProcessMain();
     return true;
   }
 

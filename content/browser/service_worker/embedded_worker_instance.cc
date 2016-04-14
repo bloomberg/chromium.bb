@@ -87,8 +87,8 @@ void RegisterToWorkerDevToolsManagerOnUI(
 void SetupMojoOnUIThread(
     int process_id,
     int thread_id,
-    mojo::shell::mojom::InterfaceProviderRequest services,
-    mojo::shell::mojom::InterfaceProviderPtrInfo exposed_services) {
+    shell::mojom::InterfaceProviderRequest services,
+    shell::mojom::InterfaceProviderPtrInfo exposed_services) {
   RenderProcessHost* rph = RenderProcessHost::FromID(process_id);
   // |rph| or its ServiceRegistry may be NULL in unit tests.
   if (!rph || !rph->GetServiceRegistry())
@@ -595,11 +595,10 @@ void EmbeddedWorkerInstance::OnThreadStarted(int thread_id) {
   thread_id_ = thread_id;
   FOR_EACH_OBSERVER(Listener, listener_list_, OnThreadStarted());
 
-  mojo::shell::mojom::InterfaceProviderPtr exposed_services;
+  shell::mojom::InterfaceProviderPtr exposed_services;
   service_registry_->Bind(GetProxy(&exposed_services));
-  mojo::shell::mojom::InterfaceProviderPtr services;
-  mojo::shell::mojom::InterfaceProviderRequest services_request =
-      GetProxy(&services);
+  shell::mojom::InterfaceProviderPtr services;
+  shell::mojom::InterfaceProviderRequest services_request = GetProxy(&services);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(SetupMojoOnUIThread, process_id(), thread_id_,

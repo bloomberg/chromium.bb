@@ -27,8 +27,8 @@ namespace session {
 Session::Session() : connector_(nullptr), screen_locked_(false) {}
 Session::~Session() {}
 
-void Session::Initialize(mojo::Connector* connector,
-                         const mojo::Identity& identity,
+void Session::Initialize(shell::Connector* connector,
+                         const shell::Identity& identity,
                          uint32_t id) {
   connector_ = connector;
   StartBrowserDriver();
@@ -37,7 +37,7 @@ void Session::Initialize(mojo::Connector* connector,
   StartQuickLaunch();
 }
 
-bool Session::AcceptConnection(mojo::Connection* connection) {
+bool Session::AcceptConnection(shell::Connection* connection) {
   connection->AddInterface<mojom::Session>(this);
   return true;
 }
@@ -85,7 +85,7 @@ void Session::UnlockScreen() {
   StopScreenlock();
 }
 
-void Session::Create(mojo::Connection* connection,
+void Session::Create(shell::Connection* connection,
                      mojom::SessionRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
@@ -135,7 +135,7 @@ void Session::StartRestartableService(
     const base::Closure& restart_callback) {
   // TODO(beng): This would be the place to insert logic that counted restarts
   //             to avoid infinite crash-restart loops.
-  std::unique_ptr<mojo::Connection> connection = connector_->Connect(url);
+  std::unique_ptr<shell::Connection> connection = connector_->Connect(url);
   // Note: |connection| may be null if we've lost our connection to the shell.
   if (connection) {
     connection->SetConnectionLostClosure(

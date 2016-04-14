@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module mojo.shell.test.mojom;
+module shell.test.mojom;
 
 // An interface implemented by an application exposing different ways for the
 // application to "shut down" from the caller and shell's perspective.

@@ -29,15 +29,14 @@ namespace content {
 // multiple connections in a single browser process. Each connection may have
 // its own identity, e.g., a connection with unique user ID per BrowserContext.
 class BrowserShellConnection
-    : public mojo::ShellClient,
-      public mojo::InterfaceFactory<mojo::shell::mojom::ShellClientFactory>,
-      public mojo::shell::mojom::ShellClientFactory {
+    : public shell::ShellClient,
+      public shell::InterfaceFactory<shell::mojom::ShellClientFactory>,
+      public shell::mojom::ShellClientFactory {
  public:
-  explicit BrowserShellConnection(
-      mojo::shell::mojom::ShellClientRequest request);
+  explicit BrowserShellConnection(shell::mojom::ShellClientRequest request);
   ~BrowserShellConnection() override;
 
-  mojo::Connector* GetConnector();
+  shell::Connector* GetConnector();
 
   // Adds an embedded application to this connection's ShellClientFactory.
   // |callback| will be used to create a new instance of the application on
@@ -50,19 +49,19 @@ class BrowserShellConnection
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
 
  private:
-  // mojo::ShellClient:
-  bool AcceptConnection(mojo::Connection* connection) override;
+  // shell::ShellClient:
+  bool AcceptConnection(shell::Connection* connection) override;
 
-  // mojo::InterfaceFactory<mojo::shell::mojom::ShellClientFactory>:
-  void Create(mojo::Connection* connection,
-              mojo::shell::mojom::ShellClientFactoryRequest request) override;
+  // shell::InterfaceFactory<shell::mojom::ShellClientFactory>:
+  void Create(shell::Connection* connection,
+              shell::mojom::ShellClientFactoryRequest request) override;
 
-  // mojo::shell::mojom::ShellClientFactory:
-  void CreateShellClient(mojo::shell::mojom::ShellClientRequest request,
+  // shell::mojom::ShellClientFactory:
+  void CreateShellClient(shell::mojom::ShellClientRequest request,
                          const mojo::String& name) override;
 
-  std::unique_ptr<mojo::ShellConnection> shell_connection_;
-  mojo::BindingSet<mojo::shell::mojom::ShellClientFactory> factory_bindings_;
+  std::unique_ptr<shell::ShellConnection> shell_connection_;
+  mojo::BindingSet<shell::mojom::ShellClientFactory> factory_bindings_;
   std::unordered_map<std::string, std::unique_ptr<EmbeddedApplicationRunner>>
       embedded_apps_;
 

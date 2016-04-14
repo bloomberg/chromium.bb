@@ -7,7 +7,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 
-namespace mojo {
+namespace shell {
 
 const char kNameType_Mojo[] = "mojo";
 const char kNameType_Exe[] = "exe";
@@ -43,4 +43,4 @@ std::string GetNamePath(const std::string& name) {
   return parts.back();
 }
 
-}  // namespace mojo
+}  // namespace shell

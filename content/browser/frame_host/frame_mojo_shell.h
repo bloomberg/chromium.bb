@@ -17,35 +17,34 @@ namespace content {
 class RenderFrameHost;
 class ServiceRegistryImpl;
 
-// This provides the |mojo::shell::mojom::Shell| service interface to each
+// This provides the |shell::mojom::Shell| service interface to each
 // frame's ServiceRegistry, giving frames the ability to connect to Mojo
 // applications.
-class FrameMojoShell : public mojo::shell::mojom::Connector {
+class FrameMojoShell : public shell::mojom::Connector {
  public:
   explicit FrameMojoShell(RenderFrameHost* frame_host);
   ~FrameMojoShell() override;
 
-  void BindRequest(mojo::shell::mojom::ConnectorRequest request);
+  void BindRequest(shell::mojom::ConnectorRequest request);
 
  private:
-  // mojo::Connector:
+  // shell::Connector:
   void Connect(
-      mojo::shell::mojom::IdentityPtr target,
-      mojo::shell::mojom::InterfaceProviderRequest services,
-      mojo::shell::mojom::InterfaceProviderPtr exposed_services,
-      mojo::shell::mojom::ClientProcessConnectionPtr client_process_connection,
-      const mojo::shell::mojom::Connector::ConnectCallback& callback) override;
-  void Clone(mojo::shell::mojom::ConnectorRequest request) override;
+      shell::mojom::IdentityPtr target,
+      shell::mojom::InterfaceProviderRequest services,
+      shell::mojom::InterfaceProviderPtr exposed_services,
+      shell::mojom::ClientProcessConnectionPtr client_process_connection,
+      const shell::mojom::Connector::ConnectCallback& callback) override;
+  void Clone(shell::mojom::ConnectorRequest request) override;
 
   ServiceRegistryImpl* GetServiceRegistry();
 
   RenderFrameHost* frame_host_;
-  mojo::BindingSet<mojo::shell::mojom::Connector> connectors_;
+  mojo::BindingSet<shell::mojom::Connector> connectors_;
 
   // ServiceRegistry providing browser services to connected applications.
   std::unique_ptr<ServiceRegistryImpl> service_registry_;
-  mojo::BindingSet<mojo::shell::mojom::InterfaceProvider>
-      service_provider_bindings_;
+  mojo::BindingSet<shell::mojom::InterfaceProvider> service_provider_bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameMojoShell);
 };

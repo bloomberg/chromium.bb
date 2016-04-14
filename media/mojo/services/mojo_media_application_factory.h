@@ -12,7 +12,7 @@
 namespace media {
 
 // Creates a MojoMediaApplication instance using the default MojoMediaClient.
-std::unique_ptr<mojo::ShellClient> CreateMojoMediaApplication();
+std::unique_ptr<shell::ShellClient> CreateMojoMediaApplication();
 
 }  // namespace media
 

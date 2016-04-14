@@ -5,8 +5,9 @@
 #ifndef SERVICES_SHELL_PUBLIC_CPP_SHELL_TEST_H_
 #define SERVICES_SHELL_PUBLIC_CPP_SHELL_TEST_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "services/shell/public/cpp/connector.h"
 #include "services/shell/public/cpp/shell_client.h"
 #include "services/shell/public/cpp/shell_connection.h"
@@ -16,10 +17,10 @@ namespace base {
 class MessageLoop;
 }
 
-namespace mojo {
 namespace shell {
+
 class BackgroundShell;
-}
+
 namespace test {
 
 class ShellTest;
@@ -28,7 +29,7 @@ class ShellTest;
 // to customize this should subclass this class instead of ShellClient,
 // otherwise they will have to call ShellTest::InitializeCalled() to forward
 // metadata from Initialize() to the test.
-class ShellTestClient : public mojo::ShellClient {
+class ShellTestClient : public ShellClient {
  public:
   explicit ShellTestClient(ShellTest* test);
   ~ShellTestClient() override;
@@ -69,9 +70,9 @@ class ShellTest : public testing::Test {
   // via Initialize(). Override to customize, but custom implementations must
   // call InitializeCalled() to forward the metadata so test_name() etc all
   // work.
-  virtual scoped_ptr<ShellClient> CreateShellClient();
+  virtual std::unique_ptr<ShellClient> CreateShellClient();
 
-  virtual scoped_ptr<base::MessageLoop> CreateMessageLoop();
+  virtual std::unique_ptr<base::MessageLoop> CreateMessageLoop();
 
   // Call to set Initialize() metadata when GetShellClient() is overridden.
   void InitializeCalled(Connector* connector,
@@ -86,11 +87,11 @@ class ShellTest : public testing::Test {
  private:
   friend ShellTestClient;
 
-  scoped_ptr<ShellClient> shell_client_;
+  std::unique_ptr<ShellClient> shell_client_;
 
-  scoped_ptr<base::MessageLoop> message_loop_;
-  scoped_ptr<shell::BackgroundShell> background_shell_;
-  scoped_ptr<ShellConnection> shell_connection_;
+  std::unique_ptr<base::MessageLoop> message_loop_;
+  std::unique_ptr<BackgroundShell> background_shell_;
+  std::unique_ptr<ShellConnection> shell_connection_;
 
   // See constructor.
   std::string test_name_;
@@ -106,6 +107,6 @@ class ShellTest : public testing::Test {
 };
 
 }  // namespace test
-}  // namespace mojo
+}  // namespace shell
 
 #endif  // SERVICES_SHELL_PUBLIC_CPP_SHELL_TEST_H_

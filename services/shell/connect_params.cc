@@ -4,11 +4,9 @@
 
 #include "services/shell/connect_params.h"
 
-namespace mojo {
 namespace shell {
 
 ConnectParams::ConnectParams() {}
 ConnectParams::~ConnectParams() {}
 
 }  // namespace shell
-}  // namespace mojo

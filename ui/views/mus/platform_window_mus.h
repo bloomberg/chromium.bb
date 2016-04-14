@@ -20,7 +20,7 @@ namespace bitmap_uploader {
 class BitmapUploader;
 }
 
-namespace mojo {
+namespace shell {
 class Connector;
 }
 
@@ -37,7 +37,7 @@ class VIEWS_MUS_EXPORT PlatformWindowMus
       public NON_EXPORTED_BASE(mus::InputEventHandler) {
  public:
   PlatformWindowMus(ui::PlatformWindowDelegate* delegate,
-                    mojo::Connector* connector,
+                    shell::Connector* connector,
                     mus::Window* mus_window);
   ~PlatformWindowMus() override;
 

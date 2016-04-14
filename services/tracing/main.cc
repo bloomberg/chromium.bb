@@ -7,6 +7,6 @@
 #include "services/tracing/tracing_app.h"
 
 MojoResult MojoMain(MojoHandle shell_handle) {
-  mojo::ApplicationRunner runner(new tracing::TracingApp);
+  shell::ApplicationRunner runner(new tracing::TracingApp);
   return runner.Run(shell_handle);
 }

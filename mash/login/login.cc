@@ -36,7 +36,7 @@ class Login;
 class UI : public views::WidgetDelegateView,
            public views::ButtonListener {
  public:
-  static void Show(mojo::Connector* connector, Login* login) {
+  static void Show(shell::Connector* connector, Login* login) {
     UI* ui = new UI(login, connector);
     ui->StartWindowManager();
 
@@ -60,7 +60,7 @@ class UI : public views::WidgetDelegateView,
   }
 
  private:
-  UI(Login* login, mojo::Connector* connector)
+  UI(Login* login, shell::Connector* connector)
       : login_(login),
         connector_(connector),
         user_id_1_("00000000-0000-4000-8000-000000000000"),
@@ -119,18 +119,18 @@ class UI : public views::WidgetDelegateView,
   }
 
   Login* login_;
-  mojo::Connector* connector_;
+  shell::Connector* connector_;
   const std::string user_id_1_;
   const std::string user_id_2_;
   views::LabelButton* login_button_1_;
   views::LabelButton* login_button_2_;
-  std::unique_ptr<mojo::Connection> window_manager_connection_;
+  std::unique_ptr<shell::Connection> window_manager_connection_;
 
   DISALLOW_COPY_AND_ASSIGN(UI);
 };
 
-class Login : public mojo::ShellClient,
-              public mojo::InterfaceFactory<mojom::Login>,
+class Login : public shell::ShellClient,
+              public shell::InterfaceFactory<mojom::Login>,
               public mojom::Login {
  public:
    Login() {}
@@ -144,8 +144,9 @@ class Login : public mojo::ShellClient,
   }
 
  private:
-  // mojo::ShellClient:
-  void Initialize(mojo::Connector* connector, const mojo::Identity& identity,
+  // shell::ShellClient:
+  void Initialize(shell::Connector* connector,
+                  const shell::Identity& identity,
                   uint32_t id) override {
     connector_ = connector;
     tracing_.Initialize(connector, identity.name());
@@ -155,13 +156,13 @@ class Login : public mojo::ShellClient,
     connector_->ConnectToInterface("mojo:mus", &user_access_manager_);
     user_access_manager_->SetActiveUser(identity.user_id());
   }
-  bool AcceptConnection(mojo::Connection* connection) override {
+  bool AcceptConnection(shell::Connection* connection) override {
     connection->AddInterface<mojom::Login>(this);
     return true;
   }
 
-  // mojo::InterfaceFactory<mojom::Login>:
-  void Create(mojo::Connection* connection,
+  // shell::InterfaceFactory<mojom::Login>:
+  void Create(shell::Connection* connection,
               mojom::LoginRequest request) override {
     bindings_.AddBinding(this, std::move(request));
   }
@@ -176,12 +177,12 @@ class Login : public mojo::ShellClient,
 
   void StartWindowManager();
 
-  mojo::Connector* connector_;
+  shell::Connector* connector_;
   mojo::TracingImpl tracing_;
   std::unique_ptr<views::AuraInit> aura_init_;
   mojo::BindingSet<mojom::Login> bindings_;
   mus::mojom::UserAccessManagerPtr user_access_manager_;
-  std::unique_ptr<mojo::Connection> window_manager_connection_;
+  std::unique_ptr<shell::Connection> window_manager_connection_;
 
   DISALLOW_COPY_AND_ASSIGN(Login);
 };
@@ -200,7 +201,7 @@ void UI::ButtonPressed(views::Button* sender, const ui::Event& event) {
 
 }  // namespace
 
-mojo::ShellClient* CreateLogin() {
+shell::ShellClient* CreateLogin() {
   return new Login;
 }
 

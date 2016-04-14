@@ -95,12 +95,12 @@ class HumanResourceDatabaseImpl : public HumanResourceDatabase {
 };
 
 class HumanResourceSystemServer
-    : public ShellClient,
+    : public shell::ShellClient,
       public InterfaceFactory<HumanResourceDatabase> {
  public:
   HumanResourceSystemServer() {}
 
-  // mojo::ShellClient implementation.
+  // shell::ShellClient implementation.
   bool AcceptConnection(Connection* connection) override {
     connection->AddInterface<HumanResourceDatabase>(this);
     return true;

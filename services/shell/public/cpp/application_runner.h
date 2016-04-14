@@ -5,11 +5,12 @@
 #ifndef SERVICES_SHELL_PUBLIC_CPP_APPLICATION_RUNNER_H_
 #define SERVICES_SHELL_PUBLIC_CPP_APPLICATION_RUNNER_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/message_loop/message_loop.h"
 #include "mojo/public/cpp/system/core.h"
 
-namespace mojo {
+namespace shell {
 
 class ShellClient;
 class ShellConnection;
@@ -18,7 +19,7 @@ class ShellConnection;
 // case is to use when writing your MojoMain:
 //
 //  MojoResult MojoMain(MojoHandle shell_handle) {
-//    mojo::ApplicationRunner runner(new MyDelegate());
+//    shell::ApplicationRunner runner(new MyDelegate());
 //    return runner.Run(shell_handle);
 //  }
 //
@@ -58,8 +59,8 @@ class ApplicationRunner {
   void Quit();
 
  private:
-  scoped_ptr<ShellConnection> connection_;
-  scoped_ptr<ShellClient> client_;
+  std::unique_ptr<ShellConnection> connection_;
+  std::unique_ptr<ShellClient> client_;
 
   // MessageLoop type. TYPE_CUSTOM is default (MessagePumpMojo will be used as
   // the underlying message pump).
@@ -70,6 +71,6 @@ class ApplicationRunner {
   DISALLOW_COPY_AND_ASSIGN(ApplicationRunner);
 };
 
-}  // namespace mojo
+}  // namespace shell
 
 #endif  // SERVICES_SHELL_PUBLIC_CPP_APPLICATION_RUNNER_H_

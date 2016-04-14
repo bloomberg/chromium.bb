@@ -16,7 +16,7 @@ namespace filesystem {
 class LockTable;
 }
 
-namespace mojo {
+namespace shell {
 class MessageLoopRef;
 }
 

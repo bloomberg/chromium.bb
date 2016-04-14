@@ -9,7 +9,7 @@
 
 #include "services/shell/public/interfaces/connector.mojom.h"
 
-namespace mojo {
+namespace shell {
 
 // Represents the identity of an application.
 // |name| is the structured name of the application.
@@ -41,13 +41,18 @@ class Identity {
   std::string instance_;
 };
 
+}  // namespace shell
+
+namespace mojo {
+
 template <>
-struct TypeConverter<shell::mojom::IdentityPtr, Identity> {
-  static shell::mojom::IdentityPtr Convert(const Identity& input);
+struct TypeConverter<shell::mojom::IdentityPtr, shell::Identity> {
+  static shell::mojom::IdentityPtr Convert(const shell::Identity& input);
 };
+
 template <>
-struct TypeConverter<Identity, shell::mojom::IdentityPtr> {
-  static Identity Convert(const shell::mojom::IdentityPtr& input);
+struct TypeConverter<shell::Identity, shell::mojom::IdentityPtr> {
+  static shell::Identity Convert(const shell::mojom::IdentityPtr& input);
 };
 
 }  // namespace mojo

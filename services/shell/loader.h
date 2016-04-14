@@ -10,7 +10,6 @@
 #include "services/shell/public/interfaces/connector.mojom.h"
 #include "services/shell/public/interfaces/shell_client.mojom.h"
 
-namespace mojo {
 namespace shell {
 
 // Interface to implement special loading behavior for a particular name.
@@ -23,6 +22,5 @@ class Loader {
 };
 
 }  // namespace shell
-}  // namespace mojo
 
 #endif  // SERVICES_SHELL_LOADER_H_

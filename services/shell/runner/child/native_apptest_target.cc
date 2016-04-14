@@ -18,33 +18,33 @@
 namespace {
 
 class TargetApplicationDelegate
-    : public mojo::ShellClient,
-      public mojo::shell::test::TestNativeService,
-      public mojo::InterfaceFactory<mojo::shell::test::TestNativeService> {
+    : public shell::ShellClient,
+      public shell::test::TestNativeService,
+      public shell::InterfaceFactory<shell::test::TestNativeService> {
  public:
   TargetApplicationDelegate() {}
   ~TargetApplicationDelegate() override {}
 
  private:
-  // mojo::ShellClient:
-  bool AcceptConnection(mojo::Connection* connection) override {
-    connection->AddInterface<mojo::shell::test::TestNativeService>(this);
+  // shell::ShellClient:
+  bool AcceptConnection(shell::Connection* connection) override {
+    connection->AddInterface<shell::test::TestNativeService>(this);
     return true;
   }
 
-  // mojo::shell::test::TestNativeService:
+  // shell::test::TestNativeService:
   void Invert(bool from_driver, const InvertCallback& callback) override {
     callback.Run(!from_driver);
   }
 
-  // mojo::InterfaceFactory<mojo::shell::test::TestNativeService>:
-  void Create(mojo::Connection* connection,
-              mojo::InterfaceRequest<mojo::shell::test::TestNativeService>
-                  request) override {
+  // shell::InterfaceFactory<shell::test::TestNativeService>:
+  void Create(
+      shell::Connection* connection,
+      mojo::InterfaceRequest<shell::test::TestNativeService> request) override {
     bindings_.AddBinding(this, std::move(request));
   }
 
-  mojo::BindingSet<mojo::shell::test::TestNativeService> bindings_;
+  mojo::BindingSet<shell::test::TestNativeService> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(TargetApplicationDelegate);
 };
@@ -55,8 +55,8 @@ int main(int argc, char** argv) {
   base::AtExitManager at_exit;
   base::CommandLine::Init(argc, argv);
 
-  mojo::shell::InitializeLogging();
+  shell::InitializeLogging();
 
   TargetApplicationDelegate delegate;
-  return mojo::shell::TestNativeMain(&delegate);
+  return shell::TestNativeMain(&delegate);
 }

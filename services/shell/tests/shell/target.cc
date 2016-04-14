@@ -12,18 +12,19 @@
 #include "services/shell/runner/init.h"
 #include "services/shell/tests/shell/shell_unittest.mojom.h"
 
-using mojo::shell::test::mojom::CreateInstanceTestPtr;
+using shell::test::mojom::CreateInstanceTestPtr;
 
 namespace {
 
-class Target : public mojo::ShellClient {
+class Target : public shell::ShellClient {
  public:
   Target() {}
   ~Target() override {}
 
  private:
-  // mojo::ShellClient:
-  void Initialize(mojo::Connector* connector, const mojo::Identity& identity,
+  // shell::ShellClient:
+  void Initialize(shell::Connector* connector,
+                  const shell::Identity& identity,
                   uint32_t id) override {
     CreateInstanceTestPtr service;
     connector->ConnectToInterface("mojo:shell_unittest", &service);
@@ -39,8 +40,8 @@ int main(int argc, char** argv) {
   base::AtExitManager at_exit;
   base::CommandLine::Init(argc, argv);
 
-  mojo::shell::InitializeLogging();
+  shell::InitializeLogging();
 
   Target target;
-  return mojo::shell::TestNativeMain(&target);
+  return shell::TestNativeMain(&target);
 }

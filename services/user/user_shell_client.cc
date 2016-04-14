@@ -25,7 +25,7 @@ class UserShellClient::UserServiceObjects
   ~UserServiceObjects() {}
 
   // Called on the |user_service_runner_|.
-  void OnUserServiceRequest(mojo::Connection* connection,
+  void OnUserServiceRequest(shell::Connection* connection,
                             mojom::UserServiceRequest request) {
     if (!lock_table_)
       lock_table_ = new filesystem::LockTable;
@@ -52,7 +52,7 @@ class UserShellClient::LevelDBServiceObjects
   ~LevelDBServiceObjects() {}
 
   // Called on the |leveldb_service_runner_|.
-  void OnLevelDBServiceRequest(mojo::Connection* connection,
+  void OnLevelDBServiceRequest(shell::Connection* connection,
                                leveldb::LevelDBServiceRequest request) {
     if (!leveldb_service_)
       leveldb_service_.reset(new leveldb::LevelDBServiceImpl(task_runner_));
@@ -69,7 +69,7 @@ class UserShellClient::LevelDBServiceObjects
   DISALLOW_COPY_AND_ASSIGN(LevelDBServiceObjects);
 };
 
-scoped_ptr<mojo::ShellClient> CreateUserShellClient(
+scoped_ptr<shell::ShellClient> CreateUserShellClient(
     scoped_refptr<base::SingleThreadTaskRunner> user_service_runner,
     scoped_refptr<base::SingleThreadTaskRunner> leveldb_service_runner) {
   return make_scoped_ptr(new UserShellClient(std::move(user_service_runner),
@@ -87,8 +87,8 @@ UserShellClient::~UserShellClient() {
   leveldb_service_runner_->DeleteSoon(FROM_HERE, leveldb_objects_.release());
 }
 
-void UserShellClient::Initialize(mojo::Connector* connector,
-                                 const mojo::Identity& identity,
+void UserShellClient::Initialize(shell::Connector* connector,
+                                 const shell::Identity& identity,
                                  uint32_t id) {
   tracing_.Initialize(connector, identity.name());
   user_objects_.reset(new UserShellClient::UserServiceObjects(
@@ -97,13 +97,13 @@ void UserShellClient::Initialize(mojo::Connector* connector,
       new UserShellClient::LevelDBServiceObjects(leveldb_service_runner_));
 }
 
-bool UserShellClient::AcceptConnection(mojo::Connection* connection) {
+bool UserShellClient::AcceptConnection(shell::Connection* connection) {
   connection->AddInterface<leveldb::LevelDBService>(this);
   connection->AddInterface<mojom::UserService>(this);
   return true;
 }
 
-void UserShellClient::Create(mojo::Connection* connection,
+void UserShellClient::Create(shell::Connection* connection,
                              mojom::UserServiceRequest request) {
   user_service_runner_->PostTask(
       FROM_HERE,
@@ -112,7 +112,7 @@ void UserShellClient::Create(mojo::Connection* connection,
                  base::Passed(&request)));
 }
 
-void UserShellClient::Create(mojo::Connection* connection,
+void UserShellClient::Create(shell::Connection* connection,
                              leveldb::LevelDBServiceRequest request) {
   leveldb_service_runner_->PostTask(
       FROM_HERE,

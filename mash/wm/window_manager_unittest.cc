@@ -31,9 +31,9 @@ class WindowTreeDelegateImpl : public mus::WindowTreeDelegate {
   DISALLOW_COPY_AND_ASSIGN(WindowTreeDelegateImpl);
 };
 
-class WindowManagerTest : public mojo::test::ShellTest {
+class WindowManagerTest : public shell::test::ShellTest {
  public:
-  WindowManagerTest() : mojo::test::ShellTest("exe:mash_unittests") {}
+  WindowManagerTest() : shell::test::ShellTest("exe:mash_unittests") {}
   ~WindowManagerTest() override {}
 
  private:

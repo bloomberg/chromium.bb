@@ -17,8 +17,8 @@ ViewsExamplesApplicationDelegate::~ViewsExamplesApplicationDelegate() {
 }
 
 void ViewsExamplesApplicationDelegate::Initialize(
-    mojo::Connector* connector,
-    const mojo::Identity& identity,
+    shell::Connector* connector,
+    const shell::Identity& identity,
     uint32_t id) {
   tracing_.Initialize(connector, identity.name());
   aura_init_.reset(new views::AuraInit(connector, "views_mus_resources.pak"));
@@ -30,6 +30,6 @@ void ViewsExamplesApplicationDelegate::Initialize(
 }
 
 bool ViewsExamplesApplicationDelegate::AcceptConnection(
-    mojo::Connection* connection) {
+    shell::Connection* connection) {
   return false;
 }

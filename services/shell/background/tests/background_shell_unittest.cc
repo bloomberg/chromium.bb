@@ -4,6 +4,9 @@
 
 #include "services/shell/background/background_shell.h"
 
+#include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "services/shell/background/tests/test.mojom.h"
 #include "services/shell/background/tests/test_catalog_store.h"
@@ -12,7 +15,6 @@
 #include "services/shell/public/cpp/shell_connection.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace mojo {
 namespace shell {
 namespace {
 
@@ -27,10 +29,10 @@ class ShellClientImpl : public ShellClient {
   DISALLOW_COPY_AND_ASSIGN(ShellClientImpl);
 };
 
-scoped_ptr<TestCatalogStore> BuildTestCatalogStore() {
-  scoped_ptr<base::ListValue> apps(new base::ListValue);
+std::unique_ptr<TestCatalogStore> BuildTestCatalogStore() {
+  std::unique_ptr<base::ListValue> apps(new base::ListValue);
   apps->Append(BuildPermissiveSerializedAppInfo(kTestName, "test"));
-  return make_scoped_ptr(new TestCatalogStore(std::move(apps)));
+  return base::WrapUnique(new TestCatalogStore(std::move(apps)));
 }
 
 }  // namespace
@@ -48,9 +50,9 @@ scoped_ptr<TestCatalogStore> BuildTestCatalogStore() {
 TEST(BackgroundShellTest, MAYBE_Basic) {
   base::MessageLoop message_loop;
   BackgroundShell background_shell;
-  scoped_ptr<BackgroundShell::InitParams> init_params(
+  std::unique_ptr<BackgroundShell::InitParams> init_params(
       new BackgroundShell::InitParams);
-  scoped_ptr<TestCatalogStore> store_ptr = BuildTestCatalogStore();
+  std::unique_ptr<TestCatalogStore> store_ptr = BuildTestCatalogStore();
   TestCatalogStore* store = store_ptr.get();
   init_params->catalog_store = std::move(store_ptr);
   background_shell.Init(std::move(init_params));
@@ -72,4 +74,3 @@ TEST(BackgroundShellTest, MAYBE_Basic) {
 }
 
 }  // namespace shell
-}  // namespace mojo

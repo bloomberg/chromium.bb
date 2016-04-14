@@ -22,7 +22,7 @@ namespace content {
 
 class CONTENT_EXPORT ServiceRegistryImpl
     : public ServiceRegistry,
-      public NON_EXPORTED_BASE(mojo::shell::mojom::InterfaceProvider) {
+      public NON_EXPORTED_BASE(shell::mojom::InterfaceProvider) {
  public:
   using ServiceFactory = base::Callback<void(mojo::ScopedMessagePipeHandle)>;
 
@@ -30,14 +30,14 @@ class CONTENT_EXPORT ServiceRegistryImpl
   ~ServiceRegistryImpl() override;
 
   // Binds this ServiceProvider implementation to a message pipe endpoint.
-  void Bind(mojo::shell::mojom::InterfaceProviderRequest request);
+  void Bind(shell::mojom::InterfaceProviderRequest request);
 
   // Binds to a remote ServiceProvider. This will expose added services to the
   // remote ServiceProvider with the corresponding handle and enable
   // ConnectToRemoteService to provide access to services exposed by the remote
   // ServiceProvider.
   void BindRemoteServiceProvider(
-      mojo::shell::mojom::InterfaceProviderPtr service_provider);
+      shell::mojom::InterfaceProviderPtr service_provider);
 
   // ServiceRegistry overrides.
   void AddService(const std::string& service_name,
@@ -61,8 +61,8 @@ class CONTENT_EXPORT ServiceRegistryImpl
 
   void OnConnectionError();
 
-  mojo::Binding<mojo::shell::mojom::InterfaceProvider> binding_;
-  mojo::shell::mojom::InterfaceProviderPtr remote_provider_;
+  mojo::Binding<shell::mojom::InterfaceProvider> binding_;
+  shell::mojom::InterfaceProviderPtr remote_provider_;
 
   std::map<std::string, ServiceFactory> service_factories_;
   std::queue<std::pair<std::string, mojo::MessagePipeHandle> >

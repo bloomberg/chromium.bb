@@ -9,7 +9,6 @@
 #include "services/shell/public/cpp/connection.h"
 #include "services/shell/public/cpp/shell_client.h"
 
-namespace mojo {
 namespace shell {
 
 class TestClient : public ShellClient,
@@ -31,7 +30,7 @@ class TestClient : public ShellClient,
 
   // InterfaceFactory<mojom::TestService>:
   void Create(Connection* connection,
-              InterfaceRequest<mojom::TestService> request) override {
+              mojo::InterfaceRequest<mojom::TestService> request) override {
     bindings_.AddBinding(this, std::move(request));
   }
 
@@ -40,15 +39,14 @@ class TestClient : public ShellClient,
     callback.Run();
   }
 
-  BindingSet<mojom::TestService> bindings_;
+  mojo::BindingSet<mojom::TestService> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(TestClient);
 };
 
 }  // namespace shell
-}  // namespace mojo
 
 MojoResult MojoMain(MojoHandle shell_handle) {
-  mojo::ApplicationRunner runner(new mojo::shell::TestClient);
+  shell::ApplicationRunner runner(new shell::TestClient);
   return runner.Run(shell_handle);
 }

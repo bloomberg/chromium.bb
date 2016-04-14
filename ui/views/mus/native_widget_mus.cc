@@ -238,7 +238,7 @@ class NativeWidgetMus::MusWindowObserver : public mus::WindowObserver {
 // NativeWidgetMus, public:
 
 NativeWidgetMus::NativeWidgetMus(internal::NativeWidgetDelegate* delegate,
-                                 mojo::Connector* connector,
+                                 shell::Connector* connector,
                                  mus::Window* window,
                                  mus::mojom::SurfaceType surface_type)
     : window_(window),

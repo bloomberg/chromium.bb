@@ -7,7 +7,7 @@
 #include "base/guid.h"
 #include "services/shell/public/cpp/names.h"
 
-namespace mojo {
+namespace shell {
 
 Identity::Identity() {}
 
@@ -40,10 +40,14 @@ bool Identity::operator==(const Identity& other) const {
          other.user_id_ == user_id_;
 }
 
+}  // namespace shell
+
+namespace mojo {
+
 // static
 shell::mojom::IdentityPtr
-    TypeConverter<shell::mojom::IdentityPtr, Identity>::Convert(
-        const Identity& input) {
+TypeConverter<shell::mojom::IdentityPtr, shell::Identity>::Convert(
+    const shell::Identity& input) {
   shell::mojom::IdentityPtr identity(shell::mojom::Identity::New());
   identity->name = input.name();
   identity->user_id = input.user_id();
@@ -52,9 +56,10 @@ shell::mojom::IdentityPtr
 }
 
 // static
-Identity TypeConverter<Identity, shell::mojom::IdentityPtr>::Convert(
+shell::Identity
+TypeConverter<shell::Identity, shell::mojom::IdentityPtr>::Convert(
     const shell::mojom::IdentityPtr& input) {
-  return Identity(input->name, input->user_id, input->instance);
+  return shell::Identity(input->name, input->user_id, input->instance);
 }
 
 }  // namespace mojo

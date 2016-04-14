@@ -8,6 +8,6 @@ import "services/shell/public/interfaces/shell_client.mojom";
 
 interface ProcessControl {
   LoadApplication(string url,
-                  mojo.shell.mojom.ShellClient& request) => (bool success);
+                  shell.mojom.ShellClient& request) => (bool success);
 };
 

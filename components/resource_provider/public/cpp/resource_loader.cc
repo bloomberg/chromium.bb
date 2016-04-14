@@ -26,7 +26,7 @@ base::File GetFileFromHandle(mojo::ScopedHandle handle) {
 }
 }
 
-ResourceLoader::ResourceLoader(mojo::Connector* connector,
+ResourceLoader::ResourceLoader(shell::Connector* connector,
                                const std::set<std::string>& paths)
     : loaded_(false), did_block_(false) {
   connector->ConnectToInterface("mojo:resource_provider", &resource_provider_);

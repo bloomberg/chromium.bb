@@ -11,7 +11,6 @@ namespace base {
 class CommandLine;
 }
 
-namespace mojo {
 namespace shell {
 
 // Creates a new ShellClient pipe and returns one end of it. The other end is
@@ -27,6 +26,5 @@ mojom::ShellClientPtr PassShellClientRequestOnCommandLine(
 mojom::ShellClientRequest GetShellClientRequestFromCommandLine();
 
 }  // namespace shell
-}  // namespace mojo
 
 #endif  // SERVICES_SHELL_RUNNER_COMMON_CLIENT_UTIL_H_

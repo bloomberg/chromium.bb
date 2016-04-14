@@ -32,7 +32,7 @@ VideoRendererSink* MojoMediaClient::CreateVideoRendererSink(
 }
 
 std::unique_ptr<CdmFactory> MojoMediaClient::CreateCdmFactory(
-    mojo::shell::mojom::InterfaceProvider* interface_provider) {
+    shell::mojom::InterfaceProvider* interface_provider) {
   return nullptr;
 }
 

@@ -33,9 +33,9 @@ class RendererFactory;
 class ServiceFactoryImpl : public interfaces::ServiceFactory {
  public:
   ServiceFactoryImpl(mojo::InterfaceRequest<interfaces::ServiceFactory> request,
-                     mojo::shell::mojom::InterfaceProvider* interfaces,
+                     shell::mojom::InterfaceProvider* interfaces,
                      scoped_refptr<MediaLog> media_log,
-                     std::unique_ptr<mojo::MessageLoopRef> parent_app_refcount,
+                     std::unique_ptr<shell::MessageLoopRef> parent_app_refcount,
                      MojoMediaClient* mojo_media_client);
   ~ServiceFactoryImpl() final;
 
@@ -62,9 +62,9 @@ class ServiceFactoryImpl : public interfaces::ServiceFactory {
 
   MojoCdmServiceContext cdm_service_context_;
   mojo::StrongBinding<interfaces::ServiceFactory> binding_;
-  mojo::shell::mojom::InterfaceProvider* interfaces_;
+  shell::mojom::InterfaceProvider* interfaces_;
   scoped_refptr<MediaLog> media_log_;
-  std::unique_ptr<mojo::MessageLoopRef> parent_app_refcount_;
+  std::unique_ptr<shell::MessageLoopRef> parent_app_refcount_;
   MojoMediaClient* mojo_media_client_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceFactoryImpl);

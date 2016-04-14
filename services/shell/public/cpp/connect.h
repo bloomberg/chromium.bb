@@ -9,17 +9,17 @@
 
 #include "services/shell/public/interfaces/interface_provider.mojom.h"
 
-namespace mojo {
+namespace shell {
 
 // Binds |ptr| to a remote implementation of Interface from |interfaces|.
 template <typename Interface>
-inline void GetInterface(shell::mojom::InterfaceProvider* interfaces,
-                         InterfacePtr<Interface>* ptr) {
-  MessagePipe pipe;
-  ptr->Bind(InterfacePtrInfo<Interface>(std::move(pipe.handle0), 0u));
+inline void GetInterface(mojom::InterfaceProvider* interfaces,
+                         mojo::InterfacePtr<Interface>* ptr) {
+  mojo::MessagePipe pipe;
+  ptr->Bind(mojo::InterfacePtrInfo<Interface>(std::move(pipe.handle0), 0u));
   interfaces->GetInterface(Interface::Name_, std::move(pipe.handle1));
 }
 
-}  // namespace mojo
+}  // namespace shell
 
 #endif  // SERVICES_SHELL_PUBLIC_CPP_CONNECT_H_

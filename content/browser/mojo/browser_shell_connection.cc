@@ -10,12 +10,12 @@
 namespace content {
 
 BrowserShellConnection::BrowserShellConnection(
-    mojo::shell::mojom::ShellClientRequest request)
-    : shell_connection_(new mojo::ShellConnection(this, std::move(request))) {}
+    shell::mojom::ShellClientRequest request)
+    : shell_connection_(new shell::ShellConnection(this, std::move(request))) {}
 
 BrowserShellConnection::~BrowserShellConnection() {}
 
-mojo::Connector* BrowserShellConnection::GetConnector() {
+shell::Connector* BrowserShellConnection::GetConnector() {
   return shell_connection_->connector();
 }
 
@@ -30,18 +30,17 @@ void BrowserShellConnection::AddEmbeddedApplication(
   DCHECK(result.second);
 }
 
-bool BrowserShellConnection::AcceptConnection(mojo::Connection* connection) {
+bool BrowserShellConnection::AcceptConnection(shell::Connection* connection) {
   std::string remote_app = connection->GetRemoteIdentity().name();
   if (remote_app == "mojo:shell") {
     // Only expose the SCF interface to the shell.
-    connection->AddInterface<mojo::shell::mojom::ShellClientFactory>(this);
+    connection->AddInterface<shell::mojom::ShellClientFactory>(this);
     return true;
   }
 
   // Allow connections from the root browser application.
   if (remote_app == kBrowserMojoApplicationName &&
-      connection->GetRemoteIdentity().user_id() ==
-          mojo::shell::mojom::kRootUserID)
+      connection->GetRemoteIdentity().user_id() == shell::mojom::kRootUserID)
     return true;
 
   // Reject all other connections to this application.
@@ -49,13 +48,13 @@ bool BrowserShellConnection::AcceptConnection(mojo::Connection* connection) {
 }
 
 void BrowserShellConnection::Create(
-    mojo::Connection* connection,
-    mojo::shell::mojom::ShellClientFactoryRequest request) {
+    shell::Connection* connection,
+    shell::mojom::ShellClientFactoryRequest request) {
   factory_bindings_.AddBinding(this, std::move(request));
 }
 
 void BrowserShellConnection::CreateShellClient(
-    mojo::shell::mojom::ShellClientRequest request,
+    shell::mojom::ShellClientRequest request,
     const mojo::String& name) {
   auto it = embedded_apps_.find(name);
   if (it != embedded_apps_.end())

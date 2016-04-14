@@ -114,7 +114,7 @@ gfx::ImageSkia GetShelfIconFromSerializedBitmap(
 
 ShelfDelegateMus::ShelfDelegateMus(ShelfModel* model)
     : model_(model), binding_(this) {
-  mojo::Connector* connector =
+  ::shell::Connector* connector =
       views::WindowManagerConnection::Get()->connector();
   connector->ConnectToInterface("mojo:desktop_wm", &user_window_controller_);
   user_window_controller_->AddUserWindowObserver(

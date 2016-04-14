@@ -24,7 +24,6 @@
 #include <unistd.h>
 #endif
 
-namespace mojo {
 namespace shell {
 
 void InitializeLogging() {
@@ -85,4 +84,3 @@ void CallLibraryEarlyInitialization(base::NativeLibrary app_library) {
 }
 
 }  // namespace shell
-}  // namespace mojo

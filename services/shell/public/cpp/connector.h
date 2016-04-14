@@ -5,13 +5,15 @@
 #ifndef SERVICES_SHELL_PUBLIC_CPP_CONNECTOR_H_
 #define SERVICES_SHELL_PUBLIC_CPP_CONNECTOR_H_
 
+#include <memory>
+
 #include "services/shell/public/cpp/connection.h"
 #include "services/shell/public/cpp/identity.h"
 #include "services/shell/public/interfaces/connector.mojom.h"
 #include "services/shell/public/interfaces/shell.mojom.h"
 #include "services/shell/public/interfaces/shell_client.mojom.h"
 
-namespace mojo {
+namespace shell {
 
 // An interface that encapsulates the Mojo Shell's broker interface by which
 // connections between applications are established. Once Connect() is called,
@@ -40,22 +42,22 @@ class Connector {
     const Identity& target() { return target_; }
     void set_target(const Identity& target) { target_ = target; }
     void set_client_process_connection(
-        shell::mojom::ShellClientPtr shell_client,
-        shell::mojom::PIDReceiverRequest pid_receiver_request) {
+        mojom::ShellClientPtr shell_client,
+        mojom::PIDReceiverRequest pid_receiver_request) {
       shell_client_ = std::move(shell_client);
       pid_receiver_request_ = std::move(pid_receiver_request);
     }
     void TakeClientProcessConnection(
-        shell::mojom::ShellClientPtr* shell_client,
-        shell::mojom::PIDReceiverRequest* pid_receiver_request) {
+        mojom::ShellClientPtr* shell_client,
+        mojom::PIDReceiverRequest* pid_receiver_request) {
       *shell_client = std::move(shell_client_);
       *pid_receiver_request = std::move(pid_receiver_request_);
     }
 
    private:
     Identity target_;
-    shell::mojom::ShellClientPtr shell_client_;
-    shell::mojom::PIDReceiverRequest pid_receiver_request_;
+    mojom::ShellClientPtr shell_client_;
+    mojom::PIDReceiverRequest pid_receiver_request_;
 
     DISALLOW_COPY_AND_ASSIGN(ConnectParams);
   };
@@ -66,26 +68,27 @@ class Connector {
   // Once this method is called, this object is bound to the thread on which the
   // call took place. To pass to another thread, call Clone() and pass the
   // result.
-  virtual scoped_ptr<Connection> Connect(const std::string& name) = 0;
-  virtual scoped_ptr<Connection> Connect(ConnectParams* params) = 0;
+  virtual std::unique_ptr<Connection> Connect(const std::string& name) = 0;
+  virtual std::unique_ptr<Connection> Connect(ConnectParams* params) = 0;
 
   // Connect to application identified by |request->name| and connect to the
   // service implementation of the interface identified by |Interface|.
   template <typename Interface>
-  void ConnectToInterface(ConnectParams* params, InterfacePtr<Interface>* ptr) {
-    scoped_ptr<Connection> connection = Connect(params);
+  void ConnectToInterface(ConnectParams* params,
+                          mojo::InterfacePtr<Interface>* ptr) {
+    std::unique_ptr<Connection> connection = Connect(params);
     if (connection)
       connection->GetInterface(ptr);
   }
   template <typename Interface>
   void ConnectToInterface(const Identity& target,
-                          InterfacePtr<Interface>* ptr) {
+                          mojo::InterfacePtr<Interface>* ptr) {
     ConnectParams params(target);
     return ConnectToInterface(&params, ptr);
   }
   template <typename Interface>
   void ConnectToInterface(const std::string& name,
-                          InterfacePtr<Interface>* ptr) {
+                          mojo::InterfacePtr<Interface>* ptr) {
     ConnectParams params(name);
     return ConnectToInterface(&params, ptr);
   }
@@ -93,9 +96,9 @@ class Connector {
   // Creates a new instance of this class which may be passed to another thread.
   // The returned object may be passed multiple times until Connect() is called,
   // at which point this method must be called again to pass again.
-  virtual scoped_ptr<Connector> Clone() = 0;
+  virtual std::unique_ptr<Connector> Clone() = 0;
 };
 
-}  // namespace mojo
+}  // namespace shell
 
 #endif  // SERVICES_SHELL_PUBLIC_CPP_CONNECTOR_H_

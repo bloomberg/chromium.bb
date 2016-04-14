@@ -4,7 +4,7 @@
 
 #include "services/shell/switches.h"
 
-namespace mojo {
+namespace shell {
 namespace switches {
 
 // Disables the sandbox for debugging.
@@ -14,4 +14,4 @@ const char kNoSandbox[] = "no-sandbox";
 const char kSingleProcess[] = "single-process";
 
 }  // namespace switches
-}  // namespace mojo
+}  // namespace shell

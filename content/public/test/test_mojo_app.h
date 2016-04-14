@@ -17,19 +17,19 @@ extern const char kTestMojoAppUrl[];
 
 // Simple Mojo app which provides a mojom::TestMojoService impl. The app
 // terminates itself after its TestService fulfills a single DoSomething call.
-class TestMojoApp : public mojo::ShellClient,
-                    public mojo::InterfaceFactory<mojom::TestMojoService>,
+class TestMojoApp : public shell::ShellClient,
+                    public shell::InterfaceFactory<mojom::TestMojoService>,
                     public mojom::TestMojoService {
  public:
   TestMojoApp();
   ~TestMojoApp() override;
 
  private:
-  // mojo::ShellClient:
-  bool AcceptConnection(mojo::Connection* connection) override;
+  // shell::ShellClient:
+  bool AcceptConnection(shell::Connection* connection) override;
 
-  // mojo::InterfaceFactory<mojom::TestMojoService>:
-  void Create(mojo::Connection* connection,
+  // shell::InterfaceFactory<mojom::TestMojoService>:
+  void Create(shell::Connection* connection,
               mojo::InterfaceRequest<mojom::TestMojoService> request) override;
 
   // TestMojoService:

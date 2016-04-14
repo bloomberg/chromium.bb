@@ -19,7 +19,7 @@ using mojo::Capture;
 namespace leveldb {
 namespace {
 
-class LevelDBServiceTest : public mojo::test::ShellTest {
+class LevelDBServiceTest : public shell::test::ShellTest {
  public:
   LevelDBServiceTest() : ShellTest("exe:leveldb_service_unittests") {}
   ~LevelDBServiceTest() override {}

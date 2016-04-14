@@ -5,13 +5,11 @@
 #ifndef SERVICES_SHELL_RUNNER_HOST_CHILD_PROCESS_H_
 #define SERVICES_SHELL_RUNNER_HOST_CHILD_PROCESS_H_
 
-namespace mojo {
 namespace shell {
 
 // Main method for a child process.
 int ChildProcessMain();
 
 }  // namespace shell
-}  // namespace mojo
 
 #endif  // SERVICES_SHELL_RUNNER_HOST_CHILD_PROCESS_H_

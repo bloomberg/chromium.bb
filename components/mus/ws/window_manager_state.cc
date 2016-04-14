@@ -94,7 +94,7 @@ WindowManagerState::WindowManagerState(Display* display,
                          platform_display,
                          surface_id,
                          false,
-                         mojo::shell::mojom::kRootUserID) {}
+                         shell::mojom::kRootUserID) {}
 
 WindowManagerState::WindowManagerState(Display* display,
                                        PlatformDisplay* platform_display,

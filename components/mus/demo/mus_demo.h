@@ -31,7 +31,7 @@ namespace mus_demo {
 // A simple MUS Demo mojo app. This app connects to the mojo:mus, creates a new
 // window and draws a spinning square in the center of the window. Provides a
 // simple way to demonstrate that the graphic stack works as intended.
-class MusDemo : public mojo::ShellClient,
+class MusDemo : public shell::ShellClient,
                 public mus::WindowTreeDelegate,
                 public mus::WindowManagerDelegate {
  public:
@@ -39,11 +39,11 @@ class MusDemo : public mojo::ShellClient,
   ~MusDemo() override;
 
  private:
-  // mojo::ShellClient:
-  void Initialize(mojo::Connector* connector,
-                  const mojo::Identity& identity,
+  // shell::ShellClient:
+  void Initialize(shell::Connector* connector,
+                  const shell::Identity& identity,
                   uint32_t id) override;
-  bool AcceptConnection(mojo::Connection* connection) override;
+  bool AcceptConnection(shell::Connection* connection) override;
 
   // WindowTreeDelegate:
   void OnEmbed(mus::Window* root) override;
@@ -66,7 +66,7 @@ class MusDemo : public mojo::ShellClient,
   // Draws one frame, incrementing the rotation angle.
   void DrawFrame();
 
-  mojo::Connector* connector_ = nullptr;
+  shell::Connector* connector_ = nullptr;
 
   mus::Window* window_ = nullptr;
   mus::mojom::WindowTreeHostPtr window_tree_host_;

@@ -4,6 +4,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <utility>
 
 #include "base/at_exit.h"
@@ -12,7 +13,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
@@ -36,16 +36,17 @@
 
 namespace {
 
-class Driver : public mojo::ShellClient,
-               public mojo::InterfaceFactory<mojo::shell::test::mojom::Driver>,
-               public mojo::shell::test::mojom::Driver {
+class Driver : public shell::ShellClient,
+               public shell::InterfaceFactory<shell::test::mojom::Driver>,
+               public shell::test::mojom::Driver {
  public:
   Driver() : weak_factory_(this) {}
   ~Driver() override {}
 
  private:
-  // mojo::ShellClient:
-  void Initialize(mojo::Connector* connector, const mojo::Identity& identity,
+  // shell::ShellClient:
+  void Initialize(shell::Connector* connector,
+                  const shell::Identity& identity,
                   uint32_t id) override {
     base::FilePath target_path;
     CHECK(base::PathService::Get(base::DIR_EXE, &target_path));
@@ -72,16 +73,16 @@ class Driver : public mojo::ShellClient,
     platform_channel_pair.PrepareToPassClientHandleToChildProcess(
         &child_command_line, &handle_passing_info);
 
-    mojo::shell::mojom::ShellClientPtr client =
-        mojo::shell::PassShellClientRequestOnCommandLine(&child_command_line);
-    mojo::shell::mojom::PIDReceiverPtr receiver;
+    shell::mojom::ShellClientPtr client =
+        shell::PassShellClientRequestOnCommandLine(&child_command_line);
+    shell::mojom::PIDReceiverPtr receiver;
 
-    mojo::Identity target("exe:shell_unittest_target",
-                          mojo::shell::mojom::kInheritUserID);
-    mojo::Connector::ConnectParams params(target);
+    shell::Identity target("exe:shell_unittest_target",
+                           shell::mojom::kInheritUserID);
+    shell::Connector::ConnectParams params(target);
     params.set_client_process_connection(std::move(client),
                                          GetProxy(&receiver));
-    scoped_ptr<mojo::Connection> connection = connector->Connect(&params);
+    std::unique_ptr<shell::Connection> connection = connector->Connect(&params);
     connection->AddConnectionCompletedClosure(
         base::Bind(&Driver::OnConnectionCompleted, base::Unretained(this)));
 
@@ -98,14 +99,14 @@ class Driver : public mojo::ShellClient,
                                     platform_channel_pair.PassServerHandle());
   }
 
-  bool AcceptConnection(mojo::Connection* connection) override {
-    connection->AddInterface<mojo::shell::test::mojom::Driver>(this);
+  bool AcceptConnection(shell::Connection* connection) override {
+    connection->AddInterface<shell::test::mojom::Driver>(this);
     return true;
   }
 
-  // mojo::InterfaceFactory<Driver>:
-  void Create(mojo::Connection* connection,
-              mojo::shell::test::mojom::DriverRequest request) override {
+  // shell::InterfaceFactory<Driver>:
+  void Create(shell::Connection* connection,
+              shell::test::mojom::DriverRequest request) override {
     bindings_.AddBinding(this, std::move(request));
   }
 
@@ -118,7 +119,7 @@ class Driver : public mojo::ShellClient,
   void OnConnectionCompleted() {}
 
   base::Process target_;
-  mojo::BindingSet<mojo::shell::test::mojom::Driver> bindings_;
+  mojo::BindingSet<shell::test::mojom::Driver> bindings_;
   base::WeakPtrFactory<Driver> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(Driver);
@@ -130,8 +131,8 @@ int main(int argc, char** argv) {
   base::AtExitManager at_exit;
   base::CommandLine::Init(argc, argv);
 
-  mojo::shell::InitializeLogging();
+  shell::InitializeLogging();
 
   Driver driver;
-  return mojo::shell::TestNativeMain(&driver);
+  return shell::TestNativeMain(&driver);
 }

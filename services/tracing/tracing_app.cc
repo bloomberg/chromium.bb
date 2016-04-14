@@ -21,7 +21,7 @@ TracingApp::TracingApp() : collector_binding_(this), tracing_active_(false) {
 TracingApp::~TracingApp() {
 }
 
-bool TracingApp::AcceptConnection(mojo::Connection* connection) {
+bool TracingApp::AcceptConnection(shell::Connection* connection) {
   connection->AddInterface<TraceCollector>(this);
   connection->AddInterface<StartupPerformanceDataCollector>(this);
 
@@ -50,13 +50,13 @@ bool TracingApp::ShellConnectionLost() {
   return false;
 }
 
-void TracingApp::Create(mojo::Connection* connection,
+void TracingApp::Create(shell::Connection* connection,
                         mojo::InterfaceRequest<TraceCollector> request) {
   collector_binding_.Bind(std::move(request));
 }
 
 void TracingApp::Create(
-    mojo::Connection* connection,
+    shell::Connection* connection,
     mojo::InterfaceRequest<StartupPerformanceDataCollector> request) {
   startup_performance_data_collector_bindings_.AddBinding(this,
                                                           std::move(request));

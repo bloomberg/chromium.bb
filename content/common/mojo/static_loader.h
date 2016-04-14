@@ -16,20 +16,20 @@ namespace base {
 class SimpleThread;
 }
 
-namespace mojo {
+namespace shell {
 class ShellClient;
 }
 
 namespace content {
 
 // An Loader which loads a single type of app from a given
-// mojo::ShellClientFactory. A Load() request is fulfilled by creating an
+// shell::ShellClientFactory. A Load() request is fulfilled by creating an
 // instance of the app on a new thread. Only one instance of the app will run at
 // a time. Any Load requests received while the app is running will be dropped.
-class StaticLoader : public mojo::shell::Loader {
+class StaticLoader : public shell::Loader {
  public:
   using ApplicationFactory =
-      base::Callback<std::unique_ptr<mojo::ShellClient>()>;
+      base::Callback<std::unique_ptr<shell::ShellClient>()>;
 
   // Constructs a static loader for |factory|.
   explicit StaticLoader(const ApplicationFactory& factory);
@@ -41,9 +41,9 @@ class StaticLoader : public mojo::shell::Loader {
 
   ~StaticLoader() override;
 
-  // mojo::shell::Loader:
+  // shell::Loader:
   void Load(const std::string& name,
-            mojo::shell::mojom::ShellClientRequest request) override;
+            shell::mojom::ShellClientRequest request) override;
 
  private:
   void StopAppThread();

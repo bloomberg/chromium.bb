@@ -42,7 +42,7 @@ FrameMojoShell::FrameMojoShell(RenderFrameHost* frame_host)
 FrameMojoShell::~FrameMojoShell() {
 }
 
-void FrameMojoShell::BindRequest(mojo::shell::mojom::ConnectorRequest request) {
+void FrameMojoShell::BindRequest(shell::mojom::ConnectorRequest request) {
   connectors_.AddBinding(this, std::move(request));
 }
 
@@ -50,12 +50,12 @@ void FrameMojoShell::BindRequest(mojo::shell::mojom::ConnectorRequest request) {
 // drop it and replace it with services we provide in the browser. In the
 // future we may need to support both.
 void FrameMojoShell::Connect(
-    mojo::shell::mojom::IdentityPtr target,
-    mojo::shell::mojom::InterfaceProviderRequest services,
-    mojo::shell::mojom::InterfaceProviderPtr /* exposed_services */,
-    mojo::shell::mojom::ClientProcessConnectionPtr client_process_connection,
-    const mojo::shell::mojom::Connector::ConnectCallback& callback) {
-  mojo::shell::mojom::InterfaceProviderPtr frame_services;
+    shell::mojom::IdentityPtr target,
+    shell::mojom::InterfaceProviderRequest services,
+    shell::mojom::InterfaceProviderPtr /* exposed_services */,
+    shell::mojom::ClientProcessConnectionPtr client_process_connection,
+    const shell::mojom::Connector::ConnectCallback& callback) {
+  shell::mojom::InterfaceProviderPtr frame_services;
   service_provider_bindings_.AddBinding(GetServiceRegistry(),
                                         GetProxy(&frame_services));
   std::string mojo_user_id = BrowserContext::GetMojoUserIdFor(
@@ -66,7 +66,7 @@ void FrameMojoShell::Connect(
       std::move(frame_services), callback);
 }
 
-void FrameMojoShell::Clone(mojo::shell::mojom::ConnectorRequest request) {
+void FrameMojoShell::Clone(shell::mojom::ConnectorRequest request) {
   connectors_.AddBinding(this, std::move(request));
 }
 

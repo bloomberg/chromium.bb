@@ -18,11 +18,9 @@ namespace base {
 class SingleThreadTaskRunner;
 }
 
-namespace mojo {
 namespace shell {
 namespace mojom {
 class InterfaceProvider;
-}
 }
 }
 
@@ -55,7 +53,7 @@ class MojoMediaClient {
 
   // Returns the CdmFactory to be used by MojoCdmService.
   virtual std::unique_ptr<CdmFactory> CreateCdmFactory(
-      mojo::shell::mojom::InterfaceProvider* interface_provider);
+      shell::mojom::InterfaceProvider* interface_provider);
 
  protected:
   MojoMediaClient();

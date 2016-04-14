@@ -55,15 +55,15 @@ BrowserDriverApplicationDelegate::BrowserDriverApplicationDelegate()
 BrowserDriverApplicationDelegate::~BrowserDriverApplicationDelegate() {}
 
 void BrowserDriverApplicationDelegate::Initialize(
-    mojo::Connector* connector,
-    const mojo::Identity& identity,
+    shell::Connector* connector,
+    const shell::Identity& identity,
     uint32_t id) {
   connector_ = connector;
   AddAccelerators();
 }
 
 bool BrowserDriverApplicationDelegate::AcceptConnection(
-    mojo::Connection* connection) {
+    shell::Connection* connection) {
   return true;
 }
 

@@ -56,7 +56,7 @@ class EntryTest : public testing::Test {
 TEST_F(EntryTest, Simple) {
   scoped_ptr<Entry> entry = ReadEntry("simple", nullptr);
   EXPECT_EQ("mojo:foo", entry->name());
-  EXPECT_EQ(mojo::GetNamePath(entry->name()), entry->qualifier());
+  EXPECT_EQ(shell::GetNamePath(entry->name()), entry->qualifier());
   EXPECT_EQ("Foo", entry->display_name());
 }
 
@@ -73,8 +73,8 @@ TEST_F(EntryTest, Capabilities) {
   EXPECT_EQ("mojo:foo", entry->name());
   EXPECT_EQ("bar", entry->qualifier());
   EXPECT_EQ("Foo", entry->display_name());
-  mojo::CapabilitySpec spec;
-  mojo::CapabilityRequest request;
+  shell::CapabilitySpec spec;
+  shell::CapabilityRequest request;
   request.interfaces.insert("mojo::Bar");
   spec.required["mojo:bar"] = request;
   EXPECT_EQ(spec, entry->capabilities());

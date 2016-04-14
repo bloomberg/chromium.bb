@@ -13,21 +13,21 @@
 
 namespace leveldb {
 
-class LevelDBApp : public mojo::ShellClient,
-                   public mojo::InterfaceFactory<LevelDBService> {
+class LevelDBApp : public shell::ShellClient,
+                   public shell::InterfaceFactory<LevelDBService> {
  public:
   LevelDBApp();
   ~LevelDBApp() override;
 
  private:
   // |ShellClient| override:
-  void Initialize(mojo::Connector* connector,
-                  const mojo::Identity& identity,
+  void Initialize(shell::Connector* connector,
+                  const shell::Identity& identity,
                   uint32_t id) override;
-  bool AcceptConnection(mojo::Connection* connection) override;
+  bool AcceptConnection(shell::Connection* connection) override;
 
   // |InterfaceFactory<LevelDBService>| implementation:
-  void Create(mojo::Connection* connection,
+  void Create(shell::Connection* connection,
               leveldb::LevelDBServiceRequest request) override;
 
   mojo::TracingImpl tracing_;

@@ -11,7 +11,8 @@
 
 #include "services/shell/public/interfaces/shell_resolver.mojom.h"
 
-namespace mojo {
+namespace shell {
+
 using Class = std::string;
 using Classes = std::set<std::string>;
 using Interface = std::string;
@@ -41,29 +42,36 @@ struct CapabilitySpec {
   std::map<Name, CapabilityRequest> required;
 };
 
+}  // namespace shell
+
+namespace mojo {
+
 template <>
-struct TypeConverter<shell::mojom::CapabilitySpecPtr, CapabilitySpec> {
+struct TypeConverter<shell::mojom::CapabilitySpecPtr, shell::CapabilitySpec> {
   static shell::mojom::CapabilitySpecPtr Convert(
-      const CapabilitySpec& input);
+      const shell::CapabilitySpec& input);
 };
+
 template <>
-struct TypeConverter<CapabilitySpec, shell::mojom::CapabilitySpecPtr> {
-  static CapabilitySpec Convert(
+struct TypeConverter<shell::CapabilitySpec, shell::mojom::CapabilitySpecPtr> {
+  static shell::CapabilitySpec Convert(
       const shell::mojom::CapabilitySpecPtr& input);
 };
 
 template <>
 struct TypeConverter<shell::mojom::CapabilityRequestPtr,
-                     CapabilityRequest> {
+                     shell::CapabilityRequest> {
   static shell::mojom::CapabilityRequestPtr Convert(
-      const CapabilityRequest& input);
+      const shell::CapabilityRequest& input);
 };
+
 template <>
-struct TypeConverter<CapabilityRequest,
+struct TypeConverter<shell::CapabilityRequest,
                      shell::mojom::CapabilityRequestPtr> {
-  static CapabilityRequest Convert(
+  static shell::CapabilityRequest Convert(
       const shell::mojom::CapabilityRequestPtr& input);
 };
+
 }  // namespace mojo
 
 #endif  // SERVICES_SHELL_PUBLIC_CPP_CAPABILITIES_H_

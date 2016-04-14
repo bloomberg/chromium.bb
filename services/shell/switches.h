@@ -8,7 +8,7 @@
 #include <set>
 #include <string>
 
-namespace mojo {
+namespace shell {
 namespace switches {
 
 // All switches in alphabetical order. The switches should be documented
@@ -17,6 +17,6 @@ extern const char kNoSandbox[];
 extern const char kSingleProcess[];
 
 }  // namespace switches
-}  // namespace mojo
+}  // namespace shell
 
 #endif  // SERVICES_SHELL_SWITCHES_H_

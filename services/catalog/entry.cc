@@ -13,16 +13,15 @@
 namespace catalog {
 namespace {
 
-mojo::CapabilitySpec BuildCapabilitiesV0(
-    const base::DictionaryValue& value) {
-  mojo::CapabilitySpec capabilities;
+shell::CapabilitySpec BuildCapabilitiesV0(const base::DictionaryValue& value) {
+  shell::CapabilitySpec capabilities;
   base::DictionaryValue::Iterator it(value);
   for (; !it.IsAtEnd(); it.Advance()) {
     const base::ListValue* values = nullptr;
     CHECK(it.value().GetAsList(&values));
-    mojo::CapabilityRequest spec;
+    shell::CapabilityRequest spec;
     for (auto i = values->begin(); i != values->end(); ++i) {
-      mojo::Interface interface_name;
+      shell::Interface interface_name;
       const base::Value* v = *i;
       CHECK(v->GetAsString(&interface_name));
       spec.interfaces.insert(interface_name);
@@ -60,9 +59,8 @@ void ReadStringSetFromDictionary(const base::DictionaryValue& dictionary,
     ReadStringSet(*list_value, string_set);
 }
 
-mojo::CapabilitySpec BuildCapabilitiesV1(
-    const base::DictionaryValue& value) {
-  mojo::CapabilitySpec capabilities;
+shell::CapabilitySpec BuildCapabilitiesV1(const base::DictionaryValue& value) {
+  shell::CapabilitySpec capabilities;
 
   const base::DictionaryValue* provided_value = nullptr;
   if (value.HasKey(Store::kCapabilities_ProvidedKey)) {
@@ -70,10 +68,10 @@ mojo::CapabilitySpec BuildCapabilitiesV1(
                               &provided_value));
   }
   if (provided_value) {
-    mojo::CapabilityRequest provided;
+    shell::CapabilityRequest provided;
     base::DictionaryValue::Iterator it(*provided_value);
     for(; !it.IsAtEnd(); it.Advance()) {
-      mojo::Interfaces interfaces;
+      shell::Interfaces interfaces;
       ReadStringSetFromValue(it.value(), &interfaces);
       capabilities.provided[it.key()] = interfaces;
     }
@@ -87,7 +85,7 @@ mojo::CapabilitySpec BuildCapabilitiesV1(
   if (required_value) {
     base::DictionaryValue::Iterator it(*required_value);
     for (; !it.IsAtEnd(); it.Advance()) {
-      mojo::CapabilityRequest spec;
+      shell::CapabilityRequest spec;
       const base::DictionaryValue* entry_value = nullptr;
       CHECK(it.value().GetAsDictionary(&entry_value));
       ReadStringSetFromDictionary(
@@ -104,9 +102,7 @@ mojo::CapabilitySpec BuildCapabilitiesV1(
 
 Entry::Entry() {}
 Entry::Entry(const std::string& name)
-    : name_(name),
-      qualifier_(mojo::GetNamePath(name)),
-      display_name_(name) {}
+    : name_(name), qualifier_(shell::GetNamePath(name)), display_name_(name) {}
 Entry::Entry(const Entry& other) = default;
 Entry::~Entry() {}
 
@@ -157,7 +153,7 @@ scoped_ptr<Entry> Entry::Deserialize(const base::DictionaryValue& value) {
     LOG(ERROR) << "Entry::Deserialize: dictionary has no name key";
     return nullptr;
   }
-  if (!mojo::IsValidName(name_string)) {
+  if (!shell::IsValidName(name_string)) {
     LOG(WARNING) << "Entry::Deserialize: " << name_string << " is not a valid "
                  << "Mojo name";
     return nullptr;
@@ -168,7 +164,7 @@ scoped_ptr<Entry> Entry::Deserialize(const base::DictionaryValue& value) {
     CHECK(value.GetString(Store::kQualifierKey, &qualifier));
     entry->set_qualifier(qualifier);
   } else {
-    entry->set_qualifier(mojo::GetNamePath(name_string));
+    entry->set_qualifier(shell::GetNamePath(name_string));
   }
   std::string display_name;
   if (!value.GetString(Store::kDisplayNameKey, &display_name)) {

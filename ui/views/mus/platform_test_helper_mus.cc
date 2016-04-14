@@ -15,14 +15,14 @@
 #include "ui/views/test/platform_test_helper.h"
 #include "ui/views/views_delegate.h"
 
-using mojo::shell::BackgroundShell;
+using shell::BackgroundShell;
 
 namespace views {
 namespace {
 
 const char kTestName[] = "mojo:test-app";
 
-class DefaultShellClient : public mojo::ShellClient {
+class DefaultShellClient : public shell::ShellClient {
  public:
   DefaultShellClient() {}
   ~DefaultShellClient() override {}
@@ -31,11 +31,10 @@ class DefaultShellClient : public mojo::ShellClient {
   DISALLOW_COPY_AND_ASSIGN(DefaultShellClient);
 };
 
-std::unique_ptr<mojo::shell::TestCatalogStore> BuildTestCatalogStore() {
+std::unique_ptr<shell::TestCatalogStore> BuildTestCatalogStore() {
   std::unique_ptr<base::ListValue> apps(new base::ListValue);
-  apps->Append(
-      mojo::shell::BuildPermissiveSerializedAppInfo(kTestName, "test"));
-  return base::WrapUnique(new mojo::shell::TestCatalogStore(std::move(apps)));
+  apps->Append(shell::BuildPermissiveSerializedAppInfo(kTestName, "test"));
+  return base::WrapUnique(new shell::TestCatalogStore(std::move(apps)));
 }
 
 class PlatformTestHelperMus : public PlatformTestHelper {
@@ -47,7 +46,7 @@ class PlatformTestHelperMus : public PlatformTestHelper {
     init_params->catalog_store = BuildTestCatalogStore();
     background_shell_->Init(std::move(init_params));
     shell_client_.reset(new DefaultShellClient);
-    shell_connection_.reset(new mojo::ShellConnection(
+    shell_connection_.reset(new shell::ShellConnection(
         shell_client_.get(),
         background_shell_->CreateShellClientRequest(kTestName)));
 
@@ -58,7 +57,7 @@ class PlatformTestHelperMus : public PlatformTestHelper {
 
     // ui/views/mus requires a WindowManager running, for now use the desktop
     // one.
-    mojo::Connector* connector = shell_connection_->connector();
+    shell::Connector* connector = shell_connection_->connector();
     connector->Connect("mojo:desktop_wm");
     WindowManagerConnection::Create(connector);
 
@@ -93,7 +92,7 @@ class PlatformTestHelperMus : public PlatformTestHelper {
   }
 
   std::unique_ptr<BackgroundShell> background_shell_;
-  std::unique_ptr<mojo::ShellConnection> shell_connection_;
+  std::unique_ptr<shell::ShellConnection> shell_connection_;
   std::unique_ptr<DefaultShellClient> shell_client_;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformTestHelperMus);

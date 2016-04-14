@@ -5,14 +5,14 @@
 #ifndef MASH_LOGIN_LOGIN_H_
 #define MASH_LOGIN_LOGIN_H_
 
-namespace mojo {
+namespace shell {
 class ShellClient;
 }
 
 namespace mash {
 namespace login {
 
-mojo::ShellClient* CreateLogin();
+shell::ShellClient* CreateLogin();
 
 }  // namespace login
 }  // namespace mash

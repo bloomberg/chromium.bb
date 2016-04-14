@@ -7,7 +7,7 @@
 
 #include "base/memory/ref_counted.h"
 
-namespace mojo {
+namespace shell {
 class Connector;
 }
 
@@ -23,7 +23,7 @@ struct PlatformDisplayInitParams {
   PlatformDisplayInitParams(const PlatformDisplayInitParams& other);
   ~PlatformDisplayInitParams();
 
-  mojo::Connector* connector = nullptr;
+  shell::Connector* connector = nullptr;
   scoped_refptr<GpuState> gpu_state;
   scoped_refptr<SurfacesState> surfaces_state;
 };

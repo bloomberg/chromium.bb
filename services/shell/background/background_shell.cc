@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/simple_thread.h"
@@ -20,12 +21,12 @@
 #include "services/shell/shell.h"
 #include "services/shell/standalone/context.h"
 
-namespace mojo {
 namespace shell {
+
 namespace {
 
-scoped_ptr<base::MessagePump> CreateMessagePumpMojo() {
-  return make_scoped_ptr(new common::MessagePumpMojo);
+std::unique_ptr<base::MessagePump> CreateMessagePumpMojo() {
+  return base::WrapUnique(new mojo::common::MessagePumpMojo);
 }
 
 // Used to obtain the ShellClientRequest for an application. When Loader::Load()
@@ -70,13 +71,13 @@ class MojoMessageLoop : public base::MessageLoop {
 // Manages the thread to startup mojo.
 class BackgroundShell::MojoThread : public base::SimpleThread {
  public:
-  explicit MojoThread(scoped_ptr<BackgroundShell::InitParams> init_params)
+  explicit MojoThread(std::unique_ptr<BackgroundShell::InitParams> init_params)
       : SimpleThread("mojo-background-shell"),
         init_params_(std::move(init_params)) {}
   ~MojoThread() override {}
 
   void CreateShellClientRequest(base::WaitableEvent* signal,
-                                scoped_ptr<ConnectParams> params,
+                                std::unique_ptr<ConnectParams> params,
                                 mojom::ShellClientRequest* request) {
     // Only valid to call this on the background thread.
     DCHECK_EQ(message_loop_, base::MessageLoop::current());
@@ -86,7 +87,7 @@ class BackgroundShell::MojoThread : public base::SimpleThread {
     BackgroundLoader* loader = new BackgroundLoader(
         base::Bind(&MojoThread::OnGotApplicationRequest, base::Unretained(this),
                    name, signal, request));
-    context_->shell()->SetLoaderForName(make_scoped_ptr(loader), name);
+    context_->shell()->SetLoaderForName(base::WrapUnique(loader), name);
     context_->shell()->Connect(std::move(params));
     // The request is asynchronously processed. When processed
     // OnGotApplicationRequest() is called and we'll signal |signal|.
@@ -116,10 +117,10 @@ class BackgroundShell::MojoThread : public base::SimpleThread {
   void Run() override {
     // The construction/destruction order is very finicky and has to be done
     // in the order here.
-    scoped_ptr<base::MessageLoop> message_loop(message_loop_);
+    std::unique_ptr<base::MessageLoop> message_loop(message_loop_);
 
-    scoped_ptr<mojo::shell::Context::InitParams> context_init_params(
-        new mojo::shell::Context::InitParams);
+    std::unique_ptr<Context::InitParams> context_init_params(
+        new Context::InitParams);
     if (init_params_) {
       context_init_params->catalog_store =
           std::move(init_params_->catalog_store);
@@ -132,7 +133,7 @@ class BackgroundShell::MojoThread : public base::SimpleThread {
 
     message_loop_->BindToCurrentThread();
 
-    scoped_ptr<Context> context(new Context);
+    std::unique_ptr<Context> context(new Context);
     context_ = context.get();
     context_->Init(std::move(context_init_params));
 
@@ -163,7 +164,7 @@ class BackgroundShell::MojoThread : public base::SimpleThread {
   // Created in Run() on the background thread.
   Context* context_ = nullptr;
 
-  scoped_ptr<BackgroundShell::InitParams> init_params_;
+  std::unique_ptr<BackgroundShell::InitParams> init_params_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoThread);
 };
@@ -177,7 +178,7 @@ BackgroundShell::~BackgroundShell() {
   thread_->Stop();
 }
 
-void BackgroundShell::Init(scoped_ptr<InitParams> init_params) {
+void BackgroundShell::Init(std::unique_ptr<InitParams> init_params) {
   DCHECK(!thread_);
   thread_.reset(new MojoThread(std::move(init_params)));
   thread_->Start();
@@ -185,7 +186,7 @@ void BackgroundShell::Init(scoped_ptr<InitParams> init_params) {
 
 mojom::ShellClientRequest BackgroundShell::CreateShellClientRequest(
     const std::string& name) {
-  scoped_ptr<ConnectParams> params(new ConnectParams);
+  std::unique_ptr<ConnectParams> params(new ConnectParams);
   params->set_source(CreateShellIdentity());
   params->set_target(Identity(name, mojom::kRootUserID));
   mojom::ShellClientRequest request;
@@ -206,4 +207,3 @@ void BackgroundShell::ExecuteOnShellThread(
 }
 
 }  // namespace shell
-}  // namespace mojo

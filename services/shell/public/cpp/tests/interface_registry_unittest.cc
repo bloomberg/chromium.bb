@@ -4,12 +4,11 @@
 
 #include "services/shell/public/cpp/interface_registry.h"
 
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "services/shell/public/cpp/interface_binder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace mojo {
+namespace shell {
 namespace internal {
 namespace {
 
@@ -19,7 +18,7 @@ class TestBinder : public InterfaceBinder {
   ~TestBinder() override { (*delete_count_)++; }
   void BindInterface(Connection* connection,
                      const std::string& interface_name,
-                     ScopedMessagePipeHandle client_handle) override {}
+                     mojo::ScopedMessagePipeHandle client_handle) override {}
 
  private:
   int* delete_count_;
@@ -39,7 +38,7 @@ TEST(InterfaceRegistryTest, Ownership) {
 
   // Removal.
   {
-    scoped_ptr<InterfaceRegistry> registry(new InterfaceRegistry(nullptr));
+    std::unique_ptr<InterfaceRegistry> registry(new InterfaceRegistry(nullptr));
     InterfaceBinder* b = new TestBinder(&delete_count);
     InterfaceRegistry::TestApi test_api(registry.get());
     test_api.SetInterfaceBinderForName(b, "TC1");
@@ -70,4 +69,4 @@ TEST(InterfaceRegistryTest, Ownership) {
 
 }  // namespace
 }  // namespace internal
-}  // namespace mojo
+}  // namespace shell

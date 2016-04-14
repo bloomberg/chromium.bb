@@ -13,7 +13,6 @@
 #include "sandbox/linux/bpf_dsl/policy.h"
 #include "sandbox/linux/syscall_broker/broker_process.h"
 
-namespace mojo {
 namespace shell {
 
 // Encapsulates all tasks related to raising the sandbox for mojo runner.
@@ -48,6 +47,5 @@ class LinuxSandbox {
 };
 
 }  // namespace shell
-}  // namespace mojo
 
 #endif  // SERVICES_SHELL_RUNNER_HOST_LINUX_SANDBOX_H_

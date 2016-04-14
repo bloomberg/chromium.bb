@@ -17,18 +17,18 @@ namespace chromeos {
 // InterfaceFactory for creating all services provided by chrome.
 class ChromeInterfaceFactory
     : public content::MojoShellConnection::Listener,
-      public mojo::InterfaceFactory<keyboard::mojom::Keyboard> {
+      public shell::InterfaceFactory<keyboard::mojom::Keyboard> {
  public:
   ChromeInterfaceFactory();
   ~ChromeInterfaceFactory() override;
 
  private:
   // content::MojoShellConnection::Listener:
-  bool AcceptConnection(mojo::Connection* connection) override;
+  bool AcceptConnection(shell::Connection* connection) override;
 
-  // mojo::InterfaceFactory<keyboard::Keyboard>:
+  // shell::InterfaceFactory<keyboard::Keyboard>:
   void Create(
-      mojo::Connection* connection,
+      shell::Connection* connection,
       mojo::InterfaceRequest<keyboard::mojom::Keyboard> request) override;
 
   std::unique_ptr<KeyboardUIService> keyboard_ui_service_;

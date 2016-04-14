@@ -16,9 +16,9 @@ namespace media {
 namespace {
 
 std::unique_ptr<ProvisionFetcher> CreateProvisionFetcher(
-    mojo::shell::mojom::InterfaceProvider* interface_provider) {
+    shell::mojom::InterfaceProvider* interface_provider) {
   interfaces::ProvisionFetcherPtr provision_fetcher_ptr;
-  mojo::GetInterface(interface_provider, &provision_fetcher_ptr);
+  shell::GetInterface(interface_provider, &provision_fetcher_ptr);
   return base::WrapUnique(
       new MojoProvisionFetcher(std::move(provision_fetcher_ptr)));
 }
@@ -37,7 +37,7 @@ std::unique_ptr<AudioDecoder> AndroidMojoMediaClient::CreateAudioDecoder(
 }
 
 std::unique_ptr<CdmFactory> AndroidMojoMediaClient::CreateCdmFactory(
-    mojo::shell::mojom::InterfaceProvider* interface_provider) {
+    shell::mojom::InterfaceProvider* interface_provider) {
   return base::WrapUnique(new AndroidCdmFactory(
       base::Bind(&CreateProvisionFetcher, interface_provider)));
 }

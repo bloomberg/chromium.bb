@@ -4,12 +4,13 @@
 
 #include "services/shell/public/cpp/shell_test.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "services/shell/background/background_shell.h"
 #include "services/shell/public/cpp/shell_client.h"
 
-namespace mojo {
+namespace shell {
 namespace test {
 
 ShellTestClient::ShellTestClient(ShellTest* test) : test_(test) {}
@@ -29,12 +30,12 @@ void ShellTest::InitTestName(const std::string& test_name) {
   test_name_ = test_name;
 }
 
-scoped_ptr<ShellClient> ShellTest::CreateShellClient() {
-  return make_scoped_ptr(new ShellTestClient(this));
+std::unique_ptr<ShellClient> ShellTest::CreateShellClient() {
+  return base::WrapUnique(new ShellTestClient(this));
 }
 
-scoped_ptr<base::MessageLoop> ShellTest::CreateMessageLoop() {
-  return make_scoped_ptr(new base::MessageLoop);
+std::unique_ptr<base::MessageLoop> ShellTest::CreateMessageLoop() {
+  return base::WrapUnique(new base::MessageLoop);
 }
 
 void ShellTest::InitializeCalled(Connector* connector,
@@ -77,4 +78,4 @@ void ShellTest::TearDown() {
 }
 
 }  // namespace test
-}  // namespace mojo
+}  // namespace shell

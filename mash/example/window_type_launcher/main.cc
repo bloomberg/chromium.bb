@@ -39,8 +39,8 @@ int main(int argc, char** argv) {
   base::AtExitManager at_exit;
   base::CommandLine::Init(argc, argv);
 
-  mojo::shell::InitializeLogging();
-  mojo::shell::WaitForDebuggerIfNecessary();
+  shell::InitializeLogging();
+  shell::WaitForDebuggerIfNecessary();
 
 #if !defined(OFFICIAL_BUILD)
   base::debug::EnableInProcessStackDumping();
@@ -62,8 +62,8 @@ int main(int argc, char** argv) {
 
     base::MessageLoop loop;
     WindowTypeLauncher delegate;
-    mojo::ShellConnection impl(
-        &delegate, mojo::shell::GetShellClientRequestFromCommandLine());
+    shell::ShellConnection impl(&delegate,
+                                shell::GetShellClientRequestFromCommandLine());
     loop.Run();
 
     mojo::edk::ShutdownIPCSupport();

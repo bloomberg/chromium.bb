@@ -5,6 +5,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -25,13 +26,15 @@
 // implementing ShellClientFactory; that these applications can be specified by
 // the package's manifest and are thus registered with the PackageManager.
 
-namespace mojo {
 namespace shell {
+
 namespace {
+
 void QuitLoop(base::RunLoop* loop) {
   loop->Quit();
 }
-}
+
+}  // namespace
 
 using GetTitleCallback = test::mojom::ConnectTestService::GetTitleCallback;
 
@@ -57,7 +60,7 @@ class ProvidedShellClient
   }
 
  private:
-  // mojo::ShellClient:
+  // shell::ShellClient:
   void Initialize(Connector* connector, const Identity& identity,
                   uint32_t id) override {
     connector_ = connector;
@@ -123,7 +126,7 @@ class ProvidedShellClient
       mojom::IdentityPtr target,
       const ConnectToClassAppAsDifferentUserCallback& callback) override {
     Connector::ConnectParams params(target.To<Identity>());
-    scoped_ptr<Connection> connection = connector_->Connect(&params);
+    std::unique_ptr<Connection> connection = connector_->Connect(&params);
     {
       base::RunLoop loop;
       connection->AddConnectionCompletedClosure(base::Bind(&QuitLoop, &loop));
@@ -153,9 +156,9 @@ class ProvidedShellClient
   const std::string title_;
   mojom::ShellClientRequest request_;
   test::mojom::ExposedInterfacePtr caller_;
-  BindingSet<test::mojom::ConnectTestService> bindings_;
-  BindingSet<test::mojom::BlockedInterface> blocked_bindings_;
-  BindingSet<test::mojom::UserIdTest> user_id_test_bindings_;
+  mojo::BindingSet<test::mojom::ConnectTestService> bindings_;
+  mojo::BindingSet<test::mojom::BlockedInterface> blocked_bindings_;
+  mojo::BindingSet<test::mojom::UserIdTest> user_id_test_bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(ProvidedShellClient);
 };
@@ -171,7 +174,7 @@ class ConnectTestShellClient
   ~ConnectTestShellClient() override {}
 
  private:
-  // mojo::ShellClient:
+  // shell::ShellClient:
   void Initialize(Connector* connector, const Identity& identity,
                   uint32_t id) override {
     identity_ = identity;
@@ -199,7 +202,7 @@ class ConnectTestShellClient
 
   // mojom::ShellClientFactory:
   void CreateShellClient(mojom::ShellClientRequest request,
-                         const String& name) override {
+                         const mojo::String& name) override {
     if (name == "mojo:connect_test_a")
       new ProvidedShellClient("A", std::move(request));
     else if (name == "mojo:connect_test_b")
@@ -220,19 +223,17 @@ class ConnectTestShellClient
   }
 
   Identity identity_;
-  std::vector<scoped_ptr<ShellClient>> delegates_;
-  BindingSet<mojom::ShellClientFactory> shell_client_factory_bindings_;
-  BindingSet<test::mojom::ConnectTestService> bindings_;
+  std::vector<std::unique_ptr<ShellClient>> delegates_;
+  mojo::BindingSet<mojom::ShellClientFactory> shell_client_factory_bindings_;
+  mojo::BindingSet<test::mojom::ConnectTestService> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(ConnectTestShellClient);
 };
 
 }  // namespace shell
-}  // namespace mojo
-
 
 MojoResult MojoMain(MojoHandle shell_handle) {
-  MojoResult rv = mojo::ApplicationRunner(
-      new mojo::shell::ConnectTestShellClient).Run(shell_handle);
+  MojoResult rv = shell::ApplicationRunner(new shell::ConnectTestShellClient)
+                      .Run(shell_handle);
   return rv;
 }

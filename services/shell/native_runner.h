@@ -5,8 +5,9 @@
 #ifndef SERVICES_SHELL_NATIVE_RUNNER_H_
 #define SERVICES_SHELL_NATIVE_RUNNER_H_
 
+#include <memory>
+
 #include "base/callback_forward.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/process/process_handle.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/shell/public/interfaces/shell_client.mojom.h"
@@ -15,10 +16,8 @@ namespace base {
 class FilePath;
 }
 
-namespace mojo {
-class Identity;
 namespace shell {
-
+class Identity;
 
 // Shell requires implementations of NativeRunner and NativeRunnerFactory to run
 // native applications.
@@ -40,10 +39,10 @@ class NativeRunner {
 class NativeRunnerFactory {
  public:
   virtual ~NativeRunnerFactory() {}
-  virtual scoped_ptr<NativeRunner> Create(const base::FilePath& app_path) = 0;
+  virtual std::unique_ptr<NativeRunner> Create(
+      const base::FilePath& app_path) = 0;
 };
 
 }  // namespace shell
-}  // namespace mojo
 
 #endif  // SERVICES_SHELL_NATIVE_RUNNER_H_

@@ -12,7 +12,6 @@
 #include "services/shell/runner/host/child_process.h"
 #include "services/shell/runner/init.h"
 
-namespace mojo {
 namespace shell {
 namespace {
 
@@ -28,13 +27,12 @@ int RunChildProcess() {
 
 }  // namespace
 }  // namespace shell
-}  // namespace mojo
 
 int main(int argc, char** argv) {
   base::CommandLine::Init(argc, argv);
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kChildProcess)) {
-    return mojo::shell::RunChildProcess();
+    return shell::RunChildProcess();
   }
   // Reset CommandLine as most likely main() is going to use CommandLine too
   // and expect to be able to initialize it.

@@ -41,7 +41,8 @@ TracingImpl::TracingImpl() {
 TracingImpl::~TracingImpl() {
 }
 
-void TracingImpl::Initialize(Connector* connector, const std::string& url) {
+void TracingImpl::Initialize(shell::Connector* connector,
+                             const std::string& url) {
   {
     base::AutoLock lock(g_singleton_lock.Get());
     if (g_tracing_singleton_created)
@@ -66,7 +67,7 @@ void TracingImpl::Initialize(Connector* connector, const std::string& url) {
 #endif
 }
 
-void TracingImpl::Create(Connection* connection,
+void TracingImpl::Create(shell::Connection* connection,
                          InterfaceRequest<tracing::TraceProvider> request) {
   provider_impl_.Bind(std::move(request));
 }

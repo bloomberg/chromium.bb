@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/process/process.h"
 #include "base/run_loop.h"
 #include "services/shell/public/cpp/identity.h"
@@ -13,8 +16,8 @@
 #include "services/shell/tests/lifecycle/lifecycle_unittest.mojom.h"
 #include "services/shell/tests/util.h"
 
-namespace mojo {
 namespace shell {
+
 namespace {
 
 const char kTestAppName[] = "mojo:lifecycle_unittest_app";
@@ -35,7 +38,7 @@ void DecrementCountAndQuitWhenZero(base::RunLoop* loop, size_t* count) {
 }
 
 struct Instance {
-  Instance() : id(shell::mojom::kInvalidInstanceID), pid(0) {}
+  Instance() : id(mojom::kInvalidInstanceID), pid(0) {}
   Instance(const Identity& identity, uint32_t id, uint32_t pid)
       : identity(identity), id(id), pid(pid) {}
 
@@ -66,7 +69,8 @@ class InstanceState : public mojom::InstanceListener {
 
  private:
   // mojom::InstanceListener:
-  void SetExistingInstances(Array<mojom::InstanceInfoPtr> instances) override {
+  void SetExistingInstances(
+      mojo::Array<mojom::InstanceInfoPtr> instances) override {
     for (const auto& instance : instances) {
       Instance i(instance->identity.To<Identity>(), instance->id,
                  instance->pid);
@@ -110,7 +114,7 @@ class InstanceState : public mojom::InstanceListener {
   // The initial set of instances.
   std::map<std::string, Instance> initial_instances_;
 
-  Binding<mojom::InstanceListener> binding_;
+  mojo::Binding<mojom::InstanceListener> binding_;
   base::RunLoop* loop_;
 
   // Set when the client wants to wait for this object to track the destruction
@@ -120,23 +124,23 @@ class InstanceState : public mojom::InstanceListener {
   DISALLOW_COPY_AND_ASSIGN(InstanceState);
 };
 
-}
+}  // namespace
 
-class LifecycleTest : public mojo::test::ShellTest {
+class LifecycleTest : public test::ShellTest {
  public:
   LifecycleTest() : ShellTest(kTestName) {}
   ~LifecycleTest() override {}
 
  protected:
-  // mojo::test::ShellTest:
+  // test::ShellTest:
   void SetUp() override {
-    mojo::test::ShellTest::SetUp();
+    test::ShellTest::SetUp();
     InitPackage();
     instances_ = TrackInstances();
   }
   void TearDown() override {
     instances_.reset();
-    mojo::test::ShellTest::TearDown();
+    test::ShellTest::TearDown();
   }
 
   bool CanRunCrashTest() {
@@ -187,7 +191,7 @@ class LifecycleTest : public mojo::test::ShellTest {
   }
 
  private:
-  scoped_ptr<InstanceState> TrackInstances() {
+  std::unique_ptr<InstanceState> TrackInstances() {
     mojom::ShellPtr shell;
     connector()->ConnectToInterface("mojo:shell", &shell);
     mojom::InstanceListenerPtr listener;
@@ -195,10 +199,10 @@ class LifecycleTest : public mojo::test::ShellTest {
     InstanceState* state = new InstanceState(GetProxy(&listener), &loop);
     shell->AddInstanceListener(std::move(listener));
     loop.Run();
-    return make_scoped_ptr(state);
+    return base::WrapUnique(state);
   }
 
-  scoped_ptr<InstanceState> instances_;
+  std::unique_ptr<InstanceState> instances_;
 
   DISALLOW_COPY_AND_ASSIGN(LifecycleTest);
 };
@@ -441,7 +445,7 @@ TEST_F(LifecycleTest, Exe_TerminateProcess) {
 
 TEST_F(LifecycleTest, ShutdownTree) {
   // Verifies that Instances are destroyed when their creator is.
-  scoped_ptr<Connection> parent_connection =
+  std::unique_ptr<Connection> parent_connection =
       connector()->Connect(kTestParentName);
   test::mojom::ParentPtr parent;
   parent_connection->GetInterface(&parent);
@@ -469,4 +473,3 @@ TEST_F(LifecycleTest, ShutdownTree) {
 }
 
 }  // namespace shell
-}  // namespace mojo

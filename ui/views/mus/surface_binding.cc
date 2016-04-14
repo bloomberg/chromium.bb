@@ -42,7 +42,7 @@ namespace views {
 class SurfaceBinding::PerConnectionState
     : public base::RefCounted<PerConnectionState> {
  public:
-  static PerConnectionState* Get(mojo::Connector* connector,
+  static PerConnectionState* Get(shell::Connector* connector,
                                  mus::WindowTreeConnection* connection);
 
   std::unique_ptr<cc::OutputSurface> CreateOutputSurface(
@@ -55,7 +55,7 @@ class SurfaceBinding::PerConnectionState
 
   friend class base::RefCounted<PerConnectionState>;
 
-  PerConnectionState(mojo::Connector* connector,
+  PerConnectionState(shell::Connector* connector,
                      mus::WindowTreeConnection* connection);
   ~PerConnectionState();
 
@@ -64,7 +64,7 @@ class SurfaceBinding::PerConnectionState
   static base::LazyInstance<
       base::ThreadLocalPointer<ConnectionToStateMap>>::Leaky window_states;
 
-  mojo::Connector* connector_;
+  shell::Connector* connector_;
   mus::WindowTreeConnection* connection_;
 
   // Set of state needed to create an OutputSurface.
@@ -80,7 +80,7 @@ base::LazyInstance<base::ThreadLocalPointer<
 
 // static
 SurfaceBinding::PerConnectionState* SurfaceBinding::PerConnectionState::Get(
-    mojo::Connector* connector,
+    shell::Connector* connector,
     mus::WindowTreeConnection* connection) {
   ConnectionToStateMap* window_map = window_states.Pointer()->Get();
   if (!window_map) {
@@ -110,7 +110,7 @@ SurfaceBinding::PerConnectionState::CreateOutputSurface(
 }
 
 SurfaceBinding::PerConnectionState::PerConnectionState(
-    mojo::Connector* connector,
+    shell::Connector* connector,
     mus::WindowTreeConnection* connection)
     : connector_(connector), connection_(connection) {}
 
@@ -131,7 +131,7 @@ void SurfaceBinding::PerConnectionState::Init() {
 
 // SurfaceBinding --------------------------------------------------------------
 
-SurfaceBinding::SurfaceBinding(mojo::Connector* connector,
+SurfaceBinding::SurfaceBinding(shell::Connector* connector,
                                mus::Window* window,
                                mus::mojom::SurfaceType surface_type)
     : window_(window),

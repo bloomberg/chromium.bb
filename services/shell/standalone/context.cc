@@ -15,7 +15,6 @@
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/process/process_info.h"
 #include "base/run_loop.h"
@@ -47,14 +46,13 @@
 #include "services/shell/runner/host/mach_broker.h"
 #endif
 
-namespace mojo {
 namespace shell {
 namespace {
 
 // Used to ensure we only init once.
 class Setup {
  public:
-  Setup() { edk::Init(); }
+  Setup() { mojo::edk::Init(); }
 
   ~Setup() {}
 
@@ -62,33 +60,33 @@ class Setup {
   DISALLOW_COPY_AND_ASSIGN(Setup);
 };
 
-class TracingInterfaceProvider : public shell::mojom::InterfaceProvider {
+class TracingInterfaceProvider : public mojom::InterfaceProvider {
  public:
   TracingInterfaceProvider(Tracer* tracer,
-                           shell::mojom::InterfaceProviderRequest request)
+                           mojom::InterfaceProviderRequest request)
       : tracer_(tracer), binding_(this, std::move(request)) {}
   ~TracingInterfaceProvider() override {}
 
-  // shell::mojom::InterfaceProvider:
+  // mojom::InterfaceProvider:
   void GetInterface(const mojo::String& interface_name,
-                    ScopedMessagePipeHandle client_handle) override {
+                    mojo::ScopedMessagePipeHandle client_handle) override {
     if (tracer_ && interface_name == tracing::TraceProvider::Name_) {
       tracer_->ConnectToProvider(
-          MakeRequest<tracing::TraceProvider>(std::move(client_handle)));
+          mojo::MakeRequest<tracing::TraceProvider>(std::move(client_handle)));
     }
   }
 
  private:
   Tracer* tracer_;
-  StrongBinding<shell::mojom::InterfaceProvider> binding_;
+  mojo::StrongBinding<mojom::InterfaceProvider> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(TracingInterfaceProvider);
 };
 
 const size_t kMaxBlockingPoolThreads = 3;
 
-scoped_ptr<base::Thread> CreateIOThread(const char* name) {
-  scoped_ptr<base::Thread> thread(new base::Thread(name));
+std::unique_ptr<base::Thread> CreateIOThread(const char* name) {
+  std::unique_ptr<base::Thread> thread(new base::Thread(name));
   base::Thread::Options options;
   options.message_loop_type = base::MessageLoop::TYPE_IO;
   thread->StartWithOptions(options);
@@ -120,7 +118,7 @@ void Context::EnsureEmbedderIsInitialized() {
   setup.Get();
 }
 
-void Context::Init(scoped_ptr<InitParams> init_params) {
+void Context::Init(std::unique_ptr<InitParams> init_params) {
   TRACE_EVENT0("mojo_shell", "Context::Init");
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
@@ -142,13 +140,13 @@ void Context::Init(scoped_ptr<InitParams> init_params) {
 
   init_edk_ = !init_params || init_params->init_edk;
   if (init_edk_) {
-    edk::InitIPCSupport(this, io_thread_->task_runner().get());
+    mojo::edk::InitIPCSupport(this, io_thread_->task_runner().get());
 #if defined(OS_MACOSX)
-    edk::SetMachPortProvider(MachBroker::GetInstance()->port_provider());
+    mojo::edk::SetMachPortProvider(MachBroker::GetInstance()->port_provider());
 #endif
   }
 
-  scoped_ptr<NativeRunnerFactory> runner_factory;
+  std::unique_ptr<NativeRunnerFactory> runner_factory;
   if (command_line.HasSwitch(switches::kSingleProcess)) {
 #if defined(COMPONENT_BUILD)
     LOG(ERROR) << "Running Mojo in single process component build, which isn't "
@@ -163,7 +161,7 @@ void Context::Init(scoped_ptr<InitParams> init_params) {
     runner_factory.reset(new OutOfProcessNativeRunnerFactory(
         blocking_pool_.get(), native_runner_delegate));
   }
-  scoped_ptr<catalog::Store> store;
+  std::unique_ptr<catalog::Store> store;
   if (init_params)
     store = std::move(init_params->catalog_store);
   catalog_.reset(
@@ -171,14 +169,14 @@ void Context::Init(scoped_ptr<InitParams> init_params) {
   shell_.reset(new Shell(std::move(runner_factory),
                          catalog_->TakeShellClient()));
 
-  shell::mojom::InterfaceProviderPtr tracing_remote_interfaces;
-  shell::mojom::InterfaceProviderPtr tracing_local_interfaces;
+  mojom::InterfaceProviderPtr tracing_remote_interfaces;
+  mojom::InterfaceProviderPtr tracing_local_interfaces;
   new TracingInterfaceProvider(&tracer_, GetProxy(&tracing_local_interfaces));
 
-  scoped_ptr<ConnectParams> params(new ConnectParams);
+  std::unique_ptr<ConnectParams> params(new ConnectParams);
   params->set_source(CreateShellIdentity());
   params->set_target(Identity("mojo:tracing", mojom::kRootUserID));
-  params->set_remote_interfaces(GetProxy(&tracing_remote_interfaces));
+  params->set_remote_interfaces(mojo::GetProxy(&tracing_remote_interfaces));
   params->set_local_interfaces(std::move(tracing_local_interfaces));
   shell_->Connect(std::move(params));
 
@@ -196,7 +194,7 @@ void Context::Init(scoped_ptr<InitParams> init_params) {
     tracing::StartupPerformanceDataCollectorPtr collector;
     tracing_remote_interfaces->GetInterface(
         tracing::StartupPerformanceDataCollector::Name_,
-        GetProxy(&collector).PassMessagePipe());
+        mojo::GetProxy(&collector).PassMessagePipe());
 #if defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_LINUX)
     // CurrentProcessInfo::CreationTime is only defined on some platforms.
     const base::Time creation_time = base::CurrentProcessInfo::CreationTime();
@@ -220,8 +218,8 @@ void Context::Shutdown() {
 
   TRACE_EVENT0("mojo_shell", "Context::Shutdown");
   // Post a task in case OnShutdownComplete is called synchronously.
-  base::MessageLoop::current()->PostTask(FROM_HERE,
-                                         base::Bind(edk::ShutdownIPCSupport));
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE, base::Bind(mojo::edk::ShutdownIPCSupport));
   // We'll quit when we get OnShutdownComplete().
   base::MessageLoop::current()->Run();
 }
@@ -250,16 +248,15 @@ void Context::RunCommandLineApplication() {
 void Context::Run(const std::string& name) {
   shell_->SetInstanceQuitCallback(base::Bind(&OnInstanceQuit, name));
 
-  shell::mojom::InterfaceProviderPtr remote_interfaces;
-  shell::mojom::InterfaceProviderPtr local_interfaces;
+  mojom::InterfaceProviderPtr remote_interfaces;
+  mojom::InterfaceProviderPtr local_interfaces;
 
-  scoped_ptr<ConnectParams> params(new ConnectParams);
+  std::unique_ptr<ConnectParams> params(new ConnectParams);
   params->set_source(CreateShellIdentity());
   params->set_target(Identity(name, mojom::kRootUserID));
-  params->set_remote_interfaces(GetProxy(&remote_interfaces));
+  params->set_remote_interfaces(mojo::GetProxy(&remote_interfaces));
   params->set_local_interfaces(std::move(local_interfaces));
   shell_->Connect(std::move(params));
 }
 
 }  // namespace shell
-}  // namespace mojo

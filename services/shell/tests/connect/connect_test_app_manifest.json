@@ -7,7 +7,7 @@
       "mojo:connect_test_a": { "interfaces": ["*"] },
       "mojo:connect_test_class_app": {
         "classes": [ "class" ],
-        "interfaces": ["mojo::shell::test::mojom::ConnectTestService"]
+        "interfaces": ["shell::test::mojom::ConnectTestService"]
       },
       "mojo:shell": { "classes": [ "user_id" ] }
     }

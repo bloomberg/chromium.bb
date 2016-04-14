@@ -10,7 +10,7 @@
 namespace mus {
 namespace ws {
 
-UserIdTracker::UserIdTracker() : active_id_(mojo::shell::mojom::kRootUserID) {
+UserIdTracker::UserIdTracker() : active_id_(shell::mojom::kRootUserID) {
   ids_.insert(active_id_);
 }
 UserIdTracker::~UserIdTracker() {

@@ -11,7 +11,7 @@
 #include "services/shell/public/cpp/interface_binder.h"
 #include "services/shell/public/cpp/interface_factory.h"
 
-namespace mojo {
+namespace shell {
 namespace internal {
 
 template <typename Interface>
@@ -21,11 +21,11 @@ class InterfaceFactoryBinder : public InterfaceBinder {
       : factory_(factory) {}
    ~InterfaceFactoryBinder() override {}
 
-  void BindInterface(Connection* connection,
-                     const std::string& interface_name,
-                     ScopedMessagePipeHandle client_handle) override {
-    factory_->Create(connection,
-                     MakeRequest<Interface>(std::move(client_handle)));
+   void BindInterface(Connection* connection,
+                      const std::string& interface_name,
+                      mojo::ScopedMessagePipeHandle client_handle) override {
+     factory_->Create(connection,
+                      mojo::MakeRequest<Interface>(std::move(client_handle)));
   }
 
  private:
@@ -34,6 +34,6 @@ class InterfaceFactoryBinder : public InterfaceBinder {
 };
 
 }  // namespace internal
-}  // namespace mojo
+}  // namespace shell
 
 #endif  // SERVICES_SHELL_PUBLIC_CPP_LIB_INTERFACE_FACTORY_BINDER_H_

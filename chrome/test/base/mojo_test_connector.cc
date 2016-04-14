@@ -29,8 +29,8 @@
 #include "services/shell/shell.h"
 #include "services/shell/switches.h"
 
-using mojo::shell::mojom::ShellClient;
-using mojo::shell::mojom::ShellClientPtr;
+using shell::mojom::ShellClient;
+using shell::mojom::ShellClientPtr;
 
 namespace {
 
@@ -54,10 +54,10 @@ base::DictionaryValue* EnsureDictionary(base::DictionaryValue* parent,
 
 // This builds a permissive catalog with the addition of the 'instance_name'
 // permission.
-std::unique_ptr<mojo::shell::TestCatalogStore> BuildTestCatalogStore() {
+std::unique_ptr<shell::TestCatalogStore> BuildTestCatalogStore() {
   std::unique_ptr<base::ListValue> apps(new base::ListValue);
   std::unique_ptr<base::DictionaryValue> test_app_config =
-      mojo::shell::BuildPermissiveSerializedAppInfo(kTestRunnerName, "test");
+      shell::BuildPermissiveSerializedAppInfo(kTestRunnerName, "test");
   base::DictionaryValue* capabilities =
       EnsureDictionary(test_app_config.get(), catalog::Store::kCapabilitiesKey);
   base::DictionaryValue* required_capabilities =
@@ -70,7 +70,7 @@ std::unique_ptr<mojo::shell::TestCatalogStore> BuildTestCatalogStore() {
                   std::move(required_shell_classes));
   required_capabilities->Set("mojo:shell", std::move(shell_caps));
   apps->Append(std::move(test_app_config));
-  return base::WrapUnique(new mojo::shell::TestCatalogStore(std::move(apps)));
+  return base::WrapUnique(new shell::TestCatalogStore(std::move(apps)));
 }
 
 // BackgroundTestState maintains all the state necessary to bind the test to
@@ -83,7 +83,7 @@ class BackgroundTestState {
   // Prepares the command line and other setup for connecting the test to mojo.
   // Must be paired with a clal to ChildProcessLaunched().
   void Connect(base::CommandLine* command_line,
-               mojo::shell::Shell* shell,
+               shell::Shell* shell,
                const std::string& instance,
                base::TestLauncher::LaunchOptions* test_launch_options) {
     command_line->AppendSwitch(MojoTestConnector::kTestSwitch);
@@ -103,17 +103,16 @@ class BackgroundTestState {
 #else
 #error "Unsupported"
 #endif
-    mojo::shell::mojom::ShellClientPtr client =
-        mojo::shell::PassShellClientRequestOnCommandLine(command_line);
+    shell::mojom::ShellClientPtr client =
+        shell::PassShellClientRequestOnCommandLine(command_line);
 
-    std::unique_ptr<mojo::shell::ConnectParams> params(
-        new mojo::shell::ConnectParams);
-    params->set_source(mojo::shell::CreateShellIdentity());
+    std::unique_ptr<shell::ConnectParams> params(new shell::ConnectParams);
+    params->set_source(shell::CreateShellIdentity());
     params->set_target(
-        mojo::Identity(kTestName, mojo::shell::mojom::kRootUserID, instance));
+        shell::Identity(kTestName, shell::mojom::kRootUserID, instance));
 
-    mojo::shell::mojom::ClientProcessConnectionPtr client_process_connection =
-        mojo::shell::mojom::ClientProcessConnection::New();
+    shell::mojom::ClientProcessConnectionPtr client_process_connection =
+        shell::mojom::ClientProcessConnection::New();
     client_process_connection->shell_client =
         client.PassInterface().PassHandle();
     client_process_connection->pid_receiver_request =
@@ -138,7 +137,7 @@ class BackgroundTestState {
 
   mojo::edk::HandlePassingInformation handle_passing_info_;
 
-  mojo::shell::mojom::PIDReceiverPtr pid_receiver_;
+  shell::mojom::PIDReceiverPtr pid_receiver_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundTestState);
 };
@@ -146,13 +145,13 @@ class BackgroundTestState {
 // Called used destroy BackgroundTestState on the background thread.
 void DestroyBackgroundStateOnBackgroundThread(
     std::unique_ptr<BackgroundTestState> state,
-    mojo::shell::Shell* shell) {}
+    shell::Shell* shell) {}
 
 // State created per test. Manages creation of the corresponding
 // BackgroundTestState and making sure processing runs on the right threads.
 class MojoTestState : public content::TestState {
  public:
-  explicit MojoTestState(mojo::shell::BackgroundShell* background_shell)
+  explicit MojoTestState(shell::BackgroundShell* background_shell)
       : background_shell_(background_shell) {}
 
   ~MojoTestState() override {
@@ -192,7 +191,7 @@ class MojoTestState : public content::TestState {
   void ChildProcessLaunchedOnBackgroundThread(base::ProcessHandle handle,
                                               base::ProcessId pid,
                                               base::WaitableEvent* signal,
-                                              mojo::shell::Shell* shell) {
+                                              shell::Shell* shell) {
     background_state_->ChildProcessLaunched(handle, pid);
     signal->Signal();
   }
@@ -201,7 +200,7 @@ class MojoTestState : public content::TestState {
       base::WaitableEvent* signal,
       base::CommandLine* command_line,
       base::TestLauncher::LaunchOptions* test_launch_options,
-      mojo::shell::Shell* shell) {
+      shell::Shell* shell) {
     static int instance_id = 0;
     const std::string instance_name =
         "instance-" + base::IntToString(instance_id++);
@@ -211,7 +210,7 @@ class MojoTestState : public content::TestState {
     signal->Signal();
   }
 
-  mojo::shell::BackgroundShell* background_shell_;
+  shell::BackgroundShell* background_shell_;
   std::unique_ptr<BackgroundTestState> background_state_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoTestState);
@@ -220,15 +219,15 @@ class MojoTestState : public content::TestState {
 }  // namespace
 
 class MojoTestConnector::NativeRunnerDelegateImpl
-    : public mojo::shell::NativeRunnerDelegate {
+    : public shell::NativeRunnerDelegate {
  public:
   NativeRunnerDelegateImpl() {}
   ~NativeRunnerDelegateImpl() override {}
 
  private:
-  // mojo::shell::NativeRunnerDelegate:
+  // shell::NativeRunnerDelegate:
   void AdjustCommandLineArgumentsForTarget(
-      const mojo::Identity& target,
+      const shell::Identity& target,
       base::CommandLine* command_line) override {
     if (target.name() == "exe:chrome")
       command_line->AppendSwitch(switches::kWaitForMojoShell);
@@ -242,10 +241,10 @@ const char MojoTestConnector::kTestSwitch[] = "is_test";
 
 MojoTestConnector::MojoTestConnector() {}
 
-mojo::shell::mojom::ShellClientRequest MojoTestConnector::Init() {
+shell::mojom::ShellClientRequest MojoTestConnector::Init() {
   native_runner_delegate_.reset(new NativeRunnerDelegateImpl);
-  std::unique_ptr<mojo::shell::BackgroundShell::InitParams> init_params(
-      new mojo::shell::BackgroundShell::InitParams);
+  std::unique_ptr<shell::BackgroundShell::InitParams> init_params(
+      new shell::BackgroundShell::InitParams);
   init_params->catalog_store = BuildTestCatalogStore();
   // When running in single_process mode chrome initializes the edk.
   init_params->init_edk = !base::CommandLine::ForCurrentProcess()->HasSwitch(

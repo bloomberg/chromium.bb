@@ -12,7 +12,7 @@
 namespace media {
 
 MojoRendererFactory::MojoRendererFactory(
-    mojo::shell::mojom::InterfaceProvider* interface_provider)
+    shell::mojom::InterfaceProvider* interface_provider)
     : interface_provider_(interface_provider) {
   DCHECK(interface_provider_);
 }
@@ -27,7 +27,7 @@ std::unique_ptr<Renderer> MojoRendererFactory::CreateRenderer(
     VideoRendererSink* /* video_renderer_sink */,
     const RequestSurfaceCB& /* request_surface_cb */) {
   interfaces::RendererPtr renderer_ptr;
-  mojo::GetInterface<interfaces::Renderer>(interface_provider_, &renderer_ptr);
+  shell::GetInterface<interfaces::Renderer>(interface_provider_, &renderer_ptr);
 
   return std::unique_ptr<Renderer>(
       new MojoRendererImpl(media_task_runner, std::move(renderer_ptr)));

@@ -19,7 +19,7 @@ namespace base {
 class FilePath;
 }
 
-namespace mojo {
+namespace shell {
 class Connector;
 }
 
@@ -40,7 +40,7 @@ class CONTENT_EXPORT DOMStorageContextWrapper :
  public:
   // If |data_path| is empty, nothing will be saved to disk.
   DOMStorageContextWrapper(
-      mojo::Connector* connector,
+      shell::Connector* connector,
       const base::FilePath& data_path,
       const base::FilePath& local_partition_path,
       storage::SpecialStoragePolicy* special_storage_policy);

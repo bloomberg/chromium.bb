@@ -18,38 +18,38 @@ Factory::Factory(base::TaskRunner* file_task_runner,
       store_(std::move(store)),
       manifest_provider_(manifest_provider),
       weak_factory_(this) {
-  mojo::shell::mojom::ShellClientRequest request = GetProxy(&shell_client_);
-  shell_connection_.reset(new mojo::ShellConnection(this, std::move(request)));
+  shell::mojom::ShellClientRequest request = GetProxy(&shell_client_);
+  shell_connection_.reset(new shell::ShellConnection(this, std::move(request)));
 }
 
 Factory::~Factory() {}
 
-mojo::shell::mojom::ShellClientPtr Factory::TakeShellClient() {
+shell::mojom::ShellClientPtr Factory::TakeShellClient() {
   return std::move(shell_client_);
 }
 
-bool Factory::AcceptConnection(mojo::Connection* connection) {
+bool Factory::AcceptConnection(shell::Connection* connection) {
   connection->AddInterface<mojom::Catalog>(this);
   connection->AddInterface<mojom::Resolver>(this);
-  connection->AddInterface<mojo::shell::mojom::ShellResolver>(this);
+  connection->AddInterface<shell::mojom::ShellResolver>(this);
   return true;
 }
 
-void Factory::Create(mojo::Connection* connection,
+void Factory::Create(shell::Connection* connection,
                      mojom::ResolverRequest request) {
   Catalog* instance =
       GetCatalogForUserId(connection->GetRemoteIdentity().user_id());
   instance->BindResolver(std::move(request));
 }
 
-void Factory::Create(mojo::Connection* connection,
-                     mojo::shell::mojom::ShellResolverRequest request) {
+void Factory::Create(shell::Connection* connection,
+                     shell::mojom::ShellResolverRequest request) {
   Catalog* instance =
       GetCatalogForUserId(connection->GetRemoteIdentity().user_id());
   instance->BindShellResolver(std::move(request));
 }
 
-void Factory::Create(mojo::Connection* connection,
+void Factory::Create(shell::Connection* connection,
                      mojom::CatalogRequest request) {
   Catalog* instance =
       GetCatalogForUserId(connection->GetRemoteIdentity().user_id());

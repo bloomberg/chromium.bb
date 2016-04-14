@@ -35,8 +35,8 @@ class MojoShellTest : public ContentBrowserTest {
   }
 
  private:
-  static std::unique_ptr<mojo::ShellClient> CreateTestApp() {
-    return std::unique_ptr<mojo::ShellClient>(new TestMojoApp);
+  static std::unique_ptr<shell::ShellClient> CreateTestApp() {
+    return std::unique_ptr<shell::ShellClient>(new TestMojoApp);
   }
 
   MojoShellContext::StaticApplicationMap test_apps_;

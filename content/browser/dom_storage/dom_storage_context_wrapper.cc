@@ -80,7 +80,7 @@ void GetSessionStorageUsageHelper(
 // for now).
 class DOMStorageContextWrapper::MojoState {
  public:
-  MojoState(mojo::Connector* connector, const base::FilePath& subdirectory)
+  MojoState(shell::Connector* connector, const base::FilePath& subdirectory)
       : connector_(connector),
         subdirectory_(subdirectory),
         connection_state_(NO_CONNECTION),
@@ -109,7 +109,7 @@ class DOMStorageContextWrapper::MojoState {
   // Maps between an origin and its prefixed LevelDB view.
   std::map<url::Origin, std::unique_ptr<LevelDBWrapperImpl>> level_db_wrappers_;
 
-  mojo::Connector* const connector_;
+  shell::Connector* const connector_;
   const base::FilePath subdirectory_;
 
   enum ConnectionState {
@@ -118,7 +118,7 @@ class DOMStorageContextWrapper::MojoState {
     CONNECTION_FINISHED
   } connection_state_;
 
-  std::unique_ptr<mojo::Connection> user_service_connection_;
+  std::unique_ptr<shell::Connection> user_service_connection_;
 
   user_service::mojom::UserServicePtr user_service_;
   filesystem::DirectoryPtr directory_;
@@ -232,7 +232,7 @@ void DOMStorageContextWrapper::MojoState::BindLocalStorage(
 }
 
 DOMStorageContextWrapper::DOMStorageContextWrapper(
-    mojo::Connector* connector,
+    shell::Connector* connector,
     const base::FilePath& profile_path,
     const base::FilePath& local_partition_path,
     storage::SpecialStoragePolicy* special_storage_policy) {

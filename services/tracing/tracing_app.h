@@ -22,27 +22,27 @@
 namespace tracing {
 
 class TracingApp
-    : public mojo::ShellClient,
-      public mojo::InterfaceFactory<TraceCollector>,
+    : public shell::ShellClient,
+      public shell::InterfaceFactory<TraceCollector>,
       public TraceCollector,
-      public mojo::InterfaceFactory<StartupPerformanceDataCollector>,
+      public shell::InterfaceFactory<StartupPerformanceDataCollector>,
       public StartupPerformanceDataCollector {
  public:
   TracingApp();
   ~TracingApp() override;
 
  private:
-  // mojo::ShellClient implementation.
-  bool AcceptConnection(mojo::Connection* connection) override;
+  // shell::ShellClient implementation.
+  bool AcceptConnection(shell::Connection* connection) override;
   bool ShellConnectionLost() override;
 
-  // mojo::InterfaceFactory<TraceCollector> implementation.
-  void Create(mojo::Connection* connection,
+  // shell::InterfaceFactory<TraceCollector> implementation.
+  void Create(shell::Connection* connection,
               mojo::InterfaceRequest<TraceCollector> request) override;
 
-  // mojo::InterfaceFactory<StartupPerformanceDataCollector> implementation.
+  // shell::InterfaceFactory<StartupPerformanceDataCollector> implementation.
   void Create(
-      mojo::Connection* connection,
+      shell::Connection* connection,
       mojo::InterfaceRequest<StartupPerformanceDataCollector> request) override;
 
   // tracing::TraceCollector implementation.

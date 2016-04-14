@@ -24,8 +24,7 @@ namespace content {
 // EmbeddedApplicationRunner instance.
 class EmbeddedApplicationRunner {
  public:
-  using FactoryCallback =
-      base::Callback<std::unique_ptr<mojo::ShellClient>()>;
+  using FactoryCallback = base::Callback<std::unique_ptr<shell::ShellClient>()>;
 
   // Constructs a runner which hosts the application on |task_runner|'s thread.
   // If an existing instance of the app is not running when an incoming
@@ -40,13 +39,14 @@ class EmbeddedApplicationRunner {
   // Binds an incoming ShellClientRequest for this application. If the
   // application isn't already running, it's started. Otherwise the request is
   // bound to the running instance.
-  void BindShellClientRequest(mojo::shell::mojom::ShellClientRequest request);
+  void BindShellClientRequest(shell::mojom::ShellClientRequest request);
 
  private:
   class Instance;
 
   // The TaskRunner on which the factory callback will be run. The
-  // mojo::ShellClient it returns will live and die on this TaskRunner's thread.
+  // shell::ShellClient it returns will live and die on this TaskRunner's
+  // thread.
   const scoped_refptr<base::SingleThreadTaskRunner> application_task_runner_;
 
   // A reference to the application instance which may operate on the
