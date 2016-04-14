@@ -36,6 +36,7 @@
 #include "bindings/core/v8/V8BindingForTesting.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/testing/NullExecutionContext.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include <v8.h>
 
@@ -75,6 +76,7 @@ public:
     ScriptPromiseTest()
         : m_scope(v8::Isolate::GetCurrent())
     {
+        m_scope.getScriptState()->setExecutionContext(new NullExecutionContext());
     }
 
     ~ScriptPromiseTest()
