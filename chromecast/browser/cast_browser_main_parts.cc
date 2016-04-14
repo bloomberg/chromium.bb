@@ -28,6 +28,7 @@
 #include "chromecast/browser/cast_browser_context.h"
 #include "chromecast/browser/cast_browser_process.h"
 #include "chromecast/browser/cast_content_browser_client.h"
+#include "chromecast/browser/cast_memory_pressure_monitor.h"
 #include "chromecast/browser/cast_net_log.h"
 #include "chromecast/browser/devtools/remote_debugging_server.h"
 #include "chromecast/browser/metrics/cast_metrics_prefs.h"
@@ -176,6 +177,7 @@ void DeregisterKillOnAlarm() {
     DCHECK_EQ(sa_old.sa_handler, KillOnAlarm);
   }
 }
+
 #endif  // !defined(OS_ANDROID)
 
 }  // namespace
@@ -383,6 +385,8 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
 
 #if defined(OS_ANDROID)
   ::media::SetMediaClientAndroid(new media::CastMediaClientAndroid());
+#else
+  memory_pressure_monitor_.reset(new CastMemoryPressureMonitor());
 #endif  // defined(OS_ANDROID)
 
   cast_browser_process_->SetConnectivityChecker(

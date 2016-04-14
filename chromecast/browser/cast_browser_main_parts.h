@@ -21,6 +21,7 @@ class NetLog;
 }
 
 namespace chromecast {
+class CastMemoryPressureMonitor;
 
 namespace media {
 class MediaPipelineBackendManager;
@@ -70,6 +71,8 @@ class CastBrowserMainParts : public content::BrowserMainParts {
   // Tracks all media pipeline backends.
   std::unique_ptr<media::MediaPipelineBackendManager>
       media_pipeline_backend_manager_;
+
+  std::unique_ptr<CastMemoryPressureMonitor> memory_pressure_monitor_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(CastBrowserMainParts);

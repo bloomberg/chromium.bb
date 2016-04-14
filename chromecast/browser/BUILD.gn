@@ -115,6 +115,8 @@ source_set("browser") {
 
   if (is_linux) {
     sources += [
+      "cast_memory_pressure_monitor.cc",
+      "cast_memory_pressure_monitor.h",
       "metrics/external_metrics.cc",
       "metrics/external_metrics.h",
     ]
