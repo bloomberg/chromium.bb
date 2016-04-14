@@ -45,8 +45,10 @@
 #import "ios/web/navigation/navigation_item_impl.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
 #import "ios/web/net/crw_cert_verification_controller.h"
+#import "ios/web/net/crw_ssl_status_updater.h"
 #include "ios/web/net/request_group_util.h"
 #include "ios/web/public/browser_state.h"
+#include "ios/web/public/cert_store.h"
 #include "ios/web/public/favicon_url.h"
 #include "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
@@ -191,9 +193,11 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 }
 }  // namespace
 
-@interface CRWWebController () <CRWNativeContentDelegate,
-                                CRWWebControllerContainerViewDelegate,
-                                CRWWebViewScrollViewProxyObserver> {
+@interface CRWWebController ()<CRWNativeContentDelegate,
+                               CRWSSLStatusUpdaterDataSource,
+                               CRWSSLStatusUpdaterDelegate,
+                               CRWWebControllerContainerViewDelegate,
+                               CRWWebViewScrollViewProxyObserver> {
   base::WeakNSProtocol<id<CRWWebDelegate>> _delegate;
   base::WeakNSProtocol<id<CRWWebUserInterfaceDelegate>> _UIDelegate;
   base::WeakNSProtocol<id<CRWNativeContentProvider>> _nativeProvider;
@@ -344,6 +348,22 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 
   // CRWWebUIManager object for loading WebUI pages.
   base::scoped_nsobject<CRWWebUIManager> _webUIManager;
+
+  // Updates SSLStatus for current navigation item.
+  base::scoped_nsobject<CRWSSLStatusUpdater> _SSLStatusUpdater;
+
+  // Controller used for certs verification to help with blocking requests with
+  // bad SSL cert, presenting SSL interstitials and determining SSL status for
+  // Navigation Items.
+  base::scoped_nsobject<CRWCertVerificationController>
+      _certVerificationController;
+
+  // CertVerification errors which happened inside
+  // |webView:didReceiveAuthenticationChallenge:completionHandler:|.
+  // Key is leaf-cert/host pair. This storage is used to carry calculated
+  // cert status from |didReceiveAuthenticationChallenge:| to
+  // |didFailProvisionalNavigation:| delegate method.
+  std::unique_ptr<CertVerificationErrorsCacheType> _certVerificationErrors;
 }
 
 // The container view.  The container view should be accessed through this
@@ -361,6 +381,8 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 @property(nonatomic, readonly) NSString* activityIndicatorGroupID;
 // Referrer for the current page; does not include the fragment.
 @property(nonatomic, readonly) NSString* currentReferrerString;
+// Identifier used for storing and retrieving certificates.
+@property(nonatomic, readonly) int certGroupID;
 // Removes the container view from the hierarchy and resets the ivar.
 - (void)resetContainerView;
 // Resets any state that is associated with a specific document object (e.g.,
@@ -514,6 +536,14 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 // Tries to open a popup with the given new window information.
 - (void)openPopupWithInfo:(const web::NewWindowInfo&)windowInfo;
 
+// Used in webView:didReceiveAuthenticationChallenge:completionHandler: to
+// reply with NSURLSessionAuthChallengeDisposition and credentials.
+- (void)processAuthChallenge:(NSURLAuthenticationChallenge*)challenge
+         forCertAcceptPolicy:(web::CertAcceptPolicy)policy
+                  certStatus:(net::CertStatus)certStatus
+           completionHandler:(void (^)(NSURLSessionAuthChallengeDisposition,
+                                       NSURLCredential*))completionHandler;
+
 // Handlers for JavaScript messages. |message| contains a JavaScript command and
 // data relevant to the message, and |context| contains contextual information
 // about web view state needed for some handlers.
@@ -658,6 +688,11 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     _gestureRecognizers.reset([[NSMutableArray alloc] init]);
     _webViewToolbars.reset([[NSMutableArray alloc] init]);
     _pendingLoadCompleteActions.reset([[NSMutableArray alloc] init]);
+    web::BrowserState* browserState = _webStateImpl->GetBrowserState();
+    _certVerificationController.reset([[CRWCertVerificationController alloc]
+        initWithBrowserState:browserState]);
+    _certVerificationErrors.reset(
+        new CertVerificationErrorsCacheType(kMaxCertErrorsCount));
     [[NSNotificationCenter defaultCenter]
         addObserver:self
            selector:@selector(orientationDidChange)
@@ -818,6 +853,10 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   return _currentReferrerString;
 }
 
+- (int)certGroupID {
+  return self.webState->GetCertGroupId();
+}
+
 // NativeControllerDelegate method, called to inform that title has changed.
 - (void)nativeContent:(id)content titleDidChange:(NSString*)title {
   // Responsiveness to delegate method was checked in setDelegate:.
@@ -899,6 +938,8 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
 // Stop doing stuff, especially network stuff. Close the request tracker.
 - (void)terminateNetworkActivity {
+  web::CertStore::GetInstance()->RemoveCertsForGroup(self.certGroupID);
+
   DCHECK(!_isHalted);
   _isHalted = YES;
 
@@ -916,6 +957,9 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
 // Caller must reset the delegate before calling.
 - (void)close {
+  _SSLStatusUpdater.reset();
+  [_certVerificationController shutDown];
+
   self.nativeProvider = nil;
   self.swipeRecognizerProvider = nil;
   if ([self.nativeController respondsToSelector:@selector(close)])
@@ -1881,6 +1925,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
 - (void)abortLoad {
   [self abortWebLoad];
+  _certVerificationErrors->Clear();
   [self loadCancelled];
 }
 
@@ -3390,6 +3435,47 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 }
 
 #pragma mark -
+#pragma mark Auth Challenge
+
+- (void)processAuthChallenge:(NSURLAuthenticationChallenge*)challenge
+         forCertAcceptPolicy:(web::CertAcceptPolicy)policy
+                  certStatus:(net::CertStatus)certStatus
+           completionHandler:(void (^)(NSURLSessionAuthChallengeDisposition,
+                                       NSURLCredential*))completionHandler {
+  SecTrustRef trust = challenge.protectionSpace.serverTrust;
+  if (policy == web::CERT_ACCEPT_POLICY_RECOVERABLE_ERROR_ACCEPTED_BY_USER) {
+    // Cert is invalid, but user agreed to proceed, override default behavior.
+    completionHandler(NSURLSessionAuthChallengeUseCredential,
+                      [NSURLCredential credentialForTrust:trust]);
+    return;
+  }
+
+  if (policy != web::CERT_ACCEPT_POLICY_ALLOW &&
+      SecTrustGetCertificateCount(trust)) {
+    // The cert is invalid and the user has not agreed to proceed. Cache the
+    // cert verification result in |_certVerificationErrors|, so that it can
+    // later be reused inside |didFailProvisionalNavigation:|.
+    // The leaf cert is used as the key, because the chain provided by
+    // |didFailProvisionalNavigation:| will differ (it is the server-supplied
+    // chain), thus if intermediates were considered, the keys would mismatch.
+    scoped_refptr<net::X509Certificate> leafCert =
+        net::X509Certificate::CreateFromHandle(
+            SecTrustGetCertificateAtIndex(trust, 0),
+            net::X509Certificate::OSCertHandles());
+    if (leafCert) {
+      BOOL is_recoverable =
+          policy == web::CERT_ACCEPT_POLICY_RECOVERABLE_ERROR_UNDECIDED_BY_USER;
+      std::string host =
+          base::SysNSStringToUTF8(challenge.protectionSpace.host);
+      _certVerificationErrors->Put(
+          web::CertHostPair(leafCert, host),
+          CertVerificationError(is_recoverable, certStatus));
+    }
+  }
+  completionHandler(NSURLSessionAuthChallengeRejectProtectionSpace, nil);
+}
+
+#pragma mark -
 #pragma mark TouchTracking
 
 - (void)touched:(BOOL)touched {
@@ -4012,12 +4098,99 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   [_delegate webDidUpdateHistoryStateWithPageURL:url];
 }
 
+- (void)updateSSLStatusForCurrentNavigationItem {
+  if ([self isBeingDestroyed]) {
+    return;
+  }
+
+  web::NavigationManager* navManager = self.webState->GetNavigationManager();
+  web::NavigationItem* currentNavItem = navManager->GetLastCommittedItem();
+  if (!currentNavItem) {
+    return;
+  }
+
+  if (!_SSLStatusUpdater) {
+    _SSLStatusUpdater.reset([[CRWSSLStatusUpdater alloc]
+        initWithDataSource:self
+         navigationManager:navManager
+               certGroupID:self.certGroupID]);
+    [_SSLStatusUpdater setDelegate:self];
+  }
+  NSString* host = base::SysUTF8ToNSString(self.documentURL.host());
+  NSArray* certChain = [self.webView certificateChain];
+  BOOL hasOnlySecureContent = [self.webView hasOnlySecureContent];
+  [_SSLStatusUpdater updateSSLStatusForNavigationItem:currentNavItem
+                                         withCertHost:host
+                                            certChain:certChain
+                                 hasOnlySecureContent:hasOnlySecureContent];
+}
+
 - (void)didUpdateSSLStatusForCurrentNavigationItem {
   if ([_delegate respondsToSelector:
           @selector(
               webControllerDidUpdateSSLStatusForCurrentNavigationItem:)]) {
     [_delegate webControllerDidUpdateSSLStatusForCurrentNavigationItem:self];
   }
+}
+
+- (void)handleSSLCertError:(NSError*)error {
+  CHECK(web::IsWKWebViewSSLCertError(error));
+
+  net::SSLInfo info;
+  web::GetSSLInfoFromWKWebViewSSLCertError(error, &info);
+
+  web::SSLStatus status;
+  status.security_style = web::SECURITY_STYLE_AUTHENTICATION_BROKEN;
+  status.cert_status = info.cert_status;
+  // |info.cert| can be null if certChain in NSError is empty or can not be
+  // parsed.
+  if (info.cert) {
+    status.cert_id = web::CertStore::GetInstance()->StoreCert(info.cert.get(),
+                                                              self.certGroupID);
+  }
+
+  // Retrieve verification results from _certVerificationErrors cache to avoid
+  // unnecessary recalculations. Verification results are cached for the leaf
+  // cert, because the cert chain in |didReceiveAuthenticationChallenge:| is
+  // the OS constructed chain, while |chain| is the chain from the server.
+  NSArray* chain = error.userInfo[web::kNSErrorPeerCertificateChainKey];
+  NSString* host = [error.userInfo[web::kNSErrorFailingURLKey] host];
+  scoped_refptr<net::X509Certificate> leafCert;
+  BOOL recoverable = NO;
+  if (chain.count && host.length) {
+    // The complete cert chain may not be available, so the leaf cert is used
+    // as a key to retrieve _certVerificationErrors, as well as for storing the
+    // cert decision.
+    leafCert = web::CreateCertFromChain(@[ chain.firstObject ]);
+    if (leafCert) {
+      auto error = _certVerificationErrors->Get(
+          {leafCert, base::SysNSStringToUTF8(host)});
+      bool cacheHit = error != _certVerificationErrors->end();
+      if (cacheHit) {
+        recoverable = error->second.is_recoverable;
+        status.cert_status = error->second.status;
+        info.cert_status = error->second.status;
+      }
+      UMA_HISTOGRAM_BOOLEAN("WebController.CertVerificationErrorsCacheHit",
+                            cacheHit);
+    }
+  }
+
+  // Present SSL interstitial and inform everyone that the load is cancelled.
+  [self.delegate presentSSLError:info
+                    forSSLStatus:status
+                     recoverable:recoverable
+                        callback:^(BOOL proceed) {
+                          if (proceed) {
+                            // The interstitial will be removed during reload.
+                            [_certVerificationController
+                                allowCert:leafCert
+                                  forHost:host
+                                   status:status.cert_status];
+                            [self loadCurrentURL];
+                          }
+                        }];
+  [self loadCancelled];
 }
 
 - (void)loadHTML:(NSString*)HTML forURL:(const GURL&)URL {
@@ -4342,13 +4515,13 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // This must be reset at the end, since code above may need information about
   // the pending load.
   [self resetPendingNavigationInfo];
-  [self clearCertVerificationErrors];
+  _certVerificationErrors->Clear();
 }
 
 - (void)webView:(WKWebView*)webView
     didCommitNavigation:(WKNavigation*)navigation {
   DCHECK_EQ(self.webView, webView);
-  [self clearCertVerificationErrors];
+  _certVerificationErrors->Clear();
   // This point should closely approximate the document object change, so reset
   // the list of injected scripts to those that are automatically injected.
   [self clearInjectedScriptManagers];
@@ -4400,7 +4573,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
             withError:(NSError*)error {
   [self handleLoadError:WKWebViewErrorWithSource(error, NAVIGATION)
             inMainFrame:YES];
-  [self clearCertVerificationErrors];
+  _certVerificationErrors->Clear();
 }
 
 - (void)webView:(WKWebView*)webView
@@ -4426,7 +4599,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   base::ScopedCFTypeRef<SecTrustRef> scopedTrust(trust,
                                                  base::scoped_policy::RETAIN);
   base::WeakNSObject<CRWWebController> weakSelf(self);
-  [self.certVerificationController
+  [_certVerificationController
       decideLoadPolicyForTrust:scopedTrust
                           host:challenge.protectionSpace.host
              completionHandler:^(web::CertAcceptPolicy policy,
@@ -4446,8 +4619,31 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 }
 
 - (void)webViewWebContentProcessDidTerminate:(WKWebView*)webView {
-  [self clearCertVerificationErrors];
+  _certVerificationErrors->Clear();
   [self webViewWebProcessDidCrash];
+}
+
+#pragma mark -
+#pragma mark CRWSSLStatusUpdater DataSource/Delegate Methods
+
+- (void)SSLStatusUpdater:(CRWSSLStatusUpdater*)SSLStatusUpdater
+    querySSLStatusForCertChain:(NSArray*)certChain
+                          host:(NSString*)host
+             completionHandler:(StatusQueryHandler)completionHandler {
+  base::ScopedCFTypeRef<SecTrustRef> trust(
+      web::CreateServerTrustFromChain(certChain, host));
+  [_certVerificationController querySSLStatusForTrust:std::move(trust)
+                                                 host:host
+                                    completionHandler:completionHandler];
+}
+
+- (void)SSLStatusUpdater:(CRWSSLStatusUpdater*)SSLStatusUpdater
+    didChangeSSLStatusForNavigationItem:(web::NavigationItem*)navigationItem {
+  web::NavigationItem* currentNavigationItem =
+      self.webState->GetNavigationManager()->GetLastCommittedItem();
+  if (navigationItem == currentNavigationItem) {
+    [self didUpdateSSLStatusForCurrentNavigationItem];
+  }
 }
 
 #pragma mark -
