@@ -382,7 +382,8 @@ public class AwTestBase
         }
         public AwSettings createAwSettings(Context context, boolean supportsLegacyQuirks) {
             return new AwSettings(context, false /* isAccessFromFileURLsGrantedByDefault */,
-                    supportsLegacyQuirks, false /* allowEmptyDocumentPersistence */);
+                    supportsLegacyQuirks, false /* allowEmptyDocumentPersistence */,
+                    true /* allowGeolocationOnInsecureOrigins */);
         }
     }
 

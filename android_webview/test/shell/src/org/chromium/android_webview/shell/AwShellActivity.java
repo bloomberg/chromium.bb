@@ -185,7 +185,8 @@ public class AwShellActivity extends Activity {
         }
         final AwSettings awSettings = new AwSettings(this /* context */,
                 false /* isAccessFromFileURLsGrantedByDefault */, false /* supportsLegacyQuirks */,
-                false /* allowEmptyDocumentPersistence */);
+                false /* allowEmptyDocumentPersistence */,
+                true /* allowGeolocationOnInsecureOrigins */);
         // Required for WebGL conformance tests.
         awSettings.setMediaPlaybackRequiresUserGesture(false);
         // Allow zoom and fit contents to screen

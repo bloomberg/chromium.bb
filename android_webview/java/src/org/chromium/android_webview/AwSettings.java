@@ -97,6 +97,7 @@ public class AwSettings {
 
     private final boolean mSupportLegacyQuirks;
     private final boolean mAllowEmptyDocumentPersistence;
+    private final boolean mAllowGeolocationOnInsecureOrigins;
 
     private final boolean mPasswordEchoEnabled;
 
@@ -210,7 +211,8 @@ public class AwSettings {
     public AwSettings(Context context,
             boolean isAccessFromFileURLsGrantedByDefault,
             boolean supportsLegacyQuirks,
-            boolean allowEmptyDocumentPersistence) {
+            boolean allowEmptyDocumentPersistence,
+            boolean allowGeolocationOnInsecureOrigins) {
         boolean hasInternetPermission = context.checkPermission(
                 android.Manifest.permission.INTERNET,
                 Process.myPid(),
@@ -240,6 +242,7 @@ public class AwSettings {
 
             mSupportLegacyQuirks = supportsLegacyQuirks;
             mAllowEmptyDocumentPersistence = allowEmptyDocumentPersistence;
+            mAllowGeolocationOnInsecureOrigins = allowGeolocationOnInsecureOrigins;
         }
         // Defer initializing the native side until a native WebContents instance is set.
     }
@@ -1253,6 +1256,12 @@ public class AwSettings {
     private boolean getAllowEmptyDocumentPersistenceLocked() {
         assert Thread.holdsLock(mAwSettingsLock);
         return mAllowEmptyDocumentPersistence;
+    }
+
+    @CalledByNative
+    private boolean getAllowGeolocationOnInsecureOrigins() {
+        assert Thread.holdsLock(mAwSettingsLock);
+        return mAllowGeolocationOnInsecureOrigins;
     }
 
     /**

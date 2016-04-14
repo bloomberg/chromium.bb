@@ -2901,7 +2901,7 @@ public class AwSettingsTest extends AwTestBase {
         @Override
         public AwSettings createAwSettings(Context context, boolean supportsLegacyQuirks) {
             return new AwSettings(context, false /* isAccessFromFileURLsGrantedByDefault */,
-                    supportsLegacyQuirks, mAllow);
+                    supportsLegacyQuirks, mAllow, true /* allowGeolocationOnInsecureOrigins */);
         }
     }
 

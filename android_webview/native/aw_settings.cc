@@ -440,7 +440,8 @@ void AwSettings::PopulateWebPreferencesLocked(JNIEnv* env,
 
   // TODO(jww): This should be removed once sufficient warning has been given of
   // possible API breakage because of disabling insecure use of geolocation.
-  web_prefs->allow_geolocation_on_insecure_origins = true;
+  web_prefs->allow_geolocation_on_insecure_origins =
+      Java_AwSettings_getAllowGeolocationOnInsecureOrigins(env, obj);
 }
 
 static jlong Init(JNIEnv* env,
