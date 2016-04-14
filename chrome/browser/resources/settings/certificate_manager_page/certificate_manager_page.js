@@ -46,7 +46,7 @@ Polymer({
     certificateTypeEnum_: {
       type: Object,
       value: settings.CertificateType,
-      readonly: true,
+      readOnly: true,
     },
 
     /** @private */

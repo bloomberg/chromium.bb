@@ -2,22 +2,29 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.exportPath('settings_test');
-
-/** @type {boolean} */
-settings_test.changePictureNotifyForTest;
+/**
+ * Contains the possible types of Change Picture selections.
+ * @enum {string}
+ */
+var ChangePictureSelectionTypes = {
+  CAMERA: 'camera',
+  FILE: 'file',
+  PROFILE: 'profile',
+  OLD: 'old',
+  DEFAULT: 'default',
+};
 
 /**
  * An image element.
  * @typedef {{
  *   dataset: {
- *     type: string,
+ *     type: !ChangePictureSelectionTypes,
  *     defaultImageIndex: ?number,
  *   },
  *   src: string,
  * }}
  */
-settings.ChangePictureImageElement;
+var ChangePictureImageElement;
 
 /**
  * @fileoverview
@@ -46,12 +53,12 @@ Polymer({
      * The currently selected item. This property is bound to the iron-selector
      * and never directly assigned. This may be undefined momentarily as
      * the selection changes due to iron-selector implementation details.
-     * @private {?settings.ChangePictureImageElement}
+     * @private {?ChangePictureImageElement}
      */
     selectedItem_: Object,
 
     /**
-     * The url of the 'old' image, which is the existing image sourced from
+     * The url of the Old image, which is the existing image sourced from
      * the camera, a file, or a deprecated default image. It defaults to an
      * empty string instead of undefined, because Polymer bindings don't behave
      * as expected with undefined properties.
@@ -81,9 +88,9 @@ Polymer({
     },
 
     /**
-     * The fallback image to be selected when the user discards the 'old' image.
-     * This may be null if the user started with the 'old' image.
-     * @private {?settings.ChangePictureImageElement}
+     * The fallback image to be selected when the user discards the Old image.
+     * This may be null if the user started with the Old image.
+     * @private {?ChangePictureImageElement}
      */
     fallbackImage_: Object,
 
@@ -95,6 +102,13 @@ Polymer({
     lastSelectedImageType_: {
       type: String,
       value: '',
+    },
+
+    /** @private */
+    selectionTypesEnum_: {
+      type: Object,
+      value: ChangePictureSelectionTypes,
+      readOnly: true,
     },
 
     /** @private {!settings.ChangePictureBrowserProxyImpl} */
@@ -139,21 +153,24 @@ Polymer({
    */
   receiveSelectedImage_: function(imageUrl) {
     var index = this.$.selector.items.findIndex(function(image) {
-      return image.dataset.type == 'default' && image.src == imageUrl;
+      return image.dataset.type == ChangePictureSelectionTypes.DEFAULT &&
+          image.src == imageUrl;
     });
     assert(index != -1, 'Default image not found: ' + imageUrl);
 
     this.fallbackImage_ = this.$.selector.items[index];
 
     // If user is currently taking a photo, do not steal the focus.
-    if (!this.selectedItem_ || this.selectedItem_.dataset.type != 'camera')
+    if (!this.selectedItem_ ||
+        this.selectedItem_.dataset.type != ChangePictureSelectionTypes.CAMERA) {
       this.$.selector.select(index);
+    }
   },
 
   /**
-   * Handler for the 'old-image-changed' event. The 'old' image is any selected
+   * Handler for the 'old-image-changed' event. The Old image is any selected
    * non-profile and non-default image. It can be from the camera, a file, or a
-   * deprecated default image. When this method is called, the old image
+   * deprecated default image. When this method is called, the Old image
    * becomes the selected image.
    * @param {string} imageUrl
    * @private
@@ -179,8 +196,10 @@ Polymer({
     this.fallbackImage_ = this.$.profileImage;
 
     // If user is currently taking a photo, do not steal the focus.
-    if (!this.selectedItem_ || this.selectedItem_.dataset.type != 'camera')
+    if (!this.selectedItem_ ||
+        this.selectedItem_.dataset.type != ChangePictureSelectionTypes.CAMERA) {
       this.$.selector.select(this.$.selector.indexOf(this.$.profileImage));
+    }
   },
 
   /**
@@ -194,24 +213,24 @@ Polymer({
 
   /**
    * Selects an image element.
-   * @param {!settings.ChangePictureImageElement} image
+   * @param {!ChangePictureImageElement} image
    * @private
    */
   selectImage_: function(image) {
     switch (image.dataset.type) {
-      case 'camera':
+      case ChangePictureSelectionTypes.CAMERA:
         // Nothing needs to be done.
         break;
-      case 'file':
+      case ChangePictureSelectionTypes.FILE:
         this.browserProxy_.chooseFile();
         break;
-      case 'profile':
+      case ChangePictureSelectionTypes.PROFILE:
         this.browserProxy_.selectProfileImage();
         break;
-      case 'old':
+      case ChangePictureSelectionTypes.OLD:
         this.browserProxy_.selectOldImage();
         break;
-      case 'default':
+      case ChangePictureSelectionTypes.DEFAULT:
         this.browserProxy_.selectDefaultImage(image.src);
         break;
       default:
@@ -264,12 +283,15 @@ Polymer({
 
       case 'enter':
       case 'space':
-        if (this.selectedItem_.dataset.type == 'camera') {
+        if (this.selectedItem_.dataset.type ==
+            ChangePictureSelectionTypes.CAMERA) {
           var /** SettingsCameraElement */ camera = this.$.camera;
           camera.takePhoto();
-        } else if (this.selectedItem_.dataset.type == 'file') {
+        } else if (this.selectedItem_.dataset.type ==
+                   ChangePictureSelectionTypes.FILE) {
           this.browserProxy_.chooseFile();
-        } else if (this.selectedItem_.dataset.type == 'old') {
+        } else if (this.selectedItem_.dataset.type ==
+                   ChangePictureSelectionTypes.OLD) {
           this.onTapDiscardOldImage_();
         }
         break;
@@ -297,14 +319,14 @@ Polymer({
   },
 
   /**
-   * Discard currently selected old image. Selects the first default icon.
+   * Discard currently selected Old image. Selects the first default icon.
    * Returns to the camera stream if the user had just taken a picture.
    * @private
    */
   onTapDiscardOldImage_: function() {
     this.oldImageUrl_ = '';
 
-    if (this.lastSelectedImageType_ == 'camera')
+    if (this.lastSelectedImageType_ == ChangePictureSelectionTypes.CAMERA)
       this.$.selector.select(this.$.selector.indexOf(this.$.cameraImage));
 
     if (this.fallbackImage_ != null) {
@@ -322,14 +344,14 @@ Polymer({
 
   /**
    * @param {string} oldImageUrl
-   * @return {boolean} True if there is no old image and the old image icon
+   * @return {boolean} True if there is no Old image and the Old image icon
    *     should be hidden.
    * @private
    */
   isOldImageHidden_: function(oldImageUrl) { return oldImageUrl.length == 0; },
 
   /**
-   * @param {settings.ChangePictureImageElement} selectedItem
+   * @param {ChangePictureImageElement} selectedItem
    * @return {boolean} True if the preview image should be hidden.
    * @private
    */
@@ -338,39 +360,44 @@ Polymer({
       return true;
 
     var type = selectedItem.dataset.type;
-    return type != 'default' && type != 'profile' && type != 'old';
+    return type != ChangePictureSelectionTypes.DEFAULT &&
+        type != ChangePictureSelectionTypes.PROFILE &&
+        type != ChangePictureSelectionTypes.OLD;
   },
 
   /**
-   * @param {settings.ChangePictureImageElement} selectedItem
+   * @param {boolean} cameraPresent
+   * @param {ChangePictureImageElement} selectedItem
    * @return {boolean} True if the camera is selected in the image grid.
    * @private
    */
   isCameraActive_: function(cameraPresent, selectedItem) {
     return cameraPresent && selectedItem &&
-        selectedItem.dataset.type == 'camera';
+        selectedItem.dataset.type == ChangePictureSelectionTypes.CAMERA;
   },
 
   /**
-   * @param {settings.ChangePictureImageElement} selectedItem
+   * @param {ChangePictureImageElement} selectedItem
    * @return {boolean} True if the discard controls should be hidden.
    * @private
    */
   isDiscardHidden_: function(selectedItem) {
-    return !selectedItem || selectedItem.dataset.type != 'old';
+    return !selectedItem ||
+        selectedItem.dataset.type != ChangePictureSelectionTypes.OLD;
   },
 
   /**
-   * @param {settings.ChangePictureImageElement} selectedItem
+   * @param {ChangePictureImageElement} selectedItem
    * @return {boolean} True if the author credit text is shown.
    * @private
    */
   isAuthorCreditShown_: function(selectedItem) {
-    return selectedItem && selectedItem.dataset.type == 'default';
+    return selectedItem &&
+        selectedItem.dataset.type == ChangePictureSelectionTypes.DEFAULT;
   },
 
   /**
-   * @param {!settings.ChangePictureImageElement} selectedItem
+   * @param {!ChangePictureImageElement} selectedItem
    * @param {!Array<!settings.DefaultImage>} defaultImages
    * @return {string} The author name for the selected default image. An empty
    *     string is returned if there is no valid author name.
@@ -386,7 +413,7 @@ Polymer({
   },
 
   /**
-   * @param {!settings.ChangePictureImageElement} selectedItem
+   * @param {!ChangePictureImageElement} selectedItem
    * @param {!Array<!settings.DefaultImage>} defaultImages
    * @return {string} The author website for the selected default image. An
    *     empty string is returned if there is no valid author name.

@@ -23,19 +23,23 @@
       <div id="availableIcons" class="start">
         <iron-selector id="selector" on-iron-activate="onImageActivate_"
             selected-item="{{selectedItem_}}">
-          <iron-icon id="cameraImage" data-type="camera" icon="image:camera-alt"
-              i18n-values="alt:takePhoto" hidden="[[!cameraPresent_]]">
+          <iron-icon id="cameraImage"
+              data-type$="[[selectionTypesEnum_.CAMERA]]"
+              icon="image:camera-alt" i18n-values="alt:takePhoto"
+              hidden="[[!cameraPresent_]]">
           </iron-icon>
-          <iron-icon data-type="file" icon="folder"
-              i18n-values="alt:chooseFile">
+          <iron-icon data-type$="[[selectionTypesEnum_.FILE]]"
+              icon="folder" i18n-values="alt:chooseFile">
           </iron-icon>
-          <img id="profileImage" data-type="profile"
+          <img id="profileImage"
+              data-type$="[[selectionTypesEnum_.PROFILE]]"
               src="[[profileImageUrl_]]" i18n-values="alt:profilePhotoLoading">
-          <img id="oldImage" data-type="old"
+          <img id="oldImage" data-type$="[[selectionTypesEnum_.OLD]]"
               src="[[oldImageUrl_]]" hidden="[[!oldImageUrl_]]">
           <template is="dom-repeat" items="[[defaultImages_]]">
-            <img data-type="default" data-default-image-index$="[[index]]"
-                src="[[item.url]]" alt="[[item.title]]">
+            <img data-type$="[[selectionTypesEnum_.DEFAULT]]"
+                data-default-image-index$="[[index]]" src="[[item.url]]"
+                alt="[[item.title]]">
           </template>
         </iron-selector>
         <template is="dom-if" if="[[isAuthorCreditShown_(selectedItem_)]]">

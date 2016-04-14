@@ -136,7 +136,8 @@ cr.define('settings_people_page_change_picture', function() {
         Polymer.dom.flush();
         expectFalse(cameraIcon.hidden);
         expectTrue(settingsCamera.cameraActive);
-        expectEquals('camera', getSelectedItem().dataset.type);
+        expectEquals(ChangePictureSelectionTypes.CAMERA,
+                     getSelectedItem().dataset.type);
         expectTrue(discardControlBar.hidden);
       });
 
@@ -150,7 +151,8 @@ cr.define('settings_people_page_change_picture', function() {
         return browserProxy.whenCalled('selectProfileImage').then(function() {
           Polymer.dom.flush();
 
-          expectEquals('profile', getSelectedItem().dataset.type);
+          expectEquals(ChangePictureSelectionTypes.PROFILE,
+                       getSelectedItem().dataset.type);
           expectFalse(settingsCamera.cameraActive);
           expectTrue(discardControlBar.hidden);
         });
@@ -167,7 +169,8 @@ cr.define('settings_people_page_change_picture', function() {
 
         // Expect the old image to be selected once an old image is sent via
         // the native interface.
-        expectEquals('old', getSelectedItem().dataset.type);
+        expectEquals(ChangePictureSelectionTypes.OLD,
+                     getSelectedItem().dataset.type);
         expectFalse(oldImage.hidden);
         expectFalse(settingsCamera.cameraActive);
         expectFalse(discardControlBar.hidden);
@@ -184,7 +187,8 @@ cr.define('settings_people_page_change_picture', function() {
               expectEquals('chrome://foo/1.png', args[0]);
 
               Polymer.dom.flush();
-              expectEquals('default', getSelectedItem().dataset.type);
+              expectEquals(ChangePictureSelectionTypes.DEFAULT,
+                           getSelectedItem().dataset.type);
               expectEquals(firstDefaultImage, getSelectedItem());
               expectFalse(settingsCamera.cameraActive);
               expectTrue(discardControlBar.hidden);
@@ -206,7 +210,8 @@ cr.define('settings_people_page_change_picture', function() {
           cr.webUIListenerCallback('old-image-changed', 'fake-old-image.jpg');
 
           Polymer.dom.flush();
-          expectEquals('old', getSelectedItem().dataset.type);
+          expectEquals(ChangePictureSelectionTypes.OLD,
+                       getSelectedItem().dataset.type);
 
           MockInteractions.tap(discardOldImage);
 

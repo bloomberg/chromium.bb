@@ -36,7 +36,7 @@ Polymer({
      */
     digits: {
       type: Array,
-      readonly: true,
+      readOnly: true,
       value: [0, 1, 2, 3, 4, 5],
     },
   },
