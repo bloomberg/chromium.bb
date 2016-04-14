@@ -1790,10 +1790,13 @@ source_set("net_fuzzer_test_support") {
 
   sources = [
     "base/fuzzer_test_support.cc",
+    "socket/fuzzed_socket.cc",
+    "socket/fuzzed_socket.h",
   ]
   deps = [
     "//base",
     "//base:i18n",
+    "//net",
   ]
 }
 
@@ -1975,6 +1978,30 @@ fuzzer_test("net_quic_crypto_framer_parse_message_fuzzer") {
   ]
   deps = [
     ":net_fuzzer_test_support",
+    "//base",
+    "//net",
+  ]
+}
+
+fuzzer_test("net_socks_client_socket_fuzzer") {
+  sources = [
+    "socket/socks_client_socket_fuzzer.cc",
+  ]
+  deps = [
+    ":net_fuzzer_test_support",
+    ":test_support",
+    "//base",
+    "//net",
+  ]
+}
+
+fuzzer_test("net_socks5_client_socket_fuzzer") {
+  sources = [
+    "socket/socks5_client_socket_fuzzer.cc",
+  ]
+  deps = [
+    ":net_fuzzer_test_support",
+    ":test_support",
     "//base",
     "//net",
   ]
