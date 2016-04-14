@@ -355,6 +355,9 @@ void GLES2DecoderTestBase::InitDecoderWithCommandLine(
     EXPECT_CALL(*gl_, Enable(GL_TEXTURE_CUBE_MAP_SEAMLESS))
         .Times(1)
         .RetiresOnSaturation();
+    EXPECT_CALL(*gl_, Enable(GL_FRAMEBUFFER_SRGB))
+        .Times(1)
+        .RetiresOnSaturation();
   }
 
   static GLint max_viewport_dims[] = {
