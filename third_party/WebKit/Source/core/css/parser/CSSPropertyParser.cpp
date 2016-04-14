@@ -654,7 +654,7 @@ static CSSValueList* consumeRotation(CSSParserTokenRange& range)
     return list;
 }
 
-static CSSValueList* consumeScale(CSSParserTokenRange& range, CSSParserMode cssParserMode)
+static CSSValueList* consumeScale(CSSParserTokenRange& range)
 {
     ASSERT(RuntimeEnabledFeatures::cssIndependentTransformPropertiesEnabled());
 
@@ -693,7 +693,7 @@ static CSSValueList* consumeTranslate(CSSParserTokenRange& range, CSSParserMode 
     return list;
 }
 
-static CSSValue* consumeCounter(CSSParserTokenRange& range, CSSParserMode cssParserMode, int defaultValue)
+static CSSValue* consumeCounter(CSSParserTokenRange& range, int defaultValue)
 {
     if (range.peek().id() == CSSValueNone)
         return consumeIdent(range);
@@ -972,7 +972,7 @@ static CSSValue* consumeColumnGap(CSSParserTokenRange& range, CSSParserMode cssP
     return consumeLength(range, cssParserMode, ValueRangeNonNegative);
 }
 
-static CSSValue* consumeColumnSpan(CSSParserTokenRange& range, CSSParserMode cssParserMode)
+static CSSValue* consumeColumnSpan(CSSParserTokenRange& range)
 {
     return consumeIdent<CSSValueAll, CSSValueNone>(range);
 }
@@ -2733,7 +2733,7 @@ static CSSValue* consumeBorderImageRepeat(CSSParserTokenRange& range)
     return CSSValuePair::create(horizontal, vertical, CSSValuePair::DropIdenticalValues);
 }
 
-static CSSValue* consumeBorderImageSlice(CSSPropertyID property, CSSParserTokenRange& range, CSSParserMode cssParserMode)
+static CSSValue* consumeBorderImageSlice(CSSPropertyID property, CSSParserTokenRange& range)
 {
     bool fill = consumeIdent<CSSValueFill>(range);
     CSSPrimitiveValue* slices[4] = { 0 };
@@ -2816,7 +2816,7 @@ static bool consumeBorderImageComponents(CSSPropertyID property, CSSParserTokenR
                 continue;
         }
         if (!slice) {
-            slice = consumeBorderImageSlice(property, range, context.mode());
+            slice = consumeBorderImageSlice(property, range);
             if (slice) {
                 ASSERT(!width && !outset);
                 if (consumeSlashIncludingWhitespace(range)) {
@@ -2933,21 +2933,21 @@ static CSSValue* consumePrefixedBackgroundBox(CSSPropertyID property, CSSParserT
     return nullptr;
 }
 
-static CSSValue* consumeBackgroundSize(CSSPropertyID unresolvedProperty, CSSParserTokenRange& range, CSSParserMode mode)
+static CSSValue* consumeBackgroundSize(CSSPropertyID unresolvedProperty, CSSParserTokenRange& range, CSSParserMode cssParserMode)
 {
     if (identMatches<CSSValueContain, CSSValueCover>(range.peek().id()))
         return consumeIdent(range);
 
     CSSPrimitiveValue* horizontal = consumeIdent<CSSValueAuto>(range);
     if (!horizontal)
-        horizontal = consumeLengthOrPercent(range, mode, ValueRangeAll, UnitlessQuirk::Forbid);
+        horizontal = consumeLengthOrPercent(range, cssParserMode, ValueRangeAll, UnitlessQuirk::Forbid);
 
     CSSPrimitiveValue* vertical = nullptr;
     if (!range.atEnd()) {
         if (range.peek().id() == CSSValueAuto) // `auto' is the default
             range.consumeIncludingWhitespace();
         else
-            vertical = consumeLengthOrPercent(range, mode, ValueRangeAll, UnitlessQuirk::Forbid);
+            vertical = consumeLengthOrPercent(range, cssParserMode, ValueRangeAll, UnitlessQuirk::Forbid);
     } else if (unresolvedProperty == CSSPropertyAliasWebkitBackgroundSize) {
         // Legacy syntax: "-webkit-background-size: 10px" is equivalent to "background-size: 10px 10px".
         vertical = horizontal;
@@ -3465,7 +3465,7 @@ CSSValue* CSSPropertyParser::parseSingleValue(CSSPropertyID unresolvedProperty)
     case CSSPropertyRotate:
         return consumeRotation(m_range);
     case CSSPropertyScale:
-        return consumeScale(m_range, m_context.mode());
+        return consumeScale(m_range);
     case CSSPropertyTranslate:
         return consumeTranslate(m_range, m_context.mode());
     case CSSPropertyWebkitBorderHorizontalSpacing:
@@ -3473,7 +3473,7 @@ CSSValue* CSSPropertyParser::parseSingleValue(CSSPropertyID unresolvedProperty)
         return consumeLength(m_range, m_context.mode(), ValueRangeNonNegative);
     case CSSPropertyCounterIncrement:
     case CSSPropertyCounterReset:
-        return consumeCounter(m_range, m_context.mode(), property == CSSPropertyCounterIncrement ? 1 : 0);
+        return consumeCounter(m_range, property == CSSPropertyCounterIncrement ? 1 : 0);
     case CSSPropertySize:
         return consumeSize(m_range, m_context.mode());
     case CSSPropertySnapHeight:
@@ -3542,7 +3542,7 @@ CSSValue* CSSPropertyParser::parseSingleValue(CSSPropertyID unresolvedProperty)
     case CSSPropertyColumnGap:
         return consumeColumnGap(m_range, m_context.mode());
     case CSSPropertyColumnSpan:
-        return consumeColumnSpan(m_range, m_context.mode());
+        return consumeColumnSpan(m_range);
     case CSSPropertyZoom:
         return consumeZoom(m_range, m_context);
     case CSSPropertyAnimationDelay:
@@ -3741,7 +3741,7 @@ CSSValue* CSSPropertyParser::parseSingleValue(CSSPropertyID unresolvedProperty)
         return consumeBorderImageRepeat(m_range);
     case CSSPropertyBorderImageSlice:
     case CSSPropertyWebkitMaskBoxImageSlice:
-        return consumeBorderImageSlice(property, m_range, m_context.mode());
+        return consumeBorderImageSlice(property, m_range);
     case CSSPropertyBorderImageOutset:
     case CSSPropertyWebkitMaskBoxImageOutset:
         return consumeBorderImageOutset(m_range);
@@ -4134,7 +4134,7 @@ bool CSSPropertyParser::parseViewportDescriptor(CSSPropertyID propId, bool impor
     }
 }
 
-static bool consumeColumnWidthOrCount(CSSParserTokenRange& range, CSSParserMode cssParserMode, CSSValue*& columnWidth, CSSValue*& columnCount)
+static bool consumeColumnWidthOrCount(CSSParserTokenRange& range, CSSValue*& columnWidth, CSSValue*& columnCount)
 {
     if (range.peek().id() == CSSValueAuto) {
         consumeIdent(range);
@@ -4154,9 +4154,9 @@ bool CSSPropertyParser::consumeColumns(bool important)
 {
     CSSValue* columnWidth = nullptr;
     CSSValue* columnCount = nullptr;
-    if (!consumeColumnWidthOrCount(m_range, m_context.mode(), columnWidth, columnCount))
+    if (!consumeColumnWidthOrCount(m_range, columnWidth, columnCount))
         return false;
-    consumeColumnWidthOrCount(m_range, m_context.mode(), columnWidth, columnCount);
+    consumeColumnWidthOrCount(m_range, columnWidth, columnCount);
     if (!m_range.atEnd())
         return false;
     if (!columnWidth)
