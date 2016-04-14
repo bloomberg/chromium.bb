@@ -812,7 +812,8 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   power_button_observer_.reset();
   idle_action_warning_observer_.reset();
 
-  MagnificationManager::Shutdown();
+  if (!IsRunningAsMusClient())
+    MagnificationManager::Shutdown();
 
   media::SoundsManager::Shutdown();
 
@@ -849,7 +850,8 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   // Ash needs to be closed before UserManager is destroyed.
   ChromeBrowserMainPartsLinux::PostMainMessageLoopRun();
 
-  AccessibilityManager::Shutdown();
+  if (!IsRunningAsMusClient())
+    AccessibilityManager::Shutdown();
 
   input_method::Shutdown();
 

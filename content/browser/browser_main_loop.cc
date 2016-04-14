@@ -969,9 +969,6 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
       base::Bind(base::IgnoreResult(&base::ThreadRestrictions::SetIOAllowed),
                  true));
 
-  if (IsRunningInMojoShell())
-    MojoShellConnection::Destroy();
-
   if (RenderProcessHost::run_renderer_in_process())
     RenderProcessHostImpl::ShutDownInProcessRenderer();
 
@@ -980,6 +977,9 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
                  "BrowserMainLoop::Subsystem:PostMainMessageLoopRun");
     parts_->PostMainMessageLoopRun();
   }
+
+  if (IsRunningInMojoShell())
+    MojoShellConnection::Destroy();
 
 #if defined(USE_AURA)
   env_.reset();
