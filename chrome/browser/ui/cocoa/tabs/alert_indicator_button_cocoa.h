@@ -8,6 +8,7 @@
 #include <memory>
 
 #import "base/mac/scoped_nsobject.h"
+#import "chrome/browser/ui/cocoa/themed_window.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
 #import "ui/base/cocoa/hover_button.h"
 
@@ -27,7 +28,7 @@ class AnimationDelegate;
 //
 // Note: Send the |-setClickTarget:withAction:| message instead of the
 // |-setTarget:| and |-setAction:| messages to be notified of button clicks.
-@interface AlertIndicatorButton : HoverButton {
+@interface AlertIndicatorButton : HoverButton <ThemedWindowDrawing> {
  @private
   class FadeAnimationDelegate;
 
@@ -78,6 +79,10 @@ class AnimationDelegate;
 // Request a message be sent to |target| whenever the enabled button has been
 // clicked.  A weak reference on |target| is held.
 - (void)setClickTarget:(id)target withAction:(SEL)action;
+
+// ThemedWindowDrawing protocol support.
+- (void)windowDidChangeTheme;
+- (void)windowDidChangeActive;
 
 @end
 

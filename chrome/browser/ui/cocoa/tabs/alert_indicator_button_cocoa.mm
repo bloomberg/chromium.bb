@@ -72,17 +72,22 @@ class FadeAnimationDelegate : public gfx::AnimationDelegate {
   [super removeFromSuperview];
 }
 
+- (void)updateIconForState:(TabAlertState)aState {
+  if (aState != TabAlertState::NONE) {
+    TabView* const tabView = base::mac::ObjCCast<TabView>([self superview]);
+    SkColor iconColor = [tabView closeButtonColor];
+    NSImage* tabIndicatorImage =
+        chrome::GetTabAlertIndicatorImage(aState, iconColor).ToNSImage();
+    [self setImage:tabIndicatorImage];
+    affordanceImage_.reset([tabIndicatorImage retain]);
+  }
+}
+
 - (void)transitionToAlertState:(TabAlertState)nextState {
   if (nextState == alertState_)
     return;
 
-  if (nextState != TabAlertState::NONE) {
-    [self
-        setImage:chrome::GetTabAlertIndicatorImage(nextState, 0).ToNSImage()];
-    affordanceImage_.reset(
-        [chrome::GetTabAlertIndicatorAffordanceImage(nextState, 0)
-                .ToNSImage() retain]);
-  }
+  [self updateIconForState:nextState];
 
   if ((alertState_ == TabAlertState::AUDIO_PLAYING &&
        nextState == TabAlertState::AUDIO_MUTING) ||
@@ -235,6 +240,17 @@ class FadeAnimationDelegate : public gfx::AnimationDelegate {
   }
 
   [self setEnabled:enable];
+}
+
+// ThemedWindowDrawing protocol support.
+
+- (void)windowDidChangeTheme {
+  // Force the alert icon to update because the icon color may change based
+  // on the current theme.
+  [self updateIconForState:alertState_];
+}
+
+- (void)windowDidChangeActive {
 }
 
 @end

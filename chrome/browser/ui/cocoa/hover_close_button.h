@@ -7,6 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "third_party/skia/include/core/SkColor.h"
 #import "ui/base/cocoa/hover_button.h"
 
 @class GTMKeyValueAnimation;
@@ -19,6 +20,8 @@
   HoverState previousState_;
 }
 
+// Returns the Material Design color of the "x".
+- (SkColor)iconColor;
 @end
 
 // A version of HoverCloseButton with the "x" icon changed to match the WebUI

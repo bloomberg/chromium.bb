@@ -121,6 +121,9 @@ const CGFloat kImageNoFocusAlpha = 0.65;
 // user to click to select/activate the tab.
 - (int)widthOfLargestSelectableRegion;
 
+// Returns the Material Design color of the "x".
+- (SkColor)closeButtonColor;
+
 @end
 
 // The TabController |controller_| is not the only owner of this view. If the
