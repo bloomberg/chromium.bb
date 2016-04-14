@@ -3,4 +3,8 @@ Test that completions in the context of an iframe with a different origin will r
 
 myGlobalVar
 myGlobalFunction
+myIFrame completions:
+self
+top
+window
 

@@ -18,6 +18,26 @@ function test()
             else
                 InspectorTest.addResult("NOT FOUND: " + expected[i]);
         }
+        requestIFrameCompletions();
+    }
+
+    function requestIFrameCompletions()
+    {
+        InspectorTest.changeExecutionContext("top");
+        WebInspector.context.flavor(WebInspector.ExecutionContext).completionsForExpression("myIFrame.", "myIFrame.", 0, "", false, checkIframeCompletions.bind(this));
+    }
+
+    function checkIframeCompletions(completions)
+    {
+        var completionSet = new Set(completions);
+        var expected = ["self", "top", "window"];
+        InspectorTest.addResult("myIFrame completions:")
+        for (var completion of expected) {
+            if (completionSet.has(completion))
+                InspectorTest.addResult(completion);
+            else
+                InspectorTest.addResult("NOT FOUND: " + completion);
+        }
         InspectorTest.dumpConsoleMessages();
         InspectorTest.completeTest();
     }
