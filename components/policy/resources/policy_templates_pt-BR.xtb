@@ -78,6 +78,7 @@
 <translation id="1359553908012294236">Se esta política é definida como "true" ou não é configurada, o <ph name="PRODUCT_NAME" /> ativa os logins de convidados. Os logins de convidados são perfis do <ph name="PRODUCT_NAME" /> nos quais todas as janelas ficam no modo de navegação anônima.
 
       Se esta política é definida como "false", o <ph name="PRODUCT_NAME" /> não permite que perfis de convidados sejam iniciados.</translation>
+<translation id="1363275621236827384">Permitir consultas no Servidor Quirks para perfis de hardware</translation>
 <translation id="1397855852561539316">URL sugerido do provedor de pesquisa padrão</translation>
 <translation id="1398889361882383850">Permite definir se os websites estão autorizados a executar plug-ins automaticamente. A execução automática de plug-ins pode ser permitida ou negada para todos os websites. 
 
@@ -666,6 +667,13 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 
       O valor da política deve ser especificado em milissegundos, Os valores são fixados em um intervalo de 30 segundos a 24 horas.</translation>
 <translation id="3528000905991875314">Ativar páginas de erro alternativas</translation>
+<translation id="3538538104630456270">A configuração associada foi usada antes da reautenticação de exibição de senhas ser introduzida. Desde então, a configuração e, portanto, esta política, não tiveram efeito no comportamento do Chrome. O comportamento atual do Chrome é o mesmo que seria caso a política estivesse definida para desativar a exibição de senhas em texto não criptografado na página de configurações do gerenciador de senha. Isso significa que a página de configurações contém apenas um marcador, e somente depois que usuário clicar em "Mostrar" (e fizer a reautenticação, se aplicável) o Chrome mostrará a senha. Veja abaixo a descrição original da política.
+
+          Controla se o usuário pode exibir senhas em texto não criptografado no gerenciador de senhas.
+
+          Se você desativar essa configuração, o gerenciador de senhas não permitirá a exibição de senhas armazenadas em texto não criptografado na janela do gerenciador de senhas.
+
+          Se você ativar ou não definir esta política, os usuários poderão ver as próprias senhas em texto não criptografado no gerenciador de senhas.</translation>
 <translation id="3547954654003013442">Configurações de proxy</translation>
 <translation id="3570008976476035109">Bloquear plug-ins nestes sites</translation>
 <translation id="3591584750136265240">Configura o comportamento de autenticação de login</translation>
@@ -1553,6 +1561,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 
       Se esta política for deixada sem configuração, o usuário pode alterar a lista de aplicativos fixados no iniciador.</translation>
 <translation id="7132877481099023201">URLs que terão acesso a dispositivos de captura de vídeo sem solicitação</translation>
+<translation id="7167436895080860385">Permitir que os usuários exibam senhas no gerenciador de senhas (uso suspenso)</translation>
 <translation id="7173856672248996428">Perfil temporário</translation>
 <translation id="7187256234726597551">Se for definida como "verdadeira", a declaração remota será permitida para o dispositivo e um certificado será gerado automaticamente e enviado ao Servidor de gerenciamento de dispositivos.
 
@@ -1849,6 +1858,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="8197918588508433925">Esta política especifica as extensões que podem usar a API Enterprise Platform Keys chrome.enterprise.platformKeysPrivate.challengeUserKey() para declaração remota. As extensões devem ser adicionadas a esta lista para usar a API.
 
           Se uma extensão não estiver na lista ou se a lista não estiver definida, a chamada para a API falhará com um código de erro.</translation>
+<translation id="8214600119442850823">Configura o gerenciador de senhas.</translation>
 <translation id="8244525275280476362">Atraso máximo de busca após a invalidação de uma política</translation>
 <translation id="8256688113167012935">Controla o nome da conta que o <ph name="PRODUCT_OS_NAME" /> mostra na tela de login para a conta local de dispositivo correspondente.
 
@@ -2014,6 +2024,17 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="8858642179038618439">Forçar modo de segurança do YouTube</translation>
 <translation id="8864975621965365890">Remove a solicitação de recusa que aparece quando um site é processado pelo <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="8870318296973696995">Página inicial</translation>
+<translation id="8889588091638298603">O Servidor Quirks fornece arquivos de configuração específicos de hardware, como
+      perfis de exibição ICC para ajustar a calibragem do monitor.
+
+      Quando esta política é definida como false, o dispositivo não tenta
+      entrar em contato com o Servidor Quirks para fazer o download de arquivos de configuração.
+
+      Se esta política é definida como true ou não é configurada,
+      o <ph name="PRODUCT_OS_NAME" /> entra
+      em contato com o Servidor Quirks automaticamente e faz o download dos arquivos de configuração,
+      se eles estão disponíveis, e os armazena no dispositivo. Esses arquivos podem ser usados,
+      por exemplo, para melhorar a qualidade de exibição dos monitores acoplados.</translation>
 <translation id="8905426178924715309">O uso desta política está suspenso. Use ForceGoogleSafeSearch e ForceYouTubeSafetyMode em vez dela. Esta política é ignorada se a política ForceGoogleSafeSearch ou a ForceYouTubeSafetyMode estão configuradas.
 
       Força as consultas no Google Web Search a serem feitas com o SafeSearch ativado e impede que os usuários alterem essa configuração, a qual também força o Modo de segurança do YouTube.

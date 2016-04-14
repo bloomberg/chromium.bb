@@ -6,7 +6,6 @@
 <translation id="10614374240317010">Aldrig sparad</translation>
 <translation id="1061441684050139317">Chrome behöver tillgång till mikrofonen för att kunna dela den på den här webbplatsen.</translation>
 <translation id="1080790410959514870">Du loggar ut från ett konto som hanteras av <ph name="DOMAIN_NAME" />. Chrome-data som lagras på enheten kommer att tas bort, men all data finns kvar i ditt Google-konto.</translation>
-<translation id="1095407227123756519">Lägg till ett konto och få åtkomst till bokmärken, historik, lösenord och andra inställningar på alla dina enheter.</translation>
 <translation id="1098052486217676340">Har avslutats</translation>
 <translation id="1121094540300013208">Användning och felrapporter</translation>
 <translation id="1137305377394488060">den senaste timmen</translation>
@@ -197,6 +196,7 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="3716158070938632480">Det finns webbsidor i närheten</translation>
 <translation id="3732088672634061408">Det gick inte att hämta intressen.</translation>
 <translation id="3738139272394829648">Tryck för att söka</translation>
+<translation id="3744111561329211289">Synkronisera i bakgrunden</translation>
 <translation id="3809549525127675114">Uppspelningen av <ph name="VIDEO_TITLE" /> har avslutats</translation>
 <translation id="3828029223314399057">Sök efter bokmärken</translation>
 <translation id="3871171699884605801">Webbhistoriken kan inte rensas med barnkonton</translation>
@@ -285,6 +285,7 @@ Du behöver bara öppna Chrome på datorn, öppna menyn och välja Logga in i Ch
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">Tillåt</translation>
 <translation id="5040262127954254034">Sekretess</translation>
+<translation id="5056549851600133418">Artiklar för dig</translation>
 <translation id="5063480226653192405">Användning</translation>
 <translation id="5100237604440890931">Vyn har komprimerats. Expandera den genom att klicka.</translation>
 <translation id="5107381076085091558">Nedladdning pausad.</translation>
@@ -352,7 +353,6 @@ Du behöver bara öppna Chrome på datorn, öppna menyn och välja Logga in i Ch
 <translation id="5712189971979076230">Hjälp oss att prioritera vilka funktioner och förbättringar vi ska arbeta med genom att skicka information till Google om vilka filer, program och tjänster som körs när en krasch inträffar.
 
 Användningsstatistiken innehåller information som inställningar, knappklick och minnesanvändning. De innehåller inte webbadresser eller personliga uppgifter. Felrapporter innehåller information om systemet vid tidpunkten för kraschen och kan innehålla webbadresser eller personliga uppgifter beroende på vad som hände vid kraschen.</translation>
-<translation id="5715468759630044318">Välj konto</translation>
 <translation id="5719837394786370183">Sidor du visar i inkognitoflikar sparas inte i webbläsarhistoriken och lagras inte bland cookies eller i sökhistoriken när du har stängt alla inkognitoflikar. Däremot sparas alla filer du laddar ned och bokmärken du skapar.
 
 Du är dock inte osynlig. Trots inkognitoläget kan din arbetsgivare, din internetleverantör eller de webbplatser du besöker se din aktivitet.</translation>
@@ -433,7 +433,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="6699351163704950317">Alla sparade sidor</translation>
 <translation id="6710213216561001401">Föregående</translation>
 <translation id="6720988912937197322">Sidan som sparades är inte tillgänglig offline</translation>
-<translation id="6722992508235227685">Bokmärken, historik, lösenord och andra inställningar synkroniseras med ditt Google-konto så att du kan använda dem på alla enheter. Du kan välja vad som ska synkroniseras under <ph name="BEGIN_LINK1" />Inställningar<ph name="END_LINK1" />.</translation>
 <translation id="6738867403308150051">Laddar ned …</translation>
 <translation id="6762156594045689028"><ph name="BEGIN_LINK" />Återställ synkroniseringen<ph name="END_LINK" /> om du vill ändra den här inställningen.</translation>
 <translation id="6770414673596662518">Säker webbsökning i Chrome används dessutom för att identifiera skadliga sidor och skydda dig från nätfiske, skadlig programvara och skadliga filnedladdningar.</translation>
@@ -500,6 +499,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="7501135638693251872">Alla bokmärken</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7562080006725997899">Tar bort webbinformation</translation>
+<translation id="756809126120519699">Data i Chrome har rensats</translation>
 <translation id="7588950540487816470">Physical Web</translation>
 <translation id="7596558890252710462">Operativsystem</translation>
 <translation id="7599840151813361502">Du loggas inte ut från dina <ph name="BEGIN_LINK" />Google-konton<ph name="END_LINK" /></translation>
@@ -543,7 +543,7 @@ Du är dock inte osynlig. Trots inkognitoläget kan din arbetsgivare, din intern
 <translation id="8069239273282989646">Efter komprimering</translation>
 <translation id="8073388330009372546">Öppna bild i ny flik</translation>
 <translation id="8076014560081431679">Sparade webbplatsinställningar raderas inte och kan visa dina surfvanor. <ph name="BEGIN_LINK" />Läs mer<ph name="END_LINK" /></translation>
-<translation id="8084156870963450514">Logga in för att komma åt alla dina grejer på webben från vilken enhet som helst</translation>
+<translation id="8087000398470557479">Innehållet kommer från <ph name="DOMAIN_NAME" /> via Google.</translation>
 <translation id="8098570222830891427">Webbsidor sänds via Bluetooth av enheter i närheten. Chrome söker efter sidor och visar dem när du startar enheten. Sidorna skickas via en tjänst från Google för att förbättra kvaliteten på sidresultaten.
 
 Du kan styra Physical Web i inställningarna för Chrome.</translation>
@@ -609,6 +609,7 @@ Du hämtar nya licenser genom att ansluta till internet och spela upp det nedlad
 <translation id="8931159598799892500">Chrome + Physical Web</translation>
 <translation id="8941248009481596111">Din anslutning till webbplatsen är privat.</translation>
 <translation id="8941729603749328384">www.example.com</translation>
+<translation id="8942627711005830162">Öppna i ett annat fönster</translation>
 <translation id="8959122750345127698">Det går inte att nå webbadressen: <ph name="URL" /></translation>
 <translation id="8979340629087822094">den senaste dagen</translation>
 <translation id="8987061207681586800">Anpassa Chrome</translation>

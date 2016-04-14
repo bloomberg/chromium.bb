@@ -165,6 +165,7 @@ la distanță Chrome</translation>
 <translation id="4918086044614829423">Accept</translation>
 <translation id="492843737083352574">Întâmpin probleme cu tastatura sau cu mouse-ul.</translation>
 <translation id="4973800994433240357">Descărcând programul de instalare gazdă pentru Chromoting, accepți <ph name="LINK_BEGIN" />Termenii și condițiile<ph name="LINK_END" /> Google.</translation>
+<translation id="4985296110227979402">Mai întâi, trebuie să configurezi computerul pentru accesul la distanță</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (offline)</translation>
 <translation id="5070121137485264635">Gazda la distanță solicită să vă autentificați pe un site terță parte. Pentru a continua, trebuie să acordați permisiuni suplimentare aplicației Desktop la distanță Chrome pentru a accesa această adresă:</translation>
 <translation id="5156271271724754543">Introduceți același cod PIN în ambele casete.</translation>
@@ -174,6 +175,7 @@ la distanță Chrome</translation>
 <translation id="5222676887888702881">Deconectează-te</translation>
 <translation id="5254120496627797685">Părăsind această pagină, veți încheia sesiunea Desktop la distanță Chrome.</translation>
 <translation id="5308380583665731573">Conectează-te</translation>
+<translation id="533625276787323658">Niciun dispozitiv la care te poți conecta</translation>
 <translation id="5363265567587775042">Roagă utilizatorul al cărui computer dorești să îl accesezi să dea clic pe „<ph name="SHARE" />” și să îți trimită codul de acces.</translation>
 <translation id="5379087427956679853">Cu aplicația Desktop la distanță Chrome, puteți permite accesul în siguranță la computerul dvs. pe web. Ambii utilizatori trebuie să ruleze aplicația Desktop la distanță Chrome, care poate fi găsită la <ph name="URL" />.</translation>
 <translation id="5394895745784982830">Pentru Mac (OS X 10.6 și versiuni ulterioare)</translation>

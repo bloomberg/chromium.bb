@@ -39,7 +39,6 @@
 <translation id="1228893227497259893">Грешен идентификатор на обект</translation>
 <translation id="1232569758102978740">Неозаглавен</translation>
 <translation id="1254117744268754948">Избор на папка</translation>
-<translation id="1270699273812232624">Разрешаване на елементите</translation>
 <translation id="1285320974508926690">Този сайт да не се превежда никога</translation>
 <translation id="129553762522093515">Наскоро затворени</translation>
 <translation id="1339601241726513588">Домейн за записване:</translation>
@@ -86,7 +85,6 @@
 <translation id="1898423065542865115">Филтриране</translation>
 <translation id="1911837502049945214"><ph name="HOST_NAME" /> не прие сертификата ви за вход или той може да е с изтекла валидност.</translation>
 <translation id="194030505837763158">Към <ph name="LINK" /></translation>
-<translation id="1958820272620550857">Блокиране на елементите</translation>
 <translation id="1962204205936693436">Отметки от <ph name="DOMAIN" /></translation>
 <translation id="1973335181906896915">Грешка при сериализирането</translation>
 <translation id="1974060860693918893">Разширени</translation>
@@ -210,7 +208,6 @@
 <translation id="3105172416063519923">ID на актива:</translation>
 <translation id="3109728660330352905">Нямате пълномощия за преглед на тази страница.</translation>
 <translation id="3118046075435288765">Сървърът неочаквано прекъсна връзката.</translation>
-<translation id="31454997771848827">Домейни на групи</translation>
 <translation id="3145945101586104090">Декодирането на отговора не бе успешно</translation>
 <translation id="3147485256806412701">Този сайт използва нов общ домейн от първо ниво.</translation>
 <translation id="3150653042067488994">Временна грешка в сървъра</translation>
@@ -290,6 +287,7 @@
 <translation id="3788090790273268753">Валидността на сертификата за този сайт изтича през 2016 г., а съответната верига съдържа сертификат, подписан с SHA-1.</translation>
 <translation id="382518646247711829">Ако използвате прокси сървър...</translation>
 <translation id="3828924085048779000">Не може пропускът да не се попълни.</translation>
+<translation id="3845539888601087042">Показва се историята от устройствата, на които сте влезли в профила си. <ph name="BEGIN_LINK" />Научете повече<ph name="END_LINK" />.</translation>
 <translation id="385051799172605136">Назад</translation>
 <translation id="3858027520442213535">Актуализиране на датата и часа</translation>
 <translation id="3884278016824448484">Идентификационният номер на устройството е несъвместим</translation>
@@ -325,7 +323,6 @@
 <translation id="4258748452823770588">Невалиден подпис</translation>
 <translation id="4268298190799576220">Chromium не можа да потвърди картата ви. Моля, опитайте отново по-късно.</translation>
 <translation id="4269787794583293679">(Няма потребителско име)</translation>
-<translation id="4278390842282768270">Разрешено</translation>
 <translation id="4300246636397505754">Основни предложения</translation>
 <translation id="4304224509867189079">Вход</translation>
 <translation id="4325863107915753736">Намирането на статията не бе успешно</translation>
@@ -410,6 +407,7 @@
 <translation id="5421136146218899937">Изчистване на данните за сърфирането...</translation>
 <translation id="5430298929874300616">Премахване на отметката</translation>
 <translation id="5431657950005405462">Файлът ви не бе намерен</translation>
+<translation id="5435775191620395718">Показва се историята от това устройство. <ph name="BEGIN_LINK" />Научете повече<ph name="END_LINK" />.</translation>
 <translation id="5439770059721715174">При потвърждаване на схемата възникна грешка в/ъв „<ph name="ERROR_PATH" />“: <ph name="ERROR" /></translation>
 <translation id="5447330194051379405">Показване на всички запазени страници</translation>
 <translation id="5452270690849572955">Тази страница на <ph name="HOST_NAME" /> не може да бъде намерена</translation>
@@ -522,7 +520,6 @@
 <translation id="6753269504797312559">Стойност за правилото</translation>
 <translation id="6757797048963528358">Устройството ви премина в спящ режим.</translation>
 <translation id="6781404225664080496">Временно спряхме заявките до този URL адрес.</translation>
-<translation id="6800914069727136216">В пакет със съдържание</translation>
 <translation id="6820686453637990663">Код за сигурност</translation>
 <translation id="6830600606572693159">Уеб страницата на адрес <ph name="URL" /> понастоящем не е налице. Възможно е да е претоварена или да не работи поради профилактика.</translation>
 <translation id="6831043979455480757">Превод</translation>
@@ -698,6 +695,7 @@
 <translation id="8730621377337864115">Готово</translation>
 <translation id="8738058698779197622">За установяване на сигурна връзка е необходимо часовникът ви да е верен. Това е така, защото сертификатите, с които уебсайтовете се идентифицират, са валидни само за конкретни периоди от време. Тъй като часовникът на устройството ви не е верен, Chromium не може да потвърди тези сертификати.</translation>
 <translation id="8740359287975076522">&lt;abbr id="dnsDefinition"&gt;DNS адресът&lt;/abbr&gt; на <ph name="HOST_NAME" /> не можа да бъде намерен. Проблемът се диагностицира.</translation>
+<translation id="8741995161408053644">Възможно е в профила ви в Google да има други видове история на сърфиране, съхранявани на адрес <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="8790007591277257123">&amp;Възстановяване на изтриването</translation>
 <translation id="8798099450830957504">По подразбиране</translation>
 <translation id="8804164990146287819">Декларация за поверителност</translation>

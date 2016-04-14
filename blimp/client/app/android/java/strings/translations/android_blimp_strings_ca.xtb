@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ca">
 <translation id="1091157412887719337">No s'ha pogut obtenir l'assignació. No hi havia cap motor disponible.</translation>
+<translation id="1416550906796893042">Versió de l'aplicació</translation>
 <translation id="2004526128230838685">No s'ha pogut obtenir l'assignació. S'ha produït un error desconegut.</translation>
 <translation id="2023631438558435272">No s'ha pogut obtenir l'assignació. La resposta no era vàlida.</translation>
 <translation id="2353984724370197742">No s'ha pogut obtenir l'assignació. S'ha produït un error a la sol·licitud de xarxa.</translation>
@@ -16,6 +17,7 @@
 <translation id="5860346505531085166">No s'ha pogut obtenir l'assignació. El compte no hi té accés.</translation>
 <translation id="704835510384979817">No s'ha pogut obtenir l'assignació. La versió del motor no és correcta.</translation>
 <translation id="7536363920335771251">El motor s'ha desconnectat pel motiu següent: %1$s</translation>
+<translation id="7596558890252710462">Sistema operatiu</translation>
 <translation id="7961542533680218955">L'assignació s'ha obtingut correctament.</translation>
 <translation id="8514856595257368555">S'ha recuperat el testimoni.</translation>
 </translationbundle>

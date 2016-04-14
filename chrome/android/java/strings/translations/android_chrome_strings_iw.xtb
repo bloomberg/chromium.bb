@@ -6,7 +6,6 @@
 <translation id="10614374240317010">פריטים שאף פעם לא נשמרו</translation>
 <translation id="1061441684050139317">‏Chrome זקוק לגישה למיקרופון כדי לשתף אותו עם האתר הזה.</translation>
 <translation id="1080790410959514870">‏אתה מתנתק מחשבון המנוהל על ידי <ph name="DOMAIN_NAME" />. הפעולה הזו תמחק את נתוני Chrome המאוחסנים במכשיר הזה, אבל הנתונים יישמרו בחשבון Google שלך.</translation>
-<translation id="1095407227123756519">הוסף חשבון כדי לקבל גישה אל הסימניות, ההיסטוריה, הסיסמאות והגדרות נוספות בכל המכשירים שברשותך.</translation>
 <translation id="1098052486217676340">הסתיים</translation>
 <translation id="1121094540300013208">דוחות קריסה ושימוש</translation>
 <translation id="1137305377394488060">מהשעה האחרונה</translation>
@@ -197,6 +196,7 @@
 <translation id="3716158070938632480">יש דפי אינטרנט בסביבה הקרובה</translation>
 <translation id="3732088672634061408">לא ניתן היה לאחזר את תחומי העניין.</translation>
 <translation id="3738139272394829648">גע כדי לחפש</translation>
+<translation id="3744111561329211289">סינכרון ברקע</translation>
 <translation id="3809549525127675114">"<ph name="VIDEO_TITLE" />" הסתיים</translation>
 <translation id="3828029223314399057">חפש סימניות</translation>
 <translation id="3871171699884605801">לא ניתן למחוק את היסטוריית הגלישה בחשבונות של ילדים</translation>
@@ -285,6 +285,7 @@
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">אפשר</translation>
 <translation id="5040262127954254034">פרטיות</translation>
+<translation id="5056549851600133418">מאמרים מומלצים עבורך</translation>
 <translation id="5063480226653192405">שימוש</translation>
 <translation id="5100237604440890931">מכווץ - לחץ כדי להרחיב.</translation>
 <translation id="5107381076085091558">ההורדה הושהתה.</translation>
@@ -352,7 +353,6 @@
 <translation id="5712189971979076230">‏כדי לעזור לנו לקבוע את סדר העדיפויות לגבי תכונות ושיפורים שעלינו לעבוד עליהם, שלח ל-Google מידע על הקבצים, על האפליקציות ועל השירותים הפועלים בזמן שאתה נתקל בקריסה.
 
 סטטיסטיקות השימוש כוללות מידע כגון העדפות, לחיצות על לחצנים ושימוש בזיכרון. הן אינן כוללות כתובות של דפי אינטרנט או מידע אישי. דוחות קריסה מכילים מידע על המערכת בזמן הקריסה, והם עשויים להכיל כתובות של דפי אינטרנט או מידע אישי, בהתאם למתרחש בזמן הקריסה.</translation>
-<translation id="5715468759630044318">בחר חשבון</translation>
 <translation id="5719837394786370183">‏דפים שאתה מציג בכרטיסיות גלישה בסתר לא יישמרו בהיסטוריית הדפדפן, אחסון קובצי ה-cookie או היסטוריית החיפושים לאחר שתסגור את כל הכרטיסיות של גלישה בסתר. קבצים שתוריד או סימניות שתיצור יישמרו.
 
 עם זאת, אינך בלתי נראה. מעבר למצב גלישה בסתר אינו מסתיר את הגלישה שלך מהמעסיק, ספק שירות האינטרנט או האתרים שבהם אתה מבקר.</translation>
@@ -433,7 +433,6 @@
 <translation id="6699351163704950317">כל הדפים שנשמרו</translation>
 <translation id="6710213216561001401">הקודם</translation>
 <translation id="6720988912937197322">הדף שנשמר אינו זמין במצב לא מקוון</translation>
-<translation id="6722992508235227685">‏הסימניות, ההיסטוריה, הסיסמאות והגדרות אחרות יסונכרנו עם חשבון Google כך שתוכל להשתמש בהם בכל המכשירים שלך. בעזרת ה<ph name="BEGIN_LINK1" />הגדרות<ph name="END_LINK1" /> ניתן לבחור איזה פריטים לסנכרן.</translation>
 <translation id="6738867403308150051">מוריד...</translation>
 <translation id="6762156594045689028"><ph name="BEGIN_LINK" />אפס את הסינכרון<ph name="END_LINK" /> כדי לשנות את ההגדרה הזו</translation>
 <translation id="6770414673596662518">‏מערכת הגלישה הבטוחה של Chrome תשמש גם לזיהוי דפים זדוניים ולהגנה עליך מפני דיוג, תוכנות זדוניות והורדות של קבצים מזיקים.</translation>
@@ -500,6 +499,7 @@
 <translation id="7501135638693251872">כל הסימניות</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7562080006725997899">מנקה נתוני גלישה</translation>
+<translation id="756809126120519699">‏נתוני Chrome נוקו</translation>
 <translation id="7588950540487816470">האינטרנט הווירטופיזי</translation>
 <translation id="7596558890252710462">מערכת הפעלה</translation>
 <translation id="7599840151813361502">‏לא תתבצע יציאה מ<ph name="BEGIN_LINK" />חשבונות Google<ph name="END_LINK" /> שלך</translation>
@@ -543,7 +543,7 @@
 <translation id="8069239273282989646">לאחר דחיסה</translation>
 <translation id="8073388330009372546">פתח את התמונה בכרטיסייה חדשה</translation>
 <translation id="8076014560081431679">הגדרות אתרים שנשמרו לא יימחקו ועשויות לשקף את הרגלי הגלישה שלך. <ph name="BEGIN_LINK" />למידע נוסף<ph name="END_LINK" /></translation>
-<translation id="8084156870963450514">היכנס כדי לגשת לכל הדברים שלך באינטרנט מכל מכשיר</translation>
+<translation id="8087000398470557479">‏התוכן הזה הוא מ-<ph name="DOMAIN_NAME" />, ומסופק על-ידי Google.</translation>
 <translation id="8098570222830891427">‏בסביבה הקרובה יש מכשירים שמשדרים דפי אינטרנט בתקשורת Bluetooth. ‏Chrome יאתר את הדפים האלו בסריקה ויציג אותם כשתוציא את המכשיר ממצב שינה. הדפים יעברו דרך שירות של Google כדי לשפר את איכות התוצאות.
 
 ניתן לשלוט על האינטרנט הווירטופיזי בהגדרות של Chrome.</translation>
@@ -607,6 +607,7 @@
 <translation id="8931159598799892500">‏Chrome + האינטרנט הווירטופיזי</translation>
 <translation id="8941248009481596111">החיבור שלך לאתר זה הוא פרטי.</translation>
 <translation id="8941729603749328384">www.example.com</translation>
+<translation id="8942627711005830162">פתח בחלון האחר</translation>
 <translation id="8959122750345127698">הניווט לא אפשרי: <ph name="URL" /></translation>
 <translation id="8979340629087822094">מהיום האחרון</translation>
 <translation id="8987061207681586800">‏התאם אישית את Chrome</translation>

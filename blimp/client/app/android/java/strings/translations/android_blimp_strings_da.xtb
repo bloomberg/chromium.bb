@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="da">
 <translation id="1091157412887719337">Tildelingen mislykkedes. Der var ingen tilgængelig maskine.</translation>
+<translation id="1416550906796893042">Appversion</translation>
 <translation id="2004526128230838685">Tildelingen mislykkedes. Ukendt problem.</translation>
 <translation id="2023631438558435272">Tildelingen mislykkedes. Ugyldigt svar.</translation>
 <translation id="2353984724370197742">Tildelingen mislykkedes. Netværksanmodningen mislykkedes.</translation>
@@ -16,6 +17,7 @@
 <translation id="5860346505531085166">Tildelingen mislykkedes. Kontoen har ikke adgang.</translation>
 <translation id="704835510384979817">Tildelingen mislykkedes. Ingen matchende maskinversion.</translation>
 <translation id="7536363920335771251">Forbindelsen til maskinen blev afbrudt. Årsag: %1$s</translation>
+<translation id="7596558890252710462">Operativsystem</translation>
 <translation id="7961542533680218955">Tildelingen lykkedes.</translation>
 <translation id="8514856595257368555">Tokenet blev hentet.</translation>
 </translationbundle>

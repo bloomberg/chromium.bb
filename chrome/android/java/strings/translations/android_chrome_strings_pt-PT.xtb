@@ -6,7 +6,6 @@
 <translation id="10614374240317010">Nunca guardadas</translation>
 <translation id="1061441684050139317">O Chrome necessita de acesso ao microfone para o partilhar com este site.</translation>
 <translation id="1080790410959514870">Está a terminar sessão numa conta gerida por <ph name="DOMAIN_NAME" />. Esta ação elimina os dados do Chrome armazenados neste dispositivo, mas os dados permanecem na sua Conta Google.</translation>
-<translation id="1095407227123756519">Adicione uma conta para aceder aos marcadores, ao histórico, às palavras-passe e a outras definições em todos os dispositivos.</translation>
 <translation id="1098052486217676340">Concluído</translation>
 <translation id="1121094540300013208">Relatórios de utilização e falhas</translation>
 <translation id="1137305377394488060">da hora anterior</translation>
@@ -197,6 +196,7 @@ Para ajustar o termo de pesquisa, prima continuamente para selecionar. Para refi
 <translation id="3716158070938632480">Existem páginas Web próximas</translation>
 <translation id="3732088672634061408">Não foi possível obter os interesses.</translation>
 <translation id="3738139272394829648">Tocar para pesquisar</translation>
+<translation id="3744111561329211289">Sincronização em segundo plano</translation>
 <translation id="3809549525127675114">"<ph name="VIDEO_TITLE" />" concluído</translation>
 <translation id="3828029223314399057">Pesquisar marcadores</translation>
 <translation id="3871171699884605801">Não é possível limpar o histórico de navegação nas contas para crianças</translation>
@@ -285,6 +285,7 @@ Basta abrir o Chrome no computador, aceder ao menu e selecionar "Iniciar sessão
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">Permitir</translation>
 <translation id="5040262127954254034">Privacidade</translation>
+<translation id="5056549851600133418">Artigos para si</translation>
 <translation id="5063480226653192405">Utilização</translation>
 <translation id="5100237604440890931">Reduzido. Clique para expandir.</translation>
 <translation id="5107381076085091558">Transferência interrompida.</translation>
@@ -352,7 +353,6 @@ Basta abrir o Chrome no computador, aceder ao menu e selecionar "Iniciar sessão
 <translation id="5712189971979076230">Ajude-nos a dar prioridade às funcionalidades e às melhorias nas quais devemos trabalhar ao enviar à Google informações sobre os ficheiros, as aplicações e os serviços em execução sempre que ocorrer uma falha.
 
 As estatísticas de utilização incluem informações como preferências, cliques em botões e utilização da memória. Estas não incluem URLs de páginas Web nem quaisquer informações pessoais. Os relatórios de falhas contêm informações do sistema no momento em que as falhas ocorreram e podem conter URLs de páginas Web ou informações pessoais, consoante as operações em curso no momento da falha.</translation>
-<translation id="5715468759630044318">Escolher conta</translation>
 <translation id="5719837394786370183">As páginas que visualizar em separadores de navegação anónima não serão guardadas no histórico do navegador, no armazenamento de cookies ou no histórico de pesquisas depois de fechar todos os separadores de navegação anónima. Os ficheiros que transferir ou os marcadores que criar manter-se-ão.
 
 No entanto, a navegação não é invisível. Passar para o modo de navegação anónima não oculta a navegação do empregador ou do prestador de serviços de Internet, nem os Websites que visitar.</translation>
@@ -433,7 +433,6 @@ Por exemplo, alguns Websites podem responder a este pedido ao mostrar-lhe anúnc
 <translation id="6699351163704950317">Todas as páginas guardadas</translation>
 <translation id="6710213216561001401">Anterior</translation>
 <translation id="6720988912937197322">Página guardada não disponível offline</translation>
-<translation id="6722992508235227685">Os marcadores, o histórico, as palavras-passe e outras definições são sincronizados com a sua Conta Google para que os possa utilizar em todos os dispositivos. Pode escolher os conteúdos a sincronizar em <ph name="BEGIN_LINK1" />Definições<ph name="END_LINK1" />.</translation>
 <translation id="6738867403308150051">A transferir...</translation>
 <translation id="6762156594045689028">Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização<ph name="END_LINK" /></translation>
 <translation id="6770414673596662518">O sistema de Navegação segura do Chrome também será utilizado para detetar páginas maliciosas e para o proteger contra phishing, programas maliciosos e transferências prejudiciais.</translation>
@@ -500,6 +499,7 @@ Por exemplo, alguns Websites podem responder a este pedido ao mostrar-lhe anúnc
 <translation id="7501135638693251872">Todos os marcadores</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7562080006725997899">A limpar dados de navegação</translation>
+<translation id="756809126120519699">Dados do Chrome limpos</translation>
 <translation id="7588950540487816470">Web física</translation>
 <translation id="7596558890252710462">Sistema operativo</translation>
 <translation id="7599840151813361502">A sessão nas suas <ph name="BEGIN_LINK" />Contas Google<ph name="END_LINK" /> não é terminada</translation>
@@ -543,7 +543,7 @@ No entanto, a navegação não é invisível. Passar para o modo de navegação 
 <translation id="8069239273282989646">Após compressão</translation>
 <translation id="8073388330009372546">Abrir imagem num novo separad.</translation>
 <translation id="8076014560081431679">As definições de sites guardadas não são eliminadas e podem refletir os seus hábitos de navegação. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
-<translation id="8084156870963450514">Iniciar sessão para aceder a todo o seu conteúdo da Web a partir de qualquer dispositivo</translation>
+<translation id="8087000398470557479">Este conteúdo é proveniente de <ph name="DOMAIN_NAME" />, fornecido pela Google.</translation>
 <translation id="8098570222830891427">Existem dispositivos próximos de si a transmitir páginas Web através de Bluetooth. O Chrome procura páginas e apresenta-as quando reativar o dispositivo. Estas páginas passam por um serviço Google para melhorar a qualidade dos resultados da página.
 
 Pode controlar a Web física nas definições do Chrome.</translation>
@@ -609,6 +609,7 @@ Para obter licenças novas, ligue-se à Internet e reproduza o conteúdo transfe
 <translation id="8931159598799892500">Chrome + Web física</translation>
 <translation id="8941248009481596111">A sua ligação a este site é privada.</translation>
 <translation id="8941729603749328384">www.example.com</translation>
+<translation id="8942627711005830162">Abrir noutra janela</translation>
 <translation id="8959122750345127698">A navegação está inacessível: <ph name="URL" /></translation>
 <translation id="8979340629087822094">do dia anterior</translation>
 <translation id="8987061207681586800">Personalizar o Chrome</translation>

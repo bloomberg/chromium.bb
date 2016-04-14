@@ -165,6 +165,7 @@ Desktopi host</translation>
 <translation id="4918086044614829423">Nõustu</translation>
 <translation id="492843737083352574">Mul on probleeme klaviatuuri või hiirega.</translation>
 <translation id="4973800994433240357">Chromootimise hosti installiprogrammi allalaadimisel nõustute Google’i <ph name="LINK_BEGIN" />teenusetingimustega<ph name="LINK_END" />.</translation>
+<translation id="4985296110227979402">Esmalt tuleb arvutis seadistada kaugjuurdepääs</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (võrguühenduseta)</translation>
 <translation id="5070121137485264635">Kaughost vajab autentimist kolmanda osapoole veebisaidil. Jätkamiseks peate andma Chrome Remote Desktopile täiendavad load juurdepääsuks sellele aadressile:</translation>
 <translation id="5156271271724754543">Sisestage mõlemale väljale sama PIN-kood.</translation>
@@ -174,6 +175,7 @@ Desktopi host</translation>
 <translation id="5222676887888702881">Logi välja</translation>
 <translation id="5254120496627797685">Lehelt lahkudes katkeb teie Chrome Remote Desktopi seanss.</translation>
 <translation id="5308380583665731573">Ühendamine</translation>
+<translation id="533625276787323658">Ühegi seadmega ei saa ühendust luua</translation>
 <translation id="5363265567587775042">Paluge kasutajal, kelle arvutile soovite juurde pääseda, klõpsata nupul „<ph name="SHARE" />” ja anda teile juurdepääsukood.</translation>
 <translation id="5379087427956679853">Chrome Remote Desktop võimaldab arvutit turvaliselt veebi kaudu jagada. Mõlema kasutaja arvutis peab töötama rakendus Chrome Remote Desktop, mille leiate aadressilt <ph name="URL" />.</translation>
 <translation id="5394895745784982830">Macile (OS X 10.6 ja uuemad versioonid)</translation>

@@ -564,7 +564,6 @@
 <translation id="1783075131180517613">Please update your sync passphrase.</translation>
 <translation id="1788636309517085411">Use default</translation>
 <translation id="1789575671122666129">Popups</translation>
-<translation id="1790550373387225389">Enter Presentation Mode</translation>
 <translation id="1792705092719258158">Enable mirrored screen mode.</translation>
 <translation id="1793119619663054394">Are you sure that you want to remove "<ph name="PROFILE_NAME" />" and all associated Chrome data from this computer? This cannot be undone.</translation>
 <translation id="179767530217573436">the last 4 weeks</translation>
@@ -1663,7 +1662,6 @@ From <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3324301154597925148">Is This the Search Page That You Were Expecting?</translation>
 <translation id="3324684065575061611">(Disabled by enterprise policy)</translation>
 <translation id="3326821416087822643">Zipping <ph name="FILE_NAME" />...</translation>
-<translation id="3330206034087160972">Exit Presentation Mode</translation>
 <translation id="3330686263988132416">WebRTC Stun origin header</translation>
 <translation id="3331321258768829690">(<ph name="UTCOFFSET" />) <ph name="LONGTZNAME" /> (<ph name="EXEMPLARCITY" />)</translation>
 <translation id="3331799185273394951">Enable the mirrored screen mode. This mode flips the screen image horizontally.</translation>
@@ -1919,7 +1917,6 @@ From <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="367645871420407123">leave empty if you want to set the root password to the default test image value</translation>
 <translation id="3678156199662914018">Extension: <ph name="EXTENSION_NAME" /></translation>
 <translation id="3678559383040232393">Maltese keyboard</translation>
-<translation id="3680173818488851340">Low priority iframes.</translation>
 <translation id="3683524264665795342"><ph name="APP_NAME" /> Screen Sharing Request</translation>
 <translation id="3685122418104378273">Google Drive sync is disabled by default, when using mobile data.</translation>
 <translation id="3685387984467886507">Remember decisions to proceed through SSL errors for a specified length of time.</translation>
@@ -3873,7 +3870,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
 <translation id="6662016084451426657">Sync Error: Please contact administrator to enable sync.</translation>
 <translation id="6663792236418322902">The password that you choose will be required to restore this file later. Please record it in a safe location.</translation>
 <translation id="6664237456442406323">Unfortunately, your computer is configured with a malformed hardware ID. This prevents Chrome OS from updating with the latest security fixes and your computer <ph name="BEGIN_BOLD" />may be vulnerable to malicious attacks<ph name="END_BOLD" />.</translation>
-<translation id="666541661050183336">Reduces the load priority of iframe resources.</translation>
 <translation id="6666647326143344290">with your Google Account</translation>
 <translation id="6675665718701918026">Pointing device connected</translation>
 <translation id="6677037229676347494">Expected ID "<ph name="EXPECTED_ID" />", but ID was "<ph name="NEW_ID" />".</translation>

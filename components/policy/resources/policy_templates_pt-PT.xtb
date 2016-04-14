@@ -89,6 +89,7 @@
 <translation id="1359553908012294236">Se esta política for definida como verdadeira ou não for configurada, o <ph name="PRODUCT_NAME" /> permite inícios de sessão de convidados. Os inícios de sessão de convidados são perfis do <ph name="PRODUCT_NAME" /> em que todas as janelas estão no modo de navegação anónima.
 
       Se esta política for definida como falsa, o <ph name="PRODUCT_NAME" /> não permite que os perfis de convidado sejam iniciados.</translation>
+<translation id="1363275621236827384">Ativar consultas ao Servidor Quirks para perfis de hardware</translation>
 <translation id="1397855852561539316">URL de sugestão do fornecedor de pesquisas padrão</translation>
 <translation id="1398889361882383850">Permite-lhe definir se os Websites têm automaticamente permissão para executar plug-ins. Os plug-ins automaticamente em execução podem ser permitidos para todos os Websites ou negados para todos os Websites.
 
@@ -691,6 +692,13 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
       O valor da política deverá ser especificado em milissegundos. Os valores estão limitados a um intervalo entre 30 segundos e 24 horas.</translation>
 <translation id="3528000905991875314">Ativar páginas de erro alternativas</translation>
+<translation id="3538538104630456270">A definição associada era utilizada antes da introdução da reautenticação durante a visualização de palavras-passe. Depois disso, a definição e, consequentemente, esta política deixaram de afetar o comportamento do Chrome. Atualmente, o Chrome comporta-se como se a política estivesse definida para desativar a apresentação das palavras-passe em texto não codificado na página de definições do gestor de palavras-passe. Isto significa que a página de definições inclui apenas um marcador de posição e o Chrome só mostra a palavra-passe depois de o utilizador clicar em "Mostrar" (e efetuar a reautenticação, se aplicável). Segue-se a descrição original da política.
+
+          Controla se os utilizadores podem mostrar palavras-passe em texto não codificado no gestor de palavras-passe.
+
+          Se desativar esta definição, o gestor de palavras-passe não permite mostrar as palavras-passe armazenadas em texto não codificado na janela do gestor.
+
+          Se ativar ou não definir esta política, os utilizadores podem ver as palavras-passe em texto não codificado no gestor de palavras-passe.</translation>
 <translation id="3547954654003013442">Definições de proxy</translation>
 <translation id="3570008976476035109">Bloquear plug-ins nestes sites</translation>
 <translation id="3591584750136265240">Configurar o comportamento de autenticação de início de sessão</translation>
@@ -1588,6 +1596,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
       Se esta política não for configurada, o utilizador pode alterar a lista de aplicações fixadas no iniciador.</translation>
 <translation id="7132877481099023201">URLs aos quais será concedido acesso a dispositivos de captura de vídeo imediatamente</translation>
+<translation id="7167436895080860385">Permitir que os utilizadores mostrem palavras-passe no Gestor de palavras-passe (descontinuado)</translation>
 <translation id="7173856672248996428">Perfil efémero</translation>
 <translation id="7187256234726597551">Se verdadeira, a comprovação remota é permitida para o dispositivo e será automaticamente gerado um certificado e carregado para o Servidor de Gestão de Dispositivos.
 
@@ -1884,6 +1893,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="8197918588508433925">Esta política especifica as extensões com a permissão para utilizar a API Enterprise Platform Keys chrome.enterprise.platformKeysPrivate.challengeUserKey() para a comprovação remota. As extensões têm de ser adicionadas a esta lista para poderem utilizar a API.
 
           Se uma extensão não estiver na lista ou a lista não estiver definida, a chamada para a API falhará e resultará num código de erro.</translation>
+<translation id="8214600119442850823">Configura o gestor de palavras-passe.</translation>
 <translation id="8244525275280476362">Atraso máximo na obtenção após a invalidação de uma política</translation>
 <translation id="8256688113167012935">Controla o nome da conta mostrado pelo <ph name="PRODUCT_OS_NAME" /> no ecrã de início de sessão para a conta local do dispositivo correspondente.
 
@@ -2053,6 +2063,17 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="8858642179038618439">Forçar o Modo de segurança do YouTube</translation>
 <translation id="8864975621965365890">Suprime o pedido de recusa que aparece quando um site é convertido por <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="8870318296973696995">Página inicial</translation>
+<translation id="8889588091638298603">O Servidor Quirks fornece ficheiros de configuração específicos do hardware, como
+      perfis de visualização ICC para ajustar a calibração do monitor.
+
+      Quando esta política está definida como falsa, o dispositivo não tenta
+      contactar o Servidor Quirks para transferir ficheiros de configuração.
+
+      Se esta política estiver definida como verdadeira ou não estiver configurada,
+      o <ph name="PRODUCT_OS_NAME" />
+      contacta automaticamente o Servidor Quirks, transfere os ficheiros de configuração,
+      se estiverem disponíveis, e armazena-os no dispositivo. Estes ficheiros podem
+      ser utilizados, por exemplo, para melhorar a qualidade de visualização dos monitores ligados.</translation>
 <translation id="8905426178924715309">Esta política foi descontinuada. Utilize ForceGoogleSafeSearch e ForceYouTubeSafetyMode em alternativa. Esta política é ignorada se as políticas ForceGoogleSafeSearch ou ForceYouTubeSafetyMode forem definidas.
 
       Força a execução de consultas na Pesquisa Web do Google através da Pesquisa segura definida como ativa e impede os utilizadores de alterar esta definição. Esta definição também força o Modo de segurança no YouTube.

@@ -6,7 +6,6 @@
 <translation id="10614374240317010">비밀번호를 저장하지 않은 사이트</translation>
 <translation id="1061441684050139317">이 사이트에 공유하려면 Chrome에 마이크 액세스 권한이 있어야 합니다.</translation>
 <translation id="1080790410959514870"><ph name="DOMAIN_NAME" />에서 관리하는 계정에서 로그아웃합니다. 로그아웃하면 이 기기에 저장된 Chrome 데이터는 삭제되지만 Google 계정에는 데이터가 남습니다.</translation>
-<translation id="1095407227123756519">계정을 추가하면 모든 기기에서 북마크, 방문 기록, 비밀번호, 기타 설정을 사용할 수 있습니다.</translation>
 <translation id="1098052486217676340">완료</translation>
 <translation id="1121094540300013208">사용 및 충돌 보고서</translation>
 <translation id="1137305377394488060">지난 1시간</translation>
@@ -197,6 +196,7 @@
 <translation id="3716158070938632480">주변에 웹페이지 있음</translation>
 <translation id="3732088672634061408">관심분야를 검색하지 못했습니다.</translation>
 <translation id="3738139272394829648">터치하여 검색</translation>
+<translation id="3744111561329211289">백그라운드 동기화</translation>
 <translation id="3809549525127675114">'<ph name="VIDEO_TITLE" />' 재생 완료</translation>
 <translation id="3828029223314399057">북마크 검색</translation>
 <translation id="3871171699884605801">어린이용 계정으로는 인터넷 사용 기록을 삭제할 수 없습니다.</translation>
@@ -285,6 +285,7 @@
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">허용</translation>
 <translation id="5040262127954254034">개인정보</translation>
+<translation id="5056549851600133418">추천 도움말</translation>
 <translation id="5063480226653192405">사용</translation>
 <translation id="5100237604440890931">접힘 - 펼치려면 클릭</translation>
 <translation id="5107381076085091558">다운로드가 일시중지되었습니다.</translation>
@@ -352,7 +353,6 @@
 <translation id="5712189971979076230">다운이 발생할 때마다 실행 중인 파일, 애플리케이션, 서비스에 관한 정보를 Google에 전송하여 우선적으로 구현해야 할 기능과 개선사항을 정할 수 있도록 도와주세요.
 
 사용 통계에는 환경설정, 버튼 클릭수, 메모리 사용량과 같은 정보가 포함되며 웹페이지 URL이나 개인정보는 포함되어 있지 않습니다. 오류 보고서에는 문제가 발생했을 당시의 시스템 정보가 포함되며 발생 당시 상황에 따라 웹페이지 URL이나 개인정보가 포함될 수도 있습니다.</translation>
-<translation id="5715468759630044318">계정 선택</translation>
 <translation id="5719837394786370183">시크릿 탭을 모두 닫으면 시크릿 탭에서 본 페이지는 브라우저 방문 기록, 쿠키 저장소 또는 방문 기록 어디에도 흔적이 남지 않습니다. 단, 다운로드한 파일이나 생성한 북마크는 유지됩니다.
 
 하지만 완전한 비밀이 보장되는 것은 아닙니다. 시크릿 모드로 탐색해도 회사, 인터넷 서비스 제공업체(IPS), 방문한 웹사이트에 저장된 흔적까지 없앨 수는 없습니다.</translation>
@@ -433,7 +433,6 @@
 <translation id="6699351163704950317">모든 저장된 페이지</translation>
 <translation id="6710213216561001401">이전</translation>
 <translation id="6720988912937197322">저장한 페이지를 오프라인에서 사용할 수 없습니다.</translation>
-<translation id="6722992508235227685">북마크, 방문 기록, 비밀번호 등 기타 설정이 Google 계정에 동기화되어 모든 기기에서 사용할 수 있습니다. <ph name="BEGIN_LINK1" />설정<ph name="END_LINK1" />에서 동기화할 항목을 선택할 수 있습니다.</translation>
 <translation id="6738867403308150051">다운로드 중...</translation>
 <translation id="6762156594045689028">이 설정을 변경하려면 <ph name="BEGIN_LINK" />동기화를 재설정<ph name="END_LINK" />합니다.</translation>
 <translation id="6770414673596662518">또한 Chrome의 세이프 브라우징 시스템이 악성 웹페이지를 탐지하여 피싱, 멀웨어, 유해한 다운로드로부터 사용자를 보호합니다.</translation>
@@ -500,6 +499,7 @@
 <translation id="7501135638693251872">모든 북마크</translation>
 <translation id="7521387064766892559">자바스크립트</translation>
 <translation id="7562080006725997899">인터넷 사용 기록 삭제</translation>
+<translation id="756809126120519699">Chrome 데이터 삭제됨</translation>
 <translation id="7588950540487816470">피지컬 웹</translation>
 <translation id="7596558890252710462">운영체제</translation>
 <translation id="7599840151813361502"><ph name="BEGIN_LINK" />Google 계정<ph name="END_LINK" />에서 로그아웃되지 않습니다.</translation>
@@ -543,7 +543,7 @@
 <translation id="8069239273282989646">압축 후</translation>
 <translation id="8073388330009372546">새 탭에서 이미지 열기</translation>
 <translation id="8076014560081431679">저장된 사이트 설정은 삭제되지 않으며 인터넷 사용 습관이 반영될 수 있습니다. <ph name="BEGIN_LINK" />자세히 알아보기<ph name="END_LINK" /></translation>
-<translation id="8084156870963450514">모든 기기에서 모든 웹 항목에 액세스하려면 로그인하세요.</translation>
+<translation id="8087000398470557479">이 콘텐츠의 출처는 Google에서 제공하는 <ph name="DOMAIN_NAME" />입니다.</translation>
 <translation id="8098570222830891427">주변 기기에서 블루투스를 사용하여 웹페이지를 전송합니다. 내 기기의 대기 모드가 해제되었을 때 Chrome에서 페이지를 스캔하고 표시합니다. 이 페이지는 페이지 결과의 품질을 높이기 위해 Google 서비스를 거칩니다.
 
 Chrome 설정에서 피지컬 웹을 관리할 수 있습니다.</translation>
@@ -609,6 +609,7 @@ Chrome 설정에서 피지컬 웹을 관리할 수 있습니다.</translation>
 <translation id="8931159598799892500">Chrome + 피지컬 웹</translation>
 <translation id="8941248009481596111">이 사이트에 대한 연결은 비공개입니다.</translation>
 <translation id="8941729603749328384">www.example.com</translation>
+<translation id="8942627711005830162">다른 창에서 열기</translation>
 <translation id="8959122750345127698">탐색할 수 없음: <ph name="URL" /></translation>
 <translation id="8979340629087822094">지난 1일</translation>
 <translation id="8987061207681586800">나만의 Chrome 만들기</translation>

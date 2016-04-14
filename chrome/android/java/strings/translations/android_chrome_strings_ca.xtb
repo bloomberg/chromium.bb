@@ -6,7 +6,6 @@
 <translation id="10614374240317010">Contrasenyes que no es desen mai</translation>
 <translation id="1061441684050139317">Chrome necessita accés al micròfon per compartir-lo amb aquest lloc web.</translation>
 <translation id="1080790410959514870">Esteu tancant la sessió d'un compte que gestiona <ph name="DOMAIN_NAME" />. Aquesta acció farà que se suprimeixin les dades de Chrome emmagatzemades en aquest dispositiu, però les dades es conservaran al vostre compte de Google.</translation>
-<translation id="1095407227123756519">Afegiu un compte per tenir les adreces d'interès, l'historial, les contrasenyes i altres configuracions en tots els vostres dispositius.</translation>
 <translation id="1098052486217676340">Finalitzat</translation>
 <translation id="1121094540300013208">Informes d'ús i d'error</translation>
 <translation id="1137305377394488060">de l'última hora</translation>
@@ -197,6 +196,7 @@ Per ajustar el terme de la cerca, manteniu-lo premut per seleccionar-lo. Per def
 <translation id="3716158070938632480">Hi ha pàgines web a prop</translation>
 <translation id="3732088672634061408">No s'han pogut recuperar els interessos.</translation>
 <translation id="3738139272394829648">Toca per cercar</translation>
+<translation id="3744111561329211289">Sincronització en segon pla</translation>
 <translation id="3809549525127675114">"<ph name="VIDEO_TITLE" />" ha finalitzat</translation>
 <translation id="3828029223314399057">Cerca adreces d'interès</translation>
 <translation id="3871171699884605801">L'historial de navegació no es pot esborrar amb un compte infantil</translation>
@@ -285,6 +285,7 @@ Per fer-ho, obriu Chrome a l'ordinador, aneu al menú i seleccioneu Inicia la se
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">Permet</translation>
 <translation id="5040262127954254034">Privadesa</translation>
+<translation id="5056549851600133418">Articles que us poden interessar</translation>
 <translation id="5063480226653192405">Ús</translation>
 <translation id="5100237604440890931">Vista replegada (feu clic per desplegar-la)</translation>
 <translation id="5107381076085091558">S'ha aturat la baixada.</translation>
@@ -352,7 +353,6 @@ Per fer-ho, obriu Chrome a l'ordinador, aneu al menú i seleccioneu Inicia la se
 <translation id="5712189971979076230">Ajudeu-nos a prioritzar les funcions i les millores en les quals hem de treballar enviant a Google informació sobre els fitxers, les aplicacions i els serveis que s'executaven en el moment de l'error.
 
 Les estadístiques d'ús inclouen dades com ara les preferències, els clics en botons i l'ús de la memòria. No inclouen els URL de les pàgines web ni cap informació personal. Els informes d'error contenen informació del sistema en el moment de l'error i poden incloure els URL de pàgines web o informació personal, en funció de l'activitat registrada en el moment de l'error.</translation>
-<translation id="5715468759630044318">Tria un compte</translation>
 <translation id="5719837394786370183">Les pàgines que visualitzeu a les pestanyes d'incògnit no quedaran registrades a l'historial del navegador, al magatzem de galetes ni a l'historial de cerca un cop tanqueu totes les pestanyes d'incògnit. Tots els fitxers que baixeu o les adreces d'interès que creeu es conservaran.
 
 Tanmateix, no sou invisible. El vostre cap, el vostre proveïdor de serveis d'Internet i els llocs web que visiteu poden veure la vostra navegació d'incògnit.</translation>
@@ -433,7 +433,6 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="6699351163704950317">Totes les pàgines desades</translation>
 <translation id="6710213216561001401">Anterior</translation>
 <translation id="6720988912937197322">La pàgina desada no està disponible sense connexió</translation>
-<translation id="6722992508235227685">Les adreces d'interès, l'historial, les contrasenyes i altres opcions de configuració se sincronitzaran amb el vostre compte de Google, perquè els pugueu utilitzar en tots els dispositius. Per triar què voleu sincronitzar, aneu a <ph name="BEGIN_LINK1" />Configuració<ph name="END_LINK1" />.</translation>
 <translation id="6738867403308150051">Baixada en curs...</translation>
 <translation id="6762156594045689028">Per canviar aquesta configuració, <ph name="BEGIN_LINK" />restabliu la sincronització<ph name="END_LINK" /></translation>
 <translation id="6770414673596662518">El sistema de Navegació segura de Chrome també s'utilitzarà per detectar pàgines malicioses i per protegir-vos de la pesca (suplantació d'identitat), de programari maliciós i de baixades perjudicials.</translation>
@@ -500,6 +499,7 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="7501135638693251872">Totes adreces d'interès</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7562080006725997899">S'estan esborrant les dades de navegació</translation>
+<translation id="756809126120519699">S'han esborrat les dades de Chrome</translation>
 <translation id="7588950540487816470">El Web físic</translation>
 <translation id="7596558890252710462">Sistema operatiu</translation>
 <translation id="7599840151813361502">No es tancarà la sessió dels <ph name="BEGIN_LINK" />comptes de Google<ph name="END_LINK" />.</translation>
@@ -543,7 +543,7 @@ Tanmateix, no sou invisible. La vostra empresa, el vostre proveïdor de serveis 
 <translation id="8069239273282989646">Després de la compressió</translation>
 <translation id="8073388330009372546">Obre en una pestanya nova</translation>
 <translation id="8076014560081431679">La configuració desada del lloc no se suprimirà i és possible que reflecteixi els vostres hàbits de navegació. <ph name="BEGIN_LINK" />Més informació<ph name="END_LINK" /></translation>
-<translation id="8084156870963450514">Inicieu la sessió per accedir a tots els vostres recursos d'Internet des de qualsevol dispositiu.</translation>
+<translation id="8087000398470557479">Aquest contingut és del domini <ph name="DOMAIN_NAME" />, publicat per Google.</translation>
 <translation id="8098570222830891427">Hi ha dispositius a prop que estan emetent pàgines web per Bluetooth. Quan activeu el vostre dispositiu, Chrome cercarà pàgines i us les mostrarà. A més, es processaran mitjançant un servei de Google per millorar la qualitat dels resultats.
 
 Podeu controlar el Web físic a la configuració de Chrome.</translation>
@@ -609,6 +609,7 @@ Per obtenir llicències noves, connecteu-vos a Internet i reproduïu el contingu
 <translation id="8931159598799892500">Chrome + el Web físic</translation>
 <translation id="8941248009481596111">La vostra connexió amb aquest lloc és privada.</translation>
 <translation id="8941729603749328384">www.example.com</translation>
+<translation id="8942627711005830162">Obre en una altra finestra</translation>
 <translation id="8959122750345127698">No es pot accedir a la navegació: <ph name="URL" /></translation>
 <translation id="8979340629087822094">d'ahir</translation>
 <translation id="8987061207681586800">Personalitzar Chrome</translation>

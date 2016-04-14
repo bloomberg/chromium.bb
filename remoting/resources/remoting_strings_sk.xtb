@@ -165,6 +165,7 @@ Hostiteľ pracovnej plochy</translation>
 <translation id="4918086044614829423">Prijať</translation>
 <translation id="492843737083352574">Mám problémy s klávesnicou alebo myšou.</translation>
 <translation id="4973800994433240357">Stiahnutím nástroja na inštalovanie hostiteľa funkcie Chromoting vyjadrujete súhlas so <ph name="LINK_BEGIN" />zmluvnými podmienkami<ph name="LINK_END" /> Google.</translation>
+<translation id="4985296110227979402">Najprv musíte v počítači nastaviť vzdialený prístup</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (offline)</translation>
 <translation id="5070121137485264635">Vzdialený hostiteľ od vás vyžaduje overenie na webových stránkach tretej strany. Ak chcete pokračovať, musíte vzdialenej ploche Chrome udeliť dodatočné oprávnenie na prístup k tejto adrese:</translation>
 <translation id="5156271271724754543">Do obidvoch polí zadajte rovnaký kód PIN.</translation>
@@ -174,6 +175,7 @@ Hostiteľ pracovnej plochy</translation>
 <translation id="5222676887888702881">Odhlásiť sa</translation>
 <translation id="5254120496627797685">Ak opustíte túto stránku, relácia Vzdialenej plochy Chrome sa ukončí.</translation>
 <translation id="5308380583665731573">Pripojenie</translation>
+<translation id="533625276787323658">Na pripojenie nie sú k dispozícii žiadne zariadenia</translation>
 <translation id="5363265567587775042">Požiadajte používateľa s počítačom, do ktorého chcete získať prístup, aby klikol na tlačidlo <ph name="SHARE" /> a poskytol vám prístupový kód.</translation>
 <translation id="5379087427956679853">Vzdialená plocha Chrome vám umožňuje bezpečne zdieľať váš počítač cez internet. Obaja používatelia musia mať spustenú aplikáciu Vzdialená plocha Chrome, ktorú nájdete na adrese <ph name="URL" />.</translation>
 <translation id="5394895745784982830">Pre počítače Mac (OS X 10.6 a novší)</translation>

@@ -111,6 +111,7 @@
 <translation id="4987820182225656817">Гості можуть анонімно користуватися Chromium.</translation>
 <translation id="4994636714258228724">Додати себе в Chromium</translation>
 <translation id="5032989939245619637">Зберігати дані в Chromium</translation>
+<translation id="5116586539350239523">Chromium надійно зберігатиме ваші особисті дані, тож вам не потрібно буде вводити їх знову.</translation>
 <translation id="5358375970380395591">Ви входите, використовуючи дані облікового запису, яким керує адміністратор. Адміністратор може контролювати ваш профіль Chromium. Ваші дані Chromium, як-от програми, закладки, історія, паролі й інші налаштування, буде назавжди пов’язано з обліковим записом <ph name="USER_NAME" />. Ці дані можна видалити на інформаційній панелі Облікових записів Google, але ви не зможете пов’язати їх з іншим обліковим записом. <ph name="LEARN_MORE" /></translation>
 <translation id="5398878173008909840">Доступна нова версія Chromium.</translation>
 <translation id="5427571867875391349">Зробити Chromium веб-переглядачем за умовчанням</translation>
@@ -221,7 +222,6 @@ Chromium не може відновити ваші налаштування.</tr
 
 Якщо ви все одно ввійдете, наявні дані Chromium, як-от закладки, історію й інші налаштування, буде об’єднано з обліковим записом <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
 <translation id="9013087743919948559">Додати в Chromium</translation>
-<translation id="9013262824292842194">Chromium потребує ОС Windows Vista чи Windows XP із SP2 або новішу версію.</translation>
 <translation id="9019929317751753759">Щоб зробити Chromium безпечнішим, ми вимкнули наведене нижче розширення, установлене не із сайту <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> і, можливо, додане без вашого відома.</translation>
 <translation id="9022552996538154597">Вхід у Chromium</translation>
 <translation id="9036189287518468038">Панель запуску програм Chromium</translation>

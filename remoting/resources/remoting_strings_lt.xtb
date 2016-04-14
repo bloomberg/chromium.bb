@@ -165,6 +165,7 @@ valdymo priegloba</translation>
 <translation id="4918086044614829423">Priimti</translation>
 <translation id="492843737083352574">Kyla problemų dėl klaviatūros ir pelės.</translation>
 <translation id="4973800994433240357">Atsisiųsdami „Chrome“ nuotolinio ryšio prieglobos diegimo programą sutinkate su „Google“ <ph name="LINK_BEGIN" />paslaugų teikimo sąlygomis<ph name="LINK_END" />.</translation>
+<translation id="4985296110227979402">Pirmiausia turite nustatyti nuotolinę kompiuterio prieigą</translation>
 <translation id="5064360042339518108">„<ph name="HOSTNAME" />“ (neprisijungta)</translation>
 <translation id="5070121137485264635">Nuotolinė priegloba reikalauja autentifikuoti trečiosios šalies svetainę. Jei norite tęsti, turite suteikti „Chrome“ nuotolinio kompiuterio valdymo programai papildomas teises pasiekti šį adresą</translation>
 <translation id="5156271271724754543">Įveskite tą patį PIN kodą abiejuose laukeliuose.</translation>
@@ -174,6 +175,7 @@ valdymo priegloba</translation>
 <translation id="5222676887888702881">Atsijungti</translation>
 <translation id="5254120496627797685">Išėjus iš šio puslapio, baigsis „Chrome“ nuotolinio kompiuterio valdymo sesija.</translation>
 <translation id="5308380583665731573">Prisijungti</translation>
+<translation id="533625276787323658">Nėra prie ko prisijungti</translation>
 <translation id="5363265567587775042">Paprašykite naudotojo, kurio kompiuterį norite pasiekti, spustelėti „<ph name="SHARE" />“ ir suteikti pasiekiamumo kodą.</translation>
 <translation id="5379087427956679853">Naudodami „Chrome“ nuotolinį kompiuterio valdymą, galite saugiai bendrinti kompiuterį žiniatinklyje. Abu naudotojai turi paleisti „Chrome“ nuotolinio kompiuterio valdymo programą, kurią galima rasti adresu <ph name="URL" />.</translation>
 <translation id="5394895745784982830">Skirta „Mac“ (10.6 ir naujesnės versijos „OS X“)</translation>

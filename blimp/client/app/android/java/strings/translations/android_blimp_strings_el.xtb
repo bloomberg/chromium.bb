@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="el">
 <translation id="1091157412887719337">Η ανάθεση απέτυχε. Δεν υπάρχει διαθέσιμη μηχανή.</translation>
+<translation id="1416550906796893042">Έκδοση εφαρμογής</translation>
 <translation id="2004526128230838685">Η ανάθεση απέτυχε. Άγνωστη πρόβλημα.</translation>
 <translation id="2023631438558435272">Η ανάθεση απέτυχε. Μη έγκυρη απόκριση.</translation>
 <translation id="2353984724370197742">Η ανάθεση απέτυχε. Το αίτημα δικτύου απέτυχε.</translation>
@@ -16,6 +17,7 @@
 <translation id="5860346505531085166">Η ανάθεση απέτυχε. Ο λογαριασμός δεν έχει πρόσβαση.</translation>
 <translation id="704835510384979817">Η ανάθεση απέτυχε. Η έκδοση μηχανής δεν αντιστοιχεί.</translation>
 <translation id="7536363920335771251">Η μηχανή αποσυνδέθηκε. Αιτία: %1$s</translation>
+<translation id="7596558890252710462">Λειτουργικό σύστημα</translation>
 <translation id="7961542533680218955">Η ανάθεση ήταν επιτυχής.</translation>
 <translation id="8514856595257368555">Το διακριτικό ανακτήθηκε.</translation>
 </translationbundle>

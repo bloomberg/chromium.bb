@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="cs">
 <translation id="1091157412887719337">Přidružení se nezdařilo. Není k dispozici žádný modul.</translation>
+<translation id="1416550906796893042">Verze aplikace</translation>
 <translation id="2004526128230838685">Přidružení se nezdařilo. Neznámý problém.</translation>
 <translation id="2023631438558435272">Přidružení se nezdařilo. Neplatná odpověď.</translation>
 <translation id="2353984724370197742">Přidružení se nezdařilo. Síťový požadavek se nezdařil.</translation>
@@ -16,6 +17,7 @@
 <translation id="5860346505531085166">Přidružení se nezdařilo. Účet nemá přístup.</translation>
 <translation id="704835510384979817">Přidružení se nezdařilo. Není k dispozici odpovídající verze modulu.</translation>
 <translation id="7536363920335771251">Vyhledávač byl odpojen. Důvod: %1$s</translation>
+<translation id="7596558890252710462">Operační systém</translation>
 <translation id="7961542533680218955">Přidružení bylo úspěšné.</translation>
 <translation id="8514856595257368555">Token byl načten.</translation>
 </translationbundle>

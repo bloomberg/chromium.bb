@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="sr">
 <translation id="1091157412887719337">Пренос права није успео. Нема доступног механизма.</translation>
+<translation id="1416550906796893042">Верзија апликације</translation>
 <translation id="2004526128230838685">Пренос права није успео. Дошло је до непознатог проблема.</translation>
 <translation id="2023631438558435272">Пренос права није успео. Неважећи одговор.</translation>
 <translation id="2353984724370197742">Пренос права није успео. Захтев мреже није успео.</translation>
@@ -16,6 +17,7 @@
 <translation id="5860346505531085166">Пренос права није успео. Налог нема приступ.</translation>
 <translation id="704835510384979817">Пренос права није успео. Нема одговарајуће верзије механизма.</translation>
 <translation id="7536363920335771251">Прекинута је веза са механизмом, разлог: %1$s</translation>
+<translation id="7596558890252710462">Оперативни систем</translation>
 <translation id="7961542533680218955">Пренос права је успео.</translation>
 <translation id="8514856595257368555">Токен је преузет.</translation>
 </translationbundle>

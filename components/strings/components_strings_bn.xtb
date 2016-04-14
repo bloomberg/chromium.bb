@@ -39,7 +39,6 @@
 <translation id="1228893227497259893">ভুল সত্তা সনাক্তকারী</translation>
 <translation id="1232569758102978740">শিরোনামহীন</translation>
 <translation id="1254117744268754948">ফোল্ডার চয়ন করুন</translation>
-<translation id="1270699273812232624">আইটেমগুলিকে মঞ্জুরি দিন</translation>
 <translation id="1285320974508926690">কখনই এই সাইটটিকে অনুবাদ করবেন না</translation>
 <translation id="129553762522093515">সম্প্রতি বন্ধ হয়েছে</translation>
 <translation id="1339601241726513588">ডোমেন নথিভুক্ত করুন:</translation>
@@ -87,7 +86,6 @@
 <translation id="1898423065542865115">ফিল্টার হচ্ছে</translation>
 <translation id="1911837502049945214"><ph name="HOST_NAME" /> আপনার লগইন শংসাপত্রটি স্বীকার করেনি, অথবা আপনার লগইন শংসাপত্রের মেয়াদ হয়ত শেষ হয়ে গেছে।</translation>
 <translation id="194030505837763158"><ph name="LINK" /> এ যান</translation>
-<translation id="1958820272620550857">আইটেমগুলি অবরুদ্ধ করুন</translation>
 <translation id="1962204205936693436"><ph name="DOMAIN" /> বুকমার্কগুলি</translation>
 <translation id="1973335181906896915">ধারাবাহিকতাতে ত্রুটি</translation>
 <translation id="1974060860693918893">উন্নত</translation>
@@ -211,7 +209,6 @@
 <translation id="3105172416063519923">সম্পদ আইডি:</translation>
 <translation id="3109728660330352905">আপনার এই পৃষ্ঠাটি দেখার জন্য অনুমোদন নেই।</translation>
 <translation id="3118046075435288765">সার্ভার অপ্রত্যাশিতভাবে সংযোগ বন্ধ করেছে৷</translation>
-<translation id="31454997771848827">গোষ্ঠী ডোমেনগগুলি</translation>
 <translation id="3145945101586104090">প্রতিক্রিয়া ডিকোড করতে ব্যর্থ হয়েছে</translation>
 <translation id="3147485256806412701">এই সাইটটি একটি নতুন জেনেরিক উচ্চ স্তরের ডোমেন ব্যবহার করছে৷</translation>
 <translation id="3150653042067488994">সাময়িক সার্ভার ত্রুটি</translation>
@@ -291,6 +288,7 @@
 <translation id="3788090790273268753">২০১৬ সালে এই সাইটের শংসাপত্র মেয়াদোত্তীর্ণ হবে, এবং শংসাপত্র শৃঙ্খলে SHA-1 ব্যবহার করে স্বাক্ষর করা একটি শংসাপত্র রয়েছে।</translation>
 <translation id="382518646247711829">যদি আপনি একটি প্রক্সি সার্ভার ব্যবহার করেন...</translation>
 <translation id="3828924085048779000">ফাঁকা পাসফ্রেজের অনুমতি নেই৷</translation>
+<translation id="3845539888601087042">আপনার সাইন ইন করা ডিভাইসগুলি থেকে ইতিহাস দেখাচ্ছে। <ph name="BEGIN_LINK" />আরো জানুন<ph name="END_LINK" />।</translation>
 <translation id="385051799172605136">ফিরুন</translation>
 <translation id="3858027520442213535">তারিখ এবং সময় আপডেট করুন</translation>
 <translation id="3884278016824448484">পরস্পর বিরোধী ডিভাইস সনাক্তকারী</translation>
@@ -326,7 +324,6 @@
 <translation id="4258748452823770588">ত্রুটিপূর্ণ স্বাক্ষর</translation>
 <translation id="4268298190799576220">Chromium এই মুহূর্তে আপনার কার্ড যাচাই করতে অক্ষম হয়েছে৷ দয়া করে পরে আবার চেষ্টা করুন৷</translation>
 <translation id="4269787794583293679">(কোনো ব্যবহারকারীর নাম নেই)</translation>
-<translation id="4278390842282768270">মঞ্জুরিপ্রাপ্ত</translation>
 <translation id="4300246636397505754">মূল প্রস্তাবনাগুলি</translation>
 <translation id="4304224509867189079">লগ ইন</translation>
 <translation id="4325863107915753736">নিবন্ধ খুঁজে পেতে ব্যর্থ হয়েছে</translation>
@@ -411,6 +408,7 @@
 <translation id="5421136146218899937">ব্রাউজিং ডেটা সাফ করুন...</translation>
 <translation id="5430298929874300616">বুকমার্ক সরান</translation>
 <translation id="5431657950005405462">আপনার ফাইলটি পাওয়া যায়নি</translation>
+<translation id="5435775191620395718">এই ডিভাইস থেকে ইতিহাস দেখাচ্ছে। <ph name="BEGIN_LINK" />আরো জানুন<ph name="END_LINK" />।</translation>
 <translation id="5439770059721715174">"<ph name="ERROR_PATH" />" এ স্কিমা বৈধতার ত্রুটি হয়েছে: <ph name="ERROR" /></translation>
 <translation id="5447330194051379405">সব সংরক্ষিত পৃষ্ঠা দেখান</translation>
 <translation id="5452270690849572955">এই <ph name="HOST_NAME" /> পৃষ্ঠাটি পাওয়া যাচ্ছে না</translation>
@@ -522,7 +520,6 @@
 <translation id="6753269504797312559">নীতি মান</translation>
 <translation id="6757797048963528358">আপনার ডিভাইস নিদ্রা মোডে গিয়েছে।</translation>
 <translation id="6781404225664080496">এই URL এ অনুরোধ পাঠানো অস্থায়ীভাবে বন্ধ রাখা হয়েছে।</translation>
-<translation id="6800914069727136216">সামগ্রী প্যাকের মধ্যে</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6830600606572693159"> <ph name="URL" />তে থাকা ওয়েবপৃষ্ঠাটি বর্তমানে অনুপলব্ধ৷  রক্ষণাবেক্ষণের জন্য এটি ওভারলোড বা ডাউন হয়ে থাকতে পারে৷</translation>
 <translation id="6831043979455480757">অনুবাদ</translation>
@@ -698,6 +695,7 @@
 <translation id="8730621377337864115">সম্পন্ন হয়েছে</translation>
 <translation id="8738058698779197622">নিরাপদ নেটওয়ার্ক সংযোগ স্থাপন করতে আপনার ঘড়িকে সঠিকভাবে সেট করতে হবে৷ নিরাপদ সংযোগ স্থাপন করার জন্য নিজেদের সনাক্ত করার জন্য ওয়েবসাইটগুলি যে শংসাপত্রগুলি ব্যবহার করে, সেগুলি শুধুমাত্র নির্দিষ্ট সময়ের জন্য বৈধ থাকে৷ যেহেতু আপনার ডিভাইসের ঘড়িটি ভুল, সেই জন্য Chromium সঠিকভাবে শংসাপত্রগুলি পরীক্ষা করতে পারে না৷</translation>
 <translation id="8740359287975076522"><ph name="HOST_NAME" /> এর &lt;abbr id="dnsDefinition"&gt;DNS ঠিকানা&lt;/abbr&gt; পাওয়া যায়নি। সমস্যা নির্ণয় করা হচ্ছে।</translation>
+<translation id="8741995161408053644"><ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> এ আপনার Google অ্যাকাউন্টের অন্যান্য ধরনের ব্রাউজিং ইতিহাস থাকতে পারে।</translation>
 <translation id="8790007591277257123">&amp;মুছে ফেলাকে পুনরায় করুন</translation>
 <translation id="8798099450830957504">ডিফল্ট</translation>
 <translation id="8804164990146287819">গোপনীয়তা নীতি</translation>

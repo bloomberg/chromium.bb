@@ -165,6 +165,7 @@ namizje za Chrome</translation>
 <translation id="4918086044614829423">Sprejmi</translation>
 <translation id="492843737083352574">Imam težave s tipkovnico ali miško.</translation>
 <translation id="4973800994433240357">Če prenesete namestitveni program za gostitelja za Oddaljeno povezovanje s Chromom, sprejemate Googlove <ph name="LINK_BEGIN" />pogoje storitve<ph name="LINK_END" />.</translation>
+<translation id="4985296110227979402">Računalnik morate najprej nastaviti za oddaljeni dostop.</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (brez povezave)</translation>
 <translation id="5070121137485264635">Oddaljeni gostitelj zahteva, da previte pristnost na spletnem mestu tretje osebe. Če želite nadaljevati, morate Oddaljenemu namizju za Chrome dodeliti dodatna dovoljenja za dostop do tega naslova:</translation>
 <translation id="5156271271724754543">V polji vnesite isto kodo PIN.</translation>
@@ -174,6 +175,7 @@ namizje za Chrome</translation>
 <translation id="5222676887888702881">Odjava</translation>
 <translation id="5254120496627797685">Če zapustite to stran, se bo seja Oddaljenega namizja za Chrome končala.</translation>
 <translation id="5308380583665731573">Povezovanje</translation>
+<translation id="533625276787323658">Ni naprav za povezovanje</translation>
 <translation id="5363265567587775042">Uporabnika, do čigar računalnika želite dostopati, prosite, da klikne »<ph name="SHARE" />« in vam da kodo za dostop.</translation>
 <translation id="5379087427956679853">Oddaljeno namizje za Chrome omogoča varno skupno rabo računalnika v spletu. Oba uporabnika morata uporabljati aplikacijo Oddaljeno namizje za Chrome, ki je na voljo na <ph name="URL" />.</translation>
 <translation id="5394895745784982830">Za Mac OS (OS X 10.6 in novejši)</translation>

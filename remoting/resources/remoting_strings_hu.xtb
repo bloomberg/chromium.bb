@@ -165,6 +165,7 @@ gazdagép</translation>
 <translation id="4918086044614829423">Elfogadás</translation>
 <translation id="492843737083352574">Problémám adódott a billentyűzetemmel vagy az egeremmel.</translation>
 <translation id="4973800994433240357">A Chromoting gazdagép-telepítő letöltésével elfogadja a Google <ph name="LINK_BEGIN" />Általános Szerződési Feltételeit<ph name="LINK_END" />.</translation>
+<translation id="4985296110227979402">Előbb be kell állítania számítógépén a távoli hozzáférést.</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (offline)</translation>
 <translation id="5070121137485264635">A távoli gazdagép hitelesítést kér egy harmadik féltől származó webhelyhez. A folytatáshoz további engedélyeket kell adnia a Chrome távoliasztal-szolgáltatásnak a cím eléréséhez:</translation>
 <translation id="5156271271724754543">Kérjük, ugyanazt a PIN kódot adja meg mindkét mezőben.</translation>
@@ -174,6 +175,7 @@ gazdagép</translation>
 <translation id="5222676887888702881">Kijelentkezés</translation>
 <translation id="5254120496627797685">Ha elhagyja ezt az oldalt, akkor befejeződik a Chrome távoliasztal-szolgáltatás munkamenete.</translation>
 <translation id="5308380583665731573">Csatlakozás</translation>
+<translation id="533625276787323658">Nincs mihez csatlakozni.</translation>
 <translation id="5363265567587775042">Kérje meg a felhasználót, akinek számítógépéhez megpróbál hozzáférni, hogy kattintson a „<ph name="SHARE" />” lehetőségre, és adja meg Önnek a hozzáférési kódot.</translation>
 <translation id="5379087427956679853">A Chrome távoliasztal-szolgáltatás lehetővé teszi a számítógép biztonságos megosztását az interneten keresztül. Mindkét felhasználónál futnia kell a Chrome távoliasztal-szolgáltatás alkalmazásnak, amely itt található: <ph name="URL" />.</translation>
 <translation id="5394895745784982830">Mac típusú számítógépekhez (OS X 10.6 és újabb)</translation>

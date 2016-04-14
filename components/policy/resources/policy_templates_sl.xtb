@@ -97,6 +97,7 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
 <translation id="1359553908012294236">Če je ta pravilnik omogočen ali ni nastavljen, <ph name="PRODUCT_NAME" /> omogoči prijave gostov. Prijave gostov so profili v brskalniku <ph name="PRODUCT_NAME" />, v katerih so vsa okna v načinu brez beleženja zgodovine.
 
       Če je ta pravilnik onemogočen, <ph name="PRODUCT_NAME" /> ne dovoli profilov gosta.</translation>
+<translation id="1363275621236827384">Omogoči poizvedbe strežniku Quirks Server za profile strojne opreme.</translation>
 <translation id="1397855852561539316">Privzeti URL iskalnika za predlog</translation>
 <translation id="1398889361882383850">Omogoča nastavitev, ali je spletnim mestom dovoljeno samodejno izvajati vtičnike. Samodejno izvajanje vtičnikov je mogoče dovoliti za vsa spletna mesta ali zavrniti za vsa spletna mesta.
 
@@ -750,6 +751,13 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 
       Vrednost pravilnika mora biti navedena v milisekundah. Vrednosti so v obsegu od 30 sekund do 24 ur.</translation>
 <translation id="3528000905991875314">Omogoči nadomestne strani za napake</translation>
+<translation id="3538538104630456270">Povezana nastavitev je bila uporabljena pred uvedbo vnovičnega preverjanja pristnosti ob ogledu gesel. Od takrat nastavitev in posledično ta pravilnik nimata nobenega vpliva na način delovanja Chroma. Trenuten način delovanja Chroma je zdaj enak, kot da bi bil pravilnik nastavljen tako, da onemogoča prikaz nešifriranih gesel na strani z nastavitvami upravitelja gesel. To pomeni, da je na strani z nastavitvami samo nadomestni znak in Chrome geslo prikaže šele, ko uporabnik klikne »Pokaži« (in po vnovičnem preverjanju pristnosti, če je potrebno). Izvirni opis pravilnika je spodaj.
+
+          Določa, ali lahko uporabnik v upravitelju gesel pokaže nešifrirana gesla.
+
+          Če to nastavitev onemogočite, upravitelj gesel ne dovoli prikaza shranjenih gesel v nešifrirani obliki v oknu upravitelja gesel.
+
+          Če ta pravilnik omogočite ali ga ne nastavite, si lahko uporabniki v upravitelju gesel svoja gesla ogledajo v nešifrirani obliki.</translation>
 <translation id="3547954654003013442">Nastavitve proxyja</translation>
 <translation id="3570008976476035109">Blokiraj vtičnike na teh mestih</translation>
 <translation id="3591584750136265240">Konfiguriranje preverjanja pristnosti pri prijavi</translation>
@@ -1750,6 +1758,7 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 
       Če pravilnik ni nastavljen, lahko uporabnik spremeni seznam pripetih aplikacij v zaganjalniku.</translation>
 <translation id="7132877481099023201">URL-ji, ki jim bo brez poziva dovoljen dostop do naprav za zajem videa</translation>
+<translation id="7167436895080860385">Dovoli uporabnikom, da pokažejo gesla v upravitelju gesel (zastarelo).</translation>
 <translation id="7173856672248996428">Kratkotrajni profil</translation>
 <translation id="7187256234726597551">Če je ta pravilnik vklopljen, bo za to napravo dovoljeno oddaljeno potrjevanje in samodejno bo ustvarjeno potrdilo, ki bo preneseno v strežnik za upravljanje naprav.
 
@@ -2076,6 +2085,7 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="8197918588508433925">Ta pravilnik določa dovoljene razširitve, ki lahko uporabljajo API Enterprise Platform Keys chrome.enterprise.platformKeysPrivate.challengeUserKey() za potrditev na daljavo. Razširitve, ki lahko uporabljajo API, morate dodati na ta seznam.
 
           Če razširitve ni na seznamu ali seznam ni nastavljen, poziv API-ju ne bo uspel in bo prikazano sporočilo o napaki.</translation>
+<translation id="8214600119442850823">Konfigurira upravitelja gesel.</translation>
 <translation id="8244525275280476362">Največja zakasnitev za prenos po zavrnitvi preverjanja pravilnika</translation>
 <translation id="8256688113167012935">Nadzira prikaz imena računa na zaslonu za prijavo v sistemu <ph name="PRODUCT_OS_NAME" /> za ustrezen lokalni račun za napravo.
 
@@ -2269,6 +2279,17 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="8858642179038618439">Vsiljenje varnega načina v YouTubu</translation>
 <translation id="8864975621965365890">Ne prikaže poziva za preklop, ki se prikaže, ko se spletno mesto upodablja z <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="8870318296973696995">Domača stran</translation>
+<translation id="8889588091638298603">Strežnik Quirks Server ponuja konfiguracijske datoteke za posamezne komponente strojne opreme, kot so
+      prikazovalni profili ICC za prilagajanje umerjanja monitorja.
+
+      Če je ta pravilnik nastavljen na »False«, naprava ne bo poskušala
+      vzpostaviti stika s strežnikom Quirks Server in prenesti konfiguracijskih datotek.
+
+      Če je ta pravilnik nastavljen na »True« ali ni konfiguriran,
+      bo <ph name="PRODUCT_OS_NAME" />
+      samodejno vzpostavil stik s strežnikom Quirks Server in prenesel konfiguracijske
+      datoteke, če so na voljo, ter jih shranil v napravi. Te datoteke je mogoče
+      na primer uporabiti za izboljšanje kakovosti prikaza priključenih monitorjev.</translation>
 <translation id="8905426178924715309">Ta pravilnik je zastarel, uporabite ForceGoogleSafeSearch in ForceYouTubeSafetyMode. Ta pravilnik bo prezrt, če je nastavljen pravilnik ForceGoogleSafeSearch ali ForceYouTubeSafetyMode.
 
       Uveljavi izvajanje poizvedb v Google Spletnem iskanju z aktiviranim Varnim iskanjem in uporabnikom prepreči spreminjanje te nastavitve. Ta nastavitev uveljavi tudi varni način v YouTubu.

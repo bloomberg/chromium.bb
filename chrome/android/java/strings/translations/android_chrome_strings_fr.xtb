@@ -6,7 +6,6 @@
 <translation id="10614374240317010">Jamais enregistrés</translation>
 <translation id="1061441684050139317">Chrome doit disposer de l'accès au micro pour le partager avec ce site.</translation>
 <translation id="1080790410959514870">Vous vous déconnectez d'un compte géré par <ph name="DOMAIN_NAME" />. Cette opération va entraîner la suppression des données Chrome stockées sur l'appareil, mais celles-ci seront conservées dans votre compte Google.</translation>
-<translation id="1095407227123756519">Ajoutez un compte pour récupérer vos favoris, votre historique, vos mots de passe et d'autres paramètres sur tous vos appareils.</translation>
 <translation id="1098052486217676340">Terminé</translation>
 <translation id="1121094540300013208">Statistiques d'utilisation et rapports d'erreur</translation>
 <translation id="1137305377394488060">de la dernière heure</translation>
@@ -197,6 +196,7 @@ Pour modifier le terme de recherche, appuyez sur celui-ci de manière prolongée
 <translation id="3716158070938632480">Pages Web à proximité</translation>
 <translation id="3732088672634061408">Impossible de récupérer les centres d'intérêt.</translation>
 <translation id="3738139272394829648">Appuyer pour rechercher</translation>
+<translation id="3744111561329211289">Synchronisation en arrière-plan</translation>
 <translation id="3809549525127675114">Lecture de la vidéo "<ph name="VIDEO_TITLE" />" terminée.</translation>
 <translation id="3828029223314399057">Rechercher dans les favoris</translation>
 <translation id="3871171699884605801">L'historique de navigation des comptes pour enfants ne peut être effacé.</translation>
@@ -285,6 +285,7 @@ Il vous suffit d'ouvrir Chrome sur votre ordinateur, d'accéder au menu, puis de
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">Autoriser</translation>
 <translation id="5040262127954254034">Confidentialité</translation>
+<translation id="5056549851600133418">Articles pour vous</translation>
 <translation id="5063480226653192405">Utilisation</translation>
 <translation id="5100237604440890931">Réduit – Cliquer pour développer</translation>
 <translation id="5107381076085091558">Téléchargement suspendu.</translation>
@@ -353,7 +354,6 @@ Il vous suffit d'ouvrir Chrome sur votre ordinateur, d'accéder au menu, puis de
 <translation id="5712189971979076230">Aidez-nous à identifier les fonctionnalités et les améliorations sur lesquelles nous devons travailler en priorité en nous envoyant des informations sur les fichiers, les applications et les services en cours d'exécution au moment où vous constatez un plantage.
 
 Les statistiques d'utilisation englobent des informations telles que les préférences, les clics sur les boutons et l'utilisation de la mémoire. Elles n'incluent pas d'URL de pages Web ni d'informations personnelles. Les rapports d'erreur contiennent des informations relatives au système au moment du plantage, et peuvent contenir des URL de pages Web ou des informations personnelles, en fonction des activités en cours lors de l'incident.</translation>
-<translation id="5715468759630044318">Choisir un compte</translation>
 <translation id="5719837394786370183">Les pages consultées dans les onglets de navigation privée ne sont pas enregistrées dans l'historique de votre navigateur, dans les cookies ni dans l'historique des recherches une fois que vous avez fermé tous les onglets de navigation privée. Les fichiers téléchargés et les favoris ajoutés sont conservés.
 
 Vous n'êtes cependant pas devenu invisible. L'utilisation du mode navigation privée n'empêche pas votre employeur, votre fournisseur d'accès à Internet ou les sites Web que vous avez consultés d'avoir accès aux informations relatives à votre navigation.</translation>
@@ -434,7 +434,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="6699351163704950317">Toutes les pages enregistrées</translation>
 <translation id="6710213216561001401">Précédent</translation>
 <translation id="6720988912937197322">La page enregistrée n'est pas disponible hors connexion.</translation>
-<translation id="6722992508235227685">Vos favoris, votre historique, vos mots de passe et d'autres paramètres sont synchronisés avec votre compte Google afin que vous puissiez les utiliser sur tous vos appareils. Vous pouvez sélectionner les éléments à synchroniser dans <ph name="BEGIN_LINK1" />Paramètres<ph name="END_LINK1" />.</translation>
 <translation id="6738867403308150051">Téléchargement en cours…</translation>
 <translation id="6762156594045689028">Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchronisation<ph name="END_LINK" />.</translation>
 <translation id="6770414673596662518">Nous utilisons également le système de navigation sécurisée de Chrome pour détecter les pages nuisibles tout en vous protégeant de l'hameçonnage, des logiciels malveillants et des téléchargements dangereux.</translation>
@@ -501,6 +500,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="7501135638693251872">Tous les favoris</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7562080006725997899">Effacement des données de navigation en cours</translation>
+<translation id="756809126120519699">Données de Chrome effacées</translation>
 <translation id="7588950540487816470">Web physique</translation>
 <translation id="7596558890252710462">Système d'exploitation</translation>
 <translation id="7599840151813361502">Vous ne serez pas déconnecté de vos <ph name="BEGIN_LINK" />comptes Google<ph name="END_LINK" />.</translation>
@@ -544,7 +544,7 @@ Vous n'êtes cependant pas devenu invisible. L'utilisation du mode navigation pr
 <translation id="8069239273282989646">Après compression</translation>
 <translation id="8073388330009372546">Ouvrir image dans autre onglet</translation>
 <translation id="8076014560081431679">Les paramètres de site enregistrés ne seront pas supprimés et peuvent donner des indications sur vos habitudes de navigation. <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /></translation>
-<translation id="8084156870963450514">Connectez-vous pour accéder à tous vos contenus Web sur n'importe quel appareil.</translation>
+<translation id="8087000398470557479">Ce contenu est issu de <ph name="DOMAIN_NAME" />. Il est diffusé par Google.</translation>
 <translation id="8098570222830891427">Des appareils à proximité diffusent des pages Web via le Bluetooth. Chrome recherche les pages à proximité et les affiche lorsque vous réactivez votre l'appareil. Ces pages sont analysées par un service Google pour améliorer la qualité des résultats.
 
 Vous pouvez contrôler le Web physique dans les paramètres de Chrome.</translation>
@@ -610,6 +610,7 @@ Pour obtenir de nouvelles licences, connectez-vous à Internet et lisez le conte
 <translation id="8931159598799892500">Chrome et le Web physique</translation>
 <translation id="8941248009481596111">Votre connexion à ce site est privée.</translation>
 <translation id="8941729603749328384">www.example.com</translation>
+<translation id="8942627711005830162">Ouvrir dans une autre fenêtre</translation>
 <translation id="8959122750345127698">Impossible d'accéder à <ph name="URL" />.</translation>
 <translation id="8979340629087822094">des dernières 24 heures</translation>
 <translation id="8987061207681586800">Personnalisez Chrome</translation>

@@ -165,6 +165,7 @@ remoto de Chrome</translation>
 <translation id="4918086044614829423">Aceptar</translation>
 <translation id="492843737083352574">Tengo problemas con mi teclado o con el ratón.</translation>
 <translation id="4973800994433240357">Al descargar el programa de instalación del host de Chromoting, aceptas las <ph name="LINK_BEGIN" />Condiciones de Servicio<ph name="LINK_END" /> de Google.</translation>
+<translation id="4985296110227979402">En primer lugar, debes configurar el acceso remoto a tu ordenador</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (sin conexión)</translation>
 <translation id="5070121137485264635">El host remoto requiere tu autenticación en un sitio web de terceros. Para continuar, debes conceder a la aplicación Escritorio remoto de Chrome permisos adicionales para acceder a la siguiente dirección:</translation>
 <translation id="5156271271724754543">Debes introducir el mismo PIN en los dos cuadros.</translation>
@@ -174,6 +175,7 @@ remoto de Chrome</translation>
 <translation id="5222676887888702881">Cerrar sesión</translation>
 <translation id="5254120496627797685">Si abandonas esta página, finalizará tu sesión en Escritorio remoto de Chrome.</translation>
 <translation id="5308380583665731573">Conectar</translation>
+<translation id="533625276787323658">No hay ningún ordenador al que conectarse</translation>
 <translation id="5363265567587775042">Pregunta al usuario el ordenador al que se quiere acceder para hacer clic en <ph name="SHARE" /> y proporcionar el código de acceso.</translation>
 <translation id="5379087427956679853">Escritorio remoto de Chrome permite compartir de forma segura tu ordenador a través de Internet. Ambos usuarios deben estar ejecutando la aplicación Escritorio remoto de Chrome, que está disponible en la página <ph name="URL" />.</translation>
 <translation id="5394895745784982830">Para Mac (OS X 10.6 y versiones superiores)</translation>

@@ -39,7 +39,6 @@
 <translation id="1228893227497259893">Pengecam entiti yang salah</translation>
 <translation id="1232569758102978740">Tidak Bertajuk</translation>
 <translation id="1254117744268754948">Pilih Folder</translation>
-<translation id="1270699273812232624">Benarkan item</translation>
 <translation id="1285320974508926690">Jangan sekali-kali menterjemahkan tapak ini</translation>
 <translation id="129553762522093515">Ditutup baru-baru ini</translation>
 <translation id="1339601241726513588">Domain pendaftaran:</translation>
@@ -86,7 +85,6 @@
 <translation id="1898423065542865115">Penapisan</translation>
 <translation id="1911837502049945214"><ph name="HOST_NAME" /> tidak menerima sijil log masuk anda atau sijil log masuk anda telah tamat tempoh.</translation>
 <translation id="194030505837763158">Pergi ke <ph name="LINK" /></translation>
-<translation id="1958820272620550857">Sekat item</translation>
 <translation id="1962204205936693436"><ph name="DOMAIN" /> Penanda halaman</translation>
 <translation id="1973335181906896915">Ralat penyirian</translation>
 <translation id="1974060860693918893">Lanjutan</translation>
@@ -210,7 +208,6 @@
 <translation id="3105172416063519923">ID Aset:</translation>
 <translation id="3109728660330352905">Anda tidak mempunyai kebenaran untuk melihat halaman ini.</translation>
 <translation id="3118046075435288765">Pelayan menutup sambungan tanpa disangka-sangka.</translation>
-<translation id="31454997771848827">Kumpulan domain</translation>
 <translation id="3145945101586104090">Gagal menyahkod balasan</translation>
 <translation id="3147485256806412701">Tapak ini menggunakan domain tahap atas generik baharu.</translation>
 <translation id="3150653042067488994">Ralat pelayan sementara</translation>
@@ -327,7 +324,6 @@
 <translation id="4258748452823770588">Tandatangan tidak elok</translation>
 <translation id="4268298190799576220">Chromium tidak dapat mengesahkan kad anda pada masa ini. Sila cuba lagi nanti.</translation>
 <translation id="4269787794583293679">(Tiada nama pengguna)</translation>
-<translation id="4278390842282768270">Dibenarkan</translation>
 <translation id="4300246636397505754">Cadangan ibu bapa</translation>
 <translation id="4304224509867189079">Log Masuk</translation>
 <translation id="4325863107915753736">Gagal menemui artikel</translation>
@@ -525,7 +521,6 @@
 <translation id="6753269504797312559">Nilai dasar</translation>
 <translation id="6757797048963528358">Peranti anda tidak aktif.</translation>
 <translation id="6781404225664080496">Permintaan ke URL ini telah didikitkan untuk sementara waktu.</translation>
-<translation id="6800914069727136216">Dalam pek kandungan</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6830600606572693159">Halaman web di <ph name="URL" /> kini tidak tersedia.  Ia mungkin terlebih muatan atau tergendala akibat penyelenggaraan.</translation>
 <translation id="6831043979455480757">Terjemah</translation>

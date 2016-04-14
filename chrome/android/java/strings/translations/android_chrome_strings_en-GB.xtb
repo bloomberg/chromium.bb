@@ -6,7 +6,6 @@
 <translation id="10614374240317010">Never saved</translation>
 <translation id="1061441684050139317">Chrome needs microphone access to share it with this site.</translation>
 <translation id="1080790410959514870">You are signing out of an account managed by <ph name="DOMAIN_NAME" />. This will delete the Chrome data stored on this device, but the data will remain in your Google Account.</translation>
-<translation id="1095407227123756519">Add an account to get your bookmarks, history, passwords and other settings on all your devices.</translation>
 <translation id="1098052486217676340">Finished</translation>
 <translation id="1121094540300013208">Usage and crash reports</translation>
 <translation id="1137305377394488060">past hour</translation>
@@ -354,7 +353,6 @@ Just open Chrome on your computer, go to the menu and select “Sign in to Chrom
 <translation id="5712189971979076230">Help us to prioritise the features and improvements that we should work on by sending Google information about the files, applications and services running whenever you experience a crash.
 
         Usage statistics include information such as preferences, button clicks and memory usage. They do not include web page URLs or any personal information. Crash reports contain system information at the time of the crash, and may contain web page URLs or personal information, depending on what was happening at the time of the crash.</translation>
-<translation id="5715468759630044318">Choose account</translation>
 <translation id="5719837394786370183">Pages that you view in incognito tabs won’t stick around in your browser’s history, cookie store or search history after you've closed all of your incognito tabs. Any files that you download or bookmarks that you create will be kept.
 
 However, you aren't invisible. Going incognito doesn't hide your browsing from your employer, your Internet service provider or the websites you visit.</translation>
@@ -435,7 +433,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6699351163704950317">All saved pages</translation>
 <translation id="6710213216561001401">Previous</translation>
 <translation id="6720988912937197322">Saved page not available offline</translation>
-<translation id="6722992508235227685">Your bookmarks, history, passwords and other settings will be synced to your Google Account so that you can use them on all your devices. You can choose what to sync in <ph name="BEGIN_LINK1" />Settings<ph name="END_LINK1" />.</translation>
 <translation id="6738867403308150051">Downloading…</translation>
 <translation id="6762156594045689028">To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" /></translation>
 <translation id="6770414673596662518">Chrome’s Safe Browsing system will also be used to detect malicious pages and protect you from phishing, malware and harmful downloads.</translation>
@@ -546,7 +543,6 @@ However, you aren’t invisible. Going incognito doesn’t hide your browsing fr
 <translation id="8069239273282989646">After compression</translation>
 <translation id="8073388330009372546">Open image in new tab</translation>
 <translation id="8076014560081431679">Saved site settings will not be deleted and may reflect your browsing habits. <ph name="BEGIN_LINK" />Find out more<ph name="END_LINK" /></translation>
-<translation id="8084156870963450514">Sign in to access all your web stuff from any device</translation>
 <translation id="8087000398470557479">This content is from <ph name="DOMAIN_NAME" />, delivered by Google.</translation>
 <translation id="8098570222830891427">Devices near to you are broadcasting web pages over Bluetooth. Chrome will scan for pages and display them when you wake up your device. These pages will go through a Google service to improve the quality of page results.
 

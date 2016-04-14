@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ro">
 <translation id="1091157412887719337">Atribuirea nu a reușit. Niciun motor disponibil.</translation>
+<translation id="1416550906796893042">Versiunea aplicației</translation>
 <translation id="2004526128230838685">Atribuirea nu a reușit. Problemă necunoscută.</translation>
 <translation id="2023631438558435272">Atribuirea nu a reușit. Răspuns nevalid.</translation>
 <translation id="2353984724370197742">Atribuirea nu a reușit. Solicitarea din rețea nu a reușit.</translation>
@@ -16,6 +17,7 @@
 <translation id="5860346505531085166">Atribuirea nu a reușit. Contul nu are acces.</translation>
 <translation id="704835510384979817">Atribuirea nu a reușit. Nicio versiune a motorului potrivită.</translation>
 <translation id="7536363920335771251">Motor deconectat, motiv: %1$s</translation>
+<translation id="7596558890252710462">Sistem de operare</translation>
 <translation id="7961542533680218955">Atribuirea a reușit.</translation>
 <translation id="8514856595257368555">Indicativul a fost preluat.</translation>
 </translationbundle>

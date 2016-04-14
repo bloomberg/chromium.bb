@@ -165,6 +165,7 @@ Desktop Jarak Jauh</translation>
 <translation id="4918086044614829423">Terima</translation>
 <translation id="492843737083352574">Saya mengalami masalah dengan keyboard atau mouse.</translation>
 <translation id="4973800994433240357">Dengan mengunduh Pemasang Host Chrome Desktop Jarak Jauh, Anda menyetujui <ph name="LINK_BEGIN" />Persyaratan Layanan<ph name="LINK_END" /> Google.</translation>
+<translation id="4985296110227979402">Pertama, Anda perlu menyiapkan komputer untuk akses jarak jauh</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (offline)</translation>
 <translation id="5070121137485264635">Hosting jarak jauh mewajibkan Anda mengautentikasi ke situs web pihak ketiga. Untuk melanjutkan, Anda harus memberikan izin tambahan ke Chrome Desktop Jarak Jauh untuk mengakses alamat ini:</translation>
 <translation id="5156271271724754543">Masukkan PIN yang sama di kedua kotak.</translation>
@@ -174,6 +175,7 @@ Desktop Jarak Jauh</translation>
 <translation id="5222676887888702881">Keluar</translation>
 <translation id="5254120496627797685">Dengan meninggalkan laman ini, Anda akan mengakhiri sesi Chrome Desktop Jarak Jauh.</translation>
 <translation id="5308380583665731573">Sambungkan</translation>
+<translation id="533625276787323658">Perangkat sambungan belum disiapkan</translation>
 <translation id="5363265567587775042">Minta pengguna yang menggunakan komputer yang ingin Anda akses untuk mengeklik “<ph name="SHARE" />” dan memberikan kode akses kepada Anda.</translation>
 <translation id="5379087427956679853">Chrome Desktop Jarak Jauh memungkinkan Anda berbagi komputer melalui web dengan aman. Kedua pengguna harus menjalankan aplikasi Chrome Desktop Jarak Jauh yang dapat ditemukan di <ph name="URL" />.</translation>
 <translation id="5394895745784982830">Untuk Mac (OS X 10.6 dan yang lebih tinggi)</translation>

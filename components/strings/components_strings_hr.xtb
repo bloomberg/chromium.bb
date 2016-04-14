@@ -39,7 +39,6 @@
 <translation id="1228893227497259893">Pogrešan identifikator entiteta</translation>
 <translation id="1232569758102978740">Neimenovano</translation>
 <translation id="1254117744268754948">Odabir mape</translation>
-<translation id="1270699273812232624">Dopusti stavke</translation>
 <translation id="1285320974508926690">Nikad nemoj prevoditi ovu web-lokaciju</translation>
 <translation id="129553762522093515">Nedavno zatvoreno</translation>
 <translation id="1339601241726513588">Domena upisa:</translation>
@@ -86,7 +85,6 @@
 <translation id="1898423065542865115">Filtriranje</translation>
 <translation id="1911837502049945214">Host <ph name="HOST_NAME" /> nije prihvatio certifikat za prijavu ili je certifikat za prijavu možda istekao.</translation>
 <translation id="194030505837763158">Posjetite <ph name="LINK" /></translation>
-<translation id="1958820272620550857">Blokirane stavke</translation>
 <translation id="1962204205936693436">Oznake s domene <ph name="DOMAIN" /></translation>
 <translation id="1973335181906896915">Pogreška postavljanja u seriju</translation>
 <translation id="1974060860693918893">Napredno</translation>
@@ -210,7 +208,6 @@
 <translation id="3105172416063519923">ID uređaja:</translation>
 <translation id="3109728660330352905">Nemate ovlaštenje za prikaz te stranice.</translation>
 <translation id="3118046075435288765">Poslužitelj je neočekivano prekinuo vezu.</translation>
-<translation id="31454997771848827">Domene grupe</translation>
 <translation id="3145945101586104090">Dekodiranje odgovora nije uspjelo</translation>
 <translation id="3147485256806412701">Ta web-lokacija upotrebljava novu generičku vršnu domenu.</translation>
 <translation id="3150653042067488994">Privremena pogreška poslužitelja</translation>
@@ -289,6 +286,7 @@
 <translation id="3788090790273268753">Certifikat za ovu web-lokaciju istječe 2016., a lanac certifikata sadrži certifikat s SHA-1 potpisom.</translation>
 <translation id="382518646247711829">Ako upotrebljavate proxy poslužitelj...</translation>
 <translation id="3828924085048779000">Prazne zaporke nisu dopuštene.</translation>
+<translation id="3845539888601087042">Prikazuje se povijest s uređaja na kojima se prijavljujete. <ph name="BEGIN_LINK" />Saznajte više<ph name="END_LINK" />.</translation>
 <translation id="385051799172605136">Natrag</translation>
 <translation id="3858027520442213535">Ažuriraj datum i vrijeme</translation>
 <translation id="3884278016824448484">Identifikator uređaja sukobljen je</translation>
@@ -324,7 +322,6 @@
 <translation id="4258748452823770588">Potpis nije valjan</translation>
 <translation id="4268298190799576220">Chromium nije uspio potvrditi vašu karticu u ovom trenutku. Pokušajte ponovo kasnije.</translation>
 <translation id="4269787794583293679">(Nema korisničkog imena)</translation>
-<translation id="4278390842282768270">Dopušteno</translation>
 <translation id="4300246636397505754">Nadređeni prijedlozi</translation>
 <translation id="4304224509867189079">Prijavi se</translation>
 <translation id="4325863107915753736">Članak nije pronađen</translation>
@@ -409,6 +406,7 @@
 <translation id="5421136146218899937">Obriši podatke pregledavanja...</translation>
 <translation id="5430298929874300616">Ukloni oznaku</translation>
 <translation id="5431657950005405462">Datoteka nije pronađena</translation>
+<translation id="5435775191620395718">Prikazuje se povijest s ovog uređaja. <ph name="BEGIN_LINK" />Saznajte više<ph name="END_LINK" />.</translation>
 <translation id="5439770059721715174">Pogreška provjere sheme na lokaciji "<ph name="ERROR_PATH" />": <ph name="ERROR" /></translation>
 <translation id="5447330194051379405">Prikaži sve spremljene stranice</translation>
 <translation id="5452270690849572955">Tu stranicu na <ph name="HOST_NAME" /> nije moguće pronaći</translation>
@@ -521,7 +519,6 @@
 <translation id="6753269504797312559">Vrijednost pravila</translation>
 <translation id="6757797048963528358">Uređaj je u stanju mirovanja.</translation>
 <translation id="6781404225664080496">Zahtjevi za taj URL privremeno su ograničeni.</translation>
-<translation id="6800914069727136216">U paketu sadržaja</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6830600606572693159">Web-stranica na <ph name="URL" /> trenutno nije dostupna.  Možda je preopterećena ili isključena zbog održavanja.</translation>
 <translation id="6831043979455480757">Prevedi</translation>
@@ -697,6 +694,7 @@ Psst! Sljedeći bi vam put mogao koristiti anonimni način <ph name="SHORTCUT_KE
 <translation id="8730621377337864115">Gotovo</translation>
 <translation id="8738058698779197622">Za uspostavu sigurne veze sat mora biti točno postavljen. To je zato što certifikati koje web-lokacije upotrebljavaju za međusobnu identifikaciju vrijede samo određeno vrijeme. Budući da sat na vašem uređaju nije točan, Chromium ne može potvrditi te certifikate.</translation>
 <translation id="8740359287975076522">&lt;abbr id="dnsDefinition"&gt;DNS adresa&lt;/abbr&gt; hosta <ph name="HOST_NAME" /> nije pronađena. U tijeku je dijagnosticiranje problema.</translation>
+<translation id="8741995161408053644">Na Google računu možda postoje drugi oblici povijesti pregledavanja na stranici <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="8790007591277257123">&amp;Ponovi brisanje</translation>
 <translation id="8798099450830957504">Zadano</translation>
 <translation id="8804164990146287819">Pravila o privatnosti</translation>

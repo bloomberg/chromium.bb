@@ -6,7 +6,6 @@
 <translation id="10614374240317010">Contraseñas que nunca se guardan</translation>
 <translation id="1061441684050139317">Chrome necesita acceder al micrófono para compartirlo con este sitio web.</translation>
 <translation id="1080790410959514870">Vas a salir de una cuenta administrada por <ph name="DOMAIN_NAME" />. Se eliminarán los datos de Chrome almacenados en este dispositivo, pero los datos permanecerán en tu cuenta de Google.</translation>
-<translation id="1095407227123756519">Añade una cuenta para ver tus marcadores, tu historial, tus contraseñas y otras opciones en todos tus dispositivos.</translation>
 <translation id="1098052486217676340">Finalizado</translation>
 <translation id="1121094540300013208">Informes de uso y sobre fallos</translation>
 <translation id="1137305377394488060">última hora</translation>
@@ -197,6 +196,7 @@ Para ajustar el término de búsqueda, mantén pulsado el texto para seleccionar
 <translation id="3716158070938632480">Hay páginas web cercanas</translation>
 <translation id="3732088672634061408">No se han podido recuperar los intereses.</translation>
 <translation id="3738139272394829648">Tocar para buscar</translation>
+<translation id="3744111561329211289">Sincronización en segundo plano</translation>
 <translation id="3809549525127675114">"<ph name="VIDEO_TITLE" />" ha finalizado</translation>
 <translation id="3828029223314399057">Buscar marcadores</translation>
 <translation id="3871171699884605801">El historial de navegación no se puede borrar con cuentas infantiles</translation>
@@ -285,6 +285,7 @@ Solo tienes que abrir Chrome en tu ordenador, ir al menú y seleccionar "Iniciar
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">Permitir</translation>
 <translation id="5040262127954254034">Privacidad</translation>
+<translation id="5056549851600133418">Artículos recomendados</translation>
 <translation id="5063480226653192405">Uso</translation>
 <translation id="5100237604440890931">Contraído (hacer clic para ampliar)</translation>
 <translation id="5107381076085091558">Se ha pausado la descarga.</translation>
@@ -352,7 +353,6 @@ Solo tienes que abrir Chrome en tu ordenador, ir al menú y seleccionar "Iniciar
 <translation id="5712189971979076230">Ayúdanos a priorizar las funciones y las mejoras en las que debemos trabajar enviando información a Google sobre los archivos, las aplicaciones y los servicios utilizados cuando se produce un error.
 
 Las estadísticas de uso incluyen información sobre preferencias, clics en botones, uso de memoria y otros datos. No incluyen las URL de páginas web ni información personal. Los informes sobre fallos contienen información del sistema en el momento del error y pueden incluir las URL de páginas web o información personal (según lo que haya sucedido en el momento del fallo).</translation>
-<translation id="5715468759630044318">Seleccionar cuenta</translation>
 <translation id="5719837394786370183">Las páginas que visites a través de las pestañas de incógnito no se mostrarán en el historial del navegador, en el almacén de cookies ni en el historial de búsquedas una vez que cierres todas las pestañas de incógnito. Sí se conservarán los archivos que descargues y los marcadores que crees.
 
 No obstante, tus acciones no serán totalmente invisibles. El uso del modo incógnito no te permite ocultar tu actividad de navegación a tu empresa, a tu proveedor de servicios de Internet o a los sitios web que visites.</translation>
@@ -433,7 +433,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="6699351163704950317">Todas las páginas guardadas</translation>
 <translation id="6710213216561001401">Anterior</translation>
 <translation id="6720988912937197322">La página guardada no está disponible sin conexión</translation>
-<translation id="6722992508235227685">Tus marcadores, tu historial, tus contraseñas y otros ajustes se sincronizarán con tu cuenta de Google para que puedas utilizarlos en todos tus dispositivos. Puedes elegir lo que quieras que se sincronice en <ph name="BEGIN_LINK1" />Configuración<ph name="END_LINK1" />.</translation>
 <translation id="6738867403308150051">Descargando…</translation>
 <translation id="6762156594045689028">Para cambiar esta opción, <ph name="BEGIN_LINK" />restablece la sincronización<ph name="END_LINK" /></translation>
 <translation id="6770414673596662518">El sistema de navegación segura de Chrome también se utilizará para detectar páginas maliciosas y para proteger al usuario de la suplantación de identidad, del software malicioso y de las descargas peligrosas.</translation>
@@ -500,6 +499,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="7501135638693251872">Todos los marcadores</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7562080006725997899">Borrando datos de navegación</translation>
+<translation id="756809126120519699">Datos de Chrome borrados</translation>
 <translation id="7588950540487816470">Web física</translation>
 <translation id="7596558890252710462">Sistema operativo</translation>
 <translation id="7599840151813361502">No se cerrará la sesión en tus <ph name="BEGIN_LINK" />cuentas de Google<ph name="END_LINK" /></translation>
@@ -543,7 +543,7 @@ No obstante, tus acciones no serán totalmente invisibles. El uso del modo incó
 <translation id="8069239273282989646">Después de comprimir</translation>
 <translation id="8073388330009372546">Abrir en pestaña nueva</translation>
 <translation id="8076014560081431679">No se eliminará la configuración guardada de los sitios web, lo cual puede reflejar tus hábitos de navegación. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
-<translation id="8084156870963450514">Inicia sesión para acceder a todo tu contenido web desde cualquier dispositivo</translation>
+<translation id="8087000398470557479">Este contenido procede de <ph name="DOMAIN_NAME" />, publicado por Google.</translation>
 <translation id="8098570222830891427">Dispositivos cercanos con los que transmites páginas web por Bluetooth. Chrome busca páginas y las muestra cuando activas el dispositivo. Estas páginas se envían a un servicio de Google para mejorar la calidad de los resultados de páginas.
 
 Puedes controlar la Web física en la configuración de privacidad de Chrome.</translation>
@@ -609,6 +609,7 @@ Para obtener nuevas licencias, conéctate a Internet y reproduce el contenido de
 <translation id="8931159598799892500">Chrome + Web física</translation>
 <translation id="8941248009481596111">Tu conexión con este sitio es privada.</translation>
 <translation id="8941729603749328384">www.ejemplo.com</translation>
+<translation id="8942627711005830162">Abrir en otra ventana</translation>
 <translation id="8959122750345127698">No se puede realizar la navegación: <ph name="URL" /></translation>
 <translation id="8979340629087822094">último día</translation>
 <translation id="8987061207681586800">Personaliza Chrome</translation>

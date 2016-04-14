@@ -39,7 +39,6 @@
 <translation id="1228893227497259893">エンティティ識別子が正しくありません</translation>
 <translation id="1232569758102978740">無題</translation>
 <translation id="1254117744268754948">フォルダの選択</translation>
-<translation id="1270699273812232624">アイテムを許可</translation>
 <translation id="1285320974508926690">このサイトは翻訳しない</translation>
 <translation id="129553762522093515">最近閉じたタブ</translation>
 <translation id="1339601241726513588">登録ドメイン:</translation>
@@ -86,7 +85,6 @@
 <translation id="1898423065542865115">フィルタ</translation>
 <translation id="1911837502049945214"><ph name="HOST_NAME" /> でログイン証明書が承認されなかった、またはログイン証明書の有効期限が切れている可能性があります。</translation>
 <translation id="194030505837763158"><ph name="LINK" /> に移動します</translation>
-<translation id="1958820272620550857">アイテムをブロック</translation>
 <translation id="1962204205936693436"><ph name="DOMAIN" /> のブックマーク</translation>
 <translation id="1973335181906896915">シリアル化エラーです</translation>
 <translation id="1974060860693918893">詳細設定</translation>
@@ -209,7 +207,6 @@
 <translation id="3105172416063519923">アセット ID:</translation>
 <translation id="3109728660330352905">このページを表示する権限がありません。</translation>
 <translation id="3118046075435288765">サーバーが途中で接続を切断しました。</translation>
-<translation id="31454997771848827">グループのドメイン</translation>
 <translation id="3145945101586104090">応答をデコードできませんでした</translation>
 <translation id="3147485256806412701">このサイトは新しいジェネリック トップレベル ドメインを使用しています。</translation>
 <translation id="3150653042067488994">一時的なサーバー エラーです</translation>
@@ -289,6 +286,7 @@
 <translation id="3788090790273268753">このサイトの証明書は 2016 年まで有効で、証明書チェーンには SHA-1 を使って署名された証明書が含まれています。</translation>
 <translation id="382518646247711829">プロキシ サーバーを使用している場合...</translation>
 <translation id="3828924085048779000">パスフレーズは必ず指定してください。</translation>
+<translation id="3845539888601087042">ログインしている端末の履歴を表示しています。<ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
 <translation id="385051799172605136">戻る</translation>
 <translation id="3858027520442213535">日時を更新</translation>
 <translation id="3884278016824448484">競合するデバイス識別子です</translation>
@@ -324,7 +322,6 @@
 <translation id="4258748452823770588">署名が不適切です</translation>
 <translation id="4268298190799576220">現在、Chromium でカードを確認できません。しばらくしてからもう一度お試しください。</translation>
 <translation id="4269787794583293679">（ユーザー名なし）</translation>
-<translation id="4278390842282768270">許可</translation>
 <translation id="4300246636397505754">保護者からのおすすめ</translation>
 <translation id="4304224509867189079">ログイン</translation>
 <translation id="4325863107915753736">記事が見つかりませんでした</translation>
@@ -409,6 +406,7 @@
 <translation id="5421136146218899937">閲覧履歴データの消去...</translation>
 <translation id="5430298929874300616">ブックマークを削除</translation>
 <translation id="5431657950005405462">ファイルが見つかりませんでした</translation>
+<translation id="5435775191620395718">この端末の履歴を表示しています。<ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
 <translation id="5439770059721715174">「<ph name="ERROR_PATH" />」でスキーマ確認エラー: <ph name="ERROR" /></translation>
 <translation id="5447330194051379405">すべての保存ページを表示</translation>
 <translation id="5452270690849572955">この <ph name="HOST_NAME" /> ページが見つかりません</translation>
@@ -521,7 +519,6 @@
 <translation id="6753269504797312559">ポリシーの値</translation>
 <translation id="6757797048963528358">デバイスがスリープ状態です。</translation>
 <translation id="6781404225664080496">この URL へのリクエストは一時的に制限されています。</translation>
-<translation id="6800914069727136216">コンテンツ パック内</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6830600606572693159">ウェブページ（<ph name="URL" />）は現在表示できません。アクセスが集中しているか、メンテナンスのために停止している可能性があります。</translation>
 <translation id="6831043979455480757">翻訳</translation>
@@ -692,6 +689,7 @@
 <translation id="8730621377337864115">完了</translation>
 <translation id="8738058698779197622">安全な接続を確立するには時計が正しく設定されている必要があります。この理由は、本物のウェブサイトであることを示すためにウェブサイトで使用される証明書には、有効期間（発効日時と失効日時）が設定されているためです。デバイスの時計が正しくないため、Chromium ではこれらの証明書を確認できません。</translation>
 <translation id="8740359287975076522"><ph name="HOST_NAME" /> の &lt;abbr id="dnsDefinition"&gt;DNS アドレス&lt;/abbr&gt;が見つかりませんでした。問題を診断しています。</translation>
+<translation id="8741995161408053644">Google アカウントでの他の形式の閲覧履歴が <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> に残ることがあります。</translation>
 <translation id="8790007591277257123">削除のやり直し（&amp;R）</translation>
 <translation id="8798099450830957504">既定</translation>
 <translation id="8804164990146287819">プライバシー ポリシー</translation>

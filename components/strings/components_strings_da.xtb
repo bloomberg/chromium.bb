@@ -39,7 +39,6 @@
 <translation id="1228893227497259893">Forkert enheds-id</translation>
 <translation id="1232569758102978740">Ikke-navngivet</translation>
 <translation id="1254117744268754948">Vælg mappe</translation>
-<translation id="1270699273812232624">Tillad elementer</translation>
 <translation id="1285320974508926690">Oversæt aldrig dette website</translation>
 <translation id="129553762522093515">Senest lukkede</translation>
 <translation id="1339601241726513588">Registreringsdomæne:</translation>
@@ -86,7 +85,6 @@
 <translation id="1898423065542865115">Filtrering</translation>
 <translation id="1911837502049945214"><ph name="HOST_NAME" /> accepterede ikke dit logincertifikat, eller dit logincertifikat er muligvis udløbet.</translation>
 <translation id="194030505837763158">Gå til <ph name="LINK" /></translation>
-<translation id="1958820272620550857">Blokerede elementer</translation>
 <translation id="1962204205936693436">Bogmærker fra <ph name="DOMAIN" /></translation>
 <translation id="1973335181906896915">Serialiseringsfejl</translation>
 <translation id="1974060860693918893">Avanceret</translation>
@@ -210,7 +208,6 @@
 <translation id="3105172416063519923">Aktiv-id:</translation>
 <translation id="3109728660330352905">Du har ikke tilladelse til at se denne side.</translation>
 <translation id="3118046075435288765">Serveren lukkede forbindelsen uventet.</translation>
-<translation id="31454997771848827">Gruppens domæner</translation>
 <translation id="3145945101586104090">Svaret kunne ikke afkodes</translation>
 <translation id="3147485256806412701">Dette website anvender et nyt generisk domæne på øverste niveau.</translation>
 <translation id="3150653042067488994">Midlertidig serverfejl</translation>
@@ -290,6 +287,7 @@
 <translation id="3788090790273268753">Certifikatet for dette website udløber i 2016, og certifikatkæden indeholder et certifikat, der er signeret med SHA-1.</translation>
 <translation id="382518646247711829">Hvis du bruger en proxyserver...</translation>
 <translation id="3828924085048779000">Tomme adgangssætninger er ikke tilladt.</translation>
+<translation id="3845539888601087042">Viser historik fra de enheder, hvor du er logget ind. <ph name="BEGIN_LINK" />Få flere oplysninger<ph name="END_LINK" />.</translation>
 <translation id="385051799172605136">Tilbage</translation>
 <translation id="3858027520442213535">Opdater dato og tid</translation>
 <translation id="3884278016824448484">Modstridende enheds-id</translation>
@@ -325,7 +323,6 @@
 <translation id="4258748452823770588">Forkert signatur</translation>
 <translation id="4268298190799576220">Chrome kan ikke bekræfte dit kort i øjeblikket. Prøv igen senere.</translation>
 <translation id="4269787794583293679">(Intet brugernavn)</translation>
-<translation id="4278390842282768270">Tilladt</translation>
 <translation id="4300246636397505754">Forslag fra forældre</translation>
 <translation id="4304224509867189079">Log ind</translation>
 <translation id="4325863107915753736">Artiklen blev ikke fundet.</translation>
@@ -410,6 +407,7 @@
 <translation id="5421136146218899937">Ryd browserdata...</translation>
 <translation id="5430298929874300616">Fjern bogmærke</translation>
 <translation id="5431657950005405462">Din fil blev ikke fundet</translation>
+<translation id="5435775191620395718">Viser historik fra denne enhed. <ph name="BEGIN_LINK" />Få flere oplysninger<ph name="END_LINK" />.</translation>
 <translation id="5439770059721715174">Skemavalideringsfejl på "<ph name="ERROR_PATH" />": <ph name="ERROR" /></translation>
 <translation id="5447330194051379405">Vis alle gemte sider</translation>
 <translation id="5452270690849572955">Denne side fra <ph name="HOST_NAME" /> kan ikke findes</translation>
@@ -522,7 +520,6 @@
 <translation id="6753269504797312559">Politikkens værdi</translation>
 <translation id="6757797048963528358">Din enhed gik i dvale.</translation>
 <translation id="6781404225664080496">Anmodninger til denne webadresse er midlertidigt deaktiveret.</translation>
-<translation id="6800914069727136216">I indholdspakke</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6830600606572693159">Websiden på <ph name="URL" /> er ikke tilgængelig lige nu. Den kan enten være overbelastet eller under vedligeholdelse.</translation>
 <translation id="6831043979455480757">Oversæt</translation>
@@ -698,6 +695,7 @@ Psst! Prøv at bruge Inkognitotilstand <ph name="SHORTCUT_KEY" /> næste gang.</
 <translation id="8730621377337864115">Fuldført</translation>
 <translation id="8738058698779197622">For at kunne oprette en sikker forbindelse skal dit ur være indstillet korrekt. Det er vigtigt, da de certifikater, som websites bruger til at identificere sig selv, kun er gyldige i bestemte tidsperioder. Da uret på din enhed går forkert, kan Chromium ikke bekræfte disse certifikater.</translation>
 <translation id="8740359287975076522">&lt;abbr id="dnsDefinition"&gt;DNS-adressen&lt;/abbr&gt; for <ph name="HOST_NAME" /> kunne ikke findes. Diagnosticerer problemet.</translation>
+<translation id="8741995161408053644">Din Google-konto kan have andre former for browserhistorik på <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="8790007591277257123">&amp;Annuller fortryd sletning</translation>
 <translation id="8798099450830957504">Standard</translation>
 <translation id="8804164990146287819">Privatlivspolitik</translation>

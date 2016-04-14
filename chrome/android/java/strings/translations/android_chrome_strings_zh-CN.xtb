@@ -6,7 +6,6 @@
 <translation id="10614374240317010">一律不保存</translation>
 <translation id="1061441684050139317">Chrome 需要具有麦克风使用权限，才能批准此网站的分享请求。</translation>
 <translation id="1080790410959514870">您要退出某个由 <ph name="DOMAIN_NAME" /> 管理的帐户。这会导致系统删除此设备上存储的 Chrome 数据，但这些数据仍会保留在您的 Google 帐户中。</translation>
-<translation id="1095407227123756519">请添加帐户，以便获取您所有设备上保存的书签、历史记录、密码和其他设置。</translation>
 <translation id="1098052486217676340">已完成</translation>
 <translation id="1121094540300013208">使用情况统计信息和崩溃报告</translation>
 <translation id="1137305377394488060">过去 1 小时</translation>
@@ -197,6 +196,7 @@
 <translation id="3716158070938632480">附近有设备在播报网页</translation>
 <translation id="3732088672634061408">无法检索兴趣相关数据。</translation>
 <translation id="3738139272394829648">触摸搜索</translation>
+<translation id="3744111561329211289">后台同步</translation>
 <translation id="3809549525127675114">“<ph name="VIDEO_TITLE" />”已播放完毕</translation>
 <translation id="3828029223314399057">搜索书签</translation>
 <translation id="3871171699884605801">无法清除未成年人帐户的浏览记录</translation>
@@ -285,6 +285,7 @@
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">允许</translation>
 <translation id="5040262127954254034">隐私设置</translation>
+<translation id="5056549851600133418">为您推荐的文章</translation>
 <translation id="5063480226653192405">使用情况</translation>
 <translation id="5100237604440890931">已收起 - 点击此处即可展开。</translation>
 <translation id="5107381076085091558">已暂停下载。</translation>
@@ -352,7 +353,6 @@
 <translation id="5712189971979076230">将发生崩溃时正在运行的文件、应用和服务的相关信息发送给 Google，协助我们确定应优先推出和改进哪些功能。
 
 使用情况统计信息包含偏好设置、按钮点击次数和内存使用情况之类的信息，但不包含网页网址或任何个人信息。崩溃报告包含发生崩溃时的系统信息，并可能包含网页网址或个人信息，具体取决于发生崩溃时的情况。</translation>
-<translation id="5715468759630044318">选择帐户</translation>
 <translation id="5719837394786370183">在您关闭所有隐身标签页后，您在这些标签页中查看的网页不会在浏览器历史记录、Cookie 存储区或搜索记录中留下任何痕迹。不过，您下载的所有文件或创建的书签均会保留下来。
 
 但是，这并不意味着您能完全隐身。即使您进入隐身模式，您的雇主、互联网服务提供商和您访问的网站仍然能看到您的浏览活动。</translation>
@@ -433,7 +433,6 @@
 <translation id="6699351163704950317">所有保存的网页</translation>
 <translation id="6710213216561001401">上一个</translation>
 <translation id="6720988912937197322">无法为保存的页面创建离线副本</translation>
-<translation id="6722992508235227685">您的书签、历史记录、密码和其他设置将同步到您的 Google 帐户，这样您便可以在自己的任意设备上使用这些内容。您可以在<ph name="BEGIN_LINK1" />设置<ph name="END_LINK1" />部分选择要同步的内容。</translation>
 <translation id="6738867403308150051">即将开始下载…</translation>
 <translation id="6762156594045689028">要更改此设置，请<ph name="BEGIN_LINK" />重置同步设置<ph name="END_LINK" /></translation>
 <translation id="6770414673596662518">Chrome 的安全浏览系统也将用于检测恶意网页，保护您免受网上诱骗、恶意软件和有害下载内容的侵害。</translation>
@@ -500,6 +499,7 @@
 <translation id="7501135638693251872">所有书签</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7562080006725997899">正在清除浏览数据</translation>
+<translation id="756809126120519699">已清除 Chrome 数据</translation>
 <translation id="7588950540487816470">实物网</translation>
 <translation id="7596558890252710462">操作系统</translation>
 <translation id="7599840151813361502">您不会因此而退出自己的 <ph name="BEGIN_LINK" />Google 帐户<ph name="END_LINK" /></translation>
@@ -543,7 +543,7 @@
 <translation id="8069239273282989646">压缩后</translation>
 <translation id="8073388330009372546">在新标签页中打开图片</translation>
 <translation id="8076014560081431679">已保存的网站设置将不会遭到删除，并且可能会反映您的浏览习惯。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
-<translation id="8084156870963450514">登录后即可通过任意设备查看您的所有在线内容</translation>
+<translation id="8087000398470557479">此内容来自 <ph name="DOMAIN_NAME" />（由 Google 提供）。</translation>
 <translation id="8098570222830891427">附近有设备在通过蓝牙播报网页。当您唤醒自己的设备时，Chrome 将会搜索并显示这些网页。这些网页将经由 Google 服务进行处理，以让网页搜索结果的展示更理想。
 
 您可以在 Chrome 设置部分控制实物网。</translation>
@@ -609,6 +609,7 @@
 <translation id="8931159598799892500">Chrome + 实物网</translation>
 <translation id="8941248009481596111">您与此网站建立的是私密连接。</translation>
 <translation id="8941729603749328384">www.example.com</translation>
+<translation id="8942627711005830162">在其他窗口中打开</translation>
 <translation id="8959122750345127698">无法访问 <ph name="URL" /></translation>
 <translation id="8979340629087822094">过去 1 天</translation>
 <translation id="8987061207681586800">定制自己专属的 Chrome</translation>

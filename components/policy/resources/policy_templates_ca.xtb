@@ -82,6 +82,7 @@
 <translation id="1359553908012294236">Si aquesta política s'estableix en "true" o no es configura, <ph name="PRODUCT_NAME" /> permetrà els inicis de sessió en mode de convidat. Aquests inicis són perfils de <ph name="PRODUCT_NAME" /> on totes les finestres utilitzen el mode d'incògnit.
 
       Si aquesta política s'estableix en "false", <ph name="PRODUCT_NAME" /> no permetrà que s'iniciïn els perfils de convidat.</translation>
+<translation id="1363275621236827384">Activa l'opció d'enviar consultes al servidor de Quirks per als perfils de maquinari</translation>
 <translation id="1397855852561539316">URL de suggeriments del proveïdor de cerca predeterminat</translation>
 <translation id="1398889361882383850">Permet definir si els llocs web poden executar connectors automàticament. Podeu permetre o denegar l'execució automàtica de connectors a tots els llocs web.
 
@@ -686,6 +687,13 @@ Si es defineix aquesta política, els usuaris no podran modificar-la ni sobreesc
 
 El valor de la política s'ha d'especificar en mil·lisegons. Els valors s'estableixen en un interval de 30 segons a 24 hores.</translation>
 <translation id="3528000905991875314">Activa les pàgines d'error alternatives</translation>
+<translation id="3538538104630456270">L'opció de configuració associada s'utilitzava abans d'introduir la reautenticació en veure contrasenyes. Des de llavors, aquesta opció i, per tant, aquesta política no afectaven el comportament de Chrome. Actualment, es comporta igual que si la política s'hagués establert per desactivar la visualització de contrasenyes en text no xifrat a la pàgina de configuració del gestor de contrasenyes. Això vol dir que la pàgina de configuració conté només un espai reservat i que Chrome només revela la contrasenya quan l'usuari fa clic a Mostra (i es torna a autenticar, si escau). A continuació teniu la descripció original de la política.
+
+          Controla si l'usuari pot mostrar les contrasenyes en text no xifrat al gestor de contrasenyes.
+
+          Si desactiveu aquesta opció de configuració, el gestor de contrasenyes no permetrà mostrar les contrasenyes emmagatzemades en text no xifrat a la finestra del gestor de contrasenyes.
+
+          Si activeu aquesta política o si no la definiu, els usuaris podran veure les seves contrasenyes en text no xifrat al gestor de contrasenyes.</translation>
 <translation id="3547954654003013442">Configuració del servidor intermediari</translation>
 <translation id="3570008976476035109">Bloqueja els connectors en aquests llocs</translation>
 <translation id="3591584750136265240">Configura el comportament de l'autenticació d'inici de sessió</translation>
@@ -1581,6 +1589,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 
       Si no configureu aquesta política, l'usuari pot modificar la llista d'aplicacions fixades a la barra d'execució ràpida.</translation>
 <translation id="7132877481099023201">URL als quals els dispositius de captura de vídeo podran accedir sense confirmació.</translation>
+<translation id="7167436895080860385">Permet que els usuaris mostrin les contrasenyes al gestor de contrasenyes (política obsoleta)</translation>
 <translation id="7173856672248996428">Perfil efímer</translation>
 <translation id="7187256234726597551">Si s'estableix el valor com a vertader, es permetrà el testimoni remot per al dispositiu i automàticament es crearà i es penjarà un certificat al servidor de gestió de dispositius.
 
@@ -1883,6 +1892,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="8197918588508433925">Aquesta política especifica les extensions permeses per utilitzar l'API de claus de plataformes empresarials chrome.enterprise.platformKeysPrivate.challengeUserKey() per als testimonis remots. Les extensions s'han d'afegir a aquesta llista perquè utilitzin l'API.
 
           Si alguna extensió no s'inclou a la llista o si no es defineix la llista, les crides a l'API fallaran i tornaran un codi d'error.</translation>
+<translation id="8214600119442850823">Configura el gestor de contrasenyes.</translation>
 <translation id="8244525275280476362">Retard màxim en l'obtenció després de la invalidació d'una política</translation>
 <translation id="8256688113167012935">Controla el nom del compte que <ph name="PRODUCT_OS_NAME" /> mostra a la pantalla d'inici de sessió per al compte local del dispositiu corresponent.
 
@@ -2061,6 +2071,11 @@ Aquesta política s'ignora en els comptes d'usuari normals.</translation>
 <translation id="8858642179038618439">Força el mode de seguretat de YouTube</translation>
 <translation id="8864975621965365890">Suprimeix l'avís de desactivació que apareix quan un lloc <ph name="PRODUCT_FRAME_NAME" /> renderitza un lloc.</translation>
 <translation id="8870318296973696995">Pàgina d'inici</translation>
+<translation id="8889588091638298603">Quirks Server proporciona fitxers de configuració específics de cada maquinari, com ara perfils de visualització ICC per ajustar el calibratge del monitor.
+
+      Si aquesta política s'estableix en "false", el dispositiu no prova de contactar amb Quirks Server per baixar els fitxers de configuració.
+
+      Si s'estableix en "true" o no s'estableix, <ph name="PRODUCT_OS_NAME" /> contacta automàticament amb el Quirks Server, baixa els fitxers de configuració, si estan disponibles, i els emmagatzema al dispositiu. Aquests fitxers es poden utilitzar, per exemple, per millorar la qualitat dels monitors connectats.</translation>
 <translation id="8905426178924715309">Aquesta política està obsoleta; substituïu-la per ForceGoogleSafeSearch i per ForceYouTubeSafetyMode. S'ignorarà si ForceGoogleSafeSearch o ForceYouTubeSafetyMode estan establertes.
 
       Força que les consultes de la Cerca web de Google es facin amb la funció SafeSearch activada i impedeix que els usuaris canviïn aquesta opció de configuració. Aquesta opció també força el mode de seguretat a YouTube.

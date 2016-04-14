@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="fi">
 <translation id="1091157412887719337">Tehtävä epäonnistui. Koneita ei ole käytettävissä.</translation>
+<translation id="1416550906796893042">Sovellusversio</translation>
 <translation id="2004526128230838685">Tehtävä epäonnistui. Tapahtui tuntematon virhe.</translation>
 <translation id="2023631438558435272">Tehtävä epäonnistui. Vastaus on virheellinen.</translation>
 <translation id="2353984724370197742">Tehtävä epäonnistui. Verkon pyyntö epäonnistui.</translation>
@@ -16,6 +17,7 @@
 <translation id="5860346505531085166">Tehtävä epäonnistui. Tilillä ei ole käyttöoikeutta.</translation>
 <translation id="704835510384979817">Tehtävä epäonnistui. Koneiden versiot eivät täsmää.</translation>
 <translation id="7536363920335771251">Yhteys katkaistiin. Syy: %1$s.</translation>
+<translation id="7596558890252710462">Käyttöjärjestelmä</translation>
 <translation id="7961542533680218955">Tehtävä onnistui.</translation>
 <translation id="8514856595257368555">Tunnus noudettu.</translation>
 </translationbundle>

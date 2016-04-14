@@ -165,6 +165,7 @@ US英語以外のキーボードを使用しているリモートパソコンで
 <translation id="4918086044614829423">承諾</translation>
 <translation id="492843737083352574">キーボードまたはマウスに関連した問題がある。</translation>
 <translation id="4973800994433240357">Chromoting ホスト インストーラをダウンロードすると、Google の<ph name="LINK_BEGIN" />利用規約<ph name="LINK_END" />に同意したことになります。</translation>
+<translation id="4985296110227979402">リモート接続に使用するパソコンを最初に設定しておく必要があります</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" />（オフライン）</translation>
 <translation id="5070121137485264635">リモート ホストで、サードパーティ ウェブサイトへの認証が求められています。続行するには、次のアドレスにアクセスできるように Chrome リモート デスクトップに追加の権限を与える必要があります:</translation>
 <translation id="5156271271724754543">両方のボックスに同じ PIN を入力してください。</translation>
@@ -174,6 +175,7 @@ US英語以外のキーボードを使用しているリモートパソコンで
 <translation id="5222676887888702881">ログアウト</translation>
 <translation id="5254120496627797685">このページを閉じると、Chrome リモート デスクトップ セッションが終了します。</translation>
 <translation id="5308380583665731573">接続</translation>
+<translation id="533625276787323658">接続先がありません</translation>
 <translation id="5363265567587775042">接続先のパソコンのユーザーに、[<ph name="SHARE" />] をクリックしてアクセスコードを付与してもらってください。</translation>
 <translation id="5379087427956679853">Chrome リモート デスクトップを使用すると、パソコンをウェブ経由で安全に共有できます。共有するには両方のユーザーが Chrome リモート デスクトップ アプリを実行している必要があります。このアプリは <ph name="URL" /> から入手できます。</translation>
 <translation id="5394895745784982830">Mac 版（OS X 10.6 以上）</translation>

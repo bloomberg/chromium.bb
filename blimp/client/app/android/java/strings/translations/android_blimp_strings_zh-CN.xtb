@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-CN">
 <translation id="1091157412887719337">无法获取任务，因为没有可用的引擎。</translation>
+<translation id="1416550906796893042">应用版本</translation>
 <translation id="2004526128230838685">无法获取任务，因为出现了未知问题。</translation>
 <translation id="2023631438558435272">无法获取任务，因为响应无效。</translation>
 <translation id="2353984724370197742">无法获取任务，因为网络请求失败。</translation>
@@ -16,6 +17,7 @@
 <translation id="5860346505531085166">无法获取任务，因为相关帐户无访问权限。</translation>
 <translation id="704835510384979817">无法获取任务，因为没有相符的引擎版本。</translation>
 <translation id="7536363920335771251">引擎已断开，原因：%1$s</translation>
+<translation id="7596558890252710462">操作系统</translation>
 <translation id="7961542533680218955">已成功获取任务。</translation>
 <translation id="8514856595257368555">已检索到令牌。</translation>
 </translationbundle>

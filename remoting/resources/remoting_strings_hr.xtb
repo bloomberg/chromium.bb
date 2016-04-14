@@ -165,6 +165,7 @@ površine Chrome</translation>
 <translation id="4918086044614829423">Prihvati</translation>
 <translation id="492843737083352574">Imam problema s tipkovnicom ili mišem.</translation>
 <translation id="4973800994433240357">Preuzimanjem programa za instalaciju hosta Chromotinga prihvaćate Googleove <ph name="LINK_BEGIN" />Uvjete pružanja usluge<ph name="LINK_END" />.</translation>
+<translation id="4985296110227979402">Prvo morate postaviti računalo za daljinski pristup</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (van mreže)</translation>
 <translation id="5070121137485264635">Udaljeni host zahtijeva autentifikaciju web-lokacije treće strane. Da biste nastavili, morate dati Udaljenoj radnoj površini Chrome dodatne dozvole za pristup ovoj adresi:</translation>
 <translation id="5156271271724754543">Unesite isti PIN u oba polja.</translation>
@@ -174,6 +175,7 @@ površine Chrome</translation>
 <translation id="5222676887888702881">Odjava</translation>
 <translation id="5254120496627797685">Ako napustite ovu stranicu, završit će vaša sesija u aplikaciji Udaljena radna površina Chrome.</translation>
 <translation id="5308380583665731573">Povežite se</translation>
+<translation id="533625276787323658">Nema dostupnih računala za povezivanje</translation>
 <translation id="5363265567587775042">Zamolite korisnika čijem računalu želite pristupiti da klikne "<ph name="SHARE" />" i da vam pristupni kôd.</translation>
 <translation id="5379087427956679853">Udaljena radna površina Chrome omogućuje vam da svoje računalo sigurno dijelite putem weba. Na računalima oba korisnika mora biti pokrenuta aplikacija Udaljena radna površina Chrome koju možete pronaći na web-lokaciji <ph name="URL" />.</translation>
 <translation id="5394895745784982830">Za Mac (OS X 10.6 i novije verzije)</translation>

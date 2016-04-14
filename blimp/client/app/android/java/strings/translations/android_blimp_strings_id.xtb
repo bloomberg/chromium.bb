@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="id">
 <translation id="1091157412887719337">Penugasan gagal.  Tidak ada mesin yang tersedia.</translation>
+<translation id="1416550906796893042">Versi aplikasi</translation>
 <translation id="2004526128230838685">Penugasan gagal.  Masalah tidak dikenal.</translation>
 <translation id="2023631438558435272">Penugasan gagal.  Tanggapan tidak valid.</translation>
 <translation id="2353984724370197742">Penugasan gagal.  Permintaan jaringan gagal.</translation>
@@ -16,6 +17,7 @@
 <translation id="5860346505531085166">Penugasan gagal.  Akun tidak memiliki akses.</translation>
 <translation id="704835510384979817">Penugasan gagal.  Tidak ada versi mesin yang sesuai.</translation>
 <translation id="7536363920335771251">Sambungan perangkat terputus, alasan: %1$s</translation>
+<translation id="7596558890252710462">Sistem operasi</translation>
 <translation id="7961542533680218955">Penugasan berhasil.</translation>
 <translation id="8514856595257368555">Token telah diambil.</translation>
 </translationbundle>

@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="fa">
 <translation id="1091157412887719337">واگذاری ناموفق بود. موتوری در دسترس نیست.</translation>
+<translation id="1416550906796893042">نسخه برنامه</translation>
 <translation id="2004526128230838685">واگذاری ناموفق بود. مشکل نامشخص.</translation>
 <translation id="2023631438558435272">واگذاری ناموفق بود. پاسخ نامعتبر.</translation>
 <translation id="2353984724370197742">واگذاری ناموفق بود. درخواست شبکه انجام نشد.</translation>
@@ -16,6 +17,7 @@
 <translation id="5860346505531085166">واگذاری ناموفق بود.  حساب دسترسی ندارد.</translation>
 <translation id="704835510384979817">واگذاری ناموفق بود.  نسخه موتور مطابقی وجود ندارد.</translation>
 <translation id="7536363920335771251">‏ارتباط موتور قطع شد، دلیل: %1$s</translation>
+<translation id="7596558890252710462">سیستم عامل</translation>
 <translation id="7961542533680218955">واگذاری با موفقیت انجام شد.</translation>
 <translation id="8514856595257368555">کد بازیابی شد.</translation>
 </translationbundle>

@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="uk">
 <translation id="1091157412887719337">Не вдалось отримати завдання. Немає доступних ресурсів.</translation>
+<translation id="1416550906796893042">Версія додатка</translation>
 <translation id="2004526128230838685">Не вдалось отримати завдання. Невідома проблема.</translation>
 <translation id="2023631438558435272">Не вдалось отримати завдання. Недійсна відповідь.</translation>
 <translation id="2353984724370197742">Не вдалось отримати завдання. Помилка мережі.</translation>
@@ -16,6 +17,7 @@
 <translation id="5860346505531085166">Не вдалось отримати завдання. Обліковий запис не має доступу.</translation>
 <translation id="704835510384979817">Не вдалось отримати завдання. Немає відповідної версії ресурсу.</translation>
 <translation id="7536363920335771251">Систему від’єднано. Причина: %1$s</translation>
+<translation id="7596558890252710462">Операційна система</translation>
 <translation id="7961542533680218955">Завдання отримано.</translation>
 <translation id="8514856595257368555">Маркер отримано.</translation>
 </translationbundle>

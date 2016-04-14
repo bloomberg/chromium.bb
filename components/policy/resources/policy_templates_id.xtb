@@ -82,6 +82,7 @@
 <translation id="1359553908012294236">Jika kebijakan ini disetel ke True atau tidak dikonfigurasi, <ph name="PRODUCT_NAME" /> akan mengaktifkan proses masuk tamu. Proses masuk tamu adalah profil <ph name="PRODUCT_NAME" /> dengan semua jendela dalam mode penyamaran.
 
       Jika kebijakan ini disetel ke False, <ph name="PRODUCT_NAME" /> tidak akan mengizinkan profil tamu dimulai.</translation>
+<translation id="1363275621236827384">Mengaktifkan kueri ke Quirks Server untuk profil perangkat keras</translation>
 <translation id="1397855852561539316">URL saran penyedia penelusuran default</translation>
 <translation id="1398889361882383850">Memungkinkan Anda untuk menyetel apakah situs web diizinkan untuk menjalankan plugin secara otomatis. Plugin yang berjalan secara otomatis dapat diizinkan untuk semua situs web atau ditolak untuk semua situs web.
 
@@ -685,6 +686,13 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 
       Nilai kebijakan harus ditentukan dalam milidetik. Nilai ditetapkan dengan rentang antara 30 detik hingga 24 jam.</translation>
 <translation id="3528000905991875314">Mengaktifkan laman kesalahan alternatif</translation>
+<translation id="3538538104630456270">Setelan yang dikaitkan telah digunakan sebelum autentikasi ulang lihat sandi diperkenalkan. Oleh karena itu, setelan dan kebijakan ini tidak berpengaruh pada perilaku Chrome. Perilaku Chrome saat ini sama dengan jika kebijakan ini disetel untuk menonaktifkan menampilkan sandi dalam teks yang jelas di laman setelan pengelola sandi. Artinya, laman setelan tersebut hanya berisi placeholder, dan Chrome hanya akan menampilkan sandi saat pengguna mengeklik "Tampilkan" (dan autentikasi ulang, jika berlaku). Deskripsi asli kebijakan ini tercantum di bawah.
+
+          Mengontrol apakah pengguna dapat menampilkan sandi dalam teks yang jelas di pengelola sandi atau tidak.
+
+          Jika Anda menonaktifkan setelan ini, pengelola sandi tidak mengizinkan penampilan sandi tersimpan dalam teks yang jelas di jendela pengelola sandi.
+
+          Jika Anda mengaktifkan atau tidak menyetel kebijakan ini, pengguna dapat melihat sandinya dalam teks yang jelas di pengelola sandi.</translation>
 <translation id="3547954654003013442">Setelan proxy</translation>
 <translation id="3570008976476035109">Mencekal plugin di situs ini</translation>
 <translation id="3591584750136265240">Mengonfigurasi perilaku autentikasi proses masuk</translation>
@@ -1582,6 +1590,7 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 
       Jika kebijakan ini dibiarkan tanpa disetel, pengguna dapat mengubah daftar aplikasi tersemat pada peluncur.</translation>
 <translation id="7132877481099023201">URL yang akan diberi akses ke perangkat perekam video tanpa peringatan</translation>
+<translation id="7167436895080860385">Mengizinkan pengguna menampilkan sandi di Pengelola Sandi (tak lagi digunakan)</translation>
 <translation id="7173856672248996428">Profil singkat</translation>
 <translation id="7187256234726597551">Jika true, pengesahan jarak jauh diizinkan untuk perangkat dan sertifikat akan otomatis dibuat serta diunggah ke Server Pengelolaan Perangkat.
 
@@ -1878,6 +1887,7 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 <translation id="8197918588508433925">Kebijakan ini menentukan ekstensi yang diizinkan untuk menggunakan API Kunci Platform Perusahaan chrome.enterprise.platformKeysPrivate.challengeUserKey() untuk pengesahan jarak jauh. Ekstensi harus ditambahkan ke daftar ini untuk menggunakan API.
 
           Jika ekstensi tidak ada dalam daftar, atau daftar tidak disetel, panggilan ke API akan gagal dengan suatu kode kesalahan.</translation>
+<translation id="8214600119442850823">Mengonfigurasi pengelola sandi.</translation>
 <translation id="8244525275280476362">Penundaan mengambil maksimum setelah kebijakan invalidasi</translation>
 <translation id="8256688113167012935">Mengontrol nama akun yang ditampilkan <ph name="PRODUCT_OS_NAME" /> di layar masuk untuk akun lokal perangkat yang sesuai.
 
@@ -2047,6 +2057,17 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 <translation id="8858642179038618439">Memaksakan Mode Perlindungan YouTube</translation>
 <translation id="8864975621965365890">Menimpa permintaan penghentian yang muncul saat situs dirender oleh <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="8870318296973696995">Beranda</translation>
+<translation id="8889588091638298603">Quirks Server menyediakan file konfigurasi khusus perangkat keras, seperti
+      profil tampilan ICC untuk menyesuaikan kalibrasi monitor.
+
+      Jika kebijakan ini disetel ke False, perangkat tidak akan mencoba
+      menghubungi Quirks Server untuk mengunduh file konfigurasi.
+
+      Jika kebijakan ini disetel ke True atau tidak dikonfigurasi,
+      <ph name="PRODUCT_OS_NAME" /> akan
+      otomatis menghubungi Quirks Server dan mengunduh file konfigurasi,
+      jika tersedia, dan menyimpannya di perangkat.  File tersebut dapat,
+      misalnya, digunakan untuk meningkatkan kualitas tampilan monitor yang terpasang.</translation>
 <translation id="8905426178924715309">Kebijakan ini tidak digunakan lagi, gunakan ForceGoogleSafeSearch dan ForceYouTubeSafetyMode sebagai gantinya. Kebijakan ini akan diabaikan jika kebijakan ForceGoogleSafeSearch atau ForceYouTubeSafetyMode disetel.
 
       Memaksa kueri di Google Penelusuran Web untuk dilakukan dengan TelusurAman yang diaktifkan, dan mencegah pengguna mengubah setelan ini. Setelan ini juga memaksa Mode Perlindungan di YouTube.

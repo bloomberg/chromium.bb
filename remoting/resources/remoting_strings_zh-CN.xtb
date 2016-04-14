@@ -165,6 +165,7 @@
 <translation id="4918086044614829423">接受</translation>
 <translation id="492843737083352574">我的键盘或鼠标无法正常使用。</translation>
 <translation id="4973800994433240357">下载 Chrome 远程访问主机安装程序，即表示您同意遵守 Google <ph name="LINK_BEGIN" />服务条款<ph name="LINK_END" />。</translation>
+<translation id="4985296110227979402">您需要先设置计算机，以便进行远程访问</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" />（离线）</translation>
 <translation id="5070121137485264635">远程主机要求您对第三方网站进行身份验证。要继续操作，您必须向 Chrome 远程桌面授予访问以下地址的额外权限：</translation>
 <translation id="5156271271724754543">请在两个框中输入相同的 PIN。</translation>
@@ -174,6 +175,7 @@
 <translation id="5222676887888702881">退出</translation>
 <translation id="5254120496627797685">如果您离开此页，那么您的 Chrome 远程桌面会话就会结束。</translation>
 <translation id="5308380583665731573">连接</translation>
+<translation id="533625276787323658">没有可连接到的计算机</translation>
 <translation id="5363265567587775042">请让您想访问其计算机的用户点击“<ph name="SHARE" />”，然后向您提供访问代码。</translation>
 <translation id="5379087427956679853">Chrome 远程桌面可让您通过网络安全地共享自己的计算机。双方用户必须同时运行 Chrome 远程桌面应用（下载地址为 <ph name="URL" />）。</translation>
 <translation id="5394895745784982830">适用于 Mac（OS X 10.6 及更高版本）</translation>

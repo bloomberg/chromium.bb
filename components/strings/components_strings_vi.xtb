@@ -39,7 +39,6 @@
 <translation id="1228893227497259893">Số nhận dạng tổ chức không đúng</translation>
 <translation id="1232569758102978740">Không tên</translation>
 <translation id="1254117744268754948">Chọn thư mục</translation>
-<translation id="1270699273812232624">Cho phép mục</translation>
 <translation id="1285320974508926690">Không bao giờ dịch trang web này</translation>
 <translation id="129553762522093515">Các tab đã đóng gần đây</translation>
 <translation id="1339601241726513588">Tên miền đăng ký:</translation>
@@ -86,7 +85,6 @@
 <translation id="1898423065542865115">Lọc</translation>
 <translation id="1911837502049945214"><ph name="HOST_NAME" /> không chấp nhận chứng chỉ đăng nhập của bạn hoặc chứng chỉ đăng nhập của bạn có thể đã hết hạn.</translation>
 <translation id="194030505837763158">Truy cập <ph name="LINK" /></translation>
-<translation id="1958820272620550857">Chặn các mục</translation>
 <translation id="1962204205936693436">Dấu trang của <ph name="DOMAIN" /></translation>
 <translation id="1973335181906896915">Lỗi nối tiếp hóa</translation>
 <translation id="1974060860693918893">Nâng cao</translation>
@@ -210,7 +208,6 @@
 <translation id="3105172416063519923">ID phần tử:</translation>
 <translation id="3109728660330352905">Bạn không có quyền xem trang này.</translation>
 <translation id="3118046075435288765">Máy chủ đã bất ngờ đóng kết nối.</translation>
-<translation id="31454997771848827">Miền nhóm</translation>
 <translation id="3145945101586104090">Không thể giải mã phản hồi</translation>
 <translation id="3147485256806412701">Trang web này đang sử dụng miền chung mới cấp cao nhất.</translation>
 <translation id="3150653042067488994">Lỗi máy chủ tạm thời</translation>
@@ -290,6 +287,7 @@
 <translation id="3788090790273268753">Chứng chỉ cho trang web này sẽ hết hạn vào năm 2016, đồng thời, chuỗi chứng chỉ này chứa một chứng chỉ đã ký bằng SHA-1.</translation>
 <translation id="382518646247711829">Nếu bạn sử dụng máy chủ proxy...</translation>
 <translation id="3828924085048779000">Không cho phép cụm mật khẩu trống.</translation>
+<translation id="3845539888601087042">Hiển thị lịch sử từ các thiết bị bạn đã đăng nhập. <ph name="BEGIN_LINK" />Tìm hiểu thêm<ph name="END_LINK" />.</translation>
 <translation id="385051799172605136">Quay lại</translation>
 <translation id="3858027520442213535">Cập nhật ngày và giờ</translation>
 <translation id="3884278016824448484">Số nhận dạng thiết bị xung đột</translation>
@@ -325,7 +323,6 @@
 <translation id="4258748452823770588">Chữ ký không hợp lệ</translation>
 <translation id="4268298190799576220">Chromium không thể xác minh thẻ của bạn vào lúc này. Vui lòng thử lại sau.</translation>
 <translation id="4269787794583293679">(Không có tên người dùng)</translation>
-<translation id="4278390842282768270">Được cho phép</translation>
 <translation id="4300246636397505754">Đề xuất chính</translation>
 <translation id="4304224509867189079">Đăng nhập</translation>
 <translation id="4325863107915753736">Không tìm được bài viết</translation>
@@ -410,6 +407,7 @@
 <translation id="5421136146218899937">Xóa dữ liệu duyệt web...</translation>
 <translation id="5430298929874300616">Xóa dấu trang</translation>
 <translation id="5431657950005405462">Không tìm thấy tệp của bạn</translation>
+<translation id="5435775191620395718">Hiển thị lịch sử từ thiết bị này. <ph name="BEGIN_LINK" />Tìm hiểu thêm<ph name="END_LINK" />.</translation>
 <translation id="5439770059721715174">Lỗi xác thực lược đồ tại "<ph name="ERROR_PATH" />": <ph name="ERROR" /></translation>
 <translation id="5447330194051379405">Hiển thị tất cả các trang đã lưu</translation>
 <translation id="5452270690849572955">Không thể tìm thấy trang <ph name="HOST_NAME" /> này</translation>
@@ -522,7 +520,6 @@
 <translation id="6753269504797312559">Giá trị chính sách</translation>
 <translation id="6757797048963528358">Thiết bị của bạn đã chuyển sang chế độ ngủ.</translation>
 <translation id="6781404225664080496">Yêu cầu tới URL này đã tạm thời bị chặn.</translation>
-<translation id="6800914069727136216">Trong gói nội dung</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6830600606572693159">Trang web tại <ph name="URL" /> hiện không có. Trang này có thể đã bị quá tải hoặc đang ngừng hoạt động để bảo trì.</translation>
 <translation id="6831043979455480757">Dịch</translation>
@@ -698,6 +695,7 @@ Lưu ý! Chế độ ẩn danh <ph name="SHORTCUT_KEY" /> có thể hữu ích v
 <translation id="8730621377337864115">Hoàn tất</translation>
 <translation id="8738058698779197622">Để thiết lập kết nối an toàn, bạn cần đặt thời gian đúng cho đồng hồ. Nguyên nhân là do chứng chỉ mà các trang web dùng để tự nhận dạng chỉ có hiệu lực trong khoảng thời gian cụ thể. Vì đồng hồ trên thiết bị của bạn không đúng nên Chromium không thể xác minh các chứng chỉ này.</translation>
 <translation id="8740359287975076522">Không thể tìm thấy &lt;abbr id="dnsDefinition"&gt;địa chỉ DNS&lt;/abbr&gt; của <ph name="HOST_NAME" />. Đang chẩn đoán sự cố.</translation>
+<translation id="8741995161408053644">Tài khoản Google có thể có các biểu mẫu lịch sử duyệt web khác tại <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="8790007591277257123">&amp;Làm lại xóa</translation>
 <translation id="8798099450830957504">Mặc định</translation>
 <translation id="8804164990146287819">Chính sách bảo mật</translation>

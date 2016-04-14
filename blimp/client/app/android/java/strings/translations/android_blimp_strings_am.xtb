@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="am">
 <translation id="1091157412887719337">ምደባ አልተሳካም። ምንም ፕሮግራም አይገኝም።</translation>
+<translation id="1416550906796893042">የመተግበሪያ ስሪት</translation>
 <translation id="2004526128230838685">ምደባ አልተሳካም። ያልታወቀ ችግር።</translation>
 <translation id="2023631438558435272">ምደባ አልተሳካም። ልክ ያልሆነ ምላሽ።</translation>
 <translation id="2353984724370197742">ምደባ አልተሳካም። የአውታረ መረብ ጥያቄ አልተሳካም።</translation>
@@ -16,6 +17,7 @@
 <translation id="5860346505531085166">ምደባ አልተሳካም። መለያ መዳረሻ የለውም።</translation>
 <translation id="704835510384979817">ምደባ አልተሳካም። ምንም ተዛማጅ የፕሮግራም ስሪት የለም።</translation>
 <translation id="7536363920335771251">የሞተር ግንኙነት ተቋርጧል፣ ምክንያት፦ %1$s</translation>
+<translation id="7596558890252710462">ስርዓተ ክወና</translation>
 <translation id="7961542533680218955">ምደባ ተሳክቷል።</translation>
 <translation id="8514856595257368555">ማስመሰያ ተገኝቷል።</translation>
 </translationbundle>

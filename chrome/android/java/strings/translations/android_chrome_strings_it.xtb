@@ -6,7 +6,6 @@
 <translation id="10614374240317010">Mai salvate</translation>
 <translation id="1061441684050139317">Chrome deve avere accesso al microfono per condividerla con questo sito.</translation>
 <translation id="1080790410959514870">Stai per uscire da un account gestito da <ph name="DOMAIN_NAME" />. Verranno eliminati i dati di Chrome memorizzati su questo dispositivo, ma i dati rimarranno nel tuo account Google.</translation>
-<translation id="1095407227123756519">Aggiungi un account per visualizzare i tuoi Preferiti, la cronologia, le password e altre impostazioni su tutti i tuoi dispositivi.</translation>
 <translation id="1098052486217676340">Terminata</translation>
 <translation id="1121094540300013208">Rapporti sull'utilizzo e sugli arresti anomali</translation>
 <translation id="1137305377394488060">ultima ora</translation>
@@ -354,7 +353,6 @@ Apri Chrome sul computer, apri il menu e seleziona "Accedi a Chrome…"</transla
 <translation id="5712189971979076230">Aiutaci a scegliere le funzioni e i miglioramenti a cui dare la priorità inviando a Google informazioni sui file, sulle applicazioni e sui servizi in esecuzione quando si verifica un arresto anomalo.
 
 Le statistiche sull'utilizzo includono informazioni quali preferenze, clic sui pulsanti e utilizzo della memoria. Non includono gli URL delle pagine web o le informazioni personali. I rapporti sugli arresti anomali contengono informazioni sul sistema al momento dell'arresto anomalo e potrebbero includere URL di pagine web o informazioni personali, in base alle attività in corso al momento dell'arresto.</translation>
-<translation id="5715468759630044318">Scegli account</translation>
 <translation id="5719837394786370183">Le pagine visualizzate nelle schede in incognito non vengono memorizzate nella cronologia del browser, nell'archivio di cookie o nella cronologia delle ricerche dopo aver chiuso tutte le schede. I file da te scaricati o i Preferiti da te creati vengono mantenuti.
 
 Tuttavia, le tue attività non sono invisibili. L'attivazione della modalità di navigazione in incognito non consente di nascondere la navigazione al tuo datore di lavoro, al tuo provider di servizi Internet o ai siti web da te visitati.</translation>
@@ -435,7 +433,6 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="6699351163704950317">Tutte le pagine salvate</translation>
 <translation id="6710213216561001401">Indietro</translation>
 <translation id="6720988912937197322">Pagina salvata non disponibile offline</translation>
-<translation id="6722992508235227685">I tuoi preferiti, la cronologia, le password e altre impostazioni verranno sincronizzati con il tuo account Google per consentirti di utilizzarli su tutti i tuoi dispositivi. Puoi scegliere quali dati sincronizzare nelle <ph name="BEGIN_LINK1" />Impostazioni<ph name="END_LINK1" />.</translation>
 <translation id="6738867403308150051">Download in corso…</translation>
 <translation id="6762156594045689028">Per modificare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincronizzazione<ph name="END_LINK" /></translation>
 <translation id="6770414673596662518">Il sistema Navigazione sicura di Chrome verrà utilizzato anche per rilevare pagine dannose e proteggerti da phishing, malware e download pericolosi.</translation>
@@ -546,7 +543,6 @@ Tuttavia, le tue attività non sono invisibili. L'attivazione della modalità di
 <translation id="8069239273282989646">Dopo la compressione</translation>
 <translation id="8073388330009372546">Immagine in nuova scheda</translation>
 <translation id="8076014560081431679">Le impostazioni del sito salvate non verranno eliminate e potrebbero rispecchiare le tue abitudini di navigazione. <ph name="BEGIN_LINK" />Ulteriori informazioni<ph name="END_LINK" /></translation>
-<translation id="8084156870963450514">Esegui l'accesso per accedere a tutti i tuoi contenuti web da qualsiasi dispositivo</translation>
 <translation id="8087000398470557479">Questi contenuti derivano da <ph name="DOMAIN_NAME" /> e sono offerti da Google.</translation>
 <translation id="8098570222830891427">Alcuni dispositivi nelle tue vicinanze stanno trasmettendo pagine web tramite Bluetooth. Chrome cerca pagine nelle vicinanze quando attivi il tuo dispositivo. Tali pagine passeranno attraverso un servizio di Google per migliorare la qualità dei risultati.
 

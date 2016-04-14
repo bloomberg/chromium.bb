@@ -36,7 +36,6 @@
 <translation id="1228893227497259893">Onjuiste entiteits-ID</translation>
 <translation id="1232569758102978740">Naamloos</translation>
 <translation id="1254117744268754948">Map kiezen</translation>
-<translation id="1270699273812232624">Items toestaan</translation>
 <translation id="1285320974508926690">Deze site nooit vertalen</translation>
 <translation id="129553762522093515">Recent gesloten</translation>
 <translation id="1339601241726513588">Inschrijvingsdomein:</translation>
@@ -83,7 +82,6 @@
 <translation id="1898423065542865115">Filteren</translation>
 <translation id="1911837502049945214"><ph name="HOST_NAME" /> heeft je inlogcertificaat niet geaccepteerd of je inlogcertificaat is mogelijk verlopen.</translation>
 <translation id="194030505837763158">Ga naar <ph name="LINK" /></translation>
-<translation id="1958820272620550857">Items blokkeren</translation>
 <translation id="1962204205936693436">Bladwijzers voor <ph name="DOMAIN" /></translation>
 <translation id="1973335181906896915">Serialisatiefout</translation>
 <translation id="1974060860693918893">Geavanceerd</translation>
@@ -200,7 +198,6 @@
 <translation id="3105172416063519923">Item-ID:</translation>
 <translation id="3109728660330352905">Je hebt geen toestemming om deze pagina te bekijken.</translation>
 <translation id="3118046075435288765">De server heeft de verbinding onverwacht verbroken.</translation>
-<translation id="31454997771848827">Domeinen groeperen</translation>
 <translation id="3145945101586104090">Kan reactie niet decoderen</translation>
 <translation id="3147485256806412701">Deze site gebruikt een nieuw algemeen hoofddomein.</translation>
 <translation id="3150653042067488994">Tijdelijke serverfout</translation>
@@ -276,6 +273,7 @@
 <translation id="3788090790273268753">Het certificaat voor deze site verloopt in 2016 en de certificaatketen bevat een certificaat dat is ondertekend met SHA-1.</translation>
 <translation id="382518646247711829">Als je een proxyserver gebruikt...</translation>
 <translation id="3828924085048779000">Een lege wachtwoordzin is niet toegestaan.</translation>
+<translation id="3845539888601087042">Geschiedenis van je ingelogde apparaten wordt weergegeven. <ph name="BEGIN_LINK" />Meer informatie<ph name="END_LINK" />.</translation>
 <translation id="385051799172605136">Vorige</translation>
 <translation id="3858027520442213535">Datum en tijd updaten</translation>
 <translation id="3884278016824448484">Conflicterende apparaat-ID's</translation>
@@ -311,7 +309,6 @@
 <translation id="4258748452823770588">Onjuiste handtekening</translation>
 <translation id="4268298190799576220">Chromium kan je kaart momenteel niet verifiëren. Probeer het later opnieuw.</translation>
 <translation id="4269787794583293679">(Geen gebruikersnaam)</translation>
-<translation id="4278390842282768270">Toegestaan</translation>
 <translation id="4300246636397505754">Bovenliggende suggesties</translation>
 <translation id="4304224509867189079">Inloggen</translation>
 <translation id="4325863107915753736">Kan artikel niet vinden</translation>
@@ -396,6 +393,7 @@
 <translation id="5421136146218899937">Browsegegevens wissen...</translation>
 <translation id="5430298929874300616">Bladwijzer verwijderen</translation>
 <translation id="5431657950005405462">Je bestand is niet gevonden</translation>
+<translation id="5435775191620395718">Geschiedenis van dit apparaat wordt weergegeven. <ph name="BEGIN_LINK" />Meer informatie<ph name="END_LINK" />.</translation>
 <translation id="5439770059721715174">Schemavalidatiefout op '<ph name="ERROR_PATH" />': <ph name="ERROR" /></translation>
 <translation id="5447330194051379405">Alle opgeslagen pagina's weergeven</translation>
 <translation id="5452270690849572955">Deze pagina op <ph name="HOST_NAME" /> kan niet worden gevonden</translation>
@@ -505,7 +503,6 @@
 <translation id="6753269504797312559">Beleidswaarde</translation>
 <translation id="6757797048963528358">De slaapstand van je apparaat is geactiveerd.</translation>
 <translation id="6781404225664080496">Verzoeken naar deze URL zijn tijdelijk afgebroken.</translation>
-<translation id="6800914069727136216">In inhoudspakket</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6830600606572693159">De webpagina op <ph name="URL" /> is momenteel niet beschikbaar. De pagina bevat wellicht teveel verkeer of is offline wegens onderhoud.</translation>
 <translation id="6831043979455480757">Vertalen</translation>
@@ -667,6 +664,7 @@ De volgende keer kan het handig zijn de incognitomodus <ph name="SHORTCUT_KEY" /
 <translation id="8730621377337864115">Gereed</translation>
 <translation id="8738058698779197622">Als je een veilige verbinding tot stand wilt brengen, moet je klok goed zijn ingesteld. Dit moet omdat de certificaten die deze websites gebruiken om zichzelf te identificeren, slechts gedurende bepaalde perioden geldig zijn. Aangezien de klok van je apparaat niet goed is ingesteld, kan Chromium deze certificaten niet verifiëren.</translation>
 <translation id="8740359287975076522">Het &lt;abbr id="dnsDefinition"&gt;DNS-adres&lt;/abbr&gt; van <ph name="HOST_NAME" /> kan niet worden gevonden. Er wordt een diagnose van het probleem uitgevoerd.</translation>
+<translation id="8741995161408053644">Voor je Google-account kunnen andere vormen van browsegeschiedenis beschikbaar zijn via <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="8790007591277257123">&amp;Opnieuw verwijderen</translation>
 <translation id="8798099450830957504">Standaard</translation>
 <translation id="8804164990146287819">Privacybeleid</translation>

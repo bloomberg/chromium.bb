@@ -97,6 +97,7 @@
 <translation id="1359553908012294236">Om den här principen är inställd på sant, eller om den inte är konfigurerad, aktiveras gästinloggning i <ph name="PRODUCT_NAME" />. Gästinloggningar är profiler i <ph name="PRODUCT_NAME" /> där alla fönster öppnas i inkognitoläge.
 
       Om principen är inställd på falskt tillåts ingen användning av gästprofiler i <ph name="PRODUCT_NAME" />.</translation>
+<translation id="1363275621236827384">Aktivera frågor till Quirks-servern (servern för maskinvaruspecifik information) om maskinvaruprofiler</translation>
 <translation id="1397855852561539316">Standardsökleverantörens förslagsadress</translation>
 <translation id="1398889361882383850">Gör det möjligt att ange om webbplatser får köra plugin-program automatiskt. Det går att tillåta eller neka att plugin-program körs automatiskt för alla webbplatser.
 
@@ -754,6 +755,13 @@
 
       Policyvärdet ska anges i millisekunder. Värden anges inom ett intervall från 30 sekunder till 24 timmar.</translation>
 <translation id="3528000905991875314">Aktivera alternativa felsidor</translation>
+<translation id="3538538104630456270">Inställningen som hör ihop med den här principen användes innan vi införde systemet med att göra om autentiseringen efter att lösenorden visats. Sedan dess har inställningen – och därmed principen – inte haft någon inverkan på hur Chrome fungerar. Nu fungerar Chrome som om principen vore inställd på att inaktivera visning i klartext av lösenord på lösenordshanterarens inställningssida. Det innebär att det bara finns en platshållare på inställningssidan, och lösenordet visas bara om användaren klickar på Visa (och gör om autentiseringen i tillämpliga fall). Den ursprungliga beskrivningen av principen följer nedan.
+
+          Styr om användaren kan visa lösenord i klartext i lösenordshanteraren.
+
+          Om du inaktiverar den här inställningen går det inte att visa sparade lösenord i klartext i lösenordshanteraren.
+
+          Om du aktiverar principen eller om den inte konfigureras kan användarnas lösenord visas i klartext i lösenordshanteraren.</translation>
 <translation id="3547954654003013442">Proxyinställningar</translation>
 <translation id="3570008976476035109">Blockera plugin-program för dessa webbplatser</translation>
 <translation id="3591584750136265240">Konfigurera vad som ska göras vid inloggningsautentisering</translation>
@@ -1756,6 +1764,7 @@
 
       Om den här policyn inte ställs in kan användaren ändra listan med fasta appar i startfältet.</translation>
 <translation id="7132877481099023201">Webbadresser som ska beviljas åtkomst till videoinspelningsenheter utan meddelande</translation>
+<translation id="7167436895080860385">Tillåt att användarnas lösenord visas i lösenordshanteraren (utfasad)</translation>
 <translation id="7173856672248996428">Kortlivad profil</translation>
 <translation id="7187256234726597551">Om detta är sant är vidimering på distans tillåtet för enheten och ett certifikat genereras automatiskt. Det laddas upp till enhetshanteringsservern.
 
@@ -2083,6 +2092,7 @@
 <translation id="8197918588508433925">Policyn specificerar vilka tillägg som får använda API:et för Enterprise Platform Keys – chrome.enterprise.platformKeysPrivate.challengeUserKey() – för fjärrattestering. Tillägg måste anges på den här listan om de ska kunna använda API:et.
 
           Om ett tillägg inte finns med på listan, eller om listan inte har fastställts, kommer anslutningen till API:et att misslyckas och en felkod att visas.</translation>
+<translation id="8214600119442850823">Konfigurerar lösenordshanteraren.</translation>
 <translation id="8244525275280476362">Längsta fördröjning av hämtning efter en ogiltigförklarad policy</translation>
 <translation id="8256688113167012935">Kontrollerar hur kontonamnet <ph name="PRODUCT_OS_NAME" /> visas på inloggningssidan för motsvarande lokala konto på enheten.
 
@@ -2278,6 +2288,17 @@
 <translation id="8858642179038618439">Tvinga fram Säkert läge på YouTube</translation>
 <translation id="8864975621965365890">Ser till att avvisningsmeddelandet som visas när en webbplats renderas av <ph name="PRODUCT_FRAME_NAME" /> inte visas.</translation>
 <translation id="8870318296973696995">Startsida</translation>
+<translation id="8889588091638298603">Quirks-servern tillhandahåller maskinvaruspecifika konfigurationsfiler, t.ex.
+      ICC-bildskärmsprofiler som används för färgkalibrering av skärmen.
+
+      När principen är inställd på falskt försöker enheten inte kontakta
+      Quirks-servern för att ladda ned konfigurationsfiler.
+
+      Om principen är inställd på sant eller om den inte har konfigurerats
+      kommer <ph name="PRODUCT_OS_NAME" />
+      automatiskt att kontakta Quirks-servern och ladda ned konfigurationsfiler
+      (i mån av tillgång) och spara dem på enheten. Sådana filer kan till
+      exempel användas för att förbättra visningskvaliteten på anslutna skärmar.</translation>
 <translation id="8905426178924715309">Den här principen har fasats ut. Använd ForceGoogleSafeSearch och ForceYouTubeSafetyMode i stället. Principen ignoreras om antingen ForceGoogleSafeSearch eller ForceYouTubeSafetyMode har angetts.
 
       Sökfrågor i Googles webbsökning görs obligatoriskt med SafeSearch aktiverat och användarna förhindras att ändra inställningen. Med den här inställningen blir även Säkert läge obligatoriskt på YouTube.

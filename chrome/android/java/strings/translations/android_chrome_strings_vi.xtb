@@ -6,7 +6,6 @@
 <translation id="10614374240317010">Không bao giờ được lưu</translation>
 <translation id="1061441684050139317">Chrome cần quyền truy cập micrô để chia sẻ micrô với trang web này.</translation>
 <translation id="1080790410959514870">Bạn đang đăng xuất tài khoản do <ph name="DOMAIN_NAME" /> quản lý. Thao tác này sẽ xóa dữ liệu Chrome được lưu trữ trên thiết bị này nhưng dữ liệu sẽ vẫn còn trong tài khoản Google của bạn.</translation>
-<translation id="1095407227123756519">Thêm tài khoản để nhận dấu trang, lịch sử, mật khẩu và các cài đặt khác trên tất cả các thiết bị của bạn.</translation>
 <translation id="1098052486217676340">Đã hoàn thành</translation>
 <translation id="1121094540300013208">Báo cáo sử dụng và sự cố</translation>
 <translation id="1137305377394488060">giờ trước</translation>
@@ -197,6 +196,7 @@ Bạn đang đăng nhập bằng tài khoản được quản lý và cung cấp
 <translation id="3716158070938632480">Các trang web lân cận</translation>
 <translation id="3732088672634061408">Không thể truy xuất sở thích.</translation>
 <translation id="3738139272394829648">Chạm để tìm kiếm</translation>
+<translation id="3744111561329211289">Đồng bộ hóa dưới nền</translation>
 <translation id="3809549525127675114">Đã phát xong “<ph name="VIDEO_TITLE" />”</translation>
 <translation id="3828029223314399057">Tìm kiếm dấu trang</translation>
 <translation id="3871171699884605801">Không thể xóa lịch sử duyệt web bằng tài khoản dành cho trẻ em</translation>
@@ -285,6 +285,7 @@ Bạn chỉ cần mở Chrome trên máy tính của mình, chuyển tới menu 
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">Cho phép</translation>
 <translation id="5040262127954254034">Bảo mật</translation>
+<translation id="5056549851600133418">Bài viết dành cho bạn</translation>
 <translation id="5063480226653192405">Sử dụng</translation>
 <translation id="5100237604440890931">Đã thu gọn - nhấp để mở rộng.</translation>
 <translation id="5107381076085091558">Đã tạm dừng tải xuống.</translation>
@@ -352,7 +353,6 @@ Bạn chỉ cần mở Chrome trên máy tính của mình, chuyển tới menu 
 <translation id="5712189971979076230">Giúp chúng tôi ưu tiên các tính năng và cải tiến mà chúng tôi nên giải quyết bằng cách gửi cho Google thông tin về các tệp, ứng dụng và dịch vụ đang chạy bất cứ khi nào bạn gặp sự cố.
 
 Số liệu thống kê sử dụng bao gồm thông tin chẳng hạn như tùy chọn, số lần nhấp nút và mức sử dụng bộ nhớ. Số liệu này không bao gồm URL trang web hoặc bất kỳ thông tin cá nhân nào. Báo cáo sự cố chứa thông tin hệ thống tại thời điểm xảy ra sự cố và có thể bao gồm URL của trang web hoặc thông tin cá nhân tùy thuộc vào hiện tượng tại thời điểm xảy ra sự cố.</translation>
-<translation id="5715468759630044318">Chọn tài khoản</translation>
 <translation id="5719837394786370183">Trang mà bạn xem ở tab ẩn danh sẽ không bị lưu lại trong lịch sử của trình duyệt, kho cookie hoặc lịch sử tìm kiếm sau khi bạn đóng tất cả tab ẩn danh của bạn. Mọi tệp bạn tải xuống hoặc dấu trang bạn tạo sẽ được giữ nguyên.
 
 Tuy nhiên, bạn vẫn hiển thị. Truy cập ẩn danh sẽ không ẩn thao tác duyệt của bạn khỏi chủ lao động, nhà cung cấp dịch vụ Internet hoặc trang web bạn truy cập.</translation>
@@ -433,7 +433,6 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="6699351163704950317">Tất cả các trang đã lưu</translation>
 <translation id="6710213216561001401">Trước đó</translation>
 <translation id="6720988912937197322">Trang đã lưu không khả dụng khi ngoại tuyến</translation>
-<translation id="6722992508235227685">Dấu trang, lịch sử, mật khẩu và các cài đặt khác của bạn sẽ được đồng bộ hóa với Tài khoản Google để bạn có thể sử dụng trên tất cả thiết bị. Bạn có thể chọn nội dung cần đồng bộ hóa trong <ph name="BEGIN_LINK1" />Cài đặt<ph name="END_LINK1" />.</translation>
 <translation id="6738867403308150051">Đang tải xuống...</translation>
 <translation id="6762156594045689028">Để thay đổi cài đặt này, hãy <ph name="BEGIN_LINK" />đặt lại đồng bộ hóa<ph name="END_LINK" /></translation>
 <translation id="6770414673596662518">Hệ thống duyệt web an toàn của Chrome cũng sẽ được sử dụng để phát hiện trang độc hại và bảo vệ bạn khỏi lừa đảo, phần mềm độc hại và nội dung tải xuống có hại.</translation>
@@ -500,6 +499,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="7501135638693251872">Tất cả dấu trang</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7562080006725997899">Xóa dữ liệu duyệt web</translation>
+<translation id="756809126120519699">Đã xóa dữ liệu Chrome</translation>
 <translation id="7588950540487816470">Web trong cuộc sống</translation>
 <translation id="7596558890252710462">Hệ điều hành</translation>
 <translation id="7599840151813361502">Bạn sẽ không bị đăng xuất khỏi <ph name="BEGIN_LINK" />Tài khoản Google<ph name="END_LINK" /> của mình</translation>
@@ -543,7 +543,7 @@ Tuy nhiên, bạn không ẩn. Việc chuyển sang chế độ ẩn danh sẽ 
 <translation id="8069239273282989646">Sau khi nén</translation>
 <translation id="8073388330009372546">Mở ảnh trong tab mới</translation>
 <translation id="8076014560081431679">Cài đặt trang web đã lưu sẽ không bị xóa và có thể phản ánh thói quen duyệt web của bạn. <ph name="BEGIN_LINK" />Tìm hiểu thêm<ph name="END_LINK" /></translation>
-<translation id="8084156870963450514">Đăng nhập để truy cập tất cả nội dung trên trang web của bạn từ mọi thiết bị</translation>
+<translation id="8087000398470557479">Nội dung này đến từ <ph name="DOMAIN_NAME" />, do Google phân phối.</translation>
 <translation id="8098570222830891427">Các thiết bị lân cận mà bạn đang truyền trang web qua Bluetooth. Chrome sẽ quét tìm các trang và hiển thị chúng khi bạn khởi động thiết bị của mình. Các trang này sẽ được chuyển tới một dịch vụ của Google để cải thiện chất lượng của kết quả trang.
 
 Bạn có thể kiểm soát cài đặt Web trong cuộc sống trên Chrome.</translation>
@@ -609,6 +609,7 @@ Bạn có thể kiểm soát cài đặt Web trong cuộc sống trên Chrome.</
 <translation id="8931159598799892500">Chrome + Web trong cuộc sống</translation>
 <translation id="8941248009481596111">Kết nối của bạn tới trang web này ở chế độ riêng tư.</translation>
 <translation id="8941729603749328384">www.example.com</translation>
+<translation id="8942627711005830162">Mở trong cửa sổ khác</translation>
 <translation id="8959122750345127698">Không thể tiếp cận điều hướng: <ph name="URL" /></translation>
 <translation id="8979340629087822094">ngày trước</translation>
 <translation id="8987061207681586800">Tùy chỉnh riêng Chrome</translation>

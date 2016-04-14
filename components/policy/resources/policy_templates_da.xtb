@@ -82,6 +82,7 @@
 <translation id="1359553908012294236">Hvis denne politik er angivet til sand eller ikke er konfigureret, aktiverer <ph name="PRODUCT_NAME" /> gæstelogins. Gæstelogins er <ph name="PRODUCT_NAME" />-profiler, hvor alle vinduer er i inkognitotilstand.
 
       Hvis denne politik er angivet til falsk, tillader <ph name="PRODUCT_NAME" /> ikke, at der startes gæsteprofiler.</translation>
+<translation id="1363275621236827384">Aktivér forespørgsler til Quirks-serveren om hardwareprofiler</translation>
 <translation id="1397855852561539316">Foreslået webadresse fra standardsøgemaskinen</translation>
 <translation id="1398889361882383850">Giver dig mulighed for at angive, om websites automatisk har tilladelse til at køre plugins. Plugins, der kører automatisk, kan enten tillades eller nægtes for alle websites.
 
@@ -688,6 +689,13 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 
       Politikkens værdi skal angives i millisekunder. Værdierne fastgøres til et interval fra 30 sekunder til 24 timer.</translation>
 <translation id="3528000905991875314">Aktiver alternative fejlsider</translation>
+<translation id="3538538104630456270">Den tilknyttede indstilling blev brugt før ny godkendelse ved visning af adgangskoder blev indført. Siden da har indstillingen og dermed denne politik ikke påvirket Chromes adfærd. Chromes nuværende adfærd er nu den samme, som hvis politikken var konfigureret til at deaktivere visning af adgangskoder i tydelig tekst på siden med indstillinger for adgangskodeadministratoren. Det betyder, at siden med indstillinger kun indeholder en pladsholder, og Chrome viser kun adgangskoden, når brugeren klikker på "Vis" (og ny godkendelse, hvis det er relevant). Den oprindelige beskrivelse af politikken er angivet nedenfor.
+
+          Kontrollerer, om brugeren kan se adgangskoder i tydelig tekst i adgangskodeadministratoren.
+
+          Hvis du deaktiverer denne indstilling, tillader adgangskodeadministratoren ikke visning af gemte adgangskoder i tydelig tekst i vinduet for adgangskodeadministratoren.
+
+          Hvis du aktiverer eller ikke angiver denne politik, kan brugerne se deres adgangskoder i tydelig tekst i adgangskodeadministratoren.</translation>
 <translation id="3547954654003013442">Proxyindstillinger</translation>
 <translation id="3570008976476035109">Bloker plugins på disse websites</translation>
 <translation id="3591584750136265240">Konfigurer adfærden for logingodkendelse</translation>
@@ -1591,6 +1599,7 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 
       Hvis politikken ikke er angivet, kan brugeren ændre listen over fastgjorte apps på applikationslisten.</translation>
 <translation id="7132877481099023201">Webadresser, der får adgang til videooptagelsesenheder, uden at du skal give tilladelse hertil.</translation>
+<translation id="7167436895080860385">Tillad, at brugerne kan se adgangskoder i adgangskodeadministratoren</translation>
 <translation id="7173856672248996428">Efemerisk profil</translation>
 <translation id="7187256234726597551">Hvis den er indstillet til sand, er fjernattestering tilladt for enheden, og der genereres og uploades automatisk et certifikat til Device Management Server.
 
@@ -1891,6 +1900,7 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 <translation id="8197918588508433925">Denne politik angiver de tilladte udvidelser til brug af Enterprise Platform Keys API chrome.enterprise.platformKeysPrivate.challengeUserKey() til fjernattestering. Udvidelser skal føjes til denne liste for at kunne anvende API'en
 
           Hvis en udvidelse ikke findes på listen, eller listen ikke er angivet, mislykkes kaldet til API'en med en fejlkode.</translation>
+<translation id="8214600119442850823">Konfigurerer adgangskodeadministratoren.</translation>
 <translation id="8244525275280476362">Maksimal henteforsinkelse efter ugyldiggørelse af en politik</translation>
 <translation id="8256688113167012935">Styrer det kontonavn, som <ph name="PRODUCT_OS_NAME" /> viser på loginskærmen for den tilsvarende enhedslokale konto.
 
@@ -2069,6 +2079,15 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 <translation id="8858642179038618439">Gennemtving Beskyttet tilstand på YouTube</translation>
 <translation id="8864975621965365890">Undertrykker opfordringen til afvisning, som vises, når et website gengives af <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="8870318296973696995">Startside</translation>
+<translation id="8889588091638298603">Quirks-serveren leverer hardwarespecifikke konfigurationsfiler, som f.eks. ICC-profiler til visning, til justering af skærmkalibrering.
+
+      Når denne politik er angivet som falsk, forsøger enheden ikke at kontakte Quirks-serveren for at downloade konfigurationsfiler.
+
+      Hvis denne politik er angivet som sand eller ikke er konfigureret,
+      kontakter <ph name="PRODUCT_OS_NAME" />
+      automatisk Quirks-serveren og downloader konfigurationsfiler,
+      hvis de er tilgængelige, som derefter gemmes på enheden.  Sådanne filer
+      kan f.eks. anvendes til at forbedre kvaliteten af visningen af tilsluttede skærme.</translation>
 <translation id="8905426178924715309">Denne politik er udfaset. Brug ForceGoogleSafeSearch og ForceYouTubeSafetyMode i stedet. Denne politik ignoreres, hvis en af politikkerne ForceGoogleSafeSearch eller ForceYouTubeSafetyMode er angivet.
 
       Gennemtvinger, at forespørgsler i Google Websøgning udføres med Beskyttet søgning slået til, og forhindrer brugere i at ændre denne indstilling. Denne indstilling gennemtvinger også Beskyttet tilstand på YouTube.

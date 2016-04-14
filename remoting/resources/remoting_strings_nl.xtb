@@ -165,6 +165,7 @@ Desktop-host</translation>
 <translation id="4918086044614829423">Accepteren</translation>
 <translation id="492843737083352574">Ik ondervind problemen met mijn toetsenbord of muis.</translation>
 <translation id="4973800994433240357">Door het installatieprogramma voor de Chromoting-host te downloaden, ga je akkoord met de <ph name="LINK_BEGIN" />Servicevoorwaarden<ph name="LINK_END" /> van Google.</translation>
+<translation id="4985296110227979402">Je moet eerst je computer instellen voor externe toegang</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (offline)</translation>
 <translation id="5070121137485264635">De externe host vereist dat je op een website van derden wordt geverifieerd. Als je wilt doorgaan, moet je Chrome Remote Desktop aanvullende machtigingen geven om toegang tot dit adres te krijgen:</translation>
 <translation id="5156271271724754543">Geef dezelfde pincode in beide vakken op.</translation>
@@ -174,6 +175,7 @@ Desktop-host</translation>
 <translation id="5222676887888702881">Uitloggen</translation>
 <translation id="5254120496627797685">Als je deze pagina verlaat, wordt je Chrome Remote Desktop-sessie beëindigd.</translation>
 <translation id="5308380583665731573">Verbinding maken</translation>
+<translation id="533625276787323658">Er is geen computer om verbinding mee te maken</translation>
 <translation id="5363265567587775042">Vraag de gebruiker tot wiens computer je toegang wilt hebben, op <ph name="SHARE" /> te klikken en je de toegangscode te geven.</translation>
 <translation id="5379087427956679853">Met Chrome Remote Desktop kun je je computer veilig delen via internet. Beide gebruikers moeten hiervoor de app Chrome Remote Desktop uitvoeren, die beschikbaar is op <ph name="URL" />.</translation>
 <translation id="5394895745784982830">Voor Mac (OS X 10.6 en hoger)</translation>

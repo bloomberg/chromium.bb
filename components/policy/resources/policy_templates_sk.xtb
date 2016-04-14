@@ -96,6 +96,7 @@
 <translation id="1359553908012294236">Ak je toto pravidlo nastavené na možnosť True alebo nie je nakonfigurované, prehliadač <ph name="PRODUCT_NAME" /> povolí prihlasovanie hostí. Prihlásenia hostí sú profily prehliadača <ph name="PRODUCT_NAME" />, v ktorých sú všetky okná v režime inkognito.
 
       Ak je toto pravidlo nastavené na možnosť False, prehliadač <ph name="PRODUCT_NAME" /> nepovolí spustenie profilov hostí.</translation>
+<translation id="1363275621236827384">Povoľte dopyty na serveri Quirks pre hardvérové profily</translation>
 <translation id="1397855852561539316">Webová adresa návrhu predvoleného poskytovateľa vyhľadávania</translation>
 <translation id="1398889361882383850">Umožňuje nastaviť, či môžu webové stránky automaticky spúšťať doplnky. Automatické spúšťanie doplnkov môže byť pre všetky webové stránky povolené alebo zakázané.
 
@@ -746,6 +747,14 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 
       Hodnota pravidla by mala byť uvedená v milisekundách. Hodnoty musia byť v rozsahu od 30 sekúnd do 24 hodín.</translation>
 <translation id="3528000905991875314">Povoliť alternatívne chybové stránky</translation>
+<translation id="3538538104630456270">Toto súvisiace nastavenie sa používalo predtým, ako bolo prestavené opätovné overenie pri zobrazovaní hesiel. Odvtedy nemalo toto nastavenie, a teda ani toto pravidlo, žiadny vplyv na správanie Chromu. Aktuálne správanie Chromu je teraz rovnaké, ako keby bolo toto pravidlo nastavené na možnosť, ktorá zakazuje zobrazovanie hesiel formou čitateľného textu na stránke s nastaveniami správcu hesiel. Znamená to, že stránka s nastaveniami obsahuje iba zástupný symbol a Chrome zobrazí heslo iba po kliknutí na možnosť Zobraziť (a po opätovnom overení, ak ho používate). Pôvodný popis tohto pravidla je uvedený nižšie.
+
+          Určuje, či môžu používatelia zobraziť heslá v správcovi hesiel formou čitateľného textu.
+
+          
+Ak toto nastavenie zakážete, v okne správcu hesiel nebude možné zobraziť uložené heslá formou čitateľného textu.
+
+          Ak toto nastavenie povolíte alebo ho nenastavíte, používatelia budú môcť v správcovi hesiel zobraziť uložené heslá formou čitateľného textu.</translation>
 <translation id="3547954654003013442">Nastavenia servera proxy</translation>
 <translation id="3570008976476035109">Blokovať doplnky na týchto stránkach</translation>
 <translation id="3591584750136265240">Konfigurácia správania pri overovaní prihlasovacích údajov</translation>
@@ -1738,6 +1747,7 @@ Pozrite si tiež pravidlo RemoteAccessHostClientDomain.</translation>
 
       Ak toto pravidlo nastavené nie je, používateľ zoznam aplikácií v spúšťači zmeniť môže.</translation>
 <translation id="7132877481099023201">Webové adresy, ktorým bude udelený prístup k zariadeniam na zaznamenávanie videa bez zobrazenia výzvy</translation>
+<translation id="7167436895080860385">Povoliť používateľom zobraziť heslá v Správcovi hesiel (podpora bola ukončená)</translation>
 <translation id="7173856672248996428">Efemérny profil</translation>
 <translation id="7187256234726597551">Ak je toto pravidlo nastavené na hodnotu true, pre zariadenia sa povolí vzdialené overenie a certifikát sa automaticky vygeneruje a odovzdá na server na správu zariadení.
 
@@ -2059,6 +2069,7 @@ Pozrite si tiež pravidlo RemoteAccessHostClientDomain.</translation>
 <translation id="8197918588508433925">Toto pravidlo určuje, pre ktoré rozšírenia bude povolené vzdialené prihlásenie pomocou metódy chrome.enterprise.platformKeysPrivate.challengeUserKey() rozhrania Enterprise Platform Keys API. Aby mohli rozšírenia používať toto rozhranie API, musia byť pridané do tohto zoznamu.
 
           Ak sa rozšírenie na zozname nenachádza alebo zoznam nie je vytvorený, volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
+<translation id="8214600119442850823">Umožňuje konfiguráciu správcu hesiel.</translation>
 <translation id="8244525275280476362">Maximálne oneskorenie načítania po zrušení platnosti pravidla</translation>
 <translation id="8256688113167012935">Ovláda názov účtu, ktorý systém <ph name="PRODUCT_OS_NAME" /> zobrazí na obrazovke prihlásenia pre zodpovedajúci miestny účet na zariadení.
 
@@ -2236,6 +2247,17 @@ Odporúčaný spôsob nastavenia pravidiel v systéme Windows je prostredníctv
 <translation id="8858642179038618439">Vynútenie Bezpečnostného režimu v službe YouTube</translation>
 <translation id="8864975621965365890">Potlačí výzvu o zamietnutie, ktorá sa zobrazí pri vykreslení stránky rámcom <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="8870318296973696995">Domovská stránka</translation>
+<translation id="8889588091638298603">Server Quirks poskytuje konfiguračné súbory pre konkrétny hardvér, ako
+      napríklad profily obrazoviek ICC na úpravu kalibrácie monitorov.
+
+      Keď toto pravidlo nastavíte na možnosť False, zariadenie sa nepokúsi
+      kontaktovať server Quirks a stiahnuť konfiguračné súbory.
+
+      Ak toto pravidlo nastavíte na možnosť True alebo ho nenakonfigurujete,
+      systém <ph name="PRODUCT_OS_NAME" />
+      automaticky kontaktuje server Quirks a stiahne konfiguračné súbory,
+      ak budú k dispozícii, a uloží ich na zariadení. Tieto súbory je možné
+      použiť napríklad na vylepšenie kvality zobrazenia na pripojených monitoroch.</translation>
 <translation id="8905426178924715309">Podpora tohto pravidla je ukončená. Použite namiesto neho pravidlá ForceGoogleSafeSearch a ForceYouTubeSafetyMode. Ak nastavíte pravidlo ForceGoogleSafeSearch alebo ForceYouTubeSafetyMode, pôvodné pravidlo sa bude ignorovať.
 
       Vynucuje vyhľadávanie dopytov vo Vyhľadávaní Google na webe pomocou aktívneho Bezpečného vyhľadávania a zabraňuje používateľom toto nastavenie zmeniť. Toto nastavenie tiež vynucuje použitie Bezpečného režimu v službe YouTube.

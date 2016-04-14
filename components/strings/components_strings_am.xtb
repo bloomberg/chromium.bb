@@ -39,7 +39,6 @@
 <translation id="1228893227497259893">የተሳሳተ የምንነት ለዪ</translation>
 <translation id="1232569758102978740">ርዕስ አልባ</translation>
 <translation id="1254117744268754948">አቃፊ ይምረጡ</translation>
-<translation id="1270699273812232624">ንጥሎችን ፍቀድ</translation>
 <translation id="1285320974508926690">ይህን ጣቢያ በጭራሽ አትተርጉም</translation>
 <translation id="129553762522093515">በቅርብ ጊዜ የተዘጉ</translation>
 <translation id="1339601241726513588">የምዝገባ ጎራ፦</translation>
@@ -86,7 +85,6 @@
 <translation id="1898423065542865115">በማጣራት ላይ</translation>
 <translation id="1911837502049945214"><ph name="HOST_NAME" /> የእርስዎን የመግቢያ እውቅና ማረጋገጫ አልተቀበለም፣ ወይም ደግሞ የመግቢያ እውቅና ማረጋገጫዎ ጊዜው አልፎበት ሊሆን ይችላል።</translation>
 <translation id="194030505837763158">ወደ <ph name="LINK" /> ሂድ</translation>
-<translation id="1958820272620550857">ንጥሎችን አግድ</translation>
 <translation id="1962204205936693436"><ph name="DOMAIN" /> እልባቶች</translation>
 <translation id="1973335181906896915">የመለያ ቁጥር መስጠት ላይ ስህተት</translation>
 <translation id="1974060860693918893">የላቀ</translation>
@@ -210,7 +208,6 @@
 <translation id="3105172416063519923">የእሴት መታወቂያ፦</translation>
 <translation id="3109728660330352905">ይህን ገጽ ለማየት ፍቃድ የለዎትም።</translation>
 <translation id="3118046075435288765">አገልጋዩ ሳይታሰብ ግንኙነቱን ዘግቶታል።</translation>
-<translation id="31454997771848827">የቡድን ጎራዎች</translation>
 <translation id="3145945101586104090">ምላሹን መግለጥ አልተሳካም</translation>
 <translation id="3147485256806412701">ይህ ጣቢያ አዲስ ተመሳስሎ የተፈጠረ ከፍተኛ ደረጃ ጎራን እየተጠቀመ ነው።</translation>
 <translation id="3150653042067488994">ጊዜያዊ የአገልጋይ ስህተት</translation>
@@ -325,7 +322,6 @@
 <translation id="4258748452823770588">መጥፎ ፊርማ</translation>
 <translation id="4268298190799576220">Chrome የእርስዎን ካርድ በዚህ ጊዜ ላይ ለማረጋገጥ አልቻለም። እባክዎ ቆይተው እንደገና ይሞክሩ።</translation>
 <translation id="4269787794583293679">(ምንም የተጠቃሚ ስም የለም)</translation>
-<translation id="4278390842282768270">ተፈቅዷል</translation>
 <translation id="4300246636397505754">የወላጅ አስተያየት ጥቆማዎች</translation>
 <translation id="4304224509867189079">ይግቡ</translation>
 <translation id="4325863107915753736">ጽሑፉን ማግኘት አልተቻለም</translation>
@@ -524,7 +520,6 @@ nil</translation>
 <translation id="6753269504797312559">የመምሪያ እሴት</translation>
 <translation id="6757797048963528358">የእርስዎ መሣሪያ ተኝቷል።</translation>
 <translation id="6781404225664080496">ወደዚህ ዩአርኤል የሚቀርቡ ጥያቄዎች ለጊዜው ታግደዋል።</translation>
-<translation id="6800914069727136216">በይዘት ጥቅል ውስጥ</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6830600606572693159"><ph name="URL" /> ላይ ያለው ድረ-ገጽ በአሁኑ ጊዜ አይገኝም።  ከአቅም በላይ ስራ በዝቶበት ወይም ለጥገና ከስራ ውጪ ተደርጎ ሊሆን ይችላል።</translation>
 <translation id="6831043979455480757">መተርጎም</translation>

@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-TW">
 <translation id="1091157412887719337">指派失敗。沒有可用的引擎。</translation>
+<translation id="1416550906796893042">應用程式版本</translation>
 <translation id="2004526128230838685">指派失敗。發生不明問題。</translation>
 <translation id="2023631438558435272">指派失敗。回應無效。</translation>
 <translation id="2353984724370197742">指派失敗。網路要求失敗。</translation>
@@ -16,6 +17,7 @@
 <translation id="5860346505531085166">指派失敗。帳戶沒有存取權。</translation>
 <translation id="704835510384979817">指派失敗。沒有相符的引擎版本。</translation>
 <translation id="7536363920335771251">引擎連線已中斷 (原因：%1$s)</translation>
+<translation id="7596558890252710462">作業系統</translation>
 <translation id="7961542533680218955">指派成功。</translation>
 <translation id="8514856595257368555">已擷取憑證。</translation>
 </translationbundle>

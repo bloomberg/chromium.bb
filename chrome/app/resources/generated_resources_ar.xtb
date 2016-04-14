@@ -564,7 +564,6 @@
 <translation id="1783075131180517613">الرجاء تحديث عبارة مرور المزامنة.</translation>
 <translation id="1788636309517085411">استخدام الموقع الافتراضي</translation>
 <translation id="1789575671122666129">النوافذ المنبثقة</translation>
-<translation id="1790550373387225389">الدخول إلى وضع العرض</translation>
 <translation id="1792705092719258158">تمكين وضع الشاشة المنعكس.</translation>
 <translation id="1793119619663054394">‏هل تريد بالتأكيد إزالة "<ph name="PROFILE_NAME" />" وكل البيانات المرتبطة بمتصفح Chrome من جهاز الكمبيوتر هذا؟ لا يمكن التراجع عن هذا الإجراء.</translation>
 <translation id="179767530217573436">آخر 4 أسابيع</translation>
@@ -1659,7 +1658,6 @@
 <translation id="3324301154597925148">هل هذه هي صفحة البحث التي كنت تتوقع ظهورها؟</translation>
 <translation id="3324684065575061611">(تم التعطيل بموجب سياسة المؤسسة)</translation>
 <translation id="3326821416087822643">جارٍ ضغط <ph name="FILE_NAME" />...</translation>
-<translation id="3330206034087160972">الخروج من وضع العرض</translation>
 <translation id="3330686263988132416">‏عنوان الأصل WebRTC Stun</translation>
 <translation id="3331321258768829690">(<ph name="UTCOFFSET" />) <ph name="LONGTZNAME" /> (<ph name="EXEMPLARCITY" />)</translation>
 <translation id="3331799185273394951">تمكين وضع الشاشة المعكوس. هذا الوضع يعكس الصورة المعروضة على الشاشة أفقيًا.</translation>
@@ -1915,7 +1913,6 @@
 <translation id="367645871420407123">اتركه فارغًا إذا كنت ترغب في تعيين كلمة مرور الجذر إلى قيمة صورة الاختبار الافتراضية</translation>
 <translation id="3678156199662914018">الإضافة: <ph name="EXTENSION_NAME" /></translation>
 <translation id="3678559383040232393">لوحة المفاتيح المالطية</translation>
-<translation id="3680173818488851340">الأطر المدمجة ذات الأولوية المنخفضة.</translation>
 <translation id="3683524264665795342">يطلب <ph name="APP_NAME" /> مشاركة الشاشة</translation>
 <translation id="3685122418104378273">‏يتم تعطيل مزامنة Google Drive افتراضيًا، عند استخدام بيانات الجوّال.</translation>
 <translation id="3685387984467886507">‏تذكر القرارات للمتابعة خلال أخطاء SSL لمدة محددة من الوقت.</translation>
@@ -3863,7 +3860,6 @@
 <translation id="6662016084451426657">خطأ في المزامنة: الرجاء الاتصال بالمشرف لتمكين المزامنة.</translation>
 <translation id="6663792236418322902">ستكون كلمة المرور التي تختارها مطلوبة لاستعادة هذا الملف لاحقًا.  الرجاء تسجيلها في مكان آمن.</translation>
 <translation id="6664237456442406323">‏للأسف، تمت تهيئة جهاز الكمبيوتر باستخدام معرف جهاز غير صحيح. وهذا يمنع تحديث نظام التشغيل Chrome بأحدث إصلاحات الأمان، وقد يكون جهاز الكمبيوتر <ph name="BEGIN_BOLD" />عرضة للهجمات الضارة<ph name="END_BOLD" />.</translation>
-<translation id="666541661050183336">يقلل من أولوية تحميل موارد الأطر المدمجة.</translation>
 <translation id="6666647326143344290">‏باستخدام حساب Google</translation>
 <translation id="6675665718701918026">الإشارة إلى الأجهزة المتصلة</translation>
 <translation id="6677037229676347494">المعرف المتوقع "<ph name="EXPECTED_ID" />"، ولكن المعرف كان "<ph name="NEW_ID" />".</translation>

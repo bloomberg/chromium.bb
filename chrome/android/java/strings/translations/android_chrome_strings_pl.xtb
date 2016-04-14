@@ -6,7 +6,6 @@
 <translation id="10614374240317010">Nigdy nie zapisane</translation>
 <translation id="1061441684050139317">Aby zezwolić stronie na wykorzystanie mikrofonu, Chrome musi mieć do niego dostęp.</translation>
 <translation id="1080790410959514870">Wylogowujesz się z konta zarządzanego przez <ph name="DOMAIN_NAME" />. Spowoduje to usunięcie danych Chrome zapisanych na tym urządzeniu, jednak pozostaną one na Twoim koncie Google.</translation>
-<translation id="1095407227123756519">Dodaj konto, by korzystać z zakładek, historii, haseł i innych ustawień na wszystkich swoich urządzeniach.</translation>
 <translation id="1098052486217676340">Zakończono</translation>
 <translation id="1121094540300013208">Raporty o użytkowaniu i awariach</translation>
 <translation id="1137305377394488060">z ostatniej godziny</translation>
@@ -197,6 +196,7 @@ Aby dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je zaznaczyć
 <translation id="3716158070938632480">Znaleziono strony internetowe w pobliżu</translation>
 <translation id="3732088672634061408">Nie udało się pobrać zainteresowań.</translation>
 <translation id="3738139272394829648">Dotknij, by wyszukać</translation>
+<translation id="3744111561329211289">Synchronizacja w tle</translation>
 <translation id="3809549525127675114">Zakończono odtwarzanie „<ph name="VIDEO_TITLE" />”</translation>
 <translation id="3828029223314399057">Przeszukaj zakładki</translation>
 <translation id="3871171699884605801">Na kontach dla dzieci nie można usunąć historii przeglądania</translation>
@@ -285,6 +285,7 @@ Wystarczy uruchomić Chrome na komputerze i w menu wybrać „Zaloguj się w Chr
 <translation id="5016205925109358554">Szeryfowa</translation>
 <translation id="5039804452771397117">Zezwalaj</translation>
 <translation id="5040262127954254034">Prywatność</translation>
+<translation id="5056549851600133418">Artykuły dla Ciebie</translation>
 <translation id="5063480226653192405">Wykorzystanie</translation>
 <translation id="5100237604440890931">Zwinięty – kliknij, by rozwinąć.</translation>
 <translation id="5107381076085091558">Pobieranie zostało wstrzymane.</translation>
@@ -352,7 +353,6 @@ Wystarczy uruchomić Chrome na komputerze i w menu wybrać „Zaloguj się w Chr
 <translation id="5712189971979076230">Pomóż nam określić najważniejsze funkcje i ulepszenia, nad którymi powinniśmy pracować, wysyłając do Google przy każdej awarii informacje o plikach, aplikacjach oraz uruchomionych usługach.
 
 Statystyki użytkowania obejmują np. dane o ustawieniach, kliknięciach przycisków i wykorzystaniu pamięci. Nie zawierają one adresów URL stron internetowych ani żadnych danych osobowych. Raporty o awariach zawierają informacje systemowe z chwili awarii i mogą obejmować adresy URL stron internetowych lub dane osobowe w zależności od okoliczności awarii.</translation>
-<translation id="5715468759630044318">Wybierz konto</translation>
 <translation id="5719837394786370183">Po zamknięciu wszystkich kart incognito wyświetlane na nich strony nie pozostawią żadnych śladów w historii przeglądarki, magazynie plików cookie ani historii wyszukiwania. Pobrane pliki i utworzone zakładki zostaną zachowane.
 
 To jednak nie oznacza, że Cię nie widać. Nawet gdy przejdziesz w tryb incognito, Twój pracodawca, dostawca usług internetowych czy webmasterzy otwieranych stron mogą dowiedzieć się, co przeglądasz.</translation>
@@ -433,7 +433,6 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="6699351163704950317">Wszystkie zapisane strony</translation>
 <translation id="6710213216561001401">Wstecz</translation>
 <translation id="6720988912937197322">Zapisana strona nie jest dostępna w trybie offline</translation>
-<translation id="6722992508235227685">Zakładki, historia, hasła i inne ustawienia zostaną zsynchronizowane z kontem Google, by można było z nich korzystać na wszystkich urządzeniach. Elementy do zsynchronizowania możesz wybrać w <ph name="BEGIN_LINK1" />Ustawieniach<ph name="END_LINK1" />.</translation>
 <translation id="6738867403308150051">Pobieram…</translation>
 <translation id="6762156594045689028">Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph name="END_LINK" /></translation>
 <translation id="6770414673596662518">System Bezpieczne przeglądanie w Chrome jest też używany do wykrywania złośliwych stron oraz ochrony przed wyłudzaniem informacji, złośliwym oprogramowaniem i szkodliwymi plikami do pobrania.</translation>
@@ -500,6 +499,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="7501135638693251872">Wszystkie zakładki</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7562080006725997899">Czyszczenie danych przeglądania</translation>
+<translation id="756809126120519699">Wyczyszczono dane Chrome</translation>
 <translation id="7588950540487816470">Internet rzeczy</translation>
 <translation id="7596558890252710462">System operacyjny</translation>
 <translation id="7599840151813361502">Nie spowoduje to wylogowania Cię z <ph name="BEGIN_LINK" />kont Google<ph name="END_LINK" /></translation>
@@ -543,7 +543,7 @@ To jednak nie oznacza, że Cię nie widać. Nawet gdy przejdziesz w tryb incogni
 <translation id="8069239273282989646">Po skompresowaniu</translation>
 <translation id="8073388330009372546">Otwórz grafikę w nowej karcie</translation>
 <translation id="8076014560081431679">Zapisane ustawienia witryn nie zostaną usunięte i mogą zawierać informacje o Twoim korzystaniu z przeglądarki. <ph name="BEGIN_LINK" />Więcej informacji<ph name="END_LINK" /></translation>
-<translation id="8084156870963450514">Zaloguj się, by móc korzystać ze wszystkich swoich rzeczy związanych z internetem na dowolnym urządzeniu</translation>
+<translation id="8087000398470557479">Treść z <ph name="DOMAIN_NAME" /> dostarczana przez Google.</translation>
 <translation id="8098570222830891427">Urządzenia w pobliżu przekazują strony internetowe przy użyciu Bluetooth. Chrome wyszuka te strony i wyświetli je, gdy wybudzisz urządzenie. Następnie trafią one do usługi Google, która zwiększy trafność wyników.
 
 Internet rzeczy możesz skonfigurować w ustawieniach Chrome.</translation>
@@ -609,6 +609,7 @@ Aby otrzymać nowe licencje, połącz się z internetem i odtwórz pobrane treś
 <translation id="8931159598799892500">Chrome + internet rzeczy</translation>
 <translation id="8941248009481596111">Twoje połączenie z tą witryną jest prywatne.</translation>
 <translation id="8941729603749328384">www.example.com</translation>
+<translation id="8942627711005830162">Otwórz w innym oknie</translation>
 <translation id="8959122750345127698">Adres nieosiągalny: <ph name="URL" /></translation>
 <translation id="8979340629087822094">z ostatniego dnia</translation>
 <translation id="8987061207681586800">Dostosuj Chrome</translation>

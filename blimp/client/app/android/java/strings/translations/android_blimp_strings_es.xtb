@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="es">
 <translation id="1091157412887719337">Ha fallado la asignación. No hay motores disponibles.</translation>
+<translation id="1416550906796893042">Versión de la aplicación</translation>
 <translation id="2004526128230838685">Ha fallado la asignación. Problema desconocido.</translation>
 <translation id="2023631438558435272">Ha fallado la asignación. La respuesta no es válida.</translation>
 <translation id="2353984724370197742">Ha fallado la asignación. Error en la solicitud de red.</translation>
@@ -16,6 +17,7 @@
 <translation id="5860346505531085166">Ha fallado la asignación. La cuenta no dispone de acceso.</translation>
 <translation id="704835510384979817">Ha fallado la asignación. La versión del motor no coincide.</translation>
 <translation id="7536363920335771251">Motivo por el que el motor está desconectado: %1$s</translation>
+<translation id="7596558890252710462">Sistema operativo</translation>
 <translation id="7961542533680218955">Asignación correcta.</translation>
 <translation id="8514856595257368555">Se ha recuperado el token.</translation>
 </translationbundle>

@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="it">
 <translation id="1091157412887719337">Assegnazione non riuscita. Nessun motore disponibile.</translation>
+<translation id="1416550906796893042">Versione applicazione</translation>
 <translation id="2004526128230838685">Assegnazione non riuscita. Problema sconosciuto.</translation>
 <translation id="2023631438558435272">Assegnazione non riuscita. Risposta non valida.</translation>
 <translation id="2353984724370197742">Assegnazione non riuscita. Richiesta di rete non riuscita.</translation>
@@ -16,6 +17,7 @@
 <translation id="5860346505531085166">Assegnazione non riuscita. All'account non è consentito l'accesso.</translation>
 <translation id="704835510384979817">Assegnazione non riuscita. Nessuna versione del motore corrispondente.</translation>
 <translation id="7536363920335771251">Motore disconnesso. Motivo: %1$s</translation>
+<translation id="7596558890252710462">Sistema operativo</translation>
 <translation id="7961542533680218955">Assegnazione riuscita.</translation>
 <translation id="8514856595257368555">Token recuperato.</translation>
 </translationbundle>

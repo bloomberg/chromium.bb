@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="iw">
 <translation id="1091157412887719337">ההקצאה נכשלה. אין מנוע זמין.</translation>
+<translation id="1416550906796893042">גרסת אפליקציה</translation>
 <translation id="2004526128230838685">ההקצאה נכשלה. בעיה לא ידועה.</translation>
 <translation id="2023631438558435272">ההקצאה נכשלה. תגובה לא חוקית.</translation>
 <translation id="2353984724370197742">ההקצאה נכשלה. בקשת הרשת נכשלה.</translation>
@@ -16,6 +17,7 @@
 <translation id="5860346505531085166">ההקצאה נכשלה. אין לחשבון הרשאת גישה.</translation>
 <translation id="704835510384979817">ההקצאה נכשלה. לא נמצאה גירסת מנוע תואמת.</translation>
 <translation id="7536363920335771251">‏המנוע מנותק. הסיבה: %1$s</translation>
+<translation id="7596558890252710462">מערכת הפעלה</translation>
 <translation id="7961542533680218955">ההקצאה הצליחה.</translation>
 <translation id="8514856595257368555">האסימון אוחזר.</translation>
 </translationbundle>

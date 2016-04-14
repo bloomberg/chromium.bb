@@ -81,6 +81,7 @@
 <translation id="1359553908012294236">Si esta política no se configura o se establece en true, <ph name="PRODUCT_NAME" /> permitirá acceder como invitado. Los accesos como invitado son perfiles de <ph name="PRODUCT_NAME" /> en los que todas las ventanas están en modo de navegación de incógnito.
 
       Si esta política se establece en false, <ph name="PRODUCT_NAME" /> no permitirá que se inicien perfiles de invitado.</translation>
+<translation id="1363275621236827384">Habilitar las consultas a Quirks Server para perfiles de hardware</translation>
 <translation id="1397855852561539316">Dirección URL sugerida para el proveedor de búsqueda predeterminado</translation>
 <translation id="1398889361882383850">Te permite establecer los sitios web que pueden ejecutar automáticamente los complementos. La ejecución automática de complementos puede permitirse o negarse a todos los sitios web. 
 
@@ -671,6 +672,13 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
 
       El valor de la política debe estar especificado en milisegundos. Los valores están fijados en un intervalo de entre 30 segundos y 24 horas.</translation>
 <translation id="3528000905991875314">Habilitar páginas de error alternativas</translation>
+<translation id="3538538104630456270">La configuración asociada se usó antes de implementar la reautenticación para ver contraseñas. A partir de ese momento, la configuración y, por lo tanto, esta política no tienen efecto en el comportamiento de Chrome. El comportamiento actual de Chrome es como si la política se hubiera establecido para no ver las contraseñas en texto claro en las páginas de configuración del administrador de contraseñas. Esto significa que la página de configuración contiene solo un marcador de posición y Chrome mostrará la contraseña después de que el usuario haga clic en "Mostrar" (e implemente la reautenticación, si corresponde). A continuación, se muestra la descripción original de la política.
+
+          Controla si el usuario puede mostrar contraseñas en texto claro en el administrador de contraseñas.
+
+          Si inhabilitas esta configuración, el administrador de contraseñas no permite mostrar contraseñas guardadas en texto claro en la ventana del administrador de contraseñas.
+
+          Si habilitas esta configuración o no estableces esta política, los usuarios pueden ver las contraseñas en texto claro en el administrador de contraseñas.</translation>
 <translation id="3547954654003013442">Configuración de proxy</translation>
 <translation id="3570008976476035109">Bloquear complementos en estos sitios</translation>
 <translation id="3591584750136265240">Configurar el comportamiento de autenticación en el acceso</translation>
@@ -1561,6 +1569,7 @@ desactivarlo).</translation>
 
       Si no se configura esta política, el usuario podrá cambiar la lista de aplicaciones fijas en el menú de aplicaciones.</translation>
 <translation id="7132877481099023201">Las URL que recibirán acceso a dispositivos de captura de video sin solicitarlo</translation>
+<translation id="7167436895080860385">Permitir que los usuarios muestren las contraseñas en el administrador de contraseñas (ya no está disponible)</translation>
 <translation id="7173856672248996428">Perfil efímero</translation>
 <translation id="7187256234726597551">Si está establecida como verdadera, se permitirá la confirmación remota para el dispositivo, y se generará automáticamente un certificado que se subirá al servidor de administración de dispositivos.
 
@@ -1852,6 +1861,7 @@ desactivarlo).</translation>
 <translation id="8197918588508433925">Esta política especifica las extensiones que tienen permitido usar la API de claves de plataforma empresarial chrome.enterprise.platformKeysPrivate.challengeUserKey() para la atestación remota. Las extensiones deben agregarse a esta lista para que puedan usar la API.
 
           Si una extensión no está en la lista o si la lista no está establecida, la llamada a la API fallará y se mostrará un código de error.</translation>
+<translation id="8214600119442850823">Configura el administrador de contraseñas.</translation>
 <translation id="8244525275280476362">Demora de recuperación máxima después de invalidar una política</translation>
 <translation id="8256688113167012935">Controla el nombre de cuenta <ph name="PRODUCT_OS_NAME" /> que aparece en la pantalla de acceso de la cuenta local del dispositivo que corresponda.
 
@@ -2010,6 +2020,19 @@ desactivarlo).</translation>
 <translation id="8858642179038618439">Forzar el modo de seguridad de YouTube</translation>
 <translation id="8864975621965365890">Elimina el mensaje de desactivación que aparece cuando <ph name="PRODUCT_FRAME_NAME" /> muestra un sitio.</translation>
 <translation id="8870318296973696995">Página principal</translation>
+<translation id="8889588091638298603">Quirks Server proporciona archivos de configuración específicos de hardware, como
+      perfiles de visualización de ICC, para ajustar la calibración del monitor.
+
+      Cuando esta política se establece como falsa, el dispositivo no intentará
+      comunicarse con Quirks Server para descargar archivos de configuración.
+
+      Si esta política se establece como verdadera o no se configura,
+      <ph name="PRODUCT_OS_NAME" /> se comunicará
+      de forma automática con Quirks Server, descargará archivos de
+       configuración,
+      si están disponibles, y los guardará en el dispositivo. Estos
+      archivos pueden usarse, por ejemplo, para mejorar la calidad de
+      visualización de los monitores conectados.</translation>
 <translation id="8905426178924715309">Esta política dejó de estar disponible; se deben usar ForceGoogleSafeSearch y ForceYouTubeSafetyMode en su lugar. Esta política se ignorará si se establecen las políticas ForceGoogleSafeSearch o ForceYouTubeSafetyMode.
 
       Permite forzar las consultas en la Búsqueda web de Google para que se realicen con SafeSearch activado y evitar que los usuarios modifiquen esta configuración. Esta configuración también fuerza el modo de seguridad en YouTube.

@@ -165,6 +165,7 @@ Google Chrome</translation>
 <translation id="4918086044614829423">Accepter</translation>
 <translation id="492843737083352574">Je rencontre des problèmes avec mon clavier ou ma souris.</translation>
 <translation id="4973800994433240357">En téléchargeant le programme d'installation de l'hôte Chromoting, vous acceptez les <ph name="LINK_BEGIN" />Conditions d'utilisation<ph name="LINK_END" /> de Google.</translation>
+<translation id="4985296110227979402">Vous devez tout d'abord configurer votre ordinateur pour l'accès à distance.</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (hors connexion)</translation>
 <translation id="5070121137485264635">L'hôte distant nécessite votre authentification auprès d'un site Web tiers. Pour continuer, vous devez accorder au Bureau à distance Chrome des autorisations supplémentaires afin d'accéder à l'adresse suivante :</translation>
 <translation id="5156271271724754543">Veuillez saisir le même code d'accès dans les deux champs.</translation>
@@ -174,6 +175,7 @@ Google Chrome</translation>
 <translation id="5222676887888702881">Déconnexion</translation>
 <translation id="5254120496627797685">En quittant cette page, vous mettrez fin à la session du bureau à distance Google Chrome.</translation>
 <translation id="5308380583665731573">Connexion</translation>
+<translation id="533625276787323658">Aucun appareil auquel se connecter.</translation>
 <translation id="5363265567587775042">Demandez à l'utilisateur de l'ordinateur auquel vous souhaitez accéder de cliquer sur "<ph name="SHARE" />" et de vous donner le code d'accès.</translation>
 <translation id="5379087427956679853">L'application Bureau à distance Google Chrome vous permet de partager votre ordinateur sur le Web en toute sécurité. Pour ce faire, les deux utilisateurs en question doivent exécuter cette application, disponible à l'adresse <ph name="URL" />.</translation>
 <translation id="5394895745784982830">Pour Mac (OS X 10.6 ou version ultérieure)</translation>

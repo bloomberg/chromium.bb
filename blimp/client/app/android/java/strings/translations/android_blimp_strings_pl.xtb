@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="pl">
 <translation id="1091157412887719337">Przypisanie się nie udało. Nie jest dostępna żadna wyszukiwarka.</translation>
+<translation id="1416550906796893042">Wersja aplikacji</translation>
 <translation id="2004526128230838685">Przypisanie się nie udało. Nieznany problem.</translation>
 <translation id="2023631438558435272">Przypisanie się nie udało. Nieprawidłowa odpowiedź.</translation>
 <translation id="2353984724370197742">Przypisanie się nie udało. Błąd żądania sieciowego.</translation>
@@ -16,6 +17,7 @@
 <translation id="5860346505531085166">Przypisanie się nie udało. Konto nie ma dostępu.</translation>
 <translation id="704835510384979817">Przypisanie się nie udało. Brak pasującej wersji przeglądarki.</translation>
 <translation id="7536363920335771251">Rozłączono z mechanizmem, powód: %1$s</translation>
+<translation id="7596558890252710462">System operacyjny</translation>
 <translation id="7961542533680218955">Przypisano.</translation>
 <translation id="8514856595257368555">Token został pobrany.</translation>
 </translationbundle>

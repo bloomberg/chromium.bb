@@ -563,7 +563,6 @@ Tieni presente che il Bluetooth verrà attivato per tutti i dispositivi compatib
 <translation id="1783075131180517613">Aggiorna la tua passphrase di sincronizzazione.</translation>
 <translation id="1788636309517085411">Usa posizione predefinita</translation>
 <translation id="1789575671122666129">Popup</translation>
-<translation id="1790550373387225389">Passa a modalità Presentazione</translation>
 <translation id="1792705092719258158">Attiva modalità schermo con mirroring.</translation>
 <translation id="1793119619663054394">Vuoi rimuovere "<ph name="PROFILE_NAME" />" e tutti i dati di Chrome associati da questo computer? L'operazione non può essere annullata.</translation>
 <translation id="179767530217573436">ultime quattro settimane</translation>
@@ -1658,7 +1657,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="3324301154597925148">È la pagina di ricerca prevista?</translation>
 <translation id="3324684065575061611">(Disattivato per norma aziendale)</translation>
 <translation id="3326821416087822643">Compressione di <ph name="FILE_NAME" />...</translation>
-<translation id="3330206034087160972">Esci da modalità Presentazione</translation>
 <translation id="3330686263988132416">Intestazione Origin nei messaggi Stun WebRTC</translation>
 <translation id="3331321258768829690">(<ph name="UTCOFFSET" />) <ph name="LONGTZNAME" /> (<ph name="EXEMPLARCITY" />)</translation>
 <translation id="3331799185273394951">Consente di attivare la modalità a schermo speculare, che consente di capovolgere l'immagine dello schermo in orizzontale.</translation>
@@ -1914,7 +1912,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="367645871420407123">lascia vuoto questo campo se desideri impostare la password root sul valore dell'immagine di test predefinita</translation>
 <translation id="3678156199662914018">Estensione: <ph name="EXTENSION_NAME" /></translation>
 <translation id="3678559383040232393">Tastiera Maltese</translation>
-<translation id="3680173818488851340">Iframe con priorità bassa.</translation>
 <translation id="3683524264665795342">Richiesta di condivisione dello schermo da parte di <ph name="APP_NAME" /></translation>
 <translation id="3685122418104378273">La sincronizzazione con Google Drive è disattivata per impostazione predefinita quando vengono utilizzati i dati mobili.</translation>
 <translation id="3685387984467886507">Memorizza le decisioni relative a come procedere con gli errori SSL per un periodo di tempo specifico.</translation>
@@ -3863,7 +3860,6 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
 <translation id="6662016084451426657">Errore di sincronizzazione. Contatta l'amministratore per richiedere l'attivazione della sincronizzazione.</translation>
 <translation id="6663792236418322902">La password scelta sarà necessaria per recuperare il file in un secondo momento. Registrala in una posizione sicura.</translation>
 <translation id="6664237456442406323">Purtroppo il tuo computer è configurato con un ID hardware non valido. Ciò impedisce a Chrome OS di aggiornarsi con le ultime correzioni relative alla sicurezza e il tuo computer <ph name="BEGIN_BOLD" />potrebbe essere vulnerabile ad attacchi dannosi<ph name="END_BOLD" />.</translation>
-<translation id="666541661050183336">Consente di ridurre la priorità di caricamento delle risorse di iframe.</translation>
 <translation id="6666647326143344290">con il tuo account Google</translation>
 <translation id="6675665718701918026">Dispositivo di puntamento collegato</translation>
 <translation id="6677037229676347494">L'ID previsto era "<ph name="EXPECTED_ID" />", ma in realtà era "<ph name="NEW_ID" />".</translation>

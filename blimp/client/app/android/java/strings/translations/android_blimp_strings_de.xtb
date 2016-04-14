@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="de">
 <translation id="1091157412887719337">Zuweisung fehlgeschlagen. Kein Modul verfügbar.</translation>
+<translation id="1416550906796893042">Anwendungsversion</translation>
 <translation id="2004526128230838685">Zuweisung fehlgeschlagen. Unbekanntes Problem.</translation>
 <translation id="2023631438558435272">Zuweisung fehlgeschlagen. Ungültige Antwort.</translation>
 <translation id="2353984724370197742">Zuweisung fehlgeschlagen. Netzwerkanfrage fehlgeschlagen.</translation>
@@ -16,6 +17,7 @@
 <translation id="5860346505531085166">Zuweisung fehlgeschlagen. Konto hat keinen Zugriff.</translation>
 <translation id="704835510384979817">Zuweisung fehlgeschlagen. Keine übereinstimmende Modulversion.</translation>
 <translation id="7536363920335771251">Modul getrennt, Grund: %1$s</translation>
+<translation id="7596558890252710462">Betriebssystem</translation>
 <translation id="7961542533680218955">Zuweisung ist erfolgt.</translation>
 <translation id="8514856595257368555">Token abgerufen.</translation>
 </translationbundle>

@@ -39,7 +39,6 @@
 <translation id="1228893227497259893">Identifiant d'entité incorrect.</translation>
 <translation id="1232569758102978740">Sans titre</translation>
 <translation id="1254117744268754948">Sélectionner un dossier</translation>
-<translation id="1270699273812232624">Autoriser les éléments</translation>
 <translation id="1285320974508926690">Ne jamais traduire ce site</translation>
 <translation id="129553762522093515">Récemment fermés</translation>
 <translation id="1339601241726513588">Domaine d'enregistrement :</translation>
@@ -86,7 +85,6 @@
 <translation id="1898423065542865115">Filtrage</translation>
 <translation id="1911837502049945214"><ph name="HOST_NAME" /> n'a pas accepté votre certificat de connexion, ou ce dernier a peut-être expiré.</translation>
 <translation id="194030505837763158">Accédez à <ph name="LINK" /></translation>
-<translation id="1958820272620550857">Bloquer des éléments</translation>
 <translation id="1962204205936693436">Favoris du domaine <ph name="DOMAIN" /></translation>
 <translation id="1973335181906896915">Erreur de sérialisation.</translation>
 <translation id="1974060860693918893">Paramètres avancés</translation>
@@ -210,7 +208,6 @@
 <translation id="3105172416063519923">ID d'élément :</translation>
 <translation id="3109728660330352905">Vous n'êtes pas autorisé à consulter cette page.</translation>
 <translation id="3118046075435288765">Le serveur a mis fin à la connexion de manière inattendue.</translation>
-<translation id="31454997771848827">Regrouper les domaines</translation>
 <translation id="3145945101586104090">Échec du décodage de la réponse.</translation>
 <translation id="3147485256806412701">Ce site utilise un nouveau domaine générique de premier niveau.</translation>
 <translation id="3150653042067488994">Erreur temporaire du serveur.</translation>
@@ -290,6 +287,7 @@
 <translation id="3788090790273268753">Le certificat de ce site arrive à expiration en 2016, et la chaîne de certificats contient un certificat signé avec SHA-1.</translation>
 <translation id="382518646247711829">Si vous utilisez un serveur proxy…</translation>
 <translation id="3828924085048779000">La phrase secrète est obligatoire.</translation>
+<translation id="3845539888601087042">Affichage de l'historique des appareils auxquels vous êtes connecté. <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /></translation>
 <translation id="385051799172605136">Retour</translation>
 <translation id="3858027520442213535">Mettre à jour la date et l'heure</translation>
 <translation id="3884278016824448484">Identifiant de l'appareil en conflit.</translation>
@@ -325,7 +323,6 @@
 <translation id="4258748452823770588">Signature incorrecte.</translation>
 <translation id="4268298190799576220">Impossible de valider votre carte dans Chromium pour le moment. Veuillez réessayer ultérieurement.</translation>
 <translation id="4269787794583293679">(aucun nom d'utilisateur)</translation>
-<translation id="4278390842282768270">Autorisé</translation>
 <translation id="4300246636397505754">Suggestions des parents</translation>
 <translation id="4304224509867189079">Se connecter</translation>
 <translation id="4325863107915753736">Échec de la recherche de l'article.</translation>
@@ -410,6 +407,7 @@
 <translation id="5421136146218899937">Effacer les données de navigation...</translation>
 <translation id="5430298929874300616">Supprimer le favori</translation>
 <translation id="5431657950005405462">Votre fichier est introuvable</translation>
+<translation id="5435775191620395718">Affichage de l'historique de cet appareil. <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /></translation>
 <translation id="5439770059721715174">Erreur de validation du schéma au niveau de "<ph name="ERROR_PATH" />" : <ph name="ERROR" /></translation>
 <translation id="5447330194051379405">Afficher toutes les pages enregistrées</translation>
 <translation id="5452270690849572955">Cette page du site <ph name="HOST_NAME" /> est introuvable</translation>
@@ -522,7 +520,6 @@
 <translation id="6753269504797312559">Valeur de la règle</translation>
 <translation id="6757797048963528358">Votre appareil s'est mis en veille.</translation>
 <translation id="6781404225664080496">Les requêtes à cette URL ont été temporairement suspendues.</translation>
-<translation id="6800914069727136216">Dans le pack de contenu</translation>
 <translation id="6820686453637990663">Cryptogramme</translation>
 <translation id="6830600606572693159">La page Web <ph name="URL" /> n'est pas disponible pour le moment. Cela peut être dû à une surcharge ou à une opération de maintenance.</translation>
 <translation id="6831043979455480757">Traduire</translation>
@@ -698,6 +695,7 @@ Conseil : Le mode navigation privée (<ph name="SHORTCUT_KEY" />) pourra vous �
 <translation id="8730621377337864115">OK</translation>
 <translation id="8738058698779197622">Afin d'établir une connexion sécurisée, votre horloge doit être réglée correctement. Les certificats permettant aux sites Web de s'identifier sont en effet valides pendant une période précise. Si l'horloge de votre appareil est incorrecte, Chromium n'est pas en mesure de vérifier la validité des certificats.</translation>
 <translation id="8740359287975076522">L'&lt;abbr id="dnsDefinition"&gt;adresse DNS&lt;/abbr&gt; de <ph name="HOST_NAME" /> est introuvable. Identification du problème…</translation>
+<translation id="8741995161408053644">Votre compte Google conserve peut- être d'autres formes d'historique de navigation sur la page <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="8790007591277257123">&amp;Rétablir la suppression</translation>
 <translation id="8798099450830957504">Par défaut</translation>
 <translation id="8804164990146287819">Règles de confidentialité</translation>

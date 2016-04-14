@@ -165,6 +165,7 @@ remot de Chrome</translation>
 <translation id="4918086044614829423">Accepta</translation>
 <translation id="492843737083352574">Tinc problemes amb el teclat o amb el ratolí.</translation>
 <translation id="4973800994433240357">En baixar l'instal·lador de l'amfitrió de Chromoting accepteu les <ph name="LINK_BEGIN" />Condicions del servei<ph name="LINK_END" /> de Google.</translation>
+<translation id="4985296110227979402">Primer heu de configurar l'accés remot al vostre ordinador.</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (fora de línia)</translation>
 <translation id="5070121137485264635">L'amfitrió remot necessita que us autentiqueu en un lloc web de tercers. Per continuar, cal que concediu permisos addicionals a l'escriptori remot de Chrome per accedir a aquesta adreça:</translation>
 <translation id="5156271271724754543">Introduïu el mateix PIN als dos quadres.</translation>
@@ -174,6 +175,7 @@ remot de Chrome</translation>
 <translation id="5222676887888702881">Tanca la sessió</translation>
 <translation id="5254120496627797685">Si sortiu d'aquesta pàgina, la sessió de l'escriptori remot de Chrome finalitzarà.</translation>
 <translation id="5308380583665731573">Connexió</translation>
+<translation id="533625276787323658">No hi ha cap ordinador per connectar-s'hi</translation>
 <translation id="5363265567587775042">Demaneu a l'usuari de l'ordinador al qual voleu accedir que faci clic a <ph name="SHARE" /> i que us faciliti el codi d'accés.</translation>
 <translation id="5379087427956679853">L'escriptori remot de Chrome us permet compartir el vostre ordinador de manera segura al web. Els dos usuaris han d'executar l'aplicació d'escriptori remot de Chrome, que podeu trobar a la pàgina <ph name="URL" />.</translation>
 <translation id="5394895745784982830">Per a Mac (OS X 10.6 i versions posteriors)</translation>

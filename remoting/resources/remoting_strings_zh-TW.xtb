@@ -165,6 +165,7 @@
 <translation id="4918086044614829423">接受</translation>
 <translation id="492843737083352574">我無法順利使用鍵盤或滑鼠。</translation>
 <translation id="4973800994433240357">下載 Chromoting 主機安裝程式即表示您同意 Google 的《<ph name="LINK_BEGIN" />服務條款<ph name="LINK_END" />》。</translation>
+<translation id="4985296110227979402">您必須先設定電腦，才能執行遠端存取作業。</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (離線)</translation>
 <translation id="5070121137485264635">遠端主機要求您向第三方網站進行驗證。如要繼續，您必須授予額外權限，讓 Chrome 遠端桌面能夠存取這個位址：</translation>
 <translation id="5156271271724754543">請在兩個方塊中輸入相同的 PIN。</translation>
@@ -174,6 +175,7 @@
 <translation id="5222676887888702881">登出</translation>
 <translation id="5254120496627797685">如果離開這個頁面，您的 Chrome 遠端桌面工作階段也會結束。</translation>
 <translation id="5308380583665731573">連線</translation>
+<translation id="533625276787323658">沒有可供連線的電腦</translation>
 <translation id="5363265567587775042">請您要存取的電腦的使用者點選 [<ph name="SHARE" />]，並提供存取碼給您。</translation>
 <translation id="5379087427956679853">Chrome 遠端桌面提供了安全的連線機制，可讓您透過網路與他人共用自己的電腦。您和共用對象都必須執行 Chrome 遠端桌面應用程式，請前往 <ph name="URL" /> 安裝。</translation>
 <translation id="5394895745784982830">適用於 Mac (OS X 10.6 以上版本)</translation>

@@ -39,7 +39,6 @@
 <translation id="1228893227497259893">معرف الكيان خاطئ</translation>
 <translation id="1232569758102978740">بلا عنوان</translation>
 <translation id="1254117744268754948">اختيار مجلد</translation>
-<translation id="1270699273812232624">السماح بالعناصر</translation>
 <translation id="1285320974508926690">عدم ترجمة هذا الموقع مطلقًا</translation>
 <translation id="129553762522093515">المغلقة حديثًا</translation>
 <translation id="1339601241726513588">نطاق التسجيل:</translation>
@@ -86,7 +85,6 @@
 <translation id="1898423065542865115">التصفية</translation>
 <translation id="1911837502049945214">لم يقبل <ph name="HOST_NAME" /> شهادة تسجيل الدخول أو ربما انتهت صلاحية شهادة تسجيل الدخول.</translation>
 <translation id="194030505837763158">الانتقال إلى <ph name="LINK" /></translation>
-<translation id="1958820272620550857">حظر العناصر</translation>
 <translation id="1962204205936693436">إشارات <ph name="DOMAIN" /></translation>
 <translation id="1973335181906896915">خطأ أثناء التسلسل</translation>
 <translation id="1974060860693918893">إعدادات متقدمة</translation>
@@ -210,7 +208,6 @@
 <translation id="3105172416063519923">رقم تعريف الأصل:</translation>
 <translation id="3109728660330352905">ليس لديك إذن بعرض هذه الصفحة.</translation>
 <translation id="3118046075435288765">أغلق الخادم الاتصال على نحو غير متوقع.</translation>
-<translation id="31454997771848827">نطاقات المجموعات</translation>
 <translation id="3145945101586104090">أخفق فك تشفير الاستجابة</translation>
 <translation id="3147485256806412701">هذا الموقع يستخدم نطاق مستوى أعلى عام جديد.</translation>
 <translation id="3150653042067488994">خطأ مؤقت في الخادم</translation>
@@ -326,7 +323,6 @@
 <translation id="4258748452823770588">توقيع غير صالح</translation>
 <translation id="4268298190799576220">‏لم يتمكن Chromium من التحقق من بطاقتك في الوقت الحالي. يُرجى إعادة المحاولة في وقت لاحق.</translation>
 <translation id="4269787794583293679">(اسم المستخدم غير موجود)</translation>
-<translation id="4278390842282768270">مسموح بها</translation>
 <translation id="4300246636397505754">اقتراحات الآباء</translation>
 <translation id="4304224509867189079">تسجيل الدخول</translation>
 <translation id="4325863107915753736">أخفق العثور على المقالة</translation>
@@ -523,7 +519,6 @@
 <translation id="6753269504797312559">قيمة السياسة</translation>
 <translation id="6757797048963528358">خضع جهازك إلى وضع السكون.</translation>
 <translation id="6781404225664080496">‏لقد تم منع الطلبات إلى عنوان URL هذا مؤقتًا.</translation>
-<translation id="6800914069727136216">في حزمة المحتوى</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6830600606572693159">صفحة الويب على <ph name="URL" /> غير متاحة حاليًا.. ربما تكون هناك زيادة في تحميلها أو أنها معطلة لأسباب تتعلق بالصيانة.</translation>
 <translation id="6831043979455480757">ترجمة</translation>

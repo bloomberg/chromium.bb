@@ -109,6 +109,7 @@
 <translation id="4987820182225656817">అతిథులు ఎటువంటి చరిత్రను వదలకుండానే Chromiumను ఉపయోగించవచ్చు.</translation>
 <translation id="4994636714258228724">Chromiumకు మిమ్మల్ని జోడించుకోండి</translation>
 <translation id="5032989939245619637">వివరాలను Chromiumలో సేవ్ చేయి</translation>
+<translation id="5116586539350239523">Chromium మీ వ్యక్తిగత వివరాలను సురక్షితంగా నిల్వ చేస్తుంది కాబట్టి మీరు వాటిని మళ్లీ టైప్ చేయాల్సిన అవసరం లేదు.</translation>
 <translation id="5358375970380395591">మీరు నిర్వహించబడే ఖాతాతో సైన్ ఇన్ చేస్తున్నారు మరియు దీని నిర్వాహకునికి మీ Chromium ప్రొఫైల్‌పై నియంత్రణను అందిస్తున్నారు. మీ అనువర్తనాలు, బుక్‌మార్క్‌లు, చరిత్ర, పాస్‌వర్డ్‌లు మరియు ఇతర సెట్టింగ్‌ల వంటి మీ Chromium డేటా శాశ్వతంగా <ph name="USER_NAME" />కు అనుబంధించబడుతుంది. మీరు Google ఖాతాల డాష్‌బోర్డ్ ద్వారా ఈ డేటాను తొలగించవచ్చు, కానీ ఈ డేటాను మరో ఖాతాతో అనుబంధించలేరు. <ph name="LEARN_MORE" /></translation>
 <translation id="5398878173008909840">క్రొత్త Chromium సంస్కరణ అందుబాటులో ఉంది.</translation>
 <translation id="5427571867875391349">Chromiumను మీ డిఫాల్ట్ బ్రౌజర్‌గా సెట్ చేయండి</translation>
@@ -217,7 +218,6 @@
 
 ఏదేమైనా సైన్ ఇన్ చేస్తే బుక్‌మార్క్‌లు, చరిత్ర మరియు ఇతర సెట్టింగ్‌ల వంటి Chromium సమాచారం <ph name="ACCOUNT_EMAIL_NEW" />కు విలీనం చేయబడుతుంది.</translation>
 <translation id="9013087743919948559">Chromiumకి జోడించండి</translation>
-<translation id="9013262824292842194">Chromiumకి SP2 లేదా తదుపరి దానితో Windows Vista లేదా Windows XP అవసరం.</translation>
 <translation id="9019929317751753759">Chromiumని సురక్షితం చేయడానికి, మేము క్రింది పొడిగింపుని నిలిపివేసాము, ఇది <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />లో జాబితా చేయబడలేదు మరియు మీకు తెలియకుండా జోడించబడి ఉండవచ్చు.</translation>
 <translation id="9022552996538154597">Chromiumకి సైన్ ఇన్ చేయండి</translation>
 <translation id="9036189287518468038">Chromium అనువర్తన లాంచర్</translation>

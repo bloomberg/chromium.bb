@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="no">
 <translation id="1091157412887719337">Oppgaven kunne ikke utføres. Ingen motorer var tilgjengelige.</translation>
+<translation id="1416550906796893042">Programversjon</translation>
 <translation id="2004526128230838685">Oppgaven kunne ikke utføres. Ukjent problem.</translation>
 <translation id="2023631438558435272">Oppgaven kunne ikke utføres. Ugyldig svar.</translation>
 <translation id="2353984724370197742">Oppgaven kunne ikke utføres. Nettverksforespørselen mislyktes.</translation>
@@ -16,6 +17,7 @@
 <translation id="5860346505531085166">Oppgaven kunne ikke utføres. Kontoen har ikke tilgang.</translation>
 <translation id="704835510384979817">Oppgaven kunne ikke utføres. Ingen samsvarende motorversjon.</translation>
 <translation id="7536363920335771251">Motoren er koblet fra. Årsak: %1$s</translation>
+<translation id="7596558890252710462">Operativsystem</translation>
 <translation id="7961542533680218955">Oppgaven ble utført.</translation>
 <translation id="8514856595257368555">Tokenet er hentet.</translation>
 </translationbundle>

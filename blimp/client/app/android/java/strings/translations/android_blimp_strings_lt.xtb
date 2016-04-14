@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="lt">
 <translation id="1091157412887719337">Priskirti nepavyko. Nėra jokių pasiekiamų variklių.</translation>
+<translation id="1416550906796893042">Programos versija</translation>
 <translation id="2004526128230838685">Priskirti nepavyko. Nežinoma problema.</translation>
 <translation id="2023631438558435272">Priskirti nepavyko. Netinkamas atsakas.</translation>
 <translation id="2353984724370197742">Priskirti nepavyko. Nepavyko tinklo užklausa.</translation>
@@ -16,6 +17,7 @@
 <translation id="5860346505531085166">Priskirti nepavyko. Naudojant paskyrą negalima pasiekti duomenų.</translation>
 <translation id="704835510384979817">Priskirti nepavyko. Nėra atitinkamos versijos variklio.</translation>
 <translation id="7536363920335771251">Variklis atjungtas, priežastis: %1$s</translation>
+<translation id="7596558890252710462">Operacinė sistema</translation>
 <translation id="7961542533680218955">Priskirti pavyko.</translation>
 <translation id="8514856595257368555">Prieigos raktas gautas.</translation>
 </translationbundle>

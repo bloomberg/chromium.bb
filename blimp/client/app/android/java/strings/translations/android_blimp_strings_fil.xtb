@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="fil">
 <translation id="1091157412887719337">Hindi naitalaga.  Walang available na engine.</translation>
+<translation id="1416550906796893042">Bersyon ng application</translation>
 <translation id="2004526128230838685">Hindi naitalaga.  May hindi matukoy na isyu.</translation>
 <translation id="2023631438558435272">Hindi naitalaga.  Di-wasto ang tugon.</translation>
 <translation id="2353984724370197742">Hindi naitalaga.  Hindi naisagawa ang kahilingan sa network.</translation>
@@ -16,6 +17,7 @@
 <translation id="5860346505531085166">Hindi naitalaga.  Walang access ang account.</translation>
 <translation id="704835510384979817">Hindi naitalaga.  Walang tumutugmang bersyon ng engine.</translation>
 <translation id="7536363920335771251">Nadiskonekta ang engine, dahilan: %1$s</translation>
+<translation id="7596558890252710462">Operating system</translation>
 <translation id="7961542533680218955">Naging matagumpay ang pagtatalaga.</translation>
 <translation id="8514856595257368555">Nabawi ang token.</translation>
 </translationbundle>

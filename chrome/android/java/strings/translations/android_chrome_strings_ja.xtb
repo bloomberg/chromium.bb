@@ -6,7 +6,6 @@
 <translation id="10614374240317010">未保存</translation>
 <translation id="1061441684050139317">このサイトとマイクを共有するには Chrome にマイクへのアクセスを許可する必要があります。</translation>
 <translation id="1080790410959514870"><ph name="DOMAIN_NAME" /> により管理されているアカウントからログアウトします。このデバイスに保存されている Chrome データは削除されますが、Google アカウントではデータが保持されます。</translation>
-<translation id="1095407227123756519">アカウントを追加すると、お使いのどのデバイスでも同じブックマーク、履歴、パスワード、その他の設定を利用できるようになります。</translation>
 <translation id="1098052486217676340">終了しました</translation>
 <translation id="1121094540300013208">利用状況と障害レポート</translation>
 <translation id="1137305377394488060">過去 1 時間</translation>
@@ -197,6 +196,7 @@
 <translation id="3716158070938632480">ウェブページが近くにあります</translation>
 <translation id="3732088672634061408">興味や関心を取得できませんでした。</translation>
 <translation id="3738139272394829648">タップして検索</translation>
+<translation id="3744111561329211289">バックグラウンド同期</translation>
 <translation id="3809549525127675114">「<ph name="VIDEO_TITLE" />」が終了しました</translation>
 <translation id="3828029223314399057">ブックマークを検索</translation>
 <translation id="3871171699884605801">子供向けのアカウントで閲覧履歴を消去することはできません</translation>
@@ -285,6 +285,7 @@
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">許可</translation>
 <translation id="5040262127954254034">プライバシー</translation>
+<translation id="5056549851600133418">おすすめの記事</translation>
 <translation id="5063480226653192405">使用状況</translation>
 <translation id="5100237604440890931">折りたたまれています - クリックすると展開します。</translation>
 <translation id="5107381076085091558">ダウンロードを一時停止しました。</translation>
@@ -352,7 +353,6 @@
 <translation id="5712189971979076230">Google では優先度の高い機能から順に開発や改善に取り組みたいと考えています。そのため、障害が発生した場合は、実行していたファイル、アプリケーション、サービスに関する情報を Google に送信していただけますと幸いです。
 
 使用統計データには、設定、ボタンのクリック数、メモリの使用状況などの情報が含まれ、ウェブページの URL や個人情報は含まれません。障害レポートには、障害発生時のシステム情報が含まれ、障害発生時の状況によってはウェブページの URL や個人情報が含まれることもあります。</translation>
-<translation id="5715468759630044318">アカウントを選択</translation>
 <translation id="5719837394786370183">シークレット タブで表示したページの記録は、シークレット タブをすべて閉じた後、ブラウザの履歴、Cookieの保存場所、検索履歴から消去されます。ただし、ダウンロードしたファイルや作成したブックマークは保存されます。
 
 あらゆる場所に記録が一切残らないわけではありません。シークレット モードを使っても、雇用主、インターネット サービス プロバイダ、訪問先のウェブサイトに閲覧内容が知られる可能性はあります。</translation>
@@ -433,7 +433,6 @@
 <translation id="6699351163704950317">保存したすべてのページ</translation>
 <translation id="6710213216561001401">前へ</translation>
 <translation id="6720988912937197322">保存したページはオフラインで表示できません</translation>
-<translation id="6722992508235227685">ブックマーク、履歴、パスワードなどの設定が Google アカウントに同期され、どのデバイスでも利用できるようになります。同期する項目は [<ph name="BEGIN_LINK1" />設定<ph name="END_LINK1" />] で選択できます。</translation>
 <translation id="6738867403308150051">ダウンロードしています…</translation>
 <translation id="6762156594045689028">この設定を変更するには、<ph name="BEGIN_LINK" />同期をリセット<ph name="END_LINK" />します</translation>
 <translation id="6770414673596662518">また、Chrome のセーフ ブラウジング システムにより悪意のあるページが検出され、フィッシング、不正なソフトウェア、有害なダウンロードからユーザーを保護します。</translation>
@@ -500,6 +499,7 @@
 <translation id="7501135638693251872">すべてのブックマーク</translation>
 <translation id="7521387064766892559">Javascript</translation>
 <translation id="7562080006725997899">閲覧データの消去</translation>
+<translation id="756809126120519699">Chrome データの消去完了</translation>
 <translation id="7588950540487816470">フィジカルウェブ</translation>
 <translation id="7596558890252710462">オペレーティング システム</translation>
 <translation id="7599840151813361502"><ph name="BEGIN_LINK" />Google アカウント<ph name="END_LINK" />へのログインは維持されます</translation>
@@ -543,7 +543,7 @@
 <translation id="8069239273282989646">圧縮後</translation>
 <translation id="8073388330009372546">新しいタブで画像を開く</translation>
 <translation id="8076014560081431679">保存済みのサイト設定は削除されず、普段の閲覧行動を反映した設定などが残る場合があります。<ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
-<translation id="8084156870963450514">ログインすると、どのデバイスからもウェブ上の自分のデータにアクセスできます</translation>
+<translation id="8087000398470557479"><ph name="DOMAIN_NAME" /> のコンテンツを Google から配信しています。</translation>
 <translation id="8098570222830891427">近くのデバイスから Bluetooth を介してウェブページが送信されています。端末がアクティブになったとき、Chrome ではこうしたページがスキャンされ、表示されます。スキャンされたページは Google サービスに送られ、ページ結果の品質向上に使用されます。
 
 フィジカル ウェブの管理は Chrome のプライバシー設定で行うことができます。</translation>
@@ -609,6 +609,7 @@
 <translation id="8931159598799892500">Chrome + フィジカル ウェブ</translation>
 <translation id="8941248009481596111">このサイトへの接続はプライベート接続です。</translation>
 <translation id="8941729603749328384">www.example.com</translation>
+<translation id="8942627711005830162">別のウィンドウで開く</translation>
 <translation id="8959122750345127698"><ph name="URL" /> にアクセスできません</translation>
 <translation id="8979340629087822094">過去 1 日</translation>
 <translation id="8987061207681586800">自分だけの Chrome を</translation>

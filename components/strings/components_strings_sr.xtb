@@ -38,7 +38,6 @@
 <translation id="1228893227497259893">Погрешан идентификатор ентитета</translation>
 <translation id="1232569758102978740">Ненасловљено</translation>
 <translation id="1254117744268754948">Избор директоријума</translation>
-<translation id="1270699273812232624">Дозволи ставке</translation>
 <translation id="1285320974508926690">Никад не преводи овај сајт</translation>
 <translation id="129553762522093515">Недавно затворено</translation>
 <translation id="1339601241726513588">Домен уписнице:</translation>
@@ -85,7 +84,6 @@
 <translation id="1898423065542865115">Филтрирање</translation>
 <translation id="1911837502049945214">Хост <ph name="HOST_NAME" /> није прихватио сертификат за пријављивање или је сертификат за пријављивање можда истекао.</translation>
 <translation id="194030505837763158">Идите на <ph name="LINK" /></translation>
-<translation id="1958820272620550857">Блокирај ставке</translation>
 <translation id="1962204205936693436"><ph name="DOMAIN" /> – обележивачи</translation>
 <translation id="1973335181906896915">Грешка при серијализацији</translation>
 <translation id="1974060860693918893">Напредне опције</translation>
@@ -209,7 +207,6 @@
 <translation id="3105172416063519923">ИД елемента:</translation>
 <translation id="3109728660330352905">Немате овлашћење да прегледате ову страницу.</translation>
 <translation id="3118046075435288765">Сервер је неочекивано прекинуо везу.</translation>
-<translation id="31454997771848827">Групиши домене</translation>
 <translation id="3145945101586104090">Декодирање одговора није успело</translation>
 <translation id="3147485256806412701">Овај сајт користи нови генерички домен највишег нивоа.</translation>
 <translation id="3150653042067488994">Привремена грешка на серверу</translation>
@@ -289,6 +286,7 @@
 <translation id="3788090790273268753">Сертификат за овај сајт истиче 2016, а ланац сертификата садржи сертификат потписан помоћу алгоритма SHA-1.</translation>
 <translation id="382518646247711829">Ако користите прокси сервер...</translation>
 <translation id="3828924085048779000">Није дозвољено да поље за приступну фразу буде празно.</translation>
+<translation id="3845539888601087042">Приказујемо историју са уређаја на које сте пријављени. <ph name="BEGIN_LINK" />Сазнајте више<ph name="END_LINK" />.</translation>
 <translation id="385051799172605136">Назад</translation>
 <translation id="3858027520442213535">Ажурирајте датум и време</translation>
 <translation id="3884278016824448484">Неусаглашени идентификатор уређаја</translation>
@@ -324,7 +322,6 @@
 <translation id="4258748452823770588">Неисправан потпис</translation>
 <translation id="4268298190799576220">Chromium овог пута није успео да верификује картицу. Покушајте поново касније.</translation>
 <translation id="4269787794583293679">(Без корисничког имена)</translation>
-<translation id="4278390842282768270">Дозвољено</translation>
 <translation id="4300246636397505754">Предлози родитеља</translation>
 <translation id="4304224509867189079">Пријављивање</translation>
 <translation id="4325863107915753736">Нисмо успели да пронађемо чланак</translation>
@@ -409,6 +406,7 @@
 <translation id="5421136146218899937">Обриши податке прегледања...</translation>
 <translation id="5430298929874300616">Уклоните обележивач</translation>
 <translation id="5431657950005405462">Датотека није пронађена</translation>
+<translation id="5435775191620395718">Приказујемо историју са овог уређаја. <ph name="BEGIN_LINK" />Сазнајте више<ph name="END_LINK" />.</translation>
 <translation id="5439770059721715174">Грешка у валидацији шеме на „<ph name="ERROR_PATH" />“: <ph name="ERROR" /></translation>
 <translation id="5447330194051379405">Прикажи све сачуване странице</translation>
 <translation id="5452270690849572955">Није могуће пронаћи ову страницу хоста <ph name="HOST_NAME" /></translation>
@@ -518,7 +516,6 @@
 <translation id="6753269504797312559">Вредност смерница</translation>
 <translation id="6757797048963528358">Уређај је прешао у режим спавања.</translation>
 <translation id="6781404225664080496">Захтеви за овај URL су привремено онемогућени.</translation>
-<translation id="6800914069727136216">У пакету садржаја</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6830600606572693159">Веб-страница на адреси <ph name="URL" /> тренутно је недоступна. Можда је преоптерећена или неактивна због одржавања.</translation>
 <translation id="6831043979455480757">Преведи</translation>
@@ -687,6 +684,7 @@
 <translation id="8730621377337864115">Готово</translation>
 <translation id="8738058698779197622">Да бисте успоставили безбедну везу, сат на уређају мора да буде тачан. То је зато што сертификати које веб-сајтови користе за идентификацију важе само одређени временски период. Пошто сат на вашем уређају није тачан, Chromium не може да верификује ове сертификате.</translation>
 <translation id="8740359287975076522">Нисмо успели да пронађемо &lt;abbr id="dnsDefinition"&gt;DNS адресу&lt;/abbr&gt; хоста <ph name="HOST_NAME" />. Покушавамо да утврдимо у чему је проблем.</translation>
+<translation id="8741995161408053644">Google налог има друге облике историје прегледања на <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="8790007591277257123">&amp;Понови брисање</translation>
 <translation id="8798099450830957504">Подразумевано</translation>
 <translation id="8804164990146287819">Политика приватности</translation>

@@ -6,7 +6,6 @@
 <translation id="10614374240317010">Jangan pernah disimpan</translation>
 <translation id="1061441684050139317">Chrome memerlukan akses mikrofon untuk berbagi dengan situs ini.</translation>
 <translation id="1080790410959514870">Anda keluar dari akun yang dikelola oleh <ph name="DOMAIN_NAME" />. Tindakan ini akan menghapus data Chrome yang tersimpan di perangkat ini, namun data akan tetap berada di Akun Google Anda.</translation>
-<translation id="1095407227123756519">Tambahkan akun untuk mendapatkan bookmark, riwayat, sandi, dan setelan lainnya di semua perangkat Anda.</translation>
 <translation id="1098052486217676340">Selesai</translation>
 <translation id="1121094540300013208">Laporan kerusakan dan penggunaan</translation>
 <translation id="1137305377394488060">satu jam terakhir</translation>
@@ -197,6 +196,7 @@ Untuk menyesuaikan istilah penelusuran, tekan lama untuk memilih. Untuk menyarin
 <translation id="3716158070938632480">Terdapat laman web di sekitar</translation>
 <translation id="3732088672634061408">Tidak dapat mengambil minat.</translation>
 <translation id="3738139272394829648">Sentuh untuk Menelusuri</translation>
+<translation id="3744111561329211289">Sinkronisasi latar belakang</translation>
 <translation id="3809549525127675114">“<ph name="VIDEO_TITLE" />” selesai</translation>
 <translation id="3828029223314399057">Cari bookmark</translation>
 <translation id="3871171699884605801">Riwayat penjelajahan tidak dapat dihapus melalui akun anak</translation>
@@ -285,6 +285,7 @@ Cukup buka Chrome di komputer, buka menu, lalu pilih "Masuk ke Chrome…”</tra
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">Izinkan</translation>
 <translation id="5040262127954254034">Privasi</translation>
+<translation id="5056549851600133418">Artikel untuk Anda</translation>
 <translation id="5063480226653192405">Penggunaan</translation>
 <translation id="5100237604440890931">Diciutkan - klik untuk memperluas.</translation>
 <translation id="5107381076085091558">Unduhan dijeda.</translation>
@@ -352,7 +353,6 @@ Cukup buka Chrome di komputer, buka menu, lalu pilih "Masuk ke Chrome…”</tra
 <translation id="5712189971979076230">Bantu kami memprioritaskan fitur dan penyempurnaan yang harus dikerjakan dengan mengirimkan informasi tentang file, aplikasi, dan layanan yang sedang berjalan kepada Google kapan pun aplikasi mogok.
 
 Statistik penggunaan mencakup informasi seperti preferensi, klik tombol, dan penggunaan memori. Statistik ini tidak mencakup URL laman web atau informasi pribadi apa pun. Laporan kerusakan berisi informasi sistem saat terjadi mogok dan dapat berisi URL laman web atau informasi pribadi, tergantung apa yang terjadi saat aplikasi mogok.</translation>
-<translation id="5715468759630044318">Pilih akun</translation>
 <translation id="5719837394786370183">Laman yang Anda lihat dalam tab penyamaran tidak akan disimpan di riwayat, penyimpanan cookie, atau riwayat penelusuran browser setelah semua tab penyamaran ditutup. File apa pun yang diunduh atau bookmark yang dibuat akan tetap tersimpan.
 
 Namun demikian, bukan berarti Anda sama sekali tidak terlihat. Menggunakan mode penyamaran tidak akan menyembunyikan penjelajahan yang Anda lakukan dari atasan di kantor, dari penyedia layanan internet, maupun situs web yang Anda kunjungi.</translation>
@@ -433,7 +433,6 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="6699351163704950317">Semua laman tersimpan</translation>
 <translation id="6710213216561001401">Sebelumnya</translation>
 <translation id="6720988912937197322">Laman tersimpan tidak tersedia offline</translation>
-<translation id="6722992508235227685">Bookmark, riwayat, sandi, dan setelan lainnya akan disinkronkan dengan Akun Google sehingga Anda dapat menggunakannya di semua perangkat. Anda dapat memilih data yang ingin disinkronkan di <ph name="BEGIN_LINK1" />Setelan<ph name="END_LINK1" />.</translation>
 <translation id="6738867403308150051">Mengunduh…</translation>
 <translation id="6762156594045689028">Untuk mengubah setelan ini, <ph name="BEGIN_LINK" />setel ulang sinkronisasi<ph name="END_LINK" /></translation>
 <translation id="6770414673596662518">Sistem Penjelajahan Aman Chrome juga dapat digunakan untuk mendeteksi laman berbahaya dan melindungi Anda dari phishing, perangkat lunak perusak, dan unduhan berbahaya.</translation>
@@ -500,6 +499,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="7501135638693251872">Semua bookmark</translation>
 <translation id="7521387064766892559">Javascript</translation>
 <translation id="7562080006725997899">Menghapus data penjelajahan</translation>
+<translation id="756809126120519699">Data Chrome telah dihapus</translation>
 <translation id="7588950540487816470">Web Fisik</translation>
 <translation id="7596558890252710462">Sistem operasi</translation>
 <translation id="7599840151813361502">Anda tidak akan dikeluarkan dari <ph name="BEGIN_LINK" />Akun Google<ph name="END_LINK" /></translation>
@@ -543,7 +543,7 @@ Namun demikian, bukan berarti Anda tidak terlihat sama sekali. Menggunakan mode 
 <translation id="8069239273282989646">Setelah kompresi</translation>
 <translation id="8073388330009372546">Buka gambar di tab baru</translation>
 <translation id="8076014560081431679">Setelan situs yang disimpan tidak akan dihapus dan dapat mencerminkan kebiasaan penjelajahan Anda. <ph name="BEGIN_LINK" />Pelajari lebih lanjut<ph name="END_LINK" /></translation>
-<translation id="8084156870963450514">Masuk untuk mengakses semua file web Anda dari perangkat apa pun</translation>
+<translation id="8087000398470557479">Konten ini dari <ph name="DOMAIN_NAME" />, dikirimkan oleh Google.</translation>
 <translation id="8098570222830891427">Perangkat di sekitar Anda sedang mentransmisi laman web melalui Bluetooth. Chrome akan memindai laman dan menampilkannya saat Anda membangunkan perangkat. Laman ini akan melalui layanan Google untuk meningkatkan kualitas hasil laman.
 
 Anda dapat mengontrol Web Fisik di Setelan Chrome.</translation>
@@ -609,6 +609,7 @@ Untuk mendapatkan lisensi baru, sambungkan ke internet dan putar konten yang diu
 <translation id="8931159598799892500">Chrome + Web Fisik</translation>
 <translation id="8941248009481596111">Sambungan Anda ke situs ini bersifat pribadi.</translation>
 <translation id="8941729603749328384">www.example.com</translation>
+<translation id="8942627711005830162">Buka di jendela lain</translation>
 <translation id="8959122750345127698">Navigasi tidak dapat dijangkau: <ph name="URL" /></translation>
 <translation id="8979340629087822094">kemarin</translation>
 <translation id="8987061207681586800">Gayakan Chrome sesukamu</translation>

@@ -39,7 +39,6 @@
 <translation id="1228893227497259893">Väärä entiteettitunnus</translation>
 <translation id="1232569758102978740">Nimetön</translation>
 <translation id="1254117744268754948">Valitse kansio</translation>
-<translation id="1270699273812232624">Salli kohteet</translation>
 <translation id="1285320974508926690">Älä käännä tätä sivustoa</translation>
 <translation id="129553762522093515">Hiljattain suljetut välilehdet</translation>
 <translation id="1339601241726513588">Käyttöönoton verkkotunnus:</translation>
@@ -86,7 +85,6 @@
 <translation id="1898423065542865115">Suodatus</translation>
 <translation id="1911837502049945214"><ph name="HOST_NAME" /> ei hyväksynyt kirjautumisvarmennettasi, tai kirjautumisvarmenteesi on voinut vanhentua.</translation>
 <translation id="194030505837763158">Siirry osoitteeseen <ph name="LINK" /></translation>
-<translation id="1958820272620550857">Estä kohteet</translation>
 <translation id="1962204205936693436">Verkkotunnuksen <ph name="DOMAIN" /> kirjanmerkit</translation>
 <translation id="1973335181906896915">Sarjaesittämisen virhe</translation>
 <translation id="1974060860693918893">Lisäasetukset</translation>
@@ -209,7 +207,6 @@
 <translation id="3105172416063519923">Laitteen tunnus:</translation>
 <translation id="3109728660330352905">Sinulla ei ole oikeutta tarkastella tätä sivua.</translation>
 <translation id="3118046075435288765">Palvelin katkaisi yhteyden.</translation>
-<translation id="31454997771848827">Ryhmittele verkkotunnukset</translation>
 <translation id="3145945101586104090">Vastauksen purkaminen epäonnistui</translation>
 <translation id="3147485256806412701">Tämä sivusto käyttää uutta yleistä ylätason verkkotunnusta.</translation>
 <translation id="3150653042067488994">Tilapäinen palvelinvirhe</translation>
@@ -290,6 +287,7 @@
 <translation id="3788090790273268753">Tämän sivuston varmenne vanhenee vuonna 2016, ja varmenneketju sisältää varmenteen, joka on allekirjoitettu SHA-1:llä.</translation>
 <translation id="382518646247711829">Jos käytät välityspalvelinta…</translation>
 <translation id="3828924085048779000">Tunnuslause ei voi olla tyhjä.</translation>
+<translation id="3845539888601087042">Näytetään kirjautuneiden laitteiden historia. <ph name="BEGIN_LINK" />Lisätietoja<ph name="END_LINK" /></translation>
 <translation id="385051799172605136">Edellinen</translation>
 <translation id="3858027520442213535">Päivitä päivämäärä ja aika</translation>
 <translation id="3884278016824448484">Ristiriitainen laitteen tunnus</translation>
@@ -325,7 +323,6 @@
 <translation id="4258748452823770588">Virheellinen allekirjoitus</translation>
 <translation id="4268298190799576220">Chromium ei voinut vahvistaa korttiasi. Yritä myöhemmin uudelleen.</translation>
 <translation id="4269787794583293679">(Ei käyttäjänimeä)</translation>
-<translation id="4278390842282768270">Sallittu</translation>
 <translation id="4300246636397505754">Ylätason ehdotukset</translation>
 <translation id="4304224509867189079">Kirjaudu sisään</translation>
 <translation id="4325863107915753736">Artikkelia ei löydy</translation>
@@ -410,6 +407,7 @@
 <translation id="5421136146218899937">Poista selaustiedot...</translation>
 <translation id="5430298929874300616">Poista kirjanmerkki</translation>
 <translation id="5431657950005405462">Tiedostoasi ei löydy</translation>
+<translation id="5435775191620395718">Näytetään tämän laitteen historia. <ph name="BEGIN_LINK" />Lisätietoja<ph name="END_LINK" /></translation>
 <translation id="5439770059721715174">Mallin todennusvirhe kohdassa <ph name="ERROR_PATH" />: <ph name="ERROR" /></translation>
 <translation id="5447330194051379405">Näytä kaikki tallennetut sivut</translation>
 <translation id="5452270690849572955">Tätä sivuston <ph name="HOST_NAME" /> sivua ei löydy.</translation>
@@ -522,7 +520,6 @@
 <translation id="6753269504797312559">Käytännön arvo</translation>
 <translation id="6757797048963528358">Laitteesi siirtyi virransäästötilaan.</translation>
 <translation id="6781404225664080496">Tämän URL-osoitteen pyyntöjä rajoitetaan tilapäisesti.</translation>
-<translation id="6800914069727136216">Sisältöpaketissa</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6830600606572693159">Verkkosivusto osoitteessa <ph name="URL" /> ei ole juuri nyt käytettävissä. Se saattaa olla ylikuormitettu tai suljettuna ylläpitotoimien vuoksi.</translation>
 <translation id="6831043979455480757">Käännä</translation>
@@ -696,6 +693,7 @@ Psst! Suosittelemme käyttämään ensi kerralla incognito-tilaa <ph name="SHORT
 <translation id="8730621377337864115">Valmis</translation>
 <translation id="8738058698779197622">Kellosi täytyy asettaa oikeaan aikaan, jotta salattu yhteys voidaan muodostaa. Tämä johtuu siitä, että verkkosivustojen tunnistamisessa käytettävät varmenteet ovat voimassa vain tiettyinä ajanjaksoina. Chromium ei voi vahvistaa varmenteita, koska laitteesi kello on väärässä ajassa.</translation>
 <translation id="8740359287975076522">Sivuston <ph name="HOST_NAME" /> &lt;abbr id="dnsDefinition"&gt;DNS-osoitetta&lt;/abbr&gt; ei löydy. Ongelmaa diagnosoidaan.</translation>
+<translation id="8741995161408053644">Google-tililläsi voi olla muita selaushistoriatietoja osoitteessa <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="8790007591277257123">&amp;Toista poisto</translation>
 <translation id="8798099450830957504">Oletus</translation>
 <translation id="8804164990146287819">Tietosuojakäytäntö</translation>

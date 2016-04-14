@@ -81,6 +81,7 @@
 <translation id="1359553908012294236">Jeśli ta zasada jest włączona lub nieskonfigurowana, <ph name="PRODUCT_NAME" /> będzie umożliwiać logowanie się w trybie gościa. Dane logowania gościa to profile <ph name="PRODUCT_NAME" />, dla których wszystkie okna otwierają się w trybie incognito.
 
       Jeśli zasada jest wyłączona, <ph name="PRODUCT_NAME" /> nie zezwala na uruchamianie sesji gościa.</translation>
+<translation id="1363275621236827384">Włącz wysyłanie zapytań o profile sprzętowe do Quirks Server</translation>
 <translation id="1397855852561539316">Adres URL usługi propozycji od domyślnego dostawcy wyszukiwania</translation>
 <translation id="1398889361882383850">Pozwala określić, czy strony będą mogły automatycznie uruchamiać wtyczki. Automatyczne uruchamianie wtyczek może być dozwolone dla wszystkich witryn lub zabronione dla wszystkich witryn.
 
@@ -681,6 +682,13 @@
 
       Wartość opcji należy podać w milisekundach. Wartości są dopasowywane do przedziału od 30 sekund od 24 godzin.</translation>
 <translation id="3528000905991875314">Włącz alternatywne strony błędów</translation>
+<translation id="3538538104630456270">To ustawienie było używane przed wprowadzeniem ponownego uwierzytelniania przy wyświetleniu haseł. Po wprowadzeniu ponownego uwierzytelniania ustawienie i zasada nie mają żadnego wpływu na działanie Chrome. Obecnie Chrome działa tak, jakby zasada wyłączała wyświetlanie tekstu haseł na stronie ustawień menedżera haseł. Oznacza to, że na stronie ustawień znajduje się tylko element zastępczy, a dopiero po kliknięciu przez użytkownika „Pokaż” (i ponownym uwierzytelnieniu, jeśli jest wymagane) Chrome pokaże hasło. Poniżej wcześniejszy opis tej zasady.
+
+          Pozwala określić, czy użytkownik może wyświetlać tekst haseł w menedżerze haseł.
+
+          Jeśli wyłączysz to ustawienie, w oknie menedżera haseł nie będzie można wyświetlać tekstu przechowywanych haseł.
+
+          W przypadku włączenia lub nieskonfigurowania tej zasady użytkownicy będą mogli wyświetlać tekst haseł w menedżerze haseł.</translation>
 <translation id="3547954654003013442">Ustawienia serwera proxy</translation>
 <translation id="3570008976476035109">Blokuj wtyczki w tych witrynach</translation>
 <translation id="3591584750136265240">Skonfiguruj sposób uwierzytelniania logowania</translation>
@@ -1570,6 +1578,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 
       Jeśli zasada nie jest ustawiona, użytkownik może zmieniać listę aplikacji przypiętych w programie uruchamiającym.</translation>
 <translation id="7132877481099023201">Adresy URL, które bez pytania otrzymają dostęp do urządzeń do nagrywania filmów</translation>
+<translation id="7167436895080860385">Zezwalaj użytkownikom na pokazywanie haseł w menedżerze haseł (wycofane)</translation>
 <translation id="7173856672248996428">Profil tymczasowy</translation>
 <translation id="7187256234726597551">Jeśli zasada ma wartość „prawda”, zdalne poświadczanie na potrzeby urządzenia jest dozwolone, a certyfikat jest automatycznie generowany i przesyłany na serwer zarządzania urządzeniami.
 
@@ -1866,6 +1875,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="8197918588508433925">Ta zasada określa dozwolone rozszerzenia do użycia z funkcją  chrome.enterprise.platformKeysPrivate.challengeUserKey() interfejsu API Enterprise Platform Keys do zdalnego poświadczania. Rozszerzenia muszą zostać dodane do tej listy, by były używane z interfejsem API.
 
           Jeśli rozszerzenie nie znajduje się na liście, lub lista nie jest ustawiona, wywołanie interfejsu API zakończy się błędem.</translation>
+<translation id="8214600119442850823">Pozwala skonfigurować menedżera haseł.</translation>
 <translation id="8244525275280476362">Maksymalne opóźnienie pobrania po unieważnieniu zasady</translation>
 <translation id="8256688113167012935">Określa nazwę konta, którą <ph name="PRODUCT_OS_NAME" /> pokazuje na ekranie logowania dla danego lokalnego konta na urządzeniu.
 
@@ -2033,6 +2043,17 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="8858642179038618439">Wymuś tryb bezpieczny w YouTube</translation>
 <translation id="8864975621965365890">Pomija monit o odinstalowanie wyświetlany wtedy, gdy witryna jest renderowana przez <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="8870318296973696995">Strona startowa</translation>
+<translation id="8889588091638298603">Quirks Server dostarcza pliki konfiguracyjne dla określonych urządzeń, takie jak
+      profile ICC do kalibracji monitorów.
+
+      W przypadku wyłączenia tej zasady urządzenie nie będzie próbować
+      pobrać plików konfiguracyjnych z Quirks Server.
+
+      Gdy zasada jest włączona lub nie została skonfigurowana,
+      <ph name="PRODUCT_OS_NAME" /> będzie
+      automatycznie pobierać pliki konfiguracyjne z Quirks Server
+      (jeśli będą dostępne) i zapisywać je na urządzeniu. Takie pliki mogą
+      na przykład poprawiać jakość obrazu na podłączonych monitorach.</translation>
 <translation id="8905426178924715309">Ta zasada została wycofana. Zamiast niej użyj ForceGoogleSafeSearch lub ForceYouTubeSafetyMode. Zasada zostanie zignorowana, jeśli ustawiona zostanie zasada ForceGoogleSafeSearch lub ForceYouTubeSafetyMode.
 
       Wymusza realizację zapytań w wyszukiwarce Google przy użyciu filtra SafeSearch i uniemożliwia użytkownikom zmianę tego ustawienia. To ustawienie wymusza też włączenie Trybu bezpiecznego w YouTube.

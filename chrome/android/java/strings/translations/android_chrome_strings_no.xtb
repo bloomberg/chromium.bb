@@ -6,7 +6,6 @@
 <translation id="10614374240317010">Aldri lagret</translation>
 <translation id="1061441684050139317">Chrome må ha tilgang til mikrofonen for å kunne dele den med dette nettstedet.</translation>
 <translation id="1080790410959514870">Du er i ferd med å logge av en konto som er administrert av <ph name="DOMAIN_NAME" />. Dette fører til at Chrome-data som er lagret på enheten, slettes. Dataene er imidlertid fortsatt lagret i Google-kontoen din.</translation>
-<translation id="1095407227123756519">Legg til en konto for å få bokmerkene, loggen, passordene og de andre innstillingene dine på alle enhetene du bruker.</translation>
 <translation id="1098052486217676340">Ferdig</translation>
 <translation id="1121094540300013208">Bruks- og programstopprapporter</translation>
 <translation id="1137305377394488060">den siste timen</translation>
@@ -197,6 +196,7 @@ Hvis du vil endre søkeordet, kan du trykke på det og holde for å merke det. H
 <translation id="3716158070938632480">Det finnes nettsider i nærheten</translation>
 <translation id="3732088672634061408">Kunne ikke hente interesser.</translation>
 <translation id="3738139272394829648">Trykk for å søke</translation>
+<translation id="3744111561329211289">Bakgrunnssynkronisering</translation>
 <translation id="3809549525127675114"><ph name="VIDEO_TITLE" /> er ferdig</translation>
 <translation id="3828029223314399057">Søk i bokmerker</translation>
 <translation id="3871171699884605801">Nettlesingsloggen kan ikke slettes for barnekontoer</translation>
@@ -285,6 +285,7 @@ Bare åpne Chrome på datamaskinen, gå til menyen, og velg «Logg på Chrome».
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">Tillat</translation>
 <translation id="5040262127954254034">Personvern</translation>
+<translation id="5056549851600133418">Artikler for deg</translation>
 <translation id="5063480226653192405">Bruk</translation>
 <translation id="5100237604440890931">Minimert – klikk for å utvide</translation>
 <translation id="5107381076085091558">Nedlastingen er satt på pause.</translation>
@@ -352,7 +353,6 @@ Bare åpne Chrome på datamaskinen, gå til menyen, og velg «Logg på Chrome».
 <translation id="5712189971979076230">Hjelp oss med å prioritere funksjonene og forbedringene vi skal jobbe på, ved å sende Google informasjon om filene, appene og tjenestene som kjører når du opplever et krasj.
 
 Bruksstatistikken inneholder informasjon om for eksempel innstillinger, knappeklikk og minnebruk. Den inneholder ikke nettadresser eller personopplysninger. Programstopprapporter inneholder systeminformasjon fra krasjtidspunktet, og de kan inneholde nettadresser eller personopplysninger, avhengig av hva som skjedde på krasjtidspunktet.</translation>
-<translation id="5715468759630044318">Velg en konto</translation>
 <translation id="5719837394786370183">Når du åpner sider i inkognitofaner, lagres de ikke i nettleser- eller søkeloggen, og eventuelle informasjonskapsler slettes. Filer du laster ned og bokmerker du oppretter, beholdes.
 
 Du er imidlertid ikke usynlig. Inkognito-modusen skjuler ikke surfingen din for arbeidsgiveren, nettleverandøren eller nettstedene du besøker.</translation>
@@ -433,7 +433,6 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="6699351163704950317">Alle lagrede sider</translation>
 <translation id="6710213216561001401">Forrige</translation>
 <translation id="6720988912937197322">Den lagrede siden er ikke tilgjengelig uten nett</translation>
-<translation id="6722992508235227685">Bokmerkene dine, loggen din, passordene dine og andre innstillinger synkroniseres til Google-kontoen din, slik at du kan bruke dem på alle enhetene dine. Du kan velge hva som skal synkroniseres, i <ph name="BEGIN_LINK1" />innstillingene<ph name="END_LINK1" />.</translation>
 <translation id="6738867403308150051">Laster ned …</translation>
 <translation id="6762156594045689028">For å endre denne innstillingen, <ph name="BEGIN_LINK" />tilbakestill synkroniseringen<ph name="END_LINK" /></translation>
 <translation id="6770414673596662518">Safe Browsing-systemet («sikker surfing») i Chrome brukes også til å oppdage skadelige sider og beskytte deg mot nettfisking, skadelig programvare og skadelige nedlastinger.</translation>
@@ -500,6 +499,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="7501135638693251872">Alle bokmerker</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7562080006725997899">Sletter nettlesingsdata</translation>
+<translation id="756809126120519699">Chrome-dataene er slettet</translation>
 <translation id="7588950540487816470">Fysisk nett</translation>
 <translation id="7596558890252710462">Operativsystem</translation>
 <translation id="7599840151813361502">Du logges ikke av <ph name="BEGIN_LINK" />Google-kontoene<ph name="END_LINK" /> dine</translation>
@@ -543,7 +543,7 @@ Du er imidlertid ikke usynlig. Inkognitomodus skjuler ikke surfingen din for arb
 <translation id="8069239273282989646">Etter komprimering</translation>
 <translation id="8073388330009372546">Åpne bildet i en ny fane</translation>
 <translation id="8076014560081431679">Lagrede nettstedsinnstillinger slettes ikke og kan gjenspeile nettleserbruken din. <ph name="BEGIN_LINK" />Finn ut mer<ph name="END_LINK" /></translation>
-<translation id="8084156870963450514">Logg på, så får du tilgang til alt du har på nettet, på alle enheter du bruker</translation>
+<translation id="8087000398470557479">Dette innholdet er fra <ph name="DOMAIN_NAME" /> og er levert av Google.</translation>
 <translation id="8098570222830891427">Enheter i nærheten av deg kringkaster nettsider via Bluetooth. Chrome søker etter sider og viser dem når du vekker enheten. Disse sidene går gjennom en Google-tjeneste for å forbedre kvaliteten på sideresultatene.
 
 Du kan kontrollere det fysiske nettet i Chrome-innstillingene.</translation>
@@ -609,6 +609,7 @@ For å få nye lisenser må du koble deg til Internett og spille av innholdet du
 <translation id="8931159598799892500">Chrome + det fysiske nettet</translation>
 <translation id="8941248009481596111">Tilkoblingen til dette nettstedet er privat.</translation>
 <translation id="8941729603749328384">www.example.com</translation>
+<translation id="8942627711005830162">Åpne i et annet vindu</translation>
 <translation id="8959122750345127698">Nettadressen er utilgjengelig: <ph name="URL" /></translation>
 <translation id="8979340629087822094">det siste døgnet</translation>
 <translation id="8987061207681586800">Tilpass Chrome</translation>

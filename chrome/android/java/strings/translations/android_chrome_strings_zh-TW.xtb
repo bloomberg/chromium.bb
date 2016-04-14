@@ -6,7 +6,6 @@
 <translation id="10614374240317010">永不儲存</translation>
 <translation id="1061441684050139317">Chrome 需要存取麥克風，才能與這個網站分享。</translation>
 <translation id="1080790410959514870">您即將登出由 <ph name="DOMAIN_NAME" /> 所管理的帳戶。儲存在這個裝置上的 Chrome 資料將因此遭到刪除，但這些資料仍會保留在您的 Google 帳戶中。</translation>
-<translation id="1095407227123756519">新增帳戶後，即可從任何裝置取得自己的書籤、歷史紀錄、密碼和其他設定。</translation>
 <translation id="1098052486217676340">已結束</translation>
 <translation id="1121094540300013208">使用資料和當機報告</translation>
 <translation id="1137305377394488060">過去 1 小時</translation>
@@ -197,6 +196,7 @@
 <translation id="3716158070938632480">附近有裝置在播送網頁</translation>
 <translation id="3732088672634061408">無法擷取興趣資料。</translation>
 <translation id="3738139272394829648">輕觸搜尋</translation>
+<translation id="3744111561329211289">背景同步處理</translation>
 <translation id="3809549525127675114">「<ph name="VIDEO_TITLE" />」已結束</translation>
 <translation id="3828029223314399057">搜尋書籤</translation>
 <translation id="3871171699884605801">無法清除兒童專用帳戶的瀏覽紀錄</translation>
@@ -285,6 +285,7 @@
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">允許</translation>
 <translation id="5040262127954254034">隱私權</translation>
+<translation id="5056549851600133418">為您推薦的文章</translation>
 <translation id="5063480226653192405">用量</translation>
 <translation id="5100237604440890931">已收合 - 按一下即可展開。</translation>
 <translation id="5107381076085091558">已暫停下載。</translation>
@@ -352,7 +353,6 @@
 <translation id="5712189971979076230">發生當機情形時，如果您將當下正在執行的檔案、應用程式和服務的相關資訊傳送給 Google，即可協助我們優先提供重要的功能與改進項目。
 
 使用統計資料包括偏好設定、按鈕點擊次數和記憶體使用量等資訊，不含網頁網址或任何個人資訊。當機報告則包括當機時的系統資訊；而且根據當機時發生的狀況，可能會包含網頁網址和個人資訊。</translation>
-<translation id="5715468759630044318">選擇帳戶</translation>
 <translation id="5719837394786370183">當您關閉所有無痕式分頁後，您在其中瀏覽的網頁都不會保留在瀏覽器紀錄、Cookie 儲存庫或搜尋紀錄中。不過，系統會將您下載的檔案或建立的書籤全部予以保留。
 
 然而，您並沒有因此隱形。使用無痕模式時，您的雇主和網際網路服務供應商仍然可以追蹤您的瀏覽紀錄，您所造訪的網站也可記錄您的瀏覽行為。</translation>
@@ -433,7 +433,6 @@
 <translation id="6699351163704950317">所有儲存的網頁</translation>
 <translation id="6710213216561001401">返回</translation>
 <translation id="6720988912937197322">無法離線存取您剛儲存的網頁</translation>
-<translation id="6722992508235227685">您的書籤、歷史紀錄、密碼和其他設定都會在您的 Google 帳戶中保持同步，讓您在所有個人裝置上使用。您可以在 [<ph name="BEGIN_LINK1" />設定<ph name="END_LINK1" />] 中選擇要同步處理的資料。</translation>
 <translation id="6738867403308150051">下載中…</translation>
 <translation id="6762156594045689028">如要變更這項設定，請<ph name="BEGIN_LINK" />重設同步功能<ph name="END_LINK" /></translation>
 <translation id="6770414673596662518">Chrome 的安全瀏覽系統也會用於偵測惡意網頁，保護您不受網路釣魚、惡意軟體和有害下載內容的攻擊。</translation>
@@ -500,6 +499,7 @@
 <translation id="7501135638693251872">所有書籤</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7562080006725997899">正在清除瀏覽資料</translation>
+<translation id="756809126120519699">已清除 Chrome 資料</translation>
 <translation id="7588950540487816470">實體化網路</translation>
 <translation id="7596558890252710462">作業系統</translation>
 <translation id="7599840151813361502">您不會因此登出 <ph name="BEGIN_LINK" />Google 帳戶<ph name="END_LINK" /></translation>
@@ -543,7 +543,7 @@
 <translation id="8069239273282989646">壓縮後大小</translation>
 <translation id="8073388330009372546">在新分頁中開啟圖片</translation>
 <translation id="8076014560081431679">已儲存的網站設定不會遭到刪除，而且可能會反映您的瀏覽習慣。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
-<translation id="8084156870963450514">登入帳戶即可透過任何裝置存取您在網路上的所有資料</translation>
+<translation id="8087000398470557479">這個內容來自 <ph name="DOMAIN_NAME" />，由 Google 所提供。</translation>
 <translation id="8098570222830891427">您附近的裝置正在透過藍牙播送網頁。Chrome 會在您的裝置結束休眠狀態時掃瞄並顯示這些網頁。這些網頁經由 Google 服務處理過後，可讓網頁搜尋結果的品質更臻完善。
 
 您可以在 Chrome 設定中控管「實體化網路」設定。</translation>
@@ -609,6 +609,7 @@
 <translation id="8931159598799892500">Chrome 和實體化網路</translation>
 <translation id="8941248009481596111">您與這個網站建立了私人連線。</translation>
 <translation id="8941729603749328384">www.example.com</translation>
+<translation id="8942627711005830162">在其他視窗中開啟</translation>
 <translation id="8959122750345127698">瀏覽的網址無法存取：<ph name="URL" /></translation>
 <translation id="8979340629087822094">過去 1 天</translation>
 <translation id="8987061207681586800">自訂您專屬的 Chrome</translation>

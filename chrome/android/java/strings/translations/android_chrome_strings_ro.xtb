@@ -6,7 +6,6 @@
 <translation id="10614374240317010">Nu se salvează niciodată</translation>
 <translation id="1061441684050139317">Chrome are nevoie de acces la microfon pentru a-l acorda acestui site.</translation>
 <translation id="1080790410959514870">În prezent, te deconectezi de la un cont gestionat de <ph name="DOMAIN_NAME" />. Astfel, vor fi șterse datele Chrome stocate pe acest dispozitiv, dar datele vor rămâne în Contul Google.</translation>
-<translation id="1095407227123756519">Adaugă un cont pentru a avea marcajele, istoricul, parolele și alte setări pe toate dispozitivele.</translation>
 <translation id="1098052486217676340">Terminat</translation>
 <translation id="1121094540300013208">Statistici de utilizare și rapoarte de blocare</translation>
 <translation id="1137305377394488060">din ultima oră</translation>
@@ -197,6 +196,7 @@ Pentru a ajusta termenii căutării, apasă lung pentru a selecta. Pentru a rafi
 <translation id="3716158070938632480">Există pagini web în apropiere</translation>
 <translation id="3732088672634061408">Interesele nu au putut fi preluate.</translation>
 <translation id="3738139272394829648">Atinge pentru a căuta</translation>
+<translation id="3744111561329211289">Sincronizare în fundal</translation>
 <translation id="3809549525127675114">Videoclipul „<ph name="VIDEO_TITLE" />” s-a terminat</translation>
 <translation id="3828029223314399057">Căutați în marcaje</translation>
 <translation id="3871171699884605801">Istoricul de navigare nu poate fi golit folosind conturile de copii</translation>
@@ -285,6 +285,7 @@ Deschide Chrome pe computer, accesează meniul și selectează „Conectează-te
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">Permite</translation>
 <translation id="5040262127954254034">Confidențialitate</translation>
+<translation id="5056549851600133418">Articole pentru tine</translation>
 <translation id="5063480226653192405">Utilizare</translation>
 <translation id="5100237604440890931">Afișare restrânsă – dă clic pentru a extinde.</translation>
 <translation id="5107381076085091558">Descărcare întreruptă.</translation>
@@ -352,7 +353,6 @@ Deschide Chrome pe computer, accesează meniul și selectează „Conectează-te
 <translation id="5712189971979076230">Trimite la Google informații despre fișierele, aplicațiile și serviciile care rulează când te confrunți cu o blocare, pentru a ne ajuta să stabilim la care funcții și îmbunătățiri ar trebui să lucrăm.
 
 Statisticile de utilizare includ informații precum preferințele, clicurile pe butoane și utilizarea memoriei. Acestea nu includ adresele URL ale paginilor web sau alte informații personale. Rapoartele de blocare includ informații despre sistem din momentul blocării și pot include adresele URL ale paginilor web sau informații personale, în funcție de ceea ce s-a întâmplat în momentul blocării.</translation>
-<translation id="5715468759630044318">Alege contul</translation>
 <translation id="5719837394786370183">Paginile pe care le vezi în filele incognito nu vor fi înregistrate în istoricul browserului, nu vor stoca cookie-uri și nu vor rămâne în istoricul de căutare după ce închizi toate filele incognito. Fișierele descărcate și marcajele create vor fi păstrate.
 
 Totuși, nu ești invizibil(ă). Trecerea în modul incognito nu ascunde activitatea de navigare față de angajator, față de furnizorul de servicii de internet sau față de site-urile pe care le accesezi.</translation>
@@ -433,7 +433,6 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="6699351163704950317">Toate paginile salvate</translation>
 <translation id="6710213216561001401">Înapoi</translation>
 <translation id="6720988912937197322">Pagina salvată nu este disponibilă offline</translation>
-<translation id="6722992508235227685">Marcajele, istoricul, parolele și alte setări vor fi sincronizate cu Contul Google pentru a le putea folosi pe toate dispozitivele. Poți alege ce să sincronizezi în <ph name="BEGIN_LINK1" />Setări<ph name="END_LINK1" />.</translation>
 <translation id="6738867403308150051">Se descarcă...</translation>
 <translation id="6762156594045689028">Pentru a modifica această setare, <ph name="BEGIN_LINK" />resetează sincronizarea<ph name="END_LINK" /></translation>
 <translation id="6770414673596662518">Sistemul Navigare sigură din Chrome va fi folosit pentru a detecta pagini rău-intenționate și pentru a te proteja împotriva phishingului, a programelor malware și a descărcărilor periculoase.</translation>
@@ -500,6 +499,7 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="7501135638693251872">Toate marcajele</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7562080006725997899">Se șterg datele de navigare</translation>
+<translation id="756809126120519699">Datele Chrome au fost șterse</translation>
 <translation id="7588950540487816470">Web material</translation>
 <translation id="7596558890252710462">Sistem de operare</translation>
 <translation id="7599840151813361502">Nu vei fi deconectat(ă) de la <ph name="BEGIN_LINK" />Conturile Google<ph name="END_LINK" /></translation>
@@ -543,7 +543,7 @@ Cu toate acestea, nu ești invizibil(ă). Trecerea în modul incognito nu ascund
 <translation id="8069239273282989646">După comprimare</translation>
 <translation id="8073388330009372546">Vedeți imaginea în filă nouă</translation>
 <translation id="8076014560081431679">Setările salvate pentru site-uri nu vor fi șterse și pot reflecta obiceiurile de navigare. <ph name="BEGIN_LINK" />Află mai multe<ph name="END_LINK" /></translation>
-<translation id="8084156870963450514">Conectează-te pentru a-ți accesa tot conținutul de pe web folosind orice dispozitiv</translation>
+<translation id="8087000398470557479">Acest conținut provine de pe <ph name="DOMAIN_NAME" />, oferit de Google.</translation>
 <translation id="8098570222830891427">Dispozitive din apropierea ta difuzează pagini web prin Bluetooth. Chrome va căuta astfel de pagini și le va afișa când activezi dispozitivul. Aceste pagini vor fi procesate de un serviciu Google pentru a îmbunătăți calitatea rezultatelor cu pagini.
 
 Poți să controlezi Webul material din Setările Chrome.</translation>
@@ -609,6 +609,7 @@ Pentru licențe noi, conectează-te la internet și redă conținutul descărcat
 <translation id="8931159598799892500">Chrome + Webul material</translation>
 <translation id="8941248009481596111">Conexiunea la acest site este privată.</translation>
 <translation id="8941729603749328384">www.example.com</translation>
+<translation id="8942627711005830162">Deschide în altă fereastră</translation>
 <translation id="8959122750345127698">Navigarea nu este accesibilă: <ph name="URL" /></translation>
 <translation id="8979340629087822094">din ultima zi</translation>
 <translation id="8987061207681586800">Personalizează Chrome</translation>

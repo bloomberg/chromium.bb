@@ -6,7 +6,6 @@
 <translation id="10614374240317010">Hiç kaydedilmeyecekler</translation>
 <translation id="1061441684050139317">Chrome'un mikrofonu bu siteyle paylaşması için mikrofon erişimine ihtiyacı var.</translation>
 <translation id="1080790410959514870"><ph name="DOMAIN_NAME" /> tarafından yönetilen bir hesaptan çıkış yapıyorsunuz. Bu işlem, bu cihazda depolanan Chrome verilerini siler, ancak veriler Google Hesabınızda kalmaya devam eder.</translation>
-<translation id="1095407227123756519">Yer işaretlerinize, geçmişinize, şifrelerinize ve diğer ayarlarınıza tüm cihazlarınızdan erişmek için bir hesap ekleyin.</translation>
 <translation id="1098052486217676340">Bitti</translation>
 <translation id="1121094540300013208">Kullanım ve kilitlenme raporları</translation>
 <translation id="1137305377394488060">son 1 saat</translation>
@@ -197,6 +196,7 @@ Arama teriminizi düzeltmek için uzun basarak terimi seçin. Aramanızı ayrın
 <translation id="3716158070938632480">Yakındaki web sayfaları</translation>
 <translation id="3732088672634061408">İlgi alanları alınamadı.</translation>
 <translation id="3738139272394829648">Dokun ve Ara</translation>
+<translation id="3744111561329211289">Arka plan senkronizasyonu</translation>
 <translation id="3809549525127675114">“<ph name="VIDEO_TITLE" />” bitti</translation>
 <translation id="3828029223314399057">Yer işaretlerinde ara</translation>
 <translation id="3871171699884605801">Çocuklar için hesapların tarama geçmişi temizlenemez</translation>
@@ -285,6 +285,7 @@ Bunun için bilgisayarınızda Chrome'u açmanız ve menüye gidip "Chrome'da ot
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">İzin ver</translation>
 <translation id="5040262127954254034">Gizlilik</translation>
+<translation id="5056549851600133418">Size uygun makaleler</translation>
 <translation id="5063480226653192405">Kullanım</translation>
 <translation id="5100237604440890931">Daraltıldı - Genişletmek için tıklayın.</translation>
 <translation id="5107381076085091558">İndirme işlemi duraklatıldı.</translation>
@@ -352,7 +353,6 @@ Bunun için bilgisayarınızda Chrome'u açmanız ve menüye gidip "Chrome'da ot
 <translation id="5712189971979076230">Bir kilitlenme yaşadığınızda çalışan dosyalarla, uygulamalarla ve hizmetlerle ilgili bilgileri Google'a göndererek, üzerinde çalışmamız gereken özellikler ve iyileştirmelerle ilgili öncelikleri belirlememize yardım edin.
 
 Kullanım istatistikleri; tercihler, tıklanan düğmeler ve bellek kullanımı gibi bilgileri içerir. Web sayfası URL'lerini veya hiçbir kişisel bilgiyi içermez. Kilitlenme raporları, kilitlenme sırasında geçerli olan sistem bilgilerini kapsar ve kilitlenme sırasında olanlara bağlı olarak web sayfası URL'lerini veya kişisel bilgilerinizi içerebilir.</translation>
-<translation id="5715468759630044318">Hesap seçin</translation>
 <translation id="5719837394786370183">Gizli sekmelerde görüntülediğiniz sayfalar, gizli sekmelerinizin tamamını kapattıktan sonra tarayıcı geçmişinizde, çerez deponuzda veya arama geçmişinizde kalmaz. İndirdiğiniz dosyalar veya oluşturduğunuz yer işaretleri saklanır.
 
 Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı işvereninizden, İnternet servis sağlayıcınızdan veya ziyaret ettiğiniz web sitelerinden saklamaz.</translation>
@@ -433,7 +433,6 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="6699351163704950317">Kaydedilen tüm sayfalar</translation>
 <translation id="6710213216561001401">Önceki</translation>
 <translation id="6720988912937197322">Kaydedilen sayfa çevrimdışı olarak kullanılamıyor</translation>
-<translation id="6722992508235227685">Yer işaretleri, geçmiş, şifre ve diğer ayarlarınız Google Hesabınızla senkronize edilecek. Böylece, bu ayarlarınızı tüm cihazlarınızda kullanabileceksiniz. Nelerin senkronize edileceğini <ph name="BEGIN_LINK1" />Ayarlar<ph name="END_LINK1" />'da seçebilirsiniz.</translation>
 <translation id="6738867403308150051">İndiriliyor…</translation>
 <translation id="6762156594045689028">Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlayın<ph name="END_LINK" /></translation>
 <translation id="6770414673596662518">Chrome'un Güvenli Tarama sistemi, kötü amaçlı sayfaların tespit edilmesinin yanı sıra sizi kimlik avı, kötü amaçlı uygulama ve zararlı indirme işlemlerine karşı korumak için de kullanılır.</translation>
@@ -500,6 +499,7 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="7501135638693251872">Tüm yer işaretleri</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7562080006725997899">Göz atma verileri temizleniyor</translation>
+<translation id="756809126120519699">Chrome verileri temizlendi</translation>
 <translation id="7588950540487816470">Fiziksel Web</translation>
 <translation id="7596558890252710462">İşletim sistemi</translation>
 <translation id="7599840151813361502"><ph name="BEGIN_LINK" />Google Hesaplarınızdaki<ph name="END_LINK" /> oturumlarınız kapatılmaz</translation>
@@ -543,7 +543,7 @@ Yine de, görünmez değilsiniz. Gizli moda geçmeniz web'de yaptıklarınızı 
 <translation id="8069239273282989646">Sıkıştırmadan sonra</translation>
 <translation id="8073388330009372546">Resmi yeni sekmede aç</translation>
 <translation id="8076014560081431679">Kayıtlı site ayarları silinmez ve web'e göz atma alışkanlıklarınızı yansıtabilir. <ph name="BEGIN_LINK" />Daha fazla bilgi edinin<ph name="END_LINK" /></translation>
-<translation id="8084156870963450514">Herhangi bir cihazdan tüm web öğelerinize erişmek için oturum açın</translation>
+<translation id="8087000398470557479">Bu içerik Google tarafından <ph name="DOMAIN_NAME" /> adresinden sağlanmaktadır.</translation>
 <translation id="8098570222830891427">Bluetooth üzerinden web sayfaları yayınlayan size yakın cihazlar. Cihazınız uyku modunda olmadığında Chrome yakındaki sayfaları tarar ve gösterir. Bu sayfalar, sayfa sonuçlarının kalitesini iyileştirmek amacıyla bir Google hizmeti üzerinden gönderilir.
 
 Fiziksel Web'i Chrome gizlilik ayarlarından kontrol edebilirsiniz.</translation>
@@ -609,6 +609,7 @@ Yeni lisansları edinmek için İnternet'e bağlanın ve indirdiğiniz içeriği
 <translation id="8931159598799892500">Chrome + Fiziksel Web</translation>
 <translation id="8941248009481596111">Bu siteye bağlantınız gizli.</translation>
 <translation id="8941729603749328384">www.example.com</translation>
+<translation id="8942627711005830162">Yeni pencerede aç</translation>
 <translation id="8959122750345127698">Gezinme işlevine ulaşılamıyor: <ph name="URL" /></translation>
 <translation id="8979340629087822094">son 1 gün</translation>
 <translation id="8987061207681586800">Chrome'u size özel yapın</translation>

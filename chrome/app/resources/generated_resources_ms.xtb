@@ -563,7 +563,6 @@
 <translation id="1783075131180517613">Sila kemas kini frasa laluan segerak anda.</translation>
 <translation id="1788636309517085411">Gunakan lalai</translation>
 <translation id="1789575671122666129">Pop timbul</translation>
-<translation id="1790550373387225389">Masukkan Mod Persembahan</translation>
 <translation id="1792705092719258158">Dayakan mod skrin cermin.</translation>
 <translation id="1793119619663054394">Adakah anda pasti mahu mengalih keluar "<ph name="PROFILE_NAME" />" dan semua data Chrome yang berkaitan dari komputer ini? Tindakan ini tidak boleh dibuat asal.</translation>
 <translation id="179767530217573436">4 minggu yang lalu</translation>
@@ -1663,7 +1662,6 @@ Daripada <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3324301154597925148">Adakah Ini Halaman Carian Yang Anda Jangkakan?</translation>
 <translation id="3324684065575061611">(Dilumpuhkan oleh dasar perusahaan)</translation>
 <translation id="3326821416087822643">Mengezip <ph name="FILE_NAME" />...</translation>
-<translation id="3330206034087160972">Exit Presentation Mode</translation>
 <translation id="3330686263988132416">Pengepala asal WebRTC Stun</translation>
 <translation id="3331321258768829690">(<ph name="UTCOFFSET" />) <ph name="LONGTZNAME" /> (<ph name="EXEMPLARCITY" />)</translation>
 <translation id="3331799185273394951">Dayakan mod skrin cermin. Mod ini menterbalikkan imej skrin secara mendatar.</translation>
@@ -1919,7 +1917,6 @@ Daripada <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="367645871420407123">biarkan kosong jika anda ingin menetapkan kata laluan akar kepada nilai imej ujian lalai</translation>
 <translation id="3678156199662914018">Sambungan: <ph name="EXTENSION_NAME" /></translation>
 <translation id="3678559383040232393">Papan kekunci Malta</translation>
-<translation id="3680173818488851340">iframes keutamaan rendah.</translation>
 <translation id="3683524264665795342"><ph name="APP_NAME" /> Permintaan Perkongsian Skrin</translation>
 <translation id="3685122418104378273">Penyegerakan Google Drive dilumpuhkan secara lalai, apabila menggunakan data mudah alih.</translation>
 <translation id="3685387984467886507">Ingat keputusan untuk meneruskan melalui ralat-ralat SSL untuk tempoh masa ditentukan.</translation>
@@ -3871,7 +3868,6 @@ Tekan sebarang kekunci untuk terus meneroka.</translation>
 <translation id="6662016084451426657">Ralat Segerak: Sila hubungi pentadbir untuk mendayakan segerak.</translation>
 <translation id="6663792236418322902">Kata laluan yang anda pilih akan diperlukan untuk memulihkan fail ini kemudian.  Sila catatnya dalam lokasi selamat.</translation>
 <translation id="6664237456442406323">Malangnya, komputer anda dikonfigurasi dengan ID perkakasan tidak sempurna. Hal ini menghalang OS Chrome daripada mengemas kini kepada pembetulan keselamatan terbaharu dan komputer anda <ph name="BEGIN_BOLD" />mungkin terdedah kepada serangan berniat jahat<ph name="END_BOLD" />.</translation>
-<translation id="666541661050183336">Kurangkan keutamaan beban sumber iframe.</translation>
 <translation id="6666647326143344290">dengan Akaun Google anda</translation>
 <translation id="6675665718701918026">Peranti penuding disambung</translation>
 <translation id="6677037229676347494">ID dijangkakan "<ph name="EXPECTED_ID" />", tetapi ID sebenar ialah "<ph name="NEW_ID" />".</translation>

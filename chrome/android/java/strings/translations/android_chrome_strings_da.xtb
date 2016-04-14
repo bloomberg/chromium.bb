@@ -6,7 +6,6 @@
 <translation id="10614374240317010">Aldrig gemt</translation>
 <translation id="1061441684050139317">Chrome skal have adgang til mikrofonen for at kunne dele den med dette website.</translation>
 <translation id="1080790410959514870">Du er ved at logge ud af en konto, der administreres af <ph name="DOMAIN_NAME" />. Dette medfører sletning af de Chrome-data, der er gemt på denne enhed, men dataene forbliver på din Google-konto.</translation>
-<translation id="1095407227123756519">Tilføj en konto for at få adgang til bogmærker, historik og andre indstillinger på alle dine enheder.</translation>
 <translation id="1098052486217676340">Afsluttet</translation>
 <translation id="1121094540300013208">Forbrugs- og nedbrudsrapporter</translation>
 <translation id="1137305377394488060">den seneste time</translation>
@@ -197,6 +196,7 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="3716158070938632480">Der er websider i nærheden</translation>
 <translation id="3732088672634061408">Interesser kunne ikke hentes.</translation>
 <translation id="3738139272394829648">Tryk for at søge</translation>
+<translation id="3744111561329211289">Synkronisering i baggrunden</translation>
 <translation id="3809549525127675114">Afspilningen af "<ph name="VIDEO_TITLE" />" er slut</translation>
 <translation id="3828029223314399057">Søg i bogmærker</translation>
 <translation id="3871171699884605801">Browserhistorikken kan ikke ryddes på børnekonti</translation>
@@ -285,6 +285,7 @@ Du skal bare åbne Chrome på din computer, gå til menuen og vælge "Log ind i 
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">Tillad</translation>
 <translation id="5040262127954254034">Beskyttelse af personlige oplysninger</translation>
+<translation id="5056549851600133418">Artikler til dig</translation>
 <translation id="5063480226653192405">Forbrug</translation>
 <translation id="5100237604440890931">Skjult – klik for at udvide.</translation>
 <translation id="5107381076085091558">Downloaden er sat på pause.</translation>
@@ -352,7 +353,6 @@ Du skal bare åbne Chrome på din computer, gå til menuen og vælge "Log ind i 
 <translation id="5712189971979076230">Hjælp os med at prioritere de funktioner og forbedringer, vi bør arbejde på, ved at sende oplysninger til Google om, hvilke filer, applikationer og tjenester, der kører, når du oplever nedbrud.
 
 Brugsstatistik indeholder oplysninger, såsom præferencer, antal klik på en knap og hukommelsesforbrug. De omfatter ikke webadresser eller personlige oplysninger. Nedbrudsrapporter indeholder systemoplysninger på tidspunktet for nedbruddet og kan indeholde webadresser eller personlige oplysninger, afhængigt af hvad der skete på tidspunktet for nedbruddet.</translation>
-<translation id="5715468759630044318">Vælg konto</translation>
 <translation id="5719837394786370183">De sider, du ser på inkognitofaner, gemmes ikke i browserhistorikken, cookielageret eller søgehistorikken, når du har lukket alle dine inkognitofaner. Alle de filer, du downloader, eller bogmærker, du opretter, vil blive gemt.
 
 Du er dog ikke usynlig. Inkognitotilstanden skjuler ikke dine søgninger fra din arbejdsgiver, din internetudbyder eller de websites, du besøger.</translation>
@@ -433,7 +433,6 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="6699351163704950317">Alle gemte sider</translation>
 <translation id="6710213216561001401">Forrige</translation>
 <translation id="6720988912937197322">Den gemte side er ikke tilgængelig offline</translation>
-<translation id="6722992508235227685">Dine bogmærker, din historik, dine adgangskoder og andre indstillinger synkroniseres til din Google-konto, så du kan bruge dem på alle dine enheder. Du kan vælge, hvad der skal synkroniseres, under <ph name="BEGIN_LINK1" />Indstillinger<ph name="END_LINK1" />.</translation>
 <translation id="6738867403308150051">Downloader…</translation>
 <translation id="6762156594045689028">Hvis du vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille synkroniseringen<ph name="END_LINK" /></translation>
 <translation id="6770414673596662518">Systemet Beskyttet browsing i Chrome anvendes også til at registrere skadelige sider og beskytte dig mod phishing, malware og skadelige downloads.</translation>
@@ -500,6 +499,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="7501135638693251872">Alle bogmærker</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7562080006725997899">Browserdata ryddes</translation>
+<translation id="756809126120519699">Chrome-dataene blev ryddet</translation>
 <translation id="7588950540487816470">Fysisk web</translation>
 <translation id="7596558890252710462">Operativsystem</translation>
 <translation id="7599840151813361502">Du bliver ikke logget ud af dine <ph name="BEGIN_LINK" />Google-konti<ph name="END_LINK" /></translation>
@@ -543,7 +543,7 @@ Husk, at du ikke er usynlig. Inkognitotilstanden skjuler ikke dine søgninger fo
 <translation id="8069239273282989646">Efter komprimering</translation>
 <translation id="8073388330009372546">Åbn billede på ny fane</translation>
 <translation id="8076014560081431679">Gemte websiteindstillinger slettes ikke og kan afspejle dine søgevaner. <ph name="BEGIN_LINK" />Få flere oplysninger<ph name="END_LINK" /></translation>
-<translation id="8084156870963450514">Log ind for at få adgang til alle dine webting fra en enhver enhed</translation>
+<translation id="8087000398470557479">Dette indhold er fra <ph name="DOMAIN_NAME" />, som leveres af Google.</translation>
 <translation id="8098570222830891427">Der er enheder i nærheden, som udsender websider via Bluetooth. Chrome scanner efter disse sider og viser dem, når du starter din enhed. Siderne går gennem en Google-tjeneste for at forbedre kvaliteten af sideresultaterne.
 
 Du kan kontrollere Fysisk web i Chrome-indstillingerne.</translation>
@@ -609,6 +609,7 @@ Du kan få nye licenser ved at oprette forbindelse til internettet og afspille d
 <translation id="8931159598799892500">Chrome og Fysisk web</translation>
 <translation id="8941248009481596111">Din forbindelse til dette website er privat.</translation>
 <translation id="8941729603749328384">www.eksempel.com</translation>
+<translation id="8942627711005830162">Åbn i et andet vindue</translation>
 <translation id="8959122750345127698">Navigationen er ikke mulig: <ph name="URL" /></translation>
 <translation id="8979340629087822094">det seneste døgn</translation>
 <translation id="8987061207681586800">Gør Chrome til dit eget</translation>

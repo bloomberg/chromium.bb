@@ -165,6 +165,7 @@ Fjernskrivebord</translation>
 <translation id="4918086044614829423">Accepter</translation>
 <translation id="492843737083352574">Jeg har problemer med mit tastatur eller min mus.</translation>
 <translation id="4973800994433240357">Når du downloader installationsprogrammet til Chromoting-host, accepterer du automatisk Google <ph name="LINK_BEGIN" />Servicevilkår<ph name="LINK_END" />.</translation>
+<translation id="4985296110227979402">Du skal først konfigurere din computer til fjernadgang</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (offline)</translation>
 <translation id="5070121137485264635">Fjernværten kræver, at du bekræftes over for et tredjepartswebsite. Du skal give Chrome Fjernskrivebord yderligere tilladelser til at få adgang til denne adresse, før du kan fortsætte:</translation>
 <translation id="5156271271724754543">Indtast den samme pinkode i begge felter.</translation>
@@ -174,6 +175,7 @@ Fjernskrivebord</translation>
 <translation id="5222676887888702881">Log ud</translation>
 <translation id="5254120496627797685">Hvis du forlader denne side, afsluttes din session med Chrome Fjernskrivebord.</translation>
 <translation id="5308380583665731573">Få forbindelse</translation>
+<translation id="533625276787323658">Der er intet at oprette forbindelse til</translation>
 <translation id="5363265567587775042">Bed den bruger, hvis computer du ønsker at få adgang til, om at klikke på "<ph name="SHARE" />" for at give dig adgangskoden.</translation>
 <translation id="5379087427956679853">Med Chrome Fjernskrivebord får du mulighed for sikkert at dele din computer via internettet. Begge brugere skal køre appen Chrome Fjernskrivebord, som kan findes på <ph name="URL" />.</translation>
 <translation id="5394895745784982830">Til Mac (OS X 10.6 og nyere)</translation>
