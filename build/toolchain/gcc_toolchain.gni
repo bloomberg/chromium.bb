@@ -234,23 +234,25 @@ template("gcc_toolchain") {
       description = "AR {{output}}"
       rspfile_content = "{{inputs}}"
       outputs = [
-        "{{target_out_dir}}/{{target_output_name}}{{output_extension}}",
+        "{{output_dir}}/{{target_output_name}}{{output_extension}}",
       ]
+
+      # Shared libraries go in the target out directory by default so we can
+      # generate different targets with the same name and not have them collide.
+      default_output_dir = "{{target_out_dir}}"
       default_output_extension = ".a"
       output_prefix = "lib"
     }
 
     tool("solink") {
       soname = "{{target_output_name}}{{output_extension}}"  # e.g. "libfoo.so".
-      sofile = "{{root_out_dir}}/$soname"  # Possibly including toolchain dir.
-      if (shlib_subdir != ".") {
-        sofile = "{{root_out_dir}}/$shlib_subdir/$soname"
-      }
+      sofile = "{{output_dir}}/$soname"  # Possibly including toolchain dir.
       rspfile = sofile + ".rsp"
 
-      unstripped_sofile = sofile
       if (defined(invoker.strip)) {
         unstripped_sofile = "{{root_out_dir}}/lib.unstripped/$soname"
+      } else {
+        unstripped_sofile = sofile
       }
 
       # These variables are not built into GN but are helpers that
@@ -283,6 +285,11 @@ template("gcc_toolchain") {
       # specifies).
       default_output_extension = default_shlib_extension
 
+      default_output_dir = "{{root_out_dir}}"
+      if (shlib_subdir != ".") {
+        default_output_dir += "/$shlib_subdir"
+      }
+
       output_prefix = "lib"
 
       # Since the above commands only updates the .TOC file when it changes, ask
@@ -305,15 +312,13 @@ template("gcc_toolchain") {
 
     tool("solink_module") {
       soname = "{{target_output_name}}{{output_extension}}"  # e.g. "libfoo.so".
-      sofile = "{{root_out_dir}}/$soname"  # Possibly including toolchain dir.
-      if (shlib_subdir != ".") {
-        sofile = "{{root_out_dir}}/$shlib_subdir/$soname"
-      }
+      sofile = "{{output_dir}}/$soname"
       rspfile = sofile + ".rsp"
 
-      unstripped_sofile = sofile
       if (defined(invoker.strip)) {
         unstripped_sofile = "{{root_out_dir}}/lib.unstripped/$soname"
+      } else {
+        unstripped_sofile = sofile
       }
 
       command = "$ld -shared {{ldflags}} -o \"$unstripped_sofile\" -Wl,-soname=\"$soname\" @\"$rspfile\""
@@ -335,6 +340,11 @@ template("gcc_toolchain") {
         default_output_extension = default_shlib_extension
       }
 
+      default_output_dir = "{{root_out_dir}}"
+      if (shlib_subdir != ".") {
+        default_output_dir += "/$shlib_subdir"
+      }
+
       output_prefix = "lib"
 
       outputs = [
@@ -347,7 +357,7 @@ template("gcc_toolchain") {
 
     tool("link") {
       exename = "{{target_output_name}}{{output_extension}}"
-      outfile = "{{root_out_dir}}/$exename"
+      outfile = "{{output_dir}}/$exename"
       rspfile = "$outfile.rsp"
       unstripped_outfile = outfile
 
@@ -355,6 +365,8 @@ template("gcc_toolchain") {
       # overrides it (in which case {{output_extension}} will be what the target
       # specifies).
       default_output_extension = default_executable_extension
+
+      default_output_dir = "{{root_out_dir}}"
 
       if (defined(invoker.strip)) {
         unstripped_outfile = "{{root_out_dir}}/exe.unstripped/$exename"
