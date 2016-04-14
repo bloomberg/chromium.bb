@@ -56,6 +56,8 @@ private:
     void setTextInternal(PassRefPtr<StringImpl>) override;
     void styleDidChange(StyleDifference, const ComputedStyle*) override;
 
+    void addMetricsFromRun(const TextRun&, bool& lastCharacterWasWhiteSpace);
+
     FloatRect objectBoundingBox() const override { return floatLinesBoundingBox(); }
 
     bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVG || type == LayoutObjectSVGInlineText || LayoutText::isOfType(type); }
