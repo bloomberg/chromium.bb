@@ -37,9 +37,6 @@
 # for more information.
 
 {
-  'includes': [
-    '../build/util/version.gypi',
-  ],
   'rules': [
     {
       'rule_name': 'isolate',
@@ -66,10 +63,6 @@
         # file
         '--path-variable', 'DEPTH', '<(DEPTH)',
         '--path-variable', 'PRODUCT_DIR', '<(PRODUCT_DIR) ',
-
-        # Extra variables are replaced on the 'command' entry and on paths in
-        # the .isolate file but are not considered relative paths.
-        '--extra-variable', 'version_full=<(version_full)',
 
         # Note: This list must match DefaultConfigVariables()
         # in build/android/pylib/utils/isolator.py
@@ -104,6 +97,8 @@
       ],
       'conditions': [
         # Note: When gyp merges lists, it appends them to the old value.
+        # Extra variables are replaced on the 'command' entry and on paths in
+        # the .isolate file but are not considered relative paths.
         ['OS=="mac"', {
           'action': [
             '--extra-variable', 'mac_product_name=<(mac_product_name)',
@@ -119,7 +114,9 @@
           ],
         }],
         ['OS=="win"', {
+          'includes': ['../build/util/version.gypi'],
           'action': [
+            '--extra-variable', 'version_full=<(version_full)',
             '--config-variable', 'msvs_version=<(MSVS_VERSION)',
           ],
         }, {
