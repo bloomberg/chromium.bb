@@ -117,7 +117,17 @@ class MockMemoryDumpProvider : public MemoryDumpProvider {
   MOCK_METHOD2(OnMemoryDump,
                bool(const MemoryDumpArgs& args, ProcessMemoryDump* pmd));
 
-  MockMemoryDumpProvider() : enable_mock_destructor(false) {}
+  MockMemoryDumpProvider() : enable_mock_destructor(false) {
+    ON_CALL(*this, OnMemoryDump(_, _))
+        .WillByDefault(Invoke([](const MemoryDumpArgs&,
+                                 ProcessMemoryDump* pmd) -> bool {
+          // |session_state| should not be null under any circumstances when
+          // invoking a memory dump. The problem might arise in race conditions
+          // like crbug.com/600570 .
+          EXPECT_TRUE(pmd->session_state().get() != nullptr);
+          return true;
+        }));
+  }
   ~MockMemoryDumpProvider() override {
     if (enable_mock_destructor)
       Destructor();
@@ -938,8 +948,14 @@ TEST_F(MemoryDumpManagerTest, DisableTracingRightBeforeStartOfDump) {
   base::WaitableEvent tracing_disabled_event(false, false);
   InitializeMemoryDumpManager(false /* is_coordinator */);
 
-  MockMemoryDumpProvider mdp;
-  RegisterDumpProvider(&mdp);
+  std::unique_ptr<Thread> mdp_thread(new Thread("test thread"));
+  mdp_thread->Start();
+
+  // Create both same-thread MDP and another MDP with dedicated thread
+  MockMemoryDumpProvider mdp1;
+  RegisterDumpProvider(&mdp1);
+  MockMemoryDumpProvider mdp2;
+  RegisterDumpProvider(&mdp2, mdp_thread->task_runner(), kDefaultOptions);
   EnableTracingWithLegacyCategories(MemoryDumpManager::kTraceCategory);
 
   EXPECT_CALL(*delegate_, RequestGlobalMemoryDump(_, _))
@@ -948,6 +964,11 @@ TEST_F(MemoryDumpManagerTest, DisableTracingRightBeforeStartOfDump) {
         DisableTracing();
         delegate_->CreateProcessDump(args, callback);
       }));
+
+  // If tracing is disabled for current session CreateProcessDump() should NOT
+  // request dumps from providers. Real-world regression: crbug.com/600570 .
+  EXPECT_CALL(mdp1, OnMemoryDump(_, _)).Times(0);
+  EXPECT_CALL(mdp2, OnMemoryDump(_, _)).Times(0);
 
   last_callback_success_ = true;
   RequestGlobalDumpAndWait(MemoryDumpType::EXPLICITLY_TRIGGERED,

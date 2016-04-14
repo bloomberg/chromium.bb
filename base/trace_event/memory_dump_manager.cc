@@ -407,8 +407,14 @@ void MemoryDumpManager::SetupNextMemoryDump(
   // (for discounting trace memory overhead) while holding the |lock_|.
   TraceLog::GetInstance()->InitializeThreadLocalEventBufferIfSupported();
 
-  // If this was the last hop, create a trace event, add it to the trace and
-  // finalize process dump (invoke callback).
+  // |dump_thread_| might be destroyed before getting this point.
+  // It means that tracing was disabled right before starting this dump.
+  // Anyway either tracing is stopped or this was the last hop, create a trace
+  // event, add it to the trace and finalize process dump invoking the callback.
+  if (!pmd_async_state->dump_thread_task_runner.get()) {
+    pmd_async_state->dump_successful = false;
+    pmd_async_state->pending_dump_providers.clear();
+  }
   if (pmd_async_state->pending_dump_providers.empty())
     return FinalizeDumpAndAddToTrace(std::move(pmd_async_state));
 
@@ -418,20 +424,12 @@ void MemoryDumpManager::SetupNextMemoryDump(
       pmd_async_state->pending_dump_providers.back().get();
 
   // If the dump provider did not specify a task runner affinity, dump on
-  // |dump_thread_|. Note that |dump_thread_| might have been destroyed
-  // meanwhile.
+  // |dump_thread_| which is already checked above for presence.
   SequencedTaskRunner* task_runner = mdpinfo->task_runner.get();
   if (!task_runner) {
     DCHECK(mdpinfo->options.dumps_on_single_thread_task_runner);
     task_runner = pmd_async_state->dump_thread_task_runner.get();
-    if (!task_runner) {
-      // If tracing was disabled before reaching CreateProcessDump() the
-      // dump_thread_ would have been already torn down. Nack current dump and
-      // continue.
-      pmd_async_state->dump_successful = false;
-      pmd_async_state->pending_dump_providers.pop_back();
-      return SetupNextMemoryDump(std::move(pmd_async_state));
-    }
+    DCHECK(task_runner);
   }
 
   if (mdpinfo->options.dumps_on_single_thread_task_runner &&
