@@ -33,6 +33,11 @@ class NewTabUI : public content::WebUIController {
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
+  // Checks whether the given URL points to an NTP WebUI. Note that this only
+  // applies to incognito and guest mode NTPs - you probably want to check
+  // search::NavEntryIsInstantNTP too!
+  static bool IsNewTab(const GURL& url);
+
   // Returns whether or not to show apps pages.
   static bool ShouldShowApps();
 
@@ -47,10 +52,6 @@ class NewTabUI : public content::WebUIController {
   // Adds "full_name" and "full_name_direction" keys on incoming dictionary.
   static void SetFullNameAndDirection(const base::string16& full_name,
                                       base::DictionaryValue* dictionary);
-
-  // Returns a pointer to a NewTabUI if the WebUIController object is a new tab
-  // page.
-  static NewTabUI* FromWebUIController(content::WebUIController* ui);
 
  private:
   class NewTabHTMLSource : public content::URLDataSource {

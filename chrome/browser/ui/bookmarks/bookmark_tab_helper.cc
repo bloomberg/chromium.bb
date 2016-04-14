@@ -24,25 +24,15 @@ using bookmarks::BookmarkNode;
 
 namespace {
 
-bool IsNTPWebUI(content::WebContents* web_contents) {
-  content::WebUI* web_ui = NULL;
-  // Use the committed entry so the bookmarks bar disappears at the same time
-  // the page does.
-  if (web_contents->GetController().GetLastCommittedEntry())
-    web_ui = web_contents->GetCommittedWebUI();
-  else
-    web_ui = web_contents->GetWebUI();
-  return web_ui && NewTabUI::FromWebUIController(web_ui->GetController());
-}
-
-bool IsInstantNTP(content::WebContents* web_contents) {
+bool IsNTP(content::WebContents* web_contents) {
   // Use the committed entry so the bookmarks bar disappears at the same time
   // the page does.
   const content::NavigationEntry* entry =
       web_contents->GetController().GetLastCommittedEntry();
   if (!entry)
     entry = web_contents->GetController().GetVisibleEntry();
-  return search::NavEntryIsInstantNTP(web_contents, entry);
+  return (entry && NewTabUI::IsNewTab(entry->GetURL())) ||
+         search::NavEntryIsInstantNTP(web_contents, entry);
 }
 
 }  // namespace
@@ -77,7 +67,7 @@ bool BookmarkTabHelper::ShouldShowBookmarkBar() const {
       !prefs->GetBoolean(bookmarks::prefs::kShowBookmarkBar))
     return false;
 
-  return IsNTPWebUI(web_contents()) || IsInstantNTP(web_contents());
+  return IsNTP(web_contents());
 }
 
 BookmarkTabHelper::BookmarkTabHelper(content::WebContents* web_contents)

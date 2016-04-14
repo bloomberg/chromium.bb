@@ -5,10 +5,8 @@
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 
 #include <memory>
-#include <set>
 
 #include "base/i18n/rtl.h"
-#include "base/lazy_instance.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -45,8 +43,6 @@ namespace {
 const char kRTLHtmlTextDirection[] = "rtl";
 const char kLTRHtmlTextDirection[] = "ltr";
 
-static base::LazyInstance<std::set<const WebUIController*> > g_live_new_tabs;
-
 const char* GetHtmlTextDirection(const base::string16& text) {
   if (base::i18n::IsRTL() && base::i18n::StringContainsStrongRTLChars(text))
     return kRTLHtmlTextDirection;
@@ -61,7 +57,6 @@ const char* GetHtmlTextDirection(const base::string16& text) {
 
 NewTabUI::NewTabUI(content::WebUI* web_ui)
     : WebUIController(web_ui) {
-  g_live_new_tabs.Pointer()->insert(this);
   web_ui->OverrideTitle(l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE));
 
   Profile* profile = GetProfile();
@@ -95,9 +90,7 @@ NewTabUI::NewTabUI(content::WebUI* web_ui)
                                         base::Unretained(this)));
 }
 
-NewTabUI::~NewTabUI() {
-  g_live_new_tabs.Pointer()->erase(this);
-}
+NewTabUI::~NewTabUI() {}
 
 void NewTabUI::OnShowBookmarkBarChanged() {
   base::StringValue attached(
@@ -111,6 +104,11 @@ void NewTabUI::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   CoreAppLauncherHandler::RegisterProfilePrefs(registry);
   AppLauncherHandler::RegisterProfilePrefs(registry);
+}
+
+// static
+bool NewTabUI::IsNewTab(const GURL& url) {
+  return url.GetOrigin() == GURL(chrome::kChromeUINewTabURL).GetOrigin();
 }
 
 // static
@@ -162,13 +160,6 @@ void NewTabUI::SetFullNameAndDirection(const base::string16& full_name,
                                        base::DictionaryValue* dictionary) {
   dictionary->SetString("full_name", full_name);
   dictionary->SetString("full_name_direction", GetHtmlTextDirection(full_name));
-}
-
-// static
-NewTabUI* NewTabUI::FromWebUIController(WebUIController* ui) {
-  if (!g_live_new_tabs.Pointer()->count(ui))
-    return NULL;
-  return static_cast<NewTabUI*>(ui);
 }
 
 Profile* NewTabUI::GetProfile() const {
