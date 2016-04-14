@@ -308,6 +308,12 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     elif request_type == 'status_upload':
       response = self.ProcessStatusUploadRequest(
           rmsg.device_status_report_request, rmsg.session_status_report_request)
+    elif request_type == 'device_attribute_update_permission':
+      response = self.ProcessDeviceAttributeUpdatePermissionRequest()
+    elif request_type == 'device_attribute_update':
+      response = self.ProcessDeviceAttributeUpdateRequest()
+    elif request_type == 'remote_commands':
+      response = self.ProcessRemoteCommandsRequest()
     else:
       return (400, 'Invalid request parameter')
 
@@ -585,6 +591,38 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         session_status_report_response)
 
     return (200, response)
+
+  def ProcessDeviceAttributeUpdatePermissionRequest(self):
+    """Handles a device attribute update permission request.
+
+    Returns:
+      A tuple of HTTP status code and response data to send to the client.
+    """
+    response = dm.DeviceManagementResponse()
+    response.device_attribute_update_permission_response.result = (
+        dm.DeviceAttributeUpdatePermissionResponse.ATTRIBUTE_UPDATE_ALLOWED)
+
+    return (200, response)
+
+  def ProcessDeviceAttributeUpdateRequest(self):
+    """Handles a device attribute update request.
+
+    Returns:
+      A tuple of HTTP status code and response data to send to the client.
+    """
+    response = dm.DeviceManagementResponse()
+    response.device_attribute_update_response.result = (
+        dm.DeviceAttributeUpdateResponse.ATTRIBUTE_UPDATE_SUCCESS)
+
+    return (200, response)
+
+  def ProcessRemoteCommandsRequest(self):
+    """Handles a remote command request.
+
+    Returns:
+      A tuple of HTTP status code and response data to send to the client.
+    """
+    return (200, '')
 
   def SetProtobufMessageField(self, group_message, field, field_value):
     """Sets a field in a protobuf message.

@@ -572,6 +572,9 @@ cr.define('cr.ui.login', function() {
 
       $('step-logo').hidden = newStep.classList.contains('no-logo');
 
+      $('oobe').dispatchEvent(
+          new CustomEvent('screenchanged',
+                          {detail: this.currentScreen.id}));
       chrome.send('updateCurrentScreen', [this.currentScreen.id]);
     },
 

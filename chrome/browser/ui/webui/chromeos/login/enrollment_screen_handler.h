@@ -62,6 +62,7 @@ class EnrollmentScreenHandler
 
  private:
   // Handlers for WebUI messages.
+  void HandleToggleFakeEnrollment();
   void HandleClose(const std::string& reason);
   void HandleCompleteLogin(const std::string& user,
                            const std::string& auth_code);
