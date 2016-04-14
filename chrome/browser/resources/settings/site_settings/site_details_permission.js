@@ -48,8 +48,8 @@ Polymer({
   siteChanged_: function(site) {
     this.$.details.hidden = true;
 
-    var prefsProxy = settings.SiteSettingsPrefsBrowserProxyImpl.getInstance();
-    prefsProxy.getExceptionList(this.category).then(function(exceptionList) {
+    this.browserProxy.getExceptionList(this.category).then(
+        function(exceptionList) {
       for (var i = 0; i < exceptionList.length; ++i) {
         if (exceptionList[i].origin == site.origin) {
           this.$.permission.selected = exceptionList[i].setting;

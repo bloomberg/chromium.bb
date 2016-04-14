@@ -11,7 +11,104 @@
   <link rel="import" type="css" href="site_settings_page.css">
   <template>
     <div class="settings-box">
-      <div id="list" class="settings-list"></div>
+      <div id="list" class="settings-list">
+        <paper-icon-item category$="[[ALL_SITES]]"
+            on-tap="onTapCategory">
+          <iron-icon icon="list" item-icon=""></iron-icon>
+          <div class="flex" i18n-content="siteSettingsCategoryAllSites"></div>
+        </paper-icon-item>
+
+        <paper-icon-item category$="[[ContentSettingsTypes.COOKIES]]"
+            on-tap="onTapCategory">
+          <iron-icon icon="[[computeIconForContentCategory(
+              ContentSettingsTypes.COOKIES)]]" item-icon=""></iron-icon>
+          <div class="flex">
+            [[computeTitleForContentCategory(ContentSettingsTypes.COOKIES)]]
+          </div>
+          <div id="cookies" class="option-value"></div>
+        </paper-icon-item>
+
+        <paper-icon-item category$="[[ContentSettingsTypes.GEOLOCATION]]"
+            on-tap="onTapCategory">
+          <iron-icon icon="[[computeIconForContentCategory(
+              ContentSettingsTypes.GEOLOCATION)]]" item-icon=""></iron-icon>
+          <div class="flex">
+            [[computeTitleForContentCategory(ContentSettingsTypes.GEOLOCATION)]]
+          </div>
+          <div id="geolocation" class="option-value"></div>
+        </paper-icon-item>
+
+        <paper-icon-item category$="[[ContentSettingsTypes.CAMERA]]"
+            on-tap="onTapCategory">
+          <iron-icon icon="[[computeIconForContentCategory(
+              ContentSettingsTypes.CAMERA)]]" item-icon=""></iron-icon>
+          <div class="flex">
+            [[computeTitleForContentCategory(ContentSettingsTypes.CAMERA)]]
+          </div>
+          <div id="camera" class="option-value"></div>
+        </paper-icon-item>
+
+        <paper-icon-item category$="[[ContentSettingsTypes.MIC]]"
+            on-tap="onTapCategory">
+          <iron-icon icon="[[computeIconForContentCategory(
+              ContentSettingsTypes.MIC)]]" item-icon=""></iron-icon>
+          <div class="flex">
+            [[computeTitleForContentCategory(ContentSettingsTypes.MIC)]]
+          </div>
+          <div id="mic" class="option-value"></div>
+        </paper-icon-item>
+
+        <paper-icon-item category$="[[ContentSettingsTypes.JAVASCRIPT]]"
+            on-tap="onTapCategory">
+          <iron-icon icon="[[computeIconForContentCategory(
+              ContentSettingsTypes.JAVASCRIPT)]]" item-icon=""></iron-icon>
+          <div class="flex">
+            [[computeTitleForContentCategory(ContentSettingsTypes.JAVASCRIPT)]]
+          </div>
+          <div id="javascript" class="option-value"></div>
+        </paper-icon-item>
+
+        <paper-icon-item category$="[[ContentSettingsTypes.POPUPS]]"
+            on-tap="onTapCategory">
+          <iron-icon icon="[[computeIconForContentCategory(
+              ContentSettingsTypes.POPUPS)]]" item-icon=""></iron-icon>
+          <div class="flex">
+            [[computeTitleForContentCategory(ContentSettingsTypes.POPUPS)]]
+          </div>
+          <div id="popups" class="option-value"></div>
+        </paper-icon-item>
+
+        <paper-icon-item category$="[[ContentSettingsTypes.FULLSCREEN]]"
+            on-tap="onTapCategory">
+          <iron-icon icon="[[computeIconForContentCategory(
+              ContentSettingsTypes.FULLSCREEN)]]" item-icon=""></iron-icon>
+          <div class="flex">
+            [[computeTitleForContentCategory(ContentSettingsTypes.FULLSCREEN)]]
+          </div>
+          <div id="fullscreen" class="option-value"></div>
+        </paper-icon-item>
+
+        <paper-icon-item category$="[[ContentSettingsTypes.NOTIFICATIONS]]"
+            on-tap="onTapCategory">
+          <iron-icon icon="[[computeIconForContentCategory(
+              ContentSettingsTypes.NOTIFICATIONS)]]" item-icon=""></iron-icon>
+          <div class="flex">
+            [[computeTitleForContentCategory(
+                ContentSettingsTypes.NOTIFICATIONS)]]
+          </div>
+          <div id="notifications" class="option-value"></div>
+        </paper-icon-item>
+
+        <paper-icon-item category$="[[ContentSettingsTypes.IMAGES]]"
+            on-tap="onTapCategory">
+          <iron-icon icon="[[computeIconForContentCategory(
+              ContentSettingsTypes.IMAGES)]]" item-icon=""></iron-icon>
+          <div class="flex">
+            [[computeTitleForContentCategory(ContentSettingsTypes.IMAGES)]]
+          </div>
+          <div id="images" class="option-value"></div>
+        </paper-icon-item>
+      </div>
     </div>
   </template>
   <script src="site_settings_page.js"></script>
