@@ -59,6 +59,10 @@ source_set("usb") {
 
   if (is_android) {
     deps += [ ":jni_headers" ]
+    sources += [
+      "usb_device_handle_usbfs.cc",
+      "usb_device_handle_usbfs.h",
+    ]
   } else {
     sources += [
       "usb_context.cc",
@@ -74,6 +78,17 @@ source_set("usb") {
     ]
 
     deps += [ "//third_party/libusb" ]
+  }
+
+  if (is_linux || is_chromeos) {
+    sources += [
+      "usb_device_handle_usbfs.cc",
+      "usb_device_handle_usbfs.h",
+    ]
+    sources -= [
+      "usb_device_handle_impl.cc",
+      "usb_device_handle_impl.h",
+    ]
   }
 
   if (is_chromeos) {
