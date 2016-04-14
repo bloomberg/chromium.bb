@@ -153,7 +153,7 @@ template("ios_app_bundle") {
       if (!defined(data_deps)) {
         data_deps = []
       }
-      data_deps += [ "//testing/iossim(${host_toolchain})" ]
+      data_deps += [ "//testing/iossim" ]
     }
 
     bundle_root_dir = "$root_out_dir/$_output_name.app"
