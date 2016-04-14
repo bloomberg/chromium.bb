@@ -8,7 +8,6 @@
 #include "components/arc/ime/arc_ime_bridge_impl.h"
 #include "components/exo/shell_surface.h"
 #include "components/exo/surface.h"
-#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
@@ -20,15 +19,6 @@
 namespace arc {
 
 namespace {
-
-// The height in DIP of the window titlebar, rendered in client-side (i.e.,
-// inside ARC), but outside where ARC apps and IME recognize. Rather than
-// to complicate things by wiring the value progaramatically via yet another
-// IPC, we just embed the constant here for simplicity.
-//
-// TODO(kinaba, skuhne): Future version of ARC window management should make
-// this host-side offsetting unnecessary. Get rid of this when it's ready.
-constexpr int kWindowTitleHeight = 32;
 
 bool IsArcWindow(const aura::Window* window) {
   return exo::Surface::AsSurface(window);
@@ -223,7 +213,7 @@ gfx::Rect ArcImeService::GetCaretBounds() const {
   // |cursor_rect_| holds the rectangle reported from ARC apps, in the "screen
   // coordinates" in ARC, counted by physical pixels.
   // Chrome OS input methods expect the coordinates in Chrome OS screen, within
-  // device independent pixels. Three factors are involved for the conversion.
+  // device independent pixels. Two factors are involved for the conversion.
 
   // Divide by the scale factor. To convert from physical pixels to DIP.
   gfx::Rect converted = gfx::ScaleToEnclosingRect(
@@ -231,13 +221,6 @@ gfx::Rect ArcImeService::GetCaretBounds() const {
 
   // Add the offset of the window showing the ARC app.
   converted.Offset(window->GetBoundsInScreen().OffsetFromOrigin());
-
-  // Add the titlebar height (drawn inside ARC.)
-  // TODO(kinaba, skuhne): This should be absorbed inside ARC in the future.
-  if (window->GetProperty(aura::client::kShowStateKey) !=
-      ui::SHOW_STATE_FULLSCREEN) {
-    converted.Offset(0, kWindowTitleHeight);
-  }
   return converted;
 }
 
