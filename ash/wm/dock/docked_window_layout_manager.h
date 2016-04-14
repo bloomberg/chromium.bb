@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "ash/ash_export.h"
-#include "ash/shelf/shelf_layout_manager_observer.h"
 #include "ash/shell_observer.h"
 #include "ash/snap_to_pixel_layout_manager.h"
 #include "ash/wm/dock/dock_types.h"
@@ -41,7 +40,6 @@ class DockedBackgroundWidget;
 class DockedWindowLayoutManagerObserver;
 class DockedWindowResizerTest;
 class Shelf;
-class ShelfLayoutManager;
 class WorkspaceController;
 
 struct WindowWithHeight {
@@ -72,7 +70,6 @@ class ASH_EXPORT DockedWindowLayoutManager
       public aura::WindowObserver,
       public aura::client::ActivationChangeObserver,
       public keyboard::KeyboardControllerObserver,
-      public ShelfLayoutManagerObserver,
       public wm::WindowStateObserver {
  public:
   // Maximum width of the docked windows area.
@@ -162,10 +159,6 @@ class ASH_EXPORT DockedWindowLayoutManager
   void OnFullscreenStateChanged(bool is_fullscreen,
                                 aura::Window* root_window) override;
   void OnShelfAlignmentChanged(aura::Window* root_window) override;
-
-  // ShelfLayoutManagerObserver:
-  void OnBackgroundUpdated(ShelfBackgroundType background_type,
-                           BackgroundAnimatorChangeType change_type) override;
 
   // wm::WindowStateObserver:
   void OnPreWindowStateTypeChange(wm::WindowState* window_state,
