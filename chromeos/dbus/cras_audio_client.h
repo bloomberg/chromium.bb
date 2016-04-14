@@ -139,6 +139,8 @@ class CHROMEOS_EXPORT CrasAudioClient : public DBusClient {
   static CrasAudioClient* Create();
 
  protected:
+  friend class CrasAudioClientTest;
+
   // Create() should be used instead.
   CrasAudioClient();
 

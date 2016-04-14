@@ -440,6 +440,7 @@
       'cryptohome/homedir_methods_unittest.cc',
       'cryptohome/system_salt_getter_unittest.cc',
       'dbus/blocking_method_caller_unittest.cc',
+      'dbus/cras_audio_client_unittest.cc',
       'dbus/cros_disks_client_unittest.cc',
       'dbus/dbus_client_bundle_unittest.cc',
       'dbus/fake_easy_unlock_client_unittest.cc',
