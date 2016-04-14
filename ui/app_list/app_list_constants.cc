@@ -126,7 +126,7 @@ size_t kMaxFolderItems = 16;
 const size_t kNumFolderTopItems = 4;
 
 // Maximum length of the folder name in chars.
-const size_t kMaxFolderNameChars = 40;
+const size_t kMaxFolderNameChars = 80;
 
 // Font style for app item labels.
 const ui::ResourceBundle::FontStyle kItemTextFontStyle =
