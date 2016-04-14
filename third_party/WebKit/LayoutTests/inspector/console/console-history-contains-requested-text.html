@@ -1,0 +1,22 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/console-test.js"></script>
+<script>
+
+function test()
+{
+    InspectorTest.evaluateInConsole("{a:1, b:2}", step2);
+    function step2()
+    {
+        var consoleView = WebInspector.ConsoleView.instance();
+        InspectorTest.addResult(consoleView._prompt._previous());
+        InspectorTest.completeTest();
+    }
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests that expression which is evaluated as Object Literal, is correctly stored in console history. (crbug.com/584881)</p>
+</body>
+</html>
