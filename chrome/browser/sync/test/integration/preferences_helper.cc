@@ -266,7 +266,7 @@ const char* PrefMatchChecker::GetPath() const {
 }
 
 void PrefMatchChecker::RegisterPrefListener(PrefService* pref_service) {
-  scoped_ptr<PrefChangeRegistrar> registrar(new PrefChangeRegistrar());
+  std::unique_ptr<PrefChangeRegistrar> registrar(new PrefChangeRegistrar());
   registrar->Init(pref_service);
   registrar->Add(path_,
                  base::Bind(&PrefMatchChecker::CheckExitCondition,

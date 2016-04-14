@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
@@ -161,17 +162,17 @@ class SyncSessionsClientImpl : public sync_sessions::SyncSessionsClient {
     return window_delegates_getter_.get();
   }
 
-  scoped_ptr<browser_sync::LocalSessionEventRouter> GetLocalSessionEventRouter()
-      override {
+  std::unique_ptr<browser_sync::LocalSessionEventRouter>
+  GetLocalSessionEventRouter() override {
     syncer::SyncableService::StartSyncFlare flare(
         sync_start_util::GetFlareForSyncableService(profile_->GetPath()));
-    return make_scoped_ptr(
+    return base::WrapUnique(
         new NotificationServiceSessionsRouter(profile_, this, flare));
   }
 
  private:
   Profile* profile_;
-  scoped_ptr<SyncedWindowDelegatesGetter> window_delegates_getter_;
+  std::unique_ptr<SyncedWindowDelegatesGetter> window_delegates_getter_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncSessionsClientImpl);
 };
@@ -478,7 +479,7 @@ ChromeSyncClient::GetSyncApiComponentFactory() {
 }
 
 void ChromeSyncClient::SetSyncApiComponentFactoryForTesting(
-    scoped_ptr<sync_driver::SyncApiComponentFactory> component_factory) {
+    std::unique_ptr<sync_driver::SyncApiComponentFactory> component_factory) {
   component_factory_ = std::move(component_factory);
 }
 

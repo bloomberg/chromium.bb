@@ -5,9 +5,9 @@
 #ifndef CHROME_BROWSER_SYNC_TEST_INTEGRATION_WIFI_CREDENTIALS_HELPER_H_
 #define CHROME_BROWSER_SYNC_TEST_INTEGRATION_WIFI_CREDENTIALS_HELPER_H_
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "components/wifi_sync/wifi_credential.h"
 #include "components/wifi_sync/wifi_security_class.h"
 
@@ -39,7 +39,7 @@ bool ProfileMatchesVerifier(int profile_index);
 bool AllProfilesMatch();
 
 // Returns a new WifiCredential constructed from the given parameters.
-scoped_ptr<wifi_sync::WifiCredential> MakeWifiCredential(
+std::unique_ptr<wifi_sync::WifiCredential> MakeWifiCredential(
     const std::string& ssid,
     wifi_sync::WifiSecurityClass security_class,
     const std::string& passphrase);

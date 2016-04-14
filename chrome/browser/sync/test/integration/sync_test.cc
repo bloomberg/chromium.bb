@@ -8,14 +8,15 @@
 #include <stdint.h>
 
 #include <limits>
+#include <memory>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/guid.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
@@ -172,21 +173,21 @@ class EncryptionChecker : public SingleClientStatusChangeChecker {
   std::string GetDebugMessage() const override { return "Encryption"; }
 };
 
-scoped_ptr<KeyedService> BuildFakeServerProfileInvalidationProvider(
+std::unique_ptr<KeyedService> BuildFakeServerProfileInvalidationProvider(
     content::BrowserContext* context) {
-  return make_scoped_ptr(new invalidation::ProfileInvalidationProvider(
-      scoped_ptr<invalidation::InvalidationService>(
+  return base::WrapUnique(new invalidation::ProfileInvalidationProvider(
+      std::unique_ptr<invalidation::InvalidationService>(
           new fake_server::FakeServerInvalidationService)));
 }
 
-scoped_ptr<KeyedService> BuildP2PProfileInvalidationProvider(
+std::unique_ptr<KeyedService> BuildP2PProfileInvalidationProvider(
     content::BrowserContext* context,
     syncer::P2PNotificationTarget notification_target) {
   Profile* profile = static_cast<Profile*>(context);
-  return make_scoped_ptr(new invalidation::ProfileInvalidationProvider(
-      scoped_ptr<invalidation::InvalidationService>(
+  return base::WrapUnique(new invalidation::ProfileInvalidationProvider(
+      std::unique_ptr<invalidation::InvalidationService>(
           new invalidation::P2PInvalidationService(
-              scoped_ptr<IdentityProvider>(new ProfileIdentityProvider(
+              std::unique_ptr<IdentityProvider>(new ProfileIdentityProvider(
                   SigninManagerFactory::GetForProfile(profile),
                   ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
                   LoginUIServiceFactory::GetShowLoginPopupCallbackForProfile(
@@ -194,12 +195,12 @@ scoped_ptr<KeyedService> BuildP2PProfileInvalidationProvider(
               profile->GetRequestContext(), notification_target))));
 }
 
-scoped_ptr<KeyedService> BuildSelfNotifyingP2PProfileInvalidationProvider(
+std::unique_ptr<KeyedService> BuildSelfNotifyingP2PProfileInvalidationProvider(
     content::BrowserContext* context) {
   return BuildP2PProfileInvalidationProvider(context, syncer::NOTIFY_ALL);
 }
 
-scoped_ptr<KeyedService> BuildRealisticP2PProfileInvalidationProvider(
+std::unique_ptr<KeyedService> BuildRealisticP2PProfileInvalidationProvider(
     content::BrowserContext* context) {
   return BuildP2PProfileInvalidationProvider(context, syncer::NOTIFY_OTHERS);
 }
@@ -537,7 +538,7 @@ void SyncTest::InitializeProfile(int index, Profile* profile) {
   if (server_type_ == IN_PROCESS_FAKE_SERVER) {
     // TODO(pvalenzuela): Run the fake server via EmbeddedTestServer.
     profile_sync_service->OverrideNetworkResourcesForTest(
-        make_scoped_ptr<syncer::NetworkResources>(
+        base::WrapUnique<syncer::NetworkResources>(
             new fake_server::FakeServerNetworkResources(
                 fake_server_->AsWeakPtr())));
   }
@@ -972,7 +973,7 @@ bool SyncTest::IsTestServerRunning() {
   std::string sync_url = cl->GetSwitchValueASCII(switches::kSyncServiceURL);
   GURL sync_url_status(sync_url.append("/healthz"));
   SyncServerStatusChecker delegate;
-  scoped_ptr<net::URLFetcher> fetcher =
+  std::unique_ptr<net::URLFetcher> fetcher =
       net::URLFetcher::Create(sync_url_status, net::URLFetcher::GET, &delegate);
   fetcher->SetLoadFlags(net::LOAD_DISABLE_CACHE |
                         net::LOAD_DO_NOT_SEND_COOKIES |

@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_SYNC_PROFILE_SYNC_TEST_UTIL_H_
 #define CHROME_BROWSER_SYNC_PROFILE_SYNC_TEST_UTIL_H_
 
+#include <memory>
 #include <string>
 
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "components/browser_sync/browser/profile_sync_service_mock.h"
 #include "content/public/browser/browser_thread.h"
@@ -46,16 +46,16 @@ ACTION(QuitUIMessageLoop) {
 ProfileSyncService::InitParams CreateProfileSyncServiceParamsForTest(
     Profile* profile);
 ProfileSyncService::InitParams CreateProfileSyncServiceParamsForTest(
-    scoped_ptr<sync_driver::SyncClient> sync_client,
+    std::unique_ptr<sync_driver::SyncClient> sync_client,
     Profile* profile);
 
 // A utility used by sync tests to create a TestingProfile with a Google
 // Services username stored in a (Testing)PrefService.
-scoped_ptr<TestingProfile> MakeSignedInTestingProfile();
+std::unique_ptr<TestingProfile> MakeSignedInTestingProfile();
 
 // Helper routine to be used in conjunction with
 // BrowserContextKeyedServiceFactory::SetTestingFactory().
-scoped_ptr<KeyedService> BuildMockProfileSyncService(
+std::unique_ptr<KeyedService> BuildMockProfileSyncService(
     content::BrowserContext* context);
 
 #endif  // CHROME_BROWSER_SYNC_PROFILE_SYNC_TEST_UTIL_H_

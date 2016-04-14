@@ -89,7 +89,7 @@ void LoadApp(content::BrowserContext* context,
 AppStateMap GetAppStates(Profile* profile) {
   AppStateMap app_state_map;
 
-  scoped_ptr<const extensions::ExtensionSet> extensions(
+  std::unique_ptr<const extensions::ExtensionSet> extensions(
       extensions::ExtensionRegistry::Get(profile)
           ->GenerateInstalledExtensionsSet());
   for (const auto& extension : *extensions) {

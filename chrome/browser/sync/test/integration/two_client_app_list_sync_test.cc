@@ -72,7 +72,7 @@ void CheckAppInfoInPrefs(Profile* profile,
         service->GetModel()->top_level_item_list()->FindItem(id);
     ASSERT_TRUE(item);
     // Ensure local prefs matches the model data.
-    scoped_ptr<app_list::AppListPrefs::AppListInfo> info =
+    std::unique_ptr<app_list::AppListPrefs::AppListInfo> info =
         app_list::AppListPrefs::Get(profile)->GetAppListInfo(id);
     ASSERT_TRUE(info);
     EXPECT_EQ(item->name(), info->name);

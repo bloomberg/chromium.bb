@@ -148,10 +148,9 @@ void WaitForHistoryDBThread(int index) {
       HistoryServiceFactory::GetForProfileWithoutCreating(
           test()->GetProfile(index));
   base::WaitableEvent wait_event(true, false);
-  service->ScheduleDBTask(
-      scoped_ptr<history::HistoryDBTask>(
-          new FlushHistoryDBQueueTask(&wait_event)),
-      &tracker);
+  service->ScheduleDBTask(std::unique_ptr<history::HistoryDBTask>(
+                              new FlushHistoryDBQueueTask(&wait_event)),
+                          &tracker);
   wait_event.Wait();
 }
 
@@ -178,10 +177,9 @@ history::URLRows GetTypedUrlsFromHistoryService(
   base::CancelableTaskTracker tracker;
   history::URLRows rows;
   base::WaitableEvent wait_event(true, false);
-  service->ScheduleDBTask(
-      scoped_ptr<history::HistoryDBTask>(
-          new GetTypedUrlsTask(&rows, &wait_event)),
-      &tracker);
+  service->ScheduleDBTask(std::unique_ptr<history::HistoryDBTask>(
+                              new GetTypedUrlsTask(&rows, &wait_event)),
+                          &tracker);
   wait_event.Wait();
   return rows;
 }
@@ -192,10 +190,9 @@ bool GetUrlFromHistoryService(history::HistoryService* service,
   base::CancelableTaskTracker tracker;
   base::WaitableEvent wait_event(true, false);
   bool found = false;
-  service->ScheduleDBTask(
-      scoped_ptr<history::HistoryDBTask>(
-          new GetUrlTask(url, row, &found, &wait_event)),
-      &tracker);
+  service->ScheduleDBTask(std::unique_ptr<history::HistoryDBTask>(
+                              new GetUrlTask(url, row, &found, &wait_event)),
+                          &tracker);
   wait_event.Wait();
   return found;
 }
@@ -206,10 +203,9 @@ history::VisitVector GetVisitsFromHistoryService(
   base::CancelableTaskTracker tracker;
   base::WaitableEvent wait_event(true, false);
   history::VisitVector visits;
-  service->ScheduleDBTask(
-      scoped_ptr<history::HistoryDBTask>(
-          new GetVisitsTask(id, &visits, &wait_event)),
-      &tracker);
+  service->ScheduleDBTask(std::unique_ptr<history::HistoryDBTask>(
+                              new GetVisitsTask(id, &visits, &wait_event)),
+                          &tracker);
   wait_event.Wait();
   return visits;
 }
@@ -218,10 +214,9 @@ void RemoveVisitsFromHistoryService(history::HistoryService* service,
                                     const history::VisitVector& visits) {
   base::CancelableTaskTracker tracker;
   base::WaitableEvent wait_event(true, false);
-  service->ScheduleDBTask(
-      scoped_ptr<history::HistoryDBTask>(
-          new RemoveVisitsTask(visits, &wait_event)),
-      &tracker);
+  service->ScheduleDBTask(std::unique_ptr<history::HistoryDBTask>(
+                              new RemoveVisitsTask(visits, &wait_event)),
+                          &tracker);
   wait_event.Wait();
 }
 

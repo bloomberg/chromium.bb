@@ -6,9 +6,11 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "ash/test/ash_test_base.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/notifications/notification.h"
@@ -70,9 +72,9 @@ class FakeLoginUI : public LoginUIService::LoginUI {
   int focus_ui_call_count_;
 };
 
-scoped_ptr<KeyedService> BuildMockLoginUIService(
+std::unique_ptr<KeyedService> BuildMockLoginUIService(
     content::BrowserContext* profile) {
-  return make_scoped_ptr(new FakeLoginUIService());
+  return base::WrapUnique(new FakeLoginUIService());
 }
 
 class SyncErrorNotifierTest : public AshTestBase  {
@@ -157,12 +159,12 @@ class SyncErrorNotifierTest : public AshTestBase  {
   }
 
 #if defined(OS_WIN)
-  scoped_ptr<gfx::Screen> test_screen_;
+  std::unique_ptr<gfx::Screen> test_screen_;
 #endif
-  scoped_ptr<TestingProfileManager> profile_manager_;
-  scoped_ptr<SyncErrorController> error_controller_;
-  scoped_ptr<SyncErrorNotifier> error_notifier_;
-  scoped_ptr<ProfileSyncServiceMock> service_;
+  std::unique_ptr<TestingProfileManager> profile_manager_;
+  std::unique_ptr<SyncErrorController> error_controller_;
+  std::unique_ptr<SyncErrorNotifier> error_notifier_;
+  std::unique_ptr<ProfileSyncServiceMock> service_;
   TestingProfile* profile_;
   FakeLoginUI login_ui_;
   NotificationUIManager* notification_ui_manager_;

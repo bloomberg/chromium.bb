@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
@@ -23,10 +24,10 @@
 ProfileSyncService::InitParams CreateProfileSyncServiceParamsForTest(
     Profile* profile) {
   auto sync_client =
-      make_scoped_ptr(new browser_sync::ChromeSyncClient(profile));
+      base::WrapUnique(new browser_sync::ChromeSyncClient(profile));
 
   sync_client->SetSyncApiComponentFactoryForTesting(
-      make_scoped_ptr(new SyncApiComponentFactoryMock()));
+      base::WrapUnique(new SyncApiComponentFactoryMock()));
 
   ProfileSyncService::InitParams init_params =
       CreateProfileSyncServiceParamsForTest(std::move(sync_client), profile);
@@ -35,11 +36,11 @@ ProfileSyncService::InitParams CreateProfileSyncServiceParamsForTest(
 }
 
 ProfileSyncService::InitParams CreateProfileSyncServiceParamsForTest(
-    scoped_ptr<sync_driver::SyncClient> sync_client,
+    std::unique_ptr<sync_driver::SyncClient> sync_client,
     Profile* profile) {
   ProfileSyncService::InitParams init_params;
 
-  init_params.signin_wrapper = make_scoped_ptr(
+  init_params.signin_wrapper = base::WrapUnique(
       new SigninManagerWrapper(SigninManagerFactory::GetForProfile(profile)));
   init_params.oauth2_token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
@@ -61,16 +62,16 @@ ProfileSyncService::InitParams CreateProfileSyncServiceParamsForTest(
   return init_params;
 }
 
-scoped_ptr<TestingProfile> MakeSignedInTestingProfile() {
-  auto profile = make_scoped_ptr(new TestingProfile());
+std::unique_ptr<TestingProfile> MakeSignedInTestingProfile() {
+  auto profile = base::WrapUnique(new TestingProfile());
   SigninManagerFactory::GetForProfile(profile.get())
       ->SetAuthenticatedAccountInfo("12345", "foo");
   return profile;
 }
 
-scoped_ptr<KeyedService> BuildMockProfileSyncService(
+std::unique_ptr<KeyedService> BuildMockProfileSyncService(
     content::BrowserContext* context) {
-  return make_scoped_ptr(
+  return base::WrapUnique(
       new ProfileSyncServiceMock(CreateProfileSyncServiceParamsForTest(
           Profile::FromBrowserContext(context))));
 }

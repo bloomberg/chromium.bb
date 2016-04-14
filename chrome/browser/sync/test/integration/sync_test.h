@@ -5,12 +5,12 @@
 #ifndef CHROME_BROWSER_SYNC_TEST_INTEGRATION_SYNC_TEST_H_
 #define CHROME_BROWSER_SYNC_TEST_INTEGRATION_SYNC_TEST_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/process/process.h"
 #include "chrome/browser/profiles/profile.h"
@@ -284,7 +284,7 @@ class SyncTest : public InProcessBrowserTest {
   base::FilePath password_file_;
 
   // The FakeServer used in tests with server type IN_PROCESS_FAKE_SERVER.
-  scoped_ptr<fake_server::FakeServer> fake_server_;
+  std::unique_ptr<fake_server::FakeServer> fake_server_;
 
  private:
   // Handles Profile creation for given index. Profile's path and type is
@@ -372,7 +372,7 @@ class SyncTest : public InProcessBrowserTest {
   syncer::LocalSyncTestServer sync_server_;
 
   // Helper class to whitelist the notification port.
-  scoped_ptr<net::ScopedPortException> xmpp_port_;
+  std::unique_ptr<net::ScopedPortException> xmpp_port_;
 
   // Used to differentiate between single-client and two-client tests as well
   // as wher the in-process FakeServer is used.
@@ -393,7 +393,7 @@ class SyncTest : public InProcessBrowserTest {
   // Collection of profile delegates. Only used for test profiles, which require
   // a custom profile delegate to ensure initialization happens at the right
   // time.
-  std::vector<scoped_ptr<Profile::Delegate>> profile_delegates_;
+  std::vector<std::unique_ptr<Profile::Delegate>> profile_delegates_;
 
   // Collection of profile paths used by a test. Each profile has a unique path
   // which should be cleaned up at test shutdown. Profile paths inside the
@@ -443,16 +443,17 @@ class SyncTest : public InProcessBrowserTest {
   // Sync integration tests need to make live DNS requests for access to
   // GAIA and sync server URLs under google.com. We use a scoped version
   // to override the default resolver while the test is active.
-  scoped_ptr<net::ScopedDefaultHostResolverProc> mock_host_resolver_override_;
+  std::unique_ptr<net::ScopedDefaultHostResolverProc>
+      mock_host_resolver_override_;
 
   // Used to start and stop the local test server.
   base::Process test_server_;
 
   // Fake URLFetcher factory used to mock out GAIA signin.
-  scoped_ptr<net::FakeURLFetcherFactory> fake_factory_;
+  std::unique_ptr<net::FakeURLFetcherFactory> fake_factory_;
 
   // The URLFetcherImplFactory instance used to instantiate |fake_factory_|.
-  scoped_ptr<net::URLFetcherImplFactory> factory_;
+  std::unique_ptr<net::URLFetcherImplFactory> factory_;
 
   // The contents to be written to a profile's Preferences file before the
   // Profile object is created. If empty, no preexisting file will be written.

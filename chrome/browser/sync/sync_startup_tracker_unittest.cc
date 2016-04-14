@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/scoped_ptr.h"
+#include "chrome/browser/sync/sync_startup_tracker.h"
+
+#include <memory>
+
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
-#include "chrome/browser/sync/sync_startup_tracker.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -61,7 +63,7 @@ class SyncStartupTrackerTest : public testing::Test {
 
   content::TestBrowserThreadBundle thread_bundle_;
   GoogleServiceAuthError no_error_;
-  scoped_ptr<TestingProfile> profile_;
+  std::unique_ptr<TestingProfile> profile_;
   ProfileSyncServiceMock* mock_pss_;
   MockObserver observer_;
 };

@@ -63,7 +63,7 @@ class ChromeSyncClient : public sync_driver::SyncClient {
   void SetBrowsingDataRemoverObserverForTesting(
       BrowsingDataRemover::Observer* observer);
   void SetSyncApiComponentFactoryForTesting(
-      scoped_ptr<sync_driver::SyncApiComponentFactory> component_factory);
+      std::unique_ptr<sync_driver::SyncApiComponentFactory> component_factory);
 
   // Iterates over all of the profiles that have been loaded so far, and
   // extracts their tracker if present. If some profiles don't have trackers, no
@@ -89,14 +89,14 @@ class ChromeSyncClient : public sync_driver::SyncClient {
   Profile* const profile_;
 
   // The sync api component factory in use by this client.
-  scoped_ptr<sync_driver::SyncApiComponentFactory> component_factory_;
+  std::unique_ptr<sync_driver::SyncApiComponentFactory> component_factory_;
 
   // Members that must be fetched on the UI thread but accessed on their
   // respective backend threads.
   scoped_refptr<autofill::AutofillWebDataService> web_data_service_;
   scoped_refptr<password_manager::PasswordStore> password_store_;
 
-  scoped_ptr<sync_sessions::SyncSessionsClient> sync_sessions_client_;
+  std::unique_ptr<sync_sessions::SyncSessionsClient> sync_sessions_client_;
 
   // Generates and monitors the ExtensionsActivity object used by sync.
   ExtensionsActivityMonitor extensions_activity_monitor_;

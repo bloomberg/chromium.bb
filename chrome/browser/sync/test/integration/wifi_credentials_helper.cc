@@ -129,9 +129,10 @@ bool AllProfilesMatch() {
   return true;
 }
 
-scoped_ptr<WifiCredential> MakeWifiCredential(const std::string& ssid,
-                                              WifiSecurityClass security_class,
-                                              const std::string& passphrase) {
+std::unique_ptr<WifiCredential> MakeWifiCredential(
+    const std::string& ssid,
+    WifiSecurityClass security_class,
+    const std::string& passphrase) {
   return WifiCredential::Create(WifiCredential::MakeSsidBytesForTest(ssid),
                                 security_class,
                                 passphrase);

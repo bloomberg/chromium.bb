@@ -54,7 +54,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientWifiCredentialsSyncTest, SingleCredential) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   const char ssid[] = "fake-ssid";
-  scoped_ptr<WifiCredential> credential =
+  std::unique_ptr<WifiCredential> credential =
       wifi_credentials_helper::MakeWifiCredential(
           ssid, wifi_sync::SECURITY_CLASS_PSK, "fake_passphrase");
   ASSERT_TRUE(credential);

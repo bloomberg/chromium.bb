@@ -4,10 +4,11 @@
 
 #include "chrome/browser/sync/test/integration/extension_settings_helper.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
@@ -44,10 +45,10 @@ void GetAllSettingsOnFileThread(base::DictionaryValue* out,
   signal->Signal();
 }
 
-scoped_ptr<base::DictionaryValue> GetAllSettings(
-    Profile* profile, const std::string& id) {
+std::unique_ptr<base::DictionaryValue> GetAllSettings(Profile* profile,
+                                                      const std::string& id) {
   base::WaitableEvent signal(false, false);
-  scoped_ptr<base::DictionaryValue> settings(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> settings(new base::DictionaryValue());
   extensions::StorageFrontend::Get(profile)->RunWithStorage(
       ExtensionRegistry::Get(profile)->enabled_extensions().GetByID(id),
       extensions::settings_namespace::SYNC,
@@ -70,9 +71,9 @@ bool AreSettingsSame(Profile* expected_profile, Profile* actual_profile) {
        it != extensions.end();
        ++it) {
     const std::string& id = (*it)->id();
-    scoped_ptr<base::DictionaryValue> expected(
+    std::unique_ptr<base::DictionaryValue> expected(
         GetAllSettings(expected_profile, id));
-    scoped_ptr<base::DictionaryValue> actual(
+    std::unique_ptr<base::DictionaryValue> actual(
         GetAllSettings(actual_profile, id));
     if (!expected->Equals(actual.get())) {
       ADD_FAILURE() <<

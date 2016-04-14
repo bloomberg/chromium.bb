@@ -71,8 +71,8 @@ class NotificationServiceSessionsRouter
   sync_sessions::SyncSessionsClient* const sessions_client_;
   syncer::SyncableService::StartSyncFlare flare_;
 
-  scoped_ptr<base::CallbackList<void(const std::set<GURL>&,
-                                     const GURL&)>::Subscription>
+  std::unique_ptr<base::CallbackList<void(const std::set<GURL>&,
+                                          const GURL&)>::Subscription>
       favicon_changed_subscription_;
 
   base::WeakPtrFactory<NotificationServiceSessionsRouter> weak_ptr_factory_;

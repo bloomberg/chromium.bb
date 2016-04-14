@@ -261,8 +261,8 @@ class DummyRouter : public LocalSessionEventRouter {
   void Stop() override {}
 };
 
-scoped_ptr<LocalSessionEventRouter> NewDummyRouter() {
-  return scoped_ptr<LocalSessionEventRouter>(new DummyRouter());
+std::unique_ptr<LocalSessionEventRouter> NewDummyRouter() {
+  return std::unique_ptr<LocalSessionEventRouter>(new DummyRouter());
 }
 
 // Provides ability to override SyncedWindowDelegatesGetter.
@@ -302,8 +302,8 @@ class SyncSessionsClientShim : public sync_sessions::SyncSessionsClient {
                : sync_sessions_client_->GetSyncedWindowDelegatesGetter();
   }
 
-  scoped_ptr<browser_sync::LocalSessionEventRouter> GetLocalSessionEventRouter()
-      override {
+  std::unique_ptr<browser_sync::LocalSessionEventRouter>
+  GetLocalSessionEventRouter() override {
     return sync_sessions_client_->GetLocalSessionEventRouter();
   }
 
@@ -345,7 +345,7 @@ class SessionsSyncManagerTest
     sync_prefs_.reset(new sync_driver::SyncPrefs(profile()->GetPrefs()));
     manager_.reset(new SessionsSyncManager(
         GetSyncSessionsClient(), sync_prefs_.get(), local_device_.get(),
-        scoped_ptr<LocalSessionEventRouter>(router),
+        std::unique_ptr<LocalSessionEventRouter>(router),
         base::Bind(&SessionNotificationObserver::NotifyOfUpdate,
                    base::Unretained(&observer_)),
         base::Bind(&SessionNotificationObserver::NotifyOfRefresh,
@@ -374,8 +374,8 @@ class SessionsSyncManagerTest
     test_processor_ = new TestSyncProcessorStub(output);
     syncer::SyncMergeResult result = manager_->MergeDataAndStartSyncing(
         syncer::SESSIONS, initial_data,
-        scoped_ptr<syncer::SyncChangeProcessor>(test_processor_),
-        scoped_ptr<syncer::SyncErrorFactory>(
+        std::unique_ptr<syncer::SyncChangeProcessor>(test_processor_),
+        std::unique_ptr<syncer::SyncErrorFactory>(
             new syncer::SyncErrorFactoryMock()));
     EXPECT_FALSE(result.error().IsSet());
   }
@@ -425,14 +425,14 @@ class SessionsSyncManagerTest
   }
 
  private:
-  scoped_ptr<browser_sync::ChromeSyncClient> sync_client_;
-  scoped_ptr<SyncSessionsClientShim> sessions_client_shim_;
-  scoped_ptr<sync_driver::SyncPrefs> sync_prefs_;
+  std::unique_ptr<browser_sync::ChromeSyncClient> sync_client_;
+  std::unique_ptr<SyncSessionsClientShim> sessions_client_shim_;
+  std::unique_ptr<sync_driver::SyncPrefs> sync_prefs_;
   SessionNotificationObserver observer_;
-  scoped_ptr<SessionsSyncManager> manager_;
+  std::unique_ptr<SessionsSyncManager> manager_;
   SessionSyncTestHelper helper_;
   TestSyncProcessorStub* test_processor_;
-  scoped_ptr<LocalDeviceInfoProviderMock> local_device_;
+  std::unique_ptr<LocalDeviceInfoProviderMock> local_device_;
 };
 
 // Test that the SyncSessionManager can properly fill in a SessionHeader.
@@ -488,7 +488,7 @@ class SyncedTabDelegateFake : public SyncedTabDelegate {
     current_entry_index_ = i;
   }
 
-  void AppendEntry(scoped_ptr<content::NavigationEntry> entry) {
+  void AppendEntry(std::unique_ptr<content::NavigationEntry> entry) {
     entries_.push_back(std::move(entry));
   }
 
@@ -537,7 +537,7 @@ class SyncedTabDelegateFake : public SyncedTabDelegate {
   void set_blocked_navigations(
       std::vector<const content::NavigationEntry*>* navs) {
     for (auto* entry : *navs) {
-      scoped_ptr<sessions::SerializedNavigationEntry> serialized_entry(
+      std::unique_ptr<sessions::SerializedNavigationEntry> serialized_entry(
           new sessions::SerializedNavigationEntry());
       *serialized_entry =
           sessions::ContentSerializedNavigationBuilder::FromNavigationEntry(
@@ -588,19 +588,19 @@ static const base::Time kTime9 = base::Time::FromInternalValue(190);
 TEST_F(SessionsSyncManagerTest, SetSessionTabFromDelegate) {
   // Create a tab with three valid entries.
   SyncedTabDelegateFake tab;
-  scoped_ptr<content::NavigationEntry> entry1(
+  std::unique_ptr<content::NavigationEntry> entry1(
       content::NavigationEntry::Create());
   GURL url1("http://www.google.com/");
   entry1->SetVirtualURL(url1);
   entry1->SetTimestamp(kTime1);
   entry1->SetHttpStatusCode(200);
-  scoped_ptr<content::NavigationEntry> entry2(
+  std::unique_ptr<content::NavigationEntry> entry2(
       content::NavigationEntry::Create());
   GURL url2("http://www.noodle.com/");
   entry2->SetVirtualURL(url2);
   entry2->SetTimestamp(kTime2);
   entry2->SetHttpStatusCode(201);
-  scoped_ptr<content::NavigationEntry> entry3(
+  std::unique_ptr<content::NavigationEntry> entry3(
       content::NavigationEntry::Create());
   GURL url3("http://www.doodle.com/");
   entry3->SetVirtualURL(url3);
@@ -658,61 +658,61 @@ TEST_F(SessionsSyncManagerTest, SetSessionTabFromDelegate) {
 // stack gets trucated to +/- 6 entries.
 TEST_F(SessionsSyncManagerTest, SetSessionTabFromDelegateNavigationIndex) {
   SyncedTabDelegateFake tab;
-  scoped_ptr<content::NavigationEntry> entry0(
+  std::unique_ptr<content::NavigationEntry> entry0(
       content::NavigationEntry::Create());
   GURL url0("http://www.google.com/");
   entry0->SetVirtualURL(url0);
   entry0->SetTimestamp(kTime0);
   entry0->SetHttpStatusCode(200);
-  scoped_ptr<content::NavigationEntry> entry1(
+  std::unique_ptr<content::NavigationEntry> entry1(
       content::NavigationEntry::Create());
   GURL url1("http://www.zoogle.com/");
   entry1->SetVirtualURL(url1);
   entry1->SetTimestamp(kTime1);
   entry1->SetHttpStatusCode(200);
-  scoped_ptr<content::NavigationEntry> entry2(
+  std::unique_ptr<content::NavigationEntry> entry2(
       content::NavigationEntry::Create());
   GURL url2("http://www.noogle.com/");
   entry2->SetVirtualURL(url2);
   entry2->SetTimestamp(kTime2);
   entry2->SetHttpStatusCode(200);
-  scoped_ptr<content::NavigationEntry> entry3(
+  std::unique_ptr<content::NavigationEntry> entry3(
       content::NavigationEntry::Create());
   GURL url3("http://www.doogle.com/");
   entry3->SetVirtualURL(url3);
   entry3->SetTimestamp(kTime3);
   entry3->SetHttpStatusCode(200);
-  scoped_ptr<content::NavigationEntry> entry4(
+  std::unique_ptr<content::NavigationEntry> entry4(
       content::NavigationEntry::Create());
   GURL url4("http://www.yoogle.com/");
   entry4->SetVirtualURL(url4);
   entry4->SetTimestamp(kTime4);
   entry4->SetHttpStatusCode(200);
-  scoped_ptr<content::NavigationEntry> entry5(
+  std::unique_ptr<content::NavigationEntry> entry5(
       content::NavigationEntry::Create());
   GURL url5("http://www.foogle.com/");
   entry5->SetVirtualURL(url5);
   entry5->SetTimestamp(kTime5);
   entry5->SetHttpStatusCode(200);
-  scoped_ptr<content::NavigationEntry> entry6(
+  std::unique_ptr<content::NavigationEntry> entry6(
       content::NavigationEntry::Create());
   GURL url6("http://www.boogle.com/");
   entry6->SetVirtualURL(url6);
   entry6->SetTimestamp(kTime6);
   entry6->SetHttpStatusCode(200);
-  scoped_ptr<content::NavigationEntry> entry7(
+  std::unique_ptr<content::NavigationEntry> entry7(
       content::NavigationEntry::Create());
   GURL url7("http://www.moogle.com/");
   entry7->SetVirtualURL(url7);
   entry7->SetTimestamp(kTime7);
   entry7->SetHttpStatusCode(200);
-  scoped_ptr<content::NavigationEntry> entry8(
+  std::unique_ptr<content::NavigationEntry> entry8(
       content::NavigationEntry::Create());
   GURL url8("http://www.poogle.com/");
   entry8->SetVirtualURL(url8);
   entry8->SetTimestamp(kTime8);
   entry8->SetHttpStatusCode(200);
-  scoped_ptr<content::NavigationEntry> entry9(
+  std::unique_ptr<content::NavigationEntry> entry9(
       content::NavigationEntry::Create());
   GURL url9("http://www.roogle.com/");
   entry9->SetVirtualURL(url9);
@@ -745,22 +745,22 @@ TEST_F(SessionsSyncManagerTest, SetSessionTabFromDelegateNavigationIndex) {
 // stack if the current navigation is invalid.
 TEST_F(SessionsSyncManagerTest, SetSessionTabFromDelegateCurrentInvalid) {
   SyncedTabDelegateFake tab;
-  scoped_ptr<content::NavigationEntry> entry0(
+  std::unique_ptr<content::NavigationEntry> entry0(
       content::NavigationEntry::Create());
   entry0->SetVirtualURL(GURL("http://www.google.com"));
   entry0->SetTimestamp(kTime0);
   entry0->SetHttpStatusCode(200);
-  scoped_ptr<content::NavigationEntry> entry1(
+  std::unique_ptr<content::NavigationEntry> entry1(
       content::NavigationEntry::Create());
   entry1->SetVirtualURL(GURL(""));
   entry1->SetTimestamp(kTime1);
   entry1->SetHttpStatusCode(200);
-  scoped_ptr<content::NavigationEntry> entry2(
+  std::unique_ptr<content::NavigationEntry> entry2(
       content::NavigationEntry::Create());
   entry2->SetVirtualURL(GURL("http://www.noogle.com"));
   entry2->SetTimestamp(kTime2);
   entry2->SetHttpStatusCode(200);
-  scoped_ptr<content::NavigationEntry> entry3(
+  std::unique_ptr<content::NavigationEntry> entry3(
       content::NavigationEntry::Create());
   entry3->SetVirtualURL(GURL("http://www.doogle.com"));
   entry3->SetTimestamp(kTime3);
@@ -807,19 +807,19 @@ TEST_F(SessionsSyncManagerTest, SetVariationIds) {
 // as such, while regular navigations are marked as allowed.
 TEST_F(SessionsSyncManagerTest, BlockedNavigations) {
   SyncedTabDelegateFake tab;
-  scoped_ptr<content::NavigationEntry> entry1(
+  std::unique_ptr<content::NavigationEntry> entry1(
       content::NavigationEntry::Create());
   GURL url1("http://www.google.com/");
   entry1->SetVirtualURL(url1);
   entry1->SetTimestamp(kTime1);
   tab.AppendEntry(std::move(entry1));
 
-  scoped_ptr<content::NavigationEntry> entry2(
+  std::unique_ptr<content::NavigationEntry> entry2(
       content::NavigationEntry::Create());
   GURL url2("http://blocked.com/foo");
   entry2->SetVirtualURL(url2);
   entry2->SetTimestamp(kTime2);
-  scoped_ptr<content::NavigationEntry> entry3(
+  std::unique_ptr<content::NavigationEntry> entry3(
       content::NavigationEntry::Create());
   GURL url3("http://evil.com/");
   entry3->SetVirtualURL(url3);
@@ -915,10 +915,9 @@ TEST_F(SessionsSyncManagerTest, MergeLocalSessionNoTabs) {
                                local_device(), NewDummyRouter(),
                                base::Closure(), base::Closure());
   syncer::SyncMergeResult result = manager2.MergeDataAndStartSyncing(
-      syncer::SESSIONS, in,
-      scoped_ptr<syncer::SyncChangeProcessor>(
-          new TestSyncProcessorStub(&out)),
-      scoped_ptr<syncer::SyncErrorFactory>(
+      syncer::SESSIONS, in, std::unique_ptr<syncer::SyncChangeProcessor>(
+                                new TestSyncProcessorStub(&out)),
+      std::unique_ptr<syncer::SyncErrorFactory>(
           new syncer::SyncErrorFactoryMock()));
   ASSERT_FALSE(result.error().IsSet());
 
@@ -987,15 +986,14 @@ TEST_F(SessionsSyncManagerTest, SwappedOutOnRestore) {
                                 t2.GetSpecifics().session().tab().tab_id());
   std::set<const SyncedWindowDelegate*> delegates;
   delegates.insert(&window_override);
-  scoped_ptr<TestSyncedWindowDelegatesGetter> getter(
+  std::unique_ptr<TestSyncedWindowDelegatesGetter> getter(
       new TestSyncedWindowDelegatesGetter(delegates));
   set_synced_window_getter(getter.get());
 
   syncer::SyncMergeResult result = manager()->MergeDataAndStartSyncing(
-      syncer::SESSIONS, in,
-      scoped_ptr<syncer::SyncChangeProcessor>(
-          new TestSyncProcessorStub(&out)),
-      scoped_ptr<syncer::SyncErrorFactory>(
+      syncer::SESSIONS, in, std::unique_ptr<syncer::SyncChangeProcessor>(
+                                new TestSyncProcessorStub(&out)),
+      std::unique_ptr<syncer::SyncErrorFactory>(
           new syncer::SyncErrorFactoryMock()));
 
   // There should be two changes, one for the fully associated tab, and
@@ -1506,10 +1504,9 @@ TEST_F(SessionsSyncManagerTest, SaveUnassociatedNodesForReassociation) {
                                local_device(), NewDummyRouter(),
                                base::Closure(), base::Closure());
   syncer::SyncMergeResult result = manager2.MergeDataAndStartSyncing(
-      syncer::SESSIONS, in,
-      scoped_ptr<syncer::SyncChangeProcessor>(
-          new TestSyncProcessorStub(&changes)),
-      scoped_ptr<syncer::SyncErrorFactory>(
+      syncer::SESSIONS, in, std::unique_ptr<syncer::SyncChangeProcessor>(
+                                new TestSyncProcessorStub(&changes)),
+      std::unique_ptr<syncer::SyncErrorFactory>(
           new syncer::SyncErrorFactoryMock()));
   ASSERT_FALSE(result.error().IsSet());
   EXPECT_TRUE(FilterOutLocalHeaderChanges(&changes)->empty());
@@ -1962,7 +1959,7 @@ TEST_F(SessionsSyncManagerTest, CheckPrerenderedWebContentsSwap) {
 
   // To simulate WebContents swap during prerendering, create new WebContents
   // and swap with old WebContents.
-  scoped_ptr<content::WebContents> old_web_contents;
+  std::unique_ptr<content::WebContents> old_web_contents;
   old_web_contents.reset(browser()->tab_strip_model()->GetActiveWebContents());
 
   // Create new WebContents, with the required tab helpers.

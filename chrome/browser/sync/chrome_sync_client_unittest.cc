@@ -4,7 +4,8 @@
 
 #include "chrome/browser/sync/chrome_sync_client.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "chrome/common/url_constants.h"
 #include "components/sync_driver/sync_api_component_factory.h"
 #include "components/sync_sessions/sync_sessions_client.h"
@@ -29,7 +30,7 @@ class ChromeSyncClientTest : public testing::Test {
 
  private:
   content::TestBrowserThreadBundle thread_bundle_;
-  scoped_ptr<ChromeSyncClient> sync_client_;
+  std::unique_ptr<ChromeSyncClient> sync_client_;
 };
 
 TEST_F(ChromeSyncClientTest, ShouldSyncURL) {

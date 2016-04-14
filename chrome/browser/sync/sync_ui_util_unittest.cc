@@ -87,7 +87,7 @@ class SyncUIUtilTest : public testing::Test {
 // Test that GetStatusLabelsForSyncGlobalError returns an error if a
 // passphrase is required.
 TEST_F(SyncUIUtilTest, PassphraseGlobalError) {
-  scoped_ptr<Profile> profile = MakeSignedInTestingProfile();
+  std::unique_ptr<Profile> profile = MakeSignedInTestingProfile();
   ProfileSyncServiceMock service(
       CreateProfileSyncServiceParamsForTest(profile.get()));
   browser_sync::SyncBackendHost::Status status;
@@ -107,7 +107,7 @@ TEST_F(SyncUIUtilTest, PassphraseGlobalError) {
 // Test that GetStatusLabelsForSyncGlobalError returns an error if a
 // passphrase is required and not for auth errors.
 TEST_F(SyncUIUtilTest, AuthAndPassphraseGlobalError) {
-  scoped_ptr<Profile> profile(MakeSignedInTestingProfile());
+  std::unique_ptr<Profile> profile(MakeSignedInTestingProfile());
   ProfileSyncServiceMock service(
       CreateProfileSyncServiceParamsForTest(profile.get()));
   browser_sync::SyncBackendHost::Status status;
@@ -135,7 +135,7 @@ TEST_F(SyncUIUtilTest, AuthAndPassphraseGlobalError) {
 // Test that GetStatusLabelsForSyncGlobalError does not indicate errors for
 // auth errors (these are reported through SigninGlobalError).
 TEST_F(SyncUIUtilTest, AuthStateGlobalError) {
-  scoped_ptr<Profile> profile(MakeSignedInTestingProfile());
+  std::unique_ptr<Profile> profile(MakeSignedInTestingProfile());
   ProfileSyncService::InitParams init_params =
       CreateProfileSyncServiceParamsForTest(profile.get());
   NiceMock<ProfileSyncServiceMock> service(&init_params);
@@ -337,7 +337,7 @@ void GetDistinctCase(ProfileSyncServiceMock* service,
 TEST_F(SyncUIUtilTest, DistinctCasesReportUniqueMessageSets) {
   std::set<base::string16> messages;
   for (int idx = 0; idx != NUMBER_OF_STATUS_CASES; idx++) {
-    scoped_ptr<Profile> profile(new TestingProfile());
+    std::unique_ptr<Profile> profile(new TestingProfile());
     ProfileSyncService::InitParams init_params =
         CreateProfileSyncServiceParamsForTest(profile.get());
     NiceMock<ProfileSyncServiceMock> service(&init_params);
@@ -345,7 +345,7 @@ TEST_F(SyncUIUtilTest, DistinctCasesReportUniqueMessageSets) {
     EXPECT_CALL(service, GetAuthError()).WillRepeatedly(ReturnRef(error));
     FakeSigninManagerForSyncUIUtilTest signin(profile.get());
     signin.SetAuthenticatedAccountInfo(kTestGaiaId, kTestUser);
-    scoped_ptr<FakeAuthStatusProvider> provider(new FakeAuthStatusProvider(
+    std::unique_ptr<FakeAuthStatusProvider> provider(new FakeAuthStatusProvider(
         SigninErrorControllerFactory::GetForProfile(profile.get())));
     GetDistinctCase(&service, &signin, provider.get(), idx);
     base::string16 status_label;
@@ -375,7 +375,7 @@ TEST_F(SyncUIUtilTest, DistinctCasesReportUniqueMessageSets) {
 // honored.
 TEST_F(SyncUIUtilTest, HtmlNotIncludedInStatusIfNotRequested) {
   for (int idx = 0; idx != NUMBER_OF_STATUS_CASES; idx++) {
-    scoped_ptr<Profile> profile(MakeSignedInTestingProfile());
+    std::unique_ptr<Profile> profile(MakeSignedInTestingProfile());
     ProfileSyncService::InitParams init_params =
         CreateProfileSyncServiceParamsForTest(profile.get());
     NiceMock<ProfileSyncServiceMock> service(&init_params);
@@ -383,7 +383,7 @@ TEST_F(SyncUIUtilTest, HtmlNotIncludedInStatusIfNotRequested) {
     EXPECT_CALL(service, GetAuthError()).WillRepeatedly(ReturnRef(error));
     FakeSigninManagerForSyncUIUtilTest signin(profile.get());
     signin.SetAuthenticatedAccountInfo(kTestGaiaId, kTestUser);
-    scoped_ptr<FakeAuthStatusProvider> provider(new FakeAuthStatusProvider(
+    std::unique_ptr<FakeAuthStatusProvider> provider(new FakeAuthStatusProvider(
         SigninErrorControllerFactory::GetForProfile(profile.get())));
     GetDistinctCase(&service, &signin, provider.get(), idx);
     base::string16 status_label;

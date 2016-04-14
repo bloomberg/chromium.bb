@@ -4,8 +4,10 @@
 
 #include "chrome/browser/sync/sync_global_error.h"
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/browser/sync/sync_global_error_factory.h"
@@ -50,9 +52,9 @@ class FakeLoginUI : public LoginUIService::LoginUI {
   int focus_ui_call_count_;
 };
 
-scoped_ptr<KeyedService> BuildMockLoginUIService(
+std::unique_ptr<KeyedService> BuildMockLoginUIService(
     content::BrowserContext* profile) {
-  return make_scoped_ptr(new FakeLoginUIService());
+  return base::WrapUnique(new FakeLoginUIService());
 }
 
 // Same as BrowserWithTestWindowTest, but uses MockBrowser to test calls to
@@ -71,7 +73,7 @@ class SyncGlobalErrorTest : public BrowserWithTestWindowTest {
   Profile* profile() { return profile_.get(); }
 
  private:
-  scoped_ptr<TestingProfile> profile_;
+  std::unique_ptr<TestingProfile> profile_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncGlobalErrorTest);
 };

@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -153,7 +154,7 @@ KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
   AboutSigninInternalsFactory::GetForProfile(profile);
 
   init_params.signin_wrapper =
-      make_scoped_ptr(new SupervisedUserSigninManagerWrapper(profile, signin));
+      base::WrapUnique(new SupervisedUserSigninManagerWrapper(profile, signin));
   init_params.oauth2_token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
   init_params.gaia_cookie_manager_service =
@@ -170,7 +171,7 @@ KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
                                    : ProfileSyncService::MANUAL_START;
 
   init_params.sync_client =
-      make_scoped_ptr(new browser_sync::ChromeSyncClient(profile));
+      base::WrapUnique(new browser_sync::ChromeSyncClient(profile));
 
   init_params.network_time_update_callback = base::Bind(&UpdateNetworkTime);
   init_params.base_directory = profile->GetPath();
@@ -185,7 +186,7 @@ KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
           content::BrowserThread::FILE);
   init_params.blocking_pool = content::BrowserThread::GetBlockingPool();
 
-  auto pss = make_scoped_ptr(new ProfileSyncService(std::move(init_params)));
+  auto pss = base::WrapUnique(new ProfileSyncService(std::move(init_params)));
 
   // Will also initialize the sync client.
   pss->Initialize();

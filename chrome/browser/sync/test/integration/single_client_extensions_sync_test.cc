@@ -83,7 +83,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientExtensionsSyncTest, UninstallWinsConflicts) {
       GetFakeServer()->GetSyncEntitiesByModelType(syncer::EXTENSIONS);
   ASSERT_EQ(1ul, server_extensions.size());
   std::string entity_id = server_extensions[0].id_string();
-  scoped_ptr<fake_server::FakeServerEntity> tombstone(
+  std::unique_ptr<fake_server::FakeServerEntity> tombstone(
       fake_server::TombstoneEntity::Create(entity_id));
   GetFakeServer()->InjectEntity(std::move(tombstone));
 

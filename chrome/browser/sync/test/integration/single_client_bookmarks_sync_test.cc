@@ -352,7 +352,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest,
       GetFakeServer()->GetSyncEntitiesByModelType(syncer::BOOKMARKS);
   ASSERT_EQ(1ul, server_bookmarks.size());
   std::string entity_id = server_bookmarks[0].id_string();
-  scoped_ptr<fake_server::FakeServerEntity> tombstone(
+  std::unique_ptr<fake_server::FakeServerEntity> tombstone(
       fake_server::TombstoneEntity::Create(entity_id));
   GetFakeServer()->InjectEntity(std::move(tombstone));
 
