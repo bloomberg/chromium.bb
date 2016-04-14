@@ -77,8 +77,8 @@ TEST_F(ArcPolicyBridgeTest, EmptyPolicyTest) {
 
 TEST_F(ArcPolicyBridgeTest, ArcPolicyTest) {
   policy_map().Set(
-      "ArcPolicy", policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-      policy::POLICY_SOURCE_CLOUD,
+      policy::key::kArcPolicy, policy::POLICY_LEVEL_MANDATORY,
+      policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
       new base::StringValue(
           "{\"applications\":"
               "[{\"packageName\":\"com.google.android.apps.youtube.kids\","
@@ -102,22 +102,35 @@ TEST_F(ArcPolicyBridgeTest, ArcPolicyTest) {
 
 TEST_F(ArcPolicyBridgeTest, HompageLocationTest) {
   // This policy will not be passed on, result should be empty.
-  policy_map().Set("HomepageLocation", policy::POLICY_LEVEL_MANDATORY,
-                   policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-                   new base::StringValue("http://chromium.org"), nullptr);
+  policy_map().Set(policy::key::kHomepageLocation,
+                   policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
+                   policy::POLICY_SOURCE_CLOUD,
+                   new base::StringValue("http://chromium.org"),
+                   nullptr);
   policy_bridge()->GetPolicies(PolicyStringCallback("{}"));
 }
 
+TEST_F(ArcPolicyBridgeTest, DisableScreenshotsTest) {
+  policy_map().Set(policy::key::kDisableScreenshots,
+                   policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
+                   policy::POLICY_SOURCE_CLOUD,
+                   new base::FundamentalValue(true), nullptr);
+  policy_bridge()->GetPolicies(
+      PolicyStringCallback("{\"screenCaptureDisabled\":true}"));
+}
+
 TEST_F(ArcPolicyBridgeTest, VideoCaptureAllowedTest) {
-  policy_map().Set("VideoCaptureAllowed", policy::POLICY_LEVEL_MANDATORY,
-                   policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
+  policy_map().Set(policy::key::kVideoCaptureAllowed,
+                   policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
+                   policy::POLICY_SOURCE_CLOUD,
                    new base::FundamentalValue(false), nullptr);
   policy_bridge()->GetPolicies(
       PolicyStringCallback("{\"cameraDisabled\":true}"));
 }
 
 TEST_F(ArcPolicyBridgeTest, AudioCaptureAllowedTest) {
-  policy_map().Set("AudioCaptureAllowed", policy::POLICY_LEVEL_MANDATORY,
+  policy_map().Set(policy::key::kAudioCaptureAllowed,
+                   policy::POLICY_LEVEL_MANDATORY,
                    policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
                    new base::FundamentalValue(false), nullptr);
   policy_bridge()->GetPolicies(
@@ -156,8 +169,8 @@ TEST_F(ArcPolicyBridgeTest, URLWhitelistTest) {
 
 TEST_F(ArcPolicyBridgeTest, MultiplePoliciesTest) {
   policy_map().Set(
-      "ArcPolicy", policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-      policy::POLICY_SOURCE_CLOUD,
+      policy::key::kArcPolicy, policy::POLICY_LEVEL_MANDATORY,
+      policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
       new base::StringValue("{\"applications\":"
               "[{\"packageName\":\"com.google.android.apps.youtube.kids\","
                 "\"installType\":\"REQUIRED\","
@@ -166,10 +179,12 @@ TEST_F(ArcPolicyBridgeTest, MultiplePoliciesTest) {
               "}],"
           "\"defaultPermissionPolicy\":\"GRANT\"}"),
       nullptr);
-  policy_map().Set("HomepageLocation", policy::POLICY_LEVEL_MANDATORY,
+  policy_map().Set(policy::key::kHomepageLocation,
+                   policy::POLICY_LEVEL_MANDATORY,
                    policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
                    new base::StringValue("http://chromium.org"), nullptr);
-  policy_map().Set("VideoCaptureAllowed", policy::POLICY_LEVEL_MANDATORY,
+  policy_map().Set(policy::key::kVideoCaptureAllowed,
+                   policy::POLICY_LEVEL_MANDATORY,
                    policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
                    new base::FundamentalValue(false), nullptr);
   policy_bridge()->GetPolicies(PolicyStringCallback(
