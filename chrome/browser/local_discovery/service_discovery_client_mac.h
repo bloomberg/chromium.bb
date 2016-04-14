@@ -39,20 +39,20 @@ class ServiceDiscoveryClientMac : public ServiceDiscoverySharedClient {
   ~ServiceDiscoveryClientMac() override;
 
   // ServiceDiscoveryClient implementation.
-  scoped_ptr<ServiceWatcher> CreateServiceWatcher(
+  std::unique_ptr<ServiceWatcher> CreateServiceWatcher(
       const std::string& service_type,
       const ServiceWatcher::UpdatedCallback& callback) override;
-  scoped_ptr<ServiceResolver> CreateServiceResolver(
+  std::unique_ptr<ServiceResolver> CreateServiceResolver(
       const std::string& service_name,
       const ServiceResolver::ResolveCompleteCallback& callback) override;
-  scoped_ptr<LocalDomainResolver> CreateLocalDomainResolver(
+  std::unique_ptr<LocalDomainResolver> CreateLocalDomainResolver(
       const std::string& domain,
       net::AddressFamily address_family,
       const LocalDomainResolver::IPAddressCallback& callback) override;
 
   void StartThreadIfNotStarted();
 
-  scoped_ptr<base::Thread> service_discovery_thread_;
+  std::unique_ptr<base::Thread> service_discovery_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceDiscoveryClientMac);
 };
@@ -115,8 +115,8 @@ class ServiceWatcherImplMac : public ServiceWatcher {
   ServiceWatcher::UpdatedCallback callback_;
   bool started_;
 
-  scoped_ptr<NetServiceBrowserContainer,
-             ServiceDiscoveryThreadDeleter<NetServiceBrowserContainer> >
+  std::unique_ptr<NetServiceBrowserContainer,
+                  ServiceDiscoveryThreadDeleter<NetServiceBrowserContainer>>
       container_;
   base::WeakPtrFactory<ServiceWatcherImplMac> weak_factory_;
 
@@ -183,8 +183,9 @@ class ServiceResolverImplMac : public ServiceResolver {
   ServiceResolver::ResolveCompleteCallback callback_;
   bool has_resolved_;
 
-  scoped_ptr<NetServiceContainer,
-             ServiceDiscoveryThreadDeleter<NetServiceContainer> > container_;
+  std::unique_ptr<NetServiceContainer,
+                  ServiceDiscoveryThreadDeleter<NetServiceContainer>>
+      container_;
   base::WeakPtrFactory<ServiceResolverImplMac> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceResolverImplMac);

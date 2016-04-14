@@ -38,7 +38,7 @@ void ReportFirewallStats() {
   if (!PathService::Get(base::FILE_EXE, &exe_path))
     return;
   base::ElapsedTimer timer;
-  scoped_ptr<installer::FirewallManager> manager =
+  std::unique_ptr<installer::FirewallManager> manager =
       installer::FirewallManager::Create(BrowserDistribution::GetDistribution(),
                                          exe_path);
   if (!manager)

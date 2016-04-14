@@ -123,32 +123,33 @@ void ParseTxtRecord(NSData* record, std::vector<std::string>* output) {
 ServiceDiscoveryClientMac::ServiceDiscoveryClientMac() {}
 ServiceDiscoveryClientMac::~ServiceDiscoveryClientMac() {}
 
-scoped_ptr<ServiceWatcher> ServiceDiscoveryClientMac::CreateServiceWatcher(
+std::unique_ptr<ServiceWatcher> ServiceDiscoveryClientMac::CreateServiceWatcher(
     const std::string& service_type,
     const ServiceWatcher::UpdatedCallback& callback) {
   StartThreadIfNotStarted();
   VLOG(1) << "CreateServiceWatcher: " << service_type;
-  return scoped_ptr<ServiceWatcher>(new ServiceWatcherImplMac(
+  return std::unique_ptr<ServiceWatcher>(new ServiceWatcherImplMac(
       service_type, callback, service_discovery_thread_->task_runner()));
 }
 
-scoped_ptr<ServiceResolver> ServiceDiscoveryClientMac::CreateServiceResolver(
+std::unique_ptr<ServiceResolver>
+ServiceDiscoveryClientMac::CreateServiceResolver(
     const std::string& service_name,
     const ServiceResolver::ResolveCompleteCallback& callback) {
   StartThreadIfNotStarted();
   VLOG(1) << "CreateServiceResolver: " << service_name;
-  return scoped_ptr<ServiceResolver>(new ServiceResolverImplMac(
+  return std::unique_ptr<ServiceResolver>(new ServiceResolverImplMac(
       service_name, callback, service_discovery_thread_->task_runner()));
 }
 
-scoped_ptr<LocalDomainResolver>
+std::unique_ptr<LocalDomainResolver>
 ServiceDiscoveryClientMac::CreateLocalDomainResolver(
     const std::string& domain,
     net::AddressFamily address_family,
     const LocalDomainResolver::IPAddressCallback& callback) {
   NOTIMPLEMENTED();  // TODO(noamsml): Implement.
   VLOG(1) << "CreateLocalDomainResolver: " << domain;
-  return scoped_ptr<LocalDomainResolver>();
+  return std::unique_ptr<LocalDomainResolver>();
 }
 
 void ServiceDiscoveryClientMac::StartThreadIfNotStarted() {

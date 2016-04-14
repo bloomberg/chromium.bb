@@ -93,7 +93,7 @@ TEST_F(ServiceDiscoveryClientMacTest, ServiceWatcher) {
   const std::string test_service_type = "_testing._tcp.local";
   const std::string test_service_name = "Test.123";
 
-  scoped_ptr<ServiceWatcher> watcher = client_->CreateServiceWatcher(
+  std::unique_ptr<ServiceWatcher> watcher = client_->CreateServiceWatcher(
       test_service_type,
       base::Bind(&ServiceDiscoveryClientMacTest::OnServiceUpdated,
                  base::Unretained(this)));
@@ -115,7 +115,7 @@ TEST_F(ServiceDiscoveryClientMacTest, ServiceWatcher) {
 
 TEST_F(ServiceDiscoveryClientMacTest, ServiceResolver) {
   const std::string test_service_name = "Test.123._testing._tcp.local";
-  scoped_ptr<ServiceResolver> resolver = client_->CreateServiceResolver(
+  std::unique_ptr<ServiceResolver> resolver = client_->CreateServiceResolver(
       test_service_name,
       base::Bind(&ServiceDiscoveryClientMacTest::OnResolveComplete,
                  base::Unretained(this)));

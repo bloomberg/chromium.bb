@@ -30,25 +30,27 @@ void TestServiceDiscoveryClient::Start() {
                                       &TestServiceDiscoveryClient::OnSendTo));
 }
 
-scoped_ptr<ServiceWatcher> TestServiceDiscoveryClient::CreateServiceWatcher(
-      const std::string& service_type,
-      const ServiceWatcher::UpdatedCallback& callback) {
+std::unique_ptr<ServiceWatcher>
+TestServiceDiscoveryClient::CreateServiceWatcher(
+    const std::string& service_type,
+    const ServiceWatcher::UpdatedCallback& callback) {
   return service_discovery_client_impl_->CreateServiceWatcher(service_type,
                                                               callback);
 }
 
-scoped_ptr<ServiceResolver> TestServiceDiscoveryClient::CreateServiceResolver(
-      const std::string& service_name,
-      const ServiceResolver::ResolveCompleteCallback& callback) {
+std::unique_ptr<ServiceResolver>
+TestServiceDiscoveryClient::CreateServiceResolver(
+    const std::string& service_name,
+    const ServiceResolver::ResolveCompleteCallback& callback) {
   return service_discovery_client_impl_->CreateServiceResolver(service_name,
                                                               callback);
 }
 
-scoped_ptr<LocalDomainResolver>
+std::unique_ptr<LocalDomainResolver>
 TestServiceDiscoveryClient::CreateLocalDomainResolver(
-      const std::string& domain,
-      net::AddressFamily address_family,
-      const LocalDomainResolver::IPAddressCallback& callback) {
+    const std::string& domain,
+    net::AddressFamily address_family,
+    const LocalDomainResolver::IPAddressCallback& callback) {
   return service_discovery_client_impl_->CreateLocalDomainResolver(
       domain, address_family, callback);
 }

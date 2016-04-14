@@ -32,26 +32,28 @@ ServiceDiscoveryClientImpl::ServiceDiscoveryClientImpl(
 ServiceDiscoveryClientImpl::~ServiceDiscoveryClientImpl() {
 }
 
-scoped_ptr<ServiceWatcher> ServiceDiscoveryClientImpl::CreateServiceWatcher(
+std::unique_ptr<ServiceWatcher>
+ServiceDiscoveryClientImpl::CreateServiceWatcher(
     const std::string& service_type,
     const ServiceWatcher::UpdatedCallback& callback) {
-  return scoped_ptr<ServiceWatcher>(new ServiceWatcherImpl(
-      service_type, callback, mdns_client_));
+  return std::unique_ptr<ServiceWatcher>(
+      new ServiceWatcherImpl(service_type, callback, mdns_client_));
 }
 
-scoped_ptr<ServiceResolver> ServiceDiscoveryClientImpl::CreateServiceResolver(
+std::unique_ptr<ServiceResolver>
+ServiceDiscoveryClientImpl::CreateServiceResolver(
     const std::string& service_name,
     const ServiceResolver::ResolveCompleteCallback& callback) {
-  return scoped_ptr<ServiceResolver>(new ServiceResolverImpl(
-      service_name, callback, mdns_client_));
+  return std::unique_ptr<ServiceResolver>(
+      new ServiceResolverImpl(service_name, callback, mdns_client_));
 }
 
-scoped_ptr<LocalDomainResolver>
+std::unique_ptr<LocalDomainResolver>
 ServiceDiscoveryClientImpl::CreateLocalDomainResolver(
-      const std::string& domain,
-      net::AddressFamily address_family,
-      const LocalDomainResolver::IPAddressCallback& callback) {
-  return scoped_ptr<LocalDomainResolver>(new LocalDomainResolverImpl(
+    const std::string& domain,
+    net::AddressFamily address_family,
+    const LocalDomainResolver::IPAddressCallback& callback) {
+  return std::unique_ptr<LocalDomainResolver>(new LocalDomainResolverImpl(
       domain, address_family, callback, mdns_client_));
 }
 
@@ -100,8 +102,10 @@ void ServiceWatcherImpl::ReadCachedServices() {
 }
 
 bool ServiceWatcherImpl::CreateTransaction(
-    bool network, bool cache, bool force_refresh,
-    scoped_ptr<net::MDnsTransaction>* transaction) {
+    bool network,
+    bool cache,
+    bool force_refresh,
+    std::unique_ptr<net::MDnsTransaction>* transaction) {
   int transaction_flags = 0;
   if (network)
     transaction_flags |= net::MDnsTransaction::QUERY_NETWORK;
@@ -172,7 +176,7 @@ void ServiceWatcherImpl::OnCachePurged() {
 }
 
 void ServiceWatcherImpl::OnTransactionResponse(
-    scoped_ptr<net::MDnsTransaction>* transaction,
+    std::unique_ptr<net::MDnsTransaction>* transaction,
     net::MDnsTransaction::Result result,
     const net::RecordParsed* record) {
   DCHECK(started_);
@@ -528,8 +532,8 @@ void LocalDomainResolverImpl::Start() {
   }
 }
 
-scoped_ptr<net::MDnsTransaction> LocalDomainResolverImpl::CreateTransaction(
-    uint16_t type) {
+std::unique_ptr<net::MDnsTransaction>
+LocalDomainResolverImpl::CreateTransaction(uint16_t type) {
   return mdns_client_->CreateTransaction(
       type, domain_, net::MDnsTransaction::SINGLE_RESULT |
                      net::MDnsTransaction::QUERY_CACHE |

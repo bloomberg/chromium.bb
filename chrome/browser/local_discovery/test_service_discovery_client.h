@@ -21,13 +21,13 @@ class TestServiceDiscoveryClient : public ServiceDiscoverySharedClient {
 
   void Start();
 
-  scoped_ptr<ServiceWatcher> CreateServiceWatcher(
+  std::unique_ptr<ServiceWatcher> CreateServiceWatcher(
       const std::string& service_type,
       const ServiceWatcher::UpdatedCallback& callback) override;
-  scoped_ptr<ServiceResolver> CreateServiceResolver(
+  std::unique_ptr<ServiceResolver> CreateServiceResolver(
       const std::string& service_name,
       const ServiceResolver::ResolveCompleteCallback& callback) override;
-  scoped_ptr<LocalDomainResolver> CreateLocalDomainResolver(
+  std::unique_ptr<LocalDomainResolver> CreateLocalDomainResolver(
       const std::string& domain,
       net::AddressFamily address_family,
       const LocalDomainResolver::IPAddressCallback& callback) override;
@@ -41,8 +41,8 @@ class TestServiceDiscoveryClient : public ServiceDiscoverySharedClient {
 
   // Owned by mdns_client_impl_.
   net::MockMDnsSocketFactory mock_socket_factory_;
-  scoped_ptr<net::MDnsClient> mdns_client_;
-  scoped_ptr<ServiceDiscoveryClient> service_discovery_client_impl_;
+  std::unique_ptr<net::MDnsClient> mdns_client_;
+  std::unique_ptr<ServiceDiscoveryClient> service_discovery_client_impl_;
 };
 
 }  // namespace local_discovery

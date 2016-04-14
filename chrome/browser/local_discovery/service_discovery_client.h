@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_LOCAL_DISCOVERY_SERVICE_DISCOVERY_CLIENT_H_
 #define CHROME_BROWSER_LOCAL_DISCOVERY_SERVICE_DISCOVERY_CLIENT_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "net/base/address_family.h"
 #include "net/base/host_port_pair.h"
@@ -116,18 +116,18 @@ class ServiceDiscoveryClient {
 
   // Create a service watcher object listening for DNS-SD service announcements
   // on service type |service_type|.
-  virtual scoped_ptr<ServiceWatcher> CreateServiceWatcher(
+  virtual std::unique_ptr<ServiceWatcher> CreateServiceWatcher(
       const std::string& service_type,
       const ServiceWatcher::UpdatedCallback& callback) = 0;
 
   // Create a service resolver object for getting detailed service information
   // for the service called |service_name|.
-  virtual scoped_ptr<ServiceResolver> CreateServiceResolver(
+  virtual std::unique_ptr<ServiceResolver> CreateServiceResolver(
       const std::string& service_name,
       const ServiceResolver::ResolveCompleteCallback& callback) = 0;
 
   // Create a resolver for local domain, both ipv4 or ipv6.
-  virtual scoped_ptr<LocalDomainResolver> CreateLocalDomainResolver(
+  virtual std::unique_ptr<LocalDomainResolver> CreateLocalDomainResolver(
       const std::string& domain,
       net::AddressFamily address_family,
       const LocalDomainResolver::IPAddressCallback& callback) = 0;

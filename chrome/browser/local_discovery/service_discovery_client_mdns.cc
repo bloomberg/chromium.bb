@@ -5,12 +5,13 @@
 #include "chrome/browser/local_discovery/service_discovery_client_mdns.h"
 
 #include <stddef.h>
+
+#include <memory>
 #include <utility>
 #include <vector>
 
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
@@ -123,12 +124,12 @@ class SocketFactory : public net::MDnsSocketFactory {
       : interfaces_(interfaces) {}
 
   // net::MDnsSocketFactory implementation:
-  void CreateSockets(
-      std::vector<scoped_ptr<net::DatagramServerSocket>>* sockets) override {
+  void CreateSockets(std::vector<std::unique_ptr<net::DatagramServerSocket>>*
+                         sockets) override {
     for (size_t i = 0; i < interfaces_.size(); ++i) {
       DCHECK(interfaces_[i].second == net::ADDRESS_FAMILY_IPV4 ||
              interfaces_[i].second == net::ADDRESS_FAMILY_IPV6);
-      scoped_ptr<net::DatagramServerSocket> socket(
+      std::unique_ptr<net::DatagramServerSocket> socket(
           CreateAndBindMDnsSocket(interfaces_[i].second, interfaces_[i].first));
       if (socket)
         sockets->push_back(std::move(socket));
@@ -170,7 +171,7 @@ class ProxyBase : public ServiceDiscoveryClientMdns::Proxy, public T {
   };
 
  protected:
-  void set_implementation(scoped_ptr<T> implementation) {
+  void set_implementation(std::unique_ptr<T> implementation) {
     implementation_ = std::move(implementation);
   }
 
@@ -179,7 +180,7 @@ class ProxyBase : public ServiceDiscoveryClientMdns::Proxy, public T {
   }
 
  private:
-  scoped_ptr<T> implementation_;
+  std::unique_ptr<T> implementation_;
   DISALLOW_COPY_AND_ASSIGN(ProxyBase);
 };
 
@@ -335,29 +336,31 @@ ServiceDiscoveryClientMdns::ServiceDiscoveryClientMdns()
   StartNewClient();
 }
 
-scoped_ptr<ServiceWatcher> ServiceDiscoveryClientMdns::CreateServiceWatcher(
+std::unique_ptr<ServiceWatcher>
+ServiceDiscoveryClientMdns::CreateServiceWatcher(
     const std::string& service_type,
     const ServiceWatcher::UpdatedCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return scoped_ptr<ServiceWatcher>(
+  return std::unique_ptr<ServiceWatcher>(
       new ServiceWatcherProxy(this, service_type, callback));
 }
 
-scoped_ptr<ServiceResolver> ServiceDiscoveryClientMdns::CreateServiceResolver(
+std::unique_ptr<ServiceResolver>
+ServiceDiscoveryClientMdns::CreateServiceResolver(
     const std::string& service_name,
     const ServiceResolver::ResolveCompleteCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return scoped_ptr<ServiceResolver>(
+  return std::unique_ptr<ServiceResolver>(
       new ServiceResolverProxy(this, service_name, callback));
 }
 
-scoped_ptr<LocalDomainResolver>
+std::unique_ptr<LocalDomainResolver>
 ServiceDiscoveryClientMdns::CreateLocalDomainResolver(
     const std::string& domain,
     net::AddressFamily address_family,
     const LocalDomainResolver::IPAddressCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return scoped_ptr<LocalDomainResolver>(
+  return std::unique_ptr<LocalDomainResolver>(
       new LocalDomainResolverProxy(this, domain, address_family, callback));
 }
 

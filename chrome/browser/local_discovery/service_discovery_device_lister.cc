@@ -65,13 +65,11 @@ void ServiceDiscoveryDeviceLister::OnServiceUpdated(
     // If there is already a resolver working on this service, don't add one.
     if (insert_result.second) {
       VLOG(1) << "Adding resolver for service_name: " << service_name;
-      scoped_ptr<ServiceResolver> resolver =
+      std::unique_ptr<ServiceResolver> resolver =
           service_discovery_client_->CreateServiceResolver(
-          service_name, base::Bind(
-              &ServiceDiscoveryDeviceLister::OnResolveComplete,
-              weak_factory_.GetWeakPtr(),
-              added,
-              service_name));
+              service_name,
+              base::Bind(&ServiceDiscoveryDeviceLister::OnResolveComplete,
+                         weak_factory_.GetWeakPtr(), added, service_name));
 
       insert_result.first->second.reset(resolver.release());
       insert_result.first->second->StartResolving();

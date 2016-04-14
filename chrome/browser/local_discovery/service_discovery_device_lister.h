@@ -6,11 +6,11 @@
 #define CHROME_BROWSER_LOCAL_DISCOVERY_SERVICE_DISCOVERY_DEVICE_LISTER_H_
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/local_discovery/service_discovery_client.h"
 
@@ -58,7 +58,7 @@ class ServiceDiscoveryDeviceLister {
   ServiceDiscoveryClient* const service_discovery_client_;
   const std::string service_type_;
 
-  scoped_ptr<ServiceWatcher> service_watcher_;
+  std::unique_ptr<ServiceWatcher> service_watcher_;
   ServiceResolverMap resolvers_;
 
   base::WeakPtrFactory<ServiceDiscoveryDeviceLister> weak_factory_;

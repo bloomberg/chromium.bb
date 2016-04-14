@@ -28,13 +28,13 @@ class ServiceDiscoveryClientMdns
   ServiceDiscoveryClientMdns();
 
   // ServiceDiscoveryClient implementation.
-  scoped_ptr<ServiceWatcher> CreateServiceWatcher(
+  std::unique_ptr<ServiceWatcher> CreateServiceWatcher(
       const std::string& service_type,
       const ServiceWatcher::UpdatedCallback& callback) override;
-  scoped_ptr<ServiceResolver> CreateServiceResolver(
+  std::unique_ptr<ServiceResolver> CreateServiceResolver(
       const std::string& service_name,
       const ServiceResolver::ResolveCompleteCallback& callback) override;
-  scoped_ptr<LocalDomainResolver> CreateLocalDomainResolver(
+  std::unique_ptr<LocalDomainResolver> CreateLocalDomainResolver(
       const std::string& domain,
       net::AddressFamily address_family,
       const LocalDomainResolver::IPAddressCallback& callback) override;
@@ -60,10 +60,10 @@ class ServiceDiscoveryClientMdns
   scoped_refptr<base::SequencedTaskRunner> mdns_runner_;
 
   // Access only on |mdns_runner_| thread.
-  scoped_ptr<net::MDnsClient> mdns_;
+  std::unique_ptr<net::MDnsClient> mdns_;
 
   // Access only on |mdns_runner_| thread.
-  scoped_ptr<ServiceDiscoveryClient> client_;
+  std::unique_ptr<ServiceDiscoveryClient> client_;
 
   // Counter of restart attempts we have made after network change.
   int restart_attempts_;

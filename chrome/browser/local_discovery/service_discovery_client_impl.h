@@ -29,15 +29,15 @@ class ServiceDiscoveryClientImpl : public ServiceDiscoveryClient {
   ~ServiceDiscoveryClientImpl() override;
 
   // ServiceDiscoveryClient implementation:
-  scoped_ptr<ServiceWatcher> CreateServiceWatcher(
+  std::unique_ptr<ServiceWatcher> CreateServiceWatcher(
       const std::string& service_type,
       const ServiceWatcher::UpdatedCallback& callback) override;
 
-  scoped_ptr<ServiceResolver> CreateServiceResolver(
+  std::unique_ptr<ServiceResolver> CreateServiceResolver(
       const std::string& service_name,
       const ServiceResolver::ResolveCompleteCallback& callback) override;
 
-  scoped_ptr<LocalDomainResolver> CreateLocalDomainResolver(
+  std::unique_ptr<LocalDomainResolver> CreateLocalDomainResolver(
       const std::string& domain,
       net::AddressFamily address_family,
       const LocalDomainResolver::IPAddressCallback& callback) override;
@@ -75,7 +75,7 @@ class ServiceWatcherImpl : public ServiceWatcher,
   void OnCachePurged() override;
 
   virtual void OnTransactionResponse(
-      scoped_ptr<net::MDnsTransaction>* transaction,
+      std::unique_ptr<net::MDnsTransaction>* transaction,
       net::MDnsTransaction::Result result,
       const net::RecordParsed* record);
 
@@ -108,9 +108,9 @@ class ServiceWatcherImpl : public ServiceWatcher,
 
     void DoQuerySRV();
 
-    scoped_ptr<net::MDnsListener> srv_listener_;
-    scoped_ptr<net::MDnsListener> txt_listener_;
-    scoped_ptr<net::MDnsTransaction> srv_transaction_;
+    std::unique_ptr<net::MDnsListener> srv_listener_;
+    std::unique_ptr<net::MDnsListener> txt_listener_;
+    std::unique_ptr<net::MDnsTransaction> srv_transaction_;
 
     std::string service_name_;
     net::MDnsClient* mdns_client_;
@@ -128,9 +128,10 @@ class ServiceWatcherImpl : public ServiceWatcher,
   void RemovePTR(const std::string& service);
   void RemoveSRV(const std::string& service);
   void AddSRV(const std::string& service);
-  bool CreateTransaction(bool active, bool alert_existing_services,
+  bool CreateTransaction(bool active,
+                         bool alert_existing_services,
                          bool force_refresh,
-                         scoped_ptr<net::MDnsTransaction>* transaction);
+                         std::unique_ptr<net::MDnsTransaction>* transaction);
 
   void DeferUpdate(ServiceWatcher::UpdateType update_type,
                    const std::string& service_name);
@@ -143,9 +144,9 @@ class ServiceWatcherImpl : public ServiceWatcher,
 
   std::string service_type_;
   ServiceListenersMap services_;
-  scoped_ptr<net::MDnsTransaction> transaction_network_;
-  scoped_ptr<net::MDnsTransaction> transaction_cache_;
-  scoped_ptr<net::MDnsListener> listener_;
+  std::unique_ptr<net::MDnsTransaction> transaction_network_;
+  std::unique_ptr<net::MDnsTransaction> transaction_cache_;
+  std::unique_ptr<net::MDnsListener> listener_;
 
   ServiceWatcher::UpdatedCallback callback_;
   bool started_;
@@ -213,9 +214,9 @@ class ServiceResolverImpl
   bool metadata_resolved_;
   bool address_resolved_;
 
-  scoped_ptr<net::MDnsTransaction> txt_transaction_;
-  scoped_ptr<net::MDnsTransaction> srv_transaction_;
-  scoped_ptr<net::MDnsTransaction> a_transaction_;
+  std::unique_ptr<net::MDnsTransaction> txt_transaction_;
+  std::unique_ptr<net::MDnsTransaction> srv_transaction_;
+  std::unique_ptr<net::MDnsTransaction> a_transaction_;
 
   ServiceDescription service_staging_;
 
@@ -241,7 +242,7 @@ class LocalDomainResolverImpl : public LocalDomainResolver {
       net::MDnsTransaction::Result result,
       const net::RecordParsed* record);
 
-  scoped_ptr<net::MDnsTransaction> CreateTransaction(uint16_t type);
+  std::unique_ptr<net::MDnsTransaction> CreateTransaction(uint16_t type);
 
   bool IsSuccess();
 
@@ -251,8 +252,8 @@ class LocalDomainResolverImpl : public LocalDomainResolver {
   net::AddressFamily address_family_;
   IPAddressCallback callback_;
 
-  scoped_ptr<net::MDnsTransaction> transaction_a_;
-  scoped_ptr<net::MDnsTransaction> transaction_aaaa_;
+  std::unique_ptr<net::MDnsTransaction> transaction_a_;
+  std::unique_ptr<net::MDnsTransaction> transaction_aaaa_;
 
   int transactions_finished_;
 
