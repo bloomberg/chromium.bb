@@ -76,7 +76,7 @@ class MEDIA_EXPORT VideoRendererAlgorithm {
   //
   // At least one frame will always remain after this call so that subsequent
   // Render() calls have a frame to return if no new frames are enqueued before
-  // then.  Returns the number of frames removed.
+  // then.  Returns the number of frames removed that were never rendered.
   //
   // Note: In cases where there is no known frame duration (i.e. perhaps a video
   // with only a single frame), the last frame can not be expired, regardless of
@@ -97,16 +97,22 @@ class MEDIA_EXPORT VideoRendererAlgorithm {
   // Attempting to enqueue a frame with the same timestamp as a previous frame
   // will result in the previous frame being replaced if it has not been
   // rendered yet.  If it has been rendered, the new frame will be dropped.
+  //
+  // EnqueueFrame() will compute the current start time and an estimated end
+  // time of the frame based on previous frames so that EffectiveFramesQueued()
+  // is relatively accurate immediately after this call.
   void EnqueueFrame(const scoped_refptr<VideoFrame>& frame);
 
   // Removes all frames from the |frame_queue_| and clears predictors.  The
-  // algorithm will be as if freshly constructed after this call.
-  void Reset();
+  // algorithm will be as if freshly constructed after this call.  By default
+  // everything is reset, but if kPreserveNextFrameEstimates is specified, then
+  // predictors for the start time of the next frame given to EnqueueFrame()
+  // will be kept; allowing EffectiveFramesQueued() accuracy with one frame.
+  enum class ResetFlag { kEverything, kPreserveNextFrameEstimates };
+  void Reset(ResetFlag reset_flag = ResetFlag::kEverything);
 
   // Returns the number of frames currently buffered which could be rendered
-  // assuming current Render() interval trends.  Before Render() is called, this
-  // will be the same as the number of frames given to EnqueueFrame().  After
-  // Render() has been called, one of two things will be returned:
+  // assuming current Render() interval trends.
   //
   // If a cadence has been identified, this will return the number of frames
   // which have a non-zero ideal render count.
@@ -119,7 +125,7 @@ class MEDIA_EXPORT VideoRendererAlgorithm {
   //
   // In either case, frames enqueued before the last displayed frame will not
   // be counted as effective.
-  size_t EffectiveFramesQueued() const;
+  size_t effective_frames_queued() const { return effective_frames_queued_; }
 
   // Returns an estimate of the amount of memory (in bytes) used for frames.
   int64_t GetMemoryUsage() const;
@@ -249,6 +255,12 @@ class MEDIA_EXPORT VideoRendererAlgorithm {
   base::TimeDelta CalculateAbsoluteDriftForFrame(base::TimeTicks deadline_min,
                                                  int frame_index) const;
 
+  // Updates |effective_frames_queued_| which is typically called far more
+  // frequently (~4x) than the value changes.  This must be called whenever
+  // frames are added or removed from the queue or when any property of a
+  // ReadyFrame within the queue changes.
+  void UpdateEffectiveFramesQueued();
+
   // Queue of incoming frames waiting for rendering.
   using VideoFrameQueue = std::deque<ReadyFrame>;
   VideoFrameQueue frame_queue_;
@@ -319,6 +331,10 @@ class MEDIA_EXPORT VideoRendererAlgorithm {
   // UpdateFrameStatistics() during Render() or externally by
   // set_time_stopped().
   bool was_time_moving_;
+
+  // Current number of effective frames in the |frame_queue_|.  Updated by calls
+  // to UpdateEffectiveFramesQueued() whenever the |frame_queue_| is changed.
+  size_t effective_frames_queued_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoRendererAlgorithm);
 };

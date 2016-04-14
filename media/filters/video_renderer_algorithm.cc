@@ -86,6 +86,7 @@ scoped_refptr<VideoFrame> VideoRendererAlgorithm::Render(
     if (was_time_moving_ && !have_known_duration)
       ++ready_frame.render_count;
 
+    UpdateEffectiveFramesQueued();
     return ready_frame.frame;
   }
 
@@ -239,6 +240,7 @@ scoped_refptr<VideoFrame> VideoRendererAlgorithm::Render(
     first_frame_ = false;
   }
 
+  UpdateEffectiveFramesQueued();
   DCHECK(frame_queue_.front().frame);
   return frame_queue_.front().frame;
 }
@@ -249,26 +251,42 @@ size_t VideoRendererAlgorithm::RemoveExpiredFrames(base::TimeTicks deadline) {
   if (deadline > last_deadline_max_)
     last_deadline_max_ = deadline;
 
-  if (frame_queue_.size() < 2)
+  if (frame_queue_.empty())
     return 0;
 
+  // Even though we may not be able to remove anything due to having only one
+  // frame, correct any estimates which may have been set during EnqueueFrame().
   UpdateFrameStatistics();
+
+  // We always leave at least one frame in the queue, so if there's only one
+  // frame there's nothing we can expire.
+  if (frame_queue_.size() == 1) {
+    UpdateEffectiveFramesQueued();
+    return 0;
+  }
+
   DCHECK_GT(average_frame_duration_, base::TimeDelta());
 
   // Finds and removes all frames which are too old to be used; I.e., the end of
   // their render interval is further than |max_acceptable_drift_| from the
   // given |deadline|.  We also always expire anything inserted before the last
   // rendered frame.
+  size_t frames_dropped_without_rendering = 0;
   size_t frames_to_expire = last_frame_index_;
   const base::TimeTicks minimum_start_time =
       deadline - max_acceptable_drift_ - average_frame_duration_;
   for (; frames_to_expire < frame_queue_.size() - 1; ++frames_to_expire) {
-    if (frame_queue_[frames_to_expire].start_time >= minimum_start_time)
+    const ReadyFrame& frame = frame_queue_[frames_to_expire];
+    if (frame.start_time >= minimum_start_time)
       break;
+    if (frame.render_count == frame.drop_count)
+      ++frames_dropped_without_rendering;
   }
 
-  if (!frames_to_expire)
+  if (!frames_to_expire) {
+    UpdateEffectiveFramesQueued();
     return 0;
+  }
 
   cadence_frame_counter_ += frames_to_expire - last_frame_index_;
   frame_queue_.erase(frame_queue_.begin(),
@@ -277,7 +295,9 @@ size_t VideoRendererAlgorithm::RemoveExpiredFrames(base::TimeTicks deadline) {
   last_frame_index_ = last_frame_index_ > frames_to_expire
                           ? last_frame_index_ - frames_to_expire
                           : 0;
-  return frames_to_expire;
+
+  UpdateEffectiveFramesQueued();
+  return frames_dropped_without_rendering;
 }
 
 void VideoRendererAlgorithm::OnLastFrameDropped() {
@@ -295,62 +315,28 @@ void VideoRendererAlgorithm::OnLastFrameDropped() {
   ++frame_queue_[last_frame_index_].drop_count;
   DCHECK_LE(frame_queue_[last_frame_index_].drop_count,
             frame_queue_[last_frame_index_].render_count);
+  UpdateEffectiveFramesQueued();
 }
 
-void VideoRendererAlgorithm::Reset() {
+void VideoRendererAlgorithm::Reset(ResetFlag reset_flag) {
   frames_dropped_during_enqueue_ = last_frame_index_ = 0;
   have_rendered_frames_ = last_render_had_glitch_ = false;
-  last_deadline_max_ = base::TimeTicks();
-  average_frame_duration_ = render_interval_ = base::TimeDelta();
+  render_interval_ = base::TimeDelta();
   frame_queue_.clear();
   cadence_estimator_.Reset();
-  frame_duration_calculator_.Reset();
+  if (reset_flag != ResetFlag::kPreserveNextFrameEstimates) {
+    average_frame_duration_ = base::TimeDelta();
+    last_deadline_max_ = base::TimeTicks();
+    frame_duration_calculator_.Reset();
+  }
   first_frame_ = true;
-  cadence_frame_counter_ = 0;
+  effective_frames_queued_ = cadence_frame_counter_ = 0;
   last_render_ignored_cadence_frame_ = false;
   was_time_moving_ = false;
 
   // Default to ATSC IS/191 recommendations for maximum acceptable drift before
   // we have enough frames to base the maximum on frame duration.
   max_acceptable_drift_ = base::TimeDelta::FromMilliseconds(15);
-}
-
-size_t VideoRendererAlgorithm::EffectiveFramesQueued() const {
-  if (frame_queue_.empty() || average_frame_duration_ == base::TimeDelta() ||
-      last_deadline_max_.is_null()) {
-    return frame_queue_.size();
-  }
-
-  // If we don't have cadence, subtract off any frames which are before
-  // the last rendered frame or are past their expected rendering time.
-  if (!cadence_estimator_.has_cadence()) {
-    size_t expired_frames = last_frame_index_;
-    DCHECK_LT(last_frame_index_, frame_queue_.size());
-    for (; expired_frames < frame_queue_.size(); ++expired_frames) {
-      const ReadyFrame& frame = frame_queue_[expired_frames];
-      if (frame.end_time.is_null() || frame.end_time > last_deadline_max_)
-        break;
-    }
-    return frame_queue_.size() - expired_frames;
-  }
-
-  // Find the first usable frame to start counting from.
-  const int start_index = FindBestFrameByCadence(nullptr);
-  if (start_index < 0)
-    return 0;
-
-  const base::TimeTicks minimum_start_time =
-      last_deadline_max_ - max_acceptable_drift_;
-  size_t renderable_frame_count = 0;
-  for (size_t i = start_index; i < frame_queue_.size(); ++i) {
-    const ReadyFrame& frame = frame_queue_[i];
-    if (frame.render_count < frame.ideal_render_count &&
-        (frame.end_time.is_null() || frame.end_time > minimum_start_time)) {
-      ++renderable_frame_count;
-    }
-  }
-
-  return renderable_frame_count;
 }
 
 int64_t VideoRendererAlgorithm::GetMemoryUsage() const {
@@ -401,6 +387,16 @@ void VideoRendererAlgorithm::EnqueueFrame(
     return;
   }
 
+  // Calculate an accurate start time and an estimated end time if possible for
+  // the new frame; this allows EffectiveFramesQueued() to be relatively correct
+  // immediately after a new frame is queued.
+  std::vector<base::TimeDelta> media_timestamps(1, frame->timestamp());
+  std::vector<base::TimeTicks> wall_clock_times;
+  wall_clock_time_cb_.Run(media_timestamps, &wall_clock_times);
+  ready_frame.start_time = wall_clock_times[0];
+  if (frame_duration_calculator_.count())
+    ready_frame.end_time = ready_frame.start_time + average_frame_duration_;
+
   // The vast majority of cases should always append to the back, but in rare
   // circumstance we get out of order timestamps, http://crbug.com/386551.
   frame_queue_.insert(it, ready_frame);
@@ -411,6 +407,7 @@ void VideoRendererAlgorithm::EnqueueFrame(
   if (cadence_estimator_.has_cadence())
     UpdateCadenceForFrames();
 
+  UpdateEffectiveFramesQueued();
 #ifndef NDEBUG
   // Verify sorted order in debug mode.
   for (size_t i = 0; i < frame_queue_.size() - 1; ++i) {
@@ -505,7 +502,7 @@ void VideoRendererAlgorithm::UpdateFrameStatistics() {
 
   // If we were called via RemoveExpiredFrames() and Render() was never called,
   // we may not have a render interval yet.
-  if (render_interval_ == base::TimeDelta())
+  if (render_interval_.is_zero())
     return;
 
   const bool cadence_changed = cadence_estimator_.UpdateCadenceEstimate(
@@ -690,6 +687,48 @@ base::TimeDelta VideoRendererAlgorithm::CalculateAbsoluteDriftForFrame(
   DCHECK_GE(deadline_min, frame.start_time);
   DCHECK_GE(frame.end_time, deadline_min);
   return base::TimeDelta();
+}
+
+void VideoRendererAlgorithm::UpdateEffectiveFramesQueued() {
+  if (frame_queue_.empty() || average_frame_duration_.is_zero() ||
+      last_deadline_max_.is_null()) {
+    effective_frames_queued_ = frame_queue_.size();
+    return;
+  }
+
+  // If we don't have cadence, subtract off any frames which are before
+  // the last rendered frame or are past their expected rendering time.
+  if (!cadence_estimator_.has_cadence()) {
+    size_t expired_frames = last_frame_index_;
+    DCHECK_LT(last_frame_index_, frame_queue_.size());
+    for (; expired_frames < frame_queue_.size(); ++expired_frames) {
+      const ReadyFrame& frame = frame_queue_[expired_frames];
+      if (frame.end_time.is_null() || frame.end_time > last_deadline_max_)
+        break;
+    }
+    effective_frames_queued_ = frame_queue_.size() - expired_frames;
+    return;
+  }
+
+  // Find the first usable frame to start counting from.
+  const int start_index = FindBestFrameByCadence(nullptr);
+  if (start_index < 0) {
+    effective_frames_queued_ = 0;
+    return;
+  }
+
+  const base::TimeTicks minimum_start_time =
+      last_deadline_max_ - max_acceptable_drift_;
+  size_t renderable_frame_count = 0;
+  for (size_t i = start_index; i < frame_queue_.size(); ++i) {
+    const ReadyFrame& frame = frame_queue_[i];
+    if (frame.render_count < frame.ideal_render_count &&
+        (frame.end_time.is_null() || frame.end_time > minimum_start_time)) {
+      ++renderable_frame_count;
+    }
+  }
+
+  effective_frames_queued_ = renderable_frame_count;
 }
 
 }  // namespace media

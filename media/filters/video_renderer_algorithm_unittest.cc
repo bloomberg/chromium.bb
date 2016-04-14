@@ -190,7 +190,7 @@ class VideoRendererAlgorithmTest : public testing::Test {
     int glitch_count = 0;
     const base::TimeTicks start_time = tick_clock_->NowTicks();
     while (tick_clock_->NowTicks() - start_time < minimum_glitch_time()) {
-      while (algorithm_.EffectiveFramesQueued() < 3 ||
+      while (EffectiveFramesQueued() < 3 ||
              frame_tg->current() - time_source_.CurrentMediaTime() <
                  base::TimeTicks()) {
         algorithm_.EnqueueFrame(
@@ -243,20 +243,18 @@ class VideoRendererAlgorithmTest : public testing::Test {
       // within the last render interval.
       if (!is_using_cadence() || !frames_queued() ||
           GetCurrentFrameDisplayCount() < GetCurrentFrameIdealDisplayCount()) {
-        ASSERT_NEAR(GetUsableFrameCount(deadline_max),
-                    algorithm_.EffectiveFramesQueued(),
+        ASSERT_NEAR(GetUsableFrameCount(deadline_max), EffectiveFramesQueued(),
                     fresh_algorithm ? 0 : 1);
       } else if (is_using_cadence() && !IsCadenceBelowOne()) {
         // If there was no glitch in the last render, the two queue sizes should
         // be off by exactly one frame; i.e., the current frame doesn't count.
         if (!last_render_had_glitch() && fresh_algorithm)
-          ASSERT_EQ(frames_queued() - 1, algorithm_.EffectiveFramesQueued());
+          ASSERT_EQ(frames_queued() - 1, EffectiveFramesQueued());
       } else if (IsCadenceBelowOne()) {
         // The frame estimate should be off by at most one frame.
         const size_t estimated_frames_queued =
             std::floor(frames_queued() * CadenceValue());
-        ASSERT_NEAR(algorithm_.EffectiveFramesQueued(), estimated_frames_queued,
-                    1);
+        ASSERT_NEAR(EffectiveFramesQueued(), estimated_frames_queued, 1);
       }
     }
 
@@ -322,6 +320,14 @@ class VideoRendererAlgorithmTest : public testing::Test {
     return 0;
   }
 
+  size_t EffectiveFramesQueued() {
+    const size_t expected_frames_queued = algorithm_.effective_frames_queued();
+    // These values should always be in sync.
+    algorithm_.UpdateEffectiveFramesQueued();
+    EXPECT_EQ(expected_frames_queued, algorithm_.effective_frames_queued());
+    return expected_frames_queued;
+  }
+
  protected:
   VideoFramePool frame_pool_;
   scoped_ptr<base::SimpleTestTickClock> tick_clock_;
@@ -350,6 +356,36 @@ TEST_F(VideoRendererAlgorithmTest, Reset) {
   algorithm_.Reset();
   EXPECT_EQ(0u, frames_queued());
   EXPECT_NE(base::TimeDelta(), max_acceptable_drift());
+
+  // Enqueue a frame and render enough such that the next frame should be
+  // considered ineffective.
+  time_source_.StartTicking();
+  size_t frames_dropped = 0;
+  algorithm_.EnqueueFrame(CreateFrame(tg.interval(0)));
+  algorithm_.EnqueueFrame(CreateFrame(tg.interval(1)));
+  scoped_refptr<VideoFrame> frame = RenderAndStep(&tg, &frames_dropped);
+  ASSERT_TRUE(frame);
+  EXPECT_EQ(tg.interval(0), frame->timestamp());
+  EXPECT_EQ(0u, frames_dropped);
+  EXPECT_EQ(1u, EffectiveFramesQueued());
+
+  for (int i = 0; i < 2; ++i) {
+    frame = RenderAndStep(&tg, &frames_dropped);
+    ASSERT_TRUE(frame);
+    EXPECT_EQ(tg.interval(1), frame->timestamp());
+    EXPECT_EQ(0u, frames_dropped);
+    EXPECT_EQ(0u, EffectiveFramesQueued());
+  }
+  time_source_.StopTicking();
+
+  // After reset the new frame should still be counted as ineffective.
+  algorithm_.Reset(
+      VideoRendererAlgorithm::ResetFlag::kPreserveNextFrameEstimates);
+  algorithm_.EnqueueFrame(CreateFrame(tg.interval(2)));
+  EXPECT_EQ(0u, EffectiveFramesQueued());
+  algorithm_.EnqueueFrame(CreateFrame(tg.interval(3)));
+  ASSERT_EQ(1u, algorithm_.RemoveExpiredFrames(
+                    tg.current() + algorithm_.average_frame_duration()));
 }
 
 TEST_F(VideoRendererAlgorithmTest, AccountForMissingIntervals) {
@@ -522,20 +558,20 @@ TEST_F(VideoRendererAlgorithmTest, EffectiveFramesQueued) {
   // normal frame pump tests when cadence is not present.
   disable_cadence_hysteresis();
 
-  EXPECT_EQ(0u, algorithm_.EffectiveFramesQueued());
+  EXPECT_EQ(0u, EffectiveFramesQueued());
   time_source_.StartTicking();
 
   algorithm_.EnqueueFrame(CreateFrame(frame_tg.interval(0)));
-  EXPECT_EQ(1u, algorithm_.EffectiveFramesQueued());
+  EXPECT_EQ(1u, EffectiveFramesQueued());
 
   algorithm_.EnqueueFrame(CreateFrame(frame_tg.interval(1)));
-  EXPECT_EQ(2u, algorithm_.EffectiveFramesQueued());
+  EXPECT_EQ(2u, EffectiveFramesQueued());
 
   algorithm_.EnqueueFrame(CreateFrame(frame_tg.interval(2)));
-  EXPECT_EQ(3u, algorithm_.EffectiveFramesQueued());
+  EXPECT_EQ(3u, EffectiveFramesQueued());
 
   algorithm_.EnqueueFrame(CreateFrame(frame_tg.interval(3)));
-  EXPECT_EQ(4u, algorithm_.EffectiveFramesQueued());
+  EXPECT_EQ(4u, EffectiveFramesQueued());
   EXPECT_EQ(4u, frames_queued());
 
   // Render one frame which will detect cadence...
@@ -547,32 +583,32 @@ TEST_F(VideoRendererAlgorithmTest, EffectiveFramesQueued) {
 
   // Fractional cadence should be detected and the count will decrease.
   ASSERT_TRUE(is_using_cadence());
-  EXPECT_EQ(1u, algorithm_.EffectiveFramesQueued());
+  EXPECT_EQ(1u, EffectiveFramesQueued());
   EXPECT_EQ(4u, frames_queued());
 
   // Dropping the last rendered frame should do nothing, since the last frame
   // is already excluded from the count if it has a display count of 1.
   algorithm_.OnLastFrameDropped();
-  EXPECT_EQ(1u, algorithm_.EffectiveFramesQueued());
+  EXPECT_EQ(1u, EffectiveFramesQueued());
 }
 
 TEST_F(VideoRendererAlgorithmTest, EffectiveFramesQueuedWithoutCadence) {
   TickGenerator tg(tick_clock_->NowTicks(), 60);
 
-  EXPECT_EQ(0u, algorithm_.EffectiveFramesQueued());
+  EXPECT_EQ(0u, EffectiveFramesQueued());
   time_source_.StartTicking();
 
   algorithm_.EnqueueFrame(CreateFrame(tg.interval(0)));
-  EXPECT_EQ(1u, algorithm_.EffectiveFramesQueued());
+  EXPECT_EQ(1u, EffectiveFramesQueued());
 
   algorithm_.EnqueueFrame(CreateFrame(tg.interval(1)));
-  EXPECT_EQ(2u, algorithm_.EffectiveFramesQueued());
+  EXPECT_EQ(2u, EffectiveFramesQueued());
 
   algorithm_.EnqueueFrame(CreateFrame(tg.interval(2)));
-  EXPECT_EQ(3u, algorithm_.EffectiveFramesQueued());
+  EXPECT_EQ(3u, EffectiveFramesQueued());
 
   algorithm_.EnqueueFrame(CreateFrame(tg.interval(3)));
-  EXPECT_EQ(4u, algorithm_.EffectiveFramesQueued());
+  EXPECT_EQ(4u, EffectiveFramesQueued());
   EXPECT_EQ(4u, frames_queued());
   EXPECT_EQ(384, algorithm_.GetMemoryUsage());
 
@@ -585,7 +621,7 @@ TEST_F(VideoRendererAlgorithmTest, EffectiveFramesQueuedWithoutCadence) {
   ASSERT_TRUE(frame);
   EXPECT_EQ(2u, frames_dropped);
   EXPECT_EQ(tg.interval(2), frame->timestamp());
-  EXPECT_EQ(1u, algorithm_.EffectiveFramesQueued());
+  EXPECT_EQ(1u, EffectiveFramesQueued());
   EXPECT_EQ(2u, frames_queued());
   EXPECT_EQ(192, algorithm_.GetMemoryUsage());
 
@@ -595,7 +631,7 @@ TEST_F(VideoRendererAlgorithmTest, EffectiveFramesQueuedWithoutCadence) {
   ASSERT_TRUE(frame);
   EXPECT_EQ(0u, frames_dropped);
   EXPECT_EQ(tg.interval(3), frame->timestamp());
-  EXPECT_EQ(0u, algorithm_.EffectiveFramesQueued());
+  EXPECT_EQ(0u, EffectiveFramesQueued());
   EXPECT_EQ(1u, frames_queued());
   EXPECT_EQ(96, algorithm_.GetMemoryUsage());
 }
@@ -634,7 +670,7 @@ TEST_F(VideoRendererAlgorithmTest, TimeIsStopped) {
   EXPECT_EQ(tg.interval(0), frame->timestamp());
   EXPECT_EQ(0u, frames_dropped);
   EXPECT_EQ(1u, frames_queued());
-  EXPECT_EQ(1u, algorithm_.EffectiveFramesQueued());
+  EXPECT_EQ(1u, EffectiveFramesQueued());
 
   // The same timestamp should be returned after time starts.
   tick_clock_->Advance(tg.interval(1));
@@ -644,18 +680,18 @@ TEST_F(VideoRendererAlgorithmTest, TimeIsStopped) {
   EXPECT_EQ(tg.interval(0), frame->timestamp());
   EXPECT_EQ(0u, frames_dropped);
   EXPECT_EQ(1u, frames_queued());
-  EXPECT_EQ(1u, algorithm_.EffectiveFramesQueued());
+  EXPECT_EQ(1u, EffectiveFramesQueued());
 
   // Ensure the next suitable frame is vended as time advances.
   algorithm_.EnqueueFrame(CreateFrame(tg.interval(1)));
   EXPECT_EQ(2u, frames_queued());
-  EXPECT_EQ(2u, algorithm_.EffectiveFramesQueued());
+  EXPECT_EQ(2u, EffectiveFramesQueued());
   frame = RenderAndStep(&tg, &frames_dropped);
   ASSERT_TRUE(frame);
   EXPECT_EQ(tg.interval(1), frame->timestamp());
   EXPECT_EQ(0u, frames_dropped);
   EXPECT_EQ(1u, frames_queued());
-  EXPECT_EQ(0u, algorithm_.EffectiveFramesQueued());
+  EXPECT_EQ(0u, EffectiveFramesQueued());
 
   // Once time stops ticking, any further frames shouldn't be returned, even if
   // the interval requested more closely matches.
@@ -666,7 +702,7 @@ TEST_F(VideoRendererAlgorithmTest, TimeIsStopped) {
   EXPECT_EQ(tg.interval(1), frame->timestamp());
   EXPECT_EQ(0u, frames_dropped);
   EXPECT_EQ(2u, frames_queued());
-  EXPECT_EQ(1u, algorithm_.EffectiveFramesQueued());
+  EXPECT_EQ(1u, EffectiveFramesQueued());
 }
 
 // Verify frames inserted out of order end up in the right spot and are rendered
@@ -679,7 +715,7 @@ TEST_F(VideoRendererAlgorithmTest, SortedFrameQueue) {
   algorithm_.EnqueueFrame(CreateFrame(tg.interval(3)));
   algorithm_.EnqueueFrame(CreateFrame(tg.interval(2)));
   EXPECT_EQ(2u, frames_queued());
-  EXPECT_EQ(2u, algorithm_.EffectiveFramesQueued());
+  EXPECT_EQ(2u, EffectiveFramesQueued());
 
   time_source_.StartTicking();
 
@@ -689,7 +725,7 @@ TEST_F(VideoRendererAlgorithmTest, SortedFrameQueue) {
   EXPECT_EQ(0u, frames_dropped);
   EXPECT_EQ(tg.interval(2), frame->timestamp());
   EXPECT_EQ(2u, frames_queued());
-  EXPECT_EQ(2u, algorithm_.EffectiveFramesQueued());
+  EXPECT_EQ(2u, EffectiveFramesQueued());
 
   // Since a frame has already been rendered, queuing this frame and calling
   // Render() should result in it being dropped; even though it's a better
@@ -697,12 +733,12 @@ TEST_F(VideoRendererAlgorithmTest, SortedFrameQueue) {
   // it won't show up in frames_queued().
   algorithm_.EnqueueFrame(CreateFrame(tg.interval(1)));
   EXPECT_EQ(2u, frames_queued());
-  EXPECT_EQ(2u, algorithm_.EffectiveFramesQueued());
+  EXPECT_EQ(2u, EffectiveFramesQueued());
   frame = RenderAndStep(&tg, &frames_dropped);
   EXPECT_EQ(1u, frames_dropped);
   EXPECT_EQ(tg.interval(2), frame->timestamp());
   EXPECT_EQ(2u, frames_queued());
-  EXPECT_EQ(2u, algorithm_.EffectiveFramesQueued());
+  EXPECT_EQ(2u, EffectiveFramesQueued());
 }
 
 // Run through integer cadence selection for 1, 2, 3, and 4.
@@ -803,7 +839,7 @@ TEST_F(VideoRendererAlgorithmTest, BestFrameByCadenceOverdisplayedForDrift) {
   scoped_refptr<VideoFrame> last_frame;
   bool have_overdisplayed_frame = false;
   while (!have_overdisplayed_frame) {
-    while (algorithm_.EffectiveFramesQueued() < 2) {
+    while (EffectiveFramesQueued() < 2) {
       algorithm_.EnqueueFrame(
           CreateFrame(frame_tg.current() - base::TimeTicks()));
       frame_tg.step();
@@ -1069,7 +1105,7 @@ TEST_F(VideoRendererAlgorithmTest, RemoveExpiredFrames) {
 
   algorithm_.EnqueueFrame(CreateFrame(tg.interval(0)));
   ASSERT_EQ(0u, algorithm_.RemoveExpiredFrames(tg.current()));
-  EXPECT_EQ(1u, algorithm_.EffectiveFramesQueued());
+  EXPECT_EQ(1u, EffectiveFramesQueued());
 
   time_source_.StartTicking();
 
@@ -1083,29 +1119,61 @@ TEST_F(VideoRendererAlgorithmTest, RemoveExpiredFrames) {
   algorithm_.EnqueueFrame(CreateFrame(tg.interval(2)));
   algorithm_.EnqueueFrame(CreateFrame(tg.interval(3)));
   algorithm_.EnqueueFrame(CreateFrame(tg.interval(4)));
-  EXPECT_EQ(5u, algorithm_.EffectiveFramesQueued());
+  EXPECT_EQ(5u, EffectiveFramesQueued());
 
   tg.step(2);
-  ASSERT_EQ(2u, algorithm_.RemoveExpiredFrames(tg.current()));
+  // Two frames are removed, one displayed frame (which should not be counted as
+  // dropped) and one undisplayed one.
+  ASSERT_EQ(1u, algorithm_.RemoveExpiredFrames(tg.current()));
   frame = RenderAndStep(&tg, &frames_dropped);
   EXPECT_EQ(1u, frames_dropped);
   EXPECT_EQ(2u, frames_queued());
-  EXPECT_EQ(1u, algorithm_.EffectiveFramesQueued());
+  EXPECT_EQ(1u, EffectiveFramesQueued());
   ASSERT_TRUE(frame);
   EXPECT_EQ(tg.interval(3), frame->timestamp());
 
   // Advance expiry enough that one frame is removed, but one remains and is
-  // still counted as effective.
+  // still counted as effective; the expired frame was displayed so it is not
+  // counted as dropped.
   ASSERT_EQ(
-      1u, algorithm_.RemoveExpiredFrames(tg.current() + tg.interval(1) * 0.9));
+      0u, algorithm_.RemoveExpiredFrames(tg.current() + tg.interval(1) * 0.9));
   EXPECT_EQ(1u, frames_queued());
-  EXPECT_EQ(1u, algorithm_.EffectiveFramesQueued());
+  EXPECT_EQ(1u, EffectiveFramesQueued());
 
   // Advancing expiry once more should mark the frame as ineffective.
   tg.step();
   ASSERT_EQ(0u, algorithm_.RemoveExpiredFrames(tg.current()));
   EXPECT_EQ(1u, frames_queued());
-  EXPECT_EQ(0u, algorithm_.EffectiveFramesQueued());
+  EXPECT_EQ(0u, EffectiveFramesQueued());
+}
+
+TEST_F(VideoRendererAlgorithmTest, RemoveExpiredFramesPartialReset) {
+  TickGenerator tg(tick_clock_->NowTicks(), 50);
+
+  algorithm_.EnqueueFrame(CreateFrame(tg.interval(0)));
+  algorithm_.EnqueueFrame(CreateFrame(tg.interval(1)));
+  ASSERT_EQ(0u, algorithm_.RemoveExpiredFrames(tg.current()));
+  EXPECT_EQ(2u, EffectiveFramesQueued());
+
+  time_source_.StartTicking();
+
+  // Render such that the next enqueued frame should be counting as expired.
+  for (int i = 0; i < 3; ++i) {
+    size_t frames_dropped = 0;
+    scoped_refptr<VideoFrame> frame = RenderAndStep(&tg, &frames_dropped);
+    ASSERT_TRUE(frame);
+    EXPECT_EQ(tg.interval(std::min(i, 1)), frame->timestamp());
+    EXPECT_EQ(0u, frames_dropped);
+  }
+
+  time_source_.StopTicking();
+  algorithm_.Reset(
+      VideoRendererAlgorithm::ResetFlag::kPreserveNextFrameEstimates);
+  // Skip ahead several frames to ensure EnqueueFrame() estimates correctly.
+  algorithm_.EnqueueFrame(CreateFrame(tg.interval(5)));
+  EXPECT_EQ(1u, EffectiveFramesQueued());
+  ASSERT_EQ(0u, algorithm_.RemoveExpiredFrames(tg.current()));
+  EXPECT_EQ(1u, EffectiveFramesQueued());
 }
 
 TEST_F(VideoRendererAlgorithmTest, RemoveExpiredFramesCadence) {
@@ -1117,7 +1185,7 @@ TEST_F(VideoRendererAlgorithmTest, RemoveExpiredFramesCadence) {
   algorithm_.EnqueueFrame(CreateFrame(tg.interval(2)));
 
   ASSERT_EQ(0u, algorithm_.RemoveExpiredFrames(tg.current()));
-  EXPECT_EQ(3u, algorithm_.EffectiveFramesQueued());
+  EXPECT_EQ(3u, EffectiveFramesQueued());
 
   time_source_.StartTicking();
 
@@ -1127,40 +1195,30 @@ TEST_F(VideoRendererAlgorithmTest, RemoveExpiredFramesCadence) {
   EXPECT_EQ(tg.interval(0), frame->timestamp());
   EXPECT_EQ(0u, frames_dropped);
   ASSERT_TRUE(is_using_cadence());
-  EXPECT_EQ(2u, algorithm_.EffectiveFramesQueued());
+  EXPECT_EQ(2u, EffectiveFramesQueued());
 
   // Advance expiry enough that some frames are removed, but one remains and is
-  // still counted as effective.
-  ASSERT_EQ(2u, algorithm_.RemoveExpiredFrames(tg.current() + tg.interval(1) +
+  // still counted as effective.  1 undisplayed and 1 displayed frame will be
+  // expired.
+  ASSERT_EQ(1u, algorithm_.RemoveExpiredFrames(tg.current() + tg.interval(1) +
                                                max_acceptable_drift() * 1.25));
   EXPECT_EQ(1u, frames_queued());
-  EXPECT_EQ(1u, algorithm_.EffectiveFramesQueued());
+  EXPECT_EQ(1u, EffectiveFramesQueued());
 
   // Advancing expiry once more should mark the frame as ineffective.
   tg.step(3);
   ASSERT_EQ(0u, algorithm_.RemoveExpiredFrames(tg.current()));
   EXPECT_EQ(1u, frames_queued());
-  EXPECT_EQ(0u, algorithm_.EffectiveFramesQueued());
+  EXPECT_EQ(0u, EffectiveFramesQueued());
 }
 
-// TODO(crbug.com/570032): Test disabled for being flaky.
-TEST_F(VideoRendererAlgorithmTest, DISABLED_CadenceBasedTest) {
+// Test runs too slowly on debug builds.
+#if defined(NDEBUG)
+TEST_F(VideoRendererAlgorithmTest, CadenceBasedTest) {
   // Common display rates.
   const double kDisplayRates[] = {
-      NTSC(24),
-      24,
-      NTSC(25),
-      25,
-      NTSC(30),
-      30,
-      48,
-      NTSC(50),
-      50,
-      NTSC(60),
-      60,
-      75,
-      120,
-      144,
+      NTSC(24), 24, NTSC(25), 25, NTSC(30), 30,  48,
+      NTSC(50), 50, NTSC(60), 60, 75,       120, 144,
   };
 
   // List of common frame rate values. Values pulled from local test media,
@@ -1183,6 +1241,7 @@ TEST_F(VideoRendererAlgorithmTest, DISABLED_CadenceBasedTest) {
     }
   }
 }
+#endif
 
 // Rotate through various playback rates and ensure algorithm adapts correctly.
 TEST_F(VideoRendererAlgorithmTest, VariablePlaybackRateCadence) {
@@ -1225,7 +1284,7 @@ TEST_F(VideoRendererAlgorithmTest, UglyTimestampsHaveCadence) {
   bool cadence_detected = false;
   base::TimeDelta timestamp;
   for (size_t i = 0; i < arraysize(kBadTimestampsMs) * 2; ++i) {
-    while (algorithm_.EffectiveFramesQueued() < 3) {
+    while (EffectiveFramesQueued() < 3) {
       algorithm_.EnqueueFrame(CreateFrame(timestamp));
       timestamp += base::TimeDelta::FromMilliseconds(
           kBadTimestampsMs[i % arraysize(kBadTimestampsMs)]);
@@ -1260,7 +1319,7 @@ TEST_F(VideoRendererAlgorithmTest, VariableFrameRateNoCadence) {
   bool cadence_turned_off = false;
   base::TimeDelta timestamp;
   for (size_t i = 0; i < arraysize(kBadTimestampsMs);) {
-    while (algorithm_.EffectiveFramesQueued() < 3) {
+    while (EffectiveFramesQueued() < 3) {
       algorithm_.EnqueueFrame(CreateFrame(timestamp));
       timestamp += base::TimeDelta::FromMilliseconds(
           kBadTimestampsMs[i % arraysize(kBadTimestampsMs)]);

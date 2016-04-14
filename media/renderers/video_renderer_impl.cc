@@ -201,11 +201,11 @@ scoped_refptr<VideoFrame> VideoRendererImpl::Render(
   // If |time_progressing_| is actually true when |render_first_frame_and_stop_|
   // is also true, then the ended callback will be harmlessly delayed until
   // MaybeStopSinkAfterFirstPaint() runs and the next Render() call comes in.
-  const size_t effective_frames =
-      MaybeFireEndedCallback_Locked(!render_first_frame_and_stop_);
+  MaybeFireEndedCallback_Locked(!render_first_frame_and_stop_);
   if (buffering_state_ == BUFFERING_HAVE_ENOUGH && !received_end_of_stream_ &&
-      !effective_frames && (!background_rendering ||
-                            (!frames_decoded_ && was_background_rendering_))) {
+      !algorithm_->effective_frames_queued() &&
+      (!background_rendering ||
+       (!frames_decoded_ && was_background_rendering_))) {
     // Do not set |buffering_state_| here as the lock in FrameReady() may be
     // held already and it fire the state changes in the wrong order.
     task_runner_->PostTask(
@@ -339,7 +339,7 @@ void VideoRendererImpl::FrameReady(uint32_t sequence_token,
     pending_read_ = false;
 
     if (status == VideoFrameStream::DECODE_ERROR) {
-      DCHECK(!frame.get());
+      DCHECK(!frame);
       PipelineStatus error = PIPELINE_ERROR_DECODE;
       task_runner_->PostTask(FROM_HERE, base::Bind(error_cb_, error));
       return;
@@ -354,7 +354,7 @@ void VideoRendererImpl::FrameReady(uint32_t sequence_token,
     DCHECK_EQ(state_, kPlaying);
 
     // Can happen when demuxers are preparing for a new Seek().
-    if (!frame.get()) {
+    if (!frame) {
       DCHECK_EQ(status, VideoFrameStream::DEMUXER_READ_ABORTED);
       return;
     }
@@ -575,7 +575,7 @@ bool VideoRendererImpl::HaveReachedBufferingCap() {
   // When the display rate is less than the frame rate, the effective frames
   // queued may be much smaller than the actual number of frames queued.  Here
   // we ensure that frames_queued() doesn't get excessive.
-  return algorithm_->EffectiveFramesQueued() >= kMaxVideoFrames ||
+  return algorithm_->effective_frames_queued() >= kMaxVideoFrames ||
          algorithm_->frames_queued() >= 3 * kMaxVideoFrames;
 }
 
@@ -595,32 +595,29 @@ void VideoRendererImpl::StopSink() {
   was_background_rendering_ = false;
 }
 
-size_t VideoRendererImpl::MaybeFireEndedCallback_Locked(bool time_progressing) {
+void VideoRendererImpl::MaybeFireEndedCallback_Locked(bool time_progressing) {
   lock_.AssertAcquired();
 
   // If there's only one frame in the video or Render() was never called, the
   // algorithm will have one frame linger indefinitely.  So in cases where the
   // frame duration is unknown and we've received EOS, fire it once we get down
   // to a single frame.
-  const size_t effective_frames = algorithm_->EffectiveFramesQueued();
 
   // Don't fire ended if we haven't received EOS or have already done so.
   if (!received_end_of_stream_ || rendered_end_of_stream_)
-    return effective_frames;
+    return;
 
   // Don't fire ended if time isn't moving and we have frames.
   if (!time_progressing && algorithm_->frames_queued())
-    return effective_frames;
+    return;
 
   // Fire ended if we have no more effective frames or only ever had one frame.
-  if (!effective_frames ||
+  if (!algorithm_->effective_frames_queued() ||
       (algorithm_->frames_queued() == 1u &&
-       algorithm_->average_frame_duration() == base::TimeDelta())) {
+       algorithm_->average_frame_duration().is_zero())) {
     rendered_end_of_stream_ = true;
     task_runner_->PostTask(FROM_HERE, ended_cb_);
   }
-
-  return effective_frames;
 }
 
 base::TimeTicks VideoRendererImpl::ConvertMediaTimestamp(

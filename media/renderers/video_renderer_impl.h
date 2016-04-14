@@ -144,9 +144,7 @@ class MEDIA_EXPORT VideoRendererImpl
   // value of |time_progressing_|.  When called from Render() on the sink
   // callback thread, the inverse of |render_first_frame_and_stop_| should be
   // used as a proxy for |time_progressing_|.
-  //
-  // Returns algorithm_->EffectiveFramesQueued().
-  size_t MaybeFireEndedCallback_Locked(bool time_progressing);
+  void MaybeFireEndedCallback_Locked(bool time_progressing);
 
   // Helper method for converting a single media timestamp to wall clock time.
   base::TimeTicks ConvertMediaTimestamp(base::TimeDelta media_timestamp);
