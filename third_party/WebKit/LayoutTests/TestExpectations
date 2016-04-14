@@ -141,16 +141,6 @@ crbug.com/520739 [ Mac ] http/tests/websocket/close-code-and-reason.html [ Failu
 crbug.com/520737 [ Mac ] imported/csswg-test/css-writing-modes-3/writing-mode-vertical-rl-001.xht [ Failure Pass Timeout ]
 crbug.com/520736 [ Win7 ] media/W3C/video/networkState/networkState_during_progress.html [ Failure Pass ]
 
-crbug.com/602606 svg/W3C-SVG-1.1/styling-css-02-b.svg [ NeedsRebaseline ]
-crbug.com/602606 svg/W3C-SVG-1.1/text-align-08-b.svg [ NeedsRebaseline ]
-crbug.com/602606 svg/W3C-SVG-1.1/text-tselect-02-f.svg [ NeedsRebaseline ]
-crbug.com/602606 svg/W3C-SVG-1.1/text-ws-01-t.svg [ NeedsRebaseline ]
-crbug.com/602606 svg/custom/invalid-text-content.svg [ NeedsRebaseline ]
-crbug.com/602606 svg/custom/text-whitespace-handling.svg [ NeedsRebaseline ]
-crbug.com/602606 svg/text/text-selection-tselect-02-f.svg [ NeedsRebaseline ]
-crbug.com/602606 svg/text/text-selection-ws-01-t.svg [ NeedsRebaseline ]
-crbug.com/602606 svg/text/textPathBoundsBug.svg [ NeedsRebaseline ]
-
 crbug.com/563650 inspector/elements/css-rule-hover-highlights-selectors.html [ Pass Failure ]
 
 crbug.com/522641 inspector/elements/styles-4/styles-update-links.html [ Pass Timeout ]

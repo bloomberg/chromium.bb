@@ -13,6 +13,7 @@ layer at (0,0) size 480x360
         LayoutSVGTSpan {tspan} at (0,0) size 67x33
           LayoutSVGInlineText {#text} at (491,107) size 67x33
             chunk 1 text run 1 at (541.64,200.00) startOffset 0 endOffset 3 width 65.55: "a\x{729C}\x{923}"
+        LayoutSVGInlineText {#text} at (0,0) size 0x0
       LayoutSVGPath {line} at (50,199) size 383x2 [stroke={[type=SOLID] [color=#0000FF]}] [fill={[type=SOLID] [color=#000000]}] [x1=50.00] [y1=200.00] [x2=433.00] [y2=200.00]
       LayoutSVGPath {line} at (50,229) size 383x2 [stroke={[type=SOLID] [color=#FF0000]}] [fill={[type=SOLID] [color=#000000]}] [x1=50.00] [y1=230.00] [x2=433.00] [y2=230.00]
       LayoutSVGPath {line} at (50,94) size 383x2 [stroke={[type=SOLID] [color=#008000]}] [fill={[type=SOLID] [color=#000000]}] [x1=50.00] [y1=95.00] [x2=433.00] [y2=95.00]
