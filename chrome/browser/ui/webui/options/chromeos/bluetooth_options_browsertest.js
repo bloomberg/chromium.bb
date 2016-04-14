@@ -123,7 +123,8 @@ TEST_F('BluetoothWebUITestAsync', 'testEnableBluetooth', function() {
   }.bind(this));
 });
 
-TEST_F('BluetoothWebUITestAsync', 'testAddDevice', function() {
+// TODO(crbug.com/603499) Test is flaky.
+TEST_F('BluetoothWebUITestAsync', 'DISABLED_testAddDevice', function() {
   assertEquals(this.browsePreload, document.location.href);
 
   // Enable bluetooth.
