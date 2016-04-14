@@ -8,6 +8,7 @@ namespace blimp {
 namespace engine {
 
 const char kClientTokenPath[] = "blimp-client-token-path";
+const char kEnginePort[] = "engine-port";
 
 }  // namespace engine
 }  // namespace blimp

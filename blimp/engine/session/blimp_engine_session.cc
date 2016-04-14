@@ -6,13 +6,16 @@
 
 #include <string>
 
+#include "base/command_line.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
 #include "blimp/common/create_blimp_message.h"
 #include "blimp/common/proto/tab_control.pb.h"
 #include "blimp/engine/app/blimp_engine_config.h"
 #include "blimp/engine/app/settings_manager.h"
+#include "blimp/engine/app/switches.h"
 #include "blimp/engine/app/ui/blimp_layout_manager.h"
 #include "blimp/engine/app/ui/blimp_screen.h"
 #include "blimp/engine/app/ui/blimp_window_tree_client.h"
@@ -90,6 +93,22 @@ base::Closure QuitCurrentMessageLoopClosure() {
                     base::MessageLoop::QuitWhenIdleClosure());
 }
 
+uint16_t GetListeningPort() {
+  unsigned port_parsed = 0;
+  if (!base::StringToUint(
+          base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+              kEnginePort),
+          &port_parsed)) {
+    return kDefaultPort;
+  }
+  if (port_parsed == 0 ||
+      port_parsed > 65535) {
+    LOG(FATAL) << "--engine-port must be a value between 1 and 65535.";
+    return kDefaultPort;
+  }
+  return port_parsed;
+}
+
 }  // namespace
 
 // EngineNetworkComponents is created by the BlimpEngineSession on the UI
@@ -155,7 +174,7 @@ void EngineNetworkComponents::Initialize(const std::string& client_token) {
       new EngineConnectionManager(authentication_handler_.get()));
 
   // Adds BlimpTransports to connection_manager_.
-  net::IPEndPoint address(GetIPv4AnyAddress(), kDefaultPort);
+  net::IPEndPoint address(GetIPv4AnyAddress(), GetListeningPort());
   connection_manager_->AddTransport(
       base::WrapUnique(new TCPEngineTransport(address, net_log_)));
 }

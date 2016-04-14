@@ -11,6 +11,9 @@ namespace engine {
 // Path to the client token/shared secret between the engine and the client.
 extern const char kClientTokenPath[];
 
+// The port to listen to for incoming TCP connections.
+extern const char kEnginePort[];
+
 }  // namespace engine
 }  // namespace blimp
 
