@@ -47,7 +47,8 @@ BidirectionalStream::BidirectionalStream(
                                  NetLog::SOURCE_BIDIRECTIONAL_STREAM)),
       session_(session),
       delegate_(delegate),
-      timer_(std::move(timer)) {
+      timer_(std::move(timer)),
+      write_buffer_len_(0) {
   DCHECK(delegate_);
   DCHECK(request_info_);
 
@@ -86,7 +87,15 @@ BidirectionalStream::~BidirectionalStream() {
 int BidirectionalStream::ReadData(IOBuffer* buf, int buf_len) {
   DCHECK(stream_impl_);
 
-  return stream_impl_->ReadData(buf, buf_len);
+  int rv = stream_impl_->ReadData(buf, buf_len);
+  if (rv > 0) {
+    net_log_.AddByteTransferEvent(
+        NetLog::TYPE_BIDIRECTIONAL_STREAM_BYTES_RECEIVED, rv, buf->data());
+  } else if (rv == ERR_IO_PENDING) {
+    read_buffer_ = buf;
+    // Bytes will be logged in OnDataRead().
+  }
+  return rv;
 }
 
 void BidirectionalStream::SendData(IOBuffer* data,
@@ -95,6 +104,8 @@ void BidirectionalStream::SendData(IOBuffer* data,
   DCHECK(stream_impl_);
 
   stream_impl_->SendData(data, length, end_stream);
+  write_buffer_ = data;
+  write_buffer_len_ = length;
 }
 
 void BidirectionalStream::Cancel() {
@@ -146,10 +157,22 @@ void BidirectionalStream::OnHeadersReceived(
 }
 
 void BidirectionalStream::OnDataRead(int bytes_read) {
+  DCHECK(read_buffer_);
+
+  net_log_.AddByteTransferEvent(
+      NetLog::TYPE_BIDIRECTIONAL_STREAM_BYTES_RECEIVED, bytes_read,
+      read_buffer_->data());
+  read_buffer_ = nullptr;
   delegate_->OnDataRead(bytes_read);
 }
 
 void BidirectionalStream::OnDataSent() {
+  DCHECK(write_buffer_);
+
+  net_log_.AddByteTransferEvent(NetLog::TYPE_BIDIRECTIONAL_STREAM_BYTES_SENT,
+                                write_buffer_len_, write_buffer_->data());
+  write_buffer_ = nullptr;
+  write_buffer_len_ = 0;
   delegate_->OnDataSent();
 }
 

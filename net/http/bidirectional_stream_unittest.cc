@@ -18,6 +18,8 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_server_properties.h"
 #include "net/log/net_log.h"
+#include "net/log/test_net_log.h"
+#include "net/log/test_net_log_util.h"
 #include "net/socket/socket_test_util.h"
 #include "net/spdy/spdy_session.h"
 #include "net/spdy/spdy_test_util_common.h"
@@ -302,6 +304,7 @@ class BidirectionalStreamTest : public testing::TestWithParam<bool> {
         ssl_data_(SSLSocketDataProvider(ASYNC, OK)) {
     ssl_data_.SetNextProto(kProtoHTTP2);
     ssl_data_.cert = ImportCertFromFile(GetTestCertsDirectory(), "ok_cert.pem");
+    net_log_.SetCaptureMode(NetLogCaptureMode::IncludeSocketBytes());
   }
 
  protected:
@@ -323,10 +326,13 @@ class BidirectionalStreamTest : public testing::TestWithParam<bool> {
     sequenced_data_.reset(
         new SequencedSocketData(reads, reads_count, writes, writes_count));
     session_deps_.socket_factory->AddSocketDataProvider(sequenced_data_.get());
+    session_deps_.net_log = net_log_.bound().net_log();
     http_session_ = SpdySessionDependencies::SpdyCreateSession(&session_deps_);
-    session_ = CreateSecureSpdySession(http_session_.get(), key, BoundNetLog());
+    session_ =
+        CreateSecureSpdySession(http_session_.get(), key, net_log_.bound());
   }
 
+  BoundTestNetLog net_log_;
   SpdyTestUtil spdy_util_;
   SpdySessionDependencies session_deps_;
   scoped_ptr<SequencedSocketData> sequenced_data_;
@@ -442,6 +448,111 @@ TEST_F(BidirectionalStreamTest, TestReadDataAfterClose) {
             delegate->GetTotalSentBytes());
   EXPECT_EQ(CountReadBytes(reads, arraysize(reads)),
             delegate->GetTotalReceivedBytes());
+}
+
+TEST_F(BidirectionalStreamTest, TestContainFullBytes) {
+  BufferedSpdyFramer framer(spdy_util_.spdy_version());
+
+  scoped_ptr<SpdySerializedFrame> req(spdy_util_.ConstructSpdyPost(
+      "https://www.example.org", 1, kBodyDataSize * 3, LOWEST, nullptr, 0));
+  scoped_ptr<SpdySerializedFrame> data_frame(
+      framer.CreateDataFrame(1, kBodyData, kBodyDataSize, DATA_FLAG_FIN));
+  MockWrite writes[] = {
+      CreateMockWrite(*req, 0), CreateMockWrite(*data_frame, 3),
+  };
+
+  scoped_ptr<SpdySerializedFrame> resp(
+      spdy_util_.ConstructSpdyGetSynReply(nullptr, 0, 1));
+  scoped_ptr<SpdySerializedFrame> response_body_frame1(
+      spdy_util_.ConstructSpdyBodyFrame(1, false));
+  scoped_ptr<SpdySerializedFrame> response_body_frame2(
+      spdy_util_.ConstructSpdyBodyFrame(1, true));
+
+  MockRead reads[] = {
+      CreateMockRead(*resp, 1),
+      MockRead(ASYNC, ERR_IO_PENDING, 2),  // Force a pause.
+      CreateMockRead(*response_body_frame1, 4),
+      MockRead(ASYNC, ERR_IO_PENDING, 5),  // Force a pause.
+      CreateMockRead(*response_body_frame2, 6),
+      MockRead(ASYNC, 0, 7),
+  };
+
+  HostPortPair host_port_pair("www.example.org", 443);
+  SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
+                     PRIVACY_MODE_DISABLED);
+  InitSession(reads, arraysize(reads), writes, arraysize(writes), key);
+
+  scoped_ptr<BidirectionalStreamRequestInfo> request_info(
+      new BidirectionalStreamRequestInfo);
+  request_info->method = "POST";
+  request_info->url = GURL("https://www.example.org/");
+  request_info->priority = LOWEST;
+  request_info->extra_headers.SetHeader(net::HttpRequestHeaders::kContentLength,
+                                        base::SizeTToString(kBodyDataSize * 3));
+
+  scoped_refptr<IOBuffer> read_buffer(new IOBuffer(kReadBufferSize));
+  MockTimer* timer = new MockTimer();
+  scoped_ptr<TestDelegateBase> delegate(new TestDelegateBase(
+      read_buffer.get(), kReadBufferSize, make_scoped_ptr(timer)));
+  delegate->set_do_not_start_read(true);
+  delegate->Start(std::move(request_info), http_session_.get());
+  // Send the request and receive response headers.
+  sequenced_data_->RunUntilPaused();
+  EXPECT_FALSE(timer->IsRunning());
+
+  scoped_refptr<StringIOBuffer> buf(
+      new StringIOBuffer(std::string(kBodyData, kBodyDataSize)));
+  // Send a DATA frame.
+  delegate->SendData(buf.get(), buf->size(), true);
+  // ReadData returns asynchronously because no data is buffered.
+  int rv = delegate->ReadData();
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+  // Deliver the first DATA frame.
+  sequenced_data_->Resume();
+  sequenced_data_->RunUntilPaused();
+  // |sequenced_data_| is now stopped after delivering first DATA frame but
+  // before the second DATA frame.
+  // Fire the timer to allow the first ReadData to complete asynchronously.
+  timer->Fire();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, delegate->on_data_read_count());
+
+  // Now let |sequenced_data_| run until completion.
+  sequenced_data_->Resume();
+  base::RunLoop().RunUntilIdle();
+  // All data has been delivered, and OnClosed() has been invoked.
+  // Read now, and it should complete synchronously.
+  rv = delegate->ReadData();
+  EXPECT_EQ(kUploadDataSize, rv);
+  EXPECT_EQ("200", delegate->response_headers().find(":status")->second);
+  EXPECT_EQ(1, delegate->on_data_read_count());
+  EXPECT_EQ(1, delegate->on_data_sent_count());
+  EXPECT_EQ(kProtoHTTP2, delegate->GetProtocol());
+  EXPECT_EQ(CountWriteBytes(writes, arraysize(writes)),
+            delegate->GetTotalSentBytes());
+  EXPECT_EQ(CountReadBytes(reads, arraysize(reads)),
+            delegate->GetTotalReceivedBytes());
+
+  TestNetLogEntry::List entries;
+  net_log_.GetEntries(&entries);
+  // Sent bytes. Sending data is always asynchronous.
+  size_t index = ExpectLogContainsSomewhere(
+      entries, 0, NetLog::TYPE_BIDIRECTIONAL_STREAM_BYTES_SENT,
+      NetLog::PHASE_NONE);
+  TestNetLogEntry entry = entries[index];
+  EXPECT_EQ(NetLog::SOURCE_BIDIRECTIONAL_STREAM, entry.source.type);
+  // Received bytes for asynchronous read.
+  index = ExpectLogContainsSomewhere(
+      entries, index, NetLog::TYPE_BIDIRECTIONAL_STREAM_BYTES_RECEIVED,
+      NetLog::PHASE_NONE);
+  entry = entries[index];
+  EXPECT_EQ(NetLog::SOURCE_BIDIRECTIONAL_STREAM, entry.source.type);
+  // Received bytes for synchronous read.
+  index = ExpectLogContainsSomewhere(
+      entries, index, NetLog::TYPE_BIDIRECTIONAL_STREAM_BYTES_RECEIVED,
+      NetLog::PHASE_NONE);
+  entry = entries[index];
+  EXPECT_EQ(NetLog::SOURCE_BIDIRECTIONAL_STREAM, entry.source.type);
 }
 
 TEST_F(BidirectionalStreamTest, TestInterleaveReadDataAndSendData) {

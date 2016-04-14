@@ -9,6 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/http/bidirectional_stream_impl.h"
 #include "net/http/http_stream_factory.h"
@@ -201,6 +202,13 @@ class NET_EXPORT BidirectionalStream
   // The underlying BidirectioanlStreamImpl used for this stream. It is
   // non-NULL, if the |stream_request_| successfully finishes.
   scoped_ptr<BidirectionalStreamImpl> stream_impl_;
+
+  // Buffer used for reading.
+  scoped_refptr<IOBuffer> read_buffer_;
+  // Buffer used for writing.
+  scoped_refptr<IOBuffer> write_buffer_;
+  // Length of |write_buffer_|.
+  size_t write_buffer_len_;
 
   DISALLOW_COPY_AND_ASSIGN(BidirectionalStream);
 };
