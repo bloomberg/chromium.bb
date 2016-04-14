@@ -36,6 +36,7 @@
 #include "content/common/host_shared_bitmap_manager.h"
 #include "content/common/input_messages.h"
 #include "content/common/site_isolation_policy.h"
+#include "content/common/text_input_state.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_plugin_guest_manager.h"
@@ -775,6 +776,14 @@ void BrowserPluginGuest::OnWillAttachComplete(
 void BrowserPluginGuest::OnDetach(int browser_plugin_instance_id) {
   if (!attached())
     return;
+
+  // The BrowserPluginGuest loses the link to |owner_web_contents_|. Therefore,
+  // the RenderWidgetHostViewGuest will not get a chance to update its text
+  // input state which is tracked by |owner_web_contents_|.
+  // TODO(ekaramad): We should perform detaching through WebContentsImpl (
+  // inner WebContents detaching from outer WebContents). After this is fixed,
+  // we can remove this call to OnTextInputStateChanged (crbug.com/602640).
+  OnTextInputStateChanged(TextInputState());
 
   // This tells BrowserPluginGuest to queue up all IPCs to BrowserPlugin until
   // it's attached again.

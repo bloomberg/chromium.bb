@@ -57,6 +57,7 @@
 #include "content/common/host_shared_bitmap_manager.h"
 #include "content/common/input_messages.h"
 #include "content/common/resize_params.h"
+#include "content/common/text_input_state.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/notification_service.h"
@@ -2056,6 +2057,11 @@ void RenderWidgetHostImpl::DelayedAutoResized() {
 }
 
 void RenderWidgetHostImpl::DetachDelegate() {
+  // If |view_| has active text input state, it will not be able to update the
+  // |delegate_| about shut down and losing the state (see crbug.com/602144).
+  if (view_)
+    view_->TextInputStateChanged(TextInputState());
+
   delegate_ = NULL;
 }
 

@@ -25,3 +25,14 @@ window.addEventListener('load', function() {
     chrome.test.sendMessage('EMBEDDER-FOCUSED-2');
   });
 });
+
+function detachWebView() {
+  var webview = document.querySelector('webview');
+  if (webview) {
+    webview.parentNode.removeChild(webview);
+    chrome.test.sendMessage('detached');
+  } else {
+    chrome.test.sendMessage('failed-to-detach');
+  }
+}
+

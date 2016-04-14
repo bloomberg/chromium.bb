@@ -1420,14 +1420,12 @@ IN_PROC_BROWSER_TEST_P(WebViewTextInputStateInteractiveTest,
       base::Bind(&TextInputStateHelper::HasGivenValue, "last one"));
 }
 
-// TODO(ekaramad): Activate this test for OOPIF when input event routing for
-// OOPIF-<webview> is fixed.
 IN_PROC_BROWSER_TEST_P(WebViewTextInputStateInteractiveTest,
                        CrashingWebViewResetsState) {
   SetupTest("web_view/text_input_state",
             "/extensions/platform_apps/web_view/text_input_state/guest.html");
 
-  // Press tab key twice to end up in the <input> of the <webview>,
+  // Press tab key twice to end up in the <input> of the <webview>.
   ExtensionTestMessageListener listener("GUEST-FOCUSED", false);
   for (size_t i = 0; i < 2; ++i)
     SendKeyPressToPlatformApp(ui::VKEY_TAB);
@@ -1442,7 +1440,43 @@ IN_PROC_BROWSER_TEST_P(WebViewTextInputStateInteractiveTest,
   // Now crash the <webview>.
   guest_web_contents()->GetRenderProcessHost()->Shutdown(false, 0);
 
-  // State should reset to none.
+  // Wait for the outer WebContentsImpl |text_input_state_->type| to be reset to
+  // none.
+  TextInputStateHelper::WaitForDesiredState(
+      embedder_web_contents(),
+      base::Bind(&TextInputStateHelper::IsStateOfGivenType,
+                 ui::TEXT_INPUT_TYPE_NONE));
+}
+
+// This test creates a <webview> with a text input field inside, gives focus to
+// the input field, and then detaches the <webview>. It monitors the embedder
+// WebContents text input state to make sure it tracks the state properly.
+IN_PROC_BROWSER_TEST_P(WebViewTextInputStateInteractiveTest,
+                       OuterWebContentsResetsStateAfterDetach) {
+  SetupTest("web_view/text_input_state",
+            "/extensions/platform_apps/web_view/text_input_state/guest.html");
+
+  // Press tab key twice to end up in the <input> of the <webview>.
+  ExtensionTestMessageListener listener("GUEST-FOCUSED", false);
+  for (size_t i = 0; i < 2; ++i)
+    SendKeyPressToPlatformApp(ui::VKEY_TAB);
+
+  listener.WaitUntilSatisfied();
+
+  // Now wait for a text input state change.
+  TextInputStateHelper::WaitForDesiredState(
+      embedder_web_contents(),
+      base::Bind(&TextInputStateHelper::HasGivenValue, "guest"));
+
+  // Now detach the <webview>.
+  ExtensionTestMessageListener detach_listener("detached", false);
+  detach_listener.set_failure_message("failed-to-detach");
+  EXPECT_TRUE(
+      content::ExecuteScript(embedder_web_contents(), "detachWebView();"));
+  detach_listener.WaitUntilSatisfied();
+
+  // Wait for the outer WebContentsImpl |text_input_state_->type| to be reset to
+  // none.
   TextInputStateHelper::WaitForDesiredState(
       embedder_web_contents(),
       base::Bind(&TextInputStateHelper::IsStateOfGivenType,
