@@ -12,26 +12,24 @@ from telemetry.testing import tab_test_case
 
 class TabStackTraceTest(tab_test_case.TabTestCase):
 
-  # TODO(dyen): For now this doesn't work on Android but continue to
-  # expand this.
-  # TODO(kbr): currently failing on Windows because the symbolized
-  # stack trace format is unexpected. http://crbug.com/561763
-  @decorators.Enabled('mac', 'linux')
   # Stack traces do not currently work on 10.6, but they are also being
   # disabled shortly so just disable it for now.
-  @decorators.Disabled('snowleopard')
-  def testStackTrace(self):
+  # All platforms except chromeos should at least have a valid minidump.
+  # TODO(dyen): Investigate why crashpad_database_util is not being included.
+  @decorators.Disabled('snowleopard', 'chromeos', 'win')
+  def testValidDump(self):
     with self.assertRaises(exceptions.DevtoolsTargetCrashException) as c:
       self._tab.Navigate('chrome://crash', timeout=5)
-      self.assertIn('Thread 0 (crashed)', '\n'.join(c.exception.stack_trace))
+    self.assertTrue(c.exception.is_valid_dump)
 
   # Stack traces aren't working on Android yet.
-  @decorators.Enabled('mac', 'linux', 'win')
+  # TODO(dyen): Investigate why windows is crashing in mojo.
+  @decorators.Enabled('mac', 'linux')
   @decorators.Disabled('snowleopard')
   def testCrashSymbols(self):
     with self.assertRaises(exceptions.DevtoolsTargetCrashException) as c:
       self._tab.Navigate('chrome://crash', timeout=5)
-      self.assertIn('CrashIntentionally', '\n'.join(c.exception.stack_trace))
+    self.assertIn('CrashIntentionally', '\n'.join(c.exception.stack_trace))
 
   # The breakpad file specific test only apply to platforms which use the
   # breakpad symbol format. This also must be tested in isolation because it can
@@ -46,19 +44,19 @@ class TabStackTraceTest(tab_test_case.TabTestCase):
                                      dir=os.path.dirname(executable_path),
                                      prefix=executable + '.breakpad',
                                      delete=True) as f:
-      f.write('Garbage Data 012345')
+      garbage_hash = 'ABCDEF1234567'
+      f.write('MODULE PLATFORM ARCH %s %s' % (garbage_hash, executable))
       f.flush()
       with self.assertRaises(exceptions.DevtoolsTargetCrashException) as c:
         self._tab.Navigate('chrome://crash', timeout=5)
-        # The symbol directory should now contain our breakpad file.
-        tmp_dir = os.path.join(self._browser._browser_backend._tmp_minidump_dir)
+      # The symbol directory should now symbols for out executable.
+      tmp_dir = os.path.join(self._browser._browser_backend._tmp_minidump_dir)
+      symbol_dir = os.path.join(tmp_dir, 'symbols')
+      self.assertTrue(os.path.isdir(symbol_dir))
 
-        # Symbol directory should have been created.
-        symbol_dir = os.path.join(tmp_dir, 'symbols', executable)
-        self.assertTrue(os.path.isdir(symbol_dir))
+      # Bad breakpad file should not be in the symbol directory
+      garbage_symbol_dir = os.path.join(symbol_dir, executable, garbage_hash)
+      self.assertFalse(os.path.isdir(garbage_symbol_dir))
 
-        # A single symbol file should still exist here.
-        self.assertEqual(1, len(os.listdir(symbol_dir)))
-
-        # Stack trace should still work.
-        self.assertIn('CrashIntentionally', '\n'.join(c.exception.stack_trace))
+      # Stack trace should still work.
+      self.assertIn('CrashIntentionally', '\n'.join(c.exception.stack_trace))

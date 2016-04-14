@@ -146,7 +146,7 @@ def mkdir_p(path):
 def GetBinaryInfoFromHeaderInfo(header_info):
   """Given a standard symbol header information line, returns BINARY_INFO."""
   # header info is of the form "MODULE $PLATFORM $ARCH $HASH $BINARY"
-  info_split = header_info.strip().split(' ', 5)
+  info_split = header_info.strip().split(' ', 4)
   if len(info_split) != 5 or info_split[0] != 'MODULE':
     return None
   return BINARY_INFO(*info_split[1:])
