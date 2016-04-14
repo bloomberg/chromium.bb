@@ -55,6 +55,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/glsl3/forbidden-operators.html', bug=483282)
 
     self.Fail('conformance2/misc/expando-loss-2.html', bug=483282)
+    self.Flaky('conformance2/query/occlusion-query.html', bug=603168)
     self.Fail('conformance2/vertex_arrays/vertex-array-object.html', bug=483282)
 
     # Windows only.
