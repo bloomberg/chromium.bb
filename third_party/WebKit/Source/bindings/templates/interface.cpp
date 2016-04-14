@@ -688,13 +688,7 @@ v8::NamedPropertyHandlerConfiguration namedPropertyHandlerConfig({{named_propert
 {% if not is_array_buffer_or_view %}
 v8::Local<v8::FunctionTemplate> {{v8_class}}::domTemplate(v8::Isolate* isolate)
 {
-    {% if has_partial_interface %}
-    {% set installTemplateFunction = '%s::install%sTemplateFunction' % (v8_class, v8_class) %}
-    ASSERT({{installTemplateFunction}} != {{v8_class}}::install{{v8_class}}Template);
-    {% else %}
-    {% set installTemplateFunction = 'install%sTemplate' % v8_class %}
-    {% endif %}
-{% set installTemplateFunction = '%s::install%sTemplateFunction' % (v8_class, v8_class) if has_partial_interface else 'install%sTemplate' % v8_class %}
+    {% set installTemplateFunction = '%s::install%sTemplateFunction' % (v8_class, v8_class) if has_partial_interface else 'install%sTemplate' % v8_class %}
     return V8DOMConfiguration::domClassTemplate(isolate, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), {{installTemplateFunction}});
 }
 

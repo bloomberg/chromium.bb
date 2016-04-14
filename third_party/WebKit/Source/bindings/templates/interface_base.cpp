@@ -91,7 +91,7 @@ static bool {{cpp_class}}CreateDataProperty(v8::Local<v8::Name> name, v8::Local<
 {% endfor %}
 {##############################################################################}
 {% block security_check_functions %}
-{% if has_access_check_callbacks %}
+{% if has_access_check_callbacks and not is_partial %}
 bool securityCheck(v8::Local<v8::Context> accessingContext, v8::Local<v8::Object> accessedObject, v8::Local<v8::Value> data)
 {
     // TODO(jochen): Take accessingContext into account.
@@ -298,12 +298,12 @@ static void install{{v8_class}}Template(v8::Local<v8::FunctionTemplate> interfac
     } // if ({{runtime_enabled_function}}())
     {% endif %}
 
-    {%- if has_access_check_callbacks %}{{newline}}
+    {%- if has_access_check_callbacks and not is_partial %}{{newline}}
     // Cross-origin access check
     instanceTemplate->SetAccessCheckCallback({{cpp_class}}V8Internal::securityCheck, v8::External::New(isolate, const_cast<WrapperTypeInfo*>(&{{v8_class}}::wrapperTypeInfo)));
     {% endif %}
 
-    {%- if has_array_iterator and not is_global %}{{newline}}
+    {%- if has_array_iterator and not is_partial and not is_global %}{{newline}}
     // Array iterator
     prototypeTemplate->SetIntrinsicDataProperty(v8::Symbol::GetIterator(isolate), v8::kArrayProto_values, v8::DontEnum);
     {% endif %}
@@ -336,11 +336,11 @@ static void install{{v8_class}}Template(v8::Local<v8::FunctionTemplate> interfac
     }
     {% endfor %}
 
-    {%- if indexed_property_getter %}{{newline}}
+    {%- if indexed_property_getter and not is_partial %}{{newline}}
     // Indexed properties
     {{install_indexed_property_handler('instanceTemplate') | indent}}
     {% endif %}
-    {% if named_property_getter and not has_named_properties_object %}
+    {% if named_property_getter and not is_partial and not has_named_properties_object %}
     // Named properties
     {{install_named_property_handler('instanceTemplate') | indent}}
     {% endif %}
@@ -355,11 +355,11 @@ static void install{{v8_class}}Template(v8::Local<v8::FunctionTemplate> interfac
     {% endfilter %}
     {% endif %}
 
-    {%- if has_custom_legacy_call_as_function %}{{newline}}
+    {%- if has_custom_legacy_call_as_function and not is_partial %}{{newline}}
     instanceTemplate->SetCallAsFunctionHandler({{v8_class}}::legacyCallCustom);
     {% endif %}
 
-    {%- if interface_name == 'HTMLAllCollection' %}{{newline}}
+    {%- if interface_name == 'HTMLAllCollection' and not is_partial %}{{newline}}
     // Needed for legacy support of document.all
     instanceTemplate->MarkAsUndetectable();
     {% endif %}

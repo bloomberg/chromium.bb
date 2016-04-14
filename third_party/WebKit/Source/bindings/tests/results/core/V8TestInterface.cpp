@@ -2168,7 +2168,6 @@ void V8TestInterface::installV8TestInterfaceTemplate(v8::Local<v8::FunctionTempl
 
 v8::Local<v8::FunctionTemplate> V8TestInterface::domTemplate(v8::Isolate* isolate)
 {
-    ASSERT(V8TestInterface::installV8TestInterfaceTemplateFunction != V8TestInterface::installV8TestInterfaceTemplate);
     return V8DOMConfiguration::domClassTemplate(isolate, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), V8TestInterface::installV8TestInterfaceTemplateFunction);
 }
 
