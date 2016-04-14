@@ -18,6 +18,7 @@
 #include "base/observer_list.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
+#include "components/metrics/proto/memory_leak_report.pb.h"
 
 namespace base {
 template <typename T>
@@ -48,26 +49,14 @@ class LeakDetectorImpl;
 // enforced with a DCHECK.
 class LeakDetector {
  public:
-  // Contains a report of a detected memory leak.
-  struct LeakReport {
-    LeakReport();
-    LeakReport(const LeakReport& other);
-    ~LeakReport();
-
-    size_t alloc_size_bytes;
-
-    // Unlike the CallStack struct, which consists of addresses, this call stack
-    // will contain offsets in the executable binary.
-    std::vector<uintptr_t> call_stack;
-  };
-
   // Interface for receiving leak reports.
   class Observer {
    public:
     virtual ~Observer() {}
 
-    // Called by leak detector to report a leak.
-    virtual void OnLeakFound(const LeakReport& report) = 0;
+    // Called by leak detector to report leaks.
+    virtual void OnLeaksFound(
+        const std::vector<MemoryLeakReportProto>& reports) = 0;
   };
 
   // Returns the sole instance, or creates it if it hasn't already been created.
@@ -126,8 +115,8 @@ class LeakDetector {
   bool ShouldSample(const void* ptr) const;
 
   // Notifies all Observers in |observers_| with the given vector of leak
-  // reports.
-  void NotifyObservers(const std::vector<LeakReport>& reports);
+  // report protobufs.
+  void NotifyObservers(const std::vector<MemoryLeakReportProto>& reports);
 
   // List of observers to notify when there's a leak report.
   // TODO(sque): Consider using ObserverListThreadSafe instead.

@@ -142,6 +142,7 @@ if (is_chromeos) {
 
     deps = [
       "//base",
+      "//components/metrics/proto:proto",
       "//content/public/browser",
     ]
   }
@@ -302,6 +303,7 @@ if (is_chromeos) {
     deps = [
       ":leak_detector",
       "//base",
+      "//components/metrics/proto:proto",
       "//content/test:test_support",
       "//testing/gtest",
     ]

@@ -105,20 +105,19 @@ LeakDetectorController::~LeakDetectorController() {
   LeakDetector::GetInstance()->RemoveObserver(this);
 }
 
-void LeakDetectorController::OnLeakFound(
-    const LeakDetector::LeakReport& report) {
+void LeakDetectorController::OnLeaksFound(
+    const std::vector<MemoryLeakReportProto>& reports) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  // Initialize the new report with the protobuf template, which contains some
-  // pre-filled data (parameter values).
-  stored_reports_.push_back(leak_report_proto_template_);
-  MemoryLeakReportProto* proto = &stored_reports_.back();
+  for (const auto& report : reports) {
+    // Initialize the new report with the protobuf template, which contains some
+    // pre-filled data (parameter values).
+    stored_reports_.push_back(leak_report_proto_template_);
+    MemoryLeakReportProto* proto = &stored_reports_.back();
 
-  // Fill in the remaining fields of the protobuf with data from |report|.
-  proto->set_size_bytes(report.alloc_size_bytes);
-  proto->mutable_call_stack()->Reserve(report.call_stack.size());
-  for (uintptr_t call_stack_entry : report.call_stack)
-    proto->mutable_call_stack()->Add(call_stack_entry);
+    // Merge in the other fields.
+    proto->MergeFrom(report);
+  }
 }
 
 void LeakDetectorController::GetLeakReports(

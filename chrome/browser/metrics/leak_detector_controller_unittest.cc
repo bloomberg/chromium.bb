@@ -13,18 +13,29 @@
 
 namespace metrics {
 
+namespace {
+
+// Converts a vector of values into a protobuf RepeatedField. Although there is
+// no hard requirement, T should be a POD type since that is what RepeatedField
+// is used for in protobuf classes.
+template <typename T>
+void InitializeRepeatedField(const std::vector<T>& input,
+                             ::google::protobuf::RepeatedField<T>* output) {
+  *output = ::google::protobuf::RepeatedField<T>(input.begin(), input.end());
+}
+
+}  // namespace
+
 // Test class for LeakDetectorController that exposes protected methods.
 class TestLeakDetectorController : public LeakDetectorController {
  public:
-  using LeakDetectorController::OnLeakFound;
+  using LeakDetectorController::OnLeaksFound;
 
   TestLeakDetectorController() {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestLeakDetectorController);
 };
-
-using LeakReport = LeakDetector::LeakReport;
 
 // Use a global instance of the test class because LeakDetectorController
 // initializes class LeakDetector, which can only be initialized once, enforced
@@ -37,12 +48,12 @@ base::LazyInstance<TestLeakDetectorController> g_instance =
     LAZY_INSTANCE_INITIALIZER;
 
 TEST(LeakDetectorControllerTest, SingleReport) {
-  LeakReport report;
-  report.alloc_size_bytes = 8;
-  report.call_stack = {1, 2, 3, 4};
+  MemoryLeakReportProto report;
+  report.set_size_bytes(8);
+  InitializeRepeatedField({1, 2, 3, 4}, report.mutable_call_stack());
 
   TestLeakDetectorController* controller = &g_instance.Get();
-  controller->OnLeakFound(report);
+  controller->OnLeaksFound({report});
 
   std::vector<MemoryLeakReportProto> stored_reports;
   controller->GetLeakReports(&stored_reports);
@@ -69,16 +80,69 @@ TEST(LeakDetectorControllerTest, SingleReport) {
   ASSERT_EQ(0U, stored_reports.size());
 }
 
+TEST(LeakDetectorControllerTest, SingleReportHistory) {
+  MemoryLeakReportProto report;
+
+  auto entry = report.add_alloc_breakdown_history();
+  InitializeRepeatedField({100, 200, 300}, entry->mutable_counts_by_size());
+  entry->set_count_for_call_stack(15);
+
+  entry = report.add_alloc_breakdown_history();
+  InitializeRepeatedField({150, 250, 350, 650},
+                          entry->mutable_counts_by_size());
+  entry->set_count_for_call_stack(30);
+
+  entry = report.add_alloc_breakdown_history();
+  InitializeRepeatedField({200, 300, 400, 700, 800},
+                          entry->mutable_counts_by_size());
+  entry->set_count_for_call_stack(45);
+
+  TestLeakDetectorController* controller = &g_instance.Get();
+  controller->OnLeaksFound({report});
+
+  std::vector<MemoryLeakReportProto> stored_reports;
+  controller->GetLeakReports(&stored_reports);
+  ASSERT_EQ(1U, stored_reports.size());
+
+  const auto& history = stored_reports[0].alloc_breakdown_history();
+  ASSERT_EQ(3, history.size());
+
+  ASSERT_EQ(3, history.Get(0).counts_by_size().size());
+  EXPECT_EQ(100U, history.Get(0).counts_by_size(0));
+  EXPECT_EQ(200U, history.Get(0).counts_by_size(1));
+  EXPECT_EQ(300U, history.Get(0).counts_by_size(2));
+  EXPECT_EQ(15U, history.Get(0).count_for_call_stack());
+
+  ASSERT_EQ(4, history.Get(1).counts_by_size_size());
+  EXPECT_EQ(150U, history.Get(1).counts_by_size(0));
+  EXPECT_EQ(250U, history.Get(1).counts_by_size(1));
+  EXPECT_EQ(350U, history.Get(1).counts_by_size(2));
+  EXPECT_EQ(650U, history.Get(1).counts_by_size(3));
+  EXPECT_EQ(30U, history.Get(1).count_for_call_stack());
+
+  ASSERT_EQ(5, history.Get(2).counts_by_size_size());
+  EXPECT_EQ(200U, history.Get(2).counts_by_size(0));
+  EXPECT_EQ(300U, history.Get(2).counts_by_size(1));
+  EXPECT_EQ(400U, history.Get(2).counts_by_size(2));
+  EXPECT_EQ(700U, history.Get(2).counts_by_size(3));
+  EXPECT_EQ(800U, history.Get(2).counts_by_size(4));
+  EXPECT_EQ(45U, history.Get(2).count_for_call_stack());
+
+  // No more reports.
+  controller->GetLeakReports(&stored_reports);
+  ASSERT_EQ(0U, stored_reports.size());
+}
+
 TEST(LeakDetectorControllerTest, MultipleReportsSeparately) {
   TestLeakDetectorController* controller = &g_instance.Get();
   std::vector<MemoryLeakReportProto> stored_reports;
 
   // Pass in first report.
-  LeakReport report;
-  report.alloc_size_bytes = 8;
-  report.call_stack = {1, 2, 3, 4};
+  MemoryLeakReportProto report1;
+  report1.set_size_bytes(8);
+  InitializeRepeatedField({1, 2, 3, 4}, report1.mutable_call_stack());
 
-  controller->OnLeakFound(report);
+  controller->OnLeaksFound({report1});
   controller->GetLeakReports(&stored_reports);
   ASSERT_EQ(1U, stored_reports.size());
 
@@ -93,9 +157,10 @@ TEST(LeakDetectorControllerTest, MultipleReportsSeparately) {
   ASSERT_EQ(0U, stored_reports.size());
 
   // Pass in second report.
-  report.alloc_size_bytes = 16;
-  report.call_stack = {5, 6, 7, 8, 9, 10};
-  controller->OnLeakFound(report);
+  MemoryLeakReportProto report2;
+  report2.set_size_bytes(16);
+  InitializeRepeatedField({5, 6, 7, 8, 9, 10}, report2.mutable_call_stack());
+  controller->OnLeaksFound({report2});
 
   controller->GetLeakReports(&stored_reports);
   ASSERT_EQ(1U, stored_reports.size());
@@ -113,9 +178,11 @@ TEST(LeakDetectorControllerTest, MultipleReportsSeparately) {
   ASSERT_EQ(0U, stored_reports.size());
 
   // Pass in third report.
-  report.alloc_size_bytes = 24;
-  report.call_stack = {9, 10, 11, 12, 13, 14, 15, 16};
-  controller->OnLeakFound(report);
+  MemoryLeakReportProto report3;
+  report3.set_size_bytes(24);
+  InitializeRepeatedField({9, 10, 11, 12, 13, 14, 15, 16},
+                          report3.mutable_call_stack());
+  controller->OnLeaksFound({report3});
 
   controller->GetLeakReports(&stored_reports);
   ASSERT_EQ(1U, stored_reports.size());
@@ -136,18 +203,17 @@ TEST(LeakDetectorControllerTest, MultipleReportsSeparately) {
 }
 
 TEST(LeakDetectorControllerTest, MultipleReportsTogether) {
-  LeakReport report1, report2, report3;
-  report1.alloc_size_bytes = 8;
-  report1.call_stack = {1, 2, 3, 4};
-  report2.alloc_size_bytes = 16;
-  report2.call_stack = {5, 6, 7, 8, 9, 10};
-  report3.alloc_size_bytes = 24;
-  report3.call_stack = {9, 10, 11, 12, 13, 14, 15, 16};
+  std::vector<MemoryLeakReportProto> reports(3);
+  reports[0].set_size_bytes(8);
+  InitializeRepeatedField({1, 2, 3, 4}, reports[0].mutable_call_stack());
+  reports[1].set_size_bytes(16);
+  InitializeRepeatedField({5, 6, 7, 8, 9, 10}, reports[1].mutable_call_stack());
+  reports[2].set_size_bytes(24);
+  InitializeRepeatedField({9, 10, 11, 12, 13, 14, 15, 16},
+                          reports[2].mutable_call_stack());
 
   TestLeakDetectorController* controller = &g_instance.Get();
-  controller->OnLeakFound(report1);
-  controller->OnLeakFound(report2);
-  controller->OnLeakFound(report3);
+  controller->OnLeaksFound(reports);
 
   std::vector<MemoryLeakReportProto> stored_reports;
 

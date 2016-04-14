@@ -4,6 +4,7 @@
 
 #include "components/metrics/leak_detector/leak_detector.h"
 
+#include <algorithm>
 #include <set>
 
 #include "base/allocator/allocator_extension.h"
@@ -23,34 +24,40 @@ const uint64_t kDefaultAnalysisIntervalBytes = 32 * 1024 * 1024;  // 32 MiB.
 const uint32_t kDefaultSizeSuspicionThreshold = 4;
 const uint32_t kDefaultCallStackSuspicionThreshold = 4;
 
-using LeakReport = LeakDetector::LeakReport;
-
 // Observer class that receives leak reports and stores them in |reports_|.
 // Only one copy of each unique report will be stored.
 class TestObserver : public LeakDetector::Observer {
  public:
-  // Contains a comparator function used to compare LeakReports for uniqueness.
+  // Contains a comparator function used to compare MemoryLeakReportProtos for
+  // uniqueness.
   struct Comparator {
-    bool operator()(const LeakReport& a, const LeakReport& b) const {
-      if (a.alloc_size_bytes != b.alloc_size_bytes)
-        return a.alloc_size_bytes < b.alloc_size_bytes;
+    bool operator()(const MemoryLeakReportProto& a,
+                    const MemoryLeakReportProto& b) const {
+      if (a.size_bytes() != b.size_bytes())
+        return a.size_bytes() < b.size_bytes();
 
-      return a.call_stack < b.call_stack;
+      return std::lexicographical_compare(a.call_stack().begin(),
+                                          a.call_stack().end(),
+                                          b.call_stack().begin(),
+                                          b.call_stack().end());
     }
   };
 
   TestObserver() {}
 
-  void OnLeakFound(const LeakReport& report) override {
-    reports_.insert(report);
+  void OnLeaksFound(
+      const std::vector<MemoryLeakReportProto>& reports) override {
+    reports_.insert(reports.begin(), reports.end());
   }
 
-  const std::set<LeakReport, Comparator>& reports() const { return reports_; }
+  const std::set<MemoryLeakReportProto, Comparator>& reports() const {
+    return reports_;
+  }
 
  private:
-  // Container for all leak reports received through OnLeakFound(). Stores only
+  // Container for all leak reports received through OnLeaksFound(). Stores only
   // one copy of each unique report.
-  std::set<LeakReport, Comparator> reports_;
+  std::set<MemoryLeakReportProto, Comparator> reports_;
 
   DISALLOW_COPY_AND_ASSIGN(TestObserver);
 };
@@ -79,21 +86,33 @@ class LeakDetectorTest : public ::testing::Test {
 
 TEST_F(LeakDetectorTest, NotifyObservers) {
   // Generate two sets of leak reports.
-  std::vector<LeakReport> reports1(3);
-  reports1[0].alloc_size_bytes = 8;
-  reports1[0].call_stack = {1, 2, 3, 4};
-  reports1[1].alloc_size_bytes = 16;
-  reports1[1].call_stack = {5, 6, 7, 8};
-  reports1[2].alloc_size_bytes = 24;
-  reports1[2].call_stack = {9, 10, 11, 12};
+  std::vector<MemoryLeakReportProto> reports1(3);
+  reports1[0].set_size_bytes(8);
+  for (uint64_t entry : {1, 2, 3, 4}) {
+    reports1[0].add_call_stack(entry);
+  }
+  reports1[1].set_size_bytes(16);
+  for (uint64_t entry : {5, 6, 7, 8}) {
+    reports1[1].add_call_stack(entry);
+  }
+  reports1[2].set_size_bytes(24);
+  for (uint64_t entry : {9, 10, 11, 12}) {
+    reports1[1].add_call_stack(entry);
+  }
 
-  std::vector<LeakReport> reports2(3);
-  reports2[0].alloc_size_bytes = 32;
-  reports2[0].call_stack = {1, 2, 4, 8};
-  reports2[1].alloc_size_bytes = 40;
-  reports2[1].call_stack = {16, 32, 64, 128};
-  reports2[2].alloc_size_bytes = 48;
-  reports2[2].call_stack = {256, 512, 1024, 2048};
+  std::vector<MemoryLeakReportProto> reports2(3);
+  reports2[0].set_size_bytes(32);
+  for (uint64_t entry : {1, 2, 4, 8}) {
+    reports2[0].add_call_stack(entry);
+  }
+  reports2[1].set_size_bytes(40);
+  for (uint64_t entry : {16, 32, 64, 128}) {
+    reports2[1].add_call_stack(entry);
+  }
+  reports2[2].set_size_bytes(48);
+  for (uint64_t entry : {256, 512, 1024, 2048}) {
+    reports2[2].add_call_stack(entry);
+  }
 
   // Register three observers;
   TestObserver obs1, obs2, obs3;

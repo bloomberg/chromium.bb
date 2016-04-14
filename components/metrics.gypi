@@ -252,6 +252,7 @@
           'type': 'static_library',
           'dependencies': [
             '../base/base.gyp:base',
+            'component_metrics_proto',
           ],
           'sources': [
             'metrics/leak_detector/call_stack_manager.cc',
