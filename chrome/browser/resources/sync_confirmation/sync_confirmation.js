@@ -18,6 +18,7 @@ cr.define('sync.confirmation', function() {
   }
 
   function initialize() {
+    document.addEventListener('keydown', onKeyDown);
     $('confirmButton').addEventListener('click', onConfirm);
     $('undoButton').addEventListener('click', onUndo);
     $('settingsLink').addEventListener('click', onGoToSettings);
@@ -31,6 +32,17 @@ cr.define('sync.confirmation', function() {
 
   function onPictureLoaded(e) {
     $('picture-container').classList.add('loaded');
+  }
+
+  function onKeyDown(e) {
+    // If the currently focused element isn't something that performs an action
+    // on "enter" being pressed and the user hits "enter", perform the default
+    // action of the dialog, which is "OK, Got It".
+    if (e.keyIdentifier == 'Enter' &&
+        !/^(A|PAPER-BUTTON)$/.test(document.activeElement.tagName)) {
+      $('confirmButton').click();
+      e.preventDefault();
+    }
   }
 
   return {
