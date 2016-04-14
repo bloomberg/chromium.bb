@@ -64,11 +64,6 @@ void ShellSpeechRecognitionManagerDelegate::OnAudioLevelsChange(
     float noise_volume) {
 }
 
-void ShellSpeechRecognitionManagerDelegate::GetDiagnosticInformation(
-    bool* can_report_metrics,
-    std::string* hardware_info) {
-}
-
 void ShellSpeechRecognitionManagerDelegate::CheckRecognitionIsAllowed(
     int session_id,
     base::Callback<void(bool ask_user, bool is_allowed)> callback) {

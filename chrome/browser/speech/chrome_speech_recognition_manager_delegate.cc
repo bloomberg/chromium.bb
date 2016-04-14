@@ -64,71 +64,6 @@ void TabClosedCallbackOnIOThread(int render_process_id, int render_view_id) {
 
 }  // namespace
 
-
-// Asynchronously fetches the PC and audio hardware/driver info if
-// the user has opted into UMA. This information is sent with speech input
-// requests to the server for identifying and improving quality issues with
-// specific device configurations.
-class ChromeSpeechRecognitionManagerDelegate::OptionalRequestInfo
-    : public base::RefCountedThreadSafe<OptionalRequestInfo> {
- public:
-  OptionalRequestInfo() : can_report_metrics_(false) {
-  }
-
-  void Refresh() {
-    DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    // UMA opt-in can be checked only from the UI thread, so switch to that.
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-        base::Bind(&OptionalRequestInfo::CheckUMAAndGetHardwareInfo, this));
-  }
-
-  void CheckUMAAndGetHardwareInfo() {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    // TODO(hans): Move this check to where hardware info gets sent
-    // crbug.com/533496
-    if (ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled()) {
-      // Access potentially slow OS calls from the FILE thread.
-      BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-          base::Bind(&OptionalRequestInfo::GetHardwareInfo, this));
-    }
-  }
-
-  void GetHardwareInfo() {
-    DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-    base::AutoLock lock(lock_);
-    can_report_metrics_ = true;
-    base::string16 device_model =
-        SpeechRecognitionManager::GetInstance()->GetAudioInputDeviceModel();
-#if defined(OS_WIN)
-    value_ = base::UTF16ToUTF8(
-        installer::WMIComputerSystem::GetModel() + L"|" + device_model);
-#else  // defined(OS_WIN)
-    value_ = base::UTF16ToUTF8(device_model);
-#endif  // defined(OS_WIN)
-  }
-
-  std::string value() {
-    base::AutoLock lock(lock_);
-    return value_;
-  }
-
-  bool can_report_metrics() {
-    base::AutoLock lock(lock_);
-    return can_report_metrics_;
-  }
-
- private:
-  friend class base::RefCountedThreadSafe<OptionalRequestInfo>;
-
-  ~OptionalRequestInfo() {}
-
-  base::Lock lock_;
-  std::string value_;
-  bool can_report_metrics_;
-
-  DISALLOW_COPY_AND_ASSIGN(OptionalRequestInfo);
-};
-
 // Simple utility to get notified when a WebContent (a tab or an extension's
 // background page) is closed or crashes. The callback will always be called on
 // the UI thread.
@@ -329,25 +264,6 @@ void ChromeSpeechRecognitionManagerDelegate::OnAudioLevelsChange(
 }
 
 void ChromeSpeechRecognitionManagerDelegate::OnRecognitionEnd(int session_id) {
-}
-
-void ChromeSpeechRecognitionManagerDelegate::GetDiagnosticInformation(
-    bool* can_report_metrics,
-    std::string* hardware_info) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (!optional_request_info_.get()) {
-    optional_request_info_ = new OptionalRequestInfo();
-    // Since hardware info is optional with speech input requests, we start an
-    // asynchronous fetch here and move on with recording audio. This first
-    // speech input request would send an empty string for hardware info and
-    // subsequent requests may have the hardware info available if the fetch
-    // completed before them. This way we don't end up stalling the user with
-    // a long wait and disk seeks when they click on a UI element and start
-    // speaking.
-    optional_request_info_->Refresh();
-  }
-  *can_report_metrics = optional_request_info_->can_report_metrics();
-  *hardware_info = optional_request_info_->value();
 }
 
 void ChromeSpeechRecognitionManagerDelegate::CheckRecognitionIsAllowed(

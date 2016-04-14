@@ -39,8 +39,6 @@ class ShellSpeechRecognitionManagerDelegate
                            float noise_volume) override;
 
   // SpeechRecognitionManagerDelegate methods.
-  void GetDiagnosticInformation(bool* can_report_metrics,
-                                std::string* hardware_info) override;
   void CheckRecognitionIsAllowed(
       int session_id,
       base::Callback<void(bool ask_user, bool is_allowed)> callback) override;

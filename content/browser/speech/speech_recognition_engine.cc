@@ -362,10 +362,6 @@ SpeechRecognitionEngine::ConnectBothStreams(const FSMEventArgs&) {
                             base::UintToString(max_alternatives));
   }
   upstream_args.push_back("app=chromium");
-  if (!config_.hardware_info.empty()) {
-    upstream_args.push_back(
-        "xhw=" + net::EscapeQueryParamValue(config_.hardware_info, true));
-  }
   for (const SpeechRecognitionGrammar& grammar : config_.grammars) {
     std::string grammar_value(
         base::DoubleToString(grammar.weight) + ":" + grammar.url);

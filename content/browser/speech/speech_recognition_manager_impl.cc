@@ -106,11 +106,6 @@ int SpeechRecognitionManagerImpl::CreateSession(
   session->config = config;
   session->context = config.initial_context;
 
-  std::string hardware_info;
-  bool can_report_metrics = false;
-  if (delegate_)
-    delegate_->GetDiagnosticInformation(&can_report_metrics, &hardware_info);
-
 #if !defined(OS_ANDROID)
   // A SpeechRecognitionEngine (and corresponding Config) is required only
   // when using SpeechRecognizerImpl, which performs the audio capture and
@@ -130,7 +125,6 @@ int SpeechRecognitionManagerImpl::CreateSession(
   remote_engine_config.continuous = config.continuous;
   remote_engine_config.interim_results = config.interim_results;
   remote_engine_config.max_hypotheses = config.max_hypotheses;
-  remote_engine_config.hardware_info = hardware_info;
   remote_engine_config.origin_url = config.origin_url;
   remote_engine_config.auth_token = config.auth_token;
   remote_engine_config.auth_scope = config.auth_scope;

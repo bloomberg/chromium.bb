@@ -86,7 +86,6 @@ class CONTENT_EXPORT SpeechRecognitionEngine
     bool continuous;
     bool interim_results;
     uint32_t max_hypotheses;
-    std::string hardware_info;
     std::string origin_url;
     int audio_sample_rate;
     int audio_num_bits_per_sample;

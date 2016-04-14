@@ -43,8 +43,6 @@ class ChromeSpeechRecognitionManagerDelegate
                            float noise_volume) override;
 
   // SpeechRecognitionManagerDelegate methods.
-  void GetDiagnosticInformation(bool* can_report_metrics,
-                                std::string* hardware_info) override;
   void CheckRecognitionIsAllowed(
       int session_id,
       base::Callback<void(bool ask_user, bool is_allowed)> callback) override;
@@ -55,7 +53,6 @@ class ChromeSpeechRecognitionManagerDelegate
   virtual void TabClosedCallback(int render_process_id, int render_view_id);
 
  private:
-  class OptionalRequestInfo;
   class TabWatcher;
 
   // Checks for VIEW_TYPE_TAB_CONTENTS host in the UI thread and notifies back
@@ -65,7 +62,6 @@ class ChromeSpeechRecognitionManagerDelegate
       int render_process_id,
       int render_view_id);
 
-  scoped_refptr<OptionalRequestInfo> optional_request_info_;
   scoped_refptr<TabWatcher> tab_watcher_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeSpeechRecognitionManagerDelegate);

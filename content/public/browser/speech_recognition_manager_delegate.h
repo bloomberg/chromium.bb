@@ -21,11 +21,6 @@ class SpeechRecognitionManagerDelegate {
  public:
   virtual ~SpeechRecognitionManagerDelegate() {}
 
-  // Get the optional diagnostic hardware information if available.
-  // This is called on the IO thread.
-  virtual void GetDiagnosticInformation(bool* can_report_metrics,
-                                        std::string* hardware_info) = 0;
-
   // Checks (asynchronously) if current setup allows speech recognition.
   // This is called on the IO thread.
   virtual void CheckRecognitionIsAllowed(
