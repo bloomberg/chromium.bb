@@ -8,7 +8,6 @@
 #include "platform/geometry/IntSize.h"
 #include "platform/heap/Handle.h"
 #include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
@@ -30,8 +29,6 @@ public:
 
 private:
     CanvasAsyncBlobCreator(DOMUint8ClampedArray* data, const String& mimeType, const IntSize&, BlobCallback*);
-    void scheduleCreateBlobAndCallOnMainThread();
-    void scheduleCreateNullptrAndCallOnMainThread();
 
     OwnPtr<PNGImageEncoderState> m_pngEncoderState;
     OwnPtr<JPEGImageEncoderState> m_jpegEncoderState;
@@ -43,9 +40,6 @@ private:
     size_t m_pixelRowStride;
     const String m_mimeType;
     CrossThreadPersistent<BlobCallback> m_callback;
-
-    SelfKeepAlive<CanvasAsyncBlobCreator> m_keepAlive;
-    void clearSelfReference();
 
     void initiatePngEncoding(double deadlineSeconds);
     void scheduleIdleEncodeRowsPng();
