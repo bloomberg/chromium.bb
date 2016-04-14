@@ -18,6 +18,7 @@
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_helper.h"
+#include "ui/gl/gl_implementation.h"
 #include "ui/gl/scoped_api.h"
 #include "ui/gl/scoped_binders.h"
 #include "ui/gl/scoped_cgl.h"
@@ -32,17 +33,36 @@ using gfx::BufferFormat;
 namespace gl {
 namespace {
 
-const char kGLSLVersion[] = "#version 110";
+const char kVertexHeaderCompatiblityProfile[] =
+    "#version 110\n"
+    "#define ATTRIBUTE attribute\n"
+    "#define VARYING varying\n";
 
-const char kTextureRectangleRequired[] =
-    "#extension GL_ARB_texture_rectangle : require";
+const char kVertexHeaderCoreProfile[] =
+    "#version 150\n"
+    "#define ATTRIBUTE in\n"
+    "#define VARYING out\n";
+
+const char kFragmentHeaderCompatiblityProfile[] =
+    "#version 110\n"
+    "#extension GL_ARB_texture_rectangle : require\n"
+    "#define VARYING varying\n"
+    "#define FRAGCOLOR gl_FragColor\n"
+    "#define TEX texture2DRect\n";
+
+const char kFragmentHeaderCoreProfile[] =
+    "#version 150\n"
+    "#define VARYING in\n"
+    "#define TEX texture\n"
+    "#define FRAGCOLOR frag_color\n"
+    "out vec4 FRAGCOLOR;\n";
 
 // clang-format off
 const char kVertexShader[] =
 STRINGIZE(
-  attribute vec2 a_position;
+  ATTRIBUTE vec2 a_position;
   uniform vec2 a_texScale;
-  varying vec2 v_texCoord;
+  VARYING vec2 v_texCoord;
   void main() {
     gl_Position = vec4(a_position.x, a_position.y, 0.0, 1.0);
     v_texCoord = (a_position + vec2(1.0, 1.0)) * 0.5 * a_texScale;
@@ -53,16 +73,16 @@ const char kFragmentShader[] =
 STRINGIZE(
   uniform sampler2DRect a_y_texture;
   uniform sampler2DRect a_uv_texture;
-  varying vec2 v_texCoord;
+  VARYING vec2 v_texCoord;
   void main() {
     vec3 yuv_adj = vec3(-0.0625, -0.5, -0.5);
     mat3 yuv_matrix = mat3(vec3(1.164, 1.164, 1.164),
                            vec3(0.0, -.391, 2.018),
                            vec3(1.596, -.813, 0.0));
     vec3 yuv = vec3(
-        texture2DRect(a_y_texture, v_texCoord).r,
-        texture2DRect(a_uv_texture, v_texCoord * 0.5).rg);
-    gl_FragColor = vec4(yuv_matrix * (yuv + yuv_adj), 1.0);
+        TEX(a_y_texture, v_texCoord).r,
+        TEX(a_uv_texture, v_texCoord * 0.5).rg);
+    FRAGCOLOR = vec4(yuv_matrix * (yuv + yuv_adj), 1.0);
   }
 );
 // clang-format on
@@ -235,17 +255,23 @@ GLImageIOSurface::RGBConverter::GetForCurrentContext() {
 
 GLImageIOSurface::RGBConverter::RGBConverter(CGLContextObj cgl_context)
     : cgl_context_(cgl_context, base::scoped_policy::RETAIN) {
+  bool use_core_profile =
+      gfx::GetGLImplementation() == gfx::kGLImplementationDesktopGLCoreProfile;
   gfx::ScopedSetGLToRealGLApi scoped_set_gl_api;
   glGenFramebuffersEXT(1, &framebuffer_);
   vertex_buffer_ = gfx::GLHelper::SetupQuadVertexBuffer();
   vertex_shader_ = gfx::GLHelper::LoadShader(
       GL_VERTEX_SHADER,
-      base::StringPrintf("%s\n%s", kGLSLVersion, kVertexShader).c_str());
+      base::StringPrintf("%s\n%s",
+                         use_core_profile ? kVertexHeaderCoreProfile
+                                          : kVertexHeaderCompatiblityProfile,
+                         kVertexShader).c_str());
   fragment_shader_ = gfx::GLHelper::LoadShader(
       GL_FRAGMENT_SHADER,
-      base::StringPrintf("%s\n%s\n%s", kGLSLVersion, kTextureRectangleRequired,
-                         kFragmentShader)
-          .c_str());
+      base::StringPrintf("%s\n%s",
+                         use_core_profile ? kFragmentHeaderCoreProfile
+                                          : kFragmentHeaderCompatiblityProfile,
+                         kFragmentShader).c_str());
   program_ = gfx::GLHelper::SetupProgram(vertex_shader_, fragment_shader_);
 
   gfx::ScopedUseProgram use_program(program_);
