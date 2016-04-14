@@ -105,9 +105,9 @@ scoped_ptr<WebFrameTestClient> WebTestInterfaces::CreateWebFrameTestClient() {
 
 scoped_ptr<WebViewTestClient> WebTestInterfaces::CreateWebViewTestClient(
     WebTestProxyBase* web_test_proxy_base) {
-  return make_scoped_ptr(new WebViewTestClient(
-        interfaces_->GetTestRunner(), interfaces_->GetDelegate(),
-        interfaces_->GetEventSender(), web_test_proxy_base));
+  return make_scoped_ptr(new WebViewTestClient(interfaces_->GetTestRunner(),
+                                               interfaces_->GetEventSender(),
+                                               web_test_proxy_base));
 }
 
 }  // namespace test_runner

@@ -72,8 +72,14 @@ class TEST_RUNNER_EXPORT WebTestProxyBase {
     view_test_client_ = std::move(view_test_client);
   }
 
+  WebTestDelegate* delegate() { return delegate_; }
+  void set_delegate(WebTestDelegate* delegate) {
+    DCHECK(delegate);
+    DCHECK(!delegate_);
+    delegate_ = delegate;
+  }
+
   void SetInterfaces(WebTestInterfaces* interfaces);
-  void SetDelegate(WebTestDelegate* delegate);
 
   std::string DumpBackForwardLists();
 

@@ -92,10 +92,6 @@ void WebTestProxyBase::SetInterfaces(WebTestInterfaces* interfaces) {
   test_interfaces_->WindowOpened(this);
 }
 
-void WebTestProxyBase::SetDelegate(WebTestDelegate* delegate) {
-  delegate_ = delegate;
-}
-
 std::string WebTestProxyBase::DumpBackForwardLists() {
   return DumpAllBackForwardLists(test_interfaces_, delegate_);
 }

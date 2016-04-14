@@ -28,17 +28,14 @@
 namespace test_runner {
 
 WebViewTestClient::WebViewTestClient(TestRunner* test_runner,
-                                     WebTestDelegate* delegate,
                                      EventSender* event_sender,
                                      WebTestProxyBase* web_test_proxy_base)
     : test_runner_(test_runner),
-      delegate_(delegate),
       event_sender_(event_sender),
       web_test_proxy_base_(web_test_proxy_base),
       animation_scheduled_(false),
       weak_factory_(this) {
   DCHECK(test_runner);
-  DCHECK(delegate);
   DCHECK(event_sender);
   DCHECK(web_test_proxy_base);
 }
@@ -53,7 +50,7 @@ void WebViewTestClient::scheduleAnimation() {
     animation_scheduled_ = true;
     test_runner_->OnAnimationScheduled(web_test_proxy_base_->web_view());
 
-    delegate_->PostDelayedTask(
+    delegate()->PostDelayedTask(
         new WebCallbackTask(base::Bind(&WebViewTestClient::AnimateNow,
                                        weak_factory_.GetWeakPtr())),
         1);
@@ -93,7 +90,7 @@ void WebViewTestClient::startDragging(blink::WebLocalFrame* frame,
 
 void WebViewTestClient::didChangeContents() {
   if (test_runner_->shouldDumpEditingCallbacks())
-    delegate_->PrintMessage(
+    delegate()->PrintMessage(
         "EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification\n");
 }
 
@@ -105,16 +102,16 @@ blink::WebView* WebViewTestClient::createView(
     blink::WebNavigationPolicy policy,
     bool suppress_opener) {
   if (test_runner_->shouldDumpNavigationPolicy()) {
-    delegate_->PrintMessage("Default policy for createView for '" +
-                            URLDescription(request.url()) + "' is '" +
-                            WebNavigationPolicyToString(policy) + "'\n");
+    delegate()->PrintMessage("Default policy for createView for '" +
+                             URLDescription(request.url()) + "' is '" +
+                             WebNavigationPolicyToString(policy) + "'\n");
   }
 
   if (!test_runner_->canOpenWindows())
     return nullptr;
   if (test_runner_->shouldDumpCreateView())
-    delegate_->PrintMessage(std::string("createView(") +
-                            URLDescription(request.url()) + ")\n");
+    delegate()->PrintMessage(std::string("createView(") +
+                             URLDescription(request.url()) + ")\n");
 
   // The return value below is used to communicate to WebTestProxy whether it
   // should forward the createView request to RenderViewImpl or not.  The
@@ -126,7 +123,7 @@ blink::WebView* WebViewTestClient::createView(
 void WebViewTestClient::setStatusText(const blink::WebString& text) {
   if (!test_runner_->shouldDumpStatusCallbacks())
     return;
-  delegate_->PrintMessage(
+  delegate()->PrintMessage(
       std::string("UI DELEGATE STATUS CALLBACK: setStatusText:") +
       text.utf8().data() + "\n");
 }
@@ -144,7 +141,7 @@ void WebViewTestClient::printPage(blink::WebLocalFrame* frame) {
 bool WebViewTestClient::runFileChooser(
     const blink::WebFileChooserParams& params,
     blink::WebFileChooserCompletion* completion) {
-  delegate_->PrintMessage("Mock: Opening a file chooser.\n");
+  delegate()->PrintMessage("Mock: Opening a file chooser.\n");
   // FIXME: Add ability to set file names to a file upload control.
   return false;
 }
@@ -174,10 +171,10 @@ void WebViewTestClient::showValidationMessage(
       base::i18n::WrapStringWithRTLFormatting(&wrapped_sub_text);
     }
   }
-  delegate_->PrintMessage("ValidationMessageClient: main-message=" +
-                          base::UTF16ToUTF8(wrapped_main_text) +
-                          " sub-message=" +
-                          base::UTF16ToUTF8(wrapped_sub_text) + "\n");
+  delegate()->PrintMessage("ValidationMessageClient: main-message=" +
+                           base::UTF16ToUTF8(wrapped_main_text) +
+                           " sub-message=" +
+                           base::UTF16ToUTF8(wrapped_sub_text) + "\n");
 }
 
 blink::WebSpeechRecognizer* WebViewTestClient::speechRecognizer() {
@@ -214,6 +211,10 @@ void WebViewTestClient::resetInputMethod() {
 
 blink::WebString WebViewTestClient::acceptLanguages() {
   return blink::WebString::fromUTF8(test_runner_->GetAcceptLanguages());
+}
+
+WebTestDelegate* WebViewTestClient::delegate() {
+  return web_test_proxy_base_->delegate();
 }
 
 }  // namespace test_runner

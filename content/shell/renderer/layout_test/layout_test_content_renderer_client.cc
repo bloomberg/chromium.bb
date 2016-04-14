@@ -53,6 +53,8 @@ void WebTestProxyCreated(RenderView* render_view,
                          test_runner::WebTestProxyBase* proxy) {
   BlinkTestRunner* test_runner = new BlinkTestRunner(render_view);
   test_runner->set_proxy(proxy);
+  proxy->set_delegate(test_runner);
+
   if (!LayoutTestRenderProcessObserver::GetInstance()->test_delegate()) {
     LayoutTestRenderProcessObserver::GetInstance()->SetTestDelegate(
         test_runner);
@@ -62,8 +64,6 @@ void WebTestProxyCreated(RenderView* render_view,
                                   ->CreateWebViewTestClient(proxy));
   proxy->SetInterfaces(
       LayoutTestRenderProcessObserver::GetInstance()->test_interfaces());
-  test_runner->proxy()->SetDelegate(
-      LayoutTestRenderProcessObserver::GetInstance()->test_delegate());
 }
 
 void WebFrameTestProxyCreated(RenderFrame* render_frame,
