@@ -40,32 +40,19 @@
 
 namespace blink {
 
-static PassRefPtr<StringImpl> applySVGWhitespaceRules(PassRefPtr<StringImpl> string, bool preserveWhiteSpace)
+// Turn tabs, newlines and carriage returns into spaces. In the future this
+// should be removed in favor of letting the generic white-space code handle
+// this.
+static PassRefPtr<StringImpl> normalizeWhitespace(PassRefPtr<StringImpl> string)
 {
-    if (preserveWhiteSpace) {
-        // Spec: When xml:space="preserve", the SVG user agent will do the following using a
-        // copy of the original character data content. It will convert all newline and tab
-        // characters into space characters. Then, it will draw all space characters, including
-        // leading, trailing and multiple contiguous space characters.
-        RefPtr<StringImpl> newString = string->replace('\t', ' ');
-        newString = newString->replace('\n', ' ');
-        newString = newString->replace('\r', ' ');
-        return newString.release();
-    }
-
-    // Spec: When xml:space="default", the SVG user agent will do the following using a
-    // copy of the original character data content. First, it will remove all newline
-    // characters. Then it will convert all tab characters into space characters.
-    // Then, it will strip off all leading and trailing space characters.
-    // Then, all contiguous space characters will be consolidated.
-    RefPtr<StringImpl> newString = string->replace('\n', StringImpl::empty());
-    newString = newString->replace('\r', StringImpl::empty());
-    newString = newString->replace('\t', ' ');
+    RefPtr<StringImpl> newString = string->replace('\t', ' ');
+    newString = newString->replace('\n', ' ');
+    newString = newString->replace('\r', ' ');
     return newString.release();
 }
 
 LayoutSVGInlineText::LayoutSVGInlineText(Node* n, PassRefPtr<StringImpl> string)
-    : LayoutText(n, applySVGWhitespaceRules(string, false))
+    : LayoutText(n, normalizeWhitespace(string))
     , m_scalingFactor(1)
     , m_layoutAttributes(this)
 {
@@ -395,7 +382,7 @@ PassRefPtr<StringImpl> LayoutSVGInlineText::originalText() const
     RefPtr<StringImpl> result = LayoutText::originalText();
     if (!result)
         return nullptr;
-    return applySVGWhitespaceRules(result, style() && style()->whiteSpace() == PRE);
+    return normalizeWhitespace(result);
 }
 
 } // namespace blink
