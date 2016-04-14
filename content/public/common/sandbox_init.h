@@ -42,16 +42,6 @@ class SandboxedProcessLauncherDelegate;
 CONTENT_EXPORT bool InitializeSandbox(
     sandbox::SandboxInterfaceInfo* sandbox_info);
 
-// This is a restricted version of Windows' DuplicateHandle() function
-// that works inside the sandbox and can send handles but not retrieve
-// them.  Unlike DuplicateHandle(), it takes a process ID rather than
-// a process handle.  It returns true on success, false otherwise.
-CONTENT_EXPORT bool BrokerDuplicateHandle(HANDLE source_handle,
-                                          DWORD target_process_id,
-                                          HANDLE* target_handle,
-                                          DWORD desired_access,
-                                          DWORD options);
-
 // Inform the current process's sandbox broker (e.g. the broker for
 // 32-bit processes) about a process created under a different sandbox
 // broker (e.g. the broker for 64-bit processes).  This allows

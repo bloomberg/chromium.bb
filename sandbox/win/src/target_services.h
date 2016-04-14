@@ -46,11 +46,6 @@ class TargetServicesBase : public TargetServices {
   ResultCode Init() override;
   void LowerToken() override;
   ProcessState* GetState() override;
-  ResultCode DuplicateHandle(HANDLE source_handle,
-                             DWORD target_process_id,
-                             HANDLE* target_handle,
-                             DWORD desired_access,
-                             DWORD options) override;
 
   // Factory method.
   static TargetServicesBase* GetInstance();

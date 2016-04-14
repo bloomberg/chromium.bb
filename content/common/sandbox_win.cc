@@ -283,14 +283,6 @@ bool ShouldSetJobLevel(const base::CommandLine& cmd_line) {
 bool AddGenericPolicy(sandbox::TargetPolicy* policy) {
   sandbox::ResultCode result;
 
-  // Renderers need to copy sections for plugin DIBs and GPU.
-  // GPU needs to copy sections to renderers.
-  result = policy->AddRule(sandbox::TargetPolicy::SUBSYS_HANDLES,
-                           sandbox::TargetPolicy::HANDLES_DUP_ANY,
-                           L"Section");
-  if (result != sandbox::SBOX_ALL_OK)
-    return false;
-
   // Add the policy for the client side of a pipe. It is just a file
   // in the \pipe\ namespace. We restrict it to pipes that start with
   // "chrome." so the sandboxed process cannot connect to system services.
@@ -380,13 +372,7 @@ bool AddGenericPolicy(sandbox::TargetPolicy* policy) {
 }
 
 bool AddPolicyForSandboxedProcess(sandbox::TargetPolicy* policy) {
-  sandbox::ResultCode result;
-  // Renderers need to share events with plugins.
-  result = policy->AddRule(sandbox::TargetPolicy::SUBSYS_HANDLES,
-                           sandbox::TargetPolicy::HANDLES_DUP_ANY,
-                           L"Event");
-  if (result != sandbox::SBOX_ALL_OK)
-    return false;
+  sandbox::ResultCode result = sandbox::SBOX_ALL_OK;
 
   // Win8+ adds a device DeviceApi that we don't need.
   if (base::win::GetVersion() > base::win::VERSION_WIN7)
@@ -459,8 +445,7 @@ NtQueryObject g_QueryObject = NULL;
 
 static const char* kDuplicateHandleWarning =
     "You are attempting to duplicate a privileged handle into a sandboxed"
-    " process.\n Please use the sandbox::BrokerDuplicateHandle API or"
-    " contact security@chromium.org for assistance.";
+    " process.\n Please contact security@chromium.org for assistance.";
 
 void CheckDuplicateHandle(HANDLE handle) {
   // Get the object type (32 characters is safe; current max is 14).
@@ -827,39 +812,6 @@ base::Process StartSandboxedProcess(
 
   CHECK(ResumeThread(target.thread_handle()) != static_cast<DWORD>(-1));
   return base::Process(target.TakeProcessHandle());
-}
-
-bool BrokerDuplicateHandle(HANDLE source_handle,
-                           DWORD target_process_id,
-                           HANDLE* target_handle,
-                           DWORD desired_access,
-                           DWORD options) {
-  // If our process is the target just duplicate the handle.
-  if (::GetCurrentProcessId() == target_process_id) {
-    return !!::DuplicateHandle(::GetCurrentProcess(), source_handle,
-                               ::GetCurrentProcess(), target_handle,
-                               desired_access, FALSE, options);
-  }
-
-  // Try the broker next
-  if (g_target_services &&
-      g_target_services->DuplicateHandle(source_handle, target_process_id,
-                                         target_handle, desired_access,
-                                         options) == sandbox::SBOX_ALL_OK) {
-    return true;
-  }
-
-  // Finally, see if we already have access to the process.
-  base::win::ScopedHandle target_process;
-  target_process.Set(::OpenProcess(PROCESS_DUP_HANDLE, FALSE,
-                                    target_process_id));
-  if (target_process.IsValid()) {
-    return !!::DuplicateHandle(::GetCurrentProcess(), source_handle,
-                                target_process.Get(), target_handle,
-                                desired_access, FALSE, options);
-  }
-
-  return false;
 }
 
 bool BrokerAddTargetPeer(HANDLE peer_process) {

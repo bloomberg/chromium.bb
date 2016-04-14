@@ -15,7 +15,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/win/windows_version.h"
 #include "sandbox/win/src/filesystem_policy.h"
-#include "sandbox/win/src/handle_policy.h"
 #include "sandbox/win/src/interception.h"
 #include "sandbox/win/src/job.h"
 #include "sandbox/win/src/named_pipe_policy.h"
@@ -696,14 +695,6 @@ ResultCode PolicyBase::AddRuleInternal(SubSystem subsystem,
       }
       break;
     }
-    case SUBSYS_HANDLES: {
-      if (!HandlePolicy::GenerateRules(pattern, semantics, policy_maker_)) {
-        NOTREACHED();
-        return SBOX_ERROR_BAD_PARAMS;
-      }
-      break;
-    }
-
     case SUBSYS_WIN32K_LOCKDOWN: {
       if (!ProcessMitigationsWin32KLockdownPolicy::GenerateRules(
               pattern, semantics, policy_maker_)) {
