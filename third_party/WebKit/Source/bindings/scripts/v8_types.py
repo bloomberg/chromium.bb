@@ -493,7 +493,7 @@ V8_VALUE_TO_CPP_VALUE = {
     'FlexibleArrayBufferView': 'toFlexibleArrayBufferView({isolate}, {v8_value}, {variable_name}, allocateFlexibleArrayBufferViewStorage({v8_value}))',
     'NodeFilter': 'toNodeFilter({v8_value}, info.Holder(), ScriptState::current({isolate}))',
     'Promise': 'ScriptPromise::cast(ScriptState::current({isolate}), {v8_value})',
-    'SerializedScriptValue': 'SerializedScriptValueFactory::instance().create({isolate}, {v8_value}, nullptr, nullptr, nullptr, exceptionState)',
+    'SerializedScriptValue': 'SerializedScriptValueFactory::instance().create({isolate}, {v8_value}, nullptr, exceptionState)',
     'ScriptValue': 'ScriptValue(ScriptState::current({isolate}), {v8_value})',
     'Window': 'toDOMWindow({isolate}, {v8_value})',
     'XPathNSResolver': 'toXPathNSResolver(ScriptState::current({isolate}), {v8_value})',

@@ -464,20 +464,24 @@ void postMessageImpl(const char* interfaceName, {{cpp_class}}* instance, const v
         exceptionState.throwIfNeeded();
         return;
     }
-    MessagePortArray* ports = new MessagePortArray;
     TransferableArray* transferables = new TransferableArray;
     if (info.Length() > 1) {
         const int transferablesArgIndex = 1;
-        if (!SerializedScriptValue::extractTransferables(info.GetIsolate(), info[transferablesArgIndex], transferablesArgIndex, *ports, *transferables, exceptionState)) {
+        if (!SerializedScriptValue::extractTransferables(info.GetIsolate(), info[transferablesArgIndex], transferablesArgIndex, *transferables, exceptionState)) {
             exceptionState.throwIfNeeded();
             return;
         }
     }
-    RefPtr<SerializedScriptValue> message = SerializedScriptValueFactory::instance().create(info.GetIsolate(), info[0], ports, transferables, exceptionState);
+    RefPtr<SerializedScriptValue> message = SerializedScriptValueFactory::instance().create(info.GetIsolate(), info[0], transferables, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
     // FIXME: Only pass context/exceptionState if instance really requires it.
     ExecutionContext* context = currentExecutionContext(info.GetIsolate());
+    MessagePortArray* ports;
+    if (auto* messagePorts = TransferableMessagePort::get(*transferables))
+        ports = &(messagePorts->getArray());
+    else
+        ports = new MessagePortArray;
     instance->postMessage(context, message.release(), ports, exceptionState);
     exceptionState.throwIfNeeded();
 }

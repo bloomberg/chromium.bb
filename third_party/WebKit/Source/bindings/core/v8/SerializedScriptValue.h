@@ -92,7 +92,7 @@ public:
     // Also validates the elements per sections 4.1.13 and 4.1.15 of the WebIDL spec and section 8.3.3
     // of the HTML5 spec and generates exceptions as appropriate.
     // Returns true if the array was filled, or false if the passed value was not of an appropriate type.
-    static bool extractTransferables(v8::Isolate*, v8::Local<v8::Value>, int, MessagePortArray&, TransferableArray&, ExceptionState&);
+    static bool extractTransferables(v8::Isolate*, v8::Local<v8::Value>, int, TransferableArray&, ExceptionState&);
 
     // Informs the V8 about external memory allocated and owned by this object. Large values should contribute
     // to GC counters to eventually trigger a GC, otherwise flood of postMessage() can cause OOM.

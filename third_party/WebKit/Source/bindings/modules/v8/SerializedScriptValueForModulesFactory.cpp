@@ -11,7 +11,7 @@
 
 namespace blink {
 
-PassRefPtr<SerializedScriptValue> SerializedScriptValueForModulesFactory::create(v8::Isolate* isolate, v8::Local<v8::Value> value, MessagePortArray* messagePorts, TransferableArray* transferables, WebBlobInfoArray* blobInfo, ExceptionState& exceptionState)
+PassRefPtr<SerializedScriptValue> SerializedScriptValueForModulesFactory::create(v8::Isolate* isolate, v8::Local<v8::Value> value, TransferableArray* transferables, WebBlobInfoArray* blobInfo, ExceptionState& exceptionState)
 {
     RefPtr<SerializedScriptValue> serializedValue = SerializedScriptValueFactory::create();
     SerializedScriptValueWriterForModules writer;
@@ -19,7 +19,7 @@ PassRefPtr<SerializedScriptValue> SerializedScriptValueForModulesFactory::create
     String errorMessage;
     {
         v8::TryCatch tryCatch(isolate);
-        status = SerializedScriptValueFactory::doSerialize(value, writer, messagePorts, transferables, blobInfo, serializedValue.get(), tryCatch, errorMessage, isolate);
+        status = SerializedScriptValueFactory::doSerialize(value, writer, transferables, blobInfo, serializedValue.get(), tryCatch, errorMessage, isolate);
         if (status == ScriptValueSerializer::JSException) {
             // If there was a JS exception thrown, re-throw it.
             exceptionState.rethrowV8Exception(tryCatch.Exception());
@@ -50,9 +50,9 @@ PassRefPtr<SerializedScriptValue> SerializedScriptValueForModulesFactory::create
     return createFromWire(wireData);
 }
 
-ScriptValueSerializer::Status SerializedScriptValueForModulesFactory::doSerialize(v8::Local<v8::Value> value, SerializedScriptValueWriter& writer, MessagePortArray* messagePorts, TransferableArray* transferables, WebBlobInfoArray* blobInfo, BlobDataHandleMap& blobDataHandles, v8::TryCatch& tryCatch, String& errorMessage, v8::Isolate* isolate)
+ScriptValueSerializer::Status SerializedScriptValueForModulesFactory::doSerialize(v8::Local<v8::Value> value, SerializedScriptValueWriter& writer, TransferableArray* transferables, WebBlobInfoArray* blobInfo, BlobDataHandleMap& blobDataHandles, v8::TryCatch& tryCatch, String& errorMessage, v8::Isolate* isolate)
 {
-    ScriptValueSerializerForModules serializer(writer, messagePorts, transferables, blobInfo, blobDataHandles, tryCatch, ScriptState::current(isolate));
+    ScriptValueSerializerForModules serializer(writer, transferables, blobInfo, blobDataHandles, tryCatch, ScriptState::current(isolate));
     ScriptValueSerializer::Status status = serializer.serialize(value);
     errorMessage = serializer.errorMessage();
     return status;

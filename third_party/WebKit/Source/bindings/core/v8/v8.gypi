@@ -105,6 +105,7 @@
             'Transferable.h',
             'TransferableArrayBuffer.h',
             'TransferableImageBitmap.h',
+            'TransferableMessagePort.h',
             'ToV8.cpp',
             'ToV8.h',
             'V8AbstractEventListener.cpp',

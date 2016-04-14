@@ -5,7 +5,6 @@
 #ifndef TransferableImageBitmap_h
 #define TransferableImageBitmap_h
 
-#include "bindings/core/v8/SerializedScriptValue.h"
 #include "bindings/core/v8/Transferable.h"
 #include "core/CoreExport.h"
 #include "core/frame/ImageBitmap.h"
@@ -25,17 +24,17 @@ public:
     }
     static TransferableImageBitmap* ensure(TransferableArray& transferables)
     {
-        if (transferables.size() <= ScriptValueSerializer::TransferableImageBitmapType) {
-            transferables.resize(ScriptValueSerializer::TransferableImageBitmapType + 1);
-            transferables[ScriptValueSerializer::TransferableImageBitmapType] = new TransferableImageBitmap();
+        if (transferables.size() <= TransferableImageBitmapType) {
+            transferables.resize(TransferableImageBitmapType + 1);
+            transferables[TransferableImageBitmapType] = new TransferableImageBitmap();
         }
-        return static_cast<TransferableImageBitmap*>(transferables[ScriptValueSerializer::TransferableImageBitmapType].get());
+        return static_cast<TransferableImageBitmap*>(transferables[TransferableImageBitmapType].get());
     }
     static TransferableImageBitmap* get(TransferableArray& transferables)
     {
-        if (transferables.size() <= ScriptValueSerializer::TransferableImageBitmapType)
+        if (transferables.size() <= TransferableImageBitmapType)
             return nullptr;
-        return static_cast<TransferableImageBitmap*>(transferables[ScriptValueSerializer::TransferableImageBitmapType].get());
+        return static_cast<TransferableImageBitmap*>(transferables[TransferableImageBitmapType].get());
     }
     HeapVector<Member<ImageBitmap>, 1>& getArray()
     {

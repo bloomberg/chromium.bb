@@ -16,6 +16,7 @@
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/SerializedScriptValue.h"
 #include "bindings/core/v8/SerializedScriptValueFactory.h"
+#include "bindings/core/v8/TransferableMessagePort.h"
 #include "bindings/core/v8/UnionTypesCore.h"
 #include "bindings/core/v8/V8AbstractEventListener.h"
 #include "bindings/core/v8/V8ArrayBuffer.h"
@@ -1047,7 +1048,7 @@ static void serializedScriptValueAttributeAttributeSetter(v8::Local<v8::Value> v
     v8::Local<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "serializedScriptValueAttribute", "TestObject", holder, info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(holder);
-    RefPtr<SerializedScriptValue> cppValue = SerializedScriptValueFactory::instance().create(info.GetIsolate(), v8Value, nullptr, nullptr, nullptr, exceptionState);
+    RefPtr<SerializedScriptValue> cppValue = SerializedScriptValueFactory::instance().create(info.GetIsolate(), v8Value, nullptr, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
     impl->setSerializedScriptValueAttribute(cppValue);
@@ -6935,7 +6936,7 @@ static void voidMethodSerializedScriptValueArgMethod(const v8::FunctionCallbackI
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     RefPtr<SerializedScriptValue> serializedScriptValueArg;
     {
-        serializedScriptValueArg = SerializedScriptValueFactory::instance().create(info.GetIsolate(), info[0], nullptr, nullptr, nullptr, exceptionState);
+        serializedScriptValueArg = SerializedScriptValueFactory::instance().create(info.GetIsolate(), info[0], nullptr, exceptionState);
         if (exceptionState.throwIfNeeded())
             return;
     }
@@ -10038,20 +10039,24 @@ void postMessageImpl(const char* interfaceName, TestObject* instance, const v8::
         exceptionState.throwIfNeeded();
         return;
     }
-    MessagePortArray* ports = new MessagePortArray;
     TransferableArray* transferables = new TransferableArray;
     if (info.Length() > 1) {
         const int transferablesArgIndex = 1;
-        if (!SerializedScriptValue::extractTransferables(info.GetIsolate(), info[transferablesArgIndex], transferablesArgIndex, *ports, *transferables, exceptionState)) {
+        if (!SerializedScriptValue::extractTransferables(info.GetIsolate(), info[transferablesArgIndex], transferablesArgIndex, *transferables, exceptionState)) {
             exceptionState.throwIfNeeded();
             return;
         }
     }
-    RefPtr<SerializedScriptValue> message = SerializedScriptValueFactory::instance().create(info.GetIsolate(), info[0], ports, transferables, exceptionState);
+    RefPtr<SerializedScriptValue> message = SerializedScriptValueFactory::instance().create(info.GetIsolate(), info[0], transferables, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
     // FIXME: Only pass context/exceptionState if instance really requires it.
     ExecutionContext* context = currentExecutionContext(info.GetIsolate());
+    MessagePortArray* ports;
+    if (auto* messagePorts = TransferableMessagePort::get(*transferables))
+        ports = &(messagePorts->getArray());
+    else
+        ports = new MessagePortArray;
     instance->postMessage(context, message.release(), ports, exceptionState);
     exceptionState.throwIfNeeded();
 }

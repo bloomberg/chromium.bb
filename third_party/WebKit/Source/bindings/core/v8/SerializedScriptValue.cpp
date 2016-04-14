@@ -38,6 +38,7 @@
 #include "bindings/core/v8/SerializedScriptValueFactory.h"
 #include "bindings/core/v8/TransferableArrayBuffer.h"
 #include "bindings/core/v8/TransferableImageBitmap.h"
+#include "bindings/core/v8/TransferableMessagePort.h"
 #include "bindings/core/v8/V8ArrayBuffer.h"
 #include "bindings/core/v8/V8ImageBitmap.h"
 #include "bindings/core/v8/V8MessagePort.h"
@@ -196,10 +197,9 @@ v8::Local<v8::Value> SerializedScriptValue::deserialize(v8::Isolate* isolate, Me
     return SerializedScriptValueFactory::instance().deserialize(this, isolate, messagePorts, blobInfo);
 }
 
-bool SerializedScriptValue::extractTransferables(v8::Isolate* isolate, v8::Local<v8::Value> value, int argumentIndex, MessagePortArray& ports, TransferableArray& transferables, ExceptionState& exceptionState)
+bool SerializedScriptValue::extractTransferables(v8::Isolate* isolate, v8::Local<v8::Value> value, int argumentIndex, TransferableArray& transferables, ExceptionState& exceptionState)
 {
     if (isUndefinedOrNull(value)) {
-        ports.resize(0);
         transferables.resize(0);
         return true;
     }
@@ -229,12 +229,13 @@ bool SerializedScriptValue::extractTransferables(v8::Isolate* isolate, v8::Local
         // Validation of Objects implementing an interface, per WebIDL spec 4.1.15.
         if (V8MessagePort::hasInstance(transferrable, isolate)) {
             MessagePort* port = V8MessagePort::toImpl(v8::Local<v8::Object>::Cast(transferrable));
+            TransferableMessagePort* ports = TransferableMessagePort::ensure(transferables);
             // Check for duplicate MessagePorts.
-            if (ports.contains(port)) {
+            if (ports->contains(port)) {
                 exceptionState.throwDOMException(DataCloneError, "Message port at index " + String::number(i) + " is a duplicate of an earlier port.");
                 return false;
             }
-            ports.append(port);
+            ports->append(port);
         } else if (V8ArrayBuffer::hasInstance(transferrable, isolate)) {
             DOMArrayBuffer* arrayBuffer = V8ArrayBuffer::toImpl(v8::Local<v8::Object>::Cast(transferrable));
             TransferableArrayBuffer* arrayBuffers = TransferableArrayBuffer::ensure(transferables);

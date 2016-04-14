@@ -208,12 +208,7 @@ public:
         JSException
     };
 
-    enum TransferableType {
-        TransferableArrayBufferType,
-        TransferableImageBitmapType
-    };
-
-    ScriptValueSerializer(SerializedScriptValueWriter&, MessagePortArray* messagePorts, TransferableArray*, WebBlobInfoArray*, BlobDataHandleMap& blobDataHandles, v8::TryCatch&, ScriptState*);
+    ScriptValueSerializer(SerializedScriptValueWriter&, TransferableArray*, WebBlobInfoArray*, BlobDataHandleMap& blobDataHandles, v8::TryCatch&, ScriptState*);
     v8::Isolate* isolate() { return m_scriptState->isolate(); }
     v8::Local<v8::Context> context() { return m_scriptState->context(); }
 

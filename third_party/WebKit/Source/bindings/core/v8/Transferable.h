@@ -13,6 +13,12 @@ class CORE_EXPORT Transferable : public GarbageCollectedFinalized<Transferable> 
 public:
     virtual ~Transferable() { }
     DEFINE_INLINE_VIRTUAL_TRACE() { }
+
+    enum TransferableType {
+        TransferableArrayBufferType,
+        TransferableImageBitmapType,
+        TransferableMessagePortType
+    };
 };
 
 } // namespace blink

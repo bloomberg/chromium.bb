@@ -5,7 +5,6 @@
 #ifndef TransferableArrayBuffer_h
 #define TransferableArrayBuffer_h
 
-#include "bindings/core/v8/SerializedScriptValue.h"
 #include "bindings/core/v8/Transferable.h"
 #include "core/CoreExport.h"
 #include "core/dom/DOMArrayBufferBase.h"
@@ -25,17 +24,17 @@ public:
     }
     static TransferableArrayBuffer* ensure(TransferableArray& transferables)
     {
-        if (transferables.size() <= ScriptValueSerializer::TransferableArrayBufferType) {
-            transferables.resize(ScriptValueSerializer::TransferableArrayBufferType + 1);
-            transferables[ScriptValueSerializer::TransferableArrayBufferType] = new TransferableArrayBuffer();
+        if (transferables.size() <= TransferableArrayBufferType) {
+            transferables.resize(TransferableArrayBufferType + 1);
+            transferables[TransferableArrayBufferType] = new TransferableArrayBuffer();
         }
-        return static_cast<TransferableArrayBuffer*>(transferables[ScriptValueSerializer::TransferableArrayBufferType].get());
+        return static_cast<TransferableArrayBuffer*>(transferables[TransferableArrayBufferType].get());
     }
     static TransferableArrayBuffer* get(TransferableArray& transferables)
     {
-        if (transferables.size() <= ScriptValueSerializer::TransferableArrayBufferType)
+        if (transferables.size() <= TransferableArrayBufferType)
             return nullptr;
-        return static_cast<TransferableArrayBuffer*>(transferables[ScriptValueSerializer::TransferableArrayBufferType].get());
+        return static_cast<TransferableArrayBuffer*>(transferables[TransferableArrayBufferType].get());
     }
     HeapVector<Member<DOMArrayBufferBase>, 1>& getArray()
     {
