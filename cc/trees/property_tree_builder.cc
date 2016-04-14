@@ -626,12 +626,6 @@ bool AddEffectNodeIfNeeded(
           data_from_ancestor.transform_tree->next_available_id();
     }
     node.data.clip_id = data_from_ancestor.clip_tree_parent;
-    EffectNode* parent_node = data_for_children->effect_tree->Node(parent_id);
-    node.data.node_or_ancestor_has_background_filters =
-        parent_node->data.node_or_ancestor_has_background_filters ||
-        node.data.has_background_filters;
-    node.data.to_screen_opacity_is_animated =
-        parent_node->data.to_screen_opacity_is_animated || has_animated_opacity;
   } else {
     // Root render surface acts the unbounded and untransformed to draw content
     // into. Transform node created from root layer (includes device scale
@@ -639,9 +633,6 @@ bool AddEffectNodeIfNeeded(
     // to root render surface's content, but not root render surface itself.
     node.data.transform_id = kRootPropertyTreeNodeId;
     node.data.clip_id = kRootPropertyTreeNodeId;
-    node.data.node_or_ancestor_has_background_filters =
-        node.data.has_background_filters;
-    node.data.to_screen_opacity_is_animated = has_animated_opacity;
   }
   data_for_children->effect_tree_parent =
       data_for_children->effect_tree->Insert(node, parent_id);

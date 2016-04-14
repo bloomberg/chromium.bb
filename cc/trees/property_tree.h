@@ -267,8 +267,6 @@ struct CC_EXPORT EffectNodeData {
   RenderSurfaceImpl* render_surface;
   bool has_copy_request;
   bool has_background_filters;
-  bool node_or_ancestor_has_background_filters;
-  bool to_screen_opacity_is_animated;
   bool hidden_by_backface_visibility;
   bool double_sided;
   bool is_drawn;

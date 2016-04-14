@@ -646,8 +646,6 @@ void CalculateRenderSurfaceLayerList(
     descendants = &(layer->render_surface()->layer_list());
   }
 
-  size_t descendants_size = descendants->size();
-
   bool layer_should_be_skipped = !draw_property_utils::LayerNeedsUpdate(
       layer, layer_is_drawn, property_trees->transform_tree);
   if (!layer_should_be_skipped) {
@@ -731,13 +729,6 @@ void CalculateRenderSurfaceLayerList(
   if (render_to_separate_surface && !IsRootLayer(layer) &&
       layer->render_surface()->DrawableContentRect().IsEmpty()) {
     RemoveSurfaceForEarlyExit(layer, render_surface_layer_list);
-    return;
-  }
-
-  // If neither this layer nor any of its children were added, early out.
-  if (descendants_size == descendants->size()) {
-    DCHECK(!render_to_separate_surface || IsRootLayer(layer));
-    return;
   }
 }
 
