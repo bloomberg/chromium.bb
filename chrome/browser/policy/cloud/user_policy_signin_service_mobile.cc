@@ -92,8 +92,8 @@ void UserPolicySigninService::RegisterForPolicyInternal(
     const std::string& access_token,
     const PolicyRegistrationCallback& callback) {
   // Create a new CloudPolicyClient for fetching the DMToken.
-  scoped_ptr<CloudPolicyClient> policy_client = CreateClientForRegistrationOnly(
-      username);
+  std::unique_ptr<CloudPolicyClient> policy_client =
+      CreateClientForRegistrationOnly(username);
   if (!policy_client) {
     callback.Run(std::string(), std::string());
     return;
@@ -128,7 +128,7 @@ void UserPolicySigninService::RegisterForPolicyInternal(
 }
 
 void UserPolicySigninService::CallPolicyRegistrationCallback(
-    scoped_ptr<CloudPolicyClient> client,
+    std::unique_ptr<CloudPolicyClient> client,
     PolicyRegistrationCallback callback) {
   registration_helper_.reset();
   callback.Run(client->dm_token(), client->client_id());

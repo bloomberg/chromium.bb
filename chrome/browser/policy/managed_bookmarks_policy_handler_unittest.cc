@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/policy/managed_bookmarks_policy_handler.h"
+
 #include <utility>
 
 #include "base/json/json_reader.h"
-#include "chrome/browser/policy/managed_bookmarks_policy_handler.h"
+#include "base/memory/ptr_util.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/policy/core/browser/configuration_policy_pref_store.h"
 #include "components/policy/core/browser/configuration_policy_pref_store_test.h"
@@ -24,7 +26,7 @@ class ManagedBookmarksPolicyHandlerTest
     : public ConfigurationPolicyPrefStoreTest {
   void SetUp() override {
     Schema chrome_schema = Schema::Wrap(GetChromeSchemaData());
-    handler_list_.AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
+    handler_list_.AddHandler(base::WrapUnique<ConfigurationPolicyHandler>(
         new ManagedBookmarksPolicyHandler(chrome_schema)));
   }
 };
@@ -92,7 +94,7 @@ TEST_F(ManagedBookmarksPolicyHandlerTest, ApplyPolicySettings) {
   ASSERT_TRUE(folder_value->GetAsString(&folder_name));
   EXPECT_EQ("abc 123", folder_name);
 
-  scoped_ptr<base::Value> expected(
+  std::unique_ptr<base::Value> expected(
       extensions::ListBuilder()
           .Append(extensions::DictionaryBuilder()
                       .Set("name", "Google")
@@ -170,7 +172,7 @@ TEST_F(ManagedBookmarksPolicyHandlerTest, ApplyPolicySettingsNoTitle) {
   ASSERT_TRUE(folder_value->GetAsString(&folder_name));
   EXPECT_EQ("", folder_name);
 
-  scoped_ptr<base::Value> expected(
+  std::unique_ptr<base::Value> expected(
       extensions::ListBuilder()
           .Append(extensions::DictionaryBuilder()
                       .Set("name", "Google")
@@ -223,7 +225,7 @@ TEST_F(ManagedBookmarksPolicyHandlerTest, UnknownKeys) {
       store_->GetValue(bookmarks::prefs::kManagedBookmarks, &pref_value));
   ASSERT_TRUE(pref_value);
 
-  scoped_ptr<base::Value> expected(
+  std::unique_ptr<base::Value> expected(
       extensions::ListBuilder()
           .Append(extensions::DictionaryBuilder()
                       .Set("name", "Google")
@@ -267,7 +269,7 @@ TEST_F(ManagedBookmarksPolicyHandlerTest, BadBookmark) {
       store_->GetValue(bookmarks::prefs::kManagedBookmarks, &pref_value));
   ASSERT_TRUE(pref_value);
 
-  scoped_ptr<base::Value> expected(
+  std::unique_ptr<base::Value> expected(
       extensions::ListBuilder()
           .Append(extensions::DictionaryBuilder()
                       .Set("name", "Google")

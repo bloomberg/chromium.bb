@@ -13,7 +13,7 @@
 namespace policy {
 
 SchemaRegistryService::SchemaRegistryService(
-    scoped_ptr<SchemaRegistry> registry,
+    std::unique_ptr<SchemaRegistry> registry,
     const Schema& chrome_schema,
     CombinedSchemaRegistry* global_registry)
     : registry_(std::move(registry)) {

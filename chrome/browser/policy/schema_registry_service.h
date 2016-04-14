@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_POLICY_SCHEMA_REGISTRY_SERVICE_H_
 #define CHROME_BROWSER_POLICY_SCHEMA_REGISTRY_SERVICE_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 namespace policy {
@@ -21,7 +22,7 @@ class SchemaRegistryService : public KeyedService {
   // This |registry| will initially contain only the |chrome_schema|, if
   // it's valid. The optional |global_registry| must outlive this, and will
   // track |registry|.
-  SchemaRegistryService(scoped_ptr<SchemaRegistry> registry,
+  SchemaRegistryService(std::unique_ptr<SchemaRegistry> registry,
                         const Schema& chrome_schema,
                         CombinedSchemaRegistry* global_registry);
   ~SchemaRegistryService() override;
@@ -29,7 +30,7 @@ class SchemaRegistryService : public KeyedService {
   SchemaRegistry* registry() const { return registry_.get(); }
 
  private:
-  scoped_ptr<SchemaRegistry> registry_;
+  std::unique_ptr<SchemaRegistry> registry_;
 
   DISALLOW_COPY_AND_ASSIGN(SchemaRegistryService);
 };

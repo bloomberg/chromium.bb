@@ -5,13 +5,13 @@
 #ifndef CHROME_BROWSER_POLICY_CLOUD_USER_POLICY_SIGNIN_SERVICE_MOBILE_H_
 #define CHROME_BROWSER_POLICY_CLOUD_USER_POLICY_SIGNIN_SERVICE_MOBILE_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "chrome/browser/policy/cloud/user_policy_signin_service_base.h"
@@ -78,7 +78,7 @@ class UserPolicySigninService : public UserPolicySigninServiceBase {
                                  const std::string& access_token,
                                  const PolicyRegistrationCallback& callback);
 
-  void CallPolicyRegistrationCallback(scoped_ptr<CloudPolicyClient> client,
+  void CallPolicyRegistrationCallback(std::unique_ptr<CloudPolicyClient> client,
                                       PolicyRegistrationCallback callback);
 
   // KeyedService implementation:
@@ -95,7 +95,7 @@ class UserPolicySigninService : public UserPolicySigninServiceBase {
 
   void OnRegistrationDone();
 
-  scoped_ptr<CloudPolicyClientRegistrationHelper> registration_helper_;
+  std::unique_ptr<CloudPolicyClientRegistrationHelper> registration_helper_;
 
   // Weak pointer to the token service used to authenticate the
   // CloudPolicyClient during registration.

@@ -32,7 +32,7 @@ ManagedBookmarksPolicyHandler::~ManagedBookmarksPolicyHandler() {}
 void ManagedBookmarksPolicyHandler::ApplyPolicySettings(
     const PolicyMap& policies,
     PrefValueMap* prefs) {
-  scoped_ptr<base::Value> value;
+  std::unique_ptr<base::Value> value;
   if (!CheckAndGetValue(policies, NULL, &value))
     return;
 

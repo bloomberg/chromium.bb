@@ -36,7 +36,7 @@ CloudPolicyInvalidator::CloudPolicyInvalidator(
     enterprise_management::DeviceRegisterRequest::Type type,
     CloudPolicyCore* core,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner,
-    scoped_ptr<base::Clock> clock,
+    std::unique_ptr<base::Clock> clock,
     int64_t highest_handled_invalidation_version)
     : state_(UNINITIALIZED),
       type_(type),

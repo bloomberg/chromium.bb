@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/policy/javascript_policy_handler.h"
+
+#include "base/memory/ptr_util.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/policy/core/browser/configuration_policy_pref_store.h"
@@ -16,8 +18,8 @@ namespace policy {
 
 class JavascriptPolicyHandlerTest : public ConfigurationPolicyPrefStoreTest {
   void SetUp() override {
-    handler_list_.AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
-          new JavascriptPolicyHandler));
+    handler_list_.AddHandler(base::WrapUnique<ConfigurationPolicyHandler>(
+        new JavascriptPolicyHandler));
   }
 };
 

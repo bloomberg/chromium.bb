@@ -5,12 +5,12 @@
 #ifndef CHROME_BROWSER_POLICY_CLOUD_USER_POLICY_SIGNIN_SERVICE_H_
 #define CHROME_BROWSER_POLICY_CLOUD_USER_POLICY_SIGNIN_SERVICE_H_
 
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/policy/cloud/user_policy_signin_service_base.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 
@@ -64,7 +64,7 @@ class UserPolicySigninService : public UserPolicySigninServiceBase,
   // UserPolicySigninServiceBase implementation:
   void InitializeUserCloudPolicyManager(
       const std::string& username,
-      scoped_ptr<CloudPolicyClient> client) override;
+      std::unique_ptr<CloudPolicyClient> client) override;
 
   void PrepareForUserCloudPolicyManagerShutdown() override;
   void ShutdownUserCloudPolicyManager() override;
@@ -84,13 +84,13 @@ class UserPolicySigninService : public UserPolicySigninServiceBase,
   void ProhibitSignoutIfNeeded();
 
   // Invoked when a policy registration request is complete.
-  void CallPolicyRegistrationCallback(scoped_ptr<CloudPolicyClient> client,
+  void CallPolicyRegistrationCallback(std::unique_ptr<CloudPolicyClient> client,
                                       PolicyRegistrationCallback callback);
 
   // Parent profile for this service.
   Profile* profile_;
 
-  scoped_ptr<CloudPolicyClientRegistrationHelper> registration_helper_;
+  std::unique_ptr<CloudPolicyClientRegistrationHelper> registration_helper_;
 
   // Weak pointer to the token service we use to authenticate during
   // CloudPolicyClient registration.

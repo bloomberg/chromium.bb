@@ -56,7 +56,7 @@ class ProfilePolicyConnectorTest : public testing::Test {
   SchemaRegistry schema_registry_;
   MockConfigurationPolicyProvider mock_provider_;
   MockCloudPolicyStore cloud_policy_store_;
-  scoped_ptr<CloudPolicyManager> cloud_policy_manager_;
+  std::unique_ptr<CloudPolicyManager> cloud_policy_manager_;
 };
 
 TEST_F(ProfilePolicyConnectorTest, IsManagedForManagedUsers) {

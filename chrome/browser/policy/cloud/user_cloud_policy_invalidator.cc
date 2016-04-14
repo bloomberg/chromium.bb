@@ -4,8 +4,9 @@
 
 #include "chrome/browser/policy/cloud/user_cloud_policy_invalidator.h"
 
+#include <memory>
+
 #include "base/bind.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/default_clock.h"
 #include "build/build_config.h"
@@ -20,11 +21,12 @@ namespace policy {
 UserCloudPolicyInvalidator::UserCloudPolicyInvalidator(
     Profile* profile,
     CloudPolicyManager* policy_manager)
-    : CloudPolicyInvalidator(GetPolicyType(),
-                             policy_manager->core(),
-                             base::ThreadTaskRunnerHandle::Get(),
-                             scoped_ptr<base::Clock>(new base::DefaultClock()),
-                             0 /* highest_handled_invalidation_version */),
+    : CloudPolicyInvalidator(
+          GetPolicyType(),
+          policy_manager->core(),
+          base::ThreadTaskRunnerHandle::Get(),
+          std::unique_ptr<base::Clock>(new base::DefaultClock()),
+          0 /* highest_handled_invalidation_version */),
       profile_(profile) {
   DCHECK(profile);
 

@@ -2,14 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/policy/cloud/cloud_policy_invalidator.h"
+
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/metrics/sample_map.h"
@@ -20,7 +22,6 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "chrome/browser/policy/cloud/cloud_policy_invalidator.h"
 #include "chrome/browser/policy/cloud/user_cloud_policy_invalidator.h"
 #include "components/invalidation/impl/fake_invalidation_service.h"
 #include "components/invalidation/public/invalidation_util.h"
@@ -194,7 +195,7 @@ class CloudPolicyInvalidatorTest : public testing::Test {
   base::SimpleTestClock* clock_;
 
   // The invalidator which will be tested.
-  scoped_ptr<CloudPolicyInvalidator> invalidator_;
+  std::unique_ptr<CloudPolicyInvalidator> invalidator_;
 
   // Object ids for the test policy objects.
   invalidation::ObjectId object_id_a_;
@@ -236,12 +237,10 @@ void CloudPolicyInvalidatorTest::StartInvalidator(
     bool initialize,
     bool start_refresh_scheduler,
     int64_t highest_handled_invalidation_version) {
-  invalidator_.reset(new CloudPolicyInvalidator(
-      GetPolicyType(),
-      &core_,
-      task_runner_,
-      scoped_ptr<base::Clock>(clock_),
-      highest_handled_invalidation_version));
+  invalidator_.reset(
+      new CloudPolicyInvalidator(GetPolicyType(), &core_, task_runner_,
+                                 std::unique_ptr<base::Clock>(clock_),
+                                 highest_handled_invalidation_version));
   if (start_refresh_scheduler) {
     ConnectCore();
     StartRefreshScheduler();
@@ -265,7 +264,7 @@ void CloudPolicyInvalidatorTest::DestroyInvalidator() {
 void CloudPolicyInvalidatorTest::ConnectCore() {
   client_ = new MockCloudPolicyClient();
   client_->SetDMToken("dm");
-  core_.Connect(scoped_ptr<CloudPolicyClient>(client_));
+  core_.Connect(std::unique_ptr<CloudPolicyClient>(client_));
 }
 
 void CloudPolicyInvalidatorTest::StartRefreshScheduler() {
@@ -865,14 +864,14 @@ class CloudPolicyInvalidatorUserTypedTest
   em::DeviceRegisterRequest::Type GetPolicyType() const override;
 
   // Get histogram samples for the given histogram.
-  scoped_ptr<base::HistogramSamples> GetHistogramSamples(
+  std::unique_ptr<base::HistogramSamples> GetHistogramSamples(
       const std::string& name) const;
 
   // Stores starting histogram counts for kMetricPolicyRefresh.
-  scoped_ptr<base::HistogramSamples> refresh_samples_;
+  std::unique_ptr<base::HistogramSamples> refresh_samples_;
 
   // Stores starting histogram counts for kMetricPolicyInvalidations.
-  scoped_ptr<base::HistogramSamples> invalidations_samples_;
+  std::unique_ptr<base::HistogramSamples> invalidations_samples_;
 
   DISALLOW_COPY_AND_ASSIGN(CloudPolicyInvalidatorUserTypedTest);
 };
@@ -915,13 +914,13 @@ CloudPolicyInvalidatorUserTypedTest::GetPolicyType() const {
   return GetParam();
 }
 
-scoped_ptr<base::HistogramSamples>
+std::unique_ptr<base::HistogramSamples>
 CloudPolicyInvalidatorUserTypedTest::GetHistogramSamples(
     const std::string& name) const {
   base::HistogramBase* histogram =
       base::StatisticsRecorder::FindHistogram(name);
   if (!histogram)
-    return scoped_ptr<base::HistogramSamples>(new base::SampleMap());
+    return std::unique_ptr<base::HistogramSamples>(new base::SampleMap());
   return histogram->SnapshotSamples();
 }
 

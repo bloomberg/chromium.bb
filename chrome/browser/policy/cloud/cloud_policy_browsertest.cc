@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
@@ -81,10 +83,10 @@ namespace policy {
 
 namespace {
 
-scoped_ptr<KeyedService> BuildFakeProfileInvalidationProvider(
+std::unique_ptr<KeyedService> BuildFakeProfileInvalidationProvider(
     content::BrowserContext* context) {
-  return make_scoped_ptr(new invalidation::ProfileInvalidationProvider(
-      scoped_ptr<invalidation::InvalidationService>(
+  return base::WrapUnique(new invalidation::ProfileInvalidationProvider(
+      std::unique_ptr<invalidation::InvalidationService>(
           new invalidation::FakeInvalidationService)));
 }
 
@@ -380,7 +382,7 @@ class CloudPolicyTest : public InProcessBrowserTest,
   void OnPolicyServiceInitialized(PolicyDomain domain) override {}
 
   base::ScopedTempDir temp_dir_;
-  scoped_ptr<LocalPolicyTestServer> test_server_;
+  std::unique_ptr<LocalPolicyTestServer> test_server_;
   base::FilePath user_policy_key_file_;
   base::Closure on_policy_updated_;
 };

@@ -5,13 +5,13 @@
 #ifndef CHROME_BROWSER_POLICY_CLOUD_USER_POLICY_SIGNIN_SERVICE_BASE_H_
 #define CHROME_BROWSER_POLICY_CLOUD_USER_POLICY_SIGNIN_SERVICE_BASE_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
@@ -112,7 +112,7 @@ class UserPolicySigninServiceBase : public KeyedService,
 
   // Returns a CloudPolicyClient to perform a registration with the DM server,
   // or NULL if |username| shouldn't register for policy management.
-  scoped_ptr<CloudPolicyClient> CreateClientForRegistrationOnly(
+  std::unique_ptr<CloudPolicyClient> CreateClientForRegistrationOnly(
       const std::string& username);
 
   // Returns false if cloud policy is disabled or if the passed |email_address|
@@ -141,7 +141,7 @@ class UserPolicySigninServiceBase : public KeyedService,
   // the initial policy fetch after signing in.
   virtual void InitializeUserCloudPolicyManager(
       const std::string& username,
-      scoped_ptr<CloudPolicyClient> client);
+      std::unique_ptr<CloudPolicyClient> client);
 
   // Prepares for the UserCloudPolicyManager to be shutdown due to
   // user signout or profile destruction.

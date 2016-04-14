@@ -118,14 +118,15 @@ void LocalPolicyTestServer::RegisterClient(const std::string& dm_token,
                                            const std::string& device_id) {
   CHECK(server_data_dir_.IsValid());
 
-  scoped_ptr<base::DictionaryValue> client_dict(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> client_dict(
+      new base::DictionaryValue());
   client_dict->SetString(kClientStateKeyDeviceId, device_id);
   client_dict->SetString(kClientStateKeyDeviceToken, dm_token);
   client_dict->SetString(kClientStateKeyMachineName, std::string());
   client_dict->SetString(kClientStateKeyMachineId, std::string());
 
   // Allow all policy types for now.
-  scoped_ptr<base::ListValue> types(new base::ListValue());
+  std::unique_ptr<base::ListValue> types(new base::ListValue());
   types->AppendString(dm_protocol::kChromeDevicePolicyType);
   types->AppendString(dm_protocol::kChromeUserPolicyType);
   types->AppendString(dm_protocol::kChromePublicAccountPolicyType);

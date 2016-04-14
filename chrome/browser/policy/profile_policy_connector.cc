@@ -131,7 +131,8 @@ void ProfilePolicyConnector::Init(
 #endif
 }
 
-void ProfilePolicyConnector::InitForTesting(scoped_ptr<PolicyService> service) {
+void ProfilePolicyConnector::InitForTesting(
+    std::unique_ptr<PolicyService> service) {
   policy_service_ = std::move(service);
 }
 

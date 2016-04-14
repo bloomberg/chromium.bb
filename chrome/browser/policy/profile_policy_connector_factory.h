@@ -7,9 +7,9 @@
 
 #include <list>
 #include <map>
+#include <memory>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/keyed_service/content/browser_context_keyed_base_factory.h"
 
 namespace base {
@@ -47,7 +47,7 @@ class ProfilePolicyConnectorFactory : public BrowserContextKeyedBaseFactory {
   // instance created, as long as it lives.
   // If |force_immediate_load| is true then policy is loaded synchronously on
   // startup.
-  static scoped_ptr<ProfilePolicyConnector> CreateForBrowserContext(
+  static std::unique_ptr<ProfilePolicyConnector> CreateForBrowserContext(
       content::BrowserContext* context,
       bool force_immediate_load);
 
@@ -71,7 +71,7 @@ class ProfilePolicyConnectorFactory : public BrowserContextKeyedBaseFactory {
   ProfilePolicyConnector* GetForBrowserContextInternal(
       content::BrowserContext* context);
 
-  scoped_ptr<ProfilePolicyConnector> CreateForBrowserContextInternal(
+  std::unique_ptr<ProfilePolicyConnector> CreateForBrowserContextInternal(
       content::BrowserContext* context,
       bool force_immediate_load);
 

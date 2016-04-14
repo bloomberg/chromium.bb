@@ -2,14 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/policy/policy_path_parser.h"
+
 #include <shlobj.h>
 #include <stddef.h>
 #include <wtsapi32.h>
 
-#include "chrome/browser/policy/policy_path_parser.h"
+#include <memory>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/registry.h"
 #include "chrome/common/chrome_switches.h"
@@ -93,7 +94,7 @@ base::FilePath::StringType ExpandPathVariables(
     DWORD return_length = 0;
     ::GetUserName(NULL, &return_length);
     if (return_length != 0) {
-      scoped_ptr<WCHAR[]> username(new WCHAR[return_length]);
+      std::unique_ptr<WCHAR[]> username(new WCHAR[return_length]);
       ::GetUserName(username.get(), &return_length);
       std::wstring username_string(username.get());
       result.replace(position, wcslen(kUserNamePolicyVarName), username_string);
@@ -104,7 +105,7 @@ base::FilePath::StringType ExpandPathVariables(
     DWORD return_length = 0;
     ::GetComputerNameEx(ComputerNamePhysicalDnsHostname, NULL, &return_length);
     if (return_length != 0) {
-      scoped_ptr<WCHAR[]> machinename(new WCHAR[return_length]);
+      std::unique_ptr<WCHAR[]> machinename(new WCHAR[return_length]);
       ::GetComputerNameEx(ComputerNamePhysicalDnsHostname,
                           machinename.get(), &return_length);
       std::wstring machinename_string(machinename.get());

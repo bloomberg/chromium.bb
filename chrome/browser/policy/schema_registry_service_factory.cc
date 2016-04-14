@@ -71,7 +71,7 @@ SchemaRegistryService* SchemaRegistryServiceFactory::GetForContext(
 }
 
 // static
-scoped_ptr<SchemaRegistryService>
+std::unique_ptr<SchemaRegistryService>
 SchemaRegistryServiceFactory::CreateForContext(
     content::BrowserContext* context,
     const Schema& chrome_schema,
@@ -99,7 +99,7 @@ SchemaRegistryService* SchemaRegistryServiceFactory::GetForContextInternal(
   return it->second;
 }
 
-scoped_ptr<SchemaRegistryService>
+std::unique_ptr<SchemaRegistryService>
 SchemaRegistryServiceFactory::CreateForContextInternal(
     content::BrowserContext* context,
     const Schema& chrome_schema,
@@ -107,7 +107,7 @@ SchemaRegistryServiceFactory::CreateForContextInternal(
   DCHECK(!context->IsOffTheRecord());
   DCHECK(registries_.find(context) == registries_.end());
 
-  scoped_ptr<SchemaRegistry> registry;
+  std::unique_ptr<SchemaRegistry> registry;
 
 #if defined(OS_CHROMEOS)
   DeviceLocalAccountPolicyBroker* broker = GetBroker(context);
@@ -123,7 +123,7 @@ SchemaRegistryServiceFactory::CreateForContextInternal(
   if (!registry)
     registry.reset(new SchemaRegistry);
 
-  scoped_ptr<SchemaRegistryService> service(new SchemaRegistryService(
+  std::unique_ptr<SchemaRegistryService> service(new SchemaRegistryService(
       std::move(registry), chrome_schema, global_registry));
   registries_[context] = service.get();
   return service;

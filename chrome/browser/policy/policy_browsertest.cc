@@ -4,7 +4,9 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
 #include <algorithm>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -19,8 +21,8 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/string16.h"
@@ -339,12 +341,12 @@ class MakeRequestFail {
   // Filters requests to the |host| such that they fail. Run on IO thread.
   static void MakeRequestFailOnIO(const std::string& host) {
     net::URLRequestFilter* filter = net::URLRequestFilter::GetInstance();
-    filter->AddHostnameInterceptor(
-        "http", host,
-        scoped_ptr<net::URLRequestInterceptor>(new FailedJobInterceptor()));
-    filter->AddHostnameInterceptor(
-        "https", host,
-        scoped_ptr<net::URLRequestInterceptor>(new FailedJobInterceptor()));
+    filter->AddHostnameInterceptor("http", host,
+                                   std::unique_ptr<net::URLRequestInterceptor>(
+                                       new FailedJobInterceptor()));
+    filter->AddHostnameInterceptor("https", host,
+                                   std::unique_ptr<net::URLRequestInterceptor>(
+                                       new FailedJobInterceptor()));
   }
 
   // Remove filters for requests to the |host|. Run on IO thread.
@@ -443,8 +445,8 @@ bool IsWebGLEnabled(content::WebContents* contents) {
 }
 
 bool IsJavascriptEnabled(content::WebContents* contents) {
-  scoped_ptr<base::Value> value = content::ExecuteScriptAndGetValue(
-      contents->GetMainFrame(), "123");
+  std::unique_ptr<base::Value> value =
+      content::ExecuteScriptAndGetValue(contents->GetMainFrame(), "123");
   int result = 0;
   if (!value->GetAsInteger(&result))
     EXPECT_EQ(base::Value::TYPE_NULL, value->GetType());
@@ -725,7 +727,7 @@ class PolicyTest : public InProcessBrowserTest {
   void TestScreenshotFile(bool enabled) {
     // AddObserver is an ash-specific method, so just replace the screenshot
     // grabber with one we've created here.
-    scoped_ptr<ChromeScreenshotGrabber> chrome_screenshot_grabber(
+    std::unique_ptr<ChromeScreenshotGrabber> chrome_screenshot_grabber(
         new ChromeScreenshotGrabber);
     // ScreenshotGrabber doesn't own this observer, so the observer's lifetime
     // is tied to the test instead.
@@ -888,7 +890,7 @@ class PolicyTest : public InProcessBrowserTest {
   }
 
   MockConfigurationPolicyProvider provider_;
-  scoped_ptr<extensions::ExtensionCacheFake> test_extension_cache_;
+  std::unique_ptr<extensions::ExtensionCacheFake> test_extension_cache_;
 #if defined(OS_CHROMEOS)
   QuitMessageLoopAfterScreenshot observer_;
 #endif
@@ -1161,7 +1163,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, PolicyPreprocessing) {
 
   // It should be removed and replaced with a dictionary.
   PolicyMap expected;
-  scoped_ptr<base::DictionaryValue> expected_value(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> expected_value(
+      new base::DictionaryValue);
   expected_value->SetInteger(key::kProxyServerMode, 3);
   expected.Set(key::kProxySettings,
                POLICY_LEVEL_MANDATORY,
@@ -1802,7 +1805,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallBlacklistSharedModules) {
   EXPECT_TRUE(shared_module->is_shared_module());
 
   // Verify the dependency.
-  scoped_ptr<extensions::ExtensionSet> set =
+  std::unique_ptr<extensions::ExtensionSet> set =
       service->shared_module_service()->GetDependentExtensions(shared_module);
   ASSERT_TRUE(set);
   EXPECT_EQ(1u, set->size());
@@ -2463,7 +2466,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, SavingBrowserHistoryDisabled) {
 #if !defined(USE_AURA)
 // http://crbug.com/241691 PolicyTest.TranslateEnabled is failing regularly.
 IN_PROC_BROWSER_TEST_F(PolicyTest, DISABLED_TranslateEnabled) {
-  scoped_ptr<test::CldDataHarness> cld_data_scope =
+  std::unique_ptr<test::CldDataHarness> cld_data_scope =
       test::CldDataHarnessFactory::Get()->CreateCldDataHarness();
   ASSERT_NO_FATAL_FAILURE(cld_data_scope->Init());
 
@@ -2851,7 +2854,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, MAYBE_DisableScreenshotsFile) {
 IN_PROC_BROWSER_TEST_F(PolicyTest, DisableAudioOutput) {
   // Set up the mock observer.
   chromeos::CrasAudioHandler* audio_handler = chromeos::CrasAudioHandler::Get();
-  scoped_ptr<TestAudioObserver> test_observer(new TestAudioObserver);
+  std::unique_ptr<TestAudioObserver> test_observer(new TestAudioObserver);
   audio_handler->AddAudioObserver(test_observer.get());
 
   bool prior_state = audio_handler->IsOutputMuted();
@@ -3498,7 +3501,7 @@ class MediaStreamDevicesControllerBrowserTest
 
   void Accept(const content::MediaStreamDevices& devices,
               content::MediaStreamRequestResult result,
-              scoped_ptr<content::MediaStreamUI> ui) {
+              std::unique_ptr<content::MediaStreamUI> ui) {
     if (policy_value_ || request_url_allowed_via_whitelist_) {
       ASSERT_EQ(1U, devices.size());
       ASSERT_EQ("fake_dev", devices[0].id);
@@ -3878,9 +3881,9 @@ IN_PROC_BROWSER_TEST_F(PolicyVariationsServiceTest, VariationsURLIsValid) {
 
   // g_browser_process->variations_service() is null by default in Chromium
   // builds, so construct a VariationsService locally instead.
-  scoped_ptr<variations::VariationsService> service =
+  std::unique_ptr<variations::VariationsService> service =
       variations::VariationsService::CreateForTesting(
-          make_scoped_ptr(new ChromeVariationsServiceClient()),
+          base::WrapUnique(new ChromeVariationsServiceClient()),
           g_browser_process->local_state());
 
   const GURL url = service->GetVariationsServerURL(
@@ -4032,19 +4035,19 @@ class ArcPolicyTest : public PolicyTest {
     fake_session_manager_client_ = new chromeos::FakeSessionManagerClient;
     fake_session_manager_client_->set_arc_available(true);
     chromeos::DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
-        scoped_ptr<chromeos::SessionManagerClient>(
+        std::unique_ptr<chromeos::SessionManagerClient>(
             fake_session_manager_client_));
 
     fake_arc_bridge_instance_.reset(new arc::FakeArcBridgeInstance);
-    arc::ArcServiceManager::SetArcBridgeServiceForTesting(make_scoped_ptr(
-        new arc::ArcBridgeServiceImpl(make_scoped_ptr(
-            new arc::FakeArcBridgeBootstrap(
+    arc::ArcServiceManager::SetArcBridgeServiceForTesting(
+        base::WrapUnique(new arc::ArcBridgeServiceImpl(
+            base::WrapUnique(new arc::FakeArcBridgeBootstrap(
                 fake_arc_bridge_instance_.get())))));
   }
 
  private:
   chromeos::FakeSessionManagerClient *fake_session_manager_client_;
-  scoped_ptr<arc::FakeArcBridgeInstance> fake_arc_bridge_instance_;
+  std::unique_ptr<arc::FakeArcBridgeInstance> fake_arc_bridge_instance_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcPolicyTest);
 };

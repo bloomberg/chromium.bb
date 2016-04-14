@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_POLICY_CONFIGURATION_POLICY_HANDLER_LIST_FACTORY_H_
 #define CHROME_BROWSER_POLICY_CONFIGURATION_POLICY_HANDLER_LIST_FACTORY_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
 
 namespace policy {
 
@@ -13,7 +13,7 @@ class ConfigurationPolicyHandlerList;
 class Schema;
 
 // Builds a platform-specific handler list.
-scoped_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
+std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
     const Schema& chrome_schema);
 
 }  // namespace policy

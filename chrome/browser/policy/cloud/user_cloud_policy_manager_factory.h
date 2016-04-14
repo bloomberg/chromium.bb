@@ -6,10 +6,10 @@
 #define CHROME_BROWSER_POLICY_CLOUD_USER_CLOUD_POLICY_MANAGER_FACTORY_H_
 
 #include <map>
+#include <memory>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "components/keyed_service/content/browser_context_keyed_base_factory.h"
 
@@ -62,7 +62,8 @@ class UserCloudPolicyManagerFactory : public BrowserContextKeyedBaseFactory {
   // FILE BrowserThread.
   // |io_task_runner| is used for network IO. Currently this must be the IO
   // BrowserThread.
-  static scoped_ptr<UserCloudPolicyManager> CreateForOriginalBrowserContext(
+  static std::unique_ptr<UserCloudPolicyManager>
+  CreateForOriginalBrowserContext(
       content::BrowserContext* context,
       bool force_immediate_load,
       const scoped_refptr<base::SequencedTaskRunner>& background_task_runner,
@@ -95,7 +96,8 @@ class UserCloudPolicyManagerFactory : public BrowserContextKeyedBaseFactory {
   UserCloudPolicyManager* GetManagerForBrowserContext(
       content::BrowserContext* context);
 
-  scoped_ptr<UserCloudPolicyManager> CreateManagerForOriginalBrowserContext(
+  std::unique_ptr<UserCloudPolicyManager>
+  CreateManagerForOriginalBrowserContext(
       content::BrowserContext* context,
       bool force_immediate_load,
       const scoped_refptr<base::SequencedTaskRunner>& background_task_runner,

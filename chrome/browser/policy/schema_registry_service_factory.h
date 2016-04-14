@@ -6,10 +6,10 @@
 #define CHROME_BROWSER_POLICY_SCHEMA_REGISTRY_SERVICE_FACTORY_H_
 
 #include <map>
+#include <memory>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "components/keyed_service/content/browser_context_keyed_base_factory.h"
 
@@ -39,7 +39,7 @@ class SchemaRegistryServiceFactory : public BrowserContextKeyedBaseFactory {
   // Creates a new SchemaRegistryService for |context|, which must be managed
   // by the caller. Subsequent calls to GetForContext() will return the instance
   // created, as long as it lives.
-  static scoped_ptr<SchemaRegistryService> CreateForContext(
+  static std::unique_ptr<SchemaRegistryService> CreateForContext(
       content::BrowserContext* context,
       const Schema& chrome_schema,
       CombinedSchemaRegistry* global_registry);
@@ -53,7 +53,7 @@ class SchemaRegistryServiceFactory : public BrowserContextKeyedBaseFactory {
   SchemaRegistryService* GetForContextInternal(
       content::BrowserContext* context);
 
-  scoped_ptr<SchemaRegistryService> CreateForContextInternal(
+  std::unique_ptr<SchemaRegistryService> CreateForContextInternal(
       content::BrowserContext* context,
       const Schema& chrome_schema,
       CombinedSchemaRegistry* global_registry);

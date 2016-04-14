@@ -42,7 +42,7 @@ ProfilePolicyConnector* ProfilePolicyConnectorFactory::GetForBrowserContext(
 }
 
 // static
-scoped_ptr<ProfilePolicyConnector>
+std::unique_ptr<ProfilePolicyConnector>
 ProfilePolicyConnectorFactory::CreateForBrowserContext(
     content::BrowserContext* context,
     bool force_immediate_load) {
@@ -91,7 +91,7 @@ ProfilePolicyConnectorFactory::GetForBrowserContextInternal(
   return it->second;
 }
 
-scoped_ptr<ProfilePolicyConnector>
+std::unique_ptr<ProfilePolicyConnector>
 ProfilePolicyConnectorFactory::CreateForBrowserContextInternal(
     content::BrowserContext* context,
     bool force_immediate_load) {
@@ -117,7 +117,8 @@ ProfilePolicyConnectorFactory::CreateForBrowserContextInternal(
       UserCloudPolicyManagerFactory::GetForBrowserContext(context);
 #endif  // defined(OS_CHROMEOS)
 
-  scoped_ptr<ProfilePolicyConnector> connector(new ProfilePolicyConnector());
+  std::unique_ptr<ProfilePolicyConnector> connector(
+      new ProfilePolicyConnector());
 
   if (test_providers_.empty()) {
     connector->Init(
@@ -129,7 +130,7 @@ ProfilePolicyConnectorFactory::CreateForBrowserContextInternal(
     PolicyServiceImpl::Providers providers;
     providers.push_back(test_providers_.front());
     test_providers_.pop_front();
-    scoped_ptr<PolicyService> service(new PolicyServiceImpl(providers));
+    std::unique_ptr<PolicyService> service(new PolicyServiceImpl(providers));
     connector->InitForTesting(std::move(service));
   }
 

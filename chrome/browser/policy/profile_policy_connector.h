@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_POLICY_PROFILE_POLICY_CONNECTOR_H_
 #define CHROME_BROWSER_POLICY_PROFILE_POLICY_CONNECTOR_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "components/keyed_service/core/keyed_service.h"
 
@@ -38,7 +38,7 @@ class ProfilePolicyConnector : public KeyedService {
       SchemaRegistry* schema_registry,
       CloudPolicyManager* user_cloud_policy_manager);
 
-  void InitForTesting(scoped_ptr<PolicyService> service);
+  void InitForTesting(std::unique_ptr<PolicyService> service);
   void OverrideIsManagedForTesting(bool is_managed);
 
   // KeyedService:
@@ -75,10 +75,11 @@ class ProfilePolicyConnector : public KeyedService {
   // local state.
   bool is_primary_user_;
 
-  scoped_ptr<ConfigurationPolicyProvider> special_user_policy_provider_;
+  std::unique_ptr<ConfigurationPolicyProvider> special_user_policy_provider_;
 #endif  // defined(OS_CHROMEOS)
 
-  scoped_ptr<ConfigurationPolicyProvider> wrapped_platform_policy_provider_;
+  std::unique_ptr<ConfigurationPolicyProvider>
+      wrapped_platform_policy_provider_;
   CloudPolicyManager* user_cloud_policy_manager_;
 
   // |policy_providers_| contains a list of the policy providers available for
@@ -91,8 +92,8 @@ class ProfilePolicyConnector : public KeyedService {
   // result is true, so take care if a provider overrides that.
   std::vector<ConfigurationPolicyProvider*> policy_providers_;
 
-  scoped_ptr<PolicyService> policy_service_;
-  scoped_ptr<bool> is_managed_override_;
+  std::unique_ptr<PolicyService> policy_service_;
+  std::unique_ptr<bool> is_managed_override_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfilePolicyConnector);
 };

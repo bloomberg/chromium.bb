@@ -4,9 +4,10 @@
 
 #include "chrome/browser/policy/cloud/policy_header_service_factory.h"
 
+#include <memory>
 #include <utility>
 
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
@@ -33,7 +34,8 @@ namespace {
 
 class PolicyHeaderServiceWrapper : public KeyedService {
  public:
-  explicit PolicyHeaderServiceWrapper(scoped_ptr<PolicyHeaderService> service)
+  explicit PolicyHeaderServiceWrapper(
+      std::unique_ptr<PolicyHeaderService> service)
       : policy_header_service_(std::move(service)) {}
 
   PolicyHeaderService* policy_header_service() const {
@@ -47,7 +49,7 @@ class PolicyHeaderServiceWrapper : public KeyedService {
   }
 
  private:
-  scoped_ptr<PolicyHeaderService> policy_header_service_;
+  std::unique_ptr<PolicyHeaderService> policy_header_service_;
 };
 
 }  // namespace
@@ -106,11 +108,10 @@ KeyedService* PolicyHeaderServiceFactory::BuildServiceInstanceFor(
   device_store = connector->GetDeviceCloudPolicyManager()->core()->store();
 #endif
 
-  scoped_ptr<PolicyHeaderService> service = make_scoped_ptr(
-      new PolicyHeaderService(device_management_service->GetServerUrl(),
-                              kPolicyVerificationKeyHash,
-                              user_store,
-                              device_store));
+  std::unique_ptr<PolicyHeaderService> service =
+      base::WrapUnique(new PolicyHeaderService(
+          device_management_service->GetServerUrl(), kPolicyVerificationKeyHash,
+          user_store, device_store));
   return new PolicyHeaderServiceWrapper(std::move(service));
 }
 
