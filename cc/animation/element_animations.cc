@@ -77,7 +77,7 @@ void ElementAnimations::CreateLayerAnimationController(int layer_id) {
 
   layer_animation_controller_ =
       animation_host_->GetAnimationControllerForId(layer_id);
-  animation_host_->SetAnimationRegistrarFor(layer_animation_controller_);
+  layer_animation_controller_->SetAnimationHost(animation_host_);
   layer_animation_controller_->set_layer_animation_delegate(this);
   layer_animation_controller_->set_value_provider(this);
 
@@ -104,7 +104,7 @@ void ElementAnimations::DestroyLayerAnimationController() {
   if (layer_animation_controller_) {
     layer_animation_controller_->remove_value_provider(this);
     layer_animation_controller_->remove_layer_animation_delegate(this);
-    animation_host_->ResetAnimationRegistrarFor(layer_animation_controller_);
+    layer_animation_controller_->SetAnimationHost(nullptr);
     layer_animation_controller_ = nullptr;
   }
 }

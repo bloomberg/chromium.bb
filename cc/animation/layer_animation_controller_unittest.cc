@@ -232,8 +232,8 @@ TEST(LayerAnimationControllerTest, Activation) {
   controller->AddValueObserver(&dummy);
   std::unique_ptr<AnimationEvents> events = host->CreateEvents();
 
-  host->SetAnimationRegistrarFor(controller);
-  host_impl->SetAnimationRegistrarFor(controller_impl);
+  controller->SetAnimationHost(host.get());
+  controller_impl->SetAnimationHost(host_impl.get());
   EXPECT_EQ(1u, host->all_animation_controllers_for_testing().size());
   EXPECT_EQ(1u, host_impl->all_animation_controllers_for_testing().size());
 
@@ -297,8 +297,8 @@ TEST(LayerAnimationControllerTest, Activation) {
   EXPECT_EQ(0u, host->active_animation_controllers_for_testing().size());
   EXPECT_EQ(0u, host_impl->active_animation_controllers_for_testing().size());
 
-  host->ResetAnimationRegistrarFor(controller);
-  host_impl->ResetAnimationRegistrarFor(controller_impl);
+  controller->SetAnimationHost(nullptr);
+  controller_impl->SetAnimationHost(nullptr);
 }
 
 TEST(LayerAnimationControllerTest, SyncPause) {

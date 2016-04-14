@@ -13,7 +13,7 @@
 #include "cc/animation/animation_curve.h"
 #include "cc/animation/animation_delegate.h"
 #include "cc/animation/animation_events.h"
-#include "cc/animation/animation_registrar.h"
+#include "cc/animation/animation_host.h"
 #include "cc/animation/keyframed_animation_curve.h"
 #include "cc/animation/layer_animation_value_observer.h"
 #include "cc/animation/layer_animation_value_provider.h"
@@ -25,7 +25,7 @@
 namespace cc {
 
 LayerAnimationController::LayerAnimationController(int id)
-    : registrar_(0),
+    : host_(0),
       id_(id),
       is_active_(false),
       value_provider_(nullptr),
@@ -36,8 +36,8 @@ LayerAnimationController::LayerAnimationController(int id)
       potentially_animating_transform_for_pending_observers_(false) {}
 
 LayerAnimationController::~LayerAnimationController() {
-  if (registrar_)
-    registrar_->UnregisterAnimationController(this);
+  if (host_)
+    host_->UnregisterAnimationController(this);
 }
 
 scoped_refptr<LayerAnimationController> LayerAnimationController::Create(
@@ -370,17 +370,16 @@ bool LayerAnimationController::IsCurrentlyAnimatingProperty(
   return false;
 }
 
-void LayerAnimationController::SetAnimationRegistrar(
-    AnimationRegistrar* registrar) {
-  if (registrar_ == registrar)
+void LayerAnimationController::SetAnimationHost(AnimationHost* host) {
+  if (host_ == host)
     return;
 
-  if (registrar_)
-    registrar_->UnregisterAnimationController(this);
+  if (host_)
+    host_->UnregisterAnimationController(this);
 
-  registrar_ = registrar;
-  if (registrar_)
-    registrar_->RegisterAnimationController(this);
+  host_ = host;
+  if (host_)
+    host_->RegisterAnimationController(this);
 
   UpdateActivation(FORCE_ACTIVATION);
 }
@@ -1162,7 +1161,7 @@ void LayerAnimationController::TickAnimations(base::TimeTicks monotonic_time) {
 
 void LayerAnimationController::UpdateActivation(UpdateActivationType type) {
   bool force = type == FORCE_ACTIVATION;
-  if (registrar_) {
+  if (host_) {
     bool was_active = is_active_;
     is_active_ = false;
     for (size_t i = 0; i < animations_.size(); ++i) {
@@ -1173,9 +1172,9 @@ void LayerAnimationController::UpdateActivation(UpdateActivationType type) {
     }
 
     if (is_active_ && (!was_active || force))
-      registrar_->DidActivateAnimationController(this);
+      host_->DidActivateAnimationController(this);
     else if (!is_active_ && (was_active || force))
-      registrar_->DidDeactivateAnimationController(this);
+      host_->DidDeactivateAnimationController(this);
   }
 }
 

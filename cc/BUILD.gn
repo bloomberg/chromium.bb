@@ -20,8 +20,6 @@ component("cc") {
     "animation/animation_id_provider.h",
     "animation/animation_player.cc",
     "animation/animation_player.h",
-    "animation/animation_registrar.cc",
-    "animation/animation_registrar.h",
     "animation/animation_timeline.cc",
     "animation/animation_timeline.h",
     "animation/element_animations.cc",

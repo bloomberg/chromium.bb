@@ -29,7 +29,7 @@ namespace cc {
 
 class AnimationDelegate;
 class AnimationEvents;
-class AnimationRegistrar;
+class AnimationHost;
 class FilterOperations;
 class KeyframeValueList;
 class LayerAnimationValueObserver;
@@ -92,8 +92,8 @@ class CC_EXPORT LayerAnimationController
   bool IsCurrentlyAnimatingProperty(TargetProperty::Type target_property,
                                     ObserverType observer_type) const;
 
-  void SetAnimationRegistrar(AnimationRegistrar* registrar);
-  AnimationRegistrar* animation_registrar() { return registrar_; }
+  void SetAnimationHost(AnimationHost* host);
+  AnimationHost* animation_host() { return host_; }
 
   void NotifyAnimationStarted(const AnimationEvent& event);
   void NotifyAnimationFinished(const AnimationEvent& event);
@@ -226,11 +226,11 @@ class CC_EXPORT LayerAnimationController
   bool HasValueObserver();
   bool HasActiveValueObserver();
 
-  AnimationRegistrar* registrar_;
+  AnimationHost* host_;
   int id_;
   std::vector<std::unique_ptr<Animation>> animations_;
 
-  // This is used to ensure that we don't spam the registrar.
+  // This is used to ensure that we don't spam the animation host.
   bool is_active_;
 
   base::TimeTicks last_tick_time_;

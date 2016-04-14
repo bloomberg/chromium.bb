@@ -9,6 +9,7 @@
 #include <unordered_map>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "cc/animation/animation.h"
@@ -25,7 +26,6 @@ namespace cc {
 
 class AnimationEvents;
 class AnimationPlayer;
-class AnimationRegistrar;
 class AnimationTimeline;
 class ElementAnimations;
 class LayerAnimationController;
@@ -41,12 +41,13 @@ enum class ThreadInstance { MAIN, IMPL };
 // (PushPropertiesTo).
 // An AnimationHost talks to its correspondent LayerTreeHost via
 // LayerTreeMutatorsClient interface.
-// AnimationHost has it's own instance of AnimationRegistrar,
-// we want to merge AnimationRegistrar into AnimationHost.
 class CC_EXPORT AnimationHost {
  public:
+  using AnimationControllerMap =
+      std::unordered_map<int, LayerAnimationController*>;
+
   static std::unique_ptr<AnimationHost> Create(ThreadInstance thread_instance);
-  virtual ~AnimationHost();
+  ~AnimationHost();
 
   void AddAnimationTimeline(scoped_refptr<AnimationTimeline> timeline);
   void RemoveAnimationTimeline(scoped_refptr<AnimationTimeline> timeline);
@@ -151,18 +152,20 @@ class CC_EXPORT AnimationHost {
   // creates a new one and returns a scoped_refptr to it.
   scoped_refptr<LayerAnimationController> GetAnimationControllerForId(int id);
 
-  void SetAnimationRegistrarFor(
-      scoped_refptr<LayerAnimationController> controller);
-  void ResetAnimationRegistrarFor(
-      scoped_refptr<LayerAnimationController> controller);
+  // Registers the given animation controller as active. An active animation
+  // controller is one that has a running animation that needs to be ticked.
+  void DidActivateAnimationController(LayerAnimationController* controller);
+
+  // Unregisters the given animation controller. When this happens, the
+  // animation controller will no longer be ticked (since it's not active). It
+  // is not an error to call this function with a deactivated controller.
+  void DidDeactivateAnimationController(LayerAnimationController* controller);
 
   // Registers the given controller as alive.
   void RegisterAnimationController(LayerAnimationController* controller);
   // Unregisters the given controller as alive.
   void UnregisterAnimationController(LayerAnimationController* controller);
 
-  using AnimationControllerMap =
-      std::unordered_map<int, LayerAnimationController*>;
   const AnimationControllerMap& active_animation_controllers_for_testing()
       const;
   const AnimationControllerMap& all_animation_controllers_for_testing() const;
@@ -188,13 +191,17 @@ class CC_EXPORT AnimationHost {
       std::unordered_map<int, scoped_refptr<AnimationTimeline>>;
   IdToTimelineMap id_to_timeline_map_;
 
-  std::unique_ptr<AnimationRegistrar> animation_registrar_;
+  AnimationControllerMap active_animation_controllers_;
+  AnimationControllerMap all_animation_controllers_;
+
   MutatorHostClient* mutator_host_client_;
 
   class ScrollOffsetAnimations;
   std::unique_ptr<ScrollOffsetAnimations> scroll_offset_animations_;
 
   const ThreadInstance thread_instance_;
+
+  bool supports_scroll_animations_;
 
   DISALLOW_COPY_AND_ASSIGN(AnimationHost);
 };

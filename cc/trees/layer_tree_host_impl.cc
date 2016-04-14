@@ -282,7 +282,7 @@ LayerTreeHostImpl::~LayerTreeHostImpl() {
     scroll_elasticity_helper_.reset();
 
   // The layer trees must be destroyed before the layer tree host. We've
-  // made a contract with our animation controllers that the registrar
+  // made a contract with our animation controllers that the animation_host
   // will outlive them, and we must make good.
   if (recycle_tree_)
     recycle_tree_->Shutdown();
@@ -3457,7 +3457,7 @@ bool LayerTreeHostImpl::AnimateLayers(base::TimeTicks monotonic_time) {
   // tree, or if they are on the pending tree waiting for some future time to
   // start.
   // TODO(crbug.com/551138): We currently have a single signal from the
-  // animation host/registrar, so on the last frame of an animation we will
+  // animation_host, so on the last frame of an animation we will
   // still request an extra SetNeedsAnimate here.
   if (animated)
     SetNeedsOneBeginImplFrame();
