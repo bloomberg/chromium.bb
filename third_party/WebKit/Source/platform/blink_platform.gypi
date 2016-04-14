@@ -1159,7 +1159,6 @@
       'fonts/android/FontCacheAndroidTest.cpp',
       'fonts/mac/FontFamilyMatcherMacTest.mm',
       'fonts/opentype/OpenTypeVerticalDataTest.cpp',
-      'fonts/opentype/OpenTypeCapsSupportTest.cpp',
       'fonts/shaping/CachingWordShaperTest.cpp',
       'fonts/shaping/HarfBuzzShaperTest.cpp',
       'fonts/shaping/RunSegmenterTest.cpp',
