@@ -9,7 +9,6 @@
 #include "build/build_config.h"
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_tree_connection.h"
-#include "content/browser/mojo/mojo_child_connection.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/render_widget_window_tree_client_factory.mojom.h"
@@ -40,7 +39,7 @@ RenderWidgetHostViewMus::RenderWidgetHostViewMus(mus::Window* parent_window,
   // Connect to the renderer, pass it a WindowTreeClient interface request
   // and embed that client inside our mus window.
   mojom::RenderWidgetWindowTreeClientFactoryPtr factory;
-  GetMojoConnection(host_->GetProcess())->GetInterface(&factory);
+  host_->GetProcess()->GetChildConnection()->GetInterface(&factory);
 
   mus::mojom::WindowTreeClientPtr window_tree_client;
   factory->CreateWindowTreeClientForRenderWidget(

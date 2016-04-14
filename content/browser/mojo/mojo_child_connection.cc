@@ -7,128 +7,47 @@
 #include <stdint.h>
 #include <utility>
 
-#include "base/macros.h"
-#include "base/strings/stringprintf.h"
-#include "base/thread_task_runner_handle.h"
-#include "build/build_config.h"
-#include "content/browser/mojo/constants.h"
-#include "content/public/browser/browser_thread.h"
-#include "content/public/browser/render_process_host.h"
-#include "content/public/browser/render_process_host_observer.h"
 #include "content/public/common/mojo_shell_connection.h"
-#include "ipc/ipc_sender.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "services/shell/public/cpp/connector.h"
-#include "services/shell/public/interfaces/shell.mojom.h"
+#include "services/shell/public/cpp/identity.h"
 #include "services/shell/public/interfaces/shell_client.mojom.h"
 
 namespace content {
-namespace {
 
-const char kMojoRenderProcessHostConnection[] =
-    "mojo_render_process_host_connection";
-
-class RenderProcessHostConnection : public base::SupportsUserData::Data {
- public:
-  explicit RenderProcessHostConnection(
-      std::unique_ptr<shell::Connection> connection)
-      : connection_(std::move(connection)) {}
-  ~RenderProcessHostConnection() override {}
-
-  shell::Connection* get() const { return connection_.get(); }
-
- private:
-  std::unique_ptr<shell::Connection> connection_;
-
-  DISALLOW_COPY_AND_ASSIGN(RenderProcessHostConnection);
-};
-
-void SetMojoConnection(RenderProcessHost* render_process_host,
-                       std::unique_ptr<shell::Connection> connection) {
-  render_process_host->SetUserData(
-      kMojoRenderProcessHostConnection,
-      new RenderProcessHostConnection(std::move(connection)));
-}
-
-class PIDSender : public RenderProcessHostObserver {
- public:
-  PIDSender(RenderProcessHost* host, shell::mojom::PIDReceiverPtr pid_receiver)
-      : host_(host), pid_receiver_(std::move(pid_receiver)) {
-    pid_receiver_.set_connection_error_handler([this]() { delete this; });
-    DCHECK(!host_->IsReady());
-    host_->AddObserver(this);
-  }
-  ~PIDSender() override {
-    if (host_)
-      host_->RemoveObserver(this);
-  }
-
- private:
-  // Overridden from RenderProcessHostObserver:
-  void RenderProcessReady(RenderProcessHost* host) override {
-    pid_receiver_->SetPID(base::GetProcId(host->GetHandle()));
-    delete this;
-  }
-
-  void RenderProcessHostDestroyed(RenderProcessHost* host) override {
-    DCHECK_EQ(host_, host);
-    host_ = nullptr;
-  }
-
-  RenderProcessHost* host_;
-  shell::mojom::PIDReceiverPtr pid_receiver_;
-
-  DISALLOW_COPY_AND_ASSIGN(PIDSender);
-};
-
-}  // namespace
-
-std::string MojoConnectToChild(int child_process_id,
-                               int instance_id,
-                               RenderProcessHost* render_process_host) {
-  // Generate a token and create a pipe which is bound to it. This pipe is
-  // passed to the shell if one is available.
-  std::string pipe_token = mojo::edk::GenerateRandomToken();
+MojoChildConnection::MojoChildConnection(const std::string& application_name,
+                                         const std::string& instance_id)
+    : shell_client_token_(mojo::edk::GenerateRandomToken()) {
   mojo::ScopedMessagePipeHandle shell_client_pipe =
-      mojo::edk::CreateParentMessagePipe(pipe_token);
+      mojo::edk::CreateParentMessagePipe(shell_client_token_);
 
   // Some process types get created before the main message loop. In this case
   // the shell request pipe will simply be closed, and the child can detect
   // this.
   if (!MojoShellConnection::Get())
-    return pipe_token;
+    return;
 
   shell::mojom::ShellClientPtr client;
   client.Bind(mojo::InterfacePtrInfo<shell::mojom::ShellClient>(
       std::move(shell_client_pipe), 0u));
-  shell::mojom::PIDReceiverPtr pid_receiver;
   shell::mojom::PIDReceiverRequest pid_receiver_request =
-      GetProxy(&pid_receiver);
-  // PIDSender manages its own lifetime.
-  new PIDSender(render_process_host, std::move(pid_receiver));
+      GetProxy(&pid_receiver_);
 
-  shell::Identity target(
-      kRendererMojoApplicationName, shell::mojom::kInheritUserID,
-      base::StringPrintf("%d_%d", child_process_id, instance_id));
+  shell::Identity target(application_name, shell::mojom::kInheritUserID,
+                         instance_id);
   shell::Connector::ConnectParams params(target);
   params.set_client_process_connection(std::move(client),
                                        std::move(pid_receiver_request));
-  std::unique_ptr<shell::Connection> connection =
-      MojoShellConnection::Get()->GetConnector()->Connect(&params);
-
-  // Store the connection on the RPH so client code can access it later via
-  // GetMojoConnection().
-  SetMojoConnection(render_process_host, std::move(connection));
-
-  return pipe_token;
+  connection_ = MojoShellConnection::Get()->GetConnector()->Connect(&params);
 }
 
-shell::Connection* GetMojoConnection(RenderProcessHost* render_process_host) {
-  RenderProcessHostConnection* connection =
-      static_cast<RenderProcessHostConnection*>(
-          render_process_host->GetUserData(kMojoRenderProcessHostConnection));
-  return connection ? connection->get() : nullptr;
+MojoChildConnection::~MojoChildConnection() {}
+
+void MojoChildConnection::SetProcessHandle(base::ProcessHandle handle) {
+  DCHECK(pid_receiver_.is_bound());
+  pid_receiver_->SetPID(base::GetProcId(handle));
+  pid_receiver_.reset();
 }
 
 }  // namespace content

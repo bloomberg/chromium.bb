@@ -35,6 +35,10 @@ class AudioOutputController;
 class MediaKeys;
 }
 
+namespace shell {
+class Connection;
+}
+
 namespace content {
 class BrowserContext;
 class BrowserMessageFilter;
@@ -256,6 +260,9 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
 
   // Returns the ServiceRegistry for this process.
   virtual ServiceRegistry* GetServiceRegistry() = 0;
+
+  // Returns the shell connection for this process.
+  virtual shell::Connection* GetChildConnection() = 0;
 
   // Extracts any persistent-memory-allocator used for renderer metrics.
   // Ownership is passed to the caller. To support sharing of histogram data
