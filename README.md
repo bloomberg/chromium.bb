@@ -12,8 +12,8 @@ This includes:
 Under the [include](include) directory, header files are provided according to
 their own version.  Only major and minor version numbers count.
 For example, the headers for SPIR-V 1.1 are in
-[include/spirv/1.1](include/spirv/1.1).  Also, the 1.0 versions of the
-GLSL.std.450 and OpenCL extended instruction sets are in
+[include/spirv/1.1](include/spirv/1.1).  Also, the headers for the 1.0 versions
+of the GLSL.std.450 and OpenCL extended instruction sets are in
 [include/spirv/1.0](include/spirv/1.0).
 
 In contrast, the XML registry file has a linear history, so it is
