@@ -271,12 +271,13 @@ class LastDownloadFinderTest : public testing::Test {
       const base::FilePath::CharType* file_path) {
     base::Time now(base::Time::Now());
     return history::DownloadRow(
-        base::FilePath(file_path),
-        base::FilePath(file_path),
+        base::FilePath(file_path), base::FilePath(file_path),
         std::vector<GURL>(1, GURL("http://www.google.com")),  // url_chain
-        GURL(),                                               // referrer
-        std::string(),                                        // HTTP method
-        "application/octet-stream",                           // mime_type
+        GURL("http://referrer.example.com/"),        // referrer
+        GURL("http://tab-url.example.com/"),         // tab URL
+        GURL("http://tab-referrer.example.com/"),    // tab referrer URL
+        std::string(),                               // HTTP method
+        "application/octet-stream",                  // mime_type
         "application/octet-stream",                  // original_mime_type
         now - base::TimeDelta::FromMinutes(10),      // start
         now - base::TimeDelta::FromMinutes(9),       // end
@@ -290,7 +291,7 @@ class LastDownloadFinderTest : public testing::Test {
             content::DOWNLOAD_INTERRUPT_REASON_NONE),  // interrupt_reason,
         std::string(),                                 // hash
         download_id_++,                                // id
-        base::GenerateGUID(),
+        base::GenerateGUID(),                          // GUID
         false,           // download_opened
         std::string(),   // ext_id
         std::string());  // ext_name

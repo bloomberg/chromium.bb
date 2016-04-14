@@ -146,6 +146,8 @@ class CONTENT_EXPORT DownloadManager : public base::SupportsUserData::Data {
       const base::FilePath& target_path,
       const std::vector<GURL>& url_chain,
       const GURL& referrer_url,
+      const GURL& tab_url,
+      const GURL& tab_referrer_url,
       const std::string& mime_type,
       const std::string& original_mime_type,
       const base::Time& start_time,

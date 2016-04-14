@@ -221,6 +221,10 @@ DownloadUIControllerTest::CreateMockInProgressDownload() {
       .WillRepeatedly(testing::ReturnRefOfCopy(std::vector<GURL>()));
   EXPECT_CALL(*item, GetReferrerUrl())
       .WillRepeatedly(testing::ReturnRefOfCopy(GURL()));
+  EXPECT_CALL(*item, GetTabUrl())
+      .WillRepeatedly(testing::ReturnRefOfCopy(GURL()));
+  EXPECT_CALL(*item, GetTabReferrerUrl())
+      .WillRepeatedly(testing::ReturnRefOfCopy(GURL()));
   EXPECT_CALL(*item, GetStartTime()).WillRepeatedly(Return(base::Time()));
   EXPECT_CALL(*item, GetEndTime()).WillRepeatedly(Return(base::Time()));
   EXPECT_CALL(*item, GetETag()).WillRepeatedly(ReturnRefOfCopy(std::string()));

@@ -23,7 +23,9 @@ DownloadRow::DownloadRow()
 DownloadRow::DownloadRow(const base::FilePath& current_path,
                          const base::FilePath& target_path,
                          const std::vector<GURL>& url_chain,
-                         const GURL& referrer,
+                         const GURL& referrer_url,
+                         const GURL& tab_url,
+                         const GURL& tab_referrer_url,
                          const std::string& http_method,
                          const std::string& mime_type,
                          const std::string& original_mime_type,
@@ -45,7 +47,9 @@ DownloadRow::DownloadRow(const base::FilePath& current_path,
     : current_path(current_path),
       target_path(target_path),
       url_chain(url_chain),
-      referrer_url(referrer),
+      referrer_url(referrer_url),
+      tab_url(tab_url),
+      tab_referrer_url(tab_referrer_url),
       http_method(http_method),
       mime_type(mime_type),
       original_mime_type(original_mime_type),
@@ -70,28 +74,19 @@ DownloadRow::DownloadRow(const DownloadRow& other) = default;
 DownloadRow::~DownloadRow() {}
 
 bool DownloadRow::operator==(const DownloadRow& rhs) const {
-  return current_path == rhs.current_path &&
-         target_path == rhs.target_path &&
-         url_chain == rhs.url_chain &&
-         referrer_url == rhs.referrer_url &&
-         http_method == rhs.http_method &&
-         mime_type == rhs.mime_type &&
+  return current_path == rhs.current_path && target_path == rhs.target_path &&
+         url_chain == rhs.url_chain && referrer_url == rhs.referrer_url &&
+         tab_url == rhs.tab_url && tab_referrer_url == rhs.tab_referrer_url &&
+         http_method == rhs.http_method && mime_type == rhs.mime_type &&
          original_mime_type == rhs.original_mime_type &&
-         start_time == rhs.start_time &&
-         end_time == rhs.end_time &&
-         etag == rhs.etag &&
-         last_modified == rhs.last_modified &&
+         start_time == rhs.start_time && end_time == rhs.end_time &&
+         etag == rhs.etag && last_modified == rhs.last_modified &&
          received_bytes == rhs.received_bytes &&
-         total_bytes == rhs.total_bytes &&
-         state == rhs.state &&
+         total_bytes == rhs.total_bytes && state == rhs.state &&
          danger_type == rhs.danger_type &&
-         interrupt_reason == rhs.interrupt_reason &&
-         hash == rhs.hash &&
-         id == rhs.id &&
-         guid == rhs.guid &&
-         opened == rhs.opened &&
-         by_ext_id == rhs.by_ext_id &&
-         by_ext_name == rhs.by_ext_name;
+         interrupt_reason == rhs.interrupt_reason && hash == rhs.hash &&
+         id == rhs.id && guid == rhs.guid && opened == rhs.opened &&
+         by_ext_id == rhs.by_ext_id && by_ext_name == rhs.by_ext_name;
 }
 
 }  // namespace history

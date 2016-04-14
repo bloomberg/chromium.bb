@@ -36,7 +36,7 @@ namespace {
 // Current version number. We write databases at the "current" version number,
 // but any previous version that can read the "compatible" one can make do with
 // our database without *too* many bad effects.
-const int kCurrentVersionNumber = 30;
+const int kCurrentVersionNumber = 31;
 const int kCompatibleVersionNumber = 16;
 const char kEarlyExpirationThresholdKey[] = "early_expiration_threshold";
 const int kMaxHostsInMemory = 10000;
@@ -493,6 +493,15 @@ sql::InitStatus HistoryDatabase::EnsureCurrentVersion() {
   if (cur_version == 29) {
     if (!MigrateHashHttpMethodAndGenerateGuids()) {
       LOG(WARNING) << "Unable to migrate history to version 30";
+      return sql::INIT_FAILURE;
+    }
+    cur_version++;
+    meta_table_.SetVersionNumber(cur_version);
+  }
+
+  if (cur_version == 30) {
+    if (!MigrateDownloadTabUrl()) {
+      LOG(WARNING) << "Unable to migrate history to version 31";
       return sql::INIT_FAILURE;
     }
     cur_version++;

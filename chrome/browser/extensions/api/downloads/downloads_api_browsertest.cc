@@ -432,7 +432,9 @@ class DownloadExtensionTest : public ExtensionApiTest {
           downloads_directory().Append(history_info[i].filename),
           downloads_directory().Append(history_info[i].filename),
           url_chain,
-          GURL(),  // URL Chain, referrer
+          GURL(),
+          GURL(),
+          GURL(),
           std::string(),
           std::string(),  // mime_type, original_mime_type
           current,

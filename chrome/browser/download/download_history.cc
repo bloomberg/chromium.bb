@@ -127,28 +127,18 @@ history::DownloadRow GetDownloadRow(
 #endif
 
   return history::DownloadRow(
-      item->GetFullPath(),
-      item->GetTargetFilePath(),
-      item->GetUrlChain(),
-      item->GetReferrerUrl(),
+      item->GetFullPath(), item->GetTargetFilePath(), item->GetUrlChain(),
+      item->GetReferrerUrl(), item->GetTabUrl(), item->GetTabReferrerUrl(),
       std::string(),  // HTTP method (not available yet)
-      item->GetMimeType(),
-      item->GetOriginalMimeType(),
-      item->GetStartTime(),
-      item->GetEndTime(),
-      item->GetETag(),
-      item->GetLastModifiedTime(),
-      item->GetReceivedBytes(),
-      item->GetTotalBytes(),
+      item->GetMimeType(), item->GetOriginalMimeType(), item->GetStartTime(),
+      item->GetEndTime(), item->GetETag(), item->GetLastModifiedTime(),
+      item->GetReceivedBytes(), item->GetTotalBytes(),
       history::ToHistoryDownloadState(item->GetState()),
       history::ToHistoryDownloadDangerType(item->GetDangerType()),
       history::ToHistoryDownloadInterruptReason(item->GetLastReason()),
       std::string(),  // Hash value (not available yet)
-      history::ToHistoryDownloadId(item->GetId()),
-      item->GetGuid(),
-      item->GetOpened(),
-      by_ext_id,
-      by_ext_name);
+      history::ToHistoryDownloadId(item->GetId()), item->GetGuid(),
+      item->GetOpened(), by_ext_id, by_ext_name);
 }
 
 bool ShouldUpdateHistory(const history::DownloadRow* previous,
@@ -272,20 +262,10 @@ void DownloadHistory::QueryCallback(std::unique_ptr<InfoVector> infos) {
        it != infos->end(); ++it) {
     loading_id_ = history::ToContentDownloadId(it->id);
     content::DownloadItem* item = notifier_.GetManager()->CreateDownloadItem(
-        it->guid,
-        loading_id_,
-        it->current_path,
-        it->target_path,
-        it->url_chain,
-        it->referrer_url,
-        it->mime_type,
-        it->original_mime_type,
-        it->start_time,
-        it->end_time,
-        it->etag,
-        it->last_modified,
-        it->received_bytes,
-        it->total_bytes,
+        it->guid, loading_id_, it->current_path, it->target_path, it->url_chain,
+        it->referrer_url, it->tab_url, it->tab_referrer_url, it->mime_type,
+        it->original_mime_type, it->start_time, it->end_time, it->etag,
+        it->last_modified, it->received_bytes, it->total_bytes,
         std::string(),  // TODO(asanka): Need to persist and restore hash of
                         // partial file for an interrupted download. No need to
                         // store hash for a completed file.

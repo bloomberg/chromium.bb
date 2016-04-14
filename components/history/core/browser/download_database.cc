@@ -250,6 +250,11 @@ bool DownloadDatabase::MigrateHashHttpMethodAndGenerateGuids() {
   return GetDB().Execute(kMigrateGuidsQuery);
 }
 
+bool DownloadDatabase::MigrateDownloadTabUrl() {
+  return EnsureColumnExists("tab_url", "VARCHAR NOT NULL DEFAULT ''") &&
+         EnsureColumnExists("tab_referrer_url", "VARCHAR NOT NULL DEFAULT ''");
+}
+
 bool DownloadDatabase::InitDownloadTable() {
   const char kSchema[] =
       "CREATE TABLE downloads ("
@@ -268,6 +273,8 @@ bool DownloadDatabase::InitDownloadTable() {
       "opened INTEGER NOT NULL,"            // 1 if it has ever been opened
                                             // else 0
       "referrer VARCHAR NOT NULL,"          // HTTP Referrer
+      "tab_url VARCHAR NOT NULL,"           // Tab URL for initiator.
+      "tab_referrer_url VARCHAR NOT NULL,"  // Tag referrer URL for initiator.
       "http_method VARCHAR NOT NULL,"       // HTTP method.
       "by_ext_id VARCHAR NOT NULL,"         // ID of extension that started the
                                             // download
@@ -337,8 +344,8 @@ void DownloadDatabase::QueryDownloads(std::vector<DownloadRow>* results) {
       "SELECT id, guid, current_path, target_path, mime_type, "
       "original_mime_type, start_time, received_bytes, total_bytes, state, "
       "danger_type, interrupt_reason, hash, end_time, opened, referrer, "
-      "http_method, by_ext_id, by_ext_name, etag, last_modified "
-      "FROM downloads ORDER BY start_time"));
+      "tab_url, tab_referrer_url, http_method, by_ext_id, by_ext_name, etag, "
+      "last_modified FROM downloads ORDER BY start_time"));
 
   while (statement_main.Step()) {
     scoped_ptr<DownloadRow> info(new DownloadRow());
@@ -371,6 +378,8 @@ void DownloadDatabase::QueryDownloads(std::vector<DownloadRow>* results) {
         base::Time::FromInternalValue(statement_main.ColumnInt64(column++));
     info->opened = statement_main.ColumnInt(column++) != 0;
     info->referrer_url = GURL(statement_main.ColumnString(column++));
+    info->tab_url = GURL(statement_main.ColumnString(column++));
+    info->tab_referrer_url = GURL(statement_main.ColumnString(column++));
     info->http_method = statement_main.ColumnString(column++);
     info->by_ext_id = statement_main.ColumnString(column++);
     info->by_ext_name = statement_main.ColumnString(column++);
@@ -543,11 +552,12 @@ bool DownloadDatabase::CreateDownload(const DownloadRow& info) {
         "INSERT INTO downloads "
         "(id, guid, current_path, target_path, mime_type, original_mime_type, "
         " start_time, received_bytes, total_bytes, state, danger_type, "
-        " interrupt_reason, hash, end_time, opened, referrer, http_method, "
-        " by_ext_id, by_ext_name, etag, last_modified) "
+        " interrupt_reason, hash, end_time, opened, referrer, tab_url, "
+        " tab_referrer_url, http_method, by_ext_id, by_ext_name, etag, "
+        " last_modified) "
         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, "
         "        ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, "
-        "        ?)"));
+        "        ?, ?, ?)"));
 
     int column = 0;
     statement_insert.BindInt(column++, DownloadIdToInt(info.id));
@@ -568,6 +578,8 @@ bool DownloadDatabase::CreateDownload(const DownloadRow& info) {
     statement_insert.BindInt64(column++, info.end_time.ToInternalValue());
     statement_insert.BindInt(column++, info.opened ? 1 : 0);
     statement_insert.BindString(column++, info.referrer_url.spec());
+    statement_insert.BindString(column++, info.tab_url.spec());
+    statement_insert.BindString(column++, info.tab_referrer_url.spec());
     statement_insert.BindString(column++, info.http_method);
     statement_insert.BindString(column++, info.by_ext_id);
     statement_insert.BindString(column++, info.by_ext_name);

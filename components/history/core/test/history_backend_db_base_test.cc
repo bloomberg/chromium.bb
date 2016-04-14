@@ -123,28 +123,15 @@ bool HistoryBackendDBBaseTest::AddDownload(uint32_t id,
   std::vector<GURL> url_chain;
   url_chain.push_back(GURL("foo-url"));
 
-  DownloadRow download(base::FilePath(FILE_PATH_LITERAL("current-path")),
-                       base::FilePath(FILE_PATH_LITERAL("target-path")),
-                       url_chain,
-                       GURL("http://referrer.com/"),
-                       std::string(),
-                       "application/vnd.oasis.opendocument.text",
-                       "application/octet-stream",
-                       time,
-                       time,
-                       std::string(),
-                       std::string(),
-                       0,
-                       512,
-                       state,
-                       DownloadDangerType::NOT_DANGEROUS,
-                       kTestDownloadInterruptReasonNone,
-                       std::string(),
-                       id,
-                       guid,
-                       false,
-                       "by_ext_id",
-                       "by_ext_name");
+  DownloadRow download(
+      base::FilePath(FILE_PATH_LITERAL("current-path")),
+      base::FilePath(FILE_PATH_LITERAL("target-path")), url_chain,
+      GURL("http://referrer.example.com/"), GURL("http://tab-url.example.com/"),
+      GURL("http://tab-referrer-url.example.com/"), std::string(),
+      "application/vnd.oasis.opendocument.text", "application/octet-stream",
+      time, time, std::string(), std::string(), 0, 512, state,
+      DownloadDangerType::NOT_DANGEROUS, kTestDownloadInterruptReasonNone,
+      std::string(), id, guid, false, "by_ext_id", "by_ext_name");
   return db_->CreateDownload(download);
 }
 

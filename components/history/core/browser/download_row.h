@@ -25,7 +25,9 @@ struct DownloadRow {
   DownloadRow(const base::FilePath& current_path,
               const base::FilePath& target_path,
               const std::vector<GURL>& url_chain,
-              const GURL& referrer,
+              const GURL& referrer_url,
+              const GURL& tab_url,
+              const GURL& tab_referrer_url,
               const std::string& http_method,
               const std::string& mime_type,
               const std::string& original_mime_type,
@@ -64,6 +66,14 @@ struct DownloadRow {
 
   // The URL that referred us. Is not changed by UpdateDownload().
   GURL referrer_url;
+
+  // The URL of the tab that initiated the download, if any. Not changed by
+  // UpdateDownload().
+  GURL tab_url;
+
+  // The referrer of the tab that initialized the download, if any. Not changed
+  // by UpdateDownload();
+  GURL tab_referrer_url;
 
   // HTTP method used for the request. GET is assumed if the method was not
   // stored for a download in the history database.
