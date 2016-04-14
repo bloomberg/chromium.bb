@@ -27,17 +27,17 @@ import org.chromium.sync.AndroidSyncSettings;
 import org.chromium.sync.signin.AccountManagerHelper;
 
 /**
- * Tests for ChromiumSyncAdapter.
+ * Tests for ChromeBrowserSyncAdapter.
  */
-public class ChromiumSyncAdapterTest extends ChromeActivityTestCaseBase<ChromeActivity> {
+public class ChromeBrowserSyncAdapterTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     private static final Account TEST_ACCOUNT =
             AccountManagerHelper.createAccountFromName("test@gmail.com");
     private static final long WAIT_FOR_LAUNCHER_MS = ScalableTimeout.scaleTimeout(10 * 1000);
     private static final long POLL_INTERVAL_MS = 100;
 
-    private TestChromiumSyncAdapter mSyncAdapter;
+    private TestSyncAdapter mSyncAdapter;
 
-    private static class TestChromiumSyncAdapter extends ChromiumSyncAdapter {
+    private static class TestSyncAdapter extends ChromeBrowserSyncAdapter {
         private boolean mInvalidated;
         private boolean mInvalidatedAllTypes;
         private int mObjectSource;
@@ -45,7 +45,7 @@ public class ChromiumSyncAdapterTest extends ChromeActivityTestCaseBase<ChromeAc
         private long mVersion;
         private String mPayload;
 
-        public TestChromiumSyncAdapter(Context context, Application application) {
+        public TestSyncAdapter(Context context, Application application) {
             super(context, application);
         }
 
@@ -64,14 +64,14 @@ public class ChromiumSyncAdapterTest extends ChromeActivityTestCaseBase<ChromeAc
         }
     }
 
-    public ChromiumSyncAdapterTest() {
+    public ChromeBrowserSyncAdapterTest() {
         super(ChromeActivity.class);
     }
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        mSyncAdapter = new TestChromiumSyncAdapter(
+        mSyncAdapter = new TestSyncAdapter(
                 getInstrumentation().getTargetContext(), getActivity().getApplication());
     }
 

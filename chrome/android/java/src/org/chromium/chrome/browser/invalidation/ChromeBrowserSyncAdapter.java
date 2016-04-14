@@ -35,12 +35,12 @@ import java.util.concurrent.TimeUnit;
  * A Sync adapter that receives invalidations from {@link InvalidationClientService} and dispatches
  * it to the native side with a caching layer in {@link DelayedInvalidationsController}.
  */
-public class ChromiumSyncAdapter extends AbstractThreadedSyncAdapter {
+public class ChromeBrowserSyncAdapter extends AbstractThreadedSyncAdapter {
     private static final String TAG = "invalidation";
 
     private final Application mApplication;
 
-    public ChromiumSyncAdapter(Context context, Application application) {
+    public ChromeBrowserSyncAdapter(Context context, Application application) {
         super(context, false);
         mApplication = application;
     }

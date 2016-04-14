@@ -10,16 +10,16 @@ import android.content.Intent;
 import android.os.IBinder;
 
 public class ChromeBrowserSyncAdapterService extends Service {
-    private static ChromiumSyncAdapter sSyncAdapter = null;
+    private static ChromeBrowserSyncAdapter sSyncAdapter = null;
     private static final Object LOCK = new Object();
 
     /**
      * Get the sync adapter reference, creating an instance if necessary.
      */
-    private ChromiumSyncAdapter getOrCreateSyncAdapter(Context applicationContext) {
+    private ChromeBrowserSyncAdapter getOrCreateSyncAdapter(Context applicationContext) {
         synchronized (LOCK) {
             if (sSyncAdapter == null) {
-                sSyncAdapter = new ChromiumSyncAdapter(applicationContext, getApplication());
+                sSyncAdapter = new ChromeBrowserSyncAdapter(applicationContext, getApplication());
             }
         }
         return sSyncAdapter;
