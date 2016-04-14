@@ -62,9 +62,8 @@ void SoftwareOutputDeviceX11::EndPaint() {
     XImage image;
     memset(&image, 0, sizeof(image));
 
-    SkImageInfo info;
-    size_t rowBytes;
-    const void* addr = surface_->peekPixels(&info, &rowBytes);
+    SkPixmap skia_pixmap;
+    surface_->peekPixels(&skia_pixmap);
     image.width = viewport_pixel_size_.width();
     image.height = viewport_pixel_size_.height();
     image.depth = 32;
@@ -73,11 +72,12 @@ void SoftwareOutputDeviceX11::EndPaint() {
     image.byte_order = LSBFirst;
     image.bitmap_unit = 8;
     image.bitmap_bit_order = LSBFirst;
-    image.bytes_per_line = rowBytes;
+    image.bytes_per_line = skia_pixmap.rowBytes();
     image.red_mask = 0xff;
     image.green_mask = 0xff00;
     image.blue_mask = 0xff0000;
-    image.data = const_cast<char*>(static_cast<const char*>(addr));
+    image.data = const_cast<char*>(static_cast<const char*>(
+        skia_pixmap.addr()));
 
     XPutImage(display_,
               pixmap,
@@ -116,14 +116,13 @@ void SoftwareOutputDeviceX11::EndPaint() {
   }
 
   // TODO(jbauman): Switch to XShmPutImage since it's async.
-  SkImageInfo info;
-  size_t rowBytes;
-  const void* addr = surface_->peekPixels(&info, &rowBytes);
+  SkPixmap pixmap;
+  surface_->peekPixels(&pixmap);
   gfx::PutARGBImage(
       display_, attributes_.visual, attributes_.depth, compositor_->widget(),
-      gc_, static_cast<const uint8_t*>(addr), viewport_pixel_size_.width(),
-      viewport_pixel_size_.height(), rect.x(), rect.y(), rect.x(), rect.y(),
-      rect.width(), rect.height());
+      gc_, static_cast<const uint8_t*>(pixmap.addr()),
+      viewport_pixel_size_.width(), viewport_pixel_size_.height(), rect.x(),
+      rect.y(), rect.x(), rect.y(), rect.width(), rect.height());
 }
 
 }  // namespace content

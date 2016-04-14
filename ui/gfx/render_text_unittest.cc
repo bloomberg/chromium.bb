@@ -3043,8 +3043,9 @@ TEST_F(RenderTextTest, TextDoesntClip) {
 
     render_text->Draw(&canvas);
     ASSERT_LT(string_size.width() + kTestSize, kCanvasSize.width());
-    const uint32_t* buffer =
-        static_cast<const uint32_t*>(surface->peekPixels(nullptr, nullptr));
+    SkPixmap pixmap;
+    surface->peekPixels(&pixmap);
+    const uint32_t* buffer = static_cast<const uint32_t*>(pixmap.addr());
     ASSERT_NE(nullptr, buffer);
     TestRectangleBuffer rect_buffer(string, buffer, kCanvasSize.width(),
                                     kCanvasSize.height());
@@ -3128,8 +3129,9 @@ TEST_F(RenderTextTest, TextDoesClip) {
     render_text->set_clip_to_display_rect(true);
     render_text->Draw(&canvas);
     ASSERT_LT(string_size.width() + kTestSize, kCanvasSize.width());
-    const uint32_t* buffer =
-        static_cast<const uint32_t*>(surface->peekPixels(nullptr, nullptr));
+    SkPixmap pixmap;
+    surface->peekPixels(&pixmap);
+    const uint32_t* buffer = static_cast<const uint32_t*>(pixmap.addr());
     ASSERT_NE(nullptr, buffer);
     TestRectangleBuffer rect_buffer(string, buffer, kCanvasSize.width(),
                                     kCanvasSize.height());

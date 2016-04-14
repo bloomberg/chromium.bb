@@ -42,23 +42,23 @@ void SoftwareOutputDeviceMus::EndPaint() {
           widget, bitmap_uploader::kBitmapUploaderForAcceleratedWidget));
   DCHECK(uploader);
 
-  SkImageInfo info;
-  size_t rowBytes;
-  const void* addr = surface_->peekPixels(&info, &rowBytes);
+  SkPixmap pixmap;
+  surface_->peekPixels(&pixmap);
 
-  if (!addr) {
+  if (!pixmap.addr()) {
     LOG(WARNING) << "SoftwareOutputDeviceMus: skia surface did not provide us "
                     "with pixels";
     return;
   }
 
-  const unsigned char* pixels = static_cast<const unsigned char*>(addr);
+  const unsigned char* pixels = static_cast<const unsigned char*>(
+      pixmap.addr());
 
   // TODO(rjkroege): This makes an additional copy. Improve the
   // bitmap_uploader API to remove.
   std::unique_ptr<std::vector<unsigned char>> data(
       new std::vector<unsigned char>(
-          pixels, pixels + rowBytes * viewport_pixel_size_.height()));
+          pixels, pixels + pixmap.rowBytes() * viewport_pixel_size_.height()));
   uploader->SetBitmap(viewport_pixel_size_.width(),
                       viewport_pixel_size_.height(), std::move(data),
                       bitmap_uploader::BitmapUploader::BGRA);

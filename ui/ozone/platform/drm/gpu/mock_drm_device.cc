@@ -203,7 +203,9 @@ bool MockDrmDevice::MapDumbBuffer(uint32_t handle, size_t size, void** pixels) {
   if (handle >= buffers_.size() || !buffers_[handle])
     return false;
 
-  *pixels = const_cast<void*>(buffers_[handle]->peekPixels(nullptr, nullptr));
+  SkPixmap pixmap;
+  buffers_[handle]->peekPixels(&pixmap);
+  *pixels = const_cast<void*>(pixmap.addr());
   return true;
 }
 

@@ -87,18 +87,13 @@ void CacaSurface::ResizeCanvas(const gfx::Size& viewport_size) {
 void CacaSurface::PresentCanvas(const gfx::Rect& damage) {
   TRACE_EVENT0("ozone", "CacaSurface::PresentCanvas");
 
-  SkImageInfo info;
-  size_t row_bytes;
-  const void* pixels = surface_->peekPixels(&info, &row_bytes);
+  SkPixmap pixmap;
+  surface_->peekPixels(&pixmap);
 
   caca_canvas_t* canvas = caca_get_canvas(window_->display());
-  caca_dither_bitmap(canvas,
-                     0,
-                     0,
-                     caca_get_canvas_width(canvas),
-                     caca_get_canvas_height(canvas),
-                     dither_.get(),
-                     static_cast<const uint8_t*>(pixels));
+  caca_dither_bitmap(canvas, 0, 0, caca_get_canvas_width(canvas),
+                     caca_get_canvas_height(canvas), dither_.get(),
+                     static_cast<const uint8_t*>(pixmap.addr()));
   caca_refresh_display(window_->display());
 }
 

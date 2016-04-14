@@ -198,13 +198,12 @@ void HeadsUpDisplayLayerImpl::UpdateHudTexture(
   }
 
   TRACE_EVENT0("cc", "UploadHudTexture");
-  SkImageInfo info;
-  size_t row_bytes = 0;
-  const void* pixels = hud_surface_->peekPixels(&info, &row_bytes);
-  DCHECK(pixels);
-  DCHECK(info.colorType() == kN32_SkColorType);
+  SkPixmap pixmap;
+  hud_surface_->peekPixels(&pixmap);
+  DCHECK(pixmap.addr());
+  DCHECK(pixmap.info().colorType() == kN32_SkColorType);
   resource_provider->CopyToResource(resources_.back()->id(),
-                                    static_cast<const uint8_t*>(pixels),
+                                    static_cast<const uint8_t*>(pixmap.addr()),
                                     internal_content_bounds_);
   resource_provider->GenerateSyncTokenForResource(resources_.back()->id());
 }

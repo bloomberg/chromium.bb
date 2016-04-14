@@ -114,11 +114,12 @@ void TileTaskWorkerPool::PlaybackToMemory(
         DCHECK_EQ(size.height() % 4, 0);
         std::unique_ptr<TextureCompressor> texture_compressor =
             TextureCompressor::Create(TextureCompressor::kFormatETC1);
-        texture_compressor->Compress(reinterpret_cast<const uint8_t*>(
-                                         surface->peekPixels(nullptr, nullptr)),
-                                     reinterpret_cast<uint8_t*>(memory),
-                                     size.width(), size.height(),
-                                     TextureCompressor::kQualityHigh);
+        SkPixmap pixmap;
+        surface->peekPixels(&pixmap);
+        texture_compressor->Compress(
+            reinterpret_cast<const uint8_t*>(pixmap.addr()),
+            reinterpret_cast<uint8_t*>(memory), size.width(), size.height(),
+            TextureCompressor::kQualityHigh);
       } else {
         TRACE_EVENT0("cc",
                      "TileTaskWorkerPool::PlaybackToMemory::ConvertRGBA4444");
