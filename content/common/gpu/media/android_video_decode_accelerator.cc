@@ -1319,9 +1319,11 @@ AndroidVideoDecodeAccelerator::GetCapabilities(
     capabilities.flags = media::VideoDecodeAccelerator::Capabilities::
                              NEEDS_ALL_PICTURE_BUFFERS_TO_DECODE |
                          media::VideoDecodeAccelerator::Capabilities::
-                             SUPPORTS_EXTERNAL_OUTPUT_SURFACE |
-                         media::VideoDecodeAccelerator::Capabilities::
                              SUPPORTS_DEFERRED_INITIALIZATION;
+    if (media::MediaCodecUtil::IsSurfaceViewOutputSupported()) {
+      capabilities.flags |= media::VideoDecodeAccelerator::Capabilities::
+          SUPPORTS_EXTERNAL_OUTPUT_SURFACE;
+    }
   }
 
   return capabilities;
