@@ -1344,6 +1344,7 @@ TEST_F(LayerTreeHostCommonTest,
   // When parent is transparent, the layer should not be drawn.
   parent->OnOpacityAnimated(0.f);
   render_surface1->OnOpacityAnimated(1.f);
+  render_surface1->set_visible_layer_rect(gfx::Rect());
   {
     LayerImplList render_surface_layer_list;
     parent->layer_tree_impl()->IncrementRenderSurfaceListIdForTesting();
@@ -1356,6 +1357,7 @@ TEST_F(LayerTreeHostCommonTest,
 
   node = effect_tree.Node(render_surface1->effect_tree_index());
   EXPECT_FALSE(node->data.is_drawn);
+  EXPECT_EQ(gfx::Rect(), render_surface1->visible_layer_rect());
 }
 
 TEST_F(LayerTreeHostCommonTest, RenderSurfaceListForFilter) {
@@ -5187,7 +5189,7 @@ TEST_F(LayerTreeHostCommonTest, OpacityAnimatingOnPendingTree) {
   LayerTreeHostCommon::CalculateDrawProperties(&inputs2);
 
   LayerImpl* child_ptr = root_layer->layer_tree_impl()->LayerById(2);
-  EffectTree tree =
+  EffectTree& tree =
       root_layer->layer_tree_impl()->property_trees()->effect_tree;
   EffectNode* node = tree.Node(child_ptr->effect_tree_index());
   EXPECT_FALSE(node->data.is_drawn);
@@ -5210,6 +5212,23 @@ TEST_F(LayerTreeHostCommonTest, OpacityAnimatingOnPendingTree) {
   node = tree.Node(child_ptr->effect_tree_index());
   EXPECT_TRUE(node->data.is_drawn);
   EXPECT_TRUE(tree.ContributesToDrawnSurface(child_ptr->effect_tree_index()));
+
+  // But if the opacity of the layer remains 0 after activation, it should not
+  // be drawn.
+  host_impl.ActivateSyncTree();
+  LayerImpl* active_root = host_impl.active_tree()->root_layer();
+  LayerImpl* active_child = host_impl.active_tree()->LayerById(child_ptr->id());
+
+  EffectTree& active_effect_tree =
+      host_impl.active_tree()->property_trees()->effect_tree;
+  EXPECT_TRUE(active_effect_tree.needs_update());
+
+  ExecuteCalculateDrawProperties(active_root);
+
+  node = active_effect_tree.Node(active_child->effect_tree_index());
+  EXPECT_FALSE(node->data.is_drawn);
+  EXPECT_FALSE(active_effect_tree.ContributesToDrawnSurface(
+      active_child->effect_tree_index()));
 }
 
 using LCDTextTestParam = std::tr1::tuple<bool, bool, bool>;
@@ -5681,7 +5700,7 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHiddenWithCopyRequest) {
   // appear in its list, since it needs to be drawn for the copy request.
   ASSERT_EQ(1u, copy_parent_layer->render_surface()->layer_list().size());
   EXPECT_EQ(copy_layer->id(),
-            copy_layer->render_surface()->layer_list().at(0)->id());
+            copy_parent_layer->render_surface()->layer_list().at(0)->id());
 
   // The copy_layer's render surface should have two contributing layers.
   ASSERT_EQ(2u, copy_layer->render_surface()->layer_list().size());
