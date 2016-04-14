@@ -1457,12 +1457,12 @@ String HTMLInputElement::localizeValue(const String& proposedValue) const
 
 bool HTMLInputElement::isInRange() const
 {
-    return m_inputType->isInRange(value());
+    return willValidate() && m_inputType->isInRange(value());
 }
 
 bool HTMLInputElement::isOutOfRange() const
 {
-    return m_inputType->isOutOfRange(value());
+    return willValidate() && m_inputType->isOutOfRange(value());
 }
 
 bool HTMLInputElement::isRequiredFormControl() const
