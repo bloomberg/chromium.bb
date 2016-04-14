@@ -74,7 +74,7 @@ class AndroidHistoryProviderServiceTest : public testing::Test {
   base::MessageLoop message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
-  scoped_ptr<AndroidHistoryProviderService> service_;
+  std::unique_ptr<AndroidHistoryProviderService> service_;
   base::CancelableTaskTracker cancelable_tracker_;
   TestingProfile* testing_profile_;
 

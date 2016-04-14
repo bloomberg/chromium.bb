@@ -6,12 +6,13 @@
 #define CHROME_BROWSER_HISTORY_ANDROID_SQLITE_CURSOR_H_
 
 #include <jni.h>
+
+#include <memory>
 #include <vector>
 
 #include "base/android/scoped_java_ref.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/cancelable_task_tracker.h"
@@ -189,7 +190,7 @@ class SQLiteCursor {
   AndroidHistoryProviderService* service_;
 
   // Live on UI thread.
-  scoped_ptr<base::CancelableTaskTracker> tracker_;
+  std::unique_ptr<base::CancelableTaskTracker> tracker_;
 
   // The count of result rows.
   int count_;

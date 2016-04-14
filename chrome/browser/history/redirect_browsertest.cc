@@ -7,11 +7,12 @@
 // here might indicate that WebKit changed the calls our glue layer gets in
 // the case of redirects. It may also mean problems with the history system.
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"

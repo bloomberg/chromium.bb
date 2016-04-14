@@ -39,7 +39,7 @@ class AndroidURLsMigrationTest : public HistoryUnitTestBase {
 
  protected:
   base::FilePath history_db_name_;
-  scoped_ptr<TestingProfile> profile_;
+  std::unique_ptr<TestingProfile> profile_;
 };
 
 // Disabled as this does not correctly set up all the tables so that migration

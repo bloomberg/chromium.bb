@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/history/chrome_history_backend_client.h"
 #include "chrome/browser/history/history_utils.h"
 #include "chrome/browser/ui/profile_error_dialog.h"
@@ -69,9 +70,9 @@ void ChromeHistoryClient::NotifyProfileError(sql::InitStatus init_status) {
       IDS_COULDNT_OPEN_PROFILE_ERROR : IDS_PROFILE_TOO_NEW_ERROR);
 }
 
-scoped_ptr<history::HistoryBackendClient>
+std::unique_ptr<history::HistoryBackendClient>
 ChromeHistoryClient::CreateBackendClient() {
-  return make_scoped_ptr(new ChromeHistoryBackendClient(bookmark_model_));
+  return base::WrapUnique(new ChromeHistoryBackendClient(bookmark_model_));
 }
 
 void ChromeHistoryClient::BookmarkModelChanged() {

@@ -5,12 +5,12 @@
 #ifndef CHROME_BROWSER_HISTORY_CHROME_HISTORY_CLIENT_H_
 #define CHROME_BROWSER_HISTORY_CHROME_HISTORY_CLIENT_H_
 
+#include <memory>
 #include <set>
 
 #include "base/callback_forward.h"
 #include "base/callback_list.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/bookmarks/browser/base_bookmark_model_observer.h"
 #include "components/history/core/browser/history_client.h"
 
@@ -35,7 +35,7 @@ class ChromeHistoryClient : public history::HistoryClient,
   void Shutdown() override;
   bool CanAddURL(const GURL& url) override;
   void NotifyProfileError(sql::InitStatus init_status) override;
-  scoped_ptr<history::HistoryBackendClient> CreateBackendClient() override;
+  std::unique_ptr<history::HistoryBackendClient> CreateBackendClient() override;
 
  private:
   // bookmarks::BaseBookmarkModelObserver implementation.
@@ -59,8 +59,8 @@ class ChromeHistoryClient : public history::HistoryClient,
   base::Callback<void(const std::set<GURL>&)> on_bookmarks_removed_;
 
   // Subscription for notifications of changes to favicons.
-  scoped_ptr<base::CallbackList<void(const std::set<GURL>&,
-                                     const GURL&)>::Subscription>
+  std::unique_ptr<base::CallbackList<void(const std::set<GURL>&,
+                                          const GURL&)>::Subscription>
       favicons_changed_subscription_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeHistoryClient);

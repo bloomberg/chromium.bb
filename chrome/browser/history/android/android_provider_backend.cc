@@ -115,17 +115,17 @@ bool IsHistoryAndBookmarkRowValid(const HistoryAndBookmarkRow& row) {
 }
 
 void RunNotifyFaviconChanged(HistoryBackendNotifier* notifier,
-                             scoped_ptr<std::set<GURL>> urls) {
+                             std::unique_ptr<std::set<GURL>> urls) {
   notifier->NotifyFaviconsChanged(*(urls.get()), GURL());
 }
 
 void RunNotifyURLsModified(HistoryBackendNotifier* notifier,
-                           scoped_ptr<URLRows> rows) {
+                           std::unique_ptr<URLRows> rows) {
   notifier->NotifyURLsModified(*(rows.get()));
 }
 
 void RunNotifyURLsDeleted(HistoryBackendNotifier* notifier,
-                          scoped_ptr<URLRows> rows) {
+                          std::unique_ptr<URLRows> rows) {
   notifier->NotifyURLsDeleted(false /* all_history */,
                               false /* expired */,
                               *(rows.get()),
@@ -360,8 +360,8 @@ bool AndroidProviderBackend::UpdateHistoryAndBookmarks(
   }
   *updated_count = ids_set.size();
 
-  scoped_ptr<URLRows> changed_urls;
-  scoped_ptr<std::set<GURL>> favicon;
+  std::unique_ptr<URLRows> changed_urls;
+  std::unique_ptr<std::set<GURL>> favicon;
 
   for (const auto& id : ids_set) {
     if (row.is_value_set_explicitly(HistoryAndBookmarkRow::TITLE) ||
@@ -424,10 +424,10 @@ AndroidURLID AndroidProviderBackend::InsertHistoryAndBookmark(
   if (!history_db_->GetURLRow(row.url_id(), &url_row))
     return false;
 
-  scoped_ptr<URLRows> changed_urls(new URLRows);
+  std::unique_ptr<URLRows> changed_urls(new URLRows);
   changed_urls->push_back(url_row);
 
-  scoped_ptr<std::set<GURL>> favicon;
+  std::unique_ptr<std::set<GURL>> favicon;
   // No favicon should be changed if the thumbnail_db_ is not available.
   if (row.is_value_set_explicitly(HistoryAndBookmarkRow::FAVICON) &&
       row.favicon_valid() && thumbnail_db_) {
@@ -558,8 +558,8 @@ AndroidStatement* AndroidProviderBackend::QuerySearchTerms(
     sql.append(sort_order);
   }
 
-  scoped_ptr<sql::Statement> statement(new sql::Statement(
-      db_->GetUniqueStatement(sql.c_str())));
+  std::unique_ptr<sql::Statement> statement(
+      new sql::Statement(db_->GetUniqueStatement(sql.c_str())));
   int count = 0;
   BindStatement(selection_args, statement.get(), &count);
   if (!statement->is_valid()) {
@@ -1004,7 +1004,7 @@ bool AndroidProviderBackend::SimulateUpdateURL(
   std::ostringstream oss;
   oss << "url_id = " << ids[0].url_id;
 
-  scoped_ptr<AndroidStatement> statement;
+  std::unique_ptr<AndroidStatement> statement;
   statement.reset(QueryHistoryAndBookmarksInternal(projections, oss.str(),
       std::vector<base::string16>(), std::string()));
   if (!statement.get() || !statement->statement()->Step())
@@ -1022,8 +1022,8 @@ bool AndroidProviderBackend::SimulateUpdateURL(
   if (!history_db_->GetURLRow(ids[0].url_id, &old_url_row))
     return false;
 
-  scoped_ptr<std::set<GURL>> favicons;
-  scoped_ptr<URLRows> deleted_rows(new URLRows);
+  std::unique_ptr<std::set<GURL>> favicons;
+  std::unique_ptr<URLRows> deleted_rows(new URLRows);
   deleted_rows->push_back(old_url_row);
 
   favicon_base::FaviconID favicon_id = statement->statement()->ColumnInt64(4);
@@ -1098,7 +1098,7 @@ bool AndroidProviderBackend::SimulateUpdateURL(
   if (!history_db_->GetURLRow(new_row.url_id(), &new_url_row))
     return false;
 
-  scoped_ptr<URLRows> changed_urls(new URLRows);
+  std::unique_ptr<URLRows> changed_urls(new URLRows);
   changed_urls->push_back(new_url_row);
 
   notifications->push_back(
@@ -1142,8 +1142,8 @@ AndroidStatement* AndroidProviderBackend::QueryHistoryAndBookmarksInternal(
     sql.append(sort_order);
   }
 
-  scoped_ptr<sql::Statement> statement(new sql::Statement(
-      db_->GetUniqueStatement(sql.c_str())));
+  std::unique_ptr<sql::Statement> statement(
+      new sql::Statement(db_->GetUniqueStatement(sql.c_str())));
   int count = 0;
   BindStatement(selection_args, statement.get(), &count);
   if (!statement->is_valid()) {
@@ -1158,8 +1158,8 @@ bool AndroidProviderBackend::DeleteHistoryInternal(
     const TableIDRows& urls,
     bool delete_bookmarks,
     HistoryNotifications* notifications) {
-  scoped_ptr<URLRows> deleted_rows;
-  scoped_ptr<std::set<GURL>> favicons;
+  std::unique_ptr<URLRows> deleted_rows;
+  std::unique_ptr<std::set<GURL>> favicons;
   for (TableIDRows::const_iterator i = urls.begin(); i != urls.end(); ++i) {
     URLRow url_row;
     if (!history_db_->GetURLRow(i->url_id, &url_row))

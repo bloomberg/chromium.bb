@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_HISTORY_ANDROID_ANDROID_PROVIDER_BACKEND_H_
 
 #include <list>
+#include <memory>
 #include <set>
 
 #include "base/containers/hash_tables.h"
@@ -13,7 +14,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/supports_user_data.h"
 #include "components/history/core/browser/android/android_cache_database.h"
 #include "components/history/core/browser/android/android_history_types.h"
@@ -320,11 +320,11 @@ class AndroidProviderBackend : public base::SupportsUserData::Data {
   bool AddSearchTerm(const SearchRow& values);
 
   // SQLHandlers for different tables.
-  scoped_ptr<SQLHandler> urls_handler_;
-  scoped_ptr<SQLHandler> visit_handler_;
-  scoped_ptr<SQLHandler> android_urls_handler_;
-  scoped_ptr<SQLHandler> favicon_handler_;
-  scoped_ptr<SQLHandler> bookmark_model_handler_;
+  std::unique_ptr<SQLHandler> urls_handler_;
+  std::unique_ptr<SQLHandler> visit_handler_;
+  std::unique_ptr<SQLHandler> android_urls_handler_;
+  std::unique_ptr<SQLHandler> favicon_handler_;
+  std::unique_ptr<SQLHandler> bookmark_model_handler_;
 
   // The vector of all handlers
   std::vector<SQLHandler*> sql_handlers_;

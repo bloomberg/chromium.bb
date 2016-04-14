@@ -4,6 +4,7 @@
 
 #include "chrome/browser/history/history_service_factory.h"
 
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/history/chrome_history_client.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
@@ -77,11 +78,11 @@ HistoryServiceFactory::~HistoryServiceFactory() {
 KeyedService* HistoryServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = Profile::FromBrowserContext(context);
-  scoped_ptr<history::HistoryService> history_service(
+  std::unique_ptr<history::HistoryService> history_service(
       new history::HistoryService(
-          make_scoped_ptr(new ChromeHistoryClient(
+          base::WrapUnique(new ChromeHistoryClient(
               BookmarkModelFactory::GetForProfile(profile))),
-          make_scoped_ptr(new history::ContentVisitDelegate(profile))));
+          base::WrapUnique(new history::ContentVisitDelegate(profile))));
   if (!history_service->Init(
           history::HistoryDatabaseParamsForPath(profile->GetPath()))) {
     return nullptr;

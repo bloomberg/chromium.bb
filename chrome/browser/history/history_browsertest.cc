@@ -100,7 +100,7 @@ class HistoryBrowserTest : public InProcessBrowserTest {
 
   void WaitForHistoryBackendToRun() {
     base::CancelableTaskTracker task_tracker;
-    scoped_ptr<history::HistoryDBTask> task(new WaitForHistoryTask());
+    std::unique_ptr<history::HistoryDBTask> task(new WaitForHistoryTask());
     history::HistoryService* history = HistoryServiceFactory::GetForProfile(
         GetProfile(), ServiceAccessType::EXPLICIT_ACCESS);
     history->ScheduleDBTask(std::move(task), &task_tracker);

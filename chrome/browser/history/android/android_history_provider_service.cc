@@ -59,11 +59,11 @@ class AndroidProviderTask : public history::HistoryDBTask {
 // Creates an instance of AndroidProviderTask using the two callback and using
 // type deduction.
 template <typename ResultType>
-scoped_ptr<history::HistoryDBTask> CreateAndroidProviderTask(
+std::unique_ptr<history::HistoryDBTask> CreateAndroidProviderTask(
     const base::Callback<ResultType(history::AndroidProviderBackend*)>&
         request_cb,
     const base::Callback<void(ResultType)>& result_cb) {
-  return scoped_ptr<history::HistoryDBTask>(
+  return std::unique_ptr<history::HistoryDBTask>(
       new AndroidProviderTask<ResultType>(request_cb, result_cb));
 }
 
@@ -373,7 +373,7 @@ void AndroidHistoryProviderService::CloseStatement(
     delete statement;
     return;
   }
-  scoped_ptr<CloseStatementTask> task(new CloseStatementTask(statement));
+  std::unique_ptr<CloseStatementTask> task(new CloseStatementTask(statement));
   base::CancelableTaskTracker* tracker = task->tracker();
   hs->ScheduleDBTask(std::move(task), tracker);
 }
