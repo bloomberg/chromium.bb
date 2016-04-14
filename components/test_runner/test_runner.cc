@@ -2982,6 +2982,8 @@ void TestRunner::DispatchBeforeInstallPromptEvent(
 void TestRunner::ResolveBeforeInstallPromptPromise(
     int request_id,
     const std::string& platform) {
+  if (!test_interfaces_->GetAppBannerClient())
+    return;
   test_interfaces_->GetAppBannerClient()->ResolvePromise(request_id, platform);
 }
 
