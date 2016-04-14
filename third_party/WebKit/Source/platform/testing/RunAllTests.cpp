@@ -61,7 +61,7 @@ double dummyCurrentTime()
 int runTestSuite(base::TestSuite* testSuite)
 {
     int result = testSuite->Run();
-    blink::Heap::collectAllGarbage();
+    blink::ThreadHeap::collectAllGarbage();
     return result;
 }
 
@@ -95,7 +95,7 @@ int main(int argc, char** argv)
         platformConfig.compositorSupport = &compositorSupport;
         blink::TestingPlatformSupport platform(platformConfig);
 
-        blink::Heap::init();
+        blink::ThreadHeap::init();
         blink::ThreadState::attachMainThread();
         blink::ThreadState::current()->registerTraceDOMWrappers(nullptr, nullptr);
         blink::EventTracer::initialize();
@@ -109,7 +109,7 @@ int main(int argc, char** argv)
         result = base::LaunchUnitTests(argc, argv, base::Bind(runTestSuite, base::Unretained(&testSuite)));
 
         blink::ThreadState::detachMainThread();
-        blink::Heap::shutdown();
+        blink::ThreadHeap::shutdown();
     }
     blink::CompositorFactory::shutdown();
     WTF::shutdown();

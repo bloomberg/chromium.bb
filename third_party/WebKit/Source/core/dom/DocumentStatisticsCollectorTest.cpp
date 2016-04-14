@@ -30,7 +30,7 @@ protected:
 #if ENABLE(OILPAN)
     void TearDown() override
     {
-        Heap::collectAllGarbage();
+        ThreadHeap::collectAllGarbage();
     }
 #endif
 

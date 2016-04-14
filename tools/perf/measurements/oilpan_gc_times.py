@@ -72,7 +72,7 @@ def _AddTracingResults(thread, results):
     if event.name == 'ThreadHeap::coalesce':
       values['oilpan_coalesce'].append(duration)
       continue
-    if event.name == 'Heap::collectGarbage':
+    if event.name == 'BlinkGCMarking':
       if reason is not None:
         values['oilpan_%s_mark' % reason].append(mark_time)
         values['oilpan_%s_lazy_sweep' % reason].append(lazy_sweep_time)

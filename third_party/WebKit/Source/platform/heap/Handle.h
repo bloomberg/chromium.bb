@@ -274,15 +274,15 @@ private:
         if (!m_raw)
             return;
 
-        // Heap::isHeapObjectAlive(m_raw) checks that m_raw is a traceable
+        // ThreadHeap::isHeapObjectAlive(m_raw) checks that m_raw is a traceable
         // object. In other words, it checks that the pointer is either of:
         //
         //   (a) a pointer to the head of an on-heap object.
         //   (b) a pointer to the head of an on-heap mixin object.
         //
-        // Otherwise, Heap::isHeapObjectAlive will crash when it calls
+        // Otherwise, ThreadHeap::isHeapObjectAlive will crash when it calls
         // header->checkHeader().
-        Heap::isHeapObjectAlive(m_raw);
+        ThreadHeap::isHeapObjectAlive(m_raw);
 #endif
     }
 
@@ -844,7 +844,7 @@ protected:
         //   (a) a pointer to the head of an on-heap object.
         //   (b) a pointer to the head of an on-heap mixin object.
         //
-        // We can check it by calling Heap::isHeapObjectAlive(m_raw),
+        // We can check it by calling ThreadHeap::isHeapObjectAlive(m_raw),
         // but we cannot call it here because it requires to include T.h.
         // So we currently only try to implement the check for (a), but do
         // not insist that T's definition is in scope.

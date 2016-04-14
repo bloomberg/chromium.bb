@@ -64,7 +64,7 @@ TEST_F(PaintWorkletTest, GarbageCollectionOfCSSPaintDefinition)
     ASSERT(handle.isWeak());
 
     // Run a GC, persistent shouldn't have been collected yet.
-    Heap::collectAllGarbage();
+    ThreadHeap::collectAllGarbage();
     V8GCController::collectAllGarbageForTesting(isolate);
     ASSERT(!handle.isEmpty());
 
@@ -72,7 +72,7 @@ TEST_F(PaintWorkletTest, GarbageCollectionOfCSSPaintDefinition)
     m_page.clear();
 
     // Run a GC, the persistent should have been collected.
-    Heap::collectAllGarbage();
+    ThreadHeap::collectAllGarbage();
     V8GCController::collectAllGarbageForTesting(isolate);
     ASSERT(handle.isEmpty());
 }

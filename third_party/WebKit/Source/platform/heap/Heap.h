@@ -171,8 +171,8 @@ private:
     double m_estimatedMarkingTimePerByte;
 };
 
-class PLATFORM_EXPORT Heap {
-    STATIC_ONLY(Heap);
+class PLATFORM_EXPORT ThreadHeap {
+    STATIC_ONLY(ThreadHeap);
 public:
     static void init();
     static void shutdown();
@@ -234,7 +234,7 @@ public:
             return false;
         ASSERT(page->arena()->getThreadState()->isSweepingInProgress());
 
-        return !Heap::isHeapObjectAlive(const_cast<T*>(objectPointer));
+        return !ThreadHeap::isHeapObjectAlive(const_cast<T*>(objectPointer));
     }
 
     // Push a trace callback on the marking stack.
@@ -411,7 +411,7 @@ public:
 
     static void* allocateObject(size_t size, bool eagerlySweep)
     {
-        return Heap::allocate<T>(size, eagerlySweep);
+        return ThreadHeap::allocate<T>(size, eagerlySweep);
     }
 
     void operator delete(void* p)
@@ -444,7 +444,7 @@ protected:
 // for a class.
 //
 
-inline int Heap::arenaIndexForObjectSize(size_t size)
+inline int ThreadHeap::arenaIndexForObjectSize(size_t size)
 {
     if (size < 64) {
         if (size < 32)
@@ -456,7 +456,7 @@ inline int Heap::arenaIndexForObjectSize(size_t size)
     return BlinkGC::NormalPage4ArenaIndex;
 }
 
-inline bool Heap::isNormalArenaIndex(int index)
+inline bool ThreadHeap::isNormalArenaIndex(int index)
 {
     return index >= BlinkGC::NormalPage1ArenaIndex && index <= BlinkGC::NormalPage4ArenaIndex;
 }
@@ -496,7 +496,7 @@ public:                                                \
 #define EAGERLY_FINALIZE() typedef int IsEagerlyFinalizedMarker
 #endif
 
-inline Address Heap::allocateOnArenaIndex(ThreadState* state, size_t size, int arenaIndex, size_t gcInfoIndex, const char* typeName)
+inline Address ThreadHeap::allocateOnArenaIndex(ThreadState* state, size_t size, int arenaIndex, size_t gcInfoIndex, const char* typeName)
 {
     ASSERT(state->isAllocationAllowed());
     ASSERT(arenaIndex != BlinkGC::LargeObjectArenaIndex);
@@ -507,15 +507,15 @@ inline Address Heap::allocateOnArenaIndex(ThreadState* state, size_t size, int a
 }
 
 template<typename T>
-Address Heap::allocate(size_t size, bool eagerlySweep)
+Address ThreadHeap::allocate(size_t size, bool eagerlySweep)
 {
     ThreadState* state = ThreadStateFor<ThreadingTrait<T>::Affinity>::state();
     const char* typeName = WTF_HEAP_PROFILER_TYPE_NAME(T);
-    return Heap::allocateOnArenaIndex(state, size, eagerlySweep ? BlinkGC::EagerSweepArenaIndex : Heap::arenaIndexForObjectSize(size), GCInfoTrait<T>::index(), typeName);
+    return ThreadHeap::allocateOnArenaIndex(state, size, eagerlySweep ? BlinkGC::EagerSweepArenaIndex : ThreadHeap::arenaIndexForObjectSize(size), GCInfoTrait<T>::index(), typeName);
 }
 
 template<typename T>
-Address Heap::reallocate(void* previous, size_t size)
+Address ThreadHeap::reallocate(void* previous, size_t size)
 {
     // Not intended to be a full C realloc() substitute;
     // realloc(nullptr, size) is not a supported alias for malloc(size).
@@ -537,11 +537,11 @@ Address Heap::reallocate(void* previous, size_t size)
         arenaIndex = arenaIndexForObjectSize(size);
 
     // TODO(haraken): We don't support reallocate() for finalizable objects.
-    ASSERT(!Heap::gcInfo(previousHeader->gcInfoIndex())->hasFinalizer());
+    ASSERT(!ThreadHeap::gcInfo(previousHeader->gcInfoIndex())->hasFinalizer());
     ASSERT(previousHeader->gcInfoIndex() == GCInfoTrait<T>::index());
     const char* typeName = WTF_HEAP_PROFILER_TYPE_NAME(T);
     HeapAllocHooks::freeHookIfEnabled(static_cast<Address>(previous));
-    Address address = Heap::allocateOnArenaIndex(state, size, arenaIndex, GCInfoTrait<T>::index(), typeName);
+    Address address = ThreadHeap::allocateOnArenaIndex(state, size, arenaIndex, GCInfoTrait<T>::index(), typeName);
     size_t copySize = previousHeader->payloadSize();
     if (copySize > size)
         copySize = size;

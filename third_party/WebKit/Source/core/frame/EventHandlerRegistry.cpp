@@ -255,9 +255,9 @@ void EventHandlerRegistry::clearWeakMembers(Visitor* visitor)
         for (const auto& eventTarget : *targets) {
             Node* node = eventTarget.key->toNode();
             LocalDOMWindow* window = eventTarget.key->toDOMWindow();
-            if (node && !Heap::isHeapObjectAlive(node)) {
+            if (node && !ThreadHeap::isHeapObjectAlive(node)) {
                 deadTargets.append(node);
-            } else if (window && !Heap::isHeapObjectAlive(window)) {
+            } else if (window && !ThreadHeap::isHeapObjectAlive(window)) {
                 deadTargets.append(window);
             }
         }

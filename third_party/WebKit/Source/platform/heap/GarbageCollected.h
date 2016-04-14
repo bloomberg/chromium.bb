@@ -204,7 +204,7 @@ public:
 public:                                                                 \
     bool isHeapObjectAlive() const override                             \
     {                                                                   \
-        return Heap::isHeapObjectAlive(this);                           \
+        return ThreadHeap::isHeapObjectAlive(this);                           \
     }                                                                   \
 private:
 

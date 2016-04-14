@@ -146,7 +146,7 @@ TEST_F(ScrollableAreaTest, ScrollbarTrackAndThumbRepaint)
     EXPECT_TRUE(scrollbar->thumbNeedsRepaint());
 
     // Forced GC in order to finalize objects depending on the mock object.
-    Heap::collectAllGarbage();
+    ThreadHeap::collectAllGarbage();
 }
 
 TEST_F(ScrollableAreaTest, ScrollbarGraphicsLayerInvalidation)
@@ -167,7 +167,7 @@ TEST_F(ScrollableAreaTest, ScrollbarGraphicsLayerInvalidation)
     EXPECT_TRUE(graphicsLayer.hasTrackedPaintInvalidations());
 
     // Forced GC in order to finalize objects depending on the mock object.
-    Heap::collectAllGarbage();
+    ThreadHeap::collectAllGarbage();
 }
 
 TEST_F(ScrollableAreaTest, InvalidatesNonCompositedScrollbarsWhenThumbMoves)
@@ -199,7 +199,7 @@ TEST_F(ScrollableAreaTest, InvalidatesNonCompositedScrollbarsWhenThumbMoves)
     scrollableArea->clearNeedsPaintInvalidationForScrollControls();
 
     // Forced GC in order to finalize objects depending on the mock object.
-    Heap::collectAllGarbage();
+    ThreadHeap::collectAllGarbage();
 }
 
 TEST_F(ScrollableAreaTest, InvalidatesCompositedScrollbarsIfPartsNeedRepaint)
@@ -266,7 +266,7 @@ TEST_F(ScrollableAreaTest, InvalidatesCompositedScrollbarsIfPartsNeedRepaint)
     EXPECT_FALSE(verticalScrollbar->thumbNeedsRepaint());
 
     // Forced GC in order to finalize objects depending on the mock object.
-    Heap::collectAllGarbage();
+    ThreadHeap::collectAllGarbage();
 }
 
 TEST_F(ScrollableAreaTest, RecalculatesScrollbarOverlayIfBackgroundChanges)

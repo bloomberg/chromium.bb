@@ -101,7 +101,7 @@ void OrphanedPagePool::decommitOrphanedPages()
             } else {
                 page->~BasePage();
                 clearMemory(memory);
-                Heap::getFreePagePool()->addFreePage(index, memory);
+                ThreadHeap::getFreePagePool()->addFreePage(index, memory);
             }
 
             PoolEntry* deadEntry = entry;

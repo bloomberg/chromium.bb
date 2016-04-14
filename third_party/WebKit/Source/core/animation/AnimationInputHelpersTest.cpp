@@ -39,7 +39,7 @@ protected:
     void TearDown() override
     {
         document.release();
-        Heap::collectAllGarbage();
+        ThreadHeap::collectAllGarbage();
     }
 
     OwnPtr<DummyPageHolder> pageHolder;

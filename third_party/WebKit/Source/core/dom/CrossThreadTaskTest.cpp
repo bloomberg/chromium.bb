@@ -36,7 +36,7 @@ protected:
     }
     void TearDown() override
     {
-        Heap::collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithSweep, BlinkGC::ForcedGC);
+        ThreadHeap::collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithSweep, BlinkGC::ForcedGC);
         ASSERT_EQ(0, GCObject::s_counter);
     }
 };
@@ -45,7 +45,7 @@ TEST_F(CrossThreadTaskTest, CreateForGarbageCollectedMethod)
 {
     OwnPtr<ExecutionContextTask> task1 = createCrossThreadTask(&GCObject::run, new GCObject, new GCObject);
     OwnPtr<ExecutionContextTask> task2 = createCrossThreadTask(&GCObject::run, new GCObject, new GCObject);
-    Heap::collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithSweep, BlinkGC::ForcedGC);
+    ThreadHeap::collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithSweep, BlinkGC::ForcedGC);
     EXPECT_EQ(4, GCObject::s_counter);
 }
 
@@ -53,7 +53,7 @@ TEST_F(CrossThreadTaskTest, CreateForFunctionWithGarbageCollected)
 {
     OwnPtr<ExecutionContextTask> task1 = createCrossThreadTask(&functionWithGarbageCollected, new GCObject);
     OwnPtr<ExecutionContextTask> task2 = createCrossThreadTask(&functionWithGarbageCollected, new GCObject);
-    Heap::collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithSweep, BlinkGC::ForcedGC);
+    ThreadHeap::collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithSweep, BlinkGC::ForcedGC);
     EXPECT_EQ(2, GCObject::s_counter);
 }
 
@@ -61,7 +61,7 @@ TEST_F(CrossThreadTaskTest, CreateForFunctionWithExecutionContext)
 {
     OwnPtr<ExecutionContextTask> task1 = createCrossThreadTask(&functionWithExecutionContext, new GCObject);
     OwnPtr<ExecutionContextTask> task2 = createCrossThreadTask(&functionWithExecutionContext, new GCObject);
-    Heap::collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithSweep, BlinkGC::ForcedGC);
+    ThreadHeap::collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithSweep, BlinkGC::ForcedGC);
     EXPECT_EQ(2, GCObject::s_counter);
 }
 

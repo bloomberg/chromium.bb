@@ -94,7 +94,7 @@ void SVGImageChromeClient::animationTimerFired(Timer<SVGImageChromeClient>*)
     //
     // TODO(Oilpan): move (SVG)Image to the Oilpan heap, and avoid
     // this explicit lifetime check.
-    if (Heap::willObjectBeLazilySwept(m_image->getImageObserver()))
+    if (ThreadHeap::willObjectBeLazilySwept(m_image->getImageObserver()))
         return;
 
     // serviceScriptedAnimations runs requestAnimationFrame callbacks, but SVG
