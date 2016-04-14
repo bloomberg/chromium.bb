@@ -242,7 +242,7 @@ class V8Adword(perf_benchmark.PerfBenchmark):
     category_filter.AddIncludedCategory('v8')
     category_filter.AddIncludedCategory('blink.console')
     options = timeline_based_measurement.Options(category_filter)
-    options.SetLegacyTimelineBasedMetrics([v8_execution.V8ExecutionMetric()])
+    options.SetTimelineBasedMetric('executionMetric')
     return options
 
   def CreateStorySet(self, options):
