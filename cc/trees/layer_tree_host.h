@@ -31,6 +31,7 @@
 #include "cc/input/scrollbar.h"
 #include "cc/input/top_controls_state.h"
 #include "cc/layers/layer_collections.h"
+#include "cc/layers/layer_list_iterator.h"
 #include "cc/output/output_surface.h"
 #include "cc/output/renderer_capabilities.h"
 #include "cc/output/swap_promise.h"
@@ -146,6 +147,11 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   void DidCommitAndDrawFrame() { client_->DidCommitAndDrawFrame(); }
   void DidCompleteSwapBuffers() { client_->DidCompleteSwapBuffers(); }
   bool UpdateLayers();
+
+  LayerListIterator<Layer> begin();
+  LayerListIterator<Layer> end();
+  LayerListReverseIterator<Layer> rbegin();
+  LayerListReverseIterator<Layer> rend();
 
   // Called when the compositor completed page scale animation.
   void DidCompletePageScaleAnimation();
