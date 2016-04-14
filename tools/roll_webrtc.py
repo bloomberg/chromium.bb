@@ -38,6 +38,9 @@ IS_WIN = sys.platform.startswith('win')
 WEBRTC_PATH = os.path.join('third_party', 'webrtc')
 LIBJINGLE_PATH = os.path.join('third_party', 'libjingle', 'source', 'talk')
 LIBJINGLE_README = os.path.join('third_party', 'libjingle', 'README.chromium')
+# Run these CQ trybots in addition to the default ones in infra/config/cq.cfg.
+EXTRA_TRYBOTS = ('tryserver.chromium.linux:linux_chromium_archive_rel_ng,'
+                 'tryserver.chromium.mac:mac_chromium_archive_rel_ng')
 
 # Result codes from build/third_party/buildbot_8_4p1/buildbot/status/results.py
 # plus the -1 code which is used when there's no result yet.
@@ -184,6 +187,7 @@ def _GenerateCLDescriptionCommand(webrtc_current, libjingle_current,
     description.extend(['-m', libjingle_str])
     description.extend(['-m', 'Changes: %s' % libjingle_changelog_url])
   description.extend(['-m', 'TBR='])
+  description.extend(['-m', 'CQ_EXTRA_TRYBOTS=%s' % EXTRA_TRYBOTS])
   return description
 
 
