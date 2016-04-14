@@ -198,15 +198,15 @@ CertStatus GetFailureFromTrustProperties(CFArrayRef properties) {
       CFBundleGetBundleWithIdentifier(CFSTR("com.apple.Security"));
   CFStringRef date_string =
       CFSTR("One or more certificates have expired or are not valid yet.");
-  CFStringRef date_error = CFBundleCopyLocalizedString(
-      bundle, date_string, date_string, CFSTR("SecCertificate"));
+  ScopedCFTypeRef<CFStringRef> date_error(CFBundleCopyLocalizedString(
+      bundle, date_string, date_string, CFSTR("SecCertificate")));
   CFStringRef trust_string = CFSTR("Root certificate is not trusted.");
-  CFStringRef trust_error = CFBundleCopyLocalizedString(
-      bundle, trust_string, trust_string, CFSTR("SecCertificate"));
+  ScopedCFTypeRef<CFStringRef> trust_error(CFBundleCopyLocalizedString(
+      bundle, trust_string, trust_string, CFSTR("SecCertificate")));
   CFStringRef weak_string =
       CFSTR("One or more certificates is using a weak key size.");
-  CFStringRef weak_error = CFBundleCopyLocalizedString(
-      bundle, weak_string, weak_string, CFSTR("SecCertificate"));
+  ScopedCFTypeRef<CFStringRef> weak_error(CFBundleCopyLocalizedString(
+      bundle, weak_string, weak_string, CFSTR("SecCertificate")));
 
   for (CFIndex i = 0; i < properties_length; ++i) {
     CFDictionaryRef dict = reinterpret_cast<CFDictionaryRef>(
