@@ -216,9 +216,7 @@ ExecutionContext* PresentationConnection::getExecutionContext() const
 
 bool PresentationConnection::addEventListenerInternal(const AtomicString& eventType, EventListener* listener, const EventListenerOptions& options)
 {
-    if (eventType == EventTypeNames::statechange)
-        Deprecation::countDeprecation(getExecutionContext(), UseCounter::PresentationConnectionStateChangeEventListener);
-    else if (eventType == EventTypeNames::connect)
+    if (eventType == EventTypeNames::connect)
         UseCounter::count(getExecutionContext(), UseCounter::PresentationConnectionConnectEventListener);
     else if (eventType == EventTypeNames::close)
         UseCounter::count(getExecutionContext(), UseCounter::PresentationConnectionCloseEventListener);
@@ -405,7 +403,6 @@ void PresentationConnection::didChangeState(WebPresentationConnectionState state
         return;
 
     m_state = state;
-    dispatchEvent(Event::create(EventTypeNames::statechange));
     switch (m_state) {
     case WebPresentationConnectionState::Connected:
         dispatchEvent(Event::create(EventTypeNames::connect));

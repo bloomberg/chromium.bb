@@ -4305,7 +4305,6 @@ interface PresentationConnection : EventTarget
     getter onclose
     getter onconnect
     getter onmessage
-    getter onstatechange
     getter onterminate
     getter state
     method close
@@ -4316,7 +4315,6 @@ interface PresentationConnection : EventTarget
     setter onclose
     setter onconnect
     setter onmessage
-    setter onstatechange
     setter onterminate
 interface PresentationConnectionAvailableEvent : Event
     attribute @@toStringTag

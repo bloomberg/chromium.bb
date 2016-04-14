@@ -753,7 +753,6 @@ public:
         PresentationRequestConnectionAvailableEventListener = 932,
         PresentationConnectionTerminate = 933,
         PresentationConnectionSend = 934,
-        PresentationConnectionStateChangeEventListener = 935,
         PresentationConnectionMessageEventListener = 936,
         CSSAnimationsStackedNeutralKeyframe = 937,
         ReadingCheckedInClickHandler = 938,

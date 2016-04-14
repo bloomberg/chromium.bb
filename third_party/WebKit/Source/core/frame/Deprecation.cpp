@@ -355,9 +355,6 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature)
     case UseCounter::WebAnimationHyphenatedProperty:
         return "Hyphenated property names in Web Animations keyframes are invalid and therefore ignored. Please use camelCase instead.";
 
-    case UseCounter::PresentationConnectionStateChangeEventListener:
-        return replacedWillBeRemoved("'PresentationConnection.onstateachange'", "'PresentationConnection.on{connect,close,terminate}'", 51, "5662456714100736");
-
     case UseCounter::HTMLKeygenElement:
         return willBeRemoved("The <keygen> element", 54, "5716060992962560");
 

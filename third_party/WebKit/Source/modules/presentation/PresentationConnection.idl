@@ -17,7 +17,6 @@ enum PresentationConnectionState {
     readonly attribute PresentationConnectionState state;
     [MeasureAs=PresentationConnectionClose] void close();
     [MeasureAs=PresentationConnectionTerminate] void terminate();
-    [DeprecateAs=PresentationConnectionStateChangeEventListener] attribute EventHandler onstatechange;
     attribute EventHandler onconnect;
     attribute EventHandler onclose;
     attribute EventHandler onterminate;
