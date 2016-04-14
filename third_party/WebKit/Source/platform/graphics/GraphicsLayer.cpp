@@ -549,13 +549,34 @@ void GraphicsLayer::trackPaintInvalidation(const DisplayItemClient& client, cons
     // to avoid constructing the rect unnecessarily.
     ASSERT(isTrackingPaintInvalidations());
 
+    Vector<PaintInvalidationInfo>& infos = paintInvalidationTrackingMap().add(this, Vector<PaintInvalidationInfo>()).storedValue->value;
+    // Omit the entry for invalidateDisplayItemClient() if the last entry is for the same client.
+    // This is to avoid duplicated entries for setNeedsDisplayInRect() and invalidateDisplayItemClient().
+    if (rect.isEmpty() && !infos.isEmpty() && infos.last().client == &client)
+        return;
+
     PaintInvalidationInfo info = { &client, client.debugName(), rect, reason };
-    paintInvalidationTrackingMap().add(this, Vector<PaintInvalidationInfo>()).storedValue->value.append(info);
+    infos.append(info);
 }
 
 static bool comparePaintInvalidationInfo(const PaintInvalidationInfo& a, const PaintInvalidationInfo& b)
 {
-    return codePointCompareLessThan(a.clientDebugName, b.clientDebugName);
+    // Sort by rect first, bigger rects before smaller ones.
+    if (a.rect.width() != b.rect.width())
+        return a.rect.width() > b.rect.width();
+    if (a.rect.height() != b.rect.height())
+        return a.rect.height() > b.rect.height();
+    if (a.rect.x() != b.rect.x())
+        return a.rect.x() > b.rect.x();
+    if (a.rect.y() != b.rect.y())
+        return a.rect.y() > b.rect.y();
+
+    // Then compare clientDebugName, in alphabetic order.
+    int nameCompareResult = codePointCompare(a.clientDebugName, b.clientDebugName);
+    if (nameCompareResult != 0)
+        return nameCompareResult < 0;
+
+    return a.reason < b.reason;
 }
 
 template <typename T>
@@ -710,21 +731,13 @@ PassRefPtr<JSONObject> GraphicsLayer::layerTreeAsJSON(LayerTreeFlags flags, Rend
         if (flags & LayerTreeIncludesPaintInvalidations) {
             Vector<PaintInvalidationInfo>& infos = it->value;
             if (!infos.isEmpty()) {
-                std::stable_sort(infos.begin(), infos.end(), &comparePaintInvalidationInfo);
+                std::sort(infos.begin(), infos.end(), &comparePaintInvalidationInfo);
                 RefPtr<JSONArray> paintInvalidationsJSON = JSONArray::create();
-                const DisplayItemClient* lastDisplayItemClientWithRect = nullptr;
                 for (auto& info : infos) {
                     RefPtr<JSONObject> infoJSON = JSONObject::create();
-                    if (info.rect.isEmpty()) {
-                        // Entry with empty rect is from invalidateDisplayItemClient().
-                        // Skip the entry if the client is the same as the previous setNeedsDisplayInRect().
-                        if (info.client == lastDisplayItemClientWithRect)
-                            continue;
-                    } else {
-                        lastDisplayItemClientWithRect = info.client;
-                    }
                     infoJSON->setString("object", info.clientDebugName);
-                    infoJSON->setArray("rect", rectAsJSONArray(info.rect));
+                    if (!info.rect.isEmpty())
+                        infoJSON->setArray("rect", rectAsJSONArray(info.rect));
                     infoJSON->setString("reason", paintInvalidationReasonToString(info.reason));
                     paintInvalidationsJSON->pushObject(infoJSON);
                 }
