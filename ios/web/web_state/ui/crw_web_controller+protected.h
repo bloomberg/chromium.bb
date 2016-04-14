@@ -137,6 +137,10 @@ static NSString* const kScriptImmediateName = @"crwebinvokeimmediate";
 
 - (CRWWebControllerPendingNavigationInfo*)pendingNavigationInfo;
 
+// Designated initializer. Initializes web controller with |webState|. The
+// calling code must retain the ownership of |webState|.
+- (instancetype)initWithWebState:(web::WebStateImpl*)webState;
+
 // Creates a web view if it's not yet created.
 - (void)ensureWebViewCreated;
 
@@ -186,12 +190,24 @@ static NSString* const kScriptImmediateName = @"crwebinvokeimmediate";
 // Called when a load ends in an SSL error and certificate chain.
 - (void)handleSSLCertError:(NSError*)error;
 
+// Updates SSL status for the current navigation item based on the information
+// provided by web view.
+- (void)updateSSLStatusForCurrentNavigationItem;
+
 // Used in webView:didReceiveAuthenticationChallenge:completionHandler: to reply
 // with NSURLSessionAuthChallengeDisposition and credentials.
 - (void)handleHTTPAuthForChallenge:(NSURLAuthenticationChallenge*)challenge
                  completionHandler:
                      (void (^)(NSURLSessionAuthChallengeDisposition,
                                NSURLCredential*))completionHandler;
+
+// Used in webView:didReceiveAuthenticationChallenge:completionHandler: to
+// reply with NSURLSessionAuthChallengeDisposition and credentials.
+- (void)processAuthChallenge:(NSURLAuthenticationChallenge*)challenge
+         forCertAcceptPolicy:(web::CertAcceptPolicy)policy
+                  certStatus:(net::CertStatus)certStatus
+           completionHandler:(void (^)(NSURLSessionAuthChallengeDisposition,
+                                       NSURLCredential*))completionHandler;
 
 #pragma mark - Optional methods for subclasses
 // Subclasses may overwrite methods in this section.
@@ -293,6 +309,12 @@ static NSString* const kScriptImmediateName = @"crwebinvokeimmediate";
 // Returns NavigationManager's session controller.
 @property(nonatomic, readonly) CRWSessionController* sessionController;
 
+// Controller used for certs verification to help with blocking requests with
+// bad SSL cert, presenting SSL interstitials and determining SSL status for
+// Navigation Items.
+@property(nonatomic, readonly)
+    CRWCertVerificationController* certVerificationController;
+
 // Returns a new script which wraps |script| with windowID check so |script| is
 // not evaluated on windowID mismatch.
 - (NSString*)scriptByAddingWindowIDCheckForScript:(NSString*)script;
@@ -370,10 +392,6 @@ static NSString* const kScriptImmediateName = @"crwebinvokeimmediate";
 // agent.
 - (BOOL)useDesktopUserAgent;
 
-// Updates SSL status for the current navigation item based on the information
-// provided by web view.
-- (void)updateSSLStatusForCurrentNavigationItem;
-
 // Called when SSL status has been updated for the current navigation item.
 - (void)didUpdateSSLStatusForCurrentNavigationItem;
 
@@ -431,6 +449,12 @@ static NSString* const kScriptImmediateName = @"crwebinvokeimmediate";
 - (BOOL)shouldBlockPopupWithURL:(const GURL&)popupURL
                       sourceURL:(const GURL&)sourceURL;
 
+// Call to stop web controller activity, in particular to stop all network
+// requests. Called as part of the close sequence if it hasn't already been
+// halted; should also be called from the web delegate as part of any shutdown
+// sequence which doesn't call -close.
+- (void)terminateNetworkActivity;
+
 // Acts on a single message from the JS object, parsed from JSON into a
 // DictionaryValue. Returns NO if the format for the message was invalid.
 - (BOOL)respondToMessage:(base::DictionaryValue*)crwMessage
@@ -466,6 +490,10 @@ static NSString* const kScriptImmediateName = @"crwebinvokeimmediate";
 
 // Returns the current entry from the underlying session controller.
 - (CRWSessionEntry*)currentSessionEntry;
+
+// Clears certVerification errors which happened inside
+// |webView:didReceiveAuthenticationChallenge:completionHandler:|.
+- (void)clearCertVerificationErrors;
 
 // Resets pending external request information.
 - (void)resetExternalRequest;

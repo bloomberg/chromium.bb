@@ -19,7 +19,9 @@
 #import "ios/web/navigation/crw_session_entry.h"
 #include "ios/web/navigation/navigation_item_impl.h"
 #import "ios/web/public/navigation_manager.h"
+#import "ios/web/net/crw_ssl_status_updater.h"
 #include "ios/web/public/browser_state.h"
+#include "ios/web/public/cert_store.h"
 #include "ios/web/public/navigation_item.h"
 #include "ios/web/public/ssl_status.h"
 #include "ios/web/public/url_util.h"
@@ -64,7 +66,8 @@
 
 #pragma mark -
 
-@interface CRWWKWebViewWebController () {
+@interface CRWWKWebViewWebController ()<CRWSSLStatusUpdaterDataSource,
+                                        CRWSSLStatusUpdaterDelegate> {
   // The WKWebView managed by this instance.
   base::scoped_nsobject<WKWebView> _wkWebView;
 
@@ -77,6 +80,22 @@
   // Object for loading POST requests with body.
   base::scoped_nsobject<CRWJSPOSTRequestLoader> _POSTRequestLoader;
 
+  // Controller used for certs verification to help with blocking requests with
+  // bad SSL cert, presenting SSL interstitials and determining SSL status for
+  // Navigation Items.
+  base::scoped_nsobject<CRWCertVerificationController>
+      _certVerificationController;
+
+  // Updates SSLStatus for current navigation item.
+  base::scoped_nsobject<CRWSSLStatusUpdater> _SSLStatusUpdater;
+
+  // CertVerification errors which happened inside
+  // |webView:didReceiveAuthenticationChallenge:completionHandler:|.
+  // Key is leaf-cert/host pair. This storage is used to carry calculated
+  // cert status from |didReceiveAuthenticationChallenge:| to
+  // |didFailProvisionalNavigation:| delegate method.
+  std::unique_ptr<CertVerificationErrorsCacheType> _certVerificationErrors;
+
   // YES if the user has interacted with the content area since the last URL
   // change.
   BOOL _interactionRegisteredSinceLastURLChange;
@@ -88,6 +107,9 @@
 // -[self webViewURLDidChange] must be called every time when WKWebView.URL is
 // changed.
 @property(nonatomic, readonly) NSDictionary* wkWebViewObservers;
+
+// Identifier used for storing and retrieving certificates.
+@property(nonatomic, readonly) int certGroupID;
 
 // Loads POST request with body in |_wkWebView| by constructing an HTML page
 // that executes the request through JavaScript and replaces document with the
@@ -162,6 +184,32 @@
 
 @implementation CRWWKWebViewWebController
 
+#pragma mark CRWWebController public methods
+
+- (instancetype)initWithWebState:(web::WebStateImpl*)webState {
+  self = [super initWithWebState:webState];
+  if (self) {
+    DCHECK(webState);
+    web::BrowserState* browserState = webState->GetBrowserState();
+    _certVerificationController.reset([[CRWCertVerificationController alloc]
+        initWithBrowserState:browserState]);
+    _certVerificationErrors.reset(
+        new CertVerificationErrorsCacheType(kMaxCertErrorsCount));
+  }
+  return self;
+}
+
+- (void)terminateNetworkActivity {
+  web::CertStore::GetInstance()->RemoveCertsForGroup(self.certGroupID);
+  [super terminateNetworkActivity];
+}
+
+- (void)close {
+  _SSLStatusUpdater.reset();
+  [_certVerificationController shutDown];
+  [super close];
+}
+
 #pragma mark -
 #pragma mark Testing-Only Methods
 
@@ -190,6 +238,14 @@
 
 - (BOOL)interactionRegisteredSinceLastURLChange {
   return _interactionRegisteredSinceLastURLChange;
+}
+
+- (CRWCertVerificationController*)certVerificationController {
+  return _certVerificationController;
+}
+
+- (void)clearCertVerificationErrors {
+  _certVerificationErrors->Clear();
 }
 
 // Overridden to track interactions since URL change.
@@ -338,6 +394,7 @@
 - (void)abortWebLoad {
   [_wkWebView stopLoading];
   [self.pendingNavigationInfo setCancelled:YES];
+  _certVerificationErrors->Clear();
 }
 
 - (void)applyWebViewScrollZoomScaleFromZoomState:
@@ -375,6 +432,12 @@
     @"title" : @"webViewTitleDidChange",
     @"URL" : @"webViewURLDidChange",
   };
+}
+
+- (int)certGroupID {
+  DCHECK(self.webStateImpl);
+  // Request tracker IDs are used as certificate groups.
+  return self.webStateImpl->GetRequestTracker()->identifier();
 }
 
 - (void)loadPOSTRequest:(NSMutableURLRequest*)request {
@@ -536,6 +599,93 @@
   });
 }
 
+- (void)handleSSLCertError:(NSError*)error {
+  CHECK(web::IsWKWebViewSSLCertError(error));
+
+  net::SSLInfo info;
+  web::GetSSLInfoFromWKWebViewSSLCertError(error, &info);
+
+  web::SSLStatus status;
+  status.security_style = web::SECURITY_STYLE_AUTHENTICATION_BROKEN;
+  status.cert_status = info.cert_status;
+  // |info.cert| can be null if certChain in NSError is empty or can not be
+  // parsed.
+  if (info.cert) {
+    status.cert_id = web::CertStore::GetInstance()->StoreCert(info.cert.get(),
+                                                              self.certGroupID);
+  }
+
+  // Retrieve verification results from _certVerificationErrors cache to avoid
+  // unnecessary recalculations. Verification results are cached for the leaf
+  // cert, because the cert chain in |didReceiveAuthenticationChallenge:| is
+  // the OS constructed chain, while |chain| is the chain from the server.
+  NSArray* chain = error.userInfo[web::kNSErrorPeerCertificateChainKey];
+  NSString* host = [error.userInfo[web::kNSErrorFailingURLKey] host];
+  scoped_refptr<net::X509Certificate> leafCert;
+  BOOL recoverable = NO;
+  if (chain.count && host.length) {
+    // The complete cert chain may not be available, so the leaf cert is used
+    // as a key to retrieve _certVerificationErrors, as well as for storing the
+    // cert decision.
+    leafCert = web::CreateCertFromChain(@[ chain.firstObject ]);
+    if (leafCert) {
+      auto error = _certVerificationErrors->Get(
+          {leafCert, base::SysNSStringToUTF8(host)});
+      bool cacheHit = error != _certVerificationErrors->end();
+      if (cacheHit) {
+        recoverable = error->second.is_recoverable;
+        status.cert_status = error->second.status;
+        info.cert_status = error->second.status;
+      }
+      UMA_HISTOGRAM_BOOLEAN("WebController.CertVerificationErrorsCacheHit",
+                            cacheHit);
+    }
+  }
+
+  // Present SSL interstitial and inform everyone that the load is cancelled.
+  [self.delegate presentSSLError:info
+                    forSSLStatus:status
+                     recoverable:recoverable
+                        callback:^(BOOL proceed) {
+                          if (proceed) {
+                            // The interstitial will be removed during reload.
+                            [_certVerificationController
+                                allowCert:leafCert
+                                  forHost:host
+                                   status:status.cert_status];
+                            [self loadCurrentURL];
+                          }
+                        }];
+  [self loadCancelled];
+}
+
+- (void)updateSSLStatusForCurrentNavigationItem {
+  if ([self isBeingDestroyed]) {
+    return;
+  }
+
+  web::NavigationManager* navManager = self.webState->GetNavigationManager();
+  web::NavigationItem* currentNavItem = navManager->GetLastCommittedItem();
+  if (!currentNavItem) {
+    return;
+  }
+
+  if (!_SSLStatusUpdater) {
+    _SSLStatusUpdater.reset([[CRWSSLStatusUpdater alloc]
+        initWithDataSource:self
+         navigationManager:navManager
+               certGroupID:self.certGroupID]);
+    [_SSLStatusUpdater setDelegate:self];
+  }
+  NSString* host = base::SysUTF8ToNSString(_documentURL.host());
+  NSArray* certChain = [_wkWebView certificateChain];
+  BOOL hasOnlySecureContent = [_wkWebView hasOnlySecureContent];
+  [_SSLStatusUpdater updateSSLStatusForNavigationItem:currentNavItem
+                                         withCertHost:host
+                                            certChain:certChain
+                                 hasOnlySecureContent:hasOnlySecureContent];
+}
+
 - (void)handleHTTPAuthForChallenge:(NSURLAuthenticationChallenge*)challenge
                  completionHandler:
                      (void (^)(NSURLSessionAuthChallengeDisposition,
@@ -589,6 +739,44 @@
           credentialWithUser:user
                     password:password
                  persistence:NSURLCredentialPersistenceForSession]);
+}
+
+- (void)processAuthChallenge:(NSURLAuthenticationChallenge*)challenge
+         forCertAcceptPolicy:(web::CertAcceptPolicy)policy
+                  certStatus:(net::CertStatus)certStatus
+           completionHandler:(void (^)(NSURLSessionAuthChallengeDisposition,
+                                       NSURLCredential*))completionHandler {
+  SecTrustRef trust = challenge.protectionSpace.serverTrust;
+  if (policy == web::CERT_ACCEPT_POLICY_RECOVERABLE_ERROR_ACCEPTED_BY_USER) {
+    // Cert is invalid, but user agreed to proceed, override default behavior.
+    completionHandler(NSURLSessionAuthChallengeUseCredential,
+                      [NSURLCredential credentialForTrust:trust]);
+    return;
+  }
+
+  if (policy != web::CERT_ACCEPT_POLICY_ALLOW &&
+      SecTrustGetCertificateCount(trust)) {
+    // The cert is invalid and the user has not agreed to proceed. Cache the
+    // cert verification result in |_certVerificationErrors|, so that it can
+    // later be reused inside |didFailProvisionalNavigation:|.
+    // The leaf cert is used as the key, because the chain provided by
+    // |didFailProvisionalNavigation:| will differ (it is the server-supplied
+    // chain), thus if intermediates were considered, the keys would mismatch.
+    scoped_refptr<net::X509Certificate> leafCert =
+        net::X509Certificate::CreateFromHandle(
+            SecTrustGetCertificateAtIndex(trust, 0),
+            net::X509Certificate::OSCertHandles());
+    if (leafCert) {
+      BOOL is_recoverable =
+          policy == web::CERT_ACCEPT_POLICY_RECOVERABLE_ERROR_UNDECIDED_BY_USER;
+      std::string host =
+          base::SysNSStringToUTF8(challenge.protectionSpace.host);
+      _certVerificationErrors->Put(
+          web::CertHostPair(leafCert, host),
+          CertVerificationError(is_recoverable, certStatus));
+    }
+  }
+  completionHandler(NSURLSessionAuthChallengeRejectProtectionSpace, nil);
 }
 
 - (BOOL)isKVOChangePotentialSameDocumentNavigationToURL:(const GURL&)newURL {
@@ -809,6 +997,28 @@
                        [self URLDidChangeWithoutDocumentChange:url];
                      }
                  }];
+  }
+}
+
+#pragma mark - CRWSSLStatusUpdater DataSource/Delegate Methods
+
+- (void)SSLStatusUpdater:(CRWSSLStatusUpdater*)SSLStatusUpdater
+    querySSLStatusForCertChain:(NSArray*)certChain
+                          host:(NSString*)host
+             completionHandler:(StatusQueryHandler)completionHandler {
+  base::ScopedCFTypeRef<SecTrustRef> trust(
+      web::CreateServerTrustFromChain(certChain, host));
+  [_certVerificationController querySSLStatusForTrust:std::move(trust)
+                                                 host:host
+                                    completionHandler:completionHandler];
+}
+
+- (void)SSLStatusUpdater:(CRWSSLStatusUpdater*)SSLStatusUpdater
+    didChangeSSLStatusForNavigationItem:(web::NavigationItem*)navigationItem {
+  web::NavigationItem* currentNavigationItem =
+      self.webState->GetNavigationManager()->GetLastCommittedItem();
+  if (navigationItem == currentNavigationItem) {
+    [self didUpdateSSLStatusForCurrentNavigationItem];
   }
 }
 

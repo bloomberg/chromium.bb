@@ -113,14 +113,6 @@ class WebStateImpl;
 // |CRWWebDelegate webControllerDidSuppressDialog:| will be called.
 @property(nonatomic, assign) BOOL shouldSuppressDialogs;
 
-// CRWWebContorller should be initialized with |-initWithWebState:|.
-- (instancetype)init NS_UNAVAILABLE;
-
-// Initializes web controller with |webState|. The
-// calling code must retain the ownership of |webState|.
-- (instancetype)initWithWebState:(web::WebStateImpl*)webState
-    NS_DESIGNATED_INITIALIZER;
-
 // Return an image to use as replacement of a missing snapshot.
 + (UIImage*)defaultSnapshotImage;
 
