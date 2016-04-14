@@ -741,7 +741,6 @@
     'content_unittests_speech_sources': [
       'browser/speech/chunked_byte_buffer_unittest.cc',
       'browser/speech/endpointer/endpointer_unittest.cc',
-      'browser/speech/google_one_shot_remote_engine_unittest.cc',
       'browser/speech/google_streaming_remote_engine_unittest.cc',
       'browser/speech/speech_recognizer_impl_unittest.cc',
     ],
