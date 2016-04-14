@@ -71,7 +71,12 @@ class WebPImageEncoder : public SkPixelSerializer {
     // the WebP defaults would invalidate all caches they are hard coded.
     config.lossless = 0;
     config.quality = 75.0;  // between 0 (smallest file) and 100 (biggest).
-    config.method = 4;  // quality/speed trade-off (0=fast, 6=slower-better).
+
+    // TODO(nyquist): Move image encoding to a different thread when
+    // asynchronous loading of images is possible. The encode work currently
+    // blocks the render thread so we are dropping the method down to 0.
+    // crbug.com/603643.
+    config.method = 0;  // quality/speed trade-off (0=fast, 6=slower-better).
 
     // Encode the picture using the given configuration.
     bool success = WebPEncode(&config, &picture);
