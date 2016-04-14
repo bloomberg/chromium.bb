@@ -37,7 +37,7 @@ int64_t FLAGS_quic_time_wait_list_max_connections = 600000;
 bool FLAGS_enable_quic_stateless_reject_support = true;
 
 // This flag is not in use, just to keep consistency for shared code.
-bool FLAGS_quic_always_log_bugs_for_tests = false;
+bool FLAGS_quic_always_log_bugs_for_tests = true;
 
 // If true, a QUIC connection option with tag DHDT can be used to disable
 // HPACK\'s dynamic table.
@@ -87,7 +87,7 @@ bool FLAGS_quic_use_new_tcp_sender = true;
 
 // If true, the QUIC dispatcher will directly send version negotiation packets
 // without needing to create a QUIC session first.
-bool FLAGS_quic_stateless_version_negotiation = false;
+bool FLAGS_quic_stateless_version_negotiation = true;
 
 // QUIC Ack Decimation with tolerance for packet reordering.
 bool FLAGS_quic_ack_decimation2 = true;
