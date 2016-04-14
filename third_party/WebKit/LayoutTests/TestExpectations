@@ -1252,8 +1252,6 @@ crbug.com/564109 [ Win7 ]  http/tests/webfont/font-display.html [ Pass Timeout F
 crbug.com/568867 [ Win Debug ] transforms/3d/point-mapping/3d-point-mapping-deep.html [ Failure ]
 crbug.com/568867 [ Win Debug ] transforms/3d/point-mapping/3d-point-mapping-preserve-3d.html [ Failure ]
 
-crbug.com/569811 inspector-protocol/debugger/updateCallFrameScopes.html [ Pass Failure ]
-
 crbug.com/571376 http/tests/webfont/font-display-intervention.html [ Pass Failure ]
 
 crbug.com/320139 fast/repaint/block-layout-inline-children-replaced.html [ Pass Failure ]
