@@ -8,6 +8,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/base_paths.h"
@@ -15,9 +16,13 @@
 #include "base/callback_helpers.h"
 #include "base/environment.h"
 #include "base/files/file_path.h"
+#include "base/format_macros.h"
 #include "base/macros.h"
 #include "base/path_service.h"
+#include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/win/wait_chain.h"
 #include "base/win/win_util.h"
 
 #include "chrome/chrome_watcher/chrome_watcher_main_api.h"
@@ -127,11 +132,32 @@ void AddCrashKey(const wchar_t *key, const wchar_t *value,
   DCHECK(value);
   DCHECK(crash_keys);
 
-  kasko::api::CrashKey crash_key;
-  std::wcsncpy(crash_key.name, key, kasko::api::CrashKey::kNameMaxLength - 1);
-  std::wcsncpy(crash_key.value, value,
-               kasko::api::CrashKey::kValueMaxLength - 1);
-  crash_keys->push_back(crash_key);
+  crash_keys->resize(crash_keys->size() + 1);
+  kasko::api::CrashKey& crash_key = crash_keys->back();
+  base::wcslcpy(crash_key.name, key, kasko::api::CrashKey::kNameMaxLength);
+  base::wcslcpy(crash_key.value, value, kasko::api::CrashKey::kValueMaxLength);
+}
+
+// Get the |process| and the |thread_id| of the node inside the |wait_chain|
+// that is of type ThreadType and belongs to a process that is valid for the
+// capture of a crash dump. Returns if such a node was found.
+bool GetLastValidNodeInfo(const base::win::WaitChainNodeVector& wait_chain,
+                          base::Process* process,
+                          DWORD* thread_id) {
+  // The last thread in the wait chain is nominated as the hung thread.
+  base::win::WaitChainNodeVector::const_reverse_iterator it;
+  for (it = wait_chain.rbegin(); it != wait_chain.rend(); ++it) {
+    if (it->ObjectType != WctThreadType)
+      continue;
+
+    auto current_process = base::Process::Open(it->ThreadObject.ProcessId);
+    if (EnsureTargetProcessValidForCapture(current_process)) {
+      *process = std::move(current_process);
+      *thread_id = it->ThreadObject.ThreadId;
+      return true;
+    }
+  }
+  return false;
 }
 
 }  // namespace
@@ -192,6 +218,38 @@ void DumpHungProcess(DWORD main_thread_id, const base::string16& channel,
   crash_reporter::ReadMainModuleAnnotationsForKasko(process, &annotations);
   AddCrashKey(key, L"1", &annotations);
 
+  // Use the Wait Chain Traversal API to determine the hung thread. Defaults to
+  // UI thread on error. The wait chain may point to a different thread in a
+  // different process for the hung thread.
+  DWORD hung_thread_id = main_thread_id;
+  base::Process hung_process = process.Duplicate();
+
+  base::win::WaitChainNodeVector wait_chain;
+  bool is_deadlock = false;
+  if (base::win::GetThreadWaitChain(main_thread_id, &wait_chain,
+                                    &is_deadlock)) {
+    bool found_valid_node =
+        GetLastValidNodeInfo(wait_chain, &hung_process, &hung_thread_id);
+    DCHECK(found_valid_node);
+
+    // The entire wait chain is added to the crash report via crash keys.
+    //
+    // As an example (key : value):
+    // hung-process-is-deadlock  : false
+    // hung-process-wait-chain-00 : Thread #10242 with status Blocked
+    // hung-process-wait-chain-01 : Lock of type ThreadWait with status Owned
+    // hung-process-wait-chain-02 : Thread #77221 with status Blocked
+    //
+    AddCrashKey(L"hung-process-is-deadlock", is_deadlock ? L"true" : L"false",
+                &annotations);
+    for (size_t i = 0; i < wait_chain.size(); i++) {
+      AddCrashKey(
+          base::StringPrintf(L"hung-process-wait-chain-%02" PRIuS, i).c_str(),
+          base::win::WaitChainNodeToString(wait_chain[i]).c_str(),
+          &annotations);
+    }
+  }
+
   std::vector<const base::char16*> key_buffers;
   std::vector<const base::char16*> value_buffers;
   for (const auto& crash_key : annotations) {
@@ -201,7 +259,7 @@ void DumpHungProcess(DWORD main_thread_id, const base::string16& channel,
   key_buffers.push_back(nullptr);
   value_buffers.push_back(nullptr);
 
-  // Synthesize an exception for the main thread. Populate the record with the
+  // Synthesize an exception for the hung thread. Populate the record with the
   // current context of the thread to get the stack trace bucketed on the crash
   // backend.
   CONTEXT thread_context = {};
@@ -209,32 +267,32 @@ void DumpHungProcess(DWORD main_thread_id, const base::string16& channel,
   exception_record.ExceptionCode = EXCEPTION_ARRAY_BOUNDS_EXCEEDED;
   EXCEPTION_POINTERS exception_pointers = {&exception_record, &thread_context};
 
-  base::win::ScopedHandle main_thread(::OpenThread(
+  base::win::ScopedHandle hung_thread(::OpenThread(
       THREAD_SUSPEND_RESUME | THREAD_GET_CONTEXT | THREAD_QUERY_INFORMATION,
-      FALSE, main_thread_id));
+      FALSE, hung_thread_id));
 
   bool have_context = false;
-  if (main_thread.IsValid()) {
-    DWORD suspend_count = ::SuspendThread(main_thread.Get());
+  if (hung_thread.IsValid()) {
+    DWORD suspend_count = ::SuspendThread(hung_thread.Get());
     const DWORD kSuspendFailed = static_cast<DWORD>(-1);
     if (suspend_count != kSuspendFailed) {
       // Best effort capture of the context.
       thread_context.ContextFlags = CONTEXT_FLOATING_POINT | CONTEXT_SEGMENTS |
                                     CONTEXT_INTEGER | CONTEXT_CONTROL;
-      if (::GetThreadContext(main_thread.Get(), &thread_context) == TRUE)
+      if (::GetThreadContext(hung_thread.Get(), &thread_context) == TRUE)
         have_context = true;
 
-      ::ResumeThread(main_thread.Get());
+      ::ResumeThread(hung_thread.Get());
     }
   }
 
   // TODO(manzagop): consider making the dump-type channel-dependent.
   if (have_context) {
     kasko::api::SendReportForProcess(
-        process.Handle(), main_thread_id, &exception_pointers,
+        hung_process.Handle(), hung_thread_id, &exception_pointers,
         kasko::api::LARGER_DUMP_TYPE, key_buffers.data(), value_buffers.data());
   } else {
-    kasko::api::SendReportForProcess(process.Handle(), 0, nullptr,
+    kasko::api::SendReportForProcess(hung_process.Handle(), 0, nullptr,
                                      kasko::api::LARGER_DUMP_TYPE,
                                      key_buffers.data(), value_buffers.data());
   }

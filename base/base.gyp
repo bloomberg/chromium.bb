@@ -602,6 +602,7 @@
         'win/scoped_variant_unittest.cc',
         'win/shortcut_unittest.cc',
         'win/startup_information_unittest.cc',
+        'win/wait_chain_unittest.cc',
         'win/win_util_unittest.cc',
         'win/windows_version_unittest.cc',
         'win/wrapped_window_proc_unittest.cc',

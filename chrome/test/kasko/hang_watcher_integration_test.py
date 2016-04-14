@@ -16,12 +16,11 @@ most likely lead to constant failures.
 Typical usage (assuming in root 'src' directory):
 - generate project files with the following build variables:
     GYP variables:
-      branding=Chrome kasko=1 kasko_hang_reports=1
+      branding=Chrome kasko_hang_reports=1
     GN variables:
       target_cpu = "x86"
       is_debug = false
       is_chrome_branded = true
-      enable_kasko = true
       enable_kasko_hang_reports = true
 - build the release Chrome binaries:
     ninja -C {build_dir} chrome.exe chromedriver.exe
@@ -46,10 +45,15 @@ _LOGGER = logging.getLogger(os.path.basename(__file__))
 def Main():
   options = kasko.config.ParseCommandLine()
 
-  kasko.integration_test.RunTest(options,
-                                 'chrome://delayeduithreadhang',
-                                 120,
-                                 {'hung-process': 'DumpHungBrowserProcess()'})
+  kasko.integration_test.RunTest(
+      options,
+      'chrome://delayeduithreadhang',
+      120,
+      {
+        'hung-process': 'DumpHungBrowserProcess()',
+        'hung-process-is-deadlock': 'GetThreadWaitChain()',
+        'hung-process-wait-chain-00': 'GetThreadWaitChain()',
+      })
 
   _LOGGER.info('Test passed successfully!')
 

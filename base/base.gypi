@@ -789,6 +789,8 @@
           'win/shortcut.h',
           'win/startup_information.cc',
           'win/startup_information.h',
+          'win/wait_chain.cc',
+          'win/wait_chain.h',
           'win/win_util.cc',
           'win/win_util.h',
           'win/windows_version.cc',

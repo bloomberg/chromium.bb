@@ -224,11 +224,9 @@ extern "C" int WatcherMain(const base::char16* registry_path,
                                                 browser_data_directory);
 
 #if BUILDFLAG(ENABLE_KASKO_HANG_REPORTS)
-  // Only activate hang reports for the canary channel. For testing purposes,
-  // Chrome instances with no channels will also report hangs.
+  // Only activate hang reports for the canary channel.
   if (launched_kasko &&
-      (base::StringPiece16(channel_name) == L"" ||
-       base::StringPiece16(channel_name) == installer::kChromeChannelCanary)) {
+      base::StringPiece16(channel_name) == installer::kChromeChannelCanary) {
     on_hung_callback = base::Bind(&DumpHungProcess, main_thread_id,
                                   channel_name, L"hung-process");
   }

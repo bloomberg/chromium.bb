@@ -223,10 +223,8 @@ void SendFailedRdvReport(const base::Process& process, DWORD thread_id) {
   // TODO(manzagop): add a metric for the number of captured hang reports, for
   //   comparison with uploaded count?
 
-  // Only report on canary (or unspecified).
-  const version_info::Channel channel = chrome::GetChannel();
-  if (channel != version_info::Channel::UNKNOWN &&
-      channel != version_info::Channel::CANARY) {
+  // Only report on canary.
+  if (chrome::GetChannel() != version_info::Channel::CANARY) {
     return;
   }
   // TODO(manzagop): add a metric for the number of times this does not match.
