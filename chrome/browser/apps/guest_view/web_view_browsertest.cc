@@ -1644,7 +1644,7 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, IndexedDBIsolation) {
 // The test launches an app with guest and closes the window on loadcommit. It
 // then launches the app window again. The process is repeated 3 times.
 // http://crbug.com/291278
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(MAC_OS_X_VERSION_10_9)
 #define MAYBE_CloseOnLoadcommit DISABLED_CloseOnLoadcommit
 #else
 #define MAYBE_CloseOnLoadcommit CloseOnLoadcommit
