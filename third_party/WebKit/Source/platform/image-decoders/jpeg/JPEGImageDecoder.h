@@ -40,7 +40,7 @@ public:
 
     // ImageDecoder:
     String filenameExtension() const override { return "jpg"; }
-    void onSetData(SharedBuffer* data) override;
+    void onSetData(SegmentReader* data) override;
     IntSize decodedSize() const override { return m_decodedSize; }
     bool setSize(unsigned width, unsigned height) override;
     IntSize decodedYUVSize(int component) const override;

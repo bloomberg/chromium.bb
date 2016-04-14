@@ -25,7 +25,6 @@
 
 #include "platform/graphics/ImageDecodingStore.h"
 
-#include "platform/SharedBuffer.h"
 #include "platform/graphics/ImageFrameGenerator.h"
 #include "platform/graphics/test/MockImageDecoder.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -37,8 +36,7 @@ public:
     void SetUp() override
     {
         ImageDecodingStore::instance().setCacheLimitInBytes(1024 * 1024);
-        m_data = SharedBuffer::create();
-        m_generator = ImageFrameGenerator::create(SkISize::Make(100, 100), m_data, true);
+        m_generator = ImageFrameGenerator::create(SkISize::Make(100, 100), true);
         m_decodersDestroyed = 0;
     }
 
@@ -77,7 +75,6 @@ protected:
             ImageDecodingStore::instance().setCacheLimitInBytes(0);
     }
 
-    RefPtr<SharedBuffer> m_data;
     RefPtr<ImageFrameGenerator> m_generator;
     int m_decodersDestroyed;
 };

@@ -387,7 +387,15 @@ bool GIFImageReader::decode(size_t frameIndex)
 
 bool GIFImageReader::parse(GIFImageDecoder::GIFParseQuery query)
 {
-    ASSERT(m_bytesRead <= m_data->size());
+    if (m_bytesRead >= m_data->size()) {
+        // This data has already been parsed. For example, in deferred
+        // decoding, a DecodingImageGenerator with more data may have already
+        // used this same ImageDecoder to decode. This can happen if two
+        // SkImages created by a DeferredImageDecoder are drawn/prerolled
+        // out of order (with respect to how much data they had at creation
+        // time).
+        return !m_client->failed();
+    }
 
     return parseData(m_bytesRead, m_data->size() - m_bytesRead, query);
 }

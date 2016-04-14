@@ -47,7 +47,7 @@ public:
 
     // ImageDecoder:
     String filenameExtension() const override { return "gif"; }
-    void onSetData(SharedBuffer* data) override;
+    void onSetData(SegmentReader* data) override;
     int repetitionCount() const override;
     bool frameIsCompleteAtIndex(size_t) const override;
     float frameDurationAtIndex(size_t) const override;

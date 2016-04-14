@@ -144,6 +144,7 @@ void WEBPImageDecoder::clear()
 {
     WebPDemuxDelete(m_demux);
     m_demux = 0;
+    m_consolidatedData.clear();
     clearDecoder();
 }
 
@@ -155,7 +156,7 @@ void WEBPImageDecoder::clearDecoder()
     m_frameBackgroundHasAlpha = false;
 }
 
-void WEBPImageDecoder::onSetData(SharedBuffer*)
+void WEBPImageDecoder::onSetData(SegmentReader*)
 {
     m_haveAlreadyParsedThisData = false;
 }
@@ -195,10 +196,14 @@ bool WEBPImageDecoder::updateDemuxer()
         return false; // Await VP8X header so WebPDemuxPartial succeeds.
 
     WebPDemuxDelete(m_demux);
-    WebPData inputData = { reinterpret_cast<const uint8_t*>(m_data->data()), m_data->size() };
+    m_consolidatedData = m_data->getAsSkData();
+    WebPData inputData = { reinterpret_cast<const uint8_t*>(m_consolidatedData->data()), m_consolidatedData->size() };
     m_demux = WebPDemuxPartial(&inputData, &m_demuxState);
-    if (!m_demux || (isAllDataReceived() && m_demuxState != WEBP_DEMUX_DONE))
+    if (!m_demux || (isAllDataReceived() && m_demuxState != WEBP_DEMUX_DONE)) {
+        if (!m_demux)
+            m_consolidatedData.clear();
         return setFailed();
+    }
 
     ASSERT(m_demuxState > WEBP_DEMUX_PARSING_HEADER);
     if (!WebPDemuxGetI(m_demux, WEBP_FF_FRAME_COUNT))

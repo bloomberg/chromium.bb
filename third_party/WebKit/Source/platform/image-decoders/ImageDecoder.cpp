@@ -32,66 +32,50 @@
 
 namespace blink {
 
-static size_t copyFromSharedBuffer(char* buffer, size_t bufferLength, const SharedBuffer& sharedBuffer, size_t offset)
-{
-    size_t bytesExtracted = 0;
-    const char* moreData;
-    while (size_t moreDataLength = sharedBuffer.getSomeData(moreData, offset)) {
-        size_t bytesToCopy = std::min(bufferLength - bytesExtracted, moreDataLength);
-        memcpy(buffer + bytesExtracted, moreData, bytesToCopy);
-        bytesExtracted += bytesToCopy;
-        if (bytesExtracted == bufferLength)
-            break;
-        offset += bytesToCopy;
-    }
-    return bytesExtracted;
-}
-
-inline bool matchesJPEGSignature(char* contents)
+inline bool matchesJPEGSignature(const char* contents)
 {
     return !memcmp(contents, "\xFF\xD8\xFF", 3);
 }
 
-inline bool matchesPNGSignature(char* contents)
+inline bool matchesPNGSignature(const char* contents)
 {
     return !memcmp(contents, "\x89\x50\x4E\x47\x0D\x0A\x1A\x0A", 8);
 }
 
-inline bool matchesGIFSignature(char* contents)
+inline bool matchesGIFSignature(const char* contents)
 {
     return !memcmp(contents, "GIF87a", 6) || !memcmp(contents, "GIF89a", 6);
 }
 
-inline bool matchesWebPSignature(char* contents)
+inline bool matchesWebPSignature(const char* contents)
 {
     return !memcmp(contents, "RIFF", 4) && !memcmp(contents + 8, "WEBPVP", 6);
 }
 
-inline bool matchesICOSignature(char* contents)
+inline bool matchesICOSignature(const char* contents)
 {
     return !memcmp(contents, "\x00\x00\x01\x00", 4);
 }
 
-inline bool matchesCURSignature(char* contents)
+inline bool matchesCURSignature(const char* contents)
 {
     return !memcmp(contents, "\x00\x00\x02\x00", 4);
 }
 
-inline bool matchesBMPSignature(char* contents)
+inline bool matchesBMPSignature(const char* contents)
 {
     return !memcmp(contents, "BM", 2);
 }
 
-PassOwnPtr<ImageDecoder> ImageDecoder::create(const SharedBuffer& data, AlphaOption alphaOption, GammaAndColorProfileOption colorOptions)
+PassOwnPtr<ImageDecoder> ImageDecoder::create(const char* contents, size_t length, AlphaOption alphaOption, GammaAndColorProfileOption colorOptions)
 {
     const size_t longestSignatureLength = sizeof("RIFF????WEBPVP") - 1;
     ASSERT(longestSignatureLength == 14);
 
-    size_t maxDecodedBytes = Platform::current() ? Platform::current()->maxDecodedImageBytes() : noDecodedImageByteLimit;
-
-    char contents[longestSignatureLength];
-    if (copyFromSharedBuffer(contents, longestSignatureLength, data, 0) < longestSignatureLength)
+    if (length < longestSignatureLength)
         return nullptr;
+
+    size_t maxDecodedBytes = Platform::current() ? Platform::current()->maxDecodedImageBytes() : noDecodedImageByteLimit;
 
     if (matchesJPEGSignature(contents))
         return adoptPtr(new JPEGImageDecoder(alphaOption, colorOptions, maxDecodedBytes));
@@ -112,6 +96,20 @@ PassOwnPtr<ImageDecoder> ImageDecoder::create(const SharedBuffer& data, AlphaOpt
         return adoptPtr(new BMPImageDecoder(alphaOption, colorOptions, maxDecodedBytes));
 
     return nullptr;
+}
+
+PassOwnPtr<ImageDecoder> ImageDecoder::create(const SharedBuffer& data, AlphaOption alphaOption, GammaAndColorProfileOption colorOptions)
+{
+    const char* contents;
+    const size_t length = data.getSomeData<size_t>(contents);
+    return create(contents, length, alphaOption, colorOptions);
+}
+
+PassOwnPtr<ImageDecoder> ImageDecoder::create(const SegmentReader& data, AlphaOption alphaOption, GammaAndColorProfileOption colorOptions)
+{
+    const char* contents;
+    const size_t length = data.getSomeData(contents, 0);
+    return create(contents, length, alphaOption, colorOptions);
 }
 
 size_t ImageDecoder::frameCount()

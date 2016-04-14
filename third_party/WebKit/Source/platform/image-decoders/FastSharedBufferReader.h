@@ -32,7 +32,7 @@
 #define FastSharedBufferReader_h
 
 #include "platform/PlatformExport.h"
-#include "platform/SharedBuffer.h"
+#include "platform/image-decoders/SegmentReader.h"
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PassRefPtr.h"
@@ -48,9 +48,9 @@ class PLATFORM_EXPORT FastSharedBufferReader final {
     DISALLOW_NEW();
     WTF_MAKE_NONCOPYABLE(FastSharedBufferReader);
 public:
-    FastSharedBufferReader(PassRefPtr<SharedBuffer> data);
+    FastSharedBufferReader(PassRefPtr<SegmentReader> data);
 
-    void setData(PassRefPtr<SharedBuffer>);
+    void setData(PassRefPtr<SegmentReader>);
 
     // Returns a consecutive buffer that carries the data starting
     // at |dataPosition| with |length| bytes.
@@ -60,7 +60,7 @@ public:
     // Caller must ensure there are enough bytes in |m_data| and |buffer|.
     const char* getConsecutiveData(size_t dataPosition, size_t length, char* buffer) const;
 
-    // Wraps SharedBuffer::getSomeData().
+    // Wraps SegmentReader::getSomeData().
     size_t getSomeData(const char*& someData, size_t dataPosition) const;
 
     // Returns a byte at |dataPosition|.
@@ -76,14 +76,14 @@ public:
     }
 
     // This class caches the last access for faster subsequent reads. This
-    // method clears that cache in case the SharedBuffer has been modified
-    // (i.e. with mergeSegmentsIntoBuffer).
+    // method clears that cache in case the SegmentReader has been modified
+    // (e.g. with mergeSegmentsIntoBuffer on a wrapped SharedBuffer).
     void clearCache();
 
 private:
     void getSomeDataInternal(size_t dataPosition) const;
 
-    RefPtr<SharedBuffer> m_data;
+    RefPtr<SegmentReader> m_data;
 
     // Caches the last segment of |m_data| accessed, since subsequent reads are
     // likely to re-access it.
