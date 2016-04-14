@@ -589,6 +589,7 @@ class Settings(object):
     self.updated = False
     self.is_gerrit = None
     self.squash_gerrit_uploads = None
+    self.gerrit_skip_ensure_authenticated = None
     self.git_editor = None
     self.project = None
     self.force_https_commit_url = None
@@ -770,6 +771,15 @@ class Settings(object):
           RunGit(['config', '--bool', 'gerrit.squash-uploads'],
                  error_ok=True).strip() == 'true')
     return self.squash_gerrit_uploads
+
+  def GetGerritSkipEnsureAuthenticated(self):
+    """Return True if EnsureAuthenticated should not be done for Gerrit
+    uploads."""
+    if self.gerrit_skip_ensure_authenticated is None:
+      self.gerrit_skip_ensure_authenticated = (
+          RunGit(['config', '--bool', 'gerrit.skip_ensure_authenticated'],
+                 error_ok=True).strip() == 'true')
+    return self.gerrit_skip_ensure_authenticated
 
   def GetGitEditor(self):
     """Return the editor specified in the git config, or None if none is."""
@@ -2022,6 +2032,10 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
 
   def EnsureAuthenticated(self, force):
     """Best effort check that user is authenticated with Gerrit server."""
+    if settings.GetGerritSkipEnsureAuthenticated():
+      # For projects with unusual authentication schemes.
+      # See http://crbug.com/603378.
+      return
     # Lazy-loader to identify Gerrit and Git hosts.
     if gerrit_util.GceAuthenticator.is_gce():
       return
@@ -2716,6 +2730,10 @@ def LoadCodereviewSettingsFromFile(fileobj):
   if 'GERRIT_SQUASH_UPLOADS' in keyvals:
     RunGit(['config', 'gerrit.squash-uploads',
             keyvals['GERRIT_SQUASH_UPLOADS']])
+
+  if 'GERRIT_SKIP_ENSURE_AUTHENTICATED' in keyvals:
+    RunGit(['config', 'gerrit.skip_ensure_authenticated',
+            keyvals['GERRIT_SKIP_ENSURE_AUTHENTICATED']])
 
   if 'PUSH_URL_CONFIG' in keyvals and 'ORIGIN_URL_CONFIG' in keyvals:
     #should be of the form

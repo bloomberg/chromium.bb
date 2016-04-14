@@ -527,6 +527,7 @@ class TestGitCl(TestCase):
       reviewers,
       private=False):
     """Generic reviewer test framework."""
+    self.mock(git_cl.sys, 'stdout', StringIO.StringIO())
     try:
       similarity = upload_args[upload_args.index('--similarity')+1]
     except ValueError:
@@ -660,6 +661,7 @@ class TestGitCl(TestCase):
           'Must specify reviewers to send email.\n', stderr.getvalue())
 
   def test_dcommit(self):
+    self.mock(git_cl.sys, 'stdout', StringIO.StringIO())
     self.calls = (
         self._dcommit_calls_1() +
         self._git_sanity_checks('fake_ancestor_sha', 'working') +
@@ -668,6 +670,7 @@ class TestGitCl(TestCase):
     git_cl.main(['dcommit'])
 
   def test_dcommit_bypass_hooks(self):
+    self.mock(git_cl.sys, 'stdout', StringIO.StringIO())
     self.calls = (
         self._dcommit_calls_1() +
         self._dcommit_calls_bypassed() +
@@ -676,8 +679,12 @@ class TestGitCl(TestCase):
 
 
   @classmethod
-  def _gerrit_ensure_auth_calls(cls, issue=None):
-    calls = []
+  def _gerrit_ensure_auth_calls(cls, issue=None, skip_auth_check=False):
+    cmd = ['git', 'config', '--bool', 'gerrit.skip_ensure_authenticated']
+    if skip_auth_check:
+      return [((cmd, ), 'true')]
+
+    calls = [((cmd, ), '', subprocess2.CalledProcessError(1, '', '', '', ''))]
     if issue:
       calls.extend([
           ((['git', 'config', 'branch.master.gerritserver'],), ''),
@@ -849,6 +856,7 @@ class TestGitCl(TestCase):
       issue=None):
     """Generic gerrit upload test framework."""
     reviewers = reviewers or []
+    self.mock(git_cl.sys, 'stdout', StringIO.StringIO())
     self.mock(git_cl.gerrit_util, "CookiesAuthenticator",
               CookiesAuthenticatorMockFactory(same_cookie='same_cred'))
     self.calls = self._gerrit_base_calls(issue=issue)
@@ -926,6 +934,7 @@ class TestGitCl(TestCase):
         issue=123456)
 
   def test_upload_branch_deps(self):
+    self.mock(git_cl.sys, 'stdout', StringIO.StringIO())
     def mock_run_git(*args, **_kwargs):
       if args[0] == ['for-each-ref',
                        '--format=%(refname:short) %(upstream:short)',
@@ -1094,6 +1103,7 @@ class TestGitCl(TestCase):
     self.assertNotEqual(git_cl.main(['diff']), 0)
 
   def _patch_common(self, is_gerrit=False, force_codereview=False):
+    self.mock(git_cl.sys, 'stdout', StringIO.StringIO())
     self.mock(git_cl._RietveldChangelistImpl, 'GetMostRecentPatchset',
               lambda x: '60001')
     self.mock(git_cl._RietveldChangelistImpl, 'GetPatchSetDiff',
@@ -1265,11 +1275,13 @@ class TestGitCl(TestCase):
 
   def test_checkout_not_found(self):
     """Tests git cl checkout <issue>."""
+    self.mock(git_cl.sys, 'stdout', StringIO.StringIO())
     self.calls = self._checkout_calls()
     self.assertEqual(1, git_cl.main(['checkout', '99999']))
 
   def test_checkout_no_branch_issues(self):
     """Tests git cl checkout <issue>."""
+    self.mock(git_cl.sys, 'stdout', StringIO.StringIO())
     self.calls = [
         ((['git', 'config', '--local', '--get-regexp',
            'branch\\..*\\.rietveldissue'], ), '',
@@ -1281,17 +1293,18 @@ class TestGitCl(TestCase):
     ]
     self.assertEqual(1, git_cl.main(['checkout', '99999']))
 
-  def _test_gerrit_ensure_authenticated_common(self, auth):
+  def _test_gerrit_ensure_authenticated_common(self, auth,
+                                               skip_auth_check=False):
     self.mock(git_cl.gerrit_util, 'CookiesAuthenticator',
               CookiesAuthenticatorMockFactory(hosts_with_creds=auth))
     self.mock(git_cl, 'DieWithError',
               lambda msg: self._mocked_call(['DieWithError', msg]))
     self.mock(git_cl, 'ask_for_data',
               lambda msg: self._mocked_call(['ask_for_data', msg]))
-    self.calls = [
-        ((['git', 'symbolic-ref', 'HEAD'],), 'master')
-    ] + self._gerrit_ensure_auth_calls()
+    self.calls = self._gerrit_ensure_auth_calls(skip_auth_check=skip_auth_check)
     cl = git_cl.Changelist(codereview='gerrit')
+    cl.branch = 'master'
+    cl.branchref = 'refs/heads/master'
     cl.lookedup_issue = True
     return cl
 
@@ -1309,6 +1322,7 @@ class TestGitCl(TestCase):
     self.assertIsNone(cl.EnsureAuthenticated(force=False))
 
   def test_gerrit_ensure_authenticated_conflict(self):
+    self.mock(git_cl.sys, 'stdout', StringIO.StringIO())
     cl = self._test_gerrit_ensure_authenticated_common(auth={
       'chromium.googlesource.com': 'one',
       'chromium-review.googlesource.com': 'other',
@@ -1323,6 +1337,11 @@ class TestGitCl(TestCase):
       'chromium.googlesource.com': 'same',
       'chromium-review.googlesource.com': 'same',
     })
+    self.assertIsNone(cl.EnsureAuthenticated(force=False))
+
+  def test_gerrit_ensure_authenticated_skipped(self):
+    cl = self._test_gerrit_ensure_authenticated_common(
+        auth={}, skip_auth_check=True)
     self.assertIsNone(cl.EnsureAuthenticated(force=False))
 
   def test_cmd_set_commit_rietveld(self):
