@@ -12,4 +12,7 @@
 // New projects should not include this file: include the file included below.
 #include "mkvmuxer/mkvmuxerutil.h"
 
+using mkvmuxer::EbmlElementSize;
+using mkvmuxer::EbmlMasterElementSize;
+
 #endif  // LIBWEBM_MKVMUXERUTIL_HPP_
