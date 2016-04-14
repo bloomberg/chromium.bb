@@ -130,13 +130,13 @@ TEST_F('SettingsBluetoothPageBrowserTest', 'MAYBE_Bluetooth', function() {
       // Set enabled, with default (empty) device list.
       self.bluetoothApi_.setEnabled(true);
       Polymer.dom.flush();
-      // Ensure that initially the 'device list empty' span is visible.
+      // Ensure that initially the 'no devices' element is visible.
       expectFalse(deviceList.hidden);
-      var noDevices = deviceList.querySelector('span');
+      var noDevices = deviceList.querySelector('.no-devices');
       assertTrue(!!noDevices);
       expectFalse(noDevices.hidden);
-      // Set some devices (triggers onDeviceAdded events). 'empty' span should
-      // be hidden.
+      // Set some devices (triggers onDeviceAdded events). 'no devices' element
+      // should be hidden.
       self.bluetoothApi_.setDevicesForTest(fakeDevices_);
       Polymer.dom.flush();
       expectTrue(noDevices.hidden);
@@ -157,7 +157,7 @@ TEST_F('SettingsBluetoothPageBrowserTest', 'MAYBE_Bluetooth', function() {
       self.bluetoothApi_.setEnabled(true);
 
       // Tap the 'add device' button.
-      MockInteractions.tap(bluetooth.$.addDevice);
+      MockInteractions.tap(bluetooth.$$('.primary-button'));
       Polymer.dom.flush();
       // Ensure the dialog appears.
       var dialog = bluetooth.$.deviceDialog;

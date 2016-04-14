@@ -7,10 +7,28 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-item/paper-item.html">
 
 <dom-module id="bluetooth-device-list-item">
-  <link rel="import" type="css" href="bluetooth_device_list_item.css">
+  <style>
+    iron-icon {
+      -webkit-padding-start: 10px;
+    }
+
+    span.name {
+      padding: 10px 0;
+    }
+
+    span.name[connected] {
+      font-weight: 500;
+    }
+
+    /* TODO(dbeam): combine with other similar styles. */
+    .dropdown-content {
+      background: white;
+      box-shadow: 0 2px 6px grey;
+    }
+  </style>
   <template>
-    <div id="outer" class="layout horizontal center"
-        dropdown$="[[dropdownOpened]]" on-tap="itemTapped_">
+    <div class="flex layout horizontal center" dropdown$="[[dropdownOpened]]"
+        on-tap="itemTapped_">
       <span class="name" connected$="[[device.connected]]">
         [[getDeviceName_(device)]]
       </span>

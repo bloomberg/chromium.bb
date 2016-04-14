@@ -197,6 +197,16 @@ Polymer({
   },
 
   /**
+   * @param {boolean} bluetoothEnabled
+   * @param {boolean} deviceListExpanded
+   * @return {boolean} Whether the <iron-collapse> can be shown.
+   * @private
+   */
+  canShowDeviceList_: function(bluetoothEnabled, deviceListExpanded) {
+    return bluetoothEnabled && deviceListExpanded;
+  },
+
+  /**
    * If bluetooth is enabled, request the complete list of devices and update
    * |deviceList|.
    * @private
