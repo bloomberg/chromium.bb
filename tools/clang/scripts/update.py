@@ -327,7 +327,7 @@ def AddGnuWinToPath():
     DownloadAndUnpack(CDS_URL + '/tools/' + zip_name, LLVM_BUILD_TOOLS_DIR)
     WriteStampFile(GNUWIN_VERSION, GNUWIN_STAMP)
 
-  os.environ['PATH'] = gnuwin_dir + os.pathsep + os.environ.get('PATH', '')
+  os.environ['PATH'] = os.environ.get('PATH', '') + os.pathsep + gnuwin_dir
 
 
 vs_version = None
