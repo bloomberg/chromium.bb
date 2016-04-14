@@ -353,3 +353,10 @@
 # Regressions: Unexpected text-only failures (3)
   imported/web-platform-tests/web-animations/keyframe-effect/getComputedTiming-currentIteration.html [ Failure ]
   imported/web-platform-tests/web-animations/keyframe-effect/getComputedTiming-progress.html [ Failure ]
+
+# Update on 16-4-14
+
+# Regressions: Unexpected text-only failures (2)
+  http/tests/security/mixedContent/insecure-prefetch-in-main-frame.html [ Failure ]
+  imported/web-platform-tests/web-animations/animation-timeline/document-timeline.html [ Failure ]
+
