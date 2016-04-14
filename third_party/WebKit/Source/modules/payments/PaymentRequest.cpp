@@ -201,7 +201,7 @@ const AtomicString& PaymentRequest::interfaceName() const
 
 ExecutionContext* PaymentRequest::getExecutionContext() const
 {
-    return m_scriptState->getExecutionContext();
+    return ContextLifecycleObserver::getExecutionContext();
 }
 
 ScriptPromise PaymentRequest::complete(ScriptState* scriptState, bool success)
@@ -223,10 +223,11 @@ DEFINE_TRACE(PaymentRequest)
     visitor->trace(m_showResolver);
     visitor->trace(m_completeResolver);
     EventTargetWithInlineData::trace(visitor);
+    ContextLifecycleObserver::trace(visitor);
 }
 
 PaymentRequest::PaymentRequest(ScriptState* scriptState, const Vector<String>& supportedMethods, const PaymentDetails& details, const PaymentOptions& options, const ScriptValue& data, ExceptionState& exceptionState)
-    : m_scriptState(scriptState)
+    : ContextLifecycleObserver(scriptState->getExecutionContext())
     , m_supportedMethods(supportedMethods)
     , m_details(details)
     , m_options(options)
@@ -297,6 +298,11 @@ PaymentRequest::PaymentRequest(ScriptState* scriptState, const Vector<String>& s
         m_shippingOption = details.shippingOptions().begin()->id();
 }
 
+void PaymentRequest::contextDestroyed()
+{
+    cleanUp();
+}
+
 void PaymentRequest::OnShippingAddressChange(mojom::wtf::ShippingAddressPtr address)
 {
     DCHECK(m_showResolver);
@@ -360,7 +366,8 @@ void PaymentRequest::cleanUp()
 {
     m_completeResolver.clear();
     m_showResolver.clear();
-    m_clientBinding.Close();
+    if (m_clientBinding.is_bound())
+        m_clientBinding.Close();
     m_paymentProvider.reset();
 }
 

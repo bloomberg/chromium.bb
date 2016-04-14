@@ -8,6 +8,7 @@
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include "core/events/EventTarget.h"
 #include "modules/ModulesExport.h"
 #include "modules/payments/PaymentCompleter.h"
@@ -29,7 +30,7 @@ class ScriptPromiseResolver;
 class ScriptState;
 class ShippingAddress;
 
-class MODULES_EXPORT PaymentRequest final : public EventTargetWithInlineData, WTF_NON_EXPORTED_BASE(public mojom::wtf::PaymentRequestClient), public PaymentCompleter {
+class MODULES_EXPORT PaymentRequest final : public EventTargetWithInlineData, WTF_NON_EXPORTED_BASE(public mojom::wtf::PaymentRequestClient), public PaymentCompleter, public ContextLifecycleObserver {
     DEFINE_WRAPPERTYPEINFO();
     USING_GARBAGE_COLLECTED_MIXIN(PaymentRequest)
     WTF_MAKE_NONCOPYABLE(PaymentRequest);
@@ -62,6 +63,9 @@ public:
 private:
     PaymentRequest(ScriptState*, const Vector<String>& supportedMethods, const PaymentDetails&, const PaymentOptions&, const ScriptValue& data, ExceptionState&);
 
+    // LifecycleObserver:
+    void contextDestroyed() override;
+
     // mojom::wtf::PaymentRequestClient:
     void OnShippingAddressChange(mojom::wtf::ShippingAddressPtr) override;
     void OnShippingOptionChange(const String& shippingOptionId) override;
@@ -72,7 +76,6 @@ private:
     // Clears the promise resolvers and closes the Mojo connection.
     void cleanUp();
 
-    RefPtr<ScriptState> m_scriptState;
     Vector<String> m_supportedMethods;
     PaymentDetails m_details;
     PaymentOptions m_options;
