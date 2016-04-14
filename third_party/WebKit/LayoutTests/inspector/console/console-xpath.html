@@ -12,20 +12,31 @@ function test()
     InspectorTest.evaluateInConsole("$x('name(/html)')"); // string
     InspectorTest.evaluateInConsole("$x('not(42)')"); // boolean
     InspectorTest.evaluateInConsole("$x('/html/body/p').length"); // node iterator
+    InspectorTest.evaluateInConsole("$x('//a/@href')[0]"); // href, should not throw
     InspectorTest.evaluateInPage("console.log('complete')"); // node iterator
 
     function addMessageSniffer(uiMessage)
     {
         if (uiMessage.toString().indexOf("complete") !== -1) {
-            InspectorTest.dumpConsoleMessages();
-            InspectorTest.completeTest();
+            InspectorTest.expandConsoleMessages(waitForObjects);
         }
+    }
+
+    function waitForObjects()
+    {
+        InspectorTest.waitForRemoteObjectsConsoleMessages(dumpConsoleMessages);
+    }
+
+    function dumpConsoleMessages()
+    {
+        InspectorTest.dumpConsoleMessages();
+        InspectorTest.completeTest();
     }
 }
 
 </script>
 </head>
-
+<a href="http://chromium.org"></a>
 <body onload="runTest()">
 <p>
 Tests $x for iterator and non-iterator types.

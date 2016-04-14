@@ -5,9 +5,11 @@ $x('42')
 $x('name(/html)')
 $x('not(42)')
 $x('/html/body/p').length
+$x('//a/@href')[0]
 42
 "html"
 false
 1
+href="http://chromium.org"
 VM:1 complete
 
