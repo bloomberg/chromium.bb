@@ -877,7 +877,8 @@ void Shell::Init(const ShellInitParams& init_params) {
 
 #if defined(USE_OZONE)
   display_configurator_->Init(
-      ui::OzonePlatform::GetInstance()->CreateNativeDisplayDelegate(),
+      in_mus_ ? nullptr
+              : ui::OzonePlatform::GetInstance()->CreateNativeDisplayDelegate(),
       !gpu_support_->IsPanelFittingDisabled());
 #elif defined(USE_X11)
   display_configurator_->Init(
