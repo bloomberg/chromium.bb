@@ -205,7 +205,6 @@ bool RuleSet::findBestRuleSetAndAdd(const CSSSelector& component, RuleData& rule
     }
 
     if (component.isHostPseudoClass()) {
-        ASSERT(component.isLastInTagHistory() || (component.relation() == CSSSelector::SubSelector && component.tagHistory()->match() == CSSSelector::PseudoElement));
         m_shadowHostRules.append(ruleData);
         return true;
     }

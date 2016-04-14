@@ -610,10 +610,13 @@ RuleFeatureSet::SelectorPreMatch RuleFeatureSet::collectFeaturesFromSelector(con
             break;
         case CSSSelector::PseudoHost:
         case CSSSelector::PseudoHostContext:
-            if (relation == CSSSelector::SubSelector)
+            if (!foundHostPseudo && relation == CSSSelector::SubSelector)
                 return SelectorNeverMatches;
-            if (!current->isLastInTagHistory() && current->tagHistory()->match() != CSSSelector::PseudoElement)
+            if (!current->isLastInTagHistory()
+                && current->tagHistory()->match() != CSSSelector::PseudoElement
+                && !current->tagHistory()->isHostPseudoClass()) {
                 return SelectorNeverMatches;
+            }
             foundHostPseudo = true;
             // fall through.
         default:
