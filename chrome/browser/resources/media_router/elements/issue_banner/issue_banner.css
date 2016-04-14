@@ -32,6 +32,7 @@
   background-color: var(--paper-grey-800);
   overflow: hidden;
   padding: 16px;
+  width: inherit;
 }
 
 .non-blocking > #buttons {
@@ -39,6 +40,10 @@
   flex-direction: row;
   justify-content: flex-end;
   width: 100%;
+}
+
+.non-blocking > #buttons > #default-button {
+  -webkit-margin-end: 24px;
 }
 
 .non-blocking > div > #title {
