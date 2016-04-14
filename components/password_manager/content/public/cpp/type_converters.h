@@ -5,7 +5,8 @@
 #ifndef COMPONENTS_PASSWORD_MANAGER_CONTENT_PUBLIC_CPP_TYPE_CONVERTERS_IMPL_H_
 #define COMPONENTS_PASSWORD_MANAGER_CONTENT_PUBLIC_CPP_TYPE_CONVERTERS_IMPL_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "components/password_manager/content/public/interfaces/credential_manager.mojom.h"
 
 namespace blink {
@@ -40,9 +41,9 @@ struct TypeConverter<password_manager::mojom::CredentialInfoPtr,
 };
 
 template <>
-struct TypeConverter<scoped_ptr<blink::WebCredential>,
+struct TypeConverter<std::unique_ptr<blink::WebCredential>,
                      password_manager::mojom::CredentialInfoPtr> {
-  static scoped_ptr<blink::WebCredential> Convert(
+  static std::unique_ptr<blink::WebCredential> Convert(
       const password_manager::mojom::CredentialInfoPtr& input);
 };
 

@@ -99,10 +99,10 @@ TypeConverter<mojom::CredentialInfoPtr, blink::WebCredential>::Convert(
   return output;
 }
 
-scoped_ptr<blink::WebCredential> TypeConverter<
-    scoped_ptr<blink::WebCredential>,
+std::unique_ptr<blink::WebCredential> TypeConverter<
+    std::unique_ptr<blink::WebCredential>,
     mojom::CredentialInfoPtr>::Convert(const mojom::CredentialInfoPtr& input) {
-  scoped_ptr<blink::WebCredential> output;
+  std::unique_ptr<blink::WebCredential> output;
 
   switch (input->type) {
     case mojom::CredentialType::PASSWORD:
