@@ -5,6 +5,7 @@
 #include "ui/views/controls/menu/menu_scroll_view_container.h"
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/accessibility/ax_view_state.h"
@@ -293,7 +294,8 @@ void MenuScrollViewContainer::CreateDefaultBorder() {
                               ui::NativeTheme::kColorId_MenuBorderColor)
                         : gfx::kPlaceholderColor;
     SetBorder(views::Border::CreateBorderPainter(
-        new views::RoundRectPainter(color, menu_config.corner_radius),
+        base::WrapUnique(
+            new views::RoundRectPainter(color, menu_config.corner_radius)),
         gfx::Insets(top, left, bottom, right)));
   } else {
     SetBorder(Border::CreateEmptyBorder(top, left, bottom, right));

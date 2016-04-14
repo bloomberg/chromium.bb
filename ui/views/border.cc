@@ -139,7 +139,7 @@ gfx::Size EmptyBorder::GetMinimumSize() const {
 
 class BorderPainter : public Border {
  public:
-  BorderPainter(Painter* painter, const gfx::Insets& insets);
+  BorderPainter(std::unique_ptr<Painter> painter, const gfx::Insets& insets);
 
   // Overridden from Border:
   void Paint(const View& view, gfx::Canvas* canvas) override;
@@ -153,10 +153,10 @@ class BorderPainter : public Border {
   DISALLOW_COPY_AND_ASSIGN(BorderPainter);
 };
 
-BorderPainter::BorderPainter(Painter* painter, const gfx::Insets& insets)
-    : painter_(painter),
-      insets_(insets) {
-  DCHECK(painter);
+BorderPainter::BorderPainter(std::unique_ptr<Painter> painter,
+                             const gfx::Insets& insets)
+    : painter_(std::move(painter)), insets_(insets) {
+  DCHECK(painter_);
 }
 
 void BorderPainter::Paint(const View& view, gfx::Canvas* canvas) {
@@ -222,9 +222,10 @@ std::unique_ptr<Border> Border::CreateSolidSidedBorder(int top,
 }
 
 // static
-std::unique_ptr<Border> Border::CreateBorderPainter(Painter* painter,
-                                                    const gfx::Insets& insets) {
-  return base::WrapUnique(new BorderPainter(painter, insets));
+std::unique_ptr<Border> Border::CreateBorderPainter(
+    std::unique_ptr<Painter> painter,
+    const gfx::Insets& insets) {
+  return base::WrapUnique(new BorderPainter(std::move(painter), insets));
 }
 
 }  // namespace views

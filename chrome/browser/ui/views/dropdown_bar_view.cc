@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/dropdown_bar_view.h"
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -103,5 +104,6 @@ void DropdownBarView::SetBorderFromIds(int left_border_image_id,
   int border_image_ids[3] = {left_border_image_id, middle_border_image_id,
       right_border_image_id};
   SetBorder(views::Border::CreateBorderPainter(
-      new views::HorizontalPainter(border_image_ids), gfx::Insets()));
+      base::WrapUnique(new views::HorizontalPainter(border_image_ids)),
+      gfx::Insets()));
 }
