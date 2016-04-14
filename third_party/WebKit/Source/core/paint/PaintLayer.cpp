@@ -422,6 +422,9 @@ void PaintLayer::updateTransform(const ComputedStyle* oldStyle, const ComputedSt
 
     if (had3DTransform != has3DTransform())
         dirty3DTransformedDescendantStatus();
+
+    if (FrameView* frameView = layoutObject()->document().view())
+        frameView->setNeedsUpdateWidgetGeometries();
 }
 
 static PaintLayer* enclosingLayerForContainingBlock(PaintLayer* layer)

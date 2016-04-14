@@ -477,4 +477,30 @@ TEST_F(FrameThrottlingTest, ScrollingCoordinatorShouldSkipThrottledFrame)
     EXPECT_TRUE(document().view()->shouldScrollOnMainThread());
 }
 
+TEST_F(FrameThrottlingTest, UnthrottleByTransformingWithoutLayout)
+{
+    webView().settings()->setAcceleratedCompositingEnabled(true);
+
+    // Create a hidden frame which is throttled.
+    SimRequest mainResource("https://example.com/", "text/html");
+    SimRequest frameResource("https://example.com/iframe.html", "text/html");
+
+    loadURL("https://example.com/");
+    mainResource.complete("<iframe id=frame sandbox src=iframe.html></iframe>");
+    frameResource.complete("");
+
+    // Move the frame offscreen to throttle it.
+    auto* frameElement = toHTMLIFrameElement(document().getElementById("frame"));
+    frameElement->setAttribute(styleAttr, "transform: translateY(480px)");
+    EXPECT_FALSE(frameElement->contentDocument()->view()->canThrottleRendering());
+    compositeFrame();
+    EXPECT_TRUE(frameElement->contentDocument()->view()->canThrottleRendering());
+
+    // Make the frame visible by changing its transform. This doesn't cause a
+    // layout, but should still unthrottle the frame.
+    frameElement->setAttribute(styleAttr, "transform: translateY(0px)");
+    compositeFrame();
+    EXPECT_FALSE(frameElement->contentDocument()->view()->canThrottleRendering());
+}
+
 } // namespace blink
