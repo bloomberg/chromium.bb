@@ -12,6 +12,7 @@
 
 namespace blink {
 
+class ExceptionState;
 class ScriptState;
 class ScriptValue;
 
@@ -27,7 +28,7 @@ public:
 
     virtual StyleValueType type() const = 0;
 
-    static ScriptValue parse(ScriptState*, const String& property, const String& cssText);
+    static ScriptValue parse(ScriptState*, const String& propertyName, const String& value, ExceptionState&);
 
     virtual CSSValue* toCSSValue() const = 0;
     virtual String cssString() const
