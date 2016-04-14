@@ -64,12 +64,17 @@ public class ContextualSearchFieldTrial {
     // Quick Answers.
     private static final String ENABLE_QUICK_ANSWERS = "enable_quick_answers";
 
-    // Recent-scroll experiments.
+    // Triggering suppression.
     // Enables collection of recent scroll seen/unseen histograms.
     // TODO(donnd): remove all supporting code once short-lived data collection is done.
     private static final String ENABLE_RECENT_SCROLL_COLLECTION = "enable_recent_scroll_collection";
     // Set non-zero to establish an recent scroll suppression threshold for taps.
     private static final String RECENT_SCROLL_DURATION_MS = "recent_scroll_duration_ms";
+    // TODO(donnd): remove all supporting code once short-lived data collection is done.
+    private static final String ENABLE_SCREEN_TOP_COLLECTION = "enable_screen_top_collection";
+    private static final String SCREEN_TOP_SUPPRESSION_DPS = "screen_top_suppression_dps";
+    private static final String ENABLE_BAR_OVERLAP_COLLECTION = "enable_bar_overlap_collection";
+    private static final String BAR_OVERLAP_SUPPRESSION_ENABLED = "enable_bar_overlap_suppression";
 
     // Cached values to avoid repeated and redundant JNI operations.
     private static Boolean sEnabled;
@@ -88,6 +93,10 @@ public class ContextualSearchFieldTrial {
     private static Boolean sIsQuickAnswersEnabled;
     private static Boolean sIsRecentScrollCollectionEnabled;
     private static Integer sRecentScrollDurationMs;
+    private static Boolean sIsScreenTopCollectionEnabled;
+    private static Integer sScreenTopSuppressionDps;
+    private static Boolean sIsBarOverlapCollectionEnabled;
+    private static Boolean sIsBarOverlapSuppressionEnabled;
 
     /**
      * Don't instantiate.
@@ -323,6 +332,49 @@ public class ContextualSearchFieldTrial {
             sRecentScrollDurationMs = getIntParamValueOrDefault(RECENT_SCROLL_DURATION_MS, 0);
         }
         return sRecentScrollDurationMs.intValue();
+    }
+
+    /**
+     * @return Whether collecting metrics for tap triggering near the top of the screen is enabled.
+     */
+    static boolean isScreenTopCollectionEnabled() {
+        if (sIsScreenTopCollectionEnabled == null) {
+            sIsScreenTopCollectionEnabled = getBooleanParam(ENABLE_SCREEN_TOP_COLLECTION);
+        }
+        return sIsScreenTopCollectionEnabled.booleanValue();
+    }
+
+    /**
+     * Gets a Y value limit that will suppress a Tap near the top of the screen.
+     * Any Y value less than the limit will suppress the Tap trigger.
+     * @return The Y value triggering limit in DPs, a value of zero will not limit.
+     */
+    static int getScreenTopSuppressionDps() {
+        if (sScreenTopSuppressionDps == null) {
+            sScreenTopSuppressionDps = getIntParamValueOrDefault(SCREEN_TOP_SUPPRESSION_DPS, 0);
+        }
+        return sScreenTopSuppressionDps.intValue();
+    }
+
+    /**
+     * @return Whether collecting data on Bar overlap is enabled.
+     */
+    static boolean isBarOverlapCollectionEnabled() {
+        if (sIsBarOverlapCollectionEnabled == null) {
+            sIsBarOverlapCollectionEnabled = getBooleanParam(ENABLE_BAR_OVERLAP_COLLECTION);
+        }
+        return sIsBarOverlapCollectionEnabled.booleanValue();
+    }
+
+    /**
+     * @return Whether triggering is suppressed by a selection nearly overlapping the normal
+     *         Bar peeking location.
+     */
+    static boolean isBarOverlapSupressionEnabled() {
+        if (sIsBarOverlapSuppressionEnabled == null) {
+            sIsBarOverlapSuppressionEnabled = getBooleanParam(BAR_OVERLAP_SUPPRESSION_ENABLED);
+        }
+        return sIsBarOverlapSuppressionEnabled.booleanValue();
     }
 
     // --------------------------------------------------------------------------------------------

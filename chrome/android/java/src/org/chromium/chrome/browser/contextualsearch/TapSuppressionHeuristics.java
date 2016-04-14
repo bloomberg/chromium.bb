@@ -23,6 +23,12 @@ public class TapSuppressionHeuristics extends ContextualSearchHeuristics {
         TapFarFromPreviousSuppression farFromPreviousHeuristic =
                 new TapFarFromPreviousSuppression(selectionController, x, y);
         mHeuristics.add(farFromPreviousHeuristic);
+        NearTopTapSuppression tapNearTopSuppression =
+                new NearTopTapSuppression(selectionController, y);
+        mHeuristics.add(tapNearTopSuppression);
+        BarOverlapTapSuppression barOverlapTapSuppression =
+                new BarOverlapTapSuppression(selectionController, x, y);
+        mHeuristics.add(barOverlapTapSuppression);
     }
 
     /**

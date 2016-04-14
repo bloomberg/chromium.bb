@@ -13,6 +13,13 @@ class TapFarFromPreviousSuppression extends ContextualSearchHeuristic {
     private final float mPxToDp;
     private final boolean mShouldHandleTap;
 
+    /**
+     * Constructs a heuristic to determine if the current Tap should be suppressed because it is
+     * far from the previous tap.
+     * @param controller The {@link ContextualSearchSelectionController}.
+     * @param x The x coordinate of the tap gesture.
+     * @param y The y coordinate of the tap gesture.
+     */
     TapFarFromPreviousSuppression(ContextualSearchSelectionController controller, int x, int y) {
         mPxToDp = controller.getPxToDp();
         mX = controller.getLastX();

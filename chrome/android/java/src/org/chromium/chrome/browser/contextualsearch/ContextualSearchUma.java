@@ -215,6 +215,17 @@ public class ContextualSearchUma {
     private static final int QUICK_ANSWER_NOT_ACTIVATED_NOT_SEEN = 5;
     private static final int QUICK_ANSWER_SEEN_BOUNDARY = 6;
 
+    // Constants for "Bar Overlap" with triggering gesture, and whether the results were seen.
+    private static final int BAR_OVERLAP_RESULTS_SEEN_FROM_TAP = 0;
+    private static final int BAR_OVERLAP_RESULTS_NOT_SEEN_FROM_TAP = 1;
+    private static final int NO_BAR_OVERLAP_RESULTS_SEEN_FROM_TAP = 2;
+    private static final int NO_BAR_OVERLAP_RESULTS_NOT_SEEN_FROM_TAP = 3;
+    private static final int BAR_OVERLAP_RESULTS_SEEN_FROM_LONG_PRESS = 4;
+    private static final int BAR_OVERLAP_RESULTS_NOT_SEEN_FROM_LONG_PRESS = 5;
+    private static final int NO_BAR_OVERLAP_RESULTS_SEEN_FROM_LONG_PRESS = 6;
+    private static final int NO_BAR_OVERLAP_RESULTS_NOT_SEEN_FROM_LONG_PRESS = 7;
+    private static final int BAR_OVERLAP_RESULTS_BOUNDARY = 8;
+
     /**
      * Key used in maps from {state, reason} to state entry (exit) logging code.
      */
@@ -799,6 +810,57 @@ public class ContextualSearchUma {
     }
 
     /**
+     * Logs the whether the panel was seen and the type of the trigger and if Bar nearly overlapped.
+     * @param wasPanelSeen Whether the panel was seen.
+     * @param wasTap Whether the gesture was a Tap or not.
+     * @param wasBarOverlap Whether the trigger location overlapped the Bar area.
+     */
+    public static void logBarOverlapResultsSeen(
+            boolean wasPanelSeen, boolean wasTap, boolean wasBarOverlap) {
+        RecordHistogram.recordEnumeratedHistogram("Search.ContextualSearchBarOverlapSeen",
+                getBarOverlapEnum(wasBarOverlap, wasPanelSeen, wasTap),
+                BAR_OVERLAP_RESULTS_BOUNDARY);
+    }
+
+    /**
+     * Log whether the UX was suppressed due to Bar overlap.
+     * @param wasSuppressed Whether showing the UX was suppressed.
+     */
+    public static void logBarOverlapSuppression(boolean wasSuppressed) {
+        RecordHistogram.recordEnumeratedHistogram("Search.ContextualSearchBarOverlap",
+                wasSuppressed ? TAP_SUPPRESSED : NOT_TAP_SUPPRESSED, TAP_SUPPRESSED_BOUNDARY);
+    }
+
+    /**
+     * Logs the location of a Tap and whether the panel was seen and the type of the
+     * trigger.
+     * @param wasPanelSeen Whether the panel was seen.
+     * @param wasTap Whether the gesture was a Tap or not.
+     * @param triggerLocationDps The trigger location from the top of the screen.
+     */
+    public static void logScreenTopTapLocation(
+            boolean wasPanelSeen, boolean wasTap, int triggerLocationDps) {
+        // We only log Tap locations for the screen top.
+        if (!wasTap) return;
+        String histogram = wasPanelSeen ? "Search.ContextualSearchTopLocationSeen"
+                                        : "Search.ContextualSearchTopLocationNotSeen";
+        int min = 1;
+        int max = 250;
+        int numBuckets = 50;
+        RecordHistogram.recordCustomCountHistogram(
+                histogram, triggerLocationDps, min, max, numBuckets);
+    }
+
+    /**
+     * Log whether the UX was suppressed due to a Tap too close to the screen top.
+     * @param wasSuppressed Whether showing the UX was suppressed.
+     */
+    public static void logScreenTopTapSuppression(boolean wasSuppressed) {
+        RecordHistogram.recordEnumeratedHistogram("Search.ContextualSearchScreenTopSuppressed",
+                wasSuppressed ? TAP_SUPPRESSED : NOT_TAP_SUPPRESSED, TAP_SUPPRESSED_BOUNDARY);
+    }
+
+    /**
      * Logs whether search results were seen, whether the search provider icon sprite was animated
      * when the panel first appeared, and the triggering gesture.
      * @param wasIconSpriteAnimated Whether the search provider icon sprite was animated when the
@@ -981,6 +1043,47 @@ public class ContextualSearchUma {
                 break;
             default:
                 break;
+        }
+    }
+
+    /**
+     * Get the encoded value to use for the Bar Overlap histogram by encoding all the input
+     * parameters.
+     * @param didBarOverlap Whether the selection overlapped the Bar position.
+     * @param wasPanelSeen Whether the panel content was seen.
+     * @param wasTap Whether the gesture was a Tap.
+     * @return The value for the enum histogram.
+     */
+    private static int getBarOverlapEnum(
+            boolean didBarOverlap, boolean wasPanelSeen, boolean wasTap) {
+        if (wasTap) {
+            if (didBarOverlap) {
+                if (wasPanelSeen) {
+                    return BAR_OVERLAP_RESULTS_SEEN_FROM_TAP;
+                } else {
+                    return BAR_OVERLAP_RESULTS_NOT_SEEN_FROM_TAP;
+                }
+            } else {
+                if (wasPanelSeen) {
+                    return NO_BAR_OVERLAP_RESULTS_SEEN_FROM_TAP;
+                } else {
+                    return NO_BAR_OVERLAP_RESULTS_NOT_SEEN_FROM_TAP;
+                }
+            }
+        } else {
+            if (didBarOverlap) {
+                if (wasPanelSeen) {
+                    return BAR_OVERLAP_RESULTS_SEEN_FROM_LONG_PRESS;
+                } else {
+                    return BAR_OVERLAP_RESULTS_NOT_SEEN_FROM_LONG_PRESS;
+                }
+            } else {
+                if (wasPanelSeen) {
+                    return NO_BAR_OVERLAP_RESULTS_SEEN_FROM_LONG_PRESS;
+                } else {
+                    return NO_BAR_OVERLAP_RESULTS_NOT_SEEN_FROM_LONG_PRESS;
+                }
+            }
         }
     }
 

@@ -532,6 +532,9 @@ public class ContextualSearchPanel extends OverlayPanel {
 
     // TODO(pedrosimonetti): replace proxy methods with direct PanelMetrics usage
 
+    /**
+     * @return The {@link ContextualSearchPanelMetrics}.
+     */
     public ContextualSearchPanelMetrics getPanelMetrics() {
         return mPanelMetrics;
     }
