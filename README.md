@@ -11,6 +11,10 @@ This includes:
 
 Under the [include](include) directory, header files are provided according to
 their own version.  Only major and minor version numbers count.
+For example, the headers for SPIR-V 1.1 are in
+[include/spirv/1.1](include/spirv/1.1).  Also, the 1.0 versions of the
+GLSL.std.450 and OpenCL extended instruction sets are in
+[include/spirv/1.0](include/spirv/1.0).
 
 In contrast, the XML registry file has a linear history, so it is
 not tied to SPIR-V specification versions.
@@ -58,7 +62,9 @@ A CMake-based project can use the headers without installing, as follows:
 2. Use `${SPIRV-Headers_SOURCE_DIR}/include}` in a `target_include_directories`
    directive.
 3. In your C or C++ source code use `#include` directives that explicitly mention
-   the `spirv` path component.  For example:
+   the `spirv` path component.  For example the following uses SPIR-V 1.1
+   core instructions, and the 1.0 versions of the GLSL.std.450 and OpenCL
+   extended instructions.
 ```
 #include "spirv/1.0/GLSL.std.450.h"
 #include "spirv/1.0/OpenCL.std.h"
@@ -73,13 +79,13 @@ See also the [example](example/) subdirectory.  But since that example is
 * *How are different versions published?*
 
   All versions are present in the master branch of the repository.
-  They are located in different subdirectories under `include/spirv`,
-  where the subdirectory at that level encodes the major and minor
-  version number of the SPIR-V (core) specification.
+  They are located in different subdirectories under
+  [include/spirv](include/spirv), where the subdirectory at that
+  level encodes the major and minor version number of the relevant spec.
 
-  An application should consciously select the targeted SPIR-V version
-  number, by naming the specific version in their `#include` directives,
-  as above and in the example.
+  An application should consciously select the targeted spec version
+  number, by naming the specific version in its `#include` directives,
+  as above and in the examples.
 
 * *How do you handle the evolution of extended instruction sets?*
 
