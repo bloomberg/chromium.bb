@@ -99,6 +99,7 @@
 
 #issue-banner.non-blocking {
   bottom: 0;
+  display: block;
   margin-top: 0;
 }
 
