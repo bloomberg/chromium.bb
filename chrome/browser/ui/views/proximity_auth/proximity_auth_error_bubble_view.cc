@@ -51,6 +51,7 @@ void ShowProximityAuthErrorBubble(const base::string16& message,
 
   g_bubble.Get() = ProximityAuthErrorBubbleView::Create(
       message, link_range, link_url, anchor_rect, web_contents);
+  views::BubbleDialogDelegateView::CreateBubble(g_bubble.Get().get())->Show();
 }
 
 void HideProximityAuthErrorBubble() {
@@ -77,13 +78,16 @@ ProximityAuthErrorBubbleView::ProximityAuthErrorBubbleView(
     const GURL& link_url,
     const gfx::Rect& anchor_rect,
     content::WebContents* web_contents)
-    : WebContentsObserver(web_contents),
+    : BubbleDialogDelegateView(nullptr, views::BubbleBorder::LEFT_TOP),
+      WebContentsObserver(web_contents),
       message_(message),
+      link_range_(link_range),
       link_url_(link_url),
       weak_ptr_factory_(this) {
   SetAnchorRect(anchor_rect);
-  set_arrow(views::BubbleBorder::LEFT_TOP);
+}
 
+void ProximityAuthErrorBubbleView::Init() {
   // Define this grid layout for the bubble:
   // ----------------------------
   // | icon | padding | message |
@@ -102,26 +106,25 @@ ProximityAuthErrorBubbleView::ProximityAuthErrorBubbleView(
   warning_icon->SetImage(*bundle.GetImageSkiaNamed(IDR_WARNING));
 
   std::unique_ptr<views::StyledLabel> label(
-      new views::StyledLabel(message, this));
-  if (!link_range.is_empty()) {
-    label->AddStyleRange(link_range,
+      new views::StyledLabel(message_, this));
+  if (!link_range_.is_empty()) {
+    label->AddStyleRange(link_range_,
                          views::StyledLabel::RangeStyleInfo::CreateForLink());
   }
-  label->SizeToFit(
-      kBubbleWidth - margins().width() - warning_icon->size().width() -
-      kBubbleIntraColumnPadding);
+  label->SizeToFit(kBubbleWidth - margins().width() -
+                   warning_icon->size().width() - kBubbleIntraColumnPadding);
 
   // Lay out the views.
   layout->StartRow(0, 0);
   layout->AddView(warning_icon.release());
   layout->AddView(label.release());
   SetLayoutManager(layout.release());
-
-  views::Widget* widget = views::BubbleDelegateView::CreateBubble(this);
-  widget->Show();
 }
 
-ProximityAuthErrorBubbleView::~ProximityAuthErrorBubbleView() {
+ProximityAuthErrorBubbleView::~ProximityAuthErrorBubbleView() {}
+
+int ProximityAuthErrorBubbleView::GetDialogButtons() const {
+  return ui::DIALOG_BUTTON_NONE;
 }
 
 void ProximityAuthErrorBubbleView::WebContentsDestroyed() {
@@ -135,7 +138,7 @@ void ProximityAuthErrorBubbleView::StyledLabelLinkClicked(
   if (!web_contents())
     return;
 
-  web_contents()->OpenURL(content::OpenURLParams(
-      link_url_, content::Referrer(), NEW_FOREGROUND_TAB,
-      ui::PAGE_TRANSITION_LINK, false));
+  web_contents()->OpenURL(
+      content::OpenURLParams(link_url_, content::Referrer(), NEW_FOREGROUND_TAB,
+                             ui::PAGE_TRANSITION_LINK, false));
 }

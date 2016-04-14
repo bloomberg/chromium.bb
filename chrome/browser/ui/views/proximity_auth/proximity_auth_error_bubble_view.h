@@ -9,7 +9,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "ui/views/bubble/bubble_delegate.h"
+#include "ui/gfx/range/range.h"
+#include "ui/views/bubble/bubble_dialog_delegate.h"
 #include "ui/views/controls/styled_label_listener.h"
 #include "url/gurl.h"
 
@@ -18,12 +19,11 @@ class WebContents;
 }
 
 namespace gfx {
-class Range;
 class Rect;
 }
 
-class ProximityAuthErrorBubbleView : public content::WebContentsObserver,
-                                     public views::BubbleDelegateView,
+class ProximityAuthErrorBubbleView : public views::BubbleDialogDelegateView,
+                                     public content::WebContentsObserver,
                                      public views::StyledLabelListener {
  public:
   // Shows an error bubble with the given |message|, with an arrow pointing to
@@ -48,6 +48,10 @@ class ProximityAuthErrorBubbleView : public content::WebContentsObserver,
                                content::WebContents* web_contents);
   ~ProximityAuthErrorBubbleView() override;
 
+  // views::BubbleDialogDelegateView:
+  int GetDialogButtons() const override;
+  void Init() override;
+
   // content::WebContentsObserver:
   void WebContentsDestroyed() override;
 
@@ -57,7 +61,10 @@ class ProximityAuthErrorBubbleView : public content::WebContentsObserver,
                               int event_flags) override;
 
   // The message text shown in the bubble.
-  base::string16 message_;
+  const base::string16 message_;
+
+  // The range of text within |message_| that should be linkified.
+  const gfx::Range link_range_;
 
   // The target URL of the link shown in the bubble's error message. Ignored if
   // there is no link.
