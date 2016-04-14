@@ -9,16 +9,16 @@
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
 #include "ash/session/session_state_delegate.h"
-#include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
 #include "ash/wm/always_on_top_controller.h"
+#include "ash/wm/common/workspace/workspace_layout_manager_delegate.h"
 #include "ash/wm/window_animations.h"
 #include "ash/wm/window_positioner.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
-#include "ash/wm/workspace/workspace_layout_manager_delegate.h"
+#include "ash/wm/workspace/workspace_layout_manager_backdrop_delegate.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
@@ -34,10 +34,12 @@ using aura::Window;
 
 namespace ash {
 
-WorkspaceLayoutManager::WorkspaceLayoutManager(aura::Window* window)
-    : shelf_(NULL),
-      window_(window),
+WorkspaceLayoutManager::WorkspaceLayoutManager(
+    aura::Window* window,
+    std::unique_ptr<wm::WorkspaceLayoutManagerDelegate> delegate)
+    : window_(window),
       root_window_(window->GetRootWindow()),
+      delegate_(std::move(delegate)),
       work_area_in_parent_(ScreenUtil::ConvertRectFromScreen(
           window_,
           gfx::Screen::GetScreen()
@@ -60,12 +62,12 @@ WorkspaceLayoutManager::~WorkspaceLayoutManager() {
   Shell::GetInstance()->activation_client()->RemoveObserver(this);
 }
 
-void WorkspaceLayoutManager::SetShelf(ShelfLayoutManager* shelf) {
-  shelf_ = shelf;
+void WorkspaceLayoutManager::DeleteDelegate() {
+  delegate_.reset();
 }
 
 void WorkspaceLayoutManager::SetMaximizeBackdropDelegate(
-    std::unique_ptr<WorkspaceLayoutManagerDelegate> delegate) {
+    std::unique_ptr<WorkspaceLayoutManagerBackdropDelegate> delegate) {
   backdrop_delegate_.reset(delegate.release());
 }
 
@@ -329,8 +331,8 @@ void WorkspaceLayoutManager::AdjustAllWindowsBoundsForWorkAreaChange(
 }
 
 void WorkspaceLayoutManager::UpdateShelfVisibility() {
-  if (shelf_)
-    shelf_->UpdateVisibilityState();
+  if (delegate_)
+    delegate_->UpdateShelfVisibility();
 }
 
 void WorkspaceLayoutManager::UpdateFullscreenState() {
@@ -339,13 +341,12 @@ void WorkspaceLayoutManager::UpdateFullscreenState() {
   // only windows in the default workspace container will go fullscreen but
   // this should really be tracked by the RootWindowController since
   // technically any container could get a fullscreen window.
-  if (!shelf_)
+  if (!delegate_)
     return;
   bool is_fullscreen = GetRootWindowController(
       window_->GetRootWindow())->GetWindowForFullscreenMode() != NULL;
   if (is_fullscreen != is_fullscreen_) {
-    ash::Shell::GetInstance()->NotifyFullscreenStateChange(
-        is_fullscreen, window_->GetRootWindow());
+    delegate_->OnFullscreenStateChanged(is_fullscreen);
     is_fullscreen_ = is_fullscreen;
   }
 }

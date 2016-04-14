@@ -33,6 +33,7 @@
 #include "ash/touch/touch_hud_projection.h"
 #include "ash/touch/touch_observer_hud.h"
 #include "ash/wm/always_on_top_controller.h"
+#include "ash/wm/common/workspace/workspace_layout_manager_delegate.h"
 #include "ash/wm/dock/docked_window_layout_manager.h"
 #include "ash/wm/lock_layout_manager.h"
 #include "ash/wm/panels/attached_panel_window_targeter.h"
@@ -49,6 +50,7 @@
 #include "ash/wm/workspace/workspace_layout_manager.h"
 #include "ash/wm/workspace_controller.h"
 #include "base/command_line.h"
+#include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/screen_position_client.h"
@@ -258,6 +260,34 @@ class EmptyWindowDelegate : public aura::WindowDelegate {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(EmptyWindowDelegate);
+};
+
+class WorkspaceLayoutManagerDelegateImpl
+    : public wm::WorkspaceLayoutManagerDelegate {
+ public:
+  explicit WorkspaceLayoutManagerDelegateImpl(aura::Window* root_window)
+      : root_window_(root_window) {}
+  ~WorkspaceLayoutManagerDelegateImpl() override = default;
+
+  void set_shelf(ShelfLayoutManager* shelf) { shelf_ = shelf; }
+
+  // WorkspaceLayoutManagerDelegate:
+  void UpdateShelfVisibility() override {
+    if (shelf_)
+      shelf_->UpdateVisibilityState();
+  }
+  void OnFullscreenStateChanged(bool is_fullscreen) override {
+    if (shelf_) {
+      ash::Shell::GetInstance()->NotifyFullscreenStateChange(is_fullscreen,
+                                                             root_window_);
+    }
+  }
+
+ private:
+  aura::Window* root_window_;
+  ShelfLayoutManager* shelf_ = nullptr;
+
+  DISALLOW_COPY_AND_ASSIGN(WorkspaceLayoutManagerDelegateImpl);
 };
 
 }  // namespace
@@ -541,7 +571,8 @@ void RootWindowController::CloseChildWindows() {
 void RootWindowController::MoveWindowsTo(aura::Window* dst) {
   // Forget the shelf early so that shelf don't update itself using wrong
   // display info.
-  workspace_controller_->SetShelf(NULL);
+  workspace_controller_->SetShelf(nullptr);
+  workspace_controller_->layout_manager()->DeleteDelegate();
   ReparentAllWindows(GetRootWindow(), dst);
 }
 
@@ -743,8 +774,11 @@ void RootWindowController::InitLayoutManagers() {
   aura::Window* default_container =
       GetContainer(kShellWindowId_DefaultContainer);
   // Workspace manager has its own layout managers.
-  workspace_controller_.reset(
-      new WorkspaceController(default_container));
+
+  WorkspaceLayoutManagerDelegateImpl* workspace_layout_manager_delegate =
+      new WorkspaceLayoutManagerDelegateImpl(root_window);
+  workspace_controller_.reset(new WorkspaceController(
+      default_container, base::WrapUnique(workspace_layout_manager_delegate)));
 
   aura::Window* always_on_top_container =
       GetContainer(kShellWindowId_AlwaysOnTopContainer);
@@ -757,6 +791,7 @@ void RootWindowController::InitLayoutManagers() {
   aura::Window* status_container = GetContainer(kShellWindowId_StatusContainer);
   shelf_.reset(new ShelfWidget(
       shelf_container, status_container, workspace_controller()));
+  workspace_layout_manager_delegate->set_shelf(shelf_->shelf_layout_manager());
 
   if (!Shell::GetInstance()->session_state_delegate()->
       IsActiveUserSessionStarted()) {

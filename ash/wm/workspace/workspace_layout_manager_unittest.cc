@@ -842,7 +842,7 @@ class WorkspaceLayoutManagerBackdropTest : public test::AshTestBase {
 
   // Turn the top window back drop on / off.
   void ShowTopWindowBackdrop(bool show) {
-    std::unique_ptr<ash::WorkspaceLayoutManagerDelegate> backdrop;
+    std::unique_ptr<ash::WorkspaceLayoutManagerBackdropDelegate> backdrop;
     if (show) {
       backdrop.reset(new ash::WorkspaceBackdropDelegate(default_container_));
     }

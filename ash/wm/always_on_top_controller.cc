@@ -6,6 +6,7 @@
 
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
+#include "ash/wm/common/workspace/workspace_layout_manager_delegate.h"
 #include "ash/wm/workspace/workspace_layout_manager.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
@@ -15,7 +16,7 @@ namespace ash {
 AlwaysOnTopController::AlwaysOnTopController(aura::Window* viewport)
     : always_on_top_container_(viewport) {
   always_on_top_container_->SetLayoutManager(
-      new WorkspaceLayoutManager(viewport));
+      new WorkspaceLayoutManager(viewport, nullptr));
   // Container should be empty.
   DCHECK(always_on_top_container_->children().empty());
   always_on_top_container_->AddObserver(this);

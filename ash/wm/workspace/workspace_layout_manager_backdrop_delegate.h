@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_WORKSPACE_WORKSPACE_LAYOUT_MANAGER_DELEGATE_H_
-#define ASH_WM_WORKSPACE_WORKSPACE_LAYOUT_MANAGER_DELEGATE_H_
+#ifndef ASH_WM_WORKSPACE_WORKSPACE_LAYOUT_MANAGER_BACKDROP_DELEGATE_H_
+#define ASH_WM_WORKSPACE_WORKSPACE_LAYOUT_MANAGER_BACKDROP_DELEGATE_H_
 
+#include "ash/ash_export.h"
 #include "ash/wm/wm_types.h"
 
 namespace aura {
@@ -18,10 +19,9 @@ class WindowState;
 
 // A delegate which can be set to create and control a backdrop which gets
 // placed below the top level window.
-class WorkspaceLayoutManagerDelegate {
+class ASH_EXPORT WorkspaceLayoutManagerBackdropDelegate {
  public:
-  WorkspaceLayoutManagerDelegate() {}
-  virtual ~WorkspaceLayoutManagerDelegate() {}
+  virtual ~WorkspaceLayoutManagerBackdropDelegate() {}
 
   // A window got added to the layout.
   virtual void OnWindowAddedToLayout(aura::Window* child) = 0;
@@ -46,4 +46,4 @@ class WorkspaceLayoutManagerDelegate {
 
 }  // namespace ash
 
-#endif  // ASH_WM_WORKSPACE_WORKSPACE_LAYOUT_MANAGER_DELEGATE_H_
+#endif  // ASH_WM_WORKSPACE_WORKSPACE_LAYOUT_MANAGER_BACKDROP_DELEGATE_H_

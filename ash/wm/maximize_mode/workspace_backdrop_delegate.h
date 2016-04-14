@@ -6,7 +6,7 @@
 #define ASH_WM_MAXIMIZE_MODE_WORKSPACE_BACKDROP_DELEGATE_H_
 
 #include "ash/ash_export.h"
-#include "ash/wm/workspace/workspace_layout_manager_delegate.h"
+#include "ash/wm/workspace/workspace_layout_manager_backdrop_delegate.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "ui/aura/window_observer.h"
@@ -30,7 +30,7 @@ namespace ash {
 // entire container.
 class ASH_EXPORT WorkspaceBackdropDelegate
     : public aura::WindowObserver,
-      public NON_EXPORTED_BASE(WorkspaceLayoutManagerDelegate) {
+      public WorkspaceLayoutManagerBackdropDelegate {
  public:
   explicit WorkspaceBackdropDelegate(aura::Window* container);
   ~WorkspaceBackdropDelegate() override;
@@ -40,7 +40,7 @@ class ASH_EXPORT WorkspaceBackdropDelegate
                              const gfx::Rect& old_bounds,
                              const gfx::Rect& new_bounds) override;
 
-  // WorkspaceLayoutManagerDelegate overrides:
+  // WorkspaceLayoutManagerBackdropDelegate overrides:
   void OnWindowAddedToLayout(aura::Window* child) override;
   void OnWindowRemovedFromLayout(aura::Window* child) override;
   void OnChildWindowVisibilityChanged(aura::Window* child,

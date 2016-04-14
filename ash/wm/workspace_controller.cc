@@ -10,12 +10,13 @@
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
+#include "ash/wm/common/workspace/workspace_layout_manager_delegate.h"
 #include "ash/wm/window_animations.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/workspace_event_handler.h"
 #include "ash/wm/workspace/workspace_layout_manager.h"
-#include "ash/wm/workspace/workspace_layout_manager_delegate.h"
+#include "ash/wm/workspace/workspace_layout_manager_backdrop_delegate.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -40,11 +41,14 @@ bool IsDockedAreaVisible(const ShelfLayoutManager* shelf) {
 
 }  // namespace
 
-WorkspaceController::WorkspaceController(aura::Window* viewport)
+WorkspaceController::WorkspaceController(
+    aura::Window* viewport,
+    std::unique_ptr<wm::WorkspaceLayoutManagerDelegate> delegate)
     : viewport_(viewport),
       shelf_(NULL),
       event_handler_(new WorkspaceEventHandler),
-      layout_manager_(new WorkspaceLayoutManager(viewport)) {
+      layout_manager_(
+          new WorkspaceLayoutManager(viewport, std::move(delegate))) {
   SetWindowVisibilityAnimationTransition(
       viewport_, ::wm::ANIMATE_NONE);
 
@@ -101,7 +105,6 @@ WorkspaceWindowState WorkspaceController::GetWindowState() const {
 
 void WorkspaceController::SetShelf(ShelfLayoutManager* shelf) {
   shelf_ = shelf;
-  layout_manager_->SetShelf(shelf);
 }
 
 void WorkspaceController::DoInitialAnimation() {
@@ -134,7 +137,7 @@ void WorkspaceController::DoInitialAnimation() {
 }
 
 void WorkspaceController::SetMaximizeBackdropDelegate(
-    std::unique_ptr<WorkspaceLayoutManagerDelegate> delegate) {
+    std::unique_ptr<WorkspaceLayoutManagerBackdropDelegate> delegate) {
   layout_manager_->SetMaximizeBackdropDelegate(std::move(delegate));
 }
 

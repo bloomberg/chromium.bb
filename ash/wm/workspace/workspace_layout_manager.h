@@ -30,11 +30,11 @@ class Layer;
 }
 
 namespace ash {
-class ShelfLayoutManager;
-class WorkspaceLayoutManagerDelegate;
+class WorkspaceLayoutManagerBackdropDelegate;
 
 namespace wm {
 class WindowState;
+class WorkspaceLayoutManagerDelegate;
 class WMEvent;
 }
 
@@ -47,16 +47,19 @@ class ASH_EXPORT WorkspaceLayoutManager
       public ShellObserver,
       public wm::WindowStateObserver {
  public:
-  explicit WorkspaceLayoutManager(aura::Window* window);
+  WorkspaceLayoutManager(
+      aura::Window* window,
+      std::unique_ptr<wm::WorkspaceLayoutManagerDelegate> delegate);
+
   ~WorkspaceLayoutManager() override;
 
-  void SetShelf(ShelfLayoutManager* shelf);
+  void DeleteDelegate();
 
   // A delegate which can be set to add a backdrop behind the top most visible
   // window. With the call the ownership of the delegate will be transferred to
   // the WorkspaceLayoutManager.
   void SetMaximizeBackdropDelegate(
-      std::unique_ptr<WorkspaceLayoutManagerDelegate> delegate);
+      std::unique_ptr<WorkspaceLayoutManagerBackdropDelegate> delegate);
 
   // Overridden from aura::LayoutManager:
   void OnWindowResized() override {}
@@ -129,9 +132,10 @@ class ASH_EXPORT WorkspaceLayoutManager
   // Animates the window bounds to |bounds|.
   void SetChildBoundsAnimated(aura::Window* child, const gfx::Rect& bounds);
 
-  ShelfLayoutManager* shelf_;
   aura::Window* window_;
   aura::Window* root_window_;
+
+  std::unique_ptr<wm::WorkspaceLayoutManagerDelegate> delegate_;
 
   // Set of windows we're listening to.
   WindowSet windows_;
@@ -144,7 +148,7 @@ class ASH_EXPORT WorkspaceLayoutManager
 
   // A window which covers the full container and which gets inserted behind the
   // topmost visible window.
-  std::unique_ptr<WorkspaceLayoutManagerDelegate> backdrop_delegate_;
+  std::unique_ptr<WorkspaceLayoutManagerBackdropDelegate> backdrop_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkspaceLayoutManager);
 };
