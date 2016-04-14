@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/debug/crash_logging.h"
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
@@ -40,6 +41,9 @@ enum DirectWriteLoadFamilyResult {
 };
 
 const char kFontKeyName[] = "font_key_name";
+
+const base::Feature kFileLoadingExperimentFeature{
+    "DirectWriteFontFileLoadingExperiment", base::FEATURE_DISABLED_BY_DEFAULT};
 
 void LogLoadFamilyResult(DirectWriteLoadFamilyResult result) {
   UMA_HISTOGRAM_ENUMERATION("DirectWrite.Fonts.Proxy.LoadFamilyResult", result,
@@ -461,6 +465,15 @@ HRESULT FontFileEnumerator::GetCurrentFontFile(IDWriteFontFile** file) {
   DCHECK(file);
   if (current_file_ >= file_names_.size()) {
     return E_FAIL;
+  }
+
+  if (base::FeatureList::IsEnabled(kFileLoadingExperimentFeature)) {
+    TRACE_EVENT0("dwrite",
+                 "FontFileEnumerator::GetCurrentFontFile (directwrite)");
+    HRESULT hr = factory_->CreateFontFileReference(
+        file_names_[current_file_].c_str(), nullptr /* lastWriteTime*/, file);
+    DCHECK(SUCCEEDED(hr));
+    return hr;
   }
 
   TRACE_EVENT0("dwrite", "FontFileEnumerator::GetCurrentFontFile (memmap)");
