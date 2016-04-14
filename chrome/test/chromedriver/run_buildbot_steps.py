@@ -62,6 +62,7 @@ def _ArchiveServerLogs():
   """Uploads chromedriver server logs to google storage."""
   util.MarkBuildStepStart('archive chromedriver server logs')
   for server_log in glob.glob(os.path.join(tempfile.gettempdir(),
+                                           'chromedriver_*',
                                            'chromedriver_log_*')):
     if os.path.isfile(server_log):
       base_name = os.path.basename(server_log)
