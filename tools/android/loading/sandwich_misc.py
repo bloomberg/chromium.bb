@@ -15,10 +15,10 @@ import wpr_backend
 REDIRECTED_MAIN_DISCOVERER = 'redirected-main'
 
 # All resources which are fetched from the main document and their redirections.
-PARSER_DISCOVERER = 'parser',
+PARSER_DISCOVERER = 'parser'
 
 # Simulation of HTMLPreloadScanner on the main document and their redirections.
-HTML_PRELOAD_SCANNER_DISCOVERER = 'html-scanner',
+HTML_PRELOAD_SCANNER_DISCOVERER = 'html-scanner'
 
 SUBRESOURCE_DISCOVERERS = set([
   REDIRECTED_MAIN_DISCOVERER,
