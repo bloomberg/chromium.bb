@@ -19,6 +19,11 @@ namespace remoting {
 
 class AudioPlayer {
  public:
+  // The number of channels in the audio stream (only supporting stereo audio
+  // for now).
+  static const int kChannels = 2;
+  static const int kSampleSizeBytes = 2;
+
   virtual ~AudioPlayer();
 
   void ProcessAudioPacket(std::unique_ptr<AudioPacket> packet);
@@ -38,13 +43,16 @@ class AudioPlayer {
                                   uint32_t buffer_size,
                                   void* data);
 
+  // Function called by the subclass when it needs more audio samples to fill
+  // its buffer. Will fill the buffer with 0's if no sample is available.
+  void FillWithSamples(void* samples, uint32_t buffer_size);
+
  private:
   friend class AudioPlayerTest;
 
   typedef std::list<AudioPacket*> AudioPacketQueue;
 
   void ResetQueue();
-  void FillWithSamples(void* samples, uint32_t buffer_size);
 
   AudioPacket::SamplingRate sampling_rate_;
 

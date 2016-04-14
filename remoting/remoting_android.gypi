@@ -42,6 +42,8 @@
             '../ui/gfx/gfx.gyp:gfx',
           ],
           'sources': [
+            'client/audio_player_android.cc',
+            'client/audio_player_android.h',
             'client/jni/android_keymap.cc',
             'client/jni/android_keymap.h',
             'client/jni/chromoting_jni_instance.cc',
@@ -65,6 +67,11 @@
               ]
             }]
           ],
+          'link_settings': {
+            'libraries': [
+              '-lOpenSLES',
+            ],
+          },
         },  # end of target 'remoting_client_jni'
         {
           'target_name': 'remoting_android_resources',

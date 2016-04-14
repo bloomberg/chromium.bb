@@ -17,7 +17,7 @@
 #include "jingle/glue/thread_wrapper.h"
 #include "net/socket/client_socket_factory.h"
 #include "remoting/base/chromium_url_request.h"
-#include "remoting/client/audio_player.h"
+#include "remoting/client/audio_player_android.h"
 #include "remoting/client/client_status_logger.h"
 #include "remoting/client/jni/android_keymap.h"
 #include "remoting/client/jni/chromoting_jni_runtime.h"
@@ -396,8 +396,9 @@ void ChromotingJniInstance::ConnectToHostOnNetworkThread() {
   video_renderer_.reset(new SoftwareVideoRenderer(
       client_context_->decode_task_runner(), view_.get(), perf_tracker_.get()));
 
-  client_.reset(new ChromotingClient(client_context_.get(), this,
-                                     video_renderer_.get(), nullptr));
+  client_.reset(
+      new ChromotingClient(client_context_.get(), this, video_renderer_.get(),
+                           make_scoped_ptr(new AudioPlayerAndroid())));
 
   signaling_.reset(
       new XmppSignalStrategy(net::ClientSocketFactory::GetDefaultFactory(),
