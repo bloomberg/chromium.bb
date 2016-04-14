@@ -62,7 +62,7 @@ A CMake-based project can use the headers without installing, as follows:
 ```
 #include "spirv/1.0/GLSL.std.450.h"
 #include "spirv/1.0/OpenCL.std.h"
-#include "spirv/1.0/spirv.hpp"
+#include "spirv/1.1/spirv.hpp"
 ```
 
 See also the [example](example/) subdirectory.  But since that example is
