@@ -198,8 +198,7 @@ template("bundle_data_xib") {
       invoker.source,
     ]
     outputs = [
-      "$target_gen_dir/$_nib_filename/objects.nib",
-      "$target_gen_dir/$_nib_filename/runtime.nib",
+      "$target_gen_dir/$_nib_filename",
     ]
     args = [
       "--minimum-deployment-target",
@@ -220,11 +219,10 @@ template("bundle_data_xib") {
     public_deps += [ ":$_compile_xib" ]
 
     sources = [
-      "$target_gen_dir/$_nib_filename/objects.nib",
-      "$target_gen_dir/$_nib_filename/runtime.nib",
+      "$target_gen_dir/$_nib_filename",
     ]
     outputs = [
-      "{{bundle_resources_dir}}/$_nib_filename/{{source_file_part}}",
+      "{{bundle_resources_dir}}/$_nib_filename",
     ]
   }
 }

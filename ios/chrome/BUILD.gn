@@ -2,7 +2,25 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/ios/rules.gni")
 import("//testing/test.gni")
+
+bundle_data("ios_chrome_unittests_bundle_data") {
+  testonly = true
+  sources = [
+    "test/data/webdata/bookmarkimages/image.jpg",
+    "test/data/webdata/bookmarkimages/index.html",
+  ]
+  outputs = [
+    "{{bundle_resources_dir}}/{{source_root_relative_dir}}/" +
+        "{{source_file_part}}",
+  ]
+}
+
+bundle_data_xib("native_content_controller_test_xib") {
+  testonly = true
+  source = "browser/ui/native_content_controller_test.xib"
+}
 
 test("ios_chrome_unittests") {
   sources = [
@@ -44,6 +62,8 @@ test("ios_chrome_unittests") {
   ]
 
   deps = [
+    ":ios_chrome_unittests_bundle_data",
+    ":native_content_controller_test_xib",
     "//base",
     "//base/test:test_support",
     "//components/bookmarks/test",
@@ -73,24 +93,4 @@ test("ios_chrome_unittests") {
     "//third_party/ocmock",
     "//ui/gfx:test_support",
   ]
-
-  # TODO(crbug.com/546283): once bundle resources are supported add code
-  # corresponding to the following gyp fragment:
-  #
-  # 'mac_bundle_resources': [
-  #   'browser/ui/native_content_controller_test.xib'
-  # ],
-  # 'actions': [
-  #   {
-  #     'action_name': 'copy_ios_chrome_test_data',
-  #     'variables': {
-  #       'test_data_files': [
-  #         'test/data/webdata/bookmarkimages',
-  #       ],
-  #       'test_data_prefix': 'ios/chrome',
-  #     },
-  #     'includes': [ '../../build/copy_test_data_ios.gypi' ]
-  #   },
-  # ],
-  # 'includes': ['ios_chrome_resources_bundle.gypi'],
 }
