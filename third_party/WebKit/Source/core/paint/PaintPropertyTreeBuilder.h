@@ -22,6 +22,19 @@ public:
 
 private:
     void walk(FrameView&, const PaintPropertyTreeBuilderContext&);
+
+    static void updatePaintOffsetTranslation(LayoutObject&, PaintPropertyTreeBuilderContext&);
+    static void updateTransform(LayoutObject&, PaintPropertyTreeBuilderContext&);
+    static void updateEffect(LayoutObject&, PaintPropertyTreeBuilderContext&);
+    static void updateCssClip(LayoutObject&, PaintPropertyTreeBuilderContext&);
+    static void updateLocalBorderBoxContext(LayoutObject&, const PaintPropertyTreeBuilderContext&);
+    static void updateScrollbarPaintOffset(LayoutObject&, const PaintPropertyTreeBuilderContext&);
+    static void updateOverflowClip(LayoutObject&, PaintPropertyTreeBuilderContext&);
+    static void updatePerspective(LayoutObject&, PaintPropertyTreeBuilderContext&);
+    static void updateSvgLocalTransform(LayoutObject&, PaintPropertyTreeBuilderContext&);
+    static void updateScrollTranslation(LayoutObject&, PaintPropertyTreeBuilderContext&);
+    static void updateOutOfFlowContext(LayoutObject&, PaintPropertyTreeBuilderContext&);
+
     void walk(LayoutObject&, const PaintPropertyTreeBuilderContext&);
 };
 

@@ -27,25 +27,9 @@ class ObjectPaintProperties {
 public:
     struct LocalBorderBoxProperties;
 
-    // TODO(pdr): This should be refactored to not pass 11 arguments because it
-    // is hard to follow here and at the callsites.
-    static PassOwnPtr<ObjectPaintProperties> create(
-        PassRefPtr<TransformPaintPropertyNode> paintOffsetTranslation,
-        PassRefPtr<TransformPaintPropertyNode> transform,
-        PassRefPtr<EffectPaintPropertyNode> effect,
-        PassRefPtr<ClipPaintPropertyNode> cssClip,
-        PassRefPtr<ClipPaintPropertyNode> cssClipFixedPosition,
-        PassRefPtr<ClipPaintPropertyNode> overflowClip,
-        PassRefPtr<TransformPaintPropertyNode> perspective,
-        PassRefPtr<TransformPaintPropertyNode> svgLocalTransform,
-        PassRefPtr<TransformPaintPropertyNode> scrollTranslation,
-        PassRefPtr<TransformPaintPropertyNode> scrollbarPaintOffset,
-        PassOwnPtr<LocalBorderBoxProperties> localBorderBoxProperties)
+    static PassOwnPtr<ObjectPaintProperties> create()
     {
-        return adoptPtr(new ObjectPaintProperties(paintOffsetTranslation,
-            transform, effect, cssClip, cssClipFixedPosition, overflowClip,
-            perspective, svgLocalTransform, scrollTranslation,
-            scrollbarPaintOffset, localBorderBoxProperties));
+        return adoptPtr(new ObjectPaintProperties());
     }
 
     // The hierarchy of transform subtree created by a LayoutObject.
@@ -90,29 +74,29 @@ public:
     LocalBorderBoxProperties* localBorderBoxProperties() const { return m_localBorderBoxProperties.get(); }
 
 private:
-    ObjectPaintProperties(
-        PassRefPtr<TransformPaintPropertyNode> paintOffsetTranslation,
-        PassRefPtr<TransformPaintPropertyNode> transform,
-        PassRefPtr<EffectPaintPropertyNode> effect,
-        PassRefPtr<ClipPaintPropertyNode> cssClip,
-        PassRefPtr<ClipPaintPropertyNode> cssClipFixedPosition,
-        PassRefPtr<ClipPaintPropertyNode> overflowClip,
-        PassRefPtr<TransformPaintPropertyNode> perspective,
-        PassRefPtr<TransformPaintPropertyNode> svgLocalTransform,
-        PassRefPtr<TransformPaintPropertyNode> scrollTranslation,
-        PassRefPtr<TransformPaintPropertyNode> scrollbarPaintOffset,
-        PassOwnPtr<LocalBorderBoxProperties> localBorderBoxProperties)
-        : m_paintOffsetTranslation(paintOffsetTranslation)
-        , m_transform(transform)
-        , m_effect(effect)
-        , m_cssClip(cssClip)
-        , m_cssClipFixedPosition(cssClipFixedPosition)
-        , m_overflowClip(overflowClip)
-        , m_perspective(perspective)
-        , m_svgLocalTransform(svgLocalTransform)
-        , m_scrollTranslation(scrollTranslation)
-        , m_scrollbarPaintOffset(scrollbarPaintOffset)
-        , m_localBorderBoxProperties(localBorderBoxProperties) { }
+    ObjectPaintProperties() { }
+
+    friend class PaintPropertyTreeBuilder;
+    // These setters should only be used by PaintPropertyTreeBuilder.
+    void setPaintOffsetTranslation(PassRefPtr<TransformPaintPropertyNode> paintOffset) { m_paintOffsetTranslation = paintOffset; }
+    void setTransform(PassRefPtr<TransformPaintPropertyNode> transform) { m_transform = transform; }
+    void setEffect(PassRefPtr<EffectPaintPropertyNode> effect) { m_effect = effect; }
+    void setCssClip(PassRefPtr<ClipPaintPropertyNode> clip) { m_cssClip = clip; }
+    void setCssClipFixedPosition(PassRefPtr<ClipPaintPropertyNode> clip) { m_cssClipFixedPosition = clip; }
+    void setOverflowClip(PassRefPtr<ClipPaintPropertyNode> clip) { m_overflowClip = clip; }
+    void setPerspective(PassRefPtr<TransformPaintPropertyNode> perspective) { m_perspective = perspective; }
+    void setSvgLocalTransform(PassRefPtr<TransformPaintPropertyNode> transform)
+    {
+        DCHECK(!scrollTranslation()) << "SVG elements cannot scroll so there should never be both a scroll translation and an SVG local transform.";
+        m_svgLocalTransform = transform;
+    }
+    void setScrollTranslation(PassRefPtr<TransformPaintPropertyNode> translation)
+    {
+        DCHECK(!svgLocalTransform()) << "SVG elements cannot scroll so there should never be both a scroll translation and an SVG local transform.";
+        m_scrollTranslation = translation;
+    }
+    void setScrollbarPaintOffset(PassRefPtr<TransformPaintPropertyNode> paintOffset) { m_scrollbarPaintOffset = paintOffset; }
+    void setLocalBorderBoxProperties(PassOwnPtr<LocalBorderBoxProperties> properties) { m_localBorderBoxProperties = properties; }
 
     RefPtr<TransformPaintPropertyNode> m_paintOffsetTranslation;
     RefPtr<TransformPaintPropertyNode> m_transform;

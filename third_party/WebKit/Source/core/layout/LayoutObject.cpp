@@ -3635,10 +3635,13 @@ ObjectPaintProperties* LayoutObject::objectPaintProperties() const
     return objectPaintPropertiesMap().get(this);
 }
 
-void LayoutObject::setObjectPaintProperties(PassOwnPtr<ObjectPaintProperties> paintProperties)
+ObjectPaintProperties& LayoutObject::ensureObjectPaintProperties()
 {
     ASSERT(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
-    objectPaintPropertiesMap().set(this, paintProperties);
+    if (ObjectPaintProperties* properties = objectPaintPropertiesMap().get(this))
+        return *properties;
+    objectPaintPropertiesMap().set(this, ObjectPaintProperties::create());
+    return *objectPaintPropertiesMap().get(this);
 }
 
 void LayoutObject::clearObjectPaintProperties()
