@@ -398,6 +398,8 @@ void PermissionManager::OnContentSettingChanged(
   for (SubscriptionsMap::iterator iter(&subscriptions_);
        !iter.IsAtEnd(); iter.Advance()) {
     Subscription* subscription = iter.GetCurrentValue();
+    if (IsConstantPermission(subscription->permission))
+      continue;
     if (PermissionTypeToContentSetting(subscription->permission) !=
         content_type) {
       continue;
