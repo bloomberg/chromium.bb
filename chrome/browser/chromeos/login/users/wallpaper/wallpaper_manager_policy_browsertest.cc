@@ -32,6 +32,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chromeos/chromeos_paths.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/cryptohome/system_salt_getter.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
@@ -125,6 +126,12 @@ SkColor GetAverageBackgroundColor() {
 
   const SkBitmap& bitmap = representation.sk_bitmap();
   return ComputeAverageColor(bitmap);
+}
+
+// Initialize system salt to calculate wallpaper file names.
+void SetSystemSalt() {
+  chromeos::SystemSaltGetter::Get()->SetRawSaltForTesting(
+      chromeos::SystemSaltGetter::RawSalt({1, 2, 3, 4, 5, 6, 7, 8}));
 }
 
 }  // namespace
@@ -295,6 +302,7 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest, PRE_SetResetClear) {
 // user.  Also verifies that after the policy has been cleared, the wallpaper
 // reverts to default.
 IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest, SetResetClear) {
+  SetSystemSalt();
   wallpaper::WallpaperInfo info;
   LoginUser(testUsers_[0].GetUserEmail());
   base::RunLoop().RunUntilIdle();
@@ -388,11 +396,13 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest,
 }
 
 IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest, PRE_PRE_PersistOverLogout) {
+  SetSystemSalt();
   RegisterUser(testUsers_[0].GetUserEmail());
   StartupUtils::MarkOobeCompleted();
 }
 
 IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest, PRE_PersistOverLogout) {
+  SetSystemSalt();
   LoginUser(testUsers_[0].GetUserEmail());
 
   // Wait until default wallpaper has been loaded.
