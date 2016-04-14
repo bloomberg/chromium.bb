@@ -365,7 +365,7 @@ class ChromeLauncherController
   // user profile or not. However, since the full visibility calculation of the
   // shelf cannot be performed here, this is only a probability used for
   // animation predictions.
-  bool ShelfBoundsChangesProbablyWithUser(aura::Window* root_window,
+  bool ShelfBoundsChangesProbablyWithUser(ash::Shelf* shelf,
                                           const std::string& user_id) const;
 
   // Called when the user profile is fully loaded and ready to switch to.

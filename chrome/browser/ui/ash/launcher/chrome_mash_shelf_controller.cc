@@ -6,13 +6,12 @@
 
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/grit/theme_resources.h"
-#include "components/prefs/pref_service.h"
 #include "content/public/common/mojo_shell_connection.h"
 #include "services/shell/public/cpp/connector.h"
 #include "skia/public/type_converters.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/screen.h"
 
 class ChromeShelfItemDelegate : public mash::shelf::mojom::ShelfItemDelegate {
  public:
@@ -65,17 +64,12 @@ void ChromeMashShelfController::Init() {
 
   // Set shelf alignment and auto-hide behavior from preferences.
   Profile* profile = ProfileManager::GetActiveUserProfile();
-
-  const std::string& alignment_value =
-      profile->GetPrefs()->GetString(prefs::kShelfAlignmentLocal);
+  int64_t display_id = gfx::Screen::GetScreen()->GetPrimaryDisplay().id();
   shelf_controller_->SetAlignment(static_cast<mash::shelf::mojom::Alignment>(
-      ash::AlignmentFromPref(alignment_value)));
-
-  const std::string& auto_hide_value =
-      profile->GetPrefs()->GetString(prefs::kShelfAutoHideBehaviorLocal);
+      ash::GetShelfAlignmentPref(profile->GetPrefs(), display_id)));
   shelf_controller_->SetAutoHideBehavior(
       static_cast<mash::shelf::mojom::AutoHideBehavior>(
-          ash::AutoHideBehaviorFromPref(auto_hide_value)));
+          ash::GetShelfAutoHideBehaviorPref(profile->GetPrefs(), display_id)));
 
   // Create a test shortcut item to a fake application.
   mash::shelf::mojom::ShelfItemPtr item(mash::shelf::mojom::ShelfItem::New());
@@ -99,18 +93,15 @@ void ChromeMashShelfController::Init() {
 
 void ChromeMashShelfController::OnAlignmentChanged(
     mash::shelf::mojom::Alignment alignment) {
-  const char* value =
-      ash::AlignmentToPref(static_cast<ash::ShelfAlignment>(alignment));
-  Profile* profile = ProfileManager::GetActiveUserProfile();
-  profile->GetPrefs()->SetString(prefs::kShelfAlignmentLocal, value);
+  ash::SetShelfAlignmentPref(ProfileManager::GetActiveUserProfile()->GetPrefs(),
+                             gfx::Screen::GetScreen()->GetPrimaryDisplay().id(),
+                             static_cast<ash::ShelfAlignment>(alignment));
 }
 
 void ChromeMashShelfController::OnAutoHideBehaviorChanged(
     mash::shelf::mojom::AutoHideBehavior auto_hide) {
-  const char* value = ash::AutoHideBehaviorToPref(
+  ash::SetShelfAutoHideBehaviorPref(
+      ProfileManager::GetActiveUserProfile()->GetPrefs(),
+      gfx::Screen::GetScreen()->GetPrimaryDisplay().id(),
       static_cast<ash::ShelfAutoHideBehavior>(auto_hide));
-  if (!value)
-    return;
-  Profile* profile = ProfileManager::GetActiveUserProfile();
-  profile->GetPrefs()->SetString(prefs::kShelfAutoHideBehaviorLocal, value);
 }
