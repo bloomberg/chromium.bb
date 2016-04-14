@@ -11,10 +11,17 @@ test(() => {
   document.documentElement.animate([], { });
   document.documentElement.animate([], { easing: 'linear' });
   document.documentElement.animate([], { easing: 'step-start' });
-  document.documentElement.animate([], { easing: 'invalid' });
   assert_false(internals.isUseCounted(document, WebAnimationsEasingAsFunctionLinear));
   assert_false(internals.isUseCounted(document, WebAnimationsEasingAsFunctionOther));
 }, 'Non-function values for easing are not use-counted.');
+
+test(() => {
+  assert_throws(
+      {name: 'TypeError'},
+      function() { document.documentElement.animate([], { easing: 'invalid' }) });
+  assert_false(internals.isUseCounted(document, WebAnimationsEasingAsFunctionLinear));
+  assert_false(internals.isUseCounted(document, WebAnimationsEasingAsFunctionOther));
+}, 'Invalid non-function values for easing are not use-counted.');
 
 test(() => {
   // This linear function value is the one expected from uses of the unpatched

@@ -236,7 +236,8 @@ TEST_F(AnimationKeyframeEffectV8Test, SpecifiedSetters)
     EXPECT_EQ("reverse", specified->direction());
 
     EXPECT_EQ("linear", specified->easing());
-    specified->setEasing("step-start");
+    specified->setEasing("step-start", exceptionState);
+    ASSERT_FALSE(exceptionState.hadException());
     EXPECT_EQ("step-start", specified->easing());
 }
 

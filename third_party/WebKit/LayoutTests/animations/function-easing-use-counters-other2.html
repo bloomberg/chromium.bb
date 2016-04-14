@@ -8,7 +8,9 @@ var WebAnimationsEasingAsFunctionLinear = 1295;
 var WebAnimationsEasingAsFunctionOther = 1296;
 
 test(() => {
-  document.documentElement.animate([], { easing: 'function(x, y){return 0.3}' });
+  assert_throws(
+      {name: 'TypeError'},
+      function() { document.documentElement.animate([], { easing: 'function(x, y){return 0.3}' }) });
   assert_false(internals.isUseCounted(document, WebAnimationsEasingAsFunctionLinear));
   assert_true(internals.isUseCounted(document, WebAnimationsEasingAsFunctionOther));
 }, 'Arbitrary functions for easing are counted in WebAnimationsEasingAsFunctionOther.');

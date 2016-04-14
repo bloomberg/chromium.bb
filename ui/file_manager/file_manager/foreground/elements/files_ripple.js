@@ -56,7 +56,7 @@ var FilesRipple = Polymer({
         height: '2%',
         opacity: 0,
         offset: 0,
-        easing: 'liner'
+        easing: 'linear'
       },
       {
         width: '50%',

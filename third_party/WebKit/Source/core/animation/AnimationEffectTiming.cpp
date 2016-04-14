@@ -4,6 +4,7 @@
 
 #include "core/animation/AnimationEffectTiming.h"
 
+#include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/UnionTypesCore.h"
 #include "core/animation/AnimationEffect.h"
 #include "core/animation/KeyframeEffect.h"
@@ -127,7 +128,7 @@ void AnimationEffectTiming::setDirection(String direction)
     m_parent->updateSpecifiedTiming(timing);
 }
 
-void AnimationEffectTiming::setEasing(String easing)
+void AnimationEffectTiming::setEasing(String easing, ExceptionState& exceptionState)
 {
     Timing timing = m_parent->specifiedTiming();
     // The AnimationEffectTiming might not be attached to a document at this
@@ -135,8 +136,8 @@ void AnimationEffectTiming::setEasing(String easing)
     // calls are not considered in the WebAnimationsEasingAsFunction*
     // UseCounters, but the bug we are tracking there does not come through
     // this interface.
-    TimingInput::setTimingFunction(timing, easing, nullptr);
-    m_parent->updateSpecifiedTiming(timing);
+    if (TimingInput::setTimingFunction(timing, easing, nullptr, exceptionState))
+        m_parent->updateSpecifiedTiming(timing);
 }
 
 DEFINE_TRACE(AnimationEffectTiming)

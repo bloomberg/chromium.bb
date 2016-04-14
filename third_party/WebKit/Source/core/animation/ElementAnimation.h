@@ -61,10 +61,12 @@ public:
     static Animation* animate(ExecutionContext* executionContext, Element& element, const EffectModelOrDictionarySequenceOrDictionary& effectInput, const KeyframeEffectOptions& options, ExceptionState& exceptionState)
     {
         EffectModel* effect = EffectInput::convert(&element, effectInput, executionContext, exceptionState);
-        if (exceptionState.hadException())
+        Timing timing;
+        bool success = TimingInput::convert(options, timing, &element.document(), exceptionState);
+        if (!success || exceptionState.hadException())
             return 0;
 
-        Animation* animation = animateInternal(element, effect, TimingInput::convert(options, &element.document()));
+        Animation* animation = animateInternal(element, effect, timing);
         animation->setId(options.id());
         return animation;
     }

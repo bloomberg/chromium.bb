@@ -12,6 +12,7 @@
 
 namespace blink {
 
+class ExceptionState;
 class UnrestrictedDoubleOrString;
 
 class CORE_EXPORT AnimationEffectTiming : public GarbageCollected<AnimationEffectTiming>, public ScriptWrappable {
@@ -36,7 +37,7 @@ public:
     void setDuration(const UnrestrictedDoubleOrString&);
     void setPlaybackRate(double);
     void setDirection(String);
-    void setEasing(String);
+    void setEasing(String, ExceptionState&);
 
     DECLARE_TRACE();
 

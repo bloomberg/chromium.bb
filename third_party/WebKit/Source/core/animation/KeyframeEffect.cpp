@@ -60,13 +60,20 @@ KeyframeEffect* KeyframeEffect::create(ExecutionContext* executionContext, Eleme
         UseCounter::count(element->document(), UseCounter::AnimationConstructorKeyframeListEffectObjectTiming);
     return create(element, EffectInput::convert(element, effectInput, executionContext, exceptionState), TimingInput::convert(duration));
 }
+
 KeyframeEffect* KeyframeEffect::create(ExecutionContext* executionContext, Element* element, const EffectModelOrDictionarySequenceOrDictionary& effectInput, const KeyframeEffectOptions& timingInput, ExceptionState& exceptionState)
 {
     ASSERT(RuntimeEnabledFeatures::webAnimationsAPIEnabled());
     if (element)
         UseCounter::count(element->document(), UseCounter::AnimationConstructorKeyframeListEffectObjectTiming);
-    return create(element, EffectInput::convert(element, effectInput, executionContext, exceptionState), TimingInput::convert(timingInput, &element->document()));
+    Timing timing;
+    bool success = TimingInput::convert(timingInput, timing, &element->document(), exceptionState);
+    if (!success || exceptionState.hadException())
+        return nullptr;
+
+    return create(element, EffectInput::convert(element, effectInput, executionContext, exceptionState), timing);
 }
+
 KeyframeEffect* KeyframeEffect::create(ExecutionContext* executionContext, Element* element, const EffectModelOrDictionarySequenceOrDictionary& effectInput, ExceptionState& exceptionState)
 {
     ASSERT(RuntimeEnabledFeatures::webAnimationsAPIEnabled());

@@ -5,6 +5,7 @@
 #include "core/animation/AnimationInputHelpers.h"
 
 #include "core/dom/Element.h"
+#include "core/dom/ExceptionCode.h"
 #include "core/testing/DummyPageHolder.h"
 #include "platform/animation/TimingFunction.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -18,16 +19,25 @@ public:
         return AnimationInputHelpers::keyframeAttributeToCSSProperty(property, *document);
     }
 
-    PassRefPtr<TimingFunction> parseTimingFunction(const String& string)
+    PassRefPtr<TimingFunction> parseTimingFunction(const String& string, ExceptionState& exceptionState)
     {
-        return AnimationInputHelpers::parseTimingFunction(string, document);
+        return AnimationInputHelpers::parseTimingFunction(string, document, exceptionState);
     }
 
-    bool timingFunctionRoundTrips(const String& string)
+    void timingFunctionRoundTrips(const String& string, ExceptionState& exceptionState)
     {
-        RefPtr<TimingFunction> timingFunction = parseTimingFunction(string);
-        return timingFunction && string == timingFunction->toString();
+        RefPtr<TimingFunction> timingFunction = parseTimingFunction(string, exceptionState);
+        EXPECT_NE(nullptr, timingFunction);
+        EXPECT_EQ(string, timingFunction->toString());
     }
+
+    void timingFunctionThrows(const String& string, ExceptionState& exceptionState)
+    {
+        RefPtr<TimingFunction> timingFunction = parseTimingFunction(string, exceptionState);
+        EXPECT_TRUE(exceptionState.hadException());
+        EXPECT_EQ(V8TypeError, exceptionState.code());
+    }
+
 
 protected:
     void SetUp() override
@@ -44,6 +54,7 @@ protected:
 
     OwnPtr<DummyPageHolder> pageHolder;
     Persistent<Document> document;
+    TrackExceptionState exceptionState;
 };
 
 TEST_F(AnimationAnimationInputHelpersTest, ParseKeyframePropertyAttributes)
@@ -69,28 +80,29 @@ TEST_F(AnimationAnimationInputHelpersTest, ParseKeyframePropertyAttributes)
 
 TEST_F(AnimationAnimationInputHelpersTest, ParseAnimationTimingFunction)
 {
-    EXPECT_EQ(nullptr, parseTimingFunction("initial"));
-    EXPECT_EQ(nullptr, parseTimingFunction("inherit"));
-    EXPECT_EQ(nullptr, parseTimingFunction("unset"));
+    timingFunctionThrows("", exceptionState);
+    timingFunctionThrows("initial", exceptionState);
+    timingFunctionThrows("inherit", exceptionState);
+    timingFunctionThrows("unset", exceptionState);
 
-    EXPECT_TRUE(timingFunctionRoundTrips("ease"));
-    EXPECT_TRUE(timingFunctionRoundTrips("linear"));
-    EXPECT_TRUE(timingFunctionRoundTrips("ease-in"));
-    EXPECT_TRUE(timingFunctionRoundTrips("ease-out"));
-    EXPECT_TRUE(timingFunctionRoundTrips("ease-in-out"));
-    EXPECT_TRUE(timingFunctionRoundTrips("step-start"));
-    EXPECT_TRUE(timingFunctionRoundTrips("step-middle"));
-    EXPECT_TRUE(timingFunctionRoundTrips("step-end"));
-    EXPECT_TRUE(timingFunctionRoundTrips("steps(3, start)"));
-    EXPECT_TRUE(timingFunctionRoundTrips("steps(3, middle)"));
-    EXPECT_TRUE(timingFunctionRoundTrips("steps(3, end)"));
-    EXPECT_TRUE(timingFunctionRoundTrips("cubic-bezier(0.1, 5, 0.23, 0)"));
+    timingFunctionRoundTrips("ease", exceptionState);
+    timingFunctionRoundTrips("linear", exceptionState);
+    timingFunctionRoundTrips("ease-in", exceptionState);
+    timingFunctionRoundTrips("ease-out", exceptionState);
+    timingFunctionRoundTrips("ease-in-out", exceptionState);
+    timingFunctionRoundTrips("step-start", exceptionState);
+    timingFunctionRoundTrips("step-middle", exceptionState);
+    timingFunctionRoundTrips("step-end", exceptionState);
+    timingFunctionRoundTrips("steps(3, start)", exceptionState);
+    timingFunctionRoundTrips("steps(3, middle)", exceptionState);
+    timingFunctionRoundTrips("steps(3, end)", exceptionState);
+    timingFunctionRoundTrips("cubic-bezier(0.1, 5, 0.23, 0)", exceptionState);
 
-    EXPECT_EQ("steps(3, end)", parseTimingFunction("steps(3)")->toString());
+    EXPECT_EQ("steps(3, end)", parseTimingFunction("steps(3)", exceptionState)->toString());
 
-    EXPECT_EQ(nullptr, parseTimingFunction("steps(3, nowhere)"));
-    EXPECT_EQ(nullptr, parseTimingFunction("steps(-3, end)"));
-    EXPECT_EQ(nullptr, parseTimingFunction("cubic-bezier(0.1, 0, 4, 0.4)"));
+    timingFunctionThrows("steps(3, nowhere)", exceptionState);
+    timingFunctionThrows("steps(-3, end)", exceptionState);
+    timingFunctionThrows("cubic-bezier(0.1, 0, 4, 0.4)", exceptionState);
 }
 
 } // namespace blink

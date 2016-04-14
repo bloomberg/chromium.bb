@@ -12,6 +12,7 @@
 namespace blink {
 
 class Element;
+class ExceptionState;
 class TimingFunction;
 class QualifiedName;
 
@@ -21,7 +22,7 @@ public:
     static CSSPropertyID keyframeAttributeToCSSProperty(const String&, const Document&);
     static CSSPropertyID keyframeAttributeToPresentationAttribute(const String&, const Element&);
     static const QualifiedName* keyframeAttributeToSVGAttribute(const String&, Element&);
-    static PassRefPtr<TimingFunction> parseTimingFunction(const String&, Document*);
+    static PassRefPtr<TimingFunction> parseTimingFunction(const String&, Document*, ExceptionState&);
 };
 
 } // namespace blink

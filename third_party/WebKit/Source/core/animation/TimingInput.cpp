@@ -4,6 +4,7 @@
 
 #include "core/animation/TimingInput.h"
 
+#include "bindings/core/v8/ExceptionState.h"
 #include "core/animation/AnimationInputHelpers.h"
 #include "core/animation/KeyframeEffectOptions.h"
 
@@ -85,34 +86,34 @@ void TimingInput::setPlaybackDirection(Timing& timing, const String& direction)
     }
 }
 
-void TimingInput::setTimingFunction(Timing& timing, const String& timingFunctionString, Document* document)
+bool TimingInput::setTimingFunction(Timing& timing, const String& timingFunctionString, Document* document, ExceptionState& exceptionState)
 {
-    if (RefPtr<TimingFunction> timingFunction = AnimationInputHelpers::parseTimingFunction(timingFunctionString, document))
+    if (RefPtr<TimingFunction> timingFunction = AnimationInputHelpers::parseTimingFunction(timingFunctionString, document, exceptionState)) {
         timing.timingFunction = timingFunction;
-    else
-        timing.timingFunction = Timing::defaults().timingFunction;
+        return true;
+    }
+    return false;
 }
 
-Timing TimingInput::convert(const KeyframeEffectOptions& timingInput, Document* document)
+bool TimingInput::convert(const KeyframeEffectOptions& timingInput, Timing& timingOutput, Document* document, ExceptionState& exceptionState)
 {
-    Timing result;
-
-    setStartDelay(result, timingInput.delay());
-    setEndDelay(result, timingInput.endDelay());
-    setFillMode(result, timingInput.fill());
-    setIterationStart(result, timingInput.iterationStart());
-    setIterationCount(result, timingInput.iterations());
+    setStartDelay(timingOutput, timingInput.delay());
+    setEndDelay(timingOutput, timingInput.endDelay());
+    setFillMode(timingOutput, timingInput.fill());
+    setIterationStart(timingOutput, timingInput.iterationStart());
+    setIterationCount(timingOutput, timingInput.iterations());
     if (timingInput.duration().isUnrestrictedDouble())
-        setIterationDuration(result, timingInput.duration().getAsUnrestrictedDouble());
+        setIterationDuration(timingOutput, timingInput.duration().getAsUnrestrictedDouble());
     else
-        setIterationDuration(result, -1);
-    setPlaybackRate(result, timingInput.playbackRate());
-    setPlaybackDirection(result, timingInput.direction());
-    setTimingFunction(result, timingInput.easing(), document);
+        setIterationDuration(timingOutput, -1);
+    setPlaybackRate(timingOutput, timingInput.playbackRate());
+    setPlaybackDirection(timingOutput, timingInput.direction());
+    if (!setTimingFunction(timingOutput, timingInput.easing(), document, exceptionState))
+        return false;
 
-    result.assertValid();
+    timingOutput.assertValid();
 
-    return result;
+    return true;
 }
 
 Timing TimingInput::convert(double duration)

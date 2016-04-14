@@ -17,5 +17,5 @@
     // TODO(dstockwell): playbackRate has been removed from level 1.
     attribute double playbackRate;
     attribute DOMString direction;
-    attribute DOMString easing;
+    [RaisesException=Setter] attribute DOMString easing;
 };

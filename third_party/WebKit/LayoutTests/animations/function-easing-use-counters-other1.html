@@ -8,7 +8,9 @@ var WebAnimationsEasingAsFunctionLinear = 1295;
 var WebAnimationsEasingAsFunctionOther = 1296;
 
 test(() => {
-  document.documentElement.animate([], { easing: 'function (x){return x}' });
+  assert_throws(
+      {name: 'TypeError'},
+      function() { document.documentElement.animate([], { easing: 'function (x){return x}' }) });
   assert_false(internals.isUseCounted(document, WebAnimationsEasingAsFunctionLinear));
   assert_true(internals.isUseCounted(document, WebAnimationsEasingAsFunctionOther));
 }, 'Any linear function for easing other than "function (a){return a}" is counted in WebAnimationsEasingAsFunctionOther.');

@@ -367,6 +367,9 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature)
     case UseCounter::TouchDragUserGestureUsedCrossOrigin:
         return willBeRemoved("Performing sensitive operations in iframes on touch events which don't represent a tap gesture", 52, "https://www.chromestatus.com/features/5649871251963904");
 
+    case UseCounter::WebAnimationsEasingAsFunctionLinear:
+        return String::format("Specifying animation easing as a function is deprecated and all support will be removed in %s, at which point this will throw a TypeError. This warning may have been triggered by the Web Animations or Polymer polyfills. See http://crbug.com/601672 for details.", milestoneString(54));
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
         return String();

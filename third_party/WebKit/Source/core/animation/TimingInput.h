@@ -13,12 +13,13 @@ namespace blink {
 
 class Dictionary;
 class Document;
+class ExceptionState;
 class KeyframeEffectOptions;
 
 class CORE_EXPORT TimingInput {
     STATIC_ONLY(TimingInput);
 public:
-    static Timing convert(const KeyframeEffectOptions& timingInput, Document*);
+    static bool convert(const KeyframeEffectOptions& timingInput, Timing& timingOutput, Document*, ExceptionState&);
     static Timing convert(double duration);
 
     static void setStartDelay(Timing&, double startDelay);
@@ -29,7 +30,7 @@ public:
     static void setIterationDuration(Timing&, double iterationDuration);
     static void setPlaybackRate(Timing&, double playbackRate);
     static void setPlaybackDirection(Timing&, const String& direction);
-    static void setTimingFunction(Timing&, const String& timingFunctionString, Document*);
+    static bool setTimingFunction(Timing&, const String& timingFunctionString, Document*, ExceptionState&);
 };
 
 } // namespace blink

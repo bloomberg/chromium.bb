@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script>
+var animate_with_easing = function(inputEasing) {
+  return document.documentElement.animate([], { easing : inputEasing });
+};
+
+var assert_animate_with_easing_succeeds = function(inputEasing, expectedEasing) {
+  var animation = animate_with_easing(inputEasing);
+  assert_equals(animation.effect.timing.easing, expectedEasing);
+};
+
+var assert_animate_with_easing_roundtrips = function(inputEasing) {
+  assert_animate_with_easing_succeeds(inputEasing, inputEasing);
+};
+
+var assert_animate_with_easing_throws = function(inputEasing) {
+  assert_throws(
+      {name: 'TypeError'},
+      function() { animate_with_easing(inputEasing); },
+      'with inputEasing=\'' + inputEasing + '\'');
+};
+
+test(function() {
+  assert_animate_with_easing_roundtrips('ease');
+  assert_animate_with_easing_roundtrips('linear');
+  assert_animate_with_easing_roundtrips('ease-in');
+  assert_animate_with_easing_roundtrips('ease-out');
+  assert_animate_with_easing_roundtrips('ease-in-out');
+  assert_animate_with_easing_roundtrips('step-start');
+  assert_animate_with_easing_roundtrips('step-middle');
+  assert_animate_with_easing_roundtrips('step-end');
+  assert_animate_with_easing_roundtrips('steps(3, start)');
+  assert_animate_with_easing_roundtrips('steps(3, middle)');
+  assert_animate_with_easing_roundtrips('steps(3, end)');
+  assert_animate_with_easing_roundtrips('cubic-bezier(0.1, 5, 0.23, 0)');
+}, 'Valid easing functions should come out the same as they went in');
+
+test(function() {
+  assert_animate_with_easing_succeeds('steps(3)', 'steps(3, end)');
+}, 'steps easing second parameter defaults to end');
+
+test(function() {
+  assert_animate_with_easing_succeeds('eAse\\2d iN-ouT', 'ease-in-out');
+}, 'Should accept arbitrary casing and escape chararcters');
+
+test(function() {
+  assert_animate_with_easing_throws('');
+  assert_animate_with_easing_throws('initial');
+  assert_animate_with_easing_throws('inherit');
+  assert_animate_with_easing_throws('unset');
+  assert_animate_with_easing_throws('steps(3, nowhere)');
+  assert_animate_with_easing_throws('steps(-3, end)');
+  assert_animate_with_easing_throws('cubic-bezier(0.1, 0, 4, 0.4)');
+}, 'Invalid easing values should throw a TypeError');
+
+test(function() {
+  assert_animate_with_easing_succeeds('function (a){return a}', 'linear');
+  assert_animate_with_easing_throws('function (x){return x}');
+  assert_animate_with_easing_throws('function(x, y){return 0.3}');
+}, 'Function values for easing should throw a TypeError, except for one special linear case, which is deprecated for now and returns the default');
+</script>

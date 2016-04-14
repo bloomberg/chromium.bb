@@ -4,6 +4,7 @@
 
 #include "core/animation/AnimationInputHelpers.h"
 
+#include "bindings/core/v8/ExceptionState.h"
 #include "core/SVGNames.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/parser/CSSParser.h"
@@ -202,14 +203,17 @@ const QualifiedName* AnimationInputHelpers::keyframeAttributeToSVGAttribute(cons
     return iter->value;
 }
 
-PassRefPtr<TimingFunction> AnimationInputHelpers::parseTimingFunction(const String& string, Document* document)
+PassRefPtr<TimingFunction> AnimationInputHelpers::parseTimingFunction(const String& string, Document* document, ExceptionState& exceptionState)
 {
-    if (string.isEmpty())
+    if (string.isEmpty()) {
+        exceptionState.throwTypeError("Easing may not be the empty string");
         return nullptr;
+    }
 
     CSSValue* value = CSSParser::parseSingleValue(CSSPropertyTransitionTimingFunction, string);
     if (!value || !value->isValueList()) {
         ASSERT(!value || value->isCSSWideKeyword());
+        bool throwTypeError = true;
         if (document) {
             if (string.startsWith("function")) {
                 // Due to a bug in old versions of the web-animations-next
@@ -221,18 +225,33 @@ PassRefPtr<TimingFunction> AnimationInputHelpers::parseTimingFunction(const Stri
                 // https://github.com/web-animations/web-animations-next/pull/423
                 // and we want to track how often it is still being hit. The
                 // linear case is special because 'linear' is the default value
-                // for easing.
-                if (string == "function (a){return a}")
-                    UseCounter::count(*document, UseCounter::WebAnimationsEasingAsFunctionLinear);
-                else
+                // for easing. See http://crbug.com/601672
+                if (string == "function (a){return a}") {
+                    Deprecation::countDeprecation(*document, UseCounter::WebAnimationsEasingAsFunctionLinear);
+                    throwTypeError = false;
+                } else {
                     UseCounter::count(*document, UseCounter::WebAnimationsEasingAsFunctionOther);
+                }
             }
         }
+
+        // TODO(suzyh): This return clause exists so that the special linear
+        // function case above is exempted from causing TypeErrors. The
+        // throwTypeError bool and this if-statement should be removed after the
+        // M53 branch point in July 2016, so that this case will also throw
+        // TypeErrors from M54 onward.
+        if (!throwTypeError) {
+            return Timing::defaults().timingFunction;
+        }
+
+        exceptionState.throwTypeError("'" + string + "' is not a valid value for easing");
         return nullptr;
     }
     CSSValueList* valueList = toCSSValueList(value);
-    if (valueList->length() > 1)
+    if (valueList->length() > 1) {
+        exceptionState.throwTypeError("Easing may not be set to a list of values");
         return nullptr;
+    }
     return CSSToStyleMap::mapAnimationTimingFunction(*valueList->item(0), true);
 }
 
