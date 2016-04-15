@@ -79,7 +79,6 @@ private:
     bool m_y2Set : 1;
 };
 
-#if ENABLE(OILPAN)
 // Wrapper object for the LinearGradientAttributes part object.
 class LinearGradientAttributesWrapper : public GarbageCollectedFinalized<LinearGradientAttributesWrapper> {
 public:
@@ -99,7 +98,6 @@ private:
 
     LinearGradientAttributes m_attributes;
 };
-#endif
 
 } // namespace blink
 

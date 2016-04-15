@@ -95,7 +95,6 @@ private:
     bool m_frSet : 1;
 };
 
-#if ENABLE(OILPAN)
 // Wrapper object for the RadialGradientAttributes part object.
 class RadialGradientAttributesWrapper : public GarbageCollectedFinalized<RadialGradientAttributesWrapper> {
 public:
@@ -115,7 +114,6 @@ private:
 
     RadialGradientAttributes m_attributes;
 };
-#endif
 
 } // namespace blink
 

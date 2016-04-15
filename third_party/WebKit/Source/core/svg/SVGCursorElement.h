@@ -41,9 +41,6 @@ public:
     ~SVGCursorElement() override;
 
     void addClient(SVGElement*);
-#if !ENABLE(OILPAN)
-    void removeClient(SVGElement*);
-#endif
     void removeReferencedElement(SVGElement*);
 
     SVGAnimatedLength* x() const { return m_x.get(); }

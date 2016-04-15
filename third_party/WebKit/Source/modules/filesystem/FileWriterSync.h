@@ -43,12 +43,8 @@ class Blob;
 class ExceptionState;
 
 class FileWriterSync final
-#if ENABLE(OILPAN)
     : public GarbageCollectedFinalized<FileWriterSync>
     , public FileWriterBase
-#else
-    : public FileWriterBase
-#endif
     , public ScriptWrappable
     , public WebFileWriterClient {
     DEFINE_WRAPPERTYPEINFO();
