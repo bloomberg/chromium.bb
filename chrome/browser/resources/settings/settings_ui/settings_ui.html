@@ -1,8 +1,8 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-drawer-panel/paper-drawer-panel.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-header-panel/paper-header-panel.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/shadow.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/typography.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-toolbar/paper-toolbar.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
@@ -24,52 +24,129 @@
         background-color: var(--settings-background-color);
       }
 
-      iron-icon {
-       --iron-icon-fill-color: var(--settings-title-bar-color);
-      }
-
-      paper-toolbar {
-        @apply(--shadow-elevation-4dp);
-        --paper-toolbar-title: {
-          font-size: 123.08%;
-        };
-        background-color: var(--settings-title-bar-background-color);
-        min-height: 56px;
-        position: relative;
-        z-index: 10;
-      }
-
       paper-drawer-panel {
         @apply(--layout-center);
         --paper-drawer-panel-left-drawer-container: {
           background-color: var(--settings-background-color);
-          margin-top: 8px;
         };
         --paper-drawer-panel-right-drawer-container: {
           background-color: var(--settings-background-color);
-          margin-top: 8px;
         };
         position: relative;
       }
 
-      settings-main paper-icon-button {
-        z-index: 10;
+      paper-icon-button {
+        --iron-icon-fill-color: var(--settings-title-bar-color);
+      }
+
+      paper-icon-button[suffix] {
+        --iron-icon-fill-color: var(--settings-title-search-color);
+        height: 32px; /* After padding, the icon size is 16px. */
+        width: 32px;
+      }
+
+      paper-input {
+        @apply(--layout-center);
+        --paper-input-container: {
+          padding-top: 0;
+        };
+        --paper-input-container-color: var(--settings-title-search-color);
+        --paper-input-container-focus-color: var(--settings-title-search-color);
+        --paper-input-container-input: {
+          font-size: 81.25%; /* go to 13px from 16px */
+          position: relative;
+          top: 3px; /* Special positioning needed for UX design. */
+        };
+
+        /*
+         * The button in the input suffix needs special positioning for the UX
+         * design. The hit box extends right and down from the paper-input
+         * underline.
+         */
+        --paper-input-suffix: {
+          left: 8px;
+          line-height: 16px;
+          position: relative;
+          top: 4px;
+        };
+        --paper-input-container-input-color: var(--settings-title-bar-color);
+        --paper-input-container-label: {
+          font-size: 81.25%; /* go to 13px from 16px */
+          top: 3px; /* Special positioning needed for UX design. */
+        };
+        --paper-input-max-width: 200px;
+      }
+
+      paper-toolbar {
+        --paper-toolbar-height: 56px;
+        --paper-toolbar-sm-height: 56px;
+        --paper-toolbar-content: {
+          font-size: 123.08%; /* go to 16px from 13px */
+        }
+        --paper-toolbar: {
+          background-color: var(--settings-title-bar-background-color);
+        };
+      }
+
+      /* Prevent paper-toolbar from setting the margin-right to 24px. */
+      paper-icon-button#menu-button {
+        /*
+         * TODO(dschuyler): this margin is on the right regardless of language
+         * direction (e.g. rtl). Make a patch for paper-toolbar in Polymer.
+         */
+        margin-right: 0;
+      }
+
+      .heading {
+        -webkit-margin-start: 8px;
+      }
+
+      paper-drawer-panel:not([narrow]) #main-title {
+        display: none;
+      }
+
+      paper-icon-button[toggles]:not([active]) + #search-input {
+        display: none;
+      }
+
+      .last {
+        display: flex;
+        justify-content: flex-end;
+        width: 100%;
       }
     </style>
     <settings-router current-route="{{currentRoute}}"
         current-route-titles="{{currentRouteTitles}}">
     </settings-router>
-    <paper-toolbar>
-      <div class="title" i18n-content="settings"></div>
-      <!-- TODO(dschuyler): implement internal search. -->
-      <iron-icon icon="md-settings-icons:search"></iron-icon>
-    </paper-toolbar>
-    <paper-drawer-panel drawer-width="256px" id="panel">
-      <settings-menu drawer class="flex" current-route="{{currentRoute}}">
-      </settings-menu>
-      <settings-main main prefs="{{prefs}}" current-route="{{currentRoute}}">
-        <paper-icon-button icon="menu" paper-drawer-toggle></paper-icon-button>
-      </settings-main>
+    <paper-drawer-panel drawer-width="256px" id="panel" narrow="{{isNarrow_}}">
+      <paper-header-panel drawer>
+        <paper-toolbar class="toolbar">
+          <div class="heading flex">$i18n{settings}</div>
+        </paper-toolbar>
+        <settings-menu current-route="{{currentRoute}}">
+        </settings-menu>
+      </paper-header-panel>
+      <paper-header-panel main>
+        <paper-toolbar class="toolbar">
+          <paper-icon-button icon="menu" id="menu-button" paper-drawer-toggle>
+          </paper-icon-button>
+          <div class="heading" id="main-title">
+            $i18n{settings}
+          </div>
+          <div class="last">
+            <paper-icon-button icon="md-settings-icons:search" toggles>
+            </paper-icon-button>
+            <paper-input id="search-input" label="$i18n{internalSearch}"
+                no-label-float>
+              <!-- TODO(dschuyler): implement internal search. -->
+              <paper-icon-button suffix icon="md-settings-icons:cancel">
+              </paper-icon-button>
+            </paper-input>
+          </div>
+        </paper-toolbar>
+        <settings-main prefs="{{prefs}}" current-route="{{currentRoute}}">
+        </paper-icon-button>
+      </paper-header-panel>
     </paper-drawer-panel>
   </template>
   <script src="settings_ui.js"></script>

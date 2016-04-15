@@ -115,6 +115,9 @@
   <message name="IDS_SETTINGS_BASIC" desc="Name of the settings page which displays advanced preferences.">
     Basic
   </message>
+  <message name="IDS_SETTINGS_INTERNAL_SEARCH" desc="Label for input field to search within settings.">
+    Search
+  </message>
   <message name="IDS_SETTINGS_SETTINGS" desc="The settings page title.">
     Settings
   </message>

@@ -69,6 +69,7 @@ void AddCommonStrings(content::WebUIDataSource* html_source) {
       {"save", IDS_SAVE},
       {"advancedPageTitle", IDS_SETTINGS_ADVANCED},
       {"basicPageTitle", IDS_SETTINGS_BASIC},
+      {"internalSearch", IDS_SETTINGS_INTERNAL_SEARCH},
       {"settings", IDS_SETTINGS_SETTINGS},
       {"restart", IDS_SETTINGS_RESTART},
   };
