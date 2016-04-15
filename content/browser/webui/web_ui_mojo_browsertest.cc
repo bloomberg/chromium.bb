@@ -228,22 +228,5 @@ IN_PROC_BROWSER_TEST_F(WebUIMojoTest, EndToEndPing) {
             other_shell->web_contents()->GetRenderProcessHost());
 }
 
-// Loads a webui page that connects to a test Mojo application via the browser's
-// Mojo shell interface.
-IN_PROC_BROWSER_TEST_F(WebUIMojoTest, ConnectToApplication) {
-  if (!IsGeneratedResourceAvailable(
-          "content/public/test/test_mojo_service.mojom"))
-    return;
-
-  ASSERT_TRUE(embedded_test_server()->Start());
-  NavigateToURL(shell(),
-                GURL("chrome://mojo-web-ui/web_ui_mojo_shell_test.html"));
-
-  DOMMessageQueue message_queue;
-  std::string message;
-  ASSERT_TRUE(message_queue.WaitForMessage(&message));
-  EXPECT_EQ("true", message);
-}
-
 }  // namespace
 }  // namespace content

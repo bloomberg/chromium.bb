@@ -468,8 +468,6 @@
       'common/mojo/mojo_shell_connection_impl.h',
       'common/mojo/service_registry_impl.cc',
       'common/mojo/service_registry_impl.h',
-      'common/mojo/static_loader.cc',
-      'common/mojo/static_loader.h',
       'common/navigation_gesture.h',
       'common/navigation_params.cc',
       'common/navigation_params.h',

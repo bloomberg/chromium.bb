@@ -5,7 +5,6 @@
 #include "content/utility/utility_process_control_impl.h"
 
 #include "base/bind.h"
-#include "content/common/mojo/static_loader.h"
 #include "content/public/common/content_client.h"
 #include "content/public/utility/content_utility_client.h"
 #include "content/public/utility/utility_thread.h"
@@ -17,35 +16,25 @@
 
 namespace content {
 
-namespace {
-
-// Called when a static application terminates.
-void QuitProcess() {
-  UtilityThread::Get()->ReleaseProcessIfNeeded();
-}
-
-}  // namespace
-
 UtilityProcessControlImpl::UtilityProcessControlImpl() {}
 
 UtilityProcessControlImpl::~UtilityProcessControlImpl() {}
 
-void UtilityProcessControlImpl::RegisterLoaders(
-    NameToLoaderMap* name_to_loader_map) {
-  NameToLoaderMap& map_ref = *name_to_loader_map;
-
+void UtilityProcessControlImpl::RegisterApplicationFactories(
+    ApplicationFactoryMap* factories) {
   ContentUtilityClient::StaticMojoApplicationMap apps;
   GetContentClient()->utility()->RegisterMojoApplications(&apps);
-
-  for (const auto& entry : apps) {
-    map_ref[entry.first] =
-        new StaticLoader(entry.second, base::Bind(&QuitProcess));
-  }
+  for (const auto& entry : apps)
+    factories->insert(std::make_pair(entry.first, entry.second));
 
 #if defined(ENABLE_MOJO_MEDIA_IN_UTILITY_PROCESS)
-  map_ref["mojo:media"] = new StaticLoader(
-      base::Bind(&media::CreateMojoMediaApplication), base::Bind(&QuitProcess));
+  factories->insert(std::make_pair(
+      "mojo:media", base::Bind(&media::CreateMojoMediaApplication)));
 #endif
+}
+
+void UtilityProcessControlImpl::OnApplicationQuit() {
+  UtilityThread::Get()->ReleaseProcessIfNeeded();
 }
 
 void UtilityProcessControlImpl::OnLoadFailed() {

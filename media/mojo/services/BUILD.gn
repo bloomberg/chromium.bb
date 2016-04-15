@@ -240,6 +240,11 @@ mojo_native_application("media") {
   ]
 }
 
+mojo_application_manifest("media_manifest") {
+  application_name = "media"
+  source = "media_manifest.json"
+}
+
 # Note, the following tests must be loaded via mojo_runner as an app, e.g.
 #
 #   mojo/tools/apptest_runner.py

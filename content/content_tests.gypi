@@ -247,7 +247,6 @@
       'browser/media/session/mock_media_session_observer.h',
       'browser/memory/memory_pressure_controller_impl_browsertest.cc',
       'browser/message_port_provider_browsertest.cc',
-      'browser/mojo_shell_browsertest.cc',
       'browser/net_info_browsertest.cc',
       'browser/renderer_host/input/composited_scrolling_browsertest.cc',
       'browser/renderer_host/input/non_blocking_event_browsertest.cc',

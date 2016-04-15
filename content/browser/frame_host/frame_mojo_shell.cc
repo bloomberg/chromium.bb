@@ -9,7 +9,6 @@
 #include "build/build_config.h"
 #include "content/browser/mojo/mojo_shell_context.h"
 #include "content/common/mojo/service_registry_impl.h"
-#include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -58,10 +57,8 @@ void FrameMojoShell::Connect(
   shell::mojom::InterfaceProviderPtr frame_services;
   service_provider_bindings_.AddBinding(GetServiceRegistry(),
                                         GetProxy(&frame_services));
-  std::string mojo_user_id = BrowserContext::GetMojoUserIdFor(
-      frame_host_->GetProcess()->GetBrowserContext());
   MojoShellContext::ConnectToApplication(
-      mojo_user_id, target->name,
+      shell::mojom::kRootUserID, target->name,
       frame_host_->GetSiteInstance()->GetSiteURL().spec(), std::move(services),
       std::move(frame_services), callback);
 }

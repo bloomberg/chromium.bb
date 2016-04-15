@@ -146,8 +146,12 @@ mojo_application_manifest("browser_manifest") {
   type = "exe"
   application_name = "content_browser"
   source = "mojo/content_browser_manifest.json"
-  packaged_applications = [ "user" ]
+  packaged_applications = [
+    "media",
+    "user",
+  ]
   deps = [
+    "//media/mojo/services:media_manifest",
     "//services/user:manifest",
   ]
 }

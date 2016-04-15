@@ -5,42 +5,42 @@
 #ifndef CONTENT_CHILD_PROCESS_CONTROL_IMPL_H_
 #define CONTENT_CHILD_PROCESS_CONTROL_IMPL_H_
 
-#include <map>
+#include <memory>
+#include <unordered_map>
 
 #include "base/macros.h"
+#include "content/common/mojo/embedded_application_runner.h"
 #include "content/common/process_control.mojom.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/shell/public/interfaces/shell_client.mojom.h"
-
-namespace shell {
-class Loader;
-}  // namespace shell
 
 namespace content {
 
 // Default implementation of the mojom::ProcessControl interface.
 class ProcessControlImpl : public mojom::ProcessControl {
  public:
+  using ApplicationFactoryMap =
+      std::unordered_map<std::string,
+                         EmbeddedApplicationRunner::FactoryCallback>;
+
   ProcessControlImpl();
   ~ProcessControlImpl() override;
 
-  using NameToLoaderMap = std::map<std::string, shell::Loader*>;
-
-  // Registers Mojo loaders for names.
-  virtual void RegisterLoaders(NameToLoaderMap* name_to_loader_map) = 0;
+  virtual void RegisterApplicationFactories(
+      ApplicationFactoryMap* factories) = 0;
+  virtual void OnApplicationQuit() {}
 
   // ProcessControl:
-  void LoadApplication(
-      const mojo::String& name,
-      mojo::InterfaceRequest<shell::mojom::ShellClient> request,
-      const LoadApplicationCallback& callback) override;
+  void LoadApplication(const mojo::String& name,
+                       shell::mojom::ShellClientRequest request,
+                       const LoadApplicationCallback& callback) override;
 
  private:
   // Called if a LoadApplication request fails.
   virtual void OnLoadFailed() {}
 
-  bool has_registered_loaders_ = false;
-  NameToLoaderMap name_to_loader_map_;
+  bool has_registered_apps_ = false;
+  std::unordered_map<std::string, std::unique_ptr<EmbeddedApplicationRunner>>
+      apps_;
 
   DISALLOW_COPY_AND_ASSIGN(ProcessControlImpl);
 };

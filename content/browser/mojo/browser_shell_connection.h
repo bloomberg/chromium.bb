@@ -33,7 +33,17 @@ class BrowserShellConnection
       public shell::InterfaceFactory<shell::mojom::ShellClientFactory>,
       public shell::mojom::ShellClientFactory {
  public:
+  using ShellClientRequestHandler =
+      base::Callback<void(shell::mojom::ShellClientRequest)>;
+
+  // Constructs a connection which does not own a ShellClient pipe. This
+  // connection must be manually fed new incoming connections via its
+  // shell::ShellClient interface.
+  BrowserShellConnection();
+
+  // Constructs a connection associated with its own ShellClient pipe.
   explicit BrowserShellConnection(shell::mojom::ShellClientRequest request);
+
   ~BrowserShellConnection() override;
 
   shell::Connector* GetConnector();
@@ -47,6 +57,15 @@ class BrowserShellConnection
       const base::StringPiece& name,
       const EmbeddedApplicationRunner::FactoryCallback& callback,
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
+
+  // Adds a generic ShellClientRequestHandler for a given application name. This
+  // will be used to satisfy any incoming calls to CreateShellClient() which
+  // reference the given name.
+  //
+  // For in-process applications, it is preferrable to use
+  // |AddEmbeddedApplication()| as defined above.
+  void AddShellClientRequestHandler(const base::StringPiece& name,
+                                    const ShellClientRequestHandler& handler);
 
  private:
   // shell::ShellClient:
@@ -64,6 +83,7 @@ class BrowserShellConnection
   mojo::BindingSet<shell::mojom::ShellClientFactory> factory_bindings_;
   std::unordered_map<std::string, std::unique_ptr<EmbeddedApplicationRunner>>
       embedded_apps_;
+  std::unordered_map<std::string, ShellClientRequestHandler> request_handlers_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserShellConnection);
 };

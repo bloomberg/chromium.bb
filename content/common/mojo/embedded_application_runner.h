@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "services/shell/public/cpp/shell_client.h"
 #include "services/shell/public/interfaces/shell_client.mojom.h"
@@ -41,8 +42,14 @@ class EmbeddedApplicationRunner {
   // bound to the running instance.
   void BindShellClientRequest(shell::mojom::ShellClientRequest request);
 
+  // Sets a callback to run after the application loses its last connection and
+  // is torn down.
+  void SetQuitClosure(const base::Closure& quit_closure);
+
  private:
   class Instance;
+
+  void OnQuit();
 
   // The TaskRunner on which the factory callback will be run. The
   // shell::ShellClient it returns will live and die on this TaskRunner's
@@ -52,6 +59,10 @@ class EmbeddedApplicationRunner {
   // A reference to the application instance which may operate on the
   // |application_task_runner_|'s thread.
   scoped_refptr<Instance> instance_;
+
+  base::Closure quit_closure_;
+
+  base::WeakPtrFactory<EmbeddedApplicationRunner> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(EmbeddedApplicationRunner);
 };

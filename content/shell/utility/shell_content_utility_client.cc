@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "content/common/mojo/static_loader.h"
 #include "content/public/test/test_mojo_app.h"
 
 namespace content {
