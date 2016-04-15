@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "chrome/browser/media/combined_desktop_media_list.h"
 #include "chrome/browser/media/desktop_media_list.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/common/chrome_switches.h"
@@ -395,16 +396,33 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
     DesktopMediaPickerViews* parent,
     const base::string16& app_name,
     const base::string16& target_name,
-    std::unique_ptr<DesktopMediaList> media_list,
+    std::unique_ptr<DesktopMediaList> screen_list,
+    std::unique_ptr<DesktopMediaList> window_list,
+    std::unique_ptr<DesktopMediaList> tab_list,
     bool request_audio)
     : parent_(parent),
       app_name_(app_name),
       description_label_(new views::Label()),
       audio_share_checkbox_(nullptr),
       audio_share_checked_(true),
-      sources_scroll_view_(views::ScrollView::CreateScrollViewWithBorder()),
-      sources_list_view_(
-          new DesktopMediaListView(this, std::move(media_list))) {
+      sources_scroll_view_(views::ScrollView::CreateScrollViewWithBorder()) {
+  std::vector<std::unique_ptr<DesktopMediaList>> media_lists;
+  if (screen_list)
+    media_lists.push_back(std::move(screen_list));
+  if (window_list)
+    media_lists.push_back(std::move(window_list));
+  if (tab_list)
+    media_lists.push_back(std::move(tab_list));
+
+  std::unique_ptr<DesktopMediaList> media_list;
+  if (media_lists.size() > 1)
+    media_list.reset(new CombinedDesktopMediaList(media_lists));
+  else
+    media_list = std::move(media_lists[0]);
+
+  DCHECK(media_list != nullptr);
+  sources_list_view_ = new DesktopMediaListView(this, std::move(media_list));
+
   // TODO(estade): we should be getting the inside-border spacing by default as
   // a DialogDelegateView subclass, via default BubbleFrameView content margins.
   SetLayoutManager(new views::BoxLayout(
@@ -615,17 +633,21 @@ DesktopMediaPickerViews::~DesktopMediaPickerViews() {
   }
 }
 
-void DesktopMediaPickerViews::Show(content::WebContents* web_contents,
-                                   gfx::NativeWindow context,
-                                   gfx::NativeWindow parent,
-                                   const base::string16& app_name,
-                                   const base::string16& target_name,
-                                   std::unique_ptr<DesktopMediaList> media_list,
-                                   bool request_audio,
-                                   const DoneCallback& done_callback) {
+void DesktopMediaPickerViews::Show(
+    content::WebContents* web_contents,
+    gfx::NativeWindow context,
+    gfx::NativeWindow parent,
+    const base::string16& app_name,
+    const base::string16& target_name,
+    std::unique_ptr<DesktopMediaList> screen_list,
+    std::unique_ptr<DesktopMediaList> window_list,
+    std::unique_ptr<DesktopMediaList> tab_list,
+    bool request_audio,
+    const DoneCallback& done_callback) {
   callback_ = done_callback;
   dialog_ = new DesktopMediaPickerDialogView(
-      web_contents, context, this, app_name, target_name, std::move(media_list),
+      web_contents, context, this, app_name, target_name,
+      std::move(screen_list), std::move(window_list), std::move(tab_list),
       request_audio);
 }
 

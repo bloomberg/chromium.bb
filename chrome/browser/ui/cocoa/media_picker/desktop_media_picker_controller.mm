@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #import "base/mac/bundle_locations.h"
 #include "base/strings/sys_string_conversions.h"
+#include "chrome/browser/media/combined_desktop_media_list.h"
 #import "chrome/browser/ui/cocoa/key_equivalent_constants.h"
 #import "chrome/browser/ui/cocoa/media_picker/desktop_media_picker_item.h"
 #include "chrome/common/chrome_switches.h"
@@ -63,12 +64,14 @@ const int kExcessButtonPadding = 6;
 
 @implementation DesktopMediaPickerController
 
-- (id)initWithMediaList:(std::unique_ptr<DesktopMediaList>)media_list
-                 parent:(NSWindow*)parent
-               callback:(const DesktopMediaPicker::DoneCallback&)callback
-                appName:(const base::string16&)appName
-             targetName:(const base::string16&)targetName
-           requestAudio:(bool)requestAudio {
+- (id)initWithScreenList:(std::unique_ptr<DesktopMediaList>)screen_list
+              windowList:(std::unique_ptr<DesktopMediaList>)window_list
+                 tabList:(std::unique_ptr<DesktopMediaList>)tab_list
+                  parent:(NSWindow*)parent
+                callback:(const DesktopMediaPicker::DoneCallback&)callback
+                 appName:(const base::string16&)appName
+              targetName:(const base::string16&)targetName
+            requestAudio:(bool)requestAudio {
   const NSUInteger kStyleMask =
       NSTitledWindowMask | NSClosableWindowMask | NSResizableWindowMask;
   base::scoped_nsobject<NSWindow> window(
@@ -83,7 +86,20 @@ const int kExcessButtonPadding = 6;
     [self initializeContentsWithAppName:appName
                              targetName:targetName
                            requestAudio:requestAudio];
-    media_list_ = std::move(media_list);
+    std::vector<std::unique_ptr<DesktopMediaList>> media_lists;
+    if (screen_list)
+      media_lists.push_back(std::move(screen_list));
+
+    if (window_list)
+      media_lists.push_back(std::move(window_list));
+
+    if (tab_list)
+      media_lists.push_back(std::move(tab_list));
+
+    if (media_lists.size() > 1)
+      media_list_.reset(new CombinedDesktopMediaList(media_lists));
+    else
+      media_list_ = std::move(media_lists[0]);
     media_list_->SetViewDialogWindowId(content::DesktopMediaID(
        content::DesktopMediaID::TYPE_WINDOW, [window windowNumber]));
     doneCallback_ = callback;

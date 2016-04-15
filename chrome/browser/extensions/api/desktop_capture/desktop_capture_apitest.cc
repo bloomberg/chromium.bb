@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <queue>
+#include <array>
 
 #include "base/command_line.h"
 #include "base/macros.h"
@@ -56,7 +56,9 @@ class FakeDesktopMediaPicker : public DesktopMediaPicker {
             gfx::NativeWindow parent,
             const base::string16& app_name,
             const base::string16& target_name,
-            std::unique_ptr<DesktopMediaList> model,
+            std::unique_ptr<DesktopMediaList> screen_list,
+            std::unique_ptr<DesktopMediaList> window_list,
+            std::unique_ptr<DesktopMediaList> tab_list,
             bool request_audio,
             const DoneCallback& done_callback) override {
     if (!expectation_->cancelled) {
@@ -98,18 +100,28 @@ class FakeDesktopMediaPickerFactory :
   }
 
   // DesktopCaptureChooseDesktopMediaFunction::PickerFactory interface.
-  std::unique_ptr<DesktopMediaList> CreateModel(bool show_screens,
-                                                bool show_windows,
-                                                bool show_tabs,
-                                                bool show_audio) override {
+  MediaListArray CreateModel(
+      bool show_screens,
+      bool show_windows,
+      bool show_tabs,
+      bool show_audio) override {
     EXPECT_LE(current_test_, tests_count_);
-    if (current_test_ >= tests_count_)
-      return std::unique_ptr<DesktopMediaList>();
+    MediaListArray media_lists;
+    if (current_test_ >= tests_count_) {
+      return media_lists;
+    }
     EXPECT_EQ(test_flags_[current_test_].expect_screens, show_screens);
     EXPECT_EQ(test_flags_[current_test_].expect_windows, show_windows);
     EXPECT_EQ(test_flags_[current_test_].expect_tabs, show_tabs);
     EXPECT_EQ(test_flags_[current_test_].expect_audio, show_audio);
-    return std::unique_ptr<DesktopMediaList>(new FakeDesktopMediaList());
+
+    media_lists[0] = std::unique_ptr<DesktopMediaList>(
+        show_screens ? new FakeDesktopMediaList() : nullptr);
+    media_lists[1] = std::unique_ptr<DesktopMediaList>(
+        show_windows ? new FakeDesktopMediaList() : nullptr);
+    media_lists[2] = std::unique_ptr<DesktopMediaList>(
+        show_tabs ? new FakeDesktopMediaList() : nullptr);
+    return media_lists;
   }
 
   std::unique_ptr<DesktopMediaPicker> CreatePicker() override {

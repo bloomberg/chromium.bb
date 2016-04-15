@@ -29,14 +29,19 @@ class DesktopMediaPickerViewsTest : public testing::Test {
   ~DesktopMediaPickerViewsTest() override {}
 
   void SetUp() override {
-    media_list_ = new FakeDesktopMediaList();
-    std::unique_ptr<FakeDesktopMediaList> media_list(media_list_);
+    screen_list_ = new FakeDesktopMediaList();
+    window_list_ = new FakeDesktopMediaList();
+    tab_list_ = new FakeDesktopMediaList();
+    std::unique_ptr<FakeDesktopMediaList> screen_list(screen_list_);
+    std::unique_ptr<FakeDesktopMediaList> window_list(window_list_);
+    std::unique_ptr<FakeDesktopMediaList> tab_list(tab_list_);
 
     base::string16 app_name = base::ASCIIToUTF16("foo");
 
     picker_views_.reset(new DesktopMediaPickerViews());
     picker_views_->Show(NULL, test_helper_.GetContext(), NULL, app_name,
-                        app_name, std::move(media_list), false,
+                        app_name, std::move(screen_list),
+                        std::move(window_list), std::move(tab_list), false,
                         base::Bind(&DesktopMediaPickerViewsTest::OnPickerDone,
                                    base::Unretained(this)));
   }
@@ -57,7 +62,9 @@ class DesktopMediaPickerViewsTest : public testing::Test {
  protected:
   content::TestBrowserThreadBundle thread_bundle_;
   views::ScopedViewsTestHelper test_helper_;
-  FakeDesktopMediaList* media_list_;
+  FakeDesktopMediaList* screen_list_;
+  FakeDesktopMediaList* window_list_;
+  FakeDesktopMediaList* tab_list_;
   std::unique_ptr<DesktopMediaPickerViews> picker_views_;
 };
 
@@ -73,7 +80,7 @@ TEST_F(DesktopMediaPickerViewsTest, DoneCallbackCalledOnOkButtonPressed) {
   EXPECT_CALL(*this,
               OnPickerDone(content::DesktopMediaID(
                   content::DesktopMediaID::TYPE_WINDOW, kFakeId)));
-  media_list_->AddSource(kFakeId);
+  window_list_->AddSource(kFakeId);
 
   EXPECT_FALSE(
       GetPickerDialogView()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));
@@ -89,8 +96,8 @@ TEST_F(DesktopMediaPickerViewsTest, DoneCallbackCalledOnOkButtonPressed) {
 // Verifies that a MediaSourceView is selected with mouse left click and
 // original selected MediaSourceView gets unselected.
 TEST_F(DesktopMediaPickerViewsTest, SelectMediaSourceViewOnSingleClick) {
-  media_list_->AddSource(0);
-  media_list_->AddSource(1);
+  window_list_->AddSource(0);
+  window_list_->AddSource(1);
 
   DesktopMediaSourceView* source_view_0 =
       GetPickerDialogView()->GetMediaSourceViewForTesting(0);
@@ -124,7 +131,7 @@ TEST_F(DesktopMediaPickerViewsTest, DoneCallbackCalledOnDoubleClick) {
               OnPickerDone(content::DesktopMediaID(
                   content::DesktopMediaID::TYPE_WINDOW, kFakeId)));
 
-  media_list_->AddSource(kFakeId);
+  window_list_->AddSource(kFakeId);
 
   ui::MouseEvent double_click(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
                               ui::EventTimeForNow(),
@@ -142,7 +149,7 @@ TEST_F(DesktopMediaPickerViewsTest, DoneCallbackCalledOnDoubleTap) {
               OnPickerDone(content::DesktopMediaID(
                   content::DesktopMediaID::TYPE_WINDOW, kFakeId)));
 
-  media_list_->AddSource(kFakeId);
+  window_list_->AddSource(kFakeId);
   ui::GestureEventDetails details(ui::ET_GESTURE_TAP);
   details.set_tap_count(2);
   ui::GestureEvent double_tap(10, 10, 0, base::TimeDelta(), details);
@@ -164,12 +171,12 @@ TEST_F(DesktopMediaPickerViewsTest, AddAndRemoveMediaSource) {
   EXPECT_EQ(NULL, GetPickerDialogView()->GetMediaSourceViewForTesting(0));
 
   for (int i = 0; i < 3; ++i) {
-    media_list_->AddSource(i);
+    window_list_->AddSource(i);
     EXPECT_TRUE(GetPickerDialogView()->GetMediaSourceViewForTesting(i));
   }
 
   for (int i = 2; i >= 0; --i) {
-    media_list_->RemoveSource(i);
+    window_list_->RemoveSource(i);
     EXPECT_EQ(NULL, GetPickerDialogView()->GetMediaSourceViewForTesting(i));
   }
 }
@@ -177,8 +184,8 @@ TEST_F(DesktopMediaPickerViewsTest, AddAndRemoveMediaSource) {
 // Verifies that focusing the MediaSourceView marks it selected and the
 // original selected MediaSourceView gets unselected.
 TEST_F(DesktopMediaPickerViewsTest, FocusMediaSourceViewToSelect) {
-  media_list_->AddSource(0);
-  media_list_->AddSource(1);
+  window_list_->AddSource(0);
+  window_list_->AddSource(1);
 
   DesktopMediaSourceView* source_view_0 =
       GetPickerDialogView()->GetMediaSourceViewForTesting(0);
@@ -202,7 +209,7 @@ TEST_F(DesktopMediaPickerViewsTest, FocusMediaSourceViewToSelect) {
 }
 
 TEST_F(DesktopMediaPickerViewsTest, OkButtonDisabledWhenNoSelection) {
-  media_list_->AddSource(111);
+  window_list_->AddSource(111);
 
   EXPECT_FALSE(
       GetPickerDialogView()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));
@@ -211,7 +218,7 @@ TEST_F(DesktopMediaPickerViewsTest, OkButtonDisabledWhenNoSelection) {
   EXPECT_TRUE(
       GetPickerDialogView()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));
 
-  media_list_->RemoveSource(0);
+  window_list_->RemoveSource(0);
   EXPECT_FALSE(
       GetPickerDialogView()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));
 }

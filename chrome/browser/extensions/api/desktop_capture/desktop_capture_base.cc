@@ -12,7 +12,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
-#include "chrome/browser/media/combined_desktop_media_list.h"
 #include "chrome/browser/media/desktop_media_list_ash.h"
 #include "chrome/browser/media/desktop_streams_registry.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
@@ -127,46 +126,62 @@ bool DesktopCaptureChooseDesktopMediaFunctionBase::Execute(
 
   const gfx::NativeWindow parent_window =
       web_contents->GetTopLevelNativeWindow();
-  std::unique_ptr<DesktopMediaList> media_list;
+  std::unique_ptr<DesktopMediaList> screen_list;
+  std::unique_ptr<DesktopMediaList> window_list;
+  std::unique_ptr<DesktopMediaList> tab_list;
   if (g_picker_factory) {
-    media_list = g_picker_factory->CreateModel(show_screens, show_windows,
-                                               show_tabs, request_audio);
+    PickerFactory::MediaListArray media_lists =
+        g_picker_factory->CreateModel(show_screens, show_windows, show_tabs,
+                                      request_audio);
+    screen_list = std::move(media_lists[0]);
+    window_list = std::move(media_lists[1]);
+    tab_list = std::move(media_lists[2]);
     picker_ = g_picker_factory->CreatePicker();
   } else {
-    std::vector<std::unique_ptr<DesktopMediaList>> media_lists;
-    // Create a screens/windows list and push it into media_lists.
-    if (show_screens || show_windows) {
+    // Create a screens list.
+    if (show_screens) {
 #if defined(USE_ASH)
       if (chrome::IsNativeWindowInAsh(parent_window)) {
-        media_lists.push_back(base::WrapUnique(new DesktopMediaListAsh(
-            (show_screens ? DesktopMediaListAsh::SCREENS : 0) |
-            (show_windows ? DesktopMediaListAsh::WINDOWS : 0))));
+        screen_list = base::WrapUnique(
+            new DesktopMediaListAsh(DesktopMediaListAsh::SCREENS));
       }
 #endif
-      if (media_lists.empty()) {
+      if (!screen_list) {
         webrtc::DesktopCaptureOptions options =
             webrtc::DesktopCaptureOptions::CreateDefault();
         options.set_disable_effects(false);
         std::unique_ptr<webrtc::ScreenCapturer> screen_capturer(
-            show_screens ? webrtc::ScreenCapturer::Create(options) : NULL);
-        std::unique_ptr<webrtc::WindowCapturer> window_capturer(
-            show_windows ? webrtc::WindowCapturer::Create(options) : NULL);
+            webrtc::ScreenCapturer::Create(options));
 
-        media_lists.push_back(base::WrapUnique(new NativeDesktopMediaList(
-            std::move(screen_capturer), std::move(window_capturer))));
+        screen_list = base::WrapUnique(
+            new NativeDesktopMediaList(std::move(screen_capturer), nullptr));
+      }
+    }
+
+    // Create a windows list.
+    if (show_windows) {
+#if defined(USE_ASH)
+      if (chrome::IsNativeWindowInAsh(parent_window)) {
+        window_list = base::WrapUnique(
+            new DesktopMediaListAsh(DesktopMediaListAsh::WINDOWS));
+      }
+#endif
+      if (!window_list) {
+        webrtc::DesktopCaptureOptions options =
+            webrtc::DesktopCaptureOptions::CreateDefault();
+        options.set_disable_effects(false);
+        std::unique_ptr<webrtc::WindowCapturer> window_capturer(
+            webrtc::WindowCapturer::Create(options));
+
+        window_list = base::WrapUnique(
+            new NativeDesktopMediaList(nullptr, std::move(window_capturer)));
       }
     }
 
     if (show_tabs)
-      media_lists.push_back(base::WrapUnique(new TabDesktopMediaList()));
+      tab_list = base::WrapUnique(new TabDesktopMediaList());
 
-    DCHECK(!media_lists.empty());
-
-    if (media_lists.size() == 1) {
-      media_list = std::move(media_lists[0]);
-    } else {
-      media_list.reset(new CombinedDesktopMediaList(media_lists));
-    }
+    DCHECK(screen_list || window_list || tab_list);
 
     // DesktopMediaPicker is implemented only for Windows, OSX and
     // Aura Linux builds.
@@ -184,7 +199,8 @@ bool DesktopCaptureChooseDesktopMediaFunctionBase::Execute(
 
   picker_->Show(web_contents, parent_window, parent_window,
                 base::UTF8ToUTF16(extension()->name()), target_name,
-                std::move(media_list), request_audio, callback);
+                std::move(screen_list), std::move(window_list),
+                std::move(tab_list), request_audio, callback);
   origin_ = origin;
   return true;
 }

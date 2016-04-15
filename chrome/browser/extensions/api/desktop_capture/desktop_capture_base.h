@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_DESKTOP_CAPTURE_DESKTOP_CAPTURE_BASE_H_
 #define CHROME_BROWSER_EXTENSIONS_API_DESKTOP_CAPTURE_DESKTOP_CAPTURE_BASE_H_
 
+#include <array>
 #include <map>
 
 #include "base/macros.h"
@@ -26,10 +27,12 @@ class DesktopCaptureChooseDesktopMediaFunctionBase
   // Used for tests to supply fake picker.
   class PickerFactory {
    public:
-    virtual std::unique_ptr<DesktopMediaList> CreateModel(bool show_screens,
-                                                          bool show_windows,
-                                                          bool show_tabs,
-                                                          bool show_audio) = 0;
+    typedef std::array<std::unique_ptr<DesktopMediaList>, 3> MediaListArray;
+    virtual MediaListArray CreateModel(
+        bool show_screens,
+        bool show_windows,
+        bool show_tabs,
+        bool show_audio) = 0;
     virtual std::unique_ptr<DesktopMediaPicker> CreatePicker() = 0;
 
    protected:

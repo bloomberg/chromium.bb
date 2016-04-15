@@ -62,12 +62,14 @@
 // appears as the initiator of the request.
 // |targetName| will be used to format the dialog's label and appear as the
 // consumer of the requested stream.
-- (id)initWithMediaList:(std::unique_ptr<DesktopMediaList>)media_list
-                 parent:(NSWindow*)parent
-               callback:(const DesktopMediaPicker::DoneCallback&)callback
-                appName:(const base::string16&)appName
-             targetName:(const base::string16&)targetName
-           requestAudio:(bool)requestAudio;
+- (id)initWithScreenList:(std::unique_ptr<DesktopMediaList>)screen_list
+              windowList:(std::unique_ptr<DesktopMediaList>)window_list
+                 tabList:(std::unique_ptr<DesktopMediaList>)tab_list
+                  parent:(NSWindow*)parent
+                callback:(const DesktopMediaPicker::DoneCallback&)callback
+                 appName:(const base::string16&)appName
+              targetName:(const base::string16&)targetName
+            requestAudio:(bool)requestAudio;
 
 @end
 
