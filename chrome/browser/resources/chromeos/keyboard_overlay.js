@@ -101,6 +101,23 @@ var KEYCODE_TO_LABEL = {
 };
 
 /**
+ * When the top row keys setting is changed so that they're treated as function
+ * keys, their labels should change as well.
+ */
+var TOP_ROW_KEY_LABEL_TO_FUNCTION_LABEL = {
+  'back' : 'f1',
+  'forward' : 'f2',
+  'reload' : 'f3',
+  'full screen' : 'f4',
+  'switch window' : 'f5',
+  'bright down' : 'f6',
+  'bright up' : 'f7',
+  'mute' : 'f8',
+  'vol. down' : 'f9',
+  'vol. up' : 'f10',
+};
+
+/**
  * Some key labels define actions (like for example 'vol. up' or 'mute').
  * These labels should be localized. (crbug.com/471025).
  */
@@ -128,6 +145,16 @@ var LABEL_TO_LOCALIZED_LABEL_ID = {
   'right' : 'keyboardOverlayRightKeyLabel',
   'up' : 'keyboardOverlayUpKeyLabel',
   'down' : 'keyboardOverlayDownKeyLabel',
+  'f1' : 'keyboardOverlayF1',
+  'f2' : 'keyboardOverlayF2',
+  'f3' : 'keyboardOverlayF3',
+  'f4' : 'keyboardOverlayF4',
+  'f5' : 'keyboardOverlayF5',
+  'f6' : 'keyboardOverlayF6',
+  'f7' : 'keyboardOverlayF7',
+  'f8' : 'keyboardOverlayF8',
+  'f9' : 'keyboardOverlayF9',
+  'f10' : 'keyboardOverlayF10',
 };
 
 var IME_ID_PREFIX = '_comp_ime_';
@@ -196,6 +223,14 @@ function getKeyboardOverlayId() {
  */
 function getKeyboardGlyphData() {
   return keyboardOverlayData['keyboardGlyph'][getKeyboardOverlayId()];
+}
+
+/**
+ * Tests if the top row keys are set to be treated as function keys.
+ * @return {boolean} True if the top row keys are set to be function keys.
+ */
+function topRowKeysAreFunctionKeys() {
+  return loadTimeData.getBoolean('keyboardOverlayTopRowKeysAreFunctionKeys');
 }
 
 /**
@@ -393,6 +428,11 @@ function getKeyLabel(keyData, modifiers) {
     return '';
   }
   if (keyData.label) {
+    if (topRowKeysAreFunctionKeys()) {
+      var topRowKeyLabel = TOP_ROW_KEY_LABEL_TO_FUNCTION_LABEL[keyData.label];
+      if (topRowKeyLabel)
+        return topRowKeyLabel;
+    }
     return keyData.label;
   }
   var keyLabel = '';
@@ -450,11 +490,26 @@ function getKeyTextValue(keyData) {
     if (keyData.label == 'space') {
       return '';
     }
+
     // some key labels define actions such as 'mute' or 'vol. up'. Those actions
     // should be localized (crbug.com/471025).
-    var localizedLabel = LABEL_TO_LOCALIZED_LABEL_ID[keyData.label];
-    if (localizedLabel)
-      return loadTimeData.getString(localizedLabel);
+    var localizedLabelId = null;
+    var labelToBeLocalized = keyData.label;
+    if (topRowKeysAreFunctionKeys()) {
+      // If this is a top row key label, we need to convert that label to
+      // function-keys label (i.e. mute --> f8), and then use that label to get
+      // a localized one.
+      var topRowKeyAsFunctionLabel =
+        TOP_ROW_KEY_LABEL_TO_FUNCTION_LABEL[labelToBeLocalized];
+
+      labelToBeLocalized =
+        topRowKeyAsFunctionLabel ? topRowKeyAsFunctionLabel : keyData.label;
+    }
+
+    localizedLabelId = LABEL_TO_LOCALIZED_LABEL_ID[labelToBeLocalized];
+
+    if (localizedLabelId)
+      return loadTimeData.getString(localizedLabelId);
 
     return keyData.label;
   }

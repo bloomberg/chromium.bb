@@ -268,6 +268,14 @@ struct I18nContentToMessage {
   { "keyboardOverlayZoomScreenOut", IDS_KEYBOARD_OVERLAY_ZOOM_SCREEN_OUT },
 };
 
+bool TopRowKeysAreFunctionKeys(Profile* profile) {
+  if (!profile)
+    return false;
+
+  const PrefService* prefs = profile->GetPrefs();
+  return prefs ? prefs->GetBoolean(prefs::kLanguageSendFunctionKeys) : false;
+}
+
 std::string ModifierKeyToLabel(ModifierKey modifier) {
   for (size_t i = 0; i < arraysize(kModifierToLabels); ++i) {
     if (modifier == kModifierToLabels[i].modifier) {
@@ -277,7 +285,7 @@ std::string ModifierKeyToLabel(ModifierKey modifier) {
   return "";
 }
 
-content::WebUIDataSource* CreateKeyboardOverlayUIHTMLSource() {
+content::WebUIDataSource* CreateKeyboardOverlayUIHTMLSource(Profile* profile) {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIKeyboardOverlayHost);
 
@@ -291,6 +299,8 @@ content::WebUIDataSource* CreateKeyboardOverlayUIHTMLSource() {
   source->AddBoolean("keyboardOverlayHasChromeOSDiamondKey",
                      base::CommandLine::ForCurrentProcess()->HasSwitch(
                          chromeos::switches::kHasChromeOSDiamondKey));
+  source->AddBoolean("keyboardOverlayTopRowKeysAreFunctionKeys",
+                     TopRowKeysAreFunctionKeys(profile));
   ash::Shell* shell = ash::Shell::GetInstance();
   ash::DisplayManager* display_manager = shell->display_manager();
   source->AddBoolean("keyboardOverlayIsDisplayUIScalingEnabled",
@@ -410,5 +420,6 @@ KeyboardOverlayUI::KeyboardOverlayUI(content::WebUI* web_ui)
   web_ui->AddMessageHandler(handler);
 
   // Set up the chrome://keyboardoverlay/ source.
-  content::WebUIDataSource::Add(profile, CreateKeyboardOverlayUIHTMLSource());
+  content::WebUIDataSource::Add(profile,
+                                CreateKeyboardOverlayUIHTMLSource(profile));
 }
