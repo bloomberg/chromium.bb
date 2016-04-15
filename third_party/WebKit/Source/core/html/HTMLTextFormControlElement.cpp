@@ -575,7 +575,7 @@ void HTMLTextFormControlElement::setAutocapitalize(const AtomicString& autocapit
 
 void HTMLTextFormControlElement::restoreCachedSelection()
 {
-    setSelectionRange(m_cachedSelectionStart, m_cachedSelectionEnd, m_cachedSelectionDirection, NotDispatchSelectEvent);
+    setSelectionRange(m_cachedSelectionStart, m_cachedSelectionEnd, m_cachedSelectionDirection, DispatchSelectEvent);
 }
 
 void HTMLTextFormControlElement::selectionChanged(bool userTriggered)

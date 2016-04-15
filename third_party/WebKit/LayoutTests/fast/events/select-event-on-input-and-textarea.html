@@ -16,6 +16,9 @@ var jsTestIsAsync = true;
 
 var inputTests = [
     function() {
+        input.select();
+    },
+    function() {
         input.setSelectionRange(1, 2);
     },
     function() {
@@ -33,6 +36,9 @@ var inputTests = [
 ];
 
 var textAreaTests = [
+    function() {
+        textarea.select();
+    },
     function() {
         textarea.setSelectionRange(1, 2);
     },
@@ -58,9 +64,9 @@ function handleInputSelectEvent() {
     }
 
     if (expectedNumOfSelectEvent == actualNumOfSelectEvent) {
-        testPassed("select event is triggered on setSelectionRange, setRangeText, selectionStart, selectionEnd and selectionDirection methods of input element.");
+        testPassed("select event is triggered on focus, select, setSelectionRange, setRangeText, selectionStart, selectionEnd and selectionDirection methods of input element.");
     } else {
-        testFailed("select is triggered " + actualNumOfSelectEvent + " times instead of " + expectedNumOfSelectEvent + " times on textarea element.");
+        testFailed("select is triggered " + actualNumOfSelectEvent + " times instead of " + expectedNumOfSelectEvent + " times on input element.");
     }
 
     runTextareaTests();
@@ -74,7 +80,7 @@ function handleTextAreaSelectEvent() {
     }
 
     if (expectedNumOfSelectEvent == actualNumOfSelectEvent) {
-        testPassed("select event is triggered on setSelectionRange, setRangeText, selectionStart, selectionEnd and selectionDirection methods of textarea element.");
+        testPassed("select event is triggered on focus, select, setSelectionRange, setRangeText, selectionStart, selectionEnd and selectionDirection methods of textarea element.");
     } else {
         testFailed("select is triggered " + actualNumOfSelectEvent + " times instead of " + expectedNumOfSelectEvent + " times on textarea element.");
     }
@@ -83,19 +89,27 @@ function handleTextAreaSelectEvent() {
 }
 
 function runInputTests() {
-    // incrementing it by 1 as select() is kept outside the inputTests array.
+    // incrementing it by 1 as focus() is kept outside the inputTests array.
     expectedNumOfSelectEvent = inputTests.length + 1;
     actualNumOfSelectEvent = 0;
+    // Prevent setSelectionRange from setting focus.
+    input.hidden = true;
+    input.setSelectionRange(0, 1);
+    input.hidden = false;
     input.addEventListener("select", handleInputSelectEvent);
-    input.select();
+    input.focus();
 }
 
 function runTextareaTests() {
-    // incrementing it by 1 as select() is kept outside the textAreaTests array.
+    // incrementing it by 1 as focus() is kept outside the textAreaTests array.
     expectedNumOfSelectEvent = textAreaTests.length + 1;
     actualNumOfSelectEvent = 0;
+    // Prevent setSelectionRange from setting focus.
+    textarea.hidden = true;
+    textarea.setSelectionRange(0, 1);
+    textarea.hidden = false;
     textarea.addEventListener("select", handleTextAreaSelectEvent);
-    textarea.select();
+    textarea.focus();
 }
 </script>
 </body>
