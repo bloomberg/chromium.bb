@@ -97,8 +97,16 @@ class PageLoadMetricsObserver {
  public:
   virtual ~PageLoadMetricsObserver() {}
 
-  // The page load started, with the given navigation handle.
-  virtual void OnStart(content::NavigationHandle* navigation_handle) {}
+  // The page load started, with the given navigation handle. Note that OnStart
+  // is called for same-page navigations. Implementers of OnStart that only want
+  // to process non-same-page navigations should also check to see that the page
+  // load committed via OnCommit or committed_url in
+  // PageLoadExtraInfo. currently_committed_url contains the URL of the
+  // committed page load at the time the navigation for navigation_handle was
+  // initiated, or the empty URL if there was no committed page load at the time
+  // the navigation was initiated.
+  virtual void OnStart(content::NavigationHandle* navigation_handle,
+                       const GURL& currently_committed_url) {}
 
   // OnRedirect is triggered when a page load redirects to another URL.
   // The navigation handle holds relevant data for the navigation, but will

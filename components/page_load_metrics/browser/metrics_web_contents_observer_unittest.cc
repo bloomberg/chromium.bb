@@ -18,30 +18,39 @@
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace page_load_metrics {
 
 namespace {
 
-const char kDefaultTestUrl[] = "https://google.com";
-const char kDefaultTestUrlAnchor[] = "https://google.com#samepage";
-const char kDefaultTestUrl2[] = "https://whatever.com";
+const char kDefaultTestUrl[] = "https://google.com/";
+const char kDefaultTestUrlAnchor[] = "https://google.com/#samepage";
+const char kDefaultTestUrl2[] = "https://whatever.com/";
 
 // Simple PageLoadMetricsObserver that copies observed PageLoadTimings into the
 // provided std::vector, so they can be analyzed by unit tests.
 class TestPageLoadMetricsObserver : public PageLoadMetricsObserver {
  public:
   explicit TestPageLoadMetricsObserver(
-      std::vector<PageLoadTiming>* observed_timings)
-      : observed_timings_(observed_timings) {}
+      std::vector<PageLoadTiming>* observed_timings,
+      std::vector<GURL>* observed_committed_urls)
+      : observed_timings_(observed_timings),
+        observed_committed_urls_(observed_committed_urls) {}
+
+  void OnStart(content::NavigationHandle* navigation_handle,
+               const GURL& currently_committed_url) override {
+    observed_committed_urls_->push_back(currently_committed_url);
+  }
 
   void OnComplete(const PageLoadTiming& timing,
-                  const PageLoadExtraInfo&) override {
+                  const PageLoadExtraInfo& extra_info) override {
     observed_timings_->push_back(timing);
   }
 
  private:
   std::vector<PageLoadTiming>* const observed_timings_;
+  std::vector<GURL>* const observed_committed_urls_;
 };
 
 class TestPageLoadMetricsEmbedderInterface
@@ -56,15 +65,21 @@ class TestPageLoadMetricsEmbedderInterface
     is_prerendering_ = is_prerendering;
   }
   void RegisterObservers(PageLoadTracker* tracker) override {
-    tracker->AddObserver(
-        make_scoped_ptr(new TestPageLoadMetricsObserver(&observed_timings_)));
+    tracker->AddObserver(make_scoped_ptr(new TestPageLoadMetricsObserver(
+        &observed_timings_, &observed_committed_urls_)));
   }
   const std::vector<PageLoadTiming>& observed_timings() const {
     return observed_timings_;
   }
 
+  // currently_committed_urls passed to OnStart().
+  const std::vector<GURL>& observed_committed_urls_from_on_start() const {
+    return observed_committed_urls_;
+  }
+
  private:
   std::vector<PageLoadTiming> observed_timings_;
+  std::vector<GURL> observed_committed_urls_;
   bool is_prerendering_;
 };
 
@@ -78,6 +93,18 @@ class MetricsWebContentsObserverTest
   void SetUp() override {
     RenderViewHostTestHarness::SetUp();
     AttachObserver();
+  }
+
+  void SimulateTimingUpdate(const PageLoadTiming& timing) {
+    SimulateTimingUpdate(timing, web_contents()->GetMainFrame());
+  }
+
+  void SimulateTimingUpdate(const PageLoadTiming& timing,
+                            content::RenderFrameHost* render_frame_host) {
+    ASSERT_TRUE(observer_->OnMessageReceived(
+        PageLoadMetricsMsg_TimingUpdated(observer_->routing_id(), timing,
+                                         PageLoadMetadata()),
+        render_frame_host));
   }
 
   void AttachObserver() {
@@ -107,8 +134,24 @@ class MetricsWebContentsObserverTest
     }
   }
 
+  void AssertNonEmptyTimingsReported(size_t expected_non_empty_timings) {
+    ASSERT_GE(embedder_interface_->observed_timings().size(),
+              expected_non_empty_timings);
+    size_t actual_non_empty_timings = 0;
+    for (const auto& timing : embedder_interface_->observed_timings()) {
+      if (!timing.IsEmpty()) {
+        ++actual_non_empty_timings;
+      }
+    }
+    ASSERT_EQ(expected_non_empty_timings, actual_non_empty_timings);
+  }
+
   void AssertNoTimingReported() {
     ASSERT_TRUE(embedder_interface_->observed_timings().empty());
+  }
+
+  const std::vector<GURL>& observed_committed_urls_from_on_start() const {
+    return embedder_interface_->observed_committed_urls_from_on_start();
   }
 
  protected:
@@ -121,6 +164,31 @@ class MetricsWebContentsObserverTest
 
   DISALLOW_COPY_AND_ASSIGN(MetricsWebContentsObserverTest);
 };
+
+TEST_F(MetricsWebContentsObserverTest, SuccessfulMainFrameNavigation) {
+  PageLoadTiming timing;
+  timing.navigation_start = base::Time::FromDoubleT(1);
+  timing.response_start = base::TimeDelta::FromMilliseconds(2);
+
+  content::WebContentsTester* web_contents_tester =
+      content::WebContentsTester::For(web_contents());
+
+  ASSERT_TRUE(observed_committed_urls_from_on_start().empty());
+  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
+  ASSERT_EQ(1u, observed_committed_urls_from_on_start().size());
+  ASSERT_TRUE(observed_committed_urls_from_on_start().at(0).is_empty());
+
+  SimulateTimingUpdate(timing);
+  AssertNoTimingReported();
+
+  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl2));
+  AssertNonEmptyTimingsReported(1);
+  ASSERT_EQ(2u, observed_committed_urls_from_on_start().size());
+  ASSERT_EQ(kDefaultTestUrl,
+            observed_committed_urls_from_on_start().at(1).spec());
+
+  CheckNoErrorEvents();
+}
 
 TEST_F(MetricsWebContentsObserverTest, NotInMainFrame) {
   PageLoadTiming timing;
@@ -138,10 +206,7 @@ TEST_F(MetricsWebContentsObserverTest, NotInMainFrame) {
       content::RenderFrameHostTester::For(subframe);
   subframe_tester->SimulateNavigationStart(GURL(kDefaultTestUrl2));
   subframe_tester->SimulateNavigationCommit(GURL(kDefaultTestUrl2));
-  observer_->OnMessageReceived(
-      PageLoadMetricsMsg_TimingUpdated(observer_->routing_id(), timing,
-                                       PageLoadMetadata()),
-      subframe);
+  SimulateTimingUpdate(timing, subframe);
   subframe_tester->SimulateNavigationStop();
 
   // Navigate again to see if the timing updated for a subframe message.
@@ -159,11 +224,7 @@ TEST_F(MetricsWebContentsObserverTest, SamePageNoTrigger) {
   content::WebContentsTester* web_contents_tester =
       content::WebContentsTester::For(web_contents());
   web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
-
-  observer_->OnMessageReceived(
-      PageLoadMetricsMsg_TimingUpdated(observer_->routing_id(), timing,
-                                       PageLoadMetadata()),
-      web_contents()->GetMainFrame());
+  SimulateTimingUpdate(timing);
   web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrlAnchor));
   // A same page navigation shouldn't trigger logging UMA for the original.
   AssertNoNonEmptyTimingReported();
@@ -179,11 +240,7 @@ TEST_F(MetricsWebContentsObserverTest, DontLogPrerender) {
   embedder_interface_->set_is_prerendering(true);
 
   web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
-  observer_->OnMessageReceived(
-      PageLoadMetricsMsg_TimingUpdated(observer_->routing_id(), timing,
-                                       PageLoadMetadata()),
-      web_contents()->GetMainFrame());
-
+  SimulateTimingUpdate(timing);
   web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl2));
   AssertNoTimingReported();
   CheckErrorEvent(ERR_IPC_WITH_NO_RELEVANT_LOAD, 1);
@@ -199,12 +256,7 @@ TEST_F(MetricsWebContentsObserverTest, DontLogIrrelevantNavigation) {
 
   GURL about_blank_url = GURL("about:blank");
   web_contents_tester->NavigateAndCommit(about_blank_url);
-
-  observer_->OnMessageReceived(
-      PageLoadMetricsMsg_TimingUpdated(observer_->routing_id(), timing,
-                                       PageLoadMetadata()),
-      main_rfh());
-
+  SimulateTimingUpdate(timing);
   web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
 
   CheckErrorEvent(ERR_IPC_FROM_BAD_URL_SCHEME, 1);
@@ -228,10 +280,7 @@ TEST_F(MetricsWebContentsObserverTest, NotInMainError) {
       content::RenderFrameHostTester::For(subframe);
   subframe_tester->SimulateNavigationStart(GURL(kDefaultTestUrl2));
   subframe_tester->SimulateNavigationCommit(GURL(kDefaultTestUrl2));
-  observer_->OnMessageReceived(
-      PageLoadMetricsMsg_TimingUpdated(observer_->routing_id(), timing,
-                                       PageLoadMetadata()),
-      subframe);
+  SimulateTimingUpdate(timing, subframe);
   CheckErrorEvent(ERR_IPC_FROM_WRONG_FRAME, 1);
   CheckTotalErrorEvents();
 }
@@ -246,14 +295,8 @@ TEST_F(MetricsWebContentsObserverTest, BadIPC) {
       content::WebContentsTester::For(web_contents());
   web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
 
-  observer_->OnMessageReceived(
-      PageLoadMetricsMsg_TimingUpdated(observer_->routing_id(), timing,
-                                       PageLoadMetadata()),
-      main_rfh());
-  observer_->OnMessageReceived(
-      PageLoadMetricsMsg_TimingUpdated(observer_->routing_id(), timing2,
-                                       PageLoadMetadata()),
-      main_rfh());
+  SimulateTimingUpdate(timing);
+  SimulateTimingUpdate(timing2);
 
   CheckErrorEvent(ERR_BAD_TIMING_IPC, 1);
   CheckTotalErrorEvents();
@@ -276,10 +319,8 @@ TEST_F(MetricsWebContentsObserverTest, ObservePartialNavigation) {
   AttachObserver();
   rfh_tester->SimulateNavigationCommit(GURL(kDefaultTestUrl));
 
-  observer_->OnMessageReceived(
-      PageLoadMetricsMsg_TimingUpdated(observer_->routing_id(), timing,
-                                       PageLoadMetadata()),
-      main_rfh());
+  SimulateTimingUpdate(timing);
+
   // Navigate again to force histogram logging.
   web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl2));
   AssertNoTimingReported();

@@ -106,9 +106,12 @@ class PageLoadMetricsEmbedderInterface {
 class PageLoadTracker {
  public:
   // Caller must guarantee that the embedder_interface pointer outlives this
-  // class.
+  // class. The PageLoadTracker must not hold on to
+  // currently_committed_load_or_null or navigation_handle beyond the scope of
+  // the constructor.
   PageLoadTracker(bool in_foreground,
                   PageLoadMetricsEmbedderInterface* embedder_interface,
+                  PageLoadTracker* const currently_committed_load_or_null,
                   content::NavigationHandle* navigation_handle,
                   int aborted_chain_size,
                   int aborted_chain_size_same_url);
@@ -122,7 +125,6 @@ class PageLoadTracker {
   // Returns true if the timing was successfully updated.
   bool UpdateTiming(const PageLoadTiming& timing,
                     const PageLoadMetadata& metadata);
-  bool HasBackgrounded();
 
   void set_renderer_tracked(bool renderer_tracked);
   bool renderer_tracked() const { return renderer_tracked_; }
@@ -152,11 +154,14 @@ class PageLoadTracker {
 
   bool MatchesOriginalNavigation(content::NavigationHandle* navigation_handle);
 
+  // Only valid to call post-commit.
+  const GURL& committed_url() const {
+    DCHECK(!commit_time_.is_null());
+    return url_;
+  }
+
  private:
   PageLoadExtraInfo GetPageLoadMetricsInfo();
-
-  // Only valid to call post-commit.
-  const GURL& committed_url();
 
   void UpdateAbortInternal(UserAbortType abort_type,
                            base::TimeTicks timestamp);
