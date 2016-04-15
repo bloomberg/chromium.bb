@@ -132,8 +132,6 @@ protected:
     void setNeedsStyleRecalcForViewportUnits();
 
 private:
-    bool rootNodeHasTreeSharedParent() const;
-
     Member<ContainerNode> m_rootNode;
     Member<Document> m_document;
     Member<TreeScope> m_parentTreeScope;

@@ -97,11 +97,6 @@ bool TreeScope::isInclusiveOlderSiblingShadowRootOrAncestorTreeScopeOf(const Tre
     return false;
 }
 
-bool TreeScope::rootNodeHasTreeSharedParent() const
-{
-    return rootNode().hasTreeSharedParent();
-}
-
 void TreeScope::setParentTreeScope(TreeScope& newParentScope)
 {
     // A document node cannot be re-parented.

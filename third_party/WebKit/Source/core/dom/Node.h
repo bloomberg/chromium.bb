@@ -30,7 +30,6 @@
 #include "core/dom/MutationObserver.h"
 #include "core/dom/SimulatedClickOptions.h"
 #include "core/dom/TreeScope.h"
-#include "core/dom/TreeShared.h"
 #include "core/editing/EditingBoundary.h"
 #include "core/events/EventTarget.h"
 #include "core/style/ComputedStyleConstants.h"
@@ -766,10 +765,6 @@ protected:
     void setIsFinishedParsingChildren(bool value) { setFlag(value, IsFinishedParsingChildrenFlag); }
 
 private:
-    friend class TreeShared<Node>;
-
-    bool hasTreeSharedParent() const { return !!parentOrShadowHostNode(); }
-
     // Gets nodeName without caching AtomicStrings. Used by
     // debugName. Compositor may call debugName from the "impl" thread
     // during "commit". The main thread is stopped at that time, but

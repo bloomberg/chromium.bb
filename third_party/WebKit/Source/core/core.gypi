@@ -2614,7 +2614,6 @@
             'dom/TreeScopeAdopter.h',
             'dom/TreeScopeStyleSheetCollection.cpp',
             'dom/TreeScopeStyleSheetCollection.h',
-            'dom/TreeShared.h',
             'dom/TreeWalker.cpp',
             'dom/TreeWalker.h',
             'dom/URLSearchParams.cpp',
