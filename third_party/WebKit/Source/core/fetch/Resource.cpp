@@ -253,6 +253,11 @@ DEFINE_TRACE(Resource)
 
 void Resource::load(ResourceFetcher* fetcher)
 {
+    // TOOD(japhet): Temporary, out of place hack to stop a top crasher.
+    // Make this more organic.
+    if (!fetcher->loadingTaskRunner())
+        return;
+
     RELEASE_ASSERT(!m_loader);
     ASSERT(stillNeedsLoad());
     m_status = Pending;

@@ -42,11 +42,24 @@
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/weborigin/KURL.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebTaskRunner.h"
 #include "public/platform/WebURLLoaderMockFactory.h"
 #include "public/platform/WebURLResponse.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
+
+namespace {
+
+class MockTaskRunner : public blink::WebTaskRunner {
+    void postTask(const WebTraceLocation&, Task*) override { }
+    void postDelayedTask(const WebTraceLocation&, Task*, double) override { }
+    WebTaskRunner* clone() override { return nullptr; }
+    double virtualTimeSeconds() const override { return 0.0; }
+    double monotonicallyIncreasingVirtualTimeSeconds() const override { return 0.0; }
+};
+
+}
 
 class ResourceFetcherTestMockFetchContext : public FetchContext {
 public:
@@ -60,6 +73,7 @@ public:
     bool allowImage(bool imagesEnabled, const KURL&) const override { return true; }
     bool canRequest(Resource::Type, const ResourceRequest&, const KURL&, const ResourceLoaderOptions&, bool forPreload, FetchRequest::OriginRestriction) const override { return true; }
     bool shouldLoadNewResource(Resource::Type) const override { return true; }
+    WebTaskRunner* loadingTaskRunner() const override { return m_runner.get(); }
 
     void setCachePolicy(CachePolicy policy) { m_policy = policy; }
     CachePolicy getCachePolicy() const override { return m_policy; }
@@ -67,9 +81,11 @@ public:
 private:
     ResourceFetcherTestMockFetchContext()
         : m_policy(CachePolicyVerify)
+        , m_runner(adoptPtr(new MockTaskRunner))
     { }
 
     CachePolicy m_policy;
+    OwnPtr<MockTaskRunner> m_runner;
 };
 
 class ResourceFetcherTest : public ::testing::Test {
@@ -96,6 +112,10 @@ TEST_F(ResourceFetcherTest, StartLoadAfterFrameDetach)
     Resource* resource = fetcher->requestResource(fetchRequest, TestResourceFactory());
     EXPECT_EQ(resource, static_cast<Resource*>(nullptr));
     EXPECT_EQ(memoryCache()->resourceForURL(secureURL), static_cast<Resource*>(nullptr));
+
+    // Try calling Resource::load directly. This shouldn't crash.
+    Resource* resource2 = Resource::create(secureURL, Resource::Raw);
+    resource2->load(fetcher);
 }
 
 TEST_F(ResourceFetcherTest, UseExistingResource)
