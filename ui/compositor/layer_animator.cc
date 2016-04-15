@@ -174,16 +174,19 @@ void LayerAnimator::SetCompositor(Compositor* compositor) {
 void LayerAnimator::ResetCompositor(Compositor* compositor) {
   DCHECK(compositor);
 
+  cc::AnimationTimeline* timeline = compositor->GetAnimationTimeline();
+  DCHECK(timeline);
+
+  const int layer_id = animation_player_->layer_id();
+
   // Store a reference to LAC if any so it may be picked up in SetCompositor.
-  if (animation_player_->element_animations()) {
+  if (layer_id) {
     animation_controller_state_ =
-        animation_player_->element_animations()->layer_animation_controller();
+        timeline->animation_host()->GetControllerForLayerId(layer_id);
   }
 
   DetachLayerFromAnimationPlayer();
 
-  cc::AnimationTimeline* timeline = compositor->GetAnimationTimeline();
-  DCHECK(timeline);
   timeline->DetachPlayer(animation_player_);
 }
 
@@ -195,7 +198,6 @@ void LayerAnimator::AttachLayerToAnimationPlayer(int layer_id) {
 
   if (animation_player_->element_animations()) {
     animation_player_->element_animations()
-        ->layer_animation_controller()
         ->AddEventObserver(this);
   }
 }
@@ -203,7 +205,6 @@ void LayerAnimator::AttachLayerToAnimationPlayer(int layer_id) {
 void LayerAnimator::DetachLayerFromAnimationPlayer() {
   if (animation_player_->element_animations()) {
     animation_player_->element_animations()
-        ->layer_animation_controller()
         ->RemoveEventObserver(this);
   }
 

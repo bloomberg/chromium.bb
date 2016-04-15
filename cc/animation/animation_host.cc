@@ -79,7 +79,6 @@ class AnimationHost::ScrollOffsetAnimations : public AnimationDelegate {
     DCHECK_EQ(layer_id, scroll_offset_animation_player_->layer_id());
 
     Animation* animation = scroll_offset_animation_player_->element_animations()
-                               ->layer_animation_controller()
                                ->GetAnimation(TargetProperty::SCROLL_OFFSET);
     if (!animation) {
       scroll_offset_animation_player_->DetachLayer();
@@ -337,7 +336,7 @@ LayerAnimationController* AnimationHost::GetControllerForLayerId(
   if (!element_animations)
     return nullptr;
 
-  return element_animations->layer_animation_controller();
+  return element_animations->layer_animation_controller_.get();
 }
 
 ElementAnimations* AnimationHost::GetElementAnimationsForLayerId(

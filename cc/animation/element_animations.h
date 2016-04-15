@@ -50,10 +50,6 @@ class CC_EXPORT ElementAnimations : public AnimationDelegate,
   AnimationHost* animation_host() { return animation_host_; }
   const AnimationHost* animation_host() const { return animation_host_; }
 
-  LayerAnimationController* layer_animation_controller() const {
-    return layer_animation_controller_.get();
-  }
-
   void CreateLayerAnimationController(int layer_id);
   void DestroyLayerAnimationController();
 
@@ -77,7 +73,27 @@ class CC_EXPORT ElementAnimations : public AnimationDelegate,
 
   void PushPropertiesTo(ElementAnimations* element_animations_impl);
 
+  void AddAnimation(std::unique_ptr<Animation> animation);
+  void PauseAnimation(int animation_id, base::TimeDelta time_offset);
+  void RemoveAnimation(int animation_id);
+  void AbortAnimation(int animation_id);
+  void AbortAnimations(TargetProperty::Type target_property,
+                       bool needs_completion = false);
+
+  // Returns the active animation animating the given property that is either
+  // running, or is next to run, if such an animation exists.
+  Animation* GetAnimation(TargetProperty::Type target_property) const;
+
+  // Returns the active animation for the given unique animation id.
+  Animation* GetAnimationById(int animation_id) const;
+
+  void AddEventObserver(LayerAnimationEventObserver* observer);
+  void RemoveEventObserver(LayerAnimationEventObserver* observer);
+
  private:
+  // TODO(loyso): Erase this when LAC merged into ElementAnimations.
+  friend class AnimationHost;
+
   explicit ElementAnimations(AnimationHost* host);
 
   void SetFilterMutated(LayerTreeType tree_type,

@@ -268,10 +268,8 @@ TEST_F(AnimationPlayerTest, AddRemoveAnimationToNonAttachedPlayer) {
 
   EXPECT_TRUE(player_->element_animations());
   EXPECT_FALSE(player_->element_animations()
-                   ->layer_animation_controller()
                    ->GetAnimationById(filter_id));
   EXPECT_TRUE(player_->element_animations()
-                  ->layer_animation_controller()
                   ->GetAnimationById(opacity_id));
 
   host_->PushPropertiesTo(host_impl_);

@@ -160,9 +160,8 @@ class LayerTreeHostAnimationTestAddAnimation
                               int group) override {
     EXPECT_LT(base::TimeTicks(), monotonic_time);
 
-    LayerAnimationController* controller =
-        player_->element_animations()->layer_animation_controller();
-    Animation* animation = controller->GetAnimation(TargetProperty::OPACITY);
+    Animation* animation =
+        player_->element_animations()->GetAnimation(TargetProperty::OPACITY);
     if (animation)
       player_->RemoveAnimation(animation->id());
 
@@ -294,10 +293,9 @@ class LayerTreeHostAnimationTestAddAnimationWithTimingFunction
     scoped_refptr<AnimationPlayer> player_child_impl =
         timeline_impl->GetPlayerById(player_child_id_);
 
-    LayerAnimationController* controller_impl =
-        player_child_impl->element_animations()->layer_animation_controller();
     Animation* animation =
-        controller_impl->GetAnimation(TargetProperty::OPACITY);
+        player_child_impl->element_animations()->GetAnimation(
+            TargetProperty::OPACITY);
 
     const FloatAnimationCurve* curve =
         animation->curve()->ToFloatAnimationCurve();
@@ -348,11 +346,10 @@ class LayerTreeHostAnimationTestSynchronizeAnimationStartTimes
   void NotifyAnimationStarted(base::TimeTicks monotonic_time,
                               TargetProperty::Type target_property,
                               int group) override {
-    LayerAnimationController* controller =
-        player_child_->element_animations()->layer_animation_controller();
-    Animation* animation = controller->GetAnimation(TargetProperty::OPACITY);
+    Animation* animation = player_child_->element_animations()->GetAnimation(
+        TargetProperty::OPACITY);
     main_start_time_ = animation->start_time();
-    controller->RemoveAnimation(animation->id());
+    player_child_->element_animations()->RemoveAnimation(animation->id());
     EndTest();
   }
 
@@ -363,9 +360,9 @@ class LayerTreeHostAnimationTestSynchronizeAnimationStartTimes
     scoped_refptr<AnimationPlayer> player_child_impl =
         timeline_impl->GetPlayerById(player_child_id_);
 
-    LayerAnimationController* controller =
-        player_child_impl->element_animations()->layer_animation_controller();
-    Animation* animation = controller->GetAnimation(TargetProperty::OPACITY);
+    Animation* animation =
+        player_child_impl->element_animations()->GetAnimation(
+            TargetProperty::OPACITY);
     if (!animation)
       return;
 
@@ -400,11 +397,10 @@ class LayerTreeHostAnimationTestAnimationFinishedEvents
   void NotifyAnimationFinished(base::TimeTicks monotonic_time,
                                TargetProperty::Type target_property,
                                int group) override {
-    LayerAnimationController* controller =
-        player_->element_animations()->layer_animation_controller();
-    Animation* animation = controller->GetAnimation(TargetProperty::OPACITY);
+    Animation* animation =
+        player_->element_animations()->GetAnimation(TargetProperty::OPACITY);
     if (animation)
-      controller->RemoveAnimation(animation->id());
+      player_->element_animations()->RemoveAnimation(animation->id());
     EndTest();
   }
 
@@ -443,11 +439,9 @@ class LayerTreeHostAnimationTestDoNotSkipLayersWithAnimatedOpacity
     scoped_refptr<AnimationPlayer> player_impl =
         timeline_impl->GetPlayerById(player_id_);
 
-    LayerAnimationController* controller_impl =
-        player_impl->element_animations()->layer_animation_controller();
-    Animation* animation_impl =
-        controller_impl->GetAnimation(TargetProperty::OPACITY);
-    controller_impl->RemoveAnimation(animation_impl->id());
+    Animation* animation_impl = player_impl->element_animations()->GetAnimation(
+        TargetProperty::OPACITY);
+    player_impl->element_animations()->RemoveAnimation(animation_impl->id());
     EndTest();
   }
 
@@ -801,7 +795,6 @@ class LayerTreeHostAnimationTestScrollOffsetAnimationRemoval
       case 1: {
         Animation* animation =
             player_child_->element_animations()
-                ->layer_animation_controller()
                 ->GetAnimation(TargetProperty::SCROLL_OFFSET);
         player_child_->RemoveAnimation(animation->id());
         scroll_layer_->SetScrollOffset(final_postion_);
@@ -834,7 +827,6 @@ class LayerTreeHostAnimationTestScrollOffsetAnimationRemoval
     LayerImpl* scroll_layer_impl =
         host_impl->active_tree()->root_layer()->children()[0];
     Animation* animation = player_impl->element_animations()
-                               ->layer_animation_controller()
                                ->GetAnimation(TargetProperty::SCROLL_OFFSET);
 
     if (!animation || animation->run_state() != Animation::RUNNING) {
@@ -950,22 +942,21 @@ class LayerTreeHostAnimationTestAnimationsAddedToNewAndExistingLayers
     if (!player_impl->element_animations())
       return;
 
-    LayerAnimationController* root_controller_impl =
-        player_impl->element_animations()->layer_animation_controller();
-    Animation* root_animation =
-        root_controller_impl->GetAnimation(TargetProperty::OPACITY);
+    Animation* root_animation = player_impl->element_animations()->GetAnimation(
+        TargetProperty::OPACITY);
     if (!root_animation || root_animation->run_state() != Animation::RUNNING)
       return;
 
-    LayerAnimationController* child_controller_impl =
-        player_child_impl->element_animations()->layer_animation_controller();
     Animation* child_animation =
-        child_controller_impl->GetAnimation(TargetProperty::OPACITY);
+        player_child_impl->element_animations()->GetAnimation(
+            TargetProperty::OPACITY);
     EXPECT_EQ(Animation::RUNNING, child_animation->run_state());
     EXPECT_EQ(root_animation->start_time(), child_animation->start_time());
-    root_controller_impl->AbortAnimations(TargetProperty::OPACITY);
-    root_controller_impl->AbortAnimations(TargetProperty::TRANSFORM);
-    child_controller_impl->AbortAnimations(TargetProperty::OPACITY);
+    player_impl->element_animations()->AbortAnimations(TargetProperty::OPACITY);
+    player_impl->element_animations()->AbortAnimations(
+        TargetProperty::TRANSFORM);
+    player_child_impl->element_animations()->AbortAnimations(
+        TargetProperty::OPACITY);
     EndTest();
   }
 
@@ -1024,13 +1015,10 @@ class LayerTreeHostAnimationTestPendingTreeAnimatesFirstCommit
     scoped_refptr<AnimationPlayer> player_impl =
         timeline_impl->GetPlayerById(player_id_);
 
-    LayerAnimationController* controller_impl =
-        player_impl->element_animations()->layer_animation_controller();
-
     LayerImpl* root = host_impl->sync_tree()->root_layer();
     LayerImpl* child = root->children()[0];
-    Animation* animation =
-        controller_impl->GetAnimation(TargetProperty::TRANSFORM);
+    Animation* animation = player_impl->element_animations()->GetAnimation(
+        TargetProperty::TRANSFORM);
 
     // The animation should be starting for the first frame.
     EXPECT_EQ(Animation::STARTING, animation->run_state());
@@ -1043,7 +1031,8 @@ class LayerTreeHostAnimationTestPendingTreeAnimatesFirstCommit
     // And the sync tree layer should know it is animating.
     EXPECT_TRUE(child->screen_space_transform_is_animating());
 
-    controller_impl->AbortAnimations(TargetProperty::TRANSFORM);
+    player_impl->element_animations()->AbortAnimations(
+        TargetProperty::TRANSFORM);
     EndTest();
   }
 
@@ -1225,10 +1214,9 @@ class LayerTreeHostAnimationTestRemoveAnimation
         AddAnimatedTransformToPlayer(player_child_.get(), 1.0, 5, 5);
         break;
       case 2:
-        LayerAnimationController* controller =
-            player_child_->element_animations()->layer_animation_controller();
         Animation* animation =
-            controller->GetAnimation(TargetProperty::TRANSFORM);
+            player_child_->element_animations()->GetAnimation(
+                TargetProperty::TRANSFORM);
         player_child_->RemoveAnimation(animation->id());
         gfx::Transform transform;
         transform.Translate(10.f, 10.f);
@@ -1305,10 +1293,8 @@ class LayerTreeHostAnimationTestIsAnimating
         AddAnimatedTransformToPlayer(player_.get(), 1.0, 5, 5);
         break;
       case 2:
-        LayerAnimationController* controller =
-            player_->element_animations()->layer_animation_controller();
-        Animation* animation =
-            controller->GetAnimation(TargetProperty::TRANSFORM);
+        Animation* animation = player_->element_animations()->GetAnimation(
+            TargetProperty::TRANSFORM);
         player_->RemoveAnimation(animation->id());
         break;
     }

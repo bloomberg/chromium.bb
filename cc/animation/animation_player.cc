@@ -105,8 +105,7 @@ void AnimationPlayer::BindElementAnimations() {
 
   // Pass all accumulated animations to LAC.
   for (auto& animation : animations_) {
-    element_animations_->layer_animation_controller()->AddAnimation(
-        std::move(animation));
+    element_animations_->AddAnimation(std::move(animation));
   }
   if (!animations_.empty())
     SetNeedsCommit();
@@ -123,8 +122,7 @@ void AnimationPlayer::AddAnimation(std::unique_ptr<Animation> animation) {
          (animation_host_ && animation_host_->SupportsScrollAnimations()));
 
   if (element_animations_) {
-    element_animations_->layer_animation_controller()->AddAnimation(
-        std::move(animation));
+    element_animations_->AddAnimation(std::move(animation));
     SetNeedsCommit();
   } else {
     animations_.push_back(std::move(animation));
@@ -133,15 +131,14 @@ void AnimationPlayer::AddAnimation(std::unique_ptr<Animation> animation) {
 
 void AnimationPlayer::PauseAnimation(int animation_id, double time_offset) {
   DCHECK(element_animations_);
-  element_animations_->layer_animation_controller()->PauseAnimation(
+  element_animations_->PauseAnimation(
       animation_id, base::TimeDelta::FromSecondsD(time_offset));
   SetNeedsCommit();
 }
 
 void AnimationPlayer::RemoveAnimation(int animation_id) {
   if (element_animations_) {
-    element_animations_->layer_animation_controller()->RemoveAnimation(
-        animation_id);
+    element_animations_->RemoveAnimation(animation_id);
     SetNeedsCommit();
   } else {
     auto animations_to_remove = std::remove_if(
@@ -155,16 +152,14 @@ void AnimationPlayer::RemoveAnimation(int animation_id) {
 
 void AnimationPlayer::AbortAnimation(int animation_id) {
   DCHECK(element_animations_);
-  element_animations_->layer_animation_controller()->AbortAnimation(
-      animation_id);
+  element_animations_->AbortAnimation(animation_id);
   SetNeedsCommit();
 }
 
 void AnimationPlayer::AbortAnimations(TargetProperty::Type target_property,
                                       bool needs_completion) {
   if (element_animations_) {
-    element_animations_->layer_animation_controller()->AbortAnimations(
-        target_property, needs_completion);
+    element_animations_->AbortAnimations(target_property, needs_completion);
     SetNeedsCommit();
   } else {
     auto animations_to_remove = std::remove_if(

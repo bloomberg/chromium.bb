@@ -150,10 +150,52 @@ bool ElementAnimations::IsEmpty() const {
 void ElementAnimations::PushPropertiesTo(
     ElementAnimations* element_animations_impl) {
   DCHECK(layer_animation_controller_);
-  DCHECK(element_animations_impl->layer_animation_controller());
+  DCHECK(element_animations_impl->layer_animation_controller_);
 
   layer_animation_controller_->PushAnimationUpdatesTo(
-      element_animations_impl->layer_animation_controller());
+      element_animations_impl->layer_animation_controller_.get());
+}
+
+void ElementAnimations::AddAnimation(std::unique_ptr<Animation> animation) {
+  layer_animation_controller_->AddAnimation(std::move(animation));
+}
+
+void ElementAnimations::PauseAnimation(int animation_id,
+                                       base::TimeDelta time_offset) {
+  layer_animation_controller_->PauseAnimation(animation_id, time_offset);
+}
+
+void ElementAnimations::RemoveAnimation(int animation_id) {
+  layer_animation_controller_->RemoveAnimation(animation_id);
+}
+
+void ElementAnimations::AbortAnimation(int animation_id) {
+  layer_animation_controller_->AbortAnimation(animation_id);
+}
+
+void ElementAnimations::AbortAnimations(TargetProperty::Type target_property,
+                                        bool needs_completion) {
+  layer_animation_controller_->AbortAnimations(target_property,
+                                               needs_completion);
+}
+
+Animation* ElementAnimations::GetAnimation(
+    TargetProperty::Type target_property) const {
+  return layer_animation_controller_->GetAnimation(target_property);
+}
+
+Animation* ElementAnimations::GetAnimationById(int animation_id) const {
+  return layer_animation_controller_->GetAnimationById(animation_id);
+}
+
+void ElementAnimations::AddEventObserver(
+    LayerAnimationEventObserver* observer) {
+  layer_animation_controller_->AddEventObserver(observer);
+}
+
+void ElementAnimations::RemoveEventObserver(
+    LayerAnimationEventObserver* observer) {
+  layer_animation_controller_->RemoveEventObserver(observer);
 }
 
 void ElementAnimations::SetFilterMutated(LayerTreeType tree_type,
