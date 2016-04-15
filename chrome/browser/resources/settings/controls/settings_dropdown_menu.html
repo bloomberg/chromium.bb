@@ -2,7 +2,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-dropdown-menu/paper-dropdown-menu.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-item/paper-item.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-menu/paper-menu.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-listbox/paper-listbox.html">
 <link rel="import" href="chrome://md-settings/controls/pref_control_behavior.html">
 <link rel="import" href="chrome://md-settings/prefs/pref_util.html">
 <link rel="import" href="chrome://md-settings/settings_shared_css.html">
@@ -29,7 +29,7 @@
     <paper-dropdown-menu id="dropdownMenu" label="[[menuLabel_]]"
         on-iron-select="onSelect_" no-label-float$="[[noLabelFloat]]"
         disabled="[[shouldDisableMenu_(disabled, menuOptions.*)]]">
-      <paper-menu class="dropdown-content" selected="{{selected_}}"
+      <paper-listbox class="dropdown-content" selected="{{selected_}}"
           attr-for-selected="data-value">
         <template is="dom-repeat" items="[[menuOptions]]">
           <paper-item data-value$="[[item.value]]">[[item.name]]</paper-item>
@@ -38,7 +38,7 @@
             hidden$="[[!isSelectedNotFound_(selected_)]]">
           [[i18n('custom')]]
         </paper-item>
-      </paper-menu>
+      </paper-listbox>
     </paper-dropdown-menu>
   </template>
   <script src="settings_dropdown_menu.js"></script>
