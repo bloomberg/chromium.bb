@@ -31,14 +31,11 @@
 #import "ios/web/public/web_state/ui/crw_web_view_content_view.h"
 #import "ios/web/web_state/error_translation_util.h"
 #include "ios/web/web_state/frame_info.h"
-#import "ios/web/web_state/js/crw_js_post_request_loader.h"
 #import "ios/web/web_state/js/crw_js_window_id_manager.h"
 #import "ios/web/web_state/ui/crw_web_controller+protected.h"
 #import "ios/web/web_state/ui/crw_wk_script_message_router.h"
 #import "ios/web/web_state/ui/web_view_js_utils.h"
-#import "ios/web/web_state/ui/wk_web_view_configuration_provider.h"
 #import "ios/web/web_state/web_state_impl.h"
-#import "ios/web/web_state/web_view_internal_creation_util.h"
 #import "ios/web/web_state/wk_web_view_security_util.h"
 #import "net/base/mac/url_conversions.h"
 #include "net/cert/x509_certificate.h"
@@ -64,41 +61,16 @@
 #pragma mark -
 
 @interface CRWWKWebViewWebController () {
-  // The WKWebView managed by this instance.
-  base::scoped_nsobject<WKWebView> _wkWebView;
-
   // The actual URL of the document object (i.e., the last committed URL).
   // TODO(crbug.com/549616): Remove this in favor of just updating the
   // navigation manager and treating that as authoritative. For now, this allows
   // sharing the flow that's currently in the superclass.
   GURL _documentURL;
 
-  // Object for loading POST requests with body.
-  base::scoped_nsobject<CRWJSPOSTRequestLoader> _POSTRequestLoader;
-
   // YES if the user has interacted with the content area since the last URL
   // change.
   BOOL _interactionRegisteredSinceLastURLChange;
 }
-
-// Loads POST request with body in |_wkWebView| by constructing an HTML page
-// that executes the request through JavaScript and replaces document with the
-// result.
-// Note that this approach includes multiple body encodings and decodings, plus
-// the data is passed to |_wkWebView| on main thread.
-// This is necessary because WKWebView ignores POST request body.
-// Workaround for https://bugs.webkit.org/show_bug.cgi?id=145410
-- (void)loadPOSTRequest:(NSMutableURLRequest*)request;
-
-// Returns the WKWebViewConfigurationProvider associated with the web
-// controller's BrowserState.
-- (web::WKWebViewConfigurationProvider&)webViewConfigurationProvider;
-
-// Returns a new autoreleased web view created with given configuration.
-- (WKWebView*)createWebViewWithConfiguration:(WKWebViewConfiguration*)config;
-
-// Sets the value of the webView property, and performs its basic setup.
-- (void)setWebView:(WKWebView*)webView;
 
 // Returns YES if the given WKBackForwardListItem is valid to use for
 // navigation.
@@ -108,27 +80,7 @@
 
 @implementation CRWWKWebViewWebController
 
-#pragma mark -
-#pragma mark Testing-Only Methods
-
-- (void)injectWebViewContentView:(CRWWebViewContentView*)webViewContentView {
-  [super injectWebViewContentView:webViewContentView];
-  [self setWebView:static_cast<WKWebView*>(webViewContentView.webView)];
-}
-
 #pragma mark - Protected property implementations
-
-- (WKWebView*)webView {
-  return _wkWebView.get();
-}
-
-- (UIScrollView*)webScrollView {
-  return [_wkWebView scrollView];
-}
-
-- (NSString*)title {
-  return [_wkWebView title];
-}
 
 - (GURL)documentURL {
   return _documentURL;
@@ -147,16 +99,6 @@
 
 #pragma mark Protected method implementations
 
-- (void)ensureWebViewCreated {
-  WKWebViewConfiguration* config =
-      [self webViewConfigurationProvider].GetWebViewConfiguration();
-  [self ensureWebViewCreatedWithConfiguration:config];
-}
-
-- (void)resetWebView {
-  [self setWebView:nil];
-}
-
 - (GURL)webURLWithTrustLevel:(web::URLVerificationTrustLevel*)trustLevel {
   DCHECK(trustLevel);
   *trustLevel = web::URLVerificationTrustLevel::kAbsolute;
@@ -170,7 +112,7 @@
 // non-HTML contents (e.g. PDF documents).
 - (web::WebViewDocumentType)webViewDocumentType {
   // This happens during tests.
-  if (!_wkWebView) {
+  if (!self.webView) {
     return web::WEB_VIEW_DOCUMENT_TYPE_GENERIC;
   }
 
@@ -241,10 +183,10 @@
     [self registerLoadRequest:[self currentNavigationURL]
                      referrer:[self currentSessionEntryReferrer]
                    transition:[self currentTransition]];
-    if ([self currentNavigationURL] == net::GURLWithNSURL([_wkWebView URL])) {
-      [_wkWebView reload];
+    if ([self currentNavigationURL] == net::GURLWithNSURL([self.webView URL])) {
+      [self.webView reload];
     } else {
-      [_wkWebView goToBackForwardListItem:holder->back_forward_list_item()];
+      [self.webView goToBackForwardListItem:holder->back_forward_list_item()];
     }
   };
 
@@ -282,7 +224,7 @@
 }
 
 - (void)abortWebLoad {
-  [_wkWebView stopLoading];
+  [self.webView stopLoading];
   [self.pendingNavigationInfo setCancelled:YES];
 }
 
@@ -312,89 +254,6 @@
 
 #pragma mark Private methods
 
-- (void)loadPOSTRequest:(NSMutableURLRequest*)request {
-  if (!_POSTRequestLoader) {
-    _POSTRequestLoader.reset([[CRWJSPOSTRequestLoader alloc] init]);
-  }
-
-  CRWWKScriptMessageRouter* messageRouter =
-      [self webViewConfigurationProvider].GetScriptMessageRouter();
-
-  [_POSTRequestLoader loadPOSTRequest:request
-                            inWebView:_wkWebView
-                        messageRouter:messageRouter
-                    completionHandler:^(NSError* loadError) {
-                      if (loadError)
-                        [self handleLoadError:loadError inMainFrame:YES];
-                      else
-                        self.webStateImpl->SetContentsMimeType("text/html");
-                    }];
-}
-
-- (web::WKWebViewConfigurationProvider&)webViewConfigurationProvider {
-  DCHECK(self.webStateImpl);
-  web::BrowserState* browserState = self.webStateImpl->GetBrowserState();
-  return web::WKWebViewConfigurationProvider::FromBrowserState(browserState);
-}
-
-- (void)ensureWebViewCreatedWithConfiguration:(WKWebViewConfiguration*)config {
-  if (!_wkWebView) {
-    [self setWebView:[self createWebViewWithConfiguration:config]];
-    // Notify super class about created web view. -webViewDidChange is not
-    // called from -setWebView:scriptMessageRouter: as the latter used in unit
-    // tests with fake web view, which cannot be added to view hierarchy.
-    [self webViewDidChange];
-  }
-}
-
-- (WKWebView*)createWebViewWithConfiguration:(WKWebViewConfiguration*)config {
-  return [web::CreateWKWebView(CGRectZero, config,
-                               self.webStateImpl->GetBrowserState(),
-                               [self useDesktopUserAgent]) autorelease];
-}
-
-- (void)setWebView:(WKWebView*)webView {
-  DCHECK_NE(_wkWebView.get(), webView);
-
-  // Unwind the old web view.
-  // TODO(eugenebut): Remove CRWWKScriptMessageRouter once crbug.com/543374 is
-  // fixed.
-  CRWWKScriptMessageRouter* messageRouter =
-      [self webViewConfigurationProvider].GetScriptMessageRouter();
-  if (_wkWebView) {
-    [messageRouter removeAllScriptMessageHandlersForWebView:_wkWebView];
-  }
-  [_wkWebView setNavigationDelegate:nil];
-  [_wkWebView setUIDelegate:nil];
-  for (NSString* keyPath in self.wkWebViewObservers) {
-    [_wkWebView removeObserver:self forKeyPath:keyPath];
-  }
-  [self clearActivityIndicatorTasks];
-
-  _wkWebView.reset([webView retain]);
-
-  // Set up the new web view.
-  if (webView) {
-    base::WeakNSObject<CRWWKWebViewWebController> weakSelf(self);
-    void (^messageHandler)(WKScriptMessage*) = ^(WKScriptMessage* message) {
-      [weakSelf didReceiveScriptMessage:message];
-    };
-    [messageRouter setScriptMessageHandler:messageHandler
-                                      name:kScriptMessageName
-                                   webView:webView];
-    [messageRouter setScriptMessageHandler:messageHandler
-                                      name:kScriptImmediateName
-                                   webView:webView];
-  }
-  [_wkWebView setNavigationDelegate:self];
-  [_wkWebView setUIDelegate:self];
-  for (NSString* keyPath in self.wkWebViewObservers) {
-    [_wkWebView addObserver:self forKeyPath:keyPath options:0 context:nullptr];
-  }
-  [self clearInjectedScriptManagers];
-  [self setDocumentURL:[self defaultURL]];
-}
-
 - (void)setDocumentURL:(const GURL&)newURL {
   if (newURL != _documentURL) {
     _documentURL = newURL;
@@ -405,7 +264,7 @@
 - (BOOL)isBackForwardListItemValid:(WKBackForwardListItem*)item {
   // The current back-forward list item MUST be in the WKWebView's back-forward
   // list to be valid.
-  WKBackForwardList* list = [_wkWebView backForwardList];
+  WKBackForwardList* list = [self.webView backForwardList];
   return list.currentItem == item ||
          [list.forwardList indexOfObject:item] != NSNotFound ||
          [list.backList indexOfObject:item] != NSNotFound;

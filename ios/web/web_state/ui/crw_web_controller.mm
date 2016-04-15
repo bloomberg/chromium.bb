@@ -78,16 +78,20 @@
 #include "ios/web/web_state/frame_info.h"
 #import "ios/web/web_state/js/crw_js_early_script_manager.h"
 #import "ios/web/web_state/js/crw_js_plugin_placeholder_manager.h"
+#import "ios/web/web_state/js/crw_js_post_request_loader.h"
 #import "ios/web/web_state/js/crw_js_window_id_manager.h"
 #import "ios/web/web_state/page_viewport_state.h"
 #import "ios/web/web_state/ui/crw_context_menu_provider.h"
 #import "ios/web/web_state/ui/crw_swipe_recognizer_provider.h"
 #import "ios/web/web_state/ui/crw_web_controller+protected.h"
 #import "ios/web/web_state/ui/crw_web_controller_container_view.h"
+#import "ios/web/web_state/ui/crw_wk_script_message_router.h"
 #import "ios/web/web_state/ui/crw_wk_web_view_web_controller.h"
+#import "ios/web/web_state/ui/wk_web_view_configuration_provider.h"
 #import "ios/web/web_state/web_controller_observer_bridge.h"
 #include "ios/web/web_state/web_state_facade_delegate.h"
 #import "ios/web/web_state/web_state_impl.h"
+#import "ios/web/web_state/web_view_internal_creation_util.h"
 #import "ios/web/web_state/wk_web_view_security_util.h"
 #import "ios/web/webui/crw_web_ui_manager.h"
 #import "net/base/mac/url_conversions.h"
@@ -202,6 +206,8 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
   base::WeakNSProtocol<id<CRWWebUserInterfaceDelegate>> _UIDelegate;
   base::WeakNSProtocol<id<CRWNativeContentProvider>> _nativeProvider;
   base::WeakNSProtocol<id<CRWSwipeRecognizerProvider>> _swipeRecognizerProvider;
+  // The WKWebView managed by this instance.
+  base::scoped_nsobject<WKWebView> _webView;
   // The CRWWebViewProxy is the wrapper to give components access to the
   // web view in a controlled and limited way.
   base::scoped_nsobject<CRWWebViewProxyImpl> _webViewProxy;
@@ -297,6 +303,8 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
   BOOL _webProcessIsDead;
 
   std::unique_ptr<web::NewWindowInfo> _externalRequest;
+  // Object for loading POST requests with body.
+  base::scoped_nsobject<CRWJSPOSTRequestLoader> _POSTRequestLoader;
 
   // WebStateImpl instance associated with this CRWWebController, web controller
   // does not own this pointer.
@@ -377,6 +385,8 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 @property(nonatomic, readwrite) web::PageDisplayState pageDisplayState;
 // The currently displayed native controller, if any.
 @property(nonatomic, readwrite) id<CRWNativeContent> nativeController;
+// The title of the page.
+@property(nonatomic, readonly) NSString* title;
 // Activity indicator group ID for this web controller.
 @property(nonatomic, readonly) NSString* activityIndicatorGroupID;
 // Referrer for the current page; does not include the fragment.
@@ -398,6 +408,21 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 - (void)addPlaceholderOverlay;
 // Removes placeholder overlay.
 - (void)removePlaceholderOverlay;
+
+// Creates a web view if it's not yet created.
+- (void)ensureWebViewCreated;
+// Creates a web view with given |config|. No-op if web view is already created.
+- (void)ensureWebViewCreatedWithConfiguration:(WKWebViewConfiguration*)config;
+// Returns a new autoreleased web view created with given configuration.
+- (WKWebView*)createWebViewWithConfiguration:(WKWebViewConfiguration*)config;
+// Sets the value of the webView property, and performs its basic setup.
+- (void)setWebView:(WKWebView*)webView;
+// Destroys the web view by setting webView property to nil.
+- (void)resetWebView;
+// Returns the WKWebViewConfigurationProvider associated with the web
+// controller's BrowserState.
+- (web::WKWebViewConfigurationProvider&)webViewConfigurationProvider;
+
 // Returns |YES| if |url| should be loaded in a native view.
 - (BOOL)shouldLoadURLInNativeView:(const GURL&)url;
 // Loads the HTML into the page at the given URL.
@@ -893,6 +918,10 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   [self setNativeControllerWebUsageEnabled:_webUsageEnabled];
 }
 
+- (NSString*)title {
+  return [_webView title];
+}
+
 - (NSString*)activityIndicatorGroupID {
   return [NSString
       stringWithFormat:@"WKWebViewWebController.NetworkActivityIndicatorKey.%@",
@@ -1187,6 +1216,14 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   if (self.nativeController)
     return [self.nativeController url];
   return [self currentNavigationURL];
+}
+
+- (WKWebView*)webView {
+  return _webView.get();
+}
+
+- (UIScrollView*)webScrollView {
+  return [_webView scrollView];
 }
 
 - (GURL)currentURL {
@@ -4346,6 +4383,98 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   [self loadCancelled];
 }
 
+- (void)ensureWebViewCreated {
+  WKWebViewConfiguration* config =
+      [self webViewConfigurationProvider].GetWebViewConfiguration();
+  [self ensureWebViewCreatedWithConfiguration:config];
+}
+
+- (void)ensureWebViewCreatedWithConfiguration:(WKWebViewConfiguration*)config {
+  if (!_webView) {
+    [self setWebView:[self createWebViewWithConfiguration:config]];
+    // Notify super class about created web view. -webViewDidChange is not
+    // called from -setWebView:scriptMessageRouter: as the latter used in unit
+    // tests with fake web view, which cannot be added to view hierarchy.
+    [self webViewDidChange];
+  }
+}
+
+- (WKWebView*)createWebViewWithConfiguration:(WKWebViewConfiguration*)config {
+  return [web::CreateWKWebView(CGRectZero, config,
+                               self.webStateImpl->GetBrowserState(),
+                               [self useDesktopUserAgent]) autorelease];
+}
+
+- (void)setWebView:(WKWebView*)webView {
+  DCHECK_NE(_webView.get(), webView);
+
+  // Unwind the old web view.
+  // TODO(eugenebut): Remove CRWWKScriptMessageRouter once crbug.com/543374 is
+  // fixed.
+  CRWWKScriptMessageRouter* messageRouter =
+      [self webViewConfigurationProvider].GetScriptMessageRouter();
+  if (_webView) {
+    [messageRouter removeAllScriptMessageHandlersForWebView:_webView];
+  }
+  [_webView setNavigationDelegate:nil];
+  [_webView setUIDelegate:nil];
+  for (NSString* keyPath in self.wkWebViewObservers) {
+    [_webView removeObserver:self forKeyPath:keyPath];
+  }
+  [self clearActivityIndicatorTasks];
+
+  _webView.reset([webView retain]);
+
+  // Set up the new web view.
+  if (webView) {
+    base::WeakNSObject<CRWWebController> weakSelf(self);
+    void (^messageHandler)(WKScriptMessage*) = ^(WKScriptMessage* message) {
+      [weakSelf didReceiveScriptMessage:message];
+    };
+    [messageRouter setScriptMessageHandler:messageHandler
+                                      name:kScriptMessageName
+                                   webView:webView];
+    [messageRouter setScriptMessageHandler:messageHandler
+                                      name:kScriptImmediateName
+                                   webView:webView];
+  }
+  [_webView setNavigationDelegate:self];
+  [_webView setUIDelegate:self];
+  for (NSString* keyPath in self.wkWebViewObservers) {
+    [_webView addObserver:self forKeyPath:keyPath options:0 context:nullptr];
+  }
+  [self clearInjectedScriptManagers];
+  [self setDocumentURL:[self defaultURL]];
+}
+
+- (void)resetWebView {
+  [self setWebView:nil];
+}
+
+- (void)loadPOSTRequest:(NSMutableURLRequest*)request {
+  if (!_POSTRequestLoader) {
+    _POSTRequestLoader.reset([[CRWJSPOSTRequestLoader alloc] init]);
+  }
+
+  CRWWKScriptMessageRouter* messageRouter =
+      [self webViewConfigurationProvider].GetScriptMessageRouter();
+
+  [_POSTRequestLoader loadPOSTRequest:request
+                            inWebView:_webView
+                        messageRouter:messageRouter
+                    completionHandler:^(NSError* loadError) {
+                      if (loadError)
+                        [self handleLoadError:loadError inMainFrame:YES];
+                      else
+                        self.webStateImpl->SetContentsMimeType("text/html");
+                    }];
+}
+
+- (web::WKWebViewConfigurationProvider&)webViewConfigurationProvider {
+  web::BrowserState* browserState = self.webStateImpl->GetBrowserState();
+  return web::WKWebViewConfigurationProvider::FromBrowserState(browserState);
+}
+
 - (void)loadHTML:(NSString*)HTML forURL:(const GURL&)URL {
   // Remove the transient content view.
   [self clearTransientContentView];
@@ -5012,11 +5141,12 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 #pragma mark -
 #pragma mark Testing-Only Methods
 
-- (void)injectWebViewContentView:(id)webViewContentView {
+- (void)injectWebViewContentView:(CRWWebViewContentView*)webViewContentView {
   [self removeWebViewAllowingCachedReconstruction:NO];
 
   _lastRegisteredRequestURL = _defaultURL;
   [self.containerView displayWebViewContentView:webViewContentView];
+  [self setWebView:static_cast<WKWebView*>(webViewContentView.webView)];
 }
 
 - (void)resetInjectedWebViewContentView {

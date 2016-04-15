@@ -112,16 +112,6 @@ static NSString* const kScriptImmediateName = @"crwebinvokeimmediate";
 #pragma mark Methods implemented by subclasses
 // Everything in this section must be implemented by subclasses.
 
-// If |contentView_| contains a web view, this is the web view it contains.
-// If not, it's nil.
-@property(nonatomic, readonly) WKWebView* webView;
-
-// The scroll view of |webView|.
-@property(nonatomic, readonly) UIScrollView* webScrollView;
-
-// The title of the page.
-@property(nonatomic, readonly) NSString* title;
-
 // Downloader for PassKit files. Lazy initialized.
 @property(nonatomic, readonly) CRWPassKitDownloader* passKitDownloader;
 
@@ -136,12 +126,6 @@ static NSString* const kScriptImmediateName = @"crwebinvokeimmediate";
 @property(nonatomic, readonly) BOOL interactionRegisteredSinceLastURLChange;
 
 - (CRWWebControllerPendingNavigationInfo*)pendingNavigationInfo;
-
-// Creates a web view if it's not yet created.
-- (void)ensureWebViewCreated;
-
-// Destroys the web view by setting webView property to nil.
-- (void)resetWebView;
 
 // Sets _documentURL to newURL, and updates any relevant state information.
 - (void)setDocumentURL:(const GURL&)newURL;
@@ -173,9 +157,6 @@ static NSString* const kScriptImmediateName = @"crwebinvokeimmediate";
 // Sets zoom scale value for webview scroll view from |zoomState|.
 - (void)applyWebViewScrollZoomScaleFromZoomState:
     (const web::PageZoomState&)zoomState;
-
-// Creates a web view with given |config|. No-op if web view is already created.
-- (void)ensureWebViewCreatedWithConfiguration:(WKWebViewConfiguration*)config;
 
 // Called when web controller receives a new message from the web page.
 - (void)didReceiveScriptMessage:(WKScriptMessage*)message;
@@ -230,6 +211,13 @@ static NSString* const kScriptImmediateName = @"crwebinvokeimmediate";
 - (void)handleLoadError:(NSError*)error inMainFrame:(BOOL)inMainFrame;
 
 #pragma mark - Internal methods for use by subclasses
+
+// If |contentView_| contains a web view, this is the web view it contains.
+// If not, it's nil.
+@property(nonatomic, readonly) WKWebView* webView;
+
+// The scroll view of |webView|.
+@property(nonatomic, readonly) UIScrollView* webScrollView;
 
 // The web view's view of the current URL. During page transitions
 // this may not be the same as the session history's view of the current URL.
@@ -467,6 +455,15 @@ static NSString* const kScriptImmediateName = @"crwebinvokeimmediate";
 
 // Extracts Referer value from WKNavigationAction request header.
 - (NSString*)refererFromNavigationAction:(WKNavigationAction*)action;
+
+// Loads POST request with body in |_wkWebView| by constructing an HTML page
+// that executes the request through JavaScript and replaces document with the
+// result.
+// Note that this approach includes multiple body encodings and decodings, plus
+// the data is passed to |_wkWebView| on main thread.
+// This is necessary because WKWebView ignores POST request body.
+// Workaround for https://bugs.webkit.org/show_bug.cgi?id=145410
+- (void)loadPOSTRequest:(NSMutableURLRequest*)request;
 
 @end
 
