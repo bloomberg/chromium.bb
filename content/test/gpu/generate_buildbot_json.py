@@ -144,6 +144,7 @@ FYI_WATERFALL = {
     'GPU Mac Builder (dbg)',
     'GPU Linux Builder',
     'GPU Linux Builder (dbg)',
+    'Linux ChromiumOS Builder',
    ],
 
   'testers': {

@@ -263,6 +263,8 @@
         'swarming_gpu_tests_deqp_gles_gyp_release_bot_minimal_symbols_x64',
       'GPU Win x64 Builder (dbg)':
         'swarming_gpu_tests_deqp_gles_gyp_debug_bot_minimal_symbols_x64',
+      'Linux ChromiumOS Builder':
+        'swarming_gpu_fyi_tests_chromeos_gyp_release_bot',
       'Linux Debug (NVIDIA)': 'none',
       'Linux Debug (New Intel)': 'none',
       'Linux Release (ATI)': 'none',
@@ -1280,6 +1282,11 @@
 
     'swarming_gn_msan_release_bot_x64': [
       'swarming', 'gn', 'msan', 'release_bot', 'x64',
+    ],
+
+    'swarming_gpu_fyi_tests_chromeos_gyp_release_bot': [
+      'swarming', 'gpu_tests', 'internal_gles2_conform_tests', 'gyp',
+      'release_bot', 'angle_deqp_tests', 'chromeos',
     ],
 
     'swarming_gpu_fyi_tests_gn_debug_bot': [

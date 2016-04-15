@@ -9,6 +9,7 @@
   "GPU Win Builder (dbg)": {},
   "GPU Win x64 Builder": {},
   "GPU Win x64 Builder (dbg)": {},
+  "Linux ChromiumOS Builder": {},
   "Linux Debug (NVIDIA)": {
     "gtest_tests": [
       {
