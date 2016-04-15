@@ -494,7 +494,14 @@ TEST_F(RecentTabsSubMenuModelTest, OtherDevices) {
   EXPECT_TRUE(model.GetURLAndTitleForItemAtIndex(12, &url, &title));
 }
 
-TEST_F(RecentTabsSubMenuModelTest, MaxSessionsAndRecency) {
+// Per http://crbug.com/603744, MaxSessionsAndRecenty fails intermittently on
+// windows and linux.
+#if defined(WIN) || defined(LINUX)
+#define MAYBE_MaxSessionsAndRecency DISABLED_MaxSessionsAndRecency
+#else
+#define MAYBE_MaxSessionsAndRecency MaxSessionsAndRecency
+#endif
+TEST_F(RecentTabsSubMenuModelTest, MAYBE_MaxSessionsAndRecency) {
   // Create 4 sessions : each session has 1 window with 1 tab each.
   RecentTabsBuilderTestHelper recent_tabs_builder;
   for (int s = 0; s < 4; ++s) {
