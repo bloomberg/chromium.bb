@@ -63,12 +63,16 @@ ProcessorEntityTracker::ProcessorEntityTracker(
 ProcessorEntityTracker::~ProcessorEntityTracker() {}
 
 void ProcessorEntityTracker::CacheCommitData(EntityData* data) {
-  DCHECK(RequiresCommitRequest());
   DCHECK(data);
   if (data->client_tag_hash.empty()) {
     data->client_tag_hash = metadata_.client_tag_hash();
   }
-  commit_data_ = data->PassToPtr();
+  CacheCommitData(data->PassToPtr());
+}
+
+void ProcessorEntityTracker::CacheCommitData(const EntityDataPtr& data_ptr) {
+  DCHECK(RequiresCommitData());
+  commit_data_ = data_ptr;
   DCHECK(HasCommitData());
 }
 
@@ -78,7 +82,7 @@ bool ProcessorEntityTracker::HasCommitData() const {
 
 bool ProcessorEntityTracker::MatchesSpecificsHash(
     const sync_pb::EntitySpecifics& specifics) const {
-  DCHECK(specifics.ByteSize() > 0);
+  DCHECK_GT(specifics.ByteSize(), 0);
   std::string hash;
   HashSpecifics(specifics, &hash);
   return hash == metadata_.specifics_hash();
@@ -112,8 +116,6 @@ bool ProcessorEntityTracker::UpdateIsReflection(int64_t update_version) const {
 void ProcessorEntityTracker::RecordIgnoredUpdate(
     const UpdateResponseData& update) {
   metadata_.set_server_version(update.response_version);
-  // TODO(maxbogue): Understand and fix encryption (crbug.com/561814).
-  encryption_key_name_ = update.encryption_key_name;
   // Either these already matched, acked was just bumped to squash a pending
   // commit and this should follow, or the pending commit needs to be requeued.
   commit_requested_sequence_number_ = metadata_.acked_sequence_number();
@@ -155,21 +157,8 @@ void ProcessorEntityTracker::MakeLocalChange(std::unique_ptr<EntityData> data) {
 
   data->id = metadata_.server_id();
   data->creation_time = syncer::ProtoTimeToTime(metadata_.creation_time());
+  commit_data_.reset();
   CacheCommitData(data.get());
-}
-
-void ProcessorEntityTracker::UpdateDesiredEncryptionKey(
-    const std::string& name) {
-  if (encryption_key_name_ == name)
-    return;
-
-  DVLOG(2) << metadata_.server_id()
-           << ": Encryption triggered commit: " << encryption_key_name_
-           << " -> " << name;
-
-  // Schedule commit with the expectation that the worker will re-encrypt with
-  // the latest encryption key as it does.
-  IncrementSequenceNumber();
 }
 
 void ProcessorEntityTracker::Delete() {
@@ -177,8 +166,7 @@ void ProcessorEntityTracker::Delete() {
   metadata_.set_is_deleted(true);
   metadata_.clear_specifics_hash();
   // Clear any cached pending commit data.
-  if (HasCommitData())
-    commit_data_.reset();
+  commit_data_.reset();
 }
 
 void ProcessorEntityTracker::InitializeCommitRequestData(
@@ -211,7 +199,6 @@ void ProcessorEntityTracker::ReceiveCommitResponse(
   metadata_.set_server_id(id);
   metadata_.set_acked_sequence_number(sequence_number);
   metadata_.set_server_version(response_version);
-  encryption_key_name_ = encryption_key_name;
   if (!IsUnsynced()) {
     // Clear pending commit data if there hasn't been another commit request
     // since the one that is currently getting acked.

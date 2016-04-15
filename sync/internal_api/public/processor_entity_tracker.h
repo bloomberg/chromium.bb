@@ -80,11 +80,6 @@ class SYNC_EXPORT ProcessorEntityTracker {
   // Applies a local change to this item.
   void MakeLocalChange(std::unique_ptr<EntityData> data);
 
-  // Schedule a commit if the |name| does not match this item's last known
-  // encryption key.  The worker that performs the commit is expected to
-  // encrypt the item using the latest available key.
-  void UpdateDesiredEncryptionKey(const std::string& name);
-
   // Applies a local deletion to this item.
   void Delete();
 
@@ -112,6 +107,9 @@ class SYNC_EXPORT ProcessorEntityTracker {
   // The data is swapped from the input struct without copying.
   void CacheCommitData(EntityData* data);
 
+  // Caches the a copy of |data_ptr|, which doesn't copy the data itself.
+  void CacheCommitData(const EntityDataPtr& data_ptr);
+
   // Check if the instance has cached commit data.
   bool HasCommitData() const;
 
@@ -120,6 +118,9 @@ class SYNC_EXPORT ProcessorEntityTracker {
 
   // Check whether |data| matches the stored metadata.
   bool MatchesData(const EntityData& data) const;
+
+  // Increment sequence number in the metadata.
+  void IncrementSequenceNumber();
 
  private:
   friend class ProcessorEntityTrackerTest;
@@ -133,9 +134,6 @@ class SYNC_EXPORT ProcessorEntityTracker {
   // server. This is used to determine whether it is safe to delete the tracker
   // and metadata for this entity.
   bool IsLocalOnly() const;
-
-  // Increment sequence number in the metadata.
-  void IncrementSequenceNumber();
 
   // Update hash string for EntitySpecifics in the metadata.
   void UpdateSpecificsHash(const sync_pb::EntitySpecifics& specifics);
@@ -152,11 +150,6 @@ class SYNC_EXPORT ProcessorEntityTracker {
 
   // The sequence number of the last item sent to the sync thread.
   int64_t commit_requested_sequence_number_;
-
-  // TODO(stanisc): this should be removed.
-  // The name of the encryption key used to encrypt this item on the server.
-  // Empty when no encryption is in use.
-  std::string encryption_key_name_;
 };
 
 }  // namespace syncer_v2

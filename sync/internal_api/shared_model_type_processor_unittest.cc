@@ -203,7 +203,9 @@ class SharedModelTypeProcessorTest : public ::testing::Test,
   // Initialize to a "ready-to-commit" state.
   void InitializeToReadyState() {
     InitializeToMetadataLoaded();
-    OnDataLoaded();
+    if (!data_callback_.is_null()) {
+      OnPendingCommitDataLoaded();
+    }
     OnSyncStarting();
   }
 
@@ -211,11 +213,10 @@ class SharedModelTypeProcessorTest : public ::testing::Test,
     type_processor()->OnMetadataLoaded(db_.CreateMetadataBatch());
   }
 
-  void OnDataLoaded() {
-    if (!data_callback_.is_null()) {
-      data_callback_.Run();
-      data_callback_.Reset();
-    }
+  void OnPendingCommitDataLoaded() {
+    DCHECK(!data_callback_.is_null());
+    data_callback_.Run();
+    data_callback_.Reset();
   }
 
   void OnSyncStarting() {
@@ -263,7 +264,7 @@ class SharedModelTypeProcessorTest : public ::testing::Test,
     }
   }
 
-  // Wipes existing DB and simulates one commited item.
+  // Wipes existing DB and simulates one uncommited, server-known item.
   void ResetStateWriteAckedItem(const std::string& tag,
                                 const std::string& value) {
     clear_change_processor();
@@ -317,6 +318,16 @@ class SharedModelTypeProcessorTest : public ::testing::Test,
     update.entity = GenerateEntityData(tag, value)->PassToPtr();
     updates.push_back(update);
     OnInitialSyncDone(updates);
+  }
+
+  // Generate update data for the given parameters.
+  UpdateResponseData GenerateUpdateData(const std::string& tag,
+                                        const std::string& value,
+                                        const std::string& ekn) {
+    UpdateResponseData data = mock_queue_->UpdateFromServer(
+        1, GenerateTagHash(tag), GenerateSpecifics(tag, value));
+    data.encryption_key_name = ekn;
+    return data;
   }
 
   // Emulate updates from the server.
@@ -529,6 +540,7 @@ class SharedModelTypeProcessorTest : public ::testing::Test,
   void GetData(ClientTagList tags, DataCallback callback) override {
     std::unique_ptr<DataBatchImpl> batch(new DataBatchImpl());
     for (const std::string& tag : tags) {
+      DCHECK(db_.HasData(tag)) << "No data for " << tag;
       batch->Put(tag, CopyEntityData(db_.GetData(tag)));
     }
     data_callback_ =
@@ -551,7 +563,7 @@ class SharedModelTypeProcessorTest : public ::testing::Test,
   // The current mock queue, which is owned by |type_processor()|.
   MockCommitQueue* mock_queue_;
 
-  // Stores the data callback between GetData() and OnDataLoaded().
+  // Stores the data callback between GetData() and OnPendingCommitDataLoaded().
   base::Closure data_callback_;
 
   // Contains all of the data and metadata state for these tests.
@@ -600,7 +612,7 @@ TEST_F(SharedModelTypeProcessorTest, LoadPendingCommit) {
   // Data, connect.
   ResetStateWriteAckedItem(kTag1, kValue1);
   InitializeToMetadataLoaded();
-  OnDataLoaded();
+  OnPendingCommitDataLoaded();
   OnSyncStarting();
   EXPECT_EQ(1U, GetNumCommitRequestLists());
   ExpectNthCommitRequestList(0, kTag1, kValue1);
@@ -610,14 +622,14 @@ TEST_F(SharedModelTypeProcessorTest, LoadPendingCommit) {
   InitializeToMetadataLoaded();
   OnSyncStarting();
   EXPECT_EQ(0U, GetNumCommitRequestLists());
-  OnDataLoaded();
+  OnPendingCommitDataLoaded();
   EXPECT_EQ(1U, GetNumCommitRequestLists());
   ExpectNthCommitRequestList(0, kTag1, kValue1);
 
   // Data, connect, put.
   ResetStateWriteAckedItem(kTag1, kValue1);
   InitializeToMetadataLoaded();
-  OnDataLoaded();
+  OnPendingCommitDataLoaded();
   OnSyncStarting();
   WriteItem(kTag1, kValue2);
   EXPECT_EQ(2U, GetNumCommitRequestLists());
@@ -627,7 +639,7 @@ TEST_F(SharedModelTypeProcessorTest, LoadPendingCommit) {
   // Data, put, connect.
   ResetStateWriteAckedItem(kTag1, kValue1);
   InitializeToMetadataLoaded();
-  OnDataLoaded();
+  OnPendingCommitDataLoaded();
   WriteItem(kTag1, kValue2);
   OnSyncStarting();
   EXPECT_EQ(1U, GetNumCommitRequestLists());
@@ -637,7 +649,7 @@ TEST_F(SharedModelTypeProcessorTest, LoadPendingCommit) {
   ResetStateWriteAckedItem(kTag1, kValue1);
   InitializeToMetadataLoaded();
   OnSyncStarting();
-  OnDataLoaded();
+  OnPendingCommitDataLoaded();
   WriteItem(kTag1, kValue2);
   EXPECT_EQ(2U, GetNumCommitRequestLists());
   ExpectNthCommitRequestList(0, kTag1, kValue1);
@@ -648,16 +660,16 @@ TEST_F(SharedModelTypeProcessorTest, LoadPendingCommit) {
   InitializeToMetadataLoaded();
   OnSyncStarting();
   WriteItem(kTag1, kValue2);
-  EXPECT_EQ(0U, GetNumCommitRequestLists());
-  OnDataLoaded();
   EXPECT_EQ(1U, GetNumCommitRequestLists());
   ExpectNthCommitRequestList(0, kTag1, kValue2);
+  OnPendingCommitDataLoaded();
+  EXPECT_EQ(1U, GetNumCommitRequestLists());
 
   // Put, data, connect.
   ResetStateWriteAckedItem(kTag1, kValue1);
   InitializeToMetadataLoaded();
   WriteItem(kTag1, kValue2);
-  OnDataLoaded();
+  OnPendingCommitDataLoaded();
   OnSyncStarting();
   EXPECT_EQ(1U, GetNumCommitRequestLists());
   ExpectNthCommitRequestList(0, kTag1, kValue2);
@@ -667,15 +679,15 @@ TEST_F(SharedModelTypeProcessorTest, LoadPendingCommit) {
   InitializeToMetadataLoaded();
   WriteItem(kTag1, kValue2);
   OnSyncStarting();
-  EXPECT_EQ(0U, GetNumCommitRequestLists());
-  OnDataLoaded();
   EXPECT_EQ(1U, GetNumCommitRequestLists());
   ExpectNthCommitRequestList(0, kTag1, kValue2);
+  OnPendingCommitDataLoaded();
+  EXPECT_EQ(1U, GetNumCommitRequestLists());
 
   // Data, connect, delete.
   ResetStateWriteAckedItem(kTag1, kValue1);
   InitializeToMetadataLoaded();
-  OnDataLoaded();
+  OnPendingCommitDataLoaded();
   OnSyncStarting();
   DeleteItem(kTag1);
   EXPECT_EQ(2U, GetNumCommitRequestLists());
@@ -685,7 +697,7 @@ TEST_F(SharedModelTypeProcessorTest, LoadPendingCommit) {
   // Data, delete, connect.
   ResetStateWriteAckedItem(kTag1, kValue1);
   InitializeToMetadataLoaded();
-  OnDataLoaded();
+  OnPendingCommitDataLoaded();
   DeleteItem(kTag1);
   OnSyncStarting();
   EXPECT_EQ(1U, GetNumCommitRequestLists());
@@ -695,7 +707,7 @@ TEST_F(SharedModelTypeProcessorTest, LoadPendingCommit) {
   ResetStateWriteAckedItem(kTag1, kValue1);
   InitializeToMetadataLoaded();
   OnSyncStarting();
-  OnDataLoaded();
+  OnPendingCommitDataLoaded();
   DeleteItem(kTag1);
   EXPECT_EQ(2U, GetNumCommitRequestLists());
   ExpectNthCommitRequestList(0, kTag1, kValue1);
@@ -706,16 +718,16 @@ TEST_F(SharedModelTypeProcessorTest, LoadPendingCommit) {
   InitializeToMetadataLoaded();
   OnSyncStarting();
   DeleteItem(kTag1);
-  EXPECT_EQ(0U, GetNumCommitRequestLists());
-  OnDataLoaded();
   EXPECT_EQ(1U, GetNumCommitRequestLists());
   ExpectNthCommitRequestList(0, kTag1, "");
+  OnPendingCommitDataLoaded();
+  EXPECT_EQ(1U, GetNumCommitRequestLists());
 
   // Delete, data, connect.
   ResetStateWriteAckedItem(kTag1, kValue1);
   InitializeToMetadataLoaded();
   DeleteItem(kTag1);
-  OnDataLoaded();
+  OnPendingCommitDataLoaded();
   OnSyncStarting();
   EXPECT_EQ(1U, GetNumCommitRequestLists());
   ExpectNthCommitRequestList(0, kTag1, "");
@@ -725,10 +737,10 @@ TEST_F(SharedModelTypeProcessorTest, LoadPendingCommit) {
   InitializeToMetadataLoaded();
   DeleteItem(kTag1);
   OnSyncStarting();
-  EXPECT_EQ(0U, GetNumCommitRequestLists());
-  OnDataLoaded();
   EXPECT_EQ(1U, GetNumCommitRequestLists());
   ExpectNthCommitRequestList(0, kTag1, "");
+  OnPendingCommitDataLoaded();
+  EXPECT_EQ(1U, GetNumCommitRequestLists());
 }
 
 // This test covers race conditions during loading a pending delete. All cases
@@ -1292,69 +1304,128 @@ TEST_F(SharedModelTypeProcessorTest, Disable) {
 }
 
 // Test re-encrypt everything when desired encryption key changes.
-TEST_F(SharedModelTypeProcessorTest, DISABLED_ReEncryptCommitsWithNewKey) {
+TEST_F(SharedModelTypeProcessorTest, ReEncryptCommitsWithNewKey) {
   InitializeToReadyState();
 
   // Commit an item.
   WriteItemAndAck(kTag1, kValue1);
-
   // Create another item and don't wait for its commit response.
   WriteItem(kTag2, kValue2);
-
-  ASSERT_EQ(2U, GetNumCommitRequestLists());
+  ExpectCommitRequests({kTag1, kTag2});
+  EXPECT_EQ(1U, db().GetMetadata(kTag1).sequence_number());
+  EXPECT_EQ(1U, db().GetMetadata(kTag2).sequence_number());
 
   // Receive notice that the account's desired encryption key has changed.
   UpdateDesiredEncryptionKey("k1");
-
-  // That should trigger a new commit request.
+  // Tag 2 is recommitted immediately because the data was in memory.
   ASSERT_EQ(3U, GetNumCommitRequestLists());
-  EXPECT_EQ(2U, GetNthCommitRequestList(2).size());
+  ExpectNthCommitRequestList(2, kTag2, kValue2);
+  // Sequence numbers in the store are updated.
+  EXPECT_EQ(2U, db().GetMetadata(kTag1).sequence_number());
+  EXPECT_EQ(2U, db().GetMetadata(kTag2).sequence_number());
 
-  const CommitRequestData& tag1_enc = GetLatestCommitRequestForTag(kTag1);
-  const CommitRequestData& tag2_enc = GetLatestCommitRequestForTag(kTag2);
-
-  SuccessfulCommitResponse(tag1_enc);
-  SuccessfulCommitResponse(tag2_enc);
-
-  // And that should be the end of it.
-  ASSERT_EQ(3U, GetNumCommitRequestLists());
+  // Tag 1 needs to go to the store to load its data before recommitting.
+  OnPendingCommitDataLoaded();
+  ASSERT_EQ(4U, GetNumCommitRequestLists());
+  ExpectNthCommitRequestList(3, kTag1, kValue1);
 }
 
 // Test receipt of updates with new and old keys.
-// TODO(stanisc): crbug/561814: Disabled due to data caching changes in
-// ProcessorEntityTracker. Revisit the test once fetching of data is
-// implemented.
-TEST_F(SharedModelTypeProcessorTest, DISABLED_ReEncryptUpdatesWithNewKey) {
+TEST_F(SharedModelTypeProcessorTest, ReEncryptUpdatesWithNewKey) {
   InitializeToReadyState();
 
   // Receive an unencrypted update.
-  UpdateFromServer(5, "no_enc", kValue1);
-
+  UpdateFromServer(1, kTag1, kValue1);
   ASSERT_EQ(0U, GetNumCommitRequestLists());
 
   // Set desired encryption key to k2 to force updates to some items.
-  UpdateDesiredEncryptionKey("k2");
+  sync_pb::DataTypeState data_type_state(db().data_type_state());
+  data_type_state.set_encryption_key_name("k2");
+  UpdateResponseDataList updates;
+  // Receive an entity with old encryption as part of the update.
+  updates.push_back(GenerateUpdateData(kTag2, kValue2, "k1"));
+  // Receive an entity with up-to-date encryption as part of the update.
+  updates.push_back(GenerateUpdateData(kTag3, kValue3, "k2"));
+  type_processor()->OnUpdateReceived(data_type_state, updates);
 
-  ASSERT_EQ(1U, GetNumCommitRequestLists());
-  EXPECT_EQ(1U, GetNthCommitRequestList(0).size());
-  EXPECT_TRUE(HasCommitRequestForTag("no_enc"));
+  // kTag2 needed to be re-encrypted and had data so it was queued immediately.
+  ExpectCommitRequests({kTag2});
+  OnPendingCommitDataLoaded();
+  // kTag1 needed data so once that's loaded, it is also queued.
+  ExpectCommitRequests({kTag2, kTag1});
 
-  // Receive an update that was encrypted with key k1.
+  // Receive a separate update that was encrypted with key k1.
   SetServerEncryptionKey("k1");
   UpdateFromServer(10, "enc_k1", kValue1);
-
   // Receipt of updates encrypted with old key also forces a re-encrypt commit.
-  ASSERT_EQ(2U, GetNumCommitRequestLists());
-  EXPECT_EQ(1U, GetNthCommitRequestList(1).size());
-  EXPECT_TRUE(HasCommitRequestForTag("enc_k1"));
+  ExpectCommitRequests({kTag2, kTag1, "enc_k1"});
 
   // Receive an update that was encrypted with key k2.
   SetServerEncryptionKey("k2");
   UpdateFromServer(15, "enc_k2", kValue1);
-
   // That was the correct key, so no re-encryption is required.
+  ExpectCommitRequests({kTag2, kTag1, "enc_k1"});
+}
+
+// Test that re-encrypting enqueues the right data for USE_LOCAL conflicts.
+TEST_F(SharedModelTypeProcessorTest, ReEncryptConflictResolutionUseLocal) {
+  InitializeToReadyState();
+  UpdateDesiredEncryptionKey("k1");
+  WriteItem(kTag1, kValue1);
+  ExpectCommitRequests({kTag1});
+
+  SetConflictResolution(ConflictResolution::UseLocal());
+  UpdateFromServer(5, kTag1, kValue2);
+
+  // Ensure the re-commit has the correct value.
   EXPECT_EQ(2U, GetNumCommitRequestLists());
-  EXPECT_FALSE(HasCommitRequestForTag("enc_k2"));
+  ExpectNthCommitRequestList(1, kTag1, kValue1);
+}
+
+// Test that re-encrypting enqueues the right data for USE_REMOTE conflicts.
+TEST_F(SharedModelTypeProcessorTest, ReEncryptConflictResolutionUseRemote) {
+  InitializeToReadyState();
+  UpdateDesiredEncryptionKey("k1");
+  WriteItem(kTag1, kValue1);
+
+  SetConflictResolution(ConflictResolution::UseRemote());
+  UpdateFromServer(5, kTag1, kValue2);
+
+  // Ensure the re-commit has the correct value.
+  EXPECT_EQ(2U, GetNumCommitRequestLists());
+  ExpectNthCommitRequestList(1, kTag1, kValue2);
+}
+
+// Test that re-encrypting enqueues the right data for USE_NEW conflicts.
+TEST_F(SharedModelTypeProcessorTest, ReEncryptConflictResolutionUseNew) {
+  InitializeToReadyState();
+  UpdateDesiredEncryptionKey("k1");
+  WriteItem(kTag1, kValue1);
+
+  SetConflictResolution(
+      ConflictResolution::UseNew(GenerateEntityData(kTag1, kValue3)));
+  UpdateFromServer(5, kTag1, kValue2);
+
+  // Ensure the re-commit has the correct value.
+  EXPECT_EQ(2U, GetNumCommitRequestLists());
+  ExpectNthCommitRequestList(1, kTag1, kValue3);
+}
+
+// TODO(maxbogue): Fix this case (crbug.com/561814).
+TEST_F(SharedModelTypeProcessorTest, DISABLED_ReEncryptConflictWhileLoading) {
+  InitializeToReadyState();
+  // Create item and ack so its data is no longer cached.
+  WriteItemAndAck(kTag1, kValue1);
+  // Update key so that it needs to fetch data to re-commit.
+  UpdateDesiredEncryptionKey("k1");
+
+  SetConflictResolution(ConflictResolution::UseLocal());
+  UpdateFromServer(5, kTag1, kValue2);
+  OnPendingCommitDataLoaded();
+
+  // Ensure the re-commit has the correct value.
+  EXPECT_EQ(2U, GetNumCommitRequestLists());
+  ExpectNthCommitRequestList(1, kTag1, kValue1);
 }
 
 }  // namespace syncer_v2
