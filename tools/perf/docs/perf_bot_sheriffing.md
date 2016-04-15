@@ -3,6 +3,8 @@
 The perf bot sheriff is responsible for keeping the bots on the chromium.perf
 waterfall up and running, and triaging performance test failures and flakes.
 
+**[Rotation calendar](https://calendar.google.com/calendar/embed?src=google.com_2fpmo740pd1unrui9d7cgpbg2k%40group.calendar.google.com)**
+
 ## Key Responsibilities
 
 *   [Handle Device and Bot Failures](#botfailures)

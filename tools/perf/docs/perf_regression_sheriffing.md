@@ -5,6 +5,8 @@ continuous integration tests. Note that a [new rotation](perf_bot_sheriffing.md)
 has been created to ensure the builds and tests stay green, so the perf
 regression sheriff role is now entirely focused on performance.
 
+**[Rotation calendar](https://calendar.google.com/calendar/embed?src=google.com_2fpmo740pd1unrui9d7cgpbg2k%40group.calendar.google.com)**
+
 ## Key Responsibilities
 
  * [Triage Regressions on the Perf Dashboard](#triage)
