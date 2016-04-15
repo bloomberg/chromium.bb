@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_BLUETOOTH_BLUETOOTH_REMOTE_GATT_DESCRIPTOR_BLUEZ_H_
-#define DEVICE_BLUETOOTH_BLUETOOTH_REMOTE_GATT_DESCRIPTOR_BLUEZ_H_
+#ifndef DEVICE_BLUETOOTH_BLUETOOTH_GATT_DESCRIPTOR_BLUEZ_H_
+#define DEVICE_BLUETOOTH_BLUETOOTH_GATT_DESCRIPTOR_BLUEZ_H_
 
 #include <stdint.h>
 
@@ -24,13 +24,12 @@ class BluetoothGattCharacteristic;
 
 namespace bluez {
 
-class BluetoothRemoteGattCharacteristicBlueZ;
+class BluetoothGattCharacteristicBlueZ;
 
-// The BluetoothRemoteGattDescriptorBlueZ class implements
-// BluetoothGattDescriptor for remote GATT characteristic descriptors for
-// platforms that use BlueZ.
-class BluetoothRemoteGattDescriptorBlueZ
-    : public device::BluetoothGattDescriptor {
+// The BluetoothGattDescriptorBlueZ class implements
+// BluetoothGattDescriptor for remote and local GATT characteristic descriptors
+// for platforms that use BlueZ.
+class BluetoothGattDescriptorBlueZ : public device::BluetoothGattDescriptor {
  public:
   // device::BluetoothGattDescriptor overrides.
   std::string GetIdentifier() const override;
@@ -52,10 +51,10 @@ class BluetoothRemoteGattDescriptorBlueZ
  private:
   friend class BluetoothRemoteGattCharacteristicBlueZ;
 
-  BluetoothRemoteGattDescriptorBlueZ(
-      BluetoothRemoteGattCharacteristicBlueZ* characteristic,
-      const dbus::ObjectPath& object_path);
-  ~BluetoothRemoteGattDescriptorBlueZ() override;
+  BluetoothGattDescriptorBlueZ(BluetoothGattCharacteristicBlueZ* characteristic,
+                               const dbus::ObjectPath& object_path,
+                               bool is_local);
+  ~BluetoothGattDescriptorBlueZ() override;
 
   // Called by dbus:: on unsuccessful completion of a request to read or write
   // the descriptor value.
@@ -67,15 +66,18 @@ class BluetoothRemoteGattDescriptorBlueZ
   dbus::ObjectPath object_path_;
 
   // The GATT characteristic this descriptor belongs to.
-  BluetoothRemoteGattCharacteristicBlueZ* characteristic_;
+  BluetoothGattCharacteristicBlueZ* characteristic_;
+
+  // Is this a remote or local descriptor.
+  bool is_local_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<BluetoothRemoteGattDescriptorBlueZ> weak_ptr_factory_;
+  base::WeakPtrFactory<BluetoothGattDescriptorBlueZ> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(BluetoothRemoteGattDescriptorBlueZ);
+  DISALLOW_COPY_AND_ASSIGN(BluetoothGattDescriptorBlueZ);
 };
 
 }  // namespace bluez
 
-#endif  // DEVICE_BLUETOOTH_BLUETOOTH_REMOTE_GATT_DESCRIPTOR_BLUEZ_H_
+#endif  // DEVICE_BLUETOOTH_BLUETOOTH_GATT_DESCRIPTOR_BLUEZ_H_

@@ -6,17 +6,14 @@
 #define DEVICE_BLUETOOTH_BLUETOOTH_REMOTE_GATT_SERVICE_BLUEZ_H_
 
 #include <stdint.h>
-
-#include <map>
 #include <string>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/observer_list.h"
 #include "dbus/object_path.h"
-#include "device/bluetooth/bluetooth_gatt_service.h"
+#include "device/bluetooth/bluetooth_gatt_service_bluez.h"
 #include "device/bluetooth/bluetooth_uuid.h"
 #include "device/bluetooth/dbus/bluetooth_gatt_characteristic_client.h"
 #include "device/bluetooth/dbus/bluetooth_gatt_service_client.h"
@@ -24,6 +21,7 @@
 namespace device {
 
 class BluetoothAdapter;
+class BluetoothDevice;
 class BluetoothGattCharacteristic;
 
 }  // namespace device
@@ -33,27 +31,20 @@ namespace bluez {
 class BluetoothAdapterBlueZ;
 class BluetoothDeviceBlueZ;
 class BluetoothRemoteGattCharacteristicBlueZ;
-class BluetoothRemoteGattDescriptorBlueZ;
+class BluetoothGattDescriptorBlueZ;
 
 // The BluetoothRemoteGattServiceBlueZ class implements BluetootGattService
 // for remote GATT services for platforms that use BlueZ.
 class BluetoothRemoteGattServiceBlueZ
-    : public device::BluetoothGattService,
-      public bluez::BluetoothGattServiceClient::Observer,
-      public bluez::BluetoothGattCharacteristicClient::Observer {
+    : public BluetoothGattServiceBlueZ,
+      public BluetoothGattServiceClient::Observer,
+      public BluetoothGattCharacteristicClient::Observer {
  public:
   // device::BluetoothGattService overrides.
-  std::string GetIdentifier() const override;
   device::BluetoothUUID GetUUID() const override;
   bool IsLocal() const override;
   bool IsPrimary() const override;
   device::BluetoothDevice* GetDevice() const override;
-  std::vector<device::BluetoothGattCharacteristic*> GetCharacteristics()
-      const override;
-  std::vector<device::BluetoothGattService*> GetIncludedServices()
-      const override;
-  device::BluetoothGattCharacteristic* GetCharacteristic(
-      const std::string& identifier) const override;
   bool AddCharacteristic(
       device::BluetoothGattCharacteristic* characteristic) override;
   bool AddIncludedService(device::BluetoothGattService* service) override;
@@ -61,16 +52,6 @@ class BluetoothRemoteGattServiceBlueZ
                 const ErrorCallback& error_callback) override;
   void Unregister(const base::Closure& callback,
                   const ErrorCallback& error_callback) override;
-
-  // Object path of the underlying service.
-  const dbus::ObjectPath& object_path() const { return object_path_; }
-
-  // Parses a named D-Bus error into a service error code.
-  static device::BluetoothGattService::GattErrorCode DBusErrorToServiceError(
-      const std::string error_name);
-
-  // Returns the adapter associated with this service.
-  BluetoothAdapterBlueZ* GetAdapter() const;
 
   // Notifies its observers that the GATT service has changed. This is mainly
   // used by BluetoothRemoteGattCharacteristicBlueZ instances to notify
@@ -85,7 +66,7 @@ class BluetoothRemoteGattServiceBlueZ
   // be sent.
   void NotifyDescriptorAddedOrRemoved(
       BluetoothRemoteGattCharacteristicBlueZ* characteristic,
-      BluetoothRemoteGattDescriptorBlueZ* descriptor,
+      BluetoothGattDescriptorBlueZ* descriptor,
       bool added);
 
   // Notifies its observers that the value of a descriptor has changed. Called
@@ -93,14 +74,11 @@ class BluetoothRemoteGattServiceBlueZ
   // observers.
   void NotifyDescriptorValueChanged(
       BluetoothRemoteGattCharacteristicBlueZ* characteristic,
-      BluetoothRemoteGattDescriptorBlueZ* descriptor,
+      BluetoothGattDescriptorBlueZ* descriptor,
       const std::vector<uint8_t>& value);
 
  private:
   friend class BluetoothDeviceBlueZ;
-
-  typedef std::map<dbus::ObjectPath, BluetoothRemoteGattCharacteristicBlueZ*>
-      CharacteristicMap;
 
   BluetoothRemoteGattServiceBlueZ(BluetoothAdapterBlueZ* adapter,
                                   BluetoothDeviceBlueZ* device,
@@ -118,22 +96,9 @@ class BluetoothRemoteGattServiceBlueZ
       const dbus::ObjectPath& object_path,
       const std::string& property_name) override;
 
-  // Object path of the GATT service.
-  dbus::ObjectPath object_path_;
-
-  // The adapter associated with this service. It's ok to store a raw pointer
-  // here since |adapter_| indirectly owns this instance.
-  BluetoothAdapterBlueZ* adapter_;
-
   // The device this GATT service belongs to. It's ok to store a raw pointer
   // here since |device_| owns this instance.
   BluetoothDeviceBlueZ* device_;
-
-  // Mapping from GATT characteristic object paths to characteristic objects.
-  // owned by this service. Since the BlueZ implementation uses object
-  // paths as unique identifiers, we also use this mapping to return
-  // characteristics by identifier.
-  CharacteristicMap characteristics_;
 
   // Indicates whether or not the characteristics of this service are known to
   // have been discovered.

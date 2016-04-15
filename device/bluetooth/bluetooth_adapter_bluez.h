@@ -44,9 +44,6 @@ class BluetoothBlueZTest;
 class BluetoothAdapterProfileBlueZ;
 class BluetoothDeviceBlueZ;
 class BluetoothPairingBlueZ;
-class BluetoothRemoteGattCharacteristicBlueZ;
-class BluetoothRemoteGattDescriptorBlueZ;
-class BluetoothRemoteGattServiceBlueZ;
 
 // The BluetoothAdapterBlueZ class implements BluetoothAdapter for platforms
 // that use BlueZ.

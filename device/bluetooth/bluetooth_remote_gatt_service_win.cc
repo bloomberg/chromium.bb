@@ -118,14 +118,14 @@ void BluetoothRemoteGattServiceWin::Register(
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
   NOTIMPLEMENTED();
-  error_callback.Run();
+  error_callback.Run(GATT_ERROR_NOT_SUPPORTED);
 }
 
 void BluetoothRemoteGattServiceWin::Unregister(
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
   NOTIMPLEMENTED();
-  error_callback.Run();
+  error_callback.Run(GATT_ERROR_NOT_SUPPORTED);
 }
 
 void BluetoothRemoteGattServiceWin::GattCharacteristicDiscoveryComplete(

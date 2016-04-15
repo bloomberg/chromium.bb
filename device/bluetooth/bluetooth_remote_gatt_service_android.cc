@@ -169,13 +169,13 @@ bool BluetoothRemoteGattServiceAndroid::AddIncludedService(
 void BluetoothRemoteGattServiceAndroid::Register(
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
-  error_callback.Run();
+  error_callback.Run(GATT_ERROR_NOT_SUPPORTED);
 }
 
 void BluetoothRemoteGattServiceAndroid::Unregister(
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
-  error_callback.Run();
+  error_callback.Run(GATT_ERROR_NOT_SUPPORTED);
 }
 
 void BluetoothRemoteGattServiceAndroid::CreateGattRemoteCharacteristic(

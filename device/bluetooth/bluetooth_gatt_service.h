@@ -6,10 +6,11 @@
 #define DEVICE_BLUETOOTH_BLUETOOTH_GATT_SERVICE_H_
 
 #include <stdint.h>
-
+#include <string>
 #include <vector>
 
 #include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "device/bluetooth/bluetooth_export.h"
 #include "device/bluetooth/bluetooth_uuid.h"
@@ -142,7 +143,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattService {
   };
 
   // The ErrorCallback is used by methods to asynchronously report errors.
-  typedef base::Closure ErrorCallback;
+  using ErrorCallback = base::Callback<void(GattErrorCode error_code)>;
 
   virtual ~BluetoothGattService();
 

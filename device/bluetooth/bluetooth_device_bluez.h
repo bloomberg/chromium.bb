@@ -29,8 +29,8 @@ namespace bluez {
 class BluetoothAdapterBlueZ;
 class BluetoothPairingBlueZ;
 
-// The BluetoothDeviceBlueZ class implements BluetoothDevice for the
-// Chrome OS platform.
+// The BluetoothDeviceBlueZ class implements BluetoothDevice for platforms using
+// BlueZ.
 //
 // This class is not thread-safe, but is only called from the UI thread.
 //

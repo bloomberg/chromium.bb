@@ -2,13 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/bluetooth/bluetooth_remote_gatt_descriptor_bluez.h"
+#include <iostream>
+#include <iterator>
 
 #include "base/bind.h"
+#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
-#include "device/bluetooth/bluetooth_remote_gatt_characteristic_bluez.h"
-#include "device/bluetooth/bluetooth_remote_gatt_service_bluez.h"
+#include "dbus/property.h"
+#include "device/bluetooth/bluetooth_gatt_characteristic.h"
+#include "device/bluetooth/bluetooth_gatt_characteristic_bluez.h"
+#include "device/bluetooth/bluetooth_gatt_descriptor_bluez.h"
+#include "device/bluetooth/bluetooth_gatt_service_bluez.h"
 #include "device/bluetooth/dbus/bluetooth_gatt_descriptor_client.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
 
@@ -28,23 +34,25 @@ std::ostream& operator<<(std::ostream& out, const std::vector<uint8_t> bytes) {
 
 }  // namespace
 
-BluetoothRemoteGattDescriptorBlueZ::BluetoothRemoteGattDescriptorBlueZ(
-    BluetoothRemoteGattCharacteristicBlueZ* characteristic,
-    const dbus::ObjectPath& object_path)
+BluetoothGattDescriptorBlueZ::BluetoothGattDescriptorBlueZ(
+    BluetoothGattCharacteristicBlueZ* characteristic,
+    const dbus::ObjectPath& object_path,
+    bool is_local)
     : object_path_(object_path),
       characteristic_(characteristic),
+      is_local_(is_local),
       weak_ptr_factory_(this) {
   VLOG(1) << "Creating remote GATT descriptor with identifier: "
           << GetIdentifier() << ", UUID: " << GetUUID().canonical_value();
 }
 
-BluetoothRemoteGattDescriptorBlueZ::~BluetoothRemoteGattDescriptorBlueZ() {}
+BluetoothGattDescriptorBlueZ::~BluetoothGattDescriptorBlueZ() {}
 
-std::string BluetoothRemoteGattDescriptorBlueZ::GetIdentifier() const {
+std::string BluetoothGattDescriptorBlueZ::GetIdentifier() const {
   return object_path_.value();
 }
 
-device::BluetoothUUID BluetoothRemoteGattDescriptorBlueZ::GetUUID() const {
+device::BluetoothUUID BluetoothGattDescriptorBlueZ::GetUUID() const {
   bluez::BluetoothGattDescriptorClient::Properties* properties =
       bluez::BluezDBusManager::Get()
           ->GetBluetoothGattDescriptorClient()
@@ -53,12 +61,11 @@ device::BluetoothUUID BluetoothRemoteGattDescriptorBlueZ::GetUUID() const {
   return device::BluetoothUUID(properties->uuid.value());
 }
 
-bool BluetoothRemoteGattDescriptorBlueZ::IsLocal() const {
-  return false;
+bool BluetoothGattDescriptorBlueZ::IsLocal() const {
+  return is_local_;
 }
 
-const std::vector<uint8_t>& BluetoothRemoteGattDescriptorBlueZ::GetValue()
-    const {
+const std::vector<uint8_t>& BluetoothGattDescriptorBlueZ::GetValue() const {
   bluez::BluetoothGattDescriptorClient::Properties* properties =
       bluez::BluezDBusManager::Get()
           ->GetBluetoothGattDescriptorClient()
@@ -70,18 +77,18 @@ const std::vector<uint8_t>& BluetoothRemoteGattDescriptorBlueZ::GetValue()
 }
 
 device::BluetoothGattCharacteristic*
-BluetoothRemoteGattDescriptorBlueZ::GetCharacteristic() const {
+BluetoothGattDescriptorBlueZ::GetCharacteristic() const {
   return characteristic_;
 }
 
 device::BluetoothGattCharacteristic::Permissions
-BluetoothRemoteGattDescriptorBlueZ::GetPermissions() const {
+BluetoothGattDescriptorBlueZ::GetPermissions() const {
   // TODO(armansito): Once BlueZ defines the permissions, return the correct
   // values here.
   return device::BluetoothGattCharacteristic::PERMISSION_NONE;
 }
 
-void BluetoothRemoteGattDescriptorBlueZ::ReadRemoteDescriptor(
+void BluetoothGattDescriptorBlueZ::ReadRemoteDescriptor(
     const ValueCallback& callback,
     const ErrorCallback& error_callback) {
   VLOG(1) << "Sending GATT characteristic descriptor read request to "
@@ -90,11 +97,11 @@ void BluetoothRemoteGattDescriptorBlueZ::ReadRemoteDescriptor(
 
   bluez::BluezDBusManager::Get()->GetBluetoothGattDescriptorClient()->ReadValue(
       object_path_, callback,
-      base::Bind(&BluetoothRemoteGattDescriptorBlueZ::OnError,
+      base::Bind(&BluetoothGattDescriptorBlueZ::OnError,
                  weak_ptr_factory_.GetWeakPtr(), error_callback));
 }
 
-void BluetoothRemoteGattDescriptorBlueZ::WriteRemoteDescriptor(
+void BluetoothGattDescriptorBlueZ::WriteRemoteDescriptor(
     const std::vector<uint8_t>& new_value,
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
@@ -106,19 +113,18 @@ void BluetoothRemoteGattDescriptorBlueZ::WriteRemoteDescriptor(
   bluez::BluezDBusManager::Get()
       ->GetBluetoothGattDescriptorClient()
       ->WriteValue(object_path_, new_value, callback,
-                   base::Bind(&BluetoothRemoteGattDescriptorBlueZ::OnError,
+                   base::Bind(&BluetoothGattDescriptorBlueZ::OnError,
                               weak_ptr_factory_.GetWeakPtr(), error_callback));
 }
 
-void BluetoothRemoteGattDescriptorBlueZ::OnError(
-    const ErrorCallback& error_callback,
-    const std::string& error_name,
-    const std::string& error_message) {
+void BluetoothGattDescriptorBlueZ::OnError(const ErrorCallback& error_callback,
+                                           const std::string& error_name,
+                                           const std::string& error_message) {
   VLOG(1) << "Operation failed: " << error_name
           << ", message: " << error_message;
 
   error_callback.Run(
-      BluetoothRemoteGattServiceBlueZ::DBusErrorToServiceError(error_name));
+      BluetoothGattServiceBlueZ::DBusErrorToServiceError(error_name));
 }
 
 }  // namespace bluez

@@ -4,18 +4,24 @@
 
 #include "device/bluetooth/bluetooth_remote_gatt_characteristic_bluez.h"
 
+#include <iostream>
+#include <iterator>
 #include <limits>
-#include <memory>
-#include <utility>
 
+#include "base/bind.h"
+#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
+#include "dbus/property.h"
 #include "device/bluetooth/bluetooth_adapter_bluez.h"
 #include "device/bluetooth/bluetooth_device.h"
+#include "device/bluetooth/bluetooth_gatt_characteristic.h"
+#include "device/bluetooth/bluetooth_gatt_descriptor_bluez.h"
 #include "device/bluetooth/bluetooth_gatt_notify_session_bluez.h"
-#include "device/bluetooth/bluetooth_remote_gatt_characteristic_bluez.h"
-#include "device/bluetooth/bluetooth_remote_gatt_descriptor_bluez.h"
+#include "device/bluetooth/bluetooth_gatt_service.h"
 #include "device/bluetooth/bluetooth_remote_gatt_service_bluez.h"
+#include "device/bluetooth/dbus/bluetooth_gatt_characteristic_client.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -38,8 +44,7 @@ std::ostream& operator<<(std::ostream& out, const std::vector<uint8_t> bytes) {
 BluetoothRemoteGattCharacteristicBlueZ::BluetoothRemoteGattCharacteristicBlueZ(
     BluetoothRemoteGattServiceBlueZ* service,
     const dbus::ObjectPath& object_path)
-    : object_path_(object_path),
-      service_(service),
+    : BluetoothGattCharacteristicBlueZ(service, object_path),
       num_notify_sessions_(0),
       notify_call_pending_(false),
       weak_ptr_factory_(this) {
@@ -79,15 +84,11 @@ BluetoothRemoteGattCharacteristicBlueZ::
   }
 }
 
-std::string BluetoothRemoteGattCharacteristicBlueZ::GetIdentifier() const {
-  return object_path_.value();
-}
-
 device::BluetoothUUID BluetoothRemoteGattCharacteristicBlueZ::GetUUID() const {
   bluez::BluetoothGattCharacteristicClient::Properties* properties =
       bluez::BluezDBusManager::Get()
           ->GetBluetoothGattCharacteristicClient()
-          ->GetProperties(object_path_);
+          ->GetProperties(object_path());
   DCHECK(properties);
   return device::BluetoothUUID(properties->uuid.value());
 }
@@ -101,16 +102,11 @@ const std::vector<uint8_t>& BluetoothRemoteGattCharacteristicBlueZ::GetValue()
   bluez::BluetoothGattCharacteristicClient::Properties* properties =
       bluez::BluezDBusManager::Get()
           ->GetBluetoothGattCharacteristicClient()
-          ->GetProperties(object_path_);
+          ->GetProperties(object_path());
 
   DCHECK(properties);
 
   return properties->value.value();
-}
-
-device::BluetoothGattService*
-BluetoothRemoteGattCharacteristicBlueZ::GetService() const {
-  return service_;
 }
 
 device::BluetoothGattCharacteristic::Properties
@@ -118,7 +114,7 @@ BluetoothRemoteGattCharacteristicBlueZ::GetProperties() const {
   bluez::BluetoothGattCharacteristicClient::Properties* properties =
       bluez::BluezDBusManager::Get()
           ->GetBluetoothGattCharacteristicClient()
-          ->GetProperties(object_path_);
+          ->GetProperties(object_path());
   DCHECK(properties);
 
   Properties props = PROPERTY_NONE;
@@ -150,40 +146,14 @@ BluetoothRemoteGattCharacteristicBlueZ::GetProperties() const {
   return props;
 }
 
-device::BluetoothGattCharacteristic::Permissions
-BluetoothRemoteGattCharacteristicBlueZ::GetPermissions() const {
-  // TODO(armansito): Once BlueZ defines the permissions, return the correct
-  // values here.
-  return PERMISSION_NONE;
-}
-
 bool BluetoothRemoteGattCharacteristicBlueZ::IsNotifying() const {
   bluez::BluetoothGattCharacteristicClient::Properties* properties =
       bluez::BluezDBusManager::Get()
           ->GetBluetoothGattCharacteristicClient()
-          ->GetProperties(object_path_);
+          ->GetProperties(object_path());
   DCHECK(properties);
 
   return properties->notifying.value();
-}
-
-std::vector<device::BluetoothGattDescriptor*>
-BluetoothRemoteGattCharacteristicBlueZ::GetDescriptors() const {
-  std::vector<device::BluetoothGattDescriptor*> descriptors;
-  for (DescriptorMap::const_iterator iter = descriptors_.begin();
-       iter != descriptors_.end(); ++iter)
-    descriptors.push_back(iter->second);
-  return descriptors;
-}
-
-device::BluetoothGattDescriptor*
-BluetoothRemoteGattCharacteristicBlueZ::GetDescriptor(
-    const std::string& identifier) const {
-  DescriptorMap::const_iterator iter =
-      descriptors_.find(dbus::ObjectPath(identifier));
-  if (iter == descriptors_.end())
-    return NULL;
-  return iter->second;
 }
 
 bool BluetoothRemoteGattCharacteristicBlueZ::AddDescriptor(
@@ -196,35 +166,6 @@ bool BluetoothRemoteGattCharacteristicBlueZ::UpdateValue(
     const std::vector<uint8_t>& value) {
   VLOG(1) << "Cannot update the value of a remote GATT characteristic.";
   return false;
-}
-
-void BluetoothRemoteGattCharacteristicBlueZ::ReadRemoteCharacteristic(
-    const ValueCallback& callback,
-    const ErrorCallback& error_callback) {
-  VLOG(1) << "Sending GATT characteristic read request to characteristic: "
-          << GetIdentifier() << ", UUID: " << GetUUID().canonical_value()
-          << ".";
-
-  bluez::BluezDBusManager::Get()
-      ->GetBluetoothGattCharacteristicClient()
-      ->ReadValue(object_path_, callback,
-                  base::Bind(&BluetoothRemoteGattCharacteristicBlueZ::OnError,
-                             weak_ptr_factory_.GetWeakPtr(), error_callback));
-}
-
-void BluetoothRemoteGattCharacteristicBlueZ::WriteRemoteCharacteristic(
-    const std::vector<uint8_t>& new_value,
-    const base::Closure& callback,
-    const ErrorCallback& error_callback) {
-  VLOG(1) << "Sending GATT characteristic write request to characteristic: "
-          << GetIdentifier() << ", UUID: " << GetUUID().canonical_value()
-          << ", with value: " << new_value << ".";
-
-  bluez::BluezDBusManager::Get()
-      ->GetBluetoothGattCharacteristicClient()
-      ->WriteValue(object_path_, new_value, callback,
-                   base::Bind(&BluetoothRemoteGattCharacteristicBlueZ::OnError,
-                              weak_ptr_factory_.GetWeakPtr(), error_callback));
 }
 
 void BluetoothRemoteGattCharacteristicBlueZ::StartNotifySession(
@@ -252,7 +193,7 @@ void BluetoothRemoteGattCharacteristicBlueZ::StartNotifySession(
       std::unique_ptr<device::BluetoothGattNotifySession> session(
           new BluetoothGattNotifySessionBlueZ(
               service_->GetAdapter(), service_->GetDevice()->GetAddress(),
-              service_->GetIdentifier(), GetIdentifier(), object_path_));
+              service_->GetIdentifier(), GetIdentifier(), object_path()));
       callback.Run(std::move(session));
       return;
     }
@@ -270,13 +211,42 @@ void BluetoothRemoteGattCharacteristicBlueZ::StartNotifySession(
   bluez::BluezDBusManager::Get()
       ->GetBluetoothGattCharacteristicClient()
       ->StartNotify(
-          object_path_,
+          object_path(),
           base::Bind(
               &BluetoothRemoteGattCharacteristicBlueZ::OnStartNotifySuccess,
               weak_ptr_factory_.GetWeakPtr(), callback),
           base::Bind(
               &BluetoothRemoteGattCharacteristicBlueZ::OnStartNotifyError,
               weak_ptr_factory_.GetWeakPtr(), error_callback));
+}
+
+void BluetoothRemoteGattCharacteristicBlueZ::ReadRemoteCharacteristic(
+    const ValueCallback& callback,
+    const ErrorCallback& error_callback) {
+  VLOG(1) << "Sending GATT characteristic read request to characteristic: "
+          << GetIdentifier() << ", UUID: " << GetUUID().canonical_value()
+          << ".";
+
+  bluez::BluezDBusManager::Get()
+      ->GetBluetoothGattCharacteristicClient()
+      ->ReadValue(object_path(), callback,
+                  base::Bind(&BluetoothRemoteGattCharacteristicBlueZ::OnError,
+                             weak_ptr_factory_.GetWeakPtr(), error_callback));
+}
+
+void BluetoothRemoteGattCharacteristicBlueZ::WriteRemoteCharacteristic(
+    const std::vector<uint8_t>& new_value,
+    const base::Closure& callback,
+    const ErrorCallback& error_callback) {
+  VLOG(1) << "Sending GATT characteristic write request to characteristic: "
+          << GetIdentifier() << ", UUID: " << GetUUID().canonical_value()
+          << ", with value: " << new_value << ".";
+
+  bluez::BluezDBusManager::Get()
+      ->GetBluetoothGattCharacteristicClient()
+      ->WriteValue(object_path(), new_value, callback,
+                   base::Bind(&BluetoothRemoteGattCharacteristicBlueZ::OnError,
+                              weak_ptr_factory_.GetWeakPtr(), error_callback));
 }
 
 void BluetoothRemoteGattCharacteristicBlueZ::RemoveNotifySession(
@@ -308,7 +278,7 @@ void BluetoothRemoteGattCharacteristicBlueZ::RemoveNotifySession(
   bluez::BluezDBusManager::Get()
       ->GetBluetoothGattCharacteristicClient()
       ->StopNotify(
-          object_path_,
+          object_path(),
           base::Bind(
               &BluetoothRemoteGattCharacteristicBlueZ::OnStopNotifySuccess,
               weak_ptr_factory_.GetWeakPtr(), callback),
@@ -329,7 +299,7 @@ void BluetoothRemoteGattCharacteristicBlueZ::GattDescriptorAdded(
           ->GetBluetoothGattDescriptorClient()
           ->GetProperties(object_path);
   DCHECK(properties);
-  if (properties->characteristic.value() != object_path_) {
+  if (properties->characteristic.value() != this->object_path()) {
     VLOG(3) << "Remote GATT descriptor does not belong to this characteristic.";
     return;
   }
@@ -337,14 +307,15 @@ void BluetoothRemoteGattCharacteristicBlueZ::GattDescriptorAdded(
   VLOG(1) << "Adding new remote GATT descriptor for GATT characteristic: "
           << GetIdentifier() << ", UUID: " << GetUUID().canonical_value();
 
-  BluetoothRemoteGattDescriptorBlueZ* descriptor =
-      new BluetoothRemoteGattDescriptorBlueZ(this, object_path);
+  BluetoothGattDescriptorBlueZ* descriptor =
+      new BluetoothGattDescriptorBlueZ(this, object_path, false /* is_local */);
   descriptors_[object_path] = descriptor;
   DCHECK(descriptor->GetIdentifier() == object_path.value());
   DCHECK(descriptor->GetUUID().IsValid());
   DCHECK(service_);
 
-  service_->NotifyDescriptorAddedOrRemoved(this, descriptor, true /* added */);
+  static_cast<BluetoothRemoteGattServiceBlueZ*>(service_)
+      ->NotifyDescriptorAddedOrRemoved(this, descriptor, true /* added */);
 }
 
 void BluetoothRemoteGattCharacteristicBlueZ::GattDescriptorRemoved(
@@ -358,12 +329,13 @@ void BluetoothRemoteGattCharacteristicBlueZ::GattDescriptorRemoved(
   VLOG(1) << "Removing remote GATT descriptor from characteristic: "
           << GetIdentifier() << ", UUID: " << GetUUID().canonical_value();
 
-  BluetoothRemoteGattDescriptorBlueZ* descriptor = iter->second;
+  BluetoothGattDescriptorBlueZ* descriptor = iter->second;
   DCHECK(descriptor->object_path() == object_path);
   descriptors_.erase(iter);
 
   DCHECK(service_);
-  service_->NotifyDescriptorAddedOrRemoved(this, descriptor, false /* added */);
+  static_cast<BluetoothRemoteGattServiceBlueZ*>(service_)
+      ->NotifyDescriptorAddedOrRemoved(this, descriptor, false /* added */);
 
   delete descriptor;
 }
@@ -388,24 +360,15 @@ void BluetoothRemoteGattCharacteristicBlueZ::GattDescriptorPropertyChanged(
     return;
 
   DCHECK(service_);
-  service_->NotifyDescriptorValueChanged(this, iter->second,
-                                         properties->value.value());
-}
-
-void BluetoothRemoteGattCharacteristicBlueZ::OnError(
-    const ErrorCallback& error_callback,
-    const std::string& error_name,
-    const std::string& error_message) {
-  VLOG(1) << "Operation failed: " << error_name
-          << ", message: " << error_message;
-  error_callback.Run(
-      BluetoothRemoteGattServiceBlueZ::DBusErrorToServiceError(error_name));
+  static_cast<BluetoothRemoteGattServiceBlueZ*>(service_)
+      ->NotifyDescriptorValueChanged(this, iter->second,
+                                     properties->value.value());
 }
 
 void BluetoothRemoteGattCharacteristicBlueZ::OnStartNotifySuccess(
     const NotifySessionCallback& callback) {
   VLOG(1) << "Started notifications from characteristic: "
-          << object_path_.value();
+          << object_path().value();
   DCHECK(num_notify_sessions_ == 0);
   DCHECK(notify_call_pending_);
 
@@ -418,7 +381,7 @@ void BluetoothRemoteGattCharacteristicBlueZ::OnStartNotifySuccess(
   std::unique_ptr<device::BluetoothGattNotifySession> session(
       new BluetoothGattNotifySessionBlueZ(
           service_->GetAdapter(), service_->GetDevice()->GetAddress(),
-          service_->GetIdentifier(), GetIdentifier(), object_path_));
+          service_->GetIdentifier(), GetIdentifier(), object_path()));
   callback.Run(std::move(session));
 
   ProcessStartNotifyQueue();
@@ -429,7 +392,7 @@ void BluetoothRemoteGattCharacteristicBlueZ::OnStartNotifyError(
     const std::string& error_name,
     const std::string& error_message) {
   VLOG(1) << "Failed to start notifications from characteristic: "
-          << object_path_.value() << ": " << error_name << ", "
+          << object_path().value() << ": " << error_name << ", "
           << error_message;
   DCHECK(num_notify_sessions_ == 0);
   DCHECK(notify_call_pending_);
@@ -459,7 +422,7 @@ void BluetoothRemoteGattCharacteristicBlueZ::OnStopNotifyError(
     const std::string& error_name,
     const std::string& error_message) {
   VLOG(1) << "Call to stop notifications failed for characteristic: "
-          << object_path_.value() << ": " << error_name << ", "
+          << object_path().value() << ": " << error_name << ", "
           << error_message;
 
   // Since this is a best effort operation, treat this as success.
@@ -472,6 +435,16 @@ void BluetoothRemoteGattCharacteristicBlueZ::ProcessStartNotifyQueue() {
     pending_start_notify_calls_.pop();
     StartNotifySession(callbacks.first, callbacks.second);
   }
+}
+
+void BluetoothRemoteGattCharacteristicBlueZ::OnError(
+    const ErrorCallback& error_callback,
+    const std::string& error_name,
+    const std::string& error_message) {
+  VLOG(1) << "Operation failed: " << error_name
+          << ", message: " << error_message;
+  error_callback.Run(
+      BluetoothGattServiceBlueZ::DBusErrorToServiceError(error_name));
 }
 
 }  // namespace bluez
