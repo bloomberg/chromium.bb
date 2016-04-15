@@ -316,13 +316,14 @@ import java.util.UUID;
 
     @Override
     public void evaluateJavaScript(String script, JavaScriptCallback callback) {
-        if (isDestroyed()) return;
+        if (isDestroyed() || script == null) return;
         nativeEvaluateJavaScript(mNativeWebContentsAndroid, script, callback);
     }
 
     @Override
     @VisibleForTesting
     public void evaluateJavaScriptForTests(String script, JavaScriptCallback callback) {
+        if (script == null) return;
         nativeEvaluateJavaScriptForTests(mNativeWebContentsAndroid, script, callback);
     }
 
