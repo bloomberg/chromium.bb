@@ -154,7 +154,7 @@ class PrefetchSimulationView(object):
     for preload_step_event in preload_step_events:
       preload_event = resource_events.EventFromStep(preload_step_event)
       if preload_event:
-        preloaded_urls.add(preload_event.args['url'])
+        preloaded_urls.add(preload_event.args['data']['url'])
     parser_requests = cls.ParserDiscoverableRequests(
         request, dependencies_lens)
     preloaded_root_requests = filter(

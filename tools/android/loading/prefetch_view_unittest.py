@@ -38,7 +38,7 @@ class PrefetchSimulationViewTestCase(unittest.TestCase):
         first_request, self.dependencies_lens, self.trace)
     self.assertListEqual([first_request], preloaded_requests)
     self._SetUp(
-        [{'args': {'url': 'http://bla.com/nyancat.js'},
+        [{'args': {'data': {'url': 'http://bla.com/nyancat.js'}},
           'cat': 'blink.net', 'id': '0xaf9f14fa9dd6c314', 'name': 'Resource',
           'ph': 'X', 'ts': 1, 'dur': 120, 'pid': 12, 'tid': 12},
          {'args': {'step': 'Preload'}, 'cat': 'blink.net',
