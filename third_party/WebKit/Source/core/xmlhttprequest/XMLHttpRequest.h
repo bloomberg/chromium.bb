@@ -147,9 +147,6 @@ public:
     // (Also) eagerly finalized so as to prevent access to the eagerly finalized
     // progress event throttle.
     EAGERLY_FINALIZE();
-#if !ENABLE(OILPAN)
-    DECLARE_EAGER_FINALIZATION_OPERATOR_NEW();
-#endif
     DECLARE_VIRTUAL_TRACE();
 
 private:
