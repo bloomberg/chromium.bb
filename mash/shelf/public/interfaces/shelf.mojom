@@ -4,6 +4,7 @@
 
 module mash.shelf.mojom;
 
+import "mash/shelf/public/interfaces/shelf_constants.mojom";
 import "skia/public/interfaces/bitmap.mojom";
 
 // TODO(msw): Add support for multiple displays (with unified and multi-shelf).
@@ -38,12 +39,6 @@ interface ShelfItemDelegate {
   // |order| is the index of the item on the shelf.
   ItemReordered(uint32 order);
 };
-
-// These values match ash::ShelfAlignment.
-enum Alignment { BOTTOM, LEFT, RIGHT, };
-
-// These values match ash::ShelfAutoHideBehavior.
-enum AutoHideBehavior { ALWAYS, NEVER, HIDDEN, };
 
 // ContextMenuItems may be used to supplement ash shelf item context menus.
 struct ContextMenuItem {

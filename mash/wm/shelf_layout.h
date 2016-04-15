@@ -7,12 +7,13 @@
 
 #include "base/macros.h"
 #include "mash/wm/layout_manager.h"
+#include "mash/wm/public/interfaces/shelf_layout.mojom.h"
 
 namespace mash {
 namespace wm {
 
 // Lays out the shelf within shelf containers.
-class ShelfLayout : public LayoutManager {
+class ShelfLayout : public LayoutManager, public mojom::ShelfLayout {
  public:
   explicit ShelfLayout(mus::Window* owner);
   ~ShelfLayout() override;
@@ -20,6 +21,14 @@ class ShelfLayout : public LayoutManager {
  private:
   // Overridden from LayoutManager:
   void LayoutWindow(mus::Window* window) override;
+
+  // Overridden from mojom::ShelfLayout:
+  void SetAlignment(mash::shelf::mojom::Alignment alignment) override;
+  void SetAutoHideBehavior(
+      mash::shelf::mojom::AutoHideBehavior auto_hide) override;
+
+  mash::shelf::mojom::Alignment alignment_;
+  mash::shelf::mojom::AutoHideBehavior auto_hide_behavior_;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfLayout);
 };

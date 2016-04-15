@@ -14,6 +14,7 @@
 #include "mash/wm/accelerator_registrar_impl.h"
 #include "mash/wm/root_window_controller.h"
 #include "mash/wm/root_windows_observer.h"
+#include "mash/wm/shelf_layout.h"
 #include "mash/wm/user_window_controller_impl.h"
 #include "mojo/converters/input_events/input_events_type_converters.h"
 #include "services/shell/public/cpp/connection.h"
@@ -67,9 +68,17 @@ void WindowManagerApplication::OnRootWindowControllerDoneInit(
   // TODO(msw): figure out if this should be per display, or global.
   user_window_controller_->Initialize(root_controller);
   for (auto& request : user_window_controller_requests_)
-    user_window_controller_binding_.AddBinding(user_window_controller_.get(),
-                                               std::move(*request));
+    user_window_controller_bindings_.AddBinding(user_window_controller_.get(),
+                                                std::move(*request));
   user_window_controller_requests_.clear();
+
+  // TODO(msw): figure out if this should be per display, or global.
+  if (root_controller == (*root_controllers_.begin())) {
+    ShelfLayout* shelf_layout = root_controller->GetShelfLayoutManager();
+    for (auto& request : shelf_layout_requests_)
+      shelf_layout_bindings_.AddBinding(shelf_layout, std::move(*request));
+    shelf_layout_requests_.clear();
+  }
 
   FOR_EACH_OBSERVER(RootWindowsObserver, root_windows_observers_,
                     OnRootWindowControllerAdded(root_controller));
@@ -121,7 +130,8 @@ void WindowManagerApplication::Initialize(shell::Connector* connector,
 }
 
 bool WindowManagerApplication::AcceptConnection(shell::Connection* connection) {
-  connection->AddInterface<mash::wm::mojom::UserWindowController>(this);
+  connection->AddInterface<mojom::ShelfLayout>(this);
+  connection->AddInterface<mojom::UserWindowController>(this);
   connection->AddInterface<mus::mojom::AcceleratorRegistrar>(this);
   if (connection->GetRemoteIdentity().name() == "mojo:mash_session")
     connection->GetInterface(&session_);
@@ -130,13 +140,27 @@ bool WindowManagerApplication::AcceptConnection(shell::Connection* connection) {
 
 void WindowManagerApplication::Create(
     shell::Connection* connection,
-    mojo::InterfaceRequest<mash::wm::mojom::UserWindowController> request) {
+    mojo::InterfaceRequest<mojom::ShelfLayout> request) {
+  // TODO(msw): Handle multiple shelves (one per display).
   if (!root_controllers_.empty() && (*root_controllers_.begin())->root()) {
-    user_window_controller_binding_.AddBinding(user_window_controller_.get(),
-                                               std::move(request));
+    ShelfLayout* shelf_layout =
+        (*root_controllers_.begin())->GetShelfLayoutManager();
+    shelf_layout_bindings_.AddBinding(shelf_layout, std::move(request));
+  } else {
+    shelf_layout_requests_.push_back(base::WrapUnique(
+        new mojo::InterfaceRequest<mojom::ShelfLayout>(std::move(request))));
+  }
+}
+
+void WindowManagerApplication::Create(
+    shell::Connection* connection,
+    mojo::InterfaceRequest<mojom::UserWindowController> request) {
+  if (!root_controllers_.empty() && (*root_controllers_.begin())->root()) {
+    user_window_controller_bindings_.AddBinding(user_window_controller_.get(),
+                                                std::move(request));
   } else {
     user_window_controller_requests_.push_back(base::WrapUnique(
-        new mojo::InterfaceRequest<mash::wm::mojom::UserWindowController>(
+        new mojo::InterfaceRequest<mojom::UserWindowController>(
             std::move(request))));
   }
 }

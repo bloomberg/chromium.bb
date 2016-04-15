@@ -26,7 +26,10 @@ mojom::AshWindowType GetAshWindowType(const mus::Window* window) {
 
 }  // namespace
 
-ShelfLayout::ShelfLayout(mus::Window* owner) : LayoutManager(owner) {
+ShelfLayout::ShelfLayout(mus::Window* owner)
+    : LayoutManager(owner),
+      alignment_(mash::shelf::mojom::Alignment::BOTTOM),
+      auto_hide_behavior_(mash::shelf::mojom::AutoHideBehavior::NEVER) {
   AddLayoutProperty(mus::mojom::WindowManager::kPreferredSize_Property);
 }
 
@@ -37,19 +40,53 @@ ShelfLayout::~ShelfLayout() {}
 // shelf restarts.
 
 void ShelfLayout::LayoutWindow(mus::Window* window) {
-  // TODO(msw): Support additional shelf alignments and RTL UI.
-  gfx::Size size = GetWindowPreferredSize(window);
-  const int y = owner()->bounds().height() - size.height();
   const mojom::AshWindowType ash_window_type = GetAshWindowType(window);
-  if (ash_window_type == mojom::AshWindowType::SHELF) {
-    size.set_width(owner()->bounds().width());
-    window->SetBounds(gfx::Rect(0, y, size.width(), size.height()));
-  } else if (ash_window_type == mojom::AshWindowType::STATUS_AREA) {
-    window->SetBounds(gfx::Rect(owner()->bounds().width() - size.width(), y,
-                                size.width(), size.height()));
+  gfx::Size size = GetWindowPreferredSize(window);
+
+  if (alignment_ == mash::shelf::mojom::Alignment::BOTTOM) {
+    const int y = owner()->bounds().height() - size.height();
+    if (ash_window_type == mojom::AshWindowType::SHELF) {
+      size.set_width(owner()->bounds().width());
+      window->SetBounds(gfx::Rect(0, y, size.width(), size.height()));
+    } else if (ash_window_type == mojom::AshWindowType::STATUS_AREA) {
+      // TODO(msw): Place the status area on the left for RTL UIs.
+      window->SetBounds(gfx::Rect(owner()->bounds().width() - size.width(), y,
+                                  size.width(), size.height()));
+    } else {
+      NOTREACHED() << "Unknown window in USER_SHELF container.";
+    }
   } else {
-    NOTREACHED() << "Unknown window in USER_SHELF container.";
+    const int x = (alignment_ == mash::shelf::mojom::Alignment::LEFT)
+                      ? 0
+                      : (owner()->bounds().width() - size.width());
+    if (ash_window_type == mojom::AshWindowType::SHELF) {
+      size.set_height(owner()->bounds().height());
+      window->SetBounds(gfx::Rect(x, 0, size.width(), size.height()));
+    } else if (ash_window_type == mojom::AshWindowType::STATUS_AREA) {
+      window->SetBounds(gfx::Rect(x, owner()->bounds().height() - size.height(),
+                                  size.width(), size.height()));
+    } else {
+      NOTREACHED() << "Unknown window in USER_SHELF container.";
+    }
   }
+}
+
+void ShelfLayout::SetAlignment(mash::shelf::mojom::Alignment alignment) {
+  if (alignment_ == alignment)
+    return;
+
+  alignment_ = alignment;
+  for (mus::Window* window : owner()->children())
+    LayoutWindow(window);
+}
+
+void ShelfLayout::SetAutoHideBehavior(
+    mash::shelf::mojom::AutoHideBehavior auto_hide) {
+  if (auto_hide_behavior_ == auto_hide)
+    return;
+
+  auto_hide_behavior_ = auto_hide;
+  NOTIMPLEMENTED();
 }
 
 }  // namespace wm

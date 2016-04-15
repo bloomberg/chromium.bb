@@ -91,6 +91,12 @@ void RootWindowController::OnAccelerator(uint32_t id, const ui::Event& event) {
   }
 }
 
+ShelfLayout* RootWindowController::GetShelfLayoutManager() {
+  return static_cast<ShelfLayout*>(
+      layout_manager_[GetWindowForContainer(mojom::Container::USER_SHELF)]
+          .get());
+}
+
 RootWindowController::RootWindowController(WindowManagerApplication* app)
     : app_(app), root_(nullptr), window_count_(0) {
   window_manager_.reset(new WindowManager);

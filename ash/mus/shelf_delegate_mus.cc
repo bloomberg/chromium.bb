@@ -116,6 +116,7 @@ ShelfDelegateMus::ShelfDelegateMus(ShelfModel* model)
     : model_(model), binding_(this) {
   ::shell::Connector* connector =
       views::WindowManagerConnection::Get()->connector();
+  connector->ConnectToInterface("mojo:desktop_wm", &shelf_layout_);
   connector->ConnectToInterface("mojo:desktop_wm", &user_window_controller_);
   user_window_controller_->AddUserWindowObserver(
       binding_.CreateInterfacePtrAndBind());
@@ -124,19 +125,7 @@ ShelfDelegateMus::ShelfDelegateMus(ShelfModel* model)
 ShelfDelegateMus::~ShelfDelegateMus() {}
 
 void ShelfDelegateMus::OnShelfCreated(Shelf* shelf) {
-  ShelfWidget* widget = shelf->shelf_widget();
-  ShelfLayoutManager* layout_manager = widget->shelf_layout_manager();
-  mus::Window* window = aura::GetMusWindow(widget->GetNativeWindow());
-  gfx::Size size = layout_manager->GetIdealBounds().size();
-  window->SetSharedProperty<gfx::Size>(
-      mus::mojom::WindowManager::kPreferredSize_Property, size);
-
-  StatusAreaWidget* status_widget = widget->status_area_widget();
-  mus::Window* status_window =
-      aura::GetMusWindow(status_widget->GetNativeWindow());
-  gfx::Size status_size = status_widget->GetWindowBoundsInScreen().size();
-  status_window->SetSharedProperty<gfx::Size>(
-      mus::mojom::WindowManager::kPreferredSize_Property, status_size);
+  SetShelfPreferredSizes(shelf);
 }
 
 void ShelfDelegateMus::OnShelfDestroyed(Shelf* shelf) {
@@ -144,18 +133,27 @@ void ShelfDelegateMus::OnShelfDestroyed(Shelf* shelf) {
 }
 
 void ShelfDelegateMus::OnShelfAlignmentChanged(Shelf* shelf) {
-  observers_.ForAllPtrs([shelf](mash::shelf::mojom::ShelfObserver* observer) {
-    observer->OnAlignmentChanged(
-        static_cast<mash::shelf::mojom::Alignment>(shelf->GetAlignment()));
-  });
+  SetShelfPreferredSizes(shelf);
+  mash::shelf::mojom::Alignment alignment =
+      static_cast<mash::shelf::mojom::Alignment>(shelf->GetAlignment());
+  shelf_layout_->SetAlignment(alignment);
+
+  observers_.ForAllPtrs(
+      [alignment](mash::shelf::mojom::ShelfObserver* observer) {
+        observer->OnAlignmentChanged(alignment);
+      });
 }
 
 void ShelfDelegateMus::OnShelfAutoHideBehaviorChanged(Shelf* shelf) {
-  observers_.ForAllPtrs([shelf](mash::shelf::mojom::ShelfObserver* observer) {
-    observer->OnAutoHideBehaviorChanged(
-        static_cast<mash::shelf::mojom::AutoHideBehavior>(
-            shelf->auto_hide_behavior()));
-  });
+  mash::shelf::mojom::AutoHideBehavior behavior =
+      static_cast<mash::shelf::mojom::AutoHideBehavior>(
+          shelf->auto_hide_behavior());
+  shelf_layout_->SetAutoHideBehavior(behavior);
+
+  observers_.ForAllPtrs(
+      [behavior](mash::shelf::mojom::ShelfObserver* observer) {
+        observer->OnAutoHideBehaviorChanged(behavior);
+      });
 }
 
 ShelfID ShelfDelegateMus::GetShelfIDForAppID(const std::string& app_id) {
@@ -319,6 +317,22 @@ void ShelfDelegateMus::OnUserWindowFocusChanged(uint32_t window_id,
   ShelfItem item = *iter;
   item.status = has_focus ? STATUS_ACTIVE : STATUS_RUNNING;
   model_->Set(index, item);
+}
+
+void ShelfDelegateMus::SetShelfPreferredSizes(Shelf* shelf) {
+  ShelfWidget* widget = shelf->shelf_widget();
+  ShelfLayoutManager* layout_manager = widget->shelf_layout_manager();
+  mus::Window* window = aura::GetMusWindow(widget->GetNativeWindow());
+  gfx::Size size = layout_manager->GetIdealBounds().size();
+  window->SetSharedProperty<gfx::Size>(
+      mus::mojom::WindowManager::kPreferredSize_Property, size);
+
+  StatusAreaWidget* status_widget = widget->status_area_widget();
+  mus::Window* status_window =
+      aura::GetMusWindow(status_widget->GetNativeWindow());
+  gfx::Size status_size = status_widget->GetWindowBoundsInScreen().size();
+  status_window->SetSharedProperty<gfx::Size>(
+      mus::mojom::WindowManager::kPreferredSize_Property, status_size);
 }
 
 }  // namespace sysui

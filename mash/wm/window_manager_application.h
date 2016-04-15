@@ -18,6 +18,7 @@
 #include "components/mus/public/interfaces/window_manager_factory.mojom.h"
 #include "components/mus/public/interfaces/window_tree_host.mojom.h"
 #include "mash/session/public/interfaces/session.mojom.h"
+#include "mash/wm/public/interfaces/shelf_layout.mojom.h"
 #include "mash/wm/public/interfaces/user_window_controller.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -49,7 +50,8 @@ class UserWindowControllerImpl;
 class WindowManagerApplication
     : public shell::ShellClient,
       public mus::mojom::WindowManagerFactory,
-      public shell::InterfaceFactory<mash::wm::mojom::UserWindowController>,
+      public shell::InterfaceFactory<mojom::ShelfLayout>,
+      public shell::InterfaceFactory<mojom::UserWindowController>,
       public shell::InterfaceFactory<mus::mojom::AcceleratorRegistrar> {
  public:
   WindowManagerApplication();
@@ -92,12 +94,16 @@ class WindowManagerApplication
                   uint32_t id) override;
   bool AcceptConnection(shell::Connection* connection) override;
 
-  // InterfaceFactory<mash::wm::mojom::UserWindowController>:
+  // shell::InterfaceFactory<mojom::ShelfLayout>:
   void Create(shell::Connection* connection,
-              mojo::InterfaceRequest<mash::wm::mojom::UserWindowController>
-                  request) override;
+              mojo::InterfaceRequest<mojom::ShelfLayout> request) override;
 
-  // InterfaceFactory<mus::mojom::AcceleratorRegistrar>:
+  // shell::InterfaceFactory<mojom::UserWindowController>:
+  void Create(
+      shell::Connection* connection,
+      mojo::InterfaceRequest<mojom::UserWindowController> request) override;
+
+  // shell::InterfaceFactory<mus::mojom::AcceleratorRegistrar>:
   void Create(shell::Connection* connection,
               mojo::InterfaceRequest<mus::mojom::AcceleratorRegistrar> request)
       override;
@@ -114,13 +120,19 @@ class WindowManagerApplication
   std::unique_ptr<ui::mojo::UIInit> ui_init_;
   std::unique_ptr<views::AuraInit> aura_init_;
 
+  // The ShelfLayout object is created once OnEmbed() is called. Until that
+  // time |shelf_layout_requests_| stores pending interface requests.
+  mojo::BindingSet<mojom::ShelfLayout> shelf_layout_bindings_;
+  std::vector<scoped_ptr<mojo::InterfaceRequest<mojom::ShelfLayout>>>
+      shelf_layout_requests_;
+
   // |user_window_controller_| is created once OnEmbed() is called. Until that
   // time |user_window_controller_requests_| stores pending interface requests.
   std::unique_ptr<UserWindowControllerImpl> user_window_controller_;
-  mojo::BindingSet<mash::wm::mojom::UserWindowController>
-      user_window_controller_binding_;
-  std::vector<std::unique_ptr<
-      mojo::InterfaceRequest<mash::wm::mojom::UserWindowController>>>
+  mojo::BindingSet<mojom::UserWindowController>
+      user_window_controller_bindings_;
+  std::vector<
+      std::unique_ptr<mojo::InterfaceRequest<mojom::UserWindowController>>>
       user_window_controller_requests_;
 
   std::set<AcceleratorRegistrarImpl*> accelerator_registrars_;

@@ -9,6 +9,7 @@
 
 #include "ash/shelf/shelf_delegate.h"
 #include "mash/shelf/public/interfaces/shelf.mojom.h"
+#include "mash/wm/public/interfaces/shelf_layout.mojom.h"
 #include "mash/wm/public/interfaces/user_window_controller.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
@@ -61,10 +62,14 @@ class ShelfDelegateMus : public ShelfDelegate,
                                   mojo::Array<uint8_t> app_icon) override;
   void OnUserWindowFocusChanged(uint32_t window_id, bool has_focus) override;
 
+  // Set the Mus window preferred sizes, needed by mash::wm::ShelfLayout.
+  void SetShelfPreferredSizes(Shelf* shelf);
+
   ShelfModel* model_;
 
   mojo::AssociatedInterfacePtrSet<mash::shelf::mojom::ShelfObserver> observers_;
 
+  mash::wm::mojom::ShelfLayoutPtr shelf_layout_;
   mash::wm::mojom::UserWindowControllerPtr user_window_controller_;
   mojo::Binding<mash::wm::mojom::UserWindowObserver> binding_;
   std::map<uint32_t, ShelfID> window_id_to_shelf_id_;
