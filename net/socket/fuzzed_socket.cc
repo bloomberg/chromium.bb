@@ -153,7 +153,7 @@ void FuzzedSocket::Disconnect() {
 }
 
 bool FuzzedSocket::IsConnected() const {
-  return net_error_ != OK && !error_pending_;
+  return net_error_ == OK && !error_pending_;
 }
 
 bool FuzzedSocket::IsConnectedAndIdle() const {

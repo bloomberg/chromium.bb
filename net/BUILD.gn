@@ -1972,6 +1972,18 @@ fuzzer_test("net_http_chunked_decoder_fuzzer") {
   dict = "http/http_chunked_decoder_fuzzer.dict"
 }
 
+fuzzer_test("net_http_proxy_client_socket_fuzzer") {
+  sources = [
+    "http/http_proxy_client_socket_fuzzer.cc",
+  ]
+  deps = [
+    ":net_fuzzer_test_support",
+    ":test_support",
+    "//base",
+    "//net",
+  ]
+}
+
 fuzzer_test("net_quic_crypto_framer_parse_message_fuzzer") {
   sources = [
     "quic/quic_crypto_framer_parse_message_fuzzer.cc",

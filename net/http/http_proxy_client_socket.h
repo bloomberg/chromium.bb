@@ -14,6 +14,7 @@
 #include "net/base/completion_callback.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/load_timing_info.h"
+#include "net/base/net_export.h"
 #include "net/http/http_auth_controller.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_request_info.h"
@@ -32,7 +33,7 @@ class HttpStreamParser;
 class IOBuffer;
 class ProxyDelegate;
 
-class HttpProxyClientSocket : public ProxyClientSocket {
+class NET_EXPORT_PRIVATE HttpProxyClientSocket : public ProxyClientSocket {
  public:
   // Takes ownership of |transport_socket|, which should already be connected
   // by the time Connect() is called.  If tunnel is true then on Connect()
