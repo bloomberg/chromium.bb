@@ -724,6 +724,8 @@ Region ScrollingCoordinator::computeShouldHandleScrollGestureOnMainThreadRegion(
 
     if (const FrameView::ScrollableAreaSet* scrollableAreas = frameView->scrollableAreas()) {
         for (const ScrollableArea* scrollableArea : *scrollableAreas) {
+            if (scrollableArea->isFrameView() && toFrameView(scrollableArea)->shouldThrottleRendering())
+                continue;
             // Composited scrollable areas can be scrolled off the main thread.
             if (scrollableArea->usesCompositedScrolling())
                 continue;

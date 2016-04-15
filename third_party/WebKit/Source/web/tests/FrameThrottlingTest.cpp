@@ -469,12 +469,55 @@ TEST_F(FrameThrottlingTest, ScrollingCoordinatorShouldSkipThrottledFrame)
     // The fixed background in the throttled sub frame should not cause main thread scrolling.
     EXPECT_FALSE(document().view()->shouldScrollOnMainThread());
 
-    // Scroll down to unthrottle the frame.
-    webView().mainFrameImpl()->frameView()->setScrollPosition(DoublePoint(0, 480), ProgrammaticScroll);
-    document().view()->updateAllLifecyclePhases();
-    testing::runPendingTasks();
+    // Make the frame visible by changing its transform. This doesn't cause a
+    // layout, but should still unthrottle the frame.
+    frameElement->setAttribute(styleAttr, "transform: translateY(0px)");
+    compositeFrame();
+    EXPECT_FALSE(frameElement->contentDocument()->view()->canThrottleRendering());
     // The fixed background in the throttled sub frame should be considered.
     EXPECT_TRUE(document().view()->shouldScrollOnMainThread());
+}
+
+TEST_F(FrameThrottlingTest, ScrollingCoordinatorShouldSkipCompositedThrottledFrame)
+{
+    webView().settings()->setAcceleratedCompositingEnabled(true);
+    webView().settings()->setPreferCompositingToLCDTextEnabled(true);
+
+    // Create a hidden frame which is throttled.
+    SimRequest mainResource("https://example.com/", "text/html");
+    SimRequest frameResource("https://example.com/iframe.html", "text/html");
+
+    loadURL("https://example.com/");
+    mainResource.complete("<iframe id=frame sandbox src=iframe.html></iframe>");
+    frameResource.complete("<div style='height: 2000px'></div>");
+
+    // Move the frame offscreen to throttle it.
+    auto* frameElement = toHTMLIFrameElement(document().getElementById("frame"));
+    frameElement->setAttribute(styleAttr, "transform: translateY(480px)");
+    EXPECT_FALSE(frameElement->contentDocument()->view()->canThrottleRendering());
+    compositeFrame();
+    EXPECT_TRUE(frameElement->contentDocument()->view()->canThrottleRendering());
+
+    // Change style of the frame's content to make it in VisualUpdatePending state.
+    frameElement->contentDocument()->body()->setAttribute(styleAttr, "background: green");
+    // Change root frame's layout so that the next lifecycle update will call
+    // ScrollingCoordinator::updateAfterCompositingChangeIfNeeded().
+    document().body()->setAttribute(styleAttr, "margin: 20px");
+    EXPECT_EQ(DocumentLifecycle::VisualUpdatePending, frameElement->contentDocument()->lifecycle().state());
+
+    DocumentLifecycle::AllowThrottlingScope throttlingScope(document().lifecycle());
+    // This will call ScrollingCoordinator::updateAfterCompositingChangeIfNeeded() and should not
+    // cause assert failure about isAllowedToQueryCompositingState() in the throttled frame.
+    compositeFrame();
+    EXPECT_EQ(DocumentLifecycle::VisualUpdatePending, frameElement->contentDocument()->lifecycle().state());
+
+    // Make the frame visible by changing its transform. This doesn't cause a
+    // layout, but should still unthrottle the frame.
+    frameElement->setAttribute(styleAttr, "transform: translateY(0px)");
+    compositeFrame(); // Unthrottle the frame.
+    compositeFrame(); // Handle the pending visual update of the unthrottled frame.
+    EXPECT_EQ(DocumentLifecycle::PaintClean, frameElement->contentDocument()->lifecycle().state());
+    EXPECT_TRUE(frameElement->contentDocument()->view()->usesCompositedScrolling());
 }
 
 TEST_F(FrameThrottlingTest, UnthrottleByTransformingWithoutLayout)

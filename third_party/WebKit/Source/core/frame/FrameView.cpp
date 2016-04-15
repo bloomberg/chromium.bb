@@ -4080,6 +4080,9 @@ void FrameView::notifyRenderThrottlingObservers()
 
     bool becameUnthrottled = wasThrottled && !canThrottleRendering();
     if (becameUnthrottled) {
+        // ScrollingCoordinator needs to update according to the new throttling status.
+        if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator())
+            scrollingCoordinator->notifyGeometryChanged();
         // Start ticking animation frames again if necessary.
         page()->animator().scheduleVisualUpdate(m_frame.get());
         // Force a full repaint of this frame to ensure we are not left with a
