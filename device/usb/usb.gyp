@@ -103,10 +103,6 @@
           'dependencies!': [
             '../../third_party/libusb/libusb.gyp:libusb',
           ],
-          'sources': [
-            'usb_device_handle_usbfs.cc',
-            'usb_device_handle_usbfs.h',
-          ],
           # These sources are libusb-specific.
           'sources!': [
             'usb_context.cc',
@@ -126,16 +122,6 @@
             '../../chromeos/chromeos.gyp:chromeos',
           ],
         }],
-        ['OS=="linux"', {
-          'sources': [
-            'usb_device_handle_usbfs.cc',
-            'usb_device_handle_usbfs.h',
-          ],
-          'sources!': [
-            'usb_device_handle_impl.cc',
-            'usb_device_handle_impl.h',
-          ]
-        }]
       ]
     },
     {
