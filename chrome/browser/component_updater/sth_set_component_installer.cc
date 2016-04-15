@@ -19,7 +19,6 @@
 #include "components/safe_json/safe_json_parser.h"
 #include "content/public/browser/browser_thread.h"
 #include "crypto/sha2.h"
-#include "net/cert/ct_known_logs_static.h"
 #include "net/cert/ct_log_response_parser.h"
 #include "net/cert/signed_tree_head.h"
 #include "net/cert/sth_distributor.h"

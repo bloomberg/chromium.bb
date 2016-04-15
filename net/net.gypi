@@ -85,7 +85,7 @@
       'cert/crl_set.h',
       'cert/ct_known_logs.cc',
       'cert/ct_known_logs.h',
-      'cert/ct_known_logs_static.h',
+      'cert/ct_known_logs_static-inc.h',
       'cert/ct_policy_enforcer.cc',
       'cert/ct_policy_enforcer.h',
       'cert/ct_policy_status.h',
