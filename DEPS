@@ -144,7 +144,7 @@ deps = {
     Var('chromium_git') + '/external/google-safe-browsing/testing.git' + '@' + '9d7e8064f3ca2e45891470c9b5b1dce54af6a9d6',
 
   'src/third_party/leveldatabase/src':
-    Var('chromium_git') + '/external/leveldb.git' + '@' + '7306ef856a91e462a73ff1832c1fa8771008ba36',
+    Var('chromium_git') + '/external/leveldb.git' + '@' + 'a7bff697baa062c8f6b8fb760eacf658712b611a',
 
   'src/third_party/snappy/src':
     Var('chromium_git') + '/external/snappy.git' + '@' + '762bb32f0c9d2f31ba4958c7c0933d22e80c20bf',
