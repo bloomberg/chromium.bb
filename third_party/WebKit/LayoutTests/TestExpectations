@@ -1740,6 +1740,8 @@ crbug.com/594672 virtual/trustedeventsdefaultaction/fast/events/updateLayoutForH
 
 crbug.com/593888 [ Linux Debug ] fast/dom/htmlcollection-reachable.html [ Timeout ]
 
+crbug.com/603728 [ Linux ] virtual/gpu-rasterization/fast/images/color-profile-filter.html [ Failure ]
+
 crbug.com/593568 [ Win Debug ] virtual/threaded/fast/scroll-behavior/smooth-scroll/horizontal-smooth-scroll-in-rtl.html [ Failure ]
 
 #crbug.com/591825 [ Mac10.11 Debug ] fast/text/selection-multiple-runs.html [ Failure ]
