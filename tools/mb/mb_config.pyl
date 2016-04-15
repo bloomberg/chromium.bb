@@ -214,7 +214,6 @@
       'Win8 Tests (1)': 'none',
       'Win8 Tests (2)': 'none',
       'WinClang': 'win_clang_debug_bot',
-      'WinClang64 (dbg)': 'win_clang_debug_bot',
       'Windows Browser (DrMemory light) (1)': 'none',
       'Windows Browser (DrMemory light) (2)': 'none',
 
@@ -568,6 +567,7 @@
       'Win7 Tests (dbg)(1)': 'none',
       'Win8 Aura': 'gn_release_bot_minimal_symbols_x86',
       'Win8 GN (dbg)': 'gn_debug_bot_minimal_symbols_x86',
+      'WinClang64 (dbg)': 'win_clang_debug_bot',
     },
 
     'official.desktop': {
