@@ -102,27 +102,13 @@ namespace blink {
 
 using namespace HTMLNames;
 
-struct SameSizeAsNode : NODE_BASE_CLASSES {
+struct SameSizeAsNode : EventTarget {
     uint32_t m_nodeFlags;
     Member<void*> m_willbeMember[4];
     void* m_pointer;
 };
 
 static_assert(sizeof(Node) <= sizeof(SameSizeAsNode), "Node should stay small");
-
-#if !ENABLE(OILPAN)
-void* Node::operator new(size_t size)
-{
-    DCHECK(isMainThread());
-    return partitionAlloc(WTF::Partitions::nodePartition(), size, "blink::Node");
-}
-
-void Node::operator delete(void* ptr)
-{
-    DCHECK(isMainThread());
-    partitionFree(ptr);
-}
-#endif
 
 #if DUMP_NODE_STATISTICS
 using WeakNodeSet = HeapHashSet<WeakMember<Node>>;
@@ -265,11 +251,6 @@ Node::Node(TreeScope* treeScope, ConstructionType type)
     , m_next(nullptr)
 {
     DCHECK(m_treeScope || type == CreateDocument || type == CreateShadowRoot);
-#if !ENABLE(OILPAN)
-    if (m_treeScope)
-        m_treeScope->guardRef();
-#endif
-
 #if !defined(NDEBUG) || (defined(DUMP_NODE_STATISTICS) && DUMP_NODE_STATISTICS)
     trackForDebugging();
 #endif
@@ -278,60 +259,11 @@ Node::Node(TreeScope* treeScope, ConstructionType type)
 
 Node::~Node()
 {
-#if !ENABLE(OILPAN)
-#if DUMP_NODE_STATISTICS
-    liveNodeSet().remove(this);
-#endif
-
-    if (hasRareData())
-        clearRareData();
-
-    RELEASE_ASSERT(!layoutObject());
-
-    if (!isContainerNode())
-        willBeDeletedFromDocument();
-
-    if (m_previous)
-        m_previous->setNextSibling(nullptr);
-    if (m_next)
-        m_next->setPreviousSibling(nullptr);
-
-    if (m_treeScope)
-        m_treeScope->guardDeref();
-
-    if (getFlag(HasWeakReferencesFlag))
-        WeakIdentifierMap<Node>::notifyObjectDestroyed(this);
-
-    // clearEventTargetData() must be always done,
-    // or eventTargetDataMap() may keep a raw pointer to a deleted object.
-    DCHECK(!hasEventTargetData());
-#else
     // With Oilpan, the rare data finalizer also asserts for
     // this condition (we cannot directly access it here.)
     RELEASE_ASSERT(hasRareData() || !layoutObject());
-#endif
-
     InstanceCounters::decrementCounter(InstanceCounters::NodeCounter);
 }
-
-#if !ENABLE(OILPAN)
-// With Oilpan all of this is handled with weak processing of the document.
-void Node::willBeDeletedFromDocument()
-{
-    if (hasEventTargetData())
-        clearEventTargetData();
-
-    if (!isTreeScopeInitialized())
-        return;
-
-    Document& document = this->document();
-
-    if (document.frameHost())
-        document.frameHost()->eventHandlerRegistry().didRemoveAllEventHandlers(*this);
-
-    document.markers().removeMarkers(this);
-}
-#endif
 
 NodeRareData* Node::rareData() const
 {
@@ -354,22 +286,6 @@ NodeRareData& Node::ensureRareData()
     setFlag(HasRareDataFlag);
     return *rareData();
 }
-
-#if !ENABLE(OILPAN)
-void Node::clearRareData()
-{
-    DCHECK(hasRareData());
-    DCHECK(!transientMutationObserverRegistry() || transientMutationObserverRegistry()->isEmpty());
-
-    LayoutObject* layoutObject = m_data.m_rareData->layoutObject();
-    if (isElementNode())
-        delete static_cast<ElementRareData*>(m_data.m_rareData);
-    else
-        delete static_cast<NodeRareData*>(m_data.m_rareData);
-    m_data.m_layoutObject = layoutObject;
-    clearFlag(HasRareDataFlag);
-}
-#endif
 
 Node* Node::toNode()
 {
@@ -1940,16 +1856,6 @@ EventTargetData& Node::ensureEventTargetData()
     return *data;
 }
 
-#if !ENABLE(OILPAN)
-void Node::clearEventTargetData()
-{
-    eventTargetDataMap().remove(this);
-#if DCHECK_IS_ON()
-    setHasEventTargetData(false);
-#endif
-}
-#endif
-
 HeapVector<Member<MutationObserverRegistration>>* Node::mutationObserverRegistry()
 {
     if (!hasRareData())
@@ -2030,11 +1936,9 @@ void Node::unregisterMutationObserver(MutationObserverRegistration* registration
         return;
 
     // FIXME: Simplify the registration/transient registration logic to make this understandable by humans.
-#if ENABLE(OILPAN)
     // The explicit dispose() is needed to have the registration
     // object unregister itself promptly.
     registration->dispose();
-#endif
     registry->remove(index);
 }
 
@@ -2235,53 +2139,6 @@ bool Node::willRespondToTouchEvents()
         return false;
     return hasEventListeners(EventTypeNames::touchstart) || hasEventListeners(EventTypeNames::touchmove) || hasEventListeners(EventTypeNames::touchcancel) || hasEventListeners(EventTypeNames::touchend);
 }
-
-#if !ENABLE(OILPAN)
-// This is here for inlining
-inline void TreeScope::removedLastRefToScope()
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!deletionHasBegun());
-    if (m_guardRefCount) {
-        // If removing a child removes the last self-only ref, we don't
-        // want the scope to be destructed until after
-        // removeDetachedChildren returns, so we guard ourselves with an
-        // extra self-only ref.
-        guardRef();
-        dispose();
-#if DCHECK_IS_ON()
-        // We need to do this right now since guardDeref() can delete this.
-        rootNode().m_inRemovedLastRefFunction = false;
-#endif
-        guardDeref();
-    } else {
-#if DCHECK_IS_ON()
-        rootNode().m_inRemovedLastRefFunction = false;
-#endif
-#if ENABLE(SECURITY_ASSERT)
-        beginDeletion();
-#endif
-        delete this;
-    }
-}
-
-// It's important not to inline removedLastRef, because we don't want to inline the code to
-// delete a Node at each deref call site.
-void Node::removedLastRef()
-{
-    // An explicit check for Document here is better than a virtual function since it is
-    // faster for non-Document nodes, and because the call to removedLastRef that is inlined
-    // at all deref call sites is smaller if it's a non-virtual function.
-    if (isTreeScope()) {
-        treeScope().removedLastRefToScope();
-        return;
-    }
-
-#if ENABLE(SECURITY_ASSERT)
-    m_deletionHasBegun = true;
-#endif
-    delete this;
-}
-#endif
 
 unsigned Node::connectedSubframeCount() const
 {

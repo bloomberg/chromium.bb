@@ -88,9 +88,6 @@ class StyleChangeReasonForTracing;
 class TagCollection;
 class Text;
 class TouchEvent;
-#if !ENABLE(OILPAN)
-template <typename T> struct WeakIdentifierMapTraits;
-#endif
 
 const int nodeStyleChangeShift = 19;
 
@@ -120,19 +117,9 @@ protected:
 class Node;
 WILL_NOT_BE_EAGERLY_TRACED_CLASS(Node);
 
-#if ENABLE(OILPAN)
-#define NODE_BASE_CLASSES public EventTarget
-#else
-// TreeShared should be the last to pack TreeShared::m_refCount and
-// Node::m_nodeFlags on 64bit platforms.
-#define NODE_BASE_CLASSES public EventTarget, public TreeShared<Node>
-#endif
-
 // This class represents a DOM node in the DOM tree.
 // https://dom.spec.whatwg.org/#interface-node
-class CORE_EXPORT Node : NODE_BASE_CLASSES {
-#if !ENABLE(OILPAN)
-#endif
+class CORE_EXPORT Node : public EventTarget {
     DEFINE_WRAPPERTYPEINFO();
     friend class TreeScope;
     friend class TreeScopeAdopter;
@@ -170,7 +157,6 @@ public:
         DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC = 0x20,
     };
 
-#if ENABLE(OILPAN)
     // Override operator new to allocate Node subtype objects onto
     // a dedicated heap.
     GC_PLUGIN_IGNORE("crbug.com/443854")
@@ -184,12 +170,6 @@ public:
         const char typeName[] = "blink::Node";
         return ThreadHeap::allocateOnArenaIndex(state, size, isEager ? BlinkGC::EagerSweepArenaIndex : BlinkGC::NodeArenaIndex, GCInfoTrait<EventTarget>::index(), typeName);
     }
-#else // !ENABLE(OILPAN)
-    // All Nodes are placed in their own heap partition for security.
-    // See http://crbug.com/246860 for detail.
-    void* operator new(size_t);
-    void operator delete(void*);
-#endif
 
     static void dumpStatistics();
 
@@ -769,19 +749,10 @@ protected:
 
     static void reattachWhitespaceSiblingsIfNeeded(Text* start);
 
-#if !ENABLE(OILPAN)
-    void willBeDeletedFromDocument();
-#endif
-
     bool hasRareData() const { return getFlag(HasRareDataFlag); }
 
     NodeRareData* rareData() const;
     NodeRareData& ensureRareData();
-#if !ENABLE(OILPAN)
-    void clearRareData();
-
-    void clearEventTargetData();
-#endif
 
     void setHasCustomStyleCallbacks() { setFlag(true, HasCustomStyleCallbacksFlag); }
 
@@ -798,12 +769,7 @@ protected:
 
 private:
     friend class TreeShared<Node>;
-#if !ENABLE(OILPAN)
-    // FIXME: consider exposing proper API for this instead.
-    friend struct WeakIdentifierMapTraits<Node>;
 
-    void removedLastRef();
-#endif
     bool hasTreeSharedParent() const { return !!parentOrShadowHostNode(); }
 
     // Gets nodeName without caching AtomicStrings. Used by
