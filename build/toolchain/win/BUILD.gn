@@ -150,9 +150,10 @@ template("msvc_toolchain") {
       outputs = [
         # Ignore {{output_extension}} and always use .lib, there's no reason to
         # allow targets to override this extension on Windows.
-        "{{target_out_dir}}/{{target_output_name}}.lib",
+        "{{output_dir}}/{{target_output_name}}.lib",
       ]
       default_output_extension = ".lib"
+      default_output_dir = "{{target_out_dir}}"
 
       # The use of inputs_newline is to work around a fixed per-line buffer
       # size in the linker.
@@ -160,18 +161,14 @@ template("msvc_toolchain") {
     }
 
     tool("solink") {
-      dllname = "{{root_out_dir}}/{{target_output_name}}{{output_extension}}"  # e.g. foo.dll
+      dllname = "{{output_dir}}/{{target_output_name}}{{output_extension}}"  # e.g. foo.dll
       libname = "${dllname}.lib"  # e.g. foo.dll.lib
       rspfile = "${dllname}.rsp"
 
-      link_command = "$python_path gyp-win-tool link-wrapper $env False $link /nologo /IMPLIB:$libname /DLL /OUT:$dllname /PDB:${dllname}.pdb @$rspfile"
-
-      # TODO(brettw) support manifests
-      #manifest_command = "$python_path gyp-win-tool manifest-wrapper $env mt.exe -nologo -manifest $manifests -out:${dllname}.manifest"
-      #command = "cmd /c $link_command && $manifest_command"
-      command = link_command
+      command = "$python_path gyp-win-tool link-wrapper $env False $link /nologo /IMPLIB:$libname /DLL /OUT:$dllname /PDB:${dllname}.pdb @$rspfile"
 
       default_output_extension = ".dll"
+      default_output_dir = "{{root_out_dir}}"
       description = "LINK(DLL) {{output}}"
       outputs = [
         dllname,
@@ -192,14 +189,13 @@ template("msvc_toolchain") {
     }
 
     tool("solink_module") {
-      dllname = "{{root_out_dir}}/{{target_output_name}}{{output_extension}}"  # e.g. foo.dll
+      dllname = "{{output_dir}}/{{target_output_name}}{{output_extension}}"  # e.g. foo.dll
       rspfile = "${dllname}.rsp"
 
-      link_command = "$python_path gyp-win-tool link-wrapper $env False $link /nologo /DLL /OUT:$dllname /PDB:${dllname}.pdb @$rspfile"
-
-      command = link_command
+      command = "$python_path gyp-win-tool link-wrapper $env False $link /nologo /DLL /OUT:$dllname /PDB:${dllname}.pdb @$rspfile"
 
       default_output_extension = ".dll"
+      default_output_dir = "{{root_out_dir}}"
       description = "LINK_MODULE(DLL) {{output}}"
       outputs = [
         dllname,
@@ -213,17 +209,13 @@ template("msvc_toolchain") {
     tool("link") {
       rspfile = "{{output}}.rsp"
 
-      link_command = "$python_path gyp-win-tool link-wrapper $env False $link /nologo /OUT:{{output}} /PDB:{{output}}.pdb @$rspfile"
-
-      # TODO(brettw) support manifests
-      #manifest_command = "$python_path gyp-win-tool manifest-wrapper $env mt.exe -nologo -manifest $manifests -out:{{output}}.manifest"
-      #command = "cmd /c $link_command && $manifest_command"
-      command = link_command
+      command = "$python_path gyp-win-tool link-wrapper $env False $link /nologo /OUT:{{output}} /PDB:{{output}}.pdb @$rspfile"
 
       default_output_extension = ".exe"
+      default_output_dir = "{{root_out_dir}}"
       description = "LINK {{output}}"
       outputs = [
-        "{{root_out_dir}}/{{target_output_name}}{{output_extension}}",
+        "{{output_dir}}/{{target_output_name}}{{output_extension}}",
       ]
 
       # The use of inputs_newline is to work around a fixed per-line buffer
