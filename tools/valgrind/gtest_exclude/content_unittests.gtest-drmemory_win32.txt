@@ -11,3 +11,6 @@ RenderWidgetCompositorOutputSurfaceTest.FallbackSuccessNormalSuccess
 # http://crbug.com/554665
 WebContentsVideoCaptureDeviceTest.VariableResolution_AnyWithinLimits
 WebContentsVideoCaptureDeviceTest.VariableResolution_FixedAspectRatio
+
+# https://crbug.com/604056
+CodecProfiles/RTCVideoDecoderTest.GetVDAErrorCounterForTesting/0
