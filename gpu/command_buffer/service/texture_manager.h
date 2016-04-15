@@ -246,6 +246,9 @@ class GPU_EXPORT Texture {
     return immutable_;
   }
 
+  // Return 0 if it's not immutable.
+  GLint GetImmutableLevels() const;
+
   // Get the cleared rectangle for a particular level. Returns an empty
   // rectangle if level does not exist.
   gfx::Rect GetLevelClearedRect(GLenum target, GLint level) const;

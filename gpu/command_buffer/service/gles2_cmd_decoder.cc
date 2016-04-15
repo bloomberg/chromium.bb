@@ -1559,10 +1559,14 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   // Wrapper for glGetShaderiv
   void DoGetShaderiv(GLuint shader, GLenum pname, GLint* params);
 
+  // Helper for DoGetTexParameter{f|i}v.
+  void GetTexParameterImpl(
+      GLenum target, GLenum pname, GLfloat* fparams, GLint* iparams,
+      const char* function_name);
+
   // Wrappers for glGetTexParameter.
   void DoGetTexParameterfv(GLenum target, GLenum pname, GLfloat* params);
   void DoGetTexParameteriv(GLenum target, GLenum pname, GLint* params);
-  void InitTextureMaxAnisotropyIfNeeded(GLenum target, GLenum pname);
 
   // Wrappers for glGetVertexAttrib.
   template <typename T>
@@ -8913,37 +8917,52 @@ void GLES2DecoderImpl::DoGetSamplerParameteriv(
   glGetSamplerParameteriv(sampler->service_id(), pname, params);
 }
 
-void GLES2DecoderImpl::DoGetTexParameterfv(
-    GLenum target, GLenum pname, GLfloat* params) {
-  InitTextureMaxAnisotropyIfNeeded(target, pname);
-  glGetTexParameterfv(target, pname, params);
-}
-
-void GLES2DecoderImpl::DoGetTexParameteriv(
-    GLenum target, GLenum pname, GLint* params) {
-  InitTextureMaxAnisotropyIfNeeded(target, pname);
-  glGetTexParameteriv(target, pname, params);
-}
-
-void GLES2DecoderImpl::InitTextureMaxAnisotropyIfNeeded(
-    GLenum target, GLenum pname) {
-  if (!workarounds().init_texture_max_anisotropy)
-    return;
-  if (pname != GL_TEXTURE_MAX_ANISOTROPY_EXT ||
-      !validators_->texture_parameter.IsValid(pname)) {
-    return;
-  }
-
+void GLES2DecoderImpl::GetTexParameterImpl(
+    GLenum target, GLenum pname, GLfloat* fparams, GLint* iparams,
+    const char* function_name) {
   TextureRef* texture_ref = texture_manager()->GetTextureInfoForTarget(
       &state_, target);
   if (!texture_ref) {
     LOCAL_SET_GL_ERROR(
-        GL_INVALID_OPERATION,
-        "glGetTexParamter{fi}v", "unknown texture for target");
+        GL_INVALID_OPERATION, function_name, "unknown texture for target");
     return;
   }
   Texture* texture = texture_ref->texture();
-  texture->InitTextureMaxAnisotropyIfNeeded(target);
+  switch (pname) {
+    case GL_TEXTURE_MAX_ANISOTROPY_EXT:
+      if (workarounds().init_texture_max_anisotropy) {
+        texture->InitTextureMaxAnisotropyIfNeeded(target);
+      }
+      break;
+    case GL_TEXTURE_IMMUTABLE_LEVELS:
+      if (feature_info_->gl_version_info().IsLowerThanGL(4, 2)) {
+        GLint levels = texture->GetImmutableLevels();
+        if (fparams) {
+          fparams[0] = static_cast<GLfloat>(levels);
+        } else {
+          iparams[0] = levels;
+        }
+        return;
+      }
+      break;
+    default:
+      break;
+  }
+  if (fparams) {
+    glGetTexParameterfv(target, pname, fparams);
+  } else {
+    glGetTexParameteriv(target, pname, iparams);
+  }
+}
+
+void GLES2DecoderImpl::DoGetTexParameterfv(
+    GLenum target, GLenum pname, GLfloat* params) {
+  GetTexParameterImpl(target, pname, params, nullptr, "glGetTexParameterfv");
+}
+
+void GLES2DecoderImpl::DoGetTexParameteriv(
+    GLenum target, GLenum pname, GLint* params) {
+  GetTexParameterImpl(target, pname, nullptr, params, "glGetTexParameteriv");
 }
 
 template <typename T>

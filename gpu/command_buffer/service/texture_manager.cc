@@ -1319,6 +1319,21 @@ bool Texture::ClearRenderableLevels(GLES2Decoder* decoder) {
   return true;
 }
 
+GLint Texture::GetImmutableLevels() const {
+  if (!immutable_)
+    return 0;
+  GLint levels = 0;
+  if (immutable_) {
+    DCHECK(face_infos_.size() > 0);
+    for (size_t ii = 0; ii < face_infos_[0].level_infos.size(); ++ii) {
+      const Texture::LevelInfo& info = face_infos_[0].level_infos[ii];
+      if (info.target != 0)
+        levels++;
+    }
+  }
+  return levels;
+}
+
 gfx::Rect Texture::GetLevelClearedRect(GLenum target, GLint level) const {
   size_t face_index = GLES2Util::GLTargetToFaceIndex(target);
   if (face_index >= face_infos_.size() ||

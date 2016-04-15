@@ -326,8 +326,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac'], bug=483282)
     self.Fail('conformance2/textures/misc/compressed-tex-image.html',
         ['mac'], bug=565438)
-    self.Fail('conformance2/textures/misc/gl-get-tex-parameter.html',
-        ['mac'], bug=483282)
     self.Fail('conformance2/textures/misc/tex-new-formats.html',
         ['mac'], bug=483282)
     self.Fail('conformance2/textures/misc/tex-storage-compressed-formats.html',
