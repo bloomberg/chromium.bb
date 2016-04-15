@@ -12,6 +12,7 @@
 #include "base/trace_event/trace_event.h"
 #include "content/renderer/media/audio_device_factory.h"
 #include "content/renderer/media/media_stream_audio_track.h"
+#include "content/renderer/media/webrtc_audio_renderer.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_shifter.h"
 
@@ -39,7 +40,7 @@ base::TimeDelta ComputeTotalElapsedRenderTime(
 
 // media::AudioRendererSink::RenderCallback implementation
 int TrackAudioRenderer::Render(media::AudioBus* audio_bus,
-                               uint32_t audio_delay_milliseconds,
+                               uint32_t frames_delayed,
                                uint32_t frames_skipped) {
   TRACE_EVENT0("audio", "TrackAudioRenderer::Render");
   base::AutoLock auto_lock(thread_lock_);
@@ -48,6 +49,11 @@ int TrackAudioRenderer::Render(media::AudioBus* audio_bus,
     audio_bus->Zero();
     return 0;
   }
+
+  // Source sample rate equals to output one, see MaybeStartSink(), so using it.
+  uint32_t audio_delay_milliseconds = static_cast<double>(frames_delayed) *
+                                      base::Time::kMillisecondsPerSecond /
+                                      source_params_.sample_rate();
 
   // TODO(miu): Plumbing is needed to determine the actual playout timestamp
   // of the audio, instead of just snapshotting TimeTicks::Now(), for proper
@@ -305,11 +311,12 @@ void TrackAudioRenderer::MaybeStartSink() {
   media::AudioParameters sink_params(
       hardware_params.format(), source_params_.channel_layout(),
       source_params_.sample_rate(), source_params_.bits_per_sample(),
-      hardware_params.frames_per_buffer() * source_params_.sample_rate() /
-          hardware_params.sample_rate());
+      WebRtcAudioRenderer::GetOptimalBufferSize(
+          source_params_.sample_rate(), hardware_params.frames_per_buffer()));
   DVLOG(1) << ("TrackAudioRenderer::MaybeStartSink() -- Starting sink.  "
                "source_params_={")
-           << source_params_.AsHumanReadableString() << "}, sink parameters={"
+           << source_params_.AsHumanReadableString() << "}, hardware_params_={"
+           << hardware_params.AsHumanReadableString() << "}, sink parameters={"
            << sink_params.AsHumanReadableString() << '}';
   sink_->Initialize(sink_params, this);
   sink_->Start();
