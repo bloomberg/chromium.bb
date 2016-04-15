@@ -37,26 +37,8 @@ class CookiesFetcher {
   void PersistCookies(JNIEnv* env,
                       const base::android::JavaParamRef<jobject>& obj);
 
-  // Saves a cookie to the cookie jar.
-  void RestoreCookies(JNIEnv* env,
-                      const base::android::JavaParamRef<jobject>& obj,
-                      const base::android::JavaParamRef<jstring>& url,
-                      const base::android::JavaParamRef<jstring>& name,
-                      const base::android::JavaParamRef<jstring>& value,
-                      const base::android::JavaParamRef<jstring>& domain,
-                      const base::android::JavaParamRef<jstring>& path,
-                      int64_t creation,
-                      int64_t expiration,
-                      int64_t last_access,
-                      bool secure,
-                      bool httponly,
-                      int samesite,
-                      int priority);
-
  private:
   void PersistCookiesInternal(net::URLRequestContextGetter* getter);
-  void RestoreToCookieJarInternal(net::URLRequestContextGetter* getter,
-                                  const net::CanonicalCookie& cookie);
 
   base::android::ScopedJavaGlobalRef<jobject> jobject_;
 
