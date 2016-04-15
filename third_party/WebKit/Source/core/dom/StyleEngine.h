@@ -73,10 +73,6 @@ public:
 
     ~StyleEngine();
 
-#if !ENABLE(OILPAN)
-    void detachFromDocument();
-#endif
-
     const HeapVector<Member<StyleSheet>>& styleSheetsForStyleSheetList(TreeScope&);
 
     const HeapVector<Member<CSSStyleSheet>>& injectedAuthorStyleSheets() const { return m_injectedAuthorStyleSheets; }

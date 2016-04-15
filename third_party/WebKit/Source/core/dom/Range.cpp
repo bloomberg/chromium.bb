@@ -111,10 +111,8 @@ Range* Range::createAdjustedToTreeScope(const TreeScope& treeScope, const Positi
 
 void Range::dispose()
 {
-#if ENABLE(OILPAN)
     // A prompt detach from the owning Document helps avoid GC overhead.
     m_ownerDocument->detachRange(this);
-#endif
 }
 
 bool Range::inShadowIncludingDocument() const

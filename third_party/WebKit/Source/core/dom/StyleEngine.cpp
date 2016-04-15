@@ -76,29 +76,6 @@ static bool isStyleElement(Node& node)
     return isHTMLStyleElement(node) || isSVGStyleElement(node);
 }
 
-#if !ENABLE(OILPAN)
-void StyleEngine::detachFromDocument()
-{
-    // Cleanup is performed eagerly when the StyleEngine is removed from the
-    // document. The StyleEngine is unreachable after this, since only the
-    // document has a reference to it.
-    for (unsigned i = 0; i < m_injectedAuthorStyleSheets.size(); ++i)
-        m_injectedAuthorStyleSheets[i]->clearOwnerNode();
-
-    if (m_fontSelector) {
-        m_fontSelector->clearDocument();
-        m_fontSelector->unregisterForInvalidationCallbacks(this);
-    }
-
-    // Decrement reference counts for things we could be keeping alive.
-    m_fontSelector.clear();
-    m_resolver.clear();
-    m_styleSheetCollectionMap.clear();
-    m_dirtyTreeScopes.clear();
-    m_activeTreeScopes.clear();
-}
-#endif
-
 inline Document* StyleEngine::master()
 {
     if (isMaster())

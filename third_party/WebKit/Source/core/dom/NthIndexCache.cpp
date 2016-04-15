@@ -261,10 +261,4 @@ DEFINE_TRACE(NthIndexData)
     visitor->trace(m_elementIndexMap);
 }
 
-#if !ENABLE(OILPAN)
-NthIndexData::~NthIndexData()
-{
-}
-#endif
-
 } // namespace blink

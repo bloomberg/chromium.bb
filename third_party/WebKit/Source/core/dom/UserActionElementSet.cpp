@@ -45,13 +45,6 @@ void UserActionElementSet::didDetach(Element& element)
     clearFlags(&element, IsActiveFlag | InActiveChainFlag | IsHoveredFlag);
 }
 
-#if !ENABLE(OILPAN)
-void UserActionElementSet::documentDidRemoveLastRef()
-{
-    m_elements.clear();
-}
-#endif
-
 bool UserActionElementSet::hasFlags(const Node* node, unsigned flags) const
 {
     DCHECK(node->isUserActionElement() && node->isElementNode());

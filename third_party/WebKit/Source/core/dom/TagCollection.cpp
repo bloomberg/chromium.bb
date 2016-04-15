@@ -38,12 +38,6 @@ TagCollection::TagCollection(ContainerNode& rootNode, CollectionType type, const
 
 TagCollection::~TagCollection()
 {
-#if !ENABLE(OILPAN)
-    if (m_namespaceURI == starAtom)
-        ownerNode().nodeLists()->removeCache(this, type(), m_localName);
-    else
-        ownerNode().nodeLists()->removeCache(this, m_namespaceURI, m_localName);
-#endif
 }
 
 bool TagCollection::elementMatches(const Element& testNode) const

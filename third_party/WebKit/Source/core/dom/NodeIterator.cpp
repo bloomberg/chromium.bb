@@ -80,14 +80,6 @@ NodeIterator::NodeIterator(Node* rootNode, unsigned whatToShow, NodeFilter* filt
         root()->document().attachNodeIterator(this);
 }
 
-#if !ENABLE(OILPAN)
-NodeIterator::~NodeIterator()
-{
-    if (!root()->isAttributeNode())
-        root()->document().detachNodeIterator(this);
-}
-#endif
-
 Node* NodeIterator::nextNode(ExceptionState& exceptionState)
 {
     Node* result = nullptr;

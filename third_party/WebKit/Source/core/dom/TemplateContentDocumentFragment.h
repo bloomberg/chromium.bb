@@ -39,9 +39,6 @@ public:
     }
 
     Element* host() const { return m_host; }
-#if !ENABLE(OILPAN)
-    void clearHost() { m_host = nullptr; }
-#endif
 
     DEFINE_INLINE_VIRTUAL_TRACE()
     {

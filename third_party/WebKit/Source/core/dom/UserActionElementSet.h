@@ -52,10 +52,6 @@ public:
 
     void didDetach(Element&);
 
-#if !ENABLE(OILPAN)
-    void documentDidRemoveLastRef();
-#endif
-
     DECLARE_TRACE();
 
 private:

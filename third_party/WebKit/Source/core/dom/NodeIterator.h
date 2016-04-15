@@ -43,10 +43,6 @@ public:
         return new NodeIterator(rootNode, whatToShow, filter);
     }
 
-#if !ENABLE(OILPAN)
-    ~NodeIterator();
-#endif
-
     Node* nextNode(ExceptionState&);
     Node* previousNode(ExceptionState&);
     void detach();
