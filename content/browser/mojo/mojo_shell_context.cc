@@ -31,7 +31,7 @@
 #include "content/public/common/service_registry.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/string.h"
-#include "services/catalog/factory.h"
+#include "services/catalog/catalog.h"
 #include "services/catalog/manifest_provider.h"
 #include "services/catalog/store.h"
 #include "services/shell/connect_params.h"
@@ -245,7 +245,7 @@ MojoShellContext::MojoShellContext() {
   manifest_provider_->AddManifestResource(user_service::kUserServiceName,
                                           IDR_MOJO_PROFILE_MANIFEST);
 
-  catalog_.reset(new catalog::Factory(file_task_runner.get(), nullptr,
+  catalog_.reset(new catalog::Catalog(file_task_runner.get(), nullptr,
                                       manifest_provider_.get()));
   shell_.reset(new shell::Shell(std::move(native_runner_factory),
                                 catalog_->TakeShellClient()));

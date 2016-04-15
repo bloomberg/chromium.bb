@@ -17,7 +17,7 @@
 #include "services/shell/shell.h"
 
 namespace catalog {
-class Factory;
+class Catalog;
 }
 
 namespace mojo {
@@ -67,7 +67,7 @@ class CONTENT_EXPORT MojoShellContext {
   static base::LazyInstance<std::unique_ptr<Proxy>> proxy_;
 
   std::unique_ptr<BuiltinManifestProvider> manifest_provider_;
-  std::unique_ptr<catalog::Factory> catalog_;
+  std::unique_ptr<catalog::Catalog> catalog_;
   std::unique_ptr<shell::Shell> shell_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoShellContext);

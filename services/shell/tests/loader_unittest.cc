@@ -13,7 +13,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "services/catalog/factory.h"
+#include "services/catalog/catalog.h"
 #include "services/catalog/store.h"
 #include "services/shell/connect_util.h"
 #include "services/shell/loader.h"
@@ -402,7 +402,7 @@ class LoaderTest : public testing::Test {
   void SetUp() override {
     blocking_pool_ = new base::SequencedWorkerPool(3, "blocking_pool");
     catalog_.reset(
-        new catalog::Factory(blocking_pool_.get(), nullptr, nullptr));
+        new catalog::Catalog(blocking_pool_.get(), nullptr, nullptr));
     shell_.reset(new Shell(nullptr, catalog_->TakeShellClient()));
     test_loader_ = new TestLoader(&context_);
     shell_->set_default_loader(std::unique_ptr<Loader>(test_loader_));
@@ -453,7 +453,7 @@ class LoaderTest : public testing::Test {
   TestContext context_;
   base::MessageLoop loop_;
   std::unique_ptr<TestClient> test_client_;
-  std::unique_ptr<catalog::Factory> catalog_;
+  std::unique_ptr<catalog::Catalog> catalog_;
   scoped_refptr<base::SequencedWorkerPool> blocking_pool_;
   std::unique_ptr<Shell> shell_;
 
@@ -479,7 +479,7 @@ TEST_F(LoaderTest, ClientError) {
 
 TEST_F(LoaderTest, Deletes) {
   {
-    catalog::Factory catalog(blocking_pool_.get(), nullptr, nullptr);
+    catalog::Catalog catalog(blocking_pool_.get(), nullptr, nullptr);
     Shell shell(nullptr, catalog.TakeShellClient());
     TestLoader* default_loader = new TestLoader(&context_);
     TestLoader* name_loader1 = new TestLoader(&context_);

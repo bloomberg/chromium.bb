@@ -21,7 +21,7 @@ class SingleThreadTaskRunner;
 }
 
 namespace catalog {
-class Factory;
+class Catalog;
 class Store;
 }
 
@@ -72,7 +72,7 @@ class Context : public mojo::edk::ProcessDelegate {
   // Ensure this is destructed before task_runners_ since it owns a message pipe
   // that needs the IO thread to destruct cleanly.
   Tracer tracer_;
-  std::unique_ptr<catalog::Factory> catalog_;
+  std::unique_ptr<catalog::Catalog> catalog_;
   std::unique_ptr<Shell> shell_;
   base::Time main_entry_time_;
   bool init_edk_ = false;

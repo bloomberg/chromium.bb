@@ -5,91 +5,81 @@
 #ifndef SERVICES_CATALOG_CATALOG_H_
 #define SERVICES_CATALOG_CATALOG_H_
 
-#include "base/files/file_path.h"
+#include <map>
+#include <string>
+
+#include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/path_service.h"
-#include "base/values.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
-#include "services/catalog/entry.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "services/catalog/public/interfaces/catalog.mojom.h"
 #include "services/catalog/public/interfaces/resolver.mojom.h"
-#include "services/catalog/store.h"
 #include "services/catalog/types.h"
-#include "services/shell/public/cpp/interface_factory.h"
+#include "services/shell/public/cpp/shell_client.h"
+#include "services/shell/public/interfaces/shell_client.mojom.h"
 #include "services/shell/public/interfaces/shell_resolver.mojom.h"
+
+namespace base {
+class TaskRunner;
+}
+
+namespace shell {
+class ShellConnection;
+}
 
 namespace catalog {
 
+class ManifestProvider;
 class Reader;
+class Resolver;
 class Store;
 
-class Catalog : public mojom::Resolver,
-                public shell::mojom::ShellResolver,
-                public mojom::Catalog {
+// Creates and owns an instance of the catalog. Exposes a ShellClientPtr that
+// can be passed to the Shell, potentially in a different process.
+class Catalog : public shell::ShellClient,
+                public shell::InterfaceFactory<mojom::Catalog>,
+                public shell::InterfaceFactory<mojom::Resolver>,
+                public shell::InterfaceFactory<shell::mojom::ShellResolver> {
  public:
   // |manifest_provider| may be null.
-  Catalog(scoped_ptr<Store> store, Reader* system_reader);
+  Catalog(base::TaskRunner* file_task_runner,
+          scoped_ptr<Store> store,
+          ManifestProvider* manifest_provider);
   ~Catalog() override;
 
-  void BindResolver(mojom::ResolverRequest request);
-  void BindShellResolver(shell::mojom::ShellResolverRequest request);
-  void BindCatalog(mojom::CatalogRequest request);
-
-  // Called when |cache| has been populated by a directory scan.
-  void CacheReady(EntryCache* cache);
+  shell::mojom::ShellClientPtr TakeShellClient();
 
  private:
-  using MojoNameAliasMap =
-      std::map<std::string, std::pair<std::string, std::string>>;
+  // shell::ShellClient:
+  bool AcceptConnection(shell::Connection* connection) override;
 
-  // mojom::Resolver:
-  void ResolveInterfaces(mojo::Array<mojo::String> interfaces,
-                         const ResolveInterfacesCallback& callback) override;
-  void ResolveMIMEType(const mojo::String& mime_type,
-                       const ResolveMIMETypeCallback& callback) override;
-  void ResolveProtocolScheme(
-      const mojo::String& scheme,
-      const ResolveProtocolSchemeCallback& callback) override;
+  // shell::InterfaceFactory<mojom::Resolver>:
+  void Create(shell::Connection* connection,
+              mojom::ResolverRequest request) override;
 
-  // shell::mojom::ShellResolver:
-  void ResolveMojoName(const mojo::String& mojo_name,
-                       const ResolveMojoNameCallback& callback) override;
+  // shell::InterfaceFactory<shell::mojom::ShellResolver>:
+  void Create(shell::Connection* connection,
+              shell::mojom::ShellResolverRequest request) override;
 
-  // mojom::Catalog:
-  void GetEntries(mojo::Array<mojo::String> names,
-                  const GetEntriesCallback& callback) override;
+  // shell::InterfaceFactory<mojom::Catalog>:
+  void Create(shell::Connection* connection,
+              mojom::CatalogRequest request) override;
 
-  // Populate/serialize the catalog from/to the supplied store.
-  void DeserializeCatalog();
-  void SerializeCatalog();
+  Resolver* GetResolverForUserId(const std::string& user_id);
 
-  // Receives the result of manifest parsing, may be received after the
-  // catalog object that issued the request is destroyed.
-  static void OnReadManifest(base::WeakPtr<Catalog> catalog,
-                             const std::string& mojo_name,
-                             const ResolveMojoNameCallback& callback,
-                             shell::mojom::ResolveResultPtr result);
+  void SystemPackageDirScanned();
 
-  // User-specific persistent storage of package manifests and other settings.
+  base::TaskRunner* const file_task_runner_;
   scoped_ptr<Store> store_;
 
-  mojo::BindingSet<mojom::Resolver> resolver_bindings_;
-  mojo::BindingSet<shell::mojom::ShellResolver> shell_resolver_bindings_;
-  mojo::BindingSet<mojom::Catalog> catalog_bindings_;
+  shell::mojom::ShellClientPtr shell_client_;
+  scoped_ptr<shell::ShellConnection> shell_connection_;
 
-  Reader* system_reader_;
+  std::map<std::string, scoped_ptr<Resolver>> resolvers_;
 
-  // A map of name -> Entry data structure for system-level packages (i.e. those
-  // that are visible to all users).
-  // TODO(beng): eventually add per-user applications.
-  EntryCache* system_catalog_ = nullptr;
-
-  // We only bind requests for these interfaces once the catalog has been
-  // populated. These data structures queue requests until that happens.
-  std::vector<mojom::ResolverRequest> pending_resolver_requests_;
-  std::vector<shell::mojom::ShellResolverRequest>
-      pending_shell_resolver_requests_;
-  std::vector<mojom::CatalogRequest> pending_catalog_requests_;
+  scoped_ptr<Reader> system_reader_;
+  EntryCache system_catalog_;
+  bool loaded_ = false;
 
   base::WeakPtrFactory<Catalog> weak_factory_;
 

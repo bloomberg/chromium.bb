@@ -29,7 +29,7 @@
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/util/filename_util.h"
-#include "services/catalog/factory.h"
+#include "services/catalog/catalog.h"
 #include "services/catalog/store.h"
 #include "services/shell/connect_params.h"
 #include "services/shell/public/cpp/names.h"
@@ -165,7 +165,7 @@ void Context::Init(std::unique_ptr<InitParams> init_params) {
   if (init_params)
     store = std::move(init_params->catalog_store);
   catalog_.reset(
-      new catalog::Factory(blocking_pool_.get(), std::move(store), nullptr));
+      new catalog::Catalog(blocking_pool_.get(), std::move(store), nullptr));
   shell_.reset(new Shell(std::move(runner_factory),
                          catalog_->TakeShellClient()));
 
