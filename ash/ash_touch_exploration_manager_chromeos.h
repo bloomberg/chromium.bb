@@ -11,6 +11,7 @@
 #include "ash/system/tray_accessibility.h"
 #include "base/macros.h"
 #include "ui/chromeos/touch_exploration_controller.h"
+#include "ui/wm/public/activation_change_observer.h"
 
 namespace chromeos {
 class CrasAudioHandler;
@@ -25,7 +26,8 @@ class RootWindowController;
 // the system.
 class ASH_EXPORT AshTouchExplorationManager
     : public ash::AccessibilityObserver,
-      public ui::TouchExplorationControllerDelegate {
+      public ui::TouchExplorationControllerDelegate,
+      public aura::client::ActivationChangeObserver {
  public:
   explicit AshTouchExplorationManager(
       RootWindowController* root_window_controller);
@@ -42,6 +44,12 @@ class ASH_EXPORT AshTouchExplorationManager
   void PlayPassthroughEarcon() override;
   void PlayExitScreenEarcon() override;
   void PlayEnterScreenEarcon() override;
+
+  // aura::client::ActivationChangeObserver overrides:
+  void OnWindowActivated(
+      aura::client::ActivationChangeObserver::ActivationReason reason,
+      aura::Window* gained_active,
+      aura::Window* lost_active) override;
 
  private:
   void UpdateTouchExplorationState();

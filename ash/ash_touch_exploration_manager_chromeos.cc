@@ -9,11 +9,13 @@
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_notifier.h"
+#include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "chromeos/audio/chromeos_sounds.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/chromeos_switches.h"
 #include "ui/chromeos/touch_exploration_controller.h"
+#include "ui/wm/public/activation_client.h"
 
 namespace ash {
 
@@ -22,6 +24,7 @@ AshTouchExplorationManager::AshTouchExplorationManager(
     : root_window_controller_(root_window_controller),
       audio_handler_(chromeos::CrasAudioHandler::Get()) {
   Shell::GetInstance()->system_tray_notifier()->AddAccessibilityObserver(this);
+  ash::Shell::GetInstance()->activation_client()->AddObserver(this);
   UpdateTouchExplorationState();
 }
 
@@ -30,6 +33,7 @@ AshTouchExplorationManager::~AshTouchExplorationManager() {
       Shell::GetInstance()->system_tray_notifier();
   if (system_tray_notifier)
     system_tray_notifier->RemoveAccessibilityObserver(this);
+  ash::Shell::GetInstance()->activation_client()->RemoveObserver(this);
 }
 
 void AshTouchExplorationManager::OnAccessibilityModeChanged(
@@ -80,15 +84,31 @@ void AshTouchExplorationManager::PlayEnterScreenEarcon() {
       chromeos::SOUND_ENTER_SCREEN);
 }
 
+void AshTouchExplorationManager::OnWindowActivated(
+    aura::client::ActivationChangeObserver::ActivationReason reason,
+    aura::Window* gained_active,
+    aura::Window* lost_active) {
+  UpdateTouchExplorationState();
+}
+
 void AshTouchExplorationManager::UpdateTouchExplorationState() {
+  // Comes from components/exo/shell_surface.cc.
+  const char kExoShellSurfaceWindowName[] = "ExoShellSurface";
+
+  // See crbug.com/603745 for more details.
+  bool pass_through_surface =
+      wm::GetActiveWindow() &&
+      wm::GetActiveWindow()->name() == kExoShellSurfaceWindowName;
+
   AccessibilityDelegate* delegate =
       Shell::GetInstance()->accessibility_delegate();
   bool enabled = delegate->IsSpokenFeedbackEnabled();
 
-  if (enabled && !touch_exploration_controller_.get()) {
+  if (!pass_through_surface && enabled &&
+      !touch_exploration_controller_.get()) {
     touch_exploration_controller_.reset(new ui::TouchExplorationController(
         root_window_controller_->GetRootWindow(), this));
-  } else if (!enabled) {
+  } else if (!enabled || pass_through_surface) {
     touch_exploration_controller_.reset();
   }
 }

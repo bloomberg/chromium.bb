@@ -771,9 +771,8 @@ Shell::~Shell() {
   mru_window_tracker_.reset();
 
   // Chrome implementation of shelf delegate depends on FocusClient,
-  // so must be deleted before |focus_client_|.
+  // so must be deleted before |focus_client_| (below).
   shelf_delegate_.reset();
-  focus_client_.reset();
 
   // Destroy SystemTrayNotifier after destroying SystemTray as TrayItems
   // needs to remove observers from it.
@@ -817,8 +816,11 @@ Shell::~Shell() {
   // of its owned RootWindowControllers relies on the value.
   display_manager_->CreateScreenForShutdown();
   display_configuration_controller_.reset();
+
+  // Depends on |focus_client_|, so must be destroyed before.
   window_tree_host_manager_->Shutdown();
   window_tree_host_manager_.reset();
+  focus_client_.reset();
   screen_position_controller_.reset();
   accessibility_delegate_.reset();
   new_window_delegate_.reset();
