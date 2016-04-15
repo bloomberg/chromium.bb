@@ -27,7 +27,7 @@ def _HexDigest(file_name):
   return hasher.hexdigest()
 
 
-def _CopyImpl(file_name, target_dir, source_dir, verbose=True):
+def _CopyImpl(file_name, target_dir, source_dir, verbose=False):
   """Copy |source| to |target| if it doesn't already exist or if it
   needs to be updated.
   """

@@ -3294,13 +3294,11 @@
             }],
             ['OS=="mac" or OS=="win"', {
               'dependencies': [
-                # TODO(kbr): port this dependency to GN.
                 '../third_party/crashpad/crashpad/tools/tools.gyp:crashpad_database_util',
               ],
             }],
             ['OS=="win"', {
               'dependencies': [
-                # TODO(kbr): port this dependency to GN.
                 'copy_cdb_to_output',
               ],
             }],
@@ -3463,7 +3461,6 @@
         ['OS=="win"', {
           'targets': [
             {
-              # TODO(kbr): port this target to GN.
               'target_name': 'copy_cdb_to_output',
               'type': 'none',
               'actions': [

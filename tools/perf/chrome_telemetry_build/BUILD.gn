@@ -4,6 +4,25 @@
 
 import("//build/config/compiler/compiler.gni")
 
+if (is_win) {
+  action("copy_cdb_to_output") {
+    script = "//build/win/copy_cdb_to_output.py"
+    inputs = [
+      script,
+    ]
+    outputs = [
+      "$root_out_dir/cdb/cdb.exe",
+      "$root_out_dir/cdb/dbgeng.dll",
+      "$root_out_dir/cdb/dbghelp.dll",
+      "$root_out_dir/cdb/dbgmodel.dll",
+    ]
+    args = [
+      rebase_path("$root_out_dir/cdb", root_out_dir),
+      target_cpu,
+    ]
+  }
+}
+
 group("telemetry_chrome_test") {
   data_deps = [
     # TODO(kbr): this used to be "//chrome". Had to change this to
@@ -31,8 +50,10 @@ group("telemetry_chrome_test") {
   }
 
   if (is_win && (symbol_level == 1 || symbol_level == 2)) {
-    data_deps +=
-        [ "//third_party/crashpad/crashpad/tools:crashpad_database_util" ]
+    data_deps += [
+      ":copy_cdb_to_output",
+      "//third_party/crashpad/crashpad/tools:crashpad_database_util",
+    ]
 
     # TODO(GYP): These should be provided automatically through data_deps.
     data += [ "$root_out_dir/chrome.exe.pdb" ]
