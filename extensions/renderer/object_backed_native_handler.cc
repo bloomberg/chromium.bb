@@ -74,10 +74,14 @@ void ObjectBackedNativeHandler::Router(
     std::string feature_name = *v8::String::Utf8Value(feature_name_string);
     // TODO(devlin): Eventually, we should fail if either script_context is null
     // or feature_name is empty.
-    if (script_context &&
-        !feature_name.empty() &&
-        !script_context->GetAvailability(feature_name).is_available()) {
-      return;
+    if (script_context && !feature_name.empty()) {
+      Feature::Availability availability =
+          script_context->GetAvailability(feature_name);
+      if (!availability.is_available()) {
+        DVLOG(1) << feature_name
+                 << " is not available: " << availability.message();
+        return;
+      }
     }
   }
   // This CHECK is *important*. Otherwise, we'll go around happily executing

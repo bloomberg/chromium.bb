@@ -39,6 +39,8 @@
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/switches.h"
 #include "extensions/renderer/dispatcher.h"
+#include "extensions/renderer/i18n_custom_bindings.h"
+#include "extensions/renderer/lazy_background_page_native_handler.h"
 #include "extensions/renderer/native_handler.h"
 #include "extensions/renderer/resource_bundle_source_map.h"
 #include "extensions/renderer/script_context.h"
@@ -124,6 +126,19 @@ void ChromeExtensionsDispatcherDelegate::RegisterNativeHandlers(
       "automationInternal",
       std::unique_ptr<NativeHandler>(
           new extensions::AutomationInternalCustomBindings(context)));
+
+  // The following are native handlers that are defined in //extensions, but
+  // are only used for APIs defined in Chrome.
+  // TODO(devlin): We should clean this up. If an API is defined in Chrome,
+  // there's no reason to have its native handlers residing and being compiled
+  // in //extensions.
+  module_system->RegisterNativeHandler(
+      "i18n",
+      scoped_ptr<NativeHandler>(new extensions::I18NCustomBindings(context)));
+  module_system->RegisterNativeHandler(
+      "lazy_background_page",
+      scoped_ptr<NativeHandler>(
+          new extensions::LazyBackgroundPageNativeHandler(context)));
 }
 
 void ChromeExtensionsDispatcherDelegate::PopulateSourceMap(

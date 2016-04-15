@@ -70,13 +70,10 @@
 #include "extensions/renderer/extensions_renderer_client.h"
 #include "extensions/renderer/file_system_natives.h"
 #include "extensions/renderer/guest_view/guest_view_internal_custom_bindings.h"
-#include "extensions/renderer/i18n_custom_bindings.h"
 #include "extensions/renderer/id_generator_custom_bindings.h"
-#include "extensions/renderer/lazy_background_page_native_handler.h"
 #include "extensions/renderer/logging_native_handler.h"
 #include "extensions/renderer/messaging_bindings.h"
 #include "extensions/renderer/module_system.h"
-#include "extensions/renderer/print_native_handler.h"
 #include "extensions/renderer/process_info_native_handler.h"
 #include "extensions/renderer/render_frame_observer_natives.h"
 #include "extensions/renderer/renderer_extension_registry.h"
@@ -824,14 +821,9 @@ void Dispatcher::RegisterNativeHandlers(ModuleSystem* module_system,
   module_system->RegisterNativeHandler(
       "chrome", scoped_ptr<NativeHandler>(new ChromeNativeHandler(context)));
   module_system->RegisterNativeHandler(
-      "lazy_background_page",
-      scoped_ptr<NativeHandler>(new LazyBackgroundPageNativeHandler(context)));
-  module_system->RegisterNativeHandler(
       "logging", scoped_ptr<NativeHandler>(new LoggingNativeHandler(context)));
   module_system->RegisterNativeHandler("schema_registry",
                                        v8_schema_registry->AsNativeHandler());
-  module_system->RegisterNativeHandler(
-      "print", scoped_ptr<NativeHandler>(new PrintNativeHandler(context)));
   module_system->RegisterNativeHandler(
       "test_features",
       scoped_ptr<NativeHandler>(new TestFeaturesNativeHandler(context)));
@@ -893,8 +885,6 @@ void Dispatcher::RegisterNativeHandlers(ModuleSystem* module_system,
       "guest_view_internal",
       scoped_ptr<NativeHandler>(
           new GuestViewInternalCustomBindings(context)));
-  module_system->RegisterNativeHandler(
-      "i18n", scoped_ptr<NativeHandler>(new I18NCustomBindings(context)));
   module_system->RegisterNativeHandler(
       "id_generator",
       scoped_ptr<NativeHandler>(new IdGeneratorCustomBindings(context)));

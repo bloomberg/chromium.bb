@@ -943,8 +943,6 @@
       'renderer/native_handler.h',
       'renderer/object_backed_native_handler.cc',
       'renderer/object_backed_native_handler.h',
-      'renderer/print_native_handler.cc',
-      'renderer/print_native_handler.h',
       'renderer/process_info_native_handler.cc',
       'renderer/process_info_native_handler.h',
       'renderer/programmatic_script_injector.cc',

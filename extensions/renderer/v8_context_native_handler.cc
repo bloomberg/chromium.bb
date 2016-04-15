@@ -20,10 +20,9 @@ V8ContextNativeHandler::V8ContextNativeHandler(ScriptContext* context)
   RouteFunction("GetModuleSystem",
                 base::Bind(&V8ContextNativeHandler::GetModuleSystem,
                            base::Unretained(this)));
-  RouteFunction(
-      "RunWithNativesEnabled",
-      base::Bind(&V8ContextNativeHandler::RunWithNativesEnabled,
-                 base::Unretained(this)));
+  RouteFunction("RunWithNativesEnabled", "test",
+                base::Bind(&V8ContextNativeHandler::RunWithNativesEnabled,
+                           base::Unretained(this)));
 }
 
 void V8ContextNativeHandler::GetAvailability(
