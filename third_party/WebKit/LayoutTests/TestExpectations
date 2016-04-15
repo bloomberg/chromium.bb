@@ -1973,6 +1973,9 @@ crbug.com/600261 imported/web-platform-tests/mediacapture-streams/GUM-deny.html 
 crbug.com/600261 imported/web-platform-tests/mediacapture-streams/MediaDevices-getUserMedia.html [ Failure ]
 crbug.com/600261 imported/web-platform-tests/mediacapture-streams/MediaStream-MediaElement-srcObject.html [ Failure ]
 
+crbug.com/603767  [ Linux ] inspector/tracing/timeline-auto-record.html [ Failure ]
+crbug.com/603767  [ Linux ] virtual/threaded/inspector/tracing/timeline-auto-record.html [ Failure ]
+
 crbug.com/593679 virtual/scalefactor150/fast/hidpi/static/calendar-picker-appearance.html [ NeedsManualRebaseline ]
 crbug.com/593679 virtual/scalefactor200/fast/hidpi/static/calendar-picker-appearance.html [ NeedsManualRebaseline ]
 crbug.com/593679 virtual/scalefactor200withzoom/fast/hidpi/static/calendar-picker-appearance.html [ NeedsManualRebaseline ]
