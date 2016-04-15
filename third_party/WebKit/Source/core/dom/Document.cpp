@@ -441,9 +441,6 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_isSrcdocDocument(false)
     , m_isMobileDocument(false)
     , m_layoutView(0)
-#if !ENABLE(OILPAN)
-    , m_weakFactory(this)
-#endif
     , m_contextDocument(initializer.contextDocument())
     , m_hasFullscreenSupplement(false)
     , m_loadEventDelayCount(0)
@@ -487,11 +484,6 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     initSecurityContext(initializer);
     initDNSPrefetch();
 
-#if !ENABLE(OILPAN)
-    for (unsigned i = 0; i < WTF_ARRAY_LENGTH(m_nodeListCounts); ++i)
-        m_nodeListCounts[i] = 0;
-#endif
-
     InstanceCounters::incrementCounter(InstanceCounters::DocumentCounter);
 
     m_lifecycle.advanceTo(DocumentLifecycle::Inactive);
@@ -517,116 +509,8 @@ Document::~Document()
     // If a top document with a cache, verify that it was comprehensively
     // cleared during detach.
     DCHECK(!m_axObjectCache);
-#if !ENABLE(OILPAN)
-    DCHECK(m_ranges.isEmpty());
-    DCHECK(!hasGuardRefCount());
-    DCHECK(!m_importsController);
-    // With Oilpan, either the document outlives the visibility observers
-    // or the visibility observers and the document die in the same GC round.
-    // When they die in the same GC round, the list of visibility observers
-    // will not be empty on Document destruction.
-    DCHECK(m_visibilityObservers.isEmpty());
-
-    if (m_templateDocument)
-        m_templateDocument->m_templateDocumentHost = nullptr; // balanced in ensureTemplateDocument().
-
-    m_scriptRunner.clear();
-
-    // FIXME: Oilpan: Not removing event listeners here also means that we do
-    // not notify the inspector instrumentation that the event listeners are
-    // gone. The Document and all the nodes in the document are gone, so maybe
-    // that is OK?
-    removeAllEventListenersRecursively();
-
-    // Currently we believe that Document can never outlive the parser.
-    // Although the Document may be replaced synchronously, DocumentParsers
-    // generally keep at least one reference to an Element which would in turn
-    // has a reference to the Document.  If you hit this ASSERT, then that
-    // assumption is wrong.  DocumentParser::detach() should ensure that even
-    // if the DocumentParser outlives the Document it won't cause badness.
-    DCHECK(!m_parser || m_parser->refCount() == 1);
-    detachParser();
-
-    if (m_styleSheetList)
-        m_styleSheetList->detachFromDocument();
-
-    m_timeline->detachFromDocument();
-
-    // We need to destroy CSSFontSelector before destroying m_fetcher.
-    m_styleEngine->detachFromDocument();
-
-    if (m_elemSheet)
-        m_elemSheet->clearOwnerNode();
-
-    // We must call clearRareData() here since a Document class inherits TreeScope
-    // as well as Node. See a comment on TreeScope.h for the reason.
-    if (hasRareData())
-        clearRareData();
-
-    DCHECK(m_listsInvalidatedAtDocument.isEmpty());
-
-    for (unsigned i = 0; i < WTF_ARRAY_LENGTH(m_nodeListCounts); ++i)
-        DCHECK(!m_nodeListCounts[i]);
-
-    liveDocumentSet().remove(this);
-#endif
-
     InstanceCounters::decrementCounter(InstanceCounters::DocumentCounter);
 }
-
-#if !ENABLE(OILPAN)
-void Document::dispose()
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!m_deletionHasBegun);
-
-    // We must make sure not to be retaining any of our children through
-    // these extra pointers or we will create a reference cycle.
-    m_docType = nullptr;
-    m_focusedElement = nullptr;
-    m_sequentialFocusNavigationStartingPoint = nullptr;
-    m_hoverNode = nullptr;
-    m_activeHoverElement = nullptr;
-    m_titleElement = nullptr;
-    m_documentElement = nullptr;
-    m_contextFeatures = ContextFeatures::defaultSwitch();
-    m_userActionElements.documentDidRemoveLastRef();
-    m_associatedFormControls.clear();
-
-    m_scriptRunner->dispose();
-    detachParser();
-
-    m_registrationContext.clear();
-
-    // removeDetachedChildren() doesn't always unregister IDs,
-    // so tear down scope information upfront to avoid having stale references in the map.
-    destroyTreeScopeData();
-
-    removeDetachedChildren();
-
-    // removeDetachedChildren() can access FormController.
-    m_formController.clear();
-
-    m_markers->clear();
-
-    // FIXME: consider using ActiveDOMObject.
-    if (m_scriptedAnimationController)
-        m_scriptedAnimationController->clearDocumentPointer();
-    m_scriptedAnimationController.clear();
-
-    m_scriptedIdleTaskController.clear();
-
-    if (svgExtensions())
-        accessSVGExtensions().pauseAnimations();
-
-    if (m_intersectionObserverData)
-        m_intersectionObserverData->dispose();
-
-    m_lifecycle.advanceTo(DocumentLifecycle::Disposed);
-    DocumentLifecycleNotifier::notifyDocumentWasDisposed();
-
-    m_canvasFontCache.clear();
-}
-#endif
 
 SelectorQueryCache& Document::selectorQueryCache()
 {
@@ -3838,24 +3722,16 @@ void Document::setCSSTarget(Element* newTarget)
 
 void Document::registerNodeList(const LiveNodeListBase* list)
 {
-#if ENABLE(OILPAN)
     DCHECK(!m_nodeLists[list->invalidationType()].contains(list));
     m_nodeLists[list->invalidationType()].add(list);
-#else
-    m_nodeListCounts[list->invalidationType()]++;
-#endif
     if (list->isRootedAtTreeScope())
         m_listsInvalidatedAtDocument.add(list);
 }
 
 void Document::unregisterNodeList(const LiveNodeListBase* list)
 {
-#if ENABLE(OILPAN)
     DCHECK(m_nodeLists[list->invalidationType()].contains(list));
     m_nodeLists[list->invalidationType()].remove(list);
-#else
-    m_nodeListCounts[list->invalidationType()]--;
-#endif
     if (list->isRootedAtTreeScope()) {
         DCHECK(m_listsInvalidatedAtDocument.contains(list));
         m_listsInvalidatedAtDocument.remove(list);
@@ -3864,23 +3740,14 @@ void Document::unregisterNodeList(const LiveNodeListBase* list)
 
 void Document::registerNodeListWithIdNameCache(const LiveNodeListBase* list)
 {
-#if ENABLE(OILPAN)
     DCHECK(!m_nodeLists[InvalidateOnIdNameAttrChange].contains(list));
     m_nodeLists[InvalidateOnIdNameAttrChange].add(list);
-#else
-    m_nodeListCounts[InvalidateOnIdNameAttrChange]++;
-#endif
 }
 
 void Document::unregisterNodeListWithIdNameCache(const LiveNodeListBase* list)
 {
-#if ENABLE(OILPAN)
     DCHECK(m_nodeLists[InvalidateOnIdNameAttrChange].contains(list));
     m_nodeLists[InvalidateOnIdNameAttrChange].remove(list);
-#else
-    DCHECK_GT(m_nodeListCounts[InvalidateOnIdNameAttrChange], 0);
-    m_nodeListCounts[InvalidateOnIdNameAttrChange]--;
-#endif
 }
 
 void Document::attachNodeIterator(NodeIterator* ni)
@@ -5418,7 +5285,6 @@ void Document::checkLoadEventSoon()
 
 bool Document::isDelayingLoadEvent()
 {
-#if ENABLE(OILPAN)
     // Always delay load events until after garbage collection.
     // This way we don't have to explicitly delay load events via
     // incrementLoadEventDelayCount and decrementLoadEventDelayCount in
@@ -5428,7 +5294,6 @@ bool Document::isDelayingLoadEvent()
             checkLoadEventSoon();
         return true;
     }
-#endif
     return m_loadEventDelayCount;
 }
 
@@ -5842,7 +5707,6 @@ bool Document::hasFocus() const
     return page() && page()->focusController().isDocumentFocused(*this);
 }
 
-#if ENABLE(OILPAN)
 template<unsigned type>
 bool shouldInvalidateNodeListCachesForAttr(const HeapHashSet<WeakMember<const LiveNodeListBase>> nodeLists[], const QualifiedName& attrName)
 {
@@ -5856,38 +5720,15 @@ bool shouldInvalidateNodeListCachesForAttr<numNodeListInvalidationTypes>(const H
 {
     return false;
 }
-#else
-template<unsigned type>
-bool shouldInvalidateNodeListCachesForAttr(const unsigned nodeListCounts[], const QualifiedName& attrName)
-{
-    if (nodeListCounts[type] && LiveNodeListBase::shouldInvalidateTypeOnAttributeChange(static_cast<NodeListInvalidationType>(type), attrName))
-        return true;
-    return shouldInvalidateNodeListCachesForAttr<type + 1>(nodeListCounts, attrName);
-}
-
-template<>
-bool shouldInvalidateNodeListCachesForAttr<numNodeListInvalidationTypes>(const unsigned[], const QualifiedName&)
-{
-    return false;
-}
-#endif
 
 bool Document::shouldInvalidateNodeListCaches(const QualifiedName* attrName) const
 {
     if (attrName) {
-#if ENABLE(OILPAN)
         return shouldInvalidateNodeListCachesForAttr<DoNotInvalidateOnAttributeChanges + 1>(m_nodeLists, *attrName);
-#else
-        return shouldInvalidateNodeListCachesForAttr<DoNotInvalidateOnAttributeChanges + 1>(m_nodeListCounts, *attrName);
-#endif
     }
 
     for (int type = 0; type < numNodeListInvalidationTypes; ++type) {
-#if ENABLE(OILPAN)
         if (!m_nodeLists[type].isEmpty())
-#else
-        if (m_nodeListCounts[type])
-#endif
             return true;
     }
 

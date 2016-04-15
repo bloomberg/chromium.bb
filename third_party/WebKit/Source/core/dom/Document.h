@@ -231,10 +231,6 @@ public:
 
     void mediaQueryAffectingValueChanged();
 
-#if !ENABLE(OILPAN)
-    using ContainerNode::ref;
-    using ContainerNode::deref;
-#endif
     using SecurityContext::getSecurityOrigin;
     using SecurityContext::contentSecurityPolicy;
     using TreeScope::getElementById;
@@ -1076,10 +1072,6 @@ protected:
 
     void clearXMLVersion() { m_xmlVersion = String(); }
 
-#if !ENABLE(OILPAN)
-    void dispose() override;
-#endif
-
     virtual Document* cloneDocumentWithoutChildren();
 
     bool importContainerNodeChildren(ContainerNode* oldContainerNode, ContainerNode* newContainerNode, ExceptionState&);
@@ -1131,11 +1123,6 @@ private:
     bool isSecureContextImpl(String* errorMessage, const SecureContextCheck priviligeContextCheck) const;
 
     ShadowCascadeOrder m_shadowCascadeOrder = ShadowCascadeNone;
-
-#if !ENABLE(OILPAN)
-    void refExecutionContext() final { ref(); }
-    void derefExecutionContext() final { deref(); }
-#endif
 
     const KURL& virtualURL() const final; // Same as url(), but needed for ExecutionContext to implement it without a performance loss for direct calls.
     KURL virtualCompleteURL(const String&) const final; // Same as completeURL() for the same reason as above.
@@ -1190,7 +1177,7 @@ private:
 
     Member<LocalFrame> m_frame;
     Member<LocalDOMWindow> m_domWindow;
-    // FIXME: oilpan: when we get rid of the transition types change the
+    // TODO(Oilpan): when we get rid of the transition types change the
     // HTMLImportsController to not be a DocumentSupplement since it is
     // redundant with oilpan.
     Member<HTMLImportsController> m_importsController;
@@ -1311,15 +1298,10 @@ private:
     bool m_isRunningExecCommand;
 
     HeapHashSet<WeakMember<const LiveNodeListBase>> m_listsInvalidatedAtDocument;
-#if ENABLE(OILPAN)
     // Oilpan keeps track of all registered NodeLists.
-    //
-    // FIXME: Oilpan: improve - only need to know if a NodeList
+    // TODO(Oilpan): improve - only need to know if a NodeList
     // is currently alive or not for the different types.
     HeapHashSet<WeakMember<const LiveNodeListBase>> m_nodeLists[numNodeListInvalidationTypes];
-#else
-    unsigned m_nodeListCounts[numNodeListInvalidationTypes];
-#endif
 
     Member<SVGDocumentExtensions> m_svgExtensions;
 
@@ -1389,9 +1371,6 @@ private:
     Member<CompositorPendingAnimations> m_compositorPendingAnimations;
 
     Member<Document> m_templateDocument;
-    // With Oilpan the templateDocument and the templateDocumentHost
-    // live and die together. Without Oilpan, the templateDocumentHost
-    // is a manually managed backpointer from m_templateDocument.
     Member<Document> m_templateDocumentHost;
 
     Timer<Document> m_didAssociateFormControlsTimer;

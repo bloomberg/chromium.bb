@@ -458,15 +458,12 @@ void HTMLMediaElement::dispose()
 
     // Destroying the player may cause a resource load to be canceled,
     // which could result in LocalDOMWindow::dispatchWindowLoadEvent() being
-    // called via ResourceFetch::didLoadResource() then
-    // FrameLoader::checkCompleted(). To prevent load event dispatching during
-    // object destruction, we use Document::incrementLoadEventDelayCount().
-    // See http://crbug.com/275223 for more details.
-    setShouldDelayLoadEvent(true);
-
+    // called via ResourceFetch::didLoadResource(), then
+    // FrameLoader::checkCompleted(). But it's guaranteed that the load event
+    // doesn't get dispatched during the object destruction.
+    // See Document::isDelayingLoadEvent().
+    // Also see http://crbug.com/275223 for more details.
     clearMediaPlayerAndAudioSourceProviderClientWithoutLocking();
-
-    setShouldDelayLoadEvent(false);
 }
 
 void HTMLMediaElement::didMoveToNewDocument(Document& oldDocument)
