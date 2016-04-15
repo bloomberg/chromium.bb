@@ -66,9 +66,6 @@ MutationObserver::MutationObserver(MutationCallback* callback)
 
 MutationObserver::~MutationObserver()
 {
-#if !ENABLE(OILPAN)
-    DCHECK(m_registrations.isEmpty());
-#endif
     cancelInspectorAsyncTasks();
 }
 

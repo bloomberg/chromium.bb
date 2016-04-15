@@ -51,9 +51,6 @@ MutationObserverRegistration::MutationObserverRegistration(MutationObserver& obs
 
 MutationObserverRegistration::~MutationObserverRegistration()
 {
-#if !ENABLE(OILPAN)
-    dispose();
-#endif
 }
 
 void MutationObserverRegistration::dispose()
