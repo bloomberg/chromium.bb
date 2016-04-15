@@ -134,6 +134,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['mac', ('nvidia', 0xfd5), ('nvidia', 0xfe9)], bug=368912)
     self.Fail('conformance/textures/image_bitmap_from_image/*',
         ['mac', ('nvidia', 0xfd5), ('nvidia', 0xfe9)], bug=589930)
+    self.Fail('conformance/extensions/webgl-draw-buffers.html',
+        ['mavericks', ('nvidia', 0xfe9)], bug=586536)
 
     # Mac Retina AMD failures
     self.Fail('conformance/textures/image_bitmap_from_image/*',
