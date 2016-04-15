@@ -3,113 +3,96 @@
 <head>
 <script src="../../resources/js-test.js"></script>
 </head>
-<body onload="runInputTests()">
+<body onload="startTests()">
 <input id="inputId" value="abcd"></input>
 <textarea id="textAreaId">abcd</textarea>
 <script>
 description("Test select event is triggered on input and textarea Elements.");
 var input = document.getElementById("inputId");
 var textarea = document.getElementById("textAreaId");
-var expectedNumOfSelectEvent;
-var actualNumOfSelectEvent;
 var jsTestIsAsync = true;
+var currentCase;
+var lastCase;
 
-var inputTests = [
+var tests = [
+    function() {
+        input.focus();
+        return "input.focus()";
+    },
     function() {
         input.select();
+        return "input.select()";
     },
     function() {
         input.setSelectionRange(1, 2);
+        return "input.setSelectionRange()";
     },
     function() {
         input.setRangeText("efgh");
+        return "input.setRangeText()";
     },
     function() {
         input.selectionStart = 1;
+        return "input.selectionStart";
     },
     function() {
         input.selectionEnd = 3;
+        return "input.selectionEnd";
     },
     function() {
         input.selectionDirection = "forward";
-    }
-];
-
-var textAreaTests = [
+        return "input.selectionDirection";
+    },
+    function() {
+        textarea.focus();
+        return "textarea.focus()";
+    },
     function() {
         textarea.select();
+        return "textarea.select()";
     },
     function() {
         textarea.setSelectionRange(1, 2);
+        return "textarea.setSelectionRange()";
     },
     function() {
         textarea.setRangeText("efgh");
+        return "textarea.setRangeText()";
     },
     function() {
         textarea.selectionStart = 1;
+        return "textarea.selectionStart";
     },
     function() {
         textarea.selectionEnd = 3;
+        return "textarea.selectionEnd";
     },
     function() {
         textarea.selectionDirection = "forward";
+        return "textarea.selectionDirection";
     }
 ];
 
-function handleInputSelectEvent() {
-    actualNumOfSelectEvent++;
-    if (inputTests.length) {
-        inputTests.shift()();
+function runNext() {
+    if (tests.length <= 0)
+        finishJSTest();
+    currentCase = tests.shift()();
+}
+
+function handleSelectEvent() {
+    if (lastCase == currentCase) {
+        testFailed("The above test dispatched mulitiple select events.");
         return;
     }
-
-    if (expectedNumOfSelectEvent == actualNumOfSelectEvent) {
-        testPassed("select event is triggered on focus, select, setSelectionRange, setRangeText, selectionStart, selectionEnd and selectionDirection methods of input element.");
-    } else {
-        testFailed("select is triggered " + actualNumOfSelectEvent + " times instead of " + expectedNumOfSelectEvent + " times on input element.");
-    }
-
-    runTextareaTests();
+    testPassed(currentCase);
+    lastCase = currentCase;
+    setTimeout(runNext, 0);
 }
 
-function handleTextAreaSelectEvent() {
-    actualNumOfSelectEvent++;
-    if (textAreaTests.length) {
-        textAreaTests.shift()();
-        return;
-    }
-
-    if (expectedNumOfSelectEvent == actualNumOfSelectEvent) {
-        testPassed("select event is triggered on focus, select, setSelectionRange, setRangeText, selectionStart, selectionEnd and selectionDirection methods of textarea element.");
-    } else {
-        testFailed("select is triggered " + actualNumOfSelectEvent + " times instead of " + expectedNumOfSelectEvent + " times on textarea element.");
-    }
-
-    finishJSTest();
-}
-
-function runInputTests() {
-    // incrementing it by 1 as focus() is kept outside the inputTests array.
-    expectedNumOfSelectEvent = inputTests.length + 1;
-    actualNumOfSelectEvent = 0;
-    // Prevent setSelectionRange from setting focus.
-    input.hidden = true;
-    input.setSelectionRange(0, 1);
-    input.hidden = false;
-    input.addEventListener("select", handleInputSelectEvent);
-    input.focus();
-}
-
-function runTextareaTests() {
-    // incrementing it by 1 as focus() is kept outside the textAreaTests array.
-    expectedNumOfSelectEvent = textAreaTests.length + 1;
-    actualNumOfSelectEvent = 0;
-    // Prevent setSelectionRange from setting focus.
-    textarea.hidden = true;
-    textarea.setSelectionRange(0, 1);
-    textarea.hidden = false;
-    textarea.addEventListener("select", handleTextAreaSelectEvent);
-    textarea.focus();
+function startTests() {
+    input.addEventListener("select", handleSelectEvent);
+    textarea.addEventListener("select", handleSelectEvent);
+    runNext();
 }
 </script>
 </body>

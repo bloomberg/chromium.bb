@@ -3,8 +3,20 @@ Test select event is triggered on input and textarea Elements.
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS select event is triggered on focus, select, setSelectionRange, setRangeText, selectionStart, selectionEnd and selectionDirection methods of input element.
-PASS select event is triggered on focus, select, setSelectionRange, setRangeText, selectionStart, selectionEnd and selectionDirection methods of textarea element.
+PASS input.focus()
+PASS input.select()
+PASS input.setSelectionRange()
+PASS input.setRangeText()
+PASS input.selectionStart
+PASS input.selectionEnd
+PASS input.selectionDirection
+PASS textarea.focus()
+PASS textarea.select()
+PASS textarea.setSelectionRange()
+PASS textarea.setRangeText()
+PASS textarea.selectionStart
+PASS textarea.selectionEnd
+PASS textarea.selectionDirection
 PASS successfullyParsed is true
 
 TEST COMPLETE
