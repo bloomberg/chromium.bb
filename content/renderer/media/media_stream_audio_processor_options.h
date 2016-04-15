@@ -83,6 +83,11 @@ class CONTENT_EXPORT MediaAudioConstraints {
   // Otherwise return false.
   bool IsValid() const;
 
+  // Exposed for testing.
+  bool default_audio_processing_constraint_value() const {
+    return default_audio_processing_constraint_value_;
+  }
+
  private:
   // Gets the default value of constraint named by |key| in |constraints|.
   bool GetDefaultValueForConstraint(const std::string& key) const;

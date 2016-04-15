@@ -342,6 +342,35 @@ TEST_F(MediaStreamAudioProcessorTest, ValidateGoodConstraints) {
   EXPECT_TRUE(audio_constraints.IsValid());
 }
 
+TEST_F(MediaStreamAudioProcessorTest, NoEchoTurnsOffProcessing) {
+  {
+    MockConstraintFactory constraint_factory;
+    MediaAudioConstraints audio_constraints(
+        constraint_factory.CreateWebMediaConstraints(), 0);
+    // The default value for echo cancellation is true, except when all
+    // audio processing has been turned off.
+    EXPECT_TRUE(audio_constraints.default_audio_processing_constraint_value());
+  }
+  // Turning off audio processing via a mandatory constraint.
+  {
+    MockConstraintFactory constraint_factory;
+    constraint_factory.basic().echoCancellation.setExact(false);
+    MediaAudioConstraints audio_constraints(
+        constraint_factory.CreateWebMediaConstraints(), 0);
+    // The default value for echo cancellation is true, except when all
+    // audio processing has been turned off.
+    EXPECT_FALSE(audio_constraints.default_audio_processing_constraint_value());
+  }
+  // Turning off audio processing via an optional constraint.
+  {
+    MockConstraintFactory constraint_factory;
+    constraint_factory.AddAdvanced().echoCancellation.setExact(false);
+    MediaAudioConstraints audio_constraints(
+        constraint_factory.CreateWebMediaConstraints(), 0);
+    EXPECT_FALSE(audio_constraints.default_audio_processing_constraint_value());
+  }
+}
+
 MediaAudioConstraints MakeMediaAudioConstraints(
     const MockConstraintFactory& constraint_factory) {
   return MediaAudioConstraints(constraint_factory.CreateWebMediaConstraints(),
