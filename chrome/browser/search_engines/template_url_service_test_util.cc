@@ -54,7 +54,7 @@ TemplateURLServiceTestUtil::TemplateURLServiceTestUtil()
                              base::ThreadTaskRunnerHandle::Get(),
                              base::ThreadTaskRunnerHandle::Get());
   web_database_service->AddTable(
-      scoped_ptr<WebDatabaseTable>(new KeywordTable()));
+      std::unique_ptr<WebDatabaseTable>(new KeywordTable()));
   web_database_service->LoadDatabase();
 
   web_data_service_ = new KeywordWebDataService(
@@ -113,12 +113,14 @@ void TemplateURLServiceTestUtil::ResetModel(bool verify_load) {
     ClearModel();
   search_terms_data_ = new TestingSearchTermsData("http://www.google.com/");
   model_.reset(new TemplateURLService(
-      profile()->GetPrefs(), scoped_ptr<SearchTermsData>(search_terms_data_),
+      profile()->GetPrefs(),
+      std::unique_ptr<SearchTermsData>(search_terms_data_),
       web_data_service_.get(),
-      scoped_ptr<TemplateURLServiceClient>(new TestingTemplateURLServiceClient(
-          HistoryServiceFactory::GetForProfileIfExists(
-              profile(), ServiceAccessType::EXPLICIT_ACCESS),
-          &search_term_)),
+      std::unique_ptr<TemplateURLServiceClient>(
+          new TestingTemplateURLServiceClient(
+              HistoryServiceFactory::GetForProfileIfExists(
+                  profile(), ServiceAccessType::EXPLICIT_ACCESS),
+              &search_term_)),
       NULL, NULL, base::Closure()));
   model()->AddObserver(this);
   changed_count_ = 0;

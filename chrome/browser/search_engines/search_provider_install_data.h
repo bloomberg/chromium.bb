@@ -5,12 +5,12 @@
 #ifndef CHROME_BROWSER_SEARCH_ENGINES_SEARCH_PROVIDER_INSTALL_DATA_H_
 #define CHROME_BROWSER_SEARCH_ENGINES_SEARCH_PROVIDER_INSTALL_DATA_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 
@@ -88,7 +88,7 @@ class SearchProviderInstallData {
   std::vector<base::Closure> closure_queue_;
 
   // Holds results of a load that was done using this class.
-  scoped_ptr<SearchHostToURLsMap> provider_map_;
+  std::unique_ptr<SearchHostToURLsMap> provider_map_;
 
   // The list of template urls that are owned by the class.
   ScopedVector<TemplateURL> template_urls_;

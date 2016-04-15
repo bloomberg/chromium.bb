@@ -5,10 +5,11 @@
 #ifndef CHROME_BROWSER_SEARCH_ENGINES_TEMPLATE_URL_SERVICE_ANDROID_H_
 #define CHROME_BROWSER_SEARCH_ENGINES_TEMPLATE_URL_SERVICE_ANDROID_H_
 
+#include <memory>
+
 #include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/search_engines/template_url_service_observer.h"
 
@@ -89,7 +90,7 @@ class TemplateUrlServiceAndroid : public TemplateURLServiceObserver {
   // Pointer to the TemplateUrlService for the main profile.
   TemplateURLService* template_url_service_;
 
-  scoped_ptr<TemplateURLService::Subscription> template_url_subscription_;
+  std::unique_ptr<TemplateURLService::Subscription> template_url_subscription_;
 
   DISALLOW_COPY_AND_ASSIGN(TemplateUrlServiceAndroid);
 };

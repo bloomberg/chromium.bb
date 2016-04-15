@@ -5,12 +5,12 @@
 #ifndef CHROME_BROWSER_SEARCH_ENGINES_TEMPLATE_URL_SERVICE_TEST_UTIL_H_
 #define CHROME_BROWSER_SEARCH_ENGINES_TEMPLATE_URL_SERVICE_TEST_UTIL_H_
 
+#include <memory>
 #include <string>
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "components/search_engines/template_url_service_observer.h"
 
@@ -78,13 +78,13 @@ class TemplateURLServiceTestUtil : public TemplateURLServiceObserver {
   TestingProfile* profile() { return profile_.get(); }
 
  private:
-  scoped_ptr<TestingProfile> profile_;
+  std::unique_ptr<TestingProfile> profile_;
   base::ScopedTempDir temp_dir_;
   int changed_count_;
   base::string16 search_term_;
   scoped_refptr<KeywordWebDataService> web_data_service_;
   TestingSearchTermsData* search_terms_data_;
-  scoped_ptr<TemplateURLService> model_;
+  std::unique_ptr<TemplateURLService> model_;
 
   DISALLOW_COPY_AND_ASSIGN(TemplateURLServiceTestUtil);
 };

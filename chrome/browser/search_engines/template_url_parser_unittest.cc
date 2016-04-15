@@ -64,7 +64,7 @@ class TemplateURLParserTest : public testing::Test {
                  TemplateURLParser::ParameterFilter* filter);
 
   // ParseFile parses the results into this template_url.
-  scoped_ptr<TemplateURL> template_url_;
+  std::unique_ptr<TemplateURL> template_url_;
 
  private:
   base::FilePath full_path_;

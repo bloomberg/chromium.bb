@@ -132,7 +132,8 @@ class GoogleURLObserver : public content::RenderProcessHostObserver {
   GoogleURLTracker* google_url_tracker_;
   scoped_refptr<GoogleURLChangeNotifier> change_notifier_;
 
-  scoped_ptr<GoogleURLTracker::Subscription> google_url_updated_subscription_;
+  std::unique_ptr<GoogleURLTracker::Subscription>
+      google_url_updated_subscription_;
 
   DISALLOW_COPY_AND_ASSIGN(GoogleURLObserver);
 };

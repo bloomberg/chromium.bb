@@ -5,6 +5,8 @@
 #include "components/search_engines/template_url_service.h"
 
 #include <stddef.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -12,7 +14,6 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -175,7 +176,7 @@ class TemplateURLServiceTest : public testing::Test {
 
  private:
   content::TestBrowserThreadBundle thread_bundle_;  // To set up BrowserThreads.
-  scoped_ptr<TemplateURLServiceTestUtil> test_util_;
+  std::unique_ptr<TemplateURLServiceTestUtil> test_util_;
 
   DISALLOW_COPY_AND_ASSIGN(TemplateURLServiceTest);
 };
@@ -308,7 +309,7 @@ TEST_F(TemplateURLServiceTest, AddUpdateRemove) {
   // We need to make a second copy as the model takes ownership of |t_url| and
   // will delete it.  We have to do this after calling Add() since that gives
   // |t_url| its ID.
-  scoped_ptr<TemplateURL> cloned_url(new TemplateURL(t_url->data()));
+  std::unique_ptr<TemplateURL> cloned_url(new TemplateURL(t_url->data()));
 
   // Reload the model to verify it was actually saved to the database.
   test_util()->ResetModel(true);
@@ -323,7 +324,7 @@ TEST_F(TemplateURLServiceTest, AddUpdateRemove) {
   // We expect the last_modified time to be updated to the present time on an
   // explicit reset.
   base::Time now = base::Time::Now();
-  scoped_ptr<base::SimpleTestClock> clock(new base::SimpleTestClock);
+  std::unique_ptr<base::SimpleTestClock> clock(new base::SimpleTestClock);
   clock->SetNow(now);
   model()->set_clock(std::move(clock));
 
@@ -638,7 +639,7 @@ TEST_F(TemplateURLServiceTest, Reset) {
   base::RunLoop().RunUntilIdle();
 
   base::Time now = base::Time::Now();
-  scoped_ptr<base::SimpleTestClock> clock(new base::SimpleTestClock);
+  std::unique_ptr<base::SimpleTestClock> clock(new base::SimpleTestClock);
   clock->SetNow(now);
   model()->set_clock(std::move(clock));
 
@@ -656,7 +657,7 @@ TEST_F(TemplateURLServiceTest, Reset) {
   ASSERT_TRUE(
       model()->GetTemplateURLForKeyword(ASCIIToUTF16("keyword")) == NULL);
 
-  scoped_ptr<TemplateURL> cloned_url(new TemplateURL(t_url->data()));
+  std::unique_ptr<TemplateURL> cloned_url(new TemplateURL(t_url->data()));
 
   // Reload the model from the database and make sure the change took.
   test_util()->ResetModel(true);
@@ -685,7 +686,7 @@ TEST_F(TemplateURLServiceTest, DefaultSearchProvider) {
   VerifyObserverCount(1);
   base::RunLoop().RunUntilIdle();
 
-  scoped_ptr<TemplateURL> cloned_url(new TemplateURL(t_url->data()));
+  std::unique_ptr<TemplateURL> cloned_url(new TemplateURL(t_url->data()));
 
   // Make sure when we reload we get a default search provider.
   test_util()->ResetModel(true);
@@ -763,7 +764,7 @@ TEST_F(TemplateURLServiceTest, DefaultSearchProviderLoadedFromPrefs) {
 
   model()->SetUserSelectedDefaultSearchProvider(t_url);
   base::RunLoop().RunUntilIdle();
-  scoped_ptr<TemplateURL> cloned_url(new TemplateURL(t_url->data()));
+  std::unique_ptr<TemplateURL> cloned_url(new TemplateURL(t_url->data()));
 
   // Reset the model and don't load it. The template url we set as the default
   // should be pulled from prefs now.
@@ -863,7 +864,7 @@ TEST_F(TemplateURLServiceTest, RepairSearchEnginesWithManagedDefault) {
       kEncodings, ";", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   data.alternate_urls.push_back(kAlternateURL);
   data.search_terms_replacement_key = kSearchTermsReplacementKey;
-  scoped_ptr<TemplateURL> expected_managed_default(new TemplateURL(data));
+  std::unique_ptr<TemplateURL> expected_managed_default(new TemplateURL(data));
   EXPECT_TRUE(model()->is_default_search_managed());
   const TemplateURL* actual_managed_default =
       model()->GetDefaultSearchProvider();
@@ -1070,7 +1071,7 @@ TEST_F(TemplateURLServiceTest, LoadRetainsModifiedProvider) {
   model()->Add(t_url);
 
   // Do the copy after t_url is added so that the id is set.
-  scoped_ptr<TemplateURL> cloned_url(new TemplateURL(t_url->data()));
+  std::unique_ptr<TemplateURL> cloned_url(new TemplateURL(t_url->data()));
   ASSERT_EQ(t_url, model()->GetTemplateURLForKeyword(ASCIIToUTF16("unittest")));
 
   // Wait for any saves to finish.
@@ -1100,7 +1101,8 @@ TEST_F(TemplateURLServiceTest, LoadSavesPrepopulatedDefaultSearchProvider) {
   // Verify that the default search provider is set to something.
   TemplateURL* default_search = model()->GetDefaultSearchProvider();
   ASSERT_TRUE(default_search != NULL);
-  scoped_ptr<TemplateURL> cloned_url(new TemplateURL(default_search->data()));
+  std::unique_ptr<TemplateURL> cloned_url(
+      new TemplateURL(default_search->data()));
 
   // Wait for any saves to finish.
   base::RunLoop().RunUntilIdle();
@@ -1126,7 +1128,7 @@ TEST_F(TemplateURLServiceTest, LoadRetainsDefaultProvider) {
   model()->SetUserSelectedDefaultSearchProvider(t_url);
   // Do the copy after t_url is added and set as default so that its
   // internal state is correct.
-  scoped_ptr<TemplateURL> cloned_url(new TemplateURL(t_url->data()));
+  std::unique_ptr<TemplateURL> cloned_url(new TemplateURL(t_url->data()));
 
   ASSERT_EQ(t_url, model()->GetTemplateURLForKeyword(ASCIIToUTF16("unittest")));
   ASSERT_EQ(t_url, model()->GetDefaultSearchProvider());
@@ -1243,7 +1245,7 @@ TEST_F(TemplateURLServiceTest, TestManagedDefaultSearch) {
       kEncodings, ";", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   data.alternate_urls.push_back(kAlternateURL);
   data.search_terms_replacement_key = kSearchTermsReplacementKey;
-  scoped_ptr<TemplateURL> expected_managed_default1(new TemplateURL(data));
+  std::unique_ptr<TemplateURL> expected_managed_default1(new TemplateURL(data));
   const TemplateURL* actual_managed_default =
       model()->GetDefaultSearchProvider();
   ExpectSimilar(expected_managed_default1.get(), actual_managed_default);
@@ -1268,7 +1270,8 @@ TEST_F(TemplateURLServiceTest, TestManagedDefaultSearch) {
   data2.SetURL(kNewSearchURL);
   data2.suggestions_url = kNewSuggestURL;
   data2.show_in_default_list = true;
-  scoped_ptr<TemplateURL> expected_managed_default2(new TemplateURL(data2));
+  std::unique_ptr<TemplateURL> expected_managed_default2(
+      new TemplateURL(data2));
   actual_managed_default = model()->GetDefaultSearchProvider();
   ExpectSimilar(expected_managed_default2.get(), actual_managed_default);
   EXPECT_EQ(actual_managed_default->show_in_default_list(), true);
@@ -1413,7 +1416,7 @@ TEST_F(TemplateURLServiceTest, DefaultExtensionEngine) {
       model(), "ext", "ext", "http://www.search.com/s?q={searchTerms}",
       std::string(), std::string(), std::string(),
       true, true, "UTF-8", Time(), Time());
-  scoped_ptr<TemplateURL::AssociatedExtensionInfo> extension_info(
+  std::unique_ptr<TemplateURL::AssociatedExtensionInfo> extension_info(
       new TemplateURL::AssociatedExtensionInfo(
           TemplateURL::NORMAL_CONTROLLED_BY_EXTENSION, "ext"));
   extension_info->wants_to_be_default_engine = true;
@@ -1439,7 +1442,7 @@ TEST_F(TemplateURLServiceTest, ExtensionEnginesNotPersist) {
       model(), "ext1", "ext1", "http://www.ext1.com/s?q={searchTerms}",
       std::string(), std::string(), std::string(),
       true, false, "UTF-8", Time(), Time());
-  scoped_ptr<TemplateURL::AssociatedExtensionInfo> extension_info(
+  std::unique_ptr<TemplateURL::AssociatedExtensionInfo> extension_info(
       new TemplateURL::AssociatedExtensionInfo(
           TemplateURL::NORMAL_CONTROLLED_BY_EXTENSION, "ext1"));
   extension_info->wants_to_be_default_engine = false;
@@ -1487,7 +1490,7 @@ TEST_F(TemplateURLServiceTest, ExtensionEngineVsPolicy) {
       kEncodings, ";", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   data.alternate_urls.push_back(kAlternateURL);
   data.search_terms_replacement_key = kSearchTermsReplacementKey;
-  scoped_ptr<TemplateURL> expected_managed_default(new TemplateURL(data));
+  std::unique_ptr<TemplateURL> expected_managed_default(new TemplateURL(data));
   EXPECT_TRUE(model()->is_default_search_managed());
   const TemplateURL* actual_managed_default =
       model()->GetDefaultSearchProvider();
@@ -1497,7 +1500,7 @@ TEST_F(TemplateURLServiceTest, ExtensionEngineVsPolicy) {
       model(), "ext1", "ext1", "http://www.ext1.com/s?q={searchTerms}",
       std::string(), std::string(), std::string(),
       true, true, "UTF-8", Time(), Time());
-  scoped_ptr<TemplateURL::AssociatedExtensionInfo> extension_info(
+  std::unique_ptr<TemplateURL::AssociatedExtensionInfo> extension_info(
       new TemplateURL::AssociatedExtensionInfo(
           TemplateURL::NORMAL_CONTROLLED_BY_EXTENSION, "ext1"));
   extension_info->wants_to_be_default_engine = true;

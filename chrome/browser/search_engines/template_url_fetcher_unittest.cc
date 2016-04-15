@@ -5,13 +5,14 @@
 #include "components/search_engines/template_url_fetcher.h"
 
 #include <stddef.h>
+
+#include <memory>
 #include <string>
 #include <utility>
 
 #include "base/callback_helpers.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
@@ -51,7 +52,7 @@ class TemplateURLFetcherTest : public testing::Test {
   // this class, this method handles those calls for the test.)
   void ConfirmAddSearchProvider(
       base::ScopedClosureRunner* callback_destruction_notifier,
-      scoped_ptr<TemplateURL> template_url);
+      std::unique_ptr<TemplateURL> template_url);
 
   // Schedules the download of the url.
   void StartDownload(const base::string16& keyword,
@@ -75,11 +76,11 @@ class TemplateURLFetcherTest : public testing::Test {
  private:
   content::TestBrowserThreadBundle thread_bundle_;  // To set up BrowserThreads.
   TemplateURLServiceTestUtil test_util_;
-  scoped_ptr<TemplateURLFetcher> template_url_fetcher_;
+  std::unique_ptr<TemplateURLFetcher> template_url_fetcher_;
   net::EmbeddedTestServer test_server_;
 
   // The last TemplateURL to come from a callback.
-  scoped_ptr<TemplateURL> last_callback_template_url_;
+  std::unique_ptr<TemplateURL> last_callback_template_url_;
 
   // How many TemplateURLFetcherTestCallbacks have been destructed.
   int callbacks_destroyed_;
@@ -123,7 +124,7 @@ void TemplateURLFetcherTest::DestroyedCallback() {
 
 void TemplateURLFetcherTest::ConfirmAddSearchProvider(
     base::ScopedClosureRunner* callback_destruction_notifier,
-    scoped_ptr<TemplateURL> template_url) {
+    std::unique_ptr<TemplateURL> template_url) {
   last_callback_template_url_ = std::move(template_url);
   add_provider_called_++;
 }

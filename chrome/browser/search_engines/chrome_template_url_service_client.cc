@@ -4,6 +4,7 @@
 
 #include "chrome/browser/search_engines/chrome_template_url_service_client.h"
 
+#include "base/memory/ptr_util.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/search_engines/template_url_service.h"
 #include "extensions/common/constants.h"
@@ -68,8 +69,8 @@ void ChromeTemplateURLServiceClient::RestoreExtensionInfoIfNecessary(
   GURL url(data.url());
   if (url.SchemeIs(extensions::kExtensionScheme)) {
     const std::string& extension_id = url.host();
-    template_url->set_extension_info(make_scoped_ptr(
-        new TemplateURL::AssociatedExtensionInfo(
+    template_url->set_extension_info(
+        base::WrapUnique(new TemplateURL::AssociatedExtensionInfo(
             TemplateURL::OMNIBOX_API_EXTENSION, extension_id)));
   }
 }

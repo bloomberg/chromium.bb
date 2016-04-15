@@ -2,16 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/search_engines/search_provider_install_data.h"
+
+#include <memory>
 #include <string>
 
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/search_engines/search_provider_install_data.h"
 #include "chrome/browser/search_engines/template_url_service_test_util.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/search_engines/search_terms_data.h"
@@ -142,7 +143,7 @@ class SearchProviderInstallDataTest : public testing::Test {
 
   // A mock RenderProcessHost that the SearchProviderInstallData will scope its
   // lifetime to.
-  scoped_ptr<content::MockRenderProcessHost> process_;
+  std::unique_ptr<content::MockRenderProcessHost> process_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchProviderInstallDataTest);
 };
