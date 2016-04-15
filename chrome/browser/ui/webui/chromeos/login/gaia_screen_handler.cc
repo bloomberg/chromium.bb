@@ -348,9 +348,7 @@ void GaiaScreenHandler::DeclareLocalizedValues(
   builder->Add("offlineLoginForgotPasswordDlg",
                IDS_OFFLINE_LOGIN_FORGOT_PASSWORD_DIALOG_TEXT);
   builder->Add("offlineLoginCloseBtn", IDS_OFFLINE_LOGIN_CLOSE_BUTTON_TEXT);
-  builder->AddF("enterpriseInfoMessage",
-                IDS_LOGIN_DEVICE_MANAGED_BY_NOTICE,
-                base::UTF8ToUTF16(GetEnterpriseDomain()));
+  builder->Add("enterpriseInfoMessage", IDS_LOGIN_DEVICE_MANAGED_BY_NOTICE);
   builder->Add("samlInterstitialMessage",
                 IDS_LOGIN_SAML_INTERSTITIAL_MESSAGE);
   builder->Add("samlInterstitialChangeAccountLink",

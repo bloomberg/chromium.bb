@@ -249,6 +249,9 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       }.bind(this));
       $('saml-interstitial').addEventListener('samlPageChangeAccountClicked',
                                               function() {
+        // The user requests to change the account. We must clear the email
+        // field of the auth params.
+        this.gaiaAuthParams_.email = '';
         this.screenMode = ScreenMode.DEFAULT;
         this.loadGaiaAuthHost_(false /* doSamlRedirect */);
       }.bind(this));
@@ -955,7 +958,8 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       this.loading = true;
       this.startLoadingTimer_();
       var offlineLogin = $('offline-gaia');
-      offlineLogin.showEnterpriseMessage = !!('enterpriseDomain' in params);
+      if ('enterpriseDomain' in params)
+        offlineLogin.domain = params['enterpriseDomain'];
       if ('emailDomain' in params)
         offlineLogin.emailDomain = '@' + params['emailDomain'];
       offlineLogin.setEmail(params.email);

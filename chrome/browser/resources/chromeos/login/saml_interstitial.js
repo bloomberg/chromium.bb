@@ -27,6 +27,8 @@ Polymer({
     this.$.samlInterstitialForm.submit();
   },
   onDomainChanged_: function() {
+    this.$.managedBy.textContent =
+      loadTimeData.getStringF('enterpriseInfoMessage', this.domain);
     this.$.message.content =
       loadTimeData.getStringF('samlInterstitialMessage', this.domain);
     this.showDomainMessages_ = !!this.domain.length;

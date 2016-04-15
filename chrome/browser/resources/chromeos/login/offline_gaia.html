@@ -23,6 +23,7 @@
 
   Attributes:
     'showEnterpriseMessage' - If the "manged by" message should be shown.
+    'domain' - The enterprise domain the device is managed by.
     'emailDomain' - autocomplete domain for the email input.
 
   Events:
@@ -53,8 +54,8 @@
         <gaia-card class="fit">
           <div class="header flex vertical layout end-justified start">
             <h1 class="welcome-message" i18n-content="loginWelcomeMessage"></h1>
-            <p class="enterprise-info"  hidden$="[[!showEnterpriseMessage]]"
-               i18n-content="enterpriseInfoMessage">
+            <p id="managedBy" class="enterprise-info"
+               hidden$="[[!showEnterpriseMessage]]">
             </p>
           </div>
           <div class="footer flex vertical layout justified">
