@@ -497,6 +497,9 @@
         "test": "compositor_unittests"
       },
       {
+        "args": [
+          "--gtest_filter=-WebRtcBrowserTest.CanForwardRemoteStream"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true
         },
