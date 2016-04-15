@@ -6858,6 +6858,20 @@
       }
     ]
   },
+  "Headless Linux (dbg)": {
+    "additional_compile_targets": [
+      "headless_libs",
+      "headless_tests"
+    ],
+    "gtest_tests": [
+      {
+        "test": "headless_browsertests"
+      },
+      {
+        "test": "headless_unittests"
+      }
+    ]
+  },
   "Linux ARM": {
     "gtest_tests": [
       {

@@ -197,6 +197,8 @@
       'CrWinClangLLD64 tester': 'none',
       'CrWinClngLLD64dbg tester': 'none',
       'CrWinClngLLDdbg tester': 'none',
+      'Headless Linux (dbg)':
+        '//build/args/bots/chromium.fyi/headless_linux_dbg.gn',
       'LTO Linux Perf': 'gn_official_goma_lto',
       'Libfuzzer Upload Linux ASan': 'gn_release_libfuzzer_asan',
       'Libfuzzer Upload Linux MSan': 'gn_release_libfuzzer_msan',

@@ -299,6 +299,14 @@
     "label": "//gpu:gpu_unittests",
     "type": "windowed_test_launcher",
   },
+  "headless_browsertests": {
+    "label": "//headless:headless_browsertests",
+    "type": "console_test_launcher",
+  },
+  "headless_unittests": {
+    "label": "//headless:headless_unittests",
+    "type": "console_test_launcher",
+  },
   "installer_util_unittests": {
     "label": "//chrome/installer/util:installer_util_unittests",
     "type": "console_test_launcher",
