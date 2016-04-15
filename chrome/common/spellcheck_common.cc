@@ -114,11 +114,10 @@ base::FilePath GetVersionedFileName(const std::string& input_language,
                         // crash.
     {"tg-TG", "-5-0"},  // Mar 4, 2014: Add Tajik dictionary.
 
-    // March 2016: Update from upstream
-    {"en-AU", "-7-0"},
-    {"en-CA", "-7-0"},
-    {"en-GB", "-7-0"},
-    {"en-US", "-7-0"},
+    // April 2016: Local fixes
+    {"en-CA", "-7-1"},
+    {"en-GB", "-7-1"},
+    {"en-US", "-7-1"},
 
     // March 2016: Initial check-in of Persian
     {"fa-IR", "-7-0"},
