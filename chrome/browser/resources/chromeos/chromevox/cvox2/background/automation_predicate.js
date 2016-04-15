@@ -178,7 +178,11 @@ AutomationPredicate.leafDomNode = function(node) {
  */
 AutomationPredicate.element = function(node) {
   return (node.state .focusable && node.role != RoleType.rootWebArea) ||
-      AutomationPredicate.leafDomNode(node);
+      (AutomationPredicate.leafDomNode(node) &&
+       (/\S+/.test(node.name) ||
+        (node.role != RoleType.lineBreak &&
+         node.role != RoleType.staticText &&
+         node.role != RoleType.inlineTextBox)));
 };
 
 /**
