@@ -71,7 +71,6 @@ public:
     PauseOnExceptionsState getPauseOnExceptionsState();
     void setPauseOnExceptionsState(PauseOnExceptionsState);
     void setPauseOnNextStatement(bool);
-    bool pausingOnNextStatement();
     bool canBreakProgram();
     void breakProgram();
     void continueProgram();

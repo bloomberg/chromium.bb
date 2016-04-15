@@ -274,11 +274,6 @@ void V8DebuggerImpl::setPauseOnNextStatement(bool pause)
         v8::Debug::CancelDebugBreak(m_isolate);
 }
 
-bool V8DebuggerImpl::pausingOnNextStatement()
-{
-    return v8::Debug::CheckDebugBreak(m_isolate);
-}
-
 bool V8DebuggerImpl::canBreakProgram()
 {
     if (!m_breakpointsActivated)

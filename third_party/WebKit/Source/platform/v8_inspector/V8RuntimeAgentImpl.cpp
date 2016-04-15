@@ -238,22 +238,12 @@ void V8RuntimeAgentImpl::releaseObject(ErrorString* errorString, const String16&
     InjectedScript::ObjectScope scope(errorString, m_debugger, m_session->contextGroupId(), objectId);
     if (!scope.initialize())
         return;
-    bool pausingOnNextStatement = m_debugger->pausingOnNextStatement();
-    if (pausingOnNextStatement)
-        m_debugger->setPauseOnNextStatement(false);
     scope.injectedScript()->releaseObject(objectId);
-    if (pausingOnNextStatement)
-        m_debugger->setPauseOnNextStatement(true);
 }
 
 void V8RuntimeAgentImpl::releaseObjectGroup(ErrorString*, const String16& objectGroup)
 {
-    bool pausingOnNextStatement = m_debugger->pausingOnNextStatement();
-    if (pausingOnNextStatement)
-        m_debugger->setPauseOnNextStatement(false);
     m_session->releaseObjectGroup(objectGroup);
-    if (pausingOnNextStatement)
-        m_debugger->setPauseOnNextStatement(true);
 }
 
 void V8RuntimeAgentImpl::run(ErrorString* errorString)
