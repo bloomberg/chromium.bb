@@ -82,6 +82,12 @@ LLVM_REPO_URL='https://llvm.org/svn/llvm-project'
 if 'LLVM_REPO_URL' in os.environ:
   LLVM_REPO_URL = os.environ['LLVM_REPO_URL']
 
+# Bump after VC updates.
+DIA_DLL = {
+  '2013': 'msdia120.dll',
+  '2015': 'msdia140.dll',
+}
+
 
 def DownloadUrl(url, output_file):
   """Download url into output_file."""
@@ -354,7 +360,7 @@ def GetVSVersion():
 def CopyDiaDllTo(target_dir):
   # This script always wants to use the 64-bit msdia*.dll.
   dia_path = os.path.join(GetVSVersion().Path(), 'DIA SDK', 'bin', 'amd64')
-  dia_dll = os.path.join(dia_path, 'msdia140.dll')  # Bump after VC updates.
+  dia_dll = os.path.join(dia_path, DIA_DLL[GetVSVersion().ShortName()])
   CopyFile(dia_dll, target_dir)
 
 
