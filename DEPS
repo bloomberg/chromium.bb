@@ -389,13 +389,13 @@ deps_os = {
     'src/third_party/freetype-android/src':
      Var('chromium_git') + '/chromium/src/third_party/freetype2.git' + '@' + Var('freetype_android_revision'),
 
-    # Build tools for Chrome OS.
+    # Build tools for Chrome OS. Note: This depends on third_party/pyelftools.
     'src/third_party/chromite':
-     Var('chromium_git') + '/chromiumos/chromite.git' + '@' + 'e19f83ba227bf1ec0077f5d3a816a415f1dd88d0',
+     Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '9bb353c06c398f670e8a33db1eba74760ac3a6d6',
 
-    # Dependency of chromite.git.
+    # Dependency of chromite.git and skia.
     'src/third_party/pyelftools':
-     Var('chromium_git') + '/chromiumos/third_party/pyelftools.git' + '@' + 'bdc1d380acd88d4bfaf47265008091483b0d614e',
+     Var('chromium_git') + '/chromiumos/third_party/pyelftools.git' + '@' + '19b3e610c86fcadb837d252c794cb5e8008826ae',
 
     'src/third_party/liblouis/src':
      Var('chromium_git') + '/external/liblouis-github.git' + '@' + '5f9c03f2a3478561deb6ae4798175094be8a26c2',

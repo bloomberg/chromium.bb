@@ -184,15 +184,43 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
         'UNKNOWN',
     ],
 
+    # http://crbug.com/603946
+    # https://github.com/google/oauth2client/issues/331
+    # Just imports googleapiclient. Chromite is not shipped.
+    'third_party/chromite/third_party/apiclient': [
+        'UNKNOWN',
+    ],
+
+    # http://crbug.com/603946
+    # https://github.com/google/google-api-python-client/issues/216
+    # Apache (v2.0) license. Chromite is not shipped.
+    'third_party/chromite/third_party/googleapiclient/channel.py': [
+        'UNKNOWN',
+    ],
+
     # http://crbug.com/222828
     # http://bugs.python.org/issue17514
     'third_party/chromite/third_party/argparse.py': [
         'UNKNOWN',
     ],
 
+    # http://crbug.com/603939
+    # https://github.com/jcgregorio/httplib2/issues/307
+    # MIT license. Chromite is not shipped.
+    'third_party/chromite/third_party/httplib2': [
+        'UNKNOWN',
+    ],
+
     # http://crbug.com/326117
     # https://bitbucket.org/chrisatlee/poster/issue/21
     'third_party/chromite/third_party/poster': [
+        'UNKNOWN',
+    ],
+
+    # http://crbug.com/603944
+    # https://github.com/kennethreitz/requests/issues/1610
+    # Apache (v2.0) license. Chromite is not shipped
+    'third_party/chromite/third_party/requests': [
         'UNKNOWN',
     ],
 
@@ -492,12 +520,14 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
         'UNKNOWN',
     ],
 
+    # https://github.com/google/google-api-python-client/issues/216
     # Apache v2.0.
     'tools/swarming_client/third_party/googleapiclient': [
         'UNKNOWN',
     ],
 
     # http://crbug.com/334668
+    # https://github.com/jcgregorio/httplib2/issues/307
     # MIT license.
     'tools/swarming_client/third_party/httplib2': [
         'UNKNOWN',
