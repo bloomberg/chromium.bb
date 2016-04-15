@@ -77,7 +77,7 @@ TEST_F(CommonJsTest, IsTestField) {
       {"submit", 0, false}};
   for (size_t i = 0; i < arraysize(testElements); ++i) {
     TextFieldTestElement element = testElements[i];
-    NSString* result = RunJavaScript([NSString
+    NSString* result = EvaluateJavaScriptAsString([NSString
         stringWithFormat:@"__gCrWeb.common.isTextField("
                           "window.document.getElementsByName('%s')[%d])",
                          element.element_name, element.element_index]);

@@ -77,11 +77,6 @@ class WebTestWithWebController : public WebTest,
   void WaitForCondition(ConditionBlock condition);
   // Evaluates JavaScript and returns result as a string.
   NSString* EvaluateJavaScriptAsString(NSString* script);
-  // Runs the given JavaScript and returns the result as a string. This method
-  // is a drop-in replacement for stringByEvaluatingJavaScriptFromString with
-  // the additional functionality that any JavaScript exceptions are caught and
-  // logged (not dropped silently).
-  NSString* RunJavaScript(NSString* script);
   // TaskObserver methods (used when waiting for background tasks).
   void WillProcessTask(const base::PendingTask& pending_task) override;
   void DidProcessTask(const base::PendingTask& pending_task) override;

@@ -61,7 +61,7 @@ class CoreJsTest : public web::WebTestWithWebController {
     for (size_t i = 0; i < arraysize(testData); i++) {
       TestScriptAndExpectedValue& data = testData[i];
       LoadHtml(pageContent);
-      NSString* result = RunJavaScript(data.testScript);
+      NSString* result = EvaluateJavaScriptAsString(data.testScript);
       EXPECT_NSEQ(data.expectedValue, result) << " in test " << i << ": " <<
           [data.testScript UTF8String];
     }
@@ -126,7 +126,7 @@ TEST_F(CoreJsTest, TextAreaStopsProximity) {
   for (size_t i = 0; i < arraysize(testData); i++) {
     TestScriptAndExpectedValue& data = testData[i];
     LoadHtml(pageContent);
-    NSString* result = RunJavaScript(data.testScript);
+    NSString* result = EvaluateJavaScriptAsString(data.testScript);
     EXPECT_NSEQ(data.expectedValue, result) << " in test " << i << ": " <<
     [data.testScript UTF8String];
   }
@@ -153,7 +153,8 @@ TEST_F(CoreJsTest, HasPasswordField) {
   for (size_t i = 0; i < arraysize(testData); i++) {
     TestDataForPasswordFormDetection& data = testData[i];
     LoadHtml(data.pageContent);
-    NSString* result = RunJavaScript(@"__gCrWeb.hasPasswordField()");
+    NSString* result =
+        EvaluateJavaScriptAsString(@"__gCrWeb.hasPasswordField()");
     EXPECT_NSEQ(data.containsPassword, result) <<
         " in test " << i << ": " << [data.pageContent UTF8String];
   }
@@ -171,7 +172,7 @@ TEST_F(CoreJsTest, HasPasswordFieldinFrame) {
     @"true"
   };
   LoadHtml(data.pageContent);
-  NSString* result = RunJavaScript(@"__gCrWeb.hasPasswordField()");
+  NSString* result = EvaluateJavaScriptAsString(@"__gCrWeb.hasPasswordField()");
   EXPECT_NSEQ(data.containsPassword, result) << [data.pageContent UTF8String];
 }
 
@@ -231,7 +232,7 @@ TEST_F(CoreJsTest, Stringify) {
     // Load a sample HTML page. As a side-effect, loading HTML via
     // |webController_| will also inject core.js.
     LoadHtml(@"<p>");
-    NSString* result = RunJavaScript(data.testScript);
+    NSString* result = EvaluateJavaScriptAsString(data.testScript);
     EXPECT_NSEQ(data.expectedValue, result) << " in test " << i << ": " <<
         [data.testScript UTF8String];
   }
@@ -246,7 +247,7 @@ TEST_F(CoreJsTest, LinkOfImage) {
   // A page with a link to a destination URL.
   LoadHtml(base::StringPrintf(image, "http://destination"));
   NSString* result =
-      RunJavaScript(@"__gCrWeb['getElementFromPoint'](200, 200)");
+      EvaluateJavaScriptAsString(@"__gCrWeb['getElementFromPoint'](200, 200)");
   std::string expected_result =
       R"({"src":"foo","referrerPolicy":"default",)"
       R"("href":"http://destination/"})";
@@ -254,7 +255,8 @@ TEST_F(CoreJsTest, LinkOfImage) {
 
   // A page with a link with some JavaScript that does not result in a NOP.
   LoadHtml(base::StringPrintf(image, "javascript:console.log('whatever')"));
-  result = RunJavaScript(@"__gCrWeb['getElementFromPoint'](200, 200)");
+  result =
+      EvaluateJavaScriptAsString(@"__gCrWeb['getElementFromPoint'](200, 200)");
   expected_result =
       R"({"src":"foo","referrerPolicy":"default",)"
       R"("href":"javascript:console.log("})";
@@ -270,7 +272,8 @@ TEST_F(CoreJsTest, LinkOfImage) {
     // A page with a link with some JavaScript that results in a NOP.
     const std::string javascript = std::string("javascript:") + js;
     LoadHtml(base::StringPrintf(image, javascript.c_str()));
-    result = RunJavaScript(@"__gCrWeb['getElementFromPoint'](200, 200)");
+    result = EvaluateJavaScriptAsString(
+        @"__gCrWeb['getElementFromPoint'](200, 200)");
     expected_result = R"({"src":"foo","referrerPolicy":"default"})";
 
     // Make sure the returned JSON does not have an 'href' key.

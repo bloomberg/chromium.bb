@@ -51,7 +51,7 @@ TEST_F(CRWWebControllerObserverTest, HandleCommand) {
   command.SetString("command", "test.testMessage");
   std::string message;
   base::JSONWriter::Write(command, &message);
-  RunJavaScript([NSString
+  EvaluateJavaScriptAsString([NSString
       stringWithFormat:@"__gCrWeb.message.invokeOnHost(%s)", message.c_str()]);
   WaitForBackgroundTasks();
   ASSERT_EQ(1U, [fake_web_controller_observer_ commandsReceived].size());
@@ -72,7 +72,7 @@ TEST_F(CRWWebControllerObserverTest, HandleImmediateCommand) {
   command.SetString("referrerPolicy", "referrerPolicy");
   std::string message;
   base::JSONWriter::Write(command, &message);
-  RunJavaScript(
+  EvaluateJavaScriptAsString(
       [NSString stringWithFormat:@"__gCrWeb.message.invokeOnHostImmediate(%s)",
                                  message.c_str()]);
   WaitForBackgroundTasks();
@@ -92,7 +92,7 @@ TEST_F(CRWWebControllerObserverTest, HandleMultipleCommands) {
     command.SetInteger("number", count);
     base::JSONWriter::Write(command, &message);
     ASSERT_EQ(0U, [fake_web_controller_observer_ commandsReceived].size());
-    RunJavaScript(
+    EvaluateJavaScriptAsString(
         [NSString stringWithFormat:@"__gCrWeb.message.invokeOnHost(%s)",
                                    message.c_str()]);
     WaitForBackgroundTasks();

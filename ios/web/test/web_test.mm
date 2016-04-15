@@ -163,10 +163,6 @@ void WebTestWithWebController::WaitForCondition(ConditionBlock condition) {
 
 NSString* WebTestWithWebController::EvaluateJavaScriptAsString(
     NSString* script) {
-  return RunJavaScript(script);
-}
-
-NSString* WebTestWithWebController::RunJavaScript(NSString* script) {
   __block base::scoped_nsobject<NSString> evaluationResult;
   [webController_ evaluateJavaScript:script
                  stringResultHandler:^(NSString* result, NSError*) {
@@ -191,7 +187,7 @@ void WebTestWithWebController::DidProcessTask(
 
 bool WebTestWithWebController::ResetPageIfNavigationStalled(
     NSString* load_check) {
-  NSString* inner_html = RunJavaScript(
+  NSString* inner_html = EvaluateJavaScriptAsString(
       @"(document && document.body && document.body.innerHTML) || 'undefined'");
   if ([inner_html rangeOfString:load_check].location == NSNotFound) {
     [webController_ setWebUsageEnabled:NO];
