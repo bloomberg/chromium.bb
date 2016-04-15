@@ -129,7 +129,9 @@ public class TabModelImpl extends TabModelJniBridge {
             index = mOrderController.determineInsertionIndex(type, index, tab);
             assert index <= mTabs.size();
 
-            assert tab.isIncognito() == isIncognito();
+            if (tab.isIncognito() != isIncognito()) {
+                throw new IllegalStateException("Attempting to open tab in wrong model");
+            }
 
             // TODO(dtrainor): Update the list of undoable tabs instead of committing it.
             commitAllTabClosures();
