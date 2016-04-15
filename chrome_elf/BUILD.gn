@@ -24,6 +24,7 @@ windows_manifest("chrome_elf_manifest") {
 
 shared_library("chrome_elf") {
   sources = [
+    "chrome_elf.def",
     "chrome_elf_main.cc",
     "chrome_elf_main.h",
   ]
@@ -37,10 +38,7 @@ shared_library("chrome_elf") {
   ]
   configs += [ "//build/config/win:windowed" ]
   configs -= [ "//build/config/win:console" ]
-  ldflags = [
-    "/NODEFAULTLIB:user32.lib",
-    "/DEF:" + rebase_path("chrome_elf.def"),
-  ]
+  ldflags = [ "/NODEFAULTLIB:user32.lib" ]
   if (current_cpu == "x86") {
     # Don"t set an x64 base address (to avoid breaking HE-ASLR).
     ldflags += [ "/BASE:0x01c20000" ]
@@ -161,6 +159,7 @@ test("chrome_elf_unittests") {
 shared_library("blacklist_test_main_dll") {
   sources = [
     "blacklist/test/blacklist_test_main_dll.cc",
+    "blacklist/test/blacklist_test_main_dll.def",
   ]
   deps = [
     ":blacklist",
@@ -168,34 +167,34 @@ shared_library("blacklist_test_main_dll") {
     "//base",
     "//build/config/sanitizers:deps",
   ]
-  ldflags =
-      [ "/DEF:" + rebase_path("blacklist/test/blacklist_test_main_dll.def",
-                              root_build_dir) ]
 }
 
-shared_library("blacklist_test_dll_1") {
+loadable_module("blacklist_test_dll_1") {
   sources = [
     "blacklist/test/blacklist_test_dll_1.cc",
+    "blacklist/test/blacklist_test_dll_1.def",
   ]
-  ldflags = [ "/DEF:" + rebase_path("blacklist/test/blacklist_test_dll_1.def",
-                                    root_build_dir) ]
   deps = [
     "//build/config/sanitizers:deps",
   ]
 }
 
-shared_library("blacklist_test_dll_2") {
+loadable_module("blacklist_test_dll_2") {
   sources = [
     "blacklist/test/blacklist_test_dll_2.cc",
+    "blacklist/test/blacklist_test_dll_2.def",
   ]
-  ldflags = [ "/DEF:" + rebase_path("blacklist/test/blacklist_test_dll_2.def",
-                                    root_build_dir) ]
   deps = [
     "//build/config/sanitizers:deps",
   ]
 }
 
-shared_library("blacklist_test_dll_3") {
+# As-is, this does not generate a .lib file because there are no exports and no
+# .def file. The current definition of loadable_module does not declare a .lib
+# file as an output, so this is OK. If it did (or if this used shared_library
+# which does), Ninja would get confused and always rebuild this target because
+# it sees a declared output file but that file doesn't exist on disk.
+loadable_module("blacklist_test_dll_3") {
   sources = [
     "blacklist/test/blacklist_test_dll_3.cc",
   ]
