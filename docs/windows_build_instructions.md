@@ -8,50 +8,36 @@ represented in the current code page."
 
 ### Setting up the environment for Visual Studio
 
-You must build with Visual Studio 2013 Update 4 or Visual Studio 2015
-Update 1, no other versions are supported.
+You must build with Visual Studio 2015 Update 2; no other version is
+supported.
 
 You must have Windows 7 x64 or later. x86 OSs are unsupported.
 
-1.  Get
-[depot\_tools](http://commondatastorage.googleapis.com/chrome-infra-docs/flat/depot_tools/docs/html/depot_tools_tutorial.html#_setting_up).
-2.  Follow the appropriate path below:
+## Step 1: Getting depot_tools
+
+Get [depot\_tools](http://commondatastorage.googleapis.com/chrome-infra-docs/flat/depot_tools/docs/html/depot_tools_tutorial.html#_setting_up).
+
+## Step 2: Getting the compiler toolchain
+
+Follow the appropriate path below:
 
 ### Open source contributors
 
-####For building with Visual Studio 2015 (default compiler as of March 11, 2016):
+As of March 11, 2016 Chromium requires Visual Studio 2015 to build.
 
-> Install Visual Studio 2015 Update 2 or later - Community Edition
-> should work if its license is appropriate for you. Use the Custom Install option
-> and select:
-> 
-> - Visual C++, which will select three sub-categories including MFC
-> - Universal Windows Apps Development Tools > Tools
-> - Universal Windows Apps Development Tools > Windows 10 SDK (10.0.10586)
-> 
-> You must have the 10586 SDK installed or else you will hit compile errors such
-> as redefined macros.
+Install Visual Studio 2015 Update 2 or later - Community Edition
+should work if its license is appropriate for you. Use the Custom Install option
+and select:
 
-#### For building with Visual Studio 2013 (no longer default as of March 11, 2016, and not recommended - requires setting `GYP_MSVS_VERSION=2013`):
+- Visual C++, which will select three sub-categories including MFC
+- Universal Windows Apps Development Tools > Tools
+- Universal Windows Apps Development Tools > Windows 10 SDK (10.0.10586)
 
-> Install [Visual Studio 2013
-> Community](http://www.visualstudio.com/products/visual-studio-community-vs)
-> or [Visual Studio 2013
-> Professional](http://www.visualstudio.com/products/visual-studio-professional-with-msdn-vs)
-> depending on which license is appropriate for you. You can deselect
-> the default options if you want, but you must make sure to install
-> "Microsoft Foundation Classes for C++".
-> 
-> You should also install the [Windows 10
-> SDK](https://dev.windows.com/en-us/downloads/windows-10-sdk) to the
-> default install location. You must have SDK version 10.0.10586 or
-> greater installed.
+You must have the 10586 SDK installed or else you will hit compile errors such
+as redefined macros.
 
 Run `set DEPOT_TOOLS_WIN_TOOLCHAIN=0`, or set that variable in your
 global environment.
-
-Visual Studio Express 2013 is **not** supported and will not be able to
-build Chromium.
 
 Compilation is done through ninja, **not** Visual Studio.
 
@@ -65,19 +51,19 @@ project-id.
 Once you've done this, the toolchain will be installed automatically for
 you in Step 3, below (near the end of the step).
 
-The toolchain will be in `depot_tools\win_toolchain`, and windbg can be
-found in `depot_tools\win_toolchain\vs2013_files\win8sdk\Debuggers`.
+The toolchain will be in `depot_tools\win_toolchain\vs_files\<hash>`, and windbg
+can be found in `depot_tools\win_toolchain\vs_files\<hash>\win_sdk\Debuggers`.
 
 If you want the IDE for debugging and editing, you will need to install
 it separately, but this is optional and not needed to build Chromium.
 
-## Getting the Code
+## Step 3: Getting the Code
 
 Follow the steps to [check out the
 code](https://www.chromium.org/developers/how-tos/get-the-code) (largely
 `fetch chromium`).
 
-## Building
+## Step 4: Building
 
 Build the target you are interested in.
 
@@ -86,7 +72,7 @@ ninja -C out\Debug chrome
 ```
 
 Alternative (Graphical user interface): Open a generated .sln
-file such as all.sln, right-click the chrome project and select build.
+file such as chrome.sln, right-click the chrome project and select build.
 This will invoke the real step 4 above. Do not build the whole solution
 since that conflicts with ninja's build management and everything will
 explode.
