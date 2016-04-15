@@ -150,17 +150,17 @@ void MojoAudioDecoder::OnConnectionError() {
     base::ResetAndReturn(&reset_cb_).Run();
 }
 
-void MojoAudioDecoder::OnInitialized(bool status,
+void MojoAudioDecoder::OnInitialized(bool success,
                                      bool needs_bitstream_conversion) {
-  DVLOG(1) << __FUNCTION__ << ": status:" << status;
+  DVLOG(1) << __FUNCTION__ << ": success:" << success;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   needs_bitstream_conversion_ = needs_bitstream_conversion;
 
-  if (status)
+  if (success)
     CreateDataPipe();
 
-  task_runner_->PostTask(FROM_HERE, base::Bind(init_cb_, status));
+  base::ResetAndReturn(&init_cb_).Run(success);
 }
 
 static media::DecodeStatus ConvertDecodeStatus(

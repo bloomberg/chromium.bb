@@ -45,7 +45,7 @@ class MojoAudioDecoder : public AudioDecoder,
   void OnConnectionError();
 
   // Called when |remote_decoder_| finished initialization.
-  void OnInitialized(bool status, bool needs_bitstream_conversion);
+  void OnInitialized(bool success, bool needs_bitstream_conversion);
 
   // Called when |remote_decoder_| accepted or rejected DecoderBuffer.
   void OnDecodeStatus(interfaces::AudioDecoder::DecodeStatus decode_status);
