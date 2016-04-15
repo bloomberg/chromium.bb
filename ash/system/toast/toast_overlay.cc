@@ -197,30 +197,25 @@ ToastOverlay::ToastOverlay(Delegate* delegate, const std::string& text)
 }
 
 ToastOverlay::~ToastOverlay() {
-  gfx::NativeWindow native_view = overlay_widget_->GetNativeView();
-  wm::SetWindowVisibilityAnimationTransition(native_view, wm::ANIMATE_NONE);
-
-  // Remove ourself from the animator to avoid being re-entrantly called in
-  // |overlay_widget_|'s destructor.
-  ui::Layer* layer = overlay_widget_->GetLayer();
-  if (layer) {
-    ui::LayerAnimator* animator = layer->GetAnimator();
-    if (animator)
-      animator->RemoveObserver(this);
-  }
-
   overlay_widget_->Close();
 }
 
 void ToastOverlay::Show(bool visible) {
-  if (is_visible_ == visible)
+  if (overlay_widget_->GetLayer()->GetTargetVisibility() == visible)
     return;
 
-  is_visible_ = visible;
+  ui::LayerAnimator* animator = overlay_widget_->GetLayer()->GetAnimator();
+  DCHECK(animator);
 
-  overlay_widget_->GetLayer()->GetAnimator()->AddObserver(this);
+  base::TimeDelta original_duration = animator->GetTransitionDuration();
+  ui::ScopedLayerAnimationSettings animation_settings(animator);
+  // ScopedLayerAnimationSettings ctor chanes the transition duration, so change
+  // back it to the original value (should be zero).
+  animation_settings.SetTransitionDuration(original_duration);
 
-  if (is_visible_)
+  animation_settings.AddObserver(this);
+
+  if (visible)
     overlay_widget_->Show();
   else
     overlay_widget_->Hide();
@@ -238,29 +233,12 @@ gfx::Rect ToastOverlay::CalculateOverlayBounds() {
   return bounds;
 }
 
-void ToastOverlay::OnLayerAnimationEnded(ui::LayerAnimationSequence* sequence) {
-  ui::LayerAnimator* animator = overlay_widget_->GetLayer()->GetAnimator();
-  if (animator)
-    animator->RemoveObserver(this);
-  if (!is_visible_) {
-    // Acync operation, since delegate may remove this instance and removing
-    // this here causes crash.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(&Delegate::OnClosed,
-                   base::Unretained(delegate_) /* |delegate| lives longer */));
-  }
-}
+void ToastOverlay::OnImplicitAnimationsScheduled() {}
 
-void ToastOverlay::OnLayerAnimationAborted(
-    ui::LayerAnimationSequence* sequence) {
-  ui::LayerAnimator* animator = overlay_widget_->GetLayer()->GetAnimator();
-  if (animator)
-    animator->RemoveObserver(this);
+void ToastOverlay::OnImplicitAnimationsCompleted() {
+  if (!overlay_widget_->GetLayer()->GetTargetVisibility())
+    delegate_->OnClosed();
 }
-
-void ToastOverlay::OnLayerAnimationScheduled(
-    ui::LayerAnimationSequence* sequence) {}
 
 views::Widget* ToastOverlay::widget_for_testing() {
   return overlay_widget_.get();

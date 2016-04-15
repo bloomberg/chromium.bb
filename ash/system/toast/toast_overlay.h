@@ -28,7 +28,7 @@ class ToastManagerTest;
 class ToastOverlayView;
 class ToastOverlayButton;
 
-class ASH_EXPORT ToastOverlay : public ui::LayerAnimationObserver {
+class ASH_EXPORT ToastOverlay : public ui::ImplicitAnimationObserver {
  public:
   class ASH_EXPORT Delegate {
    public:
@@ -48,15 +48,12 @@ class ASH_EXPORT ToastOverlay : public ui::LayerAnimationObserver {
   // Returns the current bounds of the overlay, which is based on visibility.
   gfx::Rect CalculateOverlayBounds();
 
-  // gfx::LayerAnimationObserver overrides:
-  void OnLayerAnimationEnded(ui::LayerAnimationSequence* sequence) override;
-  void OnLayerAnimationAborted(ui::LayerAnimationSequence* sequence) override;
-  void OnLayerAnimationScheduled(ui::LayerAnimationSequence* sequence) override;
+  void OnImplicitAnimationsScheduled() override;
+  void OnImplicitAnimationsCompleted() override;
 
   views::Widget* widget_for_testing();
   void ClickDismissButtonForTesting(const ui::Event& event);
 
-  bool is_visible_ = false;
   Delegate* const delegate_;
   const std::string text_;
   std::unique_ptr<views::Widget> overlay_widget_;
