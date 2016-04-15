@@ -857,6 +857,6 @@ hooks = [
     # A change to a .gyp, .gypi, or to GYP itself should run the generator.
     'name': 'gyp',
     'pattern': '.',
-    'action': ['python', 'src/build/gyp_chromium'],
+    'action': ['python', 'src/build/gyp_chromium', '--running-as-hook'],
   },
 ]
