@@ -94,6 +94,49 @@ void ExpectInt32AndArrayOfDoublesArguments(
   EXPECT_FALSE(reader->HasMoreData());
 }
 
+// Expect the reader to have an uint64_t and an int32_t.
+void ExpectUint64AndInt32Arguments(uint64_t expected_uint64,
+                                   int32_t expected_int32,
+                                   dbus::MessageReader* reader) {
+  uint64_t value1;
+  ASSERT_TRUE(reader->PopUint64(&value1));
+  EXPECT_EQ(expected_uint64, value1);
+  int32_t value2;
+  ASSERT_TRUE(reader->PopInt32(&value2));
+  EXPECT_EQ(expected_int32, value2);
+  EXPECT_FALSE(reader->HasMoreData());
+}
+
+// Expect the reader to have an uint64_t.
+void ExpectUint64Argument(uint64_t expected_value,
+                          dbus::MessageReader* reader) {
+  uint64_t value;
+  ASSERT_TRUE(reader->PopUint64(&value));
+  EXPECT_EQ(expected_value, value);
+  EXPECT_FALSE(reader->HasMoreData());
+}
+
+// Expect the reader to have a bool.
+void ExpectBoolArgument(bool expected_bool, dbus::MessageReader* reader) {
+  bool value;
+  ASSERT_TRUE(reader->PopBool(&value));
+  EXPECT_EQ(expected_bool, value);
+  EXPECT_FALSE(reader->HasMoreData());
+}
+
+// Expect the reader to have an uint64_t and a bool.
+void ExpectUint64AndBoolArguments(uint64_t expected_uint64,
+                                  bool expected_bool,
+                                  dbus::MessageReader* reader) {
+  uint64_t value1;
+  ASSERT_TRUE(reader->PopUint64(&value1));
+  EXPECT_EQ(expected_uint64, value1);
+  bool value2;
+  ASSERT_TRUE(reader->PopBool(&value2));
+  EXPECT_EQ(expected_bool, value2);
+  EXPECT_FALSE(reader->HasMoreData());
+}
+
 void WriteNodesToResponse(dbus::MessageWriter& writer,
                           const AudioNodeList& node_list) {
   dbus::MessageWriter sub_writer(nullptr);
@@ -595,6 +638,180 @@ TEST_F(CrasAudioClientTest, GetNodes) {
                                &expected_node_list),
                     error_callback.GetCallback());
   EXPECT_CALL(error_callback, Run(_, _)).Times(0);
+  // Run the message loop.
+  message_loop_.RunUntilIdle();
+}
+
+TEST_F(CrasAudioClientTest, SetOutputNodeVolume) {
+  const uint64_t kNodeId = 10003;
+  const int32_t kVolume = 80;
+  // Create response.
+  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+
+  // Set expectations.
+  PrepareForMethodCall(cras::kSetOutputNodeVolume,
+                       base::Bind(&ExpectUint64AndInt32Arguments,
+                                  kNodeId,
+                                  kVolume),
+                       response.get());
+  // Call method.
+  client_->SetOutputNodeVolume(kNodeId, kVolume);
+  // Run the message loop.
+  message_loop_.RunUntilIdle();
+}
+
+TEST_F(CrasAudioClientTest, SetOutputUserMute) {
+  const bool kUserMuteOn = true;
+  // Create response.
+  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+
+  // Set expectations.
+  PrepareForMethodCall(cras::kSetOutputUserMute,
+                       base::Bind(&ExpectBoolArgument, kUserMuteOn),
+                       response.get());
+  // Call method.
+  client_->SetOutputUserMute(kUserMuteOn);
+  // Run the message loop.
+  message_loop_.RunUntilIdle();
+}
+
+TEST_F(CrasAudioClientTest, SetInputNodeGain) {
+  const uint64_t kNodeId = 20003;
+  const int32_t kInputGain = 2;
+  // Create response.
+  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+
+  // Set expectations.
+  PrepareForMethodCall(cras::kSetInputNodeGain,
+                       base::Bind(&ExpectUint64AndInt32Arguments,
+                                  kNodeId,
+                                  kInputGain),
+                       response.get());
+  // Call method.
+  client_->SetInputNodeGain(kNodeId, kInputGain);
+  // Run the message loop.
+  message_loop_.RunUntilIdle();
+}
+
+TEST_F(CrasAudioClientTest, SetInputMute) {
+  const bool kInputMuteOn = true;
+  // Create response.
+  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+
+  // Set expectations.
+  PrepareForMethodCall(cras::kSetInputMute,
+                       base::Bind(&ExpectBoolArgument, kInputMuteOn),
+                       response.get());
+  // Call method.
+  client_->SetInputMute(kInputMuteOn);
+  // Run the message loop.
+  message_loop_.RunUntilIdle();
+}
+
+TEST_F(CrasAudioClientTest, SetActiveOutputNode) {
+  const uint64_t kNodeId = 10004;
+  // Create response.
+  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+
+  // Set expectations.
+  PrepareForMethodCall(cras::kSetActiveOutputNode,
+                       base::Bind(&ExpectUint64Argument, kNodeId),
+                       response.get());
+  // Call method.
+  client_->SetActiveOutputNode(kNodeId);
+  // Run the message loop.
+  message_loop_.RunUntilIdle();
+}
+
+TEST_F(CrasAudioClientTest, SetActiveInputNode) {
+  const uint64_t kNodeId = 20004;
+  // Create response.
+  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+
+  // Set expectations.
+  PrepareForMethodCall(cras::kSetActiveInputNode,
+                       base::Bind(&ExpectUint64Argument, kNodeId),
+                       response.get());
+  // Call method.
+  client_->SetActiveInputNode(kNodeId);
+  // Run the message loop.
+  message_loop_.RunUntilIdle();
+}
+
+TEST_F(CrasAudioClientTest, AddActiveInputNode) {
+  const uint64_t kNodeId = 20005;
+  // Create response.
+  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+
+  // Set expectations.
+  PrepareForMethodCall(cras::kAddActiveInputNode,
+                       base::Bind(&ExpectUint64Argument, kNodeId),
+                       response.get());
+  // Call method.
+  client_->AddActiveInputNode(kNodeId);
+  // Run the message loop.
+  message_loop_.RunUntilIdle();
+}
+
+TEST_F(CrasAudioClientTest, RemoveActiveInputNode) {
+  const uint64_t kNodeId = 20006;
+  // Create response.
+  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+
+  // Set expectations.
+  PrepareForMethodCall(cras::kRemoveActiveInputNode,
+                       base::Bind(&ExpectUint64Argument, kNodeId),
+                       response.get());
+  // Call method.
+  client_->RemoveActiveInputNode(kNodeId);
+  // Run the message loop.
+  message_loop_.RunUntilIdle();
+}
+
+TEST_F(CrasAudioClientTest, AddActiveOutputNode) {
+  const uint64_t kNodeId = 10005;
+  // Create response.
+  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+
+  // Set expectations.
+  PrepareForMethodCall(cras::kAddActiveOutputNode,
+                       base::Bind(&ExpectUint64Argument, kNodeId),
+                       response.get());
+  // Call method.
+  client_->AddActiveOutputNode(kNodeId);
+  // Run the message loop.
+  message_loop_.RunUntilIdle();
+}
+
+TEST_F(CrasAudioClientTest, RemoveActiveOutputNode) {
+  const uint64_t kNodeId = 10006;
+  // Create response.
+  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+
+  // Set expectations.
+  PrepareForMethodCall(cras::kRemoveActiveOutputNode,
+                       base::Bind(&ExpectUint64Argument, kNodeId),
+                       response.get());
+  // Call method.
+  client_->RemoveActiveOutputNode(kNodeId);
+  // Run the message loop.
+  message_loop_.RunUntilIdle();
+}
+
+TEST_F(CrasAudioClientTest, SwapLeftRight) {
+  const uint64_t kNodeId = 10007;
+  const bool kSwap = true;
+  // Create response.
+  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+
+  // Set expectations.
+  PrepareForMethodCall(cras::kSwapLeftRight,
+                       base::Bind(&ExpectUint64AndBoolArguments,
+                                  kNodeId,
+                                  kSwap),
+                       response.get());
+  // Call method.
+  client_->SwapLeftRight(kNodeId, kSwap);
   // Run the message loop.
   message_loop_.RunUntilIdle();
 }
