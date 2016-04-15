@@ -567,8 +567,6 @@ libtoytoolkit_la_SOURCES =				\
 nodist_libtoytoolkit_la_SOURCES =			\
 	protocol/text-cursor-position-protocol.c	\
 	protocol/text-cursor-position-client-protocol.h	\
-	protocol/scaler-protocol.c			\
-	protocol/scaler-client-protocol.h		\
 	protocol/viewporter-protocol.c			\
 	protocol/viewporter-client-protocol.h		\
 	protocol/xdg-shell-unstable-v5-protocol.c			\
@@ -774,8 +772,6 @@ BUILT_SOURCES +=					\
 	protocol/input-method-unstable-v1-client-protocol.h		\
 	protocol/weston-desktop-shell-client-protocol.h			\
 	protocol/weston-desktop-shell-protocol.c			\
-	protocol/scaler-client-protocol.h		\
-	protocol/scaler-protocol.c			\
 	protocol/viewporter-client-protocol.h		\
 	protocol/viewporter-protocol.c			\
 	protocol/presentation-time-protocol.c				\
@@ -1368,7 +1364,6 @@ EXTRA_DIST +=					\
 	protocol/weston-screenshooter.xml	\
 	protocol/text-cursor-position.xml	\
 	protocol/weston-test.xml		\
-	protocol/scaler.xml			\
 	protocol/ivi-application.xml		\
 	protocol/ivi-hmi-controller.xml
 
