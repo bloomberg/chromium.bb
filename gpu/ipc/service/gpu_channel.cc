@@ -944,6 +944,20 @@ void GpuChannel::OnCreateCommandBuffer(
     return;
   }
 
+  if (share_group && !share_group->decoder()) {
+    // This should catch test errors where we did not Initialize the
+    // share_group's CommandBuffer.
+    DLOG(ERROR) << "GpuChannel::OnCreateCommandBuffer(): shared context was "
+                   "not initialized";
+    return;
+  }
+
+  if (share_group && share_group->decoder()->WasContextLost()) {
+    DLOG(ERROR) << "GpuChannel::OnCreateCommandBuffer(): shared context was "
+                   "already lost";
+    return;
+  }
+
   scoped_ptr<GpuCommandBufferStub> stub(new GpuCommandBufferStub(
       this, sync_point_manager_, task_runner_.get(), share_group,
       surface_handle, mailbox_manager_.get(), preempted_flag_.get(),
