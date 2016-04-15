@@ -980,10 +980,10 @@ void NodeController::AttemptShutdownIfRequested() {
     base::AutoLock lock(shutdown_lock_);
     if (shutdown_callback_.is_null())
       return;
-    if (!node_->CanShutdownCleanly(true /* allow_local_ports */)) {
-      DVLOG(2) << "Unable to cleanly shut down node " << name_ << ".";
-      return;
-    }
+
+    // TODO(rockot): We should return here if clean shutdown of |node_| is not
+    // yet possible. See http://crbug.com/589864 for why we don't.
+
     callback = shutdown_callback_;
     shutdown_callback_.Reset();
   }
