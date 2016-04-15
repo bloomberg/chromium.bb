@@ -154,10 +154,6 @@ private:
     ShadowRoot(Document&, ShadowRootType);
     ~ShadowRoot() override;
 
-#if !ENABLE(OILPAN)
-    void dispose() override;
-#endif
-
     void childrenChanged(const ChildrenChange&) override;
 
     ShadowRootRareData* ensureShadowRootRareData();

@@ -76,10 +76,6 @@ public:
 private:
     ElementShadow();
 
-#if !ENABLE(OILPAN)
-    void removeDetachedShadowRoots();
-#endif
-
     void distribute();
     void clearDistribution();
 
@@ -92,17 +88,11 @@ private:
     bool needsSelectFeatureSet() const { return m_needsSelectFeatureSet; }
     void setNeedsSelectFeatureSet() { m_needsSelectFeatureSet = true; }
 
-#if ENABLE(OILPAN)
-    // The cost of |new| in Oilpan is lower than non-Oilpan.  We should reduce
-    // the size of HashMap entry.
-    typedef HeapHashMap<Member<const Node>, Member<DestinationInsertionPoints>> NodeToDestinationInsertionPoints;
-#else
-    typedef HashMap<const Node*, DestinationInsertionPoints> NodeToDestinationInsertionPoints;
-#endif
+    using NodeToDestinationInsertionPoints = HeapHashMap<Member<const Node>, Member<DestinationInsertionPoints>>;
     NodeToDestinationInsertionPoints m_nodeToInsertionPoints;
 
     SelectRuleFeatureSet m_selectFeatures;
-    // FIXME: Oilpan: add a heap-based version of DoublyLinkedList<>.
+    // TODO(Oilpan): add a heap-based version of DoublyLinkedList<>.
     DoublyLinkedList<ShadowRoot> m_shadowRoots;
     bool m_needsDistributionRecalc;
     bool m_needsSelectFeatureSet;
