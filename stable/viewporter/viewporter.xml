@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<protocol name="scaler">
+<protocol name="viewporter">
 
   <copyright>
     Copyright © 2013-2014 Collabora, Ltd.
@@ -24,7 +24,7 @@
     DEALINGS IN THE SOFTWARE.
   </copyright>
 
-  <interface name="wl_scaler" version="2">
+  <interface name="wp_viewporter" version="1">
     <description summary="surface cropping and scaling">
       The global interface exposing surface cropping and scaling
       capabilities is used to instantiate an interface extension for a
@@ -38,7 +38,7 @@
       <description summary="unbind from the cropping and scaling interface">
 	Informs the server that the client will not be using this
 	protocol object anymore. This does not affect any other objects,
-	wl_viewport objects included.
+	wp_viewport objects included.
       </description>
     </request>
 
@@ -51,18 +51,18 @@
       <description summary="extend surface interface for crop and scale">
 	Instantiate an interface extension for the given wl_surface to
 	crop and scale its content. If the given wl_surface already has
-	a wl_viewport object associated, the viewport_exists
+	a wp_viewport object associated, the viewport_exists
 	protocol error is raised.
       </description>
 
-      <arg name="id" type="new_id" interface="wl_viewport"
+      <arg name="id" type="new_id" interface="wp_viewport"
            summary="the new viewport interface id"/>
       <arg name="surface" type="object" interface="wl_surface"
            summary="the surface"/>
     </request>
   </interface>
 
-  <interface name="wl_viewport" version="2">
+  <interface name="wp_viewport" version="1">
     <description summary="crop and scale interface to a wl_surface">
       An additional interface to a wl_surface object, which allows the
       client to specify the cropping and scaling of the surface
@@ -85,7 +85,7 @@
       this size. This overrides whatever the attached wl_buffer size is,
       unless the wl_buffer is NULL. If the wl_buffer is NULL, the surface
       has no content and therefore no size. Otherwise, the size is always
-      at least 1x1 in surface coordinates.
+      at least 1x1 in surface local coordinates.
 
       If the source rectangle is set, it defines what area of the
       wl_buffer is taken as the source. If the source rectangle is set and
@@ -97,7 +97,7 @@
       the surface-local coordinates happen in the following order:
         1. buffer_transform (wl_surface.set_buffer_transform)
         2. buffer_scale (wl_surface.set_buffer_scale)
-        3. crop and scale (wl_viewport.set*)
+        3. crop and scale (wp_viewport.set*)
       This means, that the source rectangle coordinates of crop and scale
       are given in the coordinates after the buffer transform and scale,
       i.e. in the coordinates that would be the surface-local coordinates
@@ -113,10 +113,10 @@
       still in the surface-local coordinate system, just like dst_width
       and dst_height are.
 
-      If the wl_surface associated with the wl_viewport is destroyed,
-      the wl_viewport object becomes inert.
+      If the wl_surface associated with the wp_viewport is destroyed,
+      the wp_viewport object becomes inert.
 
-      If the wl_viewport object is destroyed, the crop and scale
+      If the wp_viewport object is destroyed, the crop and scale
       state is removed from the wl_surface. The change will be applied
       on the next wl_surface.commit.
     </description>
@@ -133,10 +133,10 @@
              summary="negative or zero values in width or height"/>
     </enum>
 
-    <request name="set_source" since="2">
+    <request name="set_source">
       <description summary="set the source rectangle for cropping">
 	Set the source rectangle of the associated wl_surface. See
-	wl_viewport for the description, and relation to the wl_buffer
+	wp_viewport for the description, and relation to the wl_buffer
 	size.
 
 	If width is -1.0 and height is -1.0, the source rectangle is unset
@@ -154,10 +154,10 @@
       <arg name="height" type="fixed" summary="source rectangle height"/>
     </request>
 
-    <request name="set_destination" since="2">
+    <request name="set_destination">
       <description summary="set the surface size for scaling">
 	Set the destination size of the associated wl_surface. See
-	wl_viewport for the description, and relation to the wl_buffer
+	wp_viewport for the description, and relation to the wl_buffer
 	size.
 
 	If width is -1 and height is -1, the destination size is unset
@@ -178,4 +178,5 @@
       <arg name="height" type="int" summary="surface height"/>
     </request>
   </interface>
+
 </protocol>
