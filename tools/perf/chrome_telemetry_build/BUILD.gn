@@ -31,6 +31,9 @@ group("telemetry_chrome_test") {
   }
 
   if (is_win && (symbol_level == 1 || symbol_level == 2)) {
+    data_deps +=
+        [ "//third_party/crashpad/crashpad/tools:crashpad_database_util" ]
+
     # TODO(GYP): These should be provided automatically through data_deps.
     data += [ "$root_out_dir/chrome.exe.pdb" ]
     if (is_component_build) {

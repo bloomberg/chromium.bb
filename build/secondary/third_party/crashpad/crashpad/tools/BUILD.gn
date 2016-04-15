@@ -18,3 +18,19 @@ source_set("tool_support") {
     "tool_support.h",
   ]
 }
+
+executable("crashpad_database_util") {
+  sources = [
+    "crashpad_database_util.cc",
+  ]
+
+  include_dirs = [ ".." ]
+
+  deps = [
+    ":tool_support",
+    "//base",
+    "//third_party/crashpad/crashpad/client",
+    "//third_party/crashpad/crashpad/compat",
+    "//third_party/crashpad/crashpad/util",
+  ]
+}
