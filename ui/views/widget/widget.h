@@ -47,6 +47,10 @@ class Point;
 class Rect;
 }
 
+namespace mus {
+class Window;
+}
+
 namespace ui {
 class Accelerator;
 class Compositor;
@@ -236,6 +240,8 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     // Whether the widget should be maximized or minimized.
     ui::WindowShowState show_state;
     gfx::NativeView parent;
+    // Used only by mus and is necessitated by mus not being a NativeView.
+    mus::Window* parent_mus = nullptr;
     // Specifies the initial bounds of the Widget. Default is empty, which means
     // the NativeWidget may specify a default size. If the parent is specified,
     // |bounds| is in the parent's coordinate system. If the parent is not

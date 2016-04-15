@@ -421,6 +421,9 @@ void NativeWidgetMus::InitNativeWidget(const Widget::InitParams& params) {
       parent_mus->AddTransientWindow(window_);
   }
 
+  if (params.parent_mus)
+    params.parent_mus->AddChild(window_);
+
   // TODO(sky): deal with show state.
   if (!params.bounds.size().IsEmpty())
     SetBounds(params.bounds);
