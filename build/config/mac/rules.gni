@@ -172,3 +172,94 @@ template("mac_framework_bundle") {
     deps += [ ":$_info_plist_bundle_data" ]
   }
 }
+
+# Template to create a Mac executable application bundle.
+#
+# Arguments
+#
+#     info_plist:
+#         string, path to the Info.plist file that will be used for the bundle.
+#
+#     output_name:
+#         (optional) string, name of the generated app without the
+#         .app suffix. If omitted, defaults to target_name.
+template("mac_app_bundle") {
+  assert(defined(invoker.info_plist),
+         "The Info.plist file must be specified for $target_name")
+
+  _target_name = target_name
+  _output_name = target_name
+  if (defined(invoker.output_name)) {
+    _output_name = invoker.output_name
+  }
+
+  _executable_target = target_name + "_executable"
+  _executable_bundle_data = _executable_target + "_bundle_data"
+
+  executable(_executable_target) {
+    visibility = [ ":$_executable_bundle_data" ]
+    forward_variables_from(invoker,
+                           "*",
+                           [
+                             "assert_no_deps",
+                             "data_deps",
+                             "info_plist",
+                             "output_name",
+                             "visibility",
+                           ])
+    output_name = _output_name
+    output_dir = "$target_out_dir/$_executable_target"
+  }
+
+  bundle_data(_executable_bundle_data) {
+    visibility = [ ":$_target_name" ]
+    forward_variables_from(invoker, [ "testonly" ])
+    sources = [
+      "$target_out_dir/$_executable_target/$_output_name",
+    ]
+    outputs = [
+      "{{bundle_executable_dir}}/$_output_name",
+    ]
+    public_deps = [
+      ":$_executable_target",
+    ]
+  }
+
+  _info_plist_target = target_name + "_info_plist"
+
+  # TODO(rsesek): Process Info.plist variables.
+
+  _info_plist_bundle_data = _info_plist_target + "_bundle_data"
+
+  bundle_data(_info_plist_bundle_data) {
+    forward_variables_from(invoker, [ "testonly" ])
+    visibility = [ ":$_target_name" ]
+    sources = [
+      invoker.info_plist,
+    ]
+    outputs = [
+      "{{bundle_root_dir}}/Info.plist",
+    ]
+  }
+
+  create_bundle(_target_name) {
+    forward_variables_from(invoker,
+                           [
+                             "data_deps",
+                             "deps",
+                             "public_deps",
+                             "testonly",
+                           ])
+    if (!defined(deps)) {
+      deps = []
+    }
+    deps += [
+      ":$_executable_bundle_data",
+      ":$_info_plist_bundle_data",
+    ]
+
+    bundle_root_dir = "$root_out_dir/${_output_name}.app/Contents"
+    bundle_resources_dir = "$bundle_root_dir/Resources"
+    bundle_executable_dir = "$bundle_root_dir/MacOS"
+  }
+}
