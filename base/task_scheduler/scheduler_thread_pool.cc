@@ -11,6 +11,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/sequenced_task_runner.h"
 #include "base/task_scheduler/utils.h"
 #include "base/threading/thread_local.h"
 
@@ -56,6 +57,50 @@ class SchedulerParallelTaskRunner : public TaskRunner {
   SchedulerTaskExecutor* const executor_;
 
   DISALLOW_COPY_AND_ASSIGN(SchedulerParallelTaskRunner);
+};
+
+// A task runner that runs tasks with the SEQUENCED ExecutionMode.
+class SchedulerSequencedTaskRunner : public SequencedTaskRunner {
+ public:
+  // Constructs a SchedulerParallelTaskRunner which can be used to post tasks so
+  // long as |executor| is alive.
+  // TODO(robliao): Find a concrete way to manage |executor|'s memory.
+  SchedulerSequencedTaskRunner(const TaskTraits& traits,
+                               TaskTracker* task_tracker,
+                               SchedulerTaskExecutor* executor)
+      : traits_(traits), task_tracker_(task_tracker), executor_(executor) {}
+
+  // SequencedTaskRunner:
+  bool PostDelayedTask(const tracked_objects::Location& from_here,
+                       const Closure& closure,
+                       TimeDelta delay) override {
+    // Post the task as part of |sequence|.
+    return PostTaskToExecutor(from_here, closure, traits_, delay, sequence_,
+                              executor_, task_tracker_);
+  }
+
+  bool PostNonNestableDelayedTask(const tracked_objects::Location& from_here,
+                                  const Closure& closure,
+                                  base::TimeDelta delay) override {
+    // Tasks are never nested within the task scheduler.
+    return PostDelayedTask(from_here, closure, delay);
+  }
+
+  bool RunsTasksOnCurrentThread() const override {
+    return tls_current_thread_pool.Get().Get() == executor_;
+  }
+
+ private:
+  ~SchedulerSequencedTaskRunner() override = default;
+
+  // Sequence for all Tasks posted through this TaskRunner.
+  const scoped_refptr<Sequence> sequence_ = new Sequence;
+
+  const TaskTraits traits_;
+  TaskTracker* const task_tracker_;
+  SchedulerTaskExecutor* const executor_;
+
+  DISALLOW_COPY_AND_ASSIGN(SchedulerSequencedTaskRunner);
 };
 
 }  // namespace
@@ -108,8 +153,11 @@ scoped_refptr<TaskRunner> SchedulerThreadPool::CreateTaskRunnerWithTraits(
           new SchedulerParallelTaskRunner(traits, task_tracker_, this));
 
     case ExecutionMode::SEQUENCED:
+      return make_scoped_refptr(
+          new SchedulerSequencedTaskRunner(traits, task_tracker_, this));
+
     case ExecutionMode::SINGLE_THREADED:
-      // TODO(fdoray): Support SEQUENCED and SINGLE_THREADED TaskRunners.
+      // TODO(fdoray): Support SINGLE_THREADED TaskRunners.
       NOTREACHED();
       return nullptr;
   }

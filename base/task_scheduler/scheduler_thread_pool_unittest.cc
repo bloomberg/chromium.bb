@@ -34,7 +34,8 @@ const size_t kNumThreadsInThreadPool = 4;
 const size_t kNumThreadsPostingTasks = 4;
 const size_t kNumTasksPostedPerThread = 150;
 
-class TaskSchedulerThreadPoolTest : public testing::Test {
+class TaskSchedulerThreadPoolTest
+    : public testing::TestWithParam<ExecutionMode> {
  protected:
   TaskSchedulerThreadPoolTest() = default;
 
@@ -70,19 +71,23 @@ class TaskSchedulerThreadPoolTest : public testing::Test {
 
 class TaskFactory {
  public:
-  TaskFactory() : cv_(&lock_) {}
+  // Constructs a TaskFactory that posts tasks with |execution_mode| to
+  // |thread_pool|.
+  TaskFactory(SchedulerThreadPool* thread_pool, ExecutionMode execution_mode)
+      : cv_(&lock_),
+        task_runner_(thread_pool->CreateTaskRunnerWithTraits(TaskTraits(),
+                                                             execution_mode)),
+        execution_mode_(execution_mode) {}
 
-  // Posts a task through |task_runner|. If |post_nested_task| is true, the task
-  // will post a new task through |task_runner| when it runs. If |event| is set,
-  // the task will block until it is signaled.
-  void PostTestTask(scoped_refptr<TaskRunner> task_runner,
-                    bool post_nested_task,
-                    WaitableEvent* event) {
+  // Posts a task through |task_runner_|. If |post_nested_task| is true, the
+  // task will post a new task when it runs. If |event| is set, the task will
+  // block until it is signaled.
+  void PostTestTask(bool post_nested_task, WaitableEvent* event) {
     AutoLock auto_lock(lock_);
-    EXPECT_TRUE(task_runner->PostTask(
-        FROM_HERE, Bind(&TaskFactory::RunTaskCallback, Unretained(this),
-                        num_created_tasks_++, task_runner, post_nested_task,
-                        Unretained(event))));
+    EXPECT_TRUE(task_runner_->PostTask(
+        FROM_HERE,
+        Bind(&TaskFactory::RunTaskCallback, Unretained(this),
+             num_created_tasks_++, post_nested_task, Unretained(event))));
   }
 
   // Waits for all tasks posted by PostTestTask() to start running. It is not
@@ -98,18 +103,24 @@ class TaskFactory {
     return ran_tasks_.size();
   }
 
+  const TaskRunner* task_runner() const { return task_runner_.get(); }
+
  private:
   void RunTaskCallback(size_t task_index,
-                       scoped_refptr<TaskRunner> task_runner,
                        bool post_nested_task,
                        WaitableEvent* event) {
     if (post_nested_task)
-      PostTestTask(task_runner, false, nullptr);
+      PostTestTask(false, nullptr);
 
-    EXPECT_TRUE(task_runner->RunsTasksOnCurrentThread());
+    EXPECT_TRUE(task_runner_->RunsTasksOnCurrentThread());
 
     {
       AutoLock auto_lock(lock_);
+
+      if (execution_mode_ == ExecutionMode::SEQUENCED &&
+          task_index != ran_tasks_.size()) {
+        ADD_FAILURE() << "A SEQUENCED task didn't run in the expected order.";
+      }
 
       if (ran_tasks_.find(task_index) != ran_tasks_.end())
         ADD_FAILURE() << "A task ran more than once.";
@@ -127,6 +138,12 @@ class TaskFactory {
 
   // Condition variable signaled when a task runs.
   mutable ConditionVariable cv_;
+
+  // Task runner through which this factory posts tasks.
+  const scoped_refptr<TaskRunner> task_runner_;
+
+  // Execution mode of |task_runner_|.
+  const ExecutionMode execution_mode_;
 
   // Number of tasks posted by PostTestTask().
   size_t num_created_tasks_ = 0;
@@ -150,10 +167,9 @@ class ThreadPostingTasks : public SimpleThread {
                      bool post_nested_task)
       : SimpleThread("ThreadPostingTasks"),
         thread_pool_(thread_pool),
-        task_runner_(thread_pool_->CreateTaskRunnerWithTraits(TaskTraits(),
-                                                              execution_mode)),
         wait_for_all_threads_idle_(wait_for_all_threads_idle),
-        post_nested_task_(post_nested_task) {
+        post_nested_task_(post_nested_task),
+        factory_(thread_pool_, execution_mode) {
     DCHECK(thread_pool_);
   }
 
@@ -161,12 +177,12 @@ class ThreadPostingTasks : public SimpleThread {
 
  private:
   void Run() override {
-    EXPECT_FALSE(task_runner_->RunsTasksOnCurrentThread());
+    EXPECT_FALSE(factory_.task_runner()->RunsTasksOnCurrentThread());
 
     for (size_t i = 0; i < kNumTasksPostedPerThread; ++i) {
       if (wait_for_all_threads_idle_)
         thread_pool_->WaitForAllWorkerThreadsIdleForTesting();
-      factory_.PostTestTask(task_runner_, post_nested_task_, nullptr);
+      factory_.PostTestTask(post_nested_task_, nullptr);
     }
   }
 
@@ -179,14 +195,14 @@ class ThreadPostingTasks : public SimpleThread {
   DISALLOW_COPY_AND_ASSIGN(ThreadPostingTasks);
 };
 
-TEST_F(TaskSchedulerThreadPoolTest, PostParallelTasks) {
-  // Create threads to post tasks to PARALLEL TaskRunners.
+TEST_P(TaskSchedulerThreadPoolTest, PostTasks) {
+  // Create threads to post tasks.
   std::vector<std::unique_ptr<ThreadPostingTasks>> threads_posting_tasks;
   for (size_t i = 0; i < kNumThreadsPostingTasks; ++i) {
     const bool kWaitForAllThreadIdle = false;
     const bool kPostNestedTasks = false;
     threads_posting_tasks.push_back(WrapUnique(
-        new ThreadPostingTasks(thread_pool_.get(), ExecutionMode::PARALLEL,
+        new ThreadPostingTasks(thread_pool_.get(), GetParam(),
                                kWaitForAllThreadIdle, kPostNestedTasks)));
     threads_posting_tasks.back()->Start();
   }
@@ -204,16 +220,16 @@ TEST_F(TaskSchedulerThreadPoolTest, PostParallelTasks) {
   thread_pool_->WaitForAllWorkerThreadsIdleForTesting();
 }
 
-TEST_F(TaskSchedulerThreadPoolTest, PostParallelTasksWaitAllThreadsIdle) {
-  // Create threads to post tasks to PARALLEL TaskRunners. To verify that
-  // worker threads can sleep and be woken up when new tasks are posted, wait
-  // for all threads to become idle before posting a new task.
+TEST_P(TaskSchedulerThreadPoolTest, PostTasksWaitAllThreadsIdle) {
+  // Create threads to post tasks. To verify that worker threads can sleep and
+  // be woken up when new tasks are posted, wait for all threads to become idle
+  // before posting a new task.
   std::vector<std::unique_ptr<ThreadPostingTasks>> threads_posting_tasks;
   for (size_t i = 0; i < kNumThreadsPostingTasks; ++i) {
     const bool kWaitForAllThreadIdle = true;
     const bool kPostNestedTasks = false;
     threads_posting_tasks.push_back(WrapUnique(
-        new ThreadPostingTasks(thread_pool_.get(), ExecutionMode::PARALLEL,
+        new ThreadPostingTasks(thread_pool_.get(), GetParam(),
                                kWaitForAllThreadIdle, kPostNestedTasks)));
     threads_posting_tasks.back()->Start();
   }
@@ -231,15 +247,15 @@ TEST_F(TaskSchedulerThreadPoolTest, PostParallelTasksWaitAllThreadsIdle) {
   thread_pool_->WaitForAllWorkerThreadsIdleForTesting();
 }
 
-TEST_F(TaskSchedulerThreadPoolTest, NestedPostParallelTasks) {
-  // Create threads to post tasks to PARALLEL TaskRunners. Each task posted by
-  // these threads will post another task when it runs.
+TEST_P(TaskSchedulerThreadPoolTest, NestedPostTasks) {
+  // Create threads to post tasks. Each task posted by these threads will post
+  // another task when it runs.
   std::vector<std::unique_ptr<ThreadPostingTasks>> threads_posting_tasks;
   for (size_t i = 0; i < kNumThreadsPostingTasks; ++i) {
     const bool kWaitForAllThreadIdle = false;
     const bool kPostNestedTasks = true;
     threads_posting_tasks.push_back(WrapUnique(
-        new ThreadPostingTasks(thread_pool_.get(), ExecutionMode::PARALLEL,
+        new ThreadPostingTasks(thread_pool_.get(), GetParam(),
                                kWaitForAllThreadIdle, kPostNestedTasks)));
     threads_posting_tasks.back()->Start();
   }
@@ -257,50 +273,62 @@ TEST_F(TaskSchedulerThreadPoolTest, NestedPostParallelTasks) {
   thread_pool_->WaitForAllWorkerThreadsIdleForTesting();
 }
 
-TEST_F(TaskSchedulerThreadPoolTest, PostParallelTasksWithOneAvailableThread) {
-  TaskFactory factory;
-
+TEST_P(TaskSchedulerThreadPoolTest, PostTasksWithOneAvailableThread) {
   // Post tasks to keep all threads busy except one until |event| is signaled.
+  // Use different factories so that tasks are added to different sequences and
+  // can run simultaneously when the execution mode is SEQUENCED.
   WaitableEvent event(true, false);
-  auto task_runner = thread_pool_->CreateTaskRunnerWithTraits(
-      TaskTraits(), ExecutionMode::PARALLEL);
-  for (size_t i = 0; i < (kNumThreadsInThreadPool - 1); ++i)
-    factory.PostTestTask(task_runner, false, &event);
-  factory.WaitForAllTasksToRun();
+  std::vector<std::unique_ptr<TaskFactory>> blocked_task_factories;
+  for (size_t i = 0; i < (kNumThreadsInThreadPool - 1); ++i) {
+    blocked_task_factories.push_back(
+        WrapUnique(new TaskFactory(thread_pool_.get(), GetParam())));
+    blocked_task_factories.back()->PostTestTask(false, &event);
+    blocked_task_factories.back()->WaitForAllTasksToRun();
+  }
 
   // Post |kNumTasksPostedPerThread| tasks that should all run despite the fact
   // that only one thread in |thread_pool_| isn't busy.
+  TaskFactory short_task_factory(thread_pool_.get(), GetParam());
   for (size_t i = 0; i < kNumTasksPostedPerThread; ++i)
-    factory.PostTestTask(task_runner, false, nullptr);
-  factory.WaitForAllTasksToRun();
+    short_task_factory.PostTestTask(false, nullptr);
+  short_task_factory.WaitForAllTasksToRun();
 
   // Release tasks waiting on |event|.
   event.Signal();
 
   // Wait until all worker threads are idle to be sure that no task accesses
-  // |factory| after it is destroyed.
+  // its TaskFactory after it is destroyed.
   thread_pool_->WaitForAllWorkerThreadsIdleForTesting();
 }
 
-TEST_F(TaskSchedulerThreadPoolTest, Saturate) {
-  TaskFactory factory;
-
-  // Verify that it is possible to have |kNumThreadsInThreadPool| tasks running
-  // simultaneously.
+TEST_P(TaskSchedulerThreadPoolTest, Saturate) {
+  // Verify that it is possible to have |kNumThreadsInThreadPool|
+  // tasks/sequences running simultaneously. Use different factories so that
+  // tasks are added to different sequences and can run simultaneously when the
+  // execution mode is SEQUENCED.
   WaitableEvent event(true, false);
-  auto task_runner = thread_pool_->CreateTaskRunnerWithTraits(
-      TaskTraits(), ExecutionMode::PARALLEL);
-  for (size_t i = 0; i < kNumThreadsInThreadPool; ++i)
-    factory.PostTestTask(task_runner, false, &event);
-  factory.WaitForAllTasksToRun();
+  std::vector<std::unique_ptr<TaskFactory>> factories;
+  for (size_t i = 0; i < kNumThreadsInThreadPool; ++i) {
+    factories.push_back(
+        WrapUnique(new TaskFactory(thread_pool_.get(), GetParam())));
+    factories.back()->PostTestTask(false, &event);
+    factories.back()->WaitForAllTasksToRun();
+  }
 
   // Release tasks waiting on |event|.
   event.Signal();
 
   // Wait until all worker threads are idle to be sure that no task accesses
-  // |factory| after it is destroyed.
+  // its TaskFactory after it is destroyed.
   thread_pool_->WaitForAllWorkerThreadsIdleForTesting();
 }
+
+INSTANTIATE_TEST_CASE_P(Parallel,
+                        TaskSchedulerThreadPoolTest,
+                        ::testing::Values(ExecutionMode::PARALLEL));
+INSTANTIATE_TEST_CASE_P(Sequenced,
+                        TaskSchedulerThreadPoolTest,
+                        ::testing::Values(ExecutionMode::SEQUENCED));
 
 }  // namespace
 }  // namespace internal
