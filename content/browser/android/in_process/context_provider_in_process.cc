@@ -11,9 +11,9 @@
 #include "base/callback_helpers.h"
 #include "base/strings/stringprintf.h"
 #include "cc/output/managed_memory_policy.h"
-#include "content/common/gpu/client/grcontext_for_gles2_interface.h"
 #include "gpu/blink/webgraphicscontext3d_in_process_command_buffer_impl.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
+#include "gpu/skia_bindings/grcontext_for_gles2_interface.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 
 using gpu_blink::WebGraphicsContext3DInProcessCommandBufferImpl;
@@ -139,8 +139,8 @@ class GrContext* ContextProviderInProcess::GrContext() {
   if (gr_context_)
     return gr_context_->get();
 
-  gr_context_.reset(
-      new GrContextForGLES2Interface(context3d_->GetGLInterface()));
+  gr_context_.reset(new skia_bindings::GrContextForGLES2Interface(
+      context3d_->GetGLInterface()));
   return gr_context_->get();
 }
 
@@ -149,7 +149,7 @@ void ContextProviderInProcess::InvalidateGrContext(uint32_t state) {
   DCHECK(context_thread_checker_.CalledOnValidThread());
 
   if (gr_context_)
-    return gr_context_->get()->resetContext(state);
+    return gr_context_->ResetContext(state);
 }
 
 void ContextProviderInProcess::SetupLock() {

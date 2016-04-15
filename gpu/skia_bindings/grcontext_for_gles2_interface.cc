@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/gpu/client/grcontext_for_gles2_interface.h"
+#include "gpu/skia_bindings/grcontext_for_gles2_interface.h"
 
 #include <stddef.h>
 #include <string.h>
@@ -16,14 +16,14 @@
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "third_party/skia/include/gpu/gl/GrGLInterface.h"
 
-namespace content {
+namespace skia_bindings {
 
 GrContextForGLES2Interface::GrContextForGLES2Interface(
     gpu::gles2::GLES2Interface* gl) {
   sk_sp<GrGLInterface> interface(
       skia_bindings::CreateGLES2InterfaceBindings(gl));
-  gr_context_ =
-      sk_sp<GrContext>(GrContext::Create(kOpenGL_GrBackend,
+  gr_context_ = sk_sp<GrContext>(
+      GrContext::Create(kOpenGL_GrBackend,
                         // GrContext takes ownership of |interface|.
                         reinterpret_cast<GrBackendContext>(interface.get())));
   if (gr_context_) {
@@ -51,6 +51,11 @@ void GrContextForGLES2Interface::OnLostContext() {
     gr_context_->abandonContext();
 }
 
+void GrContextForGLES2Interface::ResetContext(uint32_t state) {
+  if (gr_context_)
+    gr_context_->resetContext(state);
+}
+
 void GrContextForGLES2Interface::FreeGpuResources() {
   if (gr_context_) {
     TRACE_EVENT_INSTANT0("gpu", "GrContext::freeGpuResources",
@@ -59,4 +64,4 @@ void GrContextForGLES2Interface::FreeGpuResources() {
   }
 }
 
-}  // namespace content
+}  // namespace skia_bindings

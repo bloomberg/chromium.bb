@@ -18,9 +18,11 @@
 #include "content/common/gpu/client/command_buffer_metrics.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 
-namespace content {
-
+namespace skia_bindings {
 class GrContextForGLES2Interface;
+}  // namespace skia_bindings
+
+namespace content {
 
 // Implementation of cc::ContextProvider that provides a
 // WebGraphicsContext3DCommandBufferImpl context and a GrContext.
@@ -65,7 +67,7 @@ class CONTENT_EXPORT ContextProviderCommandBuffer
   base::ThreadChecker context_thread_checker_;
 
   std::unique_ptr<WebGraphicsContext3DCommandBufferImpl> context3d_;
-  std::unique_ptr<GrContextForGLES2Interface> gr_context_;
+  std::unique_ptr<skia_bindings::GrContextForGLES2Interface> gr_context_;
 
   cc::ContextProvider::Capabilities capabilities_;
   CommandBufferContextType context_type_;

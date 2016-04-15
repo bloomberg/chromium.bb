@@ -350,8 +350,6 @@
       'common/gpu/client/command_buffer_metrics.h',
       'common/gpu/client/context_provider_command_buffer.cc',
       'common/gpu/client/context_provider_command_buffer.h',
-      'common/gpu/client/grcontext_for_gles2_interface.cc',
-      'common/gpu/client/grcontext_for_gles2_interface.h',
       'common/gpu/client/webgraphicscontext3d_command_buffer_impl.cc',
       'common/gpu/client/webgraphicscontext3d_command_buffer_impl.h',
       'common/gpu/media/fake_video_decode_accelerator.cc',

@@ -10,7 +10,7 @@
 #include "gpu/command_buffer/client/gl_in_process_context.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/gles2_lib.h"
-#include "gpu/skia_bindings/gl_bindings_skia_cmd_buffer.h"
+#include "gpu/skia_bindings/grcontext_for_gles2_interface.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "third_party/skia/include/gpu/gl/GrGLInterface.h"
 
@@ -52,8 +52,6 @@ BlimpContextProvider::BlimpContextProvider(
 BlimpContextProvider::~BlimpContextProvider() {
   DCHECK(main_thread_checker_.CalledOnValidThread() ||
          context_thread_checker_.CalledOnValidThread());
-  if (gr_context_)
-    gr_context_->releaseResourcesAndAbandonContext();
 }
 
 bool BlimpContextProvider::BindToCurrentThread() {
@@ -86,22 +84,18 @@ class GrContext* BlimpContextProvider::GrContext() {
   DCHECK(context_thread_checker_.CalledOnValidThread());
 
   if (gr_context_)
-    return gr_context_.get();
+    return gr_context_->get();
 
-  sk_sp<GrGLInterface> interface(
-      skia_bindings::CreateGLES2InterfaceBindings(ContextGL()));
+  gr_context_.reset(new skia_bindings::GrContextForGLES2Interface(ContextGL()));
 
-  gr_context_ = skia::AdoptRef(GrContext::Create(
-      // GrContext takes ownership of |interface|.
-      kOpenGL_GrBackend, reinterpret_cast<GrBackendContext>(interface.get())));
-  return gr_context_.get();
+  return gr_context_->get();
 }
 
 void BlimpContextProvider::InvalidateGrContext(uint32_t state) {
   DCHECK(context_thread_checker_.CalledOnValidThread());
 
   if (gr_context_)
-    gr_context_->resetContext(state);
+    gr_context_->ResetContext(state);
 }
 
 void BlimpContextProvider::SetupLock() {
@@ -116,7 +110,7 @@ void BlimpContextProvider::DeleteCachedResources() {
   DCHECK(context_thread_checker_.CalledOnValidThread());
 
   if (gr_context_)
-    gr_context_->freeGpuResources();
+    gr_context_->FreeGpuResources();
 }
 
 void BlimpContextProvider::SetLostContextCallback(
@@ -130,7 +124,7 @@ void BlimpContextProvider::OnLostContext() {
   if (!lost_context_callback_.is_null())
     lost_context_callback_.Run();
   if (gr_context_)
-    gr_context_->abandonContext();
+    gr_context_->OnLostContext();
 }
 
 }  // namespace client

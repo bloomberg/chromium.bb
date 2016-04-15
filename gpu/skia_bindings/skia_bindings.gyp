@@ -18,6 +18,8 @@
       'sources': [
         'gl_bindings_skia_cmd_buffer.cc',
         'gl_bindings_skia_cmd_buffer.h',
+        'grcontext_for_gles2_interface.cc',
+        'grcontext_for_gles2_interface.h',
       ],
     }
   ]

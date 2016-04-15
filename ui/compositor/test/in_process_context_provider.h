@@ -24,6 +24,10 @@ class GpuMemoryBufferManager;
 class ImageFactory;
 }
 
+namespace skia_bindings {
+class GrContextForGLES2Interface;
+}
+
 namespace ui {
 
 class InProcessContextProvider : public cc::ContextProvider {
@@ -70,7 +74,7 @@ class InProcessContextProvider : public cc::ContextProvider {
   base::ThreadChecker context_thread_checker_;
 
   std::unique_ptr<gpu::GLInProcessContext> context_;
-  skia::RefPtr<class GrContext> gr_context_;
+  std::unique_ptr<skia_bindings::GrContextForGLES2Interface> gr_context_;
 
   gpu::gles2::ContextCreationAttribHelper attribs_;
   InProcessContextProvider* shared_context_;

@@ -21,9 +21,11 @@ namespace gpu_blink {
 class WebGraphicsContext3DInProcessCommandBufferImpl;
 }
 
-namespace content {
-
+namespace skia_bindings {
 class GrContextForGLES2Interface;
+}
+
+namespace content {
 
 class ContextProviderInProcess
     : NON_EXPORTED_BASE(public cc_blink::ContextProviderWebContext) {
@@ -65,7 +67,7 @@ class ContextProviderInProcess
 
   std::unique_ptr<gpu_blink::WebGraphicsContext3DInProcessCommandBufferImpl>
       context3d_;
-  std::unique_ptr<GrContextForGLES2Interface> gr_context_;
+  std::unique_ptr<skia_bindings::GrContextForGLES2Interface> gr_context_;
 
   LostContextCallback lost_context_callback_;
 

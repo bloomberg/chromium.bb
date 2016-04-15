@@ -19,6 +19,10 @@ namespace gpu {
 class GLInProcessContext;
 }
 
+namespace skia_bindings {
+class GrContextForGLES2Interface;
+}
+
 namespace cc {
 
 std::unique_ptr<gpu::GLInProcessContext> CreateTestInProcessContext();
@@ -52,7 +56,7 @@ class TestInProcessContextProvider : public ContextProvider {
   TestGpuMemoryBufferManager gpu_memory_buffer_manager_;
   TestImageFactory image_factory_;
   std::unique_ptr<gpu::GLInProcessContext> context_;
-  skia::RefPtr<class GrContext> gr_context_;
+  std::unique_ptr<skia_bindings::GrContextForGLES2Interface> gr_context_;
   base::Lock context_lock_;
 };
 

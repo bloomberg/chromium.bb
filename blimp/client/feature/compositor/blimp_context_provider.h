@@ -17,6 +17,10 @@
 #include "skia/ext/refptr.h"
 #include "ui/gl/gl_surface.h"
 
+namespace skia_bindings {
+class GrContextForGLES2Interface;
+}  // namespace skia_bindings
+
 namespace blimp {
 namespace client {
 
@@ -55,7 +59,7 @@ class BlimpContextProvider : public cc::ContextProvider {
 
   base::Lock context_lock_;
   std::unique_ptr<gpu::GLInProcessContext> context_;
-  skia::RefPtr<class GrContext> gr_context_;
+  std::unique_ptr<skia_bindings::GrContextForGLES2Interface> gr_context_;
 
   cc::ContextProvider::Capabilities capabilities_;
 

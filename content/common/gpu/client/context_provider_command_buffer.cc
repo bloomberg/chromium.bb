@@ -12,8 +12,8 @@
 #include "base/callback_helpers.h"
 #include "base/strings/stringprintf.h"
 #include "cc/output/managed_memory_policy.h"
-#include "content/common/gpu/client/grcontext_for_gles2_interface.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
+#include "gpu/skia_bindings/grcontext_for_gles2_interface.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 
 namespace content {
@@ -126,8 +126,8 @@ class GrContext* ContextProviderCommandBuffer::GrContext() {
   if (gr_context_)
     return gr_context_->get();
 
-  gr_context_.reset(
-      new GrContextForGLES2Interface(context3d_->GetGLInterface()));
+  gr_context_.reset(new skia_bindings::GrContextForGLES2Interface(
+      context3d_->GetGLInterface()));
 
   // If GlContext is already lost, also abandon the new GrContext.
   if (gr_context_->get() &&
@@ -141,7 +141,7 @@ void ContextProviderCommandBuffer::InvalidateGrContext(uint32_t state) {
   if (gr_context_) {
     DCHECK(lost_context_callback_proxy_);  // Is bound to thread.
     DCHECK(context_thread_checker_.CalledOnValidThread());
-    gr_context_->get()->resetContext(state);
+    gr_context_->ResetContext(state);
   }
 }
 
