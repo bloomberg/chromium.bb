@@ -46,8 +46,8 @@ class CSSStyleSheet;
 class Document;
 class Element;
 class ExceptionState;
-class InspectorCSSAgent;
 class InspectorResourceAgent;
+class InspectorResourceContainer;
 class InspectorStyleSheetBase;
 
 typedef HeapVector<Member<CSSRule>> CSSRuleVector;
@@ -120,7 +120,7 @@ private:
 
 class InspectorStyleSheet : public InspectorStyleSheetBase {
 public:
-    static InspectorStyleSheet* create(InspectorResourceAgent*, CSSStyleSheet* pageStyleSheet, const String& origin, const String& documentURL, InspectorCSSAgent*);
+    static InspectorStyleSheet* create(InspectorResourceAgent*, CSSStyleSheet* pageStyleSheet, const String& origin, const String& documentURL, InspectorStyleSheetBase::Listener*, InspectorResourceContainer*);
 
     ~InspectorStyleSheet() override;
     DECLARE_VIRTUAL_TRACE();
@@ -154,7 +154,7 @@ protected:
     InspectorStyle* inspectorStyle(CSSStyleDeclaration*) override;
 
 private:
-    InspectorStyleSheet(InspectorResourceAgent*, CSSStyleSheet* pageStyleSheet, const String& origin, const String& documentURL, InspectorCSSAgent*);
+    InspectorStyleSheet(InspectorResourceAgent*, CSSStyleSheet* pageStyleSheet, const String& origin, const String& documentURL, InspectorStyleSheetBase::Listener*, InspectorResourceContainer*);
     CSSRuleSourceData* ruleSourceDataAfterSourceRange(const SourceRange&);
     CSSRuleSourceData* findRuleByHeaderRange(const SourceRange&);
     CSSRuleSourceData* findRuleByBodyRange(const SourceRange&);
@@ -176,7 +176,7 @@ private:
     void innerSetText(const String& newText, bool markAsLocallyModified);
     Element* ownerStyleElement();
 
-    Member<InspectorCSSAgent> m_cssAgent;
+    Member<InspectorResourceContainer> m_resourceContainer;
     Member<InspectorResourceAgent> m_resourceAgent;
     Member<CSSStyleSheet> m_pageStyleSheet;
     String m_origin;

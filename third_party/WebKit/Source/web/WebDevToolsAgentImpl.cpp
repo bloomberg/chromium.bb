@@ -50,6 +50,7 @@
 #include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InspectorProfilerAgent.h"
 #include "core/inspector/InspectorResourceAgent.h"
+#include "core/inspector/InspectorResourceContainer.h"
 #include "core/inspector/InspectorResourceContentLoader.h"
 #include "core/inspector/InspectorTaskRunner.h"
 #include "core/inspector/InspectorTracingAgent.h"
@@ -307,6 +308,7 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
     , m_resourceContentLoader(InspectorResourceContentLoader::create(m_webLocalFrameImpl->frame()))
     , m_overlay(overlay)
     , m_inspectedFrames(InspectedFrames::create(m_webLocalFrameImpl->frame()))
+    , m_resourceContainer(new InspectorResourceContainer(m_inspectedFrames))
     , m_domAgent(nullptr)
     , m_pageAgent(nullptr)
     , m_resourceAgent(nullptr)
@@ -361,6 +363,7 @@ DEFINE_TRACE(WebDevToolsAgentImpl)
     visitor->trace(m_resourceContentLoader);
     visitor->trace(m_overlay);
     visitor->trace(m_inspectedFrames);
+    visitor->trace(m_resourceContainer);
     visitor->trace(m_domAgent);
     visitor->trace(m_pageAgent);
     visitor->trace(m_resourceAgent);
@@ -408,7 +411,7 @@ void WebDevToolsAgentImpl::initializeDeferredAgents()
     m_resourceAgent = resourceAgent;
     m_agents.append(resourceAgent);
 
-    InspectorCSSAgent* cssAgent = InspectorCSSAgent::create(m_domAgent, m_inspectedFrames.get(), m_resourceAgent, m_resourceContentLoader.get());
+    InspectorCSSAgent* cssAgent = InspectorCSSAgent::create(m_domAgent, m_inspectedFrames.get(), m_resourceAgent, m_resourceContentLoader.get(), m_resourceContainer.get());
     m_agents.append(cssAgent);
 
     m_agents.append(InspectorAnimationAgent::create(m_inspectedFrames.get(), m_domAgent, cssAgent, runtimeAgent));
@@ -534,6 +537,7 @@ void WebDevToolsAgentImpl::continueProgram()
 
 void WebDevToolsAgentImpl::didCommitLoadForLocalFrame(LocalFrame* frame)
 {
+    m_resourceContainer->didCommitLoadForLocalFrame(frame);
     m_resourceContentLoader->didCommitLoadForLocalFrame(frame);
     m_agents.didCommitLoadForLocalFrame(frame);
 }

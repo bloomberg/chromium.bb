@@ -62,6 +62,7 @@
 #include "core/inspector/InspectedFrames.h"
 #include "core/inspector/InspectorHistory.h"
 #include "core/inspector/InspectorResourceAgent.h"
+#include "core/inspector/InspectorResourceContainer.h"
 #include "core/inspector/InspectorResourceContentLoader.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/layout/HitTestResult.h"
@@ -610,12 +611,13 @@ CSSMediaRule* InspectorCSSAgent::asCSSMediaRule(CSSRule* rule)
     return toCSSMediaRule(rule);
 }
 
-InspectorCSSAgent::InspectorCSSAgent(InspectorDOMAgent* domAgent, InspectedFrames* inspectedFrames, InspectorResourceAgent* resourceAgent, InspectorResourceContentLoader* resourceContentLoader)
+InspectorCSSAgent::InspectorCSSAgent(InspectorDOMAgent* domAgent, InspectedFrames* inspectedFrames, InspectorResourceAgent* resourceAgent, InspectorResourceContentLoader* resourceContentLoader, InspectorResourceContainer* resourceContainer)
     : InspectorBaseAgent<InspectorCSSAgent, protocol::Frontend::CSS>("CSS")
     , m_domAgent(domAgent)
     , m_inspectedFrames(inspectedFrames)
     , m_resourceAgent(resourceAgent)
     , m_resourceContentLoader(resourceContentLoader)
+    , m_resourceContainer(resourceContainer)
     , m_creatingViaInspectorStyleSheet(false)
     , m_isSettingStyleSheetText(false)
 {
@@ -703,11 +705,8 @@ void InspectorCSSAgent::disable(ErrorString*)
 
 void InspectorCSSAgent::didCommitLoadForLocalFrame(LocalFrame* frame)
 {
-    if (frame == m_inspectedFrames->root()) {
+    if (frame == m_inspectedFrames->root())
         reset();
-        m_editedStyleSheets.clear();
-        m_editedStyleElements.clear();
-    }
 }
 
 void InspectorCSSAgent::mediaQueryResultChanged()
@@ -785,32 +784,6 @@ void InspectorCSSAgent::documentDetached(Document* document)
 {
     m_invalidatedDocuments.remove(document);
     setActiveStyleSheets(document, HeapVector<Member<CSSStyleSheet>>(), ExistingFrontendRefresh);
-}
-
-void InspectorCSSAgent::addEditedStyleSheet(const String& url, const String& content)
-{
-    m_editedStyleSheets.set(url, content);
-}
-
-bool InspectorCSSAgent::getEditedStyleSheet(const String& url, String* content)
-{
-    if (!m_editedStyleSheets.contains(url))
-        return false;
-    *content = m_editedStyleSheets.get(url);
-    return true;
-}
-
-void InspectorCSSAgent::addEditedStyleElement(int backendNodeId, const String& content)
-{
-    m_editedStyleElements.set(backendNodeId, content);
-}
-
-bool InspectorCSSAgent::getEditedStyleElement(int backendNodeId, String* content)
-{
-    if (!m_editedStyleElements.contains(backendNodeId))
-        return false;
-    *content = m_editedStyleElements.get(backendNodeId);
-    return true;
 }
 
 bool InspectorCSSAgent::forcePseudoState(Element* element, CSSSelector::PseudoType pseudoType)
@@ -1612,7 +1585,7 @@ InspectorStyleSheet* InspectorCSSAgent::bindStyleSheet(CSSStyleSheet* styleSheet
     InspectorStyleSheet* inspectorStyleSheet = m_cssStyleSheetToInspectorStyleSheet.get(styleSheet);
     if (!inspectorStyleSheet) {
         Document* document = styleSheet->ownerDocument();
-        inspectorStyleSheet = InspectorStyleSheet::create(m_resourceAgent, styleSheet, detectOrigin(styleSheet, document), InspectorDOMAgent::documentURLString(document), this);
+        inspectorStyleSheet = InspectorStyleSheet::create(m_resourceAgent, styleSheet, detectOrigin(styleSheet, document), InspectorDOMAgent::documentURLString(document), this, m_resourceContainer);
         m_idToInspectorStyleSheet.set(inspectorStyleSheet->id(), inspectorStyleSheet);
         m_cssStyleSheetToInspectorStyleSheet.set(styleSheet, inspectorStyleSheet);
         if (m_creatingViaInspectorStyleSheet)
@@ -2099,6 +2072,7 @@ DEFINE_TRACE(InspectorCSSAgent)
     visitor->trace(m_inspectedFrames);
     visitor->trace(m_resourceAgent);
     visitor->trace(m_resourceContentLoader);
+    visitor->trace(m_resourceContainer);
     visitor->trace(m_idToInspectorStyleSheet);
     visitor->trace(m_idToInspectorStyleSheetForInlineStyle);
     visitor->trace(m_cssStyleSheetToInspectorStyleSheet);

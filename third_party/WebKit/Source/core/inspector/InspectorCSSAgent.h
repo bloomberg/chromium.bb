@@ -53,6 +53,7 @@ class Element;
 class InspectedFrames;
 class InspectorFrontend;
 class InspectorResourceAgent;
+class InspectorResourceContainer;
 class InspectorResourceContentLoader;
 class MediaList;
 class Node;
@@ -99,9 +100,9 @@ public:
     static CSSStyleRule* asCSSStyleRule(CSSRule*);
     static CSSMediaRule* asCSSMediaRule(CSSRule*);
 
-    static InspectorCSSAgent* create(InspectorDOMAgent* domAgent, InspectedFrames* inspectedFrames, InspectorResourceAgent* resourceAgent, InspectorResourceContentLoader* resourceContentLoader)
+    static InspectorCSSAgent* create(InspectorDOMAgent* domAgent, InspectedFrames* inspectedFrames, InspectorResourceAgent* resourceAgent, InspectorResourceContentLoader* resourceContentLoader, InspectorResourceContainer* resourceContainer)
     {
-        return new InspectorCSSAgent(domAgent, inspectedFrames, resourceAgent, resourceContentLoader);
+        return new InspectorCSSAgent(domAgent, inspectedFrames, resourceAgent, resourceContentLoader, resourceContainer);
     }
 
     static void collectAllDocumentStyleSheets(Document*, HeapVector<Member<CSSStyleSheet>>&);
@@ -119,12 +120,6 @@ public:
 
     void activeStyleSheetsUpdated(Document*);
     void documentDetached(Document*);
-
-    void addEditedStyleSheet(const String& url, const String& content);
-    bool getEditedStyleSheet(const String& url, String* content);
-
-    void addEditedStyleElement(int backendNodeId, const String& content);
-    bool getEditedStyleElement(int backendNodeId, String* content);
 
     void enable(ErrorString*, PassOwnPtr<EnableCallback>) override;
     void disable(ErrorString*) override;
@@ -165,7 +160,7 @@ private:
 
     static void collectStyleSheets(CSSStyleSheet*, HeapVector<Member<CSSStyleSheet>>&);
 
-    InspectorCSSAgent(InspectorDOMAgent*, InspectedFrames*, InspectorResourceAgent*, InspectorResourceContentLoader*);
+    InspectorCSSAgent(InspectorDOMAgent*, InspectedFrames*, InspectorResourceAgent*, InspectorResourceContentLoader*, InspectorResourceContainer*);
 
     typedef HeapHashMap<String, Member<InspectorStyleSheet>> IdToInspectorStyleSheet;
     typedef HeapHashMap<String, Member<InspectorStyleSheetForInlineStyle>> IdToInspectorStyleSheetForInlineStyle;
@@ -216,6 +211,7 @@ private:
     Member<InspectedFrames> m_inspectedFrames;
     Member<InspectorResourceAgent> m_resourceAgent;
     Member<InspectorResourceContentLoader> m_resourceContentLoader;
+    Member<InspectorResourceContainer> m_resourceContainer;
 
     IdToInspectorStyleSheet m_idToInspectorStyleSheet;
     IdToInspectorStyleSheetForInlineStyle m_idToInspectorStyleSheetForInlineStyle;
@@ -229,8 +225,6 @@ private:
     NodeIdToForcedPseudoState m_nodeIdToForcedPseudoState;
 
     Member<CSSStyleSheet> m_inspectorUserAgentStyleSheet;
-    HashMap<String, String> m_editedStyleSheets;
-    HashMap<int, String> m_editedStyleElements;
 
     bool m_creatingViaInspectorStyleSheet;
     bool m_isSettingStyleSheetText;

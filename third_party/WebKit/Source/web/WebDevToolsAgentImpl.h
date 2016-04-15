@@ -49,6 +49,7 @@ namespace blink {
 class GraphicsLayer;
 class InspectedFrames;
 class InspectorOverlay;
+class InspectorResourceContainer;
 class InspectorResourceContentLoader;
 class LocalFrame;
 class Page;
@@ -152,6 +153,7 @@ private:
     Member<InspectorResourceContentLoader> m_resourceContentLoader;
     Member<InspectorOverlay> m_overlay;
     Member<InspectedFrames> m_inspectedFrames;
+    Member<InspectorResourceContainer> m_resourceContainer;
     OwnPtr<V8InspectorSession> m_v8Session;
 
     Member<InspectorDOMAgent> m_domAgent;

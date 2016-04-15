@@ -1848,6 +1848,8 @@
             'inspector/InspectorProfilerAgent.h',
             'inspector/InspectorResourceAgent.cpp',
             'inspector/InspectorResourceAgent.h',
+            'inspector/InspectorResourceContainer.cpp',
+            'inspector/InspectorResourceContainer.h',
             'inspector/InspectorResourceContentLoader.cpp',
             'inspector/InspectorResourceContentLoader.h',
             'inspector/InspectorRuntimeAgent.cpp',

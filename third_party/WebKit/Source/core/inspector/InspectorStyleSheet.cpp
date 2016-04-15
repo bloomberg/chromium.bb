@@ -50,6 +50,7 @@
 #include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/InspectorCSSAgent.h"
 #include "core/inspector/InspectorResourceAgent.h"
+#include "core/inspector/InspectorResourceContainer.h"
 #include "core/svg/SVGStyleElement.h"
 #include "platform/v8_inspector/public/V8ContentSearchUtil.h"
 #include "wtf/OwnPtr.h"
@@ -917,14 +918,14 @@ bool InspectorStyleSheetBase::lineNumberAndColumnToOffset(unsigned lineNumber, u
     return true;
 }
 
-InspectorStyleSheet* InspectorStyleSheet::create(InspectorResourceAgent* resourceAgent, CSSStyleSheet* pageStyleSheet, const String& origin, const String& documentURL, InspectorCSSAgent* cssAgent)
+InspectorStyleSheet* InspectorStyleSheet::create(InspectorResourceAgent* resourceAgent, CSSStyleSheet* pageStyleSheet, const String& origin, const String& documentURL, InspectorStyleSheetBase::Listener* listener, InspectorResourceContainer* resourceContainer)
 {
-    return new InspectorStyleSheet(resourceAgent, pageStyleSheet, origin, documentURL, cssAgent);
+    return new InspectorStyleSheet(resourceAgent, pageStyleSheet, origin, documentURL, listener, resourceContainer);
 }
 
-InspectorStyleSheet::InspectorStyleSheet(InspectorResourceAgent* resourceAgent, CSSStyleSheet* pageStyleSheet, const String& origin, const String& documentURL, InspectorCSSAgent* cssAgent)
-    : InspectorStyleSheetBase(cssAgent)
-    , m_cssAgent(cssAgent)
+InspectorStyleSheet::InspectorStyleSheet(InspectorResourceAgent* resourceAgent, CSSStyleSheet* pageStyleSheet, const String& origin, const String& documentURL, InspectorStyleSheetBase::Listener* listener, InspectorResourceContainer* resourceContainer)
+    : InspectorStyleSheetBase(listener)
+    , m_resourceContainer(resourceContainer)
     , m_resourceAgent(resourceAgent)
     , m_pageStyleSheet(pageStyleSheet)
     , m_origin(origin)
@@ -944,7 +945,7 @@ InspectorStyleSheet::~InspectorStyleSheet()
 
 DEFINE_TRACE(InspectorStyleSheet)
 {
-    visitor->trace(m_cssAgent);
+    visitor->trace(m_resourceContainer);
     visitor->trace(m_resourceAgent);
     visitor->trace(m_pageStyleSheet);
     visitor->trace(m_sourceData);
@@ -1303,9 +1304,9 @@ void InspectorStyleSheet::innerSetText(const String& text, bool markAsLocallyMod
     if (markAsLocallyModified) {
         Element* element = ownerStyleElement();
         if (element)
-            m_cssAgent->addEditedStyleElement(DOMNodeIds::idForNode(element), text);
+            m_resourceContainer->storeStyleElementContent(DOMNodeIds::idForNode(element), text);
         else
-            m_cssAgent->addEditedStyleSheet(finalURL(), text);
+            m_resourceContainer->storeStyleSheetContent(finalURL(), text);
     }
 }
 
@@ -1670,7 +1671,7 @@ bool InspectorStyleSheet::resourceStyleSheetText(String* result)
         return false;
 
     KURL url(ParsedURLString, m_pageStyleSheet->href());
-    if (m_cssAgent->getEditedStyleSheet(url, result))
+    if (m_resourceContainer->loadStyleSheetContent(url, result))
         return true;
 
     bool base64Encoded;
@@ -1695,7 +1696,7 @@ bool InspectorStyleSheet::inlineStyleSheetText(String* result)
     Element* ownerElement = ownerStyleElement();
     if (!ownerElement)
         return false;
-    if (m_cssAgent->getEditedStyleElement(DOMNodeIds::idForNode(ownerElement), result))
+    if (m_resourceContainer->loadStyleElementContent(DOMNodeIds::idForNode(ownerElement), result))
         return true;
     *result = ownerElement->textContent();
     return true;
