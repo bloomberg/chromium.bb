@@ -170,10 +170,9 @@ String16 toProtocolString(v8::Local<v8::String> value)
 {
     if (value.IsEmpty() || value->IsNull() || value->IsUndefined())
         return String16();
-    UChar* buffer;
-    String16 result = String16::createUninitialized(value->Length(), buffer);
-    value->Write(reinterpret_cast<uint16_t*>(buffer), 0, value->Length());
-    return result;
+    OwnPtr<UChar[]> buffer = adoptArrayPtr(new UChar[value->Length()]);
+    value->Write(reinterpret_cast<uint16_t*>(buffer.get()), 0, value->Length());
+    return String16(buffer.get(), value->Length());
 }
 
 String16 toProtocolStringWithTypeCheck(v8::Local<v8::Value> value)

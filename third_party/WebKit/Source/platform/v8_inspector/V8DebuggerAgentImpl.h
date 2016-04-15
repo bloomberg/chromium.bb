@@ -238,9 +238,9 @@ private:
     protocol::HashSet<void*> m_recurringTasks;
     int m_maxAsyncCallStackDepth;
 #if ENABLE(ASSERT)
-    Vector<void*> m_currentTasks;
+    protocol::Vector<void*> m_currentTasks;
 #endif
-    Vector<OwnPtr<V8StackTraceImpl>> m_currentStacks;
+    protocol::Vector<OwnPtr<V8StackTraceImpl>> m_currentStacks;
     protocol::HashMap<String16, protocol::Vector<std::pair<int, int>>> m_blackboxedPositions;
 };
 
