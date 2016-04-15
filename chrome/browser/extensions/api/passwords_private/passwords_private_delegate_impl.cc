@@ -165,6 +165,7 @@ void PasswordsPrivateDelegateImpl::SetPasswordList(
     entry.login_pair.origin_url =
         password_manager::GetHumanReadableOrigin(*form);
     entry.login_pair.username = base::UTF16ToUTF8(form->username_value);
+    entry.link_url = form->origin.spec();
     entry.num_characters_in_password = form->password_value.length();
 
     if (!form->federation_origin.unique()) {

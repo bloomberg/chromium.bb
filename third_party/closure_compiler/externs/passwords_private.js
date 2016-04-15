@@ -7,7 +7,7 @@
 // NOTE: The format of types has changed. 'FooType' is now
 //   'chrome.passwordsPrivate.FooType'.
 // Please run the closure compiler before committing changes.
-// See https://code.google.com/p/chromium/wiki/ClosureCompilation.
+// See https://chromium.googlesource.com/chromium/src/+/master/docs/closure_compilation.md
 
 /** @fileoverview Externs generated from namespace: passwordsPrivate */
 
@@ -28,6 +28,7 @@ chrome.passwordsPrivate.LoginPair;
 /**
  * @typedef {{
  *   loginPair: !chrome.passwordsPrivate.LoginPair,
+ *   linkUrl: string,
  *   numCharactersInPassword: number,
  *   federationText: (string|undefined)
  * }}
