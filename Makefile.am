@@ -130,8 +130,8 @@ nodist_libweston_la_SOURCES =					\
 	protocol/input-method-unstable-v1-server-protocol.h		\
 	protocol/presentation-time-protocol.c		\
 	protocol/presentation-time-server-protocol.h	\
-	protocol/scaler-protocol.c			\
-	protocol/scaler-server-protocol.h		\
+	protocol/viewporter-protocol.c			\
+	protocol/viewporter-server-protocol.h		\
 	protocol/linux-dmabuf-unstable-v1-protocol.c	\
 	protocol/linux-dmabuf-unstable-v1-server-protocol.h
 

@@ -993,7 +993,8 @@ struct weston_surface_state {
 
 	/* wl_surface.set_buffer_transform */
 	/* wl_surface.set_scaling_factor */
-	/* wl_viewport.set */
+	/* wp_viewport.set_source */
+	/* wp_viewport.set_destination */
 	struct weston_buffer_viewport buffer_viewport;
 };
 
@@ -1042,7 +1043,7 @@ struct weston_surface {
 	int32_t height_from_buffer;
 	bool keep_buffer; /* for backends to prevent early release */
 
-	/* wl_viewport resource for this surface */
+	/* wp_viewport resource for this surface */
 	struct wl_resource *viewport_resource;
 
 	/* All the pending state, that wl_surface.commit will apply. */

@@ -54,7 +54,7 @@
 #include "timeline.h"
 
 #include "compositor.h"
-#include "scaler-server-protocol.h"
+#include "viewporter-server-protocol.h"
 #include "presentation-time-server-protocol.h"
 #include "shared/helpers.h"
 #include "shared/os-compatibility.h"
@@ -791,7 +791,7 @@ weston_surface_to_buffer_float(struct weston_surface *surface,
 
 /** Transform a rectangle from surface coordinates to buffer coordinates
  *
- * \param surface The surface to fetch wl_viewport and buffer transformation
+ * \param surface The surface to fetch wp_viewport and buffer transformation
  * from.
  * \param rect The rectangle to transform.
  * \return The transformed rectangle.
@@ -831,7 +831,7 @@ weston_surface_to_buffer_rect(struct weston_surface *surface,
 
 /** Transform a region from surface coordinates to buffer coordinates
  *
- * \param surface The surface to fetch wl_viewport and buffer transformation
+ * \param surface The surface to fetch wp_viewport and buffer transformation
  * from.
  * \param surface_region[in] The region in surface coordinates.
  * \param buffer_region[out] The region converted to buffer coordinates.
@@ -2709,7 +2709,8 @@ weston_surface_commit_state(struct weston_surface *surface,
 
 	/* wl_surface.set_buffer_transform */
 	/* wl_surface.set_buffer_scale */
-	/* wl_viewport.set */
+	/* wp_viewport.set_source */
+	/* wp_viewport.set_destination */
 	surface->buffer_viewport = state->buffer_viewport;
 
 	/* wl_surface.attach */
@@ -4233,48 +4234,6 @@ viewport_destroy(struct wl_client *client,
 }
 
 static void
-viewport_set(struct wl_client *client,
-	     struct wl_resource *resource,
-	     wl_fixed_t src_x,
-	     wl_fixed_t src_y,
-	     wl_fixed_t src_width,
-	     wl_fixed_t src_height,
-	     int32_t dst_width,
-	     int32_t dst_height)
-{
-	struct weston_surface *surface =
-		wl_resource_get_user_data(resource);
-
-	assert(surface->viewport_resource != NULL);
-
-	if (wl_fixed_to_double(src_width) < 0 ||
-	    wl_fixed_to_double(src_height) < 0) {
-		wl_resource_post_error(resource,
-			WL_VIEWPORT_ERROR_BAD_VALUE,
-			"source dimensions must be non-negative (%fx%f)",
-			wl_fixed_to_double(src_width),
-			wl_fixed_to_double(src_height));
-		return;
-	}
-
-	if (dst_width <= 0 || dst_height <= 0) {
-		wl_resource_post_error(resource,
-			WL_VIEWPORT_ERROR_BAD_VALUE,
-			"destination dimensions must be positive (%dx%d)",
-			dst_width, dst_height);
-		return;
-	}
-
-	surface->pending.buffer_viewport.buffer.src_x = src_x;
-	surface->pending.buffer_viewport.buffer.src_y = src_y;
-	surface->pending.buffer_viewport.buffer.src_width = src_width;
-	surface->pending.buffer_viewport.buffer.src_height = src_height;
-	surface->pending.buffer_viewport.surface.width = dst_width;
-	surface->pending.buffer_viewport.surface.height = dst_height;
-	surface->pending.buffer_viewport.changed = 1;
-}
-
-static void
 viewport_set_source(struct wl_client *client,
 		    struct wl_resource *resource,
 		    wl_fixed_t src_x,
@@ -4298,7 +4257,7 @@ viewport_set_source(struct wl_client *client,
 
 	if (src_width <= 0 || src_height <= 0) {
 		wl_resource_post_error(resource,
-			WL_VIEWPORT_ERROR_BAD_VALUE,
+			WP_VIEWPORT_ERROR_BAD_VALUE,
 			"source size must be positive (%fx%f)",
 			wl_fixed_to_double(src_width),
 			wl_fixed_to_double(src_height));
@@ -4332,7 +4291,7 @@ viewport_set_destination(struct wl_client *client,
 
 	if (dst_width <= 0 || dst_height <= 0) {
 		wl_resource_post_error(resource,
-			WL_VIEWPORT_ERROR_BAD_VALUE,
+			WP_VIEWPORT_ERROR_BAD_VALUE,
 			"destination size must be positive (%dx%d)",
 			dst_width, dst_height);
 		return;
@@ -4343,9 +4302,8 @@ viewport_set_destination(struct wl_client *client,
 	surface->pending.buffer_viewport.changed = 1;
 }
 
-static const struct wl_viewport_interface viewport_interface = {
+static const struct wp_viewport_interface viewport_interface = {
 	viewport_destroy,
-	viewport_set,
 	viewport_set_source,
 	viewport_set_destination
 };
@@ -4370,12 +4328,12 @@ scaler_get_viewport(struct wl_client *client,
 
 	if (surface->viewport_resource) {
 		wl_resource_post_error(scaler,
-			WL_SCALER_ERROR_VIEWPORT_EXISTS,
+			WP_VIEWPORTER_ERROR_VIEWPORT_EXISTS,
 			"a viewport for that surface already exists");
 		return;
 	}
 
-	resource = wl_resource_create(client, &wl_viewport_interface,
+	resource = wl_resource_create(client, &wp_viewport_interface,
 				      version, id);
 	if (resource == NULL) {
 		wl_client_post_no_memory(client);
@@ -4388,7 +4346,7 @@ scaler_get_viewport(struct wl_client *client,
 	surface->viewport_resource = resource;
 }
 
-static const struct wl_scaler_interface scaler_interface = {
+static const struct wp_viewporter_interface scaler_interface = {
 	scaler_destroy,
 	scaler_get_viewport
 };
@@ -4399,7 +4357,7 @@ bind_scaler(struct wl_client *client,
 {
 	struct wl_resource *resource;
 
-	resource = wl_resource_create(client, &wl_scaler_interface,
+	resource = wl_resource_create(client, &wp_viewporter_interface,
 				      version, id);
 	if (resource == NULL) {
 		wl_client_post_no_memory(client);
@@ -4589,7 +4547,7 @@ weston_compositor_create(struct wl_display *display, void *user_data)
 			      ec, bind_subcompositor))
 		goto fail;
 
-	if (!wl_global_create(ec->wl_display, &wl_scaler_interface, 2,
+	if (!wl_global_create(ec->wl_display, &wp_viewporter_interface, 1,
 			      ec, bind_scaler))
 		goto fail;
 
