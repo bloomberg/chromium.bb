@@ -3464,7 +3464,6 @@ float WebViewImpl::maximumPageScaleFactor() const
 
 void WebViewImpl::resetScaleStateImmediately()
 {
-    page()->frameHost().visualViewport().setScale(1);
     pageScaleConstraintsSet().setNeedsReset(true);
 }
 
