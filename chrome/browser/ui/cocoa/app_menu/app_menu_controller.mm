@@ -387,6 +387,9 @@ class ToolbarActionsBarObserverHelper : public ToolbarActionsBarObserver {
 - (void)menuNeedsUpdate:(NSMenu*)menu {
   // First empty out the menu and create a new model.
   [self removeAllItems:menu];
+  // Delete the BrowserActionsController; if a new one's needed, it'll be
+  // created as we add items to the menu.
+  browserActionsController_.reset();
   [self createModel];
   [menu setMinimumWidth:0];
 
