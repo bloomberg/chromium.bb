@@ -63,8 +63,6 @@ import javax.net.ssl.X509TrustManager;
 public class TestWebServer {
     private static final String TAG = "TestWebServer";
 
-    public static final String SHUTDOWN_PREFIX = "/shutdown";
-
     private static TestWebServer sInstance;
     private static TestWebServer sSecureInstance;
     private static Hashtable<Integer, String> sReasons;
@@ -169,31 +167,15 @@ public class TestWebServer {
         }
 
         try {
-            // Avoid a deadlock between two threads where one is trying to call
-            // close() and the other one is calling accept() by sending a GET
-            // request for shutdown and having the server's one thread
-            // sequentially call accept() and close().
-            URL url = new URL(mServerUri + SHUTDOWN_PREFIX);
-            URLConnection connection = openConnection(url);
-            connection.connect();
-
-            // Read the input from the stream to send the request.
-            InputStream is = connection.getInputStream();
-            is.close();
-
+            mServerThread.cancelAllRequests();
             // Block until the server thread is done shutting down.
             mServerThread.join();
-
         } catch (MalformedURLException e) {
             throw new IllegalStateException(e);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         } catch (IOException e) {
             throw new RuntimeException(e);
-        } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException(e);
-        } catch (KeyManagementException e) {
-            throw new IllegalStateException(e);
         }
     }
 
@@ -476,9 +458,7 @@ public class TestWebServer {
         synchronized (mLock) {
             response = mResponseMap.get(path);
         }
-        if (path.equals(SHUTDOWN_PREFIX)) {
-            httpResponse = createResponse(HttpStatus.SC_OK);
-        } else if (response == null) {
+        if (response == null) {
             httpResponse = createResponse(HttpStatus.SC_NOT_FOUND);
         } else if (response.mIsNotFound) {
             httpResponse = createResponse(HttpStatus.SC_NOT_FOUND);
@@ -571,8 +551,11 @@ public class TestWebServer {
         private TestWebServer mServer;
         private ServerSocket mSocket;
         private boolean mIsSsl;
-        private boolean mIsCancelled;
         private SSLContext mSslContext;
+
+        private final Object mLock = new Object();
+        private boolean mIsCancelled;
+        private Socket mCurrentRequestSocket;
 
         /**
          * Defines the keystore contents for the server, BKS version. Holds just a
@@ -625,6 +608,33 @@ public class TestWebServer {
             return keyManagerFactory.getKeyManagers();
         }
 
+        private void setCurrentRequestSocket(Socket socket) {
+            synchronized (mLock) {
+                mCurrentRequestSocket = socket;
+            }
+        }
+
+        private boolean getIsCancelled() {
+            synchronized (mLock) {
+                return mIsCancelled;
+            }
+        }
+
+        // Called from non-server thread.
+        public void cancelAllRequests() throws IOException {
+            synchronized (mLock) {
+                mIsCancelled = true;
+                if (mCurrentRequestSocket != null) {
+                    try {
+                        mCurrentRequestSocket.close();
+                    } catch (IOException ignored) {
+                        // Catching this to ensure the server socket is closed as well.
+                    }
+                }
+            }
+            // Any current and subsequent accept call will throw instead of block.
+            mSocket.close();
+        }
 
         public ServerThread(TestWebServer server, int port, boolean ssl) throws Exception {
             super("ServerThread");
@@ -656,21 +666,17 @@ public class TestWebServer {
         public void run() {
             HttpParams params = new BasicHttpParams();
             params.setParameter(CoreProtocolPNames.PROTOCOL_VERSION, HttpVersion.HTTP_1_0);
-            while (!mIsCancelled) {
+            while (!getIsCancelled()) {
                 Socket socket = null;
                 try {
                     socket = mSocket.accept();
+                    setCurrentRequestSocket(socket);
+
                     DefaultHttpServerConnection conn = new DefaultHttpServerConnection();
                     conn.bind(socket, params);
 
-                    // Determine whether we need to shutdown early before
-                    // parsing the response since conn.close() will crash
-                    // for SSL requests due to UnsupportedOperationException.
+                    if (getIsCancelled()) continue;
                     HttpRequest request = conn.receiveRequestHeader();
-                    if (isShutdownRequest(request)) {
-                        mIsCancelled = true;
-                    }
-
                     HttpResponse response = mServer.getResponse(request);
                     conn.sendResponseHeader(response);
                     conn.sendResponseEntity(response);
@@ -702,19 +708,6 @@ public class TestWebServer {
                     }
                 }
             }
-            try {
-                mSocket.close();
-            } catch (IOException ignored) {
-                // safe to ignore
-            }
-        }
-
-        private boolean isShutdownRequest(HttpRequest request) {
-            RequestLine requestLine = request.getRequestLine();
-            String uriString = requestLine.getUri();
-            URI uri = URI.create(uriString);
-            String path = uri.getPath();
-            return path.equals(SHUTDOWN_PREFIX);
         }
     }
 }
