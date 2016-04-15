@@ -27,12 +27,10 @@ class DocumentStatisticsCollectorTest : public ::testing::Test {
 protected:
     void SetUp() override;
 
-#if ENABLE(OILPAN)
     void TearDown() override
     {
         ThreadHeap::collectAllGarbage();
     }
-#endif
 
     Document& document() const { return m_dummyPageHolder->document(); }
 

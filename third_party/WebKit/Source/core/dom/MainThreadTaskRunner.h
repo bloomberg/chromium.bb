@@ -35,7 +35,6 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
-#include "wtf/WeakPtr.h"
 
 namespace blink {
 
@@ -66,9 +65,6 @@ private:
     void postTaskInternal(const WebTraceLocation&, PassOwnPtr<ExecutionContextTask>, bool isInspectorTask);
 
     Member<ExecutionContext> m_context;
-#if !ENABLE(OILPAN)
-    WeakPtrFactory<MainThreadTaskRunner> m_weakFactory;
-#endif
     Timer<MainThreadTaskRunner> m_pendingTasksTimer;
     Vector<OwnPtr<ExecutionContextTask>> m_pendingTasks;
     bool m_suspended;

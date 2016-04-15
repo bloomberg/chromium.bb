@@ -33,18 +33,6 @@ namespace blink {
 
 using namespace HTMLNames;
 
-#if !ENABLE(OILPAN)
-void NamedNodeMap::ref()
-{
-    m_element->ref();
-}
-
-void NamedNodeMap::deref()
-{
-    m_element->deref();
-}
-#endif
-
 Attr* NamedNodeMap::getNamedItem(const AtomicString& name) const
 {
     return m_element->getAttributeNode(name);

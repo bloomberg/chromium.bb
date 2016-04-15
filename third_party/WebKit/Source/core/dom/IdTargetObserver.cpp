@@ -38,9 +38,6 @@ IdTargetObserver::IdTargetObserver(IdTargetObserverRegistry& observerRegistry, c
 
 IdTargetObserver::~IdTargetObserver()
 {
-#if !ENABLE(OILPAN)
-    registry().removeObserver(m_id, this);
-#endif
 }
 
 DEFINE_TRACE(IdTargetObserver)
@@ -50,9 +47,7 @@ DEFINE_TRACE(IdTargetObserver)
 
 void IdTargetObserver::unregister()
 {
-#if ENABLE(OILPAN)
     registry().removeObserver(m_id, this);
-#endif
 }
 
 } // namespace blink

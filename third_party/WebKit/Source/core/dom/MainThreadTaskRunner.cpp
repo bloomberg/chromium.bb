@@ -37,9 +37,6 @@ namespace blink {
 
 MainThreadTaskRunner::MainThreadTaskRunner(ExecutionContext* context)
     : m_context(context)
-#if !ENABLE(OILPAN)
-    , m_weakFactory(this)
-#endif
     , m_pendingTasksTimer(this, &MainThreadTaskRunner::pendingTasksTimerFired)
     , m_suspended(false)
 {
@@ -58,11 +55,7 @@ void MainThreadTaskRunner::postTaskInternal(const WebTraceLocation& location, Pa
 {
     Platform::current()->mainThread()->getWebTaskRunner()->postTask(location, threadSafeBind(
         &MainThreadTaskRunner::perform,
-#if ENABLE(OILPAN)
         CrossThreadWeakPersistentThisPointer<MainThreadTaskRunner>(this),
-#else
-        AllowCrossThreadAccess(m_weakFactory.createWeakPtr()),
-#endif
         task,
         isInspectorTask));
 }

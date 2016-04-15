@@ -16,9 +16,6 @@ DocumentVisibilityObserver::DocumentVisibilityObserver(Document& document)
 
 DocumentVisibilityObserver::~DocumentVisibilityObserver()
 {
-#if !ENABLE(OILPAN)
-    unregisterObserver();
-#endif
 }
 
 DEFINE_TRACE(DocumentVisibilityObserver)

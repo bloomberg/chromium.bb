@@ -130,10 +130,6 @@ public:
 
     // Called after the construction of an ActiveDOMObject to synchronize suspend state.
     void suspendActiveDOMObjectIfNeeded(ActiveDOMObject*);
-#if !ENABLE(OILPAN)
-    void ref() { refExecutionContext(); }
-    void deref() { derefExecutionContext(); }
-#endif
 
     // Gets the next id in a circular sequence from 1 to 2^31-1.
     int circularSequentialID();
@@ -166,12 +162,6 @@ protected:
 private:
     bool dispatchErrorEvent(ErrorEvent*, AccessControlStatus);
     void runSuspendableTasks();
-
-#if !ENABLE(OILPAN)
-    virtual void refExecutionContext() = 0;
-    virtual void derefExecutionContext() = 0;
-#endif
-    // LifecycleContext implementation.
 
     unsigned m_circularSequentialID;
 

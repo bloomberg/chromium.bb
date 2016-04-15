@@ -57,9 +57,6 @@ public:
 
     virtual ~LiveNodeListBase()
     {
-#if !ENABLE(OILPAN)
-        document().unregisterNodeList(this);
-#endif
     }
 
     ContainerNode& rootNode() const;

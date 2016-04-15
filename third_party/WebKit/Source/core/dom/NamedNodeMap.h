@@ -43,11 +43,6 @@ public:
         return new NamedNodeMap(element);
     }
 
-#if !ENABLE(OILPAN)
-    void ref();
-    void deref();
-#endif
-
     // Public DOM interface.
 
     Attr* getNamedItem(const AtomicString&) const;

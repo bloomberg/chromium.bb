@@ -38,9 +38,6 @@ namespace blink {
 
 EmptyNodeList::~EmptyNodeList()
 {
-#if !ENABLE(OILPAN)
-    m_owner->nodeLists()->removeEmptyChildNodeList(this);
-#endif
 }
 
 Node* EmptyNodeList::virtualOwnerNode() const

@@ -151,7 +151,6 @@ IntersectionObserver::IntersectionObserver(IntersectionObserverCallback& callbac
     root.document().ensureIntersectionObserverController().addTrackedObserver(*this);
 }
 
-#if ENABLE(OILPAN)
 void IntersectionObserver::clearWeakMembers(Visitor* visitor)
 {
     if (ThreadHeap::isHeapObjectAlive(m_root))
@@ -159,7 +158,6 @@ void IntersectionObserver::clearWeakMembers(Visitor* visitor)
     disconnect();
     m_root = nullptr;
 }
-#endif
 
 LayoutObject* IntersectionObserver::rootLayoutObject() const
 {
