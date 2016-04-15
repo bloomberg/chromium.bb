@@ -32,8 +32,8 @@
         <template is="dom-repeat" items="[[sites]]">
           <div class="site-list horizontal layout center">
             <paper-item class="flex">
-              <iron-icon icon="[[computeSiteIcon_(item)]]" item-icon>
-              </iron-icon>
+              <div class="website-icon" style$="[[computeSiteIcon(item)]]">
+              </div>
               <paper-item-body two-line on-tap="onOriginTap_" class="origin">
                 <div>[[item.originForDisplay]]</div>
                 <div secondary>[[item.embeddingOriginForDisplay]]</div>

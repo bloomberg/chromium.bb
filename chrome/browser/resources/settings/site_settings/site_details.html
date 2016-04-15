@@ -13,7 +13,10 @@
   <template>
     <style include="settings-shared"></style>
     <div class="settings-box block">
-      <div class="origin">[[site.originForDisplay]]</div>
+      <div class="horizontal layout origin-box">
+        <div class="website-icon" style$="[[computeSiteIcon(site)]]"></div>
+        <div class="origin flex">[[site.originForDisplay]]</div>
+      </div>
       <h2 i18n-content="siteSettingsUsage" id="usage"
           hidden$="[[!storedData_]]"></h2>
       <paper-item id="storage" hidden$="[[!storedData_]]">

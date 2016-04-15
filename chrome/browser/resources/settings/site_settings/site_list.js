@@ -319,7 +319,7 @@ Polymer({
     var lastEmbeddingOrigin = '';
     for (var i = 0; i < sites.length; ++i) {
       var origin = sites[i].origin;
-      var originForDisplay = origin.replace('[*.]', '');
+      var originForDisplay = this.sanitizePort(origin.replace('[*.]', ''));
 
       var embeddingOrigin = sites[i].embeddingOrigin;
       if (this.category == settings.ContentSettingsTypes.GEOLOCATION) {
@@ -328,8 +328,8 @@ Polymer({
       }
       var embeddingOriginForDisplay = '';
       if (embeddingOrigin != '' && origin != embeddingOrigin) {
-        embeddingOriginForDisplay =
-            loadTimeData.getStringF('embeddedOnHost', embeddingOrigin);
+        embeddingOriginForDisplay = loadTimeData.getStringF(
+            'embeddedOnHost', this.sanitizePort(embeddingOrigin));
       }
 
       // The All Sites category can contain duplicates (from other categories).
@@ -451,16 +451,5 @@ Polymer({
       return true;
 
     return toggleState;
-  },
-
-  /**
-   * Returns the icon to use for a given site.
-   * @param {string} url The url of the site to fetch the icon for.
-   * @private
-   */
-  computeSiteIcon_: function(url) {
-    // TODO(finnur): For now, we're returning a placeholder image for each site
-    // but the actual favicon for each site will need to be returned.
-    return 'communication:message';
   },
 });

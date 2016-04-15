@@ -6,11 +6,15 @@
   display: block;
 }
 
-.origin {
-  font-size: 110%;
-  font-weight: 500;
+.origin-box {
   margin-bottom: 20px;
   margin-top: 35px;
+}
+
+.origin {
+  -webkit-margin-start: 10px;
+  font-size: 110%;
+  font-weight: 500;
 }
 
 .reset-button {
@@ -19,4 +23,11 @@
 
 #storage {
   -webkit-padding-end: 0;
+}
+
+.website-icon {
+  background-repeat: no-repeat;
+  background-size: contain;
+  height: 16px;
+  width: 16px;
 }

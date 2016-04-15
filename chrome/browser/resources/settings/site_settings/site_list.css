@@ -18,3 +18,10 @@
   --paper-item-body-two-line-min-height: 0;
   -webkit-margin-start: 12px;
 }
+
+.website-icon {
+  background-repeat: no-repeat;
+  background-size: contain;
+  height: 16px;
+  width: 16px;
+}

@@ -294,6 +294,35 @@ var SiteSettingsBehaviorImpl = {
     if (url.length == 0) return url;
     return url.includes('://') ? url : 'http://' + url;
   },
+
+  /**
+   * Removes redundant ports, such as port 80 for http and 443 for https.
+   * @param {string} url The URL to sanitize.
+   * @return {string} The URL without redundant ports, if any.
+   */
+  sanitizePort: function(url) {
+    var urlWithScheme = this.ensureUrlHasScheme(url);
+    if (urlWithScheme.startsWith('https://') &&
+        urlWithScheme.endsWith(':443')) {
+      return url.slice(0, -4);
+    }
+    if (urlWithScheme.startsWith('http://') &&
+        urlWithScheme.endsWith(':80')) {
+      return url.slice(0, -3);
+    }
+    return url;
+  },
+
+  /**
+   * Returns the icon to use for a given site.
+   * @param {SiteException} site The url of the site to fetch the icon for.
+   * @return {string} The background-image style with the favicon.
+   * @private
+   */
+  computeSiteIcon: function(site) {
+    var url = this.ensureUrlHasScheme(site.originForDisplay);
+    return 'background-image: ' + getFaviconImageSet(url);
+  },
 };
 
 /** @polymerBehavior */
