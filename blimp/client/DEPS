@@ -4,6 +4,7 @@ include_rules = [
   "-cc/blink",
   "-chrome",
   "+components/safe_json",
+  "+components/url_formatter",
   "-content",
   "+gpu",
   "+jni",

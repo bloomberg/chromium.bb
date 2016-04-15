@@ -362,6 +362,7 @@ if (is_android) {
       "//blimp/common/proto",
       "//blimp/net:blimp_net",
       "//components/safe_json/android:safe_json_jni_headers",
+      "//components/url_formatter",
       "//skia",
       "//ui/base/ime:text_input_types",
       "//ui/gfx/geometry",
