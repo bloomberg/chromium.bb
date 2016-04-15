@@ -680,7 +680,7 @@ class TestGitCl(TestCase):
 
   @classmethod
   def _gerrit_ensure_auth_calls(cls, issue=None, skip_auth_check=False):
-    cmd = ['git', 'config', '--bool', 'gerrit.skip_ensure_authenticated']
+    cmd = ['git', 'config', '--bool', 'gerrit.skip-ensure-authenticated']
     if skip_auth_check:
       return [((cmd, ), 'true')]
 

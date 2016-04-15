@@ -777,7 +777,7 @@ class Settings(object):
     uploads."""
     if self.gerrit_skip_ensure_authenticated is None:
       self.gerrit_skip_ensure_authenticated = (
-          RunGit(['config', '--bool', 'gerrit.skip_ensure_authenticated'],
+          RunGit(['config', '--bool', 'gerrit.skip-ensure-authenticated'],
                  error_ok=True).strip() == 'true')
     return self.gerrit_skip_ensure_authenticated
 
@@ -2732,7 +2732,7 @@ def LoadCodereviewSettingsFromFile(fileobj):
             keyvals['GERRIT_SQUASH_UPLOADS']])
 
   if 'GERRIT_SKIP_ENSURE_AUTHENTICATED' in keyvals:
-    RunGit(['config', 'gerrit.skip_ensure_authenticated',
+    RunGit(['config', 'gerrit.skip-ensure-authenticated',
             keyvals['GERRIT_SKIP_ENSURE_AUTHENTICATED']])
 
   if 'PUSH_URL_CONFIG' in keyvals and 'ORIGIN_URL_CONFIG' in keyvals:
