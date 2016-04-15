@@ -382,6 +382,7 @@ _COPY_PATHS_ENVOY = (
 _COPY_PATHS_MASH = (
     Path('mojo_runner', exe=True),
     Path('Mojo Applications/'),
+    Path('*_manifest.json'),
 ) + _COPY_PATHS_CHROME
 
 _COPY_PATHS_MAP = {
