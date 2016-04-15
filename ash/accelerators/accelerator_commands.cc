@@ -8,10 +8,10 @@
 #include "ash/display/display_util.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
+#include "ash/wm/common/wm_event.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm/wm_event.h"
 #include "base/metrics/user_metrics.h"
 
 namespace ash {

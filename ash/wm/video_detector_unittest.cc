@@ -8,8 +8,8 @@
 
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/common/wm_event.h"
 #include "ash/wm/window_state.h"
-#include "ash/wm/wm_event.h"
 #include "base/compiler_specific.h"
 #include "base/time/time.h"
 #include "third_party/skia/include/core/SkColor.h"

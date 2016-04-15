@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_WM_EVENT_H_
-#define ASH_WM_WM_EVENT_H_
+#ifndef ASH_WM_COMMON_WM_EVENT_H_
+#define ASH_WM_COMMON_WM_EVENT_H_
 
 #include "ash/ash_export.h"
 #include "ash/wm/wm_types.h"
@@ -104,7 +104,7 @@ class ASH_EXPORT WMEvent {
 
 // An WMEvent to request new bounds for the window.
 class SetBoundsEvent : public WMEvent {
-public:
+ public:
   SetBoundsEvent(WMEventType type, const gfx::Rect& requested_bounds);
   ~SetBoundsEvent() override;
 
@@ -119,5 +119,4 @@ public:
 }  // namespace wm
 }  // namespace ash
 
-#endif  // ASH_WM_WM_EVENT_H_
-
+#endif  // ASH_WM_COMMON_WM_EVENT_H_

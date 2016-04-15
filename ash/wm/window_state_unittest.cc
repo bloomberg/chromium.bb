@@ -8,8 +8,8 @@
 
 #include "ash/screen_util.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/common/wm_event.h"
 #include "ash/wm/window_state.h"
-#include "ash/wm/wm_event.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
