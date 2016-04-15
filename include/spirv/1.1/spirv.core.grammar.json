@@ -3022,7 +3022,6 @@
       "opname" : "OpTypePipeStorage",
       "opcode" : 322,
       "operands" : [
-        { "kind" : "IdResultType" },
         { "kind" : "IdResult" }
       ],
       "capabilities" : [ "PipeStorage" ]
@@ -3081,7 +3080,6 @@
       "opname" : "OpTypeNamedBarrier",
       "opcode" : 327,
       "operands" : [
-        { "kind" : "IdResultType" },
         { "kind" : "IdResult" }
       ],
       "capabilities" : [ "NamedBarrier" ]
