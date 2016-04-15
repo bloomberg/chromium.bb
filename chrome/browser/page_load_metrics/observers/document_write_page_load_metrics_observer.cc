@@ -8,33 +8,37 @@
 
 namespace internal {
 const char kHistogramDocWriteFirstContentfulPaint[] =
-    "PageLoad.Clients.DocWrite.Evaluator.NavigationToFirstContentfulPaint";
+    "PageLoad.Clients.DocWrite.Evaluator.Timing2."
+    "NavigationToFirstContentfulPaint";
 const char kHistogramDocWriteParseStartToFirstContentfulPaint[] =
-    "PageLoad.Clients.DocWrite.Evaluator.ParseStartToFirstContentfulPaint";
+    "PageLoad.Clients.DocWrite.Evaluator.Timing2."
+    "ParseStartToFirstContentfulPaint";
 const char kHistogramDocWriteParseDuration[] =
-    "PageLoad.Clients.DocWrite.Evaluator.ParseDuration";
+    "PageLoad.Clients.DocWrite.Evaluator.Timing2.ParseDuration";
 const char kHistogramDocWriteParseBlockedOnScript[] =
-    "PageLoad.Clients.DocWrite.Evaluator.ParseBlockedOnScriptLoad";
+    "PageLoad.Clients.DocWrite.Evaluator.Timing2.ParseBlockedOnScriptLoad";
 const char kHistogramDocWriteParseBlockedOnScriptParseComplete[] =
-    "PageLoad.Clients.DocWrite.Evaluator.ParseBlockedOnScriptLoad."
+    "PageLoad.Clients.DocWrite.Evaluator.Timing2.ParseBlockedOnScriptLoad."
     "ParseComplete";
 const char kHistogramDocWriteParseBlockedOnScriptLoadDocumentWrite[] =
-    "PageLoad.Clients.DocWrite.Evaluator."
+    "PageLoad.Clients.DocWrite.Evaluator.Timing2."
     "ParseBlockedOnScriptLoadFromDocumentWrite";
 const char
     kHistogramDocWriteParseBlockedOnScriptLoadDocumentWriteParseComplete[] =
-        "PageLoad.Clients.DocWrite.Evaluator."
+        "PageLoad.Clients.DocWrite.Evaluator.Timing2."
         "ParseBlockedOnScriptLoadFromDocumentWrite.ParseComplete";
 
 const char kBackgroundHistogramDocWriteFirstContentfulPaint[] =
-    "PageLoad.Clients.DocWrite.Evaluator.NavigationToFirstContentfulPaint."
+    "PageLoad.Clients.DocWrite.Evaluator.Timing2."
+    "NavigationToFirstContentfulPaint."
     "Background";
 const char kBackgroundHistogramDocWriteParseDuration[] =
-    "PageLoad.Clients.DocWrite.Evaluator.ParseDuration.Background";
+    "PageLoad.Clients.DocWrite.Evaluator.Timing2.ParseDuration.Background";
 const char kBackgroundHistogramDocWriteParseBlockedOnScript[] =
-    "PageLoad.Clients.DocWrite.Evaluator.ParseBlockedOnScriptLoad.Background";
+    "PageLoad.Clients.DocWrite.Evaluator.Timing2.ParseBlockedOnScriptLoad."
+    "Background";
 const char kBackgroundHistogramDocWriteParseBlockedOnScriptLoadDocumentWrite[] =
-    "PageLoad.Clients.DocWrite.Evaluator."
+    "PageLoad.Clients.DocWrite.Evaluator.Timing2."
     "ParseBlockedOnScriptLoadFromDocumentWrite.Background";
 
 }  // namespace internal
