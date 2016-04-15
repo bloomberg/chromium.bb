@@ -56,7 +56,7 @@ bool H264BitReader::UpdateCurrByte() {
   --bytes_left_;
   num_remaining_bits_in_curr_byte_ = 8;
 
-  prev_two_bytes_ = (prev_two_bytes_ << 8) | curr_byte_;
+  prev_two_bytes_ = ((prev_two_bytes_ & 0xff) << 8) | curr_byte_;
 
   return true;
 }
