@@ -1457,16 +1457,18 @@ class SurfaceAggregatorPartialSwapTest
 TEST_F(SurfaceAggregatorPartialSwapTest, IgnoreOutside) {
   SurfaceId child_surface_id = allocator_.GenerateId();
   factory_.Create(child_surface_id);
-  // The child surface has two quads, one with a visible rect of 13,13 4x4 and
+  // The child surface has three quads, one with a visible rect of 13,13 4x4 and
   // the other other with a visible rect of 10,10 2x2 (relative to root target
-  // space).
+  // space), and one with a non-invertible transform.
   {
     RenderPassId child_pass_id = RenderPassId(1, 1);
     test::Quad child_quads1[] = {test::Quad::RenderPassQuad(child_pass_id)};
     test::Quad child_quads2[] = {test::Quad::RenderPassQuad(child_pass_id)};
+    test::Quad child_quads3[] = {test::Quad::RenderPassQuad(child_pass_id)};
     test::Pass child_passes[] = {
         test::Pass(child_quads1, arraysize(child_quads1), child_pass_id),
-        test::Pass(child_quads2, arraysize(child_quads2), child_pass_id)};
+        test::Pass(child_quads2, arraysize(child_quads2), child_pass_id),
+        test::Pass(child_quads3, arraysize(child_quads2), child_pass_id)};
 
     RenderPassList child_pass_list;
     AddPasses(&child_pass_list, gfx::Rect(SurfaceSize()), child_passes,
@@ -1480,6 +1482,15 @@ TEST_F(SurfaceAggregatorPartialSwapTest, IgnoreOutside) {
     child_sqs->quad_to_target_transform.Scale(2, 2);
 
     child_pass_list[1]->quad_list.ElementAt(0)->visible_rect =
+        gfx::Rect(0, 0, 2, 2);
+
+    SharedQuadState* child_noninvertible_sqs =
+        child_pass_list[2]->shared_quad_state_list.ElementAt(0u);
+    child_noninvertible_sqs->quad_to_target_transform.matrix().setDouble(0, 0,
+                                                                         0.0);
+    EXPECT_FALSE(
+        child_noninvertible_sqs->quad_to_target_transform.IsInvertible());
+    child_pass_list[2]->quad_list.ElementAt(0)->visible_rect =
         gfx::Rect(0, 0, 2, 2);
 
     SubmitPassListAsFrame(child_surface_id, &child_pass_list);
@@ -1512,12 +1523,13 @@ TEST_F(SurfaceAggregatorPartialSwapTest, IgnoreOutside) {
 
   const RenderPassList& aggregated_pass_list = frame_data->render_pass_list;
 
-  ASSERT_EQ(2u, aggregated_pass_list.size());
+  ASSERT_EQ(3u, aggregated_pass_list.size());
 
   // Damage rect for first aggregation should contain entire root surface.
-  EXPECT_EQ(gfx::Rect(0, 0, 15, 15), aggregated_pass_list[1]->damage_rect);
+  EXPECT_EQ(gfx::Rect(0, 0, 15, 15), aggregated_pass_list[2]->damage_rect);
   EXPECT_EQ(1u, aggregated_pass_list[0]->quad_list.size());
   EXPECT_EQ(1u, aggregated_pass_list[1]->quad_list.size());
+  EXPECT_EQ(1u, aggregated_pass_list[2]->quad_list.size());
 
   // Create a root surface with a smaller damage rect.
   {
@@ -1548,15 +1560,16 @@ TEST_F(SurfaceAggregatorPartialSwapTest, IgnoreOutside) {
 
     const RenderPassList& aggregated_pass_list = frame_data->render_pass_list;
 
-    ASSERT_EQ(2u, aggregated_pass_list.size());
+    ASSERT_EQ(3u, aggregated_pass_list.size());
 
     // Only first quad from surface is inside damage rect and should be
     // included.
-    EXPECT_EQ(gfx::Rect(10, 10, 2, 2), aggregated_pass_list[1]->damage_rect);
+    EXPECT_EQ(gfx::Rect(10, 10, 2, 2), aggregated_pass_list[2]->damage_rect);
     EXPECT_EQ(0u, aggregated_pass_list[0]->quad_list.size());
     EXPECT_EQ(1u, aggregated_pass_list[1]->quad_list.size());
     EXPECT_EQ(gfx::Rect(0, 0, 2, 2),
               aggregated_pass_list[1]->quad_list.back()->visible_rect);
+    EXPECT_EQ(1u, aggregated_pass_list[2]->quad_list.size());
   }
 
   // New child frame has same content and no damage, but has a
@@ -1613,6 +1626,7 @@ TEST_F(SurfaceAggregatorPartialSwapTest, IgnoreOutside) {
               aggregated_pass_list[0]->quad_list.ElementAt(0)->visible_rect);
     EXPECT_EQ(gfx::Rect(0, 0, 2, 2),
               aggregated_pass_list[1]->quad_list.ElementAt(0)->visible_rect);
+    ASSERT_EQ(1u, aggregated_pass_list[2]->quad_list.size());
   }
 
   {
