@@ -1036,6 +1036,13 @@ bool DXVAVideoDecodeAccelerator::CreateD3DDevManager() {
   hr = Direct3DCreate9Ex(D3D_SDK_VERSION, d3d9_.Receive());
   RETURN_ON_HR_FAILURE(hr, "Direct3DCreate9Ex failed", false);
 
+  hr = d3d9_->CheckDeviceFormatConversion(
+      D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL,
+      static_cast<D3DFORMAT>(MAKEFOURCC('N', 'V', '1', '2')),
+      D3DFMT_X8R8G8B8);
+  RETURN_ON_HR_FAILURE(hr,
+      "D3D9 driver does not support H/W format conversion", false);
+
   base::win::ScopedComPtr<IDirect3DDevice9> angle_device =
       QueryDeviceObjectFromANGLE<IDirect3DDevice9>(EGL_D3D9_DEVICE_ANGLE);
   if (angle_device.get())
@@ -1063,8 +1070,7 @@ bool DXVAVideoDecodeAccelerator::CreateD3DDevManager() {
                                D3DDEVTYPE_HAL,
                                NULL,
                                D3DCREATE_FPU_PRESERVE |
-                               D3DCREATE_HARDWARE_VERTEXPROCESSING |
-                               D3DCREATE_DISABLE_PSGP_THREADING |
+                               D3DCREATE_MIXED_VERTEXPROCESSING |
                                D3DCREATE_MULTITHREADED,
                                &present_params,
                                NULL,
