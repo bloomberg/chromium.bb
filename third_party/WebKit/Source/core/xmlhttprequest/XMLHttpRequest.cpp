@@ -869,6 +869,9 @@ void XMLHttpRequest::createRequest(PassRefPtr<EncodedFormData> httpBody, Excepti
 
     m_sameOriginRequest = getSecurityOrigin()->canRequestNoSuborigin(m_url);
 
+    if (!m_sameOriginRequest && m_includeCredentials)
+        UseCounter::count(&executionContext, UseCounter::XMLHttpRequestCrossOriginWithCredentials);
+
     // We also remember whether upload events should be allowed for this request in case the upload listeners are
     // added after the request is started.
     m_uploadEventsAllowed = m_sameOriginRequest || uploadEvents || !FetchUtils::isSimpleRequest(m_method, m_requestHeaders);
