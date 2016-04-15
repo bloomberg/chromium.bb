@@ -135,6 +135,7 @@ public class DownloadNotificationService extends Service {
         NotificationCompat.Builder builder = buildNotification(
                 android.R.drawable.stat_sys_download, fileName, null);
         builder.setOngoing(true).setProgress(100, percentage, indeterminate);
+        builder.setPriority(Notification.PRIORITY_HIGH);
         if (!indeterminate) {
             NumberFormat formatter = NumberFormat.getPercentInstance(Locale.getDefault());
             String percentText = formatter.format(percentage / 100.0);
