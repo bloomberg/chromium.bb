@@ -34,6 +34,11 @@ TaskTraits& TaskTraits::WithShutdownBehavior(
   return *this;
 }
 
+bool TaskTraits::operator==(const TaskTraits& other) const {
+  return with_file_io_ == other.with_file_io_ && priority_ == other.priority_ &&
+         shutdown_behavior_ == other.shutdown_behavior_;
+}
+
 std::ostream& operator<<(std::ostream& os, const TaskPriority& task_priority) {
   switch (task_priority) {
     case TaskPriority::BACKGROUND:

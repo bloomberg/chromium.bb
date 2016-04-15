@@ -95,6 +95,8 @@ class BASE_EXPORT PriorityQueue {
   // PriorityQueue.
   std::unique_ptr<Transaction> BeginTransaction();
 
+  const SchedulerLock* container_lock() const { return &container_lock_; }
+
  private:
   struct SequenceAndSortKeyComparator {
     bool operator()(const std::unique_ptr<SequenceAndSortKey>& left,
