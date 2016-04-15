@@ -127,8 +127,9 @@ Polymer({
     var template = Polymer.dom(this).querySelector(
         'template[name="' + id + '"]');
 
-    // Do nothing if the subpage is already stamped.
-    if (template.if)
+    // Nothing to do if the subpage isn't wrapped in a <template> or the
+    // template is already stamped.
+    if (!template || template.if)
       return;
 
     // Set the subpage's id for use by neon-animated-pages.
