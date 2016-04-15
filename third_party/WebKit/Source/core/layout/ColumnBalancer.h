@@ -140,8 +140,7 @@ private:
         // breaks assumed so far.
         LayoutUnit columnLogicalHeight(LayoutUnit startOffset) const
         {
-            // TODO(leviw): This should probably be fromFloatCeil.
-            return LayoutUnit(ceilf((m_breakOffset - startOffset) / float(m_assumedImplicitBreaks + 1)));
+            return LayoutUnit::fromFloatCeil(float(m_breakOffset - startOffset) / float(m_assumedImplicitBreaks + 1));
         }
 
     private:
