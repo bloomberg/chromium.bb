@@ -54,6 +54,9 @@ enum CryptohomeErrorCode {
   CRYPTOHOME_ERROR_CA_REFUSED_ENROLLMENT = 23;
   CRYPTOHOME_ERROR_CA_REFUSED_CERTIFICATE = 24;
   CRYPTOHOME_ERROR_INTERNAL_ATTESTATION_ERROR = 25;
+  CRYPTOHOME_ERROR_FIRMWARE_MANAGEMENT_PARAMETERS_INVALID = 26;
+  CRYPTOHOME_ERROR_FIRMWARE_MANAGEMENT_PARAMETERS_CANNOT_STORE = 27;
+  CRYPTOHOME_ERROR_FIRMWARE_MANAGEMENT_PARAMETERS_CANNOT_REMOVE = 28;
 }
 
 message AccountIdentifier {
@@ -277,4 +280,38 @@ message GetEndorsementInfoReply {
 }
 
 message InitializeCastKeyRequest {
+}
+
+// Flags for GetFirmwareManagementParametersReply and
+// SetFirmwareManagementParametersRequest
+enum FirmwareManagementParametersFlags {
+  NONE = 0;
+  DEVELOPER_DISABLE_BOOT = 1;
+  DEVELOPER_DISABLE_RECOVERY_INSTALL = 2;
+  DEVELOPER_DISABLE_RECOVERY_ROOTFS = 4;
+  DEVELOPER_ENABLE_USB = 8;
+  DEVELOPER_ENABLE_LEGACY = 16;
+  DEVELOPER_USE_KEY_HASH = 32;
+}
+
+message GetFirmwareManagementParametersRequest {
+}
+
+message GetFirmwareManagementParametersReply {
+  extend BaseReply {
+    optional GetFirmwareManagementParametersReply reply = 1008;
+  }
+
+  // Flags (zero or more from FirmwareManagementParametersFlags)
+  optional int32 flags = 1;
+  optional bytes developer_key_hash = 2;
+}
+
+message SetFirmwareManagementParametersRequest {
+  // Flags (zero or more from FirmwareManagementParametersFlags)
+  optional int32 flags = 1;
+  optional bytes developer_key_hash = 2;
+}
+
+message RemoveFirmwareManagementParametersRequest {
 }
