@@ -23,7 +23,6 @@ class GL_EXPORT GLContextStub : public GLContextReal {
   bool IsCurrent(GLSurface* surface) override;
   void* GetHandle() override;
   void OnSetSwapInterval(int interval) override;
-  std::string GetExtensions() override;
   std::string GetGLRenderer() override;
 
  protected:

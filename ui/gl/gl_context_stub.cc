@@ -34,10 +34,6 @@ void* GLContextStub::GetHandle() {
 void GLContextStub::OnSetSwapInterval(int interval) {
 }
 
-std::string GLContextStub::GetExtensions() {
-  return std::string();
-}
-
 std::string GLContextStub::GetGLRenderer() {
   return std::string("CHROMIUM");
 }
