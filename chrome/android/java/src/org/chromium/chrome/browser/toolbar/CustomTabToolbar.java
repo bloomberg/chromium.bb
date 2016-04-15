@@ -27,6 +27,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.WindowDelegate;
 import org.chromium.chrome.browser.appmenu.AppMenuButtonHelper;
 import org.chromium.chrome.browser.dom_distiller.DomDistillerServiceFactory;
@@ -265,18 +266,18 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
             mTitleBar.setText("");
             return;
         }
+        String title = currentTab.getTitle();
 
         // It takes some time to parse the title of the webcontent, and before that Tab#getTitle
         // always return the url. We postpone the title animation until the title is authentic.
-        // TODO(yusufo): Clear the explicit references to about:blank here and for domain.
-        if (mState == STATE_DOMAIN_AND_TITLE
-                && !TextUtils.equals(currentTab.getTitle(), currentTab.getUrl())
-                && !TextUtils.equals(currentTab.getTitle(), "about:blank")) {
+        if ((mState == STATE_DOMAIN_AND_TITLE || mState == STATE_TITLE_ONLY)
+                && !title.equals(currentTab.getUrl())
+                && !title.equals(UrlConstants.ABOUT_BLANK)) {
             // Delay the title animation until security icon animation finishes.
             ThreadUtils.postOnUiThreadDelayed(mTitleAnimationStarter, TITLE_ANIM_DELAY_MS);
         }
 
-        mTitleBar.setText(currentTab.getTitle());
+        mTitleBar.setText(title);
     }
 
     @Override
@@ -307,7 +308,7 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
         // If we have taken a pre-initialized WebContents, then the starting URL
         // is "about:blank". We should not display it.
         if (NativePageFactory.isNativePageUrl(url, getCurrentTab().isIncognito())
-                || "about:blank".equals(url)) {
+                || UrlConstants.ABOUT_BLANK.equals(url)) {
             mUrlBar.setUrl("", null);
             return;
         }
