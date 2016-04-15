@@ -253,6 +253,20 @@ bool ChromeClientImpl::hadFormInteraction() const
     return m_webView->pageImportanceSignals() && m_webView->pageImportanceSignals()->hadFormInteraction();
 }
 
+void ChromeClientImpl::startDragging(LocalFrame* frame,
+    const WebDragData& dragData,
+    WebDragOperationsMask mask,
+    const WebImage& dragImage,
+    const WebPoint& dragImageOffset)
+{
+    m_webView->startDragging(frame, dragData, mask, dragImage, dragImageOffset);
+}
+
+bool ChromeClientImpl::acceptsLoadDrops() const
+{
+    return !m_webView->client() || m_webView->client()->acceptsLoadDrops();
+}
+
 namespace {
 
 void updatePolicyForEvent(const WebInputEvent* inputEvent, NavigationPolicy* policy)

@@ -55,7 +55,6 @@
 #include "public/web/WebView.h"
 #include "web/ChromeClientImpl.h"
 #include "web/ContextMenuClientImpl.h"
-#include "web/DragClientImpl.h"
 #include "web/EditorClientImpl.h"
 #include "web/MediaKeysClientImpl.h"
 #include "web/PageWidgetDelegate.h"
@@ -297,11 +296,6 @@ public:
     Color baseBackgroundColor() const { return m_baseBackgroundColor; }
 
     WebColor backgroundColorOverride() const { return m_backgroundColorOverride; }
-
-    const WebPoint& lastMouseDownPoint() const
-    {
-        return m_lastMouseDownPoint;
-    }
 
     Frame* focusedCoreFrame() const;
 
@@ -630,7 +624,6 @@ private:
 
     Persistent<ChromeClientImpl> m_chromeClientImpl;
     ContextMenuClientImpl m_contextMenuClientImpl;
-    DragClientImpl m_dragClientImpl;
     EditorClientImpl m_editorClientImpl;
     SpellCheckerClientImpl m_spellCheckerClientImpl;
     StorageClientImpl m_storageClientImpl;
@@ -652,15 +645,6 @@ private:
 
     // A copy of the web drop data object we received from the browser.
     Persistent<DataObject> m_currentDragData;
-
-    // The point relative to the client area where the mouse was last pressed
-    // down. This is used by the drag client to determine what was under the
-    // mouse when the drag was initiated. We need to track this here in
-    // WebViewImpl since DragClient::startDrag does not pass the position the
-    // mouse was at when the drag was initiated, only the current point, which
-    // can be misleading as it is usually not over the element the user actually
-    // dragged by the time a drag is initiated.
-    WebPoint m_lastMouseDownPoint;
 
     // Keeps track of the current zoom level. 0 means no zoom, positive numbers
     // mean zoom in, negative numbers mean zoom out.

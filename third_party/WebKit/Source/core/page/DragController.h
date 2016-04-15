@@ -38,7 +38,6 @@ namespace blink {
 
 class DataTransfer;
 class Document;
-class DragClient;
 class DragData;
 class DragImage;
 struct DragSession;
@@ -55,7 +54,7 @@ class CORE_EXPORT DragController final : public GarbageCollectedFinalized<DragCo
 public:
     ~DragController();
 
-    static DragController* create(Page*, DragClient*);
+    static DragController* create(Page*);
 
     DragSession dragEntered(DragData*);
     void dragExited(DragData*);
@@ -78,7 +77,7 @@ public:
     static const int DragIconBottomInset;
 
 private:
-    DragController(Page*, DragClient*);
+    DragController(Page*);
 
     DispatchEventResult dispatchTextInputEventFor(LocalFrame*, DragData*);
     bool canProcessDrag(DragData*);
@@ -95,10 +94,8 @@ private:
     void mouseMovedIntoDocument(Document*);
 
     void doSystemDrag(DragImage*, const IntPoint& dragLocation, const IntPoint& dragOrigin, DataTransfer*, LocalFrame*, bool forLink);
-    void cleanupAfterSystemDrag();
 
     Member<Page> m_page;
-    DragClient* m_client;
 
     Member<Document> m_documentUnderMouse; // The document the mouse was last dragged over.
     Member<Document> m_dragInitiator; // The Document (if any) that initiated the drag.

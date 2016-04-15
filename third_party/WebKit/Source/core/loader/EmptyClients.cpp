@@ -51,9 +51,6 @@ void fillWithEmptyClients(Page::PageClients& pageClients)
     DEFINE_STATIC_LOCAL(EmptyContextMenuClient, dummyContextMenuClient, ());
     pageClients.contextMenuClient = &dummyContextMenuClient;
 
-    DEFINE_STATIC_LOCAL(EmptyDragClient, dummyDragClient, ());
-    pageClients.dragClient = &dummyDragClient;
-
     DEFINE_STATIC_LOCAL(EmptyEditorClient, dummyEditorClient, ());
     pageClients.editorClient = &dummyEditorClient;
 

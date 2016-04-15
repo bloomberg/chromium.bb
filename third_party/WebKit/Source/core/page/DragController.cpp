@@ -55,27 +55,33 @@
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLPlugInElement.h"
 #include "core/input/EventHandler.h"
+#include "core/layout/HitTestRequest.h"
+#include "core/layout/HitTestResult.h"
+#include "core/layout/LayoutImage.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/layout/LayoutView.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoader.h"
 #include "core/page/ChromeClient.h"
-#include "core/page/DragClient.h"
 #include "core/page/DragData.h"
 #include "core/page/DragSession.h"
 #include "core/page/DragState.h"
 #include "core/page/Page.h"
-#include "core/layout/HitTestRequest.h"
-#include "core/layout/HitTestResult.h"
-#include "core/layout/LayoutImage.h"
 #include "platform/DragImage.h"
 #include "platform/geometry/IntRect.h"
+#include "platform/geometry/IntSize.h"
 #include "platform/graphics/BitmapImage.h"
 #include "platform/graphics/Image.h"
 #include "platform/graphics/ImageOrientation.h"
 #include "platform/network/ResourceRequest.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "public/platform/WebCommon.h"
+#include "public/platform/WebDragData.h"
+#include "public/platform/WebDragOperation.h"
+#include "public/platform/WebImage.h"
+#include "public/platform/WebPoint.h"
 #include "public/platform/WebScreenInfo.h"
+#include "wtf/Assertions.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
@@ -124,9 +130,8 @@ static DataTransfer* createDraggingDataTransfer(DataTransferAccessPolicy policy,
     return DataTransfer::create(DataTransfer::DragAndDrop, policy, dragData->platformData());
 }
 
-DragController::DragController(Page* page, DragClient* client)
+DragController::DragController(Page* page)
     : m_page(page)
-    , m_client(client)
     , m_documentUnderMouse(nullptr)
     , m_dragInitiator(nullptr)
     , m_fileInputElementUnderMouse(nullptr)
@@ -134,16 +139,15 @@ DragController::DragController(Page* page, DragClient* client)
     , m_dragDestinationAction(DragDestinationActionNone)
     , m_didInitiateDrag(false)
 {
-    ASSERT(m_client);
 }
 
 DragController::~DragController()
 {
 }
 
-DragController* DragController::create(Page* page, DragClient* client)
+DragController* DragController::create(Page* page)
 {
-    return new DragController(page, client);
+    return new DragController(page);
 }
 
 static DocumentFragment* documentFragmentFromDragData(DragData* dragData, LocalFrame* frame, Range* context, bool allowPlainText, bool& chosePlainText)
@@ -293,7 +297,10 @@ DragSession DragController::dragEnteredOrUpdated(DragData* dragData)
     ASSERT(m_page->mainFrame());
     mouseMovedIntoDocument(m_page->deprecatedLocalMainFrame()->documentAtPoint(dragData->clientPosition()));
 
-    m_dragDestinationAction = m_client->actionMaskForDrag(dragData);
+    // TODO(esprehn): Replace acceptsLoadDrops with a Setting used in core.
+    m_dragDestinationAction = m_page->chromeClient().acceptsLoadDrops()
+        ? DragDestinationActionAny
+        : static_cast<DragDestinationAction>(DragDestinationActionDHTML | DragDestinationActionEdit);
     if (m_dragDestinationAction == DragDestinationActionNone) {
         cancelDrag(); // FIXME: Why not call mouseMovedIntoDocument(0)?
         return DragSession();
@@ -933,6 +940,7 @@ bool DragController::startDrag(LocalFrame* src, const DragState& state, const Pl
     return true;
 }
 
+// TODO(esprehn): forLink is dead code, what was it for?
 void DragController::doSystemDrag(DragImage* image, const IntPoint& dragLocation, const IntPoint& eventPos, DataTransfer* dataTransfer, LocalFrame* frame, bool forLink)
 {
     // TODO(dcheng): Drag and drop is not yet supported for OOPI.
@@ -940,17 +948,29 @@ void DragController::doSystemDrag(DragImage* image, const IntPoint& dragLocation
         return;
     m_didInitiateDrag = true;
     m_dragInitiator = frame->document();
-    // Protect this frame and view, as a load may occur mid drag and attempt to unload this frame
+
     LocalFrame* mainFrame = m_page->deprecatedLocalMainFrame();
     FrameView* mainFrameView = mainFrame->view();
+    IntPoint adjustedDragLocation = mainFrameView->rootFrameToContents(frame->view()->contentsToRootFrame(dragLocation));
+    IntPoint adjustedEventPos = mainFrameView->rootFrameToContents(frame->view()->contentsToRootFrame(eventPos));
+    WebDragData dragData = dataTransfer->dataObject()->toWebDragData();
+    WebDragOperationsMask dragOperationMask = static_cast<WebDragOperationsMask>(dataTransfer->sourceOperation());
+    IntSize offsetSize(adjustedEventPos - adjustedDragLocation);
+    WebPoint offsetPoint(offsetSize.width(), offsetSize.height());
+    WebImage dragImage;
 
-    m_client->startDrag(image, mainFrameView->rootFrameToContents(frame->view()->contentsToRootFrame(dragLocation)),
-        mainFrameView->rootFrameToContents(frame->view()->contentsToRootFrame(eventPos)), dataTransfer, frame, forLink);
-    // DragClient::startDrag can cause our Page to dispear, deallocating |this|.
-    if (!frame->page())
-        return;
+    if (image) {
+        float resolutionScale = image->resolutionScale();
+        float deviceScaleFactor = m_page->chromeClient().screenInfo().deviceScaleFactor;
+        if (deviceScaleFactor != resolutionScale) {
+            DCHECK_GT(resolutionScale, 0);
+            float scale = deviceScaleFactor / resolutionScale;
+            image->scale(scale, scale);
+        }
+        dragImage = image->bitmap();
+    }
 
-    cleanupAfterSystemDrag();
+    m_page->chromeClient().startDragging(frame, dragData, dragOperationMask, dragImage, offsetPoint);
 }
 
 DragOperation DragController::dragOperation(DragData* dragData)
@@ -972,10 +992,6 @@ bool DragController::isCopyKeyDown(DragData* dragData)
 #else
     return modifiers & PlatformEvent::CtrlKey;
 #endif
-}
-
-void DragController::cleanupAfterSystemDrag()
-{
 }
 
 DEFINE_TRACE(DragController)

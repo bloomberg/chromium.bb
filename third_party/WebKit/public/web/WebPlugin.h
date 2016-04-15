@@ -33,10 +33,10 @@
 #define WebPlugin_h
 
 #include "../platform/WebCanvas.h"
+#include "../platform/WebDragOperation.h"
 #include "../platform/WebFocusType.h"
 #include "../platform/WebString.h"
 #include "../platform/WebURL.h"
-#include "WebDragOperation.h"
 #include "WebDragStatus.h"
 #include "WebWidget.h"
 #include <v8.h>

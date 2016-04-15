@@ -6,7 +6,7 @@
 #include "content/public/common/common_param_traits.h"
 #include "content/public/common/drop_data.h"
 #include "ipc/ipc_message_macros.h"
-#include "third_party/WebKit/public/web/WebDragOperation.h"
+#include "third_party/WebKit/public/platform/WebDragOperation.h"
 #include "ui/gfx/geometry/point.h"
 
 #define IPC_MESSAGE_START DragMsgStart

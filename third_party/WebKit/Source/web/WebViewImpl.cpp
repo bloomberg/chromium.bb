@@ -401,7 +401,6 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     , m_spellCheckClient(nullptr)
     , m_chromeClientImpl(ChromeClientImpl::create(this))
     , m_contextMenuClientImpl(this)
-    , m_dragClientImpl(this)
     , m_editorClientImpl(this)
     , m_spellCheckerClientImpl(this)
     , m_storageClientImpl(this)
@@ -450,7 +449,6 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     pageClients.chromeClient = m_chromeClientImpl.get();
     pageClients.contextMenuClient = &m_contextMenuClientImpl;
     pageClients.editorClient = &m_editorClientImpl;
-    pageClients.dragClient = &m_dragClientImpl;
     pageClients.spellCheckerClient = &m_spellCheckerClientImpl;
 
     m_page = Page::createOrdinary(pageClients);
@@ -535,8 +533,6 @@ void WebViewImpl::handleMouseDown(LocalFrame& mainFrame, const WebMouseEvent& ev
         hidePopups();
         DCHECK(!m_pagePopup);
     }
-
-    m_lastMouseDownPoint = WebPoint(event.x, event.y);
 
     // Take capture on a mouse down on a plugin so we can send it mouse events.
     // If the hit node is a plugin but a scrollbar is over it don't start mouse

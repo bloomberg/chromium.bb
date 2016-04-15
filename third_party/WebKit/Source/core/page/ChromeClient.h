@@ -36,6 +36,7 @@
 #include "platform/heap/Handle.h"
 #include "platform/scroll/ScrollTypes.h"
 #include "public/platform/BlameContext.h"
+#include "public/platform/WebDragOperation.h"
 #include "public/platform/WebEventListenerProperties.h"
 #include "public/platform/WebFocusType.h"
 #include "wtf/Forward.h"
@@ -47,32 +48,35 @@ namespace blink {
 class AXObject;
 class ColorChooser;
 class ColorChooserClient;
+class CompositorAnimationTimeline;
 class DateTimeChooser;
 class DateTimeChooserClient;
 class Element;
 class FileChooser;
-class Frame;
 class FloatPoint;
+class Frame;
 class GraphicsContext;
 class GraphicsLayer;
-class HitTestResult;
 class HTMLFormControlElement;
 class HTMLInputElement;
 class HTMLSelectElement;
+class HitTestResult;
 class IntRect;
 class LocalFrame;
 class Node;
 class Page;
 class PaintArtifact;
 class PopupOpeningObserver;
-class CompositorAnimationTimeline;
+class WebDragData;
 class WebFrameScheduler;
+class WebImage;
 
 struct CompositedSelection;
 struct DateTimeChooserParameters;
 struct FrameLoadRequest;
 struct GraphicsDeviceAdapter;
 struct ViewportDescription;
+struct WebPoint;
 struct WindowFeatures;
 
 class CORE_EXPORT ChromeClient : public HostWindow {
@@ -94,6 +98,10 @@ public:
     virtual void focusedNodeChanged(Node*, Node*) = 0;
 
     virtual bool hadFormInteraction() const = 0;
+
+    // Start a system drag and drop operation.
+    virtual void startDragging(LocalFrame*, const WebDragData&, WebDragOperationsMask, const WebImage& dragImage, const WebPoint& dragImageOffset) = 0;
+    virtual bool acceptsLoadDrops() const = 0;
 
     // The LocalFrame pointer provides the ChromeClient with context about which
     // LocalFrame wants to create the new Page. Also, the newly created window

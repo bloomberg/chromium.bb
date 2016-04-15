@@ -34,7 +34,6 @@
 #include "core/loader/FrameLoaderClient.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/ContextMenuClient.h"
-#include "core/page/DragClient.h"
 #include "core/page/EditorClient.h"
 #include "core/page/Page.h"
 #include "core/page/SpellCheckerClient.h"
@@ -91,6 +90,9 @@ public:
     void didOverscroll(const FloatSize&, const FloatSize&, const FloatPoint&, const FloatSize&) override {}
 
     bool hadFormInteraction() const override { return false; }
+
+    void startDragging(LocalFrame*, const WebDragData&, WebDragOperationsMask, const WebImage& dragImage, const WebPoint& dragImageOffset) {}
+    bool acceptsLoadDrops() const override { return true; }
 
     void setToolbarsVisible(bool) override {}
     bool toolbarsVisible() override { return false; }
@@ -324,15 +326,6 @@ public:
     ~EmptyContextMenuClient() override {}
     void showContextMenu(const ContextMenu*) override {}
     void clearContextMenu() override {}
-};
-
-class EmptyDragClient final : public DragClient {
-    WTF_MAKE_NONCOPYABLE(EmptyDragClient); USING_FAST_MALLOC(EmptyDragClient);
-public:
-    EmptyDragClient() {}
-    ~EmptyDragClient() override {}
-    DragDestinationAction actionMaskForDrag(DragData*) override { return DragDestinationActionNone; }
-    void startDrag(DragImage*, const IntPoint&, const IntPoint&, DataTransfer*, LocalFrame*, bool) override {}
 };
 
 CORE_EXPORT void fillWithEmptyClients(Page::PageClients&);

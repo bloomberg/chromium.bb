@@ -66,7 +66,6 @@ DummyPageHolder::DummyPageHolder(
         pageClients.chromeClient = pageClientsArgument->chromeClient;
         pageClients.contextMenuClient = pageClientsArgument->contextMenuClient;
         pageClients.editorClient = pageClientsArgument->editorClient;
-        pageClients.dragClient = pageClientsArgument->dragClient;
         pageClients.spellCheckerClient = pageClientsArgument->spellCheckerClient;
     }
     m_page = Page::create(pageClients);

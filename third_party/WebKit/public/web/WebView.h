@@ -33,11 +33,11 @@
 
 #include "../platform/WebColor.h"
 #include "../platform/WebDisplayMode.h"
+#include "../platform/WebDragOperation.h"
 #include "../platform/WebFocusType.h"
 #include "../platform/WebPageVisibilityState.h"
 #include "../platform/WebString.h"
 #include "../platform/WebVector.h"
-#include "WebDragOperation.h"
 #include "WebHistoryCommitType.h"
 #include "WebHistoryItem.h"
 #include "WebWidget.h"

@@ -53,7 +53,6 @@ class ContextMenuClient;
 class ContextMenuController;
 class Document;
 class DragCaretController;
-class DragClient;
 class DragController;
 class EditorClient;
 class FocusController;
@@ -88,7 +87,6 @@ public:
         Member<ChromeClient> chromeClient;
         ContextMenuClient* contextMenuClient;
         EditorClient* editorClient;
-        DragClient* dragClient;
         SpellCheckerClient* spellCheckerClient;
     };
 

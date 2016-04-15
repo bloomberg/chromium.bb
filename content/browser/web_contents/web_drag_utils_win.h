@@ -5,7 +5,7 @@
 #ifndef CONTENT_BROWSER_WEB_CONTENTS_WEB_DRAG_UTILS_WIN_H_
 #define CONTENT_BROWSER_WEB_CONTENTS_WEB_DRAG_UTILS_WIN_H_
 
-#include "third_party/WebKit/public/web/WebDragOperation.h"
+#include "third_party/WebKit/public/platform/WebDragOperation.h"
 
 #include <windows.h>
 
