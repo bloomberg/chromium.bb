@@ -690,8 +690,11 @@ ScriptPromise HTMLImageElement::createImageBitmap(ScriptState* scriptState, Even
         return ScriptPromise();
     }
     if (cachedImage()->getImage()->isSVGImage()) {
-        exceptionState.throwDOMException(InvalidStateError, "The image element contains an SVG image, which is unsupported.");
-        return ScriptPromise();
+        SVGImage* image = toSVGImage(cachedImage()->getImage());
+        if (!image->hasIntrinsicDimensions()) {
+            exceptionState.throwDOMException(InvalidStateError, "The image element contains an SVG image without intrinsic dimensions.");
+            return ScriptPromise();
+        }
     }
     if (!sw || !sh) {
         exceptionState.throwDOMException(IndexSizeError, String::format("The source %s provided is 0.", sw ? "height" : "width"));

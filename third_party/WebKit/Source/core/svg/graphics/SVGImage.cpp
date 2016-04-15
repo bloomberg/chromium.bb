@@ -168,6 +168,11 @@ static float resolveHeightForRatio(float width, const FloatSize& intrinsicRatio)
     return width * intrinsicRatio.height() / intrinsicRatio.width();
 }
 
+bool SVGImage::hasIntrinsicDimensions() const
+{
+    return !concreteObjectSize(FloatSize()).isEmpty();
+}
+
 FloatSize SVGImage::concreteObjectSize(const FloatSize& defaultObjectSize) const
 {
     SVGSVGElement* svg = svgRootElement(m_page.get());

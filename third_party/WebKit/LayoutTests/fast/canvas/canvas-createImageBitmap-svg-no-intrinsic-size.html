@@ -1,0 +1,26 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+<head>
+<script src="../../resources/js-test.js"></script>
+</head>
+<body>
+<script>
+
+description("Test createImageBitmap from a SVG image without intrinsic size.");
+window.jsTestIsAsync = true;
+
+var image = new Image();
+image.onload = function() {
+    createImageBitmap(image).then(function(imageBitmap) {
+        testFailed("createImageBitmap promise resolved, expected to be rejected");
+        finishJSTest();
+    }, function (e) {
+        testPassed("createImageBitmap promise rejected: " + e);
+        finishJSTest();
+    });
+}
+image.src = '../../svg/hixie/intrinsic/resources/003.svg';
+
+</script>
+</body>
+</html>

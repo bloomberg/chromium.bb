@@ -1,0 +1,10 @@
+Test createImageBitmap from a SVG image without intrinsic size.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS createImageBitmap promise rejected: InvalidStateError: Failed to execute 'createImageBitmap' on 'Window': The image element contains an SVG image without intrinsic dimensions.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

@@ -1,0 +1,48 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+<head>
+<script src="../../resources/js-test.js"></script>
+</head>
+<body>
+<script>
+
+description("Test createImageBitmap from a SVG image.");
+window.jsTestIsAsync = true;
+
+function shouldBeBlue(x, y) {
+    d = ctx.getImageData(x, y, 1, 1).data;
+    shouldBeEqualToNumber("d[0]", 0);
+    shouldBeEqualToNumber("d[1]", 0);
+    shouldBeEqualToNumber("d[2]", 255);
+    shouldBeEqualToNumber("d[3]", 255);
+}
+
+var canvas = document.createElement("canvas");
+canvas.setAttribute("width", "200");
+canvas.setAttribute("height", "200");
+var ctx = canvas.getContext("2d");
+var bitmap;
+
+var image = new Image();
+image.onload = function() {
+    createImageBitmap(image).then(function(imageBitmap) {
+        bitmap = imageBitmap;
+        shouldBe("bitmap.width", "200");
+        shouldBe("bitmap.height", "200");
+        ctx.clearRect(0, 0, 200, 200);
+        ctx.drawImage(imageBitmap, 0, 0);
+        shouldBeBlue(0, 0);
+        shouldBeBlue(0, 199);
+        shouldBeBlue(199, 0);
+        shouldBeBlue(199, 199);
+        finishJSTest();
+    }, function (e) {
+        testFailed("createImageBitmap promise rejected: " + e);
+        finishJSTest();
+    });
+}
+image.src = '../../svg/as-image/resources/200x200-blue-rect.svg';
+
+</script>
+</body>
+</html>

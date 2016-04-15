@@ -86,6 +86,8 @@ public:
     String debugName() const final { return "SVGImage"; }
     LayoutRect visualRect() const override;
 
+    bool hasIntrinsicDimensions() const;
+
 private:
     friend class AXLayoutObject;
     friend class SVGImageChromeClient;
