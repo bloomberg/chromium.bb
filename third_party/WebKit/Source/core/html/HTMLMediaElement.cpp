@@ -79,11 +79,13 @@
 #include "platform/audio/AudioBus.h"
 #include "platform/audio/AudioSourceProviderClient.h"
 #include "platform/graphics/GraphicsLayer.h"
+#include "platform/mediastream/MediaStreamDescriptor.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebAudioSourceProvider.h"
 #include "public/platform/WebContentDecryptionModule.h"
 #include "public/platform/WebInbandTextTrack.h"
+#include "public/platform/WebMediaPlayerSource.h"
 #include "public/platform/WebMediaStream.h"
 #include "public/platform/modules/remoteplayback/WebRemotePlaybackClient.h"
 #include "public/platform/modules/remoteplayback/WebRemotePlaybackState.h"
@@ -560,7 +562,7 @@ Node::InsertionNotificationRequest HTMLMediaElement::insertedInto(ContainerNode*
     HTMLElement::insertedInto(insertionPoint);
     if (insertionPoint->inShadowIncludingDocument()) {
         UseCounter::count(document(), UseCounter::HTMLMediaElementInDocument);
-        if ((!getAttribute(srcAttr).isEmpty() || m_srcObject.isMediaProviderObject()) && m_networkState == NETWORK_EMPTY) {
+        if ((!getAttribute(srcAttr).isEmpty() || m_srcObject) && m_networkState == NETWORK_EMPTY) {
             m_ignorePreloadNone = false;
             invokeLoadAlgorithm();
         }
@@ -655,14 +657,8 @@ void HTMLMediaElement::setSrc(const AtomicString& url)
     setAttribute(srcAttr, url);
 }
 
-void HTMLMediaElement::setSrcObject(const WebMediaPlayerSource& srcObject)
+void HTMLMediaElement::setSrcObject(MediaStreamDescriptor* srcObject)
 {
-    // srcObject can be a media-provider object or null.
-    ASSERT(!srcObject.isURL());
-
-    // The srcObject IDL attribute, on setting, must set the element's assigned
-    // media provider object to the new value, and then invoke the element's
-    // media element load algorithm.
     m_srcObject = srcObject;
     invokeLoadAlgorithm();
 }
@@ -850,7 +846,7 @@ void HTMLMediaElement::selectMediaResource()
 
     // 6 - If the media element has an assigned media provider object, then let
     //     mode be object.
-    if (m_srcObject.isMediaProviderObject()) {
+    if (m_srcObject) {
         mode = Object;
     } else if (fastHasAttribute(srcAttr)) {
         // Otherwise, if the media element has no assigned media provider object
@@ -905,13 +901,13 @@ void HTMLMediaElement::selectMediaResource()
 
 void HTMLMediaElement::loadSourceFromObject()
 {
-    ASSERT(m_srcObject.isMediaProviderObject());
+    ASSERT(m_srcObject);
     m_loadState = LoadingFromSrcObject;
 
     // No type is available when the resource comes from the 'srcObject'
     // attribute.
     ContentType contentType((String()));
-    loadResource(m_srcObject, contentType);
+    loadResource(WebMediaPlayerSource(WebMediaStream(m_srcObject)), contentType);
 }
 
 void HTMLMediaElement::loadSourceFromAttribute()
@@ -999,8 +995,7 @@ void HTMLMediaElement::loadResource(const WebMediaPlayerSource& source, ContentT
 
     bool attemptLoad = true;
 
-    bool isObjectOrBlobURL = source.isMediaProviderObject() || url.protocolIs(mediaSourceBlobProtocol);
-    if (isObjectOrBlobURL) {
+    if (source.isMediaStream() || url.protocolIs(mediaSourceBlobProtocol)) {
         bool isMediaStream = source.isMediaStream() || (source.isURL() && isMediaStreamURL(url.getString()));
         if (isMediaStream) {
             m_autoplayHelper->removeUserGestureRequirement(GesturelessPlaybackEnabledByStream);
@@ -1018,7 +1013,7 @@ void HTMLMediaElement::loadResource(const WebMediaPlayerSource& source, ContentT
         }
     }
 
-    bool canLoadResource = source.isMediaProviderObject() || canLoadURL(url, contentType);
+    bool canLoadResource = source.isMediaStream() || canLoadURL(url, contentType);
     if (attemptLoad && canLoadResource) {
         ASSERT(!webMediaPlayer());
 
@@ -1045,8 +1040,8 @@ void HTMLMediaElement::startPlayerLoad()
     ASSERT(!m_webMediaPlayer);
 
     WebMediaPlayerSource source;
-    if (m_srcObject.isMediaProviderObject()) {
-        source = m_srcObject;
+    if (m_srcObject) {
+        source = WebMediaPlayerSource(WebMediaStream(m_srcObject));
     } else {
         // Filter out user:pass as those two URL components aren't
         // considered for media resource fetches (including for the CORS
@@ -1188,7 +1183,7 @@ WebMediaPlayer::LoadType HTMLMediaElement::loadType() const
     if (m_mediaSource)
         return WebMediaPlayer::LoadTypeMediaSource;
 
-    if (m_srcObject.isMediaStream() || isMediaStreamURL(m_currentSrc.getString()))
+    if (m_srcObject || isMediaStreamURL(m_currentSrc.getString()))
         return WebMediaPlayer::LoadTypeMediaStream;
 
     return WebMediaPlayer::LoadTypeURL;
@@ -3618,6 +3613,7 @@ DEFINE_TRACE(HTMLMediaElement)
     visitor->trace(m_audioSourceProvider);
     visitor->trace(m_autoplayHelperClient);
     visitor->trace(m_autoplayHelper);
+    visitor->trace(m_srcObject);
     visitor->template registerWeakMembers<HTMLMediaElement, &HTMLMediaElement::clearWeakMembers>(this);
     Supplementable<HTMLMediaElement>::trace(visitor);
     HTMLElement::trace(visitor);

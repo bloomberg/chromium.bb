@@ -39,7 +39,6 @@
 #include "platform/audio/AudioSourceProvider.h"
 #include "public/platform/WebAudioSourceProviderClient.h"
 #include "public/platform/WebMediaPlayerClient.h"
-#include "public/platform/WebMediaPlayerSource.h"
 #include "public/platform/WebMimeRegistry.h"
 
 namespace blink {
@@ -55,6 +54,7 @@ class HTMLTrackElement;
 class KURL;
 class MediaControls;
 class MediaError;
+class MediaStreamDescriptor;
 class HTMLMediaSource;
 class ScriptState;
 class TextTrackContainer;
@@ -111,8 +111,8 @@ public:
     // network state
     void setSrc(const AtomicString&);
     const KURL& currentSrc() const { return m_currentSrc; }
-    void setSrcObject(const WebMediaPlayerSource&);
-    const WebMediaPlayerSource& getSrcObject() const { return m_srcObject; }
+    void setSrcObject(MediaStreamDescriptor*);
+    MediaStreamDescriptor* getSrcObject() const { return m_srcObject.get(); }
 
     enum NetworkState { NETWORK_EMPTY, NETWORK_IDLE, NETWORK_LOADING, NETWORK_NO_SOURCE };
     NetworkState getNetworkState() const;
@@ -482,7 +482,7 @@ private:
     ReadyState m_readyState;
     ReadyState m_readyStateMaximum;
     KURL m_currentSrc;
-    WebMediaPlayerSource m_srcObject;
+    Member<MediaStreamDescriptor> m_srcObject;
 
     Member<MediaError> m_error;
 

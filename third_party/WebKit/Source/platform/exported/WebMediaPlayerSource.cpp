@@ -35,11 +35,6 @@ WebURL WebMediaPlayerSource::getAsURL() const
     return m_url;
 }
 
-bool WebMediaPlayerSource::isMediaProviderObject() const
-{
-    return isMediaStream();
-}
-
 bool WebMediaPlayerSource::isMediaStream() const
 {
     return !m_mediaStream.isNull();

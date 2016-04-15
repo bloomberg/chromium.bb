@@ -7,17 +7,14 @@
 #include "core/html/HTMLMediaElement.h"
 #include "modules/mediastream/MediaStream.h"
 #include "platform/mediastream/MediaStreamDescriptor.h"
-#include "public/platform/WebMediaPlayerSource.h"
-#include "public/platform/WebMediaStream.h"
 
 namespace blink {
 
 // static
 MediaStream* HTMLMediaElementSrcObject::srcObject(HTMLMediaElement& element)
 {
-    const WebMediaPlayerSource& source = element.getSrcObject();
-    if (source.isMediaStream()) {
-        MediaStreamDescriptor* descriptor = source.getAsMediaStream();
+    MediaStreamDescriptor* descriptor = element.getSrcObject();
+    if (descriptor) {
         MediaStream* stream = toMediaStream(descriptor);
         return stream;
     }
@@ -29,12 +26,10 @@ MediaStream* HTMLMediaElementSrcObject::srcObject(HTMLMediaElement& element)
 void HTMLMediaElementSrcObject::setSrcObject(HTMLMediaElement& element, MediaStream* mediaStream)
 {
     if (!mediaStream) {
-        element.setSrcObject(WebMediaPlayerSource());
+        element.setSrcObject(nullptr);
         return;
     }
-    WebMediaStream webStream = WebMediaStream(mediaStream->descriptor());
-    WebMediaPlayerSource source(webStream);
-    element.setSrcObject(source);
+    element.setSrcObject(mediaStream->descriptor());
 }
 
 } // namespace blink

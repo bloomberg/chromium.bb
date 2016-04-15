@@ -21,8 +21,6 @@ public:
     bool isURL() const;
     WebURL getAsURL() const;
 
-    bool isMediaProviderObject() const;
-
     bool isMediaStream() const;
     WebMediaStream getAsMediaStream() const;
 
