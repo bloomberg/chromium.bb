@@ -68,11 +68,15 @@ public class PopupTouchHandleDrawable extends View {
     private static final int FADE_IN_DURATION_MS = 200;
     private Runnable mDeferredHandleFadeInRunnable;
     private long mFadeStartTime;
+    private Runnable mTemporarilyHiddenExpiredRunnable;
     private long mTemporarilyHiddenExpireTime;
     private boolean mVisible;
     private boolean mScrolling;
     private boolean mFocused;
     private boolean mTemporarilyHidden;
+    private boolean mAttachedToWindow;
+    // This should be set only from onVisibilityInputChanged.
+    private boolean mWasShowingAllowed;
 
     // Gesture accounting for handle hiding while scrolling.
     private final GestureStateListener mGestureStateListener;
@@ -263,11 +267,11 @@ public class PopupTouchHandleDrawable extends View {
     }
 
     private boolean isShowingAllowed() {
-        return mVisible && mFocused && !mScrolling;
+        return mAttachedToWindow && mVisible && mFocused && !mScrolling && !mTemporarilyHidden;
     }
 
     private void updateVisibility() {
-        int newVisibility = isShowingAllowed() && !mTemporarilyHidden ? VISIBLE : INVISIBLE;
+        int newVisibility = isShowingAllowed() ? VISIBLE : INVISIBLE;
 
         // When regaining visibility, delay the visibility update by one frame
         // to ensure the PopupWindow has first been positioned properly.
@@ -295,12 +299,46 @@ public class PopupTouchHandleDrawable extends View {
         onVisibilityInputChanged();
     }
 
+    private void setTemporarilyHidden(boolean hidden) {
+        if (mTemporarilyHidden == hidden) return;
+
+        mTemporarilyHidden = hidden;
+        if (mTemporarilyHidden) {
+            if (mTemporarilyHiddenExpiredRunnable == null) {
+                mTemporarilyHiddenExpiredRunnable = new Runnable() {
+                    @Override
+                    public void run() {
+                        setTemporarilyHidden(false);
+                    }
+                };
+            }
+            removeCallbacks(mTemporarilyHiddenExpiredRunnable);
+            long now = SystemClock.uptimeMillis();
+            long delay = Math.max(0, mTemporarilyHiddenExpireTime - now);
+            postDelayed(mTemporarilyHiddenExpiredRunnable, delay);
+        } else if (mTemporarilyHiddenExpiredRunnable != null) {
+            removeCallbacks(mTemporarilyHiddenExpiredRunnable);
+        }
+        onVisibilityInputChanged();
+    }
+
     private void onVisibilityInputChanged() {
         if (!mContainer.isShowing()) return;
-        if (isShowingAllowed()) {
-            rescheduleFadeIn();
+        boolean allowed = isShowingAllowed();
+        if (mWasShowingAllowed == allowed) return;
+        mWasShowingAllowed = allowed;
+        cancelFadeIn();
+        if (allowed) {
+            if (mDeferredHandleFadeInRunnable == null) {
+                mDeferredHandleFadeInRunnable = new Runnable() {
+                    @Override
+                    public void run() {
+                        beginFadeIn();
+                    }
+                };
+            }
+            postOnAnimation(mDeferredHandleFadeInRunnable);
         } else {
-            cancelFadeIn();
             updateVisibility();
         }
     }
@@ -315,10 +353,8 @@ public class PopupTouchHandleDrawable extends View {
 
     private void temporarilyHide() {
         if (!mContainer.isShowing()) return;
-        mTemporarilyHidden = true;
         mTemporarilyHiddenExpireTime = SystemClock.uptimeMillis() + MOVING_FADE_IN_DELAY_MS;
-        updateVisibility();
-        rescheduleFadeIn();
+        setTemporarilyHidden(true);
     }
 
     private void doInvalidate() {
@@ -342,26 +378,6 @@ public class PopupTouchHandleDrawable extends View {
         if (mHasPendingInvalidate) return;
         mHasPendingInvalidate = true;
         postOnAnimation(mInvalidationRunnable);
-    }
-
-    private void rescheduleFadeIn() {
-        if (!isShowingAllowed()) return;
-        if (mDeferredHandleFadeInRunnable == null) {
-            mDeferredHandleFadeInRunnable = new Runnable() {
-                @Override
-                public void run() {
-                    assert isShowingAllowed();
-                    mTemporarilyHidden = false;
-                    mTemporarilyHiddenExpireTime = 0;
-                    beginFadeIn();
-                }
-            };
-        }
-
-        cancelFadeIn();
-        long now = SystemClock.uptimeMillis();
-        long delay = Math.max(0, mTemporarilyHiddenExpireTime - now);
-        postOnAnimationDelayed(mDeferredHandleFadeInRunnable, delay);
     }
 
     private void cancelFadeIn() {
@@ -402,9 +418,17 @@ public class PopupTouchHandleDrawable extends View {
     }
 
     @Override
+    protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        mAttachedToWindow = true;
+        onVisibilityInputChanged();
+    }
+
+    @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
-        hide();
+        mAttachedToWindow = false;
+        onVisibilityInputChanged();
     }
 
     @CalledByNative
@@ -437,10 +461,9 @@ public class PopupTouchHandleDrawable extends View {
 
     @CalledByNative
     private void hide() {
-        mTemporarilyHidden = false;
         mTemporarilyHiddenExpireTime = 0;
+        setTemporarilyHidden(false);
         mAlpha = 1.0f;
-        cancelFadeIn();
         if (mContainer.isShowing()) mContainer.dismiss();
         mParentPositionObserver.clearListener();
     }
