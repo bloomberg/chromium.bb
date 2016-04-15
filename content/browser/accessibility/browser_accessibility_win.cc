@@ -3583,13 +3583,17 @@ void BrowserAccessibilityWin::UpdateStep3FireEvents(bool is_subtree_creation) {
     BrowserAccessibilityWin* parent = ToBrowserAccessibilityWin(GetParent());
     if (parent && IsTextOnlyObject() &&
         name() != old_win_attributes_->name) {
-      parent->UpdateStep1ComputeWinAttributes();
-      parent->UpdateStep2ComputeHypertext();
-      parent->UpdateStep3FireEvents(false);
+      parent->UpdatePlatformAttributes();
     }
   }
 
   old_win_attributes_.reset(nullptr);
+}
+
+void BrowserAccessibilityWin::UpdatePlatformAttributes() {
+  UpdateStep1ComputeWinAttributes();
+  UpdateStep2ComputeHypertext();
+  UpdateStep3FireEvents(false);
 }
 
 void BrowserAccessibilityWin::OnSubtreeWillBeDeleted() {

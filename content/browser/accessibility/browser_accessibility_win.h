@@ -103,7 +103,11 @@ BrowserAccessibilityWin
   CONTENT_EXPORT void UpdateStep1ComputeWinAttributes();
   CONTENT_EXPORT void UpdateStep2ComputeHypertext();
   CONTENT_EXPORT void UpdateStep3FireEvents(bool is_subtree_creation);
-  CONTENT_EXPORT void UpdateStep4DeleteOldWinAttributes();
+
+  // This is used to call UpdateStep1ComputeWinAttributes, ... above when
+  // a node needs to be updated for some other reason other than via
+  // OnAtomicUpdateFinished.
+  CONTENT_EXPORT void UpdatePlatformAttributes() override;
 
   //
   // BrowserAccessibility methods.

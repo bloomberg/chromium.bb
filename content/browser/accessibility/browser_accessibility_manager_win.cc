@@ -115,7 +115,7 @@ void BrowserAccessibilityManagerWin::MaybeCallNotifyWinEvent(
 
   // It doesn't make sense to fire a REORDER event on a leaf node; that
   // happens when the node has internal children line inline text boxes.
-  if (event == EVENT_OBJECT_REORDER && node->PlatformIsLeaf())
+  if (event == EVENT_OBJECT_REORDER && node->PlatformChildCount() == 0)
     return;
 
   // Pass the negation of this node's unique id in the |child_id|
@@ -290,12 +290,6 @@ void BrowserAccessibilityManagerWin::OnAtomicUpdateFinished(
     const std::vector<ui::AXTreeDelegate::Change>& changes) {
   BrowserAccessibilityManager::OnAtomicUpdateFinished(
       tree, root_changed, changes);
-
-  if (root_changed) {
-    // In order to make screen readers aware of the new accessibility root,
-    // we need to fire a focus event on it.
-    OnWindowFocused();
-  }
 
   // Do a sequence of Windows-specific updates on each node. Each one is
   // done in a single pass that must complete before the next step starts.

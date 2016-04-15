@@ -91,6 +91,11 @@ class CONTENT_EXPORT BrowserAccessibility {
   // Called when the location changed.
   virtual void OnLocationChanged() {}
 
+  // This is called when the platform-specific attributes for a node need
+  // to be recomputed, which may involve firing native events, due to a
+  // change other than an update from OnAccessibilityEvents.
+  virtual void UpdatePlatformAttributes() {}
+
   // Return true if this object is equal to or a descendant of |ancestor|.
   bool IsDescendantOf(const BrowserAccessibility* ancestor) const;
 

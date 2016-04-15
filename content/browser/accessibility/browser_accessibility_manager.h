@@ -426,6 +426,11 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
   BrowserAccessibility* last_focused_node_;
   BrowserAccessibilityManager* last_focused_manager_;
 
+  // True if the root's parent is in another accessibility tree and that
+  // parent's child is the root. Ensures that the parent node is notified
+  // once when this subtree is first connected.
+  bool connected_to_parent_tree_node_;
+
   // The global ID of this accessibility tree.
   AXTreeIDRegistry::AXTreeID ax_tree_id_;
 
