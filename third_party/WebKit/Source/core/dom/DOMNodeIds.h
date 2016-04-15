@@ -12,13 +12,6 @@
 
 namespace blink {
 
-#if !ENABLE(OILPAN)
-template<> struct WeakIdentifierMapTraits<Node> {
-    static void removedFromIdentifierMap(Node*);
-    static void addedToIdentifierMap(Node*);
-};
-#endif
-
 DECLARE_WEAK_IDENTIFIER_MAP(Node);
 
 class CORE_EXPORT DOMNodeIds {

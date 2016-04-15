@@ -141,18 +141,6 @@ static AtomicString convertPropertyNameToAttributeName(const String& name)
     return builder.toAtomicString();
 }
 
-#if !ENABLE(OILPAN)
-void DatasetDOMStringMap::ref()
-{
-    m_element->ref();
-}
-
-void DatasetDOMStringMap::deref()
-{
-    m_element->deref();
-}
-#endif
-
 void DatasetDOMStringMap::getNames(Vector<String>& names)
 {
     AttributeCollection attributes = m_element->attributes();

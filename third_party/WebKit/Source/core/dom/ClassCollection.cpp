@@ -43,9 +43,6 @@ ClassCollection::ClassCollection(ContainerNode& rootNode, const AtomicString& cl
 
 ClassCollection::~ClassCollection()
 {
-#if !ENABLE(OILPAN)
-    ownerNode().nodeLists()->removeCache(this, ClassCollectionType, m_originalClassNames);
-#endif
 }
 
 } // namespace blink

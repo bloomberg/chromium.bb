@@ -53,11 +53,6 @@ ActiveDOMObject::~ActiveDOMObject()
 #if DCHECK_IS_ON()
     DCHECK(m_suspendIfNeededCalled);
 #endif
-
-    // Oilpan: not valid to access getExecutionContext() in the destructor.
-#if !ENABLE(OILPAN)
-    DCHECK(!getExecutionContext() || getExecutionContext()->isContextThread());
-#endif
 }
 
 void ActiveDOMObject::suspendIfNeeded()

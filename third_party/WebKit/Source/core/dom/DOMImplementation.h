@@ -46,10 +46,6 @@ public:
         return new DOMImplementation(document);
     }
 
-#if !ENABLE(OILPAN)
-    void ref() { m_document->ref(); }
-    void deref() { m_document->deref(); }
-#endif
     Document& document() const { return *m_document; }
 
     // DOM methods & attributes for DOMImplementation

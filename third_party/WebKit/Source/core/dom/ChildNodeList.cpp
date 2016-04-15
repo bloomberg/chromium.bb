@@ -40,9 +40,6 @@ Node* ChildNodeList::virtualOwnerNode() const
 
 ChildNodeList::~ChildNodeList()
 {
-#if !ENABLE(OILPAN)
-    m_parent->nodeLists()->removeChildNodeList(this);
-#endif
 }
 
 Node* ChildNodeList::traverseForwardToOffset(unsigned offset, Node& currentNode, unsigned& currentOffset) const

@@ -41,11 +41,6 @@ public:
         return new DatasetDOMStringMap(element);
     }
 
-#if !ENABLE(OILPAN)
-    void ref() override;
-    void deref() override;
-#endif
-
     void getNames(Vector<String>&) override;
     String item(const String& name) override;
     bool contains(const String& name) override;

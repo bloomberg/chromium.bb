@@ -10,18 +10,6 @@ namespace blink {
 
 DEFINE_WEAK_IDENTIFIER_MAP(Node);
 
-#if !ENABLE(OILPAN)
-void WeakIdentifierMapTraits<Node>::removedFromIdentifierMap(Node* node)
-{
-    node->clearFlag(Node::HasWeakReferencesFlag);
-}
-
-void WeakIdentifierMapTraits<Node>::addedToIdentifierMap(Node* node)
-{
-    node->setFlag(Node::HasWeakReferencesFlag);
-}
-#endif
-
 // static
 int DOMNodeIds::idForNode(Node* node)
 {
