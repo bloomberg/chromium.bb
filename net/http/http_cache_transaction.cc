@@ -2706,8 +2706,8 @@ void HttpCache::Transaction::RecordHistograms() {
   }
 
   std::string mime_type;
-  if (GetResponseInfo()->headers &&
-      GetResponseInfo()->headers->GetMimeType(&mime_type)) {
+  HttpResponseHeaders* response_headers = GetResponseInfo()->headers.get();
+  if (response_headers && response_headers->GetMimeType(&mime_type)) {
     // Record the cache pattern by resource type. The type is inferred by
     // response header mime type, which could be incorrect, so this is just an
     // estimate.
@@ -2723,6 +2723,14 @@ void HttpCache::Transaction::RecordHistograms() {
                                 transaction_pattern_, PATTERN_MAX);
     } else if (base::StartsWith(mime_type, "image/",
                                 base::CompareCase::SENSITIVE)) {
+      int64_t content_length = response_headers->GetContentLength();
+      if (content_length >= 0 && content_length < 100) {
+        UMA_HISTOGRAM_ENUMERATION(std::string("HttpCache.Pattern.TinyImage"),
+                                  transaction_pattern_, PATTERN_MAX);
+      } else if (content_length >= 100) {
+        UMA_HISTOGRAM_ENUMERATION(std::string("HttpCache.Pattern.NonTinyImage"),
+                                  transaction_pattern_, PATTERN_MAX);
+      }
       UMA_HISTOGRAM_ENUMERATION(std::string("HttpCache.Pattern.Image"),
                                 transaction_pattern_, PATTERN_MAX);
     } else if (base::EndsWith(mime_type, "javascript",
