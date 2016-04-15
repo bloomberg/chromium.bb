@@ -1746,6 +1746,21 @@ LRESULT HWNDMessageHandler::OnNCHitTest(const gfx::Point& point) {
     return 0;
   }
 
+  // Some views may overlap the non client area of the window.
+  // This means that we should look for these views before handing the
+  // hittest message off to DWM or DefWindowProc.
+  // If the hittest returned from the search for a view returns HTCLIENT
+  // then it means that we have a view overlapping the non client area.
+  // In all other cases we can fallback to the system default handling.
+
+  // Allow the NonClientView to handle the hittest to see if we have a view
+  // overlapping the non client area of the window.
+  POINT temp = { point.x(), point.y() };
+  MapWindowPoints(HWND_DESKTOP, hwnd(), &temp, 1);
+  int component = delegate_->GetNonClientComponent(gfx::Point(temp));
+  if (component == HTCLIENT)
+    return component;
+
   // If the DWM is rendering the window controls, we need to give the DWM's
   // default window procedure first chance to handle hit testing.
   if (HasSystemFrame()) {
@@ -1756,11 +1771,7 @@ LRESULT HWNDMessageHandler::OnNCHitTest(const gfx::Point& point) {
     }
   }
 
-  // First, give the NonClientView a chance to test the point to see if it
-  // provides any of the non-client area.
-  POINT temp = { point.x(), point.y() };
-  MapWindowPoints(HWND_DESKTOP, hwnd(), &temp, 1);
-  int component = delegate_->GetNonClientComponent(gfx::Point(temp));
+  // If the point is specified as custom or system nonclient item, return it.
   if (component != HTNOWHERE)
     return component;
 

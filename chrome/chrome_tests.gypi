@@ -660,6 +660,7 @@
     'chrome_browser_tests_views_sources': [
       'browser/ui/global_error/global_error_service_browsertest.cc',
       'browser/ui/views/extensions/extension_uninstall_dialog_view_browsertest.cc',
+      'browser/ui/views/frame/browser_non_client_frame_view_browsertest_win.cc',
       'browser/ui/views/frame/browser_window_property_manager_browsertest_win.cc',
       'browser/ui/views/select_file_dialog_extension_browsertest.cc',
     ],
