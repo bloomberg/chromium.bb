@@ -60,24 +60,6 @@ public:
         return list;
     }
 
-#if !ENABLE(OILPAN)
-    void removeChildNodeList(ChildNodeList* list)
-    {
-        DCHECK_EQ(m_childNodeList, list);
-        if (deleteThisAndUpdateNodeRareDataIfAboutToRemoveLastList(list->ownerNode()))
-            return;
-        m_childNodeList = nullptr;
-    }
-
-    void removeEmptyChildNodeList(EmptyNodeList* list)
-    {
-        DCHECK_EQ(m_childNodeList, list);
-        if (deleteThisAndUpdateNodeRareDataIfAboutToRemoveLastList(list->ownerNode()))
-            return;
-        m_childNodeList = nullptr;
-    }
-#endif
-
     struct NodeListAtomicCacheMapEntryHash {
         STATIC_ONLY(NodeListAtomicCacheMapEntryHash);
         static unsigned hash(const std::pair<unsigned char, StringImpl*>& entry)
@@ -89,9 +71,7 @@ public:
     };
 
     // Oilpan: keep a weak reference to the collection objects.
-    // Explicit object unregistration in a non-Oilpan setting
-    // on object destruction is replaced by the garbage collector
-    // clearing out their weak reference.
+    // Object unregistration is handled by GC's weak processing.
     typedef HeapHashMap<std::pair<unsigned char, StringImpl*>, WeakMember<LiveNodeListBase>, NodeListAtomicCacheMapEntryHash> NodeListAtomicNameCacheMap;
     typedef HeapHashMap<QualifiedName, WeakMember<TagCollection>> TagCollectionCacheNS;
 
@@ -100,11 +80,7 @@ public:
     {
         NodeListAtomicNameCacheMap::AddResult result = m_atomicNameCaches.add(namedNodeListKey(collectionType, name), nullptr);
         if (!result.isNewEntry) {
-#if ENABLE(OILPAN)
             return static_cast<T*>(result.storedValue->value.get());
-#else
-            return static_cast<T*>(result.storedValue->value);
-#endif
         }
 
         T* list = T::create(node, collectionType, name);
@@ -117,11 +93,7 @@ public:
     {
         NodeListAtomicNameCacheMap::AddResult result = m_atomicNameCaches.add(namedNodeListKey(collectionType, starAtom), nullptr);
         if (!result.isNewEntry) {
-#if ENABLE(OILPAN)
             return static_cast<T*>(result.storedValue->value.get());
-#else
-            return static_cast<T*>(result.storedValue->value);
-#endif
         }
 
         T* list = T::create(node, collectionType);
@@ -146,25 +118,6 @@ public:
         result.storedValue->value = list;
         return list;
     }
-
-#if !ENABLE(OILPAN)
-    void removeCache(LiveNodeListBase* list, CollectionType collectionType, const AtomicString& name = starAtom)
-    {
-        DCHECK_EQ(list, m_atomicNameCaches.get(namedNodeListKey(collectionType, name)));
-        if (deleteThisAndUpdateNodeRareDataIfAboutToRemoveLastList(list->ownerNode()))
-            return;
-        m_atomicNameCaches.remove(namedNodeListKey(collectionType, name));
-    }
-
-    void removeCache(LiveNodeListBase* list, const AtomicString& namespaceURI, const AtomicString& localName)
-    {
-        QualifiedName name(nullAtom, localName, namespaceURI);
-        DCHECK_EQ(list, m_tagCollectionCacheNS.get(name));
-        if (deleteThisAndUpdateNodeRareDataIfAboutToRemoveLastList(list->ownerNode()))
-            return;
-        m_tagCollectionCacheNS.remove(name);
-    }
-#endif
 
     static NodeListsNodeData* create()
     {
@@ -215,26 +168,11 @@ private:
         return std::pair<unsigned char, StringImpl*>(type, name.impl());
     }
 
-#if !ENABLE(OILPAN)
-    bool deleteThisAndUpdateNodeRareDataIfAboutToRemoveLastList(Node&);
-#endif
-
     // Can be a ChildNodeList or an EmptyNodeList.
     WeakMember<NodeList> m_childNodeList;
     NodeListAtomicNameCacheMap m_atomicNameCaches;
     TagCollectionCacheNS m_tagCollectionCacheNS;
 };
-
-#if !ENABLE(OILPAN)
-inline bool NodeListsNodeData::deleteThisAndUpdateNodeRareDataIfAboutToRemoveLastList(Node& ownerNode)
-{
-    DCHECK_EQ(ownerNode.nodeLists(), this);
-    if ((m_childNodeList ? 1 : 0) + m_atomicNameCaches.size() + m_tagCollectionCacheNS.size() != 1)
-        return false;
-    ownerNode.clearNodeLists();
-    return true;
-}
-#endif
 
 template <typename Collection>
 inline Collection* ContainerNode::ensureCachedCollection(CollectionType type)

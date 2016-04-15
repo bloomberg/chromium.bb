@@ -79,7 +79,6 @@ ElementData::ElementData(const ElementData& other, bool isUnique)
     // NOTE: The inline style is copied by the subclass copy constructor since we don't know what to do with it here.
 }
 
-#if ENABLE(OILPAN)
 void ElementData::finalizeGarbageCollectedObject()
 {
     if (m_isUnique)
@@ -87,15 +86,6 @@ void ElementData::finalizeGarbageCollectedObject()
     else
         toShareableElementData(this)->~ShareableElementData();
 }
-#else
-void ElementData::destroy()
-{
-    if (m_isUnique)
-        delete toUniqueElementData(this);
-    else
-        delete toShareableElementData(this);
-}
-#endif
 
 UniqueElementData* ElementData::makeUniqueCopy() const
 {

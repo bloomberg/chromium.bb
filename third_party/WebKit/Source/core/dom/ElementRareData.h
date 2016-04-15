@@ -187,13 +187,6 @@ inline ElementRareData::ElementRareData(LayoutObject* layoutObject)
 
 inline ElementRareData::~ElementRareData()
 {
-#if !ENABLE(OILPAN)
-    if (m_elementAnimations)
-        m_elementAnimations->dispose();
-    if (m_intersectionObserverData)
-        m_intersectionObserverData->dispose();
-    DCHECK(!m_shadow);
-#endif
     DCHECK(!m_generatedBefore);
     DCHECK(!m_generatedAfter);
     DCHECK(!m_generatedFirstLetter);

@@ -48,15 +48,9 @@ class UniqueElementData;
 // data such as attributes, inline style, and parsed class names and ids.
 class ElementData : public GarbageCollectedFinalized<ElementData> {
 public:
-#if ENABLE(OILPAN)
     // Override GarbageCollectedFinalized's finalizeGarbageCollectedObject to
     // dispatch to the correct subclass destructor.
     void finalizeGarbageCollectedObject();
-#else
-    // Override RefCounted's deref() to ensure operator delete is called on
-    // the appropriate subclass type.
-    void deref();
-#endif
 
     void clearClass() const { m_classNames.clear(); }
     void setClass(const AtomicString& className, bool shouldFoldCase) const { m_classNames.set(shouldFoldCase ? className.lowerASCII() : className , SpaceSplitString::ShouldNotFoldCase); }
@@ -102,10 +96,6 @@ private:
     friend class ShareableElementData;
     friend class UniqueElementData;
     friend class SVGElement;
-
-#if !ENABLE(OILPAN)
-    void destroy();
-#endif
 
     UniqueElementData* makeUniqueCopy() const;
 };
@@ -183,15 +173,6 @@ public:
 };
 
 DEFINE_ELEMENT_DATA_TYPE_CASTS(UniqueElementData, data->isUnique(), data.isUnique());
-
-#if !ENABLE(OILPAN)
-inline void ElementData::deref()
-{
-    if (!derefBase())
-        return;
-    destroy();
-}
-#endif
 
 inline const StylePropertySet* ElementData::presentationAttributeStyle() const
 {
