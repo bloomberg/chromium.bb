@@ -488,6 +488,47 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarRedesignBrowserTest,
             browser_actions_bar()->GetExtensionId(1));
 }
 
+// Test removing an extension that has an popup showing.
+// Regression test for crbug.com/599467.
+IN_PROC_BROWSER_TEST_F(BrowserActionsBarRedesignBrowserTest,
+                       OverflowedBrowserActionPopupTestRemoval) {
+  std::unique_ptr<BrowserActionTestUtil> overflow_bar =
+      browser_actions_bar()->CreateOverflowBar();
+
+  // Install an extension and shrink the visible count to zero so the extension
+  // is overflowed.
+  base::FilePath data_dir =
+      test_data_dir_.AppendASCII("api_test").AppendASCII("browser_action");
+  const extensions::Extension* extension =
+      LoadExtension(data_dir.AppendASCII("open_popup"));
+  ASSERT_TRUE(extension);
+  toolbar_model()->SetVisibleIconCount(0);
+  EXPECT_EQ(0, browser_actions_bar()->VisibleBrowserActions());
+  EXPECT_EQ(1, overflow_bar->VisibleBrowserActions());
+  EXPECT_FALSE(browser_actions_bar()->HasPopup());
+
+  // Click on the overflowed extension, causing it to pop out.
+  overflow_bar->Press(0);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(browser_actions_bar()->HasPopup());
+  EXPECT_EQ(1, browser_actions_bar()->VisibleBrowserActions());
+
+  {
+    content::WindowedNotificationObserver observer(
+        extensions::NOTIFICATION_EXTENSION_HOST_DESTROYED,
+        content::NotificationService::AllSources());
+    // Remove the extension. Nothing should crash.
+    extension_service()->UnloadExtension(
+        extension->id(),
+        extensions::UnloadedExtensionInfo::REASON_UNINSTALL);
+    observer.Wait();
+  }
+
+  EXPECT_EQ(0, browser_actions_bar()->VisibleBrowserActions());
+  EXPECT_EQ(0, overflow_bar->VisibleBrowserActions());
+  EXPECT_EQ(0u, toolbar_model()->toolbar_items().size());
+}
+
 // Test that page action popups work with the toolbar redesign.
 IN_PROC_BROWSER_TEST_F(BrowserActionsBarRedesignBrowserTest,
                        PageActionPopupsTest) {

@@ -609,9 +609,13 @@ void ToolbarActionsBarBridge::ShowToolbarActionBubble(
 - (void)removeViewForAction:(ToolbarActionViewController*)action {
   BrowserActionButton* button = [self buttonForId:action->GetId()];
 
+  // Note: We remove the button from the view and the buttons list first because
+  // destroying it (or calling -onRemoved) can cause redraws, and we don't want
+  // to include it when the view is gone.
   [button removeFromSuperview];
-  [button onRemoved];
   [buttons_ removeObject:button];
+
+  [button onRemoved];
 
   [containerView_ setMaxDesiredWidth:toolbarActionsBar_->GetMaximumWidth()];
 }
