@@ -23,4 +23,6 @@ PageLoadExtraInfo::PageLoadExtraInfo(base::TimeDelta first_background_time,
       time_to_abort(time_to_abort),
       metadata(metadata) {}
 
+PageLoadExtraInfo::PageLoadExtraInfo(const PageLoadExtraInfo& other) = default;
+
 }  // namespace page_load_metrics

@@ -59,6 +59,7 @@ struct PageLoadExtraInfo {
                     UserAbortType abort_type,
                     base::TimeDelta time_to_abort,
                     const PageLoadMetadata& metadata);
+  PageLoadExtraInfo(const PageLoadExtraInfo& other);
 
   // The first time that the page was backgrounded since the navigation started.
   // If the page has not been backgrounded this will be base::TimeDelta().

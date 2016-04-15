@@ -42,6 +42,7 @@ class LeakDetectorImpl {
     // time.
     struct AllocationBreakdown {
       AllocationBreakdown();
+      AllocationBreakdown(const AllocationBreakdown& other);
       ~AllocationBreakdown();
 
       // The contents of |LeakDetectorImpl::size_breakdown_history_| when this

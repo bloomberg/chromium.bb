@@ -68,6 +68,9 @@ size_t IndexToSize(size_t index) {
 LeakDetectorImpl::LeakReport::AllocationBreakdown::AllocationBreakdown()
     : count_for_call_stack(0) {}
 
+LeakDetectorImpl::LeakReport::AllocationBreakdown::AllocationBreakdown(
+    const AllocationBreakdown& other) = default;
+
 LeakDetectorImpl::LeakReport::AllocationBreakdown::~AllocationBreakdown() {}
 
 LeakDetectorImpl::LeakReport::LeakReport() : alloc_size_bytes_(0) {}
