@@ -14,9 +14,10 @@
 
 namespace {
 
-class AppListShowerTestSuite : public base::TestSuite {
+class AppListPresenterTestSuite : public base::TestSuite {
  public:
-  AppListShowerTestSuite(int argc, char** argv) : base::TestSuite(argc, argv) {}
+  AppListPresenterTestSuite(int argc, char** argv)
+      : base::TestSuite(argc, argv) {}
 
  protected:
   void Initialize() override {
@@ -35,15 +36,15 @@ class AppListShowerTestSuite : public base::TestSuite {
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(AppListShowerTestSuite);
+  DISALLOW_COPY_AND_ASSIGN(AppListPresenterTestSuite);
 };
 
 }  // namespace
 
 int main(int argc, char** argv) {
-  AppListShowerTestSuite test_suite(argc, argv);
+  AppListPresenterTestSuite test_suite(argc, argv);
 
-  return base::LaunchUnitTests(
-      argc, argv,
-      base::Bind(&AppListShowerTestSuite::Run, base::Unretained(&test_suite)));
+  return base::LaunchUnitTests(argc, argv,
+                               base::Bind(&AppListPresenterTestSuite::Run,
+                                          base::Unretained(&test_suite)));
 }

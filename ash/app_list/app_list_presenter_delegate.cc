@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/app_list/app_list_shower_delegate.h"
+#include "ash/app_list/app_list_presenter_delegate.h"
 
 #include "ash/app_list/app_list_view_delegate_factory.h"
 #include "ash/ash_switches.h"
@@ -17,7 +17,7 @@
 #include "base/command_line.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_switches.h"
-#include "ui/app_list/shower/app_list_shower.h"
+#include "ui/app_list/presenter/app_list_presenter.h"
 #include "ui/app_list/views/app_list_view.h"
 #include "ui/aura/window.h"
 #include "ui/events/event.h"
@@ -48,8 +48,8 @@ views::BubbleBorder::Arrow GetBubbleArrow(aura::Window* window) {
 
 // Using |button_bounds|, determine the anchor offset so that the bubble gets
 // shown above the shelf (used for the alternate shelf theme).
-gfx::Vector2d GetAnchorPositionOffsetToShelf(
-    const gfx::Rect& button_bounds, views::Widget* widget) {
+gfx::Vector2d GetAnchorPositionOffsetToShelf(const gfx::Rect& button_bounds,
+                                             views::Widget* widget) {
   DCHECK(Shell::HasInstance());
   ShelfAlignment shelf_alignment = Shell::GetInstance()->GetShelfAlignment(
       widget->GetNativeView()->GetRootWindow());
@@ -60,7 +60,8 @@ gfx::Vector2d GetAnchorPositionOffsetToShelf(
         int screen_width = widget->GetWorkAreaBoundsInScreen().width();
         return gfx::Vector2d(
             std::min(screen_width - kMinimalAnchorPositionOffset - anchor.x(),
-                     0), 0);
+                     0),
+            0);
       }
       return gfx::Vector2d(
           std::max(kMinimalAnchorPositionOffset - anchor.x(), 0), 0);
@@ -119,16 +120,16 @@ bool IsFullscreenAppListEnabled() {
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
-// AppListShowerDelegate, public:
+// AppListPresenterDelegate, public:
 
-AppListShowerDelegate::AppListShowerDelegate(
-    app_list::AppListShower* shower,
+AppListPresenterDelegate::AppListPresenterDelegate(
+    app_list::AppListPresenter* presenter,
     AppListViewDelegateFactory* view_delegate_factory)
-    : shower_(shower), view_delegate_factory_(view_delegate_factory) {
+    : presenter_(presenter), view_delegate_factory_(view_delegate_factory) {
   Shell::GetInstance()->AddShellObserver(this);
 }
 
-AppListShowerDelegate::~AppListShowerDelegate() {
+AppListPresenterDelegate::~AppListPresenterDelegate() {
   DCHECK(view_);
   keyboard::KeyboardController* keyboard_controller =
       keyboard::KeyboardController::GetInstance();
@@ -140,13 +141,13 @@ AppListShowerDelegate::~AppListShowerDelegate() {
   Shell::GetInstance()->RemoveShellObserver(this);
 }
 
-app_list::AppListViewDelegate* AppListShowerDelegate::GetViewDelegate() {
+app_list::AppListViewDelegate* AppListPresenterDelegate::GetViewDelegate() {
   return view_delegate_factory_->GetDelegate();
 }
 
-void AppListShowerDelegate::Init(app_list::AppListView* view,
-                                 aura::Window* root_window,
-                                 int current_apps_page) {
+void AppListPresenterDelegate::Init(app_list::AppListView* view,
+                                    aura::Window* root_window,
+                                    int current_apps_page) {
   // App list needs to know the new shelf layout in order to calculate its
   // UI layout when AppListView visibility changes.
   ash::Shell::GetPrimaryRootWindowController()
@@ -169,10 +170,8 @@ void AppListShowerDelegate::Init(app_list::AppListView* view,
   } else if (is_centered_) {
     // Note: We can't center the app list until we have its dimensions, so we
     // init at (0, 0) and then reset its anchor point.
-    view->InitAsBubbleAtFixedLocation(container,
-                                      current_apps_page,
-                                      gfx::Point(),
-                                      views::BubbleBorder::FLOAT,
+    view->InitAsBubbleAtFixedLocation(container, current_apps_page,
+                                      gfx::Point(), views::BubbleBorder::FLOAT,
                                       true /* border_accepts_events */);
     // The experimental app list is centered over the display of the app list
     // button that was pressed (if triggered via keyboard, this is the display
@@ -182,18 +181,15 @@ void AppListShowerDelegate::Init(app_list::AppListView* view,
   } else {
     gfx::Rect applist_button_bounds = applist_button->GetBoundsInScreen();
     // We need the location of the button within the local screen.
-    applist_button_bounds = ScreenUtil::ConvertRectFromScreen(
-        root_window,
-        applist_button_bounds);
+    applist_button_bounds =
+        ScreenUtil::ConvertRectFromScreen(root_window, applist_button_bounds);
     view->InitAsBubbleAttachedToAnchor(
-        container,
-        current_apps_page,
+        container, current_apps_page,
         Shelf::ForWindow(container)->GetAppListButtonView(),
         GetAnchorPositionOffsetToShelf(
             applist_button_bounds,
             Shelf::ForWindow(container)->GetAppListButtonView()->GetWidget()),
-        GetBubbleArrow(container),
-        true /* border_accepts_events */);
+        GetBubbleArrow(container), true /* border_accepts_events */);
     view->SetArrowPaintType(views::BubbleBorder::PAINT_NONE);
   }
 
@@ -211,13 +207,13 @@ void AppListShowerDelegate::Init(app_list::AppListView* view,
       Shelf::ForWindow(root_window)->GetDragAndDropHostForAppList());
 }
 
-void AppListShowerDelegate::OnShown(aura::Window* root_window) {
+void AppListPresenterDelegate::OnShown(aura::Window* root_window) {
   is_visible_ = true;
   // Update applist button status when app list visibility is changed.
   Shelf::ForWindow(root_window)->GetAppListButtonView()->SchedulePaint();
 }
 
-void AppListShowerDelegate::OnDismissed() {
+void AppListPresenterDelegate::OnDismissed() {
   DCHECK(is_visible_);
   DCHECK(view_);
 
@@ -235,7 +231,7 @@ void AppListShowerDelegate::OnDismissed() {
       ->SchedulePaint();
 }
 
-void AppListShowerDelegate::UpdateBounds() {
+void AppListPresenterDelegate::UpdateBounds() {
   if (!view_ || !is_visible_)
     return;
 
@@ -247,7 +243,7 @@ void AppListShowerDelegate::UpdateBounds() {
   }
 }
 
-gfx::Vector2d AppListShowerDelegate::GetVisibilityAnimationOffset(
+gfx::Vector2d AppListPresenterDelegate::GetVisibilityAnimationOffset(
     aura::Window* root_window) {
   DCHECK(Shell::HasInstance());
 
@@ -272,9 +268,9 @@ gfx::Vector2d AppListShowerDelegate::GetVisibilityAnimationOffset(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// AppListShowerDelegate, private:
+// AppListPresenterDelegate, private:
 
-void AppListShowerDelegate::ProcessLocatedEvent(ui::LocatedEvent* event) {
+void AppListPresenterDelegate::ProcessLocatedEvent(ui::LocatedEvent* event) {
   if (!view_ || !is_visible_)
     return;
 
@@ -299,58 +295,60 @@ void AppListShowerDelegate::ProcessLocatedEvent(ui::LocatedEvent* event) {
   aura::Window* window = view_->GetWidget()->GetNativeView()->parent();
   if (!window->Contains(target) &&
       !app_list::switches::ShouldNotDismissOnBlur()) {
-    shower_->Dismiss();
+    presenter_->Dismiss();
   }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// AppListShowerDelegate, aura::EventFilter implementation:
+// AppListPresenterDelegate, aura::EventFilter implementation:
 
-void AppListShowerDelegate::OnMouseEvent(ui::MouseEvent* event) {
+void AppListPresenterDelegate::OnMouseEvent(ui::MouseEvent* event) {
   if (event->type() == ui::ET_MOUSE_PRESSED)
     ProcessLocatedEvent(event);
 }
 
-void AppListShowerDelegate::OnGestureEvent(ui::GestureEvent* event) {
+void AppListPresenterDelegate::OnGestureEvent(ui::GestureEvent* event) {
   if (event->type() == ui::ET_GESTURE_TAP_DOWN)
     ProcessLocatedEvent(event);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// AppListShowerDelegate, keyboard::KeyboardControllerObserver implementation:
+// AppListPresenterDelegate, keyboard::KeyboardControllerObserver
+// implementation:
 
-void AppListShowerDelegate::OnKeyboardBoundsChanging(
+void AppListPresenterDelegate::OnKeyboardBoundsChanging(
     const gfx::Rect& new_bounds) {
   UpdateBounds();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// AppListShowerDelegate, ShellObserver implementation:
-void AppListShowerDelegate::OnShelfAlignmentChanged(aura::Window* root_window) {
+// AppListPresenterDelegate, ShellObserver implementation:
+void AppListPresenterDelegate::OnShelfAlignmentChanged(
+    aura::Window* root_window) {
   if (view_)
     view_->SetBubbleArrow(GetBubbleArrow(view_->GetWidget()->GetNativeView()));
 }
 
-void AppListShowerDelegate::OnMaximizeModeStarted() {
+void AppListPresenterDelegate::OnMaximizeModeStarted() {
   // The "fullscreen" app-list is initialized as in a different type of window,
   // therefore we can't switch between the fullscreen status and the normal
   // app-list bubble. App-list should be dismissed for the transition between
   // maximize mode (touch-view mode) and non-maximize mode, otherwise the app
   // list tries to behave as a bubble which leads to a crash. crbug.com/510062
   if (IsFullscreenAppListEnabled() && is_visible_)
-    shower_->Dismiss();
+    presenter_->Dismiss();
 }
 
-void AppListShowerDelegate::OnMaximizeModeEnded() {
+void AppListPresenterDelegate::OnMaximizeModeEnded() {
   // See the comments of OnMaximizeModeStarted().
   if (IsFullscreenAppListEnabled() && is_visible_)
-    shower_->Dismiss();
+    presenter_->Dismiss();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// AppListShowerDelegate, ShelfIconObserver implementation:
+// AppListPresenterDelegate, ShelfIconObserver implementation:
 
-void AppListShowerDelegate::OnShelfIconPositionsChanged() {
+void AppListPresenterDelegate::OnShelfIconPositionsChanged() {
   UpdateBounds();
 }
 

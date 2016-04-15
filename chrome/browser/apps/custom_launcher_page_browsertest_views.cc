@@ -31,7 +31,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/ash/app_list/test/app_list_service_ash_test_api.h"
-#include "ui/app_list/shower/app_list_shower_impl.h"
+#include "ui/app_list/presenter/app_list_presenter_impl.h"
 #endif
 
 namespace {
@@ -81,7 +81,7 @@ class CustomLauncherPageBrowserTest
 #if defined(OS_CHROMEOS)
     AppListServiceAshTestApi service_test;
     app_list_view = service_test.GetAppListView();
-    EXPECT_TRUE(service_test.GetAppListShower()->GetTargetVisibility());
+    EXPECT_TRUE(service_test.GetAppListPresenter()->GetTargetVisibility());
 #else
     AppListServiceViews* service =
         static_cast<AppListServiceViews*>(AppListService::Get());

@@ -25,7 +25,7 @@
       "swarming": {
         "can_use_on_swarming_builders": true
       },
-      "test": "app_list_shower_unittests"
+      "test": "app_list_presenter_unittests"
     },
     {
       "chromium_configs": [

@@ -11,12 +11,12 @@
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_types.h"
 
 namespace app_list {
-class AppListShowerImpl;
+class AppListPresenterImpl;
 }
 
 class AppListControllerDelegateAsh : public AppListControllerDelegate {
  public:
-  explicit AppListControllerDelegateAsh(app_list::AppListShowerImpl*);
+  explicit AppListControllerDelegateAsh(app_list::AppListPresenterImpl*);
   ~AppListControllerDelegateAsh() override;
 
  private:
@@ -52,7 +52,7 @@ class AppListControllerDelegateAsh : public AppListControllerDelegate {
   ash::LaunchSource AppListSourceToLaunchSource(AppListSource source);
 
   // Not owned.
-  app_list::AppListShowerImpl* app_list_shower_;
+  app_list::AppListPresenterImpl* app_list_presenter_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListControllerDelegateAsh);
 };

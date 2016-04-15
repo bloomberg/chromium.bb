@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/app_list/shower/app_list_shower_impl.h"
+#include "ui/app_list/presenter/app_list_presenter_impl.h"
 
 #include <memory>
 
 #include "base/memory/ptr_util.h"
-#include "ui/app_list/shower/app_list_shower_delegate_factory.h"
-#include "ui/app_list/shower/test/app_list_shower_impl_test_api.h"
+#include "ui/app_list/presenter/app_list_presenter_delegate_factory.h"
+#include "ui/app_list/presenter/test/app_list_presenter_impl_test_api.h"
 #include "ui/app_list/test/app_list_test_view_delegate.h"
 #include "ui/app_list/views/app_list_view.h"
 #include "ui/aura/client/focus_client.h"
@@ -21,13 +21,13 @@ namespace app_list {
 
 namespace {
 
-// Test stub for AppListShowerDelegate
-class AppListShowerDelegateTest : public AppListShowerDelegate {
+// Test stub for AppListPresenterDelegate
+class AppListPresenterDelegateTest : public AppListPresenterDelegate {
  public:
-  AppListShowerDelegateTest(aura::Window* container,
-                            test::AppListTestViewDelegate* view_delegate)
+  AppListPresenterDelegateTest(aura::Window* container,
+                               test::AppListTestViewDelegate* view_delegate)
       : container_(container), view_delegate_(view_delegate) {}
-  ~AppListShowerDelegateTest() override {}
+  ~AppListPresenterDelegateTest() override {}
 
   bool init_called() const { return init_called_; }
   bool on_shown_called() const { return on_shown_called_; }
@@ -35,7 +35,7 @@ class AppListShowerDelegateTest : public AppListShowerDelegate {
   bool update_bounds_called() const { return update_bounds_called_; }
 
  private:
-  // AppListShowerDelegate:
+  // AppListPresenterDelegate:
   AppListViewDelegate* GetViewDelegate() override { return view_delegate_; }
   void Init(AppListView* view,
             aura::Window* root_window,
@@ -61,74 +61,77 @@ class AppListShowerDelegateTest : public AppListShowerDelegate {
   bool on_dismissed_called_ = false;
   bool update_bounds_called_ = false;
 
-  DISALLOW_COPY_AND_ASSIGN(AppListShowerDelegateTest);
+  DISALLOW_COPY_AND_ASSIGN(AppListPresenterDelegateTest);
 };
 
-// Test fake for AppListShowerDelegateFactory, creates instances of
-// AppListShowerDelegateTest.
-class AppListShowerDelegateFactoryTest : public AppListShowerDelegateFactory {
+// Test fake for AppListPresenterDelegateFactory, creates instances of
+// AppListPresenterDelegateTest.
+class AppListPresenterDelegateFactoryTest
+    : public AppListPresenterDelegateFactory {
  public:
-  explicit AppListShowerDelegateFactoryTest(aura::Window* container)
+  explicit AppListPresenterDelegateFactoryTest(aura::Window* container)
       : container_(container) {}
-  ~AppListShowerDelegateFactoryTest() override {}
+  ~AppListPresenterDelegateFactoryTest() override {}
 
-  AppListShowerDelegateTest* current_delegate() { return current_delegate_; }
+  AppListPresenterDelegateTest* current_delegate() { return current_delegate_; }
 
-  // AppListShowerDelegateFactory:
-  std::unique_ptr<AppListShowerDelegate> GetDelegate(
-      AppListShower* shower) override {
+  // AppListPresenterDelegateFactory:
+  std::unique_ptr<AppListPresenterDelegate> GetDelegate(
+      AppListPresenter* presenter) override {
     current_delegate_ =
-        new AppListShowerDelegateTest(container_, &app_list_view_delegate_);
+        new AppListPresenterDelegateTest(container_, &app_list_view_delegate_);
     return base::WrapUnique(current_delegate_);
   }
 
  private:
   aura::Window* container_;
-  AppListShowerDelegateTest* current_delegate_ = nullptr;
+  AppListPresenterDelegateTest* current_delegate_ = nullptr;
   test::AppListTestViewDelegate app_list_view_delegate_;
 
-  DISALLOW_COPY_AND_ASSIGN(AppListShowerDelegateFactoryTest);
+  DISALLOW_COPY_AND_ASSIGN(AppListPresenterDelegateFactoryTest);
 };
 
 }  // namespace
 
-class AppListShowerImplTest : public aura::test::AuraTestBase {
+class AppListPresenterImplTest : public aura::test::AuraTestBase {
  public:
-  AppListShowerImplTest();
-  ~AppListShowerImplTest() override;
+  AppListPresenterImplTest();
+  ~AppListPresenterImplTest() override;
 
-  AppListShowerImpl* shower() { return shower_.get(); }
+  AppListPresenterImpl* presenter() { return presenter_.get(); }
   aura::Window* container() { return container_.get(); }
 
   // Don't cache the return of this method - a new delegate is created every
   // time the app list is shown.
-  AppListShowerDelegateTest* delegate() { return factory_->current_delegate(); }
+  AppListPresenterDelegateTest* delegate() {
+    return factory_->current_delegate();
+  }
 
   // aura::test::AuraTestBase:
   void SetUp() override;
   void TearDown() override;
 
  private:
-  std::unique_ptr<AppListShowerDelegateFactoryTest> factory_;
-  std::unique_ptr<AppListShowerImpl> shower_;
+  std::unique_ptr<AppListPresenterDelegateFactoryTest> factory_;
+  std::unique_ptr<AppListPresenterImpl> presenter_;
   std::unique_ptr<aura::Window> container_;
 
-  DISALLOW_COPY_AND_ASSIGN(AppListShowerImplTest);
+  DISALLOW_COPY_AND_ASSIGN(AppListPresenterImplTest);
 };
 
-AppListShowerImplTest::AppListShowerImplTest() {}
+AppListPresenterImplTest::AppListPresenterImplTest() {}
 
-AppListShowerImplTest::~AppListShowerImplTest() {}
+AppListPresenterImplTest::~AppListPresenterImplTest() {}
 
-void AppListShowerImplTest::SetUp() {
+void AppListPresenterImplTest::SetUp() {
   AuraTestBase::SetUp();
   new wm::DefaultActivationClient(root_window());
   container_.reset(CreateNormalWindow(0, root_window(), nullptr));
-  factory_.reset(new AppListShowerDelegateFactoryTest(container_.get()));
-  shower_.reset(new AppListShowerImpl(factory_.get()));
+  factory_.reset(new AppListPresenterDelegateFactoryTest(container_.get()));
+  presenter_.reset(new AppListPresenterImpl(factory_.get()));
 }
 
-void AppListShowerImplTest::TearDown() {
+void AppListPresenterImplTest::TearDown() {
   container_.reset();
   AuraTestBase::TearDown();
 }
@@ -137,16 +140,16 @@ void AppListShowerImplTest::TearDown() {
 // not app list window's sibling and that appropriate delegate callbacks are
 // executed when the app launcher is shown and then when the app launcher is
 // dismissed.
-TEST_F(AppListShowerImplTest, HideOnFocusOut) {
+TEST_F(AppListPresenterImplTest, HideOnFocusOut) {
   aura::client::FocusClient* focus_client =
       aura::client::GetFocusClient(root_window());
-  shower()->Show(container());
+  presenter()->Show(container());
   EXPECT_TRUE(delegate()->init_called());
   EXPECT_TRUE(delegate()->on_shown_called());
   EXPECT_FALSE(delegate()->on_dismissed_called());
   EXPECT_FALSE(delegate()->update_bounds_called());
-  focus_client->FocusWindow(shower()->GetWindow());
-  EXPECT_TRUE(shower()->GetTargetVisibility());
+  focus_client->FocusWindow(presenter()->GetWindow());
+  EXPECT_TRUE(presenter()->GetTargetVisibility());
 
   std::unique_ptr<aura::Window> window(
       CreateNormalWindow(1, root_window(), nullptr));
@@ -154,18 +157,18 @@ TEST_F(AppListShowerImplTest, HideOnFocusOut) {
 
   EXPECT_TRUE(delegate()->on_dismissed_called());
   EXPECT_FALSE(delegate()->update_bounds_called());
-  EXPECT_FALSE(shower()->GetTargetVisibility());
+  EXPECT_FALSE(presenter()->GetTargetVisibility());
 }
 
 // Tests that app launcher remains visible when focus moves to a window which
 // is app list window's sibling and that appropriate delegate callbacks are
 // executed when the app launcher is shown.
-TEST_F(AppListShowerImplTest, RemainVisibleWhenFocusingToSibling) {
+TEST_F(AppListPresenterImplTest, RemainVisibleWhenFocusingToSibling) {
   aura::client::FocusClient* focus_client =
       aura::client::GetFocusClient(root_window());
-  shower()->Show(container());
-  focus_client->FocusWindow(shower()->GetWindow());
-  EXPECT_TRUE(shower()->GetTargetVisibility());
+  presenter()->Show(container());
+  focus_client->FocusWindow(presenter()->GetWindow());
+  EXPECT_TRUE(presenter()->GetTargetVisibility());
   EXPECT_TRUE(delegate()->init_called());
   EXPECT_TRUE(delegate()->on_shown_called());
   EXPECT_FALSE(delegate()->on_dismissed_called());
@@ -176,15 +179,15 @@ TEST_F(AppListShowerImplTest, RemainVisibleWhenFocusingToSibling) {
       CreateNormalWindow(1, container(), nullptr));
   focus_client->FocusWindow(window.get());
 
-  EXPECT_TRUE(shower()->GetTargetVisibility());
+  EXPECT_TRUE(presenter()->GetTargetVisibility());
   EXPECT_FALSE(delegate()->on_dismissed_called());
   EXPECT_FALSE(delegate()->update_bounds_called());
 }
 
 // Tests that UpdateBounds is called on the delegate when the root window
 // is resized.
-TEST_F(AppListShowerImplTest, RootWindowResize) {
-  shower()->Show(container());
+TEST_F(AppListPresenterImplTest, RootWindowResize) {
+  presenter()->Show(container());
   EXPECT_FALSE(delegate()->update_bounds_called());
   gfx::Rect bounds = root_window()->bounds();
   bounds.Inset(-10, 0);
@@ -194,13 +197,13 @@ TEST_F(AppListShowerImplTest, RootWindowResize) {
 
 // Tests that the app list is dismissed and the delegate is destroyed when the
 // app list's widget is destroyed.
-TEST_F(AppListShowerImplTest, WidgetDestroyed) {
-  shower()->Show(container());
-  EXPECT_TRUE(shower()->GetTargetVisibility());
-  shower()->GetView()->GetWidget()->CloseNow();
-  EXPECT_FALSE(shower()->GetTargetVisibility());
-  test::AppListShowerImplTestApi shower_test_api(shower());
-  EXPECT_FALSE(shower_test_api.shower_delegate());
+TEST_F(AppListPresenterImplTest, WidgetDestroyed) {
+  presenter()->Show(container());
+  EXPECT_TRUE(presenter()->GetTargetVisibility());
+  presenter()->GetView()->GetWidget()->CloseNow();
+  EXPECT_FALSE(presenter()->GetTargetVisibility());
+  test::AppListPresenterImplTestApi presenter_test_api(presenter());
+  EXPECT_FALSE(presenter_test_api.presenter_delegate());
 }
 
 }  // namespace app_list

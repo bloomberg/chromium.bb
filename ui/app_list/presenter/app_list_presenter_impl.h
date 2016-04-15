@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_APP_LIST_SHOWER_APP_LIST_SHOWER_IMPL_H_
-#define UI_APP_LIST_SHOWER_APP_LIST_SHOWER_IMPL_H_
+#ifndef UI_APP_LIST_PRESENTER_APP_LIST_PRESENTER_IMPL_H_
+#define UI_APP_LIST_PRESENTER_APP_LIST_PRESENTER_IMPL_H_
 
 #include <memory>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "ui/app_list/pagination_model_observer.h"
-#include "ui/app_list/shower/app_list_shower.h"
-#include "ui/app_list/shower/app_list_shower_delegate.h"
+#include "ui/app_list/presenter/app_list_presenter.h"
+#include "ui/app_list/presenter/app_list_presenter_delegate.h"
 #include "ui/aura/client/focus_change_observer.h"
 #include "ui/aura/window_observer.h"
 #include "ui/compositor/layer_animation_observer.h"
@@ -21,29 +21,29 @@
 namespace app_list {
 class AppListView;
 class AppListViewDelegate;
-class AppListShowerDelegateFactory;
+class AppListPresenterDelegateFactory;
 
 namespace test {
-class AppListShowerImplTestApi;
+class AppListPresenterImplTestApi;
 }
 
-class AppListShowerImplTest;
+class AppListPresenterImplTest;
 class AppListViewDelegate;
 
 // Manages app list UI. Creates AppListView and schedules showing/hiding
 // animation. While the UI is visible, it monitors things such as app list
 // activation state to auto dismiss the UI. Delegates the responsibility
 // for laying out the app list UI to ash::AppListLayoutDelegate.
-class APP_LIST_SHOWER_EXPORT AppListShowerImpl
-    : public AppListShower,
+class APP_LIST_PRESENTER_EXPORT AppListPresenterImpl
+    : public AppListPresenter,
       public aura::client::FocusChangeObserver,
       public aura::WindowObserver,
       public ui::ImplicitAnimationObserver,
       public views::WidgetObserver,
       public PaginationModelObserver {
  public:
-  explicit AppListShowerImpl(AppListShowerDelegateFactory* factory);
-  ~AppListShowerImpl() override;
+  explicit AppListPresenterImpl(AppListPresenterDelegateFactory* factory);
+  ~AppListPresenterImpl() override;
 
   // Returns app list window or NULL if it is not visible.
   aura::Window* GetWindow();
@@ -51,14 +51,14 @@ class APP_LIST_SHOWER_EXPORT AppListShowerImpl
   // Returns app list view if one exists, or NULL otherwise.
   AppListView* GetView() { return view_; }
 
-  // AppListShower:
+  // AppListPresenter:
   void Show(aura::Window* window) override;
   void Dismiss() override;
   bool IsVisible() const override;
   bool GetTargetVisibility() const override;
 
  private:
-  friend class test::AppListShowerImplTestApi;
+  friend class test::AppListPresenterImplTestApi;
 
   // Sets the app list view and attempts to show it.
   void SetView(AppListView* view);
@@ -91,10 +91,10 @@ class APP_LIST_SHOWER_EXPORT AppListShowerImpl
   void TransitionChanged() override;
 
   // Not owned
-  AppListShowerDelegateFactory* const factory_;
+  AppListPresenterDelegateFactory* const factory_;
 
   // Responsible for laying out the app list UI.
-  std::unique_ptr<AppListShowerDelegate> shower_delegate_;
+  std::unique_ptr<AppListPresenterDelegate> presenter_delegate_;
 
   // Whether we should show or hide app list widget.
   bool is_visible_ = false;
@@ -112,9 +112,9 @@ class APP_LIST_SHOWER_EXPORT AppListShowerImpl
   // Whether should schedule snap back animation.
   bool should_snap_back_ = false;
 
-  DISALLOW_COPY_AND_ASSIGN(AppListShowerImpl);
+  DISALLOW_COPY_AND_ASSIGN(AppListPresenterImpl);
 };
 
 }  // namespace app_list
 
-#endif  // UI_APP_LIST_SHOWER_APP_LIST_SHOWER_IMPL_H_
+#endif  // UI_APP_LIST_PRESENTER_APP_LIST_PRESENTER_IMPL_H_

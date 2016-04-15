@@ -99,8 +99,8 @@
     "label": "//ui/app_list:app_list_unittests",
     "type": "windowed_test_launcher",
   },
-  "app_list_shower_unittests": {
-    "label": "//ui/app_list/shower:app_list_shower_unittests",
+  "app_list_presenter_unittests": {
+    "label": "//ui/app_list/presenter:app_list_presenter_unittests",
     "type": "windowed_test_launcher",
   },
   "app_shell_unittests": {

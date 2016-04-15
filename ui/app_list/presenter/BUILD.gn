@@ -7,17 +7,17 @@ import("//build/config/ui.gni")
 
 assert(use_aura)
 
-component("shower") {
+component("presenter") {
   sources = [
-    "app_list_shower.h",
-    "app_list_shower_delegate.h",
-    "app_list_shower_delegate_factory.h",
-    "app_list_shower_export.h",
-    "app_list_shower_impl.cc",
-    "app_list_shower_impl.h",
+    "app_list_presenter.h",
+    "app_list_presenter_delegate.h",
+    "app_list_presenter_delegate_factory.h",
+    "app_list_presenter_export.h",
+    "app_list_presenter_impl.cc",
+    "app_list_presenter_impl.h",
   ]
 
-  defines = [ "APP_LIST_SHOWER_IMPLEMENTATION" ]
+  defines = [ "APP_LIST_PRESENTER_IMPLEMENTATION" ]
 
   public_deps = [
     "//base",
@@ -31,28 +31,28 @@ component("shower") {
 
 source_set("test_support") {
   sources = [
-    "test/app_list_shower_impl_test_api.cc",
-    "test/app_list_shower_impl_test_api.h",
+    "test/app_list_presenter_impl_test_api.cc",
+    "test/app_list_presenter_impl_test_api.h",
   ]
 
   public_deps = [
-    ":shower",
+    ":presenter",
   ]
   deps = [
     "//base",
   ]
 }
 
-test("app_list_shower_unittests") {
+test("app_list_presenter_unittests") {
   sources = [
-    "app_list_shower_impl_unittest.cc",
+    "app_list_presenter_impl_unittest.cc",
     "test/run_all_unittests.cc",
   ]
 
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 
   deps = [
-    ":shower",
+    ":presenter",
     ":test_support",
     "//base",
     "//base/test:test_support",

@@ -600,7 +600,7 @@ if (!is_android) {
 
       deps = [
         "//chrome/browser/ui",
-        "//ui/app_list/shower:test_support",
+        "//ui/app_list/presenter:test_support",
       ]
     }
   }

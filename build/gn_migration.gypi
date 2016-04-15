@@ -619,7 +619,7 @@
             }],
             ['use_aura==1', {
               'dependencies': [
-                '../ui/app_list/shower/app_list_shower.gyp:app_list_shower_unittests_run',
+                '../ui/app_list/presenter/app_list_presenter.gyp:app_list_presenter_unittests_run',
                 '../ui/aura/aura.gyp:aura_unittests_run',
                 '../ui/wm/wm.gyp:wm_unittests_run',
               ],

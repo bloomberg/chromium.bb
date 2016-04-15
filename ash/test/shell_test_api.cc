@@ -44,8 +44,8 @@ DragDropController* ShellTestApi::drag_drop_controller() {
   return shell_->drag_drop_controller_.get();
 }
 
-app_list::AppListShower* ShellTestApi::app_list_shower() {
-  return shell_->delegate_->GetAppListShower();
+app_list::AppListPresenter* ShellTestApi::app_list_presenter() {
+  return shell_->delegate_->GetAppListPresenter();
 }
 
 void ShellTestApi::DisableDisplayAnimator() {

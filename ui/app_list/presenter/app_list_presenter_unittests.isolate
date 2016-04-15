@@ -7,7 +7,7 @@
       'variables': {
         'command': [
           '../../../testing/test_env.py',
-          '<(PRODUCT_DIR)/app_list_shower_unittests<(EXECUTABLE_SUFFIX)',
+          '<(PRODUCT_DIR)/app_list_presenter_unittests<(EXECUTABLE_SUFFIX)',
           '--brave-new-test-launcher',
           '--test-launcher-bot-mode',
           '--asan=<(asan)',
@@ -21,7 +21,7 @@
         'command': [
           '../../../testing/xvfb.py',
           '<(PRODUCT_DIR)',
-          '<(PRODUCT_DIR)/app_list_shower_unittests<(EXECUTABLE_SUFFIX)',
+          '<(PRODUCT_DIR)/app_list_presenter_unittests<(EXECUTABLE_SUFFIX)',
           '--brave-new-test-launcher',
           '--test-launcher-bot-mode',
           '--asan=<(asan)',
@@ -66,7 +66,7 @@
     ['OS=="mac" and asan==1 and fastbuild==0', {
       'variables': {
         'files': [
-          '<(PRODUCT_DIR)/app_list_shower_unittests.dSYM/',
+          '<(PRODUCT_DIR)/app_list_presenter_unittests.dSYM/',
           '<(PRODUCT_DIR)/osmesa.so.dSYM/',
         ],
       },

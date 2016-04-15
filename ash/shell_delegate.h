@@ -15,7 +15,7 @@
 class GURL;
 
 namespace app_list {
-class AppListShower;
+class AppListPresenter;
 class AppListViewDelegate;
 }
 
@@ -113,8 +113,8 @@ class ASH_EXPORT ShellDelegate {
   // Opens the |url| in a new browser tab.
   virtual void OpenUrl(const GURL& url) = 0;
 
-  // Get the AppListShower. Ownership stays with Chrome.
-  virtual app_list::AppListShower* GetAppListShower() = 0;
+  // Get the AppListPresenter. Ownership stays with Chrome.
+  virtual app_list::AppListPresenter* GetAppListPresenter() = 0;
 
   // Creates a new ShelfDelegate. Shell takes ownership of the returned
   // value.

@@ -84,7 +84,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
-#include "ui/app_list/shower/app_list_shower.h"
+#include "ui/app_list/presenter/app_list_presenter.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/layout_manager.h"
@@ -308,15 +308,15 @@ void Shell::ShowAppList(aura::Window* window) {
   // If the context window is not given, show it on the target root window.
   if (!window)
     window = GetTargetRootWindow();
-  delegate_->GetAppListShower()->Show(window);
+  delegate_->GetAppListPresenter()->Show(window);
 }
 
 void Shell::DismissAppList() {
-  delegate_->GetAppListShower()->Dismiss();
+  delegate_->GetAppListPresenter()->Dismiss();
 }
 
 void Shell::ToggleAppList(aura::Window* window) {
-  if (delegate_->GetAppListShower()->IsVisible()) {
+  if (delegate_->GetAppListPresenter()->IsVisible()) {
     DismissAppList();
     return;
   }
@@ -325,7 +325,7 @@ void Shell::ToggleAppList(aura::Window* window) {
 }
 
 bool Shell::GetAppListTargetVisibility() const {
-  return delegate_->GetAppListShower()->GetTargetVisibility();
+  return delegate_->GetAppListPresenter()->GetTargetVisibility();
 }
 
 bool Shell::IsSystemModalWindowOpen() const {

@@ -12,7 +12,7 @@
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "ui/app_list/app_list_switches.h"
-#include "ui/app_list/shower/app_list_shower_impl.h"
+#include "ui/app_list/presenter/app_list_presenter_impl.h"
 #include "ui/app_list/views/app_list_view.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
@@ -26,24 +26,25 @@ const int kMinimalCenteredAppListMargin = 10;
 
 // The parameter is true to test the centered app list, false for normal.
 // (The test name ends in "/0" for normal, "/1" for centered.)
-class AppListShowerDelegateTest : public test::AshTestBase,
-                                  public ::testing::WithParamInterface<bool> {
+class AppListPresenterDelegateTest
+    : public test::AshTestBase,
+      public ::testing::WithParamInterface<bool> {
  public:
-  AppListShowerDelegateTest();
-  virtual ~AppListShowerDelegateTest();
+  AppListPresenterDelegateTest();
+  virtual ~AppListPresenterDelegateTest();
 
   // testing::Test:
   void SetUp() override;
 
-  app_list::AppListShowerImpl* GetAppListShower();
+  app_list::AppListPresenterImpl* GetAppListPresenter();
   bool IsCentered() const;
 };
 
-AppListShowerDelegateTest::AppListShowerDelegateTest() {}
+AppListPresenterDelegateTest::AppListPresenterDelegateTest() {}
 
-AppListShowerDelegateTest::~AppListShowerDelegateTest() {}
+AppListPresenterDelegateTest::~AppListPresenterDelegateTest() {}
 
-void AppListShowerDelegateTest::SetUp() {
+void AppListPresenterDelegateTest::SetUp() {
   AshTestBase::SetUp();
   if (IsCentered()) {
     base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
@@ -54,16 +55,17 @@ void AppListShowerDelegateTest::SetUp() {
   UpdateDisplay("1024x768");
 }
 
-app_list::AppListShowerImpl* AppListShowerDelegateTest::GetAppListShower() {
-  return ash_test_helper()->test_shell_delegate()->app_list_shower();
+app_list::AppListPresenterImpl*
+AppListPresenterDelegateTest::GetAppListPresenter() {
+  return ash_test_helper()->test_shell_delegate()->app_list_presenter();
 }
 
-bool AppListShowerDelegateTest::IsCentered() const {
+bool AppListPresenterDelegateTest::IsCentered() const {
   return GetParam();
 }
 
 // Tests that app launcher hides when focus moves to a normal window.
-TEST_P(AppListShowerDelegateTest, HideOnFocusOut) {
+TEST_P(AppListPresenterDelegateTest, HideOnFocusOut) {
   Shell::GetInstance()->ShowAppList(NULL);
   EXPECT_TRUE(Shell::GetInstance()->GetAppListTargetVisibility());
 
@@ -75,7 +77,8 @@ TEST_P(AppListShowerDelegateTest, HideOnFocusOut) {
 
 // Tests that app launcher remains visible when focus is moved to a different
 // window in kShellWindowId_AppListContainer.
-TEST_P(AppListShowerDelegateTest, RemainVisibleWhenFocusingToApplistContainer) {
+TEST_P(AppListPresenterDelegateTest,
+       RemainVisibleWhenFocusingToApplistContainer) {
   Shell::GetInstance()->ShowAppList(NULL);
   EXPECT_TRUE(Shell::GetInstance()->GetAppListTargetVisibility());
 
@@ -89,10 +92,10 @@ TEST_P(AppListShowerDelegateTest, RemainVisibleWhenFocusingToApplistContainer) {
 }
 
 // Tests that clicking outside the app-list bubble closes it.
-TEST_P(AppListShowerDelegateTest, ClickOutsideBubbleClosesBubble) {
+TEST_P(AppListPresenterDelegateTest, ClickOutsideBubbleClosesBubble) {
   Shell* shell = Shell::GetInstance();
   shell->ShowAppList(NULL);
-  aura::Window* app_window = GetAppListShower()->GetWindow();
+  aura::Window* app_window = GetAppListPresenter()->GetWindow();
   ASSERT_TRUE(app_window);
   ui::test::EventGenerator generator(shell->GetPrimaryRootWindow(), app_window);
   // Click on the bubble itself. The bubble should remain visible.
@@ -111,11 +114,11 @@ TEST_P(AppListShowerDelegateTest, ClickOutsideBubbleClosesBubble) {
 }
 
 // Tests that clicking outside the app-list bubble closes it.
-TEST_P(AppListShowerDelegateTest, TapOutsideBubbleClosesBubble) {
+TEST_P(AppListPresenterDelegateTest, TapOutsideBubbleClosesBubble) {
   Shell* shell = Shell::GetInstance();
   shell->ShowAppList(NULL);
 
-  aura::Window* app_window = GetAppListShower()->GetWindow();
+  aura::Window* app_window = GetAppListPresenter()->GetWindow();
   ASSERT_TRUE(app_window);
   gfx::Rect app_window_bounds = app_window->GetBoundsInRootWindow();
 
@@ -135,7 +138,7 @@ TEST_P(AppListShowerDelegateTest, TapOutsideBubbleClosesBubble) {
 
 // Tests opening the app launcher on a non-primary display, then deleting the
 // display.
-TEST_P(AppListShowerDelegateTest, NonPrimaryDisplay) {
+TEST_P(AppListPresenterDelegateTest, NonPrimaryDisplay) {
   if (!SupportsMultipleDisplays())
     return;
 
@@ -160,7 +163,7 @@ TEST_P(AppListShowerDelegateTest, NonPrimaryDisplay) {
 
 // Tests opening the app launcher on a tiny display that is too small to contain
 // it.
-TEST_P(AppListShowerDelegateTest, TinyDisplay) {
+TEST_P(AppListPresenterDelegateTest, TinyDisplay) {
   // Don't test this for the non-centered app list case; it isn't designed for
   // small displays. The most common case of a small display --- when the
   // virtual keyboard is open --- switches into the centered app list mode, so
@@ -183,14 +186,14 @@ TEST_P(AppListShowerDelegateTest, TinyDisplay) {
   // from the anchor (center) and height. There isn't a bounds rect that gives
   // the actual app list position (the widget bounds include the bubble border
   // which is much bigger than the actual app list size).
-  app_list::AppListView* app_list = GetAppListShower()->GetView();
+  app_list::AppListView* app_list = GetAppListPresenter()->GetView();
   int app_list_view_top =
       app_list->anchor_rect().y() - app_list->bounds().height() / 2;
   EXPECT_GE(app_list_view_top, kMinimalCenteredAppListMargin);
 }
 
-INSTANTIATE_TEST_CASE_P(AppListShowerDelegateTestInstance,
-                        AppListShowerDelegateTest,
+INSTANTIATE_TEST_CASE_P(AppListPresenterDelegateTestInstance,
+                        AppListPresenterDelegateTest,
                         ::testing::Bool());
 
 }  // namespace ash

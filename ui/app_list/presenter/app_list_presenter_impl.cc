@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/app_list/shower/app_list_shower_impl.h"
+#include "ui/app_list/presenter/app_list_presenter_impl.h"
 
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/pagination_model.h"
-#include "ui/app_list/shower/app_list_shower_delegate_factory.h"
+#include "ui/app_list/presenter/app_list_presenter_delegate_factory.h"
 #include "ui/app_list/views/app_list_view.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/window.h"
@@ -30,13 +30,14 @@ ui::Layer* GetLayer(views::Widget* widget) {
 
 }  // namespace
 
-AppListShowerImpl::AppListShowerImpl(AppListShowerDelegateFactory* factory)
+AppListPresenterImpl::AppListPresenterImpl(
+    AppListPresenterDelegateFactory* factory)
     : factory_(factory) {
   DCHECK(factory);
 }
 
-AppListShowerImpl::~AppListShowerImpl() {
-  shower_delegate_.reset();
+AppListPresenterImpl::~AppListPresenterImpl() {
+  presenter_delegate_.reset();
   // Ensures app list view goes before the controller since pagination model
   // lives in the controller and app list view would access it on destruction.
   if (view_) {
@@ -46,11 +47,11 @@ AppListShowerImpl::~AppListShowerImpl() {
   }
 }
 
-aura::Window* AppListShowerImpl::GetWindow() {
+aura::Window* AppListPresenterImpl::GetWindow() {
   return is_visible_ && view_ ? view_->GetWidget()->GetNativeWindow() : nullptr;
 }
 
-void AppListShowerImpl::Show(aura::Window* window) {
+void AppListPresenterImpl::Show(aura::Window* window) {
   if (is_visible_)
     return;
 
@@ -60,19 +61,19 @@ void AppListShowerImpl::Show(aura::Window* window) {
   if (view_) {
     ScheduleAnimation();
   } else {
-    shower_delegate_ = factory_->GetDelegate(this);
-    AppListViewDelegate* view_delegate = shower_delegate_->GetViewDelegate();
+    presenter_delegate_ = factory_->GetDelegate(this);
+    AppListViewDelegate* view_delegate = presenter_delegate_->GetViewDelegate();
     DCHECK(view_delegate);
     // Note the AppListViewDelegate outlives the AppListView. For Ash, the view
     // is destroyed when dismissed.
     AppListView* view = new AppListView(view_delegate);
-    shower_delegate_->Init(view, root_window, current_apps_page_);
+    presenter_delegate_->Init(view, root_window, current_apps_page_);
     SetView(view);
   }
-  shower_delegate_->OnShown(root_window);
+  presenter_delegate_->OnShown(root_window);
 }
 
-void AppListShowerImpl::Dismiss() {
+void AppListPresenterImpl::Dismiss() {
   if (!is_visible_)
     return;
 
@@ -88,22 +89,22 @@ void AppListShowerImpl::Dismiss() {
   // animation completes and any menus stay open.
   view_->GetWidget()->Deactivate();
 
-  shower_delegate_->OnDismissed();
+  presenter_delegate_->OnDismissed();
   ScheduleAnimation();
 }
 
-bool AppListShowerImpl::IsVisible() const {
+bool AppListPresenterImpl::IsVisible() const {
   return view_ && view_->GetWidget()->IsVisible();
 }
 
-bool AppListShowerImpl::GetTargetVisibility() const {
+bool AppListPresenterImpl::GetTargetVisibility() const {
   return is_visible_;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// AppListShowerImpl, private:
+// AppListPresenterImpl, private:
 
-void AppListShowerImpl::SetView(AppListView* view) {
+void AppListPresenterImpl::SetView(AppListView* view) {
   DCHECK(view_ == nullptr);
   DCHECK(is_visible_);
 
@@ -116,14 +117,14 @@ void AppListShowerImpl::SetView(AppListView* view) {
   view_->ShowWhenReady();
 }
 
-void AppListShowerImpl::ResetView() {
+void AppListPresenterImpl::ResetView() {
   if (!view_)
     return;
 
   views::Widget* widget = view_->GetWidget();
   widget->RemoveObserver(this);
   GetLayer(widget)->GetAnimator()->RemoveObserver(this);
-  shower_delegate_.reset();
+  presenter_delegate_.reset();
   widget->GetNativeView()->GetRootWindow()->RemoveObserver(this);
   aura::client::GetFocusClient(widget->GetNativeView())->RemoveObserver(this);
 
@@ -132,7 +133,7 @@ void AppListShowerImpl::ResetView() {
   view_ = nullptr;
 }
 
-void AppListShowerImpl::ScheduleAnimation() {
+void AppListPresenterImpl::ScheduleAnimation() {
   // Stop observing previous animation.
   StopObservingImplicitAnimations();
 
@@ -141,7 +142,7 @@ void AppListShowerImpl::ScheduleAnimation() {
   layer->GetAnimator()->StopAnimating();
 
   gfx::Rect target_bounds;
-  gfx::Vector2d offset = shower_delegate_->GetVisibilityAnimationOffset(
+  gfx::Vector2d offset = presenter_delegate_->GetVisibilityAnimationOffset(
       widget->GetNativeView()->GetRootWindow());
   if (is_visible_) {
     target_bounds = widget->GetWindowBoundsInScreen();
@@ -163,10 +164,10 @@ void AppListShowerImpl::ScheduleAnimation() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// AppListShowerImpl,  aura::client::FocusChangeObserver implementation:
+// AppListPresenterImpl,  aura::client::FocusChangeObserver implementation:
 
-void AppListShowerImpl::OnWindowFocused(aura::Window* gained_focus,
-                                        aura::Window* lost_focus) {
+void AppListPresenterImpl::OnWindowFocused(aura::Window* gained_focus,
+                                           aura::Window* lost_focus) {
   if (view_ && is_visible_) {
     aura::Window* applist_window = view_->GetWidget()->GetNativeView();
     aura::Window* applist_container = applist_window->parent();
@@ -179,18 +180,18 @@ void AppListShowerImpl::OnWindowFocused(aura::Window* gained_focus,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// AppListShowerImpl,  aura::WindowObserver implementation:
-void AppListShowerImpl::OnWindowBoundsChanged(aura::Window* root,
-                                              const gfx::Rect& old_bounds,
-                                              const gfx::Rect& new_bounds) {
-  if (shower_delegate_)
-    shower_delegate_->UpdateBounds();
+// AppListPresenterImpl,  aura::WindowObserver implementation:
+void AppListPresenterImpl::OnWindowBoundsChanged(aura::Window* root,
+                                                 const gfx::Rect& old_bounds,
+                                                 const gfx::Rect& new_bounds) {
+  if (presenter_delegate_)
+    presenter_delegate_->UpdateBounds();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// AppListShowerImpl, ui::ImplicitAnimationObserver implementation:
+// AppListPresenterImpl, ui::ImplicitAnimationObserver implementation:
 
-void AppListShowerImpl::OnImplicitAnimationsCompleted() {
+void AppListPresenterImpl::OnImplicitAnimationsCompleted() {
   if (is_visible_)
     view_->GetWidget()->Activate();
   else
@@ -198,9 +199,9 @@ void AppListShowerImpl::OnImplicitAnimationsCompleted() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// AppListShowerImpl, views::WidgetObserver implementation:
+// AppListPresenterImpl, views::WidgetObserver implementation:
 
-void AppListShowerImpl::OnWidgetDestroying(views::Widget* widget) {
+void AppListPresenterImpl::OnWidgetDestroying(views::Widget* widget) {
   DCHECK(view_->GetWidget() == widget);
   if (is_visible_)
     Dismiss();
@@ -208,18 +209,18 @@ void AppListShowerImpl::OnWidgetDestroying(views::Widget* widget) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// AppListShowerImpl, PaginationModelObserver implementation:
+// AppListPresenterImpl, PaginationModelObserver implementation:
 
-void AppListShowerImpl::TotalPagesChanged() {}
+void AppListPresenterImpl::TotalPagesChanged() {}
 
-void AppListShowerImpl::SelectedPageChanged(int old_selected,
-                                            int new_selected) {
+void AppListPresenterImpl::SelectedPageChanged(int old_selected,
+                                               int new_selected) {
   current_apps_page_ = new_selected;
 }
 
-void AppListShowerImpl::TransitionStarted() {}
+void AppListPresenterImpl::TransitionStarted() {}
 
-void AppListShowerImpl::TransitionChanged() {
+void AppListPresenterImpl::TransitionChanged() {
   // |view_| could be NULL when app list is closed with a running transition.
   if (!view_)
     return;

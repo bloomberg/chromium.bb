@@ -10,25 +10,25 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "extensions/common/extension.h"
-#include "ui/app_list/shower/app_list_shower_impl.h"
+#include "ui/app_list/presenter/app_list_presenter_impl.h"
 #include "ui/app_list/views/app_list_view.h"
 
 AppListControllerDelegateAsh::AppListControllerDelegateAsh(
-    app_list::AppListShowerImpl* app_list_shower)
-    : app_list_shower_(app_list_shower) {}
+    app_list::AppListPresenterImpl* app_list_presenter)
+    : app_list_presenter_(app_list_presenter) {}
 
 AppListControllerDelegateAsh::~AppListControllerDelegateAsh() {}
 
 void AppListControllerDelegateAsh::DismissView() {
-  app_list_shower_->Dismiss();
+  app_list_presenter_->Dismiss();
 }
 
 gfx::NativeWindow AppListControllerDelegateAsh::GetAppListWindow() {
-  return app_list_shower_->GetWindow();
+  return app_list_presenter_->GetWindow();
 }
 
 gfx::Rect AppListControllerDelegateAsh::GetAppListBounds() {
-  app_list::AppListView* app_list_view = app_list_shower_->GetView();
+  app_list::AppListView* app_list_view = app_list_presenter_->GetView();
   if (app_list_view)
     return app_list_view->GetBoundsInScreen();
   return gfx::Rect();
@@ -55,13 +55,13 @@ AppListControllerDelegate::Pinnable AppListControllerDelegateAsh::GetPinnable(
 }
 
 void AppListControllerDelegateAsh::OnShowChildDialog() {
-  app_list::AppListView* app_list_view = app_list_shower_->GetView();
+  app_list::AppListView* app_list_view = app_list_presenter_->GetView();
   if (app_list_view)
     app_list_view->SetAppListOverlayVisible(true);
 }
 
 void AppListControllerDelegateAsh::OnCloseChildDialog() {
-  app_list::AppListView* app_list_view = app_list_shower_->GetView();
+  app_list::AppListView* app_list_view = app_list_presenter_->GetView();
   if (app_list_view)
     app_list_view->SetAppListOverlayVisible(false);
 }

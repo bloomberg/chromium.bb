@@ -6,8 +6,8 @@
 
 #include <limits>
 
-#include "ash/app_list/app_list_shower_delegate.h"
-#include "ash/app_list/app_list_shower_delegate_factory.h"
+#include "ash/app_list/app_list_presenter_delegate.h"
+#include "ash/app_list/app_list_presenter_delegate_factory.h"
 #include "ash/app_list/app_list_view_delegate_factory.h"
 #include "ash/default_accessibility_delegate.h"
 #include "ash/gpu_support_stub.h"
@@ -25,7 +25,7 @@
 #include "ash/wm/window_util.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "ui/app_list/shower/app_list_shower_impl.h"
+#include "ui/app_list/presenter/app_list_presenter_impl.h"
 #include "ui/app_list/test/app_list_test_view_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/image/image.h"
@@ -105,7 +105,7 @@ TestShellDelegate::TestShellDelegate()
     : num_exit_requests_(0),
       multi_profiles_enabled_(false),
       force_maximize_on_first_run_(false),
-      app_list_shower_delegate_factory_(new AppListShowerDelegateFactory(
+      app_list_presenter_delegate_factory_(new AppListPresenterDelegateFactory(
           base::WrapUnique(new AppListViewDelegateFactoryImpl))) {}
 
 TestShellDelegate::~TestShellDelegate() {
@@ -167,12 +167,12 @@ void TestShellDelegate::RemoveVirtualKeyboardStateObserver(
 
 void TestShellDelegate::OpenUrl(const GURL& url) {}
 
-app_list::AppListShower* TestShellDelegate::GetAppListShower() {
-  if (!app_list_shower_) {
-    app_list_shower_.reset(new app_list::AppListShowerImpl(
-        app_list_shower_delegate_factory_.get()));
+app_list::AppListPresenter* TestShellDelegate::GetAppListPresenter() {
+  if (!app_list_presenter_) {
+    app_list_presenter_.reset(new app_list::AppListPresenterImpl(
+        app_list_presenter_delegate_factory_.get()));
   }
-  return app_list_shower_.get();
+  return app_list_presenter_.get();
 }
 
 ShelfDelegate* TestShellDelegate::CreateShelfDelegate(ShelfModel* model) {

@@ -8,8 +8,8 @@
   },
   'targets': [
     {
-      # GN version: //ui/app_list/shower
-      'target_name': 'app_list_shower',
+      # GN version: //ui/app_list/presenter
+      'target_name': 'app_list_presenter',
       'type': '<(component)',
       'dependencies': [
         '../../../base/base.gyp:base',
@@ -23,38 +23,38 @@
         '../app_list.gyp:app_list',
       ],
       'defines': [
-        'APP_LIST_SHOWER_IMPLEMENTATION',
+        'APP_LIST_PRESENTER_IMPLEMENTATION',
       ],
       'sources': [
         # Note: sources list duplicated in GN build.
-        'app_list_shower.h',
-        'app_list_shower_delegate.h',
-        'app_list_shower_delegate_factory.h',
-        'app_list_shower_export.h',
-        'app_list_shower_impl.cc',
-        'app_list_shower_impl.h',
+        'app_list_presenter.h',
+        'app_list_presenter_delegate.h',
+        'app_list_presenter_delegate_factory.h',
+        'app_list_presenter_export.h',
+        'app_list_presenter_impl.cc',
+        'app_list_presenter_impl.h',
       ],
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
       'msvs_disabled_warnings': [ 4267, ],
     },
     {
-      # GN version: //ui/app_list/shower:test_support
-      'target_name': 'app_list_shower_test_support',
+      # GN version: //ui/app_list/presenter:test_support
+      'target_name': 'app_list_presenter_test_support',
       'type': 'static_library',
       'dependencies': [
         '../../../base/base.gyp:base',
         '../../../skia/skia.gyp:skia',
-        'app_list_shower',
+        'app_list_presenter',
       ],
       'sources': [
         # Note: sources list duplicated in GN build.
-        'test/app_list_shower_impl_test_api.cc',
-        'test/app_list_shower_impl_test_api.h',
+        'test/app_list_presenter_impl_test_api.cc',
+        'test/app_list_presenter_impl_test_api.h',
       ],
     },
     {
-      # GN version: //ui/app_list/shower:app_list_shower_unittests
-      'target_name': 'app_list_shower_unittests',
+      # GN version: //ui/app_list/presenter:app_list_presenter_unittests
+      'target_name': 'app_list_presenter_unittests',
       'type': 'executable',
       'dependencies': [
         '../../../base/base.gyp:base',
@@ -66,12 +66,12 @@
         '../../views/views.gyp:views',
         '../../wm/wm.gyp:wm',
         '../app_list.gyp:app_list_test_support',
-        'app_list_shower',
-        'app_list_shower_test_support',
+        'app_list_presenter',
+        'app_list_presenter_test_support',
       ],
       'sources': [
         # Note: sources list duplicated in GN build.
-        'app_list_shower_impl_unittest.cc',
+        'app_list_presenter_impl_unittest.cc',
         'test/run_all_unittests.cc',
       ],
       # Disable c4267 warnings until we fix size_t to int truncations.
@@ -82,16 +82,16 @@
     ['test_isolation_mode != "noop"', {
       'targets': [
         {
-          'target_name': 'app_list_shower_unittests_run',
+          'target_name': 'app_list_presenter_unittests_run',
           'type': 'none',
           'dependencies': [
-            'app_list_shower_unittests',
+            'app_list_presenter_unittests',
           ],
           'includes': [
             '../../../build/isolate.gypi',
           ],
           'sources': [
-            'app_list_shower_unittests.isolate',
+            'app_list_presenter_unittests.isolate',
           ],
           'conditions': [
             ['use_x11 == 1', {

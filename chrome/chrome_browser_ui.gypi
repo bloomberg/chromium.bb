@@ -2625,7 +2625,7 @@
       'browser/ui/app_list/app_list_service_impl.h',
       'browser/ui/app_list/app_list_service_mac.h',
       'browser/ui/app_list/app_list_service_mac.mm',
-      'browser/ui/app_list/app_list_shower_delegate.h',
+      'browser/ui/app_list/app_list_presenter_delegate.h',
       'browser/ui/app_list/app_list_syncable_service.cc',
       'browser/ui/app_list/app_list_syncable_service.h',
       'browser/ui/app_list/app_list_syncable_service_factory.cc',
@@ -3048,7 +3048,7 @@
             '../ash/ash.gyp:ash_with_content',
             '../ash/ash_strings.gyp:ash_strings',
             '../components/components.gyp:user_manager',
-            '../ui/app_list/shower/app_list_shower.gyp:app_list_shower',
+            '../ui/app_list/presenter/app_list_presenter.gyp:app_list_presenter',
           ],
           'conditions': [
             ['chromeos == 0', {

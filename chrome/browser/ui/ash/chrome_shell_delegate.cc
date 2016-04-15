@@ -32,7 +32,7 @@
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/grit/chromium_strings.h"
 #include "grit/theme_resources.h"
-#include "ui/app_list/shower/app_list_shower.h"
+#include "ui/app_list/presenter/app_list_presenter.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -140,9 +140,9 @@ void ChromeShellDelegate::OpenUrl(const GURL& url) {
       displayer.browser()->window()->GetNativeWindow());
 }
 
-app_list::AppListShower* ChromeShellDelegate::GetAppListShower() {
+app_list::AppListPresenter* ChromeShellDelegate::GetAppListPresenter() {
   DCHECK(ash::Shell::HasInstance());
-  return AppListServiceAsh::GetInstance()->GetAppListShower();
+  return AppListServiceAsh::GetInstance()->GetAppListPresenter();
 }
 
 ash::ShelfDelegate* ChromeShellDelegate::CreateShelfDelegate(

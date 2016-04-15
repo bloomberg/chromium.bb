@@ -241,7 +241,7 @@ group("both_gn_and_gyp") {
     deps += [
       "//ash:ash_shell_with_content",
       "//ash:ash_unittests",
-      "//ui/app_list/shower:app_list_shower_unittests",
+      "//ui/app_list/presenter:app_list_presenter_unittests",
       "//ui/aura:aura_unittests",
       "//ui/aura:demo",
       "//ui/wm:wm_unittests",

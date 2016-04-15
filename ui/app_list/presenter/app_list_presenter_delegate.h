@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_APP_LIST_SHOWER_APP_LIST_SHOWER_DELEGATE_H_
-#define UI_APP_LIST_SHOWER_APP_LIST_SHOWER_DELEGATE_H_
+#ifndef UI_APP_LIST_PRESENTER_APP_LIST_PRESENTER_DELEGATE_H_
+#define UI_APP_LIST_PRESENTER_APP_LIST_PRESENTER_DELEGATE_H_
 
-#include "ui/app_list/shower/app_list_shower_export.h"
+#include "ui/app_list/presenter/app_list_presenter_export.h"
 
 namespace aura {
 class Window;
@@ -20,12 +20,13 @@ namespace app_list {
 class AppListView;
 class AppListViewDelegate;
 
-// Delegate of AppListShower which allows to customize AppListShower's behavior.
+// Delegate of AppListPresenter which allows to customize AppListPresenter's
+// behavior.
 // The design of this interface was heavily influenced by the needs of Ash's
-// app list implementation (see ash::AppListShowerDelegate).
-class APP_LIST_SHOWER_EXPORT AppListShowerDelegate {
+// app list implementation (see ash::AppListPresenterDelegate).
+class APP_LIST_PRESENTER_EXPORT AppListPresenterDelegate {
  public:
-  virtual ~AppListShowerDelegate() {}
+  virtual ~AppListPresenterDelegate() {}
 
   // Returns the delegate for the app list view, possibly creating one.
   virtual AppListViewDelegate* GetViewDelegate() = 0;
@@ -52,4 +53,4 @@ class APP_LIST_SHOWER_EXPORT AppListShowerDelegate {
 
 }  // namespace app_list
 
-#endif  // UI_APP_LIST_SHOWER_APP_LIST_SHOWER_DELEGATE_H_
+#endif  // UI_APP_LIST_PRESENTER_APP_LIST_PRESENTER_DELEGATE_H_

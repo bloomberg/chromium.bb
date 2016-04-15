@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_APP_LIST_SHOWER_APP_LIST_SHOWER_H_
-#define UI_APP_LIST_SHOWER_APP_LIST_SHOWER_H_
+#ifndef UI_APP_LIST_PRESENTER_APP_LIST_PRESENTER_H_
+#define UI_APP_LIST_PRESENTER_APP_LIST_PRESENTER_H_
 
-#include "ui/app_list/shower/app_list_shower_export.h"
+#include "ui/app_list/presenter/app_list_presenter_export.h"
 
 namespace aura {
 class Window;
@@ -14,9 +14,9 @@ class Window;
 namespace app_list {
 
 // Interface for showing and hiding the app list.
-class APP_LIST_SHOWER_EXPORT AppListShower {
+class APP_LIST_PRESENTER_EXPORT AppListPresenter {
  public:
-  virtual ~AppListShower() {}
+  virtual ~AppListPresenter() {}
 
   // Show/hide app list window. The |window| is used to deterime in
   // which display (in which the |window| exists) the app list should
@@ -37,4 +37,4 @@ class APP_LIST_SHOWER_EXPORT AppListShower {
 
 }  // namespace app_list
 
-#endif  // UI_APP_LIST_SHOWER_APP_LIST_SHOWER_H_
+#endif  // UI_APP_LIST_PRESENTER_APP_LIST_PRESENTER_H_

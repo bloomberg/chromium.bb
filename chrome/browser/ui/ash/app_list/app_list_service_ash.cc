@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/ash/app_list/app_list_service_ash.h"
 
-#include "ash/app_list/app_list_shower_delegate.h"
-#include "ash/app_list/app_list_shower_delegate_factory.h"
+#include "ash/app_list/app_list_presenter_delegate.h"
+#include "ash/app_list/app_list_presenter_delegate_factory.h"
 #include "ash/app_list/app_list_view_delegate_factory.h"
 #include "ash/shell.h"
 #include "base/files/file_path.h"
@@ -19,8 +19,8 @@
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/session_util.h"
 #include "ui/app_list/app_list_switches.h"
-#include "ui/app_list/shower/app_list_shower_delegate_factory.h"
-#include "ui/app_list/shower/app_list_shower_impl.h"
+#include "ui/app_list/presenter/app_list_presenter_delegate_factory.h"
+#include "ui/app_list/presenter/app_list_presenter_impl.h"
 #include "ui/app_list/views/app_list_main_view.h"
 #include "ui/app_list/views/app_list_view.h"
 #include "ui/app_list/views/contents_view.h"
@@ -54,19 +54,19 @@ AppListServiceAsh* AppListServiceAsh::GetInstance() {
 }
 
 AppListServiceAsh::AppListServiceAsh()
-    : shower_delegate_factory_(new ash::AppListShowerDelegateFactory(
+    : presenter_delegate_factory_(new ash::AppListPresenterDelegateFactory(
           base::WrapUnique(new ViewDelegateFactoryImpl(this)))) {
-  app_list_shower_.reset(
-      new app_list::AppListShowerImpl(shower_delegate_factory_.get()));
+  app_list_presenter_.reset(
+      new app_list::AppListPresenterImpl(presenter_delegate_factory_.get()));
   controller_delegate_.reset(
-      new AppListControllerDelegateAsh(app_list_shower_.get()));
+      new AppListControllerDelegateAsh(app_list_presenter_.get()));
 }
 
 AppListServiceAsh::~AppListServiceAsh() {
 }
 
-app_list::AppListShower* AppListServiceAsh::GetAppListShower() {
-  return app_list_shower_.get();
+app_list::AppListPresenter* AppListServiceAsh::GetAppListPresenter() {
+  return app_list_presenter_.get();
 }
 
 void AppListServiceAsh::Init(Profile* initial_profile) {
@@ -84,14 +84,14 @@ void AppListServiceAsh::OnProfileWillBeRemoved(
 void AppListServiceAsh::ShowAndSwitchToState(
     app_list::AppListModel::State state) {
   bool app_list_was_open = true;
-  app_list::AppListView* app_list_view = app_list_shower_->GetView();
+  app_list::AppListView* app_list_view = app_list_presenter_->GetView();
   if (!app_list_view) {
     // TODO(calamity): This may cause the app list to show briefly before the
     // state change. If this becomes an issue, add the ability to ash::Shell to
     // load the app list without showing it.
-    app_list_shower_->Show(ash::Shell::GetTargetRootWindow());
+    app_list_presenter_->Show(ash::Shell::GetTargetRootWindow());
     app_list_was_open = false;
-    app_list_view = app_list_shower_->GetView();
+    app_list_view = app_list_presenter_->GetView();
     DCHECK(app_list_view);
   }
 
@@ -112,7 +112,7 @@ void AppListServiceAsh::ShowForProfile(Profile* /*default_profile*/) {
   // This may not work correctly if the profile passed in is different from the
   // one the ash Shell is currently using.
   // TODO(ananta): Handle profile changes correctly when !defined(OS_CHROMEOS).
-  app_list_shower_->Show(ash::Shell::GetTargetRootWindow());
+  app_list_presenter_->Show(ash::Shell::GetTargetRootWindow());
 }
 
 void AppListServiceAsh::ShowForAppInstall(Profile* profile,
@@ -130,7 +130,7 @@ void AppListServiceAsh::ShowForCustomLauncherPage(Profile* /*profile*/) {
 }
 
 void AppListServiceAsh::HideCustomLauncherPage() {
-  app_list::AppListView* app_list_view = app_list_shower_->GetView();
+  app_list::AppListView* app_list_view = app_list_presenter_->GetView();
   if (!app_list_view)
     return;
 
@@ -143,18 +143,18 @@ void AppListServiceAsh::HideCustomLauncherPage() {
 }
 
 bool AppListServiceAsh::IsAppListVisible() const {
-  return app_list_shower_->GetTargetVisibility();
+  return app_list_presenter_->GetTargetVisibility();
 }
 
 void AppListServiceAsh::DismissAppList() {
-  app_list_shower_->Dismiss();
+  app_list_presenter_->Dismiss();
 }
 
 void AppListServiceAsh::EnableAppList(Profile* initial_profile,
                                       AppListEnableSource enable_source) {}
 
 gfx::NativeWindow AppListServiceAsh::GetAppListWindow() {
-  return app_list_shower_->GetWindow();
+  return app_list_presenter_->GetWindow();
 }
 
 Profile* AppListServiceAsh::GetCurrentAppListProfile() {

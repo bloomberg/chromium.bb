@@ -14,7 +14,7 @@
 #include "ash/system/tray/default_system_tray_delegate.h"
 #include "base/strings/string16.h"
 #include "components/user_manager/user_info_impl.h"
-#include "ui/app_list/shower/app_list_shower.h"
+#include "ui/app_list/presenter/app_list_presenter.h"
 #include "ui/gfx/image/image.h"
 
 namespace ash {
@@ -94,12 +94,12 @@ class MediaDelegateStub : public MediaDelegate {
   DISALLOW_COPY_AND_ASSIGN(MediaDelegateStub);
 };
 
-class AppListShowerMus : public app_list::AppListShower {
+class AppListPresenterMus : public app_list::AppListPresenter {
  public:
-  AppListShowerMus() {}
-  ~AppListShowerMus() override {}
+  AppListPresenterMus() {}
+  ~AppListPresenterMus() override {}
 
-  // app_list::AppListShower:
+  // app_list::AppListPresenter:
   void Show(aura::Window* window) override { NOTIMPLEMENTED(); }
   void Dismiss() override { NOTIMPLEMENTED(); }
   bool IsVisible() const override {
@@ -112,12 +112,13 @@ class AppListShowerMus : public app_list::AppListShower {
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(AppListShowerMus);
+  DISALLOW_COPY_AND_ASSIGN(AppListPresenterMus);
 };
 
 }  // namespace
 
-ShellDelegateMus::ShellDelegateMus() : app_list_shower_(new AppListShowerMus) {}
+ShellDelegateMus::ShellDelegateMus()
+    : app_list_presenter_(new AppListPresenterMus) {}
 
 ShellDelegateMus::~ShellDelegateMus() {}
 
@@ -186,8 +187,8 @@ void ShellDelegateMus::OpenUrl(const GURL& url) {
   NOTIMPLEMENTED();
 }
 
-app_list::AppListShower* ShellDelegateMus::GetAppListShower() {
-  return app_list_shower_.get();
+app_list::AppListPresenter* ShellDelegateMus::GetAppListPresenter() {
+  return app_list_presenter_.get();
 }
 
 ShelfDelegate* ShellDelegateMus::CreateShelfDelegate(ShelfModel* model) {

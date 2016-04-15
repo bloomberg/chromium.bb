@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_APP_LIST_APP_LIST_SHOWER_DELEGATE_H_
-#define ASH_APP_LIST_APP_LIST_SHOWER_DELEGATE_H_
+#ifndef ASH_APP_LIST_APP_LIST_PRESENTER_DELEGATE_H_
+#define ASH_APP_LIST_APP_LIST_PRESENTER_DELEGATE_H_
 
 #include "ash/ash_export.h"
 #include "ash/shelf/shelf_icon_observer.h"
 #include "ash/shell_observer.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "ui/app_list/shower/app_list_shower_delegate.h"
+#include "ui/app_list/presenter/app_list_presenter_delegate.h"
 #include "ui/events/event_handler.h"
 #include "ui/keyboard/keyboard_controller_observer.h"
 
@@ -20,7 +20,7 @@ class AppListView;
 }
 
 namespace app_list {
-class AppListShower;
+class AppListPresenter;
 }
 
 namespace ui {
@@ -30,7 +30,7 @@ class LocatedEvent;
 namespace ash {
 
 namespace test {
-class AppListShowerAshTestApi;
+class AppListPresenterAshTestApi;
 }
 
 class AppListViewDelegateFactory;
@@ -39,18 +39,18 @@ class AppListViewDelegateFactory;
 // launch icon as the state of the app list changes. Listens to shell events
 // and touches/mouse clicks outside the app list to auto dismiss the UI or
 // update its layout as necessary.
-class ASH_EXPORT AppListShowerDelegate
-    : public app_list::AppListShowerDelegate,
+class ASH_EXPORT AppListPresenterDelegate
+    : public app_list::AppListPresenterDelegate,
       public ui::EventHandler,
       public keyboard::KeyboardControllerObserver,
       public ShellObserver,
       public ShelfIconObserver {
  public:
-  AppListShowerDelegate(app_list::AppListShower* shower,
-                        AppListViewDelegateFactory* view_delegate_factory);
-  ~AppListShowerDelegate() override;
+  AppListPresenterDelegate(app_list::AppListPresenter* presenter,
+                           AppListViewDelegateFactory* view_delegate_factory);
+  ~AppListPresenterDelegate() override;
 
-  // app_list::AppListShowerDelegate:
+  // app_list::AppListPresenterDelegate:
   app_list::AppListViewDelegate* GetViewDelegate() override;
   void Init(app_list::AppListView* view,
             aura::Window* root_window,
@@ -86,7 +86,7 @@ class ASH_EXPORT AppListShowerDelegate
   bool is_centered_ = false;
 
   // Not owned. Pointer is guaranteed to be valid while this object is alive.
-  app_list::AppListShower* shower_;
+  app_list::AppListPresenter* presenter_;
 
   // Not owned. Pointer is guaranteed to be valid while this object is alive.
   AppListViewDelegateFactory* view_delegate_factory_;
@@ -94,9 +94,9 @@ class ASH_EXPORT AppListShowerDelegate
   // The AppListView this class manages, owned by its widget.
   app_list::AppListView* view_ = nullptr;
 
-  DISALLOW_COPY_AND_ASSIGN(AppListShowerDelegate);
+  DISALLOW_COPY_AND_ASSIGN(AppListPresenterDelegate);
 };
 
 }  // namespace ash
 
-#endif  // ASH_APP_LIST_APP_LIST_SHOWER_DELEGATE_H_
+#endif  // ASH_APP_LIST_APP_LIST_PRESENTER_DELEGATE_H_

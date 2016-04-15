@@ -2404,7 +2404,7 @@
                 '<@(chrome_browser_app_list_ash_test_support_sources)'
               ],
               'dependencies': [
-                '../ui/app_list/shower/app_list_shower.gyp:app_list_shower_test_support',
+                '../ui/app_list/presenter/app_list_presenter.gyp:app_list_presenter_test_support',
               ],
             }],
           ],

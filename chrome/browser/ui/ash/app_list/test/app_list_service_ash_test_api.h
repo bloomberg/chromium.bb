@@ -8,19 +8,19 @@
 #include "base/macros.h"
 
 namespace app_list {
-class AppListShowerImpl;
+class AppListPresenterImpl;
 class AppListView;
 class AppsGridView;
 class StartPageView;
 }
 
-// Accesses private data from an AppListServiceAsh and AppListShowerImpl
+// Accesses private data from an AppListServiceAsh and AppListPresenterImpl
 // for testing.
 class AppListServiceAshTestApi {
  public:
   AppListServiceAshTestApi();
 
-  app_list::AppListShowerImpl* GetAppListShower() const;
+  app_list::AppListPresenterImpl* GetAppListPresenter() const;
 
   app_list::AppListView* GetAppListView() const;
 
