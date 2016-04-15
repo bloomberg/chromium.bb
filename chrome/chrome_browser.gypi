@@ -510,6 +510,8 @@
       'browser/process_singleton_win.cc',
       'browser/push_messaging/background_budget_service.h',
       'browser/push_messaging/background_budget_service.cc',
+      'browser/push_messaging/background_budget_service_factory.h',
+      'browser/push_messaging/background_budget_service_factory.cc',
       'browser/push_messaging/push_messaging_app_identifier.cc',
       'browser/push_messaging/push_messaging_app_identifier.h',
       'browser/push_messaging/push_messaging_constants.cc',

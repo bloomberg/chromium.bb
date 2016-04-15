@@ -6,6 +6,7 @@
 #include <string>
 
 #include "chrome/browser/push_messaging/background_budget_service.h"
+#include "chrome/browser/push_messaging/background_budget_service_factory.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -22,7 +23,9 @@ class BackgroundBudgetServiceTest : public testing::Test {
   BackgroundBudgetServiceTest() {}
   ~BackgroundBudgetServiceTest() override {}
 
-  TestingProfile* profile() { return &profile_; }
+  BackgroundBudgetService* service() {
+    return BackgroundBudgetServiceFactory::GetForProfile(&profile_);
+  }
 
  private:
   content::TestBrowserThreadBundle thread_bundle_;
@@ -32,8 +35,7 @@ class BackgroundBudgetServiceTest : public testing::Test {
 TEST_F(BackgroundBudgetServiceTest, GetBudgetFailure) {
   const GURL origin(kTestOrigin);
 
-  std::string budget_string =
-      BackgroundBudgetService::GetBudget(profile(), origin);
+  std::string budget_string = service()->GetBudget(origin);
 
   EXPECT_EQ(std::string(), budget_string);
 }
@@ -41,10 +43,9 @@ TEST_F(BackgroundBudgetServiceTest, GetBudgetFailure) {
 TEST_F(BackgroundBudgetServiceTest, GetBudgetSuccess) {
   const GURL origin(kTestOrigin);
 
-  BackgroundBudgetService::StoreBudget(profile(), origin, kTestData);
+  service()->StoreBudget(origin, kTestData);
 
-  std::string budget_string =
-      BackgroundBudgetService::GetBudget(profile(), origin);
+  std::string budget_string = service()->GetBudget(origin);
 
   EXPECT_EQ(kTestData, budget_string);
 }

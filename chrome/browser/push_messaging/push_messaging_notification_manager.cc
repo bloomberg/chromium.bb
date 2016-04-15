@@ -14,6 +14,7 @@
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/push_messaging/background_budget_service.h"
+#include "chrome/browser/push_messaging/background_budget_service_factory.h"
 #include "chrome/browser/push_messaging/push_messaging_constants.h"
 #include "chrome/common/features.h"
 #include "chrome/grit/generated_resources.h"
@@ -188,8 +189,9 @@ void PushMessagingNotificationManager::DidGetNotificationsFromDatabase(
   // Don't track push messages that didn't show a notification but were exempt
   // from needing to do so.
   if (notification_shown || notification_needed) {
-    std::string notification_history =
-        BackgroundBudgetService::GetBudget(profile_, origin);
+    BackgroundBudgetService* service =
+        BackgroundBudgetServiceFactory::GetForProfile(profile_);
+    std::string notification_history = service->GetBudget(origin);
     DidGetBudget(origin, service_worker_registration_id, notification_shown,
                  notification_needed, message_handled_closure,
                  notification_history);
@@ -257,7 +259,9 @@ void PushMessagingNotificationManager::DidGetBudget(
   missed_notifications[0] = needed_but_not_shown;
   std::string updated_data(missed_notifications.
       to_string<char, std::string::traits_type, std::string::allocator_type>());
-  BackgroundBudgetService::StoreBudget(profile_, origin, updated_data);
+  BackgroundBudgetService* service =
+      BackgroundBudgetServiceFactory::GetForProfile(profile_);
+  service->StoreBudget(origin, updated_data);
 
   if (notification_shown) {
     RecordUserVisibleStatus(

@@ -25,24 +25,26 @@ std::string GetBudgetStringForOrigin(Profile* profile, const GURL& origin) {
 
 }  // namespace
 
+BackgroundBudgetService::BackgroundBudgetService(Profile* profile)
+    : profile_(profile) {
+  DCHECK(profile);
+}
+
 // static
 void BackgroundBudgetService::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterDictionaryPref(prefs::kBackgroundBudgetMap);
 }
 
-// static
-std::string BackgroundBudgetService::GetBudget(Profile* profile,
-                                               const GURL& origin) {
-  return GetBudgetStringForOrigin(profile, origin);
+std::string BackgroundBudgetService::GetBudget(const GURL& origin) {
+  return GetBudgetStringForOrigin(profile_, origin);
 }
 
-// static
 void BackgroundBudgetService::StoreBudget(
-    Profile* profile,
     const GURL& origin,
     const std::string& notifications_shown) {
-  DictionaryPrefUpdate update(profile->GetPrefs(), prefs::kBackgroundBudgetMap);
+  DictionaryPrefUpdate update(profile_->GetPrefs(),
+                              prefs::kBackgroundBudgetMap);
   base::DictionaryValue* map = update.Get();
   map->SetStringWithoutPathExpansion(origin.spec(), notifications_shown);
 }
