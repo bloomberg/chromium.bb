@@ -745,8 +745,8 @@ weston_transformed_region(int width, int height,
 }
 
 static void
-scaler_surface_to_buffer(struct weston_surface *surface,
-			 float sx, float sy, float *bx, float *by)
+viewport_surface_to_buffer(struct weston_surface *surface,
+			   float sx, float sy, float *bx, float *by)
 {
 	struct weston_buffer_viewport *vp = &surface->buffer_viewport;
 	double src_width, src_height;
@@ -780,8 +780,8 @@ weston_surface_to_buffer_float(struct weston_surface *surface,
 {
 	struct weston_buffer_viewport *vp = &surface->buffer_viewport;
 
-	/* first transform coordinates if the scaler is set */
-	scaler_surface_to_buffer(surface, sx, sy, bx, by);
+	/* first transform coordinates if the viewport is set */
+	viewport_surface_to_buffer(surface, sx, sy, bx, by);
 
 	weston_transformed_coord(surface->width_from_buffer,
 				 surface->height_from_buffer,
@@ -814,12 +814,12 @@ weston_surface_to_buffer_rect(struct weston_surface *surface,
 	struct weston_buffer_viewport *vp = &surface->buffer_viewport;
 	float xf, yf;
 
-	/* first transform box coordinates if the scaler is set */
-	scaler_surface_to_buffer(surface, rect.x1, rect.y1, &xf, &yf);
+	/* first transform box coordinates if the viewport is set */
+	viewport_surface_to_buffer(surface, rect.x1, rect.y1, &xf, &yf);
 	rect.x1 = floorf(xf);
 	rect.y1 = floorf(yf);
 
-	scaler_surface_to_buffer(surface, rect.x2, rect.y2, &xf, &yf);
+	viewport_surface_to_buffer(surface, rect.x2, rect.y2, &xf, &yf);
 	rect.x2 = ceilf(xf);
 	rect.y2 = ceilf(yf);
 
@@ -4309,25 +4309,25 @@ static const struct wp_viewport_interface viewport_interface = {
 };
 
 static void
-scaler_destroy(struct wl_client *client,
-	       struct wl_resource *resource)
+viewporter_destroy(struct wl_client *client,
+		   struct wl_resource *resource)
 {
 	wl_resource_destroy(resource);
 }
 
 static void
-scaler_get_viewport(struct wl_client *client,
-		    struct wl_resource *scaler,
-		    uint32_t id,
-		    struct wl_resource *surface_resource)
+viewporter_get_viewport(struct wl_client *client,
+			struct wl_resource *viewporter,
+			uint32_t id,
+			struct wl_resource *surface_resource)
 {
-	int version = wl_resource_get_version(scaler);
+	int version = wl_resource_get_version(viewporter);
 	struct weston_surface *surface =
 		wl_resource_get_user_data(surface_resource);
 	struct wl_resource *resource;
 
 	if (surface->viewport_resource) {
-		wl_resource_post_error(scaler,
+		wl_resource_post_error(viewporter,
 			WP_VIEWPORTER_ERROR_VIEWPORT_EXISTS,
 			"a viewport for that surface already exists");
 		return;
@@ -4346,14 +4346,14 @@ scaler_get_viewport(struct wl_client *client,
 	surface->viewport_resource = resource;
 }
 
-static const struct wp_viewporter_interface scaler_interface = {
-	scaler_destroy,
-	scaler_get_viewport
+static const struct wp_viewporter_interface viewporter_interface = {
+	viewporter_destroy,
+	viewporter_get_viewport
 };
 
 static void
-bind_scaler(struct wl_client *client,
-	    void *data, uint32_t version, uint32_t id)
+bind_viewporter(struct wl_client *client,
+		void *data, uint32_t version, uint32_t id)
 {
 	struct wl_resource *resource;
 
@@ -4364,7 +4364,7 @@ bind_scaler(struct wl_client *client,
 		return;
 	}
 
-	wl_resource_set_implementation(resource, &scaler_interface,
+	wl_resource_set_implementation(resource, &viewporter_interface,
 				       NULL, NULL);
 }
 
@@ -4548,7 +4548,7 @@ weston_compositor_create(struct wl_display *display, void *user_data)
 		goto fail;
 
 	if (!wl_global_create(ec->wl_display, &wp_viewporter_interface, 1,
-			      ec, bind_scaler))
+			      ec, bind_viewporter))
 		goto fail;
 
 	if (!wl_global_create(ec->wl_display, &wp_presentation_interface, 1,
