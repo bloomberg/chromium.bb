@@ -39,6 +39,9 @@ class VIEWS_EXPORT MenuRunnerImplCocoa : public MenuRunnerImplInterface {
   // The Cocoa menu controller that this instance is bridging.
   base::scoped_nsobject<MenuController> menu_controller_;
 
+  // Are we in run waiting for it to return?
+  bool running_;
+
   // Set if |running_| and Release() has been invoked.
   bool delete_after_run_;
 
