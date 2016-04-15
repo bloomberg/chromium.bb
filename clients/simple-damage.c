@@ -40,7 +40,7 @@
 #include "shared/zalloc.h"
 #include "xdg-shell-unstable-v5-client-protocol.h"
 #include "fullscreen-shell-unstable-v1-client-protocol.h"
-#include "scaler-client-protocol.h"
+#include "viewporter-client-protocol.h"
 
 int print_debug = 0;
 
@@ -49,7 +49,7 @@ struct display {
 	struct wl_registry *registry;
 	int compositor_version;
 	struct wl_compositor *compositor;
-	struct wl_scaler *scaler;
+	struct wp_viewporter *viewporter;
 	struct xdg_shell *shell;
 	struct zwp_fullscreen_shell_v1 *fshell;
 	struct wl_shm *shm;
@@ -72,7 +72,7 @@ struct window {
 	struct display *display;
 	int width, height, border;
 	struct wl_surface *surface;
-	struct wl_viewport *viewport;
+	struct wp_viewport *viewport;
 	struct xdg_surface *xdg_surface;
 	struct wl_callback *callback;
 	struct buffer buffers[2];
@@ -258,8 +258,8 @@ create_window(struct display *display, int width, int height,
 		exit(1);
 	}
 
-	if (display->scaler == NULL && (flags & WINDOW_FLAG_USE_VIEWPORT)) {
-		fprintf(stderr, "Compositor does not support wl_viewport");
+	if (display->viewporter == NULL && (flags & WINDOW_FLAG_USE_VIEWPORT)) {
+		fprintf(stderr, "Compositor does not support wp_viewport");
 		exit(1);
 	}
 
@@ -290,8 +290,8 @@ create_window(struct display *display, int width, int height,
 	window->surface = wl_compositor_create_surface(display->compositor);
 
 	if (window->flags & WINDOW_FLAG_USE_VIEWPORT)
-		window->viewport = wl_scaler_get_viewport(display->scaler,
-							  window->surface);
+		window->viewport = wp_viewporter_get_viewport(display->viewporter,
+							      window->surface);
 
 	if (display->shell) {
 		window->xdg_surface =
@@ -337,7 +337,7 @@ destroy_window(struct window *window)
 	if (window->xdg_surface)
 		xdg_surface_destroy(window->xdg_surface);
 	if (window->viewport)
-		wl_viewport_destroy(window->viewport);
+		wp_viewport_destroy(window->viewport);
 	wl_surface_destroy(window->surface);
 	free(window);
 }
@@ -560,7 +560,7 @@ redraw(void *data, struct wl_callback *callback, uint32_t time)
 			off_x = ty;
 			break;
 		}
-		wl_viewport_set_source(window->viewport,
+		wp_viewport_set_source(window->viewport,
 				       wl_fixed_from_int(window->width / 3),
 				       wl_fixed_from_int(window->height / 5),
 				       wl_fixed_from_int(window->width / 2),
@@ -640,7 +640,7 @@ redraw(void *data, struct wl_callback *callback, uint32_t time)
 						window->transform);
 
 	if (window->viewport)
-		wl_viewport_set_destination(window->viewport,
+		wp_viewport_set_destination(window->viewport,
 					    window->width,
 					    window->height);
 
@@ -709,9 +709,9 @@ registry_handle_global(void *data, struct wl_registry *registry,
 			wl_registry_bind(registry,
 					 id, &wl_compositor_interface,
 					 d->compositor_version);
-	} else if (strcmp(interface, "wl_scaler") == 0 && version >= 2) {
-		d->scaler = wl_registry_bind(registry,
-					     id, &wl_scaler_interface, 2);
+	} else if (strcmp(interface, "wp_viewporter") == 0) {
+		d->viewporter = wl_registry_bind(registry, id,
+						 &wp_viewporter_interface, 1);
 	} else if (strcmp(interface, "xdg_shell") == 0) {
 		d->shell = wl_registry_bind(registry,
 					    id, &xdg_shell_interface, 1);
@@ -784,8 +784,8 @@ destroy_display(struct display *display)
 	if (display->fshell)
 		zwp_fullscreen_shell_v1_release(display->fshell);
 
-	if (display->scaler)
-		wl_scaler_destroy(display->scaler);
+	if (display->viewporter)
+		wp_viewporter_destroy(display->viewporter);
 
 	if (display->compositor)
 		wl_compositor_destroy(display->compositor);
@@ -816,7 +816,7 @@ print_usage(int retval)
 		"  --scale=SCALE\t\tScale factor for the surface\n"
 		"  --transform=TRANSFORM\tTransform for the surface\n"
 		"  --rotating-transform\tUse a different buffer_transform for each frame\n"
-		"  --use-viewport\tUse wl_viewport\n"
+		"  --use-viewport\tUse wp_viewport\n"
 		"  --use-damage-buffer\tUse damage_buffer to post damage\n"
 	);
 

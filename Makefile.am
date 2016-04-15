@@ -486,8 +486,8 @@ weston_simple_shm_LDADD = $(SIMPLE_CLIENT_LIBS) libshared.la
 
 weston_simple_damage_SOURCES = clients/simple-damage.c
 nodist_weston_simple_damage_SOURCES =		\
-	protocol/scaler-protocol.c		\
-	protocol/scaler-client-protocol.h	\
+	protocol/viewporter-protocol.c		\
+	protocol/viewporter-client-protocol.h	\
 	protocol/xdg-shell-unstable-v5-protocol.c		\
 	protocol/xdg-shell-unstable-v5-client-protocol.h	\
 	protocol/fullscreen-shell-unstable-v1-protocol.c	\
