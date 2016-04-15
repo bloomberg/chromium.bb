@@ -51,7 +51,7 @@ void V8TestInterfaceCustomConstructor::constructorCallback(const v8::FunctionCal
     V8TestInterfaceCustomConstructor::constructorCustom(info);
 }
 
-static void installV8TestInterfaceCustomConstructorTemplate(v8::Local<v8::FunctionTemplate> interfaceTemplate, v8::Isolate* isolate)
+static void installV8TestInterfaceCustomConstructorTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world, v8::Local<v8::FunctionTemplate> interfaceTemplate)
 {
     // Initialize the interface object's template.
     V8DOMConfiguration::initializeDOMInterfaceTemplate(isolate, interfaceTemplate, V8TestInterfaceCustomConstructor::wrapperTypeInfo.interfaceName, v8::Local<v8::FunctionTemplate>(), V8TestInterfaceCustomConstructor::internalFieldCount);
@@ -67,9 +67,9 @@ static void installV8TestInterfaceCustomConstructorTemplate(v8::Local<v8::Functi
 
 }
 
-v8::Local<v8::FunctionTemplate> V8TestInterfaceCustomConstructor::domTemplate(v8::Isolate* isolate)
+v8::Local<v8::FunctionTemplate> V8TestInterfaceCustomConstructor::domTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world)
 {
-    return V8DOMConfiguration::domClassTemplate(isolate, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), installV8TestInterfaceCustomConstructorTemplate);
+    return V8DOMConfiguration::domClassTemplate(isolate, world, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), installV8TestInterfaceCustomConstructorTemplate);
 }
 
 bool V8TestInterfaceCustomConstructor::hasInstance(v8::Local<v8::Value> v8Value, v8::Isolate* isolate)

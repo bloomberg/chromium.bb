@@ -7,9 +7,9 @@
 {% from 'interface.cpp' import install_conditionally_enabled_attributes_on_prototype with context %}
 {% from 'methods.cpp' import install_conditionally_enabled_methods
         with context %}
-void {{v8_class_or_partial}}::preparePrototypeAndInterfaceObject(v8::Local<v8::Context> context, v8::Local<v8::Object> prototypeObject, v8::Local<v8::Function> interfaceObject, v8::Local<v8::FunctionTemplate> interfaceTemplate)
+void {{v8_class_or_partial}}::preparePrototypeAndInterfaceObject(v8::Local<v8::Context> context, const DOMWrapperWorld& world, v8::Local<v8::Object> prototypeObject, v8::Local<v8::Function> interfaceObject, v8::Local<v8::FunctionTemplate> interfaceTemplate)
 {
-    {{v8_class}}::preparePrototypeAndInterfaceObject(context, prototypeObject, interfaceObject, interfaceTemplate);
+    {{v8_class}}::preparePrototypeAndInterfaceObject(context, world, prototypeObject, interfaceObject, interfaceTemplate);
 {% if unscopeables or
       has_conditional_attributes_on_prototype or
       conditionally_enabled_methods %}

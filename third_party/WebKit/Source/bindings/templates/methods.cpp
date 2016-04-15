@@ -530,21 +530,27 @@ static void {{method.name}}MethodCallback{{world_suffix}}(const v8::FunctionCall
 {% macro origin_safe_method_getter(method, world_suffix) %}
 static void {{method.name}}OriginSafeMethodGetter{{world_suffix}}(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    {% set signature = 'v8::Signature::New(info.GetIsolate(), %s::domTemplate(info.GetIsolate()))' % v8_class %}
     static int domTemplateKey; // This address is used for a key to look up the dom template.
     V8PerIsolateData* data = V8PerIsolateData::from(info.GetIsolate());
-    v8::Local<v8::FunctionTemplate> domTemplate = data->domTemplate(&domTemplateKey, {{cpp_class}}V8Internal::{{method.name}}MethodCallback{{world_suffix}}, v8Undefined(), {{signature}}, {{method.length}});
+    const DOMWrapperWorld& world = DOMWrapperWorld::world(info.GetIsolate()->GetCurrentContext());
+    v8::Local<v8::FunctionTemplate> interfaceTemplate = data->findInterfaceTemplate(world, &{{v8_class}}::wrapperTypeInfo);
+    v8::Local<v8::Signature> signature = v8::Signature::New(info.GetIsolate(), interfaceTemplate);
 
+    v8::Local<v8::FunctionTemplate> methodTemplate = data->findOrCreateOperationTemplate(world, &domTemplateKey, {{cpp_class}}V8Internal::{{method.name}}MethodCallback{{world_suffix}}, v8Undefined(), signature, {{method.length}});
+    // Return the function by default, unless the user script has overwritten it.
+    v8SetReturnValue(info, methodTemplate->GetFunction(info.GetIsolate()->GetCurrentContext()).ToLocalChecked());
+
+    // Check whether or not the user script has overwritten the property, which
+    // is stored in a private value (aka hidden value).
+    //
     // It is unsafe to use info.Holder() because OriginSafeMethodGetter is called
     // back without checking the type of info.Holder().
-    v8::Local<v8::Object> holder = {{v8_class}}::findInstanceInPrototypeChain(info.This(), info.GetIsolate());
+    v8::Local<v8::Object> holder = info.This()->FindInstanceInPrototypeChain(interfaceTemplate);
     if (holder.IsEmpty()) {
-        v8SetReturnValue(info, domTemplate->GetFunction(info.GetIsolate()->GetCurrentContext()).ToLocalChecked());
         return;
     }
     {{cpp_class}}* impl = {{v8_class}}::toImpl(holder);
     if (!BindingSecurity::shouldAllowAccessTo(info.GetIsolate(), callingDOMWindow(info.GetIsolate()), impl, DoNotReportSecurityError)) {
-        v8SetReturnValue(info, domTemplate->GetFunction(info.GetIsolate()->GetCurrentContext()).ToLocalChecked());
         return;
     }
 
@@ -552,10 +558,7 @@ static void {{method.name}}OriginSafeMethodGetter{{world_suffix}}(const v8::Prop
     v8::Local<v8::Value> hiddenValue = V8HiddenValue::getHiddenValue(ScriptState::current(info.GetIsolate()), v8::Local<v8::Object>::Cast(info.This()), v8AtomicString(info.GetIsolate(), "{{method.name}}"));
     if (!hiddenValue.IsEmpty()) {
         v8SetReturnValue(info, hiddenValue);
-        return;
     }
-
-    v8SetReturnValue(info, domTemplate->GetFunction(info.GetIsolate()->GetCurrentContext()).ToLocalChecked());
 }
 
 static void {{method.name}}OriginSafeMethodGetterCallback{{world_suffix}}(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -673,14 +676,14 @@ v8SetReturnValue(info, wrapper);
 {######################################}
 {% macro install_custom_signature(method, instance_template, prototype_template, interface_template, signature) %}
 const V8DOMConfiguration::MethodConfiguration {{method.name}}MethodConfiguration = {{method_configuration(method)}};
-V8DOMConfiguration::installMethod(isolate, {{instance_template}}, {{prototype_template}}, {{interface_template}}, {{signature}}, {{method.name}}MethodConfiguration);
+V8DOMConfiguration::installMethod(isolate, world, {{instance_template}}, {{prototype_template}}, {{interface_template}}, {{signature}}, {{method.name}}MethodConfiguration);
 {%- endmacro %}
 
 {######################################}
 {% macro install_conditionally_enabled_methods() %}
 {% if conditionally_enabled_methods %}
 {# Define operations with limited exposure #}
-v8::Local<v8::Signature> signature = v8::Signature::New(isolate, domTemplate(isolate));
+v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTemplate);
 ExecutionContext* executionContext = toExecutionContext(prototypeObject->CreationContext());
 ASSERT(executionContext);
 {% for method in conditionally_enabled_methods %}
@@ -691,7 +694,7 @@ ASSERT(executionContext);
                           if method.overloads else
                           method.runtime_enabled_function) %}
 const V8DOMConfiguration::MethodConfiguration {{method.name}}MethodConfiguration = {{method_configuration(method)}};
-V8DOMConfiguration::installMethod(isolate, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, {{method.name}}MethodConfiguration);
+V8DOMConfiguration::installMethod(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, {{method.name}}MethodConfiguration);
 {% endfilter %}{# runtime_enabled() #}
 {% endfilter %}{# exposed() #}
 {% endfor %}

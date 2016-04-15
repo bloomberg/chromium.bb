@@ -136,11 +136,11 @@ static void V8TestInterfaceNamedConstructorConstructorCallback(const v8::Functio
     v8SetReturnValue(info, wrapper);
 }
 
-v8::Local<v8::FunctionTemplate> V8TestInterfaceNamedConstructorConstructor::domTemplate(v8::Isolate* isolate)
+v8::Local<v8::FunctionTemplate> V8TestInterfaceNamedConstructorConstructor::domTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world)
 {
     static int domTemplateKey; // This address is used for a key to look up the dom template.
     V8PerIsolateData* data = V8PerIsolateData::from(isolate);
-    v8::Local<v8::FunctionTemplate> result = data->existingDOMTemplate(&domTemplateKey);
+    v8::Local<v8::FunctionTemplate> result = data->findInterfaceTemplate(world, &domTemplateKey);
     if (!result.IsEmpty())
         return result;
 
@@ -148,12 +148,12 @@ v8::Local<v8::FunctionTemplate> V8TestInterfaceNamedConstructorConstructor::domT
     v8::Local<v8::ObjectTemplate> instanceTemplate = result->InstanceTemplate();
     instanceTemplate->SetInternalFieldCount(V8TestInterfaceNamedConstructor::internalFieldCount);
     result->SetClassName(v8AtomicString(isolate, "TestInterfaceNamedConstructor"));
-    result->Inherit(V8TestInterfaceNamedConstructor::domTemplate(isolate));
-    data->setDOMTemplate(&domTemplateKey, result);
+    result->Inherit(V8TestInterfaceNamedConstructor::domTemplate(isolate, world));
+    data->setInterfaceTemplate(world, &domTemplateKey, result);
     return result;
 }
 
-static void installV8TestInterfaceNamedConstructorTemplate(v8::Local<v8::FunctionTemplate> interfaceTemplate, v8::Isolate* isolate)
+static void installV8TestInterfaceNamedConstructorTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world, v8::Local<v8::FunctionTemplate> interfaceTemplate)
 {
     // Initialize the interface object's template.
     V8DOMConfiguration::initializeDOMInterfaceTemplate(isolate, interfaceTemplate, V8TestInterfaceNamedConstructor::wrapperTypeInfo.interfaceName, v8::Local<v8::FunctionTemplate>(), V8TestInterfaceNamedConstructor::internalFieldCount);
@@ -164,12 +164,12 @@ static void installV8TestInterfaceNamedConstructorTemplate(v8::Local<v8::Functio
     v8::Local<v8::ObjectTemplate> prototypeTemplate = interfaceTemplate->PrototypeTemplate();
     ALLOW_UNUSED_LOCAL(prototypeTemplate);
     // Register DOM constants, attributes and operations.
-    V8DOMConfiguration::installAttributes(isolate, instanceTemplate, prototypeTemplate, V8TestInterfaceNamedConstructorAttributes, WTF_ARRAY_LENGTH(V8TestInterfaceNamedConstructorAttributes));
+    V8DOMConfiguration::installAttributes(isolate, world, instanceTemplate, prototypeTemplate, V8TestInterfaceNamedConstructorAttributes, WTF_ARRAY_LENGTH(V8TestInterfaceNamedConstructorAttributes));
 }
 
-v8::Local<v8::FunctionTemplate> V8TestInterfaceNamedConstructor::domTemplate(v8::Isolate* isolate)
+v8::Local<v8::FunctionTemplate> V8TestInterfaceNamedConstructor::domTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world)
 {
-    return V8DOMConfiguration::domClassTemplate(isolate, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), installV8TestInterfaceNamedConstructorTemplate);
+    return V8DOMConfiguration::domClassTemplate(isolate, world, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), installV8TestInterfaceNamedConstructorTemplate);
 }
 
 bool V8TestInterfaceNamedConstructor::hasInstance(v8::Local<v8::Value> v8Value, v8::Isolate* isolate)

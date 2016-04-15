@@ -470,11 +470,11 @@ const WrapperTypeInfo {{v8_class}}Constructor::wrapperTypeInfo = { gin::kEmbedde
 #endif
 
 {{generate_constructor(named_constructor)}}
-v8::Local<v8::FunctionTemplate> {{v8_class}}Constructor::domTemplate(v8::Isolate* isolate)
+v8::Local<v8::FunctionTemplate> {{v8_class}}Constructor::domTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world)
 {
     static int domTemplateKey; // This address is used for a key to look up the dom template.
     V8PerIsolateData* data = V8PerIsolateData::from(isolate);
-    v8::Local<v8::FunctionTemplate> result = data->existingDOMTemplate(&domTemplateKey);
+    v8::Local<v8::FunctionTemplate> result = data->findInterfaceTemplate(world, &domTemplateKey);
     if (!result.IsEmpty())
         return result;
 
@@ -482,8 +482,8 @@ v8::Local<v8::FunctionTemplate> {{v8_class}}Constructor::domTemplate(v8::Isolate
     v8::Local<v8::ObjectTemplate> instanceTemplate = result->InstanceTemplate();
     instanceTemplate->SetInternalFieldCount({{v8_class}}::internalFieldCount);
     result->SetClassName(v8AtomicString(isolate, "{{cpp_class}}"));
-    result->Inherit({{v8_class}}::domTemplate(isolate));
-    data->setDOMTemplate(&domTemplateKey, result);
+    result->Inherit({{v8_class}}::domTemplate(isolate, world));
+    data->setInterfaceTemplate(world, &domTemplateKey, result);
     return result;
 }
 
@@ -622,7 +622,7 @@ void {{v8_class}}::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>
 const V8DOMConfiguration::AttributeConfiguration {{method.name}}OriginSafeAttributeConfiguration = {
     "{{method.name}}", {{getter_callback}}, {{setter_callback}}, {{getter_callback_for_main_world}}, {{setter_callback_for_main_world}}, &{{v8_class}}::wrapperTypeInfo, v8::ALL_CAN_READ, {{property_attribute}}, {{only_exposed_to_private_script}}, {{property_location(method)}}, {{holder_check}},
 };
-V8DOMConfiguration::installAttribute(isolate, {{instance_template}}, {{prototype_template}}, {{method.name}}OriginSafeAttributeConfiguration);
+V8DOMConfiguration::installAttribute(isolate, world, {{instance_template}}, {{prototype_template}}, {{method.name}}OriginSafeAttributeConfiguration);
 {%- endmacro %}
 
 
@@ -686,10 +686,10 @@ v8::NamedPropertyHandlerConfiguration namedPropertyHandlerConfig({{named_propert
 {##############################################################################}
 {% block get_dom_template %}
 {% if not is_array_buffer_or_view %}
-v8::Local<v8::FunctionTemplate> {{v8_class}}::domTemplate(v8::Isolate* isolate)
+v8::Local<v8::FunctionTemplate> {{v8_class}}::domTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world)
 {
     {% set installTemplateFunction = '%s::install%sTemplateFunction' % (v8_class, v8_class) if has_partial_interface else 'install%sTemplate' % v8_class %}
-    return V8DOMConfiguration::domClassTemplate(isolate, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), {{installTemplateFunction}});
+    return V8DOMConfiguration::domClassTemplate(isolate, world, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), {{installTemplateFunction}});
 }
 
 {% endif %}
@@ -699,9 +699,9 @@ v8::Local<v8::FunctionTemplate> {{v8_class}}::domTemplate(v8::Isolate* isolate)
 {##############################################################################}
 {% block get_dom_template_for_named_properties_object %}
 {% if has_named_properties_object %}
-v8::Local<v8::FunctionTemplate> {{v8_class}}::domTemplateForNamedPropertiesObject(v8::Isolate* isolate)
+v8::Local<v8::FunctionTemplate> {{v8_class}}::domTemplateForNamedPropertiesObject(v8::Isolate* isolate, const DOMWrapperWorld& world)
 {
-    v8::Local<v8::FunctionTemplate> parentTemplate = V8{{parent_interface}}::domTemplate(isolate);
+    v8::Local<v8::FunctionTemplate> parentTemplate = V8{{parent_interface}}::domTemplate(isolate, world);
 
     v8::Local<v8::FunctionTemplate> namedPropertiesObjectFunctionTemplate = v8::FunctionTemplate::New(isolate);
     namedPropertiesObjectFunctionTemplate->SetClassName(v8AtomicString(isolate, "{{interface_name}}Properties"));
@@ -853,7 +853,7 @@ void {{v8_class}}::installConditionallyEnabledProperties(v8::Local<v8::Object> i
 {% block prepare_prototype_and_interface_object %}
 {% from 'methods.cpp' import install_conditionally_enabled_methods with context %}
 {% if unscopeables or has_conditional_attributes_on_prototype or conditionally_enabled_methods %}
-void {{v8_class}}::preparePrototypeAndInterfaceObject(v8::Local<v8::Context> context, v8::Local<v8::Object> prototypeObject, v8::Local<v8::Function> interfaceObject, v8::Local<v8::FunctionTemplate> interfaceTemplate)
+void {{v8_class}}::preparePrototypeAndInterfaceObject(v8::Local<v8::Context> context, const DOMWrapperWorld& world, v8::Local<v8::Object> prototypeObject, v8::Local<v8::Function> interfaceObject, v8::Local<v8::FunctionTemplate> interfaceTemplate)
 {
     v8::Isolate* isolate = context->GetIsolate();
 {% if unscopeables %}
@@ -896,7 +896,7 @@ v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTempla
 {% for attribute in attributes if attribute.exposed_test and attribute.on_prototype %}
 {% filter exposed(attribute.exposed_test) %}
 const V8DOMConfiguration::AccessorConfiguration accessorConfiguration = {{attribute_configuration(attribute)}};
-V8DOMConfiguration::installAccessor(isolate, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, accessorConfiguration);
+V8DOMConfiguration::installAccessor(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, accessorConfiguration);
 {% endfilter %}
 {% endfor %}
 {% endmacro %}

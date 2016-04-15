@@ -54,8 +54,15 @@ v8::Local<v8::Object> V8DOMWrapper::createWrapper(v8::Isolate* isolate, v8::Loca
     if (perContextData) {
         wrapper = perContextData->createWrapperFromCache(type);
     } else {
-        if (!type->domTemplate(isolate)->InstanceTemplate()->NewInstance(scope.context()).ToLocal(&wrapper))
-            return v8::Local<v8::Object>();
+        // The context is detached, but still accessible.
+        // TODO(yukishiino): This code does not create a wrapper with
+        // the correct settings.  Should follow the same way as
+        // V8PerContextData::createWrapperFromCache, though there is no need to
+        // cache resulting objects or their constructors.
+        const DOMWrapperWorld& world = DOMWrapperWorld::world(scope.context());
+        if (!type->domTemplate(isolate, world)->InstanceTemplate()->NewInstance(scope.context()).ToLocal(&wrapper)) {
+            // Nothing to do.
+        }
     }
 
     return wrapper;

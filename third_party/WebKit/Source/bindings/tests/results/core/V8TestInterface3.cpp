@@ -213,7 +213,7 @@ const V8DOMConfiguration::MethodConfiguration V8TestInterface3Methods[] = {
     {"voidMethodDocument", TestInterface3V8Internal::voidMethodDocumentMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
 };
 
-static void installV8TestInterface3Template(v8::Local<v8::FunctionTemplate> interfaceTemplate, v8::Isolate* isolate)
+static void installV8TestInterface3Template(v8::Isolate* isolate, const DOMWrapperWorld& world, v8::Local<v8::FunctionTemplate> interfaceTemplate)
 {
     // Initialize the interface object's template.
     V8DOMConfiguration::initializeDOMInterfaceTemplate(isolate, interfaceTemplate, V8TestInterface3::wrapperTypeInfo.interfaceName, v8::Local<v8::FunctionTemplate>(), V8TestInterface3::internalFieldCount);
@@ -224,7 +224,7 @@ static void installV8TestInterface3Template(v8::Local<v8::FunctionTemplate> inte
     v8::Local<v8::ObjectTemplate> prototypeTemplate = interfaceTemplate->PrototypeTemplate();
     ALLOW_UNUSED_LOCAL(prototypeTemplate);
     // Register DOM constants, attributes and operations.
-    V8DOMConfiguration::installMethods(isolate, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestInterface3Methods, WTF_ARRAY_LENGTH(V8TestInterface3Methods));
+    V8DOMConfiguration::installMethods(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestInterface3Methods, WTF_ARRAY_LENGTH(V8TestInterface3Methods));
 
     // Indexed properties
     v8::IndexedPropertyHandlerConfiguration indexedPropertyHandlerConfig(TestInterface3V8Internal::indexedPropertyGetterCallback, TestInterface3V8Internal::indexedPropertySetterCallback, 0, TestInterface3V8Internal::indexedPropertyDeleterCallback, indexedPropertyEnumerator<TestInterface3>, v8::Local<v8::Value>(), v8::PropertyHandlerFlags::kNone);
@@ -236,30 +236,30 @@ static void installV8TestInterface3Template(v8::Local<v8::FunctionTemplate> inte
     if (RuntimeEnabledFeatures::featureNameEnabled()) {
         // Iterator (@@iterator)
         const V8DOMConfiguration::SymbolKeyedMethodConfiguration symbolKeyedIteratorConfiguration = { v8::Symbol::GetIterator, TestInterface3V8Internal::iteratorMethodCallback, 0, v8::DontDelete, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype };
-        V8DOMConfiguration::installMethod(isolate, prototypeTemplate, signature, symbolKeyedIteratorConfiguration);
+        V8DOMConfiguration::installMethod(isolate, world, prototypeTemplate, signature, symbolKeyedIteratorConfiguration);
     }
 
     if (RuntimeEnabledFeatures::featureNameEnabled()) {
         const V8DOMConfiguration::MethodConfiguration keysMethodConfiguration = {"keys", TestInterface3V8Internal::keysMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype};
-        V8DOMConfiguration::installMethod(isolate, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, keysMethodConfiguration);
+        V8DOMConfiguration::installMethod(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, keysMethodConfiguration);
     }
     if (RuntimeEnabledFeatures::featureNameEnabled()) {
         const V8DOMConfiguration::MethodConfiguration valuesMethodConfiguration = {"values", TestInterface3V8Internal::valuesMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype};
-        V8DOMConfiguration::installMethod(isolate, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, valuesMethodConfiguration);
+        V8DOMConfiguration::installMethod(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, valuesMethodConfiguration);
     }
     if (RuntimeEnabledFeatures::featureNameEnabled()) {
         const V8DOMConfiguration::MethodConfiguration entriesMethodConfiguration = {"entries", TestInterface3V8Internal::entriesMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype};
-        V8DOMConfiguration::installMethod(isolate, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, entriesMethodConfiguration);
+        V8DOMConfiguration::installMethod(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, entriesMethodConfiguration);
     }
     if (RuntimeEnabledFeatures::featureNameEnabled()) {
         const V8DOMConfiguration::MethodConfiguration forEachMethodConfiguration = {"forEach", TestInterface3V8Internal::forEachMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype};
-        V8DOMConfiguration::installMethod(isolate, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, forEachMethodConfiguration);
+        V8DOMConfiguration::installMethod(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, forEachMethodConfiguration);
     }
 }
 
-v8::Local<v8::FunctionTemplate> V8TestInterface3::domTemplate(v8::Isolate* isolate)
+v8::Local<v8::FunctionTemplate> V8TestInterface3::domTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world)
 {
-    return V8DOMConfiguration::domClassTemplate(isolate, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), installV8TestInterface3Template);
+    return V8DOMConfiguration::domClassTemplate(isolate, world, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), installV8TestInterface3Template);
 }
 
 bool V8TestInterface3::hasInstance(v8::Local<v8::Value> v8Value, v8::Isolate* isolate)

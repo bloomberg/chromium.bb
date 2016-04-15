@@ -115,7 +115,7 @@ void V8TestException::constructorCallback(const v8::FunctionCallbackInfo<v8::Val
     TestExceptionV8Internal::constructor(info);
 }
 
-static void installV8TestExceptionTemplate(v8::Local<v8::FunctionTemplate> interfaceTemplate, v8::Isolate* isolate)
+static void installV8TestExceptionTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world, v8::Local<v8::FunctionTemplate> interfaceTemplate)
 {
     // Initialize the interface object's template.
     V8DOMConfiguration::initializeDOMInterfaceTemplate(isolate, interfaceTemplate, V8TestException::wrapperTypeInfo.interfaceName, v8::Local<v8::FunctionTemplate>(), V8TestException::internalFieldCount);
@@ -132,13 +132,13 @@ static void installV8TestExceptionTemplate(v8::Local<v8::FunctionTemplate> inter
         {"UNSIGNED_SHORT_CONSTANT", 1, 0, V8DOMConfiguration::ConstantTypeUnsignedShort},
     };
     V8DOMConfiguration::installConstants(isolate, interfaceTemplate, prototypeTemplate, V8TestExceptionConstants, WTF_ARRAY_LENGTH(V8TestExceptionConstants));
-    V8DOMConfiguration::installAccessors(isolate, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestExceptionAccessors, WTF_ARRAY_LENGTH(V8TestExceptionAccessors));
-    V8DOMConfiguration::installMethods(isolate, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestExceptionMethods, WTF_ARRAY_LENGTH(V8TestExceptionMethods));
+    V8DOMConfiguration::installAccessors(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestExceptionAccessors, WTF_ARRAY_LENGTH(V8TestExceptionAccessors));
+    V8DOMConfiguration::installMethods(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestExceptionMethods, WTF_ARRAY_LENGTH(V8TestExceptionMethods));
 }
 
-v8::Local<v8::FunctionTemplate> V8TestException::domTemplate(v8::Isolate* isolate)
+v8::Local<v8::FunctionTemplate> V8TestException::domTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world)
 {
-    return V8DOMConfiguration::domClassTemplate(isolate, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), installV8TestExceptionTemplate);
+    return V8DOMConfiguration::domClassTemplate(isolate, world, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), installV8TestExceptionTemplate);
 }
 
 bool V8TestException::hasInstance(v8::Local<v8::Value> v8Value, v8::Isolate* isolate)

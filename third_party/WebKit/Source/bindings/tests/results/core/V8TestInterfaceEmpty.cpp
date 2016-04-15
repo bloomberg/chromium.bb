@@ -35,7 +35,7 @@ namespace TestInterfaceEmptyV8Internal {
 
 } // namespace TestInterfaceEmptyV8Internal
 
-static void installV8TestInterfaceEmptyTemplate(v8::Local<v8::FunctionTemplate> interfaceTemplate, v8::Isolate* isolate)
+static void installV8TestInterfaceEmptyTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world, v8::Local<v8::FunctionTemplate> interfaceTemplate)
 {
     // Initialize the interface object's template.
     V8DOMConfiguration::initializeDOMInterfaceTemplate(isolate, interfaceTemplate, V8TestInterfaceEmpty::wrapperTypeInfo.interfaceName, v8::Local<v8::FunctionTemplate>(), V8TestInterfaceEmpty::internalFieldCount);
@@ -49,9 +49,9 @@ static void installV8TestInterfaceEmptyTemplate(v8::Local<v8::FunctionTemplate> 
 
 }
 
-v8::Local<v8::FunctionTemplate> V8TestInterfaceEmpty::domTemplate(v8::Isolate* isolate)
+v8::Local<v8::FunctionTemplate> V8TestInterfaceEmpty::domTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world)
 {
-    return V8DOMConfiguration::domClassTemplate(isolate, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), installV8TestInterfaceEmptyTemplate);
+    return V8DOMConfiguration::domClassTemplate(isolate, world, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), installV8TestInterfaceEmptyTemplate);
 }
 
 bool V8TestInterfaceEmpty::hasInstance(v8::Local<v8::Value> v8Value, v8::Isolate* isolate)

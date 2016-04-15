@@ -2047,10 +2047,10 @@ const V8DOMConfiguration::MethodConfiguration V8TestInterfaceMethods[] = {
     {"toString", TestInterfaceImplementationV8Internal::toStringMethodCallback, 0, 0, static_cast<v8::PropertyAttribute>(v8::DontEnum), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
 };
 
-void V8TestInterface::installV8TestInterfaceTemplate(v8::Local<v8::FunctionTemplate> interfaceTemplate, v8::Isolate* isolate)
+void V8TestInterface::installV8TestInterfaceTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world, v8::Local<v8::FunctionTemplate> interfaceTemplate)
 {
     // Initialize the interface object's template.
-    V8DOMConfiguration::initializeDOMInterfaceTemplate(isolate, interfaceTemplate, V8TestInterface::wrapperTypeInfo.interfaceName, V8TestInterfaceEmpty::domTemplate(isolate), V8TestInterface::internalFieldCount);
+    V8DOMConfiguration::initializeDOMInterfaceTemplate(isolate, interfaceTemplate, V8TestInterface::wrapperTypeInfo.interfaceName, V8TestInterfaceEmpty::domTemplate(isolate, world), V8TestInterface::internalFieldCount);
     v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTemplate);
     ALLOW_UNUSED_LOCAL(signature);
     v8::Local<v8::ObjectTemplate> instanceTemplate = interfaceTemplate->InstanceTemplate();
@@ -2073,54 +2073,54 @@ void V8TestInterface::installV8TestInterfaceTemplate(v8::Local<v8::FunctionTempl
             const V8DOMConfiguration::ConstantConfiguration constantPartialDoubleConfiguration = {"PARTIAL_DOUBLE", 0, 3.14, V8DOMConfiguration::ConstantTypeDouble};
             V8DOMConfiguration::installConstant(isolate, interfaceTemplate, prototypeTemplate, constantPartialDoubleConfiguration);
         }
-        V8DOMConfiguration::installAttributes(isolate, instanceTemplate, prototypeTemplate, V8TestInterfaceAttributes, WTF_ARRAY_LENGTH(V8TestInterfaceAttributes));
-        V8DOMConfiguration::installAccessors(isolate, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestInterfaceAccessors, WTF_ARRAY_LENGTH(V8TestInterfaceAccessors));
-        V8DOMConfiguration::installMethods(isolate, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestInterfaceMethods, WTF_ARRAY_LENGTH(V8TestInterfaceMethods));
+        V8DOMConfiguration::installAttributes(isolate, world, instanceTemplate, prototypeTemplate, V8TestInterfaceAttributes, WTF_ARRAY_LENGTH(V8TestInterfaceAttributes));
+        V8DOMConfiguration::installAccessors(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestInterfaceAccessors, WTF_ARRAY_LENGTH(V8TestInterfaceAccessors));
+        V8DOMConfiguration::installMethods(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestInterfaceMethods, WTF_ARRAY_LENGTH(V8TestInterfaceMethods));
     } // if (RuntimeEnabledFeatures::featureNameEnabled())
 
     if (RuntimeEnabledFeatures::featureNameEnabled()) {
         const V8DOMConfiguration::AccessorConfiguration accessorconditionalReadOnlyLongAttributeConfiguration = \
         {"conditionalReadOnlyLongAttribute", TestInterfaceImplementationV8Internal::conditionalReadOnlyLongAttributeAttributeGetterCallback, 0, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
-        V8DOMConfiguration::installAccessor(isolate, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, accessorconditionalReadOnlyLongAttributeConfiguration);
+        V8DOMConfiguration::installAccessor(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, accessorconditionalReadOnlyLongAttributeConfiguration);
         const V8DOMConfiguration::AccessorConfiguration accessorstaticConditionalReadOnlyLongAttributeConfiguration = \
         {"staticConditionalReadOnlyLongAttribute", TestInterfaceImplementationV8Internal::staticConditionalReadOnlyLongAttributeAttributeGetterCallback, 0, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInterface, V8DOMConfiguration::CheckHolder};
-        V8DOMConfiguration::installAccessor(isolate, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, accessorstaticConditionalReadOnlyLongAttributeConfiguration);
+        V8DOMConfiguration::installAccessor(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, accessorstaticConditionalReadOnlyLongAttributeConfiguration);
         const V8DOMConfiguration::AccessorConfiguration accessorconditionalLongAttributeConfiguration = \
         {"conditionalLongAttribute", TestInterfaceImplementationV8Internal::conditionalLongAttributeAttributeGetterCallback, TestInterfaceImplementationV8Internal::conditionalLongAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
-        V8DOMConfiguration::installAccessor(isolate, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, accessorconditionalLongAttributeConfiguration);
+        V8DOMConfiguration::installAccessor(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, accessorconditionalLongAttributeConfiguration);
     }
 
     if (RuntimeEnabledFeatures::implements2FeatureNameEnabled()) {
         const V8DOMConfiguration::AccessorConfiguration accessorimplements2StaticStringAttributeConfiguration = \
         {"implements2StaticStringAttribute", TestInterfaceImplementationV8Internal::implements2StaticStringAttributeAttributeGetterCallback, TestInterfaceImplementationV8Internal::implements2StaticStringAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInterface, V8DOMConfiguration::CheckHolder};
-        V8DOMConfiguration::installAccessor(isolate, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, accessorimplements2StaticStringAttributeConfiguration);
+        V8DOMConfiguration::installAccessor(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, accessorimplements2StaticStringAttributeConfiguration);
         const V8DOMConfiguration::AccessorConfiguration accessorimplements2StringAttributeConfiguration = \
         {"implements2StringAttribute", TestInterfaceImplementationV8Internal::implements2StringAttributeAttributeGetterCallback, TestInterfaceImplementationV8Internal::implements2StringAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
-        V8DOMConfiguration::installAccessor(isolate, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, accessorimplements2StringAttributeConfiguration);
+        V8DOMConfiguration::installAccessor(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, accessorimplements2StringAttributeConfiguration);
     }
 
     if (RuntimeEnabledFeatures::implementsFeatureNameEnabled()) {
         const V8DOMConfiguration::AccessorConfiguration accessorimplementsRuntimeEnabledNodeAttributeConfiguration = \
         {"implementsRuntimeEnabledNodeAttribute", TestInterfaceImplementationV8Internal::implementsRuntimeEnabledNodeAttributeAttributeGetterCallback, TestInterfaceImplementationV8Internal::implementsRuntimeEnabledNodeAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
-        V8DOMConfiguration::installAccessor(isolate, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, accessorimplementsRuntimeEnabledNodeAttributeConfiguration);
+        V8DOMConfiguration::installAccessor(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, accessorimplementsRuntimeEnabledNodeAttributeConfiguration);
     }
 
     if (RuntimeEnabledFeatures::partialFeatureNameEnabled()) {
         const V8DOMConfiguration::AccessorConfiguration accessorpartialPartialEnumTypeAttributeConfiguration = \
         {"partialPartialEnumTypeAttribute", TestInterfaceImplementationV8Internal::partialPartialEnumTypeAttributeAttributeGetterCallback, TestInterfaceImplementationV8Internal::partialPartialEnumTypeAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
-        V8DOMConfiguration::installAccessor(isolate, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, accessorpartialPartialEnumTypeAttributeConfiguration);
+        V8DOMConfiguration::installAccessor(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, accessorpartialPartialEnumTypeAttributeConfiguration);
         const V8DOMConfiguration::AccessorConfiguration accessorpartialCallWithExecutionContextLongAttributeConfiguration = \
         {"partialCallWithExecutionContextLongAttribute", TestInterfaceImplementationV8Internal::partialCallWithExecutionContextLongAttributeAttributeGetterCallback, TestInterfaceImplementationV8Internal::partialCallWithExecutionContextLongAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
-        V8DOMConfiguration::installAccessor(isolate, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, accessorpartialCallWithExecutionContextLongAttributeConfiguration);
+        V8DOMConfiguration::installAccessor(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, accessorpartialCallWithExecutionContextLongAttributeConfiguration);
         const V8DOMConfiguration::AccessorConfiguration accessorpartialLongAttributeConfiguration = \
         {"partialLongAttribute", TestInterfaceImplementationV8Internal::partialLongAttributeAttributeGetterCallback, TestInterfaceImplementationV8Internal::partialLongAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
-        V8DOMConfiguration::installAccessor(isolate, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, accessorpartialLongAttributeConfiguration);
+        V8DOMConfiguration::installAccessor(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, accessorpartialLongAttributeConfiguration);
         const V8DOMConfiguration::AccessorConfiguration accessorpartialStaticLongAttributeConfiguration = \
         {"partialStaticLongAttribute", TestInterfaceImplementationV8Internal::partialStaticLongAttributeAttributeGetterCallback, TestInterfaceImplementationV8Internal::partialStaticLongAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInterface, V8DOMConfiguration::CheckHolder};
-        V8DOMConfiguration::installAccessor(isolate, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, accessorpartialStaticLongAttributeConfiguration);
+        V8DOMConfiguration::installAccessor(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, accessorpartialStaticLongAttributeConfiguration);
         const V8DOMConfiguration::AccessorConfiguration accessorstringAttributeConfiguration = \
         {"stringAttribute", TestInterfaceImplementationV8Internal::stringAttributeAttributeGetterCallback, TestInterfaceImplementationV8Internal::stringAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
-        V8DOMConfiguration::installAccessor(isolate, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, accessorstringAttributeConfiguration);
+        V8DOMConfiguration::installAccessor(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, accessorstringAttributeConfiguration);
     }
 
     // Indexed properties
@@ -2132,43 +2132,43 @@ void V8TestInterface::installV8TestInterfaceTemplate(v8::Local<v8::FunctionTempl
 
     // Iterator (@@iterator)
     const V8DOMConfiguration::SymbolKeyedMethodConfiguration symbolKeyedIteratorConfiguration = { v8::Symbol::GetIterator, TestInterfaceImplementationV8Internal::iteratorMethodCallback, 0, v8::DontDelete, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype };
-    V8DOMConfiguration::installMethod(isolate, prototypeTemplate, signature, symbolKeyedIteratorConfiguration);
+    V8DOMConfiguration::installMethod(isolate, world, prototypeTemplate, signature, symbolKeyedIteratorConfiguration);
 
     instanceTemplate->SetCallAsFunctionHandler(V8TestInterface::legacyCallCustom);
 
     if (RuntimeEnabledFeatures::implements2FeatureNameEnabled()) {
         const V8DOMConfiguration::MethodConfiguration implements2VoidMethodMethodConfiguration = {"implements2VoidMethod", TestInterfaceImplementationV8Internal::implements2VoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype};
-        V8DOMConfiguration::installMethod(isolate, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, implements2VoidMethodMethodConfiguration);
+        V8DOMConfiguration::installMethod(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, implements2VoidMethodMethodConfiguration);
     }
     if (RuntimeEnabledFeatures::partialFeatureNameEnabled()) {
         const V8DOMConfiguration::MethodConfiguration partialVoidMethodMethodConfiguration = {"partialVoidMethod", TestInterfaceImplementationV8Internal::partialVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype};
-        V8DOMConfiguration::installMethod(isolate, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, partialVoidMethodMethodConfiguration);
+        V8DOMConfiguration::installMethod(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, partialVoidMethodMethodConfiguration);
     }
     if (RuntimeEnabledFeatures::partialFeatureNameEnabled()) {
         const V8DOMConfiguration::MethodConfiguration partialStaticVoidMethodMethodConfiguration = {"partialStaticVoidMethod", TestInterfaceImplementationV8Internal::partialStaticVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInterface};
-        V8DOMConfiguration::installMethod(isolate, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, partialStaticVoidMethodMethodConfiguration);
+        V8DOMConfiguration::installMethod(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, partialStaticVoidMethodMethodConfiguration);
     }
     if (RuntimeEnabledFeatures::partialFeatureNameEnabled()) {
         const V8DOMConfiguration::MethodConfiguration partialVoidMethodLongArgMethodConfiguration = {"partialVoidMethodLongArg", TestInterfaceImplementationV8Internal::partialVoidMethodLongArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype};
-        V8DOMConfiguration::installMethod(isolate, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, partialVoidMethodLongArgMethodConfiguration);
+        V8DOMConfiguration::installMethod(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, partialVoidMethodLongArgMethodConfiguration);
     }
     if (RuntimeEnabledFeatures::partialFeatureNameEnabled()) {
         const V8DOMConfiguration::MethodConfiguration partialCallWithExecutionContextRaisesExceptionVoidMethodMethodConfiguration = {"partialCallWithExecutionContextRaisesExceptionVoidMethod", TestInterfaceImplementationV8Internal::partialCallWithExecutionContextRaisesExceptionVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype};
-        V8DOMConfiguration::installMethod(isolate, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, partialCallWithExecutionContextRaisesExceptionVoidMethodMethodConfiguration);
+        V8DOMConfiguration::installMethod(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, partialCallWithExecutionContextRaisesExceptionVoidMethodMethodConfiguration);
     }
     if (RuntimeEnabledFeatures::partialFeatureNameEnabled()) {
         const V8DOMConfiguration::MethodConfiguration partialVoidMethodPartialCallbackTypeArgMethodConfiguration = {"partialVoidMethodPartialCallbackTypeArg", TestInterfaceImplementationV8Internal::partialVoidMethodPartialCallbackTypeArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype};
-        V8DOMConfiguration::installMethod(isolate, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, partialVoidMethodPartialCallbackTypeArgMethodConfiguration);
+        V8DOMConfiguration::installMethod(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, partialVoidMethodPartialCallbackTypeArgMethodConfiguration);
     }
     if (RuntimeEnabledFeatures::partialFeatureNameEnabled()) {
         const V8DOMConfiguration::MethodConfiguration shortMethodWithShortArgumentImplementedInPrivateScriptMethodConfiguration = {"shortMethodWithShortArgumentImplementedInPrivateScript", TestInterfaceImplementationV8Internal::shortMethodWithShortArgumentImplementedInPrivateScriptMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype};
-        V8DOMConfiguration::installMethod(isolate, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, shortMethodWithShortArgumentImplementedInPrivateScriptMethodConfiguration);
+        V8DOMConfiguration::installMethod(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, shortMethodWithShortArgumentImplementedInPrivateScriptMethodConfiguration);
     }
 }
 
-v8::Local<v8::FunctionTemplate> V8TestInterface::domTemplate(v8::Isolate* isolate)
+v8::Local<v8::FunctionTemplate> V8TestInterface::domTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world)
 {
-    return V8DOMConfiguration::domClassTemplate(isolate, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), V8TestInterface::installV8TestInterfaceTemplateFunction);
+    return V8DOMConfiguration::domClassTemplate(isolate, world, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), V8TestInterface::installV8TestInterfaceTemplateFunction);
 }
 
 bool V8TestInterface::hasInstance(v8::Local<v8::Value> v8Value, v8::Isolate* isolate)
@@ -2186,55 +2186,55 @@ TestInterfaceImplementation* V8TestInterface::toImplWithTypeCheck(v8::Isolate* i
     return hasInstance(value, isolate) ? toImpl(v8::Local<v8::Object>::Cast(value)) : 0;
 }
 
-void V8TestInterface::preparePrototypeAndInterfaceObject(v8::Local<v8::Context> context, v8::Local<v8::Object> prototypeObject, v8::Local<v8::Function> interfaceObject, v8::Local<v8::FunctionTemplate> interfaceTemplate)
+void V8TestInterface::preparePrototypeAndInterfaceObject(v8::Local<v8::Context> context, const DOMWrapperWorld& world, v8::Local<v8::Object> prototypeObject, v8::Local<v8::Function> interfaceObject, v8::Local<v8::FunctionTemplate> interfaceTemplate)
 {
     v8::Isolate* isolate = context->GetIsolate();
     ExecutionContext* executionContext = toExecutionContext(context);
     v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTemplate);
     if (executionContext && (executionContext->isWorkerGlobalScope())) {
         const V8DOMConfiguration::AccessorConfiguration accessorConfiguration = {"workerExposedAttribute", TestInterfaceImplementationV8Internal::workerExposedAttributeAttributeGetterCallback, TestInterfaceImplementationV8Internal::workerExposedAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
-        V8DOMConfiguration::installAccessor(isolate, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, accessorConfiguration);
+        V8DOMConfiguration::installAccessor(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, accessorConfiguration);
     }
     if (executionContext && (executionContext->isDocument())) {
         const V8DOMConfiguration::AccessorConfiguration accessorConfiguration = {"windowExposedAttribute", TestInterfaceImplementationV8Internal::windowExposedAttributeAttributeGetterCallback, TestInterfaceImplementationV8Internal::windowExposedAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
-        V8DOMConfiguration::installAccessor(isolate, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, accessorConfiguration);
+        V8DOMConfiguration::installAccessor(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, accessorConfiguration);
     }
-    v8::Local<v8::Signature> signature = v8::Signature::New(isolate, domTemplate(isolate));
+    v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTemplate);
     ExecutionContext* executionContext = toExecutionContext(prototypeObject->CreationContext());
     ASSERT(executionContext);
     if (executionContext && (executionContext->isWorkerGlobalScope())) {
         const V8DOMConfiguration::MethodConfiguration workerExposedMethodMethodConfiguration = {"workerExposedMethod", TestInterfaceImplementationV8Internal::workerExposedMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype};
-        V8DOMConfiguration::installMethod(isolate, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, workerExposedMethodMethodConfiguration);
+        V8DOMConfiguration::installMethod(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, workerExposedMethodMethodConfiguration);
     }
     if (executionContext && (executionContext->isDocument())) {
         const V8DOMConfiguration::MethodConfiguration windowExposedMethodMethodConfiguration = {"windowExposedMethod", TestInterfaceImplementationV8Internal::windowExposedMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype};
-        V8DOMConfiguration::installMethod(isolate, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, windowExposedMethodMethodConfiguration);
+        V8DOMConfiguration::installMethod(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, windowExposedMethodMethodConfiguration);
     }
     if (executionContext && (executionContext->isWorkerGlobalScope())) {
         const V8DOMConfiguration::MethodConfiguration workerExposedStaticMethodMethodConfiguration = {"workerExposedStaticMethod", TestInterfaceImplementationV8Internal::workerExposedStaticMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInterface};
-        V8DOMConfiguration::installMethod(isolate, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, workerExposedStaticMethodMethodConfiguration);
+        V8DOMConfiguration::installMethod(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, workerExposedStaticMethodMethodConfiguration);
     }
     if (executionContext && (executionContext->isDocument())) {
         const V8DOMConfiguration::MethodConfiguration windowExposedStaticMethodMethodConfiguration = {"windowExposedStaticMethod", TestInterfaceImplementationV8Internal::windowExposedStaticMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInterface};
-        V8DOMConfiguration::installMethod(isolate, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, windowExposedStaticMethodMethodConfiguration);
+        V8DOMConfiguration::installMethod(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, windowExposedStaticMethodMethodConfiguration);
     }
     if (executionContext && (executionContext->isDocument())) {
         if (RuntimeEnabledFeatures::featureNameEnabled()) {
             const V8DOMConfiguration::MethodConfiguration methodWithExposedAndRuntimeEnabledFlagMethodConfiguration = {"methodWithExposedAndRuntimeEnabledFlag", TestInterfaceImplementationV8Internal::methodWithExposedAndRuntimeEnabledFlagMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype};
-            V8DOMConfiguration::installMethod(isolate, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, methodWithExposedAndRuntimeEnabledFlagMethodConfiguration);
+            V8DOMConfiguration::installMethod(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, methodWithExposedAndRuntimeEnabledFlagMethodConfiguration);
         }
     }
     if (executionContext && (executionContext->isDocument())) {
         const V8DOMConfiguration::MethodConfiguration overloadMethodWithExposedAndRuntimeEnabledFlagMethodConfiguration = {"overloadMethodWithExposedAndRuntimeEnabledFlag", TestInterfaceImplementationV8Internal::overloadMethodWithExposedAndRuntimeEnabledFlagMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype};
-        V8DOMConfiguration::installMethod(isolate, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, overloadMethodWithExposedAndRuntimeEnabledFlagMethodConfiguration);
+        V8DOMConfiguration::installMethod(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, overloadMethodWithExposedAndRuntimeEnabledFlagMethodConfiguration);
     }
     if (executionContext && ((executionContext->isDocument() && RuntimeEnabledFeatures::featureNameEnabled()) || (executionContext->isWorkerGlobalScope() && RuntimeEnabledFeatures::featureName2Enabled()))) {
         const V8DOMConfiguration::MethodConfiguration methodWithExposedHavingRuntimeEnabldFlagMethodConfiguration = {"methodWithExposedHavingRuntimeEnabldFlag", TestInterfaceImplementationV8Internal::methodWithExposedHavingRuntimeEnabldFlagMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype};
-        V8DOMConfiguration::installMethod(isolate, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, methodWithExposedHavingRuntimeEnabldFlagMethodConfiguration);
+        V8DOMConfiguration::installMethod(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, methodWithExposedHavingRuntimeEnabldFlagMethodConfiguration);
     }
     if (executionContext && (executionContext->isDocument() || executionContext->isServiceWorkerGlobalScope())) {
         const V8DOMConfiguration::MethodConfiguration windowAndServiceWorkerExposedMethodMethodConfiguration = {"windowAndServiceWorkerExposedMethod", TestInterfaceImplementationV8Internal::windowAndServiceWorkerExposedMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype};
-        V8DOMConfiguration::installMethod(isolate, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, windowAndServiceWorkerExposedMethodMethodConfiguration);
+        V8DOMConfiguration::installMethod(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, windowAndServiceWorkerExposedMethodMethodConfiguration);
     }
 }
 

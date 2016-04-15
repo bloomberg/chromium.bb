@@ -238,20 +238,20 @@ const V8DOMConfiguration::MethodConfiguration {{v8_class}}Methods[] = {
 {% from 'attributes.cpp' import attribute_configuration with context %}
 {% from 'constants.cpp' import install_constants with context %}
 {% if has_partial_interface or is_partial %}
-void {{v8_class_or_partial}}::install{{v8_class}}Template(v8::Local<v8::FunctionTemplate> interfaceTemplate, v8::Isolate* isolate)
+void {{v8_class_or_partial}}::install{{v8_class}}Template(v8::Isolate* isolate, const DOMWrapperWorld& world, v8::Local<v8::FunctionTemplate> interfaceTemplate)
 {% else %}
-static void install{{v8_class}}Template(v8::Local<v8::FunctionTemplate> interfaceTemplate, v8::Isolate* isolate)
+static void install{{v8_class}}Template(v8::Isolate* isolate, const DOMWrapperWorld& world, v8::Local<v8::FunctionTemplate> interfaceTemplate)
 {% endif %}
 {
     {% set newline = '' %}
     // Initialize the interface object's template.
     {% if is_partial %}
-    {{v8_class}}::install{{v8_class}}Template(interfaceTemplate, isolate);
+    {{v8_class}}::install{{v8_class}}Template(isolate, world, interfaceTemplate);
     {% else %}
     {% set parent_interface_template =
-           '%s::domTemplateForNamedPropertiesObject(isolate)' % v8_class
+           '%s::domTemplateForNamedPropertiesObject(isolate, world)' % v8_class
            if has_named_properties_object else
-           'V8%s::domTemplate(isolate)' % parent_interface
+           'V8%s::domTemplate(isolate, world)' % parent_interface
            if parent_interface else
            'v8::Local<v8::FunctionTemplate>()' %}
     V8DOMConfiguration::initializeDOMInterfaceTemplate(isolate, interfaceTemplate, {{v8_class}}::wrapperTypeInfo.interfaceName, {{parent_interface_template}}, {{v8_class}}::internalFieldCount);
@@ -285,13 +285,13 @@ static void install{{v8_class}}Template(v8::Local<v8::FunctionTemplate> interfac
     {{install_constants() | indent}}
     {% endif %}
     {% if has_attribute_configuration %}
-    V8DOMConfiguration::installAttributes(isolate, instanceTemplate, prototypeTemplate, {{'%sAttributes' % v8_class}}, {{'WTF_ARRAY_LENGTH(%sAttributes)' % v8_class}});
+    V8DOMConfiguration::installAttributes(isolate, world, instanceTemplate, prototypeTemplate, {{'%sAttributes' % v8_class}}, {{'WTF_ARRAY_LENGTH(%sAttributes)' % v8_class}});
     {% endif %}
     {% if has_accessor_configuration %}
-    V8DOMConfiguration::installAccessors(isolate, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, {{'%sAccessors' % v8_class}}, {{'WTF_ARRAY_LENGTH(%sAccessors)' % v8_class}});
+    V8DOMConfiguration::installAccessors(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, {{'%sAccessors' % v8_class}}, {{'WTF_ARRAY_LENGTH(%sAccessors)' % v8_class}});
     {% endif %}
     {% if method_configuration_methods %}
-    V8DOMConfiguration::installMethods(isolate, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, {{'%sMethods' % v8_class}}, {{'WTF_ARRAY_LENGTH(%sMethods)' % v8_class}});
+    V8DOMConfiguration::installMethods(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, {{'%sMethods' % v8_class}}, {{'WTF_ARRAY_LENGTH(%sMethods)' % v8_class}});
     {% endif %}
     {% endfilter %}{{newline}}
     {% if runtime_enabled_function %}
@@ -326,11 +326,11 @@ static void install{{v8_class}}Template(v8::Local<v8::FunctionTemplate> interfac
         {% if attribute.is_data_type_property %}
         const V8DOMConfiguration::AttributeConfiguration attribute{{attribute.name}}Configuration = \
         {{attribute_configuration(attribute)}};
-        V8DOMConfiguration::installAttribute(isolate, instanceTemplate, prototypeTemplate, attribute{{attribute.name}}Configuration);
+        V8DOMConfiguration::installAttribute(isolate, world, instanceTemplate, prototypeTemplate, attribute{{attribute.name}}Configuration);
         {% else %}
         const V8DOMConfiguration::AccessorConfiguration accessor{{attribute.name}}Configuration = \
         {{attribute_configuration(attribute)}};
-        V8DOMConfiguration::installAccessor(isolate, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, accessor{{attribute.name}}Configuration);
+        V8DOMConfiguration::installAccessor(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, accessor{{attribute.name}}Configuration);
         {% endif %}
         {% endfor %}
     }
@@ -350,7 +350,7 @@ static void install{{v8_class}}Template(v8::Local<v8::FunctionTemplate> interfac
     {% filter runtime_enabled(iterator_method.runtime_enabled_function) %}
     // Iterator (@@iterator)
     const V8DOMConfiguration::SymbolKeyedMethodConfiguration symbolKeyedIteratorConfiguration = { v8::Symbol::GetIterator, {{cpp_class_or_partial}}V8Internal::iteratorMethodCallback, 0, v8::DontDelete, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype };
-    V8DOMConfiguration::installMethod(isolate, prototypeTemplate, signature, symbolKeyedIteratorConfiguration);
+    V8DOMConfiguration::installMethod(isolate, world, prototypeTemplate, signature, symbolKeyedIteratorConfiguration);
     {% endfilter %}
     {% endfilter %}
     {% endif %}

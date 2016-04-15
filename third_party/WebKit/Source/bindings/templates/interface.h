@@ -15,7 +15,7 @@ class Dictionary;
 class {{v8_class}}Constructor {
     STATIC_ONLY({{v8_class}}Constructor);
 public:
-    static v8::Local<v8::FunctionTemplate> domTemplate(v8::Isolate*);
+    static v8::Local<v8::FunctionTemplate> domTemplate(v8::Isolate*, const DOMWrapperWorld&);
     static const WrapperTypeInfo wrapperTypeInfo;
 };
 
@@ -44,9 +44,9 @@ public:
     {{exported}}static {{cpp_class}}* toImpl(v8::Local<v8::Object> object);
     {% else %}
     static v8::Local<v8::Object> findInstanceInPrototypeChain(v8::Local<v8::Value>, v8::Isolate*);
-    {{exported}}static v8::Local<v8::FunctionTemplate> domTemplate(v8::Isolate*);
+    {{exported}}static v8::Local<v8::FunctionTemplate> domTemplate(v8::Isolate*, const DOMWrapperWorld&);
     {% if has_named_properties_object %}
-    {{exported}}static v8::Local<v8::FunctionTemplate> domTemplateForNamedPropertiesObject(v8::Isolate*);
+    {{exported}}static v8::Local<v8::FunctionTemplate> domTemplateForNamedPropertiesObject(v8::Isolate*, const DOMWrapperWorld&);
     {% endif %}
     static {{cpp_class}}* toImpl(v8::Local<v8::Object> object)
     {
@@ -154,12 +154,12 @@ public:
     static void installConditionallyEnabledProperties(v8::Local<v8::Object>, v8::Isolate*){% if has_conditional_attributes %};
     {% else %} { }
     {% endif %}
-    static void preparePrototypeAndInterfaceObject(v8::Local<v8::Context>, v8::Local<v8::Object> prototypeObject, v8::Local<v8::Function> interfaceObject, v8::Local<v8::FunctionTemplate> interfaceTemplate){% if unscopeables or has_conditional_attributes_on_prototype or conditionally_enabled_methods %};
+    static void preparePrototypeAndInterfaceObject(v8::Local<v8::Context>, const DOMWrapperWorld&, v8::Local<v8::Object> prototypeObject, v8::Local<v8::Function> interfaceObject, v8::Local<v8::FunctionTemplate> interfaceTemplate){% if unscopeables or has_conditional_attributes_on_prototype or conditionally_enabled_methods %};
     {% else %} { }
     {% endif %}
     {% if has_partial_interface %}
     {{exported}}static void updateWrapperTypeInfo(InstallTemplateFunction, PreparePrototypeAndInterfaceObjectFunction);
-    {{exported}}static void install{{v8_class}}Template(v8::Local<v8::FunctionTemplate>, v8::Isolate*);
+    {{exported}}static void install{{v8_class}}Template(v8::Isolate*, const DOMWrapperWorld&, v8::Local<v8::FunctionTemplate> interfaceTemplate);
     {% for method in methods if method.overloads and method.overloads.has_partial_overloads %}
     {{exported}}static void register{{method.name | blink_capitalize}}MethodForPartialInterface(void (*)(const v8::FunctionCallbackInfo<v8::Value>&));
     {% endfor %}

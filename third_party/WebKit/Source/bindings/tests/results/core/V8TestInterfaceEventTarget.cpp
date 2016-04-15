@@ -65,11 +65,11 @@ static void V8TestInterfaceEventTargetConstructorCallback(const v8::FunctionCall
     v8SetReturnValue(info, wrapper);
 }
 
-v8::Local<v8::FunctionTemplate> V8TestInterfaceEventTargetConstructor::domTemplate(v8::Isolate* isolate)
+v8::Local<v8::FunctionTemplate> V8TestInterfaceEventTargetConstructor::domTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world)
 {
     static int domTemplateKey; // This address is used for a key to look up the dom template.
     V8PerIsolateData* data = V8PerIsolateData::from(isolate);
-    v8::Local<v8::FunctionTemplate> result = data->existingDOMTemplate(&domTemplateKey);
+    v8::Local<v8::FunctionTemplate> result = data->findInterfaceTemplate(world, &domTemplateKey);
     if (!result.IsEmpty())
         return result;
 
@@ -77,15 +77,15 @@ v8::Local<v8::FunctionTemplate> V8TestInterfaceEventTargetConstructor::domTempla
     v8::Local<v8::ObjectTemplate> instanceTemplate = result->InstanceTemplate();
     instanceTemplate->SetInternalFieldCount(V8TestInterfaceEventTarget::internalFieldCount);
     result->SetClassName(v8AtomicString(isolate, "TestInterfaceEventTarget"));
-    result->Inherit(V8TestInterfaceEventTarget::domTemplate(isolate));
-    data->setDOMTemplate(&domTemplateKey, result);
+    result->Inherit(V8TestInterfaceEventTarget::domTemplate(isolate, world));
+    data->setInterfaceTemplate(world, &domTemplateKey, result);
     return result;
 }
 
-static void installV8TestInterfaceEventTargetTemplate(v8::Local<v8::FunctionTemplate> interfaceTemplate, v8::Isolate* isolate)
+static void installV8TestInterfaceEventTargetTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world, v8::Local<v8::FunctionTemplate> interfaceTemplate)
 {
     // Initialize the interface object's template.
-    V8DOMConfiguration::initializeDOMInterfaceTemplate(isolate, interfaceTemplate, V8TestInterfaceEventTarget::wrapperTypeInfo.interfaceName, V8EventTarget::domTemplate(isolate), V8TestInterfaceEventTarget::internalFieldCount);
+    V8DOMConfiguration::initializeDOMInterfaceTemplate(isolate, interfaceTemplate, V8TestInterfaceEventTarget::wrapperTypeInfo.interfaceName, V8EventTarget::domTemplate(isolate, world), V8TestInterfaceEventTarget::internalFieldCount);
     v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTemplate);
     ALLOW_UNUSED_LOCAL(signature);
     v8::Local<v8::ObjectTemplate> instanceTemplate = interfaceTemplate->InstanceTemplate();
@@ -96,9 +96,9 @@ static void installV8TestInterfaceEventTargetTemplate(v8::Local<v8::FunctionTemp
 
 }
 
-v8::Local<v8::FunctionTemplate> V8TestInterfaceEventTarget::domTemplate(v8::Isolate* isolate)
+v8::Local<v8::FunctionTemplate> V8TestInterfaceEventTarget::domTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world)
 {
-    return V8DOMConfiguration::domClassTemplate(isolate, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), installV8TestInterfaceEventTargetTemplate);
+    return V8DOMConfiguration::domClassTemplate(isolate, world, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), installV8TestInterfaceEventTargetTemplate);
 }
 
 bool V8TestInterfaceEventTarget::hasInstance(v8::Local<v8::Value> v8Value, v8::Isolate* isolate)

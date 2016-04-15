@@ -204,8 +204,10 @@ void V8PerIsolateData::destroy(v8::Isolate* isolate)
     data->m_hiddenValue.clear();
     data->m_stringCache->dispose();
     data->m_stringCache.clear();
-    data->m_domTemplateMapForNonMainWorld.clear();
-    data->m_domTemplateMapForMainWorld.clear();
+    data->m_interfaceTemplateMapForNonMainWorld.clear();
+    data->m_interfaceTemplateMapForMainWorld.clear();
+    data->m_operationTemplateMapForNonMainWorld.clear();
+    data->m_operationTemplateMapForMainWorld.clear();
     if (isMainThread())
         mainThreadPerIsolateData = 0;
 
@@ -214,37 +216,45 @@ void V8PerIsolateData::destroy(v8::Isolate* isolate)
     delete data;
 }
 
-V8PerIsolateData::DOMTemplateMap& V8PerIsolateData::currentDOMTemplateMap()
+V8PerIsolateData::V8FunctionTemplateMap& V8PerIsolateData::selectInterfaceTemplateMap(const DOMWrapperWorld& world)
 {
-    if (DOMWrapperWorld::current(isolate()).isMainWorld())
-        return m_domTemplateMapForMainWorld;
-    return m_domTemplateMapForNonMainWorld;
+    return world.isMainWorld()
+        ? m_interfaceTemplateMapForMainWorld
+        : m_interfaceTemplateMapForNonMainWorld;
 }
 
-v8::Local<v8::FunctionTemplate> V8PerIsolateData::domTemplate(const void* domTemplateKey, v8::FunctionCallback callback, v8::Local<v8::Value> data, v8::Local<v8::Signature> signature, int length)
+V8PerIsolateData::V8FunctionTemplateMap& V8PerIsolateData::selectOperationTemplateMap(const DOMWrapperWorld& world)
 {
-    DOMTemplateMap& domTemplateMap = currentDOMTemplateMap();
-    DOMTemplateMap::iterator result = domTemplateMap.find(domTemplateKey);
-    if (result != domTemplateMap.end())
+    return world.isMainWorld()
+        ? m_operationTemplateMapForMainWorld
+        : m_operationTemplateMapForNonMainWorld;
+}
+
+v8::Local<v8::FunctionTemplate> V8PerIsolateData::findOrCreateOperationTemplate(const DOMWrapperWorld& world, const void* key, v8::FunctionCallback callback, v8::Local<v8::Value> data, v8::Local<v8::Signature> signature, int length)
+{
+    auto& map = selectOperationTemplateMap(world);
+    auto result = map.find(key);
+    if (result != map.end())
         return result->value.Get(isolate());
 
     v8::Local<v8::FunctionTemplate> templ = v8::FunctionTemplate::New(isolate(), callback, data, signature, length);
-    domTemplateMap.add(domTemplateKey, v8::Eternal<v8::FunctionTemplate>(isolate(), templ));
+    map.add(key, v8::Eternal<v8::FunctionTemplate>(isolate(), templ));
     return templ;
 }
 
-v8::Local<v8::FunctionTemplate> V8PerIsolateData::existingDOMTemplate(const void* domTemplateKey)
+v8::Local<v8::FunctionTemplate> V8PerIsolateData::findInterfaceTemplate(const DOMWrapperWorld& world, const void* key)
 {
-    DOMTemplateMap& domTemplateMap = currentDOMTemplateMap();
-    DOMTemplateMap::iterator result = domTemplateMap.find(domTemplateKey);
-    if (result != domTemplateMap.end())
+    auto& map = selectInterfaceTemplateMap(world);
+    auto result = map.find(key);
+    if (result != map.end())
         return result->value.Get(isolate());
     return v8::Local<v8::FunctionTemplate>();
 }
 
-void V8PerIsolateData::setDOMTemplate(const void* domTemplateKey, v8::Local<v8::FunctionTemplate> templ)
+void V8PerIsolateData::setInterfaceTemplate(const DOMWrapperWorld& world, const void* key, v8::Local<v8::FunctionTemplate> value)
 {
-    currentDOMTemplateMap().add(domTemplateKey, v8::Eternal<v8::FunctionTemplate>(isolate(), v8::Local<v8::FunctionTemplate>(templ)));
+    auto& map = selectInterfaceTemplateMap(world);
+    map.add(key, v8::Eternal<v8::FunctionTemplate>(isolate(), value));
 }
 
 v8::Local<v8::Context> V8PerIsolateData::ensureScriptRegexpContext()
@@ -266,14 +276,14 @@ void V8PerIsolateData::clearScriptRegexpContext()
 
 bool V8PerIsolateData::hasInstance(const WrapperTypeInfo* untrustedWrapperTypeInfo, v8::Local<v8::Value> value)
 {
-    return hasInstance(untrustedWrapperTypeInfo, value, m_domTemplateMapForMainWorld)
-        || hasInstance(untrustedWrapperTypeInfo, value, m_domTemplateMapForNonMainWorld);
+    return hasInstance(untrustedWrapperTypeInfo, value, m_interfaceTemplateMapForMainWorld)
+        || hasInstance(untrustedWrapperTypeInfo, value, m_interfaceTemplateMapForNonMainWorld);
 }
 
-bool V8PerIsolateData::hasInstance(const WrapperTypeInfo* untrustedWrapperTypeInfo, v8::Local<v8::Value> value, DOMTemplateMap& domTemplateMap)
+bool V8PerIsolateData::hasInstance(const WrapperTypeInfo* untrustedWrapperTypeInfo, v8::Local<v8::Value> value, V8FunctionTemplateMap& map)
 {
-    DOMTemplateMap::iterator result = domTemplateMap.find(untrustedWrapperTypeInfo);
-    if (result == domTemplateMap.end())
+    auto result = map.find(untrustedWrapperTypeInfo);
+    if (result == map.end())
         return false;
     v8::Local<v8::FunctionTemplate> templ = result->value.Get(isolate());
     return templ->HasInstance(value);
@@ -281,18 +291,18 @@ bool V8PerIsolateData::hasInstance(const WrapperTypeInfo* untrustedWrapperTypeIn
 
 v8::Local<v8::Object> V8PerIsolateData::findInstanceInPrototypeChain(const WrapperTypeInfo* info, v8::Local<v8::Value> value)
 {
-    v8::Local<v8::Object> wrapper = findInstanceInPrototypeChain(info, value, m_domTemplateMapForMainWorld);
+    v8::Local<v8::Object> wrapper = findInstanceInPrototypeChain(info, value, m_interfaceTemplateMapForMainWorld);
     if (!wrapper.IsEmpty())
         return wrapper;
-    return findInstanceInPrototypeChain(info, value, m_domTemplateMapForNonMainWorld);
+    return findInstanceInPrototypeChain(info, value, m_interfaceTemplateMapForNonMainWorld);
 }
 
-v8::Local<v8::Object> V8PerIsolateData::findInstanceInPrototypeChain(const WrapperTypeInfo* info, v8::Local<v8::Value> value, DOMTemplateMap& domTemplateMap)
+v8::Local<v8::Object> V8PerIsolateData::findInstanceInPrototypeChain(const WrapperTypeInfo* info, v8::Local<v8::Value> value, V8FunctionTemplateMap& map)
 {
     if (value.IsEmpty() || !value->IsObject())
         return v8::Local<v8::Object>();
-    DOMTemplateMap::iterator result = domTemplateMap.find(info);
-    if (result == domTemplateMap.end())
+    auto result = map.find(info);
+    if (result == map.end())
         return v8::Local<v8::Object>();
     v8::Local<v8::FunctionTemplate> templ = result->value.Get(isolate());
     return v8::Local<v8::Object>::Cast(value)->FindInstanceInPrototypeChain(templ);

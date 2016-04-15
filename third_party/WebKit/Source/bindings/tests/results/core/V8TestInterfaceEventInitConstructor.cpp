@@ -110,10 +110,10 @@ void V8TestInterfaceEventInitConstructor::constructorCallback(const v8::Function
     TestInterfaceEventInitConstructorV8Internal::constructor(info);
 }
 
-static void installV8TestInterfaceEventInitConstructorTemplate(v8::Local<v8::FunctionTemplate> interfaceTemplate, v8::Isolate* isolate)
+static void installV8TestInterfaceEventInitConstructorTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world, v8::Local<v8::FunctionTemplate> interfaceTemplate)
 {
     // Initialize the interface object's template.
-    V8DOMConfiguration::initializeDOMInterfaceTemplate(isolate, interfaceTemplate, V8TestInterfaceEventInitConstructor::wrapperTypeInfo.interfaceName, V8Event::domTemplate(isolate), V8TestInterfaceEventInitConstructor::internalFieldCount);
+    V8DOMConfiguration::initializeDOMInterfaceTemplate(isolate, interfaceTemplate, V8TestInterfaceEventInitConstructor::wrapperTypeInfo.interfaceName, V8Event::domTemplate(isolate, world), V8TestInterfaceEventInitConstructor::internalFieldCount);
     interfaceTemplate->SetCallHandler(V8TestInterfaceEventInitConstructor::constructorCallback);
     interfaceTemplate->SetLength(2);
     v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTemplate);
@@ -123,18 +123,18 @@ static void installV8TestInterfaceEventInitConstructorTemplate(v8::Local<v8::Fun
     v8::Local<v8::ObjectTemplate> prototypeTemplate = interfaceTemplate->PrototypeTemplate();
     ALLOW_UNUSED_LOCAL(prototypeTemplate);
     // Register DOM constants, attributes and operations.
-    V8DOMConfiguration::installAccessors(isolate, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestInterfaceEventInitConstructorAccessors, WTF_ARRAY_LENGTH(V8TestInterfaceEventInitConstructorAccessors));
+    V8DOMConfiguration::installAccessors(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestInterfaceEventInitConstructorAccessors, WTF_ARRAY_LENGTH(V8TestInterfaceEventInitConstructorAccessors));
 
     if (RuntimeEnabledFeatures::trustedEventsEnabled()) {
         const V8DOMConfiguration::AccessorConfiguration accessorisTrustedConfiguration = \
         {"isTrusted", TestInterfaceEventInitConstructorV8Internal::isTrustedAttributeGetterCallback, 0, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::DontDelete | v8::ReadOnly), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance, V8DOMConfiguration::CheckHolder};
-        V8DOMConfiguration::installAccessor(isolate, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, accessorisTrustedConfiguration);
+        V8DOMConfiguration::installAccessor(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, accessorisTrustedConfiguration);
     }
 }
 
-v8::Local<v8::FunctionTemplate> V8TestInterfaceEventInitConstructor::domTemplate(v8::Isolate* isolate)
+v8::Local<v8::FunctionTemplate> V8TestInterfaceEventInitConstructor::domTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world)
 {
-    return V8DOMConfiguration::domClassTemplate(isolate, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), installV8TestInterfaceEventInitConstructorTemplate);
+    return V8DOMConfiguration::domClassTemplate(isolate, world, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), installV8TestInterfaceEventInitConstructorTemplate);
 }
 
 bool V8TestInterfaceEventInitConstructor::hasInstance(v8::Local<v8::Value> v8Value, v8::Isolate* isolate)

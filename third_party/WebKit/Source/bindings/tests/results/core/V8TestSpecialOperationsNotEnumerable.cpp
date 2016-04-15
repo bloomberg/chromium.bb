@@ -65,7 +65,7 @@ static void namedPropertyGetterCallback(v8::Local<v8::Name> name, const v8::Prop
 
 } // namespace TestSpecialOperationsNotEnumerableV8Internal
 
-static void installV8TestSpecialOperationsNotEnumerableTemplate(v8::Local<v8::FunctionTemplate> interfaceTemplate, v8::Isolate* isolate)
+static void installV8TestSpecialOperationsNotEnumerableTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world, v8::Local<v8::FunctionTemplate> interfaceTemplate)
 {
     // Initialize the interface object's template.
     V8DOMConfiguration::initializeDOMInterfaceTemplate(isolate, interfaceTemplate, V8TestSpecialOperationsNotEnumerable::wrapperTypeInfo.interfaceName, v8::Local<v8::FunctionTemplate>(), V8TestSpecialOperationsNotEnumerable::internalFieldCount);
@@ -86,9 +86,9 @@ static void installV8TestSpecialOperationsNotEnumerableTemplate(v8::Local<v8::Fu
     instanceTemplate->SetHandler(namedPropertyHandlerConfig);
 }
 
-v8::Local<v8::FunctionTemplate> V8TestSpecialOperationsNotEnumerable::domTemplate(v8::Isolate* isolate)
+v8::Local<v8::FunctionTemplate> V8TestSpecialOperationsNotEnumerable::domTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world)
 {
-    return V8DOMConfiguration::domClassTemplate(isolate, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), installV8TestSpecialOperationsNotEnumerableTemplate);
+    return V8DOMConfiguration::domClassTemplate(isolate, world, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), installV8TestSpecialOperationsNotEnumerableTemplate);
 }
 
 bool V8TestSpecialOperationsNotEnumerable::hasInstance(v8::Local<v8::Value> v8Value, v8::Isolate* isolate)

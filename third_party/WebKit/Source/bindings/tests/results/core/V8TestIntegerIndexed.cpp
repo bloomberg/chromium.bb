@@ -137,7 +137,7 @@ const V8DOMConfiguration::MethodConfiguration V8TestIntegerIndexedMethods[] = {
     {"voidMethodDocument", TestIntegerIndexedV8Internal::voidMethodDocumentMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
 };
 
-static void installV8TestIntegerIndexedTemplate(v8::Local<v8::FunctionTemplate> interfaceTemplate, v8::Isolate* isolate)
+static void installV8TestIntegerIndexedTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world, v8::Local<v8::FunctionTemplate> interfaceTemplate)
 {
     // Initialize the interface object's template.
     V8DOMConfiguration::initializeDOMInterfaceTemplate(isolate, interfaceTemplate, V8TestIntegerIndexed::wrapperTypeInfo.interfaceName, v8::Local<v8::FunctionTemplate>(), V8TestIntegerIndexed::internalFieldCount);
@@ -148,8 +148,8 @@ static void installV8TestIntegerIndexedTemplate(v8::Local<v8::FunctionTemplate> 
     v8::Local<v8::ObjectTemplate> prototypeTemplate = interfaceTemplate->PrototypeTemplate();
     ALLOW_UNUSED_LOCAL(prototypeTemplate);
     // Register DOM constants, attributes and operations.
-    V8DOMConfiguration::installAccessors(isolate, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestIntegerIndexedAccessors, WTF_ARRAY_LENGTH(V8TestIntegerIndexedAccessors));
-    V8DOMConfiguration::installMethods(isolate, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestIntegerIndexedMethods, WTF_ARRAY_LENGTH(V8TestIntegerIndexedMethods));
+    V8DOMConfiguration::installAccessors(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestIntegerIndexedAccessors, WTF_ARRAY_LENGTH(V8TestIntegerIndexedAccessors));
+    V8DOMConfiguration::installMethods(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestIntegerIndexedMethods, WTF_ARRAY_LENGTH(V8TestIntegerIndexedMethods));
 
     // Array iterator
     prototypeTemplate->SetIntrinsicDataProperty(v8::Symbol::GetIterator(isolate), v8::kArrayProto_values, v8::DontEnum);
@@ -162,9 +162,9 @@ static void installV8TestIntegerIndexedTemplate(v8::Local<v8::FunctionTemplate> 
     instanceTemplate->SetHandler(namedPropertyHandlerConfig);
 }
 
-v8::Local<v8::FunctionTemplate> V8TestIntegerIndexed::domTemplate(v8::Isolate* isolate)
+v8::Local<v8::FunctionTemplate> V8TestIntegerIndexed::domTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world)
 {
-    return V8DOMConfiguration::domClassTemplate(isolate, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), installV8TestIntegerIndexedTemplate);
+    return V8DOMConfiguration::domClassTemplate(isolate, world, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), installV8TestIntegerIndexedTemplate);
 }
 
 bool V8TestIntegerIndexed::hasInstance(v8::Local<v8::Value> v8Value, v8::Isolate* isolate)

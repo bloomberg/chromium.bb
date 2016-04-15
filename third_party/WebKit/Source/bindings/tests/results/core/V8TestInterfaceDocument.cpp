@@ -76,10 +76,10 @@ const V8DOMConfiguration::AccessorConfiguration V8TestInterfaceDocumentAccessors
     {"location", TestInterfaceDocumentV8Internal::locationAttributeGetterCallback, TestInterfaceDocumentV8Internal::locationAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::DontDelete), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance, V8DOMConfiguration::CheckHolder},
 };
 
-static void installV8TestInterfaceDocumentTemplate(v8::Local<v8::FunctionTemplate> interfaceTemplate, v8::Isolate* isolate)
+static void installV8TestInterfaceDocumentTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world, v8::Local<v8::FunctionTemplate> interfaceTemplate)
 {
     // Initialize the interface object's template.
-    V8DOMConfiguration::initializeDOMInterfaceTemplate(isolate, interfaceTemplate, V8TestInterfaceDocument::wrapperTypeInfo.interfaceName, V8Document::domTemplate(isolate), V8TestInterfaceDocument::internalFieldCount);
+    V8DOMConfiguration::initializeDOMInterfaceTemplate(isolate, interfaceTemplate, V8TestInterfaceDocument::wrapperTypeInfo.interfaceName, V8Document::domTemplate(isolate, world), V8TestInterfaceDocument::internalFieldCount);
     v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTemplate);
     ALLOW_UNUSED_LOCAL(signature);
     v8::Local<v8::ObjectTemplate> instanceTemplate = interfaceTemplate->InstanceTemplate();
@@ -87,12 +87,12 @@ static void installV8TestInterfaceDocumentTemplate(v8::Local<v8::FunctionTemplat
     v8::Local<v8::ObjectTemplate> prototypeTemplate = interfaceTemplate->PrototypeTemplate();
     ALLOW_UNUSED_LOCAL(prototypeTemplate);
     // Register DOM constants, attributes and operations.
-    V8DOMConfiguration::installAccessors(isolate, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestInterfaceDocumentAccessors, WTF_ARRAY_LENGTH(V8TestInterfaceDocumentAccessors));
+    V8DOMConfiguration::installAccessors(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestInterfaceDocumentAccessors, WTF_ARRAY_LENGTH(V8TestInterfaceDocumentAccessors));
 }
 
-v8::Local<v8::FunctionTemplate> V8TestInterfaceDocument::domTemplate(v8::Isolate* isolate)
+v8::Local<v8::FunctionTemplate> V8TestInterfaceDocument::domTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world)
 {
-    return V8DOMConfiguration::domClassTemplate(isolate, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), installV8TestInterfaceDocumentTemplate);
+    return V8DOMConfiguration::domClassTemplate(isolate, world, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), installV8TestInterfaceDocumentTemplate);
 }
 
 bool V8TestInterfaceDocument::hasInstance(v8::Local<v8::Value> v8Value, v8::Isolate* isolate)

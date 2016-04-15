@@ -22,9 +22,9 @@ class V8TestInterfacePartial {
 public:
     static void initialize();
     static void implementsCustomVoidMethodMethodCustom(const v8::FunctionCallbackInfo<v8::Value>&);
-    static void preparePrototypeAndInterfaceObject(v8::Local<v8::Context>, v8::Local<v8::Object>, v8::Local<v8::Function>, v8::Local<v8::FunctionTemplate>);
+    static void preparePrototypeAndInterfaceObject(v8::Local<v8::Context>, const DOMWrapperWorld&, v8::Local<v8::Object>, v8::Local<v8::Function>, v8::Local<v8::FunctionTemplate>);
 private:
-    static void installV8TestInterfaceTemplate(v8::Local<v8::FunctionTemplate>, v8::Isolate*);
+    static void installV8TestInterfaceTemplate(v8::Isolate*, const DOMWrapperWorld&, v8::Local<v8::FunctionTemplate> interfaceTemplate);
 };
 }
 #endif // V8TestInterfacePartial_h

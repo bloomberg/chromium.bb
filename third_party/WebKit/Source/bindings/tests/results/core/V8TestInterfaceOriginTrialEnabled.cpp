@@ -227,7 +227,7 @@ const V8DOMConfiguration::MethodConfiguration V8TestInterfaceOriginTrialEnabledM
     {"voidMethodPartialOverload", TestInterfaceOriginTrialEnabledV8Internal::voidMethodPartialOverloadMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
 };
 
-static void installV8TestInterfaceOriginTrialEnabledTemplate(v8::Local<v8::FunctionTemplate> interfaceTemplate, v8::Isolate* isolate)
+static void installV8TestInterfaceOriginTrialEnabledTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world, v8::Local<v8::FunctionTemplate> interfaceTemplate)
 {
     // Initialize the interface object's template.
     V8DOMConfiguration::initializeDOMInterfaceTemplate(isolate, interfaceTemplate, V8TestInterfaceOriginTrialEnabled::wrapperTypeInfo.interfaceName, v8::Local<v8::FunctionTemplate>(), V8TestInterfaceOriginTrialEnabled::internalFieldCount);
@@ -245,25 +245,25 @@ static void installV8TestInterfaceOriginTrialEnabledTemplate(v8::Local<v8::Funct
     V8DOMConfiguration::installConstants(isolate, interfaceTemplate, prototypeTemplate, V8TestInterfaceOriginTrialEnabledConstants, WTF_ARRAY_LENGTH(V8TestInterfaceOriginTrialEnabledConstants));
     static_assert(0 == TestInterfaceOriginTrialEnabled::UNSIGNED_LONG, "the value of TestInterfaceOriginTrialEnabled_UNSIGNED_LONG does not match with implementation");
     static_assert(1 == TestInterfaceOriginTrialEnabled::CONST_JAVASCRIPT, "the value of TestInterfaceOriginTrialEnabled_CONST_JAVASCRIPT does not match with implementation");
-    V8DOMConfiguration::installAccessors(isolate, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestInterfaceOriginTrialEnabledAccessors, WTF_ARRAY_LENGTH(V8TestInterfaceOriginTrialEnabledAccessors));
-    V8DOMConfiguration::installMethods(isolate, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestInterfaceOriginTrialEnabledMethods, WTF_ARRAY_LENGTH(V8TestInterfaceOriginTrialEnabledMethods));
+    V8DOMConfiguration::installAccessors(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestInterfaceOriginTrialEnabledAccessors, WTF_ARRAY_LENGTH(V8TestInterfaceOriginTrialEnabledAccessors));
+    V8DOMConfiguration::installMethods(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestInterfaceOriginTrialEnabledMethods, WTF_ARRAY_LENGTH(V8TestInterfaceOriginTrialEnabledMethods));
 
     if (RuntimeEnabledFeatures::featureNameEnabled()) {
         const V8DOMConfiguration::AccessorConfiguration accessorconditionalReadOnlyLongAttributeConfiguration = \
         {"conditionalReadOnlyLongAttribute", TestInterfaceOriginTrialEnabledV8Internal::conditionalReadOnlyLongAttributeAttributeGetterCallback, 0, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
-        V8DOMConfiguration::installAccessor(isolate, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, accessorconditionalReadOnlyLongAttributeConfiguration);
+        V8DOMConfiguration::installAccessor(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, accessorconditionalReadOnlyLongAttributeConfiguration);
         const V8DOMConfiguration::AccessorConfiguration accessorstaticConditionalReadOnlyLongAttributeConfiguration = \
         {"staticConditionalReadOnlyLongAttribute", TestInterfaceOriginTrialEnabledV8Internal::staticConditionalReadOnlyLongAttributeAttributeGetterCallback, 0, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInterface, V8DOMConfiguration::CheckHolder};
-        V8DOMConfiguration::installAccessor(isolate, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, accessorstaticConditionalReadOnlyLongAttributeConfiguration);
+        V8DOMConfiguration::installAccessor(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, accessorstaticConditionalReadOnlyLongAttributeConfiguration);
         const V8DOMConfiguration::AccessorConfiguration accessorconditionalLongAttributeConfiguration = \
         {"conditionalLongAttribute", TestInterfaceOriginTrialEnabledV8Internal::conditionalLongAttributeAttributeGetterCallback, TestInterfaceOriginTrialEnabledV8Internal::conditionalLongAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
-        V8DOMConfiguration::installAccessor(isolate, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, accessorconditionalLongAttributeConfiguration);
+        V8DOMConfiguration::installAccessor(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, accessorconditionalLongAttributeConfiguration);
     }
 }
 
-v8::Local<v8::FunctionTemplate> V8TestInterfaceOriginTrialEnabled::domTemplate(v8::Isolate* isolate)
+v8::Local<v8::FunctionTemplate> V8TestInterfaceOriginTrialEnabled::domTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world)
 {
-    return V8DOMConfiguration::domClassTemplate(isolate, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), installV8TestInterfaceOriginTrialEnabledTemplate);
+    return V8DOMConfiguration::domClassTemplate(isolate, world, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), installV8TestInterfaceOriginTrialEnabledTemplate);
 }
 
 bool V8TestInterfaceOriginTrialEnabled::hasInstance(v8::Local<v8::Value> v8Value, v8::Isolate* isolate)

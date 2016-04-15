@@ -182,10 +182,10 @@ void V8TestNode::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>& 
     TestNodeV8Internal::constructor(info);
 }
 
-static void installV8TestNodeTemplate(v8::Local<v8::FunctionTemplate> interfaceTemplate, v8::Isolate* isolate)
+static void installV8TestNodeTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world, v8::Local<v8::FunctionTemplate> interfaceTemplate)
 {
     // Initialize the interface object's template.
-    V8DOMConfiguration::initializeDOMInterfaceTemplate(isolate, interfaceTemplate, V8TestNode::wrapperTypeInfo.interfaceName, V8Node::domTemplate(isolate), V8TestNode::internalFieldCount);
+    V8DOMConfiguration::initializeDOMInterfaceTemplate(isolate, interfaceTemplate, V8TestNode::wrapperTypeInfo.interfaceName, V8Node::domTemplate(isolate, world), V8TestNode::internalFieldCount);
     interfaceTemplate->SetCallHandler(V8TestNode::constructorCallback);
     interfaceTemplate->SetLength(0);
     v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTemplate);
@@ -195,12 +195,12 @@ static void installV8TestNodeTemplate(v8::Local<v8::FunctionTemplate> interfaceT
     v8::Local<v8::ObjectTemplate> prototypeTemplate = interfaceTemplate->PrototypeTemplate();
     ALLOW_UNUSED_LOCAL(prototypeTemplate);
     // Register DOM constants, attributes and operations.
-    V8DOMConfiguration::installAccessors(isolate, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestNodeAccessors, WTF_ARRAY_LENGTH(V8TestNodeAccessors));
+    V8DOMConfiguration::installAccessors(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestNodeAccessors, WTF_ARRAY_LENGTH(V8TestNodeAccessors));
 }
 
-v8::Local<v8::FunctionTemplate> V8TestNode::domTemplate(v8::Isolate* isolate)
+v8::Local<v8::FunctionTemplate> V8TestNode::domTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world)
 {
-    return V8DOMConfiguration::domClassTemplate(isolate, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), installV8TestNodeTemplate);
+    return V8DOMConfiguration::domClassTemplate(isolate, world, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), installV8TestNodeTemplate);
 }
 
 bool V8TestNode::hasInstance(v8::Local<v8::Value> v8Value, v8::Isolate* isolate)

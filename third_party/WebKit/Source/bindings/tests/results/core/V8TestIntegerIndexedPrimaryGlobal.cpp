@@ -137,10 +137,10 @@ const V8DOMConfiguration::MethodConfiguration V8TestIntegerIndexedPrimaryGlobalM
     {"voidMethodDocument", TestIntegerIndexedPrimaryGlobalV8Internal::voidMethodDocumentMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance},
 };
 
-static void installV8TestIntegerIndexedPrimaryGlobalTemplate(v8::Local<v8::FunctionTemplate> interfaceTemplate, v8::Isolate* isolate)
+static void installV8TestIntegerIndexedPrimaryGlobalTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world, v8::Local<v8::FunctionTemplate> interfaceTemplate)
 {
     // Initialize the interface object's template.
-    V8DOMConfiguration::initializeDOMInterfaceTemplate(isolate, interfaceTemplate, V8TestIntegerIndexedPrimaryGlobal::wrapperTypeInfo.interfaceName, V8TestIntegerIndexedPrimaryGlobal::domTemplateForNamedPropertiesObject(isolate), V8TestIntegerIndexedPrimaryGlobal::internalFieldCount);
+    V8DOMConfiguration::initializeDOMInterfaceTemplate(isolate, interfaceTemplate, V8TestIntegerIndexedPrimaryGlobal::wrapperTypeInfo.interfaceName, V8TestIntegerIndexedPrimaryGlobal::domTemplateForNamedPropertiesObject(isolate, world), V8TestIntegerIndexedPrimaryGlobal::internalFieldCount);
     v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTemplate);
     ALLOW_UNUSED_LOCAL(signature);
     v8::Local<v8::ObjectTemplate> instanceTemplate = interfaceTemplate->InstanceTemplate();
@@ -150,22 +150,22 @@ static void installV8TestIntegerIndexedPrimaryGlobalTemplate(v8::Local<v8::Funct
     interfaceTemplate->SetHiddenPrototype(true);
 
     // Register DOM constants, attributes and operations.
-    V8DOMConfiguration::installAccessors(isolate, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestIntegerIndexedPrimaryGlobalAccessors, WTF_ARRAY_LENGTH(V8TestIntegerIndexedPrimaryGlobalAccessors));
-    V8DOMConfiguration::installMethods(isolate, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestIntegerIndexedPrimaryGlobalMethods, WTF_ARRAY_LENGTH(V8TestIntegerIndexedPrimaryGlobalMethods));
+    V8DOMConfiguration::installAccessors(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestIntegerIndexedPrimaryGlobalAccessors, WTF_ARRAY_LENGTH(V8TestIntegerIndexedPrimaryGlobalAccessors));
+    V8DOMConfiguration::installMethods(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestIntegerIndexedPrimaryGlobalMethods, WTF_ARRAY_LENGTH(V8TestIntegerIndexedPrimaryGlobalMethods));
 
     // Indexed properties
     v8::IndexedPropertyHandlerConfiguration indexedPropertyHandlerConfig(TestIntegerIndexedPrimaryGlobalV8Internal::indexedPropertyGetterCallback, TestIntegerIndexedPrimaryGlobalV8Internal::indexedPropertySetterCallback, 0, TestIntegerIndexedPrimaryGlobalV8Internal::indexedPropertyDeleterCallback, indexedPropertyEnumerator<TestIntegerIndexedPrimaryGlobal>, v8::Local<v8::Value>(), v8::PropertyHandlerFlags::kNone);
     instanceTemplate->SetHandler(indexedPropertyHandlerConfig);
 }
 
-v8::Local<v8::FunctionTemplate> V8TestIntegerIndexedPrimaryGlobal::domTemplate(v8::Isolate* isolate)
+v8::Local<v8::FunctionTemplate> V8TestIntegerIndexedPrimaryGlobal::domTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world)
 {
-    return V8DOMConfiguration::domClassTemplate(isolate, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), installV8TestIntegerIndexedPrimaryGlobalTemplate);
+    return V8DOMConfiguration::domClassTemplate(isolate, world, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), installV8TestIntegerIndexedPrimaryGlobalTemplate);
 }
 
-v8::Local<v8::FunctionTemplate> V8TestIntegerIndexedPrimaryGlobal::domTemplateForNamedPropertiesObject(v8::Isolate* isolate)
+v8::Local<v8::FunctionTemplate> V8TestIntegerIndexedPrimaryGlobal::domTemplateForNamedPropertiesObject(v8::Isolate* isolate, const DOMWrapperWorld& world)
 {
-    v8::Local<v8::FunctionTemplate> parentTemplate = V8None::domTemplate(isolate);
+    v8::Local<v8::FunctionTemplate> parentTemplate = V8None::domTemplate(isolate, world);
 
     v8::Local<v8::FunctionTemplate> namedPropertiesObjectFunctionTemplate = v8::FunctionTemplate::New(isolate);
     namedPropertiesObjectFunctionTemplate->SetClassName(v8AtomicString(isolate, "TestIntegerIndexedPrimaryGlobalProperties"));

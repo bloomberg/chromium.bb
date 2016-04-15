@@ -596,7 +596,7 @@ void V8TestInterface2::constructorCallback(const v8::FunctionCallbackInfo<v8::Va
     TestInterface2V8Internal::constructor(info);
 }
 
-static void installV8TestInterface2Template(v8::Local<v8::FunctionTemplate> interfaceTemplate, v8::Isolate* isolate)
+static void installV8TestInterface2Template(v8::Isolate* isolate, const DOMWrapperWorld& world, v8::Local<v8::FunctionTemplate> interfaceTemplate)
 {
     // Initialize the interface object's template.
     V8DOMConfiguration::initializeDOMInterfaceTemplate(isolate, interfaceTemplate, V8TestInterface2::wrapperTypeInfo.interfaceName, v8::Local<v8::FunctionTemplate>(), V8TestInterface2::internalFieldCount);
@@ -614,7 +614,7 @@ static void installV8TestInterface2Template(v8::Local<v8::FunctionTemplate> inte
         V8DOMConfiguration::installConstant(isolate, interfaceTemplate, prototypeTemplate, constantConstValue1Configuration);
     }
     static_assert(1 == TestInterface2::CONST_VALUE_1, "the value of TestInterface2_CONST_VALUE_1 does not match with implementation");
-    V8DOMConfiguration::installMethods(isolate, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestInterface2Methods, WTF_ARRAY_LENGTH(V8TestInterface2Methods));
+    V8DOMConfiguration::installMethods(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestInterface2Methods, WTF_ARRAY_LENGTH(V8TestInterface2Methods));
 
     // Indexed properties
     v8::IndexedPropertyHandlerConfiguration indexedPropertyHandlerConfig(TestInterface2V8Internal::indexedPropertyGetterCallback, TestInterface2V8Internal::indexedPropertySetterCallback, 0, TestInterface2V8Internal::indexedPropertyDeleterCallback, indexedPropertyEnumerator<TestInterface2>, v8::Local<v8::Value>(), v8::PropertyHandlerFlags::kNone);
@@ -625,12 +625,12 @@ static void installV8TestInterface2Template(v8::Local<v8::FunctionTemplate> inte
 
     // Iterator (@@iterator)
     const V8DOMConfiguration::SymbolKeyedMethodConfiguration symbolKeyedIteratorConfiguration = { v8::Symbol::GetIterator, TestInterface2V8Internal::iteratorMethodCallback, 0, v8::DontDelete, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype };
-    V8DOMConfiguration::installMethod(isolate, prototypeTemplate, signature, symbolKeyedIteratorConfiguration);
+    V8DOMConfiguration::installMethod(isolate, world, prototypeTemplate, signature, symbolKeyedIteratorConfiguration);
 }
 
-v8::Local<v8::FunctionTemplate> V8TestInterface2::domTemplate(v8::Isolate* isolate)
+v8::Local<v8::FunctionTemplate> V8TestInterface2::domTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world)
 {
-    return V8DOMConfiguration::domClassTemplate(isolate, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), installV8TestInterface2Template);
+    return V8DOMConfiguration::domClassTemplate(isolate, world, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), installV8TestInterface2Template);
 }
 
 bool V8TestInterface2::hasInstance(v8::Local<v8::Value> v8Value, v8::Isolate* isolate)

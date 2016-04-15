@@ -40,6 +40,7 @@
 
 namespace blink {
 
+class DOMWrapperWorld;
 class EventTarget;
 class ScriptWrappable;
 
@@ -51,11 +52,11 @@ static const int v8DefaultWrapperInternalFieldCount = static_cast<int>(gin::kNum
 static const int v8PrototypeTypeIndex = 0;
 static const int v8PrototypeInternalFieldcount = 1;
 
-typedef v8::Local<v8::FunctionTemplate> (*DomTemplateFunction)(v8::Isolate*);
+typedef v8::Local<v8::FunctionTemplate> (*DomTemplateFunction)(v8::Isolate*, const DOMWrapperWorld&);
 typedef void (*TraceFunction)(Visitor*, ScriptWrappable*);
 typedef ActiveScriptWrappable* (*ToActiveScriptWrappableFunction)(v8::Local<v8::Object>);
 typedef void (*ResolveWrapperReachabilityFunction)(v8::Isolate*, ScriptWrappable*, const v8::Persistent<v8::Object>&);
-typedef void (*PreparePrototypeAndInterfaceObjectFunction)(v8::Local<v8::Context>, v8::Local<v8::Object>, v8::Local<v8::Function>, v8::Local<v8::FunctionTemplate>);
+typedef void (*PreparePrototypeAndInterfaceObjectFunction)(v8::Local<v8::Context>, const DOMWrapperWorld&, v8::Local<v8::Object>, v8::Local<v8::Function>, v8::Local<v8::FunctionTemplate>);
 typedef void (*InstallConditionallyEnabledPropertiesFunction)(v8::Local<v8::Object>, v8::Isolate*);
 
 inline void setObjectGroup(v8::Isolate* isolate, ScriptWrappable* scriptWrappable, const v8::Persistent<v8::Object>& wrapper)
@@ -115,9 +116,9 @@ struct WrapperTypeInfo {
             wrapper->MarkIndependent();
     }
 
-    v8::Local<v8::FunctionTemplate> domTemplate(v8::Isolate* isolate) const
+    v8::Local<v8::FunctionTemplate> domTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world) const
     {
-        return domTemplateFunction(isolate);
+        return domTemplateFunction(isolate, world);
     }
 
     void wrapperCreated() const
@@ -138,10 +139,10 @@ struct WrapperTypeInfo {
         return traceFunction(visitor, scriptWrappable);
     }
 
-    void preparePrototypeAndInterfaceObject(v8::Local<v8::Context> context, v8::Local<v8::Object> prototypeObject, v8::Local<v8::Function> interfaceObject, v8::Local<v8::FunctionTemplate> interfaceTemplate) const
+    void preparePrototypeAndInterfaceObject(v8::Local<v8::Context> context, const DOMWrapperWorld& world, v8::Local<v8::Object> prototypeObject, v8::Local<v8::Function> interfaceObject, v8::Local<v8::FunctionTemplate> interfaceTemplate) const
     {
         if (preparePrototypeAndInterfaceObjectFunction)
-            preparePrototypeAndInterfaceObjectFunction(context, prototypeObject, interfaceObject, interfaceTemplate);
+            preparePrototypeAndInterfaceObjectFunction(context, world, prototypeObject, interfaceObject, interfaceTemplate);
     }
 
     void installConditionallyEnabledProperties(v8::Local<v8::Object> prototypeObject, v8::Isolate* isolate) const

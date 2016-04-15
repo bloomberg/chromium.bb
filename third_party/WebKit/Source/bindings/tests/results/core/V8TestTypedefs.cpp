@@ -336,7 +336,7 @@ void V8TestTypedefs::constructorCallback(const v8::FunctionCallbackInfo<v8::Valu
     TestTypedefsV8Internal::constructor(info);
 }
 
-static void installV8TestTypedefsTemplate(v8::Local<v8::FunctionTemplate> interfaceTemplate, v8::Isolate* isolate)
+static void installV8TestTypedefsTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world, v8::Local<v8::FunctionTemplate> interfaceTemplate)
 {
     // Initialize the interface object's template.
     V8DOMConfiguration::initializeDOMInterfaceTemplate(isolate, interfaceTemplate, V8TestTypedefs::wrapperTypeInfo.interfaceName, v8::Local<v8::FunctionTemplate>(), V8TestTypedefs::internalFieldCount);
@@ -349,14 +349,14 @@ static void installV8TestTypedefsTemplate(v8::Local<v8::FunctionTemplate> interf
     v8::Local<v8::ObjectTemplate> prototypeTemplate = interfaceTemplate->PrototypeTemplate();
     ALLOW_UNUSED_LOCAL(prototypeTemplate);
     // Register DOM constants, attributes and operations.
-    V8DOMConfiguration::installAttributes(isolate, instanceTemplate, prototypeTemplate, V8TestTypedefsAttributes, WTF_ARRAY_LENGTH(V8TestTypedefsAttributes));
-    V8DOMConfiguration::installAccessors(isolate, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestTypedefsAccessors, WTF_ARRAY_LENGTH(V8TestTypedefsAccessors));
-    V8DOMConfiguration::installMethods(isolate, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestTypedefsMethods, WTF_ARRAY_LENGTH(V8TestTypedefsMethods));
+    V8DOMConfiguration::installAttributes(isolate, world, instanceTemplate, prototypeTemplate, V8TestTypedefsAttributes, WTF_ARRAY_LENGTH(V8TestTypedefsAttributes));
+    V8DOMConfiguration::installAccessors(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestTypedefsAccessors, WTF_ARRAY_LENGTH(V8TestTypedefsAccessors));
+    V8DOMConfiguration::installMethods(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestTypedefsMethods, WTF_ARRAY_LENGTH(V8TestTypedefsMethods));
 }
 
-v8::Local<v8::FunctionTemplate> V8TestTypedefs::domTemplate(v8::Isolate* isolate)
+v8::Local<v8::FunctionTemplate> V8TestTypedefs::domTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world)
 {
-    return V8DOMConfiguration::domClassTemplate(isolate, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), installV8TestTypedefsTemplate);
+    return V8DOMConfiguration::domClassTemplate(isolate, world, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), installV8TestTypedefsTemplate);
 }
 
 bool V8TestTypedefs::hasInstance(v8::Local<v8::Value> v8Value, v8::Isolate* isolate)

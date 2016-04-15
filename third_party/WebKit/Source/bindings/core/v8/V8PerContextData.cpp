@@ -98,10 +98,11 @@ v8::Local<v8::Function> V8PerContextData::constructorForTypeSlowCase(const Wrapp
 
     v8::Local<v8::Context> currentContext = context();
     v8::Context::Scope scope(currentContext);
+    const DOMWrapperWorld& world = DOMWrapperWorld::world(currentContext);
     // We shouldn't reach this point for the types that are implemented in v8 such as typed arrays and
     // hence don't have domTemplateFunction.
     ASSERT(type->domTemplateFunction);
-    v8::Local<v8::FunctionTemplate> interfaceTemplate = type->domTemplate(m_isolate);
+    v8::Local<v8::FunctionTemplate> interfaceTemplate = type->domTemplate(m_isolate, world);
     // Getting the function might fail if we're running out of stack or memory.
     v8::Local<v8::Function> interfaceObject;
     if (!interfaceTemplate->GetFunction(currentContext).ToLocal(&interfaceObject))
@@ -122,7 +123,7 @@ v8::Local<v8::Function> V8PerContextData::constructorForTypeSlowCase(const Wrapp
     if (prototypeObject->InternalFieldCount() == v8PrototypeInternalFieldcount
         && type->wrapperTypePrototype == WrapperTypeInfo::WrapperTypeObjectPrototype)
         prototypeObject->SetAlignedPointerInInternalField(v8PrototypeTypeIndex, const_cast<WrapperTypeInfo*>(type));
-    type->preparePrototypeAndInterfaceObject(currentContext, prototypeObject, interfaceObject, interfaceTemplate);
+    type->preparePrototypeAndInterfaceObject(currentContext, world, prototypeObject, interfaceObject, interfaceTemplate);
     if (type->wrapperTypePrototype == WrapperTypeInfo::WrapperTypeExceptionPrototype) {
         if (!v8CallBoolean(prototypeObject->SetPrototype(currentContext, m_errorPrototype.newLocal(m_isolate))))
             return v8::Local<v8::Function>();
