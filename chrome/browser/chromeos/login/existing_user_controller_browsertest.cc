@@ -289,8 +289,14 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerUntrustedTest,
   existing_user_controller()->Login(user_context, SigninSpecifics());
 }
 
+// Per http://crbug.com/603735, NewUserLoginForbidden fails.
+#if defined(LINUX)
+#define MAYBE_NewUserLoginForbidden DISABLED_NewUserLoginForbidden
+#else
+#define MAYBE_NewUserLoginForbidden NewUserLoginForbidden
+#endif
 IN_PROC_BROWSER_TEST_F(ExistingUserControllerUntrustedTest,
-                       NewUserLoginForbidden) {
+                       MAYBE_NewUserLoginForbidden) {
   UserContext user_context(account_id_);
   user_context.SetKey(Key(kPassword));
   user_context.SetUserIDHash(account_id_.GetUserEmail());
