@@ -20,11 +20,11 @@ class VideoFrame;
 namespace content {
 
 // VideoTrackRecorder is a MediaStreamVideoSink that encodes the video frames
-// received from a Stream Video Track. The class is constructed and used on a
-// single thread, namely the main Render thread. It has an internal VpxEncoder
-// with its own threading subtleties, see the implementation file. This mirrors
-// the other MediaStreamVideo* classes that are constructed/configured on Main
-// Render thread but that pass frames on Render IO thread.
+// received from a Stream Video Track. This class is constructed and used on a
+// single thread, namely the main Render thread. This mirrors the other
+// MediaStreamVideo* classes that are constructed/configured on Main Render
+// thread but that pass frames on Render IO thread. It has an internal Encoder
+// with its own threading subtleties, see the implementation file.
 class CONTENT_EXPORT VideoTrackRecorder
     : NON_EXPORTED_BASE(public MediaStreamVideoSink) {
  public:
@@ -32,6 +32,7 @@ class CONTENT_EXPORT VideoTrackRecorder
     VP8,
     VP9,
   };
+  class Encoder;
 
   using OnEncodedVideoCB =
       base::Callback<void(const scoped_refptr<media::VideoFrame>& video_frame,
@@ -60,8 +61,7 @@ class CONTENT_EXPORT VideoTrackRecorder
   blink::WebMediaStreamTrack track_;
 
   // Inner class to encode using whichever codec is configured.
-  class VpxEncoder;
-  const scoped_refptr<VpxEncoder> encoder_;
+  const scoped_refptr<Encoder> encoder_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoTrackRecorder);
 };

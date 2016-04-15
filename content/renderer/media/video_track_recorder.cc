@@ -30,6 +30,40 @@ using media::VideoFrameMetadata;
 
 namespace content {
 
+// Base class to describe a generic Encoder. This class is used to encapsulate
+// interactions with actual encoders, encoding and delivery of received frames.
+// This class is ref-counted to allow the MediaStreamVideoTrack to hold a
+// reference to it, via the callback that MediaStreamVideoSink passes along.
+// Also, it is quite common that encoders run in a background thread.
+class VideoTrackRecorder::Encoder : public base::RefCountedThreadSafe<Encoder> {
+ public:
+  Encoder(const OnEncodedVideoCB& on_encoded_video_callback,
+          int32_t bits_per_second)
+      : paused_(false),
+        on_encoded_video_callback_(on_encoded_video_callback),
+        bits_per_second_(bits_per_second) {}
+
+  virtual void StartFrameEncode(const scoped_refptr<VideoFrame>& frame,
+                                base::TimeTicks capture_timestamp) = 0;
+
+  void set_paused(bool paused) { paused_ = paused; }
+
+ protected:
+  friend class base::RefCountedThreadSafe<Encoder>;
+  virtual ~Encoder() {}
+
+  // While |paused_|, frames are not encoded.
+  bool paused_;
+
+  // This callback should be exercised on IO thread.
+  const OnEncodedVideoCB on_encoded_video_callback_;
+
+  // Target bitrate or video encoding. If 0, a standard bitrate is used.
+  const int32_t bits_per_second_;
+
+  DISALLOW_COPY_AND_ASSIGN(Encoder);
+};
+
 namespace {
 
 const vpx_codec_flags_t kNoFlags = 0;
@@ -59,13 +93,8 @@ void OnFrameEncodeCompleted(
   on_encoded_video_cb.Run(frame, std::move(data), capture_timestamp, keyframe);
 }
 
-}  // anonymous namespace
-
-// Inner class encapsulating all libvpx interactions and the encoding+delivery
-// of received frames. Limitation: Only VP8 is supported for the time being.
-// This class must be ref-counted because the MediaStreamVideoTrack will hold a
-// reference to it, via the callback MediaStreamVideoSink passes along, and it's
-// unknown when exactly it will release that reference. This class:
+// Class encapsulating libvpx interactions, encoding and delivery of received
+// frames. This class:
 // - is created and destroyed on its parent's thread (usually the main Render
 // thread);
 // - receives VideoFrames and Run()s the callbacks on |origin_task_runner_|,
@@ -73,24 +102,21 @@ void OnFrameEncodeCompleted(
 // thread, but this is not enforced;
 // - uses an internal |encoding_thread_| for libvpx interactions, notably for
 // encoding (which might take some time).
-class VideoTrackRecorder::VpxEncoder final
-    : public base::RefCountedThreadSafe<VpxEncoder> {
+class VpxEncoder final : public VideoTrackRecorder::Encoder {
  public:
   static void ShutdownEncoder(std::unique_ptr<base::Thread> encoding_thread,
                               ScopedVpxCodecCtxPtr encoder);
 
-  VpxEncoder(bool use_vp9,
-             const OnEncodedVideoCB& on_encoded_video_callback,
-             int32_t bits_per_second);
+  VpxEncoder(
+      bool use_vp9,
+      const VideoTrackRecorder::OnEncodedVideoCB& on_encoded_video_callback,
+      int32_t bits_per_second);
 
   void StartFrameEncode(const scoped_refptr<VideoFrame>& frame,
-                        base::TimeTicks capture_timestamp);
-
-  void set_paused(bool paused) { paused_ = paused; }
+                        base::TimeTicks capture_timestamp) override;
 
  private:
-  friend class base::RefCountedThreadSafe<VpxEncoder>;
-  ~VpxEncoder();
+  ~VpxEncoder() override;
 
   void EncodeOnEncodingThread(const scoped_refptr<VideoFrame>& frame,
                               base::TimeTicks capture_timestamp);
@@ -104,17 +130,8 @@ class VideoTrackRecorder::VpxEncoder final
   base::TimeDelta CalculateFrameDuration(
       const scoped_refptr<VideoFrame>& frame);
 
-  // While |paused_|, frames are not encoded.
-  bool paused_;
-
   // Force usage of VP9 for encoding, instead of VP8 which is the default.
   const bool use_vp9_;
-
-  // This callback should be exercised on IO thread.
-  const OnEncodedVideoCB on_encoded_video_callback_;
-
-  // Target bitrate or video encoding. If 0, a standard bitrate is used.
-  const int32_t bits_per_second_;
 
   // Used to shutdown properly on the same thread we were created.
   const scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
@@ -139,22 +156,19 @@ class VideoTrackRecorder::VpxEncoder final
 };
 
 // static
-void VideoTrackRecorder::VpxEncoder::ShutdownEncoder(
-    std::unique_ptr<base::Thread> encoding_thread,
-    ScopedVpxCodecCtxPtr encoder) {
+void VpxEncoder::ShutdownEncoder(std::unique_ptr<base::Thread> encoding_thread,
+                                 ScopedVpxCodecCtxPtr encoder) {
   DCHECK(encoding_thread->IsRunning());
   encoding_thread->Stop();
   // Both |encoding_thread| and |encoder| will be destroyed at end-of-scope.
 }
 
-VideoTrackRecorder::VpxEncoder::VpxEncoder(
+VpxEncoder::VpxEncoder(
     bool use_vp9,
-    const OnEncodedVideoCB& on_encoded_video_callback,
+    const VideoTrackRecorder::OnEncodedVideoCB& on_encoded_video_callback,
     int32_t bits_per_second)
-    : paused_(false),
+    : Encoder(on_encoded_video_callback, bits_per_second),
       use_vp9_(use_vp9),
-      on_encoded_video_callback_(on_encoded_video_callback),
-      bits_per_second_(bits_per_second),
       main_task_runner_(base::MessageLoop::current()->task_runner()),
       encoding_thread_(new base::Thread("EncodingThread")) {
   DCHECK(!on_encoded_video_callback_.is_null());
@@ -165,16 +179,15 @@ VideoTrackRecorder::VpxEncoder::VpxEncoder(
   encoding_thread_->Start();
 }
 
-VideoTrackRecorder::VpxEncoder::~VpxEncoder() {
+VpxEncoder::~VpxEncoder() {
   main_task_runner_->PostTask(FROM_HERE,
                               base::Bind(&VpxEncoder::ShutdownEncoder,
                                          base::Passed(&encoding_thread_),
                                          base::Passed(&encoder_)));
 }
 
-void VideoTrackRecorder::VpxEncoder::StartFrameEncode(
-    const scoped_refptr<VideoFrame>& frame,
-    base::TimeTicks capture_timestamp) {
+void VpxEncoder::StartFrameEncode(const scoped_refptr<VideoFrame>& frame,
+                                  base::TimeTicks capture_timestamp) {
   // Cache the thread sending frames on first frame arrival.
   if (!origin_task_runner_.get())
     origin_task_runner_ = base::MessageLoop::current()->task_runner();
@@ -186,11 +199,10 @@ void VideoTrackRecorder::VpxEncoder::StartFrameEncode(
                             this, frame, capture_timestamp));
 }
 
-void VideoTrackRecorder::VpxEncoder::EncodeOnEncodingThread(
+void VpxEncoder::EncodeOnEncodingThread(
     const scoped_refptr<VideoFrame>& video_frame,
     base::TimeTicks capture_timestamp) {
-  TRACE_EVENT0("video",
-               "VideoTrackRecorder::VpxEncoder::EncodeOnEncodingThread");
+  TRACE_EVENT0("video", "VpxEncoder::EncodeOnEncodingThread");
   DCHECK(encoding_thread_->task_runner()->BelongsToCurrentThread());
 
   if (!(video_frame->format() == media::PIXEL_FORMAT_I420 ||
@@ -259,7 +271,7 @@ void VideoTrackRecorder::VpxEncoder::EncodeOnEncodingThread(
                  keyframe));
 }
 
-void VideoTrackRecorder::VpxEncoder::ConfigureEncoding(const gfx::Size& size) {
+void VpxEncoder::ConfigureEncoding(const gfx::Size& size) {
   if (IsInitialized()) {
     // TODO(mcasas) VP8 quirk/optimisation: If the new |size| is strictly less-
     // than-or-equal than the old size, in terms of area, the existing encoder
@@ -351,12 +363,12 @@ void VideoTrackRecorder::VpxEncoder::ConfigureEncoding(const gfx::Size& size) {
   }
 }
 
-bool VideoTrackRecorder::VpxEncoder::IsInitialized() const {
+bool VpxEncoder::IsInitialized() const {
   DCHECK(encoding_thread_->task_runner()->BelongsToCurrentThread());
   return codec_config_.g_timebase.den != 0;
 }
 
-base::TimeDelta VideoTrackRecorder::VpxEncoder::CalculateFrameDuration(
+base::TimeDelta VpxEncoder::CalculateFrameDuration(
     const scoped_refptr<VideoFrame>& frame) {
   DCHECK(encoding_thread_->task_runner()->BelongsToCurrentThread());
 
@@ -381,6 +393,8 @@ base::TimeDelta VideoTrackRecorder::VpxEncoder::CalculateFrameDuration(
                                               kMinFrameDuration));
 }
 
+}  // anonymous namespace
+
 VideoTrackRecorder::VideoTrackRecorder(
     CodecId codec,
     const blink::WebMediaStreamTrack& track,
@@ -397,7 +411,7 @@ VideoTrackRecorder::VideoTrackRecorder(
   // StartFrameEncode() will be called on Render IO thread.
   MediaStreamVideoSink::ConnectToTrack(
       track_,
-      base::Bind(&VideoTrackRecorder::VpxEncoder::StartFrameEncode, encoder_));
+      base::Bind(&VideoTrackRecorder::Encoder::StartFrameEncode, encoder_));
 }
 
 VideoTrackRecorder::~VideoTrackRecorder() {
