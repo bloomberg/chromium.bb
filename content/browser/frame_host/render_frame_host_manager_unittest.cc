@@ -1204,7 +1204,7 @@ TEST_F(RenderFrameHostManagerTest, PageDoesBackAndReload) {
   params.should_update_history = false;
   params.gesture = NavigationGestureAuto;
   params.was_within_same_page = false;
-  params.is_post = false;
+  params.method = "GET";
   params.page_state = PageState::CreateFromURL(kUrl2);
 
   evil_rfh->SimulateNavigationStart(kUrl2);
@@ -2788,7 +2788,7 @@ TEST_F(RenderFrameHostManagerTest, CanCommitOrigin) {
   params.should_update_history = false;
   params.gesture = NavigationGestureAuto;
   params.was_within_same_page = false;
-  params.is_post = false;
+  params.method = "GET";
   params.page_state = PageState::CreateFromURL(kUrlBar);
 
   struct TestCase {
@@ -3096,7 +3096,7 @@ TEST_F(RenderFrameHostManagerTestWithSiteIsolation,
   commit_params.should_update_history = false;
   commit_params.gesture = NavigationGestureAuto;
   commit_params.was_within_same_page = false;
-  commit_params.is_post = false;
+  commit_params.method = "GET";
   commit_params.page_state = PageState::CreateFromURL(kUrl3);
   commit_params.should_enforce_strict_mixed_content_checking = false;
   child_host->SendNavigateWithParams(&commit_params);

@@ -737,7 +737,7 @@ void NavigationControllerImpl::LoadURLWithParams(const LoadURLParams& params) {
         entry = GetLastCommittedEntry()->Clone();
         entry->SetPageID(-1);
         entry->AddOrUpdateFrameEntry(node, "", -1, -1, nullptr, params.url,
-                                     params.referrer, PageState());
+                                     params.referrer, PageState(), "GET", -1);
       }
     }
   }
@@ -1120,8 +1120,6 @@ void NavigationControllerImpl::RendererDidNavigateToNewPage(
   new_entry->SetTransitionType(params.transition);
   new_entry->set_site_instance(
       static_cast<SiteInstanceImpl*>(rfh->GetSiteInstance()));
-  new_entry->SetHasPostData(params.is_post);
-  new_entry->SetPostID(params.post_id);
   new_entry->SetOriginalRequestURL(params.original_request_url);
   new_entry->SetIsOverridingUserAgent(params.is_overriding_user_agent);
 
@@ -1131,6 +1129,8 @@ void NavigationControllerImpl::RendererDidNavigateToNewPage(
   frame_entry->set_frame_unique_name(params.frame_unique_name);
   frame_entry->set_item_sequence_number(params.item_sequence_number);
   frame_entry->set_document_sequence_number(params.document_sequence_number);
+  frame_entry->set_method(params.method);
+  frame_entry->set_post_id(params.post_id);
 
   // history.pushState() is classified as a navigation to a new page, but
   // sets was_within_same_page to true. In this case, we already have the
@@ -1184,6 +1184,12 @@ void NavigationControllerImpl::RendererDidNavigateToExistingPage(
   if (entry->update_virtual_url_with_url())
     UpdateVirtualURLToURL(entry, params.url);
 
+  // Update the post parameters.
+  FrameNavigationEntry* frame_entry =
+      entry->GetFrameEntry(rfh->frame_tree_node());
+  frame_entry->set_method(params.method);
+  frame_entry->set_post_id(params.post_id);
+
   // The redirected to page should not inherit the favicon from the previous
   // page.
   if (ui::PageTransitionIsRedirect(params.transition))
@@ -1195,9 +1201,6 @@ void NavigationControllerImpl::RendererDidNavigateToExistingPage(
          entry->site_instance() == rfh->GetSiteInstance());
   entry->set_site_instance(
       static_cast<SiteInstanceImpl*>(rfh->GetSiteInstance()));
-
-  entry->SetHasPostData(params.is_post);
-  entry->SetPostID(params.post_id);
 
   // The entry we found in the list might be pending if the user hit
   // back/forward/reload. This load should commit it (since it's already in the
@@ -1241,8 +1244,10 @@ void NavigationControllerImpl::RendererDidNavigateToSamePage(
   existing_entry->SetReferrer(params.referrer);
 
   // The page may have been requested with a different HTTP method.
-  existing_entry->SetHasPostData(params.is_post);
-  existing_entry->SetPostID(params.post_id);
+  FrameNavigationEntry* frame_entry =
+      existing_entry->GetFrameEntry(rfh->frame_tree_node());
+  frame_entry->set_method(params.method);
+  frame_entry->set_post_id(params.post_id);
 
   DiscardNonCommittedEntries();
 }
@@ -1267,7 +1272,8 @@ void NavigationControllerImpl::RendererDidNavigateNewSubframe(
     FrameNavigationEntry* frame_entry = new FrameNavigationEntry(
         rfh->frame_tree_node()->frame_tree_node_id(), params.frame_unique_name,
         params.item_sequence_number, params.document_sequence_number,
-        rfh->GetSiteInstance(), params.url, params.referrer);
+        rfh->GetSiteInstance(), params.url, params.referrer, params.method,
+        params.post_id);
     new_entry = GetLastCommittedEntry()->CloneAndReplace(rfh->frame_tree_node(),
                                                          frame_entry);
 
@@ -1328,7 +1334,8 @@ bool NavigationControllerImpl::RendererDidNavigateAutoSubframe(
     last_committed->AddOrUpdateFrameEntry(
         rfh->frame_tree_node(), params.frame_unique_name,
         params.item_sequence_number, params.document_sequence_number,
-        rfh->GetSiteInstance(), params.url, params.referrer, params.page_state);
+        rfh->GetSiteInstance(), params.url, params.referrer, params.page_state,
+        params.method, params.post_id);
 
     // Cross-process subframe navigations may leave a pending entry around.
     // Clear it if it's actually for the subframe.

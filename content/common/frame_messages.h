@@ -232,8 +232,8 @@ IPC_STRUCT_BEGIN_WITH_PARENT(FrameHostMsg_DidCommitProvisionalLoad_Params,
   // The gesture that initiated this navigation.
   IPC_STRUCT_MEMBER(content::NavigationGesture, gesture)
 
-  // True if this was a post request.
-  IPC_STRUCT_MEMBER(bool, is_post)
+  // The HTTP method used by the navigation.
+  IPC_STRUCT_MEMBER(std::string, method)
 
   // The POST body identifier. -1 if it doesn't exist.
   IPC_STRUCT_MEMBER(int64_t, post_id)

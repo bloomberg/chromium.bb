@@ -3648,4 +3648,63 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_EQ(url_3, new_root->current_url());
 }
 
+// Tests that when using FrameNavigationEntries, knowledge of POST navigations
+// is recorded on a subframe level.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       PostInSubframe) {
+  if (!SiteIsolationPolicy::UseSubframeNavigationEntries())
+    return;
+
+  GURL page_with_form_url = embedded_test_server()->GetURL(
+      "/navigation_controller/subframe_form.html");
+  NavigateToURL(shell(), page_with_form_url);
+
+  NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
+      shell()->web_contents()->GetController());
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  FrameTreeNode* frame = root->child_at(0);
+  EXPECT_EQ(1, controller.GetEntryCount());
+
+  {
+    NavigationEntryImpl* entry = controller.GetLastCommittedEntry();
+    FrameNavigationEntry* root_entry = entry->GetFrameEntry(root);
+    FrameNavigationEntry* frame_entry = entry->GetFrameEntry(frame);
+    EXPECT_NE(nullptr, root_entry);
+    EXPECT_NE(nullptr, frame_entry);
+    EXPECT_EQ("GET", root_entry->method());
+    EXPECT_EQ(-1, root_entry->post_id());
+    EXPECT_EQ("GET", frame_entry->method());
+    EXPECT_EQ(-1, frame_entry->post_id());
+    EXPECT_FALSE(entry->GetHasPostData());
+    EXPECT_EQ(-1, entry->GetPostID());
+  }
+
+  // Submit the form.
+  TestNavigationObserver observer(shell()->web_contents(), 1);
+  EXPECT_TRUE(ExecuteScript(
+      shell()->web_contents(),
+      "window.domAutomationController.send(submitForm('isubmit'))"));
+  observer.Wait();
+
+  EXPECT_EQ(2, controller.GetEntryCount());
+  {
+    NavigationEntryImpl* entry = controller.GetLastCommittedEntry();
+    FrameNavigationEntry* root_entry = entry->GetFrameEntry(root);
+    FrameNavigationEntry* frame_entry = entry->GetFrameEntry(frame);
+    EXPECT_NE(nullptr, root_entry);
+    EXPECT_NE(nullptr, frame_entry);
+    EXPECT_EQ("GET", root_entry->method());
+    EXPECT_EQ(-1, root_entry->post_id());
+    EXPECT_EQ("POST", frame_entry->method());
+    // TODO(clamy): Check the post id as well when PlzNavigate handles it
+    // properly.
+    if (!IsBrowserSideNavigationEnabled())
+      EXPECT_NE(-1, frame_entry->post_id());
+    EXPECT_FALSE(entry->GetHasPostData());
+    EXPECT_EQ(-1, entry->GetPostID());
+  }
+}
+
 }  // namespace content

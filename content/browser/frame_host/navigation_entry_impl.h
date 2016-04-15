@@ -194,7 +194,9 @@ class CONTENT_EXPORT NavigationEntryImpl
                              SiteInstanceImpl* site_instance,
                              const GURL& url,
                              const Referrer& referrer,
-                             const PageState& page_state);
+                             const PageState& page_state,
+                             const std::string& method,
+                             int64_t post_id);
 
   // Returns the FrameNavigationEntry corresponding to |frame_tree_node|, if
   // there is one in this NavigationEntry.
@@ -394,8 +396,6 @@ class CONTENT_EXPORT NavigationEntryImpl
   SSLStatus ssl_;
   ui::PageTransition transition_type_;
   GURL user_typed_url_;
-  bool has_post_data_;
-  int64_t post_id_;
   RestoreType restore_type_;
   GURL original_request_url_;
   bool is_overriding_user_agent_;

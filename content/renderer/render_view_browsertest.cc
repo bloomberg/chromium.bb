@@ -618,7 +618,7 @@ TEST_F(RenderViewImplTest, OnNavigationHttpPost) {
   FrameHostMsg_DidCommitProvisionalLoad::Param host_nav_params;
   FrameHostMsg_DidCommitProvisionalLoad::Read(frame_navigate_msg,
                                               &host_nav_params);
-  EXPECT_TRUE(base::get<0>(host_nav_params).is_post);
+  EXPECT_EQ("POST", base::get<0>(host_nav_params).method);
 
   // Check post data sent to browser matches
   EXPECT_TRUE(base::get<0>(host_nav_params).page_state.IsValid());

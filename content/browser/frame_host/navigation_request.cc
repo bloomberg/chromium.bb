@@ -212,9 +212,8 @@ void NavigationRequest::BeginNavigation() {
     // TODO(clamy): pass the method to the NavigationHandle instead of a
     // boolean.
     navigation_handle_->WillStartRequest(
-        common_params_.method == "POST",
-        Referrer::SanitizeForRequest(common_params_.url,
-                                     common_params_.referrer),
+        common_params_.method, Referrer::SanitizeForRequest(
+                                   common_params_.url, common_params_.referrer),
         begin_params_.has_user_gesture, common_params_.transition, false,
         base::Bind(&NavigationRequest::OnStartChecksComplete,
                    base::Unretained(this)));
@@ -266,8 +265,8 @@ void NavigationRequest::OnRequestRedirected(
   // NavigationHandle where the callback will be stored.
   // TODO(clamy): pass the real value for |is_external_protocol| if needed.
   navigation_handle_->WillRedirectRequest(
-      common_params_.url, common_params_.method == "POST",
-      common_params_.referrer.url, false, response->head.headers,
+      common_params_.url, common_params_.method, common_params_.referrer.url,
+      false, response->head.headers,
       base::Bind(&NavigationRequest::OnRedirectChecksComplete,
                  base::Unretained(this)));
 }

@@ -50,7 +50,6 @@ NavigationHandleImpl::NavigationHandleImpl(
     const base::TimeTicks& navigation_start,
     int pending_nav_entry_id)
     : url_(url),
-      is_post_(false),
       has_user_gesture_(false),
       transition_(ui::PAGE_TRANSITION_LINK),
       is_external_protocol_(false),
@@ -128,7 +127,7 @@ const base::TimeTicks& NavigationHandleImpl::NavigationStart() {
 bool NavigationHandleImpl::IsPost() {
   CHECK_NE(INITIAL, state_)
       << "This accessor should not be called before the request is started.";
-  return is_post_;
+  return method_ == "POST";
 }
 
 const Referrer& NavigationHandleImpl::GetReferrer() {
@@ -231,8 +230,8 @@ NavigationHandleImpl::CallWillStartRequestForTesting(
     ui::PageTransition transition,
     bool is_external_protocol) {
   NavigationThrottle::ThrottleCheckResult result = NavigationThrottle::DEFER;
-  WillStartRequest(is_post, sanitized_referrer, has_user_gesture, transition,
-                   is_external_protocol,
+  WillStartRequest(is_post ? "POST" : "GET", sanitized_referrer,
+                   has_user_gesture, transition, is_external_protocol,
                    base::Bind(&UpdateThrottleCheckResult, &result));
 
   // Reset the callback to ensure it will not be called later.
@@ -247,8 +246,8 @@ NavigationHandleImpl::CallWillRedirectRequestForTesting(
     const GURL& new_referrer_url,
     bool new_is_external_protocol) {
   NavigationThrottle::ThrottleCheckResult result = NavigationThrottle::DEFER;
-  WillRedirectRequest(new_url, new_method_is_post, new_referrer_url,
-                      new_is_external_protocol,
+  WillRedirectRequest(new_url, new_method_is_post ? "POST" : "GET",
+                      new_referrer_url, new_is_external_protocol,
                       scoped_refptr<net::HttpResponseHeaders>(),
                       base::Bind(&UpdateThrottleCheckResult, &result));
 
@@ -265,14 +264,14 @@ void NavigationHandleImpl::InitServiceWorkerHandle(
 }
 
 void NavigationHandleImpl::WillStartRequest(
-    bool is_post,
+    const std::string& method,
     const Referrer& sanitized_referrer,
     bool has_user_gesture,
     ui::PageTransition transition,
     bool is_external_protocol,
     const ThrottleChecksFinishedCallback& callback) {
   // Update the navigation parameters.
-  is_post_ = is_post;
+  method_ = method;
   sanitized_referrer_ = sanitized_referrer;
   has_user_gesture_ = has_user_gesture;
   transition_ = transition;
@@ -303,14 +302,14 @@ void NavigationHandleImpl::WillStartRequest(
 
 void NavigationHandleImpl::WillRedirectRequest(
     const GURL& new_url,
-    bool new_method_is_post,
+    const std::string& new_method,
     const GURL& new_referrer_url,
     bool new_is_external_protocol,
     scoped_refptr<net::HttpResponseHeaders> response_headers,
     const ThrottleChecksFinishedCallback& callback) {
   // Update the navigation parameters.
   url_ = new_url;
-  is_post_ = new_method_is_post;
+  method_ = new_method;
   sanitized_referrer_.url = new_referrer_url;
   sanitized_referrer_ = Referrer::SanitizeForRequest(url_, sanitized_referrer_);
   is_external_protocol_ = new_is_external_protocol;
@@ -370,7 +369,7 @@ void NavigationHandleImpl::DidCommitNavigation(
   DCHECK_EQ(frame_tree_node_, render_frame_host->frame_tree_node());
   CHECK_EQ(url_, params.url);
 
-  is_post_ = params.is_post;
+  method_ = params.method;
   has_user_gesture_ = (params.gesture == NavigationGestureUser);
   transition_ = params.transition;
   render_frame_host_ = render_frame_host;

@@ -35,7 +35,9 @@ class CONTENT_EXPORT FrameNavigationEntry
                        int64_t document_sequence_number,
                        scoped_refptr<SiteInstanceImpl> site_instance,
                        const GURL& url,
-                       const Referrer& referrer);
+                       const Referrer& referrer,
+                       const std::string& method,
+                       int64_t post_id);
 
   // Creates a copy of this FrameNavigationEntry that can be modified
   // independently from the original.
@@ -48,7 +50,9 @@ class CONTENT_EXPORT FrameNavigationEntry
                    SiteInstanceImpl* site_instance,
                    const GURL& url,
                    const Referrer& referrer,
-                   const PageState& page_state);
+                   const PageState& page_state,
+                   const std::string& method,
+                   int64_t post_id);
 
   // The ID of the FrameTreeNode this entry is for.  -1 for the main frame,
   // since we don't always know the FrameTreeNode ID when creating the overall
@@ -105,6 +109,15 @@ class CONTENT_EXPORT FrameNavigationEntry
   void set_page_state(const PageState& page_state) { page_state_ = page_state; }
   const PageState& page_state() const { return page_state_; }
 
+  // The HTTP method used to navigate.
+  const std::string& method() const { return method_; }
+  void set_method(const std::string& method) { method_ = method; }
+
+  // The id of the post corresponding to this navigation or -1 if the
+  // navigation was not a POST.
+  int64_t post_id() const { return post_id_; }
+  void set_post_id(int64_t post_id) { post_id_ = post_id; }
+
  private:
   friend class base::RefCounted<FrameNavigationEntry>;
   virtual ~FrameNavigationEntry();
@@ -125,6 +138,8 @@ class CONTENT_EXPORT FrameNavigationEntry
   Referrer referrer_;
   // TODO(creis): Change this to FrameState.
   PageState page_state_;
+  std::string method_;
+  int64_t post_id_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameNavigationEntry);
 };

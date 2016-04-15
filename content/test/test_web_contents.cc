@@ -136,7 +136,7 @@ void TestWebContents::TestDidNavigateWithReferrer(
   params.security_info = std::string();
   params.gesture = NavigationGestureUser;
   params.was_within_same_page = false;
-  params.is_post = false;
+  params.method = "GET";
   params.page_state = PageState::CreateFromURL(url);
   params.contents_mime_type = std::string("text/html");
 

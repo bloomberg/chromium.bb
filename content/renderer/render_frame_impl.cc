@@ -4398,7 +4398,7 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(
   FrameHostMsg_DidCommitProvisionalLoad_Params params;
   params.http_status_code = response.httpStatusCode();
   params.url_is_unreachable = ds->hasUnreachableURL();
-  params.is_post = false;
+  params.method = "GET";
   params.intended_as_new_entry =
       navigation_state->request_params().intended_as_new_entry;
   params.did_create_new_entry = commit_type == blink::WebStandardCommit;
@@ -4466,6 +4466,15 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(
     params.page_state = SingleHistoryItemToPageState(item);
     post_id = ExtractPostId(item);
   }
+
+  // When using subframe navigation entries, method and post id are set for all
+  // frames. Otherwise, they are only set for the main frame navigation.
+  if (SiteIsolationPolicy::UseSubframeNavigationEntries()) {
+    params.method = request.httpMethod().latin1();
+    if (params.method == "POST")
+      params.post_id = post_id;
+  }
+
   params.frame_unique_name = item.target().utf8();
   params.item_sequence_number = item.itemSequenceNumber();
   params.document_sequence_number = item.documentSequenceNumber();
@@ -4535,10 +4544,12 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(
           frame, ds->request());
     }
 
-    base::string16 method = request.httpMethod();
-    if (base::EqualsASCII(method, "POST")) {
-      params.is_post = true;
-      params.post_id = post_id;
+    // When using subframe navigation entries, method and post id have already
+    // been set.
+    if (!SiteIsolationPolicy::UseSubframeNavigationEntries()) {
+      params.method = request.httpMethod().latin1();
+      if (params.method == "POST")
+        params.post_id = post_id;
     }
 
     // Send the user agent override back.
