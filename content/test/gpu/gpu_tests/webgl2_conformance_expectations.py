@@ -305,20 +305,14 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win', 'intel'], bug=483282)
 
     # Mac only.
-    self.Skip('deqp/data/gles3/shaders/qualification_order.html',
+    self.Fail('deqp/data/gles3/shaders/qualification_order.html',
         ['mac'], bug=483282)
-    self.Skip('deqp/data/gles3/shaders/scoping.html',
-        ['mac'], bug=483282)
-    self.Skip('deqp/functional/gles3/defaultvertexattribute.html',
-        ['mac'], bug=483282)
-    self.Skip('deqp/functional/gles3/floatstatequery.html',
+    self.Fail('deqp/data/gles3/shaders/scoping.html',
         ['mac'], bug=483282)
     self.Fail('deqp/functional/gles3/pixelbufferobject.html',
         ['mac'], bug=483282)
     self.Fail('deqp/functional/gles3/texturestatequery.html',
         ['mac'], bug=483282)
-    self.Skip('deqp/functional/gles3/shaderswitch.html',
-        ['mavericks'], bug=483282)
     self.Fail('deqp/functional/gles3/negativeshaderapi.html',
         ['mac'], bug=483282)
     self.Fail('deqp/functional/gles3/vertexarrays.html',
@@ -353,6 +347,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/textures/misc/tex-mipmap-levels.html',
         ['mac', ('nvidia', 0xfe9)], bug=483282)
     self.Fail('deqp/functional/gles3/shaderstruct.html',
+        ['mac', ('nvidia', 0xfe9)], bug=483282)
+    self.Fail('deqp/functional/gles3/shaderswitch.html',
         ['mac', ('nvidia', 0xfe9)], bug=483282)
 
     # Mac AMD
