@@ -216,6 +216,7 @@ class CONTENT_EXPORT DelegatedFrameHost
       const base::Callback<void(const gfx::Rect&, bool)>& callback,
       std::unique_ptr<cc::CopyOutputResult> result);
   static void CopyFromCompositingSurfaceFinishedForVideo(
+      scoped_refptr<media::VideoFrame> video_frame,
       base::WeakPtr<DelegatedFrameHost> rwhva,
       const base::Callback<void(bool)>& callback,
       scoped_refptr<OwnedMailbox> subscriber_texture,

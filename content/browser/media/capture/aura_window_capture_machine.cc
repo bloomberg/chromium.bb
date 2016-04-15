@@ -280,10 +280,17 @@ bool AuraWindowCaptureMachine::ProcessCopyOutputResponse(
   cursor_renderer_->SnapshotCursorState(region_in_frame);
   yuv_readback_pipeline_->ReadbackYUV(
       texture_mailbox.mailbox(), texture_mailbox.sync_token(),
-      video_frame.get(), region_in_frame.origin(),
+      video_frame->visible_rect(),
+      video_frame->stride(media::VideoFrame::kYPlane),
+      video_frame->data(media::VideoFrame::kYPlane),
+      video_frame->stride(media::VideoFrame::kUPlane),
+      video_frame->data(media::VideoFrame::kUPlane),
+      video_frame->stride(media::VideoFrame::kVPlane),
+      video_frame->data(media::VideoFrame::kVPlane), region_in_frame.origin(),
       base::Bind(&CopyOutputFinishedForVideo, weak_factory_.GetWeakPtr(),
                  start_time, capture_frame_cb, video_frame,
                  base::Passed(&release_callback)));
+  media::LetterboxYUV(video_frame.get(), region_in_frame);
   return true;
 }
 

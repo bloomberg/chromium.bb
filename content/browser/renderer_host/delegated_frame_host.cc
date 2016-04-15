@@ -584,6 +584,7 @@ void DelegatedFrameHost::ReturnSubscriberTexture(
 
 // static
 void DelegatedFrameHost::CopyFromCompositingSurfaceFinishedForVideo(
+    scoped_refptr<media::VideoFrame> video_frame,
     base::WeakPtr<DelegatedFrameHost> dfh,
     const base::Callback<void(bool)>& callback,
     scoped_refptr<OwnedMailbox> subscriber_texture,
@@ -711,11 +712,19 @@ void DelegatedFrameHost::CopyFromCompositingSurfaceHasResultForVideo(
 
   base::Callback<void(bool result)> finished_callback = base::Bind(
       &DelegatedFrameHost::CopyFromCompositingSurfaceFinishedForVideo,
-      dfh->AsWeakPtr(), base::Bind(callback, region_in_frame),
+      video_frame, dfh->AsWeakPtr(), base::Bind(callback, region_in_frame),
       subscriber_texture, base::Passed(&release_callback));
   yuv_readback_pipeline->ReadbackYUV(
       texture_mailbox.mailbox(), texture_mailbox.sync_token(),
-      video_frame.get(), region_in_frame.origin(), finished_callback);
+      video_frame->visible_rect(),
+      video_frame->stride(media::VideoFrame::kYPlane),
+      video_frame->data(media::VideoFrame::kYPlane),
+      video_frame->stride(media::VideoFrame::kUPlane),
+      video_frame->data(media::VideoFrame::kUPlane),
+      video_frame->stride(media::VideoFrame::kVPlane),
+      video_frame->data(media::VideoFrame::kVPlane), region_in_frame.origin(),
+      finished_callback);
+  media::LetterboxYUV(video_frame.get(), region_in_frame);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

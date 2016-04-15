@@ -25,8 +25,6 @@
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
-#include "media/base/video_frame.h"
-#include "media/base/video_util.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
@@ -168,8 +166,8 @@ class GLHelper::CopyTextureToImpl
       const base::Callback<void(bool)>& callback);
 
   void ReadbackPlane(TextureFrameBufferPair* source,
-                     const scoped_refptr<media::VideoFrame>& target,
-                     int plane,
+                     int row_stride_bytes,
+                     unsigned char* data,
                      int size_shift,
                      const gfx::Rect& paste_rect,
                      ReadbackSwizzle swizzle,
@@ -271,7 +269,13 @@ class GLHelper::CopyTextureToImpl
 
     void ReadbackYUV(const gpu::Mailbox& mailbox,
                      const gpu::SyncToken& sync_token,
-                     const scoped_refptr<media::VideoFrame>& target,
+                     const gfx::Rect& target_visible_rect,
+                     int y_plane_row_stride_bytes,
+                     unsigned char* y_plane_data,
+                     int u_plane_row_stride_bytes,
+                     unsigned char* u_plane_data,
+                     int v_plane_row_stride_bytes,
+                     unsigned char* v_plane_data,
                      const gfx::Point& paste_location,
                      const base::Callback<void(bool)>& callback) override;
 
@@ -307,7 +311,13 @@ class GLHelper::CopyTextureToImpl
 
     void ReadbackYUV(const gpu::Mailbox& mailbox,
                      const gpu::SyncToken& sync_token,
-                     const scoped_refptr<media::VideoFrame>& target,
+                     const gfx::Rect& target_visible_rect,
+                     int y_plane_row_stride_bytes,
+                     unsigned char* y_plane_data,
+                     int u_plane_row_stride_bytes,
+                     unsigned char* u_plane_data,
+                     int v_plane_row_stride_bytes,
+                     unsigned char* v_plane_data,
                      const gfx::Point& paste_location,
                      const base::Callback<void(bool)>& callback) override;
 
@@ -931,17 +941,17 @@ void GLHelper::InsertOrderingBarrier() {
 
 void GLHelper::CopyTextureToImpl::ReadbackPlane(
     TextureFrameBufferPair* source,
-    const scoped_refptr<media::VideoFrame>& target,
-    int plane,
+    int row_stride_bytes,
+    unsigned char* data,
     int size_shift,
     const gfx::Rect& paste_rect,
     ReadbackSwizzle swizzle,
     const base::Callback<void(bool)>& callback) {
   gl_->BindFramebuffer(GL_FRAMEBUFFER, source->framebuffer());
-  const size_t offset = target->stride(plane) * (paste_rect.y() >> size_shift) +
+  const size_t offset = row_stride_bytes * (paste_rect.y() >> size_shift) +
                         (paste_rect.x() >> size_shift);
   ReadbackAsync(source->size(), paste_rect.width() >> size_shift,
-                target->stride(plane), target->data(plane) + offset,
+                row_stride_bytes, data + offset,
                 (swizzle == kSwizzleBGRA) ? GL_BGRA_EXT : GL_RGBA,
                 GL_UNSIGNED_BYTE, 4, callback);
 }
@@ -1012,17 +1022,16 @@ GLHelper::CopyTextureToImpl::ReadbackYUVImpl::ReadbackYUVImpl(
   DCHECK(!(dst_size.height() & 1));
 }
 
-static void CallbackKeepingVideoFrameAlive(
-    scoped_refptr<media::VideoFrame> video_frame,
-    const base::Callback<void(bool)>& callback,
-    bool success) {
-  callback.Run(success);
-}
-
 void GLHelper::CopyTextureToImpl::ReadbackYUVImpl::ReadbackYUV(
     const gpu::Mailbox& mailbox,
     const gpu::SyncToken& sync_token,
-    const scoped_refptr<media::VideoFrame>& target,
+    const gfx::Rect& target_visible_rect,
+    int y_plane_row_stride_bytes,
+    unsigned char* y_plane_data,
+    int u_plane_row_stride_bytes,
+    unsigned char* u_plane_data,
+    int v_plane_row_stride_bytes,
+    unsigned char* v_plane_data,
     const gfx::Point& paste_location,
     const base::Callback<void(bool)>& callback) {
   DCHECK(!(paste_location.x() & 1));
@@ -1041,7 +1050,7 @@ void GLHelper::CopyTextureToImpl::ReadbackYUVImpl::ReadbackYUV(
   v_.Scale(scaler_.texture());
 
   const gfx::Rect paste_rect(paste_location, dst_size_);
-  if (!target->visible_rect().Contains(paste_rect)) {
+  if (!target_visible_rect.Contains(paste_rect)) {
     LOG(DFATAL) << "Paste rect not inside VideoFrame's visible rect!";
     callback.Run(false);
     return;
@@ -1049,18 +1058,16 @@ void GLHelper::CopyTextureToImpl::ReadbackYUVImpl::ReadbackYUV(
 
   // Read back planes, one at a time. Keep the video frame alive while doing the
   // readback.
-  copy_impl_->ReadbackPlane(y_.texture_and_framebuffer(), target,
-                            media::VideoFrame::kYPlane, 0, paste_rect, swizzle_,
-                            base::Bind(&nullcallback));
-  copy_impl_->ReadbackPlane(u_.texture_and_framebuffer(), target,
-                            media::VideoFrame::kUPlane, 1, paste_rect, swizzle_,
-                            base::Bind(&nullcallback));
-  copy_impl_->ReadbackPlane(
-      v_.texture_and_framebuffer(), target, media::VideoFrame::kVPlane, 1,
-      paste_rect, swizzle_,
-      base::Bind(&CallbackKeepingVideoFrameAlive, target, callback));
+  copy_impl_->ReadbackPlane(y_.texture_and_framebuffer(),
+                            y_plane_row_stride_bytes, y_plane_data, 0,
+                            paste_rect, swizzle_, base::Bind(&nullcallback));
+  copy_impl_->ReadbackPlane(u_.texture_and_framebuffer(),
+                            u_plane_row_stride_bytes, u_plane_data, 1,
+                            paste_rect, swizzle_, base::Bind(&nullcallback));
+  copy_impl_->ReadbackPlane(v_.texture_and_framebuffer(),
+                            v_plane_row_stride_bytes, v_plane_data, 1,
+                            paste_rect, swizzle_, callback);
   gl_->BindFramebuffer(GL_FRAMEBUFFER, 0);
-  media::LetterboxYUV(target.get(), paste_rect);
 }
 
 // YUV readback constructors. Initiates the main scaler pipeline and
@@ -1118,7 +1125,13 @@ GLHelper::CopyTextureToImpl::ReadbackYUV_MRT::ReadbackYUV_MRT(
 void GLHelper::CopyTextureToImpl::ReadbackYUV_MRT::ReadbackYUV(
     const gpu::Mailbox& mailbox,
     const gpu::SyncToken& sync_token,
-    const scoped_refptr<media::VideoFrame>& target,
+    const gfx::Rect& target_visible_rect,
+    int y_plane_row_stride_bytes,
+    unsigned char* y_plane_data,
+    int u_plane_row_stride_bytes,
+    unsigned char* u_plane_data,
+    int v_plane_row_stride_bytes,
+    unsigned char* v_plane_data,
     const gfx::Point& paste_location,
     const base::Callback<void(bool)>& callback) {
   DCHECK(!(paste_location.x() & 1));
@@ -1152,22 +1165,20 @@ void GLHelper::CopyTextureToImpl::ReadbackYUV_MRT::ReadbackYUV(
   pass2_shader_->Execute(uv_, outputs);
 
   const gfx::Rect paste_rect(paste_location, dst_size_);
-  if (!target->visible_rect().Contains(paste_rect)) {
+  if (!target_visible_rect.Contains(paste_rect)) {
     LOG(DFATAL) << "Paste rect not inside VideoFrame's visible rect!";
     callback.Run(false);
     return;
   }
 
   // Read back planes, one at a time.
-  copy_impl_->ReadbackPlane(&y_, target, media::VideoFrame::kYPlane, 0,
+  copy_impl_->ReadbackPlane(&y_, y_plane_row_stride_bytes, y_plane_data, 0,
                             paste_rect, swizzle_, base::Bind(&nullcallback));
-  copy_impl_->ReadbackPlane(&u_, target, media::VideoFrame::kUPlane, 1,
+  copy_impl_->ReadbackPlane(&u_, u_plane_row_stride_bytes, u_plane_data, 1,
                             paste_rect, swizzle_, base::Bind(&nullcallback));
-  copy_impl_->ReadbackPlane(
-      &v_, target, media::VideoFrame::kVPlane, 1, paste_rect, swizzle_,
-      base::Bind(&CallbackKeepingVideoFrameAlive, target, callback));
+  copy_impl_->ReadbackPlane(&v_, v_plane_row_stride_bytes, v_plane_data, 1,
+                            paste_rect, swizzle_, callback);
   gl_->BindFramebuffer(GL_FRAMEBUFFER, 0);
-  media::LetterboxYUV(target.get(), paste_rect);
 }
 
 bool GLHelper::IsReadbackConfigSupported(SkColorType color_type) {

@@ -35,6 +35,7 @@
 #include "gpu/command_buffer/client/gl_in_process_context.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "media/base/video_frame.h"
+#include "media/base/video_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkTypes.h"
@@ -1330,9 +1331,19 @@ class GLHelperTest : public testing::Test {
             base::TimeDelta::FromSeconds(0));
 
     base::RunLoop run_loop;
-    yuv_reader->ReadbackYUV(mailbox, sync_token, output_frame.get(),
+    yuv_reader->ReadbackYUV(mailbox, sync_token, output_frame->visible_rect(),
+                            output_frame->stride(media::VideoFrame::kYPlane),
+                            output_frame->data(media::VideoFrame::kYPlane),
+                            output_frame->stride(media::VideoFrame::kUPlane),
+                            output_frame->data(media::VideoFrame::kUPlane),
+                            output_frame->stride(media::VideoFrame::kVPlane),
+                            output_frame->data(media::VideoFrame::kVPlane),
                             gfx::Point(xmargin, ymargin),
                             base::Bind(&callcallback, run_loop.QuitClosure()));
+
+    const gfx::Rect paste_rect(gfx::Point(xmargin, ymargin),
+                               gfx::Size(xsize, ysize));
+    media::LetterboxYUV(output_frame.get(), paste_rect);
     run_loop.Run();
 
     if (flip) {

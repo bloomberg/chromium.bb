@@ -26,10 +26,6 @@ class ContextSupport;
 struct Mailbox;
 }
 
-namespace media {
-class VideoFrame;
-};
-
 class SkRegion;
 
 namespace content {
@@ -369,7 +365,13 @@ class CONTENT_EXPORT ReadbackYUVInterface {
   // |target->visible_rect()|.
   virtual void ReadbackYUV(const gpu::Mailbox& mailbox,
                            const gpu::SyncToken& sync_token,
-                           const scoped_refptr<media::VideoFrame>& target,
+                           const gfx::Rect& target_visible_rect,
+                           int y_plane_row_stride_bytes,
+                           unsigned char* y_plane_data,
+                           int u_plane_row_stride_bytes,
+                           unsigned char* u_plane_data,
+                           int v_plane_row_stride_bytes,
+                           unsigned char* v_plane_data,
                            const gfx::Point& paste_location,
                            const base::Callback<void(bool)>& callback) = 0;
   virtual GLHelper::ScalerInterface* scaler() = 0;
