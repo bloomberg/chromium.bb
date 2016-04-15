@@ -38,7 +38,7 @@ def main():
   p = subprocess.Popen([binary, 'format', '--stdin'],
                        stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                        stdin=subprocess.PIPE, startupinfo=startupinfo,
-                       universal_newlines=True)
+                       shell=True, universal_newlines=True)
   stdout, stderr = p.communicate(input=text)
   if p.returncode != 0:
     print 'Formatting failed, please report to gn-dev@chromium.org.'
