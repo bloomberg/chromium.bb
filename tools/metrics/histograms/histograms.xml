@@ -46254,6 +46254,26 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Search.ContextualSearchBarOverlap"
+    enum="ContextualSearchTapSuppression">
+  <owner>donnd@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    Whether a Tap was suppressed because the Bar overlapped the selection area.
+    Implemented for Android.
+  </summary>
+</histogram>
+
+<histogram name="Search.ContextualSearchBarOverlapSeen"
+    enum="ContextualSearchBarOverlapSeen">
+  <owner>donnd@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    Whether the Bar overlapped the selection area and whether the results were
+    seen. Recorded when the UX is hidden. Implemented for Android.
+  </summary>
+</histogram>
+
 <histogram name="Search.ContextualSearchBasePageProtocol"
     enum="ContextualSearchBasePageProtocol">
   <owner>donnd@chromium.org</owner>
@@ -46624,6 +46644,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Search.ContextualSearchQuickAnswerSeen"
+    enum="ContextualSearchQuickAnswerSeen">
+  <owner>donnd@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    Whether a Quick Answer was activated, considered an answer, and seen.
+    Implemented for Android.
+  </summary>
+</histogram>
+
 <histogram name="Search.ContextualSearchRecentScrollNotSeen" units="ms">
   <owner>donnd@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
@@ -46714,6 +46744,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Search.ContextualSearchScreenTopSuppressed"
+    enum="ContextualSearchTapSuppression">
+  <owner>donnd@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    Whether Taps near the top of the screen was suppressed. Implemented for
+    Android.
+  </summary>
+</histogram>
+
 <histogram name="Search.ContextualSearchSelectionValid"
     enum="ContextualSearchSelectionValid">
   <owner>donnd@chromium.org</owner>
@@ -46767,6 +46807,23 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     The time between tapping on a word and performing a search. Implemented for
     Android.
+  </summary>
+</histogram>
+
+<histogram name="Search.ContextualSearchTopLocationNotSeen" units="dps">
+  <owner>donnd@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    The DPs count histogram for Taps that were not seen. Implemented for
+    Android.
+  </summary>
+</histogram>
+
+<histogram name="Search.ContextualSearchTopLocationSeen" units="dps">
+  <owner>donnd@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    The DPs count histogram for Taps that were seen. Implemented for Android.
   </summary>
 </histogram>
 
@@ -64125,6 +64182,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1" label="Released"/>
 </enum>
 
+<enum name="ContextualSearchBarOverlapSeen" type="int">
+  <int value="0" label="Overlap seen from Tap"/>
+  <int value="1" label="Overlap not seen from Tap"/>
+  <int value="2" label="No overlap seen from Tap"/>
+  <int value="3" label="No overlap not seen from Tap"/>
+  <int value="4" label="Overlap seen from Longpress"/>
+  <int value="5" label="Overlap not seen from Longpress"/>
+  <int value="6" label="No overlap seen from Longpress"/>
+  <int value="7" label="No overlap not seen from Longpress"/>
+</enum>
+
 <enum name="ContextualSearchBasePageProtocol" type="int">
   <int value="0" label="Is HTTP"/>
   <int value="1" label="Not HTTP"/>
@@ -64283,6 +64351,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="0" label="Prefetched, partly loaded"/>
   <int value="1" label="Fully preloaded"/>
   <int value="2" label="Not prefetched"/>
+</enum>
+
+<enum name="ContextualSearchQuickAnswerSeen" type="int">
+  <int value="0" label="Activated, answered and seen"/>
+  <int value="1" label="Activated and answered but not seen"/>
+  <int value="2" label="Activated, not answered but seen"/>
+  <int value="3" label="Activated, not answered nor seen"/>
+  <int value="4" label="Not activated but seen"/>
+  <int value="5" label="Not activated nor seen"/>
 </enum>
 
 <enum name="ContextualSearchResolvedTermWords" type="int">
