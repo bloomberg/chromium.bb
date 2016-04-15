@@ -214,6 +214,7 @@
       'Win8 Tests (1)': 'none',
       'Win8 Tests (2)': 'none',
       'WinClang': 'win_clang_debug_bot',
+      'WinClang64 (dbg)': 'win_clang_debug_bot',
       'Windows Browser (DrMemory light) (1)': 'none',
       'Windows Browser (DrMemory light) (2)': 'none',
 
