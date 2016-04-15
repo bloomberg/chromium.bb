@@ -52,6 +52,12 @@ enum SurfaceType {
   DEFAULT,
 };
 
+// The result of an input event sent to a client app.
+enum EventResult {
+  HANDLED,
+  UNHANDLED,
+};
+
 // Windows are identified by a uint32. The upper 16 bits are the connection id,
 // and the lower 16 the id assigned by the client.
 //
@@ -241,7 +247,7 @@ interface WindowTree {
   SetImeVisibility(uint32 window_id, bool visible, mojo.TextInputState? state);
 
   // See documentation for WindowTreeClient::OnWindowInputEvent().
-  OnWindowInputEventAck(uint32 event_id, bool handled);
+  OnWindowInputEventAck(uint32 event_id, EventResult result);
 
   // See description of WindowManager for details.
   GetWindowManagerClient(associated WindowManagerClient& internal);
@@ -351,7 +357,7 @@ interface WindowTreeClient {
 
   // Invoked when an event is targeted at the specified window. The client must
   // call WindowTree::OnWindowInputEventAck() with the same |event_id| to notify
-  // that the event has been processed, and with a boolean |handled| to notify
+  // that the event has been processed, and with an EventResult value to notify
   // if the event was consumed. The client will not receive farther events until
   // the event is ack'ed.
   OnWindowInputEvent(uint32 event_id, uint32 window, Event event);

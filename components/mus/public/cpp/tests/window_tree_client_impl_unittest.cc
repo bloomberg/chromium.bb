@@ -31,7 +31,7 @@ namespace mus {
 
 namespace {
 
-void DoNothingBool(bool result) {}
+void DoNothingWithEventResult(mojom::EventResult result) {}
 
 Id server_id(mus::Window* window) {
   return WindowPrivate(window).server_id();
@@ -130,22 +130,22 @@ class TestInputEventHandler : public InputEventHandler {
   void AckEvent() {
     DCHECK(should_manually_ack_);
     DCHECK(!ack_callback_.is_null());
-    ack_callback_.Run(true);
-    ack_callback_ = base::Bind(&DoNothingBool);
+    ack_callback_.Run(mojom::EventResult::HANDLED);
+    ack_callback_ = base::Bind(&DoNothingWithEventResult);
   }
 
   void Reset() {
     received_event_ = false;
-    ack_callback_ = base::Bind(&DoNothingBool);
+    ack_callback_ = base::Bind(&DoNothingWithEventResult);
   }
   bool received_event() const { return received_event_; }
 
  private:
   // InputEventHandler:
-  void OnWindowInputEvent(
-      Window* target,
-      const ui::Event& event,
-      scoped_ptr<base::Callback<void(bool)>>* ack_callback) override {
+  void OnWindowInputEvent(Window* target,
+                          const ui::Event& event,
+                          scoped_ptr<base::Callback<void(mojom::EventResult)>>*
+                              ack_callback) override {
     EXPECT_FALSE(received_event_)
         << "Observer was not reset after receiving event.";
     received_event_ = true;
@@ -157,7 +157,7 @@ class TestInputEventHandler : public InputEventHandler {
 
   bool received_event_;
   bool should_manually_ack_;
-  base::Callback<void(bool)> ack_callback_;
+  base::Callback<void(mojom::EventResult)> ack_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(TestInputEventHandler);
 };

@@ -59,10 +59,11 @@ class CONTENT_EXPORT CompositorMusConnection
 
   void OnWindowInputEventOnMainThread(
       std::unique_ptr<blink::WebInputEvent> web_event,
-      const base::Callback<void(bool)>& ack);
+      const base::Callback<void(mus::mojom::EventResult)>& ack);
 
-  void OnWindowInputEventAckOnMainThread(const base::Callback<void(bool)>& ack,
-                                         bool handled);
+  void OnWindowInputEventAckOnMainThread(
+      const base::Callback<void(mus::mojom::EventResult)>& ack,
+      mus::mojom::EventResult result);
 
   // WindowTreeDelegate implementation:
   void OnConnectionLost(mus::WindowTreeConnection* connection) override;
@@ -72,7 +73,8 @@ class CONTENT_EXPORT CompositorMusConnection
   void OnWindowInputEvent(
       mus::Window* window,
       const ui::Event& event,
-      std::unique_ptr<base::Callback<void(bool)>>* ack_callback) override;
+      std::unique_ptr<base::Callback<void(mus::mojom::EventResult)>>*
+          ack_callback) override;
 
   const int routing_id_;
   mus::Window* root_;

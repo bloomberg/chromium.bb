@@ -127,7 +127,9 @@ void RenderWidgetMusConnection::OnInputEventAck(
     std::unique_ptr<InputEventAck> input_event_ack) {
   DCHECK(!pending_ack_.is_null());
   pending_ack_.Run(input_event_ack->state ==
-                   InputEventAckState::INPUT_EVENT_ACK_STATE_CONSUMED);
+                           InputEventAckState::INPUT_EVENT_ACK_STATE_CONSUMED
+                       ? mus::mojom::EventResult::HANDLED
+                       : mus::mojom::EventResult::UNHANDLED);
   pending_ack_.Reset();
 }
 
@@ -169,12 +171,12 @@ void RenderWidgetMusConnection::OnConnectionLost() {
 
 void RenderWidgetMusConnection::OnWindowInputEvent(
     std::unique_ptr<blink::WebInputEvent> input_event,
-    const base::Callback<void(bool)>& ack) {
+    const base::Callback<void(mus::mojom::EventResult)>& ack) {
   DCHECK(thread_checker_.CalledOnValidThread());
   // If we don't yet have a RenderWidgetInputHandler then we don't yet have
   // an initialized RenderWidget.
   if (!input_handler_) {
-    ack.Run(false);
+    ack.Run(mus::mojom::EventResult::UNHANDLED);
     return;
   }
   // TODO(fsamuel): It would be nice to add this DCHECK but the reality is an

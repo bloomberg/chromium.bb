@@ -203,7 +203,7 @@ TEST_F(WindowManagerStateTest, NullAccelerator) {
   EXPECT_EQ("InputEvent window=1,1 event_action=1",
             ChangesToDescription1(*tracker->changes())[0]);
 
-  state->OnEventAck(target_tree, false);
+  state->OnEventAck(target_tree, mojom::EventResult::UNHANDLED);
   EXPECT_FALSE(window_manager()->on_accelerator_called());
 }
 
@@ -220,7 +220,7 @@ TEST_F(WindowManagerStateTest, PostTargetAccelerator) {
   EXPECT_EQ("InputEvent window=1,1 event_action=1",
             ChangesToDescription1(*tracker->changes())[0]);
 
-  window_manager_state()->OnEventAck(tree(), false);
+  window_manager_state()->OnEventAck(tree(), mojom::EventResult::UNHANDLED);
   EXPECT_TRUE(window_manager()->on_accelerator_called());
   EXPECT_EQ(accelerator->id(), window_manager()->on_accelerator_id());
 }
@@ -238,7 +238,7 @@ TEST_F(WindowManagerStateTest, ClientHandlesEvent) {
   EXPECT_EQ("InputEvent window=1,1 event_action=1",
             ChangesToDescription1(*tracker->changes())[0]);
 
-  window_manager_state()->OnEventAck(tree(), true);
+  window_manager_state()->OnEventAck(tree(), mojom::EventResult::HANDLED);
   EXPECT_FALSE(window_manager()->on_accelerator_called());
 }
 
@@ -256,7 +256,7 @@ TEST_F(WindowManagerStateTest, AcceleratorDeleted) {
             ChangesToDescription1(*tracker->changes())[0]);
 
   accelerator.reset();
-  window_manager_state()->OnEventAck(tree(), false);
+  window_manager_state()->OnEventAck(tree(), mojom::EventResult::UNHANDLED);
   EXPECT_FALSE(window_manager()->on_accelerator_called());
 }
 
@@ -288,7 +288,7 @@ TEST_F(WindowManagerStateTest, EnqueuedAccelerators) {
 
   WindowTree* target_tree = tree();
   WindowTreeTestApi(target_tree).ClearAck();
-  state->OnEventAck(target_tree, false);
+  state->OnEventAck(target_tree, mojom::EventResult::UNHANDLED);
   EXPECT_EQ(1u, tracker->changes()->size());
   EXPECT_EQ("InputEvent window=1,1 event_action=1",
             ChangesToDescription1(*tracker->changes())[0]);

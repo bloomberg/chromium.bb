@@ -86,7 +86,8 @@ class VIEWS_MUS_EXPORT PlatformWindowMus
   void OnWindowInputEvent(
       mus::Window* view,
       const ui::Event& event,
-      std::unique_ptr<base::Callback<void(bool)>>* ack_callback) override;
+      std::unique_ptr<base::Callback<void(mus::mojom::EventResult)>>*
+          ack_callback) override;
 
   ui::PlatformWindowDelegate* delegate_;
   mus::Window* mus_window_;

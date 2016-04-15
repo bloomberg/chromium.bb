@@ -160,7 +160,9 @@ void WindowManagerState::OnWillDestroyTree(WindowTree* tree) {
   // The WindowTree is dying. So it's not going to ack the event.
   // If the dying tree matches the root |tree_| marked as handled so we don't
   // notify it of accelerators.
-  OnEventAck(tree_awaiting_input_ack_, tree == tree_);
+  OnEventAck(tree_awaiting_input_ack_, tree == tree_
+                                           ? mojom::EventResult::HANDLED
+                                           : mojom::EventResult::UNHANDLED);
 }
 
 WindowManagerState::WindowManagerState(Display* display,
@@ -227,7 +229,8 @@ void WindowManagerState::ProcessEvent(const ui::Event& event) {
   event_dispatcher_.ProcessEvent(event);
 }
 
-void WindowManagerState::OnEventAck(mojom::WindowTree* tree, bool handled) {
+void WindowManagerState::OnEventAck(mojom::WindowTree* tree,
+                                    mojom::EventResult result) {
   if (tree_awaiting_input_ack_ != tree) {
     // TODO(sad): The ack must have arrived after the timeout. We should do
     // something here, and in OnEventAckTimeout().
@@ -236,7 +239,7 @@ void WindowManagerState::OnEventAck(mojom::WindowTree* tree, bool handled) {
   tree_awaiting_input_ack_ = nullptr;
   event_ack_timer_.Stop();
 
-  if (!handled && post_target_accelerator_)
+  if (result == mojom::EventResult::UNHANDLED && post_target_accelerator_)
     OnAccelerator(post_target_accelerator_->id(), *event_awaiting_input_ack_);
 
   ProcessNextEventFromQueue();
@@ -249,7 +252,7 @@ WindowServer* WindowManagerState::window_server() {
 void WindowManagerState::OnEventAckTimeout() {
   // TODO(sad): Figure out what we should do.
   NOTIMPLEMENTED() << "Event ACK timed out.";
-  OnEventAck(tree_awaiting_input_ack_, false);
+  OnEventAck(tree_awaiting_input_ack_, mojom::EventResult::UNHANDLED);
 }
 
 void WindowManagerState::QueueEvent(

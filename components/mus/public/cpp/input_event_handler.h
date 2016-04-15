@@ -16,17 +16,21 @@ namespace mus {
 
 class Window;
 
+namespace mojom {
+enum class EventResult;
+}
+
 // Responsible for processing input events for mus::Window.
 class InputEventHandler {
  public:
   // The event handler can asynchronously ack the event by taking ownership of
-  // the |ack_callback|. The callback takes a bool representing whether the
+  // the |ack_callback|. The callback takes an EventResult indicating if the
   // handler has consumed the event. If the handler does not take ownership of
   // the callback, then WindowTreeClientImpl will ack the event as not consumed.
   virtual void OnWindowInputEvent(
       Window* target,
       const ui::Event& event,
-      scoped_ptr<base::Callback<void(bool)>>* ack_callback) = 0;
+      scoped_ptr<base::Callback<void(mojom::EventResult)>>* ack_callback) = 0;
 
  protected:
   virtual ~InputEventHandler() {}

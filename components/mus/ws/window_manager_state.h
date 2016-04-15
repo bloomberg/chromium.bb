@@ -96,9 +96,9 @@ class WindowManagerState : public EventDispatcherDelegate {
   void ProcessEvent(const ui::Event& event);
 
   // Called when the ack from an event dispatched to WindowTree |tree| is
-  // received. When |handled| is true, the client consumed the event.
+  // received.
   // TODO(sky): make this private and use a callback.
-  void OnEventAck(mojom::WindowTree* tree, bool handled);
+  void OnEventAck(mojom::WindowTree* tree, mojom::EventResult result);
 
   // Returns a mojom::Display for the specified display. WindowManager specific
   // values are not set.

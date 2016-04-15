@@ -29,6 +29,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event_utils.h"
 
+using mus::mojom::EventResult;
+
 namespace {
 
 // Wrapper for the callback provided to
@@ -36,12 +38,12 @@ namespace {
 // called, along with the result.
 class TestCallback : public base::RefCounted<TestCallback> {
  public:
-  TestCallback() : called_(false), result_(false) {}
+  TestCallback() : called_(false), result_(EventResult::UNHANDLED) {}
 
   bool called() { return called_; }
-  bool result() { return result_; }
+  EventResult result() { return result_; }
 
-  void BoolCallback(bool result) {
+  void ResultCallback(EventResult result) {
     called_ = true;
     result_ = result;
   }
@@ -52,7 +54,7 @@ class TestCallback : public base::RefCounted<TestCallback> {
   ~TestCallback() {}
 
   bool called_;
-  bool result_;
+  EventResult result_;
 
   DISALLOW_COPY_AND_ASSIGN(TestCallback);
 };
@@ -217,7 +219,7 @@ class CompositorMusConnectionTest : public testing::Test {
   void OnWindowInputEvent(
       mus::Window* window,
       const ui::Event& event,
-      std::unique_ptr<base::Callback<void(bool)>>* ack_callback);
+      std::unique_ptr<base::Callback<void(EventResult)>>* ack_callback);
 
   // Confirms the state of pending tasks enqueued on each task runner, and runs
   // until idle.
@@ -274,7 +276,7 @@ std::unique_ptr<ui::Event> CompositorMusConnectionTest::GenerateKeyEvent() {
 void CompositorMusConnectionTest::OnWindowInputEvent(
     mus::Window* window,
     const ui::Event& event,
-    std::unique_ptr<base::Callback<void(bool)>>* ack_callback) {
+    std::unique_ptr<base::Callback<void(EventResult)>>* ack_callback) {
   compositor_connection_->OnWindowInputEvent(window, event, ack_callback);
 }
 
@@ -334,9 +336,9 @@ TEST_F(CompositorMusConnectionTest, NotConsumed) {
   mus::TestWindow test_window;
   std::unique_ptr<ui::Event> event(GenerateKeyEvent());
   scoped_refptr<TestCallback> test_callback(new TestCallback);
-  std::unique_ptr<base::Callback<void(bool)>> ack_callback(
-      new base::Callback<void(bool)>(
-          base::Bind(&::TestCallback::BoolCallback, test_callback)));
+  std::unique_ptr<base::Callback<void(EventResult)>> ack_callback(
+      new base::Callback<void(EventResult)>(
+          base::Bind(&::TestCallback::ResultCallback, test_callback)));
 
   OnWindowInputEvent(&test_window, *event.get(), &ack_callback);
   // OnWindowInputEvent is expected to clear the callback if it plans on
@@ -347,7 +349,7 @@ TEST_F(CompositorMusConnectionTest, NotConsumed) {
 
   // The ack callback should have been called
   EXPECT_TRUE(test_callback->called());
-  EXPECT_FALSE(test_callback->result());
+  EXPECT_EQ(EventResult::UNHANDLED, test_callback->result());
 }
 
 // Tests that for events which the renderer will ack, and consume, that
@@ -361,9 +363,9 @@ TEST_F(CompositorMusConnectionTest, Consumed) {
   mus::TestWindow test_window;
   std::unique_ptr<ui::Event> event(GenerateKeyEvent());
   scoped_refptr<TestCallback> test_callback(new TestCallback);
-  std::unique_ptr<base::Callback<void(bool)>> ack_callback(
-      new base::Callback<void(bool)>(
-          base::Bind(&::TestCallback::BoolCallback, test_callback)));
+  std::unique_ptr<base::Callback<void(EventResult)>> ack_callback(
+      new base::Callback<void(EventResult)>(
+          base::Bind(&::TestCallback::ResultCallback, test_callback)));
 
   OnWindowInputEvent(&test_window, *event.get(), &ack_callback);
   // OnWindowInputEvent is expected to clear the callback if it plans on
@@ -374,7 +376,7 @@ TEST_F(CompositorMusConnectionTest, Consumed) {
 
   // The ack callback should have been called
   EXPECT_TRUE(test_callback->called());
-  EXPECT_TRUE(test_callback->result());
+  EXPECT_EQ(EventResult::HANDLED, test_callback->result());
 }
 
 // Tests that when the RenderWidgetInputHandler does not ack before a new event
@@ -383,9 +385,9 @@ TEST_F(CompositorMusConnectionTest, LostAck) {
   mus::TestWindow test_window;
   std::unique_ptr<ui::Event> event1(GenerateKeyEvent());
   scoped_refptr<TestCallback> test_callback1(new TestCallback);
-  std::unique_ptr<base::Callback<void(bool)>> ack_callback1(
-      new base::Callback<void(bool)>(
-          base::Bind(&::TestCallback::BoolCallback, test_callback1)));
+  std::unique_ptr<base::Callback<void(EventResult)>> ack_callback1(
+      new base::Callback<void(EventResult)>(
+          base::Bind(&::TestCallback::ResultCallback, test_callback1)));
 
   OnWindowInputEvent(&test_window, *event1.get(), &ack_callback1);
   EXPECT_FALSE(ack_callback1.get());
@@ -400,9 +402,9 @@ TEST_F(CompositorMusConnectionTest, LostAck) {
 
   std::unique_ptr<ui::Event> event2(GenerateKeyEvent());
   scoped_refptr<TestCallback> test_callback2(new TestCallback);
-  std::unique_ptr<base::Callback<void(bool)>> ack_callback2(
-      new base::Callback<void(bool)>(
-          base::Bind(&::TestCallback::BoolCallback, test_callback2)));
+  std::unique_ptr<base::Callback<void(EventResult)>> ack_callback2(
+      new base::Callback<void(EventResult)>(
+          base::Bind(&::TestCallback::ResultCallback, test_callback2)));
   OnWindowInputEvent(&test_window, *event2.get(), &ack_callback2);
   EXPECT_FALSE(ack_callback2.get());
 
@@ -411,7 +413,7 @@ TEST_F(CompositorMusConnectionTest, LostAck) {
   // Only the most recent ack was called.
   EXPECT_FALSE(test_callback1->called());
   EXPECT_TRUE(test_callback2->called());
-  EXPECT_TRUE(test_callback2->result());
+  EXPECT_EQ(EventResult::HANDLED, test_callback2->result());
 }
 
 // Tests that when an input handler consumes the event, that
@@ -422,9 +424,9 @@ TEST_F(CompositorMusConnectionTest, InputHandlerConsumes) {
   mus::TestWindow test_window;
   std::unique_ptr<ui::Event> event(GenerateKeyEvent());
   scoped_refptr<TestCallback> test_callback(new TestCallback);
-  std::unique_ptr<base::Callback<void(bool)>> ack_callback(
-      new base::Callback<void(bool)>(
-          base::Bind(&::TestCallback::BoolCallback, test_callback)));
+  std::unique_ptr<base::Callback<void(EventResult)>> ack_callback(
+      new base::Callback<void(EventResult)>(
+          base::Bind(&::TestCallback::ResultCallback, test_callback)));
 
   OnWindowInputEvent(&test_window, *event.get(), &ack_callback);
 
@@ -442,9 +444,9 @@ TEST_F(CompositorMusConnectionTest, RendererWillNotSendAck) {
                          gfx::Point(), ui::EF_NONE, 0, ui::EventTimeForNow());
 
   scoped_refptr<TestCallback> test_callback(new TestCallback);
-  std::unique_ptr<base::Callback<void(bool)>> ack_callback(
-      new base::Callback<void(bool)>(
-          base::Bind(&::TestCallback::BoolCallback, test_callback)));
+  std::unique_ptr<base::Callback<void(EventResult)>> ack_callback(
+      new base::Callback<void(EventResult)>(
+          base::Bind(&::TestCallback::ResultCallback, test_callback)));
 
   OnWindowInputEvent(&test_window, event, &ack_callback);
   EXPECT_TRUE(ack_callback.get());
@@ -466,9 +468,9 @@ TEST_F(CompositorMusConnectionTest, TouchEventConsumed) {
                          gfx::Point(), ui::EF_NONE, 0, ui::EventTimeForNow());
 
   scoped_refptr<TestCallback> test_callback(new TestCallback);
-  scoped_ptr<base::Callback<void(bool)>> ack_callback(
-      new base::Callback<void(bool)>(
-          base::Bind(&::TestCallback::BoolCallback, test_callback)));
+  scoped_ptr<base::Callback<void(EventResult)>> ack_callback(
+      new base::Callback<void(EventResult)>(
+          base::Bind(&::TestCallback::ResultCallback, test_callback)));
 
   OnWindowInputEvent(&test_window, event, &ack_callback);
   // OnWindowInputEvent is expected to clear the callback if it plans on
@@ -479,7 +481,7 @@ TEST_F(CompositorMusConnectionTest, TouchEventConsumed) {
 
   // The ack callback should have been called
   EXPECT_TRUE(test_callback->called());
-  EXPECT_TRUE(test_callback->result());
+  EXPECT_EQ(EventResult::HANDLED, test_callback->result());
 }
 
 }  // namespace content

@@ -61,15 +61,16 @@ class CONTENT_EXPORT RenderWidgetMusConnection
   bool WillHandleMouseEvent(const blink::WebMouseEvent& event) override;
 
   void OnConnectionLost();
-  void OnWindowInputEvent(std::unique_ptr<blink::WebInputEvent> input_event,
-                          const base::Callback<void(bool)>& ack);
+  void OnWindowInputEvent(
+      std::unique_ptr<blink::WebInputEvent> input_event,
+      const base::Callback<void(mus::mojom::EventResult)>& ack);
 
   const int routing_id_;
   RenderWidgetInputHandler* input_handler_;
   std::unique_ptr<mus::WindowSurfaceBinding> window_surface_binding_;
   scoped_refptr<CompositorMusConnection> compositor_mus_connection_;
 
-  base::Callback<void(bool)> pending_ack_;
+  base::Callback<void(mus::mojom::EventResult)> pending_ack_;
 
   // Used to verify single threaded access.
   base::ThreadChecker thread_checker_;

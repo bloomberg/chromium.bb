@@ -12,9 +12,11 @@
 #include "mojo/converters/input_events/input_events_type_converters.h"
 #include "ui/latency_info/latency_info.h"
 
+using mus::mojom::EventResult;
+
 namespace {
 
-void DoNothingBool(bool result) {}
+void DoNothingWithEventResult(EventResult result) {}
 
 }  // namespace
 
@@ -78,22 +80,22 @@ void CompositorMusConnection::OnConnectionLostOnMainThread() {
 
 void CompositorMusConnection::OnWindowInputEventOnMainThread(
     std::unique_ptr<blink::WebInputEvent> web_event,
-    const base::Callback<void(bool)>& ack) {
+    const base::Callback<void(EventResult)>& ack) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   RenderWidgetMusConnection* connection =
       RenderWidgetMusConnection::Get(routing_id_);
   if (!connection) {
-    ack.Run(false);
+    ack.Run(EventResult::UNHANDLED);
     return;
   }
   connection->OnWindowInputEvent(std::move(web_event), ack);
 }
 
 void CompositorMusConnection::OnWindowInputEventAckOnMainThread(
-    const base::Callback<void(bool)>& ack,
-    bool handled) {
+    const base::Callback<void(EventResult)>& ack,
+    EventResult result) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
-  compositor_task_runner_->PostTask(FROM_HERE, base::Bind(ack, handled));
+  compositor_task_runner_->PostTask(FROM_HERE, base::Bind(ack, result));
 }
 
 void CompositorMusConnection::OnConnectionLost(
@@ -117,7 +119,7 @@ void CompositorMusConnection::OnEmbed(mus::Window* root) {
 void CompositorMusConnection::OnWindowInputEvent(
     mus::Window* window,
     const ui::Event& event,
-    std::unique_ptr<base::Callback<void(bool)>>* ack_callback) {
+    std::unique_ptr<base::Callback<void(EventResult)>>* ack_callback) {
   DCHECK(compositor_task_runner_->BelongsToCurrentThread());
   // TODO(moshayedi): Convert ui::Event directly to blink::WebInputEvent.
   std::unique_ptr<blink::WebInputEvent> web_event(
@@ -131,7 +133,8 @@ void CompositorMusConnection::OnWindowInputEvent(
   // state.
   if (ack_state != INPUT_EVENT_ACK_STATE_NOT_CONSUMED)
     return;
-  base::Callback<void(bool)> ack = base::Bind(&::DoNothingBool);
+  base::Callback<void(EventResult)> ack =
+      base::Bind(&::DoNothingWithEventResult);
   const bool send_ack = WebInputEventTraits::ShouldBlockEventStream(*web_event);
   if (send_ack) {
     // Ultimately, this ACK needs to go back to the Mus client lib which is not
