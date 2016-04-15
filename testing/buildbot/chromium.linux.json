@@ -147,7 +147,8 @@
               "build.id": "KTU84P",
               "product.board": "hammerhead"
             }
-          ]
+          ],
+          "hard_timeout": 1200
         },
         "test": "chrome_public_test"
       },
@@ -165,7 +166,8 @@
               "build.id": "KTU84P",
               "product.board": "hammerhead"
             }
-          ]
+          ],
+          "hard_timeout": 960
         },
         "test": "content_browsertests"
       },
