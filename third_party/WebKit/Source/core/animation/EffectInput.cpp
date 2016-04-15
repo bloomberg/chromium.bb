@@ -104,7 +104,7 @@ EffectModel* createEffectModelFromKeyframes(Element& element, const StringKeyfra
     if (encounteredCompositableProperty && element.inActiveDocument())
         element.document().updateLayoutTreeForNode(&element);
 
-    StringKeyframeEffectModel* keyframeEffectModel = StringKeyframeEffectModel::create(keyframes);
+    StringKeyframeEffectModel* keyframeEffectModel = StringKeyframeEffectModel::create(keyframes, LinearTimingFunction::shared());
     if (!RuntimeEnabledFeatures::cssAdditiveAnimationsEnabled()) {
         for (const auto& keyframeGroup : keyframeEffectModel->getPropertySpecificKeyframeGroups()) {
             PropertyHandle property = keyframeGroup.key;
