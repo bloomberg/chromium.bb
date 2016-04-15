@@ -846,11 +846,6 @@ void SAMLEnrollmentTest::WaitForEnrollmentSuccess() {
       GetLoginUI()->GetWebContents(),
       "var enrollmentScreen = document.getElementById('oauth-enrollment');"
       "function SendReplyIfEnrollmentDone() {"
-      "  if (enrollmentScreen.classList.contains("
-      "          'oauth-enroll-state-attribute-prompt')) {"
-      "    $('oauth-enroll-attribute-prompt-card').fire('submit');"
-      "    return false;"
-      "  }"
       "  if (!enrollmentScreen.classList.contains("
       "           'oauth-enroll-state-success')) {"
       "    return false;"

@@ -286,40 +286,11 @@ cr.define('cr.ui', function() {
    * Login for telemetry.
    * @param {string} username Login username.
    * @param {string} password Login password.
-   * @param {boolean} enterpriseEnroll Login as an enterprise enrollment?
    */
-  Oobe.loginForTesting = function(username, password, gaia_id,
-                                  enterpriseEnroll = false) {
-    // Helper method that runs |fn| after |screenName| is visible.
-    function waitForOobeScreen(screenName, fn) {
-      if (Oobe.getInstance().currentScreen.id === screenName) {
-        fn();
-      } else {
-        $('oobe').addEventListener('screenchanged', function handler(e) {
-          if (e.detail == screenName) {
-            $('oobe').removeEventListener('screenchanged', handler);
-            fn();
-          }
-        });
-      }
-    }
-
+  Oobe.loginForTesting = function(username, password, gaia_id) {
     Oobe.disableSigninUI();
     chrome.send('skipToLoginForTesting', [username]);
-
-    if (!enterpriseEnroll) {
-      chrome.send('completeLogin', [gaia_id, username, password, false]);
-    } else {
-      waitForOobeScreen('gaia-signin', function() {
-        chrome.send('toggleEnrollmentScreen');
-        chrome.send('toggleFakeEnrollment');
-      });
-
-      waitForOobeScreen('oauth-enrollment', function() {
-        chrome.send('oauthEnrollCompleteLogin', [username, 'authcode']);
-        chrome.send('completeLogin', [gaia_id, username, password, false]);
-      });
-    }
+    chrome.send('completeLogin', [gaia_id, username, password, false]);
   };
 
   /**
