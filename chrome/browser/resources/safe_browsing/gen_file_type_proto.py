@@ -12,10 +12,11 @@ import sys
 
 
 def ConvertProto(opts):
-
   # Find the proto code
   for path in opts.path:
-    sys.path.append(path)
+    # Put the path to our proto libraries in front, so that we don't use system
+    # protobuf.
+    sys.path.insert(1, path)
 
   import download_file_types_pb2 as config_pb2
   import google.protobuf.text_format as text_format
