@@ -20,7 +20,6 @@
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/common/input_messages.h"
-#include "content/common/text_input_state.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_widget_host_view_mac_delegate.h"
@@ -143,20 +142,14 @@ id MockGestureEvent(NSEventType type, double magnification) {
 
 class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
  public:
-  MockRenderWidgetHostDelegate() : text_input_state_(new TextInputState()) {}
+  MockRenderWidgetHostDelegate() {}
   ~MockRenderWidgetHostDelegate() override {}
-
-  const TextInputState* GetTextInputState() override {
-    return text_input_state_.get();
-  }
 
  private:
   void Cut() override {}
   void Copy() override {}
   void Paste() override {}
   void SelectAll() override {}
-
-  std::unique_ptr<TextInputState> text_input_state_;
 };
 
 class MockRenderWidgetHostImpl : public RenderWidgetHostImpl {

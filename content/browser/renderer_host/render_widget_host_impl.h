@@ -48,7 +48,7 @@
 
 struct FrameHostMsg_HittestData_Params;
 struct ViewHostMsg_SelectionBounds_Params;
-struct TextInputState;
+struct ViewHostMsg_TextInputState_Params;
 struct ViewHostMsg_UpdateRect_Params;
 
 namespace base {
@@ -571,7 +571,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   void OnUpdateRect(const ViewHostMsg_UpdateRect_Params& params);
   void OnQueueSyntheticGesture(const SyntheticGesturePacket& gesture_packet);
   void OnSetCursor(const WebCursor& cursor);
-  void OnTextInputStateChanged(const TextInputState& params);
+  void OnTextInputStateChanged(
+      const ViewHostMsg_TextInputState_Params& params);
 
   void OnImeCompositionRangeChanged(
       const gfx::Range& range,

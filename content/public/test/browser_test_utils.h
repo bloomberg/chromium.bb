@@ -27,7 +27,6 @@
 #include "ipc/message_filter.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/accessibility/ax_node_data.h"
-#include "ui/base/ime/text_input_type.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "url/gurl.h"
 
@@ -506,23 +505,6 @@ class InputMsgWatcher : public BrowserMessageFilter {
   base::Closure quit_;
 
   DISALLOW_COPY_AND_ASSIGN(InputMsgWatcher);
-};
-
-class TextInputStateTestExport {
- public:
-  static TextInputStateTestExport FromWebContents(
-      content::WebContents* web_contents);
-
-  const ui::TextInputType& type() const { return type_; }
-
-  const std::string& value() const { return value_; }
-
- private:
-  TextInputStateTestExport(const ui::TextInputType& type,
-                           const std::string& value);
-
-  ui::TextInputType type_;
-  std::string value_;
 };
 
 }  // namespace content

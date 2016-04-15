@@ -12,7 +12,6 @@
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/render_widget_window_tree_client_factory.mojom.h"
-#include "content/common/text_input_state.h"
 #include "content/public/common/mojo_shell_connection.h"
 #include "services/shell/public/cpp/connector.h"
 #include "ui/aura/client/screen_position_client.h"
@@ -124,10 +123,6 @@ void RenderWidgetHostViewMus::RenderProcessGone(base::TerminationStatus status,
 }
 
 void RenderWidgetHostViewMus::Destroy() {
-  // The WebContentsImpl should be notified about us so that it will not hold
-  // an invalid text input state which was due to active text on this view.
-  NotifyHostDelegateAboutShutdown();
-
   delete aura_window_;
 }
 
@@ -191,9 +186,9 @@ void RenderWidgetHostViewMus::UpdateCursor(const WebCursor& cursor) {
 void RenderWidgetHostViewMus::SetIsLoading(bool is_loading) {
 }
 
-void RenderWidgetHostViewMus::UpdateInputMethodIfNecessary(
-    bool text_input_state_changed) {
-  // TODO: Implement the IME logic when input state changes.
+void RenderWidgetHostViewMus::TextInputStateChanged(
+    const ViewHostMsg_TextInputState_Params& params) {
+  // TODO(fsamuel): Implement an IME mojo app.
 }
 
 void RenderWidgetHostViewMus::ImeCancelComposition() {

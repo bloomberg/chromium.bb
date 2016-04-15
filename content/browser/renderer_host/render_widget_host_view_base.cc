@@ -10,18 +10,11 @@
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_target_base.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
-#include "content/browser/renderer_host/render_view_host_delegate.h"
-#include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base_observer.h"
 #include "content/common/content_switches_internal.h"
-#include "content/common/input_messages.h"
-#include "content/common/site_isolation_policy.h"
-#include "content/common/text_input_state.h"
-#include "content/common/view_messages.h"
 #include "content/public/browser/render_widget_host_view_frame_subscriber.h"
-#include "content/public/common/browser_plugin_guest_mode.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
@@ -48,7 +41,6 @@ RenderWidgetHostViewBase::RenderWidgetHostViewBase()
       current_display_rotation_(gfx::Display::ROTATE_0),
       pinch_zoom_enabled_(content::IsPinchToZoomEnabled()),
       renderer_frame_number_(0),
-      text_input_state_(new TextInputState()),
       weak_factory_(this) {}
 
 RenderWidgetHostViewBase::~RenderWidgetHostViewBase() {
@@ -71,19 +63,6 @@ void RenderWidgetHostViewBase::NotifyObserversAboutShutdown() {
                     OnRenderWidgetHostViewBaseDestroyed(this));
   // All observers are required to disconnect after they are notified.
   DCHECK(!observers_.might_have_observers());
-}
-
-void RenderWidgetHostViewBase::NotifyHostDelegateAboutShutdown() {
-  RenderWidgetHostImpl* host =
-      RenderWidgetHostImpl::From(GetRenderWidgetHost());
-
-  if (!host || !host->delegate())
-    return;
-
-  bool has_active_text = text_input_state()->type != ui::TEXT_INPUT_TYPE_NONE;
-  text_input_state_.reset(new TextInputState());
-
-  host->delegate()->UpdateTextInputState(this, has_active_text);
 }
 
 bool RenderWidgetHostViewBase::OnMessageReceived(const IPC::Message& msg){
@@ -247,35 +226,6 @@ bool RenderWidgetHostViewBase::HasDisplayPropertyChanged(gfx::NativeView view) {
   current_device_scale_factor_ = display.device_scale_factor();
   current_display_rotation_ = display.rotation();
   return true;
-}
-
-void RenderWidgetHostViewBase::TextInputStateChanged(
-    const TextInputState& params) {
-  bool text_input_state_changed = true;
-#if !defined(OS_ANDROID)
-  if (params.type == text_input_state_->type &&
-      params.can_compose_inline == text_input_state_->can_compose_inline
-#if !defined(OS_MACOSX)
-      && params.mode == text_input_state_->mode &&
-      params.flags == text_input_state_->flags
-#endif
-      )
-    text_input_state_changed = false;
-#else
-  if (params.is_non_ime_change) {
-    // Sends an acknowledgement to the renderer of a processed IME event.
-    GetRenderWidgetHost()->Send(
-        new InputMsg_ImeEventAck(GetRenderWidgetHost()->GetRoutingID()));
-  }
-#endif
-
-  if (text_input_state_changed) {
-    *text_input_state_ = params;
-    RenderWidgetHostImpl* host =
-        RenderWidgetHostImpl::From(GetRenderWidgetHost());
-    if (host && host->delegate())
-      host->delegate()->UpdateTextInputState(this, text_input_state_changed);
-  }
 }
 
 base::WeakPtr<RenderWidgetHostViewBase> RenderWidgetHostViewBase::GetWeakPtr() {

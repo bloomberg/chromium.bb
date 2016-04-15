@@ -31,9 +31,7 @@ namespace content {
 class BrowserAccessibilityManager;
 class RenderWidgetHostImpl;
 class RenderWidgetHostInputEventRouter;
-class RenderWidgetHostViewBase;
 struct NativeWebKeyboardEvent;
-struct TextInputState;
 
 //
 // RenderWidgetHostDelegate
@@ -134,16 +132,6 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   virtual RenderWidgetHostImpl* GetFocusedRenderWidgetHost(
       RenderWidgetHostImpl* receiving_widget);
 
-  // Returns the current value of text input state. This should be the value
-  // obtained from the focused RWHV.
-  virtual const TextInputState* GetTextInputState();
-
-  // This method is called by any RWHV which receives an IPC regarding a change
-  // in the text input state. The IPC might or might not have lead to a change
-  // in state but this method must be called for IME related logic.
-  virtual void UpdateTextInputState(RenderWidgetHostViewBase* rwhv,
-                                    bool text_input_state_changed) {}
-
   // Notification that the renderer has become unresponsive. The
   // delegate can use this notification to show a warning to the user.
   virtual void RendererUnresponsive(RenderWidgetHostImpl* render_widget_host) {}
@@ -179,12 +167,12 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   // Notification that the widget has lost the mouse lock.
   virtual void LostMouseLock(RenderWidgetHostImpl* render_widget_host) {}
 
-  // Called when the widget has sent a compositor proto.  This is used in Blimp
+  // Called when the widget has sent a compositor proto.  This is used in Btlimp
   // mode with the RemoteChannel compositor.
   virtual void ForwardCompositorProto(RenderWidgetHostImpl* render_widget_host,
                                       const std::vector<uint8_t>& proto) {}
 
-  // Called when the visibility of the RenderFrameProxyHost in outer
+  // Called when the visibility of the RenderFrameProxyHost in outter
   // WebContents changes. This method is only called on an inner WebContents and
   // will eventually notify all the RenderWidgetHostViews belonging to that
   // WebContents.

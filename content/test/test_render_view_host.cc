@@ -122,10 +122,7 @@ void TestRenderWidgetHostView::RenderProcessGone(base::TerminationStatus status,
   delete this;
 }
 
-void TestRenderWidgetHostView::Destroy() {
-  NotifyHostDelegateAboutShutdown();
-  delete this;
-}
+void TestRenderWidgetHostView::Destroy() { delete this; }
 
 gfx::Rect TestRenderWidgetHostView::GetViewBounds() const {
   return gfx::Rect();

@@ -115,7 +115,7 @@ include_rules = [
 
 # content -> content/shell dependency is not allowed, except for browser tests.
 specific_include_rules = {
-  ".*_browsertest[a-z_]*\.(cc|h)": [
+  ".*_browsertest[a-z_]*\.cc": [
     "+content/shell/browser",
     "+content/shell/common",
   ],

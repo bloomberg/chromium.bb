@@ -21,7 +21,6 @@
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
-#include "content/common/text_input_state.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/test/mock_render_process_host.h"
@@ -33,20 +32,13 @@ namespace content {
 namespace {
 class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
  public:
-  MockRenderWidgetHostDelegate() : text_input_state_(new TextInputState()) {}
+  MockRenderWidgetHostDelegate() {}
   ~MockRenderWidgetHostDelegate() override {}
-
-  const TextInputState* GetTextInputState() override {
-    return text_input_state_.get();
-  }
-
  private:
   void Cut() override {}
   void Copy() override {}
   void Paste() override {}
   void SelectAll() override {}
-
-  std::unique_ptr<TextInputState> text_input_state_;
 };
 
 class MockCrossProcessFrameConnector : public CrossProcessFrameConnector {

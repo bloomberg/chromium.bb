@@ -31,7 +31,6 @@
 #include "content/browser/web_contents/web_contents_view.h"
 #include "content/common/input/synthetic_web_input_event_builders.h"
 #include "content/common/input_messages.h"
-#include "content/common/text_input_state.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/histogram_fetcher.h"
@@ -1234,20 +1233,6 @@ uint32_t InputMsgWatcher::WaitForAck() {
   base::AutoReset<base::Closure> reset_quit(&quit_, run_loop.QuitClosure());
   run_loop.Run();
   return ack_result_;
-}
-
-TextInputStateTestExport::TextInputStateTestExport(
-    const ui::TextInputType& type,
-    const std::string& value)
-    : type_(type), value_(value) {}
-
-// static
-TextInputStateTestExport TextInputStateTestExport::FromWebContents(
-    WebContents* web_contents) {
-  const TextInputState* state =
-      static_cast<WebContentsImpl*>(web_contents)->GetTextInputState();
-
-  return TextInputStateTestExport(state->type, state->value);
 }
 
 }  // namespace content

@@ -219,6 +219,11 @@ void RenderWidgetHostViewChildFrame::SetIsLoading(bool is_loading) {
   NOTREACHED();
 }
 
+void RenderWidgetHostViewChildFrame::TextInputStateChanged(
+    const ViewHostMsg_TextInputState_Params& params) {
+  // TODO(kenrb): Implement.
+}
+
 void RenderWidgetHostViewChildFrame::RenderProcessGone(
     base::TerminationStatus status,
     int error_code) {
@@ -240,10 +245,6 @@ void RenderWidgetHostViewChildFrame::Destroy() {
   // host_ and do not want any event calls coming from
   // RenderWidgetHostInputEventRouter afterwards.
   NotifyObserversAboutShutdown();
-
-  // If this view has an active text input, the RenderWidgetHostDelegate should
-  // be notified.
-  NotifyHostDelegateAboutShutdown();
 
   host_->SetView(NULL);
   host_ = NULL;

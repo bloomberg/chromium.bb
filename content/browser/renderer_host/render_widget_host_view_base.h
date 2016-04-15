@@ -41,6 +41,7 @@ class SkBitmap;
 
 struct AccessibilityHostMsg_EventParams;
 struct ViewHostMsg_SelectionBounds_Params;
+struct ViewHostMsg_TextInputState_Params;
 
 namespace media {
 class VideoFrame;
@@ -69,7 +70,6 @@ class SyntheticGestureTarget;
 class WebCursor;
 struct DidOverscrollParams;
 struct NativeWebKeyboardEvent;
-struct TextInputState;
 
 // Basic implementation shared by concrete RenderWidgetHostView subclasses.
 class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
@@ -125,22 +125,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   // Tells if the display property (work area/scale factor) has
   // changed since the last time.
   bool HasDisplayPropertyChanged(gfx::NativeView view);
-
-  // This method is exclusively called by the owner RenderWidgetHost to inform
-  // the view about a change in the input state which originated in the
-  // corresponding RenderWidget. This state is stored at the RWHV.
-  // Also, this change does not necessarily reflect the current state of the
-  // input since the text input could be due to a change in the focused
-  // child-frame's (in OOPIF) or the out of process content managed by
-  // BrowserPlugin.
-  void TextInputStateChanged(const TextInputState& params);
-
-  // The current text input state for the corresponding widget. This is used by
-  // the WebContents in determining the top level text input state, which is
-  // in turn used by the IME.
-  const TextInputState* text_input_state() const {
-    return text_input_state_.get();
-  }
 
   base::WeakPtr<RenderWidgetHostViewBase> GetWeakPtr();
 
@@ -256,12 +240,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
                                                cc::SurfaceId original_surface,
                                                gfx::Point* transformed_point);
 
-  // This method is used by the WebContents owning this view to notify the view
-  // of a text input change in the tab. This method is called by the
-  // WebContentsImpl if the RenderWidgetHostView is a top-level view. The
-  // implementation is platform-specific.
-  virtual void UpdateInputMethodIfNecessary(bool text_input_state_changed) {}
-
   //----------------------------------------------------------------------------
   // The following static methods are implemented by each platform.
 
@@ -286,6 +264,10 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
 
   // Indicates whether the page has finished loading.
   virtual void SetIsLoading(bool is_loading) = 0;
+
+  // Updates the state of the input method attached to the view.
+  virtual void TextInputStateChanged(
+      const ViewHostMsg_TextInputState_Params& params) = 0;
 
   // Cancel the ongoing composition of the input method attached to the view.
   virtual void ImeCancelComposition() = 0;
@@ -404,11 +386,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
 
   void NotifyObserversAboutShutdown();
 
-  // This method should be called by RWHV during destruction or after a crash
-  // to make sure WebContents does not hold invalid text input state.
-  // TODO(ekaramad): Do we need to call this for top-level RWHV as well?
-  void NotifyHostDelegateAboutShutdown();
-
   // Whether this view is a popup and what kind of popup it is (select,
   // autofill...).
   blink::WebPopupType popup_type_;
@@ -436,6 +413,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   // The current selection range relative to the start of the web page.
   gfx::Range selection_range_;
 
+ protected:
   // The scale factor of the display the renderer is currently on.
   float current_device_scale_factor_;
 
@@ -456,9 +434,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   base::OneShotTimer flush_input_timer_;
 
   base::ObserverList<RenderWidgetHostViewBaseObserver> observers_;
-
-  // The last reported input state by the RenderWidget.
-  std::unique_ptr<TextInputState> text_input_state_;
 
   base::WeakPtrFactory<RenderWidgetHostViewBase> weak_factory_;
 

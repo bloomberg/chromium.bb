@@ -369,6 +369,10 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host,
       popup_parent_host_view_(NULL),
       popup_child_host_view_(NULL),
       is_loading_(false),
+      text_input_type_(ui::TEXT_INPUT_TYPE_NONE),
+      text_input_mode_(ui::TEXT_INPUT_MODE_DEFAULT),
+      text_input_flags_(0),
+      can_compose_inline_(true),
       has_composition_text_(false),
       accept_return_character_(false),
       last_swapped_software_frame_scale_factor_(1.f),
@@ -855,18 +859,23 @@ void RenderWidgetHostViewAura::SetIsLoading(bool is_loading) {
   UpdateCursorIfOverSelf();
 }
 
-void RenderWidgetHostViewAura::UpdateInputMethodIfNecessary(
-    bool text_input_state_changed) {
-  if (!GetInputMethod())
-    return;
-
-  if (text_input_state_changed)
-    GetInputMethod()->OnTextInputTypeChanged(this);
-
-  const TextInputState* state = host_->delegate()->GetTextInputState();
-
-  if (state->show_ime_if_needed && state->type != ui::TEXT_INPUT_TYPE_NONE)
-    GetInputMethod()->ShowImeIfNeeded();
+void RenderWidgetHostViewAura::TextInputStateChanged(
+    const ViewHostMsg_TextInputState_Params& params) {
+  if (text_input_type_ != params.type ||
+      text_input_mode_ != params.mode ||
+      can_compose_inline_ != params.can_compose_inline ||
+      text_input_flags_ != params.flags) {
+    text_input_type_ = params.type;
+    text_input_mode_ = params.mode;
+    can_compose_inline_ = params.can_compose_inline;
+    text_input_flags_ = params.flags;
+    if (GetInputMethod())
+      GetInputMethod()->OnTextInputTypeChanged(this);
+  }
+  if (params.show_ime_if_needed && params.type != ui::TEXT_INPUT_TYPE_NONE) {
+    if (GetInputMethod())
+      GetInputMethod()->ShowImeIfNeeded();
+  }
 }
 
 void RenderWidgetHostViewAura::ImeCancelComposition() {
@@ -1464,10 +1473,7 @@ void RenderWidgetHostViewAura::ClearCompositionText() {
 }
 
 void RenderWidgetHostViewAura::InsertText(const base::string16& text) {
-  DCHECK(RenderWidgetHostImpl::From(GetRenderWidgetHost())
-             ->delegate()
-             ->GetTextInputState()
-             ->type != ui::TEXT_INPUT_TYPE_NONE);
+  DCHECK(text_input_type_ != ui::TEXT_INPUT_TYPE_NONE);
   // TODO(wjmaclean): can host_ ever be null?
   if (host_)
     host_->ImeConfirmComposition(text, gfx::Range::InvalidRange(), false);
@@ -1490,27 +1496,19 @@ void RenderWidgetHostViewAura::InsertChar(const ui::KeyEvent& event) {
 }
 
 ui::TextInputType RenderWidgetHostViewAura::GetTextInputType() const {
-  if (host_->delegate())
-    return host_->delegate()->GetTextInputState()->type;
-  return text_input_state()->type;
+  return text_input_type_;
 }
 
 ui::TextInputMode RenderWidgetHostViewAura::GetTextInputMode() const {
-  if (host_->delegate())
-    return host_->delegate()->GetTextInputState()->mode;
-  return text_input_state()->mode;
+  return text_input_mode_;
 }
 
 int RenderWidgetHostViewAura::GetTextInputFlags() const {
-  if (host_->delegate())
-    return host_->delegate()->GetTextInputState()->flags;
-  return text_input_state()->flags;
+  return text_input_flags_;
 }
 
 bool RenderWidgetHostViewAura::CanComposeInline() const {
-  if (host_->delegate())
-    return host_->delegate()->GetTextInputState()->can_compose_inline;
-  return text_input_state()->can_compose_inline;
+  return can_compose_inline_;
 }
 
 gfx::Rect RenderWidgetHostViewAura::ConvertRectToScreen(
@@ -2330,10 +2328,6 @@ void RenderWidgetHostViewAura::OnHostMoved(const aura::WindowTreeHost* host,
 // RenderWidgetHostViewAura, private:
 
 RenderWidgetHostViewAura::~RenderWidgetHostViewAura() {
-  // The WebContentsImpl should be notified about us so that it will not hold
-  // an invalid text input state which was due to active text on this view.
-  NotifyHostDelegateAboutShutdown();
-
   // Ask the RWH to drop reference to us.
   if (!is_guest_view_hack_)
     host_->ViewDestroyed();

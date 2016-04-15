@@ -48,10 +48,6 @@ RenderWidgetHostImpl* RenderWidgetHostDelegate::GetFocusedRenderWidgetHost(
   return receiving_widget;
 }
 
-const TextInputState* RenderWidgetHostDelegate::GetTextInputState() {
-  return nullptr;
-}
-
 gfx::Rect RenderWidgetHostDelegate::GetRootWindowResizerRect(
     RenderWidgetHostImpl* render_widget_host) const {
   return gfx::Rect();

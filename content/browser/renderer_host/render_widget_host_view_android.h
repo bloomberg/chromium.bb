@@ -109,7 +109,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   float GetTopControlsHeight() const override;
   void UpdateCursor(const WebCursor& cursor) override;
   void SetIsLoading(bool is_loading) override;
-  void UpdateInputMethodIfNecessary(bool text_input_state_changed) override;
+  void TextInputStateChanged(
+      const ViewHostMsg_TextInputState_Params& params) override;
   void ImeCancelComposition() override;
   void ImeCompositionRangeChanged(
       const gfx::Range& range,

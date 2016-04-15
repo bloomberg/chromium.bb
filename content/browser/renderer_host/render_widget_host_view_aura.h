@@ -43,6 +43,8 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/wm/public/activation_delegate.h"
 
+struct ViewHostMsg_TextInputState_Params;
+
 namespace aura {
 class WindowTracker;
 namespace client {
@@ -134,7 +136,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   void Focus() override;
   void UpdateCursor(const WebCursor& cursor) override;
   void SetIsLoading(bool is_loading) override;
-  void UpdateInputMethodIfNecessary(bool text_input_state_changed) override;
+  void TextInputStateChanged(
+      const ViewHostMsg_TextInputState_Params& params) override;
   void ImeCancelComposition() override;
   void ImeCompositionRangeChanged(
       const gfx::Range& range,
@@ -564,6 +567,14 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // Stores the current state of the active pointers targeting this
   // object.
   ui::MotionEventAura pointer_state_;
+
+  // The current text input type.
+  ui::TextInputType text_input_type_;
+  // The current text input mode corresponding to HTML5 inputmode attribute.
+  ui::TextInputMode text_input_mode_;
+  // The current text input flags.
+  int text_input_flags_;
+  bool can_compose_inline_;
 
   // Bounds for the selection.
   ui::SelectionBound selection_anchor_;

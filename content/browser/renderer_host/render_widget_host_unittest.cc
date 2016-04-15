@@ -24,7 +24,6 @@
 #include "content/common/input/synthetic_web_input_event_builders.h"
 #include "content/common/input_messages.h"
 #include "content/common/resize_params.h"
-#include "content/common/text_input_state.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/mock_render_process_host.h"
@@ -349,8 +348,7 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
         unhandled_keyboard_event_type_(WebInputEvent::Undefined),
         handle_wheel_event_(false),
         handle_wheel_event_called_(false),
-        unresponsive_timer_fired_(false),
-        text_input_state_(new TextInputState()) {}
+        unresponsive_timer_fired_(false) {}
   ~MockRenderWidgetHostDelegate() override {}
 
   // Tests that make sure we ignore keyboard event acknowledgments to events we
@@ -386,10 +384,6 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
   bool handle_wheel_event_called() const { return handle_wheel_event_called_; }
 
   bool unresponsive_timer_fired() const { return unresponsive_timer_fired_; }
-
-  const TextInputState* GetTextInputState() override {
-    return text_input_state_.get();
-  }
 
  protected:
   bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
@@ -432,8 +426,6 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
   bool handle_wheel_event_called_;
 
   bool unresponsive_timer_fired_;
-
-  std::unique_ptr<TextInputState> text_input_state_;
 };
 
 // RenderWidgetHostTest --------------------------------------------------------

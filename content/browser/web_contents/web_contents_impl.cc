@@ -80,7 +80,6 @@
 #include "content/common/page_messages.h"
 #include "content/common/site_isolation_policy.h"
 #include "content/common/ssl_status_serialization.h"
-#include "content/common/text_input_state.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/ax_event_notification_details.h"
 #include "content/public/browser/browser_context.h"
@@ -404,7 +403,6 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
       bluetooth_connected_device_count_(0),
       virtual_keyboard_requested_(false),
       page_scale_factor_is_one_(true),
-      text_input_state_(new TextInputState()),
       loading_weak_factory_(this),
       weak_factory_(this) {
   frame_tree_.SetFrameRemoveListener(
@@ -2311,44 +2309,6 @@ void WebContentsImpl::SendScreenRects() {
 
   if (browser_plugin_embedder_)
     browser_plugin_embedder_->DidSendScreenRects();
-}
-
-const TextInputState* WebContentsImpl::GetTextInputState() {
-  if (GetOuterWebContents())
-    return GetOuterWebContents()->GetTextInputState();
-  // A RWHV should update WebContentsImpl in its destruction path so that state
-  // type is reset to none.
-  DCHECK(view_with_active_text_input_ ||
-         text_input_state_->type == ui::TEXT_INPUT_TYPE_NONE);
-  return text_input_state_.get();
-}
-
-void WebContentsImpl::UpdateTextInputState(RenderWidgetHostViewBase* rwhv,
-                                           bool text_input_state_changed) {
-  // If there is an outer WebContents, let it process this update.
-  if (GetOuterWebContents()) {
-    return GetOuterWebContents()->UpdateTextInputState(
-        rwhv, text_input_state_changed);
-  }
-
-  // If this RWHV has a text input type of NONE, then there is nothing to
-  // report to the tab RWHV.
-  if (view_with_active_text_input_.get() != rwhv &&
-      rwhv->text_input_state()->type == ui::TEXT_INPUT_TYPE_NONE)
-    return;
-
-  if (rwhv->text_input_state()->type != ui::TEXT_INPUT_TYPE_NONE)
-    view_with_active_text_input_ = rwhv->GetWeakPtr();
-  else
-    view_with_active_text_input_.reset();
-
-  *text_input_state_ = *rwhv->text_input_state();
-
-  // The top level RWHV should know about the change.
-  RenderWidgetHostViewBase* tab_rwhv =
-      static_cast<RenderWidgetHostViewBase*>(GetRenderWidgetHostView());
-  if (tab_rwhv)
-    tab_rwhv->UpdateInputMethodIfNecessary(text_input_state_changed);
 }
 
 BrowserAccessibilityManager*
