@@ -106,32 +106,6 @@ public:
 
     RadioButtonGroupScope& radioButtonGroupScope() { return m_radioButtonGroupScope; }
 
-#if !ENABLE(OILPAN)
-    // Nodes belonging to this scope hold guard references -
-    // these are enough to keep the scope from being destroyed, but
-    // not enough to keep it from removing its children. This allows a
-    // node that outlives its scope to still have a valid document
-    // pointer without introducing reference cycles.
-    void guardRef()
-    {
-        DCHECK(!deletionHasBegun());
-        ++m_guardRefCount;
-    }
-
-    void guardDeref()
-    {
-        DCHECK_GT(m_guardRefCount, 0);
-        DCHECK(!deletionHasBegun());
-        --m_guardRefCount;
-        if (!m_guardRefCount && !refCount() && !rootNodeHasTreeSharedParent()) {
-            beginDeletion();
-            delete this;
-        }
-    }
-#endif
-
-    void removedLastRefToScope();
-
     bool isInclusiveAncestorOf(const TreeScope&) const;
     unsigned short comparePosition(const TreeScope&) const;
 
@@ -151,43 +125,16 @@ protected:
     TreeScope(Document&);
     virtual ~TreeScope();
 
-#if !ENABLE(OILPAN)
-    void destroyTreeScopeData();
-#endif
-
     void setDocument(Document& document) { m_document = &document; }
     void setParentTreeScope(TreeScope&);
-
-#if !ENABLE(OILPAN)
-    bool hasGuardRefCount() const { return m_guardRefCount; }
-#endif
-
     void setNeedsStyleRecalcForViewportUnits();
 
 private:
-#if !ENABLE(OILPAN)
-    virtual void dispose() { }
-
-    int refCount() const;
-
-#if ENABLE(SECURITY_ASSERT)
-    bool deletionHasBegun();
-    void beginDeletion();
-#else
-    bool deletionHasBegun() { return false; }
-    void beginDeletion() { }
-#endif
-#endif
-
     bool rootNodeHasTreeSharedParent() const;
 
     Member<ContainerNode> m_rootNode;
     Member<Document> m_document;
     Member<TreeScope> m_parentTreeScope;
-
-#if !ENABLE(OILPAN)
-    int m_guardRefCount;
-#endif
 
     Member<DocumentOrderedMap> m_elementsById;
     Member<DocumentOrderedMap> m_imageMapsByName;

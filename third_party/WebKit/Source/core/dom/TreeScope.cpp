@@ -60,15 +60,9 @@ TreeScope::TreeScope(ContainerNode& rootNode, Document& document)
     : m_rootNode(&rootNode)
     , m_document(&document)
     , m_parentTreeScope(&document)
-#if !ENABLE(OILPAN)
-    , m_guardRefCount(0)
-#endif
     , m_idTargetObserverRegistry(IdTargetObserverRegistry::create())
 {
     DCHECK_NE(rootNode, document);
-#if !ENABLE(OILPAN)
-    m_parentTreeScope->guardRef();
-#endif
     m_rootNode->setTreeScope(this);
 }
 
@@ -76,9 +70,6 @@ TreeScope::TreeScope(Document& document)
     : m_rootNode(document)
     , m_document(&document)
     , m_parentTreeScope(nullptr)
-#if !ENABLE(OILPAN)
-    , m_guardRefCount(0)
-#endif
     , m_idTargetObserverRegistry(IdTargetObserverRegistry::create())
 {
     m_rootNode->setTreeScope(this);
@@ -86,18 +77,6 @@ TreeScope::TreeScope(Document& document)
 
 TreeScope::~TreeScope()
 {
-#if !ENABLE(OILPAN)
-    DCHECK(!m_guardRefCount);
-    m_rootNode->setTreeScope(nullptr);
-
-    if (m_selection) {
-        m_selection->clearTreeScope();
-        m_selection = nullptr;
-    }
-
-    if (m_parentTreeScope)
-        m_parentTreeScope->guardDeref();
-#endif
 }
 
 TreeScope* TreeScope::olderShadowRootOrParentTreeScope() const
@@ -123,25 +102,11 @@ bool TreeScope::rootNodeHasTreeSharedParent() const
     return rootNode().hasTreeSharedParent();
 }
 
-#if !ENABLE(OILPAN)
-void TreeScope::destroyTreeScopeData()
-{
-    m_elementsById.clear();
-    m_imageMapsByName.clear();
-    m_labelsByForAttribute.clear();
-}
-#endif
-
 void TreeScope::setParentTreeScope(TreeScope& newParentScope)
 {
     // A document node cannot be re-parented.
     DCHECK(!rootNode().isDocumentNode());
 
-#if !ENABLE(OILPAN)
-    newParentScope.guardRef();
-    if (m_parentTreeScope)
-        m_parentTreeScope->guardDeref();
-#endif
     m_parentTreeScope = &newParentScope;
     setDocument(newParentScope.document());
 }
@@ -412,9 +377,6 @@ void TreeScope::adoptIfNeeded(Node& node)
 {
     DCHECK(this);
     DCHECK(!node.isDocumentNode());
-#if !ENABLE(OILPAN)
-    ASSERT_WITH_SECURITY_IMPLICATION(!node.m_deletionHasBegun);
-#endif
     TreeScopeAdopter adopter(node, *this);
     if (adopter.needsScopeChange())
         adopter.execute();
@@ -519,25 +481,6 @@ TreeScope* TreeScope::commonAncestorTreeScope(TreeScope& other)
 {
     return const_cast<TreeScope*>(static_cast<const TreeScope&>(*this).commonAncestorTreeScope(other));
 }
-
-#if ENABLE(SECURITY_ASSERT) && !ENABLE(OILPAN)
-bool TreeScope::deletionHasBegun()
-{
-    return rootNode().m_deletionHasBegun;
-}
-
-void TreeScope::beginDeletion()
-{
-    rootNode().m_deletionHasBegun = true;
-}
-#endif
-
-#if !ENABLE(OILPAN)
-int TreeScope::refCount() const
-{
-    return rootNode().refCount();
-}
-#endif
 
 bool TreeScope::isInclusiveAncestorOf(const TreeScope& scope) const
 {
