@@ -76,6 +76,13 @@ class DeviceInfoService : public syncer_v2::ModelTypeService,
  private:
   friend class DeviceInfoServiceTest;
 
+  // Formats ClientTag form DeviceInfoSpecifics.
+  static std::string SpecificsToTag(
+      const sync_pb::DeviceInfoSpecifics& specifics);
+
+  // Extracts cache_guid from ClientTag.
+  static std::string TagToCacheGuid(const std::string& tag);
+
   static scoped_ptr<sync_pb::DeviceInfoSpecifics> CopyToSpecifics(
       const sync_driver::DeviceInfo& info);
 

@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/strings/string_util.h"
 #include "sync/api/entity_change.h"
 #include "sync/api/metadata_batch.h"
 #include "sync/api/sync_error.h"
@@ -39,6 +40,12 @@ using Record = ModelTypeStore::Record;
 using RecordList = ModelTypeStore::RecordList;
 using Result = ModelTypeStore::Result;
 using WriteBatch = ModelTypeStore::WriteBatch;
+
+namespace {
+
+const char kClientTagPrefix[] = "DeviceInfo_";
+
+}  // namespace
 
 DeviceInfoService::DeviceInfoService(
     sync_driver::LocalDeviceInfoProvider* local_device_info_provider,
@@ -85,36 +92,37 @@ SyncError DeviceInfoService::MergeSyncData(
   // data is blown away. However, this simplification is being ignored here and
   // a full difference is going to be calculated to explore what other service
   // implementations may look like.
-  std::set<std::string> local_tags_to_put;
+  std::set<std::string> local_guids_to_put;
   for (const auto& kv : all_data_) {
-    local_tags_to_put.insert(kv.first);
+    local_guids_to_put.insert(kv.first);
   }
 
   bool has_changes = false;
   const DeviceInfo* local_info =
       local_device_info_provider_->GetLocalDeviceInfo();
-  std::string local_tag = local_info->guid();
+  std::string local_guid = local_info->guid();
   scoped_ptr<WriteBatch> batch = store_->CreateWriteBatch();
   for (const auto& kv : entity_data_map) {
-    const std::string tag = GetClientTag(kv.second.value());
     const DeviceInfoSpecifics& specifics =
         kv.second.value().specifics.device_info();
-    if (tag == local_tag) {
+    DCHECK_EQ(kv.first, SpecificsToTag(specifics));
+    if (specifics.cache_guid() == local_guid) {
       // Don't Put local data if it's the same as the remote copy.
       if (local_info->Equals(*CopyToModel(specifics))) {
-        local_tags_to_put.erase(tag);
+        local_guids_to_put.erase(local_guid);
       }
     } else {
       // Remote data wins conflicts.
-      local_tags_to_put.erase(tag);
+      local_guids_to_put.erase(specifics.cache_guid());
       has_changes = true;
       StoreSpecifics(make_scoped_ptr(new DeviceInfoSpecifics(specifics)),
                      batch.get());
     }
   }
 
-  for (const std::string& tag : local_tags_to_put) {
-    change_processor()->Put(tag, CopyToEntityData(*all_data_[tag]),
+  for (const std::string& guid : local_guids_to_put) {
+    change_processor()->Put(SpecificsToTag(*all_data_[guid]),
+                            CopyToEntityData(*all_data_[guid]),
                             metadata_change_list.get());
   }
 
@@ -136,19 +144,19 @@ SyncError DeviceInfoService::ApplySyncChanges(
   scoped_ptr<WriteBatch> batch = store_->CreateWriteBatch();
   bool has_changes = false;
   for (EntityChange& change : entity_changes) {
-    const std::string tag = change.client_tag();
+    const std::string guid = TagToCacheGuid(change.client_tag());
     // Each device is the authoritative source for itself, ignore any remote
     // changes that have our local cache guid.
-    if (tag == local_device_info_provider_->GetLocalDeviceInfo()->guid()) {
+    if (guid == local_device_info_provider_->GetLocalDeviceInfo()->guid()) {
       continue;
     }
 
     if (change.type() == EntityChange::ACTION_DELETE) {
-      has_changes |= DeleteSpecifics(tag, batch.get());
+      has_changes |= DeleteSpecifics(guid, batch.get());
     } else {
       const DeviceInfoSpecifics& specifics =
           change.data().specifics.device_info();
-      DCHECK(tag == specifics.cache_guid());
+      DCHECK(guid == specifics.cache_guid());
       StoreSpecifics(make_scoped_ptr(new DeviceInfoSpecifics(specifics)),
                      batch.get());
       has_changes = true;
@@ -173,8 +181,9 @@ void DeviceInfoService::GetData(ClientTagList client_tags,
 
   scoped_ptr<DataBatchImpl> batch(new DataBatchImpl());
   for (const auto& tag : client_tags) {
-    const auto iter = all_data_.find(tag);
+    const auto& iter = all_data_.find(TagToCacheGuid(tag));
     if (iter != all_data_.end()) {
+      DCHECK_EQ(tag, SpecificsToTag(*iter->second));
       batch->Put(tag, CopyToEntityData(*iter->second));
     }
   }
@@ -193,14 +202,14 @@ void DeviceInfoService::GetAllData(DataCallback callback) {
 
   scoped_ptr<DataBatchImpl> batch(new DataBatchImpl());
   for (const auto& kv : all_data_) {
-    batch->Put(kv.first, CopyToEntityData(*kv.second));
+    batch->Put(SpecificsToTag(*kv.second), CopyToEntityData(*kv.second));
   }
   callback.Run(syncer::SyncError(), std::move(batch));
 }
 
 std::string DeviceInfoService::GetClientTag(const EntityData& entity_data) {
   DCHECK(entity_data.specifics.has_device_info());
-  return entity_data.specifics.device_info().cache_guid();
+  return SpecificsToTag(entity_data.specifics.device_info());
 }
 
 void DeviceInfoService::OnChangeProcessorSet() {
@@ -258,6 +267,16 @@ void DeviceInfoService::NotifyObservers() {
   FOR_EACH_OBSERVER(Observer, observers_, OnDeviceInfoChange());
 }
 
+std::string DeviceInfoService::SpecificsToTag(
+    const sync_pb::DeviceInfoSpecifics& specifics) {
+  return kClientTagPrefix + specifics.cache_guid();
+}
+
+std::string DeviceInfoService::TagToCacheGuid(const std::string& tag) {
+  DCHECK(base::StartsWith(tag, kClientTagPrefix, base::CompareCase::SENSITIVE));
+  return tag.substr(strlen(kClientTagPrefix));
+}
+
 // TODO(skym): crbug.com/543406: It might not make sense for this to be a
 // scoped_ptr.
 // Static.
@@ -288,26 +307,27 @@ scoped_ptr<EntityData> DeviceInfoService::CopyToEntityData(
     const DeviceInfoSpecifics& specifics) {
   scoped_ptr<EntityData> entity_data(new EntityData());
   *entity_data->specifics.mutable_device_info() = specifics;
+  entity_data->non_unique_name = specifics.client_name();
   return entity_data;
 }
 
 void DeviceInfoService::StoreSpecifics(
     scoped_ptr<DeviceInfoSpecifics> specifics,
     WriteBatch* batch) {
-  const std::string tag = specifics->cache_guid();
+  const std::string guid = specifics->cache_guid();
   DVLOG(1) << "Storing DEVICE_INFO for " << specifics->client_name()
-           << " with ID " << tag;
-  store_->WriteData(batch, tag, specifics->SerializeAsString());
-  all_data_[tag] = std::move(specifics);
+           << " with ID " << guid;
+  store_->WriteData(batch, guid, specifics->SerializeAsString());
+  all_data_[guid] = std::move(specifics);
 }
 
-bool DeviceInfoService::DeleteSpecifics(const std::string& tag,
+bool DeviceInfoService::DeleteSpecifics(const std::string& guid,
                                         WriteBatch* batch) {
-  ClientIdToSpecifics::const_iterator iter = all_data_.find(tag);
+  ClientIdToSpecifics::const_iterator iter = all_data_.find(guid);
   if (iter != all_data_.end()) {
     DVLOG(1) << "Deleting DEVICE_INFO for " << iter->second->client_name()
-             << " with ID " << tag;
-    store_->DeleteData(batch, tag);
+             << " with ID " << guid;
+    store_->DeleteData(batch, guid);
     all_data_.erase(iter);
     return true;
   } else {
@@ -346,7 +366,7 @@ void DeviceInfoService::OnReadAllData(Result result,
     scoped_ptr<DeviceInfoSpecifics> specifics(
         make_scoped_ptr(new DeviceInfoSpecifics()));
     if (specifics->ParseFromString(r.value)) {
-      all_data_[r.id] = std::move(specifics);
+      all_data_[specifics->cache_guid()] = std::move(specifics);
     } else {
       LOG(WARNING) << "Failed to deserialize specifics.";
       // TODO(skym, crbug.com/582460): Handle unrecoverable initialization
@@ -449,7 +469,8 @@ void DeviceInfoService::PutAndStore(const DeviceInfo& device_info) {
 
   scoped_ptr<MetadataChangeList> metadata_change_list =
       CreateMetadataChangeList();
-  change_processor()->Put(device_info.guid(), CopyToEntityData(*specifics),
+  change_processor()->Put(SpecificsToTag(*specifics),
+                          CopyToEntityData(*specifics),
                           metadata_change_list.get());
 
   scoped_ptr<WriteBatch> batch = store_->CreateWriteBatch();
