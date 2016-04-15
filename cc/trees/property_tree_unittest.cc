@@ -281,6 +281,17 @@ TEST(PropertyTreeSerializationTest, ScrollTreeSerialization) {
   result.FromProtobuf(proto);
 
   EXPECT_EQ(original, result);
+
+  original.clear();
+  original.set_currently_scrolling_node(0);
+  original.SetScrollOffset(2, gfx::ScrollOffset(1, 2));
+
+  proto::PropertyTree proto2;
+  original.ToProtobuf(&proto2);
+  result = ScrollTree();
+  result.FromProtobuf(proto2);
+
+  EXPECT_EQ(original, result);
 }
 
 TEST(PropertyTreeSerializationTest, PropertyTrees) {
