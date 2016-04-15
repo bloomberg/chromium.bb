@@ -439,9 +439,6 @@ source_set("browser") {
       "//chrome/browser/apps/app_shim",
     ]
   }
-  if (is_win) {
-    deps += [ "//chrome:file_pre_reader" ]
-  }
   if (is_mac || is_android) {
     sources += rebase_path(
             gypi_values.chrome_browser_password_manager_mac_android_sources,
@@ -836,8 +833,10 @@ source_set("browser") {
     ]
     deps += [
       ":chrome_process_finder",
+      "//chrome:file_pre_reader",
       "//chrome/chrome_watcher:client",
       "//chrome/chrome_watcher:kasko_util",
+      "//chrome/common:metrics_constants_util_win",
       "//chrome/common:version_header",
       "//chrome/installer/util:strings",
       "//chrome_elf",

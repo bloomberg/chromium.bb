@@ -134,6 +134,8 @@ if (!is_android) {
         "//chrome/browser:chrome_process_finder",
         "//chrome/chrome_watcher",
         "//chrome/chrome_watcher:client",
+        "//chrome/common:constants",
+        "//chrome/common:metrics_constants_util_win",
         "//chrome/installer/util:with_no_strings",
         "//chrome_elf",
         "//components/browser_watcher:browser_watcher_client",

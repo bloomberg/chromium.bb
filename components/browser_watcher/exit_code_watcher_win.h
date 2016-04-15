@@ -7,6 +7,7 @@
 #include "base/macros.h"
 #include "base/process/process.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "base/win/scoped_handle.h"
 
@@ -17,7 +18,7 @@ namespace browser_watcher {
 class ExitCodeWatcher {
  public:
   // Initialize the watcher with a registry path.
-  explicit ExitCodeWatcher(const base::char16* registry_path);
+  explicit ExitCodeWatcher(base::StringPiece16 registry_path);
   ~ExitCodeWatcher();
 
   // Initializes from arguments on |cmd_line|, returns true on success.
@@ -40,7 +41,7 @@ class ExitCodeWatcher {
   bool WriteProcessExitCode(int exit_code);
 
   // The registry path the exit codes are written to.
-  base::string16 registry_path_;
+  const base::string16 registry_path_;
 
   // Watched process and its creation time.
   base::Process process_;

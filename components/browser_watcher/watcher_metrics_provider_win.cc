@@ -191,7 +191,7 @@ const char WatcherMetricsProviderWin::kBrowserExitCodeHistogramName[] =
     "Stability.BrowserExitCodes";
 
 WatcherMetricsProviderWin::WatcherMetricsProviderWin(
-    const base::char16* registry_path,
+    const base::string16& registry_path,
     base::TaskRunner* cleanup_io_task_runner)
     : recording_enabled_(false),
       cleanup_scheduled_(false),

@@ -351,6 +351,21 @@ static_library("constants") {
   }
 }
 
+if (is_win) {
+  # GYP version: chrome/chrome_common.gypi:metrics_constants_util_win
+  source_set("metrics_constants_util_win") {
+    sources = [
+      "metrics_constants_util_win.cc",
+      "metrics_constants_util_win.h",
+    ]
+
+    deps = [
+      "//base",
+      "//chrome/installer/util:with_no_strings",
+    ]
+  }
+}
+
 source_set("test_support") {
   testonly = true
   visibility = [ "//chrome/test:test_support" ]
@@ -382,7 +397,7 @@ source_set("test_support") {
   }
 }
 
-# GN version: chrome/chrome.gyp:app_mode_app_support
+# GYP version: chrome/chrome.gyp:app_mode_app_support
 source_set("app_mode_app_support") {
   sources = [
     "mac/app_mode_chrome_locator.h",

@@ -57,14 +57,13 @@ const int kDelayTimeSeconds = 30;
 // an exit funnel, for reporting the next time Chrome runs.
 class BrowserMonitor {
  public:
-  BrowserMonitor(base::RunLoop* run_loop, const base::char16* registry_path);
+  BrowserMonitor(base::StringPiece16 registry_path, base::RunLoop* run_loop);
   ~BrowserMonitor();
 
   // Initiates the asynchronous monitoring process, returns true on success.
   // |on_initialized_event| will be signaled immediately before blocking on the
   // exit of |process|.
-  bool StartWatching(const base::char16* registry_path,
-                     base::Process process,
+  bool StartWatching(base::Process process,
                      base::win::ScopedHandle on_initialized_event);
 
  private:
@@ -95,8 +94,8 @@ class BrowserMonitor {
   DISALLOW_COPY_AND_ASSIGN(BrowserMonitor);
 };
 
-BrowserMonitor::BrowserMonitor(base::RunLoop* run_loop,
-                               const base::char16* registry_path)
+BrowserMonitor::BrowserMonitor(base::StringPiece16 registry_path,
+                               base::RunLoop* run_loop)
     : exit_code_watcher_(registry_path),
       end_session_watcher_window_(
           base::Bind(&BrowserMonitor::OnEndSessionMessage,
@@ -104,14 +103,12 @@ BrowserMonitor::BrowserMonitor(base::RunLoop* run_loop,
       background_thread_("BrowserWatcherThread"),
       browser_exited_(true, false),  // manual reset, initially non-signalled.
       run_loop_(run_loop),
-      main_thread_(base::ThreadTaskRunnerHandle::Get()) {
-}
+      main_thread_(base::ThreadTaskRunnerHandle::Get()) {}
 
 BrowserMonitor::~BrowserMonitor() {
 }
 
 bool BrowserMonitor::StartWatching(
-    const base::char16* registry_path,
     base::Process process,
     base::win::ScopedHandle on_initialized_event) {
   if (!exit_code_watcher_.Initialize(std::move(process)))
@@ -183,7 +180,6 @@ void BrowserMonitor::BrowserExited() {
 }
 
 void OnWindowEvent(
-    const base::string16& registry_path,
     base::Process process,
     const base::Callback<void(const base::Process&)>& on_hung_callback,
     browser_watcher::WindowHangMonitor::WindowEvent window_event) {
@@ -238,8 +234,8 @@ extern "C" int WatcherMain(const base::char16* registry_path,
   msg_loop.set_thread_name("WatcherMainThread");
 
   base::RunLoop run_loop;
-  BrowserMonitor monitor(&run_loop, registry_path);
-  if (!monitor.StartWatching(registry_path, process.Duplicate(),
+  BrowserMonitor monitor(registry_path, &run_loop);
+  if (!monitor.StartWatching(process.Duplicate(),
                              std::move(on_initialized_event))) {
     return 1;
   }
@@ -248,8 +244,8 @@ extern "C" int WatcherMain(const base::char16* registry_path,
     // Scoped to force |hang_monitor| destruction before Kasko is shut down.
     browser_watcher::WindowHangMonitor hang_monitor(
         base::TimeDelta::FromSeconds(60), base::TimeDelta::FromSeconds(20),
-        base::Bind(&OnWindowEvent, registry_path,
-                   base::Passed(process.Duplicate()), on_hung_callback));
+        base::Bind(&OnWindowEvent, base::Passed(process.Duplicate()),
+                   on_hung_callback));
     hang_monitor.Initialize(process.Duplicate());
 
     run_loop.Run();

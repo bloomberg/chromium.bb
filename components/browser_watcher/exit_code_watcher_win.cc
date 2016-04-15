@@ -24,9 +24,8 @@ base::string16 GetValueName(const base::Time creation_time,
 
 }  // namespace
 
-ExitCodeWatcher::ExitCodeWatcher(const base::char16* registry_path) :
-    registry_path_(registry_path), exit_code_(STILL_ACTIVE) {
-}
+ExitCodeWatcher::ExitCodeWatcher(base::StringPiece16 registry_path)
+    : registry_path_(registry_path.as_string()), exit_code_(STILL_ACTIVE) {}
 
 ExitCodeWatcher::~ExitCodeWatcher() {
 }

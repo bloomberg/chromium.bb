@@ -30,7 +30,6 @@
 #include "chrome/browser/sync/chrome_sync_client.h"
 #include "chrome/browser/ui/browser_otr_state.h"
 #include "chrome/common/channel_info.h"
-#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/crash_keys.h"
@@ -85,6 +84,7 @@
 #if defined(OS_WIN)
 #include <windows.h>
 #include "chrome/browser/metrics/google_update_metrics_provider_win.h"
+#include "chrome/common/metrics_constants_util_win.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "components/browser_watcher/watcher_metrics_provider_win.h"
 #endif
@@ -424,7 +424,7 @@ void ChromeMetricsServiceClient::Initialize() {
   metrics_service_->RegisterMetricsProvider(
       std::unique_ptr<metrics::MetricsProvider>(
           new browser_watcher::WatcherMetricsProviderWin(
-              chrome::kBrowserExitCodesRegistryPath,
+              chrome::GetBrowserExitCodesRegistryPath(),
               content::BrowserThread::GetBlockingPool())));
 #endif  // defined(OS_WIN)
 

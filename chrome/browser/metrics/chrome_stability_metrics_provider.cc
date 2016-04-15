@@ -11,7 +11,6 @@
 #include "base/metrics/sparse_histogram.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/common/chrome_constants.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
@@ -26,7 +25,7 @@
 
 #if defined(OS_WIN)
 #include <windows.h>  // Needed for STATUS_* codes
-#include "chrome/installer/util/install_util.h"
+#include "chrome/common/metrics_constants_util_win.h"
 #include "components/browser_watcher/crash_reporting_metrics_win.h"
 #endif
 
@@ -43,9 +42,7 @@ void CountBrowserCrashDumpAttempts() {
 
   browser_watcher::CrashReportingMetrics::Values metrics =
       browser_watcher::CrashReportingMetrics(
-          InstallUtil::IsChromeSxSProcess()
-              ? chrome::kBrowserCrashDumpAttemptsRegistryPathSxS
-              : chrome::kBrowserCrashDumpAttemptsRegistryPath)
+          chrome::GetBrowserCrashDumpAttemptsRegistryPath())
           .RetrieveAndResetMetrics();
 
   for (int i = 0; i < metrics.crash_dump_attempts; ++i) {

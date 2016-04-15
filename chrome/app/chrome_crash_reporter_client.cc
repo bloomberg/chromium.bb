@@ -12,7 +12,6 @@
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_result_codes.h"
@@ -26,6 +25,7 @@
 
 #include "base/file_version_info.h"
 #include "base/win/registry.h"
+#include "chrome/common/metrics_constants_util_win.h"
 #include "chrome/installer/util/google_chrome_sxs_distribution.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/util_constants.h"
@@ -194,9 +194,7 @@ void ChromeCrashReporterClient::InitBrowserCrashDumpsRegKey() {
 #if !defined(NACL_WIN64)
   if (GetCollectStatsConsent()){
     crash_reporting_metrics_.reset(new browser_watcher::CrashReportingMetrics(
-        InstallUtil::IsChromeSxSProcess()
-            ? chrome::kBrowserCrashDumpAttemptsRegistryPathSxS
-            : chrome::kBrowserCrashDumpAttemptsRegistryPath));
+        chrome::GetBrowserCrashDumpAttemptsRegistryPath()));
   }
 #endif
 }

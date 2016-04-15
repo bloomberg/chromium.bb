@@ -20,7 +20,7 @@ class WatcherMetricsProviderWin : public metrics::MetricsProvider {
 
   // Initializes the reporter. |cleanup_io_task_runner| is used to clear
   // leftover data in registry if metrics reporting is disabled.
-  WatcherMetricsProviderWin(const base::char16* registry_path,
+  WatcherMetricsProviderWin(const base::string16& registry_path,
                             base::TaskRunner* cleanup_io_task_runner);
   ~WatcherMetricsProviderWin() override;
 
@@ -33,7 +33,7 @@ class WatcherMetricsProviderWin : public metrics::MetricsProvider {
  private:
   bool recording_enabled_;
   bool cleanup_scheduled_;
-  base::string16 registry_path_;
+  const base::string16 registry_path_;
   scoped_refptr<base::TaskRunner> cleanup_io_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(WatcherMetricsProviderWin);

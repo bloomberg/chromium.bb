@@ -36,6 +36,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_result_codes.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/metrics_constants_util_win.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/install_util.h"
@@ -164,8 +165,8 @@ int MainDllLoader::Launch(HINSTANCE instance) {
         reinterpret_cast<ChromeWatcherMainFunction>(
             ::GetProcAddress(watcher_dll, kChromeWatcherDLLEntrypoint));
     return watcher_main(
-        chrome::kBrowserExitCodesRegistryPath, parent_process.Take(),
-        main_thread_id, on_initialized_event.Take(),
+        chrome::GetBrowserExitCodesRegistryPath().c_str(),
+        parent_process.Take(), main_thread_id, on_initialized_event.Take(),
         watcher_data_directory.value().c_str(), channel_name.c_str());
   }
 

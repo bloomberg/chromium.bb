@@ -57,6 +57,7 @@ shared_library("chrome_watcher") {
     "//base",
     "//base:base_static",
     "//build/config/sanitizers:deps",
+    "//chrome/common:metrics_constants_util_win",
     "//chrome/installer/util:with_no_strings",
     "//components/browser_watcher",
   ]

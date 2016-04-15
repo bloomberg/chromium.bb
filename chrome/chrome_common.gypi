@@ -657,4 +657,23 @@
       ],
     },
   ],
+  'conditions': [
+    ['OS == "win"', {
+      'targets': [
+        {
+          # GN version: //chrome/common:metrics_constants_util_win
+          'target_name': 'metrics_constants_util_win',
+          'type': 'static_library',
+          'sources': [
+            'common/metrics_constants_util_win.cc',
+            'common/metrics_constants_util_win.h',
+          ],
+          'dependencies': [
+            'installer_util',
+            '../base/base.gyp:base',
+          ],
+        },
+      ],
+    }],
+  ],
 }
