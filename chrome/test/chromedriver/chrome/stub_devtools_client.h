@@ -31,6 +31,10 @@ class StubDevToolsClient : public DevToolsClient {
   Status SendCommand(
       const std::string& method,
       const base::DictionaryValue& params) override;
+  Status SendCommandWithTimeout(
+      const std::string& method,
+      const base::DictionaryValue& params,
+      const Timeout* timeout) override;
   Status SendAsyncCommand(
       const std::string& method,
       const base::DictionaryValue& params) override;
@@ -38,9 +42,14 @@ class StubDevToolsClient : public DevToolsClient {
       const std::string& method,
       const base::DictionaryValue& params,
       std::unique_ptr<base::DictionaryValue>* result) override;
+  Status SendCommandAndGetResultWithTimeout(
+      const std::string& method,
+      const base::DictionaryValue& params,
+      const Timeout* timeout,
+      std::unique_ptr<base::DictionaryValue>* result) override;
   void AddListener(DevToolsEventListener* listener) override;
   Status HandleEventsUntil(const ConditionalFunc& conditional_func,
-                           const base::TimeDelta& timeout) override;
+                           const Timeout& timeout) override;
   Status HandleReceivedEvents() override;
 
  protected:

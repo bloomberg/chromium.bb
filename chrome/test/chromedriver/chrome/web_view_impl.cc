@@ -30,6 +30,7 @@
 #include "chrome/test/chromedriver/chrome/network_conditions_override_manager.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/chrome/ui_events.h"
+#include "chrome/test/chromedriver/net/timeout.h"
 
 namespace {
 
@@ -178,7 +179,7 @@ Status WebViewImpl::GetUrl(std::string* url) {
   return Status(kOk);
 }
 
-Status WebViewImpl::Load(const std::string& url) {
+Status WebViewImpl::Load(const std::string& url, const Timeout* timeout) {
   // Javascript URLs will cause a hang while waiting for the page to stop
   // loading, so just disallow.
   if (base::StartsWith(url, "javascript:",
@@ -186,7 +187,7 @@ Status WebViewImpl::Load(const std::string& url) {
     return Status(kUnknownError, "unsupported protocol");
   base::DictionaryValue params;
   params.SetString("url", url);
-  return client_->SendCommand("Page.navigate", params);
+  return client_->SendCommandWithTimeout("Page.navigate", params, timeout);
 }
 
 Status WebViewImpl::Reload() {
@@ -423,34 +424,34 @@ Status WebViewImpl::DeleteCookie(const std::string& name,
 }
 
 Status WebViewImpl::WaitForPendingNavigations(const std::string& frame_id,
-                                              const base::TimeDelta& timeout,
+                                              const Timeout& timeout,
                                               bool stop_load_on_timeout) {
   VLOG(0) << "Waiting for pending navigations...";
-  Status status = client_->HandleEventsUntil(
-      base::Bind(&WebViewImpl::IsNotPendingNavigation,
-                 base::Unretained(this),
-                 frame_id),
-      timeout);
+  const auto not_pending_navigation =
+      base::Bind(&WebViewImpl::IsNotPendingNavigation, base::Unretained(this),
+                 frame_id, base::Unretained(&timeout));
+  Status status = client_->HandleEventsUntil(not_pending_navigation, timeout);
   if (status.code() == kTimeout && stop_load_on_timeout) {
     VLOG(0) << "Timed out. Stopping navigation...";
     std::unique_ptr<base::Value> unused_value;
     navigation_tracker_->set_timed_out(true);
     EvaluateScript(std::string(), "window.stop();", &unused_value);
-    Status new_status = client_->HandleEventsUntil(
-        base::Bind(&WebViewImpl::IsNotPendingNavigation, base::Unretained(this),
-                   frame_id),
-        base::TimeDelta::FromSeconds(10));
+    Status new_status =
+        client_->HandleEventsUntil(not_pending_navigation, timeout);
     navigation_tracker_->set_timed_out(false);
     if (new_status.IsError())
       status = new_status;
   }
-  VLOG(0) << "Done waiting for pending navigations";
+  VLOG(0) << "Done waiting for pending navigations. Status: "
+          << status.message();
   return status;
 }
 
 Status WebViewImpl::IsPendingNavigation(const std::string& frame_id,
+                                        const Timeout* timeout,
                                         bool* is_pending) {
-  return navigation_tracker_->IsPendingNavigation(frame_id, is_pending);
+  return
+      navigation_tracker_->IsPendingNavigation(frame_id, timeout, is_pending);
 }
 
 JavaScriptDialogManager* WebViewImpl::GetJavaScriptDialogManager() {
@@ -690,10 +691,11 @@ Status WebViewImpl::CallAsyncFunctionInternal(
 }
 
 Status WebViewImpl::IsNotPendingNavigation(const std::string& frame_id,
+                                           const Timeout* timeout,
                                            bool* is_not_pending) {
   bool is_pending;
   Status status =
-      navigation_tracker_->IsPendingNavigation(frame_id, &is_pending);
+      navigation_tracker_->IsPendingNavigation(frame_id, timeout, &is_pending);
   if (status.IsError())
     return status;
   // An alert may block the pending navigation.

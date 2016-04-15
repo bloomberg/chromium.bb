@@ -13,6 +13,7 @@
 #include "base/time/time.h"
 #include "chrome/test/chromedriver/net/sync_websocket_impl.h"
 #include "chrome/test/chromedriver/net/test_http_server.h"
+#include "chrome/test/chromedriver/net/timeout.h"
 #include "chrome/test/chromedriver/net/url_request_context_getter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -34,6 +35,8 @@ class SyncWebSocketImplTest : public testing::Test {
   }
 
   void TearDown() override { server_.Stop(); }
+
+  Timeout long_timeout() const { return Timeout(long_timeout_); }
 
   base::Thread client_thread_;
   TestHttpServer server_;
@@ -64,7 +67,7 @@ TEST_F(SyncWebSocketImplTest, SendReceive) {
   std::string message;
   ASSERT_EQ(
       SyncWebSocket::kOk,
-      sock.ReceiveNextMessage(&message, long_timeout_));
+      sock.ReceiveNextMessage(&message, long_timeout()));
   ASSERT_STREQ("hi", message.c_str());
 }
 
@@ -83,13 +86,13 @@ TEST_F(SyncWebSocketImplTest, SendReceiveTimeout) {
   ASSERT_EQ(
       SyncWebSocket::kTimeout,
       sock.ReceiveNextMessage(
-          &message, base::TimeDelta()));
+          &message, Timeout(base::TimeDelta())));
 
   server_reply_allowed.Signal();
   // Receive the response to avoid possible deletion of the event while the
   // server thread has not yet returned from the call to Wait.
   EXPECT_EQ(SyncWebSocket::kOk,
-            sock.ReceiveNextMessage(&message, long_timeout_));
+            sock.ReceiveNextMessage(&message, long_timeout()));
 }
 
 TEST_F(SyncWebSocketImplTest, SendReceiveLarge) {
@@ -100,7 +103,7 @@ TEST_F(SyncWebSocketImplTest, SendReceiveLarge) {
   std::string message;
   ASSERT_EQ(
       SyncWebSocket::kOk,
-      sock.ReceiveNextMessage(&message, long_timeout_));
+      sock.ReceiveNextMessage(&message, long_timeout()));
   ASSERT_EQ(wrote_message.length(), message.length());
   ASSERT_EQ(wrote_message, message);
 }
@@ -113,16 +116,16 @@ TEST_F(SyncWebSocketImplTest, SendReceiveMany) {
   std::string message;
   ASSERT_EQ(
       SyncWebSocket::kOk,
-      sock.ReceiveNextMessage(&message, long_timeout_));
+      sock.ReceiveNextMessage(&message, long_timeout()));
   ASSERT_STREQ("1", message.c_str());
   ASSERT_TRUE(sock.Send("3"));
   ASSERT_EQ(
       SyncWebSocket::kOk,
-      sock.ReceiveNextMessage(&message, long_timeout_));
+      sock.ReceiveNextMessage(&message, long_timeout()));
   ASSERT_STREQ("2", message.c_str());
   ASSERT_EQ(
       SyncWebSocket::kOk,
-      sock.ReceiveNextMessage(&message, long_timeout_));
+      sock.ReceiveNextMessage(&message, long_timeout()));
   ASSERT_STREQ("3", message.c_str());
 }
 
@@ -134,7 +137,7 @@ TEST_F(SyncWebSocketImplTest, CloseOnReceive) {
   std::string message;
   ASSERT_EQ(
       SyncWebSocket::kDisconnected,
-      sock.ReceiveNextMessage(&message, long_timeout_));
+      sock.ReceiveNextMessage(&message, long_timeout()));
   ASSERT_STREQ("", message.c_str());
 }
 
@@ -150,9 +153,8 @@ TEST_F(SyncWebSocketImplTest, Reconnect) {
   ASSERT_TRUE(sock.Connect(server_.web_socket_url()));
   ASSERT_TRUE(sock.Send("1"));
   // Wait for SyncWebSocket to receive the response from the server.
-  base::TimeTicks deadline =
-      base::TimeTicks::Now() + base::TimeDelta::FromSeconds(20);
-  while (base::TimeTicks::Now() < deadline) {
+  Timeout response_timeout(base::TimeDelta::FromSeconds(20));
+  while (!response_timeout.IsExpired()) {
     if (sock.IsConnected() && !sock.HasNextMessage())
       base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(10));
     else
@@ -169,7 +171,7 @@ TEST_F(SyncWebSocketImplTest, Reconnect) {
   std::string message;
   ASSERT_EQ(
       SyncWebSocket::kOk,
-      sock.ReceiveNextMessage(&message, long_timeout_));
+      sock.ReceiveNextMessage(&message, long_timeout()));
   ASSERT_STREQ("3", message.c_str());
   ASSERT_FALSE(sock.HasNextMessage());
 }

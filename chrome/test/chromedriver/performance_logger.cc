@@ -17,6 +17,7 @@
 #include "chrome/test/chromedriver/chrome/devtools_client_impl.h"
 #include "chrome/test/chromedriver/chrome/log.h"
 #include "chrome/test/chromedriver/chrome/status.h"
+#include "chrome/test/chromedriver/net/timeout.h"
 #include "chrome/test/chromedriver/session.h"
 
 namespace {
@@ -268,7 +269,7 @@ Status PerformanceLogger::CollectTraceEvents() {
   // Block up to 30 seconds until Tracing.tracingComplete event is received.
   status = browser_client_->HandleEventsUntil(
       base::Bind(&PerformanceLogger::IsTraceDone, base::Unretained(this)),
-      base::TimeDelta::FromSeconds(30));
+      Timeout(base::TimeDelta::FromSeconds(30)));
   if (status.IsError())
     return status;
 

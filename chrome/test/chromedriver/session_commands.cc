@@ -458,7 +458,7 @@ Status ExecuteIsLoading(Session* session,
 
   bool is_pending;
   status = web_view->IsPendingNavigation(
-      session->GetCurrentFrameId(), &is_pending);
+      session->GetCurrentFrameId(), nullptr, &is_pending);
   if (status.IsError())
     return status;
   value->reset(new base::FundamentalValue(is_pending));

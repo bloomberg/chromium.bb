@@ -37,7 +37,7 @@ class SyncWebSocketImpl : public SyncWebSocket {
   bool Connect(const GURL& url) override;
   bool Send(const std::string& message) override;
   StatusCode ReceiveNextMessage(std::string* message,
-                                const base::TimeDelta& timeout) override;
+                                const Timeout& timeout) override;
   bool HasNextMessage() override;
 
  private:
@@ -52,7 +52,7 @@ class SyncWebSocketImpl : public SyncWebSocket {
     bool Send(const std::string& message);
     SyncWebSocket::StatusCode ReceiveNextMessage(
         std::string* message,
-        const base::TimeDelta& timeout);
+        const Timeout& timeout);
     bool HasNextMessage();
 
     // Overriden from WebSocketListener:

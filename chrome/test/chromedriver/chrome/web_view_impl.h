@@ -51,7 +51,7 @@ class WebViewImpl : public WebView {
   Status ConnectIfNecessary() override;
   Status HandleReceivedEvents() override;
   Status GetUrl(std::string* url) override;
-  Status Load(const std::string& url) override;
+  Status Load(const std::string& url, const Timeout* timeout) override;
   Status Reload() override;
   Status TraverseHistory(int delta) override;
   Status EvaluateScript(const std::string& frame,
@@ -83,9 +83,10 @@ class WebViewImpl : public WebView {
   Status GetCookies(std::unique_ptr<base::ListValue>* cookies) override;
   Status DeleteCookie(const std::string& name, const std::string& url) override;
   Status WaitForPendingNavigations(const std::string& frame_id,
-                                   const base::TimeDelta& timeout,
+                                   const Timeout& timeout,
                                    bool stop_load_on_timeout) override;
   Status IsPendingNavigation(const std::string& frame_id,
+                             const Timeout* timeout,
                              bool* is_pending) override;
   JavaScriptDialogManager* GetJavaScriptDialogManager() override;
   Status OverrideGeolocation(const Geoposition& geoposition) override;
@@ -117,6 +118,7 @@ class WebViewImpl : public WebView {
                                    const base::TimeDelta& timeout,
                                    std::unique_ptr<base::Value>* result);
   Status IsNotPendingNavigation(const std::string& frame_id,
+                                const Timeout* timeout,
                                 bool* is_not_pending);
 
   Status InitProfileInternal();

@@ -25,8 +25,9 @@ class JavaScriptDialogManager;
 struct KeyEvent;
 struct MouseEvent;
 struct NetworkConditions;
-struct TouchEvent;
 class Status;
+class Timeout;
+struct TouchEvent;
 
 class WebView {
  public:
@@ -48,7 +49,7 @@ class WebView {
   virtual Status GetUrl(std::string* url) = 0;
 
   // Load a given URL in the main frame.
-  virtual Status Load(const std::string& url) = 0;
+  virtual Status Load(const std::string& url, const Timeout* timeout) = 0;
 
   // Reload the current page.
   virtual Status Reload() = 0;
@@ -136,12 +137,13 @@ class WebView {
   // If |stop_load_on_timeout| is true, will attempt to stop the page load on
   // timeout before returning the timeout status.
   virtual Status WaitForPendingNavigations(const std::string& frame_id,
-                                           const base::TimeDelta& timeout,
+                                           const Timeout& timeout,
                                            bool stop_load_on_timeout) = 0;
 
   // Returns whether the frame is pending navigation.
-  virtual Status IsPendingNavigation(
-      const std::string& frame_id, bool* is_pending) = 0;
+  virtual Status IsPendingNavigation(const std::string& frame_id,
+                                     const Timeout* timeout,
+                                     bool* is_pending) = 0;
 
   // Returns the JavaScriptDialogManager. Never null.
   virtual JavaScriptDialogManager* GetJavaScriptDialogManager() = 0;

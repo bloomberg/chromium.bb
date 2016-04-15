@@ -17,6 +17,7 @@ class Value;
 
 struct Session;
 class Status;
+class Timeout;
 class WebView;
 
 typedef base::Callback<Status(Session* session,
@@ -27,11 +28,13 @@ typedef base::Callback<Status(Session* session,
     ElementCommand;
 
 // Execute a command on a specific element.
-Status ExecuteElementCommand(const ElementCommand& command,
-                             Session* session,
-                             WebView* web_view,
-                             const base::DictionaryValue& params,
-                             std::unique_ptr<base::Value>* value);
+Status ExecuteElementCommand(
+    const ElementCommand& command,
+    Session* session,
+    WebView* web_view,
+    const base::DictionaryValue& params,
+    std::unique_ptr<base::Value>* value,
+    Timeout* timeout);
 
 // Search for an element on the page, starting from the given element.
 Status ExecuteFindChildElement(int interval_ms,

@@ -17,6 +17,11 @@ const std::string kDummyFrameName = "chromedriver dummy frame";
 const std::string kDummyFrameUrl = "about:blank";
 const std::string kUnreachableWebDataURL = "data:text/html,chromewebdata";
 
+Status MakeNavigationCheckFailedStatus(Status command_status) {
+  return Status(command_status.code() == kTimeout ? kTimeout : kUnknownError,
+                "cannot determine loading status", command_status);
+}
+
 }  // namespace
 
 NavigationTracker::NavigationTracker(
@@ -51,6 +56,7 @@ NavigationTracker::NavigationTracker(
 NavigationTracker::~NavigationTracker() {}
 
 Status NavigationTracker::IsPendingNavigation(const std::string& frame_id,
+                                              const Timeout* timeout,
                                               bool* is_pending) {
   if (!IsExpectingFrameLoadingEvents()) {
     // Some DevTools commands (e.g. Input.dispatchMouseEvent) are handled in the
@@ -61,8 +67,8 @@ Status NavigationTracker::IsPendingNavigation(const std::string& frame_id,
     base::DictionaryValue params;
     params.SetString("expression", "1");
     std::unique_ptr<base::DictionaryValue> result;
-    Status status = client_->SendCommandAndGetResult(
-        "Runtime.evaluate", params, &result);
+    Status status = client_->SendCommandAndGetResultWithTimeout(
+        "Runtime.evaluate", params, timeout, &result);
     int value = 0;
     if (status.code() == kDisconnected) {
       // If we receive a kDisconnected status code from Runtime.evaluate, don't
@@ -80,7 +86,7 @@ Status NavigationTracker::IsPendingNavigation(const std::string& frame_id,
     } else if (status.IsError() ||
                !result->GetInteger("result.value", &value) ||
                value != 1) {
-      return Status(kUnknownError, "cannot determine loading status", status);
+      return MakeNavigationCheckFailedStatus(status);
     }
   }
 
@@ -90,11 +96,11 @@ Status NavigationTracker::IsPendingNavigation(const std::string& frame_id,
     // for the new window. In such case, the baseURL will be empty.
     base::DictionaryValue empty_params;
     std::unique_ptr<base::DictionaryValue> result;
-    Status status = client_->SendCommandAndGetResult(
-        "DOM.getDocument", empty_params, &result);
+    Status status = client_->SendCommandAndGetResultWithTimeout(
+        "DOM.getDocument", empty_params, timeout, &result);
     std::string base_url;
     if (status.IsError() || !result->GetString("root.baseURL", &base_url))
-      return Status(kUnknownError, "cannot determine loading status", status);
+      return MakeNavigationCheckFailedStatus(status);
     if (base_url.empty()) {
       *is_pending = true;
       loading_state_ = kLoading;
@@ -121,10 +127,10 @@ Status NavigationTracker::IsPendingNavigation(const std::string& frame_id,
        "}";
     base::DictionaryValue params;
     params.SetString("expression", kStartLoadingIfMainFrameNotLoading);
-    status = client_->SendCommandAndGetResult(
-        "Runtime.evaluate", params, &result);
+    status = client_->SendCommandAndGetResultWithTimeout(
+        "Runtime.evaluate", params, timeout, &result);
     if (status.IsError())
-      return Status(kUnknownError, "cannot determine loading status", status);
+      return MakeNavigationCheckFailedStatus(status);
 
     // Between the time the JavaScript is evaluated and
     // SendCommandAndGetResult returns, OnEvent may have received info about

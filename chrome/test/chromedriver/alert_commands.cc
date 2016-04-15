@@ -11,6 +11,7 @@
 #include "chrome/test/chromedriver/chrome/javascript_dialog_manager.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/chrome/web_view.h"
+#include "chrome/test/chromedriver/net/timeout.h"
 #include "chrome/test/chromedriver/session.h"
 
 Status ExecuteAlertCommand(const AlertCommand& alert_command,
@@ -31,7 +32,7 @@ Status ExecuteAlertCommand(const AlertCommand& alert_command,
     return status;
 
   status = web_view->WaitForPendingNavigations(
-      session->GetCurrentFrameId(), session->page_load_timeout, true);
+      session->GetCurrentFrameId(), Timeout(session->page_load_timeout), true);
   if (status.IsError() && status.code() != kUnexpectedAlertOpen)
     return status;
 

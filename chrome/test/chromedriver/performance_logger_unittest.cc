@@ -260,7 +260,7 @@ class FakeBrowserwideClient : public FakeDevToolsClient {
 
   // Overridden from DevToolsClient:
   Status HandleEventsUntil(const ConditionalFunc& conditional_func,
-                           const base::TimeDelta& timeout) override {
+                           const Timeout& timeout) override {
     TriggerEvent("Tracing.tracingComplete");
     events_handled_ = true;
     return Status(kOk);

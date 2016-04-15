@@ -7,9 +7,8 @@
 
 #include <string>
 
-#include "base/time/time.h"
-
 class GURL;
+class Timeout;
 
 // Proxy for using a WebSocket running on a background thread synchronously.
 class SyncWebSocket {
@@ -36,7 +35,7 @@ class SyncWebSocket {
   // Returns StatusCode::kDisconnected if the socket is closed.
   virtual StatusCode ReceiveNextMessage(
       std::string* message,
-      const base::TimeDelta& timeout) = 0;
+      const Timeout& timeout) = 0;
 
   // Returns whether there are any messages that have been received and not yet
   // handled by ReceiveNextMessage.

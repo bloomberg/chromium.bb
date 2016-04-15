@@ -36,12 +36,18 @@ class FakeDevToolsClient : public DevToolsClient {
   Status SendCommand(
       const std::string& method,
       const base::DictionaryValue& params) override {
-    return SendCommandAndGetResult(method, params, NULL);
+    return SendCommandAndGetResult(method, params, nullptr);
+  }
+  Status SendCommandWithTimeout(
+      const std::string& method,
+      const base::DictionaryValue& params,
+      const Timeout* timeout) override {
+    return SendCommandAndGetResult(method, params, nullptr);
   }
   Status SendAsyncCommand(
       const std::string& method,
       const base::DictionaryValue& params) override {
-    return SendCommandAndGetResult(method, params, NULL);
+    return SendCommandAndGetResult(method, params, nullptr);
   }
   Status SendCommandAndGetResult(
       const std::string& method,
@@ -52,9 +58,16 @@ class FakeDevToolsClient : public DevToolsClient {
     result->reset(result_.DeepCopy());
     return Status(kOk);
   }
+  Status SendCommandAndGetResultWithTimeout(
+      const std::string& method,
+      const base::DictionaryValue& params,
+      const Timeout* timeout,
+      std::unique_ptr<base::DictionaryValue>* result) override {
+    return SendCommandAndGetResult(method, params, result);
+  }
   void AddListener(DevToolsEventListener* listener) override {}
   Status HandleEventsUntil(const ConditionalFunc& conditional_func,
-                           const base::TimeDelta& timeout) override {
+                           const Timeout& timeout) override {
     return Status(kOk);
   }
   Status HandleReceivedEvents() override { return Status(kOk); }

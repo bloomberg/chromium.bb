@@ -32,7 +32,7 @@ Status StubWebView::GetUrl(std::string* url) {
   return Status(kOk);
 }
 
-Status StubWebView::Load(const std::string& url) {
+Status StubWebView::Load(const std::string& url, const Timeout* timeout) {
   return Status(kOk);
 }
 
@@ -108,12 +108,13 @@ Status StubWebView::DeleteCookie(const std::string& name,
 }
 
 Status StubWebView::WaitForPendingNavigations(const std::string& frame_id,
-                                              const base::TimeDelta& timeout,
+                                              const Timeout& timeout,
                                               bool stop_load_on_timeout) {
   return Status(kOk);
 }
 
 Status StubWebView::IsPendingNavigation(const std::string& frame_id,
+                                        const Timeout* timeout,
                                         bool* is_pending) {
   return Status(kOk);
 }

@@ -80,11 +80,13 @@ Status SendKeysToElement(
 
 }  // namespace
 
-Status ExecuteElementCommand(const ElementCommand& command,
-                             Session* session,
-                             WebView* web_view,
-                             const base::DictionaryValue& params,
-                             std::unique_ptr<base::Value>* value) {
+Status ExecuteElementCommand(
+    const ElementCommand& command,
+    Session* session,
+    WebView* web_view,
+    const base::DictionaryValue& params,
+    std::unique_ptr<base::Value>* value,
+    Timeout* timeout) {
   std::string id;
   if (params.GetString("id", &id) || params.GetString("element", &id))
     return command.Run(session, web_view, id, params, value);

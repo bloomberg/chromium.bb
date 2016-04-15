@@ -22,6 +22,7 @@ struct BrowserInfo;
 class DevToolsClient;
 class JavaScriptDialogManager;
 class Status;
+class Timeout;
 
 // Tracks the navigation state of the page.
 class NavigationTracker : public DevToolsEventListener {
@@ -45,7 +46,9 @@ class NavigationTracker : public DevToolsEventListener {
 
   // Gets whether a navigation is pending for the specified frame. |frame_id|
   // may be empty to signify the main frame.
-  Status IsPendingNavigation(const std::string& frame_id, bool* is_pending);
+  Status IsPendingNavigation(const std::string& frame_id,
+                             const Timeout* timeout,
+                             bool* is_pending);
 
   void set_timed_out(bool timed_out);
 

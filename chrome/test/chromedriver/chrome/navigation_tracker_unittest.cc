@@ -20,7 +20,8 @@ void AssertPendingState(NavigationTracker* tracker,
                         const std::string& frame_id,
                         bool expected_is_pending) {
   bool is_pending = !expected_is_pending;
-  ASSERT_EQ(kOk, tracker->IsPendingNavigation(frame_id, &is_pending).code());
+  ASSERT_EQ(
+      kOk, tracker->IsPendingNavigation(frame_id, nullptr, &is_pending).code());
   ASSERT_EQ(expected_is_pending, is_pending);
 }
 
@@ -326,7 +327,7 @@ TEST(NavigationTracker, UnknownStateFailsToDetermineState) {
   NavigationTracker tracker(&client, &browser_info, &dialog_manager);
   bool is_pending;
   ASSERT_EQ(kUnknownError,
-            tracker.IsPendingNavigation("f", &is_pending).code());
+            tracker.IsPendingNavigation("f", nullptr, &is_pending).code());
 }
 
 TEST(NavigationTracker, UnknownStatePageNotLoadAtAll) {

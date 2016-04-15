@@ -29,6 +29,7 @@
 #include "chrome/test/chromedriver/chrome/ui_events.h"
 #include "chrome/test/chromedriver/chrome/web_view.h"
 #include "chrome/test/chromedriver/element_util.h"
+#include "chrome/test/chromedriver/net/timeout.h"
 #include "chrome/test/chromedriver/session.h"
 #include "chrome/test/chromedriver/util.h"
 
@@ -202,6 +203,7 @@ Status ExecuteWindowCommand(const WindowCommand& command,
                             Session* session,
                             const base::DictionaryValue& params,
                             std::unique_ptr<base::Value>* value) {
+  Timeout timeout;
   WebView* web_view = NULL;
   Status status = session->GetTargetWindow(&web_view);
   if (status.IsError())
@@ -232,19 +234,22 @@ Status ExecuteWindowCommand(const WindowCommand& command,
     }
 
     nav_status = web_view->WaitForPendingNavigations(
-        session->GetCurrentFrameId(), session->page_load_timeout, true);
+        session->GetCurrentFrameId(),
+        Timeout(session->page_load_timeout, &timeout), true);
     if (nav_status.IsError())
       return nav_status;
 
-    status = command.Run(session, web_view, params, value);
-    if (status.code() == kNoSuchExecutionContext) {
+    status = command.Run(session, web_view, params, value, &timeout);
+    if (status.code() == kNoSuchExecutionContext || status.code() == kTimeout) {
+      // If the command timed out, let WaitForPendingNavigations cancel
+      // the navigation if there is one.
       continue;
     } else if (status.IsError()) {
       // If the command failed while a new page or frame started loading, retry
       // the command after the pending navigation has completed.
       bool is_pending = false;
       nav_status = web_view->IsPendingNavigation(session->GetCurrentFrameId(),
-                                                 &is_pending);
+                                                 &timeout, &is_pending);
       if (nav_status.IsError())
         return nav_status;
       else if (is_pending)
@@ -254,7 +259,8 @@ Status ExecuteWindowCommand(const WindowCommand& command,
   }
 
   nav_status = web_view->WaitForPendingNavigations(
-      session->GetCurrentFrameId(), session->page_load_timeout, true);
+      session->GetCurrentFrameId(),
+      Timeout(session->page_load_timeout, &timeout), true);
 
   if (status.IsOk() && nav_status.IsError() &&
       nav_status.code() != kUnexpectedAlertOpen)
@@ -267,11 +273,13 @@ Status ExecuteWindowCommand(const WindowCommand& command,
 Status ExecuteGet(Session* session,
                   WebView* web_view,
                   const base::DictionaryValue& params,
-                  std::unique_ptr<base::Value>* value) {
+                  std::unique_ptr<base::Value>* value,
+                  Timeout* timeout) {
+  timeout->SetDuration(session->page_load_timeout);
   std::string url;
   if (!params.GetString("url", &url))
     return Status(kUnknownError, "'url' must be a string");
-  Status status = web_view->Load(url);
+  Status status = web_view->Load(url, timeout);
   if (status.IsError())
     return status;
   session->SwitchToTopFrame();
@@ -281,7 +289,8 @@ Status ExecuteGet(Session* session,
 Status ExecuteExecuteScript(Session* session,
                             WebView* web_view,
                             const base::DictionaryValue& params,
-                            std::unique_ptr<base::Value>* value) {
+                            std::unique_ptr<base::Value>* value,
+                            Timeout* timeout) {
   std::string script;
   if (!params.GetString("script", &script))
     return Status(kUnknownError, "'script' must be a string");
@@ -304,7 +313,8 @@ Status ExecuteExecuteScript(Session* session,
 Status ExecuteExecuteAsyncScript(Session* session,
                                  WebView* web_view,
                                  const base::DictionaryValue& params,
-                                 std::unique_ptr<base::Value>* value) {
+                                 std::unique_ptr<base::Value>* value,
+                                 Timeout* timeout) {
   std::string script;
   if (!params.GetString("script", &script))
     return Status(kUnknownError, "'script' must be a string");
@@ -320,7 +330,8 @@ Status ExecuteExecuteAsyncScript(Session* session,
 Status ExecuteSwitchToFrame(Session* session,
                             WebView* web_view,
                             const base::DictionaryValue& params,
-                            std::unique_ptr<base::Value>* value) {
+                            std::unique_ptr<base::Value>* value,
+                            Timeout* timeout) {
   const base::Value* id;
   if (!params.Get("id", &id))
     return Status(kUnknownError, "missing 'id'");
@@ -390,7 +401,8 @@ Status ExecuteSwitchToFrame(Session* session,
 Status ExecuteSwitchToParentFrame(Session* session,
                                   WebView* web_view,
                                   const base::DictionaryValue& params,
-                                  std::unique_ptr<base::Value>* value) {
+                                  std::unique_ptr<base::Value>* value,
+                                  Timeout* timeout) {
   session->SwitchToParentFrame();
   return Status(kOk);
 }
@@ -398,7 +410,8 @@ Status ExecuteSwitchToParentFrame(Session* session,
 Status ExecuteGetTitle(Session* session,
                        WebView* web_view,
                        const base::DictionaryValue& params,
-                       std::unique_ptr<base::Value>* value) {
+                       std::unique_ptr<base::Value>* value,
+                       Timeout* timeout) {
   const char kGetTitleScript[] = "function() {  return document.title;}";
   base::ListValue args;
   return web_view->CallFunction(std::string(), kGetTitleScript, args, value);
@@ -407,7 +420,8 @@ Status ExecuteGetTitle(Session* session,
 Status ExecuteGetPageSource(Session* session,
                             WebView* web_view,
                             const base::DictionaryValue& params,
-                            std::unique_ptr<base::Value>* value) {
+                            std::unique_ptr<base::Value>* value,
+                            Timeout* timeout) {
   const char kGetPageSource[] =
       "function() {"
       "  return new XMLSerializer().serializeToString(document);"
@@ -421,7 +435,8 @@ Status ExecuteFindElement(int interval_ms,
                           Session* session,
                           WebView* web_view,
                           const base::DictionaryValue& params,
-                          std::unique_ptr<base::Value>* value) {
+                          std::unique_ptr<base::Value>* value,
+                          Timeout* timeout) {
   return FindElement(interval_ms, true, NULL, session, web_view, params, value);
 }
 
@@ -429,7 +444,8 @@ Status ExecuteFindElements(int interval_ms,
                            Session* session,
                            WebView* web_view,
                            const base::DictionaryValue& params,
-                           std::unique_ptr<base::Value>* value) {
+                           std::unique_ptr<base::Value>* value,
+                           Timeout* timeout) {
   return FindElement(
       interval_ms, false, NULL, session, web_view, params, value);
 }
@@ -437,7 +453,8 @@ Status ExecuteFindElements(int interval_ms,
 Status ExecuteGetCurrentUrl(Session* session,
                             WebView* web_view,
                             const base::DictionaryValue& params,
-                            std::unique_ptr<base::Value>* value) {
+                            std::unique_ptr<base::Value>* value,
+                            Timeout* timeout) {
   std::string url;
   Status status = GetUrl(web_view, std::string(), &url);
   if (status.IsError())
@@ -463,7 +480,8 @@ Status ExecuteGetCurrentUrl(Session* session,
 Status ExecuteGoBack(Session* session,
                      WebView* web_view,
                      const base::DictionaryValue& params,
-                     std::unique_ptr<base::Value>* value) {
+                     std::unique_ptr<base::Value>* value,
+                     Timeout* timeout) {
   Status status = web_view->TraverseHistory(-1);
   if (status.IsError())
     return status;
@@ -474,7 +492,8 @@ Status ExecuteGoBack(Session* session,
 Status ExecuteGoForward(Session* session,
                         WebView* web_view,
                         const base::DictionaryValue& params,
-                        std::unique_ptr<base::Value>* value) {
+                        std::unique_ptr<base::Value>* value,
+                        Timeout* timeout) {
   Status status = web_view->TraverseHistory(1);
   if (status.IsError())
     return status;
@@ -485,7 +504,8 @@ Status ExecuteGoForward(Session* session,
 Status ExecuteRefresh(Session* session,
                       WebView* web_view,
                       const base::DictionaryValue& params,
-                      std::unique_ptr<base::Value>* value) {
+                      std::unique_ptr<base::Value>* value,
+                      Timeout* timeout) {
   Status status = web_view->Reload();
   if (status.IsError())
     return status;
@@ -496,7 +516,8 @@ Status ExecuteRefresh(Session* session,
 Status ExecuteMouseMoveTo(Session* session,
                           WebView* web_view,
                           const base::DictionaryValue& params,
-                          std::unique_ptr<base::Value>* value) {
+                          std::unique_ptr<base::Value>* value,
+                          Timeout* timeout) {
   std::string element_id;
   bool has_element = params.GetString("element", &element_id);
   int x_offset = 0;
@@ -533,7 +554,8 @@ Status ExecuteMouseMoveTo(Session* session,
 Status ExecuteMouseClick(Session* session,
                          WebView* web_view,
                          const base::DictionaryValue& params,
-                         std::unique_ptr<base::Value>* value) {
+                         std::unique_ptr<base::Value>* value,
+                         Timeout* timeout) {
   MouseButton button;
   Status status = GetMouseButton(params, &button);
   if (status.IsError())
@@ -553,7 +575,8 @@ Status ExecuteMouseClick(Session* session,
 Status ExecuteMouseButtonDown(Session* session,
                               WebView* web_view,
                               const base::DictionaryValue& params,
-                              std::unique_ptr<base::Value>* value) {
+                              std::unique_ptr<base::Value>* value,
+                              Timeout* timeout) {
   MouseButton button;
   Status status = GetMouseButton(params, &button);
   if (status.IsError())
@@ -569,7 +592,8 @@ Status ExecuteMouseButtonDown(Session* session,
 Status ExecuteMouseButtonUp(Session* session,
                             WebView* web_view,
                             const base::DictionaryValue& params,
-                            std::unique_ptr<base::Value>* value) {
+                            std::unique_ptr<base::Value>* value,
+                            Timeout* timeout) {
   MouseButton button;
   Status status = GetMouseButton(params, &button);
   if (status.IsError())
@@ -585,7 +609,8 @@ Status ExecuteMouseButtonUp(Session* session,
 Status ExecuteMouseDoubleClick(Session* session,
                                WebView* web_view,
                                const base::DictionaryValue& params,
-                               std::unique_ptr<base::Value>* value) {
+                               std::unique_ptr<base::Value>* value,
+                               Timeout* timeout) {
   MouseButton button;
   Status status = GetMouseButton(params, &button);
   if (status.IsError())
@@ -605,28 +630,32 @@ Status ExecuteMouseDoubleClick(Session* session,
 Status ExecuteTouchDown(Session* session,
                         WebView* web_view,
                         const base::DictionaryValue& params,
-                        std::unique_ptr<base::Value>* value) {
+                        std::unique_ptr<base::Value>* value,
+                        Timeout* timeout) {
   return ExecuteTouchEvent(session, web_view, kTouchStart, params);
 }
 
 Status ExecuteTouchUp(Session* session,
                       WebView* web_view,
                       const base::DictionaryValue& params,
-                      std::unique_ptr<base::Value>* value) {
+                      std::unique_ptr<base::Value>* value,
+                      Timeout* timeout) {
   return ExecuteTouchEvent(session, web_view, kTouchEnd, params);
 }
 
 Status ExecuteTouchMove(Session* session,
                         WebView* web_view,
                         const base::DictionaryValue& params,
-                        std::unique_ptr<base::Value>* value) {
+                        std::unique_ptr<base::Value>* value,
+                        Timeout* timeout) {
   return ExecuteTouchEvent(session, web_view, kTouchMove, params);
 }
 
 Status ExecuteTouchScroll(Session* session,
                           WebView* web_view,
                           const base::DictionaryValue& params,
-                          std::unique_ptr<base::Value>* value) {
+                          std::unique_ptr<base::Value>* value,
+                          Timeout* timeout) {
   if (session->chrome->GetBrowserInfo()->build_no < 2286) {
     // TODO(samuong): remove this once we stop supporting M41.
     return Status(kUnknownCommand, "Touch scroll action requires Chrome 42+");
@@ -652,7 +681,8 @@ Status ExecuteTouchScroll(Session* session,
 Status ExecuteTouchPinch(Session* session,
                          WebView* web_view,
                          const base::DictionaryValue& params,
-                         std::unique_ptr<base::Value>* value) {
+                         std::unique_ptr<base::Value>* value,
+                         Timeout* timeout) {
   if (session->chrome->GetBrowserInfo()->build_no < 2286) {
     // TODO(samuong): remove this once we stop supporting M41.
     return Status(kUnknownCommand, "Pinch action requires Chrome 42+");
@@ -671,14 +701,16 @@ Status ExecuteTouchPinch(Session* session,
 Status ExecuteGetActiveElement(Session* session,
                                WebView* web_view,
                                const base::DictionaryValue& params,
-                               std::unique_ptr<base::Value>* value) {
+                               std::unique_ptr<base::Value>* value,
+                               Timeout* timeout) {
   return GetActiveElement(session, web_view, value);
 }
 
 Status ExecuteSendKeysToActiveElement(Session* session,
                                       WebView* web_view,
                                       const base::DictionaryValue& params,
-                                      std::unique_ptr<base::Value>* value) {
+                                      std::unique_ptr<base::Value>* value,
+                                      Timeout* timeout) {
   const base::ListValue* key_list;
   if (!params.GetList("value", &key_list))
     return Status(kUnknownError, "'value' must be a list");
@@ -689,7 +721,8 @@ Status ExecuteSendKeysToActiveElement(Session* session,
 Status ExecuteGetAppCacheStatus(Session* session,
                                 WebView* web_view,
                                 const base::DictionaryValue& params,
-                                std::unique_ptr<base::Value>* value) {
+                                std::unique_ptr<base::Value>* value,
+                                Timeout* timeout) {
   return web_view->EvaluateScript(
       session->GetCurrentFrameId(),
       "applicationCache.status",
@@ -699,7 +732,8 @@ Status ExecuteGetAppCacheStatus(Session* session,
 Status ExecuteIsBrowserOnline(Session* session,
                               WebView* web_view,
                               const base::DictionaryValue& params,
-                              std::unique_ptr<base::Value>* value) {
+                              std::unique_ptr<base::Value>* value,
+                              Timeout* timeout) {
   return web_view->EvaluateScript(
       session->GetCurrentFrameId(),
       "navigator.onLine",
@@ -710,7 +744,8 @@ Status ExecuteGetStorageItem(const char* storage,
                              Session* session,
                              WebView* web_view,
                              const base::DictionaryValue& params,
-                             std::unique_ptr<base::Value>* value) {
+                             std::unique_ptr<base::Value>* value,
+                             Timeout* timeout) {
   std::string key;
   if (!params.GetString("key", &key))
     return Status(kUnknownError, "'key' must be a string");
@@ -727,7 +762,8 @@ Status ExecuteGetStorageKeys(const char* storage,
                              Session* session,
                              WebView* web_view,
                              const base::DictionaryValue& params,
-                             std::unique_ptr<base::Value>* value) {
+                             std::unique_ptr<base::Value>* value,
+                             Timeout* timeout) {
   const char script[] =
       "var keys = [];"
       "for (var key in %s) {"
@@ -744,7 +780,8 @@ Status ExecuteSetStorageItem(const char* storage,
                              Session* session,
                              WebView* web_view,
                              const base::DictionaryValue& params,
-                             std::unique_ptr<base::Value>* value) {
+                             std::unique_ptr<base::Value>* value,
+                             Timeout* timeout) {
   std::string key;
   if (!params.GetString("key", &key))
     return Status(kUnknownError, "'key' must be a string");
@@ -765,7 +802,8 @@ Status ExecuteRemoveStorageItem(const char* storage,
                                 Session* session,
                                 WebView* web_view,
                                 const base::DictionaryValue& params,
-                                std::unique_ptr<base::Value>* value) {
+                                std::unique_ptr<base::Value>* value,
+                                Timeout* timeout) {
   std::string key;
   if (!params.GetString("key", &key))
     return Status(kUnknownError, "'key' must be a string");
@@ -782,7 +820,8 @@ Status ExecuteClearStorage(const char* storage,
                            Session* session,
                            WebView* web_view,
                            const base::DictionaryValue& params,
-                           std::unique_ptr<base::Value>* value) {
+                           std::unique_ptr<base::Value>* value,
+                           Timeout* timeout) {
   return web_view->EvaluateScript(
       session->GetCurrentFrameId(),
       base::StringPrintf("%s.clear()", storage),
@@ -793,7 +832,8 @@ Status ExecuteGetStorageSize(const char* storage,
                              Session* session,
                              WebView* web_view,
                              const base::DictionaryValue& params,
-                             std::unique_ptr<base::Value>* value) {
+                             std::unique_ptr<base::Value>* value,
+                             Timeout* timeout) {
   return web_view->EvaluateScript(
       session->GetCurrentFrameId(),
       base::StringPrintf("%s.length", storage),
@@ -803,7 +843,8 @@ Status ExecuteGetStorageSize(const char* storage,
 Status ExecuteScreenshot(Session* session,
                          WebView* web_view,
                          const base::DictionaryValue& params,
-                         std::unique_ptr<base::Value>* value) {
+                         std::unique_ptr<base::Value>* value,
+                         Timeout* timeout) {
   Status status = session->chrome->ActivateWebView(web_view->GetId());
   if (status.IsError())
     return status;
@@ -834,7 +875,8 @@ Status ExecuteScreenshot(Session* session,
 Status ExecuteGetCookies(Session* session,
                          WebView* web_view,
                          const base::DictionaryValue& params,
-                         std::unique_ptr<base::Value>* value) {
+                         std::unique_ptr<base::Value>* value,
+                         Timeout* timeout) {
   std::list<Cookie> cookies;
   Status status = GetVisibleCookies(web_view, &cookies);
   if (status.IsError())
@@ -851,7 +893,8 @@ Status ExecuteGetCookies(Session* session,
 Status ExecuteAddCookie(Session* session,
                         WebView* web_view,
                         const base::DictionaryValue& params,
-                        std::unique_ptr<base::Value>* value) {
+                        std::unique_ptr<base::Value>* value,
+                        Timeout* timeout) {
   const base::DictionaryValue* cookie;
   if (!params.GetDictionary("cookie", &cookie))
     return Status(kUnknownError, "missing 'cookie'");
@@ -865,7 +908,8 @@ Status ExecuteAddCookie(Session* session,
 Status ExecuteDeleteCookie(Session* session,
                            WebView* web_view,
                            const base::DictionaryValue& params,
-                           std::unique_ptr<base::Value>* value) {
+                           std::unique_ptr<base::Value>* value,
+                           Timeout* timeout) {
   std::string name;
   if (!params.GetString("name", &name))
     return Status(kUnknownError, "missing 'name'");
@@ -881,7 +925,8 @@ Status ExecuteDeleteCookie(Session* session,
 Status ExecuteDeleteAllCookies(Session* session,
                                WebView* web_view,
                                const base::DictionaryValue& params,
-                               std::unique_ptr<base::Value>* value) {
+                               std::unique_ptr<base::Value>* value,
+                               Timeout* timeout) {
   std::list<Cookie> cookies;
   Status status = GetVisibleCookies(web_view, &cookies);
   if (status.IsError())
@@ -908,7 +953,8 @@ Status ExecuteDeleteAllCookies(Session* session,
 Status ExecuteSetLocation(Session* session,
                           WebView* web_view,
                           const base::DictionaryValue& params,
-                          std::unique_ptr<base::Value>* value) {
+                          std::unique_ptr<base::Value>* value,
+                          Timeout* timeout) {
   const base::DictionaryValue* location = NULL;
   Geoposition geoposition;
   if (!params.GetDictionary("location", &location) ||
@@ -933,7 +979,8 @@ Status ExecuteSetLocation(Session* session,
 Status ExecuteSetNetworkConditions(Session* session,
                                    WebView* web_view,
                                    const base::DictionaryValue& params,
-                                   std::unique_ptr<base::Value>* value) {
+                                   std::unique_ptr<base::Value>* value,
+                                   Timeout* timeout) {
   std::string network_name;
   const base::DictionaryValue* conditions = NULL;
   std::unique_ptr<NetworkConditions> network_conditions(
@@ -993,7 +1040,8 @@ Status ExecuteSetNetworkConditions(Session* session,
 Status ExecuteDeleteNetworkConditions(Session* session,
                                       WebView* web_view,
                                       const base::DictionaryValue& params,
-                                      std::unique_ptr<base::Value>* value) {
+                                      std::unique_ptr<base::Value>* value,
+                                      Timeout* timeout) {
   // Chrome does not have any command to stop overriding network conditions, so
   // we just override the network conditions with the "No throttling" preset.
   NetworkConditions network_conditions;
@@ -1015,6 +1063,7 @@ Status ExecuteDeleteNetworkConditions(Session* session,
 Status ExecuteTakeHeapSnapshot(Session* session,
                                WebView* web_view,
                                const base::DictionaryValue& params,
-                               std::unique_ptr<base::Value>* value) {
+                               std::unique_ptr<base::Value>* value,
+                               Timeout* timeout) {
   return web_view->TakeHeapSnapshot(value);
 }

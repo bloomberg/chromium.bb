@@ -5,6 +5,7 @@
 import BaseHTTPServer
 import os
 import threading
+import sys
 
 
 class Responder(object):
@@ -80,6 +81,18 @@ class _BaseServer(BaseHTTPServer.HTTPServer):
         """Overriddes base class method to disable logging."""
         pass
 
+      def handle(self):
+        try:
+          BaseHTTPServer.BaseHTTPRequestHandler.handle(self)
+        except:
+          pass # Ignore socket errors.
+
+      def finish(self):
+        try:
+          BaseHTTPServer.BaseHTTPRequestHandler.finish(self)
+        except:
+          pass # Ignore socket errors.
+
     BaseHTTPServer.HTTPServer.__init__(self, ('127.0.0.1', 0), _Handler)
 
     if server_cert_and_key_path is not None:
@@ -94,9 +107,9 @@ class _BaseServer(BaseHTTPServer.HTTPServer):
     """Overridden from SocketServer."""
     raise RuntimeError('Timed out waiting for http request')
 
-  def GetUrl(self):
+  def GetUrl(self, host=None):
     """Returns the base URL of the server."""
-    postfix = '://127.0.0.1:%s' % self.server_port
+    postfix = '://%s:%s' % (host or '127.0.0.1', self.server_port)
     if self._is_https_enabled:
       return 'https' + postfix
     return 'http' + postfix
@@ -174,9 +187,9 @@ class WebServer(object):
       self._path_maps_lock.release()
 
 
-  def GetUrl(self):
+  def GetUrl(self, host=None):
     """Returns the base URL of the server."""
-    return self._server.GetUrl()
+    return self._server.GetUrl(host)
 
   def Shutdown(self):
     """Shuts down the server synchronously."""
@@ -223,5 +236,5 @@ class SyncWebServer(object):
       responder.SendResponse({}, content)
     self.Respond(SendContent)
 
-  def GetUrl(self):
-    return self._server.GetUrl()
+  def GetUrl(self, host=None):
+    return self._server.GetUrl(host)

@@ -17,6 +17,7 @@
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/chrome/util.h"
 #include "chrome/test/chromedriver/net/sync_websocket.h"
+#include "chrome/test/chromedriver/net/timeout.h"
 #include "chrome/test/chromedriver/net/url_request_context_getter.h"
 
 namespace {
@@ -171,24 +172,39 @@ Status DevToolsClientImpl::ConnectIfNecessary() {
 Status DevToolsClientImpl::SendCommand(
     const std::string& method,
     const base::DictionaryValue& params) {
+  return SendCommandWithTimeout(method, params, nullptr);
+}
+
+Status DevToolsClientImpl::SendCommandWithTimeout(
+    const std::string& method,
+    const base::DictionaryValue& params,
+    const Timeout* timeout) {
   std::unique_ptr<base::DictionaryValue> result;
-  return SendCommandInternal(method, params, &result, true);
+  return SendCommandInternal(method, params, &result, true, timeout);
 }
 
 Status DevToolsClientImpl::SendAsyncCommand(
     const std::string& method,
     const base::DictionaryValue& params) {
   std::unique_ptr<base::DictionaryValue> result;
-  return SendCommandInternal(method, params, &result, false);
+  return SendCommandInternal(method, params, &result, false, nullptr);
 }
 
 Status DevToolsClientImpl::SendCommandAndGetResult(
     const std::string& method,
     const base::DictionaryValue& params,
     std::unique_ptr<base::DictionaryValue>* result) {
+  return SendCommandAndGetResultWithTimeout(method, params, nullptr, result);
+}
+
+Status DevToolsClientImpl::SendCommandAndGetResultWithTimeout(
+    const std::string& method,
+    const base::DictionaryValue& params,
+    const Timeout* timeout,
+    std::unique_ptr<base::DictionaryValue>* result) {
   std::unique_ptr<base::DictionaryValue> intermediate_result;
   Status status = SendCommandInternal(
-      method, params, &intermediate_result, true);
+      method, params, &intermediate_result, true, timeout);
   if (status.IsError())
     return status;
   if (!intermediate_result)
@@ -203,16 +219,15 @@ void DevToolsClientImpl::AddListener(DevToolsEventListener* listener) {
 }
 
 Status DevToolsClientImpl::HandleReceivedEvents() {
-  return HandleEventsUntil(base::Bind(&ConditionIsMet), base::TimeDelta());
+  return HandleEventsUntil(base::Bind(&ConditionIsMet),
+                           Timeout(base::TimeDelta()));
 }
 
 Status DevToolsClientImpl::HandleEventsUntil(
-    const ConditionalFunc& conditional_func, const base::TimeDelta& timeout) {
+    const ConditionalFunc& conditional_func, const Timeout& timeout) {
   if (!socket_->IsConnected())
     return Status(kDisconnected, "not connected to DevTools");
 
-  base::TimeTicks deadline = base::TimeTicks::Now() + timeout;
-  base::TimeDelta next_message_timeout = timeout;
   while (true) {
     if (!socket_->HasNextMessage()) {
       bool is_condition_met = false;
@@ -223,10 +238,9 @@ Status DevToolsClientImpl::HandleEventsUntil(
         return Status(kOk);
     }
 
-    Status status = ProcessNextMessage(-1, next_message_timeout);
+    Status status = ProcessNextMessage(-1, timeout);
     if (status.IsError())
       return status;
-    next_message_timeout = deadline - base::TimeTicks::Now();
   }
 }
 
@@ -239,7 +253,8 @@ Status DevToolsClientImpl::SendCommandInternal(
     const std::string& method,
     const base::DictionaryValue& params,
     std::unique_ptr<base::DictionaryValue>* result,
-    bool wait_for_response) {
+    bool wait_for_response,
+    const Timeout* timeout) {
   if (!socket_->IsConnected())
     return Status(kDisconnected, "not connected to DevTools");
 
@@ -262,7 +277,7 @@ Status DevToolsClientImpl::SendCommandInternal(
     response_info_map_[command_id] = response_info;
     while (response_info->state == kWaiting) {
       Status status = ProcessNextMessage(
-          command_id, base::TimeDelta::FromMinutes(10));
+          command_id, Timeout(base::TimeDelta::FromMinutes(10), timeout));
       if (status.IsError()) {
         if (response_info->state == kReceived)
           response_info_map_.erase(command_id);
@@ -284,7 +299,7 @@ Status DevToolsClientImpl::SendCommandInternal(
 
 Status DevToolsClientImpl::ProcessNextMessage(
     int expected_id,
-    const base::TimeDelta& timeout) {
+    const Timeout& timeout) {
   ScopedIncrementer increment_stack_count(&stack_count_);
 
   Status status = EnsureListenersNotifiedOfConnect();
@@ -321,7 +336,7 @@ Status DevToolsClientImpl::ProcessNextMessage(
     case SyncWebSocket::kTimeout: {
       std::string err =
           "Timed out receiving message from renderer: " +
-          base::StringPrintf("%.3lf", timeout.InSecondsF());
+          base::StringPrintf("%.3lf", timeout.GetDuration().InSecondsF());
       LOG(ERROR) << err;
       return Status(kTimeout, err);
     }

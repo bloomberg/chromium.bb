@@ -21,6 +21,7 @@
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/chrome/web_view_impl.h"
 #include "chrome/test/chromedriver/net/port_server.h"
+#include "chrome/test/chromedriver/net/timeout.h"
 
 #if defined(OS_POSIX)
 #include <errno.h>
@@ -102,12 +103,12 @@ ChromeDesktopImpl::~ChromeDesktopImpl() {
 
 Status ChromeDesktopImpl::WaitForPageToLoad(
     const std::string& url,
-    const base::TimeDelta& timeout,
+    const base::TimeDelta& timeout_raw,
     std::unique_ptr<WebView>* web_view) {
-  base::TimeTicks deadline = base::TimeTicks::Now() + timeout;
+  Timeout timeout(timeout_raw);
   std::string id;
   WebViewInfo::Type type = WebViewInfo::Type::kPage;
-  while (base::TimeTicks::Now() < deadline) {
+  while (timeout.GetRemainingTime() > base::TimeDelta()) {
     WebViewsInfo views_info;
     Status status = devtools_http_client_->GetWebViewsInfo(&views_info);
     if (status.IsError())
@@ -145,7 +146,7 @@ Status ChromeDesktopImpl::WaitForPageToLoad(
     return status;
 
   status = web_view_tmp->WaitForPendingNavigations(
-      std::string(), deadline - base::TimeTicks::Now(), false);
+      std::string(), timeout, false);
   if (status.IsOk())
     *web_view = std::move(web_view_tmp);
   return status;

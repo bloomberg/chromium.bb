@@ -87,6 +87,10 @@ class DevToolsClientImpl : public DevToolsClient {
   Status SendCommand(
       const std::string& method,
       const base::DictionaryValue& params) override;
+  Status SendCommandWithTimeout(
+      const std::string& method,
+      const base::DictionaryValue& params,
+      const Timeout* timeout) override;
   Status SendAsyncCommand(
       const std::string& method,
       const base::DictionaryValue& params) override;
@@ -94,9 +98,14 @@ class DevToolsClientImpl : public DevToolsClient {
       const std::string& method,
       const base::DictionaryValue& params,
       std::unique_ptr<base::DictionaryValue>* result) override;
+  Status SendCommandAndGetResultWithTimeout(
+      const std::string& method,
+      const base::DictionaryValue& params,
+      const Timeout* timeout,
+      std::unique_ptr<base::DictionaryValue>* result) override;
   void AddListener(DevToolsEventListener* listener) override;
   Status HandleEventsUntil(const ConditionalFunc& conditional_func,
-                           const base::TimeDelta& timeout) override;
+                           const Timeout& timeout) override;
   Status HandleReceivedEvents() override;
 
  private:
@@ -121,11 +130,13 @@ class DevToolsClientImpl : public DevToolsClient {
   };
   typedef std::map<int, linked_ptr<ResponseInfo> > ResponseInfoMap;
 
-  Status SendCommandInternal(const std::string& method,
-                             const base::DictionaryValue& params,
-                             std::unique_ptr<base::DictionaryValue>* result,
-                             bool wait_for_response);
-  Status ProcessNextMessage(int expected_id, const base::TimeDelta& timeout);
+  Status SendCommandInternal(
+      const std::string& method,
+      const base::DictionaryValue& params,
+      std::unique_ptr<base::DictionaryValue>* result,
+      bool wait_for_response,
+      const Timeout* timeout);
+  Status ProcessNextMessage(int expected_id, const Timeout& timeout);
   Status ProcessEvent(const internal::InspectorEvent& event);
   Status ProcessCommandResponse(
       const internal::InspectorCommandResponse& response);

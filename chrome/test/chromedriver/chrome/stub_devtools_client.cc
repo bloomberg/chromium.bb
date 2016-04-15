@@ -32,6 +32,13 @@ Status StubDevToolsClient::SendCommand(
   return SendCommandAndGetResult(method, params, &result);
 }
 
+Status StubDevToolsClient::SendCommandWithTimeout(
+    const std::string& method,
+    const base::DictionaryValue& params,
+    const Timeout* timeout) {
+  return SendCommand(method, params);
+}
+
 Status StubDevToolsClient::SendAsyncCommand(
     const std::string& method,
     const base::DictionaryValue& params) {
@@ -46,13 +53,21 @@ Status StubDevToolsClient::SendCommandAndGetResult(
   return Status(kOk);
 }
 
+Status StubDevToolsClient::SendCommandAndGetResultWithTimeout(
+    const std::string& method,
+    const base::DictionaryValue& params,
+    const Timeout* timeout,
+    std::unique_ptr<base::DictionaryValue>* result) {
+  return SendCommandAndGetResult(method, params, result);
+}
+
 void StubDevToolsClient::AddListener(DevToolsEventListener* listener) {
   listeners_.push_back(listener);
 }
 
 Status StubDevToolsClient::HandleEventsUntil(
     const ConditionalFunc& conditional_func,
-    const base::TimeDelta& timeout) {
+    const Timeout& timeout) {
   return Status(kOk);
 }
 

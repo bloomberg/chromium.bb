@@ -448,7 +448,8 @@ TEST(CommandsTest, SuccessfulFindElement) {
   params.SetString("value", "a");
   std::unique_ptr<base::Value> result;
   ASSERT_EQ(kOk,
-            ExecuteFindElement(1, &session, &web_view, params, &result).code());
+            ExecuteFindElement(1, &session, &web_view, params, &result,
+                               nullptr).code());
   base::DictionaryValue param;
   param.SetString("id", "a");
   base::ListValue expected_args;
@@ -464,7 +465,8 @@ TEST(CommandsTest, FailedFindElement) {
   params.SetString("value", "a");
   std::unique_ptr<base::Value> result;
   ASSERT_EQ(kNoSuchElement,
-            ExecuteFindElement(1, &session, &web_view, params, &result).code());
+            ExecuteFindElement(1, &session, &web_view, params, &result,
+                               nullptr).code());
 }
 
 TEST(CommandsTest, SuccessfulFindElements) {
@@ -476,9 +478,9 @@ TEST(CommandsTest, SuccessfulFindElements) {
   params.SetString("using", "name");
   params.SetString("value", "b");
   std::unique_ptr<base::Value> result;
-  ASSERT_EQ(
-      kOk,
-      ExecuteFindElements(1, &session, &web_view, params, &result).code());
+  ASSERT_EQ(kOk,
+            ExecuteFindElements(1, &session, &web_view, params, &result,
+                                nullptr).code());
   base::DictionaryValue param;
   param.SetString("name", "b");
   base::ListValue expected_args;
@@ -493,9 +495,9 @@ TEST(CommandsTest, FailedFindElements) {
   params.SetString("using", "id");
   params.SetString("value", "a");
   std::unique_ptr<base::Value> result;
-  ASSERT_EQ(
-      kOk,
-      ExecuteFindElements(1, &session, &web_view, params, &result).code());
+  ASSERT_EQ(kOk,
+            ExecuteFindElements(1, &session, &web_view, params, &result,
+                                nullptr).code());
   base::ListValue* list;
   ASSERT_TRUE(result->GetAsList(&list));
   ASSERT_EQ(0U, list->GetSize());
@@ -590,7 +592,8 @@ TEST(CommandsTest, TimeoutInFindElement) {
   params.SetString("id", "1");
   std::unique_ptr<base::Value> result;
   ASSERT_EQ(kNoSuchElement,
-            ExecuteFindElement(1, &session, &web_view, params, &result).code());
+            ExecuteFindElement(1, &session, &web_view, params, &result,
+                               nullptr).code());
 }
 
 namespace {
@@ -623,9 +626,11 @@ TEST(CommandsTest, ErrorFindElement) {
   params.SetString("value", "a");
   std::unique_ptr<base::Value> value;
   ASSERT_EQ(kUnknownError,
-            ExecuteFindElement(1, &session, &web_view, params, &value).code());
+            ExecuteFindElement(1, &session, &web_view, params, &value,
+                               nullptr).code());
   ASSERT_EQ(kUnknownError,
-            ExecuteFindElements(1, &session, &web_view, params, &value).code());
+            ExecuteFindElements(1, &session, &web_view, params, &value,
+                                nullptr).code());
 }
 
 TEST(CommandsTest, ErrorFindChildElement) {
