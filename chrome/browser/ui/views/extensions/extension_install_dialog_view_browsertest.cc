@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/extension_icon_manager.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_install_prompt_test_helper.h"
+#include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -164,7 +165,9 @@ class ExtensionInstallDialogViewTest
     views::DialogDelegateView* delegate_view = dialog.get();
 
     views::Widget* modal_dialog = views::DialogDelegate::CreateDialogWidget(
-        dialog.release(), nullptr, browser()->window()->GetNativeWindow());
+        dialog.release(), nullptr,
+        platform_util::GetViewForWindow(
+            browser()->window()->GetNativeWindow()));
     modal_dialog->Show();
 
     return delegate_view;

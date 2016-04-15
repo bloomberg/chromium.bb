@@ -2634,6 +2634,9 @@
         ['toolkit_views==1 and OS!="mac" and chromeos == 0', {
           'sources': [ '<@(chrome_browser_tests_views_non_cros_or_mac_sources)' ],
         }],
+        ['OS=="linux" or OS=="win"', {
+          'sources': [ '<@(chrome_browser_tests_non_mac_desktop_sources)' ],
+        }],
         ['OS=="ios"', {
           'sources!': [
             # TODO(dbeam): log webui URLs on iOS and test them.
