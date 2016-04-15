@@ -56,6 +56,8 @@ class FakeMBW(mb.MetaBuildWrapper):
     return self.files[path]
 
   def WriteFile(self, path, contents, force_verbose=False):
+    if self.args.dryrun or self.args.verbose or force_verbose:
+      self.Print('\nWriting """\\\n%s""" to %s.\n' % (contents, path))
     self.files[path] = contents
 
   def Call(self, cmd, env=None, buffer_output=True):
@@ -305,23 +307,26 @@ class UnitTest(unittest.TestCase):
   def test_gn_gen(self):
     mbw = self.fake_mbw()
     self.check(['gen', '-c', 'gn_debug_goma', '//out/Default', '-g', '/goma'],
-               mbw=mbw, ret=0,
-               out=('/fake_src/buildtools/linux64/gn gen //out/Default '
-                    '--check\n'))
+               mbw=mbw, ret=0)
     self.assertMultiLineEqual(mbw.files['/fake_src/out/Default/args.gn'],
                               ('goma_dir = "/goma"\n'
                                'is_debug = true\n'
                                'use_goma = true\n'))
 
+    # Make sure we log both what is written to args.gn and the command line.
+    self.assertIn('Writing """', mbw.out)
+    self.assertIn('/fake_src/buildtools/linux64/gn gen //out/Default --check',
+                  mbw.out)
+
     mbw = self.fake_mbw(win32=True)
     self.check(['gen', '-c', 'gn_debug_goma', '-g', 'c:\\goma', '//out/Debug'],
-               mbw=mbw, ret=0,
-               out=('c:\\fake_src\\buildtools\\win\\gn.exe gen //out/Debug '
-                    '--check\n'))
+               mbw=mbw, ret=0)
     self.assertMultiLineEqual(mbw.files['c:\\fake_src\\out\\Debug\\args.gn'],
                               ('goma_dir = "c:\\\\goma"\n'
                                'is_debug = true\n'
                                'use_goma = true\n'))
+    self.assertIn('c:\\fake_src\\buildtools\\win\\gn.exe gen //out/Debug '
+                  '--check\n', mbw.out)
 
     mbw = self.fake_mbw()
     self.check(['gen', '-m', 'fake_master', '-b', 'fake_gn_args_bot',

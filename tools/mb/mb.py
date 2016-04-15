@@ -722,7 +722,7 @@ class MetaBuildWrapper(object):
     self.MaybeMakeDirectory(self.ToAbsPath(build_dir))
 
     gn_args_path = self.ToAbsPath(build_dir, 'args.gn')
-    self.WriteFile(gn_args_path, gn_args)
+    self.WriteFile(gn_args_path, gn_args, force_verbose=True)
 
     swarming_targets = []
     if getattr(self.args, 'swarming_targets_file', None):
