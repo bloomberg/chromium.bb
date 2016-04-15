@@ -39,6 +39,10 @@ struct IndexedDBHostMsg_FactoryDeleteDatabase_Params;
 struct IndexedDBHostMsg_FactoryGetDatabaseNames_Params;
 struct IndexedDBHostMsg_FactoryOpen_Params;
 
+namespace url {
+class Origin;
+}
+
 namespace content {
 class IndexedDBBlobInfo;
 class IndexedDBConnection;
@@ -86,10 +90,10 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
   int32_t Add(IndexedDBCursor* cursor);
   int32_t Add(IndexedDBConnection* connection,
               int32_t ipc_thread_id,
-              const GURL& origin_url);
+              const url::Origin& origin);
 
   void RegisterTransactionId(int64_t host_transaction_id,
-                             const GURL& origin_url);
+                             const url::Origin& origin);
 
   IndexedDBCursor* GetCursorFromId(int32_t ipc_cursor_id);
 
@@ -116,8 +120,8 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
       BlobDataHandleMap;
   typedef std::map<int64_t, int64_t> TransactionIDToDatabaseIDMap;
   typedef std::map<int64_t, uint64_t> TransactionIDToSizeMap;
-  typedef std::map<int64_t, GURL> TransactionIDToURLMap;
-  typedef std::map<int32_t, GURL> WebIDBObjectIDToURLMap;
+  typedef std::map<int64_t, url::Origin> TransactionIDToOriginMap;
+  typedef std::map<int32_t, url::Origin> WebIDBObjectIDToOriginMap;
 
   // IDMap for RefCounted types
   template <typename RefCountedType>
@@ -209,9 +213,9 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
 
     IndexedDBDispatcherHost* parent_;
     IDMap<IndexedDBConnection, IDMapOwnPointer> map_;
-    WebIDBObjectIDToURLMap database_url_map_;
+    WebIDBObjectIDToOriginMap database_origin_map_;
     TransactionIDToSizeMap transaction_size_map_;
-    TransactionIDToURLMap transaction_url_map_;
+    TransactionIDToOriginMap transaction_origin_map_;
     TransactionIDToDatabaseIDMap transaction_database_map_;
 
     // Weak pointers are used when an asynchronous quota request is made, in

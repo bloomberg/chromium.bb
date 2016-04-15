@@ -32,6 +32,7 @@
 #include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBTypes.h"
 
 using base::ASCIIToUTF16;
+using url::Origin;
 
 namespace content {
 
@@ -67,7 +68,7 @@ class TestableIndexedDBBackingStore : public IndexedDBBackingStore {
  public:
   static scoped_refptr<TestableIndexedDBBackingStore> Open(
       IndexedDBFactory* indexed_db_factory,
-      const GURL& origin_url,
+      const Origin& origin,
       const base::FilePath& path_base,
       net::URLRequestContext* request_context,
       LevelDBFactory* leveldb_factory,
@@ -94,9 +95,9 @@ class TestableIndexedDBBackingStore : public IndexedDBBackingStore {
       return scoped_refptr<TestableIndexedDBBackingStore>();
 
     scoped_refptr<TestableIndexedDBBackingStore> backing_store(
-        new TestableIndexedDBBackingStore(
-            indexed_db_factory, origin_url, blob_path, request_context,
-            std::move(db), std::move(comparator), task_runner));
+        new TestableIndexedDBBackingStore(indexed_db_factory, origin, blob_path,
+                                          request_context, std::move(db),
+                                          std::move(comparator), task_runner));
 
     *status = backing_store->SetUpMetadata();
     if (!status->ok())
@@ -153,14 +154,14 @@ class TestableIndexedDBBackingStore : public IndexedDBBackingStore {
 
  private:
   TestableIndexedDBBackingStore(IndexedDBFactory* indexed_db_factory,
-                                const GURL& origin_url,
+                                const Origin& origin,
                                 const base::FilePath& blob_path,
                                 net::URLRequestContext* request_context,
                                 std::unique_ptr<LevelDBDatabase> db,
                                 std::unique_ptr<LevelDBComparator> comparator,
                                 base::SequencedTaskRunner* task_runner)
       : IndexedDBBackingStore(indexed_db_factory,
-                              origin_url,
+                              origin,
                               blob_path,
                               request_context,
                               std::move(db),
@@ -184,7 +185,7 @@ class TestIDBFactory : public IndexedDBFactoryImpl {
       : IndexedDBFactoryImpl(idb_context) {}
 
   scoped_refptr<TestableIndexedDBBackingStore> OpenBackingStoreForTest(
-      const GURL& origin,
+      const Origin& origin,
       net::URLRequestContext* url_request_context) {
     blink::WebIDBDataLoss data_loss;
     std::string data_loss_reason;
@@ -207,7 +208,7 @@ class TestIDBFactory : public IndexedDBFactoryImpl {
   ~TestIDBFactory() override {}
 
   scoped_refptr<IndexedDBBackingStore> OpenBackingStoreHelper(
-      const GURL& origin_url,
+      const Origin& origin,
       const base::FilePath& data_directory,
       net::URLRequestContext* request_context,
       blink::WebIDBDataLoss* data_loss,
@@ -216,13 +217,9 @@ class TestIDBFactory : public IndexedDBFactoryImpl {
       bool first_time,
       leveldb::Status* status) override {
     DefaultLevelDBFactory leveldb_factory;
-    return TestableIndexedDBBackingStore::Open(this,
-                                               origin_url,
-                                               data_directory,
-                                               request_context,
-                                               &leveldb_factory,
-                                               context()->TaskRunner(),
-                                               status);
+    return TestableIndexedDBBackingStore::Open(
+        this, origin, data_directory, request_context, &leveldb_factory,
+        context()->TaskRunner(), status);
   }
 
  private:
@@ -233,7 +230,7 @@ class IndexedDBBackingStoreTest : public testing::Test {
  public:
   IndexedDBBackingStoreTest() {}
   void SetUp() override {
-    const GURL origin("http://localhost:81");
+    const Origin origin(GURL("http://localhost:81"));
     task_runner_ = new base::TestSimpleTaskRunner();
     special_storage_policy_ = new MockSpecialStoragePolicy();
     quota_manager_proxy_ = new MockQuotaManagerProxy(nullptr, nullptr);

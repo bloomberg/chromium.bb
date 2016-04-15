@@ -34,7 +34,7 @@ void IndexedDBActiveBlobRegistry::AddBlobRef(int64_t database_id,
     single_db_map[blob_key] = false;
     if (need_ref) {
       backing_store_->factory()->ReportOutstandingBlobs(
-          backing_store_->origin_url(), true);
+          backing_store_->origin(), true);
     }
   } else {
     DCHECK(!need_ref);
@@ -77,8 +77,8 @@ void IndexedDBActiveBlobRegistry::ReleaseBlobRef(int64_t database_id,
   if (delete_in_backend)
     backing_store_->ReportBlobUnused(database_id, blob_key);
   if (use_tracker_.empty()) {
-    backing_store_->factory()->ReportOutstandingBlobs(
-        backing_store_->origin_url(), false);
+    backing_store_->factory()->ReportOutstandingBlobs(backing_store_->origin(),
+                                                      false);
   }
 }
 

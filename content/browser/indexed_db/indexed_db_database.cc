@@ -38,6 +38,7 @@
 #include "storage/browser/blob/blob_data_handle.h"
 #include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBDatabaseException.h"
 #include "third_party/leveldatabase/env_chromium.h"
+#include "url/origin.h"
 
 using base::ASCIIToUTF16;
 using base::Int64ToString16;
@@ -347,8 +348,7 @@ void IndexedDBDatabase::CreateObjectStore(int64_t transaction_id,
             object_store_metadata.name + ASCIIToUTF16("'."));
     transaction->Abort(error);
     if (s.IsCorruption())
-      factory_->HandleBackingStoreCorruption(backing_store_->origin_url(),
-                                             error);
+      factory_->HandleBackingStoreCorruption(backing_store_->origin(), error);
     return;
   }
 
@@ -478,8 +478,7 @@ void IndexedDBDatabase::DeleteIndexOperation(
                                  error_string);
     transaction->Abort(error);
     if (s.IsCorruption())
-      factory_->HandleBackingStoreCorruption(backing_store_->origin_url(),
-                                             error);
+      factory_->HandleBackingStoreCorruption(backing_store_->origin(), error);
     return;
   }
 
@@ -637,8 +636,7 @@ void IndexedDBDatabase::GetOperation(
       IndexedDBDatabaseError error(blink::WebIDBDatabaseExceptionUnknownError,
                                    "Internal error deleting data in range");
       if (s.IsCorruption()) {
-        factory_->HandleBackingStoreCorruption(backing_store_->origin_url(),
-                                               error);
+        factory_->HandleBackingStoreCorruption(backing_store_->origin(), error);
       }
     }
 
@@ -665,8 +663,7 @@ void IndexedDBDatabase::GetOperation(
       callbacks->OnError(error);
 
       if (s.IsCorruption())
-        factory_->HandleBackingStoreCorruption(backing_store_->origin_url(),
-                                               error);
+        factory_->HandleBackingStoreCorruption(backing_store_->origin(), error);
       return;
     }
 
@@ -698,8 +695,7 @@ void IndexedDBDatabase::GetOperation(
                                  "Internal error in GetPrimaryKeyViaIndex.");
     callbacks->OnError(error);
     if (s.IsCorruption())
-      factory_->HandleBackingStoreCorruption(backing_store_->origin_url(),
-                                             error);
+      factory_->HandleBackingStoreCorruption(backing_store_->origin(), error);
     return;
   }
   if (!primary_key) {
@@ -724,8 +720,7 @@ void IndexedDBDatabase::GetOperation(
                                  "Internal error in GetRecord.");
     callbacks->OnError(error);
     if (s.IsCorruption())
-      factory_->HandleBackingStoreCorruption(backing_store_->origin_url(),
-                                             error);
+      factory_->HandleBackingStoreCorruption(backing_store_->origin(), error);
     return;
   }
 
@@ -796,8 +791,7 @@ void IndexedDBDatabase::GetAllOperation(
                                  "Internal error in GetAllOperation");
     callbacks->OnError(error);
     if (s.IsCorruption()) {
-      factory_->HandleBackingStoreCorruption(backing_store_->origin_url(),
-                                             error);
+      factory_->HandleBackingStoreCorruption(backing_store_->origin(), error);
     }
     return;
   }
@@ -830,8 +824,7 @@ void IndexedDBDatabase::GetAllOperation(
                                    "Internal error in GetAllOperation.");
       callbacks->OnError(error);
       if (s.IsCorruption())
-        factory_->HandleBackingStoreCorruption(backing_store_->origin_url(),
-                                               error);
+        factory_->HandleBackingStoreCorruption(backing_store_->origin(), error);
       return;
     }
 
@@ -1005,8 +998,7 @@ void IndexedDBDatabase::PutOperation(std::unique_ptr<PutOperationParams> params,
                                    "Internal error checking key existence.");
       params->callbacks->OnError(error);
       if (s.IsCorruption())
-        factory_->HandleBackingStoreCorruption(backing_store_->origin_url(),
-                                               error);
+        factory_->HandleBackingStoreCorruption(backing_store_->origin(), error);
       return;
     }
     if (found) {
@@ -1058,8 +1050,7 @@ void IndexedDBDatabase::PutOperation(std::unique_ptr<PutOperationParams> params,
         "Internal error: backing store error performing put/add.");
     params->callbacks->OnError(error);
     if (s.IsCorruption())
-      factory_->HandleBackingStoreCorruption(backing_store_->origin_url(),
-                                             error);
+      factory_->HandleBackingStoreCorruption(backing_store_->origin(), error);
     return;
   }
   {
@@ -1089,8 +1080,7 @@ void IndexedDBDatabase::PutOperation(std::unique_ptr<PutOperationParams> params,
                                    "Internal error updating key generator.");
       params->callbacks->OnError(error);
       if (s.IsCorruption())
-        factory_->HandleBackingStoreCorruption(backing_store_->origin_url(),
-                                               error);
+        factory_->HandleBackingStoreCorruption(backing_store_->origin(), error);
       return;
     }
   }
@@ -1127,8 +1117,7 @@ void IndexedDBDatabase::SetIndexKeys(int64_t transaction_id,
                                  "Internal error setting index keys.");
     transaction->Abort(error);
     if (s.IsCorruption())
-      factory_->HandleBackingStoreCorruption(backing_store_->origin_url(),
-                                             error);
+      factory_->HandleBackingStoreCorruption(backing_store_->origin(), error);
     return;
   }
   if (!found) {
@@ -1306,8 +1295,7 @@ void IndexedDBDatabase::OpenCursorOperation(
     IndexedDBDatabaseError error(blink::WebIDBDatabaseExceptionUnknownError,
                                  "Internal error opening cursor operation");
     if (s.IsCorruption()) {
-      factory_->HandleBackingStoreCorruption(backing_store_->origin_url(),
-                                             error);
+      factory_->HandleBackingStoreCorruption(backing_store_->origin(), error);
     }
   }
 
@@ -1379,8 +1367,7 @@ void IndexedDBDatabase::CountOperation(
     IndexedDBDatabaseError error(blink::WebIDBDatabaseExceptionUnknownError,
                                  "Internal error performing count operation");
     if (s.IsCorruption()) {
-      factory_->HandleBackingStoreCorruption(backing_store_->origin_url(),
-                                             error);
+      factory_->HandleBackingStoreCorruption(backing_store_->origin(), error);
     }
   }
   if (!backing_store_cursor) {
@@ -1437,8 +1424,7 @@ void IndexedDBDatabase::DeleteRangeOperation(
                                  error_string);
     transaction->Abort(error);
     if (s.IsCorruption()) {
-      factory_->HandleBackingStoreCorruption(backing_store_->origin_url(),
-                                             error);
+      factory_->HandleBackingStoreCorruption(backing_store_->origin(), error);
     }
     return;
   }
@@ -1473,8 +1459,7 @@ void IndexedDBDatabase::ClearOperation(
                                  "Internal error clearing object store");
     callbacks->OnError(error);
     if (s.IsCorruption()) {
-      factory_->HandleBackingStoreCorruption(backing_store_->origin_url(),
-                                             error);
+      factory_->HandleBackingStoreCorruption(backing_store_->origin(), error);
     }
     return;
   }
@@ -1502,8 +1487,7 @@ void IndexedDBDatabase::DeleteObjectStoreOperation(
                                  error_string);
     transaction->Abort(error);
     if (s.IsCorruption())
-      factory_->HandleBackingStoreCorruption(backing_store_->origin_url(),
-                                             error);
+      factory_->HandleBackingStoreCorruption(backing_store_->origin(), error);
     return;
   }
 
@@ -1582,9 +1566,9 @@ void IndexedDBDatabase::TransactionCommitFailed(const leveldb::Status& status) {
   if (status.IsCorruption()) {
     IndexedDBDatabaseError error(blink::WebIDBDatabaseExceptionUnknownError,
                                  "Error committing transaction");
-    factory_->HandleBackingStoreCorruption(backing_store_->origin_url(), error);
+    factory_->HandleBackingStoreCorruption(backing_store_->origin(), error);
   } else {
-    factory_->HandleBackingStoreFailure(backing_store_->origin_url());
+    factory_->HandleBackingStoreFailure(backing_store_->origin());
   }
 }
 
@@ -1861,9 +1845,9 @@ void IndexedDBDatabase::DeleteDatabaseFinal(
                                  "Internal error deleting database.");
     callbacks->OnError(error);
     if (s.IsCorruption()) {
-      GURL origin_url = backing_store_->origin_url();
+      url::Origin origin = backing_store_->origin();
       backing_store_ = NULL;
-      factory_->HandleBackingStoreCorruption(origin_url, error);
+      factory_->HandleBackingStoreCorruption(origin, error);
     }
     return;
   }
@@ -1933,10 +1917,7 @@ void IndexedDBDatabase::Close(IndexedDBConnection* connection, bool forced) {
   if (!ConnectionCount() && !pending_open_calls_.size() &&
       !pending_delete_calls_.size()) {
     DCHECK(transactions_.empty());
-
-    const GURL origin_url = backing_store_->origin_url();
     backing_store_ = NULL;
-
     factory_->ReleaseDatabase(identifier_, forced);
   }
 }

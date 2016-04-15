@@ -71,13 +71,13 @@ IndexedDBCallbacks::IndexedDBCallbacks(IndexedDBDispatcherHost* dispatcher_host,
                                        int32_t ipc_callbacks_id,
                                        int32_t ipc_database_callbacks_id,
                                        int64_t host_transaction_id,
-                                       const GURL& origin_url)
+                                       const url::Origin& origin)
     : dispatcher_host_(dispatcher_host),
       ipc_callbacks_id_(ipc_callbacks_id),
       ipc_thread_id_(ipc_thread_id),
       ipc_cursor_id_(kNoCursor),
       host_transaction_id_(host_transaction_id),
-      origin_url_(origin_url),
+      origin_(origin),
       ipc_database_id_(kNoDatabase),
       ipc_database_callbacks_id_(ipc_database_callbacks_id),
       data_loss_(blink::WebIDBDataLossNone),
@@ -160,9 +160,9 @@ void IndexedDBCallbacks::OnUpgradeNeeded(
   DCHECK_EQ(kNoDatabase, ipc_database_id_);
   DCHECK_NE(kNoDatabaseCallbacks, ipc_database_callbacks_id_);
 
-  dispatcher_host_->RegisterTransactionId(host_transaction_id_, origin_url_);
+  dispatcher_host_->RegisterTransactionId(host_transaction_id_, origin_);
   int32_t ipc_database_id =
-      dispatcher_host_->Add(connection.release(), ipc_thread_id_, origin_url_);
+      dispatcher_host_->Add(connection.release(), ipc_thread_id_, origin_);
   if (ipc_database_id < 0)
     return;
   ipc_database_id_ = ipc_database_id;
@@ -200,8 +200,8 @@ void IndexedDBCallbacks::OnSuccess(
   int32_t ipc_object_id = kNoDatabase;
   // Only register if the connection was not previously sent in OnUpgradeNeeded.
   if (ipc_database_id_ == kNoDatabase) {
-    ipc_object_id = dispatcher_host_->Add(
-        connection.release(), ipc_thread_id_, origin_url_);
+    ipc_object_id =
+        dispatcher_host_->Add(connection.release(), ipc_thread_id_, origin_);
   }
 
   dispatcher_host_->Send(new IndexedDBMsg_CallbacksSuccessIDBDatabase(

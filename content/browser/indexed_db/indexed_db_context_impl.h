@@ -24,8 +24,6 @@
 #include "storage/common/quota/quota_types.h"
 #include "url/gurl.h"
 
-class GURL;
-
 namespace base {
 class ListValue;
 class FilePath;
@@ -35,6 +33,10 @@ class SequencedTaskRunner;
 namespace storage {
 class QuotaManagerProxy;
 class SpecialStoragePolicy;
+}
+
+namespace url {
+class Origin;
 }
 
 namespace content {
@@ -77,14 +79,21 @@ class CONTENT_EXPORT IndexedDBContextImpl
   base::FilePath GetFilePathForTesting(const GURL& origin_url) const override;
   void SetTaskRunnerForTesting(base::SequencedTaskRunner* task_runner) override;
 
-  // Methods called by IndexedDBDispatcherHost for quota support.
-  void ConnectionOpened(const GURL& origin_url, IndexedDBConnection* db);
-  void ConnectionClosed(const GURL& origin_url, IndexedDBConnection* db);
-  void TransactionComplete(const GURL& origin_url);
-  void DatabaseDeleted(const GURL& origin_url);
+  // TODO(jsbell): Replace IndexedDBContext members with these.
+  int64_t GetOriginDiskUsage(const url::Origin& origin);
+  void DeleteForOrigin(const url::Origin& origin);
+  void CopyOriginData(const url::Origin& origin,
+                      IndexedDBContext* dest_context);
+  base::FilePath GetFilePathForTesting(const url::Origin& origin) const;
 
-  static base::FilePath GetBlobStoreFileName(const GURL& origin_url);
-  static base::FilePath GetLevelDBFileName(const GURL& origin_url);
+  // Methods called by IndexedDBDispatcherHost for quota support.
+  void ConnectionOpened(const url::Origin& origin, IndexedDBConnection* db);
+  void ConnectionClosed(const url::Origin& origin, IndexedDBConnection* db);
+  void TransactionComplete(const url::Origin& origin);
+  void DatabaseDeleted(const url::Origin& origin);
+
+  static base::FilePath GetBlobStoreFileName(const url::Origin& origin);
+  static base::FilePath GetLevelDBFileName(const url::Origin& origin);
 
   // Will be null in unit tests.
   storage::QuotaManagerProxy* quota_manager_proxy() const {
@@ -92,22 +101,22 @@ class CONTENT_EXPORT IndexedDBContextImpl
   }
 
   // Returns a list of all origins with backing stores.
-  std::vector<GURL> GetAllOrigins();
-  bool HasOrigin(const GURL& origin);
+  std::vector<url::Origin> GetAllOrigins();
+  bool HasOrigin(const url::Origin& origin);
 
   // Used by IndexedDBInternalsUI to populate internals page.
   base::ListValue* GetAllOriginsDetails();
 
   // ForceClose takes a value rather than a reference since it may release the
   // owning object.
-  void ForceClose(const GURL origin_url, ForceCloseReason reason);
+  void ForceClose(const url::Origin origin, ForceCloseReason reason);
   // GetStoragePaths returns all paths owned by this database, in arbitrary
   // order.
-  std::vector<base::FilePath> GetStoragePaths(const GURL& origin_url) const;
+  std::vector<base::FilePath> GetStoragePaths(const url::Origin& origin) const;
 
   base::FilePath data_path() const { return data_path_; }
-  size_t GetConnectionCount(const GURL& origin_url);
-  int GetOriginBlobFileCount(const GURL& origin_url);
+  size_t GetConnectionCount(const url::Origin& origin);
+  int GetOriginBlobFileCount(const url::Origin& origin);
 
   // For unit tests allow to override the |data_path_|.
   void set_data_path_for_testing(const base::FilePath& data_path) {
@@ -126,23 +135,23 @@ class CONTENT_EXPORT IndexedDBContextImpl
   FRIEND_TEST_ALL_PREFIXES(IndexedDBTest, ForceCloseOpenDatabasesOnDelete);
   friend class IndexedDBQuotaClientTest;
 
-  typedef std::map<GURL, int64_t> OriginToSizeMap;
+  typedef std::map<url::Origin, int64_t> OriginToSizeMap;
   class IndexedDBGetUsageAndQuotaCallback;
 
-  base::FilePath GetBlobStorePath(const GURL& origin_url) const;
-  base::FilePath GetLevelDBPath(const GURL& origin_url) const;
+  base::FilePath GetBlobStorePath(const url::Origin& origin) const;
+  base::FilePath GetLevelDBPath(const url::Origin& origin) const;
 
-  int64_t ReadUsageFromDisk(const GURL& origin_url) const;
-  void EnsureDiskUsageCacheInitialized(const GURL& origin_url);
-  void QueryDiskAndUpdateQuotaUsage(const GURL& origin_url);
-  base::Time GetOriginLastModified(const GURL& origin_url);
+  int64_t ReadUsageFromDisk(const url::Origin& origin) const;
+  void EnsureDiskUsageCacheInitialized(const url::Origin& origin);
+  void QueryDiskAndUpdateQuotaUsage(const url::Origin& origin);
+  base::Time GetOriginLastModified(const url::Origin& origin);
 
-  std::set<GURL>* GetOriginSet();
-  bool AddToOriginSet(const GURL& origin_url) {
-    return GetOriginSet()->insert(origin_url).second;
+  std::set<url::Origin>* GetOriginSet();
+  bool AddToOriginSet(const url::Origin& origin) {
+    return GetOriginSet()->insert(origin).second;
   }
-  void RemoveFromOriginSet(const GURL& origin_url) {
-    GetOriginSet()->erase(origin_url);
+  void RemoveFromOriginSet(const url::Origin& origin) {
+    GetOriginSet()->erase(origin);
   }
 
   // Only for testing.
@@ -155,7 +164,7 @@ class CONTENT_EXPORT IndexedDBContextImpl
   scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy_;
   scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
-  std::unique_ptr<std::set<GURL>> origin_set_;
+  std::unique_ptr<std::set<url::Origin>> origin_set_;
   OriginToSizeMap origin_size_map_;
 
   DISALLOW_COPY_AND_ASSIGN(IndexedDBContextImpl);

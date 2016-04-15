@@ -20,6 +20,10 @@ namespace base {
 class ListValue;
 }
 
+namespace url {
+class Origin;
+}
+
 namespace content {
 
 class DownloadItem;
@@ -45,14 +49,14 @@ class IndexedDBInternalsUI : public WebUIController {
   void DownloadOriginDataOnIndexedDBThread(
       const base::FilePath& partition_path,
       const scoped_refptr<IndexedDBContextImpl> context,
-      const GURL& origin_url);
+      const url::Origin& origin);
   void OnDownloadDataReady(const base::FilePath& partition_path,
-                           const GURL& origin_url,
+                           const url::Origin& origin,
                            const base::FilePath temp_path,
                            const base::FilePath zip_path,
                            size_t connection_count);
   void OnDownloadStarted(const base::FilePath& partition_path,
-                         const GURL& origin_url,
+                         const url::Origin& origin,
                          const base::FilePath& temp_path,
                          size_t connection_count,
                          DownloadItem* item,
@@ -62,16 +66,16 @@ class IndexedDBInternalsUI : public WebUIController {
   void ForceCloseOriginOnIndexedDBThread(
       const base::FilePath& partition_path,
       const scoped_refptr<IndexedDBContextImpl> context,
-      const GURL& origin_url);
+      const url::Origin& origin);
   void OnForcedClose(const base::FilePath& partition_path,
-                     const GURL& origin_url,
+                     const url::Origin& origin,
                      size_t connection_count);
   bool GetOriginContext(const base::FilePath& path,
-                        const GURL& origin_url,
+                        const url::Origin& origin,
                         scoped_refptr<IndexedDBContextImpl>* context);
   bool GetOriginData(const base::ListValue* args,
                      base::FilePath* path,
-                     GURL* origin_url,
+                     url::Origin* origin,
                      scoped_refptr<IndexedDBContextImpl>* context);
 
   DISALLOW_COPY_AND_ASSIGN(IndexedDBInternalsUI);

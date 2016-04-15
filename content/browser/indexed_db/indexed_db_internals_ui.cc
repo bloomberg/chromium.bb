@@ -26,6 +26,9 @@
 #include "storage/common/database/database_identifier.h"
 #include "third_party/zlib/google/zip.h"
 #include "ui/base/text/bytes_formatting.h"
+#include "url/origin.h"
+
+using url::Origin;
 
 namespace content {
 
@@ -139,7 +142,7 @@ static void FindContext(const base::FilePath& partition_path,
 bool IndexedDBInternalsUI::GetOriginData(
     const base::ListValue* args,
     base::FilePath* partition_path,
-    GURL* origin_url,
+    Origin* origin,
     scoped_refptr<IndexedDBContextImpl>* context) {
   base::FilePath::StringType path_string;
   if (!args->GetString(0, &path_string))
@@ -150,14 +153,14 @@ bool IndexedDBInternalsUI::GetOriginData(
   if (!args->GetString(1, &url_string))
     return false;
 
-  *origin_url = GURL(url_string);
+  *origin = Origin(GURL(url_string));
 
-  return GetOriginContext(*partition_path, *origin_url, context);
+  return GetOriginContext(*partition_path, *origin, context);
 }
 
 bool IndexedDBInternalsUI::GetOriginContext(
     const base::FilePath& path,
-    const GURL& origin_url,
+    const Origin& origin,
     scoped_refptr<IndexedDBContextImpl>* context) {
   // search the origins to find the right context
   BrowserContext* browser_context =
@@ -178,54 +181,47 @@ void IndexedDBInternalsUI::DownloadOriginData(const base::ListValue* args) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   base::FilePath partition_path;
-  GURL origin_url;
+  Origin origin;
   scoped_refptr<IndexedDBContextImpl> context;
-  if (!GetOriginData(args, &partition_path, &origin_url, &context))
+  if (!GetOriginData(args, &partition_path, &origin, &context))
     return;
 
   DCHECK(context.get());
   context->TaskRunner()->PostTask(
       FROM_HERE,
       base::Bind(&IndexedDBInternalsUI::DownloadOriginDataOnIndexedDBThread,
-                 base::Unretained(this),
-                 partition_path,
-                 context,
-                 origin_url));
+                 base::Unretained(this), partition_path, context, origin));
 }
 
 void IndexedDBInternalsUI::ForceCloseOrigin(const base::ListValue* args) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   base::FilePath partition_path;
-  GURL origin_url;
+  Origin origin;
   scoped_refptr<IndexedDBContextImpl> context;
-  if (!GetOriginData(args, &partition_path, &origin_url, &context))
+  if (!GetOriginData(args, &partition_path, &origin, &context))
     return;
 
   context->TaskRunner()->PostTask(
       FROM_HERE,
       base::Bind(&IndexedDBInternalsUI::ForceCloseOriginOnIndexedDBThread,
-                 base::Unretained(this),
-                 partition_path,
-                 context,
-                 origin_url));
+                 base::Unretained(this), partition_path, context, origin));
 }
 
 void IndexedDBInternalsUI::DownloadOriginDataOnIndexedDBThread(
     const base::FilePath& partition_path,
     const scoped_refptr<IndexedDBContextImpl> context,
-    const GURL& origin_url) {
+    const Origin& origin) {
   DCHECK(context->TaskRunner()->RunsTasksOnCurrentThread());
   // This runs on the IndexedDB task runner to prevent script from reopening
   // the origin while we are zipping.
 
   // Make sure the database hasn't been deleted since the page was loaded.
-  if (!context->HasOrigin(origin_url))
+  if (!context->HasOrigin(origin))
     return;
 
-  context->ForceClose(origin_url,
-                      IndexedDBContextImpl::FORCE_CLOSE_INTERNALS_PAGE);
-  size_t connection_count = context->GetConnectionCount(origin_url);
+  context->ForceClose(origin, IndexedDBContextImpl::FORCE_CLOSE_INTERNALS_PAGE);
+  size_t connection_count = context->GetConnectionCount(origin);
 
   base::ScopedTempDir temp_dir;
   if (!temp_dir.CreateUniqueTempDir())
@@ -235,61 +231,53 @@ void IndexedDBInternalsUI::DownloadOriginDataOnIndexedDBThread(
   // has completed.
   base::FilePath temp_path = temp_dir.Take();
 
-  std::string origin_id = storage::GetIdentifierFromOrigin(origin_url);
+  std::string origin_id =
+      storage::GetIdentifierFromOrigin(GURL(origin.Serialize()));
   base::FilePath zip_path =
       temp_path.AppendASCII(origin_id).AddExtension(FILE_PATH_LITERAL("zip"));
 
-  std::vector<base::FilePath> paths = context->GetStoragePaths(origin_url);
+  std::vector<base::FilePath> paths = context->GetStoragePaths(origin);
   zip::ZipWithFilterCallback(context->data_path(), zip_path,
                              base::Bind(AllowWhitelistedPaths, paths));
 
-  BrowserThread::PostTask(BrowserThread::UI,
-                          FROM_HERE,
-                          base::Bind(&IndexedDBInternalsUI::OnDownloadDataReady,
-                                     base::Unretained(this),
-                                     partition_path,
-                                     origin_url,
-                                     temp_path,
-                                     zip_path,
-                                     connection_count));
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&IndexedDBInternalsUI::OnDownloadDataReady,
+                 base::Unretained(this), partition_path, origin, temp_path,
+                 zip_path, connection_count));
 }
 
 void IndexedDBInternalsUI::ForceCloseOriginOnIndexedDBThread(
     const base::FilePath& partition_path,
     const scoped_refptr<IndexedDBContextImpl> context,
-    const GURL& origin_url) {
+    const Origin& origin) {
   DCHECK(context->TaskRunner()->RunsTasksOnCurrentThread());
 
   // Make sure the database hasn't been deleted since the page was loaded.
-  if (!context->HasOrigin(origin_url))
+  if (!context->HasOrigin(origin))
     return;
 
-  context->ForceClose(origin_url,
-                      IndexedDBContextImpl::FORCE_CLOSE_INTERNALS_PAGE);
-  size_t connection_count = context->GetConnectionCount(origin_url);
+  context->ForceClose(origin, IndexedDBContextImpl::FORCE_CLOSE_INTERNALS_PAGE);
+  size_t connection_count = context->GetConnectionCount(origin);
 
-  BrowserThread::PostTask(BrowserThread::UI,
-                          FROM_HERE,
-                          base::Bind(&IndexedDBInternalsUI::OnForcedClose,
-                                     base::Unretained(this),
-                                     partition_path,
-                                     origin_url,
-                                     connection_count));
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&IndexedDBInternalsUI::OnForcedClose, base::Unretained(this),
+                 partition_path, origin, connection_count));
 }
 
 void IndexedDBInternalsUI::OnForcedClose(const base::FilePath& partition_path,
-                                         const GURL& origin_url,
+                                         const Origin& origin,
                                          size_t connection_count) {
   web_ui()->CallJavascriptFunction(
-      "indexeddb.onForcedClose",
-      base::StringValue(partition_path.value()),
-      base::StringValue(origin_url.spec()),
+      "indexeddb.onForcedClose", base::StringValue(partition_path.value()),
+      base::StringValue(origin.Serialize()),
       base::FundamentalValue(static_cast<double>(connection_count)));
 }
 
 void IndexedDBInternalsUI::OnDownloadDataReady(
     const base::FilePath& partition_path,
-    const GURL& origin_url,
+    const Origin& origin,
     const base::FilePath temp_path,
     const base::FilePath zip_path,
     size_t connection_count) {
@@ -309,11 +297,8 @@ void IndexedDBInternalsUI::OnDownloadDataReady(
   // to start, then attach a DownloadItem::Observer to observe the
   // state change to the finished state.
   dl_params->set_callback(base::Bind(&IndexedDBInternalsUI::OnDownloadStarted,
-                                     base::Unretained(this),
-                                     partition_path,
-                                     origin_url,
-                                     temp_path,
-                                     connection_count));
+                                     base::Unretained(this), partition_path,
+                                     origin, temp_path, connection_count));
   dlm->DownloadUrl(std::move(dl_params));
 }
 
@@ -359,12 +344,11 @@ FileDeleter::~FileDeleter() {
 
 void IndexedDBInternalsUI::OnDownloadStarted(
     const base::FilePath& partition_path,
-    const GURL& origin_url,
+    const Origin& origin,
     const base::FilePath& temp_path,
     size_t connection_count,
     DownloadItem* item,
     DownloadInterruptReason interrupt_reason) {
-
   if (interrupt_reason != DOWNLOAD_INTERRUPT_REASON_NONE) {
     LOG(ERROR) << "Error downloading database dump: "
                << DownloadInterruptReasonToString(interrupt_reason);
@@ -375,7 +359,7 @@ void IndexedDBInternalsUI::OnDownloadStarted(
   web_ui()->CallJavascriptFunction(
       "indexeddb.onOriginDownloadReady",
       base::StringValue(partition_path.value()),
-      base::StringValue(origin_url.spec()),
+      base::StringValue(origin.Serialize()),
       base::FundamentalValue(static_cast<double>(connection_count)));
 }
 

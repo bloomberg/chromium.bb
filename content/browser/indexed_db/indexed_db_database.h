@@ -24,7 +24,10 @@
 #include "content/browser/indexed_db/indexed_db_transaction_coordinator.h"
 #include "content/browser/indexed_db/list_set.h"
 #include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBTypes.h"
-#include "url/gurl.h"
+
+namespace url {
+class Origin;
+}
 
 namespace content {
 
@@ -42,10 +45,10 @@ class CONTENT_EXPORT IndexedDBDatabase
     : NON_EXPORTED_BASE(public base::RefCounted<IndexedDBDatabase>) {
  public:
   // An index and corresponding set of keys
-  typedef std::pair<int64_t, std::vector<IndexedDBKey>> IndexKeys;
+  using IndexKeys = std::pair<int64_t, std::vector<IndexedDBKey>>;
 
-  // Identifier is pair of (origin url, database name).
-  typedef std::pair<GURL, base::string16> Identifier;
+  // Identifier is pair of (origin, database name).
+  using Identifier = std::pair<url::Origin, base::string16>;
 
   static const int64_t kInvalidId = 0;
   static const int64_t kMinimumIndexId = 30;

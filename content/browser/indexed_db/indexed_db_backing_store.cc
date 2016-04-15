@@ -53,6 +53,7 @@ using base::FilePath;
 using base::StringPiece;
 using std::string;
 using storage::FileWriterDelegate;
+using url::Origin;
 
 namespace content {
 
@@ -86,13 +87,13 @@ bool MakeIDBBlobDirectory(const FilePath& path_base,
   return base::CreateDirectory(path);
 }
 
-static std::string ComputeOriginIdentifier(const GURL& origin_url) {
-  return storage::GetIdentifierFromOrigin(origin_url) + "@1";
+static std::string ComputeOriginIdentifier(const Origin& origin) {
+  return storage::GetIdentifierFromOrigin(GURL(origin.Serialize())) + "@1";
 }
 
-static FilePath ComputeCorruptionFileName(const GURL& origin_url) {
-  return IndexedDBContextImpl::GetLevelDBFileName(origin_url)
-      .Append(FILE_PATH_LITERAL("corruption_info.json"));
+static FilePath ComputeCorruptionFileName(const Origin& origin) {
+  return IndexedDBContextImpl::GetLevelDBFileName(origin).Append(
+      FILE_PATH_LITERAL("corruption_info.json"));
 }
 
 }  // namespace
@@ -745,16 +746,16 @@ static bool DecodeBlobData(const std::string& data,
 
 IndexedDBBackingStore::IndexedDBBackingStore(
     IndexedDBFactory* indexed_db_factory,
-    const GURL& origin_url,
+    const Origin& origin,
     const base::FilePath& blob_path,
     net::URLRequestContext* request_context,
     std::unique_ptr<LevelDBDatabase> db,
     std::unique_ptr<LevelDBComparator> comparator,
     base::SequencedTaskRunner* task_runner)
     : indexed_db_factory_(indexed_db_factory),
-      origin_url_(origin_url),
+      origin_(origin),
       blob_path_(blob_path),
-      origin_identifier_(ComputeOriginIdentifier(origin_url)),
+      origin_identifier_(ComputeOriginIdentifier(origin)),
       request_context_(request_context),
       task_runner_(task_runner),
       db_(std::move(db)),
@@ -815,7 +816,7 @@ enum IndexedDBBackingStoreOpenResult {
 // static
 scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
     IndexedDBFactory* indexed_db_factory,
-    const GURL& origin_url,
+    const Origin& origin,
     const base::FilePath& path_base,
     net::URLRequestContext* request_context,
     blink::WebIDBDataLoss* data_loss,
@@ -826,31 +827,24 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
     leveldb::Status* status) {
   *data_loss = blink::WebIDBDataLossNone;
   DefaultLevelDBFactory leveldb_factory;
-  return IndexedDBBackingStore::Open(indexed_db_factory,
-                                     origin_url,
-                                     path_base,
-                                     request_context,
-                                     data_loss,
-                                     data_loss_message,
-                                     disk_full,
-                                     &leveldb_factory,
-                                     task_runner,
-                                     clean_journal,
-                                     status);
+  return IndexedDBBackingStore::Open(
+      indexed_db_factory, origin, path_base, request_context, data_loss,
+      data_loss_message, disk_full, &leveldb_factory, task_runner,
+      clean_journal, status);
 }
 
-static std::string OriginToCustomHistogramSuffix(const GURL& origin_url) {
-  if (origin_url.host() == "docs.google.com")
+static std::string OriginToCustomHistogramSuffix(const Origin& origin) {
+  if (origin.host() == "docs.google.com")
     return ".Docs";
   return std::string();
 }
 
 static void HistogramOpenStatus(IndexedDBBackingStoreOpenResult result,
-                                const GURL& origin_url) {
+                                const Origin& origin) {
   UMA_HISTOGRAM_ENUMERATION("WebCore.IndexedDB.BackingStore.OpenStatus",
                             result,
                             INDEXED_DB_BACKING_STORE_OPEN_MAX);
-  const std::string suffix = OriginToCustomHistogramSuffix(origin_url);
+  const std::string suffix = OriginToCustomHistogramSuffix(origin);
   // Data from the WebCore.IndexedDB.BackingStore.OpenStatus histogram is used
   // to generate a graph. So as not to alter the meaning of that graph,
   // continue to collect all stats there (above) but also now collect docs stats
@@ -897,18 +891,18 @@ static bool IsPathTooLong(const base::FilePath& leveldb_dir) {
 
 leveldb::Status IndexedDBBackingStore::DestroyBackingStore(
     const base::FilePath& path_base,
-    const GURL& origin_url) {
+    const Origin& origin) {
   const base::FilePath file_path =
-      path_base.Append(IndexedDBContextImpl::GetLevelDBFileName(origin_url));
+      path_base.Append(IndexedDBContextImpl::GetLevelDBFileName(origin));
   DefaultLevelDBFactory leveldb_factory;
   return leveldb_factory.DestroyLevelDB(file_path);
 }
 
 bool IndexedDBBackingStore::ReadCorruptionInfo(const base::FilePath& path_base,
-                                               const GURL& origin_url,
+                                               const Origin& origin,
                                                std::string* message) {
   const base::FilePath info_path =
-      path_base.Append(ComputeCorruptionFileName(origin_url));
+      path_base.Append(ComputeCorruptionFileName(origin));
 
   if (IsPathTooLong(info_path))
     return false;
@@ -946,10 +940,10 @@ bool IndexedDBBackingStore::ReadCorruptionInfo(const base::FilePath& path_base,
 
 bool IndexedDBBackingStore::RecordCorruptionInfo(
     const base::FilePath& path_base,
-    const GURL& origin_url,
+    const Origin& origin,
     const std::string& message) {
   const base::FilePath info_path =
-      path_base.Append(ComputeCorruptionFileName(origin_url));
+      path_base.Append(ComputeCorruptionFileName(origin));
   if (IsPathTooLong(info_path))
     return false;
 
@@ -969,7 +963,7 @@ bool IndexedDBBackingStore::RecordCorruptionInfo(
 // static
 scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
     IndexedDBFactory* indexed_db_factory,
-    const GURL& origin_url,
+    const Origin& origin,
     const base::FilePath& path_base,
     net::URLRequestContext* request_context,
     blink::WebIDBDataLoss* data_loss,
@@ -991,27 +985,25 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
 
   if (!base::IsStringASCII(path_base.AsUTF8Unsafe())) {
     HistogramOpenStatus(INDEXED_DB_BACKING_STORE_OPEN_ATTEMPT_NON_ASCII,
-                        origin_url);
+                        origin);
   }
   if (!base::CreateDirectory(path_base)) {
     *status =
         leveldb::Status::IOError("Unable to create IndexedDB database path");
     LOG(ERROR) << status->ToString() << ": \"" << path_base.AsUTF8Unsafe()
                << "\"";
-    HistogramOpenStatus(INDEXED_DB_BACKING_STORE_OPEN_FAILED_DIRECTORY,
-                        origin_url);
+    HistogramOpenStatus(INDEXED_DB_BACKING_STORE_OPEN_FAILED_DIRECTORY, origin);
     return scoped_refptr<IndexedDBBackingStore>();
   }
 
   const FilePath file_path =
-      path_base.Append(IndexedDBContextImpl::GetLevelDBFileName(origin_url));
+      path_base.Append(IndexedDBContextImpl::GetLevelDBFileName(origin));
   const FilePath blob_path =
-      path_base.Append(IndexedDBContextImpl::GetBlobStoreFileName(origin_url));
+      path_base.Append(IndexedDBContextImpl::GetBlobStoreFileName(origin));
 
   if (IsPathTooLong(file_path)) {
     *status = leveldb::Status::IOError("File path too long");
-    HistogramOpenStatus(INDEXED_DB_BACKING_STORE_OPEN_ORIGIN_TOO_LONG,
-                        origin_url);
+    HistogramOpenStatus(INDEXED_DB_BACKING_STORE_OPEN_ORIGIN_TOO_LONG, origin);
     return scoped_refptr<IndexedDBBackingStore>();
   }
 
@@ -1032,11 +1024,11 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
   bool is_schema_known = false;
   if (db) {
     std::string corruption_message;
-    if (ReadCorruptionInfo(path_base, origin_url, &corruption_message)) {
+    if (ReadCorruptionInfo(path_base, origin, &corruption_message)) {
       LOG(ERROR) << "IndexedDB recovering from a corrupted (and deleted) "
                     "database.";
       HistogramOpenStatus(INDEXED_DB_BACKING_STORE_OPEN_FAILED_PRIOR_CORRUPTION,
-                          origin_url);
+                          origin);
       db.reset();
       *data_loss = blink::WebIDBDataLossTotal;
       *data_loss_message =
@@ -1046,7 +1038,7 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
                     "failure to open";
       HistogramOpenStatus(
           INDEXED_DB_BACKING_STORE_OPEN_FAILED_IO_ERROR_CHECKING_SCHEMA,
-          origin_url);
+          origin);
       db.reset();
       *data_loss = blink::WebIDBDataLossTotal;
       *data_loss_message = "I/O error checking schema";
@@ -1054,7 +1046,7 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
       LOG(ERROR) << "IndexedDB backing store had unknown schema, treating it "
                     "as failure to open";
       HistogramOpenStatus(INDEXED_DB_BACKING_STORE_OPEN_FAILED_UNKNOWN_SCHEMA,
-                          origin_url);
+                          origin);
       db.reset();
       *data_loss = blink::WebIDBDataLossTotal;
       *data_loss_message = "Unknown schema";
@@ -1065,11 +1057,11 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
          status->IsCorruption());
 
   if (db) {
-    HistogramOpenStatus(INDEXED_DB_BACKING_STORE_OPEN_SUCCESS, origin_url);
+    HistogramOpenStatus(INDEXED_DB_BACKING_STORE_OPEN_SUCCESS, origin);
   } else if (status->IsIOError()) {
     LOG(ERROR) << "Unable to open backing store, not trying to recover - "
                << status->ToString();
-    HistogramOpenStatus(INDEXED_DB_BACKING_STORE_OPEN_NO_RECOVERY, origin_url);
+    HistogramOpenStatus(INDEXED_DB_BACKING_STORE_OPEN_NO_RECOVERY, origin);
     return scoped_refptr<IndexedDBBackingStore>();
   } else {
     DCHECK(!is_schema_known || status->IsCorruption());
@@ -1078,7 +1070,7 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
     if (!status->ok()) {
       LOG(ERROR) << "IndexedDB backing store cleanup failed";
       HistogramOpenStatus(INDEXED_DB_BACKING_STORE_OPEN_CLEANUP_DESTROY_FAILED,
-                          origin_url);
+                          origin);
       return scoped_refptr<IndexedDBBackingStore>();
     }
 
@@ -1089,11 +1081,11 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
       DCHECK(!db);
       LOG(ERROR) << "IndexedDB backing store reopen after recovery failed";
       HistogramOpenStatus(INDEXED_DB_BACKING_STORE_OPEN_CLEANUP_REOPEN_FAILED,
-                          origin_url);
+                          origin);
       return scoped_refptr<IndexedDBBackingStore>();
     }
     HistogramOpenStatus(INDEXED_DB_BACKING_STORE_OPEN_CLEANUP_REOPEN_SUCCESS,
-                        origin_url);
+                        origin);
   }
 
   base::trace_event::MemoryDumpManager::GetInstance()
@@ -1102,15 +1094,14 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
           base::trace_event::MemoryDumpProvider::Options());
 
   scoped_refptr<IndexedDBBackingStore> backing_store =
-      Create(indexed_db_factory, origin_url, blob_path, request_context,
+      Create(indexed_db_factory, origin, blob_path, request_context,
              std::move(db), std::move(comparator), task_runner, status);
 
   if (clean_journal && backing_store.get()) {
     *status = backing_store->CleanUpBlobJournal(LiveBlobJournalKey::Encode());
     if (!status->ok()) {
       HistogramOpenStatus(
-          INDEXED_DB_BACKING_STORE_OPEN_FAILED_CLEANUP_JOURNAL_ERROR,
-          origin_url);
+          INDEXED_DB_BACKING_STORE_OPEN_FAILED_CLEANUP_JOURNAL_ERROR, origin);
       return scoped_refptr<IndexedDBBackingStore>();
     }
   }
@@ -1119,17 +1110,17 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
 
 // static
 scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::OpenInMemory(
-    const GURL& origin_url,
+    const Origin& origin,
     base::SequencedTaskRunner* task_runner,
     leveldb::Status* status) {
   DefaultLevelDBFactory leveldb_factory;
-  return IndexedDBBackingStore::OpenInMemory(
-      origin_url, &leveldb_factory, task_runner, status);
+  return IndexedDBBackingStore::OpenInMemory(origin, &leveldb_factory,
+                                             task_runner, status);
 }
 
 // static
 scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::OpenInMemory(
-    const GURL& origin_url,
+    const Origin& origin,
     LevelDBFactory* leveldb_factory,
     base::SequencedTaskRunner* task_runner,
     leveldb::Status* status) {
@@ -1140,17 +1131,16 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::OpenInMemory(
       LevelDBDatabase::OpenInMemory(comparator.get());
   if (!db) {
     LOG(ERROR) << "LevelDBDatabase::OpenInMemory failed.";
-    HistogramOpenStatus(INDEXED_DB_BACKING_STORE_OPEN_MEMORY_FAILED,
-                        origin_url);
+    HistogramOpenStatus(INDEXED_DB_BACKING_STORE_OPEN_MEMORY_FAILED, origin);
     return scoped_refptr<IndexedDBBackingStore>();
   }
-  HistogramOpenStatus(INDEXED_DB_BACKING_STORE_OPEN_MEMORY_SUCCESS, origin_url);
+  HistogramOpenStatus(INDEXED_DB_BACKING_STORE_OPEN_MEMORY_SUCCESS, origin);
   base::trace_event::MemoryDumpManager::GetInstance()
       ->RegisterDumpProviderWithSequencedTaskRunner(
           db.get(), "IndexedDBBackingStore", task_runner,
           base::trace_event::MemoryDumpProvider::Options());
 
-  return Create(NULL /* indexed_db_factory */, origin_url, base::FilePath(),
+  return Create(NULL /* indexed_db_factory */, origin, base::FilePath(),
                 NULL /* request_context */, std::move(db),
                 std::move(comparator), task_runner, status);
 }
@@ -1158,7 +1148,7 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::OpenInMemory(
 // static
 scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Create(
     IndexedDBFactory* indexed_db_factory,
-    const GURL& origin_url,
+    const Origin& origin,
     const base::FilePath& blob_path,
     net::URLRequestContext* request_context,
     std::unique_ptr<LevelDBDatabase> db,
@@ -1167,7 +1157,7 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Create(
     leveldb::Status* status) {
   // TODO(jsbell): Handle comparator name changes.
   scoped_refptr<IndexedDBBackingStore> backing_store(new IndexedDBBackingStore(
-      indexed_db_factory, origin_url, blob_path, request_context, std::move(db),
+      indexed_db_factory, origin, blob_path, request_context, std::move(db),
       std::move(comparator), task_runner));
   *status = backing_store->SetUpMetadata();
   if (!status->ok())

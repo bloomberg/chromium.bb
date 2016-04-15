@@ -19,7 +19,7 @@
 #include "content/browser/indexed_db/indexed_db_dispatcher_host.h"
 #include "content/common/indexed_db/indexed_db_key.h"
 #include "content/common/indexed_db/indexed_db_key_path.h"
-#include "url/gurl.h"
+#include "url/origin.h"
 
 namespace content {
 class IndexedDBBlobInfo;
@@ -51,7 +51,7 @@ class CONTENT_EXPORT IndexedDBCallbacks
                      int32_t ipc_callbacks_id,
                      int32_t ipc_database_callbacks_id,
                      int64_t host_transaction_id,
-                     const GURL& origin_url);
+                     const url::Origin& origin);
 
   virtual void OnError(const IndexedDBDatabaseError& error);
 
@@ -130,7 +130,7 @@ class CONTENT_EXPORT IndexedDBCallbacks
 
   // IndexedDBDatabase callbacks ------------------------
   int64_t host_transaction_id_;
-  GURL origin_url_;
+  url::Origin origin_;
   int32_t ipc_database_id_;
   int32_t ipc_database_callbacks_id_;
 

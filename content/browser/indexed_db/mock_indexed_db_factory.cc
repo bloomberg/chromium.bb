@@ -13,7 +13,7 @@ MockIndexedDBFactory::~MockIndexedDBFactory() {
 }
 
 IndexedDBFactory::OriginDBs MockIndexedDBFactory::GetOpenDatabasesForOrigin(
-    const GURL& origin_url) const {
+    const url::Origin& origin) const {
   return OriginDBs();
 }
 

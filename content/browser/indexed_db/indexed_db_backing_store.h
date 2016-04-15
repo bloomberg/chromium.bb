@@ -36,6 +36,7 @@
 #include "storage/browser/blob/blob_data_handle.h"
 #include "third_party/leveldatabase/src/include/leveldb/status.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -359,7 +360,7 @@ class CONTENT_EXPORT IndexedDBBackingStore
     DISALLOW_COPY_AND_ASSIGN(Cursor);
   };
 
-  const GURL& origin_url() const { return origin_url_; }
+  const url::Origin& origin() const { return origin_; }
   IndexedDBFactory* factory() const { return indexed_db_factory_; }
   base::SequencedTaskRunner* task_runner() const { return task_runner_.get(); }
   base::OneShotTimer* close_timer() { return &close_timer_; }
@@ -369,7 +370,7 @@ class CONTENT_EXPORT IndexedDBBackingStore
 
   static scoped_refptr<IndexedDBBackingStore> Open(
       IndexedDBFactory* indexed_db_factory,
-      const GURL& origin_url,
+      const url::Origin& origin,
       const base::FilePath& path_base,
       net::URLRequestContext* request_context,
       blink::WebIDBDataLoss* data_loss,
@@ -380,7 +381,7 @@ class CONTENT_EXPORT IndexedDBBackingStore
       leveldb::Status* status);
   static scoped_refptr<IndexedDBBackingStore> Open(
       IndexedDBFactory* indexed_db_factory,
-      const GURL& origin_url,
+      const url::Origin& origin,
       const base::FilePath& path_base,
       net::URLRequestContext* request_context,
       blink::WebIDBDataLoss* data_loss,
@@ -391,11 +392,11 @@ class CONTENT_EXPORT IndexedDBBackingStore
       bool clean_journal,
       leveldb::Status* status);
   static scoped_refptr<IndexedDBBackingStore> OpenInMemory(
-      const GURL& origin_url,
+      const url::Origin& origin,
       base::SequencedTaskRunner* task_runner,
       leveldb::Status* status);
   static scoped_refptr<IndexedDBBackingStore> OpenInMemory(
-      const GURL& origin_url,
+      const url::Origin& origin,
       LevelDBFactory* leveldb_factory,
       base::SequencedTaskRunner* task_runner,
       leveldb::Status* status);
@@ -420,9 +421,9 @@ class CONTENT_EXPORT IndexedDBBackingStore
 
   // Assumes caller has already closed the backing store.
   static leveldb::Status DestroyBackingStore(const base::FilePath& path_base,
-                                             const GURL& origin_url);
+                                             const url::Origin& origin);
   static bool RecordCorruptionInfo(const base::FilePath& path_base,
-                                   const GURL& origin_url,
+                                   const url::Origin& origin,
                                    const std::string& message);
   leveldb::Status GetObjectStores(
       int64_t database_id,
@@ -563,7 +564,7 @@ class CONTENT_EXPORT IndexedDBBackingStore
   friend class base::RefCounted<IndexedDBBackingStore>;
 
   IndexedDBBackingStore(IndexedDBFactory* indexed_db_factory,
-                        const GURL& origin_url,
+                        const url::Origin& origin,
                         const base::FilePath& blob_path,
                         net::URLRequestContext* request_context,
                         std::unique_ptr<LevelDBDatabase> db,
@@ -597,7 +598,7 @@ class CONTENT_EXPORT IndexedDBBackingStore
  private:
   static scoped_refptr<IndexedDBBackingStore> Create(
       IndexedDBFactory* indexed_db_factory,
-      const GURL& origin_url,
+      const url::Origin& origin,
       const base::FilePath& blob_path,
       net::URLRequestContext* request_context,
       std::unique_ptr<LevelDBDatabase> db,
@@ -606,7 +607,7 @@ class CONTENT_EXPORT IndexedDBBackingStore
       leveldb::Status* status);
 
   static bool ReadCorruptionInfo(const base::FilePath& path_base,
-                                 const GURL& origin_url,
+                                 const url::Origin& origin,
                                  std::string* message);
 
   leveldb::Status FindKeyInIndex(
@@ -638,7 +639,7 @@ class CONTENT_EXPORT IndexedDBBackingStore
       const BlobJournalType& journal) const;
 
   IndexedDBFactory* indexed_db_factory_;
-  const GURL origin_url_;
+  const url::Origin origin_;
   base::FilePath blob_path_;
 
   // The origin identifier is a key prefix unique to the origin used in the

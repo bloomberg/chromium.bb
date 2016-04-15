@@ -36,8 +36,8 @@ int64_t GetOriginUsageOnIndexedDBThread(IndexedDBContextImpl* context,
 void GetAllOriginsOnIndexedDBThread(IndexedDBContextImpl* context,
                                     std::set<GURL>* origins_to_return) {
   DCHECK(context->TaskRunner()->RunsTasksOnCurrentThread());
-  std::vector<GURL> all_origins = context->GetAllOrigins();
-  origins_to_return->insert(all_origins.begin(), all_origins.end());
+  for (const auto& origin : context->GetAllOrigins())
+    origins_to_return->insert(GURL(origin.Serialize()));
 }
 
 void DidGetOrigins(const IndexedDBQuotaClient::GetOriginsCallback& callback,
@@ -50,8 +50,8 @@ void GetOriginsForHostOnIndexedDBThread(IndexedDBContextImpl* context,
                                         const std::string& host,
                                         std::set<GURL>* origins_to_return) {
   DCHECK(context->TaskRunner()->RunsTasksOnCurrentThread());
-  std::vector<GURL> all_origins = context->GetAllOrigins();
-  for (const auto& origin_url : all_origins) {
+  for (const auto& origin : context->GetAllOrigins()) {
+    GURL origin_url(origin.Serialize());
     if (host == net::GetHostOrSpecFromURL(origin_url))
       origins_to_return->insert(origin_url);
   }

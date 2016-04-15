@@ -15,6 +15,10 @@
 #include "base/macros.h"
 #include "content/browser/indexed_db/indexed_db_factory.h"
 
+namespace url {
+class Origin;
+}
+
 namespace content {
 
 class IndexedDBContextImpl;
@@ -43,33 +47,33 @@ class CONTENT_EXPORT IndexedDBFactoryImpl : public IndexedDBFactory {
                       const url::Origin& origin,
                       const base::FilePath& data_directory) override;
 
-  void HandleBackingStoreFailure(const GURL& origin_url) override;
+  void HandleBackingStoreFailure(const url::Origin& origin) override;
   void HandleBackingStoreCorruption(
-      const GURL& origin_url,
+      const url::Origin& origin,
       const IndexedDBDatabaseError& error) override;
 
-  OriginDBs GetOpenDatabasesForOrigin(const GURL& origin_url) const override;
+  OriginDBs GetOpenDatabasesForOrigin(const url::Origin& origin) const override;
 
-  void ForceClose(const GURL& origin_url) override;
+  void ForceClose(const url::Origin& origin) override;
 
   // Called by the IndexedDBContext destructor so the factory can do cleanup.
   void ContextDestroyed() override;
 
   // Called by the IndexedDBActiveBlobRegistry.
-  void ReportOutstandingBlobs(const GURL& origin_url,
+  void ReportOutstandingBlobs(const url::Origin& origin,
                               bool blobs_outstanding) override;
 
   // Called by an IndexedDBDatabase when it is actually deleted.
   void DatabaseDeleted(
       const IndexedDBDatabase::Identifier& identifier) override;
 
-  size_t GetConnectionCount(const GURL& origin_url) const override;
+  size_t GetConnectionCount(const url::Origin& origin) const override;
 
  protected:
   ~IndexedDBFactoryImpl() override;
 
   scoped_refptr<IndexedDBBackingStore> OpenBackingStore(
-      const GURL& origin_url,
+      const url::Origin& origin,
       const base::FilePath& data_directory,
       net::URLRequestContext* request_context,
       blink::WebIDBDataLoss* data_loss,
@@ -78,7 +82,7 @@ class CONTENT_EXPORT IndexedDBFactoryImpl : public IndexedDBFactory {
       leveldb::Status* s) override;
 
   scoped_refptr<IndexedDBBackingStore> OpenBackingStoreHelper(
-      const GURL& origin_url,
+      const url::Origin& origin,
       const base::FilePath& data_directory,
       net::URLRequestContext* request_context,
       blink::WebIDBDataLoss* data_loss,
@@ -87,8 +91,8 @@ class CONTENT_EXPORT IndexedDBFactoryImpl : public IndexedDBFactory {
       bool first_time,
       leveldb::Status* s) override;
 
-  void ReleaseBackingStore(const GURL& origin_url, bool immediate);
-  void CloseBackingStore(const GURL& origin_url);
+  void ReleaseBackingStore(const url::Origin& origin, bool immediate);
+  void CloseBackingStore(const url::Origin& origin);
   IndexedDBContextImpl* context() const { return context_; }
 
  private:
@@ -108,18 +112,19 @@ class CONTENT_EXPORT IndexedDBFactoryImpl : public IndexedDBFactory {
 
   typedef std::map<IndexedDBDatabase::Identifier, IndexedDBDatabase*>
       IndexedDBDatabaseMap;
-  typedef std::map<GURL, scoped_refptr<IndexedDBBackingStore> >
+  typedef std::map<url::Origin, scoped_refptr<IndexedDBBackingStore>>
       IndexedDBBackingStoreMap;
 
   // Called internally after a database is closed, with some delay. If this
   // factory has the last reference, it will be released.
-  void MaybeCloseBackingStore(const GURL& origin_url);
-  bool HasLastBackingStoreReference(const GURL& origin_url) const;
+  void MaybeCloseBackingStore(const url::Origin& origin);
+  bool HasLastBackingStoreReference(const url::Origin& origin) const;
 
   // Testing helpers, so unit tests don't need to grovel through internal state.
-  bool IsDatabaseOpen(const GURL& origin_url, const base::string16& name) const;
-  bool IsBackingStoreOpen(const GURL& origin_url) const;
-  bool IsBackingStorePendingClose(const GURL& origin_url) const;
+  bool IsDatabaseOpen(const url::Origin& origin,
+                      const base::string16& name) const;
+  bool IsBackingStoreOpen(const url::Origin& origin) const;
+  bool IsBackingStorePendingClose(const url::Origin& origin) const;
   void RemoveDatabaseFromMaps(const IndexedDBDatabase::Identifier& identifier);
 
   IndexedDBContextImpl* context_;
@@ -130,7 +135,7 @@ class CONTENT_EXPORT IndexedDBFactoryImpl : public IndexedDBFactory {
 
   std::set<scoped_refptr<IndexedDBBackingStore> > session_only_backing_stores_;
   IndexedDBBackingStoreMap backing_stores_with_active_blobs_;
-  std::set<GURL> backends_opened_since_boot_;
+  std::set<url::Origin> backends_opened_since_boot_;
 
   DISALLOW_COPY_AND_ASSIGN(IndexedDBFactoryImpl);
 };

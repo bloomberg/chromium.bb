@@ -35,7 +35,7 @@ struct IndexedDBPendingConnection;
 class CONTENT_EXPORT IndexedDBFactory
     : NON_EXPORTED_BASE(public base::RefCountedThreadSafe<IndexedDBFactory>) {
  public:
-  typedef std::multimap<GURL, IndexedDBDatabase*> OriginDBMap;
+  typedef std::multimap<url::Origin, IndexedDBDatabase*> OriginDBMap;
   typedef OriginDBMap::const_iterator OriginDBMapIterator;
   typedef std::pair<OriginDBMapIterator, OriginDBMapIterator> OriginDBs;
 
@@ -58,27 +58,28 @@ class CONTENT_EXPORT IndexedDBFactory
                               const url::Origin& origin,
                               const base::FilePath& data_directory) = 0;
 
-  virtual void HandleBackingStoreFailure(const GURL& origin_url) = 0;
+  virtual void HandleBackingStoreFailure(const url::Origin& origin) = 0;
   virtual void HandleBackingStoreCorruption(
-      const GURL& origin_url,
+      const url::Origin& origin,
       const IndexedDBDatabaseError& error) = 0;
 
-  virtual OriginDBs GetOpenDatabasesForOrigin(const GURL& origin_url) const = 0;
+  virtual OriginDBs GetOpenDatabasesForOrigin(
+      const url::Origin& origin) const = 0;
 
-  virtual void ForceClose(const GURL& origin_url) = 0;
+  virtual void ForceClose(const url::Origin& origin) = 0;
 
   // Called by the IndexedDBContext destructor so the factory can do cleanup.
   virtual void ContextDestroyed() = 0;
 
   // Called by the IndexedDBActiveBlobRegistry.
-  virtual void ReportOutstandingBlobs(const GURL& origin_url,
+  virtual void ReportOutstandingBlobs(const url::Origin& origin,
                                       bool blobs_outstanding) = 0;
 
   // Called by an IndexedDBDatabase when it is actually deleted.
   virtual void DatabaseDeleted(
       const IndexedDBDatabase::Identifier& identifier) = 0;
 
-  virtual size_t GetConnectionCount(const GURL& origin_url) const = 0;
+  virtual size_t GetConnectionCount(const url::Origin& origin) const = 0;
 
  protected:
   friend class base::RefCountedThreadSafe<IndexedDBFactory>;
@@ -87,7 +88,7 @@ class CONTENT_EXPORT IndexedDBFactory
   virtual ~IndexedDBFactory() {}
 
   virtual scoped_refptr<IndexedDBBackingStore> OpenBackingStore(
-      const GURL& origin_url,
+      const url::Origin& origin,
       const base::FilePath& data_directory,
       net::URLRequestContext* request_context,
       blink::WebIDBDataLoss* data_loss,
@@ -96,7 +97,7 @@ class CONTENT_EXPORT IndexedDBFactory
       leveldb::Status* status) = 0;
 
   virtual scoped_refptr<IndexedDBBackingStore> OpenBackingStoreHelper(
-      const GURL& origin_url,
+      const url::Origin& origin,
       const base::FilePath& data_directory,
       net::URLRequestContext* request_context,
       blink::WebIDBDataLoss* data_loss,

@@ -12,7 +12,7 @@ namespace content {
 
 IndexedDBFakeBackingStore::IndexedDBFakeBackingStore()
     : IndexedDBBackingStore(NULL /* indexed_db_factory */,
-                            GURL("http://localhost:81"),
+                            url::Origin(GURL("http://localhost:81")),
                             base::FilePath(),
                             NULL /* request_context */,
                             std::unique_ptr<LevelDBDatabase>(),
@@ -22,7 +22,7 @@ IndexedDBFakeBackingStore::IndexedDBFakeBackingStore(
     IndexedDBFactory* factory,
     base::SequencedTaskRunner* task_runner)
     : IndexedDBBackingStore(factory,
-                            GURL("http://localhost:81"),
+                            url::Origin(GURL("http://localhost:81")),
                             base::FilePath(),
                             NULL /* request_context */,
                             std::unique_ptr<LevelDBDatabase>(),

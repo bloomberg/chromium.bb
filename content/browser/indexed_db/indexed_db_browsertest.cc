@@ -44,10 +44,13 @@
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/database/database_util.h"
 #include "storage/browser/quota/quota_manager.h"
+#include "url/gurl.h"
+#include "url/origin.h"
 
 using base::ASCIIToUTF16;
 using storage::QuotaManager;
 using storage::DatabaseUtil;
+using url::Origin;
 
 namespace content {
 
@@ -161,7 +164,7 @@ class IndexedDBBrowserTest : public ContentBrowserTest,
     PostTaskAndReplyWithResult(
         GetContext()->TaskRunner(), FROM_HERE,
         base::Bind(&IndexedDBContextImpl::GetOriginBlobFileCount, GetContext(),
-                   GURL("file:///")),
+                   Origin(GURL("file:///"))),
         base::Bind(&IndexedDBBrowserTest::DidGetBlobFileCount, this));
     scoped_refptr<base::ThreadTestHelper> helper(new base::ThreadTestHelper(
         BrowserMainLoop::GetInstance()->indexed_db_thread()->task_runner()));
@@ -438,9 +441,12 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, CanDeleteWhenOverQuotaTest) {
 
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, EmptyBlob) {
   // First delete all IDB's for the test origin
+  // TODO(jsbell): Remove static_cast<> when overloads are eliminated.
   GetContext()->TaskRunner()->PostTask(
-      FROM_HERE, base::Bind(&IndexedDBContextImpl::DeleteForOrigin,
-                            GetContext(), GURL("file:///")));
+      FROM_HERE,
+      base::Bind(static_cast<void (IndexedDBContextImpl::*)(const GURL&)>(
+                     &IndexedDBContextImpl::DeleteForOrigin),
+                 GetContext(), GURL("file:///")));
   EXPECT_EQ(0, RequestBlobFileCount());  // Start with no blob files.
   const GURL test_url = GetTestUrl("indexeddb", "empty_blob.html");
   // For some reason Android's futimes fails (EPERM) in this test. Do not assert
@@ -489,9 +495,12 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DeleteForOriginDeletesBlobs) {
   int64_t size = RequestDiskUsage();
   // This assertion assumes that we do not compress blobs.
   EXPECT_GT(size, 20 << 20 /* 20 MB */);
+  // TODO(jsbell): Remove static_cast<> when overloads are eliminated.
   GetContext()->TaskRunner()->PostTask(
-      FROM_HERE, base::Bind(&IndexedDBContextImpl::DeleteForOrigin,
-                            GetContext(), GURL("file:///")));
+      FROM_HERE,
+      base::Bind(static_cast<void (IndexedDBContextImpl::*)(const GURL&)>(
+                     &IndexedDBContextImpl::DeleteForOrigin),
+                 GetContext(), GURL("file:///")));
   scoped_refptr<base::ThreadTestHelper> helper(new base::ThreadTestHelper(
       BrowserMainLoop::GetInstance()->indexed_db_thread()->task_runner()));
   ASSERT_TRUE(helper->Run());
@@ -523,12 +532,12 @@ namespace {
 
 static void CompactIndexedDBBackingStore(
     scoped_refptr<IndexedDBContextImpl> context,
-    const GURL& origin_url) {
+    const Origin& origin) {
   IndexedDBFactory* factory = context->GetIDBFactory();
 
   std::pair<IndexedDBFactory::OriginDBMapIterator,
-            IndexedDBFactory::OriginDBMapIterator> range =
-      factory->GetOpenDatabasesForOrigin(origin_url);
+            IndexedDBFactory::OriginDBMapIterator>
+      range = factory->GetOpenDatabasesForOrigin(origin);
 
   if (range.first == range.second)  // If no open db's for this origin
     return;
@@ -542,16 +551,14 @@ static void CompactIndexedDBBackingStore(
 
 static void CorruptIndexedDBDatabase(
     IndexedDBContextImpl* context,
-    const GURL& origin_url,
+    const Origin& origin,
     base::WaitableEvent* signal_when_finished) {
-
-  CompactIndexedDBBackingStore(context, origin_url);
+  CompactIndexedDBBackingStore(context, origin);
 
   int num_files = 0;
   int num_errors = 0;
   const bool recursive = false;
-  for (const base::FilePath& idb_data_path :
-       context->GetStoragePaths(origin_url)) {
+  for (const base::FilePath& idb_data_path : context->GetStoragePaths(origin)) {
     base::FileEnumerator enumerator(
         idb_data_path, recursive, base::FileEnumerator::FILES);
     for (base::FilePath idb_file = enumerator.Next(); !idb_file.empty();
@@ -583,7 +590,7 @@ const std::string s_corrupt_db_test_prefix = "/corrupt/test/";
 
 static std::unique_ptr<net::test_server::HttpResponse> CorruptDBRequestHandler(
     IndexedDBContextImpl* context,
-    const GURL& origin_url,
+    const Origin& origin,
     const std::string& path,
     IndexedDBBrowserTest* test,
     const net::test_server::HttpRequest& request) {
@@ -604,11 +611,10 @@ static std::unique_ptr<net::test_server::HttpResponse> CorruptDBRequestHandler(
   if (request_path == "corruptdb" && !request_query.empty()) {
     VLOG(0) << "Requested to corrupt IndexedDB: " << request_query;
     base::WaitableEvent signal_when_finished(false, false);
-    context->TaskRunner()->PostTask(FROM_HERE,
-                                    base::Bind(&CorruptIndexedDBDatabase,
-                                               base::ConstRef(context),
-                                               origin_url,
-                                               &signal_when_finished));
+    context->TaskRunner()->PostTask(
+        FROM_HERE,
+        base::Bind(&CorruptIndexedDBDatabase, base::ConstRef(context), origin,
+                   &signal_when_finished));
     signal_when_finished.Wait();
 
     std::unique_ptr<net::test_server::BasicHttpResponse> http_response(
@@ -701,13 +707,10 @@ static std::unique_ptr<net::test_server::HttpResponse> CorruptDBRequestHandler(
 IN_PROC_BROWSER_TEST_P(IndexedDBBrowserTest, OperationOnCorruptedOpenDatabase) {
   ASSERT_TRUE(embedded_test_server()->Started() ||
               embedded_test_server()->Start());
-  const GURL& origin_url = embedded_test_server()->base_url();
+  const Origin origin(embedded_test_server()->base_url());
   embedded_test_server()->RegisterRequestHandler(
-      base::Bind(&CorruptDBRequestHandler,
-                 base::Unretained(GetContext()),
-                 origin_url,
-                 s_corrupt_db_test_prefix,
-                 this));
+      base::Bind(&CorruptDBRequestHandler, base::Unretained(GetContext()),
+                 origin, s_corrupt_db_test_prefix, this));
 
   std::string test_file = s_corrupt_db_test_prefix +
                           "corrupted_open_db_detection.html#" + GetParam();
@@ -831,12 +834,12 @@ IN_PROC_BROWSER_TEST_F(
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, ForceCloseEventTest) {
   NavigateAndWaitForTitle(shell(), "force_close_event.html", NULL,
                           "connection ready");
-
+  // TODO(jsbell): Remove static_cast<> when overloads are eliminated.
   GetContext()->TaskRunner()->PostTask(
       FROM_HERE,
-      base::Bind(&IndexedDBContextImpl::DeleteForOrigin,
-                 GetContext(),
-                 GURL("file:///")));
+      base::Bind(static_cast<void (IndexedDBContextImpl::*)(const GURL&)>(
+                     &IndexedDBContextImpl::DeleteForOrigin),
+                 GetContext(), GURL("file:///")));
 
   base::string16 expected_title16(ASCIIToUTF16("connection closed"));
   TitleWatcher title_watcher(shell()->web_contents(), expected_title16);

@@ -83,7 +83,7 @@ class BustedLevelDBFactory : public LevelDBFactory {
 
 TEST(IndexedDBIOErrorTest, CleanUpTest) {
   content::IndexedDBFactory* factory = NULL;
-  const GURL origin("http://localhost:81");
+  const url::Origin origin(GURL("http://localhost:81"));
   base::ScopedTempDir temp_directory;
   ASSERT_TRUE(temp_directory.CreateUniqueTempDir());
   const base::FilePath path = temp_directory.path();
@@ -120,7 +120,7 @@ TEST(IndexedDBIOErrorTest, CleanUpTest) {
 
 TEST(IndexedDBNonRecoverableIOErrorTest, NuancedCleanupTest) {
   content::IndexedDBFactory* factory = NULL;
-  const GURL origin("http://localhost:81");
+  const url::Origin origin(GURL("http://localhost:81"));
   net::URLRequestContext* request_context = NULL;
   base::ScopedTempDir temp_directory;
   ASSERT_TRUE(temp_directory.CreateUniqueTempDir());

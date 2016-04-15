@@ -23,7 +23,7 @@ class MockIndexedDBFactory : public IndexedDBFactory {
                     bool forced_close));
   MOCK_METHOD4(GetDatabaseNames,
                void(scoped_refptr<IndexedDBCallbacks> callbacks,
-                    const url::Origin& origin_url,
+                    const url::Origin& origin,
                     const base::FilePath& data_directory,
                     net::URLRequestContext* request_context));
   MOCK_METHOD5(Open,
@@ -38,28 +38,28 @@ class MockIndexedDBFactory : public IndexedDBFactory {
                     scoped_refptr<IndexedDBCallbacks> callbacks,
                     const url::Origin& origin,
                     const base::FilePath& data_directory));
-  MOCK_METHOD1(HandleBackingStoreFailure, void(const GURL& origin_url));
+  MOCK_METHOD1(HandleBackingStoreFailure, void(const url::Origin& origin));
   MOCK_METHOD2(HandleBackingStoreCorruption,
-               void(const GURL& origin_url,
+               void(const url::Origin& origin,
                     const IndexedDBDatabaseError& error));
   // The Android NDK implements a subset of STL, and the gtest templates can't
   // deal with std::pair's. This means we can't use GoogleMock for this method
-  OriginDBs GetOpenDatabasesForOrigin(const GURL& origin_url) const override;
-  MOCK_METHOD1(ForceClose, void(const GURL& origin_url));
+  OriginDBs GetOpenDatabasesForOrigin(const url::Origin& origin) const override;
+  MOCK_METHOD1(ForceClose, void(const url::Origin& origin));
   MOCK_METHOD0(ContextDestroyed, void());
   MOCK_METHOD1(DatabaseDeleted,
                void(const IndexedDBDatabase::Identifier& identifier));
-  MOCK_CONST_METHOD1(GetConnectionCount, size_t(const GURL& origin_url));
+  MOCK_CONST_METHOD1(GetConnectionCount, size_t(const url::Origin& origin));
 
   MOCK_METHOD2(ReportOutstandingBlobs,
-               void(const GURL& origin_url, bool blobs_outstanding));
+               void(const url::Origin& origin, bool blobs_outstanding));
 
  protected:
   virtual ~MockIndexedDBFactory();
 
   MOCK_METHOD7(OpenBackingStore,
                scoped_refptr<IndexedDBBackingStore>(
-                   const GURL& origin_url,
+                   const url::Origin& origin,
                    const base::FilePath& data_directory,
                    net::URLRequestContext* request_context,
                    blink::WebIDBDataLoss* data_loss,
@@ -69,7 +69,7 @@ class MockIndexedDBFactory : public IndexedDBFactory {
 
   MOCK_METHOD8(OpenBackingStoreHelper,
                scoped_refptr<IndexedDBBackingStore>(
-                   const GURL& origin_url,
+                   const url::Origin& origin,
                    const base::FilePath& data_directory,
                    net::URLRequestContext* request_context,
                    blink::WebIDBDataLoss* data_loss,
