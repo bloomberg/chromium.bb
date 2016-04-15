@@ -6,7 +6,6 @@
 
 #include "base/auto_reset.h"
 #include "base/logging.h"
-#include "ui/events/blink/blink_event_util.h"
 #include "ui/events/gesture_detection/motion_event.h"
 
 namespace ui {

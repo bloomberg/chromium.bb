@@ -26,6 +26,7 @@ static_library("dom_keycode_converter") {
 
   deps = [
     "//base",
+    "//ipc:param_traits",
   ]
 }
 

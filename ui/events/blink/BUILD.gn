@@ -20,5 +20,6 @@ source_set("blink") {
     "//ui/events",
     "//ui/events:gesture_detection",
     "//ui/gfx/geometry",
+    "//ui/latency_info",
   ]
 }
