@@ -35,6 +35,8 @@ void AXWindowObjWrapper::GetChildren(
     std::vector<AXAuraObjWrapper*>* out_children) {
   aura::Window::Windows children = window_->children();
   for (size_t i = 0; i < children.size(); ++i) {
+    if (!children[i]->IsVisible())
+      continue;
     out_children->push_back(
         AXAuraObjCache::GetInstance()->GetOrCreate(children[i]));
   }
@@ -64,7 +66,7 @@ int32_t AXWindowObjWrapper::GetID() {
   return AXAuraObjCache::GetInstance()->GetID(window_);
 }
 
-void AXWindowObjWrapper::OnWindowDestroying(aura::Window* window) {
+void AXWindowObjWrapper::OnWindowDestroyed(aura::Window* window) {
   AXAuraObjCache::GetInstance()->Remove(window);
 }
 
