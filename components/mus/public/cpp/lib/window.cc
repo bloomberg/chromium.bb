@@ -15,9 +15,12 @@
 #include "components/mus/common/transient_window_utils.h"
 #include "components/mus/public/cpp/lib/window_private.h"
 #include "components/mus/public/cpp/lib/window_tree_client_impl.h"
+#include "components/mus/public/cpp/property_type_converters.h"
 #include "components/mus/public/cpp/window_observer.h"
+#include "components/mus/public/cpp/window_property.h"
 #include "components/mus/public/cpp/window_surface.h"
 #include "components/mus/public/cpp/window_tracker.h"
+#include "components/mus/public/interfaces/window_manager.mojom.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -430,6 +433,13 @@ void Window::Embed(mus::mojom::WindowTreeClientPtr client,
 void Window::RequestClose() {
   if (tree_client())
     tree_client()->RequestClose(this);
+}
+
+std::string Window::GetName() const {
+  if (HasSharedProperty(mojom::WindowManager::kName_Property))
+    return GetSharedProperty<std::string>(mojom::WindowManager::kName_Property);
+
+  return std::string();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

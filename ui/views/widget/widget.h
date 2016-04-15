@@ -213,6 +213,8 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     // If null, a default implementation will be constructed. The default
     // implementation deletes itself when the Widget closes.
     WidgetDelegate* delegate;
+    // Internal name. Propagated to the NativeWidget. Useful for debugging.
+    std::string name;
     bool child;
     // If TRANSLUCENT_WINDOW, the widget may be fully or partially transparent.
     // If OPAQUE_WINDOW, we can perform optimizations based on the widget being
@@ -763,6 +765,9 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // Under aura menus close by way of activation getting reset when the owner
   // closes.
   virtual void OnOwnerClosing();
+
+  // Returns the internal name for this Widget and NativeWidget.
+  std::string GetName() const;
 
   // Overridden from NativeWidgetDelegate:
   bool IsModal() const override;

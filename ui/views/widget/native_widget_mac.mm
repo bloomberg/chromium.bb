@@ -119,6 +119,7 @@ int NativeWidgetMac::SheetPositionY() {
 
 void NativeWidgetMac::InitNativeWidget(const Widget::InitParams& params) {
   ownership_ = params.ownership;
+  name_ = params.name;
   base::scoped_nsobject<NSWindow> window([CreateNSWindow(params) retain]);
   [window setReleasedWhenClosed:NO];  // Owned by scoped_nsobject.
   bridge_->Init(window, params);
@@ -588,6 +589,10 @@ void NativeWidgetMac::OnSizeConstraintsChanged() {
 
 void NativeWidgetMac::RepostNativeEvent(gfx::NativeEvent native_event) {
   NOTIMPLEMENTED();
+}
+
+std::string NativeWidgetMac::GetName() const {
+  return name_;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

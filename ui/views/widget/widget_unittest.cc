@@ -154,6 +154,19 @@ TEST_F(WidgetTest, WidgetInitParams) {
   EXPECT_EQ(Widget::InitParams::INFER_OPACITY, init1.opacity);
 }
 
+// Tests that the internal name is propagated through widget initialization to
+// the native widget and back.
+TEST_F(WidgetTest, GetName) {
+  Widget widget;
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
+  params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.name = "MyWidget";
+  widget.Init(params);
+
+  EXPECT_EQ("MyWidget", widget.native_widget_private()->GetName());
+  EXPECT_EQ("MyWidget", widget.GetName());
+}
+
 TEST_F(WidgetTest, NativeWindowProperty) {
   const char* key = "foo";
   int value = 3;

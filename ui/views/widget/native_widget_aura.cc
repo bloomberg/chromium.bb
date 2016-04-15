@@ -101,6 +101,7 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
   DCHECK(params.parent || params.context);
 
   ownership_ = params.ownership;
+  name_ = params.name;
 
   RegisterNativeWidgetForWindow(this, window_);
   window_->SetType(GetAuraWindowTypeForWidgetType(params.type));
@@ -736,6 +737,10 @@ void NativeWidgetAura::OnSizeConstraintsChanged() {
 
 void NativeWidgetAura::RepostNativeEvent(gfx::NativeEvent native_event) {
   OnEvent(native_event);
+}
+
+std::string NativeWidgetAura::GetName() const {
+  return name_;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -401,6 +401,7 @@ void DesktopNativeWidgetAura::InitNativeWidget(
     const Widget::InitParams& params) {
   ownership_ = params.ownership;
   widget_type_ = params.type;
+  name_ = params.name;
 
   NativeWidgetAura::RegisterNativeWidgetForWindow(this, content_window_);
   // Animations on TYPE_WINDOW are handled by the OS. Additionally if we animate
@@ -944,6 +945,10 @@ void DesktopNativeWidgetAura::OnSizeConstraintsChanged() {
 
 void DesktopNativeWidgetAura::RepostNativeEvent(gfx::NativeEvent native_event) {
   OnEvent(native_event);
+}
+
+std::string DesktopNativeWidgetAura::GetName() const {
+  return name_;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

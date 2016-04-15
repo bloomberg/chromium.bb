@@ -20,6 +20,8 @@ import "ui/mojo/geometry/geometry.mojom";
 // with WindowTreeClient, further WindowTree requests this interface from
 // WindowTreeClient supplied at the time the WindowTreeHost is created.
 interface WindowManager {
+  // Internal window name. Useful for debugging. Type: mojom::String
+  const string kName_Property = "prop:name";
   // The window's preferred size as defined by its content. Type: gfx::Size.
   const string kPreferredSize_Property = "prop:preferred-size";
   // The window's resize behavior. Type: ResizeBehavior.

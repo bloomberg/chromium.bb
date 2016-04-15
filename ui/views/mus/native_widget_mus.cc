@@ -352,6 +352,10 @@ void NativeWidgetMus::ConfigurePropertiesForNewWindow(
     (*properties)[mus::mojom::WindowManager::kUserSetBounds_Property] =
         mojo::ConvertTo<std::vector<uint8_t>>(init_params.bounds);
   }
+  if (!init_params.name.empty()) {
+    (*properties)[mus::mojom::WindowManager::kName_Property] =
+        mojo::ConvertTo<std::vector<uint8_t>>(init_params.name);
+  }
 
   if (!Widget::RequiresNonClientView(init_params.type))
     return;
@@ -877,6 +881,10 @@ void NativeWidgetMus::OnSizeConstraintsChanged() {
 
 void NativeWidgetMus::RepostNativeEvent(gfx::NativeEvent native_event) {
   // NOTIMPLEMENTED();
+}
+
+std::string NativeWidgetMus::GetName() const {
+  return window_->GetName();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

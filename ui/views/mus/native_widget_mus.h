@@ -168,6 +168,7 @@ class VIEWS_MUS_EXPORT NativeWidgetMus : public internal::NativeWidgetPrivate,
   bool IsTranslucentWindowOpacitySupported() const override;
   void OnSizeConstraintsChanged() override;
   void RepostNativeEvent(gfx::NativeEvent native_event) override;
+  std::string GetName() const override;
 
   // Overridden from aura::WindowDelegate:
   gfx::Size GetMinimumSize() const override;

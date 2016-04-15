@@ -5,6 +5,8 @@
 #ifndef UI_VIEWS_WIDGET_NATIVE_WIDGET_PRIVATE_H_
 #define UI_VIEWS_WIDGET_NATIVE_WIDGET_PRIVATE_H_
 
+#include <string>
+
 #include "base/strings/string16.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/native_widget_types.h"
@@ -222,6 +224,9 @@ class VIEWS_EXPORT NativeWidgetPrivate : public NativeWidget {
 
   // Repost an unhandled event to the native widget for default OS processing.
   virtual void RepostNativeEvent(gfx::NativeEvent native_event) = 0;
+
+  // Returns an internal name that matches the name of the associated Widget.
+  virtual std::string GetName() const = 0;
 
   // Overridden from NativeWidget:
   internal::NativeWidgetPrivate* AsNativeWidgetPrivate() override;

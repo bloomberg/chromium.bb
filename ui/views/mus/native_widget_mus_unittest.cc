@@ -193,5 +193,18 @@ TEST_F(NativeWidgetMusTest, ValidLayerTree) {
   EXPECT_TRUE(widget->GetNativeWindow()->layer()->Contains(content->layer()));
 }
 
+// Tests that the internal name is propagated from the Widget to the
+// mus::Window.
+TEST_F(NativeWidgetMusTest, GetName) {
+  Widget widget;
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
+  params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.name = "MyWidget";
+  widget.Init(params);
+  mus::Window* window =
+      static_cast<NativeWidgetMus*>(widget.native_widget_private())->window();
+  EXPECT_EQ("MyWidget", window->GetName());
+}
+
 }  // namespace
 }  // namespace views

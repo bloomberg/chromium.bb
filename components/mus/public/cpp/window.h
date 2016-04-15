@@ -218,6 +218,9 @@ class Window {
   // to a better place.
   void RequestClose();
 
+  // Returns an internal name, set by a client app when it creates a window.
+  std::string GetName() const;
+
  protected:
   // This class is subclassed only by test classes that provide a public ctor.
   Window();

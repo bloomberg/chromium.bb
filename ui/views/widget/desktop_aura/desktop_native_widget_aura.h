@@ -5,6 +5,8 @@
 #ifndef UI_VIEWS_WIDGET_DESKTOP_AURA_DESKTOP_NATIVE_WIDGET_AURA_H_
 #define UI_VIEWS_WIDGET_DESKTOP_AURA_DESKTOP_NATIVE_WIDGET_AURA_H_
 
+#include <string>
+
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/aura/client/focus_change_observer.h"
@@ -173,6 +175,7 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   bool IsTranslucentWindowOpacitySupported() const override;
   void OnSizeConstraintsChanged() override;
   void RepostNativeEvent(gfx::NativeEvent native_event) override;
+  std::string GetName() const override;
 
   // Overridden from aura::WindowDelegate:
   gfx::Size GetMinimumSize() const override;
@@ -240,6 +243,9 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
 
   // See class documentation for Widget in widget.h for a note about ownership.
   Widget::InitParams::Ownership ownership_;
+
+  // Internal name.
+  std::string name_;
 
   std::unique_ptr<DesktopCaptureClient> capture_client_;
 
