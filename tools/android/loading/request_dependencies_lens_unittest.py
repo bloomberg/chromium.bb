@@ -72,11 +72,14 @@ class TestRequests(object):
 
   @classmethod
   def CreateLoadingTrace(cls, trace_events=None):
-    return test_utils.LoadingTraceFromEvents(
+    trace = test_utils.LoadingTraceFromEvents(
         [cls.FIRST_REDIRECT_REQUEST, cls.SECOND_REDIRECT_REQUEST,
          cls.REDIRECTED_REQUEST, cls.REQUEST, cls.JS_REQUEST, cls.JS_REQUEST_2,
          cls.JS_REQUEST_OTHER_FRAME, cls.JS_REQUEST_UNRELATED_FRAME],
         cls.PAGE_EVENTS, trace_events)
+    # Serialize and deserialize so that clients can change events without
+    # affecting future tests.
+    return LoadingTrace.FromJsonDict(trace.ToJsonDict())
 
 
 class RequestDependencyLensTestCase(unittest.TestCase):

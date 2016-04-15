@@ -18,8 +18,19 @@ class FakeRequestTrack(devtools_monitor.Track):
     super(FakeRequestTrack, self).__init__(None)
     self._events = [self._RewriteEvent(e) for e in events]
 
+  def Handle(self, _method, _msg):
+    assert False  # Should never be called.
+
   def GetEvents(self):
     return self._events
+
+  def ToJsonDict(self):
+    cls = request_track.RequestTrack
+    return {cls._EVENTS_KEY: [
+        rq.ToJsonDict() for rq in self.GetEvents()],
+            cls._METADATA_KEY: {
+                cls._DUPLICATES_KEY: 0,
+                cls._INCONSISTENT_INITIATORS_KEY: 0}}
 
   def _RewriteEvent(self, event):
     # This modifies the instance used across tests, so this method
@@ -33,6 +44,9 @@ class FakePageTrack(devtools_monitor.Track):
     super(FakePageTrack, self).__init__(None)
     self._events = events
 
+  def Handle(self, _method, _msg):
+    assert False  # Should never be called.
+
   def GetEvents(self):
     return self._events
 
@@ -41,6 +55,9 @@ class FakePageTrack(devtools_monitor.Track):
     # Make sure our laziness is not an issue here.
     assert event['method'] == page_track.PageTrack.FRAME_STARTED_LOADING
     return event['frame_id']
+
+  def ToJsonDict(self):
+    return {'events': [event for event in self._events]}
 
 
 def MakeRequestWithTiming(

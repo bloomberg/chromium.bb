@@ -115,6 +115,8 @@ class TracingTrack(devtools_monitor.Track):
 
   @classmethod
   def FromJsonDict(cls, json_dict):
+    if not json_dict:
+      return None
     assert 'events' in json_dict
     events = [Event(e) for e in json_dict['events']]
     tracing_track = TracingTrack(None)

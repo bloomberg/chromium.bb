@@ -390,14 +390,14 @@ class Listener(object):
       event_name: (str) Event name, as registered.
       event: (dict) complete event.
     """
-    pass
+    raise NotImplementedError
 
 
 class Track(Listener):
   """Collects data from a DevTools server."""
   def GetEvents(self):
     """Returns a list of collected events, finalizing the state if necessary."""
-    pass
+    raise NotImplementedError
 
   def ToJsonDict(self):
     """Serializes to a dictionary, to be dumped as JSON.
@@ -406,10 +406,10 @@ class Track(Listener):
       A dict that can be dumped by the json module, and loaded by
       FromJsonDict().
     """
-    pass
+    raise NotImplementedError
 
   @classmethod
-  def FromJsonDict(cls, json_dict):
+  def FromJsonDict(cls, _json_dict):
     """Returns a Track instance constructed from data dumped by
        Track.ToJsonDict().
 
@@ -419,4 +419,8 @@ class Track(Listener):
     Returns:
       a Track instance.
     """
-    pass
+    # There is no sensible way to deserialize this abstract class, but
+    # subclasses are not required to define a deserialization method. For
+    # example, for testing we have a FakeRequestTrack which is never
+    # deserialized; instead fake instances are deserialized as RequestTracks.
+    assert False

@@ -42,7 +42,8 @@ class LoadingTrace(object):
     result = {self._URL_KEY: self.url, self._METADATA_KEY: self.metadata,
               self._PAGE_KEY: self.page_track.ToJsonDict(),
               self._REQUEST_KEY: self.request_track.ToJsonDict(),
-              self._TRACING_KEY: self.tracing_track.ToJsonDict()}
+              self._TRACING_KEY: (self.tracing_track.ToJsonDict()
+                                  if self.tracing_track else None)}
     return result
 
   def ToJsonFile(self, json_path):
@@ -111,7 +112,8 @@ class LoadingTrace(object):
     self._tracing_track = None
 
   def _RestoreTracingTrack(self):
-    assert self._tracing_json_str
+    if not self._tracing_json_str:
+      return None
     self._tracing_track = tracing.TracingTrack.FromJsonDict(
         json.loads(self._tracing_json_str))
     self._tracing_json_str = None

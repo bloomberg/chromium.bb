@@ -16,9 +16,15 @@ if __name__ == '__main__':
 
   suite = unittest.TestSuite()
   loader = unittest.TestLoader()
-  pattern = '*%s*_unittest.py' % ('' if len(sys.argv) < 2 else sys.argv[1])
   root_dir = os.path.dirname(os.path.realpath(__file__))
-  suite.addTests(loader.discover(start_dir=root_dir, pattern=pattern))
+  if len(sys.argv) < 2:
+    cases = loader.discover(start_dir=root_dir, pattern='*_unittest.py')
+  else:
+    cases = []
+    for module in sys.argv[1:]:
+      pattern = '{}_unittest.py'.format(module)
+      cases.extend(loader.discover(start_dir=root_dir, pattern=pattern))
+  suite.addTests(cases)
   res = unittest.TextTestRunner(verbosity=2).run(suite)
   if res.wasSuccessful():
     sys.exit(0)
