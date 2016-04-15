@@ -240,8 +240,8 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
       const std::vector<AXEventNotificationDetails>& details);
 
   // Called when the renderer process updates the location of accessibility
-  // objects.
-  virtual void OnLocationChanges(
+  // objects. Calls SendLocationChangeEvents(), which can be overridden.
+  void OnLocationChanges(
       const std::vector<AccessibilityHostMsg_LocationChangeParams>& params);
 
   // Called when a new find in page result is received. We hold on to this
@@ -365,6 +365,12 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
       const ui::AXTreeUpdate& initial_tree,
       BrowserAccessibilityDelegate* delegate,
       BrowserAccessibilityFactory* factory);
+
+  // Send platform-specific notifications to each of these objects that
+  // their location has changed. This is called by OnLocationChanges
+  // after it's updated the internal data structure.
+  virtual void SendLocationChangeEvents(
+      const std::vector<AccessibilityHostMsg_LocationChangeParams>& params);
 
  private:
   // The following states keep track of whether or not the

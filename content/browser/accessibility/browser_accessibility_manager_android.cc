@@ -208,7 +208,8 @@ void BrowserAccessibilityManagerAndroid::NotifyAccessibilityEvent(
   if (event_type == ui::AX_EVENT_TREE_CHANGED)
     return;
 
-  // Layout changes are handled in OnLocationChanges.
+  // Layout changes are handled in OnLocationChanges and
+  // SendLocationChangeEvents.
   if (event_type == ui::AX_EVENT_LAYOUT_COMPLETE)
     return;
 
@@ -281,7 +282,7 @@ void BrowserAccessibilityManagerAndroid::NotifyAccessibilityEvent(
   }
 }
 
-void BrowserAccessibilityManagerAndroid::OnLocationChanges(
+void BrowserAccessibilityManagerAndroid::SendLocationChangeEvents(
       const std::vector<AccessibilityHostMsg_LocationChangeParams>& params) {
   // Android is not very efficient at handling notifications, and location
   // changes in particular are frequent and not time-critical. If a lot of
@@ -297,7 +298,7 @@ void BrowserAccessibilityManagerAndroid::OnLocationChanges(
     return;
   }
 
-  BrowserAccessibilityManager::OnLocationChanges(params);
+  BrowserAccessibilityManager::SendLocationChangeEvents(params);
 }
 
 base::android::ScopedJavaLocalRef<jstring>

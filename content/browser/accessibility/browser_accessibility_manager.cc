@@ -393,7 +393,16 @@ void BrowserAccessibilityManager::OnLocationChanges(
       continue;
     ui::AXNode* node = obj->node();
     node->SetLocation(params[i].new_location);
-    obj->OnLocationChanged();
+  }
+  SendLocationChangeEvents(params);
+}
+
+void BrowserAccessibilityManager::SendLocationChangeEvents(
+    const std::vector<AccessibilityHostMsg_LocationChangeParams>& params) {
+  for (size_t i = 0; i < params.size(); ++i) {
+    BrowserAccessibility* obj = GetFromID(params[i].id);
+    if (obj)
+      obj->OnLocationChanged();
   }
 }
 
