@@ -95,7 +95,7 @@ the `foo::mojom` namespace to avoid collisions with non-generated typenames.
 In this example the generated `frob::mojom::Frobinator` has a single
 pure virtual function:
 
-```
+```cpp
 namespace frob {
 
 class Frobinator {
@@ -113,7 +113,7 @@ provides a means of binding pipes to it.
 
 Let's look at some sample code:
 
-```
+```cpp
 // src/components/frob/frobinator_impl.cc
 
 #include "components/frob/public/interfaces/frobinator.mojom.h"
@@ -148,7 +148,7 @@ and it dispatches them to methods on the bound `T` implementation.
 for a strongly-typed message pipe endpoint. A common way to create new message
 pipes is via the `GetProxy` call defined in `interface_request.h`:
 
-```
+```cpp
 mojom::FrobinatorPtr proxy;
 mojom::FrobinatorRequest request = mojo::GetProxy(&proxy);
 ```
@@ -169,7 +169,7 @@ serializing a corresponding message and writing it to the pipe.
 
 Hence we can put this together to talk to a `FrobinatorImpl` over a pipe:
 
-```
+```cpp
 frob:mojom::FrobinatorPtr frobinator;
 frob::FrobinatorImpl impl(GetProxy(&frobinator));
 
@@ -208,7 +208,7 @@ interface Frobinator {
 
 and update our implementation:
 
-```
+```cpp
 class FrobinatorImpl : public mojom::Frobinator {
  public:
   // ...
@@ -225,7 +225,7 @@ When the service implementation runs `callback`, the response arguments are
 serialized and sent back over the pipe. The proxy on the other end knows how to
 read this response and will in turn dispatch it to a callback on that end:
 
-```
+```cpp
 void ShowLevels(int min, int max) {
   DLOG(INFO) << "Frobinator min=" << min << " max=" << max;
 }
@@ -262,7 +262,7 @@ either bind it to a service implementation of some kind or you will close it, ef
 We can build a simple browser-side `FrobinatorImpl` service that has access to a
 `BrowserContext` for any frame which connects to it:
 
-```
+```cpp
 #include "base/macros.h"
 #include "components/frob/public/interfaces/frobinator.mojom.h"
 #include "content/public/browser/browser_context.h"
@@ -305,7 +305,7 @@ class FrobinatorImpl : public mojom::Frobinator {
 Now somewhere in the browser we register the Frobinator service with each
 `RenderFrameHost` ([this](https://goo.gl/HEFn63) is a popular spot):
 
-```
+```cpp
 frame_host->GetServiceRegistry()->AddService<frob::mojom::Frobinator>(
     base::Bind(
         &frob::FrobinatorImpl::Create,
@@ -314,7 +314,7 @@ frame_host->GetServiceRegistry()->AddService<frob::mojom::Frobinator>(
 
 And in the render process we can now do something like:
 
-```
+```cpp
 mojom::FrobinatorPtr frobinator;
 render_frame->GetServiceRegistry()->ConnectToRemoteService(
     mojo::GetProxy(&frobinator));
