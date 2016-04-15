@@ -55,17 +55,6 @@ ProcessingInstruction* ProcessingInstruction::create(Document& document, const S
 
 ProcessingInstruction::~ProcessingInstruction()
 {
-#if !ENABLE(OILPAN)
-    if (m_sheet)
-        clearSheet();
-
-    // FIXME: ProcessingInstruction should not be in document here.
-    // However, if we add DCHECK(!inShadowIncludingDocument()), fast/xsl/xslt-entity.xml
-    // crashes. We need to investigate ProcessingInstruction lifetime.
-    if (inShadowIncludingDocument() && m_isCSS)
-        document().styleEngine().removeStyleSheetCandidateNode(this);
-    clearEventListenerForXSLT();
-#endif
 }
 
 EventListener* ProcessingInstruction::eventListenerForXSLT()

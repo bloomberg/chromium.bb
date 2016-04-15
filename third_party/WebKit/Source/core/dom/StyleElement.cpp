@@ -55,10 +55,6 @@ StyleElement::StyleElement(Document* document, bool createdByParser)
 
 StyleElement::~StyleElement()
 {
-#if !ENABLE(OILPAN)
-    if (m_sheet)
-        clearSheet();
-#endif
 }
 
 StyleElement::ProcessingResult StyleElement::processStyleSheet(Document& document, Element* element)
