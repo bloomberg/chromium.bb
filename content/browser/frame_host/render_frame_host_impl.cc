@@ -897,10 +897,30 @@ void RenderFrameHostImpl::OnDidStartProvisionalLoad(
 
 void RenderFrameHostImpl::OnDidFailProvisionalLoadWithError(
     const FrameHostMsg_DidFailProvisionalLoadWithError_Params& params) {
-  if (!IsBrowserSideNavigationEnabled() && navigation_handle_) {
+  if (!navigation_handle_) {
+    bad_message::ReceivedBadMessage(
+        GetProcess(), bad_message::RFH_FAIL_PROVISIONAL_LOAD_NO_HANDLE);
+    return;
+  }
+
+  if (IsBrowserSideNavigationEnabled() &&
+      navigation_handle_->GetNetErrorCode() == net::OK) {
+    // The renderer should not be sending this message unless asked to commit
+    // an error page.
+    // TODO(clamy): Stop sending DidFailProvisionalLoad IPCs at all when enough
+    // observers have moved to DidFinishNavigation.
+    bad_message::ReceivedBadMessage(
+        GetProcess(), bad_message::RFH_FAIL_PROVISIONAL_LOAD_NO_ERROR);
+    return;
+  }
+
+  // Update the error code in the NavigationHandle of the navigation.
+  // PlzNavigate: this has already done in NavigationRequest::OnRequestFailed.
+  if (!IsBrowserSideNavigationEnabled()) {
     navigation_handle_->set_net_error_code(
         static_cast<net::Error>(params.error_code));
   }
+
   frame_tree_node_->navigator()->DidFailProvisionalLoadWithError(this, params);
 }
 

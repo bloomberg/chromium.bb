@@ -61714,6 +61714,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="117" label="BDH_INVALID_REFCOUNT_OPERATION"/>
   <int value="118" label="BDH_INVALID_URL_OPERATION"/>
   <int value="119" label="IDBDH_INVALID_ORIGIN"/>
+  <int value="120" label="RFH_FAIL_PROVISIONAL_LOAD_NO_HANDLE"/>
+  <int value="121" label="RFH_FAIL_PROVISIONAL_LOAD_NO_ERROR"/>
 </enum>
 
 <enum name="BadMessageReasonExtensions" type="int">
