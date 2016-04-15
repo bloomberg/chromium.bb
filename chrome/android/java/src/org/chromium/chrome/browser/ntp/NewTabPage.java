@@ -540,6 +540,7 @@ public class NewTabPage
         @Override
         public void onSnippetDismissed(SnippetArticle dismissedSnippet) {
             if (mIsDestroyed) return;
+            NewTabPageUma.recordSnippetAction(NewTabPageUma.SNIPPETS_ACTION_DISMISSED);
             mSnippetsBridge.discardSnippet(dismissedSnippet);
         }
     };

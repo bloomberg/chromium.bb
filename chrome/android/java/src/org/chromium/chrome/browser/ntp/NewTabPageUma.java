@@ -61,7 +61,8 @@ public class NewTabPageUma {
     private static final int NUM_NTP_IMPRESSION = 2;
 
     /** Possible interactions with the snippets. */
-    @IntDef({SNIPPETS_ACTION_SHOWN, SNIPPETS_ACTION_SCROLLED, SNIPPETS_ACTION_CLICKED})
+    @IntDef({SNIPPETS_ACTION_SHOWN, SNIPPETS_ACTION_SCROLLED, SNIPPETS_ACTION_CLICKED,
+            SNIPPETS_ACTION_DISMISSED})
     @Retention(RetentionPolicy.SOURCE)
     public @interface SnippetsAction {}
     /** Snippets are enabled and are being shown to the user. */
@@ -70,8 +71,10 @@ public class NewTabPageUma {
     public static final int SNIPPETS_ACTION_SCROLLED = 1;
     /** A snippet has been clicked. */
     public static final int SNIPPETS_ACTION_CLICKED = 2;
+    /** A snippet has been swiped away. */
+    public static final int SNIPPETS_ACTION_DISMISSED = 3;
     /** The number of possible actions. */
-    private static final int NUM_SNIPPETS_ACTIONS = 3;
+    private static final int NUM_SNIPPETS_ACTIONS = 4;
 
     /**
      * Records an action taken by the user on the NTP.
