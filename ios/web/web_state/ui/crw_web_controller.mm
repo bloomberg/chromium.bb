@@ -393,6 +393,12 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 @property(nonatomic, readonly) NSString* currentReferrerString;
 // Identifier used for storing and retrieving certificates.
 @property(nonatomic, readonly) int certGroupID;
+// Dictionary where keys are the names of WKWebView properties and values are
+// selector names which should be called when a corresponding property has
+// changed. e.g. @{ @"URL" : @"webViewURLDidChange" } means that
+// -[self webViewURLDidChange] must be called every time when WKWebView.URL is
+// changed.
+@property(nonatomic, readonly) NSDictionary* WKWebViewObservers;
 // Removes the container view from the hierarchy and resets the ivar.
 - (void)resetContainerView;
 // Resets any state that is associated with a specific document object (e.g.,
@@ -934,6 +940,17 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
 - (int)certGroupID {
   return self.webState->GetCertGroupId();
+}
+
+- (NSDictionary*)WKWebViewObservers {
+  return @{
+    @"certificateChain" : @"webViewSecurityFeaturesDidChange",
+    @"estimatedProgress" : @"webViewEstimatedProgressDidChange",
+    @"hasOnlySecureContent" : @"webViewSecurityFeaturesDidChange",
+    @"loading" : @"webViewLoadingStateDidChange",
+    @"title" : @"webViewTitleDidChange",
+    @"URL" : @"webViewURLDidChange",
+  };
 }
 
 // NativeControllerDelegate method, called to inform that title has changed.
@@ -4199,19 +4216,16 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 }
 
 - (void)didBlockPopupWithURL:(GURL)popupURL sourceURL:(GURL)sourceURL {
-  if (![self.delegate
-          respondsToSelector:@selector(webController:didBlockPopup:)]) {
-    return;
+  if ([_delegate respondsToSelector:@selector(webController:didBlockPopup:)]) {
+    base::WeakNSObject<CRWWebController> weakSelf(self);
+    dispatch_async(dispatch_get_main_queue(), ^{
+      [self queryPageReferrerPolicy:^(NSString* policy) {
+        [weakSelf didBlockPopupWithURL:popupURL
+                             sourceURL:sourceURL
+                        referrerPolicy:base::SysNSStringToUTF8(policy)];
+      }];
+    });
   }
-
-  base::WeakNSObject<CRWWebController> weakSelf(self);
-  dispatch_async(dispatch_get_main_queue(), ^{
-    [self queryPageReferrerPolicy:^(NSString* policy) {
-      [weakSelf didBlockPopupWithURL:popupURL
-                           sourceURL:sourceURL
-                      referrerPolicy:base::SysNSStringToUTF8(policy)];
-    }];
-  });
 }
 
 - (BOOL)isPutativeMainFrameRequest:(NSURLRequest*)request
@@ -4418,7 +4432,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   }
   [_webView setNavigationDelegate:nil];
   [_webView setUIDelegate:nil];
-  for (NSString* keyPath in self.wkWebViewObservers) {
+  for (NSString* keyPath in self.WKWebViewObservers) {
     [_webView removeObserver:self forKeyPath:keyPath];
   }
   [self clearActivityIndicatorTasks];
@@ -4440,7 +4454,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   }
   [_webView setNavigationDelegate:self];
   [_webView setUIDelegate:self];
-  for (NSString* keyPath in self.wkWebViewObservers) {
+  for (NSString* keyPath in self.WKWebViewObservers) {
     [_webView addObserver:self forKeyPath:keyPath options:0 context:nullptr];
   }
   [self clearInjectedScriptManagers];
@@ -4931,22 +4945,11 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 #pragma mark -
 #pragma mark KVO Observation
 
-- (NSDictionary*)wkWebViewObservers {
-  return @{
-    @"certificateChain" : @"webViewSecurityFeaturesDidChange",
-    @"estimatedProgress" : @"webViewEstimatedProgressDidChange",
-    @"hasOnlySecureContent" : @"webViewSecurityFeaturesDidChange",
-    @"loading" : @"webViewLoadingStateDidChange",
-    @"title" : @"webViewTitleDidChange",
-    @"URL" : @"webViewURLDidChange",
-  };
-}
-
 - (void)observeValueForKeyPath:(NSString*)keyPath
                       ofObject:(id)object
                         change:(NSDictionary*)change
                        context:(void*)context {
-  NSString* dispatcherSelectorName = self.wkWebViewObservers[keyPath];
+  NSString* dispatcherSelectorName = self.WKWebViewObservers[keyPath];
   DCHECK(dispatcherSelectorName);
   if (dispatcherSelectorName)
     [self performSelector:NSSelectorFromString(dispatcherSelectorName)];
@@ -5006,7 +5009,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     DVLOG(1) << "Received nil URL callback";
     return;
   }
-  GURL url(net::GURLWithNSURL([self.webView URL]));
+  GURL URL(net::GURLWithNSURL([self.webView URL]));
   // URL changes happen at three points:
   // 1) When a load starts; at this point, the load is provisional, and
   //    it should be ignored until it's committed, since the document/window
@@ -5034,10 +5037,10 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // window.location.href will match the previous URL at this stage, not the web
   // view's current URL.
   if (![self.webView isLoading]) {
-    if (self.documentURL == url)
+    if (self.documentURL == URL)
       return;
-    [self URLDidChangeWithoutDocumentChange:url];
-  } else if ([self isKVOChangePotentialSameDocumentNavigationToURL:url]) {
+    [self URLDidChangeWithoutDocumentChange:URL];
+  } else if ([self isKVOChangePotentialSameDocumentNavigationToURL:URL]) {
     [self.webView
         evaluateJavaScript:@"window.location.href"
          completionHandler:^(id result, NSError* error) {
@@ -5046,30 +5049,30 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
            if (!self.webView || ![result isKindOfClass:[NSString class]]) {
              return;
            }
-           GURL jsURL([result UTF8String]);
+           GURL JSURL([result UTF8String]);
            // Check that window.location matches the new URL. If
            // it does not, this is a document-changing URL change as
            // the window location would not have changed to the new
            // URL when the script was called.
-           BOOL windowLocationMatchesNewURL = jsURL == url;
+           BOOL windowLocationMatchesNewURL = JSURL == URL;
            // Re-check origin in case navigaton has occured since
            // start of JavaScript evaluation.
            BOOL newURLOriginMatchesDocumentURLOrigin =
-               self.documentURL.GetOrigin() == url.GetOrigin();
+               self.documentURL.GetOrigin() == URL.GetOrigin();
            // Check that the web view URL still matches the new URL.
            // TODO(crbug.com/563568): webViewURLMatchesNewURL check
            // may drop same document URL changes if pending URL
            // change occurs immediately after. Revisit heuristics to
            // prevent this.
            BOOL webViewURLMatchesNewURL =
-               net::GURLWithNSURL([self.webView URL]) == url;
+               net::GURLWithNSURL([self.webView URL]) == URL;
            // Check that the new URL is different from the current
            // document URL. If not, URL change should not be reported.
-           BOOL URLDidChangeFromDocumentURL = url != self.documentURL;
+           BOOL URLDidChangeFromDocumentURL = URL != self.documentURL;
            if (windowLocationMatchesNewURL &&
                newURLOriginMatchesDocumentURLOrigin &&
                webViewURLMatchesNewURL && URLDidChangeFromDocumentURL) {
-             [self URLDidChangeWithoutDocumentChange:url];
+             [self URLDidChangeWithoutDocumentChange:URL];
            }
          }];
   }
