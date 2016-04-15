@@ -6,7 +6,6 @@
 
 #include "core/css/CSSCustomPropertyDeclaration.h"
 #include "core/css/parser/CSSParserTokenRange.h"
-#include "core/css/parser/CSSParserValues.h"
 
 namespace blink {
 
