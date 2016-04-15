@@ -1491,7 +1491,7 @@ media::GpuVideoAcceleratorFactories* RenderThreadImpl::GetGpuFactories() {
 std::unique_ptr<WebGraphicsContext3DCommandBufferImpl>
 RenderThreadImpl::CreateOffscreenContext3d() {
   // This is used to create a few different offscreen contexts:
-  // - The shared main thread context (offscreen) used by blink for canvas
+  // - The shared main thread context (offscreen) used by blink for canvas.
   // - The worker context (offscreen) used for GPU raster and video decoding.
   // This is for an offscreen context, so the default framebuffer doesn't need
   // alpha, depth, stencil, antialiasing.
@@ -1507,6 +1507,8 @@ RenderThreadImpl::CreateOffscreenContext3d() {
   bool automatic_flushes = false;
   scoped_refptr<gpu::GpuChannelHost> gpu_channel_host(EstablishGpuChannelSync(
       CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE));
+  if (!gpu_channel_host)
+    return nullptr;
   return base::WrapUnique(
       WebGraphicsContext3DCommandBufferImpl::CreateOffscreenContext(
           gpu_channel_host.get(), attributes, gfx::PreferIntegratedGpu,

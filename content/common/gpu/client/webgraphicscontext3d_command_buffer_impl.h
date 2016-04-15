@@ -131,10 +131,6 @@ class WebGraphicsContext3DCommandBufferImpl
     return real_gl_.get();
   }
 
-  // Return true if GPU process reported context lost or there was a
-  // problem communicating with the GPU process.
-  bool IsCommandBufferContextLost();
-
   // Create & initialize a WebGraphicsContext3DCommandBufferImpl.  Return NULL
   // on any failure.
   static CONTENT_EXPORT WebGraphicsContext3DCommandBufferImpl*

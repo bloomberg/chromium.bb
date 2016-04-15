@@ -310,15 +310,6 @@ WebGraphicsContext3DCommandBufferImpl::GetContextSupport() {
   return real_gl_.get();
 }
 
-bool WebGraphicsContext3DCommandBufferImpl::IsCommandBufferContextLost() {
-  // If the channel shut down unexpectedly, let that supersede the
-  // command buffer's state.
-  if (host_.get() && host_->IsLost())
-    return true;
-  gpu::CommandBuffer::State state = command_buffer_->GetLastState();
-  return gpu::error::IsError(state.error);
-}
-
 // static
 WebGraphicsContext3DCommandBufferImpl*
 WebGraphicsContext3DCommandBufferImpl::CreateOffscreenContext(
@@ -330,12 +321,7 @@ WebGraphicsContext3DCommandBufferImpl::CreateOffscreenContext(
     const GURL& active_url,
     const SharedMemoryLimits& limits,
     WebGraphicsContext3DCommandBufferImpl* share_context) {
-  if (!host)
-    return NULL;
-
-  if (share_context && share_context->IsCommandBufferContextLost())
-    return NULL;
-
+  DCHECK(host);
   return new WebGraphicsContext3DCommandBufferImpl(
       gpu::kNullSurfaceHandle, active_url, host, attributes, gpu_preference,
       share_resources, automatic_flushes, limits, share_context);

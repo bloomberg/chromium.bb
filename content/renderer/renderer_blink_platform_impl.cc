@@ -75,6 +75,7 @@
 #include "content/renderer/webclipboard_impl.h"
 #include "content/renderer/webgraphicscontext3d_provider_impl.h"
 #include "content/renderer/webpublicsuffixlist_impl.h"
+#include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "ipc/ipc_sync_message_filter.h"
@@ -975,36 +976,31 @@ static void Collect3DContextInformationOnFailure(
     gpu::GpuChannelHost* host) {
   DCHECK(gl_info);
   std::string error_message("OffscreenContext Creation failed, ");
-  if (host) {
-    const gpu::GPUInfo& gpu_info = host->gpu_info();
-    gl_info->vendorId = gpu_info.gpu.vendor_id;
-    gl_info->deviceId = gpu_info.gpu.device_id;
-    switch (gpu_info.context_info_state) {
-      case gpu::kCollectInfoSuccess:
-      case gpu::kCollectInfoNonFatalFailure:
-        gl_info->rendererInfo = WebString::fromUTF8(gpu_info.gl_renderer);
-        gl_info->vendorInfo = WebString::fromUTF8(gpu_info.gl_vendor);
-        gl_info->driverVersion = WebString::fromUTF8(gpu_info.driver_version);
-        gl_info->resetNotificationStrategy =
-            gpu_info.gl_reset_notification_strategy;
-        gl_info->sandboxed = gpu_info.sandboxed;
-        gl_info->processCrashCount = gpu_info.process_crash_count;
-        gl_info->amdSwitchable = gpu_info.amd_switchable;
-        gl_info->optimus = gpu_info.optimus;
-        break;
-      case gpu::kCollectInfoFatalFailure:
-      case gpu::kCollectInfoNone:
-        error_message.append(
-            "Failed to collect gpu information, GLSurface or GLContext "
-            "creation failed");
-        gl_info->errorMessage = WebString::fromUTF8(error_message);
-        break;
-      default:
-        NOTREACHED();
-    }
-  } else {
-    error_message.append("GpuChannelHost creation failed");
-    gl_info->errorMessage = WebString::fromUTF8(error_message);
+  const gpu::GPUInfo& gpu_info = host->gpu_info();
+  gl_info->vendorId = gpu_info.gpu.vendor_id;
+  gl_info->deviceId = gpu_info.gpu.device_id;
+  switch (gpu_info.context_info_state) {
+    case gpu::kCollectInfoSuccess:
+    case gpu::kCollectInfoNonFatalFailure:
+      gl_info->rendererInfo = WebString::fromUTF8(gpu_info.gl_renderer);
+      gl_info->vendorInfo = WebString::fromUTF8(gpu_info.gl_vendor);
+      gl_info->driverVersion = WebString::fromUTF8(gpu_info.driver_version);
+      gl_info->resetNotificationStrategy =
+          gpu_info.gl_reset_notification_strategy;
+      gl_info->sandboxed = gpu_info.sandboxed;
+      gl_info->processCrashCount = gpu_info.process_crash_count;
+      gl_info->amdSwitchable = gpu_info.amd_switchable;
+      gl_info->optimus = gpu_info.optimus;
+      break;
+    case gpu::kCollectInfoFatalFailure:
+    case gpu::kCollectInfoNone:
+      error_message.append(
+          "Failed to collect gpu information, GLSurface or GLContext "
+          "creation failed");
+      gl_info->errorMessage = WebString::fromUTF8(error_message);
+      break;
+    default:
+      NOTREACHED();
   }
 }
 
@@ -1024,6 +1020,21 @@ RendererBlinkPlatformImpl::createOffscreenGraphicsContext3DProvider(
   scoped_refptr<gpu::GpuChannelHost> gpu_channel_host(
       RenderThreadImpl::current()->EstablishGpuChannelSync(
           CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE));
+  if (!gpu_channel_host) {
+    std::string error_message(
+        "OffscreenContext Creation failed, GpuChannelHost creation failed");
+    gl_info->errorMessage = WebString::fromUTF8(error_message);
+    return nullptr;
+  }
+
+  // WebGL contexts must fail creation if the share group is lost.
+  if (share_provider &&
+      share_provider->contextGL()->GetGraphicsResetStatusKHR() != GL_NO_ERROR) {
+    std::string error_message(
+        "OffscreenContext Creation failed, Shared context is lost");
+    gl_info->errorMessage = WebString::fromUTF8(error_message);
+    return nullptr;
+  }
 
   WebGraphicsContext3DCommandBufferImpl* share_context =
       share_provider ? static_cast<WebGraphicsContext3DCommandBufferImpl*>(
