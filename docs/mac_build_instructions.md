@@ -251,3 +251,20 @@ If your `git --version` reports 2.6 or higher, the following may also improve
 performance of `git status`:
 
     git update-index --untracked-cache
+
+## Xcode license agreement
+
+If you're getting the error
+
+```
+Agreeing to the Xcode/iOS license requires admin privileges, please re-run as root via sudo.
+```
+
+the Xcode license hasn't been accepted yet which (contrary to the message) any
+user can do by running:
+
+    xcodebuild -license
+
+Only accepting for all users of the machine requires root:
+
+    sudo xcodebuild -license
