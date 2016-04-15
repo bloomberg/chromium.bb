@@ -6,7 +6,7 @@
 #define ASH_WM_WINDOW_STATE_OBSERVER_H_
 
 #include "ash/ash_export.h"
-#include "ash/wm/wm_types.h"
+#include "ash/wm/common/wm_types.h"
 
 namespace ash {
 namespace wm {

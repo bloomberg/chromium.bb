@@ -8,7 +8,7 @@
 #include "ash/ash_export.h"
 #include "ash/shell_delegate.h"
 #include "ash/snap_to_pixel_layout_manager.h"
-#include "ash/wm/wm_types.h"
+#include "ash/wm/common/wm_types.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "ui/aura/layout_manager.h"

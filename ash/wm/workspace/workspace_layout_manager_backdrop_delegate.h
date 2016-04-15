@@ -6,7 +6,7 @@
 #define ASH_WM_WORKSPACE_WORKSPACE_LAYOUT_MANAGER_BACKDROP_DELEGATE_H_
 
 #include "ash/ash_export.h"
-#include "ash/wm/wm_types.h"
+#include "ash/wm/common/wm_types.h"
 
 namespace aura {
 class Window;

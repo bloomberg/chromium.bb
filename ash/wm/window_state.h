@@ -9,8 +9,8 @@
 
 #include "ash/ash_export.h"
 #include "ash/wm/aura/wm_window_aura.h"
+#include "ash/wm/common/wm_types.h"
 #include "ash/wm/drag_details.h"
-#include "ash/wm/wm_types.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/observer_list.h"

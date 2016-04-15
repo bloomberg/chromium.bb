@@ -6,7 +6,7 @@
 #define ASH_WM_COMMON_WM_EVENT_H_
 
 #include "ash/ash_export.h"
-#include "ash/wm/wm_types.h"
+#include "ash/wm/common/wm_types.h"
 #include "base/macros.h"
 #include "ui/gfx/geometry/rect.h"
 

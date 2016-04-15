@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/wm_types.h"
+#include "ash/wm/common/wm_types.h"
 
 #include "base/logging.h"
 
@@ -47,7 +47,7 @@ ui::WindowShowState ToWindowShowState(WindowStateType type) {
 
 bool IsMaximizedOrFullscreenWindowStateType(WindowStateType type) {
   return type == WINDOW_STATE_TYPE_MAXIMIZED ||
-      type == WINDOW_STATE_TYPE_FULLSCREEN;
+         type == WINDOW_STATE_TYPE_FULLSCREEN;
 }
 
 }  // namespace wm

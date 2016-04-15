@@ -6,7 +6,7 @@
 #define ASH_WM_DRAG_DETAILS_H_
 
 #include "ash/ash_export.h"
-#include "ash/wm/wm_types.h"
+#include "ash/wm/common/wm_types.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/wm/public/window_move_client.h"
 

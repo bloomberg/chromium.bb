@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_WM_TYPES_H_
-#define ASH_WM_WM_TYPES_H_
+#ifndef ASH_WM_COMMON_WM_TYPES_H_
+#define ASH_WM_COMMON_WM_TYPES_H_
 
 #include "ash/ash_export.h"
 #include "ui/base/ui_base_types.h"
@@ -57,4 +57,4 @@ ASH_EXPORT bool IsMaximizedOrFullscreenWindowStateType(WindowStateType type);
 }  // namespace wm
 }  // namespace ash
 
-#endif  // ASH_WM_WM_TYPES_H_
+#endif  // ASH_WM_COMMON_WM_TYPES_H_
