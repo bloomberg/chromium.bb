@@ -41,6 +41,7 @@ void GCCallback::OnObjectGC(const v8::WeakCallbackInfo<GCCallback>& data) {
 }
 
 void GCCallback::RunCallback() {
+  fallback_.Reset();
   v8::Isolate* isolate = context_->isolate();
   v8::HandleScope handle_scope(isolate);
   context_->CallFunction(v8::Local<v8::Function>::New(isolate, callback_));
@@ -48,8 +49,10 @@ void GCCallback::RunCallback() {
 }
 
 void GCCallback::OnContextInvalidated() {
-  fallback_.Run();
-  delete this;
+  if (!fallback_.is_null()) {
+    fallback_.Run();
+    delete this;
+  }
 }
 
 }  // namespace extensions
