@@ -221,7 +221,6 @@ PerfProvider::CollectionParams::TriggerParams::TriggerParams(
 
 PerfProvider::PerfProvider()
     : login_observer_(this),
-      next_profiling_interval_start_(base::TimeTicks::Now()),
       weak_factory_(this) {
 }
 
@@ -520,7 +519,9 @@ void PerfProvider::OnSessionRestoreDone(int num_tabs_restored) {
 }
 
 void PerfProvider::OnUserLoggedIn() {
-  login_time_ = base::TimeTicks::Now();
+  const base::TimeTicks now = base::TimeTicks::Now();
+  login_time_ = now;
+  next_profiling_interval_start_ = now;
   ScheduleIntervalCollection();
 }
 
@@ -534,14 +535,22 @@ void PerfProvider::ScheduleIntervalCollection() {
   if (timer_.IsRunning())
     return;
 
+  const base::TimeTicks now = base::TimeTicks::Now();
+
+  base::TimeTicks interval_end =
+      next_profiling_interval_start_ + collection_params_.periodic_interval();
+  if (now > interval_end) {
+    // We somehow missed at least one window. Start over.
+    next_profiling_interval_start_ = now;
+    interval_end = now + collection_params_.periodic_interval();
+  }
+
   // Pick a random time in the current interval.
   base::TimeTicks scheduled_time =
       next_profiling_interval_start_ +
       RandomTimeDelta(collection_params_.periodic_interval());
-
   // If the scheduled time has already passed in the time it took to make the
   // above calculations, trigger the collection event immediately.
-  base::TimeTicks now = base::TimeTicks::Now();
   if (scheduled_time < now)
     scheduled_time = now;
 
@@ -549,7 +558,7 @@ void PerfProvider::ScheduleIntervalCollection() {
                &PerfProvider::DoPeriodicCollection);
 
   // Update the profiling interval tracker to the start of the next interval.
-  next_profiling_interval_start_ += collection_params_.periodic_interval();
+  next_profiling_interval_start_ = interval_end;
 }
 
 void PerfProvider::CollectIfNecessary(
