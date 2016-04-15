@@ -861,6 +861,8 @@
       'browser/api/networking_private/networking_private_linux.h',
     ],
     'extensions_browser_sources_wifi_display': [
+      'browser/api/display_source/wifi_display/wifi_display_media_service_impl.cc',
+      'browser/api/display_source/wifi_display/wifi_display_media_service_impl.h',
       'browser/api/display_source/wifi_display/wifi_display_session_service_impl.cc',
       'browser/api/display_source/wifi_display/wifi_display_session_service_impl.h',
     ],

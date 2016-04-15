@@ -22,6 +22,7 @@
 #include "extensions/common/switches.h"
 
 #if defined(ENABLE_WIFI_DISPLAY)
+#include "extensions/browser/api/display_source/wifi_display/wifi_display_media_service_impl.h"
 #include "extensions/browser/api/display_source/wifi_display/wifi_display_session_service_impl.h"
 #endif
 
@@ -65,6 +66,8 @@ void RegisterServicesForFrame(content::RenderFrameHost* render_frame_host,
     service_registry->AddService(
         base::Bind(WiFiDisplaySessionServiceImpl::BindToRequest,
                    render_frame_host->GetProcess()->GetBrowserContext()));
+    service_registry->AddService(
+        base::Bind(WiFiDisplayMediaServiceImpl::BindToRequest));
   }
 #endif
 }
