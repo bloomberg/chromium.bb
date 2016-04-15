@@ -40,9 +40,11 @@ ACTION_P(RunClosure, closure) {
   closure.Run();
 }
 
-const bool kTrackRecorderTestUseVp9OrNot[] = {false, true};
+const VideoTrackRecorder::CodecId kTrackRecorderTestCodec[] = {
+    VideoTrackRecorder::CodecId::VP8, VideoTrackRecorder::CodecId::VP9};
 
-class VideoTrackRecorderTest : public TestWithParam<bool> {
+class VideoTrackRecorderTest
+    : public TestWithParam<VideoTrackRecorder::CodecId> {
  public:
   VideoTrackRecorderTest()
       : mock_source_(new MockMediaStreamVideoSource(false)) {
@@ -61,7 +63,7 @@ class VideoTrackRecorderTest : public TestWithParam<bool> {
     blink_track_.setExtraData(track_);
 
     video_track_recorder_.reset(new VideoTrackRecorder(
-        GetParam() /* use_vp9 */, blink_track_,
+        GetParam() /* codec */, blink_track_,
         base::Bind(&VideoTrackRecorderTest::OnEncodedVideo,
                    base::Unretained(this)),
         0 /* bits_per_second */));
@@ -173,6 +175,6 @@ TEST_P(VideoTrackRecorderTest, VideoEncoding) {
 
 INSTANTIATE_TEST_CASE_P(,
                         VideoTrackRecorderTest,
-                        ValuesIn(kTrackRecorderTestUseVp9OrNot));
+                        ValuesIn(kTrackRecorderTestCodec));
 
 }  // namespace content

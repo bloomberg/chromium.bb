@@ -28,14 +28,18 @@ namespace content {
 class CONTENT_EXPORT VideoTrackRecorder
     : NON_EXPORTED_BASE(public MediaStreamVideoSink) {
  public:
+  enum class CodecId {
+    VP8,
+    VP9,
+  };
+
   using OnEncodedVideoCB =
       base::Callback<void(const scoped_refptr<media::VideoFrame>& video_frame,
                           std::unique_ptr<std::string> encoded_data,
                           base::TimeTicks capture_timestamp,
                           bool is_key_frame)>;
 
-  // |use_vp9| forces using VP9, otherwise VP8 will be used by default.
-  VideoTrackRecorder(bool use_vp9,
+  VideoTrackRecorder(CodecId codec,
                      const blink::WebMediaStreamTrack& track,
                      const OnEncodedVideoCB& on_encoded_video_cb,
                      int32_t bits_per_second);
@@ -55,7 +59,7 @@ class CONTENT_EXPORT VideoTrackRecorder
   // We need to hold on to the Blink track to remove ourselves on dtor.
   blink::WebMediaStreamTrack track_;
 
-  // Forward declaration and member of an inner class to encode using VPx.
+  // Inner class to encode using whichever codec is configured.
   class VpxEncoder;
   const scoped_refptr<VpxEncoder> encoder_;
 

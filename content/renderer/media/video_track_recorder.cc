@@ -382,13 +382,14 @@ base::TimeDelta VideoTrackRecorder::VpxEncoder::CalculateFrameDuration(
 }
 
 VideoTrackRecorder::VideoTrackRecorder(
-    bool use_vp9,
+    CodecId codec,
     const blink::WebMediaStreamTrack& track,
     const OnEncodedVideoCB& on_encoded_video_callback,
     int32_t bits_per_second)
     : track_(track),
-      encoder_(
-          new VpxEncoder(use_vp9, on_encoded_video_callback, bits_per_second)) {
+      encoder_(new VpxEncoder(codec == CodecId::VP9,
+                              on_encoded_video_callback,
+                              bits_per_second)) {
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
   DCHECK(!track_.isNull());
   DCHECK(track_.getExtraData());

@@ -68,7 +68,8 @@ bool MediaRecorderHandler::canSupportMimeType(
   static const char* const kVideoCodecs[] = { "vp8", "vp9", "opus" };
   static const char* const kAudioCodecs[] = { "opus" };
   const char* const* codecs = video ? &kVideoCodecs[0] : &kAudioCodecs[0];
-  int codecs_count =  video ? arraysize(kVideoCodecs) : arraysize(kAudioCodecs);
+  const int codecs_count =
+      video ? arraysize(kVideoCodecs) : arraysize(kAudioCodecs);
 
   std::vector<std::string> codecs_list;
   media::ParseCodecString(web_codecs.utf8(), &codecs_list, true /* strip */);
@@ -165,7 +166,9 @@ bool MediaRecorderHandler::start(int timeslice) {
             &MediaRecorderHandler::OnEncodedVideo, weak_factory_.GetWeakPtr()));
 
     video_recorders_.push_back(new VideoTrackRecorder(
-        use_vp9_, video_track, on_encoded_video_cb, video_bits_per_second_));
+        use_vp9_ ? VideoTrackRecorder::CodecId::VP9
+                 : VideoTrackRecorder::CodecId::VP8,
+        video_track, on_encoded_video_cb, video_bits_per_second_));
   }
 
   if (use_audio_tracks) {
