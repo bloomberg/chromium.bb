@@ -36,6 +36,11 @@
   :group 'gn
   :type 'integer)
 
+(defcustom gn-format-command "gn format --stdin"
+  "The command to run to format gn files in place."
+  :group 'gn
+  :type 'string)
+
 (defgroup gn-faces nil
   "Faces used in Generate Ninja mode."
   :group 'gn
@@ -122,6 +127,20 @@ variable name or the '{{' and '}}' which surround it."
       ;; Never return nil; `fill-paragraph' will perform its default behavior
       ;; if we do.
       t))
+
+(defun gn-run-format ()
+  "Run 'gn format' on the buffer in place."
+  (interactive)
+  ;; We can't `save-excursion' here; that will put us at the beginning of the
+  ;; shell output, aka the beginning of the document.
+  (let ((my-start-line (line-number-at-pos)))
+    (shell-command-on-region (point-min) (point-max) gn-format-command nil t)
+    (goto-line my-start-line)))
+
+(defvar gn-mode-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map "\C-c\C-f" 'gn-run-format)
+    map))
 
 ;;;###autoload
 (define-derived-mode gn-mode prog-mode "GN"
