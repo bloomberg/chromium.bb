@@ -233,9 +233,13 @@ scoped_ptr<NaClDescWrapper> MakeShmNaClDesc(
     const base::SharedMemoryHandle& handle,
     size_t size) {
 #if defined(OS_MACOSX)
-  return scoped_ptr<NaClDescWrapper>(new NaClDescWrapper(
-      NaClDescImcShmMachMake(handle.GetMemoryObject(), size)));
-#else
+  if (handle.GetType() == base::SharedMemoryHandle::MACH) {
+    return scoped_ptr<NaClDescWrapper>(new NaClDescWrapper(
+        NaClDescImcShmMachMake(handle.GetMemoryObject(), size)));
+  }
+  CHECK_EQ(base::SharedMemoryHandle::POSIX, handle.GetType());
+#endif
+
   return scoped_ptr<NaClDescWrapper>(new NaClDescWrapper(NaClDescImcShmMake(
 #if defined(OS_WIN)
       handle.GetHandle(),
@@ -243,7 +247,6 @@ scoped_ptr<NaClDescWrapper> MakeShmNaClDesc(
       base::SharedMemory::GetFdFromSharedMemoryHandle(handle),
 #endif
       size)));
-#endif
 }
 
 }  // namespace

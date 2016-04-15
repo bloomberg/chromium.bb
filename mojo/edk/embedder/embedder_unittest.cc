@@ -302,6 +302,9 @@ TEST_F(EmbedderTest, MAYBE_MultiprocessBaseSharedMemory) {
     // from it.
     base::SharedMemoryCreateOptions options;
     options.size = 123;
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+    options.type = base::SharedMemoryHandle::POSIX;
+#endif
     base::SharedMemory shared_memory;
     ASSERT_TRUE(shared_memory.Create(options));
     base::SharedMemoryHandle shm_handle = base::SharedMemory::DuplicateHandle(
@@ -373,6 +376,139 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(MultiprocessSharedMemoryClient, EmbedderTest,
   // closed the handle.
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, MojoClose(sb1));
 }
+
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+TEST_F(EmbedderTest, MultiprocessMachSharedMemory) {
+  RUN_CHILD_ON_PIPE(MultiprocessSharedMemoryClient, server_mp)
+    // 1. Create a Mach base::SharedMemory object and create a mojo shared
+    // buffer from it.
+    base::SharedMemoryCreateOptions options;
+    options.size = 123;
+    options.type = base::SharedMemoryHandle::MACH;
+    base::SharedMemory shared_memory;
+    ASSERT_TRUE(shared_memory.Create(options));
+    base::SharedMemoryHandle shm_handle = base::SharedMemory::DuplicateHandle(
+        shared_memory.handle());
+    MojoHandle sb1;
+    ASSERT_EQ(MOJO_RESULT_OK,
+              CreateSharedBufferWrapper(shm_handle, 123, false, &sb1));
+
+    // 2. Map |sb1| and write something into it.
+    char* buffer = nullptr;
+    ASSERT_EQ(MOJO_RESULT_OK,
+              MojoMapBuffer(sb1, 0, 123, reinterpret_cast<void**>(&buffer), 0));
+    ASSERT_TRUE(buffer);
+    memcpy(buffer, kHelloWorld, sizeof(kHelloWorld));
+
+    // 3. Duplicate |sb1| into |sb2| and pass to |server_mp|.
+    MojoHandle sb2 = MOJO_HANDLE_INVALID;
+    EXPECT_EQ(MOJO_RESULT_OK, MojoDuplicateBufferHandle(sb1, 0, &sb2));
+    EXPECT_NE(MOJO_HANDLE_INVALID, sb2);
+    WriteMessageWithHandles(server_mp, "hello", &sb2, 1);
+
+    // 4. Read a message from |server_mp|.
+    EXPECT_EQ("bye", ReadMessage(server_mp));
+
+    // 5. Expect that the contents of the shared buffer have changed.
+    EXPECT_EQ(kByeWorld, std::string(buffer));
+
+    // 6. Map the original base::SharedMemory and expect it contains the
+    // expected value.
+    ASSERT_TRUE(shared_memory.Map(123));
+    EXPECT_EQ(kByeWorld,
+              std::string(static_cast<char*>(shared_memory.memory())));
+
+    ASSERT_EQ(MOJO_RESULT_OK, MojoClose(sb1));
+  END_CHILD()
+}
+
+const base::SharedMemoryHandle::Type kTestHandleTypes[] = {
+  base::SharedMemoryHandle::MACH,
+  base::SharedMemoryHandle::POSIX,
+  base::SharedMemoryHandle::POSIX,
+  base::SharedMemoryHandle::MACH,
+};
+
+// Test that we can mix file descriptor and mach port handles.
+TEST_F(EmbedderTest, MultiprocessMixMachAndFds) {
+  const size_t kShmSize = 1234;
+  RUN_CHILD_ON_PIPE(MultiprocessMixMachAndFdsClient, server_mp)
+    // 1. Create the base::SharedMemory objects and mojo handles from them.
+    MojoHandle platform_handles[arraysize(kTestHandleTypes)];
+    for (size_t i = 0; i < arraysize(kTestHandleTypes); i++) {
+      const auto type = kTestHandleTypes[i];
+      base::SharedMemoryCreateOptions options;
+      options.size = kShmSize;
+      options.type = type;
+      base::SharedMemory shared_memory;
+      ASSERT_TRUE(shared_memory.Create(options));
+      base::SharedMemoryHandle shm_handle = base::SharedMemory::DuplicateHandle(
+          shared_memory.handle());
+      ScopedPlatformHandle scoped_handle;
+      if (type == base::SharedMemoryHandle::POSIX)
+        scoped_handle.reset(PlatformHandle(shm_handle.GetFileDescriptor().fd));
+      else
+        scoped_handle.reset(PlatformHandle(shm_handle.GetMemoryObject()));
+      ASSERT_EQ(MOJO_RESULT_OK, CreatePlatformHandleWrapper(
+          std::move(scoped_handle), platform_handles + i));
+
+      // Map the shared memory object and write the type into it. 'P' for POSIX,
+      // and 'M' for Mach.
+      ASSERT_TRUE(shared_memory.Map(kShmSize));
+      static_cast<char*>(shared_memory.memory())[0] =
+          type == base::SharedMemoryHandle::POSIX ? 'P' : 'M';
+    }
+
+    // 2. Send all the handles to the child.
+    WriteMessageWithHandles(server_mp, "hello", platform_handles,
+                            arraysize(kTestHandleTypes));
+
+    // 3. Read a message from |server_mp|.
+    EXPECT_EQ("bye", ReadMessage(server_mp));
+  END_CHILD()
+}
+
+DEFINE_TEST_CLIENT_TEST_WITH_PIPE(MultiprocessMixMachAndFdsClient, EmbedderTest,
+                                  client_mp) {
+  const int kNumHandles = 4;
+  const size_t kShmSize = 1234;
+  MojoHandle platform_handles[kNumHandles];
+
+  // 1. Read from |client_mp|, which should have a message containing
+  // |kNumHandles| handles.
+  EXPECT_EQ("hello",
+            ReadMessageWithHandles(client_mp, platform_handles, kNumHandles));
+
+  // 2. Extract each handle, map it, and verify the type.
+  for (int i = 0; i < kNumHandles; i++) {
+    ScopedPlatformHandle scoped_handle;
+    ASSERT_EQ(MOJO_RESULT_OK,
+              PassWrappedPlatformHandle(platform_handles[i], &scoped_handle));
+    base::SharedMemoryHandle shm_handle;
+    char type = 0;
+    if (scoped_handle.get().type == PlatformHandle::Type::POSIX) {
+      shm_handle = base::SharedMemoryHandle(scoped_handle.release().handle,
+                                            false);
+      type = 'P';
+    } else {
+      shm_handle = base::SharedMemoryHandle(scoped_handle.release().port,
+                                            kShmSize, base::GetCurrentProcId());
+      type = 'M';
+    }
+
+    // Verify the type order.
+    EXPECT_EQ(kTestHandleTypes[i], shm_handle.GetType());
+
+    base::SharedMemory shared_memory(shm_handle, false);
+    ASSERT_TRUE(shared_memory.Map(kShmSize));
+    EXPECT_EQ(type, static_cast<char*>(shared_memory.memory())[0]);
+  }
+
+  // 3. Say bye!
+  WriteMessage(client_mp, "bye");
+}
+
+#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 
 // TODO(vtl): Test immediate write & close.
 // TODO(vtl): Test broken-connection cases.
