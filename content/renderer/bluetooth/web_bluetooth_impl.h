@@ -10,10 +10,12 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/thread_task_runner_handle.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "third_party/WebKit/public/platform/modules/bluetooth/WebBluetooth.h"
@@ -60,7 +62,6 @@ class CONTENT_EXPORT WebBluetoothImpl
       const blink::WebString& service_instance_id,
       const blink::WebString& characteristics_uuid,
       blink::WebBluetoothGetCharacteristicsCallbacks* callbacks) override;
-
   void readValue(const blink::WebString& characteristic_instance_id,
                  blink::WebBluetoothReadValueCallbacks* callbacks) override;
   void writeValue(const blink::WebString& characteristic_instance_id,
@@ -86,6 +87,10 @@ class CONTENT_EXPORT WebBluetoothImpl
       mojo::Array<uint8_t> value) override;
 
   // Callbacks for WebBluetoothService calls:
+  void OnReadValueComplete(
+      std::unique_ptr<blink::WebBluetoothReadValueCallbacks> callbacks,
+      blink::mojom::WebBluetoothError error,
+      mojo::Array<uint8_t> value);
   void OnWriteValueComplete(
       const blink::WebVector<uint8_t>& value,
       std::unique_ptr<blink::WebBluetoothWriteValueCallbacks> callbacks,
@@ -95,6 +100,10 @@ class CONTENT_EXPORT WebBluetoothImpl
       blink::mojom::WebBluetoothError error);
   void OnStopNotificationsComplete(
       std::unique_ptr<blink::WebBluetoothNotificationsCallbacks> callbacks);
+
+  void DispatchCharacteristicValueChanged(
+      const std::string& characteristic_instance_id,
+      const std::vector<uint8_t>& value);
 
   BluetoothDispatcher* GetDispatcher();
 

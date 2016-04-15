@@ -77,6 +77,9 @@ class WebBluetoothServiceImpl : public blink::mojom::WebBluetoothService,
       blink::mojom::WebBluetoothServiceClientAssociatedPtrInfo client) override;
 
   // WebBluetoothService methods:
+  void RemoteCharacteristicReadValue(
+      const mojo::String& characteristic_instance_id,
+      const RemoteCharacteristicReadValueCallback& callback) override;
   void RemoteCharacteristicWriteValue(
       const mojo::String& characteristic_instance_id,
       mojo::Array<uint8_t> value,
@@ -87,6 +90,13 @@ class WebBluetoothServiceImpl : public blink::mojom::WebBluetoothService,
   void RemoteCharacteristicStopNotifications(
       const mojo::String& characteristic_instance_id,
       const RemoteCharacteristicStopNotificationsCallback& callback) override;
+
+  // Callbacks for BluetoothGattCharacteristic::ReadRemoteCharacteristic.
+  void OnReadValueSuccess(const RemoteCharacteristicReadValueCallback& callback,
+                          const std::vector<uint8_t>& value);
+  void OnReadValueFailed(
+      const RemoteCharacteristicReadValueCallback& callback,
+      device::BluetoothGattService::GattErrorCode error_code);
 
   // Callbacks for BluetoothGattCharacteristic::WriteRemoteCharacteristic.
   void OnWriteValueSuccess(

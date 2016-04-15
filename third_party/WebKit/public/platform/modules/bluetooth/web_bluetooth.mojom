@@ -79,6 +79,16 @@ interface WebBluetoothService {
   // a device disconnects.
   SetClient(associated WebBluetoothServiceClient client);
 
+  // Reads the value for characteristic with
+  // |characteristic_instance_id|. If the value is successfully read the
+  // callback will be run with WebBluetoothError::SUCCESS and the
+  // characteristic's value. If the value is not successfully read the
+  // callback with be run with the corresponding error and nullptr for value.
+  RemoteCharacteristicReadValue(
+    string characteristic_instance_id) => (
+    WebBluetoothError error,
+    array<uint8>? value);
+
   // Writes a value to the characteristic with
   // |characteristic_instance_id|. The callback is run with
   // WebBluetoothError::SUCCESS if the value was successfully

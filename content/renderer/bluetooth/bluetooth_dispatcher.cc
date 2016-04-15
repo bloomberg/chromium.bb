@@ -155,10 +155,6 @@ void BluetoothDispatcher::OnMessageReceived(const IPC::Message& msg) {
                       OnGetCharacteristicsSuccess);
   IPC_MESSAGE_HANDLER(BluetoothMsg_GetCharacteristicsError,
                       OnGetCharacteristicsError);
-  IPC_MESSAGE_HANDLER(BluetoothMsg_ReadCharacteristicValueSuccess,
-                      OnReadValueSuccess);
-  IPC_MESSAGE_HANDLER(BluetoothMsg_ReadCharacteristicValueError,
-                      OnReadValueError);
   IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   DCHECK(handled) << "Unhandled message:" << msg.type();
@@ -243,16 +239,6 @@ void BluetoothDispatcher::getCharacteristics(
   Send(new BluetoothHostMsg_GetCharacteristics(
       CurrentWorkerId(), request_id, frame_routing_id,
       service_instance_id.utf8(), characteristics_uuid.utf8()));
-}
-
-void BluetoothDispatcher::readValue(
-    int frame_routing_id,
-    const blink::WebString& characteristic_instance_id,
-    blink::WebBluetoothReadValueCallbacks* callbacks) {
-  int request_id = pending_read_value_requests_.Add(callbacks);
-  Send(new BluetoothHostMsg_ReadValue(CurrentWorkerId(), request_id,
-                                      frame_routing_id,
-                                      characteristic_instance_id.utf8()));
 }
 
 void BluetoothDispatcher::WillStopCurrentWorkerThread() {
@@ -393,30 +379,6 @@ void BluetoothDispatcher::OnGetCharacteristicsError(int thread_id,
       ->callbacks->onError(WebBluetoothError(error));
 
   pending_characteristics_requests_.Remove(request_id);
-}
-
-void BluetoothDispatcher::OnReadValueSuccess(
-    int thread_id,
-    int request_id,
-    const std::vector<uint8_t>& value) {
-  DCHECK(pending_read_value_requests_.Lookup(request_id)) << request_id;
-
-  // WebArrayBuffer is not accessible from Source/modules so we pass a
-  // WebVector instead.
-  pending_read_value_requests_.Lookup(request_id)->onSuccess(value);
-
-  pending_read_value_requests_.Remove(request_id);
-}
-
-void BluetoothDispatcher::OnReadValueError(int thread_id,
-                                           int request_id,
-                                           WebBluetoothError error) {
-  DCHECK(pending_read_value_requests_.Lookup(request_id)) << request_id;
-
-  pending_read_value_requests_.Lookup(request_id)
-      ->onError(WebBluetoothError(error));
-
-  pending_read_value_requests_.Remove(request_id);
 }
 
 }  // namespace content

@@ -177,10 +177,6 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
                             int frame_routing_id,
                             const std::string& service_instance_id,
                             const std::string& characteristics_uuid);
-  void OnReadValue(int thread_id,
-                   int request_id,
-                   int frame_routing_id,
-                   const std::string& characteristic_instance_id);
 
   // Callbacks for BluetoothDevice::OnRequestDevice.
   // If necessary, the adapter must be obtained before continuing to Impl.
@@ -232,15 +228,6 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
       const device::BluetoothGattService& service,
       int thread_id,
       int request_id);
-
-  // Callbacks for BluetoothGattCharacteristic::ReadRemoteCharacteristic.
-  void OnCharacteristicValueRead(int thread_id,
-                                 int request_id,
-                                 const std::vector<uint8_t>& value);
-  void OnCharacteristicReadValueError(
-      int thread_id,
-      int request_id,
-      device::BluetoothGattService::GattErrorCode);
 
   // Functions to query the platform cache for the bluetooth object.
   // result.outcome == CacheQueryOutcome::SUCCESS if the object was found in the

@@ -168,45 +168,6 @@ WebBluetoothError TranslateConnectError(
   return WebBluetoothError::UNTRANSLATED_CONNECT_ERROR_CODE;
 }
 
-WebBluetoothError TranslateGATTError(
-    BluetoothGattService::GattErrorCode error_code,
-    UMAGATTOperation operation) {
-  switch (error_code) {
-    case BluetoothGattService::GATT_ERROR_UNKNOWN:
-      RecordGATTOperationOutcome(operation, UMAGATTOperationOutcome::UNKNOWN);
-      return blink::WebBluetoothError::GATT_UNKNOWN_ERROR;
-    case BluetoothGattService::GATT_ERROR_FAILED:
-      RecordGATTOperationOutcome(operation, UMAGATTOperationOutcome::FAILED);
-      return blink::WebBluetoothError::GATT_UNKNOWN_FAILURE;
-    case BluetoothGattService::GATT_ERROR_IN_PROGRESS:
-      RecordGATTOperationOutcome(operation,
-                                 UMAGATTOperationOutcome::IN_PROGRESS);
-      return blink::WebBluetoothError::GATT_OPERATION_IN_PROGRESS;
-    case BluetoothGattService::GATT_ERROR_INVALID_LENGTH:
-      RecordGATTOperationOutcome(operation,
-                                 UMAGATTOperationOutcome::INVALID_LENGTH);
-      return blink::WebBluetoothError::GATT_INVALID_ATTRIBUTE_LENGTH;
-    case BluetoothGattService::GATT_ERROR_NOT_PERMITTED:
-      RecordGATTOperationOutcome(operation,
-                                 UMAGATTOperationOutcome::NOT_PERMITTED);
-      return blink::WebBluetoothError::GATT_NOT_PERMITTED;
-    case BluetoothGattService::GATT_ERROR_NOT_AUTHORIZED:
-      RecordGATTOperationOutcome(operation,
-                                 UMAGATTOperationOutcome::NOT_AUTHORIZED);
-      return blink::WebBluetoothError::GATT_NOT_AUTHORIZED;
-    case BluetoothGattService::GATT_ERROR_NOT_PAIRED:
-      RecordGATTOperationOutcome(operation,
-                                 UMAGATTOperationOutcome::NOT_PAIRED);
-      return blink::WebBluetoothError::GATT_NOT_PAIRED;
-    case BluetoothGattService::GATT_ERROR_NOT_SUPPORTED:
-      RecordGATTOperationOutcome(operation,
-                                 UMAGATTOperationOutcome::NOT_SUPPORTED);
-      return blink::WebBluetoothError::GATT_NOT_SUPPORTED;
-  }
-  NOTREACHED();
-  return blink::WebBluetoothError::GATT_UNTRANSLATED_ERROR_CODE;
-}
-
 void StopDiscoverySession(
     std::unique_ptr<device::BluetoothDiscoverySession> discovery_session) {
   // Nothing goes wrong if the discovery session fails to stop, and we don't
@@ -310,7 +271,6 @@ bool BluetoothDispatcherHost::OnMessageReceived(const IPC::Message& message) {
   IPC_MESSAGE_HANDLER(BluetoothHostMsg_GetPrimaryService, OnGetPrimaryService)
   IPC_MESSAGE_HANDLER(BluetoothHostMsg_GetCharacteristic, OnGetCharacteristic)
   IPC_MESSAGE_HANDLER(BluetoothHostMsg_GetCharacteristics, OnGetCharacteristics)
-  IPC_MESSAGE_HANDLER(BluetoothHostMsg_ReadValue, OnReadValue)
   IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -958,44 +918,6 @@ void BluetoothDispatcherHost::OnGetCharacteristics(
           : WebBluetoothError::CHARACTERISTIC_NOT_FOUND));
 }
 
-void BluetoothDispatcherHost::OnReadValue(
-    int thread_id,
-    int request_id,
-    int frame_routing_id,
-    const std::string& characteristic_instance_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  RecordWebBluetoothFunctionCall(
-      UMAWebBluetoothFunction::CHARACTERISTIC_READ_VALUE);
-
-  const CacheQueryResult query_result = QueryCacheForCharacteristic(
-      GetOrigin(frame_routing_id), characteristic_instance_id);
-
-  if (query_result.outcome == CacheQueryOutcome::BAD_RENDERER) {
-    return;
-  }
-
-  if (query_result.outcome != CacheQueryOutcome::SUCCESS) {
-    RecordCharacteristicReadValueOutcome(query_result.outcome);
-    Send(new BluetoothMsg_ReadCharacteristicValueError(
-        thread_id, request_id, query_result.GetWebError()));
-    return;
-  }
-
-  if (BluetoothBlacklist::Get().IsExcludedFromReads(
-          query_result.characteristic->GetUUID())) {
-    RecordCharacteristicReadValueOutcome(UMAGATTOperationOutcome::BLACKLISTED);
-    Send(new BluetoothMsg_ReadCharacteristicValueError(
-        thread_id, request_id, WebBluetoothError::BLACKLISTED_READ));
-    return;
-  }
-
-  query_result.characteristic->ReadRemoteCharacteristic(
-      base::Bind(&BluetoothDispatcherHost::OnCharacteristicValueRead,
-                 weak_ptr_on_ui_thread_, thread_id, request_id),
-      base::Bind(&BluetoothDispatcherHost::OnCharacteristicReadValueError,
-                 weak_ptr_on_ui_thread_, thread_id, request_id));
-}
-
 void BluetoothDispatcherHost::OnGetAdapter(
     base::Closure continuation,
     scoped_refptr<device::BluetoothAdapter> adapter) {
@@ -1376,27 +1298,6 @@ void BluetoothDispatcherHost::AddToServicesMapAndSendGetPrimaryServiceSuccess(
   RecordGetPrimaryServiceOutcome(UMAGetPrimaryServiceOutcome::SUCCESS);
   Send(new BluetoothMsg_GetPrimaryServiceSuccess(thread_id, request_id,
                                                  service_identifier));
-}
-
-void BluetoothDispatcherHost::OnCharacteristicValueRead(
-    int thread_id,
-    int request_id,
-    const std::vector<uint8_t>& value) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  RecordCharacteristicReadValueOutcome(UMAGATTOperationOutcome::SUCCESS);
-  Send(new BluetoothMsg_ReadCharacteristicValueSuccess(thread_id, request_id,
-                                                       value));
-}
-
-void BluetoothDispatcherHost::OnCharacteristicReadValueError(
-    int thread_id,
-    int request_id,
-    device::BluetoothGattService::GattErrorCode error_code) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  // TranslateGATTError calls RecordGATTOperationOutcome.
-  Send(new BluetoothMsg_ReadCharacteristicValueError(
-      thread_id, request_id,
-      TranslateGATTError(error_code, UMAGATTOperation::CHARACTERISTIC_READ)));
 }
 
 BluetoothDispatcherHost::CacheQueryResult

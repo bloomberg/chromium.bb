@@ -71,8 +71,10 @@ void WebBluetoothImpl::getCharacteristics(
 void WebBluetoothImpl::readValue(
     const blink::WebString& characteristic_instance_id,
     blink::WebBluetoothReadValueCallbacks* callbacks) {
-  GetDispatcher()->readValue(frame_routing_id_, characteristic_instance_id,
-                             callbacks);
+  GetWebBluetoothService().RemoteCharacteristicReadValue(
+      mojo::String::From(characteristic_instance_id),
+      base::Bind(&WebBluetoothImpl::OnReadValueComplete, base::Unretained(this),
+                 base::Passed(base::WrapUnique(callbacks))));
 }
 
 void WebBluetoothImpl::writeValue(
@@ -126,10 +128,23 @@ void WebBluetoothImpl::registerCharacteristicObject(
 void WebBluetoothImpl::RemoteCharacteristicValueChanged(
     const mojo::String& characteristic_instance_id,
     mojo::Array<uint8_t> value) {
-  auto active_iter = active_characteristics_.find(characteristic_instance_id);
-  if (active_iter != active_characteristics_.end()) {
-    active_iter->second->dispatchCharacteristicValueChanged(
-        value.PassStorage());
+  // We post a task so that the event is fired after any pending promises have
+  // resolved.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::Bind(&WebBluetoothImpl::DispatchCharacteristicValueChanged,
+                 base::Unretained(this), characteristic_instance_id,
+                 value.PassStorage()));
+}
+
+void WebBluetoothImpl::OnReadValueComplete(
+    std::unique_ptr<blink::WebBluetoothReadValueCallbacks> callbacks,
+    blink::mojom::WebBluetoothError error,
+    mojo::Array<uint8_t> value) {
+  if (error == blink::mojom::WebBluetoothError::SUCCESS) {
+    callbacks->onSuccess(value.PassStorage());
+  } else {
+    callbacks->onError(error);
   }
 }
 
@@ -157,6 +172,15 @@ void WebBluetoothImpl::OnStartNotificationsComplete(
 void WebBluetoothImpl::OnStopNotificationsComplete(
     std::unique_ptr<blink::WebBluetoothNotificationsCallbacks> callbacks) {
   callbacks->onSuccess();
+}
+
+void WebBluetoothImpl::DispatchCharacteristicValueChanged(
+    const std::string& characteristic_instance_id,
+    const std::vector<uint8_t>& value) {
+  auto active_iter = active_characteristics_.find(characteristic_instance_id);
+  if (active_iter != active_characteristics_.end()) {
+    active_iter->second->dispatchCharacteristicValueChanged(value);
+  }
 }
 
 BluetoothDispatcher* WebBluetoothImpl::GetDispatcher() {
