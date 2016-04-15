@@ -569,6 +569,7 @@
             '../components/components.gyp:dom_distiller_core_java',
             '../components/components.gyp:gcm_driver_java',
             '../components/components.gyp:infobar_delegate_java',
+            '../components/components.gyp:instance_id_driver_java',
             '../components/components.gyp:invalidation_java',
             '../components/components.gyp:investigated_scenario_java',
             '../components/components.gyp:navigation_interception_java',

@@ -175,6 +175,8 @@
       ],
       'sources': [
         # Note: file list duplicated in GN build.
+        'gcm_driver/instance_id/android/component_jni_registrar.cc',
+        'gcm_driver/instance_id/android/component_jni_registrar.h',
         'gcm_driver/instance_id/instance_id.cc',
         'gcm_driver/instance_id/instance_id.h',
         'gcm_driver/instance_id/instance_id_android.cc',
@@ -186,6 +188,9 @@
       ],
       'conditions': [
         ['OS == "android"', {
+          'dependencies': [
+            'instance_id_driver_jni_headers',
+          ],
           'sources!': [
             'gcm_driver/instance_id/instance_id_impl.cc',
             'gcm_driver/instance_id/instance_id_impl.h',
@@ -300,8 +305,7 @@
           'target_name': 'gcm_driver_java',
           'type': 'none',
           'dependencies': [
-            '../base/base.gyp:base',
-            # TODO(johnme): Fix the layering violation of depending on content/
+            '../base/base.gyp:base_java',
             '../content/content.gyp:content_java',
             '../sync/sync.gyp:sync_java',
           ],
@@ -319,6 +323,31 @@
           ],
           'variables': {
             'jni_gen_package': 'components/gcm_driver',
+          },
+          'includes': [ '../build/jni_generator.gypi' ],
+        },
+        {
+          # GN version: //components/gcm_driver/instance_id/android:instance_id_driver_java
+          'target_name': 'instance_id_driver_java',
+          'type': 'none',
+          'dependencies': [
+            '../base/base.gyp:base_java',
+            '../third_party/android_tools/android_tools.gyp:google_play_services_javalib',
+          ],
+          'variables': {
+            'java_in_dir': 'gcm_driver/instance_id/android/java',
+          },
+          'includes': [ '../build/java.gypi' ],
+        },
+        {
+          # GN version: //components/gcm_driver/instance_id/android:jni_headers
+          'target_name': 'instance_id_driver_jni_headers',
+          'type': 'none',
+          'sources': [
+            'gcm_driver/instance_id/android/java/src/org/chromium/components/gcm_driver/instance_id/InstanceIDBridge.java',
+          ],
+          'variables': {
+            'jni_gen_package': 'components/gcm_driver/instance_id',
           },
           'includes': [ '../build/jni_generator.gypi' ],
         },

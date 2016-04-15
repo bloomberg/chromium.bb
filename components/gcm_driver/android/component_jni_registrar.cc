@@ -14,7 +14,7 @@ namespace gcm {
 namespace android {
 
 static base::android::RegistrationMethod kGCMDriverRegisteredMethods[] = {
-    {"GCMDriver", gcm::GCMDriverAndroid::RegisterBindings},
+    {"GCMDriver", gcm::GCMDriverAndroid::RegisterJni},
 };
 
 bool RegisterGCMDriverJni(JNIEnv* env) {

@@ -54,8 +54,9 @@ scoped_ptr<InstanceID> InstanceID::Create(const std::string& app_id,
 
 InstanceIDImpl::InstanceIDImpl(const std::string& app_id,
                                gcm::InstanceIDHandler* handler)
-    : InstanceID(app_id, handler), weak_ptr_factory_(this) {
-  handler->GetInstanceIDData(
+    : InstanceID(app_id), handler_(handler), weak_ptr_factory_(this) {
+  DCHECK(handler_);
+  handler_->GetInstanceIDData(
       app_id, base::Bind(&InstanceIDImpl::GetInstanceIDDataCompleted,
                          weak_ptr_factory_.GetWeakPtr()));
 }
@@ -126,9 +127,9 @@ void InstanceIDImpl::DoGetToken(
     const GetTokenCallback& callback) {
   EnsureIDGenerated();
 
-  handler()->GetToken(app_id(), authorized_entity, scope, options,
-                      base::Bind(&InstanceIDImpl::OnGetTokenCompleted,
-                                 weak_ptr_factory_.GetWeakPtr(), callback));
+  handler_->GetToken(app_id(), authorized_entity, scope, options,
+                     base::Bind(&InstanceIDImpl::OnGetTokenCompleted,
+                                weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
 void InstanceIDImpl::DeleteToken(const std::string& authorized_entity,
@@ -160,9 +161,9 @@ void InstanceIDImpl::DoDeleteToken(
     return;
   }
 
-  handler()->DeleteToken(app_id(), authorized_entity, scope,
-                         base::Bind(&InstanceIDImpl::OnDeleteTokenCompleted,
-                                    weak_ptr_factory_.GetWeakPtr(), callback));
+  handler_->DeleteToken(app_id(), authorized_entity, scope,
+                        base::Bind(&InstanceIDImpl::OnDeleteTokenCompleted,
+                                   weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
 void InstanceIDImpl::DeleteID(const DeleteIDCallback& callback) {
@@ -184,11 +185,11 @@ void InstanceIDImpl::DoDeleteID(const DeleteIDCallback& callback) {
     return;
   }
 
-  handler()->DeleteAllTokensForApp(
+  handler_->DeleteAllTokensForApp(
       app_id(), base::Bind(&InstanceIDImpl::OnDeleteIDCompleted,
                            weak_ptr_factory_.GetWeakPtr(), callback));
 
-  handler()->RemoveInstanceIDData(app_id());
+  handler_->RemoveInstanceIDData(app_id());
 
   id_.clear();
   creation_time_ = base::Time();
@@ -261,7 +262,7 @@ void InstanceIDImpl::EnsureIDGenerated() {
   creation_time_ = base::Time::Now();
 
   // Save to the persistent store.
-  handler()->AddInstanceIDData(
+  handler_->AddInstanceIDData(
       app_id(), id_, base::Int64ToString(creation_time_.ToInternalValue()));
 }
 

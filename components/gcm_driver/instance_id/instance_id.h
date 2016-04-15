@@ -57,7 +57,7 @@ class InstanceID {
   // Creator.
   // |app_id|: identifies the application that uses the Instance ID.
   // |handler|: provides the GCM functionality needed to support Instance ID.
-  //            Must outlive this class.
+  //            Must outlive this class. On Android, this can be null instead.
   static scoped_ptr<InstanceID> Create(const std::string& app_id,
                                        gcm::InstanceIDHandler* handler);
 
@@ -106,17 +106,11 @@ class InstanceID {
   std::string app_id() const { return app_id_; }
 
  protected:
-  InstanceID(const std::string& app_id, gcm::InstanceIDHandler* handler);
+  InstanceID(const std::string& app_id);
 
   void NotifyTokenRefresh(bool update_id);
 
-  gcm::InstanceIDHandler* handler() const { return handler_; }
-
  private:
-  // Owned by GCMProfileServiceFactory, which is a dependency of
-  // InstanceIDProfileServiceFactory, which owns this.
-  gcm::InstanceIDHandler* handler_;
-
   std::string app_id_;
   TokenRefreshCallback token_refresh_callback_;
 

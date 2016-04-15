@@ -66,6 +66,10 @@ class InstanceIDImpl : public InstanceID {
                      const DeleteTokenCallback& callback);
   void DoDeleteID(const DeleteIDCallback& callback);
 
+  // Owned by GCMProfileServiceFactory, which is a dependency of
+  // InstanceIDProfileServiceFactory, which owns this.
+  gcm::InstanceIDHandler* handler_;
+
   gcm::GCMDelayedTaskController delayed_task_controller_;
 
   // The generated Instance ID.

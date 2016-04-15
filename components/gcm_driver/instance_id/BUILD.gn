@@ -5,6 +5,8 @@
 # GYP version: components/gcm_driver.gypi:instance_id_driver
 source_set("instance_id") {
   sources = [
+    "android/component_jni_registrar.cc",
+    "android/component_jni_registrar.h",
     "instance_id.cc",
     "instance_id.h",
     "instance_id_driver.cc",
@@ -29,6 +31,7 @@ source_set("instance_id") {
       "instance_id_android.cc",
       "instance_id_android.h",
     ]
+    deps += [ "android:jni_headers" ]
   }
 }
 

@@ -111,7 +111,7 @@ void GCMDriverAndroid::OnMessageReceived(
 }
 
 // static
-bool GCMDriverAndroid::RegisterBindings(JNIEnv* env) {
+bool GCMDriverAndroid::RegisterJni(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 

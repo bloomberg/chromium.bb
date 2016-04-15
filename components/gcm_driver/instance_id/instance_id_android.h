@@ -5,12 +5,17 @@
 #ifndef COMPONENTS_GCM_DRIVER_INSTANCE_ID_INSTANCE_ID_ANDROID_H_
 #define COMPONENTS_GCM_DRIVER_INSTANCE_ID_INSTANCE_ID_ANDROID_H_
 
+#include <jni.h>
+
 #include <map>
 #include <string>
 
+#include "base/android/scoped_java_ref.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/id_map.h"
 #include "base/macros.h"
+#include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "components/gcm_driver/instance_id/instance_id.h"
 
@@ -19,10 +24,13 @@ namespace instance_id {
 // InstanceID implementation for Android.
 class InstanceIDAndroid : public InstanceID {
  public:
-  InstanceIDAndroid(const std::string& app_id, gcm::InstanceIDHandler* handler);
+  // Register JNI methods.
+  static bool RegisterJni(JNIEnv* env);
+
+  InstanceIDAndroid(const std::string& app_id);
   ~InstanceIDAndroid() override;
 
-  // InstanceID:
+  // InstanceID implementation:
   void GetID(const GetIDCallback& callback) override;
   void GetCreationTime(const GetCreationTimeCallback& callback) override;
   void GetToken(const std::string& audience,
@@ -34,7 +42,29 @@ class InstanceIDAndroid : public InstanceID {
                    const DeleteTokenCallback& callback) override;
   void DeleteID(const DeleteIDCallback& callback) override;
 
+  // Methods called from Java via JNI:
+  void DidGetToken(JNIEnv* env,
+                   const base::android::JavaParamRef<jobject>& obj,
+                   jint request_id,
+                   const base::android::JavaParamRef<jstring>& jtoken);
+  void DidDeleteToken(JNIEnv* env,
+                      const base::android::JavaParamRef<jobject>& obj,
+                      jint request_id,
+                      jboolean success);
+  void DidDeleteID(JNIEnv* env,
+                   const base::android::JavaParamRef<jobject>& obj,
+                   jint request_id,
+                   jboolean success);
+
  private:
+  base::android::ScopedJavaGlobalRef<jobject> java_ref_;
+
+  IDMap<GetTokenCallback, IDMapOwnPointer> get_token_callbacks_;
+  IDMap<DeleteTokenCallback, IDMapOwnPointer> delete_token_callbacks_;
+  IDMap<DeleteIDCallback, IDMapOwnPointer> delete_id_callbacks_;
+
+  base::ThreadChecker thread_checker_;
+
   DISALLOW_COPY_AND_ASSIGN(InstanceIDAndroid);
 };
 

@@ -12,22 +12,15 @@
 namespace instance_id {
 
 namespace {
-#if !defined(OS_ANDROID)
 const char kInstanceIDFieldTrialName[] = "InstanceID";
 const char kInstanceIDFieldTrialEnabledGroupName[] = "Enabled";
-#endif    // !defined(OS_ANDROID)
 }  // namespace
 
 // static
 bool InstanceIDDriver::IsInstanceIDEnabled() {
-#if defined(OS_ANDROID)
-  // Not implemented yet.
-  return false;
-#else
   std::string group_name =
       base::FieldTrialList::FindFullName(kInstanceIDFieldTrialName);
   return group_name == kInstanceIDFieldTrialEnabledGroupName;
-#endif    // defined(OS_ANDROID)
 }
 
 InstanceIDDriver::InstanceIDDriver(gcm::GCMDriver* gcm_driver)

@@ -162,6 +162,7 @@
 #include "components/bookmarks/common/android/component_jni_registrar.h"
 #include "components/dom_distiller/android/component_jni_registrar.h"
 #include "components/gcm_driver/android/component_jni_registrar.h"
+#include "components/gcm_driver/instance_id/android/component_jni_registrar.h"
 #include "components/invalidation/impl/android/component_jni_registrar.h"
 #include "components/navigation_interception/component_jni_registrar.h"
 #include "components/policy/core/browser/android/component_jni_registrar.h"
@@ -187,6 +188,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"DomDistiller", dom_distiller::android::RegisterDomDistiller},
     {"ChromeDownloadDelegate", RegisterChromeDownloadDelegate},
     {"GCMDriver", gcm::android::RegisterGCMDriverJni},
+    {"InstanceID", instance_id::android::RegisterInstanceIDJni},
     {"Invalidation", invalidation::android::RegisterInvalidationJni},
     {"NavigationInterception",
      navigation_interception::RegisterNavigationInterceptionJni},

@@ -51,7 +51,7 @@ class GCMDriverAndroid : public GCMDriver,
       const base::android::JavaParamRef<jobjectArray>& data_keys_and_values);
 
   // Register JNI methods.
-  static bool RegisterBindings(JNIEnv* env);
+  static bool RegisterJni(JNIEnv* env);
 
   // GCMDriver implementation:
   void OnSignedIn() override;
