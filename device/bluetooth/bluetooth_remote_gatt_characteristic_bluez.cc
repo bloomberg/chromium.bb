@@ -4,9 +4,9 @@
 
 #include "device/bluetooth/bluetooth_remote_gatt_characteristic_bluez.h"
 
-#include <iostream>
 #include <iterator>
 #include <limits>
+#include <ostream>
 
 #include "base/bind.h"
 #include "base/callback.h"

@@ -4,7 +4,6 @@
 
 #include "device/bluetooth/bluetooth_local_gatt_characteristic_bluez.h"
 
-#include <iostream>
 #include <string>
 
 #include "base/callback_forward.h"

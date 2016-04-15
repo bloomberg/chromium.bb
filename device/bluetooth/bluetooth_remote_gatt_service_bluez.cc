@@ -4,7 +4,6 @@
 
 #include "device/bluetooth/bluetooth_remote_gatt_service_bluez.h"
 
-#include <iostream>
 #include <iterator>
 
 #include "base/callback.h"
