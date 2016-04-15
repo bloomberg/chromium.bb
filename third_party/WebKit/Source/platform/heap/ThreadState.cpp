@@ -292,6 +292,12 @@ void ThreadState::cleanup()
         // pointers into the heap owned by this thread.
         m_isTerminating = true;
 
+        // Invoke the cleanup hooks. This gives an opportunity to release any
+        // persistent handles that may exist, e.g. in thread-specific static
+        // locals.
+        for (const OwnPtr<SameThreadClosure>& hook : m_threadShutdownHooks)
+            (*hook)();
+
         // Set the terminate flag on all heap pages of this thread. This is used to
         // ensure we don't trace pages on other threads that are not part of the
         // thread local GC.
@@ -1357,6 +1363,13 @@ void ThreadState::addInterruptor(PassOwnPtr<BlinkGCInterruptor> interruptor)
         MutexLocker locker(threadAttachMutex());
         m_interruptors.append(interruptor);
     }
+}
+
+void ThreadState::registerThreadShutdownHook(PassOwnPtr<SameThreadClosure> hook)
+{
+    ASSERT(checkThread());
+    ASSERT(!isTerminating());
+    m_threadShutdownHooks.append(hook);
 }
 
 #if defined(LEAK_SANITIZER)

@@ -39,6 +39,7 @@
 #include "wtf/AddressSanitizer.h"
 #include "wtf/Allocator.h"
 #include "wtf/Forward.h"
+#include "wtf/Functional.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
 #include "wtf/ThreadSpecific.h"
@@ -505,6 +506,11 @@ public:
     size_t threadStackSize();
 #endif
 
+    // Registers a closure that will be called while the thread is shutting down
+    // (i.e. ThreadState::isTerminating will be true), in order to allow for any
+    // persistent handles that should be cleared.
+    void registerThreadShutdownHook(PassOwnPtr<SameThreadClosure>);
+
 #if defined(LEAK_SANITIZER)
     void registerStaticPersistentNode(PersistentNode*);
     void releaseStaticPersistentNodes();
@@ -657,6 +663,10 @@ private:
 
     v8::Isolate* m_isolate;
     void (*m_traceDOMWrappers)(v8::Isolate*, Visitor*);
+
+    // Invoked while the thread is terminating. Intended to be used to free
+    // persistent pointers into the thread's heap.
+    Vector<OwnPtr<SameThreadClosure>> m_threadShutdownHooks;
 
 #if defined(ADDRESS_SANITIZER)
     void* m_asanFakeStack;

@@ -330,6 +330,33 @@ public:
         Parent::operator=(other);
         return *this;
     }
+
+    // Requests that the thread state clear this handle when the thread shuts
+    // down. This is intended for use with ThreadSpecific<Persistent<T>>.
+    // It's important that the Persistent<T> exist until then, because this
+    // takes a raw pointer to that handle.
+    //
+    // Example:
+    //   Foo& sharedFoo()
+    //   {
+    //        DEFINE_THREAD_SAFE_STATIC_LOCAL(
+    //            ThreadSpecific<Persistent<Foo>>, threadSpecificFoo,
+    //            new ThreadSpecific<Persistent<Foo>>);
+    //        Persistent<Foo>& fooHandle = *threadSpecificFoo;
+    //        if (!fooHandle) {
+    //            fooHandle = new Foo;
+    //            fooHandle.clearOnThreadShutdown();
+    //        }
+    //        return *fooHandle;
+    //   }
+    void clearOnThreadShutdown()
+    {
+        void (*closure)(Persistent<T>*) = [](Persistent<T>* handle)
+        {
+            *handle = nullptr;
+        };
+        ThreadState::current()->registerThreadShutdownHook(WTF::bind(closure, this));
+    }
 };
 
 // WeakPersistent is a way to create a weak pointer from an off-heap object

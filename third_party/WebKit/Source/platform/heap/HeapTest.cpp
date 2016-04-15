@@ -497,6 +497,10 @@ private:
     }
 };
 
+// Needed to give this variable a definition (the initializer above is only a
+// declaration), so that subclasses can use it.
+const int ThreadedTesterBase::numberOfThreads;
+
 class ThreadedHeapTester : public ThreadedTesterBase {
 public:
     static void test()
@@ -6481,6 +6485,47 @@ TEST(HeapTest, TestStaticLocals)
 
     EXPECT_EQ(persistentHeapVectorIntWrapper[0], heapVectorIntWrapper[0]);
     EXPECT_EQ(33, heapVectorIntWrapper[0]->value());
+}
+
+namespace {
+
+class ThreadedClearOnShutdownTester : public ThreadedTesterBase {
+public:
+    static void test()
+    {
+        IntWrapper::s_destructorCalls = 0;
+        ThreadedTesterBase::test(new ThreadedClearOnShutdownTester);
+        EXPECT_EQ(numberOfThreads, IntWrapper::s_destructorCalls);
+    }
+
+private:
+    void runThread() override
+    {
+        ThreadState::attach();
+        EXPECT_EQ(42, threadSpecificIntWrapper().value());
+        ThreadState::detach();
+        atomicDecrement(&m_threadsToFinish);
+    }
+
+    static IntWrapper& threadSpecificIntWrapper()
+    {
+        DEFINE_THREAD_SAFE_STATIC_LOCAL(
+            ThreadSpecific<Persistent<IntWrapper>>, intWrapper,
+            new ThreadSpecific<Persistent<IntWrapper>>);
+        Persistent<IntWrapper>& handle = *intWrapper;
+        if (!handle) {
+            handle = new IntWrapper(42);
+            handle.clearOnThreadShutdown();
+        }
+        return *handle;
+    }
+};
+
+} // namespace
+
+TEST(HeapTest, TestClearOnShutdown)
+{
+    ThreadedClearOnShutdownTester::test();
 }
 
 } // namespace blink
