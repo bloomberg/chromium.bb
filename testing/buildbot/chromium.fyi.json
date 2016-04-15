@@ -6860,7 +6860,7 @@
   },
   "Headless Linux (dbg)": {
     "additional_compile_targets": [
-      "headless_libs",
+      "headless_lib",
       "headless_tests"
     ],
     "gtest_tests": [
