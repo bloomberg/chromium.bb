@@ -351,6 +351,29 @@ void ChromeScreenshotGrabber::HandleTakePartialScreenshot(
   content::RecordAction(base::UserMetricsAction("Screenshot_TakePartial"));
 }
 
+void ChromeScreenshotGrabber::HandleTakeWindowScreenshot(aura::Window* window) {
+  if (ScreenshotsDisabled()) {
+    screenshot_grabber_->NotifyScreenshotCompleted(
+        ui::ScreenshotGrabberObserver::SCREENSHOTS_DISABLED, base::FilePath());
+    return;
+  }
+
+  base::FilePath screenshot_directory;
+  if (!GetScreenshotDirectory(&screenshot_directory)) {
+    screenshot_grabber_->NotifyScreenshotCompleted(
+        ui::ScreenshotGrabberObserver::SCREENSHOT_GET_DIR_FAILED,
+        base::FilePath());
+    return;
+  }
+
+  base::FilePath screenshot_path =
+      screenshot_directory.AppendASCII(GetScreenshotBaseFilename() + ".png");
+  screenshot_grabber_->TakeScreenshot(window,
+                                      gfx::Rect(window->bounds().size()),
+                                      screenshot_path);
+  content::RecordAction(base::UserMetricsAction("Screenshot_TakeWindow"));
+}
+
 bool ChromeScreenshotGrabber::CanTakeScreenshot() {
   return screenshot_grabber_->CanTakeScreenshot();
 }

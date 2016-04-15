@@ -233,6 +233,8 @@ struct I18nContentToMessage {
   { "keyboardOverlaySave", IDS_KEYBOARD_OVERLAY_SAVE },
   { "keyboardOverlayScreenshotRegion",
     IDS_KEYBOARD_OVERLAY_SCREENSHOT_REGION },
+  { "keyboardOverlayScreenshotWindow",
+    IDS_KEYBOARD_OVERLAY_SCREENSHOT_WINDOW },
   { "keyboardOverlayScrollUpOnePage",
     IDS_KEYBOARD_OVERLAY_SCROLL_UP_ONE_PAGE },
   { "keyboardOverlaySelectAll", IDS_KEYBOARD_OVERLAY_SELECT_ALL },

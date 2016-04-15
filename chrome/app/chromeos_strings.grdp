@@ -4775,6 +4775,9 @@ Battery full
   <message name="IDS_KEYBOARD_OVERLAY_SCREENSHOT_REGION" desc="The text in the keyboard overlay to explain the shortcut (take a screenshot of the selected region).">
     Screenshot region
   </message>
+  <message name="IDS_KEYBOARD_OVERLAY_SCREENSHOT_WINDOW" desc="The text in the keyboard overlay to explain the shortcut.">
+    Screenshot window
+  </message>
   <message name="IDS_KEYBOARD_OVERLAY_SCROLL_UP_ONE_PAGE" desc="The text in the keyboard overlay to explain the shortcut.">
     Scroll up one page
   </message>

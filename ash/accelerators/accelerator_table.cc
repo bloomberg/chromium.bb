@@ -36,6 +36,8 @@ const AcceleratorData kAcceleratorData[] = {
   { true, ui::VKEY_MEDIA_LAUNCH_APP1, ui::EF_CONTROL_DOWN, TAKE_SCREENSHOT },
   { true, ui::VKEY_MEDIA_LAUNCH_APP1, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
     TAKE_PARTIAL_SCREENSHOT },
+  { true, ui::VKEY_MEDIA_LAUNCH_APP1, ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN,
+    TAKE_ACTIVE_WINDOW_SCREENSHOT },
   { true, ui::VKEY_BRIGHTNESS_DOWN, ui::EF_NONE, BRIGHTNESS_DOWN },
   { true, ui::VKEY_BRIGHTNESS_DOWN, ui::EF_ALT_DOWN, KEYBOARD_BRIGHTNESS_DOWN },
   { true, ui::VKEY_BRIGHTNESS_UP, ui::EF_NONE, BRIGHTNESS_UP },
@@ -348,6 +350,7 @@ const AcceleratorAction kActionsAllowedAtLoginOrLockScreen[] = {
   SCALE_UI_RESET,
   SHOW_SYSTEM_TRAY_BUBBLE,
   SWITCH_IME,  // Switch to another IME depending on the accelerator.
+  TAKE_ACTIVE_WINDOW_SCREENSHOT,
   TAKE_PARTIAL_SCREENSHOT,
   TAKE_SCREENSHOT,
 #if defined(OS_CHROMEOS)
@@ -403,6 +406,7 @@ const AcceleratorAction kActionsAllowedAtModalWindow[] = {
   SCALE_UI_RESET,
   SHOW_KEYBOARD_OVERLAY,
   SWITCH_IME,
+  TAKE_ACTIVE_WINDOW_SCREENSHOT,
   TAKE_PARTIAL_SCREENSHOT,
   TAKE_SCREENSHOT,
 #if defined(OS_CHROMEOS)
@@ -443,6 +447,7 @@ const AcceleratorAction kNonrepeatableActions[] = {
     SCALE_UI_UP,
     SCALE_UI_DOWN,
     SCALE_UI_RESET,
+    TAKE_ACTIVE_WINDOW_SCREENSHOT,
     TAKE_PARTIAL_SCREENSHOT,
     TAKE_SCREENSHOT,
     TOGGLE_FULLSCREEN,
@@ -526,6 +531,7 @@ const AcceleratorAction kActionsKeepingMenuOpen[] = {
     PREVIOUS_IME,
     PRINT_UI_HIERARCHIES,
     SWITCH_IME,
+    TAKE_ACTIVE_WINDOW_SCREENSHOT,
     TAKE_PARTIAL_SCREENSHOT,
     TAKE_SCREENSHOT,
 #if defined(OS_CHROMEOS)

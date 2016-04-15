@@ -15917,6 +15917,7 @@ var keyboardOverlayData = {
     'space<>CTRL': 'keyboardOverlaySelectPreviousInputMethod',
     'space<>CTRL<>SHIFT': 'keyboardOverlayCycleThroughInputMethods',
     'space<>SHIFT': 'keyboardOverlayScrollUpOnePage',
+    'switch window<>ALT<>CTRL': 'keyboardOverlayScreenshotWindow',
     'switch window<>CTRL': 'keyboardOverlayTakeScreenshot',
     'switch window<>CTRL<>SHIFT': 'keyboardOverlayScreenshotRegion',
     'switch window<>SEARCH': 'keyboardOverlayF5',

@@ -34,6 +34,7 @@ class ChromeScreenshotGrabber : public ash::ScreenshotDelegate,
   void HandleTakeScreenshotForAllRootWindows() override;
   void HandleTakePartialScreenshot(aura::Window* window,
                                    const gfx::Rect& rect) override;
+  void HandleTakeWindowScreenshot(aura::Window* window) override;
   bool CanTakeScreenshot() override;
 
   // ui::ScreenshotGrabberDelegate:

@@ -22,6 +22,7 @@ class TestScreenshotDelegate : public ScreenshotDelegate {
   void HandleTakeScreenshotForAllRootWindows() override;
   void HandleTakePartialScreenshot(aura::Window* window,
                                    const gfx::Rect& rect) override;
+  void HandleTakeWindowScreenshot(aura::Window* window) override;
   bool CanTakeScreenshot() override;
 
   int handle_take_screenshot_count() const {
@@ -30,6 +31,10 @@ class TestScreenshotDelegate : public ScreenshotDelegate {
 
   int handle_take_partial_screenshot_count() const {
     return handle_take_partial_screenshot_count_;
+  }
+
+  int handle_take_window_screenshot_count() const {
+    return handle_take_window_screenshot_count_;
   }
 
   const gfx::Rect& last_rect() const { return last_rect_; }
@@ -41,6 +46,7 @@ class TestScreenshotDelegate : public ScreenshotDelegate {
  private:
   int handle_take_screenshot_count_;
   int handle_take_partial_screenshot_count_;
+  int handle_take_window_screenshot_count_;
   gfx::Rect last_rect_;
   bool can_take_screenshot_;
 
