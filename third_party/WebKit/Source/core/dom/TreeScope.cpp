@@ -382,6 +382,15 @@ void TreeScope::adoptIfNeeded(Node& node)
         adopter.execute();
 }
 
+Element* TreeScope::retarget(const Element& target) const
+{
+    for (const Element* ancestor = &target; ancestor; ancestor = ancestor->shadowHost()) {
+        if (this == ancestor->treeScope())
+            return const_cast<Element*>(ancestor);
+    }
+    return nullptr;
+}
+
 Element* TreeScope::adjustedFocusedElement() const
 {
     Document& document = rootNode().document();
@@ -392,9 +401,8 @@ Element* TreeScope::adjustedFocusedElement() const
         return nullptr;
 
     if (rootNode().isInV1ShadowTree()) {
-        if (Node* retargeted = rootNode().retarget(*element)) {
-            DCHECK(retargeted->isElementNode());
-            return this == &retargeted->treeScope() ? toElement(retargeted) : nullptr;
+        if (Element* retargeted = retarget(*element)) {
+            return (this == &retargeted->treeScope()) ? retargeted : nullptr;
         }
         return nullptr;
     }

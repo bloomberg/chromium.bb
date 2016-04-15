@@ -90,6 +90,8 @@ public:
 
     DOMSelection* getSelection() const;
 
+    Element* retarget(const Element& target) const;
+
     // Find first anchor with the given name.
     // First searches for an element with the given ID, but if that fails, then looks
     // for an anchor with the given name. ID matching is always case sensitive, but

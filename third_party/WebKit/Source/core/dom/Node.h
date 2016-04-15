@@ -202,8 +202,6 @@ public:
     Node* pseudoAwareFirstChild() const;
     Node* pseudoAwareLastChild() const;
 
-    Node* retarget(const Node& target) const;
-
     const KURL& baseURI() const;
 
     Node* insertBefore(Node* newChild, Node* refChild, ExceptionState& = ASSERT_NO_EXCEPTION);

@@ -759,15 +759,6 @@ bool Node::isShadowIncludingInclusiveAncestorOf(const Node* node) const
     return false;
 }
 
-Node* Node::retarget(const Node& target) const
-{
-    for (const Node* ancestor = &target; ancestor; ancestor = ancestor->shadowHost()) {
-        if (treeScope() == ancestor->treeScope())
-            return const_cast<Node*>(ancestor);
-    }
-    return nullptr;
-}
-
 bool Node::containsIncludingHostElements(const Node& node) const
 {
     const Node* current = &node;
