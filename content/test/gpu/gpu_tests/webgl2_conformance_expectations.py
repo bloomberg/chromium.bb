@@ -334,8 +334,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac'], bug=483282)
     self.Fail('conformance2/renderbuffers/readbuffer.html',
         ['mac'], bug=570453)
-    self.Fail('conformance2/state/gl-object-get-calls.html',
-        ['mac'], bug=483282)
 
     # Mac Retina NVIDIA
     self.Fail('conformance2/rendering/draw-buffers.html',
@@ -361,8 +359,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     # Linux only.
     self.Fail('deqp/data/gles3/shaders/functions.html',
-        ['linux'], bug=483282)
-    self.Skip('deqp/functional/gles3/shaderswitch.html',
         ['linux'], bug=483282)
     self.Fail('conformance2/glsl3/vector-dynamic-indexing.html',
         ['linux'], bug=483282)
