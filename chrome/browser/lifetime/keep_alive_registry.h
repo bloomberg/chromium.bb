@@ -40,8 +40,10 @@ class KeepAliveRegistry {
   friend struct base::DefaultSingletonTraits<KeepAliveRegistry>;
   // Friend to be able to use Register/Unregister
   friend class ScopedKeepAlive;
+#ifndef NDEBUG
   friend std::ostream& operator<<(std::ostream& out,
                                   const KeepAliveRegistry& registry);
+#endif  // NDEBUG
 
   KeepAliveRegistry();
   ~KeepAliveRegistry();

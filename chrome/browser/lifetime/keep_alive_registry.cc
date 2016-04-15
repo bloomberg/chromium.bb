@@ -45,7 +45,7 @@ KeepAliveRegistry::KeepAliveRegistry()
 
 KeepAliveRegistry::~KeepAliveRegistry() {
   DLOG_IF(ERROR, registered_count_ > 0 || registered_keep_alives_.size() > 0)
-      << "KeepAliveRegistry not empty at destruction time. State: " << *this;
+      << "KeepAliveRegistry not empty at destruction time.";
 }
 
 void KeepAliveRegistry::Register(KeepAliveOrigin origin,
@@ -68,7 +68,7 @@ void KeepAliveRegistry::Register(KeepAliveOrigin origin,
   if (new_restart_allowed != old_restart_allowed)
     OnRestartAllowedChanged(new_restart_allowed);
 
-  DVLOG(1) << "New state of the KeepAliveRegistry: " << *this;
+  DVLOG(1) << "New state of the KeepAliveRegistry.";
 }
 
 void KeepAliveRegistry::Unregister(KeepAliveOrigin origin,
@@ -96,7 +96,7 @@ void KeepAliveRegistry::Unregister(KeepAliveOrigin origin,
   if (new_keeping_alive != old_keeping_alive)
     OnKeepAliveStateChanged(new_keeping_alive);
 
-  DVLOG(1) << "New state of the KeepAliveRegistry: " << *this;
+  DVLOG(1) << "New state of the KeepAliveRegistry.";
 }
 
 void KeepAliveRegistry::OnKeepAliveStateChanged(bool new_keeping_alive) {
