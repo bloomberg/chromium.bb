@@ -90,6 +90,7 @@ public:
     void didFireWebGLError(const String& errorName);
     void didFireWebGLWarning();
     void didFireWebGLErrorOrWarning(const String& message);
+    void cancelPauseOnNextStatement();
 
     void disable(ErrorString*) override;
     void restore() override;

@@ -1,0 +1,50 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/debugger-test.js"></script>
+<script>
+
+function SHOULD_NOT_STOP_HERE()
+{
+    return 239;
+}
+
+function addEmptyEventListenerAndClick()
+{
+    // this event listener won't execute any JS code.
+    var div = document.getElementById("myDiv");
+    div.addEventListener("click", {});
+    div.click();
+    SHOULD_NOT_STOP_HERE();
+    debugger;
+}
+
+var test = function()
+{
+    InspectorTest.startDebuggerTest(step1, true);
+
+    function step1()
+    {
+        var actions = [ "Print" ];
+        InspectorTest.waitUntilPausedAndPerformSteppingActions(actions, step2);
+        WebInspector.panels.sources.sidebarPanes.eventListenerBreakpoints._setBreakpoint("listener:click");
+        InspectorTest.evaluateInPageWithTimeout("addEmptyEventListenerAndClick()");
+    }
+
+    function step2()
+    {
+        WebInspector.panels.sources.sidebarPanes.eventListenerBreakpoints._removeBreakpoint("listener:click");
+        InspectorTest.completeDebuggerTest();
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests that scheduled pause is cleared after processing event with empty handler.
+</p>
+<div id="myDiv"></div>
+</body>
+</html>

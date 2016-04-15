@@ -565,6 +565,11 @@ void InspectorDOMDebuggerAgent::didFireWebGLErrorOrWarning(const String& message
         didFireWebGLWarning();
 }
 
+void InspectorDOMDebuggerAgent::cancelPauseOnNextStatement()
+{
+    m_debuggerAgent->cancelPauseOnNextStatement();
+}
+
 void InspectorDOMDebuggerAgent::setXHRBreakpoint(ErrorString* errorString, const String& url)
 {
     if (url.isEmpty())

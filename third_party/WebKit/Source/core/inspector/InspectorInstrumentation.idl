@@ -132,7 +132,10 @@ interface InspectorInstrumentation {
     void didExecuteScript(const InspectorInstrumentationCookie&);
 
     [DOMDebugger, Inline=FastReturn]
-    void willHandleEvent([Keep] EventTarget*, Event*, EventListener* listener, bool useCapture);
+    InspectorInstrumentationCookie willHandleEvent([Keep] EventTarget*, Event*, EventListener* listener, bool useCapture);
+
+    [DOMDebugger, Inline=FastReturn]
+    void cancelPauseOnNextStatement(const InspectorInstrumentationCookie&);
 
     [Page, Inline=FastReturn]
     void didUpdateLayout(LocalFrame*);
@@ -267,7 +270,7 @@ interface InspectorInstrumentation {
     void removedResourceFromMemoryCache(Resource* cachedResource);
 
     [DOMDebugger]
-    void allowNativeBreakpoint(ExecutionContext*, const String& name, bool sync);
+    InspectorInstrumentationCookie allowNativeBreakpoint(ExecutionContext*, const String& name, bool sync);
 
     [Worker]
     void didStartWorker(ExecutionContext*, WorkerInspectorProxy* proxy, bool waitingForDebugger);

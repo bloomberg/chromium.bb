@@ -1,0 +1,51 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/debugger-test.js"></script>
+<script src="../../../http/tests/inspector/console-test.js"></script>
+<script>
+
+function runSetTimeoutWithSyntaxError()
+{
+    setTimeout({}, 0);
+}
+
+function executeSomeCode()
+{
+    debugger; // should stop here not earlier
+}
+
+var test = function()
+{
+    InspectorTest.startDebuggerTest(step1, true);
+
+    function step1()
+    {
+        WebInspector.panels.sources.sidebarPanes.eventListenerBreakpoints._setBreakpoint("instrumentation:timerFired");
+        InspectorTest.evaluateInPage("runSetTimeoutWithSyntaxError()", InspectorTest.waitUntilMessageReceived.bind(this, step2));
+    }
+
+    function step2()
+    {
+        var actions = [ "Print" ];
+        InspectorTest.waitUntilPausedAndPerformSteppingActions(actions, step3);
+        InspectorTest.evaluateInPage("executeSomeCode()");
+    }
+
+    function step3()
+    {
+        WebInspector.panels.sources.sidebarPanes.eventListenerBreakpoints._removeBreakpoint("instrumentation:timerFired");
+        InspectorTest.completeDebuggerTest();
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests that scheduled pause is cleared after processing event with empty handler.
+</p>
+<div id="myDiv"></div>
+</body>
+</html>

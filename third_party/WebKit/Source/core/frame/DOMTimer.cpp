@@ -108,7 +108,7 @@ void DOMTimer::fired()
     UserGestureIndicator gestureIndicator(m_userGestureToken.release());
 
     TRACE_EVENT1("devtools.timeline", "TimerFire", "data", InspectorTimerFireEvent::data(context, m_timeoutID));
-    InspectorInstrumentation::allowNativeBreakpoint(context, "timerFired", false);
+    InspectorInstrumentationCookie cookie = InspectorInstrumentation::allowNativeBreakpoint(context, "timerFired", false);
     InspectorInstrumentation::AsyncTask asyncTask(context, this);
 
     // Simple case for non-one-shot timers.
@@ -121,6 +121,7 @@ void DOMTimer::fired()
 
         // No access to member variables after this point, it can delete the timer.
         m_action->execute(context);
+        InspectorInstrumentation::cancelPauseOnNextStatement(cookie);
         return;
     }
 
@@ -130,6 +131,7 @@ void DOMTimer::fired()
     context->timers()->removeTimeoutByID(m_timeoutID);
 
     action->execute(context);
+    InspectorInstrumentation::cancelPauseOnNextStatement(cookie);
 
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "UpdateCounters", TRACE_EVENT_SCOPE_THREAD, "data", InspectorUpdateCountersEvent::data());
 
