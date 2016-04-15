@@ -35,6 +35,7 @@
 #include "core/page/Page.h"
 #include "modules/webdatabase/Database.h"
 #include "modules/webdatabase/DatabaseClient.h"
+#include "modules/webdatabase/DatabaseTracker.h"
 #include "modules/webdatabase/InspectorDatabaseResource.h"
 #include "modules/webdatabase/SQLError.h"
 #include "modules/webdatabase/SQLResultSet.h"
@@ -217,6 +218,11 @@ private:
 
 } // namespace
 
+void InspectorDatabaseAgent::registerDatabaseOnCreation(blink::Database* database)
+{
+    didOpenDatabase(database, database->getSecurityOrigin()->host(), database->stringIdentifier(), database->version());
+}
+
 void InspectorDatabaseAgent::didOpenDatabase(blink::Database* database, const String& domain, const String& name, const String& version)
 {
     if (InspectorDatabaseResource* resource = findByFileName(database->fileName())) {
@@ -246,6 +252,7 @@ InspectorDatabaseAgent::InspectorDatabaseAgent(Page* page)
     , m_enabled(false)
 {
     DatabaseClient::fromPage(page)->setInspectorAgent(this);
+    DatabaseTracker::tracker().forEachOpenDatabaseInPage(m_page, bind<blink::Database*>(&InspectorDatabaseAgent::registerDatabaseOnCreation, this));
 }
 
 InspectorDatabaseAgent::~InspectorDatabaseAgent()

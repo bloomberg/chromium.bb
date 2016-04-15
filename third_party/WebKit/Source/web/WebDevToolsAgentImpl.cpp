@@ -100,6 +100,17 @@
 
 namespace blink {
 
+namespace {
+
+bool isMainFrame(WebLocalFrameImpl* frame)
+{
+    // TODO(dgozman): sometimes view->mainFrameImpl() does return null, even though |frame| is meant to be main frame.
+    // See http://crbug.com/526162.
+    return frame->viewImpl() && !frame->parent();
+}
+
+}
+
 class ClientMessageLoopAdapter : public MainThreadDebugger::ClientMessageLoop {
 public:
     ~ClientMessageLoopAdapter() override
@@ -268,29 +279,15 @@ ClientMessageLoopAdapter* ClientMessageLoopAdapter::s_instance = nullptr;
 // static
 WebDevToolsAgentImpl* WebDevToolsAgentImpl::create(WebLocalFrameImpl* frame, WebDevToolsAgentClient* client)
 {
-    WebViewImpl* view = frame->viewImpl();
-    // TODO(dgozman): sometimes view->mainFrameImpl() does return null, even though |frame| is meant to be main frame.
-    // See http://crbug.com/526162.
-    bool isMainFrame = view && !frame->parent();
-    if (!isMainFrame) {
-        WebDevToolsAgentImpl* agent = new WebDevToolsAgentImpl(frame, client, nullptr);
+    if (!isMainFrame(frame)) {
+        WebDevToolsAgentImpl* agent = new WebDevToolsAgentImpl(frame, client, nullptr, false);
         if (frame->frameWidget())
             agent->layerTreeViewChanged(toWebFrameWidgetImpl(frame->frameWidget())->layerTreeView());
         return agent;
     }
 
-    WebDevToolsAgentImpl* agent = new WebDevToolsAgentImpl(frame, client, InspectorOverlay::create(view));
-    // TODO(dgozman): we should actually pass the view instead of frame, but during
-    // remote->local transition we cannot access mainFrameImpl() yet, so we have to store the
-    // frame which will become the main frame later.
-    agent->m_agents.append(InspectorRenderingAgent::create(frame, agent->m_overlay.get()));
-    agent->m_agents.append(InspectorEmulationAgent::create(frame, agent));
-    // TODO(dgozman): migrate each of the following agents to frame once module is ready.
-    agent->m_agents.append(InspectorDatabaseAgent::create(view->page()));
-    agent->m_agents.append(DeviceOrientationInspectorAgent::create(view->page()));
-    agent->m_agents.append(InspectorAccessibilityAgent::create(view->page()));
-    agent->m_agents.append(InspectorDOMStorageAgent::create(view->page()));
-    agent->m_agents.append(InspectorCacheStorageAgent::create());
+    WebViewImpl* view = frame->viewImpl();
+    WebDevToolsAgentImpl* agent = new WebDevToolsAgentImpl(frame, client, InspectorOverlay::create(view), true);
     agent->layerTreeViewChanged(view->layerTreeView());
     return agent;
 }
@@ -298,7 +295,8 @@ WebDevToolsAgentImpl* WebDevToolsAgentImpl::create(WebLocalFrameImpl* frame, Web
 WebDevToolsAgentImpl::WebDevToolsAgentImpl(
     WebLocalFrameImpl* webLocalFrameImpl,
     WebDevToolsAgentClient* client,
-    InspectorOverlay* overlay)
+    InspectorOverlay* overlay,
+    bool includeViewAgents)
     : m_client(client)
     , m_webLocalFrameImpl(webLocalFrameImpl)
     , m_attached(false)
@@ -316,6 +314,7 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
     , m_tracingAgent(nullptr)
     , m_agents(m_instrumentingAgents.get())
     , m_deferredAgentsInitialized(false)
+    , m_includeViewAgents(includeViewAgents)
     , m_sessionId(0)
     , m_stateMuted(false)
     , m_layerTreeId(0)
@@ -447,6 +446,22 @@ void WebDevToolsAgentImpl::initializeDeferredAgents()
 
     runtimeAgent->setClearConsoleCallback(bind<>(&InspectorConsoleAgent::clearAllMessages, pageConsoleAgent));
     m_tracingAgent->setLayerTreeId(m_layerTreeId);
+
+    if (m_includeViewAgents) {
+        // TODO(dgozman): we should actually pass the view instead of frame, but during
+        // remote->local transition we cannot access mainFrameImpl() yet, so we have to store the
+        // frame which will become the main frame later.
+        m_agents.append(InspectorRenderingAgent::create(m_webLocalFrameImpl, m_overlay.get()));
+        m_agents.append(InspectorEmulationAgent::create(m_webLocalFrameImpl, this));
+        // TODO(dgozman): migrate each of the following agents to frame once module is ready.
+        Page* page = m_webLocalFrameImpl->viewImpl()->page();
+        m_agents.append(InspectorDatabaseAgent::create(page));
+        m_agents.append(DeviceOrientationInspectorAgent::create(page));
+        m_agents.append(InspectorAccessibilityAgent::create(page));
+        m_agents.append(InspectorDOMStorageAgent::create(page));
+        m_agents.append(InspectorCacheStorageAgent::create());
+    }
+
     if (m_overlay)
         m_overlay->init(cssAgent, debuggerAgent, m_domAgent);
 }

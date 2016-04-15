@@ -12,6 +12,7 @@ function onload()
         testRunner.waitUntilDone();
 
     var db = openDatabase("InspectorDatabaseTest", "1.0", "Test of database instrumentation", 1);
+    var db2 = openDatabase("InspectorDatabaseTest2", "1.0", "Test of database instrumentation 2", 1);
 
     if (window.testRunner)
         testRunner.showWebInspector();
@@ -23,7 +24,17 @@ function test()
     InspectorTest.databaseModel().enable();
     function run()
     {
+        function compareByName(d1, d2)
+        {
+            if (d1.name < d2.name)
+                return -1;
+            if (d1.name > d2.name)
+                return 1;
+            return 0;
+        }
+
         var databases = InspectorTest.databaseModel().databases();
+        databases.sort(compareByName);
         for (var i = 0; i < databases.length; ++i) {
             InspectorTest.addResult("Name: " + databases[i].name);
             InspectorTest.addResult("Version: " + databases[i].version);

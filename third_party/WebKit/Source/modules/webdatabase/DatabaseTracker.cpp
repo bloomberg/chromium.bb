@@ -30,6 +30,7 @@
 
 #include "modules/webdatabase/DatabaseTracker.h"
 
+#include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/ExecutionContextTask.h"
 #include "modules/webdatabase/Database.h"
@@ -207,6 +208,23 @@ void DatabaseTracker::closeDatabasesImmediately(SecurityOrigin* origin, const St
     // We have to call closeImmediately() on the context thread.
     for (DatabaseSet::iterator it = databaseSet->begin(); it != databaseSet->end(); ++it)
         (*it)->getDatabaseContext()->getExecutionContext()->postTask(BLINK_FROM_HERE, CloseOneDatabaseImmediatelyTask::create(originString, name, *it));
+}
+
+void DatabaseTracker::forEachOpenDatabaseInPage(Page* page, PassOwnPtr<DatabaseCallback> callback)
+{
+    MutexLocker openDatabaseMapLock(m_openDatabaseMapGuard);
+    if (!m_openDatabaseMap)
+        return;
+    for (auto& originMap : *m_openDatabaseMap) {
+        for (auto& nameDatabaseSet : *originMap.value) {
+            for (Database* database : *nameDatabaseSet.value) {
+                ExecutionContext* context = database->getExecutionContext();
+                ASSERT(context->isDocument());
+                if (toDocument(context)->frame()->page() == page)
+                    (*callback)(database);
+            }
+        }
+    }
 }
 
 void DatabaseTracker::closeOneDatabaseImmediately(const String& originString, const String& name, Database* database)

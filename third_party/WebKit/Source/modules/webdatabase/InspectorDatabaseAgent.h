@@ -67,6 +67,7 @@ public:
     void didOpenDatabase(blink::Database*, const String& domain, const String& name, const String& version);
 private:
     explicit InspectorDatabaseAgent(Page*);
+    void registerDatabaseOnCreation(blink::Database*);
 
     blink::Database* databaseForId(const String& databaseId);
     InspectorDatabaseResource* findByFileName(const String& fileName);
