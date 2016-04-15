@@ -89,6 +89,7 @@
       'browser/chrome_browser_main_mac_browsertest.mm',
       'browser/chrome_content_browser_client_browsertest.cc',
       'browser/chrome_main_browsertest.cc',
+      'browser/chrome_navigation_browsertest.cc',
       'browser/chrome_plugin_browsertest.cc',
       'browser/chrome_security_exploit_browsertest.cc',
       'browser/chrome_service_worker_browsertest.cc',
