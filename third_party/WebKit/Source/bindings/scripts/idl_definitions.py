@@ -64,7 +64,7 @@ Design doc: http://www.chromium.org/developers/design-documents/idl-compiler
 
 import abc
 
-from idl_types import IdlType, IdlUnionType, IdlArrayType, IdlSequenceType, IdlNullableType
+from idl_types import IdlType, IdlUnionType, IdlArrayType, IdlSequenceType, IdlFrozenArrayType, IdlNullableType
 
 SPECIAL_KEYWORD_LIST = ['GETTER', 'SETTER', 'DELETER']
 
@@ -1019,7 +1019,7 @@ def type_node_inner_to_type(node):
         return IdlType(node.GetName(), is_unrestricted=is_unrestricted)
     elif node_class == 'Any':
         return IdlType('any')
-    elif node_class == 'Sequence':
+    elif node_class in ['Sequence', 'FrozenArray']:
         return sequence_node_to_type(node)
     elif node_class == 'UnionType':
         return union_type_node_to_idl_union_type(node)
@@ -1030,14 +1030,20 @@ def type_node_inner_to_type(node):
 
 def sequence_node_to_type(node):
     children = node.GetChildren()
+    class_name = node.GetClass()
     if len(children) != 1:
-        raise ValueError('Sequence node expects exactly 1 child, got %s' % len(children))
+        raise ValueError('%s node expects exactly 1 child, got %s' % (class_name, len(children)))
     sequence_child = children[0]
     sequence_child_class = sequence_child.GetClass()
     if sequence_child_class != 'Type':
         raise ValueError('Unrecognized node class: %s' % sequence_child_class)
     element_type = type_node_to_type(sequence_child)
-    sequence_type = IdlSequenceType(element_type)
+    if class_name == 'Sequence':
+        sequence_type = IdlSequenceType(element_type)
+    elif class_name == 'FrozenArray':
+        sequence_type = IdlFrozenArrayType(element_type)
+    else:
+        raise ValueError('Unexpected node: %s' % class_name)
     if node.GetProperty('NULLABLE'):
         return IdlNullableType(sequence_type)
     return sequence_type

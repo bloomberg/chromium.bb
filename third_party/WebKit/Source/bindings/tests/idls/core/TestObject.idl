@@ -152,6 +152,9 @@ interface TestObject {
     attribute DOMString[] stringArrayAttribute;
     attribute TestInterfaceEmpty[] testInterfaceEmptyArrayAttribute;
     attribute float[] floatArrayAttribute;
+    // FrozenArrays
+    attribute FrozenArray<DOMString> stringFrozenArrayAttribute;
+    attribute FrozenArray<TestInterfaceEmpty> testInterfaceEmptyFrozenArrayAttribute;
     // Nullable attributes
     attribute DOMString? stringOrNullAttribute;
     attribute long? longOrNullAttribute;
@@ -360,6 +363,10 @@ interface TestObject {
     void voidMethodSequenceTestInterfaceEmptyArg(sequence<TestInterfaceEmpty> testInterfaceEmptySequenceArg);
     void voidMethodSequenceSequenceDOMStringArg(sequence<sequence<DOMString>> stringSequenceSequenceArg);
     void voidMethodNullableSequenceLongArg(sequence<long>? longSequenceArg);
+    // FrozenArrays
+    FrozenArray<long> longFrozenArrayMethod();
+    void voidMethodStringFrozenArrayMethod(FrozenArray<DOMString> stringFrozenArrayArg);
+    void voidMethodTestInterfaceEmptyFrozenArrayMethod(FrozenArray<TestInterfaceEmpty> testInterfaceEmptyFrozenArrayArg);
     // Nullable types
     long? nullableLongMethod();
     DOMString? nullableStringMethod();
