@@ -198,7 +198,7 @@ bool MediaCodecUtil::IsSurfaceViewOutputSupported() {
   // Disable SurfaceView output for the Samsung Galaxy S3; it does not work
   // well enough for even 360p24 H264 playback.  http://crbug.com/602870.
   //
-  // Notably this is not codec agnostic at present, so any devices added to
+  // Notably this is codec agnostic at present, so any devices added to
   // the blacklist will avoid trying to play any codecs on SurfaceView.  If
   // needed in the future this can be expanded to be codec specific.
   return !base::StartsWith(base::android::BuildInfo::GetInstance()->model(),
