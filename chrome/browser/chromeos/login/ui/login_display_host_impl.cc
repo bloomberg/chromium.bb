@@ -954,6 +954,14 @@ void LoginDisplayHostImpl::ScheduleWorkspaceAnimation() {
 }
 
 void LoginDisplayHostImpl::ScheduleFadeOutAnimation(int animation_speed_ms) {
+  // login window might have been closed by OnBrowserCreated() at this moment.
+  // This may happen when adding another user into the session, and a browser
+  // is created before session start, which triggers the close of the login
+  // window. In this case, we should shut down the display host directly.
+  if (!login_window_) {
+    ShutdownDisplayHost(false);
+    return;
+  }
   ui::Layer* layer = login_window_->GetLayer();
   ui::ScopedLayerAnimationSettings animation(layer->GetAnimator());
   animation.AddObserver(new AnimationObserver(
