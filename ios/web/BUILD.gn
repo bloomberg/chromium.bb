@@ -433,6 +433,19 @@ test("ios_web_inttests") {
   ]
 }
 
+js_compile_bundle("web_ui_bundle") {
+  visibility = [ ":js_resources" ]
+  closure_entry_point = "__crWeb.webUIBundle"
+
+  sources = [
+    "webui/resources/web_ui_base.js",
+    "webui/resources/web_ui_bind.js",
+    "webui/resources/web_ui_bundle.js",
+    "webui/resources/web_ui_favicons.js",
+    "webui/resources/web_ui_send.js",
+  ]
+}
+
 js_compile_bundle("web_bundle") {
   visibility = [ ":js_resources" ]
   closure_entry_point = "__crWeb.webBundle"
@@ -451,12 +464,12 @@ js_compile_bundle("web_bundle") {
 js_compile_checked("js_resources") {
   public_deps = [
     ":web_bundle",
+    ":web_ui_bundle",
   ]
 
   sources = [
     "web_state/js/resources/plugin_placeholder.js",
     "web_state/js/resources/post_request.js",
     "web_state/js/resources/window_id.js",
-    "webui/resources/web_ui.js",
   ]
 }

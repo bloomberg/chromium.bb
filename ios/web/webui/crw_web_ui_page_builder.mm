@@ -313,8 +313,8 @@ NSString* const kWebUIJSURL = @"chrome://resources/js/ios/web_ui.js";
 
 - (NSString*)webUIJavaScript {
   NSBundle* bundle = base::mac::FrameworkBundle();
-  NSString* path = [bundle pathForResource:@"web_ui" ofType:@"js"];
-  DCHECK(path) << "web_ui.js file not found";
+  NSString* path = [bundle pathForResource:@"web_ui_bundle" ofType:@"js"];
+  DCHECK(path) << "web_ui_bundle.js file not found";
   return [NSString stringWithContentsOfFile:path
                                    encoding:NSUTF8StringEncoding
                                       error:nil];

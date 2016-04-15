@@ -8,32 +8,9 @@
 // this.style because member identifiers are minified by default.
 // See http://goo.gl/FwOgy
 
-window['chrome'] = window ['chrome'] || {};
+goog.require('__crWeb.webUIBase');
 
-window['chrome']['send'] = function(message, args) {
-  __gCrWeb.message.invokeOnHost({'command': 'chrome.send',
-                                 'message': '' + message,
-                                 'arguments': args || []});
-};
-
-// Chrome defines bind on all functions, so this is expected to exist by
-// webui's scripts.
-Function.prototype.bind = function(context) {
-  // Reference to the Function instance.
-  var self = this;
-  // Reference to the current arguments.
-  var curriedArguments = [];
-  for (var i = 1; i < arguments.length; i++)
-    curriedArguments.push(arguments[i]);
-  return function() {
-    var finalArguments = [];
-    for (var i = 0; i < curriedArguments.length; i++)
-      finalArguments.push(curriedArguments[i]);
-    for (var i = 0; i < arguments.length; i++)
-      finalArguments.push(arguments[i]);
-    return self.apply(context, finalArguments);
-  }
-};
+goog.provide('__crWeb.webUIFavicons');
 
 /**
  * Sends message requesting favicon at the URL from imageSet for el. Sets

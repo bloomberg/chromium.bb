@@ -357,24 +357,63 @@
       ],
     },
     {
+      # GN version: //ios/web:web_ui_bundle
+      'target_name': 'ios_web_ui_js_bundle',
+      'type': 'none',
+      'variables': {
+        'closure_entry_point': '__crWeb.webUIBundle',
+        'js_bundle_files': [
+          'webui/resources/web_ui_base.js',        
+          'webui/resources/web_ui_bind.js',
+          'webui/resources/web_ui_bundle.js',
+          'webui/resources/web_ui_favicons.js',
+          'webui/resources/web_ui_send.js',
+        ],
+      },
+      'sources': [
+          'webui/resources/web_ui_base.js',        
+          'webui/resources/web_ui_bind.js',
+          'webui/resources/web_ui_bundle.js',
+          'webui/resources/web_ui_favicons.js',
+          'webui/resources/web_ui_send.js',
+      ],
+      '!sources': [
+        # Remove all js files except web_ui_bundle. Those files should not be
+        # copied with the rest of resources, as they just Closure dependencies
+        # for web_ui_bundle.js. Dependencies were added as sources, so they get
+        # indexed by Xcode.
+        'webui/resources/web_ui_base.js',
+        'webui/resources/web_ui_bind.js',
+        'webui/resources/web_ui_favicons.js',
+        'webui/resources/web_ui_send.js',
+      ],
+      'link_settings': {
+        'mac_bundle_resources': [
+          '<(SHARED_INTERMEDIATE_DIR)/web_ui_bundle.js',
+        ],
+      },
+      'includes': [
+        'js_compile_bundle.gypi'
+      ],
+    },
+    {
       # GN version: //ios/web:js_resources
       'target_name': 'js_resources',
       'type': 'none',
       'dependencies': [
         'ios_web_js_bundle',
+        'ios_web_ui_js_bundle',
       ],
       'sources': [
         'web_state/js/resources/post_request.js',
         'web_state/js/resources/plugin_placeholder.js',
         'web_state/js/resources/window_id.js',
-        'webui/resources/web_ui.js',
       ],
       'link_settings': {
         'mac_bundle_resources': [
           '<(SHARED_INTERMEDIATE_DIR)/post_request.js',
           '<(SHARED_INTERMEDIATE_DIR)/plugin_placeholder.js',
           '<(SHARED_INTERMEDIATE_DIR)/window_id.js',
-          '<(SHARED_INTERMEDIATE_DIR)/web_ui.js',
         ],
       },
       'includes': [
