@@ -78,8 +78,8 @@ class PLATFORM_EXPORT WebProcessMemoryDumpImpl final
       base::DiscardableMemory* discardable) override;
 
   void dumpHeapUsage(
-      const base::hash_map<base::trace_event::AllocationContext, size_t>&
-          bytes_by_context,
+      const base::hash_map<base::trace_event::AllocationContext, base::trace_event::AllocationMetrics>&
+          metrics_by_context,
       base::trace_event::TraceEventMemoryOverhead& overhead,
       const char* allocator_name) override;
 

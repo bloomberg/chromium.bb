@@ -22,12 +22,12 @@ class StackFrameDeduplicator;
 class TracedValue;
 class TypeNameDeduplicator;
 
-// Aggregates |bytes_by_context|, recursively breaks down the heap, and returns
-// a traced value with an "entries" array that can be dumped in the trace log,
-// following the format described in https://goo.gl/KY7zVE. The number of
-// entries is kept reasonable because long tails are not included.
+// Aggregates |metrics_by_context|, recursively breaks down the heap, and
+// returns a traced value with an "entries" array that can be dumped in the
+// trace log, following the format described in https://goo.gl/KY7zVE. The
+// number of entries is kept reasonable because long tails are not included.
 BASE_EXPORT std::unique_ptr<TracedValue> ExportHeapDump(
-    const hash_map<AllocationContext, size_t>& bytes_by_context,
+    const hash_map<AllocationContext, AllocationMetrics>& metrics_by_context,
     StackFrameDeduplicator* stack_frame_deduplicator,
     TypeNameDeduplicator* type_name_deduplicator);
 
@@ -40,6 +40,7 @@ struct Bucket;
 // An entry in the "entries" array as described in https://goo.gl/KY7zVE.
 struct BASE_EXPORT Entry {
   size_t size;
+  size_t count;
 
   // References a backtrace in the stack frame deduplicator. -1 means empty
   // backtrace (the root of the tree).
@@ -74,7 +75,7 @@ class BASE_EXPORT HeapDumpWriter {
   // in the "entries" array. The number of entries is kept reasonable because
   // long tails are not included. Use |Serialize| to convert to a traced value.
   const std::set<Entry>& Summarize(
-      const hash_map<AllocationContext, size_t>& bytes_by_context);
+      const hash_map<AllocationContext, AllocationMetrics>& metrics_by_context);
 
  private:
   // Inserts an |Entry| for |Bucket| into |entries_|. Returns false if the

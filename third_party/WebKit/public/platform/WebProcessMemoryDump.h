@@ -90,7 +90,7 @@ public:
 
     // Dumps heap memory usage. |allocatorName| is used as an absolute name for
     // base::trace_event::ProcessMemoryDump::AddHeapDump.
-    virtual void dumpHeapUsage(const base::hash_map<base::trace_event::AllocationContext, size_t>& bytesByContext, base::trace_event::TraceEventMemoryOverhead&, const char* allocatorName) = 0;
+    virtual void dumpHeapUsage(const base::hash_map<base::trace_event::AllocationContext, base::trace_event::AllocationMetrics>& metricsByContext, base::trace_event::TraceEventMemoryOverhead&, const char* allocatorName) = 0;
 };
 
 } // namespace blink

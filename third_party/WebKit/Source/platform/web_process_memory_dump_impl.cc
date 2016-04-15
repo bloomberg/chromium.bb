@@ -168,15 +168,15 @@ WebProcessMemoryDumpImpl::createDiscardableMemoryAllocatorDump(
 }
 
 void WebProcessMemoryDumpImpl::dumpHeapUsage(
-    const base::hash_map<base::trace_event::AllocationContext, size_t>&
-        bytes_by_context,
+    const base::hash_map<base::trace_event::AllocationContext,
+        base::trace_event::AllocationMetrics>& metrics_by_context,
     base::trace_event::TraceEventMemoryOverhead& overhead,
     const char* allocator_name) {
-  if (!bytes_by_context.empty()) {
+  if (!metrics_by_context.empty()) {
     scoped_refptr<base::trace_event::MemoryDumpSessionState> session_state =
         process_memory_dump_->session_state();
     std::unique_ptr<base::trace_event::TracedValue> heap_dump = ExportHeapDump(
-        bytes_by_context, session_state->stack_frame_deduplicator(),
+        metrics_by_context, session_state->stack_frame_deduplicator(),
         session_state->type_name_deduplicator());
     process_memory_dump_->AddHeapDump(allocator_name, std::move(heap_dump));
   }
