@@ -84,6 +84,7 @@ class OfflinePageModelTest
   void OnGetAllPagesDone(const GetAllPagesResult& result);
   void OnSavePageDone(SavePageResult result, int64_t offline_id);
   void OnDeletePageDone(DeletePageResult result);
+  void OnHasPagesDone(bool result);
   void OnClearAllDone();
 
   // OfflinePageMetadataStore callbacks.
@@ -121,6 +122,8 @@ class OfflinePageModelTest
     model()->DeletePagesByOfflineId(offline_ids, callback);
   }
 
+  bool HasPages(std::string name_space);
+
   OfflinePageModel* model() { return model_.get(); }
 
   int64_t last_save_offline_id() const { return last_save_offline_id_; }
@@ -152,6 +155,7 @@ class OfflinePageModelTest
   base::FilePath last_archiver_path_;
   int64_t last_deleted_offline_id_;
   ClientId last_deleted_client_id_;
+  bool last_has_pages_result_;
 };
 
 OfflinePageModelTest::OfflinePageModelTest()
@@ -211,6 +215,10 @@ void OfflinePageModelTest::OnGetAllPagesDone(
 
 void OfflinePageModelTest::OnDeletePageDone(DeletePageResult result) {
   last_delete_result_ = result;
+}
+
+void OfflinePageModelTest::OnHasPagesDone(bool result) {
+  last_has_pages_result_ = result;
 }
 
 void OfflinePageModelTest::OnClearAllDone() {
@@ -290,10 +298,18 @@ const std::vector<OfflinePageItem>& OfflinePageModelTest::GetAllPages() {
   return all_pages_;
 }
 
+bool OfflinePageModelTest::HasPages(std::string name_space) {
+  model()->HasPages(
+      name_space,
+      base::Bind(&OfflinePageModelTest::OnHasPagesDone, AsWeakPtr()));
+  PumpLoop();
+  return last_has_pages_result_;
+}
+
 TEST_F(OfflinePageModelTest, SavePageSuccessful) {
-  EXPECT_FALSE(model()->HasOfflinePages());
+  EXPECT_FALSE(HasPages(BOOKMARK_NAMESPACE));
   SavePage(kTestUrl, kTestPageBookmarkId1);
-  EXPECT_TRUE(model()->HasOfflinePages());
+  EXPECT_TRUE(HasPages(BOOKMARK_NAMESPACE));
 
   OfflinePageTestStore* store = GetStore();
   EXPECT_EQ(kTestUrl, store->last_saved_page().url);
@@ -479,7 +495,7 @@ TEST_F(OfflinePageModelTest, MarkPageForDeletion) {
   const std::vector<OfflinePageItem>& offline_pages = GetAllPages();
   EXPECT_EQ(0UL, offline_pages.size());
 
-  EXPECT_FALSE(model()->HasOfflinePages());
+  EXPECT_FALSE(HasPages(BOOKMARK_NAMESPACE));
   EXPECT_EQ(nullptr, model()->GetPageByOnlineURL(kTestUrl));
   EXPECT_EQ(nullptr, model()->GetPageByOfflineId(last_save_offline_id()));
   EXPECT_EQ(nullptr, model()->GetPageByOfflineURL(offline_url));
@@ -1094,10 +1110,10 @@ TEST_F(OfflinePageModelBookmarkChangeTest, UndoBookmarkRemoval) {
 }
 
 TEST_F(OfflinePageModelTest, SaveRetrieveMultipleClientIds) {
-  EXPECT_FALSE(model()->HasOfflinePages());
+  EXPECT_FALSE(HasPages(BOOKMARK_NAMESPACE));
   SavePage(kTestUrl, kTestPageBookmarkId1);
   int64_t offline1 = last_save_offline_id();
-  EXPECT_TRUE(model()->HasOfflinePages());
+  EXPECT_TRUE(HasPages(BOOKMARK_NAMESPACE));
 
   SavePage(kTestUrl, kTestPageBookmarkId1);
   int64_t offline2 = last_save_offline_id();

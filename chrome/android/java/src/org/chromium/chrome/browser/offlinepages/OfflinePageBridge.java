@@ -98,7 +98,10 @@ public class OfflinePageBridge {
     /**
      * Callback used when determining whether we have any offline pages.
      */
-    public interface HasPagesCallback { void onResult(boolean items); }
+    public interface HasPagesCallback {
+        @CalledByNative("HasPagesCallback")
+        void onResult(boolean result);
+    }
 
     /**
      * Base observer class listeners to be notified of changes to the offline page model.
@@ -239,14 +242,30 @@ public class OfflinePageBridge {
      */
 
     public void getAllPages(final MultipleOfflinePageItemCallback callback) {
-        List<OfflinePageItem> result = new ArrayList<OfflinePageItem>();
+        List<OfflinePageItem> result = new ArrayList<>();
         nativeGetAllPages(mNativeOfflinePageBridge, result, callback);
     }
 
-    /** Returns whether we have any offline pages at all. */
-    public boolean hasPages() {
-        // TODO(dewittj): Make this something faster than a full scan.
-        return nativeHasPages(mNativeOfflinePageBridge);
+    /**
+     * Returns via callback whether we have any offline pages at all.
+     *
+     * TODO(dewittj): Remove @VisibleForTesting when this method is called in mainline Chrome.
+     */
+    @VisibleForTesting
+    public void hasPages(final String namespace, final HasPagesCallback callback) {
+        nativeHasPages(mNativeOfflinePageBridge, namespace, callback);
+    }
+
+    /**
+     * Returns whether we have any offline pages at all.
+     *
+     * This function may return false even if there are pages saved on disk, depending on the state
+     * of the OfflinePageModel.
+     *
+     * This function is deprecated.  Use OfflinePageBridge#hasPages instead.
+     */
+    public boolean maybeHasPages(String namespace) {
+        return nativeMaybeHasPages(mNativeOfflinePageBridge, namespace);
     }
 
     /** @return A list of all offline ids that match a particular (namespace, client_id) pair. */
@@ -632,7 +651,10 @@ public class OfflinePageBridge {
     @VisibleForTesting
     native void nativeGetAllPages(long nativeOfflinePageBridge, List<OfflinePageItem> offlinePages,
             final MultipleOfflinePageItemCallback callback);
-    native boolean nativeHasPages(long nativeOfflinePageBridge);
+    native void nativeHasPages(
+            long nativeOfflinePageBridge, String nameSpace, final HasPagesCallback callback);
+    native boolean nativeMaybeHasPages(long nativeOfflinePageBridge, String nameSpace);
+
     @VisibleForTesting
     native long[] nativeGetOfflineIdsForClientId(
             long nativeOfflinePageBridge, String clientNamespace, String clientId);

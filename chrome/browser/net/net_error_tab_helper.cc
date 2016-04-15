@@ -131,7 +131,7 @@ void NetErrorTabHelper::DidStartProvisionalLoadForFrame(
   is_error_page_ = is_error_page;
 
 #if BUILDFLAG(ANDROID_JAVA_UI)
-  SetHasOfflinePages(render_frame_host);
+  UpdateHasOfflinePages(render_frame_host);
 #endif  // BUILDFLAG(ANDROID_JAVA_UI)
 }
 
@@ -295,7 +295,7 @@ void NetErrorTabHelper::RunNetworkDiagnosticsHelper(
 }
 
 #if BUILDFLAG(ANDROID_JAVA_UI)
-void NetErrorTabHelper::SetHasOfflinePages(
+void NetErrorTabHelper::UpdateHasOfflinePages(
     content::RenderFrameHost* render_frame_host) {
   // Bails out if offline pages not supported.
   if (!offline_pages::IsOfflinePagesEnabled())
@@ -307,9 +307,22 @@ void NetErrorTabHelper::SetHasOfflinePages(
   if (!offline_page_model)
     return;
 
+  offline_page_model->HasPages(
+      offline_pages::BOOKMARK_NAMESPACE,
+      base::Bind(&NetErrorTabHelper::SetHasOfflinePages,
+                 weak_factory_.GetWeakPtr(),
+                 render_frame_host->GetFrameTreeNodeId()));
+}
+
+void NetErrorTabHelper::SetHasOfflinePages(int frame_tree_node_id,
+                                           bool has_offline_pages) {
+  content::RenderFrameHost* render_frame_host =
+      web_contents()->FindFrameByFrameTreeNodeId(frame_tree_node_id);
+  if (render_frame_host == nullptr)
+    return;
+
   render_frame_host->Send(new ChromeViewMsg_SetHasOfflinePages(
-      render_frame_host->GetRoutingID(),
-      offline_page_model->HasOfflinePages()));
+      render_frame_host->GetRoutingID(), has_offline_pages));
 }
 
 void NetErrorTabHelper::ShowOfflinePages() {

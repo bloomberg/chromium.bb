@@ -61,6 +61,12 @@ void GetAllPagesCallback(const ScopedJavaGlobalRef<jobject>& j_result_obj,
                                                 j_result_obj.obj());
 }
 
+void HasPagesCallback(const ScopedJavaGlobalRef<jobject>& j_callback_obj,
+                      bool result) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_HasPagesCallback_onResult(env, j_callback_obj.obj(), result);
+}
+
 void SavePageCallback(const ScopedJavaGlobalRef<jobject>& j_callback_obj,
                       const GURL& url,
                       OfflinePageModel::SavePageResult result,
@@ -149,6 +155,27 @@ void OfflinePageBridge::OfflinePageDeleted(int64_t offline_id,
       env, java_ref_.obj(), offline_id, CreateClientId(env, client_id).obj());
 }
 
+void OfflinePageBridge::HasPages(JNIEnv* env,
+                                 const JavaParamRef<jobject>& obj,
+                                 const JavaParamRef<jstring>& j_namespace,
+                                 const JavaParamRef<jobject>& j_callback_obj) {
+  std::string name_space = ConvertJavaStringToUTF8(env, j_namespace);
+
+  ScopedJavaGlobalRef<jobject> j_callback_ref;
+  j_callback_ref.Reset(env, j_callback_obj);
+
+  return offline_page_model_->HasPages(
+      name_space, base::Bind(&HasPagesCallback, j_callback_ref));
+}
+
+bool OfflinePageBridge::MaybeHasPages(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jstring>& j_namespace) {
+  std::string name_space = ConvertJavaStringToUTF8(env, j_namespace);
+  return offline_page_model_->MaybeHasPages(name_space);
+}
+
 void OfflinePageBridge::GetAllPages(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
@@ -165,11 +192,6 @@ void OfflinePageBridge::GetAllPages(
 
   offline_page_model_->GetAllPages(
       base::Bind(&GetAllPagesCallback, j_result_ref, j_callback_ref));
-}
-
-bool OfflinePageBridge::HasPages(JNIEnv* env,
-                                 const JavaParamRef<jobject>& obj) {
-  return offline_page_model_->HasOfflinePages();
 }
 
 void OfflinePageBridge::GetPagesToCleanUp(

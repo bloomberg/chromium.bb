@@ -174,17 +174,6 @@ std::unique_ptr<OfflinePageTestArchiver> OfflinePageUtilsTest::BuildArchiver(
   return archiver;
 }
 
-// Simple test for offline page model having any pages loaded.
-TEST_F(OfflinePageUtilsTest, HasOfflinePages) {
-  EXPECT_TRUE(OfflinePageUtils::HasOfflinePages(profile()));
-
-  OfflinePageModelFactory::GetForBrowserContext(profile())->ClearAll(
-      base::Bind(&OfflinePageUtilsTest::OnClearAllDone, AsWeakPtr()));
-  RunUntilIdle();
-
-  EXPECT_FALSE(OfflinePageUtils::HasOfflinePages(profile()));
-}
-
 TEST_F(OfflinePageUtilsTest, MightBeOfflineURL) {
   // URL is invalid.
   EXPECT_FALSE(OfflinePageUtils::MightBeOfflineURL(GURL("/test.mhtml")));

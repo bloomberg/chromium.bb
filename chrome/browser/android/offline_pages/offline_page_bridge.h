@@ -39,11 +39,19 @@ class OfflinePageBridge : public OfflinePageModel::Observer,
   void OfflinePageDeleted(int64_t offline_id,
                           const ClientId& client_id) override;
 
+  void HasPages(JNIEnv* env,
+                const base::android::JavaParamRef<jobject>& obj,
+                const base::android::JavaParamRef<jstring>& name_space,
+                const base::android::JavaParamRef<jobject>& j_callback_obj);
+
+  bool MaybeHasPages(JNIEnv* env,
+                     const base::android::JavaParamRef<jobject>& obj,
+                     const base::android::JavaParamRef<jstring>& name_space);
+
   void GetAllPages(JNIEnv* env,
                    const base::android::JavaParamRef<jobject>& obj,
                    const base::android::JavaParamRef<jobject>& j_result_obj,
                    const base::android::JavaParamRef<jobject>& j_callback_obj);
-  bool HasPages(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
 
   void GetPagesToCleanUp(
       JNIEnv* env,

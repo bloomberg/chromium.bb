@@ -130,18 +130,4 @@ bool OfflinePageUtils::HasOfflinePageForOnlineURL(
   return offline_page && !offline_page->file_path.empty();
 }
 
-// static
-bool OfflinePageUtils::HasOfflinePages(
-    content::BrowserContext* browser_context) {
-  DCHECK(browser_context);
-
-  if (!offline_pages::IsOfflinePagesEnabled())
-    return false;
-
-  offline_pages::OfflinePageModel* offline_page_model =
-      offline_pages::OfflinePageModelFactory::GetForBrowserContext(
-          browser_context);
-  return offline_page_model->HasOfflinePages();
-}
-
 }  // namespace offline_pages

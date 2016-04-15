@@ -231,7 +231,8 @@ public class BookmarkUtils {
      * Gets whether bookmark manager should load offline page initially.
      */
     private static boolean shouldShowOfflinePageAtFirst(OfflinePageBridge bridge) {
-        return !OfflinePageUtils.isConnected() && bridge != null && bridge.hasPages();
+        return !OfflinePageUtils.isConnected() && bridge != null
+                && bridge.maybeHasPages(OfflinePageBridge.BOOKMARK_NAMESPACE);
     }
 
     /**

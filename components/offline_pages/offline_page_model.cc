@@ -307,21 +307,30 @@ void OfflinePageModel::DoDeletePagesByURLPredicate(
   DoDeletePagesByOfflineId(offline_ids, callback);
 }
 
-bool OfflinePageModel::HasOfflinePages() const {
-  // Since offline pages feature is enabled by default,
-  // NetErrorTabHelper::SetHasOfflinePages might call this before the model is
-  // fully loaded. To address this, we need to switch to asynchonous model
-  // (crbug.com/589526). But for now, we just bail out to work around the test
-  // issue.
+void OfflinePageModel::HasPages(const std::string& name_space,
+                                const HasPagesCallback& callback) {
+  RunWhenLoaded(base::Bind(&OfflinePageModel::HasPagesAfterLoadDone,
+                           weak_ptr_factory_.GetWeakPtr(), name_space,
+                           callback));
+}
+
+void OfflinePageModel::HasPagesAfterLoadDone(
+    const std::string& name_space,
+    const HasPagesCallback& callback) const {
+  callback.Run(MaybeHasPages(name_space));
+}
+
+bool OfflinePageModel::MaybeHasPages(const std::string& name_space) const {
   if (!is_loaded_)
     return false;
 
-  // Check that at least one page is not marked for deletion. Because we have
-  // pages marked for deletion, we cannot simply invert result of |empty()|.
   for (const auto& id_page_pair : offline_pages_) {
-    if (!id_page_pair.second.IsMarkedForDeletion())
+    if (!id_page_pair.second.IsMarkedForDeletion() &&
+        id_page_pair.second.client_id.name_space == name_space) {
       return true;
+    }
   }
+
   return false;
 }
 
@@ -828,4 +837,14 @@ void OfflinePageModel::MarkPagesForDeletion(
     MarkPageForDeletion(id, callback);
   }
 }
+
+void OfflinePageModel::RunWhenLoaded(const base::Closure& task) {
+  if (!is_loaded_) {
+    delayed_tasks_.push_back(task);
+    return;
+  }
+
+  task_runner_->PostTask(FROM_HERE, task);
+}
+
 }  // namespace offline_pages

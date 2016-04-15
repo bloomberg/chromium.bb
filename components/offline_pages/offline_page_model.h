@@ -127,6 +127,7 @@ class OfflinePageModel : public KeyedService, public base::SupportsUserData {
   typedef base::Callback<void(SavePageResult, int64_t)> SavePageCallback;
   typedef base::Callback<void(DeletePageResult)> DeletePageCallback;
   typedef base::Callback<void(const GetAllPagesResult&)> GetAllPagesCallback;
+  typedef base::Callback<void(bool)> HasPagesCallback;
 
   // Generates a new offline id
   static int64_t GenerateOfflineId();
@@ -184,8 +185,18 @@ class OfflinePageModel : public KeyedService, public base::SupportsUserData {
       const base::Callback<bool(const GURL&)>& predicate,
       const DeletePageCallback& callback);
 
-  // Returns true if there're offline pages.
-  bool HasOfflinePages() const;
+  // Returns true if there are offline pages in the given |name_space|.  This
+  // method is sync, so the result can be wrong depending on implementation
+  // details of the model.
+  //
+  // Currently, this will return |false| if the model is not loaded, even if
+  // there are pages on disk.
+  bool MaybeHasPages(const std::string& name_space) const;
+
+  // Returns true via callback if there are offline pages in the given
+  // |name_space|.
+  void HasPages(const std::string& name_space,
+                const HasPagesCallback& callback);
 
   // Gets all available offline pages. Requires that the model is loaded.
   void GetAllPages(const GetAllPagesCallback& callback);
@@ -248,6 +259,10 @@ class OfflinePageModel : public KeyedService, public base::SupportsUserData {
   void OnEnsureArchivesDirCreatedDone();
 
   void GetAllPagesAfterLoadDone(const GetAllPagesCallback& callback);
+
+  // Callback for checking whether we have offline pages.
+  void HasPagesAfterLoadDone(const std::string& name_space,
+                             const HasPagesCallback& callback) const;
 
   // Callback for loading pages from the offline page metadata store.
   void OnLoadDone(OfflinePageMetadataStore::LoadStatus load_status,
@@ -322,6 +337,8 @@ class OfflinePageModel : public KeyedService, public base::SupportsUserData {
   void DoDeletePagesByURLPredicate(
       const base::Callback<bool(const GURL&)>& predicate,
       const DeletePageCallback& callback);
+
+  void RunWhenLoaded(const base::Closure& job);
 
   // Persistent store for offline page metadata.
   scoped_ptr<OfflinePageMetadataStore> store_;

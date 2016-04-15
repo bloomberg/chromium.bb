@@ -121,7 +121,6 @@ class TabAndroid : public CoreTabHelperDelegate,
 
   bool HasPrerenderedUrl(GURL gurl);
 
-  bool HasOfflinePages() const;
   void ShowOfflinePages();
 
   // Notifies this TabAndroid that a Lo-Fi response has been received. The

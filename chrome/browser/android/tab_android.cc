@@ -793,10 +793,6 @@ jlong TabAndroid::GetBookmarkId(JNIEnv* env,
   return -1;
 }
 
-bool TabAndroid::HasOfflinePages() const {
-  return offline_pages::OfflinePageUtils::HasOfflinePages(GetProfile());
-}
-
 void TabAndroid::ShowOfflinePages() {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_Tab_showOfflinePages(env, weak_java_tab_.get(env).obj());
