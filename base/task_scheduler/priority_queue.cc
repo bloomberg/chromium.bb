@@ -23,33 +23,15 @@ PriorityQueue::SequenceAndSortKey::SequenceAndSortKey(
 PriorityQueue::SequenceAndSortKey::~SequenceAndSortKey() = default;
 
 PriorityQueue::Transaction::Transaction(PriorityQueue* outer_queue)
-    : auto_lock_(new AutoSchedulerLock(outer_queue->container_lock_)),
-      outer_queue_(outer_queue) {
+    : auto_lock_(outer_queue->container_lock_), outer_queue_(outer_queue) {
   DCHECK(CalledOnValidThread());
 }
 
 PriorityQueue::Transaction::~Transaction() {
   DCHECK(CalledOnValidThread());
-
-  // Run the wake up callback once for each call to Push(). Perform this outside
-  // the scope of PriorityQueue's lock to avoid imposing an unnecessary lock
-  // dependency on the callback's destination.
-  auto_lock_.reset();
-  for (size_t i = 0; i < num_wake_ups_; ++i)
-    outer_queue_->wake_up_callback_.Run();
 }
 
 void PriorityQueue::Transaction::Push(
-    std::unique_ptr<SequenceAndSortKey> sequence_and_sort_key) {
-  DCHECK(CalledOnValidThread());
-  DCHECK(!sequence_and_sort_key->is_null());
-
-  PushNoWakeUp(std::move(sequence_and_sort_key));
-
-  ++num_wake_ups_;
-}
-
-void PriorityQueue::Transaction::PushNoWakeUp(
     std::unique_ptr<SequenceAndSortKey> sequence_and_sort_key) {
   DCHECK(CalledOnValidThread());
   DCHECK(!sequence_and_sort_key->is_null());
@@ -75,16 +57,10 @@ void PriorityQueue::Transaction::Pop() {
   outer_queue_->container_.pop();
 }
 
-PriorityQueue::PriorityQueue(const Closure& wake_up_callback)
-    : wake_up_callback_(wake_up_callback) {
-  DCHECK(!wake_up_callback_.is_null());
-}
+PriorityQueue::PriorityQueue() = default;
 
-PriorityQueue::PriorityQueue(const Closure& wake_up_callback,
-                             const PriorityQueue* predecessor_priority_queue)
-    : container_lock_(&predecessor_priority_queue->container_lock_),
-      wake_up_callback_(wake_up_callback) {
-  DCHECK(!wake_up_callback_.is_null());
+PriorityQueue::PriorityQueue(const PriorityQueue* predecessor_priority_queue)
+    : container_lock_(&predecessor_priority_queue->container_lock_) {
   DCHECK(predecessor_priority_queue);
 }
 

@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/base_export.h"
-#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/task_scheduler/scheduler_lock.h"
@@ -56,15 +55,8 @@ class BASE_EXPORT PriorityQueue {
    public:
     ~Transaction();
 
-    // Inserts |sequence_and_sort_key| in the PriorityQueue. Each call to this
-    // method will result in one invocation of the wake up callback when the
-    // Transaction is destroyed.
+    // Inserts |sequence_and_sort_key| in the PriorityQueue.
     void Push(std::unique_ptr<SequenceAndSortKey> sequence_and_sort_key);
-
-    // Inserts |sequence_and_sort_key| in the PriorityQueue without invoking the
-    // wake up callback.
-    void PushNoWakeUp(
-        std::unique_ptr<SequenceAndSortKey> sequence_and_sort_key);
 
     // Returns the SequenceAndSortKey with the highest priority or a null
     // SequenceAndSortKey if the PriorityQueue is empty. The reference becomes
@@ -80,32 +72,20 @@ class BASE_EXPORT PriorityQueue {
 
     explicit Transaction(PriorityQueue* outer_queue);
 
-    // Holds the lock of |outer_queue_| for most of the lifetime of this
-    // Transaction. Using a scoped_ptr allows the destructor to release the lock
-    // before performing internal operations which have to be done outside of
-    // its scope.
-    std::unique_ptr<AutoSchedulerLock> auto_lock_;
+    // Holds the lock of |outer_queue_| for the lifetime of this Transaction.
+    AutoSchedulerLock auto_lock_;
 
     PriorityQueue* const outer_queue_;
-
-    // Number of times that the wake up callback should be invoked when this
-    // Transaction is destroyed.
-    size_t num_wake_ups_ = 0;
 
     DISALLOW_COPY_AND_ASSIGN(Transaction);
   };
 
-  // |wake_up_callback| is a non-null callback invoked when a Transaction is
-  // done for each call to Push() on the Transaction.
-  explicit PriorityQueue(const Closure& wake_up_callback);
+  PriorityQueue();
 
-  // |wake_up_callback| is a non-null callback invoked when a Transaction is
-  // done for each call to Push() on the Transaction.
   // |predecessor_priority_queue| is a PriorityQueue for which a thread is
   // allowed to have an active Transaction when it creates a Transaction for
   // this PriorityQueue.
-  PriorityQueue(const Closure& wake_up_callback,
-                const PriorityQueue* predecessor_priority_queue);
+  PriorityQueue(const PriorityQueue* predecessor_priority_queue);
 
   ~PriorityQueue();
 
@@ -131,8 +111,6 @@ class BASE_EXPORT PriorityQueue {
   SchedulerLock container_lock_;
 
   ContainerType container_;
-
-  const Closure wake_up_callback_;
 
   // A null SequenceAndSortKey returned by Peek() when the PriorityQueue is
   // empty.
