@@ -1924,6 +1924,8 @@
             'browser/ui/exclusive_access/fullscreen_controller_state_tests.h',
             'browser/ui/exclusive_access/fullscreen_controller_test.cc',
             'browser/ui/exclusive_access/fullscreen_controller_test.h',
+            'browser/ui/passwords/manage_passwords_ui_controller_mock.cc',
+            'browser/ui/passwords/manage_passwords_ui_controller_mock.h',
             'browser/ui/test/test_confirm_bubble_model.cc',
             'browser/ui/test/test_confirm_bubble_model.h',
             'renderer/safe_browsing/mock_feature_extractor_clock.cc',
@@ -2259,7 +2261,6 @@
             '../components/components.gyp:webdata_services_test_support',
             '../components/components_strings.gyp:components_strings',
             '../content/app/resources/content_resources.gyp:content_resources',
-            '../device/core/core.gyp:device_core_mocks',
             '../device/bluetooth/bluetooth.gyp:device_bluetooth_mocks',
             '../device/usb/usb.gyp:device_usb_mocks',
             '../gpu/gpu.gyp:gpu_unittest_utils',
@@ -2301,11 +2302,6 @@
           ],
           'dependencies!': [
             '../third_party/libaddressinput/libaddressinput.gyp:libaddressinput',
-          ],
-          'ldflags': [
-            # Some android targets still depend on --gc-sections to link.
-            # TODO: remove --gc-sections for Debug builds (crbug.com/159847).
-            '-Wl,--gc-sections',
           ],
           'dependencies': [
             '../testing/android/native_test.gyp:native_test_native_code',
@@ -2367,8 +2363,9 @@
           'sources': [ '<@(chrome_unit_tests_extensions_sources)' ],
           'dependencies': [
             'common/extensions/api/api.gyp:chrome_api',
-            '../device/hid/hid.gyp:device_hid_mocks',
             '../components/components.gyp:audio_modem_test_support',
+            '../device/core/core.gyp:device_core_mocks',
+            '../device/hid/hid.gyp:device_hid_mocks',
             '../extensions/extensions_resources.gyp:extensions_resources',
             '../extensions/extensions_strings.gyp:extensions_strings',
           ],

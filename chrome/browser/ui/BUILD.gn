@@ -651,6 +651,8 @@ source_set("test_support") {
       "exclusive_access/fullscreen_controller_state_tests.h",
       "exclusive_access/fullscreen_controller_test.cc",
       "exclusive_access/fullscreen_controller_test.h",
+      "passwords/manage_passwords_ui_controller_mock.cc",
+      "passwords/manage_passwords_ui_controller_mock.h",
       "test/test_confirm_bubble_model.cc",
       "test/test_confirm_bubble_model.h",
     ]

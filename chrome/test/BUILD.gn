@@ -1674,7 +1674,6 @@ test("unit_tests") {
       "//components/webdata_services:test_support",
       "//content/app/resources",
       "//device/bluetooth:mocks",
-      "//device/core:mocks",
       "//device/usb:mocks",
       "//gpu:test_support",
       "//media:test_support",
@@ -1709,10 +1708,6 @@ test("unit_tests") {
         "//chrome/test/android/unit_tests_apk/AndroidManifest.xml"
     enable_multidex = true
     isolate_file = "../unit_tests.isolate"
-
-    # Some android targets still depend on --gc-sections to link.
-    # TODO: remove --gc-sections for Debug builds (crbug.com/159847).
-    ldflags = [ "-Wl,--gc-sections" ]
   } else {
     sources += rebase_path(
             chrome_tests_unit_gypi_values.chrome_unit_tests_non_android_sources,
@@ -1781,6 +1776,8 @@ test("unit_tests") {
     deps += [
       "//chrome/common/extensions/api",
       "//components/audio_modem:test_support",
+      "//device/core:mocks",
+      "//device/hid:mocks",
       "//extensions:extensions_resources",
       "//extensions/strings",
     ]

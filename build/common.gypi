@@ -4945,15 +4945,6 @@
                   }],
                 ],
               }],
-              ['asan==1', {
-                'cflags': [
-                  # Android build relies on -Wl,--gc-sections removing
-                  # unreachable code. ASan instrumentation for globals inhibits
-                  # this and results in a library with unresolvable relocations.
-                  # TODO(eugenis): find a way to reenable this.
-                  '-mllvm -asan-globals=0',
-                ],
-              }],
               ['target_arch == "arm" and order_profiling==0', {
                 'ldflags': [
                   # Enable identical code folding to reduce size.

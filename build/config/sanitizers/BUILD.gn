@@ -152,16 +152,7 @@ config("default_sanitizer_flags") {
           [ "-fsanitize-blacklist=" +
             rebase_path("//tools/memory/asan/blacklist.txt", root_build_dir) ]
     }
-    if (is_android) {
-      # Android build relies on -Wl,--gc-sections removing unreachable code.
-      # ASan instrumentation for globals inhibits this and results in a
-      # library with unresolvable relocations.
-      # TODO(eugenis): find a way to reenable this.
-      cflags += [
-        "-mllvm",
-        "-asan-globals=0",
-      ]
-    } else if (is_mac) {
+    if (is_mac) {
       # http://crbug.com/352073
       cflags += [
         "-mllvm",
