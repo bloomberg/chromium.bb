@@ -221,7 +221,8 @@ class CONTENT_EXPORT ChildThreadImpl
 
   // We create the channel first without connecting it so we can add filters
   // prior to any messages being received, then connect it afterwards.
-  void ConnectChannel(bool use_mojo_channel, const std::string& ipc_token);
+  void ConnectChannel(bool use_mojo_channel,
+                      mojo::ScopedMessagePipeHandle handle);
 
   // IPC message handlers.
   void OnShutdown();
@@ -304,7 +305,7 @@ struct ChildThreadImpl::Options {
   bool use_mojo_channel;
   scoped_refptr<base::SequencedTaskRunner> browser_process_io_runner;
   std::vector<IPC::MessageFilter*> startup_filters;
-  std::string in_process_ipc_token;
+  mojo::MessagePipeHandle in_process_message_pipe_handle;
   std::string in_process_application_token;
 
  private:

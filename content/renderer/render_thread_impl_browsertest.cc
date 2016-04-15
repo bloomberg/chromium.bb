@@ -183,8 +183,7 @@ class RenderThreadImplBrowserTest : public testing::Test {
     thread_ = new RenderThreadImplForTest(
         InProcessChildThreadParams(test_helper_->GetChannelId(),
                                    test_helper_->GetIOTaskRunner(),
-                                   test_helper_->GetMojoIpcToken(),
-                                   test_helper_->GetMojoApplicationToken()),
+                                   test_helper_->GetMessagePipeHandle()),
         std::move(renderer_scheduler), test_task_counter);
     cmd->InitFromArgv(old_argv);
 

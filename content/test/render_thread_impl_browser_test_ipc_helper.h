@@ -7,6 +7,7 @@
 
 #include "content/app/mojo/mojo_init.h"
 #include "content/browser/mojo/mojo_application_host.h"
+#include "content/common/mojo/mojo_messages.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/mojo/ipc_channel_mojo.h"
 #include "ipc/mojo/scoped_ipc_support.h"
@@ -33,12 +34,8 @@ class RenderThreadImplBrowserIPCTestHelper {
 
   scoped_refptr<base::SingleThreadTaskRunner> GetIOTaskRunner() const;
 
-  const std::string& GetMojoIpcToken() const {
-    return mojo_ipc_token_;
-  }
-
-  const std::string& GetMojoApplicationToken() const {
-    return mojo_application_token_;
+  mojo::MessagePipeHandle GetMessagePipeHandle() {
+    return message_pipe_handle_.release();
   }
 
  private:
@@ -53,8 +50,7 @@ class RenderThreadImplBrowserIPCTestHelper {
   std::unique_ptr<DummyListener> dummy_listener_;
   std::unique_ptr<IPC::ScopedIPCSupport> ipc_support_;
   std::unique_ptr<MojoApplicationHost> mojo_application_host_;
-  std::string mojo_ipc_token_;
-  std::string mojo_application_token_;
+  mojo::ScopedMessagePipeHandle message_pipe_handle_;
   std::string channel_id_;
 };
 
