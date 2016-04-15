@@ -63633,6 +63633,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="-402" label="CACHE_WRITE_FAILURE"/>
   <int value="-401" label="CACHE_READ_FAILURE"/>
   <int value="-400" label="CACHE_MISS"/>
+  <int value="-369" label="TEMPORARY_BACKOFF"/>
   <int value="-368" label="ALTERNATIVE_CERT_NOT_VALID_FOR_ORIGIN"/>
   <int value="-367" label="PAC_SCRIPT_TERMINATED"/>
   <int value="-366" label="PROXY_HTTP_1_1_REQUIRED"/>
@@ -63701,6 +63702,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="-202" label="CERT_AUTHORITY_INVALID"/>
   <int value="-201" label="CERT_DATE_INVALID"/>
   <int value="-200" label="CERT_COMMON_NAME_INVALID"/>
+  <int value="-171" label="CT_CONSISTENCY_PROOF_PARSING_FAILED"/>
+  <int value="-170" label="UNABLE_TO_REUSE_CONNECTION_FOR_PROXY_AUTH"/>
+  <int value="-169" label="CT_STH_INCOMPLETE"/>
+  <int value="-168" label="CT_STH_PARSING_FAILED"/>
+  <int value="-167" label="SSL_SERVER_CERT_BAD_FORMAT"/>
   <int value="-166" label="ICANN_NAME_COLLISION"/>
   <int value="-165" label="SSL_FALLBACK_BEYOND_MINIMUM_VERSION"/>
   <int value="-164" label="SSL_CLIENT_AUTH_CERT_BAD_FORMAT"/>
@@ -77676,6 +77682,11 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="164" label="SSL_CLIENT_AUTH_CERT_BAD_FORMAT"/>
   <int value="165" label="SSL_FALLBACK_BEYOND_MINIMUM_VERSION"/>
   <int value="166" label="ICANN_NAME_COLLISION"/>
+  <int value="167" label="SSL_SERVER_CERT_BAD_FORMAT"/>
+  <int value="168" label="CT_STH_PARSING_FAILED"/>
+  <int value="169" label="CT_STH_INCOMPLETE"/>
+  <int value="170" label="UNABLE_TO_REUSE_CONNECTION_FOR_PROXY_AUTH"/>
+  <int value="171" label="CT_CONSISTENCY_PROOF_PARSING_FAILED"/>
   <int value="200" label="CERT_COMMON_NAME_INVALID"/>
   <int value="201" label="CERT_DATE_INVALID"/>
   <int value="202" label="CERT_AUTHORITY_INVALID"/>
@@ -77746,6 +77757,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="366" label="PROXY_HTTP_1_1_REQUIRED"/>
   <int value="367" label="PAC_SCRIPT_TERMINATED"/>
   <int value="368" label="ALTERNATIVE_CERT_NOT_VALID_FOR_ORIGIN"/>
+  <int value="369" label="TEMPORARY_BACKOFF"/>
   <int value="400" label="CACHE_MISS"/>
   <int value="401" label="CACHE_READ_FAILURE"/>
   <int value="402" label="CACHE_WRITE_FAILURE"/>
