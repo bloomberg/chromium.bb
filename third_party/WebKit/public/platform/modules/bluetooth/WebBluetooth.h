@@ -84,10 +84,8 @@ public:
         const WebVector<uint8_t>& value,
         WebBluetoothWriteValueCallbacks*) {}
     virtual void startNotifications(const WebString& characteristicInstanceID,
-        WebBluetoothRemoteGATTCharacteristic*,
         WebBluetoothNotificationsCallbacks*) {}
     virtual void stopNotifications(const WebString& characteristicInstanceID,
-        WebBluetoothRemoteGATTCharacteristic*,
         WebBluetoothNotificationsCallbacks*) {}
 
     // Called when addEventListener is called on a characteristic.

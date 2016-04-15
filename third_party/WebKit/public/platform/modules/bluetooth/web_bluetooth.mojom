@@ -74,6 +74,10 @@ enum WebBluetoothError {
 // Web Bluetooth Interface that Blink can use to perform
 // Bluetooth GATT Operations on Bluetooth Devices.
 interface WebBluetoothService {
+  // Sets the client for this WebBluetoothService. The service will notify the
+  // client of device events e.g. when a Characteristic's value changes or when
+  // a device disconnects.
+  SetClient(associated WebBluetoothServiceClient client);
 
   // Writes a value to the characteristic with
   // |characteristic_instance_id|. The callback is run with
@@ -83,4 +87,21 @@ interface WebBluetoothService {
     string characteristic_instance_id,
     array<uint8> value) => (WebBluetoothError error);
 
+  // Starts notifications for the characteristic with
+  // |characteristic_instance_id|.
+  RemoteCharacteristicStartNotifications(
+    string characteristic_instance_id) => (WebBluetoothError error);
+
+  // Stops notifications for the characteristic with
+  // |characteristic_instance_id|.
+  RemoteCharacteristicStopNotifications(
+    string characteristic_instance_id) => ();
+};
+
+// Classes should implement this interface and pass an associated pointer
+// bound to them to the WebBluetoothService by using SetClient. Classes
+// that do this will be notified of device events e.g. device disconnection.
+interface WebBluetoothServiceClient {
+  RemoteCharacteristicValueChanged(string characteristic_instance_id,
+                                   array<uint8> value);
 };

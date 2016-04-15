@@ -2767,6 +2767,15 @@ void RenderFrameHostImpl::CreateWebBluetoothService(
   DCHECK(!web_bluetooth_service_);
   web_bluetooth_service_.reset(
       new WebBluetoothServiceImpl(this, std::move(request)));
+  // RFHI owns web_bluetooth_service_ and web_bluetooth_service owns the
+  // binding_ which may run the error handler. binding_ can't run the error
+  // handler after it's destroyed so it can't run after the RFHI is destroyed.
+  web_bluetooth_service_->SetClientConnectionErrorHandler(base::Bind(
+      &RenderFrameHostImpl::DeleteWebBluetoothService, base::Unretained(this)));
+}
+
+void RenderFrameHostImpl::DeleteWebBluetoothService() {
+  web_bluetooth_service_.reset();
 }
 
 }  // namespace content

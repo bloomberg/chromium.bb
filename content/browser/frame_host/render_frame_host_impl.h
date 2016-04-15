@@ -745,6 +745,9 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost,
   void CreateWebBluetoothService(
       mojo::InterfaceRequest<blink::mojom::WebBluetoothService> request);
 
+  // Deletes the Web Bluetooth Service owned by the frame.
+  void DeleteWebBluetoothService();
+
   // Allows tests to disable the swapout event timer to simulate bugs that
   // happen before it fires (to avoid flakiness).
   void DisableSwapOutTimerForTesting();

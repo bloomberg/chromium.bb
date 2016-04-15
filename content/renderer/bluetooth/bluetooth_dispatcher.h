@@ -34,7 +34,6 @@ class Message;
 struct BluetoothCharacteristicRequest;
 struct BluetoothCharacteristicsRequest;
 struct BluetoothPrimaryServiceRequest;
-struct BluetoothNotificationsRequest;
 
 namespace content {
 class ThreadSafeSender;
@@ -87,91 +86,11 @@ class BluetoothDispatcher : public WorkerThread::Observer {
   void readValue(int frame_routing_id,
                  const blink::WebString& characteristic_instance_id,
                  blink::WebBluetoothReadValueCallbacks* callbacks);
-  void startNotifications(int frame_routing_id,
-                          const blink::WebString& characteristic_instance_id,
-                          blink::WebBluetoothRemoteGATTCharacteristic* delegate,
-                          blink::WebBluetoothNotificationsCallbacks*);
-  void stopNotifications(int frame_routing_id,
-                         const blink::WebString& characteristic_instance_id,
-                         blink::WebBluetoothRemoteGATTCharacteristic* delegate,
-                         blink::WebBluetoothNotificationsCallbacks*);
-  void characteristicObjectRemoved(
-      int frame_routing_id,
-      const blink::WebString& characteristic_instance_id,
-      blink::WebBluetoothRemoteGATTCharacteristic* delegate);
-  void registerCharacteristicObject(
-      int frame_routing_id,
-      const blink::WebString& characteristic_instance_id,
-      blink::WebBluetoothRemoteGATTCharacteristic* characteristic);
 
   // WorkerThread::Observer implementation.
   void WillStopCurrentWorkerThread() override;
 
-  enum class NotificationsRequestType { START = 0, STOP = 1 };
-
  private:
-  // Notifications Queueing Notes:
-  // To avoid races and sending unnecessary IPC messages we implement
-  // a queueing system for notification requests. When receiving
-  // a notification request, the request is immediately queued. If
-  // there are no other pending requests then the request is processed.
-  // When a characteristic object gets destroyed BluetoothDispatcher
-  // gets notified by characteristicObjectRemoved. When this happens
-  // a stop request should be queued if the characteristic was subscribed
-  // to notifications.
-
-  // Helper functions for notification requests queue:
-
-  // Creates a notification request and queues it.
-  int QueueNotificationRequest(
-      int frame_routing_id,
-      const std::string& characteristic_instance_id,
-      blink::WebBluetoothRemoteGATTCharacteristic* characteristic,
-      blink::WebBluetoothNotificationsCallbacks* callbacks,
-      NotificationsRequestType type);
-  // Pops the last requests and runs the next request in the queue.
-  void PopNotificationRequestQueueAndProcessNext(int request_id);
-  // Checks if there is more than one request in the queue i.e. if there
-  // are other requests besides the one being processed.
-  bool HasNotificationRequestResponsePending(
-      const std::string& characteristic_instance_id);
-  // Checks if there are any objects subscribed to the characteristic's
-  // notifications.
-  bool HasActiveNotificationSubscription(
-      const std::string& characteristic_instance_id);
-  // Adds the object to the set of subscribed objects to a characteristic's
-  // notifications.
-  void AddToActiveNotificationSubscriptions(
-      const std::string& characteristic_instance_id,
-      blink::WebBluetoothRemoteGATTCharacteristic* characteristic);
-  // Removes the object from the set of subscribed object to the
-  // characteristic's notifications. Returns true if the subscription
-  // becomes inactive.
-  bool RemoveFromActiveNotificationSubscriptions(
-      const std::string& characteristic_instance_id,
-      blink::WebBluetoothRemoteGATTCharacteristic* characteristic);
-
-  // The following functions decide whether to resolve the request immediately
-  // or send an IPC to change the subscription state.
-  // You should never call these functions if PendingNotificationRequest
-  // is true since there is currently another request being processed.
-  void ResolveOrSendStartNotificationRequest(int request_id);
-  void ResolveOrSendStopNotificationsRequest(int request_id);
-
-  // Tells BluetoothDispatcherHost that we are no longer interested in
-  // events for the characteristic.
-  //
-  // TODO(ortuno): We should unregister a characteristic once there are no
-  // characteristic objects that have listeners attached.
-  // For now, we call this function when an object gets destroyed. So if there
-  // are two frames registered for notifications from the same characteristic
-  // and one of the characteristic objects gets destroyed both will stop
-  // receiving notifications.
-  // https://crbug.com/541388
-  void UnregisterCharacteristicObject(
-      int frame_routing_id,
-      const blink::WebString& characteristic_instance_id);
-
   // IPC Handlers, see definitions in bluetooth_messages.h.
   void OnRequestDeviceSuccess(int thread_id,
                               int request_id,
@@ -211,21 +130,8 @@ class BluetoothDispatcher : public WorkerThread::Observer {
   void OnReadValueError(int thread_id,
                         int request_id,
                         blink::WebBluetoothError error);
-  void OnStartNotificationsSuccess(int thread_id, int request_id);
-  void OnStartNotificationsError(int thread_id,
-                                 int request_id,
-                                 blink::WebBluetoothError error);
-  void OnStopNotificationsSuccess(int thread_id, int request_id);
-  void OnCharacteristicValueChanged(
-      int thread_id,
-      const std::string& characteristic_instance_id,
-      const std::vector<uint8_t> value);
 
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
-
-  // Map of characteristic_instance_id to a queue of Notification Requests' IDs.
-  // See "Notifications Queueing Note" above.
-  std::map<std::string, std::queue<int>> notification_requests_queues_;
 
   // Tracks device requests sent to browser to match replies with callbacks.
   // Owns callback objects.
@@ -248,25 +154,6 @@ class BluetoothDispatcher : public WorkerThread::Observer {
   // Tracks requests to read from a characteristics.
   IDMap<blink::WebBluetoothReadValueCallbacks, IDMapOwnPointer>
       pending_read_value_requests_;
-  IDMap<BluetoothNotificationsRequest, IDMapOwnPointer>
-      pending_notifications_requests_;
-
-  // Map of characteristic_instance_id to a set of
-  // WebBluetoothRemoteGATTCharacteristic pointers. Keeps track of which
-  // objects are subscribed to notifications.
-  std::map<std::string, std::set<blink::WebBluetoothRemoteGATTCharacteristic*>>
-      active_notification_subscriptions_;
-
-  // Map of characteristic_instance_ids to
-  // WebBluetoothRemoteGATTCharacteristics.
-  // Keeps track of what characteristics have listeners.
-  // TODO(ortuno): We are assuming that there exists a single frame per
-  // dispatcher, so there could be at most one characteristic object per
-  // characteristic_instance_id. Change to a set when we support multiple
-  // frames.
-  // http://crbug.com/541388
-  std::map<std::string, blink::WebBluetoothRemoteGATTCharacteristic*>
-      active_characteristics_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothDispatcher);
 };

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<script src="../resources/testharness.js"></script>
-<script src="../resources/testharnessreport.js"></script>
-<script src="../resources/bluetooth/bluetooth-helpers.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../../resources/bluetooth/bluetooth-helpers.js"></script>
 <script>
 'use strict';
 test(t => { assert_true(window.testRunner instanceof Object); t.done(); },
@@ -54,7 +54,6 @@ promise_test(() => {
    }).then(() => runGarbageCollection());
 }, 'Single start notifications succeeds.');
 
-
 promise_test(() => {
   return setBluetoothFakeAdapter('HeartRateAdapter')
     .then(() => requestDeviceWithKeyDown({
@@ -63,10 +62,9 @@ promise_test(() => {
    .then(gattServer => gattServer.getPrimaryService('heart_rate'))
    .then(service => service.getCharacteristic('heart_rate_measurement'))
    .then(characteristic => {
-     return characteristic.startNotifications().then(() => {
-       return characteristic.startNotifications()
-                            .then(() => characteristic.stopNotifications());
-     });
+     return characteristic.startNotifications()
+       .then(() => characteristic.startNotifications())
+       .then(() => characteristic.stopNotifications());
    }).then(() => runGarbageCollection());
 }, 'Start notifications after succesfully starting before.');
 
@@ -79,9 +77,9 @@ promise_test(() => {
    .then(service => service.getCharacteristic('heart_rate_measurement'))
    .then(characteristic => {
      return characteristic.startNotifications()
-                          .then(() => characteristic.stopNotifications())
-                          .then(() => characteristic.startNotifications())
-                          .then(() => characteristic.stopNotifications());
+       .then(() => characteristic.stopNotifications())
+       .then(() => characteristic.startNotifications())
+       .then(() => characteristic.stopNotifications());
    }).then(() => runGarbageCollection());
 }, 'Start -> stop -> start -> stop.');
 
@@ -137,8 +135,8 @@ promise_test(() => {
    .then(service => service.getCharacteristic('heart_rate_measurement'))
    .then(characteristic => {
      return characteristic.startNotifications()
-                          .then(() => characteristic.stopNotifications())
-                          .then(() => characteristic.stopNotifications());
+       .then(() => characteristic.stopNotifications())
+       .then(() => characteristic.stopNotifications());
    }).then(() => runGarbageCollection());
 }, "Stopping twice.");
 
@@ -180,7 +178,7 @@ gatt_errors_tests.forEach(testSpec => {
         return assert_promise_rejects_with_message(
           characteristic.startNotifications(),
           testSpec.error,
-          'Trying to write to a characteristic failed.');
+          'Trying to start notifications failed.');
       });
   }, testSpec.testName);
 });
