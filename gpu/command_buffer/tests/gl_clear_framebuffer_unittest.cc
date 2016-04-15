@@ -35,7 +35,7 @@ class GLClearFramebufferTest : public testing::TestWithParam<bool> {
       base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
       command_line.AppendSwitchASCII(switches::kGpuDriverBugWorkarounds,
                                      base::IntToString(gpu::GL_CLEAR_BROKEN));
-      gl_.InitializeWithCommandLine(GLManager::Options(), &command_line);
+      gl_.InitializeWithCommandLine(GLManager::Options(), command_line);
       DCHECK(gl_.workarounds().gl_clear_broken);
     } else {
       gl_.Initialize(GLManager::Options());

@@ -14,6 +14,7 @@
 #include "gpu/command_buffer/service/gpu_preferences.h"
 #include "gpu/command_buffer/service/mailbox_manager_impl.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
+#include "gpu/config/gpu_driver_bug_workarounds.h"
 #include "gpu/config/gpu_info.h"
 #include "ui/gl/gl_share_group.h"
 
@@ -40,6 +41,10 @@ class GpuState : public base::RefCountedThreadSafe<GpuState> {
 
   const gpu::GpuPreferences& gpu_preferences() const {
     return gpu_preferences_;
+  }
+
+  const gpu::GpuDriverBugWorkarounds& gpu_driver_bug_workarounds() const {
+    return gpu_driver_bug_workarounds_;
   }
 
   CommandBufferTaskRunner* command_buffer_task_runner() const {
@@ -86,6 +91,7 @@ class GpuState : public base::RefCountedThreadSafe<GpuState> {
   scoped_refptr<base::SingleThreadTaskRunner> control_thread_task_runner_;
 
   gpu::GpuPreferences gpu_preferences_;
+  const gpu::GpuDriverBugWorkarounds gpu_driver_bug_workarounds_;
   scoped_refptr<CommandBufferTaskRunner> command_buffer_task_runner_;
   scoped_ptr<CommandBufferDriverManager> driver_manager_;
   scoped_ptr<gpu::SyncPointManager> sync_point_manager_;
