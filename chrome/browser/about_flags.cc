@@ -1646,13 +1646,6 @@ const FeatureEntry kFeatureEntries[] = {
      ENABLE_DISABLE_VALUE_TYPE(switches::kEnableAppContainer,
                                switches::kDisableAppContainer)},
 #endif  // defined(OS_WIN)
-#if defined(OS_ANDROID)
-    {"disable-auto-hiding-toolbar-threshold",
-     IDS_FLAGS_DISABLE_AUTO_HIDING_TOOLBAR_NAME,
-     IDS_FLAGS_DISABLE_AUTO_HIDING_TOOLBAR_DESCRIPTION, kOsAndroid,
-     SINGLE_VALUE_TYPE_AND_VALUE(switches::kDisableAutoHidingToolbarThreshold,
-                                 "800")},
-#endif
 #if defined(TOOLKIT_VIEWS) || defined(OS_ANDROID)
     {"enable-autofill-credit-card-upload",
      IDS_FLAGS_AUTOFILL_CREDIT_CARD_UPLOAD_NAME,

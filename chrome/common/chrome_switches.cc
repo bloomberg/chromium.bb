@@ -1264,13 +1264,6 @@ const char kEnableWaylandServer[] = "enable-wayland-server";
 #endif
 
 #if defined(OS_ANDROID)
-// Sets the threshold for when to disable auto-hiding the toolbar. If the
-// device's width and height are above the threshold, the toolbar will never
-// be hidden due to scrolling. It will still be hidden if page contents go
-// fullscreen.
-const char kDisableAutoHidingToolbarThreshold[] =
-    "disable-auto-hiding-toolbar-threshold";
-
 // Forces the update menu item to show.
 const char kForceShowUpdateMenuItem[] = "force-show-update-menu-item";
 

@@ -298,7 +298,6 @@ extern const char kEnableHostedMode[];
 extern const char kEnableHungRendererInfoBar[];
 extern const char kProgressBarAnimation[];
 extern const char kEnableThemeColorInTabbedMode[];
-extern const char kDisableAutoHidingToolbarThreshold[];
 extern const char kEnableTabSwitcherInDocumentMode[];
 extern const char kNtpSwitchToExistingTab[];
 extern const char kForceShowUpdateMenuItem[];
