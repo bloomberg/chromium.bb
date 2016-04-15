@@ -53,6 +53,7 @@ class MenuRunnerImpl;
 
 namespace test {
 class MenuControllerTest;
+class MenuControllerTestApi;
 }
 
 // MenuController -------------------------------------------------------------
@@ -199,6 +200,7 @@ class VIEWS_EXPORT MenuController : public WidgetObserver {
  private:
   friend class internal::MenuRunnerImpl;
   friend class test::MenuControllerTest;
+  friend class test::MenuControllerTestApi;
   friend class MenuKeyEventHandler;
   friend class MenuHostRootView;
   friend class MenuItemView;

@@ -514,6 +514,8 @@
       'test/focus_manager_test.h',
       'test/menu_runner_test_api.cc',
       'test/menu_runner_test_api.h',
+      'test/menu_test_utils.cc',
+      'test/menu_test_utils.h',
       'test/native_widget_factory.cc',
       'test/native_widget_factory.h',
       'test/scoped_views_test_helper.cc',

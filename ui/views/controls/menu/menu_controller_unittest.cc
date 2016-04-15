@@ -24,6 +24,7 @@
 #include "ui/views/controls/menu/menu_message_loop.h"
 #include "ui/views/controls/menu/menu_scroll_view_container.h"
 #include "ui/views/controls/menu/submenu_view.h"
+#include "ui/views/test/menu_test_utils.h"
 #include "ui/views/test/views_test_base.h"
 
 #if defined(USE_AURA)
@@ -43,34 +44,6 @@ namespace views {
 namespace test {
 
 namespace {
-
-// Test implementation of MenuDelegate that only reports calls of OnPerformDrop.
-class TestMenuDelegate : public MenuDelegate {
- public:
-  TestMenuDelegate();
-  ~TestMenuDelegate() override;
-
-  bool on_perform_drop_called() { return on_perform_drop_called_; }
-
-  int OnPerformDrop(MenuItemView* menu,
-                    DropPosition position,
-                    const ui::DropTargetEvent& event) override;
-
- private:
-  bool on_perform_drop_called_;
-  DISALLOW_COPY_AND_ASSIGN(TestMenuDelegate);
-};
-
-TestMenuDelegate::TestMenuDelegate() : on_perform_drop_called_(false) {}
-
-TestMenuDelegate::~TestMenuDelegate() {}
-
-int TestMenuDelegate::OnPerformDrop(MenuItemView* menu,
-                                    DropPosition position,
-                                    const ui::DropTargetEvent& event) {
-  on_perform_drop_called_ = true;
-  return ui::DragDropTypes::DRAG_COPY;
-}
 
 // Test implementation of MenuControllerDelegate that only reports the values
 // called of OnMenuClosed.
@@ -181,12 +154,14 @@ class TestMenuMessageLoop : public MenuMessageLoop {
 
   bool is_running() const { return is_running_; }
 
+  // MenuMessageLoop:
+  void QuitNow() override;
+
  private:
   // MenuMessageLoop:
   void Run(MenuController* controller,
            Widget* owner,
            bool nested_menu) override;
-  void QuitNow() override;
   void ClearOwner() override;
 
   std::unique_ptr<MenuMessageLoop> original_;
@@ -328,6 +303,17 @@ class MenuControllerTest : public ViewsTestBase {
     menu_controller()->Cancel(MenuController::EXIT_OUTERMOST);
     EXPECT_EQ(MenuController::EXIT_OUTERMOST, menu_controller()->exit_type());
     EXPECT_FALSE(test_message_loop_->is_running());
+  }
+
+  // This nested an asynchronous delegate onto a menu with a nested message
+  // loop, then kills the loop. Simulates the loop being killed not by
+  // MenuController.
+  void TestNestedMessageLoopKillsItself(
+      TestMenuControllerDelegate* nested_delegate) {
+    menu_controller_->AddNestedDelegate(nested_delegate);
+    menu_controller_->SetAsyncRun(true);
+
+    test_message_loop_->QuitNow();
   }
 
  protected:
@@ -1238,6 +1224,29 @@ TEST_F(MenuControllerTest, AsynchronousGestureDeletesController) {
   // Close to remove observers before test TearDown
   sub_menu->Close();
   EXPECT_EQ(1, nested_delegate->on_menu_closed_called());
+}
+
+// Tests that when an asynchronous menu is nested, and the nested message loop
+// is kill not by the MenuController, that the nested menu is notified of
+// destruction.
+TEST_F(MenuControllerTest, NestedMessageLoopDiesWithNestedMenu) {
+  menu_controller()->CancelAll();
+  InstallTestMenuMessageLoop();
+  std::unique_ptr<TestMenuControllerDelegate> nested_delegate(
+      new TestMenuControllerDelegate());
+  // This will nest an asynchronous menu, and then kill the nested message loop.
+  base::MessageLoopForUI::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&MenuControllerTest::TestNestedMessageLoopKillsItself,
+                 base::Unretained(this), nested_delegate.get()));
+
+  int result_event_flags = 0;
+  // This creates a nested message loop.
+  EXPECT_EQ(nullptr, menu_controller()->Run(owner(), nullptr, menu_item(),
+                                            gfx::Rect(), MENU_ANCHOR_TOPLEFT,
+                                            false, false, &result_event_flags));
+  EXPECT_FALSE(menu_controller_delegate()->on_menu_closed_called());
+  EXPECT_TRUE(nested_delegate->on_menu_closed_called());
 }
 
 }  // namespace test

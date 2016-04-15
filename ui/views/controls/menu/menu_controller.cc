@@ -491,6 +491,11 @@ MenuItemView* MenuController::Run(Widget* parent,
   if (result_event_flags)
     *result_event_flags = accept_event_flags_;
 
+  // The nested message loop could have been killed externally. Check to see if
+  // there are nested asynchronous menus to shutdown.
+  if (async_run_ && delegate_stack_.size() > 1)
+    ExitAsyncRun();
+
   return ExitMenuRun();
 }
 
