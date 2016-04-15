@@ -62,7 +62,8 @@ KURL BlobURL::createInternalStreamURL()
 KURL BlobURL::createBlobURL(const String& originString)
 {
     ASSERT(!originString.isEmpty());
-    String urlString = "blob:" + encodeWithURLEscapeSequences(originString) + '/' + createCanonicalUUIDString();
+    String urlString =
+        "blob:" + originString + '/' + createCanonicalUUIDString();
     return KURL::createIsolated(ParsedURLString, urlString);
 }
 

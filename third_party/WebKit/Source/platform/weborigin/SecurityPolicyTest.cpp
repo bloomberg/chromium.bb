@@ -84,8 +84,9 @@ TEST(SecurityPolicyTest, GenerateReferrer)
     const char secureURLB[] = "https://b.test/path/to/file.html";
     const char secureOriginA[] = "https://a.test/";
 
-    const char blobURL[] = "blob:http%3A//a.test/b3aae9c8-7f90-440d-8d7c-43aa20d72fde";
-    const char filesystemURL[] = "filesystem:http%3A//a.test/path/t/file.html";
+    const char blobURL[] =
+        "blob:http://a.test/b3aae9c8-7f90-440d-8d7c-43aa20d72fde";
+    const char filesystemURL[] = "filesystem:http://a.test/path/t/file.html";
 
     TestCase inputs[] = {
         // HTTP -> HTTP: Same Origin

@@ -38,9 +38,9 @@ namespace content {
 namespace {
 
 const char kFakeBlobInternalUrlSpec[] =
-    "blob:blobinternal%3A///dc83ede4-9bbd-453b-be2e-60fd623fcc93";
+    "blob:blobinternal:///dc83ede4-9bbd-453b-be2e-60fd623fcc93";
 const char kFakeBlobInternalUrlSpec2[] =
-    "blob:blobinternal%3A///d28ae2e7-d233-4dda-9598-d135fe5d403e";
+    "blob:blobinternal:///d28ae2e7-d233-4dda-9598-d135fe5d403e";
 
 const char kFakeContentType[] = "fake/type";
 

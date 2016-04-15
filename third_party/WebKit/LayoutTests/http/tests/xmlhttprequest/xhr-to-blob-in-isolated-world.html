@@ -7,7 +7,7 @@ if (!window.testRunner) {
 } else {
     testRunner.dumpAsText();
     testRunner.setIsolatedWorldSecurityOrigin(1, "chrome-extension://123");
-    testRunner.evaluateScriptInIsolatedWorld(1, "var xhr = new XMLHttpRequest(); xhr.open('GET', 'blob:chrome-extension%3A//123/456789', false); xhr.send();");
+    testRunner.evaluateScriptInIsolatedWorld(1, "var xhr = new XMLHttpRequest(); xhr.open('GET', 'blob:chrome-extension://123/456789', false); xhr.send();");
 }
 </script>
 </body>

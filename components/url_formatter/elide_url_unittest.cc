@@ -320,10 +320,10 @@ TEST(TextEliderTest, FormatUrlForSecurityDisplay) {
       {"Trailing dot in DNS name", "https://www.example.com./get/goat",
        L"https://www.example.com.", L"www.example.com."},
       {"Blob URL",
-       "blob:http%3A//www.html5rocks.com/4d4ff040-6d61-4446-86d3-13ca07ec9ab9",
-       L"blob:http%3A//www.html5rocks.com/"
+       "blob:http://www.html5rocks.com/4d4ff040-6d61-4446-86d3-13ca07ec9ab9",
+       L"blob:http://www.html5rocks.com/"
        L"4d4ff040-6d61-4446-86d3-13ca07ec9ab9",
-       L"blob:http%3A//www.html5rocks.com/"
+       L"blob:http://www.html5rocks.com/"
        L"4d4ff040-6d61-4446-86d3-13ca07ec9ab9"}};
 
   for (size_t i = 0; i < arraysize(tests); ++i) {

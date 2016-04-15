@@ -374,7 +374,7 @@ TEST(HttpFsDirTest, ParseManifest) {
 }
 
 TEST(HttpFsBlobUrlTest, Basic) {
-  const char* kUrl = "blob:http%3A//example.com/6b87a5a6-713e";
+  const char* kUrl = "blob:http://example.com/6b87a5a6-713e";
   const char* kContent = "hello";
   FakePepperInterfaceURLLoader ppapi;
   ASSERT_TRUE(ppapi.server_template()->SetBlobEntity(kUrl, kContent, NULL));

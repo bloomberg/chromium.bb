@@ -4,7 +4,7 @@ Test that sync XMLHttpRequest GET succeeds.
 Status: 200
 Response: Hello
 Test that sync XMLHttpRequest POST fails.
-Received exception, code: 19, name: NetworkError, message: Failed to execute 'send' on 'XMLHttpRequest': Failed to load 'blob:file%3A///UUID': 'GET' is the only method allowed for 'blob:' URLs.
+Received exception, code: 19, name: NetworkError, message: Failed to execute 'send' on 'XMLHttpRequest': Failed to load 'blob:file:///UUID': 'GET' is the only method allowed for 'blob:' URLs.
 Test that sync XMLHttpRequest GET fails after the blob URL is revoked.
 Status: 404
 Response: 

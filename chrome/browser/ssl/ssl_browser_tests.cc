@@ -1213,7 +1213,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, MarkBlobAsNonSecure) {
 
   ui_test_utils::NavigateToURL(
       browser(),
-      GURL("blob:chrome%3A//newtab/49a463bb-fac8-476c-97bf-5d7076c3ea1a"));
+      GURL("blob:chrome://newtab/49a463bb-fac8-476c-97bf-5d7076c3ea1a"));
   EXPECT_EQ(security_state::SecurityStateModel::NONE,
             model_client->GetSecurityInfo().security_level);
 }

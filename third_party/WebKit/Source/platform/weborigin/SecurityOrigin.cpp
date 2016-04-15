@@ -75,7 +75,7 @@ KURL SecurityOrigin::extractInnerURL(const KURL& url)
         return *url.innerURL();
     // FIXME: Update this callsite to use the innerURL member function when
     // we finish implementing it.
-    return KURL(ParsedURLString, decodeURLEscapeSequences(url.path()));
+    return KURL(ParsedURLString, url.path());
 }
 
 void SecurityOrigin::setCache(SecurityOriginCache* originCache)
