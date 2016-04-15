@@ -352,13 +352,12 @@ struct ArraySerializationStrategy<ArrayType, true> {
                                   SerializationContext* context) {
     DCHECK(input);
     DCHECK_LE(input.size(), std::numeric_limits<uint32_t>::max());
-    size_t size = ArrayDataTraits<Array_Data<uint8_t>*>::GetStorageSize(
+    size_t size = ArrayDataTraits<NativeStruct_Data*>::GetStorageSize(
         static_cast<uint32_t>(input.size()));
     for (size_t i = 0; i < input.size(); ++i) {
       size_t element_size = GetSerializedSizeNative_(input[i], context);
       DCHECK_LT(element_size, std::numeric_limits<uint32_t>::max());
-      size += ArrayDataTraits<uint8_t>::GetStorageSize(
-          static_cast<uint32_t>(element_size));
+      size += static_cast<uint32_t>(element_size);
     }
     return size;
   }
@@ -369,16 +368,16 @@ struct ArraySerializationStrategy<ArrayType, true> {
                         Array_Data<F>** output,
                         const ArrayValidateParams* validate_params,
                         SerializationContext* context) {
-    static_assert(
-        std::is_same<F, Array_Data<uint8_t>*>::value,
-        "Native-only type array must serialize to array of byte arrays.");
+    static_assert(std::is_same<F, NativeStruct_Data*>::value,
+                  "Native-only type array must serialize into array of "
+                  "NativeStruct_Data*.");
     DCHECK(input);
     DCHECK(validate_params);
     // TODO(rockot): We may want to support nullable (i.e. scoped_ptr<T>)
     // elements here.
     DCHECK(!validate_params->element_is_nullable);
-    Array_Data<Array_Data<uint8_t>*>* result =
-        Array_Data<Array_Data<uint8_t>*>::New(input.size(), buf);
+    Array_Data<NativeStruct_Data*>* result =
+        Array_Data<NativeStruct_Data*>::New(input.size(), buf);
     for (size_t i = 0; i < input.size(); ++i)
       SerializeNative_(input[i], buf, &result->at(i), context);
     *output = result;
@@ -388,9 +387,9 @@ struct ArraySerializationStrategy<ArrayType, true> {
   static bool Deserialize(Array_Data<F>* input,
                           ArrayType* output,
                           SerializationContext* context) {
-    static_assert(
-        std::is_same<F, Array_Data<uint8_t>*>::value,
-        "Native-only type array must deserialize from array of byte arrays.");
+    static_assert(std::is_same<F, NativeStruct_Data*>::value,
+                  "Native-only type array must deserialize from array of "
+                  "NativeStruct_Data*.");
     DCHECK(input);
 
     ArrayType result(input->size());

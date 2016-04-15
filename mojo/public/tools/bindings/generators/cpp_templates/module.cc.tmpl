@@ -84,7 +84,9 @@ const uint32_t {{method_name}} = {{method.ordinal}};
 
 {#--- Struct definitions #}
 {%  for struct in structs %}
-{%-   include "struct_definition.tmpl" %}
+{%-   if not struct|is_native_only_kind %}
+{%-     include "struct_definition.tmpl" %}
+{%-   endif %}
 {%- endfor %}
 
 {#--- Union definitions #}
@@ -107,7 +109,9 @@ const {{constant.kind|cpp_pod_type}} {{struct.name}}::{{constant.name}} = {{cons
 
 {#--- Struct builder definitions #}
 {%- for struct in structs %}
-{%-   include "wrapper_class_definition.tmpl" %}
+{%-   if not struct|is_native_only_kind %}
+{%-     include "wrapper_class_definition.tmpl" %}
+{%-   endif %}
 {%- endfor %}
 
 {#--- Union builder definitions #}
@@ -122,7 +126,9 @@ const {{constant.kind|cpp_pod_type}} {{struct.name}}::{{constant.name}} = {{cons
 
 {#--- Struct Serialization Helpers #}
 {%- for struct in structs %}
-{%-   include "struct_serialization_definition.tmpl" %}
+{%-   if not struct|is_native_only_kind %}
+{%-     include "struct_serialization_definition.tmpl" %}
+{%-   endif %}
 {%- endfor %}
 
 {#--- Union Serialization Helpers #}

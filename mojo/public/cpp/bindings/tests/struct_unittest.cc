@@ -414,5 +414,75 @@ TEST_F(StructTest, Versioning_NewToOld) {
     EXPECT_TRUE(output->Equals(*expected_output));
   }
 }
+
+// Serialization test for native struct.
+TEST_F(StructTest, Serialization_NativeStruct) {
+  using Data = mojo::internal::NativeStruct_Data;
+  {
+    // Serialization of a null native struct.
+    NativeStructPtr native;
+    size_t size = GetSerializedSize_(native, nullptr);
+    EXPECT_EQ(0u, size);
+    mojo::internal::FixedBufferForTesting buf(size);
+
+    Data* data = nullptr;
+    Serialize_(std::move(native), &buf, &data, nullptr);
+
+    EXPECT_EQ(nullptr, data);
+
+    NativeStructPtr output_native;
+    Deserialize_(data, &output_native, nullptr);
+    EXPECT_TRUE(output_native.is_null());
+  }
+
+  {
+    // Serialization of a native struct with null data.
+    NativeStructPtr native(NativeStruct::New());
+    size_t size = GetSerializedSize_(native, nullptr);
+    EXPECT_EQ(0u, size);
+    mojo::internal::FixedBufferForTesting buf(size);
+
+    Data* data = nullptr;
+    Serialize_(std::move(native), &buf, &data, nullptr);
+
+    EXPECT_EQ(nullptr, data);
+
+    NativeStructPtr output_native;
+    Deserialize_(data, &output_native, nullptr);
+    EXPECT_TRUE(output_native.is_null());
+  }
+
+  {
+    NativeStructPtr native(NativeStruct::New());
+    native->data = Array<uint8_t>(2);
+    native->data[0] = 'X';
+    native->data[1] = 'Y';
+
+    size_t size = GetSerializedSize_(native, nullptr);
+    EXPECT_EQ(16u, size);
+    mojo::internal::FixedBufferForTesting buf(size);
+
+    Data* data = nullptr;
+    Serialize_(std::move(native), &buf, &data, nullptr);
+
+    EXPECT_NE(nullptr, data);
+
+    std::vector<Handle> handles;
+    data->EncodePointersAndHandles(&handles);
+
+    EXPECT_TRUE(handles.empty());
+
+    data->DecodePointersAndHandles(&handles);
+
+    NativeStructPtr output_native;
+    Deserialize_(data, &output_native, nullptr);
+    EXPECT_FALSE(output_native.is_null());
+    EXPECT_FALSE(output_native->data.is_null());
+    EXPECT_EQ(2u, output_native->data.size());
+    EXPECT_EQ('X', output_native->data[0]);
+    EXPECT_EQ('Y', output_native->data[1]);
+  }
+}
+
 }  // namespace test
 }  // namespace mojo

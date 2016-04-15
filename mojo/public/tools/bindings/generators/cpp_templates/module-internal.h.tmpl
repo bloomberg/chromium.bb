@@ -45,7 +45,11 @@ namespace {{variant}} {
 
 {#--- Wrapper forward declarations #}
 {%  for struct in structs %}
+{%-   if struct|is_native_only_kind %}
+using {{struct.name}} = mojo::NativeStruct;
+{%-   else %}
 class {{struct.name}};
+{%-   endif %}
 {%- endfor %}
 
 {#--- Wrapper forward declarations for unions #}
@@ -57,7 +61,11 @@ namespace internal {
 
 {#--- Internal forward declarations #}
 {%  for struct in structs %}
+{%-   if struct|is_native_only_kind %}
+using {{struct.name}}_Data = mojo::internal::NativeStruct_Data;
+{%-   else %}
 class {{struct.name}}_Data;
+{%-   endif %}
 {%- endfor %}
 
 {%  for union in unions %}
@@ -80,7 +88,9 @@ class {{union.name}}_Data;
 
 {#--- Struct class declarations #}
 {%  for struct in structs %}
-{%    include "struct_declaration.tmpl" %}
+{%-   if not struct|is_native_only_kind %}
+{%      include "struct_declaration.tmpl" %}
+{%-   endif %}
 {%- endfor %}
 
 {#--- Interface class declarations. They are needed only when they contain

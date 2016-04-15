@@ -82,8 +82,6 @@ class _NameFormatter(object):
   def _MapKindName(self, token, internal):
     if not internal:
       return token.name
-    if mojom.IsStructKind(token) and token.native_only:
-      return "mojo::Array_Data<uint8_t>"
     if (mojom.IsStructKind(token) or mojom.IsUnionKind(token) or
         mojom.IsInterfaceKind(token) or mojom.IsEnumKind(token)):
       return token.name + "_Data"
@@ -159,8 +157,6 @@ def GetNativeTypeName(typemapped_kind):
 def DoesKindSupportEquality(kind):
   if IsTypemappedKind(kind):
     return False
-  if mojom.IsStructKind(kind) and kind.native_only:
-    return False
   if mojom.IsArrayKind(kind):
     return DoesKindSupportEquality(kind.kind)
   if mojom.IsMapKind(kind):
@@ -168,9 +164,6 @@ def DoesKindSupportEquality(kind):
   return True
 
 def GetCppType(kind):
-  if mojom.IsStructKind(kind) and kind.native_only:
-    # A native-only type is just a blob of bytes.
-    return "mojo::internal::Array_Data<uint8_t>*"
   if mojom.IsArrayKind(kind):
     return "mojo::internal::Array_Data<%s>*" % GetCppType(kind.kind)
   if mojom.IsMapKind(kind):
@@ -200,16 +193,12 @@ def GetCppPodType(kind):
   return _kind_to_cpp_type[kind]
 
 def GetCppArrayArgWrapperType(kind):
-  if mojom.IsStructKind(kind) and kind.native_only:
-    if IsTypemappedKind(kind):
+  if IsTypemappedKind(kind):
+    if mojom.IsStructKind(kind) and kind.native_only:
       return GetNativeTypeName(kind)
     else:
-      # Without a relevant typemap to apply, a native-only struct can only be
-      # exposed as a blob of bytes.
-      return "mojo::Array<uint8_t>"
-  if IsTypemappedKind(kind):
-    raise Exception(
-        "Cannot serialize containers of non-native typemapped structs yet!")
+      raise Exception(
+          "Cannot serialize containers of non-native typemapped structs yet!")
   if mojom.IsEnumKind(kind):
     return GetNameForKind(kind)
   if mojom.IsStructKind(kind) or mojom.IsUnionKind(kind):
@@ -246,8 +235,6 @@ def GetCppArrayArgWrapperType(kind):
 def GetCppResultWrapperType(kind):
   if IsTypemappedKind(kind):
     return "const %s&" % GetNativeTypeName(kind)
-  if mojom.IsStructKind(kind) and kind.native_only:
-    return "mojo::Array<uint8_t>"
   if mojom.IsEnumKind(kind):
     return GetNameForKind(kind)
   if mojom.IsStructKind(kind) or mojom.IsUnionKind(kind):
@@ -289,8 +276,6 @@ def GetCppResultWrapperType(kind):
 def GetCppWrapperType(kind):
   if IsTypemappedKind(kind):
     return GetNativeTypeName(kind)
-  if mojom.IsStructKind(kind) and kind.native_only:
-    return "mojo::Array<uint8_t>"
   if mojom.IsEnumKind(kind):
     return GetNameForKind(kind)
   if mojom.IsStructKind(kind) or mojom.IsUnionKind(kind):
@@ -326,8 +311,6 @@ def GetCppWrapperType(kind):
 def GetCppConstWrapperType(kind):
   if IsTypemappedKind(kind):
     return "const %s&" % GetNativeTypeName(kind)
-  if mojom.IsStructKind(kind) and kind.native_only:
-    return "mojo::Array<uint8_t>"
   if mojom.IsStructKind(kind) or mojom.IsUnionKind(kind):
     return "%sPtr" % GetNameForKind(kind)
   if mojom.IsArrayKind(kind):
@@ -363,8 +346,6 @@ def GetCppConstWrapperType(kind):
   return _kind_to_cpp_type[kind]
 
 def GetCppFieldType(kind):
-  if mojom.IsStructKind(kind) and kind.native_only:
-    return "mojo::internal::ArrayPointer<uint8_t>"
   if mojom.IsStructKind(kind):
     return ("mojo::internal::StructPointer<%s>" %
         GetNameForKind(kind, internal=True))
@@ -458,8 +439,7 @@ def ShouldInlineUnion(union):
   return not any(mojom.IsMoveOnlyKind(field.kind) for field in union.fields)
 
 def GetArrayValidateParamsCtorArgs(kind):
-  if mojom.IsStringKind(kind) or (mojom.IsStructKind(kind) and
-                                  kind.native_only):
+  if mojom.IsStringKind(kind):
     expected_num_elements = 0
     element_is_nullable = False
     element_validate_params = "nullptr"
@@ -488,8 +468,7 @@ def GetArrayValidateParamsCtorArgs(kind):
 
 def GetNewArrayValidateParams(kind):
   if (not mojom.IsArrayKind(kind) and not mojom.IsMapKind(kind) and
-      not mojom.IsStringKind(kind) and
-      not (mojom.IsStructKind(kind) and kind.native_only)):
+      not mojom.IsStringKind(kind)):
     return "nullptr"
 
   return "new mojo::internal::ArrayValidateParams(%s)" % (

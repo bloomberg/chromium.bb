@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_PUBLIC_CPP_BINDINGS_LIB_NATIVE_SERIALIZATION_H_
-#define MOJO_PUBLIC_CPP_BINDINGS_LIB_NATIVE_SERIALIZATION_H_
+#ifndef MOJO_PUBLIC_CPP_BINDINGS_LIB_NATIVE_STRUCT_SERIALIZATION_H_
+#define MOJO_PUBLIC_CPP_BINDINGS_LIB_NATIVE_STRUCT_SERIALIZATION_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -16,7 +16,9 @@
 #include "mojo/public/cpp/bindings/lib/array_internal.h"
 #include "mojo/public/cpp/bindings/lib/bindings_internal.h"
 #include "mojo/public/cpp/bindings/lib/bindings_serialization.h"
+#include "mojo/public/cpp/bindings/lib/native_struct_data.h"
 #include "mojo/public/cpp/bindings/lib/pickle_buffer.h"
+#include "mojo/public/cpp/bindings/lib/serialization_forward.h"
 
 namespace mojo {
 namespace internal {
@@ -25,7 +27,9 @@ namespace internal {
 // It can be used as a signal (by e.g. the Array serializer) for when to use
 // SerializeNative_ with a type.
 template <typename E>
-struct ShouldUseNativeSerializer { static const bool value = false; };
+struct ShouldUseNativeSerializer {
+  static const bool value = false;
+};
 
 template <typename T>
 size_t GetSerializedSizeNative_(const T& value, SerializationContext* context) {
@@ -37,7 +41,7 @@ size_t GetSerializedSizeNative_(const T& value, SerializationContext* context) {
 template <typename T>
 void SerializeNative_(const T& value,
                       Buffer* buffer,
-                      Array_Data<uint8_t>** out,
+                      NativeStruct_Data** out,
                       SerializationContext* context) {
   PickleBuffer* pickler = buffer->AsPickleBuffer();
   DCHECK(pickler) << "Native types can only be used with PickleBuffers.";
@@ -75,11 +79,11 @@ void SerializeNative_(const T& value,
   header->num_bytes = static_cast<uint32_t>(total_size);
   header->num_elements = static_cast<uint32_t>(pickled_size);
 
-  *out = reinterpret_cast<Array_Data<uint8_t>*>(header);
+  *out = reinterpret_cast<NativeStruct_Data*>(header);
 }
 
 template <typename T>
-bool DeserializeNative_(Array_Data<uint8_t>* data,
+bool DeserializeNative_(NativeStruct_Data* data,
                         T* out,
                         SerializationContext* context) {
   if (!data)
@@ -121,4 +125,4 @@ bool DeserializeNative_(Array_Data<uint8_t>* data,
 }  // namespace internal
 }  // namespace mojo
 
-#endif  // MOJO_PUBLIC_CPP_BINDINGS_LIB_NATIVE_SERIALIZATION_H_
+#endif  // MOJO_PUBLIC_CPP_BINDINGS_LIB_NATIVE_STRUCT_SERIALIZATION_H_

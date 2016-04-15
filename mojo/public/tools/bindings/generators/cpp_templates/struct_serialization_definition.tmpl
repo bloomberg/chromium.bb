@@ -32,8 +32,6 @@ bool Deserialize_(internal::{{struct.name}}_Data* input,
   return success;
 }
 
-{%- if not struct|is_native_only_kind %}
-
 {{struct.name}}_Reader::{{struct.name}}_Reader(
     internal::{{struct.name}}_Data*  data,
     mojo::internal::SerializationContext* context)
@@ -75,5 +73,3 @@ base::StringPiece {{struct.name}}_Reader::{{name}}() const {
 }
 {%-   endif %}
 {%- endfor %}
-
-{%- endif %}

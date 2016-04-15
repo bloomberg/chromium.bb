@@ -7,8 +7,11 @@
 
 #include <stddef.h>
 
+#include "mojo/public/cpp/bindings/array.h"
 #include "mojo/public/cpp/bindings/lib/string_serialization.h"
 #include "mojo/public/cpp/bindings/lib/wtf_string_serialization.h"
+#include "mojo/public/cpp/bindings/map.h"
+#include "mojo/public/cpp/bindings/native_struct.h"
 
 // This file is included by serialization implementation files to avoid circular
 // includes.
@@ -16,12 +19,6 @@
 // wtf_serialization.h if necessary).
 
 namespace mojo {
-
-template <typename T>
-class Array;
-
-template <typename K, typename V>
-class Map;
 
 template <typename T>
 class WTFArray;
@@ -37,6 +34,8 @@ class Buffer;
 
 template <typename K, typename V>
 class Map_Data;
+
+class NativeStruct_Data;
 
 struct SerializationContext;
 
@@ -61,6 +60,18 @@ bool DeserializeNative_(Array_Data<uint8_t>* data,
                         SerializationContext* context);
 
 }  // namespace internal
+
+size_t GetSerializedSize_(const NativeStructPtr& input,
+                          internal::SerializationContext* context);
+
+void Serialize_(NativeStructPtr input,
+                internal::Buffer* buffer,
+                internal::NativeStruct_Data** output,
+                internal::SerializationContext* context);
+
+bool Deserialize_(internal::NativeStruct_Data* input,
+                  NativeStructPtr* output,
+                  internal::SerializationContext* context);
 
 // -----------------------------------------------------------------------------
 // Forward declaration for Array.

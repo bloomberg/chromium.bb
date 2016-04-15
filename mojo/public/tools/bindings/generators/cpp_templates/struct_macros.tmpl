@@ -56,8 +56,7 @@
 {%-   set name = pf.field.name %}
 {%-   set kind = pf.field.kind %}
 {%-   if kind|is_object_kind %}
-{%-     if kind|is_array_kind or
-            (kind|is_native_only_kind and not kind|is_typemapped_kind) %}
+{%-     if kind|is_array_kind %}
   const mojo::internal::ArrayValidateParams {{name}}_validate_params(
       {{kind|get_array_validate_params_ctor_args|indent(10)}});
   mojo::SerializeArray_(std::move({{input_field}}), {{buffer}},

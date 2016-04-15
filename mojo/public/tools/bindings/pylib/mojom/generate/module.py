@@ -47,9 +47,6 @@ class ReferenceKind(Kind):
     if self == SHAREDBUFFER:
       return NULLABLE_SHAREDBUFFER
 
-    if IsStructKind(self) and self.native_only:
-      raise Exception('Native-only structs cannot be nullable.')
-
     nullable_kind = type(self)()
     nullable_kind.shared_definition = self.shared_definition
     if self.spec is not None:
@@ -618,7 +615,7 @@ def IsCloneableKind(kind, filter):
     if IsArrayKind(kind):
       return _IsCloneable(kind.kind, visited_kinds)
     if IsStructKind(kind) or IsUnionKind(kind):
-      if IsStructKind(kind) and (kind.native_only or filter(kind)):
+      if IsStructKind(kind) and filter(kind):
         return False
       for field in kind.fields:
         if not _IsCloneable(field.kind, visited_kinds):
