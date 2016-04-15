@@ -796,23 +796,6 @@ DownloadManagerDelegate* TestingProfile::GetDownloadManagerDelegate() {
   return NULL;
 }
 
-net::URLRequestContextGetter* TestingProfile::GetMediaRequestContext() {
-  return NULL;
-}
-
-net::URLRequestContextGetter*
-TestingProfile::GetMediaRequestContextForRenderProcess(
-    int renderer_child_id) {
-  return NULL;
-}
-
-net::URLRequestContextGetter*
-TestingProfile::GetMediaRequestContextForStoragePartition(
-    const base::FilePath& partition_path,
-    bool in_memory) {
-  return NULL;
-}
-
 net::URLRequestContextGetter* TestingProfile::GetRequestContext() {
   return GetDefaultStoragePartition(this)->GetURLRequestContext();
 }
@@ -949,6 +932,17 @@ TestingProfile::CreateRequestContextForStoragePartition(
   // We don't test storage partitions here yet, so returning the same dummy
   // context is sufficient for now.
   return GetRequestContext();
+}
+
+net::URLRequestContextGetter* TestingProfile::CreateMediaRequestContext() {
+  return NULL;
+}
+
+net::URLRequestContextGetter*
+TestingProfile::CreateMediaRequestContextForStoragePartition(
+    const base::FilePath& partition_path,
+    bool in_memory) {
+  return NULL;
 }
 
 bool TestingProfile::WasCreatedByVersionOrLater(const std::string& version) {

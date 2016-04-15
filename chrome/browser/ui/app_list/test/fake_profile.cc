@@ -41,23 +41,6 @@ content::DownloadManagerDelegate* FakeProfile::GetDownloadManagerDelegate() {
   return nullptr;
 }
 
-net::URLRequestContextGetter* FakeProfile::GetMediaRequestContext() {
-  return nullptr;
-}
-
-net::URLRequestContextGetter*
-FakeProfile::GetMediaRequestContextForRenderProcess(
-    int renderer_child_id) {
-  return nullptr;
-}
-
-net::URLRequestContextGetter*
-FakeProfile::GetMediaRequestContextForStoragePartition(
-        const base::FilePath& partition_path,
-        bool in_memory) {
-  return nullptr;
-}
-
 content::ResourceContext* FakeProfile::GetResourceContext() {
   return nullptr;
 }
@@ -98,6 +81,17 @@ FakeProfile::CreateRequestContextForStoragePartition(
     bool in_memory,
     content::ProtocolHandlerMap* protocol_handlers,
     content::URLRequestInterceptorScopedVector request_interceptors) {
+  return nullptr;
+}
+
+net::URLRequestContextGetter* FakeProfile::CreateMediaRequestContext() {
+  return nullptr;
+}
+
+net::URLRequestContextGetter*
+FakeProfile::CreateMediaRequestContextForStoragePartition(
+    const base::FilePath& partition_path,
+    bool in_memory) {
   return nullptr;
 }
 

@@ -3369,8 +3369,8 @@ void WebContentsImpl::OnDidLoadResourceFromMemoryCache(
   if (url.is_valid() && url.SchemeIsHTTPOrHTTPS()) {
     scoped_refptr<net::URLRequestContextGetter> request_context(
         resource_type == RESOURCE_TYPE_MEDIA ?
-            GetBrowserContext()->GetMediaRequestContextForRenderProcess(
-                GetRenderProcessHost()->GetID()) :
+            GetRenderProcessHost()->GetStoragePartition()->
+                GetMediaURLRequestContext() :
             GetRenderProcessHost()->GetStoragePartition()->
                 GetURLRequestContext());
     BrowserThread::PostTask(

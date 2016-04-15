@@ -350,26 +350,6 @@ bool AwBrowserContext::IsOffTheRecord() const {
   return false;
 }
 
-net::URLRequestContextGetter* AwBrowserContext::GetMediaRequestContext() {
-  return content::BrowserContext::GetDefaultStoragePartition(this)->
-      GetURLRequestContext();
-}
-
-net::URLRequestContextGetter*
-AwBrowserContext::GetMediaRequestContextForRenderProcess(
-    int renderer_child_id) {
-  return content::BrowserContext::GetDefaultStoragePartition(this)->
-      GetURLRequestContext();
-}
-
-net::URLRequestContextGetter*
-AwBrowserContext::GetMediaRequestContextForStoragePartition(
-    const base::FilePath& partition_path,
-    bool in_memory) {
-  NOTREACHED();
-  return NULL;
-}
-
 content::ResourceContext* AwBrowserContext::GetResourceContext() {
   if (!resource_context_) {
     resource_context_.reset(
@@ -435,6 +415,18 @@ AwBrowserContext::CreateRequestContextForStoragePartition(
     bool in_memory,
     content::ProtocolHandlerMap* protocol_handlers,
     content::URLRequestInterceptorScopedVector request_interceptors) {
+  NOTREACHED();
+  return NULL;
+}
+
+net::URLRequestContextGetter* AwBrowserContext::CreateMediaRequestContext() {
+  return url_request_context_getter_.get();
+}
+
+net::URLRequestContextGetter*
+AwBrowserContext::CreateMediaRequestContextForStoragePartition(
+    const base::FilePath& partition_path,
+    bool in_memory) {
   NOTREACHED();
   return NULL;
 }

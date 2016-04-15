@@ -173,20 +173,6 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   // Return whether this context is incognito. Default is false.
   virtual bool IsOffTheRecord() const = 0;
 
-  // Returns the default request context for media resources associated with
-  // this context.
-  // TODO(creis): Remove this version in favor of the one below.
-  virtual net::URLRequestContextGetter* GetMediaRequestContext() = 0;
-
-  // Returns the request context for media resources associated with this
-  // context and renderer process.
-  virtual net::URLRequestContextGetter* GetMediaRequestContextForRenderProcess(
-      int renderer_child_id) = 0;
-  virtual net::URLRequestContextGetter*
-      GetMediaRequestContextForStoragePartition(
-          const base::FilePath& partition_path,
-          bool in_memory) = 0;
-
   // Returns the resource context.
   virtual ResourceContext* GetResourceContext() = 0;
 
@@ -230,6 +216,17 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
       bool in_memory,
       ProtocolHandlerMap* protocol_handlers,
       URLRequestInterceptorScopedVector request_interceptors) = 0;
+
+  // Creates the main net::URLRequestContextGetter for media resources. It's
+  // called only once.
+  virtual net::URLRequestContextGetter* CreateMediaRequestContext() = 0;
+
+  // Creates the media net::URLRequestContextGetter for a StoragePartition. It's
+  // called only once per partition_path.
+  virtual net::URLRequestContextGetter*
+      CreateMediaRequestContextForStoragePartition(
+          const base::FilePath& partition_path,
+          bool in_memory) = 0;
 };
 
 }  // namespace content

@@ -896,7 +896,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   ResourceContext* resource_context = browser_context->GetResourceContext();
 
   scoped_refptr<net::URLRequestContextGetter> media_request_context(
-      browser_context->GetMediaRequestContextForRenderProcess(GetID()));
+      GetStoragePartition()->GetMediaURLRequestContext());
 
   ResourceMessageFilter::GetContextsCallback get_contexts_callback(
       base::Bind(&GetContexts, browser_context->GetResourceContext(),

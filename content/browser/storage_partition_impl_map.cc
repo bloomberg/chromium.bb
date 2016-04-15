@@ -469,8 +469,8 @@ StoragePartitionImpl* StoragePartitionImplMap::Get(
   }
   partition->SetMediaURLRequestContext(
       partition_domain.empty() ?
-      browser_context_->GetMediaRequestContext() :
-      browser_context_->GetMediaRequestContextForStoragePartition(
+      browser_context_->CreateMediaRequestContext() :
+      browser_context_->CreateMediaRequestContextForStoragePartition(
           partition->GetPath(), in_memory));
 
   PostCreateInitialization(partition, in_memory);

@@ -105,23 +105,6 @@ BlimpBrowserContext::GetSystemRequestContextGetter() {
   return system_context_getter_.get();
 }
 
-net::URLRequestContextGetter* BlimpBrowserContext::GetMediaRequestContext() {
-  return resource_context_->url_request_context_getter().get();
-}
-
-net::URLRequestContextGetter*
-BlimpBrowserContext::GetMediaRequestContextForRenderProcess(
-    int renderer_child_id) {
-  return resource_context_->url_request_context_getter().get();
-}
-
-net::URLRequestContextGetter*
-BlimpBrowserContext::GetMediaRequestContextForStoragePartition(
-    const base::FilePath& partition_path,
-    bool in_memory) {
-  return resource_context_->url_request_context_getter().get();
-}
-
 content::ResourceContext* BlimpBrowserContext::GetResourceContext() {
   return resource_context_.get();
 }
@@ -175,6 +158,17 @@ BlimpBrowserContext::CreateRequestContextForStoragePartition(
     bool in_memory,
     content::ProtocolHandlerMap* protocol_handlers,
     content::URLRequestInterceptorScopedVector request_interceptors) {
+  return nullptr;
+}
+
+net::URLRequestContextGetter* BlimpBrowserContext::CreateMediaRequestContext() {
+  return resource_context_->url_request_context_getter().get();
+}
+
+net::URLRequestContextGetter*
+BlimpBrowserContext::CreateMediaRequestContextForStoragePartition(
+    const base::FilePath& partition_path,
+    bool in_memory) {
   return nullptr;
 }
 

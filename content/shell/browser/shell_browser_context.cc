@@ -147,33 +147,25 @@ net::URLRequestContextGetter* ShellBrowserContext::CreateRequestContext(
 }
 
 net::URLRequestContextGetter*
-    ShellBrowserContext::GetMediaRequestContext()  {
-  return BrowserContext::GetDefaultStoragePartition(this)->
-      GetURLRequestContext();
-}
-
-net::URLRequestContextGetter*
-    ShellBrowserContext::GetMediaRequestContextForRenderProcess(
-        int renderer_child_id)  {
-  return BrowserContext::GetDefaultStoragePartition(this)->
-      GetURLRequestContext();
-}
-
-net::URLRequestContextGetter*
-    ShellBrowserContext::GetMediaRequestContextForStoragePartition(
-        const base::FilePath& partition_path,
-        bool in_memory) {
-  return BrowserContext::GetDefaultStoragePartition(this)->
-      GetURLRequestContext();
-}
-
-net::URLRequestContextGetter*
 ShellBrowserContext::CreateRequestContextForStoragePartition(
     const base::FilePath& partition_path,
     bool in_memory,
     ProtocolHandlerMap* protocol_handlers,
     URLRequestInterceptorScopedVector request_interceptors) {
-  return NULL;
+  return nullptr;
+}
+
+net::URLRequestContextGetter*
+    ShellBrowserContext::CreateMediaRequestContext()  {
+  DCHECK(url_request_getter_.get());
+  return url_request_getter_.get();
+}
+
+net::URLRequestContextGetter*
+    ShellBrowserContext::CreateMediaRequestContextForStoragePartition(
+        const base::FilePath& partition_path,
+        bool in_memory) {
+  return nullptr;
 }
 
 ResourceContext* ShellBrowserContext::GetResourceContext()  {

@@ -90,23 +90,6 @@ DownloadManagerDelegate* TestBrowserContext::GetDownloadManagerDelegate() {
   return NULL;
 }
 
-net::URLRequestContextGetter* TestBrowserContext::GetMediaRequestContext() {
-  return NULL;
-}
-
-net::URLRequestContextGetter*
-TestBrowserContext::GetMediaRequestContextForRenderProcess(
-    int renderer_child_id) {
-  return NULL;
-}
-
-net::URLRequestContextGetter*
-TestBrowserContext::GetMediaRequestContextForStoragePartition(
-    const base::FilePath& partition_path,
-    bool in_memory) {
-  return NULL;
-}
-
 ResourceContext* TestBrowserContext::GetResourceContext() {
   if (!resource_context_)
     resource_context_.reset(new MockResourceContext(
@@ -156,6 +139,17 @@ TestBrowserContext::CreateRequestContextForStoragePartition(
     ProtocolHandlerMap* protocol_handlers,
     URLRequestInterceptorScopedVector request_interceptors) {
   return nullptr;
+}
+
+net::URLRequestContextGetter* TestBrowserContext::CreateMediaRequestContext() {
+  return NULL;
+}
+
+net::URLRequestContextGetter*
+TestBrowserContext::CreateMediaRequestContextForStoragePartition(
+    const base::FilePath& partition_path,
+    bool in_memory) {
+  return NULL;
 }
 
 }  // namespace content

@@ -323,21 +323,13 @@ net::URLRequestContextGetter* OffTheRecordProfileImpl::CreateRequestContext(
 }
 
 net::URLRequestContextGetter*
-    OffTheRecordProfileImpl::GetMediaRequestContext() {
+    OffTheRecordProfileImpl::CreateMediaRequestContext() {
   // In OTR mode, media request context is the same as the original one.
   return GetRequestContext();
 }
 
 net::URLRequestContextGetter*
-    OffTheRecordProfileImpl::GetMediaRequestContextForRenderProcess(
-        int renderer_child_id) {
-  // In OTR mode, media request context is the same as the original one.
-  return content::RenderProcessHost::FromID(renderer_child_id)->
-      GetStoragePartition()->GetURLRequestContext();
-}
-
-net::URLRequestContextGetter*
-OffTheRecordProfileImpl::GetMediaRequestContextForStoragePartition(
+OffTheRecordProfileImpl::CreateMediaRequestContextForStoragePartition(
     const base::FilePath& partition_path,
     bool in_memory) {
   return io_data_->GetIsolatedAppRequestContextGetter(partition_path, in_memory)

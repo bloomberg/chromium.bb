@@ -36,6 +36,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/test/test_utils.h"
 #include "net/base/net_errors.h"
 #include "net/test/url_request/url_request_failed_job.h"
@@ -524,7 +525,8 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest,
 IN_PROC_BROWSER_TEST_F(ProfileBrowserTest,
                        URLFetcherUsingMediaContextDuringShutdown) {
   StartActiveFetcherDuringProfileShutdownTest(
-      browser()->profile()->GetMediaRequestContext());
+      content::BrowserContext::GetDefaultStoragePartition(
+          browser()->profile())->GetMediaURLRequestContext());
 }
 
 IN_PROC_BROWSER_TEST_F(ProfileBrowserTest,

@@ -239,6 +239,10 @@ class TestingProfile : public Profile {
       bool in_memory,
       content::ProtocolHandlerMap* protocol_handlers,
       content::URLRequestInterceptorScopedVector request_interceptors) override;
+  net::URLRequestContextGetter* CreateMediaRequestContext() override;
+  net::URLRequestContextGetter* CreateMediaRequestContextForStoragePartition(
+      const base::FilePath& partition_path,
+      bool in_memory) override;
 
   TestingProfile* AsTestingProfile() override;
 
@@ -283,15 +287,8 @@ class TestingProfile : public Profile {
   PrefService* GetPrefs() override;
   const PrefService* GetPrefs() const override;
   ChromeZoomLevelPrefs* GetZoomLevelPrefs() override;
-
-  net::URLRequestContextGetter* GetMediaRequestContext() override;
-  net::URLRequestContextGetter* GetMediaRequestContextForRenderProcess(
-      int renderer_child_id) override;
   net::URLRequestContextGetter* GetRequestContext() override;
   net::URLRequestContextGetter* GetRequestContextForExtensions() override;
-  net::URLRequestContextGetter* GetMediaRequestContextForStoragePartition(
-      const base::FilePath& partition_path,
-      bool in_memory) override;
   net::SSLConfigService* GetSSLConfigService() override;
   void set_last_session_exited_cleanly(bool value) {
     last_session_exited_cleanly_ = value;
