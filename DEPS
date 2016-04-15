@@ -69,10 +69,6 @@ vars = {
   # and whatever else without interference from each other.
   'boringssl_revision': '0fe4d8bef5918f84a7f260c34c26dd13c0d70ade',
   # Three lines of non-changing comments so that
-  # the commit queue can handle CLs rolling nss
-  # and whatever else without interference from each other.
-  'nss_revision': 'ccb083050bac653bd6b98c38237fdf93c5d64a7a',
-  # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling google-toolbox-for-mac
   # and whatever else without interference from each other.
   'google_toolbox_for_mac_revision': '401878398253074c515c03cb3a3f8bb0cc8da6e9',
@@ -309,10 +305,6 @@ deps_os = {
     'src/third_party/pefile':
      Var('chromium_git') + '/external/pefile.git' + '@' + '72c6ae42396cb913bcab63c15585dc3b5c3f92f1',
 
-    # NSS, for SSLClientSocketNSS.
-    'src/third_party/nss':
-     Var('chromium_git') + '/chromium/deps/nss.git' + '@' + Var('nss_revision'),
-
     # GNU binutils assembler for x86-32.
     'src/third_party/gnu_binutils':
       Var('chromium_git') + '/native_client/deps/third_party/gnu_binutils.git' + '@' + 'f4003433b61b25666565690caf3d7a7a1a4ec436',
@@ -348,9 +340,6 @@ deps_os = {
     'src/third_party/google_toolbox_for_mac/src':
       Var('chromium_git') + '/external/github.com/google/google-toolbox-for-mac.git' + '@' + Var('google_toolbox_for_mac_revision'),
 
-    'src/third_party/nss':
-     Var('chromium_git') + '/chromium/deps/nss.git' + '@' + Var('nss_revision'),
-
     # class-dump utility to generate header files for undocumented SDKs
     'src/third_party/class-dump/src':
      Var('chromium_git') + '/external/github.com/nygard/class-dump.git' + '@' + '978d177ca6f0d2e5e34acf3e8dadc63e3140ebbc',
@@ -373,10 +362,6 @@ deps_os = {
 
     'src/third_party/lighttpd':
      Var('chromium_git') + '/chromium/deps/lighttpd.git' + '@' + Var('lighttpd_revision'),
-
-    # NSS, for SSLClientSocketNSS.
-    'src/third_party/nss':
-     Var('chromium_git') + '/chromium/deps/nss.git' + '@' + Var('nss_revision'),
 
     'src/chrome/installer/mac/third_party/xz/xz':
      Var('chromium_git') + '/chromium/deps/xz.git' + '@' + 'eecaf55632ca72e90eb2641376bce7cdbc7284f7',
