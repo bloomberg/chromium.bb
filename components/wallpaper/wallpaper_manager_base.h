@@ -346,8 +346,8 @@ class WALLPAPER_EXPORT WallpaperManagerBase {
   // Returns queue size.
   virtual size_t GetPendingListSizeForTesting() const = 0;
 
-  // Ruturns files identifier for the user.
-  virtual WallpaperFilesId GetFilesId(const user_manager::User& user) const = 0;
+  // Ruturns files identifier for the |account_id|.
+  virtual WallpaperFilesId GetFilesId(const AccountId& account_id) const = 0;
 
  protected:
   friend class TestApi;

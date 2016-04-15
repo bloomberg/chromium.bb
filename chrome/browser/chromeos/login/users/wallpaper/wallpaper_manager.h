@@ -128,9 +128,9 @@ class WallpaperManager
   // Returns queue size.
   size_t GetPendingListSizeForTesting() const override;
 
-  // Returns wallpaper files id for the user.
+  // Returns wallpaper files id for the |account_id|.
   wallpaper::WallpaperFilesId GetFilesId(
-      const user_manager::User& user) const override;
+      const AccountId& account_id) const override;
 
   // Overridden from user_manager::UserManager::UserSessionStateObserver:
   void UserChangedChildStatus(user_manager::User* user) override;
@@ -156,15 +156,6 @@ class WallpaperManager
   void SetPolicyControlledWallpaper(
       const AccountId& account_id,
       std::unique_ptr<user_manager::UserImage> user_image);
-
-  // Calls SetCustomWallpaper() with |wallpaper_files_id_str| received from
-  // cryptohome.
-  void SetCustomWallpaperOnSanitizedUsername(
-      const AccountId& account_id,
-      const gfx::ImageSkia& image,
-      bool update_wallpaper,
-      bool cryptohome_success,
-      const std::string& wallpaper_files_id_str);
 
   // WallpaperManagerBase overrides:
   void InitializeRegisteredDeviceWallpaper() override;

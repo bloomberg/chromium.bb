@@ -21,6 +21,7 @@
 #include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
+#include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -39,8 +40,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
-#include "chromeos/cryptohome/async_method_caller.h"
-#include "chromeos/cryptohome/cryptohome_parameters.h"
+#include "chromeos/cryptohome/system_salt_getter.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/login/user_names.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -129,22 +129,40 @@ int FindPublicSession(const user_manager::UserList& users) {
   return index;
 }
 
-cryptohome::Identification GetUnhashedSourceForWallpaperFilesId(
-    const user_manager::User& user) {
-  const AccountId& account_id = user.GetAccountId();
-  const std::string& old_id = account_id.GetUserEmail();  // Migrated
-  return cryptohome::Identification::FromString(old_id);
-}
+// This has once been copied from
+// brillo::cryptohome::home::SanitizeUserName(username) to be used for
+// wallpaper identification purpose only.
+//
+// Historic note: We need some way to identify users wallpaper files in
+// the device filesystem. Historically User::username_hash() was used for this
+// purpose, but it has two caveats:
+// 1. username_hash() is defined only after user has logged in.
+// 2. If cryptohome identifier changes, username_hash() will also change,
+//    and we may loose user => wallpaper files mapping at that point.
+// So this function gives WallpaperManager independent hashing method to break
+// this dependency.
+//
+wallpaper::WallpaperFilesId HashWallpaperFilesIdStr(
+    const std::string& files_id_unhashed) {
+  SystemSaltGetter* salt_getter = SystemSaltGetter::Get();
+  DCHECK(salt_getter);
 
-wallpaper::WallpaperFilesId GetKnownUserWallpaperFilesId(
-    const user_manager::User& user) {
-  const AccountId& account_id = user.GetAccountId();
-  std::string stored_value;
-  if (user_manager::known_user::GetStringPref(account_id, kWallpaperFilesId,
-                                              &stored_value)) {
-    return wallpaper::WallpaperFilesId::FromString(stored_value);
-  }
-  return wallpaper::WallpaperFilesId::FromString(user.username_hash());
+  // System salt must be defined at this point.
+  const SystemSaltGetter::RawSalt* salt = salt_getter->GetRawSalt();
+  if (!salt)
+    LOG(FATAL) << "WallpaperManager HashWallpaperFilesIdStr(): no salt!";
+
+  unsigned char binmd[base::kSHA1Length];
+  std::string lowercase(files_id_unhashed);
+  std::transform(lowercase.begin(), lowercase.end(), lowercase.begin(),
+                 ::tolower);
+  std::vector<uint8_t> data = *salt;
+  std::copy(files_id_unhashed.begin(), files_id_unhashed.end(),
+            std::back_inserter(data));
+  base::SHA1HashBytes(data.data(), data.size(), binmd);
+  std::string result = base::HexEncode(binmd, sizeof(binmd));
+  std::transform(result.begin(), result.end(), result.begin(), ::tolower);
+  return wallpaper::WallpaperFilesId::FromString(result);
 }
 
 void SetKnownUserWallpaperFilesId(
@@ -828,43 +846,15 @@ void WallpaperManager::RemovePendingWallpaperFromList(
 void WallpaperManager::SetPolicyControlledWallpaper(
     const AccountId& account_id,
     std::unique_ptr<user_manager::UserImage> user_image) {
-  const user_manager::User* user =
-      user_manager::UserManager::Get()->FindUser(account_id);
-  if (!user) {
-    NOTREACHED() << "Unknown user.";
-    return;
-  }
+  const wallpaper::WallpaperFilesId wallpaper_files_id = GetFilesId(account_id);
 
-  const wallpaper::WallpaperFilesId wallpaper_files_id =
-      GetKnownUserWallpaperFilesId(*user);
-  if (!wallpaper_files_id.is_valid()) {
-    cryptohome::AsyncMethodCaller::GetInstance()->AsyncGetSanitizedUsername(
-        GetUnhashedSourceForWallpaperFilesId(*user),
-        base::Bind(&WallpaperManager::SetCustomWallpaperOnSanitizedUsername,
-                   weak_factory_.GetWeakPtr(), account_id, user_image->image(),
-                   true /* update wallpaper */));
-  } else {
-    SetCustomWallpaper(account_id, wallpaper_files_id, "policy-controlled.jpeg",
-                       wallpaper::WALLPAPER_LAYOUT_CENTER_CROPPED,
-                       user_manager::User::POLICY, user_image->image(),
-                       true /* update wallpaper */);
-  }
-}
+  if (!wallpaper_files_id.is_valid())
+    LOG(FATAL) << "Wallpaper flies id if invalid!";
 
-void WallpaperManager::SetCustomWallpaperOnSanitizedUsername(
-    const AccountId& account_id,
-    const gfx::ImageSkia& image,
-    bool update_wallpaper,
-    bool cryptohome_success,
-    const std::string& wallpaper_files_id_str) {
-  if (!cryptohome_success)
-    return;
-  const wallpaper::WallpaperFilesId wallpaper_files_id =
-      wallpaper::WallpaperFilesId::FromString(wallpaper_files_id_str);
-  SetKnownUserWallpaperFilesId(account_id, wallpaper_files_id);
   SetCustomWallpaper(account_id, wallpaper_files_id, "policy-controlled.jpeg",
                      wallpaper::WALLPAPER_LAYOUT_CENTER_CROPPED,
-                     user_manager::User::POLICY, image, update_wallpaper);
+                     user_manager::User::POLICY, user_image->image(),
+                     true /* update wallpaper */);
 }
 
 void WallpaperManager::InitializeRegisteredDeviceWallpaper() {
@@ -1139,8 +1129,16 @@ void WallpaperManager::SetDefaultWallpaperPath(
 }
 
 wallpaper::WallpaperFilesId WallpaperManager::GetFilesId(
-    const user_manager::User& user) const {
-  return GetKnownUserWallpaperFilesId(user);
+    const AccountId& account_id) const {
+  std::string stored_value;
+  if (user_manager::known_user::GetStringPref(account_id, kWallpaperFilesId,
+                                              &stored_value)) {
+    return wallpaper::WallpaperFilesId::FromString(stored_value);
+  }
+  const std::string& old_id = account_id.GetUserEmail();  // Migrated
+  const wallpaper::WallpaperFilesId files_id = HashWallpaperFilesIdStr(old_id);
+  SetKnownUserWallpaperFilesId(account_id, files_id);
+  return files_id;
 }
 
 }  // namespace chromeos

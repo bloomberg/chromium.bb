@@ -124,7 +124,7 @@ bool WallpaperSetWallpaperFunction::RunAsync() {
   account_id_ = user->GetAccountId();
   chromeos::WallpaperManager* wallpaper_manager =
       chromeos::WallpaperManager::Get();
-  wallpaper_files_id_ = wallpaper_manager->GetFilesId(*user);
+  wallpaper_files_id_ = wallpaper_manager->GetFilesId(account_id_);
 
   if (params_->details.data) {
     StartDecode(*params_->details.data);

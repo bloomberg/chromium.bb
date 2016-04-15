@@ -42,6 +42,15 @@ void SystemSaltGetter::GetSystemSalt(
                  callback));
 }
 
+const SystemSaltGetter::RawSalt* SystemSaltGetter::GetRawSalt() const {
+  return raw_salt_.empty() ? nullptr : &raw_salt_;
+}
+
+void SystemSaltGetter::SetRawSaltForTesting(
+    const SystemSaltGetter::RawSalt& raw_salt) {
+  raw_salt_ = raw_salt;
+}
+
 void SystemSaltGetter::DidWaitForServiceToBeAvailable(
     const GetSystemSaltCallback& callback,
     bool service_is_available) {
@@ -62,10 +71,12 @@ void SystemSaltGetter::DidGetSystemSalt(
     const std::vector<uint8_t>& system_salt) {
   if (call_status == DBUS_METHOD_CALL_SUCCESS &&
       !system_salt.empty() &&
-      system_salt.size() % 2 == 0U)
+      system_salt.size() % 2 == 0U) {
+      raw_salt_ = system_salt;
     system_salt_ = ConvertRawSaltToHexString(system_salt);
-  else
+  } else {
     LOG(WARNING) << "System salt not available";
+  }
 
   callback.Run(system_salt_);
 }
