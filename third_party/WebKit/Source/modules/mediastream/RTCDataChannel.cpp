@@ -54,7 +54,10 @@ static void throwNoBlobSupportException(ExceptionState& exceptionState)
 RTCDataChannel* RTCDataChannel::create(ExecutionContext* context, PassOwnPtr<WebRTCDataChannelHandler> handler)
 {
     DCHECK(handler);
-    return new RTCDataChannel(context, handler);
+    RTCDataChannel* channel = new RTCDataChannel(context, handler);
+    channel->suspendIfNeeded();
+
+    return channel;
 }
 
 RTCDataChannel* RTCDataChannel::create(ExecutionContext* context, WebRTCPeerConnectionHandler* peerConnectionHandler, const String& label, const WebRTCDataChannelInit& init, ExceptionState& exceptionState)
@@ -64,16 +67,21 @@ RTCDataChannel* RTCDataChannel::create(ExecutionContext* context, WebRTCPeerConn
         exceptionState.throwDOMException(NotSupportedError, "RTCDataChannel is not supported");
         return nullptr;
     }
-    return new RTCDataChannel(context, handler.release());
+    RTCDataChannel* channel = new RTCDataChannel(context, handler.release());
+    channel->suspendIfNeeded();
+
+    return channel;
 }
 
 RTCDataChannel::RTCDataChannel(ExecutionContext* context, PassOwnPtr<WebRTCDataChannelHandler> handler)
-    : m_executionContext(context)
+    : ActiveScriptWrappable(this)
+    , ActiveDOMObject(context)
     , m_handler(handler)
     , m_readyState(ReadyStateConnecting)
     , m_binaryType(BinaryTypeArrayBuffer)
     , m_scheduledEventTimer(this, &RTCDataChannel::scheduledEventTimerFired)
     , m_bufferedAmountLowThreshold(0U)
+    , m_stopped(false)
 {
     ThreadState::current()->registerPreFinalizer(this);
     m_handler->setClient(this);
@@ -85,6 +93,9 @@ RTCDataChannel::~RTCDataChannel()
 
 void RTCDataChannel::dispose()
 {
+    if (m_stopped)
+        return;
+
     // Promptly clears a raw reference from content/ to an on-heap object
     // so that content/ doesn't access it in a lazy sweeping phase.
     m_handler->setClient(nullptr);
@@ -296,7 +307,65 @@ const AtomicString& RTCDataChannel::interfaceName() const
 
 ExecutionContext* RTCDataChannel::getExecutionContext() const
 {
-    return m_executionContext;
+    return ActiveDOMObject::getExecutionContext();
+}
+
+// ActiveDOMObject
+void RTCDataChannel::suspend()
+{
+    m_scheduledEventTimer.stop();
+}
+
+void RTCDataChannel::resume()
+{
+    if (!m_scheduledEvents.isEmpty() && !m_scheduledEventTimer.isActive())
+        m_scheduledEventTimer.startOneShot(0, BLINK_FROM_HERE);
+}
+
+void RTCDataChannel::stop()
+{
+    if (m_stopped)
+        return;
+
+    m_stopped = true;
+    m_handler->setClient(nullptr);
+    m_handler.clear();
+}
+
+// ActiveScriptWrappable
+bool RTCDataChannel::hasPendingActivity() const
+{
+    if (m_stopped)
+        return false;
+
+    // A RTCDataChannel object must not be garbage collected if its
+    // * readyState is connecting and at least one event listener is registered
+    //   for open events, message events, error events, or close events.
+    // * readyState is open and at least one event listener is registered for
+    //   message events, error events, or close events.
+    // * readyState is closing and at least one event listener is registered for
+    //   error events, or close events.
+    // * underlying data transport is established and data is queued to be
+    //   transmitted.
+    bool hasValidListeners = false;
+    switch (m_readyState) {
+    case ReadyStateConnecting:
+        hasValidListeners |= hasEventListeners(EventTypeNames::open);
+        // fallthrough intended
+    case ReadyStateOpen:
+        hasValidListeners |= hasEventListeners(EventTypeNames::message);
+        // fallthrough intended
+    case ReadyStateClosing:
+        hasValidListeners |= hasEventListeners(EventTypeNames::error) || hasEventListeners(EventTypeNames::close);
+        break;
+    default:
+        break;
+    }
+
+    if (hasValidListeners)
+        return true;
+
+    return m_readyState != ReadyStateClosed && bufferedAmount() > 0;
 }
 
 void RTCDataChannel::scheduleDispatchEvent(Event* event)
@@ -321,9 +390,9 @@ void RTCDataChannel::scheduledEventTimerFired(Timer<RTCDataChannel>*)
 
 DEFINE_TRACE(RTCDataChannel)
 {
-    visitor->trace(m_executionContext);
     visitor->trace(m_scheduledEvents);
     EventTargetWithInlineData::trace(visitor);
+    ActiveDOMObject::trace(visitor);
 }
 
 } // namespace blink

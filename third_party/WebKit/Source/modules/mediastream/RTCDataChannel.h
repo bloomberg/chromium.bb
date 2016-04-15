@@ -26,6 +26,8 @@
 #define RTCDataChannel_h
 
 #include "base/gtest_prod_util.h"
+#include "bindings/core/v8/ActiveScriptWrappable.h"
+#include "core/dom/ActiveDOMObject.h"
 #include "modules/EventTargetModules.h"
 #include "platform/Timer.h"
 #include "platform/heap/Handle.h"
@@ -46,7 +48,10 @@ struct WebRTCDataChannelInit;
 
 class MODULES_EXPORT RTCDataChannel final
     : public EventTargetWithInlineData
-    , WTF_NON_EXPORTED_BASE(public WebRTCDataChannelHandlerClient) {
+    , WTF_NON_EXPORTED_BASE(public WebRTCDataChannelHandlerClient)
+    , public ActiveScriptWrappable
+    , public ActiveDOMObject {
+    USING_GARBAGE_COLLECTED_MIXIN(RTCDataChannel);
     DEFINE_WRAPPERTYPEINFO();
     USING_PRE_FINALIZER(RTCDataChannel, dispose);
 public:
@@ -93,6 +98,14 @@ public:
     const AtomicString& interfaceName() const override;
     ExecutionContext* getExecutionContext() const override;
 
+    // ActiveDOMObject
+    void suspend() override;
+    void resume() override;
+    void stop() override;
+
+    // ActiveScriptWrappable
+    bool hasPendingActivity() const override;
+
     DECLARE_VIRTUAL_TRACE();
 
     // WebRTCDataChannelHandlerClient
@@ -109,8 +122,6 @@ private:
     void scheduleDispatchEvent(Event*);
     void scheduledEventTimerFired(Timer<RTCDataChannel>*);
 
-    Member<ExecutionContext> m_executionContext;
-
     OwnPtr<WebRTCDataChannelHandler> m_handler;
 
     WebRTCDataChannelHandlerClient::ReadyState m_readyState;
@@ -125,6 +136,8 @@ private:
     HeapVector<Member<Event>> m_scheduledEvents;
 
     unsigned m_bufferedAmountLowThreshold;
+
+    bool m_stopped;
 
     FRIEND_TEST_ALL_PREFIXES(RTCDataChannelTest, BufferedAmountLow);
 };

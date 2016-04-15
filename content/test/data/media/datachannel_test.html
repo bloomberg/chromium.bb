@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<title>RTCDataChannel Content Browser Test</title>
+<script type="text/javascript" src="webrtc_test_utilities.js"></script>
+<script>
+
+// Tests that an RTCDataChannel with event handlers is not garbage-collected
+// prematurely.
+function testDataChannelGC() {
+  var pc1 = new webkitRTCPeerConnection(null);
+  var pc2 = new webkitRTCPeerConnection(null);
+
+  var iceCandidateHandler = function(rpc) {
+    return function(e) {
+      if (e.candidate) {
+        rpc.addIceCandidate(e.candidate);
+      }
+    }
+  };
+
+  pc1.addEventListener("icecandidate", iceCandidateHandler(pc2));
+  pc2.addEventListener("icecandidate", iceCandidateHandler(pc1));
+
+  var probesOk = 0;
+  var dc1 = pc1.createDataChannel(null);
+  dc1.addEventListener("open", function(e) {
+    console.log("dc1/open event");
+    var probe = 0;
+    var id = setInterval(function() {
+      console.log("dc1/time: probe #" + probe);
+      if (probe == 6) {
+        clearInterval(id);
+        assertEquals(6, probesOk);
+        reportTestSuccess();
+        return;
+      }
+      dc1.send("probe #" + probe);
+      if (probe == 3) {
+        gc();  // Force garbage collection (requires: --js-flags="--expose-gc").
+      }
+      probe++;
+    }, 10);
+  });
+
+  pc2.addEventListener("datachannel", function(e) {
+    console.log("pc2/datachannel event");
+    var dc2 = e.channel;
+    dc2.addEventListener("message", function(e) {
+      console.log("dc2/message event: " + JSON.stringify(e.data));
+      probesOk++;
+    });
+  });
+
+  console.log("creating offer");
+  pc1.createOffer(function(sdp1) {
+    pc1.setLocalDescription(sdp1);
+    pc2.setRemoteDescription(sdp1, function() {
+      console.log("creating answer");
+      pc2.createAnswer(function(sdp2) {
+        pc1.setRemoteDescription(sdp2);
+        pc2.setLocalDescription(sdp2);
+      }, error => failTest(error.toString()));
+    }, error => failTest(error.toString()));
+  }, error => failTest(error.toString()));
+}
+</script>

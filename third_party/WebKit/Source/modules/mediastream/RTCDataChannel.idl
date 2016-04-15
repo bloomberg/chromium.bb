@@ -25,6 +25,8 @@
 // http://dev.w3.org/2011/webrtc/editor/webrtc.html#idl-def-RTCDataChannel
 
 [
+    ActiveScriptWrappable,
+    DependentLifetime,
     NoInterfaceObject,
 ] interface RTCDataChannel : EventTarget {
     readonly attribute DOMString label;

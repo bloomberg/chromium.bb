@@ -303,6 +303,7 @@
     'content_browsertests_webrtc_sources': [
       'browser/media/webrtc/webrtc_audio_debug_recordings_browsertest.cc',
       'browser/media/webrtc/webrtc_browsertest.cc',
+      'browser/media/webrtc/webrtc_datachannel_browsertest.cc',
       'browser/media/webrtc/webrtc_getusermedia_browsertest.cc',
       'browser/media/webrtc/webrtc_internals_browsertest.cc',
       'browser/media/webrtc/webrtc_ip_permissions_browsertest.cc',
