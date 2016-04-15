@@ -140,26 +140,32 @@ static bool isContainingBlockChainDescendant(LayoutObject* descendant, LayoutObj
 
 bool IntersectionObservation::computeGeometry(IntersectionGeometry& geometry) const
 {
-    // Pre-oilpan, there will be a delay between the time when the target Element gets deleted
-    // (because its ref count dropped to zero) and when this IntersectionObservation gets
-    // deleted (during the next gc run, because the target Element is the only thing keeping
-    // the IntersectionObservation alive).  During that interval, we need to check that m_target
-    // hasn't been cleared.
+    // In the first few lines here, before initializeGeometry is called, "return true"
+    // effectively means "if the previous observed state was that root and target were
+    // intersecting, then generate a notification indicating that they are no longer
+    // intersecting."  This happens, for example, when root or target is removed from the
+    // DOM tree and not reinserted before the next frame is generated.
     Element* targetElement = target();
-    if (!targetElement || !targetElement->inShadowIncludingDocument())
+    if (!targetElement)
         return false;
-    LayoutObject* targetLayoutObject = targetElement->layoutObject();
+    if (!targetElement->inShadowIncludingDocument())
+        return true;
     DCHECK(m_observer);
+    Element* rootElement = m_observer->root();
+    if (rootElement && !rootElement->inShadowIncludingDocument())
+        return true;
+
     LayoutObject* rootLayoutObject = m_observer->rootLayoutObject();
+    if (!rootLayoutObject || !rootLayoutObject->isBoxModelObject())
+        return false;
     // TODO(szager): Support SVG
+    LayoutObject* targetLayoutObject = targetElement->layoutObject();
     if (!targetLayoutObject)
         return false;
     if (!targetLayoutObject->isBoxModelObject() && !targetLayoutObject->isText())
         return false;
-    if (!rootLayoutObject || !rootLayoutObject->isBoxModelObject())
-        return false;
     if (!isContainingBlockChainDescendant(targetLayoutObject, rootLayoutObject))
-        return false;
+        return true;
 
     initializeGeometry(geometry);
 
@@ -220,8 +226,8 @@ void IntersectionObservation::computeIntersectionObservations(DOMHighResTimeStam
             pixelSnappedIntRect(geometry.intersectionRect),
             target());
         observer().enqueueIntersectionObserverEntry(*newEntry);
+        setLastThresholdIndex(newThresholdIndex);
     }
-    setLastThresholdIndex(newThresholdIndex);
 }
 
 void IntersectionObservation::disconnect()

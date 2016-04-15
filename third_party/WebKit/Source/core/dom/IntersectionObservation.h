@@ -23,6 +23,8 @@ public:
         LayoutRect intersectionRect;
         LayoutRect rootRect;
         bool doesIntersect;
+
+        IntersectionGeometry() : doesIntersect(false) {}
     };
 
     IntersectionObserver& observer() const { return *m_observer; }
