@@ -100,7 +100,7 @@ void UpdateEngine::Update(
 
   CrxUpdateItem update_item;
   scoped_ptr<ActionUpdateCheck> update_check_action(new ActionUpdateCheck(
-      (*update_context->update_checker_factory)(config_, *metadata_),
+      (*update_context->update_checker_factory)(config_, metadata_.get()),
       config_->GetBrowserVersion(), config_->ExtraRequestParams()));
 
   update_context->current_action.reset(update_check_action.release());

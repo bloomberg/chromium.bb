@@ -7,7 +7,9 @@
 #include <string>
 #include <vector>
 
+#include "base/guid.h"
 #include "base/macros.h"
+#include "base/strings/stringprintf.h"
 #include "base/threading/thread_checker.h"
 #include "base/values.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -35,13 +37,28 @@ int PersistedData::GetDateLastRollCall(const std::string& id) const {
       pref_service_->GetDictionary(kPersistedDataPreference);
   // We assume ids do not contain '.' characters.
   DCHECK_EQ(std::string::npos, id.find('.'));
-  if (!dict->GetInteger("apps." + id + ".dlrc", &dlrc))
+  if (!dict->GetInteger(base::StringPrintf("apps.%s.dlrc", id.c_str()), &dlrc))
     return kDateLastRollCallUnknown;
   return dlrc;
 }
 
+std::string PersistedData::GetPingFreshness(const std::string& id) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (!pref_service_)
+    return std::string();
+  std::string freshness;
+  const base::DictionaryValue* dict =
+      pref_service_->GetDictionary(kPersistedDataPreference);
+  // We assume ids do not contain '.' characters.
+  DCHECK_EQ(std::string::npos, id.find('.'));
+  if (!dict->GetString(base::StringPrintf("apps.%s.pf", id.c_str()),
+                       &freshness))
+    return std::string();
+  return base::StringPrintf("{%s}", freshness.c_str());
+}
+
 void PersistedData::SetDateLastRollCall(const std::vector<std::string>& ids,
-                                        int datenum) const {
+                                        int datenum) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!pref_service_ || datenum < 0)
     return;
@@ -49,7 +66,9 @@ void PersistedData::SetDateLastRollCall(const std::vector<std::string>& ids,
   for (auto id : ids) {
     // We assume ids do not contain '.' characters.
     DCHECK_EQ(std::string::npos, id.find('.'));
-    update->SetInteger("apps." + id + ".dlrc", datenum);
+    update->SetInteger(base::StringPrintf("apps.%s.dlrc", id.c_str()), datenum);
+    update->SetString(base::StringPrintf("apps.%s.pf", id.c_str()),
+                      base::GenerateGUID());
   }
 }
 

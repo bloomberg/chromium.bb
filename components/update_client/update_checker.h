@@ -32,7 +32,7 @@ class UpdateChecker {
 
   using Factory =
       scoped_ptr<UpdateChecker> (*)(const scoped_refptr<Configurator>& config,
-                                    const PersistedData& persistent);
+                                    PersistedData* persistent);
 
   virtual ~UpdateChecker() {}
 
@@ -46,7 +46,7 @@ class UpdateChecker {
 
   static scoped_ptr<UpdateChecker> Create(
       const scoped_refptr<Configurator>& config,
-      const PersistedData& persistent);
+      PersistedData* persistent);
 
  protected:
   UpdateChecker() {}

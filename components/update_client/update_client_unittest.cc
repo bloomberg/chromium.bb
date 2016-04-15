@@ -148,7 +148,7 @@ class UpdateClientTest : public testing::Test {
   static base::FilePath TestFilePath(const char* file);
 
   scoped_refptr<update_client::Configurator> config() { return config_; }
-  const update_client::PersistedData& metadata() { return *metadata_; }
+  update_client::PersistedData* metadata() { return metadata_.get(); }
 
   base::Closure quit_closure() { return quit_closure_; }
 
@@ -227,7 +227,7 @@ TEST_F(UpdateClientTest, OneCrxNoUpdate) {
    public:
     static scoped_ptr<UpdateChecker> Create(
         const scoped_refptr<Configurator>& config,
-        const PersistedData& metadata) {
+        PersistedData* metadata) {
       return scoped_ptr<UpdateChecker>(new FakeUpdateChecker());
     }
 
@@ -334,7 +334,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdateNoUpdate) {
    public:
     static scoped_ptr<UpdateChecker> Create(
         const scoped_refptr<Configurator>& config,
-        const PersistedData& metadata) {
+        PersistedData* metadata) {
       return scoped_ptr<UpdateChecker>(new FakeUpdateChecker());
     }
 
@@ -520,7 +520,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdate) {
    public:
     static scoped_ptr<UpdateChecker> Create(
         const scoped_refptr<Configurator>& config,
-        const PersistedData& metadata) {
+        PersistedData* metadata) {
       return scoped_ptr<UpdateChecker>(new FakeUpdateChecker());
     }
 
@@ -768,7 +768,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdateDownloadTimeout) {
    public:
     static scoped_ptr<UpdateChecker> Create(
         const scoped_refptr<Configurator>& config,
-        const PersistedData& metadata) {
+        PersistedData* metadata) {
       return scoped_ptr<UpdateChecker>(new FakeUpdateChecker());
     }
 
@@ -1019,7 +1019,7 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdate) {
    public:
     static scoped_ptr<UpdateChecker> Create(
         const scoped_refptr<Configurator>& config,
-        const PersistedData& metadata) {
+        PersistedData* metadata) {
       return scoped_ptr<UpdateChecker>(new FakeUpdateChecker());
     }
 
@@ -1311,7 +1311,7 @@ TEST_F(UpdateClientTest, OneCrxInstallError) {
    public:
     static scoped_ptr<UpdateChecker> Create(
         const scoped_refptr<Configurator>& config,
-        const PersistedData& metadata) {
+        PersistedData* metadata) {
       return scoped_ptr<UpdateChecker>(new FakeUpdateChecker());
     }
 
@@ -1495,7 +1495,7 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdateFailsFullUpdateSucceeds) {
    public:
     static scoped_ptr<UpdateChecker> Create(
         const scoped_refptr<Configurator>& config,
-        const PersistedData& metadata) {
+        PersistedData* metadata) {
       return scoped_ptr<UpdateChecker>(new FakeUpdateChecker());
     }
 
@@ -1785,7 +1785,7 @@ TEST_F(UpdateClientTest, OneCrxNoUpdateQueuedCall) {
    public:
     static scoped_ptr<UpdateChecker> Create(
         const scoped_refptr<Configurator>& config,
-        const PersistedData& metadata) {
+        PersistedData* metadata) {
       return scoped_ptr<UpdateChecker>(new FakeUpdateChecker());
     }
 
@@ -1885,7 +1885,7 @@ TEST_F(UpdateClientTest, OneCrxInstall) {
    public:
     static scoped_ptr<UpdateChecker> Create(
         const scoped_refptr<Configurator>& config,
-        const PersistedData& metadata) {
+        PersistedData* metadata) {
       return scoped_ptr<UpdateChecker>(new FakeUpdateChecker());
     }
 
@@ -2072,7 +2072,7 @@ TEST_F(UpdateClientTest, ConcurrentInstallSameCRX) {
    public:
     static scoped_ptr<UpdateChecker> Create(
         const scoped_refptr<Configurator>& config,
-        const PersistedData& metadata) {
+        PersistedData* metadata) {
       return scoped_ptr<UpdateChecker>(new FakeUpdateChecker());
     }
 
@@ -2166,7 +2166,7 @@ TEST_F(UpdateClientTest, EmptyIdList) {
    public:
     static scoped_ptr<UpdateChecker> Create(
         const scoped_refptr<Configurator>& config,
-        const PersistedData& metadata) {
+        PersistedData* metadata) {
       return scoped_ptr<UpdateChecker>(new FakeUpdateChecker());
     }
 
@@ -2212,7 +2212,7 @@ TEST_F(UpdateClientTest, SendUninstallPing) {
    public:
     static scoped_ptr<UpdateChecker> Create(
         const scoped_refptr<Configurator>& config,
-        const PersistedData& metadata) {
+        PersistedData* metadata) {
       return nullptr;
     }
 
@@ -2310,7 +2310,7 @@ TEST_F(UpdateClientTest, RetryAfter) {
    public:
     static scoped_ptr<UpdateChecker> Create(
         const scoped_refptr<Configurator>& config,
-        const PersistedData& metadata) {
+        PersistedData* metadata) {
       return scoped_ptr<UpdateChecker>(new FakeUpdateChecker());
     }
 

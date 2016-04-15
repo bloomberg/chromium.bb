@@ -22,9 +22,15 @@ TEST(PersistedDataTest, Simple) {
   metadata->SetDateLastRollCall(items, 3383);
   EXPECT_EQ(3383, metadata->GetDateLastRollCall("someappid"));
   EXPECT_EQ(-2, metadata->GetDateLastRollCall("someotherappid"));
+  const std::string pf1 = metadata->GetPingFreshness("someappid");
+  EXPECT_FALSE(pf1.empty());
   metadata->SetDateLastRollCall(items, 3386);
   EXPECT_EQ(3386, metadata->GetDateLastRollCall("someappid"));
   EXPECT_EQ(-2, metadata->GetDateLastRollCall("someotherappid"));
+  const std::string pf2 = metadata->GetPingFreshness("someappid");
+  EXPECT_FALSE(pf2.empty());
+  // The following has a 1 / 2^128 chance of being flaky.
+  EXPECT_NE(pf1, pf2);
 }
 
 TEST(PersistedDataTest, SharedPref) {

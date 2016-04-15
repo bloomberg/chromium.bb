@@ -38,12 +38,16 @@ class PersistedData {
   // -2 indicates that there is no recorded date number for the |id|.
   int GetDateLastRollCall(const std::string& id) const;
 
+  // Returns the PingFreshness (a random token that is written into the profile
+  // data whenever the DateLastRollCall it is modified) for the specified |id|.
+  // "" indicates that there is no recorded freshness value for the |id|.
+  std::string GetPingFreshness(const std::string& id) const;
+
   // Records the DateLastRollCall for the specified |ids|. |datenum| must be a
   // non-negative integer: calls with a negative |datenum| are simply ignored.
   // Calls to SetDateLastRollCall that occur prior to the persisted data store
-  // has been fully initialized are ignored.
-  void SetDateLastRollCall(const std::vector<std::string>& ids,
-                           int datenum) const;
+  // has been fully initialized are ignored. Also sets the PingFreshness.
+  void SetDateLastRollCall(const std::vector<std::string>& ids, int datenum);
 
   // This is called only via update_client's RegisterUpdateClientPreferences.
   static void RegisterPrefs(PrefRegistrySimple* registry);

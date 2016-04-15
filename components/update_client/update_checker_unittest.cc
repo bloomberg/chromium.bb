@@ -165,7 +165,7 @@ TEST_F(UpdateCheckerTest, UpdateCheckSuccess) {
   EXPECT_TRUE(post_interceptor_->ExpectRequest(
       new PartialMatch("updatecheck"), test_file("updatecheck_reply_1.xml")));
 
-  update_checker_ = UpdateChecker::Create(config_, *metadata_);
+  update_checker_ = UpdateChecker::Create(config_, metadata_.get());
 
   CrxUpdateItem item(BuildCrxUpdateItem());
   item.component.ap = "some_ap";
@@ -194,8 +194,10 @@ TEST_F(UpdateCheckerTest, UpdateCheckSuccess) {
       string::npos,
       post_interceptor_->GetRequests()[0].find(
           "<app appid=\"jebgalgnebhfojomionfpkfelancnnkf\" version=\"0.9\" "
-          "brand=\"TEST\" ap=\"some_ap\"><updatecheck /><ping rd=\"-2\" />"
-          "<packages><package fp=\"fp1\"/></packages></app>"));
+          "brand=\"TEST\" ap=\"some_ap\"><updatecheck /><ping rd=\"-2\" "));
+  EXPECT_NE(string::npos,
+            post_interceptor_->GetRequests()[0].find(
+                "<packages><package fp=\"fp1\"/></packages></app>"));
 
   EXPECT_NE(string::npos,
             post_interceptor_->GetRequests()[0].find("<hw physmemory="));
@@ -213,7 +215,7 @@ TEST_F(UpdateCheckerTest, UpdateCheckInvalidAp) {
   EXPECT_TRUE(post_interceptor_->ExpectRequest(
       new PartialMatch("updatecheck"), test_file("updatecheck_reply_1.xml")));
 
-  update_checker_ = UpdateChecker::Create(config_, *metadata_);
+  update_checker_ = UpdateChecker::Create(config_, metadata_.get());
 
   CrxUpdateItem item(BuildCrxUpdateItem());
   item.component.ap = std::string(257, 'a');  // Too long.
@@ -230,8 +232,10 @@ TEST_F(UpdateCheckerTest, UpdateCheckInvalidAp) {
       string::npos,
       post_interceptor_->GetRequests()[0].find(
           "app appid=\"jebgalgnebhfojomionfpkfelancnnkf\" version=\"0.9\" "
-          "brand=\"TEST\"><updatecheck /><ping rd=\"-2\" />"
-          "<packages><package fp=\"fp1\"/></packages></app>"));
+          "brand=\"TEST\"><updatecheck /><ping rd=\"-2\" "));
+  EXPECT_NE(string::npos,
+            post_interceptor_->GetRequests()[0].find(
+                "<packages><package fp=\"fp1\"/></packages></app>"));
 }
 
 TEST_F(UpdateCheckerTest, UpdateCheckSuccessNoBrand) {
@@ -239,7 +243,7 @@ TEST_F(UpdateCheckerTest, UpdateCheckSuccessNoBrand) {
       new PartialMatch("updatecheck"), test_file("updatecheck_reply_1.xml")));
 
   config_->SetBrand("TOOLONG");   // Sets an invalid brand code.
-  update_checker_ = UpdateChecker::Create(config_, *metadata_);
+  update_checker_ = UpdateChecker::Create(config_, metadata_.get());
 
   CrxUpdateItem item(BuildCrxUpdateItem());
   std::vector<CrxUpdateItem*> items_to_check;
@@ -255,8 +259,10 @@ TEST_F(UpdateCheckerTest, UpdateCheckSuccessNoBrand) {
       string::npos,
       post_interceptor_->GetRequests()[0].find(
           "<app appid=\"jebgalgnebhfojomionfpkfelancnnkf\" version=\"0.9\">"
-          "<updatecheck /><ping rd=\"-2\" /><packages><package fp=\"fp1\"/>"
-          "</packages></app>"));
+          "<updatecheck /><ping rd=\"-2\" "));
+  EXPECT_NE(string::npos,
+            post_interceptor_->GetRequests()[0].find(
+                "<packages><package fp=\"fp1\"/></packages></app>"));
 }
 
 // Simulates a 403 server response error.
@@ -264,7 +270,7 @@ TEST_F(UpdateCheckerTest, UpdateCheckError) {
   EXPECT_TRUE(
       post_interceptor_->ExpectRequest(new PartialMatch("updatecheck"), 403));
 
-  update_checker_ = UpdateChecker::Create(config_, *metadata_);
+  update_checker_ = UpdateChecker::Create(config_, metadata_.get());
 
   CrxUpdateItem item(BuildCrxUpdateItem());
   std::vector<CrxUpdateItem*> items_to_check;
@@ -290,7 +296,7 @@ TEST_F(UpdateCheckerTest, UpdateCheckDownloadPreference) {
 
   config_->SetDownloadPreference(string("cacheable"));
 
-  update_checker_ = UpdateChecker::Create(config_, *metadata_);
+  update_checker_ = UpdateChecker::Create(config_, metadata_.get());
 
   CrxUpdateItem item(BuildCrxUpdateItem());
   std::vector<CrxUpdateItem*> items_to_check;
@@ -316,7 +322,7 @@ TEST_F(UpdateCheckerTest, UpdateCheckCupError) {
       new PartialMatch("updatecheck"), test_file("updatecheck_reply_1.xml")));
 
   config_->SetUseCupSigning(true);
-  update_checker_ = UpdateChecker::Create(config_, *metadata_);
+  update_checker_ = UpdateChecker::Create(config_, metadata_.get());
 
   CrxUpdateItem item(BuildCrxUpdateItem());
   std::vector<CrxUpdateItem*> items_to_check;
@@ -338,8 +344,10 @@ TEST_F(UpdateCheckerTest, UpdateCheckCupError) {
       string::npos,
       post_interceptor_->GetRequests()[0].find(
           "<app appid=\"jebgalgnebhfojomionfpkfelancnnkf\" version=\"0.9\" "
-          "brand=\"TEST\"><updatecheck /><ping rd=\"-2\" />"
-          "<packages><package fp=\"fp1\"/></packages></app>"));
+          "brand=\"TEST\"><updatecheck /><ping rd=\"-2\" "));
+  EXPECT_NE(string::npos,
+            post_interceptor_->GetRequests()[0].find(
+                "<packages><package fp=\"fp1\"/></packages></app>"));
 
   // Expect an error since the response is not trusted.
   EXPECT_EQ(-10000, error_);
@@ -351,7 +359,7 @@ TEST_F(UpdateCheckerTest, UpdateCheckCupError) {
 TEST_F(UpdateCheckerTest, UpdateCheckRequiresEncryptionError) {
   config_->SetUpdateCheckUrl(GURL("http:\\foo\bar"));
 
-  update_checker_ = UpdateChecker::Create(config_, *metadata_);
+  update_checker_ = UpdateChecker::Create(config_, metadata_.get());
 
   CrxUpdateItem item(BuildCrxUpdateItem());
   item.component.requires_network_encryption = true;
@@ -375,7 +383,7 @@ TEST_F(UpdateCheckerTest, UpdateCheckDateLastRollCall) {
   EXPECT_TRUE(post_interceptor_->ExpectRequest(
       new PartialMatch("updatecheck"), test_file("updatecheck_reply_4.xml")));
 
-  update_checker_ = UpdateChecker::Create(config_, *metadata_);
+  update_checker_ = UpdateChecker::Create(config_, metadata_.get());
 
   CrxUpdateItem item(BuildCrxUpdateItem());
   std::vector<CrxUpdateItem*> items_to_check;
@@ -387,7 +395,7 @@ TEST_F(UpdateCheckerTest, UpdateCheckDateLastRollCall) {
       base::Bind(&UpdateCheckerTest::UpdateCheckComplete,
                  base::Unretained(this)));
   RunThreads();
-  update_checker_ = UpdateChecker::Create(config_, *metadata_);
+  update_checker_ = UpdateChecker::Create(config_, metadata_.get());
   update_checker_->CheckForUpdates(
       items_to_check, "extra=\"params\"",
       base::Bind(&UpdateCheckerTest::UpdateCheckComplete,
@@ -398,10 +406,10 @@ TEST_F(UpdateCheckerTest, UpdateCheckDateLastRollCall) {
       << post_interceptor_->GetRequestsAsString();
   ASSERT_EQ(2, post_interceptor_->GetCount())
       << post_interceptor_->GetRequestsAsString();
-  EXPECT_NE(string::npos,
-            post_interceptor_->GetRequests()[0].find("<ping rd=\"-2\" />"));
-  EXPECT_NE(string::npos,
-            post_interceptor_->GetRequests()[1].find("<ping rd=\"3383\" />"));
+  EXPECT_NE(string::npos, post_interceptor_->GetRequests()[0].find(
+                              "<ping rd=\"-2\" ping_freshness="));
+  EXPECT_NE(string::npos, post_interceptor_->GetRequests()[1].find(
+                              "<ping rd=\"3383\" ping_freshness="));
 }
 
 }  // namespace update_client
