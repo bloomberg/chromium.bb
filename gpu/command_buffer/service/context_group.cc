@@ -104,13 +104,14 @@ ContextGroup::ContextGroup(
       program_cache_(NULL),
       feature_info_(feature_info) {
   {
-    DCHECK(feature_info_);
     if (!mailbox_manager_.get())
       mailbox_manager_ = new MailboxManagerImpl;
     if (!subscription_ref_set_.get())
       subscription_ref_set_ = new SubscriptionRefSet();
     if (!pending_valuebuffer_state_.get())
       pending_valuebuffer_state_ = new ValueStateMap();
+    if (!feature_info.get())
+      feature_info_ = new FeatureInfo;
     transfer_buffer_manager_ = new TransferBufferManager(memory_tracker_.get());
   }
 }

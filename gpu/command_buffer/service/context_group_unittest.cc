@@ -42,10 +42,9 @@ class ContextGroupTest : public GpuServiceTest {
   void SetUp() override {
     GpuServiceTest::SetUp();
     decoder_.reset(new MockGLES2Decoder());
-    scoped_refptr<FeatureInfo> feature_info = new FeatureInfo;
-    group_ = scoped_refptr<ContextGroup>(
-        new ContextGroup(gpu_preferences_, NULL, NULL, NULL, NULL, feature_info,
-                         NULL, NULL, kBindGeneratesResource));
+    group_ = scoped_refptr<ContextGroup>(new ContextGroup(
+        gpu_preferences_, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+        kBindGeneratesResource));
   }
 
   GpuPreferences gpu_preferences_;

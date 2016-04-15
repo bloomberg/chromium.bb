@@ -210,15 +210,13 @@ GpuCommandBufferStub::GpuCommandBufferStub(
     DCHECK(context_group_->bind_generates_resource() ==
            attrib_parser.bind_generates_resource);
   } else {
-    scoped_refptr<gles2::FeatureInfo> feature_info = new gles2::FeatureInfo(
-        channel_->gpu_channel_manager()->gpu_driver_bug_workarounds());
     context_group_ = new gles2::ContextGroup(
         channel_->gpu_channel_manager()->gpu_preferences(), mailbox_manager,
         new GpuCommandBufferMemoryTracker(channel,
                                           command_buffer_id_.GetUnsafeValue()),
         channel_->gpu_channel_manager()->shader_translator_cache(),
-        channel_->gpu_channel_manager()->framebuffer_completeness_cache(),
-        feature_info, subscription_ref_set, pending_valuebuffer_state,
+        channel_->gpu_channel_manager()->framebuffer_completeness_cache(), NULL,
+        subscription_ref_set, pending_valuebuffer_state,
         attrib_parser.bind_generates_resource);
   }
 

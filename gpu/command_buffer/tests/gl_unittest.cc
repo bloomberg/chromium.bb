@@ -99,8 +99,7 @@ TEST_F(GLTest, SimpleShader) {
 }
 
 TEST_F(GLTest, FeatureFlagsMatchCapabilities) {
-  scoped_refptr<gles2::FeatureInfo> features =
-      new gles2::FeatureInfo(gl_.workarounds());
+  scoped_refptr<gles2::FeatureInfo> features = new gles2::FeatureInfo;
   EXPECT_TRUE(features->InitializeForTesting());
   const auto& caps = gl_.GetCapabilities();
   const auto& flags = features->feature_flags();

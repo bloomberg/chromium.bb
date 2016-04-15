@@ -152,23 +152,16 @@ scoped_refptr<InProcessCommandBuffer::Service> GetInitialService(
 
 }  // anonyous namespace
 
-InProcessCommandBuffer::Service::Service()
-    : gpu_driver_bug_workarounds_(base::CommandLine::ForCurrentProcess()) {}
+InProcessCommandBuffer::Service::Service() {}
 
 InProcessCommandBuffer::Service::Service(const GpuPreferences& gpu_preferences)
-    : gpu_preferences_(gpu_preferences),
-      gpu_driver_bug_workarounds_(base::CommandLine::ForCurrentProcess()) {}
+    : gpu_preferences_(gpu_preferences) {}
 
 InProcessCommandBuffer::Service::~Service() {}
 
 const gpu::GpuPreferences&
 InProcessCommandBuffer::Service::gpu_preferences() {
   return gpu_preferences_;
-}
-
-const gpu::GpuDriverBugWorkarounds&
-InProcessCommandBuffer::Service::gpu_driver_bug_workarounds() {
-  return gpu_driver_bug_workarounds_;
 }
 
 scoped_refptr<gfx::GLShareGroup>
@@ -354,18 +347,16 @@ bool InProcessCommandBuffer::InitializeOnGpuThread(
 #endif
 
   bool bind_generates_resource = false;
-  scoped_refptr<gles2::FeatureInfo> feature_info =
-      new gles2::FeatureInfo(service_->gpu_driver_bug_workarounds());
   decoder_.reset(gles2::GLES2Decoder::Create(
       params.context_group
           ? params.context_group->decoder_->GetContextGroup()
-          : new gles2::ContextGroup(
-                service_->gpu_preferences(), service_->mailbox_manager(), NULL,
-                service_->shader_translator_cache(),
-                service_->framebuffer_completeness_cache(), feature_info,
-                service_->subscription_ref_set(),
-                service_->pending_valuebuffer_state(),
-                bind_generates_resource)));
+          : new gles2::ContextGroup(service_->gpu_preferences(),
+                                    service_->mailbox_manager(), NULL,
+                                    service_->shader_translator_cache(),
+                                    service_->framebuffer_completeness_cache(),
+                                    NULL, service_->subscription_ref_set(),
+                                    service_->pending_valuebuffer_state(),
+                                    bind_generates_resource)));
 
   executor_.reset(new CommandExecutor(command_buffer.get(), decoder_.get(),
                                       decoder_.get()));

@@ -99,7 +99,8 @@ class EXTBlendFuncExtendedDrawTest : public testing::TestWithParam<bool> {
     GLManager::Options options;
     options.size = gfx::Size(kWidth, kHeight);
     options.force_shader_name_hashing = GetParam();
-    gl_.Initialize(options);
+    base::CommandLine command_line(*base::CommandLine::ForCurrentProcess());
+    gl_.InitializeWithCommandLine(options, &command_line);
   }
 
   bool IsApplicable() const {
@@ -246,7 +247,7 @@ class EXTBlendFuncExtendedES3DrawTest : public EXTBlendFuncExtendedDrawTest {
     options.force_shader_name_hashing = GetParam();
     base::CommandLine command_line(*base::CommandLine::ForCurrentProcess());
     command_line.AppendSwitch(switches::kEnableUnsafeES3APIs);
-    gl_.InitializeWithCommandLine(options, command_line);
+    gl_.InitializeWithCommandLine(options, &command_line);
   }
   bool IsApplicable() const {
     return gl_.IsInitialized() && EXTBlendFuncExtendedDrawTest::IsApplicable();
