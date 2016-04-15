@@ -3,7 +3,7 @@
 <script src="../../resources/testharnessreport.js"></script>
 
 <script>
-  var t = async_test('Simple scripts that inject external scripts via document.write should be preloaded');
+  var t = async_test('Accessors like location should be properly stubbed to aid in preloading scripts injected via document.write');
   // We reject scripts with "for", so rename window.performance.
   window.perf = window.performance;
 </script>
@@ -11,7 +11,7 @@
 <script>
   if (window.perf)
     var boundedStart = window.perf.now();
-  var src = '../../resources/dummy.js';
+  var src = window.location.protocol + '//' + window.location.hostname + ':8000' + '/resources/dummy.js';
   document.write('<scr' + 'ipt src="' + src + '"></scr' + 'ipt>');
 </script>
 

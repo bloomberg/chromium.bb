@@ -1768,6 +1768,7 @@ crbug.com/599975 [ Android ] media/video-autoplay.html [ Timeout ]
 
 # DocumentWriteEvaluator is still experimental
 crbug.com/599115 http/tests/preload/document-write [ Failure ]
+crbug.com/599115 http/tests/preload/document-write/document_write_no_preload.html [ Pass ]
 
 crbug.com/601669 [ Win ] svg/as-image/svg-nested.html [ Crash ]
 

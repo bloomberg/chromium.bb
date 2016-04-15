@@ -3,7 +3,7 @@
 <script src="../../resources/testharnessreport.js"></script>
 
 <script>
-  var t = async_test('Simple scripts that inject external scripts via document.write should be preloaded');
+  var t = async_test("Make sure that timing assumptions are accurate when document write preloading is off");
   // We reject scripts with "for", so rename window.performance.
   window.perf = window.performance;
 </script>
@@ -19,8 +19,8 @@
   window.addEventListener("load", t.step_func(function() {
     window.performance.getEntriesByType('resource').forEach(function(r) {
       if (r.name.indexOf('dummy.js') != -1) {
-        assert_less_than(r.startTime, boundedStart);
         assert_greater_than(r.startTime, 0);
+        assert_greater_than(r.startTime, boundedStart);
         t.done();
       }
     });
