@@ -839,6 +839,14 @@ hooks = [
     'action': ['python', 'src/third_party/instrumented_libraries/scripts/download_binaries.py'],
   },
   {
+    # Pull doclava binaries if building for Android.
+    'name': 'doclava',
+    'pattern': '.',
+    'action': ['python',
+               'src/build/android/download_doclava.py',
+    ],
+  },
+  {
     # A change to a .gyp, .gypi, or to GYP itself should run the generator.
     'name': 'gyp',
     'pattern': '.',
